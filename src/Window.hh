@@ -114,6 +114,13 @@ class BlackboxWindow : public bt::TimeoutHandler, public bt::EventHandler,
     StackingList::Layer layer;
 
     WMSkip skip;             // none, taskbar, pager, both
+
+    inline WMState(void)
+      : modal(false), shaded(false), iconic(false), fullscreen(false),
+        moving(false), resizing(false), focused(false),
+        send_focus_message(false), shaped(false), maximized(0),
+        layer(StackingList::LayerNormal), skip(SKIP_NONE)
+    { }
   };
 
   struct _client {

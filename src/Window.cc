@@ -212,20 +212,13 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
                           CWEventMask|CWDontPropagate, &attrib_set);
 
   client.colormap = wattrib.colormap;
-  client.state.moving = client.state.resizing = client.state.shaded =
-  client.state.iconic = client.state.focused = client.state.modal =
- client.state.fullscreen = client.state.send_focus_message =
-  client.state.shaped = False;
-  client.state.maximized = 0;
-  client.state.skip = SKIP_NONE;
-  client.state.layer = StackingList::LayerNormal;
   client.workspace = screen->currentWorkspace();
   window_number = bt::BSENTINEL;
   client.normal_hint_flags = 0;
   client.window_group = None;
-  client.transient_for = (BlackboxWindow*) 0;
+  client.transient_for = 0;
   client.window_type = WindowTypeNormal;
-  client.strut = (bt::Netwm::Strut*) 0;
+  client.strut = 0;
   /*
     set the initial size and location of client window (relative to the
     _root window_). This position is the reference point used with the
