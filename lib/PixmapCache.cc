@@ -221,7 +221,7 @@ void bt::RealPixmapCache::clear(bool force) {
 
 #ifdef PIXMAPCACHE_DEBUG
     fprintf(stderr, "bt::PixmapCache: fre %08lx %4dx%4d\n",
-            it->pixmap, it->width, it->height, it->pixmap);
+            it->pixmap, it->width, it->height);
 #endif // PIXMAPCACHE_DEBUG
 
     // keep track of memory usage server side
