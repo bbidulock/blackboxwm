@@ -38,10 +38,11 @@ namespace bt {
 
   // forward declaration
   class TimerQueueManager;
+  class Timer;
 
   class TimeoutHandler {
   public:
-    virtual void timeout(void) = 0;
+    virtual void timeout(Timer *t) = 0;
   };
 
   class Timer: public NoCopy {

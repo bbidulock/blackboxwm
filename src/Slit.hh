@@ -32,12 +32,14 @@ extern "C" {
 #include <list>
 
 #include "Screen.hh"
+#include "Util.hh"
 
 // forward declaration
 class Slitmenu;
 
 
-class Slit : public bt::TimeoutHandler, public bt::EventHandler {
+class Slit : public bt::TimeoutHandler, public bt::EventHandler,
+             public bt::NoCopy {
 public:
   struct SlitClient {
     Window window, client_window, icon_window;
@@ -70,9 +72,6 @@ private:
   void updateStrut(void);
 
   friend class Slitmenu;
-
-  Slit(const Slit&);
-  Slit& operator=(const Slit&);
 
 public:
   Slit(BScreen *scr);
@@ -120,7 +119,7 @@ public:
   void unmapNotifyEvent(const XUnmapEvent * const e);
   void reparentNotifyEvent(const XReparentEvent * const event);
 
-  virtual void timeout(void);
+  virtual void timeout(bt::Timer *);
 
   enum Direction { Vertical = 1, Horizontal };
   enum Placement { TopLeft = 1, CenterLeft, BottomLeft,

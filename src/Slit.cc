@@ -724,7 +724,7 @@ void Slit::configureRequestEvent(const XConfigureRequestEvent * const e) {
 }
 
 
-void Slit::timeout(void) {
+void Slit::timeout(bt::Timer *) {
   hidden = ! hidden;
   if (hidden)
     XMoveWindow(display, frame.window, frame.x_hidden, frame.y_hidden);
@@ -748,7 +748,7 @@ void Slit::toggleAutoHide(void) {
   if (do_auto_hide == False && hidden) {
     // force the slit to be visible
     if (timer->isTiming()) timer->stop();
-    timeout();
+    timer->fireTimeout();
   }
 }
 

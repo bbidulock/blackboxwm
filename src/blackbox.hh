@@ -182,7 +182,7 @@ public:
 
   virtual bool handleSignal(int sig);
 
-  virtual void timeout(void);
+  virtual void timeout(bt::Timer *);
 
   inline Atom getWMChangeStateAtom(void) const
     { return xa_wm_change_state; }

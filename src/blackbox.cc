@@ -1135,7 +1135,7 @@ void Blackbox::saveMenuFilename(const std::string& filename) {
 }
 
 
-void Blackbox::timeout(void) {
+void Blackbox::timeout(bt::Timer *) {
   if (reconfigure_wait)
     real_reconfigure();
 

@@ -125,7 +125,7 @@ namespace bt {
     void installRootColormap(void);
     void removeImage(Pixmap pixmap);
 
-    virtual void timeout(void);
+    virtual void timeout(Timer *);
 
   private:
     Display &display;

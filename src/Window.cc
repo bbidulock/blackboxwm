@@ -3140,7 +3140,7 @@ void BlackboxWindow::restore(bool remap) {
 
 
 // timer for autoraise
-void BlackboxWindow::timeout(void) {
+void BlackboxWindow::timeout(bt::Timer *) {
   screen->raiseWindow(this);
 }
 

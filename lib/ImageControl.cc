@@ -148,7 +148,7 @@ Pixmap bt::ImageControl::renderImage(unsigned int width, unsigned int height,
   cache.push_back(tmp);
 
   if (cache.size() > cache_max)
-    timeout();
+    timeout(0);
 
   return pixmap;
 }
@@ -167,7 +167,7 @@ void bt::ImageControl::removeImage(Pixmap pixmap) {
   }
 
   if (! timer)
-    timeout();
+    timeout(0);
 }
 
 
@@ -207,7 +207,7 @@ struct CacheCleaner {
 };
 
 
-void bt::ImageControl::timeout(void) {
+void bt::ImageControl::timeout(Timer *) {
   CacheCleaner cleaner(display.XDisplay());
   std::for_each(cache.begin(), cache.end(), cleaner);
   cache.remove_if(cleaner.ref_check);

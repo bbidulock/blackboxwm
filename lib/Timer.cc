@@ -92,7 +92,7 @@ void bt::Timer::halt(void) {
 
 void bt::Timer::fireTimeout(void) {
   if (handler)
-    handler->timeout();
+    handler->timeout(this);
 }
 
 

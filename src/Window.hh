@@ -385,7 +385,7 @@ public:
   void shapeEvent(const XShapeEvent * const /*unused*/);
 #endif // SHAPE
 
-  virtual void timeout(void);
+  virtual void timeout(bt::Timer *);
 };
 
 

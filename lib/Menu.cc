@@ -294,7 +294,7 @@ namespace bt {
   public:
     Menu *showmenu;
     inline ShowDelay(void) : showmenu(0) { }
-    inline void timeout(void) {
+    inline void timeout(Timer *) {
       if (showmenu) showmenu->show();
       showmenu = 0;
     }

@@ -475,7 +475,7 @@ void BScreen::reconfigure(void) {
       bw->reconfigure();
   }
 
-  image_control->timeout();
+  image_control->timeout(0);
 }
 
 

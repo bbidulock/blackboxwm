@@ -178,8 +178,7 @@ Toolbar::Toolbar(BScreen *scrn) {
   clock_timer->start();
   frame.minute = frame.hour = -1;
 
-  hide_handler.toolbar = this;
-  hide_timer = new bt::Timer(blackbox, &hide_handler);
+  hide_timer = new bt::Timer(blackbox, this);
   hide_timer->setTimeout(blackbox->getAutoRaiseDelay());
 
   on_top = screen->isToolbarOnTop();
@@ -979,21 +978,23 @@ void Toolbar::keyPressEvent(const XKeyEvent *ke) {
 }
 
 
-void Toolbar::timeout(void) {
-  checkClock(True);
+void Toolbar::timeout(bt::Timer *timer) {
+  if (timer == clock_timer) {
+    checkClock(True);
 
-  clock_timer->setTimeout(aMinuteFromNow());
-}
-
-
-void Toolbar::HideHandler::timeout(void) {
-  toolbar->hidden = ! toolbar->hidden;
-  if (toolbar->hidden)
-    XMoveWindow(toolbar->display, toolbar->frame.window,
-                toolbar->frame.x_hidden, toolbar->frame.y_hidden);
-  else
-    XMoveWindow(toolbar->display, toolbar->frame.window,
-                toolbar->frame.rect.x(), toolbar->frame.rect.y());
+    clock_timer->setTimeout(aMinuteFromNow());
+  } else if (timer == hide_timer) {
+    hidden = !hidden;
+    if (hidden)
+      XMoveWindow(display, frame.window,
+                  frame.x_hidden, frame.y_hidden);
+    else
+      XMoveWindow(display, frame.window,
+                  frame.rect.x(), frame.rect.y());
+  } else {
+    // this should not happen
+    assert(0);
+  }
 }
 
 
@@ -1006,7 +1007,7 @@ void Toolbar::toggleAutoHide(void) {
   if (do_auto_hide == False && hidden) {
     // force the slit to be visible
     if (hide_timer->isTiming()) hide_timer->stop();
-    hide_handler.timeout();
+    hide_timer->fireTimeout();
   }
 }
 

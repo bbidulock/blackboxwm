@@ -30,12 +30,14 @@ extern "C" {
 
 #include "Screen.hh"
 #include "Timer.hh"
+#include "Util.hh"
 
 // forward declaration
 class Toolbarmenu;
 
 
-class Toolbar : public bt::TimeoutHandler, public bt::EventHandler {
+class Toolbar : public bt::TimeoutHandler, public bt::EventHandler,
+                public bt::NoCopy {
 private:
   bool on_top, editing, hidden, do_auto_hide;
   Display *display;
@@ -53,13 +55,6 @@ private:
     bt::Rect rect;
   } frame;
 
-  class HideHandler : public bt::TimeoutHandler {
-  public:
-    Toolbar *toolbar;
-
-    virtual void timeout(void);
-  } hide_handler;
-
   Blackbox *blackbox;
   BScreen *screen;
   bt::Timer *clock_timer, *hide_timer;
@@ -69,8 +64,6 @@ private:
   std::string new_workspace_name;
   size_t new_name_pos;
 
-  friend class HideHandler;
-
   void redrawPrevWorkspaceButton(bool pressed = False, bool redraw = False);
   void redrawNextWorkspaceButton(bool pressed = False, bool redraw = False);
   void redrawPrevWindowButton(bool preseed = False, bool redraw = False);
@@ -79,9 +72,6 @@ private:
   void updateStrut(void);
 
   void checkClock(bool redraw = False);
-
-  Toolbar(const Toolbar&);
-  Toolbar& operator=(const Toolbar&);
 
 public:
   Toolbar(BScreen *scrn);
@@ -119,7 +109,7 @@ public:
   void redrawWindowLabel(bool redraw = False);
   void redrawWorkspaceLabel(bool redraw = False);
 
-  virtual void timeout(void);
+  virtual void timeout(bt::Timer *timer);
 
   enum Placement { TopLeft = 1, BottomLeft, TopCenter,
                    BottomCenter, TopRight, BottomRight };
