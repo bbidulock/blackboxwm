@@ -63,13 +63,17 @@ else
 fi
 
 dnl Check for existance of basename() and setlocale()
-AC_CHECK_FUNCS([basename],
+AC_CHECK_FUNCS([nl_langinfo])
+
+ICONV=
+AC_CHECK_FUNCS([iconv_open],
                [],
-	       [AC_CHECK_LIB([gen],
-	                     [basename],
-			     [AC_DEFINE([HAVE_BASENAME])
-			      LIBS="$LIBS -lgen"])
+               [AC_CHECK_LIB([iconv],
+                             [iconv_open],
+                             [ICONV=-liconv],
+                             [AC_MSG_ERROR([Blackbox requires iconv(3) support.])])
                ])
+AC_SUBST(ICONV)
 
 AC_CHECK_FUNCS([setlocale],
                [],

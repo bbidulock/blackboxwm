@@ -38,7 +38,8 @@ libbt_la_SOURCES = 	Application.cc					\
 			Resource.cc					\
 			Texture.cc					\
 			Timer.cc					\
-			Util.cc
+			Util.cc						\
+			Utf8.cc
 
 libbtdir = $(includedir)/bt
 libbt_HEADERS = 	Application.hh					\
@@ -56,7 +57,10 @@ libbt_HEADERS = 	Application.hh					\
 			Resource.hh					\
 			Texture.hh					\
 			Timer.hh					\
-			Util.hh
+			Util.hh						\
+			Utf8.hh
+
+libbt_la_LIBADD =	@ICONV@
 
 pkgconfigdir = 		$(libdir)/pkgconfig
 nodist_pkgconfig_DATA =	libbt.pc
