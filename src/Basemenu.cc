@@ -520,7 +520,8 @@ void Basemenu::redrawTitle(void) {
 
 void Basemenu::drawSubmenu(int index) {
   BasemenuItem *item = find(which_sub);
-  if (item && item->submenu() && ! item->submenu()->isTorn())
+  if (item && item->submenu() && ! item->submenu()->isTorn() &&
+      which_sub != index)
     item->submenu()->internal_hide();
 
   item = find(index);
