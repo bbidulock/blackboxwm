@@ -32,13 +32,12 @@ class BScreen;
 class Clientmenu : public Basemenu
 {
 public:
-  Clientmenu(Workspace *);
+  Clientmenu(Workspace *, int);
 
 protected:
-  virtual void itemClicked( const Point &, const Item &, int );
+  virtual void itemClicked(const Point &, const Item &, int);
 
 private:
-  BScreen *screen;
   Workspace *wkspc;
 };
 

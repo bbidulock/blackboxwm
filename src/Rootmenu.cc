@@ -70,7 +70,7 @@ void Rootmenu::itemClicked(const Point &, const Basemenu::Item &item, int button
   switch(item.function()) {
   case Execute:
     bexec(item.command(),
-          Blackbox::instance()->screen(screenNumber())->displayString());
+          BaseDisplay::instance()->screenInfo(screenNumber())->displayString());
     break;
 
   case Restart:

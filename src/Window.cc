@@ -178,7 +178,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   } else {
     if (client.transient_for == None ||
         client.transient_for == client.window) {
-      client.transient_for = screen->rootWindow();
+      client.transient_for = screen->screenInfo()->rootWindow();
     } else {
       BlackboxWindow *tr;
       if ((tr = blackbox->searchWindow(client.transient_for))) {
@@ -192,7 +192,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
       }
     }
 
-    if (client.transient_for == screen->rootWindow()) {
+    if (client.transient_for == screen->screenInfo()->rootWindow()) {
       flags.modal = True;
     }
 
@@ -220,8 +220,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     if ((blackbox->isStartup()) ||
 	(frame.x >= 0 &&
 	 (signed) (frame.y + frame.y_border) >= 0 &&
-	 frame.x <= (signed) screen->width() &&
-	 frame.y <= (signed) screen->height()))
+	 frame.x <= (signed) screen->screenInfo()->width() &&
+	 frame.y <= (signed) screen->screenInfo()->height()))
       place_window = False;
   }
 
@@ -432,15 +432,16 @@ Window BlackboxWindow::createToplevelWindow(int x, int y, unsigned int width,
                               CWOverrideRedirect | CWEventMask;
 
   attrib_create.background_pixmap = None;
-  attrib_create.colormap = screen->colormap();
+  attrib_create.colormap = screen->screenInfo()->colormap();
   attrib_create.override_redirect = True;
   attrib_create.event_mask = ButtonPressMask | ButtonReleaseMask |
                              ButtonMotionMask | EnterWindowMask;
 
-  return XCreateWindow(*blackbox, screen->rootWindow(), x, y, width, height,
-			borderwidth, screen->depth(), InputOutput,
-			screen->visual(), create_mask,
-			&attrib_create);
+  return XCreateWindow(*blackbox, screen->screenInfo()->rootWindow(),
+                       x, y, width, height, borderwidth,
+                       screen->screenInfo()->depth(), InputOutput,
+                       screen->screenInfo()->visual(), create_mask,
+                       &attrib_create);
 }
 
 
@@ -463,8 +464,9 @@ Window BlackboxWindow::createChildWindow(Window parent, Cursor cursor) {
     attrib_create.cursor = cursor;
   }
 
-  return XCreateWindow(*blackbox, parent, 0, 0, 1, 1, 0, screen->depth(),
-		       InputOutput, screen->visual(), create_mask,
+  return XCreateWindow(*blackbox, parent, 0, 0, 1, 1, 0,
+                       screen->screenInfo()->depth(), InputOutput,
+                       screen->screenInfo()->visual(), create_mask,
 		       &attrib_create);
 }
 
@@ -1317,21 +1319,21 @@ Bool BlackboxWindow::setInputFocus(void) {
   if (((signed) (frame.x + frame.width)) < 0) {
     if (((signed) (frame.y + frame.y_border)) < 0)
       configure(frame.border_w, frame.border_w, frame.width, frame.height);
-    else if (frame.y > (signed) screen->height())
-      configure(frame.border_w, screen->height() - frame.height,
+    else if (frame.y > (signed) screen->screenInfo()->height())
+      configure(frame.border_w, screen->screenInfo()->height() - frame.height,
                 frame.width, frame.height);
     else
       configure(frame.border_w, frame.y + frame.border_w,
                 frame.width, frame.height);
-  } else if (frame.x > (signed) screen->width()) {
+  } else if (frame.x > (signed) screen->screenInfo()->width()) {
     if (((signed) (frame.y + frame.y_border)) < 0)
-      configure(screen->width() - frame.width, frame.border_w,
+      configure(screen->screenInfo()->width() - frame.width, frame.border_w,
                 frame.width, frame.height);
-    else if (frame.y > (signed) screen->height())
-      configure(screen->width() - frame.width,
-	        screen->height() - frame.height, frame.width, frame.height);
+    else if (frame.y > (signed) screen->screenInfo()->height())
+      configure(screen->screenInfo()->width() - frame.width,
+	        screen->screenInfo()->height() - frame.height, frame.width, frame.height);
     else
-      configure(screen->width() - frame.width,
+      configure(screen->screenInfo()->width() - frame.width,
                 frame.y + frame.border_w, frame.width, frame.height);
   }
 
@@ -1346,7 +1348,7 @@ Bool BlackboxWindow::setInputFocus(void) {
       XSetInputFocus(*blackbox, client.window,
 		     RevertToPointerRoot, CurrentTime);
     else
-      XSetInputFocus(*blackbox, screen->rootWindow(),
+      XSetInputFocus(*blackbox, screen->screenInfo()->rootWindow(),
 		     RevertToNone, CurrentTime);
 
     blackbox->setFocusedWindow(this);
@@ -1506,12 +1508,12 @@ void BlackboxWindow::maximize(unsigned int button) {
   int dx = screen_area.x, dy = screen_area.y;
   unsigned int dw = screen_area.width, dh = screen_area.height;
 
-  dw = screen->width();
+  dw = screen->screenInfo()->width();
   dw -= frame.border_w * 2;
   dw -= frame.mwm_border_w * 2;
   dw -= client.base_width;
 
-  dh = screen->height();
+  dh = screen->screenInfo()->height();
   dh -= frame.border_w * 2;
   dh -= frame.mwm_border_w * 2;
   dh -= ((frame.handle_h + frame.border_w) * decorations.handle);
@@ -1533,8 +1535,8 @@ void BlackboxWindow::maximize(unsigned int button) {
   dh += ((frame.handle_h + frame.border_w) * decorations.handle);
   dh += frame.mwm_border_w * 2;
 
-  dx += ((screen->width() - dw) / 2) - frame.border_w;
-  dy += ((screen->height() - dh) / 2) - frame.border_w;
+  dx += ((screen->screenInfo()->width() - dw) / 2) - frame.border_w;
+  dy += ((screen->screenInfo()->height() - dh) / 2) - frame.border_w;
 
   switch(button) {
   case 1:
@@ -2264,7 +2266,7 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
       // according to the ICCCM - if the client doesn't reparent to
       // root, then we have to do it for them
       restoreGravity();
-      XReparentWindow( *blackbox, client.window, screen->rootWindow(),
+      XReparentWindow( *blackbox, client.window, screen->screenInfo()->rootWindow(),
                        client.x, client.y );
     }
 
@@ -2317,7 +2319,7 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
     } else {
       if (client.transient_for == None ||
           client.transient_for == client.window) {
-        client.transient_for = screen->rootWindow();
+        client.transient_for = screen->screenInfo()->rootWindow();
       } else {
         BlackboxWindow *tr;
         if ((tr = blackbox->searchWindow(client.transient_for))) {
@@ -2331,7 +2333,7 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
         }
       }
 
-      if (client.transient_for == screen->rootWindow()) {
+      if (client.transient_for == screen->screenInfo()->rootWindow()) {
         flags.modal = True;
       }
 
@@ -2542,7 +2544,7 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
 	if (! screen->doOpaqueMove()) {
 	    BGCCache::Item &gc = BGCCache::instance()->find( BColor( "orange" ), 0, GXxor,
 							     IncludeInferiors );
-	    XDrawRectangle(*blackbox, screen->rootWindow(), gc.gc(),
+	    XDrawRectangle(*blackbox, screen->screenInfo()->rootWindow(), gc.gc(),
 			   frame.move_x, frame.move_y, frame.resize_w,
 			   frame.resize_h);
 	    BGCCache::instance()->release( gc );
@@ -2557,7 +2559,7 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
     } else if (flags.resizing) {
 	BGCCache::Item &gc = BGCCache::instance()->find( BColor( "orange" ), 0, GXxor,
 							 IncludeInferiors );
-	XDrawRectangle(*blackbox, screen->rootWindow(), gc.gc(),
+	XDrawRectangle(*blackbox, screen->screenInfo()->rootWindow(), gc.gc(),
 		       frame.resize_x, frame.resize_y,
 		       frame.resize_w, frame.resize_h);
 	BGCCache::instance()->release( gc );
@@ -2614,7 +2616,7 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
 
 	BGCCache::Item &gc = BGCCache::instance()->find( BColor( "orange" ), 0, GXxor,
 							 IncludeInferiors );
-	XDrawRectangle(*blackbox, screen->rootWindow(), gc.gc(),
+	XDrawRectangle(*blackbox, screen->screenInfo()->rootWindow(), gc.gc(),
 		       frame.move_x, frame.move_y,
 		       frame.resize_w, frame.resize_h);
 	BGCCache::instance()->release( gc );
@@ -2626,11 +2628,11 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
       dy -= frame.border_w;
 
       if (screen->getEdgeSnapThreshold()) {
-        int drx = screen->width() - (dx + frame.snap_w);
+        int drx = screen->screenInfo()->width() - (dx + frame.snap_w);
 
         if (dx > 0 && dx < drx && dx < screen->getEdgeSnapThreshold()) dx = 0;
 	else if (drx > 0 && drx < screen->getEdgeSnapThreshold())
-	  dx = screen->width() - frame.snap_w;
+	  dx = screen->screenInfo()->width() - frame.snap_w;
 
         int dtty, dbby, dty, dby;
         switch (screen->getToolbarPlacement()) {
@@ -2639,7 +2641,7 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
         case Toolbar::TopRight:
           dtty = screen->getToolbar()->getExposedHeight() +
 	         frame.border_w;
-          dbby = screen->height();
+          dbby = screen->screenInfo()->height();
           break;
 
         default:
@@ -2661,14 +2663,14 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
       } else {
 	BGCCache::Item &gc = BGCCache::instance()->find( BColor( "orange" ), 0, GXxor,
 							 IncludeInferiors );
-	XDrawRectangle(*blackbox, screen->rootWindow(), gc.gc(),
+	XDrawRectangle(*blackbox, screen->screenInfo()->rootWindow(), gc.gc(),
 		       frame.move_x, frame.move_y, frame.resize_w,
 		       frame.resize_h);
 
 	frame.move_x = dx;
 	frame.move_y = dy;
 
-	XDrawRectangle(*blackbox, screen->rootWindow(), gc.gc(),
+	XDrawRectangle(*blackbox, screen->screenInfo()->rootWindow(), gc.gc(),
 		       frame.move_x, frame.move_y, frame.resize_w,
 		       frame.resize_h);
 
@@ -2711,14 +2713,14 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
 
       BGCCache::Item &gc = BGCCache::instance()->find( BColor( "orange" ), 0, GXxor,
 						       IncludeInferiors );
-      XDrawRectangle(*blackbox, screen->rootWindow(), gc.gc(),
+      XDrawRectangle(*blackbox, screen->screenInfo()->rootWindow(), gc.gc(),
 		     frame.resize_x, frame.resize_y,
 		     frame.resize_w, frame.resize_h);
       BGCCache::instance()->release( gc );
     } else {
       BGCCache::Item &gc = BGCCache::instance()->find( BColor( "orange" ), 0, GXxor,
 						       IncludeInferiors );
-      XDrawRectangle(*blackbox, screen->rootWindow(), gc.gc(),
+      XDrawRectangle(*blackbox, screen->screenInfo()->rootWindow(), gc.gc(),
 		     frame.resize_x, frame.resize_y,
 		     frame.resize_w, frame.resize_h);
 
@@ -2740,7 +2742,7 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
 	right_fixsize(&gx, &gy);
       }
 
-      XDrawRectangle(*blackbox, screen->rootWindow(), gc.gc(),
+      XDrawRectangle(*blackbox, screen->screenInfo()->rootWindow(), gc.gc(),
 		     frame.resize_x, frame.resize_y,
 		     frame.resize_w, frame.resize_h);
 
@@ -2809,7 +2811,7 @@ void BlackboxWindow::restore(void) {
   XUnmapWindow(*blackbox, client.window);
 
   XSetWindowBorderWidth(*blackbox, client.window, client.old_bw);
-  XReparentWindow(*blackbox, client.window, screen->rootWindow(),
+  XReparentWindow(*blackbox, client.window, screen->screenInfo()->rootWindow(),
                   client.x, client.y);
   XMapWindow(*blackbox, client.window);
 

@@ -56,7 +56,7 @@ Workspace::Workspace(BScreen *scrn, int i) {
 
   stackingList = new LinkedList<BlackboxWindow>;
   windowList = new LinkedList<BlackboxWindow>;
-  clientmenu = new Clientmenu(this);
+  clientmenu = new Clientmenu(this, screen->screenNumber());
 
   lastfocus = (BlackboxWindow *) 0;
 

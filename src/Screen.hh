@@ -73,11 +73,15 @@ struct NETStrut
   NETStrut(): top(0), bottom(0), left(0), right(0) {}
 };
 
-class BScreen : public ScreenInfo
+// should probably be BScreenManager, so as not to confuse it with ScreenInfo
+class BScreen
 {
 public:
-  BScreen( Blackbox *, int );
+  BScreen(Blackbox *, int);
   ~BScreen();
+
+  ScreenInfo *screenInfo() const { return screeninfo; }
+  int screenNumber() const { return screeninfo->screenNumber(); }
 
   void initialize();
 
@@ -214,6 +218,8 @@ protected:
   void InitMenu();
 
 private:
+  ScreenInfo *screeninfo;
+
   Blackbox *blackbox;
 
   Bool root_colormap_installed, managed;

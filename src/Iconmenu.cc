@@ -25,19 +25,18 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
-#include "i18n.hh"
 #include "Iconmenu.hh"
 #include "Screen.hh"
 #include "Window.hh"
-#include "Workspacemenu.hh"
+#include "blackbox.hh"
+#include "i18n.hh"
 
 
-Iconmenu::Iconmenu( BScreen *scrn )
-  : Basemenu( scrn->screenNumber() )
+Iconmenu::Iconmenu(int scrn)
+  : Basemenu(scrn)
 {
   setAutoDelete(false);
 
-  screen = scrn;
   setTitle(i18n(IconSet, IconIcons, "Icons"));
   showTitle();
 }
@@ -47,6 +46,7 @@ void Iconmenu::itemClicked(const Point &, const Item &item, int button)
   if (button != 1)
     return;
 
+  BScreen *screen = Blackbox::instance()->screen(screenNumber());
   if ( item.index() >= 0 && item.index() < screen->getIconCount()) {
     BlackboxWindow *win = screen->icon(item.index());
 

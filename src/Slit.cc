@@ -59,7 +59,8 @@ Slit::Slit(BScreen *scr)
                               CWColormap | CWOverrideRedirect | CWEventMask;
   attrib.background_pixmap = None;
   attrib.background_pixel = attrib.border_pixel = screen->style()->borderColor().pixel();
-  attrib.colormap = screen->colormap();
+  attrib.colormap =
+    BaseDisplay::instance()->screenInfo(screen->screenNumber())->colormap();
   attrib.override_redirect = True;
   attrib.event_mask = SubstructureRedirectMask |
                       ButtonPressMask | ButtonReleaseMask |
@@ -69,10 +70,11 @@ Slit::Slit(BScreen *scr)
   frame.width = frame.height = 1;
 
   frame.window =
-    XCreateWindow(*blackbox, screen->rootWindow(), frame.x, frame.y,
-		  frame.width, frame.height, screen->style()->borderWidth(),
-                  screen->depth(), InputOutput, screen->visual(),
-                  create_mask, &attrib);
+    XCreateWindow(*blackbox, screen->screenInfo()->rootWindow(),
+                  frame.x, frame.y, frame.width, frame.height,
+                  screen->style()->borderWidth(),
+                  screen->screenInfo()->depth(), InputOutput,
+                  screen->screenInfo()->visual(), create_mask, &attrib);
   blackbox->saveSlitSearch(frame.window, this);
 
   screen->addStrut(&strut);
@@ -106,8 +108,8 @@ void Slit::addClient(Window w) {
     if (wmhints) {
       if ((wmhints->flags & IconWindowHint) &&
 	  (wmhints->icon_window != None)) {
-	XMoveWindow(*blackbox, client->client_window, screen->width() + 10,
-		    screen->height() + 10);
+	XMoveWindow(*blackbox, client->client_window, screen->screenInfo()->width() + 10,
+		    screen->screenInfo()->height() + 10);
 	XMapWindow(*blackbox, client->client_window);
 
 	client->icon_window = wmhints->icon_window;
@@ -166,7 +168,7 @@ void Slit::removeClient(SlitClient *client, Bool remap) {
   if (remap && blackbox->validateWindow(client->window)) {
     XSelectInput(*blackbox, frame.window, NoEventMask);
     XSelectInput(*blackbox, client->window, NoEventMask);
-    XReparentWindow(*blackbox, client->window, screen->rootWindow(),
+    XReparentWindow(*blackbox, client->window, screen->screenInfo()->rootWindow(),
 		    client->x, client->y);
     XChangeSaveSet(*blackbox, client->window, SetModeDelete);
     XSelectInput(*blackbox, frame.window, SubstructureRedirectMask |
@@ -304,7 +306,7 @@ void Slit::reconfigure(void) {
       strut.top = height() + 1;
       break;
     case BottomCenter:
-      strut.bottom = (screen->height() - getY()) - 1;
+      strut.bottom = (screen->screenInfo()->height() - getY()) - 1;
       break;
     case TopLeft:
     case CenterLeft:
@@ -314,7 +316,7 @@ void Slit::reconfigure(void) {
     case TopRight:
     case CenterRight:
     case BottomRight:
-      strut.right = (screen->width() - getX()) - 1;
+      strut.right = (screen->screenInfo()->width() - getX()) - 1;
       break;
     }
     break;
@@ -361,13 +363,13 @@ void Slit::reconfigure(void) {
     case BottomCenter:
     case BottomLeft:
     case BottomRight:
-      strut.bottom = (screen->height() - getY()) - 1;
+      strut.bottom = (screen->screenInfo()->height() - getY()) - 1;
       break;
     case CenterLeft:
       strut.left = width() + 1;
       break;
     case CenterRight:
-      strut.right = (screen->width() - getX()) - 1;
+      strut.right = (screen->screenInfo()->width() - getX()) - 1;
       break;
     }
     break;
@@ -398,7 +400,7 @@ void Slit::reposition(void) {
 
   case CenterLeft:
     frame.x = 0;
-    frame.y = (screen->height() - frame.height) / 2;
+    frame.y = (screen->screenInfo()->height() - frame.height) / 2;
     frame.x_hidden = screen->style()->bevelWidth() - screen->style()->borderWidth()
 	             - frame.width;
     frame.y_hidden = frame.y;
@@ -406,7 +408,7 @@ void Slit::reposition(void) {
 
   case BottomLeft:
     frame.x = 0;
-    frame.y = screen->height() - frame.height
+    frame.y = screen->screenInfo()->height() - frame.height
               - (screen->style()->borderWidth() * 2);
     if (screen->getSlitDirection() == Vertical) {
       frame.x_hidden = screen->style()->bevelWidth() - screen->style()->borderWidth()
@@ -414,13 +416,13 @@ void Slit::reposition(void) {
       frame.y_hidden = frame.y;
     } else {
       frame.x_hidden = 0;
-      frame.y_hidden = screen->height() - screen->style()->bevelWidth()
+      frame.y_hidden = screen->screenInfo()->height() - screen->style()->bevelWidth()
 	               - screen->style()->borderWidth();
     }
     break;
 
   case TopCenter:
-    frame.x = (screen->width() - frame.width) / 2;
+    frame.x = (screen->screenInfo()->width() - frame.width) / 2;
     frame.y = 0;
     frame.x_hidden = frame.x;
     frame.y_hidden = screen->style()->bevelWidth() - screen->style()->borderWidth()
@@ -428,20 +430,20 @@ void Slit::reposition(void) {
     break;
 
   case BottomCenter:
-    frame.x = (screen->width() - frame.width) / 2;
-    frame.y = screen->height() - frame.height
+    frame.x = (screen->screenInfo()->width() - frame.width) / 2;
+    frame.y = screen->screenInfo()->height() - frame.height
               - (screen->style()->borderWidth() * 2);
     frame.x_hidden = frame.x;
-    frame.y_hidden = screen->height() - screen->style()->bevelWidth()
+    frame.y_hidden = screen->screenInfo()->height() - screen->style()->bevelWidth()
                      - screen->style()->borderWidth();
     break;
 
   case TopRight:
-    frame.x = screen->width() - frame.width
+    frame.x = screen->screenInfo()->width() - frame.width
               - (screen->style()->borderWidth() * 2);
     frame.y = 0;
     if (screen->getSlitDirection() == Vertical) {
-      frame.x_hidden = screen->width() - screen->style()->bevelWidth()
+      frame.x_hidden = screen->screenInfo()->width() - screen->style()->bevelWidth()
 	               - screen->style()->borderWidth();
       frame.y_hidden = 0;
     } else {
@@ -453,26 +455,26 @@ void Slit::reposition(void) {
 
   case CenterRight:
   default:
-    frame.x = screen->width() - frame.width
+    frame.x = screen->screenInfo()->width() - frame.width
               - (screen->style()->borderWidth() * 2);
-    frame.y = (screen->height() - frame.height) / 2;
-    frame.x_hidden = screen->width() - screen->style()->bevelWidth()
+    frame.y = (screen->screenInfo()->height() - frame.height) / 2;
+    frame.x_hidden = screen->screenInfo()->width() - screen->style()->bevelWidth()
                      - screen->style()->borderWidth();
     frame.y_hidden = frame.y;
     break;
 
   case BottomRight:
-    frame.x = screen->width() - frame.width
+    frame.x = screen->screenInfo()->width() - frame.width
               - (screen->style()->borderWidth() * 2);
-    frame.y = screen->height() - frame.height
+    frame.y = screen->screenInfo()->height() - frame.height
               - (screen->style()->borderWidth() * 2);
     if (screen->getSlitDirection() == Vertical) {
-      frame.x_hidden = screen->width() - screen->style()->bevelWidth()
+      frame.x_hidden = screen->screenInfo()->width() - screen->style()->bevelWidth()
 	               - screen->style()->borderWidth();
       frame.y_hidden = frame.y;
     } else {
       frame.x_hidden = frame.x;
-      frame.y_hidden = screen->height() - screen->style()->bevelWidth()
+      frame.y_hidden = screen->screenInfo()->height() - screen->style()->bevelWidth()
                        - screen->style()->borderWidth();
     }
     break;

@@ -36,13 +36,13 @@
 #include "i18n.hh"
 
 
-Configmenu::Configmenu(BScreen *scr)
-    : Basemenu(scr->screenNumber())
+Configmenu::Configmenu(int scr)
+    : Basemenu(scr)
 {
   setAutoDelete(false);
 
-  screen = scr;
   blackbox = Blackbox::instance();
+  screen = blackbox->screen(scr);
   setTitle(i18n(ConfigmenuSet, ConfigmenuConfigOptions,
                 "Config options"));
   showTitle();

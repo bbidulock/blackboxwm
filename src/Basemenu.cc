@@ -277,8 +277,8 @@ void Basemenu::updateSize()
   int w = 0, h = 0, iw;
   int index, titleh, itemh, colh = 0, maxcolh = 0;
 
-  BScreen *scr = Blackbox::instance()->screen(screenNumber());
-  BStyle *style = scr->style();
+  ScreenInfo *scr = BaseDisplay::instance()->screenInfo(screenNumber());
+  BStyle *style = Blackbox::instance()->screen(screenNumber())->style();
   if (i18n.multibyte()) {
     maxcolh = itemh = style->menuFontSetExtents()->max_ink_extent.height +
               style->bevelWidth() * 2;
@@ -307,12 +307,12 @@ void Basemenu::updateSize()
     if (i18n.multibyte()) {
       XRectangle ink, logical;
       XmbTextExtents(style->menuTitleFontSet(), item.label().c_str(),
-                      item.label().length(), &ink, &logical);
+                     item.label().length(), &ink, &logical);
       logical.width += style->bevelWidth() * 2;
       iw = int(logical.width);
     } else
       iw = XTextWidth(style->menuTitleFont(), item.label().c_str(),
-                       item.label().length()) + style->bevelWidth() * 2;
+                      item.label().length()) + style->bevelWidth() * 2;
 
     iw += indent + indent;
     item.height = titleh;
@@ -340,12 +340,12 @@ void Basemenu::updateSize()
       if (i18n.multibyte()) {
         XRectangle ink, logical;
         XmbTextExtents(style->menuFontSet(), item.label().c_str(),
-                        item.label().length(), &ink, &logical);
+                       item.label().length(), &ink, &logical);
         logical.width += style->bevelWidth() * 2;
         iw = std::max(w, int(logical.width));
       } else
         iw = XTextWidth(style->menuFont(), item.label().c_str(),
-                         item.label().length()) + style->bevelWidth() * 2;
+                        item.label().length()) + style->bevelWidth() * 2;
 
       iw += indent + indent;
       item.height = itemh;
@@ -382,9 +382,9 @@ void Basemenu::updateSize()
 
   if (show_title) {
     Rect tr(style->borderWidth(), style->borderWidth(),
-             w - style->borderWidth() * 2, titleh);
+            w - style->borderWidth() * 2, titleh);
     Rect ir(style->borderWidth(), titleh + style->borderWidth() * 2,
-             w - style->borderWidth() * 2, h - titleh - style->borderWidth() * 3);
+            w - style->borderWidth() * 2, h - titleh - style->borderWidth() * 3);
     if (tr != title_rect || ! title_pixmap) {
       title_rect = tr;
       title_pixmap = style->menuTitle().render(title_rect.size(), title_pixmap);
@@ -394,17 +394,17 @@ void Basemenu::updateSize()
       // itemw = items_rect.width() / cols;
       items_pixmap = style->menu().render(items_rect.size(), items_pixmap);
       highlight_pixmap = style->menuHighlight().render(Size(itemw, itemh),
-                                                        highlight_pixmap);
+                                                       highlight_pixmap);
     }
   } else {
     Rect ir(style->borderWidth(), style->borderWidth(),
-             w - style->borderWidth() * 2, h - style->borderWidth() * 2);
+            w - style->borderWidth() * 2, h - style->borderWidth() * 2);
     if (ir != items_rect || ! items_pixmap) {
       items_rect = ir;
       // itemw = items_rect.width() / cols;
       items_pixmap = style->menu().render(items_rect.size(), items_pixmap);
       highlight_pixmap = style->menuHighlight().render(Size(itemw, itemh),
-                                                        highlight_pixmap);
+                                                       highlight_pixmap);
     }
   }
 
@@ -442,7 +442,8 @@ void Basemenu::popup(int x, int y, bool centerOnTitle)
   if (size_dirty)
     updateSize();
 
-  BScreen *scr = Blackbox::instance()->screen(screenNumber());
+  ScreenInfo *scr = BaseDisplay::instance()->screenInfo(screenNumber());
+  BStyle *style = Blackbox::instance()->screen(screenNumber())->style();
   if (show_title) {
     if (centerOnTitle) {
       // if the title is visible, center it around the popup point
@@ -452,7 +453,7 @@ void Basemenu::popup(int x, int y, bool centerOnTitle)
       y = p.y();
       if (y + height() > scr->height())
         y -= items_rect.height() + title_rect.height() / 2 +
-             scr->style()->borderWidth() * 2;
+             style->borderWidth() * 2;
       if (y < 0)
         y = 0;
       if (x + width() > scr->width())
@@ -1039,10 +1040,11 @@ void Basemenu::showSubmenu(const Rect &r, const Item &item)
   if (item.submenu()->size_dirty)
     item.submenu()->updateSize();
 
-  BScreen *scr = Blackbox::instance()->screen(screenNumber());
+  ScreenInfo *scr = BaseDisplay::instance()->screenInfo(screenNumber());
+  BStyle *style = Blackbox::instance()->screen(screenNumber())->style();
 
   int px = x() + r.x() + r.width();
-  int py = y() + r.y() - scr->style()->borderWidth() - scr->style()->bevelWidth();
+  int py = y() + r.y() - style->borderWidth() - style->bevelWidth();
   bool on_left = false;
 
   if (parent_menu && parent_menu->isVisible() && parent_menu->x() > x())
@@ -1062,7 +1064,7 @@ void Basemenu::showSubmenu(const Rect &r, const Item &item)
     py -= item.submenu()->title_rect.y() + item.submenu()->title_rect.height();
   if (py + item.submenu()->height() > scr->height())
     py -= item.submenu()->items_rect.height() - r.height() -
-          (scr->style()->borderWidth() * 2) - scr->style()->bevelWidth();
+          (style->borderWidth() * 2) - style->bevelWidth();
   if (py < 0)
     py = 0;
 

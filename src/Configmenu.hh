@@ -34,10 +34,7 @@ class Configmenu;
 class Configmenu : public Basemenu
 {
 public:
-  Configmenu(BScreen *);
-
-  inline Basemenu *getFocusmenu(void) { return focusmenu; }
-  inline Basemenu *getPlacementmenu(void) { return placementmenu; }
+  Configmenu(int);
 
   void reconfigure(void);
 

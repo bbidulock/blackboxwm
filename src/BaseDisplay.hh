@@ -331,22 +331,7 @@ private:
   bool popup_grab;
 };
 
-
 class ScreenInfo {
-private:
-  BaseDisplay *_display;
-  Visual *_visual;
-  Window _rootwindow;
-  Colormap _colormap;
-
-  int _depth, _screen;
-  XRectangle _rect;
-
-  std::string displaystring;
-
-protected:
-  const XRectangle &rect(void) const { return _rect; }
-
 public:
   ScreenInfo( BaseDisplay *, int );
 
@@ -363,7 +348,20 @@ public:
 
   int width(void) const { return _rect.width; }
   int height(void) const { return _rect.height; }
-};
 
+  // ### TODO - make this use Rect instead
+  const XRectangle &rect(void) const { return _rect; }
+
+private:
+  BaseDisplay *_display;
+  Visual *_visual;
+  Window _rootwindow;
+  Colormap _colormap;
+
+  int _depth, _screen;
+  XRectangle _rect;
+
+  std::string displaystring;
+};
 
 #endif // __BaseDisplay_hh

@@ -190,7 +190,7 @@ Toolbar2::~Toolbar2()
 void Toolbar2::updateLayout()
 {
   // for now
-  resize(bscreen->width() - 80, 20);
+  resize(bscreen->screenInfo()->width() - 80, 20);
 
   BStyle *style = bscreen->style();
   toolbar_rect.setRect(style->borderWidth(), style->borderWidth(),
@@ -208,7 +208,7 @@ void Toolbar2::updateLayout()
 void Toolbar2::updatePosition()
 {
   // for now
-  move(40, bscreen->height() - 60);
+  move(40, bscreen->screenInfo()->height() - 60);
 }
 
 void Toolbar2::reconfigure()
@@ -340,53 +340,56 @@ Toolbar::Toolbar(BScreen *scrn)
                               CWColormap | CWOverrideRedirect | CWEventMask;
   attrib.background_pixmap = None;
   attrib.background_pixel = attrib.border_pixel = screen->style()->borderColor().pixel();
-  attrib.colormap = screen->colormap();
+  attrib.colormap = screen->screenInfo()->colormap();
   attrib.override_redirect = True;
   attrib.event_mask = ButtonPressMask | ButtonReleaseMask |
                       EnterWindowMask | LeaveWindowMask;
 
   frame.window =
-    XCreateWindow(*blackbox, screen->rootWindow(), 0, 0, 1, 1, 0,
-		  screen->depth(), InputOutput, screen->visual(),
-		  create_mask, &attrib);
+    XCreateWindow(*blackbox, screen->screenInfo()->rootWindow(),
+                  0, 0, 1, 1, 0, screen->screenInfo()->depth(),
+                  InputOutput, screen->screenInfo()->visual(),
+                  create_mask, &attrib);
   blackbox->saveToolbarSearch(frame.window, this);
 
   attrib.event_mask = ButtonPressMask | ButtonReleaseMask | ExposureMask |
                       KeyPressMask | EnterWindowMask;
 
   frame.workspace_label =
-    XCreateWindow(*blackbox, frame.window, 0, 0, 1, 1, 0, screen->depth(),
-		  InputOutput, screen->visual(), create_mask, &attrib);
+    XCreateWindow(*blackbox, frame.window, 0, 0, 1, 1, 0,
+                  screen->screenInfo()->depth(), InputOutput,
+                  screen->screenInfo()->visual(), create_mask, &attrib);
   blackbox->saveToolbarSearch(frame.workspace_label, this);
 
   frame.window_label =
-    XCreateWindow(*blackbox, frame.window, 0, 0, 1, 1, 0, screen->depth(),
-		  InputOutput, screen->visual(), create_mask, &attrib);
+    XCreateWindow(*blackbox, frame.window, 0, 0, 1, 1, 0,
+                  screen->screenInfo()->depth(), InputOutput,
+                  screen->screenInfo()->visual(), create_mask, &attrib);
   blackbox->saveToolbarSearch(frame.window_label, this);
 
   frame.clock =
-    XCreateWindow(*blackbox, frame.window, 0, 0, 1, 1, 0, screen->depth(),
-		  InputOutput, screen->visual(), create_mask, &attrib);
+    XCreateWindow(*blackbox, frame.window, 0, 0, 1, 1, 0, screen->screenInfo()->depth(),
+		  InputOutput, screen->screenInfo()->visual(), create_mask, &attrib);
   blackbox->saveToolbarSearch(frame.clock, this);
 
   frame.psbutton =
-    XCreateWindow(*blackbox ,frame.window, 0, 0, 1, 1, 0, screen->depth(),
-                  InputOutput, screen->visual(), create_mask, &attrib);
+    XCreateWindow(*blackbox ,frame.window, 0, 0, 1, 1, 0, screen->screenInfo()->depth(),
+                  InputOutput, screen->screenInfo()->visual(), create_mask, &attrib);
   blackbox->saveToolbarSearch(frame.psbutton, this);
 
   frame.nsbutton =
-    XCreateWindow(*blackbox ,frame.window, 0, 0, 1, 1, 0, screen->depth(),
-                  InputOutput, screen->visual(), create_mask, &attrib);
+    XCreateWindow(*blackbox ,frame.window, 0, 0, 1, 1, 0, screen->screenInfo()->depth(),
+                  InputOutput, screen->screenInfo()->visual(), create_mask, &attrib);
   blackbox->saveToolbarSearch(frame.nsbutton, this);
 
   frame.pwbutton =
-    XCreateWindow(*blackbox ,frame.window, 0, 0, 1, 1, 0, screen->depth(),
-                  InputOutput, screen->visual(), create_mask, &attrib);
+    XCreateWindow(*blackbox ,frame.window, 0, 0, 1, 1, 0, screen->screenInfo()->depth(),
+                  InputOutput, screen->screenInfo()->visual(), create_mask, &attrib);
   blackbox->saveToolbarSearch(frame.pwbutton, this);
 
   frame.nwbutton =
-    XCreateWindow(*blackbox ,frame.window, 0, 0, 1, 1, 0, screen->depth(),
-                  InputOutput, screen->visual(), create_mask, &attrib);
+    XCreateWindow(*blackbox ,frame.window, 0, 0, 1, 1, 0, screen->screenInfo()->depth(),
+                  InputOutput, screen->screenInfo()->visual(), create_mask, &attrib);
   blackbox->saveToolbarSearch(frame.nwbutton, this);
 
   frame.base = frame.label = frame.wlabel = frame.clk = frame.button = frame.pbutton = 0;
@@ -435,7 +438,7 @@ void Toolbar::reconfigure(void)
 {
   BStyle *style = screen->style();
   frame.bevel_w = screen->style()->bevelWidth();
-  frame.width = screen->width() * screen->getToolbarWidthPercent() / 100;
+  frame.width = screen->screenInfo()->width() * screen->getToolbarWidthPercent() / 100;
   if (i18n.multibyte())
     frame.height = style->toolbarFontSetExtents()->max_ink_extent.height;
   else
@@ -459,15 +462,15 @@ void Toolbar::reconfigure(void)
 
   case BottomLeft:
     frame.x = 0;
-    frame.y = screen->height() - frame.height
+    frame.y = screen->screenInfo()->height() - frame.height
               - (screen->style()->borderWidth() * 2);
     frame.x_hidden = 0;
-    frame.y_hidden = screen->height() - screen->style()->bevelWidth()
+    frame.y_hidden = screen->screenInfo()->height() - screen->style()->bevelWidth()
                      - screen->style()->borderWidth();
     break;
 
   case TopCenter:
-    frame.x = (screen->width() - frame.width) / 2;
+    frame.x = (screen->screenInfo()->width() - frame.width) / 2;
     frame.y = 0;
     frame.x_hidden = frame.x;
     frame.y_hidden = screen->style()->bevelWidth() - screen->style()->borderWidth()
@@ -476,16 +479,16 @@ void Toolbar::reconfigure(void)
 
   case BottomCenter:
   default:
-    frame.x = (screen->width() - frame.width) / 2;
-    frame.y = screen->height() - frame.height
+    frame.x = (screen->screenInfo()->width() - frame.width) / 2;
+    frame.y = screen->screenInfo()->height() - frame.height
               - (screen->style()->borderWidth() * 2);
     frame.x_hidden = frame.x;
-    frame.y_hidden = screen->height() - screen->style()->bevelWidth()
+    frame.y_hidden = screen->screenInfo()->height() - screen->style()->bevelWidth()
                      - screen->style()->borderWidth();
     break;
 
   case TopRight:
-    frame.x = screen->width() - frame.width
+    frame.x = screen->screenInfo()->width() - frame.width
               - (screen->style()->borderWidth() * 2);
     frame.y = 0;
     frame.x_hidden = frame.x;
@@ -494,12 +497,12 @@ void Toolbar::reconfigure(void)
     break;
 
   case BottomRight:
-    frame.x = screen->width() - frame.width
+    frame.x = screen->screenInfo()->width() - frame.width
               - (screen->style()->borderWidth() * 2);
-    frame.y = screen->height() - frame.height
+    frame.y = screen->screenInfo()->height() - frame.height
               - (screen->style()->borderWidth() * 2);
     frame.x_hidden = frame.x;
-    frame.y_hidden = screen->height() - screen->style()->bevelWidth()
+    frame.y_hidden = screen->screenInfo()->height() - screen->style()->bevelWidth()
                      - screen->style()->borderWidth();
     break;
   }
@@ -511,7 +514,7 @@ void Toolbar::reconfigure(void)
     strut.top = getY() + 1;
     break;
   default:
-    strut.bottom = screen->height() - getY() - 1;
+    strut.bottom = screen->screenInfo()->height() - getY() - 1;
   }
 
   screen->updateAvailableArea();

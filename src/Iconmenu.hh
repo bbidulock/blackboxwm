@@ -26,18 +26,13 @@
 
 #include "Basemenu.hh"
 
-class BScreen;
-
 class Iconmenu : public Basemenu
 {
 public:
-  Iconmenu( BScreen * );
+  Iconmenu(int);
 
 protected:
   virtual void itemClicked(const Point &, const Item &, int);
-
-private:
-  BScreen *screen;
 };
 
 #endif // __Iconmenu_hh

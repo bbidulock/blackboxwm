@@ -297,7 +297,7 @@ void Blackbox::process_event(XEvent *e)
       LinkedListIterator<BScreen> it(screenList);
       BScreen *screen = it.current();
       for (; screen; it++, screen = it.current()) {
-        if (e->xbutton.window != screen->rootWindow())
+        if (e->xbutton.window != screen->screenInfo()->rootWindow())
           continue;
 
         if (e->xbutton.button == 1 && ! screen->isRootColormapInstalled())
@@ -332,7 +332,7 @@ void Blackbox::process_event(XEvent *e)
       LinkedListIterator<BScreen> it(screenList);
       BScreen *screen = it.current();
       for (; screen; it++, screen = it.current()) {
-        if (e->xbutton.window != screen->rootWindow())
+        if (e->xbutton.window != screen->screenInfo()->rootWindow())
           continue;
         if (e->xbutton.button == 2)
           screen->getWorkspacemenu()->popup( e->xbutton.x_root, e->xbutton.y_root );
@@ -749,7 +749,7 @@ BScreen *Blackbox::searchScreen(Window window) {
   LinkedListIterator<BScreen> it(screenList);
 
   for (BScreen *curr = it.current(); curr; it++, curr = it.current()) {
-    if (curr->rootWindow() == window) {
+    if (curr->screenInfo()->rootWindow() == window) {
       return curr;
     }
   }

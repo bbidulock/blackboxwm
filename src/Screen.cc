@@ -105,9 +105,11 @@ struct dcmp {
 };
 
 
-BScreen::BScreen( Blackbox *bb, int scrn )
-  : ScreenInfo( bb, scrn ), _style( scrn )
+BScreen::BScreen(Blackbox *bb, int scrn)
+  : _style(scrn)
 {
+  screeninfo = BaseDisplay::instance()->screenInfo(scrn);
+
   blackbox = bb;
 
   event_mask = ColormapChangeMask | PropertyChangeMask |
@@ -116,7 +118,7 @@ BScreen::BScreen( Blackbox *bb, int scrn )
                ButtonPressMask | ButtonReleaseMask;
 
   XErrorHandler old = XSetErrorHandler((XErrorHandler) anotherWMRunning);
-  XSelectInput(*blackbox, rootWindow(), event_mask);
+  XSelectInput(*blackbox, screenInfo()->rootWindow(), event_mask);
   XSync(*blackbox, False);
   XSetErrorHandler((XErrorHandler) old);
 
@@ -177,13 +179,13 @@ void BScreen::initialize()
 {
 #ifdef    HAVE_GETPID
   pid_t bpid = getpid();
-  XChangeProperty(*blackbox, rootWindow(),
+  XChangeProperty(*blackbox, screenInfo()->rootWindow(),
                   blackbox->getBlackboxPidAtom(), XA_CARDINAL,
                   sizeof(pid_t) * 8, PropModeReplace,
                   (unsigned char *) &bpid, 1);
 #endif // HAVE_GETPID
 
-  XDefineCursor(*blackbox, rootWindow(),
+  XDefineCursor(*blackbox, screenInfo()->rootWindow(),
                 blackbox->getSessionCursor());
 
   rootmenu = 0;
@@ -200,11 +202,11 @@ void BScreen::initialize()
 
   // start off full screen, top left.
   usableArea.x = usableArea.y = 0;
-  usableArea.width = width();
-  usableArea.height = height();
+  usableArea.width = screenInfo()->width();
+  usableArea.height = screenInfo()->height();
 
   image_control =
-    new BImageControl(blackbox, this, True, blackbox->getColorsPerChannel(),
+    new BImageControl(blackbox, screenInfo(), True, blackbox->getColorsPerChannel(),
                       blackbox->getCacheLife(), blackbox->getCacheMax());
   image_control->installRootColormap();
   root_colormap_installed = True;
@@ -213,7 +215,7 @@ void BScreen::initialize()
 
   image_control->setDither(resource.image_dither);
 
-  style()->setCurrentStyle( blackbox->getStyleFilename() );
+  style()->setCurrentStyle(blackbox->getStyleFilename());
 
   /*
     ### TODO - make the geom window a separate widget
@@ -245,7 +247,7 @@ void BScreen::initialize()
     attrib.save_under = True;
 
     geom_window =
-    XCreateWindow(*blackbox, rootWindow(),
+    XCreateWindow(*blackbox, screenInfo()->rootWindow(),
     0, 0, geom_w, geom_h, resource.border_width, depth(),
     InputOutput, visual(), mask, &attrib);
     geom_visible = False;
@@ -278,8 +280,8 @@ void BScreen::initialize()
   */
 
   workspacemenu = new Workspacemenu(this);
-  iconmenu = new Iconmenu(this);
-  configmenu = new Configmenu(this);
+  iconmenu = new Iconmenu(screenNumber());
+  configmenu = new Configmenu(screenNumber());
 
   Workspace *wkspc = (Workspace *) 0;
   if (resource.workspaces != 0) {
@@ -299,7 +301,7 @@ void BScreen::initialize()
                         iconmenu);
 
   current_workspace = workspacesList->first();
-  workspacemenu->setItemChecked( 3, true );
+  workspacemenu->setItemChecked(3, true);
 
   toolbar = new Toolbar(this);
   _toolbar2 = new Toolbar2(this);
@@ -319,7 +321,7 @@ void BScreen::initialize()
   int i;
   unsigned int nchild;
   Window r, p, *children;
-  XQueryTree(*blackbox, rootWindow(), &r, &p,
+  XQueryTree(*blackbox, screenInfo()->rootWindow(), &r, &p,
              &children, &nchild);
 
   // preen the window list of all icon windows... for better dockapp support
@@ -381,7 +383,7 @@ void BScreen::initialize()
 
 void BScreen::reconfigure(void)
 {
-  style()->setCurrentStyle( blackbox->getStyleFilename() );
+  style()->setCurrentStyle(blackbox->getStyleFilename());
 
   /*
     ### TODO make the geom display a separate widget
@@ -556,8 +558,8 @@ void BScreen::changeWorkspaceID(int id) {
   if (id != current_workspace->getWorkspaceID()) {
     current_workspace->hideAll();
 
-    workspacemenu->setItemChecked( current_workspace->getWorkspaceID() + 3,
-                                   false );
+    workspacemenu->setItemChecked(current_workspace->getWorkspaceID() + 3,
+                                   false);
 
     if (blackbox->getFocusedWindow() &&
 	blackbox->getFocusedWindow()->getScreen() == this &&
@@ -568,7 +570,7 @@ void BScreen::changeWorkspaceID(int id) {
 
     current_workspace = getWorkspace(id);
 
-    workspacemenu->setItemChecked( current_workspace->getWorkspaceID() + 3,
+    workspacemenu->setItemChecked(current_workspace->getWorkspaceID() + 3,
 				   true);
     toolbar->redrawWorkspaceLabel(True);
 
@@ -691,8 +693,8 @@ void BScreen::raiseWindows(Window *workspace_stack, int num)
   while (k--)
     *(session_stack + i++) = *(workspace_stack + k);
 
-  if ( i > 0 ) {
-    XRaiseWindow( *blackbox, *session_stack );
+  if (i > 0) {
+    XRaiseWindow(*blackbox, *session_stack);
     XRestackWindows(*blackbox, session_stack, i);
   }
 
@@ -998,7 +1000,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
             continue;
           }
 
-          menu->insert(label, Rootmenu::Item( Rootmenu::Execute, command) );
+          menu->insert(label, Rootmenu::Item(Rootmenu::Execute, command));
           break;
 
         case 442: // exit
@@ -1248,9 +1250,9 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
 void BScreen::shutdown(void)
 {
-  XGrabServer( *blackbox );
+  XGrabServer(*blackbox);
 
-  XSelectInput(*blackbox, rootWindow(), NoEventMask);
+  XSelectInput(*blackbox, screenInfo()->rootWindow(), NoEventMask);
   XSync(*blackbox, False);
 
   LinkedListIterator<Workspace> it(workspacesList);
@@ -1266,7 +1268,7 @@ void BScreen::shutdown(void)
   slit->shutdown();
 #endif // SLIT
 
-  XUngrabServer( *blackbox );
+  XUngrabServer(*blackbox);
 }
 
 
@@ -1290,8 +1292,8 @@ void BScreen::showPosition(int x, int y)
 
     XClearWindow(*blackbox, geom_window);
 
-    BGCCache::Item &gc = BGCCache::instance()->find( resource.wstyle.l_text_focus,
-    resource.wstyle.font );
+    BGCCache::Item &gc = BGCCache::instance()->find(resource.wstyle.l_text_focus,
+    resource.wstyle.font);
     if (i18n->multibyte()) {
     XmbDrawString(*blackbox, geom_window,
     resource.wstyle.fontset, gc.gc(),
@@ -1304,7 +1306,7 @@ void BScreen::showPosition(int x, int y)
     resource.wstyle.font->ascent + resource.bevel_width,
     label, strlen(label));
     }
-    BGCCache::instance()->release( gc );
+    BGCCache::instance()->release(gc);
   */
 }
 
@@ -1329,8 +1331,8 @@ void BScreen::showGeometry(unsigned int gx, unsigned int gy)
 
     XClearWindow(*blackbox, geom_window);
 
-    BGCCache::Item &gc = BGCCache::instance()->find( resource.wstyle.l_text_focus,
-    resource.wstyle.font );
+    BGCCache::Item &gc = BGCCache::instance()->find(resource.wstyle.l_text_focus,
+    resource.wstyle.font);
     if (i18n->multibyte()) {
     XmbDrawString(*blackbox, geom_window,
     resource.wstyle.fontset, gc.gc(),
@@ -1364,7 +1366,7 @@ void BScreen::addStrut(NETStrut *strut)
 const XRectangle& BScreen::availableArea(void) const
 {
   if (doFullMax())
-    return rect(); // return the full screen
+    return screenInfo()->rect(); // return the full screen
   return usableArea;
 }
 
@@ -1375,7 +1377,7 @@ void BScreen::updateAvailableArea(void)
 
   LinkedListIterator<NETStrut> it(strutList);
 
-  usableArea = rect(); // reset to full screen
+  usableArea = screenInfo()->rect(); // reset to full screen
   for(NETStrut *strut = it.current(); strut; ++it, strut = it.current()) {
     if (strut->left > usableArea.x)
       usableArea.x = strut->left;
@@ -1384,10 +1386,10 @@ void BScreen::updateAvailableArea(void)
       usableArea.y = strut->top;
 
     if (((usableArea.width + old_x) - strut->right) < usableArea.width)
-      usableArea.width = width() - strut->right - usableArea.x;
+      usableArea.width = screenInfo()->width() - strut->right - usableArea.x;
 
     if (((usableArea.height + old_y) - strut->bottom) < usableArea.height)
-      usableArea.height = height() - strut->bottom - usableArea.y;
+      usableArea.height = screenInfo()->height() - strut->bottom - usableArea.y;
   }
 
   // if area changed

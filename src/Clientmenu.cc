@@ -33,15 +33,14 @@
 #include "Workspacemenu.hh"
 
 
-Clientmenu::Clientmenu(Workspace *ws)
-  : Basemenu( ws->getScreen()->screenNumber() )
+Clientmenu::Clientmenu(Workspace *ws, int scr)
+  : Basemenu(scr)
 {
   setAutoDelete(false);
   wkspc = ws;
-  screen = wkspc->getScreen();
 }
 
-void Clientmenu::itemClicked( const Point &, const Item &item, int button )
+void Clientmenu::itemClicked(const Point &, const Item &item, int button)
 {
   if (button > 2)
     return;
