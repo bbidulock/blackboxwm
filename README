@@ -1,4 +1,4 @@
--- README for Blackbox 0.40.1 Beta - an X11 Window manager
+-- README for Blackbox 0.40.2 Beta - an X11 Window manager
 -- Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
 --
 --  This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
 -- (See the included file COPYING / GPL-2.0)
 -- 
 
-This is the README for Blackbox 0.40.1 Beta release. There are a number of
+This is the README for Blackbox 0.40.x Beta release. There are a number of
 changes between this release and the last stable release, 0.35.0.
 
 Many things have changed for Blackbox 0.40.x, which will be covered in this 

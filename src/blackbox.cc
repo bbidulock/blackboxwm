@@ -138,6 +138,7 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   root_menu = 0;
   resource.stylerc = 0;
   resource.font.menu = resource.font.title = 0;
+  resource.menuFile = resource.styleFile = 0;
 
   if ((display = XOpenDisplay(dpy_name)) == NULL) {
     fprintf(stderr, "%s: connection to X server failed\n", b_argv[0]);
@@ -295,8 +296,8 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
 Blackbox::~Blackbox(void) {
   XSelectInput(display, root, NoEventMask);
 
-  delete [] resource.menuFile;
-  delete [] resource.styleFile;
+  if (resource.menuFile) delete [] resource.menuFile;
+  if (resource.styleFile) delete [] resource.styleFile;
   delete root_menu;
   delete tool_bar;
 

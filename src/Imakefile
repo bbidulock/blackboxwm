@@ -54,9 +54,8 @@ XCOMM
 #ifdef OS2Architecture
 #undef StrcasecmpDefines
 #define StrcasecmpDefines	-Dstrcasecmp=stricmp -Dstrncasecmp=strnicmp
-#endif
-
 CXXFLAGS :=	$(CXXFLAGS) StrcasecmpDefines
+#endif
 
 #ifndef CplusplusProgramTargetHelperNoMan
 #define CplusplusProgramTargetHelperNoMan(program,srcs,objs,deplib,locallib,syslib) @@\
