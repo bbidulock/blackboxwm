@@ -22,6 +22,13 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include "Menu.hh"
+#include "Application.hh"
+#include "Display.hh"
+#include "Pen.hh"
+#include "PixmapCache.hh"
+#include "Resource.hh"
+
 extern "C" {
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
@@ -29,11 +36,6 @@ extern "C" {
 #include <assert.h>
 }
 
-#include "Menu.hh"
-#include "Application.hh"
-#include "Pen.hh"
-#include "PixmapCache.hh"
-#include "Resource.hh"
 
 static const unsigned int arrow_width  = 7;
 static const unsigned int arrow_height = 7;

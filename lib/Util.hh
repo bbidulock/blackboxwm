@@ -25,54 +25,77 @@
 #ifndef __Util_hh
 #define __Util_hh
 
-extern "C" {
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-}
-
+#include <limits.h>
 #include <string>
 
-#ifndef   HAVE_BASENAME
-std::string basename(const std::string& path);
-#endif
+typedef struct _XDisplay Display;
+typedef union _XEvent XEvent;
+typedef struct _XGC *GC;
 
+typedef unsigned long Time;
+
+typedef unsigned long XID;
+typedef XID Atom;
+typedef XID Colormap;
+typedef XID Cursor;
+typedef XID Drawable;
+typedef XID Pixmap;
+typedef XID Window;
+
+#ifndef _XLIB_H_
+#  define GXcopy 3
+#  define ClipByChildren 0
+#  define None 0
+#endif
 
 namespace bt {
 
+  // XXX perhaps we could just call this SENTINEL?
+  const unsigned int BSENTINEL = UINT_MAX;
+
   class NoCopy {
   protected:
-    NoCopy(void) {}
+    inline NoCopy(void) { }
   private:
     NoCopy(const NoCopy&);
     NoCopy& operator=(const NoCopy&);
   };
 
-  inline bool within(int x, int y, int width, int height) {
-    return ((x >= 0 && x <= width) && (y >= 0 && y <= height));
-  }
+  class PointerAssassin {
+  public:
+    template<typename T>
+    inline void operator()(const T ptr) const
+    { delete ptr; }
+  };
 
-  /* XXX: this needs autoconf help */
-  const unsigned int BSENTINEL = 65535;
-
-  std::string expandTilde(const std::string& s);
+  inline bool within(int x, int y, int width, int height)
+  { return ((x >= 0 && x <= width) && (y >= 0 && y <= height)); }
 
   void bexec(const std::string& command, const std::string& displaystring);
 
-  std::string textPropertyToString(Display *display, XTextProperty& text_prop);
+  std::string basename(const std::string& path);
 
-  struct PointerAssassin {
-    template<typename T>
-    void operator()(const T ptr) const {
-      delete ptr;
-    }
-  };
+  std::string expandTilde(const std::string& s);
 
   std::string itostring(unsigned long i);
   std::string itostring(long i);
-  std::string itostring(unsigned int i);
-  std::string itostring(int i);
-  std::string itostring(unsigned short i);
-  std::string itostring(short i);
+
+  inline std::string itostring(unsigned int i)
+  { return itostring(static_cast<unsigned long>(i)); }
+
+  inline std::string itostring(int i)
+  { return itostring(static_cast<long>(i)); }
+
+  inline std::string itostring(unsigned short i)
+  { return itostring(static_cast<unsigned long>(i)); }
+
+  inline std::string itostring(short i)
+  { return itostring(static_cast<long>(i)); }
+
+#ifdef _XUTIL_H_
+  std::string textPropertyToString(::Display *display,
+                                   ::XTextProperty& text_prop);
+#endif
 
 } // namespace bt
 
