@@ -233,14 +233,6 @@ int Basemenu::insert(const string& label, Basemenu *submenu, int pos) {
 }
 
 
-#if 0
-int Basemenu::insert(const string& ulabel, const string& label) {
-  BasemenuItem *item = new BasemenuItem(ulabel, label, 0);
-
-  return insert(item, -1);
-}
-#endif
-
 int Basemenu::remove(int index) {
   BasemenuItem *item = find(index);
   if (! item) return -1;
@@ -305,7 +297,7 @@ void Basemenu::update(void) {
   MenuItems::iterator it = menuitems.begin(), end = menuitems.end();
   for (; it != end; ++it) {
     BasemenuItem *tmp = *it;
-    const char *s = (! tmp->l.empty()) ? tmp->l.c_str() : "";
+    const char *s = tmp->l.c_str();
 
     int l = strlen(s);
 
