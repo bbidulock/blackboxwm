@@ -484,7 +484,6 @@ Workspace *WorkspaceManager::workspace(int w) {
 
 void WorkspaceManager::changeWorkspaceID(int id) {
   if (id != current->workspaceID()) {
-    //    XGrabServer(display);
     hideMenu();
     current->hideAll();
     current = workspace(id);
@@ -494,7 +493,6 @@ void WorkspaceManager::changeWorkspaceID(int id) {
                 session->titleFont()->ascent, frame.title,
 		strlen(frame.title));
     current->showAll();
-    //    XUngrabServer(display);
   }
 }
 
@@ -502,7 +500,6 @@ void WorkspaceManager::changeWorkspaceID(int id) {
 void WorkspaceManager::arrangeIcons(void) {
   BlackboxIcon *icon = NULL;
   
-  //  XGrabServer(display);
   llist_iterator<BlackboxIcon> it(ilist);
   for (int i = 0; it.current(); it++, i++) {
     icon = it.current();
@@ -512,8 +509,6 @@ void WorkspaceManager::arrangeIcons(void) {
 		(icon->Height()) * (ilist->count() - (i + 1)) + 1);
     icon->exposeEvent(NULL);
   }
-  
-  //  XUngrabServer(display);
 }
 
 
@@ -676,8 +671,9 @@ void WorkspaceManager::Reconfigure(void) {
 
   workspaces_menu->Reconfigure();
 
-  for (int i = 0; i < workspaces_list->count(); i++)
-    workspace(i)->Reconfigure();
+  llist_iterator<Workspace> it(workspaces_list);
+  for (int i = 0; it.current(); i++, it++)
+    it.current()->Reconfigure();
 }
 
 
@@ -698,7 +694,8 @@ void WorkspaceManager::checkClock(Bool redraw) {
 
   if (redraw) {
     char t[9];
-    sprintf(t, "%02d:%02d %cm", ((hour > 12) ? hour - 12 : hour), minute,
+    sprintf(t, "%02d:%02d %cm",
+            ((hour > 12) ? hour - 12 : ((hour == 0) ? 12 : hour)), minute,
 	    ((hour > 12) ? 'p' : 'a'));
 	  
     int len = strlen(t);

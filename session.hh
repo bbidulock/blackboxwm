@@ -87,7 +87,7 @@ private:
   Atom _XA_WM_COLORMAP_WINDOWS, _XA_WM_PROTOCOLS, _XA_WM_STATE,
     _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS;
 
-  Bool shutdown;
+  Bool shutdown, reconfigure;
   Display *display;
   GC opGC;
   Visual *v;
@@ -169,8 +169,8 @@ protected:
   void parseSubMenu(FILE *, SessionMenu *);
   void InitColor(void);
   void ProcessEvent(XEvent *);
-  void Reconfigure(void);
   void createAutoConfigDialog(void);
+  void do_reconfigure(void);
 
 
 public:
@@ -196,6 +196,7 @@ public:
   void Shutdown(void);
   void LoadDefaults(void);
   void Dissociate(void);
+  void Reconfigure(void);
   void saveMenuSearch(Window, BlackboxMenu *);
   void saveWindowSearch(Window, BlackboxWindow *);
   void saveIconSearch(Window, BlackboxIcon *);

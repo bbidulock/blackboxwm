@@ -80,11 +80,33 @@ int SessionMenu::remove(int index) {
 
 
 void SessionMenu::showMenu(void) {
+  int mx = X() + (Width() / 2);
+  XMoveResizeWindow(session->control(), windowID(), mx, Y(), 1, titleHeight());
   BlackboxMenu::showMenu();
+
+  for (unsigned int i = 1; i < Width(); i += 5)
+    XMoveResizeWindow(session->control(), windowID(),
+		      mx - (i / 2), Y(), i, titleHeight());
+  XMoveResizeWindow(session->control(), windowID(), X(), Y(), Width(),
+  		    titleHeight());
+
+  for(unsigned int i = 1; i < Height() - titleHeight(); i += 5)
+    XResizeWindow(session->control(), windowID(), Width(), titleHeight() + i);
+  XResizeWindow(session->control(), windowID(), Width(), Height());
 }
 
 
 void SessionMenu::hideMenu(void) {
+  for(unsigned int i = Height() - titleHeight(); i > 5; i -= 5)
+    XResizeWindow(session->control(), windowID(), Width(), titleHeight() + i);
+  XResizeWindow(session->control(), windowID(), Width(), titleHeight());
+
+  int mx = X() + (Width() / 2);
+
+  for (unsigned int i = Width(); i > 5; i -= 5)
+    XMoveResizeWindow(session->control(), windowID(),
+		      mx - (i / 2), Y(), i, titleHeight());
+
   BlackboxMenu::hideMenu();
 }
 

@@ -23,11 +23,9 @@ Includes =		blackbox.hh graphics.hh icon.hh llist.hh menu.hh session.hh window.h
 Sources =		blackbox.cc graphics.cc icon.cc llist.cc main.cc menu.cc session.cc sessionmenu.cc window.cc windowmenu.cc workspace.cc workspacemenu.cc
 Objects =		blackbox.o graphics.o icon.o main.o menu.o llist.o session.o sessionmenu.o window.o windowmenu.o workspace.o workspacemenu.o
 
-XCOMM Add the name of a directory to search for includes (/include is appended)
-XPROJECTROOT =		/usr/local
-
 XCOMM Add compiler options here
-CompileOptions =	-Wall -W -DSHAPE -pipe -g $(CXXFLAGS)
+CompileOptimize =	-O2 -ffast-math -finline-functions
+CompileOptions =	-Wall -W -DSHAPE -pipe $(CompileOptimize) -I$(INCDIR)
 
 DefaultsPath =		-DXAPPLOADDIR=\"$(XAPPLOADDIR)\" -DXLIBDIR=\"$(LIBDIR)\"
 Libraries =		$(XLIB) $(EXTENSIONLIB)

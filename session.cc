@@ -139,6 +139,7 @@ void BlackboxSession::InitScreen(void) {
   XSync(display, False);
   XSetErrorHandler((XErrorHandler) NULL);
 
+  XSynchronize(display, True);
   cursor.session = XCreateFontCursor(display, XC_left_ptr);
   cursor.move = XCreateFontCursor(display, XC_fleur);
   XDefineCursor(display, root, cursor.session);
@@ -231,11 +232,15 @@ void BlackboxSession::InitScreen(void) {
 void BlackboxSession::EventLoop(void) {
   shutdown = False;
   startup = False;
+  reconfigure = False;
 
   int xfd = ConnectionNumber(display);
 
   while (! shutdown) {
-    if (XPending(display)) {
+    if (reconfigure) {
+      do_reconfigure();
+      reconfigure = False;
+    } else if (XPending(display)) {
       XEvent e;
       XNextEvent(display, &e);
       ProcessEvent(&e);
@@ -583,96 +588,98 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
 // *************************************************************************
 
 BlackboxWindow *BlackboxSession::searchWindow(Window window) {
-  XEvent foo;
-
-  if (XCheckTypedWindowEvent(display, window, DestroyNotify, &foo))
-    ProcessEvent(&foo);
-  else {
+  XEvent event;
+  if (! XCheckTypedWindowEvent(display, window, DestroyNotify, &event)) {
     BlackboxWindow *win = NULL;
     llist_iterator<WindowSearch> it(window_search_list);
 
     for (; it.current(); it++) {
       WindowSearch *tmp = it.current();
-      if (tmp->window == window) {
-	win = tmp->data;
-	break;
-      }
+      if (tmp)
+	if (tmp->window == window) {
+	  win = tmp->data;
+	  break;
+	}
     }
 
     return win;
-  }
+  } else
+    ProcessEvent(&event);
   
   return NULL;
 }
 
 
 BlackboxMenu *BlackboxSession::searchMenu(Window window) {
-  XEvent foo;
+  XEvent event;
 
-  if (XCheckTypedWindowEvent(display, window, DestroyNotify, &foo))
-    ProcessEvent(&foo);
-  else {
+  if (! XCheckTypedWindowEvent(display, window, DestroyNotify, &event)) {
     BlackboxMenu *menu = NULL;
     llist_iterator<MenuSearch> it(menu_search_list);
 
     for (; it.current(); it++) {
       MenuSearch *tmp = it.current();
-      if (tmp->window == window) {
-	menu = tmp->data;
-	break;
-      }
+
+      if (tmp)
+	if (tmp->window == window) {
+	  menu = tmp->data;
+	  break;
+	}
     }
 
     return menu;
-  }
-  
+  } else
+    ProcessEvent(&event);
+
   return NULL;
 }
 
 
 BlackboxIcon *BlackboxSession::searchIcon(Window window) {
-  XEvent foo;
+  XEvent event;
 
-  if (XCheckTypedWindowEvent(display, window, DestroyNotify, &foo))
-    ProcessEvent(&foo);
-  else {
+  if (! XCheckTypedWindowEvent(display, window, DestroyNotify, &event)) {
     BlackboxIcon *icon = NULL;
     llist_iterator<IconSearch> it(icon_search_list);
 
     for (; it.current(); it++) {
       IconSearch *tmp = it.current();
-      if (tmp->window == window) {
-	icon = tmp->data;
-	break;
-      }
+
+      if (tmp)
+	if (tmp->window == window) {
+	  icon = tmp->data;
+	  break;
+	}
     }
 
     return icon;
-  }
+  } else
+    ProcessEvent(&event);
   
   return NULL;
 }
 
 
 WorkspaceManager *BlackboxSession::searchWSManager(Window window) {
-  XEvent foo;
+  XEvent event;
 
-  if (XCheckTypedWindowEvent(display, window, DestroyNotify, &foo))
-    ProcessEvent(&foo);
-  else {
+  if (! XCheckTypedWindowEvent(display, window, DestroyNotify, &event)) {
     WorkspaceManager *wsm = NULL;
     llist_iterator<WSManagerSearch> it(wsmanager_search_list);
 
     for (; it.current(); it++) {
       WSManagerSearch *tmp = it.current();
-      if (tmp->window == window) {
-	wsm = tmp->data;
-	break;
-      }
-    }
 
+      if (tmp)
+	if (tmp->window == window) {
+	  wsm = tmp->data;
+	  break;
+	}
+    }
+    
     return wsm;
-  }
+  } else
+    ProcessEvent(&event);
   
   return NULL;
 }
@@ -715,11 +722,13 @@ void BlackboxSession::removeWindowSearch(Window window) {
   llist_iterator<WindowSearch> it(window_search_list);
   for (; it.current(); it++) {
     WindowSearch *tmp = it.current();
-    if (tmp->window == window) {
-      window_search_list->remove(tmp);
-      delete tmp;
-      break;
-    }
+
+    if (tmp)
+      if (tmp->window == window) {
+	window_search_list->remove(tmp);
+	delete tmp;
+	break;
+      }
   }
 }
 
@@ -728,11 +737,13 @@ void BlackboxSession::removeMenuSearch(Window window) {
   llist_iterator<MenuSearch> it(menu_search_list);
   for (; it.current(); it++) {
     MenuSearch *tmp = it.current();
-    if (tmp->window == window) {
-      menu_search_list->remove(tmp);
-      delete tmp;
-      break;
-    }
+
+    if (tmp)
+      if (tmp->window == window) {
+	menu_search_list->remove(tmp);
+	delete tmp;
+	break;
+      }
   }
 }
 
@@ -741,11 +752,13 @@ void BlackboxSession::removeIconSearch(Window window) {
   llist_iterator<IconSearch> it(icon_search_list);
   for (; it.current(); it++) {
     IconSearch *tmp = it.current();
-    if (tmp->window == window) {
-      icon_search_list->remove(tmp);
-      delete tmp;
-      break;
-    }
+
+    if (tmp)
+      if (tmp->window == window) {
+	icon_search_list->remove(tmp);
+	delete tmp;
+	break;
+      }
   }
 }
 
@@ -754,11 +767,13 @@ void BlackboxSession::removeWSManagerSearch(Window window) {
   llist_iterator<WSManagerSearch> it(wsmanager_search_list);
   for (; it.current(); it++) {
     WSManagerSearch *tmp = it.current();
-    if (tmp->window == window) {
-      wsmanager_search_list->remove(tmp);
-      delete tmp;
-      break;
-    }
+
+    if (tmp)
+      if (tmp->window == window) {
+	wsmanager_search_list->remove(tmp);
+	delete tmp;
+	break;
+      }
   }
 }
 
@@ -1504,8 +1519,9 @@ unsigned long BlackboxSession::getColor(const char *colorname) {
 void BlackboxSession::InitMenu(void) {
   if (rootmenu) {
     int n = rootmenu->count();
-    for (int i = 0; i < n; i++)
-      rootmenu->remove(0);
+    for (int i = n - 1; i >= 0; i--)
+      rootmenu->remove(i);
+    rootmenu->Reconfigure();
   } else
     rootmenu = new SessionMenu(this);
 
@@ -1737,10 +1753,21 @@ void BlackboxSession::parseSubMenu(FILE *menu_file, SessionMenu *menu) {
 // *************************************************************************
 
 void BlackboxSession::Reconfigure(void) {
+  reconfigure = True;
+}
+
+
+void BlackboxSession::do_reconfigure(void) {
   if (! ReconfigureDialog.visible) {
     XGrabServer(display);
     LoadDefaults();
     
+    Bool m = rootmenu->menuVisible();
+    rootmenu->hideMenu();
+    ws_manager->currentWorkspace()->hideAll();
+
+    InitMenu();
+
     XGCValues gcv;
     gcv.foreground = getColor("white");
     gcv.function = GXxor;
@@ -1771,17 +1798,9 @@ void BlackboxSession::Reconfigure(void) {
     dgcv.foreground = toolboxTextColor().pixel;
     XChangeGC(display, ReconfigureDialog.dialogGC, GCFont|GCForeground, &dgcv);
     
-    rootmenu->Reconfigure();
-    /*
-    Bool m = rootmenu->menuVisible();
-    int x = rootmenu->X(), y = rootmenu->Y();
-    InitMenu();
-
-    if (m) {
-      rootmenu->moveMenu(x, y);
+    if (m)
       rootmenu->showMenu();
-    }
-    */
+    ws_manager->currentWorkspace()->showAll();
 
     XUngrabServer(display);
   }
@@ -1806,13 +1825,13 @@ void BlackboxSession::createAutoConfigDialog(void) {
   ReconfigureDialog.DialogText[1] =
     "this capability has proven unreliable in the past.  Choose \"Yes\" to";
   ReconfigureDialog.DialogText[2] =
-    "allow Blackbox to reconfigure itself.  A full Restart is necessary to";
+    "allow Blackbox to reconfigure itself.  WARNING:  This can cause Blackbox";
   ReconfigureDialog.DialogText[3] =
-    "reload the menu set by your X resources.  WARNING: this may cause";
+    "to dump core and abort.  NOTE:  Previous bugs have been attributed to ";
   ReconfigureDialog.DialogText[4] =
-    "Balckbox to dump core.  Choose \"No\" and you can either restart or";
+    "over-optimization at compile time.  Choose \"No\" and you can either";
   ReconfigureDialog.DialogText[5] =
-    "choose the Reconfigure option from your root menu.";
+    "restart or choose the Reconfigure option from your root menu.";
 
   ReconfigureDialog.line_h = titleFont()->ascent + titleFont()->descent + 6;
   ReconfigureDialog.text_w = 0;

@@ -9,7 +9,7 @@ blackbox*menuItemTexture:         solid
 blackbox*menuItemPressedTexture:  solidflat
 
 blackbox*frameColor:              black
-blackbox*toolboxColor:            black
+blackbox*toolboxColor:            darkred
 blackbox*focusColor:              darkred
 blackbox*unfocusColor:            rgb:40/0/0
 blackbox*buttonColor:             rgb:60/0/0
