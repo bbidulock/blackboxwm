@@ -85,7 +85,6 @@ Slit::~Slit(void) {
   delete slitmenu;
 
   screen->removeStrut(&strut);
-  screen->updateAvailableArea();
 
   screen->getImageControl()->removeImage(frame.pixmap);
 
@@ -421,9 +420,6 @@ void Slit::updateStrut(void) {
       break;
     }
   }
-
-  // update area with new Strut info
-  screen->updateAvailableArea();
 }
 
 

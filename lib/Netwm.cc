@@ -32,6 +32,7 @@ Netwm::Netwm(Display* _display): display(_display) {
     "_NET_NUMBER_OF_DESKTOPS",
     "_NET_DESKTOP_GEOMETRY",
     "_NET_CURRENT_DESKTOP",
+    "_NET_DESKTOP_NAMES",
     "_NET_ACTIVE_WINDOW",
     "_NET_WORKAREA",
     "_NET_SUPPORTING_WM_CHECK",
@@ -40,19 +41,20 @@ Netwm::Netwm(Display* _display): display(_display) {
     "_NET_WM_ICON_NAME"
   };
   Atom atoms_return[12];
-  XInternAtoms(display, atoms, 11, False, atoms_return);
+  XInternAtoms(display, atoms, 12, False, atoms_return);
 
   utf8_string = atoms_return[0];
   net_supported = atoms_return[1];
   net_number_of_desktops = atoms_return[2];
   net_desktop_geometry = atoms_return[3];
   net_current_desktop = atoms_return[4];
-  net_active_window = atoms_return[5];
-  net_workarea = atoms_return[6];
-  net_supporting_wm_check = atoms_return[7];
-  net_close_window = atoms_return[8];
-  net_wm_name = atoms_return[9];
-  net_wm_icon_name = atoms_return[10];
+  net_desktop_names = atoms_return[5];
+  net_active_window = atoms_return[6];
+  net_workarea = atoms_return[7];
+  net_supporting_wm_check = atoms_return[8];
+  net_close_window = atoms_return[9];
+  net_wm_name = atoms_return[10];
+  net_wm_icon_name = atoms_return[11];
 }
 
 
@@ -82,12 +84,11 @@ void Netwm::setDesktopGeometry(Window target,
 }
 
 
-void Netwm::setWorkarea(Window target, unsigned int x, unsigned y,
-                        unsigned int width, unsigned int height) const {
-  unsigned int area[] = {x, y, width, height};
-  XChangeProperty(display, target, net_workarea, XA_CARDINAL,
-                  32, PropModeReplace,
-                  reinterpret_cast<uchar*>(area), 4);
+void Netwm::setWorkarea(Window target, unsigned long *workarea,
+                        unsigned int count) const {
+  XChangeProperty(display, target, net_workarea,
+                  XA_CARDINAL, 32, PropModeReplace,
+                  reinterpret_cast<uchar*>(workarea), count * 4);
 }
 
 
@@ -95,6 +96,14 @@ void Netwm::setCurrentDesktop(Window target, unsigned int number) const {
   XChangeProperty(display, target, net_current_desktop, XA_CARDINAL,
                   32, PropModeReplace,
                   reinterpret_cast<uchar*>(&number), 1);
+}
+
+
+void Netwm::setDesktopNames(Window target, const std::string& names) const {
+  XChangeProperty(display, target, net_desktop_names,
+                  utf8_string, 8, PropModeReplace,
+                  reinterpret_cast<uchar*>(const_cast<char*>(names.c_str())),
+                  names.length());
 }
 
 

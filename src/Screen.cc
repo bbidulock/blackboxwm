@@ -277,13 +277,14 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   blackbox->netwm()->setDesktopGeometry(getRootWindow(),
                                         getWidth(), getHeight());
   blackbox->netwm()->setActiveWindow(getRootWindow(), None);
-  blackbox->netwm()->setWorkarea(getRootWindow(), 0, 0,
-                                 usableArea.width(), usableArea.height());
+  updateWorkareaHint();
+  updateDesktopNamesHint();
 
   Atom supported[] = {
     blackbox->netwm()->numberOfDesktops(),
     blackbox->netwm()->desktopGeometry(),
     blackbox->netwm()->currentDesktop(),
+    blackbox->netwm()->desktopNames(),
     blackbox->netwm()->activeWindow(),
     blackbox->netwm()->workarea(),
     blackbox->netwm()->closeWindow(),
@@ -291,7 +292,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
     blackbox->netwm()->wmIconName()
   };
 
-  blackbox->netwm()->setSupported(getRootWindow(), supported, 8);
+  blackbox->netwm()->setSupported(getRootWindow(), supported, 9);
 
   unsigned int i, j, nchild;
   Window r, p, *children;
@@ -845,6 +846,7 @@ unsigned int BScreen::addWorkspace(void) {
   updateNetizenWorkspaceCount();
   blackbox->netwm()->setNumberOfDesktops(getRootWindow(),
                                          workspacesList.size());
+  updateDesktopNamesHint();
 
   return workspacesList.size();
 }
@@ -872,6 +874,7 @@ unsigned int BScreen::removeLastWorkspace(void) {
   updateNetizenWorkspaceCount();
   blackbox->netwm()->setNumberOfDesktops(getRootWindow(),
                                          workspacesList.size());
+  updateDesktopNamesHint();
 
   return workspacesList.size();
 }
@@ -1687,11 +1690,13 @@ void BScreen::hideGeometry(void) {
 
 void BScreen::addStrut(Strut *strut) {
   strutList.push_back(strut);
+  updateAvailableArea();
 }
 
 
 void BScreen::removeStrut(Strut *strut) {
   strutList.remove(strut);
+  updateAvailableArea();
 }
 
 
@@ -1739,8 +1744,7 @@ void BScreen::updateAvailableArea(void) {
       if ((*it)->isMaximized()) (*it)->remaximize();
   }
 
-  blackbox->netwm()->setWorkarea(getRootWindow(), 0, 0,
-                                 usableArea.width(), usableArea.height());
+  updateWorkareaHint();
 }
 
 
@@ -2080,4 +2084,36 @@ XFontSet BScreen::createFontSet(const std::string &fontname) {
   delete [] pattern2;
 
   return fs;
+}
+
+
+void BScreen::updateWorkareaHint(void) const {
+  unsigned int wkspc_count = workspacesList.size();
+  unsigned long *workarea, *tmp;
+  
+  tmp = workarea = new unsigned long[wkspc_count * 4];
+
+  for (unsigned int i = 0; i < wkspc_count; ++i) {
+    tmp[0] = usableArea.x();
+    tmp[1] = usableArea.y();
+    tmp[2] = usableArea.width();
+    tmp[3] = usableArea.height();
+    tmp += 4;
+  }
+
+  blackbox->netwm()->setWorkarea(getRootWindow(), workarea, wkspc_count);
+
+  delete [] workarea;
+}
+
+
+void BScreen::updateDesktopNamesHint(void) const {
+  std::string names;
+
+  WorkspaceList::const_iterator it = workspacesList.begin(),
+    end = workspacesList.end();
+  for (; it != end; ++it)
+    names += (*it)->getName() + '\0';
+
+  blackbox->netwm()->setDesktopNames(getRootWindow(), names);
 }

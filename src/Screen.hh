@@ -191,6 +191,9 @@ private:
   void InitMenu(void);
   void LoadStyle(void);
 
+  void updateAvailableArea(void);
+  void updateWorkareaHint(void) const;
+  void updateDesktopNamesHint(void) const;
 
 public:
   enum { RowSmartPlacement = 1, ColSmartPlacement, CascadePlacement, LeftRight,
@@ -324,7 +327,6 @@ public:
   BlackboxWindow *getIcon(unsigned int index);
 
   const Rect& availableArea(void) const;
-  void updateAvailableArea(void);
   void addStrut(Strut *strut);
   void removeStrut(Strut *strut);
 

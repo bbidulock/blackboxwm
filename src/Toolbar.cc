@@ -164,7 +164,6 @@ Toolbar::Toolbar(BScreen *scrn) {
 
 Toolbar::~Toolbar(void) {
   screen->removeStrut(&strut);
-  screen->updateAvailableArea();
 
   XUnmapWindow(display, frame.window);
 
@@ -450,8 +449,6 @@ void Toolbar::updateStrut(void) {
   default:
     strut.bottom = getExposedHeight() + border_width;
   }
-
-  screen->updateAvailableArea();
 }
 
 

@@ -6,7 +6,9 @@ netwm:
    workspace when the one they are on is closed.  However we currently
    iconify them instead
 
-* _NET_WORKAREA is supposed to be an array of desktop geometries
+refactoring:
+-----------------------------
+* look into public v. private members of all classes
 
 warts:
 -----------------------------
@@ -79,3 +81,10 @@ ADD: a regression test suite
      items to test:
        *) toggle decor works
        *) multihead
+
+CHANGE: move all of the fprintf() messages to a message function /
+        class.  Something like message(WARN, "this is broken") and use
+        sprintf() to allow for printf() style replacements.  This can
+        be set to go to stderr, a log file, whatever.  It can also be
+        disabled for final builds.
+
