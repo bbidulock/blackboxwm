@@ -249,3 +249,23 @@ std::string bt::itostring(long i) {
     tmp.insert(tmp.begin(), '-');
   return tmp;
 }
+
+
+std::string bt::itostring(unsigned int i) {
+  return bt::itostring(static_cast<unsigned long>(i));
+}
+
+
+std::string bt::itostring(int i) {
+  return bt::itostring(static_cast<long>(i));
+}
+
+
+std::string bt::itostring(unsigned short i) {
+  return bt::itostring(static_cast<unsigned long>(i));
+}
+
+
+std::string bt::itostring(short i) {
+  return bt::itostring(static_cast<long>(i));
+}

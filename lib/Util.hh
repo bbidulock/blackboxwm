@@ -108,6 +108,12 @@ namespace bt {
 
   std::string itostring(unsigned long i);
   std::string itostring(long i);
+  std::string itostring(unsigned int i);
+  std::string itostring(int i);
+  std::string itostring(unsigned short i);
+  std::string itostring(short i);
+
+
 
   template <class T>
   T next_it(T x) { return ++x; }
