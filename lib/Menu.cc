@@ -787,7 +787,7 @@ void bt::Menu::updateSize(void) {
   // remove the empty column
   if (cols > 1 && col_h == 0 && row == 0)
     --cols;
-  max_col_h = std::max(max_col_h, col_h);
+  max_col_h = std::max(std::max(max_col_h, col_h), style->frameMargin());
 
   // update rects
   _irect.setRect(style->frameMargin(), _frect.top() + style->frameMargin(),
