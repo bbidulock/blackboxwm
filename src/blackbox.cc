@@ -488,7 +488,6 @@ void Blackbox::timeout(bt::Timer *) {
                 bt::PointerAssassin());
   menuTimestamps.clear();
 
-
   std::for_each(screen_list, screen_list + screen_list_count,
                 std::mem_fun(&BScreen::reconfigure));
 
