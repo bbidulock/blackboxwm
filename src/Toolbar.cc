@@ -1005,7 +1005,7 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
           new_workspace_name.resize(0);
         }
       } else {
-        new_workspace_name.push_back(*keychar);
+        new_workspace_name += (*keychar);
         ++new_name_pos;
       }
 
