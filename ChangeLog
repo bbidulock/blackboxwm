@@ -2,3 +2,4 @@ Changelog for 0.70.x
 
 Changes from 0.65.x to 0.70.0
   - moved utility classes into a library
+  - beginnings of netwm implementation

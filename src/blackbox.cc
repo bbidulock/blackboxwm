@@ -103,6 +103,7 @@ using std::string;
 #include "Clientmenu.hh"
 #include "GCCache.hh"
 #include "Image.hh"
+#include "Netwm.hh"
 #include "Rootmenu.hh"
 #include "Screen.hh"
 #include "Slit.hh"
@@ -185,6 +186,7 @@ Blackbox::~Blackbox(void) {
                 PointerAssassin());
 
   delete timer;
+  delete _netwm;
 }
 
 
@@ -620,11 +622,25 @@ void Blackbox::process_event(XEvent *e) {
           win->iconify();
         if (e->xclient.data.l[0] == NormalState)
           win->deiconify();
-      } else if(e->xclient.message_type == getBlackboxChangeWorkspaceAtom()) {
+      } else if(e->xclient.message_type == getBlackboxChangeWorkspaceAtom() ||
+                e->xclient.message_type == netwm()->currentDesktop()) {
         BScreen *screen = searchScreen(e->xclient.window);
         unsigned int workspace = e->xclient.data.l[0];
         if (screen && workspace < screen->getWorkspaceCount())
           screen->changeWorkspaceID(workspace);
+      } else if (e->xclient.message_type == netwm()->numberOfDesktops()) {
+        BScreen *screen = searchScreen(e->xclient.window);
+        if (screen) {
+          unsigned int number = e->xclient.data.l[0];
+          unsigned int wkspc_count = screen->getWorkspaceCount();
+          if (number > wkspc_count) {
+            for (; number != wkspc_count; --number)
+              screen->addWorkspace();
+          } else if (number < wkspc_count) {
+            for (; number != wkspc_count; ++number)
+              screen->removeLastWorkspace();
+          }
+        }
       } else if (e->xclient.message_type == getBlackboxChangeWindowFocusAtom()) {
         BlackboxWindow *win = searchWindow(e->xclient.window);
 
@@ -747,46 +763,11 @@ void Blackbox::init_icccm(void) {
   blackbox_cycle_window_focus =
     XInternAtom(getXDisplay(), "_BLACKBOX_CYCLE_WINDOW_FOCUS", False);
 
-#ifdef    NEWWMSPEC
-  net_supported = XInternAtom(getXDisplay(), "_NET_SUPPORTED", False);
-  net_client_list = XInternAtom(getXDisplay(), "_NET_CLIENT_LIST", False);
-  net_client_list_stacking =
-    XInternAtom(getXDisplay(), "_NET_CLIENT_LIST_STACKING", False);
-  net_number_of_desktops =
-    XInternAtom(getXDisplay(), "_NET_NUMBER_OF_DESKTOPS", False);
-  net_desktop_geometry =
-    XInternAtom(getXDisplay(), "_NET_DESKTOP_GEOMETRY", False);
-  net_desktop_viewport =
-    XInternAtom(getXDisplay(), "_NET_DESKTOP_VIEWPORT", False);
-  net_current_desktop =
-    XInternAtom(getXDisplay(), "_NET_CURRENT_DESKTOP", False);
-  net_desktop_names = XInternAtom(getXDisplay(), "_NET_DESKTOP_NAMES", False);
-  net_active_window = XInternAtom(getXDisplay(), "_NET_ACTIVE_WINDOW", False);
-  net_workarea = XInternAtom(getXDisplay(), "_NET_WORKAREA", False);
-  net_supporting_wm_check =
-    XInternAtom(getXDisplay(), "_NET_SUPPORTING_WM_CHECK", False);
-  net_virtual_roots = XInternAtom(getXDisplay(), "_NET_VIRTUAL_ROOTS", False);
-  net_close_window = XInternAtom(getXDisplay(), "_NET_CLOSE_WINDOW", False);
-  net_wm_moveresize = XInternAtom(getXDisplay(), "_NET_WM_MOVERESIZE", False);
-  net_properties = XInternAtom(getXDisplay(), "_NET_PROPERTIES", False);
-  net_wm_name = XInternAtom(getXDisplay(), "_NET_WM_NAME", False);
-  net_wm_desktop = XInternAtom(getXDisplay(), "_NET_WM_DESKTOP", False);
-  net_wm_window_type =
-    XInternAtom(getXDisplay(), "_NET_WM_WINDOW_TYPE", False);
-  net_wm_state = XInternAtom(getXDisplay(), "_NET_WM_STATE", False);
-  net_wm_strut = XInternAtom(getXDisplay(), "_NET_WM_STRUT", False);
-  net_wm_icon_geometry =
-    XInternAtom(getXDisplay(), "_NET_WM_ICON_GEOMETRY", False);
-  net_wm_icon = XInternAtom(getXDisplay(), "_NET_WM_ICON", False);
-  net_wm_pid = XInternAtom(getXDisplay(), "_NET_WM_PID", False);
-  net_wm_handled_icons =
-    XInternAtom(getXDisplay(), "_NET_WM_HANDLED_ICONS", False);
-  net_wm_ping = XInternAtom(getXDisplay(), "_NET_WM_PING", False);
-#endif // NEWWMSPEC
-
 #ifdef    HAVE_GETPID
   blackbox_pid = XInternAtom(getXDisplay(), "_BLACKBOX_PID", False);
 #endif // HAVE_GETPID
+
+  _netwm = new Netwm(getXDisplay());
 }
 
 

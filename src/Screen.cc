@@ -82,6 +82,7 @@ using std::string;
 #include "GCCache.hh"
 #include "Iconmenu.hh"
 #include "Image.hh"
+#include "Netwm.hh"
 #include "Screen.hh"
 #include "Slit.hh"
 #include "Rootmenu.hh"
@@ -260,6 +261,31 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   updateAvailableArea();
 
   changeWorkspaceID(0);
+
+  /*
+    netwm requires the window manager to set a property on a window it creates
+    which is the id of that window.  We must also set an equivalent property
+    on the root window.  Then we must set _NET_WM_NAME on the child window
+    to be the name of the wm.
+  */
+  blackbox->netwm()->setSupportingWMCheck(getRootWindow(), geom_window,
+                                          blackbox->getXDisplay());
+  blackbox->netwm()->setSupportingWMCheck(geom_window, geom_window,
+                                          blackbox->getXDisplay());
+  blackbox->netwm()->setWMName("Blackbox", geom_window,
+                                blackbox->getXDisplay());
+
+  blackbox->netwm()->setNumberOfDesktops(workspacesList.size(),
+                                         blackbox->getXDisplay(),
+                                         getRootWindow());
+
+  Atom supported[] = {
+    blackbox->netwm()->currentDesktop(),
+    blackbox->netwm()->numberOfDesktops()
+  };
+
+  blackbox->netwm()->setSupported(supported, 2, blackbox->getXDisplay(),
+                                  getRootWindow());
 
   unsigned int i, j, nchild;
   Window r, p, *children;
@@ -794,6 +820,9 @@ unsigned int BScreen::addWorkspace(void) {
   toolbar->reconfigure();
 
   updateNetizenWorkspaceCount();
+  blackbox->netwm()->setNumberOfDesktops(workspacesList.size(),
+                                         blackbox->getXDisplay(),
+                                         getRootWindow());
 
   return workspacesList.size();
 }
@@ -819,6 +848,9 @@ unsigned int BScreen::removeLastWorkspace(void) {
   toolbar->reconfigure();
 
   updateNetizenWorkspaceCount();
+  blackbox->netwm()->setNumberOfDesktops(workspacesList.size(),
+                                         blackbox->getXDisplay(),
+                                         getRootWindow());
 
   return workspacesList.size();
 }
@@ -839,6 +871,9 @@ void BScreen::changeWorkspaceID(unsigned int id) {
   toolbar->redrawWorkspaceLabel(True);
     
   updateNetizenCurrentWorkspace();
+  blackbox->netwm()->setCurrentDesktop(current_workspace->getID(),
+                                       blackbox->getXDisplay(),
+                                       getRootWindow());
 }
 
 

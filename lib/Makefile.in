@@ -97,7 +97,7 @@ CPPFLAGS = @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ @DEBUG@ @NLS@ @TIMEDCACHE@ -DLOCAL
 
 LIBRARIES = libblackbox.a
 noinst_LIBRARIES = libblackbox.a
-libblackbox_a_SOURCES = BaseDisplay.cc Color.cc GCCache.cc Image.cc ImageControl.cc Texture.cc Timer.cc Util.cc i18n.cc
+libblackbox_a_SOURCES = BaseDisplay.cc Color.cc GCCache.cc Image.cc ImageControl.cc Netwm.cc Texture.cc Timer.cc Util.cc i18n.cc
 
 MAINTAINERCLEANFILES = Makefile.in
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -114,7 +114,7 @@ X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 libblackbox_a_LIBADD = 
 libblackbox_a_OBJECTS =  BaseDisplay.o Color.o GCCache.o Image.o \
-ImageControl.o Texture.o Timer.o Util.o i18n.o
+ImageControl.o Netwm.o Texture.o Timer.o Util.o i18n.o
 AR = ar
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -309,6 +309,7 @@ Image.o: Image.cc ../config.h i18n.hh \
 ImageControl.o: ImageControl.cc ../config.h i18n.hh \
  ../nls/blackbox-nls.hh BaseDisplay.hh Timer.hh Color.hh Image.hh \
  Texture.hh Util.hh
+Netwm.o: Netwm.hh Netwm.cc
 Texture.o: Texture.cc ../config.h Texture.hh Color.hh Util.hh \
  BaseDisplay.hh Timer.hh Image.hh i18n.hh ../nls/blackbox-nls.hh
 Timer.o: Timer.cc ../config.h BaseDisplay.hh Timer.hh Util.hh

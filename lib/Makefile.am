@@ -25,7 +25,7 @@ CPPFLAGS= @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ \
 
 LIBRARIES = libblackbox.a
 noinst_LIBRARIES = libblackbox.a
-libblackbox_a_SOURCES= BaseDisplay.cc Color.cc GCCache.cc Image.cc ImageControl.cc Texture.cc Timer.cc Util.cc i18n.cc
+libblackbox_a_SOURCES= BaseDisplay.cc Color.cc GCCache.cc Image.cc ImageControl.cc Netwm.cc Texture.cc Timer.cc Util.cc i18n.cc
 
 MAINTAINERCLEANFILES= Makefile.in
 
@@ -46,6 +46,7 @@ Image.o: Image.cc ../config.h i18n.hh \
 ImageControl.o: ImageControl.cc ../config.h i18n.hh \
  ../nls/blackbox-nls.hh BaseDisplay.hh Timer.hh Color.hh Image.hh \
  Texture.hh Util.hh
+Netwm.o: Netwm.hh Netwm.cc
 Texture.o: Texture.cc ../config.h Texture.hh Color.hh Util.hh \
  BaseDisplay.hh Timer.hh Image.hh i18n.hh ../nls/blackbox-nls.hh
 Timer.o: Timer.cc ../config.h BaseDisplay.hh Timer.hh Util.hh

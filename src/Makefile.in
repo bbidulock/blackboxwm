@@ -348,8 +348,9 @@ Rootmenu.o: Rootmenu.cc ../config.h blackbox.hh ../lib/i18n.hh \
 Screen.o: Screen.cc ../config.h ../lib/i18n.hh ../nls/blackbox-nls.hh \
  blackbox.hh ../lib/BaseDisplay.hh ../lib/Timer.hh Clientmenu.hh Basemenu.hh \
  ../lib/GCCache.hh ../lib/Color.hh Iconmenu.hh ../lib/Image.hh Screen.hh \
- ../lib/Texture.hh ../lib/Util.hh Configmenu.hh Netizen.hh Rootmenu.hh \
- Workspace.hh Workspacemenu.hh Slit.hh Toolbar.hh Window.hh Windowmenu.hh
+ ../lib/Texture.hh ../lib/Util.hh Configmenu.hh Netizen.hh ../lib/Netwm.hh \
+ Rootmenu.hh Workspace.hh Workspacemenu.hh Slit.hh Toolbar.hh Window.hh \
+ Windowmenu.hh
 Slit.o: Slit.cc ../config.h ../lib/i18n.hh ../nls/blackbox-nls.hh blackbox.hh \
  ../lib/BaseDisplay.hh ../lib/Timer.hh ../lib/Image.hh ../lib/Color.hh Screen.hh \
  ../lib/Texture.hh ../lib/Util.hh Configmenu.hh Basemenu.hh Iconmenu.hh \

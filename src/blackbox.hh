@@ -91,6 +91,7 @@ class BWindowGroup;
 class Basemenu;
 class Toolbar;
 class Slit;
+class Netwm;
 
 extern I18n i18n;
 
@@ -171,24 +172,7 @@ private:
   Atom blackbox_change_workspace, blackbox_change_window_focus,
     blackbox_cycle_window_focus;
 
-#ifdef    NEWWMSPEC
-  // root window properties
-  Atom net_supported, net_client_list, net_client_list_stacking,
-    net_number_of_desktops, net_desktop_geometry, net_desktop_viewport,
-    net_current_desktop, net_desktop_names, net_active_window, net_workarea,
-    net_supporting_wm_check, net_virtual_roots;
-
-  // root window messages
-  Atom net_close_window, net_wm_moveresize;
-
-  // application window properties
-  Atom net_properties, net_wm_name, net_wm_desktop, net_wm_window_type,
-    net_wm_state, net_wm_strut, net_wm_icon_geometry, net_wm_icon, net_wm_pid,
-    net_wm_handled_icons;
-
-  // application protocols
-  Atom net_wm_ping;
-#endif // NEWWMSPEC
+  Netwm* _netwm;
 
   Blackbox(const Blackbox&);
   Blackbox& operator=(const Blackbox&);
@@ -225,6 +209,8 @@ public:
   void removeGroupSearch(Window window);
   void removeToolbarSearch(Window window);
   void removeSlitSearch(Window window);
+
+  inline Netwm* netwm(void) { return _netwm; }
 
   inline BlackboxWindow *getFocusedWindow(void) { return focused_window; }
 

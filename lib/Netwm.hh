@@ -1,0 +1,63 @@
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
+// netwm.hh for Blackbox - an X11 Window manager
+// Copyright (c) 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
+
+#ifndef _blackbox_netwm_hh
+#define _blackbox_netwm_hh
+
+extern "C" {
+#include <X11/Xlib.h>
+#include <X11/Xatom.h>
+}
+
+#include <string>
+
+class Netwm {
+public:
+  explicit Netwm(Display* display);
+  ~Netwm(void) {};
+
+  Atom utf8String(void) const { return utf8_string; }
+  Atom supported(void) const { return net_supported; }
+  Atom numberOfDesktops(void) const { return net_number_of_desktops; }
+  Atom currentDesktop(void) const { return net_current_desktop; }
+  Atom supportingWMCheck(void) const { return net_supporting_wm_check; }
+  Atom wmName(void) const { return net_wm_name; }
+
+  void setSupported(Atom* supported, unsigned int count,
+		    Display *display, Window target);
+  void setNumberOfDesktops(unsigned int number, Display* display,
+			     Window target);
+  void setCurrentDesktop(unsigned int number, Display* display,
+			  Window target);
+  void setSupportingWMCheck(Window target, Window data, Display* display);
+  void setWMName(const std::string& name, Window w, Display *display);
+
+private:
+  Netwm(const Netwm&);
+  Netwm& operator=(const Netwm&);
+
+  Atom utf8_string,
+    net_wm_name, net_supporting_wm_check, net_number_of_desktops,
+    net_supported, net_current_desktop;
+};
+
+#endif // _blackbox_netwm_hh
