@@ -33,13 +33,6 @@
 #include <algorithm>
 
 
-bt::Texture::Texture(void) : t(0ul), bw(0u) { }
-
-
-bt::Texture::Texture(const bt::Texture& tt)
-{ *this = tt; }
-
-
 void bt::Texture::setColor(const bt::Color &new_color) {
   c = new_color;
 

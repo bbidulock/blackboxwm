@@ -76,35 +76,48 @@ namespace bt {
       Border              = (1l<<15)
     };
 
-    Texture(void);
-    Texture(const Texture &tt);
+    inline Texture(void) : t(0ul), bw(0u) { }
+    inline Texture(const Texture &tt) { *this = tt; }
 
-    const std::string &description(void) const { return descr; }
+    inline const std::string &description(void) const
+    { return descr; }
     void setDescription(const std::string &d);
 
     void setColor(const Color &new_color);
-    void setColorTo(const Color &new_colorTo) { ct = new_colorTo; }
-    void setBorderColor(const Color &new_borderColor) { bc = new_borderColor; }
+    inline void setColorTo(const Color &new_colorTo)
+    { ct = new_colorTo; }
+    inline void setBorderColor(const Color &new_borderColor)
+    { bc = new_borderColor; }
 
-    const Color &color(void) const { return c; }
-    const Color &colorTo(void) const { return ct; }
-    const Color &borderColor(void) const { return bc; }
-    const Color &lightColor(void) const { return lc; }
-    const Color &shadowColor(void) const { return sc; }
+    inline const Color &color(void) const
+    { return c; }
+    inline const Color &colorTo(void) const
+    { return ct; }
+    inline const Color &borderColor(void) const
+    { return bc; }
+    inline const Color &lightColor(void) const
+    { return lc; }
+    inline const Color &shadowColor(void) const
+    { return sc; }
 
-    unsigned long texture(void) const { return t; }
-    void setTexture(unsigned long _texture) { t  = _texture; }
-    void addTexture(unsigned long _texture) { t |= _texture; }
+    inline unsigned long texture(void) const
+    { return t; }
+    inline void setTexture(unsigned long _texture)
+    { t  = _texture; }
+    inline void addTexture(unsigned long _texture)
+    { t |= _texture; }
 
-    unsigned int borderWidth(void) const { return bw; }
-    void setBorderWidth(unsigned int new_bw) { bw = new_bw; }
+    inline unsigned int borderWidth(void) const
+    { return bw; }
+    inline void setBorderWidth(unsigned int new_bw)
+    { bw = new_bw; }
 
     Texture &operator=(const Texture &tt);
-    bool operator==(const Texture &tt) const
+    inline bool operator==(const Texture &tt) const
     { return (c == tt.c && ct == tt.ct && bc == tt.bc &&
               lc == tt.lc && sc == tt.sc && t == tt.t && bw == tt.bw); }
-    bool operator!=(const Texture &tt) const
-    { return (! operator==(tt)); }
+    inline bool operator!=(const Texture &tt) const
+    { return !operator==(tt); }
 
   private:
     std::string descr;
