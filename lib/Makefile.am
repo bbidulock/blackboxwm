@@ -26,11 +26,11 @@ noinst_LIBRARIES	= libbt.a
 libbt_a_SOURCES		= BaseDisplay.cc				\
 			  Color.cc					\
 			  Font.cc					\
-			  GCCache.cc					\
 			  Image.cc					\
 			  ImageControl.cc				\
 			  Menu.cc					\
 			  Netwm.cc					\
+			  Pen.cc					\
 			  Resource.cc					\
 			  Texture.cc					\
 			  Timer.cc					\
