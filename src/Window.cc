@@ -31,11 +31,9 @@
 #include "Windowmenu.hh"
 #include "Workspace.hh"
 #include "blackbox.hh"
-#include "../nls/blackbox-nls.hh"
 
 #include <Pen.hh>
 #include <PixmapCache.hh>
-#include <i18n.hh>
 
 #include <X11/Xatom.h>
 #ifdef SHAPE
@@ -811,8 +809,8 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
       XMoveResizeWindow(blackbox->XDisplay(), frame.maximize_button, bx, by,
                         frame.style->button_width, frame.style->button_width);
       XMapWindow(blackbox->XDisplay(), frame.maximize_button);
-      XClearWindow(blackbox->XDisplay(), frame.maximize_button);
 
+      bx -= bw;
       lw -= bw;
     } else {
       XUnmapWindow(blackbox->XDisplay(), frame.maximize_button);
@@ -966,8 +964,6 @@ void BlackboxWindow::positionWindows(void) {
   } else if (frame.handle) {
     destroyHandle();
   }
-
-  XSync(blackbox->XDisplay(), False);
 }
 
 
@@ -995,7 +991,7 @@ void BlackboxWindow::getWMName(void) {
     }
 #endif
   } else {
-    client.title = bt::i18n(WindowSet, WindowUnnamed, "Unnamed");
+    client.title = "Unnamed";
     blackbox->netwm().setWMVisibleName(client.window, client.title);
   }
 }
@@ -1195,8 +1191,9 @@ void BlackboxWindow::getWMNormalHints(void) {
     availableArea changes max_width/height will be incorrect and lead to odd
     rendering bugs.
   */
-  client.max_width = (unsigned)-1;
-  client.max_height = (unsigned)-1;
+  const bt::Rect &rect = screen->screenInfo().rect();
+  client.max_width = rect.width();
+  client.max_height = rect.height();
 
   if (! XGetWMNormalHints(blackbox->XDisplay(), client.window,
                           &sizehint, &icccm_mask))
@@ -1361,9 +1358,9 @@ void BlackboxWindow::getTransientInfo(void) {
   // Check for a circular transient state: this can lock up Blackbox
   // when it tries to find the non-transient window for a transient.
   BlackboxWindow *w = this;
-  while(w->client.transient_for &&
-        w->client.transient_for != (BlackboxWindow *) ~0ul) {
-    if(w->client.transient_for == this) {
+  while (w->client.transient_for &&
+         w->client.transient_for != (BlackboxWindow *) ~0ul) {
+    if (w->client.transient_for == this) {
       client.transient_for = (BlackboxWindow*) 0;
       break;
     }
@@ -1373,6 +1370,7 @@ void BlackboxWindow::getTransientInfo(void) {
   if (client.transient_for) {
     // register ourselves with our new transient_for
     client.transient_for->client.transientList.push_back(this);
+    client.workspace = client.transient_for->client.workspace;
   }
 }
 
@@ -1836,8 +1834,7 @@ void BlackboxWindow::setFullScreen(bool b) {
     setLayer(StackingList::LayerFullScreen);
     setState(client.current_state);
   } else {
-    ::get_decorations(client.window_type,
-                      client.decorations,
+    ::get_decorations(client.window_type, client.decorations,
                       client.functions);
 
     if (client.decorations & WindowDecorationTitlebar)
@@ -2869,10 +2866,11 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const re) {
     client.state.moving = False;
 
     if (! screen->resource().doOpaqueMove()) {
-      /* when drawing the rubber band, we need to make sure we only draw inside
-       * the frame... frame.changing_* contain the new coords for the window,
-       * so we need to subtract 1 from changing_w/changing_h every where we
-       * draw the rubber band (for both moving and resizing)
+      /* when drawing the rubber band, we need to make sure we only
+       * draw inside the frame... frame.changing_* contain the new
+       * coords for the window, so we need to subtract 1 from
+       * changing_w/changing_h every where we draw the rubber band
+       * (for both moving and resizing)
        */
       bt::Pen pen(screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
       pen.setGCFunction(GXxor);
@@ -2960,7 +2958,6 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
        frame.handle == me->window || frame.window == me->window)) {
     if (! client.state.moving) {
       // begin a move
-
       XGrabPointer(blackbox->XDisplay(), me->window, False,
                    Button1MotionMask | ButtonReleaseMask,
                    GrabModeAsync, GrabModeAsync,
@@ -2984,7 +2981,6 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
       }
     } else {
       // continue a move
-
       int dx = me->x_root - frame.grab_x, dy = me->y_root - frame.grab_y;
       dx -= frame.border_w;
       dy -= frame.border_w;
@@ -3029,8 +3025,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
     bool left = (me->window == frame.left_grip);
 
     if (! client.state.resizing) {
-      // begine a resize
-
+      // begin a resize
       XGrabServer(blackbox->XDisplay());
       XGrabPointer(blackbox->XDisplay(), me->window, False,
                    ButtonMotionMask | ButtonReleaseMask,
@@ -3045,7 +3040,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
       frame.grab_y = me->y;
       frame.changing = frame.rect;
 
-      constrain((left) ? TopRight : TopLeft);
+      constrain(left ? TopRight : TopLeft);
 
       bt::Pen pen(screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
       pen.setGCFunction(GXxor);
@@ -3203,9 +3198,8 @@ void BlackboxWindow::restore(bool remap) {
 
 
 // timer for autoraise
-void BlackboxWindow::timeout(bt::Timer *) {
-  screen->raiseWindow(this);
-}
+void BlackboxWindow::timeout(bt::Timer *)
+{ screen->raiseWindow(this); }
 
 
 /*
