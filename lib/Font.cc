@@ -423,7 +423,7 @@ bt::Rect bt::textRect(unsigned int screen, const Font &font,
   if (f) {
     XGlyphInfo xgi;
     XftTextExtentsUtf8(fontcache->_display.XDisplay(), f,
-                       reinterpret_cast<FcChar8 *>(const_cast<char *>(text.c_str())),
+                       reinterpret_cast<const FcChar8 *>(text.c_str()),
                        text.length(), &xgi);
     return Rect(xgi.x, 0, xgi.width - xgi.x, f->ascent + f->descent);
   }
@@ -471,7 +471,7 @@ void bt::drawText(const Font &font, const Pen &pen,
 
     XftDrawStringUtf8(pen.xftDraw(drawable), &col, f,
                       tr.x(), tr.y() + f->ascent,
-                      reinterpret_cast<FcChar8 *>(const_cast<char *>(text.c_str())),
+                      reinterpret_cast<const FcChar8 *>(text.c_str()),
                       text.length());
     return;
   }
