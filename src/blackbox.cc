@@ -455,13 +455,13 @@ void Blackbox::removeWindowGroup(Window window) {
 }
 
 
-void Blackbox::restart(const char *prog) {
+void Blackbox::restart(const std::string &prog) {
   shutdown();
 
-  if (prog) {
+  if (! prog.empty()) {
     putenv(const_cast<char *>(screenList.front()->displayString().c_str()));
-    execlp(prog, prog, NULL);
-    perror(prog);
+    execlp(prog.c_str(), prog.c_str(), NULL);
+    perror(prog.c_str());
   }
 
   // fall back in case the above execlp doesn't work

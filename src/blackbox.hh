@@ -178,7 +178,7 @@ public:
   void load_rc(BScreen *screen);
   void saveStyleFilename(const std::string& filename);
   void saveMenuFilename(const std::string& filename);
-  void restart(const char *prog = 0);
+  void restart(const std::string &prog = std::string());
   void reconfigure(void);
   void rereadMenu(void);
   void checkMenu(void);
