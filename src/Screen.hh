@@ -58,6 +58,7 @@ private:
   bool managed, geom_visible;
   Pixmap geom_pixmap;
   Window geom_window;
+  Window empty_window;
 
   const bt::ScreenInfo& screen_info;
   Blackbox *blackbox;

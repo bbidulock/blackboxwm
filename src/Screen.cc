@@ -101,6 +101,12 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   geom_visible = False;
   geom_window = None;
 
+  empty_window =
+    XCreateSimpleWindow(blackbox->XDisplay(), screen_info.rootWindow(),
+                        0, 0, screen_info.width(), screen_info.height(), 0,
+                        0l, 0l);
+  XSetWindowBackgroundPixmap(blackbox->XDisplay(), empty_window, None);
+
   updateGeomWindow();
 
   configmenu =
@@ -260,6 +266,7 @@ BScreen::~BScreen(void) {
 
   if (geom_window != None)
     XDestroyWindow(blackbox->XDisplay(), geom_window);
+  XDestroyWindow(blackbox->XDisplay(), empty_window);
 
   std::for_each(workspacesList.begin(), workspacesList.end(),
                 bt::PointerAssassin());
@@ -431,6 +438,10 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
 
   assert(id < workspacesList.size());
 
+  // show the empty window... this will prevent unnecessary exposure
+  // of the root window
+  XMapWindow(blackbox->XDisplay(), empty_window);
+
   {
     workspacemenu->setWorkspaceChecked(current_workspace, false);
 
@@ -457,9 +468,10 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
     }
   }
 
-  if (_toolbar) _toolbar->redrawWorkspaceLabel();
   blackbox->netwm().setCurrentDesktop(screen_info.rootWindow(),
                                       current_workspace);
+
+  XUnmapWindow(blackbox->XDisplay(), empty_window);
 }
 
 
@@ -623,8 +635,19 @@ void BScreen::raiseWindow(StackEntity *entity) {
   }
   stack.push_back(top->windowID());
 
-  if (raise)
-    XRaiseWindow(blackbox->XDisplay(), stack.front());
+  if (raise) {
+    // WindowStack doesn't have push_front, so do this the hardway
+    WindowStack stack2;
+    stack2.reserve(stack.size() + 1);
+
+    stack2.push_back(empty_window);
+    const WindowStack::iterator &end = stack.end();
+    WindowStack::iterator it;
+    for (it= stack.begin(); it != end; ++it)
+      stack2.push_back(*it);
+
+    stack = stack2;
+  }
   XRestackWindows(blackbox->XDisplay(), &stack[0], stack.size());
 
   updateClientListStackingHint();
@@ -694,12 +717,14 @@ void BScreen::lowerWindow(StackEntity *entity) {
 
 
 void BScreen::restackWindows(void) {
-  WindowStack stack_vector;
+  WindowStack stack;
+  stack.push_back(empty_window);
+
   StackingList::const_iterator it, end = stackingList.end();
   for (it = stackingList.begin(); it != end; ++it)
-    if (*it) stack_vector.push_back((*it)->windowID());
+    if (*it) stack.push_back((*it)->windowID());
 
-  XRestackWindows(blackbox->XDisplay(), &stack_vector[0], stack_vector.size());
+  XRestackWindows(blackbox->XDisplay(), &stack[0], stack.size());
 
   updateClientListStackingHint();
 }
