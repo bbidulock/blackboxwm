@@ -28,17 +28,18 @@
 #include "Pen.hh"
 #include "Resource.hh"
 
+#include <map>
+#include <vector>
+
 #include <X11/Xlib.h>
 #ifdef XFT
 #  include <X11/Xft/Xft.h>
 #endif
+
 #include <assert.h>
 #include <ctype.h>
 #include <locale.h>
 #include <stdio.h>
-
-#include <map>
-#include <vector>
 
 // #define FONTCACHE_DEBUG
 
@@ -74,9 +75,11 @@ namespace bt {
       const std::string name;
       unsigned int screen;
       inline FontName(const std::string &n, unsigned int s)
-        : name(n), screen(s) { }
+        : name(n), screen(s)
+      { }
       inline bool operator<(const FontName &other) const {
-        if (screen != other.screen) return screen < other.screen;
+        if (screen != other.screen)
+          return screen < other.screen;
         return name < other.name;
       }
     };
@@ -90,12 +93,15 @@ namespace bt {
 #endif
       unsigned int count;
       inline FontRef(void)
-        : fontset(0), xftfont(0), count(0u) { }
+        : fontset(0), xftfont(0), count(0u)
+      { }
       inline FontRef(XFontSet const fs)
-        : fontset(fs), xftfont(0), count(1u) { }
+        : fontset(fs), xftfont(0), count(1u)
+      { }
 #ifdef XFT
       inline FontRef(XftFont * const ft)
-        : fontset(0), xftfont(ft), count(1u) { }
+        : fontset(0), xftfont(ft), count(1u)
+      { }
 #endif
     };
 
@@ -143,14 +149,16 @@ namespace bt {
   typedef std::vector<std::string> xlfd_vector;
   xlfd_vector parse_xlfd(const std::string &xlfd) {
     std::string::const_iterator it = xlfd.begin(), end = xlfd.end(), save;
-    if (it == end || ! *it || *it != '-') return xlfd_vector();
+    if (it == end || !*it || *it != '-')
+      return xlfd_vector();
     xlfd_vector vec(xp_count);
 
     int x;
     for (x = 0; x < xp_count && it != end && *it; ++x) {
       save = it;
       ++save; // skip the '-'
-      while (++it != end && *it != '-');
+      while (++it != end && *it != '-')
+        ;
       vec[x].assign(save, it);
     }
 
@@ -163,18 +171,22 @@ namespace bt {
 
 
 
-bt::FontCache::FontCache(const Display &dpy) : _display(dpy) {
+bt::FontCache::FontCache(const Display &dpy)
+  : _display(dpy)
+{
 #ifdef XFT
   xft_initialized = XftInit(NULL) && XftInitFtLibrary();
 #endif
 }
 
 
-bt::FontCache::~FontCache(void) { clear(true); }
+bt::FontCache::~FontCache(void)
+{ clear(true); }
 
 
 XFontSet bt::FontCache::findFontSet(const std::string &fontsetname) {
-  if (fontsetname.empty()) return findFontSet(defaultFont);
+  if (fontsetname.empty())
+    return findFontSet(defaultFont);
 
   // see if the font is in the cache
   assert(!fontsetname.empty());
@@ -224,7 +236,7 @@ XFontSet bt::FontCache::findFontSet(const std::string &fontsetname) {
   */
   xlfd_vector vec = parse_xlfd(fontsetname);
   std::string newname = fontsetname;
-  if (! vec.empty()) {
+  if (!vec.empty()) {
     newname +=
       ",-*-*-" + vec[xp_weight] + "-" + vec[xp_slant] + "-*-*-" +
       vec[xp_pixels] + "-*-*-*-*-*-*-*,-*-*-*-*-*-*-" + vec[xp_pixels] +
@@ -236,8 +248,7 @@ XFontSet bt::FontCache::findFontSet(const std::string &fontsetname) {
   fs = XCreateFontSet(_display.XDisplay(), newname.c_str(),
                       &missing, &nmissing, &def);
   if (nmissing) {
-    int x;
-    for (x = 0; x < nmissing; ++x)
+    for (int x = 0; x < nmissing; ++x)
       fprintf(stderr, "Warning: missing charset '%s' in fontset\n",
               missing[x]);
   }
@@ -256,9 +267,11 @@ XFontSet bt::FontCache::findFontSet(const std::string &fontsetname) {
 #ifdef XFT
 XftFont *bt::FontCache::findXftFont(const std::string &fontname,
                                     unsigned int screen) {
-  if (!xft_initialized || _display.screenInfo(screen).depth() <= 8) return 0;
+  if (!xft_initialized || _display.screenInfo(screen).depth() <= 8)
+    return 0;
 
-  if (fontname.empty()) return findXftFont(defaultXftFont, screen);
+  if (fontname.empty())
+    return findXftFont(defaultXftFont, screen);
 
   // see if the font is in the cache
   assert(!fontname.empty());
@@ -341,7 +354,8 @@ void bt::FontCache::release(const std::string &fontname, unsigned int screen) {
 
 void bt::FontCache::clear(bool force) {
   Cache::iterator it = cache.begin();
-  if (it == cache.end()) return; // nothing to do
+  if (it == cache.end())
+    return; // nothing to do
 
 #ifdef FONTCACHE_DEBUG
   fprintf(stderr, "bt::FontCache: clearing cache, %u entries\n", cache.size());
@@ -403,26 +417,28 @@ void bt::Font::unload(void) {
     in the cache will be counted multiple times, so we will need to
     release multiple times
   */
-  if (_fontset) fontcache->release(_fontname, ~0u); // fontsets have no screen
+  if (_fontset)
+    fontcache->release(_fontname, ~0u); // fontsets have no screen
   _fontset = 0;
 
 #ifdef XFT
-  if (_xftfont) fontcache->release(_fontname, _screen);
+  if (_xftfont)
+    fontcache->release(_fontname, _screen);
   _xftfont = 0;
   _screen = ~0u;
 #endif
 }
 
 
-void bt::Font::clearCache(void) {
-  fontcache->clear(false);
-}
+void bt::Font::clearCache(void)
+{ fontcache->clear(false); }
 
 
 unsigned int bt::textHeight(unsigned int screen, const Font &font) {
 #ifdef XFT
   const XftFont * const f = font.xftFont(screen);
-  if (f) return f->ascent + f->descent;
+  if (f)
+    return f->ascent + f->descent;
 #endif
 
   return XExtentsOfFontSet(font.fontSet())->max_ink_extent.height;
@@ -547,8 +563,11 @@ bt::Alignment bt::alignResource(const Resource &resource,
     *it = tolower(*it);
 
   // we use find since res could have spaces and such things in the string
-  if (res.find("left")   != std::string::npos) return AlignLeft;
-  if (res.find("center") != std::string::npos) return AlignCenter;
-  if (res.find("right")  != std::string::npos) return AlignRight;
+  if (res.find("left")   != std::string::npos)
+    return AlignLeft;
+  if (res.find("center") != std::string::npos)
+    return AlignCenter;
+  if (res.find("right")  != std::string::npos)
+    return AlignRight;
   return default_align;
 }

@@ -44,8 +44,10 @@ namespace bt {
     Pen(unsigned int screen_, const Color &color_);
     ~Pen(void);
 
-    inline unsigned int screen(void) const { return _screen; }
-    inline const Color &color(void) const { return _color; }
+    inline unsigned int screen(void) const
+    { return _screen; }
+    inline const Color &color(void) const
+    { return _color; }
 
     void setGCFunction(int function);
     void setLineWidth(int linewidth);

@@ -31,6 +31,9 @@
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
+#ifdef    SHAPE
+#  include <X11/extensions/shape.h>
+#endif // SHAPE
 
 #include <sys/types.h>
 #if defined(__EMX__)
@@ -45,10 +48,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#ifdef    SHAPE
-#  include <X11/extensions/shape.h>
-#endif // SHAPE
 
 
 #if defined(__GNUC__)
@@ -88,13 +87,17 @@ static int handleXErrors(Display *d, XErrorEvent *e) {
 static void signalhandler(int sig) {
   sig_atomic_t mask = 1 << sig;
   switch (sig) {
-  case SIGBUS: case SIGFPE: case SIGILL: case SIGSEGV:
+  case SIGBUS:
+  case SIGFPE:
+  case SIGILL:
+  case SIGSEGV:
     if (pending_signals & mask) {
       fprintf(stderr, "%s: Recursive signal %d caught. dumping core...\n",
               base_app ? base_app->applicationName().c_str() : "unknown", sig);
       abort();
     }
-  default: break;
+  default:
+    break;
   }
 
   pending_signals |= mask;
@@ -156,7 +159,8 @@ bt::Application::Application(const std::string &app_name, const char *dpy_name,
       XKeysymToKeycode(_display->XDisplay(), XK_Scroll_Lock);
 
     for (size_t cnt = 0; cnt < size; ++cnt) {
-      if (! modmap->modifiermap[cnt]) continue;
+      if (!modmap->modifiermap[cnt])
+        continue;
 
       if (num_lock == modmap->modifiermap[cnt])
         NumLockMask = mask_table[cnt / modmap->max_keypermod];
@@ -175,7 +179,8 @@ bt::Application::Application(const std::string &app_name, const char *dpy_name,
   MaskList[7] = ScrollLockMask | LockMask | NumLockMask;
   MaskListLength = sizeof(MaskList) / sizeof(MaskList[0]);
 
-  if (modmap) XFreeModifiermap(const_cast<XModifierKeymap*>(modmap));
+  if (modmap)
+    XFreeModifiermap(const_cast<XModifierKeymap*>(modmap));
 }
 
 
@@ -189,8 +194,12 @@ bt::Application::~Application(void) {
 { return _display->XDisplay(); }
 
 
-void bt::Application::startup(void) { }
-void bt::Application::shutdown(void) { }
+void bt::Application::startup(void)
+{ }
+
+
+void bt::Application::shutdown(void)
+{ }
 
 
 void bt::Application::run(void) {
@@ -205,7 +214,9 @@ void bt::Application::run(void) {
       // handle any pending signals
       const unsigned int sigmax = sizeof(pending_signals) * 8;
       for (unsigned int sig = 0; sig < sigmax; ++sig) {
-        if (! (pending_signals & (1u << sig))) continue;
+        if (!(pending_signals & (1u << sig)))
+          continue;
+
         pending_signals &= ~(1u << sig);
 
         setRunState(SIGNALLED);
@@ -234,7 +245,8 @@ void bt::Application::run(void) {
     } while (run_state == RUNNING
              && XEventsQueued(_display->XDisplay(), QueuedAfterFlush));
 
-    if (run_state != RUNNING) break;
+    if (run_state != RUNNING)
+      break;
 
     fd_set rfds;
     ::timeval now, tm, *timeout = 0;
@@ -252,7 +264,8 @@ void bt::Application::run(void) {
     }
 
     int ret = select(xfd + 1, &rfds, 0, 0, timeout);
-    if (ret < 0) continue; // perhaps a signal interrupted select(2)
+    if (ret < 0)
+      continue; // perhaps a signal interrupted select(2)
 
     // check for timer timeout
     gettimeofday(&now, 0);
@@ -267,7 +280,7 @@ void bt::Application::run(void) {
     unsigned int i = 0u;
     while (!timerList.empty() && i++ < 100u) {
       bt::Timer *timer = timerList.top();
-      if (! timer->shouldFire(now))
+      if (!timer->shouldFire(now))
         break;
 
       timerList.pop();
@@ -284,7 +297,8 @@ void bt::Application::run(void) {
 
 void bt::Application::process_event(XEvent *event) {
   bt::EventHandler *handler = findEventHandler(event->xany.window);
-  if (!handler) return;
+  if (!handler)
+    return;
 
   // if there is an active menu, pre-process the events
   if (menu_grab) {
@@ -292,7 +306,7 @@ void bt::Application::process_event(XEvent *event) {
     case ButtonPress:
     case ButtonRelease:
     case MotionNotify: {
-      if (! dynamic_cast<Menu*>(handler)) {
+      if (!dynamic_cast<Menu*>(handler)) {
         // current handler is not a menu.  send the event to the most
         // recent menu instead.
         handler = dynamic_cast<EventHandler*>(menus.front());
@@ -303,7 +317,7 @@ void bt::Application::process_event(XEvent *event) {
     case LeaveNotify: {
       // we have active menus.  we should only send enter/leave events
       // to the menus themselves, not to normal windows
-      if (! dynamic_cast<Menu*>(handler))
+      if (!dynamic_cast<Menu*>(handler))
         return;
       break;
     }
@@ -489,7 +503,8 @@ void bt::Application::process_event(XEvent *event) {
 
 
 void bt::Application::addTimer(bt::Timer *timer) {
-  if (! timer) return;
+  if (!timer)
+    return;
   timerList.push(timer);
 }
 
@@ -511,8 +526,8 @@ void bt::Application::grabButton(unsigned int button, unsigned int modifiers,
                              unsigned int event_mask, int pointer_mode,
                              int keyboard_mode, Window confine_to,
                              Cursor cursor, bool allow_scroll_lock) const {
-  unsigned int length = (allow_scroll_lock) ? MaskListLength / 2:
-                                              MaskListLength;
+  const size_t length =
+    (allow_scroll_lock) ? MaskListLength / 2 : MaskListLength;
   for (size_t cnt = 0; cnt < length; ++cnt) {
     XGrabButton(_display->XDisplay(), button, modifiers | MaskList[cnt],
                 grab_window, owner_events, event_mask, pointer_mode,
@@ -584,14 +599,14 @@ bt::EventHandler *bt::Application::findEventHandler(Window window)
 void bt::Application::openMenu(Menu *menu) {
   menus.push_front(menu);
 
-  if (! menu_grab && // grab mouse and keyboard for the menu
-      XGrabKeyboard(_display->XDisplay(), menu->windowID(), True, GrabModeAsync,
-                    GrabModeAsync, xserver_time) == GrabSuccess &&
-      XGrabPointer(_display->XDisplay(), menu->windowID(), True,
-                   (ButtonPressMask | ButtonReleaseMask | ButtonMotionMask |
-                    PointerMotionMask | LeaveWindowMask),
-                   GrabModeAsync, GrabModeAsync, None, None,
-                   xserver_time) == GrabSuccess) {
+  if (!menu_grab) {
+    // grab mouse and keyboard for the menu
+    XGrabKeyboard(_display->XDisplay(), menu->windowID(), True,
+                  GrabModeAsync, GrabModeAsync, xserver_time);
+    XGrabPointer(_display->XDisplay(), menu->windowID(), True,
+                 (ButtonPressMask | ButtonReleaseMask | ButtonMotionMask |
+                  PointerMotionMask | LeaveWindowMask),
+                 GrabModeAsync, GrabModeAsync, None, None, xserver_time);
   }
   menu_grab = true;
 }
@@ -605,7 +620,7 @@ void bt::Application::closeMenu(Menu *menu) {
   }
 
   menus.pop_front();
-  if (! menus.empty())
+  if (!menus.empty())
     return;
 
   XUngrabKeyboard(_display->XDisplay(), xserver_time);

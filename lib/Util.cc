@@ -22,12 +22,16 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+// need to include these before Util.hh
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
 #include "Util.hh"
 
+#include <algorithm>
+
 #include <X11/Xatom.h>
+
 #include <assert.h>
 #if defined(__EMX__)
 #  include <process.h>
@@ -35,8 +39,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#include <algorithm>
 
 
 std::string bt::basename(const std::string& path) {
@@ -48,18 +50,18 @@ std::string bt::basename(const std::string& path) {
 
 
 std::string bt::expandTilde(const std::string& s) {
-  if (s[0] != '~') return s;
-
+  if (s[0] != '~')
+    return s;
   const char* const home = getenv("HOME");
-  if (home == NULL) return s;
-
+  if (home == NULL)
+    return s;
   return std::string(home + s.substr(s.find('/')));
 }
 
 
 void bt::bexec(const std::string& command, const std::string& displaystring) {
 #ifndef    __EMX__
-  if (! fork()) {
+  if (!fork()) {
 #ifndef __QNXTO__ // apparently, setsid interferes with signals on QNX
     setsid();
 #endif

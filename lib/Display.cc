@@ -24,13 +24,13 @@
 
 #include "Display.hh"
 
+#include <algorithm>
+
 #include <X11/Xutil.h>
 
 #include <assert.h>
 #include <fcntl.h>
 #include <stdio.h>
-
-#include <algorithm>
 
 
 namespace bt {
@@ -65,7 +65,7 @@ namespace bt {
 
 
 bt::Display::Display(const char *dpy_name, bool multi_head) {
-  if (! (xdisplay = XOpenDisplay(dpy_name))) {
+  if (!(xdisplay = XOpenDisplay(dpy_name))) {
     fprintf(stderr, "bt::Display: failed to open display '%s'\n",
             dpy_name ? dpy_name : "");
     ::exit(2);
@@ -80,7 +80,7 @@ bt::Display::Display(const char *dpy_name, bool multi_head) {
     ::exit(2);
   }
 
-  if (! multi_head || ScreenCount(xdisplay) == 1) {
+  if (!multi_head || ScreenCount(xdisplay) == 1) {
     screen_info_count = 1;
     screen_info_list = new bt::ScreenInfo*[screen_info_count];
     screen_info_list[0] = new bt::ScreenInfo(*this, DefaultScreen(xdisplay));

@@ -27,13 +27,10 @@
 #include "Pen.hh"
 #include "Resource.hh"
 
-#include <X11/Xlib.h>
-#include <ctype.h>
-
 #include <algorithm>
 
-
-bt::Texture::~Texture(void) { }
+#include <X11/Xlib.h>
+#include <ctype.h>
 
 
 void bt::Texture::setColor(const bt::Color &new_color) {
@@ -48,18 +45,24 @@ void bt::Texture::setColor(const bt::Color &new_color) {
   rr = r + (r >> 1);
   gg = g + (g >> 1);
   bb = b + (b >> 1);
-  if (rr < r) rr = ~0;
-  if (gg < g) gg = ~0;
-  if (bb < b) bb = ~0;
+  if (rr < r)
+    rr = ~0;
+  if (gg < g)
+    gg = ~0;
+  if (bb < b)
+    bb = ~0;
   lc.setRGB(rr, gg, bb);
 
   // calculate the shadow color
   rr = (r >> 2) + (r >> 1);
   gg = (g >> 2) + (g >> 1);
   bb = (b >> 2) + (b >> 1);
-  if (rr > r) rr = 0;
-  if (gg > g) gg = 0;
-  if (bb > b) bb = 0;
+  if (rr > r)
+    rr = 0;
+  if (gg > g)
+    gg = 0;
+  if (bb > b)
+    bb = 0;
   sc.setRGB(rr, gg, bb);
 }
 
@@ -182,7 +185,7 @@ void bt::drawTexture(unsigned int screen,
               urect.x() - trect.x(), urect.y() - trect.y(),
               urect.width(), urect.height(), urect.x(), urect.y());
     return;
-  } else if (! (texture.texture() & Texture::Solid)) {
+  } else if (!(texture.texture() & Texture::Solid)) {
     XClearArea(pen.XDisplay(), drawable,
                urect.x(), urect.y(), urect.width(), urect.height(), False);
     return; // might be Parent_Relative or empty

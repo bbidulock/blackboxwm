@@ -48,14 +48,12 @@ void bt::Rect::setPos(int x_, int y_) {
 }
 
 
-void bt::Rect::setWidth(unsigned int w) {
-  _x2 = w + _x1 - 1;
-}
+void bt::Rect::setWidth(unsigned int w)
+{ _x2 = w + _x1 - 1; }
 
 
-void bt::Rect::setHeight(unsigned int h) {
-  _y2 = h + _y1 - 1;
-}
+void bt::Rect::setHeight(unsigned int h)
+{ _y2 = h + _y1 - 1; }
 
 
 void bt::Rect::setSize(unsigned int w, unsigned int h) {
@@ -64,9 +62,8 @@ void bt::Rect::setSize(unsigned int w, unsigned int h) {
 }
 
 
-void bt::Rect::setRect(int x_, int y_, unsigned int w, unsigned int h) {
-  *this = bt::Rect(x_, y_, w, h);
-}
+void bt::Rect::setRect(int x_, int y_, unsigned int w, unsigned int h)
+{ *this = bt::Rect(x_, y_, w, h); }
 
 
 void bt::Rect::setCoords(int l, int t, int r, int b) {

@@ -22,8 +22,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifndef COLOR_HH
-#define COLOR_HH
+#ifndef __Color_hh
+#define __Color_hh
 
 #include <string>
 
@@ -97,4 +97,4 @@ namespace bt {
 
 } // namespace bt
 
-#endif // COLOR_HH
+#endif // __Color_hh

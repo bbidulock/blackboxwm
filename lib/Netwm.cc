@@ -30,7 +30,9 @@
 #include <stdio.h>
 
 
-bt::Netwm::Netwm(::Display* _display): display(_display) {
+bt::Netwm::Netwm(::Display* _display)
+  : display(_display)
+{
   const struct AtomRef {
     const char *name;
     Atom *atom;
@@ -108,7 +110,7 @@ bt::Netwm::Netwm(::Display* _display): display(_display) {
   for (int i = 0; i < AtomCount; ++i)
     names[i] = const_cast<char *>(refs[i].name);
 
-  XInternAtoms(display, names, AtomCount, False, atoms);
+  XInternAtoms(display, names, AtomCount, false, atoms);
 
   for (int i = 0; i < AtomCount; ++i)
     *refs[i].atom = atoms[i];
@@ -136,7 +138,7 @@ bool bt::Netwm::readSupported(Window target, AtomList& atoms) const {
     XFree(data);
   }
 
-  return (! atoms.empty());
+  return (!atoms.empty());
 }
 
 
@@ -158,7 +160,7 @@ bool bt::Netwm::readClientList(Window target, WindowList& windows) const {
     XFree(data);
   }
 
-  return (! windows.empty());
+  return (!windows.empty());
 }
 
 
@@ -183,7 +185,7 @@ bool bt::Netwm::readClientListStacking(Window target,
     XFree(data);
   }
 
-  return (! windows.empty());
+  return (!windows.empty());
 }
 
 
@@ -202,9 +204,9 @@ bool bt::Netwm::readNumberOfDesktops(Window target,
       static_cast<unsigned int>(*(reinterpret_cast<unsigned long *>(data)));
 
     XFree(data);
-    return True;
+    return true;
   }
-  return False;
+  return false;
 }
 
 
@@ -231,10 +233,10 @@ bool bt::Netwm::readDesktopGeometry(Window target,
     *height = static_cast<unsigned int>(values[1]);
 
     XFree(data);
-    return True;
+    return true;
   }
 
-  return False;
+  return false;
 }
 
 
@@ -257,10 +259,10 @@ bool bt::Netwm::readDesktopViewport(Window target, int *x, int *y) const {
     *y = static_cast<int>(values[1]);
 
     XFree(data);
-    return True;
+    return true;
   }
 
-  return False;
+  return false;
 }
 
 
@@ -285,9 +287,9 @@ bool bt::Netwm::readCurrentDesktop(Window target, unsigned int* number) const {
       static_cast<unsigned int>(*(reinterpret_cast<unsigned long *>(data)));
 
     XFree(data);
-    return True;
+    return true;
   }
-  return False;
+  return false;
 }
 
 
@@ -328,7 +330,7 @@ bool bt::Netwm::readDesktopNames(Window target,
     XFree(data);
   }
 
-  return (! names.empty());
+  return (!names.empty());
 }
 
 
@@ -350,9 +352,9 @@ bool bt::Netwm::readSupportingWMCheck(Window target, Window* window) const {
     *window = * (reinterpret_cast<Window*>(data));
 
     XFree(data);
-    return True;
+    return true;
   }
-  return False;
+  return false;
 }
 
 
@@ -374,7 +376,7 @@ bool bt::Netwm::readVirtualRoots(Window target, WindowList &windows) const {
     XFree(data);
   }
 
-  return (! windows.empty());
+  return (!windows.empty());
 }
 
 
@@ -404,7 +406,7 @@ bool bt::Netwm::readWMName(Window target, bt::ustring &name) const {
     XFree(data);
   }
 
-  return (! name.empty());
+  return (!name.empty());
 }
 
 
@@ -433,7 +435,7 @@ bool bt::Netwm::readWMIconName(Window target, bt::ustring &name) const {
     XFree(data);
   }
 
-  return (! name.empty());
+  return (!name.empty());
 }
 
 
@@ -464,9 +466,9 @@ bool bt::Netwm::readWMDesktop(Window target, unsigned int& desktop) const {
       static_cast<unsigned int>(*(reinterpret_cast<unsigned long *>(data)));
 
     XFree(data);
-    return True;
+    return true;
   }
-  return False;
+  return false;
 }
 
 
@@ -482,7 +484,7 @@ bool bt::Netwm::readWMWindowType(Window target, AtomList& types) const {
     XFree(data);
   }
 
-  return (! types.empty());
+  return (!types.empty());
 }
 
 
@@ -504,7 +506,7 @@ bool bt::Netwm::readWMState(Window target, AtomList& states) const {
     XFree(data);
   }
 
-  return (! states.empty());
+  return (!states.empty());
 }
 
 
@@ -521,11 +523,11 @@ bool bt::Netwm::readWMStrut(Window target, Strut* strut) const {
   unsigned char *data;
 
   int ret = XGetWindowProperty(display, target, net_wm_strut,
-                               0l, 4l, False,
+                               0l, 4l, false,
                                XA_CARDINAL, &atom_return, &size,
                                &nitems, &bytes_left, &data);
   if (ret != Success || nitems < 4)
-    return False;
+    return false;
 
   unsigned long* const values = reinterpret_cast<unsigned long*>(data);
 
@@ -536,7 +538,7 @@ bool bt::Netwm::readWMStrut(Window target, Strut* strut) const {
 
   XFree(data);
 
-  return True;
+  return true;
 }
 
 
@@ -547,7 +549,7 @@ bool bt::Netwm::readWMStrutPartial(Window target, StrutPartial* strut) const {
   unsigned char *data;
 
   int ret = XGetWindowProperty(display, target, net_wm_strut_partial,
-                               0l, 12l, False,
+                               0l, 12l, false,
                                XA_CARDINAL, &atom_return, &size,
                                &nitems, &bytes_left, &data);
   if (ret != Success || nitems < 4)
@@ -643,13 +645,13 @@ bool bt::Netwm::getProperty(Window target, Atom type, Atom property,
   unsigned long nitems, bytes_left;
 
   int ret = XGetWindowProperty(display, target, property,
-                               0l, 1l, False,
+                               0l, 1l, false,
                                type, &atom_return, &size,
                                &nitems, &bytes_left, data);
   if (ret != Success || nitems != 1)
-    return False;
+    return false;
 
-  return True;
+  return true;
 }
 
 
@@ -661,25 +663,25 @@ bool bt::Netwm::getListProperty(Window target, Atom type, Atom property,
   unsigned long nitems, bytes_left;
 
   int ret = XGetWindowProperty(display, target, property,
-                               0l, 1l, False,
+                               0l, 1l, false,
                                type, &atom_return, &size,
                                &nitems, &bytes_left, data);
   if (ret != Success || nitems < 1)
-    return False;
+    return false;
 
   if (bytes_left != 0) {
     XFree(*data);
     unsigned long remain = ((size / 8) * nitems) + bytes_left;
     ret = XGetWindowProperty(display, target,
-                             property, 0l, remain, False,
+                             property, 0l, remain, false,
                              type, &atom_return, &size,
                              &nitems, &bytes_left, data);
     if (ret != Success)
-      return False;
+      return false;
   }
 
   *count = nitems;
-  return True;
+  return true;
 }
 
 

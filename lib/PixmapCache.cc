@@ -64,11 +64,13 @@ namespace bt {
 
       inline CacheItem(void)
         : screen(~0u), width(0u), height(0u),
-          pixmap(0ul), count(0u) { }
+          pixmap(0ul), count(0u)
+      { }
       inline CacheItem(const unsigned int s, const Texture &t,
                        const unsigned int w, const unsigned int h)
         : texture(t), screen(s), width(w), height(h),
-          pixmap(0ul), count(1u) { }
+          pixmap(0ul), count(1u)
+      { }
 
       inline bool operator==(const CacheItem &x) const {
         return texture == x.texture &&
@@ -79,8 +81,10 @@ namespace bt {
     };
 
     struct PixmapMatch {
-      PixmapMatch(Pixmap p): pixmap(p) {}
-      bool operator()(const RealPixmapCache::CacheItem& item) const
+      inline PixmapMatch(Pixmap p)
+        : pixmap(p)
+      { }
+      inline bool operator()(const RealPixmapCache::CacheItem& item) const
       { return item.pixmap == pixmap; }
 
       const Pixmap pixmap;
@@ -92,9 +96,11 @@ namespace bt {
     Cache cache;
   };
 
+
   static RealPixmapCache *realpixmapcache = 0;
   static unsigned long maxmem_usage = 2ul*1024ul*1024ul; // 2mb default
   static unsigned long mem_usage = 0ul;
+
 
   void createPixmapCache(const Display &display) {
     assert(realpixmapcache == 0);
@@ -113,10 +119,12 @@ namespace bt {
 
 
 bt::RealPixmapCache::RealPixmapCache(const Display &display)
-  : _display(display) { }
+  : _display(display)
+{ }
 
 
-bt::RealPixmapCache::~RealPixmapCache(void) { clear(true); }
+bt::RealPixmapCache::~RealPixmapCache(void)
+{ clear(true); }
 
 
 Pixmap bt::RealPixmapCache::find(unsigned int screen,
@@ -183,7 +191,8 @@ Pixmap bt::RealPixmapCache::find(unsigned int screen,
 
 
 void bt::RealPixmapCache::release(Pixmap pixmap) {
-  if (! pixmap || pixmap == ParentRelative) return;
+  if (!pixmap || pixmap == ParentRelative)
+    return;
 
   Cache::iterator it = std::find_if(cache.begin(), cache.end(),
                                     PixmapMatch(pixmap));
@@ -200,7 +209,8 @@ void bt::RealPixmapCache::release(Pixmap pixmap) {
 
 
 void bt::RealPixmapCache::clear(bool force) {
-  if (cache.empty()) return; // nothing to do
+  if (cache.empty())
+    return; // nothing to do
 
 #ifdef PIXMAPCACHE_DEBUG
   fprintf(stderr, "bt::PixmapCache: clearing cache, %u entries\n",
@@ -209,7 +219,7 @@ void bt::RealPixmapCache::clear(bool force) {
 
   Cache::iterator it = cache.begin();
   while (it != cache.end()) {
-    if (it->count != 0 && ! force) {
+    if (it->count != 0 && !force) {
 #ifdef PIXMAPCACHE_DEBUG
       fprintf(stderr, "bt::PixmapCache: skp %08lx %4ux%4u, count %4u\n",
               it->pixmap, it->width, it->height, it->count);
@@ -247,34 +257,28 @@ void bt::RealPixmapCache::clear(bool force) {
 }
 
 
-unsigned long bt::PixmapCache::cacheLimit(void) {
-  return maxmem_usage / 1024;
-}
+unsigned long bt::PixmapCache::cacheLimit(void)
+{ return maxmem_usage / 1024; }
 
 
-void bt::PixmapCache::setCacheLimit(unsigned long limit) {
-  maxmem_usage = limit * 1024;
-}
+void bt::PixmapCache::setCacheLimit(unsigned long limit)
+{ maxmem_usage = limit * 1024; }
 
 
-unsigned long bt::PixmapCache::memoryUsage(void) {
-  return mem_usage / 1024;
-}
+unsigned long bt::PixmapCache::memoryUsage(void)
+{ return mem_usage / 1024; }
 
 
 Pixmap bt::PixmapCache::find(unsigned int screen,
                              const Texture &texture,
                              unsigned int width, unsigned int height,
-                             Pixmap old_pixmap) {
-  return realpixmapcache->find(screen, texture, width, height, old_pixmap);
-}
+                             Pixmap old_pixmap)
+{ return realpixmapcache->find(screen, texture, width, height, old_pixmap); }
 
 
-void bt::PixmapCache::release(Pixmap pixmap) {
-    realpixmapcache->release(pixmap);
-}
+void bt::PixmapCache::release(Pixmap pixmap)
+{ realpixmapcache->release(pixmap); }
 
 
-void bt::PixmapCache::clearCache(void) {
-  realpixmapcache->clear(false);
-}
+void bt::PixmapCache::clearCache(void)
+{ realpixmapcache->clear(false); }

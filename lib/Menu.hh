@@ -48,23 +48,34 @@ namespace bt {
     inline MenuItem(Type t, const ustring &l = ustring())
       : sub(0), lbl(l), ident(~0u), indx(~0u), height(0),
         separator(t == Separator),
-        active(0), title(0), enabled(1), checked(0) { }
+        active(0), title(0), enabled(1), checked(0)
+    { }
     inline MenuItem(Menu *s, const ustring &l)
       : sub(s), lbl(l), ident(~0u), indx(~0u), height(0), separator(0),
-        active(0), title(0), enabled(1), checked(0) { }
+        active(0), title(0), enabled(1), checked(0)
+    { }
 
-    bool isSeparator(void) const { return bool(separator); }
-    bool isActive(void) const { return bool(active); }
-    bool isTitle(void) const { return bool(title); }
-    bool isEnabled(void) const { return bool(enabled); }
-    bool isChecked(void) const { return bool(checked); }
+    inline bool isSeparator(void) const
+    { return bool(separator); }
+    inline bool isActive(void) const
+    { return bool(active); }
+    inline bool isTitle(void) const
+    { return bool(title); }
+    inline bool isEnabled(void) const
+    { return bool(enabled); }
+    inline bool isChecked(void) const
+    { return bool(checked); }
 
-    unsigned int id(void) const { return ident; }
-    unsigned int index(void) const { return indx; }
+    inline unsigned int id(void) const
+    { return ident; }
+    inline unsigned int index(void) const
+    { return indx; }
 
-    Menu *submenu(void) const { return sub; }
+    inline Menu *submenu(void) const
+    { return sub; }
 
-    const ustring &label(void) const { return lbl; }
+    inline const ustring &label(void) const
+    { return lbl; }
 
   private:
     Menu *sub;
@@ -98,27 +109,27 @@ namespace bt {
     unsigned int itemMargin(void) const;
 
     // textures
-    const Texture &titleTexture(void) const
+    inline const Texture &titleTexture(void) const
     { return title.texture; }
-    const Texture &frameTexture(void) const
+    inline const Texture &frameTexture(void) const
     { return frame.texture; }
-    const Texture &activeTexture(void) const
+    inline const Texture &activeTexture(void) const
     { return active.texture; }
 
     // colors
-    const bt::Color &titleForegroundColor(void) const
+    inline const bt::Color &titleForegroundColor(void) const
     { return title.foreground; }
-    const bt::Color &titleTextColor(void) const
+    inline const bt::Color &titleTextColor(void) const
     { return title.text; }
-    const bt::Color &frameForegroundColor(void) const
+    inline const bt::Color &frameForegroundColor(void) const
     { return frame.foreground; }
-    const bt::Color &frameTextColor(void) const
+    inline const bt::Color &frameTextColor(void) const
     { return frame.text; }
 
     // fonts
-    const Font &titleFont(void) const
+    inline const Font &titleFont(void) const
     { return title.font; }
-    const Font &frameFont(void) const
+    inline const Font &frameFont(void) const
     { return frame.font; }
 
     // size calculations
@@ -169,17 +180,23 @@ namespace bt {
     Menu(Application &app, unsigned int screen);
     virtual ~Menu(void);
 
-    Window windowID(void) const { return _window; }
+    inline Window windowID(void) const
+    { return _window; }
 
-    unsigned int insertItem(const MenuItem &item, unsigned int id = ~0u,
+    unsigned int insertItem(const MenuItem &item,
+                            unsigned int id = ~0u,
                             unsigned int index = ~0u);
     unsigned int insertItem(const ustring &label,
-                            unsigned int id = ~0u, unsigned int index = ~0u);
-    unsigned int insertItem(const ustring &label, Menu *submenu,
-                            unsigned int id = ~0u, unsigned int index = ~0u);
+                            unsigned int id = ~0u,
+                            unsigned int index = ~0u);
+    unsigned int insertItem(const ustring &label,
+                            Menu *submenu,
+                            unsigned int id = ~0u,
+                            unsigned int index = ~0u);
     void insertSeparator(unsigned int index = ~0u);
 
-    void changeItem(unsigned int id, const ustring &newlabel,
+    void changeItem(unsigned int id,
+                    const ustring &newlabel,
                     unsigned int newid = ~0u);
 
     void setItemEnabled(unsigned int id, bool enabled);
@@ -192,26 +209,35 @@ namespace bt {
     void removeIndex(unsigned int index);
     void clear(void);
 
-    unsigned int count(void) const { return _items.size(); }
+    inline unsigned int count(void) const
+    { return _items.size(); }
 
-    const ustring &title(void) const { return _title; }
-    void setTitle(const ustring &newtitle) { _title = newtitle; }
+    inline const ustring &title(void) const
+    { return _title; }
+    inline void setTitle(const ustring &newtitle)
+    { _title = newtitle; }
     void showTitle(void);
     void hideTitle(void);
 
-    bool isVisible(void) const { return _visible; }
-    void popup(int x, int y, bool centered = true);
-    virtual void popup(int x, int y, const Rect &constraint,
+    inline bool isVisible(void) const
+    { return _visible; }
+
+    void popup(int x, int y,
+               bool centered = true);
+    virtual void popup(int x, int y,
+                       const Rect &constraint,
                        bool centered = true);
     void move(int x, int y);
     virtual void show(void);
     virtual void hide(void);
 
-    virtual void refresh(void) { }
+    virtual void refresh(void);
     virtual void reconfigure(void);
 
-    bool autoDelete(void) const { return _auto_delete; }
-    void setAutoDelete(bool ad) { _auto_delete = ad; }
+    inline bool autoDelete(void) const
+    { return _auto_delete; }
+    inline void setAutoDelete(bool ad)
+    { _auto_delete = ad; }
 
   protected:
     virtual void updateSize(void);

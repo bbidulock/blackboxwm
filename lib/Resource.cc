@@ -25,16 +25,19 @@
 #include "Resource.hh"
 #include "Util.hh"
 
-extern "C" {
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
+
 #include <stdio.h>
-}
-
-bt::Resource::Resource(void) : db(NULL) { }
 
 
-bt::Resource::Resource(const std::string &filename) : db(NULL)
+bt::Resource::Resource(void)
+  : db(NULL)
+{ }
+
+
+bt::Resource::Resource(const std::string &filename)
+  : db(NULL)
 { load(filename); }
 
 
@@ -49,7 +52,8 @@ void bt::Resource::load(const std::string &filename) {
 
 
 void bt::Resource::save(const std::string &filename) {
-  if (! valid()) return;
+  if (!valid())
+    return;
   XrmPutFileDatabase(db, expandTilde(filename).c_str());
 }
 
@@ -190,9 +194,8 @@ void bt::Resource::write(const char* resource, unsigned long value) {
 }
 
 
-void bt::Resource::write(const char* resource, bool value) {
-  write(resource, boolAsString(value));
-}
+void bt::Resource::write(const char* resource, bool value)
+{ write(resource, boolAsString(value)); }
 
 
 void bt::Resource::write(const char* resource, double value) {

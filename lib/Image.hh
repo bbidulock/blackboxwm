@@ -56,9 +56,9 @@ namespace bt {
     static inline void setMaximumColors(unsigned int newval)
     { global_maximumColors = newval; }
 
-    static DitherMode ditherMode(void)
+    static inline DitherMode ditherMode(void)
     { return global_ditherMode; }
-    static void setDitherMode(DitherMode dithermode)
+    static inline void setDitherMode(DitherMode dithermode)
     { global_ditherMode = dithermode; }
 
     Image(unsigned int w, unsigned int h);

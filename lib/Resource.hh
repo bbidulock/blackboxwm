@@ -33,7 +33,8 @@ typedef struct _XrmHashBucketRec *XrmDatabase;
 
 namespace bt {
 
-  inline const char* boolAsString(bool b) { return (b) ? "True" : "False"; }
+  inline const char* boolAsString(bool b)
+  { return (b) ? "True" : "False"; }
 
   class Resource {
   public:
@@ -41,7 +42,8 @@ namespace bt {
     explicit Resource(const std::string &filename);
     ~Resource(void);
 
-    inline bool valid(void) const { return db != NULL; }
+    inline bool valid(void) const
+    { return db != NULL; }
 
     void load(const std::string &filename);
     void save(const std::string &filename);

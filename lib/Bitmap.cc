@@ -27,6 +27,7 @@
 #include "Pen.hh"
 
 #include <X11/Xlib.h>
+
 #include <assert.h>
 
 
@@ -65,7 +66,9 @@ namespace bt {
 
   class BitmapLoader {
   public:
-    inline BitmapLoader(const Display &display) : _display(display) { }
+    inline BitmapLoader(const Display &display)
+      : _display(display)
+    { }
 
     ::Drawable load(unsigned int screen, const unsigned char *data,
                     int width, int height);
@@ -77,6 +80,7 @@ namespace bt {
 
 
   static BitmapLoader *loader = 0;
+
 
   enum StandardBitmaps {
     LeftArrow,
@@ -106,7 +110,6 @@ namespace bt {
     loader = 0;
   }
 
-
 } // namespace bt
 
 
@@ -114,10 +117,9 @@ namespace bt {
                                   const unsigned char *data,
                                   int width, int height) {
   const bt::ScreenInfo &screeninfo = _display.screenInfo(screen);
-  return
-    XCreateBitmapFromData(_display.XDisplay(), screeninfo.rootWindow(),
-                          reinterpret_cast<const char *>(data),
-                          width, height);
+  return XCreateBitmapFromData(_display.XDisplay(), screeninfo.rootWindow(),
+                               reinterpret_cast<const char *>(data),
+                               width, height);
 }
 
 
@@ -168,46 +170,45 @@ bool bt::Bitmap::load(unsigned int scr, const unsigned char *data,
   _screen = scr;
   _width = w;
   _height = h;
-
   return true;
 }
 
 
 const bt::Bitmap &bt::Bitmap::leftArrow(unsigned int screen) {
-  if (!standard_bitmaps[LeftArrow][screen].drawable())
-    standard_bitmaps[LeftArrow][screen]
-      .load(screen, left_bits, left_width, left_height);
-  return standard_bitmaps[LeftArrow][screen];
+  Bitmap &bitmap = standard_bitmaps[LeftArrow][screen];
+  if (!bitmap.drawable())
+    bitmap.load(screen, left_bits, left_width, left_height);
+  return bitmap;
 }
 
 
 const bt::Bitmap &bt::Bitmap::rightArrow(unsigned int screen) {
-  if (!standard_bitmaps[RightArrow][screen].drawable())
-    standard_bitmaps[RightArrow][screen]
-      .load(screen, right_bits, right_width, right_height);
-  return standard_bitmaps[RightArrow][screen];
+  Bitmap &bitmap = standard_bitmaps[RightArrow][screen];
+  if (!bitmap.drawable())
+    bitmap.load(screen, right_bits, right_width, right_height);
+  return bitmap;
 }
 
 
 const bt::Bitmap &bt::Bitmap::upArrow(unsigned int screen) {
-  if (!standard_bitmaps[UpArrow][screen].drawable())
-    standard_bitmaps[UpArrow][screen]
-      .load(screen, up_bits, up_width, up_height);
-  return standard_bitmaps[UpArrow][screen];
+  Bitmap &bitmap = standard_bitmaps[UpArrow][screen];
+  if (!bitmap.drawable())
+    bitmap.load(screen, up_bits, up_width, up_height);
+  return bitmap;
 }
 
 
 const bt::Bitmap &bt::Bitmap::downArrow(unsigned int screen) {
-  if (!standard_bitmaps[DownArrow][screen].drawable())
-    standard_bitmaps[DownArrow][screen]
-      .load(screen, down_bits, down_width, down_height);
-  return standard_bitmaps[DownArrow][screen];
+  Bitmap &bitmap = standard_bitmaps[DownArrow][screen];
+  if (!bitmap.drawable())
+    bitmap.load(screen, down_bits, down_width, down_height);
+  return bitmap;
 }
 
 
 const bt::Bitmap &bt::Bitmap::checkMark(unsigned int screen) {
-  if (!standard_bitmaps[CheckMark][screen].drawable())
-    standard_bitmaps[CheckMark][screen]
-      .load(screen, check_bits, check_width, check_height);
-  return standard_bitmaps[CheckMark][screen];
+  Bitmap &bitmap = standard_bitmaps[CheckMark][screen];
+  if (!bitmap.drawable())
+    bitmap.load(screen, check_bits, check_width, check_height);
+  return bitmap;
 }

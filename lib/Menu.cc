@@ -32,6 +32,7 @@
 
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
+
 #include <stdio.h>
 #include <assert.h>
 
@@ -42,14 +43,14 @@ bt::MenuStyle **bt::MenuStyle::styles = 0;
 bt::MenuStyle *bt::MenuStyle::get(Application &app,
                                   unsigned int screen) {
   const size_t screen_count = app.display().screenCount();
-  if (! styles) {
+  if (!styles) {
     styles = new MenuStyle*[screen_count];
     for (unsigned int i = 0; i < screen_count; ++i)
       styles[i] = 0;
   }
   // we need to remap screen N to 0 if there is only one
   const size_t index = (screen_count == 1) ? 0 : screen;
-  if (! styles[index])
+  if (!styles[index])
     styles[index] = new MenuStyle(app, screen);
   return styles[index];
 }
@@ -143,8 +144,8 @@ void bt::MenuStyle::load(const Resource &resource) {
 
 
 unsigned int bt::MenuStyle::separatorHeight(void) const {
-  return (frame.texture.borderWidth() > 0 ?
-          frame.texture.borderWidth() : 1) + 2;
+  return
+    (frame.texture.borderWidth() > 0 ? frame.texture.borderWidth() : 1) + 2;
 }
 
 
@@ -232,7 +233,9 @@ namespace bt {
   public:
     Menu *showmenu;
     Menu *hidemenu;
-    inline MenuDelay(void) : showmenu(0), hidemenu(0) { }
+    inline MenuDelay(void)
+      : showmenu(0), hidemenu(0)
+    { }
     inline void timeout(Timer *) {
       if (hidemenu)
         hidemenu->hide();
@@ -244,7 +247,9 @@ namespace bt {
   class IdentMatch {
   public:
     unsigned int _id;
-    inline IdentMatch(unsigned int id) : _id(id) { }
+    inline IdentMatch(unsigned int id)
+      : _id(id)
+    { }
     inline bool operator()(const MenuItem &item) const
     { return item.id() == _id; }
   };
@@ -252,7 +257,9 @@ namespace bt {
   class IndexMatch {
   public:
     unsigned int _index;
-    inline IndexMatch(unsigned int index) : _index(index) { }
+    inline IndexMatch(unsigned int index)
+      : _index(index)
+    { }
     inline bool operator()(const MenuItem &item) const
     { return item.index() == _index; }
   };
@@ -260,7 +267,7 @@ namespace bt {
   class InteractMatch {
   public:
     inline bool operator()(const MenuItem &item) const
-    { return item.isEnabled() && ! item.isSeparator(); }
+    { return item.isEnabled() && !item.isSeparator(); }
   };
 
 } // namespace bt
@@ -359,7 +366,7 @@ unsigned int bt::Menu::insertItem(const MenuItem &item,
   }
 
   it = _items.insert(it, item);
-  if (! item.separator) {
+  if (!item.separator) {
     id = verifyId(id);
     it->ident = id;
   }
@@ -418,7 +425,8 @@ bt::Menu::ItemList::iterator bt::Menu::findItem(unsigned int id, Rect& r) {
       break;
   }
 
-  if (it == end) return end;
+  if (it == end)
+    return end;
 
   positionRect(r, row, col);
   return it;
@@ -429,10 +437,11 @@ void bt::Menu::changeItem(unsigned int id, const ustring &newlabel,
                           unsigned int newid) {
   Rect r(_irect.x(), _irect.y(), _itemw, 0);
   ItemList::iterator it = findItem(id, r);
-  if (it == _items.end()) return;
+  if (it == _items.end())
+    return;
 
   bt::MenuItem& item = *it;
-  if (! item.isSeparator()) {
+  if (!item.isSeparator()) {
     if (item.lbl != newlabel) {
       // new label
       item.lbl = newlabel;
@@ -451,14 +460,16 @@ void bt::Menu::changeItem(unsigned int id, const ustring &newlabel,
 void bt::Menu::setItemEnabled(unsigned int id, bool enabled) {
   Rect r(_irect.x(), _irect.y(), _itemw, 0);
   ItemList::iterator it = findItem(id, r);
-  if (it == _items.end()) return;
+  if (it == _items.end())
+    return;
 
   bt::MenuItem& item = *it;
   // found the item, change the status and redraw if visible
   item.enabled = enabled;
-  if (isVisible())
+  if (isVisible()) {
     XClearArea(_app.XDisplay(), _window,
                r.x(), r.y(), r.width(), r.height(), True);
+  }
 }
 
 
@@ -473,14 +484,16 @@ bool bt::Menu::isItemEnabled(unsigned int id) const {
 void bt::Menu::setItemChecked(unsigned int id, bool checked) {
   Rect r(_irect.x(), _irect.y(), _itemw, 0);
   ItemList::iterator it = findItem(id, r);
-  if (it == _items.end()) return;
+  if (it == _items.end())
+    return;
 
   bt::MenuItem& item = *it;
   // found the item, change the status and redraw if visible
   item.checked = checked;
-  if (isVisible())
+  if (isVisible()) {
     XClearArea(_app.XDisplay(), _window,
                r.x(), r.y(), r.width(), r.height(), True);
+  }
 }
 
 
@@ -495,10 +508,12 @@ bool bt::Menu::isItemChecked(unsigned int id) const {
 void bt::Menu::removeItemByIterator(ItemList::iterator& it) {
   if (it->sub) {
     it->sub->_parent_menu = 0;
-    if (it->sub->_auto_delete) delete it->sub;
+    if (it->sub->_auto_delete)
+      delete it->sub;
   }
 
-  if (! it->separator) _id_bits[it->ident] = false;
+  if (!it->separator)
+    _id_bits[it->ident] = false;
   _items.erase(it);
 
   invalidateSize();
@@ -525,7 +540,7 @@ void bt::Menu::removeIndex(unsigned int index) {
 
 
 void bt::Menu::clear(void) {
-  while (! _items.empty())
+  while (!_items.empty())
     removeIndex(0);
   invalidateSize();
 }
@@ -604,7 +619,8 @@ void bt::Menu::move(int x, int y) {
 
 
 void bt::Menu::show(void) {
-  if (isVisible()) return;
+  if (isVisible())
+    return;
 
   if (_parent_menu && _parent_menu->isVisible())
     _parent_menu->_current_submenu = this;
@@ -628,7 +644,8 @@ void bt::Menu::show(void) {
 
 
 void bt::Menu::hide(void) {
-  if (! isVisible()) return;
+  if (!isVisible())
+    return;
 
   if (_current_submenu && _current_submenu->isVisible())
     _current_submenu->hide();
@@ -669,11 +686,16 @@ void bt::Menu::hide(void) {
 }
 
 
+void bt::Menu::refresh(void)
+{ }
+
+
 void bt::Menu::reconfigure(void) {
   const ItemList::iterator &end = _items.end();
   ItemList::iterator it;
   for (it = _items.begin(); it != end; ++it) {
-    if (it->sub) it->sub->reconfigure();
+    if (it->sub)
+      it->sub->reconfigure();
   }
 
   invalidateSize();
@@ -763,7 +785,7 @@ void bt::Menu::updatePixmaps(void) {
 
 
 void bt::Menu::buttonPressEvent(const XButtonEvent * const event) {
-  if (! _rect.contains(event->x_root, event->y_root)) {
+  if (!_rect.contains(event->x_root, event->y_root)) {
     hideAll();
     return;
   }
@@ -773,7 +795,7 @@ void bt::Menu::buttonPressEvent(const XButtonEvent * const event) {
   if (_trect.contains(event->x, event->y)) {
     _title_pressed = true;
     return;
-  } else if (! _irect.contains(event->x, event->y)) {
+  } else if (!_irect.contains(event->x, event->y)) {
     return;
   }
 
@@ -787,7 +809,7 @@ void bt::Menu::buttonPressEvent(const XButtonEvent * const event) {
 
     if (!it->separator) {
       if (it->enabled && r.contains(event->x, event->y)) {
-        if (! it->active)
+        if (!it->active)
           activateItem(r, *it);
         // ensure the submenu is visible
         showActiveSubmenu();
@@ -800,11 +822,12 @@ void bt::Menu::buttonPressEvent(const XButtonEvent * const event) {
 
 
 void bt::Menu::buttonReleaseEvent(const XButtonEvent * const event) {
-  if (! _pressed && _motion < 10) return;
+  if (!_pressed && _motion < 10)
+    return;
 
   _pressed = false;
 
-  if (! _rect.contains(event->x_root, event->y_root)) {
+  if (!_rect.contains(event->x_root, event->y_root)) {
     hideAll();
     return;
   }
@@ -839,7 +862,7 @@ void bt::Menu::buttonReleaseEvent(const XButtonEvent * const event) {
           // clicked an item w/ a submenu, make sure the submenu is shown,
           // and keep the menu open
           do_hide = false;
-          if (! item.active)
+          if (!item.active)
             activateItem(r, item);
           // ensure the submenu is visible
           showActiveSubmenu();
@@ -862,7 +885,7 @@ void bt::Menu::buttonReleaseEvent(const XButtonEvent * const event) {
 void bt::Menu::motionNotifyEvent(const XMotionEvent * const event) {
   ++_motion;
 
-  if (! _irect.contains(event->x, event->y))
+  if (!_irect.contains(event->x, event->y))
     return;
 
   Rect r(_irect.x(), _irect.y(), _itemw, 0);
@@ -876,7 +899,7 @@ void bt::Menu::motionNotifyEvent(const XMotionEvent * const event) {
 
     if (!it->separator) {
       if (r.contains(event->x, event->y)) {
-        if (! it->active && it->enabled)
+        if (!it->active && it->enabled)
           activateItem(r, *it);
       } else if (it->active) {
         deactivateItem(r, *it, false);
@@ -957,7 +980,7 @@ void bt::Menu::exposeEvent(const XExposeEvent * const event) {
                 _frect, r & _frect, _fpixmap);
   }
 
-  if (! r.intersects(_irect))
+  if (!r.intersects(_irect))
     return;
 
   Rect u = r & _irect;
@@ -979,7 +1002,8 @@ void bt::Menu::exposeEvent(const XExposeEvent * const event) {
 
 
 void bt::Menu::activateSubmenu(void) {
-  if (! _active_submenu) return;
+  if (!_active_submenu)
+    return;
 
   showActiveSubmenu();
 
@@ -1007,7 +1031,8 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
   }
   } // switch
 
-  if (_items.empty()) return;
+  if (_items.empty())
+    return;
 
   switch (sym) {
   case XK_Down: {
@@ -1017,31 +1042,37 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
       std::advance<ItemList::const_iterator, signed>(anchor, _active_index);
 
       // go one paste the current active index
-      if (anchor != end && ! anchor->separator) ++anchor;
+      if (anchor != end && !anchor->separator)
+        ++anchor;
     }
 
-    if (anchor == end) anchor = _items.begin();
+    if (anchor == end)
+      anchor = _items.begin();
 
     ItemList::const_iterator it = std::find_if(anchor, end, InteractMatch());
-    if (it != end) activateIndex(it->indx);
+    if (it != end)
+      activateIndex(it->indx);
     break;
   }
 
   case XK_Up: {
-    ItemList::const_reverse_iterator anchor = _items.rbegin(),
-                                        end = _items.rend();
+    ItemList::const_reverse_iterator anchor = _items.rbegin();
+    const ItemList::const_reverse_iterator &end = _items.rend();
     if (_active_index != ~0u) {
-      std::advance<ItemList::const_reverse_iterator, signed>(anchor, _items.size() - _active_index - 1);
+      std::advance<ItemList::const_reverse_iterator, signed>
+        (anchor, _items.size() - _active_index - 1);
 
       // go one item past the current active index
-      if (anchor != end && ! anchor->separator) ++anchor;
+      if (anchor != end && !anchor->separator)
+        ++anchor;
     }
 
     if (anchor == end) anchor = _items.rbegin();
 
     ItemList::const_reverse_iterator it =
       std::find_if(anchor, end, InteractMatch());
-    if (it != end) activateIndex(it->indx);
+    if (it != end)
+      activateIndex(it->indx);
     break;
   }
 
@@ -1049,15 +1080,17 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
     const ItemList::const_iterator &end = _items.end();
     ItemList::const_iterator it = _items.begin();
     it = std::find_if(it, end, InteractMatch());
-    if (it != end) activateIndex(it->indx);
+    if (it != end)
+      activateIndex(it->indx);
     break;
   }
 
   case XK_End: {
-    const ItemList::const_reverse_iterator end = _items.rend();
+    const ItemList::const_reverse_iterator &end = _items.rend();
     ItemList::const_reverse_iterator it = _items.rbegin();
     it = std::find_if(it, end, InteractMatch());
-    if (it != end) activateIndex(it->indx);
+    if (it != end)
+      activateIndex(it->indx);
     break;
   }
 
@@ -1068,12 +1101,14 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
 
   case XK_Return:
   case XK_space: {
-    if (_active_index == ~0u) break;
+    if (_active_index == ~0u)
+      break;
 
     const ItemList::const_iterator &end = _items.end();
     ItemList::const_iterator it = _items.begin();
     it = std::find_if(it, end, IndexMatch(_active_index));
-    if (it == end) break;
+    if (it == end)
+      break;
 
     if (!it->separator) {
       /*
@@ -1099,8 +1134,8 @@ void bt::Menu::titleClicked(unsigned int button) {
 }
 
 
-void bt::Menu::itemClicked(unsigned int /*id*/, unsigned int /*button*/) {
-}
+void bt::Menu::itemClicked(unsigned int /*id*/, unsigned int /*button*/)
+{ }
 
 
 void bt::Menu::hideAll(void) {
@@ -1119,7 +1154,7 @@ unsigned int bt::Menu::verifyId(unsigned int id) {
     while (id >= _id_bits.size())
       _id_bits.insert(_id_bits.end(), _id_bits.size(), false);
 
-    if (! _id_bits[id]) {
+    if (!_id_bits[id]) {
       _id_bits[id] = true;
       return id;
     }
@@ -1152,8 +1187,10 @@ void bt::Menu::activateItem(const Rect &rect, MenuItem &item) {
              rect.x(), rect.y(), rect.width(), rect.height(), True);
 
   menudelay.showmenu = item.sub;
-  if (menudelay.hidemenu == item.sub) menudelay.hidemenu = 0;
-  if (! item.sub || item.sub->isVisible()) return;
+  if (menudelay.hidemenu == item.sub)
+    menudelay.hidemenu = 0;
+  if (!item.sub || item.sub->isVisible())
+    return;
 
   item.sub->refresh();
 
@@ -1227,7 +1264,7 @@ void bt::Menu::activateIndex(unsigned int index) {
 
     if (!it->separator) {
       if (it->indx == index) {
-        if (! it->active && it->enabled)
+        if (!it->active && it->enabled)
           activateItem(r, *it);
       } else if (it->active) {
         deactivateItem(r, *it);
@@ -1240,14 +1277,16 @@ void bt::Menu::activateIndex(unsigned int index) {
 
 
 void bt::Menu::showActiveSubmenu(void) {
-  if (! _active_submenu) return;
+  if (!_active_submenu)
+    return;
 
-  if (menudelay.hidemenu) menudelay.hidemenu->hide();
+  if (menudelay.hidemenu)
+    menudelay.hidemenu->hide();
   menudelay.hidemenu = 0;
 
   // active submenu, keep the menu item marked active and ensure
   // that the menu is visible
-  if (! _active_submenu->isVisible())
+  if (!_active_submenu->isVisible())
     _active_submenu->show();
   menudelay.showmenu = 0;
   _timer.stop();

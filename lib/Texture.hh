@@ -76,9 +76,11 @@ namespace bt {
       Border              = (1l<<15)
     };
 
-    inline Texture(void) : t(0ul), bw(0u) { }
-    inline Texture(const Texture &tt) { *this = tt; }
-    ~Texture(void);
+    inline Texture(void)
+      : t(0ul), bw(0u)
+    { }
+    inline Texture(const Texture &tt)
+    { *this = tt; }
 
     inline const std::string &description(void) const
     { return descr; }
@@ -114,11 +116,12 @@ namespace bt {
     { bw = new_bw; }
 
     Texture &operator=(const Texture &tt);
-    inline bool operator==(const Texture &tt) const
-    { return (c == tt.c && ct == tt.ct && bc == tt.bc &&
-              lc == tt.lc && sc == tt.sc && t == tt.t && bw == tt.bw); }
+    inline bool operator==(const Texture &tt) const {
+      return (c == tt.c && ct == tt.ct && bc == tt.bc &&
+              lc == tt.lc && sc == tt.sc && t == tt.t && bw == tt.bw);
+    }
     inline bool operator!=(const Texture &tt) const
-    { return !operator==(tt); }
+    { return (!operator==(tt)); }
 
   private:
     std::string descr;

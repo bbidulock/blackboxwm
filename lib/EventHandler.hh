@@ -38,50 +38,68 @@ namespace bt {
   class EventHandler
   {
   public:
-    virtual ~EventHandler(void) {}
+    inline virtual ~EventHandler(void)
+    { }
 
     // Mouse button press.
-    virtual void buttonPressEvent(const XButtonEvent * const) {}
+    inline virtual void buttonPressEvent(const XButtonEvent * const)
+    { }
     // Mouse button release.
-    virtual void buttonReleaseEvent(const XButtonEvent * const) {}
+    inline virtual void buttonReleaseEvent(const XButtonEvent * const)
+    { }
     // Mouse movement.
-    virtual void motionNotifyEvent(const XMotionEvent * const) {}
+    inline virtual void motionNotifyEvent(const XMotionEvent * const)
+    { }
     // Key press.
-    virtual void keyPressEvent(const XKeyEvent * const) {}
+    inline virtual void keyPressEvent(const XKeyEvent * const)
+    { }
     // Key release.
-    virtual void keyReleaseEvent(const XKeyEvent * const) {}
+    inline virtual void keyReleaseEvent(const XKeyEvent * const)
+    { }
 
     // Window configure (size, position, stacking, etc.).
-    virtual void configureNotifyEvent(const XConfigureEvent * const) {}
+    inline virtual void configureNotifyEvent(const XConfigureEvent * const)
+    { }
     // Window shown.
-    virtual void mapNotifyEvent(const XMapEvent * const) {}
+    inline virtual void mapNotifyEvent(const XMapEvent * const)
+    { }
     // Window hidden.
-    virtual void unmapNotifyEvent(const XUnmapEvent * const) {}
+    inline virtual void unmapNotifyEvent(const XUnmapEvent * const)
+    { }
     // Window reparented.
-    virtual void reparentNotifyEvent(const XReparentEvent * const) {}
+    inline virtual void reparentNotifyEvent(const XReparentEvent * const)
+    { }
     // Window destroyed.
-    virtual void destroyNotifyEvent(const XDestroyWindowEvent * const) {}
+    inline virtual void destroyNotifyEvent(const XDestroyWindowEvent * const)
+    { }
 
     // Mouse entered window.
-    virtual void enterNotifyEvent(const XCrossingEvent * const) {}
+    inline virtual void enterNotifyEvent(const XCrossingEvent * const)
+    { }
     // Mouse left window.
-    virtual void leaveNotifyEvent(const XCrossingEvent * const) {}
+    inline virtual void leaveNotifyEvent(const XCrossingEvent * const)
+    { }
 
     // Window needs repainting.
-    virtual void exposeEvent(const XExposeEvent * const) {}
+    inline virtual void exposeEvent(const XExposeEvent * const)
+    { }
 
     // Window property changed/added/deleted.
-    virtual void propertyNotifyEvent(const XPropertyEvent * const) {}
+    inline virtual void propertyNotifyEvent(const XPropertyEvent * const)
+    { }
 
     // Message passing.
-    virtual void clientMessageEvent(const XClientMessageEvent * const) {}
+    inline virtual void clientMessageEvent(const XClientMessageEvent * const)
+    { }
 
     // Window shape changed. (Note: we use XEvent instead of
     // XShapeEvent to avoid the header.)
-    virtual void shapeEvent(const XEvent * const) {}
+    inline virtual void shapeEvent(const XEvent * const)
+    { }
 
   protected:
-    inline EventHandler(void) {}
+    inline EventHandler(void)
+    { }
   };
 
 } // namespace bt

@@ -85,20 +85,20 @@ namespace bt {
     inline ~Font(void)
     { unload(); }
 
-    const std::string& fontName(void) const
+    inline const std::string& fontName(void) const
     { return _fontname; }
-    void setFontName(const std::string &new_fontname)
+    inline void setFontName(const std::string &new_fontname)
     { unload(); _fontname = new_fontname; }
 
     XFontSet fontSet(void) const;
     XftFont *xftFont(unsigned int screen) const;
 
-    Font& operator=(const Font &f)
+    inline Font& operator=(const Font &f)
     { setFontName(f.fontName()); return *this; }
-    bool operator==(const Font &f) const
+    inline bool operator==(const Font &f) const
     { return _fontname == f._fontname; }
-    bool operator!=(const Font &f) const
-    { return (! operator==(f)); }
+    inline bool operator!=(const Font &f) const
+    { return (!operator==(f)); }
 
   private:
     void unload(void);

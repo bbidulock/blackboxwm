@@ -42,7 +42,9 @@ namespace bt {
 
     struct Strut {
       unsigned int left, right, top, bottom;
-      inline Strut(void) : left(0), right(0), top(0), bottom(0) { }
+      inline Strut(void)
+        : left(0), right(0), top(0), bottom(0)
+      { }
     };
 
     struct StrutPartial {
@@ -53,32 +55,45 @@ namespace bt {
       unsigned int bottom_start, bottom_end;
       inline StrutPartial(void)
         : left(0u), right(0u), top(0u), bottom(0u),
-            left_start(0u),   left_end(0u),
-           right_start(0u),  right_end(0u),
-             top_start(0u),    top_end(0u),
+          left_start(0u),   left_end(0u),
+          right_start(0u),  right_end(0u),
+          top_start(0u),    top_end(0u),
           bottom_start(0u), bottom_end(0u)
       { }
     };
 
-    inline Atom utf8String(void) const { return utf8_string; }
+    inline Atom utf8String(void) const
+    { return utf8_string; }
 
     // root window properties
-    inline Atom supported(void) const { return net_supported; }
-    inline Atom clientList(void) const { return net_client_list; }
+    inline Atom supported(void) const
+    { return net_supported; }
+    inline Atom clientList(void) const
+    { return net_client_list; }
     inline Atom clientListStacking(void) const
     { return net_client_list_stacking; }
-    inline Atom numberOfDesktops(void) const { return net_number_of_desktops; }
-    inline Atom desktopGeometry(void) const { return net_desktop_geometry; }
-    inline Atom desktopViewport(void) const { return net_desktop_viewport; }
-    inline Atom currentDesktop(void) const { return net_current_desktop; }
-    inline Atom desktopNames(void) const { return net_desktop_names; }
-    inline Atom activeWindow(void) const { return net_active_window; }
-    inline Atom workarea(void) const { return net_workarea; }
+    inline Atom numberOfDesktops(void) const
+    { return net_number_of_desktops; }
+    inline Atom desktopGeometry(void) const
+    { return net_desktop_geometry; }
+    inline Atom desktopViewport(void) const
+    { return net_desktop_viewport; }
+    inline Atom currentDesktop(void) const
+    { return net_current_desktop; }
+    inline Atom desktopNames(void) const
+    { return net_desktop_names; }
+    inline Atom activeWindow(void) const
+    { return net_active_window; }
+    inline Atom workarea(void) const
+    { return net_workarea; }
     inline Atom supportingWMCheck(void) const
     { return net_supporting_wm_check; }
-    inline Atom virtualRoots(void) const { return net_virtual_roots; }
-    // inline Atom desktopLayout(void) const { return net_desktop_layout; }
-    inline Atom showingDesktop(void) const { return net_showing_desktop; }
+    inline Atom virtualRoots(void) const
+    { return net_virtual_roots; }
+    // inline Atom desktopLayout(void) const
+    // { return net_desktop_layout; }
+    inline Atom showingDesktop(void) const
+    { return net_showing_desktop; }
 
     void setSupported(Window target, Atom atoms[], unsigned int count) const;
     bool readSupported(Window target, AtomList& atoms) const;
@@ -109,18 +124,26 @@ namespace bt {
     bool readVirtualRoots(Window target, WindowList &windows) const;
 
     // other root messages
-    inline Atom closeWindow(void) const { return net_close_window; }
-    inline Atom moveresizeWindow(void) const { return net_moveresize_window; }
-    inline Atom wmMoveResize(void) const { return net_wm_moveresize; }
+    inline Atom closeWindow(void) const
+    { return net_close_window; }
+    inline Atom moveresizeWindow(void) const
+    { return net_moveresize_window; }
+    inline Atom wmMoveResize(void) const
+    { return net_wm_moveresize; }
 
     // application properties
-    inline Atom wmName(void) const { return net_wm_name; }
-    inline Atom wmVisibleName(void) const { return net_wm_visible_name; }
-    inline Atom wmIconName(void) const { return net_wm_icon_name; }
+    inline Atom wmName(void) const
+    { return net_wm_name; }
+    inline Atom wmVisibleName(void) const
+    { return net_wm_visible_name; }
+    inline Atom wmIconName(void) const
+    { return net_wm_icon_name; }
     inline Atom wmVisibleIconName(void) const
     { return net_wm_visible_icon_name; }
-    inline Atom wmDesktop(void) const { return net_wm_desktop; }
-    inline Atom wmWindowType(void) const { return net_wm_window_type; }
+    inline Atom wmDesktop(void) const
+    { return net_wm_desktop; }
+    inline Atom wmWindowType(void) const
+    { return net_wm_window_type; }
     inline Atom wmWindowTypeDesktop(void) const
     { return net_wm_window_type_desktop; }
     inline Atom wmWindowTypeDock(void) const
@@ -137,34 +160,48 @@ namespace bt {
     { return net_wm_window_type_dialog; }
     inline Atom wmWindowTypeNormal(void) const
     { return net_wm_window_type_normal; }
-    inline Atom wmState(void) const { return net_wm_state; }
-    inline Atom wmStateModal(void) const { return net_wm_state_modal; }
-    inline Atom wmStateSticky(void) const { return net_wm_state_sticky; }
+    inline Atom wmState(void) const
+    { return net_wm_state; }
+    inline Atom wmStateModal(void) const
+    { return net_wm_state_modal; }
+    inline Atom wmStateSticky(void) const
+    { return net_wm_state_sticky; }
     inline Atom wmStateMaximizedVert(void) const
     { return net_wm_state_maximized_vert; }
     inline Atom wmStateMaximizedHorz(void) const
     { return net_wm_state_maximized_horz; }
-    inline Atom wmStateShaded(void) const { return net_wm_state_shaded; }
+    inline Atom wmStateShaded(void) const
+    { return net_wm_state_shaded; }
     inline Atom wmStateSkipTaskbar(void) const
     { return net_wm_state_skip_taskbar; }
     inline Atom wmStateSkipPager(void) const
     { return net_wm_state_skip_pager; }
-    inline Atom wmStateHidden(void) const { return net_wm_state_hidden; }
+    inline Atom wmStateHidden(void) const
+    { return net_wm_state_hidden; }
     inline Atom wmStateFullscreen(void) const
     { return net_wm_state_fullscreen; }
-    inline Atom wmStateAbove(void) const { return net_wm_state_above; }
-    inline Atom wmStateBelow(void) const { return net_wm_state_below; }
-    inline Atom wmStateRemove(void) const { return 0; }
-    inline Atom wmStateAdd(void) const { return 1; }
-    inline Atom wmStateToggle(void) const { return 2; }
-    inline Atom wmAllowedActions(void) const { return net_wm_allowed_actions; }
-    inline Atom wmActionMove(void) const { return net_wm_action_move; }
+    inline Atom wmStateAbove(void) const
+    { return net_wm_state_above; }
+    inline Atom wmStateBelow(void) const
+    { return net_wm_state_below; }
+    inline Atom wmStateRemove(void) const
+    { return 0; }
+    inline Atom wmStateAdd(void) const
+    { return 1; }
+    inline Atom wmStateToggle(void) const
+    { return 2; }
+    inline Atom wmAllowedActions(void) const
+    { return net_wm_allowed_actions; }
+    inline Atom wmActionMove(void) const
+    { return net_wm_action_move; }
     inline Atom wmActionResize(void) const
     { return net_wm_action_resize; }
     inline Atom wmActionMinimize(void) const
     { return net_wm_action_minimize; }
-    inline Atom wmActionShade(void) const { return net_wm_action_shade; }
-    inline Atom wmActionStick(void) const { return net_wm_action_stick; }
+    inline Atom wmActionShade(void) const
+    { return net_wm_action_shade; }
+    inline Atom wmActionStick(void) const
+    { return net_wm_action_stick; }
     inline Atom wmActionMaximizeHorz(void) const
     { return net_wm_action_maximize_horz; }
     inline Atom wmActionMaximizeVert(void) const
@@ -173,14 +210,22 @@ namespace bt {
     { return net_wm_action_fullscreen; }
     inline Atom wmActionChangeDesktop(void) const
     { return net_wm_action_change_desktop; }
-    inline Atom wmActionClose(void) const { return net_wm_action_close; }
-    inline Atom wmStrut(void) const { return net_wm_strut; }
-    inline Atom wmStrutPartial(void) const { return net_wm_strut_partial; }
-    inline Atom wmIconGeometry(void) const { return net_wm_icon_geometry; }
-    // inline Atom wmIcon(void) const { return net_wm_icon; }
-    inline Atom wmPid(void) const { return net_wm_pid; }
-    // inline Atom wmHandledIcons(void) const { return net_wm_handled_icons; }
-    inline Atom wmUserTime(void) const { return net_wm_user_time; }
+    inline Atom wmActionClose(void) const
+    { return net_wm_action_close; }
+    inline Atom wmStrut(void) const
+    { return net_wm_strut; }
+    inline Atom wmStrutPartial(void) const
+    { return net_wm_strut_partial; }
+    inline Atom wmIconGeometry(void) const
+    { return net_wm_icon_geometry; }
+    // inline Atom wmIcon(void) const
+    // { return net_wm_icon; }
+    inline Atom wmPid(void) const
+    { return net_wm_pid; }
+    // inline Atom wmHandledIcons(void) const
+    // { return net_wm_handled_icons; }
+    inline Atom wmUserTime(void) const
+    { return net_wm_user_time; }
 
     void setWMName(Window target, const bt::ustring &name) const;
     bool readWMName(Window target, bt::ustring &name) const;
@@ -203,7 +248,8 @@ namespace bt {
     bool readWMUserTime(Window target, Time &user_time) const;
 
     // Window Manager Protocols
-    inline Atom wmPing(void) const { return net_wm_ping; }
+    inline Atom wmPing(void) const
+    { return net_wm_ping; }
 
     // utility
     void removeProperty(Window target, Atom atom) const;

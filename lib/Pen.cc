@@ -27,6 +27,8 @@
 #include "Color.hh"
 #include "Util.hh"
 
+#include <algorithm>
+
 #include <X11/Xlib.h>
 #ifdef XFT
 #  include <X11/Xft/Xft.h>
@@ -34,8 +36,6 @@
 
 #include <assert.h>
 #include <stdio.h>
-
-#include <algorithm>
 
 // #define PENCACHE_DEBUG
 
@@ -84,7 +84,8 @@ namespace bt {
   public:
     inline PenCacheContext(void)
       : _screen(~0u), _gc(0), _function(0), _linewidth(1), _subwindow(0),
-        _used(false) { }
+        _used(false)
+    { }
     ~PenCacheContext(void);
 
     void set(const Color &color, const int function, const int linewidth,
@@ -101,8 +102,11 @@ namespace bt {
 
   class PenCacheItem : public NoCopy {
   public:
-    inline PenCacheItem(void) : _ctx(0), _count(0u), _hits(0u) { }
-    inline const GC &gc(void) const { return _ctx->_gc; }
+    inline PenCacheItem(void)
+      : _ctx(0), _count(0u), _hits(0u)
+    { }
+    inline const GC &gc(void) const
+    { return _ctx->_gc; }
 
     PenCacheContext *_ctx;
     unsigned int _count;
@@ -113,7 +117,8 @@ namespace bt {
   class XftCacheContext : public NoCopy {
   public:
     inline XftCacheContext(void)
-      : _screen(~0u), _drawable(None), _xftdraw(0), _used(false) { }
+      : _screen(~0u), _drawable(None), _xftdraw(0), _used(false)
+    { }
     ~XftCacheContext(void);
 
     void set(Drawable drawable);
@@ -126,9 +131,13 @@ namespace bt {
 
   class XftCacheItem : public NoCopy {
   public:
-    inline XftCacheItem(void) : _ctx(0), _count(0u), _hits(0u) { }
-    inline Drawable drawable(void) const { return _ctx->_drawable; }
-    inline XftDraw *xftdraw(void) const { return _ctx->_xftdraw; }
+    inline XftCacheItem(void)
+      : _ctx(0), _count(0u), _hits(0u)
+    { }
+    inline Drawable drawable(void) const
+    { return _ctx->_drawable; }
+    inline XftDraw *xftdraw(void) const
+    { return _ctx->_xftdraw; }
 
     XftCacheContext *_ctx;
     unsigned int _count;
@@ -176,7 +185,9 @@ namespace bt {
   static PenCache *pencache = 0;
 
 
-  void createPenCache(const Display &display) {
+  void createPenCache(const Display &display)
+  {
+    assert(pencache == 0);
     pencache = new PenCache(display);
   }
 
@@ -190,7 +201,8 @@ namespace bt {
 
 
 bt::PenCacheContext::~PenCacheContext(void) {
-  if (_gc) XFreeGC(pencache->_display.XDisplay(), _gc);
+  if (_gc)
+    XFreeGC(pencache->_display.XDisplay(), _gc);
   _gc = 0;
 }
 
@@ -215,7 +227,8 @@ void bt::PenCacheContext::set(const Color &color,
 
 #ifdef XFT
 bt::XftCacheContext::~XftCacheContext(void) {
-  if (_xftdraw) XftDrawDestroy(_xftdraw);
+  if (_xftdraw)
+    XftDrawDestroy(_xftdraw);
   _xftdraw = 0;
 }
 
@@ -229,7 +242,8 @@ void bt::XftCacheContext::set(Drawable drawable) {
 
 bt::PenCache::PenCache(const Display &display)
   : _display(display),
-    cache_total_size(context_count * _display.screenCount()) {
+    cache_total_size(context_count * _display.screenCount())
+{
   unsigned int i;
 
   contexts = new PenCacheContext[cache_total_size];
@@ -284,7 +298,7 @@ bt::PenCacheContext *bt::PenCache::nextContext(unsigned int screen) {
   for (i = 0; i < cache_total_size; ++i) {
     c = contexts + i;
 
-    if (! c->_gc) {
+    if (!c->_gc) {
 #ifdef PENCACHE_DEBUG
       fprintf(stderr, "bt::PenCache: GC : context %03u create\n", i);
 #endif
@@ -292,7 +306,7 @@ bt::PenCacheContext *bt::PenCache::nextContext(unsigned int screen) {
       c->_used = false;
       c->_screen = screen;
     }
-    if (! c->_used && c->_screen == screen)
+    if (!c->_used && c->_screen == screen)
       return c;
   }
 
@@ -379,9 +393,8 @@ bt::PenCacheItem *bt::PenCache::find(unsigned int screen,
 }
 
 
-void bt::PenCache::release(PenCacheItem *item) {
-  --item->_count;
-}
+void bt::PenCache::release(PenCacheItem *item)
+{ --item->_count; }
 
 
 #ifdef XFT
@@ -393,7 +406,7 @@ bt::XftCacheContext *bt::PenCache::nextXftContext(unsigned int screen) {
   for (i = 0; i < cache_total_size; ++i) {
     c = xftcontexts + i;
 
-    if (! c->_xftdraw) {
+    if (!c->_xftdraw) {
 #ifdef PENCACHE_DEBUG
       fprintf(stderr, "bt::PenCache: Xft: context %03u create\n", i);
 #endif
@@ -403,7 +416,7 @@ bt::XftCacheContext *bt::PenCache::nextXftContext(unsigned int screen) {
       c->_used = false;
       c->_screen = screen;
     }
-    if (! c->_used && c->_screen == screen)
+    if (!c->_used && c->_screen == screen)
       return c;
   }
 
@@ -414,13 +427,12 @@ bt::XftCacheContext *bt::PenCache::nextXftContext(unsigned int screen) {
 }
 
 
-void bt::PenCache::release(XftCacheContext *context) {
-  context->_used = false;
-}
+void bt::PenCache::release(XftCacheContext *context)
+{ context->_used = false; }
 
 
-bt::XftCacheItem *bt::PenCache::findXft(unsigned int screen, Drawable drawable)
-{
+bt::XftCacheItem *bt::PenCache::findXft(unsigned int screen,
+                                        Drawable drawable) {
   int k = (screen * context_count) + ((drawable % cache_size) * cache_buckets);
   unsigned int i = 0; // loop variable
   XftCacheItem *c = xftcache[ k ], *prev = 0;
@@ -485,9 +497,8 @@ bt::XftCacheItem *bt::PenCache::findXft(unsigned int screen, Drawable drawable)
 }
 
 
-void bt::PenCache::release(XftCacheItem *xftitem) {
-  --xftitem->_count;
-}
+void bt::PenCache::release(XftCacheItem *xftitem)
+{ --xftitem->_count; }
 #endif
 
 
@@ -498,18 +509,21 @@ bt::Pen::Pen(unsigned int screen_, const Color &color_)
 
 
 bt::Pen::~Pen(void) {
-  if (_item) pencache->release(_item);
+  if (_item)
+    pencache->release(_item);
   _item = 0;
 
 #ifdef XFT
-  if (_xftitem) pencache->release(_xftitem);
+  if (_xftitem)
+    pencache->release(_xftitem);
   _xftitem = 0;
 #endif
 }
 
 
 void bt::Pen::setGCFunction(int function) {
-  if (_item) pencache->release(_item);
+  if (_item)
+    pencache->release(_item);
   _item = 0;
 
   _function = function;
@@ -517,7 +531,8 @@ void bt::Pen::setGCFunction(int function) {
 
 
 void bt::Pen::setLineWidth(int linewidth) {
-  if (_item) pencache->release(_item);
+  if (_item)
+    pencache->release(_item);
   _item = 0;
 
   _linewidth = linewidth;
@@ -525,7 +540,8 @@ void bt::Pen::setLineWidth(int linewidth) {
 
 
 void bt::Pen::setSubWindowMode(int subwindow) {
-  if (_item) pencache->release(_item);
+  if (_item)
+    pencache->release(_item);
   _item = 0;
 
   _subwindow = subwindow;
@@ -541,9 +557,10 @@ const bt::Display &bt::Pen::display(void) const
 
 
 const GC &bt::Pen::gc(void) const {
-  if (! _item)
+  if (!_item) {
     _item = pencache->find(_screen, _color,
                            _function, _linewidth, _subwindow);
+  }
   assert(_item != 0);
   return _item->gc();
 }
@@ -555,7 +572,7 @@ XftDraw *bt::Pen::xftDraw(Drawable drawable) const {
     pencache->release(_xftitem);
     _xftitem = 0;
   }
-  if (! _xftitem) {
+  if (!_xftitem) {
     _xftitem = pencache->findXft(_screen, drawable);
   }
   assert(_xftitem != 0);
@@ -565,4 +582,5 @@ XftDraw *bt::Pen::xftDraw(Drawable drawable) const {
 #endif
 }
 
-void bt::Pen::clearCache(void) { pencache->purge(); }
+void bt::Pen::clearCache(void)
+{ pencache->purge(); }

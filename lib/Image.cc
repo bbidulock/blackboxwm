@@ -27,6 +27,9 @@
 #include "Pen.hh"
 #include "Texture.hh"
 
+#include <algorithm>
+#include <vector>
+
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #ifdef    MITSHM
@@ -36,29 +39,27 @@
 #  include <unistd.h>
 #  include <X11/extensions/XShm.h>
 #endif // MITSHM
+
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <algorithm>
-#include <vector>
-
 // #define COLORTABLE_DEBUG
 // #define MITSHM_DEBUG
 
 
-static uint right_align(uint v)
+static unsigned int right_align(unsigned int v)
 {
   while (!(v & 0x1))
     v >>= 1;
   return v;
 }
 
-static int lowest_bit(uint v)
+static int lowest_bit(unsigned int v)
 {
   int i;
-  uint b = 1u;
+  unsigned int b = 1u;
   for (i = 0; ((v & b) == 0u) && i < 32;  ++i)
     b <<= 1u;
   return i == 32 ? -1 : i;
@@ -78,9 +79,11 @@ namespace bt {
     ~XColorTable(void);
 
     inline bt::DitherMode ditherMode(void) const
-    { return ((n_red < 256u || n_green < 256u || n_blue < 256u)
+    {
+      return ((n_red < 256u || n_green < 256u || n_blue < 256u)
               ? bt::Image::ditherMode()
-              : bt::NoDither); }
+              : bt::NoDither);
+    }
 
     void map(unsigned int &red,
              unsigned int &green,
@@ -112,7 +115,8 @@ namespace bt {
     XColorTableList::iterator it = colorTableList.begin(),
                              end = colorTableList.end();
     for (; it != end; ++it) {
-      if (*it) delete *it;
+      if (*it)
+        delete *it;
       *it = 0;
     }
     colorTableList.clear();
@@ -136,7 +140,8 @@ namespace bt {
 
   void startupShm(const Display &display) {
     // query MIT-SHM extension
-    if (! XShmQueryExtension(display.XDisplay())) return;
+    if (!XShmQueryExtension(display.XDisplay()))
+      return;
     use_shm = true;
   }
 
@@ -171,13 +176,15 @@ namespace bt {
 
   XImage *createShmImage(const Display &display, const ScreenInfo &screeninfo,
                          unsigned int width, unsigned int height) {
-    if (! use_shm) return 0;
+    if (!use_shm)
+      return 0;
 
     // use MIT-SHM extension
     XImage *image = XShmCreateImage(display.XDisplay(), screeninfo.visual(),
                                     screeninfo.depth(), ZPixmap, 0,
                                     &shm_info, width, height);
-    if (! image) return 0;
+    if (!image)
+      return 0;
 
     // get shared memory id
     unsigned int usage = image->bytes_per_line * image->height;
@@ -217,7 +224,7 @@ namespace bt {
       XSync(display.XDisplay(), False);
       XSetErrorHandler(old_handler);
 
-      if (! use_shm) {
+      if (!use_shm) {
         // the X server failed to attach the shm segment
 
 #ifdef MITSHM_DEBUG
@@ -563,7 +570,8 @@ unsigned long bt::XColorTable::pixel(unsigned int red,
 
 
 bt::Image::Image(unsigned int w, unsigned int h)
-  : data(0), width(w), height(h) {
+  : data(0), width(w), height(h)
+{
   assert(width > 0);
   assert(height > 0);
 }
@@ -581,7 +589,7 @@ Pixmap bt::Image::render(const Display &display, unsigned int screen,
     return ParentRelative;
   if (texture.texture() & bt::Texture::Solid)
     return None;
-  if (! (texture.texture() & bt::Texture::Gradient))
+  if (!(texture.texture() & bt::Texture::Gradient))
     return None;
 
   Color from, to;
@@ -624,9 +632,10 @@ Pixmap bt::Image::render(const Display &display, unsigned int screen,
     Pen penborder(screen, texture.borderColor());
     bw = texture.borderWidth();
 
-    for (unsigned int i = 0; i < bw; ++i)
+    for (unsigned int i = 0; i < bw; ++i) {
       XDrawRectangle(penborder.XDisplay(), pixmap, penborder.gc(),
                      i, i, width - (i * 2) - 1, height - (i * 2) - 1);
+    }
   }
 
   return pixmap;
@@ -820,7 +829,9 @@ void bt::Image::FloydSteinbergDither(XColorTable *colortable,
         r = static_cast<unsigned int>(std::max(std::min(rl1[x], 255), 0));
         g = static_cast<unsigned int>(std::max(std::min(gl1[x], 255), 0));
         b = static_cast<unsigned int>(std::max(std::min(bl1[x], 255), 0));
+
         colortable->map(r, g, b);
+
         pixels[x].red   = r;
         pixels[x].green = g;
         pixels[x].blue  = b;
@@ -851,7 +862,9 @@ void bt::Image::FloydSteinbergDither(XColorTable *colortable,
         r = static_cast<unsigned int>(std::max(std::min(rl1[x], 255), 0));
         g = static_cast<unsigned int>(std::max(std::min(gl1[x], 255), 0));
         b = static_cast<unsigned int>(std::max(std::min(bl1[x], 255), 0));
+
         colortable->map(r, g, b);
+
         pixels[x].red   = r;
         pixels[x].green = g;
         pixels[x].blue  = b;
@@ -899,10 +912,8 @@ Pixmap bt::Image::renderPixmap(const Display &display, unsigned int screen) {
   if (colorTableList.empty())
     colorTableList.resize(display.screenCount(), 0);
 
-  if (! colorTableList[screen]) {
-    colorTableList[screen] =
-      new XColorTable(display, screen, maximumColors());
-  }
+  if (!colorTableList[screen])
+    colorTableList[screen] = new XColorTable(display, screen, maximumColors());
 
   XColorTable *colortable = colorTableList[screen];
   const ScreenInfo &screeninfo = display.screenInfo(screen);
@@ -917,12 +928,12 @@ Pixmap bt::Image::renderPixmap(const Display &display, unsigned int screen) {
   }
 #endif // MITSHM
 
-  if (! shm_ok) {
+  if (!shm_ok) {
     // regular XImage
     image = XCreateImage(display.XDisplay(), screeninfo.visual(),
                          screeninfo.depth(), ZPixmap,
                          0, 0, width, height, 32, 0);
-    if (! image)
+    if (!image)
       return None;
 
     buffer.reserve(image->bytes_per_line * (height + 1));
@@ -930,8 +941,8 @@ Pixmap bt::Image::renderPixmap(const Display &display, unsigned int screen) {
   }
 
   unsigned char *d = reinterpret_cast<unsigned char *>(image->data);
-  unsigned int o = image->bits_per_pixel +
-                   ((image->byte_order == MSBFirst) ? 1 : 0);
+  unsigned int o = image->bits_per_pixel
+                   + ((image->byte_order == MSBFirst) ? 1 : 0);
 
   DitherMode dmode =
     (width > 1 && height > 1) ? colortable->ditherMode() : NoDither;
@@ -1015,9 +1026,12 @@ void bt::Image::bevel(unsigned int border_width) {
     gg = p->green + (p->green >> 1);
     bb = p->blue  + (p->blue  >> 1);
 
-    if (rr < p->red  ) rr = ~0;
-    if (gg < p->green) gg = ~0;
-    if (bb < p->blue ) bb = ~0;
+    if (rr < p->red  )
+      rr = ~0;
+    if (gg < p->green)
+      gg = ~0;
+    if (bb < p->blue )
+      bb = ~0;
 
     p->red = rr;
     p->green = gg;
@@ -1035,9 +1049,12 @@ void bt::Image::bevel(unsigned int border_width) {
     gg = p->green + (p->green >> 1);
     bb = p->blue  + (p->blue  >> 1);
 
-    if (rr < p->red) rr = ~0;
-    if (gg < p->green) gg = ~0;
-    if (bb < p->blue) bb = ~0;
+    if (rr < p->red)
+      rr = ~0;
+    if (gg < p->green)
+      gg = ~0;
+    if (bb < p->blue)
+      bb = ~0;
 
     p->red = rr;
     p->green = gg;
@@ -1049,9 +1066,12 @@ void bt::Image::bevel(unsigned int border_width) {
     gg = (p->green >> 2) + (p->green >> 1);
     bb = (p->blue  >> 2) + (p->blue  >> 1);
 
-    if (rr > p->red  ) rr = 0;
-    if (gg > p->green) gg = 0;
-    if (bb > p->blue ) bb = 0;
+    if (rr > p->red  )
+      rr = 0;
+    if (gg > p->green)
+      gg = 0;
+    if (bb > p->blue )
+      bb = 0;
 
     p->red   = rr;
     p->green = gg;
@@ -1068,9 +1088,12 @@ void bt::Image::bevel(unsigned int border_width) {
     gg = (p->green >> 2) + (p->green >> 1);
     bb = (p->blue  >> 2) + (p->blue  >> 1);
 
-    if (rr > p->red  ) rr = 0;
-    if (gg > p->green) gg = 0;
-    if (bb > p->blue ) bb = 0;
+    if (rr > p->red  )
+      rr = 0;
+    if (gg > p->green)
+      gg = 0;
+    if (bb > p->blue )
+      bb = 0;
 
     p->red   = rr;
     p->green = gg;
@@ -1142,7 +1165,7 @@ void bt::Image::dgradient(const Color &from, const Color &to,
 
   // Combine tables to create gradient
 
-  if (! interlaced) {
+  if (!interlaced) {
     // normal dgradient
     for (y = 0; y < height; ++y) {
       for (x = 0; x < width; ++x, ++p) {
@@ -1366,7 +1389,7 @@ void bt::Image::pgradient(const Color &from, const Color &to,
 
   // Combine tables to create gradient
 
-  if (! interlaced) {
+  if (!interlaced) {
     // normal pgradient
     for (y = 0; y < height; ++y) {
       for (x = 0; x < width; ++x, ++p) {
@@ -1468,7 +1491,7 @@ void bt::Image::rgradient(const Color &from, const Color &to,
 
   // Combine tables to create gradient
 
-  if (! interlaced) {
+  if (!interlaced) {
     // normal rgradient
     for (y = 0; y < height; ++y) {
       for (x = 0; x < width; ++x, ++p) {
@@ -1576,7 +1599,7 @@ void bt::Image::egradient(const Color &from, const Color &to,
 
   // Combine tables to create gradient
 
-  if (! interlaced) {
+  if (!interlaced) {
     // normal egradient
     for (y = 0; y < height; ++y) {
       for (x = 0; x < width; ++x, ++p) {
@@ -1684,7 +1707,7 @@ void bt::Image::pcgradient(const Color &from, const Color &to,
 
   // Combine tables to create gradient
 
-  if (! interlaced) {
+  if (!interlaced) {
     // normal rgradient
     for (y = 0; y < height; ++y) {
       for (x = 0; x < width; ++x, ++p) {
@@ -1791,7 +1814,7 @@ void bt::Image::cdgradient(const Color &from, const Color &to,
 
   // Combine tables to create gradient
 
-  if (! interlaced) {
+  if (!interlaced) {
     // normal dgradient
     for (y = 0; y < height; ++y) {
       for (x = 0; x < width; ++x, ++p) {

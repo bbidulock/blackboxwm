@@ -75,17 +75,22 @@ namespace bt {
 
     void fireTimeout(void);
 
-    inline bool isTiming(void) const { return timing; }
-    inline bool isRecurring(void) const { return recur; }
+    inline bool isTiming(void) const
+    { return timing; }
+    inline bool isRecurring(void) const
+    { return recur; }
 
-    inline const timeval &timeout(void) const { return _timeout; }
-    inline const timeval &startTime(void) const { return _start; }
+    inline const timeval &timeout(void) const
+    { return _timeout; }
+    inline const timeval &startTime(void) const
+    { return _start; }
 
     timeval timeRemaining(const timeval &tm) const;
     bool shouldFire(const timeval &tm) const;
     timeval endpoint(void) const;
 
-    inline void recurring(bool b) { recur = b; }
+    inline void recurring(bool b)
+    { recur = b; }
 
     void setTimeout(long t);
     void setTimeout(const timeval &t);
@@ -103,8 +108,11 @@ namespace bt {
   public:
     typedef std::priority_queue<_Tp, _Sequence, _Compare> _Base;
 
-    inline _timer_queue(void): _Base() { }
-    inline ~_timer_queue(void) { }
+    inline _timer_queue(void)
+      : _Base()
+    { }
+    inline ~_timer_queue(void)
+    { }
 
     inline void release(const _Tp& value) {
       _Base::c.erase(std::remove(_Base::c.begin(), _Base::c.end(), value),
@@ -112,11 +120,16 @@ namespace bt {
       // after removing the item we need to make the heap again
       std::make_heap(_Base::c.begin(), _Base::c.end(), _Base::comp);
     }
-    inline bool empty(void) const { return _Base::empty(); }
-    inline size_t size(void) const { return _Base::size(); }
-    inline void push(const _Tp& value) { _Base::push(value); }
-    inline void pop(void) { _Base::pop(); }
-    inline const _Tp& top(void) const { return _Base::top(); }
+    inline bool empty(void) const
+    { return _Base::empty(); }
+    inline size_t size(void) const
+    { return _Base::size(); }
+    inline void push(const _Tp& value)
+    { _Base::push(value); }
+    inline void pop(void)
+    { _Base::pop(); }
+    inline const _Tp& top(void) const
+    { return _Base::top(); }
   private:
     // no copying!
     _timer_queue(const _timer_queue&);

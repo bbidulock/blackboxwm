@@ -24,13 +24,12 @@
 
 #include "Timer.hh"
 
-extern "C" {
 #include <sys/time.h>
-}
 
 
 bt::timeval::timeval(const ::timeval &t)
-  : tv_sec(t.tv_sec), tv_usec(t.tv_usec) { }
+  : tv_sec(t.tv_sec), tv_usec(t.tv_usec)
+{ }
 
 
 bt::timeval &bt::timeval::operator=(const ::timeval &t)
@@ -75,7 +74,8 @@ bt::Timer::Timer(TimerQueueManager *m, TimeoutHandler *h) {
 
 
 bt::Timer::~Timer(void) {
-  if (timing) stop();
+  if (timing)
+    stop();
 }
 
 
@@ -97,7 +97,7 @@ void bt::Timer::start(void) {
   gettimeofday(&s, 0);
   _start = s;
 
-  if (! timing) {
+  if (!timing) {
     timing = true;
     manager->addTimer(this);
   }
@@ -116,7 +116,10 @@ void bt::Timer::halt(void)
 
 
 void bt::Timer::fireTimeout(void)
-{ if (handler) handler->timeout(this); }
+{
+  if (handler)
+    handler->timeout(this);
+}
 
 
 bt::timeval bt::Timer::timeRemaining(const timeval &tm) const {

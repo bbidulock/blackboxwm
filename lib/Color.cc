@@ -25,11 +25,12 @@
 #include "Color.hh"
 #include "Display.hh"
 
+#include <map>
+
 #include <X11/Xlib.h>
+
 #include <assert.h>
 #include <stdio.h>
-
-#include <map>
 
 // #define COLORCACHE_DEBUG
 
@@ -73,11 +74,14 @@ namespace bt {
       const int r, g, b;
 
       inline RGB(void)
-        : screen(~0u), r(-1), g(-1), b(-1) { }
+        : screen(~0u), r(-1), g(-1), b(-1)
+      { }
       inline RGB(const unsigned int s, const int x, const int y, const int z)
-        : screen(s), r(x), g(y), b(z) { }
+        : screen(s), r(x), g(y), b(z)
+      { }
       inline RGB(const RGB &x)
-        : screen(x.screen), r(x.r), g(x.g), b(x.b) { }
+        : screen(x.screen), r(x.r), g(x.g), b(x.b)
+      { }
 
       inline bool operator==(const RGB &x) const
       { return screen == x.screen && r == x.r && g == x.g && b == x.b; }
@@ -93,8 +97,12 @@ namespace bt {
     struct PixelRef {
       const unsigned long pixel;
       unsigned int count;
-      inline PixelRef(void) : pixel(0ul), count(0u) { }
-      inline PixelRef(const unsigned long x) : pixel(x), count(1u) { }
+      inline PixelRef(void)
+        : pixel(0ul), count(0u)
+      { }
+      inline PixelRef(const unsigned long x)
+        : pixel(x), count(1u)
+      { }
     };
 
     typedef std::map<RGB,PixelRef> Cache;
@@ -120,16 +128,22 @@ namespace bt {
 } // namespace bt
 
 
-bt::ColorCache::ColorCache(const Display &display) : _display(display) { }
+bt::ColorCache::ColorCache(const Display &display)
+  : _display(display)
+{ }
 
 
-bt::ColorCache::~ColorCache(void) { clear(true); }
+bt::ColorCache::~ColorCache(void)
+{ clear(true); }
 
 
 unsigned long bt::ColorCache::find(unsigned int screen, int r, int g, int b) {
-  if (r < 0 && r > 255) r = 0;
-  if (g < 0 && g > 255) g = 0;
-  if (b < 0 && b > 255) b = 0;
+  if (r < 0 && r > 255)
+    r = 0;
+  if (g < 0 && g > 255)
+    g = 0;
+  if (b < 0 && b > 255)
+    b = 0;
 
   // see if we have allocated this color before
   RGB rgb(screen, r, g, b);
@@ -154,7 +168,7 @@ unsigned long bt::ColorCache::find(unsigned int screen, int r, int g, int b) {
   xcol.flags = DoRed | DoGreen | DoBlue;
 
   Colormap colormap = _display.screenInfo(screen).colormap();
-  if (! XAllocColor(_display.XDisplay(), colormap, &xcol)) {
+  if (!XAllocColor(_display.XDisplay(), colormap, &xcol)) {
     fprintf(stderr,
             "bt::Color::pixel: cannot allocate color 'rgb:%02x/%02x/%02x'\n",
             r, g, b);
@@ -173,9 +187,12 @@ unsigned long bt::ColorCache::find(unsigned int screen, int r, int g, int b) {
 
 
 void bt::ColorCache::release(unsigned int screen, int r, int g, int b) {
-  if (r < 0 && r > 255) r = 0;
-  if (g < 0 && g > 255) g = 0;
-  if (b < 0 && b > 255) b = 0;
+  if (r < 0 && r > 255)
+    r = 0;
+  if (g < 0 && g > 255)
+    g = 0;
+  if (b < 0 && b > 255)
+    b = 0;
 
   RGB rgb(screen, r, g, b);
   Cache::iterator it = cache.find(rgb);
@@ -192,7 +209,8 @@ void bt::ColorCache::release(unsigned int screen, int r, int g, int b) {
 
 void bt::ColorCache::clear(bool force) {
   Cache::iterator it = cache.begin();
-  if (it == cache.end()) return; // nothing to do
+  if (it == cache.end())
+    return; // nothing to do
 
 #ifdef COLORCACHE_DEBUG
   fprintf(stderr, "bt::ColorCache: clearing cache, %u entries\n",
@@ -239,7 +257,10 @@ void bt::ColorCache::clear(bool force) {
 
 
 void bt::Color::clearCache(void)
-{ if (colorcache) colorcache->clear(false); }
+{
+  if (colorcache)
+    colorcache->clear(false);
+}
 
 
 bt::Color bt::Color::namedColor(const Display &display, unsigned int screen,
@@ -257,7 +278,7 @@ bt::Color bt::Color::namedColor(const Display &display, unsigned int screen,
   xcol.pixel = 0;
 
   Colormap colormap = display.screenInfo(screen).colormap();
-  if (! XParseColor(display.XDisplay(), colormap, colorname.c_str(), &xcol)) {
+  if (!XParseColor(display.XDisplay(), colormap, colorname.c_str(), &xcol)) {
     fprintf(stderr, "bt::Color::namedColor: invalid color '%s'\n",
             colorname.c_str());
     return Color();
@@ -268,7 +289,8 @@ bt::Color bt::Color::namedColor(const Display &display, unsigned int screen,
 
 
 unsigned long bt::Color::pixel(unsigned int screen) const {
-  if ( _screen == screen) return _pixel; // already allocated on this screen
+  if (_screen == screen)
+    return _pixel; // already allocated on this screen
 
   assert(colorcache != 0);
   // deallocate() isn't const, so we can't call it from here
@@ -282,7 +304,8 @@ unsigned long bt::Color::pixel(unsigned int screen) const {
 
 
 void bt::Color::deallocate(void) {
-  if (_screen == ~0u) return; // not allocated
+  if (_screen == ~0u)
+    return; // not allocated
 
   assert(colorcache != 0);
   colorcache->release(_screen, _red, _green, _blue);

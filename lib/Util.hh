@@ -50,7 +50,8 @@ namespace bt {
 
   class NoCopy {
   protected:
-    inline NoCopy(void) { }
+    inline NoCopy(void)
+    { }
   private:
     NoCopy(const NoCopy&);
     NoCopy& operator=(const NoCopy&);
