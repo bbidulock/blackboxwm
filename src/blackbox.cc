@@ -372,7 +372,7 @@ void Blackbox::process_event(XEvent *e) {
       win->reparentNotifyEvent(&e->xreparent);
     } else {
       Slit *slit = searchSlit(e->xreparent.window);
-      if (slit)
+      if (slit && slit->getWindowID() != e->xreparent.parent)
         slit->removeClient(e->xreparent.window, True);
     }
     break;

@@ -168,15 +168,12 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   timer = new BTimer(blackbox, this);
   timer->setTimeout(blackbox->getAutoRaiseDelay());
 
-  frame.window = createToplevelWindow(frame.x, frame.y, frame.width,
-                                      frame.height,
-                                      frame.border_w);
-  blackbox->saveWindowSearch(frame.window, this);
-
-  frame.plate = createChildWindow(frame.window);
-  blackbox->saveWindowSearch(frame.plate, this);
-
-  associateClientWindow();
+  XSetWindowAttributes attrib_set;
+  attrib_set.event_mask = PropertyChangeMask | FocusChangeMask;
+  attrib_set.do_not_propagate_mask = ButtonPressMask | ButtonReleaseMask |
+                                     ButtonMotionMask;
+  XChangeWindowAttributes(display, client.window, CWEventMask|CWDontPropagate,
+                          &attrib_set);
 
   getBlackboxHints();
   if (! client.blackbox_hint)
@@ -194,6 +191,14 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     return;
   }
 
+  frame.window = createToplevelWindow(frame.x, frame.y, frame.width,
+                                      frame.height,
+                                      frame.border_w);
+  frame.plate = createChildWindow(frame.window);
+  associateClientWindow();
+
+  blackbox->saveWindowSearch(frame.window, this);
+  blackbox->saveWindowSearch(frame.plate, this);
   blackbox->saveWindowSearch(client.window, this);
 
   // determine if this is a transient window
@@ -433,8 +438,7 @@ Window BlackboxWindow::createChildWindow(Window parent, Cursor cursor) {
 
   attrib_create.background_pixmap = None;
   attrib_create.event_mask = ButtonPressMask | ButtonReleaseMask |
-                             ButtonMotionMask | ExposureMask |
-                             EnterWindowMask | LeaveWindowMask;
+                             ButtonMotionMask | ExposureMask;
 
   if (cursor) {
     create_mask |= CWCursor;
@@ -448,13 +452,6 @@ Window BlackboxWindow::createChildWindow(Window parent, Cursor cursor) {
 
 
 void BlackboxWindow::associateClientWindow(void) {
-  XSetWindowAttributes attrib_set;
-  attrib_set.event_mask = PropertyChangeMask | FocusChangeMask;
-  attrib_set.do_not_propagate_mask = ButtonPressMask | ButtonReleaseMask |
-                                     ButtonMotionMask;
-  XChangeWindowAttributes(display, client.window, CWEventMask|CWDontPropagate,
-                          &attrib_set);
-
   XSetWindowBorderWidth(display, client.window, 0);
   getWMName();
   getWMIconName();
