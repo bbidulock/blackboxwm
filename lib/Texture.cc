@@ -33,6 +33,9 @@
 #include <algorithm>
 
 
+bt::Texture::~Texture(void) { }
+
+
 void bt::Texture::setColor(const bt::Color &new_color) {
   c = new_color;
 

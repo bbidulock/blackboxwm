@@ -78,6 +78,7 @@ namespace bt {
 
     inline Texture(void) : t(0ul), bw(0u) { }
     inline Texture(const Texture &tt) { *this = tt; }
+    ~Texture(void);
 
     inline const std::string &description(void) const
     { return descr; }
