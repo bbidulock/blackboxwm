@@ -1832,25 +1832,22 @@ void BlackboxWindow::restoreAttributes(void) {
 
   if ((net->flags & AttribMaxHoriz) ||
       (net->flags & AttribMaxVert)) {
-    int x = net->premax_x, y = net->premax_y;
-    unsigned int w = net->premax_w, h = net->premax_h;
+    blackbox_attrib.premax_x = net->premax_x;
+    blackbox_attrib.premax_y = net->premax_y;
+    blackbox_attrib.premax_w = net->premax_w;
+    blackbox_attrib.premax_h = net->premax_h;
+
     flags.maximized = 0;
 
-    unsigned int m = 0;
-    if ((net->flags & AttribMaxHoriz) &&
-        (net->flags & AttribMaxVert))
-      m = (net->attrib & (AttribMaxHoriz | AttribMaxVert)) ? 1 : 0;
-    else if (net->flags & AttribMaxVert)
-      m = (net->attrib & AttribMaxVert) ? 2 : 0;
-    else if (net->flags & AttribMaxHoriz)
-      m = (net->attrib & AttribMaxHoriz) ? 3 : 0;
+    if (net->flags & AttribMaxHoriz && net->flags & AttribMaxVert &&
+        net->attrib & (AttribMaxHoriz | AttribMaxVert))
+      flags.maximized = 1;
+    else if (net->flags & AttribMaxVert && net->attrib & AttribMaxVert)
+        flags.maximized = 2;
+    else if (net->flags & AttribMaxHoriz && net->attrib & AttribMaxHoriz)
+        flags.maximized = 3;
 
-    if (m) maximize(m);
-
-    blackbox_attrib.premax_x = x;
-    blackbox_attrib.premax_y = y;
-    blackbox_attrib.premax_w = w;
-    blackbox_attrib.premax_h = h;
+    if (flags.maximized) remaximize();
   }
 
   setState(current_state);
