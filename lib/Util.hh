@@ -42,12 +42,6 @@ typedef XID Drawable;
 typedef XID Pixmap;
 typedef XID Window;
 
-#ifndef _XLIB_H_
-#  define GXcopy 3
-#  define ClipByChildren 0
-#  define None 0
-#endif
-
 namespace bt {
 
   // XXX perhaps we could just call this SENTINEL?
