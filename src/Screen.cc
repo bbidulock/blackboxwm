@@ -238,6 +238,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
                             iconmenu, 499u);
 
   current_workspace = workspacesList.front();
+  current_workspace_id = current_workspace->getID();
   workspacemenu->setItemChecked(current_workspace->getID(), true);
 
   removeWorkspaceNames(); // do not need them any longer
