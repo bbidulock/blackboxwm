@@ -109,7 +109,7 @@ namespace bt {
 
   struct PointerAssassin {
     template<typename T>
-    inline void operator()(const T ptr) const {
+    void operator()(const T ptr) const {
       delete ptr;
     }
   };

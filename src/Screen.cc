@@ -1347,17 +1347,21 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
       std::vector<std::string>::iterator it = ls.begin(),
                                         end = ls.end();
       for (; it != end; ++it) {
-        const std::string& fname = *it;
+        std::string& fname = *it;
 
-        if (fname[fname.size()-1] == '~')
+        if (fname[0] == '.' || fname[fname.size()-1] == '~')
           continue;
 
         std::string style = stylesdir;
         style += '/';
         style += fname;
 
-        if (! stat(style.c_str(), &statbuf) && S_ISREG(statbuf.st_mode))
+        if (! stat(style.c_str(), &statbuf) && S_ISREG(statbuf.st_mode)) {
+          // convert 'This_Long_Name' to 'This Long Name'
+          std::replace(fname.begin(), fname.end(), '_', ' ');
+
           stylesmenu->insertFunction(fname, BScreen::SetStyle, style);
+        }
       }
 
       if (newmenu) {
@@ -1583,7 +1587,8 @@ void BScreen::buttonPressEvent(const XButtonEvent * const event) {
 }
 
 
-void BScreen::configureRequestEvent(const XConfigureRequestEvent* const event) {
+void BScreen::configureRequestEvent(const XConfigureRequestEvent* const event)
+{
   /*
     handle configure requests for windows that have no EventHandlers
     by simply configuring them as requested.
