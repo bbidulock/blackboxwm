@@ -2277,30 +2277,34 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
         client.state.modal = True;
       else
         client.state.modal = False;
-    } else if (first == netwm->wmStateMaximizedHorz() ||
-               second == netwm->wmStateMaximizedHorz()) {
+    }
+    if (first == netwm->wmStateMaximizedHorz() ||
+        second == netwm->wmStateMaximizedHorz()) {
       if (action == netwm->wmStateAdd() ||
           (action == netwm->wmStateToggle() &&
            ! (client.state.maximized == 1 || client.state.maximized == 3)))
         max_horz = 1;
       else
         max_horz = -1;
-    } else if (first == netwm->wmStateMaximizedVert() ||
-               second == netwm->wmStateMaximizedVert()) {
+    }
+    if (first == netwm->wmStateMaximizedVert() ||
+        second == netwm->wmStateMaximizedVert()) {
       if (action == netwm->wmStateAdd() ||
           (action == netwm->wmStateToggle() &&
            ! (client.state.maximized == 1 || client.state.maximized == 2)))
         max_vert = 1;
       else
         max_vert = -1;
-    } else if (first == netwm->wmStateShaded() ||
-               second == netwm->wmStateShaded()) {
+    }
+    if (first == netwm->wmStateShaded() ||
+        second == netwm->wmStateShaded()) {
       if ((action == netwm->wmStateRemove() && client.state.shaded) ||
           action == netwm->wmStateToggle() ||
           (action == netwm->wmStateAdd() && ! client.state.shaded))
         shade();
-    } else if (first == netwm->wmStateSkipTaskbar() ||
-               second == netwm->wmStateSkipTaskbar()) {
+    }
+    if (first == netwm->wmStateSkipTaskbar() ||
+        second == netwm->wmStateSkipTaskbar()) {
       if (action == netwm->wmStateAdd() ||
           (action == netwm->wmStateToggle() &&
            ! (client.state.skip == SKIP_TASKBAR ||
@@ -2308,8 +2312,9 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
         skip_taskbar = 1;
       else
         skip_taskbar = -1;
-    } else if (first == netwm->wmStateSkipPager() ||
-               second == netwm->wmStateSkipPager()) {
+    }
+    if (first == netwm->wmStateSkipPager() ||
+        second == netwm->wmStateSkipPager()) {
       if (action == netwm->wmStateAdd() ||
           (action == netwm->wmStateToggle() &&
            ! (client.state.skip == SKIP_PAGER ||
@@ -2317,23 +2322,28 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
         skip_pager = 1;
       else
         skip_pager = -1;
-    } else if (first == netwm->wmStateHidden() ||
+    }
+    if (first == netwm->wmStateHidden() ||
                second == netwm->wmStateHidden()) {
       /* ignore this message */
-    } else if (first == netwm->wmStateFullscreen() ||
-               second == netwm->wmStateFullscreen()) {
+    }
+    if (first == netwm->wmStateFullscreen() ||
+        second == netwm->wmStateFullscreen()) {
       if (action == netwm->wmStateAdd() ||
           (action == netwm->wmStateToggle() &&
            ! client.state.fullscreen)) {
         client.state.fullscreen = True;
         client.state.layer = LAYER_FULLSCREEN;
+        reconfigure();
       } else if (action == netwm->wmStateToggle() ||
                  action == netwm->wmStateRemove()) {
         client.state.fullscreen = False;
         client.state.layer = LAYER_NORMAL;
+        reconfigure();
       }
-    } else if (first == netwm->wmStateAbove() ||
-               second == netwm->wmStateAbove()) {
+    }
+    if (first == netwm->wmStateAbove() ||
+        second == netwm->wmStateAbove()) {
       if (action == netwm->wmStateAdd() ||
           (action == netwm->wmStateToggle() &&
            client.state.layer != LAYER_ABOVE)) {
@@ -2342,8 +2352,9 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
                  action == netwm->wmStateRemove()) {
         client.state.layer = LAYER_NORMAL;
       }
-    } else if (first == netwm->wmStateBelow() ||
-               second == netwm->wmStateBelow()) {
+    }
+    if (first == netwm->wmStateBelow() ||
+        second == netwm->wmStateBelow()) {
       if (action == netwm->wmStateAdd() ||
           (action == netwm->wmStateToggle() &&
            client.state.layer != LAYER_BELOW)) {
