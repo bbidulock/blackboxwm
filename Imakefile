@@ -24,9 +24,11 @@ XCOMM Various defines for building blackbox
 INC =		blackbox.hh debug.hh graphics.hh icon.hh llist.hh \
 		menu.hh session.hh window.hh workspace.hh
 SRC =		blackbox.cc debug.cc graphics.cc icon.cc llist.cc \
-		main.cc menu.cc session.cc window.cc workspace.cc
+		main.cc menu.cc session.cc sessionmenu.cc window.cc \
+		windowmenu.cc workspace.cc workspacemenu.cc
 OBJ =		blackbox.o debug.o graphics.o icon.o main.o menu.o \
-		llist.o session.o window.o workspace.o
+		llist.o session.o sessionmenu.o window.o windowmenu.o \
+		workspace.o workspacemenu.o
 EXTRA_DEFS =	-Wall -W -DSHAPE
 DEFAULTS_PATH =	-DXAPPLOADDIR=\"$(XAPPLOADDIR)\" -DXLIBDIR=\"$(LIBDIR)\"
 LIBS =		$(XLIB) $(EXTENSIONLIB)

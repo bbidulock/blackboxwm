@@ -128,7 +128,6 @@ Blackbox::Blackbox(int argc, char **argv) {
   //
 
   session_list->insert(new BlackboxSession(session_display));
-  debug->msg("%s: leaving Blackbox::Blackbox\n", __FILE__);
 }
 
 
@@ -136,10 +135,7 @@ Blackbox::~Blackbox(void) {
   debug->msg("%s: Blackbox::~Blackbox\n", __FILE__);
 
   delete session_list;
-
-  debug->msg("%s: leaving Blackbox::~Blackbox\n", __FILE__);
   delete debug;
-
 }
 
 
@@ -157,7 +153,6 @@ void Blackbox::EventLoop(void) {
 
   session_list->at(0)->EventLoop();
 
-  debug->msg("%s: leaving Blackbox::EventLoop\n", __FILE__);
 }
 
 
@@ -180,8 +175,6 @@ void Blackbox::Restart(char *prog) {
 
     execvp(b_argv[0], b_argv);
   }
-
-  debug->msg("%s: leaving Blackbox::Restart\n", __FILE__);
 }
 
 
@@ -190,6 +183,5 @@ void Blackbox::Shutdown(void) {
   for (int i = 0; i < session_list->count(); ++i)
     session_list->at(i)->Dissociate();
 
-  debug->msg("%s: leaving Blackbox::Shutdown\n", __FILE__);
   delete this;
 }

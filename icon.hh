@@ -37,7 +37,7 @@ private:
     Pixmap pixmap;
     Window client, window, subwindow;
     int x, y;
-    unsigned int width, height;
+    unsigned int height;
   } icon;
 
   BlackboxSession *session;
@@ -53,7 +53,6 @@ public:
   ~BlackboxIcon(void);
 
   Window iconWindow(void) { return icon.window; }
-  unsigned int Width(void) { return icon.width; }
   unsigned int Height(void) { return icon.height; }
   void move(int x, int y) { icon.x = x; icon.y = y; }
   void rereadLabel(void);

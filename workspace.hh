@@ -117,6 +117,8 @@ public:
 
   const int addWindow(BlackboxWindow *);
   const int removeWindow(BlackboxWindow *);
+  BlackboxWindow *window(int);
+  const int count(void);
   int showAll(void);
   int hideAll(void);
   int removeAll(void);
@@ -198,6 +200,10 @@ public:
     { return current->workspaceID(); }
   unsigned int Width(void)
     { return frame.frame_w; }
+  unsigned int iconWidth(void)
+    { return frame.button_w; }
+  unsigned int buttonWidth(void)
+    { return frame.button_w; }
   unsigned int Height(void)
     { return frame.frame_h; }
   void showMenu(void);

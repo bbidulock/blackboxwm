@@ -41,12 +41,7 @@ BlackboxIcon::BlackboxIcon(BlackboxSession *s, Window c) {
   if (! XGetIconName(display, icon.client, &icon.name))
     icon.name = 0;
 
-  int namewidth = (icon.name != NULL) ? 
-    XTextWidth(session->iconFont(), icon.name, strlen(icon.name)) :
-    XTextWidth(session->iconFont(), "Unnamed", strlen("Unnamed"));
-  icon.width = (namewidth + 4 < 90) ? 90 : namewidth + 4;
-  icon.height = session->iconFont()->ascent +
-    session->iconFont()->descent + 4;
+  icon.height = session->iconFont()->ascent + session->iconFont()->descent + 4;
 
   unsigned long attrib_mask = CWBackPixmap|CWBackPixel|CWBorderPixel|
     CWCursor|CWEventMask; 
@@ -60,9 +55,10 @@ BlackboxIcon::BlackboxIcon(BlackboxSession *s, Window c) {
     ButtonReleaseMask|ButtonMotionMask|ExposureMask;
   
   icon.window =
-    XCreateWindow(display, session->WSManager()->iconWindowID(), 1, 1, 92,
-		  icon.height, 0, session->Depth(), InputOutput,
-		  session->visual(), attrib_mask, &attrib);
+    XCreateWindow(display, session->WSManager()->iconWindowID(), 1, 1,
+		  ws_manager->iconWidth() - 2, icon.height, 0,
+		  session->Depth(), InputOutput, session->visual(),
+		  attrib_mask, &attrib);
   XSaveContext(display, icon.window, session->iconContext(),
 	       (XPointer) this);
 
@@ -74,14 +70,14 @@ BlackboxIcon::BlackboxIcon(BlackboxSession *s, Window c) {
   attrib.event_mask |= EnterWindowMask|LeaveWindowMask;
   attrib.background_pixel = session->frameColor().pixel;
   icon.subwindow =
-    XCreateWindow(display, icon.window, 0, 0, 92, icon.height, 0,
-		  session->Depth(), InputOutput, session->visual(),
-		  attrib_mask, &attrib);
+    XCreateWindow(display, icon.window, 0, 0, ws_manager->iconWidth() - 2,
+		  icon.height, 0, session->Depth(), InputOutput,
+		  session->visual(), attrib_mask, &attrib);
   XSaveContext(display, icon.subwindow, session->iconContext(),
 	       (XPointer) this);
   
-  BImage image(session, 92, icon.height, session->Depth(),
-	       session->frameColor());
+  BImage image(session, ws_manager->iconWidth() - 2, icon.height,
+	       session->Depth(), session->frameColor());
   Pixmap p = image.renderImage(session->toolboxTexture(), 0,
 			       session->toolboxColor(),
 			       session->toolboxToColor());
@@ -125,7 +121,7 @@ void BlackboxIcon::buttonPressEvent(XButtonEvent *) {
 void BlackboxIcon::buttonReleaseEvent(XButtonEvent *be) {
   debug->msg("%s:%d: BlackboxIcon::buttonReleaseEvent\n", __FILE__, __LINE__);
   if (be->button == 1 &&
-      be->x >= 0 && be->x <= (signed) icon.width &&
+      be->x >= 0 && be->x <= (signed) (ws_manager->iconWidth() - 2) &&
       be->y >= 0 && be->y <= (signed) icon.height) {
     XGrabServer(display);
     BlackboxWindow *win = session->getWindow(icon.client);
@@ -172,7 +168,7 @@ void BlackboxIcon::exposeEvent(XExposeEvent *) {
       XTextWidth(session->iconFont(), icon.name, strlen(icon.name)) :
       XTextWidth(session->iconFont(), "Unnamed", strlen("Unnamed"))) + 4;
 
-    if (w > 90) {
+    if (w > (signed) (ws_manager->iconWidth() - 2)) {
       int il;
       for (il = ((icon.name != NULL) ? strlen(icon.name) : strlen("Unnamed"));
        	   il > 0; --il) {
@@ -212,8 +208,13 @@ void BlackboxIcon::Reconfigure(void) {
   gcv.font = session->iconFont()->fid;
   XChangeGC(display, iconGC, GCForeground|GCFont, &gcv);
 
-  BImage image(session, 92, icon.height, session->Depth(),
-	       session->frameColor());
+  icon.height = session->iconFont()->ascent + session->iconFont()->descent + 4;
+  XResizeWindow(display, icon.window, ws_manager->iconWidth() - 2,
+		icon.height);
+  XResizeWindow(display, icon.subwindow, ws_manager->iconWidth() - 2,
+		icon.height);
+  BImage image(session, ws_manager->iconWidth() - 2, icon.height,
+	       session->Depth(), session->frameColor());
   Pixmap p = image.renderImage(session->toolboxTexture(), 0,
 			       session->toolboxColor(),
 			       session->toolboxToColor());

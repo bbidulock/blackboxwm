@@ -202,6 +202,7 @@ int BlackboxMenu::insert(char *label, int function, char *exec) {
     //    ret = insert(label, (void (*)()) session->Shutdown);
     break;
 
+  case BlackboxSession::B_WindowShade:
   case BlackboxSession::B_WindowClose:
   case BlackboxSession::B_WindowIconify:
   case BlackboxSession::B_WindowRaise:

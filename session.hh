@@ -75,7 +75,6 @@ public:
 
 class BlackboxSession {
 private:
-  int event_mask;
   unsigned int
     b1Pressed:1,
     b2Pressed:1,
@@ -132,8 +131,8 @@ private:
     int event_basep, error_basep;
   } shape;
 
-  int depth, screen;
-  uint xres, yres;
+  int depth, screen, event_mask, focus_window_number;
+  unsigned int xres, yres;
 
   friend SessionMenu;
 
@@ -244,7 +243,7 @@ public:
   void Dissociate(void);
   
   enum { B_Restart = 1, B_RestartOther, B_Exit, B_Shutdown, B_Execute,
-	 B_Reconfigure,
+	 B_Reconfigure, B_WindowShade,
 	 B_WindowClose, B_WindowMaximize, B_WindowIconify,
 	 B_WindowRaise, B_WindowLower, B_WindowSendToWorkspace };
   enum { B_TextureRSolid = 1, B_TextureSSolid, B_TextureFSolid,

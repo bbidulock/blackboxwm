@@ -225,6 +225,7 @@ public:
   void closeWindow(void);
   void withdrawWindow(void);
   void maximizeWindow(void);
+  void shadeWindow(void);
   void removeIcon(void) { icon = NULL; }
   Bool isIconic(void) { return iconic; }
   Bool resizable(void) { return (do_maximize|do_handle); }

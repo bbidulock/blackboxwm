@@ -28,7 +28,6 @@
 #include <X11/keysym.h>
 
 #include <string.h>
-#include <stdlib.h>
 #include <sys/time.h>
 
 
@@ -39,106 +38,6 @@ static int anotherWMRunning(Display *, XErrorEvent *) {
   exit(3);
   return(-1);
 }
-
-
-SessionMenu::SessionMenu(BlackboxSession *s) : BlackboxMenu(s)
-{ session = s; }
-SessionMenu::~SessionMenu(void) {
-  for (int i = 0; i < count(); i++)
-    remove(0);
-}
-
-
-int SessionMenu::insert(char *l, int f, char *e)
-{ return BlackboxMenu::insert(l, f, e); }
-int SessionMenu::insert(char *l, SessionMenu *s)
-{ return BlackboxMenu::insert(l, s); }
-
-
-int SessionMenu::remove(int index) {
-  if (index >= 0 && index < count()) {
-    BlackboxMenuItem *itmp = at(index);
-
-    if (itmp->Submenu())
-      delete itmp->Submenu();
-    if (itmp->Label())
-      delete itmp->Label();
-    if (itmp->Exec())
-      delete itmp->Exec();
-    
-    return BlackboxMenu::remove(index);
-  }
-
-  return -1;
-}
-
-
-void SessionMenu::showMenu(void)
-{ BlackboxMenu::showMenu(); }
-void SessionMenu::hideMenu(void)
-{ BlackboxMenu::hideMenu(); }
-void SessionMenu::moveMenu(int x, int y)
-{ BlackboxMenu::moveMenu(x, y); }
-void SessionMenu::updateMenu(void)
-{ BlackboxMenu::updateMenu(); }
-Window SessionMenu::windowID(void)
-{ return BlackboxMenu::windowID(); }
-void SessionMenu::itemPressed(int button, int item) {
-  if (button == 1 && hasSubmenu(item)) {
-    drawSubmenu(item);
-    XRaiseWindow(session->control(), at(item)->Submenu()->windowID());
-  }
-}
-
-
-void SessionMenu::titlePressed(int) { }
-void SessionMenu::titleReleased(int button) {
-  if (button == 3)
-    if (windowID() == session->rootmenu->windowID())
-      hideMenu();
-}
-
-
-void SessionMenu::itemReleased(int button, int index) {
-  if (button == 1) {
-    BlackboxMenuItem *item = at(index);
-    if (item->Function()) {
-      switch (item->Function()) {
-      case BlackboxSession::B_Reconfigure:
-	Session()->Reconfigure();
-	break;
-
-      case BlackboxSession::B_Restart:
-	Session()->Restart();
-	break;
-
-      case BlackboxSession::B_RestartOther:
-	blackbox->Restart(item->Exec());
-	break;
-
-      case BlackboxSession::B_Exit:
-	Session()->Exit();
-	break;
-      }
-
-      if (! session->rootmenu->userMoved() &&
-	  item->Function() != BlackboxSession::B_Reconfigure)
-	session->rootmenu->hideMenu();
-    } else if (item->Exec()) {
-      char *command = new char[strlen(item->Exec()) + 8];
-      sprintf(command, "exec %s &", item->Exec());
-      system(command);
-      delete [] command;
-      if (! session->rootmenu->userMoved())
-	session->rootmenu->hideMenu();
-    }
-  }
-}
-
-
-void SessionMenu::drawSubmenu(int index)
-{ BlackboxMenu::drawSubmenu(index); }
-
 
 
 BlackboxSession::BlackboxSession(char *display_name) {
@@ -152,6 +51,7 @@ BlackboxSession::BlackboxSession(char *display_name) {
   b2Pressed = False;
   b3Pressed = False;
   startup = True;
+  focus_window_number = -1;
 
   rootmenu = 0;
   resource.font.menu = resource.font.icon = resource.font.title = 0;
@@ -450,41 +350,29 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
     BlackboxMenu *bMenu = NULL;
     WorkspaceManager *wsMan = NULL;
 
-    if (e->xbutton.state == Mod1Mask && e->xbutton.button == 1) {
-      if (ws_manager->currentWorkspaceID() > 0)
-	ws_manager->changeWorkspaceID(ws_manager->currentWorkspaceID() - 1);
-      else
-	ws_manager->changeWorkspaceID(ws_manager->count() - 1);
-    } else if (e->xbutton.state == Mod1Mask && e->xbutton.button == 3) {
-      if (ws_manager->currentWorkspaceID() != ws_manager->count() - 1)
-	ws_manager->changeWorkspaceID(ws_manager->currentWorkspaceID() + 1);
-      else
-	ws_manager->changeWorkspaceID(0);
-    } else {
-      switch (e->xbutton.button) {
-      case 1: b1Pressed = True; break;
-      case 2: b2Pressed = True; break;
-      case 3: b3Pressed = True; break;
-      }
-      
-      if ((bWin = getWindow(e->xbutton.window)) != NULL) {
-	bWin->buttonPressEvent(&e->xbutton);
-      } else if ((bIcon = getIcon(e->xbutton.window)) != NULL) {
-	bIcon->buttonPressEvent(&e->xbutton);
-      } else if ((bMenu = getMenu(e->xbutton.window)) != NULL) {
-	bMenu->buttonPressEvent(&e->xbutton);
-      } else if ((wsMan = getWSManager(e->xbutton.window)) != NULL) {
-	wsMan->buttonPressEvent(&e->xbutton);
-      } else if (e->xbutton.window == root && e->xbutton.button == 3) {
-	rootmenu->moveMenu(e->xbutton.x_root - (rootmenu->Width() / 2),
-			   e->xbutton.y_root -
-			   (rootmenu->titleHeight() / 2));
-	
-	if (! rootmenu->menuVisible())
-	  rootmenu->showMenu();
-      }
+    switch (e->xbutton.button) {
+    case 1: b1Pressed = True; break;
+    case 2: b2Pressed = True; break;
+    case 3: b3Pressed = True; break;
     }
-
+    
+    if ((bWin = getWindow(e->xbutton.window)) != NULL) {
+      bWin->buttonPressEvent(&e->xbutton);
+    } else if ((bIcon = getIcon(e->xbutton.window)) != NULL) {
+      bIcon->buttonPressEvent(&e->xbutton);
+    } else if ((bMenu = getMenu(e->xbutton.window)) != NULL) {
+      bMenu->buttonPressEvent(&e->xbutton);
+    } else if ((wsMan = getWSManager(e->xbutton.window)) != NULL) {
+      wsMan->buttonPressEvent(&e->xbutton);
+    } else if (e->xbutton.window == root && e->xbutton.button == 3) {
+      rootmenu->moveMenu(e->xbutton.x_root - (rootmenu->Width() / 2),
+			   e->xbutton.y_root -
+			 (rootmenu->titleHeight() / 2));
+      
+      if (! rootmenu->menuVisible())
+	rootmenu->showMenu();
+    }
+    
     break;
   }
   
@@ -646,8 +534,10 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
   
   case FocusIn: {
     BlackboxWindow *iWin = getWindow(e->xfocus.window);
-    if (iWin != NULL)
+    if (iWin != NULL) {
       iWin->setFocusFlag(True);
+      focus_window_number = iWin->windowNumber();
+    }
 
     break;
   }
@@ -661,9 +551,49 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
   }
   
   case KeyPress: {
-    debug->msg("%s: BlackboxSession::ProcessEvent:\n\t"
-	       "[ key press state %x keycode %x ]\n", __FILE__, e->xkey.state,
-	       e->xkey.keycode);
+    if (e->xkey.state == Mod1Mask) {
+      if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Tab) {
+	if (ws_manager->currentWorkspace()->count() > 1) {
+	  BlackboxWindow *next, *current =
+	    ws_manager->currentWorkspace()->window(focus_window_number);
+	  
+	  int next_window_number, level = 0;
+	  do {
+	    next_window_number =
+	      ((focus_window_number + (++level)) <
+	       ws_manager->currentWorkspace()->count())
+	      ? focus_window_number + level : 0;
+	    next = ws_manager->currentWorkspace()->window(next_window_number);
+	    
+	  } while ((! next->setInputFocus()) &&
+		   (next_window_number != focus_window_number));
+
+	  if (next_window_number != focus_window_number) {
+	    current->setFocusFlag(False);
+	    ws_manager->currentWorkspace()->raiseWindow(next);
+	  }
+	} else if (ws_manager->currentWorkspace()->count() == 1) {
+	  ws_manager->currentWorkspace()->window(0)->setInputFocus();
+	}
+      } else if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Left){
+	if (ws_manager->currentWorkspaceID() > 0)
+	  ws_manager->changeWorkspaceID(ws_manager->currentWorkspaceID() - 1);
+	else
+	  ws_manager->changeWorkspaceID(ws_manager->count() - 1);
+      } else if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Right){
+	if (ws_manager->currentWorkspaceID() != ws_manager->count() - 1)
+	  ws_manager->changeWorkspaceID(ws_manager->currentWorkspaceID() + 1);
+	else
+	  ws_manager->changeWorkspaceID(0);
+      }
+    } else {
+      debug->msg("%s: BlackboxSession::ProcessEvent:\n\t"
+		 "[ key press state %x keycode %x (%s)]\n", __FILE__,
+		 e->xkey.state, e->xkey.keycode,
+		 XKeysymToString(XKeycodeToKeysym(display,
+						  e->xkey.keycode, 0)));
+    }
+
     break;
   }
 

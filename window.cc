@@ -29,191 +29,6 @@
 #include <string.h>
 
 
-const unsigned long CLIENT_EVENT_MASK = (StructureNotifyMask|\
-					 PropertyChangeMask|\
-					 EnterWindowMask|\
-					 LeaveWindowMask|\
-					 ColormapChangeMask|\
-					 SubstructureNotifyMask|\
-					 FocusChangeMask);
-
-
-// *************************************************************************
-// Window Menu class code
-// *************************************************************************
-
-BlackboxWindowMenu::BlackboxWindowMenu(BlackboxWindow *w, BlackboxSession *s) :
-  BlackboxMenu(s)
-{
-  window = w;
-  session = s;
-  hideTitle();
-  setMovable(False);
-  
-  send_to_menu = new SendToWorkspaceMenu(window, session);
-  insert("Send To ...", send_to_menu);
-  insert("Iconify", BlackboxSession::B_WindowIconify);
-
-  if (window->resizable())
-    insert("(Un)Maximize", BlackboxSession::B_WindowMaximize);
-
-  insert("Close", BlackboxSession::B_WindowClose);
-  insert("Raise", BlackboxSession::B_WindowRaise);
-  insert("Lower", BlackboxSession::B_WindowLower);
-
-  updateMenu();
-}
-
-
-BlackboxWindowMenu::~BlackboxWindowMenu(void)
-{ delete send_to_menu; }
-
-
-void BlackboxWindowMenu::Reconfigure(void) {
-  send_to_menu->Reconfigure();
-  send_to_menu->updateMenu();
-  BlackboxMenu::Reconfigure();
-  BlackboxMenu::updateMenu();
-}
-
-
-void BlackboxWindowMenu::titlePressed(int) { }
-void BlackboxWindowMenu::titleReleased(int) { }
-void BlackboxWindowMenu::itemPressed(int button, int item) {
-  if (button == 1 && item == 0) {
-    send_to_menu->updateMenu();
-    XRaiseWindow(session->control(), send_to_menu->windowID());
-    BlackboxMenu::drawSubmenu(item);
-  } else if (button == 3 && item == 0) {
-    send_to_menu->updateMenu();
-    XRaiseWindow(session->control(), send_to_menu->windowID());
-  }
-}
-
-
-void BlackboxWindowMenu::itemReleased(int button, int item) {
-  if (button == 1) {
-    if (window->resizable())
-      switch (item) {
-      case 1:
-	hideMenu();
-	window->iconifyWindow();
-	break;
-	
-      case 2:
-	hideMenu();
-	window->maximizeWindow();
-	break;
-	
-      case 3:
-	hideMenu();
-	window->closeWindow();
-	break;
-	
-      case 4:
-	hideMenu();
-	session->raiseWindow(window);
-	break;
-	
-      case 5:
-	hideMenu();
-	session->lowerWindow(window);
-	break;
-      }
-    else
-      switch (item) {
-      case 1:
-	hideMenu();
-	window->iconifyWindow();
-	break;
-	
-      case 2:
-	hideMenu();
-	window->closeWindow();
-	break;
-	
-      case 3:
-	hideMenu();
-	session->raiseWindow(window);
-	break;
-	
-      case 4:
-	hideMenu();
-	session->lowerWindow(window);
-	break;
-      }
-  }
-}
-
-
-void BlackboxWindowMenu::showMenu()
-{ BlackboxMenu::showMenu(); window->setMenuVisible(true); }
-void BlackboxWindowMenu::hideMenu() {
-  send_to_menu->hideMenu();
-  BlackboxMenu::hideMenu();
-  window->setMenuVisible(false);
-}
-
-
-void BlackboxWindowMenu::moveMenu(int x, int y)
-{ BlackboxMenu::moveMenu(x, y); }
-
-
-// *************************************************************************
-// Window send to workspace menu class code
-// *************************************************************************
-
-SendToWorkspaceMenu::SendToWorkspaceMenu(BlackboxWindow *w,
-					 BlackboxSession *s)
-  : BlackboxMenu(s)
-{
-  window = w;
-  ws_manager = s->WSManager();
-
-  hideTitle();
-  updateMenu();
-}
-
-
-void SendToWorkspaceMenu::titlePressed(int) { }
-void SendToWorkspaceMenu::titleReleased(int) { }
-void SendToWorkspaceMenu::itemPressed(int, int) { }
-void SendToWorkspaceMenu::itemReleased(int button, int item) {
-  if (button == 1)
-    if (item < ws_manager->count()) {
-      if (item != ws_manager->currentWorkspaceID()) {
-	ws_manager->workspace(window->workspace())->removeWindow(window);
-	ws_manager->workspace(item)->addWindow(window);
-	window->withdrawWindow();
-	hideMenu();
-      }
-    } else
-      updateMenu();
-}
-
-
-void SendToWorkspaceMenu::showMenu(void) {
-  updateMenu();
-  BlackboxMenu::showMenu();
-}
-
-
-void SendToWorkspaceMenu::hideMenu(void)
-{ BlackboxMenu::hideMenu(); }
-void SendToWorkspaceMenu::updateMenu(void) {
-  int i, r = BlackboxMenu::count();
-
-  if (BlackboxMenu::count() != 0)
-    for (i = 0; i < r; ++i)
-      BlackboxMenu::remove(0);
-  
-  for (i = 0; i < ws_manager->count(); ++i)
-    BlackboxMenu::insert(ws_manager->workspace(i)->name());
-  
-  BlackboxMenu::updateMenu();
-}
-  
-
 // *************************************************************************
 // Window class code
 // *************************************************************************
@@ -348,10 +163,13 @@ BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window window) {
   createDecorations();
   associateClientWindow();
   positionButtons();
-  XGrabButton(display,  1, Mod1Mask, frame.window, True, ButtonPressMask,
-	      GrabModeAsync, GrabModeSync, frame.window, None);
-  XGrabButton(display,  3, Mod1Mask, frame.window, True, ButtonPressMask,
-	      GrabModeAsync, GrabModeSync, frame.window, None);
+
+  XGrabKey(display, XKeysymToKeycode(display, XK_Tab), Mod1Mask, frame.window,
+	   True, GrabModeAsync, GrabModeAsync);
+  XGrabKey(display, XKeysymToKeycode(display, XK_Left), Mod1Mask, frame.window,
+	   True, GrabModeAsync, GrabModeAsync);
+  XGrabKey(display, XKeysymToKeycode(display, XK_Right), Mod1Mask,
+	   frame.window, True, GrabModeAsync, GrabModeAsync);
 
   XLowerWindow(display, client.window);
   XMapSubwindows(display, frame.title);
@@ -507,8 +325,12 @@ void BlackboxWindow::associateClientWindow(void) {
   Protocols.WM_DELETE_WINDOW = False;
   Protocols.WM_TAKE_FOCUS = True;
 
+  const unsigned long event_mask = StructureNotifyMask|PropertyChangeMask|
+    EnterWindowMask|LeaveWindowMask|ColormapChangeMask|SubstructureNotifyMask|
+    FocusChangeMask;
+
   XSetWindowAttributes attrib_set;
-  attrib_set.event_mask = CLIENT_EVENT_MASK;
+  attrib_set.event_mask = event_mask;
   attrib_set.do_not_propagate_mask = ButtonPressMask|ButtonReleaseMask;
   attrib_set.save_under = False;
   XChangeWindowAttributes(display, client.window, CWEventMask|CWDontPropagate|
@@ -1393,10 +1215,10 @@ void BlackboxWindow::maximizeWindow(void) {
 
   XGrabServer(display);
 
-  static int unmaximize = 0, px, py;
+  static int px, py;
   static unsigned int pw, ph;
 
-  if (! unmaximize) {
+  if (maximized) {
     int dx, dy;
     unsigned int dw, dh;
 
@@ -1424,15 +1246,26 @@ void BlackboxWindow::maximizeWindow(void) {
     
     dy = ((session->YResolution()) - dh) / 2;
 
-    unmaximize = 1;
+    maximized = True;
     configureWindow(dx, dy, dw, dh);
     session->raiseWindow(this);
   } else {
     configureWindow(px, py, pw, ph);
-    unmaximize = 0;
+    maximized = False;
   }
 
   XUngrabServer(display);
+}
+
+
+void BlackboxWindow::shadeWindow(void) {
+  if (shaded) {
+    XResizeWindow(display, frame.window, frame.width, frame.height);
+    shaded = False;
+  } else {
+    XResizeWindow(display, frame.window, frame.width, frame.title_h);
+    shaded = True;
+  }
 }
 
 
@@ -1797,10 +1630,13 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
   debug->msg("%s: BlackboxWindow::buttonReleaseEvent\n", __FILE__);
 
   if (re->button == 1) {
-    if (re->window == frame.title && moving) {
-      configureWindow(frame.x, frame.y, frame.width, frame.height);
-      moving = False;
-      XUngrabPointer(display, CurrentTime);
+    if (re->window == frame.title) {
+      if (moving) {
+	configureWindow(frame.x, frame.y, frame.width, frame.height);
+	moving = False;
+	XUngrabPointer(display, CurrentTime);
+      } else if ((re->state&ControlMask))
+	shadeWindow();
     } else if (resizing) {
       XDrawLine(display, session->Root(), session->GCOperations(),
 		frame.x + 1, frame.y + frame.title_h, frame.x_resize + 1,
