@@ -282,7 +282,7 @@ unsigned long bt::XColorTable::pixel(unsigned int red,
 
 
 bt::Image::Image(unsigned int w, unsigned int h)
-  : _dpy(0), _screen(~0u), _colortable(0), width(w), height(h) {
+  :  width(w), height(h), _dpy(0), _screen(~0u) {
   assert(width > 0  && width  < maximumWidth);
   assert(height > 0 && height < maximumHeight);
 
@@ -504,13 +504,15 @@ void assignPixelData(unsigned int bit_depth, unsigned char **data,
 // algorithm: ordered dithering... many many thanks to rasterman
 // (raster@rasterman.com) for telling me about this... portions of this
 // code is based off of his code in Imlib
-void bt::Image::TrueColorDither(unsigned int bit_depth, int bytes_per_line,
+void bt::Image::TrueColorDither(XColorTable *colortable,
+                                unsigned int bit_depth,
+                                int bytes_per_line,
                                 unsigned char *pixel_data) {
   unsigned int x, y, dithx, dithy, r, g, b, er, eg, eb, offset;
   unsigned char *ppixel_data = pixel_data;
   unsigned int maxr = 255, maxg = 255, maxb = 255;
 
-  _colortable->map(maxr, maxg, maxb);
+  colortable->map(maxr, maxg, maxb);
 
   for (y = 0, offset = 0; y < height; ++y) {
     dithy = y & 0x3;
@@ -522,28 +524,28 @@ void bt::Image::TrueColorDither(unsigned int bit_depth, int bytes_per_line,
       g = green[offset];
       b = blue[offset];
 
-      _colortable->mapDither(r, g, b, er, eg, eb);
+      colortable->mapDither(r, g, b, er, eg, eb);
 
       if ((dither4[dithy][dithx] < er) && (r < maxr)) r++;
       if ((dither4[dithy][dithx] < eg) && (g < maxg)) g++;
       if ((dither4[dithy][dithx] < eb) && (b < maxb)) b++;
 
-      assignPixelData(bit_depth, &pixel_data, _colortable->pixel(r, g, b));
+      assignPixelData(bit_depth, &pixel_data, colortable->pixel(r, g, b));
     }
 
     pixel_data = (ppixel_data += bytes_per_line);
   }
 }
 
-#ifdef ORDEREDPSEUDO
 
-void bt::Image::OrderedPseudoColorDither(int bytes_per_line,
+void bt::Image::OrderedPseudoColorDither(XColorTable *colortable,
+                                         int bytes_per_line,
                                          unsigned char *pixel_data) {
   unsigned int x, y, dithx, dithy, r, g, b, er, eg, eb, offset;
   unsigned char *ppixel_data = pixel_data;
   unsigned int maxr = 255, maxg = 255, maxb = 255;
 
-  _colortable->map(maxr, maxg, maxb);
+  colortable->map(maxr, maxg, maxb);
 
   for (y = 0, offset = 0; y < height; y++) {
     dithy = y & 7;
@@ -555,21 +557,22 @@ void bt::Image::OrderedPseudoColorDither(int bytes_per_line,
       g = green[offset];
       b = blue[offset];
 
-      _colortable->mapDither(r, g, b, er, eg, eb);
+      colortable->mapDither(r, g, b, er, eg, eb);
 
       if ((dither8[dithy][dithx] < er) && (r < maxr)) r++;
       if ((dither8[dithy][dithx] < eg) && (g < maxg)) g++;
       if ((dither8[dithy][dithx] < eb) && (b < maxb)) b++;
 
-      *(pixel_data++) = _colortable->pixel(r, g, b);
+      *(pixel_data++) = colortable->pixel(r, g, b);
     }
 
     pixel_data = (ppixel_data += bytes_per_line);
   }
 }
-#endif
 
-void bt::Image::PseudoColorDither(int bytes_per_line,
+
+void bt::Image::PseudoColorDither(XColorTable *colortable,
+                                  int bytes_per_line,
                                   unsigned char *pixel_data) {
   short *terr,
     *rerr = new short[width + 2],
@@ -615,13 +618,13 @@ void bt::Image::PseudoColorDither(int bytes_per_line,
       if (gg > 255) gg = 255; else if (gg < 0) gg = 0;
       if (bb > 255) bb = 255; else if (bb < 0) bb = 0;
 
-      _colortable->map(r, g, b);
+      colortable->map(r, g, b);
 
       rer = rerr[x] - r*dd;
       ger = gerr[x] - g*dd;
       ber = berr[x] - b*dd;
 
-      *pixel_data++ = _colortable->pixel(r, g, b);
+      *pixel_data++ = colortable->pixel(r, g, b);
 
       r = rer >> 1;
       g = ger >> 1;
@@ -669,7 +672,7 @@ XImage *bt::Image::renderXImage(void) {
     colorTableList[_screen] =
       new XColorTable(*_dpy, _screen, colorsPerChannel());
 
-  _colortable = colorTableList[_screen];
+  XColorTable *colortable = colorTableList[_screen];
 
   // create XImage
   const ScreenInfo * const screeninfo = _dpy->screenNumber(_screen);
@@ -695,15 +698,15 @@ XImage *bt::Image::renderXImage(void) {
     switch (screeninfo->getVisual()->c_class) {
     case TrueColor:
     case DirectColor:
-      TrueColorDither(o, image->bytes_per_line, d);
+      TrueColorDither(colortable, o, image->bytes_per_line, d);
       break;
 
     case StaticColor:
     case PseudoColor: {
 #ifdef ORDEREDPSEUDO
-      OrderedPseudoColorDither(image->bytes_per_line, d);
+      OrderedPseudoColorDither(colortable, image->bytes_per_line, d);
 #else
-      PseudoColorDither(image->bytes_per_line, d);
+      PseudoColorDither(colortable, image->bytes_per_line, d);
 #endif
       break;
     }
@@ -725,8 +728,8 @@ XImage *bt::Image::renderXImage(void) {
         g = green[offset];
         b = blue[offset];
 
-        _colortable->map(r, g, b);
-        assignPixelData(o, &pixel_data, _colortable->pixel(r, g, b));
+        colortable->map(r, g, b);
+        assignPixelData(o, &pixel_data, colortable->pixel(r, g, b));
       }
 
       pixel_data = (ppixel_data += image->bytes_per_line);

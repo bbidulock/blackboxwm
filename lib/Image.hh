@@ -60,22 +60,25 @@ namespace bt {
     Pixmap render(const Texture &texture);
 
   private:
-    Display *_dpy;
-    unsigned int _screen;
-    XColorTable *_colortable;
-
-    bool interlaced;
-
-    Color from, to;
     unsigned char *red, *green, *blue;
     unsigned int width, height;
 
-    void TrueColorDither(unsigned int bit_depth, int bytes_per_line,
+
+    Display *_dpy;
+    unsigned int _screen;
+    bool interlaced;
+    Color from, to;
+
+    void TrueColorDither(XColorTable *colortable,
+                         unsigned int bit_depth,
+                         int bytes_per_line,
                          unsigned char *pixel_data);
-    void PseudoColorDither(int bytes_per_line, unsigned char *pixel_data);
-#ifdef ORDEREDPSEUDO
-    void OrderedPseudoColorDither(int bytes_per_line, unsigned char *pixel_data);
-#endif
+    void PseudoColorDither(XColorTable *colortable,
+                           int bytes_per_line,
+                           unsigned char *pixel_data);
+    void OrderedPseudoColorDither(XColorTable *colortable,
+                                  int bytes_per_line,
+                                  unsigned char *pixel_data);
 
     Pixmap renderPixmap(void);
     Pixmap render_solid(const Texture &texture);
