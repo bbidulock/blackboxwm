@@ -168,6 +168,9 @@ namespace bt {
     void removeProperty(Window target, Atom atom) const;
     bool isSupportedWMWindowType(Atom atom) const;
 
+    void setProperty(Window target, Atom type, Atom property,
+                     unsigned char *data, unsigned long count) const;
+
     bool getProperty(Window target, Atom type, Atom property,
                      unsigned char** data) const;
     bool getListProperty(Window target, Atom type, Atom property,
