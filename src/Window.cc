@@ -3198,9 +3198,20 @@ void BlackboxWindow::restore(bool remap) {
   XUnmapWindow(blackbox->XDisplay(), client.window);
 
   XSetWindowBorderWidth(blackbox->XDisplay(), client.window, client.old_bw);
-  XMoveWindow(blackbox->XDisplay(), client.window,
-              client.rect.x() - frame.rect.x(),
-              client.rect.y() - frame.rect.y());
+  if (isMaximized()) {
+    // preserve the original size
+    XMoveResizeWindow(blackbox->XDisplay(), client.window,
+                      client.rect.x() - frame.rect.x(),
+                      client.rect.y() - frame.rect.y(),
+                      client.premax.width() - (frame.margin.left
+                                               + frame.margin.right),
+                      client.premax.height() - (frame.margin.top
+                                                + frame.margin.bottom));
+  } else {
+    XMoveWindow(blackbox->XDisplay(), client.window,
+                client.rect.x() - frame.rect.x(),
+                client.rect.y() - frame.rect.y());
+  }
 
   XUngrabServer(blackbox->XDisplay());
 
