@@ -29,6 +29,8 @@
 
 #include <X11/Xlib.h>
 
+#include <algorithm>
+
 
 bt::Texture::Texture(void) : t(0ul), bw(0u) { }
 

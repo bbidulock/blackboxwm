@@ -32,6 +32,7 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include <algorithm>
 #include <list>
 
 // #define PIXMAPCACHE_DEBUG
