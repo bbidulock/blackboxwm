@@ -40,28 +40,34 @@ BWindowGroup::~BWindowGroup(void)
 { blackbox->removeWindowGroup(group); }
 
 
-void BWindowGroup::addWindow(BlackboxWindow *win) {
-  windowList.push_front(win);
-  addTransient(win);
-}
+void BWindowGroup::addWindow(BlackboxWindow *win)
+{ windowList.push_front(win); }
 
 
-void BWindowGroup::removeWindow(BlackboxWindow *win) {
-  removeTransient(win);
+void BWindowGroup::removeWindow(BlackboxWindow *win)
+{
   windowList.remove(win);
-
   if (windowList.empty())
     delete this;
 }
 
 
 void BWindowGroup::addTransient(BlackboxWindow *win) {
-  if (win->isGroupTransient())
-    transientList.push_front(win);
+  assert(win->isGroupTransient());
+  /*
+    even though 'win' is a group transient, the group leader may be a
+    managed top-level window, in which case we want the transient to
+    be listed in the top-level's transient list, not here
+  */
+  const BlackboxWindow * const tmp = win->findTransientFor();
+  assert(!tmp);
+  transientList.push_front(win);
 }
 
 
 void BWindowGroup::removeTransient(BlackboxWindow *win) {
-  if (win->isGroupTransient())
-    transientList.remove(win);
+  assert(win->isGroupTransient());
+  const BlackboxWindow * const tmp = win->findTransientFor();
+  assert(!tmp);
+  transientList.remove(win);
 }

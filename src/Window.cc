@@ -1008,6 +1008,9 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
                                              _screen->screenInfo(),
                                              client.wmhints);
 
+  if (client.wmhints.window_group != None)
+    ::update_window_group(client.wmhints.window_group, blackbox, this);
+
   if (isTransient()) {
     // add ourselves to our transient_for
     BlackboxWindow *win = findTransientFor();
@@ -1015,11 +1018,12 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
       win->addTransient(this);
       client.ewmh.workspace = win->workspace();
       setLayer(win->layer());
+    } else if (isGroupTransient()) {
+      BWindowGroup *group = findWindowGroup();
+      if (group)
+        group->addTransient(this);
     }
   }
-
-  if (client.wmhints.window_group != None)
-    ::update_window_group(client.wmhints.window_group, blackbox, this);
 
   client.state.visible = false;
   client.state.iconic = false;
@@ -1172,11 +1176,15 @@ BlackboxWindow::~BlackboxWindow(void) {
   if (group)
     group->removeWindow(this);
 
-  // remove ourselves from our transient_for
   if (isTransient()) {
+  // remove ourselves from our transient_for
     BlackboxWindow *win = findTransientFor();
-    if (win)
+    if (win) {
       win->removeTransient(this);
+    } else if (isGroupTransient()) {
+      if (group)
+        group->removeTransient(this);
+    }
     client.transient_for = 0;
   }
 
@@ -1853,14 +1861,12 @@ void BlackboxWindow::configureShape(void) {
 #endif // SHAPE
 
 
-void BlackboxWindow::addTransient(BlackboxWindow *win) {
-  client.transientList.push_front(win);
-}
+void BlackboxWindow::addTransient(BlackboxWindow *win)
+{ client.transientList.push_front(win); }
 
 
-void BlackboxWindow::removeTransient(BlackboxWindow *win) {
-  client.transientList.remove(win);
-}
+void BlackboxWindow::removeTransient(BlackboxWindow *win)
+{ client.transientList.remove(win); }
 
 
 BlackboxWindow *BlackboxWindow::findTransientFor(void) const {
@@ -2969,15 +2975,14 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
   switch(event->atom) {
   case XA_WM_TRANSIENT_FOR: {
     if (isTransient()) {
-      if (isGroupTransient()) {
+      // remove ourselves from our transient_for
+      BlackboxWindow *win = findTransientFor();
+      if (win) {
+        win->removeTransient(this);
+      } else if (isGroupTransient()) {
         BWindowGroup *group = findWindowGroup();
         if (group)
           group->removeTransient(this);
-      } else {
-        // remove ourselves from our transient_for
-        BlackboxWindow *win = findTransientFor();
-        if (win)
-          win->removeTransient(this);
       }
     }
 
@@ -2988,18 +2993,16 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
                                                client.wmhints);
 
     if (isTransient()) {
-      if (isGroupTransient()) {
+      BlackboxWindow *win = findTransientFor();
+      if (win) {
+        // add ourselves to our new transient_for
+        win->addTransient(this);
+        changeWorkspace(win->workspace());
+        changeLayer(win->layer());
+      } else if (isGroupTransient()) {
         BWindowGroup *group = findWindowGroup();
         if (group)
           group->addTransient(this);
-      } else {
-        BlackboxWindow *win = findTransientFor();
-        if (win) {
-          // add ourselves to our new transient_for
-          win->addTransient(this);
-          changeWorkspace(win->workspace());
-          changeLayer(win->layer());
-        }
       }
     }
 
