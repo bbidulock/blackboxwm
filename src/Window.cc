@@ -2288,6 +2288,7 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
     if (!XGetTransientForHint(display, client.window,
                               &(client.transient_for))) {
       client.transient_for = None;
+      flags.transient = False;
     } else {
       if (client.transient_for == None ||
           client.transient_for == client.window) {
