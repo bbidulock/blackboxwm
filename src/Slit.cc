@@ -360,7 +360,7 @@ void Slit::updateStrut(void) {
       strut.top = getY() + getExposedHeight() + (screen->getBorderWidth() * 2);
       break;
     case BottomCenter:
-      strut.bottom = getExposedHeight() + (screen->getBorderWidth() * 2);
+      strut.bottom = screen->getHeight() - getY();
       break;
     case TopLeft:
     case CenterLeft:
@@ -384,8 +384,7 @@ void Slit::updateStrut(void) {
     case BottomCenter:
     case BottomLeft:
     case BottomRight:
-      strut.bottom = screen->getHeight() - getY() +
-        (screen->getBorderWidth() * 2);
+      strut.bottom = screen->getHeight() - getY();
       break;
     case CenterLeft:
       strut.left = getExposedWidth() + (screen->getBorderWidth() * 2);

@@ -2468,14 +2468,14 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
           dx = srect.left();
         // snap right?
         else if (dright < snap_distance && dright < dleft)
-          dx = srect.right() - frame.rect.width();
+          dx = srect.right() - frame.rect.width() + 1;
 
         // snap top?
         if (dtop < snap_distance && dtop < dbottom)
           dy = srect.top();
         // snap bottom?
         else if (dbottom < snap_distance && dbottom < dtop)
-          dy = srect.bottom() - frame.rect.height();
+          dy = srect.bottom() - frame.rect.height() + 1;
 
         srect = screen->getRect(); // now get the full screen
 
@@ -2489,14 +2489,14 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
           dx = srect.left();
         // snap right?
         else if (dright < snap_distance && dright < dleft)
-          dx = srect.right() - frame.rect.width();
+          dx = srect.right() - frame.rect.width() + 1;
 
         // snap top?
         if (dtop < snap_distance && dtop < dbottom)
           dy = srect.top();
         // snap bottom?
         else if (dbottom < snap_distance && dbottom < dtop)
-          dy = srect.bottom() - frame.rect.height();
+          dy = srect.bottom() - frame.rect.height() + 1;
       }
 
       if (screen->doOpaqueMove()) {
