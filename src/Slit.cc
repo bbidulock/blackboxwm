@@ -417,11 +417,11 @@ void Slit::reposition(void) {
   frame.rect.setPos(x, y);
 
   if (screen->toolbar()) {
-    bt::Rect tbar_rect = screen->toolbar()->getRect();
+    bt::Rect tbar_rect = screen->toolbar()->rect();
     bt::Rect slit_rect = frame.rect;
 
     if (slit_rect.intersects(tbar_rect)) {
-      int delta = screen->toolbar()->getExposedHeight();
+      int delta = screen->toolbar()->exposedHeight();
       if (frame.rect.bottom() <= tbar_rect.bottom())
         delta = -delta;
 
