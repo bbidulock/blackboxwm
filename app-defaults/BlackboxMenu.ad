@@ -41,7 +41,14 @@
 
   [exec] (xterm) {xterm -ls}
   [exec] (XEmacs) {xemacs}
-  [exec] (Netscape) {netscape}
+  [submenu] (Netscape) {Netscape for X}
+    [exec] (Netscape Navigator) {netscape}
+    [submenu] (More...)
+      [exec] (Netscape Mail) {netscape -mail}
+      [exec] (Netscape News) {netscape -news}
+      [exec] (Netscape Composer) {netscape -edit}
+    [end]
+  [end]
 
 # how about a useful utility submenu
 
@@ -59,10 +66,13 @@
 
   [reconfig] (Reconfigure)
   [restart] (Restart)
-  [restart] (Start FVWM) {fvwm}
-  [restart] (Start WindowMaker) {wmaker}
+  [submenu] (Others) {Other Window Managers}
+    [restart] (Start FVWM) {fvwm}
+    [restart] (Start WindowMaker) {wmaker}
+  [end]
 
 # get me OUTTA HERE!
 
   [exit] (Exit)
 [end]
+

@@ -106,6 +106,8 @@ protected:
   void drawMaximizeButton(Bool);
   void configureWindow(int, int, unsigned int, unsigned int);
 
+  Bool validateClient(void);
+
 
 public:
   BlackboxWindow(Blackbox *, Window);

@@ -2,7 +2,22 @@ At the request of some people, here is a Change log starting with 0.33.0.
 Enjoy! :)
 
 
-Changes from 0.34.1 to 0.34.2:
+Changes from 0.34.2 to 0.34.3:
+	- this was a small change in the code... but a BIG change for the user
+	  base... the X error handler is now non fatal... yes... this means if
+	  blackbox encounters an X error (like a bad window or a bad match) it
+	  will fprintf() the error and continue running... the quick window bug
+          has been mostly fixed... i have a small app that i wrote that quickly
+	  maps a window, calls XSync()... then destroys the window and exits...
+	  the first time i ran this little beauty... blackbox died a horrible
+	  death... blackbox now handles this app nicely... but does
+	  occasionally report an error (during the decoration creation... which
+	  is promptly destroyed from the destroy notify event placed in the
+	  queue by the X server... thus... no memory leaks... no memory
+	  corruption... blackbox just keeps chugging along nicely
+
+
+Changes from 0.34.1 to 0.34.2 (unreleased):
 	- fixed MSBFirst byte order image rendering at 32bpp (24bpp pending)
           (for machines better than this intel machine of mine)
 	- changed BImage to allocate dithering space when the image is created
@@ -10,7 +25,16 @@ Changes from 0.34.1 to 0.34.2:
 	  the space and deleting the space each time the image is rendered to 
 	  an XImage... hopefully this will provide a speed increase (albeit a
 	  small one)
+	- changed blackbox to call XListPixmapFormats once at startup...
+	  instead of each time an image is rendered... this should afford some
+	  speed increase (a small one at best :)
+	- fixed a bug in Window.cc that re-reads the window name...
+          Jon Denardis discovered this bug while playing with netscape 4.5...
+          the validation call is now directly before the XFetchName call...
+          instead of before an if() { } block that calls strcmp and XFree()
 	- edit Window.cc to change the way buttons are decorated and sized
+	  the associatedWindow.button.color(To) resources have been removed,
+          but the associatedWindow.button texture resource is still there
 
 
 Changes from 0.34.0 to 0.34.1:

@@ -94,21 +94,13 @@ static int handleXErrors(Display *d, XErrorEvent *e) {
   XGetErrorText(d, e->error_code, errtxt, 128);
   fprintf(stderr,
           "blackbox:  [ X Error event received. ]\n"
-          "X Error of failed request:  %s(%d)\n"
+          "  X Error of failed request:  %d %s\n"
           "  Major/minor opcode of failed request:  %d / %d\n"
-          "  Resource id in failed request:  0x%lx\n", errtxt, e->error_code,
-          e->request_code, e->minor_code, e->resourceid);
+          "  Resource id in failed request:  0x%lx\n"
+	  "  [ continuing ]\n", e->error_code, errtxt, e->request_code,
+	  e->minor_code, e->resourceid);
 
-  static int re_enter = 0;
-  if (! re_enter) {
-    re_enter = 1;
-    fprintf(stderr, "\t[ shutting down ]\n");
-    blackbox->Shutdown(False);
-  }
-  
-  fprintf(stderr, "\t[ exiting ]\n");
-  abort();
-  return(-1);
+  return(0);
 }
 
 
@@ -229,7 +221,7 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
 
     XWindowAttributes attrib;
     if (XGetWindowAttributes(display, children[i], &attrib))
-      if (! attrib.override_redirect) {
+      if (! attrib.override_redirect && attrib.map_state != IsUnmapped) {
 	Atom atom;
 	Bool app = False;
 	int foo;
@@ -444,14 +436,17 @@ void Blackbox::ProcessEvent(XEvent *e) {
     break; }
   
   case MapRequest: {
+    XGrabServer(display);
+
     BlackboxWindow *rWin = searchWindow(e->xmaprequest.window);
     
     if (rWin == NULL && validateWindow(e->xmaprequest.window))
       rWin = new BlackboxWindow(this, e->xmaprequest.window);
     
-    if (rWin && validateWindow(e->xmaprequest.window))
+    if ((rWin = searchWindow(e->xmaprequest.window)) != NULL)
 	rWin->mapRequestEvent(&e->xmaprequest);
-    
+
+    XUngrabServer(display);
     break; }
   
   case MapNotify: {

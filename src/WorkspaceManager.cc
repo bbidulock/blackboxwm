@@ -159,10 +159,10 @@ WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
 			       blackbox->Depth());
   frame.ibutton =
     i_image->renderImage(blackbox->sButtonTexture(),
-			 blackbox->sLColor(), blackbox->sLColorTo());
+			 blackbox->sBColor(), blackbox->sBColorTo());
   frame.pibutton =
     i_image->renderInvertedImage(blackbox->sButtonTexture(),
-				 blackbox->sLColor(), blackbox->sLColorTo());
+				 blackbox->sBColor(), blackbox->sBColorTo());
   delete i_image;
   XSetWindowBackgroundPixmap(display, frame.iconButton, frame.ibutton);
 
@@ -536,10 +536,10 @@ void WorkspaceManager::Reconfigure(void) {
 			       blackbox->Depth());
   frame.ibutton =
     i_image->renderImage(blackbox->sButtonTexture(),
-			 blackbox->sLColor(), blackbox->sLColorTo());
+			 blackbox->sBColor(), blackbox->sBColorTo());
   frame.pibutton =
     i_image->renderInvertedImage(blackbox->sButtonTexture(),
-				 blackbox->sLColor(), blackbox->sLColorTo());
+				 blackbox->sBColor(), blackbox->sBColorTo());
   delete i_image;
   XSetWindowBackgroundPixmap(display, frame.iconButton,
 			     ((iconMenu->Visible()) ? frame.pibutton :

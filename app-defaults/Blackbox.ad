@@ -38,8 +38,6 @@ associatedWindow.handle:                Raised Diagonal   Gradient Bevel1
 associatedWindow.frame:                 Raised Solid               Bevel1
 
 ! window colors
-associatedWindow.button.color:          darkslategrey
-associatedWindow.button.colorTo:        slategrey
 associatedWindow.frame.color:           slategrey
 
 ! focus dependant window colors
