@@ -743,6 +743,9 @@ void Blackbox::process_event(XEvent *e) {
     break;
   }
 
+  case NoExpose:
+  case ConfigureNotify:
+    break; // not handled, just ignore
 
   default: {
 #ifdef    SHAPE
