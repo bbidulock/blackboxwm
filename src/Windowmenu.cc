@@ -29,6 +29,8 @@
 
 #include <assert.h>
 
+// #define WITH_FULLSCREEN
+
 
 class SendToWorkspacemenu : public bt::Menu {
 public:
@@ -53,7 +55,9 @@ enum {
   Shade,
   Iconify,
   Maximize,
+#if defined(WITH_FULLSCREEN)
   FullScreen,
+#endif
   AlwaysOnTop,
   AlwaysOnBottom,
   KillClient,
@@ -70,7 +74,9 @@ Windowmenu::Windowmenu(bt::Application &app, unsigned int screen)
   insertItem("Shade", Shade);
   insertItem("Iconify", Iconify);
   insertItem("Maximize", Maximize);
-  // insertItem("Full Screen", FullScreen);
+#if defined(WITH_FULLSCREEN)
+  insertItem("Full Screen", FullScreen);
+#endif
   insertItem("Always on top", AlwaysOnTop);
   insertItem("Always on bottom", AlwaysOnBottom);
   insertSeparator();
@@ -112,7 +118,9 @@ void Windowmenu::refresh(void) {
   setItemEnabled(Maximize, _window->hasWindowFunction(WindowFunctionMaximize));
   setItemChecked(Maximize, _window->isMaximized());
 
-  // setItemChecked(FullScreen, _window->isFullScreen());
+#if defined(WITH_FULLSCREEN)
+  setItemChecked(FullScreen, _window->isFullScreen());
+#endif
 
   setItemEnabled(AlwaysOnTop, !_window->isFullScreen());
   setItemEnabled(AlwaysOnBottom, !_window->isFullScreen());
@@ -152,9 +160,11 @@ void Windowmenu::itemClicked(unsigned int id, unsigned int) {
     _window->maximize(1);
     break;
 
-    // case FullScreen:
-    //   _window->setFullScreen(!_window->isFullScreen());
-    //   break;
+#if defined(WITH_FULLSCREEN)
+  case FullScreen:
+    _window->setFullScreen(!_window->isFullScreen());
+    break;
+#endif
 
   case AlwaysOnTop:
     {
