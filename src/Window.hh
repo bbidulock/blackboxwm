@@ -108,6 +108,8 @@ public:
                     Decor_Close    = (1l << 5) };
   typedef unsigned char DecorationFlags;
 
+  enum WMLayer { LAYER_NORMAL, LAYER_FULLSCREEN, LAYER_ABOVE, LAYER_BELOW,
+                 LAYER_DESKTOP };
 private:
   Blackbox *blackbox;
   BScreen *screen;
@@ -120,8 +122,6 @@ private:
 
   enum FocusMode { F_NoInput = 0, F_Passive,
                    F_LocallyActive, F_GloballyActive };
-  enum WMLayer { LAYER_NORMAL, LAYER_FULLSCREEN, LAYER_ABOVE, LAYER_BELOW,
-                  LAYER_DESKTOP };
   enum WMSkip { SKIP_NONE, SKIP_TASKBAR, SKIP_PAGER, SKIP_BOTH };
 
   struct WMState {
@@ -333,6 +333,7 @@ public:
   inline unsigned int getTitleHeight(void) const
   { return frame.title_h; }
 
+  inline WMLayer getLayer(void) const { return client.state.layer; }
   inline void setWindowNumber(int n) { window_number = n; }
 
   inline void setModal(bool flag) { client.state.modal = flag; }

@@ -52,6 +52,56 @@ extern "C" {
 #include "Windowmenu.hh"
 
 
+Workspace::StackingList::StackingList(void) {
+  desktop = stack.insert(stack.begin(), 0);
+  below = stack.insert(desktop, 0);
+  normal = stack.insert(below, 0);
+  above = stack.insert(normal, 0);
+  fullscreen = stack.insert(above, 0);
+}
+
+
+Workspace::StackingList::iterator&
+Workspace::StackingList::findLocation(const BlackboxWindow* const w) {
+  if (w->getLayer() == BlackboxWindow::LAYER_NORMAL)
+    return normal;
+  else
+    return normal;
+}
+
+
+void Workspace::StackingList::insert(BlackboxWindow* w) {
+  assert(w);
+
+  StackingList::iterator& it = findLocation(w);
+  it = stack.insert(it, w);
+}
+
+
+void Workspace::StackingList::remove(BlackboxWindow* w) {
+  assert(w);
+
+  iterator& pos = findLocation(w);
+  iterator it = std::find(pos, stack.end(), w);
+  assert(it != stack.end());
+  if (it == pos)
+    ++pos;
+
+  stack.erase(it);
+  assert(stack.size() >= 5);
+}
+
+
+BlackboxWindow* Workspace::StackingList::front(void) const {
+  if (*fullscreen) return *fullscreen;
+  if (*above) return *above;
+  if (*normal) return *normal;
+  if (*below) return *below;
+  // we do not return desktop windows
+  assert(0);
+}
+
+
 Workspace::Workspace(BScreen *scrn, unsigned int i) {
   screen = scrn;
 
@@ -75,7 +125,7 @@ void Workspace::addWindow(BlackboxWindow *w, bool place) {
   w->setWorkspace(id);
   w->setWindowNumber(windowList.size());
 
-  stackingList.push_front(w);
+  stackingList.insert(w);
   windowList.push_back(w);
 
   std::string title = w->getTitle();
@@ -213,7 +263,7 @@ void Workspace::raiseTransients(const BlackboxWindow * const win,
     if (! w->isIconic()) {
       Workspace *wkspc = screen->getWorkspace(w->getWorkspaceNumber());
       wkspc->stackingList.remove(w);
-      wkspc->stackingList.push_front(w);
+      wkspc->stackingList.insert(w);
     }
   }
 
@@ -241,7 +291,7 @@ void Workspace::lowerTransients(const BlackboxWindow * const win,
     if (! w->isIconic()) {
       Workspace *wkspc = screen->getWorkspace(w->getWorkspaceNumber());
       wkspc->stackingList.remove(w);
-      wkspc->stackingList.push_back(w);
+      wkspc->stackingList.insert(w);
     }
   }
 }
@@ -265,7 +315,7 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
   if (! win->isIconic()) {
     Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
     wkspc->stackingList.remove(win);
-    wkspc->stackingList.push_front(win);
+    wkspc->stackingList.insert(win);
   }
 
   raiseTransients(win, stack);
@@ -294,7 +344,7 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
   if (! win->isIconic()) {
     Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
     wkspc->stackingList.remove(win);
-    wkspc->stackingList.push_back(win);
+    wkspc->stackingList.insert(win);
   }
 
   XLowerWindow(screen->getBaseDisplay()->getXDisplay(), stack_vector.front());
@@ -375,18 +425,23 @@ void Workspace::hide(void) {
 
   // withdraw windows in reverse order to minimize the number of Expose events
 
-  BlackboxWindowList::reverse_iterator it = stackingList.rbegin();
-  const BlackboxWindowList::reverse_iterator end = stackingList.rend();
+  StackingList::reverse_iterator it = stackingList.rbegin(),
+    end = stackingList.rend();
   for (; it != end; ++it) {
     BlackboxWindow *bw = *it;
-    bw->withdraw();
+    if (bw)
+      bw->withdraw();
   }
 }
 
 
 void Workspace::show(void) {
-  std::for_each(stackingList.begin(), stackingList.end(),
-                std::mem_fun(&BlackboxWindow::show));
+  StackingList::iterator it = stackingList.begin(),
+    end = stackingList.end();
+  for (; it != end; ++it) {
+    if (*it)
+      (*it)->show();
+  }
 
   XSync(screen->getBlackbox()->getXDisplay(), False);
 
@@ -649,9 +704,11 @@ void Workspace::placeWindow(BlackboxWindow *win) {
 }
 
 
-void
-Workspace::updateClientListStacking(WindowList& clientList) const {
-  std::transform(stackingList.begin(), stackingList.end(),
-                 std::back_inserter(clientList),
-                 std::mem_fun(&BlackboxWindow::getClientWindow));
+void Workspace::updateClientListStacking(WindowList& clientList) const {
+  StackingList::const_iterator it = stackingList.begin(),
+    end = stackingList.end();
+  for (; it != end; ++it) {
+    if (*it)
+      clientList.push_back((*it)->getClientWindow());
+  }
 }
