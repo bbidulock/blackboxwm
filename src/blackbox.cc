@@ -1512,12 +1512,9 @@ void Blackbox::reconfigure(void) {
 
 void Blackbox::real_reconfigure(void) {
   XrmDatabase new_blackboxrc = (XrmDatabase) 0;
-  char *style = new char[resource.style_file.length() + 20];
 
-  sprintf(style, "session.styleFile: %s", getStyleFilename());
-  XrmPutLineResource(&new_blackboxrc, style);
-
-  delete [] style;
+  string style = "session.styleFile: " + resource.style_file;
+  XrmPutLineResource(&new_blackboxrc, style.c_str());
 
   XrmDatabase old_blackboxrc = XrmGetFileDatabase(rc_file.c_str());
 
