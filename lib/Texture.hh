@@ -34,6 +34,7 @@ typedef unsigned long Pixmap;
 namespace bt {
 
   class ImageControl;
+  class Resource;
 
   class Texture {
   public:
@@ -54,15 +55,14 @@ namespace bt {
       Pyramid             = (1l<<10),
       PipeCross           = (1l<<11),
       Elliptic            = (1l<<12),
-      // bevel types
-      Bevel1              = (1l<<13),
-      Bevel2              = (1l<<14),
       // inverted image
-      Invert              = (1l<<15),
+      Invert              = (1l<<14),
       // parent relative image
-      Parent_Relative     = (1l<<16),
+      Parent_Relative     = (1l<<15),
       // fake interlaced image
-      Interlaced          = (1l<<17)
+      Interlaced          = (1l<<16),
+      // border around image
+      Border              = (1l<<17)
     };
 
     Texture(const bt::Display * const _display = 0,
@@ -73,22 +73,27 @@ namespace bt {
             unsigned int _screen = ~(0u),
             bt::ImageControl* _ctrl = 0);
 
-    void setColor(const bt::Color &_color);
-    void setColorTo(const bt::Color &_colorTo) { ct = _colorTo; }
+    void setColor(const bt::Color &new_color);
+    void setColorTo(const bt::Color &new_colorTo);
+    void setBorderColor(const bt::Color &new_borderColor);
 
-    const bt::Color &color(void) const { return c; }
-    const bt::Color &colorTo(void) const { return ct; }
-    const bt::Color &lightColor(void) const { return lc; }
-    const bt::Color &shadowColor(void) const { return sc; }
+    inline const bt::Color &color(void) const { return c; }
+    inline const bt::Color &colorTo(void) const { return ct; }
+    inline const bt::Color &borderColor(void) const { return bc; }
+    inline const bt::Color &lightColor(void) const { return lc; }
+    inline const bt::Color &shadowColor(void) const { return sc; }
 
-    unsigned long texture(void) const { return t; }
-    void setTexture(const unsigned long _texture) { t  = _texture; }
-    void addTexture(const unsigned long _texture) { t |= _texture; }
+    inline unsigned long texture(void) const { return t; }
+    inline void setTexture(const unsigned long _texture) { t  = _texture; }
+    inline void addTexture(const unsigned long _texture) { t |= _texture; }
+
+    inline unsigned int borderWidth(void) const { return bw; }
+    inline void setBorderWidth(unsigned int new_bw) { bw = new_bw; }
 
     Texture &operator=(const Texture &tt);
     inline bool operator==(const Texture &tt)
-    { return (c == tt.c && ct == tt.ct && lc == tt.lc &&
-              sc == tt.sc && t == tt.t); }
+    { return (c == tt.c && ct == tt.ct && bc == tt.bc &&
+              lc == tt.lc && sc == tt.sc && t == tt.t && bw == tt.bw); }
     inline bool operator!=(const Texture &tt)
     { return (! operator==(tt)); }
 
@@ -96,21 +101,31 @@ namespace bt {
     unsigned int screen(void) const { return scrn; }
     void setDisplay(const bt::Display * const _display,
                     const unsigned int _screen);
-    void setImageControl(bt::ImageControl* _ctrl) { ctrl = _ctrl; }
-    const std::string &description(void) const { return descr; }
+    inline void setImageControl(bt::ImageControl* _ctrl) { ctrl = _ctrl; }
+    inline const std::string &description(void) const { return descr; }
     void setDescription(const std::string &d);
 
     Pixmap render(const unsigned int width, const unsigned int height,
                   const Pixmap old = 0);
 
   private:
-    bt::Color c, ct, lc, sc;
+    bt::Color c, ct, bc, lc, sc;
     std::string descr;
     unsigned long t;
+    unsigned int bw;
     const bt::Display *dpy;
     bt::ImageControl *ctrl;
     unsigned int scrn;
   };
+
+  Texture
+  textureResource(const Resource &resource,
+                  const std::string &name,
+                  const std::string &classname,
+                  const std::string &default_color = std::string("black"),
+                  const bt::Display * const _display = 0,
+                  unsigned int _screen = ~(0u),
+                  bt::ImageControl* _ctrl = 0);
 
 } // namespace bt
 

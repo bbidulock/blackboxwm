@@ -94,56 +94,43 @@ Pixmap bt::Image::render_solid(const bt::Texture &texture) {
 
   XFillRectangle(display, pixmap, pen.gc(), 0, 0, width, height);
 
-  if (texture.texture() & bt::Texture::Interlaced) {
-    bt::Pen peninterlace(texture.colorTo());
-    for (unsigned int i = 0; i < height; i += 2)
-      XDrawLine(display, pixmap, peninterlace.gc(), 0, i, width, i);
+  unsigned int bw = 0;
+  if (texture.texture() & bt::Texture::Border) {
+    bt::Pen penborder(texture.borderColor());
+    bw = texture.borderWidth();
+
+    for (unsigned int i = 0; i < bw; ++i)
+      XDrawRectangle(display, pixmap, penborder.gc(),
+                     i, i, width - (i * 2) - 1, height - (i * 2) - 1);
   }
 
-  if (texture.texture() & bt::Texture::Bevel1) {
-    if (texture.texture() & bt::Texture::Raised) {
-      XDrawLine(display, pixmap, penshadow.gc(),
-                0, height - 1, width - 1, height - 1);
-      XDrawLine(display, pixmap, penshadow.gc(),
-                width - 1, height - 1, width - 1, 0);
+  if (texture.texture() & bt::Texture::Interlaced) {
+    bt::Pen peninterlace(texture.colorTo());
+    for (unsigned int i = bw; i < height - (bw * 2); i += 2)
+      XDrawLine(display, pixmap, peninterlace.gc(),
+                bw, i, width - (bw * 2), i);
+  }
 
-      XDrawLine(display, pixmap, penlight.gc(),
-                0, 0, width - 1, 0);
-      XDrawLine(display, pixmap, penlight.gc(),
-                0, height - 1, 0, 0);
-    } else if (texture.texture() & bt::Texture::Sunken) {
-      XDrawLine(display, pixmap, penlight.gc(),
-                0, height - 1, width - 1, height - 1);
-      XDrawLine(display, pixmap, penlight.gc(),
-                width - 1, height - 1, width - 1, 0);
+  if (texture.texture() & bt::Texture::Raised) {
+    XDrawLine(display, pixmap, penshadow.gc(),
+              bw, height - bw - 1, width - bw - 1, height - bw - 1);
+    XDrawLine(display, pixmap, penshadow.gc(),
+              width - bw - 1, height - bw - 1, width - bw - 1, bw);
 
-      XDrawLine(display, pixmap, penshadow.gc(),
-                0, 0, width - 1, 0);
-      XDrawLine(display, pixmap, penshadow.gc(),
-                0, height - 1, 0, 0);
-    }
-  } else if (texture.texture() & bt::Texture::Bevel2) {
-    if (texture.texture() & bt::Texture::Raised) {
-      XDrawLine(display, pixmap, penshadow.gc(),
-                1, height - 3, width - 3, height - 3);
-      XDrawLine(display, pixmap, penshadow.gc(),
-                width - 3, height - 3, width - 3, 1);
+    XDrawLine(display, pixmap, penlight.gc(),
+              bw, bw, width - bw - 1, bw);
+    XDrawLine(display, pixmap, penlight.gc(),
+              bw, height - bw - 1, bw, bw);
+  } else if (texture.texture() & bt::Texture::Sunken) {
+    XDrawLine(display, pixmap, penlight.gc(),
+              bw, height - bw - 1, width - bw - 1, height - bw - 1);
+    XDrawLine(display, pixmap, penlight.gc(),
+              width - bw - 1, height - bw - 1, width - bw - 1, bw);
 
-      XDrawLine(display, pixmap, penlight.gc(),
-                1, 1, width - 3, 1);
-      XDrawLine(display, pixmap, penlight.gc(),
-                1, height - 3, 1, 1);
-    } else if (texture.texture() & bt::Texture::Sunken) {
-      XDrawLine(display, pixmap, penlight.gc(),
-                1, height - 3, width - 3, height - 3);
-      XDrawLine(display, pixmap, penlight.gc(),
-                width - 3, height - 3, width - 3, 1);
-
-      XDrawLine(display, pixmap, penshadow.gc(),
-                1, 1, width - 3, 1);
-      XDrawLine(display, pixmap, penshadow.gc(),
-                1, height - 3, 1, 1);
-    }
+    XDrawLine(display, pixmap, penshadow.gc(),
+              bw, bw, width - bw - 1, bw);
+    XDrawLine(display, pixmap, penshadow.gc(),
+              bw, height - bw - 1, bw, bw);
   }
 
   return pixmap;
@@ -178,12 +165,25 @@ Pixmap bt::Image::render_gradient(const bt::Texture &texture) {
   else if (texture.texture() & bt::Texture::CrossDiagonal) cdgradient();
   else if (texture.texture() & bt::Texture::PipeCross) pcgradient();
 
-  if (texture.texture() & bt::Texture::Bevel1) bevel1();
-  else if (texture.texture() & bt::Texture::Bevel2) bevel2();
+  if (texture.texture() & (bt::Texture::Sunken | bt::Texture::Raised))
+    bevel(texture.borderWidth());
 
   if (inverted) invert();
 
-  return renderPixmap();
+  Pixmap pixmap = renderPixmap();
+
+  unsigned int bw = 0;
+  if (texture.texture() & bt::Texture::Border) {
+    bt::Pen penborder(texture.borderColor());
+    bw = texture.borderWidth();
+
+    for (unsigned int i = 0; i < bw; ++i)
+      XDrawRectangle(control->getDisplay()->getXDisplay(),
+                     pixmap, penborder.gc(),
+                     i, i, width - (i * 2) - 1, height - (i * 2) - 1);
+  }
+
+  return pixmap;
 }
 
 
@@ -289,7 +289,7 @@ void bt::Image::TrueColorDither(unsigned int bit_depth, int bytes_per_line,
 }
 
 #ifdef ORDEREDPSEUDO
-const static unsigned char dither8[8][8] = {
+static const unsigned char dither8[8][8] = {
   { 0,  32, 8,  40, 2,  34, 10, 42},
   { 48, 16, 56, 24, 50, 18, 58, 26},
   { 12, 44, 4,  36, 14, 46, 6,  38},
@@ -580,220 +580,97 @@ Pixmap bt::Image::renderPixmap(void) {
 }
 
 
-void bt::Image::bevel1(void) {
-  if (width > 2 && height > 2) {
-    unsigned char *pr = red, *pg = green, *pb = blue;
+void bt::Image::bevel(unsigned int border_width) {
+  if (width  < (border_width * 4) || height < (border_width * 4))
+    return;
 
-    register unsigned char r, g, b, rr ,gg ,bb;
-    register unsigned int w = width, h = height - 1, wh = w * h;
+  unsigned char *pr = red   + (border_width * width) + border_width;
+  unsigned char *pg = green + (border_width * width) + border_width;
+  unsigned char *pb = blue  + (border_width * width) + border_width;
+  unsigned int w = width - (border_width * 2);
+  unsigned int h = height - (border_width * 2) - 2;
+  unsigned char rr, gg, bb;
 
-    while (--w) {
-      r = *pr;
-      rr = r + (r >> 1);
-      if (rr < r) rr = ~0;
-      g = *pg;
-      gg = g + (g >> 1);
-      if (gg < g) gg = ~0;
-      b = *pb;
-      bb = b + (b >> 1);
-      if (bb < b) bb = ~0;
+  // top of the bevel
+  do {
+    rr = *pr + (*pr >> 1);
+    gg = *pg + (*pg >> 1);
+    bb = *pb + (*pb >> 1);
 
-      *pr = rr;
-      *pg = gg;
-      *pb = bb;
-
-      r = *(pr + wh);
-      rr = (r >> 2) + (r >> 1);
-      if (rr > r) rr = 0;
-      g = *(pg + wh);
-      gg = (g >> 2) + (g >> 1);
-      if (gg > g) gg = 0;
-      b = *(pb + wh);
-      bb = (b >> 2) + (b >> 1);
-      if (bb > b) bb = 0;
-
-      *((pr++) + wh) = rr;
-      *((pg++) + wh) = gg;
-      *((pb++) + wh) = bb;
-    }
-
-    r = *pr;
-    rr = r + (r >> 1);
-    if (rr < r) rr = ~0;
-    g = *pg;
-    gg = g + (g >> 1);
-    if (gg < g) gg = ~0;
-    b = *pb;
-    bb = b + (b >> 1);
-    if (bb < b) bb = ~0;
+    if (rr < *pr) rr = ~0;
+    if (gg < *pg) gg = ~0;
+    if (bb < *pb) bb = ~0;
 
     *pr = rr;
     *pg = gg;
     *pb = bb;
 
-    r = *(pr + wh);
-    rr = (r >> 2) + (r >> 1);
-    if (rr > r) rr = 0;
-    g = *(pg + wh);
-    gg = (g >> 2) + (g >> 1);
-    if (gg > g) gg = 0;
-    b = *(pb + wh);
-    bb = (b >> 2) + (b >> 1);
-    if (bb > b) bb = 0;
+    ++pr;
+    ++pg;
+    ++pb;
+  } while (--w);
 
-    *(pr + wh) = rr;
-    *(pg + wh) = gg;
-    *(pb + wh) = bb;
+  pr += border_width + border_width;
+  pg += border_width + border_width;
+  pb += border_width + border_width;
 
-    pr = red + width;
-    pg = green + width;
-    pb = blue + width;
+  w = width - (border_width * 2);
 
-    while (--h) {
-      r = *pr;
-      rr = r + (r >> 1);
-      if (rr < r) rr = ~0;
-      g = *pg;
-      gg = g + (g >> 1);
-      if (gg < g) gg = ~0;
-      b = *pb;
-      bb = b + (b >> 1);
-      if (bb < b) bb = ~0;
+  // left and right of the bevel
+  do {
+    rr = *pr + (*pr >> 1);
+    gg = *pg + (*pg >> 1);
+    bb = *pb + (*pb >> 1);
 
-      *pr = rr;
-      *pg = gg;
-      *pb = bb;
-
-      pr += width - 1;
-      pg += width - 1;
-      pb += width - 1;
-
-      r = *pr;
-      rr = (r >> 2) + (r >> 1);
-      if (rr > r) rr = 0;
-      g = *pg;
-      gg = (g >> 2) + (g >> 1);
-      if (gg > g) gg = 0;
-      b = *pb;
-      bb = (b >> 2) + (b >> 1);
-      if (bb > b) bb = 0;
-
-      *(pr++) = rr;
-      *(pg++) = gg;
-      *(pb++) = bb;
-    }
-
-    r = *pr;
-    rr = r + (r >> 1);
-    if (rr < r) rr = ~0;
-    g = *pg;
-    gg = g + (g >> 1);
-    if (gg < g) gg = ~0;
-    b = *pb;
-    bb = b + (b >> 1);
-    if (bb < b) bb = ~0;
+    if (rr < *pr) rr = ~0;
+    if (gg < *pg) gg = ~0;
+    if (bb < *pb) bb = ~0;
 
     *pr = rr;
     *pg = gg;
     *pb = bb;
 
-    pr += width - 1;
-    pg += width - 1;
-    pb += width - 1;
+    pr += w - 1;
+    pg += w - 1;
+    pb += w - 1;
 
-    r = *pr;
-    rr = (r >> 2) + (r >> 1);
-    if (rr > r) rr = 0;
-    g = *pg;
-    gg = (g >> 2) + (g >> 1);
-    if (gg > g) gg = 0;
-    b = *pb;
-    bb = (b >> 2) + (b >> 1);
-    if (bb > b) bb = 0;
+    rr = (*pr >> 2) + (*pr >> 1);
+    gg = (*pg >> 2) + (*pg >> 1);
+    bb = (*pb >> 2) + (*pb >> 1);
+
+    if (rr > *pr) rr = 0;
+    if (gg > *pg) gg = 0;
+    if (bb > *pb) bb = 0;
+
+    *pr++ = rr;
+    *pg++ = gg;
+    *pb++ = bb;
+
+    pr += border_width + border_width;
+    pg += border_width + border_width;
+    pb += border_width + border_width;
+  } while (--h);
+
+  w = width - (border_width * 2);
+
+  // bottom of the bevel
+  do {
+    rr = (*pr >> 2) + (*pr >> 1);
+    gg = (*pg >> 2) + (*pg >> 1);
+    bb = (*pb >> 2) + (*pb >> 1);
+
+    if (rr > *pr) rr = 0;
+    if (gg > *pg) gg = 0;
+    if (bb > *pb) bb = 0;
 
     *pr = rr;
     *pg = gg;
     *pb = bb;
-  }
-}
 
-
-void bt::Image::bevel2(void) {
-  if (width > 4 && height > 4) {
-    unsigned char r, g, b, rr ,gg ,bb, *pr = red + width + 1,
-      *pg = green + width + 1, *pb = blue + width + 1;
-    unsigned int w = width - 2, h = height - 1, wh = width * (height - 3);
-
-    while (--w) {
-      r = *pr;
-      rr = r + (r >> 1);
-      if (rr < r) rr = ~0;
-      g = *pg;
-      gg = g + (g >> 1);
-      if (gg < g) gg = ~0;
-      b = *pb;
-      bb = b + (b >> 1);
-      if (bb < b) bb = ~0;
-
-      *pr = rr;
-      *pg = gg;
-      *pb = bb;
-
-      r = *(pr + wh);
-      rr = (r >> 2) + (r >> 1);
-      if (rr > r) rr = 0;
-      g = *(pg + wh);
-      gg = (g >> 2) + (g >> 1);
-      if (gg > g) gg = 0;
-      b = *(pb + wh);
-      bb = (b >> 2) + (b >> 1);
-      if (bb > b) bb = 0;
-
-      *((pr++) + wh) = rr;
-      *((pg++) + wh) = gg;
-      *((pb++) + wh) = bb;
-    }
-
-    pr = red + width;
-    pg = green + width;
-    pb = blue + width;
-
-    while (--h) {
-      r = *pr;
-      rr = r + (r >> 1);
-      if (rr < r) rr = ~0;
-      g = *pg;
-      gg = g + (g >> 1);
-      if (gg < g) gg = ~0;
-      b = *pb;
-      bb = b + (b >> 1);
-      if (bb < b) bb = ~0;
-
-      *(++pr) = rr;
-      *(++pg) = gg;
-      *(++pb) = bb;
-
-      pr += width - 3;
-      pg += width - 3;
-      pb += width - 3;
-
-      r = *pr;
-      rr = (r >> 2) + (r >> 1);
-      if (rr > r) rr = 0;
-      g = *pg;
-      gg = (g >> 2) + (g >> 1);
-      if (gg > g) gg = 0;
-      b = *pb;
-      bb = (b >> 2) + (b >> 1);
-      if (bb > b) bb = 0;
-
-      *(pr++) = rr;
-      *(pg++) = gg;
-      *(pb++) = bb;
-
-      pr++; pg++; pb++;
-    }
-  }
+    ++pr;
+    ++pg;
+    ++pb;
+  } while (--w);
 }
 
 

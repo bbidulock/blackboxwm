@@ -67,8 +67,7 @@ namespace bt {
     XImage *renderXImage(void);
 
     void invert(void);
-    void bevel1(void);
-    void bevel2(void);
+    void bevel(unsigned int border_width = 0);
     void dgradient(void);
     void egradient(void);
     void hgradient(void);

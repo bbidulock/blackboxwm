@@ -38,28 +38,30 @@ extern "C" {
 
 #include "BaseDisplay.hh"
 #include "Image.hh"
+#include "Resource.hh"
 
 
 bt::Texture::Texture(const bt::Display * const _display,
                      unsigned int _screen,
                      bt::ImageControl* _ctrl)
-  : c(_display, _screen), ct(_display, _screen),
-    lc(_display, _screen), sc(_display, _screen), t(0),
-    dpy(_display), ctrl(_ctrl), scrn(_screen) { }
+  : c(_display, _screen), ct(_display, _screen), bc(_display, _screen),
+    lc(_display, _screen), sc(_display, _screen), t(0), bw(0),
+    dpy(_display), ctrl(_ctrl), scrn(_screen) {}
 
 
-bt::Texture::Texture(const std::string &d, const bt::Display * const _display,
+bt::Texture::Texture(const std::string &d,
+                     const bt::Display * const _display,
                      unsigned int _screen,
                      bt::ImageControl* _ctrl)
-  : c(_display, _screen), ct(_display, _screen),
-    lc(_display, _screen), sc(_display, _screen), t(0),
+  : c(_display, _screen), ct(_display, _screen), bc(_display, _screen),
+    lc(_display, _screen), sc(_display, _screen), t(0), bw(0),
     dpy(_display), ctrl(_ctrl), scrn(_screen) {
   setDescription(d);
 }
 
 
-void bt::Texture::setColor(const bt::Color &cc) {
-  c = cc;
+void bt::Texture::setColor(const bt::Color &new_color) {
+  c = new_color;
   c.setDisplay(display(), screen());
 
   unsigned char r, g, b, rr, gg, bb;
@@ -87,6 +89,18 @@ void bt::Texture::setColor(const bt::Color &cc) {
   if (gg > g) gg = 0;
   if (bb > b) bb = 0;
   sc = bt::Color(rr, gg, bb, display(), screen());
+}
+
+
+void bt::Texture::setColorTo(const bt::Color &new_colorTo) {
+  ct = new_colorTo;
+  ct.setDisplay(display(), screen());
+}
+
+
+void bt::Texture::setBorderColor(const bt::Color &new_borderColor) {
+  bc = new_borderColor;
+  bc.setDisplay(display(), screen());
 }
 
 
@@ -132,20 +146,16 @@ void bt::Texture::setDescription(const std::string &d) {
     else
       addTexture(bt::Texture::Raised);
 
-    if (! (texture() & bt::Texture::Flat)) {
-      if (descr.find("bevel2") != std::string::npos)
-        addTexture(bt::Texture::Bevel2);
-      else
-        addTexture(bt::Texture::Bevel1);
-    }
-
     if (descr.find("interlaced") != std::string::npos)
       addTexture(bt::Texture::Interlaced);
+
+    if (descr.find("border") != std::string::npos)
+      addTexture(bt::Texture::Border);
   }
 }
 
 void bt::Texture::setDisplay(const bt::Display * const _display,
-                          const unsigned int _screen) {
+                             const unsigned int _screen) {
   if (_display == display() && _screen == screen()) {
     // nothing to do
     return;
@@ -155,6 +165,7 @@ void bt::Texture::setDisplay(const bt::Display * const _display,
   scrn = _screen;
   c.setDisplay(_display, _screen);
   ct.setDisplay(_display, _screen);
+  bc.setDisplay(_display, _screen);
   lc.setDisplay(_display, _screen);
   sc.setDisplay(_display, _screen);
 }
@@ -163,10 +174,12 @@ void bt::Texture::setDisplay(const bt::Display * const _display,
 bt::Texture& bt::Texture::operator=(const bt::Texture &tt) {
   c  = tt.c;
   ct = tt.ct;
+  bc = tt.bc;
   lc = tt.lc;
   sc = tt.sc;
   descr = tt.descr;
   t  = tt.t;
+  bw = tt.bw;
   dpy = tt.dpy;
   scrn = tt.scrn;
   ctrl = tt.ctrl;
@@ -194,4 +207,39 @@ Pixmap bt::Texture::render(const unsigned int width, const unsigned int height,
     ctrl->removeImage(old);
 
   return ret;
+}
+
+bt::Texture bt::textureResource(const bt::Resource &resource,
+                                const std::string &name,
+                                const std::string &class_name,
+                                const std::string &default_color,
+                                const bt::Display * const display,
+                                unsigned int screen,
+                                bt::ImageControl* ctrl) {
+  bt::Texture texture(resource.read(name, class_name, "flat solid"),
+                      display, screen, ctrl);
+
+  bt::Color c = bt::Color(resource.read(name + ".color",
+                                        class_name + ".Color",
+                                        default_color));
+  texture.setColor(c);
+
+  c = bt::Color(resource.read(name + ".colorTo",
+                              class_name + ".ColorTo",
+                              default_color));
+  texture.setColorTo(c);
+
+  if (texture.texture() & bt::Texture::Border) {
+    c = bt::Color(resource.read(name + ".borderColor",
+                                class_name + ".BorderColor",
+                                "black"));
+    texture.setBorderColor(c);
+
+    // texture.setBorderWidth(getUInt(db, name + ".borderWidth",
+    // class_name + ".BorderWidth",
+    // 1));
+    texture.setBorderWidth(1);
+  }
+
+  return texture;
 }
