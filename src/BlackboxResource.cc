@@ -480,7 +480,7 @@ void ScreenResource::load(bt::Resource& res, unsigned int screen) {
 
 
 void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
-  const bt::Display& display = screen->getBlackbox()->display();
+  const bt::Display& display = screen->blackbox()->display();
   unsigned int screen_num = screen->screenNumber();
 
   // use the user selected style
@@ -489,7 +489,7 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
     res.load(DEFAULTSTYLE);
 
   // load menu style
-  bt::MenuStyle::get(*screen->getBlackbox(), screen_num)->load(res);
+  bt::MenuStyle::get(*screen->blackbox(), screen_num)->load(res);
 
   // load window style
   wstyle.font.setFontName(res.read("window.font", "Window.Font"));

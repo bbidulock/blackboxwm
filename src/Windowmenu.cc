@@ -144,13 +144,13 @@ void Windowmenu::itemClicked(unsigned int id, unsigned int) {
   case OccupyAllWorkspaces:
     {
       BScreen *screen = _window->screen();
-      Workspace *workspace = screen->getWorkspace(_window->workspace());
+      Workspace *workspace = screen->findWorkspace(_window->workspace());
       if (workspace) {
         // stick window
         workspace->removeWindow(_window);
       } else {
         // unstick window
-        workspace = screen->getWorkspace(screen->currentWorkspace());
+        workspace = screen->findWorkspace(screen->currentWorkspace());
         workspace->addWindow(_window);
       }
       break;
@@ -235,11 +235,11 @@ void SendToWorkspacemenu::itemClicked(unsigned int id, unsigned int button) {
   if (button != 2) _window->hide();
 
   BScreen *screen = _window->screen();
-  Workspace *workspace = screen->getWorkspace(_window->workspace());
+  Workspace *workspace = screen->findWorkspace(_window->workspace());
   assert(workspace != 0);
 
   workspace->removeWindow(_window);
-  workspace = screen->getWorkspace(id);
+  workspace = screen->findWorkspace(id);
   assert(workspace != 0);
   workspace->addWindow(_window);
 

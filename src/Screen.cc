@@ -56,7 +56,7 @@ static int anotherWMRunning(Display *, XErrorEvent *) {
 
 
 BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
-  screen_info(bb->display().screenInfo(scrn)), blackbox(bb),
+  screen_info(bb->display().screenInfo(scrn)), _blackbox(bb),
   _resource(bb->resource().screenResource(scrn))
 {
   running = true;
@@ -75,8 +75,8 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   if (! managed) {
     fprintf(stderr,
             "%s: another window manager is already running on display '%s'\n",
-            blackbox->applicationName().c_str(),
-            DisplayString(blackbox->XDisplay()));
+            _blackbox->applicationName().c_str(),
+            DisplayString(_blackbox->XDisplay()));
     return;
   }
 
@@ -89,19 +89,19 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     "DirectColor"
   };
   printf("%s: managing screen %u using %s visual 0x%lx, depth %d\n",
-         blackbox->applicationName().c_str(), screen_info.screenNumber(),
+         _blackbox->applicationName().c_str(), screen_info.screenNumber(),
          visual_classes[screen_info.visual()->c_class],
          XVisualIDFromVisual(screen_info.visual()), screen_info.depth());
 
-  blackbox->insertEventHandler(screen_info.rootWindow(), this);
+  _blackbox->insertEventHandler(screen_info.rootWindow(), this);
 
   cascade_x = cascade_y = ~0;
 
-  rootmenu = 0;
+  _rootmenu = 0;
   _windowmenu = 0;
 
-  XDefineCursor(blackbox->XDisplay(), screen_info.rootWindow(),
-                blackbox->resource().sessionCursor());
+  XDefineCursor(_blackbox->XDisplay(), screen_info.rootWindow(),
+                _blackbox->resource().sessionCursor());
 
   // start off full screen, top left.
   usableArea.setSize(screen_info.width(), screen_info.height());
@@ -114,42 +114,42 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   updateGeomWindow();
 
   empty_window =
-    XCreateSimpleWindow(blackbox->XDisplay(), screen_info.rootWindow(),
+    XCreateSimpleWindow(_blackbox->XDisplay(), screen_info.rootWindow(),
                         0, 0, screen_info.width(), screen_info.height(), 0,
                         0l, 0l);
-  XSetWindowBackgroundPixmap(blackbox->XDisplay(), empty_window, None);
+  XSetWindowBackgroundPixmap(_blackbox->XDisplay(), empty_window, None);
 
   no_focus_window =
-    XCreateSimpleWindow(blackbox->XDisplay(), screen_info.rootWindow(),
+    XCreateSimpleWindow(_blackbox->XDisplay(), screen_info.rootWindow(),
                         screen_info.width(), screen_info.height(), 1, 1,
                         0, 0l, 0l);
-  XSelectInput(blackbox->XDisplay(), no_focus_window, NoEventMask);
-  XMapWindow(blackbox->XDisplay(), no_focus_window);
+  XSelectInput(_blackbox->XDisplay(), no_focus_window, NoEventMask);
+  XMapWindow(_blackbox->XDisplay(), no_focus_window);
 
   _iconmenu =
-    new Iconmenu(*blackbox, screen_info.screenNumber(), this);
+    new Iconmenu(*_blackbox, screen_info.screenNumber(), this);
   _slitmenu =
-    new Slitmenu(*blackbox, screen_info.screenNumber(), this);
+    new Slitmenu(*_blackbox, screen_info.screenNumber(), this);
   _toolbarmenu =
-    new Toolbarmenu(*blackbox, screen_info.screenNumber(), this);
-  workspacemenu =
-    new Workspacemenu(*blackbox, screen_info.screenNumber(), this);
+    new Toolbarmenu(*_blackbox, screen_info.screenNumber(), this);
+  _workspacemenu =
+    new Workspacemenu(*_blackbox, screen_info.screenNumber(), this);
 
   configmenu =
-    new Configmenu(*blackbox, screen_info.screenNumber(), this);
+    new Configmenu(*_blackbox, screen_info.screenNumber(), this);
 
   if (_resource.numberOfWorkspaces() == 0) // there is always 1 workspace
     _resource.saveWorkspaces(1);
 
-  workspacemenu->insertIconMenu(_iconmenu);
+  _workspacemenu->insertIconMenu(_iconmenu);
   for (unsigned int i = 0; i < _resource.numberOfWorkspaces(); ++i) {
     Workspace *wkspc = new Workspace(this, i);
     workspacesList.push_back(wkspc);
-    workspacemenu->insertWorkspace(wkspc);
+    _workspacemenu->insertWorkspace(wkspc);
   }
 
   current_workspace = workspacesList.front()->id();
-  workspacemenu->setWorkspaceChecked(current_workspace, true);
+  _workspacemenu->setWorkspaceChecked(current_workspace, true);
 
   // the Slit will be created on demand
   _slit = 0;
@@ -162,7 +162,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
   InitMenu();
 
-  const bt::Netwm& netwm = blackbox->netwm();
+  const bt::Netwm& netwm = _blackbox->netwm();
   /*
     netwm requires the window manager to set a property on a window it creates
     which is the id of that window.  We must also set an equivalent property
@@ -171,7 +171,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   */
   netwm.setSupportingWMCheck(screen_info.rootWindow(), geom_window);
   netwm.setSupportingWMCheck(geom_window, geom_window);
-  netwm.setWMName(geom_window, "Blackbox");
+  netwm.setWMName(geom_window, "_Blackbox");
 
   netwm.setNumberOfDesktops(screen_info.rootWindow(),
                             workspacesList.size());
@@ -254,11 +254,11 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   netwm.setSupported(screen_info.rootWindow(), supported,
                      sizeof(supported) / sizeof(Atom));
 
-  blackbox->XGrabServer();
+  _blackbox->XGrabServer();
 
   unsigned int i, j, nchild;
   Window r, p, *children;
-  XQueryTree(blackbox->XDisplay(), screen_info.rootWindow(), &r, &p,
+  XQueryTree(_blackbox->XDisplay(), screen_info.rootWindow(), &r, &p,
              &children, &nchild);
 
   // preen the window list of all icon windows... for better dockapp support
@@ -266,7 +266,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     if (children[i] == None || children[i] == no_focus_window)
       continue;
 
-    XWMHints *wmhints = XGetWMHints(blackbox->XDisplay(),
+    XWMHints *wmhints = XGetWMHints(_blackbox->XDisplay(),
                                     children[i]);
 
     if (wmhints) {
@@ -290,7 +290,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
       continue;
 
     XWindowAttributes attrib;
-    if (XGetWindowAttributes(blackbox->XDisplay(), children[i], &attrib)) {
+    if (XGetWindowAttributes(_blackbox->XDisplay(), children[i], &attrib)) {
       if (attrib.override_redirect) continue;
 
       if (attrib.map_state != IsUnmapped) {
@@ -301,7 +301,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
   XFree(children);
 
-  blackbox->XUngrabServer();
+  _blackbox->XUngrabServer();
 
   updateClientListHint();
   restackWindows();
@@ -311,21 +311,21 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 BScreen::~BScreen(void) {
   if (! managed) return;
 
-  blackbox->removeEventHandler(screen_info.rootWindow());
+  _blackbox->removeEventHandler(screen_info.rootWindow());
 
   bt::PixmapCache::release(geom_pixmap);
 
   if (geom_window != None)
-    XDestroyWindow(blackbox->XDisplay(), geom_window);
-  XDestroyWindow(blackbox->XDisplay(), empty_window);
+    XDestroyWindow(_blackbox->XDisplay(), geom_window);
+  XDestroyWindow(_blackbox->XDisplay(), empty_window);
 
   std::for_each(workspacesList.begin(), workspacesList.end(),
                 bt::PointerAssassin());
 
-  delete rootmenu;
+  delete _rootmenu;
   delete configmenu;
 
-  delete workspacemenu;
+  delete _workspacemenu;
   delete _iconmenu;
 
   delete _windowmenu;
@@ -333,22 +333,22 @@ BScreen::~BScreen(void) {
   delete _slit;
   delete _toolbar;
 
-  blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                   blackbox->netwm().supportingWMCheck());
-  blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                   blackbox->netwm().supported());
-  blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                   blackbox->netwm().numberOfDesktops());
-  blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                   blackbox->netwm().desktopGeometry());
-  blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                   blackbox->netwm().desktopViewport());
-  blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                   blackbox->netwm().currentDesktop());
-  blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                   blackbox->netwm().activeWindow());
-  blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                   blackbox->netwm().workarea());
+  _blackbox->netwm().removeProperty(screen_info.rootWindow(),
+                                   _blackbox->netwm().supportingWMCheck());
+  _blackbox->netwm().removeProperty(screen_info.rootWindow(),
+                                   _blackbox->netwm().supported());
+  _blackbox->netwm().removeProperty(screen_info.rootWindow(),
+                                   _blackbox->netwm().numberOfDesktops());
+  _blackbox->netwm().removeProperty(screen_info.rootWindow(),
+                                   _blackbox->netwm().desktopGeometry());
+  _blackbox->netwm().removeProperty(screen_info.rootWindow(),
+                                   _blackbox->netwm().desktopViewport());
+  _blackbox->netwm().removeProperty(screen_info.rootWindow(),
+                                   _blackbox->netwm().currentDesktop());
+  _blackbox->netwm().removeProperty(screen_info.rootWindow(),
+                                   _blackbox->netwm().activeWindow());
+  _blackbox->netwm().removeProperty(screen_info.rootWindow(),
+                                   _blackbox->netwm().workarea());
 }
 
 
@@ -367,7 +367,7 @@ void BScreen::updateGeomWindow(void) {
     setattrib.save_under = True;
 
     geom_window =
-      XCreateWindow(blackbox->XDisplay(), screen_info.rootWindow(),
+      XCreateWindow(_blackbox->XDisplay(), screen_info.rootWindow(),
                     0, 0, geom_w, geom_h, 0, screen_info.depth(), InputOutput,
                     screen_info.visual(), mask, &setattrib);
   }
@@ -404,8 +404,8 @@ void BScreen::reconfigure(void) {
   InitMenu();
 
   configmenu->reconfigure();
-  rootmenu->reconfigure();
-  workspacemenu->reconfigure();
+  _rootmenu->reconfigure();
+  _workspacemenu->reconfigure();
   if (_windowmenu)
     _windowmenu->reconfigure();
 
@@ -420,12 +420,12 @@ void BScreen::reconfigure(void) {
 
 void BScreen::rereadMenu(void) {
   InitMenu();
-  rootmenu->reconfigure();
+  _rootmenu->reconfigure();
 }
 
 
 void BScreen::LoadStyle(void) {
-  _resource.loadStyle(this, blackbox->resource().styleFilename());
+  _resource.loadStyle(this, _blackbox->resource().styleFilename());
 
   if (! _resource.rootCommand().empty())
     bt::bexec(_resource.rootCommand(), screen_info.displayString());
@@ -436,11 +436,11 @@ void BScreen::addWorkspace(void) {
   Workspace *wkspc = new Workspace(this, workspacesList.size());
   workspacesList.push_back(wkspc);
 
-  workspacemenu->insertWorkspace(wkspc);
+  _workspacemenu->insertWorkspace(wkspc);
 
   if (_toolbar) _toolbar->reconfigure();
 
-  blackbox->netwm().setNumberOfDesktops(screen_info.rootWindow(),
+  _blackbox->netwm().setNumberOfDesktops(screen_info.rootWindow(),
                                         workspacesList.size());
   updateDesktopNamesHint();
 }
@@ -462,12 +462,12 @@ void BScreen::removeLastWorkspace(void) {
       win->setWorkspace(workspace->id() - 1);
   }
 
-  workspacemenu->removeWorkspace(workspace->id());
+  _workspacemenu->removeWorkspace(workspace->id());
   delete workspace;
 
   if (_toolbar) _toolbar->reconfigure();
 
-  blackbox->netwm().setNumberOfDesktops(screen_info.rootWindow(),
+  _blackbox->netwm().setNumberOfDesktops(screen_info.rootWindow(),
                                          workspacesList.size());
   updateDesktopNamesHint();
 }
@@ -478,14 +478,14 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
 
   assert(id < workspacesList.size());
 
-  blackbox->XGrabServer();
+  _blackbox->XGrabServer();
 
   // show the empty window... this will prevent unnecessary exposure
   // of the root window
-  XMapWindow(blackbox->XDisplay(), empty_window);
+  XMapWindow(_blackbox->XDisplay(), empty_window);
 
   {
-    workspacemenu->setWorkspaceChecked(current_workspace, false);
+    _workspacemenu->setWorkspaceChecked(current_workspace, false);
 
     // withdraw windows in reverse order to minimize the number of
     // Expose events
@@ -500,7 +500,7 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
   current_workspace = id;
 
   {
-    workspacemenu->setWorkspaceChecked(current_workspace, true);
+    _workspacemenu->setWorkspaceChecked(current_workspace, true);
 
     StackingList::iterator it, end = stackingList.end();
     for (it = stackingList.begin(); it != end; ++it) {
@@ -510,18 +510,18 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
     }
   }
 
-  blackbox->netwm().setCurrentDesktop(screen_info.rootWindow(),
+  _blackbox->netwm().setCurrentDesktop(screen_info.rootWindow(),
                                       current_workspace);
 
-  XUnmapWindow(blackbox->XDisplay(), empty_window);
+  XUnmapWindow(_blackbox->XDisplay(), empty_window);
 
-  blackbox->XUngrabServer();
+  _blackbox->XUngrabServer();
 }
 
 
 void BScreen::addWindow(Window w) {
   manageWindow(w);
-  BlackboxWindow * const win = blackbox->findWindow(w);
+  BlackboxWindow * const win = _blackbox->findWindow(w);
   if (!win) return;
 
   updateClientListHint();
@@ -534,10 +534,10 @@ void BScreen::addWindow(Window w) {
     break;
 
   default:
-    if (!blackbox->startingUp() &&
-        (!blackbox->activeScreen() || blackbox->activeScreen() == this) &&
+    if (!_blackbox->startingUp() &&
+        (!_blackbox->activeScreen() || _blackbox->activeScreen() == this) &&
         (win->isTransient() || resource().doFocusNew())) {
-      XSync(blackbox->XDisplay(), False); // make sure the frame is mapped..
+      XSync(_blackbox->XDisplay(), False); // make sure the frame is mapped..
       win->setInputFocus();
       break;
     }
@@ -546,7 +546,7 @@ void BScreen::addWindow(Window w) {
 
 
 void BScreen::manageWindow(Window w) {
-  XWMHints *wmhints = XGetWMHints(blackbox->XDisplay(), w);
+  XWMHints *wmhints = XGetWMHints(_blackbox->XDisplay(), w);
   bool slit_client = (wmhints && (wmhints->flags & StateHint) &&
                       wmhints->initial_state == WithdrawnState);
   if (wmhints) XFree(wmhints);
@@ -557,16 +557,16 @@ void BScreen::manageWindow(Window w) {
     return;
   }
 
-  (void) new BlackboxWindow(blackbox, w, this);
+  (void) new BlackboxWindow(_blackbox, w, this);
   // verify that we have managed the window
-  BlackboxWindow *win = blackbox->findWindow(w);
+  BlackboxWindow *win = _blackbox->findWindow(w);
   if (! win) return;
 
   if (win->workspace() >= workspaceCount() &&
       win->workspace() != bt::BSENTINEL)
     win->setWorkspace(current_workspace);
 
-  Workspace *workspace = getWorkspace(win->workspace());
+  Workspace *workspace = findWorkspace(win->workspace());
   if (!workspace) {
     win->setWorkspace(bt::BSENTINEL);
     win->setWindowNumber(bt::BSENTINEL);
@@ -575,7 +575,7 @@ void BScreen::manageWindow(Window w) {
   }
 
   bool place_window = true;
-  if (blackbox->startingUp()
+  if (_blackbox->startingUp()
       || ((win->isTransient() || win->windowType() == WindowTypeDesktop
            || (win->wmNormalHints().flags & (PPosition|USPosition)))
           && win->clientRect().intersects(screen_info.rect())))
@@ -586,11 +586,11 @@ void BScreen::manageWindow(Window w) {
 
   // insert window at the top of the stack
   stackingList.insert(win);
-  if (!blackbox->startingUp())
+  if (!_blackbox->startingUp())
     restackWindows();
 
   // 'show' window in the appropriate state
-  switch (blackbox->startingUp()
+  switch (_blackbox->startingUp()
           ? win->currentState()
           : win->wmHints().initial_state) {
   case IconicState:
@@ -621,19 +621,19 @@ void BScreen::unmanageWindow(BlackboxWindow *win) {
   if (win->isIconic()) {
     _iconmenu->removeItem(win->windowNumber());
   } else {
-    Workspace *workspace = getWorkspace(win->workspace());
+    Workspace *workspace = findWorkspace(win->workspace());
     if (workspace)
       workspace->menu()->removeItem(win->windowNumber());
   }
 
-  if (blackbox->running() && win->isFocused()) {
+  if (_blackbox->running() && win->isFocused()) {
     // pass focus to the next appropriate window
     if (focusFallback(win)) {
       // focus is going somewhere, but we want to avoid dangling pointers
-      blackbox->forgetFocusedWindow();
+      _blackbox->forgetFocusedWindow();
     } else {
       // explicitly clear the focus
-      blackbox->setFocusedWindow(0);
+      _blackbox->setFocusedWindow(0);
     }
   }
 
@@ -645,9 +645,9 @@ void BScreen::unmanageWindow(BlackboxWindow *win) {
 
 
 bool BScreen::focusFallback(const BlackboxWindow *win) {
-  Workspace *workspace = getWorkspace(win->workspace());
+  Workspace *workspace = findWorkspace(win->workspace());
   if (!workspace)
-    workspace = getWorkspace(current_workspace);
+    workspace = findWorkspace(current_workspace);
 
   if (workspace->id() != current_workspace)
     return false;
@@ -813,7 +813,7 @@ void BScreen::raiseWindow(StackEntity *entity) {
   } else {
     stack.push_back(top->windowID());
   }
-  XRestackWindows(blackbox->XDisplay(), &stack[0], stack.size());
+  XRestackWindows(_blackbox->XDisplay(), &stack[0], stack.size());
 
   updateClientListStackingHint();
 }
@@ -912,8 +912,8 @@ void BScreen::lowerWindow(StackEntity *entity) {
   }
 
   if (lower)
-    XLowerWindow(blackbox->XDisplay(), stack.front());
-  XRestackWindows(blackbox->XDisplay(), &stack[0], stack.size());
+    XLowerWindow(_blackbox->XDisplay(), stack.front());
+  XRestackWindows(_blackbox->XDisplay(), &stack[0], stack.size());
 
   updateClientListStackingHint();
 }
@@ -927,7 +927,7 @@ void BScreen::restackWindows(void) {
   for (it = stackingList.begin(); it != end; ++it)
     if (*it) stack.push_back((*it)->windowID());
 
-  XRestackWindows(blackbox->XDisplay(), &stack[0], stack.size());
+  XRestackWindows(_blackbox->XDisplay(), &stack[0], stack.size());
 
   updateClientListStackingHint();
 }
@@ -940,11 +940,11 @@ void BScreen::changeLayer(StackEntity *entity, StackingList::Layer new_layer) {
 
 
 void BScreen::changeWorkspace(BlackboxWindow *win, unsigned int id) {
-  Workspace *workspace = getWorkspace(win->workspace());
+  Workspace *workspace = findWorkspace(win->workspace());
   assert(workspace != 0);
 
   workspace->removeWindow(win);
-  workspace = getWorkspace(id);
+  workspace = findWorkspace(id);
   assert(workspace != 0);
   workspace->addWindow(win);
 
@@ -956,19 +956,19 @@ void BScreen::changeWorkspace(BlackboxWindow *win, unsigned int id) {
 
 
 void BScreen::propagateWindowName(const BlackboxWindow * const win) {
-  Workspace *workspace = getWorkspace(win->workspace());
+  Workspace *workspace = findWorkspace(win->workspace());
   if (!workspace) return;
 
   const std::string s = bt::ellideText(win->title(), 60, "...");
   workspace->menu()->changeItem(win->windowNumber(), s);
 
-  if (_toolbar && blackbox->getFocusedWindow() == win)
+  if (_toolbar && _blackbox->getFocusedWindow() == win)
     _toolbar->redrawWindowLabel();
 }
 
 
 void BScreen::nextFocus(void) {
-  BlackboxWindow *focused = blackbox->getFocusedWindow(),
+  BlackboxWindow *focused = _blackbox->getFocusedWindow(),
                     *next = 0;
   BlackboxWindowList::iterator it, end = windowList.end();
 
@@ -1004,7 +1004,7 @@ void BScreen::nextFocus(void) {
 
 
 void BScreen::prevFocus(void) {
-  BlackboxWindow *focused = blackbox->getFocusedWindow(),
+  BlackboxWindow *focused = _blackbox->getFocusedWindow(),
                     *next = 0;
   BlackboxWindowList::reverse_iterator it, end = windowList.rend();
 
@@ -1040,7 +1040,7 @@ void BScreen::prevFocus(void) {
 
 
 void BScreen::raiseFocus(void) {
-  BlackboxWindow *focused = blackbox->getFocusedWindow();
+  BlackboxWindow *focused = _blackbox->getFocusedWindow();
   if (! focused || focused->screen() != this)
     return;
 
@@ -1049,24 +1049,24 @@ void BScreen::raiseFocus(void) {
 
 
 void BScreen::InitMenu(void) {
-  if (rootmenu) {
-    rootmenu->clear();
+  if (_rootmenu) {
+    _rootmenu->clear();
   } else {
-    rootmenu = new Rootmenu(*blackbox, screen_info.screenNumber(), this);
-    rootmenu->showTitle();
+    _rootmenu = new Rootmenu(*_blackbox, screen_info.screenNumber(), this);
+    _rootmenu->showTitle();
   }
   bool defaultMenu = True;
 
-  if (blackbox->resource().menuFilename()) {
-    FILE *menu_file = fopen(blackbox->resource().menuFilename(), "r");
+  if (_blackbox->resource().menuFilename()) {
+    FILE *menu_file = fopen(_blackbox->resource().menuFilename(), "r");
 
     if (!menu_file) {
-      perror(blackbox->resource().menuFilename());
+      perror(_blackbox->resource().menuFilename());
     } else {
       if (feof(menu_file)) {
         fprintf(stderr, "%s: menu file '%s' is empty\n",
-                blackbox->applicationName().c_str(),
-                blackbox->resource().menuFilename());
+                _blackbox->applicationName().c_str(),
+                _blackbox->resource().menuFilename());
       } else {
         char line[1024], label[1024];
         memset(line, 0, 1024);
@@ -1102,8 +1102,8 @@ void BScreen::InitMenu(void) {
             if (index == -1) index = 0;
             label[index] = '\0';
 
-            rootmenu->setTitle(label);
-            defaultMenu = parseMenuFile(menu_file, rootmenu);
+            _rootmenu->setTitle(label);
+            defaultMenu = parseMenuFile(menu_file, _rootmenu);
             break;
           }
         }
@@ -1113,13 +1113,13 @@ void BScreen::InitMenu(void) {
   }
 
   if (defaultMenu) {
-    rootmenu->setTitle("Blackbox");
+    _rootmenu->setTitle("_Blackbox");
 
-    rootmenu->insertFunction("xterm", BScreen::Execute, "xterm");
-    rootmenu->insertFunction("Restart", BScreen::Restart);
-    rootmenu->insertFunction("Exit", BScreen::Exit);
+    _rootmenu->insertFunction("xterm", BScreen::Execute, "xterm");
+    _rootmenu->insertFunction("Restart", BScreen::Restart);
+    _rootmenu->insertFunction("Exit", BScreen::Exit);
   } else {
-    blackbox->saveMenuFilename(blackbox->resource().menuFilename());
+    _blackbox->saveMenuFilename(_blackbox->resource().menuFilename());
   }
 }
 
@@ -1209,7 +1209,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
       if (! (*label && *command)) {
         fprintf(stderr,
                 "%s: [exec] error, no menu label and/or command defined\n",
-                blackbox->applicationName().c_str());
+                _blackbox->applicationName().c_str());
         continue;
       }
 
@@ -1219,7 +1219,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
     case 442: // exit
       if (! *label) {
         fprintf(stderr, "%s: [exit] error, no menu label defined\n",
-                blackbox->applicationName().c_str());
+                _blackbox->applicationName().c_str());
         continue;
       }
 
@@ -1230,7 +1230,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
       if (! (*label && *command)) {
         fprintf(stderr,
                 "%s: [style] error, no menu label and/or filename defined\n",
-                blackbox->applicationName().c_str());
+                _blackbox->applicationName().c_str());
         continue;
       }
 
@@ -1242,7 +1242,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
     case 630: // config
       if (! *label) {
         fprintf(stderr, "%s: [config] error, no label defined",
-                blackbox->applicationName().c_str());
+                _blackbox->applicationName().c_str());
         continue;
       }
 
@@ -1252,7 +1252,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
     case 740: { // include
       if (! *label) {
         fprintf(stderr, "%s: [include] error, no filename defined\n",
-                blackbox->applicationName().c_str());
+                _blackbox->applicationName().c_str());
         continue;
       }
 
@@ -1268,13 +1268,13 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
       if (fstat(fileno(submenufile), &buf) ||
           ! S_ISREG(buf.st_mode)) {
         fprintf(stderr, "%s: [include] error: '%s' is not a regular file\n",
-                blackbox->applicationName().c_str(), newfile.c_str());
+                _blackbox->applicationName().c_str(), newfile.c_str());
         break;
       }
 
       if (! feof(submenufile)) {
         if (! parseMenuFile(submenufile, menu))
-          blackbox->saveMenuFilename(newfile);
+          _blackbox->saveMenuFilename(newfile);
 
         fclose(submenufile);
       }
@@ -1285,12 +1285,12 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
     case 767: { // submenu
       if (! *label) {
         fprintf(stderr, "%s: [submenu] error, no menu label defined\n",
-                blackbox->applicationName().c_str());
+                _blackbox->applicationName().c_str());
         continue;
       }
 
       Rootmenu *submenu =
-        new Rootmenu(*blackbox, screen_info.screenNumber(), this);
+        new Rootmenu(*_blackbox, screen_info.screenNumber(), this);
       submenu->showTitle();
 
       if (*command)
@@ -1307,7 +1307,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
     case 773: { // restart
       if (! *label) {
         fprintf(stderr, "%s: [restart] error, no menu label defined\n",
-                blackbox->applicationName().c_str());
+                _blackbox->applicationName().c_str());
         continue;
       }
 
@@ -1321,7 +1321,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
     case 845: { // reconfig
       if (! *label) {
         fprintf(stderr, "%s: [reconfig] error, no menu label defined\n",
-                blackbox->applicationName().c_str());
+                _blackbox->applicationName().c_str());
         continue;
       }
 
@@ -1336,7 +1336,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
       if (! *label || (! *command && newmenu)) {
         fprintf(stderr,
                 "%s: [stylesdir/stylesmenu] error, no directory defined\n",
-                blackbox->applicationName().c_str());
+                _blackbox->applicationName().c_str());
         continue;
       }
 
@@ -1349,13 +1349,13 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
       if (stat(stylesdir.c_str(), &statbuf) == -1) {
         fprintf(stderr,
                 "%s: [stylesdir/stylesmenu] error, '%s' does not exist\n",
-                blackbox->applicationName().c_str(), stylesdir.c_str());
+                _blackbox->applicationName().c_str(), stylesdir.c_str());
         continue;
       }
       if (! S_ISDIR(statbuf.st_mode)) {
         fprintf(stderr,
                 "%s: [stylesdir/stylesmenu] error, '%s' is not a directory\n",
-                blackbox->applicationName().c_str(), stylesdir.c_str());
+                _blackbox->applicationName().c_str(), stylesdir.c_str());
         continue;
       }
 
@@ -1363,7 +1363,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
       if (newmenu) {
         stylesmenu =
-          new Rootmenu(*blackbox, screen_info.screenNumber(),this);
+          new Rootmenu(*_blackbox, screen_info.screenNumber(),this);
         stylesmenu->showTitle();
       } else {
         stylesmenu = menu;
@@ -1405,18 +1405,18 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
         menu->insertItem(label, stylesmenu);
       }
 
-      blackbox->saveMenuFilename(stylesdir);
+      _blackbox->saveMenuFilename(stylesdir);
     }
       break;
 
     case 1090: { // workspaces
       if (! *label) {
         fprintf(stderr, "%s: [workspaces] error, no menu label defined\n",
-                blackbox->applicationName().c_str());
+                _blackbox->applicationName().c_str());
         continue;
       }
 
-      menu->insertItem(label, workspacemenu);
+      menu->insertItem(label, _workspacemenu);
       break;
     }
     } // switch
@@ -1427,9 +1427,9 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
 
 void BScreen::shutdown(void) {
-  XSelectInput(blackbox->XDisplay(), screen_info.rootWindow(),
+  XSelectInput(_blackbox->XDisplay(), screen_info.rootWindow(),
                NoEventMask);
-  XSync(blackbox->XDisplay(), False);
+  XSync(_blackbox->XDisplay(), False);
 
   while(! windowList.empty())
     unmanageWindow(windowList.back());
@@ -1441,11 +1441,11 @@ void BScreen::shutdown(void) {
 
 void BScreen::showGeometry(GeometryType type, const bt::Rect &rect) {
   if (! geom_visible) {
-    XMoveResizeWindow(blackbox->XDisplay(), geom_window,
+    XMoveResizeWindow(_blackbox->XDisplay(), geom_window,
                       (screen_info.width() - geom_w) / 2,
                       (screen_info.height() - geom_h) / 2, geom_w, geom_h);
-    XMapWindow(blackbox->XDisplay(), geom_window);
-    XRaiseWindow(blackbox->XDisplay(), geom_window);
+    XMapWindow(_blackbox->XDisplay(), geom_window);
+    XRaiseWindow(_blackbox->XDisplay(), geom_window);
 
     geom_visible = True;
   }
@@ -1481,7 +1481,7 @@ void BScreen::showGeometry(GeometryType type, const bt::Rect &rect) {
 
 void BScreen::hideGeometry(void) {
   if (geom_visible) {
-    XUnmapWindow(blackbox->XDisplay(), geom_window);
+    XUnmapWindow(_blackbox->XDisplay(), geom_window);
     geom_visible = False;
   }
 }
@@ -1551,8 +1551,9 @@ void BScreen::updateAvailableArea(void) {
 }
 
 
-Workspace* BScreen::getWorkspace(unsigned int index) const {
-  if (index == bt::BSENTINEL) return 0;
+Workspace* BScreen::findWorkspace(unsigned int index) const {
+  if (index == bt::BSENTINEL)
+    return 0;
   assert(index < workspacesList.size());
   return workspacesList[index];
 }
@@ -1561,7 +1562,7 @@ Workspace* BScreen::getWorkspace(unsigned int index) const {
 void BScreen::clientMessageEvent(const XClientMessageEvent * const event) {
   if (event->format != 32) return;
 
-  if (event->message_type == blackbox->netwm().numberOfDesktops()) {
+  if (event->message_type == _blackbox->netwm().numberOfDesktops()) {
     unsigned int number = event->data.l[0];
     if (number > workspaceCount()) {
       for (; number != workspaceCount(); --number)
@@ -1570,9 +1571,9 @@ void BScreen::clientMessageEvent(const XClientMessageEvent * const event) {
       for (; number != workspaceCount(); ++number)
         removeLastWorkspace();
     }
-  } else if (event->message_type == blackbox->netwm().desktopNames()) {
-    getDesktopNames();
-  } else if (event->message_type == blackbox->netwm().currentDesktop()) {
+  } else if (event->message_type == _blackbox->netwm().desktopNames()) {
+    readDesktopNames();
+  } else if (event->message_type == _blackbox->netwm().currentDesktop()) {
     const unsigned int workspace = event->data.l[0];
     if (workspace < workspaceCount() && workspace != current_workspace)
       setCurrentWorkspace(workspace);
@@ -1587,18 +1588,18 @@ void BScreen::buttonPressEvent(const XButtonEvent * const event) {
       this screen until the user focuses a window on another screen or
       makes another screen active.
     */
-    blackbox->setActiveScreen(this);
+    _blackbox->setActiveScreen(this);
   } else if (event->button == 2) {
-    workspacemenu->popup(event->x_root, event->y_root);
+    _workspacemenu->popup(event->x_root, event->y_root);
   } else if (event->button == 3) {
-    blackbox->checkMenu();
-    rootmenu->popup(event->x_root, event->y_root);
+    _blackbox->checkMenu();
+    _rootmenu->popup(event->x_root, event->y_root);
   }
 }
 
 
 void BScreen::propertyNotifyEvent(const XPropertyEvent * const event) {
-  if (event->atom == blackbox->netwm().activeWindow() && _toolbar)
+  if (event->atom == _blackbox->netwm().activeWindow() && _toolbar)
     _toolbar->redrawWindowLabel();
 }
 
@@ -1633,7 +1634,7 @@ void BScreen::updateWorkareaHint(void) const {
     tmp += 4;
   }
 
-  blackbox->netwm().setWorkarea(screen_info.rootWindow(),
+  _blackbox->netwm().setWorkarea(screen_info.rootWindow(),
                                  workarea, workspaceCount());
 
   delete [] workarea;
@@ -1648,14 +1649,14 @@ void BScreen::updateDesktopNamesHint(void) const {
   for (; it != end; ++it)
     names += (*it)->name() + '\0';
 
-  blackbox->netwm().setDesktopNames(screen_info.rootWindow(), names);
+  _blackbox->netwm().setDesktopNames(screen_info.rootWindow(), names);
 }
 
 
 void BScreen::updateClientListHint(void) const {
   if (windowList.empty()) {
-    blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                      blackbox->netwm().clientList());
+    _blackbox->netwm().removeProperty(screen_info.rootWindow(),
+                                      _blackbox->netwm().clientList());
     return;
   }
 
@@ -1664,7 +1665,7 @@ void BScreen::updateClientListHint(void) const {
   std::transform(windowList.begin(), windowList.end(), clientList.begin(),
                  std::mem_fun(&BlackboxWindow::clientWindow));
 
-  blackbox->netwm().setClientList(screen_info.rootWindow(), clientList);
+  _blackbox->netwm().setClientList(screen_info.rootWindow(), clientList);
 }
 
 
@@ -1681,18 +1682,18 @@ void BScreen::updateClientListStackingHint(void) const {
   }
 
   if (stack.empty()) {
-    blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                     blackbox->netwm().clientListStacking());
+    _blackbox->netwm().removeProperty(screen_info.rootWindow(),
+                                     _blackbox->netwm().clientListStacking());
     return;
   }
 
-  blackbox->netwm().setClientListStacking(screen_info.rootWindow(), stack);
+  _blackbox->netwm().setClientListStacking(screen_info.rootWindow(), stack);
 }
 
 
-void BScreen::getDesktopNames(void) {
+void BScreen::readDesktopNames(void) {
   bt::Netwm::UTF8StringList names;
-  if(! blackbox->netwm().readDesktopNames(screen_info.rootWindow(), names))
+  if(! _blackbox->netwm().readDesktopNames(screen_info.rootWindow(), names))
     return;
 
   bt::Netwm::UTF8StringList::const_iterator it = names.begin(),
@@ -1710,7 +1711,7 @@ void BScreen::getDesktopNames(void) {
 }
 
 
-BlackboxWindow *BScreen::getWindow(unsigned int workspace, unsigned int id) {
+BlackboxWindow *BScreen::window(unsigned int workspace, unsigned int id) {
   StackingList::const_iterator it = stackingList.begin(),
                               end = stackingList.end();
   for (; it != end; ++it) {
@@ -2143,7 +2144,7 @@ void BScreen::destroyToolbar(void) {
 
 Windowmenu *BScreen::windowmenu(BlackboxWindow *win) {
   if (!_windowmenu)
-    _windowmenu = new Windowmenu(*blackbox, screen_info.screenNumber());
+    _windowmenu = new Windowmenu(*_blackbox, screen_info.screenNumber());
   _windowmenu->setWindow(win);
   return _windowmenu;
 }
@@ -2151,24 +2152,24 @@ Windowmenu *BScreen::windowmenu(BlackboxWindow *win) {
 
 void BScreen::addIcon(BlackboxWindow *win) {
   if (win->workspace() != bt::BSENTINEL) {
-    Workspace *workspace = getWorkspace(win->workspace());
+    Workspace *workspace = findWorkspace(win->workspace());
     assert(workspace != 0);
     workspace->removeWindow(win);
   }
 
   const std::string s = bt::ellideText(win->iconTitle(), 60, "...");
   int id = _iconmenu->insertItem(s);
-  blackbox->netwm().setWMVisibleIconName(win->clientWindow(), s);
+  _blackbox->netwm().setWMVisibleIconName(win->clientWindow(), s);
   win->setWindowNumber(id);
 }
 
 
 void BScreen::removeIcon(BlackboxWindow *win) {
   _iconmenu->removeItem(win->windowNumber());
-  blackbox->netwm().removeProperty(win->clientWindow(),
-                                   blackbox->netwm().wmVisibleIconName());
+  _blackbox->netwm().removeProperty(win->clientWindow(),
+                                   _blackbox->netwm().wmVisibleIconName());
 
-  Workspace *workspace = getWorkspace(current_workspace);
+  Workspace *workspace = findWorkspace(current_workspace);
   assert(workspace != 0);
   workspace->addWindow(win);
 }

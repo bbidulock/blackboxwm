@@ -37,7 +37,7 @@
 
 Slit::Slit(BScreen *scr) {
   screen = scr;
-  blackbox = screen->getBlackbox();
+  blackbox = screen->blackbox();
 
   ScreenResource& res = screen->resource();
 

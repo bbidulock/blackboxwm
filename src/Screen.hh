@@ -64,14 +64,14 @@ private:
   Window no_focus_window;
 
   const bt::ScreenInfo& screen_info;
-  Blackbox *blackbox;
+  Blackbox *_blackbox;
   Configmenu *configmenu;
   Iconmenu *_iconmenu;
-  Rootmenu *rootmenu;
+  Rootmenu *_rootmenu;
   Slitmenu *_slitmenu;
   Toolbarmenu *_toolbarmenu;
   Windowmenu *_windowmenu;
-  Workspacemenu *workspacemenu;
+  Workspacemenu *_workspacemenu;
 
   BlackboxWindowList windowList;
   StackingList stackingList;
@@ -132,16 +132,17 @@ public:
   unsigned int screenNumber(void) const { return screen_info.screenNumber(); }
 
   ScreenResource& resource(void) { return _resource; }
-  void saveResource(void) { blackbox->resource().save(*blackbox); }
+  void saveResource(void) { _blackbox->resource().save(*_blackbox); }
 
   bool isScreenManaged(void) const { return managed; }
 
-  Blackbox *getBlackbox(void) { return blackbox; }
+  inline Blackbox *blackbox(void) const
+  { return _blackbox; }
 
-  Rootmenu *getRootmenu(void) { return rootmenu; }
-
-  Workspacemenu *getWorkspacemenu(void) { return workspacemenu; }
-
+  inline Rootmenu *rootmenu(void) const
+  { return _rootmenu; }
+  inline Workspacemenu *workspacemenu(void) const
+  { return _workspacemenu; }
   inline Iconmenu *iconmenu(void) const
   { return _iconmenu; }
   inline Slitmenu *slitmenu(void) const
@@ -161,7 +162,7 @@ public:
   void createToolbar(void);
   void destroyToolbar(void);
 
-  Workspace *getWorkspace(unsigned int index) const;
+  Workspace *findWorkspace(unsigned int index) const;
 
   inline unsigned int workspaceCount(void) const
   { return workspacesList.size(); }
@@ -177,14 +178,14 @@ public:
   void updateClientListHint(void) const;
   void updateClientListStackingHint(void) const;
   void updateDesktopNamesHint(void) const;
-  void getDesktopNames(void);
+  void readDesktopNames(void);
 
   void addWorkspace(void);
   void removeLastWorkspace(void);
 
   void addWindow(Window w);
   void releaseWindow(BlackboxWindow *win);
-  BlackboxWindow* getWindow(unsigned int workspace, unsigned int id);
+  BlackboxWindow* window(unsigned int workspace, unsigned int id);
 
   void raiseWindow(StackEntity *entity);
   void lowerWindow(StackEntity *entity);

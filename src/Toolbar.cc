@@ -49,7 +49,7 @@ long aMinuteFromNow(void) {
 
 Toolbar::Toolbar(BScreen *scrn) {
   _screen = scrn;
-  blackbox = _screen->getBlackbox();
+  blackbox = _screen->blackbox();
 
   // get the clock updating every minute
   clock_timer = new bt::Timer(blackbox, this);
@@ -446,7 +446,7 @@ void Toolbar::redrawWindowLabel(void) {
                     frame.window_label, u, u, frame.wlabel);
   }
 
-  BlackboxWindow *foc = _screen->getBlackbox()->getFocusedWindow();
+  BlackboxWindow *foc = _screen->blackbox()->getFocusedWindow();
   if (! foc || foc->screen() != _screen)
     return;
 

@@ -38,7 +38,7 @@ Clientmenu::Clientmenu(bt::Application &app, BScreen& screen,
 
 
 void Clientmenu::itemClicked(unsigned int id, unsigned int button) {
-  BlackboxWindow *win = _screen.getWindow(_workspace, id);
+  BlackboxWindow *win = _screen.window(_workspace, id);
 
   if (button == 2) {
     // move win to current workspace

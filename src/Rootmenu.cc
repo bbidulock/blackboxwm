@@ -57,24 +57,24 @@ void Rootmenu::itemClicked(unsigned int id, unsigned int) {
     break;
 
   case BScreen::Restart:
-    _bscreen->getBlackbox()->restart();
+    _bscreen->blackbox()->restart();
     break;
 
   case BScreen::RestartOther:
     if (! it->second.string.empty())
-      _bscreen->getBlackbox()->restart(it->second.string);
+      _bscreen->blackbox()->restart(it->second.string);
     break;
 
   case BScreen::Exit:
-    _bscreen->getBlackbox()->quit();
+    _bscreen->blackbox()->quit();
     break;
 
   case BScreen::SetStyle:
     if (! it->second.string.empty())
-      _bscreen->getBlackbox()->resource().saveStyleFilename(it->second.string);
+      _bscreen->blackbox()->resource().saveStyleFilename(it->second.string);
 
   case BScreen::Reconfigure:
-    _bscreen->getBlackbox()->reconfigure();
+    _bscreen->blackbox()->reconfigure();
     return;
   } // switch
 }
