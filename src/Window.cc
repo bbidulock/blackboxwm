@@ -1114,6 +1114,28 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     _screen->addStrut(client.strut);
   }
 
+  /*
+    if we just managed the group leader for an existing group, move
+    all group transients to this window
+  */
+  {
+    BWindowGroup *group = blackbox->findWindowGroup(client.window);
+    if (group) {
+      BlackboxWindowList transientList = group->transients();
+      BlackboxWindowList::const_iterator it = transientList.begin();
+      const BlackboxWindowList::const_iterator end = transientList.end();
+      for (; it != end; ++it) {
+        BlackboxWindow * const w1 = *it;
+        if (w1->client.transient_for != client.window)
+          continue;
+        group->removeTransient(w1);
+        addTransient(w1);
+        w1->changeWorkspace(workspace());
+        w1->changeLayer(layer());
+      }
+    }
+  }
+
   frame.window = createToplevelWindow();
   blackbox->insertEventHandler(frame.window, this);
 
@@ -1212,24 +1234,19 @@ BlackboxWindow::~BlackboxWindow(void) {
   BWindowGroup *group = findWindowGroup();
 
   if (isTransient()) {
-  // remove ourselves from our transient_for
+    // remove ourselves from our transient_for
     BlackboxWindow *win = findTransientFor();
     if (win) {
-      printf("found transient for\n");
       win->removeTransient(this);
     } else if (isGroupTransient()) {
-      if (group) {
-        printf("found group for group transient\n");
+      if (group)
         group->removeTransient(this);
-      }
     }
     client.transient_for = 0;
   }
 
-  if (group) {
-    printf("removing window from group");
+  if (group)
     group->removeWindow(this);
-  }
 
   if (frame.title)
     destroyTitlebar();
