@@ -54,6 +54,8 @@ Workspace::Workspace(BScreen *scrn, unsigned int i) {
 
   id = i;
 
+  clientmenu = new Clientmenu(this);
+
   lastfocus = (BlackboxWindow *) 0;
 
   name = (char *) 0;
