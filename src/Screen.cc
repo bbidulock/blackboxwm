@@ -693,7 +693,7 @@ void BScreen::LoadStyle(void) {
     resource.mstyle.frame = BTexture("solid flat", getBaseDisplay(),
                                      getScreenNumber(), image_control);
     resource.mstyle.frame.setColor(BColor("black", getBaseDisplay(),
-                                            getScreenNumber()));
+                                          getScreenNumber()));
   }
 
   resource.border_color =
