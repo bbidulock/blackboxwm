@@ -92,7 +92,8 @@ enum {
 
 Configmenu::Configmenu(bt::Application &app, unsigned int screen,
                        BScreen *bscreen)
-  : bt::Menu(app, screen), _bscreen(bscreen) {
+  : bt::Menu(app, screen), _bscreen(bscreen)
+{
   setTitle("Configuration options");
   showTitle();
 
@@ -167,7 +168,8 @@ void Configmenu::itemClicked(unsigned int id, unsigned int) {
 
 ConfigFocusmenu::ConfigFocusmenu(bt::Application &app, unsigned int screen,
                                  BScreen *bscreen)
-  : bt::Menu(app, screen), _bscreen(bscreen) {
+  : bt::Menu(app, screen), _bscreen(bscreen)
+{
   setTitle("Focus Model");
   showTitle();
 
@@ -222,7 +224,8 @@ void ConfigFocusmenu::itemClicked(unsigned int id, unsigned int) {
 ConfigPlacementmenu::ConfigPlacementmenu(bt::Application &app,
                                          unsigned int screen,
                                          BScreen *bscreen)
-  : bt::Menu(app, screen), _bscreen(bscreen) {
+  : bt::Menu(app, screen), _bscreen(bscreen)
+{
   setTitle("Window Placement");
   showTitle();
 
