@@ -24,6 +24,8 @@ nls contributors:
 	 - Danish (da_DK) nls support
 	Jan Schaumann <jschauma@netmeister.org>
 	 - German (de_DE) nls support
+	Adriano Varoli Piazza <adrianovaroli@redusers.com>
+	 - Spanish nls support (submitted as es_AR, ES and MX)
 	Duret Bertrand <bertrand.duret@libertysurf.fr>
 	 - updated French (fr_FR) nls and added French man pages
 	Bodnar Istvan <piggy@dub.hu>

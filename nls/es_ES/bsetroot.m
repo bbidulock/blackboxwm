@@ -1,16 +1,15 @@
 $set 16 #bsetroot
 
 $ #MustSpecify
-# %s: un error: es necesario especifiar uno de: -solid, -mod, -gradient\n
+# %s: error: debe especificarse uno entre: -solid, -mod, -gradient\n
 $ #Usage
 # %s 2.0: (c) 1997-2000 Brad Hughes\n\n\
-  -display <string>        la conexión de mostrar\n\
-  -mod <x> <y>             el diseño de modula \n\
-  -foreground, -fg <color> el color del primer plano de modula\n\
-  -background, -bg <color> el color del fondo de modula\n\n\
-  -gradient <texture>      la textura de la pendiente\n\
-  -from <color>            el color primero de la pendiente\n\
-  -to <color>              el color último de la pendiente\n\n\
-  -solid <color>           el color sólido\n\n\
-  -help                    mostrar este texto de ayuda y cerrar\n
-
+  -display <string>        conexión de despliegue\n\
+  -mod <x> <y>             diseño de modula\n\
+  -foreground, -fg <color> color de primer plano de modula\n\
+  -background, -bg <color> color de fondo de modula\n\n\
+  -gradient <texture>      textura del gradiente\n\
+  -from <color>            color inicial del gradiente\n\
+  -to <color>              color final del gradiente\n\n\
+  -solid <color>           color sólido\n\n\
+  -help                    Imprimir este texto de ayuda y salir\n

@@ -190,11 +190,15 @@ install-data-local: blackbox.cat
 		$(INSTALL_DATA) blackbox.cat $(THE_NLS_PATH); \
 		rm -f $(DESTDIR)$(pkgdatadir)/nls/es; \
 		ln -f -s es_ES $(DESTDIR)$(pkgdatadir)/nls/es; \
+		ln -f -s es_ES $(DESTDIR)$(pkgdatadir)/nls/es_AR; \
+		ln -f -s es_ES $(DESTDIR)$(pkgdatadir)/nls/es_MX; \
 	fi
 uninstall-local:
 	@if test x$(NLSTEST) = "x-DNLS"; then \
 		rm -f $(THE_NLS_PATH)/blackbox.cat; \
 		rm -f $(DESTDIR)$(pkgdatadir)/nls/es; \
+		rm -f $(DESTDIR)$(pkgdatadir)/nls/es_AR; \
+		rm -f $(DESTDIR)$(pkgdatadir)/nls/es_MX; \
 		rmdir $(THE_NLS_PATH); \
 	fi
 

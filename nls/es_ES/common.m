@@ -13,23 +13,26 @@ $ #DirectionVert
 # Vertical
 
 $ #AlwaysOnTop
-# Siempre encima/arriba
+# Siempre Encima
 
 $ #PlacementTitle
-# Plazamiento 
+# Ubicación
 $ #PlacementTopLeft
-# En la cabeza a la izquierda
+# Arriba, Izquierda
 $ #PlacementCenterLeft
-# Centro a la izquierda
+# Centro, Izquierda
 $ #PlacementBottomLeft
-# Al pie a la izquierda
+# Abajo, Izquierda
 $ #PlacementTopCenter
-# En la cabeza al centro
+# Arriba, Centro
 $ #PlacementBottomCenter
-# Al pie al centro
+# Abajo, Centro
 $ #PlacementTopRight
-# En la cabeza a la derecha
+# Arriba, Derecha
 $ #PlacementCenterRight
-# Centro a la derecha
+# Centro, Derecha
 $ #PlacementBottomRight
-# Al pie a la derecha
+# Abajo, Derecha
+
+$ #AutoHide
+# Ocultar Automáticamente

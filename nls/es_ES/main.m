@@ -1,20 +1,20 @@
 $set 14 #main
 
 $ #RCRequiresArg
-# error: '-rc' requiere un argumento
+# error: '-rc' requiere un argumento\n
 $ #DISPLAYRequiresArg
-# error: '-display' requiere un argumento
+# error: '-display' requiere un argumento\n
 $ #WarnDisplaySet
-# cuidado: no se puede establecer la variable de ambiente 'DISPLAY'
+# warning: no pude establecer la variable de entorno 'DISPLAY'\n
 $ #Usage
 # Blackbox %s : (c) 2001 - 2002 Sean 'Shaleh' Perry\n\
   \t\t\t 1997 - 2000, 2002 Brad Hughes\n\n\
-  -display <string> conexión de despliegue.\n\
-  -rc <string>      archivo alternativo de recuros.\n\
-  -version          mostrar la versión y cerrar.\n\
-  -help             mostrar este texto de ayuda y cerrar.\n\n
+  -display <cadena>\t\tusar la conexión de despliegue.\n\
+  -rc <cadena>\t\t\tusar otro archivo de recursos.\n\
+  -version\t\t\tmostrar version y salir.\n\
+  -help\t\t\t\tmostrar este texto de ayuda y salir.\n\n
 $ #CompileOptions
-# Opciones durante la compilación:\n\
-  Información extra para depuración:               %s\n\
-  Forma:                                           %s\n\
-  8bpp simulación ordenada de colores en imágenes: %s\n\n
+# Opciones de Tiempo de Compilación:\n\
+  Depuración:\t\t\t%s\n\
+  Forma:\t\t\t%s\n\
+  Simulación ordenada de colores de 8bpp:\t%s\n\n

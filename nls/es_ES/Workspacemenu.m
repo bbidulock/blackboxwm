@@ -3,6 +3,6 @@ $set 12 #Workspacemenu
 $ #WorkspacesTitle
 # Escritorios
 $ #NewWorkspace
-# Escritorio nuevo
+# Nuevo Escritorio
 $ #RemoveLast
-# Quitar el último escritorio
+# Quitar Ultimo
