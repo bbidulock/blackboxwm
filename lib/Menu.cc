@@ -991,41 +991,23 @@ void bt::Menu::leaveNotifyEvent(const XCrossingEvent * const /*event*/) {
 
 void bt::Menu::exposeEvent(const XExposeEvent * const event) {
   MenuStyle* style = MenuStyle::get(_app, _screen);
-  Rect r(event->x, event->y, event->width, event->height), u;
+  Rect r(event->x, event->y, event->width, event->height);
 
   if (_show_title && r.intersects(_trect)) {
-    u = r & _trect;
-
-    Pen pen(_screen, style->titleTexture().color());
-    if (_tpixmap) {
-      XCopyArea(_app.XDisplay(), _tpixmap, _window, pen.gc(),
-                u.x(), u.y(), u.width(), u.height(), u.x(), u.y());
-    } else {
-      XFillRectangle(_app.XDisplay(), _window, pen.gc(),
-                     u.x(), u.y(), u.width(), u.height());
-    }
-
+    drawTexture(_screen, style->titleTexture(), _window,
+                _trect, r & _trect, _tpixmap);
     style->drawTitle(_window, _trect, _title);
   }
 
   if (r.intersects(_frect)) {
-    u = r & _frect;
-
-    Pen pen(_screen, style->frameTexture().color());
-    if (_fpixmap) {
-      XCopyArea(_app.XDisplay(), _fpixmap, _window, pen.gc(),
-                u.x() - _frect.x(), u.y() - _frect.y(),
-                u.width(), u.height(), u.x(), u.y());
-    } else {
-      XFillRectangle(_app.XDisplay(), _window, pen.gc(),
-                     u.x(), u.y(), u.width(), u.height());
-    }
+    drawTexture(_screen, style->frameTexture(), _window,
+                _frect, r & _frect, _fpixmap);
   }
 
   if (! r.intersects(_irect))
     return;
 
-  u = r & _irect;
+  Rect u = r & _irect;
   // only draw items that intersect with the needed update rect
   r.setRect(_irect.x(), _irect.y(), _itemw, 0);
   int row = 0, col = 0;
