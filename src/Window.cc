@@ -2208,7 +2208,7 @@ void BlackboxWindow::redrawCloseButton(bool pressed) const {
 }
 
 
-void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
+void BlackboxWindow::mapRequestEvent(const XMapRequestEvent *re) {
   if (re->window != client.window)
     return;
 
@@ -2241,7 +2241,7 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
 }
 
 
-void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
+void BlackboxWindow::unmapNotifyEvent(const XUnmapEvent *ue) {
   if (ue->window != client.window)
     return;
 
@@ -2254,7 +2254,7 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
 }
 
 
-void BlackboxWindow::destroyNotifyEvent(XDestroyWindowEvent *de) {
+void BlackboxWindow::destroyNotifyEvent(const XDestroyWindowEvent *de) {
   if (de->window != client.window)
     return;
 
@@ -2267,7 +2267,7 @@ void BlackboxWindow::destroyNotifyEvent(XDestroyWindowEvent *de) {
 }
 
 
-void BlackboxWindow::reparentNotifyEvent(XReparentEvent *re) {
+void BlackboxWindow::reparentNotifyEvent(const XReparentEvent *re) {
   if (re->window != client.window || re->parent == frame.plate)
     return;
 
@@ -2366,7 +2366,7 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
 }
 
 
-void BlackboxWindow::exposeEvent(XExposeEvent *ee) {
+void BlackboxWindow::exposeEvent(const XExposeEvent *ee) {
   if (frame.label == ee->window && (decorations & Decor_Titlebar))
     redrawLabel();
   else if (frame.close_button == ee->window)
@@ -2378,7 +2378,7 @@ void BlackboxWindow::exposeEvent(XExposeEvent *ee) {
 }
 
 
-void BlackboxWindow::configureRequestEvent(XConfigureRequestEvent *cr) {
+void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent *cr) {
   if (cr->window != client.window || flags.iconic)
     return;
 
@@ -2423,7 +2423,7 @@ void BlackboxWindow::configureRequestEvent(XConfigureRequestEvent *cr) {
 }
 
 
-void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
+void BlackboxWindow::buttonPressEvent(const XButtonEvent *be) {
   if (frame.maximize_button == be->window) {
     redrawMaximizeButton(True);
   } else if (be->button == 1 || (be->button == 3 && be->state == Mod1Mask)) {
@@ -2500,7 +2500,7 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
 }
 
 
-void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
+void BlackboxWindow::buttonReleaseEvent(const XButtonEvent *re) {
   if (re->window == frame.maximize_button) {
     if ((re->x >= 0 && re->x <= static_cast<signed>(frame.button_w)) &&
         (re->y >= 0 && re->y <= static_cast<signed>(frame.button_w))) {
@@ -2568,7 +2568,7 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
 }
 
 
-void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
+void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
   if (!flags.resizing && (me->state & Button1Mask) &&
       (functions & Func_Move) &&
       (frame.title == me->window || frame.label == me->window ||

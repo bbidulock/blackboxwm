@@ -1689,7 +1689,7 @@ Workspace* BScreen::getWorkspace(unsigned int index) {
 }
 
 
-void BScreen::buttonPressEvent(XButtonEvent *xbutton) {
+void BScreen::buttonPressEvent(const XButtonEvent *xbutton) {
   if (xbutton->button == 1) {
     if (! isRootColormapInstalled())
       image_control->installRootColormap();

@@ -340,16 +340,16 @@ public:
   void changeBlackboxHints(BlackboxHints *net);
   void restoreAttributes(void);
 
-  void buttonPressEvent(XButtonEvent *be);
-  void buttonReleaseEvent(XButtonEvent *re);
-  void motionNotifyEvent(XMotionEvent *me);
-  void destroyNotifyEvent(XDestroyWindowEvent */*unused*/);
-  void mapRequestEvent(XMapRequestEvent *mre);
-  void unmapNotifyEvent(XUnmapEvent */*unused*/);
-  void reparentNotifyEvent(XReparentEvent */*unused*/);
+  void buttonPressEvent(const XButtonEvent *be);
+  void buttonReleaseEvent(const XButtonEvent *re);
+  void motionNotifyEvent(const XMotionEvent *me);
+  void destroyNotifyEvent(const XDestroyWindowEvent */*unused*/);
+  void mapRequestEvent(const XMapRequestEvent *mre);
+  void unmapNotifyEvent(const XUnmapEvent */*unused*/);
+  void reparentNotifyEvent(const XReparentEvent */*unused*/);
   void propertyNotifyEvent(Atom atom);
-  void exposeEvent(XExposeEvent *ee);
-  void configureRequestEvent(XConfigureRequestEvent *cr);
+  void exposeEvent(const XExposeEvent *ee);
+  void configureRequestEvent(const XConfigureRequestEvent *cr);
 
 #ifdef    SHAPE
   void configureShape(void);

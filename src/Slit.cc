@@ -547,7 +547,7 @@ void Slit::shutdown(void) {
 }
 
 
-void Slit::buttonPressEvent(XButtonEvent *e) {
+void Slit::buttonPressEvent(const XButtonEvent *e) {
   if (e->window != frame.window) return;
 
   if (e->button == Button1 && (! on_top)) {
@@ -581,7 +581,7 @@ void Slit::buttonPressEvent(XButtonEvent *e) {
 }
 
 
-void Slit::enterNotifyEvent(XCrossingEvent *) {
+void Slit::enterNotifyEvent(const XCrossingEvent *) {
   if (! do_auto_hide)
     return;
 
@@ -593,7 +593,7 @@ void Slit::enterNotifyEvent(XCrossingEvent *) {
 }
 
 
-void Slit::leaveNotifyEvent(XCrossingEvent *) {
+void Slit::leaveNotifyEvent(const XCrossingEvent *) {
   if (! do_auto_hide)
     return;
 
@@ -605,7 +605,7 @@ void Slit::leaveNotifyEvent(XCrossingEvent *) {
 }
 
 
-void Slit::configureRequestEvent(XConfigureRequestEvent *e) {
+void Slit::configureRequestEvent(const XConfigureRequestEvent *e) {
   if (! blackbox->validateWindow(e->window))
     return;
 
@@ -659,7 +659,7 @@ void Slit::toggleAutoHide(void) {
 }
 
 
-void Slit::unmapNotifyEvent(XUnmapEvent *e) {
+void Slit::unmapNotifyEvent(const XUnmapEvent *e) {
   removeClient(e->window);
 }
 
