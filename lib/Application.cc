@@ -202,7 +202,7 @@ void bt::Application::startup(void) { }
 void bt::Application::shutdown(void) { }
 
 
-void bt::Application::eventLoop(void) {
+void bt::Application::run(void) {
   startup();
 
   setRunState(RUNNING);

@@ -24,14 +24,8 @@
 
 #include "blackbox.hh"
 #include "../version.h"
-#include "../nls/blackbox-nls.hh"
-
-#include <i18n.hh>
 
 #include <stdio.h>
-
-
-bt::I18n bt::i18n; // initialized in main
 
 
 static void showHelp(int exitval) {
@@ -42,31 +36,28 @@ static void showHelp(int exitval) {
          __blackbox_version);
 
   // print program usage and command line options
-  printf(bt::i18n(mainSet, mainUsage,
-                  "  -display <string>\t\tuse display connection.\n"
-                  "  -single <string>\t\tmanage the default screen only\n"
-                  "  -rc <string>\t\t\tuse alternate resource file.\n"
-                  "  -version\t\t\tdisplay version and exit.\n"
-                  "  -help\t\t\t\tdisplay this help text and exit.\n\n"));
+  printf("  -display <string>\t\tuse display connection.\n"
+         "  -single <string>\t\tmanage the default screen only\n"
+         "  -rc <string>\t\t\tuse alternate resource file.\n"
+         "  -version\t\t\tdisplay version and exit.\n"
+         "  -help\t\t\t\tdisplay this help text and exit.\n\n");
 
   // some people have requested that we print out compile options
   // as well
-  printf(bt::i18n(mainSet, mainCompileOptions,
-                  "Compile time options:\n"
-                  "  Debugging:\t\t\t%s\n"
-                  "  Shape:\t\t\t%s\n\n"),
+  printf("Compile time options:\n"
+         "  Debugging:\t\t\t%s\n"
+         "  Shape:\t\t\t%s\n\n",
 #ifdef    DEBUG
-         bt::i18n(CommonSet, CommonYes, "yes"),
+         "yes",
 #else // !DEBUG
-         bt::i18n(CommonSet, CommonNo, "no"),
+         "no",
 #endif // DEBUG
 
 #ifdef    SHAPE
-         bt::i18n(CommonSet, CommonYes, "yes")
+         "yes"
 #else // !SHAPE
-         bt::i18n(CommonSet, CommonNo, "no")
+         "no"
 #endif // SHAPE
-
          );
 
   ::exit(exitval);
@@ -76,8 +67,6 @@ int main(int argc, char **argv) {
   const char *dpy_name = 0;
   std::string rc_file;
   bool multi_head = true;
-
-  bt::i18n.openCatalog("blackbox.cat");
 
   for (int i = 1; i < argc; ++i) {
     if (! strcmp(argv[i], "-help")) {
@@ -94,10 +83,7 @@ int main(int argc, char **argv) {
       // look for alternative rc file to use
 
       if ((++i) >= argc) {
-        fprintf(stderr,
-                bt::i18n(mainSet, mainRCRequiresArg,
-                                 "error: '-rc' requires and argument\n"));
-
+        fprintf(stderr, "error: '-rc' requires and argument\n");
         ::exit(1);
       }
 
@@ -107,10 +93,7 @@ int main(int argc, char **argv) {
       // set by the environment variable DISPLAY
 
       if ((++i) >= argc) {
-        fprintf(stderr,
-                bt::i18n(mainSet, mainDISPLAYRequiresArg,
-                                 "error: '-display' requires an argument\n"));
-
+        fprintf(stderr, "error: '-display' requires an argument\n");
         ::exit(1);
       }
 
@@ -119,8 +102,8 @@ int main(int argc, char **argv) {
       dtmp += dpy_name;
 
       if (putenv(const_cast<char*>(dtmp.c_str()))) {
-        fprintf(stderr, bt::i18n(mainSet, mainWarnDisplaySet,
-                "warning: couldn't set environment variable 'DISPLAY'\n"));
+        fprintf(stderr,
+                "warning: couldn't set environment variable 'DISPLAY'\n");
         perror("putenv()");
       }
     } else if (! strcmp(argv[i], "-single")) {
@@ -134,11 +117,11 @@ int main(int argc, char **argv) {
   _chdir2(getenv("X11ROOT"));
 #endif // __EMX__
 
-  if (rc_file.empty()) rc_file = "~/.blackboxrc";
+  if (rc_file.empty())
+    rc_file = "~/.blackboxrc";
   rc_file = bt::expandTilde(rc_file);
 
   Blackbox blackbox(argv, dpy_name, rc_file, multi_head);
-  blackbox.eventLoop();
-
-  return(0);
+  blackbox.run();
+  return 0;
 }

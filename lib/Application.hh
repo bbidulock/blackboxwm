@@ -37,7 +37,7 @@ namespace bt {
   class EventHandler;
   class Menu;
 
-  class Application: public TimerQueueManager, public NoCopy {
+  class Application : public TimerQueueManager, public NoCopy {
   protected:
     enum RunState { STARTUP, RUNNING, SHUTDOWN, FATAL_SIGNAL };
 
@@ -129,7 +129,7 @@ namespace bt {
     void ungrabButton(unsigned int button, unsigned int modifiers,
                       Window grab_window) const;
 
-    void eventLoop(void);
+    void run(void);
 
     inline unsigned int scrollLockMask(void) const
     { return ScrollLockMask; }
