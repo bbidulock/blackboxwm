@@ -24,7 +24,9 @@
 
 typedef unsigned char uchar;
 
-Netwm::Netwm(Display* display) {
+Netwm::Netwm(Display* _display)
+  : display(_display)
+{
   char* atoms[] = {
     "UTF8_STRING",
     "_NET_SUPPORTED",
@@ -55,24 +57,23 @@ Netwm::Netwm(Display* display) {
 
 // root window properties
 
-void Netwm::setSupported(Atom* supported, unsigned int count,
-                         Display* display, Window target) const {
+void Netwm::setSupported(Window target, Atom* supported,
+                         unsigned int count) const {
   XChangeProperty(display, target, net_supported, XA_ATOM,
                   32, PropModeReplace,
                   reinterpret_cast<uchar*>(supported), count);
 }
 
 
-void Netwm::setNumberOfDesktops(unsigned int number, Display* display,
-                                Window target) const {
+void Netwm::setNumberOfDesktops(Window target, unsigned int number) const {
   XChangeProperty(display, target, net_number_of_desktops, XA_CARDINAL,
                   32, PropModeReplace,
                   reinterpret_cast<uchar*>(&number), 1);
 }
 
 
-void Netwm::setDesktopGeometry(unsigned int width, unsigned int height,
-                               Display* display, Window target) const {
+void Netwm::setDesktopGeometry(Window target,
+                               unsigned int width, unsigned int height) const {
   unsigned int geometry[] = {width, height};
   XChangeProperty(display, target, net_desktop_geometry, XA_CARDINAL,
                   32, PropModeReplace,
@@ -80,9 +81,8 @@ void Netwm::setDesktopGeometry(unsigned int width, unsigned int height,
 }
 
 
-void Netwm::setWorkarea(unsigned int x, unsigned y,
-                        unsigned int width, unsigned int height,
-                        Display* display, Window target) const {
+void Netwm::setWorkarea(Window target, unsigned int x, unsigned y,
+                        unsigned int width, unsigned int height) const {
   unsigned int area[] = {x, y, width, height};
   XChangeProperty(display, target, net_workarea, XA_CARDINAL,
                   32, PropModeReplace,
@@ -90,8 +90,8 @@ void Netwm::setWorkarea(unsigned int x, unsigned y,
 }
 
 
-void Netwm::setDesktopViewport(unsigned int x, unsigned int y,
-                               Display* display, Window target) const {
+void Netwm::setDesktopViewport(Window target,
+                               unsigned int x, unsigned int y) const {
   unsigned int coords[] = {x, y};
   XChangeProperty(display, target, net_desktop_viewport, XA_CARDINAL,
                   32, PropModeReplace,
@@ -99,24 +99,21 @@ void Netwm::setDesktopViewport(unsigned int x, unsigned int y,
 }
 
 
-void Netwm::setCurrentDesktop(unsigned int number, Display* display,
-                              Window target) const {
+void Netwm::setCurrentDesktop(Window target, unsigned int number) const {
   XChangeProperty(display, target, net_current_desktop, XA_CARDINAL,
                   32, PropModeReplace,
                   reinterpret_cast<uchar*>(&number), 1);
 }
 
 
-void Netwm::setActiveWindow(Window target, Window data,
-                            Display* display) const {
+void Netwm::setActiveWindow(Window target, Window data) const {
   XChangeProperty(display, target, net_active_window, XA_WINDOW,
                   32, PropModeReplace,
                   reinterpret_cast<uchar*>(&data), 1);
 }
 
 
-void Netwm::setSupportingWMCheck(Window target, Window data,
-                                 Display* display) const {
+void Netwm::setSupportingWMCheck(Window target, Window data) const {
   XChangeProperty(display, target, net_supporting_wm_check, XA_WINDOW,
                   32, PropModeReplace,
                   reinterpret_cast<uchar*>(&data), 1);
@@ -125,15 +122,14 @@ void Netwm::setSupportingWMCheck(Window target, Window data,
 
 // application properties
 
-void Netwm::setWMName(const std::string &name, Window w, Display *display) const
-{
-  XChangeProperty(display, w, net_wm_name, utf8_string,
+void Netwm::setWMName(Window target, const std::string &name) const {
+  XChangeProperty(display, target, net_wm_name, utf8_string,
                   8, PropModeReplace,
                   reinterpret_cast<uchar*>(const_cast<char*>(name.c_str())),
                   name.length());
 }
 
 
-void Netwm::removeProperty(Atom atom, Display *display, Window target) const {
+void Netwm::removeProperty(Window target, Atom atom) const {
   XDeleteProperty(display, target, atom);
 }

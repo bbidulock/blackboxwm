@@ -32,44 +32,40 @@ extern "C" {
 
 class Netwm {
 public:
-  explicit Netwm(Display* display);
+  explicit Netwm(Display *_display);
   ~Netwm(void) {};
 
-  Atom utf8String(void) const { return utf8_string; }
-  Atom supported(void) const { return net_supported; }
-  Atom numberOfDesktops(void) const { return net_number_of_desktops; }
-  Atom desktopGeometry(void) const { return net_desktop_geometry; }
-  Atom desktopViewport(void) const { return net_desktop_viewport; }
-  Atom currentDesktop(void) const { return net_current_desktop; }
-  Atom activeWindow(void) const { return net_active_window; }
-  Atom workarea(void) const { return net_workarea; }
-  Atom supportingWMCheck(void) const { return net_supporting_wm_check; }
-  Atom wmName(void) const { return net_wm_name; }
+  inline Atom utf8String(void) const { return utf8_string; }
+  inline Atom supported(void) const { return net_supported; }
+  inline Atom numberOfDesktops(void) const { return net_number_of_desktops; }
+  inline Atom desktopGeometry(void) const { return net_desktop_geometry; }
+  inline Atom desktopViewport(void) const { return net_desktop_viewport; }
+  inline Atom currentDesktop(void) const { return net_current_desktop; }
+  inline Atom activeWindow(void) const { return net_active_window; }
+  inline Atom workarea(void) const { return net_workarea; }
+  inline Atom supportingWMCheck(void) const { return net_supporting_wm_check; }
+  inline Atom wmName(void) const { return net_wm_name; }
 
-  void setSupported(Atom supported[], unsigned int count,
-		    Display *display, Window target) const ;
-  void setNumberOfDesktops(unsigned int number, Display* display,
-                           Window target) const;
-  void setDesktopGeometry(unsigned int width, unsigned int height,
-                          Display* display, Window target) const;
-  void setDesktopViewport(unsigned int x, unsigned int y,
-                          Display* display, Window target) const;
-  void setCurrentDesktop(unsigned int number, Display* display,
-                         Window target) const;
-  void setActiveWindow(Window target, Window data, Display* display) const;
-  void setWorkarea(unsigned int x, unsigned int y,
-                   unsigned int width, unsigned int height,
-                   Display* display, Window target) const;
-  void setSupportingWMCheck(Window target, Window data,
-                            Display* display) const;
-  void setWMName(const std::string& name, Window w, Display *display) const;
+  void setSupported(Window target, Atom supported[], unsigned int count) const;
+  void setNumberOfDesktops(Window target, unsigned int count) const;
+  void setDesktopGeometry(Window target,
+                          unsigned int width, unsigned int height) const;
+  void setDesktopViewport(Window target,
+                          unsigned int x, unsigned int y) const;
+  void setCurrentDesktop(Window target, unsigned int number) const;
+  void setActiveWindow(Window target, Window data) const;
+  void setWorkarea(Window target, unsigned int x, unsigned int y,
+                   unsigned int width, unsigned int height) const;
+  void setSupportingWMCheck(Window target, Window data) const;
+  void setWMName(Window target, const std::string& name) const;
 
-  void removeProperty(Atom atom, Display* display, Window target) const;
+  void removeProperty(Window target, Atom atom) const;
 
 private:
   Netwm(const Netwm&);
   Netwm& operator=(const Netwm&);
 
+  Display *display;
   Atom utf8_string,
     net_supported, net_number_of_desktops, net_desktop_geometry,
     net_desktop_viewport, net_current_desktop, net_active_window,
