@@ -1,4 +1,4 @@
-// -*- mode++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Window.cc for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
 // Copyright (c) 1997 - 2000, 2002 Brad Hughes <bhughes at trolltech.com>
