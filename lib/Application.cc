@@ -167,6 +167,10 @@ bt::Application::Application(const std::string &app_name, const char *dpy_name,
     XFreeModifiermap(const_cast<XModifierKeymap*>(modmap));
 
   XrmInitialize();
+
+  ::timeval tv;
+  gettimeofday(&tv, 0);
+  currentTime = tv;
 }
 
 
@@ -255,6 +259,14 @@ void bt::Application::run(void) {
 
     // check for timer timeout
     gettimeofday(&now, 0);
+
+    {
+      // if the clock has rolled back, adjust all timers
+      timeval tv = now;
+      if (tv < currentTime)
+        adjustTimers(tv - currentTime);
+      currentTime = tv;
+    }
 
     /*
       there is a small chance for deadlock here:
@@ -614,4 +626,24 @@ void bt::Application::closeMenu(Menu *menu) {
 
   XSync(_display->XDisplay(), False);
   menu_grab = false;
+}
+
+
+void bt::Application::adjustTimers(const timeval &offset)
+{
+  // since we don't allow TimerQueues to be copied, we have to do it
+  // this way
+  TimerQueue tmp;
+  while (!timerList.empty()) {
+    Timer *t = timerList.top();
+    timerList.pop();
+    t->adjustStartTime(offset);
+    tmp.push(t);
+  }
+  assert(timerList.empty());
+  while (!tmp.empty()) {
+    Timer *t = tmp.top();
+    tmp.pop();
+    timerList.push(t);
+  }
 }

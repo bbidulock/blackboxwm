@@ -32,6 +32,26 @@ bt::timeval::timeval(const ::timeval &t)
 { }
 
 
+bool bt::timeval::operator<(const timeval &tv)
+{ return tv_sec < tv.tv_sec || (tv_sec == tv.tv_sec && tv_usec < tv.tv_usec); }
+
+
+bt::timeval bt::timeval::operator+(const timeval &tv)
+{ return timeval(tv_sec + tv.tv_sec, tv_usec + tv.tv_usec); }
+
+
+bt::timeval &bt::timeval::operator+=(const timeval &tv)
+{ return *this = normalizeTimeval(operator+(tv)); }
+
+
+bt::timeval bt::timeval::operator-(const timeval &tv)
+{ return timeval(tv_sec - tv.tv_sec, tv_usec - tv.tv_usec); }
+
+
+bt::timeval &bt::timeval::operator-=(const timeval &tv)
+{ return *this = normalizeTimeval(operator-(tv)); }
+
+
 bt::timeval &bt::timeval::operator=(const ::timeval &t)
 { return (*this = timeval(t)); }
 
@@ -79,6 +99,12 @@ bt::Timer::~Timer(void) {
 }
 
 
+void printTime(const char *message, const bt::timeval &tv);
+
+void bt::Timer::adjustStartTime(const timeval &offset)
+{ _start += offset; }
+
+
 void bt::Timer::setTimeout(long t) {
   _timeout.tv_sec = t / 1000;
   _timeout.tv_usec = t % 1000;
@@ -86,10 +112,8 @@ void bt::Timer::setTimeout(long t) {
 }
 
 
-void bt::Timer::setTimeout(const timeval &t) {
-  _timeout.tv_sec = t.tv_sec;
-  _timeout.tv_usec = t.tv_usec;
-}
+void bt::Timer::setTimeout(const timeval &t)
+{ _timeout = t; }
 
 
 void bt::Timer::start(void) {
@@ -106,7 +130,6 @@ void bt::Timer::start(void) {
 
 void bt::Timer::stop(void) {
   timing = false;
-
   manager->removeTimer(this);
 }
 

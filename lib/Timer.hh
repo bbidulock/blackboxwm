@@ -42,7 +42,17 @@ namespace bt {
     long tv_usec;
 
     inline timeval(void)
-    { tv_sec = tv_usec = 0l; }
+      : tv_sec(0l), tv_usec(0l)
+    { }
+    inline timeval(long s, long u)
+      : tv_sec(s), tv_usec(u)
+    { }
+
+    bool operator<(const timeval &);
+    timeval operator+(const timeval &);
+    timeval &operator+=(const timeval &tv);
+    timeval operator-(const timeval &);
+    timeval &operator-=(const timeval &tv);
 
     // POSIX<->bt conversion
     timeval(const ::timeval &);
@@ -84,6 +94,10 @@ namespace bt {
     { return _timeout; }
     inline const timeval &startTime(void) const
     { return _start; }
+
+    // adjust the start time by the given offset... this is done when
+    // the clock rolls back
+    void adjustStartTime(const timeval &offset);
 
     timeval timeRemaining(const timeval &tm) const;
     bool shouldFire(const timeval &tm) const;

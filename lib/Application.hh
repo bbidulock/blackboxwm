@@ -61,7 +61,9 @@ namespace bt {
     typedef std::map<Window,EventHandler*> EventHandlerMap;
     EventHandlerMap eventhandlers;
 
+    timeval currentTime;
     TimerQueue timerList;
+    void adjustTimers(const timeval &offset);
 
     typedef std::deque<Menu*> MenuStack;
     MenuStack menus;
