@@ -28,6 +28,7 @@ extern "C" {
 }
 
 #include <list>
+#include <algorithm>
 
 #include "PixmapCache.hh"
 #include "Display.hh"
@@ -127,7 +128,7 @@ unsigned long bt::RealPixmapCache::find(unsigned int screen,
 
   if (texture.texture() == (Texture::Flat | Texture::Solid))
     return None;
-  
+
   if (texture.texture() == Texture::Parent_Relative)
     return ParentRelative;
 
@@ -139,7 +140,7 @@ unsigned long bt::RealPixmapCache::find(unsigned int screen,
   if (it != cache.end()) {
     // found
     ++(it->count);
-    
+
     p = it->pixmap;
 
 #ifdef PIXMAPCACHE_DEBUG
@@ -168,7 +169,7 @@ unsigned long bt::RealPixmapCache::find(unsigned int screen,
       mem_usage += mem;
       if (mem_usage > maxmem_usage)
         clear(false);
-      
+
       if (mem_usage > maxmem_usage) {
         fprintf(stderr,
                 "bt::PixmapCache: maximum size (%ld kb) exceeded\n"
