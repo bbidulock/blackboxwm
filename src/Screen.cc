@@ -1102,7 +1102,7 @@ void BScreen::raiseWindows(const WindowStack* const workspace_stack) {
     *(it++) = slit->getWindowID();
 
   if (workspace_stack_size)
-    std::copy(workspace_stack->begin(), workspace_stack->end(), it);
+    std::copy(workspace_stack->rbegin(), workspace_stack->rend(), it);
 
   XRestackWindows(blackbox->getXDisplay(), &session_stack[0],
                   session_stack.size());

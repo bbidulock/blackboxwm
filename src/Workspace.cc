@@ -203,7 +203,7 @@ void Workspace::raiseTransients(const BlackboxWindow * const win,
   BlackboxWindowList::const_iterator it, end = win->getTransients().end();
   for (it = win->getTransients().begin(); it != end; ++it) {
     BlackboxWindow *w = *it;
-    *stack++ = w->getFrameWindow();
+    *(stack++) = w->getFrameWindow();
     screen->updateNetizenWindowRaise(w->getClientWindow());
 
     if (! w->isIconic()) {
