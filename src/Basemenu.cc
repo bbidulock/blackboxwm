@@ -25,6 +25,7 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
+#include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/keysymdef.h>
 
@@ -243,6 +244,34 @@ void Basemenu::clickActiveItem()
 
   if (do_hide)
     hideAll();
+}
+
+int Basemenu::lookupItem(const string &lookup)
+{
+  Items::const_iterator it = items.begin();
+  if (show_title) {
+    if (it == items.end()) {
+      // internal error
+      fprintf(stderr, "Basemenu: cannot find item, internal error\n");
+      return -1;
+    }
+    it++;
+  }
+
+  // only draw items that intersect with the needed update rect
+  int first_index = -1;
+  while (it != items.end()) {
+    const Item &item = (*it++);
+
+    if (item.label().compare(lookup, 0, lookup.length()) == 0) {
+      if (first_index == -1)
+        first_index = item.index();
+      if (item.index() > active_item) // found one!
+        return item.index();
+    }
+  }
+
+  return first_index;
 }
 
 void Basemenu::updateSize()
@@ -1437,6 +1466,15 @@ void Basemenu::keyPressEvent(XEvent *e)
     } else if (sym == XK_Return || sym == XK_space) {
       clickActiveItem();
       return;
+    } else {
+      KeySym textsym = 0;
+      char chars[513];
+
+      XLookupString(&e->xkey, chars, 513, &textsym, 0);
+      if (strlen(chars) > 0) {
+        if ((new_active_item = lookupItem(chars)) == -1)
+          new_active_item = active_item;
+      }
     }
 
     if (new_active_item >= 0 && new_active_item < count())

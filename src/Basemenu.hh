@@ -137,6 +137,7 @@ private:
   void drawTitle();
   void drawItem(const Rect &, const Item &);
   void clickActiveItem();
+  int lookupItem(const string &);
 
   Pixmap title_pixmap, items_pixmap, highlight_pixmap;
   Rect title_rect;
