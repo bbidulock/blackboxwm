@@ -21,6 +21,10 @@ refactoring:
 Stuff TODO or On The Way(tm):
 -----------------------------
 
+* make sure transients are correctly associated at startup
+
+* session support via the X session management protocol
+
 * re-add support for tear-off menus to bt::Menu
 
 bt::i18n is very awkward to use - replace it with something else that
