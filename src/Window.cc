@@ -1828,6 +1828,7 @@ void BlackboxWindow::setState(unsigned long new_state, bool closing) {
   if (closing) {
     netwm->removeProperty(client.window, netwm->wmDesktop());
     netwm->removeProperty(client.window, netwm->wmState());
+    netwm->removeProperty(client.window, netwm->wmAllowedActions());
     return;
   }
 
@@ -1881,6 +1882,29 @@ void BlackboxWindow::setState(unsigned long new_state, bool closing) {
     netwm->removeProperty(client.window, netwm->wmState());
   else
     netwm->setWMState(client.window, atoms);
+
+  atoms.clear();
+
+  atoms.push_back(netwm->wmActionMove());
+  atoms.push_back(netwm->wmActionChangeDesktop());
+
+  if (client.functions & Func_Iconify)
+    atoms.push_back(netwm->wmActionMinimize());
+
+  if (client.functions & Func_Resize) {
+    atoms.push_back(netwm->wmActionResize());
+    atoms.push_back(netwm->wmActionMaximizeHorz());
+    atoms.push_back(netwm->wmActionMaximizeVert());
+    atoms.push_back(netwm->wmActionFullscreen());
+  }
+
+  if (client.functions & Func_Close)
+    atoms.push_back(netwm->wmActionClose());
+
+  if (client.decorations & Decor_Titlebar)
+    atoms.push_back(netwm->wmActionShade());
+
+  netwm->setWMAllowedActions(client.window, atoms);
 }
 
 

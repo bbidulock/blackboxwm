@@ -26,7 +26,7 @@
 typedef unsigned char uchar;
 
 Netwm::Netwm(Display* _display): display(_display) {
-  char* atoms[40] = {
+  char* atoms[51] = {
     "UTF8_STRING",
     "_NET_SUPPORTED",
     "_NET_CLIENT_LIST",
@@ -66,10 +66,21 @@ Netwm::Netwm(Display* _display): display(_display) {
     "_NET_WM_STATE_BELOW",
     "_NET_WM_STATE_REMOVE",
     "_NET_WM_STATE_ADD",
-    "_NET_WM_STATE_TOGGLE"
+    "_NET_WM_STATE_TOGGLE",
+    "_NET_WM_ALLOWED_ACTIONS",
+    "_NET_WM_ALLOWED_ACTION_MOVE",
+    "_NET_WM_ALLOWED_ACTION_RESIZE",
+    "_NET_WM_ALLOWED_ACTION_MINIMIZE",
+    "_NET_WM_ALLOWED_ACTION_SHADE",
+    "_NET_WM_ALLOWED_ACTION_STICK",
+    "_NET_WM_ALLOWED_ACTION_MAXIMIZE_HORZ",
+    "_NET_WM_ALLOWED_ACTION_MAXIMIZE_VERT",
+    "_NET_WM_ALLOWED_ACTION_FULLSCREEN",
+    "_NET_WM_ALLOWED_ACTION_CHANGE_DESKTOP",
+    "_NET_WM_ALLOWED_ACTION_CLOSE"
   };
-  Atom atoms_return[40];
-  XInternAtoms(display, atoms, 40, False, atoms_return);
+  Atom atoms_return[51];
+  XInternAtoms(display, atoms, 51, False, atoms_return);
 
   utf8_string = atoms_return[0];
   net_supported = atoms_return[1];
@@ -111,6 +122,17 @@ Netwm::Netwm(Display* _display): display(_display) {
   net_wm_state_remove = atoms_return[37];
   net_wm_state_add = atoms_return[38];
   net_wm_state_toggle = atoms_return[39];
+  net_wm_allowed_actions = atoms_return[40];
+  net_wm_action_move = atoms_return[41];
+  net_wm_action_resize = atoms_return[42];
+  net_wm_action_minimize = atoms_return[43];
+  net_wm_action_shade = atoms_return[44];
+  net_wm_action_stick = atoms_return[45];
+  net_wm_action_maximize_horz = atoms_return[46];
+  net_wm_action_maximize_vert = atoms_return[47];
+  net_wm_action_fullscreen = atoms_return[48];
+  net_wm_action_change_desktop = atoms_return[49];
+  net_wm_action_close = atoms_return[50];
 }
 
 
@@ -260,6 +282,13 @@ void Netwm::setWMState(Window target, AtomList& atoms) const {
 bool Netwm::readWMState(Window target, AtomList& states) const {
   return (getAtomListProperty(target, net_wm_state, states) &&
           ! states.empty());
+}
+
+
+void Netwm::setWMAllowedActions(Window target, AtomList& atoms) const {
+  XChangeProperty(display, target, net_wm_allowed_actions, XA_ATOM,
+                  32, PropModeReplace,
+                  reinterpret_cast<uchar*>(&(atoms[0])), atoms.size());
 }
 
 

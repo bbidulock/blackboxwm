@@ -112,6 +112,23 @@ public:
   inline Atom wmStateRemove(void) const { return net_wm_state_remove; }
   inline Atom wmStateAdd(void) const { return net_wm_state_add; }
   inline Atom wmStateToggle(void) const { return net_wm_state_toggle; }
+  inline Atom wmAllowedActions(void) const { return net_wm_allowed_actions; }
+  inline Atom wmActionMove(void) const { return net_wm_action_move; }
+  inline Atom wmActionResize(void) const
+  { return net_wm_action_resize; }
+  inline Atom wmActionMinimize(void) const
+  { return net_wm_action_minimize; }
+  inline Atom wmActionShade(void) const { return net_wm_action_shade; }
+  inline Atom wmActionStick(void) const { return net_wm_action_stick; }
+  inline Atom wmActionMaximizeHorz(void) const
+  { return net_wm_action_maximize_horz; }
+  inline Atom wmActionMaximizeVert(void) const
+  { return net_wm_action_maximize_vert; }
+  inline Atom wmActionFullscreen(void) const
+  { return net_wm_action_fullscreen; }
+  inline Atom wmActionChangeDesktop(void) const
+  { return net_wm_action_change_desktop; }
+  inline Atom wmActionClose(void) const { return net_wm_action_close; }
 
   void setWMName(Window target, const std::string& name) const;
   bool readWMName(Window target, std::string& name) const;
@@ -121,6 +138,7 @@ public:
   bool readWMWindowType(Window target, AtomList& types) const;
   void setWMState(Window target, AtomList& atoms) const;
   bool readWMState(Window target, AtomList& states) const;
+  void setWMAllowedActions(Window target, AtomList& atoms) const;
 
   // utility
   void removeProperty(Window target, Atom atom) const;
@@ -152,7 +170,12 @@ private:
     net_wm_state_maximized_horz, net_wm_state_shaded,
     net_wm_state_skip_taskbar, net_wm_state_skip_pager, net_wm_state_hidden,
     net_wm_state_fullscreen, net_wm_state_above, net_wm_state_below,
-    net_wm_state_remove, net_wm_state_add, net_wm_state_toggle;
+    net_wm_state_remove, net_wm_state_add, net_wm_state_toggle,
+    net_wm_allowed_actions, net_wm_action_move, net_wm_action_resize,
+    net_wm_action_minimize, net_wm_action_shade, net_wm_action_stick,
+    net_wm_action_maximize_horz, net_wm_action_maximize_vert,
+    net_wm_action_fullscreen, net_wm_action_change_desktop,
+    net_wm_action_close;
 };
 
 #endif // _blackbox_netwm_hh

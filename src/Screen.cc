@@ -280,7 +280,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   updateWorkareaHint();
   updateDesktopNamesHint();
 
-  Atom supported[] = {
+  Atom supported[46] = {
     blackbox->netwm()->clientList(),
     blackbox->netwm()->clientListStacking(),
     blackbox->netwm()->numberOfDesktops(),
@@ -317,10 +317,20 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
     blackbox->netwm()->wmStateBelow(),
     blackbox->netwm()->wmStateRemove(),
     blackbox->netwm()->wmStateAdd(),
-    blackbox->netwm()->wmStateToggle()
+    blackbox->netwm()->wmStateToggle(),
+    blackbox->netwm()->wmAllowedActions(),
+    blackbox->netwm()->wmActionMove(),
+    blackbox->netwm()->wmActionResize(),
+    blackbox->netwm()->wmActionMinimize(),
+    blackbox->netwm()->wmActionShade(),
+    blackbox->netwm()->wmActionMaximizeHorz(),
+    blackbox->netwm()->wmActionMaximizeVert(),
+    blackbox->netwm()->wmActionFullscreen(),
+    blackbox->netwm()->wmActionChangeDesktop(),
+    blackbox->netwm()->wmActionClose()
   };
 
-  blackbox->netwm()->setSupported(getRootWindow(), supported, 36);
+  blackbox->netwm()->setSupported(getRootWindow(), supported, 46);
 
   unsigned int i, j, nchild;
   Window r, p, *children;
