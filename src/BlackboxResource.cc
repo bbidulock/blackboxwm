@@ -161,37 +161,37 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
             "Horizontal" : "Vertical");
 
   sprintf(rc_string, "session.screen%d.slit.onTop", number);
-  res.write(rc_string, bt::boolAsString(sconfig.on_top));
+  res.write(rc_string, sconfig.on_top);
 
   sprintf(rc_string, "session.screen%d.slit.autoHide", number);
-  res.write(rc_string, bt::boolAsString(sconfig.auto_hide));
+  res.write(rc_string, sconfig.auto_hide);
 
   sprintf(rc_string, "session.screen%d.placementIgnoresShaded", number);
-  res.write(rc_string, bt::boolAsString(wconfig.ignore_shaded));
+  res.write(rc_string, wconfig.ignore_shaded);
 
   sprintf(rc_string, "session.screen%d.fullMaximization", number);
-  res.write(rc_string, bt::boolAsString(wconfig.full_max));
+  res.write(rc_string, wconfig.full_max);
 
   sprintf(rc_string, "session.screen%d.focusNewWindows", number);
-  res.write(rc_string, bt::boolAsString(wconfig.focus_new));
+  res.write(rc_string, wconfig.focus_new);
 
   sprintf(rc_string, "session.screen%d.focusLastWindow", number);
-  res.write(rc_string, bt::boolAsString(wconfig.focus_last));
+  res.write(rc_string, wconfig.focus_last);
 
   sprintf(rc_string, "session.screen%d.opaqueMove", number);
-  res.write(rc_string, bt::boolAsString(wconfig.opaque_move));
+  res.write(rc_string, wconfig.opaque_move);
 
   sprintf(rc_string, "session.screen%d.disableBindingsWithScrollLock",
 	  number);
-  res.write(rc_string, bt::boolAsString(allow_scroll_lock));
+  res.write(rc_string, allow_scroll_lock);
 
   sprintf(rc_string, "session.screen%d.rowPlacementDirection", number);
   res.write(rc_string,
             (wconfig.row_direction == LeftRight) ? "LeftToRight" :
                                                    "RightToLeft");
- 
+
   sprintf(rc_string, "session.screen%d.colPlacementDirection", number);
-  res.write(rc_string, 
+  res.write(rc_string,
             (wconfig.col_direction == TopBottom) ? "TopToBottom" :
                                                    "BottomToTop");
 
@@ -226,10 +226,10 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
   res.write(rc_string, workspace_count);
 
   sprintf(rc_string, "session.screen%d.toolbar.onTop", number);
-  res.write(rc_string, bt::boolAsString(tconfig.on_top));
+  res.write(rc_string, tconfig.on_top);
 
   sprintf(rc_string, "session.screen%d.toolbar.autoHide", number);
-  res.write(rc_string, bt::boolAsString(tconfig.auto_hide));
+  res.write(rc_string, tconfig.auto_hide);
 
   switch (tconfig.placement) {
   case Toolbar::TopLeft: placement = "TopLeft"; break;
@@ -299,7 +299,7 @@ void ScreenResource::load(bt::Resource& res, unsigned int screen) {
   sprintf(name_lookup,  "session.screen%d.colPlacementDirection", screen);
   sprintf(class_lookup, "Session.Screen%d.ColPlacementDirection", screen);
   tmp = res.read(name_lookup, class_lookup, "toptobottom");
-  wconfig.col_direction = 
+  wconfig.col_direction =
     (strcasecmp(tmp.c_str(), "bottomtotop") == 0) ? BottomTop : TopBottom;
 
   sprintf(name_lookup,  "session.screen%d.windowPlacement", screen);

@@ -102,7 +102,7 @@ namespace bt {
     char *value_type;
     if (XrmGetResource(db, name, classname, &value_type, &value)) {
       unsigned int output;
-      sscanf(value.addr, "%ud", &output);
+      sscanf(value.addr, "%u", &output);
       return output;
     }
     return default_value;
@@ -122,6 +122,19 @@ namespace bt {
   }
 
 
+  unsigned long Resource::read(const char* name, const char* classname,
+                               unsigned long default_value) const {
+    XrmValue value;
+    char *value_type;
+    if (XrmGetResource(db, name, classname, &value_type, &value)) {
+      long output;
+      sscanf(value.addr, "%lu", &output);
+      return output;
+    }
+    return default_value;
+  }
+
+
   bool Resource::read(const char* name, const char* classname,
                       bool default_value) const {
     XrmValue value;
@@ -135,14 +148,41 @@ namespace bt {
   }
 
 
+  double Resource::read(const char* name, const char* classname,
+                        double default_value) const {
+    XrmValue value;
+    char *value_type;
+    if (XrmGetResource(db, name, classname, &value_type, &value)) {
+      double output;
+      sscanf(value.addr, "%f", &output);
+      return output;
+    }
+    return default_value;
+  }
+
+
   void Resource::write(const char* resource, const char* value) {
     XrmPutStringResource(&db, resource, value);
   }
 
 
+  void Resource::write(const char* resource, int value) {
+    char tmp[16];
+    sprintf(tmp, "%d", value);
+    write(resource, tmp);
+  }
+
+
   void Resource::write(const char* resource, unsigned int value) {
     char tmp[16];
-    sprintf(tmp, "%ud", value);
+    sprintf(tmp, "%u", value);
+    write(resource, tmp);
+  }
+
+
+  void Resource::write(const char* resource, long value) {
+    char tmp[64];
+    sprintf(tmp, "%ld", value);
     write(resource, tmp);
   }
 
@@ -150,6 +190,18 @@ namespace bt {
   void Resource::write(const char* resource, unsigned long value) {
     char tmp[64];
     sprintf(tmp, "%lu", value);
+    write(resource, tmp);
+  }
+
+
+  void Resource::write(const char* resource, bool value) {
+    write(resource, boolAsString(value));
+  }
+
+
+  void Resource::write(const char* resource, double value) {
+    char tmp[80];
+    sprintf(tmp, "%f", value);
     write(resource, tmp);
   }
 
