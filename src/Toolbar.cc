@@ -75,7 +75,7 @@ public:
   void hide();
 
 protected:
-  virtual void itemClicked(const Point &, const Item &, int);
+  virtual void itemClicked(const Item &, int);
 
 private:
   Toolbar *toolbar;
@@ -89,7 +89,7 @@ public:
   ToolbarPlacementmenu(Toolbar *, int);
 
 protected:
-  virtual void itemClicked(const Point &, const Item &, int);
+  virtual void itemClicked(const Item &, int);
 
 private:
   Toolbar *toolbar;
@@ -120,7 +120,7 @@ void Toolbarmenu::hide()
     toolbar->hide_handler.timeout();
 }
 
-void Toolbarmenu::itemClicked( const Point &, const Item &item, int button )
+void Toolbarmenu::itemClicked(const Item &item, int button)
 {
   if (button != 1)
     return;
@@ -163,7 +163,7 @@ ToolbarPlacementmenu::ToolbarPlacementmenu(Toolbar *tb, int scr)
 			    "Bottom Right"), Toolbar::BottomRight);
 }
 
-void ToolbarPlacementmenu::itemClicked(const Point &, const Item &item, int button )
+void ToolbarPlacementmenu::itemClicked(const Item &item, int button )
 {
   if (button != 1)
     return;
@@ -173,48 +173,171 @@ void ToolbarPlacementmenu::itemClicked(const Point &, const Item &item, int butt
 
 // new toolbar
 
-Toolbar2::Toolbar2(BScreen *scrn)
-  : Widget(scrn->screenNumber(), OverrideRedirect), bscreen(scrn),
-    toolbar_pixmap(0)
+class ToolbarClock : public Widget
 {
+public:
+  ToolbarClock(Toolbar2 *tb)
+    : Widget(tb), toolbar(tb), pixmap(0)
+  {
+  }
+  ~ToolbarClock()
+  {
+
+  }
+
+  void updateSize()
+  {
+    resize(100,10);
+  }
+
+  void updatePixmap()
+  {
+    BScreen *screen = Blackbox::instance()->screen(screenNumber());
+    BStyle *style = screen->style();
+    pixmap = style->toolbarClockLabel().render(size(), pixmap);
+    if (pixmap == ParentRelative) {
+      XSetWindowBackgroundPixmap(*BaseDisplay::instance(),
+                                 windowID(), pixmap);
+      XClearWindow(*BaseDisplay::instance(), windowID());
+    }
+    if (isVisible()) {
+      XClearArea(*BaseDisplay::instance(), windowID(),
+                 0, 0, width(), height(), True);
+    }
+  }
+
+protected:
+  void exposeEvent(XEvent *e)
+  {
+    Blackbox *blackbox = Blackbox::instance();
+    BScreen *screen = blackbox->screen(screenNumber());
+    BStyle *style = screen->style();
+    if (style->toolbarClockLabel().texture() == BImage_ParentRelative)
+      return;
+    BGCCache::Item &gc =
+      BGCCache::instance()->find(style->toolbarClockLabel().color());
+    Rect todo(e->xexpose.x, e->xexpose.y,
+              e->xexpose.width, e->xexpose.height);
+    if (style->toolbarClockLabel().texture() == (BImage_Solid | BImage_Flat))
+      XFillRectangle(*blackbox, windowID(), gc.gc(),
+                     todo.x(), todo.y(), todo.width(), todo.height());
+    else
+      XCopyArea(*blackbox, pixmap, windowID(), gc.gc(),
+                todo.x(), todo.y(), todo.width(), todo.height(),
+                todo.x(), todo.y());
+    BGCCache::instance()->release(gc);
+  }
+
+private:
+  Toolbar2 *toolbar;
+  Pixmap pixmap;
+};
+
+Toolbar2::Toolbar2(BScreen *scrn)
+  : Widget(scrn->screenNumber(), OverrideRedirect),
+    pixmap(0), texture_pixmap(0)
+{
+  _placement = (Placement) (scrn->getToolbarPlacement() - 1);
+
+  clock = new ToolbarClock(this);
+
   updateLayout();
-  updatePosition();
+  updatePlacement();
 
   // show();
 }
 
 Toolbar2::~Toolbar2()
 {
+  if (pixmap) {
+    XFreePixmap(*BaseDisplay::instance(), pixmap);
+  }
 }
 
 void Toolbar2::updateLayout()
 {
+  clock->updateSize();
+  clock->move(100, 5);
+
   // for now
-  resize(bscreen->screenInfo()->width() - 80, 20);
+  resize(BaseDisplay::instance()->screenInfo(screenNumber())->width() - 80, 20);
 
-  BStyle *style = bscreen->style();
-  toolbar_rect.setRect(style->borderWidth(), style->borderWidth(),
-                       width() - style->borderWidth() * 2,
-                       height() - style->borderWidth() * 2);
-  toolbar_pixmap =
-    style->toolbar().render(toolbar_rect.size(), toolbar_pixmap);
+  updatePixmap();
+  clock->updatePixmap();
+}
 
-  if (isVisible()) {
-    XClearArea(*BaseDisplay::instance(), windowID(), 0, 0,
-               width(), height(), True);
+void Toolbar2::updatePlacement()
+{
+  Rect srect = BaseDisplay::instance()->screenInfo(screenNumber())->rect();
+
+  switch (placement()) {
+  case TopLeft:
+    move(srect.left(), srect.top());
+    break;
+  case TopCenter:
+    move((srect.width() - width()) / 2, srect.top());
+    break;
+  case TopRight:
+    move(srect.right() - width(), srect.top());
+    break;
+
+  case BottomLeft:
+    move(srect.left(), srect.bottom() - height() + 1);
+    break;
+  case BottomCenter:
+    move((srect.width() - width()) / 2, srect.bottom() - height() + 1);
+    break;
+  case BottomRight:
+    move(srect.right() - width(), srect.bottom() - height() + 1);
+    break;
   }
 }
 
-void Toolbar2::updatePosition()
+void Toolbar2::updatePixmap()
 {
-  // for now
-  move(40, bscreen->screenInfo()->height() - 60);
+  BaseDisplay *display = BaseDisplay::instance();
+  BScreen *screen = Blackbox::instance()->screen(screenNumber());
+  BStyle *style = screen->style();
+  BGCCache *cache = BGCCache::instance();
+
+  Rect trect(style->borderWidth(), style->borderWidth(),
+             width() - style->borderWidth() * 2,
+             height() - style->borderWidth() * 2);
+  texture_pixmap = style->toolbar().render(trect.size(), texture_pixmap);
+
+  if (pixmap)
+    XFreePixmap(*display, pixmap);
+  pixmap = XCreatePixmap(*display, windowID(), width(), height(),
+                         screen->screenInfo()->depth());
+
+  BGCCache::Item &gc = cache->find( style->borderColor() );
+  if (style->borderWidth()) {
+    XFillRectangle(*display, pixmap, gc.gc(), 0, 0, width(), height());
+  }
+  if (! texture_pixmap) {
+    BGCCache::Item &fgc = cache->find(style->toolbar().color());
+    XFillRectangle(*display, pixmap, fgc.gc(), trect.x(), trect.y(),
+                   trect.width(), trect.height());
+    cache->release(fgc);
+  } else
+    XCopyArea(*display, texture_pixmap, pixmap, gc.gc(),
+              0, 0, trect.width(), trect.height(),
+              trect.x(), trect.y());
+  cache->release( gc );
+
+  XSetWindowBackgroundPixmap(*display, windowID(), pixmap);
+
+  if (isVisible()) {
+    XClearArea(*display, windowID(), 0, 0, width(), height(), True);
+  }
+
+  texture_rect = trect;
 }
 
 void Toolbar2::reconfigure()
 {
   updateLayout();
-  updatePosition();
+  updatePlacement();
 }
 
 void Toolbar2::buttonPressEvent(XEvent *)
@@ -235,61 +358,24 @@ void Toolbar2::leaveEvent(XEvent *)
 
 void Toolbar2::exposeEvent(XEvent *e)
 {
+  return;
+
+
   Rect todo( e->xexpose.x, e->xexpose.y, e->xexpose.width, e->xexpose.height);
   BaseDisplay *display = BaseDisplay::instance();
-  BStyle *style = bscreen->style();
+  BStyle *style = Blackbox::instance()->screen(screenNumber())->style();
   BGCCache *cache = BGCCache::instance();
-
-  if ( style->borderWidth() ) {
-    // draw the borders if needed
-    XRectangle xrects[4];
-    int num = 0;
-    if ( todo.y() < style->borderWidth() ) {
-      // top line
-      xrects[num].x = style->borderWidth();
-      xrects[num].y = 0;
-      xrects[num].width = width() - style->borderWidth() * 2;
-      xrects[num].height = style->borderWidth();
-      num++;
-    }
-    if ( todo.y() + todo.height() > height() - style->borderWidth() ) {
-      xrects[num].x = style->borderWidth();
-      xrects[num].y = height() - style->borderWidth();
-      xrects[num].width = width() - style->borderWidth() * 2;
-      xrects[num].height = style->borderWidth();
-      num++;
-    }
-    if ( todo.x() < style->borderWidth() ) {
-      xrects[num].x = 0;
-      xrects[num].y = 0;
-      xrects[num].width = style->borderWidth();
-      xrects[num].height = height();
-      num++;
-    }
-    if ( todo.x() + todo.width() > width() - style->borderWidth() ) {
-      xrects[num].x = width() - style->borderWidth();
-      xrects[num].y = 0;
-      xrects[num].width = style->borderWidth();
-      xrects[num].height = height();
-      num++;
-    }
-    if ( num > 0 ) {
-      BGCCache::Item &bgc = cache->find( style->borderColor() );
-      XFillRectangles(*display, windowID(), bgc.gc(), xrects, num );
-      cache->release( bgc );
-    }
-  }
 
   BGCCache::Item &tgc = cache->find(style->toolbar().color());
 
-  if (todo.intersects(toolbar_rect)) {
-    Rect up = toolbar_rect & todo;
+  if (todo.intersects(texture_rect)) {
+    Rect up = texture_rect & todo;
     if (style->toolbar().texture() == (BImage_Solid | BImage_Flat))
       XFillRectangle(*display, windowID(), tgc.gc(),
                      up.x(), up.y(), up.width(), up.height());
-    else if (toolbar_pixmap)
-      XCopyArea(*display, toolbar_pixmap, windowID(), tgc.gc(),
-                up.x() - toolbar_rect.x(), up.y() - toolbar_rect.y(),
+    else if (pixmap)
+      XCopyArea(*display, pixmap, windowID(), tgc.gc(),
+                up.x() - texture_rect.x(), up.y() - texture_rect.y(),
                 up.width(), up.height(), up.x(), up.y());
   }
 
@@ -515,6 +601,7 @@ void Toolbar::reconfigure(void)
     break;
   default:
     strut.bottom = screen->screenInfo()->height() - getY() - 1;
+    break;
   }
 
   screen->updateAvailableArea();

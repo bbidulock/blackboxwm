@@ -34,15 +34,20 @@
 // forward declaration
 class Toolbar;
 class Toolbarmenu;
-
+class ToolbarClock;
 
 class Toolbar2 : public Widget
 {
 public:
+  enum Placement { TopLeft , BottomLeft, TopCenter,
+                   BottomCenter, TopRight, BottomRight };
   Toolbar2(BScreen *);
   ~Toolbar2();
 
   void reconfigure();
+
+  void setPlacement(Placement);
+  Placement placement() const { return _placement; }
 
 protected:
   void buttonPressEvent(XEvent *);
@@ -53,15 +58,18 @@ protected:
 
 private:
   void updateLayout();
-  void updatePosition();
+  void updatePlacement();
+  void updatePixmap();
 
-  BScreen *bscreen;
   BTimer *clock_timer, *hide_timer;
-  Pixmap toolbar_pixmap;
-  Rect toolbar_rect;
+  Pixmap pixmap, texture_pixmap;
+  Rect texture_rect;
   Toolbarmenu *toolbarmenu;
   NETStrut strut;
   bool always_on_top, editing, hidden, auto_hide;
+  Placement _placement;
+
+  ToolbarClock *clock;
 
   class HideHandler : public TimeoutHandler
   {
