@@ -2649,7 +2649,7 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
   } else if (frame.close_button == be->window) {
     if (be->button == 1)
       redrawCloseButton(True);
-  } else if (frame.plate == be->window) {
+  } else if (frame.plate == be->window || frame.window == be->window) {
     if (be->button == 1 || (be->button == 3 && be->state == Mod1Mask)) {
       if (! client.state.focused)
         setInputFocus();
@@ -2661,7 +2661,7 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
       XAllowEvents(blackbox->XDisplay(), ReplayPointer, be->time);
     }
   } else if (frame.title == be->window || frame.label == be->window ||
-             frame.handle) {
+             frame.handle == be->window) {
     if (be->button == 1 || (be->button == 3 && be->state == Mod1Mask)) {
       if (! client.state.focused)
         setInputFocus();
