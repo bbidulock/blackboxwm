@@ -1,7 +1,8 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
-// Window.cc for Blackbox - an X11 Window manager
-// Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
-// Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
+// bsetroot - a background setting utility
+// Copyright (c) 2001 - 2003 Sean 'Shaleh' Perry <shaleh at debian.org>
+// Copyright (c) 1997 - 2000, 2002 - 2003
+//         Bradley T Hughes <bhughes at trolltech.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -341,8 +342,8 @@ void bsetroot::gradient(void) {
 void bsetroot::usage(int exit_code) {
   fprintf(stderr,
           "bsetroot 3.1\n\n"
-          "Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry\n"
-          "Copyright (c) 1997 - 2000, 2002 Bradley T Hughes\n");
+          "Copyright (c) 2001 - 2003 Sean 'Shaleh' Perry\n"
+          "Copyright (c) 1997 - 2000, 2002 - 2003 Bradley T Hughes\n");
   fprintf(stderr,
           bt::i18n(bsetrootSet, bsetrootUsage,
                "  -display <string>        use display connection\n"
