@@ -255,7 +255,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
 
   InitMenu();
 
-  raiseWindows(0, 0);
+  raiseWindows((WindowStack*) 0);
   rootmenu->update();
 
   updateAvailableArea();
@@ -282,6 +282,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
 
   Atom supported[] = {
     blackbox->netwm()->clientList(),
+    blackbox->netwm()->clientListStacking(),
     blackbox->netwm()->numberOfDesktops(),
     blackbox->netwm()->desktopGeometry(),
     blackbox->netwm()->currentDesktop(),
@@ -342,6 +343,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   XFree(children);
 
   updateClientListHint();
+  updateClientListStackingHint();
 
   // call this again just in case a window we found updates the Strut list
   updateAvailableArea();
@@ -473,7 +475,7 @@ void BScreen::reconfigure(void) {
   int remember_sub = rootmenu->getCurrentSubmenu();
 
   InitMenu();
-  raiseWindows(0, 0);
+  raiseWindows((WindowStack*) 0);
   rootmenu->reconfigure();
   rootmenu->drawSubmenu(remember_sub);
 
@@ -499,7 +501,7 @@ void BScreen::reconfigure(void) {
 
 void BScreen::rereadMenu(void) {
   InitMenu();
-  raiseWindows(0, 0);
+  raiseWindows((WindowStack*) 0);
 
   rootmenu->reconfigure();
 }
@@ -1057,51 +1059,55 @@ void BScreen::updateNetizenConfigNotify(XEvent *e) {
 }
 
 
-void BScreen::raiseWindows(Window *workspace_stack, unsigned int num) {
+void BScreen::raiseWindows(const WindowStack* const workspace_stack) {
   // the 13 represents the number of blackbox windows such as menus
-  Window *session_stack = new
-    Window[(num + workspacesList.size() + rootmenuList.size() + 13)];
-  unsigned int i = 0, k = num;
+  const unsigned int workspace_stack_size =
+    (workspace_stack) ? workspace_stack->size() : 0;
+  std::vector<Window> session_stack(workspace_stack_size +
+                                    workspacesList.size() +
+                                    rootmenuList.size() + 13);
+  std::back_insert_iterator<std::vector<Window> > it(session_stack);
 
   XRaiseWindow(blackbox->getXDisplay(), iconmenu->getWindowID());
-  *(session_stack + i++) = iconmenu->getWindowID();
+  *(it++) = iconmenu->getWindowID();
 
   WorkspaceList::iterator wit = workspacesList.begin();
   const WorkspaceList::iterator w_end = workspacesList.end();
   for (; wit != w_end; ++wit)
-    *(session_stack + i++) = (*wit)->getMenu()->getWindowID();
+    *(it++) = (*wit)->getMenu()->getWindowID();
 
-  *(session_stack + i++) = workspacemenu->getWindowID();
+  *(it++) = workspacemenu->getWindowID();
 
-  *(session_stack + i++) = configmenu->getFocusmenu()->getWindowID();
-  *(session_stack + i++) = configmenu->getPlacementmenu()->getWindowID();
-  *(session_stack + i++) = configmenu->getWindowID();
+  *(it++) = configmenu->getFocusmenu()->getWindowID();
+  *(it++) = configmenu->getPlacementmenu()->getWindowID();
+  *(it++) = configmenu->getWindowID();
 
-  *(session_stack + i++) = slit->getMenu()->getDirectionmenu()->getWindowID();
-  *(session_stack + i++) = slit->getMenu()->getPlacementmenu()->getWindowID();
-  *(session_stack + i++) = slit->getMenu()->getWindowID();
+  *(it++) = slit->getMenu()->getDirectionmenu()->getWindowID();
+  *(it++) = slit->getMenu()->getPlacementmenu()->getWindowID();
+  *(it++) = slit->getMenu()->getWindowID();
 
-  *(session_stack + i++) =
-    toolbar->getMenu()->getPlacementmenu()->getWindowID();
-  *(session_stack + i++) = toolbar->getMenu()->getWindowID();
+  *(it++) = toolbar->getMenu()->
+                          getPlacementmenu()->getWindowID();
+  *(it++) = toolbar->getMenu()->getWindowID();
 
   RootmenuList::iterator rit = rootmenuList.begin();
   for (; rit != rootmenuList.end(); ++rit)
-    *(session_stack + i++) = (*rit)->getWindowID();
-  *(session_stack + i++) = rootmenu->getWindowID();
+    *(it++) = (*rit)->getWindowID();
+  *(it++) = rootmenu->getWindowID();
 
   if (toolbar->isOnTop())
-    *(session_stack + i++) = toolbar->getWindowID();
+    *(it++) = toolbar->getWindowID();
 
   if (slit->isOnTop())
-    *(session_stack + i++) = slit->getWindowID();
+    *(it++) = slit->getWindowID();
 
-  while (k--)
-    *(session_stack + i++) = *(workspace_stack + k);
+  if (workspace_stack_size)
+    std::copy(workspace_stack->begin(), workspace_stack->end(), it);
 
-  XRestackWindows(blackbox->getXDisplay(), session_stack, i);
+  XRestackWindows(blackbox->getXDisplay(), &session_stack[0],
+                  session_stack.size());
 
-  delete [] session_stack;
+  updateClientListStackingHint();
 }
 
 
@@ -2141,6 +2147,7 @@ void BScreen::updateDesktopNamesHint(void) const {
 void BScreen::updateClientListHint(void) const {
   if (windowList.empty()) {
     blackbox->netwm()->setClientList(getRootWindow(), NULL, 0);
+    blackbox->netwm()->setClientListStacking(getRootWindow(), NULL, 0);
     return;
   }
 
@@ -2151,6 +2158,20 @@ void BScreen::updateClientListHint(void) const {
 
   blackbox->netwm()->setClientList(getRootWindow(), &clientList[0],
                                    clientList.size());
+}
+
+
+void BScreen::updateClientListStackingHint(void) const {
+  WindowList stack;
+
+  WorkspaceList::const_iterator it = workspacesList.begin(),
+    end = workspacesList.end();
+  for (; it != end; ++it)
+    (*it)->updateClientListStacking(stack);
+
+  std::vector<Window> clientList(stack.begin(), stack.end());
+  blackbox->netwm()->setClientListStacking(getRootWindow(), &clientList[0],
+                                           clientList.size());
 }
 
 

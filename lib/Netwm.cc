@@ -30,6 +30,7 @@ Netwm::Netwm(Display* _display): display(_display) {
     "UTF8_STRING",
     "_NET_SUPPORTED",
     "_NET_CLIENT_LIST",
+    "_NET_CLIENT_LIST_STACKING",
     "_NET_NUMBER_OF_DESKTOPS",
     "_NET_DESKTOP_GEOMETRY",
     "_NET_CURRENT_DESKTOP",
@@ -43,24 +44,25 @@ Netwm::Netwm(Display* _display): display(_display) {
     "_NET_WM_ICON_NAME",
     "_NET_WM_DESKTOP"
   };
-  Atom atoms_return[15];
-  XInternAtoms(display, atoms, 15, False, atoms_return);
+  Atom atoms_return[16];
+  XInternAtoms(display, atoms, 16, False, atoms_return);
 
   utf8_string = atoms_return[0];
   net_supported = atoms_return[1];
   net_client_list = atoms_return[2];
-  net_number_of_desktops = atoms_return[3];
-  net_desktop_geometry = atoms_return[4];
-  net_current_desktop = atoms_return[5];
-  net_desktop_names = atoms_return[6];
-  net_active_window = atoms_return[7];
-  net_workarea = atoms_return[8];
-  net_supporting_wm_check = atoms_return[9];
-  net_close_window = atoms_return[10];
-  net_moveresize_window = atoms_return[11];
-  net_wm_name = atoms_return[12];
-  net_wm_icon_name = atoms_return[13];
-  net_wm_desktop = atoms_return[14];
+  net_client_list_stacking = atoms_return[3];
+  net_number_of_desktops = atoms_return[4];
+  net_desktop_geometry = atoms_return[5];
+  net_current_desktop = atoms_return[6];
+  net_desktop_names = atoms_return[7];
+  net_active_window = atoms_return[8];
+  net_workarea = atoms_return[9];
+  net_supporting_wm_check = atoms_return[10];
+  net_close_window = atoms_return[11];
+  net_moveresize_window = atoms_return[12];
+  net_wm_name = atoms_return[13];
+  net_wm_icon_name = atoms_return[14];
+  net_wm_desktop = atoms_return[15];
 }
 
 
@@ -77,6 +79,14 @@ void Netwm::setSupported(Window target, Atom atoms[],
 void Netwm::setClientList(Window target, const Window windows[],
                           unsigned int count) const {
   XChangeProperty(display, target, net_client_list, XA_WINDOW,
+                  32, PropModeReplace,
+                  reinterpret_cast<uchar*>(&windows), count);
+}
+
+
+void Netwm::setClientListStacking(Window target, const Window windows[],
+                                  unsigned int count) const {
+  XChangeProperty(display, target, net_client_list_stacking, XA_WINDOW,
                   32, PropModeReplace,
                   reinterpret_cast<uchar*>(&windows), count);
 }

@@ -745,8 +745,9 @@ void Toolbar::buttonPressEvent(const XButtonEvent *be) {
     }
 #endif // HAVE_STRFTIME
     else if (! on_top) {
-      Window w[1] = { frame.window };
-      screen->raiseWindows(w, 1);
+      WindowStack w;
+      w.push_back(frame.window);
+      screen->raiseWindows(&w);
     }
   } else if (be->button == 2 && (! on_top)) {
     XLowerWindow(display, frame.window);
@@ -1026,7 +1027,7 @@ void Toolbarmenu::itemSelected(int button, unsigned int index) {
     toolbar->on_top = ((toolbar->isOnTop()) ? False : True);;
     setItemSelected(1, toolbar->on_top);
 
-    if (toolbar->isOnTop()) getScreen()->raiseWindows((Window *) 0, 0);
+    if (toolbar->isOnTop()) getScreen()->raiseWindows((WindowStack *) 0);
     break;
   }
 

@@ -196,7 +196,7 @@ static unsigned int countTransients(const BlackboxWindow * const win) {
  * stack[1], etc...
  */
 void Workspace::raiseTransients(const BlackboxWindow * const win,
-                                StackVector::iterator &stack) {
+                                WindowStack::iterator &stack) {
   if (win->getTransients().empty()) return; // nothing to do
 
   // put win's transients in the stack
@@ -220,7 +220,7 @@ void Workspace::raiseTransients(const BlackboxWindow * const win,
 
 
 void Workspace::lowerTransients(const BlackboxWindow * const win,
-                                StackVector::iterator &stack) {
+                                WindowStack::iterator &stack) {
   if (win->getTransients().empty()) return; // nothing to do
 
   // put transients of win's transients in the stack
@@ -255,8 +255,8 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
   unsigned int i = 1 + countTransients(win);
 
   // stack the window with all transients above
-  StackVector stack_vector(i);
-  StackVector::iterator stack = stack_vector.begin();
+  WindowStack stack_vector(i);
+  WindowStack::iterator stack = stack_vector.begin();
 
   *(stack++) = win->getFrameWindow();
   screen->updateNetizenWindowRaise(win->getClientWindow());
@@ -268,7 +268,7 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
 
   raiseTransients(win, stack);
 
-  screen->raiseWindows(&stack_vector[0], stack_vector.size());
+  screen->raiseWindows(&stack_vector);
 }
 
 
@@ -283,8 +283,8 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
   unsigned int i = 1 + countTransients(win);
 
   // stack the window with all transients above
-  StackVector stack_vector(i);
-  StackVector::iterator stack = stack_vector.begin();
+  WindowStack stack_vector(i);
+  WindowStack::iterator stack = stack_vector.begin();
 
   lowerTransients(win, stack);
 
@@ -653,4 +653,12 @@ void Workspace::placeWindow(BlackboxWindow *win) {
   if (new_win.bottom() > availableArea.bottom())
     new_win.setY(availableArea.top());
   win->configure(new_win.x(), new_win.y(), new_win.width(), new_win.height());
+}
+
+
+void
+Workspace::updateClientListStacking(WindowList& clientList) const {
+  std::transform(stackingList.begin(), stackingList.end(),
+                 std::back_inserter(clientList),
+                 std::mem_fun(&BlackboxWindow::getClientWindow));
 }

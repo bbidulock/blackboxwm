@@ -41,6 +41,8 @@ public:
   // root window properties
   inline Atom supported(void) const { return net_supported; }
   inline Atom clientList(void) const { return net_client_list; }
+  inline Atom clientListStacking(void) const
+  { return net_client_list_stacking; }
   inline Atom numberOfDesktops(void) const { return net_number_of_desktops; }
   inline Atom desktopGeometry(void) const { return net_desktop_geometry; }
   inline Atom currentDesktop(void) const { return net_current_desktop; }
@@ -52,6 +54,8 @@ public:
   void setSupported(Window target, Atom atoms[], unsigned int count) const;
   void setClientList(Window target, const Window windows[],
                      unsigned int count) const;
+  void setClientListStacking(Window target, const Window windows[],
+                             unsigned int count) const;
   void setNumberOfDesktops(Window target, unsigned int count) const;
   void setDesktopGeometry(Window target,
                           unsigned int width, unsigned int height) const;
@@ -92,11 +96,11 @@ private:
 
   Display *display;
   Atom utf8_string,
-    net_supported, net_client_list, net_number_of_desktops,
-    net_desktop_geometry, net_current_desktop, net_desktop_names,
-    net_active_window, net_workarea, net_supporting_wm_check,
-    net_close_window, net_moveresize_window, net_wm_name, net_wm_icon_name,
-    net_wm_desktop;
+    net_supported, net_client_list, net_client_list_stacking,
+    net_number_of_desktops, net_desktop_geometry, net_current_desktop,
+    net_desktop_names, net_active_window, net_workarea,
+    net_supporting_wm_check, net_close_window, net_moveresize_window,
+    net_wm_name, net_wm_icon_name, net_wm_desktop;
 };
 
 #endif // _blackbox_netwm_hh

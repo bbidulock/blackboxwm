@@ -526,8 +526,9 @@ void Slit::buttonPressEvent(const XButtonEvent * const e) {
   if (e->window != frame.window) return;
 
   if (e->button == Button1 && (! on_top)) {
-    Window w[1] = { frame.window };
-    screen->raiseWindows(w, 1);
+    WindowStack w;
+    w.push_back(frame.window);
+    screen->raiseWindows(&w);
   } else if (e->button == Button2 && (! on_top)) {
     XLowerWindow(display, frame.window);
   } else if (e->button == Button3) {
@@ -686,7 +687,7 @@ void Slitmenu::itemSelected(int button, unsigned int index) {
     slit->on_top = ((slit->isOnTop()) ?  False : True);
     setItemSelected(2, slit->on_top);
 
-    if (slit->isOnTop()) slit->screen->raiseWindows((Window *) 0, 0);
+    if (slit->isOnTop()) slit->screen->raiseWindows((WindowStack *) 0);
     break;
   }
 

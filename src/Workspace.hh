@@ -29,8 +29,8 @@ extern "C" {
 }
 
 #include <list>
-#include <string>
 #include <vector>
+#include <string>
 
 class BScreen;
 class Clientmenu;
@@ -39,7 +39,8 @@ class BlackboxWindow;
 class Netizen;
 
 typedef std::list<BlackboxWindow*> BlackboxWindowList;
-typedef std::vector<Window> StackVector;
+typedef std::vector<Window> WindowStack;
+typedef std::list<Window> WindowList;
 
 class Workspace {
 private:
@@ -57,9 +58,9 @@ private:
   Workspace& operator=(const Workspace&);
 
   void raiseTransients(const BlackboxWindow * const win,
-                       StackVector::iterator &stack);
+                       WindowStack::iterator &stack);
   void lowerTransients(const BlackboxWindow * const win,
-                       StackVector::iterator &stack);
+                       WindowStack::iterator &stack);
 
   void placeWindow(BlackboxWindow *win);
   bool cascadePlacement(Rect& win, const Rect& availableArea);
@@ -93,6 +94,7 @@ public:
   void addWindow(BlackboxWindow *w, bool place = False);
   unsigned int removeWindow(BlackboxWindow *w);
   unsigned int getCount(void) const;
+  void updateClientListStacking(WindowList& clientList) const;
 
   void show(void);
   void hide(void);
