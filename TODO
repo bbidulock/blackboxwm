@@ -3,9 +3,12 @@
 CVS Bugs:
 -----------------------------
 * maximize gets the dimensions very wrong
-* windows that set WM_DELETE_WINDOW protocol after creation do not get a close button
+* windows that set WM_DELETE_WINDOW protocol after creation do not get a close
+  button
+* clean up --help output
 
-temporarily fixed, blackbox needs real focus handling fixes for this to really go away:
+temporarily fixed, blackbox needs real focus handling fixes for this to really
+ go away:
 * use bbkeys to open a window and then close it via bbkeys.  If it is the only
   window left open, blackbox will spin in a screen->unmanageWindow loop and
   then die.  Tons of X BadWindow messages will appear as well. (nyz)
