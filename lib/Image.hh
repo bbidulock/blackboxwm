@@ -32,13 +32,13 @@ extern "C" {
 #include <list>
 #include <vector>
 
-#include "Timer.hh"
-#include "BaseDisplay.hh"
 #include "Color.hh"
+#include "Timer.hh"
 
 
 namespace bt {
-
+  class Display;
+  class ScreenInfo;
   class Texture;
   class XColorTable;
 

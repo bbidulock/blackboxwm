@@ -37,9 +37,9 @@ extern "C" {
 
 #include <algorithm>
 
-#include "BaseDisplay.hh"
-#include "Color.hh"
 #include "Image.hh"
+#include "Color.hh"
+#include "Display.hh"
 #include "Texture.hh"
 
 
@@ -57,9 +57,9 @@ bt::ImageControl::ImageControl(TimerQueueManager *app,
   } else {
     timer = (bt::Timer *) 0;
   }
-  window = scrn->getRootWindow();
-  colormap = scrn->getColormap();
-  screen = scrn->getScreenNumber();
+  window = scrn->rootWindow();
+  colormap = scrn->colormap();
+  screen = scrn->screenNumber();
 }
 
 

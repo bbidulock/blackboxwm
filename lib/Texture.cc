@@ -32,7 +32,7 @@ extern "C" {
 }
 
 #include "Texture.hh"
-#include "BaseDisplay.hh"
+#include "Display.hh"
 #include "Image.hh"
 #include "Resource.hh"
 

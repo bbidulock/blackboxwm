@@ -38,7 +38,6 @@ extern "C" {
 #endif // TIME_WITH_SYS_TIME
 }
 
-#include "BaseDisplay.hh"
 #include "Timer.hh"
 #include "Util.hh"
 

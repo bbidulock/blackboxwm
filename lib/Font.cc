@@ -21,8 +21,6 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#include "Font.hh"
-
 extern "C" {
 #include <assert.h>
 #include <ctype.h>
@@ -33,8 +31,9 @@ extern "C" {
 #include <map>
 #include <vector>
 
-#include "BaseDisplay.hh"
+#include "Font.hh"
 #include "Color.hh"
+#include "Display.hh"
 #include "Pen.hh"
 #include "Resource.hh"
 #include "i18n.hh"

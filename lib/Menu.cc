@@ -21,8 +21,6 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#include "Menu.hh"
-
 extern "C" {
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
@@ -30,10 +28,10 @@ extern "C" {
 #include <assert.h>
 }
 
-#include "BaseDisplay.hh"
+#include "Menu.hh"
+#include "Application.hh"
 #include "Pen.hh"
 #include "Resource.hh"
-#include "Timer.hh"
 
 static const unsigned int arrow_width  = 7;
 static const unsigned int arrow_height = 7;
@@ -75,17 +73,16 @@ bt::MenuStyle::MenuStyle(Application &app, unsigned int screen,
   frame.alignment = AlignLeft;
   margin_w = 1u;
 
+  const ScreenInfo &screeninfo = _app.getDisplay().screenInfo(_screen);
+
   bitmap.arrow =
-    XCreateBitmapFromData(_app.getXDisplay(),
-                          _app.getScreenInfo(_screen).getRootWindow(),
+    XCreateBitmapFromData(_app.getXDisplay(), screeninfo.rootWindow(),
                           arrow_bits, arrow_width, arrow_height);
   bitmap.check =
-    XCreateBitmapFromData(_app.getXDisplay(),
-                          _app.getScreenInfo(_screen).getRootWindow(),
+    XCreateBitmapFromData(_app.getXDisplay(), screeninfo.rootWindow(),
                           check_bits, check_width, check_height);
   bitmap.close =
-    XCreateBitmapFromData(_app.getXDisplay(),
-                          _app.getScreenInfo(_screen).getRootWindow(),
+    XCreateBitmapFromData(_app.getXDisplay(), screeninfo.rootWindow(),
                           close_bits, close_width, close_height);
 }
 
@@ -355,14 +352,14 @@ bt::Menu::Menu(Application &app, unsigned int screen)
 {
   idset.reset();
 
-  const ScreenInfo& screeninfo = _app.getScreenInfo(_screen);
+  const ScreenInfo& screeninfo = _app.getDisplay().screenInfo(_screen);
 
   // create the window
   XSetWindowAttributes attrib;
   unsigned long mask = CWBackPixmap | CWColormap |
                        CWOverrideRedirect | CWEventMask;
   attrib.background_pixmap = None;
-  attrib.colormap = screeninfo.getColormap();
+  attrib.colormap = screeninfo.colormap();
   attrib.override_redirect = False;
   attrib.event_mask = ButtonPressMask | ButtonReleaseMask |
                       ButtonMotionMask | PointerMotionMask |
@@ -370,10 +367,10 @@ bt::Menu::Menu(Application &app, unsigned int screen)
   attrib.override_redirect = True;
 
   _window =
-    XCreateWindow(_app.getXDisplay(), screeninfo.getRootWindow(),
+    XCreateWindow(_app.getXDisplay(), screeninfo.rootWindow(),
                   _rect.x(), _rect.y(), _rect.width(), _rect.height(), 0,
-                  screeninfo.getDepth(), InputOutput,
-                  screeninfo.getVisual(), mask, &attrib);
+                  screeninfo.depth(), InputOutput,
+                  screeninfo.visual(), mask, &attrib);
   _app.insertEventHandler(_window, this);
 
   _timer.setTimeout(200);
@@ -642,35 +639,36 @@ void bt::Menu::popup(int x, int y, bool centered) {
   if (_size_dirty)
     updateSize();
 
-  const ScreenInfo& screeninfo = _app.getScreenInfo(_screen);
+  const ScreenInfo& screeninfo = _app.getDisplay().screenInfo(_screen);
+
   if (_show_title) {
     if (centered) {
       x -= _trect.width() / 2;
-      if (x + _rect.width() > screeninfo.getWidth())
-        x = screeninfo.getWidth() - _rect.width();
+      if (x + _rect.width() > screeninfo.width())
+        x = screeninfo.width() - _rect.width();
 
       y -= _trect.height() / 2;
-      if (y + _rect.height() > screeninfo.getHeight())
+      if (y + _rect.height() > screeninfo.height())
         y -= _frect.height() + (_trect.height() / 2);
     } else {
-      if (x + _rect.width() > screeninfo.getWidth())
+      if (x + _rect.width() > screeninfo.width())
         x -= _rect.width();
 
       y -= _trect.height();
-      if (y + _rect.height() > screeninfo.getHeight())
+      if (y + _rect.height() > screeninfo.height())
         y -= _frect.height();
     }
   } else {
     if (centered) {
       x -= _frect.width() / 2;
-      if (x + _rect.width() > screeninfo.getWidth())
-        x = screeninfo.getWidth() - _rect.width();
+      if (x + _rect.width() > screeninfo.width())
+        x = screeninfo.width() - _rect.width();
     } else {
-      if (x + _rect.width() > screeninfo.getWidth())
+      if (x + _rect.width() > screeninfo.width())
         x -= _rect.width();
     }
 
-    if (y + _rect.height() > screeninfo.getHeight())
+    if (y + _rect.height() > screeninfo.height())
       y -= _frect.height();
   }
 
@@ -755,7 +753,7 @@ void bt::Menu::updateSize(void) {
     _frect.setPos(0, 0);
   }
 
-  const ScreenInfo& screeninfo = _app.getScreenInfo(_screen);
+  const ScreenInfo& screeninfo = _app.getDisplay().screenInfo(_screen);
   unsigned int max_item_w, col_h = 0u, max_col_h = 0u;
   unsigned int row = 0u, cols = 1u;
   max_item_w = std::max(20u, _trect.width());
@@ -774,7 +772,7 @@ void bt::Menu::updateSize(void) {
 
     ++row;
 
-    if (col_h > (screeninfo.getHeight() * 3 / 4)) {
+    if (col_h > (screeninfo.height() * 3 / 4)) {
       ++cols;
       row = 0;
 
@@ -1206,7 +1204,7 @@ void bt::Menu::activateItem(const Rect &rect, MenuItem &item) {
     item.sub->updateSize();
 
   MenuStyle *style = MenuStyle::get(_app, _screen, 0);
-  const ScreenInfo& screeninfo = _app.getScreenInfo(_screen);
+  const ScreenInfo& screeninfo = _app.getDisplay().screenInfo(_screen);
   int px = _rect.x() + rect.x() + rect.width();
   int py = _rect.y() + rect.y() - style->frameMargin();
   bool left = false;
@@ -1214,7 +1212,7 @@ void bt::Menu::activateItem(const Rect &rect, MenuItem &item) {
   if (_parent_menu && _parent_menu->isVisible() &&
       _parent_menu->_rect.x() > _rect.x())
     left = true;
-  if (px + item.sub->_rect.width() > screeninfo.getWidth() || left)
+  if (px + item.sub->_rect.width() > screeninfo.width() || left)
     px -= item.sub->_rect.width() + rect.width();
   if (px < 0) {
     if (left) // damn, lots of menus - move back to the right
@@ -1226,7 +1224,7 @@ void bt::Menu::activateItem(const Rect &rect, MenuItem &item) {
   if (_active_submenu->_show_title)
     py -=_active_submenu->_trect.height() -
          style->titleTexture().borderWidth();
-  if (py + item.sub->_rect.height() > screeninfo.getHeight())
+  if (py + item.sub->_rect.height() > screeninfo.height())
     py -= item.sub->_irect.height() - rect.height();
   if (py < 0)
     py = 0;

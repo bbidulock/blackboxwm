@@ -103,8 +103,9 @@ CPPFLAGS = @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ @DEBUG@ @NLS@ \
 			  -DLOCALEPATH=\"$(pkgdatadir)/nls\"
 
 noinst_LIBRARIES = libbt.a
-libbt_a_SOURCES = BaseDisplay.cc				\
+libbt_a_SOURCES = Application.cc				\
 			  Color.cc					\
+			  Display.cc					\
 			  Font.cc					\
 			  Image.cc					\
 			  ImageControl.cc				\
@@ -127,10 +128,11 @@ LIBRARIES = $(noinst_LIBRARIES)
 
 libbt_a_AR = $(AR) cru
 libbt_a_LIBADD =
-am_libbt_a_OBJECTS = BaseDisplay.$(OBJEXT) Color.$(OBJEXT) \
-	Font.$(OBJEXT) Image.$(OBJEXT) ImageControl.$(OBJEXT) \
-	Menu.$(OBJEXT) Netwm.$(OBJEXT) Pen.$(OBJEXT) Resource.$(OBJEXT) \
-	Texture.$(OBJEXT) Timer.$(OBJEXT) Util.$(OBJEXT) i18n.$(OBJEXT)
+am_libbt_a_OBJECTS = Application.$(OBJEXT) Color.$(OBJEXT) \
+	Display.$(OBJEXT) Font.$(OBJEXT) Image.$(OBJEXT) \
+	ImageControl.$(OBJEXT) Menu.$(OBJEXT) Netwm.$(OBJEXT) \
+	Pen.$(OBJEXT) Resource.$(OBJEXT) Texture.$(OBJEXT) \
+	Timer.$(OBJEXT) Util.$(OBJEXT) i18n.$(OBJEXT)
 libbt_a_OBJECTS = $(am_libbt_a_OBJECTS)
 
 DEFS = @DEFS@
@@ -138,13 +140,13 @@ DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
-@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/BaseDisplay.Po $(DEPDIR)/Color.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Font.Po $(DEPDIR)/Image.Po \
-@AMDEP_TRUE@	$(DEPDIR)/ImageControl.Po $(DEPDIR)/Menu.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Netwm.Po $(DEPDIR)/Pen.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Resource.Po $(DEPDIR)/Texture.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Timer.Po $(DEPDIR)/Util.Po \
-@AMDEP_TRUE@	$(DEPDIR)/i18n.Po
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/Application.Po $(DEPDIR)/Color.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Display.Po $(DEPDIR)/Font.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Image.Po $(DEPDIR)/ImageControl.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Menu.Po $(DEPDIR)/Netwm.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Pen.Po $(DEPDIR)/Resource.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Texture.Po $(DEPDIR)/Timer.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Util.Po $(DEPDIR)/i18n.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
@@ -182,8 +184,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/BaseDisplay.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Application.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Color.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Display.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Font.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Image.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/ImageControl.Po@am__quote@

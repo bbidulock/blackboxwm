@@ -23,8 +23,9 @@
 CPPFLAGS		= @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ @DEBUG@ @NLS@ \
 			  -DLOCALEPATH=\"$(pkgdatadir)/nls\"
 noinst_LIBRARIES	= libbt.a
-libbt_a_SOURCES		= BaseDisplay.cc				\
+libbt_a_SOURCES		= Application.cc				\
 			  Color.cc					\
+			  Display.cc					\
 			  Font.cc					\
 			  Image.cc					\
 			  ImageControl.cc				\

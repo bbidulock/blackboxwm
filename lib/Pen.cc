@@ -30,7 +30,7 @@ extern "C" {
 }
 
 #include "Pen.hh"
-#include "BaseDisplay.hh"
+#include "Display.hh"
 #include "Color.hh"
 #include "Font.hh"
 #include "Util.hh"
@@ -182,7 +182,7 @@ bt::GCCache::~GCCache(void) {
 
 
 bt::GCCacheContext *bt::GCCache::nextContext(unsigned int screen) {
-  Window hd = _display.screenNumber(screen)->getRootWindow();
+  Window hd = _display.screenInfo(screen).rootWindow();
 
   GCCacheContext *c;
 

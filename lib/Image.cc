@@ -33,7 +33,7 @@ extern "C" {
 
 #include <algorithm>
 
-#include "BaseDisplay.hh"
+#include "Display.hh"
 #include "Image.hh"
 #include "Pen.hh"
 #include "Texture.hh"
@@ -86,9 +86,9 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
                              unsigned int colors_per_channel)
   : _dpy(dpy), _screen(screen),
     _cpc(colors_per_channel), _cpcsq(_cpc * _cpc) {
-  const ScreenInfo * const screeninfo = _dpy.screenNumber(_screen);
-  _vclass = screeninfo->getVisual()->c_class;
-  unsigned int depth = screeninfo->getDepth();
+  const ScreenInfo &screeninfo = _dpy.screenInfo(_screen);
+  _vclass = screeninfo.visual()->c_class;
+  unsigned int depth = screeninfo.depth();
 
   red_offset = green_offset = blue_offset = 0;
   red_bits = green_bits = blue_bits = 0;
@@ -139,9 +139,9 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
   case TrueColor:
   case DirectColor: {
     // compute color tables
-    unsigned long red_mask = screeninfo->getVisual()->red_mask,
-                green_mask = screeninfo->getVisual()->green_mask,
-                 blue_mask = screeninfo->getVisual()->blue_mask;
+    unsigned long red_mask = screeninfo.visual()->red_mask,
+                green_mask = screeninfo.visual()->green_mask,
+                 blue_mask = screeninfo.visual()->blue_mask;
 
     while (! (  red_mask & 1)) {   red_offset++;   red_mask >>= 1; }
     while (! (green_mask & 1)) { green_offset++; green_mask >>= 1; }
@@ -165,7 +165,7 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
 
   if (! colors.empty()) {
     // query existing colormap
-    const Colormap colormap = screeninfo->getColormap();
+    const Colormap colormap = screeninfo.colormap();
     XColor icolors[256];
     unsigned int incolors = (((1u << depth) > 256u) ? 256u : (1u << depth));
     for (i = 0; i < incolors; i++) icolors[i].pixel = i;
@@ -255,15 +255,14 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
 
 bt::XColorTable::~XColorTable(void) {
   if (! colors.empty()) {
-    const ScreenInfo * const screeninfo = _dpy.screenNumber(_screen);
-    const Colormap colormap = screeninfo->getColormap();
     std::vector<unsigned long> pixvals(colors.size());
     std::vector<unsigned long>::iterator pt = pixvals.begin();
     std::vector<XColor>::const_iterator xt = colors.begin();
     for (; xt != colors.end() && pt != pixvals.end(); ++xt, ++pt)
       *pt = xt->pixel;
 
-    XFreeColors(_dpy.XDisplay(), colormap, &pixvals[0], pixvals.size(), 0);
+    XFreeColors(_dpy.XDisplay(), _dpy.screenInfo(_screen).colormap(),
+                &pixvals[0], pixvals.size(), 0);
 
     pixvals.clear();
     colors.clear();
@@ -336,11 +335,11 @@ Pixmap bt::Image::render(const Display &display, unsigned int screen,
 
 Pixmap bt::Image::render_solid(const Display &display, unsigned int screen,
                                const bt::Texture &texture) {
-  const ScreenInfo * const screeninfo = display.screenNumber(screen);
+  const ScreenInfo &screeninfo = display.screenInfo(screen);
 
   Pixmap pixmap =
-    XCreatePixmap(display.XDisplay(), screeninfo->getRootWindow(),
-                  width, height, screeninfo->getDepth());
+    XCreatePixmap(display.XDisplay(), screeninfo.rootWindow(),
+                  width, height, screeninfo.depth());
   if (pixmap == None)
     return None;
 
@@ -704,10 +703,10 @@ XImage *bt::Image::renderXImage(const Display &display, unsigned int screen) {
   XColorTable *colortable = colorTableList[screen];
 
   // create XImage
-  const ScreenInfo * const screeninfo = display.screenNumber(screen);
+  const ScreenInfo &screeninfo = display.screenInfo(screen);
   XImage *image =
-    XCreateImage(display.XDisplay(), screeninfo->getVisual(),
-                 screeninfo->getDepth(), ZPixmap,
+    XCreateImage(display.XDisplay(), screeninfo.visual(),
+                 screeninfo.depth(), ZPixmap,
                  0, 0, width, height, 32, 0);
 
   if (! image)
@@ -723,7 +722,7 @@ XImage *bt::Image::renderXImage(const Display &display, unsigned int screen) {
                    ((image->byte_order == MSBFirst) ? 1 : 0);
 
   DitherMode dmode = NoDither;
-  if ( screeninfo->getDepth() < 24 && width > 1 && height > 1)
+  if ( screeninfo.depth() < 24 && width > 1 && height > 1)
     dmode = ditherMode();
 
   switch (dmode) {
@@ -761,10 +760,10 @@ XImage *bt::Image::renderXImage(const Display &display, unsigned int screen) {
 
 
 Pixmap bt::Image::renderPixmap(const Display &display, unsigned int screen) {
-  const ScreenInfo * const screeninfo = display.screenNumber(screen);
+  const ScreenInfo &screeninfo = display.screenInfo(screen);
   Pixmap pixmap =
-    XCreatePixmap(display.XDisplay(), screeninfo->getRootWindow(),
-                  width, height, screeninfo->getDepth());
+    XCreatePixmap(display.XDisplay(), screeninfo.rootWindow(),
+                  width, height, screeninfo.depth());
 
   if (pixmap == None)
     return None;

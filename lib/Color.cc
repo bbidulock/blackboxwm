@@ -32,7 +32,7 @@ extern "C" {
 }
 
 #include "Color.hh"
-#include "BaseDisplay.hh"
+#include "Display.hh"
 
 // #define COLORCACHE_DEBUG
 
@@ -156,7 +156,7 @@ unsigned long bt::ColorCache::find(unsigned int screen, int r, int g, int b) {
   xcol.pixel = 0;
   xcol.flags = DoRed | DoGreen | DoBlue;
 
-  Colormap colormap = _display.screenNumber(screen)->getColormap();
+  Colormap colormap = _display.screenInfo(screen).colormap();
   if (! XAllocColor(_display.XDisplay(), colormap, &xcol)) {
     fprintf(stderr,
             "bt::Color::pixel: cannot allocate color 'rgb:%02x/%02x/%02x'\n",
@@ -227,7 +227,7 @@ void bt::ColorCache::clear(bool force) {
 
     if (count > 0u) {
       XFreeColors(_display.XDisplay(),
-                  _display.screenNumber(screen)->getColormap(),
+                  _display.screenInfo(screen).colormap(),
                   pixels, count, 0);
     }
   }
@@ -296,7 +296,7 @@ bt::Color bt::Color::namedColor(const Display &display, unsigned int screen,
   xcol.blue  = 0;
   xcol.pixel = 0;
 
-  Colormap colormap = display.screenNumber(screen)->getColormap();
+  Colormap colormap = display.screenInfo(screen).colormap();
   if (! XParseColor(display.XDisplay(), colormap, colorname.c_str(), &xcol)) {
     fprintf(stderr, "bt::Color::namedColor: invalid color '%s'\n",
             colorname.c_str());
