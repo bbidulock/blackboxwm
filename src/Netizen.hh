@@ -28,32 +28,32 @@
 // forward declaration
 class BaseDisplay;
 class BScreen;
-class Netizen;
+
 
 class Netizen {
 private:
-  BaseDisplay *basedisplay;
-  BScreen *screen;
-  Window window;
-  XEvent event;
+    BaseDisplay *display;
+    BScreen *screen;
+    Window window;
+    XEvent event;
 
 protected:
 
 public:
-  Netizen(BScreen *, Window);
+    Netizen(BScreen *, Window);
 
-  inline const Window &getWindowID(void) const { return window; }
+    inline const Window &windowID(void) const { return window; }
 
-  void sendWorkspaceCount(void);
-  void sendCurrentWorkspace(void);
+    void sendWorkspaceCount(void);
+    void sendCurrentWorkspace(void);
 
-  void sendWindowFocus(Window);
-  void sendWindowAdd(Window, unsigned long);
-  void sendWindowDel(Window);
-  void sendWindowRaise(Window);
-  void sendWindowLower(Window);
+    void sendWindowFocus(Window);
+    void sendWindowAdd(Window, unsigned long);
+    void sendWindowDel(Window);
+    void sendWindowRaise(Window);
+    void sendWindowLower(Window);
 
-  void sendConfigNotify(XEvent *);
+    void sendConfigNotify(XEvent *);
 };
 
 

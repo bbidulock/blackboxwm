@@ -30,164 +30,124 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
-#include "i18n.hh"
-#include "blackbox.hh"
+#include "Windowmenu.hh"
 #include "Screen.hh"
 #include "Window.hh"
-#include "Windowmenu.hh"
-#include "Workspace.hh"
-
-#ifdef    STDC_HEADERS
-#  include <string.h>
-#endif // STDC_HEADERS
 
 
-Windowmenu::Windowmenu(BlackboxWindow *win) : Basemenu(win->getScreen()) {
-  window = win;
-  screen = window->getScreen();
+class SendToMenu : public Basemenu2
+{
+public:
+    SendToMenu( int src, BlackboxWindow *w );
 
-  setTitleVisibility(False);
-  setMovable(False);
-  setInternalMenu();
+    void popup( int, int, bool = true );
+    void popup( const Point &, bool = true );
+    void refresh();
 
-  sendToMenu = new SendtoWorkspacemenu(this);
-  insert(i18n->getMessage(WindowmenuSet, WindowmenuSendTo, "Send To ..."),
-	 sendToMenu);
-  insert(i18n->getMessage(WindowmenuSet, WindowmenuShade, "Shade"),
-	 BScreen::WindowShade);
-  insert(i18n->getMessage(WindowmenuSet, WindowmenuIconify, "Iconify"),
-	 BScreen::WindowIconify);
-  insert(i18n->getMessage(WindowmenuSet, WindowmenuMaximize, "Maximize"),
-	 BScreen::WindowMaximize);
-  insert(i18n->getMessage(WindowmenuSet, WindowmenuRaise,"Raise"),
-	 BScreen::WindowRaise);
-  insert(i18n->getMessage(WindowmenuSet, WindowmenuLower, "Lower"),
-	 BScreen::WindowLower);
-  insert(i18n->getMessage(WindowmenuSet, WindowmenuStick, "Stick"),
-	 BScreen::WindowStick);
-  insert(i18n->getMessage(WindowmenuSet, WindowmenuKillClient, "Kill Client"),
-	 BScreen::WindowKill);
-  insert(i18n->getMessage(WindowmenuSet, WindowmenuClose, "Close"),
-	 BScreen::WindowClose);
+    void itemClicked( const Point &, const Item &, int );
 
-  update();
+private:
+    BlackboxWindow *window;
+};
 
-  setItemEnabled(1, window->hasTitlebar());
-  setItemEnabled(2, window->isIconifiable());
-  setItemEnabled(3, window->isMaximizable());
-  setItemEnabled(8, window->isClosable());
+SendToMenu::SendToMenu( int scr, BlackboxWindow *w )
+    : Basemenu2( scr ), window( w )
+{
 }
 
-
-Windowmenu::~Windowmenu(void) {
-  delete sendToMenu;
+void SendToMenu::popup( int x, int y, bool centerOnTitle )
+{
+    refresh();
+    Basemenu2::popup( x, y, centerOnTitle );
 }
 
-
-void Windowmenu::show(void) {
-  if (isItemEnabled(1)) setItemSelected(1, window->isShaded());
-  if (isItemEnabled(3)) setItemSelected(3, window->isMaximized());
-  if (isItemEnabled(6)) setItemSelected(6, window->isStuck());
-
-  Basemenu::show();
+void SendToMenu::popup( const Point &p, bool centerOnTitle )
+{
+    refresh();
+    Basemenu2::popup( p, centerOnTitle );
 }
 
-
-void Windowmenu::itemSelected(int button, int index) {
-  BasemenuItem *item = find(index);
-
-  hide();
-  switch (item->function()) {
-  case BScreen::WindowShade:
-    window->shade();
-    break;
-
-  case BScreen::WindowIconify:
-    window->iconify();
-    break;
-
-  case BScreen::WindowMaximize:
-    window->maximize((unsigned int) button);
-    break;
-
-  case BScreen::WindowClose:
-    window->close();
-    break;
-
-  case BScreen::WindowRaise:
-    screen->getWorkspace(window->getWorkspaceNumber())->raiseWindow(window);
-    break;
-
-  case BScreen::WindowLower:
-    screen->getWorkspace(window->getWorkspaceNumber())->lowerWindow(window);
-    break;
-
-  case BScreen::WindowStick:
-    window->stick();
-    break;
-
-  case BScreen::WindowKill:
-    XKillClient(screen->getBaseDisplay()->getXDisplay(),
-                window->getClientWindow());
-    break;
-  }
+void SendToMenu::refresh()
+{
+    int i, r = count();
+    if (r != 0)
+	for (i = 0; i < r; ++i)
+	    remove(0);
+    for ( i = 0; i < window->getScreen()->getCount(); i++ )
+	insert( window->getScreen()->getWorkspace(i)->getName() );
 }
 
+void SendToMenu::itemClicked( const Point &, const Item &item , int button )
+{
+    if ( button > 2 )
+	return;
+    if ( item.index() <= window->getScreen()->getCount()) {
+	if ( item.index() == window->getScreen()->getCurrentWorkspaceID())
+	    return;
+	if ( window->isStuck() )
+	    window->stick();
 
-void Windowmenu::reconfigure(void) {
-  setItemEnabled(1, window->hasTitlebar());
-  setItemEnabled(2, window->isIconifiable());
-  setItemEnabled(3, window->isMaximizable());
-  setItemEnabled(8, window->isClosable());
-
-  sendToMenu->reconfigure();
-
-  Basemenu::reconfigure();
+	if ( button == 1 )
+	    window->withdraw();
+	window->getScreen()->reassociateWindow( window, item.index(), True );
+	if ( button == 2 )
+	    window->getScreen()->changeWorkspaceID( item.index() );
+    }
 }
 
+/*
+  item indexes:
 
-Windowmenu::SendtoWorkspacemenu::SendtoWorkspacemenu(Windowmenu *w)
-  : Basemenu(w->screen) {
-  windowmenu = w;
+  0  - send to ...
+  2  - shade
+  3  - iconify
+  4  - maximize
+  5  - raise
+  6  - lower
+  7  - stick
+  9  - kill client
+  10 - close
+*/
+Windowmenu::Windowmenu( int scr, BlackboxWindow *w )
+    : Basemenu2( scr ), window( w )
+{
+    sendto = new SendToMenu( scr, w );
 
-  setTitleVisibility(False);
-  setMovable(False);
-  setInternalMenu();
-  update();
+    insert( "Send To ...", sendto );
+    insertSeparator();
+    insert( "Shade", Shade );
+    insert( "Iconify", Iconify );
+    insert( "Maximize", Maximize );
+    insert( "Raise", Raise );
+    insert( "Lower", Lower );
+    insert( "Stick", Stick );
+    insertSeparator();
+    insert( "Kill Client", KillClient );
+    insert( "Close", Close );
+
+    setItemEnabled( 5, false ); // raise
+    setItemEnabled( 6, false ); // lower
+    setItemEnabled( 9, false ); // kill client
 }
 
-
-void Windowmenu::SendtoWorkspacemenu::itemSelected(int button, int index) {
-  if (button > 2) return;
-
-  if (index <= windowmenu->screen->getCount()) {
-    if (index == windowmenu->screen->getCurrentWorkspaceID()) return;
-    if (windowmenu->window->isStuck()) windowmenu->window->stick();
-
-    if (button == 1) windowmenu->window->withdraw();
-    windowmenu->screen->reassociateWindow(windowmenu->window, index, True);
-    if (button == 2) windowmenu->screen->changeWorkspaceID(index);
-  }
-  hide();
+Windowmenu::~Windowmenu()
+{
+    delete sendto;
 }
 
+void Windowmenu::itemClicked( const Point &, const Item &item, int button )
+{
+    if ( button != 1 )
+	return;
 
-void Windowmenu::SendtoWorkspacemenu::update(void) {
-  int i, r = getCount();
-
-  if (r != 0)
-    for (i = 0; i < r; ++i)
-      remove(0);
-
-  for (i = 0; i < windowmenu->screen->getCount(); ++i)
-    insert(windowmenu->screen->getWorkspace(i)->getName());
-
-  Basemenu::update();
-}
-
-
-void Windowmenu::SendtoWorkspacemenu::show(void) {
-  update();
-
-  Basemenu::show();
+    switch( item.function() ) {
+    case Shade:	     window->shade();            break;
+    case Iconify:    window->iconify();          break;
+    case Maximize:   window->maximize( button ); break;
+    case Raise:      window->raise();            break;
+    case Lower:      window->lower();            break;
+    case Stick:      window->stick();            break;
+    case KillClient: window->killClient();       break;
+    case Close:      window->close();            break;
+    }
 }

@@ -25,54 +25,25 @@
 
 #include "Basemenu.hh"
 
-// forward declaration
-class Windowmenu;
-class SendtoWorkspaceMenu;
+// new windowmenu
 
-class Blackbox;
 class BlackboxWindow;
-class Toolbar;
+class SendToMenu;
 
-class Windowmenu : public Basemenu {
-private:
-  BlackboxWindow *window;
-  BScreen *screen;
-
-  class SendtoWorkspacemenu : public Basemenu {
-  private:
-    Windowmenu *windowmenu;
-
-  protected:
-    virtual void itemSelected(int, int);
-
-  public:
-    SendtoWorkspacemenu(Windowmenu *);
-
-    void update(void);
-
-    virtual void show(void);
-  };
-
-  SendtoWorkspacemenu *sendToMenu;
-
-  friend class SendtoWorkspacemenu;
-
-
-protected:
-  virtual void itemSelected(int, int);
-
-
+class Windowmenu : public Basemenu2
+{
 public:
-  Windowmenu(BlackboxWindow *);
-  virtual ~Windowmenu(void);
+    enum Function { Shade, Iconify, Maximize, Restore, Raise, Lower, Stick,
+		    KillClient, Close };
 
-  inline Basemenu *getSendToMenu(void) { return (Basemenu *) sendToMenu; }
+    Windowmenu( int, BlackboxWindow * );
+    ~Windowmenu();
 
-  void reconfigure(void);
-  void setClosable(void);
+    void itemClicked( const Point &, const Item &, int );
 
-  virtual void show(void);
+private:
+    BlackboxWindow *window;
+    SendToMenu *sendto;
 };
-
 
 #endif // __Windowmenu_hh

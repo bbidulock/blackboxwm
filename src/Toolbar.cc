@@ -33,6 +33,7 @@
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "Clientmenu.hh"
+#include "GCCache.hh"
 #include "Iconmenu.hh"
 #include "Rootmenu.hh"
 #include "Screen.hh"
@@ -40,6 +41,9 @@
 #include "Window.hh"
 #include "Workspace.hh"
 #include "Workspacemenu.hh"
+#ifdef SLIT
+#include "Slit.hh"
+#endif
 
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
@@ -66,7 +70,7 @@
 
 Toolbar::Toolbar(BScreen *scrn) {
   screen = scrn;
-  blackbox = screen->getBlackbox();
+  blackbox = Blackbox::instance();
 
   // get the clock updating every minute
   clock_timer = new BTimer(blackbox, this);
@@ -92,21 +96,20 @@ Toolbar::Toolbar(BScreen *scrn) {
 
   toolbarmenu = new Toolbarmenu(this);
 
-  display = blackbox->getXDisplay();
   XSetWindowAttributes attrib;
   unsigned long create_mask = CWBackPixmap | CWBackPixel | CWBorderPixel |
                               CWColormap | CWOverrideRedirect | CWEventMask;
   attrib.background_pixmap = None;
   attrib.background_pixel = attrib.border_pixel =
-    screen->getBorderColor()->getPixel();
-  attrib.colormap = screen->getColormap();
+    screen->getBorderColor()->pixel();
+  attrib.colormap = screen->colormap();
   attrib.override_redirect = True;
   attrib.event_mask = ButtonPressMask | ButtonReleaseMask |
                       EnterWindowMask | LeaveWindowMask;
 
   frame.window =
-    XCreateWindow(display, screen->getRootWindow(), 0, 0, 1, 1, 0,
-		  screen->getDepth(), InputOutput, screen->getVisual(),
+    XCreateWindow(*blackbox, screen->rootWindow(), 0, 0, 1, 1, 0,
+		  screen->depth(), InputOutput, screen->visual(),
 		  create_mask, &attrib);
   blackbox->saveToolbarSearch(frame.window, this);
 
@@ -114,52 +117,54 @@ Toolbar::Toolbar(BScreen *scrn) {
                       KeyPressMask | EnterWindowMask;
 
   frame.workspace_label =
-    XCreateWindow(display, frame.window, 0, 0, 1, 1, 0, screen->getDepth(),
-		  InputOutput, screen->getVisual(), create_mask, &attrib);
+    XCreateWindow(*blackbox, frame.window, 0, 0, 1, 1, 0, screen->depth(),
+		  InputOutput, screen->visual(), create_mask, &attrib);
   blackbox->saveToolbarSearch(frame.workspace_label, this);
 
   frame.window_label =
-    XCreateWindow(display, frame.window, 0, 0, 1, 1, 0, screen->getDepth(),
-		  InputOutput, screen->getVisual(), create_mask, &attrib);
+    XCreateWindow(*blackbox, frame.window, 0, 0, 1, 1, 0, screen->depth(),
+		  InputOutput, screen->visual(), create_mask, &attrib);
   blackbox->saveToolbarSearch(frame.window_label, this);
 
   frame.clock =
-    XCreateWindow(display, frame.window, 0, 0, 1, 1, 0, screen->getDepth(),
-		  InputOutput, screen->getVisual(), create_mask, &attrib);
+    XCreateWindow(*blackbox, frame.window, 0, 0, 1, 1, 0, screen->depth(),
+		  InputOutput, screen->visual(), create_mask, &attrib);
   blackbox->saveToolbarSearch(frame.clock, this);
 
   frame.psbutton =
-    XCreateWindow(display ,frame.window, 0, 0, 1, 1, 0, screen->getDepth(),
-                  InputOutput, screen->getVisual(), create_mask, &attrib);
+    XCreateWindow(*blackbox ,frame.window, 0, 0, 1, 1, 0, screen->depth(),
+                  InputOutput, screen->visual(), create_mask, &attrib);
   blackbox->saveToolbarSearch(frame.psbutton, this);
 
   frame.nsbutton =
-    XCreateWindow(display ,frame.window, 0, 0, 1, 1, 0, screen->getDepth(),
-                  InputOutput, screen->getVisual(), create_mask, &attrib);
+    XCreateWindow(*blackbox ,frame.window, 0, 0, 1, 1, 0, screen->depth(),
+                  InputOutput, screen->visual(), create_mask, &attrib);
   blackbox->saveToolbarSearch(frame.nsbutton, this);
 
   frame.pwbutton =
-    XCreateWindow(display ,frame.window, 0, 0, 1, 1, 0, screen->getDepth(),
-                  InputOutput, screen->getVisual(), create_mask, &attrib);
+    XCreateWindow(*blackbox ,frame.window, 0, 0, 1, 1, 0, screen->depth(),
+                  InputOutput, screen->visual(), create_mask, &attrib);
   blackbox->saveToolbarSearch(frame.pwbutton, this);
 
   frame.nwbutton =
-    XCreateWindow(display ,frame.window, 0, 0, 1, 1, 0, screen->getDepth(),
-                  InputOutput, screen->getVisual(), create_mask, &attrib);
+    XCreateWindow(*blackbox ,frame.window, 0, 0, 1, 1, 0, screen->depth(),
+                  InputOutput, screen->visual(), create_mask, &attrib);
   blackbox->saveToolbarSearch(frame.nwbutton, this);
 
   frame.base = frame.label = frame.wlabel = frame.clk = frame.button =
     frame.pbutton = None;
 
+  screen->addStrut(&strut);
+
   reconfigure();
 
-  XMapSubwindows(display, frame.window);
-  XMapWindow(display, frame.window);
+  XMapSubwindows(*blackbox, frame.window);
+  XMapWindow(*blackbox, frame.window);
 }
 
 
 Toolbar::~Toolbar(void) {
-  XUnmapWindow(display, frame.window);
+  XUnmapWindow(*blackbox, frame.window);
 
   if (frame.base) image_ctrl->removeImage(frame.base);
   if (frame.label) image_ctrl->removeImage(frame.label);
@@ -177,11 +182,11 @@ Toolbar::~Toolbar(void) {
   blackbox->removeToolbarSearch(frame.pwbutton);
   blackbox->removeToolbarSearch(frame.nwbutton);
 
-  XDestroyWindow(display, frame.workspace_label);
-  XDestroyWindow(display, frame.window_label);
-  XDestroyWindow(display, frame.clock);
+  XDestroyWindow(*blackbox, frame.workspace_label);
+  XDestroyWindow(*blackbox, frame.window_label);
+  XDestroyWindow(*blackbox, frame.clock);
 
-  XDestroyWindow(display, frame.window);
+  XDestroyWindow(*blackbox, frame.window);
 
   delete hide_timer;
   delete clock_timer;
@@ -191,8 +196,8 @@ Toolbar::~Toolbar(void) {
 
 void Toolbar::reconfigure(void) {
   frame.bevel_w = screen->getBevelWidth();
-  frame.width = screen->getWidth() * screen->getToolbarWidthPercent() / 100;
-  
+  frame.width = screen->width() * screen->getToolbarWidthPercent() / 100;
+
   if (i18n->multibyte())
     frame.height =
       screen->getToolbarStyle()->fontset_extents->max_ink_extent.height;
@@ -203,7 +208,10 @@ void Toolbar::reconfigure(void) {
   frame.height += 2;
   frame.label_h = frame.height;
   frame.height += (frame.bevel_w * 2);
-  
+
+  // left and right are always 0
+  strut.top = strut.bottom = 0;
+
   switch (screen->getToolbarPlacement()) {
   case TopLeft:
     frame.x = 0;
@@ -215,15 +223,15 @@ void Toolbar::reconfigure(void) {
 
   case BottomLeft:
     frame.x = 0;
-    frame.y = screen->getHeight() - frame.height
+    frame.y = screen->height() - frame.height
       - (screen->getBorderWidth() * 2);
     frame.x_hidden = 0;
-    frame.y_hidden = screen->getHeight() - screen->getBevelWidth()
+    frame.y_hidden = screen->height() - screen->getBevelWidth()
                      - screen->getBorderWidth();
     break;
 
   case TopCenter:
-    frame.x = (screen->getWidth() - frame.width) / 2;
+    frame.x = (screen->width() - frame.width) / 2;
     frame.y = 0;
     frame.x_hidden = frame.x;
     frame.y_hidden = screen->getBevelWidth() - screen->getBorderWidth()
@@ -232,16 +240,16 @@ void Toolbar::reconfigure(void) {
 
   case BottomCenter:
   default:
-    frame.x = (screen->getWidth() - frame.width) / 2;
-    frame.y = screen->getHeight() - frame.height
+    frame.x = (screen->width() - frame.width) / 2;
+    frame.y = screen->height() - frame.height
       - (screen->getBorderWidth() * 2);
     frame.x_hidden = frame.x;
-    frame.y_hidden = screen->getHeight() - screen->getBevelWidth()
+    frame.y_hidden = screen->height() - screen->getBevelWidth()
                      - screen->getBorderWidth();
     break;
 
   case TopRight:
-    frame.x = screen->getWidth() - frame.width
+    frame.x = screen->width() - frame.width
       - (screen->getBorderWidth() * 2);
     frame.y = 0;
     frame.x_hidden = frame.x;
@@ -250,15 +258,27 @@ void Toolbar::reconfigure(void) {
     break;
 
   case BottomRight:
-    frame.x = screen->getWidth() - frame.width
+    frame.x = screen->width() - frame.width
       - (screen->getBorderWidth() * 2);
-    frame.y = screen->getHeight() - frame.height
+    frame.y = screen->height() - frame.height
       - (screen->getBorderWidth() * 2);
     frame.x_hidden = frame.x;
-    frame.y_hidden = screen->getHeight() - screen->getBevelWidth()
+    frame.y_hidden = screen->height() - screen->getBevelWidth()
                      - screen->getBorderWidth();
     break;
   }
+
+  switch(screen->getToolbarPlacement()) {
+  case TopLeft:
+  case TopCenter:
+  case TopRight:
+    strut.top = getY() + 1;
+    break;
+  default:
+    strut.bottom = screen->height() - getY() - 1;
+  }
+
+  screen->updateAvailableArea();
 
 #ifdef    HAVE_STRFTIME
   time_t ttmp = time(NULL);
@@ -285,7 +305,7 @@ void Toolbar::reconfigure(void) {
 				   time_string, len);
       }
       frame.clock_w += (frame.bevel_w * 4);
-      
+
       delete [] time_string;
     } else {
       frame.clock_w = 0;
@@ -334,133 +354,133 @@ void Toolbar::reconfigure(void) {
                     frame.workspace_label_w + (frame.bevel_w * 8) + 6));
 
   if (hidden) {
-    XMoveResizeWindow(display, frame.window, frame.x_hidden, frame.y_hidden,
+    XMoveResizeWindow(*blackbox, frame.window, frame.x_hidden, frame.y_hidden,
 		      frame.width, frame.height);
   } else {
-    XMoveResizeWindow(display, frame.window, frame.x, frame.y,
+    XMoveResizeWindow(*blackbox, frame.window, frame.x, frame.y,
 		      frame.width, frame.height);
   }
 
-  XMoveResizeWindow(display, frame.workspace_label, frame.bevel_w,
+  XMoveResizeWindow(*blackbox, frame.workspace_label, frame.bevel_w,
 		    frame.bevel_w, frame.workspace_label_w,
                     frame.label_h);
-  XMoveResizeWindow(display, frame.psbutton, (frame.bevel_w * 2) +
+  XMoveResizeWindow(*blackbox, frame.psbutton, (frame.bevel_w * 2) +
                     frame.workspace_label_w + 1, frame.bevel_w + 1,
                     frame.button_w, frame.button_w);
-  XMoveResizeWindow(display ,frame.nsbutton, (frame.bevel_w * 3) +
+  XMoveResizeWindow(*blackbox ,frame.nsbutton, (frame.bevel_w * 3) +
                     frame.workspace_label_w + frame.button_w + 2,
                     frame.bevel_w + 1, frame.button_w, frame.button_w);
-  XMoveResizeWindow(display, frame.window_label, (frame.bevel_w * 4) +
+  XMoveResizeWindow(*blackbox, frame.window_label, (frame.bevel_w * 4) +
                     (frame.button_w * 2) + frame.workspace_label_w + 3,
 		    frame.bevel_w, frame.window_label_w, frame.label_h);
-  XMoveResizeWindow(display, frame.pwbutton, (frame.bevel_w * 5) +
+  XMoveResizeWindow(*blackbox, frame.pwbutton, (frame.bevel_w * 5) +
                     (frame.button_w * 2) + frame.workspace_label_w +
                     frame.window_label_w + 4, frame.bevel_w + 1,
                     frame.button_w, frame.button_w);
-  XMoveResizeWindow(display, frame.nwbutton, (frame.bevel_w * 6) +
+  XMoveResizeWindow(*blackbox, frame.nwbutton, (frame.bevel_w * 6) +
                     (frame.button_w * 3) + frame.workspace_label_w +
                     frame.window_label_w + 5, frame.bevel_w + 1,
                     frame.button_w, frame.button_w);
-  XMoveResizeWindow(display, frame.clock, frame.width - frame.clock_w -
+  XMoveResizeWindow(*blackbox, frame.clock, frame.width - frame.clock_w -
 		    frame.bevel_w, frame.bevel_w, frame.clock_w,
 		    frame.label_h);
 
   Pixmap tmp = frame.base;
-  BTexture *texture = &(screen->getToolbarStyle()->toolbar);
-  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+  BTexture texture = screen->getToolbarStyle()->toolbar;
+  if (texture.texture() == (BImage_Flat | BImage_Solid)) {
     frame.base = None;
-    XSetWindowBackground(display, frame.window,
-			 texture->getColor()->getPixel());
+    XSetWindowBackground(*blackbox, frame.window,
+			 texture.color().pixel());
   } else {
     frame.base =
       image_ctrl->renderImage(frame.width, frame.height, texture);
-    XSetWindowBackgroundPixmap(display, frame.window, frame.base);
+    XSetWindowBackgroundPixmap(*blackbox, frame.window, frame.base);
   }
   if (tmp) image_ctrl->removeImage(tmp);
 
   tmp = frame.label;
-  texture = &(screen->getToolbarStyle()->window);
-  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+  texture = screen->getToolbarStyle()->window;
+  if (texture.texture() == (BImage_Flat | BImage_Solid)) {
     frame.label = None;
-    XSetWindowBackground(display, frame.window_label,
-			 texture->getColor()->getPixel());
+    XSetWindowBackground(*blackbox, frame.window_label,
+			 texture.color().pixel());
   } else {
     frame.label =
       image_ctrl->renderImage(frame.window_label_w, frame.label_h, texture);
-    XSetWindowBackgroundPixmap(display, frame.window_label, frame.label);
+    XSetWindowBackgroundPixmap(*blackbox, frame.window_label, frame.label);
   }
   if (tmp) image_ctrl->removeImage(tmp);
 
   tmp = frame.wlabel;
-  texture = &(screen->getToolbarStyle()->label);
-  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+  texture = screen->getToolbarStyle()->label;
+  if (texture.texture() == (BImage_Flat | BImage_Solid)) {
     frame.wlabel = None;
-    XSetWindowBackground(display, frame.workspace_label,
-			 texture->getColor()->getPixel());
+    XSetWindowBackground(*blackbox, frame.workspace_label,
+			 texture.color().pixel());
   } else {
     frame.wlabel =
       image_ctrl->renderImage(frame.workspace_label_w, frame.label_h, texture);
-    XSetWindowBackgroundPixmap(display, frame.workspace_label, frame.wlabel);
+    XSetWindowBackgroundPixmap(*blackbox, frame.workspace_label, frame.wlabel);
   }
   if (tmp) image_ctrl->removeImage(tmp);
 
   tmp = frame.clk;
-  texture = &(screen->getToolbarStyle()->clock);
-  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+  texture = screen->getToolbarStyle()->clock;
+  if (texture.texture() == (BImage_Flat | BImage_Solid)) {
     frame.clk = None;
-    XSetWindowBackground(display, frame.clock,
-			 texture->getColor()->getPixel());
+    XSetWindowBackground(*blackbox, frame.clock,
+			 texture.color().pixel());
   } else {
     frame.clk =
       image_ctrl->renderImage(frame.clock_w, frame.label_h, texture);
-    XSetWindowBackgroundPixmap(display, frame.clock, frame.clk);
+    XSetWindowBackgroundPixmap(*blackbox, frame.clock, frame.clk);
   }
   if (tmp) image_ctrl->removeImage(tmp);
 
   tmp = frame.button;
-  texture = &(screen->getToolbarStyle()->button);
-  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+  texture = screen->getToolbarStyle()->button;
+  if (texture.texture() == (BImage_Flat | BImage_Solid)) {
     frame.button = None;
 
-    frame.button_pixel = texture->getColor()->getPixel();
-    XSetWindowBackground(display, frame.psbutton, frame.button_pixel);
-    XSetWindowBackground(display, frame.nsbutton, frame.button_pixel);
-    XSetWindowBackground(display, frame.pwbutton, frame.button_pixel);
-    XSetWindowBackground(display, frame.nwbutton, frame.button_pixel);
+    frame.button_pixel = texture.color().pixel();
+    XSetWindowBackground(*blackbox, frame.psbutton, frame.button_pixel);
+    XSetWindowBackground(*blackbox, frame.nsbutton, frame.button_pixel);
+    XSetWindowBackground(*blackbox, frame.pwbutton, frame.button_pixel);
+    XSetWindowBackground(*blackbox, frame.nwbutton, frame.button_pixel);
   } else {
     frame.button =
       image_ctrl->renderImage(frame.button_w, frame.button_w, texture);
 
-    XSetWindowBackgroundPixmap(display, frame.psbutton, frame.button);
-    XSetWindowBackgroundPixmap(display, frame.nsbutton, frame.button);
-    XSetWindowBackgroundPixmap(display, frame.pwbutton, frame.button);
-    XSetWindowBackgroundPixmap(display, frame.nwbutton, frame.button);
+    XSetWindowBackgroundPixmap(*blackbox, frame.psbutton, frame.button);
+    XSetWindowBackgroundPixmap(*blackbox, frame.nsbutton, frame.button);
+    XSetWindowBackgroundPixmap(*blackbox, frame.pwbutton, frame.button);
+    XSetWindowBackgroundPixmap(*blackbox, frame.nwbutton, frame.button);
   }
   if (tmp) image_ctrl->removeImage(tmp);
 
   tmp = frame.pbutton;
-  texture = &(screen->getToolbarStyle()->pressed);
-  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+  texture = screen->getToolbarStyle()->pressed;
+  if (texture.texture() == (BImage_Flat | BImage_Solid)) {
     frame.pbutton = None;
-    frame.pbutton_pixel = texture->getColor()->getPixel();
+    frame.pbutton_pixel = texture.color().pixel();
   } else {
     frame.pbutton =
       image_ctrl->renderImage(frame.button_w, frame.button_w, texture);
   }
   if (tmp) image_ctrl->removeImage(tmp);
 
-  XSetWindowBorder(display, frame.window,
-		   screen->getBorderColor()->getPixel());
-  XSetWindowBorderWidth(display, frame.window, screen->getBorderWidth());
+  XSetWindowBorder(*blackbox, frame.window,
+		   screen->getBorderColor()->pixel());
+  XSetWindowBorderWidth(*blackbox, frame.window, screen->getBorderWidth());
 
-  XClearWindow(display, frame.window);
-  XClearWindow(display, frame.workspace_label);
-  XClearWindow(display, frame.window_label);
-  XClearWindow(display, frame.clock);
-  XClearWindow(display, frame.psbutton);
-  XClearWindow(display, frame.nsbutton);
-  XClearWindow(display, frame.pwbutton);
-  XClearWindow(display, frame.nwbutton);
+  XClearWindow(*blackbox, frame.window);
+  XClearWindow(*blackbox, frame.workspace_label);
+  XClearWindow(*blackbox, frame.window_label);
+  XClearWindow(*blackbox, frame.clock);
+  XClearWindow(*blackbox, frame.psbutton);
+  XClearWindow(*blackbox, frame.nsbutton);
+  XClearWindow(*blackbox, frame.pwbutton);
+  XClearWindow(*blackbox, frame.nwbutton);
 
   redrawWindowLabel();
   redrawWorkspaceLabel();
@@ -487,7 +507,7 @@ void Toolbar::checkClock(Bool redraw, Bool date) {
     if (tt->tm_min != frame.minute || tt->tm_hour != frame.hour) {
       frame.hour = tt->tm_hour;
       frame.minute = tt->tm_min;
-      XClearWindow(display, frame.clock);
+      XClearWindow(*blackbox, frame.clock);
       redraw = True;
     }
   }
@@ -540,9 +560,9 @@ void Toolbar::checkClock(Bool redraw, Bool date) {
     } else {
       l = XTextWidth(screen->getToolbarStyle()->font, t, dlen);
     }
-    
+
     l += (frame.bevel_w * 4);
-    
+
     if (l > frame.clock_w) {
       for (; dlen >= 0; dlen--) {
 	if (i18n->multibyte()) {
@@ -554,7 +574,7 @@ void Toolbar::checkClock(Bool redraw, Bool date) {
 	  l = XTextWidth(screen->getToolbarStyle()->font, t, dlen);
 	}
 	l+= (frame.bevel_w * 4);
-	
+
         if (l < frame.clock_w)
           break;
       }
@@ -570,13 +590,13 @@ void Toolbar::checkClock(Bool redraw, Bool date) {
     }
 
     ToolbarStyle *style = screen->getToolbarStyle();
+    BGCCache::Item &gc = BGCCache::instance()->find( style->c_text, style->font );
     if (i18n->multibyte())
-      XmbDrawString(display, frame.clock, style->fontset, style->c_text_gc,
-		    dx, (1 - style->fontset_extents->max_ink_extent.y),
-		    t, dlen);
+      XmbDrawString(*blackbox, frame.clock, style->fontset, gc.gc(),
+		    dx, (1 - style->fontset_extents->max_ink_extent.y), t, dlen);
     else
-      XDrawString(display, frame.clock, style->c_text_gc, dx,
-		  (style->font->ascent + 1), t, dlen);
+      XDrawString(*blackbox, frame.clock, gc.gc(), dx, (style->font->ascent + 1), t, dlen);
+    BGCCache::instance()->release( gc );
   }
 }
 
@@ -584,7 +604,7 @@ void Toolbar::checkClock(Bool redraw, Bool date) {
 void Toolbar::redrawWindowLabel(Bool redraw) {
   if (screen->getBlackbox()->getFocusedWindow()) {
     if (redraw)
-      XClearWindow(display, frame.window_label);
+      XClearWindow(*blackbox, frame.window_label);
 
     BlackboxWindow *foc = screen->getBlackbox()->getFocusedWindow();
     if (foc->getScreen() != screen) return;
@@ -614,7 +634,7 @@ void Toolbar::redrawWindowLabel(Bool redraw) {
 			 *foc->getTitle(), dlen);
 	}
 	l += (frame.bevel_w * 4);
-	
+
 	if (l < frame.window_label_w)
           break;
       }
@@ -630,29 +650,30 @@ void Toolbar::redrawWindowLabel(Bool redraw) {
     }
 
     ToolbarStyle *style = screen->getToolbarStyle();
+    BGCCache::Item &gc = BGCCache::instance()->find( style->w_text, style->font );
     if (i18n->multibyte())
-      XmbDrawString(display, frame.window_label, style->fontset,
-		    style->w_text_gc, dx,
-		    (1 - style->fontset_extents->max_ink_extent.y),
+      XmbDrawString(*blackbox, frame.window_label, style->fontset, gc.gc(),
+		    dx, (1 - style->fontset_extents->max_ink_extent.y),
 		    *foc->getTitle(), dlen);
     else
-      XDrawString(display, frame.window_label, style->w_text_gc, dx,
-		  (style->font->ascent + 1), *foc->getTitle(), dlen);
+      XDrawString(*blackbox, frame.window_label, gc.gc(),
+		  dx, (style->font->ascent + 1), *foc->getTitle(), dlen);
+    BGCCache::instance()->release( gc );
   } else {
-    XClearWindow(display, frame.window_label);
+    XClearWindow(*blackbox, frame.window_label);
   }
 }
- 
- 
+
+
 void Toolbar::redrawWorkspaceLabel(Bool redraw) {
   if (screen->getCurrentWorkspace()->getName()) {
     if (redraw)
-      XClearWindow(display, frame.workspace_label);
-    
+      XClearWindow(*blackbox, frame.workspace_label);
+
     int dx = (frame.bevel_w * 2), dlen =
 	     strlen(screen->getCurrentWorkspace()->getName());
     unsigned int l;
-    
+
     if (i18n->multibyte()) {
       XRectangle ink, logical;
       XmbTextExtents(screen->getToolbarStyle()->fontset,
@@ -664,7 +685,7 @@ void Toolbar::redrawWorkspaceLabel(Bool redraw) {
 		     screen->getCurrentWorkspace()->getName(), dlen);
     }
     l += (frame.bevel_w * 4);
-    
+
     if (l > frame.workspace_label_w) {
       for (; dlen >= 0; dlen--) {
 	if (i18n->multibyte()) {
@@ -678,7 +699,7 @@ void Toolbar::redrawWorkspaceLabel(Bool redraw) {
 			 screen->getCurrentWorkspace()->getName(), dlen);
 	}
 	l += (frame.bevel_w * 4);
-	
+
         if (l < frame.workspace_label_w)
           break;
       }
@@ -694,15 +715,16 @@ void Toolbar::redrawWorkspaceLabel(Bool redraw) {
     }
 
     ToolbarStyle *style = screen->getToolbarStyle();
+    BGCCache::Item &gc = BGCCache::instance()->find( style->l_text, style->font );
     if (i18n->multibyte())
-      XmbDrawString(display, frame.workspace_label, style->fontset,
-		    style->l_text_gc, dx,
-		    (1 - style->fontset_extents->max_ink_extent.y),
+      XmbDrawString(*blackbox, frame.workspace_label, style->fontset, gc.gc(),
+		    dx, (1 - style->fontset_extents->max_ink_extent.y),
 		    (char *) screen->getCurrentWorkspace()->getName(), dlen);
     else
-      XDrawString(display, frame.workspace_label, style->l_text_gc, dx,
-		  (style->font->ascent + 1),
+      XDrawString(*blackbox, frame.workspace_label, gc.gc(),
+		  dx, (style->font->ascent + 1),
 		  (char *) screen->getCurrentWorkspace()->getName(), dlen);
+    BGCCache::instance()->release( gc );
   }
 }
 
@@ -711,16 +733,16 @@ void Toolbar::redrawPrevWorkspaceButton(Bool pressed, Bool redraw) {
   if (redraw) {
     if (pressed) {
       if (frame.pbutton)
-	XSetWindowBackgroundPixmap(display, frame.psbutton, frame.pbutton);
+	XSetWindowBackgroundPixmap(*blackbox, frame.psbutton, frame.pbutton);
       else
-	XSetWindowBackground(display, frame.psbutton, frame.pbutton_pixel);
+	XSetWindowBackground(*blackbox, frame.psbutton, frame.pbutton_pixel);
     } else {
       if (frame.button)
-        XSetWindowBackgroundPixmap(display, frame.psbutton, frame.button);
+        XSetWindowBackgroundPixmap(*blackbox, frame.psbutton, frame.button);
       else
-	XSetWindowBackground(display, frame.psbutton, frame.button_pixel);
+	XSetWindowBackground(*blackbox, frame.psbutton, frame.button_pixel);
     }
-    XClearWindow(display, frame.psbutton);
+    XClearWindow(*blackbox, frame.psbutton);
   }
 
   int hh = frame.button_w / 2, hw = frame.button_w / 2;
@@ -730,8 +752,9 @@ void Toolbar::redrawPrevWorkspaceButton(Bool pressed, Bool redraw) {
   pts[1].x = 4; pts[1].y = 2;
   pts[2].x = 0; pts[2].y = -4;
 
-  XFillPolygon(display, frame.psbutton, screen->getToolbarStyle()->b_pic_gc,
-               pts, 3, Convex, CoordModePrevious);
+  BGCCache::Item &gc = BGCCache::instance()->find( screen->getToolbarStyle()->b_pic );
+  XFillPolygon(*blackbox, frame.psbutton, gc.gc(), pts, 3, Convex, CoordModePrevious);
+  BGCCache::instance()->release( gc );
 }
 
 
@@ -739,16 +762,16 @@ void Toolbar::redrawNextWorkspaceButton(Bool pressed, Bool redraw) {
   if (redraw) {
     if (pressed) {
       if (frame.pbutton)
-	XSetWindowBackgroundPixmap(display, frame.nsbutton, frame.pbutton);
+	XSetWindowBackgroundPixmap(*blackbox, frame.nsbutton, frame.pbutton);
       else
-	XSetWindowBackground(display, frame.nsbutton, frame.pbutton_pixel);
+	XSetWindowBackground(*blackbox, frame.nsbutton, frame.pbutton_pixel);
     } else {
       if (frame.button)
-        XSetWindowBackgroundPixmap(display, frame.nsbutton, frame.button);
+        XSetWindowBackgroundPixmap(*blackbox, frame.nsbutton, frame.button);
       else
-	XSetWindowBackground(display, frame.nsbutton, frame.button_pixel);
+	XSetWindowBackground(*blackbox, frame.nsbutton, frame.button_pixel);
     }
-    XClearWindow(display, frame.nsbutton);
+    XClearWindow(*blackbox, frame.nsbutton);
   }
 
   int hh = frame.button_w / 2, hw = frame.button_w / 2;
@@ -758,8 +781,9 @@ void Toolbar::redrawNextWorkspaceButton(Bool pressed, Bool redraw) {
   pts[1].x = 4; pts[1].y =  2;
   pts[2].x = -4; pts[2].y = 2;
 
-  XFillPolygon(display, frame.nsbutton, screen->getToolbarStyle()->b_pic_gc,
-               pts, 3, Convex, CoordModePrevious);
+  BGCCache::Item &gc = BGCCache::instance()->find( screen->getToolbarStyle()->b_pic );
+  XFillPolygon(*blackbox, frame.nsbutton, gc.gc(), pts, 3, Convex, CoordModePrevious);
+  BGCCache::instance()->release( gc );
 }
 
 
@@ -767,16 +791,16 @@ void Toolbar::redrawPrevWindowButton(Bool pressed, Bool redraw) {
   if (redraw) {
     if (pressed) {
       if (frame.pbutton)
-	XSetWindowBackgroundPixmap(display, frame.pwbutton, frame.pbutton);
+	XSetWindowBackgroundPixmap(*blackbox, frame.pwbutton, frame.pbutton);
       else
-	XSetWindowBackground(display, frame.pwbutton, frame.pbutton_pixel);
+	XSetWindowBackground(*blackbox, frame.pwbutton, frame.pbutton_pixel);
     } else {
       if (frame.button)
-        XSetWindowBackgroundPixmap(display, frame.pwbutton, frame.button);
+        XSetWindowBackgroundPixmap(*blackbox, frame.pwbutton, frame.button);
       else
-	XSetWindowBackground(display, frame.pwbutton, frame.button_pixel);
+	XSetWindowBackground(*blackbox, frame.pwbutton, frame.button_pixel);
     }
-    XClearWindow(display, frame.pwbutton);
+    XClearWindow(*blackbox, frame.pwbutton);
   }
 
   int hh = frame.button_w / 2, hw = frame.button_w / 2;
@@ -786,8 +810,9 @@ void Toolbar::redrawPrevWindowButton(Bool pressed, Bool redraw) {
   pts[1].x = 4; pts[1].y = 2;
   pts[2].x = 0; pts[2].y = -4;
 
-  XFillPolygon(display, frame.pwbutton, screen->getToolbarStyle()->b_pic_gc,
-               pts, 3, Convex, CoordModePrevious);
+  BGCCache::Item &gc = BGCCache::instance()->find( screen->getToolbarStyle()->b_pic );
+  XFillPolygon(*blackbox, frame.pwbutton, gc.gc(), pts, 3, Convex, CoordModePrevious);
+  BGCCache::instance()->release( gc );
 }
 
 
@@ -795,16 +820,16 @@ void Toolbar::redrawNextWindowButton(Bool pressed, Bool redraw) {
   if (redraw) {
     if (pressed) {
       if (frame.pbutton)
-	XSetWindowBackgroundPixmap(display, frame.nwbutton, frame.pbutton);
+	XSetWindowBackgroundPixmap(*blackbox, frame.nwbutton, frame.pbutton);
       else
-	XSetWindowBackground(display, frame.nwbutton, frame.pbutton_pixel);
+	XSetWindowBackground(*blackbox, frame.nwbutton, frame.pbutton_pixel);
     } else {
       if (frame.button)
-        XSetWindowBackgroundPixmap(display, frame.nwbutton, frame.button);
+        XSetWindowBackgroundPixmap(*blackbox, frame.nwbutton, frame.button);
       else
-	XSetWindowBackground(display, frame.nwbutton, frame.button_pixel);
+	XSetWindowBackground(*blackbox, frame.nwbutton, frame.button_pixel);
     }
-    XClearWindow(display, frame.nwbutton);
+    XClearWindow(*blackbox, frame.nwbutton);
   }
 
   int hh = frame.button_w / 2, hw = frame.button_w / 2;
@@ -814,8 +839,9 @@ void Toolbar::redrawNextWindowButton(Bool pressed, Bool redraw) {
   pts[1].x = 4; pts[1].y =  2;
   pts[2].x = -4; pts[2].y = 2;
 
-  XFillPolygon(display, frame.nwbutton, screen->getToolbarStyle()->b_pic_gc,
-               pts, 3, Convex, CoordModePrevious);
+  BGCCache::Item &gc = BGCCache::instance()->find( screen->getToolbarStyle()->b_pic );
+  XFillPolygon(*blackbox, frame.nwbutton, gc.gc(), pts, 3, Convex, CoordModePrevious);
+  BGCCache::instance()->release( gc );
 }
 
 
@@ -824,24 +850,25 @@ void Toolbar::edit(void) {
   int foo;
 
   editing = True;
-  if (XGetInputFocus(display, &window, &foo) &&
+  if (XGetInputFocus(*blackbox, &window, &foo) &&
       window == frame.workspace_label)
     return;
 
-  XSetInputFocus(display, frame.workspace_label,
+  XSetInputFocus(*blackbox, frame.workspace_label,
                  ((screen->isSloppyFocus()) ? RevertToPointerRoot :
                   RevertToParent),
                  CurrentTime);
-  XClearWindow(display, frame.workspace_label);
+  XClearWindow(*blackbox, frame.workspace_label);
 
   blackbox->setNoFocus(True);
   if (blackbox->getFocusedWindow())
     blackbox->getFocusedWindow()->setFocusFlag(False);
 
-  XDrawRectangle(display, frame.workspace_label,
-                 screen->getWindowStyle()->l_text_focus_gc,
-                 frame.workspace_label_w / 2, 0, 1,
-                 frame.label_h - 1);
+  BGCCache::Item &gc = BGCCache::instance()->find( screen->getToolbarStyle()->l_text,
+						   screen->getToolbarStyle()->font );
+  XDrawRectangle(*blackbox, frame.workspace_label, gc.gc(),
+                 frame.workspace_label_w / 2, 0, 1, frame.label_h - 1);
+  BGCCache::instance()->release( gc );
 }
 
 
@@ -857,7 +884,7 @@ void Toolbar::buttonPressEvent(XButtonEvent *be) {
       redrawNextWindowButton(True, True);
 #ifndef   HAVE_STRFTIME
     else if (be->window == frame.clock) {
-      XClearWindow(display, frame.clock);
+      XClearWindow(*blackbox, frame.clock);
       checkClock(True, True);
     }
 #endif // HAVE_STRFTIME
@@ -866,23 +893,23 @@ void Toolbar::buttonPressEvent(XButtonEvent *be) {
       screen->raiseWindows(w, 1);
     }
   } else if (be->button == 2 && (! on_top)) {
-    XLowerWindow(display, frame.window);
+    XLowerWindow(*blackbox, frame.window);
   } else if (be->button == 3) {
     if (! toolbarmenu->isVisible()) {
       int x, y;
 
-      x = be->x_root - (toolbarmenu->getWidth() / 2);
-      y = be->y_root - (toolbarmenu->getHeight() / 2);
+      x = be->x_root - (toolbarmenu->width() / 2);
+      y = be->y_root - (toolbarmenu->height() / 2);
 
       if (x < 0)
         x = 0;
-      else if (x + toolbarmenu->getWidth() > screen->getWidth())
-        x = screen->getWidth() - toolbarmenu->getWidth();
+      else if (x + toolbarmenu->width() > screen->width())
+        x = screen->width() - toolbarmenu->width();
 
       if (y < 0)
         y = 0;
-      else if (y + toolbarmenu->getHeight() > screen->getHeight())
-        y = screen->getHeight() - toolbarmenu->getHeight();
+      else if (y + toolbarmenu->height() > screen->height())
+        y = screen->height() - toolbarmenu->height();
 
       toolbarmenu->move(x, y);
       toolbarmenu->show();
@@ -932,7 +959,7 @@ void Toolbar::buttonReleaseEvent(XButtonEvent *re) {
       screen->raiseFocus();
 #ifndef   HAVE_STRFTIME
     else if (re->window == frame.clock) {
-      XClearWindow(display, frame.clock);
+      XClearWindow(*blackbox, frame.clock);
       checkClock(True);
     }
 #endif // HAVE_STRFTIME
@@ -977,8 +1004,6 @@ void Toolbar::exposeEvent(XExposeEvent *ee) {
 
 void Toolbar::keyPressEvent(XKeyEvent *ke) {
   if (ke->window == frame.workspace_label && editing) {
-    blackbox->grab();
-
     if (! new_workspace_name) {
       new_workspace_name = new char[128];
       new_name_pos = 0;
@@ -1001,7 +1026,7 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
         blackbox->getFocusedWindow()->setInputFocus();
         blackbox->getFocusedWindow()->setFocusFlag(True);
       } else {
-        XSetInputFocus(display, PointerRoot, None, CurrentTime);
+        XSetInputFocus(*blackbox, PointerRoot, None, CurrentTime);
       }
       // check to make sure that new_name[0] != 0... otherwise we have a null
       // workspace name which causes serious problems, especially for the
@@ -1043,7 +1068,7 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
 	*(new_workspace_name + new_name_pos) = '\0';
       }
 
-      XClearWindow(display, frame.workspace_label);
+      XClearWindow(*blackbox, frame.workspace_label);
       int l = strlen(new_workspace_name), tw, x;
 
       if (i18n->multibyte()) {
@@ -1059,23 +1084,19 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
 
       if (x < (signed) frame.bevel_w) x = frame.bevel_w;
 
-      WindowStyle *style = screen->getWindowStyle();
+      ToolbarStyle *style = screen->getToolbarStyle();
+      BGCCache::Item &gc = BGCCache::instance()->find( style->l_text, style->font );
       if (i18n->multibyte())
-	XmbDrawString(display, frame.workspace_label, style->fontset,
-		      style->l_text_focus_gc, x,
-		      (1 - style->fontset_extents->max_ink_extent.y),
+	XmbDrawString(*blackbox, frame.workspace_label, style->fontset, gc.gc(),
+		      x, (1 - style->fontset_extents->max_ink_extent.y),
 		      new_workspace_name, l);
       else
-	XDrawString(display, frame.workspace_label, style->l_text_focus_gc, x,
-		    (style->font->ascent + 1),
-		    new_workspace_name, l);
-      
-      XDrawRectangle(display, frame.workspace_label,
-		     screen->getWindowStyle()->l_text_focus_gc, x + tw, 0, 1,
-		     frame.label_h - 1);
+	XDrawString(*blackbox, frame.workspace_label, gc.gc(),
+		    x, (style->font->ascent + 1), new_workspace_name, l);
+
+      XDrawRectangle(*blackbox, frame.workspace_label, gc.gc(),
+		     x + tw, 0, 1, frame.label_h - 1);
     }
-    
-    blackbox->ungrab();
   }
 }
 
@@ -1092,10 +1113,10 @@ void Toolbar::timeout(void) {
 void Toolbar::HideHandler::timeout(void) {
   toolbar->hidden = ! toolbar->hidden;
   if (toolbar->hidden)
-    XMoveWindow(toolbar->display, toolbar->frame.window,
+    XMoveWindow(*toolbar->blackbox, toolbar->frame.window,
 		toolbar->frame.x_hidden, toolbar->frame.y_hidden);
   else
-    XMoveWindow(toolbar->display, toolbar->frame.window,
+    XMoveWindow(*toolbar->blackbox, toolbar->frame.window,
 		toolbar->frame.x, toolbar->frame.y);
 }
 

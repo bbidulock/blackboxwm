@@ -36,37 +36,39 @@
 #include "Window.hh"
 #include "Screen.hh"
 
-Configmenu::Configmenu(BScreen *scr) : Basemenu(scr) {
-  screen = scr;
-  blackbox = screen->getBlackbox();
-  setLabel(i18n->getMessage(ConfigmenuSet, ConfigmenuConfigOptions,
-			    "Config options"));
-  setInternalMenu();
+Configmenu::Configmenu(BScreen *scr)
+    : Basemenu(scr)
+{
+    screen = scr;
+    blackbox = Blackbox::instance();
+    setLabel(i18n->getMessage(ConfigmenuSet, ConfigmenuConfigOptions,
+			      "Config options"));
+    setInternalMenu();
 
-  focusmenu = new Focusmenu(this);
-  placementmenu = new Placementmenu(this);
+    focusmenu = new Focusmenu(this);
+    placementmenu = new Placementmenu(this);
 
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuFocusModel,
-			  "Focus Model"), focusmenu);
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuWindowPlacement,
-			  "Window Placement"), placementmenu);
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuImageDithering,
-			  "Image Dithering"), 1);
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuOpaqueMove,
-			  "Opaque Window Moving"), 2);
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuFullMax,
-			  "Full Maximization"), 3);
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuFocusNew,
-			  "Focus New Windows"), 4);
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuFocusLast,
-			  "Focus Last Window on Workspace"), 5);
-  update();
+    insert(i18n->getMessage(ConfigmenuSet, ConfigmenuFocusModel,
+			    "Focus Model"), focusmenu);
+    insert(i18n->getMessage(ConfigmenuSet, ConfigmenuWindowPlacement,
+			    "Window Placement"), placementmenu);
+    insert(i18n->getMessage(ConfigmenuSet, ConfigmenuImageDithering,
+			    "Image Dithering"), 1);
+    insert(i18n->getMessage(ConfigmenuSet, ConfigmenuOpaqueMove,
+			    "Opaque Window Moving"), 2);
+    insert(i18n->getMessage(ConfigmenuSet, ConfigmenuFullMax,
+			    "Full Maximization"), 3);
+    insert(i18n->getMessage(ConfigmenuSet, ConfigmenuFocusNew,
+			    "Focus New Windows"), 4);
+    insert(i18n->getMessage(ConfigmenuSet, ConfigmenuFocusLast,
+			    "Focus Last Window on Workspace"), 5);
+    update();
 
-  setItemSelected(2, screen->getImageControl()->doDither());
-  setItemSelected(3, screen->doOpaqueMove());
-  setItemSelected(4, screen->doFullMax());
-  setItemSelected(5, screen->doFocusNew());
-  setItemSelected(6, screen->doFocusLast());
+    setItemSelected(2, screen->getImageControl()->doDither());
+    setItemSelected(3, screen->doOpaqueMove());
+    setItemSelected(4, screen->doFullMax());
+    setItemSelected(5, screen->doFocusNew());
+    setItemSelected(6, screen->doFocusLast());
 }
 
 Configmenu::~Configmenu(void) {
@@ -152,51 +154,50 @@ Configmenu::Focusmenu::Focusmenu(Configmenu *cm) : Basemenu(cm->screen) {
 }
 
 void Configmenu::Focusmenu::itemSelected(int button, int index) {
-  if (button != 1)
-    return;
+    if (button != 1)
+	return;
 
-  BasemenuItem *item = find(index);
+    BasemenuItem *item = find(index);
 
-  if (!item->function())
-    return;
+    if (!item->function())
+	return;
 
-  switch (item->function()) {
-  case 1: // click to focus
-    configmenu->screen->saveSloppyFocus(False);
-    configmenu->screen->saveAutoRaise(False);
+    switch (item->function()) {
+    case 1: // click to focus
+	configmenu->screen->saveSloppyFocus(False);
+	configmenu->screen->saveAutoRaise(False);
 
-    if (! configmenu->screen->getBlackbox()->getFocusedWindow())
-      XSetInputFocus(configmenu->screen->getBlackbox()->getXDisplay(),
-		     configmenu->screen->getToolbar()->getWindowID(),
-		     RevertToParent, CurrentTime);
-    else
-      XSetInputFocus(configmenu->screen->getBlackbox()->getXDisplay(),
-		     configmenu->screen->getBlackbox()->
-		     getFocusedWindow()->getClientWindow(),
-		     RevertToParent, CurrentTime);
+	if (! Blackbox::instance()->getFocusedWindow())
+	    XSetInputFocus( *BaseDisplay::instance(),
+			    configmenu->screen->getToolbar()->getWindowID(),
+			    RevertToParent, CurrentTime);
+	else
+	    XSetInputFocus( *BaseDisplay::instance(),
+			    Blackbox::instance()->getFocusedWindow()->getClientWindow(),
+			    RevertToParent, CurrentTime);
 
-    configmenu->screen->reconfigure();
+	configmenu->screen->reconfigure();
 
-    break;
+	break;
 
-  case 2: // sloppy focus
-    configmenu->screen->saveSloppyFocus(True);
+    case 2: // sloppy focus
+	configmenu->screen->saveSloppyFocus(True);
 
-    configmenu->screen->reconfigure();
+	configmenu->screen->reconfigure();
 
-    break;
+	break;
 
-  case 3: // auto raise with sloppy focus
-    Bool change = ((configmenu->screen->doAutoRaise()) ? False : True);
-    configmenu->screen->saveAutoRaise(change);
+    case 3: // auto raise with sloppy focus
+	Bool change = ((configmenu->screen->doAutoRaise()) ? False : True);
+	configmenu->screen->saveAutoRaise(change);
 
-    break;
-  }
+	break;
+    }
 
-  setItemSelected(0, (! configmenu->screen->isSloppyFocus()));
-  setItemSelected(1, configmenu->screen->isSloppyFocus());
-  setItemEnabled(2, configmenu->screen->isSloppyFocus());
-  setItemSelected(2, configmenu->screen->doAutoRaise());
+    setItemSelected(0, (! configmenu->screen->isSloppyFocus()));
+    setItemSelected(1, configmenu->screen->isSloppyFocus());
+    setItemEnabled(2, configmenu->screen->isSloppyFocus());
+    setItemSelected(2, configmenu->screen->doAutoRaise());
 }
 
 Configmenu::Placementmenu::Placementmenu(Configmenu *cm) :

@@ -56,6 +56,7 @@ class Toolbar;
 #ifdef    SLIT
 class Slit;
 #endif // SLIT
+class BGCCache;
 
 template <class Z>
 class DataSearch {
@@ -115,6 +116,8 @@ private:
   char *rc_file, **argv;
   int argc;
 
+    BGCCache *gccache;
+
 
 protected:
   void load_rc(void);
@@ -130,6 +133,8 @@ public:
   Blackbox(int, char **, char * = 0, char * = 0);
   virtual ~Blackbox(void);
 
+    static Blackbox *instance();
+
 #ifdef    HAVE_GETPID
   inline const Atom &getBlackboxPidAtom(void) const { return blackbox_pid; }
 #endif // HAVE_GETPID
@@ -140,7 +145,7 @@ public:
   BlackboxWindow *searchWindow(Window);
   inline BlackboxWindow *getFocusedWindow(void) { return focused_window; }
 
-  BScreen *getScreen(int);
+  BScreen *screen(int) const;
   BScreen *searchScreen(Window);
 
   inline const Time &getDoubleClickInterval(void) const

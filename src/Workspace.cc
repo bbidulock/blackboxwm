@@ -117,13 +117,13 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
       BlackboxWindow *top = stackingList->first();
       if (! top || ! top->setInputFocus()) {
 	screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
-	XSetInputFocus(screen->getBlackbox()->getXDisplay(),
+	XSetInputFocus(*BaseDisplay::instance(),
 		       screen->getToolbar()->getWindowID(),
 		       RevertToParent, CurrentTime);
       }
     }
   }
-  
+
   if (lastfocus == w)
     lastfocus = (BlackboxWindow *) 0;
 
@@ -243,12 +243,8 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
     win = win->getTransientFor();
   }
 
-  screen->getBlackbox()->grab();
-
-  XLowerWindow(screen->getBaseDisplay()->getXDisplay(), *nstack);
-  XRestackWindows(screen->getBaseDisplay()->getXDisplay(), nstack, i);
-
-  screen->getBlackbox()->ungrab();
+  XLowerWindow(*BaseDisplay::instance(), *nstack);
+  XRestackWindows(*BaseDisplay::instance(), nstack, i);
 
   delete [] nstack;
 }
@@ -309,7 +305,7 @@ void Workspace::setName(char *new_name) {
     sprintf(name, i18n->getMessage(WorkspaceSet, WorkspaceDefaultNameFormat,
 				   "Workspace %d"), id + 1);
   }
-  
+
   clientmenu->setLabel(name);
   clientmenu->update();
 }
@@ -325,46 +321,34 @@ void Workspace::shutdown(void) {
 void Workspace::placeWindow(BlackboxWindow *win) {
   Bool placed = False;
 
+  XRectangle availableArea = screen->availableArea();
+
   const int win_w = win->getWidth() + (screen->getBorderWidth() * 4),
     win_h = win->getHeight() + (screen->getBorderWidth() * 4),
-#ifdef    SLIT
-    slit_x = screen->getSlit()->getX() - screen->getBorderWidth(),
-    slit_y = screen->getSlit()->getY() - screen->getBorderWidth(),
-    slit_w = screen->getSlit()->getWidth() +
-      (screen->getBorderWidth() * 4),
-    slit_h = screen->getSlit()->getHeight() +
-      (screen->getBorderWidth() * 4),
-#endif // SLIT
-    toolbar_x = screen->getToolbar()->getX() - screen->getBorderWidth(),
-    toolbar_y = screen->getToolbar()->getY() - screen->getBorderWidth(),
-    toolbar_w = screen->getToolbar()->getWidth() +
-      (screen->getBorderWidth() * 4),
-    toolbar_h = screen->getToolbar()->getHeight() + 
-      (screen->getBorderWidth() * 4),
-    start_pos = 0,
+    start_pos_x = availableArea.x, start_pos_y = availableArea.y,
     change_y =
       ((screen->getColPlacementDirection() == BScreen::TopBottom) ? 1 : -1),
     change_x =
       ((screen->getRowPlacementDirection() == BScreen::LeftRight) ? 1 : -1),
     delta_x = 8, delta_y = 8;
 
-  int test_x, test_y, place_x = 0, place_y = 0;
+  int place_x = start_pos_x, place_y = start_pos_y;
   LinkedListIterator<BlackboxWindow> it(windowList);
 
   switch (screen->getPlacementPolicy()) {
   case BScreen::RowSmartPlacement: {
-    test_y = (screen->getColPlacementDirection() == BScreen::TopBottom) ?
-      start_pos : screen->getHeight() - win_h - start_pos;
+    place_y = (screen->getColPlacementDirection() == BScreen::TopBottom) ?
+      start_pos_y : availableArea.height - win_h - start_pos_y;
 
     while (!placed &&
 	   ((screen->getColPlacementDirection() == BScreen::BottomTop) ?
-	    test_y > 0 : test_y + win_h < (signed) screen->getHeight())) {
-      test_x = (screen->getRowPlacementDirection() == BScreen::LeftRight) ?
-	start_pos : screen->getWidth() - win_w - start_pos;
+	    place_y > 0 : place_y + win_h < (signed) availableArea.height)) {
+      place_x = (screen->getRowPlacementDirection() == BScreen::LeftRight) ?
+	start_pos_x : availableArea.width - win_w - start_pos_x;
 
       while (!placed &&
 	     ((screen->getRowPlacementDirection() == BScreen::RightLeft) ?
-	      test_x > 0 : test_x + win_w < (signed) screen->getWidth())) {
+	      place_x > 0 : place_x + win_w < (signed) availableArea.width)) {
         placed = True;
 
         it.reset();
@@ -374,59 +358,39 @@ void Workspace::placeWindow(BlackboxWindow *win) {
           int curr_h =
 	    ((curr->isShaded()) ? curr->getTitleHeight() : curr->getHeight()) +
             (screen->getBorderWidth() * 4);
-	  
-          if (curr->getXFrame() < test_x + win_w &&
-              curr->getXFrame() + curr_w > test_x &&
-              curr->getYFrame() < test_y + win_h &&
-              curr->getYFrame() + curr_h > test_y) {
+
+          if (curr->getXFrame() < place_x + win_w &&
+              curr->getXFrame() + curr_w > place_x &&
+              curr->getYFrame() < place_y + win_h &&
+              curr->getYFrame() + curr_h > place_y) {
             placed = False;
 	  }
         }
 
-        if (placed &&
-	    (toolbar_x < test_x + win_w &&
-             toolbar_x + toolbar_w > test_x &&
-             toolbar_y < test_y + win_h &&
-             toolbar_y + toolbar_h > test_y)
-#ifdef    SLIT
-             ||
-            (slit_x < test_x + win_w &&
-             slit_x + slit_w > test_x &&
-             slit_y < test_y + win_h &&
-             slit_y + slit_h > test_y)
-#endif // SLIT
-	    )
-          placed = False;
-
-        if (placed) {
-          place_x = test_x;
-          place_y = test_y;
-
-          break;
-        }
-
-	test_x += (change_x * delta_x);
+        if (! placed)
+	  place_x += (change_x * delta_x);
       }
 
-      test_y += (change_y * delta_y);
+      if (! placed)
+	place_y += (change_y * delta_y);
     }
 
     break;
   }
 
   case BScreen::ColSmartPlacement: {
-    test_x = (screen->getRowPlacementDirection() == BScreen::LeftRight) ?
-      start_pos : screen->getWidth() - win_w - start_pos;
+    place_x = (screen->getRowPlacementDirection() == BScreen::LeftRight) ?
+      start_pos_x : availableArea.width - win_w - start_pos_x;
 
     while (!placed &&
 	   ((screen->getRowPlacementDirection() == BScreen::RightLeft) ?
-	    test_x > 0 : test_x + win_w < (signed) screen->getWidth())) {
-      test_y = (screen->getColPlacementDirection() == BScreen::TopBottom) ?
-	start_pos : screen->getHeight() - win_h - start_pos;
-      
+	    place_x > 0 : place_x + win_w < (signed) availableArea.width)) {
+      place_y = (screen->getColPlacementDirection() == BScreen::TopBottom) ?
+	start_pos_y : availableArea.height - win_h - start_pos_y;
+
       while (!placed &&
 	     ((screen->getColPlacementDirection() == BScreen::BottomTop) ?
-	      test_y > 0 : test_y + win_h < (signed) screen->getHeight())) {
+	      place_y > 0 : place_y + win_h < (signed) availableArea.height)) {
         placed = True;
 
         it.reset();
@@ -437,40 +401,20 @@ void Workspace::placeWindow(BlackboxWindow *win) {
             ((curr->isShaded()) ? curr->getTitleHeight() : curr->getHeight()) +
             (screen->getBorderWidth() * 4);
 
-          if (curr->getXFrame() < test_x + win_w &&
-              curr->getXFrame() + curr_w > test_x &&
-              curr->getYFrame() < test_y + win_h &&
-              curr->getYFrame() + curr_h > test_y) {
+          if (curr->getXFrame() < place_x + win_w &&
+              curr->getXFrame() + curr_w > place_x &&
+              curr->getYFrame() < place_y + win_h &&
+              curr->getYFrame() + curr_h > place_y) {
             placed = False;
 	  }
         }
 
-        if (placed &&
-	    (toolbar_x < test_x + win_w &&
-	     toolbar_x + toolbar_w > test_x &&
-	     toolbar_y < test_y + win_h &&
-	     toolbar_y + toolbar_h > test_y)
-#ifdef    SLIT
-	    ||
-	    (slit_x < test_x + win_w &&
-	     slit_x + slit_w > test_x &&
-	     slit_y < test_y + win_h &&
-	     slit_y + slit_h > test_y)
-#endif // SLIT
-	    )
-	  placed = False;
-
-	if (placed) {
-	  place_x = test_x;
-	  place_y = test_y;
-
-	  break;
-	}
-
-	test_y += (change_y * delta_y);
+	if (! placed)
+	  place_y += (change_y * delta_y);
       }
 
-      test_x += (change_x * delta_x);
+      if (! placed)
+	place_x += (change_x * delta_x);
     }
 
     break;
@@ -478,8 +422,8 @@ void Workspace::placeWindow(BlackboxWindow *win) {
   } // switch
 
   if (! placed) {
-    if (((unsigned) cascade_x > (screen->getWidth() / 2)) ||
-	((unsigned) cascade_y > (screen->getHeight() / 2)))
+    if (((unsigned) cascade_x > (availableArea.width / (unsigned) 2)) ||
+	((unsigned) cascade_y > (availableArea.height / (unsigned) 2)))
       cascade_x = cascade_y = 32;
 
     place_x = cascade_x;
@@ -488,11 +432,11 @@ void Workspace::placeWindow(BlackboxWindow *win) {
     cascade_x += win->getTitleHeight();
     cascade_y += win->getTitleHeight();
   }
-  
-  if (place_x + win_w > (signed) screen->getWidth())
-    place_x = (((signed) screen->getWidth()) - win_w) / 2;
-  if (place_y + win_h > (signed) screen->getHeight())
-    place_y = (((signed) screen->getHeight()) - win_h) / 2;
+
+  if (place_x + win_w > (signed) availableArea.width)
+    place_x = (((signed) availableArea.width) - win_w) / 2;
+  if (place_y + win_h > (signed) availableArea.height)
+    place_y = (((signed) availableArea.height) - win_h) / 2;
 
   win->configure(place_x, place_y, win->getWidth(), win->getHeight());
 }

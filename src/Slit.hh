@@ -6,26 +6,27 @@
 // copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the 
+// and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in 
-// all copies or substantial portions of the Software. 
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
-// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-  
+
 #ifndef   __Slit_hh
 #define   __Slit_hh
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+#include "Screen.hh"
 #include "Basemenu.hh"
 #include "LinkedList.hh"
 
@@ -34,7 +35,7 @@ class Slit;
 class Slitmenu;
 
 class Slitmenu : public Basemenu {
-private: 
+private:
   class Directionmenu : public Basemenu {
   private:
     Slitmenu *slitmenu;
@@ -50,7 +51,7 @@ private:
   private:
     Slitmenu *slitmenu;
 
-  protected: 
+  protected:
     virtual void itemSelected(int, int);
 
   public:
@@ -94,11 +95,11 @@ private:
   };
 
   Bool on_top, hidden, do_auto_hide;
-  Display *display;
 
   Blackbox *blackbox;
   BScreen *screen;
   BTimer *timer;
+  NETStrut strut;
 
   LinkedList<SlitClient> *clientList;
   Slitmenu *slitmenu;
@@ -133,8 +134,8 @@ public:
   inline const int &getY(void) const
   { return ((hidden) ? frame.y_hidden : frame.y); }
 
-  inline const unsigned int &getWidth(void) const { return frame.width; }
-  inline const unsigned int &getHeight(void) const { return frame.height; }
+    unsigned int width(void) const { return frame.width; }
+    unsigned int height(void) const { return frame.height; }
 
   void addClient(Window);
   void removeClient(SlitClient *, Bool = True);

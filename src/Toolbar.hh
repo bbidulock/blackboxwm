@@ -25,6 +25,7 @@
 
 #include <X11/Xlib.h>
 
+#include "Screen.hh"
 #include "Basemenu.hh"
 #include "Timer.hh"
 
@@ -68,7 +69,6 @@ public:
 class Toolbar : public TimeoutHandler {
 private:
   Bool on_top, editing, hidden, do_auto_hide;
-  Display *display;
 
   struct frame {
     unsigned long button_pixel, pbutton_pixel;
@@ -93,6 +93,7 @@ private:
   BScreen *screen;
   BTimer *clock_timer, *hide_timer;
   Toolbarmenu *toolbarmenu;
+  NETStrut strut;
 
   char *new_workspace_name;
   size_t new_name_pos;
@@ -115,8 +116,8 @@ public:
 
   inline const Window &getWindowID(void) const { return frame.window; }
 
-  inline const unsigned int &getWidth(void) const { return frame.width; }
-  inline const unsigned int &getHeight(void) const { return frame.height; }
+    unsigned int width() const { return frame.width; }
+    unsigned int height() const { return frame.height; }
   inline const unsigned int &getExposedHeight(void) const
   { return ((do_auto_hide) ? frame.bevel_w : frame.height); }
   inline const int &getX(void) const

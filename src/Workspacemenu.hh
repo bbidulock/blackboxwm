@@ -34,10 +34,10 @@ private:
   BScreen *screen;
 
 protected:
-  virtual void itemSelected(int, int);
+  virtual void itemSelected( int, int );
 
 public:
-  Workspacemenu(BScreen *);
+  Workspacemenu( BScreen * );
 };
 
 

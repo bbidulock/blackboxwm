@@ -51,7 +51,7 @@ void Iconmenu::itemSelected(int button, int index) {
     return;
 
   if (index >= 0 && index < screen->getIconCount()) {
-    BlackboxWindow *win = screen->getIcon(index);
+    BlackboxWindow *win = screen->icon(index);
 
     if (win) {
       win->deiconify();

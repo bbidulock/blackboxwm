@@ -31,10 +31,9 @@
 
 #include "BaseDisplay.hh"
 #include "Timer.hh"
-#include "Windowmenu.hh"
 
 // forward declaration
-class BlackboxWindow;
+class Windowmenu;
 
 #define MwmHintsFunctions     (1l << 0)
 #define MwmHintsDecorations   (1l << 1)
@@ -68,7 +67,6 @@ private:
   BImageControl *image_ctrl;
   Blackbox *blackbox;
   BScreen *screen;
-  Display *display;
   BTimer *timer;
   BlackboxAttributes blackbox_attrib;
 
@@ -233,6 +231,11 @@ public:
   BlackboxWindow(Blackbox *b, Window w, BScreen *s = (BScreen *) 0);
   virtual ~BlackboxWindow(void);
 
+    void raise();
+    void lower();
+    void killClient();
+
+
   inline Bool isTransient(void) const { return flags.transient; }
   inline Bool isFocused(void) const { return flags.focused; }
   inline Bool isVisible(void) const { return flags.visible; }
@@ -278,7 +281,7 @@ public:
   { return frame.title_h; }
 
   inline void setWindowNumber(int n) { window_number = n; }
-  
+
   Bool validateClient(void);
   Bool setInputFocus(void);
 
@@ -288,6 +291,7 @@ public:
   void close(void);
   void withdraw(void);
   void maximize(unsigned int button);
+  void remaximize(void);
   void shade(void);
   void stick(void);
   void unstick(void);
@@ -306,6 +310,7 @@ public:
   void mapRequestEvent(XMapRequestEvent *);
   void mapNotifyEvent(XMapEvent *);
   void unmapNotifyEvent(XUnmapEvent *);
+  void reparentNotifyEvent(XReparentEvent *);
   void propertyNotifyEvent(Atom);
   void exposeEvent(XExposeEvent *);
   void configureRequestEvent(XConfigureRequestEvent *);

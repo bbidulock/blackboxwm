@@ -52,9 +52,11 @@
 #endif // MAXPATHLEN
 
 
-Rootmenu::Rootmenu(BScreen *scrn) : Basemenu(scrn) {
+Rootmenu::Rootmenu(BScreen *scrn)
+    : Basemenu(scrn)
+{
   screen = scrn;
-  blackbox = screen->getBlackbox();
+  blackbox = Blackbox::instance();
 }
 
 
@@ -73,9 +75,9 @@ void Rootmenu::itemSelected(int button, int index) {
 #ifndef    __EMX__
       char displaystring[MAXPATHLEN];
       sprintf(displaystring, "DISPLAY=%s",
-	      DisplayString(screen->getBaseDisplay()->getXDisplay()));
+	      DisplayString(BaseDisplay::instance()->x11Display()));
       sprintf(displaystring + strlen(displaystring) - 1, "%d",
-	      screen->getScreenNumber());
+	      screen->screen() );
 
       bexec(item->exec(), displaystring);
 #else //   __EMX__

@@ -23,6 +23,127 @@
 #ifndef   __Basemenu_hh
 #define   __Basemenu_hh
 
+#include "Widget.hh"
+
+#include <slist>
+
+
+// new basemenu popup
+
+class Basemenu2 : public Widget
+{
+public:
+    enum Function { Submenu, Custom };
+
+    class Item {
+    public:
+	enum Type { Default, Separator };
+	Item( Type t = Default )
+	    : def( t == Default ), sep( t == Separator ),
+	      active( false ), title( false ), enable( true ), checked( false ),
+	      sub( 0 ), fun( Custom ), idx( -1 ), height( 0 ) { }
+	Item( int f )
+	    : def( false ), sep( false ),
+	      active( false ), title( false ), enable( true ), checked( false ),
+	      sub( 0 ), fun( f ), idx( -1 ), height( 0 ) { }
+	Item( Basemenu2 *s )
+	    : def( false ), sep( false ),
+	      active( false ), title( false ), enable( true ), checked( false ),
+	      sub( s ), fun( Submenu ), idx( -1 ), height( 0 ) { }
+
+	bool isDefault() const { return def; }
+	bool isSeparator() const { return sep; }
+	bool isTitle() const { return title; }
+	bool isActive() const { return active; }
+      	bool isEnabled() const { return enable; }
+	bool isChecked() const { return checked; }
+	const string &label() const { return lbl; }
+	int function() const { return fun; }
+	Basemenu2 *submenu() const { return sub; }
+	int index() const { return idx; }
+
+    private:
+	bool def;
+	bool sep;
+	bool active;
+	bool title;
+	bool enable;
+	bool checked;
+	Basemenu2 *sub;
+	int fun;
+	int idx;
+	int height;
+	string lbl;
+
+	friend class Basemenu2;
+    };
+
+    Basemenu2( int scr );
+    virtual ~Basemenu2();
+
+    int insert( const string &label, const Item &item = Item::Default, int index = -1 );
+    int insertSeparator() { return insert( string(), Item::Separator ); }
+    void change( int index, const string &label, const Item &item = Item::Default );
+    void remove( int index );
+
+    int count() const { return items.size(); }
+
+    void setItemEnabled( int, bool );
+    bool isItemEnabled( int ) const;
+
+    void setItemChecked( int, bool );
+    bool isItemChecked( int ) const;
+
+    void showTitle();
+    void hideTitle();
+
+    virtual void popup( int, int, bool = true );
+    virtual void popup( const Point &, bool = true );
+    virtual void hide();
+
+protected:
+    virtual void setActiveItem( const Rect &, Item & );
+    virtual void showSubmenu( const Rect &, const Item & );
+    virtual void updateSize();
+
+    virtual void buttonPressEvent( XEvent * );
+    virtual void buttonReleaseEvent( XEvent * );
+    virtual void pointerMotionEvent( XEvent * );
+    virtual void enterEvent( XEvent * );
+    virtual void leaveEvent( XEvent * );
+    virtual void exposeEvent( XEvent *);
+    virtual void mapEvent( XEvent * );
+    virtual void unmapEvent( XEvent * );
+    virtual void configureEvent( XEvent * );
+
+    virtual void titleClicked( const Point &, int );
+    virtual void itemClicked( const Point &, const Item &, int );
+
+private:
+    void drawTitle();
+    void drawItem( const Rect &, const Item & );
+    void hideAll();
+
+    Pixmap title_pixmap, items_pixmap, highlight_pixmap;
+    Rect title_rect;
+    Rect items_rect;
+    slist<Item> items;
+    Basemenu2 *parent_menu, *current_submenu;
+    int motion;
+    int rows, cols;
+    int itemw;
+    int indent;
+    bool show_title;
+    bool size_dirty;
+    bool pressed;
+    bool title_pressed;
+};
+
+
+
+
+// old basemenu
+
 #include <X11/Xlib.h>
 
 class Blackbox;
@@ -43,7 +164,6 @@ private:
 
   Bool moving, visible, movable, torn, internal_menu, title_vis, shifted,
     hide_tree;
-  Display *display;
   int which_sub, which_press, which_sbl, alignment;
 
   struct _menu {
@@ -77,12 +197,10 @@ public:
   Basemenu(BScreen *);
   virtual ~Basemenu(void);
 
+    Window getWindowID() const { return menu.window; }
+
   inline const Bool &isTorn(void) const { return torn; }
   inline const Bool &isVisible(void) const { return visible; }
-
-  inline BScreen *getScreen(void) { return screen; }
-
-  inline const Window &getWindowID(void) const { return menu.window; }
 
   inline const char *getLabel(void) const { return menu.label; }
 
@@ -96,10 +214,9 @@ public:
   inline int getCount(void) { return menuitems->count(); }
   inline const int &getCurrentSubmenu(void) const { return which_sub; }
 
-  inline const unsigned int &getWidth(void) const { return menu.width; }
-  inline const unsigned int &getHeight(void) const { return menu.height; }
-  inline const unsigned int &getTitleHeight(void) const
-  { return menu.title_h; }
+  unsigned int width(void) const { return menu.width; }
+  unsigned int height(void) const { return menu.height; }
+  unsigned int getTitleHeight(void) const { return menu.title_h; }
 
   inline void setInternalMenu(void) { internal_menu = True; }
   inline void setAlignment(int a) { alignment = a; }
@@ -117,6 +234,7 @@ public:
   void enterNotifyEvent(XCrossingEvent *);
   void leaveNotifyEvent(XCrossingEvent *);
   void exposeEvent(XExposeEvent *);
+
   void reconfigure(void);
   void setLabel(const char *n);
   void move(int, int);

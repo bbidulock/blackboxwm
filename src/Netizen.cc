@@ -33,84 +33,81 @@
 #include "Netizen.hh"
 #include "Screen.hh"
 
-Netizen::Netizen(BScreen *scr, Window win) {
-  screen = scr;
-  basedisplay = screen->getBaseDisplay();
-  window = win;
-
-  event.type = ClientMessage;
-  event.xclient.message_type = basedisplay->getBlackboxStructureMessagesAtom();
-  event.xclient.display = basedisplay->getXDisplay();
-  event.xclient.window = window;
-  event.xclient.format = 32;
-  event.xclient.data.l[0] = basedisplay->getBlackboxNotifyStartupAtom();
-  event.xclient.data.l[1] = event.xclient.data.l[2] =
+Netizen::Netizen(BScreen *scr, Window win)
+    : display( BaseDisplay::instance() ), screen( scr ), window( win )
+{
+    event.type = ClientMessage;
+    event.xclient.message_type = display->getBlackboxStructureMessagesAtom();
+    event.xclient.display = *display;
+    event.xclient.window = window;
+    event.xclient.format = 32;
+    event.xclient.data.l[0] = display->getBlackboxNotifyStartupAtom();
+    event.xclient.data.l[1] = event.xclient.data.l[2] =
     event.xclient.data.l[3] = event.xclient.data.l[4] = 0l;
 
-  XSendEvent(basedisplay->getXDisplay(), window, False, NoEventMask, &event);
+    XSendEvent(*display, window, False, NoEventMask, &event);
 }
 
 
 void Netizen::sendWorkspaceCount(void) {
-  event.xclient.data.l[0] = basedisplay->getBlackboxNotifyWorkspaceCountAtom();
+  event.xclient.data.l[0] = display->getBlackboxNotifyWorkspaceCountAtom();
   event.xclient.data.l[1] = screen->getCount();
 
-  XSendEvent(basedisplay->getXDisplay(), window, False, NoEventMask, &event);
+  XSendEvent(*display, window, False, NoEventMask, &event);
 }
 
 
 void Netizen::sendCurrentWorkspace(void) {
-  event.xclient.data.l[0] = basedisplay->getBlackboxNotifyCurrentWorkspaceAtom();
+  event.xclient.data.l[0] = display->getBlackboxNotifyCurrentWorkspaceAtom();
   event.xclient.data.l[1] = screen->getCurrentWorkspaceID();
 
-  XSendEvent(basedisplay->getXDisplay(), window, False, NoEventMask, &event);
+  XSendEvent(*display, window, False, NoEventMask, &event);
 }
 
 
 void Netizen::sendWindowFocus(Window w) {
-  event.xclient.data.l[0] = basedisplay->getBlackboxNotifyWindowFocusAtom();
+  event.xclient.data.l[0] = display->getBlackboxNotifyWindowFocusAtom();
   event.xclient.data.l[1] = w;
 
-  XSendEvent(basedisplay->getXDisplay(), window, False, NoEventMask, &event);
+  XSendEvent(*display, window, False, NoEventMask, &event);
 }
 
 
 void Netizen::sendWindowAdd(Window w, unsigned long p) {
-  event.xclient.data.l[0] = basedisplay->getBlackboxNotifyWindowAddAtom();
+  event.xclient.data.l[0] = display->getBlackboxNotifyWindowAddAtom();
   event.xclient.data.l[1] = w;
   event.xclient.data.l[2] = p;
 
-  XSendEvent(basedisplay->getXDisplay(), window, False, NoEventMask, &event);
+  XSendEvent(*display, window, False, NoEventMask, &event);
 
   event.xclient.data.l[2] = 0l;
 }
 
 
 void Netizen::sendWindowDel(Window w) {
-  event.xclient.data.l[0] = basedisplay->getBlackboxNotifyWindowDelAtom();
+  event.xclient.data.l[0] = display->getBlackboxNotifyWindowDelAtom();
   event.xclient.data.l[1] = w;
 
-  XSendEvent(basedisplay->getXDisplay(), window, False, NoEventMask, &event);
+  XSendEvent(*display, window, False, NoEventMask, &event);
 }
 
 
 void Netizen::sendWindowRaise(Window w) {
-  event.xclient.data.l[0] = basedisplay->getBlackboxNotifyWindowRaiseAtom();
+  event.xclient.data.l[0] = display->getBlackboxNotifyWindowRaiseAtom();
   event.xclient.data.l[1] = w;
 
-  XSendEvent(basedisplay->getXDisplay(), window, False, NoEventMask, &event);
+  XSendEvent(*display, window, False, NoEventMask, &event);
 }
 
 
 void Netizen::sendWindowLower(Window w) {
-  event.xclient.data.l[0] = basedisplay->getBlackboxNotifyWindowLowerAtom();
+  event.xclient.data.l[0] = display->getBlackboxNotifyWindowLowerAtom();
   event.xclient.data.l[1] = w;
 
-  XSendEvent(basedisplay->getXDisplay(), window, False, NoEventMask, &event);
+  XSendEvent(*display, window, False, NoEventMask, &event);
 }
 
 
 void Netizen::sendConfigNotify(XEvent *e) {
-  XSendEvent(basedisplay->getXDisplay(), window, False,
-             StructureNotifyMask, e);
+  XSendEvent(*display, window, False, StructureNotifyMask, e);
 }

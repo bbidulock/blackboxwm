@@ -38,7 +38,9 @@
 #include "Workspace.hh"
 
 
-Workspacemenu::Workspacemenu(BScreen *scrn) : Basemenu(scrn) {
+Workspacemenu::Workspacemenu(BScreen *scrn)
+    : Basemenu(scrn)
+{
   screen = scrn;
 
   setInternalMenu();
