@@ -51,10 +51,14 @@ namespace bt {
 
   class Image : public NoCopy {
   public:
-    static unsigned int colorsPerChannel(void)
-    { return global_colorsPerChannel; }
-    static void setColorsPerChannel(unsigned int newval)
-    { global_colorsPerChannel = newval > 2 ? newval < 6 ? newval : 6 : 2; }
+    static inline unsigned int maximumColors(void)
+    { return global_maximumColors; }
+    static inline void setMaximumColors(unsigned int newval)
+    { global_maximumColors = (newval > 8u
+                              ? (newval <= 256u
+                                 ? newval
+                                 : 256u)
+                              : 8u); }
 
     static DitherMode ditherMode(void)
     { return global_ditherMode; }
@@ -92,7 +96,7 @@ namespace bt {
     void cdgradient(const Color &from, const Color &to, bool interlaced);
     void pcgradient(const Color &from, const Color &to, bool interlaced);
 
-    static unsigned int global_colorsPerChannel;
+    static unsigned int global_maximumColors;
     static DitherMode global_ditherMode;
   };
 

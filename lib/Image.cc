@@ -48,7 +48,7 @@
 // #define MITSHM_DEBUG
 
 
-unsigned int bt::Image::global_colorsPerChannel = 6;
+unsigned int bt::Image::global_maximumColors = 126; // 6/7/3
 bt::DitherMode bt::Image::global_ditherMode = bt::OrderedDither;
 
 
@@ -57,8 +57,13 @@ namespace bt {
   class XColorTable {
   public:
     XColorTable(const Display &dpy, unsigned int screen,
-                unsigned int colors_per_channel);
+                unsigned int ncolors);
     ~XColorTable(void);
+
+    inline bt::DitherMode ditherMode(void) const
+    { return ((_nred < 256u || _ngreen < 256u || _nblue < 256u)
+              ? bt::Image::ditherMode()
+              : bt::NoDither); }
 
     void map(unsigned int &red,
              unsigned int &green,
@@ -71,13 +76,12 @@ namespace bt {
     const Display &_dpy;
     unsigned int _screen;
     int _vclass;
-    unsigned int _cpc, _cpcsq;
+    unsigned int _nred, _ngreen, _nblue;
     int red_offset, green_offset, blue_offset;
-    unsigned int red_bits, green_bits, blue_bits;
 
-    unsigned char _red[256];
-    unsigned char _green[256];
-    unsigned char _blue[256];
+    unsigned short _red[256];
+    unsigned short _green[256];
+    unsigned short _blue[256];
     std::vector<XColor> colors;
   };
 
@@ -226,57 +230,88 @@ namespace bt {
 
 
 bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
-                             unsigned int colors_per_channel)
+                             unsigned int ncolors)
   : _dpy(dpy), _screen(screen),
-    _cpc(colors_per_channel), _cpcsq(_cpc * _cpc) {
+    _nred(0u), _ngreen(0u), _nblue(0u),
+    red_offset(0u), green_offset(0u), blue_offset(0u)
+{
   const ScreenInfo &screeninfo = _dpy.screenInfo(_screen);
-  _vclass = screeninfo.visual()->c_class;
+  Visual *visual = screeninfo.visual();
   unsigned int depth = screeninfo.depth();
+  double red_bits = 0., green_bits = 0., blue_bits = 0.;
 
-  red_offset = green_offset = blue_offset = 0;
-  red_bits = green_bits = blue_bits = 0;
+  _vclass = screeninfo.visual()->c_class;
 
   switch (_vclass) {
-  case StaticGray: {
-    red_bits = green_bits = blue_bits =
-               255u / (DisplayCells(_dpy.XDisplay(), screen) - 1);
+  case StaticGray:
+    _nred = _ngreen = _nblue = DisplayCells(_dpy.XDisplay(), screen);
+    red_bits = green_bits = blue_bits = 255. / (_nred - 1);
     break;
-  }
+
+  case StaticColor:
+    // use all (and assume) 256 colors: 8 red, 8 green, 4 blue
+    _nred   = 8u;
+    _ngreen = 8u;
+    _nblue  = 4u;
+    colors.resize(256u);
+    red_bits   = 255. / (_nred   - 1u);
+    green_bits = 255. / (_ngreen - 1u);
+    blue_bits  = 255. / (_nblue  - 1u);
+    break;
 
   case GrayScale:
-  case StaticColor:
   case PseudoColor: {
-    unsigned int ncolors = _cpc * _cpc * _cpc;
+    switch (ncolors) {
+    case 216u:
+      _nred   = 6u;
+      _ngreen = 6u;
+      _nblue  = 6u;
+      break;
 
-    if (ncolors > (1u << depth)) {
-      _cpc = (1u << depth) / 3u;
-      ncolors = _cpc * _cpc * _cpc;
-    }
-
-    if (_cpc < 2u || ncolors > (1u << depth)) {
-      // invalid colormap size, reduce
-      _cpc = (1u << depth) / 3u;
-    }
+    default:
+      // calculate 2:2:1 proportions
+      _nred   = 2u;
+      _ngreen = 2u;
+      _nblue  = 2u;
+      for (;;) {
+        if ((_nblue * 2u) < _nred
+            && (_nblue + 1u) * _nred * _ngreen <= ncolors)
+          ++_nblue;
+        else if (_nred < _ngreen
+                 && _nblue * (_nred + 1u) * _ngreen <= ncolors)
+          ++_nred;
+        else if (_nblue * _nred * (_ngreen + 1u) <= ncolors)
+          ++_ngreen;
+        else break;
+      }
+      ncolors = _nred * _ngreen * _nblue;
+      break;
+    } //switch
 
     colors.resize(ncolors);
-    red_bits = green_bits = blue_bits = 255u / (_cpc - 1);
+    red_bits   = 255. / (_nred   - 1u);
+    green_bits = 255. / (_ngreen - 1u);
+    blue_bits  = 255. / (_nblue  - 1u);
     break;
   }
 
   case TrueColor:
   case DirectColor: {
     // compute color tables
-    unsigned long red_mask = screeninfo.visual()->red_mask,
-                green_mask = screeninfo.visual()->green_mask,
-                 blue_mask = screeninfo.visual()->blue_mask;
+    unsigned long red_mask = visual->red_mask,
+                green_mask = visual->green_mask,
+                 blue_mask = visual->blue_mask;
 
-    while (! (  red_mask & 1)) {   red_offset++;   red_mask >>= 1; }
-    while (! (green_mask & 1)) { green_offset++; green_mask >>= 1; }
-    while (! ( blue_mask & 1)) {  blue_offset++;  blue_mask >>= 1; }
+    while (! (  red_mask & 1ul)) {   red_offset++;   red_mask >>= 1ul; }
+    while (! (green_mask & 1ul)) { green_offset++; green_mask >>= 1ul; }
+    while (! ( blue_mask & 1ul)) {  blue_offset++;  blue_mask >>= 1ul; }
 
-    red_bits   = 255u /   red_mask;
-    green_bits = 255u / green_mask;
-    blue_bits  = 255u /  blue_mask;
+    _nred   = static_cast<unsigned int>(  red_mask + 1ul);
+    _ngreen = static_cast<unsigned int>(green_mask + 1ul);
+    _nblue  = static_cast<unsigned int>( blue_mask + 1ul);
+    red_bits   = 255. /   red_mask;
+    green_bits = 255. / green_mask;
+    blue_bits  = 255. /  blue_mask;
 
     break;
   }
@@ -285,23 +320,60 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
   // initialize color tables
   unsigned int i;
   for (i = 0; i < 256u; i++) {
-    _red[i]   = i / red_bits;
-    _green[i] = i / green_bits;
-    _blue[i]  = i / blue_bits;
+    _red[i]   = static_cast<unsigned short>(rint(i / red_bits));
+    _green[i] = static_cast<unsigned short>(rint(i / green_bits));
+    _blue[i]  = static_cast<unsigned short>(rint(i / blue_bits));
   }
 
   if (! colors.empty()) {
-    // query existing colormap
     const Colormap colormap = screeninfo.colormap();
-    XColor icolors[256];
-    unsigned int incolors = (((1u << depth) > 256u) ? 256u : (1u << depth));
-    for (i = 0; i < incolors; i++) icolors[i].pixel = i;
+    bool need_query = false;
 
+    // create color cube
+    unsigned int ii, p, r, g, b;
+    for (r = 0, i = 0; r < _nred; r++) {
+      for (g = 0; g < _ngreen; g++) {
+     	for (b = 0; b < _nblue; b++, i++) {
+     	  colors[i].red   = ((r * 0xff) / (_nred   - 1)) * 0x101;
+     	  colors[i].green = ((g * 0xff) / (_ngreen - 1)) * 0x101;
+     	  colors[i].blue  = ((b * 0xff) / (_nblue  - 1)) * 0x101;
+
+          if ((_vclass & 1)
+              && XAllocColor(_dpy.XDisplay(), colormap, &colors[i])) {
+            colors[i].flags = DoRed|DoGreen|DoBlue;
+          } else {
+            colors[i].flags = 0;
+            need_query = true;
+          }
+
+#ifdef COLORTABLE_DEBUG
+          fprintf(stderr, "%s %3u: %02x/%02x/%02x %.2f/%.2f/%.2f (%lu)\n",
+                  colors[i].flags == 0 ? "req  " : "alloc",
+                  i,
+                  (colors[i].red   >> 8),
+                  (colors[i].green >> 8),
+                  (colors[i].blue  >> 8),
+                  (colors[i].red   >> 8) / red_bits,
+                  (colors[i].green >> 8) / green_bits,
+                  (colors[i].blue  >> 8) / blue_bits,
+                  colors[i].pixel);
+#endif // COLORTABLE_DEBUG
+     	}
+      }
+    }
+
+    if (!need_query)
+      return;
+
+    // query existing colormap
+    unsigned int incolors = (((1u << depth) > 256u) ? 256u : (1u << depth));
+    XColor icolors[256];
+    for (i = 0; i < incolors; i++) icolors[i].pixel = i;
     XQueryColors(_dpy.XDisplay(), colormap, icolors, incolors);
 
 #ifdef COLORTABLE_DEBUG
     for (i = 0; i < incolors; ++i) {
-      fprintf(stderr, "query %3d: %02x/%02x/%02x %d/%d/%d flags %x\n", i,
+      fprintf(stderr, "query %3u: %02x/%02x/%02x %.2f/%.2f/%.2f flags %x\n", i,
               (icolors[i].red   >> 8),
               (icolors[i].green >> 8),
               (icolors[i].blue  >> 8),
@@ -312,31 +384,10 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
     }
 #endif // COLORTABLE_DEBUG
 
-    // create color cube
-    unsigned int ii, p, r, g, b;
-    for (r = 0, i = 0; r < _cpc; r++) {
-      for (g = 0; g < _cpc; g++) {
-     	for (b = 0; b < _cpc; b++, i++) {
-     	  colors[i].red   = (r * 0xffff) / (_cpc - 1);
-     	  colors[i].green = (g * 0xffff) / (_cpc - 1);
-     	  colors[i].blue  = (b * 0xffff) / (_cpc - 1);
-     	  colors[i].flags = DoRed|DoGreen|DoBlue;
-
-#ifdef COLORTABLE_DEBUG
-          fprintf(stderr, "req   %3d: %02x/%02x/%02x %1d/%1d/%1d\n", i,
-                  (colors[i].red   >> 8),
-                  (colors[i].green >> 8),
-                  (colors[i].blue  >> 8),
-                  (colors[i].red   >> 8) / red_bits,
-                  (colors[i].green >> 8) / green_bits,
-                  (colors[i].blue  >> 8) / blue_bits);
-#endif // COLORTABLE_DEBUG
-     	}
-      }
-    }
-
     // for missing colors, find the closest color in the existing colormap
     for (i = 0; i < colors.size(); i++) {
+      if (colors[i].flags != 0) continue;
+
       unsigned long chk = 0xffffffff, pix, close = 0;
 
       p = 2;
@@ -361,7 +412,8 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
                         &colors[i])) {
 
 #ifdef COLORTABLE_DEBUG
-          fprintf(stderr, "close %3d: %02x/%02x/%02x %1d/%1d/%1d (%d)\n", i,
+          fprintf(stderr, "close %3u: %02x/%02x/%02x %.2f/%.2f/%.2f (%lu)\n",
+                  i,
                   (colors[i].red   >> 8),
                   (colors[i].green >> 8),
                   (colors[i].blue  >> 8),
@@ -411,12 +463,13 @@ unsigned long bt::XColorTable::pixel(unsigned int red,
                                      unsigned int blue) {
   switch (_vclass) {
   case StaticGray:
-    return std::max(red, std::max(green, blue));
+    return (red+green+blue)/3u;
+    // return std::max(red, std::max(green, blue));
 
   case GrayScale:
   case StaticColor:
   case PseudoColor:
-    return colors[(red * _cpcsq) + (green * _cpc) + blue].pixel;
+    return colors[(red * _ngreen * _nblue) + (green * _nblue) + blue].pixel;
 
   case TrueColor:
   case DirectColor:
@@ -769,7 +822,7 @@ Pixmap bt::Image::renderPixmap(const Display &display, unsigned int screen) {
 
   if (! colorTableList[screen]) {
     colorTableList[screen] =
-      new XColorTable(display, screen, colorsPerChannel());
+      new XColorTable(display, screen, maximumColors());
   }
 
   XColorTable *colortable = colorTableList[screen];
@@ -801,9 +854,8 @@ Pixmap bt::Image::renderPixmap(const Display &display, unsigned int screen) {
   unsigned int o = image->bits_per_pixel +
                    ((image->byte_order == MSBFirst) ? 1 : 0);
 
-  DitherMode dmode = NoDither;
-  if (screeninfo.depth() < 24 && width > 1 && height > 1)
-    dmode = ditherMode();
+  DitherMode dmode =
+    (width > 1 && height > 1) ? colortable->ditherMode() : NoDither;
 
   // render to XImage
   switch (dmode) {

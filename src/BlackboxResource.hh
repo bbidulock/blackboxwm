@@ -206,7 +206,6 @@ private:
   std::string menu_file, style_file, rc_file;
   Time double_click_interval;
   bt::timeval auto_raise_delay;
-  unsigned long cache_life, cache_max;
 
 public:
   BlackboxResource(const std::string& rc);
@@ -241,10 +240,6 @@ public:
   { return double_click_interval; }
   inline const bt::timeval& autoRaiseDelay(void) const
   { return auto_raise_delay; }
-  inline unsigned long cacheLife(void) const
-  { return cache_life; }
-  inline unsigned long cacheMax(void) const
-  { return cache_max; }
 };
 
 #endif

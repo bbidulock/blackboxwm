@@ -67,7 +67,6 @@ static const unsigned char close_bits[] =
 BlackboxResource::BlackboxResource(const std::string& rc): rc_file(rc) {
   screen_resources = 0;
   auto_raise_delay.tv_sec = auto_raise_delay.tv_usec = 0;
-  cache_life = cache_max = 0;
 
   XrmInitialize(); // TODO: move this off to Resource class
 }
@@ -87,9 +86,11 @@ void BlackboxResource::load(Blackbox& blackbox) {
   menu_file = bt::expandTilde(res.read("session.menuFile",
                                        "Session.MenuFile", DEFAULTMENU));
 
-  bt::Image::setColorsPerChannel(res.read("session.colorsPerChannel",
-                                          "Session.ColorsPerChannel",
-                                          bt::Image::colorsPerChannel()));
+  unsigned int maxcolors = res.read("session.maximumColors",
+                                    "Session.MaximumColors",
+                                    ~0u);
+  if (maxcolors != ~0u)
+    bt::Image::setMaximumColors(maxcolors);
 
   style_file = bt::expandTilde(res.read("session.styleFile",
                                         "Session.StyleFile", DEFAULTSTYLE));
@@ -103,11 +104,6 @@ void BlackboxResource::load(Blackbox& blackbox) {
   auto_raise_delay.tv_sec = auto_raise_delay.tv_usec / 1000;
   auto_raise_delay.tv_usec -= (auto_raise_delay.tv_sec * 1000);
   auto_raise_delay.tv_usec *= 1000;
-
-  cache_life = res.read("session.cacheLife", "Session.CacheLife", 5l);
-  cache_life *= 60000;
-
-  cache_max = res.read("session.cacheMax", "Session.CacheMax", 200l);
 
   bt::DitherMode dither_mode;
   std::string tmp = res.read("session.imageDither", "Session.ImageDither",
@@ -152,16 +148,12 @@ void BlackboxResource::save(Blackbox& blackbox) {
 
   res.write("session.styleFile", styleFilename());
 
-  res.write("session.colorsPerChannel",  bt::Image::colorsPerChannel());
+  res.write("session.maximumColors",  bt::Image::maximumColors());
 
   res.write("session.doubleClickInterval", double_click_interval);
 
   res.write("session.autoRaiseDelay", ((auto_raise_delay.tv_sec * 1000ul) +
                                        (auto_raise_delay.tv_usec / 1000ul)));
-
-  res.write("session.cacheLife", cache_life / 60000);
-
-  res.write("session.cacheMax", cache_max);
 
   const char* tmp;
   switch (bt::Image::ditherMode()) {
