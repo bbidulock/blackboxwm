@@ -847,8 +847,6 @@ static
 void raiseTransients(StackingList::iterator top,
                      StackingList &stackingList,
                      BlackboxWindowList &transients) {
-  if (transients.empty())
-    return;
   // 'top' points to the top of the layer, we need to start from the bottom
   StackingList::iterator begin = stackingList.begin(),
                            end = stackingList.end(),
@@ -881,6 +879,19 @@ void raiseTransients(StackingList::iterator top,
   all transients are also raised (preserving their stacking order).
   If the window is part of a group, the entire group is raised (also
   preserving the stacking order) befor raising the specified window.
+
+  The return value indicates which windows need to be restacked:
+
+  - if raiseWindow() return stackingList.end(), then nothing needs to
+  be restacked.
+
+  - if raiseWindow() returns an iterator for a layer boundary
+  (i.e. *raiseWindow(...) == 0) then all windows in all layers need to
+  be restacked
+
+  - otherwise, the return value points to the bottom most window that
+  needs to be restacked (i.e. the top of the layer down to the return
+  value need to be restacked)
 */
 static
 StackingList::iterator raiseWindow(StackingList &stackingList,
@@ -921,7 +932,8 @@ StackingList::iterator raiseWindow(StackingList &stackingList,
   if (win) {
     // ... with all transients above it
     BlackboxWindowList transients = buildTransientList(win);
-    raiseTransients(top, stackingList, transients);
+    if (!transients.empty())
+      raiseTransients(top, stackingList, transients);
 
     // ... and group transients on top
     if (group && !win->isGroupTransient()) {
@@ -934,7 +946,8 @@ StackingList::iterator raiseWindow(StackingList &stackingList,
           BlackboxWindowList x = buildTransientList(*wit);
           groupTransients.splice(groupTransients.end(), x);
         }
-        raiseTransients(top, stackingList, groupTransients);
+        if (!transients.empty())
+          raiseTransients(top, stackingList, groupTransients);
       }
     }
   }
@@ -1043,16 +1056,12 @@ void lowerGroup(StackingList &stackingList, BWindowGroup *group) {
 }
 
 
-static
-StackingList::iterator lowerTransients(StackingList::iterator it,
-                                       StackingList &stackingList,
-                                       BlackboxWindowList &transients) {
-  if (transients.empty())
-    return stackingList.end();
+static void lowerTransients(StackingList::iterator it,
+                            StackingList &stackingList,
+                            BlackboxWindowList &transients) {
   // 'it' points to the top of the layer
   const StackingList::iterator end = stackingList.end(),
                             bottom = std::find(it, end, (StackEntity *) 0);
-  StackingList::iterator ret = end;
   assert(bottom != end);
   for (; it != bottom; ++it) {
     assert(it != end);
@@ -1068,12 +1077,9 @@ StackingList::iterator lowerTransients(StackingList::iterator it,
     // found a transient in this layer, lower it
     --it;
     StackingList::iterator l = stackingList.lower(tmp);
-    if (ret != end)
-      ret = l;
     // don't bother looking at this window again
     transients.erase(wit);
   }
-  return ret;
 }
 
 
@@ -1082,6 +1088,19 @@ StackingList::iterator lowerTransients(StackingList::iterator it,
   all transients are also lowered (preserving their stacking order).
   If the window is part of a group, the entire group is lowered (also
   preserving the stacking order) befor lowering the specified window.
+
+  The return value indicates which windows need to be restacked:
+
+  - if lowerWindow() return stackingList.end(), then nothing needs to
+  be restacked.
+
+  - if lowerWindow() returns an iterator for a layer boundary
+  (i.e. *lowerWindow(...) == 0) then all windows in all layers need to
+  be restacked
+
+  - otherwise, the return value points to the top-most window that
+  needs to be restacked (i.e. the return value down to the bottom of
+  the layer need to be restacked)
 */
 static
 StackingList::iterator lowerWindow(StackingList &stackingList,
@@ -1091,27 +1110,37 @@ StackingList::iterator lowerWindow(StackingList &stackingList,
 
   StackingList::iterator it, end = stackingList.end();
   if (win) {
-    it = stackingList.layer(entity->layer());
+    it = end;
     group = win->findWindowGroup();
     if (group) {
-      // lower all windows in the group
+      // lower all windows in the group before lowering 'win'
       ::lowerGroup(stackingList, group);
-      it = std::find(stackingList.begin(), end, (StackEntity *) 0);
+      it = std::find(it, end, (StackEntity *) 0);
       assert(it != end);
-    } else {
+    }
+
+    const StackingList::iterator layer = stackingList.layer(win->layer());
+    BlackboxWindow *tmp = win->findNonTransientParent();
+    if (tmp && tmp != win) {
       // lower non-transient parent
-      BlackboxWindow *tmp = win->findNonTransientParent();
-      if (tmp != win) {
-        it = ::lowerWindow(stackingList, tmp);
-      } else {
-        // ... then lower transients of 'win'
-        BlackboxWindowList transients = buildTransientList(win);
-        it = lowerTransients(it, stackingList, transients);
-        // ... finally, lower 'win'
+      (void) ::lowerWindow(stackingList, tmp);
+      if (it == end)
+        it = layer;
+    } else {
+      // lower transients of 'win' and 'win'
+      BlackboxWindowList transients = buildTransientList(win);
+      if (!transients.empty()) {
+        ::lowerTransients(layer, stackingList, transients);
+        (void) stackingList.lower(win);
         if (it == end)
-          it = stackingList.lower(win);
-        else
-          (void) stackingList.lower(win);
+          it = layer;
+      } else {
+        if (it == end) {
+          it = stackingList.lower(entity);
+          assert(it != end);
+        } else {
+          (void) stackingList.lower(entity);
+        }
       }
     }
   } else {
