@@ -1112,7 +1112,6 @@ void bt::Image::hgradient(const Color &from, const Color &to,
   dgx /= width;
   dbx /= width;
 
-  // second line
   if (interlaced && height > 1) {
     // interlacing effect
 
@@ -1159,7 +1158,7 @@ void bt::Image::hgradient(const Color &from, const Color &to,
 
     if (height > 1) {
       // second line
-      memcpy(p, data, width);
+      memcpy(p, data, width * sizeof(RGB));
       p += width;
     }
   }
