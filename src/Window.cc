@@ -2325,13 +2325,36 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
       /* ignore this message */
     } else if (first == netwm->wmStateFullscreen() ||
                second == netwm->wmStateFullscreen()) {
-      client.state.fullscreen = True;
+      if (action == netwm->wmStateAdd() ||
+          (action == netwm->wmStateToggle() &&
+           ! client.state.fullscreen)) {
+        client.state.fullscreen = True;
+        client.state.layer = LAYER_FULLSCREEN;
+      } else if (action == netwm->wmStateToggle() ||
+                 action == netwm->wmStateRemove()) {
+        client.state.fullscreen = False;
+        client.state.layer = LAYER_NORMAL;
+      }
     } else if (first == netwm->wmStateAbove() ||
                second == netwm->wmStateAbove()) {
-      client.state.layer = LAYER_ABOVE;
+      if (action == netwm->wmStateAdd() ||
+          (action == netwm->wmStateToggle() &&
+           client.state.layer != LAYER_ABOVE)) {
+        client.state.layer = LAYER_ABOVE;
+      } else if (action == netwm->wmStateToggle() ||
+                 action == netwm->wmStateRemove()) {
+        client.state.layer = LAYER_NORMAL;
+      }
     } else if (first == netwm->wmStateBelow() ||
                second == netwm->wmStateBelow()) {
-      client.state.layer = LAYER_BELOW;
+      if (action == netwm->wmStateAdd() ||
+          (action == netwm->wmStateToggle() &&
+           client.state.layer != LAYER_BELOW)) {
+        client.state.layer = LAYER_BELOW;
+      } else if (action == netwm->wmStateToggle() ||
+                 action == netwm->wmStateRemove()) {
+        client.state.layer = LAYER_NORMAL;
+      }
     }
 
     if (max_horz != 0 || max_vert != 0) {
