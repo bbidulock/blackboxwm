@@ -142,7 +142,7 @@ void bt::Netwm::setSupported(Window target, Atom atoms[],
                              unsigned int count) const {
   XChangeProperty(display, target, net_supported, XA_ATOM,
                   32, PropModeReplace,
-                  reinterpret_cast<uchar*>(atoms), count);
+                  static_cast<uchar*>(atoms), count);
 }
 
 
@@ -150,7 +150,7 @@ bool bt::Netwm::readSupported(Window target, AtomList& atoms) const {
   unsigned char* data = NULL;
   unsigned long nitems;
   if (getListProperty(target, XA_ATOM, net_supported, &data, &nitems)) {
-    Atom* values = reinterpret_cast<Atom*>(data);
+    Atom* values = static_cast<Atom*>(data);
 
     atoms.reserve(nitems);
     atoms.assign(values, values + nitems);
@@ -165,7 +165,7 @@ bool bt::Netwm::readSupported(Window target, AtomList& atoms) const {
 void bt::Netwm::setClientList(Window target, WindowList& windows) const {
   XChangeProperty(display, target, net_client_list, XA_WINDOW,
                   32, PropModeReplace,
-                  reinterpret_cast<uchar*>(&windows[0]), windows.size());
+                  static_cast<uchar*>(&windows[0]), windows.size());
 }
 
 
@@ -173,7 +173,7 @@ bool bt::Netwm::readClientList(Window target, WindowList& windows) const {
   unsigned char* data = NULL;
   unsigned long nitems;
   if (getListProperty(target, XA_WINDOW, net_client_list, &data, &nitems)) {
-    Window* values = reinterpret_cast<Window*>(data);
+    Window* values = static_cast<Window*>(data);
 
     windows.reserve(nitems);
     windows.assign(values, values + nitems);
@@ -189,7 +189,7 @@ void bt::Netwm::setClientListStacking(Window target,
                                       WindowList& windows) const {
   XChangeProperty(display, target, net_client_list_stacking, XA_WINDOW,
                   32, PropModeReplace,
-                  reinterpret_cast<uchar*>(&windows[0]), windows.size());
+                  static_cast<uchar*>(&windows[0]), windows.size());
 }
 
 
@@ -199,7 +199,7 @@ bool bt::Netwm::readClientListStacking(Window target,
   unsigned long nitems;
   if (getListProperty(target, XA_WINDOW, net_client_list_stacking,
                       &data, &nitems)) {
-    Window* values = reinterpret_cast<Window*>(data);
+    Window* values = static_cast<Window*>(data);
 
     windows.reserve(nitems);
     windows.assign(values, values + nitems);
@@ -214,7 +214,7 @@ bool bt::Netwm::readClientListStacking(Window target,
 void bt::Netwm::setNumberOfDesktops(Window target, unsigned int number) const {
   XChangeProperty(display, target, net_number_of_desktops, XA_CARDINAL,
                   32, PropModeReplace,
-                  reinterpret_cast<uchar*>(&number), 1);
+                  static_cast<uchar*>(&number), 1);
 }
 
 
@@ -222,7 +222,7 @@ bool bt::Netwm::readNumberOfDesktops(Window target,
                                      unsigned int* number) const {
   unsigned char* data = NULL;
   if (getProperty(target, XA_CARDINAL, net_number_of_desktops, &data)) {
-    *number = * (reinterpret_cast<unsigned int*>(data));
+    *number = * (static_cast<unsigned int*>(data));
 
     XFree(data);
     return True;
@@ -237,7 +237,7 @@ void bt::Netwm::setDesktopGeometry(Window target,
   unsigned int geometry[] = {width, height};
   XChangeProperty(display, target, net_desktop_geometry, XA_CARDINAL,
                   32, PropModeReplace,
-                  reinterpret_cast<uchar*>(geometry), 2);
+                  static_cast<uchar*>(geometry), 2);
 }
 
 
@@ -248,7 +248,7 @@ bool bt::Netwm::readDesktopGeometry(Window target,
   unsigned long nitems;
   if (getListProperty(target, XA_CARDINAL, net_desktop_geometry,
                       &data, &nitems) && nitems == 2) {
-    unsigned int* values = reinterpret_cast<unsigned int*>(data);
+    unsigned int* values = static_cast<unsigned int*>(data);
 
     *width = values[0];
     *height = values[1];
@@ -265,21 +265,21 @@ void bt::Netwm::setWorkarea(Window target, unsigned long workareas[],
                             unsigned int count) const {
   XChangeProperty(display, target, net_workarea,
                   XA_CARDINAL, 32, PropModeReplace,
-                  reinterpret_cast<uchar*>(workareas), count * 4);
+                  static_cast<uchar*>(workareas), count * 4);
 }
 
 
 void bt::Netwm::setCurrentDesktop(Window target, unsigned int number) const {
   XChangeProperty(display, target, net_current_desktop, XA_CARDINAL,
                   32, PropModeReplace,
-                  reinterpret_cast<uchar*>(&number), 1);
+                  static_cast<uchar*>(&number), 1);
 }
 
 
 bool bt::Netwm::readCurrentDesktop(Window target, unsigned int* number) const {
   unsigned char* data = NULL;
   if (getProperty(target, XA_CARDINAL, net_current_desktop, &data)) {
-    *number = * (reinterpret_cast<unsigned int*>(data));
+    *number = * (static_cast<unsigned int*>(data));
 
     XFree(data);
     return True;
@@ -292,7 +292,7 @@ void bt::Netwm::setDesktopNames(Window target,
                                 const std::string& names) const {
   XChangeProperty(display, target, net_desktop_names,
                   utf8_string, 8, PropModeReplace,
-                  reinterpret_cast<uchar*>(const_cast<char*>(names.c_str())),
+                  static_cast<uchar*>(const_cast<char*>(names.c_str())),
                   names.length());
 }
 
@@ -319,21 +319,21 @@ bool bt::Netwm::readDesktopNames(Window target, UTF8StringList& names) const {
 void bt::Netwm::setActiveWindow(Window target, Window data) const {
   XChangeProperty(display, target, net_active_window, XA_WINDOW,
                   32, PropModeReplace,
-                  reinterpret_cast<uchar*>(&data), 1);
+                  static_cast<uchar*>(&data), 1);
 }
 
 
 void bt::Netwm::setSupportingWMCheck(Window target, Window data) const {
   XChangeProperty(display, target, net_supporting_wm_check, XA_WINDOW,
                   32, PropModeReplace,
-                  reinterpret_cast<uchar*>(&data), 1);
+                  static_cast<uchar*>(&data), 1);
 }
 
 
 bool bt::Netwm::readSupportingWMCheck(Window target, Window* window) const {
   unsigned char* data = NULL;
   if (getProperty(target, XA_WINDOW, net_supporting_wm_check, &data)) {
-    *window = * (reinterpret_cast<Window*>(data));
+    *window = * (static_cast<Window*>(data));
 
     XFree(data);
     return True;
@@ -347,7 +347,7 @@ bool bt::Netwm::readSupportingWMCheck(Window target, Window* window) const {
 void bt::Netwm::setWMName(Window target, const std::string &name) const {
   XChangeProperty(display, target, net_wm_name, utf8_string,
                   8, PropModeReplace,
-                  reinterpret_cast<uchar*>(const_cast<char*>(name.c_str())),
+                  static_cast<uchar*>(const_cast<char*>(name.c_str())),
                   name.length());
 }
 
@@ -357,7 +357,7 @@ bool bt::Netwm::readWMName(Window target, std::string& name) const {
   unsigned long nitems;
   if (getListProperty(target, utf8_string, net_wm_name,
                       &data, &nitems) && nitems > 0) {
-    name = reinterpret_cast<char*>(data);
+    name = static_cast<char*>(data);
     XFree(data);
   }
 
@@ -369,7 +369,7 @@ void bt::Netwm::setWMVisibleName(Window target,
                                  const std::string &name) const {
   XChangeProperty(display, target, net_wm_visible_name, utf8_string,
                   8, PropModeReplace,
-                  reinterpret_cast<uchar*>(const_cast<char*>(name.c_str())),
+                  static_cast<uchar*>(const_cast<char*>(name.c_str())),
                   name.length());
 }
 
@@ -379,7 +379,7 @@ bool bt::Netwm::readWMIconName(Window target, std::string& name) const {
   unsigned long nitems;
   if (getListProperty(target, utf8_string, net_wm_icon_name,
                       &data, &nitems) && nitems > 0) {
-    name = reinterpret_cast<char*>(data);
+    name = static_cast<char*>(data);
     XFree(data);
   }
 
@@ -391,7 +391,7 @@ void bt::Netwm::setWMVisibleIconName(Window target,
                                      const std::string &name) const {
   XChangeProperty(display, target, net_wm_visible_icon_name, utf8_string,
                   8, PropModeReplace,
-                  reinterpret_cast<uchar*>(const_cast<char*>(name.c_str())),
+                  static_cast<uchar*>(const_cast<char*>(name.c_str())),
                   name.length());
 }
 
@@ -399,14 +399,14 @@ void bt::Netwm::setWMVisibleIconName(Window target,
 void bt::Netwm::setWMDesktop(Window target, unsigned int desktop) const {
   XChangeProperty(display, target, net_wm_desktop, XA_CARDINAL,
                   32, PropModeReplace,
-                  reinterpret_cast<uchar*>(&desktop), 1);
+                  static_cast<uchar*>(&desktop), 1);
 }
 
 
 bool bt::Netwm::readWMDesktop(Window target, unsigned int& desktop) const {
   unsigned char* data = NULL;
   if (getProperty(target, XA_CARDINAL, net_wm_desktop, &data)) {
-    desktop = * (reinterpret_cast<int*>(data));
+    desktop = * (static_cast<int*>(data));
 
     XFree(data);
     return True;
@@ -419,7 +419,7 @@ bool bt::Netwm::readWMWindowType(Window target, AtomList& types) const {
   unsigned char* data = NULL;
   unsigned long nitems;
   if (getListProperty(target, XA_ATOM, net_wm_window_type, &data, &nitems)) {
-    Atom* values = reinterpret_cast<Atom*>(data);
+    Atom* values = static_cast<Atom*>(data);
 
     types.reserve(nitems);
     types.assign(values, values + nitems);
@@ -434,7 +434,7 @@ bool bt::Netwm::readWMWindowType(Window target, AtomList& types) const {
 void bt::Netwm::setWMState(Window target, AtomList& atoms) const {
   XChangeProperty(display, target, net_wm_state, XA_ATOM,
                   32, PropModeReplace,
-                  reinterpret_cast<uchar*>(&(atoms[0])), atoms.size());
+                  static_cast<uchar*>(&(atoms[0])), atoms.size());
 }
 
 
@@ -442,7 +442,7 @@ bool bt::Netwm::readWMState(Window target, AtomList& states) const {
   unsigned char* data = NULL;
   unsigned long nitems;
   if (getListProperty(target, XA_ATOM, net_wm_state, &data, &nitems)) {
-    Atom* values = reinterpret_cast<Atom*>(data);
+    Atom* values = static_cast<Atom*>(data);
 
     states.reserve(nitems);
     states.assign(values, values + nitems);
@@ -457,7 +457,7 @@ bool bt::Netwm::readWMState(Window target, AtomList& states) const {
 void bt::Netwm::setWMAllowedActions(Window target, AtomList& atoms) const {
   XChangeProperty(display, target, net_wm_allowed_actions, XA_ATOM,
                   32, PropModeReplace,
-                  reinterpret_cast<uchar*>(&(atoms[0])), atoms.size());
+                  static_cast<uchar*>(&(atoms[0])), atoms.size());
 }
 
 
@@ -474,7 +474,7 @@ bool bt::Netwm::readWMStrut(Window target, Strut* strut) const {
   if (ret != Success || nitems < 4)
     return False;
 
-  unsigned int* const values = reinterpret_cast<unsigned int*>(data);
+  unsigned int* const values = static_cast<unsigned int*>(data);
   strut->left   = values[0];
   strut->right  = values[1];
   strut->top    = values[2];
