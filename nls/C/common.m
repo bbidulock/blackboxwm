@@ -26,7 +26,7 @@ $ #PlacementBottomLeft
 $ #PlacementTopCenter
 # Top Center
 $ #PlacementBottomCenter
-# BottomCenter
+# Bottom Center
 $ #PlacementTopRight
 # Top Right
 $ #PlacementCenterRight
