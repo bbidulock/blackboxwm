@@ -2022,7 +2022,7 @@ void BlackboxWindow::restoreAttributes(void) {
     }
 
     // sanity check the new decor
-    if (! (functions & Func_Resize))
+    if (! (functions & Func_Resize) || isTransient())
       decorations &= ~(Decor_Maximize | Decor_Handle);
     if (! (functions & Func_Maximize))
       decorations &= ~Decor_Maximize;
@@ -3061,11 +3061,12 @@ void BlackboxWindow::changeBlackboxHints(const BlackboxHints *net) {
     }
 
     // sanity check the new decor
-    if (! (functions & Func_Resize))
+    if (! (functions & Func_Resize) || isTransient())
       decorations &= ~(Decor_Maximize | Decor_Handle);
     if (! (functions & Func_Maximize))
       decorations &= ~Decor_Maximize;
-
+    if (! (functions & Func_Iconify))
+      decorations &= ~Decor_Iconify;
     if (decorations & Decor_Titlebar) {
       if (functions & Func_Close)   // close button is controlled by function
         decorations |= Decor_Close; // not decor type
