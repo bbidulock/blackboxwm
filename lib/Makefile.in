@@ -87,7 +87,6 @@ INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 MAINT = @MAINT@
 NLS = @NLS@
 OBJEXT = @OBJEXT@
-ORDEREDPSEUDO = @ORDEREDPSEUDO@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 SHAPE = @SHAPE@
@@ -99,7 +98,7 @@ gencat_cmd = @gencat_cmd@
 install_sh = @install_sh@
 regex_cmd = @regex_cmd@
 
-CPPFLAGS = @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ @DEBUG@ @NLS@ \
+CPPFLAGS = @CPPFLAGS@ @SHAPE@ @DEBUG@ @NLS@ \
 			  -DLOCALEPATH=\"$(pkgdatadir)/nls\"
 
 noinst_LIBRARIES = libbt.a
@@ -108,10 +107,10 @@ libbt_a_SOURCES = Application.cc				\
 			  Display.cc					\
 			  Font.cc					\
 			  Image.cc					\
-			  ImageControl.cc				\
 			  Menu.cc					\
 			  Netwm.cc					\
 			  Pen.cc					\
+			  PixmapCache.cc				\
 			  Resource.cc					\
 			  Texture.cc					\
 			  Timer.cc					\
@@ -129,10 +128,10 @@ LIBRARIES = $(noinst_LIBRARIES)
 libbt_a_AR = $(AR) cru
 libbt_a_LIBADD =
 am_libbt_a_OBJECTS = Application.$(OBJEXT) Color.$(OBJEXT) \
-	Display.$(OBJEXT) Font.$(OBJEXT) Image.$(OBJEXT) \
-	ImageControl.$(OBJEXT) Menu.$(OBJEXT) Netwm.$(OBJEXT) \
-	Pen.$(OBJEXT) Resource.$(OBJEXT) Texture.$(OBJEXT) \
-	Timer.$(OBJEXT) Util.$(OBJEXT) i18n.$(OBJEXT)
+	Display.$(OBJEXT) Font.$(OBJEXT) Image.$(OBJEXT) Menu.$(OBJEXT) \
+	Netwm.$(OBJEXT) Pen.$(OBJEXT) PixmapCache.$(OBJEXT) \
+	Resource.$(OBJEXT) Texture.$(OBJEXT) Timer.$(OBJEXT) \
+	Util.$(OBJEXT) i18n.$(OBJEXT)
 libbt_a_OBJECTS = $(am_libbt_a_OBJECTS)
 
 DEFS = @DEFS@
@@ -142,9 +141,9 @@ LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 @AMDEP_TRUE@DEP_FILES = $(DEPDIR)/Application.Po $(DEPDIR)/Color.Po \
 @AMDEP_TRUE@	$(DEPDIR)/Display.Po $(DEPDIR)/Font.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Image.Po $(DEPDIR)/ImageControl.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Menu.Po $(DEPDIR)/Netwm.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Pen.Po $(DEPDIR)/Resource.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Image.Po $(DEPDIR)/Menu.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Netwm.Po $(DEPDIR)/Pen.Po \
+@AMDEP_TRUE@	$(DEPDIR)/PixmapCache.Po $(DEPDIR)/Resource.Po \
 @AMDEP_TRUE@	$(DEPDIR)/Texture.Po $(DEPDIR)/Timer.Po \
 @AMDEP_TRUE@	$(DEPDIR)/Util.Po $(DEPDIR)/i18n.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
@@ -189,10 +188,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Display.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Font.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Image.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/ImageControl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Netwm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Pen.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/PixmapCache.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Resource.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Texture.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Timer.Po@am__quote@

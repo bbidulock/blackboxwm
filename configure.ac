@@ -125,22 +125,6 @@ AC_SUBST([SHAPE])
 
 LIBS="$LIBS $Xext_lib"
 
-dnl Check for ordered 8bpp dithering
-ORDEREDPSEUDO=""
-AC_MSG_CHECKING([whether to include Pseudocolor ordered dithering code])
-AC_ARG_ENABLE([ordered-pseudo],
-              AC_HELP_STRING([--enable-ordered-pseudo],
-	                     [include code for ordered pseudocolor (8bpp) dithering @<:@default=no@:>@]),
-              [
-  if test x$enableval = "xyes"; then
-    AC_MSG_RESULT([yes])
-    ORDEREDPSEUDO="-DORDEREDPSEUDO" 
-  else
-    AC_MSG_RESULT([no]) 
-  fi          ],
-              [AC_MSG_RESULT([no])])
-AC_SUBST([ORDEREDPSEUDO])
-
 dnl Check whether to include debugging code
 DEBUG=""
 AC_MSG_CHECKING([whether to include verbose debugging code])

@@ -87,7 +87,6 @@ INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 MAINT = @MAINT@
 NLS = @NLS@
 OBJEXT = @OBJEXT@
-ORDEREDPSEUDO = @ORDEREDPSEUDO@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 SHAPE = @SHAPE@
@@ -99,7 +98,7 @@ gencat_cmd = @gencat_cmd@
 install_sh = @install_sh@
 regex_cmd = @regex_cmd@
 
-CPPFLAGS = @CPPFLAGS@ @DEBUG@ @NLS@ @ORDEREDPSEUDO@	\
+CPPFLAGS = @CPPFLAGS@ @DEBUG@ @NLS@ \
 			  -I$(top_srcdir)/lib
 
 

@@ -528,7 +528,7 @@ AC_DEFUN([AM_CONFIG_HEADER],
 	 m4_ifndef([_AM_Config_Header_Index], m4_define([_AM_Config_Header_Index], [0]))
 	 dnl prepare to store our destination file list for use in config.status
 	 AC_FOREACH([_AM_File], [$1],
-		    [m4_pushdef([_AM_Dest], patsubst(_AM_File, [:.*]))
+		    [m4_pushdef([_AM_Dest], m4_patsubst(_AM_File, [:.*]))
 		    m4_define([_AM_Config_Header_Index], m4_incr(_AM_Config_Header_Index))
 		    dnl and add it to the list of files AC keeps track of, along
 		    dnl with our hook
@@ -569,12 +569,12 @@ done])
 # -----------------
 # Like AS_DIRNAME, only do it during macro expansion
 AC_DEFUN([_AM_DIRNAME],
-       [m4_if(regexp([$1], [^.*[^/]//*[^/][^/]*/*$]), -1,
-	      m4_if(regexp([$1], [^//\([^/]\|$\)]), -1,
-		    m4_if(regexp([$1], [^/.*]), -1,
+       [m4_if(m4_regexp([$1], [^.*[^/]//*[^/][^/]*/*$]), -1,
+	      m4_if(m4_regexp([$1], [^//\([^/]\|$\)]), -1,
+		    m4_if(m4_regexp([$1], [^/.*]), -1,
 			  [.],
-			  patsubst([$1], [^\(/\).*], [\1])),
-		    patsubst([$1], [^\(//\)\([^/].*\|$\)], [\1])),
-	      patsubst([$1], [^\(.*[^/]\)//*[^/][^/]*/*$], [\1]))[]dnl
+			  m4_patsubst([$1], [^\(/\).*], [\1])),
+		    m4_patsubst([$1], [^\(//\)\([^/].*\|$\)], [\1])),
+	      m4_patsubst([$1], [^\(.*[^/]\)//*[^/][^/]*/*$], [\1]))[]dnl
 ]) # _AM_DIRNAME
 
