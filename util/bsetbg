@@ -61,7 +61,7 @@ xsetbg_default_cmd="$xsetbg_center_cmd"
 
 ##################################
 
-me=${0##*/}
+me=`basename $0`
 version=2.1
 copyright="(c) 2000-$(date +%Y) by Timothy M. King (http://lordzork.com/)"
 config=$HOME/.bsetbgrc
