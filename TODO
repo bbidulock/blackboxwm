@@ -6,7 +6,7 @@ CVS Bugs:
 * [nop] in menu segfaults (shaleh)
 * use bbkeys to open a window and then close it via bbkeys.  If it is the only
   window left open, blackbox will spin in a screen->unmanageWindow loop and
-  then die.  Tons of X BadWindow messages will appear as well.
+  then die.  Tons of X BadWindow messages will appear as well. (nyz)
 * windows that set WM_DELETE_WINDOW protocol after creation do not get a close button
 
 Stuff TODO or On The Way(tm):
