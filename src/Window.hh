@@ -262,8 +262,8 @@ private:
   void redrawCloseButton(bool pressed);
   void redrawIconifyButton(bool pressed);
   void redrawMaximizeButton(bool pressed);
-  void restoreGravity(void);
-  void setGravityOffsets(void);
+  void applyGravity(Rect &r);
+  void restoreGravity(Rect &r);
   void setState(unsigned long new_state);
   void upsize(void);
 

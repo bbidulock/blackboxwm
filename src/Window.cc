@@ -197,8 +197,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   bool place_window = True;
   if (blackbox->isStartup() || isTransient() ||
       client.normal_hint_flags & (PPosition|USPosition)) {
-    setGravityOffsets();
-
+    applyGravity(frame.rect);
 
     if (blackbox->isStartup() ||
         client.rect.intersects(screen->availableArea()))
@@ -268,7 +267,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   if (flags.shaded) {
     flags.shaded = False;
     shade();
-    
+
     /*
       Because the iconic'ness of shaded windows is lost, we need to set the
       state to NormalState so that shaded windows on other workspaces will not
@@ -1919,74 +1918,126 @@ void BlackboxWindow::restoreAttributes(void) {
 
 
 /*
- * Positions the frame according the the client window position and window
- * gravity.
+ * Positions the Rect r according the the client window position and
+ * window gravity.
  */
-void BlackboxWindow::setGravityOffsets(void) {
-  // x coordinates for each gravity type
-  const int x_west = client.rect.x();
-  const int x_east = client.rect.right() - frame.inside_w + 1;
-  const int x_center = client.rect.left() +
-    (static_cast<signed>(client.rect.width() - frame.rect.width()) / 2);
-  // y coordinates for each gravity type
-  const int y_north = client.rect.y();
-  const int y_south = client.rect.bottom() - frame.inside_h + 1;
-  const int y_center = client.rect.top() +
-    (static_cast<signed>(client.rect.height() - frame.rect.height()) / 2);
-
+void BlackboxWindow::applyGravity(Rect &r)
+{
+  // apply horizontal window gravity
   switch (client.win_gravity) {
   default:
-  case NorthWestGravity: frame.rect.setPos(x_west,   y_north);  break;
-  case NorthGravity:     frame.rect.setPos(x_center, y_north);  break;
-  case NorthEastGravity: frame.rect.setPos(x_east,   y_north);  break;
-  case SouthWestGravity: frame.rect.setPos(x_west,   y_south);  break;
-  case SouthGravity:     frame.rect.setPos(x_center, y_south);  break;
-  case SouthEastGravity: frame.rect.setPos(x_east,   y_south);  break;
-  case WestGravity:      frame.rect.setPos(x_west,   y_center); break;
-  case CenterGravity:    frame.rect.setPos(x_center, y_center); break;
-  case EastGravity:      frame.rect.setPos(x_east,   y_center); break;
+  case NorthWestGravity:
+  case SouthWestGravity:
+  case WestGravity:
+    r.setX(client.rect.x());
+    break;
+
+  case NorthGravity:
+  case SouthGravity:
+  case CenterGravity:
+    r.setX(client.rect.x() - (frame.margin.left + frame.margin.right) / 2);
+    break;
+
+  case NorthEastGravity:
+  case SouthEastGravity:
+  case EastGravity:
+    r.setX(client.rect.x() - frame.margin.left - frame.margin.right);
+    break;
 
   case ForgetGravity:
   case StaticGravity:
-    frame.rect.setPos(client.rect.x() - frame.margin.left,
-                      client.rect.y() - frame.margin.top);
+    r.setX(client.rect.x() - frame.margin.left);
+    break;
+  }
+
+  // apply vertical window gravity
+  switch (client.win_gravity) {
+  default:
+  case NorthWestGravity:
+  case NorthEastGravity:
+  case NorthGravity:
+    r.setY(client.rect.y());
+    break;
+
+  case CenterGravity:
+  case EastGravity:
+  case WestGravity:
+    r.setY(client.rect.y() - (frame.margin.top + frame.margin.bottom) / 2);
+    break;
+
+  case SouthWestGravity:
+  case SouthEastGravity:
+  case SouthGravity:
+    r.setY(client.rect.y() - frame.margin.top - frame.margin.bottom);
+    break;
+
+  case ForgetGravity:
+  case StaticGravity:
+    r.setY(client.rect.y() - frame.margin.top);
     break;
   }
 }
 
 
 /*
- * The reverse of the setGravityOffsets function. Uses the frame window's
- * position to find the window's reference point.
+ * The reverse of the applyGravity function.
+ *
+ * Positions the Rect r according to the frame window position and
+ * window gravity.
  */
-void BlackboxWindow::restoreGravity(void) {
-  // x coordinates for each gravity type
-  const int x_west = frame.rect.x();
-  const int x_east = frame.rect.x() + frame.inside_w - client.rect.width();
-  const int x_center = frame.rect.x() -
-    ((client.rect.width() - frame.rect.width()) / 2);
-  // y coordinates for each gravity type
-  const int y_north = frame.rect.y();
-  const int y_south = frame.rect.y() + frame.inside_h - client.rect.height();
-  const int y_center = frame.rect.y() -
-    ((client.rect.height() - frame.rect.height()) / 2);
-
-  switch(client.win_gravity) {
+void BlackboxWindow::restoreGravity(Rect &r)
+{
+  // restore horizontal window gravity
+  switch (client.win_gravity) {
   default:
-  case NorthWestGravity: client.rect.setPos(x_west,   y_north);  break;
-  case NorthGravity:     client.rect.setPos(x_center, y_north);  break;
-  case NorthEastGravity: client.rect.setPos(x_east,   y_north);  break;
-  case SouthWestGravity: client.rect.setPos(x_west,   y_south);  break;
-  case SouthGravity:     client.rect.setPos(x_center, y_south);  break;
-  case SouthEastGravity: client.rect.setPos(x_east,   y_south);  break;
-  case WestGravity:      client.rect.setPos(x_west,   y_center); break;
-  case CenterGravity:    client.rect.setPos(x_center, y_center); break;
-  case EastGravity:      client.rect.setPos(x_east,   y_center); break;
+  case NorthWestGravity:
+  case SouthWestGravity:
+  case WestGravity:
+    r.setX(frame.rect.x());
+    break;
+
+  case NorthGravity:
+  case SouthGravity:
+  case CenterGravity:
+    r.setX(frame.rect.x() + (frame.margin.left + frame.margin.right) / 2);
+    break;
+
+  case NorthEastGravity:
+  case SouthEastGravity:
+  case EastGravity:
+    r.setX(frame.rect.x() + frame.margin.left + frame.margin.right);
+    break;
 
   case ForgetGravity:
   case StaticGravity:
-    client.rect.setPos(frame.rect.left() + frame.margin.left,
-                       frame.rect.top() + frame.margin.top);
+    r.setX(frame.rect.x() + frame.margin.left);
+    break;
+  }
+
+  // restore vertical window gravity
+  switch (client.win_gravity) {
+  default:
+  case NorthWestGravity:
+  case NorthEastGravity:
+  case NorthGravity:
+    r.setY(frame.rect.y());
+    break;
+
+  case CenterGravity:
+  case EastGravity:
+  case WestGravity:
+    r.setY(frame.rect.y() + (frame.margin.top + frame.margin.bottom) / 2);
+    break;
+
+  case SouthWestGravity:
+  case SouthEastGravity:
+  case SouthGravity:
+    r.setY(frame.rect.y() + frame.margin.top + frame.margin.bottom);
+    break;
+
+  case ForgetGravity:
+  case StaticGravity:
+    r.setY(frame.rect.y() + frame.margin.top);
     break;
   }
 }
@@ -2316,29 +2367,29 @@ void BlackboxWindow::configureRequestEvent(XConfigureRequestEvent *cr) {
   if (cr->window != client.window || flags.iconic)
     return;
 
-  Rect new_client = client.rect;
-
   if (cr->value_mask & CWBorderWidth)
     client.old_bw = cr->border_width;
 
+  Rect req = client.rect;
   if (cr->value_mask & CWX)
-    new_client.setX(cr->x);
-
+    req.setX(cr->x);
   if (cr->value_mask & CWY)
-    new_client.setY(cr->y);
-
+    req.setY(cr->y);
   if (cr->value_mask & CWWidth)
-    new_client.setWidth(cr->width);
-
+    req.setWidth(cr->width);
   if (cr->value_mask & CWHeight)
-    new_client.setHeight(cr->height);
+    req.setHeight(cr->height);
 
-  if (new_client != client.rect) {
-    client.rect = new_client;
-    upsize();
-    setGravityOffsets();
-    configure(frame.rect.x(), frame.rect.y(),
-              frame.rect.width(), frame.rect.height());
+  if (req != client.rect) {
+    client.rect = req;
+
+    applyGravity(req);
+
+    // apply frame margins
+    req.setWidth(req.width() + frame.margin.left + frame.margin.right);
+    req.setHeight(req.height() + frame.margin.top + frame.margin.bottom);
+
+    configure(req.x(), req.y(), req.width(), req.height());
   }
 
   if (cr->value_mask & CWStackMode) {
@@ -2720,7 +2771,7 @@ void BlackboxWindow::restore(bool remap) {
   XSelectInput(blackbox->getXDisplay(), client.window, NoEventMask);
   XSelectInput(blackbox->getXDisplay(), frame.plate, NoEventMask);
 
-  restoreGravity();
+  restoreGravity(client.rect);
 
   XUnmapWindow(blackbox->getXDisplay(), frame.window);
   XUnmapWindow(blackbox->getXDisplay(), client.window);
@@ -2955,8 +3006,20 @@ void BlackboxWindow::constrain(Corner anchor, int *pw, int *ph) {
   dh -= base_height;
   dh /= client.height_inc;
 
-  if (pw) *pw = dw;
-  if (ph) *ph = dh;
+  if (pw) {
+    if (client.width_inc == 1) {
+      *pw = dw + base_width;
+    } else {
+      *pw = dw;
+    }
+  }
+  if (ph) {
+    if (client.height_inc == 1) {
+      *ph = dh + base_height;
+    } else {
+      *ph = dh;
+    }
+  }
 
   dw *= client.width_inc;
   dw += base_width;
