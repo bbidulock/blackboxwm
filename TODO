@@ -64,6 +64,12 @@ ADD: a regression test suite
        *) toggle decor works
        *) multihead
 
+CHANGE: the dithering menu texts should be more informative to the end user.
+        instead of having the algorithm name in the menu, use text like:
+	- Do not dither images
+	- Use fast dither (Ordered Dither)
+	- Use high-quality dither (Floyd-Steinberg Dither)
+
 Code cleanup:
 -----------------------------
 CHANGE: look into the settings stored in client.decorations and
