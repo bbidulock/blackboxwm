@@ -61,6 +61,6 @@ void Workspacemenu::itemClicked( const Point &, const Item &item, int button )
     else if ( ( screen->getCurrentWorkspace()->getWorkspaceID() !=
 		( item.index() - 2)) && ( ( item.index() - 2) < screen->getCount() ) ) {
 	screen->changeWorkspaceID( item.index() - 2 );
-	hide();
+	hideAll();
     }
 }
