@@ -293,9 +293,9 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     current_state that was set here will be used.
     It is set to Normal if the window is to be mapped or it is set to Iconic
     if the window is to be iconified.
-    *Note* that for sticky windows, the same rules apply here, they are in fact
-    never set to Iconic since there is no way for us to tell if a sticky window
-    was iconified previously.
+    *Note* that for sticky windows, the same rules apply here, they are in
+    fact never set to Iconic since there is no way for us to tell if a sticky
+    window was iconified previously.
   */
 
   setFocusFlag(False);
