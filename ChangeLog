@@ -31,7 +31,7 @@ Changes from 0.62.1 to 0.65.0:
     The new transient code also allows for one window to have multiple
     transients so applications like xmms and web browsers are better behaved.
   - added Taiwan Chinese (zh_TW), Hungarian (hu_HU), Korean (ko_KR),
-    Norwegian (no_NO), Romanian (ro_RO) and Ukrainian (uk_UA) nls files andi
+    Norwegian (no_NO), Romanian (ro_RO) and Ukrainian (uk_UA) nls files and
     updated the most of the others.
   - added French man pages
   - remove slit and netwm as compile time options
