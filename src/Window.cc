@@ -1079,10 +1079,8 @@ void BlackboxWindow::getWMNormalHints(void) {
     client.width_inc = client.height_inc = 1;
   client.base_width = client.base_height = 0;
   client.win_gravity = NorthWestGravity;
-#if 0
   client.min_aspect_x = client.min_aspect_y =
     client.max_aspect_x = client.max_aspect_y = 1;
-#endif
 
   /*
     use the full screen, not the strut modified size. otherwise when the
@@ -1122,14 +1120,12 @@ void BlackboxWindow::getWMNormalHints(void) {
     client.height_inc = sizehint.height_inc;
   }
 
-#if 0 // we do not support this at the moment
   if (sizehint.flags & PAspect) {
     client.min_aspect_x = sizehint.min_aspect.x;
     client.min_aspect_y = sizehint.min_aspect.y;
     client.max_aspect_x = sizehint.max_aspect.x;
     client.max_aspect_y = sizehint.max_aspect.y;
   }
-#endif
 
   if (sizehint.flags & PBaseSize) {
     client.base_width = sizehint.base_width;
@@ -2911,26 +2907,23 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
 
       client.state.resizing = True;
 
-      unsigned int gw, gh;
       frame.grab_x = me->x;
       frame.grab_y = me->y;
       frame.changing = frame.rect;
 
-      constrain((left) ? TopRight : TopLeft, &gw, &gh);
+      constrain((left) ? TopRight : TopLeft);
 
       XDrawRectangle(blackbox->XDisplay(), screen->screenInfo().rootWindow(),
                      screen->getOpGC(), frame.changing.x(),
                      frame.changing.y(), frame.changing.width() - 1,
                      frame.changing.height() - 1);
 
-      screen->showGeometry(gw, gh);
+      showGeometry(frame.changing);
     } else {
       XDrawRectangle(blackbox->XDisplay(), screen->screenInfo().rootWindow(),
                      screen->getOpGC(), frame.changing.x(),
                      frame.changing.y(), frame.changing.width() - 1,
                      frame.changing.height() - 1);
-
-      unsigned int gw, gh;
 
       Corner anchor;
 
@@ -2953,14 +2946,14 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
                                 frame.margin.top + frame.margin.bottom + 1);
       frame.changing.setHeight(nh);
 
-      constrain(anchor, &gw, &gh);
+      constrain(anchor);
 
       XDrawRectangle(blackbox->XDisplay(), screen->screenInfo().rootWindow(),
                      screen->getOpGC(), frame.changing.x(),
                      frame.changing.y(), frame.changing.width() - 1,
                      frame.changing.height() - 1);
 
-      screen->showGeometry(gw, gh);
+      showGeometry(frame.changing);
     }
   }
 }
@@ -3127,22 +3120,42 @@ void BlackboxWindow::upsize(void) {
   frame.rect.setSize(width, height);
 }
 
+/*
+ * show the geometry of the window based on rectangle r.
+ * The logical width and height are used here.  This refers to the user's
+ * perception of the window size (for example an xterm resizes in cells,
+ * not in pixels).  No extra work is needed if there is no difference between
+ * the logical and actual dimensions.
+ */
+void BlackboxWindow::showGeometry(const bt::Rect &r) const {
+  unsigned int w = r.width(), h = r.height();
+
+  // remove the window frame
+  w -= frame.margin.left + frame.margin.right;
+  h -= frame.margin.top + frame.margin.bottom;
+
+  if (client.normal_hint_flags & PResizeInc) {
+    if (client.normal_hint_flags & (PMinSize|PBaseSize)) {
+      w -= (client.base_width) ? client.base_width : client.min_width;
+      h -= (client.base_height) ? client.base_height : client.min_height;
+    }
+
+    w /= client.width_inc;
+    h /= client.height_inc;
+  }
+
+  screen->showGeometry(w, h);
+}
+
 
 /*
  * Calculate the size of the client window and constrain it to the
  * size specified by the size hints of the client window.
  *
- * The logical width and height are placed into pw and ph, if they
- * are non-zero.  Logical size refers to the users perception of
- * the window size (for example an xterm resizes in cells, not in pixels).
- * pw and ph are then used to display the geometry during window moves, resize,
- * etc.
- *
  * The physical geometry is placed into frame.changing_{x,y,width,height}.
  * Physical geometry refers to the geometry of the window in pixels.
  */
-void BlackboxWindow::constrain(Corner anchor,
-                               unsigned int *pw, unsigned int *ph) {
+void BlackboxWindow::constrain(Corner anchor) {
   // frame.changing represents the requested frame size, we need to
   // strip the frame margin off and constrain the client size
   frame.changing.
@@ -3152,12 +3165,13 @@ void BlackboxWindow::constrain(Corner anchor,
               frame.changing.bottom() -
               static_cast<signed>(frame.margin.bottom));
 
-  unsigned int dw = frame.changing.width(), dh = frame.changing.height(),
-    base_width = (client.base_width) ? client.base_width : client.min_width,
-    base_height = (client.base_height) ? client.base_height :
-                                         client.min_height;
+  unsigned int dw = frame.changing.width(), dh = frame.changing.height();
+  const unsigned int base_width = (client.base_width) ? client.base_width :
+                                                        client.min_width,
+                     base_height = (client.base_height) ? client.base_height :
+                                                          client.min_height;
 
-  // constrain
+  // constrain to min and max sizes
   if (dw < client.min_width) dw = client.min_width;
   if (dh < client.min_height) dh = client.min_height;
   if (dw > client.max_width) dw = client.max_width;
@@ -3165,28 +3179,56 @@ void BlackboxWindow::constrain(Corner anchor,
 
   assert(dw >= base_width && dh >= base_height);
 
-  if (client.width_inc > 1) {
-    dw -= base_width;
-    dw /= client.width_inc;
-  }
-  if (client.height_inc > 1) {
-    dh -= base_height;
-    dh /= client.height_inc;
+  // fit to size increments
+  if (client.normal_hint_flags & PResizeInc) {
+    dw = (((dw - base_width) / client.width_inc) * client.width_inc) \
+      + base_width;
+    dh = (((dh - base_height) / client.height_inc) * client.height_inc) \
+      + base_height;
   }
 
-  if (pw)
-      *pw = dw;
-
-  if (ph)
-      *ph = dh;
-
-  if (client.width_inc > 1) {
-    dw *= client.width_inc;
-    dw += base_width;
-  }
-  if (client.height_inc > 1) {
-    dh *= client.height_inc;
-    dh += base_height;
+  /*
+   * honor aspect ratios (based on twm which is based on uwm)
+   *
+   * The math looks like this:
+   *
+   * minAspectX    dwidth     maxAspectX
+   * ---------- <= ------- <= ----------
+   * minAspectY    dheight    maxAspectY
+   *
+   * If that is multiplied out, then the width and height are
+   * invalid in the following situations:
+   *
+   * minAspectX * dheight > minAspectY * dwidth
+   * maxAspectX * dheight < maxAspectY * dwidth
+   * 
+   */
+  if (client.normal_hint_flags & PAspect) {
+    unsigned int delta;
+    const unsigned int min_asp_x = client.min_aspect_x,
+                       min_asp_y = client.min_aspect_y,
+                       max_asp_x = client.max_aspect_x,
+                       max_asp_y = client.max_aspect_y,
+                       w_inc = client.width_inc,
+                       h_inc = client.height_inc;
+    if (min_asp_x * dh > min_asp_y * dw) {
+      delta = ((min_asp_x * dh / min_asp_y - dw) * w_inc) / w_inc;
+      if (dw + delta <= client.max_width) {
+        dw += delta;
+      } else {
+        delta = ((dh - (dw * min_asp_y) / min_asp_x) * h_inc) / h_inc;
+        if (dh - delta >= client.min_height) dh -= delta;
+      }
+    }
+    if (max_asp_x * dh < max_asp_y * dw) {
+      delta = ((max_asp_y * dw / max_asp_x - dh) * h_inc) / h_inc;
+      if (dh + delta <= client.max_height) {
+        dh += delta;
+      } else {
+        delta = ((dw - (dh * max_asp_x) / max_asp_y) * w_inc) / w_inc;
+        if (dw - delta >= client.min_width) dw -= delta;
+      }
+    }
   }
 
   frame.changing.setSize(dw, dh);
