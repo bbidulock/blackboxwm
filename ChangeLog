@@ -11,7 +11,7 @@ Changes from 0.62.1 to 0.65.0:
     Added a reparentNotifyEvent handler in the BlackboxWindow class and a new
     case in the Blackbox class's process_event function.
   - no more blackbox->grab/ungrab calls everywhere
-  - compression of motion, expose, and configure events
+  - compression of motion and expose
   - added a Util.cc file which contains useful functions with no obvious home.
   - Now we have one function which turns ~/ into /home/user/.  This is now
     called everywhere this expansion should be done.  Even added this to the

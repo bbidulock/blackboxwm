@@ -456,7 +456,7 @@ void Blackbox::process_event(XEvent *e) {
     } else if ((win = searchWindow(e->xcrossing.window))) {
       if (win->getScreen()->isSloppyFocus() &&
           (! win->isFocused()) && (! no_focus)) {
-        if (((! sa.leave) || sa.inferior) && win->isVisible()) {
+        if ((! sa.leave || sa.inferior) && win->isVisible()) {
           if (win->setInputFocus())
             win->installColormap(True); // XXX: shouldnt we honour no install?
         }

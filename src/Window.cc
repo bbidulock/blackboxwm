@@ -86,9 +86,9 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   // fetch client size and placement
   XWindowAttributes wattrib;
-  if ((! XGetWindowAttributes(blackbox->getXDisplay(),
-                              client.window, &wattrib)) ||
-      (! wattrib.screen) || wattrib.override_redirect) {
+  if (! XGetWindowAttributes(blackbox->getXDisplay(),
+                             client.window, &wattrib) ||
+      ! wattrib.screen || wattrib.override_redirect) {
 #ifdef    DEBUG
     fprintf(stderr,
             "BlackboxWindow::BlackboxWindow(): XGetWindowAttributes failed\n");
@@ -143,9 +143,11 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
                 Decor_Iconify | Decor_Maximize;
   functions = Func_Resize | Func_Move | Func_Iconify | Func_Maximize;
 
-  client.wm_hint_flags = client.normal_hint_flags = 0;
+  client.normal_hint_flags = 0;
   client.window_group = None;
   client.transient_for = 0;
+
+  current_state = NormalState;
 
   /*
     get the initial size and location of client window (relative to the
@@ -175,12 +177,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
           client.rect.x(), client.rect.y(),
           client.rect.width(), client.rect.height());
 #endif // DEBUG
-
-  if (client.initial_state == WithdrawnState) {
-    screen->getSlit()->addClient(client.window);
-    delete this;
-    return;
-  }
 
   frame.window = createToplevelWindow();
   frame.plate = createChildWindow(frame.window);
@@ -268,23 +264,20 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   // preserve the window's initial state on first map, and its current state
   // across a restart
-  if (! getState()) {
-    if (client.wm_hint_flags & StateHint)
-      current_state = client.initial_state;
-    else
-      current_state = NormalState;
-  }
+  unsigned long initial_state = current_state;
+  if (! getState())
+    current_state = initial_state;
 
   if (flags.shaded) {
     flags.shaded = False;
-    unsigned long orig_state = current_state;
+    initial_state = current_state;
     shade();
 
     /*
       At this point in the life of a window, current_state should only be set
       to IconicState if the window was an *icon*, not if it was shaded.
     */
-    if (orig_state != IconicState)
+    if (initial_state != IconicState)
       current_state = NormalState;
   }
 
@@ -293,9 +286,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     stick();
   }
 
-  if (flags.maximized && (functions & Func_Maximize)) {
+  if (flags.maximized && (functions & Func_Maximize))
     remaximize();
-  }
 
   /*
     When the window is mapped (and also when its attributes are restored), the
@@ -810,7 +802,7 @@ void BlackboxWindow::grabButtons(void) {
 
 
 void BlackboxWindow::ungrabButtons(void) {
-  if ((! screen->isSloppyFocus()) || screen->doClickRaise())
+  if (! screen->isSloppyFocus() || screen->doClickRaise())
     blackbox->ungrabButton(Button1, 0, frame.plate);
 
   blackbox->ungrabButton(Button1, Mod1Mask, frame.window);
@@ -946,7 +938,6 @@ void BlackboxWindow::getWMProtocols(void) {
  */
 void BlackboxWindow::getWMHints(void) {
   focus_mode = F_Passive;
-  client.initial_state = NormalState;
 
   // remove from current window group
   if (client.window_group) {
@@ -972,7 +963,7 @@ void BlackboxWindow::getWMHints(void) {
   }
 
   if (wmhint->flags & StateHint)
-    client.initial_state = wmhint->initial_state;
+    current_state = wmhint->initial_state;
 
   if (wmhint->flags & WindowGroupHint) {
     client.window_group = wmhint->window_group;
@@ -987,7 +978,6 @@ void BlackboxWindow::getWMHints(void) {
       group->addWindow(this);
   }
 
-  client.wm_hint_flags = wmhint->flags;
   XFree(wmhint);
 }
 
@@ -1665,7 +1655,26 @@ void BlackboxWindow::maximize(unsigned int button) {
 
 // re-maximizes the window to take into account availableArea changes
 void BlackboxWindow::remaximize(void) {
-  if (flags.shaded) return; // otherwise we lose the shade bit
+  if (flags.shaded) {
+    // we only update the window's attributes otherwise we lose the shade bit
+    switch(flags.maximized) {
+    case 1:
+      blackbox_attrib.flags |= AttribMaxHoriz | AttribMaxVert;
+      blackbox_attrib.attrib |= AttribMaxHoriz | AttribMaxVert;
+      break;
+
+    case 2:
+      blackbox_attrib.flags |= AttribMaxVert;
+      blackbox_attrib.attrib |= AttribMaxVert;
+      break;
+
+    case 3:
+      blackbox_attrib.flags |= AttribMaxHoriz;
+      blackbox_attrib.attrib |= AttribMaxHoriz;
+      break;
+    }
+    return;
+  }
 
   // save the original dimensions because maximize will wipe them out
   int premax_x = blackbox_attrib.premax_x,

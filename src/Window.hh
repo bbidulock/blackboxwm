@@ -164,7 +164,7 @@ private:
       base_width, base_height,
       win_gravity;
 
-    unsigned long initial_state, normal_hint_flags, wm_hint_flags;
+    unsigned long initial_state, normal_hint_flags;
   } client;
 
   FunctionFlags functions;
