@@ -31,17 +31,20 @@ class BScreen;
 
 #include "Basemenu.hh"
 
+
 class Rootmenu : public Basemenu
 {
 public:
-    Rootmenu(BScreen *);
+  enum Function { Execute, Restart, RestartOther, Exit, SetStyle, Reconfigure };
+
+  Rootmenu(BScreen *);
 
 protected:
-    virtual void itemSelected(int, int);
+  virtual void itemClicked( const Point &, const Item &, int );
 
 private:
-    Blackbox *blackbox;
-    BScreen *screen;
+  Blackbox *blackbox;
+  BScreen *screen;
 };
 
 #endif // __Rootmenu_hh

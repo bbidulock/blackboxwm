@@ -941,403 +941,400 @@ void BScreen::InitMenu(void) {
 
 
 Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
-    char line[1024], label[1024], command[1024];
-
-    while (! feof(file)) {
-	memset(line, 0, 1024);
-	memset(label, 0, 1024);
-	memset(command, 0, 1024);
-
-	if (fgets(line, 1024, file)) {
-	    if (line[0] != '#') {
-		register int i, key = 0, parse = 0, index = -1,
-			line_length = strlen(line),
-		       label_length = 0, command_length = 0;
-
-		// determine the keyword
-		key = 0;
-		for (i = 0; i < line_length; i++) {
-		    if (line[i] == '[') parse = 1;
-		    else if (line[i] == ']') break;
-		    else if (line[i] != ' ')
-			if (parse)
-			    key += tolower(line[i]);
-		}
-
-		// get the label enclosed in ()'s
-		parse = 0;
-
-		for (i = 0; i < line_length; i++) {
-		    if (line[i] == '(') {
-			index = 0;
-			parse = 1;
-		    } else if (line[i] == ')') break;
-		    else if (index++ >= 0) {
-			if (line[i] == '\\' && i < line_length - 1) i++;
-			label[index - 1] = line[i];
-		    }
-		}
-
-		if (parse) {
-		    label[index] = '\0';
-		    label_length = index;
-		} else {
-		    label[0] = '\0';
-		    label_length = 0;
-		}
-
-		// get the command enclosed in {}'s
-		parse = 0;
-		index = -1;
-		for (i = 0; i < line_length; i++) {
-		    if (line[i] == '{') {
-			index = 0;
-			parse = 1;
-		    } else if (line[i] == '}') break;
-		    else if (index++ >= 0) {
-			if (line[i] == '\\' && i < line_length - 1) i++;
-			command[index - 1] = line[i];
-		    }
-		}
-
-		if (parse) {
-		    command[index] = '\0';
-		    command_length = index;
-		} else {
-		    command[0] = '\0';
-		    command_length = 0;
-		}
-
-		switch (key) {
-		case 311: //end
-		    return ((menu->count() == 0) ? True : False);
-
-		    break;
-
-		case 333: // nop
-		    menu->insertSeparator();
-		    break;
-
-		case 421: // exec
-		    if ((! *label) && (! *command)) {
-			fprintf(stderr, i18n->getMessage(ScreenSet, ScreenEXECError,
-							 "BScreen::parseMenuFile: [exec] error, "
-							 "no menu label and/or command defined\n"));
-			continue;
-		    }
-
-		    menu->insert(label);
-		    // menu->insert(label, BScreen::Execute, command);
-
-		    break;
-
-		case 442: // exit
-		    if (! *label) {
-			fprintf(stderr, i18n->getMessage(ScreenSet, ScreenEXITError,
-							 "BScreen::parseMenuFile: [exit] error, "
-							 "no menu label defined\n"));
-			continue;
-		    }
-
-		    menu->insert(label, BScreen::Exit);
-
-		    break;
-
-		case 561: // style
-		    {
-			if ((! *label) || (! *command)) {
-			    fprintf(stderr, i18n->getMessage(ScreenSet, ScreenSTYLEError,
-							     "BScreen::parseMenuFile: [style] error, "
-							     "no menu label and/or filename defined\n"));
-			    continue;
-			}
-
-			char style[MAXPATHLEN];
-
-			// perform shell style ~ home directory expansion
-			char *homedir = 0;
-			int homedir_len = 0;
-			if (*command == '~' && *(command + 1) == '/') {
-			    homedir = getenv("HOME");
-			    homedir_len = strlen(homedir);
-			}
-
-			if (homedir && homedir_len != 0) {
-			    strncpy(style, homedir, homedir_len);
-
-			    strncpy(style + homedir_len, command + 1,
-				    command_length - 1);
-			    *(style + command_length + homedir_len - 1) = '\0';
-			} else {
-			    strncpy(style, command, command_length);
-			    *(style + command_length) = '\0';
-			}
-
-			// menu->insert(label, BScreen::SetStyle, style);
-			menu->insert(label);
-		    }
-
-		    break;
-
-		case 630: // config
-		    if (! *label) {
-			fprintf(stderr, i18n->getMessage(ScreenSet, ScreenCONFIGError,
-							 "BScreen::parseMenufile: [config] error, "
-							 "no label defined"));
-			continue;
-		    }
-
-		    // menu->insert(label, configmenu);
-		    break;
-
-		case 740: // include
-		    {
-			if (! *label) {
-			    fprintf(stderr, i18n->getMessage(ScreenSet, ScreenINCLUDEError,
-							     "BScreen::parseMenuFile: [include] error, "
-							     "no filename defined\n"));
-			    continue;
-			}
-
-			char newfile[MAXPATHLEN];
-
-			// perform shell style ~ home directory expansion
-			char *homedir = 0;
-			int homedir_len = 0;
-			if (*label == '~' && *(label + 1) == '/') {
-			    homedir = getenv("HOME");
-			    homedir_len = strlen(homedir);
-			}
-
-			if (homedir && homedir_len != 0) {
-			    strncpy(newfile, homedir, homedir_len);
-
-			    strncpy(newfile + homedir_len, label + 1,
-				    label_length - 1);
-			    *(newfile + label_length + homedir_len - 1) = '\0';
-			} else {
-			    strncpy(newfile, label, label_length);
-			    *(newfile + label_length) = '\0';
-			}
-
-			if (newfile) {
-			    FILE *submenufile = fopen(newfile, "r");
-
-			    if (submenufile) {
-				struct stat buf;
-				if (fstat(fileno(submenufile), &buf) ||
-				    (! S_ISREG(buf.st_mode))) {
-				    fprintf(stderr,
-					    i18n->getMessage(ScreenSet, ScreenINCLUDEErrorReg,
-							     "BScreen::parseMenuFile: [include] error: "
-							     "'%s' is not a regular file\n"), newfile);
-				    break;
-				}
-
-				if (! feof(submenufile)) {
-				    if (! parseMenuFile(submenufile, menu))
-					blackbox->saveMenuFilename(newfile);
-
-				    fclose(submenufile);
-				}
-			    } else
-				perror(newfile);
-			}
-		    }
-
-		    break;
-
-		case 767: // submenu
-		    {
-			if (! *label) {
-			    fprintf(stderr, i18n->getMessage(ScreenSet, ScreenSUBMENUError,
-							     "BScreen::parseMenuFile: [submenu] error, "
-							     "no menu label defined\n"));
-			    continue;
-			}
-
-			Rootmenu *submenu = new Rootmenu(this);
-
-			if (*command)
-			    submenu->setTitle(command);
-			else
-			    submenu->setTitle(label);
-			submenu->showTitle();
-
-			parseMenuFile(file, submenu);
-			menu->insert(label, submenu);
-			rootmenuList->insert(submenu);
-		    }
-
-		    break;
-
-		case 773: // restart
-		    {
-			if (! *label) {
-			    fprintf(stderr, i18n->getMessage(ScreenSet, ScreenRESTARTError,
-							     "BScreen::parseMenuFile: [restart] error, "
-							     "no menu label defined\n"));
-			    continue;
-			}
-
-			if (*command)
-			    // menu->insert(label, BScreen::RestartOther, command);
-			    menu->insert( label );
-			else
-			    menu->insert(label, BScreen::Restart);
-		    }
-
-		    break;
-
-		case 845: // reconfig
-		    {
-			if (! *label) {
-			    fprintf(stderr, i18n->getMessage(ScreenSet, ScreenRECONFIGError,
-							     "BScreen::parseMenuFile: [reconfig] error, "
-							     "no menu label defined\n"));
-			    continue;
-			}
-
-			menu->insert(label, BScreen::Reconfigure);
-		    }
-
-		    break;
-
-		case 995: // stylesdir
-		case 1113: // stylesmenu
-		    {
-			Bool newmenu = ((key == 1113) ? True : False);
-
-			if ((! *label) || ((! *command) && newmenu)) {
-			    fprintf(stderr,
-				    i18n->getMessage(ScreenSet, ScreenSTYLESDIRError,
-						     "BScreen::parseMenuFile: [stylesdir/stylesmenu]"
-						     " error, no directory defined\n"));
-			    continue;
-			}
-
-			char stylesdir[MAXPATHLEN];
-
-			char *directory = ((newmenu) ? command : label);
-			int directory_length = ((newmenu) ? command_length : label_length);
-
-			// perform shell style ~ home directory expansion
-			char *homedir = 0;
-			int homedir_len = 0;
-
-			if (*directory == '~' && *(directory + 1) == '/') {
-			    homedir = getenv("HOME");
-			    homedir_len = strlen(homedir);
-			}
-
-			if (homedir && homedir_len != 0) {
-			    strncpy(stylesdir, homedir, homedir_len);
-
-			    strncpy(stylesdir + homedir_len, directory + 1,
-				    directory_length - 1);
-			    *(stylesdir + directory_length + homedir_len - 1) = '\0';
-			} else {
-			    strncpy(stylesdir, directory, directory_length);
-			    *(stylesdir + directory_length) = '\0';
-			}
-
-			struct stat statbuf;
-
-			if (! stat(stylesdir, &statbuf)) {
-			    if (S_ISDIR(statbuf.st_mode)) {
-				Rootmenu *stylesmenu;
-
-				if (newmenu)
-				    stylesmenu = new Rootmenu(this);
-				else
-				    stylesmenu = menu;
-
-				DIR *d = opendir(stylesdir);
-				int entries = 0;
-				struct dirent *p;
-
-				// get the total number of directory entries
-				while ((p = readdir(d))) entries++;
-				rewinddir(d);
-
-				char **ls = new char* [entries];
-				int index = 0;
-				while ((p = readdir(d)))
-				    ls[index++] = bstrdup(p->d_name);
-
-				closedir(d);
-
-				std::sort(ls, ls + entries, dcmp());
-
-				int n, slen = strlen(stylesdir);
-				for (n = 0; n < entries; n++) {
-				    if (ls[n][strlen(ls[n])-1] != '~') {
-					int nlen = strlen(ls[n]);
-					char style[MAXPATHLEN + 1];
-
-					strncpy(style, stylesdir, slen);
-					*(style + slen) = '/';
-					strncpy(style + slen + 1, ls[n], nlen + 1);
-
-					if ((! stat(style, &statbuf)) && S_ISREG(statbuf.st_mode))
-					    // stylesmenu->insert(ls[n], BScreen::SetStyle, style);
-					    stylesmenu->insert( ls[n] );
-				    }
-
-				    delete [] ls[n];
-				}
-
-				delete [] ls;
-
-				if (newmenu) {
-				    stylesmenu->setTitle(label);
-				    stylesmenu->showTitle();
-				    menu->insert(label, stylesmenu);
-				    rootmenuList->insert(stylesmenu);
-				}
-
-				blackbox->saveMenuFilename(stylesdir);
-			    } else {
-				fprintf(stderr, i18n->getMessage(ScreenSet,
-								 ScreenSTYLESDIRErrorNotDir,
-								 "BScreen::parseMenuFile:"
-								 " [stylesdir/stylesmenu] error, %s is not a"
-								 " directory\n"), stylesdir);
-			    }
-			} else {
-			    fprintf(stderr,
-				    i18n->getMessage(ScreenSet, ScreenSTYLESDIRErrorNoExist,
-						     "BScreen::parseMenuFile: [stylesdir/stylesmenu]"
-						     " error, %s does not exist\n"), stylesdir);
-			}
-
-			break;
-		    }
-
-		case 1090: // workspaces
-		    {
-			if (! *label) {
-			    fprintf(stderr,
-				    i18n->getMessage(ScreenSet, ScreenWORKSPACESError,
-						     "BScreen:parseMenuFile: [workspaces] error, "
-						     "no menu label defined\n"));
-			    continue;
-			}
-
-			menu->insert(label, workspacemenu);
-
-			break;
-		    }
-		}
-	    }
-	}
+  char line[1024], label[1024], command[1024];
+
+  while (! feof(file)) {
+    memset(line, 0, 1024);
+    memset(label, 0, 1024);
+    memset(command, 0, 1024);
+
+    if (fgets(line, 1024, file)) {
+      if (line[0] != '#') {
+        register int i, key = 0, parse = 0, index = -1,
+                line_length = strlen(line),
+               label_length = 0, command_length = 0;
+
+        // determine the keyword
+        key = 0;
+        for (i = 0; i < line_length; i++) {
+          if (line[i] == '[') parse = 1;
+          else if (line[i] == ']') break;
+          else if (line[i] != ' ')
+            if (parse)
+              key += tolower(line[i]);
+        }
+
+        // get the label enclosed in ()'s
+        parse = 0;
+
+        for (i = 0; i < line_length; i++) {
+          if (line[i] == '(') {
+            index = 0;
+            parse = 1;
+          } else if (line[i] == ')') break;
+          else if (index++ >= 0) {
+            if (line[i] == '\\' && i < line_length - 1) i++;
+            label[index - 1] = line[i];
+          }
+        }
+
+        if (parse) {
+          label[index] = '\0';
+          label_length = index;
+        } else {
+          label[0] = '\0';
+          label_length = 0;
+        }
+
+        // get the command enclosed in {}'s
+        parse = 0;
+        index = -1;
+        for (i = 0; i < line_length; i++) {
+          if (line[i] == '{') {
+            index = 0;
+            parse = 1;
+          } else if (line[i] == '}') break;
+          else if (index++ >= 0) {
+            if (line[i] == '\\' && i < line_length - 1) i++;
+            command[index - 1] = line[i];
+          }
+        }
+
+        if (parse) {
+          command[index] = '\0';
+          command_length = index;
+        } else {
+          command[0] = '\0';
+          command_length = 0;
+        }
+
+        switch (key) {
+        case 311: //end
+          return ((menu->count() == 0) ? True : False);
+
+          break;
+
+        case 333: // nop
+          menu->insertSeparator();
+          break;
+
+        case 421: // exec
+          if ((! *label) && (! *command)) {
+            fprintf(stderr, i18n->getMessage(ScreenSet, ScreenEXECError,
+                                             "BScreen::parseMenuFile: [exec] error, "
+                                             "no menu label and/or command defined\n"));
+            continue;
+          }
+
+          menu->insert(label, Rootmenu::Item( Rootmenu::Execute, command) );
+          break;
+
+        case 442: // exit
+          if (! *label) {
+            fprintf(stderr, i18n->getMessage(ScreenSet, ScreenEXITError,
+                                             "BScreen::parseMenuFile: [exit] error, "
+                                             "no menu label defined\n"));
+            continue;
+          }
+
+          menu->insert(label, Rootmenu::Exit);
+
+          break;
+
+        case 561: // style
+          {
+            if ((! *label) || (! *command)) {
+              fprintf(stderr, i18n->getMessage(ScreenSet, ScreenSTYLEError,
+                                               "BScreen::parseMenuFile: [style] error, "
+                                               "no menu label and/or filename defined\n"));
+              continue;
+            }
+
+            char style[MAXPATHLEN];
+
+            // perform shell style ~ home directory expansion
+            char *homedir = 0;
+            int homedir_len = 0;
+            if (*command == '~' && *(command + 1) == '/') {
+              homedir = getenv("HOME");
+              homedir_len = strlen(homedir);
+            }
+
+            if (homedir && homedir_len != 0) {
+              strncpy(style, homedir, homedir_len);
+
+              strncpy(style + homedir_len, command + 1,
+                      command_length - 1);
+              *(style + command_length + homedir_len - 1) = '\0';
+            } else {
+              strncpy(style, command, command_length);
+              *(style + command_length) = '\0';
+            }
+
+            menu->insert(label, Rootmenu::Item(Rootmenu::SetStyle, style));
+          }
+
+          break;
+
+        case 630: // config
+          if (! *label) {
+            fprintf(stderr, i18n->getMessage(ScreenSet, ScreenCONFIGError,
+                                             "BScreen::parseMenufile: [config] error, "
+                                             "no label defined"));
+            continue;
+          }
+
+          // menu->insert(label, configmenu);
+          break;
+
+        case 740: // include
+          {
+            if (! *label) {
+              fprintf(stderr, i18n->getMessage(ScreenSet, ScreenINCLUDEError,
+                                               "BScreen::parseMenuFile: [include] error, "
+                                               "no filename defined\n"));
+              continue;
+            }
+
+            char newfile[MAXPATHLEN];
+
+            // perform shell style ~ home directory expansion
+            char *homedir = 0;
+            int homedir_len = 0;
+            if (*label == '~' && *(label + 1) == '/') {
+              homedir = getenv("HOME");
+              homedir_len = strlen(homedir);
+            }
+
+            if (homedir && homedir_len != 0) {
+              strncpy(newfile, homedir, homedir_len);
+
+              strncpy(newfile + homedir_len, label + 1,
+                      label_length - 1);
+              *(newfile + label_length + homedir_len - 1) = '\0';
+            } else {
+              strncpy(newfile, label, label_length);
+              *(newfile + label_length) = '\0';
+            }
+
+            if (newfile) {
+              FILE *submenufile = fopen(newfile, "r");
+
+              if (submenufile) {
+                struct stat buf;
+                if (fstat(fileno(submenufile), &buf) ||
+                    (! S_ISREG(buf.st_mode))) {
+                  fprintf(stderr,
+                          i18n->getMessage(ScreenSet, ScreenINCLUDEErrorReg,
+                                           "BScreen::parseMenuFile: [include] error: "
+                                           "'%s' is not a regular file\n"), newfile);
+                  break;
+                }
+
+                if (! feof(submenufile)) {
+                  if (! parseMenuFile(submenufile, menu))
+                    blackbox->saveMenuFilename(newfile);
+
+                  fclose(submenufile);
+                }
+              } else
+                perror(newfile);
+            }
+          }
+
+          break;
+
+        case 767: // submenu
+          {
+            if (! *label) {
+              fprintf(stderr, i18n->getMessage(ScreenSet, ScreenSUBMENUError,
+                                               "BScreen::parseMenuFile: [submenu] error, "
+                                               "no menu label defined\n"));
+              continue;
+            }
+
+            Rootmenu *submenu = new Rootmenu(this);
+
+            if (*command)
+              submenu->setTitle(command);
+            else
+              submenu->setTitle(label);
+            submenu->showTitle();
+
+            parseMenuFile(file, submenu);
+            menu->insert(label, submenu);
+            rootmenuList->insert(submenu);
+          }
+
+          break;
+
+        case 773: // restart
+          {
+            if (! *label) {
+              fprintf(stderr, i18n->getMessage(ScreenSet, ScreenRESTARTError,
+                                               "BScreen::parseMenuFile: [restart] error, "
+                                               "no menu label defined\n"));
+              continue;
+            }
+
+            if (*command)
+              menu->insert(label, Rootmenu::Item(Rootmenu::RestartOther, command));
+            else
+              menu->insert(label, Rootmenu::Restart);
+          }
+
+          break;
+
+        case 845: // reconfig
+          {
+            if (! *label) {
+              fprintf(stderr, i18n->getMessage(ScreenSet, ScreenRECONFIGError,
+                                               "BScreen::parseMenuFile: [reconfig] error, "
+                                               "no menu label defined\n"));
+              continue;
+            }
+
+            menu->insert(label, Rootmenu::Reconfigure);
+          }
+
+          break;
+
+        case 995: // stylesdir
+        case 1113: // stylesmenu
+          {
+            Bool newmenu = ((key == 1113) ? True : False);
+
+            if ((! *label) || ((! *command) && newmenu)) {
+              fprintf(stderr,
+                      i18n->getMessage(ScreenSet, ScreenSTYLESDIRError,
+                                       "BScreen::parseMenuFile: [stylesdir/stylesmenu]"
+                                       " error, no directory defined\n"));
+              continue;
+            }
+
+            char stylesdir[MAXPATHLEN];
+
+            char *directory = ((newmenu) ? command : label);
+            int directory_length = ((newmenu) ? command_length : label_length);
+
+            // perform shell style ~ home directory expansion
+            char *homedir = 0;
+            int homedir_len = 0;
+
+            if (*directory == '~' && *(directory + 1) == '/') {
+              homedir = getenv("HOME");
+              homedir_len = strlen(homedir);
+            }
+
+            if (homedir && homedir_len != 0) {
+              strncpy(stylesdir, homedir, homedir_len);
+
+              strncpy(stylesdir + homedir_len, directory + 1,
+                      directory_length - 1);
+              *(stylesdir + directory_length + homedir_len - 1) = '\0';
+            } else {
+              strncpy(stylesdir, directory, directory_length);
+              *(stylesdir + directory_length) = '\0';
+            }
+
+            struct stat statbuf;
+
+            if (! stat(stylesdir, &statbuf)) {
+              if (S_ISDIR(statbuf.st_mode)) {
+                Rootmenu *stylesmenu;
+
+                if (newmenu)
+                  stylesmenu = new Rootmenu(this);
+                else
+                  stylesmenu = menu;
+
+                DIR *d = opendir(stylesdir);
+                int entries = 0;
+                struct dirent *p;
+
+                // get the total number of directory entries
+                while ((p = readdir(d))) entries++;
+                rewinddir(d);
+
+                char **ls = new char* [entries];
+                int index = 0;
+                while ((p = readdir(d)))
+                  ls[index++] = bstrdup(p->d_name);
+
+                closedir(d);
+
+                std::sort(ls, ls + entries, dcmp());
+
+                int n, slen = strlen(stylesdir);
+                for (n = 0; n < entries; n++) {
+                  if (ls[n][strlen(ls[n])-1] != '~') {
+                    int nlen = strlen(ls[n]);
+                    char style[MAXPATHLEN + 1];
+
+                    strncpy(style, stylesdir, slen);
+                    *(style + slen) = '/';
+                    strncpy(style + slen + 1, ls[n], nlen + 1);
+
+                    if ((! stat(style, &statbuf)) && S_ISREG(statbuf.st_mode))
+                      stylesmenu->insert(ls[n], Rootmenu::Item(Rootmenu::SetStyle,
+                                                               style));
+                  }
+
+                  delete [] ls[n];
+                }
+
+                delete [] ls;
+
+                if (newmenu) {
+                  stylesmenu->setTitle(label);
+                  stylesmenu->showTitle();
+                  menu->insert(label, stylesmenu);
+                  rootmenuList->insert(stylesmenu);
+                }
+
+                blackbox->saveMenuFilename(stylesdir);
+              } else {
+                fprintf(stderr, i18n->getMessage(ScreenSet,
+                                                 ScreenSTYLESDIRErrorNotDir,
+                                                 "BScreen::parseMenuFile:"
+                                                 " [stylesdir/stylesmenu] error, %s is not a"
+                                                 " directory\n"), stylesdir);
+              }
+            } else {
+              fprintf(stderr,
+                      i18n->getMessage(ScreenSet, ScreenSTYLESDIRErrorNoExist,
+                                       "BScreen::parseMenuFile: [stylesdir/stylesmenu]"
+                                       " error, %s does not exist\n"), stylesdir);
+            }
+
+            break;
+          }
+
+        case 1090: // workspaces
+          {
+            if (! *label) {
+              fprintf(stderr,
+                      i18n->getMessage(ScreenSet, ScreenWORKSPACESError,
+                                       "BScreen:parseMenuFile: [workspaces] error, "
+                                       "no menu label defined\n"));
+              continue;
+            }
+
+            menu->insert(label, workspacemenu);
+
+            break;
+          }
+        }
+      }
     }
+  }
 
-    return ((menu->count() == 0) ? True : False);
+  return ((menu->count() == 0) ? True : False);
 }
 
 
-void BScreen::shutdown(void) {
+void BScreen::shutdown(void)
+{
   XGrabServer( *blackbox );
 
   XSelectInput(*blackbox, rootWindow(), NoEventMask);
@@ -1362,95 +1359,97 @@ void BScreen::shutdown(void) {
 
 void BScreen::showPosition(int x, int y)
 {
-    /*
-      if (! geom_visible) {
-      XMoveResizeWindow(*blackbox, geom_window,
-      (width() - geom_w) / 2,
-      (height() - geom_h) / 2, geom_w, geom_h);
-      XMapWindow(*blackbox, geom_window);
-      XRaiseWindow(*blackbox, geom_window);
+  /*
+    if (! geom_visible) {
+    XMoveResizeWindow(*blackbox, geom_window,
+    (width() - geom_w) / 2,
+    (height() - geom_h) / 2, geom_w, geom_h);
+    XMapWindow(*blackbox, geom_window);
+    XRaiseWindow(*blackbox, geom_window);
 
-      geom_visible = True;
-      }
+    geom_visible = True;
+    }
 
-      char label[1024];
+    char label[1024];
 
-      sprintf(label, i18n->getMessage(ScreenSet, ScreenPositionFormat,
-      "X: %4d x Y: %4d"), x, y);
+    sprintf(label, i18n->getMessage(ScreenSet, ScreenPositionFormat,
+    "X: %4d x Y: %4d"), x, y);
 
-      XClearWindow(*blackbox, geom_window);
+    XClearWindow(*blackbox, geom_window);
 
-      BGCCache::Item &gc = BGCCache::instance()->find( resource.wstyle.l_text_focus,
-      resource.wstyle.font );
-      if (i18n->multibyte()) {
-      XmbDrawString(*blackbox, geom_window,
-      resource.wstyle.fontset, gc.gc(),
-      resource.bevel_width, resource.bevel_width -
-      resource.wstyle.fontset_extents->max_ink_extent.y,
-      label, strlen(label));
-      } else {
-      XDrawString(*blackbox, geom_window, gc.gc(),
-      resource.bevel_width,
-      resource.wstyle.font->ascent + resource.bevel_width,
-      label, strlen(label));
-      }
-      BGCCache::instance()->release( gc );
-    */
+    BGCCache::Item &gc = BGCCache::instance()->find( resource.wstyle.l_text_focus,
+    resource.wstyle.font );
+    if (i18n->multibyte()) {
+    XmbDrawString(*blackbox, geom_window,
+    resource.wstyle.fontset, gc.gc(),
+    resource.bevel_width, resource.bevel_width -
+    resource.wstyle.fontset_extents->max_ink_extent.y,
+    label, strlen(label));
+    } else {
+    XDrawString(*blackbox, geom_window, gc.gc(),
+    resource.bevel_width,
+    resource.wstyle.font->ascent + resource.bevel_width,
+    label, strlen(label));
+    }
+    BGCCache::instance()->release( gc );
+  */
 }
 
 
 void BScreen::showGeometry(unsigned int gx, unsigned int gy)
 {
-    /*
-      if (! geom_visible) {
-      XMoveResizeWindow(*blackbox, geom_window,
-      (width() - geom_w) / 2,
-      (height() - geom_h) / 2, geom_w, geom_h);
-      XMapWindow(*blackbox, geom_window);
-      XRaiseWindow(*blackbox, geom_window);
+  /*
+    if (! geom_visible) {
+    XMoveResizeWindow(*blackbox, geom_window,
+    (width() - geom_w) / 2,
+    (height() - geom_h) / 2, geom_w, geom_h);
+    XMapWindow(*blackbox, geom_window);
+    XRaiseWindow(*blackbox, geom_window);
 
-      geom_visible = True;
-      }
+    geom_visible = True;
+    }
 
-      char label[1024];
+    char label[1024];
 
-      sprintf(label, i18n->getMessage(ScreenSet, ScreenGeometryFormat,
-      "W: %4d x H: %4d"), gx, gy);
+    sprintf(label, i18n->getMessage(ScreenSet, ScreenGeometryFormat,
+    "W: %4d x H: %4d"), gx, gy);
 
-      XClearWindow(*blackbox, geom_window);
+    XClearWindow(*blackbox, geom_window);
 
-      BGCCache::Item &gc = BGCCache::instance()->find( resource.wstyle.l_text_focus,
-      resource.wstyle.font );
-      if (i18n->multibyte()) {
-      XmbDrawString(*blackbox, geom_window,
-      resource.wstyle.fontset, gc.gc(),
-      resource.bevel_width, resource.bevel_width -
-      resource.wstyle.fontset_extents->max_ink_extent.y,
-      label, strlen(label));
-      } else {
-      XDrawString(*blackbox, geom_window, gc.gc(),
-      resource.bevel_width, resource.wstyle.font->ascent +
-      resource.bevel_width, label, strlen(label));
-      }
-    */
+    BGCCache::Item &gc = BGCCache::instance()->find( resource.wstyle.l_text_focus,
+    resource.wstyle.font );
+    if (i18n->multibyte()) {
+    XmbDrawString(*blackbox, geom_window,
+    resource.wstyle.fontset, gc.gc(),
+    resource.bevel_width, resource.bevel_width -
+    resource.wstyle.fontset_extents->max_ink_extent.y,
+    label, strlen(label));
+    } else {
+    XDrawString(*blackbox, geom_window, gc.gc(),
+    resource.bevel_width, resource.wstyle.font->ascent +
+    resource.bevel_width, label, strlen(label));
+    }
+  */
 }
 
 
 void BScreen::hideGeometry(void)
 {
-    /*
-      if (geom_visible) {
-      XUnmapWindow(*blackbox, geom_window);
-      geom_visible = False;
-      }
-    */
+  /*
+    if (geom_visible) {
+    XUnmapWindow(*blackbox, geom_window);
+    geom_visible = False;
+    }
+  */
 }
 
-void BScreen::addStrut(NETStrut *strut) {
+void BScreen::addStrut(NETStrut *strut)
+{
   strutList->insert(strut);
 }
 
-const XRectangle& BScreen::availableArea(void) const {
+const XRectangle& BScreen::availableArea(void) const
+{
   if (doFullMax())
     return rect(); // return the full screen
   return usableArea;
@@ -1458,38 +1457,38 @@ const XRectangle& BScreen::availableArea(void) const {
 
 void BScreen::updateAvailableArea(void)
 {
-    int old_x = usableArea.x, old_y = usableArea.y,
-    old_width = usableArea.width, old_height = usableArea.height;
+  int old_x = usableArea.x, old_y = usableArea.y,
+  old_width = usableArea.width, old_height = usableArea.height;
 
-    LinkedListIterator<NETStrut> it(strutList);
+  LinkedListIterator<NETStrut> it(strutList);
 
-    usableArea = rect(); // reset to full screen
-    for(NETStrut *strut = it.current(); strut; ++it, strut = it.current()) {
-	if (strut->left > usableArea.x)
-	    usableArea.x = strut->left;
+  usableArea = rect(); // reset to full screen
+  for(NETStrut *strut = it.current(); strut; ++it, strut = it.current()) {
+    if (strut->left > usableArea.x)
+      usableArea.x = strut->left;
 
-	if (strut->top > usableArea.y)
-	    usableArea.y = strut->top;
+    if (strut->top > usableArea.y)
+      usableArea.y = strut->top;
 
-	if (((usableArea.width + old_x) - strut->right) < usableArea.width)
-	    usableArea.width = width() - strut->right - usableArea.x;
+    if (((usableArea.width + old_x) - strut->right) < usableArea.width)
+      usableArea.width = width() - strut->right - usableArea.x;
 
-	if (((usableArea.height + old_y) - strut->bottom) < usableArea.height)
-	    usableArea.height = height() - strut->bottom - usableArea.y;
-    }
+    if (((usableArea.height + old_y) - strut->bottom) < usableArea.height)
+      usableArea.height = height() - strut->bottom - usableArea.y;
+  }
 
-    // if area changed
-    if (old_x != usableArea.x || old_y != usableArea.y ||
-	old_width != usableArea.width || old_height != usableArea.height) {
-	usableArea.width += old_x - usableArea.x;
-	usableArea.height += old_y - usableArea.y;
-	// TODO: update maximized windows to reflect new screen area
-    }
+  // if area changed
+  if (old_x != usableArea.x || old_y != usableArea.y ||
+      old_width != usableArea.width || old_height != usableArea.height) {
+    usableArea.width += old_x - usableArea.x;
+    usableArea.height += old_y - usableArea.y;
+    // TODO: update maximized windows to reflect new screen area
+  }
 }
 
 int BScreen::getCurrentWorkspaceID() const
 {
-    return current_workspace->getWorkspaceID();
+  return current_workspace->getWorkspaceID();
 }
 
 void BScreen::iconUpdate()

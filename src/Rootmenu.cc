@@ -34,6 +34,9 @@
 #include "Rootmenu.hh"
 #include "Screen.hh"
 
+#include <string>
+using std::string;
+
 #ifdef    HAVE_STDIO_H
 #  include <stdio.h>
 #endif // HAVE_STDIO_H
@@ -60,59 +63,43 @@ Rootmenu::Rootmenu( BScreen *scrn )
 }
 
 
-void Rootmenu::itemSelected(int button, int index)
+void Rootmenu::itemClicked( const Point &, const Basemenu::Item &item, int button )
 {
-    /*
-      if (button != 1)
-      return;
+  if (button != 1)
+    return;
 
-      BasemenuItem *item = find(index);
-
-      if (!item->function())
-      return;
-
-      switch (item->function()) {
-      case BScreen::Execute:
-      if (item->exec()) {
-      #ifndef    __EMX__
+  switch( item.function() ) {
+  case Execute:
+    {
       char displaystring[MAXPATHLEN];
       sprintf(displaystring, "DISPLAY=%s",
-      DisplayString(BaseDisplay::instance()->x11Display()));
+              DisplayString(BaseDisplay::instance()->x11Display()));
       sprintf(displaystring + strlen(displaystring) - 1, "%d",
-      screen->screen() );
-
-      bexec(item->exec(), displaystring);
-      #else //   __EMX__
-      spawnlp(P_NOWAIT, "cmd.exe", "cmd.exe", "/c", item->exec(), NULL);
-      #endif // !__EMX__
-      }
+              screen->screen() );
+      bexec(item.command().c_str(), displaystring);
       break;
+    }
 
-      case BScreen::Restart:
-      blackbox->restart();
-      break;
+  case Restart:
+    blackbox->restart();
+    break;
 
-      case BScreen::RestartOther:
-      if (item->exec())
-      blackbox->restart(item->exec());
-      break;
 
-      case BScreen::Exit:
-      blackbox->shutdown();
-      break;
+  case RestartOther:
+    blackbox->restart(item.command().c_str());
+    break;
 
-      case BScreen::SetStyle:
-      if (item->exec())
-      blackbox->saveStyleFilename(item->exec());
+  case Exit:
+    blackbox->shutdown();
+    break;
 
-      case BScreen::Reconfigure:
-      blackbox->reconfigure();
-      return;
-      }
+  case SetStyle:
+    blackbox->saveStyleFilename(item.command().c_str());
+    // fall through intended
 
-      if (! (screen->getRootmenu()->isTorn() || isTorn()) &&
-      item->function() != BScreen::Reconfigure &&
-      item->function() != BScreen::SetStyle)
-      hide();
-    */
+  case Reconfigure:
+    // ### TODO - reconfigure doesn't work
+    // blackbox->reconfigure();
+    break;
+  }
 }

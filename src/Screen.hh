@@ -135,10 +135,6 @@ public:
     enum { RowSmartPlacement = 1, ColSmartPlacement, CascadePlacement, LeftRight,
 	   RightLeft, TopBottom, BottomTop };
     enum { RoundBullet = 1, TriangleBullet, SquareBullet, NoBullet };
-    enum { Restart = 1, RestartOther, Exit, Shutdown, Execute, Reconfigure,
-	   WindowShade, WindowIconify, WindowMaximize, WindowClose, WindowRaise,
-	   WindowLower, WindowStick, WindowKill, SetStyle };
-
 
 
 
