@@ -588,8 +588,10 @@ BlackboxWindow *BlackboxSession::searchWindow(Window window) {
     ProcessEvent(&foo);
   else {
     BlackboxWindow *win = NULL;
-    for (int i = 0; i < window_search_list->count(); i++) {
-      WindowSearch *tmp = window_search_list->at(i);
+    llist_iterator<WindowSearch> it(window_search_list);
+
+    for (; it.current(); it++) {
+      WindowSearch *tmp = it.current();
       if (tmp->window == window) {
 	win = tmp->data;
 	break;
@@ -610,8 +612,10 @@ BlackboxMenu *BlackboxSession::searchMenu(Window window) {
     ProcessEvent(&foo);
   else {
     BlackboxMenu *menu = NULL;
-    for (int i = 0; i < menu_search_list->count(); i++) {
-      MenuSearch *tmp = menu_search_list->at(i);
+    llist_iterator<MenuSearch> it(menu_search_list);
+
+    for (; it.current(); it++) {
+      MenuSearch *tmp = it.current();
       if (tmp->window == window) {
 	menu = tmp->data;
 	break;
@@ -632,8 +636,10 @@ BlackboxIcon *BlackboxSession::searchIcon(Window window) {
     ProcessEvent(&foo);
   else {
     BlackboxIcon *icon = NULL;
-    for (int i = 0; i < icon_search_list->count(); i++) {
-      IconSearch *tmp = icon_search_list->at(i);
+    llist_iterator<IconSearch> it(icon_search_list);
+
+    for (; it.current(); it++) {
+      IconSearch *tmp = it.current();
       if (tmp->window == window) {
 	icon = tmp->data;
 	break;
@@ -654,8 +660,10 @@ WorkspaceManager *BlackboxSession::searchWSManager(Window window) {
     ProcessEvent(&foo);
   else {
     WorkspaceManager *wsm = NULL;
-    for (int i = 0; i < wsmanager_search_list->count(); i++) {
-      WSManagerSearch *tmp = wsmanager_search_list->at(i);
+    llist_iterator<WSManagerSearch> it(wsmanager_search_list);
+
+    for (; it.current(); it++) {
+      WSManagerSearch *tmp = it.current();
       if (tmp->window == window) {
 	wsm = tmp->data;
 	break;
@@ -703,10 +711,11 @@ void BlackboxSession::saveWSManagerSearch(Window window,
 
 
 void BlackboxSession::removeWindowSearch(Window window) {
-  for (int i = 0; i < window_search_list->count(); i++) {
-    WindowSearch *tmp = window_search_list->at(i);
+  llist_iterator<WindowSearch> it(window_search_list);
+  for (; it.current(); it++) {
+    WindowSearch *tmp = it.current();
     if (tmp->window == window) {
-      window_search_list->remove(i);
+      window_search_list->remove(tmp);
       delete tmp;
       break;
     }
@@ -715,10 +724,11 @@ void BlackboxSession::removeWindowSearch(Window window) {
 
 
 void BlackboxSession::removeMenuSearch(Window window) {
-  for (int i = 0; i < menu_search_list->count(); i++) {
-    MenuSearch *tmp = menu_search_list->at(i);
+  llist_iterator<MenuSearch> it(menu_search_list);
+  for (; it.current(); it++) {
+    MenuSearch *tmp = it.current();
     if (tmp->window == window) {
-      menu_search_list->remove(i);
+      menu_search_list->remove(tmp);
       delete tmp;
       break;
     }
@@ -727,10 +737,11 @@ void BlackboxSession::removeMenuSearch(Window window) {
 
 
 void BlackboxSession::removeIconSearch(Window window) {
-  for (int i = 0; i < icon_search_list->count(); i++) {
-    IconSearch *tmp = icon_search_list->at(i);
+  llist_iterator<IconSearch> it(icon_search_list);
+  for (; it.current(); it++) {
+    IconSearch *tmp = it.current();
     if (tmp->window == window) {
-      icon_search_list->remove(i);
+      icon_search_list->remove(tmp);
       delete tmp;
       break;
     }
@@ -739,10 +750,11 @@ void BlackboxSession::removeIconSearch(Window window) {
 
 
 void BlackboxSession::removeWSManagerSearch(Window window) {
-  for (int i = 0; i < wsmanager_search_list->count(); i++) {
-    WSManagerSearch *tmp = wsmanager_search_list->at(i);
+  llist_iterator<WSManagerSearch> it(wsmanager_search_list);
+  for (; it.current(); it++) {
+    WSManagerSearch *tmp = it.current();
     if (tmp->window == window) {
-      wsmanager_search_list->remove(i);
+      wsmanager_search_list->remove(tmp);
       delete tmp;
       break;
     }

@@ -26,6 +26,37 @@
 
 
 // *************************************************************************
+// Linked list iterator class code
+// *************************************************************************
+//
+// allocations:
+// none
+//
+// *************************************************************************
+
+__llist_iterator::__llist_iterator(__llist *l) {
+  list = l;
+  node = list->first;
+}
+
+__llist_iterator::~__llist_iterator(void) { }
+
+
+void *__llist_iterator::current(void) {
+  return ((node) ? node->data : 0);
+}
+
+void __llist_iterator::reset(void) {
+  node = list->first;
+}
+
+
+void __llist_iterator::operator++(int) {
+  node = ((node) ? node->next : 0);
+}
+
+
+// *************************************************************************
 // Linked list class code
 // *************************************************************************
 //
@@ -118,9 +149,10 @@ const int __llist::remove(void *d) {
 }
 
 
-const int __llist::remove(const int index) {
+void *__llist::remove(const int index) {
   int i;
   __llist_node *prev = (__llist_node *) 0, *rnode = first;
+  void *ret = 0;
 
   for (i = 0; i < index; ++i) {
     prev = rnode;
@@ -133,8 +165,9 @@ const int __llist::remove(const int index) {
   if (rnode == last) last = prev;
 
   --elements;
+  ret = rnode->data;
   delete rnode;
-  return i;
+  return ret;
 }
 
 void __llist::outputlist(void) {
@@ -152,7 +185,7 @@ void __llist::outputlist(void) {
 }
 
 
-void *__llist::at(int index) {
+void *__llist::find(int index) {
   if (index < elements) {
     int i;
     __llist_node *anode = first;

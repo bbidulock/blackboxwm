@@ -58,7 +58,7 @@ int SessionMenu::insert(char *l, SessionMenu *s) {
 
 int SessionMenu::remove(int index) {
   if (index >= 0 && index < count()) {
-    BlackboxMenuItem *itmp = at(index);
+    BlackboxMenuItem *itmp = find(index);
 
     if (itmp->Submenu()) {
       SessionMenu *tmp = (SessionMenu *) itmp->Submenu();
@@ -104,7 +104,7 @@ Window SessionMenu::windowID(void) {
 void SessionMenu::itemPressed(int button, int item) {
   if (button == 1 && hasSubmenu(item)) {
     drawSubmenu(item);
-    XRaiseWindow(session->control(), at(item)->Submenu()->windowID());
+    XRaiseWindow(session->control(), find(item)->Submenu()->windowID());
   }
 }
 
@@ -122,7 +122,7 @@ void SessionMenu::titleReleased(int button) {
 
 void SessionMenu::itemReleased(int button, int index) {
   if (button == 1) {
-    BlackboxMenuItem *item = at(index);
+    BlackboxMenuItem *item = find(index);
     if (item->Function()) {
       switch (item->Function()) {
       case BlackboxSession::B_Reconfigure:

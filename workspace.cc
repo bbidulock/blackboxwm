@@ -105,8 +105,10 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
 
   workspace_menu->remove((const int) w->windowNumber());
   workspace_list->remove((const int) w->windowNumber());
-  for (int i = 0; i < workspace_list->count(); ++i)
-    workspace_list->at(i)->setWindowNumber(i);
+
+  llist_iterator<BlackboxWindow> it(workspace_list);
+  for (int i = 0; it.current(); it++, i++)
+    it.current()->setWindowNumber(i);
 
   workspace_menu->updateMenu();
   return workspace_list->count();
@@ -116,55 +118,56 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
 int Workspace::showAll(void) {
   BlackboxWindow *win;
 
-  int i;
   ws_manager->stackWindows(window_stack, workspace_list->count());
-  for (i = 0; i < workspace_list->count(); ++i) {
-    win = workspace_list->at(i);
+
+  llist_iterator<BlackboxWindow> it(workspace_list);
+  for (; it.current(); it++) {
+    win = it.current();
     if (! win->isIconic())
       win->deiconifyWindow();
   }
   
-  return i;
+  return workspace_list->count();
 }
 
 
 int Workspace::hideAll(void) {
   BlackboxWindow *win;
 
-  int i;
-  for (i = 0; i < workspace_list->count(); ++i) {
-    win = workspace_list->at(i);
+  llist_iterator<BlackboxWindow> it(workspace_list);
+  for (; it.current(); it++) {
+    win = it.current();
     if (! win->isIconic())
       win->withdrawWindow();
   }
 
-  return i;
+  return workspace_list->count();
 } 
 
 
 int Workspace::removeAll(void) {
   BlackboxWindow *win;
 
-  int i;
-  for (i = 0; i < workspace_list->count(); ++i) {
-    win = workspace_list->at(i);
+  llist_iterator<BlackboxWindow> it(workspace_list);
+  for (; it.current(); it++) {
+    win = it.current();
     ws_manager->currentWorkspace()->addWindow(win);
     if (! win->isIconic())
       win->iconifyWindow();
   }
 
-  return i;
+  return workspace_list->count();
 }
 
 
 void Workspace::Dissociate(void) {
-  BlackboxWindow *win;
+  BlackboxWindow *win = 0;
   Display *display = ws_manager->Session()->control();
-  int i;
 
   XGrabServer(display);
-  for (i = 0; i < workspace_list->count(); ++i) {
-    win = workspace_list->at(i);
+  llist_iterator<BlackboxWindow> it(workspace_list);
+  for (; it.current(); it++) {
+    win = it.current();
     XUnmapWindow(display, win->frameWindow());
     XReparentWindow(display, win->clientWindow(),
 		    ws_manager->Session()->Root(), win->XFrame(),
@@ -255,14 +258,15 @@ void Workspace::Reconfigure(void) {
   workspace_menu->Reconfigure();
   workspace_menu->updateMenu();
 
-  for (int i = 0; i < workspace_list->count(); i++)
-    workspace_list->at(i)->Reconfigure();
+  llist_iterator<BlackboxWindow> it(workspace_list);
+  for (; it.current(); it++)
+    it.current()->Reconfigure();
 }
 
 
 BlackboxWindow *Workspace::window(int index) {
   if ((index >= 0) && (index < workspace_list->count()))
-    return workspace_list->at(index);
+    return workspace_list->find(index);
   else
     return 0;
 }
@@ -312,7 +316,7 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
   }
 
   workspaces_menu->updateMenu();
-  current = workspaces_list->at(0);
+  current = workspaces_list->find(0);
 
   /*
     lets do something new with the Workspace Manager and create a kind of tool
@@ -440,9 +444,11 @@ WorkspaceManager::~WorkspaceManager(void) {
   delete workspaces_menu;
   if (frame.title) delete frame.title;
 
-  for (int i = 0; i < workspaces_list->count(); ++i) {
-    delete workspaces_list->at(0);
-    workspaces_list->remove(0);
+  llist_iterator<Workspace> it(workspaces_list);
+  for (; it.current(); it++) {
+    Workspace *tmp = it.current();
+    workspaces_list->remove(tmp);
+    delete tmp;
   }
   delete workspaces_list;
 
@@ -466,13 +472,14 @@ WorkspaceManager::~WorkspaceManager(void) {
 
 
 void WorkspaceManager::DissociateAll(void) {
-  for (int i = 0; i < workspaces_list->count(); ++i)
-    workspaces_list->at(i)->Dissociate();
+  llist_iterator<Workspace> it(workspaces_list);
+  for (; it.current(); it++)
+    it.current()->Dissociate();
 }
 
 
 Workspace *WorkspaceManager::workspace(int w) {
-  return workspaces_list->at(w);
+  return workspaces_list->find(w);
 }
 
 
@@ -494,12 +501,12 @@ void WorkspaceManager::changeWorkspaceID(int id) {
 
 
 void WorkspaceManager::arrangeIcons(void) {
-  int i;
   BlackboxIcon *icon = NULL;
   
   XGrabServer(display);
-  for (i = 0; i < ilist->count(); ++i) {
-    icon = ilist->at(i);
+  llist_iterator<BlackboxIcon> it(ilist);
+  for (int i = 0; it.current(); it++, i++) {
+    icon = it.current();
     icon->move(4, (icon->Height()) * (ilist->count() - (i + 1)) +
 	       (frame.frame_h / 2) + 1);
     XMoveWindow(display, icon->iconWindow(), 1,
@@ -576,8 +583,9 @@ void WorkspaceManager::stackWindows(Window *workspace_stack, int num) {
   *(session_stack + i++) = session->menu()->windowID();
   *(session_stack + i++) = workspaces_menu->windowID();
 
-  for (int j = 0; j < workspaces_list->count(); j++)
-    *(session_stack + i++) = workspaces_list->at(j)->menu()->windowID();
+  llist_iterator<Workspace> it(workspaces_list);
+  for (; it.current(); it++)
+    *(session_stack + i++) = it.current()->menu()->windowID();
     
   int k = num;
   while (k--)

@@ -214,9 +214,7 @@ int BlackboxMenu::insert(char *label, BlackboxMenu *submenu) {
 
 
 int BlackboxMenu::remove(int index) {
-  BlackboxMenuItem *item = menuitems->at(index);
-  menuitems->remove(index);
-
+  BlackboxMenuItem *item = menuitems->remove(index);
   session->removeMenuSearch(item->window);
   XDestroyWindow(display, item->window);
   delete item;
@@ -253,9 +251,6 @@ Window BlackboxMenu::createItemWindow(void) {
 // *************************************************************************
 
 void BlackboxMenu::updateMenu(void) {
-  int i = 0, ii = 0;
-  BlackboxMenuItem *itmp = NULL;
-
   XGrabServer(display);
   XSync(display, False);
   menu.width = ((show_title) ?
@@ -264,8 +259,10 @@ void BlackboxMenu::updateMenu(void) {
                            strlen(((menu.label) ? menu.label :
                                    "Blackbox Menu"))) + 8 : 0);
 
-  for (i = 0; i < menuitems->count(); ++i) {
-    itmp = menuitems->at(i);
+  int ii = 0;
+  llist_iterator<BlackboxMenuItem> it(menuitems);
+  for (; it.current(); it++) {
+    BlackboxMenuItem *itmp = it.current();
     if (itmp->ulabel || itmp->label)
       ii = XTextWidth(session->menuFont(),
 		      ((itmp->ulabel) ? *itmp->ulabel : itmp->label),
@@ -316,8 +313,9 @@ void BlackboxMenu::updateMenu(void) {
 		((menu.label) ? menu.label : "Blackbox Menu"),
 		strlen(((menu.label) ? menu.label : "Blackbox Menu")));
 
-  for (i = 0; i < menuitems->count(); ++i) {
-    itmp = menuitems->at(i);
+  it.reset();
+  for (int i = 0; it.current(); it++, i++) {
+    BlackboxMenuItem *itmp = it.current();
     if (which_sub == i) {
       XSetWindowBackgroundPixmap(display, itmp->window, menu.pushed_pixmap);
       XMoveResizeWindow(display, itmp->window, 0, (i * (menu.item_h - 1)) +
@@ -369,7 +367,7 @@ void BlackboxMenu::hideMenu(void) {
   user_moved = False;
   visible = False;
   if (which_sub != -1) {
-    BlackboxMenuItem *tmp = menuitems->at(which_sub);
+    BlackboxMenuItem *tmp = menuitems->find(which_sub);
     tmp->sub_menu->hideMenu();
     XSetWindowBackgroundPixmap(display, tmp->window, menu.item_pixmap);
     XClearWindow(display, tmp->window);
@@ -392,7 +390,7 @@ void BlackboxMenu::moveMenu(int x, int y) {
 
 void BlackboxMenu::drawSubmenu(int index) {
   if (which_sub != -1 && which_sub != index) {
-    BlackboxMenuItem *tmp = menuitems->at(which_sub);
+    BlackboxMenuItem *tmp = menuitems->find(which_sub);
     tmp->sub_menu->hideMenu();
     XSetWindowBackgroundPixmap(display, tmp->window,
                                menu.item_pixmap);
@@ -408,7 +406,7 @@ void BlackboxMenu::drawSubmenu(int index) {
   }
 
   if (index >= 0 && index < menuitems->count()) {
-    BlackboxMenuItem *item = menuitems->at(index);
+    BlackboxMenuItem *item = menuitems->find(index);
     if (item->sub_menu) {
       int x = menu.x + menu.width + 1,
 	y =  menu.y + ((show_title) ? menu.title_h + 1 : 0) +
@@ -432,7 +430,7 @@ void BlackboxMenu::drawSubmenu(int index) {
 
 Bool BlackboxMenu::hasSubmenu(int index) {
   if ((index >= 0) && (index < menuitems->count()))
-    if (menuitems->at(index)->sub_menu)
+    if (menuitems->find(index)->sub_menu)
       return True;
     else
       return False;
@@ -451,10 +449,9 @@ void BlackboxMenu::buttonPressEvent(XButtonEvent *be) {
 	be->y >= 0 && be->y <= (signed) menu.title_h)
       titlePressed(be->button);
   } else {
-    int i;
-
-    for (i = 0; i < menuitems->count(); ++i) {
-      BlackboxMenuItem *item = menuitems->at(i);
+    llist_iterator<BlackboxMenuItem> it(menuitems);
+    for (int i = 0; it.current(); it++, i++) {
+      BlackboxMenuItem *item = it.current();
       if (item->window == be->window) {
 	if (be->button == 3 && item->sub_menu) {
 	  if (! item->sub_menu->visible) {
@@ -499,10 +496,9 @@ void BlackboxMenu::buttonReleaseEvent(XButtonEvent *re) {
 	re->y >= 0 && re->y <= (signed) menu.title_h)
       titleReleased(re->button);
   } else {
-    int i;
-
-    for (i = 0; i < menuitems->count(); ++i) {
-      BlackboxMenuItem *item = menuitems->at(i);
+    llist_iterator<BlackboxMenuItem> it(menuitems);
+    for (int i = 0; it.current(); it++, i++) {
+      BlackboxMenuItem *item = it.current();
       if (item->window == re->window) {
 	if (re->button == 3 && item->sub_menu) {
 	  if (! sub && item->sub_menu->visible == 3) {
@@ -558,7 +554,7 @@ void BlackboxMenu::motionNotifyEvent(XMotionEvent *me) {
 	  menu.x_move = me->x;
 	  menu.y_move = me->y;
 	  if (which_sub != -1)
-	  menuitems->at(which_sub)->sub_menu->hideMenu();
+	    menuitems->find(which_sub)->sub_menu->hideMenu();
 	} else
 	  moving = False;	
       } else {
@@ -580,10 +576,9 @@ void BlackboxMenu::exposeEvent(XExposeEvent *ee) {
 		((menu.label) ? menu.label : "Blackbox Menu"),
 		strlen(((menu.label) ? menu.label : "Blackbox Menu")));
   } else {
-    int i;
-
-    for (i = 0; i < menuitems->count(); ++i) {
-      BlackboxMenuItem *item = menuitems->at(i);
+    llist_iterator<BlackboxMenuItem> it(menuitems);
+    for (; it.current(); it++) {
+      BlackboxMenuItem *item = it.current();
       if (item->window == ee->window) {
 	XDrawString(display, item->window, itemGC, 4,
 		    session->menuFont()->ascent + 2,

@@ -129,7 +129,8 @@ void Blackbox::EventLoop(void) {
   //
   // Note:  as stated above... one thread will be created for each X session
   // to be managed;
-  session_list->at(0)->EventLoop();
+  llist_iterator<BlackboxSession> it(session_list);
+  it.current()->EventLoop();
 }
 
 
@@ -137,14 +138,16 @@ void Blackbox::Restart(char *prog) {
   // This function is just a quick "fix"
   // It is also subject to change when multithreads are incorporated.
   if (prog) {
-    for (int i = 0; i < session_list->count(); ++i)
-      session_list->at(i)->Dissociate();
+    llist_iterator<BlackboxSession> it(session_list);
+    for (; it.current(); it++)
+      it.current()->Dissociate();
 
     execlp(prog, prog, NULL);
   } else {
-    for (int i = 0; i < session_list->count(); ++i)
-      session_list->at(i)->Dissociate();
-
+    llist_iterator<BlackboxSession> it(session_list);
+    for (; it.current(); it++)
+      it.current()->Dissociate();
+    
     execvp(b_argv[0], b_argv);
   }
 }
@@ -152,10 +155,10 @@ void Blackbox::Restart(char *prog) {
 
 void Blackbox::Shutdown(Bool do_delete) {
   // end management for all sessions and quit
-  for (int i = 0; i < session_list->count(); ++i) {
-    BlackboxSession *tmp = session_list->at(i);
-    tmp->Dissociate();
-    delete tmp;
+  llist_iterator<BlackboxSession> it(session_list);
+  for (; it.current(); it++) {
+    it.current()->Dissociate();
+    delete it.current();
   }
 
   if (do_delete)

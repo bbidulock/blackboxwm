@@ -76,7 +76,7 @@ protected:
 
   void showTitle(void) { show_title = True; }
   void hideTitle(void) { show_title = False; }
-  BlackboxMenuItem *at(int i) { return menuitems->at(i); }
+  BlackboxMenuItem *find(int index) { return menuitems->find(index); }
   BlackboxSession *Session(void) { return session; }
 
 

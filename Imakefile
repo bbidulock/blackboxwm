@@ -26,11 +26,10 @@ Objects =		blackbox.o graphics.o icon.o main.o menu.o llist.o session.o sessionm
 XCOMM Add the name of a directory to search for includes (/include is appended)
 XPROJECTROOT =		/usr/local
 
+XCOMM Uncomment this line for debugging
+XCOMM CXXFLAGS =		-g -O2 -I$(INCDIR)
 XCOMM Add compiler options here
-XCOMM CompileOptions =	-Wall -W -DSHAPE -pipe $(CXXFLAGS)
-
-XCOMM Comment out the above and use this line for debugging
-CompileOptions =	-Wall -W -DSHAPE -I$(INCROOT) -g -O6 -mpentium -malign-functions=2 -malign-jumps=2 -malign-loops=2 -ffast-math -finline-functions -pipe
+CompileOptions =	-Wall -W -DSHAPE -pipe $(CXXFLAGS)
 
 DefaultsPath =		-DXAPPLOADDIR=\"$(XAPPLOADDIR)\" -DXLIBDIR=\"$(LIBDIR)\"
 Libraries =		$(XLIB) $(EXTENSIONLIB)

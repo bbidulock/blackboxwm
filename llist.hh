@@ -29,7 +29,33 @@ typedef struct __llist_node {
 } __llist_node;
 
 
+class __llist;
+
+
+class __llist_iterator {
+private:
+  __llist *list;
+  __llist_node *node;
+
+protected:
+  __llist_iterator(__llist *);
+  ~__llist_iterator(void);
+
+  void *current(void);
+  void reset(void);
+
+  void operator++(int);
+};
+
+
 class __llist {
+private:
+  int elements;
+  __llist_node *first, *last;
+
+  friend __llist_iterator;
+
+
 protected:
   __llist(void * = 0);
   ~__llist(void);
@@ -37,34 +63,41 @@ protected:
   const int count(void) const { return elements; }
   const int empty(void) const { return (elements == 0); }
 
-  void *at(int);
+  void *find(const int);
   const int insert(void *);
   const int remove(void *);
-  const int remove(const int);
+  void *remove(const int);
   const int append(void *);
   void outputlist(void);
-
-private:
-  int elements;
-  __llist_node *first, *last;
 };
 
 
 template <class Z>
-class llist : __llist {
+class llist_iterator : public __llist_iterator {
 public:
-  llist(Z *d = 0) : __llist(d)
-    { }
-  ~llist(void)
-    { }
+  llist_iterator(__llist *d = 0) : __llist_iterator(d) { }
+  ~llist_iterator(void) { }
+
+  Z *current(void) { return (Z *) __llist_iterator::current(); }
+  void reset(void) { __llist_iterator::reset(); }
+
+  void operator++(int a) { __llist_iterator::operator++(a); }
+};
+
+
+template <class Z>
+class llist : public __llist {
+public:
+  llist(Z *d = 0) : __llist(d) { }
+  ~llist(void) { }
 
   const int count(void) const { return __llist::count(); }
   const int empty(void) const { return __llist::empty(); }
 
-  Z *at(int index) { return (Z *) __llist::at(index); }
+  Z *find(const int i) { return (Z *) __llist::find(i); }
   const int insert(Z *d) { return __llist::insert((void *) d); }
   const int remove(Z *d) { return __llist::remove((void *) d); }
-  const int remove(const int i) { return __llist::remove(i); }
+  Z *remove(const int i) { return (Z *) __llist::remove(i); }
   const int append(Z *d) { return __llist::append((void *) d); }
   void outputlist(void) { __llist::outputlist(); }
 };

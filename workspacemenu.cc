@@ -90,7 +90,7 @@ void WorkspaceMenu::itemReleased(int button, int item) {
 
     if (item >= 0 && item < workspace->workspace_list->count()) {  
       hideMenu();
-      BlackboxWindow *w = workspace->workspace_list->at(item);
+      BlackboxWindow *w = workspace->workspace_list->find(item);
       if (w->isIconic()) w->deiconifyWindow();
       session->raiseWindow(w);
       w->setInputFocus();
@@ -168,7 +168,7 @@ void WorkspaceManagerMenu::itemReleased(int button, int item) {
     } else if (item == 1) {
       int i = ws_manager->workspaces_list->count();
       if (i > 1) {
-	Workspace *wkspc = ws_manager->workspaces_list->at(i - 1);
+	Workspace *wkspc = ws_manager->workspaces_list->find(i - 1);
 	if (ws_manager->currentWorkspaceID() == (i - 1))
 	  ws_manager->changeWorkspaceID(i - 2);
           XClearWindow(ws_manager->display,
