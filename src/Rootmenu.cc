@@ -36,7 +36,6 @@ extern "C" {
 #include "blackbox.hh"
 
 
-
 Rootmenu::Rootmenu(bt::Application &app, unsigned int screen, BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen) { }
 
