@@ -34,7 +34,6 @@ extern "C" {
 #include <vector>
 
 #include "Color.hh"
-#include "Timer.hh"
 
 
 namespace bt {
