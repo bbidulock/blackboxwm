@@ -100,35 +100,35 @@ namespace bt {
     // fixed metrics
     unsigned int separatorHeight(void) const;
     unsigned int titleMargin(void) const;
-    unsigned int panelMargin(void) const;
+    unsigned int frameMargin(void) const;
     unsigned int itemMargin(void) const;
 
     // textures
     inline const Texture &titleTexture(void) const
     { return title.texture; }
-    inline const Texture &panelTexture(void) const
-    { return panel.texture; }
+    inline const Texture &frameTexture(void) const
+    { return frame.texture; }
 
     // colors
     inline const bt::Color &titleForegroundColor(void) const
     { return title.foreground; }
     inline const bt::Color &titleTextColor(void) const
     { return title.text; }
-    inline const bt::Color &panelForegroundColor(void) const
-    { return panel.foreground; }
-    inline const bt::Color &panelTextColor(void) const
-    { return panel.text; }
+    inline const bt::Color &frameForegroundColor(void) const
+    { return frame.foreground; }
+    inline const bt::Color &frameTextColor(void) const
+    { return frame.text; }
 
     // fonts
     inline const Font &titleFont(void) const
     { return title.font; }
-    inline const Font &panelFont(void) const
-    { return panel.font; }
+    inline const Font &frameFont(void) const
+    { return frame.font; }
 
     // convenience
     Pixmap titlePixmap(unsigned int width, unsigned int height,
                        Pixmap oldpixmap);
-    Pixmap panelPixmap(unsigned int width, unsigned int height,
+    Pixmap framePixmap(unsigned int width, unsigned int height,
                        Pixmap oldpixmap);
     Pixmap activePixmap(unsigned int width, unsigned int height,
                         Pixmap oldpixmap);
@@ -163,19 +163,19 @@ namespace bt {
       Font font;
       Alignment alignment;
     } title;
-    struct _panel {
+    struct _frame {
       Texture texture;
       Color foreground;
       Color text;
       Color disabled;
       Font font;
       Alignment alignment;
-    } panel;
+    } frame;
     struct _active {
       Texture texture;
       Color foreground;
       Color text;
-      // font and alignment used from panel above
+      // font and alignment used from frame above
     } active;
     struct _bitmap {
       Pixmap arrow;
@@ -264,12 +264,12 @@ namespace bt {
     unsigned int _screen;
 
     Window _window;
-    Pixmap _tpixmap, _ppixmap, _apixmap;
+    Pixmap _tpixmap, _fpixmap, _apixmap;
 
     Rect _rect;  // entire menu
     Rect _trect; // title
-    Rect _prect; // panel
-    Rect _irect; // items inside the panel
+    Rect _frect; // frame
+    Rect _irect; // items inside the frame
 
     Timer _timer;
     std::string _title;

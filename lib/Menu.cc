@@ -35,18 +35,18 @@ extern "C" {
 #include "Resource.hh"
 #include "Timer.hh"
 
-#define arrow_width 7
-#define arrow_height 7
+static const unsigned int arrow_width  = 7;
+static const unsigned int arrow_height = 7;
 static const char arrow_bits[] =
   { 0x00, 0x10, 0x30, 0x70, 0x30, 0x10, 0x00 };
 
-#define check_width 7
-#define check_height 7
+static const unsigned int check_width  = 7;
+static const unsigned int check_height = 7;
 static const char check_bits[] =
   { 0x40, 0x60, 0x71, 0x3b, 0x1f, 0x0e, 0x04 };
 
-#define close_width 7
-#define close_height 7
+static const unsigned int close_width  = 7;
+static const unsigned int close_height = 7;
 static const char close_bits[] =
   { 0x41, 0x22, 0x14, 0x08, 0x14, 0x22, 0x41 };
 
@@ -72,7 +72,7 @@ bt::MenuStyle::MenuStyle(Application &app, unsigned int screen,
                          ImageControl *imagecontrol)
   : _app(app), _screen(screen), _imagecontrol(imagecontrol) {
   title.alignment = bt::AlignCenter;
-  panel.alignment = bt::AlignCenter;
+  frame.alignment = bt::AlignCenter;
   margin_w = 1u;
 
 
@@ -103,8 +103,8 @@ void bt::MenuStyle::load(const Resource &resource) {
   title.texture =
     bt::textureResource(resource, "menu.title", "Menu.Title", "white",
                         &_app.getDisplay(), _screen, _imagecontrol);
-  panel.texture =
-    bt::textureResource(resource, "menu.panel", "Menu.Panel", "black",
+  frame.texture =
+    bt::textureResource(resource, "menu.frame", "Menu.Frame", "black",
                         &_app.getDisplay(), _screen, _imagecontrol);
   active.texture =
     bt::textureResource(resource, "menu.active", "Menu.Active", "white",
@@ -121,19 +121,19 @@ void bt::MenuStyle::load(const Resource &resource) {
                             "Menu.Title.TextColor",
                             "black"),
               &_app.getDisplay(), _screen);
-  panel.foreground =
-    bt::Color(resource.read("menu.panel.foregroundColor",
-                            "Menu.Panel.ForegroundColor",
+  frame.foreground =
+    bt::Color(resource.read("menu.frame.foregroundColor",
+                            "Menu.Frame.ForegroundColor",
                             "white"),
               &_app.getDisplay(), _screen);
-  panel.text =
-    bt::Color(resource.read("menu.panel.textColor",
-                            "Menu.Panel.TextColor",
+  frame.text =
+    bt::Color(resource.read("menu.frame.textColor",
+                            "Menu.Frame.TextColor",
                             "white"),
               &_app.getDisplay(), _screen);
-  panel.disabled =
-    bt::Color(resource.read("menu.panel.disabledColor",
-                            "Menu.Panel.DisabledColor",
+  frame.disabled =
+    bt::Color(resource.read("menu.frame.disabledColor",
+                            "Menu.Frame.DisabledColor",
                             "white"),
               &_app.getDisplay(), _screen);
 
@@ -152,8 +152,8 @@ void bt::MenuStyle::load(const Resource &resource) {
   title.font = bt::Font(resource.read("menu.title.font",
                                       "Menu.Title.Font"),
                         &_app.getDisplay());
-  panel.font = bt::Font(resource.read("menu.panel.font",
-                                      "Menu.Panel.Font"),
+  frame.font = bt::Font(resource.read("menu.frame.font",
+                                      "Menu.Frame.Font"),
                         &_app.getDisplay());
 
   const std::string mstr =
@@ -163,8 +163,8 @@ void bt::MenuStyle::load(const Resource &resource) {
 
 
 unsigned int bt::MenuStyle::separatorHeight(void) const {
-  return (panel.texture.borderWidth() > 0 ?
-          panel.texture.borderWidth() : 1) + (margin_w * 2);
+  return (frame.texture.borderWidth() > 0 ?
+          frame.texture.borderWidth() : 1) + (margin_w * 2);
 }
 
 
@@ -173,8 +173,8 @@ unsigned int bt::MenuStyle::titleMargin(void) const {
 }
 
 
-unsigned int bt::MenuStyle::panelMargin(void) const {
-  return panel.texture.borderWidth() + (margin_w * 2);
+unsigned int bt::MenuStyle::frameMargin(void) const {
+  return frame.texture.borderWidth() + (margin_w * 2);
 }
 
 
@@ -189,9 +189,9 @@ Pixmap bt::MenuStyle::titlePixmap(unsigned int width, unsigned int height,
 }
 
 
-Pixmap bt::MenuStyle::panelPixmap(unsigned int width, unsigned int height,
+Pixmap bt::MenuStyle::framePixmap(unsigned int width, unsigned int height,
                                   Pixmap oldpixmap) {
-  return panel.texture.render(width, height, oldpixmap);
+  return frame.texture.render(width, height, oldpixmap);
 }
 
 Pixmap bt::MenuStyle::activePixmap(unsigned int width, unsigned int height,
@@ -209,7 +209,7 @@ bt::Rect bt::MenuStyle::titleRect(const std::string &text) const {
 
 
 bt::Rect bt::MenuStyle::itemRect(const MenuItem &item) const {
-  const Rect &rect = bt::textRect(panel.font, item.label());
+  const Rect &rect = bt::textRect(frame.font, item.label());
   return Rect(0, 0,
               rect.width() + ((rect.height() + itemMargin()) * 2),
               rect.height() + (itemMargin() * 2));
@@ -226,21 +226,21 @@ void bt::MenuStyle::drawTitle(Window window, const Rect &rect,
 void bt::MenuStyle::drawItem(Window window, const Rect &rect,
                              const MenuItem &item, Pixmap pixmap) const {
   if (item.isSeparator()) {
-    Pen pen(panel.foreground);
+    Pen pen(frame.foreground);
     XFillRectangle(_app.getXDisplay(), window, pen.gc(),
                    rect.x(), rect.y() + margin_w, rect.width(),
-                   (panel.texture.borderWidth() > 0 ?
-                    panel.texture.borderWidth() : 1));
+                   (frame.texture.borderWidth() > 0 ?
+                    frame.texture.borderWidth() : 1));
     return;
   }
 
   Pen fpen((item.isEnabled() ?
-            (item.isActive() ? active.foreground : panel.foreground) :
-            panel.disabled));
+            (item.isActive() ? active.foreground : frame.foreground) :
+            frame.disabled));
   Pen tpen((item.isEnabled() ?
-            (item.isActive() ? active.text : panel.text) :
-            panel.disabled),
-           panel.font.font());
+            (item.isActive() ? active.text : frame.text) :
+            frame.disabled),
+           frame.font.font());
   if (item.isActive() && item.isEnabled()) {
     Pen p2(active.texture.color());
     if (pixmap) {
@@ -251,7 +251,7 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
                      rect.x(), rect.y(), rect.width(), rect.height());
     }
   }
-  drawText(panel.font, tpen, window, rect, panel.alignment, item.label());
+  drawText(frame.font, tpen, window, rect, frame.alignment, item.label());
 
   if (item.isChecked()) {
     // draw check mark
@@ -322,11 +322,11 @@ bt::Menu::Menu(bt::Application &app, unsigned int screen)
   : _app(app),
     _screen(screen),
     _tpixmap(0),
-    _ppixmap(0),
+    _fpixmap(0),
     _apixmap(0),
     _rect(0, 0, 1, 1),
     _trect(0, 0, 0, 0),
-    _prect(0, 0, 1, 1),
+    _frect(0, 0, 1, 1),
     _irect(0, 0, 1, 1),
     _timer(&_app, &showdelay),
     _parent_menu(0),
@@ -595,15 +595,15 @@ void bt::Menu::popup(int x, int y, bool centerOnTitle) {
       x -= _trect.width() / 2;
       y -= _trect.height() / 2;
       if (y + _rect.height() > screeninfo.getHeight())
-        y -= _prect.height() + (_trect.height() / 2);
+        y -= _frect.height() + (_trect.height() / 2);
     } else {
       y -= _trect.height();
       if (y + _rect.height() > screeninfo.getHeight())
-        y -= _prect.height();
+        y -= _frect.height();
     }
   } else {
     if (y + _rect.height() > screeninfo.getHeight())
-      y -= _prect.height();
+      y -= _frect.height();
   }
 
   if (y < 0)
@@ -679,10 +679,10 @@ void bt::Menu::updateSize(void) {
 
   if (_show_title) {
     _trect = style->titleRect(_title);
-    _prect.setPos(0, _trect.height() - style->titleTexture().borderWidth());
+    _frect.setPos(0, _trect.height() - style->titleTexture().borderWidth());
   } else {
     _trect.setSize(0, 0);
-    _prect.setPos(0, 0);
+    _frect.setPos(0, 0);
   }
 
   const ScreenInfo& screeninfo = _app.getScreenInfo(_screen);
@@ -719,13 +719,13 @@ void bt::Menu::updateSize(void) {
   max_col_h = std::max(max_col_h, col_h);
 
   // update rects
-  _irect.setRect(style->panelMargin(), _prect.top() + style->panelMargin(),
+  _irect.setRect(style->frameMargin(), _frect.top() + style->frameMargin(),
                  std::max(_trect.width(), cols * max_item_w), max_col_h);
-  _prect.setSize(_irect.width()  + (style->panelMargin() * 2),
-                 _irect.height() + (style->panelMargin() * 2));
-  _rect.setSize(_prect.width(), _prect.height());
+  _frect.setSize(_irect.width()  + (style->frameMargin() * 2),
+                 _irect.height() + (style->frameMargin() * 2));
+  _rect.setSize(_frect.width(), _frect.height());
   if (_show_title) {
-    _trect.setWidth(std::max(_trect.width(), _prect.width()));
+    _trect.setWidth(std::max(_trect.width(), _frect.width()));
     _rect.setHeight(_rect.height() + _trect.height() -
                     style->titleTexture().borderWidth());
   }
@@ -735,10 +735,10 @@ void bt::Menu::updateSize(void) {
   // update pixmaps
   if (_show_title)
     _tpixmap = style->titlePixmap(_trect.width(), _trect.height(), _tpixmap);
-  _ppixmap = style->panelPixmap(_prect.width(), _prect.height(), _ppixmap);
+  _fpixmap = style->framePixmap(_frect.width(), _frect.height(), _fpixmap);
 
   _itemw = max_item_w;
-  _apixmap = style->activePixmap(_itemw, bt::textHeight(style->panelFont()) +
+  _apixmap = style->activePixmap(_itemw, bt::textHeight(style->frameFont()) +
                                  (style->itemMargin() * 2), _apixmap);
 
   _size_dirty = false;
@@ -926,13 +926,13 @@ void bt::Menu::exposeEvent(const XExposeEvent * const event) {
     style->drawTitle(_window, _trect, _title);
   }
 
-  if (r.intersects(_prect)) {
-    u = r & _prect;
+  if (r.intersects(_frect)) {
+    u = r & _frect;
 
-    Pen pen(style->panelTexture().color());
-    if (_ppixmap) {
-      XCopyArea(_app.getXDisplay(), _ppixmap, _window, pen.gc(),
-                u.x() - _prect.x(), u.y() - _prect.y(),
+    Pen pen(style->frameTexture().color());
+    if (_fpixmap) {
+      XCopyArea(_app.getXDisplay(), _fpixmap, _window, pen.gc(),
+                u.x() - _frect.x(), u.y() - _frect.y(),
                 u.width(), u.height(), u.x(), u.y());
     } else {
       XFillRectangle(_app.getXDisplay(), _window, pen.gc(),
@@ -1125,7 +1125,7 @@ void bt::Menu::activateItem(const Rect &rect, MenuItem &item) {
   MenuStyle *style = MenuStyle::get(_app, _screen, 0);
   const ScreenInfo& screeninfo = _app.getScreenInfo(_screen);
   int px = _rect.x() + rect.x() + rect.width();
-  int py = _rect.y() + rect.y() - style->panelMargin();
+  int py = _rect.y() + rect.y() - style->frameMargin();
   bool left = false;
 
   if (_parent_menu && _parent_menu->isVisible() &&
