@@ -80,13 +80,13 @@ public:
   BColor(char r = 0, char g = 0, char b = 0)
     { red = r; green = g; blue = b; pixel = 0; allocated = 0; }
 
-  inline const int &isAllocated(void) const { return allocated; }
+  inline const int isAllocated(void) const { return allocated; }
 
-  inline const unsigned char &getRed(void) const { return red; }
-  inline const unsigned char &getGreen(void) const { return green; }
-  inline const unsigned char &getBlue(void) const { return blue; }
+  inline const unsigned char getRed(void) const { return red; }
+  inline const unsigned char getGreen(void) const { return green; }
+  inline const unsigned char getBlue(void) const { return blue; }
 
-  inline const unsigned long &getPixel(void) const { return pixel; }
+  inline const unsigned long getPixel(void) const { return pixel; }
 
   inline void setAllocated(int a) { allocated = a; }
   inline void setRGB(char r, char g, char b) { red = r; green = g; blue = b; }
@@ -107,7 +107,7 @@ public:
   inline BColor *getHiColor(void) { return &hiColor; }
   inline BColor *getLoColor(void) { return &loColor; }
 
-  inline const unsigned long &getTexture(void) const { return texture; }
+  inline const unsigned long getTexture(void) const { return texture; }
 
   inline void setTexture(unsigned long t) { texture = t; }
   inline void addTexture(unsigned long t) { texture |= t; }
@@ -167,7 +167,7 @@ public:
 
 class BImageControl : public TimeoutHandler {
 public:
-  struct Cache {
+  struct CachedImage {
     Pixmap pixmap;
 
     unsigned int count, width, height;
@@ -180,17 +180,17 @@ public:
 
   inline BaseDisplay *getBaseDisplay(void) { return basedisplay; }
 
-  inline const Bool &doDither(void) { return dither; }
+  inline const Bool doDither(void) { return dither; }
 
   inline ScreenInfo *getScreenInfo(void) { return screeninfo; }
 
-  inline const Window &getDrawable(void) const { return window; }
+  inline const Window getDrawable(void) const { return window; }
 
   inline Visual *getVisual(void) { return screeninfo->getVisual(); }
 
-  inline const int &getBitsPerPixel(void) const { return bits_per_pixel; }
-  inline const int &getDepth(void) const { return screen_depth; }
-  inline const int &getColorsPerChannel(void) const
+  inline const int getBitsPerPixel(void) const { return bits_per_pixel; }
+  inline const int getDepth(void) const { return screen_depth; }
+  inline const int getColorsPerChannel(void) const
     { return colors_per_channel; }
 
   unsigned long getColor(const char *);
@@ -235,7 +235,7 @@ private:
     grad_buffer_height;
   unsigned long *sqrt_table, cache_max;
 
-  typedef std::list<Cache*> CacheContainer;
+  typedef std::list<CachedImage> CacheContainer;
   CacheContainer cache;
 
 protected:

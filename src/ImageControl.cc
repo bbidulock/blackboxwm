@@ -370,17 +370,15 @@ BImageControl::~BImageControl(void) {
   }
 
   if (!cache.empty()) {
-#ifdef DEBUG
+    //#ifdef DEBUG
     fprintf(stderr, i18n(ImageSet, ImagePixmapRelease,
 		         "BImageContol::~BImageControl: pixmap cache - "
 	                 "releasing %d pixmaps\n"), cache.size());
-#endif
+    //#endif
     CacheContainer::iterator it = cache.begin();
     const CacheContainer::iterator end = cache.end();
     for (; it != end; ++it) {
-      Cache *tmp = *it;
-      XFreePixmap(basedisplay->getXDisplay(), tmp->pixmap);
-      delete tmp;
+      XFreePixmap(basedisplay->getXDisplay(), (*it).pixmap);
     }
   }
 #ifdef    TIMEDCACHE
@@ -401,17 +399,17 @@ Pixmap BImageControl::searchCache(unsigned int width, unsigned int height,
   CacheContainer::iterator it = cache.begin();
   const CacheContainer::iterator end = cache.end();
   for (; it != end; ++it) {
-    Cache *tmp = *it;
-    if ((tmp->width == width) && (tmp->height == height) &&
-        (tmp->texture == texture) && (tmp->pixel1 == c1->getPixel()))
+    CachedImage &tmp = *it;
+    if ((tmp.width == width) && (tmp.height == height) &&
+        (tmp.texture == texture) && (tmp.pixel1 == c1->getPixel()))
       if (texture & BImage_Gradient) {
-        if (tmp->pixel2 == c2->getPixel()) {
-          tmp->count++;
-          return tmp->pixmap;
+        if (tmp.pixel2 == c2->getPixel()) {
+          tmp.count++;
+          return tmp.pixmap;
         }
       } else {
-        tmp->count++;
-        return tmp->pixmap;
+        tmp.count++;
+        return tmp.pixmap;
       }
   }
   return None;
@@ -432,28 +430,28 @@ Pixmap BImageControl::renderImage(unsigned int width, unsigned int height,
   if (!pixmap)
     return None;
 
-  Cache *tmp = new Cache;
+  CachedImage tmp;
 
-  tmp->pixmap = pixmap;
-  tmp->width = width;
-  tmp->height = height;
-  tmp->count = 1;
-  tmp->texture = texture->getTexture();
-  tmp->pixel1 = texture->getColor()->getPixel();
+  tmp.pixmap = pixmap;
+  tmp.width = width;
+  tmp.height = height;
+  tmp.count = 1;
+  tmp.texture = texture->getTexture();
+  tmp.pixel1 = texture->getColor()->getPixel();
 
   if (texture->getTexture() & BImage_Gradient)
-    tmp->pixel2 = texture->getColorTo()->getPixel();
+    tmp.pixel2 = texture->getColorTo()->getPixel();
   else
-    tmp->pixel2 = 0l;
+    tmp.pixel2 = 0l;
 
   cache.push_back(tmp);
 
   if ((unsigned) cache.size() > cache_max) {
-#ifdef    DEBUG
+    //#ifdef    DEBUG
     fprintf(stderr, i18n(ImageSet, ImagePixmapCacheLarge,
 			 "BImageControl::renderImage: cache is large, "
 			 "forcing cleanout\n"));
-#endif // DEBUG
+    //#endif // DEBUG
 
     timeout();
   }
@@ -469,16 +467,18 @@ void BImageControl::removeImage(Pixmap pixmap) {
   CacheContainer::iterator it = cache.begin();
   const CacheContainer::iterator end = cache.end();
   for (; it != end; ++it) {
-    Cache *tmp = *it;
-    if (tmp->pixmap == pixmap && tmp->count > 0)
-      tmp->count--;
+    CachedImage &tmp = *it;
+    if (tmp.pixmap == pixmap && tmp.count > 0)
+      tmp.count--;
   }
 
 #ifdef    TIMEDCACHE
-  if (! timer) timeout();
-#else // !TIMEDCACHE
-  timeout();
+  if (! timer)
 #endif // TIMEDCACHE
+  {
+    fprintf(stderr, "flushing cache in removeImage()\n");
+    timeout();
+  }
 }
 
 
@@ -707,21 +707,15 @@ void BImageControl::parseColor(BColor *color, char *c) {
   }
 }
 
+struct ZeroRefCheck {
+  bool operator()(const BImageControl::CachedImage &image) const {
+    return (image.count == 0);
+  }
+};
 
 void BImageControl::timeout(void) {
-  // kills each Cache item whose count is 0 or less
-  CacheContainer::iterator it = cache.begin();
-  const CacheContainer::iterator end = cache.end();
-  for (; it != end; ++it) {
-    Cache *tmp = *it;
-    if (tmp->count == 0) {
-      delete tmp;
-      tmp = 0;
-    }
-  }
-
-  // removes every NULL pointer from the cache
-  cache.erase(std::remove(cache.begin(), cache.end(),
-                          static_cast<BImageControl::Cache*>(0)),
+  fprintf(stderr, "timeout handler, %d\n", cache.size());
+  cache.erase(std::remove_if(cache.begin(), cache.end(), ZeroRefCheck()),
               cache.end());
+  fprintf(stderr, "timeout handler done, %d\n", cache.size());
 }
