@@ -222,6 +222,7 @@ void Blackbox::process_event(XEvent *e) {
     Basemenu *menu = (Basemenu *) 0;
     Slit *slit = (Slit *) 0;
     Toolbar *tbar = (Toolbar *) 0;
+    BScreen *scrn = (BScreen *) 0;
 
     if ((win = searchWindow(e->xbutton.window))) {
       win->buttonPressEvent(&e->xbutton);
@@ -235,21 +236,14 @@ void Blackbox::process_event(XEvent *e) {
       slit->buttonPressEvent(&e->xbutton);
     } else if ((tbar = searchToolbar(e->xbutton.window))) {
       tbar->buttonPressEvent(&e->xbutton);
-    } else {
-      ScreenList::iterator it = screenList.begin();
-      for (; it != screenList.end(); ++it) {
-        if (e->xbutton.window == (*it)->getRootWindow()) {
-          (*it)->buttonPressEvent(&e->xbutton);
-
-          if (active_screen != (*it)) {
-            active_screen = (*it);
-            // first, set no focus window on the old screen
-            setFocusedWindow(0);
-            // and move focus to this screen
-            setFocusedWindow(0);
-          }
-          break;
-        }
+    } else if ((scrn = searchScreen(e->xbutton.window))) {
+      scrn->buttonPressEvent(&e->xbutton);
+      if (active_screen != scrn) {
+        active_screen = scrn;
+        // first, set no focus window on the old screen
+        setFocusedWindow(0);
+        // and move focus to this screen
+        setFocusedWindow(0);
       }
     }
     break;
@@ -1109,6 +1103,8 @@ void Blackbox::load_rc(void) {
 
   XrmValue value;
   char *value_type;
+  int int_value;
+  unsigned long long_value;
 
   if (XrmGetResource(database, "session.menuFile", "Session.MenuFile",
                      &value_type, &value)) {
@@ -1117,16 +1113,13 @@ void Blackbox::load_rc(void) {
     resource.menu_file = DEFAULTMENU;
   }
 
+  resource.colors_per_channel = 4;
   if (XrmGetResource(database, "session.colorsPerChannel",
-                     "Session.ColorsPerChannel", &value_type, &value)) {
-    if (sscanf(value.addr, "%d", &resource.colors_per_channel) != 1) {
-      resource.colors_per_channel = 4;
-    } else {
-      if (resource.colors_per_channel < 2) resource.colors_per_channel = 2;
-      if (resource.colors_per_channel > 6) resource.colors_per_channel = 6;
-    }
-  } else {
-    resource.colors_per_channel = 4;
+                     "Session.ColorsPerChannel", &value_type, &value) &&
+      sscanf(value.addr, "%d", &int_value) == 1) {
+    resource.colors_per_channel = int_value;
+    if (resource.colors_per_channel < 2) resource.colors_per_channel = 2;
+    if (resource.colors_per_channel > 6) resource.colors_per_channel = 6;
   }
 
   if (XrmGetResource(database, "session.styleFile", "Session.StyleFile",
@@ -1134,21 +1127,19 @@ void Blackbox::load_rc(void) {
     resource.style_file = expandTilde(value.addr);
   else
     resource.style_file = DEFAULTSTYLE;
-
+  
+  resource.double_click_interval = 250;
   if (XrmGetResource(database, "session.doubleClickInterval",
-                     "Session.DoubleClickInterval", &value_type, &value)) {
-    if (sscanf(value.addr, "%lu", &resource.double_click_interval) != 1)
-      resource.double_click_interval = 250;
-  } else {
-    resource.double_click_interval = 250;
+                     "Session.DoubleClickInterval", &value_type, &value) &&
+      sscanf(value.addr, "%lu", &long_value) == 1) {
+    resource.double_click_interval = long_value;
   }
 
+  resource.auto_raise_delay.tv_usec = 400;
   if (XrmGetResource(database, "session.autoRaiseDelay",
-                     "Session.AutoRaiseDelay", &value_type, &value)) {
-    if (sscanf(value.addr, "%ld", &resource.auto_raise_delay.tv_usec) != 1)
-      resource.auto_raise_delay.tv_usec = 400;
-  } else {
-    resource.auto_raise_delay.tv_usec = 400;
+                     "Session.AutoRaiseDelay", &value_type, &value) &&
+      sscanf(value.addr, "%lu", &long_value) == 1) {
+    resource.auto_raise_delay.tv_usec = long_value;
   }
 
   resource.auto_raise_delay.tv_sec = resource.auto_raise_delay.tv_usec / 1000;
@@ -1156,22 +1147,19 @@ void Blackbox::load_rc(void) {
     (resource.auto_raise_delay.tv_sec * 1000);
   resource.auto_raise_delay.tv_usec *= 1000;
 
+  resource.cache_life = 5l;
   if (XrmGetResource(database, "session.cacheLife", "Session.CacheLife",
-                     &value_type, &value)) {
-    if (sscanf(value.addr, "%lu", &resource.cache_life) != 1)
-      resource.cache_life = 5l;
-  } else {
-    resource.cache_life = 5l;
+                     &value_type, &value) &&
+      sscanf(value.addr, "%lu", &long_value) == 1) {
+    resource.cache_life = long_value;
   }
-
   resource.cache_life *= 60000;
 
+  resource.cache_max = 200;
   if (XrmGetResource(database, "session.cacheMax", "Session.CacheMax",
-                     &value_type, &value)) {
-    if (sscanf(value.addr, "%lu", &resource.cache_max) != 1)
-      resource.cache_max = 200;
-  } else {
-    resource.cache_max = 200;
+                     &value_type, &value) &&
+      sscanf(value.addr, "%lu", &long_value) == 1) {
+    resource.cache_max = long_value;
   }
 }
 
@@ -1184,97 +1172,82 @@ void Blackbox::load_rc(BScreen *screen) {
   XrmValue value;
   char *value_type, name_lookup[1024], class_lookup[1024];
   int screen_number = screen->getScreenNumber();
+  int int_value;
 
   sprintf(name_lookup,  "session.screen%d.fullMaximization", screen_number);
   sprintf(class_lookup, "Session.Screen%d.FullMaximization", screen_number);
+  screen->saveFullMax(False);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-                     &value)) {
-    if (! strncasecmp(value.addr, "true", value.size))
-      screen->saveFullMax(True);
-    else
-      screen->saveFullMax(False);
-  } else {
-    screen->saveFullMax(False);
+                     &value) &&
+      ! strncasecmp(value.addr, "true", value.size)) {
+    screen->saveFullMax(True);
   }
+
   sprintf(name_lookup,  "session.screen%d.focusNewWindows", screen_number);
   sprintf(class_lookup, "Session.Screen%d.FocusNewWindows", screen_number);
+  screen->saveFocusNew(False);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-                     &value)) {
-    if (! strncasecmp(value.addr, "true", value.size))
-      screen->saveFocusNew(True);
-    else
-      screen->saveFocusNew(False);
-  } else {
-    screen->saveFocusNew(False);
+                     &value) &&
+      ! strncasecmp(value.addr, "true", value.size)) {
+    screen->saveFocusNew(True);
   }
+
   sprintf(name_lookup,  "session.screen%d.focusLastWindow", screen_number);
   sprintf(class_lookup, "Session.Screen%d.focusLastWindow", screen_number);
+  screen->saveFocusLast(False);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-                     &value)) {
-    if (! strncasecmp(value.addr, "true", value.size))
-      screen->saveFocusLast(True);
-    else
-      screen->saveFocusLast(False);
-  } else {
-    screen->saveFocusLast(False);
+                     &value) &&
+      ! strncasecmp(value.addr, "true", value.size)) {
+    screen->saveFocusLast(True);
   }
+
   sprintf(name_lookup,  "session.screen%d.rowPlacementDirection",
           screen_number);
   sprintf(class_lookup, "Session.Screen%d.RowPlacementDirection",
           screen_number);
+  screen->saveRowPlacementDirection(BScreen::LeftRight);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-                     &value)) {
-    if (! strncasecmp(value.addr, "righttoleft", value.size))
-      screen->saveRowPlacementDirection(BScreen::RightLeft);
-    else
-      screen->saveRowPlacementDirection(BScreen::LeftRight);
-  } else {
-    screen->saveRowPlacementDirection(BScreen::LeftRight);
+                     &value) &&
+      ! strncasecmp(value.addr, "righttoleft", value.size)) {
+    screen->saveRowPlacementDirection(BScreen::RightLeft);
   }
+
   sprintf(name_lookup,  "session.screen%d.colPlacementDirection",
           screen_number);
   sprintf(class_lookup, "Session.Screen%d.ColPlacementDirection",
           screen_number);
+  screen->saveColPlacementDirection(BScreen::TopBottom);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-                     &value)) {
-    if (! strncasecmp(value.addr, "bottomtotop", value.size))
-      screen->saveColPlacementDirection(BScreen::BottomTop);
-    else
-      screen->saveColPlacementDirection(BScreen::TopBottom);
-  } else {
-    screen->saveColPlacementDirection(BScreen::TopBottom);
+                     &value) &&
+      ! strncasecmp(value.addr, "bottomtotop", value.size)) {
+    screen->saveColPlacementDirection(BScreen::BottomTop);
   }
+
   sprintf(name_lookup,  "session.screen%d.workspaces", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Workspaces", screen_number);
-  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-                     &value)) {
-    int workspace_count;
-    if (sscanf(value.addr, "%d", &workspace_count) != 1)
-      workspace_count = 1;
-    else if (workspace_count <= 0 || workspace_count > 128)
-      workspace_count = 1;
-    screen->saveWorkspaces(workspace_count);
-  } else {
-    screen->saveWorkspaces(1);
+  screen->saveWorkspaces(1);
+  if (XrmGetResource(database, name_lookup, class_lookup,
+                     &value_type, &value) &&
+      sscanf(value.addr, "%d", &int_value) == 1 &&
+      int_value > 0 && int_value < 128) {
+    screen->saveWorkspaces(int_value);
   }
+
   sprintf(name_lookup,  "session.screen%d.toolbar.widthPercent",
           screen_number);
   sprintf(class_lookup, "Session.Screen%d.Toolbar.WidthPercent",
           screen_number);
+  screen->saveToolbarWidthPercent(66);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-                     &value)) {
-    int i;
-    if (sscanf(value.addr, "%d", &i) != 1)
-      i = 66;
-    else if (i <= 0 || i > 100)
-      i = 66;
-
-    screen->saveToolbarWidthPercent(i);
-  } else {
-    screen->saveToolbarWidthPercent(66);
+                     &value) &&
+      sscanf(value.addr, "%d", &int_value) == 1 &&
+      int_value > 0 && int_value <= 100) {
+    screen->saveToolbarWidthPercent(int_value);
   }
+
   sprintf(name_lookup, "session.screen%d.toolbar.placement", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Toolbar.Placement", screen_number);
+  screen->saveToolbarPlacement(Toolbar::BottomCenter);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value)) {
     if (! strncasecmp(value.addr, "TopLeft", value.size))
@@ -1287,10 +1260,6 @@ void Blackbox::load_rc(BScreen *screen) {
       screen->saveToolbarPlacement(Toolbar::TopRight);
     else if (! strncasecmp(value.addr, "BottomRight", value.size))
       screen->saveToolbarPlacement(Toolbar::BottomRight);
-    else
-      screen->saveToolbarPlacement(Toolbar::BottomCenter);
-  } else {
-    screen->saveToolbarPlacement(Toolbar::BottomCenter);
   }
   screen->removeWorkspaceNames();
 
@@ -1301,81 +1270,68 @@ void Blackbox::load_rc(BScreen *screen) {
     string search = value.addr;
     string::const_iterator it = search.begin(),
       end = search.end();
-    while(1) {
+    for (; it != end; ++it) {
       string::const_iterator tmp = it; // current string.begin()
       it = std::find(tmp, end, ',');   // look for comma between tmp and end
-      string s(tmp, it);               // s = search[tmp:it]
-      screen->addWorkspaceName(s);
-      if (it == end) break;
-      ++it;
+      screen->addWorkspaceName(string(tmp, it)); // string = search[tmp:it]
     }
   }
 
   sprintf(name_lookup,  "session.screen%d.toolbar.onTop", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Toolbar.OnTop", screen_number);
+  screen->saveToolbarOnTop(False);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-                     &value)) {
-    if (! strncasecmp(value.addr, "true", value.size))
-      screen->saveToolbarOnTop(True);
-    else
-      screen->saveToolbarOnTop(False);
-  } else {
-    screen->saveToolbarOnTop(False);
+                     &value) &&
+      ! strncasecmp(value.addr, "true", value.size)) {
+    screen->saveToolbarOnTop(True);
   }
+
   sprintf(name_lookup,  "session.screen%d.toolbar.autoHide", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Toolbar.autoHide", screen_number);
+  screen->saveToolbarAutoHide(False);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-                     &value)) {
-    if (! strncasecmp(value.addr, "true", value.size))
-      screen->saveToolbarAutoHide(True);
-    else
-      screen->saveToolbarAutoHide(False);
-  } else {
-    screen->saveToolbarAutoHide(False);
+                     &value) &&
+      ! strncasecmp(value.addr, "true", value.size)) {
+    screen->saveToolbarAutoHide(True);
   }
+
   sprintf(name_lookup,  "session.screen%d.focusModel", screen_number);
   sprintf(class_lookup, "Session.Screen%d.FocusModel", screen_number);
+  screen->saveSloppyFocus(True);
+  screen->saveAutoRaise(False);
+  screen->saveClickRaise(False);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value)) {
     string fmodel = value.addr;
 
     if (fmodel.find("ClickToFocus") != string::npos) {
-      screen->saveClickRaise(False);
-      screen->saveAutoRaise(False);
       screen->saveSloppyFocus(False);
     } else {
       // must be sloppy
-      screen->saveSloppyFocus(True);
-      screen->saveAutoRaise(False);
-      screen->saveClickRaise(False);
 
       if (fmodel.find("AutoRaise") != string::npos)
         screen->saveAutoRaise(True);
       if (fmodel.find("ClickRaise") != string::npos)
         screen->saveClickRaise(True);
     }
-  } else {
-    screen->saveSloppyFocus(True);
-    screen->saveAutoRaise(False);
-    screen->saveClickRaise(False);
   }
 
   sprintf(name_lookup,  "session.screen%d.windowPlacement", screen_number);
   sprintf(class_lookup, "Session.Screen%d.WindowPlacement", screen_number);
+  screen->savePlacementPolicy(BScreen::RowSmartPlacement);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value)) {
     if (! strncasecmp(value.addr, "RowSmartPlacement", value.size))
-      screen->savePlacementPolicy(BScreen::RowSmartPlacement);
+      /* pass */;
     else if (! strncasecmp(value.addr, "ColSmartPlacement", value.size))
       screen->savePlacementPolicy(BScreen::ColSmartPlacement);
-    else
+    else if (! strncasecmp(value.addr, "CascadePlacement", value.size))
       screen->savePlacementPolicy(BScreen::CascadePlacement);
-  } else {
-    screen->savePlacementPolicy(BScreen::RowSmartPlacement);
   }
 
   sprintf(name_lookup, "session.screen%d.slit.placement", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Slit.Placement", screen_number);
+  screen->saveSlitPlacement(Slit::CenterRight);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value)) {
     if (! strncasecmp(value.addr, "TopLeft", value.size))
@@ -1392,43 +1348,33 @@ void Blackbox::load_rc(BScreen *screen) {
       screen->saveSlitPlacement(Slit::TopRight);
     else if (! strncasecmp(value.addr, "BottomRight", value.size))
       screen->saveSlitPlacement(Slit::BottomRight);
-    else
-      screen->saveSlitPlacement(Slit::CenterRight);
-  } else {
-    screen->saveSlitPlacement(Slit::CenterRight);
   }
+
   sprintf(name_lookup, "session.screen%d.slit.direction", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Slit.Direction", screen_number);
+  screen->saveSlitDirection(Slit::Vertical);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-                     &value)) {
-    if (! strncasecmp(value.addr, "Horizontal", value.size))
-      screen->saveSlitDirection(Slit::Horizontal);
-    else
-      screen->saveSlitDirection(Slit::Vertical);
-  } else {
-    screen->saveSlitDirection(Slit::Vertical);
+                     &value) &&
+      ! strncasecmp(value.addr, "Horizontal", value.size)) {
+    screen->saveSlitDirection(Slit::Horizontal);
   }
+
   sprintf(name_lookup, "session.screen%d.slit.onTop", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Slit.OnTop", screen_number);
+  screen->saveSlitOnTop(False);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-                     &value)) {
-    if (! strncasecmp(value.addr, "True", value.size))
-      screen->saveSlitOnTop(True);
-    else
-      screen->saveSlitOnTop(False);
-  } else {
-    screen->saveSlitOnTop(False);
+                     &value) && 
+      ! strncasecmp(value.addr, "True", value.size)) {
+    screen->saveSlitOnTop(True);
   }
+
   sprintf(name_lookup, "session.screen%d.slit.autoHide", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Slit.AutoHide", screen_number);
+  screen->saveSlitAutoHide(False);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-                     &value)) {
-    if (! strncasecmp(value.addr, "true", value.size))
-      screen->saveSlitAutoHide(True);
-    else
-      screen->saveSlitAutoHide(False);
-  } else {
-    screen->saveSlitAutoHide(False);
+                     &value) &&
+      ! strncasecmp(value.addr, "true", value.size)) {
+    screen->saveSlitAutoHide(True);
   }
 
 #ifdef    HAVE_STRFTIME
@@ -1443,61 +1389,45 @@ void Blackbox::load_rc(BScreen *screen) {
 #else //  HAVE_STRFTIME
   sprintf(name_lookup,  "session.screen%d.dateFormat", screen_number);
   sprintf(class_lookup, "Session.Screen%d.DateFormat", screen_number);
+  screen->saveDateFormat(B_AmericanDate);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value)) {
-    if (strncasecmp(value.addr, "european", value.size))
-      screen->saveDateFormat(B_AmericanDate);
-    else
+    if (! strncasecmp(value.addr, "european", value.size))
       screen->saveDateFormat(B_EuropeanDate);
-  } else {
-    screen->saveDateFormat(B_AmericanDate);
   }
+
   sprintf(name_lookup,  "session.screen%d.clockFormat", screen_number);
   sprintf(class_lookup, "Session.Screen%d.ClockFormat", screen_number);
+  screen->saveClock24Hour(False);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-                     &value)) {
-    int clock;
-    if (sscanf(value.addr, "%d", &clock) != 1) screen->saveClock24Hour(False);
-    else if (clock == 24) screen->saveClock24Hour(True);
-    else screen->saveClock24Hour(False);
-  } else {
-    screen->saveClock24Hour(False);
+                     &value) &&
+      sscanf(value.addr, "%d", &int_value) == 1 && int_value == 24) {
+    screen->saveClock24Hour(True);
   }
 #endif // HAVE_STRFTIME
 
   sprintf(name_lookup,  "session.screen%d.edgeSnapThreshold", screen_number);
   sprintf(class_lookup, "Session.Screen%d.EdgeSnapThreshold", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-                     &value)) {
-    int threshold;
-    if (sscanf(value.addr, "%d", &threshold) != 1)
-      screen->saveEdgeSnapThreshold(0);
-    else
-      screen->saveEdgeSnapThreshold(threshold);
-  } else {
-    screen->saveEdgeSnapThreshold(0);
-  }
-  sprintf(name_lookup,  "session.screen%d.imageDither", screen_number);
-  sprintf(class_lookup, "Session.Screen%d.ImageDither", screen_number);
-  if (XrmGetResource(database, "session.imageDither", "Session.ImageDither",
-                     &value_type, &value)) {
-    if (! strncasecmp("true", value.addr, value.size))
-      screen->saveImageDither(True);
-    else
-      screen->saveImageDither(False);
-  } else {
-    screen->saveImageDither(True);
+                     &value) &&
+      sscanf(value.addr, "%d", &int_value) == 1) {
+    screen->saveEdgeSnapThreshold(int_value);
   }
 
-  if (XrmGetResource(database, "session.opaqueMove", "Session.OpaqueMove",
-                     &value_type, &value)) {
-    if (! strncasecmp("true", value.addr, value.size))
-      screen->saveOpaqueMove(True);
-    else
-      screen->saveOpaqueMove(False);
-  } else {
-    screen->saveOpaqueMove(False);
+  screen->saveImageDither(True);
+  if (XrmGetResource(database, "session.imageDither", "Session.ImageDither",
+                     &value_type, &value) &&
+      ! strncasecmp("false", value.addr, value.size)) {
+    screen->saveImageDither(False);
   }
+
+  screen->saveOpaqueMove(False);
+  if (XrmGetResource(database, "session.opaqueMove", "Session.OpaqueMove",
+                     &value_type, &value) &&
+      ! strncasecmp("true", value.addr, value.size)) {
+    screen->saveOpaqueMove(True);
+  }
+
   XrmDestroyDatabase(database);
 }
 
