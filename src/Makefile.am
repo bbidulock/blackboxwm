@@ -1,5 +1,5 @@
 # src/Makefile.am for Blackbox 0.50.x beta - an X11 Window manager
-# Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
+# Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -18,31 +18,16 @@
 #  (See the included file COPYING / GPL-2.0)
 #
 
-CPPFLAGS =		@CPPFLAGS@ \
-			@SHAPE@ \
-			@KDE@ \
-			-DDEFAULTRC=\"$(pkgdatadir)/rc\" \
-			-DDEFAULTMENU=\"$(pkgdatadir)/menu\" \
-			-DDEFAULTSTYLE=\"$(pkgdatadir)/styles/default\"
+CPPFLAGS= @CPPFLAGS@ @SHAPE@ @KDE@ @SLIT@ \
+-DDEFAULTRC=\"$(pkgdatadir)/rc\"\
+-DDEFAULTMENU=\"$(pkgdatadir)/menu\" \
+-DDEFAULTSTYLE=\"$(pkgdatadir)/styles/default\"
 
-bin_PROGRAMS =		blackbox
+bin_PROGRAMS= blackbox
 
-blackbox_SOURCES =	Basemenu.cc		\
-			Clientmenu.cc		\
-			Icon.cc			\
-			Image.cc		\
-			LinkedList.cc		\
-			Rootmenu.cc		\
-			Screen.cc		\
-			Toolbar.cc		\
-			Window.cc		\
-			Windowmenu.cc		\
-			Workspace.cc		\
-			Workspacemenu.cc	\
-			blackbox.cc		\
-			main.cc
+blackbox_SOURCES= Basemenu.cc Clientmenu.cc Icon.cc Image.cc LinkedList.cc Rootmenu.cc Screen.cc Slit.cc Toolbar.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc main.cc
 
-MAINTAINERCLEANFILES =	Makefile.in
+MAINTAINERCLEANFILES= Makefile.in
 
 distclean-local:
 	rm -f *\~
@@ -65,6 +50,7 @@ Rootmenu.o: Rootmenu.cc blackbox.hh ../version.h Image.hh \
 Screen.o: Screen.cc blackbox.hh ../version.h Image.hh LinkedList.hh \
  Clientmenu.hh Basemenu.hh Icon.hh Screen.hh Rootmenu.hh Toolbar.hh \
  Window.hh Workspace.hh Workspacemenu.hh
+Slit.o: Slit.cc
 Toolbar.o: Toolbar.cc blackbox.hh ../version.h Image.hh LinkedList.hh \
  Clientmenu.hh Basemenu.hh Icon.hh Rootmenu.hh Screen.hh Toolbar.hh \
  Workspace.hh Workspacemenu.hh

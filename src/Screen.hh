@@ -1,6 +1,6 @@
 //
 // Screen.hh for Blackbox - an X11 Window manager
-// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
+// Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -89,6 +89,11 @@ private:
   BImageControl *image_control;
   Iconmenu *iconmenu;
   Rootmenu *rootmenu;
+
+#ifdef    SLIT
+  Slit *slit;
+#endif // SLIT
+
   Toolbar *toolbar;
   Workspace *current_workspace;
   Workspacemenu *workspacemenu;
@@ -120,14 +125,20 @@ private:
     
     int workspaces, justify, menu_justify, toolbar_width_percent,
       placement_policy;
-    unsigned int handle_width, bevel_width;
 
+#ifdef    SLIT
+    int slit_placement;
+#endif // SLIT
+    
+    unsigned int handle_width, bevel_width;
+    
 #ifdef    HAVE_STRFTIME
     char *strftime_format;
 #else //  HAVE_STRFTIME
     Bool clock24hour;
     int date_format;
 #endif // HAVE_STRFTIME
+    
   } resource;
   
   
@@ -166,6 +177,13 @@ public:
   Blackbox *getBlackbox(void)            { return blackbox; }
   BImageControl *getImageControl(void)   { return image_control; }
   Rootmenu *getRootmenu(void)            { return rootmenu; }
+
+#ifdef   SLIT
+  Slit *getSlit(void)           { return slit; }
+  int getSlitPlacement(void)    { return resource.slit_placement; }
+  void saveSlitPlacement(int p) { resource.slit_placement = p; }
+#endif // SLIT
+  
   Toolbar *getToolbar(void)              { return toolbar; }
   Workspace *getWorkspace(int);
   Workspace *getCurrentWorkspace(void)   { return current_workspace; }
@@ -241,6 +259,12 @@ public:
 #endif // KDE
   
   enum { SmartPlacement = 1, CascadePlacement };
+
+#ifdef    SLIT
+  enum { TopLeft = 1, CenterLeft, BottomLeft, TopRight, CenterRight,
+	 BottomRight };
+#endif // SLIT
+
 };
 
 

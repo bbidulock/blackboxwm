@@ -1,6 +1,6 @@
 //
-// icon.hh for Blackbox - an X11 Window manager
-// Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
+// Slit.hh for Blackbox - an X11 Window manager
+// Copyright (c) 1997 - 1999, 1999 by Brad Hughes, bhughes@tcac.net
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -19,69 +19,74 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef __blackbox_icon_hh
-#define __blackbox_icon_hh
+#ifndef   __Slit_hh
+#define   __Slit_hh
 
-class IconMenu;
-class BlackboxIcon;
-
-class Blackbox;
-class BScreen;
-class Toolbar;
-class BlackboxWindow;
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
 #include "Basemenu.hh"
 #include "LinkedList.hh"
 
+class Slit;
 
-class Iconmenu : public Basemenu {
+
+class SlitClient {
+public:
+  Window client_window, icon_window, window;
+  
+  int x, y;
+  unsigned int width, height;
+};
+
+
+class SlitMenu : public Basemenu {
 private:
-  Blackbox *blackbox;
   BScreen *screen;
-  LinkedList<BlackboxIcon> *iconList;
-
-
+  Slit *slit;
+  
+  
 protected:
   virtual void itemSelected(int, int);
-
-
+  
+  
 public:
-  Iconmenu(Blackbox *, BScreen *);
-  ~Iconmenu(void);
-
-  int insert(BlackboxIcon *);
-  int remove(BlackboxIcon *);
+  SlitMenu(Slit *, BScreen *);
 };
 
 
-class BlackboxIcon {
+class Slit {
 private:
   Display *display;
-  Window client;
-
-  char *name;
-  int icon_number;
   
-  BlackboxWindow *window;
+  Blackbox *blackbox;
   BScreen *screen;
-
-
+  LinkedList<SlitClient> *clientList;
+  SlitMenu *slitmenu;
+  
+  struct frame {
+    Pixmap pixmap;
+    Window window;
+    
+    int x, y;
+    unsigned int width, height;
+  } frame;
+  
+  
 protected:
-
-
+  
+  
 public:
-  BlackboxIcon(Blackbox *, BlackboxWindow *);
-  ~BlackboxIcon(void);
+  Slit(Blackbox *, BScreen *);
+  ~Slit();
+  
+  void addClient(Window);
+  void removeClient(Window);
+  void reconfigure(void);
 
-  BlackboxWindow *getWindow(void) { return window; }
-
-  char **getULabel(void) { return &name; }
-
-  const int getIconNumber(void) { return (const int) icon_number; }
-
-  void setIconNumber(int n) { icon_number = n; }
-  void rereadLabel(void);
+  void buttonPressEvent(XButtonEvent *);
+  void configureRequestEvent(XConfigureRequestEvent *);
 };
 
 
-#endif
+#endif // __Slit_hh

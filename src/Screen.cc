@@ -1,6 +1,6 @@
 //
 // Screen.cc for Blackbox - an X11 Window manager
-// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
+// Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,9 +23,9 @@
 #define   _GNU_SOURCE
 #endif // _GNU_SOURCE
 
-#ifdef HAVE_CONFIG_H
+#ifdef    HAVE_CONFIG_H
 #  include "../config.h"
-#endif
+#endif // HAVE_CONFIG_H
 
 #include <X11/Xatom.h>
 
@@ -34,16 +34,21 @@
 #include "Icon.hh"
 #include "Image.hh"
 #include "Screen.hh"
+
+#ifdef    SLIT
+#include "Slit.hh"
+#endif // SLIT
+
 #include "Rootmenu.hh"
 #include "Toolbar.hh"
 #include "Window.hh"
 #include "Workspace.hh"
 #include "Workspacemenu.hh"
 
-#ifdef STDC_HEADERS
+#ifdef    STDC_HEADERS
 #  include <stdlib.h>
 #  include <string.h>
-#endif
+#endif // STDC_HEADERS
 
 
 static Bool running = True;
@@ -53,11 +58,33 @@ static int anotherWMRunning(Display *display, XErrorEvent *) {
 	  "BScreen::BScreen: an error occured while querying the X server.\n"
 	  "  another window manager already running on display %s.\n",
           DisplayString(display));
-
+  
   running = False;
-
+  
   return(-1);
 }
+
+
+/* Added by BS */
+static int removeRightParenEscapes(char line[], int len, int escapes) {
+  register int moves = escapes;
+  register int i;
+  
+  for(i = 0; i < len; ++i) {
+    if(escapes - moves > 0)
+      line[i-escapes+moves] = line[i];
+    
+    if(line[i] == '\\' && line[i+1] == ')')
+      --moves;
+    
+  }
+  
+  for ( i = i - escapes ; i < len ; ++i)
+    line[i] = 0;
+  
+  return i - escapes;
+}
+/* End addition by BS */
 
 
 BScreen::BScreen(Blackbox *bb, int scrn) {
@@ -172,65 +199,63 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
   workspaceNames = new LinkedList<char>;
   workspacesList = new LinkedList<Workspace>;
 
-#ifdef    KDE
+#ifdef    KDE  
   kwm_module_list = new LinkedList<Window>;
   kwm_window_list = new LinkedList<Window>;
-
-  {
-    unsigned long data = 1;
-    XChangeProperty(display, root_window, blackbox->getKWMRunningAtom(),
-                    blackbox->getKWMRunningAtom(), 32, PropModeAppend,
-                    (unsigned char *) &data, 1);
-
-    Atom a;
-    a = XInternAtom(display, "KWM_STRING_MAXIMIZE", False);
-    XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
-                    (unsigned char *) "&Maximize", 10);
-
-    a = XInternAtom(display, "KWM_STRING_UNMAXIMIZE", False);
-    XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
-                    (unsigned char *) "&Un Maximize", 12);
-
-    a = XInternAtom(display, "KWM_STRING_ICONIFY", False);
-    XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
-                    (unsigned char *) "&Iconify", 9);
-
-    a = XInternAtom(display, "KWM_STRING_UNICONIFY", False);
-    XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
-                    (unsigned char *) "&De Iconify", 9);
-
-    a = XInternAtom(display,"KWM_STRING_STICKY",False);
-    XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
-                    (unsigned char *) "&Stick", 7);
-
-    a = XInternAtom(display, "KWM_STRING_UNSTICKY", False);
-    XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
-                    (unsigned char *) "&Un Stick", 9);
-    
-    a = XInternAtom(display, "KWM_STRING_MOVE", False);
-    XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
-                    (unsigned char *) "&Move", 6);
-
-    a = XInternAtom(display, "KWM_STRING_RESIZE", False);
-    XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
-                    (unsigned char *) "&Resize", 8);
-
-    a = XInternAtom(display, "KWM_STRING_CLOSE", False);
-    XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
-                    (unsigned char *) "&Close", 7);
-
-    a = XInternAtom(display, "KWM_STRING_ONTOCURRENTDESKTOP", False);
-    XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
-                    (unsigned char *) "R&eassociate with current...", 7);
-  }
+  
+  unsigned long data = 1;
+  XChangeProperty(display, root_window, blackbox->getKWMRunningAtom(),
+		  blackbox->getKWMRunningAtom(), 32, PropModeAppend,
+		  (unsigned char *) &data, 1);
+  
+  Atom a;
+  a = XInternAtom(display, "KWM_STRING_MAXIMIZE", False);
+  XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
+		  (unsigned char *) "&Maximize", 10);
+  
+  a = XInternAtom(display, "KWM_STRING_UNMAXIMIZE", False);
+  XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
+		  (unsigned char *) "&Un Maximize", 12);
+  
+  a = XInternAtom(display, "KWM_STRING_ICONIFY", False);
+  XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
+		  (unsigned char *) "&Iconify", 9);
+  
+  a = XInternAtom(display, "KWM_STRING_UNICONIFY", False);
+  XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
+		  (unsigned char *) "&De Iconify", 9);
+  
+  a = XInternAtom(display,"KWM_STRING_STICKY",False);
+  XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
+		  (unsigned char *) "&Stick", 7);
+  
+  a = XInternAtom(display, "KWM_STRING_UNSTICKY", False);
+  XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
+		  (unsigned char *) "&Un Stick", 9);
+  
+  a = XInternAtom(display, "KWM_STRING_MOVE", False);
+  XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
+		  (unsigned char *) "&Move", 6);
+  
+  a = XInternAtom(display, "KWM_STRING_RESIZE", False);
+  XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
+		  (unsigned char *) "&Resize", 8);
+  
+  a = XInternAtom(display, "KWM_STRING_CLOSE", False);
+  XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
+		  (unsigned char *) "&Close", 7);
+  
+  a = XInternAtom(display, "KWM_STRING_ONTOCURRENTDESKTOP", False);
+  XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
+		  (unsigned char *) "R&eassociate with current...", 7);
 #endif // KDE
   
   image_control = new BImageControl(blackbox, this);
   image_control->installRootColormap();
   root_colormap_installed = True;
-
+  
   blackbox->load_rc(this);
-
+  
   LoadStyle();
   
   XGCValues gcv;
@@ -286,20 +311,18 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
   }
   
 #ifdef    KDE
-  {
     unsigned long data = (unsigned long) workspacesList->count();
     
     XChangeProperty(display, root_window,
 		    blackbox->getKWMNumberOfDesktopsAtom(),
 		    blackbox->getKWMNumberOfDesktopsAtom(), 32,
 		    PropModeReplace, (unsigned char *) &data, 1);
-
+    
     sendToKWMModules(blackbox->getKWMModuleDesktopNumberChangeAtom(),
 		     (XID) data);
-  }
 #endif // KDE
-  
-  workspacemenu->insert("Icons", iconmenu);
+    
+    workspacemenu->insert("Icons", iconmenu);
   workspacemenu->update();
   
   current_workspace = workspacesList->first();
@@ -307,33 +330,77 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
 
   toolbar = new Toolbar(blackbox, this);
 
+#ifdef    SLIT
+  slit = new Slit(blackbox, this);
+#endif // SLIT
+  
   InitMenu();
-
+  
   raiseWindows(0, 0);
   rootmenu->update();
 
   changeWorkspaceID(0);
 
+  int i;
   unsigned int nchild;
   Window r, p, *children;
   XQueryTree(display, root_window, &r, &p, &children, &nchild);
-  
-  for (int i = 0; i < (int) nchild; ++i) {
-    if (children[i] == None ||
-	(! blackbox->validateWindow(children[i])))
+
+  // preen the window list of all icon windows... for better dockapp support
+  for (i = 0; i < (int) nchild; i++) {
+    if (children[i] == None) continue;
+
+    XWMHints *wmhints = XGetWMHints(display, children[i]);
+
+    if (wmhints && (wmhints->flags & IconWindowHint) &&
+	(wmhints->icon_window != children[i])) {
+      for (int j = 0; j < (int) nchild; j++) {
+        if (children[j] == wmhints->icon_window) {
+          children[j] = None;
+	  
+          break;
+        }
+      }
+
+      XFree(wmhints);
+    }
+  }
+ 
+  // manage shown windows
+  for (i = 0; i < (int) nchild; ++i) {
+    if (children[i] == None || (! blackbox->validateWindow(children[i])))
       continue;
     
     XWindowAttributes attrib;
     if (XGetWindowAttributes(display, children[i], &attrib)) {
+
 #ifdef    KDE
       addKWMModule(children[i]);
 #endif // KDE
+      
       if (! attrib.override_redirect && attrib.map_state != IsUnmapped) {
-	BlackboxWindow *nWin = new BlackboxWindow(blackbox, this, children[i]);
+	XWMHints *wmhints = XGetWMHints(display, children[i]);
 	
-	XMapRequestEvent mre;
-	mre.window = children[i];
-	nWin->mapRequestEvent(&mre);
+#ifdef    SLIT
+	if (wmhints && (wmhints->flags & StateHint) &&
+	    (wmhints->initial_state == WithdrawnState)) {
+    	  slit->addClient(children[i]);
+	  
+	  XFree(wmhints);
+	} else if (! blackbox->searchSlit(children[i])) {
+#endif // SLIT
+	  
+	  BlackboxWindow *win = new BlackboxWindow(blackbox, this,
+					           children[i]);
+	  
+	  XMapRequestEvent mre;
+	  mre.window = children[i];
+	  win->mapRequestEvent(&mre);
+	  
+#ifdef    SLIT
+	}
+#endif // SLIT
+	
       }
     }
   }
@@ -344,12 +411,17 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
 
 BScreen::~BScreen(void) {
   if (! managed) return;
-
+  
 #ifdef    HAVE_STRFTIME
   if (resource.strftime_format) delete [] resource.strftime_format;
 #endif // HAVE_STRFTIME
 
   delete rootmenu;
+
+#ifdef    SLIT
+  delete slit;
+#endif // SLIT
+
   delete toolbar;
   delete image_control;
 
@@ -554,6 +626,11 @@ void BScreen::reconfigure(void) {
   workspacemenu->reconfigure();
   iconmenu->reconfigure();
   rootmenu->reconfigure();
+
+#ifdef    SLIT
+  slit->reconfigure();
+#endif // SLIT
+
   toolbar->reconfigure();
 
   LinkedListIterator<Workspace> it(workspacesList);
@@ -982,14 +1059,14 @@ void BScreen::raiseWindows(Window *workspace_stack, int num) {
 }
 
 
-#ifdef HAVE_STRFTIME
+#ifdef    HAVE_STRFTIME
 void BScreen::saveStrftimeFormat(char *format) {
   if (resource.strftime_format) delete [] resource.strftime_format;
   
   resource.strftime_format = new char[strlen(format) + 1];
   sprintf(resource.strftime_format, "%s", format);
 }
-#endif
+#endif // HAVE_STRFTIME
 
 
 void BScreen::addWorkspaceName(char *name) {
@@ -1103,7 +1180,7 @@ void BScreen::prevFocus(void) {
 void BScreen::raiseFocus(void) {
   Bool have_focused = False;
   int focused_window_number = -1;
-
+  
   if (blackbox->getFocusedWindow())
     if (blackbox->getFocusedWindow()->getScreen()->getScreenNumber() ==
 	screen_number) {
@@ -1187,136 +1264,230 @@ void BScreen::InitMenu(void) {
 
 
 Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
-  char line[512], tmp1[512], tmp2[512];
-
+  char line[1024], tmp1[1024], tmp2[1024];
+  
   while (! feof(file)) {
-    memset(line, 0, 512);
-    memset(tmp1, 0, 512);
-    memset(tmp2, 0, 512);
+    memset(line, 0, 1024);
+    memset(tmp1, 0, 1024);
+    memset(tmp2, 0, 1024);
     
-    if (fgets(line, 512, file)) {
+    if (fgets(line, 1024, file)) {
       if (line[0] != '#') {
-	int i, ri, len = strlen(line);
+	register int index, rear_index;
+	int old_rear_index, escapes, len = strlen(line);
+	
+	for (index = 0; index < len; ++index)
+	  if (line[index] == '[') {
+	    index++;
+	    break;
+	  }
+	
+	for (rear_index = index; rear_index < len; ++rear_index) 
+	  if (line[rear_index] == ']')
+	    break;
+	
+	if (index < rear_index && rear_index > 0) {
+	  strncpy(tmp1, line + index, rear_index - index);
+	  *(tmp1 + (rear_index - index)) = '\0';
+	  old_rear_index = rear_index;
 
-	for (i = 0; i < len; i++)
-	  if (line[i] == '[') { i++; break; }
-	for (ri = len; ri > 0; ri--)
-	  if (line[ri] == ']') break;
-
-	if (i < ri && ri > 0) {
-	  strncpy(tmp1, line + i, ri - i);
-	  *(tmp1 + (ri - i)) = '\0';
-	  
-	  if (strstr(tmp1, "nop")) {
-            for (i = 0; i < len; i++)
-              if (line[i] == '(') { i++; break; }
-            for (ri = len; ri > 0; ri--)
-              if (line[ri] == ')') break;
-
+	  // at this point, we've extracted what kind of menu 
+	  // entry we're dealing with.  Now parse the rest of the line
+	  if (strstr(tmp1, "nop"))  {
+	    for (index = old_rear_index; index < len; index++)
+	      if (line[index] == '(') {
+		index++;
+		break;
+	      }
+	    
+	    escapes = 0;
+	    for (rear_index =  index; rear_index < len; ++rear_index)
+	      if (line[rear_index] == ')')
+		if (line[rear_index - 1] == '\\')
+		  ++escapes;
+		else
+		  break;
+	    
 	    char *label = 0;
-            if (i < ri && ri > 0) {
-              label = new char[ri - i + 1];
-              strncpy(label, line + i, ri - i);
-              *(label + (ri - i)) = '\0';
-
-              menu->insert(label, 0);
-            } else {
+	    if (index < rear_index && rear_index > 0) {
+	      label = new char[rear_index - index + 1];
+	      strncpy(label, line + index, rear_index - index);
+	      *(label + (rear_index - index)) = '\0';
+			
+	      if(escapes > 0)
+		removeRightParenEscapes(label, rear_index - index, escapes);
+	      
+	      old_rear_index = rear_index;
+	      
+	      menu->insert(label, 0);
+	    } else { // there was a problem with the parens
 	      label = new char[1];
 	      *label = '\0';
 	      menu->insert(label);
 	    }
-	  } else if (strstr(tmp1, "exit")) {
-	    for (i = 0; i < len; i++)
-	      if (line[i] == '(') { i++; break; }
-	    for (ri = len; ri > 0; ri--)
-	      if (line[ri] == ')') break;
+	  }  else if (strstr(tmp1, "exit")) {
+	    for (index = old_rear_index; index < len; ++index)
+	      if (line[index] == '(') {
+		index++;
+		break;
+	      }
+
+	    escapes = 0;
+	    for (rear_index = index; rear_index < len; ++rear_index)
+	      if (line[rear_index] == ')')
+		if (line[rear_index - 1] == '\\')
+		  ++escapes;
+		else
+		  break;
 	    
-	    if (i < ri && ri > 0) {
-	      char *label = new char[ri - i + 1];
-	      strncpy(label, line + i, ri - i);
-	      *(label + (ri - i)) = '\0';
+	    if (index < rear_index && rear_index > 0)  {
+	      char *label = new char[rear_index - index + 1];
+	      strncpy(label, line + index, rear_index - index);
+	      *(label + (rear_index - index)) = '\0';
+	      
+	      if(escapes > 0)
+		removeRightParenEscapes(label, rear_index - index, escapes);
+	      
+	      old_rear_index = rear_index;
 	      
 	      menu->insert(label, Blackbox::B_Exit);
 	    }
 	  } else if (strstr(tmp1, "restart")) {
-	    for (i = 0; i < len; i++)
-	      if (line[i] == '(') { i++; break; }
-	    for (ri = len; ri > 0; ri--)
-	      if (line[ri] == ')') break;
-	    
-	    if (i < ri && ri > 0) {
-	      char *label = new char[ri - i + 1];
-	      strncpy(label, line + i, ri - i);
-	      *(label + (ri - i)) = '\0';
-	      
-	      for (i = 0; i < len; i++)
-		if (line[i] == '{') { i++; break; }
-	      for (ri = len; ri > 0; ri--)
-		if (line[ri] == '}') break;
-	      
-	      char *other = 0;
-	      if (i < ri && ri > 0) {
-		other = new char[ri - i + 1];
-		strncpy(other, line + i, ri - i);
-		*(other + (ri - i)) = '\0';
+	    for (index = old_rear_index; index < len; ++index)
+	      if (line[index] == '(') {
+		++index;
+		break;
 	      }
 
+	    escapes = 0;
+	    for (rear_index = index; rear_index < len; ++rear_index)
+	      if (line[rear_index] == ')')
+		if (line[rear_index - 1] == '\\')
+		  ++escapes;
+		else
+		  break;
+		    
+	    if (index < rear_index && rear_index > 0) {
+	      char *label = new char[rear_index - index + 1];
+	      strncpy(label, line + index, rear_index - index);
+	      *(label + (rear_index - index)) = '\0';
+	      
+	      if(escapes > 0)
+		removeRightParenEscapes(label, rear_index - index, escapes);
+	      
+	      old_rear_index = rear_index;
+	      
+	      for (index = old_rear_index; index < len; index++)
+		if (line[index] == '{') {
+		  ++index;
+		  break;
+		}
+	      
+	      for (rear_index = len; rear_index > 0; --rear_index)
+		if (line[rear_index] == '}')
+		  break;
+	      
+	      char *other = 0;
+	      if (index < rear_index && rear_index > 0) {
+		other = new char[rear_index - index + 1];
+		strncpy(other, line + index, rear_index - index);
+		*(other + (rear_index - index)) = '\0';
+	      }
+	      
 	      if (other)
 		menu->insert(label, Blackbox::B_RestartOther, other);
 	      else
 		menu->insert(label, Blackbox::B_Restart);
 	    }
 	  } else if (strstr(tmp1, "reconfig")) {
-	    for (i = 0; i < len; i++)
-	      if (line[i] == '(') { i++; break; }
-	    for (ri = len; ri > 0; ri--)
-	      if (line[ri] == ')') break;
-	    
-	    if (i < ri && ri > 0) {
-	      char *label = new char[ri - i + 1];
-	      strncpy(label, line + i, ri - i);
-	      *(label + (ri - i)) = '\0';
-	      
-	      for (i = 0; i < len; i++)
-		if (line[i] == '{') { i++; break; }
-	      for (ri = len; ri > 0; ri--)
-		if (line[ri] == '}') break;
-	      
-	      char *exec = 0;
-	      if (i < ri && ri > 0) {
-		exec = new char[ri - i + 1];
-		strncpy(exec, line + i, ri - i);
-		*(exec + (ri - i)) = '\0';
+	    for (index = old_rear_index; index < len; ++index)
+	      if (line[index] == '(') {
+		++index;
+		break;
 	      }
 
+	    escapes = 0;
+	    for (rear_index = index; rear_index < len; ++rear_index)
+	      if (line[rear_index] == ')')
+		if (line[rear_index - 1] == '\\')
+		  ++escapes;
+		else
+		  break;
+	    
+	    if (index < rear_index && rear_index > 0) {
+	      char *label = new char[rear_index - index + 1];
+	      strncpy(label, line + index, rear_index - index);
+	      *(label + (rear_index - index)) = '\0';
+			
+	      if(escapes > 0)
+		removeRightParenEscapes(label, rear_index - index, escapes);
+	      
+	      old_rear_index = rear_index;
+
+	      for (index = old_rear_index; index < len; ++index)
+		if (line[index] == '{') {
+		  ++index;
+		  break;
+		}
+	      
+	      for (rear_index = len; rear_index > 0; --rear_index)
+		if (line[rear_index] == '}')
+		  break;
+	      
+	      char *exec = 0;
+	      if (index < rear_index && rear_index > 0) {
+		exec = new char[rear_index - index + 1];
+		strncpy(exec, line + index, rear_index - index);
+		*(exec + (rear_index - index)) = '\0';
+	      }
+	      
 	      if (exec)
 		menu->insert(label, Blackbox::B_ExecReconfigure, exec);
 	      else
 		menu->insert(label, Blackbox::B_Reconfigure);
 	    }
 	  } else if (strstr(tmp1, "submenu")) {
-	    for (i = 0; i < len; i++)
-	      if (line[i] == '(') { i++; break; }
-	    for (ri = len; ri > 0; ri--)
-	      if (line[ri] == ')') break;
+	    for (index = old_rear_index; index < len; ++index)
+	      if (line[index] == '(') {
+		++index;
+		break;
+	      }
 
+	    escapes = 0;	    
+	    for (rear_index = index; rear_index < len; ++rear_index)
+	      if (line[rear_index] == ')')
+		if (line[rear_index - 1] == '\\')
+		  ++escapes;
+		else
+		  break;
+		    
 	    char *label = 0;
-	    if (i < ri && ri > 0) {
-	      label = new char[ri - i + 1];
-	      strncpy(label, line + i, ri - i);
-	      *(label + (ri - i)) = '\0';
+	    if (index < rear_index && rear_index > 0) {
+	      label = new char[rear_index - index + 1];
+	      strncpy(label, line + index, rear_index - index);
+	      *(label + (rear_index - index)) = '\0';
+	      
+	      if(escapes > 0)
+		removeRightParenEscapes(label, rear_index - index, escapes);
+	      
+	      old_rear_index = rear_index;
 	    }
-	    
+		    
 	    // this is an optional feature
-	    for (i = 0; i < len; i++)
-	      if (line[i] == '{') { i++; break; }
-	    for (ri = len; ri > 0; ri--)
-	      if (line[ri] == '}') break;
+	    for (index = old_rear_index; index < len; ++index)
+	      if (line[index] == '{') {
+		++index;
+		break;
+	      }
+
+	    for (rear_index = len; rear_index > 0; --rear_index)
+	      if (line[rear_index] == '}')
+		break;
 	    
-	    char title[512];
-	    if (i < ri && ri > 0) {
-	      strncpy(title, line + i, ri - i);
-	      *(title + (ri - i)) = '\0';
+	    char title[1024];
+	    if (index < rear_index && rear_index > 0) {
+	      strncpy(title, line + index, rear_index - index);
+	      *(title + (rear_index - index)) = '\0';
 	    } else {
 	      int l = strlen(label);
 	      strncpy(title, label, l + 1);
@@ -1330,26 +1501,42 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	  } else if (strstr(tmp1, "end")) {
 	    break;
 	  } else if (strstr(tmp1, "exec")) {
-	    for (i = 0; i < len; i++)
-	      if (line[i] == '(') { i++; break; }
-	    for (ri = len; ri > 0; ri--)
-	      if (line[ri] == ')') break;
+	    for (index = old_rear_index; index < len; index++)
+	      if (line[index] == '(') { ++index; break; }
 
-	    if (i < ri && ri > 0) {
-	      char *label = new char[ri - i + 1];
-	      strncpy(label, line + i, ri - i);
-	      *(label + (ri - i)) = '\0';
-   
-	      for (i = 0; i < len; i++)
-		if (line[i] == '{') { i++; break; }
-	      for (ri = len; ri > 0; ri--)
-		if (line[ri] == '}') break;
+	    escapes = 0;
+	    for (rear_index = index; rear_index < len; ++rear_index)
+	      if (line[rear_index] == ')')
+		if (line[rear_index - 1] == '\\')
+		  ++escapes;
+		else
+		  break;
+	    
+	    if (index < rear_index && rear_index > 0) {
+	      char *label = new char[rear_index - index + 1];
+	      strncpy(label, line + index, rear_index - index);
+	      *(label + (rear_index - index)) = '\0';
 	      
-	      if (i < ri && ri > 0) {
-		char *command = new char[ri - i + 1];
-		strncpy(command, line + i, ri - i);
-		*(command + (ri - i)) = '\0';
+	      if(escapes > 0)
+		removeRightParenEscapes(label, rear_index - index, escapes);
 
+	      old_rear_index = rear_index;
+	      
+	      for (index = old_rear_index; index < len; ++index)
+		if (line[index] == '{') {
+		  ++index;
+		  break;
+		}
+	      
+	      for (rear_index = len; rear_index > 0; --rear_index)
+		if (line[rear_index] == '}')
+		  break;
+			
+	      if (index < rear_index && rear_index > 0) {
+		char *command = new char[rear_index - index + 1];
+		strncpy(command, line + index, rear_index - index);
+		*(command + (rear_index - index)) = '\0';
+		
 		if (label && command)
 		  menu->insert(label, Blackbox::B_Execute, command);
 		else
@@ -1363,15 +1550,46 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	      fprintf(stderr, "BScreen::parseMenuFile: "
 		      "[exec] error: no label string\n");
 	  } else if (strstr(tmp1, "include")) {
-	    for (i = 0; i < len; i++)
-	      if (line[i] == '(') { i++; break; }
-	    for (ri = len; ri > 0; ri--)
-	      if (line[ri] == ')') break;
+	    for (index = old_rear_index; index < len; ++index)
+	      if (line[index] == '(') {
+		index++;
+		break;
+	      }
 
-	    if (i < ri && ri > 0) {
-	      char *newfile = new char[ri - i + 1];
-	      strncpy(newfile, line + i, ri - i);
-	      *(newfile + (ri - i)) = '\0';
+	    escapes = 0;
+	    for (rear_index = index; rear_index < len; ++rear_index)
+	      if (line[rear_index] == ')')
+		if (line[rear_index - 1] == '\\')
+		  ++escapes;
+		else
+		  break;
+	    
+	    if (index < rear_index && rear_index > 0) {
+	      // perform shell style ~ home directory expansion
+	      char *homedir = 0;
+	      int homedir_len = 0;
+	      if (*(line + index) == '~' && *(line + index + 1) == '/') {
+		homedir = getenv("HOME");
+	        homedir_len = strlen(homedir);
+	      }
+	      
+	      char *newfile = new char[rear_index - index + homedir_len + 1];
+
+	      if (homedir && homedir_len != 0) {
+		strncpy(newfile, homedir, homedir_len);
+		
+		strncpy(newfile + homedir_len, line + index + 1,
+			rear_index - index - 1);
+		*(newfile + (rear_index - index) + homedir_len - 1) = '\0';
+	      } else {
+		strncpy(newfile, line + index, rear_index - index);
+		*(newfile + (rear_index - index)) = '\0';
+	      }
+	      
+	      if(escapes > 0)
+		removeRightParenEscapes(newfile, rear_index - index, escapes);
+	      
+	      old_rear_index = rear_index;
 	      
 	      if (newfile) {
 		FILE *submenufile = fopen(newfile, "r");
@@ -1383,33 +1601,69 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 		  }
 		} else
 		  perror(newfile);
-
+		
 		delete [] newfile;
 	      } else
 		fprintf(stderr, "BScreen::parseMenuFile: "
 			"[include] error: newfile(%s) == NULL\n", newfile);
 	    }
 	  } else if (strstr(tmp1, "style")) {
-	    for (i = 0; i < len; i++)
-	      if (line[i] == '(') { i++; break; }
-	    for (ri = len; ri > 0; ri--)
-	      if (line[ri] == ')') break;
+	    for (index = old_rear_index; index < len; ++index)
+	      if (line[index] == '(') {
+		++index;
+		break;
+	      }
 	    
-	    if (i < ri && ri > 0) {
-	      char *label = new char[ri - i + 1];
-	      strncpy(label, line + i, ri - i);
-	      *(label + (ri - i)) = '\0';
+	    escapes = 0;
+	    for (rear_index = index; rear_index < len; ++rear_index)
+	      if (line[rear_index] == ')')
+		if (line[rear_index - 1] == '\\')
+		  ++escapes;
+		else
+		  break;
+	    
+	    if (index < rear_index && rear_index > 0) {
+	      char *label = new char[rear_index - index + 1];
+	      strncpy(label, line + index, rear_index - index);
+	      *(label + (rear_index - index)) = '\0';
 	      
-	      for (i = 0; i < len; i++)
-		if (line[i] == '{') { i++; break; }
-	      for (ri = len; ri > 0; ri--)
-		if (line[ri] == '}') break;
+	      if(escapes > 0)
+		removeRightParenEscapes(label, rear_index - index, escapes);
 	      
-	      if (i < ri && ri > 0) {
-		char *style = new char[ri - i + 1];
-		strncpy(style, line + i, ri - i);
-		*(style + (ri - i)) = '\0';
+	      old_rear_index = rear_index;
+	      
+	      for (index = old_rear_index; index < len; index++)
+		if (line[index] == '{') {
+		  index++;
+		  break;
+		}
 
+	      for (rear_index = len; rear_index > 0; --rear_index)
+		if (line[rear_index] == '}')
+		  break;
+			
+	      if (index < rear_index && rear_index > 0) {
+		// perform shell style ~ home directory expansion
+		char *homedir = 0;
+		int homedir_len = 0;
+		if (*(line + index) == '~' && *(line + index + 1) == '/') {
+		  homedir = getenv("HOME");
+		  homedir_len = strlen(homedir);
+		}
+		
+		char *style = new char[rear_index - index + homedir_len + 1];
+
+		if (homedir && homedir_len != 0) {
+		  strncpy(style, homedir, homedir_len);
+		
+		  strncpy(style + homedir_len, line + index + 1,
+			  rear_index - index - 1);
+		  *(style + (rear_index - index) + homedir_len - 1) = '\0';
+		} else {
+		  strncpy(style, line + index, rear_index - index);
+		  *(style + (rear_index - index)) = '\0';
+		}
+		
 		if (label && style)
 		  menu->insert(label, Blackbox::B_SetStyle, style);
 		else
@@ -1422,7 +1676,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	    } else
 	      fprintf(stderr, "BScreen::parseMenuFile: "
 		      "[style] error: no label string\n");
-          }
+	  }
 	}
       }
     }
@@ -1441,7 +1695,7 @@ void BScreen::shutdown(void) {
 #ifdef    KDE
   XDeleteProperty(display, root_window, blackbox->getKWMRunningAtom());
 #endif // KDE
-
+  
   LinkedListIterator<Workspace> it(workspacesList);
   for (; it.current(); it ++)
     it.current()->shutdown();
@@ -1451,7 +1705,6 @@ void BScreen::shutdown(void) {
 
 
 #ifdef    KDE
-
 Bool BScreen::isKWMModule(Window win) {
   Atom type_return;
 
@@ -1568,5 +1821,4 @@ void BScreen::scanWorkspaceNames(void) {
   for (; it.current(); it++)
     it.current()->rereadName();
 }
-
 #endif // KDE

@@ -1,6 +1,6 @@
 //
 // blackbox.hh for Blackbox - an X11 Window manager
-// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
+// Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -32,6 +32,11 @@ class BlackboxWindow;
 class BlackboxIcon;
 class Iconmenu;
 class Rootmenu;
+
+#ifdef    SLIT
+class Slit;
+#endif // SLIT
+
 class Toolbar;
 class Workspace;
 class Workspacemenu;
@@ -66,6 +71,13 @@ private:
     Window window;
   } ToolbarSearch;
 
+#ifdef    SLIT
+  typedef struct SlitSearch {
+    Slit *data;
+    Window window;
+  } SlitSearch;
+#endif // SLIT
+  
   struct cursor {
     Cursor session, move;
   } cursor;
@@ -73,11 +85,11 @@ private:
   struct resource {
     Bool image_dither, colormap_focus_follows_mouse;
     Time double_click_interval, auto_raise_delay_sec, auto_raise_delay_usec;
-
+    
     char *menu_file, *style_file;
     int colors_per_channel;
   } resource;
-
+  
   struct shape {
     Bool extensions;
     int event_basep, error_basep;
@@ -85,6 +97,11 @@ private:
 
   LinkedList<WindowSearch> *windowSearchList;
   LinkedList<MenuSearch> *menuSearchList;
+
+#ifdef    SLIT
+  LinkedList<SlitSearch> *slitSearchList;
+#endif // SLIT
+
   LinkedList<ToolbarSearch> *toolbarSearchList;
   LinkedList<GroupSearch> *groupSearchList;
   LinkedList<BScreen> *screenList;
@@ -177,7 +194,7 @@ public:
   Cursor getMoveCursor(void)    { return cursor.move; }
 
   Display *getDisplay(void) { return display; }
-
+  
   Time getDoubleClickInterval(void) { return resource.double_click_interval; }
 
   Toolbar *searchToolbar(Window);
@@ -209,6 +226,13 @@ public:
   void reconfigure(void);
   void shutdown(void);
 
+#ifdef    SLIT
+  Slit *searchSlit(Window);
+  
+  void saveSlitSearch(Window, Slit *);
+  void removeSlitSearch(Window);
+#endif // SLIT
+  
   enum { B_Restart = 1, B_RestartOther, B_Exit, B_Shutdown, B_Execute,
 	 B_Reconfigure, B_ExecReconfigure, B_WindowShade, B_WindowIconify,
 	 B_WindowMaximize, B_WindowClose, B_WindowRaise, B_WindowLower,

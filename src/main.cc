@@ -1,6 +1,6 @@
 //
 // main.cc for Blackbox - an X11 Window manager
-// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
+// Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -83,13 +83,13 @@ int main(int argc, char **argv) {
       }
     } else if (! strcmp(argv[i], "-version")) {
       // print current version string
-      printf("Blackbox %s : (c) 1997, 1998 Brad Hughes\n\n",
+      printf("Blackbox %s : (c) 1997 - 1999 Brad Hughes\n\n",
              __blackbox_version);
 
       ::exit(0);
     } else if (! strcmp(argv[i], "-help")) {
       // print program usage and command line options
-      printf("Blackbox %s : (c) 1997, 1998 Brad Hughes\n\n"
+      printf("Blackbox %s : (c) 1997 - 1999 Brad Hughes\n\n"
              "  -display <string>\tuse display connection.\n"
 	     "  -version\t\tdisplay version and exit.\n"
              "  -help\t\t\tdisplay this help text and exit.\n\n",

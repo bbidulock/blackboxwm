@@ -1,5 +1,5 @@
 -- README for Blackbox 0.50.x Beta - an X11 Window manager
--- Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
+-- Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -40,16 +40,22 @@ displays), where as the stock xsetroot is not.
 Supported Platforms:
 --------------------
 ix86-Linux 2.0.x (libc5 and glibc2)
-ix86-Linux 2.1.x (libc5 and glibc2 - development platform)
+ix86-Linux 2.1.x (libc5 and glibc2)
+ix86-Linux 2.2.x (glibc2)
+ix86-FreeBSD 3.1-stable (development platform... yes... i changed OS's)
 ix86-FreeBSD 3.0-current (w/ elf kernel! -lukin)
 ix86-FreeBSD 2.2.x-stable
+ix86-BSDi 4.0
 PPC-mkLinux (version?)
+ix86-Solaris 2.6
 Sparc-Solaris 2.6 (2.5 anyone?)
 ix86-Solaris 7 (== 2.7?)
-Alpha-Digital UNIX (version?)
+Alpha-Digital UNIX 4.0D
+Alpha-Linux 2.2.2
 ?-AIX (rs6k? version?)
 MIPS-IRIX 6.5 (requires gcc, MIPSpro didn't like some of the template-fu)
 ix86-OS/2 (version? recent successes?)
+hp9000/715-HP/UX 10.20 (with egcs 1.1.1)
 
 NOTE: OS/2 support was included sometime in the 0.40.x series, but I have lost
       touch with the person that contributed the patches.  The code is still in

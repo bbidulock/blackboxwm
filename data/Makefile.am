@@ -1,5 +1,5 @@
 # data/Makefile.am for Blackbox 0.40.x beta - an X11 Window manager
-# Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
+# Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 #  (See the included file COPYING / GPL-2.0)
 #
 
-SUBDIRS = brueghel styles
+SUBDIRS = styles
 CLEANFILES = menu
 MAINTAINERCLEANFILES = Makefile.in
 pkgdata_DATA = rc menu

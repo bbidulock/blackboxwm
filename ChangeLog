@@ -1,6 +1,35 @@
 ChangeLog for Blackbox 0.50.xx
 Enjoy! :)
 
+Changes from 0.50.3 to 0.50.4:
+  - changed some Copyright information to include the current year
+  - added a number of platforms to the Supported Platforms section of the
+    README
+  - added the Slit... the Slit is a window maker dockapp util that lets users
+    use all of applications with Blackbox, and allows users to easily switch
+    between Window Maker and Blackbox more easily... it is included by default,
+    but you can remove it from the source with --disable-slit on your configure
+    command line
+  - large Brueghel styles and images removed from the base distribution
+  - merged a patch from Benjamin Stewart for very robust menu parsing... this
+    patch allows for parenthesis in menu files, and works well for
+    automatically generating menus from shellscripts and programs... the menu
+    syntax has not changed... it just is understood better :)
+  - added shell style tilde-slash (~/) home directory expansion for the
+    [include] and [style] tags in menu files
+  - added some sanity to window position/gravity code to for GTK applications
+  - added Window Maker style Mod1+MouseButton1+Motion window moving (for those
+    few braindead apps that like to be positioned where no decorations are
+    visible)
+  - added a SIGCHLD handler to clean up processes started by a startup script
+    that then exec's blackbox (gets rid of all those zombie processes)
+  - added a new resource to .blackboxrc which tells Blackbox where to put the
+    Slit... editing your .blackboxrc to change this is discouraged and
+    discarded, as the Slit has a menu that lets you select where to put it
+    (click any mouse button on the slit and see for yourself)
+  - fixed a bug in the workspace renaming feature that ate all Shift keypresses
+
+
 Changes from 0.50.2 to 0.50.3:
   - few documentation updates
   - fixes to let -lgen actually get linked with the executable (fixes compile

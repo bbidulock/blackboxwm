@@ -11,7 +11,7 @@
 # PARTICULAR PURPOSE.
 
 # util/Makefile.am for Blackbox 0.50.x beta - an X11 Window manager
-# Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
+# Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -84,6 +84,7 @@ MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 PACKAGE = @PACKAGE@
 SHAPE = @SHAPE@
+SLIT = @SLIT@
 VERSION = @VERSION@
 regex_cmd = @regex_cmd@
 

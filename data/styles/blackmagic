@@ -1,5 +1,5 @@
 ! Blackbox window manager resource defaults
-! (c) 1997, 1998 Brad Hughes
+! (c) 1997 - 1999 Brad Hughes
 
 toolbar:			Raised Diagonal   Gradient Bevel1
 toolbar.label:			Flat   Diagonal   Gradient
