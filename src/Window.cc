@@ -802,15 +802,24 @@ static WMNormalHints readWMNormalHints(Blackbox *blackbox,
       wmnormal.min_width  = sizehint.min_width;
     if (sizehint.min_height > 0)
       wmnormal.min_height = sizehint.min_height;
+
+    /*
+      if the minimum size is bigger then the screen, adjust the
+      maximum size
+    */
+    if (wmnormal.min_width > wmnormal.max_width)
+      wmnormal.max_width = wmnormal.min_width;
+    if (wmnormal.min_height > wmnormal.max_height)
+      wmnormal.max_height = wmnormal.min_height;
   }
 
   if (sizehint.flags & PMaxSize) {
-    if (sizehint.max_width > static_cast<signed>(wmnormal.min_width))
+    if (sizehint.max_width >= static_cast<signed>(wmnormal.min_width))
       wmnormal.max_width  = sizehint.max_width;
     else
       wmnormal.max_width  = wmnormal.min_width;
 
-    if (sizehint.max_height > static_cast<signed>(wmnormal.min_height))
+    if (sizehint.max_height >= static_cast<signed>(wmnormal.min_height))
       wmnormal.max_height = sizehint.max_height;
     else
       wmnormal.max_height = wmnormal.min_height;
@@ -829,12 +838,10 @@ static WMNormalHints readWMNormalHints(Blackbox *blackbox,
   }
 
   if (sizehint.flags & PBaseSize) {
-    wmnormal.base_width  = sizehint.base_width;
-    wmnormal.base_height = sizehint.base_height;
-
-    // sanity checks
-    wmnormal.min_width  = std::max(wmnormal.min_width,  wmnormal.base_width);
-    wmnormal.min_height = std::max(wmnormal.min_height, wmnormal.base_height);
+    if (sizehint.base_width <= static_cast<signed>(wmnormal.min_width))
+      wmnormal.base_width  = sizehint.base_width;
+    if (sizehint.base_height <= static_cast<signed>(wmnormal.min_height))
+      wmnormal.base_height = sizehint.base_height;
   }
 
   if (sizehint.flags & PWinGravity)
