@@ -64,7 +64,7 @@ void BGCCache::Context::set(const XFontStruct * const _font) {
 }
 
 
-BGCCache::BGCCache(BaseDisplay *_display)
+BGCCache::BGCCache(const BaseDisplay * const _display)
   : context_count(128u), cache_size(16u), cache_buckets(8u), display(_display)
 {
   contexts = new Context*[context_count];
@@ -104,9 +104,11 @@ BGCCache::Context *BGCCache::nextContext(unsigned int scr)
 {
   Window hd = display->getScreenInfo(scr)->getRootWindow();
 
-  register Context *c = *contexts;
-  register int i = context_count;
-  while (i--) {
+  register Context *c;
+  register unsigned int i = 0;
+  while (i < context_count) {
+    c = contexts[i++];
+
     if (! c->gc) {
       c->gc = XCreateGC(display->getXDisplay(), hd, 0, 0);
       c->used = false;
@@ -116,7 +118,6 @@ BGCCache::Context *BGCCache::nextContext(unsigned int scr)
       c->used = true;
       return c;
     }
-    c++;
   }
 
   fprintf(stderr, "BGCCache: context fault!\n");

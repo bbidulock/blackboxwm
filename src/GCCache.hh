@@ -33,7 +33,7 @@ class BGCCache {
 private:
   class Context {
   public:
-    Context(BaseDisplay *_display)
+    Context(const BaseDisplay * const _display)
       : display(_display), gc(0), pixel(0ul), fontid(0ul),
         function(0), subwindow(0), used(false), screen(~(0u))
     {
@@ -43,7 +43,7 @@ private:
              const int _function, const int _subwindow);
     void set(const XFontStruct * const _font);
 
-    BaseDisplay *display;
+    const BaseDisplay *display;
     GC gc;
     unsigned long pixel;
     unsigned long fontid;
@@ -61,7 +61,7 @@ private:
   void release(Context *ctx);
 
 public:
-  BGCCache(BaseDisplay *_display);
+  BGCCache(const BaseDisplay * const _display);
   ~BGCCache(void);
 
   // cleans up the cache
@@ -92,7 +92,7 @@ private:
   const unsigned int context_count;
   const unsigned int cache_size;
   const unsigned int cache_buckets;
-  BaseDisplay *display;
+  const BaseDisplay *display;
   Context **contexts;
   Item **cache;
 };
@@ -104,11 +104,10 @@ public:
   inline BPen(const BColor &_color,  const XFontStruct * const _font = 0,
               int _function = GXcopy, int _subwindow = ClipByChildren)
     : color(_color), font(_font), function(_function), subwindow(_subwindow),
-      cache(0), item(0) { }
+      cache(_color.display()->gcCache()), item(0) { }
   inline ~BPen(void) { if (item) cache->release(item); }
 
   inline const GC &gc() const {
-    if (! cache) cache = color.display()->gcCache();
     if (! item) item = cache->find(color, font, function, subwindow);
     return item->gc();
   }

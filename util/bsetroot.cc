@@ -2,10 +2,13 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
-#ifdef    STDC_HEADERS
-#  include <string.h>
+#ifdef HAVE_STDLIB_H
 #  include <stdlib.h>
-#endif // STDC_HEADERS
+#endif // HAVE_STDLIB_H
+
+#ifdef HAVE_STRING_H
+#  include <string.h>
+#endif // HAVE_STRING_H
 
 #ifdef    HAVE_STDIO_H
 #  include <stdio.h>
@@ -83,8 +86,8 @@ bsetroot::bsetroot(int argc, char **argv, char *dpy_name)
   }
 
   img_ctrl = new BImageControl*[getNumberOfScreens()];
-  for (unsigned int i = 0; i < getNumberOfScreens(); i++)
-    img_ctrl[i] = new BImageControl(this, getScreenInfo(i), True);
+  for (unsigned int s = 0; s < getNumberOfScreens(); ++s)
+    img_ctrl[s] = new BImageControl(this, getScreenInfo(s), True);
 
   if (sol && fore) solid();
   else if (mod && mod_x && mod_y && fore && back) modula(mod_x, mod_y);

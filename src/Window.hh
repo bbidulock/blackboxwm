@@ -198,7 +198,7 @@ private:
   BlackboxWindow& operator=(const BlackboxWindow&);
 
 protected:
-  const Bool getState(void);
+  Bool getState(void);
   Window createToplevelWindow(int x, int y, unsigned int width,
                               unsigned int height, unsigned int borderwidth);
   Window createChildWindow(Window parent, Cursor = None);

@@ -40,10 +40,13 @@
 #  include <stdio.h>
 #endif // HAVE_STDIO_H
 
-#ifdef    STDC_HEADERS
+#ifdef HAVE_STDLIB_H
 #  include <stdlib.h>
+#endif // HAVE_STDLIB_H
+
+#ifdef HAVE_STRING_H
 #  include <string.h>
-#endif // STDC_HEADERS
+#endif // HAVE_STRING_H
 
 #ifdef    HAVE_UNISTD_H
 #  include <sys/types.h>
@@ -197,10 +200,8 @@ Blackbox::~Blackbox(void) {
   std::for_each(menuTimestamps.begin(), menuTimestamps.end(),
                 PointerAssassin());
 
-  delete rc_file;
-
+  delete [] rc_file;
   delete [] resource.menu_file;
-
   delete [] resource.style_file;
 
   delete timer;
@@ -1306,7 +1307,8 @@ void Blackbox::load_rc(BScreen *screen) {
     for (unsigned int i = 0; i < screen->getNumberOfWorkspaces(); i++) {
       char *nn;
 
-      nn = strsep(&search, ",");
+      if (! i) nn = strtok(search, ",");
+      else nn = strtok(NULL, ",");
 
       screen->addWorkspaceName(nn);
     }

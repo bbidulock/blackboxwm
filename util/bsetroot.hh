@@ -17,12 +17,12 @@ private:
 
 protected:
   inline virtual void process_event(XEvent * /*unused*/) { }
- 
+
 public:
   bsetroot(int argc, char **argv, char *dpy_name = 0);
   ~bsetroot(void);
 
-  inline virtual const Bool handleSignal(int /*unused*/) { return False; }
+  inline virtual Bool handleSignal(int /*unused*/) { return False; }
 
   void setPixmapProperty(int screen, Pixmap pixmap);
   Pixmap duplicatePixmap(int screen, Pixmap pixmap, int width, int height);

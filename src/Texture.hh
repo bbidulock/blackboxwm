@@ -83,7 +83,7 @@ public:
   inline Bool operator!=(const BTexture &tt)
     { return (! operator==(tt)); }
 
-  const BaseDisplay * const display() const { return dpy; }
+  const BaseDisplay *display() const { return dpy; }
   unsigned int screen() const { return scrn; }
   void setDisplay(const BaseDisplay * const _display,
                   const unsigned int _screen);

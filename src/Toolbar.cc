@@ -42,9 +42,9 @@
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 
-#ifdef    STDC_HEADERS
+#ifdef HAVE_STRING_H
 #  include <string.h>
-#endif // STDC_HEADERS
+#endif // HAVE_STRING_H
 
 #ifdef    HAVE_STDIO_H
 #  include <stdio.h>
@@ -65,7 +65,7 @@
 using std::string;
 
 
-static const long aMinuteFromNow(void) {
+static long aMinuteFromNow(void) {
   timeval now;
   gettimeofday(&now, 0);
   return ((60 - (now.tv_sec % 60)) * 1000);
@@ -81,6 +81,7 @@ Toolbar::Toolbar(BScreen *scrn) {
   clock_timer->setTimeout(aMinuteFromNow());
   clock_timer->recurring(True);
   clock_timer->start();
+  frame.minute = frame.hour = -1;
 
   hide_handler.toolbar = this;
   hide_timer = new BTimer(blackbox, &hide_handler);

@@ -29,10 +29,13 @@
 #  include <stdio.h>
 #endif // HAVE_STDIO_H
 
-#ifdef    STDC_HEADERS
+#ifdef HAVE_STDLIB_H
 #  include <stdlib.h>
+#endif // HAVE_STDLIB_H
+
+#ifdef HAVE_STRING_H
 #  include <string.h>
-#endif // STDC_HEADERS
+#endif // HAVE_STRING_H
 
 #include <algorithm>
 using namespace std;
@@ -664,9 +667,9 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clear,
   }
 
   MenuStyle *style = screen->getMenuStyle();
-  BPen pen = ((highlight || item->isSelected()) ? style->h_text : style->f_text),
-   textpen = ((highlight) ? style->h_text :
-              item->isEnabled() ? style->f_text : style->d_text);
+  BPen pen((highlight || item->isSelected()) ? style->h_text : style->f_text),
+      textpen((highlight) ? style->h_text :
+              item->isEnabled() ? style->f_text : style->d_text, style->f_font);
 
   sel_x = item_x;
   if (screen->getMenuStyle()->bullet_pos == Right)

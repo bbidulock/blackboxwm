@@ -50,7 +50,7 @@ private:
 
   Bool _startup, _shutdown;
   Display *display;
-  BGCCache *gccache;
+  mutable BGCCache *gccache;
 
   typedef std::vector<ScreenInfo> ScreenInfoList;
   ScreenInfoList screenInfoList;

@@ -32,9 +32,9 @@
 #include "Windowmenu.hh"
 #include "Workspace.hh"
 
-#ifdef    STDC_HEADERS
+#ifdef HAVE_STRING_H
 #  include <string.h>
-#endif // STDC_HEADERS
+#endif // HAVE_STRING_H
 
 
 Windowmenu::Windowmenu(BlackboxWindow *win) : Basemenu(win->getScreen()) {
@@ -168,12 +168,12 @@ void Windowmenu::SendtoWorkspacemenu::itemSelected(int button, int index) {
 
 
 void Windowmenu::SendtoWorkspacemenu::update(void) {
-  unsigned int r = getCount();
+  unsigned int i, r = getCount();
 
-  for (unsigned int i = 0; i < r; ++i)
+  for (i = 0; i < r; ++i)
     remove(0);
 
-  for (unsigned int i = 0; i < windowmenu->screen->getWorkspaceCount(); ++i)
+  for (i = 0; i < windowmenu->screen->getWorkspaceCount(); ++i)
     insert(windowmenu->screen->getWorkspace(i)->getName());
 
   Basemenu::update();

@@ -33,11 +33,13 @@
 #  define   _GNU_SOURCE
 #endif // _GNU_SOURCE
 
-#ifdef    STDC_HEADERS
+#ifdef HAVE_STDLIB_H
 #  include <stdlib.h>
-#  include <sys/types.h>
+#endif // HAVE_STDLIB_H
+
+#ifdef HAVE_STRING_H
 #  include <string.h>
-#endif // STDC_HEADERS
+#endif // HAVE_STRING_H
 
 #ifdef    HAVE_CTYPE_H
 #  include <ctype.h>
@@ -281,13 +283,13 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
 
   changeWorkspaceID(0);
 
-  unsigned int nchild;
+  unsigned int i, j, nchild;
   Window r, p, *children;
   XQueryTree(blackbox->getXDisplay(), getRootWindow(), &r, &p,
              &children, &nchild);
 
   // preen the window list of all icon windows... for better dockapp support
-  for (unsigned int i = 0; i < nchild; i++) {
+  for (i = 0; i < nchild; i++) {
     if (children[i] == None) continue;
 
     XWMHints *wmhints = XGetWMHints(blackbox->getXDisplay(),
@@ -296,7 +298,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
     if (wmhints) {
       if ((wmhints->flags & IconWindowHint) &&
           (wmhints->icon_window != children[i]))
-        for (unsigned int j = 0; j < nchild; j++)
+        for (j = 0; j < nchild; j++)
           if (children[j] == wmhints->icon_window) {
             children[j] = None;
 
@@ -308,7 +310,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   }
 
   // manage shown windows
-  for (unsigned int i = 0; i < nchild; ++i) {
+  for (i = 0; i < nchild; ++i) {
     if (children[i] == None || (! blackbox->validateWindow(children[i])))
       continue;
 
@@ -1040,8 +1042,10 @@ void BScreen::addWorkspaceName(const char *name) {
  * BScreen creation.
  */
 const string& BScreen::getNameOfWorkspace(unsigned int id) {
-  assert(id < workspaceNames.size());
-  return workspaceNames[id];
+  static std::string empty;
+  if (id < workspaceNames.size())
+    return workspaceNames[id];
+  return empty;
 }
 
 
@@ -1224,9 +1228,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
     if (fgets(line, 1024, file)) {
       if (line[0] != '#') {
-        int i, key = 0, parse = 0, index = -1,
-          line_length = strlen(line),
-          label_length = 0, command_length = 0;
+        int i, key = 0, parse = 0, index = -1, line_length = strlen(line);
 
         // determine the keyword
         for (i = 0; i < line_length; i++) {
@@ -1253,10 +1255,8 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
         if (parse) {
           label[index] = '\0';
-          label_length = index;
         } else {
           label[0] = '\0';
-          label_length = 0;
         }
 
         // get the command enclosed in {}'s
@@ -1275,10 +1275,8 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
         if (parse) {
           command[index] = '\0';
-          command_length = index;
         } else {
           command[0] = '\0';
-          command_length = 0;
         }
 
         switch (key) {
