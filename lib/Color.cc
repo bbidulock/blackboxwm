@@ -139,7 +139,7 @@ unsigned long bt::ColorCache::find(unsigned int screen, int r, int g, int b) {
     ++it->second.count;
 
 #ifdef COLORCACHE_DEBUG
-    fprintf(stderr, "bt::ColorCache: use %02x/%02x/%02x, count %4d\n",
+    fprintf(stderr, "bt::ColorCache: use %02x/%02x/%02x, count %4u\n",
             r, g, b, it->second.count);
 #endif // COLORCACHE_DEBUG
 
@@ -184,7 +184,7 @@ void bt::ColorCache::release(unsigned int screen, int r, int g, int b) {
   --it->second.count;
 
 #ifdef COLORCACHE_DEBUG
-  fprintf(stderr, "bt::ColorCache: rel %02x/%02x/%02x, count %4d\n",
+  fprintf(stderr, "bt::ColorCache: rel %02x/%02x/%02x, count %4u\n",
           r, g, b, it->second.count);
 #endif // COLORCACHE_DEBUG
 }
@@ -195,7 +195,7 @@ void bt::ColorCache::clear(bool force) {
   if (it == cache.end()) return; // nothing to do
 
 #ifdef COLORCACHE_DEBUG
-  fprintf(stderr, "bt::ColorCache: clearing cache, %d entries\n",
+  fprintf(stderr, "bt::ColorCache: clearing cache, %u entries\n",
           cache.size());
 #endif // COLORCACHE_DEBUG
 
@@ -232,7 +232,7 @@ void bt::ColorCache::clear(bool force) {
   delete [] pixels;
 
 #ifdef COLORCACHE_DEBUG
-  fprintf(stderr, "bt::ColorCache: cleared, %d entries remain\n",
+  fprintf(stderr, "bt::ColorCache: cleared, %u entries remain\n",
           cache.size());
 #endif // COLORCACHE_DEBUG
 }
