@@ -22,6 +22,10 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#ifdef HAVE_CONFIG_H
+#  include "../config.h"
+#endif
+
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
@@ -39,7 +43,7 @@
 #include <algorithm>
 
 
-std::string bt::basename (const std::string& path) {
+std::string bt::basename(const std::string& path) {
   std::string::size_type slash = path.rfind('/');
   if (slash == std::string::npos)
     return path;
