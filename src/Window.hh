@@ -49,6 +49,7 @@ enum WindowFunction {
   WindowFunctionIconify  = 1<<3,
   WindowFunctionMaximize = 1<<4,
   WindowFunctionClose    = 1<<5,
+  NoWindowFunctions      = 0,
   AllWindowFunctions     = (WindowFunctionResize |
                             WindowFunctionMove |
                             WindowFunctionShade |
@@ -66,6 +67,7 @@ enum WindowDecoration {
   WindowDecorationIconify  = 1<<4,
   WindowDecorationMaximize = 1<<5,
   WindowDecorationClose    = 1<<6,
+  NoWindowDecorations      = 0,
   AllWindowDecorations     = (WindowDecorationTitlebar |
                               WindowDecorationHandle |
                               WindowDecorationGrip |
@@ -76,6 +78,10 @@ enum WindowDecoration {
 };
 typedef unsigned char WindowDecorationFlags;
 
+struct MotifHints {
+  WindowDecorationFlags decorations;
+  WindowFunctionFlags functions;
+};
 struct WMHints {
   bool accept_focus;
   Window window_group;
@@ -153,6 +159,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
     WindowFunctionFlags functions;
     WindowDecorationFlags decorations;
 
+    MotifHints motif;
     WMHints wmhints;
     WMNormalHints wmnormal;
     WMProtocols wmprotocols;
@@ -220,13 +227,13 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   std::string readWMName(void);
   std::string readWMIconName(void);
 
+  MotifHints readMotifHints(void);
   WMHints readWMHints(void);
   WMNormalHints readWMNormalHints(void);
   WMProtocols readWMProtocols(void);
   BlackboxWindow *readTransientInfo(void);
 
   void getNetwmHints(void);
-  void getMWMHints(void);
 
   void setNetWMAttributes(void);
 

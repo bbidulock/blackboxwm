@@ -222,6 +222,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   // get size, aspect, minimum/maximum size, ewmh and other hints set by the
   // client
   getNetwmHints();
+  client.motif = readMotifHints();
   client.wmhints = readWMHints();
   client.wmnormal = readWMNormalHints();
   client.wmprotocols = readWMProtocols();
@@ -242,7 +243,10 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     ::update_window_group(client.wmhints.window_group, blackbox, this);
 
   ::get_decorations(client.window_type, client.decorations, client.functions);
-  getMWMHints();
+
+  // mask away stuff turned off by Motif hints
+  client.decorations &= client.motif.decorations;
+  client.functions   &= client.motif.functions;
 
   if ((client.wmnormal.flags & (PMinSize|PMaxSize)) == (PMinSize|PMaxSize)
       && client.wmnormal.max_width <= client.wmnormal.min_width
@@ -393,10 +397,9 @@ BlackboxWindow::~BlackboxWindow(void) {
   if (frame.handle)
     destroyHandle();
 
-  if (frame.plate) {
-    blackbox->removeEventHandler(frame.plate);
-    XDestroyWindow(blackbox->XDisplay(), frame.plate);
-  }
+  blackbox->removeEventHandler(frame.plate);
+  blackbox->removeWindow(frame.plate);
+  XDestroyWindow(blackbox->XDisplay(), frame.plate);
 
   if (frame.window) {
     blackbox->removeEventHandler(frame.window);
@@ -1195,19 +1198,18 @@ WMNormalHints BlackboxWindow::readWMNormalHints(void) {
 
 
 /*
- * Gets the MWM hints for the class' contained window.  This is used
- * while initializing the window to its first state, and not
- * thereafter.
- *
- * Returns: true if the MWM hints are successfully retreived and
- * applied; false if they are not.
+ * Returns the Motif hints for the class' contained window.
  */
-void BlackboxWindow::getMWMHints(void) {
+MotifHints BlackboxWindow::readMotifHints(void) {
+  MotifHints motif;
+  motif.decorations = AllWindowDecorations;
+  motif.functions     = AllWindowFunctions;
+
   /*
     this structure only contains 3 elements, even though the Motif 2.0
     structure contains 5, because we only use the first 3
   */
-  struct PropMwmHints {
+  struct PropMotifhints {
     unsigned long flags;
     unsigned long functions;
     unsigned long decorations;
@@ -1217,7 +1219,7 @@ void BlackboxWindow::getMWMHints(void) {
     MWM_HINTS_FUNCTIONS   = 1<<0,
     MWM_HINTS_DECORATIONS = 1<<1
   };
-  enum { // MWM functions
+  enum { // MWM functions (aka actions)
     MWM_FUNC_ALL      = 1<<0,
     MWM_FUNC_RESIZE   = 1<<1,
     MWM_FUNC_MOVE     = 1<<2,
@@ -1236,7 +1238,7 @@ void BlackboxWindow::getMWMHints(void) {
   };
 
   Atom atom_return;
-  PropMwmHints *mwmhints = 0;
+  PropMotifhints *prop = 0;
   int format;
   unsigned long num, len;
   int ret = XGetWindowProperty(blackbox->XDisplay(), client.window,
@@ -1244,50 +1246,58 @@ void BlackboxWindow::getMWMHints(void) {
                                PROP_MWM_HINTS_ELEMENTS, False,
                                blackbox->getMotifWMHintsAtom(), &atom_return,
                                &format, &num, &len,
-                               (unsigned char **) &mwmhints);
+                               (unsigned char **) &prop);
 
-  if (ret != Success || ! mwmhints || num != PROP_MWM_HINTS_ELEMENTS)
-    return;
+  if (ret != Success || !prop || num != PROP_MWM_HINTS_ELEMENTS) {
+    if (prop) XFree(prop);
+    return motif;
+  }
 
-  if (mwmhints->flags & MWM_HINTS_FUNCTIONS) {
-    if (mwmhints->functions & MWM_FUNC_ALL) {
-      client.functions = AllWindowFunctions;
+  if (prop->flags & MWM_HINTS_FUNCTIONS) {
+    if (prop->functions & MWM_FUNC_ALL) {
+      motif.functions = AllWindowFunctions;
     } else {
-      client.functions = 0;
+      motif.functions = NoWindowFunctions;
 
-      if (mwmhints->functions & MWM_FUNC_RESIZE)
-        client.functions |= WindowFunctionResize;
-      if (mwmhints->functions & MWM_FUNC_MOVE)
-        client.functions |= WindowFunctionMove;
-      if (mwmhints->functions & MWM_FUNC_MINIMIZE)
-        client.functions |= WindowFunctionIconify;
-      if (mwmhints->functions & MWM_FUNC_MAXIMIZE)
-        client.functions |= WindowFunctionMaximize;
-      if (mwmhints->functions & MWM_FUNC_CLOSE)
-        client.functions |= WindowFunctionClose;
+      if (prop->functions & MWM_FUNC_RESIZE)
+        motif.functions |= WindowFunctionResize;
+      if (prop->functions & MWM_FUNC_MOVE)
+        motif.functions |= WindowFunctionMove;
+      if (prop->functions & MWM_FUNC_MINIMIZE)
+        motif.functions |= WindowFunctionIconify;
+      if (prop->functions & MWM_FUNC_MAXIMIZE)
+        motif.functions |= WindowFunctionMaximize;
+      if (prop->functions & MWM_FUNC_CLOSE)
+        motif.functions |= WindowFunctionClose;
     }
   }
 
-  if (mwmhints->flags & MWM_HINTS_DECORATIONS) {
-    if (mwmhints->decorations & MWM_DECOR_ALL) {
-      client.decorations = AllWindowDecorations;
+  if (prop->flags & MWM_HINTS_DECORATIONS) {
+    if (prop->decorations & MWM_DECOR_ALL) {
+      motif.decorations = AllWindowDecorations;
     } else {
-      client.decorations = 0;
+      motif.decorations = NoWindowDecorations;
 
-      if (mwmhints->decorations & MWM_DECOR_BORDER)
-        client.decorations |= WindowDecorationBorder;
-      if (mwmhints->decorations & MWM_DECOR_RESIZEH)
-        client.decorations |= WindowDecorationHandle;
-      if (mwmhints->decorations & MWM_DECOR_TITLE)
-        client.decorations |= WindowDecorationTitlebar;
-      if (mwmhints->decorations & MWM_DECOR_MINIMIZE)
-        client.decorations |= WindowDecorationIconify;
-      if (mwmhints->decorations & MWM_DECOR_MAXIMIZE)
-        client.decorations |= WindowDecorationMaximize;
+      if (prop->decorations & MWM_DECOR_BORDER)
+        motif.decorations |= WindowDecorationBorder;
+      if (prop->decorations & MWM_DECOR_RESIZEH) {
+        motif.decorations |= (WindowDecorationHandle |
+                                   WindowDecorationGrip);
+      }
+      if (prop->decorations & MWM_DECOR_TITLE) {
+        motif.decorations |= (WindowDecorationTitlebar |
+                                   WindowDecorationClose);
+      }
+      if (prop->decorations & MWM_DECOR_MINIMIZE)
+        motif.decorations |= WindowDecorationIconify;
+      if (prop->decorations & MWM_DECOR_MAXIMIZE)
+        motif.decorations |= WindowDecorationMaximize;
     }
   }
 
-  XFree(mwmhints);
+  XFree(prop);
+
+  return motif;
 }
 
 
@@ -2642,7 +2652,17 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
         }
       }
     } else if (event->atom == blackbox->getMotifWMHintsAtom()) {
-      getMWMHints();
+      client.motif = readMotifHints();
+
+      ::get_decorations(client.window_type,
+                        client.decorations,
+                        client.functions);
+
+      // mask away stuff turned off by Motif hints
+      client.decorations &= client.motif.decorations;
+      client.functions   &= client.motif.functions;
+
+      reconfigure();
     }
 
     break;
