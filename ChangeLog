@@ -30,16 +30,17 @@ Changes from 0.62.1 to 0.65.0:
     function ensures that client.transient != this.
     The new transient code also allows for one window to have multiple
     transients so applications like xmms and web browsers are better behaved.
-  - added zh_TW (Taiwan Chinese), Hungarian (hu_HU), Ukrainian (uk_UA)
-  - updated the French, Dutch nls support and added French man pages
+  - added zh_TW (Taiwan Chinese), Hungarian (hu_HU), Ukrainian (uk_UA) nls
+    files and updated the most of the others.
+  - added French man pages
   - remove slit and netwm as compile time options
   - strip much of BaseDisplay's original functionality and move it to the
     blackbox class.
   - move code over to the STL
   - new placeWindow algorithm.  Blows the old one out of the water.  Not only
     is it faster but it is also cleaner code too (-:  Went from number 5 in the
-    profiling to results to under 30.  New window managing is slowed down by
-    image rendering above all else now.
+    profiling to results to under 30.  Managing of new windows is slowed down
+    by image rendering above all else now.
     Because of the new code layout, the support is now there for new and
     different layout options, but this will wait for after 0.65.0.
   - better window group handling
