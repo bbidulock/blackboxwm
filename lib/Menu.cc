@@ -438,6 +438,41 @@ void bt::Menu::insertSeparator(unsigned int index) {
 }
 
 
+void bt::Menu::changeItem(unsigned int id, const std::string &newlabel,
+                          unsigned int newid) {
+  Rect r(_irect.x(), _irect.y(), _itemw, 0);
+  int row = 0, col = 0;
+  ItemList::iterator it, end;
+  for (it = items.begin(), end = items.end(); it != end; ++it) {
+    r.setHeight(it->height);
+
+    if (it->ident == id) {
+      // new label
+      it->lbl = newlabel;
+      if (newid != ~0u) {
+        // change the id if necessary
+        idset.reset(it->ident);
+        it->ident = verifyId(newid);
+      }
+      if (isVisible())
+        XClearArea(_app.getXDisplay(), _window,
+                   r.x(), r.y(), r.width(), r.height(), True);
+      break;
+    }
+
+    r.setY(r.y() + r.height());
+    ++row;
+
+    if (r.y() >= _irect.bottom()) {
+      // next column
+      ++col;
+      row = 0;
+      r.setPos(_irect.x() + (_itemw * col), _irect.y());
+    }
+  }
+}
+
+
 void bt::Menu::setItemEnabled(unsigned int id, bool enabled) {
   Rect r(_irect.x(), _irect.y(), _itemw, 0);
   int row = 0, col = 0;

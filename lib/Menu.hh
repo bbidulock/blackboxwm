@@ -200,9 +200,12 @@ namespace bt {
                             unsigned int index = ~0u);
     unsigned int insertItem(const std::string& label,
                             unsigned int id = ~0u, unsigned int index = ~0u);
-    unsigned int insertItem(const std::string& lavel, Menu *submenu,
+    unsigned int insertItem(const std::string& label, Menu *submenu,
                             unsigned int id = ~0u, unsigned int index = ~0u);
     void insertSeparator(unsigned int index = ~0u);
+
+    void changeItem(unsigned int id, const std::string &newlabel,
+                    unsigned int newid = ~0u);
 
     void setItemEnabled(unsigned int id, bool enabled);
     bool isItemEnabled(unsigned int id) const;
