@@ -141,12 +141,6 @@ private:
 
   bool parseMenuFile(FILE *file, Rootmenu *menu);
 
-  XFontSet readDatabaseFontSet(const std::string &rname,
-                               const std::string &rclass);
-  XFontStruct *readDatabaseFont(const std::string &rname,
-                                const std::string &rclass);
-  XFontSet createFontSet(const std::string &fontname);
-
   void InitMenu(void);
   void LoadStyle(void);
 
