@@ -44,6 +44,7 @@ extern "C" {
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "Clientmenu.hh"
+#include "Font.hh"
 #include "Screen.hh"
 #include "Toolbar.hh"
 #include "Util.hh"
@@ -204,17 +205,7 @@ void Workspace::addWindow(BlackboxWindow *w, bool place) {
   stackingList.insert(w);
   windowList.push_back(w);
 
-  std::string title = w->getTitle();
-  unsigned int len = title.length();
-  if (len > 60) {
-    std::string::iterator lside = title.begin() + 29;
-    unsigned int delta = len - 60;
-    delta = (delta > 28) ? 28 : delta;
-    std::string::iterator rside = title.end() - delta;
-    title.replace(lside, rside, "...");
-  }
-
-  clientmenu->insert(title);
+  clientmenu->insert(bt::ellideText(w->getTitle(), 60, "..."));
   clientmenu->update();
 
   if (! w->isIconic())

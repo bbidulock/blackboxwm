@@ -47,27 +47,27 @@ namespace bt {
 
   class Font {
   public:
-    Font(const std::string &name = std::string(),
-             const bt::Display * const dpy = 0);
+    explicit Font(const std::string &name = std::string(),
+                  const bt::Display * const dpy = 0);
     ~Font(void);
 
     inline const bt::Display *display(void) const { return _dpy; }
     void setDisplay(const bt::Display * const dpy);
 
-    inline const std::string fontname(void) const { return _fontname; }
+    inline const std::string& fontname(void) const { return _fontname; }
 
     inline XFontSet fontset(void) const { return _fontset; }
     inline XFontStruct *font(void) const { return _font; }
 
-    bt::Font &operator=(const bt::Font &f);
+    bt::Font& operator=(const bt::Font &f);
     inline bool operator==(const bt::Font &f)
     { return _fontname == f._fontname; }
     inline bool operator!=(const bt::Font &f)
     { return (! operator==(f)); }
 
   private:
-    void load();
-    void unload();
+    void load(void);
+    void unload(void);
 
     std::string _fontname;
     const bt::Display *_dpy;
@@ -82,6 +82,9 @@ namespace bt {
   void drawText(const bt::Font &font, const bt::Pen &pen, Window window,
                 const bt::Rect &rect, bt::Alignment alignment,
                 const std::string &text);
+
+  std::string ellideText(const std::string& text, unsigned int count,
+                         const char* ellide);
 
 } // namespace bt
 

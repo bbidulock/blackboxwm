@@ -77,6 +77,7 @@ extern "C" {
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "Clientmenu.hh"
+#include "Font.hh"
 #include "GCCache.hh"
 #include "Iconmenu.hh"
 #include "Image.hh"
@@ -831,17 +832,7 @@ void BScreen::addIcon(BlackboxWindow *w) {
 
   iconList.push_back(w);
 
-  std::string title = w->getIconTitle();
-  unsigned int len = title.length();
-  if (len > 60) {
-    std::string::iterator lside = title.begin() + 29;
-    unsigned int delta = len - 60;
-    delta = (delta > 28) ? 28 : delta;
-    std::string::iterator rside = title.end() - delta;
-    title.replace(lside, rside, "...");
-  }
-
-  iconmenu->insert(title);
+  iconmenu->insert(bt::ellideText(w->getIconTitle(), 60, "..."));
   iconmenu->update();
 }
 
@@ -1105,17 +1096,8 @@ void BScreen::propagateWindowName(const BlackboxWindow *bw) {
     iconmenu->update();
   } else {
     Clientmenu *clientmenu = getWorkspace(bw->getWorkspaceNumber())->getMenu();
-    std::string title = bw->getTitle();
-    unsigned int len = title.length();
-    if (len > 60) {
-      std::string::iterator lside = title.begin() + 29;
-      unsigned int delta = len - 60;
-      delta = (delta > 28) ? 28 : delta;
-      std::string::iterator rside = title.end() - delta;
-      title.replace(lside, rside, "...");
-    }
-
-    clientmenu->changeItemLabel(bw->getWindowNumber(), title);
+    clientmenu->changeItemLabel(bw->getWindowNumber(),
+                                bt::ellideText(bw->getTitle(), 60, "..."));
     clientmenu->update();
 
     if (blackbox->getFocusedWindow() == bw)

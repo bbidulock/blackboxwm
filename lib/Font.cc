@@ -39,8 +39,7 @@ static const char * const defaultFont = "fixed";
 
 
 bt::Font::Font(const std::string &name, const bt::Display * const dpy )
-  : _fontname(name), _dpy(dpy), _fontset(NULL), _font(NULL)
-{
+  : _fontname(name), _dpy(dpy), _fontset(NULL), _font(NULL) {
   load();
 }
 
@@ -50,16 +49,12 @@ bt::Font::~Font(void) {
 }
 
 
-bt::Font &bt::Font::operator=(const Font &f)
-{
-  // unload the old font
+bt::Font &bt::Font::operator=(const Font &f) {
   unload();
 
-  // copy the font name and display
   _fontname = f._fontname;
   _dpy = f._dpy;
 
-  // load the new font
   load();
 
   return *this;
@@ -161,4 +156,27 @@ void bt::drawText(const bt::Font &font, const bt::Pen &pen, Window window,
                 tr.x(), tr.y() + font.font()->ascent,
                 text.c_str(), text.length());
   }
+}
+
+
+/*
+ * Take a string and make it 'count' chars long by removing the middle
+ * and replacing it with the string in 'ellide'
+ *
+ * FIXME: this function currently assumes that ellide is 3 chars long
+ */
+std::string bt::ellideText(const std::string& text, unsigned int count,
+                           const char* ellide) {
+  unsigned int len = text.length();
+  if (len <= count)
+    return text;
+
+  std::string ret = text;
+
+  // delta represents the amount of text to remove from the right hand side
+  unsigned int delta = std::min(len - count, (count/2) - 2);
+
+  ret.replace(ret.begin() + (count/2) - 1, ret.end() - delta, ellide);
+
+  return ret;
 }
