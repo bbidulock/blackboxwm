@@ -120,15 +120,6 @@ namespace bt {
   std::string itostring(int i);
   std::string itostring(unsigned short i);
   std::string itostring(short i);
-
-
-
-  template <class T>
-  T next_it(T x) { return ++x; }
-
-  template <class T>
-  T prior_it(T x) { return --x; }
-
 } // namespace bt
 
 #endif // __Util_hh
