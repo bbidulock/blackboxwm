@@ -54,6 +54,7 @@ public:
 
   Bool isCurrent(void);
   void setCurrent(void);
+  void setName(char *);
   const int addWindow(BlackboxWindow *);
   const int removeWindow(BlackboxWindow *);
   BlackboxWindow *window(int);

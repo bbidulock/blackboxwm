@@ -29,6 +29,7 @@
 #include "Windowmenu.hh"
 
 #include <stdio.h>
+#include <string.h>
 
 
 // *************************************************************************
@@ -45,8 +46,14 @@ Workspace::Workspace(Toolbar *t, int i) {
   cMenu = new Clientmenu(toolbar->_blackbox(), this);
   cMenu->Update();
   
-  name = new char[32];
-  sprintf(name, "Workspace %d", id);
+  toolbar->_blackbox()->nameOfWorkspace(id, &name);
+  
+  if (! name) {
+    name = new char[32];
+    if (name)
+      sprintf(name, "Workspace %d", id);
+  }
+  
   label = 0;
 }
 
@@ -56,8 +63,7 @@ Workspace::~Workspace(void) {
   delete cMenu;
 
   if (stack) delete [] stack;
-
-  delete [] name;
+  if (name) delete [] name;
 }
 
 
@@ -121,6 +127,7 @@ void Workspace::setFocusWindow(int w) {
   else
     label = 0;
 
+  cMenu->setHighlight(w);  
   toolbar->redrawLabel(True);
 }
 
@@ -286,4 +293,21 @@ Bool Workspace::isCurrent(void) {
 
 void Workspace::setCurrent(void) {
   toolbar->changeWorkspaceID(id);
+}
+
+
+void Workspace::setName(char *new_name) {
+  if (new_name) {
+    if (name) delete [] name;
+
+    int len = strlen(new_name) + 1;
+    name = new char[len];
+    strncpy(name, new_name, len);
+  } else {
+    if (name) delete [] name;
+    
+    name = new char[32];
+    if (name)
+      sprintf(name, "Workspace %d", id);
+  }
 }

@@ -24,5 +24,5 @@ XCOMM Define this to get Jon Denardis' curved gradient hack
 XCOMM #define GradientHack
 
 XCOMM Put any compiler specific flags here for building Blackbox
-CXXFLAGS :=	-Wall -W -pipe -fomit-frame-pointer -fforce-mem -fforce-addr -finline-functions $(CXXFLAGS)
+CXXFLAGS :=	-Wall -W -pipe -fomit-frame-pointer -fforce-addr -fforce-mem -finline-functions -funroll-loops $(CXXFLAGS)
 

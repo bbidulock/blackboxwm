@@ -2,6 +2,40 @@ At the request of some people, here is a Change log starting with 0.33.0.
 Enjoy! :)
 
 
+Changes from 0.40.5 to 0.40.6:
+	- the workspace and client menus now keep the current workspace and
+	  focus window highlighted so that we know which window is in focus
+	  (especially useful with multiple xterms in the same workspace)
+	- image dithering code has been updated slightly to hopefully squeeze
+	  every last drop of performance out of it
+	- pixel computation has been simplified
+	- gradient code has been changed to use less floating point division
+	  this breaks Jon Denardis' gradient hack, but the option has been
+	  left in place in case Jon wants to re-implement it :)
+	- more ICCCM compliance code added... window colormap focus has a
+	  click-to-focus policy... any window that wants to use it's own
+	  colormap (i.e.  netscape -install) will have it's colormap installed
+	  when button1 is pressed anywhere on the decorations (like when
+          raising)  the default root colormap is reinstalled when pressing
+	  button1 on the root window
+	- workspace names can now be changed on the fly... they are stored in
+	  the users ~/.blackboxrc file, and may be edited from there, although
+	  any changes made to the file will be over written when blackbox is
+	  shutdown or restarted...
+	- workspace names can be edited *while blackbox is running* by pressing
+	  button3 on the workspace label on the toolbar... pressing enter ends
+	  the edit and normal event processing resumes... these names are saved
+	  on exit/restart for convienence
+	- support for window gravity has been added... this is addition is
+	  another step closer to complete ICCCM compliance
+	- window resizing is a bit more sane now... a bug once pointed out long
+	  ago that i never noticed plagued me the other day... when resizing a
+	  window to a large size... blackbox can delay a bit while it renders
+	  the new decorations... if the user tries to move the window before
+	  these decorations are finished... the window is resized again... this
+	  has been fixed
+
+
 Changes from 0.40.4 to 0.40.5:
 	- updated the default style to reflect the button resource change in
 	  0.40.4

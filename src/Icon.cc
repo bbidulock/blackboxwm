@@ -73,6 +73,8 @@ int Iconmenu::remove(BlackboxIcon *icon) {
 
   Update();
 
+  if (! Count()) Hide();
+
   return ret;
 }
 

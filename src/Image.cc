@@ -27,6 +27,7 @@
 #include "Image.hh"
 
 #include <stdio.h>
+#include <alloca.h>
 #include <malloc.h>
 
 #ifdef GradientHack
@@ -48,6 +49,14 @@ BImage::BImage(BImageControl *c, unsigned int w, unsigned int h) {
   red = new unsigned char[width * height];
   green = new unsigned char[width * height];
   blue = new unsigned char[width * height];
+
+  cpc = control->colorsPerChannel();
+  cpccpc = cpc * cpc;
+  
+  control->getMaskTables(&tr, &tg, &tb, &roff, &goff, &boff);
+  
+  if (control->v()->c_class != TrueColor)
+    control->getColorTable(&colors, &ncolors);
 }
 
 
@@ -131,33 +140,24 @@ XImage *BImage::renderXImage(Bool dither) {
     return 0;
   }
   
-  register unsigned int x, y, r = 0, g = 0, b = 0;
+  register unsigned int x, y, r = 0, g = 0, b = 0, i, off;
   
-  unsigned char *idata = d;
-  unsigned int i, ofs;
+  unsigned char *idata = d, *pr, *pg, *pb;
   unsigned long pixel;
-  unsigned short *tr = 0, *tg = 0, *tb = 0;
 
-  int ncolors;
-  XColor *colors;
-  int cpc = control->colorsPerChannel(), cpccpc = cpc * cpc;
-  
-  control->getMaskTables(&tr, &tg, &tb, &roff, &goff, &boff);
   if ((! tr) || (! tg) || (! tb)) {
     XDestroyImage(image);
     return 0;
   }
   
-  if (control->v()->c_class != TrueColor) {
-    control->getColorTable(&colors, &ncolors);
+  if (control->v()->c_class != TrueColor)
     if ((! colors) || (! ncolors)) {
       XDestroyImage(image);
       return 0;
     }
-  }
 
   if (control->dither() && dither) {
-    short er, eg, eb, *or, *og, *ob, *nor, *nog, *nob;
+    short er, eg, eb, *or, *og, *ob, *nor, *nog, *nob, *por, *pog, *pob;
     
     control->getDitherBuffers(width + 2, &or, &og, &ob, &nor, &nog, &nob);
     if ((! or) || (! og) || (! ob) || (! nor) || (! nog) || (! nob)) {
@@ -165,17 +165,27 @@ XImage *BImage::renderXImage(Bool dither) {
       return 0;
     }
     
-    for (x = 0; x < width; x++) {
-      *(or + x) = *(red + x);
-      *(og + x) = *(green + x);
-      *(ob + x) = *(blue + x);
+    x = width;
+
+    por = or;
+    pog = og;
+    pob = ob;
+
+    pr = red;
+    pg = green;
+    pb = blue;
+
+    while (x--) {
+      *(por++) = *(pr++);
+      *(pog++) = *(pg++);
+      *(pob++) = *(pb++);
     }
     
-    *(or + x) = *(og + x) = *(ob + x) = 0;
+    *por = *pog = *pob = 0;
     
-    for (y = 0, ofs = 0; y < height; y++) {
+    for (y = 0, off = 0; y < height; y++) {
       if (y < (height - 1)) {
-	for (x = 0, i = ofs + width; x < width; x++, i++) {
+	for (x = 0, i = off + width; x < width; x++, i++) {
 	  *(nor + x) = *(red + i);
 	  *(nog + x) = *(green + i);
 	  *(nob + x) = *(blue + i);
@@ -206,76 +216,71 @@ XImage *BImage::renderXImage(Bool dither) {
 	case PseudoColor:
 	  pixel = (r * cpccpc) + (g * cpc) + b;
 	  *idata++ = colors[pixel].pixel;
-
+	  
           er = *(or + x) - ((r << 8) / (cpc - 1));
           eg = *(og + x) - ((g << 8) / (cpc - 1));
           eb = *(ob + x) - ((b << 8) / (cpc - 1));
-
+	  
 	  break;
 	  
 	case TrueColor:
 	  pixel = (r << roff) | (g << goff) | (b << boff);
 	  
-	  switch (image->bits_per_pixel) {
-	  case 16:
+	  switch (image->byte_order) {
+	  case MSBFirst:
 	    {
-	      if (image->byte_order == MSBFirst) {
-		*idata++ = (pixel >> 8);
-		*idata++ = pixel;
-	      } else {
-		*idata++ = pixel;
-		*idata++ = (pixel >> 8);
+	      switch (image->bits_per_pixel) {
+	      case 32:
+		*(idata++) = (pixel >> 24);
+	      case 24:
+		*(idata++) = (pixel >> 16);
+	      case 16:
+		*(idata++) = (pixel >> 8);
+	      default:
+		*(idata++) = (pixel);
 	      }
-	      
+
 	      break;
 	    }
-	    
-	  case 24:
+
+	  case LSBFirst:
 	    {
-	      if (image->byte_order == MSBFirst) {
-		*idata++ = (pixel >> 16);
-		*idata++ = (pixel >> 8);
-		*idata++ = pixel;
-	      } else {
-		*idata++ = pixel;
-		*idata++ = (pixel >> 8);
-		*idata++ = (pixel >> 16);
-	      }
+	      *(idata++) = pixel;
 	      
-	      break;
-	    }
+	      switch (image->bits_per_pixel) {
+	      case 32:
+		*(idata++) = (pixel >> 8);
+		*(idata++) = (pixel >> 16);
+		*(idata++) = (pixel >> 24);
+		break;
+
+	      case 24:
+		*(idata++) = (pixel >> 8);
+		*(idata++) = (pixel >> 16);
+		break;
 		
-	  case 32:
-	    {
-	      if (image->byte_order == MSBFirst) {
-		*idata++ = (pixel >> 24);
-		*idata++ = (pixel >> 16);
-		*idata++ = (pixel >> 8);
-		*idata++ = pixel;
-	      } else {
-		*idata++ = pixel;
-		*idata++ = (pixel >> 8);
-		*idata++ = (pixel >> 16);
-		*idata++ = (pixel >> 24);
+	      case 16:
+		*(idata++) = (pixel >> 8);
+		break;
 	      }
-	      
+
 	      break;
 	    }
 	  }
-
+	  
 	  er = *(or + x) - ((r << 8) / (image->red_mask >> roff));
 	  eg = *(og + x) - ((g << 8) / (image->green_mask >> goff));
 	  eb = *(ob + x) - ((b << 8) / (image->blue_mask >> boff));
 	  
           break;
-
+	  
 	default:
 	  fprintf(stderr, "BImage::renderXImage: unsupported visual\n");
 	  image->data = (char *) d;
 	  XDestroyImage(image);
 	  return 0;
 	}
-
+	
 	*(or + x + 1) += er;
 	*(og + x + 1) += eg;
 	*(ob + x + 1) += eb;
@@ -289,21 +294,20 @@ XImage *BImage::renderXImage(Bool dither) {
 	*(nob + x + 1) -= (eb >> 1) + (eb >> 2);
       }
       
-      ofs += image->width;
+      off += image->width;
       
-      short *t;
-      t = or; or = nor; nor = t;
-      t = og; og = nog; nog = t;
-      t = ob; ob = nob; nob = t;
+      por = or; or = nor; nor = por;
+      pog = og; og = nog; nog = pog;
+      pob = ob; ob = nob; nob = pob;
     }
   } else {
-    for (y = 0, ofs = 0; y < height; y++) {
+    for (y = 0, off = 0; y < height; y++) {
       idata = d + (image->bytes_per_line * y);
       
-      for (x = 0; x < width; x++, ofs++) {
-	r = *(tr + *(red + ofs));
-	g = *(tg + *(green + ofs));
-	b = *(tb + *(blue + ofs));
+      for (x = 0; x < width; x++, off++) {
+	r = *(tr + *(red + off));
+	g = *(tg + *(green + off));
+	b = *(tb + *(blue + off));
 	
 	switch (control->v()->c_class) {
 	case StaticColor:
@@ -315,48 +319,51 @@ XImage *BImage::renderXImage(Bool dither) {
 	case TrueColor:
 	  pixel = (r << roff) | (g << goff) | (b << boff);
 	  
-	  switch (image->bits_per_pixel) {
-	  case 16:
-	    if (image->byte_order == MSBFirst) {
-	      *idata++ = (pixel >> 8);
-	      *idata++ = pixel;
-	    } else {
-	      *idata++ = pixel;
-	      *idata++ = (pixel >> 8);
+	  switch (image->byte_order) {
+	  case MSBFirst:
+	    {
+	      switch (image->bits_per_pixel) {
+	      case 32:
+		*(idata++) = (pixel >> 24);
+	      case 24:
+		*(idata++) = (pixel >> 16);
+	      case 16:
+		*(idata++) = (pixel >> 8);
+	      default:
+		*(idata++) = (pixel);
+	      }
+	      
+	      break;
 	    }
-	    break;
+	    
+	  case LSBFirst:
+	    {
+	      *(idata++) = pixel;
+	      
+	      switch (image->bits_per_pixel) {
+	      case 32:
+		*(idata++) = (pixel >> 8);
+		*(idata++) = (pixel >> 16);
+		*(idata++) = (pixel >> 24);
+		break;
 		
-	  case 24:
-	    if (image->byte_order == MSBFirst) {
-	      *idata++ = (pixel >> 16);
-	      *idata++ = (pixel >> 8);
-	      *idata++ = pixel;
-	    } else {
-	      *idata++ = pixel;
-	      *idata++ = (pixel >> 8);
-	      *idata++ = (pixel >> 16);
-	    }
-	    break;
+	      case 24:
+		*(idata++) = (pixel >> 8);
+		*(idata++) = (pixel >> 16);
+		break;
 		
-	  case 32:
-	    if (image->byte_order == MSBFirst) {
-	      *idata++ = (pixel >> 24);
-	      *idata++ = (pixel >> 16);
-	      *idata++ = (pixel >> 8);
-	      *idata++ = pixel;
-	    } else {
-	      *idata++ = pixel;
-	      *idata++ = (pixel >> 8);
-	      *idata++ = (pixel >> 16);
-	      *idata++ = (pixel >> 24);
+	      case 16:
+		*(idata++) = (pixel >> 8);
+		break;
+	      }
+	      
+	      break;
 	    }
-
-	    break;
 	  }
-
-          break;
-
-        default:
+	  
+	  break;
+	  
+	default:
 	  fprintf(stderr, "BImage::renderXImage: unsupported visual\n");
 	  image->data = (char *) d;
 	  XDestroyImage(image);
@@ -365,7 +372,7 @@ XImage *BImage::renderXImage(Bool dither) {
       }
     }
   }
-
+  
   image->data = (char *) d;
   return image;
 }
@@ -406,8 +413,10 @@ void BImage::background(const BColor &c) {
 
 void BImage::bevel1(Bool solid, Bool solidblack) {
   if (width > 2 && height > 2) {
-    unsigned char r, g, b, rr ,gg ,bb, *pr = red, *pg = green, *pb = blue;
-    unsigned int w = width, h = height - 1, wh = w * h;
+    unsigned char *pr = red, *pg = green, *pb = blue;
+    
+    register unsigned char r, g, b, rr ,gg ,bb;
+    register unsigned int w = width, h = height - 1, wh = w * h;
     
     if (solid) {
       if (solidblack) {
@@ -737,28 +746,34 @@ void BImage::bevel2(Bool solid, Bool solidblack) {
 
 
 void BImage::invert(void) {
-  unsigned int wh = width * height;
+  register unsigned int wh = width * height;
   unsigned char *r, *g, *b, *rr, *gg, *bb,
-    *new_r = new unsigned char[wh],
-    *new_g = new unsigned char[wh],
-    *new_b = new unsigned char[wh];
-
-  if ((! new_r) || (! new_g) || (! new_b)) return;
-
+    *new_r = new unsigned char [wh],
+    *new_g = new unsigned char [wh],
+    *new_b = new unsigned char [wh];
+  
+  if ((! new_r) || (! new_g) || (! new_b)) {
+    if (new_r) delete [] new_r;
+    if (new_g) delete [] new_g;
+    if (new_b) delete [] new_b;
+    
+    return;
+  }
+  
   rr = new_r;
   gg = new_g;
   bb = new_b;
-
+  
   r = red + wh - 1;
   g = green + wh - 1;
   b = blue +wh - 1;
-
+  
   while (--wh) {
     *(rr++) = *(r--);
     *(gg++) = *(g--);
     *(bb++) = *(b--);
   }
-
+  
   *rr = *r;
   *gg = *g;
   *bb = *b;
@@ -766,7 +781,7 @@ void BImage::invert(void) {
   delete [] red;
   delete [] green;
   delete [] blue;
-
+  
   red = new_r;
   green = new_g;
   blue = new_b;
@@ -774,114 +789,110 @@ void BImage::invert(void) {
 
 
 void BImage::dgradient(void) {
-  float fr, fg, fb, tr, tg, tb, dr, dg, db,
-    w = (float) width, h = (float) height,
-    dx, dy, xr, xg, xb, yr, yg, yb;
+  float fr, fg, fb, tr, tg, tb, drx, dgx, dbx, dry, dgy, dby,
+    w = (float) width, h = (float) height, yr, yg, yb, xr, xg, xb;
+  unsigned char *pr = red, *pg = green, *pb = blue;
   
-  unsigned int x, y, off;
+  register unsigned int x, y;
   
-  fr = (float) from.red;
-  fg = (float) from.green;
-  fb = (float) from.blue;
+  yr = fr = (float) from.red;
+  yg = fg = (float) from.green;
+  yb = fb = (float) from.blue;
   
   tr = (float) to.red;
   tg = (float) to.green;
   tb = (float) to.blue;
   
-  dr = tr - fr;
-  dg = tg - fg;
-  db = tb - fb;
+  drx = (tr - fr) / w;
+  dgx = (tg - fg) / w;
+  dbx = (tb - fb) / w;
 
-  for (y = 0, off = 0; y < height; y++) {
-#ifdef GradientHack
-    dy = sin((y / h) * M_PI_2);
-#else
-    dy = y / h;
-#endif
+  dry = (tr - fr) / h;
+  dgy = (tg - fg) / h;
+  dby = (tb - fb) / h;
+
+  for (y = 0; y < height; y++) {
+    xr = fr;
+    xg = fg;
+    xb = fb;
     
-    yr = (dr * dy) + fr;
-    yg = (dg * dy) + fg;
-    yb = (db * dy) + fb;
-
-    for (x = 0; x < width; x++, off++) {
-#ifdef GradientHack
-      dx = cos((x / w) * M_PI_2);
-#else
-      dx = x / w;
-#endif
+    for (x = 0; x < width; x++) {   
+      *(pr++) = (unsigned char) ((xr + yr) / 2);
+      *(pg++) = (unsigned char) ((xg + yg) / 2);
+      *(pb++) = (unsigned char) ((xb + yb) / 2);
       
-      xr = (dr * dx) + fr;
-      xg = (dg * dx) + fg;
-      xb = (db * dx) + fb;
-      
-      *(red + off) = (unsigned char) ((xr + yr) / 2);
-      *(green + off) = (unsigned char) ((xg + yg) / 2);
-      *(blue + off) = (unsigned char) ((xb + yb) / 2);
+      xr += drx;
+      xg += dgx;
+      xb += dbx;
     }
+    
+    yr += dry;
+    yg += dgy;
+    yb += dby;
   }
 }
 
 
 void BImage::hgradient(void) {
-  float fr, fg, fb, tr, tg, tb, dr, dg, db, dx, xr, xg, xb, w = (float) width;
-  unsigned char *r = new unsigned char[width],
-    *g = new unsigned char [width],
-    *b = new unsigned char [width];
+  float fr, fg, fb, tr, tg, tb, drx, dgx, dbx, xr, xg, xb, w = (float) width;
+  unsigned char *r = (unsigned char *) alloca(width * sizeof(char)),
+    *g = (unsigned char *) alloca(width * sizeof(char)),
+    *b = (unsigned char *) alloca(width * sizeof(char));
+  unsigned char *pr = red, *pg = green, *pb = blue, *rr, *gg, *bb;
 
-  unsigned int x, y, off;
+  register unsigned int x, y, off;
 
   if ((! r) || (! g) || (! b)) return;
   
-  fr = (float) from.red;
-  fg = (float) from.green;
-  fb = (float) from.blue;
+  xr = fr = (float) from.red;
+  xg = fg = (float) from.green;
+  xb = fb = (float) from.blue;
 
   tr = (float) to.red;
   tg = (float) to.green;
   tb = (float) to.blue;
 
-  dr = tr - fr;
-  dg = tg - fg;
-  db = tb - fb;
+  drx = (tr - fr) / w;
+  dgx = (tg - fg) / w;
+  dbx = (tb - fb) / w;
 
+  rr = r;
+  gg = g;
+  bb = b;
 
   // this renders one line of the hgradient to a buffer...
   for (x = 0; x < width; x++) {
-#ifdef GradientHack
-    dx = cos((x / w) * M_PI_2);
-#else
-    dx = x / w;
-#endif
+    *(rr++) = (unsigned char) (xr);
+    *(gg++) = (unsigned char) (xg);
+    *(bb++) = (unsigned char) (xb);
     
-    xr = (dr * dx) + fr;
-    xg = (dg * dx) + fg;
-    xb = (db * dx) + fb;
-      
-    *(r + x) = (unsigned char) (xr);
-    *(g + x) = (unsigned char) (xg);
-    *(b + x) = (unsigned char) (xb);
+    xr += drx;
+    xg += dgx;
+    xb += dbx;
   }
 
   // and this copies the buffer to the image...
-  for (y = 0, off = 0; y < height; y++)
+  for (y = 0, off = 0; y < height; y++) {
+    rr = r;
+    gg = g;
+    bb = b;
+    
     for (x = 0; x < width; x++, off++) {
-      *(red + off) = *(r + x);
-      *(green + off) = *(g + x);
-      *(blue + off ) = *(b + x);
+      *(pr++) = *(rr++);
+      *(pg++) = *(gg++);
+      *(pb++) = *(bb++);
     }
-  
-
-  delete [] r;
-  delete [] g;
-  delete [] b;
+  }
 }
 
 
 void BImage::vgradient(void) {
   float fr, fg, fb, tr, tg, tb, dr, dg, db, dy, yr, yg, yb,
     h = (float) height;
-  unsigned char r, g, b, *pr = red, *pg = green, *pb = blue;
-  unsigned int x, y;
+  unsigned char *pr = red, *pg = green, *pb = blue;
+  
+  register unsigned char r, g, b;
+  register unsigned int x, y;
   
   fr = (float) from.red;
   fg = (float) from.green;
@@ -935,6 +946,7 @@ BImageControl::BImageControl(Blackbox *bb) {
   
   int count;
   XPixmapFormatValues *pmv = XListPixmapFormats(display, &count);
+  root_colormap = DefaultColormap(display, screen_number);
   
   bits_per_pixel = 0;
   for (int i = 0; i < count; i++)
@@ -1015,9 +1027,8 @@ BImageControl::BImageControl(Blackbox *bb) {
       
       XGrabServer(display);
       
-      Colormap colormap = DefaultColormap(display, screen_number);
       for (i = 0; i < ncolors; i++)
-	if (! XAllocColor(display, colormap, &colors[i])) {
+	if (! XAllocColor(display, root_colormap, &colors[i])) {
 	  fprintf(stderr, "couldn't alloc color %i %i %i\n", colors[i].red,
 		  colors[i].green, colors[i].blue);
 	  colors[i].flags = 0;
@@ -1032,7 +1043,7 @@ BImageControl::BImageControl(Blackbox *bb) {
       for (i = 0; i < incolors; i++)
 	icolors[i].pixel = i;
       
-      XQueryColors(display, colormap, icolors, incolors);
+      XQueryColors(display, root_colormap, icolors, incolors);
       for (i = 0; i < ncolors; i++) {
 	if (! colors[i].flags) {
 	  unsigned long chk = 0xffffffff, pixel, close = 0;
@@ -1054,7 +1065,7 @@ BImageControl::BImageControl(Blackbox *bb) {
 	      colors[i].green = icolors[close].green;
 	      colors[i].blue = icolors[close].blue;
 	      
-	      if (XAllocColor(display, colormap, &colors[i])) {
+	      if (XAllocColor(display, root_colormap, &colors[i])) {
 		colors[i].flags = DoRed|DoGreen|DoBlue;
 		break;
 	      }
@@ -1311,4 +1322,26 @@ void BImageControl::getDitherBuffers(unsigned int w, short **r, short **g,
   *nr = next_red_err;
   *ng = next_green_err;
   *nb = next_blue_err;
+}
+
+
+void BImageControl::installRootColormap(void) {
+  XGrabServer(display);
+  
+  Bool install = True;
+  int i = 0, ncmap = 0;
+  Colormap *cmaps = XListInstalledColormaps(display, window, &ncmap);
+  
+  if (cmaps) {
+    for (i = 0; i < ncmap; i++)
+      if (*(cmaps + i) == root_colormap)
+	install = False;
+    
+    if (install)
+      XInstallColormap(display, root_colormap);
+    
+    XFree(cmaps);
+  }
+  
+  XUngrabServer(display);
 }

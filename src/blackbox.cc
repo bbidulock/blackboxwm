@@ -58,6 +58,9 @@ Blackbox *blackbox;
 static void signalhandler(int sig) {
   static int re_enter = 0;
   
+  fflush(stdout);
+  fflush(stderr);
+
   switch (sig) {
   case SIGHUP:
     blackbox->Reconfigure();
@@ -198,12 +201,16 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   toolbarSearchList = new LinkedList<ToolbarSearch>;
   groupSearchList = new LinkedList<GroupSearch>;
 
+  resource.workspaceNames = new LinkedList<char>;
+
   XrmInitialize();
   LoadRC();
 
   if (resource.imageDither && v->c_class == TrueColor && depth >= 24)
     resource.imageDither = False;
   image_control = new BImageControl(this);
+  image_control->installRootColormap();
+  rootColormapInstalled = True;
  
   LoadStyle();
   
@@ -365,242 +372,278 @@ void Blackbox::EventLoop(void) {
 
 void Blackbox::ProcessEvent(XEvent *e) {
   switch (e->type) {
-  case ButtonPress: {
-    BlackboxWindow *bWin = NULL;
-    Basemenu *rMenu = NULL;
-    Toolbar *tbar = NULL;
-    
-    if ((bWin = searchWindow(e->xbutton.window)) != NULL) {
-      bWin->buttonPressEvent(&e->xbutton);
-    } else if ((rMenu = searchMenu(e->xbutton.window)) != NULL) {
-      rMenu->buttonPressEvent(&e->xbutton);
-    } else if ((tbar = searchToolbar(e->xbutton.window)) != NULL) {
-      tbar->buttonPressEvent(&e->xbutton);
-    } else if (e->xbutton.window == root && e->xbutton.button == 3) {
-      int mx = e->xbutton.x_root - (root_menu->Width() / 2),
-	my = e->xbutton.y_root - (root_menu->titleHeight() / 2);
-
-      if (mx < 0) mx = 0;
-      if (my < 0) my = 0;
-      if (mx + root_menu->Width() > xres) mx = xres - root_menu->Width() - 1;
-      if (my + root_menu->Height() > yres) my = yres - root_menu->Height() - 1;
-      root_menu->Move(mx, my);
+  case ButtonPress:
+    {
+      BlackboxWindow *bWin = NULL;
+      Basemenu *rMenu = NULL;
+      Toolbar *tbar = NULL;
       
-      if (! root_menu->Visible())
-	root_menu->Show();
+      if ((bWin = searchWindow(e->xbutton.window)) != NULL) {
+	bWin->buttonPressEvent(&e->xbutton);
+	if (e->xbutton.button == 1)
+          bWin->installColormap(True);
+      } else if ((rMenu = searchMenu(e->xbutton.window)) != NULL) {
+	rMenu->buttonPressEvent(&e->xbutton);
+      } else if ((tbar = searchToolbar(e->xbutton.window)) != NULL) {
+	tbar->buttonPressEvent(&e->xbutton);
+      } else if (e->xbutton.window == root)
+	if (e->xbutton.button == 3) {
+	  int mx = e->xbutton.x_root - (root_menu->Width() / 2),
+	    my = e->xbutton.y_root - (root_menu->titleHeight() / 2);
+	  
+	  if (mx < 0) mx = 0;
+	  if (my < 0) my = 0;
+	  if (mx + root_menu->Width() > xres)
+	    mx = xres - root_menu->Width() - 1;
+	  if (my + root_menu->Height() > yres)
+	    my = yres - root_menu->Height() - 1;
+	  root_menu->Move(mx, my);
+	  
+	  if (! root_menu->Visible())
+	    root_menu->Show();
+	} else if (e->xbutton.button == 1 && (! rootColormapInstalled))
+	  image_control->installRootColormap();
+      
+      break;
     }
     
-    break;
-  }
-  
-  case ButtonRelease: {
-    BlackboxWindow *bWin = NULL;
-    Basemenu *rMenu = NULL;
-    Toolbar *tbar = NULL;
-
-    if ((bWin = searchWindow(e->xbutton.window)) != NULL)
-      bWin->buttonReleaseEvent(&e->xbutton);
-    else if ((rMenu = searchMenu(e->xbutton.window)) != NULL)
-      rMenu->buttonReleaseEvent(&e->xbutton);
-    else if ((tbar = searchToolbar(e->xbutton.window)) != NULL)
-      tbar->buttonReleaseEvent(&e->xbutton);
-    
-    break;
-  }
-  
-  case ConfigureRequest: {
-    BlackboxWindow *cWin = searchWindow(e->xconfigurerequest.window);
-    if (cWin != NULL)
-      cWin->configureRequestEvent(&e->xconfigurerequest);
-    else {
-      // configure a window we haven't mapped yet
-      XWindowChanges xwc;
+  case ButtonRelease:
+    {
+      BlackboxWindow *bWin = NULL;
+      Basemenu *rMenu = NULL;
+      Toolbar *tbar = NULL;
       
-      xwc.x = e->xconfigurerequest.x;
-      xwc.y = e->xconfigurerequest.y;	
-      xwc.width = e->xconfigurerequest.width;
-      xwc.height = e->xconfigurerequest.height;
-      xwc.border_width = 0;
-      xwc.sibling = e->xconfigurerequest.above;
-      xwc.stack_mode = e->xconfigurerequest.detail;
+      if ((bWin = searchWindow(e->xbutton.window)) != NULL)
+	bWin->buttonReleaseEvent(&e->xbutton);
+      else if ((rMenu = searchMenu(e->xbutton.window)) != NULL)
+	rMenu->buttonReleaseEvent(&e->xbutton);
+      else if ((tbar = searchToolbar(e->xbutton.window)) != NULL)
+	tbar->buttonReleaseEvent(&e->xbutton);
       
-      XConfigureWindow(display, e->xconfigurerequest.window,
-		       e->xconfigurerequest.value_mask, &xwc);
+      break;
     }
     
-    break; }
-  
-  case MapRequest: {
-    BlackboxWindow *rWin = searchWindow(e->xmaprequest.window);
+  case ConfigureRequest:
+    {
+      BlackboxWindow *cWin = searchWindow(e->xconfigurerequest.window);
+      if (cWin != NULL)
+	cWin->configureRequestEvent(&e->xconfigurerequest);
+      else {
+	// configure a window we haven't mapped yet
+	XWindowChanges xwc;
+	
+	xwc.x = e->xconfigurerequest.x;
+	xwc.y = e->xconfigurerequest.y;	
+	xwc.width = e->xconfigurerequest.width;
+	xwc.height = e->xconfigurerequest.height;
+	xwc.border_width = 0;
+	xwc.sibling = e->xconfigurerequest.above;
+	xwc.stack_mode = e->xconfigurerequest.detail;
+	
+	XConfigureWindow(display, e->xconfigurerequest.window,
+			 e->xconfigurerequest.value_mask, &xwc);
+      }
+      
+      break;
+    }
     
-    if (rWin == NULL && validateWindow(e->xmaprequest.window))
-      rWin = new BlackboxWindow(this, e->xmaprequest.window);
-    
-    if ((rWin = searchWindow(e->xmaprequest.window)) != NULL)
+  case MapRequest:
+    {
+      BlackboxWindow *rWin = searchWindow(e->xmaprequest.window);
+      
+      if (rWin == NULL && validateWindow(e->xmaprequest.window))
+	rWin = new BlackboxWindow(this, e->xmaprequest.window);
+      
+      if ((rWin = searchWindow(e->xmaprequest.window)) != NULL)
 	rWin->mapRequestEvent(&e->xmaprequest);
-
-    break; }
-  
-  case MapNotify: {
-    BlackboxWindow *mWin = searchWindow(e->xmap.window);
-    if (mWin != NULL)
-      mWin->mapNotifyEvent(&e->xmap);
-    
-    break; }
-  
-  case UnmapNotify: {
-    BlackboxWindow *uWin = searchWindow(e->xunmap.window);
-    if (uWin != NULL)
-      uWin->unmapNotifyEvent(&e->xunmap);
-    
-    break; }
-  
-  case DestroyNotify: {
-    BlackboxWindow *dWin = NULL;
-
-    if ((dWin = searchWindow(e->xdestroywindow.window)) != NULL)
-      dWin->destroyNotifyEvent(&e->xdestroywindow);
-    
-    break;
-  }
-  
-  case MotionNotify: {
-    BlackboxWindow *mWin = NULL;
-    Basemenu *rMenu = NULL;
-
-    if ((mWin = searchWindow(e->xmotion.window)) != NULL)
-      mWin->motionNotifyEvent(&e->xmotion);
-    else if ((rMenu = searchMenu(e->xmotion.window)) != NULL)
-      rMenu->motionNotifyEvent(&e->xmotion);
-    
-    break;
-  }
-  
-  case PropertyNotify: {
-    if (e->xproperty.state != PropertyDelete) {
-      BlackboxWindow *pWin = searchWindow(e->xproperty.window);
       
-      if (pWin != NULL)
-	pWin->propertyNotifyEvent(e->xproperty.atom);
+      break;
     }
-    
-    break;
-  }
   
-  case EnterNotify: {
-    BlackboxWindow *eWin = NULL;
-    Basemenu *eMenu = NULL;
-        
-    if (resource.sloppyFocus &&
-	(eWin = searchWindow(e->xcrossing.window)) != NULL) {
-      XGrabServer(display);
+  case MapNotify:
+    {
+      BlackboxWindow *mWin = searchWindow(e->xmap.window);
+      if (mWin != NULL)
+	mWin->mapNotifyEvent(&e->xmap);
       
-      if (validateWindow(eWin->clientWindow()))
-	if ((! eWin->isFocused()) && eWin->isVisible())
-	  if (eWin->setInputFocus() && resource.autoRaise)    
-            tool_bar->currentWorkspace()->raiseWindow(eWin);
-
-      XUngrabServer(display);
-    } else if ((eMenu = searchMenu(e->xcrossing.window)) != NULL)
-      eMenu->enterNotifyEvent(&e->xcrossing);
-    
-    break;
-  }
-  
-  case LeaveNotify: {
-    Basemenu *lMenu = NULL;
-
-    if ((lMenu = searchMenu(e->xcrossing.window)) != NULL)
-      lMenu->leaveNotifyEvent(&e->xcrossing);
-    
-    break;
-  }
-  
-  case Expose: {
-    BlackboxWindow *eWin = NULL;
-    Basemenu *eMenu = NULL;
-    Toolbar *tbar = NULL;
-
-    if ((eWin = searchWindow(e->xexpose.window)) != NULL)
-      eWin->exposeEvent(&e->xexpose);
-    else if ((eMenu = searchMenu(e->xexpose.window)) != NULL)
-      eMenu->exposeEvent(&e->xexpose);
-    else if ((tbar = searchToolbar(e->xexpose.window)) != NULL)
-      tbar->exposeEvent(&e->xexpose);
-    
-    break;
-  } 
-  
-  case FocusIn: {
-    BlackboxWindow *iWin = searchWindow(e->xfocus.window);
-
-    if ((iWin != NULL) && (e->xfocus.mode != NotifyGrab) &&
-	(e->xfocus.mode != NotifyUngrab)) {
-      iWin->setFocusFlag(True);
-      focus_window_number = iWin->windowNumber();
-      tool_bar->currentWorkspace()->setFocusWindow(focus_window_number);
+      break;
     }
-
-    break;
-  }
   
-  case FocusOut: {
-    BlackboxWindow *oWin = searchWindow(e->xfocus.window);
-
-    if ((oWin != NULL) && (e->xfocus.mode != NotifyGrab) &&
-	(e->xfocus.mode != NotifyWhileGrabbed))
-      oWin->setFocusFlag(False);
-   
-    if ((e->xfocus.mode == NotifyNormal) &&
-	(e->xfocus.detail == NotifyAncestor)) {
-      if (resource.sloppyFocus)
-	XSetInputFocus(display, PointerRoot, RevertToParent, CurrentTime);
-      else
-	XSetInputFocus(display, tool_bar->windowID(), RevertToParent,
-		       CurrentTime);
-
-      focus_window_number = -1;
-      tool_bar->currentWorkspace()->setFocusWindow(-1);
+  case UnmapNotify:
+    {
+      BlackboxWindow *uWin = searchWindow(e->xunmap.window);
+      if (uWin != NULL)
+	uWin->unmapNotifyEvent(&e->xunmap);
+      
+      break;
     }
-
-    break;
-  }
-  
-  case KeyPress: {
-    if (e->xkey.state & Mod1Mask) {
-      if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Tab) {
-	nextFocus();
+    
+  case DestroyNotify:
+    {
+      BlackboxWindow *dWin = NULL;
+      
+      if ((dWin = searchWindow(e->xdestroywindow.window)) != NULL)
+	dWin->destroyNotifyEvent(&e->xdestroywindow);
+      
+      break;
+    }
+    
+  case MotionNotify:
+    {
+      BlackboxWindow *mWin = NULL;
+      Basemenu *rMenu = NULL;
+      
+      if ((mWin = searchWindow(e->xmotion.window)) != NULL)
+	mWin->motionNotifyEvent(&e->xmotion);
+      else if ((rMenu = searchMenu(e->xmotion.window)) != NULL)
+	rMenu->motionNotifyEvent(&e->xmotion);
+      
+      break;
+    }
+    
+  case PropertyNotify:
+    {
+      if (e->xproperty.state != PropertyDelete) {
+	BlackboxWindow *pWin = searchWindow(e->xproperty.window);
+	
+	if (pWin != NULL)
+	  pWin->propertyNotifyEvent(e->xproperty.atom);
       }
-    } else if (e->xkey.state & ControlMask) {
-      if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Left){
-	if (tool_bar->currentWorkspaceID() > 1)
-	  tool_bar->changeWorkspaceID(tool_bar->currentWorkspaceID() - 1);
-	else
-	  tool_bar->changeWorkspaceID(tool_bar->count() - 1);
-      } else if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Right){
-	if (tool_bar->currentWorkspaceID() != tool_bar->count() - 1)
-	  tool_bar->
-	    changeWorkspaceID(tool_bar->currentWorkspaceID() + 1);
-	else
-	  tool_bar->changeWorkspaceID(1);
-      }
+      
+      break;
     }
-
-    break;
-  }
-
-  default:
-#ifdef SHAPE
-    if (e->type == shape.event_basep) {
-      XShapeEvent *shape_event = (XShapeEvent *) e;
-
+  
+  case EnterNotify:
+    {
       BlackboxWindow *eWin = NULL;
-      if (((eWin = searchWindow(e->xany.window)) != NULL) ||
-	  (shape_event->kind != ShapeBounding))
-	eWin->shapeEvent(shape_event);
+      Basemenu *eMenu = NULL;
+      
+      if (resource.sloppyFocus &&
+	  (eWin = searchWindow(e->xcrossing.window)) != NULL) {
+	XGrabServer(display);
+	
+	if (validateWindow(eWin->clientWindow()))
+	  if ((! eWin->isFocused()) && eWin->isVisible())
+	    if (eWin->setInputFocus() && resource.autoRaise)    
+	      tool_bar->currentWorkspace()->raiseWindow(eWin);
+	
+	XUngrabServer(display);
+      } else if ((eMenu = searchMenu(e->xcrossing.window)) != NULL)
+	eMenu->enterNotifyEvent(&e->xcrossing);
+      
+      break;
     }
+    
+  case LeaveNotify:
+    {
+      Basemenu *lMenu = NULL;
+      
+      if ((lMenu = searchMenu(e->xcrossing.window)) != NULL)
+	lMenu->leaveNotifyEvent(&e->xcrossing);
+      
+      break;
+    }
+    
+  case Expose:
+    {
+      BlackboxWindow *eWin = NULL;
+      Basemenu *eMenu = NULL;
+      Toolbar *tbar = NULL;
+      
+      if ((eWin = searchWindow(e->xexpose.window)) != NULL)
+	eWin->exposeEvent(&e->xexpose);
+      else if ((eMenu = searchMenu(e->xexpose.window)) != NULL)
+	eMenu->exposeEvent(&e->xexpose);
+      else if ((tbar = searchToolbar(e->xexpose.window)) != NULL)
+	tbar->exposeEvent(&e->xexpose);
+      
+      break;
+    } 
+    
+  case FocusIn:
+    {
+      BlackboxWindow *iWin = searchWindow(e->xfocus.window);
+      Toolbar *tbar = searchToolbar(e->xfocus.window);
+      
+      if ((iWin != NULL) && (e->xfocus.mode != NotifyGrab) &&
+	  (e->xfocus.mode != NotifyUngrab)) {
+	iWin->setFocusFlag(True);
+	focus_window_number = iWin->windowNumber();
+	tool_bar->currentWorkspace()->setFocusWindow(focus_window_number);
+      } else if (tbar != NULL)
+	tool_bar->readWorkspaceName(e->xfocus.window);
+      
+      break;
+    }
+    
+  case FocusOut:
+    {
+      BlackboxWindow *oWin = searchWindow(e->xfocus.window);
+      
+      if ((oWin != NULL) && (e->xfocus.mode != NotifyGrab) &&
+	  (e->xfocus.mode != NotifyWhileGrabbed))
+	oWin->setFocusFlag(False);
+    
+      if ((e->xfocus.mode == NotifyNormal) &&
+	  (e->xfocus.detail == NotifyAncestor)) {
+	if (resource.sloppyFocus)
+	  XSetInputFocus(display, PointerRoot, RevertToParent, CurrentTime);
+	else
+	  XSetInputFocus(display, tool_bar->windowID(), RevertToParent,
+			 CurrentTime);
+	
+	focus_window_number = -1;
+	tool_bar->currentWorkspace()->setFocusWindow(-1);
+      }
+
+      break;
+    }
+    
+  case KeyPress:
+    {
+      if (e->xkey.state & Mod1Mask) {
+	if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Tab) {
+	  nextFocus();
+	}
+      } else if (e->xkey.state & ControlMask) {
+	if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Left){
+	  if (tool_bar->currentWorkspaceID() > 1)
+	    tool_bar->changeWorkspaceID(tool_bar->currentWorkspaceID() - 1);
+	  else
+	    tool_bar->changeWorkspaceID(tool_bar->count() - 1);
+	} else if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Right){
+	  if (tool_bar->currentWorkspaceID() != tool_bar->count() - 1)
+	    tool_bar->
+	      changeWorkspaceID(tool_bar->currentWorkspaceID() + 1);
+	  else
+	    tool_bar->changeWorkspaceID(1);
+	}
+      }
+      
+      break;
+    }
+    
+  case ColormapNotify:
+    {
+      rootColormapInstalled =
+	((e->xcolormap.state == ColormapInstalled) ? True : False);
+      break;
+    }
+    
+    
+  default:
+    {
+#ifdef SHAPE
+      if (e->type == shape.event_basep) {
+	XShapeEvent *shape_event = (XShapeEvent *) e;
+	
+	BlackboxWindow *eWin = NULL;
+	if (((eWin = searchWindow(e->xany.window)) != NULL) ||
+	    (shape_event->kind != ShapeBounding))
+	  eWin->shapeEvent(shape_event);
+      }
 #endif
-    break;
+    }
   }
 }
 
@@ -863,9 +906,34 @@ void Blackbox::SaveRC(void) {
 	   "ClickToFocus"));
   XrmPutLineResource(&new_blackboxrc, rc_string);
 
+  // write out the users workspace names
+  int i, len = 0;
+  for (i = 1; i < tool_bar->count(); i++)
+    len += strlen(tool_bar->workspace(i)->Name()) + 1;
+
+  char *resource_string = new char[len + 1024],
+    *save_string = new char[len], *save_string_pos = save_string,
+    *name_string_pos;
+  if (save_string) {
+    for (i = 1; i < tool_bar->count(); i++) {
+      len = strlen(tool_bar->workspace(i)->Name()) + 1;
+      name_string_pos = tool_bar->workspace(i)->Name();
+      
+      while (--len) *(save_string_pos++) = *(name_string_pos++);
+      *(save_string_pos++) = ',';
+    }
+  }
+
+  *(--save_string_pos) = '\0';
+
+  sprintf(resource_string, "session.workspaceNames:  %s", save_string);
+  XrmPutLineResource(&new_blackboxrc, resource_string);
+
   XrmPutFileDatabase(new_blackboxrc, rcfile);
   XrmDestroyDatabase(new_blackboxrc);
-
+  
+  delete [] resource_string;
+  delete [] save_string;
   delete [] rcfile;
 }
 
@@ -1270,6 +1338,23 @@ void Blackbox::LoadRC(void) {
     }
   } else
     resource.workspaces = 1;
+
+  while (resource.workspaceNames->count())
+    resource.workspaceNames->remove(0);
+
+  resource.workspaceNames->insert("Sticky Windows");
+  if (XrmGetResource(database,
+		     "session.workspaceNames",
+		     "Session.WorkspaceNames", &value_type, &value)) {
+    char *search = new char[value.size];
+    strncpy(search, value.addr, value.size);
+    
+    int i;
+    for (i = 0; i < resource.workspaces; i++) {
+      char *nn = strsep(&search, ",");
+      resource.workspaceNames->insert(nn);
+    }
+  }
 
   if (resource.menuFile) delete [] resource.menuFile;
   if (XrmGetResource(database,
@@ -1995,4 +2080,15 @@ void Blackbox::setStyle(char *filename) {
 
   resource.styleFile = new char[strlen(filename) + 1];
   sprintf(resource.styleFile, "%s", filename);
+}
+
+
+void Blackbox::nameOfWorkspace(int id, char **name) {
+  if (id > 0 && id < resource.workspaceNames->count()) {
+    char *wkspc_name = resource.workspaceNames->find(id);
+    int len = strlen(wkspc_name) + 1;
+    *name = new char [len];
+    strncpy(*name, wkspc_name, len);
+  } else
+    *name = 0;
 }

@@ -21,7 +21,7 @@
 
 #ifndef __blackbox_hh
 #define __blackbox_hh
-#define __blackbox_version "beta zero . four zero . five"
+#define __blackbox_version "beta zero . four zero . six"
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
@@ -134,6 +134,9 @@ private:
       autoRaise;
     BColor borderColor;
     XrmDatabase stylerc;
+
+    LinkedList<char> *workspaceNames;
+
     char *menuFile, *styleFile;
     int workspaces, justify, menu_justify, colors_per_channel;
     unsigned int handleWidth, bevelWidth;
@@ -150,15 +153,13 @@ private:
   LinkedList<ToolbarSearch> *toolbarSearchList;
   LinkedList<GroupSearch> *groupSearchList;
   
-  // internal variables for operation
   Rootmenu *root_menu;
   Toolbar *tool_bar;
-
   BImageControl *image_control;
 
   Atom _XA_WM_COLORMAP_WINDOWS, _XA_WM_PROTOCOLS, _XA_WM_STATE,
     _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS, _MOTIF_WM_HINTS;
-  Bool startup, shutdown, reconfigure;
+  Bool startup, shutdown, reconfigure, rootColormapInstalled;
   Display *display;
   GC opGC, wfocusGC, wunfocusGC, mtitleGC, mframeGC, mhiGC, mhbgGC;
   Visual *v;
@@ -291,6 +292,8 @@ public:
   int colorsPerChannel(void) { return resource.colors_per_channel; }
   unsigned int xRes(void) { return xres; }
   unsigned int yRes(void) { return yres; }
+
+  void nameOfWorkspace(int, char **);
 
   // public constants
   enum { B_Restart = 1, B_RestartOther, B_Exit, B_Shutdown, B_Execute,

@@ -44,7 +44,7 @@ private:
   Bool moving, visible, movable, user_moved, default_menu, title_vis, shifted,
     hidable;
   Display *display;
-  int which_sub, which_press, which_sbl, alignment;
+  int which_sub, which_press, which_sbl, alignment, always_highlight;
 
   struct menu {
     Pixmap iframe_pixmap, title_pixmap;
@@ -105,6 +105,7 @@ public:
   void Move(int, int);
   void Update(void);
   void defaultMenu(void) { default_menu = True; }
+  void setHighlight(int = -1);
 
   enum { MenuAlignDontCare = 1, MenuAlignTop, MenuAlignBottom };
 };

@@ -54,7 +54,8 @@ void Workspacemenu::itemSelected(int button, int index) {
       toolbar->addWorkspace();
     } else if (index == 1) {
       toolbar->removeLastWorkspace();
-    } else if (toolbar->currentWorkspace()->workspaceID() != (index - 1)) {
+    } else if ((toolbar->currentWorkspace()->workspaceID() != (index - 1)) &&
+               ((index - 1) < toolbar->count())) {
       toolbar->changeWorkspaceID(index - 1);
       Hide();
     }

@@ -31,6 +31,8 @@
 #include "Workspace.hh"
 #include "Icon.hh"
 
+#include <X11/keysym.h>
+
 #include <stdio.h>
 #include <sys/time.h>
  
@@ -56,7 +58,8 @@ Toolbar::Toolbar(Blackbox *bb, int c) {
     blackbox->borderColor().pixel;
   attrib.override_redirect = True;
   attrib.cursor = blackbox->sessionCursor();
-  attrib.event_mask = ButtonPressMask | ButtonReleaseMask | ExposureMask;
+  attrib.event_mask = ButtonPressMask | ButtonReleaseMask | ExposureMask |
+    FocusChangeMask | KeyPressMask;
 
   frame.bevel_w = blackbox->bevelWidth();
 
@@ -218,37 +221,7 @@ Toolbar::Toolbar(Blackbox *bb, int c) {
   
   zero = workspacesList->first();
   current = workspacesList->find(1);
-  
-  /*  int l = strlen(current->Name()),
-    x = (frame.label_w - XTextWidth(blackbox->titleFont(),
-				    current->Name(), l))/ 2;
-  XDrawString(display, frame.workspaceLabel, buttonGC, x,
-	      blackbox->titleFont()->ascent +
-	      blackbox->titleFont()->descent, current->Name(), l);
-
-  checkClock(True);
-
-  int hh = frame.button_h / 2, hw = frame.button_w / 2;
-  
-  XPoint pts[3];
-  pts[0].x = hw - 2; pts[0].y = hh;
-  pts[1].x = 4; pts[1].y = 2;
-  pts[2].x = 0; pts[2].y = -4;
-  
-  XFillPolygon(display, frame.workspacePrev, buttonGC, pts, 3, Convex,
-	       CoordModePrevious);
-  XFillPolygon(display, frame.windowPrev, buttonGC, pts, 3, Convex,
-	       CoordModePrevious);
-  
-  pts[0].x = hw - 2; pts[0].y = hh - 2;
-  pts[1].x = 4; pts[1].y =  2;
-  pts[2].x = -4; pts[2].y = 2;
-  
-  XFillPolygon(display, frame.workspaceNext, buttonGC, pts, 3, Convex,
-	       CoordModePrevious);
-  XFillPolygon(display, frame.windowNext, buttonGC, pts, 3, Convex,
-	       CoordModePrevious);
-  */
+  wsMenu->setHighlight(2);
 }
 
 
@@ -378,6 +351,7 @@ void Toolbar::changeWorkspaceID(int id) {
       XFillPolygon(display, frame.menuButton, buttonGC, pts, 3, Convex,
 		   CoordModePrevious);
     }
+    wsMenu->setHighlight(id + 1);
     
     int l = strlen(current->Name()),
       x = (frame.label_w - XTextWidth(blackbox->titleFont(),
@@ -659,6 +633,71 @@ void Toolbar::redrawLabel(Bool redraw) {
 }
 
 
+void Toolbar::readWorkspaceName(Window window) {
+  if (window == frame.workspaceLabel) {
+    XGrabServer(display);
+    
+    Bool done = False;
+    XEvent event;
+    
+    char *new_name = new char[1024], *new_name_pos = new_name;
+    if (! new_name) return;
+    
+    while (! done) {
+      XWindowEvent(display, frame.workspaceLabel, KeyPressMask, &event);
+      
+      KeySym ks = XKeycodeToKeysym(display, event.xkey.keycode, 0), uks, lks;
+      if (ks == XK_Return) {
+	done = True;
+
+	current->setName(new_name);
+	wsMenu->remove(current->workspaceID() + 1);
+	wsMenu->insert(current->Name(), current->Menu(),
+		       current->workspaceID());
+	wsMenu->Update();
+      } else if (! (ks == XK_Shift_L || ks == XK_Shift_R ||
+		    ks == XK_Control_L || ks == XK_Control_R ||
+		    ks == XK_Alt_L || ks == XK_Alt_R ||
+		    ks == XK_Meta_L || ks == XK_Meta_R)) {
+	if (ks == XK_BackSpace) {
+	  if (new_name_pos != new_name)
+	    *(--new_name_pos) = '\0';
+	  else
+	    *new_name = '\0';
+	} else if (ks == XK_space) {
+	  *(new_name_pos++) = ' ';
+	  *(new_name_pos) = '\0';
+	} else {
+	  if (event.xkey.state & ShiftMask) {
+	    XConvertCase(ks, &lks, &uks);
+	    ks = uks;
+	  }
+	  
+	  char *n = XKeysymToString(ks);
+	  *(new_name_pos++) = *n;
+	  *(new_name_pos) = '\0';
+	}
+	
+	XClearWindow(display, frame.workspaceLabel);
+	int l = strlen(new_name),
+	  tx = (XTextWidth(blackbox->titleFont(), new_name, l) +
+		(frame.bevel_w * 2)),
+	  x = (frame.label_w - tx) / 2;
+	
+	if (tx > (signed) frame.label_w) x = frame.bevel_w;
+	
+	XDrawString(display, frame.workspaceLabel, buttonGC, x,
+		    blackbox->titleFont()->ascent +
+		    blackbox->titleFont()->descent, new_name, l);
+	XFlush(display);
+      }
+    }
+    
+    XUngrabServer(display);
+  }
+}
+
+
 // *************************************************************************
 // event handlers
 // *************************************************************************
@@ -732,6 +771,27 @@ void Toolbar::buttonPressEvent(XButtonEvent *be) {
       
       XFillPolygon(display, frame.windowNext, buttonGC, pts, 3, Convex,
 		   CoordModePrevious);
+    } else {
+      raised = True;
+      current->restackWindows();
+    }
+  } else if (be->button == 2) {
+    raised = False;
+    current->restackWindows();
+  } else if (be->button == 3) {
+    if (be->window == frame.workspaceLabel) {
+      Window window;
+      int foo;
+
+      if (XGetInputFocus(display, &window, &foo))
+	if (window == frame.workspaceLabel) {
+	  readWorkspaceName(frame.workspaceLabel);
+	  return;
+	}
+      
+      XSetInputFocus(display, frame.workspaceLabel, RevertToParent,
+		     CurrentTime);
+      XSync(display, False);
     }
   }
 }

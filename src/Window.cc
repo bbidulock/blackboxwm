@@ -63,12 +63,12 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window) {
     True;
   functions.close = decorations.close = False;
   
-  client.normal_hint_flags = client.wmhint_flags = client.initial_state = 0;
+  client.wm_hint_flags = client.normal_hint_flags = 0;
   client.transient_for = client.transient = 0;
   client.title = 0;
   client.title_len = 0;
   icon = 0;
-  client.mwm_hints = 0;
+  client.mwm_hint = 0;
   windowmenu = 0;
 
   XGrabServer(display);
@@ -88,8 +88,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window) {
   // get size, aspect, minimum/maximum size and other hints set by the
   // client
   getWMHints();
-  XSizeHints sizehint;
-  getWMNormalHints(&sizehint);
+  getWMNormalHints();
   
   // determine if this is a transient window
   Window win;
@@ -111,12 +110,14 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window) {
   if (! transient) {
     if ((client.normal_hint_flags & PMinSize) &&
 	(client.normal_hint_flags & PMaxSize))
-      if (client.max_w == client.min_w && client.max_h == client.min_h)
+      if (client.max_width == client.min_width &&
+	  client.max_height == client.min_height)
 	decorations.maximize = decorations.handle = functions.resize = False;
-  } else
+  } else {
     decorations.border = decorations.handle = decorations.maximize =
       functions.resize = False;
-
+  }
+  
   // check for mwm hints and change the window decorations if necessary
   int format;
   Atom atom_return;
@@ -125,12 +126,12 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window) {
   XGetWindowProperty(display, client.window, blackbox->MwmHintsAtom(),
 		     0, PropMwmHintsElements, False,
 		     blackbox->MwmHintsAtom(), &atom_return, &format,
-		     &num, &len, (unsigned char **) &client.mwm_hints);
+		     &num, &len, (unsigned char **) &client.mwm_hint);
   
-  if (client.mwm_hints)
+  if (client.mwm_hint)
     if (num == PropMwmHintsElements) {
-      if (client.mwm_hints->flags & MwmHintsDecorations)
-	if (client.mwm_hints->decorations & MwmDecorAll)
+      if (client.mwm_hint->flags & MwmHintsDecorations)
+	if (client.mwm_hint->decorations & MwmDecorAll)
           decorations.titlebar = decorations.handle = decorations.border =
             decorations.iconify = decorations.maximize = decorations.close =
             decorations.menu = True;
@@ -139,37 +140,37 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window) {
 	    decorations.iconify = decorations.maximize = decorations.close =
 	    decorations.menu = False;
 	  
-	  if (client.mwm_hints->decorations & MwmDecorBorder)
+	  if (client.mwm_hint->decorations & MwmDecorBorder)
 	    decorations.border = True;
-	  if (client.mwm_hints->decorations & MwmDecorHandle)
+	  if (client.mwm_hint->decorations & MwmDecorHandle)
 	    decorations.handle = True;
-	  if (client.mwm_hints->decorations & MwmDecorTitle)
+	  if (client.mwm_hint->decorations & MwmDecorTitle)
 	    decorations.titlebar = True;
-	  if (client.mwm_hints->decorations & MwmDecorMenu)
+	  if (client.mwm_hint->decorations & MwmDecorMenu)
 	    decorations.menu = True;
-	  if (client.mwm_hints->decorations & MwmDecorIconify)
+	  if (client.mwm_hint->decorations & MwmDecorIconify)
 	    decorations.iconify = True;
-	  if (client.mwm_hints->decorations & MwmDecorMaximize)
+	  if (client.mwm_hint->decorations & MwmDecorMaximize)
 	    decorations.maximize = True;
 	}
       
-      if (client.mwm_hints->flags & MwmHintsFunctions)
-	if (client.mwm_hints->functions & MwmFuncAll)
+      if (client.mwm_hint->flags & MwmHintsFunctions)
+	if (client.mwm_hint->functions & MwmFuncAll)
 	  functions.resize = functions.move = functions.iconify =
 	    functions.maximize = functions.close = True;
 	else {
 	  functions.resize = functions.move = functions.iconify =
 	    functions.maximize = functions.close = False;
 	  
-	  if (client.mwm_hints->functions & MwmFuncResize)
+	  if (client.mwm_hint->functions & MwmFuncResize)
 	    functions.resize = True;
-	  if (client.mwm_hints->functions & MwmFuncMove)
+	  if (client.mwm_hint->functions & MwmFuncMove)
 	    functions.move = True;
-	  if (client.mwm_hints->functions & MwmFuncIconify)
+	  if (client.mwm_hint->functions & MwmFuncIconify)
 	    functions.iconify = True;
-	  if (client.mwm_hints->functions & MwmFuncMaximize)
+	  if (client.mwm_hint->functions & MwmFuncMaximize)
 	    functions.maximize = True;
-	  if (client.mwm_hints->functions & MwmFuncClose)
+	  if (client.mwm_hint->functions & MwmFuncClose)
 	    functions.close = True;
 	}
     }
@@ -201,11 +202,68 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window) {
   static unsigned int cx = 32, cy = 32;
   Bool cascade = True;
   
-  if (blackbox->Startup() || transient ||
-      (client.normal_hint_flags & (PPosition|USPosition))) { 
+  if (blackbox->Startup()) {
     frame.x = client.x - ((decorations.border) ? (frame.bevel_w + 1) : 1);
     frame.y = client.y - frame.title_h -
       ((decorations.border) ? (frame.bevel_w + 2) : 1);
+    cascade = False;
+  } else if (transient || client.normal_hint_flags & (PPosition|USPosition)) {
+    switch (client.win_gravity) {
+    case StaticGravity:
+      frame.x = client.x - ((decorations.border) ? (frame.bevel_w + 1) : 1);
+      frame.y = client.y - frame.title_h -
+	((decorations.border) ? (frame.bevel_w + 2) : 1);
+      break;
+      
+    case NorthGravity:
+      frame.x = client.x - ((decorations.border) ? (frame.bevel_w + 1) : 1);
+      frame.y = client.y;
+      break;
+      
+    case NorthEastGravity:
+      frame.x = (client.x + client.width) - frame.width;
+      frame.y = client.y;
+      break;
+      
+    case WestGravity:
+      frame.x = client.x;
+      frame.y = client.y - frame.title_h -
+	((decorations.border) ? (frame.bevel_w + 2) : 1);
+      break;
+
+    case EastGravity:
+      frame.x = client.x + client.width - frame.width;
+      frame.y = client.y - frame.title_h -
+	((decorations.border) ? (frame.bevel_w + 2) : 1);
+      break;
+
+    case SouthWestGravity:
+      frame.x = client.x;
+      frame.y = client.y + client.height - frame.height;
+      break;
+
+    case SouthGravity:
+      frame.x = client.x - ((decorations.border) ? (frame.bevel_w + 1) : 1);
+      frame.y = client.y + client.height - frame.height;
+      break;
+
+    case SouthEastGravity:
+      frame.x = client.x + client.width - frame.width;
+      frame.y = client.y + client.height - frame.height;
+      break;
+      
+    case CenterGravity:
+      frame.x = client.x + (client.width / 2);
+      frame.y = client.y + (client.height / 2);
+      break;
+      
+    case NorthWestGravity:
+    case ForgetGravity:
+    default:
+      frame.x = client.x;
+      frame.y = client.y;
+      break;
+    }
     
     if (frame.x >= 0 && frame.y >= 0)
       cascade = False;
@@ -398,7 +456,10 @@ BlackboxWindow::~BlackboxWindow(void) {
     if (strcmp(client.title, "Unnamed"))
       XFree(client.title);
 
-  if (client.mwm_hints) XFree(client.mwm_hints);
+  if (client.mwm_hint) {
+    XFree(client.mwm_hint);
+    client.mwm_hint = 0;
+  }
 
   XUngrabServer(display);
 }
@@ -868,26 +929,13 @@ void BlackboxWindow::Reconfigure(void) {
   setFocusFlag(focused);
   if (decorations.titlebar) drawTitleWin();
   drawAllButtons();
+
+  configureWindow(frame.x, frame.y, frame.width, frame.height);
   
   if (windowmenu) {
     windowmenu->Move(windowmenu->X(), frame.y + frame.title_h);
     windowmenu->Reconfigure();
   }
-  
-  XEvent event;
-  event.type = ConfigureNotify;  
-  event.xconfigure.display = display;
-  event.xconfigure.event = client.window;
-  event.xconfigure.window = client.window;
-  event.xconfigure.x = client.x;
-  event.xconfigure.y = client.y;
-  event.xconfigure.width = client.width;
-  event.xconfigure.height = client.height;
-  event.xconfigure.border_width = 0;
-  event.xconfigure.above = frame.window;
-  event.xconfigure.override_redirect = False;
-  
-  XSendEvent(display, client.window, False, StructureNotifyMask, &event);
 }
 
 
@@ -944,20 +992,21 @@ Bool BlackboxWindow::getWMProtocols(void) {
 
 Bool BlackboxWindow::getWMHints(void) {
   if (! validateClient()) return False;
-
-  XWMHints *wmhints;
-  if ((wmhints = XGetWMHints(display, client.window)) == NULL) {
+  
+  XWMHints *wmhint = XGetWMHints(display, client.window);
+  if (! wmhint) {
     visible = True;
     iconic = False;
     focus_mode = F_Passive;
     client.window_group = None;
+    client.initial_state = NormalState;
     
     return True;
   }
   
-  client.wmhint_flags = wmhints->flags;
-  if (wmhints->flags & InputHint) {
-    if (wmhints->input == True) {
+  client.wm_hint_flags = wmhint->flags;
+  if (wmhint->flags & InputHint) {
+    if (wmhint->input == True) {
       if (focusable)
 	focus_mode = F_LocallyActive;
       else
@@ -971,79 +1020,84 @@ Bool BlackboxWindow::getWMHints(void) {
   } else
     focus_mode = F_Passive;
   
-  if (wmhints->flags & StateHint)
-    client.initial_state = wmhints->initial_state;
+  if (wmhint->flags & StateHint)
+    client.initial_state = wmhint->initial_state;
   else
     client.initial_state = NormalState;
-  
-  // icon pixmap hint would be next, but since we now handle icons in a menu,
-  // this has no bearing on us what so ever
-  
-  // same with icon window hint
-  // and icon position hint
-  // and icon mask hint
-  
-  if (wmhints->flags & WindowGroupHint) {
+
+  if (wmhint->flags & WindowGroupHint) {
     if (! client.window_group) {
-      client.window_group = wmhints->window_group;
+      client.window_group = wmhint->window_group;
       blackbox->saveGroupSearch(client.window_group, this);
-      }
+    }
   } else
     client.window_group = None;
   
-  XFree(wmhints);
   return True;
 }
 
 
-Bool BlackboxWindow::getWMNormalHints(XSizeHints *hint) {
+Bool BlackboxWindow::getWMNormalHints(void) {
+  XGrabServer(display);
   if (! validateClient()) return False;
-
+  
   long icccm_mask;
-  if (! XGetWMNormalHints(display, client.window, hint, &icccm_mask)) {
-    client.inc_h = client.inc_w = 1;
-    client.min_w = client.min_h = 1;
-    client.base_w = client.base_h = 0;
-    client.max_w = blackbox->xRes();
-    client.max_h = blackbox->yRes();
-    
+  XSizeHints sizehint;
+  if (! XGetWMNormalHints(display, client.window, &sizehint, &icccm_mask)) {
+    client.min_width = client.min_height =
+      client.base_width = client.base_height =
+      client.width_inc = client.height_inc = 1;
+    client.max_width = blackbox->xRes();
+    client.max_height = blackbox->yRes();
+    client.min_aspect_x = client.min_aspect_y =
+      client.max_aspect_x = client.max_aspect_y = 1;
+
+    XUngrabServer(display);
     return True;
   }
-    
-  client.normal_hint_flags = hint->flags;
-  if (client.normal_hint_flags & PResizeInc) {
-    client.inc_w = hint->width_inc;
-    client.inc_h = hint->height_inc;
+
+  client.normal_hint_flags = sizehint.flags;
+  if (sizehint.flags & PMinSize) {
+    client.min_width = sizehint.min_width;
+    client.min_height = sizehint.min_height;
   } else
-    client.inc_h = client.inc_w = 1;
-  
-  if (client.normal_hint_flags & PMinSize) {
-    client.min_w = hint->min_width;
-    client.min_h = hint->min_height;
-  } else
-    client.min_h = client.min_w = 1;
-  
-  if (client.normal_hint_flags & PBaseSize) {
-    client.base_w = hint->base_width;
-    client.base_h = hint->base_height;
-  } else
-    client.base_w = client.base_h = 0;
-  
-  if (client.normal_hint_flags & PMaxSize) {
-    client.max_w = hint->max_width;
-    client.max_h = hint->max_height;
+    client.min_width = client.min_height = 1;
+
+  if (sizehint.flags & PMaxSize) {
+    client.max_width = sizehint.max_width;
+    client.max_height = sizehint.max_height;
   } else {
-    client.max_w = blackbox->xRes();
-    client.max_h = blackbox->yRes();
+    client.max_width = blackbox->xRes();
+    client.max_height = blackbox->yRes();
   }
+
+  if (sizehint.flags & PResizeInc) {
+    client.width_inc = sizehint.width_inc;
+    client.height_inc = sizehint.height_inc;
+  } else
+    client.width_inc = client.height_inc = 1;
+
+  if (sizehint.flags & PAspect) {
+    client.min_aspect_x = sizehint.min_aspect.x;
+    client.min_aspect_y = sizehint.min_aspect.y;
+    client.max_aspect_x = sizehint.max_aspect.x;
+    client.max_aspect_y = sizehint.max_aspect.y;
+  } else
+    client.min_aspect_x = client.min_aspect_y =
+      client.max_aspect_x = client.max_aspect_y = 1;    
   
-  if (client.normal_hint_flags & PAspect) {
-    client.min_ax = hint->min_aspect.x;
-    client.min_ay = hint->min_aspect.y;
-    client.max_ax = hint->max_aspect.x;
-    client.max_ay = hint->max_aspect.y;
-  }
+  if (sizehint.flags & PBaseSize) {
+    client.base_width = sizehint.base_width;
+    client.base_height = sizehint.base_height;
+  } else
+    client.base_width = client.base_height = 0;
+
+  if (sizehint.flags & PWinGravity)
+    client.win_gravity = sizehint.win_gravity;
+  else
+    client.win_gravity = StaticGravity;
   
+  XUngrabServer(display);
   return True;
 }
 
@@ -1060,18 +1114,20 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
   //
 
   Bool resize, send_event;
-  if (dw > (client.max_w + ((decorations.border) ? (frame.bevel_w * 2) : 0) +
+  if (dw > (client.max_width +
+	    ((decorations.border) ? (frame.bevel_w * 2) : 0) +
 	    ((decorations.handle) ? frame.handle_w + 1 : 0)))
-    dw = client.max_w + ((decorations.border) ? (frame.bevel_w * 2) : 0) +
+    dw = client.max_width +
+      ((decorations.border) ? (frame.bevel_w * 2) : 0) +
       ((decorations.handle) ? frame.handle_w + 1 : 0);
-  if (dh > (client.max_h + frame.y_border +
+  if (dh > (client.max_height + frame.y_border +
 	    ((decorations.border) ?  (frame.bevel_w * 2) : 0)))
-    dh = client.max_h + frame.y_border +
+    dh = client.max_height + frame.y_border +
       ((decorations.border) ? (frame.bevel_w * 2) : 0);
   
   if ((((signed) frame.width) + dx) < 0) dx = 0;
   if ((((signed) frame.height) + dy) < 0) dy = 0;
-    
+  
   resize = ((dw != frame.width) || (dh != frame.height));
   send_event = ((dx != frame.x || dy != frame.y) && (! resize));
   
@@ -1109,9 +1165,30 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
     xwc.width = dw;
     xwc.height = ((shaded) ? frame.title_h : dh);
     XConfigureWindow(display, frame.window, CWX|CWY|CWWidth|CWHeight, &xwc);
+
+    if (decorations.titlebar)
+      XResizeWindow(display, frame.title, frame.title_w, frame.title_h);
+
+    positionButtons();
+    
+    if (decorations.handle) {
+      XMoveResizeWindow(display, frame.handle, frame.x_handle,
+			frame.y_border, frame.handle_w, frame.handle_h);
+      
+      XMoveWindow(display, frame.resize_handle, frame.x_handle,
+		  frame.y_border + frame.handle_h + 1);
+    }
+    
+    if (decorations.border) {
+      XResizeWindow(display, frame.border, frame.border_w, frame.border_h);
+      XMoveResizeWindow(display, client.window, frame.bevel_w,
+			frame.bevel_w, client.width, client.height);
+    } else
+      XMoveResizeWindow(display, client.window, 0, frame.y_border,
+			client.width, client.height);
     
     Pixmap tmp;
-
+    
     if (decorations.titlebar) {
       tmp = frame.ftitle;
       frame.ftitle =
@@ -1149,23 +1226,8 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
     }
     
     setFocusFlag(focused);
-    if (decorations.titlebar)
-      XResizeWindow(display, frame.title, frame.title_w, frame.title_h);
-    positionButtons();
-
-    if (decorations.handle) {
-      XMoveResizeWindow(display, frame.handle, frame.x_handle,
-			frame.y_border, frame.handle_w, frame.handle_h);
-      
-      XMoveWindow(display, frame.resize_handle, frame.x_handle,
-		  frame.y_border + frame.handle_h + 1);
-    }
     
     if (decorations.border) {
-      XResizeWindow(display, frame.border, frame.border_w, frame.border_h);
-      XMoveResizeWindow(display, client.window, frame.bevel_w,
-			frame.bevel_w, client.width, client.height);
-      
       tmp = frame.frame;
       frame.frame =
 	image_ctrl->renderImage(frame.border_w, frame.border_h,
@@ -1176,9 +1238,7 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
       if (tmp) image_ctrl->removeImage(tmp);
       XSetWindowBackgroundPixmap(display, frame.border, frame.frame);
       XClearWindow(display, frame.border);
-    } else
-      XMoveResizeWindow(display, client.window, 0, frame.y_border,
-			client.width, client.height);
+    }
     
     if (decorations.titlebar) drawTitleWin();
     drawAllButtons();
@@ -1395,21 +1455,21 @@ void BlackboxWindow::maximizeWindow(void) {
     ph = frame.height;
     
     dw = blackbox->xRes() - ((decorations.handle) ? frame.handle_w + 1: 0) -
-      client.base_w - ((decorations.border) ? (frame.bevel_w * 2) : 0);
+      client.base_width - ((decorations.border) ? (frame.bevel_w * 2) : 0);
     dh = blackbox->yRes() - blackbox->toolbar()->Height() -
-      frame.y_border - client.base_h -
+      frame.y_border - client.base_height -
       ((decorations.border) ? (frame.bevel_w * 2) : 0);
 
-    if (dw < client.min_w) dw = client.min_w;
-    if (dh < client.min_h) dh = client.min_h;
-    if (dw > client.max_w) dw = client.max_w;
-    if (dh > client.max_h) dh = client.max_h;
+    if (dw < client.min_width) dw = client.min_width;
+    if (dh < client.min_height) dh = client.min_height;
+    if (dw > client.max_width) dw = client.max_width;
+    if (dh > client.max_height) dh = client.max_height;
     
-    dw /= client.inc_w;
-    dh /= client.inc_h;
+    dw /= client.width_inc;
+    dh /= client.height_inc;
     
-    dw = (dw * client.inc_w) + client.base_w;
-    dh = (dh * client.inc_h) + client.base_h;
+    dw = (dw * client.width_inc) + client.base_width;
+    dh = (dh * client.height_inc) + client.base_height;
 
     dw += ((decorations.handle) ? frame.handle_w + 1 : 0) +
       ((decorations.border) ? (frame.bevel_w * 2) : 0);
@@ -1463,6 +1523,42 @@ void BlackboxWindow::setFocusFlag(Bool focus) {
   
   if (decorations.titlebar) drawTitleWin();
   drawAllButtons();
+}
+
+
+void BlackboxWindow::installColormap(Bool install) {
+  XGrabServer(display);
+
+  if (! validateClient()) return;
+  
+  int i = 0, ncmap = 0;
+  Colormap *cmaps = XListInstalledColormaps(display, client.window, &ncmap);  
+  XWindowAttributes wattrib;
+  if (cmaps) {
+    if (XGetWindowAttributes(display, client.window, &wattrib)) {
+      if (install) {
+	// install the window's colormap
+	for (i = 0; i < ncmap; i++)
+	  if (*(cmaps + i) == wattrib.colormap)
+	    // this window is using an installed color map... do not install
+	    install = False;
+	
+	// otherwise, install the window's colormap
+	if (install)
+	  XInstallColormap(display, wattrib.colormap);
+      } else {
+	// uninstall the window's colormap
+	for (i = 0; i < ncmap; i++)
+	  if (*(cmaps + i) == wattrib.colormap)
+	    // we found the colormap to uninstall
+	    XUninstallColormap(display, wattrib.colormap);
+      }
+    }
+    
+    XFree(cmaps);
+  }
+  
+  XUngrabServer(display);
 }
 
 
@@ -1680,7 +1776,7 @@ void BlackboxWindow::drawCloseButton(Bool pressed) {
 
 void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
   if (re->window == client.window) {
-    if ((! iconic) && (client.wmhint_flags & StateHint)) {
+    if ((! iconic) && (client.wm_hint_flags & StateHint)) {
       XGrabServer(display);
       if (! validateClient()) return;
 
@@ -1851,10 +1947,9 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
     blackbox->toolbar()->workspace(workspace_number)->Update();
     break;
       
-  case XA_WM_NORMAL_HINTS: {
-    XSizeHints sizehint;
-    getWMNormalHints(&sizehint);
-    break; }
+  case XA_WM_NORMAL_HINTS:
+    getWMNormalHints();
+    break;
     
   default:
     if (atom == blackbox->ProtocolsAtom())
@@ -1955,12 +2050,12 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
     if (mx > (signed) (frame.x + frame.width - (frame.handle_w +
 						windowmenu->Width())))
       mx = frame.x + frame.width - (frame.handle_w + windowmenu->Width());
-    else if (mx < frame.x)
+    if (mx < frame.x)
       mx = frame.x;
     
     if (my > (signed) (frame.y + frame.height - windowmenu->Height()))
       my = frame.y + frame.height - windowmenu->Height();
-    else if (my < (signed) (frame.y + ((decorations.titlebar) ? frame.title_h :
+    if (my < (signed) (frame.y + ((decorations.titlebar) ? frame.title_h :
 			     	  frame.y_border)))
       my = frame.y +
 	((decorations.titlebar) ? frame.title_h : frame.y_border);
@@ -2007,7 +2102,7 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
 	XUngrabPointer(display, CurrentTime);
       } else if ((re->state & ControlMask))
 	shadeWindow();
-    } else if (resizing) {  
+    } else if (resizing) {
       int dx, dy;
       
       XDrawString(display, blackbox->Root(), blackbox->OpGC(),
@@ -2018,21 +2113,21 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
 
       // calculate the size of the client window and conform it to the
       // size specified by the size hints of the client window...
-      dx = frame.x_resize - frame.handle_w - client.base_w -
+      dx = frame.x_resize - frame.handle_w - client.base_width -
 	((decorations.border) ? (frame.bevel_w * 2) : 0) - 1;
-      dy = frame.y_resize - frame.y_border - client.base_h -
+      dy = frame.y_resize - frame.y_border - client.base_height -
 	((decorations.border) ? (frame.bevel_w * 2) : 0);
       
-      if (dx < (signed) client.min_w) dx = client.min_w;
-      if (dy < (signed) client.min_h) dy = client.min_h;
-      if ((unsigned) dx > client.max_w) dx = client.max_w;
-      if ((unsigned) dy > client.max_h) dy = client.max_h;
+      if (dx < (signed) client.min_width) dx = client.min_width;
+      if (dy < (signed) client.min_height) dy = client.min_height;
+      if ((unsigned) dx > client.max_width) dx = client.max_width;
+      if ((unsigned) dy > client.max_height) dy = client.max_height;
       
-      dx /= client.inc_w;
-      dy /= client.inc_h;
+      dx /= client.width_inc;
+      dy /= client.height_inc;
       
-      dx = (dx * client.inc_w) + client.base_w;
-      dy = (dy * client.inc_h) + client.base_h;
+      dx = (dx * client.width_inc) + client.base_width;
+      dy = (dy * client.height_inc) + client.base_height;
       
       frame.x_resize = dx + frame.handle_w +
 	((decorations.border) ? (frame.bevel_w * 2) : 0) + 1;
@@ -2040,9 +2135,11 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
 	((decorations.border) ? (frame.bevel_w * 2) : 0);
       
       delete [] resizeLabel;
-      configureWindow(frame.x, frame.y, frame.x_resize, frame.y_resize);
+      
       resizing = False;
       XUngrabPointer(display, CurrentTime);
+      
+      configureWindow(frame.x, frame.y, frame.x_resize, frame.y_resize);
       XUngrabServer(display);
     } else if (re->window == frame.iconify_button) {
       if ((re->x >= 0) && ((unsigned) re->x <= frame.button_w) &&
@@ -2177,24 +2274,24 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
 	  
 	  // calculate the size of the client window and conform it to the
 	  // size specified by the size hints of the client window...
-	  dx = frame.x_resize - frame.handle_w - client.base_w -
+	  dx = frame.x_resize - frame.handle_w - client.base_width -
 	    ((decorations.border) ? (frame.bevel_w * 2) : 0) - 1;
-	  dy = frame.y_resize - frame.y_border - client.base_h -
+	  dy = frame.y_resize - frame.y_border - client.base_height -
 	    ((decorations.border) ? (frame.bevel_w * 2) : 0);
 	  
-	  if (dx < (signed) client.min_w) dx = client.min_w;
-	  if (dy < (signed) client.min_h) dy = client.min_h;
-	  if ((unsigned) dx > client.max_w) dx = client.max_w;
-	  if ((unsigned) dy > client.max_h) dy = client.max_h;
+	  if (dx < (signed) client.min_width) dx = client.min_width;
+	  if (dy < (signed) client.min_height) dy = client.min_height;
+	  if ((unsigned) dx > client.max_width) dx = client.max_width;
+	  if ((unsigned) dy > client.max_height) dy = client.max_height;
 	  
-	  dx /= client.inc_w;
-	  dy /= client.inc_h;
+	  dx /= client.width_inc;
+	  dy /= client.height_inc;
 	  
 	  resizeLabel = new char[strlen("00000 x 00000")];
 	  sprintf(resizeLabel, "%d x %d", dx, dy);
 	  
-	  dx = (dx * client.inc_w) + client.base_w;
-	  dy = (dy * client.inc_h) + client.base_h;
+	  dx = (dx * client.width_inc) + client.base_width;
+	  dy = (dy * client.height_inc) + client.base_height;
 	  
 	  frame.x_resize = dx + frame.handle_w +
 	    ((decorations.border) ? (frame.bevel_w * 2) : 0) + 1;
@@ -2224,28 +2321,28 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
 
 	// calculate the size of the client window and conform it to the
 	// size specified by the size hints of the client window...
-	dx = frame.x_resize - frame.handle_w - client.base_w -
+	dx = frame.x_resize - frame.handle_w - client.base_width -
 	  ((decorations.border) ? (frame.bevel_w * 2) : 0) - 1;
-	dy = frame.y_resize - client.base_h - frame.y_border -
+	dy = frame.y_resize - client.base_height - frame.y_border -
 	  ((decorations.border) ? (frame.bevel_w * 2) : 0);
 
-	if (dx < (signed) client.min_w) dx = client.min_w;
-	if (dy < (signed) client.min_h) dy = client.min_h;
-	if ((unsigned) dx > client.max_w) dx = client.max_w;
-	if ((unsigned) dy > client.max_h) dy = client.max_h;
+	if (dx < (signed) client.min_width) dx = client.min_width;
+	if (dy < (signed) client.min_height) dy = client.min_height;
+	if ((unsigned) dx > client.max_width) dx = client.max_width;
+	if ((unsigned) dy > client.max_height) dy = client.max_height;
 	
-	dx /= client.inc_w;
-	dy /= client.inc_h;	
+	dx /= client.width_inc;
+	dy /= client.height_inc;	
 	sprintf(resizeLabel, "%d x %d", dx, dy);
 	
-	dx = (dx * client.inc_w) + client.base_w;
-	dy = (dy * client.inc_h) + client.base_h;
+	dx = (dx * client.width_inc) + client.base_width;
+	dy = (dy * client.height_inc) + client.base_height;
 
 	frame.x_resize = dx + frame.handle_w +
 	  ((decorations.border) ? (frame.bevel_w * 2) : 0) + 1;
 	frame.y_resize = dy + frame.y_border +
 	  ((decorations.border) ? (frame.bevel_w * 2) : 0);
-
+	
 	XDrawString(display, blackbox->Root(), blackbox->OpGC(),
 		    frame.x + frame.x_resize + 5, frame.y +
 		    frame.y_resize - 5, resizeLabel, strlen(resizeLabel));

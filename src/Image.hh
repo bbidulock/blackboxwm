@@ -67,10 +67,13 @@ class BImage {
 private:
   BImageControl *control;
 
+  XColor *colors;
+
   BColor bg, from, to;
-  int roff, goff, boff;
+  int roff, goff, boff, ncolors, cpc, cpccpc;
   unsigned char *red, *green, *blue;
   unsigned int width, height;
+  unsigned short *tr, *tg, *tb;
 
 
 protected:
@@ -102,6 +105,7 @@ class BImageControl {
 private:
   Blackbox *blackbox;
 
+  Colormap root_colormap;
   Display *display;
   Window window; // == blackbox->Root();
   XColor *colors;
@@ -145,6 +149,7 @@ public:
   unsigned long getColor(const char *);
   unsigned long getColor(const char *, unsigned char *, unsigned char *,
                          unsigned char *);
+  void installRootColormap(void);
 
   // image cache/render requests
   Pixmap renderImage(unsigned int, unsigned int, unsigned long, const BColor &,

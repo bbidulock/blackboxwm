@@ -82,10 +82,12 @@ public:
   void Reconfigure(void);
   void checkClock(Bool = False);
   void redrawLabel(Bool = False);
+  void readWorkspaceName(Window);
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);
   void exposeEvent(XExposeEvent *);
+
   Window windowID(void) { return frame.window; }
   Workspace *currentWorkspace(void) { return current; }
   int count(void) { return workspacesList->count(); }

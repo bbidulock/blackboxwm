@@ -45,7 +45,7 @@ Basemenu::Basemenu(Blackbox *ctrl) {
   shifted = default_menu = moving = user_moved = visible = False;
   menu.x = menu.y = menu.x_shift = menu.y_shift = menu.x_move =
     menu.y_move = 0;
-  which_sub = which_press = which_sbl = -1;
+  always_highlight = which_sub = which_press = which_sbl = -1;
 
   menu.iframe_pixmap = menu.title_pixmap = None;
 
@@ -184,6 +184,9 @@ int Basemenu::remove(int index) {
     if ((--which_sub) == index)
       which_sub = -1;
 
+  if (always_highlight == index)
+    always_highlight = -1;
+
   return menuitems->count();
 }
 
@@ -317,7 +320,7 @@ void Basemenu::Update(void) {
   
   int i = 0;
   for (i = 0; i < menuitems->count(); i++)
-    if (i == which_sub) {
+    if (i == which_sub || i == always_highlight) {
       drawItem(i, True, 0);
       drawSubmenu(i);
     } else
@@ -348,7 +351,9 @@ void Basemenu::Hide(void) {
   which_sub = which_press = which_sub = -1;
 
   if (parent) {
-    parent->drawItem(parent->which_sub, False, True);
+    if (parent->always_highlight != parent->which_sub)
+      parent->drawItem(parent->which_sub, False, True);
+    
     parent->which_sub = -1;
   }
 
@@ -513,6 +518,18 @@ void Basemenu::setMenuLabel(char *l) {
 }
 
 
+void Basemenu::setHighlight(int index) {
+  if (always_highlight != -1)
+    drawItem(always_highlight, False, True);
+  
+  if (index >= 0 && index < menuitems->count()) {
+    always_highlight = index; 
+    drawItem(always_highlight, True);
+  } else
+    always_highlight = -1;
+}
+
+
 // *************************************************************************
 // Menu event handling
 // *************************************************************************
@@ -622,7 +639,8 @@ void Basemenu::motionNotifyEvent(XMotionEvent *me) {
 	int p = (which_sbl * menu.persub) + which_press;
 	BasemenuItem *item = menuitems->find(p);
 	
-	drawItem(p, False, True);
+	if (p != always_highlight)
+	  drawItem(p, False, True);
 	if (item->submenu())
 	  if (item->submenu()->Visible()) {
 	    item->submenu()->Hide();
@@ -701,7 +719,7 @@ void Basemenu::exposeEvent(XExposeEvent *ee) {
       for (ii = id; ii <= id_d && it.current(); it++, ii++) {
 	int index = ii + (i * menu.persub);
 	// redraw the item
-	if (which_sub == index)
+	if (which_sub == index || always_highlight == index)
 	  drawItem(index, True);
 	else
 	  drawItem(index);
@@ -755,7 +773,7 @@ void Basemenu::leaveNotifyEvent(XCrossingEvent *ce) {
     if (which_press != -1 && which_sbl != -1 && menuitems->count() > 0) {
       int p = (which_sbl * menu.persub) + which_press;      
       
-      if (p != which_sub)
+      if ( ! ((p == which_sub) || (p == always_highlight)))
 	drawItem(p, False, True);
       
       which_sbl = which_press = -1;
@@ -763,7 +781,7 @@ void Basemenu::leaveNotifyEvent(XCrossingEvent *ce) {
     
     if (! (ce->state & Button1Mask))
       XUngrabPointer(display, CurrentTime);
-
+    
     if (shifted) {
       XMoveWindow(display, menu.frame, menu.x, menu.y);
       shifted = False;

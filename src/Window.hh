@@ -83,13 +83,12 @@ private:
     char *title;
     int x, y, title_len;
     unsigned int width, height, title_text_w,
-      base_w, base_h,
-      inc_w, inc_h,
-      min_w, min_h, max_w, max_h,
-      min_ax, min_ay, max_ax, max_ay;
-    long normal_hint_flags, wmhint_flags, initial_state;
+      min_width, min_height, max_width, max_height, width_inc, height_inc,
+      min_aspect_x, min_aspect_y, max_aspect_x, max_aspect_y,
+      base_width, base_height, win_gravity;
+    unsigned long initial_state, normal_hint_flags, wm_hint_flags;
     
-    MwmHints *mwm_hints;
+    MwmHints *mwm_hint;
   } client;
   
   struct decorations {
@@ -118,7 +117,7 @@ private:
   
   
 protected:
-  Bool getWMNormalHints(XSizeHints *);
+  Bool getWMNormalHints(void);
   Bool getWMProtocols(void);
   Bool getWMHints(void);
   Window createToplevelWindow(int, int, unsigned int, unsigned int,
@@ -173,6 +172,7 @@ public:
   void shadeWindow(void);
   void unstickWindow(void);
   void Reconfigure(void);
+  void installColormap(Bool);
   
   BlackboxWindow *Transient(void) { return client.transient; }
   BlackboxWindow *TransientFor(void) { return client.transient_for; }
