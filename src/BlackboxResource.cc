@@ -51,6 +51,12 @@ static const unsigned char maximize_bits[] =
   { 0xff, 0x01, 0xff, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
     0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0xff, 0x01 };
 
+static const int restore_width  = 9;
+static const int restore_height = 9;
+static const unsigned char restore_bits[] =
+  { 0xf8, 0x01, 0xf8, 0x01, 0x08, 0x01, 0x3f, 0x01, 0x3f,
+    0x01, 0xe1, 0x01, 0x21, 0x00, 0x21, 0x00, 0x3f, 0x00 };
+
 static const int close_width  = 9;
 static const int close_height = 9;
 static const unsigned char close_bits[] =
@@ -514,6 +520,8 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
                       iconify_width, iconify_height);
   wstyle.maximize.load(screen_num, maximize_bits,
                        maximize_width, maximize_height);
+  wstyle.restore.load(screen_num, restore_bits,
+                      restore_width, restore_height);
   wstyle.close.load(screen_num, close_bits,
                     close_width, close_height);
 
