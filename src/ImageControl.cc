@@ -57,8 +57,9 @@ static unsigned long bsqrt(unsigned long x) {
 }
 
 
-BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
-                             int _cpc, unsigned long cache_timeout,
+BImageControl::BImageControl(BaseDisplay *dpy, const ScreenInfo *scrn,
+                             Bool _dither, int _cpc,
+                             unsigned long cache_timeout,
                              unsigned long cmax)
 {
   basedisplay = dpy;

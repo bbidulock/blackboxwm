@@ -162,7 +162,7 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
   cursor.ll_angle = XCreateFontCursor(getXDisplay(), XC_ll_angle);
   cursor.lr_angle = XCreateFontCursor(getXDisplay(), XC_lr_angle);
 
-  for (int i = 0; i < getNumberOfScreens(); i++) {
+  for (unsigned int i = 0; i < getNumberOfScreens(); i++) {
     BScreen *screen = new BScreen(this, i);
 
     if (! screen->isScreenManaged()) {

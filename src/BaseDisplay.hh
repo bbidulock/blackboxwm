@@ -27,7 +27,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
-#include <list>
+#include <vector>
 
 // forward declaration
 class BaseDisplay;
@@ -50,12 +50,12 @@ private:
   Bool _startup, _shutdown;
   Display *display;
 
-  typedef std::list<ScreenInfo*> ScreenInfoList;
+  typedef std::vector<ScreenInfo> ScreenInfoList;
   ScreenInfoList screenInfoList;
   TimerQueue timerList;
 
   const char *display_name, *application_name;
-  int number_of_screens, colors_per_channel;
+  unsigned int number_of_screens;
 
   // no copying!
   BaseDisplay(const BaseDisplay &);
@@ -73,7 +73,7 @@ public:
   BaseDisplay(const char *app_name, const char *dpy_name = 0);
   virtual ~BaseDisplay(void);
 
-  ScreenInfo* getScreenInfo(unsigned int s);
+  const ScreenInfo* getScreenInfo(unsigned int s) const;
 
   inline const Bool hasShapeExtensions(void) const
     { return shape.extensions; }
@@ -82,14 +82,14 @@ public:
   inline const Bool isStartup(void) const
     { return _startup; }
 
-  inline Display *getXDisplay(void) { return display; }
+  inline Display *getXDisplay(void) const { return display; }
 
   inline const char *getXDisplayName(void) const
     { return display_name; }
   inline const char *getApplicationName(void) const
     { return application_name; }
 
-  inline const int getNumberOfScreens(void) const
+  inline const unsigned int getNumberOfScreens(void) const
     { return number_of_screens; }
   inline const int getShapeEventBase(void) const
     { return shape.event_basep; }
@@ -123,24 +123,23 @@ private:
   Window root_window;
   Colormap colormap;
 
-  int depth, screen_number;
+  int depth;
+  unsigned int screen_number;
   XRectangle rect;
 
 protected:
   const XRectangle& getRect(void) const { return rect; }
 
 public:
-  ScreenInfo(BaseDisplay *d, int num);
+  ScreenInfo(BaseDisplay *d, unsigned int num);
 
-  inline BaseDisplay *getBaseDisplay(void) { return basedisplay; }
-
-  inline Visual *getVisual(void) { return visual; }
+  inline BaseDisplay *getBaseDisplay(void) const { return basedisplay; }
+  inline Visual *getVisual(void) const { return visual; }
   inline const Window getRootWindow(void) const { return root_window; }
   inline const Colormap &getColormap(void) const { return colormap; }
-
   inline const int getDepth(void) const { return depth; }
-  inline const int getScreenNumber(void) const { return screen_number; }
-
+  inline const unsigned int getScreenNumber(void) const
+  { return screen_number; }
   inline const unsigned short getWidth(void) const { return rect.width; }
   inline const unsigned short getHeight(void) const { return rect.height; }
 };

@@ -192,7 +192,7 @@ public:
          WindowLower, WindowStick, WindowKill, SetStyle };
   enum FocusModel { SloppyFocus, ClickToFocus };
 
-  BScreen(Blackbox *bb, int scrn);
+  BScreen(Blackbox *bb, unsigned int scrn);
   ~BScreen(void);
 
   inline const Bool isToolbarOnTop(void) const

@@ -177,7 +177,7 @@ static const char *getFontSize(const char *pattern, int *size) {
 }
 
 
-BScreen::BScreen(Blackbox *bb, int scrn) : ScreenInfo(bb, scrn) {
+BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   blackbox = bb;
 
   event_mask = ColormapChangeMask | EnterWindowMask | PropertyChangeMask |

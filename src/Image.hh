@@ -174,16 +174,17 @@ public:
     unsigned long pixel1, pixel2, texture;
   };
 
-  BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither= False,
-                int _cpc = 4, unsigned long cache_timeout = 300000l,
+  BImageControl(BaseDisplay *dpy, const ScreenInfo *scrn,
+                Bool _dither= False, int _cpc = 4,
+                unsigned long cache_timeout = 300000l,
                 unsigned long cmax = 200l);
   virtual ~BImageControl(void);
 
-  inline BaseDisplay *getBaseDisplay(void) { return basedisplay; }
+  inline BaseDisplay *getBaseDisplay(void) const { return basedisplay; }
 
   inline const Bool doDither(void) { return dither; }
 
-  inline ScreenInfo *getScreenInfo(void) { return screeninfo; }
+  inline const ScreenInfo *getScreenInfo(void) { return screeninfo; }
 
   inline const Window getDrawable(void) const { return window; }
 
@@ -221,7 +222,7 @@ public:
 private:
   Bool dither;
   BaseDisplay *basedisplay;
-  ScreenInfo *screeninfo;
+  const ScreenInfo *screeninfo;
 #ifdef    TIMEDCACHE
   BTimer *timer;
 #endif // TIMEDCACHE

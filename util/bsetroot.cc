@@ -12,6 +12,7 @@
 #endif // HAVE_STDIO_H
 
 #include "../src/i18n.hh"
+#include "../src/Util.hh"
 #include "bsetroot.hh"
 
 
@@ -80,7 +81,7 @@ bsetroot::bsetroot(int argc, char **argv, char *dpy_name)
   }
   
   img_ctrl = new BImageControl*[getNumberOfScreens()];
-  for (int i = 0; i < getNumberOfScreens(); i++)
+  for (unsigned int i = 0; i < getNumberOfScreens(); i++)
     img_ctrl[i] = new BImageControl(this, getScreenInfo(i), True);
 
   if (sol && fore) solid();
@@ -95,8 +96,7 @@ bsetroot::~bsetroot(void) {
 
   XKillClient(getXDisplay(), AllTemporary);
 
-  for (int i = 0; i < getNumberOfScreens(); i++)
-    delete img_ctrl[i];
+  std::for_each(img_ctrl, img_ctrl + getNumberOfScreens(), PointerAssassin());
 
   delete [] img_ctrl;
 }
@@ -110,14 +110,15 @@ void bsetroot::setPixmapProperty(int screen, Pixmap pixmap) {
   unsigned long length, after;
   unsigned char *data;
   int mode;
-  
+  const ScreenInfo *screen_info = getScreenInfo(screen);
+
   if (rootpmap_id == None)
     rootpmap_id = XInternAtom(getXDisplay(), "_XROOTPMAP_ID", False);
 
   XGrabServer(getXDisplay());
   
   /* Clear out the old pixmap */
-  XGetWindowProperty(getXDisplay(), getScreenInfo(screen)->getRootWindow(),
+  XGetWindowProperty(getXDisplay(), screen_info->getRootWindow(),
 		     rootpmap_id, 0L, 1L, False, AnyPropertyType,
 		     &type, &format, &length, &after, &data);
   
@@ -129,11 +130,11 @@ void bsetroot::setPixmapProperty(int screen, Pixmap pixmap) {
     mode = PropModeAppend;
   }
   if (pixmap) {
-    XChangeProperty(getXDisplay(), getScreenInfo(screen)->getRootWindow(),
+    XChangeProperty(getXDisplay(), screen_info->getRootWindow(),
 		    rootpmap_id, XA_PIXMAP, 32, mode,
 		    (unsigned char *) &pixmap, 1);
   } else {
-    XDeleteProperty(getXDisplay(), getScreenInfo(screen)->getRootWindow(),
+    XDeleteProperty(getXDisplay(), screen_info->getRootWindow(),
 		    rootpmap_id);
   }
   
@@ -160,18 +161,19 @@ Pixmap bsetroot::duplicatePixmap(int screen, Pixmap pixmap,
 
 
 void bsetroot::solid(void) {
-  for (int screen = 0; screen < getNumberOfScreens(); screen++) {
+  for (unsigned int screen = 0; screen < getNumberOfScreens(); screen++) {
     BColor c;
+    const ScreenInfo *screen_info = getScreenInfo(screen);
 
     img_ctrl[screen]->parseColor(&c, fore);
     if (! c.isAllocated()) c.setPixel(BlackPixel(getXDisplay(), screen));
 
-    XSetWindowBackground(getXDisplay(), getScreenInfo(screen)->getRootWindow(),
+    XSetWindowBackground(getXDisplay(), screen_info->getRootWindow(),
                          c.getPixel());
-    XClearWindow(getXDisplay(), getScreenInfo(screen)->getRootWindow());
+    XClearWindow(getXDisplay(), screen_info->getRootWindow());
 
     Pixmap pixmap = XCreatePixmap(getXDisplay(),
-				  getScreenInfo(screen)->getRootWindow(),
+				  screen_info->getRootWindow(),
 				  8, 8, DefaultDepth(getXDisplay(), screen));
     XSetForeground(getXDisplay(), DefaultGC(getXDisplay(), screen),
 		   c.getPixel());
@@ -189,7 +191,7 @@ void bsetroot::modula(int x, int y) {
   char data[32];
   long pattern;
 
-  int screen, i;
+  unsigned int screen, i;
 
   for (pattern = 0, screen = 0; screen < getNumberOfScreens(); screen++) {
     for (i = 0; i < 16; i++) {
@@ -212,10 +214,11 @@ void bsetroot::modula(int x, int y) {
     GC gc;
     Pixmap bitmap;
     XGCValues gcv;
+    const ScreenInfo *screen_info = getScreenInfo(screen);
 
     bitmap =
       XCreateBitmapFromData(getXDisplay(),
-                            getScreenInfo(screen)->getRootWindow(), data,
+                            screen_info->getRootWindow(), data,
                             16, 16);
 
     img_ctrl[screen]->parseColor(&f, fore);
@@ -227,19 +230,19 @@ void bsetroot::modula(int x, int y) {
     gcv.foreground = f.getPixel();
     gcv.background = b.getPixel();
 
-    gc = XCreateGC(getXDisplay(), getScreenInfo(screen)->getRootWindow(),
+    gc = XCreateGC(getXDisplay(), screen_info->getRootWindow(),
                    GCForeground | GCBackground, &gcv);
 
     Pixmap pixmap = XCreatePixmap(getXDisplay(),
-				  getScreenInfo(screen)->getRootWindow(),
-				  16, 16, getScreenInfo(screen)->getDepth());
+				  screen_info->getRootWindow(),
+				  16, 16, screen_info->getDepth());
 
     XCopyPlane(getXDisplay(), bitmap, pixmap, gc,
                0, 0, 16, 16, 0, 0, 1l);
     XSetWindowBackgroundPixmap(getXDisplay(),
-                               getScreenInfo(screen)->getRootWindow(),
+                               screen_info->getRootWindow(),
                                pixmap);
-    XClearWindow(getXDisplay(), getScreenInfo(screen)->getRootWindow());
+    XClearWindow(getXDisplay(), screen_info->getRootWindow());
 
     setPixmapProperty(screen,
 		      duplicatePixmap(screen, pixmap, 16, 16));
@@ -247,15 +250,17 @@ void bsetroot::modula(int x, int y) {
     XFreeGC(getXDisplay(), gc);
     XFreePixmap(getXDisplay(), bitmap);
 
-    if (! (getScreenInfo(screen)->getVisual()->c_class & 1))
+    if (! (screen_info->getVisual()->c_class & 1))
       XFreePixmap(getXDisplay(), pixmap);
   }
 }
 
 
 void bsetroot::gradient(void) {
-  for (int screen = 0; screen < getNumberOfScreens(); screen++) {
+  for (unsigned int screen = 0; screen < getNumberOfScreens(); screen++) {
     BTexture texture;
+    const ScreenInfo *screen_info = getScreenInfo(screen);
+
     img_ctrl[screen]->parseTexture(&texture, grad);
     img_ctrl[screen]->parseColor(texture.getColor(), fore);
     img_ctrl[screen]->parseColor(texture.getColorTo(), back);
@@ -266,21 +271,21 @@ void bsetroot::gradient(void) {
       texture.getColorTo()->setPixel(BlackPixel(getXDisplay(), screen));
 
     Pixmap pixmap =
-      img_ctrl[screen]->renderImage(getScreenInfo(screen)->getWidth(),
-                                    getScreenInfo(screen)->getHeight(),
+      img_ctrl[screen]->renderImage(screen_info->getWidth(),
+                                    screen_info->getHeight(),
                                     &texture);
 
     XSetWindowBackgroundPixmap(getXDisplay(),
-                               getScreenInfo(screen)->getRootWindow(),
+                               screen_info->getRootWindow(),
                                pixmap);
-    XClearWindow(getXDisplay(), getScreenInfo(screen)->getRootWindow());
+    XClearWindow(getXDisplay(), screen_info->getRootWindow());
 
     setPixmapProperty(screen,
 		      duplicatePixmap(screen, pixmap,
-				      getScreenInfo(screen)->getWidth(), 
-				      getScreenInfo(screen)->getHeight()));
+				      screen_info->getWidth(), 
+				      screen_info->getHeight()));
       
-    if (! (getScreenInfo(screen)->getVisual()->c_class & 1)) {
+    if (! (screen_info->getVisual()->c_class & 1)) {
       img_ctrl[screen]->removeImage(pixmap);
     }
   }

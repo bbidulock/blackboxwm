@@ -229,8 +229,9 @@ BaseDisplay::BaseDisplay(const char *app_name, const char *dpy_name) {
 
   XSetErrorHandler((XErrorHandler) handleXErrors);
 
-  for (int i = 0; i < number_of_screens; ++i) {
-    ScreenInfo *screeninfo = new ScreenInfo(this, i);
+  screenInfoList.reserve(number_of_screens);
+  for (unsigned int i = 0; i < number_of_screens; ++i) {
+    ScreenInfo screeninfo(this, i);
     screenInfoList.push_back(screeninfo);
   }
 
@@ -275,9 +276,6 @@ BaseDisplay::BaseDisplay(const char *app_name, const char *dpy_name) {
 
 
 BaseDisplay::~BaseDisplay(void) {
-  std::for_each(screenInfoList.begin(), screenInfoList.end(),
-                PointerAssassin());
-
   // we don't create the BTimers, we don't delete them
 
   XCloseDisplay(display);
@@ -381,17 +379,14 @@ void BaseDisplay::ungrabButton(unsigned int button, unsigned int modifiers,
 }
 
 
-ScreenInfo* BaseDisplay::getScreenInfo(unsigned int s) {
-  if (s < screenInfoList.size()) {
-    ScreenInfoList::iterator it = screenInfoList.begin();
-    for (; s > 0; ++it, --s); // increment interator to index
-    return *it;
-  }
-  return (ScreenInfo*) 0;
+const ScreenInfo* BaseDisplay::getScreenInfo(unsigned int s) const {
+  if (s < screenInfoList.size())
+    return &screenInfoList[s];
+  return (const ScreenInfo*) 0;
 }
 
 
-ScreenInfo::ScreenInfo(BaseDisplay *d, int num) {
+ScreenInfo::ScreenInfo(BaseDisplay *d, unsigned int num) {
   basedisplay = d;
   screen_number = num;
 
