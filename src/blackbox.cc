@@ -450,7 +450,7 @@ void Blackbox::shutdown(void) {
 
   XGrabServer();
 
-  XSetInputFocus(XDisplay(), PointerRoot, RevertToNone, CurrentTime);
+  XSetInputFocus(XDisplay(), PointerRoot, RevertToNone, XTime());
 
   std::for_each(screen_list, screen_list + screen_list_count,
                 std::mem_fun(&BScreen::shutdown));
@@ -601,7 +601,7 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
     active_screen = 0;
     focused_window = 0;
     // set input focus to PointerRoot
-    XSetInputFocus(XDisplay(), PointerRoot, RevertToNone, CurrentTime);
+    XSetInputFocus(XDisplay(), PointerRoot, RevertToNone, XTime());
   }
 
   Window active =

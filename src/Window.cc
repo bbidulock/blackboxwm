@@ -436,7 +436,7 @@ BlackboxWindow::~BlackboxWindow(void) {
 
   if (client.state.moving || client.state.resizing) {
     screen->hideGeometry();
-    XUngrabPointer(blackbox->XDisplay(), CurrentTime);
+    XUngrabPointer(blackbox->XDisplay(), blackbox->XTime());
   }
 
   delete timer;
@@ -1575,7 +1575,7 @@ bool BlackboxWindow::setInputFocus(void) {
 
   if (client.wmhints.accept_focus) {
     XSetInputFocus(blackbox->XDisplay(), client.window,
-                   RevertToPointerRoot, CurrentTime);
+                   RevertToPointerRoot, blackbox->XTime());
   } else {
     /*
      * we could set the focus to none, since the window doesn't accept
@@ -1583,7 +1583,7 @@ bool BlackboxWindow::setInputFocus(void) {
      * surely make someone angry.  instead, set the focus to the plate
      */
     XSetInputFocus(blackbox->XDisplay(), frame.plate,
-                   RevertToPointerRoot, CurrentTime);
+                   RevertToPointerRoot, blackbox->XTime());
   }
 
   if (client.wmprotocols.wm_take_focus) {
@@ -1677,7 +1677,7 @@ void BlackboxWindow::close(void) {
   ce.xclient.window = client.window;
   ce.xclient.format = 32;
   ce.xclient.data.l[0] = blackbox->getWMDeleteAtom();
-  ce.xclient.data.l[1] = CurrentTime;
+  ce.xclient.data.l[1] = blackbox->XTime();
   ce.xclient.data.l[2] = 0l;
   ce.xclient.data.l[3] = 0l;
   ce.xclient.data.l[4] = 0l;
@@ -2964,7 +2964,7 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const event) {
                 frame.rect.width(), frame.rect.height());
     }
     screen->hideGeometry();
-    XUngrabPointer(blackbox->XDisplay(), CurrentTime);
+    XUngrabPointer(blackbox->XDisplay(), blackbox->XTime());
   } else if (client.state.resizing) {
     bt::Pen pen(screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
     const int bw = frame.style->frame_border_width, hw = bw / 2;
@@ -2990,10 +2990,10 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const event) {
     configure(frame.changing.x(), frame.changing.y(),
               frame.changing.width(), frame.changing.height());
 
-    XUngrabPointer(blackbox->XDisplay(), CurrentTime);
+    XUngrabPointer(blackbox->XDisplay(), blackbox->XTime());
   } else if (event->window == frame.window) {
     if (event->button == 2 && event->state == Mod1Mask)
-      XUngrabPointer(blackbox->XDisplay(), CurrentTime);
+      XUngrabPointer(blackbox->XDisplay(), blackbox->XTime());
   }
 }
 
@@ -3043,7 +3043,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
       XGrabPointer(blackbox->XDisplay(), event->window, False,
                    Button1MotionMask | ButtonReleaseMask,
                    GrabModeAsync, GrabModeAsync,
-                   None, blackbox->resource().moveCursor(), CurrentTime);
+                   None, blackbox->resource().moveCursor(), blackbox->XTime());
 
       client.state.moving = True;
 
@@ -3122,7 +3122,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
                    GrabModeAsync, GrabModeAsync, None,
                    ((left) ? blackbox->resource().resizeBottomLeftCursor() :
                     blackbox->resource().resizeBottomRightCursor()),
-                   CurrentTime);
+                   blackbox->XTime());
 
       client.state.resizing = True;
 
