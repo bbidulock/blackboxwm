@@ -24,6 +24,7 @@
 // DEALINGS IN THE SOFTWARE.
 
 #include "Resource.hh"
+#include "Util.hh"
 
 
 bt::Resource::Resource(void) : db(NULL) {
@@ -40,16 +41,16 @@ bt::Resource::~Resource(void) {
 
 void bt::Resource::load(const std::string &filename) {
   XrmDestroyDatabase(db);
-  db = XrmGetFileDatabase(filename.c_str());
+  db = XrmGetFileDatabase(expandTilde(filename).c_str());
 }
 
 void bt::Resource::save(const std::string &filename) {
   if (! valid()) return;
-  XrmPutFileDatabase(db, filename.c_str());
+  XrmPutFileDatabase(db, expandTilde(filename).c_str());
 }
 
 void bt::Resource::merge(const std::string &filename) {
-  XrmCombineFileDatabase(filename.c_str(), &db, true);
+  XrmCombineFileDatabase(expandTilde(filename).c_str(), &db, true);
 }
 
 std::string bt::Resource::read(const std::string &name,
