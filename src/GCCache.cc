@@ -90,8 +90,6 @@ BGCCache::~BGCCache(void) {
   std::for_each(cache, cache + cache_total_size, PointerAssassin());
   delete [] cache;
   delete [] contexts;
-  cache = 0;
-  contexts = 0;
 }
 
 
