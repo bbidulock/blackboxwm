@@ -246,11 +246,15 @@ void bt::Application::eventLoop(void) {
       // check for timer timeout
       gettimeofday(&now, 0);
 
-      // there is a small chance for deadlock here:
-      // *IF* the timer list keeps getting refreshed *AND* the time between
-      // timer->start() and timer->shouldFire() is within the timer's period
-      // then the timer will keep firing.  This should be VERY near impossible.
-      while (! timerList.empty()) {
+      /*
+         there is a small chance for deadlock here:
+         *IF* the timer list keeps getting refreshed *AND* the time between
+         timer->start() and timer->shouldFire() is within the timer's period
+         then the timer will keep firing.  This should be VERY near impossible.
+         But to be safe, let's use a counter here.
+      */
+      unsigned int i = 0;
+      while (! timerList.empty() && i++ < 100) {
         bt::Timer *timer = timerList.top();
         if (! timer->shouldFire(now))
           break;
