@@ -83,7 +83,7 @@ protected:
 
 public:
   Basemenu(BScreen *scrn);
-  virtual ~Basemenu(void) = 0;
+  virtual ~Basemenu(void);
 
   inline bool isTorn(void) const { return torn; }
   inline bool isVisible(void) const { return visible; }
