@@ -46,6 +46,7 @@ private:
 
 
 enum WindowAction {
+  WindowActionSendTo,
   WindowActionShade,
   WindowActionIconify,
   WindowActionMaximize,
@@ -60,7 +61,7 @@ Windowmenu::Windowmenu(bt::Application &app, unsigned int screen,
   : bt::Menu(app, screen), _window(window) {
   _sendto = new SendToWorkspacemenu(app, screen, _window);
   insertItem(bt::i18n(WindowmenuSet, WindowmenuSendTo, "Send To ..."),
-             _sendto);
+             _sendto, WindowActionSendTo);
   insertSeparator();
   insertItem(bt::i18n(WindowmenuSet, WindowmenuShade, "Shade"),
              WindowActionShade);
