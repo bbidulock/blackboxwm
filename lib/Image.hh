@@ -54,11 +54,7 @@ namespace bt {
     static inline unsigned int maximumColors(void)
     { return global_maximumColors; }
     static inline void setMaximumColors(unsigned int newval)
-    { global_maximumColors = (newval > 8u
-                              ? (newval <= 256u
-                                 ? newval
-                                 : 256u)
-                              : 8u); }
+    { global_maximumColors = newval; }
 
     static DitherMode ditherMode(void)
     { return global_ditherMode; }
