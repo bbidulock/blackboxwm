@@ -380,7 +380,11 @@ void writeComment(std::ofstream& stream, const std::string& text) {
 
 void writeValue(std::ofstream& stream, const std::string& key,
                 const std::string& value) {
-  stream << std::setw(40) << std::left << key + ":" << value << '\n';
+  std::string new_key = key + ':';
+  int len = 40 - new_key.length();
+  assert(len > 0);
+  std::string padding(len, ' ');
+  stream << new_key << padding << value << '\n';
 }
 
 
