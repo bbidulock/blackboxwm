@@ -88,8 +88,6 @@ Slit::Slit(BScreen *scr) {
 
 
 Slit::~Slit() {
-  blackbox->grab();
-
   if (timer->isTiming()) timer->stop();
   delete timer;
 
@@ -101,14 +99,10 @@ Slit::~Slit() {
   blackbox->removeSlitSearch(frame.window);
 
   XDestroyWindow(display, frame.window);
-
-  blackbox->ungrab();
 }
 
 
 void Slit::addClient(Window w) {
-  blackbox->grab();
-
   if (blackbox->validateWindow(w)) {
     SlitClient *client = new SlitClient;
     client->client_window = w;
@@ -164,8 +158,6 @@ void Slit::addClient(Window w) {
     blackbox->saveSlitSearch(client->icon_window, this);
     reconfigure();
   }
-
-  blackbox->ungrab();
 }
 
 
@@ -193,8 +185,6 @@ void Slit::removeClient(SlitClient *client, Bool remap) {
 
 
 void Slit::removeClient(Window w, Bool remap) {
-  blackbox->grab();
-
   Bool reconf = False;
 
   LinkedListIterator<SlitClient> it(clientList);
@@ -208,8 +198,6 @@ void Slit::removeClient(Window w, Bool remap) {
   }
 
   if (reconf) reconfigure();
-
-  blackbox->ungrab();
 }
 
 
@@ -603,8 +591,6 @@ void Slit::leaveNotifyEvent(XCrossingEvent *) {
 
 
 void Slit::configureRequestEvent(XConfigureRequestEvent *e) {
-  blackbox->grab();
-
   if (blackbox->validateWindow(e->window)) {
     Bool reconf = False;
     XWindowChanges xwc;
@@ -636,8 +622,6 @@ void Slit::configureRequestEvent(XConfigureRequestEvent *e) {
     if (reconf) reconfigure();
 
   }
-
-  blackbox->ungrab();
 }
 
 

@@ -997,8 +997,6 @@ void Toolbar::exposeEvent(XExposeEvent *ee) {
 
 void Toolbar::keyPressEvent(XKeyEvent *ke) {
   if (ke->window == frame.workspace_label && editing) {
-    blackbox->grab();
-
     if (! new_workspace_name) {
       new_workspace_name = new char[128];
       new_name_pos = 0;
@@ -1094,8 +1092,6 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
 		     screen->getWindowStyle()->l_text_focus_gc, x + tw, 0, 1,
 		     frame.label_h - 1);
     }
-    
-    blackbox->ungrab();
   }
 }
 

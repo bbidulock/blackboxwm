@@ -196,7 +196,6 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
 
   _startup = True;
   _shutdown = False;
-  server_grabs = 0;
   last_bad_window = None;
 
   ::base_display = this;
@@ -493,20 +492,6 @@ const Bool BaseDisplay::validateWindow(Window window) {
   }
 
   return True;
-}
-
-
-void BaseDisplay::grab(void) {
-  if (! server_grabs++)
-    XGrabServer(display);
-}
-
-
-void BaseDisplay::ungrab(void) {
-  if (! --server_grabs)
-    XUngrabServer(display);
-
-  if (server_grabs < 0) server_grabs = 0;
 }
 
 

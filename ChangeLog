@@ -14,6 +14,9 @@ Changes from 0.62.1:
     the event and the unmapNotify event is where reparentNotify was handled.
     Added a reparentNotifyEvent handler in the BlackboxWindow class and a new
     case in the Blackbox class's process_event function.
+  - applied a patch from the long lost in the tundra Brad.  This one's a doozy.
+    * no more blackbox->grab/ungrab calls everywhere
+    * compression of motion, expose, and configure events
 
 Changes from 0.62.0 to 0.62.1:
   - the lock modifier code handles user redefined modifiers better

@@ -69,7 +69,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   blackbox = b;
   display = blackbox->getXDisplay();
 
-  blackbox->grab();
   if (! validateClient()) return;
 
   // fetch client size and placement
@@ -83,7 +82,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 	       "failed\n"));
 #endif // DEBUG
 
-    b->ungrab();
     return;
   }
 
@@ -99,7 +97,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 	              RootWindowOfScreen(wattrib.screen));
 #endif // DEBUG
 
-      b->ungrab();
       return;
     }
   }
@@ -171,7 +168,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     screen->getSlit()->addClient(client.window);
     delete this;
 
-    b->ungrab();
     return;
   }
 #endif // SLIT
@@ -301,8 +297,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   }
 
   setFocusFlag(False);
-
-  blackbox->ungrab();
 }
 
 
@@ -1344,7 +1338,6 @@ Bool BlackboxWindow::setInputFocus(void) {
                 frame.y + frame.border_w, frame.width, frame.height);
   }
 
-  blackbox->grab();
   if (! validateClient()) return False;
 
   Bool ret = False;
@@ -1381,8 +1374,6 @@ Bool BlackboxWindow::setInputFocus(void) {
 
     ret = True;
   }
-
-  blackbox->ungrab();
 
   return ret;
 }
@@ -1705,7 +1696,6 @@ void BlackboxWindow::setFocusFlag(Bool focus) {
 
 
 void BlackboxWindow::installColormap(Bool install) {
-  blackbox->grab();
   if (! validateClient()) return;
 
   int i = 0, ncmap = 0;
@@ -1735,8 +1725,6 @@ void BlackboxWindow::installColormap(Bool install) {
 
     XFree(cmaps);
   }
-
-  blackbox->ungrab();
 }
 
 
@@ -1771,7 +1759,6 @@ Bool BlackboxWindow::getState(void) {
 			  &atom_return, &foo, &nitems, &ulfoo,
 			  (unsigned char **) &state) != Success) ||
       (! state)) {
-    blackbox->ungrab();
     return False;
   }
 
@@ -2169,7 +2156,6 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
             client.window);
 #endif // DEBUG
 
-    blackbox->grab();
     if (! validateClient()) return;
 
     Bool get_state_ret = getState();
@@ -2199,8 +2185,6 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
       deiconify(False);
       break;
     }
-
-    blackbox->ungrab();
   }
 }
 
@@ -2208,7 +2192,6 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
 void BlackboxWindow::mapNotifyEvent(XMapEvent *ne) {
   if ((ne->window == client.window) && (! ne->override_redirect)
       && (flags.visible)) {
-    blackbox->grab();
     if (! validateClient()) return;
 
     if (decorations.titlebar) positionButtons();
@@ -2224,8 +2207,6 @@ void BlackboxWindow::mapNotifyEvent(XMapEvent *ne) {
 
     flags.visible = True;
     flags.iconic = False;
-
-    blackbox->ungrab();
   }
 }
 
@@ -2238,7 +2219,6 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
             client.window);
 #endif // DEBUG
 
-    blackbox->grab();
     if (! validateClient()) return;
 
     XChangeSaveSet(display, client.window, SetModeDelete);
@@ -2251,15 +2231,18 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
     XUnmapWindow(display, frame.window);
     XUnmapWindow(display, client.window);
 
+    XSync( display, False );
+
     XEvent ev;
     if (! XCheckTypedWindowEvent(display, client.window, ReparentNotify,&ev)) {
-      // calls 'delete this' so we never get past the next line
-      reparentNotifyEvent(&(ev.xreparent));
+      // according to the ICCCM - if the client doesn't reparent to
+      // root, then we have to do it for them
+      restoreGravity();
+      XReparentWindow( display, client.window, screen->getRootWindow(),
+                       client.x, client.y );
     }
 
     XFlush(display);
-
-    blackbox->ungrab();
 
     delete this;
   }
@@ -2292,7 +2275,6 @@ void BlackboxWindow::reparentNotifyEvent(XReparentEvent *re) {
 
 
 void BlackboxWindow::propertyNotifyEvent(Atom atom) {
-  blackbox->grab();
   if (! validateClient()) return;
 
   switch(atom) {
@@ -2390,8 +2372,6 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
 
     break;
   }
-
-  blackbox->ungrab();
 }
 
 
@@ -2409,7 +2389,6 @@ void BlackboxWindow::exposeEvent(XExposeEvent *ee) {
 
 void BlackboxWindow::configureRequestEvent(XConfigureRequestEvent *cr) {
   if (cr->window == client.window) {
-    blackbox->grab();
     if (! validateClient()) return;
 
     int cx = frame.x, cy = frame.y;
@@ -2452,14 +2431,11 @@ void BlackboxWindow::configureRequestEvent(XConfigureRequestEvent *cr) {
 	break;
       }
     }
-
-    blackbox->ungrab();
   }
 }
 
 
 void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
-  blackbox->grab();
   if (! validateClient()) return;
 
   if (frame.maximize_button == be->window) {
@@ -2546,13 +2522,10 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
       }
     }
   }
-
-  blackbox->ungrab();
 }
 
 
 void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
-  blackbox->grab();
   if (! validateClient()) return;
 
   if (re->window == frame.maximize_button) {
@@ -2583,9 +2556,9 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
       XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
 		     frame.move_x, frame.move_y, frame.resize_w,
 		     frame.resize_h);
+      XUngrabServer( display );
 
       configure(frame.move_x, frame.move_y, frame.width, frame.height);
-      blackbox->ungrab();
     } else {
       configure(frame.x, frame.y, frame.width, frame.height);
     }
@@ -2595,6 +2568,7 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
     XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
 		   frame.resize_x, frame.resize_y,
 		   frame.resize_w, frame.resize_h);
+    XUngrabServer( display );
 
     screen->hideGeometry();
 
@@ -2611,13 +2585,11 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
 	      frame.resize_w - (frame.border_w * 2),
 	      frame.resize_h - (frame.border_w * 2));
 
-    blackbox->ungrab();
     XUngrabPointer(display, CurrentTime);
   } else if (re->window == frame.window) {
     if (re->button == 2 && re->state == Mod1Mask)
       XUngrabPointer(display, CurrentTime);
   }
-  blackbox->ungrab();
 }
 
 
@@ -2638,7 +2610,7 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
       blackbox->maskWindowEvents(client.window, this);
 
       if (! screen->doOpaqueMove()) {
-        blackbox->grab();
+        XGrabServer( display );
 
         frame.move_x = frame.x;
 	frame.move_y = frame.y;
@@ -2714,6 +2686,7 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
     Bool left = (me->window == frame.left_grip);
 
     if (! flags.resizing) {
+      XGrabServer( display );
       XGrabPointer(display, me->window, False, ButtonMotionMask |
                    ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None,
                    ((left) ? blackbox->getLowerLeftAngleCursor() :
@@ -2721,8 +2694,6 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
                    CurrentTime);
 
       flags.resizing = True;
-
-      blackbox->grab();
 
       int gx, gy;
       frame.grab_x = me->x - frame.border_w;
@@ -2779,7 +2750,6 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
 void BlackboxWindow::shapeEvent(XShapeEvent *) {
   if (blackbox->hasShapeExtensions()) {
     if (flags.shaped) {
-      blackbox->grab();
       if (! validateClient()) return;
       XShapeCombineShape(display, frame.window, ShapeBounding,
 			 frame.mwm_border_w, frame.y_border +
@@ -2802,7 +2772,6 @@ void BlackboxWindow::shapeEvent(XShapeEvent *) {
 
       XShapeCombineRectangles(display, frame.window, ShapeBounding, 0, 0,
 			      xrect, num, ShapeUnion, Unsorted);
-      blackbox->ungrab();
     }
   }
 }
@@ -2816,7 +2785,6 @@ Bool BlackboxWindow::validateClient(void) {
   if (XCheckTypedWindowEvent(display, client.window, DestroyNotify, &e) ||
       XCheckTypedWindowEvent(display, client.window, UnmapNotify, &e)) {
     XPutBackEvent(display, &e);
-    blackbox->ungrab();
 
     return False;
   }

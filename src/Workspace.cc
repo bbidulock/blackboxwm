@@ -243,12 +243,8 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
     win = win->getTransientFor();
   }
 
-  screen->getBlackbox()->grab();
-
   XLowerWindow(screen->getBaseDisplay()->getXDisplay(), *nstack);
   XRestackWindows(screen->getBaseDisplay()->getXDisplay(), nstack, i);
-
-  screen->getBlackbox()->ungrab();
 
   delete [] nstack;
 }

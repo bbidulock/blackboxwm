@@ -2188,7 +2188,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
 
 void BScreen::shutdown(void) {
-  blackbox->grab();
+  XGrabServer( getBaseDisplay()->getXDisplay() );
 
   XSelectInput(getBaseDisplay()->getXDisplay(), getRootWindow(), NoEventMask);
   XSync(getBaseDisplay()->getXDisplay(), False);
@@ -2206,7 +2206,7 @@ void BScreen::shutdown(void) {
   slit->shutdown();
 #endif // SLIT
 
-  blackbox->ungrab();
+  XUngrabServer( getBaseDisplay()->getXDisplay() );
 }
 
 

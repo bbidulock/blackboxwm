@@ -110,6 +110,8 @@
 #  include <libgen.h>
 #endif // HAVE_LIBGEN_H
 
+#include <algorithm>
+
 #ifndef   HAVE_BASENAME
 static inline char *basename (char *s) {
   char *save = s;
@@ -145,9 +147,8 @@ Blackbox *blackbox;
 
 
 Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
-  : BaseDisplay(m_argv[0], dpy_name) {
-  grab();
-
+  : BaseDisplay(m_argv[0], dpy_name)
+{
   if (! XSupportsLocale())
     fprintf(stderr, "X server does not support locale\n");
 
@@ -213,8 +214,6 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
   timer = new BTimer(this, this);
   timer->setTimeout(0);
   timer->fireOnce(True);
-
-  ungrab();
 }
 
 
@@ -254,14 +253,6 @@ Blackbox::~Blackbox(void) {
 
 
 void Blackbox::process_event(XEvent *e) {
-  if ((masked == e->xany.window) && masked_window &&
-      (e->type == MotionNotify)) {
-    last_time = e->xmotion.time;
-    masked_window->motionNotifyEvent(&e->xmotion);
-
-    return;
-  }
-
   switch (e->type) {
   case ButtonPress: {
     // strip the lock key modifiers
@@ -388,6 +379,16 @@ void Blackbox::process_event(XEvent *e) {
   }
 
   case ConfigureRequest: {
+    // compress configure requests...
+    XEvent realevent;
+    unsigned int i = 0;
+    while(XCheckTypedWindowEvent(getXDisplay(), e->xconfigurerequest.window,
+				 ConfigureRequest, &realevent)) {
+      i++;
+    }
+    if ( i > 0 )
+      e = &realevent;
+
     BlackboxWindow *win = (BlackboxWindow *) 0;
 
 #ifdef    SLIT
@@ -403,8 +404,6 @@ void Blackbox::process_event(XEvent *e) {
 #endif // SLIT
 
     } else {
-      grab();
-
       if (validateWindow(e->xconfigurerequest.window)) {
 	XWindowChanges xwc;
 
@@ -419,8 +418,6 @@ void Blackbox::process_event(XEvent *e) {
 	XConfigureWindow(getXDisplay(), e->xconfigurerequest.window,
 			 e->xconfigurerequest.value_mask, &xwc);
       }
-
-      ungrab();
     }
 
     break;
@@ -512,6 +509,18 @@ void Blackbox::process_event(XEvent *e) {
   }
 
   case MotionNotify: {
+    // motion notify compression...
+    XEvent realevent;
+    unsigned int i = 0;
+    while (XCheckTypedWindowEvent(getXDisplay(), e->xmotion.window,
+				  MotionNotify, &realevent)) {
+      i++;
+    }
+
+    // if we have compressed some motion events, use the last one
+    if ( i > 0 )
+      e = &realevent;
+
     // strip the lock key modifiers
     e->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
     
@@ -567,13 +576,9 @@ void Blackbox::process_event(XEvent *e) {
     } else if ((win = searchWindow(e->xcrossing.window))) {
       if (win->getScreen()->isSloppyFocus() &&
 	  (! win->isFocused()) && (! no_focus)) {
-	grab();
-
         if (((! sa.leave) || sa.inferior) && win->isVisible() &&
             win->setInputFocus())
 	  win->installColormap(True);
-
-        ungrab();
       }
     } else if ((menu = searchMenu(e->xcrossing.window))) {
       menu->enterNotifyEvent(&e->xcrossing);
@@ -613,6 +618,35 @@ void Blackbox::process_event(XEvent *e) {
   }
 
   case Expose: {
+    // compress expose events
+    XEvent realevent;
+    unsigned int i = 0;
+    int  ex1, ey1, ex2, ey2;
+    ex1 = e->xexpose.x;
+    ey1 = e->xexpose.y;
+    ex2 = ex1 + e->xexpose.width - 1;
+    ey2 = ey1 + e->xexpose.height - 1;
+    while (XCheckTypedWindowEvent(getXDisplay(), e->xexpose.window,
+				  Expose, &realevent)) {
+      i++;
+          
+      // merge expose area
+      ex1 = std::min(realevent.xexpose.x, ex1);
+      ey1 = std::min(realevent.xexpose.y, ey1);
+      ex2 = std::max(realevent.xexpose.x + realevent.xexpose.width - 1,
+		     ex2);
+      ey2 = std::max(realevent.xexpose.y + realevent.xexpose.height - 1,
+		     ey2);
+    }      
+    if ( i > 0 )
+      e = &realevent;
+
+    // use the merged area
+    e->xexpose.x = ex1;
+    e->xexpose.y = ey1;
+    e->xexpose.width = ex2 - ex1 + 1;
+    e->xexpose.height = ey2 - ey1 + 1;
+
     BlackboxWindow *win = (BlackboxWindow *) 0;
     Basemenu *menu = (Basemenu *) 0;
     Toolbar *tbar = (Toolbar *) 0;
@@ -1623,8 +1657,6 @@ void Blackbox::reconfigure(void) {
 
 
 void Blackbox::real_reconfigure(void) {
-  grab();
-
   XrmDatabase new_blackboxrc = (XrmDatabase) 0;
   char style[MAXPATHLEN + 64];
 
@@ -1664,8 +1696,6 @@ void Blackbox::real_reconfigure(void) {
   for (BScreen *screen = it.current(); screen; it++, screen = it.current()) {
     screen->reconfigure();
   }
-
-  ungrab();
 }
 
 

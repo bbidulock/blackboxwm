@@ -128,7 +128,7 @@ private:
   LinkedList<BTimer> *timerList;
 
   char *display_name, *application_name;
-  int number_of_screens, server_grabs, colors_per_channel;
+  int number_of_screens, colors_per_channel;
 
 
 protected:
@@ -308,8 +308,6 @@ public:
   void ungrabButton(unsigned int button, unsigned int modifiers,
       Window grab_window) const;
   
-  void grab(void);
-  void ungrab(void);
   void eventLoop(void);
   void addTimer(BTimer *);
   void removeTimer(BTimer *);
