@@ -33,6 +33,7 @@
 #include <X11/Xatom.h>
 
 #include <assert.h>
+#include <ctype.h>
 #if defined(__EMX__)
 #  include <process.h>
 #endif // __EMX__
@@ -96,6 +97,18 @@ std::string bt::itostring(long i) {
   if (i < 0)
     tmp.insert(tmp.begin(), '-');
   return tmp;
+}
+
+
+std::string bt::tolower(const std::string &string)
+{
+  std::string returnValue;
+  returnValue.reserve(string.size());
+  std::string::const_iterator it = string.begin();
+  const std::string::const_iterator end = string.end();
+  for (; it != end; ++it)
+    returnValue.push_back(::tolower(*it));
+  return returnValue;
 }
 
 

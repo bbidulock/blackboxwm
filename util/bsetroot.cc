@@ -287,17 +287,10 @@ void bsetroot::gradient(void) {
     'raised' or 'sunken' in the description and erase them.  To be paranoid
     the search is done in a loop.
   */
-  std::string descr;
-  descr.reserve(grad.size());
-
-  std::string::const_iterator it = grad.begin(), end = grad.end();
-  for (; it != end; ++it)
-    descr += tolower(*it);
-
+  std::string descr = bt::tolower(grad);
   std::string::size_type pos;
   while ((pos = descr.find("raised")) != std::string::npos)
     descr.erase(pos, 6); // 6 is strlen raised
-
   while ((pos = descr.find("sunken")) != std::string::npos)
     descr.erase(pos, 6);
 

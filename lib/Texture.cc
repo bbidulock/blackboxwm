@@ -68,13 +68,7 @@ void bt::Texture::setColor1(const bt::Color &new_color) {
 
 
 void bt::Texture::setDescription(const std::string &d) {
-  descr.erase();
-  descr.reserve(d.length());
-
-  std::string::const_iterator it = d.begin(), end = d.end();
-  for (; it != end; ++it)
-    descr += tolower(*it);
-
+  descr = tolower(d);
   if (descr.find("parentrelative") != std::string::npos) {
     setTexture(bt::Texture::Parent_Relative);
   } else {

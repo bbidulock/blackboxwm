@@ -38,20 +38,9 @@ extern "C" {
 #include <vector>
 
 
-std::string tolower(const std::string &string)
-{
-  std::string returnValue;
-  returnValue.reserve(string.size());
-  std::string::const_iterator it = string.begin();
-  const std::string::const_iterator end = string.end();
-  for (; it != end; ++it)
-    returnValue.push_back(tolower(*it));
-  return returnValue;
-}
-
 std::string justifyToAlignment(const std::string &justify)
 {
-  std::string alignment = tolower(justify);
+  std::string alignment = bt::tolower(justify);
   std::string::size_type at = alignment.find("justify");
   if (at != std::string::npos)
     alignment.resize(at);
@@ -136,7 +125,7 @@ struct NewTexture {
 
 NewTexture &NewTexture::operator=(const OldTexture &oldTexture)
 {
-  appearance = tolower(oldTexture.appearance);
+  appearance = bt::tolower(oldTexture.appearance);
   color1 = oldTexture.color1;
   color2 = oldTexture.color2;
   return *this;

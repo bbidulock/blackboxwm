@@ -88,6 +88,8 @@ namespace bt {
   inline std::string itostring(short i)
   { return itostring(static_cast<long>(i)); }
 
+  std::string tolower(const std::string &string);
+
 #ifdef _XUTIL_H_
   std::string textPropertyToString(::Display *display,
                                    ::XTextProperty& text_prop);

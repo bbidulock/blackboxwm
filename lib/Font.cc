@@ -560,13 +560,7 @@ bt::ustring bt::ellideText(const bt::ustring &text,
 bt::Alignment bt::alignResource(const Resource &resource,
                                 const char* name, const char* classname,
                                 Alignment default_align) {
-  std::string res = resource.read(name, classname);
-
-  // convert to lowercase
-  std::string::iterator it, end;
-  for (it = res.begin(), end = res.end(); it != end; ++it)
-    *it = tolower(*it);
-
+  std::string res = tolower(resource.read(name, classname));
   // we use find since res could have spaces and such things in the string
   if (res.find("left")   != std::string::npos)
     return AlignLeft;
