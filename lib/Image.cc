@@ -484,11 +484,9 @@ unsigned long bt::XColorTable::pixel(unsigned int red,
 
 
 bt::Image::Image(unsigned int w, unsigned int h)
-  :  width(w), height(h) {
+  :  width(w), height(h), data(0) {
   assert(width > 0);
   assert(height > 0);
-
-  data = static_cast<RGB *>(malloc(width * height * sizeof(RGB)));
 }
 
 
@@ -517,6 +515,8 @@ Pixmap bt::Image::render(const Display &display, unsigned int screen,
     from = texture.color();
     to = texture.colorTo();
   }
+
+  data = static_cast<RGB *>(malloc(width * height * sizeof(RGB)));
 
   if (texture.texture() & bt::Texture::Diagonal)
     dgradient(from, to, interlaced);
