@@ -2,8 +2,6 @@
 
 CVS Bugs:
 -----------------------------
-* sticky windows are not considered
-
 * colour issue under Irix
 
 * acroread transients
@@ -16,6 +14,8 @@ CVS Bugs:
 
 CVS warts:
 -----------------------------
+* sticky windows are not considered
+
 * transient handling should be properly done for cases where a single toplevel
   has multiple transients... this includes transient stacking
   (partially finished)
