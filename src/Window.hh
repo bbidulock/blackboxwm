@@ -93,7 +93,6 @@ private:
       shaded,                // is shaded?
       visible,               // is visible?
       iconic,                // is iconified?
-      transient,             // is a transient window?
       focused,               // has focus?
       stuck,                 // is omnipresent
       modal,                 // is modal? (must be dismissed to continue)
@@ -110,7 +109,6 @@ private:
       window_group,                 // the client's window group
       transient_for;                // which window are we a transient for?
     BlackboxWindow *transient;      // which window is our transient?
-
 
     std::string title, icon_title;
     std::string::size_type title_len; // strlen(title)

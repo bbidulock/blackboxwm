@@ -80,7 +80,7 @@ public:
 
   const ScreenInfo* getScreenInfo(const unsigned int s) const;
 
-  BGCCache *gcCache() const;
+  BGCCache *gcCache(void) const;
 
   inline Bool hasShapeExtensions(void) const
     { return shape.extensions; }

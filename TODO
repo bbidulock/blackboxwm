@@ -61,5 +61,7 @@ ADD: way to have items in menu and store data other than their index number.
 
 CHECK: why do we have workspace_number and attrib.workspace in BlackboWindow?
 
+CHANGE: use a Workspace* instead of a number in BlackboxWindow
+
 (still here) better support for window groups... i don't know when i'm going to
     ever get to this
