@@ -100,6 +100,7 @@ extern "C" {
 #include "Image.hh"
 #include "Netwm.hh"
 #include "Pen.hh"
+#include "PixmapCache.hh"
 #include "Rootmenu.hh"
 #include "Screen.hh"
 #include "Slit.hh"
@@ -1067,6 +1068,8 @@ void Blackbox::real_reconfigure(void) {
 
   std::for_each(screenList.begin(), screenList.end(),
                 std::mem_fun(&BScreen::reconfigure));
+
+  bt::PixmapCache::clearCache();
 }
 
 
