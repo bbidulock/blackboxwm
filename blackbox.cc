@@ -20,12 +20,6 @@
 //
 
 #define _GNU_SOURCE
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
-#include <X11/Xresource.h>
-#include <X11/cursorfont.h>
-
 #include "blackbox.hh"
 #include "session.hh"
 
@@ -37,6 +31,9 @@
 Blackbox *blackbox;
 
 
+//
+// signal handler to allow for proper and gentle shutdown
+//
 static void signalhandler(int i) {
   static int re_enter = 0;
   
@@ -52,6 +49,10 @@ static void signalhandler(int i) {
 }
 
 
+// *************************************************************************
+// Blackbox class code
+// *************************************************************************
+
 Blackbox::Blackbox(int argc, char **argv) {
   debug = new Debugger('!');
 #ifdef DEBUG
@@ -59,58 +60,47 @@ Blackbox::Blackbox(int argc, char **argv) {
 #endif
   debug->msg("%s: Blackbox::Blackbox\n", __FILE__);
 
+  // install signal handlers for fatal signals
   signal(SIGSEGV, (void (*)(int)) signalhandler);
   signal(SIGTERM, (void (*)(int)) signalhandler);
+  signal(SIGINT, (void (*)(int)) signalhandler);
 
+  // store program arguments (used in restart)
   b_argc = argc;
   b_argv = argv;
 
+  // the initial display is set to NULL... and Xlib will read the environment
+  // variable DISPLAY to determine with which X server to establish the session
   char *session_display = NULL;
   ::blackbox = this;
-  //
-  //  Startup our window management session.
-  //
-
-
-
-
   session_list = new llist<BlackboxSession>;
-  //
-  //  Scan the command line for a list of servers to manage.
-  //
 
+  // scan the command line for a list of servers to manage.
   int i;
   for (i = 1; i < argc; ++i) {
     if (! strcmp(argv[i], "-display")) {
-      //
-      //  In this case, we have been started by xinit or xdm to manage a single
-      //  X session.  Open the single connection and start the event loop.
-      //
-
+      // use display specified on the command line
       if (++i >= argc) {
 	printf("error: '-display' requires and argument\n");
 	exit(1);
       }
       
       debug->msg("%s: beginning single display management '%s'\n",
-		 __BASE_FILE__, argv[i]);
+		 __FILE__, argv[i]);
       session_display = argv[i];
 
-      //
-      // Once the specified display is open... set the environment variable
-      // for DISPLAY... xinit (and xdm?) do this already... but when future
-      // multi X session management is finished... we'll need this set for
-      // each separate X session.
-      //
+      // set the environment variable DISPLAY
       if (setenv("DISPLAY", session_display, 1)) {
 	fprintf(stderr, "couldn't set environment variable DISPLAY\n");
 	perror("setenv()");
       }
     } else if (! strcmp(argv[i], "-version")) {
+      // print current version string
       printf("Blackbox %s : (c) 1997, 1998 Brad Hughes\n\n",
              _blackbox_version);
       exit(0);
     } else if (! strcmp(argv[i], "-help")) {
+      // print program options
       printf("Blackbox %s : (c) 1997, 1998 Brad Hughes\n",
              _blackbox_version);
       printf("\n"
@@ -121,12 +111,9 @@ Blackbox::Blackbox(int argc, char **argv) {
     }
   }
 
-  //
   // At the moment, blackbox can only manage one X server connection... this
   // will hopefully change with the advent of multiple threads and placing one
   // event loop in each thread.
-  //
-
   session_list->insert(new BlackboxSession(session_display));
 }
 
@@ -142,28 +129,21 @@ Blackbox::~Blackbox(void) {
 void Blackbox::EventLoop(void) {
   debug->msg("%s: Blackbox::EventLoop\n", __FILE__);
 
-  //
   // When multiple X sessions are supported... this function will change to
   // create new threads of execution and start an session->EventLoop() in
   // each thread.
   //
   // Note:  as stated above... one thread will be created for each X session
   // to be managed;
-  //
-
   session_list->at(0)->EventLoop();
-
 }
 
 
 void Blackbox::Restart(char *prog) {
   debug->msg("%s: Blackbox::Restart\n", __FILE__);
 
-  //
   // This function is just a quick "fix"
-  // It is also subject to change when multithreads are incorporated...
-  //
-
+  // It is also subject to change when multithreads are incorporated.
   if (prog) {
     for (int i = 0; i < session_list->count(); ++i)
       session_list->at(i)->Dissociate();
@@ -180,8 +160,13 @@ void Blackbox::Restart(char *prog) {
 
 void Blackbox::Shutdown(void) {
   debug->msg("%s: Blackbox::Shutdown\n", __FILE__);
-  for (int i = 0; i < session_list->count(); ++i)
-    session_list->at(i)->Dissociate();
+
+  // end management for all sessions and quit
+  for (int i = 0; i < session_list->count(); ++i) {
+    BlackboxSession *tmp = session_list->at(i);
+    tmp->Dissociate();
+    delete tmp;
+  }
 
   delete this;
 }

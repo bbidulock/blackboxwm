@@ -57,8 +57,7 @@ BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window window) {
   client.window = window;
   frame.window = frame.title = frame.handle = frame.close_button =
     frame.iconify_button = frame.maximize_button = client.icon_window = 
-    client.icon_pixmap = client.icon_mask = frame.button = frame.pbutton =
-    None;
+    frame.button = frame.pbutton = None;
   client.transient_for = client.transient = 0;
   client.title = client.app_class = client.app_name = 0;
   icon = 0;
@@ -164,11 +163,11 @@ BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window window) {
   associateClientWindow();
   positionButtons();
 
-  XGrabKey(display, XKeysymToKeycode(display, XK_Tab), Mod1Mask, frame.window,
-	   True, GrabModeAsync, GrabModeAsync);
-  XGrabKey(display, XKeysymToKeycode(display, XK_Left), Mod1Mask, frame.window,
-	   True, GrabModeAsync, GrabModeAsync);
-  XGrabKey(display, XKeysymToKeycode(display, XK_Right), Mod1Mask,
+  XGrabKey(display, XKeysymToKeycode(display, XK_Tab), ControlMask,
+           frame.window, True, GrabModeAsync, GrabModeAsync);
+  XGrabKey(display, XKeysymToKeycode(display, XK_Left), ControlMask,
+           frame.window, True, GrabModeAsync, GrabModeAsync);
+  XGrabKey(display, XKeysymToKeycode(display, XK_Right), ControlMask,
 	   frame.window, True, GrabModeAsync, GrabModeAsync);
 
   XLowerWindow(display, client.window);
@@ -830,11 +829,11 @@ Bool BlackboxWindow::getWMHints(void) {
   } 
   
   if (wmhints->flags & IconPixmapHint) {
-    client.icon_pixmap = wmhints->icon_pixmap;
+    //    client.icon_pixmap = wmhints->icon_pixmap;
   }
   
   if (wmhints->flags & IconWindowHint) {
-    client.icon_window = wmhints->icon_window;
+    //    client.icon_window = wmhints->icon_window;
   }
   
   /* icon position hint would be next, but as the ICCCM says, we can ignore
@@ -843,7 +842,7 @@ Bool BlackboxWindow::getWMHints(void) {
   */
   
   if (wmhints->flags & IconMaskHint) {
-    client.icon_mask = wmhints->icon_mask;
+    //    client.icon_mask = wmhints->icon_mask;
   }
   
   if (wmhints->flags & WindowGroupHint) {
@@ -1124,7 +1123,7 @@ void BlackboxWindow::iconifyWindow(void) {
 
   unsigned long state[2];
   state[0] = (unsigned long) IconicState;
-  state[1] = (unsigned long) client.icon_pixmap;
+  state[1] = (unsigned long) None;
   XChangeProperty(display, client.window, session->StateAtom(),
                   session->StateAtom(), 32, PropModeReplace,
 		  (unsigned char *) state, 2);

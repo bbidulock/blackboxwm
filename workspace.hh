@@ -63,7 +63,6 @@ public:
   void hideMenu();
   void moveMenu(int, int);
   void updateMenu();
-
   int insert(char **);
   int remove(int);
 };
@@ -88,7 +87,6 @@ public:
   void hideMenu();
   void moveMenu(int, int);
   void updateMenu();
-
   int insert(char *);
   int insert(char *, WorkspaceMenu *);
   int remove(int);
@@ -130,14 +128,11 @@ public:
   void moveMenu(int, int);
   void updateMenu(void);
   void Reconfigure();
-  
-  int workspaceID(void)
-    { return workspace_id; }
-  char *name(void)
-    { return workspace_name; }
-  WorkspaceMenu *menu(void)
-    { return workspace_menu; }
   int menuVisible(void);
+  
+  int workspaceID(void) { return workspace_id; }
+  char *name(void) { return workspace_name; }
+  WorkspaceMenu *menu(void) { return workspace_menu; }
 };
 
 

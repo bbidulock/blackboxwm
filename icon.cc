@@ -113,8 +113,6 @@ BlackboxIcon::~BlackboxIcon(void) {
 
 void BlackboxIcon::buttonPressEvent(XButtonEvent *) {
   debug->msg("%s:%d: BlackboxIcon::buttonPressEvent\n", __FILE__, __LINE__);
-  if (session->button1Pressed())
-    XRaiseWindow(display, icon.window);
 }
 
 

@@ -29,6 +29,10 @@
 #include <sys/time.h>
 
 
+// *************************************************************************
+// Workspace class code
+// *************************************************************************
+
 Workspace::Workspace(WorkspaceManager *m, int id) {
   ws_manager = m;
   workspace_id = id;
@@ -180,6 +184,8 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
   Window *tmp_stack = new Window[workspace_list->count()];
   int i = 0, ii = 0;
 
+  if (w->isTransient()) raiseWindow(w->TransientFor());
+
   for (i = 0; i < workspace_list->count(); ++i)
     if (*(window_stack + i) != w->frameWindow())
       *(tmp_stack + (ii++)) = *(window_stack + i);
@@ -211,6 +217,7 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
     *(window_stack + i) = *(tmp_stack + i);
 
   delete [] tmp_stack;
+  if (w->isTransient()) lowerWindow(w->TransientFor());
   ws_manager->stackWindows(window_stack, workspace_list->count());
 }
 
@@ -235,6 +242,10 @@ BlackboxWindow *Workspace::window(int index) {
 const int Workspace::count(void)
 { return workspace_list->count(); }
 
+
+// *************************************************************************
+// Workspace manager class code
+// *************************************************************************
 
 WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
   debug = new Debugger('^');
@@ -408,6 +419,10 @@ WorkspaceManager::~WorkspaceManager(void) {
   if (frame.button) XFreePixmap(display, frame.button);
   if (frame.pbutton) XFreePixmap(display, frame.pbutton);
 
+  XDeleteContext(display, frame.clock, session->wsContext());
+  XDestroyWindow(display, frame.clock);
+  XDeleteContext(display, frame.icon, session->wsContext());
+  XDestroyWindow(display, frame.icon);
   XDeleteContext(display, frame.workspace_button, session->wsContext());
   XDestroyWindow(display, frame.workspace_button);
   XDeleteContext(display, frame.workspace_button, session->wsContext());

@@ -97,7 +97,7 @@ private:
     Atom WMDelete, WMProtocols;
     BlackboxWindow *transient_for,  /* which window are we a transient for? */
       *transient;                   /* which window is our transient? */
-    Pixmap icon_pixmap, icon_mask;
+    //    Pixmap icon_pixmap, icon_mask;
     Window window, icon_window, window_group;
 
     char *title, *app_name, *app_class;
@@ -111,18 +111,14 @@ private:
   } client;
 
   struct frame {
+    Bool shaped;
     GC ftextGC, utextGC;
     Pixmap utitle, ftitle, uhandle, fhandle, rhandle, button, pbutton;
     Window window, title, handle, close_button, iconify_button,
       maximize_button, resize_handle;
     int x, y;
-    unsigned int width, height,
-      title_h, title_w,
-      handle_h, handle_w,
-      button_w, button_h,
-      text_w, text_h,
-      x_resize, y_resize,
-      shaped;
+    unsigned int width, height, title_h, title_w, handle_h, handle_w,
+      button_w, button_h, x_resize, y_resize;
   } frame;
 
   struct {
@@ -155,84 +151,32 @@ private:
 
 
 protected:
-  //
-  // decoration creation
-  //
+  Bool getWMNormalHints(XSizeHints *);
+  Bool getWMProtocols(void);
+  Bool getWMHints(void);
   Window createToplevelWindow(int, int, unsigned int, unsigned int,
 			      unsigned int);
   Window createChildWindow(Window, int ,int, unsigned int, unsigned int,
 			   unsigned int);
+
   void associateClientWindow(void);
   void createDecorations(void);
   void positionButtons(void);
   void createCloseButton(void);
   void createIconifyButton(void);
   void createMaximizeButton(void);
-
-  //
-  // drawing functions
-  //
   void drawTitleWin(int, int, int ,int);
   void drawAllButtons(void);
   void drawCloseButton(Bool);
   void drawIconifyButton(Bool);
   void drawMaximizeButton(Bool);
-
-  //
-  // various functions
-  //
   void configureWindow(int, int, unsigned int, unsigned int);
-  Bool getWMNormalHints(XSizeHints *);
-  Bool getWMProtocols(void);
-  Bool getWMHints(void);
 
 
 public:
   BlackboxWindow(BlackboxSession *, Window);
   ~BlackboxWindow(void);
 
-  //
-  // frame window information
-  //
-  Window frameWindow(void) { return frame.window; }
-  char **Title(void) { return &client.title; }
-  int XFrame(void) { return frame.x; }
-  int YFrame(void) { return frame.y; }
-
-  //
-  // client window information
-  //
-  Window clientWindow(void) { return client.window; }
-  unsigned int clientHeight(void) { return client.height; }
-  unsigned int clientWidth(void) { return client.width; }
-  Bool isTransient(void) { return transient; }
-  Bool hasTransient(void) { return ((client.transient) ? True : False); }
-  BlackboxWindow *Transient(void) { return client.transient; }
-
-  //
-  // Focus control
-  //
-  Bool isFocused(void) { return focused; }
-  Bool isVisible(void) { return visible; }
-  Bool setInputFocus(void);
-  void setFocusFlag(Bool);
-
-  //
-  // Window control
-  //
-  void iconifyWindow(void);
-  void deiconifyWindow(void);
-  void closeWindow(void);
-  void withdrawWindow(void);
-  void maximizeWindow(void);
-  void shadeWindow(void);
-  void removeIcon(void) { icon = NULL; }
-  Bool isIconic(void) { return iconic; }
-  Bool resizable(void) { return (do_maximize|do_handle); }
-
-  //
-  // Event handlers
-  //
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);
   void motionNotifyEvent(XMotionEvent *);
@@ -247,18 +191,37 @@ public:
   void shapeEvent(XShapeEvent *);
 #endif
 
-  //
-  // various window functions
-  //
-  void Reconfigure(void);
+  Bool setInputFocus(void);
   int setWindowNumber(int);
   int setWorkspace(int);
-  int workspace(void)
-    { return workspace_number; }
-  int windowNumber(void)
-    { return window_number; }
-  int setMenuVisible(Bool v)
-    { return menu_visible = v; }
+  void setFocusFlag(Bool);
+  void iconifyWindow(void);
+  void deiconifyWindow(void);
+  void closeWindow(void);
+  void withdrawWindow(void);
+  void maximizeWindow(void);
+  void shadeWindow(void);
+  void Reconfigure(void);
+
+  BlackboxWindow *Transient(void) { return client.transient; }
+  BlackboxWindow *TransientFor(void) { return client.transient_for; }
+  Bool isTransient(void) { return transient; }
+  Bool hasTransient(void) { return ((client.transient) ? True : False); }
+  Bool isFocused(void) { return focused; }
+  Bool isVisible(void) { return visible; }
+  Bool isIconic(void) { return iconic; }
+  Bool resizable(void) { return (do_maximize|do_handle); }
+  Window frameWindow(void) { return frame.window; }
+  Window clientWindow(void) { return client.window; }
+  char **Title(void) { return &client.title; }
+  int XFrame(void) { return frame.x; }
+  int YFrame(void) { return frame.y; }
+  int workspace(void) { return workspace_number; }
+  int windowNumber(void) { return window_number; }
+  int setMenuVisible(Bool v) { return menu_visible = v; }
+  unsigned int clientHeight(void) { return client.height; }
+  unsigned int clientWidth(void) { return client.width; }
+  void removeIcon(void) { icon = NULL; }
 };
 
 

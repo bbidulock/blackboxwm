@@ -21,16 +21,14 @@
 
 #ifndef _blackbox_hh
 #define _blackbox_hh
-#define _blackbox_version "zero point one four point five beta"
-
-//
-//   This is a class to manage a single X server connection.  It allows for
-//   future expansion and plans to manage multiple X server connections.
-//
-class BlackboxSession;
+#define _blackbox_version "zero point one five point zero beta"
 
 #include "debug.hh"
 #include "llist.hh"
+
+
+// forward declaration
+class BlackboxSession;
 
 
 class Blackbox {

@@ -38,6 +38,7 @@ typedef struct BColor {
 #include "session.hh"
 
 
+// image class that does basic rendering functions for blackbox
 class BImage {
 private:
   int depth;

@@ -43,6 +43,7 @@ class SessionMenu;
 class WorkspaceManager;
 
 
+// root window menu... for starting user commands
 class SessionMenu : public BlackboxMenu {
 private:
   BlackboxSession *session;
@@ -60,19 +61,19 @@ public:
   SessionMenu(BlackboxSession *);
   virtual ~SessionMenu(void);
   
-  void showMenu(void);
-  void hideMenu(void);
-  void moveMenu(int, int);
-  void updateMenu(void);
   Window windowID(void);
-
   int insert(char *, void (*)());
   int insert(char *, int, char * = 0);
   int insert(char *, SessionMenu *);
   int remove(int);
+  void showMenu(void);
+  void hideMenu(void);
+  void moveMenu(int, int);
+  void updateMenu(void);
 };
 
 
+// class for managing a single X session...
 class BlackboxSession {
 private:
   unsigned int
@@ -85,10 +86,7 @@ private:
   SessionMenu *rootmenu;
   Debugger *debug;
   WorkspaceManager *ws_manager;
-  
-  //
-  // X Atoms for ICCCM compliance
-  //
+
   Atom _XA_WM_COLORMAP_WINDOWS, _XA_WM_PROTOCOLS, _XA_WM_STATE,
     _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS;
 
@@ -150,16 +148,13 @@ public:
   BlackboxSession(char *);
   ~BlackboxSession();
   
-  Display *control(void) { return display; }
-  Window Root(void) { return root; }
-  int Depth(void) { return depth; }
-  Visual *visual(void) { return v; }
-  unsigned int XResolution(void) { return xres; }
-  unsigned int YResolution(void) { return yres; }
-  Bool shapeExtensions(void) { return shape.extensions; }
-
-  WorkspaceManager *WSManager(void) { return ws_manager; }
-  SessionMenu *menu(void) { return rootmenu; }
+  BlackboxWindow *getWindow(Window);
+  BlackboxIcon *getIcon(Window);
+  BlackboxMenu *getMenu(Window);
+  WorkspaceManager *getWSManager(Window);
+  unsigned long getColor(const char *);
+  unsigned long getColor(const char *, unsigned char *, unsigned char *,
+			 unsigned char *);
   void addWindow(BlackboxWindow *);
   void removeWindow(BlackboxWindow *);
   void reassociateWindow(BlackboxWindow *);
@@ -170,29 +165,43 @@ public:
   void Restart(void);
   void Exit(void);
   void Shutdown(void);
-  Bool Startup(void) { return startup; }
   void LoadDefaults(void);
+  void Dissociate(void);
 
+  // various informative functions about the current X session
+  Atom StateAtom(void) { return _XA_WM_STATE; }
+  Atom DeleteAtom(void) { return _XA_WM_DELETE_WINDOW; }
+  Atom ProtocolsAtom(void) { return _XA_WM_PROTOCOLS; }
+  Atom FocusAtom(void) { return _XA_WM_TAKE_FOCUS; }
+  Atom ColormapAtom(void) { return _XA_WM_COLORMAP_WINDOWS; }
+  Bool button1Pressed() const { return b1Pressed; }
+  Bool button2Pressed() const { return b2Pressed; }
+  Bool button3Pressed() const { return b3Pressed; }
+  Bool shapeExtensions(void) { return shape.extensions; }
+  Bool Startup(void) { return startup; }
+  Cursor sessionCursor(void) { return cursor.session; }
+  Cursor moveCursor(void) { return cursor.move; }
+  Display *control(void) { return display; }
+  GC GCOperations(void) { return opGC; }
+  Visual *visual(void) { return v; }
+  Window Root(void) { return root; }
+  XColor *Colors8bpp(void) { return colors_8bpp; }
   XContext wsContext(void) { return context.workspace; }
   XContext iconContext(void) { return context.icon; }
   XContext winContext(void) { return context.window; }
   XContext menuContext(void) { return context.menu; }
-
-  Cursor sessionCursor(void) { return cursor.session; }
-  Cursor moveCursor(void) { return cursor.move; }
-
   XFontStruct *titleFont(void) { return resource.font.title; }
   XFontStruct *menuFont(void) { return resource.font.menu; }
   XFontStruct *iconFont(void) { return resource.font.icon; }
+  int Depth(void) { return depth; }
+  unsigned int XResolution(void) { return xres; }
+  unsigned int YResolution(void) { return yres; }
 
-  unsigned long getColor(const char *);
-  unsigned long getColor(const char *, unsigned char *, unsigned char *,
-			 unsigned char *);
-  BlackboxWindow *getWindow(Window);
-  BlackboxIcon *getIcon(Window);
-  BlackboxMenu *getMenu(Window);
-  WorkspaceManager *getWSManager(Window);
+  // pointers to the sessions controlling members
+  SessionMenu *menu(void) { return rootmenu; }
+  WorkspaceManager *WSManager(void) { return ws_manager; }
 
+  // textures and colors for configuration
   int toolboxTexture(void) { return resource.texture.toolbox; }
   int windowTexture(void) { return resource.texture.window; }
   int buttonTexture(void) { return resource.texture.button; }
@@ -225,23 +234,10 @@ public:
   const BColor &iconTextColor(void) const { return resource.color.itext; }
   const BColor &toolboxTextColor(void) const { return resource.color.ttext; }
 
-  XColor *Colors8bpp(void) { return colors_8bpp; }
-
+  // controls arrangement of decorations for left and right handed users
   const int Orientation(void) const { return resource.orientation; }
-
-  Bool button1Pressed() const { return b1Pressed; }
-  Bool button2Pressed() const { return b2Pressed; }
-  Bool button3Pressed() const { return b3Pressed; }
-
-  Atom StateAtom(void) { return _XA_WM_STATE; }
-  Atom DeleteAtom(void) { return _XA_WM_DELETE_WINDOW; }
-  Atom ProtocolsAtom(void) { return _XA_WM_PROTOCOLS; }
-  Atom FocusAtom(void) { return _XA_WM_TAKE_FOCUS; }
-  Atom ColormapAtom(void) { return _XA_WM_COLORMAP_WINDOWS; }
-
-  GC GCOperations(void) { return opGC; }
-  void Dissociate(void);
   
+  // constants for internal workings of blackbox
   enum { B_Restart = 1, B_RestartOther, B_Exit, B_Shutdown, B_Execute,
 	 B_Reconfigure, B_WindowShade,
 	 B_WindowClose, B_WindowMaximize, B_WindowIconify,

@@ -26,6 +26,10 @@
 #include <stdlib.h>
 
 
+// *************************************************************************
+// root menu code
+// *************************************************************************
+
 SessionMenu::SessionMenu(BlackboxSession *s) : BlackboxMenu(s) {
   session = s;
 }

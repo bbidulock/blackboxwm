@@ -60,9 +60,9 @@ Contributors:
 	Keith Bolland <prime@strip.net.nz>
 	 - beta testing, bug reports and suggestions
 	James Spooner <spoons@xtra.co.nz>
-	 - beta testing, bug reports
+	 - beta testing, bug reports (beta moron)
 	Fred Knieper <derf@tamu.edu>
-	 - beta testing (beta moron)
+	 - beta testing, bug reports
 
 
 Compilation and Installation:
@@ -198,13 +198,13 @@ the client specifies if it can take focus through ICCCM protocol requests).
 Blackbox disobeys the terms dicated by the ICCCM by allowing certain keyboard
 shortcuts (the ICCCM instructs window manager clients to not trap any key or
 pointer events from clients, until certain window manager function keys/key
-combinations are implemented).  The shortcut keys are as follows.  Mod1+Tab
+combinations are implemented).  The shortcut keys are as follows.  Control+Tab
 cycles window focus (skipping windows that do not accept focus and windows that
-are iconified).  Mod1+Left/Right arrow key combinations will circulate through
-available workspaces, by ascending the workspace list (ALT+Left arrow) or
-descending it (ALT+Right arrow).  If the user tries to acsend above the first
-workspace, Blackbox will change to the last workspace (and vice vera for trying
-to descend past the last).
+are iconified).  Control+Left/Right arrow key combinations will circulate
+through available workspaces, by ascending the workspace list (ALT+Left arrow)
+or descending it (ALT+Right arrow).  If the user tries to acsend above the
+first workspace, Blackbox will change to the last workspace (and vice vera for
+trying to descend past the last).
 
 Icons are placed on the bottom half of the toolbox.  These icons are present
 in all workspaces,  thus it is possible to move a window to another workspace

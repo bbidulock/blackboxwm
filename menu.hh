@@ -39,8 +39,8 @@ class BlackboxMenu;
 class BlackboxMenuItem;
 class BlackboxSession;
 
-// Note:  this is a base menu class... it is inherited and expanded upon for
-// sessions, windows, and workspaces
+
+// base menu class... it is inherited for sessions, windows, and workspaces
 class BlackboxMenu {
 private:
   llist<BlackboxMenuItem> *menuitems;
@@ -50,7 +50,6 @@ private:
   Bool moving, show_title, visible, sub, movable, user_moved;
   Display *display;
   GC titleGC, itemGC, pitemGC;
-  XContext itemContext;
   
   int which_sub;
 
@@ -60,7 +59,6 @@ private:
     unsigned width, height,
       title_w, title_h,
       button_w, button_h, item_h;
-    unsigned long pframe, ptitle, pitem, ppushed;
     Pixmap item_pixmap, pushed_pixmap;
     Window frame, title;
   } menu;
@@ -72,11 +70,12 @@ protected:
   virtual void titlePressed(int) = 0;
   virtual void titleReleased(int) = 0;
 
+  void drawSubmenu(int);
+  Window createItemWindow(void);
   void showMenu(void);
   void hideMenu(void);
   void moveMenu(int, int);
   void updateMenu(void);
-
   int insert(char *);
   int insert(char **);
   int insert(char *, int, char * = 0);
@@ -88,13 +87,17 @@ protected:
   BlackboxMenuItem *at(int i) { return menuitems->at(i); }
   BlackboxSession *Session(void) { return session; }
 
-  void drawSubmenu(int);
-  Window createItemWindow(void);
-
 
 public:
   BlackboxMenu(BlackboxSession *);
   virtual ~BlackboxMenu(void);
+
+  void buttonPressEvent(XButtonEvent *);
+  void buttonReleaseEvent(XButtonEvent *);
+  void motionNotifyEvent(XMotionEvent *);
+  void exposeEvent(XExposeEvent *);
+  void Reconfigure(void);
+  Bool hasSubmenu(int);
 
   Window windowID(void) { return menu.frame; }
   unsigned int Width(void) { return menu.width; }
@@ -105,21 +108,26 @@ public:
   int menuVisible(void) { return visible; }
   const char *label(void) const { return menu.label; }
   int count(void) { return menuitems->count(); }
-  Bool hasSubmenu(int);
   Bool userMoved(void) { return user_moved; }
-  void Reconfigure(void);
-
   void setMenuLabel(char *n) { menu.label = n; }
   void setMovable(Bool b) { movable = b; }
-
-  void buttonPressEvent(XButtonEvent *);
-  void buttonReleaseEvent(XButtonEvent *);
-  void motionNotifyEvent(XMotionEvent *);
-  void exposeEvent(XExposeEvent *);
 };
 
 
+// menu items held in the menus
 class BlackboxMenuItem {
+private:
+  Window window;
+  BlackboxMenu *sub_menu;
+  char **ulabel, *label, *exec;
+  int function;
+
+  friend BlackboxMenu;
+
+
+protected:
+
+
 public:
   BlackboxMenuItem(Window w, char **u)
     { window = w; ulabel = u; label = 0; exec = 0; sub_menu = 0;
@@ -153,19 +161,6 @@ public:
   char **ULabel(void) { return ulabel; }
   int Function(void) { return function; }
   BlackboxMenu *Submenu(void) { return sub_menu; }
-
-protected:
-
-
-private:
-  Window window;
-
-  BlackboxMenu *sub_menu;
-
-  char **ulabel, *label, *exec;
-  int function;
-
-  friend BlackboxMenu;
 };
 
 

@@ -34,7 +34,6 @@ private:
 
   struct {
     char *name;
-    Pixmap pixmap;
     Window client, window, subwindow;
     int x, y;
     unsigned int height;
@@ -52,17 +51,17 @@ public:
   BlackboxIcon(BlackboxSession *, Window);
   ~BlackboxIcon(void);
 
-  Window iconWindow(void) { return icon.window; }
-  unsigned int Height(void) { return icon.height; }
-  void move(int x, int y) { icon.x = x; icon.y = y; }
-  void rereadLabel(void);
-  void Reconfigure(void);
-
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);
   void enterNotifyEvent(XCrossingEvent *);
   void leaveNotifyEvent(XCrossingEvent *);
   void exposeEvent(XExposeEvent *);
+  void rereadLabel(void);
+  void Reconfigure(void);
+
+  Window iconWindow(void) { return icon.window; }
+  unsigned int Height(void) { return icon.height; }
+  void move(int x, int y) { icon.x = x; icon.y = y; }
 };
 
 
