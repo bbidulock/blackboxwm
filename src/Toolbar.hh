@@ -29,47 +29,62 @@
 #include "Screen.hh"
 #include "Basemenu.hh"
 #include "Timer.hh"
+#include "Widget.hh"
 
 // forward declaration
 class Toolbar;
+class Toolbarmenu;
 
-class Toolbarmenu : public Basemenu
+
+class Toolbar2 : public Widget
 {
 public:
-  Toolbarmenu( Toolbar * );
-  ~Toolbarmenu();
+  Toolbar2(BScreen *);
+  ~Toolbar2();
 
-  Basemenu *getPlacementmenu() const { return placementmenu; }
-
-  virtual void reconfigure();
-  virtual void hide();
+  void reconfigure();
 
 protected:
-  virtual void itemClicked(const Point &, const Item &, int);
+  void buttonPressEvent(XEvent *);
+  void buttonReleaseEvent(XEvent *);
+  void enterEvent(XEvent *);
+  void leaveEvent(XEvent *);
+  void exposeEvent(XEvent *);
 
 private:
-  class Placementmenu : public Basemenu {
-  private:
-    Toolbarmenu *toolbarmenu;
+  void updateLayout();
+  void updatePosition();
 
-  protected:
-    virtual void itemClicked(const Point &, const Item &, int);
+  BScreen *bscreen;
+  BTimer *clock_timer, *hide_timer;
+  Pixmap toolbar_pixmap;
+  Rect toolbar_rect;
+  Toolbarmenu *toolbarmenu;
+  NETStrut strut;
+  bool always_on_top, editing, hidden, auto_hide;
 
+  class HideHandler : public TimeoutHandler
+  {
   public:
-    Placementmenu(Toolbarmenu *);
-  };
+    Toolbar *toolbar;
+    void timeout();
+  } hide_handler;
 
-  Toolbar *toolbar;
-  Placementmenu *placementmenu;
+  class ClockHandler : public TimeoutHandler
+  {
+  public:
+    Toolbar *toolbar;
+    void timeout();
+  } clock_handler;
 
-  friend class Placementmenu;
-  friend class Toolbar;
+  friend class HideHandler;
+  friend class ClockHandler;
 };
 
 
 class Toolbar : public TimeoutHandler {
 private:
-  Bool on_top, editing, hidden, do_auto_hide;
+  bool on_top, editing, hidden, auto_hide;
 
   struct frame {
     unsigned long button_pixel, pbutton_pixel;
@@ -101,26 +116,27 @@ private:
 
   friend class HideHandler;
   friend class Toolbarmenu;
-  friend class Toolbarmenu::Placementmenu;
-
 
 public:
   Toolbar(BScreen *);
   virtual ~Toolbar(void);
 
-  inline Toolbarmenu *getMenu(void) { return toolbarmenu; }
+  bool isEditing(void) const { return editing; }
 
-  inline const Bool &isEditing(void) const { return editing; }
-  inline const Bool &isOnTop(void) const { return on_top; }
-  inline const Bool &isHidden(void) const { return hidden; }
-  inline const Bool &doAutoHide(void) const { return do_auto_hide; }
+  void setOnTop(bool t);
+  bool isOnTop(void) const { return on_top; }
+
+  bool isHidden(void) const { return hidden; }
+
+  void setAutoHide(bool h);
+  bool autoHide(void) const { return auto_hide; }
 
   inline const Window &getWindowID(void) const { return frame.window; }
 
-    unsigned int width() const { return frame.width; }
-    unsigned int height() const { return frame.height; }
+  unsigned int width() const { return frame.width; }
+  unsigned int height() const { return frame.height; }
   inline const unsigned int &getExposedHeight(void) const
-  { return ((do_auto_hide) ? frame.bevel_w : frame.height); }
+  { return ((auto_hide) ? frame.bevel_w : frame.height); }
   inline const int &getX(void) const
   { return ((hidden) ? frame.x_hidden : frame.x); }
   inline const int &getY(void) const
@@ -150,8 +166,9 @@ public:
 
   virtual void timeout(void);
 
-  enum { TopLeft = 1, BottomLeft, TopCenter,
-         BottomCenter, TopRight, BottomRight };
+  enum Placement { TopLeft = 1, BottomLeft, TopCenter,
+                   BottomCenter, TopRight, BottomRight };
+  void setPlacement(Placement);
 };
 
 

@@ -790,7 +790,7 @@ void BlackboxWindow::reconfigure(void)
 
     if (client.title) {
 	BStyle *style = screen->style();
-	if (i18n->multibyte()) {
+	if (i18n.multibyte()) {
 	    XRectangle ink, logical;
 	    XmbTextExtents(style->windowFontSet(),
 			   client.title, client.title_len, &ink, &logical);
@@ -882,17 +882,15 @@ void BlackboxWindow::getWMName(void) {
       }
       XFree((char *) text_prop.value);
     } else {
-      client.title = bstrdup(i18n->getMessage(WindowSet, WindowUnnamed,
-					      "Unnamed"));
+      client.title = bstrdup(i18n(WindowSet, WindowUnnamed, "Unnamed"));
     }
   } else {
-    client.title = bstrdup(i18n->getMessage(WindowSet, WindowUnnamed,
-					    "Unnamed"));
+    client.title = bstrdup(i18n(WindowSet, WindowUnnamed, "Unnamed"));
   }
   client.title_len = strlen(client.title);
 
   BStyle *style = screen->style();
-  if (i18n->multibyte()) {
+  if (i18n.multibyte()) {
     XRectangle ink, logical;
     XmbTextExtents(style->windowFontSet(),
 		   client.title, client.title_len, &ink, &logical);
@@ -1375,7 +1373,8 @@ Bool BlackboxWindow::setInputFocus(void) {
 
 
 void BlackboxWindow::iconify(void) {
-  if (flags.iconic) return;
+  if (flags.iconic)
+    return;
 
   if ( windowmenu && windowmenu->isVisible() )
       windowmenu->hide();
@@ -1996,7 +1995,7 @@ void BlackboxWindow::redrawLabel(void) {
 
     if (client.title_text_w > frame.label_w) {
 	for (; dlen >= 0; dlen--) {
-	    if (i18n->multibyte()) {
+	    if (i18n.multibyte()) {
 		XRectangle ink, logical;
 		XmbTextExtents(style->windowFontSet(), client.title, dlen,
 			       &ink, &logical);
@@ -2029,7 +2028,7 @@ void BlackboxWindow::redrawLabel(void) {
 				      style->windowLabelFocusTextColor() :
 				      style->windowLabelUnfocusTextColor() ),
 				    style->windowFont() );
-    if (i18n->multibyte())
+    if (i18n.multibyte())
 	XmbDrawString(*blackbox, frame.label, style->windowFontSet(), gc.gc(), dx,
 		      (1 - style->windowFontSetExtents()->max_ink_extent.y),
 		      client.title, dlen);
@@ -2172,7 +2171,7 @@ void BlackboxWindow::redrawCloseButton(Bool pressed) {
 void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
   if (re->window == client.window) {
 #ifdef    DEBUG
-    fprintf(stderr, i18n->getMessage(WindowSet, WindowMapRequest,
+    fprintf(stderr, i18n.getMessage(WindowSet, WindowMapRequest,
 			     "BlackboxWindow::mapRequestEvent() for 0x%lx\n"),
             client.window);
 #endif // DEBUG
@@ -2235,7 +2234,7 @@ void BlackboxWindow::mapNotifyEvent(XMapEvent *ne) {
 void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
   if (ue->window == client.window) {
 #ifdef    DEBUG
-    fprintf(stderr, i18n->getMessage(WindowSet, WindowUnmapNotify,
+    fprintf(stderr, i18n.getMessage(WindowSet, WindowUnmapNotify,
 			     "BlackboxWindow::unmapNotifyEvent() for 0x%lx\n"),
             client.window);
 #endif // DEBUG
@@ -2285,7 +2284,7 @@ void BlackboxWindow::reparentNotifyEvent(XReparentEvent *re) {
 
 #ifdef    DEBUG
   fprintf(stderr,
-	  i18n->getMessage(WindowSet, WindowReparentNotify,
+	  i18n.getMessage(WindowSet, WindowReparentNotify,
 		"BlackboxWindow::reparentNotifyEvent(): reparent 0x%lx to "
 		"0x%lx.\n"), client.window, re->parent);
 #endif // DEBUG
@@ -2387,7 +2386,8 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
 
       if (decorations.close && (! frame.close_button)) {
         createCloseButton();
-        if (decorations.titlebar) positionButtons(True);
+        if (decorations.titlebar)
+          positionButtons(True);
       }
     }
 
@@ -2569,8 +2569,11 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
     } else if (re->window == frame.window) {
 	if (re->button == 2 && re->state == Mod1Mask)
 	    XUngrabPointer(*blackbox, CurrentTime);
-    } else if ( windowmenu && re->button == 3 && re->window == frame.label )
+    } else if (windowmenu && re->button == 3 &&
+                (re->window == frame.label ||
+                 re->window == frame.handle)) {
 	windowmenu->popup( re->x_root, re->y_root );
+    }
 }
 
 void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
@@ -2906,7 +2909,7 @@ void BlackboxWindow::upsize(void)
 	// the height of the titlebar is based upon the height of the font being
 	// used to *blackbox the window's title
 	BStyle *style = screen->style();
-	if (i18n->multibyte())
+	if (i18n.multibyte())
 	    frame.title_h = (style->windowFontSetExtents()->max_ink_extent.height +
 			     (screen->style()->bevelWidth() * 2) + 2);
 	else
@@ -3028,12 +3031,15 @@ void BlackboxWindow::left_fixsize(int *gx, int *gy) {
 
 void BlackboxWindow::raise()
 {
+  screen->getWorkspace(workspace_number)->raiseWindow(this);
 }
 
 void BlackboxWindow::lower()
 {
+  screen->getWorkspace(workspace_number)->lowerWindow(this);
 }
 
 void BlackboxWindow::killClient()
 {
+  XKillClient(*blackbox, client.window);
 }

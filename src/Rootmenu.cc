@@ -34,6 +34,7 @@
 #include "blackbox.hh"
 #include "Rootmenu.hh"
 #include "Screen.hh"
+#include "Util.hh"
 
 #include <string>
 using std::string;
@@ -56,34 +57,25 @@ using std::string;
 #endif // MAXPATHLEN
 
 
-Rootmenu::Rootmenu( BScreen *scrn )
-    : Basemenu( scrn->screen() )
+Rootmenu::Rootmenu(int scr)
+    : Basemenu(scr)
 {
-  screen = scrn;
   blackbox = Blackbox::instance();
 }
 
-void Rootmenu::itemClicked( const Point &, const Basemenu::Item &item, int button )
+void Rootmenu::itemClicked(const Point &, const Basemenu::Item &item, int button)
 {
   if (button != 1)
     return;
 
-  switch( item.function() ) {
+  switch(item.function()) {
   case Execute:
-    {
-      char displaystring[MAXPATHLEN];
-      sprintf(displaystring, "DISPLAY=%s",
-              DisplayString(BaseDisplay::instance()->x11Display()));
-      sprintf(displaystring + strlen(displaystring) - 1, "%d",
-              screen->screen() );
-      bexec(item.command().c_str(), displaystring);
-      break;
-    }
+    bexec(item.command(), screen());
+    break;
 
   case Restart:
     blackbox->restart();
     break;
-
 
   case RestartOther:
     blackbox->restart(item.command().c_str());

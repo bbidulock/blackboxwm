@@ -36,6 +36,7 @@
 Clientmenu::Clientmenu(Workspace *ws)
   : Basemenu( ws->getScreen()->screen() )
 {
+  setAutoDelete(false);
   wkspc = ws;
   screen = wkspc->getScreen();
 }

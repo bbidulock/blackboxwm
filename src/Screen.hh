@@ -52,6 +52,7 @@ class Iconmenu;
 class Netizen;
 class Rootmenu;
 class Toolbar;
+class Toolbar2;
 class Workspace;
 class Workspacemenu;
 
@@ -80,6 +81,7 @@ public:
   inline BImageControl *getImageControl() { return image_control; }
   inline Rootmenu *getRootmenu() { return rootmenu; }
   inline Toolbar *getToolbar() { return toolbar; }
+  Toolbar2 *toolbar2() const { return _toolbar2; }
 
   inline Workspace *getWorkspace(int w) { return workspacesList->find(w); }
   inline Workspace *getCurrentWorkspace() { return current_workspace; }
@@ -226,6 +228,7 @@ private:
 #endif // SLIT
 
   Toolbar *toolbar;
+  Toolbar2 *_toolbar2;
   Workspace *current_workspace;
   Workspacemenu *workspacemenu;
 

@@ -146,7 +146,7 @@ Blackbox *blackbox;
 
 
 Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
-  : BaseDisplay(m_argv[0], dpy_name)
+  : BaseDisplay(m_argv[0], dpy_name), screenList(0)
 {
   if (! XSupportsLocale())
     fprintf(stderr, "X server does not support locale\n");
@@ -193,22 +193,22 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
 
   screenList = new LinkedList<BScreen>;
   for ( int i = 0; i < getNumberOfScreens(); i++ ) {
-      BScreen *screen = new BScreen( this, i );
+    BScreen *screen = new BScreen( this, i );
 
-      if (! screen->isScreenManaged()) {
-	  delete screen;
-	  screenList->insert( 0 );
-	  continue;
-      }
+    if (! screen->isScreenManaged()) {
+      delete screen;
+      screenList->insert( 0 );
+      continue;
+    }
 
-      screenList->insert( screen );
-      screen->initialize();
+    screenList->insert( screen );
+    screen->initialize();
   }
 
   if (! screenList->count()) {
     fprintf(stderr,
-	    i18n->getMessage(blackboxSet, blackboxNoManagableScreens,
-	       "Blackbox::Blackbox: no managable screens found, aborting.\n"));
+	    i18n(blackboxSet, blackboxNoManagableScreens,
+                 "Blackbox::Blackbox: no managable screens found, aborting.\n"));
     ::exit(3);
   }
 
@@ -896,9 +896,11 @@ void Blackbox::shutdown(void) {
 
   XSetInputFocus(*this, PointerRoot, None, CurrentTime);
 
-  LinkedListIterator<BScreen> it(screenList);
-  for (BScreen *s = it.current(); s; it++, s = it.current())
-    s->shutdown();
+  if (screenList) {
+    LinkedListIterator<BScreen> it(screenList);
+    for (BScreen *s = it.current(); s; it++, s = it.current())
+      s->shutdown();
+  }
 
   XSync(*this, False);
 
@@ -1037,7 +1039,7 @@ void Blackbox::save_rc(void) {
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.toolbar.autoHide:  %s", screen_number,
-	    ((screen->getToolbar()->doAutoHide()) ? "True" : "False"));
+	    ((screen->getToolbar()->autoHide()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     char *toolbar_placement = (char *) 0;

@@ -35,8 +35,10 @@
 Iconmenu::Iconmenu( BScreen *scrn )
   : Basemenu( scrn->screen() )
 {
+  setAutoDelete(false);
+
   screen = scrn;
-  setTitle(i18n->getMessage(IconSet, IconIcons, "Icons"));
+  setTitle(i18n(IconSet, IconIcons, "Icons"));
   showTitle();
 }
 

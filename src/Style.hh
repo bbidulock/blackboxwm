@@ -108,6 +108,8 @@ public:
   Pixmap iconifyBitmap() const { return bitmap.iconify; }
   Pixmap maximizeBitmap() const { return bitmap.maximize; }
   Pixmap closeBitmap() const { return bitmap.close; }
+  Pixmap nextBitmap() const { return bitmap.next; }
+  Pixmap previousBitmap() const { return bitmap.previous; }
 
   // general
   const BColor &borderColor() const { return bordercolor; }
@@ -171,7 +173,7 @@ private:
   } windowstyle;
 
   struct bitmap {
-    Pixmap arrow, check, iconify, maximize, close;
+    Pixmap arrow, check, iconify, maximize, close, next, previous;
   } bitmap;
 
   BColor bordercolor;

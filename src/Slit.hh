@@ -39,7 +39,6 @@ class Slitmenu : public Basemenu
 {
 public:
   Slitmenu(Slit *);
-  virtual ~Slitmenu();
 
   Basemenu *getDirectionmenu() const { return directionmenu; }
   Basemenu *getPlacementmenu() const { return placementmenu; }

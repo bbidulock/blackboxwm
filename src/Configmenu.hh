@@ -35,7 +35,6 @@ class Configmenu : public Basemenu
 {
 public:
   Configmenu(BScreen *);
-  virtual ~Configmenu(void);
 
   inline Basemenu *getFocusmenu(void) { return focusmenu; }
   inline Basemenu *getPlacementmenu(void) { return placementmenu; }

@@ -44,12 +44,13 @@ Basemenu::Basemenu( int scr )
     parent_menu( 0 ), current_submenu( 0 ),
     motion( 0 ), rows( 0 ), cols( 0 ), itemw( 0 ), indent( 0 ),
     show_title( false ), size_dirty( true ),
-    pressed( false ), title_pressed( false )
+    pressed( false ), title_pressed( false ), auto_delete( true )
 {
 }
 
 Basemenu::~Basemenu()
 {
+  clear();
 }
 
 void Basemenu::drawTitle()
@@ -58,7 +59,7 @@ void Basemenu::drawTitle()
 
   int dx = 1;
   int l;
-  if (i18n->multibyte()) {
+  if (i18n.multibyte()) {
     XRectangle ink, logical;
     XmbTextExtents( style->menuTitleFontSet(), title().c_str(), title().length(),
                     &ink, &logical );
@@ -83,7 +84,7 @@ void Basemenu::drawTitle()
 
   BGCCache::Item &gc = BGCCache::instance()->find( style->menuTitleTextColor(),
                                                    style->menuTitleFont() );
-  if ( i18n->multibyte() )
+  if ( i18n.multibyte() )
     XmbDrawString( *BaseDisplay::instance(), windowID(), style->menuTitleFontSet(),
                    gc.gc(), title_rect.x() + dx, title_rect.y() +
                    ( style->bevelWidth() -
@@ -113,7 +114,7 @@ void Basemenu::drawItem( const Rect &r, const Item &item )
 
   int dx = 1;
   int l;
-  if ( i18n->multibyte() ) {
+  if ( i18n.multibyte() ) {
     XRectangle ink, logical;
     XmbTextExtents( style->menuFontSet(), item.label().c_str(),
                     item.label().length(), &ink, &logical );
@@ -153,7 +154,7 @@ void Basemenu::drawItem( const Rect &r, const Item &item )
                    item.isEnabled() ? style->menuTextColor() :
                    style->menuDisabledTextColor() ), style->menuFont() );
 
-  if ( i18n->multibyte() )
+  if ( i18n.multibyte() )
     XmbDrawString( *display, windowID(), style->menuFontSet(), gc.gc(),
                    r.x() + dx, r.y() + ( style->bevelWidth() -
                                          style->menuFontSetExtents()->max_ink_extent.y ),
@@ -196,7 +197,7 @@ void Basemenu::updateSize()
 
   BScreen *scr = Blackbox::instance()->screen( screen() );
   BStyle *style = scr->style();
-  if (i18n->multibyte()) {
+  if (i18n.multibyte()) {
     maxcolh = itemh = style->menuFontSetExtents()->max_ink_extent.height +
               style->bevelWidth() * 2;
     titleh = style->menuTitleFontSetExtents()->max_ink_extent.height +
@@ -221,7 +222,7 @@ void Basemenu::updateSize()
 
     Item &item = *it++;
 
-    if ( i18n->multibyte() ) {
+    if ( i18n.multibyte() ) {
       XRectangle ink, logical;
       XmbTextExtents( style->menuTitleFontSet(), item.label().c_str(),
                       item.label().length(), &ink, &logical );
@@ -253,7 +254,7 @@ void Basemenu::updateSize()
       iw = 80;
       item.height = style->borderWidth() > 0 ? style->borderWidth() : 1;
     } else {
-      if ( i18n->multibyte() ) {
+      if ( i18n.multibyte() ) {
         XRectangle ink, logical;
         XmbTextExtents( style->menuFontSet(), item.label().c_str(),
                         item.label().length(), &ink, &logical );
@@ -278,6 +279,11 @@ void Basemenu::updateSize()
       rows = 0;
     }
   }
+
+  // if we just changed to a new column, but have no items, then remove the empty
+  // column
+  if ( cols > 1 && colh == 0 && rows == 0 )
+    cols--;
 
   if ( w < 80 )
     w = 80;
@@ -327,6 +333,13 @@ void Basemenu::updateSize()
 
 void Basemenu::reconfigure()
 {
+  Items::iterator it = items.begin();
+  while (it != items.end()) {
+    if ((*it).submenu())
+      (*it).submenu()->reconfigure();
+    it++;
+  }
+
   title_rect = items_rect = Rect(0, 0, 1, 1);
   size_dirty = true;
   updateSize();
@@ -427,7 +440,7 @@ void Basemenu::hide()
     y += item.height;
     row++;
 
-    if ( y > items_rect.y() + items_rect.height() ) {
+    if ( y >= items_rect.y() + items_rect.height() - style->bevelWidth() ) {
       // next column
       col++;
       row = 0;
@@ -517,8 +530,19 @@ void Basemenu::change( int index,
     it++;
   }
 
-  if ( ! item.def )
+  if ( ! item.def ) {
+    // remove old submenu if there is one...
+    if ( (*it).submenu() ) {
+      // ... and delete it if necessary
+      if ((*it).submenu()->autoDelete())
+        delete (*it).submenu();
+      else
+        (*it).submenu()->parent_menu = 0;
+      (*it).sub = 0;
+    }
+
     (*it) = item;
+  }
   (*it).lbl = label;
   if ( (*it).submenu() )
     (*it).submenu()->parent_menu = this;
@@ -564,8 +588,13 @@ void Basemenu::remove( int index )
     return;
   }
 
-  if ( (*it).submenu() )
-    (*it).submenu()->parent_menu = 0;
+  if ( (*it).submenu() ) {
+    if ((*it).submenu()->autoDelete())
+      delete (*it).submenu();
+    else
+      (*it).submenu()->parent_menu = 0;
+    (*it).sub = 0;
+  }
   items.erase( it );
 
   if ( isVisible() ) {
@@ -644,7 +673,7 @@ void Basemenu::setItemEnabled( int index, bool enabled )
     y += item.height;
     row++;
 
-    if ( y > items_rect.y() + items_rect.height() ) {
+    if ( y >= items_rect.y() + items_rect.height() - style->bevelWidth()) {
       // next column
       col++;
       row = 0;
@@ -736,7 +765,7 @@ void Basemenu::setItemChecked( int index, bool check )
     y += item.height;
     row++;
 
-    if ( y > items_rect.y() + items_rect.height() ) {
+    if ( y >= items_rect.y() + items_rect.height() - style->bevelWidth()) {
       // next column
       col++;
       row = 0;
@@ -909,7 +938,7 @@ void Basemenu::buttonPressEvent( XEvent *e )
     y += item.height;
     row++;
 
-    if ( y > items_rect.y() + items_rect.height() ) {
+    if ( y >= items_rect.y() + items_rect.height() - style->bevelWidth()) {
       // next column
       col++;
       row = 0;
@@ -980,7 +1009,7 @@ void Basemenu::buttonReleaseEvent( XEvent *e )
     y += item.height;
     row++;
 
-    if ( y > items_rect.y() + items_rect.height() ) {
+    if ( y >= items_rect.y() + items_rect.height() - style->bevelWidth()) {
       // next column
       col++;
       row = 0;
@@ -1047,7 +1076,7 @@ void Basemenu::pointerMotionEvent( XEvent *e )
     y += item.height;
     row++;
 
-    if ( y > items_rect.y() + items_rect.height() ) {
+    if ( y >= items_rect.y() + items_rect.height() - style->bevelWidth()) {
       // next column
       col++;
       row = 0;
@@ -1089,7 +1118,7 @@ void Basemenu::leaveEvent( XEvent * )
     y += item.height;
     row++;
 
-    if ( y > items_rect.y() + items_rect.height() ) {
+    if ( y >= items_rect.y() + items_rect.height() - style->bevelWidth()) {
       // next column
       col++;
       row = 0;
@@ -1206,7 +1235,7 @@ void Basemenu::exposeEvent( XEvent *e )
       y += item.height;
       row++;
 
-      if ( y > items_rect.y() + items_rect.height() ) {
+      if ( y >= items_rect.y() + items_rect.height() - style->bevelWidth()) {
         // next column
         col++;
         row = 0;

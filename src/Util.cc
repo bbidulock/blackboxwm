@@ -46,8 +46,18 @@
 #  endif // HAVE_SYS_TIME_H
 #endif // TIME_WITH_SYS_TIME
 
+#ifdef    HAVE_UNISTD_H
+#  include <sys/types.h>
+#  include <unistd.h>
+#endif // HAVE_UNISTD_H
+
+#ifdef HAVE_STDIO_H
+#  include <stdio.h>
+#endif // HAVE_STDIO_H
+
 #include <string>   // C++ string
 using std::string;
+
 
 char* expandTilde(const char* s) {
   if (s[0] != '~') return bstrdup(s);
@@ -63,6 +73,42 @@ char* bstrdup(const char *s) {
   char *n = new char[len];
   strcpy(n, s);
   return n;
+}
+
+void bexec(const string &command, int screen)
+{
+  if (command.empty()) {
+    fprintf(stderr, "bexec: command not specified.\n");
+    return;
+  }
+
+  // setup DISPLAY environment variable
+  string displaystring = getenv("DISPLAY");
+  if (displaystring.empty()) {
+    fprintf(stderr, "bexec: DISPLAY not set.\n");
+    return;
+  }
+  displaystring = "DISPLAY=" + displaystring;
+  if (screen != -1) {
+    unsigned int dot = displaystring.rfind('.');
+    if (dot != string::npos)
+      displaystring.resize(dot);
+    char screennumber[32];
+    sprintf(screennumber, ".%d", screen);
+    displaystring += screennumber;
+  }
+
+  // setup command to execute
+  string cmd = "exec ";
+  cmd += command;
+
+  if (! fork()) {
+    setsid();
+    putenv(displaystring.c_str());
+    execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL);
+    perror("execl");
+    exit(0);
+  }
 }
 
 timeval normalizeTimeval(const timeval &tm) {

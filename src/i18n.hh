@@ -40,28 +40,30 @@ extern "C" {
 #endif // HAVE_NL_TYPES_H
 
 
-class I18n {
+class I18n
+{
+public:
+  I18n(void);
+  ~I18n(void);
+
+  bool multibyte(void) const { return mb; }
+
+  const char *operator()(int set, int msg, const char *msgString) const
+  { return getMessage(set, msg, msgString); }
+
+  void openCatalog(const char *catalog);
+
 private:
+  const char *getMessage(int set, int msg, const char *msgString) const;
+
   char *locale, *catalog_filename;
   bool mb;
 #ifdef HAVE_NL_TYPES_H
   nl_catd catalog_fd;
 #endif
-
-public:
-  I18n(void);
-  ~I18n(void);
-
-  inline bool multibyte(void) const { return mb; }
-
-  const char *getMessage(int set, int msg, const char *msgString) const;
-  void openCatalog(const char *catalog);
 };
 
-
-extern I18n *i18n;
+extern const I18n &i18n;
 extern void NLSInit(const char *);
-
-
 
 #endif // __i18n_h

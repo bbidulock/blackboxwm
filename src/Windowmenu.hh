@@ -34,17 +34,19 @@ class SendToMenu;
 class Windowmenu : public Basemenu
 {
 public:
-    enum Function { Shade, Iconify, Maximize, Restore, Raise, Lower, Stick,
-		    KillClient, Close };
+  enum Function { Shade, Iconify, Maximize, Restore, Raise, Lower, Stick,
+                  KillClient, Close };
 
-    Windowmenu( int, BlackboxWindow * );
-    ~Windowmenu();
+  Windowmenu( int, BlackboxWindow * );
 
-    void itemClicked( const Point &, const Item &, int );
+  void refresh();
+
+protected:
+  void itemClicked( const Point &, const Item &, int );
 
 private:
-    BlackboxWindow *window;
-    SendToMenu *sendto;
+  BlackboxWindow *window;
+  SendToMenu *sendto;
 };
 
 #endif // __Windowmenu_hh

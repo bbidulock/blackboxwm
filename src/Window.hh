@@ -191,8 +191,8 @@ private:
       y_border, y_handle;      // where within frame is the border and handle
 
     unsigned int width, height, title_h, label_w, label_h, handle_h,
-	button_w, button_h, grip_w, grip_h, mwm_border_w, border_h, border_w,
-	snap_w, snap_h;
+      button_w, button_h, grip_w, grip_h, mwm_border_w, border_h, border_w,
+      snap_w, snap_h;
   } frame;
 
 protected:
@@ -235,56 +235,55 @@ public:
   BlackboxWindow(Blackbox *b, Window w, BScreen *s = (BScreen *) 0);
   virtual ~BlackboxWindow(void);
 
-    void raise();
-    void lower();
-    void killClient();
+  void raise();
+  void lower();
+  void killClient();
 
+  Bool isTransient(void) const { return flags.transient; }
+  Bool isFocused(void) const { return flags.focused; }
+  Bool isVisible(void) const { return flags.visible; }
+  Bool isIconic(void) const { return flags.iconic; }
+  Bool isShaded(void) const { return flags.shaded; }
+  Bool isMaximized(void) const { return flags.maximized; }
+  Bool isStuck(void) const { return flags.stuck; }
+  Bool isIconifiable(void) const { return functions.iconify; }
+  Bool isMaximizable(void) const { return functions.maximize; }
+  Bool isResizable(void) const { return functions.resize; }
+  Bool isClosable(void) const { return functions.close; }
 
-  inline Bool isTransient(void) const { return flags.transient; }
-  inline Bool isFocused(void) const { return flags.focused; }
-  inline Bool isVisible(void) const { return flags.visible; }
-  inline Bool isIconic(void) const { return flags.iconic; }
-  inline Bool isShaded(void) const { return flags.shaded; }
-  inline Bool isMaximized(void) const { return flags.maximized; }
-  inline Bool isStuck(void) const { return flags.stuck; }
-  inline Bool isIconifiable(void) const { return functions.iconify; }
-  inline Bool isMaximizable(void) const { return functions.maximize; }
-  inline Bool isResizable(void) const { return functions.resize; }
-  inline Bool isClosable(void) const { return functions.close; }
-
-  inline Bool hasTitlebar(void) const { return decorations.titlebar; }
-  inline Bool hasTransient(void) const
+  Bool hasTitlebar(void) const { return decorations.titlebar; }
+  Bool hasTransient(void) const
   { return ((client.transient) ? True : False); }
 
-  inline BlackboxWindow *getTransient(void) { return client.transient; }
-  inline BlackboxWindow *getTransientFor(void) { return client.transient_for; }
+  BlackboxWindow *getTransient(void) { return client.transient; }
+  BlackboxWindow *getTransientFor(void) { return client.transient_for; }
 
-  inline BScreen *getScreen(void) { return screen; }
+  BScreen *getScreen(void) { return screen; }
 
-  inline const Window &getFrameWindow(void) const { return frame.window; }
-  inline const Window &getClientWindow(void) const { return client.window; }
+  Window getFrameWindow(void) const { return frame.window; }
+  Window getClientWindow(void) const { return client.window; }
 
-  inline Windowmenu * getWindowmenu(void) { return windowmenu; }
+  Windowmenu * getWindowmenu(void) { return windowmenu; }
 
-  inline char **getTitle(void) { return &client.title; }
-  inline char **getIconTitle(void) { return &client.icon_title; }
-  inline const int &getXFrame(void) const { return frame.x; }
-  inline const int &getYFrame(void) const { return frame.y; }
-  inline const int &getXClient(void) const { return client.x; }
-  inline const int &getYClient(void) const { return client.y; }
-  inline const int &getWorkspaceNumber(void) const { return workspace_number; }
-  inline const int &getWindowNumber(void) const { return window_number; }
+  char **getTitle(void) { return &client.title; }
+  char **getIconTitle(void) { return &client.icon_title; }
+  int getXFrame(void) const { return frame.x; }
+  int getYFrame(void) const { return frame.y; }
+  int getXClient(void) const { return client.x; }
+  int getYClient(void) const { return client.y; }
+  int getWorkspaceNumber(void) const { return workspace_number; }
+  int getWindowNumber(void) const { return window_number; }
 
-  inline const unsigned int &getWidth(void) const { return frame.width; }
-  inline const unsigned int &getHeight(void) const { return frame.height; }
-  inline const unsigned int &getClientHeight(void) const
+  unsigned int getWidth(void) const { return frame.width; }
+  unsigned int getHeight(void) const { return frame.height; }
+  unsigned int getClientHeight(void) const
   { return client.height; }
-  inline const unsigned int &getClientWidth(void) const
+  unsigned int getClientWidth(void) const
   { return client.width; }
-  inline const unsigned int &getTitleHeight(void) const
+  unsigned int getTitleHeight(void) const
   { return frame.title_h; }
 
-  inline void setWindowNumber(int n) { window_number = n; }
+  void setWindowNumber(int n) { window_number = n; }
 
   Bool validateClient(void);
   Bool setInputFocus(void);

@@ -34,14 +34,13 @@ class Rootmenu : public Basemenu
 public:
   enum Function { Execute, Restart, RestartOther, Exit, SetStyle, Reconfigure };
 
-  Rootmenu(BScreen *);
+  Rootmenu(int);
 
 protected:
   virtual void itemClicked( const Point &, const Item &, int );
 
 private:
   Blackbox *blackbox;
-  BScreen *screen;
 };
 
 #endif // __Rootmenu_hh

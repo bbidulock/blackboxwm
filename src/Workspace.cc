@@ -294,8 +294,8 @@ void Workspace::setName(char *new_name) {
     name = bstrdup(new_name);
   } else {
     name = new char[128];
-    sprintf(name, i18n->getMessage(WorkspaceSet, WorkspaceDefaultNameFormat,
-				   "Workspace %d"), id + 1);
+    sprintf(name, i18n(WorkspaceSet, WorkspaceDefaultNameFormat, "Workspace %d"),
+            id + 1);
   }
 
   clientmenu->setTitle(name);

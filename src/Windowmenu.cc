@@ -40,18 +40,19 @@
 class SendToMenu : public Basemenu
 {
 public:
-    SendToMenu( int src, BlackboxWindow *w );
+  SendToMenu(int src, BlackboxWindow *w);
 
-    void refresh();
+  void refresh();
 
-    void itemClicked( const Point &, const Item &, int );
+protected:
+  void itemClicked(const Point &, const Item &, int);
 
 private:
-    BlackboxWindow *window;
+  BlackboxWindow *window;
 };
 
-SendToMenu::SendToMenu( int scr, BlackboxWindow *w )
-    : Basemenu( scr ), window( w )
+SendToMenu::SendToMenu(int scr, BlackboxWindow *w)
+  : Basemenu(scr), window(w)
 {
 }
 
@@ -59,27 +60,29 @@ void SendToMenu::refresh()
 {
   int i;
   clear();
-  for ( i = 0; i < window->getScreen()->getCount(); i++ )
-    insert( window->getScreen()->getWorkspace(i)->getName() );
-  setItemChecked( window->getWorkspaceNumber(), true );
+  for (i = 0; i < window->getScreen()->getCount(); i++)
+    insert(window->getScreen()->getWorkspace(i)->getName());
+  setItemChecked(window->getWorkspaceNumber(), true);
 }
 
-void SendToMenu::itemClicked( const Point &, const Item &item , int button )
+void SendToMenu::itemClicked(const Point &, const Item &item , int button)
 {
-    if ( button > 2 )
-	return;
-    if ( item.index() <= window->getScreen()->getCount()) {
-	if ( item.index() == window->getScreen()->getCurrentWorkspaceID())
-	    return;
-	if ( window->isStuck() )
-	    window->stick();
+  if (button > 2)
+    return;
 
-	if ( button == 1 )
-	    window->withdraw();
-	window->getScreen()->reassociateWindow( window, item.index(), True );
-	if ( button == 2 )
-	    window->getScreen()->changeWorkspaceID( item.index() );
-    }
+  if (item.index() <= window->getScreen()->getCount()) {
+    if (item.index() == window->getScreen()->getCurrentWorkspaceID())
+      return;
+
+    if (window->isStuck())
+      window->stick();
+
+    if (button == 1)
+      window->withdraw();
+    window->getScreen()->reassociateWindow(window, item.index(), True);
+    if (button == 2)
+      window->getScreen()->changeWorkspaceID(item.index());
+  }
 }
 
 /*
@@ -95,47 +98,56 @@ void SendToMenu::itemClicked( const Point &, const Item &item , int button )
   9  - kill client
   10 - close
 */
-Windowmenu::Windowmenu( int scr, BlackboxWindow *w )
-    : Basemenu( scr ), window( w )
+Windowmenu::Windowmenu(int scr, BlackboxWindow *w)
+  : Basemenu(scr), window(w)
 {
-    sendto = new SendToMenu( scr, w );
+  sendto = new SendToMenu(scr, w);
 
-    insert( "Send To ...", sendto );
-    insertSeparator();
-    insert( "Shade", Shade );
-    insert( "Iconify", Iconify );
-    insert( "Maximize", Maximize );
-    insert( "Raise", Raise );
-    insert( "Lower", Lower );
-    insert( "Stick", Stick );
-    insertSeparator();
-    insert( "Kill Client", KillClient );
-    insert( "Close", Close );
-
-    setItemEnabled( 5, false ); // raise
-    setItemEnabled( 6, false ); // lower
-    setItemEnabled( 9, false ); // kill client
+  insert("Send To ...", sendto);
+  insertSeparator();
+  insert("Shade", Shade);
+  insert("Iconify", Iconify);
+  insert("Maximize", Maximize);
+  insert("Raise", Raise);
+  insert("Lower", Lower);
+  insert("Stick", Stick);
+  insertSeparator();
+  insert("Kill Client", KillClient);
+  insert("Close", Close);
 }
 
-Windowmenu::~Windowmenu()
+void Windowmenu::refresh()
 {
-    delete sendto;
+  fprintf(stderr, "Windowmenu::refresh: TODO - make BlackboxWindow update these\n");
+
+  setItemEnabled(2, window->hasTitlebar());
+  setItemChecked(2, window->isShaded());
+
+  setItemEnabled(3, window->isIconifiable());
+  setItemChecked(3, window->isIconic());
+
+  setItemEnabled(4, window->isMaximizable());
+  setItemChecked(4, window->isMaximized());
+
+  setItemChecked(7, window->isStuck());
+
+  setItemEnabled(10, window->isClosable());
 }
 
-void Windowmenu::itemClicked( const Point &, const Item &item, int button )
+void Windowmenu::itemClicked(const Point &, const Item &item, int button)
 {
-    if ( button != 1 )
-	return;
+  if (button != 1 && item.function() != Maximize)
+    return;
 
-    switch( item.function() ) {
-    case Shade:	     window->shade();            break;
-    case Iconify:    window->iconify();          break;
-    case Maximize:   window->maximize( button ); break;
-    case Raise:      window->raise();            break;
-    case Lower:      window->lower();            break;
-    case Stick:      window->stick();            break;
-    case KillClient: window->killClient();       break;
-    case Close:      window->close();            break;
-    default: break;
-    }
+  switch(item.function()) {
+  case Shade:	   window->shade();          break;
+  case Iconify:    window->iconify();        break;
+  case Maximize:   window->maximize(button); break;
+  case Raise:      window->raise();          break;
+  case Lower:      window->lower();          break;
+  case Stick:      window->stick();          break;
+  case KillClient: window->killClient();     break;
+  case Close:      window->close();          break;
+  default: break;
+  }
 }

@@ -77,9 +77,17 @@ static char maximize_bits[] = { 0x7f, 0x7f, 0x41, 0x41, 0x41, 0x41, 0x7f };
 #define close_height 7
 static char close_bits[] = { 0x41, 0x22, 0x14, 0x08, 0x14, 0x22, 0x41 };
 
+#define next_width 7
+#define next_height 7
+static char next_bits[] = { 0x00, 0x04, 0x0c, 0x1c, 0x0c, 0x04, 0x00 };
 
-BStyle::BStyle( int scr )
-  : screen( scr )
+#define prev_width 7
+#define prev_height 7
+static char prev_bits[] = { 0x00, 0x10, 0x18, 0x1c, 0x18, 0x10, 0x00 };
+
+
+BStyle::BStyle(int scr)
+  : screen(scr)
 {
   windowstyle.fontset = 0;
   toolbarstyle.fontset = 0;
@@ -92,201 +100,214 @@ BStyle::BStyle( int scr )
 
   // ### TODO - make this configurable
   bitmap.arrow =
-    XCreateBitmapFromData( *BaseDisplay::instance(),
-                           BaseDisplay::instance()->screenInfo( scr )->rootWindow(),
-                           arrow_bits, arrow_width, arrow_height );
+    XCreateBitmapFromData(*BaseDisplay::instance(),
+                           BaseDisplay::instance()->screenInfo(scr)->rootWindow(),
+                           arrow_bits, arrow_width, arrow_height);
   bitmap.check =
-    XCreateBitmapFromData( *BaseDisplay::instance(),
-                           BaseDisplay::instance()->screenInfo( scr )->rootWindow(),
-                           check_bits, check_width, check_height );
+    XCreateBitmapFromData(*BaseDisplay::instance(),
+                           BaseDisplay::instance()->screenInfo(scr)->rootWindow(),
+                           check_bits, check_width, check_height);
   bitmap.iconify =
-    XCreateBitmapFromData( *BaseDisplay::instance(),
-                           BaseDisplay::instance()->screenInfo( scr )->rootWindow(),
-                           iconify_bits, iconify_width, iconify_height );
+    XCreateBitmapFromData(*BaseDisplay::instance(),
+                           BaseDisplay::instance()->screenInfo(scr)->rootWindow(),
+                           iconify_bits, iconify_width, iconify_height);
   bitmap.maximize =
-    XCreateBitmapFromData( *BaseDisplay::instance(),
-                           BaseDisplay::instance()->screenInfo( scr )->rootWindow(),
-                           maximize_bits, maximize_width, maximize_height );
+    XCreateBitmapFromData(*BaseDisplay::instance(),
+                           BaseDisplay::instance()->screenInfo(scr)->rootWindow(),
+                           maximize_bits, maximize_width, maximize_height);
   bitmap.close =
-    XCreateBitmapFromData( *BaseDisplay::instance(),
-                           BaseDisplay::instance()->screenInfo( scr )->rootWindow(),
-                           close_bits, close_width, close_height );
+    XCreateBitmapFromData(*BaseDisplay::instance(),
+                           BaseDisplay::instance()->screenInfo(scr)->rootWindow(),
+                           close_bits, close_width, close_height);
+
+  bitmap.next =
+    XCreateBitmapFromData(*BaseDisplay::instance(),
+                          BaseDisplay::instance()->screenInfo(scr)->rootWindow(),
+                          next_bits, next_width, next_height);
+  bitmap.previous =
+    XCreateBitmapFromData(*BaseDisplay::instance(),
+                          BaseDisplay::instance()->screenInfo(scr)->rootWindow(),
+                          prev_bits, prev_width, prev_height);
 }
 
 BStyle::~BStyle()
 {
-  if ( windowstyle.fontset )
-    XFreeFontSet( *BaseDisplay::instance(), windowstyle.fontset );
-  if ( toolbarstyle.fontset )
-    XFreeFontSet( *BaseDisplay::instance(), toolbarstyle.fontset );
-  if ( menustyle.fontset )
-    XFreeFontSet( *BaseDisplay::instance(), menustyle.fontset );
-  if ( menustyle.titlestyle.fontset )
-    XFreeFontSet( *BaseDisplay::instance(), menustyle.titlestyle.fontset );
-  if ( windowstyle.font )
-    XFreeFont( *BaseDisplay::instance(), windowstyle.font );
-  if ( toolbarstyle.font )
-    XFreeFont( *BaseDisplay::instance(), toolbarstyle.font );
-  if ( menustyle.font )
-    XFreeFont( *BaseDisplay::instance(), menustyle.font );
-  if ( menustyle.titlestyle.font )
-    XFreeFont( *BaseDisplay::instance(), menustyle.titlestyle.font );
-  if ( bitmap.arrow )
-    XFreePixmap( *BaseDisplay::instance(), bitmap.arrow );
-  if ( bitmap.check )
-    XFreePixmap( *BaseDisplay::instance(), bitmap.check );
-  if ( bitmap.iconify )
-    XFreePixmap( *BaseDisplay::instance(), bitmap.iconify );
-  if ( bitmap.maximize )
-    XFreePixmap( *BaseDisplay::instance(), bitmap.maximize );
-  if ( bitmap.close )
-    XFreePixmap( *BaseDisplay::instance(), bitmap.close );
+  if (windowstyle.fontset)
+    XFreeFontSet(*BaseDisplay::instance(), windowstyle.fontset);
+  if (toolbarstyle.fontset)
+    XFreeFontSet(*BaseDisplay::instance(), toolbarstyle.fontset);
+  if (menustyle.fontset)
+    XFreeFontSet(*BaseDisplay::instance(), menustyle.fontset);
+  if (menustyle.titlestyle.fontset)
+    XFreeFontSet(*BaseDisplay::instance(), menustyle.titlestyle.fontset);
+  if (windowstyle.font)
+    XFreeFont(*BaseDisplay::instance(), windowstyle.font);
+  if (toolbarstyle.font)
+    XFreeFont(*BaseDisplay::instance(), toolbarstyle.font);
+  if (menustyle.font)
+    XFreeFont(*BaseDisplay::instance(), menustyle.font);
+  if (menustyle.titlestyle.font)
+    XFreeFont(*BaseDisplay::instance(), menustyle.titlestyle.font);
+  if (bitmap.arrow)
+    XFreePixmap(*BaseDisplay::instance(), bitmap.arrow);
+  if (bitmap.check)
+    XFreePixmap(*BaseDisplay::instance(), bitmap.check);
+  if (bitmap.iconify)
+    XFreePixmap(*BaseDisplay::instance(), bitmap.iconify);
+  if (bitmap.maximize)
+    XFreePixmap(*BaseDisplay::instance(), bitmap.maximize);
+  if (bitmap.close)
+    XFreePixmap(*BaseDisplay::instance(), bitmap.close);
+  if (bitmap.next)
+    XFreePixmap(*BaseDisplay::instance(), bitmap.next);
+  if (bitmap.previous)
+    XFreePixmap(*BaseDisplay::instance(), bitmap.previous);
 }
 
 static XrmDatabase stylerc = 0;
 
-void BStyle::setCurrentStyle( const string &newstyle )
+void BStyle::setCurrentStyle(const string &newstyle)
 {
   currentstyle = newstyle;
-  stylerc = XrmGetFileDatabase( currentstyle.c_str() );
+  stylerc = XrmGetFileDatabase(currentstyle.c_str());
   if (! stylerc)
     stylerc = XrmGetFileDatabase(DEFAULTSTYLE);
 
   // load fonts/fontsets
-  if ( windowstyle.fontset )
-    XFreeFontSet( *BaseDisplay::instance(), windowstyle.fontset );
-  if ( toolbarstyle.fontset )
-    XFreeFontSet( *BaseDisplay::instance(), toolbarstyle.fontset );
-  if ( menustyle.fontset )
-    XFreeFontSet( *BaseDisplay::instance(), menustyle.fontset );
-  if ( menustyle.titlestyle.fontset )
-    XFreeFontSet( *BaseDisplay::instance(), menustyle.titlestyle.fontset );
+  if (windowstyle.fontset)
+    XFreeFontSet(*BaseDisplay::instance(), windowstyle.fontset);
+  if (toolbarstyle.fontset)
+    XFreeFontSet(*BaseDisplay::instance(), toolbarstyle.fontset);
+  if (menustyle.fontset)
+    XFreeFontSet(*BaseDisplay::instance(), menustyle.fontset);
+  if (menustyle.titlestyle.fontset)
+    XFreeFontSet(*BaseDisplay::instance(), menustyle.titlestyle.fontset);
   windowstyle.fontset = 0;
   toolbarstyle.fontset = 0;
   menustyle.fontset = 0;
   menustyle.titlestyle.fontset = 0;
-  if ( windowstyle.font )
-    XFreeFont( *BaseDisplay::instance(), windowstyle.font );
-  if ( toolbarstyle.font )
-    XFreeFont( *BaseDisplay::instance(), toolbarstyle.font );
-  if ( menustyle.font )
-    XFreeFont( *BaseDisplay::instance(), menustyle.font );
-  if ( menustyle.titlestyle.font )
-    XFreeFont( *BaseDisplay::instance(), menustyle.titlestyle.font );
+  if (windowstyle.font)
+    XFreeFont(*BaseDisplay::instance(), windowstyle.font);
+  if (toolbarstyle.font)
+    XFreeFont(*BaseDisplay::instance(), toolbarstyle.font);
+  if (menustyle.font)
+    XFreeFont(*BaseDisplay::instance(), menustyle.font);
+  if (menustyle.titlestyle.font)
+    XFreeFont(*BaseDisplay::instance(), menustyle.titlestyle.font);
   windowstyle.font = 0;
   toolbarstyle.font = 0;
   menustyle.font = 0;
   menustyle.titlestyle.font = 0;
 
-  if (i18n->multibyte()) {
-    windowstyle.fontset = readDatabaseFontSet("window.font", "Window.Font" );
-    toolbarstyle.fontset = readDatabaseFontSet("toolbar.font", "Toolbar.Font" );
-    menustyle.fontset = readDatabaseFontSet("menu.frame.font", "Menu.Frame.Font" );
+  if (i18n.multibyte()) {
+    windowstyle.fontset = readDatabaseFontSet("window.font", "Window.Font");
+    toolbarstyle.fontset = readDatabaseFontSet("toolbar.font", "Toolbar.Font");
+    menustyle.fontset = readDatabaseFontSet("menu.frame.font", "Menu.Frame.Font");
     menustyle.titlestyle.fontset =
-      readDatabaseFontSet("menu.title.font", "Menu.Title.Font" );
+      readDatabaseFontSet("menu.title.font", "Menu.Title.Font");
 
-    windowstyle.fontset_extents = XExtentsOfFontSet( windowstyle.fontset );
-    toolbarstyle.fontset_extents = XExtentsOfFontSet( toolbarstyle.fontset );
-    menustyle.fontset_extents = XExtentsOfFontSet( menustyle.fontset );
+    windowstyle.fontset_extents = XExtentsOfFontSet(windowstyle.fontset);
+    toolbarstyle.fontset_extents = XExtentsOfFontSet(toolbarstyle.fontset);
+    menustyle.fontset_extents = XExtentsOfFontSet(menustyle.fontset);
     menustyle.titlestyle.fontset_extents =
-      XExtentsOfFontSet( menustyle.titlestyle.fontset );
+      XExtentsOfFontSet(menustyle.titlestyle.fontset);
   } else {
-    windowstyle.font = readDatabaseFont("window.font", "Window.Font" );
-    toolbarstyle.font = readDatabaseFont("toolbar.font", "Toolbar.Font" );
-    menustyle.font = readDatabaseFont("menu.frame.font", "Menu.Frame.Font" );
+    windowstyle.font = readDatabaseFont("window.font", "Window.Font");
+    toolbarstyle.font = readDatabaseFont("toolbar.font", "Toolbar.Font");
+    menustyle.font = readDatabaseFont("menu.frame.font", "Menu.Frame.Font");
     menustyle.titlestyle.font =
-      readDatabaseFont("menu.title.font", "Menu.Title.Font" );
+      readDatabaseFont("menu.title.font", "Menu.Title.Font");
   }
 
   // load window config
   windowstyle.focus.title =
-    readDatabaseTexture("window.title.focus", "Window.Title.Focus", "white" );
+    readDatabaseTexture("window.title.focus", "Window.Title.Focus", "white");
 
   windowstyle.unfocus.title =
-    readDatabaseTexture("window.title.unfocus", "Window.Title.Unfocus", "black" );
+    readDatabaseTexture("window.title.unfocus", "Window.Title.Unfocus", "black");
   windowstyle.focus.label =
-    readDatabaseTexture("window.label.focus", "Window.Label.Focus", "white" );
+    readDatabaseTexture("window.label.focus", "Window.Label.Focus", "white");
   windowstyle.unfocus.label =
-    readDatabaseTexture("window.label.unfocus", "Window.Label.Unfocus", "black" );
+    readDatabaseTexture("window.label.unfocus", "Window.Label.Unfocus", "black");
   windowstyle.focus.handle =
-    readDatabaseTexture("window.handle.focus", "Window.Handle.Focus", "white" );
+    readDatabaseTexture("window.handle.focus", "Window.Handle.Focus", "white");
   windowstyle.unfocus.handle =
-    readDatabaseTexture("window.handle.unfocus", "Window.Handle.Unfocus", "black" );
+    readDatabaseTexture("window.handle.unfocus", "Window.Handle.Unfocus", "black");
   windowstyle.focus.grip =
-    readDatabaseTexture("window.grip.focus", "Window.Grip.Focus", "white" );
+    readDatabaseTexture("window.grip.focus", "Window.Grip.Focus", "white");
   windowstyle.unfocus.grip =
-    readDatabaseTexture("window.grip.unfocus", "Window.Grip.Unfocus", "black" );
+    readDatabaseTexture("window.grip.unfocus", "Window.Grip.Unfocus", "black");
   windowstyle.focus.button =
-    readDatabaseTexture("window.button.focus", "Window.Button.Focus", "white" );
+    readDatabaseTexture("window.button.focus", "Window.Button.Focus", "white");
   windowstyle.unfocus.button =
-    readDatabaseTexture("window.button.unfocus", "Window.Button.Unfocus", "black" );
+    readDatabaseTexture("window.button.unfocus", "Window.Button.Unfocus", "black");
   windowstyle.buttonpressed =
-    readDatabaseTexture("window.button.pressed", "Window.Button.Pressed", "white" );
+    readDatabaseTexture("window.button.pressed", "Window.Button.Pressed", "white");
   windowstyle.focus.framecolor =
     readDatabaseColor("window.frame.focusColor",
-                      "Window.Frame.FocusColor", "white" );
+                      "Window.Frame.FocusColor", "white");
   windowstyle.unfocus.framecolor =
     readDatabaseColor("window.frame.unfocusColor",
-                      "Window.Frame.UnfocusColor", "black" );
+                      "Window.Frame.UnfocusColor", "black");
   windowstyle.focus.labeltextcolor =
     readDatabaseColor("window.label.focus.textColor",
-                      "Window.Label.Focus.TextColor", "white" );
+                      "Window.Label.Focus.TextColor", "white");
   windowstyle.unfocus.labeltextcolor =
     readDatabaseColor("window.label.unfocus.textColor",
-                      "Window.Label.Unfocus.TextColor", "white" );
+                      "Window.Label.Unfocus.TextColor", "white");
   windowstyle.focus.piccolor =
     readDatabaseColor("window.button.focus.picColor",
-                      "Window.Button.Focus.PicColor", "black" );
+                      "Window.Button.Focus.PicColor", "black");
   windowstyle.unfocus.piccolor =
     readDatabaseColor("window.button.unfocus.picColor",
-                      "Window.Button.Unfocus.PicColor", "white" );
+                      "Window.Button.Unfocus.PicColor", "white");
 
   // load toolbar config
   toolbarstyle.texture =
-    readDatabaseTexture("toolbar", "Toolbar", "black" );
+    readDatabaseTexture("toolbar", "Toolbar", "black");
   toolbarstyle.workspacelabel =
-    readDatabaseTexture("toolbar.label", "Toolbar.Label", "black" );
+    readDatabaseTexture("toolbar.label", "Toolbar.Label", "black");
   toolbarstyle.windowlabel =
-    readDatabaseTexture("toolbar.windowLabel", "Toolbar.WindowLabel", "black" );
+    readDatabaseTexture("toolbar.windowLabel", "Toolbar.WindowLabel", "black");
   toolbarstyle.button =
-    readDatabaseTexture("toolbar.button", "Toolbar.Button", "white" );
+    readDatabaseTexture("toolbar.button", "Toolbar.Button", "white");
   toolbarstyle.buttonpressed =
     readDatabaseTexture("toolbar.button.pressed",
-                        "Toolbar.Button.Pressed", "white" );
+                        "Toolbar.Button.Pressed", "white");
   toolbarstyle.clocklabel =
-    readDatabaseTexture("toolbar.clock", "Toolbar.Clock", "black" );
+    readDatabaseTexture("toolbar.clock", "Toolbar.Clock", "black");
   toolbarstyle.workspacelabeltextcolor =
     readDatabaseColor("toolbar.label.textColor",
-                      "Toolbar.Label.TextColor", "white" );
+                      "Toolbar.Label.TextColor", "white");
   toolbarstyle.windowlabeltextcolor =
     readDatabaseColor("toolbar.windowLabel.textColor",
-                      "Toolbar.WindowLabel.TextColor", "white" );
+                      "Toolbar.WindowLabel.TextColor", "white");
   toolbarstyle.clocktextcolor =
     readDatabaseColor("toolbar.clock.textColor",
-                      "Toolbar.Clock.TextColor", "white" );
+                      "Toolbar.Clock.TextColor", "white");
   toolbarstyle.piccolor =
     readDatabaseColor("toolbar.button.picColor",
-                      "Toolbar.Button.PicColor", "black" );
+                      "Toolbar.Button.PicColor", "black");
 
   // load menu config
   menustyle.titlestyle.texture =
-    readDatabaseTexture("menu.title", "Menu.Title", "white" );
+    readDatabaseTexture("menu.title", "Menu.Title", "white");
   menustyle.titlestyle.textcolor =
-    readDatabaseColor("menu.title.textColor", "Menu.Title.TextColor", "black" );
+    readDatabaseColor("menu.title.textColor", "Menu.Title.TextColor", "black");
   menustyle.texture =
-    readDatabaseTexture("menu.frame", "Menu.Frame", "black" );
+    readDatabaseTexture("menu.frame", "Menu.Frame", "black");
   menustyle.highlight =
-    readDatabaseTexture("menu.hilite", "Menu.Hilite", "white" );
+    readDatabaseTexture("menu.hilite", "Menu.Hilite", "white");
   menustyle.textcolor =
-    readDatabaseColor("menu.frame.textColor", "Menu.Frame.TextColor", "white" );
+    readDatabaseColor("menu.frame.textColor", "Menu.Frame.TextColor", "white");
   menustyle.disabledcolor =
     readDatabaseColor("menu.frame.disableColor",
-                      "Menu.Frame.DisableColor", "black" );
+                      "Menu.Frame.DisableColor", "black");
   menustyle.hitextcolor =
-    readDatabaseColor("menu.hilite.textColor", "Menu.Hilite.TextColor", "black" );
+    readDatabaseColor("menu.hilite.textColor", "Menu.Hilite.TextColor", "black");
 
   // others
-  bordercolor = readDatabaseColor("borderColor", "BorderColor", "black" );
+  bordercolor = readDatabaseColor("borderColor", "BorderColor", "black");
 
   XrmValue value;
   char *value_type;
@@ -390,92 +411,82 @@ void BStyle::setCurrentStyle( const string &newstyle )
 
   if (XrmGetResource(stylerc, "frameWidth", "FrameWidth",
                      &value_type, &value)) {
-    if (sscanf(value.addr, "%u", &frame_width) != 1 || frame_width > 100 )
+    if (sscanf(value.addr, "%u", &frame_width) != 1 || frame_width > 100)
       frame_width = bevel_width;
   } else
     frame_width = bevel_width;
 
   // load and exec root command
-  if (XrmGetResource(stylerc,
-                     "rootCommand",
-                     "RootCommand", &value_type, &value)) {
-#ifndef    __EMX__
-    char displaystring[MAXPATHLEN];
-    sprintf( displaystring, "DISPLAY=%s",
-             DisplayString( Blackbox::instance()->x11Display() ) );
-    sprintf( displaystring + strlen( displaystring ) - 1, "%d", screen );
-
-    bexec(value.addr, displaystring);
-#else //   __EMX__
-    spawnlp(P_NOWAIT, "cmd.exe", "cmd.exe", "/c", value.addr, NULL);
-#endif // !__EMX__
+  if (XrmGetResource(stylerc, "rootCommand", "RootCommand",
+                     &value_type, &value)) {
+    bexec(value.addr, screen);
   }
 
   XrmDestroyDatabase(stylerc);
   stylerc = 0;
 }
 
-BTexture BStyle::readDatabaseTexture( const string &rname, const string &rclass,
-				      const string &default_color )
+BTexture BStyle::readDatabaseTexture(const string &rname, const string &rclass,
+				      const string &default_color)
 {
   BTexture texture;
   XrmValue value;
   char *value_type;
 
   if (XrmGetResource(stylerc, rname.c_str(), rclass.c_str(), &value_type, &value))
-    texture = BTexture( value.addr );
+    texture = BTexture(value.addr);
   else
     texture.setTexture(BImage_Solid | BImage_Flat);
 
   if (texture.texture() & BImage_Solid) {
-    texture.setColor( readDatabaseColor( rname + ".color",
+    texture.setColor(readDatabaseColor(rname + ".color",
                                          rclass + ".Color",
-                                         default_color) );
+                                         default_color));
 
 #ifdef    INTERLACE
-    texture.setColorTo( readDatabaseColor( rname + ".colorTo",
+    texture.setColorTo(readDatabaseColor(rname + ".colorTo",
                                            rclass + ".ColorTo",
-                                           default_color) );
+                                           default_color));
 #endif // INTERLACE
 
     unsigned char r, g, b;
     r = texture.color().red() | (texture.color().red() >> 1);
     g = texture.color().green() | (texture.color().green() >> 1);
     b = texture.color().blue() | (texture.color().blue() >> 1);
-    texture.setLightColor( BColor( r, g, b ) );
+    texture.setLightColor(BColor(r, g, b));
 
     r = (texture.color().red() >> 2) | (texture.color().red() >> 1);
     g = (texture.color().green() >> 2) | (texture.color().green() >> 1);
     b = (texture.color().blue() >> 2) | (texture.color().blue() >> 1);
-    texture.setShadowColor( BColor( r, g, b ) );
+    texture.setShadowColor(BColor(r, g, b));
   } else if (texture.texture() & BImage_Gradient) {
-    texture.setColor( readDatabaseColor( rname + ".color",
+    texture.setColor(readDatabaseColor(rname + ".color",
                                          rclass + ".Color",
-                                         default_color) );
-    texture.setColorTo( readDatabaseColor( rname + ".colorTo",
+                                         default_color));
+    texture.setColorTo(readDatabaseColor(rname + ".colorTo",
                                            rclass + ".ColorTo",
-                                           default_color ) );
+                                           default_color));
   }
 
-  texture.setScreen( screen );
+  texture.setScreen(screen);
   return texture;
 }
 
-BColor BStyle::readDatabaseColor( const string &rname, const string &rclass,
+BColor BStyle::readDatabaseColor(const string &rname, const string &rclass,
 				  const string &default_color)
 {
   BColor color;
   XrmValue value;
   char *value_type;
   if (XrmGetResource(stylerc, rname.c_str(), rclass.c_str(), &value_type, &value))
-    color = BColor( value.addr );
+    color = BColor(value.addr);
   else
-    color = BColor( default_color );
-  color.setScreen( screen );
+    color = BColor(default_color);
+  color.setScreen(screen);
   return color;
 }
 
-XFontSet BStyle::readDatabaseFontSet( const string &rname, const string &rclass )
+XFontSet BStyle::readDatabaseFontSet(const string &rname, const string &rclass)
 {
   static char *defaultFont = "fixed";
 
@@ -483,9 +494,9 @@ XFontSet BStyle::readDatabaseFontSet( const string &rname, const string &rclass 
   XrmValue value;
   char *value_type;
   XFontSet fontset = 0;
-  if ( XrmGetResource( stylerc, rname.c_str(), rclass.c_str(),
-                       &value_type, &value ) ) {
-    if ( ! ( fontset = createFontSet( value.addr ) ) )
+  if (XrmGetResource(stylerc, rname.c_str(), rclass.c_str(),
+                       &value_type, &value)) {
+    if (! (fontset = createFontSet(value.addr)))
       load_default = True;
   } else
     load_default = True;
@@ -494,8 +505,9 @@ XFontSet BStyle::readDatabaseFontSet( const string &rname, const string &rclass 
     fontset = createFontSet(defaultFont);
 
     if (! fontset) {
-      fprintf(stderr, i18n->getMessage(ScreenSet, ScreenDefaultFontLoadFail,
-                                       "BStyle::setCurrentStyle(): couldn't load default font.\n"));
+      fprintf(stderr,
+              i18n(ScreenSet, ScreenDefaultFontLoadFail,
+                   "BStyle::setCurrentStyle(): couldn't load default font.\n"));
       exit(2);
     }
   }
@@ -503,7 +515,7 @@ XFontSet BStyle::readDatabaseFontSet( const string &rname, const string &rclass 
   return fontset;
 }
 
-XFontStruct *BStyle::readDatabaseFont( const string &rname, const string &rclass )
+XFontStruct *BStyle::readDatabaseFont(const string &rname, const string &rclass)
 {
   static char *defaultFont = "fixed";
 
@@ -512,9 +524,10 @@ XFontStruct *BStyle::readDatabaseFont( const string &rname, const string &rclass
   char *value_type;
   XFontStruct *font = 0;
   if (XrmGetResource(stylerc, rname.c_str(), rclass.c_str(), &value_type, &value)) {
-    if ( ( font = XLoadQueryFont( *BaseDisplay::instance(), value.addr ) ) == NULL ) {
-      fprintf(stderr, i18n->getMessage(ScreenSet, ScreenFontLoadFail,
-                                       "BStyle::setCurrentStyle(): couldn't load font '%s'\n"),
+    if ((font = XLoadQueryFont(*BaseDisplay::instance(), value.addr)) == NULL) {
+      fprintf(stderr,
+              i18n(ScreenSet, ScreenFontLoadFail,
+                   "BStyle::setCurrentStyle(): couldn't load font '%s'\n"),
               value.addr);
 
       load_default = True;
@@ -524,9 +537,10 @@ XFontStruct *BStyle::readDatabaseFont( const string &rname, const string &rclass
 
 
   if (load_default) {
-    if ( ( font = XLoadQueryFont( *BaseDisplay::instance(), defaultFont ) ) == NULL ) {
-      fprintf(stderr, i18n->getMessage(ScreenSet, ScreenDefaultFontLoadFail,
-                                       "BStyle::setCurrentStyle(): couldn't load default font.\n"));
+    if ((font = XLoadQueryFont(*BaseDisplay::instance(), defaultFont)) == NULL) {
+      fprintf(stderr,
+              i18n(ScreenSet, ScreenDefaultFontLoadFail,
+                   "BStyle::setCurrentStyle(): couldn't load default font.\n"));
       exit(2);
     }
   }
@@ -537,7 +551,7 @@ XFontStruct *BStyle::readDatabaseFont( const string &rname, const string &rclass
 #ifndef    HAVE_STRCASESTR
 static const char * strcasestr(const char *str, const char *ptn) {
   const char *s2, *p2;
-  for( ; *str; str++) {
+  for(; *str; str++) {
     for(s2=str,p2=ptn; ; s2++,p2++) {
       if (!*p2) return str;
       if (toupper(*s2) != toupper(*p2)) break;
@@ -599,7 +613,7 @@ static const char *getFontSize(const char *pattern, int *size)
   }
 }
 
-XFontSet BStyle::createFontSet( const string &fontname )
+XFontSet BStyle::createFontSet(const string &fontname)
 {
   XFontSet fs;
   char **missing, *def = "-";
@@ -636,10 +650,14 @@ XFontSet BStyle::createFontSet( const string &fontname )
                  "-r-", "-i-", "-o-", "-ri-", "-ro-", NULL);
   getFontSize(nfontname, &pixel_size);
 
-  if (! strcmp(weight, "*")) strncpy(weight, "medium", FONT_ELEMENT_SIZE);
-  if (! strcmp(slant, "*")) strncpy(slant, "r", FONT_ELEMENT_SIZE);
-  if (pixel_size < 3) pixel_size = 3;
-  else if (pixel_size > 97) pixel_size = 97;
+  if (! strcmp(weight, "*"))
+    strncpy(weight, "medium", FONT_ELEMENT_SIZE);
+  if (! strcmp(slant, "*"))
+    strncpy(slant, "r", FONT_ELEMENT_SIZE);
+  if (pixel_size < 3)
+    pixel_size = 3;
+  else if (pixel_size > 97)
+    pixel_size = 97;
 
   buf_size = strlen(nfontname) + (FONT_ELEMENT_SIZE * 2) + 64;
   char *pattern2 = new char[buf_size];
@@ -650,10 +668,13 @@ XFontSet BStyle::createFontSet( const string &fontname )
            nfontname, weight, slant, pixel_size, pixel_size);
   nfontname = pattern2;
 
-  if (nmissing) XFreeStringList(missing);
-  if (fs) XFreeFontSet(*BaseDisplay::instance(), fs);
+  if (nmissing)
+    XFreeStringList(missing);
+  if (fs)
+    XFreeFontSet(*BaseDisplay::instance(), fs);
 
-  fs = XCreateFontSet(*BaseDisplay::instance(), nfontname, &missing, &nmissing, &def);
+  fs = XCreateFontSet(*BaseDisplay::instance(), nfontname, &missing,
+                      &nmissing, &def);
 
   delete [] pattern2;
 

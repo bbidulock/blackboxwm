@@ -67,12 +67,8 @@ typedef struct _blackbox_attributes {
 #define PropBlackboxHintsElements      (5)
 #define PropBlackboxAttributesElements (9)
 
-#ifndef    __EMX__
-void bexec(const char *, char *);
-#endif // !__EMX__
-
-
 typedef std::deque<Widget*> WidgetQueue;
+
 
 class BaseDisplay : public TimerQueueManager {
 private:

@@ -43,16 +43,15 @@
 Workspacemenu::Workspacemenu(BScreen *scrn)
     : Basemenu( scrn->screen() )
 {
+  setAutoDelete(false);
+
   screen = scrn;
 
-  setTitle(i18n->getMessage(WorkspacemenuSet, WorkspacemenuWorkspacesTitle,
-                            "Workspaces"));
+  setTitle(i18n(WorkspacemenuSet, WorkspacemenuWorkspacesTitle, "Workspaces"));
   showTitle();
 
-  insert( i18n->getMessage( WorkspacemenuSet,
-                            WorkspacemenuNewWorkspace, "New Workspace" ) );
-  insert( i18n->getMessage( WorkspacemenuSet,
-                            WorkspacemenuRemoveLast, "Remove Last" ) );
+  insert(i18n(WorkspacemenuSet, WorkspacemenuNewWorkspace, "New Workspace"));
+  insert(i18n( WorkspacemenuSet, WorkspacemenuRemoveLast, "Remove Last"));
   insertSeparator();
 }
 

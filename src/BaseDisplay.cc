@@ -101,8 +101,8 @@ static int handleXErrors(Display *d, XErrorEvent *e)
   char errtxt[128];
 
   XGetErrorText(d, e->error_code, errtxt, 128);
-  fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplayXError,
-		     "%s:  X error: %s(%d) opcodes %d/%d\n  resource 0x%lx\n"),
+  fprintf(stderr, i18n(BaseDisplaySet, BaseDisplayXError,
+                       "%s:  X error: %s(%d) opcodes %d/%d\n  resource 0x%lx\n"),
           base_display->getApplicationName(), errtxt, e->error_code,
           e->request_code, e->minor_code, e->resourceid);
 #else
@@ -150,22 +150,22 @@ signalhandler(int sig) {
       return;
     }
 
-    fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplaySignalCaught,
-                                     "%s:  signal %d caught\n"),
+    fprintf(stderr, i18n(BaseDisplaySet, BaseDisplaySignalCaught,
+                         "%s:  signal %d caught\n"),
             base_display->getApplicationName(), sig);
 
     if (! base_display->isStartup() && ! re_enter) {
       internal_error = True;
 
       re_enter = 1;
-      fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplayShuttingDown,
-                                       "shutting down\n"));
+      fprintf(stderr, i18n(BaseDisplaySet, BaseDisplayShuttingDown,
+                           "shutting down\n"));
       base_display->shutdown();
     }
 
     if (sig != SIGTERM && sig != SIGINT) {
-      fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplayAborting,
-                                       "aborting... dumping core\n"));
+      fprintf(stderr, i18n(BaseDisplaySet, BaseDisplayAborting,
+                           "aborting... dumping core\n"));
       abort();
     }
 
@@ -174,20 +174,6 @@ signalhandler(int sig) {
     break;
   }
 }
-
-
-// convenience functions
-#ifndef    __EMX__
-void bexec(const char *command, char* displaystring) {
-  if (! fork()) {
-    setsid();
-    putenv(displaystring);
-    execl("/bin/sh", "/bin/sh", "-c", command, NULL);
-    exit(0);
-  }
-}
-#endif // !__EMX__
-
 
 BaseDisplay::BaseDisplay(char *app_name, char *dpy_name)
     : popwidget( 0 ), popup_grab( false )
@@ -229,14 +215,14 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name)
 #endif // HAVE_SIGACTION
 
   if (! (_display = XOpenDisplay(dpy_name))) {
-    fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplayXConnectFail,
-                                     "BaseDisplay::BaseDisplay: connection to X server failed.\n"));
+    fprintf(stderr, i18n(BaseDisplaySet, BaseDisplayXConnectFail,
+                         "BaseDisplay::BaseDisplay: connection to X server failed.\n"));
     ::exit(2);
   } else if (fcntl(ConnectionNumber(_display), F_SETFD, 1) == -1) {
     fprintf(stderr,
-	    i18n->getMessage(BaseDisplaySet, BaseDisplayCloseOnExecFail,
-                             "BaseDisplay::BaseDisplay: couldn't mark display connection "
-                             "as close-on-exec\n"));
+	    i18n(BaseDisplaySet, BaseDisplayCloseOnExecFail,
+                 "BaseDisplay::BaseDisplay: couldn't mark display connection "
+                 "as close-on-exec\n"));
     ::exit(2);
   }
 
@@ -407,10 +393,10 @@ void BaseDisplay::eventLoop(void)
 
       if (last_bad_window != None && e.xany.window == last_bad_window) {
 #ifdef    DEBUG
-        fprintf(stderr, i18n->getMessage(BaseDisplaySet,
-                                         BaseDisplayBadWindowRemove,
-                                         "BaseDisplay::eventLoop(): removing bad window "
-                                         "from event queue\n"));
+        fprintf(stderr, i18n(BaseDisplaySet,
+                             BaseDisplayBadWindowRemove,
+                             "BaseDisplay::eventLoop(): removing bad window "
+                             "from event queue\n"));
 #endif // DEBUG
       } else {
 	last_bad_window = None;
@@ -686,7 +672,6 @@ void BaseDisplay::removeTimer(BTimer *timer) {
   timerList.release(timer);
 }
 
-
 /*
  * Grabs a button, but also grabs the button in every possible combination with
  * the keyboard lock keys, so that they do not cancel out the event.
@@ -709,7 +694,8 @@ void BaseDisplay::grabButton(unsigned int button, unsigned int modifiers,
  * keyboard lock keys.
  */
 void BaseDisplay::ungrabButton(unsigned int button, unsigned int modifiers,
-			       Window grab_window) const {
+			       Window grab_window) const
+{
   for (size_t cnt = 0; cnt < MaskListLength; ++cnt) {
     XUngrabButton(_display, button, modifiers | MaskList[cnt], grab_window);
   }
@@ -717,47 +703,47 @@ void BaseDisplay::ungrabButton(unsigned int button, unsigned int modifiers,
 
 
 ScreenInfo::ScreenInfo(BaseDisplay *d, int num) {
-    _display = d;
-    _screen = num;
+  _display = d;
+  _screen = num;
 
-    _rootwindow = RootWindow( display()->x11Display(), screen() );
-    _depth = DefaultDepth( display()->x11Display(), screen() );
+  _rootwindow = RootWindow( display()->x11Display(), screen() );
+  _depth = DefaultDepth( display()->x11Display(), screen() );
 
-    _rect.x = _rect.y = 0;
-    _rect.width =
-	WidthOfScreen(ScreenOfDisplay( display()->x11Display(), screen()));
-    _rect.height =
-	HeightOfScreen(ScreenOfDisplay( display()->x11Display(), screen()));
+  _rect.x = _rect.y = 0;
+  _rect.width =
+    WidthOfScreen(ScreenOfDisplay( display()->x11Display(), screen()));
+  _rect.height =
+    HeightOfScreen(ScreenOfDisplay( display()->x11Display(), screen()));
 
-    // search for a TrueColor Visual... if we can't find one... we will use the
-    // default visual for the screen
-    XVisualInfo vinfo_template, *vinfo_return;
-    int vinfo_nitems;
+  // search for a TrueColor Visual... if we can't find one... we will use the
+  // default visual for the screen
+  XVisualInfo vinfo_template, *vinfo_return;
+  int vinfo_nitems;
 
-    vinfo_template.screen = screen();
-    vinfo_template.c_class = TrueColor;
+  vinfo_template.screen = screen();
+  vinfo_template.c_class = TrueColor;
 
-    _visual = (Visual *) 0;
+  _visual = (Visual *) 0;
 
-    if ((vinfo_return = XGetVisualInfo(*display(),
-				       VisualScreenMask | VisualClassMask,
-				       &vinfo_template, &vinfo_nitems)) &&
-	vinfo_nitems > 0) {
-	for (int i = 0; i < vinfo_nitems; i++) {
-	    if (_depth < (vinfo_return + i)->depth) {
-		_depth = (vinfo_return + i)->depth;
-		_visual = (vinfo_return + i)->visual;
-	    }
-	}
-
-	XFree(vinfo_return);
+  if ((vinfo_return = XGetVisualInfo(*display(),
+                                     VisualScreenMask | VisualClassMask,
+                                     &vinfo_template, &vinfo_nitems)) &&
+      vinfo_nitems > 0) {
+    for (int i = 0; i < vinfo_nitems; i++) {
+      if (_depth < (vinfo_return + i)->depth) {
+        _depth = (vinfo_return + i)->depth;
+        _visual = (vinfo_return + i)->visual;
+      }
     }
 
-    if (_visual) {
-	_colormap = XCreateColormap(*display(), _rootwindow,
-				    _visual, AllocNone);
-    } else {
-	_visual = DefaultVisual(display()->x11Display(), screen());
-	_colormap = DefaultColormap(display()->x11Display(), screen());
-    }
+    XFree(vinfo_return);
+  }
+
+  if (_visual) {
+    _colormap = XCreateColormap(*display(), _rootwindow,
+                                _visual, AllocNone);
+  } else {
+    _visual = DefaultVisual(display()->x11Display(), screen());
+    _colormap = DefaultColormap(display()->x11Display(), screen());
+  }
 }

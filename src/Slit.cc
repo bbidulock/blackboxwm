@@ -599,27 +599,22 @@ void Slit::timeout(void) {
 }
 
 Slitmenu::Slitmenu(Slit *sl)
-    : Basemenu( sl->screen->screen() )
+  : Basemenu( sl->screen->screen() )
 {
-    slit = sl;
+  slit = sl;
 
-    directionmenu = new Directionmenu(this);
-    placementmenu = new Placementmenu(this);
+  directionmenu = new Directionmenu(this);
+  placementmenu = new Placementmenu(this);
 
-    insert(i18n->getMessage(CommonSet, CommonDirectionTitle, "Direction"),
-	   directionmenu);
-    insert(i18n->getMessage(CommonSet, CommonPlacementTitle, "Placement"),
-	   placementmenu);
-    insert(i18n->getMessage(CommonSet, CommonAlwaysOnTop, "Always on top"), 1);
-    insert(i18n->getMessage(CommonSet, CommonAutoHide, "Auto hide"), 2);
+  insert(i18n(CommonSet, CommonDirectionTitle, "Direction"),
+         directionmenu);
+  insert(i18n(CommonSet, CommonPlacementTitle, "Placement"),
+         placementmenu);
+  insert(i18n(CommonSet, CommonAlwaysOnTop, "Always on top"), 1);
+  insert(i18n(CommonSet, CommonAutoHide, "Auto hide"), 2);
 
-    if (slit->isOnTop()) setItemChecked(2, True);
-    if (slit->doAutoHide()) setItemChecked(3, True);
-}
-
-Slitmenu::~Slitmenu(void) {
-  delete directionmenu;
-  delete placementmenu;
+  if (slit->isOnTop()) setItemChecked(2, True);
+  if (slit->doAutoHide()) setItemChecked(3, True);
 }
 
 void Slitmenu::itemClicked(const Point &, const Item &item, int button)
@@ -657,19 +652,19 @@ void Slitmenu::reconfigure(void) {
 }
 
 Slitmenu::Directionmenu::Directionmenu(Slitmenu *sm)
-    : Basemenu( sm->slit->screen->screen() )
+  : Basemenu( sm->slit->screen->screen() )
 {
-    slitmenu = sm;
+  slitmenu = sm;
 
-    insert(i18n->getMessage(CommonSet, CommonDirectionHoriz, "Horizontal"),
-	   Slit::Horizontal);
-    insert(i18n->getMessage(CommonSet, CommonDirectionVert, "Vertical"),
-	   Slit::Vertical);
+  insert(i18n(CommonSet, CommonDirectionHoriz, "Horizontal"),
+         Slit::Horizontal);
+  insert(i18n(CommonSet, CommonDirectionVert, "Vertical"),
+         Slit::Vertical);
 
-    if (sm->slit->screen->getSlitDirection() == Slit::Horizontal)
-	setItemChecked(0, True);
-    else
-	setItemChecked(1, True);
+  if (sm->slit->screen->getSlitDirection() == Slit::Horizontal)
+    setItemChecked(0, True);
+  else
+    setItemChecked(1, True);
 }
 
 void Slitmenu::Directionmenu::itemClicked(const Point &, const Item &item, int button)
@@ -691,28 +686,28 @@ void Slitmenu::Directionmenu::itemClicked(const Point &, const Item &item, int b
 }
 
 Slitmenu::Placementmenu::Placementmenu(Slitmenu *sm)
-    : Basemenu( sm->slit->screen->screen() )
+  : Basemenu( sm->slit->screen->screen() )
 {
-    slitmenu = sm;
+  slitmenu = sm;
 
-    // setMinimumSublevels(3);
+  // setMinimumSublevels(3);
 
-    insert(i18n->getMessage(CommonSet, CommonPlacementTopLeft, "Top Left"),
-	   Slit::TopLeft);
-    insert(i18n->getMessage(CommonSet, CommonPlacementCenterLeft, "Center Left"),
-	   Slit::CenterLeft);
-    insert(i18n->getMessage(CommonSet, CommonPlacementBottomLeft, "Bottom Left"),
-	   Slit::BottomLeft);
-    insert(i18n->getMessage(CommonSet, CommonPlacementTopCenter, "Top Center"),
-	   Slit::TopCenter);
-    insert(i18n->getMessage(CommonSet, CommonPlacementBottomCenter, "Bottom Center"),
-	   Slit::BottomCenter);
-    insert(i18n->getMessage(CommonSet, CommonPlacementTopRight, "Top Right"),
-	   Slit::TopRight);
-    insert(i18n->getMessage(CommonSet, CommonPlacementCenterRight, "Center Right"),
-	   Slit::CenterRight);
-    insert(i18n->getMessage(CommonSet, CommonPlacementBottomRight, "Bottom Right"),
-	   Slit::BottomRight);
+  insert(i18n(CommonSet, CommonPlacementTopLeft, "Top Left"),
+         Slit::TopLeft);
+  insert(i18n(CommonSet, CommonPlacementCenterLeft, "Center Left"),
+         Slit::CenterLeft);
+  insert(i18n(CommonSet, CommonPlacementBottomLeft, "Bottom Left"),
+         Slit::BottomLeft);
+  insert(i18n(CommonSet, CommonPlacementTopCenter, "Top Center"),
+         Slit::TopCenter);
+  insert(i18n(CommonSet, CommonPlacementBottomCenter, "Bottom Center"),
+         Slit::BottomCenter);
+  insert(i18n(CommonSet, CommonPlacementTopRight, "Top Right"),
+         Slit::TopRight);
+  insert(i18n(CommonSet, CommonPlacementCenterRight, "Center Right"),
+         Slit::CenterRight);
+  insert(i18n(CommonSet, CommonPlacementBottomRight, "Bottom Right"),
+         Slit::BottomRight);
 }
 
 void Slitmenu::Placementmenu::itemClicked(const Point &, const Item &item, int button)

@@ -44,12 +44,10 @@
 #define False false
 
 static I18n static_i18n;
-I18n *i18n;
+const I18n &i18n = static_i18n;
 
 void NLSInit(const char *catalog) {
-  i18n = &static_i18n;
-
-  i18n->openCatalog(catalog);
+  static_i18n.openCatalog(catalog);
 }
 
 

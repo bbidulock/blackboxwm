@@ -25,8 +25,8 @@
 #define UTIL_HH
 
 #include <algorithm>
-#include <list>
-
+#include <string>
+using std::string;
 
 class Point
 {
@@ -186,6 +186,7 @@ private:
 // some string functions
 char* expandTilde(const char *s);
 char* bstrdup(const char *);
+void bexec(const string &, int = -1);
 
 struct timeval; // forward declare to avoid the header
 timeval normalizeTimeval(const timeval &tm);

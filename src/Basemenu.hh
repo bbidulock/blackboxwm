@@ -55,7 +55,6 @@ public:
       : def( false ), sep( false ),
         active( false ), title( false ), enable( true ), checked( false ),
         sub( s ), fun( Submenu ), idx( -1 ), height( 0 ) { }
-    virtual ~Item() { }
 
     bool isDefault() const { return def; }
     bool isSeparator() const { return sep; }
@@ -92,6 +91,9 @@ public:
   int insertSeparator() { return insert( string(), Item::Separator ); }
   void change( int index, const string &label, const Item &item = Item::Default );
   void remove( int index );
+
+  bool autoDelete() const { return auto_delete; }
+  void setAutoDelete(bool ad) { auto_delete = ad; }
   void clear();
 
   int count() const { return items.size() - show_title ? 1 : 0; }
@@ -146,6 +148,7 @@ private:
   bool size_dirty;
   bool pressed;
   bool title_pressed;
+  bool auto_delete;
 };
 
 #endif // __Basemenu_hh
