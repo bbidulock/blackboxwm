@@ -523,9 +523,20 @@ void BScreen::LoadStyle(void) {
                         "window.handle.unfocus", "Window.Handle.Unfocus",
                         "black");
 
-  wstr = res.read("window.handleWidth", "Window.HandleWidth", "6");
-  resource.wstyle.handle_width =
+  wstr = res.read("window.handleHeight", "Window.HandleHeight", "6");
+  resource.wstyle.handle_height =
     static_cast<unsigned int>(strtoul(wstr.c_str(), 0, 0));
+
+  resource.wstyle.bevel_width = resource.bevel_width;
+
+  // the height of the titlebar is based upon the height of the font being
+  // used to display the window's title
+  resource.wstyle.label_height = bt::textHeight(resource.wstyle.font) + 2;
+  resource.wstyle.title_height = resource.wstyle.label_height + 
+    resource.wstyle.bevel_width * 2;
+  resource.wstyle.button_width = resource.wstyle.label_height - 2;
+
+  resource.wstyle.grip_width = resource.wstyle.button_width * 2;
 
   resource.wstyle.g_focus =
     bt::textureResource(display, screen, res,

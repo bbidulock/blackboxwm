@@ -65,7 +65,8 @@ struct WindowStyle {
     h_focus, h_unfocus, b_focus, b_unfocus, b_pressed, g_focus, g_unfocus;
   bt::Font font;
   bt::Alignment alignment;
-  unsigned int handle_width, frame_width;
+  unsigned int handle_height, grip_width, frame_width, bevel_width,
+    label_height, title_height, button_width;
 };
 
 struct ToolbarStyle {

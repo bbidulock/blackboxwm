@@ -94,7 +94,8 @@ public:
 };
 
 
-class BlackboxWindow : public bt::TimeoutHandler, public bt::EventHandler {
+class BlackboxWindow : public bt::TimeoutHandler, public bt::EventHandler,
+                       public bt::NoCopy {
 public:
   enum Function { Func_Resize   = (1l << 0),
                   Func_Move     = (1l << 1),
@@ -204,11 +205,10 @@ private:
    */
 
   struct _frame {
+    WindowStyle* style;
+
     // u -> unfocused, f -> has focus
-    unsigned long ulabel_pixel, flabel_pixel, utitle_pixel,
-      ftitle_pixel, uhandle_pixel, fhandle_pixel, ubutton_pixel,
-      fbutton_pixel, pbutton_pixel, uborder_pixel, fborder_pixel,
-      ugrip_pixel, fgrip_pixel;
+    unsigned long uborder_pixel, fborder_pixel;
     Pixmap ulabel, flabel, utitle, ftitle, uhandle, fhandle,
       ubutton, fbutton, pbutton, ugrip, fgrip;
 
@@ -237,13 +237,8 @@ private:
     int grab_x, grab_y;         // where was the window when it was grabbed?
 
     unsigned int inside_w, inside_h, // window w/h without border_w
-      title_h, label_w, label_h, handle_h,
-      button_w, grip_w, mwm_border_w, border_w,
-      bevel_w;
+      label_w, mwm_border_w, border_w;
   } frame;
-
-  BlackboxWindow(const BlackboxWindow&);
-  BlackboxWindow& operator=(const BlackboxWindow&);
 
   bool getState(void);
   Window createToplevelWindow();
@@ -340,7 +335,7 @@ public:
   inline const bt::Rect &clientRect(void) const { return client.rect; }
 
   inline unsigned int getTitleHeight(void) const
-  { return frame.title_h; }
+  { return frame.style->title_height; }
 
   inline WMLayer getLayer(void) const { return client.state.layer; }
   unsigned long normalHintFlags(void) const

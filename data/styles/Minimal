@@ -1,81 +1,137 @@
-! Minimal (c) 2000 Jeff Raven
-! Blackbox window manager resource defaults, with an
-! eye towards consuming as little of an 8-bit palette
-! as possible. As an additional bonus, with the changes
-! as of Blackbox 0.60.3, it should also use very little
-! memory.
+! ***** Menu *****
+menu.frame.font:                        -*-helvetica-*-r-*-*-12-*-*-*-*-*-*-*
+menu.title.font:                        -*-helvetica-*-r-*-*-12-*-*-*-*-*-*-*
 
-toolbar:                        Flat Solid
-toolbar.color:                  MidnightBlue
+menu.title:                             flat solid border
+     menu.title.color:                  Black
+     menu.title.colorTo:                
+menu.title.borderWidth:                 1
+menu.title.borderColor:                 Black
+menu.title.textColor:                   White
 
-toolbar.clock:                  ParentRelative
-toolbar.label:                  ParentRelative
-toolbar.windowLabel:            ParentRelative
+menu.frame:                             flat solid border
+     menu.frame.color:                  MidnightBlue
+     menu.frame.colorTo:                
+menu.frame.borderWidth:                 1
+menu.frame.borderColor:                 Black
+menu.frame.textColor:                   White
+menu.frame.foregroundColor:             White
 
-toolbar.button:                 ParentRelative
-toolbar.button.pressed:         Flat Solid
-toolbar.button.pressed.color:   SteelBlue
-toolbar.button*picColor:        White
+menu.active:                            flat solid border
+     menu.active.color:                 White
+     menu.active.colorTo:               
+menu.active.borderWidth:                1
+menu.active.borderColor:                Black
+menu.active.textColor:                  Black
 
-toolbar.textColor:              White
-toolbar.justify:                center
+! for 0.6x compatibility
+menu.hilite:                            flat solid
+     menu.hilite.color:                 White
+     menu.hilite.colorTo:               
+menu.hilite.textColor:                  Black
 
-window.title.focus:             Flat Solid
-window.title.focus.color:       SteelBlue
-window.title.unfocus:           Flat Solid
-window.title.unfocus.color:     MidnightBlue
+menu.bullet:                            Triangle
+menu.bullet.position:                   Right
 
-window.label.focus:             ParentRelative
-window.label.focus.textColor:   White
-window.label.unfocus:           ParentRelative
-window.label.unfocus.textColor: Grey
+menu.frame.disabledColor:               black
+! for 0.6x compatibility
+menu.frame.disableColor:                black
 
-window.button.focus:            ParentRelative
-window.button.focus.picColor:   White
-window.button.unfocus:          ParentRelative
-window.button.unfocus.picColor: Grey
-window.button.pressed:          ParentRelative
+menu.frame.alignment:                   left
+menu.title.alignment:                   center
 
-window.handle.focus:            Flat Solid
-window.handle.focus.color:      SteelBlue
-window.handle.unfocus:          Flat Solid
-window.handle.unfocus.color:    MidnightBlue
+! for 0.6x compatibility
+menu.frame.justify:                     left
+menu.title.justify:                     center
 
-window.grip.focus:              Flat Solid
-window.grip.unfocus:            Flat Solid
-window.grip*color:              Grey
 
-window.frame.focus:             Flat Solid
-window.frame.focus.color:       SteelBlue
-window.frame.unfocus:           Flat Solid
-window.frame.unfocus.color:     MidnightBlue
+! ***** Window *****
+window.font:                            -*-helvetica-*-r-*-*-12-*-*-*-*-*-*-*
 
-window.justify:                 center
+! focused window
+window.title.focus:                     flat solid
+     window.title.focus.color:          SteelBlue
+     window.title.focus.colorTo:        
 
-menu.title:                     Flat Solid
-menu.frame:                     Flat Solid
-menu.hilite:                    Flat Solid
+window.label.focus:                     parentrelative
+window.label.focus.textColor:           White
 
-menu.title.color:               Black
-menu.title.textColor:           White
-menu.title.justify:             center
+window.handle.focus:                    flat solid
+     window.handle.focus.color:         SteelBlue
+     window.handle.focus.colorTo:       
 
-menu.frame.color:               MidnightBlue
-menu.frame.textColor:           White
-menu.frame.justify:             left
+window.grip.focus:                      flat solid
+     window.grip.focus.color:           Grey
+     window.grip.focus.colorTo:         
 
-menu.hilite.color:              White
-menu.hilite.textColor:          Black
+window.button.focus:                    parentrelative
+window.button.focus.picColor:           White
 
-menu.bullet:                    Triangle
-menu.bullet.position:           Right
+window.button.pressed:                  parentrelative
 
-borderColor:                    Black
+window.frame.focusColor:                SteelBlue
 
-bevelWidth:                     1
-borderWidth:                    1
-handleWidth:                    4
+! unfocused window
+window.title.unfocus:                   flat solid
+     window.title.unfocus.color:        MidnightBlue
+     window.title.unfocus.colorTo:      
 
-*Font:                          -*-helvetica-*-r-*-*-12-*-*-*-*-*-*-*
+window.label.unfocus:                   parentrelative
+window.label.unfocus.textColor:         Grey
 
-rootCommand:                    bsetroot -solid SlateGrey
+window.handle.unfocus:                  flat solid
+     window.handle.unfocus.color:       MidnightBlue
+     window.handle.unfocus.colorTo:     
+
+window.grip.unfocus:                    flat solid
+     window.grip.unfocus.color:         Grey
+     window.grip.unfocus.colorTo:       
+
+window.button.unfocus:                  parentrelative
+window.button.unfocus.picColor:         Grey
+
+window.frame.unfocusColor:              MidnightBlue
+
+window.alignment:                       center
+window.frameWidth:                      1
+window.handleHeight:                    4
+
+! for 0.6x compatibility
+window.justify:                         center
+
+! ***** toolbar *****
+toolbar.font:                           -*-helvetica-*-r-*-*-12-*-*-*-*-*-*-*
+toolbar:                                flat solid
+     toolbar.color:                     MidnightBlue
+     toolbar.colorTo:                   
+
+toolbar.label:                          parentrelative
+toolbar.label.textColor:                white
+
+toolbar.windowLabel:                    parentrelative
+toolbar.windowLabel.textColor:          white
+
+toolbar.clock:                          parentrelative
+toolbar.clock.textColor:                white
+
+toolbar.button:                         parentrelative
+
+toolbar.button.pressed:                 flat solid
+     toolbar.button.pressed.color:      SteelBlue
+     toolbar.button.pressed.colorTo:    
+
+toolbar.button.picColor:                White
+
+toolbar.alignment:                      center
+
+! for 0.6x compatibility
+toolbar.justify:                        center
+
+! ***** the rest *****
+borderColor:                            Black
+borderWidth:                            1
+bevelWidth:                             1
+!  for 0.6x compatibility
+handleWidth:                            4
+frameWidth:                             1
+rootCommand:                            bsetroot -solid SlateGrey

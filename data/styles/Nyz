@@ -1,105 +1,155 @@
-toolbar:			flat diagonal gradient
-toolbar.color:			rgb:6/9/c
-toolbar.colorTo:		rgb:4/6/8
-toolbar.button:			flat diagonal gradient
-toolbar.button.color:		rgb:3/48/6
-toolbar.button.colorTo:		rgb:5/78/a
-toolbar.button.picColor:	rgb:1/18/2
-toolbar.button.pressed:		flat crossdiagonal gradient
-toolbar.button.pressed.color:	grey40
-toolbar.button.pressed.colorTo:	grey20
-toolbar.label:			flat crossdiagonal gradient
-toolbar.label.color:		grey40
-toolbar.label.colorTo:		grey20
-toolbar.label.textColor:	grey85
-toolbar.windowLabel:		flat crossdiagonal gradient
-toolbar.windowLabel.color:	grey40
-toolbar.windowLabel.colorTo:	grey20
-toolbar.windowLabel.textColor:	grey85
-toolbar.clock:			flat crossdiagonal gradient
-toolbar.clock.color:		grey40
-toolbar.clock.colorTo:		grey20
-toolbar.clock.textColor:	grey85
-toolbar.justify:		right
-toolbar.font:			lucidasans-10
+! ***** Menu *****
+menu.frame.font:                        lucidasans-10
+menu.title.font:                        lucidasans-10
 
-menu.title:			flat crossdiagonal gradient
-menu.title.color:		rgb:6/9/c
-menu.title.colorTo:		rgb:3/48/6
-menu.title.textColor:		white
-menu.title.font:		lucidasans-10
-menu.title.justify:		right
+menu.title:                             flat crossdiagonal gradient border
+     menu.title.color:                  rgb:6/9/c
+     menu.title.colorTo:                rgb:3/48/6
+menu.title.borderWidth:                 2
+menu.title.borderColor:                 grey10
+menu.title.textColor:                   white
 
-menu.frame:			flat crossdiagonal gradient
-menu.frame.color:		grey40
-menu.frame.colorTo:		grey20
-menu.frame.textColor:		grey85
-menu.frame.disableColor:	rgb:4/4/38
-menu.frame.font:		lucidasans-10
-menu.frame.justify:		center
+menu.frame:                             flat crossdiagonal gradient border
+     menu.frame.color:                  grey40
+     menu.frame.colorTo:                grey20
+menu.frame.borderWidth:                 2
+menu.frame.borderColor:                 grey10
+menu.frame.textColor:                   grey85
+menu.frame.foregroundColor:             grey85
 
-menu.bullet.position:		right
-menu.bullet:			triangle
+menu.active:                            flat crossdiagonal gradient border
+     menu.active.color:                 rgb:6/9/c
+     menu.active.colorTo:               rgb:3/48/6
+menu.active.borderWidth:                2
+menu.active.borderColor:                grey10
+menu.active.textColor:                  white
 
-menu.hilite:			flat crossdiagonal gradient
-menu.hilite.color:		rgb:6/9/c
-menu.hilite.colorTo:		rgb:3/48/6
-menu.hilite.textColor:		white
+! for 0.6x compatibility
+menu.hilite:                            flat crossdiagonal gradient
+     menu.hilite.color:                 rgb:6/9/c
+     menu.hilite.colorTo:               rgb:3/48/6
+menu.hilite.textColor:                  white
 
-window.title.focus:		flat diagonal gradient
-window.title.focus.color:	rgb:6/9/c
-window.title.focus.colorTo:	rgb:4/6/8
-window.title.unfocus:		flat solid
-window.title.unfocus.color:	grey30
+menu.bullet:                            triangle
+menu.bullet.position:                   right
 
-window.label.focus:		flat crossdiagonal gradient
-window.label.focus.color:	grey40
-window.label.focus.colorTo:	grey20
-window.label.focus.textColor:	white
-window.label.unfocus:		flat crossdiagonal gradient
-window.label.unfocus.color:	grey30
-window.label.unfocus.colorTo:	grey20
-window.label.unfocus.textColor:	grey60
+menu.frame.disabledColor:               rgb:4/4/38
+! for 0.6x compatibility
+menu.frame.disableColor:                rgb:4/4/38
 
-window.button.focus:		flat diagonal gradient
-window.button.focus.color:	rgb:4/6/8
-window.button.focus.colorTo:	rgb:5/78/a
-window.button.focus.picColor:	rgb:1/18/2
-window.button.unfocus:		flat solid
-window.button.unfocus.color:	grey30
-window.button.unfocus.picColor:	grey20
-window.button.pressed:		flat crossdiagonal gradient
-window.button.pressed.color:	grey40
-window.button.pressed.colorTo:	grey20
+menu.frame.alignment:                   center
+menu.title.alignment:                   right
 
-window.handle.focus:		flat crossdiagonal gradient
-window.handle.focus.color:	rgb:6/9/c
-window.handle.focus.colorTo:	rgb:3/48/6
-window.handle.unfocus:		flat solid
-window.handle.unfocus.color:	grey30
+! for 0.6x compatibility
+menu.frame.justify:                     center
+menu.title.justify:                     right
 
-window.grip.focus:		flat crossdiagonal gradient
-window.grip.focus.color:	grey40
-window.grip.focus.colorTo:	grey20
-window.grip.unfocus:		flat crossdiagonal gradient
-window.grip.unfocus.color:	grey30
-window.grip.unfocus.colorTo:	grey20
 
-window.frame.focus:		flat solid
-window.frame.focus.color:	rgb:6/9/c
-window.frame.unfocus:		flat solid
-window.frame.unfocus.color:	grey30
+! ***** Window *****
+window.font:                            lucidasans-10
 
-window.font:			lucidasans-10
-window.justify:			right
+! focused window
+window.title.focus:                     flat diagonal gradient
+     window.title.focus.color:          rgb:6/9/c
+     window.title.focus.colorTo:        rgb:4/6/8
 
-borderColor:			grey10
+window.label.focus:                     flat crossdiagonal gradient
+     window.label.focus.color:          grey40
+     window.label.focus.colorTo:        grey20
+window.label.focus.textColor:           white
 
-bevelWidth:			1
-borderWidth:			2
-handleWidth:			4
+window.handle.focus:                    flat crossdiagonal gradient
+     window.handle.focus.color:         rgb:6/9/c
+     window.handle.focus.colorTo:       rgb:3/48/6
 
-*textColor:			grey85
-*Font:				lucidasans-10
+window.grip.focus:                      flat crossdiagonal gradient
+     window.grip.focus.color:           grey40
+     window.grip.focus.colorTo:         grey20
 
-rootCommand:			bsetroot -solid grey20
+window.button.focus:                    flat diagonal gradient
+     window.button.focus.color:         rgb:4/6/8
+     window.button.focus.colorTo:       rgb:5/78/a
+window.button.focus.picColor:           rgb:1/18/2
+
+window.button.pressed:                  flat crossdiagonal gradient
+     window.button.pressed.color:       grey40
+     window.button.pressed.colorTo:     grey20
+
+window.frame.focusColor:                rgb:6/9/c
+
+! unfocused window
+window.title.unfocus:                   flat solid
+     window.title.unfocus.color:        grey30
+     window.title.unfocus.colorTo:      
+
+window.label.unfocus:                   flat crossdiagonal gradient
+     window.label.unfocus.color:        grey30
+     window.label.unfocus.colorTo:      grey20
+window.label.unfocus.textColor:         grey60
+
+window.handle.unfocus:                  flat solid
+     window.handle.unfocus.color:       grey30
+     window.handle.unfocus.colorTo:     
+
+window.grip.unfocus:                    flat crossdiagonal gradient
+     window.grip.unfocus.color:         grey30
+     window.grip.unfocus.colorTo:       grey20
+
+window.button.unfocus:                  flat solid
+     window.button.unfocus.color:       grey30
+     window.button.unfocus.colorTo:     
+window.button.unfocus.picColor:         grey20
+
+window.frame.unfocusColor:              grey30
+
+window.alignment:                       right
+window.frameWidth:                      1
+window.handleHeight:                    4
+
+! for 0.6x compatibility
+window.justify:                         right
+
+! ***** toolbar *****
+toolbar.font:                           lucidasans-10
+toolbar:                                flat diagonal gradient
+     toolbar.color:                     rgb:6/9/c
+     toolbar.colorTo:                   rgb:4/6/8
+
+toolbar.label:                          flat crossdiagonal gradient
+     toolbar.label.color:               grey40
+     toolbar.label.colorTo:             grey20
+toolbar.label.textColor:                grey85
+
+toolbar.windowLabel:                    flat crossdiagonal gradient
+     toolbar.windowLabel.color:         grey40
+     toolbar.windowLabel.colorTo:       grey20
+toolbar.windowLabel.textColor:          grey85
+
+toolbar.clock:                          flat crossdiagonal gradient
+     toolbar.clock.color:               grey40
+     toolbar.clock.colorTo:             grey20
+toolbar.clock.textColor:                grey85
+
+toolbar.button:                         flat diagonal gradient
+     toolbar.button.color:              rgb:3/48/6
+     toolbar.button.colorTo:            rgb:5/78/a
+
+toolbar.button.pressed:                 flat crossdiagonal gradient
+     toolbar.button.pressed.color:      grey40
+     toolbar.button.pressed.colorTo:    grey20
+
+toolbar.button.picColor:                rgb:1/18/2
+
+toolbar.alignment:                      right
+
+! for 0.6x compatibility
+toolbar.justify:                        right
+
+! ***** the rest *****
+borderColor:                            grey10
+borderWidth:                            2
+bevelWidth:                             1
+!  for 0.6x compatibility
+handleWidth:                            4
+frameWidth:                             1
+rootCommand:                            bsetroot -solid grey20

@@ -1,104 +1,155 @@
+! ***** Menu *****
+menu.frame.font:                        -b&h-lucida-medium-r-normal-*-*-100-*-*-p-*-iso8859-1
+menu.title.font:                        -b&h-lucida-medium-r-normal-*-*-100-*-*-p-*-iso8859-1
 
-toolbar:		        sunken
-toolbar.color:			grey68
+menu.title:                             raised diagonal gradient bevel1 border
+     menu.title.color:                  rgb:b/b/b
+     menu.title.colorTo:                rgb:1/9/9
+menu.title.borderWidth:                 1
+menu.title.borderColor:                 rgb:0/0/0
+menu.title.textColor:                   black
 
-toolbar.button:			flat
-toolbar.button.color:		grey68
-toolbar.button.picColor:	rgb:0/8/8
-toolbar.button.pressed:		sunken
-toolbar.button.pressed.color:   rgb:c/c/c
-toolbar.button.pressed.colorTo: rgb:8/8/8
+menu.frame:                             raised diagonal gradient bevel1 border
+     menu.frame.color:                  rgb:b/b/b
+     menu.frame.colorTo:                rgb:c/c/c
+menu.frame.borderWidth:                 1
+menu.frame.borderColor:                 rgb:0/0/0
+menu.frame.textColor:                   black
+menu.frame.foregroundColor:             black
 
-toolbar.label:			flat
-toolbar.label.color:		grey68
-toolbar.label.textColor:	black
+menu.active:                            raised diagonal gradient bevel1 border
+     menu.active.color:                 grey77
+     menu.active.colorTo:               grey74
+menu.active.borderWidth:                1
+menu.active.borderColor:                rgb:0/0/0
+menu.active.textColor:                  rgb:0/8/8
 
-toolbar.windowLabel:            flat
-toolbar.windowLabel.color:      grey68
-toolbar.windowLabel.textColor:	black
+! for 0.6x compatibility
+menu.hilite:                            raised diagonal gradient bevel1
+     menu.hilite.color:                 grey77
+     menu.hilite.colorTo:               grey74
+menu.hilite.textColor:                  rgb:0/8/8
 
-toolbar.clock:			flat
-toolbar.clock.color:		grey68
-toolbar.clock.textColor:	black
+menu.bullet:                            square
+menu.bullet.position:                   right
 
-toolbar.justify:		Left
+menu.frame.disabledColor:               black
+! for 0.6x compatibility
+menu.frame.disableColor:                black
 
-menu.title:			Raised Diagonal Gradient Bevel1
-menu.title.color:               rgb:b/b/b
-menu.title.colorTo:             rgb:1/9/9
-menu.title.textColor:           black
-menu.title.justify:		center
+menu.frame.alignment:                   center
+menu.title.alignment:                   center
 
-menu.frame:			Raised Diagonal Gradient Bevel1
-menu.frame.color:		rgb:b/b/b
-menu.frame.colorTo:		rgb:c/c/c
-menu.frame.textColor:		black
-menu.frame.justify:		center
+! for 0.6x compatibility
+menu.frame.justify:                     center
+menu.title.justify:                     center
 
-menu.hilite:			Raised diagonal gradient bevel1
-menu.hilite.color:		grey77
-menu.hilite.colorTo:		grey74
-menu.hilite.textColor:		rgb:0/8/8
 
-menu.bullet:			square
-menu.bullet.position:		right
+! ***** Window *****
+window.font:                            -b&h-lucida-medium-r-normal-*-*-100-*-*-p-*-iso8859-1
 
-window.title.focus:		sunken diagonal gradient bevel1
-window.title.focus.color:	rgb:c/c/c
-window.title.focus.colorTo:	rgb:b/b/b
-window.title.unfocus:		sunken
-window.title.unfocus.color:	grey70
+! focused window
+window.title.focus:                     sunken diagonal gradient bevel1
+     window.title.focus.color:          rgb:c/c/c
+     window.title.focus.colorTo:        rgb:b/b/b
 
-window.label.focus:		Flat pyramid interlaced gradient
-window.label.focus.color:	rgb:c/c/c
-window.label.focus.colorTo:	rgb:b/b/b
-window.label.focus.textColor:	black
-window.label.unfocus:		flat
-window.label.unfocus.color:	grey70
-window.label.unfocus.textColor:	black
+window.label.focus:                     flat pyramid interlaced gradient
+     window.label.focus.color:          rgb:c/c/c
+     window.label.focus.colorTo:        rgb:b/b/b
+window.label.focus.textColor:           black
 
-window.handle.focus:		flat diagonal gradient bevel1
-window.handle.focus.color:	rgb:c/c/c
-window.handle.focus.colorTo:	rgb:0/8/8
-window.handle.unfocus:		raised pyramid gradient bevel1
-window.handle.unfocus.color:	rgb:c/c/c
-window.handle.unfocus.colorTo:	rgb:0/8/8
+window.handle.focus:                    flat diagonal gradient bevel1
+     window.handle.focus.color:         rgb:c/c/c
+     window.handle.focus.colorTo:       rgb:0/8/8
 
-window.grip.focus:		flat diagonal interlaced gradient bevel1
-window.grip.focus.color:	grey90
-window.grip.focus.colorTo:	grey40
-window.grip.unfocus:		flat diagonal gradient bevel1
-window.grip.unfocus.color:	grey40
-window.grip.unfocus.colorTo:	grey90
+window.grip.focus:                      flat diagonal interlaced gradient bevel1
+     window.grip.focus.color:           grey90
+     window.grip.focus.colorTo:         grey40
 
-window.button.focus:		sunken diagonal gradient bevel1
-window.button.focus.color:	grey90
-window.button.focus.colorTo:	grey40
-window.button.focus.picColor:	grey20
+window.button.focus:                    sunken diagonal gradient bevel1
+     window.button.focus.color:         grey90
+     window.button.focus.colorTo:       grey40
+window.button.focus.picColor:           grey20
 
-window.button.unfocus:		flat
-window.button.unfocus.color:	grey70
-window.button.unfocus.colorTo:	grey70
-window.button.unfocus.picColor:	grey70
+window.button.pressed:                  sunken interlaced diagonal gradient bevel1
+     window.button.pressed.color:       rgb:38/4/4
+     window.button.pressed.colorTo:     rgb:d/f/f
 
-window.button.pressed:		sunken interlaced diagonal gradient bevel1
-window.button.pressed.color:	rgb:38/4/4
-window.button.pressed.colorTo:	rgb:d/f/f
+window.frame.focusColor:                grey72
 
-window.frame.focus:		sunken solid bevel1
-window.frame.unfocus:		sunken solid bevel1
-window.frame.focus.color:	grey72
-window.frame.unfocus.color:	grey72
+! unfocused window
+window.title.unfocus:                   sunken
+     window.title.unfocus.color:        grey70
+     window.title.unfocus.colorTo:      
 
-window.justify:			center
+window.label.unfocus:                   flat
+     window.label.unfocus.color:        grey70
+     window.label.unfocus.colorTo:      
+window.label.unfocus.textColor:         black
 
-borderColor:			rgb:0/0/0
+window.handle.unfocus:                  raised pyramid gradient bevel1
+     window.handle.unfocus.color:       rgb:c/c/c
+     window.handle.unfocus.colorTo:     rgb:0/8/8
 
-borderWidth:			1
-bevelWidth:			2
-handleWidth:			5
+window.grip.unfocus:                    flat diagonal gradient bevel1
+     window.grip.unfocus.color:         grey40
+     window.grip.unfocus.colorTo:       grey90
 
-*font:			-b&h-lucida-medium-r-normal-*-*-100-*-*-p-*-iso8859-1
-*textColor:		black
+window.button.unfocus:                  flat
+     window.button.unfocus.color:       grey70
+     window.button.unfocus.colorTo:     grey70
+window.button.unfocus.picColor:         grey70
 
-rootCommand:	bsetroot -mod 16 8 -bg rgb:0/8/8 -fg rgb:0/9/9
+window.frame.unfocusColor:              grey72
+
+window.alignment:                       center
+window.frameWidth:                      2
+window.handleHeight:                    5
+
+! for 0.6x compatibility
+window.justify:                         center
+
+! ***** toolbar *****
+toolbar.font:                           -b&h-lucida-medium-r-normal-*-*-100-*-*-p-*-iso8859-1
+toolbar:                                sunken
+     toolbar.color:                     grey68
+     toolbar.colorTo:                   
+
+toolbar.label:                          flat
+     toolbar.label.color:               grey68
+     toolbar.label.colorTo:             
+toolbar.label.textColor:                black
+
+toolbar.windowLabel:                    flat
+     toolbar.windowLabel.color:         grey68
+     toolbar.windowLabel.colorTo:       
+toolbar.windowLabel.textColor:          black
+
+toolbar.clock:                          flat
+     toolbar.clock.color:               grey68
+     toolbar.clock.colorTo:             
+toolbar.clock.textColor:                black
+
+toolbar.button:                         flat
+     toolbar.button.color:              grey68
+     toolbar.button.colorTo:            
+
+toolbar.button.pressed:                 sunken
+     toolbar.button.pressed.color:      rgb:c/c/c
+     toolbar.button.pressed.colorTo:    rgb:8/8/8
+
+toolbar.button.picColor:                rgb:0/8/8
+
+toolbar.alignment:                      Left
+
+! for 0.6x compatibility
+toolbar.justify:                        Left
+
+! ***** the rest *****
+borderColor:                            rgb:0/0/0
+borderWidth:                            1
+bevelWidth:                             2
+!  for 0.6x compatibility
+handleWidth:                            5
+frameWidth:                             2
+rootCommand:                            bsetroot -mod 16 8 -bg rgb:0/8/8 -fg rgb:0/9/9

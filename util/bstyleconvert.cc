@@ -55,7 +55,7 @@ struct Style {
       label_focus_textColor, label_unfocus_textColor,
       handle_focus, handle_focus_color, handle_focus_colorTo,
       handle_unfocus, handle_unfocus_color, handle_unfocus_colorTo,
-      handle_width,
+      handle_height,
       grip_focus, grip_focus_color, grip_focus_colorTo,
       grip_unfocus, grip_unfocus_color, grip_unfocus_colorTo,
       button_focus, button_focus_color, button_focus_colorTo,
@@ -165,7 +165,7 @@ void Style::read(const bt::Resource& res) {
   window.handle_unfocus_colorTo =
     res.read("window.handle.unfocus.colorTo",
              "Window.Handle.Unfocus.ColorTo", "");
-  window.handle_width =
+  window.handle_height =
     res.read("handleWidth", "HandleWidth", "6");
 
   window.grip_focus =
@@ -537,7 +537,7 @@ void convert(const Style& style, const char* const filename) {
   fout << '\n';
   writeValue(fout, "window.alignment", style.window.alignment);
   writeValue(fout, "window.frameWidth", style.window.frame_width);
-  writeValue(fout, "window.handleWidth", style.window.handle_width);
+  writeValue(fout, "window.handleHeight", style.window.handle_height);
   fout << '\n';
   writeComment(fout, "for 0.6x compatibility");
   writeValue(fout, "window.justify", style.window.alignment);
@@ -580,7 +580,7 @@ void convert(const Style& style, const char* const filename) {
   writeValue(fout, "borderWidth", style.border_width);
   writeValue(fout, "bevelWidth", style.bevel_width);
   writeComment(fout, " for 0.6x compatibility");
-  writeValue(fout, "handleWidth", style.window.handle_width);
+  writeValue(fout, "handleWidth", style.window.handle_height);
   writeValue(fout, "frameWidth", style.window.frame_width);
   if (! style.rootCommand.empty())
     writeValue(fout, "rootCommand", style.rootCommand);
