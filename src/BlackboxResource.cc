@@ -286,7 +286,7 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
   }
 
   sprintf(rc_string, "session.screen%u.workspaceNames", number);
-  res.write(rc_string, save_string.c_str());
+  res.write(rc_string, bt::toLocale(save_string).c_str());
 
   // these options can not be modified at runtime currently
 
