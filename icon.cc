@@ -70,7 +70,7 @@ BlackboxIcon::BlackboxIcon(Blackbox *bb, BlackboxWindow *win) {
   XSetWindowAttributes attrib;
   attrib.background_pixmap = None;
   attrib.background_pixel = blackbox->toolboxColor().pixel;
-  attrib.border_pixel = blackbox->frameColor().pixel;
+  attrib.border_pixel = blackbox->borderColor().pixel;
   attrib.cursor = blackbox->sessionCursor();
   attrib.event_mask = StructureNotifyMask|SubstructureNotifyMask|
     ExposureMask|SubstructureRedirectMask|ButtonPressMask|

@@ -13,9 +13,24 @@ blackbox*buttonTexture:           Raised Diagonal   Gradient Bevel1
 blackbox*menuTexture:             Flat   Vertical   Gradient
 blackbox*menuItemTexture:         Raised Diagonal   Gradient Bevel1
 
+! This texture can be specified for any number of windows
+! i.e. blackbox*Netscape.frameTexture:   Sunken Solid Bevel2
+!
+! This is a solid texture... it is not a gradient.
+!
+
+blackbox*frameTexture:		  Raised Solid		     Bevel1
+
 ! Colors are any valid X color name or rgb formation
 !
+blackbox*borderColor:             black
+
+! This color can be specified for any number of windows
+! i.e. blackbox*Netscape.frameColor:     rgb:b8/b8/b8
+!
+
 blackbox*frameColor:              grey20
+
 blackbox*toolboxColor:            slategrey
 ! *ToColor's are used for gradient textures
 blackbox*toolboxToColor:          darkslategrey
@@ -41,7 +56,7 @@ blackbox*iconTextColor:           lightgrey
 
 blackbox*workspaces:              3
 
-! the menu file is set in Blackbox.ad
+! the menu file is not set in Blackbox.ad
 ! blackbox*menuFile:              Not Set
  
 blackbox*titleJustify:		  centerjustify

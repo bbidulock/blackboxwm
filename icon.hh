@@ -27,6 +27,7 @@ class BlackboxIcon;
 
 class Blackbox;
 class Workspace;
+class BlackboxWindow;
 
 
 class BlackboxIcon {

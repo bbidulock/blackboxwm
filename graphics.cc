@@ -28,12 +28,6 @@
 // *************************************************************************
 // Graphics engine class code
 // *************************************************************************
-//
-// allocations:
-// unsigned long *data
-//
-// *************************************************************************
-
 
 BImage::BImage(Blackbox *bb, unsigned int w, unsigned int h, int d)
 {
@@ -225,8 +219,7 @@ Bool BImage::getPixel(unsigned int x, unsigned int y, unsigned long *pixel) {
 }
 
 
-Bool BImage::putPixel(unsigned int x, unsigned int y, const BColor &color)
-{
+Bool BImage::putPixel(unsigned int x, unsigned int y, const BColor &color) {
   if (x > width || y > height) return False;
   
   unsigned int xy = x * y;
@@ -308,7 +301,7 @@ XImage *BImage::convertToXImage(void) {
 
     if (blackbox->imageDither()) {
       // lets dither the image while blitting to the XImage
-      unsigned int i, x, y, ofs;
+      unsigned int i, x, y, ofs, w2 = width * 2;
       unsigned short *tor, *tog, *tob, er, eg, eb, sr, sg, sb,
 	*or = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
 	*og = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
@@ -335,7 +328,7 @@ XImage *BImage::convertToXImage(void) {
 	if (y < (height - 1)) {
 	  tor = nor; tog = nog; tob = nob;
 	  
-	  for (i = ofs + width; i < ofs + (width * 2); i++) {
+	  for (i = ofs + width; i < ofs + w2; i++) {
 	    *(tor++) = ((*(data + i)) & 0xff0000) >> 16;
 	    *(tog++) = ((*(data + i)) & 0xff00) >> 8;
 	    *(tob++) = ((*(data + i)) & 0xff);
@@ -365,17 +358,17 @@ XImage *BImage::convertToXImage(void) {
 	  eg = *(og + x) - (sg >> 3);
 	  eb = *(ob + x) - (sb << 3);
 	  
-	  *(or + x + 1) += (er * 3) / 8;
-	  *(og + x + 1) += (eg * 3) / 8;
-	  *(ob + x + 1) += (eb * 3) / 8;
+	  *(or + x + 1) += ((er >> 3) + (er >> 2));
+	  *(og + x + 1) += ((eg >> 3) + (eg >> 2));
+	  *(ob + x + 1) += ((eb >> 3) + (eb >> 2));
 	  
-	  *(nor + x) += (er * 3) / 8;
-	  *(nog + x) += (eg * 3) / 8;
-	  *(nob + x) += (eb * 3) / 8;
-	
-	  *(nor + x + 1) += (er * 2) / 8;
-	  *(nog + x + 1) += (eg * 2) / 8;
-	  *(nob + x + 1) += (eb * 2) / 8;
+	  *(nor + x) += ((er >> 3) + (er >> 2));
+	  *(nog + x) += ((eg >> 1) + (eg >> 2));
+	  *(nob + x) += ((eb >> 1) + (eg >> 2));
+	  
+	  *(nor + x + 1) += (er >> 2);
+	  *(nog + x + 1) += (eg >> 2);
+	  *(nob + x + 1) += (eb >> 2);
 	}
 	ofs += width;
 	
@@ -459,8 +452,8 @@ XImage *BImage::convertToXImage(void) {
 	  sg = ((sg << 2) & image->green_mask);
 	  sb = ((sb >> 3) & image->blue_mask);
 	  
-	  //	  *(im++) = sr|sg|sb;
-	  XPutPixel(image, x, y, sr|sg|sb);
+	  *(im++) = sr|sg|sb;
+	  //	  XPutPixel(image, x, y, sr|sg|sb);
 
 	  er = *(or + x) - (sr >> 7);
 	  eg = *(og + x) - (sg >> 2);
@@ -510,7 +503,7 @@ XImage *BImage::convertToXImage(void) {
 
     if (blackbox->imageDither()) {
       int d = 0xff / blackbox->cpc8bpp();
-      unsigned int i, x, y, ofs;
+      unsigned int i, x, y, ofs, w2 = width * 2;
       unsigned short *tor, *tog, *tob, er, eg, eb,
 	*or = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
 	*og = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
@@ -538,7 +531,7 @@ XImage *BImage::convertToXImage(void) {
 	if (y < (height - 1)) {
 	  tor = nor; tog = nog; tob = nob;
 	  
-	  for (i = ofs + width; i < ofs + (width * 2); i++) {
+	  for (i = ofs + width; i < ofs + w2; i++) {
 	    *(tor++) = ((*(data + i)) & 0xff0000) >> 16;
 	    *(tog++) = ((*(data + i)) & 0xff00) >> 8;
 	    *(tob++) = ((*(data + i)) & 0xff);
@@ -570,17 +563,17 @@ XImage *BImage::convertToXImage(void) {
 	  eg = *(og + x) - (gg * d);
 	  eb = *(ob + x) - (bb * d);
 	  
-	  *(or + x + 1) += (er * 3) / 8;
-	  *(og + x + 1) += (eg * 3) / 8;
-	  *(ob + x + 1) += (eb * 3) / 8;
+	  *(or + x + 1) += ((er >> 3) + (er >> 2));
+	  *(og + x + 1) += ((eg >> 3) + (eg >> 2));
+	  *(ob + x + 1) += ((eb >> 3) + (eb >> 2));
 	  
-	  *(nor + x) += (er * 3) / 8;
-	  *(nog + x) += (eg * 3) / 8;
-	  *(nob + x) += (eb * 3) / 8;
-	
-	  *(nor + x + 1) += (er * 2) / 8;
-	  *(nog + x + 1) += (eg * 2) / 8;
-	  *(nob + x + 1) += (eb * 2) / 8;
+	  *(nor + x) += ((er >> 3) + (er >> 2));
+	  *(nog + x) += ((eg >> 1) + (eg >> 2));
+	  *(nob + x) += ((eb >> 1) + (eg >> 2));
+	  
+	  *(nor + x + 1) += (er >> 2);
+	  *(nog + x + 1) += (eg >> 2);
+	  *(nob + x + 1) += (eb >> 2);
 	}
 	ofs += width;
 	

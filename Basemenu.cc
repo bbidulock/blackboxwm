@@ -23,6 +23,7 @@
 #include "blackbox.hh"
 #include "graphics.hh"
 #include "Basemenu.hh"
+#include "Rootmenu.hh"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -61,7 +62,7 @@ Basemenu::Basemenu(Blackbox *ctrl) {
   XSetWindowAttributes attrib;
   attrib.background_pixmap = None;
   attrib.background_pixel = attrib.border_pixel =
-    blackbox->frameColor().pixel;
+    blackbox->borderColor().pixel;
   attrib.override_redirect = True;
   attrib.cursor = blackbox->sessionCursor();
   attrib.event_mask = StructureNotifyMask|SubstructureNotifyMask|
@@ -75,7 +76,7 @@ Basemenu::Basemenu(Blackbox *ctrl) {
   blackbox->saveMenuSearch(menu.frame, this);
   
   attrib_mask = CWBackPixmap|CWBackPixel|CWBorderPixel|CWCursor|CWEventMask;
-  attrib.background_pixel = blackbox->frameColor().pixel;
+  attrib.background_pixel = blackbox->borderColor().pixel;
   attrib.event_mask |= EnterWindowMask|LeaveWindowMask;
   menu.title =
     XCreateWindow(display, menu.frame, 0, 0, menu.width, menu.height, 0,
@@ -352,7 +353,7 @@ void Basemenu::Update(void) {
     drawItem(i, (i == which_sub), 0);
 
   XMapSubwindows(display, menu.frame);
-  //XSync(display, False);
+  XSync(display, False);
 }
 
 
@@ -780,8 +781,8 @@ void Basemenu::Reconfigure(void) {
   XChangeGC(display, hbgGC, GCForeground|GCFillStyle|GCArcMode,
 	    &gcv);
 
-  XSetWindowBackground(display, menu.frame, blackbox->frameColor().pixel);
-  XSetWindowBorder(display, menu.frame, blackbox->frameColor().pixel);
+  XSetWindowBackground(display, menu.frame, blackbox->borderColor().pixel);
+  XSetWindowBorder(display, menu.frame, blackbox->borderColor().pixel);
 
   menu.item_h = blackbox->menuFont()->ascent +
     blackbox->menuFont()->descent + 4;

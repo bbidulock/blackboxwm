@@ -23,6 +23,7 @@
 #define __blackbox_graphics_hh
 
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
 // forward declarations
 class BImage;

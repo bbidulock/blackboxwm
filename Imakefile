@@ -18,7 +18,7 @@ XCOMM
 XCOMM (See the included file COPYING / GPL-2.0)
 
 XCOMM Uncomment this to get debugging symbols in the executable
-CXXFLAGS :=	$(CXXFLAGS) -g
+XCOMM CXXFLAGS :=	$(CXXFLAGS) -g
 
 XCOMM Define this to get XShapeExtention support
 #define SupportShapeExtension
@@ -32,9 +32,9 @@ XCOMM
 
 XCOMM Source files from which blackbox is built
 
-Includes :=		Basemenu.hh Clientmenu.hh LinkedList.hh ReconfigureWidget.hh Rootmenu.hh Windowmenu.hh Workspace.hh WorkspaceManager.hh Workspacemenu.hh blackbox.hh graphics.hh icon.hh window.hh
-Sources :=		Basemenu.cc Clientmenu.cc LinkedList.cc ReconfigureWidget.cc Rootmenu.cc Windowmenu.cc Workspace.cc WorkspaceManager.cc Workspacemenu.cc blackbox.cc graphics.cc icon.cc main.cc window.cc
-Objects :=		Basemenu.o  Clientmenu.o  LinkedList.o  ReconfigureWidget.o  Rootmenu.o  Windowmenu.o  Workspace.o  WorkspaceManager.o  Workspacemenu.o  blackbox.o graphics.o icon.o main.o window.o
+Includes :=		Basemenu.hh Clientmenu.hh LinkedList.hh Rootmenu.hh Windowmenu.hh Workspace.hh WorkspaceManager.hh Workspacemenu.hh blackbox.hh graphics.hh icon.hh window.hh
+Sources :=		Basemenu.cc Clientmenu.cc LinkedList.cc Rootmenu.cc Windowmenu.cc Workspace.cc WorkspaceManager.cc Workspacemenu.cc blackbox.cc graphics.cc icon.cc main.cc window.cc
+Objects :=		Basemenu.o  Clientmenu.o  LinkedList.o  Rootmenu.o  Windowmenu.o  Workspace.o  WorkspaceManager.o  Workspacemenu.o  blackbox.o graphics.o icon.o main.o window.o
 
 DefaultsPath :=		-DXAPPLOADDIR=\"$(XAPPLOADDIR)\" -DXLIBDIR=\"$(LIBDIR)\"
 Libraries :=		$(XLIB) $(EXTENSIONLIB)
@@ -43,7 +43,7 @@ OtherLibs :=
 #ifdef SupportShapeExtension
 CXXFLAGS :=	$(CXXFLAGS) -DSHAPE
 #endif
-CXXFLAGS :=	-Wall -W $(CXXFLAGS)
+CXXFLAGS :=	-Wall -W $(CXXFLAGS) -fomit-frame-pointer
 
 PROGRAMS := blackbox
 SRCS1 := $(Sources)

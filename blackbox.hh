@@ -21,23 +21,21 @@
 
 #ifndef __blackbox_hh
 #define __blackbox_hh
-#define __blackbox_version "beta zero point three zero point three"
+#define __blackbox_version "beta zero point three one point zero"
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
 
-// forward declaration
+// forward declarations
 class Blackbox;
-
-#include "WorkspaceManager.hh"
-#include "Basemenu.hh"
-#include "ReconfigureWidget.hh"
-#include "Rootmenu.hh"
+class WorkspaceManager;
+class Basemenu;
+class Rootmenu;
+class BlackboxIcon;
+class BlackboxWindow;
 
 #include "LinkedList.hh"
 #include "graphics.hh"
-#include "icon.hh"
-#include "window.hh"
 
 
 class Blackbox {
@@ -63,20 +61,15 @@ private:
     Window window;
   } WSManagerSearch;
 
-  typedef struct __reconfigure_widget_search {
-    ReconfigureWidget *data;
-    Window window;
-  } RWidgetSearch;
-
   struct cursor {
     Cursor session, move;
   } cursor;
 
   struct resource {
     struct color {
-      BColor frame, toolbox, toolbox_to, focus, focus_to, unfocus, unfocus_to,
-	menu, menu_to, imenu, imenu_to, hmenu, button, button_to, ftext,
-	utext, mtext, mitext, htext, itext, ttext;
+      BColor border, toolbox, toolbox_to, focus, focus_to, unfocus,
+	unfocus_to, menu, menu_to, imenu, imenu_to, hmenu, button, button_to,
+	ftext, utext, mtext, mitext, htext, itext, ttext;
     } color;
     
     struct font {
@@ -103,15 +96,13 @@ private:
   LinkedList<MenuSearch> *menuSearchList;
   LinkedList<IconSearch> *iconSearchList;
   LinkedList<WSManagerSearch> *wsManagerSearchList;
-  LinkedList<RWidgetSearch> *rWidgetSearchList;
 
   // internal variables for operation
   Rootmenu *rootmenu;
   WorkspaceManager *wsManager;
-  ReconfigureWidget *reconfWidget;
 
   Atom _XA_WM_COLORMAP_WINDOWS, _XA_WM_PROTOCOLS, _XA_WM_STATE,
-    _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS;
+    _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS, BLACKBOX_CFG_MSG;
   Bool startup, shutdown, reconfigure;
   Display *display;
   GC opGC;
@@ -130,21 +121,16 @@ protected:
   void InitColor(void);
   void LoadDefaults(void);
 
-  unsigned long readDatabaseTexture(char *, char *);
-  Bool readDatabaseColor(char *, char *, BColor *);
-
   // event processing and dispatching
   void ProcessEvent(XEvent *);
 
   // internal routines
   void Dissociate(void);
   void do_reconfigure(void);
+  Bool validateWindow(Window);
 
   // value lookups and retrieval
   void readMenuDatabase(Rootmenu *, XrmValue *, XrmDatabase *);
-  unsigned long getColor(const char *);
-  unsigned long getColor(const char *, unsigned char *, unsigned char *,
-			 unsigned char *);
 
 
 public:
@@ -160,7 +146,6 @@ public:
   BlackboxWindow *searchWindow(Window);
   BlackboxIcon *searchIcon(Window);
   WorkspaceManager *searchWSManager(Window);
-  ReconfigureWidget *searchRWidget(Window);
 
   // window context operations
   void addWindow(BlackboxWindow *);
@@ -174,12 +159,14 @@ public:
   void saveWindowSearch(Window, BlackboxWindow *);
   void saveIconSearch(Window, BlackboxIcon *);
   void saveWSManagerSearch(Window, WorkspaceManager *);
-  void saveRWidgetSearch(Window, ReconfigureWidget *);
   void removeMenuSearch(Window);
   void removeWindowSearch(Window);
   void removeIconSearch(Window);
   void removeWSManagerSearch(Window);
-  void removeRWidgetSearch(Window);
+
+  // X resource database lookups
+  unsigned long readDatabaseTexture(char *, char *);
+  Bool readDatabaseColor(char *, char *, BColor *);
 
   // main event loop
   void EventLoop(void);
@@ -211,9 +198,13 @@ public:
 
   Window Root(void) { return root; }
 
+  // color alloc and lookup
   Bool imageDither(void) { return resource.imageDither; }
   XColor *Colors8bpp(void) { return colors_8bpp; }
   int cpc8bpp(void) { return resource.cpc8bpp; }
+  unsigned long getColor(const char *);
+  unsigned long getColor(const char *, unsigned char *, unsigned char *,
+			 unsigned char *);
 
   XFontStruct *titleFont(void) { return resource.font.title; }
   XFontStruct *menuFont(void) { return resource.font.menu; }
@@ -231,7 +222,7 @@ public:
   int menuTexture(void) { return resource.texture.menu; }
   int menuItemTexture(void) { return resource.texture.imenu; }
 
-  const BColor &frameColor(void) const { return resource.color.frame; }
+  const BColor &borderColor(void) const { return resource.color.border; }
   const BColor &toolboxColor(void) const { return resource.color.toolbox; }
   const BColor &toolboxToColor(void) const
     { return resource.color.toolbox_to; }

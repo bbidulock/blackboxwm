@@ -24,7 +24,9 @@
 #include "Workspacemenu.hh"
 
 #include "blackbox.hh"
+#include "Rootmenu.hh"
 #include "Workspace.hh"
+#include "icon.hh"
 
 #include <stdio.h>
 #include <sys/time.h>
@@ -46,8 +48,8 @@ WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
     CWOverrideRedirect |CWCursor|CWEventMask; 
   
   attrib_create.background_pixmap = None;
-  attrib_create.background_pixel = blackbox->frameColor().pixel;
-  attrib_create.border_pixel = blackbox->frameColor().pixel;
+  attrib_create.background_pixel = attrib_create.border_pixel =
+    blackbox->borderColor().pixel;
   attrib_create.override_redirect = True;
   attrib_create.cursor = blackbox->sessionCursor();
   attrib_create.event_mask = NoEventMask;
@@ -413,6 +415,9 @@ void WorkspaceManager::Reconfigure(void) {
   XSetWindowBackgroundPixmap(display, frame.clock, p);
   if (p) XFreePixmap(display, p);
 
+  XSetWindowBackground(display, frame.base, blackbox->borderColor().pixel);
+  XSetWindowBorder(display, frame.base, blackbox->borderColor().pixel);
+
   XClearWindow(display, frame.window);
   XClearWindow(display, frame.workspaceDock);
   XClearWindow(display, frame.fButton);
@@ -467,7 +472,7 @@ void WorkspaceManager::checkClock(Bool redraw) {
     char t[9];
     sprintf(t, "%02d:%02d %cm",
             ((hour > 12) ? hour - 12 : ((hour == 0) ? 12 : hour)), minute,
-	    ((hour > 12) ? 'p' : 'a'));
+	    ((hour >= 12) ? 'p' : 'a'));
 	  
     int len = strlen(t);
     XDrawString(display, frame.clock, buttonGC, 4,

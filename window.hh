@@ -67,13 +67,14 @@ private:
   struct frame {
     Bool shaped;
     GC ftextGC, utextGC;
-    Pixmap utitle, ftitle, uhandle, fhandle, rhandle, button, pbutton, fbase,
-      ubase;
-    Window window, title, base, handle, close_button, iconify_button,
+    Pixmap utitle, ftitle, uhandle, fhandle, button, pbutton;
+    Window window, title, border, handle, close_button, iconify_button,
       maximize_button, resize_handle;
     int x, y, x_resize, y_resize, x_move, y_move;
     unsigned int width, height, title_h, title_w, handle_h, handle_w,
-      base_w, base_h, button_w, button_h, rh_w, rh_h;
+      border_w, border_h, button_w, button_h, rh_w, rh_h;
+    unsigned long texture;
+    BColor color;
   } frame;
 
   struct protocols {

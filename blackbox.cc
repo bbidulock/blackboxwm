@@ -32,7 +32,11 @@
 #endif
 
 #include "blackbox.hh"
+#include "icon.hh"
+#include "Rootmenu.hh"
+#include "window.hh"
 #include "Workspace.hh"
+#include "WorkspaceManager.hh"
 
 #include <signal.h>
 #include <stdio.h>
@@ -102,7 +106,6 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   focus_window_number = -1;
 
   rootmenu = 0;
-  reconfWidget = 0;
   resource.blackboxrc = 0;
   resource.font.menu = resource.font.icon = resource.font.title = 0;
 
@@ -139,6 +142,7 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   _XA_WM_STATE = XInternAtom(display, "WM_STATE", False);
   _XA_WM_DELETE_WINDOW = XInternAtom(display, "WM_DELETE_WINDOW", False);
   _XA_WM_TAKE_FOCUS = XInternAtom(display, "WM_TAKE_FOCUS", False);
+  BLACKBOX_CFG_MSG = XInternAtom(display, "BLACKBOX_CFG_MSG", False);
 
   XIconSize *iconSize = XAllocIconSize();
   if (iconSize != NULL) {
@@ -164,7 +168,6 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   menuSearchList = new LinkedList<MenuSearch>;
   iconSearchList = new LinkedList<IconSearch>;
   wsManagerSearchList = new LinkedList<WSManagerSearch>;
-  rWidgetSearchList = new LinkedList<RWidgetSearch>;
 
   XrmInitialize();
   LoadDefaults();
@@ -190,7 +193,7 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   XQueryTree(display, root, &r, &p, &children, &nchild);
 
   for (int i = 0; i < (int) nchild; ++i) {
-    if (children[i] == None) continue;
+    if (children[i] == None || ! validateWindow(children[i])) continue;
 
     XWindowAttributes attrib;
     if (XGetWindowAttributes(display, children[i], &attrib)) {
@@ -252,7 +255,6 @@ Blackbox::~Blackbox(void) {
   delete iconSearchList;
   delete menuSearchList;
   delete wsManagerSearchList;
-  delete rWidgetSearchList;
   
   if (resource.font.title) XFreeFont(display, resource.font.title);
   if (resource.font.menu) XFreeFont(display, resource.font.menu);
@@ -324,7 +326,6 @@ void Blackbox::ProcessEvent(XEvent *e) {
     BlackboxWindow *bWin = NULL;
     BlackboxIcon *bIcon = NULL;
     Basemenu *rMenu = NULL;
-    ReconfigureWidget *rWidget = NULL;
     WorkspaceManager *wsMan = NULL;
     
     if ((bWin = searchWindow(e->xbutton.window)) != NULL) {
@@ -335,8 +336,6 @@ void Blackbox::ProcessEvent(XEvent *e) {
       rMenu->buttonPressEvent(&e->xbutton);
     } else if ((wsMan = searchWSManager(e->xbutton.window)) != NULL) {
       wsMan->buttonPressEvent(&e->xbutton);
-    } else if ((rWidget = searchRWidget(e->xbutton.window)) != NULL) {
-      rWidget->buttonPressEvent(&e->xbutton);
     } else if (e->xbutton.window == root && e->xbutton.button == 3) {
       int mx = e->xbutton.x_root - (rootmenu->Width() / 2);
       rootmenu->Move(((mx > 0) ? mx : 0), e->xbutton.y_root -
@@ -353,7 +352,6 @@ void Blackbox::ProcessEvent(XEvent *e) {
     BlackboxWindow *bWin = NULL;
     BlackboxIcon *bIcon = NULL;
     Basemenu *rMenu = NULL;
-    ReconfigureWidget *rWidget = NULL;
     WorkspaceManager *wsMan = NULL;
 
     if ((bWin = searchWindow(e->xbutton.window)) != NULL)
@@ -364,8 +362,6 @@ void Blackbox::ProcessEvent(XEvent *e) {
       rMenu->buttonReleaseEvent(&e->xbutton);
     else if ((wsMan = searchWSManager(e->xbutton.window)) != NULL)
       wsMan->buttonReleaseEvent(&e->xbutton);
-    else if ((rWidget = searchRWidget(e->xbutton.window)) != NULL)
-      rWidget->buttonReleaseEvent(&e->xbutton);
     
     break;
   }
@@ -390,34 +386,32 @@ void Blackbox::ProcessEvent(XEvent *e) {
 		       e->xconfigurerequest.value_mask, &xwc);
     }
     
-    break;
-  }
-    
+    break; }
+  
   case MapRequest: {
     BlackboxWindow *rWin = searchWindow(e->xmaprequest.window);
-    if (rWin == NULL)
-	rWin = new BlackboxWindow(this, e->xmaprequest.window);
     
-    rWin->mapRequestEvent(&e->xmaprequest);
+    if (rWin == NULL && validateWindow(e->xmaprequest.window))
+      rWin = new BlackboxWindow(this, e->xmaprequest.window);
     
-      break;
-  }
+    if (rWin)
+	rWin->mapRequestEvent(&e->xmaprequest);
+    
+    break; }
   
   case MapNotify: {
     BlackboxWindow *mWin = searchWindow(e->xmap.window);
     if (mWin != NULL)
       mWin->mapNotifyEvent(&e->xmap);
     
-    break;
-  }
+    break; }
   
   case UnmapNotify: {
     BlackboxWindow *uWin = searchWindow(e->xunmap.window);
     if (uWin != NULL)
       uWin->unmapNotifyEvent(&e->xunmap);
     
-    break;
-  }
+    break; }
   
   case DestroyNotify: {
     BlackboxWindow *dWin = searchWindow(e->xdestroywindow.window);
@@ -487,7 +481,6 @@ void Blackbox::ProcessEvent(XEvent *e) {
     BlackboxWindow *eWin = NULL;
     BlackboxIcon *eIcon = NULL;
     Basemenu *eMenu = NULL;
-    ReconfigureWidget *rWidget = NULL;
     WorkspaceManager *wsMan = NULL;
 
     if ((eWin = searchWindow(e->xexpose.window)) != NULL)
@@ -498,14 +491,15 @@ void Blackbox::ProcessEvent(XEvent *e) {
       eMenu->exposeEvent(&e->xexpose);
     else if ((wsMan = searchWSManager(e->xexpose.window)) != NULL)
       wsMan->exposeEvent(&e->xexpose);
-    else if ((rWidget = searchRWidget(e->xexpose.window)) != NULL)
-      rWidget->exposeEvent(&e->xexpose);
     
     break;
   } 
   
   case FocusIn: {
     BlackboxWindow *iWin = searchWindow(e->xfocus.window);
+
+    // printf("id 0x%08lx focus in  %d %d\n", e->xfocus.window, e->xfocus.mode,
+    //        e->xfocus.detail);
 
     if ((iWin != NULL) && (e->xfocus.mode != NotifyGrab) &&
 	(e->xfocus.mode != NotifyUngrab)) {
@@ -518,6 +512,9 @@ void Blackbox::ProcessEvent(XEvent *e) {
   
   case FocusOut: {
     BlackboxWindow *oWin = searchWindow(e->xfocus.window);
+
+    // printf("id 0x%08lx focus out %d %d\n", e->xfocus.window, e->xfocus.mode,
+    //        e->xfocus.detail);
 
     if ((oWin != NULL) && (e->xfocus.mode != NotifyGrab) &&
 	(e->xfocus.mode != NotifyUngrab))
@@ -585,6 +582,12 @@ void Blackbox::ProcessEvent(XEvent *e) {
     break;
   }
 
+  case ClientMessage: {
+    if (e->xclient.message_type == BLACKBOX_CFG_MSG)
+      Reconfigure();
+
+    break; }
+
   default:
 #ifdef SHAPE
     if (e->type == shape.event_basep) {
@@ -605,126 +608,93 @@ void Blackbox::ProcessEvent(XEvent *e) {
 // Linked list lookup/save/remove methods 
 // *************************************************************************
 
-BlackboxWindow *Blackbox::searchWindow(Window window) {
+Bool Blackbox::validateWindow(Window window) {
   XEvent event;
-  if (! XCheckTypedWindowEvent(display, window, DestroyNotify, &event)) {
-    BlackboxWindow *win = NULL;
-    LinkedListIterator<WindowSearch> it(windowSearchList);
+  if (XCheckTypedWindowEvent(display, window, DestroyNotify, &event)) {
+    ProcessEvent(&event);
+    return False;
+  }
 
+  return True;
+}
+
+
+BlackboxWindow *Blackbox::searchWindow(Window window) {
+  if (validateWindow(window)) {
+    BlackboxWindow *win;
+    LinkedListIterator<WindowSearch> it(windowSearchList);
+    
     for (; it.current(); it++) {
       WindowSearch *tmp = it.current();
       if (tmp)
 	if (tmp->window == window) {
 	  win = tmp->data;
-	  break;
+	  return win;
 	}
     }
-
-    return win;
-  } else
-    ProcessEvent(&event);
+  }
   
-  return NULL;
+  return 0;
 }
 
 
 Basemenu *Blackbox::searchMenu(Window window) {
-  XEvent event;
-
-  if (! XCheckTypedWindowEvent(display, window, DestroyNotify, &event)) {
+  if (validateWindow(window)) {
     Basemenu *menu = NULL;
     LinkedListIterator<MenuSearch> it(menuSearchList);
-
+    
     for (; it.current(); it++) {
       MenuSearch *tmp = it.current();
-
+      
       if (tmp)
 	if (tmp->window == window) {
 	  menu = tmp->data;
-	  break;
+	  return menu;
 	}
     }
+  }
 
-    return menu;
-  } else
-    ProcessEvent(&event);
-
-  return NULL;
+  return 0;
 }
 
 
 BlackboxIcon *Blackbox::searchIcon(Window window) {
-  XEvent event;
-
-  if (! XCheckTypedWindowEvent(display, window, DestroyNotify, &event)) {
+  if (validateWindow(window)) {
     BlackboxIcon *icon = NULL;
     LinkedListIterator<IconSearch> it(iconSearchList);
-
+    
     for (; it.current(); it++) {
       IconSearch *tmp = it.current();
-
+      
       if (tmp)
 	if (tmp->window == window) {
 	  icon = tmp->data;
-	  break;
+	  return icon;
 	}
     }
-
-    return icon;
-  } else
-    ProcessEvent(&event);
+  }
   
-  return NULL;
+  return 0;
 }
 
 
 WorkspaceManager *Blackbox::searchWSManager(Window window) {
-  XEvent event;
-
-  if (! XCheckTypedWindowEvent(display, window, DestroyNotify, &event)) {
+  if (validateWindow(window)) {
     WorkspaceManager *wsm = NULL;
     LinkedListIterator<WSManagerSearch> it(wsManagerSearchList);
-
+    
     for (; it.current(); it++) {
       WSManagerSearch *tmp = it.current();
-
-      if (tmp)
-	if (tmp->window == window) {
-	  wsm = tmp->data;
-	  break;
-	}
-    }
-    
-    return wsm;
-  } else
-    ProcessEvent(&event);
-  
-  return NULL;
-}
-
-
-ReconfigureWidget *Blackbox::searchRWidget(Window window) {
-  XEvent event;
-
-  if (! XCheckTypedWindowEvent(display, window, DestroyNotify, &event)) {
-    ReconfigureWidget *rWidget = NULL;
-    LinkedListIterator<RWidgetSearch> it(rWidgetSearchList);
-
-    for (; it.current(); it++) {
-      RWidgetSearch *tmp = it.current();
       
       if (tmp)
 	if (tmp->window == window) {
-	  rWidget = tmp->data;
-	  break;
+	  wsm = tmp->data;
+	  return wsm;
 	}
     }
-    
-    return rWidget;
-  } else
-    ProcessEvent(&event);
+  }
   
-  return NULL;
+  return 0;
 }
 
 
@@ -758,14 +728,6 @@ void Blackbox::saveWSManagerSearch(Window window,
   tmp->window = window;
   tmp->data = data;
   wsManagerSearchList->insert(tmp);
-}
-
-
-void Blackbox::saveRWidgetSearch(Window window, ReconfigureWidget *data) {
-  RWidgetSearch *tmp = new RWidgetSearch;
-  tmp->window = window;
-  tmp->data = data;
-  rWidgetSearchList->insert(tmp);
 }
 
 
@@ -822,21 +784,6 @@ void Blackbox::removeWSManagerSearch(Window window) {
     if (tmp)
       if (tmp->window == window) {
 	wsManagerSearchList->remove(tmp);
-	delete tmp;
-	break;
-      }
-  }
-}
-
-
-void Blackbox::removeRWidgetSearch(Window window) {
-  LinkedListIterator<RWidgetSearch> it(rWidgetSearchList);
-  for (; it.current(); it++) {
-    RWidgetSearch *tmp = it.current();
-
-    if (tmp)
-      if (tmp->window == window) {
-	rWidgetSearchList->remove(tmp);
 	delete tmp;
 	break;
       }
@@ -1100,7 +1047,9 @@ void Blackbox::LoadDefaults(void) {
 
   XGrabServer(display);
   
-  resource.blackboxrc = NULL;
+  if (resource.blackboxrc)
+    XrmDestroyDatabase(resource.blackboxrc);
+  resource.blackboxrc = 0;
 
   char *homedir = getenv("HOME"), *rcfile = new char[strlen(homedir) + 32];
   sprintf(rcfile, "%s/.blackboxrc", homedir);
@@ -1140,12 +1089,12 @@ void Blackbox::LoadDefaults(void) {
     resource.texture.imenu = BImageRaised|BImageBevel1|BImageSolid;
 
   // load colors
-  if (! (readDatabaseColor("blackbox.session.frameColor",
-			   "Blackbox.Session.FrameColor",
-			   &resource.color.frame)))
-    resource.color.frame.pixel =
-      getColor("black", &resource.color.frame.r, &resource.color.frame.g,
-	       &resource.color.frame.b);
+  if (! (readDatabaseColor("blackbox.session.borderColor",
+			   "Blackbox.Session.BorderColor",
+			   &resource.color.border)))
+    resource.color.border.pixel =
+      getColor("black", &resource.color.border.r, &resource.color.border.g,
+	       &resource.color.border.b);
   
   if (! (readDatabaseColor("blackbox.session.toolboxColor",
 			   "Blackbox.Session.ToolboxColor",
@@ -1357,20 +1306,21 @@ void Blackbox::LoadDefaults(void) {
   } else
     resource.imageDither = True;
 
-  if (depth == 8 && startup) {
-    if (XrmGetResource(resource.blackboxrc,
-		       "blackbox.imageRender.colorsPerChannel",
-		       "Blackbox.ImageRender.ColorsPerChannel", &value_type,
-		       &value)) {
-      if (sscanf(value.addr, "%d", &resource.cpc8bpp) != 1) {
-	resource.cpc8bpp = 5;
-      } else {
-	if (resource.cpc8bpp < 1) resource.cpc8bpp = 1;
-	if (resource.cpc8bpp > 6) resource.cpc8bpp = 6;
+  if (startup)
+    if (depth == 8) {
+      if (XrmGetResource(resource.blackboxrc,
+			 "blackbox.imageRender.colorsPerChannel",
+			 "Blackbox.ImageRender.ColorsPerChannel", &value_type,
+			 &value)) {
+	if (sscanf(value.addr, "%d", &resource.cpc8bpp) != 1) {
+	  resource.cpc8bpp = 5;
+	} else {
+	  if (resource.cpc8bpp < 1) resource.cpc8bpp = 1;
+	  if (resource.cpc8bpp > 6) resource.cpc8bpp = 6;
+	}
       }
-    }
-  } else
-    resource.cpc8bpp = 0;
+    } else
+      resource.cpc8bpp = 0;
 
   const char *defaultFont = "-*-charter-medium-r-*-*-*-120-*-*-*-*-*-*";
   if (resource.font.title) XFreeFont(display, resource.font.title);
@@ -1451,7 +1401,7 @@ void Blackbox::LoadDefaults(void) {
     }
   }
 
-  XrmDestroyDatabase(resource.blackboxrc);
+  //  XrmDestroyDatabase(resource.blackboxrc);
   XUngrabServer(display);
 }
 
