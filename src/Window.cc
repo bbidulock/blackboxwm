@@ -750,6 +750,10 @@ void BlackboxWindow::grabButtons(void) {
                          ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
                          GrabModeAsync, frame.window,
                          blackbox->getLowerRightAngleCursor());
+  // alt+middle lowers the window
+  blackbox->grabButton(Button2, Mod1Mask, frame.window, True,
+                       ButtonReleaseMask, GrabModeAsync, GrabModeAsync,
+                       frame.window, None);
 }
 
 
@@ -758,6 +762,7 @@ void BlackboxWindow::ungrabButtons(void) {
     blackbox->ungrabButton(Button1, 0, frame.plate);
 
   blackbox->ungrabButton(Button1, Mod1Mask, frame.window);
+  blackbox->ungrabButton(Button2, Mod1Mask, frame.window);
   blackbox->ungrabButton(Button3, Mod1Mask, frame.window);
 }
 
@@ -2594,6 +2599,9 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent *re) {
               frame.changing.width(), frame.changing.height());
 
     XUngrabPointer(blackbox->getXDisplay(), CurrentTime);
+  } else if (re->window == frame.window) {
+    if (re->button == 2 && re->state == Mod1Mask)
+      XUngrabPointer(blackbox->getXDisplay(), CurrentTime);
   }
 }
 
