@@ -15,7 +15,5 @@ $ #Usage
 $ #CompileOptions
 # Compile time options:\n\
   Debugging\t\t\t%s\n\
-  Interlacing:\t\t\t%s\n\
   Shape:\t\t\t%s\n\
-  Slit:\t\t\t\t%s\n\
   8bpp Ordered Dithering:\t%s\n\n

@@ -1,21 +1,19 @@
 $set 14 #main
 
 $ #RCRequiresArg
-# un error: '-rc' requiere un argumento
+# error: '-rc' requiere un argumento
 $ #DISPLAYRequiresArg
-# un error: '-display' requiere un argumento
+# error: '-display' requiere un argumento
 $ #WarnDisplaySet
-# cuidado: no pude fijar la variable del medio ambiente 'DISPLAY'
+# cuidado: no se puede establecer la variable de ambiente 'DISPLAY'
 $ #Usage
 # Blackbox %s: (c) 1997 - 2000 Brad Hughes\n\n\
-  -display <string> ls conexión de mostrar.\n\
-  -rc <string>      el archivo alternativo de recuros.\n\
+  -display <string> conexión de despliegue.\n\
+  -rc <string>      archivo alternativo de recuros.\n\
   -version          mostrar la versión y cerrar.\n\
   -help             mostrar este texto de ayuda y cerrar.\n\n
 $ #CompileOptions
-# Opciones para tiempo de compilar:\n\
-  Información extra para problemas:                %s\n\
-  Interlacing:                                     %s\n\
+# Opciones durante la compilación:\n\
+  Información extra para depuración:               %s\n\
   Forma:                                           %s\n\
-  Slit:                                            %s\n\
-  8bpp simulación ordenada de colores en imagenes: %s\n\n
+  8bpp simulación ordenada de colores en imágenes: %s\n\n

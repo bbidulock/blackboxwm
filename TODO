@@ -1,4 +1,9 @@
--- TODO for Blackbox 0.61.x  - an X11 Window manager
+-- TODO for Blackbox - an X11 Window manager
+
+CVS Bugs:
+-----------------------------
+restart via menu, weird things happen
+unknown options segfault blackbox (blackbox --random)
 
 Stuff TODO or On The Way(tm):
 -----------------------------
@@ -14,7 +19,7 @@ CHANGE: rework the .blackboxrc resources so that they give a more
         uniform behavior across screens. (Still not sure how I want
 	to do this, so it'll have to wait.)
 
-ADD: support for KDE2 via the new WM Spec at
+ADD: support for KDE and GNOME via the new WM Spec at
      http://www.freedesktop.org/standards/wm-spec/
 
 ADD: get volunteers to translate blackbox into other languages

@@ -69,27 +69,27 @@ static void showHelp(int exitval) {
 
   // some people have requested that we print out compile options
   // as well
-  fprintf(stdout,i18n(mainSet, mainCompileOptions,
-                      "Compile time options:\n"
-                      "  Debugging:\t\t\t%s\n"
-                      "  Shape:\t\t\t%s\n"
-                      "  8bpp Ordered Dithering:\t%s\n\n"),
+  printf(i18n(mainSet, mainCompileOptions,
+              "Compile time options:\n"
+              "  Debugging:\t\t\t%s\n"
+              "  Shape:\t\t\t%s\n"
+              "  8bpp Ordered Dithering:\t%s\n\n"),
 #ifdef    DEBUG
-          i18n(CommonSet, CommonYes, "yes"),
+         i18n(CommonSet, CommonYes, "yes"),
 #else // !DEBUG
-          i18n(CommonSet, CommonNo, "no"),
+         i18n(CommonSet, CommonNo, "no"),
 #endif // DEBUG
 
 #ifdef    SHAPE
-          i18n(CommonSet, CommonYes, "yes"),
+         i18n(CommonSet, CommonYes, "yes"),
 #else // !SHAPE
-          i18n(CommonSet, CommonNo, "no"),
+         i18n(CommonSet, CommonNo, "no"),
 #endif // SHAPE
 
 #ifdef    ORDEREDPSEUDO
-          i18n(CommonSet, CommonYes, "yes")
+         i18n(CommonSet, CommonYes, "yes")
 #else // !ORDEREDPSEUDO
-          i18n(CommonSet, CommonNo, "no")
+         i18n(CommonSet, CommonNo, "no")
 #endif // ORDEREDPSEUDO
           );
 

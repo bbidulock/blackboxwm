@@ -16,7 +16,5 @@ $ #Usage
 $ #CompileOptions
 # Izbire pri prevajanju:\n\
   Razhro¹èevanje\t\t\t%s\n\
-  Prepletanje:\t\t\t%s\n\
   Oblika:\t\t\t%s\n\
-  Re¾a:\t\t\t\t%s\n\
   Osembitno stresanje barv:\t%s\n\n

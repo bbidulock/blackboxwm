@@ -15,7 +15,5 @@ $ #Usage
 $ #CompileOptions
 # Kompileerimisoptsioonid:\n\
   Debuggimine\t\t\t%s\n\
-  Pıimimine:\t\t\t%s\n\
   Kuju:\t\t\t%s\n\
-  Pragu:\t\t\t\t%s\n\
   8bpp m‰‰ratud teravustamine:\t%s\n\n

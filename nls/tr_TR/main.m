@@ -15,7 +15,5 @@ $ #Usage
 $ #CompileOptions
 # Denetleme seçenekleri :\n\
   Bilgilendirme\t\t\t%s\n\
-  Týzlama:\t\t\t%s\n\
   Gölgeleme:\t\t\t%s\n\
-  Slit:\t\t\t\t%s\n\
   R8b'e göre týzla:\t%s\n\n

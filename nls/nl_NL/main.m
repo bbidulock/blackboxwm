@@ -15,7 +15,5 @@ $ #Usage
 $ #CompileOptions
 # Gecompileerd met instellingen:\n\
   Debugging:               %s\n\
-  Interlacing:             %s\n\
   Shape:                   %s\n\
-  Slit:                    %s\n\
   8bpp Ordered Dithering:  %s\n\n
