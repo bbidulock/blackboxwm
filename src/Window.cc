@@ -303,8 +303,10 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, BScreen *scrn, Window window) {
 	XFree((char *) ret);
       }
 #endif // KDE
-      
+
       screen->getCurrentWorkspace()->addWindow(this, place_window);
+
+      configure(frame.x, frame.y, frame.width, frame.height); 
 
 #ifdef    KDE
       screen->addKWMWindow(client.window);

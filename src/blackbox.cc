@@ -54,6 +54,10 @@
 #  include <signal.h>
 #endif // HAVE_SIGNAL_H
 
+#ifdef    HAVE_SYS_SIGNAL_H
+#  include <sys/signal.h>
+#endif // HAVE_SYS_SIGNAL_H
+
 #ifdef    HAVE_STDIO_H
 #  include <stdio.h>
 #endif // HAVE_STDIO_H
@@ -848,9 +852,22 @@ void Blackbox::process_event(XEvent *e) {
           grab();
 
           if (((! sa.leave) || sa.inferior) && win->isVisible() &&
-              win->setInputFocus())
+              win->setInputFocus()) {
             if (resource.colormap_focus_follows_mouse)  
               win->installColormap(True);
+            if ((win->getScreen()->doAutoRaise()) &&
+                (auto_raise_window != win)) {
+              struct itimerval delay;
+
+              delay.it_interval.tv_sec = delay.it_interval.tv_usec = 0;
+              delay.it_value.tv_sec = resource.auto_raise_delay_sec;
+              delay.it_value.tv_usec = resource.auto_raise_delay_usec;
+              setitimer(ITIMER_REAL, &delay, 0);
+
+              auto_raise_pending = True;
+              auto_raise_window = win;
+            }
+          }
 
           ungrab();
         }
@@ -898,27 +915,28 @@ void Blackbox::process_event(XEvent *e) {
       if ((tbar = searchToolbar(e->xkey.window)) && tbar->isEditing()) {
         tbar->keyPressEvent(&e->xkey);
       } else if ((screen = searchScreen(e->xkey.root))) {
-	if (e->xkey.state == resource.wkspc_change_mask) {
-	  if (XKeycodeToKeysym(getDisplay(), e->xkey.keycode, 0) == XK_Left){
-	    if (screen->getCurrentWorkspaceID() > 0)
-	      screen->changeWorkspaceID(screen->getCurrentWorkspaceID() - 1);
-	    else
-	      screen->changeWorkspaceID(screen->getCount() - 1);
-	  } else if (XKeycodeToKeysym(getDisplay(), e->xkey.keycode, 0) ==
-		     XK_Right) {
-	    if (screen->getCurrentWorkspaceID() != screen->getCount() - 1)
-	      screen->changeWorkspaceID(screen->getCurrentWorkspaceID() + 1);
-	    else
-	      screen->changeWorkspaceID(0);
-	  }
-	} else if (e->xkey.state == resource.cycle_mask) {
-          if (XKeycodeToKeysym(getDisplay(), e->xkey.keycode, 0) == XK_Tab) {
+	if ((e->xkey.state == resource.wkspc_change_mask) &&
+	    (XKeycodeToKeysym(getDisplay(), e->xkey.keycode, 0) ==
+             XK_Left)) {
+          if (screen->getCurrentWorkspaceID() > 0)
+	    screen->changeWorkspaceID(screen->getCurrentWorkspaceID() - 1);
+	  else
+	    screen->changeWorkspaceID(screen->getCount() - 1);
+	} else if ((e->xkey.state == resource.wkspc_change_mask) &&
+                   (XKeycodeToKeysym(getDisplay(), e->xkey.keycode, 0) ==
+		    XK_Right)) {
+	  if (screen->getCurrentWorkspaceID() != screen->getCount() - 1)
+	    screen->changeWorkspaceID(screen->getCurrentWorkspaceID() + 1);
+	  else
+	    screen->changeWorkspaceID(0);
+	} else if ((e->xkey.state == resource.cycle_mask) &&
+                   (XKeycodeToKeysym(getDisplay(), e->xkey.keycode, 0) ==
+                    XK_Tab)) {
             screen->nextFocus();
-          }
-        } else if (e->xkey.state & (resource.cycle_mask | ShiftMask)) {
-          if (XKeycodeToKeysym(getDisplay(), e->xkey.keycode, 0) == XK_Tab) {
-              screen->prevFocus();
-          }
+        } else if ((e->xkey.state & (resource.cycle_mask | ShiftMask)) &&
+                   (XKeycodeToKeysym(getDisplay(), e->xkey.keycode, 0) ==
+                    XK_Tab)) {
+            screen->prevFocus();
 	}
       }
  

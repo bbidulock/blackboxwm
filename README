@@ -76,7 +76,7 @@ ix86-FreeBSD 3.1-{stable,release}
 ix86-FreeBSD 2.2.x-stable
 ix86-NetBSD 1.3.3
 ix86-BSDi 4.0
-PPC-mkLinux (version?)
+PPC-Linux R5 (aka linuxppc 1999)
 ix86-Solaris 2.6
 Sparc-Solaris 2.6 (2.5 anyone?)
 Sparc-Solaris 2.7

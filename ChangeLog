@@ -1,5 +1,16 @@
 ChangeLog for 0.51.x
 
+Changes from 0.51.0 to 0.51.1:
+  - add a check for sys/signal.h and include it if found... some systems may
+    need this for sigaction support...
+  - added a missing definition for BaseDisplay::getScreenInfo()
+  - BlackboxWindow constructor now sends a synthetic ConfigureNotify when
+    created... so that apps know where they are at after they are reparented...
+    this used to be in older versions... i dunno why i removed it :/
+  - fixed autoraise
+  - fixed that pesky bug that Jeff Raven keeps telling me about... the
+    window cycle and workspace modifiers can now be the same
+
 Changes from 0.50.5 to 0.51.0:
   - new default theme, shows off new gradients (see below)
   - many themes updated to show off new menu bullet configuration

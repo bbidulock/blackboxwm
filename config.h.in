@@ -58,6 +58,9 @@
 /* Define if you have the <sys/select.h> header file.  */
 #undef HAVE_SYS_SELECT_H
 
+/* Define if you have the <sys/signal.h> header file.  */
+#undef HAVE_SYS_SIGNAL_H
+
 /* Define if you have the <sys/stat.h> header file.  */
 #undef HAVE_SYS_STAT_H
 

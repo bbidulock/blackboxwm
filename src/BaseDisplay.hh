@@ -70,7 +70,8 @@ public:
   Atom getWMColormapAtom(void) { return xa_wm_colormap_windows; }
   Atom getMotifWMHintsAtom(void) { return motif_wm_hints; }
 
-  ScreenInfo *getScreenInfo(int);
+  ScreenInfo *getScreenInfo(int s)
+    { return (ScreenInfo *) screenInfoList->find(s); }
 
   Bool hasShapeExtensions(void) { return shape.extensions; }
   Bool doShutdown(void) { return _shutdown; }
