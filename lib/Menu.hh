@@ -43,7 +43,6 @@ extern "C" {
 namespace bt {
 
   class Application;
-  class ImageControl;
   class Menu;
 
   class MenuItem
@@ -92,8 +91,7 @@ namespace bt {
   class MenuStyle : public NoCopy
   {
   public:
-    static MenuStyle *get(Application &app, unsigned int screen,
-                          ImageControl *imagecontrol);
+    static MenuStyle *get(Application &app, unsigned int screen);
 
     void load(const Resource &resource);
 
@@ -108,6 +106,8 @@ namespace bt {
     { return title.texture; }
     const Texture &frameTexture(void) const
     { return frame.texture; }
+    const Texture &activeTexture(void) const
+    { return active.texture; }
 
     // colors
     const bt::Color &titleForegroundColor(void) const
@@ -125,14 +125,6 @@ namespace bt {
     const Font &frameFont(void) const
     { return frame.font; }
 
-    // convenience
-    Pixmap titlePixmap(unsigned int width, unsigned int height,
-                       Pixmap oldpixmap);
-    Pixmap framePixmap(unsigned int width, unsigned int height,
-                       Pixmap oldpixmap);
-    Pixmap activePixmap(unsigned int width, unsigned int height,
-                        Pixmap oldpixmap);
-
     // bitmaps
     Pixmap arrowBitmap() const { return bitmap.arrow; }
     Pixmap checkBitmap() const { return bitmap.check; }
@@ -149,8 +141,7 @@ namespace bt {
                   const MenuItem &item, Pixmap activePixmap) const;
 
   private:
-    MenuStyle(Application &app, unsigned int screen,
-              ImageControl *imagecontrol);
+    MenuStyle(Application &app, unsigned int screen);
     ~MenuStyle(void);
 
     Application &_app;
@@ -239,6 +230,7 @@ namespace bt {
 
   protected:
     virtual void updateSize(void);
+    virtual void updatePixmaps(void);
 
     virtual void buttonPressEvent(const XButtonEvent * const event);
     virtual void buttonReleaseEvent(const XButtonEvent * const event);

@@ -31,6 +31,7 @@ extern "C" {
 #include "Menu.hh"
 #include "Application.hh"
 #include "Pen.hh"
+#include "PixmapCache.hh"
 #include "Resource.hh"
 
 static const unsigned int arrow_width  = 7;
@@ -53,22 +54,20 @@ bt::MenuStyle **bt::MenuStyle::styles = 0;
 
 
 bt::MenuStyle *bt::MenuStyle::get(Application &app,
-                                  unsigned int screen,
-                                  ImageControl *imagecontrol) {
+                                  unsigned int screen) {
   if (! styles) {
     styles = new MenuStyle*[app.display().screenCount()];
     for (unsigned int i = 0; i < app.display().screenCount(); ++i)
       styles[i] = 0;
   }
   if (! styles[screen])
-    styles[screen] = new MenuStyle(app, screen, imagecontrol);
+    styles[screen] = new MenuStyle(app, screen);
   return styles[screen];
 }
 
 
-bt::MenuStyle::MenuStyle(Application &app, unsigned int screen,
-                         ImageControl *imagecontrol)
-  : _app(app), _screen(screen), _imagecontrol(imagecontrol) {
+bt::MenuStyle::MenuStyle(Application &app, unsigned int screen)
+  : _app(app), _screen(screen) {
   title.alignment = AlignLeft;
   frame.alignment = AlignLeft;
   margin_w = 1u;
@@ -182,26 +181,6 @@ unsigned int bt::MenuStyle::frameMargin(void) const {
 
 unsigned int bt::MenuStyle::itemMargin(void) const {
   return active.texture.borderWidth() + margin_w;
-}
-
-
-Pixmap bt::MenuStyle::titlePixmap(unsigned int width, unsigned int height,
-                                  Pixmap oldpixmap) {
-  return title.texture.render(_app.display(), _screen, *_imagecontrol,
-                              width, height, oldpixmap);
-}
-
-
-Pixmap bt::MenuStyle::framePixmap(unsigned int width, unsigned int height,
-                                  Pixmap oldpixmap) {
-  return frame.texture.render(_app.display(), _screen, *_imagecontrol,
-                              width, height, oldpixmap);
-}
-
-Pixmap bt::MenuStyle::activePixmap(unsigned int width, unsigned int height,
-                                   Pixmap oldpixmap) {
-  return active.texture.render(_app.display(), _screen, *_imagecontrol,
-                               width, height, oldpixmap);
 }
 
 
@@ -382,6 +361,11 @@ bt::Menu::~Menu(void)
   hide();
   clear();
 
+  bt::PixmapCache::release(_tpixmap);
+  bt::PixmapCache::release(_fpixmap);
+  bt::PixmapCache::release(_apixmap);
+  _tpixmap = _fpixmap = _apixmap = 0ul;
+
   _app.removeEventHandler(_window);
   XDestroyWindow(_app.XDisplay(), _window);
 }
@@ -409,6 +393,7 @@ unsigned int bt::Menu::insertItem(const MenuItem &item,
 
   if (isVisible()) {
     updateSize();
+    updatePixmaps();
     XClearArea(_app.XDisplay(), _window, 0, 0,
                _rect.width(), _rect.height(), True);
   } else {
@@ -559,6 +544,7 @@ void bt::Menu::removeItem(unsigned int id) {
 
   if (isVisible()) {
     updateSize();
+    updatePixmaps();
     XClearArea(_app.XDisplay(), _window,
                0, 0, _rect.width(), _rect.height(), True);
   } else {
@@ -583,6 +569,7 @@ void bt::Menu::removeIndex(unsigned int index) {
 
   if (isVisible()) {
     updateSize();
+    updatePixmaps();
     XClearArea(_app.XDisplay(), _window,
                0, 0, _rect.width(), _rect.height(), True);
   } else {
@@ -597,6 +584,7 @@ void bt::Menu::clear(void) {
 
   if (isVisible()) {
     updateSize();
+    updatePixmaps();
     XClearArea(_app.XDisplay(), _window,
                0, 0, _rect.width(), _rect.height(), True);
   } else {
@@ -610,6 +598,7 @@ void bt::Menu::showTitle(void) {
 
     if (isVisible()) {
     updateSize();
+    updatePixmaps();
     XClearArea(_app.XDisplay(), _window,
                0, 0, _rect.width(), _rect.height(), True);
   } else {
@@ -623,6 +612,7 @@ void bt::Menu::hideTitle(void) {
 
   if (isVisible()) {
     updateSize();
+    updatePixmaps();
     XClearArea(_app.XDisplay(), _window,
                0, 0, _rect.width(), _rect.height(), True);
   } else {
@@ -691,6 +681,8 @@ void bt::Menu::move(int x, int y) {
 void bt::Menu::show(void) {
   if (isVisible()) return;
 
+  updatePixmaps();
+
   XMapRaised(_app.XDisplay(), _window);
   XSync(_app.XDisplay(), False);
   _app.openMenu(this);
@@ -723,6 +715,13 @@ void bt::Menu::hide(void) {
   XUnmapWindow(_app.XDisplay(), _window);
   _visible = false;
   _pressed = false;
+
+  // release the pixmaps for this menu... menus are not visible 100% of the
+  // time, so they should not use pixmap memory 100% of the time
+  bt::PixmapCache::release(_tpixmap);
+  bt::PixmapCache::release(_fpixmap);
+  bt::PixmapCache::release(_apixmap);
+  _tpixmap = _fpixmap = _apixmap = 0ul;
 }
 
 
@@ -734,6 +733,7 @@ void bt::Menu::reconfigure(void) {
 
   if (isVisible()) {
     updateSize();
+    updatePixmaps();
     XClearArea(_app.XDisplay(), _window,
                0, 0, _rect.width(), _rect.height(), True);
   } else {
@@ -743,7 +743,7 @@ void bt::Menu::reconfigure(void) {
 
 
 void bt::Menu::updateSize(void) {
-  MenuStyle* style = MenuStyle::get(_app, _screen, 0);
+  MenuStyle* style = MenuStyle::get(_app, _screen);
 
   if (_show_title) {
     _trect = style->titleRect(_title);
@@ -754,18 +754,18 @@ void bt::Menu::updateSize(void) {
   }
 
   const ScreenInfo& screeninfo = _app.display().screenInfo(_screen);
-  unsigned int max_item_w, col_h = 0u, max_col_h = 0u;
+  unsigned int col_h = 0u, max_col_h = 0u;
   unsigned int row = 0u, cols = 1u;
-  max_item_w = std::max(20u, _trect.width());
+  _itemw = std::max(20u, _trect.width());
   ItemList::iterator it, end;
   for (it= items.begin(), end = items.end(); it != end; ++it) {
     if (it->isSeparator()) {
-      max_item_w = std::max(max_item_w, 20u);
+      _itemw = std::max(_itemw, 20u);
       it->height = style->separatorHeight();
       col_h += it->height;
     } else {
       const Rect &rect = style->itemRect(*it);
-      max_item_w = std::max(max_item_w, rect.width());
+      _itemw = std::max(_itemw, rect.width());
       it->height = rect.height();
       col_h += it->height;
     }
@@ -789,7 +789,7 @@ void bt::Menu::updateSize(void) {
 
   // update rects
   _irect.setRect(style->frameMargin(), _frect.top() + style->frameMargin(),
-                 std::max(_trect.width(), cols * max_item_w), max_col_h);
+                 std::max(_trect.width(), cols * _itemw), max_col_h);
   _frect.setSize(_irect.width()  + (style->frameMargin() * 2),
                  _irect.height() + (style->frameMargin() * 2));
   _rect.setSize(_frect.width(), _frect.height());
@@ -800,17 +800,24 @@ void bt::Menu::updateSize(void) {
   }
 
   XResizeWindow(_app.XDisplay(), _window, _rect.width(), _rect.height());
+  _size_dirty = false;
+}
+
+
+void bt::Menu::updatePixmaps(void) {
+  MenuStyle* style = MenuStyle::get(_app, _screen);
 
   // update pixmaps
-  if (_show_title)
-    _tpixmap = style->titlePixmap(_trect.width(), _trect.height(), _tpixmap);
-  _fpixmap = style->framePixmap(_frect.width(), _frect.height(), _fpixmap);
+  if (_show_title) {
+    _tpixmap = PixmapCache::find(_screen, style->titleTexture(),
+                                 _trect.width(), _trect.height(), _tpixmap);
+  }
+  _fpixmap = PixmapCache::find(_screen, style->frameTexture(),
+                               _frect.width(), _frect.height(), _fpixmap);
 
-  _itemw = max_item_w;
-  _apixmap = style->activePixmap(_itemw, textHeight(style->frameFont()) +
-                                 (style->itemMargin() * 2), _apixmap);
-
-  _size_dirty = false;
+  _apixmap = PixmapCache::find(_screen, style->activeTexture(),
+                               _itemw, textHeight(style->frameFont()) +
+                               (style->itemMargin() * 2), _apixmap);
 }
 
 
@@ -983,7 +990,7 @@ void bt::Menu::leaveNotifyEvent(const XCrossingEvent * const /*event*/) {
 
 
 void bt::Menu::exposeEvent(const XExposeEvent * const event) {
-  MenuStyle* style = MenuStyle::get(_app, _screen, 0);
+  MenuStyle* style = MenuStyle::get(_app, _screen);
   Rect r(event->x, event->y, event->width, event->height), u;
 
   if (_show_title && r.intersects(_trect)) {
@@ -1203,7 +1210,7 @@ void bt::Menu::activateItem(const Rect &rect, MenuItem &item) {
   if (item.sub->_size_dirty)
     item.sub->updateSize();
 
-  MenuStyle *style = MenuStyle::get(_app, _screen, 0);
+  MenuStyle *style = MenuStyle::get(_app, _screen);
   const ScreenInfo& screeninfo = _app.display().screenInfo(_screen);
   int px = _rect.x() + rect.x() + rect.width();
   int py = _rect.y() + rect.y() - style->frameMargin();
