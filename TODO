@@ -24,6 +24,10 @@ warts:
 Stuff TODO or On The Way(tm):
 -----------------------------
 
+bt::i18n is very awkward to use - replace it with something else that
+can translate into either UTF-8 (needed for NETWM and Xft) or locale
+(for Xmb).
+
 ADD: more user-friendly and intuitive method of moving a window to
 another workspace: grab the window like you would for a move, switch
 workspaces (like with bbkeys) and let go of the window.
