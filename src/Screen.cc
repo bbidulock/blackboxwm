@@ -202,7 +202,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
                               mask, &setattrib);
   geom_visible = False;
 
-  BTexture* texture = &(resource.wstyle.l_focus);
+  bt::Texture* texture = &(resource.wstyle.l_focus);
   geom_pixmap = texture->render(geom_w, geom_h, geom_pixmap);
   if (geom_pixmap == ParentRelative) {
     texture = &(resource.wstyle.t_focus);
@@ -473,7 +473,7 @@ void BScreen::reconfigure(void) {
   geom_w += (resource.bevel_width * 2);
   geom_h += (resource.bevel_width * 2);
 
-  BTexture* texture = &(resource.wstyle.l_focus);
+  bt::Texture* texture = &(resource.wstyle.l_focus);
   geom_pixmap = texture->render(geom_w, geom_h, geom_pixmap);
   if (geom_pixmap == ParentRelative) {
     texture = &(resource.wstyle.t_focus);
@@ -625,13 +625,13 @@ void BScreen::LoadStyle(void) {
   // make the code cleaner and is not actually used for display
   BColor color = readDatabaseColor("window.frame.focusColor",
                                    "Window.Frame.FocusColor", "white");
-  resource.wstyle.f_focus = BTexture("solid flat", getBaseDisplay(),
+  resource.wstyle.f_focus = bt::Texture("solid flat", getBaseDisplay(),
                                      getScreenNumber(), image_control);
   resource.wstyle.f_focus.setColor(color);
 
   color = readDatabaseColor("window.frame.unfocusColor",
                             "Window.Frame.UnfocusColor", "white");
-  resource.wstyle.f_unfocus = BTexture("solid flat", getBaseDisplay(),
+  resource.wstyle.f_unfocus = bt::Texture("solid flat", getBaseDisplay(),
                                        getScreenNumber(), image_control);
   resource.wstyle.f_unfocus.setColor(color);
 
@@ -658,13 +658,13 @@ void BScreen::LoadStyle(void) {
   }
 
   // sanity checks
-  if (resource.wstyle.t_focus.texture() == BTexture::Parent_Relative)
+  if (resource.wstyle.t_focus.texture() == bt::Texture::Parent_Relative)
     resource.wstyle.t_focus = resource.wstyle.f_focus;
-  if (resource.wstyle.t_unfocus.texture() == BTexture::Parent_Relative)
+  if (resource.wstyle.t_unfocus.texture() == bt::Texture::Parent_Relative)
     resource.wstyle.t_unfocus = resource.wstyle.f_unfocus;
-  if (resource.wstyle.h_focus.texture() == BTexture::Parent_Relative)
+  if (resource.wstyle.h_focus.texture() == bt::Texture::Parent_Relative)
     resource.wstyle.h_focus = resource.wstyle.f_focus;
-  if (resource.wstyle.h_unfocus.texture() == BTexture::Parent_Relative)
+  if (resource.wstyle.h_unfocus.texture() == bt::Texture::Parent_Relative)
     resource.wstyle.h_unfocus = resource.wstyle.f_unfocus;
 
   // load toolbar config
@@ -704,8 +704,8 @@ void BScreen::LoadStyle(void) {
   }
 
   // sanity checks
-  if (resource.tstyle.toolbar.texture() == BTexture::Parent_Relative) {
-    resource.tstyle.toolbar = BTexture("solid flat", getBaseDisplay(),
+  if (resource.tstyle.toolbar.texture() == bt::Texture::Parent_Relative) {
+    resource.tstyle.toolbar = bt::Texture("solid flat", getBaseDisplay(),
                                        getScreenNumber(), image_control);
     resource.tstyle.toolbar.setColor(BColor("black", getBaseDisplay(),
                                             getScreenNumber()));
@@ -768,8 +768,8 @@ void BScreen::LoadStyle(void) {
   }
 
   // sanity checks
-  if (resource.mstyle.frame.texture() == BTexture::Parent_Relative) {
-    resource.mstyle.frame = BTexture("solid flat", getBaseDisplay(),
+  if (resource.mstyle.frame.texture() == bt::Texture::Parent_Relative) {
+    resource.mstyle.frame = bt::Texture("solid flat", getBaseDisplay(),
                                      getScreenNumber(), image_control);
     resource.mstyle.frame.setColor(BColor("black", getBaseDisplay(),
                                           getScreenNumber()));
@@ -1843,18 +1843,18 @@ void BScreen::toggleFocusModel(FocusModel model) {
 }
 
 
-BTexture BScreen::readDatabaseTexture(const std::string &rname,
+bt::Texture BScreen::readDatabaseTexture(const std::string &rname,
                                       const std::string &rclass,
                                       const std::string &default_color) {
-  BTexture texture;
+  bt::Texture texture;
   XrmValue value;
   char *value_type;
 
   if (XrmGetResource(resource.stylerc, rname.c_str(), rclass.c_str(),
                      &value_type, &value))
-    texture = BTexture(value.addr);
+    texture = bt::Texture(value.addr);
   else
-    texture.setTexture(BTexture::Solid | BTexture::Flat);
+    texture.setTexture(bt::Texture::Solid | bt::Texture::Flat);
 
   // associate this texture with this screen
   texture.setDisplay(getBaseDisplay(), getScreenNumber());

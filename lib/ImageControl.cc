@@ -366,7 +366,7 @@ Pixmap BImageControl::searchCache(const unsigned int width,
     CachedImage& tmp = *it;
     if (tmp.width == width && tmp.height == height &&
         tmp.texture == texture && tmp.pixel1 == c1.pixel())
-      if (texture & BTexture::Gradient) {
+      if (texture & bt::Texture::Gradient) {
         if (tmp.pixel2 == c2.pixel()) {
           tmp.count++;
           return tmp.pixmap;
@@ -381,8 +381,8 @@ Pixmap BImageControl::searchCache(const unsigned int width,
 
 
 Pixmap BImageControl::renderImage(unsigned int width, unsigned int height,
-                                  const BTexture &texture) {
-  if (texture.texture() & BTexture::Parent_Relative) return ParentRelative;
+                                  const bt::Texture &texture) {
+  if (texture.texture() & bt::Texture::Parent_Relative) return ParentRelative;
 
   Pixmap pixmap = searchCache(width, height, texture.texture(),
 			      texture.color(), texture.colorTo());
@@ -403,7 +403,7 @@ Pixmap BImageControl::renderImage(unsigned int width, unsigned int height,
   tmp.texture = texture.texture();
   tmp.pixel1 = texture.color().pixel();
 
-  if (texture.texture() & BTexture::Gradient)
+  if (texture.texture() & bt::Texture::Gradient)
     tmp.pixel2 = texture.colorTo().pixel();
   else
     tmp.pixel2 = 0l;

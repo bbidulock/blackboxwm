@@ -334,11 +334,11 @@ void Basemenu::update(void) {
   if (menu.height < 1) menu.height = 1;
 
   Pixmap tmp;
-  BTexture *texture;
+  bt::Texture *texture;
   if (title_vis) {
     tmp = menu.title_pixmap;
     texture = &(screen->getMenuStyle()->title);
-    if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
+    if (texture->texture() == (bt::Texture::Flat | bt::Texture::Solid)) {
       menu.title_pixmap = None;
       XSetWindowBackground(display, menu.title,
                            texture->color().pixel());
@@ -353,7 +353,7 @@ void Basemenu::update(void) {
 
   tmp = menu.frame_pixmap;
   texture = &(screen->getMenuStyle()->frame);
-  if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
+  if (texture->texture() == (bt::Texture::Flat | bt::Texture::Solid)) {
     menu.frame_pixmap = None;
     XSetWindowBackground(display, menu.frame,
                          texture->color().pixel());
@@ -366,7 +366,7 @@ void Basemenu::update(void) {
 
   tmp = menu.hilite_pixmap;
   texture = &(screen->getMenuStyle()->hilite);
-  if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
+  if (texture->texture() == (bt::Texture::Flat | bt::Texture::Solid)) {
     menu.hilite_pixmap = None;
   } else {
     menu.hilite_pixmap =
@@ -375,7 +375,7 @@ void Basemenu::update(void) {
   if (tmp) image_ctrl->removeImage(tmp);
 
   tmp = menu.sel_pixmap;
-  if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
+  if (texture->texture() == (bt::Texture::Flat | bt::Texture::Solid)) {
     menu.sel_pixmap = None;
   } else {
     const int hw = menu.item_h / 2;

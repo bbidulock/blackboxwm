@@ -260,7 +260,7 @@ void Slit::reconfigure(void) {
   else
     XMapWindow(display, frame.window);
 
-  BTexture *texture = &(screen->getToolbarStyle()->toolbar);
+  bt::Texture *texture = &(screen->getToolbarStyle()->toolbar);
   frame.pixmap = texture->render(frame.rect.width(), frame.rect.height(),
                                  frame.pixmap);
   if (! frame.pixmap)

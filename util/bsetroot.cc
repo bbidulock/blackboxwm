@@ -317,7 +317,7 @@ void bsetroot::gradient(void) {
   descr += "flat";
 
   for (unsigned int screen = 0; screen < getNumberOfScreens(); screen++) {
-    BTexture texture(descr, this, screen, img_ctrl[screen]);
+    bt::Texture texture(descr, this, screen, img_ctrl[screen]);
     const ScreenInfo *screen_info = getScreenInfo(screen);
 
     texture.setColor(BColor(fore, this, screen));

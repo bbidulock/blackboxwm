@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Image.cc for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
 // Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
@@ -68,18 +68,18 @@ BImage::~BImage(void) {
 }
 
 
-Pixmap BImage::render(const BTexture &texture) {
-  if (texture.texture() & BTexture::Parent_Relative)
+Pixmap BImage::render(const bt::Texture &texture) {
+  if (texture.texture() & bt::Texture::Parent_Relative)
     return ParentRelative;
-  else if (texture.texture() & BTexture::Solid)
+  else if (texture.texture() & bt::Texture::Solid)
     return render_solid(texture);
-  else if (texture.texture() & BTexture::Gradient)
+  else if (texture.texture() & bt::Texture::Gradient)
     return render_gradient(texture);
   return None;
 }
 
 
-Pixmap BImage::render_solid(const BTexture &texture) {
+Pixmap BImage::render_solid(const bt::Texture &texture) {
   Pixmap pixmap = XCreatePixmap(control->getBaseDisplay()->getXDisplay(),
 				control->getDrawable(), width,
 				height, control->getDepth());
@@ -94,14 +94,14 @@ Pixmap BImage::render_solid(const BTexture &texture) {
 
   XFillRectangle(display, pixmap, pen.gc(), 0, 0, width, height);
 
-  if (texture.texture() & BTexture::Interlaced) {
+  if (texture.texture() & bt::Texture::Interlaced) {
     BPen peninterlace(texture.colorTo());
     for (unsigned int i = 0; i < height; i += 2)
       XDrawLine(display, pixmap, peninterlace.gc(), 0, i, width, i);
   }
 
-  if (texture.texture() & BTexture::Bevel1) {
-    if (texture.texture() & BTexture::Raised) {
+  if (texture.texture() & bt::Texture::Bevel1) {
+    if (texture.texture() & bt::Texture::Raised) {
       XDrawLine(display, pixmap, penshadow.gc(),
                 0, height - 1, width - 1, height - 1);
       XDrawLine(display, pixmap, penshadow.gc(),
@@ -111,7 +111,7 @@ Pixmap BImage::render_solid(const BTexture &texture) {
                 0, 0, width - 1, 0);
       XDrawLine(display, pixmap, penlight.gc(),
                 0, height - 1, 0, 0);
-    } else if (texture.texture() & BTexture::Sunken) {
+    } else if (texture.texture() & bt::Texture::Sunken) {
       XDrawLine(display, pixmap, penlight.gc(),
                 0, height - 1, width - 1, height - 1);
       XDrawLine(display, pixmap, penlight.gc(),
@@ -122,8 +122,8 @@ Pixmap BImage::render_solid(const BTexture &texture) {
       XDrawLine(display, pixmap, penshadow.gc(),
                 0, height - 1, 0, 0);
     }
-  } else if (texture.texture() & BTexture::Bevel2) {
-    if (texture.texture() & BTexture::Raised) {
+  } else if (texture.texture() & bt::Texture::Bevel2) {
+    if (texture.texture() & bt::Texture::Raised) {
       XDrawLine(display, pixmap, penshadow.gc(),
                 1, height - 3, width - 3, height - 3);
       XDrawLine(display, pixmap, penshadow.gc(),
@@ -133,7 +133,7 @@ Pixmap BImage::render_solid(const BTexture &texture) {
                 1, 1, width - 3, 1);
       XDrawLine(display, pixmap, penlight.gc(),
                 1, height - 3, 1, 1);
-    } else if (texture.texture() & BTexture::Sunken) {
+    } else if (texture.texture() & bt::Texture::Sunken) {
       XDrawLine(display, pixmap, penlight.gc(),
                 1, height - 3, width - 3, height - 3);
       XDrawLine(display, pixmap, penlight.gc(),
@@ -150,36 +150,36 @@ Pixmap BImage::render_solid(const BTexture &texture) {
 }
 
 
-Pixmap BImage::render_gradient(const BTexture &texture) {
+Pixmap BImage::render_gradient(const bt::Texture &texture) {
   bool inverted = False;
 
-  interlaced = texture.texture() & BTexture::Interlaced;
+  interlaced = texture.texture() & bt::Texture::Interlaced;
 
-  if (texture.texture() & BTexture::Sunken) {
+  if (texture.texture() & bt::Texture::Sunken) {
     from = texture.colorTo();
     to = texture.color();
 
-    if (! (texture.texture() & BTexture::Invert)) inverted = True;
+    if (! (texture.texture() & bt::Texture::Invert)) inverted = True;
   } else {
     from = texture.color();
     to = texture.colorTo();
 
-    if (texture.texture() & BTexture::Invert) inverted = True;
+    if (texture.texture() & bt::Texture::Invert) inverted = True;
   }
 
   control->getGradientBuffers(width, height, &xtable, &ytable);
 
-  if (texture.texture() & BTexture::Diagonal) dgradient();
-  else if (texture.texture() & BTexture::Elliptic) egradient();
-  else if (texture.texture() & BTexture::Horizontal) hgradient();
-  else if (texture.texture() & BTexture::Pyramid) pgradient();
-  else if (texture.texture() & BTexture::Rectangle) rgradient();
-  else if (texture.texture() & BTexture::Vertical) vgradient();
-  else if (texture.texture() & BTexture::CrossDiagonal) cdgradient();
-  else if (texture.texture() & BTexture::PipeCross) pcgradient();
+  if (texture.texture() & bt::Texture::Diagonal) dgradient();
+  else if (texture.texture() & bt::Texture::Elliptic) egradient();
+  else if (texture.texture() & bt::Texture::Horizontal) hgradient();
+  else if (texture.texture() & bt::Texture::Pyramid) pgradient();
+  else if (texture.texture() & bt::Texture::Rectangle) rgradient();
+  else if (texture.texture() & bt::Texture::Vertical) vgradient();
+  else if (texture.texture() & bt::Texture::CrossDiagonal) cdgradient();
+  else if (texture.texture() & bt::Texture::PipeCross) pcgradient();
 
-  if (texture.texture() & BTexture::Bevel1) bevel1();
-  else if (texture.texture() & BTexture::Bevel2) bevel2();
+  if (texture.texture() & bt::Texture::Bevel1) bevel1();
+  else if (texture.texture() & bt::Texture::Bevel2) bevel2();
 
   if (inverted) invert();
 

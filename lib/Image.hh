@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Image.hh for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
 // Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
@@ -35,8 +35,11 @@ extern "C" {
 #include "BaseDisplay.hh"
 #include "Color.hh"
 
+namespace bt {
+  class Texture;
+}
+
 class BImageControl;
-class BTexture;
 
 class BImage {
 private:
@@ -58,8 +61,8 @@ private:
 #endif
 
   Pixmap renderPixmap(void);
-  Pixmap render_solid(const BTexture &texture);
-  Pixmap render_gradient(const BTexture &texture);
+  Pixmap render_solid(const bt::Texture &texture);
+  Pixmap render_gradient(const bt::Texture &texture);
 
   XImage *renderXImage(void);
 
@@ -81,7 +84,7 @@ public:
   BImage(BImageControl *c, int w, int h);
   ~BImage(void);
 
-  Pixmap render(const BTexture &texture);
+  Pixmap render(const bt::Texture &texture);
 };
 
 
@@ -118,7 +121,7 @@ public:
   unsigned long getSqrt(unsigned int x);
 
   Pixmap renderImage(unsigned int width, unsigned int height,
-                     const BTexture &texture);
+                     const bt::Texture &texture);
 
   void installRootColormap(void);
   void removeImage(Pixmap pixmap);

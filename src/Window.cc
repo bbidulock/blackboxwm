@@ -459,7 +459,7 @@ void BlackboxWindow::associateClientWindow(void) {
 
 
 void BlackboxWindow::decorate(void) {
-  BTexture* texture;
+  bt::Texture* texture;
 
   texture = &(screen->getWindowStyle()->b_focus);
   frame.fbutton = texture->render(frame.button_w, frame.button_w,
@@ -540,7 +540,7 @@ void BlackboxWindow::decorate(void) {
 
 
 void BlackboxWindow::decorateLabel(void) {
-  BTexture *texture;
+  bt::Texture *texture;
 
   texture = &(screen->getWindowStyle()->l_focus);
   frame.flabel = texture->render(frame.label_w, frame.label_h, frame.flabel);

@@ -35,19 +35,20 @@ extern "C" {
 #include <assert.h>
 
 #include "Texture.hh"
+
 #include "BaseDisplay.hh"
 #include "Image.hh"
 
 
-BTexture::BTexture(const BaseDisplay * const _display,
-                   unsigned int _screen, BImageControl* _ctrl)
+bt::Texture::Texture(const BaseDisplay * const _display,
+                     unsigned int _screen, BImageControl* _ctrl)
   : c(_display, _screen), ct(_display, _screen),
     lc(_display, _screen), sc(_display, _screen), t(0),
     dpy(_display), ctrl(_ctrl), scrn(_screen) { }
 
 
-BTexture::BTexture(const std::string &d, const BaseDisplay * const _display,
-                   unsigned int _screen, BImageControl* _ctrl)
+bt::Texture::Texture(const std::string &d, const BaseDisplay * const _display,
+                     unsigned int _screen, BImageControl* _ctrl)
   : c(_display, _screen), ct(_display, _screen),
     lc(_display, _screen), sc(_display, _screen), t(0),
     dpy(_display), ctrl(_ctrl), scrn(_screen) {
@@ -55,7 +56,7 @@ BTexture::BTexture(const std::string &d, const BaseDisplay * const _display,
 }
 
 
-void BTexture::setColor(const BColor &cc) {
+void bt::Texture::setColor(const BColor &cc) {
   c = cc;
   c.setDisplay(display(), screen());
 
@@ -87,7 +88,7 @@ void BTexture::setColor(const BColor &cc) {
 }
 
 
-void BTexture::setDescription(const std::string &d) {
+void bt::Texture::setDescription(const std::string &d) {
   descr.erase();
   descr.reserve(d.length());
 
@@ -96,52 +97,52 @@ void BTexture::setDescription(const std::string &d) {
     descr += tolower(*it);
 
   if (descr.find("parentrelative") != std::string::npos) {
-    setTexture(BTexture::Parent_Relative);
+    setTexture(bt::Texture::Parent_Relative);
   } else {
     setTexture(0);
 
     if (descr.find("gradient") != std::string::npos) {
-      addTexture(BTexture::Gradient);
+      addTexture(bt::Texture::Gradient);
       if (descr.find("crossdiagonal") != std::string::npos)
-        addTexture(BTexture::CrossDiagonal);
+        addTexture(bt::Texture::CrossDiagonal);
       else if (descr.find("rectangle") != std::string::npos)
-        addTexture(BTexture::Rectangle);
+        addTexture(bt::Texture::Rectangle);
       else if (descr.find("pyramid") != std::string::npos)
-        addTexture(BTexture::Pyramid);
+        addTexture(bt::Texture::Pyramid);
       else if (descr.find("pipecross") != std::string::npos)
-        addTexture(BTexture::PipeCross);
+        addTexture(bt::Texture::PipeCross);
       else if (descr.find("elliptic") != std::string::npos)
-        addTexture(BTexture::Elliptic);
+        addTexture(bt::Texture::Elliptic);
       else if (descr.find("horizontal") != std::string::npos)
-        addTexture(BTexture::Horizontal);
+        addTexture(bt::Texture::Horizontal);
       else if (descr.find("vertical") != std::string::npos)
-        addTexture(BTexture::Vertical);
+        addTexture(bt::Texture::Vertical);
       else
-        addTexture(BTexture::Diagonal);
+        addTexture(bt::Texture::Diagonal);
     } else {
-      addTexture(BTexture::Solid);
+      addTexture(bt::Texture::Solid);
     }
 
     if (descr.find("sunken") != std::string::npos)
-      addTexture(BTexture::Sunken);
+      addTexture(bt::Texture::Sunken);
     else if (descr.find("flat") != std::string::npos)
-      addTexture(BTexture::Flat);
+      addTexture(bt::Texture::Flat);
     else
-      addTexture(BTexture::Raised);
+      addTexture(bt::Texture::Raised);
 
-    if (! (texture() & BTexture::Flat)) {
+    if (! (texture() & bt::Texture::Flat)) {
       if (descr.find("bevel2") != std::string::npos)
-        addTexture(BTexture::Bevel2);
+        addTexture(bt::Texture::Bevel2);
       else
-        addTexture(BTexture::Bevel1);
+        addTexture(bt::Texture::Bevel1);
     }
 
     if (descr.find("interlaced") != std::string::npos)
-      addTexture(BTexture::Interlaced);
+      addTexture(bt::Texture::Interlaced);
   }
 }
 
-void BTexture::setDisplay(const BaseDisplay * const _display,
+void bt::Texture::setDisplay(const BaseDisplay * const _display,
                           const unsigned int _screen) {
   if (_display == display() && _screen == screen()) {
     // nothing to do
@@ -157,7 +158,7 @@ void BTexture::setDisplay(const BaseDisplay * const _display,
 }
 
 
-BTexture& BTexture::operator=(const BTexture &tt) {
+bt::Texture& bt::Texture::operator=(const bt::Texture &tt) {
   c  = tt.c;
   ct = tt.ct;
   lc = tt.lc;
@@ -172,13 +173,13 @@ BTexture& BTexture::operator=(const BTexture &tt) {
 }
 
 
-Pixmap BTexture::render(const unsigned int width, const unsigned int height,
+Pixmap bt::Texture::render(const unsigned int width, const unsigned int height,
                         const Pixmap old) {
   assert(display() != 0);
 
-  if (texture() == (BTexture::Flat | BTexture::Solid))
+  if (texture() == (bt::Texture::Flat | bt::Texture::Solid))
     return None;
-  if (texture() == BTexture::Parent_Relative)
+  if (texture() == bt::Texture::Parent_Relative)
     return ParentRelative;
 
   if (screen() == ~(0u))

@@ -715,7 +715,7 @@ void Toolbar::edit(void) {
                  frame.workspace_label_w / 2, 0, 1,
                  frame.label_h - 1);
   // change the background of the window to that of an active window label
-  BTexture *texture = &(screen->getWindowStyle()->l_focus);
+  bt::Texture *texture = &(screen->getWindowStyle()->l_focus);
   frame.wlabel = texture->render(frame.workspace_label_w, frame.label_h,
                                  frame.wlabel);
   if (! frame.wlabel)
@@ -893,7 +893,7 @@ void Toolbar::keyPressEvent(const XKeyEvent *ke) {
 
       // reset the background to that of the workspace label (its normal
       // setting)
-      BTexture *texture = &(screen->getToolbarStyle()->label);
+      bt::Texture *texture = &(screen->getToolbarStyle()->label);
       frame.wlabel = texture->render(frame.workspace_label_w, frame.label_h,
                                      frame.wlabel);
       if (! frame.wlabel)

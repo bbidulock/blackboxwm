@@ -38,6 +38,10 @@ class Workspace;
 class BlackboxWindow;
 class Netizen;
 
+namespace bt {
+  class Rect;
+}
+
 typedef std::list<BlackboxWindow*> BlackboxWindowList;
 typedef std::list<Window> WindowList;
 

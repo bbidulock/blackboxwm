@@ -61,7 +61,7 @@ enum TextJustify { LeftJustify = 1, RightJustify, CenterJustify };
 struct WindowStyle {
   BColor l_text_focus, l_text_unfocus, b_pic_focus,
     b_pic_unfocus;
-  BTexture f_focus, f_unfocus, t_focus, t_unfocus, l_focus, l_unfocus,
+  bt::Texture f_focus, f_unfocus, t_focus, t_unfocus, l_focus, l_unfocus,
     h_focus, h_unfocus, b_focus, b_unfocus, b_pressed, g_focus, g_unfocus;
 
   XFontSet fontset;
@@ -76,7 +76,7 @@ struct WindowStyle {
 
 struct ToolbarStyle {
   BColor l_text, w_text, c_text, b_pic;
-  BTexture toolbar, label, window, button, pressed, clock;
+  bt::Texture toolbar, label, window, button, pressed, clock;
 
   XFontSet fontset;
   XFontSetExtents *fontset_extents;
@@ -90,7 +90,7 @@ struct ToolbarStyle {
 
 struct MenuStyle {
   BColor t_text, f_text, h_text, d_text;
-  BTexture title, frame, hilite;
+  bt::Texture title, frame, hilite;
 
   XFontSet t_fontset, f_fontset;
   XFontSetExtents *t_fontset_extents, *f_fontset_extents;
@@ -169,9 +169,9 @@ private:
 
   bool parseMenuFile(FILE *file, Rootmenu *menu);
 
-  BTexture readDatabaseTexture(const std::string &rname,
-                               const std::string &rclass,
-                               const std::string &default_color);
+  bt::Texture readDatabaseTexture(const std::string &rname,
+                                  const std::string &rclass,
+                                  const std::string &default_color);
   BColor readDatabaseColor(const std::string &rname,
                            const std::string &rclass,
                            const std::string &default_color);
