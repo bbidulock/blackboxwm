@@ -256,6 +256,14 @@ namespace bt {
 
     ItemList::iterator &find_item(unsigned int id) const;
 
+    // FIXME: the next four need better names
+    MenuItem& blef(unsigned int id, Rect& r);
+    void blarg(void);
+    void blah(void);
+    void bloob(Rect& r, int &row, int &col);
+
+    void removeItemByIterator(ItemList::iterator& it);
+
     Application &_app;
     unsigned int _screen;
 

@@ -360,8 +360,7 @@ bt::Menu::Menu(Application &app, unsigned int screen)
 }
 
 
-bt::Menu::~Menu(void)
-{
+bt::Menu::~Menu(void) {
   hide();
   clear();
 
@@ -372,6 +371,18 @@ bt::Menu::~Menu(void)
 
   _app.removeEventHandler(_window);
   XDestroyWindow(_app.XDisplay(), _window);
+}
+
+
+void bt::Menu::blarg(void) {
+  if (isVisible()) {
+    updateSize();
+    updatePixmaps();
+    XClearArea(_app.XDisplay(), _window,
+               0, 0, _rect.width(), _rect.height(), True);
+  } else {
+    _size_dirty = true;
+  }
 }
 
 
@@ -395,14 +406,7 @@ unsigned int bt::Menu::insertItem(const MenuItem &item,
   if (! item.separator) it->ident = verifyId(id);
   it->indx = index;
 
-  if (isVisible()) {
-    updateSize();
-    updatePixmaps();
-    XClearArea(_app.XDisplay(), _window, 0, 0,
-               _rect.width(), _rect.height(), True);
-  } else {
-    _size_dirty = true;
-  }
+  blarg();
 
   return it->ident;
 }
@@ -426,67 +430,64 @@ void bt::Menu::insertSeparator(unsigned int index) {
 }
 
 
-void bt::Menu::changeItem(unsigned int id, const std::string &newlabel,
-                          unsigned int newid) {
-  Rect r(_irect.x(), _irect.y(), _itemw, 0);
+void bt::Menu::bloob(Rect& r, int &row, int &col) {
+  r.setY(r.y() + r.height());
+  ++row;
+
+  if (r.y() >= _irect.bottom()) {
+    // next column
+    ++col;
+    row = 0;
+    r.setPos(_irect.x() + (_itemw * col), _irect.y());
+  }
+}
+
+
+// method assumes id exists and the items list has at least one item in it
+bt::MenuItem& bt::Menu::blef(unsigned int id, Rect& r) {
   int row = 0, col = 0;
   ItemList::iterator it, end;
   for (it = items.begin(), end = items.end(); it != end; ++it) {
     r.setHeight(it->height);
 
-    if (! it->separator && it->ident == id) {
-      // new label
-      it->lbl = newlabel;
-      if (newid != ~0u) {
-        // change the id if necessary
-        idset.reset(it->ident);
-        it->ident = verifyId(newid);
-      }
-      if (isVisible())
-        XClearArea(_app.XDisplay(), _window,
-                   r.x(), r.y(), r.width(), r.height(), True);
+    if (it->id() == id)
       break;
-    }
 
-    r.setY(r.y() + r.height());
-    ++row;
+  }
 
-    if (r.y() >= _irect.bottom()) {
-      // next column
-      ++col;
-      row = 0;
-      r.setPos(_irect.x() + (_itemw * col), _irect.y());
+  bloob(r, row, col);
+
+  return *it;
+}
+
+
+void bt::Menu::changeItem(unsigned int id, const std::string &newlabel,
+                          unsigned int newid) {
+  Rect r(_irect.x(), _irect.y(), _itemw, 0);
+  bt::MenuItem& it = blef(id, r);
+  if (! it.isSeparator()) {
+    // new label
+    it.lbl = newlabel;
+    if (newid != ~0u) {
+      // change the id if necessary
+      idset.reset(it.ident);
+      it.ident = verifyId(newid);
     }
+    if (isVisible())
+      XClearArea(_app.XDisplay(), _window,
+                 r.x(), r.y(), r.width(), r.height(), True);
   }
 }
 
 
 void bt::Menu::setItemEnabled(unsigned int id, bool enabled) {
   Rect r(_irect.x(), _irect.y(), _itemw, 0);
-  int row = 0, col = 0;
-  ItemList::iterator it, end;
-  for (it = items.begin(), end = items.end(); it != end; ++it) {
-    r.setHeight(it->height);
-
-    if (it->id() == id) {
-      // found the item, change the status and redraw if visible
-      it->enabled = enabled;
-      if (isVisible())
-        XClearArea(_app.XDisplay(), _window,
-                   r.x(), r.y(), r.width(), r.height(), True);
-      break;
-    }
-
-    r.setY(r.y() + r.height());
-    ++row;
-
-    if (r.y() >= _irect.bottom()) {
-      // next column
-      ++col;
-      row = 0;
-      r.setPos(_irect.x() + (_itemw * col), _irect.y());
-    }
-  }
+  bt::MenuItem& it = blef(id, r);
+  // found the item, change the status and redraw if visible
+  it.enabled = enabled;
+  if (isVisible())
+    XClearArea(_app.XDisplay(), _window,
+               r.x(), r.y(), r.width(), r.height(), True);
 }
 
 
@@ -499,30 +500,12 @@ bool bt::Menu::isItemEnabled(unsigned int id) const {
 
 void bt::Menu::setItemChecked(unsigned int id, bool checked) {
   Rect r(_irect.x(), _irect.y(), _itemw, 0);
-  int row = 0, col = 0;
-  ItemList::iterator it, end;
-  for (it = items.begin(), end = items.end(); it != end; ++it) {
-    r.setHeight(it->height);
-
-    if (it->id() == id) {
-      // found the item, change the status and redraw if visible
-      it->checked = checked;
-      if (isVisible())
-        XClearArea(_app.XDisplay(), _window,
-                   r.x(), r.y(), r.width(), r.height(), True);
-      break;
-    }
-
-    r.setY(r.y() + r.height());
-    ++row;
-
-    if (r.y() >= _irect.bottom()) {
-      // next column
-      ++col;
-      row = 0;
-      r.setPos(_irect.x() + (_itemw * col), _irect.y());
-    }
-  }
+  bt::MenuItem& it = blef(id, r);
+  // found the item, change the status and redraw if visible
+  it.checked = checked;
+  if (isVisible())
+    XClearArea(_app.XDisplay(), _window,
+               r.x(), r.y(), r.width(), r.height(), True);
 }
 
 
@@ -533,27 +516,23 @@ bool bt::Menu::isItemChecked(unsigned int id) const {
 }
 
 
-void bt::Menu::removeItem(unsigned int id) {
-  ItemList::iterator it =
-    std::find_if(items.begin(), items.end(), IdentMatch(id));
-  if (it == items.end())
-    return; // item not found
-
+void bt::Menu::removeItemByIterator(ItemList::iterator& it) {
   if (it->sub) {
     it->sub->_parent_menu = 0;
     if (it->sub->_auto_delete) delete it->sub;
   }
   if (! it->separator) idset.reset(it->ident);
   items.erase(it);
+  blarg();
+}
 
-  if (isVisible()) {
-    updateSize();
-    updatePixmaps();
-    XClearArea(_app.XDisplay(), _window,
-               0, 0, _rect.width(), _rect.height(), True);
-  } else {
-    _size_dirty = true;
-  }
+
+void bt::Menu::removeItem(unsigned int id) {
+  ItemList::iterator it =
+    std::find_if(items.begin(), items.end(), IdentMatch(id));
+  if (it == items.end())
+    return; // item not found
+  removeItemByIterator(it);
 }
 
 
@@ -563,65 +542,26 @@ void bt::Menu::removeIndex(unsigned int index) {
   std::advance<ItemList::iterator, signed>(it, index);
   if (it == items.end())
     return; // item not found
-
-  if (it->sub) {
-    it->sub->_parent_menu = 0;
-    if (it->sub->_auto_delete) delete it->sub;
-  }
-  if (! it->separator) idset.reset(it->ident);
-  items.erase(it);
-
-  if (isVisible()) {
-    updateSize();
-    updatePixmaps();
-    XClearArea(_app.XDisplay(), _window,
-               0, 0, _rect.width(), _rect.height(), True);
-  } else {
-    _size_dirty = true;
-  }
+  removeItemByIterator(it);
 }
 
 
 void bt::Menu::clear(void) {
   while (! items.empty())
     removeIndex(0);
-
-  if (isVisible()) {
-    updateSize();
-    updatePixmaps();
-    XClearArea(_app.XDisplay(), _window,
-               0, 0, _rect.width(), _rect.height(), True);
-  } else {
-    _size_dirty = true;
-  }
+  blarg();
 }
 
 
 void bt::Menu::showTitle(void) {
   _show_title = true;
-
-    if (isVisible()) {
-    updateSize();
-    updatePixmaps();
-    XClearArea(_app.XDisplay(), _window,
-               0, 0, _rect.width(), _rect.height(), True);
-  } else {
-    _size_dirty = true;
-  }
+  blarg();
 }
 
 
 void bt::Menu::hideTitle(void) {
   _show_title = false;
-
-  if (isVisible()) {
-    updateSize();
-    updatePixmaps();
-    XClearArea(_app.XDisplay(), _window,
-               0, 0, _rect.width(), _rect.height(), True);
-  } else {
-    _size_dirty = true;
-  }
+  blarg();
 }
 
 
@@ -735,14 +675,7 @@ void bt::Menu::reconfigure(void) {
     if (it->sub) it->sub->reconfigure();
   }
 
-  if (isVisible()) {
-    updateSize();
-    updatePixmaps();
-    XClearArea(_app.XDisplay(), _window,
-               0, 0, _rect.width(), _rect.height(), True);
-  } else {
-    _size_dirty = true;
-  }
+  blarg();
 }
 
 
@@ -789,6 +722,7 @@ void bt::Menu::updateSize(void) {
   // remove the empty column
   if (cols > 1 && col_h == 0 && row == 0)
     --cols;
+
   max_col_h = std::max(std::max(max_col_h, col_h), style->frameMargin());
 
   // update rects
@@ -854,15 +788,7 @@ void bt::Menu::buttonPressEvent(const XButtonEvent * const event) {
       showActiveSubmenu();
     }
 
-    r.setY(r.y() + r.height());
-    ++row;
-
-    if (r.y() >= _irect.bottom()) {
-      // next column
-      ++col;
-      row = 0;
-      r.setPos(_irect.x() + (_itemw * col), _irect.y());
-    }
+    bloob(r, row, col);
   }
 }
 
@@ -916,15 +842,7 @@ void bt::Menu::buttonReleaseEvent(const XButtonEvent * const event) {
       itemClicked(item.ident, event->button);
     }
 
-    r.setY(r.y() + r.height());
-    ++row;
-
-    if (r.y() >= _irect.bottom()) {
-      // next column
-      ++col;
-      row = 0;
-      r.setPos(_irect.x() + (_itemw * col), _irect.y());
-    }
+    bloob(r, row, col);
   }
 
   if (do_hide)
@@ -952,15 +870,7 @@ void bt::Menu::motionNotifyEvent(const XMotionEvent * const event) {
       deactivateItem(r, *it);
     }
 
-    r.setY(r.y() + r.height());
-    ++row;
-
-    if (r.y() >= _irect.bottom()) {
-      // next column
-      ++col;
-      row = 0;
-      r.setPos(_irect.x() + (_itemw * col), _irect.y());
-    }
+    bloob(r, row, col);
   }
 
   if (showdelay.showmenu && ! _timer.isTiming())
@@ -978,15 +888,7 @@ void bt::Menu::leaveNotifyEvent(const XCrossingEvent * const /*event*/) {
     if (it->active && (! _active_submenu || it->sub != _active_submenu))
       deactivateItem(r, *it);
 
-    r.setY(r.y() + r.height());
-    ++row;
-
-    if (r.y() >= _irect.bottom()) {
-      // next column
-      ++col;
-      row = 0;
-      r.setPos(_irect.x() + (_itemw * col), _irect.y());
-    }
+    bloob(r, row, col);
   }
 
   showActiveSubmenu();
@@ -1023,16 +925,22 @@ void bt::Menu::exposeEvent(const XExposeEvent * const event) {
     if (r.intersects(u))
       style->drawItem(_window, r, *it, _apixmap);
 
-    r.setY(r.y() + r.height());
-    ++row;
-
-    if (r.y() >= _irect.bottom()) {
-      // next column
-      ++col;
-      row = 0;
-      r.setPos(_irect.x() + (_itemw * col),  _irect.y());
-    }
+    bloob(r, row, col);
   }
+}
+
+
+void bt::Menu::blah(void) {
+  if (! _active_submenu) return;
+
+  showActiveSubmenu();
+
+  // activate the first item in the menu when shown with the keyboard
+  ItemList::const_iterator it = _active_submenu->items.begin(),
+                          end = _active_submenu->items.end();
+  it = std::find_if(it, end, InteractMatch());
+  if (it != end && _active_submenu->count() > 0)
+    _active_submenu->activateIndex(it->indx);
 }
 
 
@@ -1105,16 +1013,7 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
   }
 
   case XK_Right: {
-    if (! _active_submenu) break;
-
-    showActiveSubmenu();
-
-    // activate the first item in the menu when shown with the keyboard
-    ItemList::const_iterator anchor = _active_submenu->items.begin(),
-                                end = _active_submenu->items.end();
-    ItemList::const_iterator it = std::find_if(anchor, end, InteractMatch());
-    if (it != end && _active_submenu->count() > 0)
-      _active_submenu->activateIndex(it->indx);
+    blah();
     break;
   }
 
@@ -1127,12 +1026,15 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
     if (it == end) break;
 
     /*
-      the item could be removed in in the itemClicked call, so don't use
+      the item could be removed in the itemClicked call, so don't use
       the iterator after calling itemClicked
     */
-    bool do_hide = (! it->sub);
-    itemClicked(it->ident, 1);
-    if (do_hide) hideAll();
+    if (it->sub) {
+      blah();
+    } else {
+      itemClicked(it->ident, 1);
+      hideAll();
+    }
     break;
   }
   } // switch
@@ -1254,15 +1156,7 @@ void bt::Menu::activateIndex(unsigned int index) {
       deactivateItem(r, *it);
     }
 
-    r.setY(r.y() + r.height());
-    ++row;
-
-    if (r.y() >= _irect.bottom()) {
-      // next column
-      ++col;
-      row = 0;
-      r.setPos(_irect.x() + (_itemw * col), _irect.y());
-    }
+    bloob(r, row, col);
   }
 }
 
