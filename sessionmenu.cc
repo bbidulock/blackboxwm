@@ -20,24 +20,17 @@
 //
 
 #include "blackbox.hh"
-#include "session.hh"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 // *************************************************************************
 // Session menu class code - root menu
 // *************************************************************************
-//
-// allocations:
-// dynamic number of items - each has a char *label, and either a
-//    char *exec  OR
-//    SessionMenu *sub_menu
-//
-// *************************************************************************
 
-SessionMenu::SessionMenu(BlackboxSession *s) : BlackboxMenu(s) {
-  session = s;
+SessionMenu::SessionMenu(Blackbox *bb) : BaseMenu(bb) {
+  blackbox = bb;
   default_menu = False;
 }
   
@@ -51,7 +44,7 @@ SessionMenu::~SessionMenu(void) {
 
 int SessionMenu::remove(int index) {
   if (index >= 0 && index < count()) {
-    BlackboxMenuItem *itmp = find(index);
+    BaseMenuItem *itmp = find(index);
 
     if (! default_menu) {
       if (itmp->Submenu()) {
@@ -66,7 +59,7 @@ int SessionMenu::remove(int index) {
       }
     }
     
-    return BlackboxMenu::remove(index);
+    return BaseMenu::remove(index);
   }
 
   return -1;
@@ -76,7 +69,7 @@ int SessionMenu::remove(int index) {
 void SessionMenu::itemPressed(int button, int item) {
   if (button == 1 && hasSubmenu(item)) {
     if (find(item)->Submenu()->menuVisible())
-      XRaiseWindow(session->control(), find(item)->Submenu()->windowID());
+      XRaiseWindow(blackbox->control(), find(item)->Submenu()->windowID());
   }
 }
 
@@ -86,43 +79,43 @@ void SessionMenu::titlePressed(int) {
 
 
 void SessionMenu::titleReleased(int button) {
-  if (button == 3 && windowID() == session->rootmenu->windowID())
+  if (button == 3 && windowID() == blackbox->Rootmenu()->windowID())
     hideMenu();
 }
 
 
 void SessionMenu::itemReleased(int button, int index) {
   if (button == 1) {
-    BlackboxMenuItem *item = find(index);
+    BaseMenuItem *item = find(index);
     if (item->Function()) {
       switch (item->Function()) {
-      case BlackboxSession::B_Reconfigure:
-	session->Reconfigure();
+      case Blackbox::B_Reconfigure:
+	blackbox->Reconfigure();
 	break;
 
-      case BlackboxSession::B_Restart:
-	session->Restart();
+      case Blackbox::B_Restart:
+	blackbox->Restart();
 	break;
 
-      case BlackboxSession::B_RestartOther:
+      case Blackbox::B_RestartOther:
 	blackbox->Restart(item->Exec());
 	break;
 
-      case BlackboxSession::B_Exit:
-	session->Exit();
+      case Blackbox::B_Exit:
+	blackbox->Exit();
 	break;
       }
 
-      if (! session->rootmenu->userMoved() &&
-	  item->Function() != BlackboxSession::B_Reconfigure)
-	session->rootmenu->hideMenu();
+      if (! blackbox->Rootmenu()->userMoved() &&
+	  item->Function() != Blackbox::B_Reconfigure)
+	blackbox->Rootmenu()->hideMenu();
     } else if (item->Exec()) {
       char *command = new char[strlen(item->Exec()) + 8];
       sprintf(command, "exec %s &", item->Exec());
       system(command);
       delete [] command;
-      if (! session->rootmenu->userMoved())
-	session->rootmenu->hideMenu();
+      if (! blackbox->Rootmenu()->userMoved())
+	blackbox->Rootmenu()->hideMenu();
     }
   }
 }

@@ -19,8 +19,8 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef _blackbox_graphics_hh
-#define _blackbox_graphics_hh
+#ifndef __blackbox_graphics_hh
+#define __blackbox_graphics_hh
 
 #include <X11/Xlib.h>
 
@@ -29,7 +29,7 @@ typedef struct BColor {
   unsigned long pixel;
 } BColor;
 
-#include "session.hh"
+#include "blackbox.hh"
 
 
 // image class that does basic rendering functions for blackbox
@@ -40,7 +40,7 @@ private:
   unsigned int width, height;
 
   BColor bg_color;
-  BlackboxSession *session;
+  Blackbox *blackbox;
 
 
 protected:
@@ -58,9 +58,9 @@ protected:
 
   
 public:
-  BImage(BlackboxSession *, unsigned int, unsigned int, int,
+  BImage(Blackbox *, unsigned int, unsigned int, int,
 	 unsigned char = 0, unsigned char = 0, unsigned char = 0);
-  BImage(BlackboxSession *, unsigned int, unsigned int, int, const BColor &);
+  BImage(Blackbox *, unsigned int, unsigned int, int, const BColor &);
   ~BImage(void);
 
   Bool getPixel(unsigned int, unsigned int, unsigned long *);

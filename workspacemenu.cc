@@ -20,46 +20,41 @@
 //
 
 #define _GNU_SOURCE
-#include "workspace.hh"
+#include "blackbox.hh"
 #include "window.hh"
-#include "session.hh"
+#include "workspace.hh"
 
 
 // *************************************************************************
 // Workspace Menu class code
 // *************************************************************************
-//
-// allocations:
-// none - items are redraw from char**'s that point to the workspace names
-//
-// *************************************************************************
 
-WorkspaceMenu::WorkspaceMenu(Workspace *w, BlackboxSession *s) :
-  BlackboxMenu(s)
+WorkspaceMenu::WorkspaceMenu(Workspace *w, Blackbox *bb) :
+  BaseMenu(bb)
 {
-  session = s;
+  blackbox = bb;
   workspace = w;
   setMovable(False);
 }
 
 
 void WorkspaceMenu::showMenu(void) {
-  BlackboxMenu::showMenu();
+  BaseMenu::showMenu();
 }
 
 
 void WorkspaceMenu::hideMenu(void) {
-  BlackboxMenu::hideMenu();
+  BaseMenu::hideMenu();
 }
 
 
 void WorkspaceMenu::moveMenu(int x, int y) {
-  BlackboxMenu::moveMenu(x, y);
+  BaseMenu::moveMenu(x, y);
 }
 
 
 void WorkspaceMenu::updateMenu(void) {
-  BlackboxMenu::updateMenu();
+  BaseMenu::updateMenu();
 
   if (workspace->ws_manager->workspaces_menu->menuVisible()) {
     int mx = 4 + workspace->ws_manager->frame.button_h +
@@ -74,12 +69,12 @@ void WorkspaceMenu::updateMenu(void) {
 
 
 int WorkspaceMenu::insert(char **u) {
-  return BlackboxMenu::insert(u);
+  return BaseMenu::insert(u);
 }
 
 
 int WorkspaceMenu::remove(int i) {
-  return BlackboxMenu::remove(i);
+  return BaseMenu::remove(i);
 }
 
 
@@ -102,7 +97,7 @@ void WorkspaceMenu::itemReleased(int button, int item) {
       hideMenu();
       BlackboxWindow *w = workspace->workspace_list->find(item);
       if (w->isIconic()) w->deiconifyWindow();
-      session->raiseWindow(w);
+      blackbox->raiseWindow(w);
       w->setInputFocus();
 
       workspace->ws_manager->hideMenu();
@@ -114,16 +109,10 @@ void WorkspaceMenu::itemReleased(int button, int item) {
 // *************************************************************************
 // Workspace Manager Menu class code
 // *************************************************************************
-//
-// allocations:
-// none - workspaces created are placed under the control of the workspace
-//    manager
-//
-// *************************************************************************
 
 WorkspaceManagerMenu::WorkspaceManagerMenu(WorkspaceManager *m,
-					   BlackboxSession *s) :
-  BlackboxMenu(s)
+					   Blackbox *bb) :
+  BaseMenu(bb)
 {
   ws_manager = m;
   hideTitle();
@@ -132,32 +121,32 @@ WorkspaceManagerMenu::WorkspaceManagerMenu(WorkspaceManager *m,
 
 
 void WorkspaceManagerMenu::showMenu(void) {
-  BlackboxMenu::showMenu();
+  BaseMenu::showMenu();
 }
 
 
 void WorkspaceManagerMenu::hideMenu(void) {
-  BlackboxMenu::hideMenu();
+  BaseMenu::hideMenu();
 }
 
 
 void WorkspaceManagerMenu::moveMenu(int x, int y) {
-  BlackboxMenu::moveMenu(x, y);
+  BaseMenu::moveMenu(x, y);
 }
 
 
 void WorkspaceManagerMenu::updateMenu(void) {
-  BlackboxMenu::updateMenu();
+  BaseMenu::updateMenu();
 }
 
 
 int WorkspaceManagerMenu::insert(char *l) {
-  return BlackboxMenu::insert(l);
+  return BaseMenu::insert(l);
 }
 
 
 int WorkspaceManagerMenu::insert(char *l, WorkspaceMenu *m) {
-  return BlackboxMenu::insert(l, m);
+  return BaseMenu::insert(l, m);
 }
 
 
@@ -193,12 +182,12 @@ void WorkspaceManagerMenu::itemReleased(int button, int item) {
 		       ws_manager->frame.workspace_button);
           XDrawString(ws_manager->display, ws_manager->frame.workspace_button,
                       ws_manager->buttonGC, 4, 3 +
-                      ws_manager->session->titleFont()->ascent,
+                      ws_manager->blackbox->titleFont()->ascent,
                       ws_manager->frame.title,
 		      strlen(ws_manager->frame.title));
 	wkspc->removeAll();
 	ws_manager->workspaces_list->remove(i - 1);
-	BlackboxMenu::remove(i + 1);
+	BaseMenu::remove(i + 1);
 	delete wkspc;
 	XSync(ws_manager->display, False);
 	updateMenu();
@@ -218,7 +207,7 @@ void WorkspaceManagerMenu::itemReleased(int button, int item) {
       XClearWindow(ws_manager->display, ws_manager->frame.workspace_button);
       XDrawString(ws_manager->display, ws_manager->frame.workspace_button,
 		  ws_manager->buttonGC, 4, 3 +
-		  ws_manager->session->titleFont()->ascent,
+		  ws_manager->blackbox->titleFont()->ascent,
 		  ws_manager->frame.title, strlen(ws_manager->frame.title));
       hideMenu();
     }

@@ -19,8 +19,8 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef _blackbox_llist_hh
-#define _blackbox_llist_hh
+#ifndef __blackbox_llist_hh
+#define __blackbox_llist_hh
 
 
 typedef struct __llist_node {

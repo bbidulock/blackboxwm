@@ -19,10 +19,14 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef _blackbox_icon_hh
-#define _blackbox_icon_hh
+#ifndef __blackbox_icon_hh
+#define __blackbox_icon_hh
 
-#include "session.hh"
+// forward declaration
+class BlackboxIcon;
+
+#include "blackbox.hh"
+#include "workspace.hh"
 
 
 class BlackboxIcon {
@@ -38,7 +42,7 @@ private:
     unsigned int height;
   } icon;
 
-  BlackboxSession *session;
+  Blackbox *blackbox;
   WorkspaceManager *ws_manager;
 
 
@@ -46,7 +50,7 @@ protected:
 
 
 public:
-  BlackboxIcon(BlackboxSession *, Window);
+  BlackboxIcon(Blackbox *, Window);
   ~BlackboxIcon(void);
 
   void buttonPressEvent(XButtonEvent *);

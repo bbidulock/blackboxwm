@@ -19,23 +19,30 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef _blackbox_window_hh
-#define _blackbox_window_hh
+#ifndef __blackbox_window_hh
+#define __blackbox_window_hh
 
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#ifdef SHAPE
+#  include <X11/extensions/shape.h>
+#endif
+
+// forward declaration
+class BlackboxWindow;
+
+#include "blackbox.hh"
 #include "menu.hh"
 #include "workspace.hh"
 
-class BlackboxIcon;
-class BlackboxSession;
-class BlackboxWindow;
+
 class BlackboxWindowMenu;
 class SendToWorkspaceMenu;
 
-
-class BlackboxWindowMenu : public BlackboxMenu {
+class BlackboxWindowMenu : public BaseMenu {
 private:
   BlackboxWindow *window;
-  BlackboxSession *session;
+  Blackbox *blackbox;
   SendToWorkspaceMenu *send_to_menu;
 
   friend BlackboxWindow;
@@ -49,7 +56,7 @@ protected:
 
 
 public:
-  BlackboxWindowMenu(BlackboxWindow *, BlackboxSession *);
+  BlackboxWindowMenu(BlackboxWindow *, Blackbox *);
   ~BlackboxWindowMenu(void);
 
   void showMenu(void);
@@ -59,14 +66,14 @@ public:
 };
 
 
-class SendToWorkspaceMenu : public BlackboxMenu {
+class SendToWorkspaceMenu : public BaseMenu {
 private:
   BlackboxWindow *window;
   WorkspaceManager *ws_manager;
   
   friend BlackboxWindow;
-
-
+  
+  
 protected:
   virtual void titlePressed(int);
   virtual void titleReleased(int);
@@ -75,7 +82,7 @@ protected:
 
 
 public:
-  SendToWorkspaceMenu(BlackboxWindow *, BlackboxSession *);
+  SendToWorkspaceMenu(BlackboxWindow *, Blackbox *);
 
   void updateMenu(void);
   void showMenu(void);
@@ -86,17 +93,21 @@ public:
 
 class BlackboxWindow {
 private:
-  BlackboxSession *session;
+  Blackbox *blackbox;
   BlackboxIcon *icon;
   BlackboxWindowMenu *window_menu;
-  Display *display;
 
+  Bool do_handle, do_close, do_iconify, do_maximize, moving, resizing, shaded,
+    maximized, visible, iconic, transient, focused, icccm_compliant,
+    menu_visible, internal_window;
+  Display *display;
+  
   struct client {
     Atom WMDelete, WMProtocols;
     BlackboxWindow *transient_for,  /* which window are we a transient for? */
       *transient;                   /* which window is our transient? */
     Window window, icon_window, window_group;
-
+    
     char *title, *app_name, *app_class;
     int x, y, x_move, y_move;
     unsigned int width, height,
@@ -106,7 +117,7 @@ private:
       min_ax, min_ay, max_ax, max_ay;
     long hint_flags;
   } client;
-
+  
   struct frame {
     Bool shaped;
     GC ftextGC, utextGC;
@@ -129,21 +140,7 @@ private:
   int focus_mode, window_number, workspace_number;
 
   unsigned int
-    do_handle:1,
-    do_close:1,
-    do_iconify:1,
-    do_maximize:1,
-    moving:1,
-    resizing:1,
-    shaded:1,
-    maximized:1,
 
-    visible:1,
-    iconic:1,
-    transient:1,
-    focused:1,
-    icccm_compliant:1,
-    menu_visible:1,
     extra:2; /* keep data aligned better */
 
 
@@ -171,7 +168,7 @@ protected:
 
 
 public:
-  BlackboxWindow(BlackboxSession *, Window, Bool = False);
+  BlackboxWindow(Blackbox *, Window, Bool = False);
   ~BlackboxWindow(void);
 
   void buttonPressEvent(XButtonEvent *);

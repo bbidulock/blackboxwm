@@ -32,10 +32,10 @@
 //
 // *************************************************************************
 
-BImage::BImage(BlackboxSession *s, unsigned int w, unsigned int h, int d,
+BImage::BImage(Blackbox *bb, unsigned int w, unsigned int h, int d,
 	       unsigned char r, unsigned char g, unsigned char b)
 {
-  session = s;
+  blackbox = bb;
   width = ((signed) w > 0) ? w : 1;
   height = ((signed) h > 0) ? h : 1;
   depth = d;
@@ -46,10 +46,10 @@ BImage::BImage(BlackboxSession *s, unsigned int w, unsigned int h, int d,
 }
 
 
-BImage::BImage(BlackboxSession *s, unsigned int w, unsigned int h, int d,
+BImage::BImage(Blackbox *bb, unsigned int w, unsigned int h, int d,
 	       const BColor &c)
 {
-  session = s;
+  blackbox = bb;
   width = ((signed) w > 0) ? w : 1;
   height = ((signed) h > 0) ? h : 1;
   depth = d;
@@ -69,21 +69,21 @@ Pixmap BImage::renderImage(int texture, int bevel, const BColor &color1,
 			   const BColor &color2)
 {
   switch (texture) {
-  case BlackboxSession::B_TextureRSolid:
-  case BlackboxSession::B_TextureSSolid:
-  case BlackboxSession::B_TextureFSolid:
+  case Blackbox::B_TextureRSolid:
+  case Blackbox::B_TextureSSolid:
+  case Blackbox::B_TextureFSolid:
     return renderSolidImage(texture, bevel, color1);
     break;
 
-  case BlackboxSession::B_TextureRDGradient:
-  case BlackboxSession::B_TextureSDGradient:
-  case BlackboxSession::B_TextureFDGradient:
-  case BlackboxSession::B_TextureRHGradient:
-  case BlackboxSession::B_TextureSHGradient:
-  case BlackboxSession::B_TextureFHGradient:
-  case BlackboxSession::B_TextureRVGradient:
-  case BlackboxSession::B_TextureSVGradient:
-  case BlackboxSession::B_TextureFVGradient:
+  case Blackbox::B_TextureRDGradient:
+  case Blackbox::B_TextureSDGradient:
+  case Blackbox::B_TextureFDGradient:
+  case Blackbox::B_TextureRHGradient:
+  case Blackbox::B_TextureSHGradient:
+  case Blackbox::B_TextureFHGradient:
+  case Blackbox::B_TextureRVGradient:
+  case Blackbox::B_TextureSVGradient:
+  case Blackbox::B_TextureFVGradient:
     return renderGradientImage(texture, bevel, color1, color2);
     break;
   }
@@ -97,7 +97,7 @@ Pixmap BImage::renderInvertedImage(int texture, int bevel,
 				   const BColor &color2)
 {
   switch (texture) {
-  case BlackboxSession::B_TextureRSolid:
+  case Blackbox::B_TextureRSolid:
     setBackgroundColor(color1);
     if (bevel)
       if (color1.r == color1.g && color1.g == color1.b && color1.b == 0)
@@ -114,7 +114,7 @@ Pixmap BImage::renderInvertedImage(int texture, int bevel,
     return convertToPixmap();
     break;
     
-  case BlackboxSession::B_TextureSSolid:
+  case Blackbox::B_TextureSSolid:
     setBackgroundColor(color1);
     if (bevel)
       if (color1.r == color1.g && color1.g == color1.b && color1.b == 0)
@@ -130,13 +130,13 @@ Pixmap BImage::renderInvertedImage(int texture, int bevel,
     return convertToPixmap();
     break;
     
-  case BlackboxSession::B_TextureFSolid:
+  case Blackbox::B_TextureFSolid:
     setBackgroundColor(color1);
     invertImage();
     return convertToPixmap();
     break;
 
-  case BlackboxSession::B_TextureRDGradient:
+  case Blackbox::B_TextureRDGradient:
     renderDGradient(color1, color2);
     if (bevel)
       renderBevel();
@@ -147,7 +147,7 @@ Pixmap BImage::renderInvertedImage(int texture, int bevel,
     return convertToPixmap();
     break;
 
-  case BlackboxSession::B_TextureSDGradient:
+  case Blackbox::B_TextureSDGradient:
     renderDGradient(color2, color1);
     if (bevel)
       renderBevel();
@@ -157,13 +157,13 @@ Pixmap BImage::renderInvertedImage(int texture, int bevel,
     return convertToPixmap();
     break;
 
-  case BlackboxSession::B_TextureFDGradient:
+  case Blackbox::B_TextureFDGradient:
     renderDGradient(color1, color2);
     invertImage();
     return convertToPixmap();
     break;
 
-  case BlackboxSession::B_TextureRHGradient:
+  case Blackbox::B_TextureRHGradient:
     renderHGradient(color1, color2);
     if (bevel)
       renderBevel();
@@ -174,7 +174,7 @@ Pixmap BImage::renderInvertedImage(int texture, int bevel,
     return convertToPixmap();
     break;
 
-  case BlackboxSession::B_TextureSHGradient:
+  case Blackbox::B_TextureSHGradient:
     renderHGradient(color2, color1);
     if (bevel)
       renderBevel();
@@ -184,13 +184,13 @@ Pixmap BImage::renderInvertedImage(int texture, int bevel,
     return convertToPixmap();
     break;
 
-  case BlackboxSession::B_TextureFHGradient:
+  case Blackbox::B_TextureFHGradient:
     renderHGradient(color1, color2);
     invertImage();
     return convertToPixmap();
     break;
 
-  case BlackboxSession::B_TextureRVGradient:
+  case Blackbox::B_TextureRVGradient:
     renderVGradient(color1, color2);
     if (bevel)
       renderBevel();
@@ -201,7 +201,7 @@ Pixmap BImage::renderInvertedImage(int texture, int bevel,
     return convertToPixmap();
     break;
 
-  case BlackboxSession::B_TextureSVGradient:
+  case Blackbox::B_TextureSVGradient:
     renderVGradient(color2, color1);
     if (bevel)
       renderBevel();
@@ -211,7 +211,7 @@ Pixmap BImage::renderInvertedImage(int texture, int bevel,
     return convertToPixmap();
     break;
 
-  case BlackboxSession::B_TextureFVGradient:
+  case Blackbox::B_TextureFVGradient:
     renderVGradient(color1, color2);
     invertImage();
     return convertToPixmap();
@@ -224,7 +224,7 @@ Pixmap BImage::renderInvertedImage(int texture, int bevel,
 
 Pixmap BImage::renderSolidImage(int texture, int bevel, const BColor &color) {
   switch(texture) {
-  case BlackboxSession::B_TextureRSolid:
+  case Blackbox::B_TextureRSolid:
     setBackgroundColor(color);
     if (bevel)
       if (color.r == color.g && color.g == color.b && color.b == 0)
@@ -240,7 +240,7 @@ Pixmap BImage::renderSolidImage(int texture, int bevel, const BColor &color) {
     return convertToPixmap();
     break;
     
-  case BlackboxSession::B_TextureSSolid:
+  case Blackbox::B_TextureSSolid:
     setBackgroundColor(color);
     if (bevel)
       if (color.r == color.g && color.g == color.b && color.b == 0)
@@ -257,7 +257,7 @@ Pixmap BImage::renderSolidImage(int texture, int bevel, const BColor &color) {
     return convertToPixmap();
     break;
     
-  case BlackboxSession::B_TextureFSolid:
+  case Blackbox::B_TextureFSolid:
     setBackgroundColor(color);
     return convertToPixmap();
     break;
@@ -272,7 +272,7 @@ Pixmap BImage::renderGradientImage(int texture, int bevel,
 				   const BColor &to)
 {
   switch(texture) {
-  case BlackboxSession::B_TextureRDGradient:
+  case Blackbox::B_TextureRDGradient:
     renderDGradient(from, to);
     if (bevel)
       renderBevel();
@@ -282,7 +282,7 @@ Pixmap BImage::renderGradientImage(int texture, int bevel,
     return convertToPixmap();
     break;
 
-  case BlackboxSession::B_TextureSDGradient:
+  case Blackbox::B_TextureSDGradient:
     renderDGradient(to, from);
     if (bevel)
       renderBevel();
@@ -293,12 +293,12 @@ Pixmap BImage::renderGradientImage(int texture, int bevel,
     return convertToPixmap();
     break;
 
-  case BlackboxSession::B_TextureFDGradient:
+  case Blackbox::B_TextureFDGradient:
     renderDGradient(from, to);
     return convertToPixmap();
     break;
 
-  case BlackboxSession::B_TextureRHGradient:
+  case Blackbox::B_TextureRHGradient:
     renderHGradient(from, to);
     if (bevel)
       renderBevel();
@@ -308,7 +308,7 @@ Pixmap BImage::renderGradientImage(int texture, int bevel,
     return convertToPixmap();
     break;
 
-  case BlackboxSession::B_TextureSHGradient:
+  case Blackbox::B_TextureSHGradient:
     renderHGradient(to, from);
     if (bevel)
       renderBevel();
@@ -319,12 +319,12 @@ Pixmap BImage::renderGradientImage(int texture, int bevel,
     return convertToPixmap();
     break;
 
-  case BlackboxSession::B_TextureFHGradient:
+  case Blackbox::B_TextureFHGradient:
     renderHGradient(from, to);
     return convertToPixmap();
     break;
 
-  case BlackboxSession::B_TextureRVGradient:
+  case Blackbox::B_TextureRVGradient:
     renderVGradient(from, to);
     if (bevel)
       renderBevel();
@@ -334,7 +334,7 @@ Pixmap BImage::renderGradientImage(int texture, int bevel,
     return convertToPixmap();
     break;
 
-  case BlackboxSession::B_TextureSVGradient:
+  case Blackbox::B_TextureSVGradient:
     renderVGradient(to, from);
     if (bevel)
       renderBevel();
@@ -345,7 +345,7 @@ Pixmap BImage::renderGradientImage(int texture, int bevel,
     return convertToPixmap();
     break;
 
-  case BlackboxSession::B_TextureFVGradient:
+  case Blackbox::B_TextureFVGradient:
     renderVGradient(from, to);
     return convertToPixmap();
     break;
@@ -411,7 +411,7 @@ Bool BImage::putPixel(unsigned int x, unsigned int y, unsigned long pixel) {
 
 XImage *BImage::convertToXImage(void) {
   int count = 0, bpp = 0;
-  XPixmapFormatValues *pmv = XListPixmapFormats(session->control(), &count);
+  XPixmapFormatValues *pmv = XListPixmapFormats(blackbox->control(), &count);
 
   for (int i = 0; i < count; i++)
     if (pmv[i].depth == depth) {
@@ -424,7 +424,7 @@ XImage *BImage::convertToXImage(void) {
   char *d = new char[width * height * (bpp / 8)];
   if (! d) return 0;
 
-  XImage *image = XCreateImage(session->control(), session->visual(), depth,
+  XImage *image = XCreateImage(blackbox->control(), blackbox->visual(), depth,
 			       ZPixmap, 0, d, width, height, 8, 0);
   if (image == NULL) return 0;
   
@@ -526,7 +526,7 @@ XImage *BImage::convertToXImage(void) {
       else if (gg > 4) gg = 4;
       if (bb < 0) bb = 0;
       else if (bb > 4) bb = 4;
-      *(im++) = session->Colors8bpp()[(rr * 25) + (gg * 5) + bb].pixel;
+      *(im++) = blackbox->Colors8bpp()[(rr * 25) + (gg * 5) + bb].pixel;
     }
 
     r = (unsigned char) (((*p) & 0xff0000) >> 16);
@@ -543,7 +543,7 @@ XImage *BImage::convertToXImage(void) {
     else if (gg > 4) gg = 4;
     if (bb < 0) bb = 0;
     else if (bb > 4) bb = 4;
-    *(im) = session->Colors8bpp()[(rr * 25) + (gg * 5) + bb].pixel;
+    *(im) = blackbox->Colors8bpp()[(rr * 25) + (gg * 5) + bb].pixel;
     
     break; }
   }
@@ -553,7 +553,7 @@ XImage *BImage::convertToXImage(void) {
 
 
 Pixmap BImage::convertToPixmap(void) {
-  Pixmap pixmap = XCreatePixmap(session->control(), session->Root(), width,
+  Pixmap pixmap = XCreatePixmap(blackbox->control(), blackbox->Root(), width,
 				height,	(unsigned) depth);
   
   if (pixmap == None) return None;
@@ -561,12 +561,13 @@ Pixmap BImage::convertToPixmap(void) {
   XImage *img = convertToXImage();
 
   if (! img) {
-    XFreePixmap(session->control(), pixmap);
+    XFreePixmap(blackbox->control(), pixmap);
     return None;
   }
 
-  XPutImage(session->control(), pixmap,
-	    DefaultGC(session->control(), DefaultScreen(session->control())),
+  XPutImage(blackbox->control(), pixmap,
+	    DefaultGC(blackbox->control(),
+		      DefaultScreen(blackbox->control())),
 	    img, 0, 0, 0, 0, width, height);
   
   XDestroyImage(img);

@@ -20,8 +20,9 @@
 //
 
 #define _GNU_SOURCE
+#include "blackbox.hh"
+#include "menu.hh"
 #include "window.hh"
-#include "session.hh"
 #include "workspace.hh"
 
 #include <string.h>
@@ -30,31 +31,26 @@
 // *************************************************************************
 // Window Menu class code
 // *************************************************************************
-//
-// allocations:
-// SendToWorkspaceMenu *send_to_menu
-//
-// *************************************************************************
 
-BlackboxWindowMenu::BlackboxWindowMenu(BlackboxWindow *w, BlackboxSession *s) :
-  BlackboxMenu(s)
+BlackboxWindowMenu::BlackboxWindowMenu(BlackboxWindow *w, Blackbox *bb) :
+  BaseMenu(bb)
 {
   window = w;
-  session = s;
+  blackbox = bb;
   hideTitle();
   setMovable(False);
   
-  send_to_menu = new SendToWorkspaceMenu(window, session);
+  send_to_menu = new SendToWorkspaceMenu(window, blackbox);
   insert("Send To ...", send_to_menu);
-  insert("(Un)Shade", BlackboxSession::B_WindowShade);
-  insert("Iconify", BlackboxSession::B_WindowIconify);
+  insert("(Un)Shade", Blackbox::B_WindowShade);
+  insert("Iconify", Blackbox::B_WindowIconify);
 
   if (window->resizable())
-    insert("(Un)Maximize", BlackboxSession::B_WindowMaximize);
+    insert("(Un)Maximize", Blackbox::B_WindowMaximize);
 
-  insert("Close", BlackboxSession::B_WindowClose);
-  insert("Raise", BlackboxSession::B_WindowRaise);
-  insert("Lower", BlackboxSession::B_WindowLower);
+  insert("Close", Blackbox::B_WindowClose);
+  insert("Raise", Blackbox::B_WindowRaise);
+  insert("Lower", Blackbox::B_WindowLower);
 
   useSublevels(2);
   updateMenu();
@@ -67,7 +63,7 @@ BlackboxWindowMenu::~BlackboxWindowMenu(void)
 
 void BlackboxWindowMenu::Reconfigure(void) {
   send_to_menu->Reconfigure();
-  BlackboxMenu::Reconfigure();
+  BaseMenu::Reconfigure();
 }
 
 
@@ -76,11 +72,10 @@ void BlackboxWindowMenu::titleReleased(int) { }
 void BlackboxWindowMenu::itemPressed(int button, int item) {
   if (button == 1 && item == 0) {
     send_to_menu->updateMenu();
-    XRaiseWindow(session->control(), send_to_menu->windowID());
-    // BlackboxMenu::drawSubmenu(item);
+    XRaiseWindow(blackbox->control(), send_to_menu->windowID());
   } else if (button == 3 && item == 0) {
     send_to_menu->updateMenu();
-    XRaiseWindow(session->control(), send_to_menu->windowID());
+    XRaiseWindow(blackbox->control(), send_to_menu->windowID());
   }
 }
 
@@ -111,12 +106,12 @@ void BlackboxWindowMenu::itemReleased(int button, int item) {
 	
       case 5:
 	hideMenu();
-	session->raiseWindow(window);
+	blackbox->raiseWindow(window);
 	break;
 	
       case 6:
 	hideMenu();
-	session->lowerWindow(window);
+	blackbox->lowerWindow(window);
 	break;
       }
     else
@@ -138,12 +133,12 @@ void BlackboxWindowMenu::itemReleased(int button, int item) {
 	
       case 4:
 	hideMenu();
-	session->raiseWindow(window);
+	blackbox->raiseWindow(window);
 	break;
 	
       case 5:
 	hideMenu();
-	session->lowerWindow(window);
+	blackbox->lowerWindow(window);
 	break;
       }
   }
@@ -151,16 +146,16 @@ void BlackboxWindowMenu::itemReleased(int button, int item) {
 
 
 void BlackboxWindowMenu::showMenu()
-{ BlackboxMenu::showMenu(); window->setMenuVisible(true); }
+{ BaseMenu::showMenu(); window->setMenuVisible(true); }
 void BlackboxWindowMenu::hideMenu() {
   send_to_menu->hideMenu();
-  BlackboxMenu::hideMenu();
+  BaseMenu::hideMenu();
   window->setMenuVisible(false);
 }
 
 
 void BlackboxWindowMenu::moveMenu(int x, int y)
-{ BlackboxMenu::moveMenu(x, y); }
+{ BaseMenu::moveMenu(x, y); }
 
 
 // *************************************************************************
@@ -168,11 +163,11 @@ void BlackboxWindowMenu::moveMenu(int x, int y)
 // *************************************************************************
 
 SendToWorkspaceMenu::SendToWorkspaceMenu(BlackboxWindow *w,
-					 BlackboxSession *s)
-  : BlackboxMenu(s)
+					 Blackbox *bb)
+  : BaseMenu(bb)
 {
   window = w;
-  ws_manager = s->WSManager();
+  ws_manager = bb->WSManager();
 
   char *l = new char[strlen("Send To ...") + 1];
   strncpy(l, "Send To ...", strlen("Send To ...") + 1);
@@ -201,21 +196,21 @@ void SendToWorkspaceMenu::itemReleased(int button, int item) {
 
 void SendToWorkspaceMenu::showMenu(void) {
   updateMenu();
-  BlackboxMenu::showMenu();
+  BaseMenu::showMenu();
 }
 
 
 void SendToWorkspaceMenu::hideMenu(void)
-{ BlackboxMenu::hideMenu(); }
+{ BaseMenu::hideMenu(); }
 void SendToWorkspaceMenu::updateMenu(void) {
-  int i, r = BlackboxMenu::count();
+  int i, r = BaseMenu::count();
 
-  if (BlackboxMenu::count() != 0)
+  if (BaseMenu::count() != 0)
     for (i = 0; i < r; ++i)
-      BlackboxMenu::remove(0);
+      BaseMenu::remove(0);
   
   for (i = 0; i < ws_manager->count(); ++i)
-    BlackboxMenu::insert(ws_manager->workspace(i)->name());
+    BaseMenu::insert(ws_manager->workspace(i)->name());
   
-  BlackboxMenu::updateMenu();
+  BaseMenu::updateMenu();
 }

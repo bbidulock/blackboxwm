@@ -19,30 +19,29 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef _blackbox_menu_hh
-#define _blackbox_menu_hh
+#ifndef __blackbox_menu_hh
+#define __blackbox_menu_hh
 
 #include <X11/Xlib.h>
 
+#include "blackbox.hh"
 #include "llist.hh"
 
 
 // forward declarations
-class BlackboxMenu;
-class BlackboxMenuItem;
-class BlackboxSession;
+class BaseMenu;
+class BaseMenuItem;
 
 
 // base menu class... it is inherited for sessions, windows, and workspaces
-class BlackboxMenu {
+class BaseMenu {
 private:
-  llist<BlackboxMenuItem> *menuitems;
-  BlackboxSession *session;
+  llist<BaseMenuItem> *menuitems;
+  Blackbox *blackbox;
 
   Bool moving, show_title, visible, sub, movable, user_moved;
   Display *display;
   GC titleGC, itemGC, pitemGC;
-  
   int which_sub;
 
   struct menu {
@@ -68,12 +67,12 @@ protected:
 
   void showTitle(void) { show_title = True; }
   void hideTitle(void) { show_title = False; }
-  BlackboxMenuItem *find(int index) { return menuitems->find(index); }
+  BaseMenuItem *find(int index) { return menuitems->find(index); }
 
 
 public:
-  BlackboxMenu(BlackboxSession *);
-  virtual ~BlackboxMenu(void);
+  BaseMenu(Blackbox *);
+  virtual ~BaseMenu(void);
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);
@@ -85,7 +84,7 @@ public:
   int insert(char *);
   int insert(char **);
   int insert(char *, int, char * = 0);
-  int insert(char *, BlackboxMenu *);
+  int insert(char *, BaseMenu *);
 
   Window windowID(void) { return menu.frame; }
   unsigned int Width(void) { return menu.width; }
@@ -109,52 +108,52 @@ public:
 
 
 // menu items held in the menus
-class BlackboxMenuItem {
+class BaseMenuItem {
 private:
   Window window;
-  BlackboxMenu *sub_menu;
+  BaseMenu *sub_menu;
   char **ulabel, *label, *exec;
   int function;
 
-  friend BlackboxMenu;
+  friend BaseMenu;
 
 
 protected:
 
 
 public:
-  BlackboxMenuItem(Window w, char **u)
+  BaseMenuItem(Window w, char **u)
     { window = w; ulabel = u; label = 0; exec = 0; sub_menu = 0;
       function = 0; }
   
-  BlackboxMenuItem(Window w, char *l, int f)
+  BaseMenuItem(Window w, char *l, int f)
     { window = w; ulabel = 0; label = l; exec = 0; sub_menu = 0;
       function = f; }
   
-  BlackboxMenuItem(Window w, char *l, char *e)
+  BaseMenuItem(Window w, char *l, char *e)
     { window = w; ulabel = 0; label = l; exec = e; sub_menu = 0;
       function = 0; }
 
-  BlackboxMenuItem(Window w, char *l, int f, char *e)
+  BaseMenuItem(Window w, char *l, int f, char *e)
     { window = w; ulabel = 0; label = l; exec = e; sub_menu = 0;
       function = f; }
 
-  BlackboxMenuItem(Window w, char *l)
+  BaseMenuItem(Window w, char *l)
     { window = w; ulabel = 0; label = l; exec = 0; sub_menu = 0;
       function = 0; }
 
-  BlackboxMenuItem(Window w, char *l, BlackboxMenu *m)
+  BaseMenuItem(Window w, char *l, BaseMenu *m)
     { window = w; ulabel = 0; label = l; sub_menu = m; exec = 0;
       function = 0; }
 
-  ~BlackboxMenuItem(void)
+  ~BaseMenuItem(void)
     { /* the item doesn't delete any data it holds */ }
 
   char *Exec(void) { return exec; }
   char *Label(void) { return label; }
   char **ULabel(void) { return ulabel; }
   int Function(void) { return function; }
-  BlackboxMenu *Submenu(void) { return sub_menu; }
+  BaseMenu *Submenu(void) { return sub_menu; }
 };
 
 

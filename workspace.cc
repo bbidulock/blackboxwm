@@ -20,10 +20,11 @@
 //
 
 #define _GNU_SOURCE
-#include "workspace.hh"
-#include "window.hh"
-#include "session.hh"
+#include "blackbox.hh"
 #include "graphics.hh"
+#include "icon.hh"
+#include "window.hh"
+#include "workspace.hh"
 
 #include <stdio.h>
 #include <sys/time.h>
@@ -46,7 +47,7 @@ Workspace::Workspace(WorkspaceManager *m, int id) {
   window_stack = 0;
 
   workspace_list = new llist<BlackboxWindow>;
-  workspace_menu = new WorkspaceMenu(this, ws_manager->Session());
+  workspace_menu = new WorkspaceMenu(this, ws_manager->_blackbox());
 
   workspace_name = new char[13];
   sprintf(workspace_name, "Workspace %d", workspace_id);
@@ -162,7 +163,7 @@ int Workspace::removeAll(void) {
 
 void Workspace::Dissociate(void) {
   BlackboxWindow *win = 0;
-  Display *display = ws_manager->Session()->control();
+  Display *display = ws_manager->_blackbox()->control();
 
   XGrabServer(display);
   llist_iterator<BlackboxWindow> it(workspace_list);
@@ -170,7 +171,7 @@ void Workspace::Dissociate(void) {
     win = it.current();
     XUnmapWindow(display, win->frameWindow());
     XReparentWindow(display, win->clientWindow(),
-		    ws_manager->Session()->Root(), win->XFrame(),
+		    ws_manager->_blackbox()->Root(), win->XFrame(),
 		    win->YFrame());
     XMoveResizeWindow(display, win->clientWindow(), win->XFrame(),
 		      win->YFrame(), win->clientWidth(), win->clientHeight());
@@ -288,13 +289,13 @@ const int Workspace::count(void) {
 // dynamic number of Workspace*'s
 // *************************************************************************
 
-WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
+WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
   Workspace *wkspc = 0;
-  session = s;
+  blackbox = bb;
   
   workspaces_list = new llist<Workspace>;
   ilist = new llist<BlackboxIcon>;
-  workspaces_menu = new WorkspaceManagerMenu(this, session);
+  workspaces_menu = new WorkspaceManagerMenu(this, blackbox);
 
   frame.title = new char[13];
   sprintf(frame.title, "Workspace 0");
@@ -325,28 +326,28 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
 
   sub = False;
 
-  display = session->control();
+  display = blackbox->control();
   XSetWindowAttributes attrib_create;
   unsigned long create_mask = CWBackPixmap|CWBackPixel|CWBorderPixel|
     CWOverrideRedirect |CWCursor|CWEventMask; 
   
   attrib_create.background_pixmap = None;
-  attrib_create.background_pixel = session->frameColor().pixel;
-  attrib_create.border_pixel = session->frameColor().pixel;
+  attrib_create.background_pixel = blackbox->frameColor().pixel;
+  attrib_create.border_pixel = blackbox->frameColor().pixel;
   attrib_create.override_redirect = True;
-  attrib_create.cursor = session->sessionCursor();
+  attrib_create.cursor = blackbox->sessionCursor();
   attrib_create.event_mask = NoEventMask;
 
-  frame.button_w = XTextWidth(session->titleFont(), "Workspace 00", 13) + 8;
-  frame.button_h = session->titleFont()->ascent +
-    session->titleFont()->descent + 8; 
+  frame.button_w = XTextWidth(blackbox->titleFont(), "Workspace 00", 13) + 8;
+  frame.button_h = blackbox->titleFont()->ascent +
+    blackbox->titleFont()->descent + 8; 
 
   frame.frame_w = frame.button_w + 6;
-  frame.frame_h = session->YResolution() - 2;
+  frame.frame_h = blackbox->YResolution() - 2;
   frame.base =
-    XCreateWindow(display, session->Root(), 0, 0, frame.frame_w,
-		  frame.frame_h, 1, session->Depth(), InputOutput,
-		  session->visual(), create_mask, &attrib_create);
+    XCreateWindow(display, blackbox->Root(), 0, 0, frame.frame_w,
+		  frame.frame_h, 1, blackbox->Depth(), InputOutput,
+		  blackbox->visual(), create_mask, &attrib_create);
 
   attrib_create.event_mask = StructureNotifyMask|SubstructureNotifyMask|
     SubstructureRedirectMask|ButtonPressMask|ButtonReleaseMask|
@@ -354,54 +355,54 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
 
   frame.window =
     XCreateWindow(display, frame.base, 0, 0, frame.frame_w,
-		  frame.frame_h, 0, session->Depth(), InputOutput,
-		  session->visual(), create_mask, &attrib_create);
-  session->saveWSManagerSearch(frame.window, this);
+		  frame.frame_h, 0, blackbox->Depth(), InputOutput,
+		  blackbox->visual(), create_mask, &attrib_create);
+  blackbox->saveWSManagerSearch(frame.window, this);
 
-  BImage *image = new BImage(session, frame.frame_w, frame.frame_h,
-			     session->Depth(), session->frameColor());
-  Pixmap p = image->renderImage(session->toolboxTexture(), 1,
-				session->toolboxColor(),
-				session->toolboxToColor());
+  BImage *image = new BImage(blackbox, frame.frame_w, frame.frame_h,
+			     blackbox->Depth(), blackbox->frameColor());
+  Pixmap p = image->renderImage(blackbox->toolboxTexture(), 1,
+				blackbox->toolboxColor(),
+				blackbox->toolboxToColor());
   delete image;
   XSetWindowBackgroundPixmap(display, frame.window, p);
   if (p) XFreePixmap(display, p);
 
   frame.workspace_button =
     XCreateWindow(display, frame.window, 3, 3, frame.button_w, frame.button_h,
-		  0, session->Depth(), InputOutput, session->visual(),
+		  0, blackbox->Depth(), InputOutput, blackbox->visual(),
 		  create_mask, &attrib_create);
-  session->saveWSManagerSearch(frame.workspace_button, this);
+  blackbox->saveWSManagerSearch(frame.workspace_button, this);
 
   XGCValues gcv;
-  gcv.font = session->titleFont()->fid;
-  gcv.foreground = session->toolboxTextColor().pixel;
+  gcv.font = blackbox->titleFont()->fid;
+  gcv.foreground = blackbox->toolboxTextColor().pixel;
   buttonGC = XCreateGC(display, frame.workspace_button,
 		       GCFont|GCForeground, &gcv);
 
-  BImage *bimage = new BImage(session, frame.button_w, frame.button_h,
-			      session->Depth(), session->buttonColor());
-  frame.button = bimage->renderImage(session->buttonTexture(), 0,
-				    session->buttonColor(),
-				    session->buttonToColor());
-  frame.pbutton = bimage->renderInvertedImage(session->buttonTexture(), 0,
-					     session->buttonColor(),
-					     session->buttonToColor());
+  BImage *bimage = new BImage(blackbox, frame.button_w, frame.button_h,
+			      blackbox->Depth(), blackbox->buttonColor());
+  frame.button = bimage->renderImage(blackbox->buttonTexture(), 0,
+				    blackbox->buttonColor(),
+				    blackbox->buttonToColor());
+  frame.pbutton = bimage->renderInvertedImage(blackbox->buttonTexture(), 0,
+					     blackbox->buttonColor(),
+					     blackbox->buttonToColor());
   delete bimage;
   XSetWindowBackgroundPixmap(display, frame.workspace_button, frame.button);
   
   frame.icon =
     XCreateWindow(display, frame.window, 3, frame.frame_h / 2,
 		  frame.button_w, (frame.frame_h / 2) - 2, 0,
-		  session->Depth(), InputOutput, session->visual(),
+		  blackbox->Depth(), InputOutput, blackbox->visual(),
 		  create_mask, &attrib_create);
-  session->saveWSManagerSearch(frame.icon, this);
+  blackbox->saveWSManagerSearch(frame.icon, this);
   
-  BImage *iimage = new BImage(session, frame.button_w, (frame.frame_h / 2) - 2,
-			      session->Depth(), session->toolboxColor());
-  p = iimage->renderInvertedImage(session->toolboxTexture(), 0,
-				  session->toolboxColor(),
- 				  session->toolboxToColor());
+  BImage *iimage = new BImage(blackbox, frame.button_w, (frame.frame_h / 2) - 2,
+			      blackbox->Depth(), blackbox->toolboxColor());
+  p = iimage->renderInvertedImage(blackbox->toolboxTexture(), 0,
+				  blackbox->toolboxColor(),
+ 				  blackbox->toolboxToColor());
   delete iimage;
   XSetWindowBackgroundPixmap(display, frame.icon, p);
   if (p) XFreePixmap(display, p);
@@ -409,15 +410,15 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
   frame.clock =
     XCreateWindow(display, frame.window, 3,
 		  frame.frame_h / 2 - frame.button_h - 2, frame.button_w,
-		  frame.button_h, 0, session->Depth(), InputOutput,
-		  session->visual(), create_mask, &attrib_create);
-  session->saveWSManagerSearch(frame.clock, this);
+		  frame.button_h, 0, blackbox->Depth(), InputOutput,
+		  blackbox->visual(), create_mask, &attrib_create);
+  blackbox->saveWSManagerSearch(frame.clock, this);
 
-  BImage *cimage = new BImage(session, frame.button_w, frame.button_h,
-			      session->Depth(), session->toolboxColor());
-  p = cimage->renderInvertedImage(session->toolboxTexture(), 0,
-				  session->toolboxColor(),
-				  session->toolboxToColor());
+  BImage *cimage = new BImage(blackbox, frame.button_w, frame.button_h,
+			      blackbox->Depth(), blackbox->toolboxColor());
+  p = cimage->renderInvertedImage(blackbox->toolboxTexture(), 0,
+				  blackbox->toolboxColor(),
+				  blackbox->toolboxToColor());
   delete cimage;
   XSetWindowBackgroundPixmap(display, frame.clock, p);
   if (p) XFreePixmap(display, p);
@@ -432,21 +433,19 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
   XMapWindow(display, frame.base);
 
   XDrawString(display, frame.workspace_button, buttonGC, 4, 3 +
-	      session->titleFont()->ascent, frame.title, strlen(frame.title));
+	      blackbox->titleFont()->ascent, frame.title, strlen(frame.title));
 }
 
 
 WorkspaceManager::~WorkspaceManager(void) {
-  DissociateAll();
-
   delete ilist;
   delete workspaces_menu;
   if (frame.title) delete frame.title;
 
-  llist_iterator<Workspace> it(workspaces_list);
-  for (; it.current(); it++) {
-    Workspace *tmp = it.current();
-    workspaces_list->remove(tmp);
+  int n = workspaces_list->count(), i;
+  for (i = 0; i < n; i++) {
+    Workspace *tmp = workspaces_list->find(0);
+    workspaces_list->remove(0);
     delete tmp;
   }
   delete workspaces_list;
@@ -454,16 +453,16 @@ WorkspaceManager::~WorkspaceManager(void) {
   if (frame.button) XFreePixmap(display, frame.button);
   if (frame.pbutton) XFreePixmap(display, frame.pbutton);
 
-  session->removeWSManagerSearch(frame.clock);
+  blackbox->removeWSManagerSearch(frame.clock);
   XDestroyWindow(display, frame.clock);
 
-  session->removeWSManagerSearch(frame.icon);
+  blackbox->removeWSManagerSearch(frame.icon);
   XDestroyWindow(display, frame.icon);
 
-  session->removeWSManagerSearch(frame.workspace_button);
+  blackbox->removeWSManagerSearch(frame.workspace_button);
   XDestroyWindow(display, frame.workspace_button);
 
-  session->removeWSManagerSearch(frame.window);
+  blackbox->removeWSManagerSearch(frame.window);
   XDestroyWindow(display, frame.window);
 
   XDestroyWindow(display, frame.base);
@@ -490,7 +489,7 @@ void WorkspaceManager::changeWorkspaceID(int id) {
     sprintf(frame.title, "Workspace %d", id);
     XClearWindow(display, frame.workspace_button);
     XDrawString(display, frame.workspace_button, buttonGC, 4, 3 +
-                session->titleFont()->ascent, frame.title,
+                blackbox->titleFont()->ascent, frame.title,
 		strlen(frame.title));
     current->showAll();
     XSync(display, False);
@@ -536,7 +535,7 @@ void WorkspaceManager::buttonReleaseEvent(XButtonEvent *re) {
 void WorkspaceManager::exposeEvent(XExposeEvent *ee) {
   if (ee->window == frame.workspace_button)
     XDrawString(display, frame.workspace_button, buttonGC, 4, 3 +
-		session->titleFont()->ascent, frame.title,
+		blackbox->titleFont()->ascent, frame.title,
 		strlen(frame.title));
   else if (ee->window == frame.clock)
     checkClock(True);
@@ -548,7 +547,7 @@ void WorkspaceManager::showMenu(void) {
 			     frame.pbutton);
   XClearWindow(display, frame.workspace_button);
   XDrawString(display, frame.workspace_button, buttonGC, 4, 3 +
-	      session->titleFont()->ascent, frame.title,
+	      blackbox->titleFont()->ascent, frame.title,
 	      strlen(frame.title));
   workspaces_menu->moveMenu(3, 3 + frame.button_h);
   workspaces_menu->showMenu();
@@ -569,7 +568,7 @@ void WorkspaceManager::hideMenu(void) {
 			     frame.button);
   XClearWindow(display, frame.workspace_button);
   XDrawString(display, frame.workspace_button, buttonGC, 4, 3 +
-	      session->titleFont()->ascent, frame.title,
+	      blackbox->titleFont()->ascent, frame.title,
 	      strlen(frame.title));
   workspaces_menu->hideMenu();
   llist_iterator<Workspace> it(workspaces_list);
@@ -586,7 +585,7 @@ void WorkspaceManager::stackWindows(Window *workspace_stack, int num) {
   Window *session_stack = new Window[num + 3 + workspaces_list->count()];
 
   int i = 0;
-  *(session_stack + i++) = session->Rootmenu()->windowID();
+  *(session_stack + i++) = blackbox->Rootmenu()->windowID();
   *(session_stack + i++) = workspaces_menu->windowID();
 
   llist_iterator<Workspace> it(workspaces_list);
@@ -605,23 +604,23 @@ void WorkspaceManager::stackWindows(Window *workspace_stack, int num) {
 
 
 void WorkspaceManager::Reconfigure(void) {
-  frame.button_w = XTextWidth(session->titleFont(), "Workspace 00", 13) + 8;
-  frame.button_h = session->titleFont()->ascent +
-    session->titleFont()->descent + 8;
+  frame.button_w = XTextWidth(blackbox->titleFont(), "Workspace 00", 13) + 8;
+  frame.button_h = blackbox->titleFont()->ascent +
+    blackbox->titleFont()->descent + 8;
 
   frame.frame_w = frame.button_w + 6;
-  frame.frame_h = session->YResolution() - 2;
+  frame.frame_h = blackbox->YResolution() - 2;
 
   XGCValues gcv;
-  gcv.font = session->titleFont()->fid;
-  gcv.foreground = session->toolboxTextColor().pixel;
+  gcv.font = blackbox->titleFont()->fid;
+  gcv.foreground = blackbox->toolboxTextColor().pixel;
   XChangeGC(display, buttonGC, GCFont|GCForeground, &gcv);
 
-  BImage image(session, frame.frame_w, frame.frame_h,
-	       session->Depth(), session->frameColor());
-  Pixmap p = image.renderImage(session->toolboxTexture(), 1,
-			       session->toolboxColor(),
-			       session->toolboxToColor());
+  BImage image(blackbox, frame.frame_w, frame.frame_h,
+	       blackbox->Depth(), blackbox->frameColor());
+  Pixmap p = image.renderImage(blackbox->toolboxTexture(), 1,
+			       blackbox->toolboxColor(),
+			       blackbox->toolboxToColor());
   
   XResizeWindow(display, frame.base, frame.frame_w, frame.frame_h);
   XResizeWindow(display, frame.window, frame.frame_w, frame.frame_h);
@@ -631,14 +630,14 @@ void WorkspaceManager::Reconfigure(void) {
   if (frame.button) XFreePixmap(display, frame.button);
   if (frame.pbutton) XFreePixmap(display, frame.pbutton);
 
-  BImage bimage(session, frame.button_w, frame.button_h,
-		session->Depth(), session->buttonColor());
-  frame.button = bimage.renderImage(session->buttonTexture(), 0,
-				    session->buttonColor(),
-				    session->buttonToColor());
-  frame.pbutton = bimage.renderInvertedImage(session->buttonTexture(), 0,
-					     session->buttonColor(),
-					     session->buttonToColor());
+  BImage bimage(blackbox, frame.button_w, frame.button_h,
+		blackbox->Depth(), blackbox->buttonColor());
+  frame.button = bimage.renderImage(blackbox->buttonTexture(), 0,
+				    blackbox->buttonColor(),
+				    blackbox->buttonToColor());
+  frame.pbutton = bimage.renderInvertedImage(blackbox->buttonTexture(), 0,
+					     blackbox->buttonColor(),
+					     blackbox->buttonToColor());
 
   XResizeWindow(display, frame.workspace_button, frame.button_w,
 		frame.button_h);
@@ -648,36 +647,36 @@ void WorkspaceManager::Reconfigure(void) {
   } else
     XSetWindowBackgroundPixmap(display, frame.workspace_button, frame.button);
   
-  BImage iimage(session, frame.button_w, (frame.frame_h / 2) - 2,
-		session->Depth(), session->toolboxColor());
-  p = iimage.renderInvertedImage(session->toolboxTexture(), 0,
-				 session->toolboxColor(),
-				 session->toolboxToColor());
+  BImage iimage(blackbox, frame.button_w, (frame.frame_h / 2) - 2,
+		blackbox->Depth(), blackbox->toolboxColor());
+  p = iimage.renderInvertedImage(blackbox->toolboxTexture(), 0,
+				 blackbox->toolboxColor(),
+				 blackbox->toolboxToColor());
 
 
   XResizeWindow(display, frame.icon, frame.button_w, (frame.frame_h / 2) - 2);
   XSetWindowBackgroundPixmap(display, frame.icon, p);
   if (p) XFreePixmap(display, p);
 
-  BImage cimage(session, frame.button_w, frame.button_h,
-	        session->Depth(), session->toolboxColor());
-  p = cimage.renderInvertedImage(session->toolboxTexture(), 0,
-				 session->toolboxColor(),
-				 session->toolboxToColor());
+  BImage cimage(blackbox, frame.button_w, frame.button_h,
+	        blackbox->Depth(), blackbox->toolboxColor());
+  p = cimage.renderInvertedImage(blackbox->toolboxTexture(), 0,
+				 blackbox->toolboxColor(),
+				 blackbox->toolboxToColor());
   
   XResizeWindow(display, frame.clock, frame.button_w, frame.button_h);
   XSetWindowBackgroundPixmap(display, frame.clock, p);
   if (p) XFreePixmap(display, p);
 
-  XSetWindowBackground(display, frame.base, session->frameColor().pixel);
-  XSetWindowBorder(display, frame.base, session->frameColor().pixel);
+  XSetWindowBackground(display, frame.base, blackbox->frameColor().pixel);
+  XSetWindowBorder(display, frame.base, blackbox->frameColor().pixel);
   XClearWindow(display, frame.window);
   XClearWindow(display, frame.workspace_button);
   XClearWindow(display, frame.icon);
   XClearWindow(display, frame.clock);
   
   XDrawString(display, frame.workspace_button, buttonGC, 4, 3 +
-	      session->titleFont()->ascent, frame.title,
+	      blackbox->titleFont()->ascent, frame.title,
 	      strlen(frame.title));
   checkClock(True);
 
@@ -719,7 +718,7 @@ void WorkspaceManager::checkClock(Bool redraw) {
     int len = strlen(t);
     XDrawString(display, frame.clock, buttonGC,
 		(frame.button_w -
-		 XTextWidth(session->titleFont(), t, len)) / 2,
-		3 + session->titleFont()->ascent, t, len);
+		 XTextWidth(blackbox->titleFont(), t, len)) / 2,
+		3 + blackbox->titleFont()->ascent, t, len);
   }
 }

@@ -36,54 +36,54 @@
 //
 // *************************************************************************
 
-BlackboxIcon::BlackboxIcon(BlackboxSession *s, Window c) {
-  session = s;
-  display = session->control();
-  ws_manager = session->WSManager();
+BlackboxIcon::BlackboxIcon(Blackbox *bb, Window c) {
+  blackbox = bb;
+  display = blackbox->control();
+  ws_manager = blackbox->WSManager();
   icon.client = c;
   focus = False;
 
   if (! XGetIconName(display, icon.client, &icon.name))
     icon.name = 0;
 
-  icon.height = session->iconFont()->ascent + session->iconFont()->descent + 4;
+  icon.height = blackbox->iconFont()->ascent + blackbox->iconFont()->descent + 4;
 
   unsigned long attrib_mask = CWBackPixmap|CWBackPixel|CWBorderPixel|
     CWCursor|CWEventMask; 
   XSetWindowAttributes attrib;
   attrib.background_pixmap = None;
-  attrib.background_pixel = session->frameColor().pixel;
+  attrib.background_pixel = blackbox->frameColor().pixel;
   attrib.border_pixel = 0l;
-  attrib.cursor = session->sessionCursor();
+  attrib.cursor = blackbox->sessionCursor();
   attrib.event_mask = StructureNotifyMask|SubstructureNotifyMask|
     ExposureMask|SubstructureRedirectMask|ButtonPressMask|
     ButtonReleaseMask|ButtonMotionMask|ExposureMask;
   
   icon.window =
-    XCreateWindow(display, session->WSManager()->iconWindowID(), 1, 1,
+    XCreateWindow(display, blackbox->WSManager()->iconWindowID(), 1, 1,
 		  ws_manager->iconWidth() - 2, icon.height, 0,
-		  session->Depth(), InputOutput, session->visual(),
+		  blackbox->Depth(), InputOutput, blackbox->visual(),
 		  attrib_mask, &attrib);
-  session->saveIconSearch(icon.window, this);
+  blackbox->saveIconSearch(icon.window, this);
 
   XGCValues gcv;
-  gcv.foreground = session->iconTextColor().pixel;
-  gcv.font = session->iconFont()->fid;
+  gcv.foreground = blackbox->iconTextColor().pixel;
+  gcv.font = blackbox->iconFont()->fid;
   iconGC = XCreateGC(display, icon.window, GCForeground|GCFont, &gcv);
 
   attrib.event_mask |= EnterWindowMask|LeaveWindowMask;
-  attrib.background_pixel = session->frameColor().pixel;
+  attrib.background_pixel = blackbox->frameColor().pixel;
   icon.subwindow =
     XCreateWindow(display, icon.window, 0, 0, ws_manager->iconWidth() - 2,
-		  icon.height, 0, session->Depth(), InputOutput,
-		  session->visual(), attrib_mask, &attrib);
-  session->saveIconSearch(icon.subwindow, this);
+		  icon.height, 0, blackbox->Depth(), InputOutput,
+		  blackbox->visual(), attrib_mask, &attrib);
+  blackbox->saveIconSearch(icon.subwindow, this);
   
-  BImage image(session, ws_manager->iconWidth() - 2, icon.height,
-	       session->Depth(), session->frameColor());
-  Pixmap p = image.renderImage(session->toolboxTexture(), 0,
-			       session->toolboxColor(),
-			       session->toolboxToColor());
+  BImage image(blackbox, ws_manager->iconWidth() - 2, icon.height,
+	       blackbox->Depth(), blackbox->frameColor());
+  Pixmap p = image.renderImage(blackbox->toolboxTexture(), 0,
+			       blackbox->toolboxColor(),
+			       blackbox->toolboxToColor());
 
   XSetWindowBackgroundPixmap(display, icon.subwindow, p);
   XClearWindow(display, icon.subwindow);
@@ -104,8 +104,8 @@ BlackboxIcon::~BlackboxIcon(void) {
   XFreeGC(display, iconGC);
   if (icon.name) XFree(icon.name);
 
-  session->removeIconSearch(icon.window);
-  session->removeIconSearch(icon.subwindow);
+  blackbox->removeIconSearch(icon.window);
+  blackbox->removeIconSearch(icon.subwindow);
   XDestroyWindow(display, icon.subwindow);
   XDestroyWindow(display, icon.window);
 }
@@ -118,13 +118,13 @@ void BlackboxIcon::buttonReleaseEvent(XButtonEvent *be) {
   if (be->button == 1 &&
       be->x >= 0 && be->x <= (signed) (ws_manager->iconWidth() - 2) &&
       be->y >= 0 && be->y <= (signed) icon.height) {
-    BlackboxWindow *win = session->searchWindow(icon.client);
+    BlackboxWindow *win = blackbox->searchWindow(icon.client);
     XUnmapWindow(display, icon.window);
-    XDrawString(display, session->Root(), session->GCOperations(), icon.x + 2, 
-                icon.y + 2 + session->iconFont()->ascent,
+    XDrawString(display, blackbox->Root(), blackbox->GCOperations(), icon.x + 2, 
+                icon.y + 2 + blackbox->iconFont()->ascent,
                 ((icon.name != NULL) ? icon.name : "Unnamed"),
                 ((icon.name != NULL) ? strlen(icon.name) : strlen("Unnamed")));
-    XClearWindow(display, session->WSManager()->iconWindowID());
+    XClearWindow(display, blackbox->WSManager()->iconWindowID());
     win->deiconifyWindow();
     win->setFocusFlag(False);
   }
@@ -134,8 +134,8 @@ void BlackboxIcon::buttonReleaseEvent(XButtonEvent *be) {
 void BlackboxIcon::enterNotifyEvent(XCrossingEvent *) {
   focus = True;
   XClearWindow(display, icon.subwindow);
-  XDrawString(display, session->Root(), session->GCOperations(), icon.x + 2,
-              icon.y + 2 + session->iconFont()->ascent,
+  XDrawString(display, blackbox->Root(), blackbox->GCOperations(), icon.x + 2,
+              icon.y + 2 + blackbox->iconFont()->ascent,
 	      ((icon.name != NULL) ? icon.name : "Unnamed"),
 	      ((icon.name != NULL) ? strlen(icon.name) : strlen("Unnamed")));
 }
@@ -143,8 +143,8 @@ void BlackboxIcon::enterNotifyEvent(XCrossingEvent *) {
 
 void BlackboxIcon::leaveNotifyEvent(XCrossingEvent *) {
   focus = False;
-  XDrawString(display, session->Root(), session->GCOperations(), icon.x + 2, 
-              icon.y + 2 + session->iconFont()->ascent,
+  XDrawString(display, blackbox->Root(), blackbox->GCOperations(), icon.x + 2, 
+              icon.y + 2 + blackbox->iconFont()->ascent,
               ((icon.name != NULL) ? icon.name : "Unnamed"),
               ((icon.name != NULL) ? strlen(icon.name) : strlen("Unnamed")));
   XClearWindow(display, icon.subwindow);
@@ -155,25 +155,25 @@ void BlackboxIcon::leaveNotifyEvent(XCrossingEvent *) {
 void BlackboxIcon::exposeEvent(XExposeEvent *) {
   if (! focus) {
     int w = ((icon.name != NULL) ?
-      XTextWidth(session->iconFont(), icon.name, strlen(icon.name)) :
-      XTextWidth(session->iconFont(), "Unnamed", strlen("Unnamed"))) + 4;
+      XTextWidth(blackbox->iconFont(), icon.name, strlen(icon.name)) :
+      XTextWidth(blackbox->iconFont(), "Unnamed", strlen("Unnamed"))) + 4;
 
     if (w > (signed) (ws_manager->iconWidth() - 2)) {
       int il;
       for (il = ((icon.name != NULL) ? strlen(icon.name) : strlen("Unnamed"));
        	   il > 0; --il) {
         if ((w = ((icon.name != NULL) ?
-                  XTextWidth(session->iconFont(), icon.name, il) :
-                  XTextWidth(session->iconFont(), "Unnamed", il)) + 4) < 90)
+                  XTextWidth(blackbox->iconFont(), icon.name, il) :
+                  XTextWidth(blackbox->iconFont(), "Unnamed", il)) + 4) < 90)
           break;
       }
 
       XDrawString(display, icon.subwindow, iconGC, 2, 2 +
-                  session->iconFont()->ascent,
+                  blackbox->iconFont()->ascent,
                   ((icon.name != NULL) ? icon.name : "Unnamed"), il);
     } else {
       XDrawString(display, icon.subwindow, iconGC, 2, 2 +
-		  session->iconFont()->ascent,
+		  blackbox->iconFont()->ascent,
 		  ((icon.name != NULL) ? icon.name : "Unnamed"),
 		  ((icon.name != NULL) ? strlen(icon.name) :
                    strlen("Unnamed")));
@@ -192,20 +192,20 @@ void BlackboxIcon::rereadLabel(void) {
 
 void BlackboxIcon::Reconfigure(void) {
   XGCValues gcv;
-  gcv.foreground = session->iconTextColor().pixel;
-  gcv.font = session->iconFont()->fid;
+  gcv.foreground = blackbox->iconTextColor().pixel;
+  gcv.font = blackbox->iconFont()->fid;
   XChangeGC(display, iconGC, GCForeground|GCFont, &gcv);
 
-  icon.height = session->iconFont()->ascent + session->iconFont()->descent + 4;
+  icon.height = blackbox->iconFont()->ascent + blackbox->iconFont()->descent + 4;
   XResizeWindow(display, icon.window, ws_manager->iconWidth() - 2,
 		icon.height);
   XResizeWindow(display, icon.subwindow, ws_manager->iconWidth() - 2,
 		icon.height);
-  BImage image(session, ws_manager->iconWidth() - 2, icon.height,
-	       session->Depth(), session->frameColor());
-  Pixmap p = image.renderImage(session->toolboxTexture(), 0,
-			       session->toolboxColor(),
-			       session->toolboxToColor());
+  BImage image(blackbox, ws_manager->iconWidth() - 2, icon.height,
+	       blackbox->Depth(), blackbox->frameColor());
+  Pixmap p = image.renderImage(blackbox->toolboxTexture(), 0,
+			       blackbox->toolboxColor(),
+			       blackbox->toolboxToColor());
 
   XSetWindowBackgroundPixmap(display, icon.subwindow, p);
   XClearWindow(display, icon.subwindow);

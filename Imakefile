@@ -40,9 +40,9 @@ XCOMM
 
 XCOMM Source files from which blackbox is built
 
-Includes :=		blackbox.hh graphics.hh icon.hh llist.hh menu.hh session.hh window.hh workspace.hh
-Sources :=		blackbox.cc graphics.cc icon.cc llist.cc main.cc menu.cc session.cc sessionmenu.cc window.cc windowmenu.cc workspace.cc workspacemenu.cc
-Objects :=		blackbox.o graphics.o icon.o main.o menu.o llist.o session.o sessionmenu.o window.o windowmenu.o workspace.o workspacemenu.o
+Includes :=		blackbox.hh graphics.hh icon.hh llist.hh menu.hh window.hh workspace.hh
+Sources :=		blackbox.cc graphics.cc icon.cc llist.cc main.cc menu.cc sessionmenu.cc window.cc windowmenu.cc workspace.cc workspacemenu.cc
+Objects :=		blackbox.o graphics.o icon.o main.o menu.o llist.o sessionmenu.o window.o windowmenu.o workspace.o workspacemenu.o
 
 DefaultsPath :=		-DXAPPLOADDIR=\"$(XAPPLOADDIR)\" -DXLIBDIR=\"$(LIBDIR)\"
 Libraries :=		$(XLIB) $(EXTENSIONLIB)
@@ -68,7 +68,7 @@ ComplexProgramTarget_1(blackbox, $(Libraries), $(OtherLibs))
 .cc.o: $(Sources)
 	$(CXX) $(CompileOptions) -c -o $@ $<
 
-session.o: session.cc
+blackbox.o: blackbox.cc
 	$(CXX) $(CompileOptions) $(DefaultsPath) -c -o $@ $<
 
 depend::

@@ -19,27 +19,24 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef _blackbox_workspace_hh
-#define _blackbox_workspace_hh
+#ifndef __blackbox_workspace_hh
+#define __blackbox_workspace_hh
 
 #include <X11/Xlib.h>
 
-
-class BlackboxSession;
-class BlackboxWindow;
+// forward declarations
 class Workspace;
-class WorkspaceMenu;
 class WorkspaceManager;
-class WorkspaceManagerMenu;
 
 #include "menu.hh"
 #include "llist.hh"
 #include "icon.hh"
+#include "window.hh"
 
 
-class WorkspaceMenu : public BlackboxMenu {
+class WorkspaceMenu : public BaseMenu {
 private:
-  BlackboxSession *session;
+  Blackbox *blackbox;
   Workspace *workspace;
 
 
@@ -51,7 +48,7 @@ protected:
 
 
 public:
-  WorkspaceMenu(Workspace *, BlackboxSession *s);
+  WorkspaceMenu(Workspace *, Blackbox *);
 
   void showMenu();
   void hideMenu();
@@ -62,7 +59,7 @@ public:
 };
 
 
-class WorkspaceManagerMenu : public BlackboxMenu {
+class WorkspaceManagerMenu : public BaseMenu {
 private:
   WorkspaceManager *ws_manager;
   
@@ -75,7 +72,7 @@ protected:
 
 
 public:
-  WorkspaceManagerMenu(WorkspaceManager *, BlackboxSession *);
+  WorkspaceManagerMenu(WorkspaceManager *, Blackbox *);
 
   void showMenu();
   void hideMenu();
@@ -146,7 +143,7 @@ private:
   llist<Workspace> *workspaces_list;
   llist<BlackboxIcon> *ilist;
   WorkspaceManagerMenu *workspaces_menu;
-  BlackboxSession *session;
+  Blackbox *blackbox;
   Workspace *current;
   
   friend WorkspaceManagerMenu;
@@ -157,7 +154,7 @@ protected:
 
 
 public:
-  WorkspaceManager(BlackboxSession *, int = 1);
+  WorkspaceManager(Blackbox *, int = 1);
   ~WorkspaceManager(void);
 
   int addWorkspace(void);
@@ -180,8 +177,8 @@ public:
     { return frame.icon; }
   Workspace *currentWorkspace(void)
     { return current; }
-  BlackboxSession *Session(void)
-    { return session; }
+  Blackbox *_blackbox(void)
+    { return blackbox; }
   int count(void)
     { return workspaces_list->count(); }
   int currentWorkspaceID(void)
