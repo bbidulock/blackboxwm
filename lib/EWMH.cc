@@ -83,6 +83,7 @@ bt::EWMH::EWMH(const Display &_display)
     { "_NET_WM_STATE_FULLSCREEN", &net_wm_state_fullscreen },
     { "_NET_WM_STATE_ABOVE", &net_wm_state_above },
     { "_NET_WM_STATE_BELOW", &net_wm_state_below },
+    { "_NET_WM_STATE_DEMANDS_ATTENTION", &net_wm_state_demands_attention },
     { "_NET_WM_ALLOWED_ACTIONS", &net_wm_allowed_actions },
     { "_NET_WM_ACTION_MOVE", &net_wm_action_move },
     { "_NET_WM_ACTION_RESIZE", &net_wm_action_resize },

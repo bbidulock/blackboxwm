@@ -191,6 +191,8 @@ namespace bt {
     { return net_wm_state_above; }
     inline Atom wmStateBelow(void) const
     { return net_wm_state_below; }
+    inline Atom wmStateDemandsAttention(void) const
+    { return net_wm_state_demands_attention; }
     inline Atom wmStateRemove(void) const
     { return 0; }
     inline Atom wmStateAdd(void) const
@@ -321,6 +323,7 @@ namespace bt {
       net_wm_state_fullscreen,
       net_wm_state_above,
       net_wm_state_below,
+      net_wm_state_demands_attention,
       net_wm_state_remove,
       net_wm_state_add,
       net_wm_state_toggle,
