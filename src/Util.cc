@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Util.cc for Blackbox - an X11 Window manager
 // Copyright (c) 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000, 2002 Brad Hughes (bhughes@tcac.net)
@@ -57,6 +57,56 @@ extern "C" {
 #include "Util.hh"
 
 using std::string;
+
+
+void Rect::setX(int __x) {
+  _x2 += __x - _x1;
+  _x1 = __x;
+}
+
+
+void Rect::setY(int __y)
+{
+  _y2 += __y - _y1;
+  _y1 = __y;
+}
+
+
+void Rect::setPos(int __x, int __y) {
+  _x2 += __x - _x1;
+  _x1 = __x;
+  _y2 += __y - _y1;
+  _y1 = __y;
+}
+
+
+void Rect::setWidth(unsigned int __w) {
+  _x2 = __w + _x1 - 1;
+}
+
+
+void Rect::setHeight(unsigned int __h) {
+  _y2 = __h + _y1 - 1;
+}
+
+
+void Rect::setSize(unsigned int __w, unsigned int __h) {
+  _x2 = __w + _x1 - 1;
+  _y2 = __h + _y1 - 1;
+}
+
+
+void Rect::setRect(int __x, int __y, unsigned int __w, unsigned int __h) {
+  *this = Rect(__x, __y, __w, __h);
+}
+
+
+void Rect::setCoords(int __l, int __t, int __r, int __b) {
+  _x1 = __l;
+  _y1 = __t;
+  _x2 = __r;
+  _y2 = __b;
+}
 
 
 Rect Rect::operator|(const Rect &a) const {
