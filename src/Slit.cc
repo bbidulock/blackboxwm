@@ -192,8 +192,7 @@ Slit::Slit(BScreen *scr) {
                               CWColormap | CWOverrideRedirect | CWEventMask;
   attrib.background_pixmap = None;
   attrib.background_pixel = attrib.border_pixel =
-    screen->getBorderColor()->pixel(blackbox->getDisplay(),
-                                    screen->getScreenInfo().getScreenNumber());
+    screen->getBorderColor()->pixel(screen->getScreenInfo().getScreenNumber());
   attrib.colormap = screen->getColormap();
   attrib.override_redirect = True;
   attrib.event_mask = SubstructureRedirectMask | ButtonPressMask |
@@ -396,8 +395,7 @@ void Slit::reconfigure(void) {
 
   XSetWindowBorderWidth(display ,frame.window, screen->getBorderWidth());
   XSetWindowBorder(display, frame.window,
-                   screen->getBorderColor()->pixel(blackbox->getDisplay(),
-                                                   screen->getScreenInfo().
+                   screen->getBorderColor()->pixel(screen->getScreenInfo().
                                                    getScreenNumber()));
 
   XMapWindow(display, frame.window);
@@ -410,8 +408,7 @@ void Slit::reconfigure(void) {
                     frame.rect.width(), frame.rect.height(), frame.pixmap);
   if (! frame.pixmap)
     XSetWindowBackground(display, frame.window,
-                         texture->color().pixel(blackbox->getDisplay(),
-                                                screen->getScreenInfo().
+                         texture->color().pixel(screen->getScreenInfo().
                                                 getScreenNumber()));
   else
     XSetWindowBackgroundPixmap(display, frame.window, frame.pixmap);

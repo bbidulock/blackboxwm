@@ -26,25 +26,13 @@
 #endif // HAVE_CONFIG_H
 
 extern "C" {
-#ifdef HAVE_STDLIB_H
-#  include <stdlib.h>
-#endif // HAVE_STDLIB_H
-
-#ifdef HAVE_STRING_H
-#  include <string.h>
-#endif // HAVE_STRING_H
-
 #include <stdio.h>
-
-#ifdef    HAVE_CTYPE_H
-#  include <ctype.h>
-#endif // HAVE_CTYPE_H
 }
 
-#include "i18n.hh"
-#include "GCCache.hh"
-#include "Texture.hh"
 #include "bsetroot.hh"
+#include "Pen.hh"
+#include "Texture.hh"
+#include "i18n.hh"
 
 
 bt::I18n bt::i18n;
@@ -198,14 +186,14 @@ void bsetroot::solid(void) {
   for (unsigned int screen = 0; screen < display.screenCount(); screen++) {
     const bt::ScreenInfo * const screen_info = display.screenNumber(screen);
     XSetWindowBackground(display.XDisplay(), screen_info->getRootWindow(),
-                         c.pixel(display, screen));
+                         c.pixel(screen));
     XClearWindow(display.XDisplay(), screen_info->getRootWindow());
 
     Pixmap pixmap =
       XCreatePixmap(display.XDisplay(), screen_info->getRootWindow(),
                     8, 8, DefaultDepth(display.XDisplay(), screen));
 
-    bt::Pen pen(display, screen, c);
+    bt::Pen pen(screen, c);
     XFillRectangle(display.XDisplay(), pixmap, pen.gc(), 0, 0, 8, 8);
 
     setPixmapProperty(screen, duplicatePixmap(screen, pixmap, 8, 8));
@@ -250,8 +238,8 @@ void bsetroot::modula(int x, int y) {
                             data, 16, 16);
 
     XGCValues gcv;
-    gcv.foreground = f.pixel(display, screen);
-    gcv.background = b.pixel(display, screen);
+    gcv.foreground = f.pixel(screen);
+    gcv.background = b.pixel(screen);
 
     gc = XCreateGC(display.XDisplay(), screen_info->getRootWindow(),
                    GCForeground | GCBackground, &gcv);

@@ -97,9 +97,9 @@ extern "C" {
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "Clientmenu.hh"
-#include "GCCache.hh"
 #include "Image.hh"
 #include "Netwm.hh"
+#include "Pen.hh"
 #include "Rootmenu.hh"
 #include "Screen.hh"
 #include "Slit.hh"
@@ -1037,11 +1037,12 @@ void Blackbox::real_reconfigure(void) {
                 bt::PointerAssassin());
   menuTimestamps.clear();
 
+  bt::Color::clearCache();
+  bt::Font::clearCache();
+  bt::Pen::clearCache();
+
   std::for_each(screenList.begin(), screenList.end(),
                 std::mem_fun(&BScreen::reconfigure));
-
-  getDisplay().gcCache()->purge();
-  bt::Color::clearColorCache();
 }
 
 

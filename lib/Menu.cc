@@ -31,7 +31,7 @@ extern "C" {
 }
 
 #include "BaseDisplay.hh"
-#include "GCCache.hh"
+#include "Pen.hh"
 #include "Resource.hh"
 #include "Timer.hh"
 
@@ -147,12 +147,9 @@ void bt::MenuStyle::load(const Resource &resource) {
                                     "white"));
 
   // fonts
-  title.font = Font(resource.read("menu.title.font",
-                                  "Menu.Title.Font"),
-                    &_app.getDisplay());
-  frame.font = Font(resource.read("menu.frame.font",
-                                  "Menu.Frame.Font"),
-                    &_app.getDisplay());
+  title.font.setFontName(resource.read("menu.title.font", "Menu.Title.Font"));
+  frame.font.setFontName(resource.read("menu.frame.font", "Menu.Frame.Font"));
+
   item_indent = std::max(textHeight(frame.font), 7u);
 
   title.alignment =
@@ -165,7 +162,8 @@ void bt::MenuStyle::load(const Resource &resource) {
 
   const std::string mstr =
     resource.read("menu.marginWidth", "Menu.MarginWidth", "1");
-  margin_w = static_cast<unsigned int>(strtoul(mstr.c_str(), 0, 0));
+  margin_w =
+    std::max(static_cast<unsigned int>(strtoul(mstr.c_str(), 0, 0)), 1u);
 }
 
 
@@ -176,12 +174,12 @@ unsigned int bt::MenuStyle::separatorHeight(void) const {
 
 
 unsigned int bt::MenuStyle::titleMargin(void) const {
-  return title.texture.borderWidth() + std::max(margin_w, 2u);
+  return title.texture.borderWidth() + margin_w;
 }
 
 
 unsigned int bt::MenuStyle::frameMargin(void) const {
-  return frame.texture.borderWidth() + std::max(margin_w, 2u);
+  return frame.texture.borderWidth() + margin_w;
 }
 
 
@@ -228,7 +226,7 @@ bt::Rect bt::MenuStyle::itemRect(const MenuItem &item) const {
 
 void bt::MenuStyle::drawTitle(Window window, const Rect &rect,
                               const std::string &text) const {
-  Pen pen(_app.getDisplay(), _screen, title.text, title.font.font());
+  Pen pen(_screen, title.text);
   Rect r;
   r.setCoords(rect.left() + titleMargin(), rect.top(),
               rect.right() - titleMargin(), rect.bottom());
@@ -243,7 +241,7 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
                rect.right() - item_indent, rect.bottom());
 
   if (item.isSeparator()) {
-    Pen pen(_app.getDisplay(), _screen, frame.foreground);
+    Pen pen(_screen, frame.foreground);
     XFillRectangle(_app.getXDisplay(), window, pen.gc(),
                    r2.x(), r2.y() + margin_w, r2.width(),
                    (frame.texture.borderWidth() > 0 ?
@@ -251,17 +249,12 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
     return;
   }
 
-  Pen fpen(_app.getDisplay(), _screen,
-           (item.isEnabled() ?
-            (item.isActive() ? active.foreground : frame.foreground) :
-            frame.disabled));
-  Pen tpen(_app.getDisplay(), _screen,
-           (item.isEnabled() ?
-            (item.isActive() ? active.text : frame.text) :
-            frame.disabled),
-           frame.font.font());
+  Pen fpen(_screen, (item.isEnabled() ? (item.isActive() ? active.foreground :
+                                         frame.foreground) : frame.disabled));
+  Pen tpen(_screen, (item.isEnabled() ? (item.isActive() ? active.text :
+                                         frame.text) : frame.disabled));
   if (item.isActive() && item.isEnabled()) {
-    Pen p2(_app.getDisplay(), _screen, active.texture.color());
+    Pen p2(_screen, active.texture.color());
     if (pixmap) {
       XCopyArea(_app.getXDisplay(), pixmap, window, p2.gc(),
                 0, 0, rect.width(), rect.height(), rect.x(), rect.y());
@@ -998,7 +991,7 @@ void bt::Menu::exposeEvent(const XExposeEvent * const event) {
   if (_show_title && r.intersects(_trect)) {
     u = r & _trect;
 
-    Pen pen(_app.getDisplay(), _screen, style->titleTexture().color());
+    Pen pen(_screen, style->titleTexture().color());
     if (_tpixmap) {
       XCopyArea(_app.getXDisplay(), _tpixmap, _window, pen.gc(),
                 u.x(), u.y(), u.width(), u.height(), u.x(), u.y());
@@ -1013,7 +1006,7 @@ void bt::Menu::exposeEvent(const XExposeEvent * const event) {
   if (r.intersects(_frect)) {
     u = r & _frect;
 
-    Pen pen(_app.getDisplay(), _screen, style->frameTexture().color());
+    Pen pen(_screen, style->frameTexture().color());
     if (_fpixmap) {
       XCopyArea(_app.getXDisplay(), _fpixmap, _window, pen.gc(),
                 u.x() - _frect.x(), u.y() - _frect.y(),

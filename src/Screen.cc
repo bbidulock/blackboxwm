@@ -78,11 +78,11 @@ extern "C" {
 #include "blackbox.hh"
 #include "Clientmenu.hh"
 #include "Font.hh"
-#include "GCCache.hh"
 #include "Iconmenu.hh"
 #include "Image.hh"
 #include "Menu.hh"
 #include "Netwm.hh"
+#include "Pen.hh"
 #include "Resource.hh"
 #include "Screen.hh"
 #include "Slit.hh"
@@ -180,8 +180,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   XSetWindowAttributes setattrib;
   unsigned long mask = CWBorderPixel | CWColormap | CWSaveUnder;
   setattrib.border_pixel =
-    resource.border_color.pixel(blackbox->getDisplay(),
-                                screen_info.getScreenNumber());
+    resource.border_color.pixel(screen_info.getScreenNumber());
   setattrib.colormap = screen_info.getColormap();
   setattrib.save_under = True;
 
@@ -207,7 +206,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   }
   if (! geom_pixmap)
     XSetWindowBackground(blackbox->getXDisplay(), geom_window,
-                         texture->color().pixel(blackbox->getDisplay(), screen_info.getScreenNumber()));
+                         texture->color().pixel(screen_info.getScreenNumber()));
   else
     XSetWindowBackgroundPixmap(blackbox->getXDisplay(),
                                geom_window, geom_pixmap);
@@ -424,8 +423,10 @@ void BScreen::reconfigure(void) {
   if (! bt::i18n.multibyte()) gc_value_mask |= GCFont;
 
   gcv.foreground = WhitePixel(blackbox->getXDisplay(),
-                              screen_info.getScreenNumber());
-  gcv.function = GXinvert;
+                              screen_info.getScreenNumber())
+                   ^ BlackPixel(blackbox->getXDisplay(),
+                                screen_info.getScreenNumber());
+  gcv.function = GXxor;
   gcv.subwindow_mode = IncludeInferiors;
   XChangeGC(blackbox->getXDisplay(), opGC,
             GCForeground | GCFunction | GCSubwindowMode, &gcv);
@@ -450,9 +451,7 @@ void BScreen::reconfigure(void) {
   }
   if (! geom_pixmap)
     XSetWindowBackground(blackbox->getXDisplay(), geom_window,
-                         texture->color().pixel(blackbox->getDisplay(),
-                                                screen_info.
-                                                getScreenNumber()));
+                         texture->color().pixel(screen_info.getScreenNumber()));
   else
     XSetWindowBackgroundPixmap(blackbox->getXDisplay(),
                                geom_window, geom_pixmap);
@@ -460,8 +459,7 @@ void BScreen::reconfigure(void) {
   XSetWindowBorderWidth(blackbox->getXDisplay(), geom_window,
                         resource.border_width);
   XSetWindowBorder(blackbox->getXDisplay(), geom_window,
-                   resource.border_color.pixel(blackbox->getDisplay(),
-                                               screen_info.getScreenNumber()));
+                   resource.border_color.pixel(screen_info.getScreenNumber()));
 
   workspacemenu->reconfigure();
   iconmenu->reconfigure();
@@ -519,14 +517,10 @@ void BScreen::LoadStyle(void) {
   bt::MenuStyle::get(*blackbox, screen, image_control)->load(res);
 
   // load fonts
-  resource.wstyle.font = bt::Font(res.read("window.font",
-                                           "Window.Font",
-                                           "fixed"),
-                                  &blackbox->getDisplay());
-  resource.tstyle.font = bt::Font(res.read("toolbar.font",
-                                           "Toolbar.Font",
-                                           "fixed"),
-                                  &blackbox->getDisplay());
+  resource.wstyle.font.setFontName(res.read("window.font", "Window.Font",
+                                            "fixed"));
+  resource.tstyle.font.setFontName(res.read("toolbar.font", "Toolbar.Font",
+                                            "fixed"));
 
   // load window config
   resource.wstyle.t_focus =
@@ -1449,8 +1443,7 @@ void BScreen::showPosition(int x, int y) {
 
   XClearWindow(blackbox->getXDisplay(), geom_window);
 
-  bt::Pen pen(blackbox->getDisplay(), screen_info.getScreenNumber(),
-              resource.wstyle.l_text_focus, resource.wstyle.font.font());
+  bt::Pen pen(screen_info.getScreenNumber(), resource.wstyle.l_text_focus);
   bt::Rect rect(resource.bevel_width, resource.bevel_width,
                 geom_w - (resource.bevel_width * 2),
                 geom_h - (resource.bevel_width * 2));
@@ -1477,8 +1470,7 @@ void BScreen::showGeometry(unsigned int gx, unsigned int gy) {
 
   XClearWindow(blackbox->getXDisplay(), geom_window);
 
-  bt::Pen pen(blackbox->getDisplay(), screen_info.getScreenNumber(),
-              resource.wstyle.l_text_focus, resource.wstyle.font.font());
+  bt::Pen pen(screen_info.getScreenNumber(), resource.wstyle.l_text_focus);
   bt::Rect rect(resource.bevel_width, resource.bevel_width,
                 geom_w - (resource.bevel_width * 2),
                 geom_h - (resource.bevel_width * 2));
