@@ -108,11 +108,13 @@ bin_PROGRAMS = bsetroot bstyleconvert
 
 bsetroot_SOURCES = bsetroot.cc
 bsetroot_DEPENDENCIES = $(top_builddir)/lib/libbt.a
-bsetroot_LDADD = -L$(top_builddir)/lib -lbt
+bsetroot_LDFLAGS = -L$(top_builddir)/lib
+bsetroot_LDADD = -lbt
 
 bstyleconvert_SOURCES = bstyleconvert.cc
 bstyleconvert_DEPENDENCIES = $(top_builddir)/lib/libbt.a
-bstyleconvert_LDADD = -L$(top_builddir)/lib -lbt
+bstyleconvert_LDFLAGS = -L$(top_builddir)/lib
+bstyleconvert_LDADD = -lbt
 
 MAINTAINERCLEANFILES = Makefile.in
 subdir = util
@@ -124,10 +126,8 @@ PROGRAMS = $(bin_PROGRAMS)
 
 am_bsetroot_OBJECTS = bsetroot.$(OBJEXT)
 bsetroot_OBJECTS = $(am_bsetroot_OBJECTS)
-bsetroot_LDFLAGS =
 am_bstyleconvert_OBJECTS = bstyleconvert.$(OBJEXT)
 bstyleconvert_OBJECTS = $(am_bstyleconvert_OBJECTS)
-bstyleconvert_LDFLAGS =
 SCRIPTS = $(bin_SCRIPTS)
 
 

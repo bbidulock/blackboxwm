@@ -90,13 +90,14 @@ if test "x$x_includes" != "x"; then
   CXXFLAGS="$CXXFLAGS -I$x_includes"
 fi
 if test "x$x_libraries" != "x"; then
-  LIBS="$LIBS -L$x_libraries"
+  LDFLAGS="$LDFLAGS -L$x_libraries"
 fi
 
 dnl Check for required functions in -lX11
 XLIB=
 AC_CHECK_LIB([X11], [XOpenDisplay], [XLIB=yes], [XLIB=no])
 test "x$XLIB" = "xno" && AC_MSG_ERROR([standard X11 libraries not found])
+LIBS="-lX11 $LIBS"
 
 AC_CHECK_HEADERS([X11/Xlib.h], [XLIB=yes], [XLIB=no])
 test "x$XLIB" = "xno" && AC_MSG_ERROR([standard X11 headers not found])
@@ -122,7 +123,9 @@ if test "x$SHAPE" = "xyes"; then
   if test "x$SHAPE" = "xyes"; then
     save_LIBS="$LIBS"
       
-    LIBS="$LIBS -lXext"
+    if echo "$LIBS" | grep -q Xext 2>&1 >/dev/null; then
+      LIBS="-lXext $LIBS"
+    fi
     AC_CHECK_HEADERS([X11/extensions/shape.h], [SHAPE=yes], [SHAPE=no],
 [
 #include <X11/Xlib.h>
@@ -153,7 +156,7 @@ if test "x$MITSHM" = "xyes"; then
   if test "x$MITSHM" = "xyes"; then
     save_LIBS="$LIBS"
 
-    LIBS="$LIBS -lXext"
+    LIBS="-lXext $LIBS"
     AC_CHECK_HEADERS([X11/extensions/XShm.h], [MITSHM=yes], [MITSHM=no],
 [
 #include <X11/Xlib.h>
@@ -204,16 +207,6 @@ AC_SUBST(NLS)
 dnl Determine if maintainer portions of the Makefiles should be included.
 AM_MAINTAINER_MODE
 
-dnl Print results
-AC_MSG_RESULT([])
-AC_MSG_RESULT([	$PACKAGE version $VERSION configured successfully.])
-AC_MSG_RESULT([])
-AC_MSG_RESULT([Using '$prefix' for installation.])
-AC_MSG_RESULT([Using '$CXX' for C++ compiler.])
-AC_MSG_RESULT([Building with '$CXXFLAGS' for C++ compiler flags.])
-AC_MSG_RESULT([Building with '$LIBS' for linker flags.])
-AC_MSG_RESULT([])
-
 dnl Output files
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_FILES([
@@ -256,3 +249,14 @@ nls/zh_CN/Makefile
 nls/zh_TW/Makefile
 version.h])
 AC_OUTPUT
+
+dnl Print results
+AC_MSG_RESULT([])
+AC_MSG_RESULT([	$PACKAGE version $VERSION configured successfully.])
+AC_MSG_RESULT([])
+AC_MSG_RESULT([Using '$prefix' for installation.])
+AC_MSG_RESULT([Using '$CXX' for C++ compiler.])
+AC_MSG_RESULT([Building with '$CXXFLAGS' for C++ compiler flags.])
+AC_MSG_RESULT([Building with '$LDFLAGS' for linker flags.])
+AC_MSG_RESULT([Building with '$LIBS' libraries.])
+AC_MSG_RESULT([])

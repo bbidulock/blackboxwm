@@ -3980,7 +3980,7 @@ if test "x$x_includes" != "x"; then
   CXXFLAGS="$CXXFLAGS -I$x_includes"
 fi
 if test "x$x_libraries" != "x"; then
-  LIBS="$LIBS -L$x_libraries"
+  LDFLAGS="$LDFLAGS -L$x_libraries"
 fi
 
 XLIB=
@@ -4047,6 +4047,7 @@ fi
 test "x$XLIB" = "xno" && { { echo "$as_me:$LINENO: error: standard X11 libraries not found" >&5
 echo "$as_me: error: standard X11 libraries not found" >&2;}
    { (exit 1); exit 1; }; }
+LIBS="-lX11 $LIBS"
 
 
 for ac_header in X11/Xlib.h
@@ -4336,7 +4337,9 @@ fi
   if test "x$SHAPE" = "xyes"; then
     save_LIBS="$LIBS"
 
-    LIBS="$LIBS -lXext"
+    if echo "$LIBS" | grep -q Xext 2>&1 >/dev/null; then
+      LIBS="-lXext $LIBS"
+    fi
 
 for ac_header in X11/extensions/shape.h
 do
@@ -4481,7 +4484,7 @@ fi
   if test "x$MITSHM" = "xyes"; then
     save_LIBS="$LIBS"
 
-    LIBS="$LIBS -lXext"
+    LIBS="-lXext $LIBS"
 
 for ac_header in X11/extensions/XShm.h
 do
@@ -4610,23 +4613,6 @@ fi
   MAINT=$MAINTAINER_MODE_TRUE
 
 
-
-echo "$as_me:$LINENO: result: " >&5
-echo "${ECHO_T}" >&6
-echo "$as_me:$LINENO: result: 	$PACKAGE version $VERSION configured successfully." >&5
-echo "${ECHO_T}	$PACKAGE version $VERSION configured successfully." >&6
-echo "$as_me:$LINENO: result: " >&5
-echo "${ECHO_T}" >&6
-echo "$as_me:$LINENO: result: Using '$prefix' for installation." >&5
-echo "${ECHO_T}Using '$prefix' for installation." >&6
-echo "$as_me:$LINENO: result: Using '$CXX' for C++ compiler." >&5
-echo "${ECHO_T}Using '$CXX' for C++ compiler." >&6
-echo "$as_me:$LINENO: result: Building with '$CXXFLAGS' for C++ compiler flags." >&5
-echo "${ECHO_T}Building with '$CXXFLAGS' for C++ compiler flags." >&6
-echo "$as_me:$LINENO: result: Building with '$LIBS' for linker flags." >&5
-echo "${ECHO_T}Building with '$LIBS' for linker flags." >&6
-echo "$as_me:$LINENO: result: " >&5
-echo "${ECHO_T}" >&6
 
 
 
@@ -5900,3 +5886,22 @@ if test "$no_create" != yes; then
   $ac_cs_success || { (exit 1); exit 1; }
 fi
 
+
+echo "$as_me:$LINENO: result: " >&5
+echo "${ECHO_T}" >&6
+echo "$as_me:$LINENO: result: 	$PACKAGE version $VERSION configured successfully." >&5
+echo "${ECHO_T}	$PACKAGE version $VERSION configured successfully." >&6
+echo "$as_me:$LINENO: result: " >&5
+echo "${ECHO_T}" >&6
+echo "$as_me:$LINENO: result: Using '$prefix' for installation." >&5
+echo "${ECHO_T}Using '$prefix' for installation." >&6
+echo "$as_me:$LINENO: result: Using '$CXX' for C++ compiler." >&5
+echo "${ECHO_T}Using '$CXX' for C++ compiler." >&6
+echo "$as_me:$LINENO: result: Building with '$CXXFLAGS' for C++ compiler flags." >&5
+echo "${ECHO_T}Building with '$CXXFLAGS' for C++ compiler flags." >&6
+echo "$as_me:$LINENO: result: Building with '$LDFLAGS' for linker flags." >&5
+echo "${ECHO_T}Building with '$LDFLAGS' for linker flags." >&6
+echo "$as_me:$LINENO: result: Building with '$LIBS' libraries." >&5
+echo "${ECHO_T}Building with '$LIBS' libraries." >&6
+echo "$as_me:$LINENO: result: " >&5
+echo "${ECHO_T}" >&6

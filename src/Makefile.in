@@ -124,7 +124,8 @@ blackbox_SOURCES = BlackboxResource.cc                           \
 			  main.cc
 
 blackbox_DEPENDENCIES = $(top_builddir)/lib/libbt.a
-blackbox_LDADD = -L$(top_builddir)/lib -lbt
+blackbox_LDFLAGS = -L$(top_builddir)/lib
+blackbox_LDADD = -lbt
 
 MAINTAINERCLEANFILES = Makefile.in
 subdir = src
@@ -140,7 +141,6 @@ am_blackbox_OBJECTS = BlackboxResource.$(OBJEXT) Clientmenu.$(OBJEXT) \
 	Window.$(OBJEXT) Windowmenu.$(OBJEXT) Workspace.$(OBJEXT) \
 	Workspacemenu.$(OBJEXT) blackbox.$(OBJEXT) main.$(OBJEXT)
 blackbox_OBJECTS = $(am_blackbox_OBJECTS)
-blackbox_LDFLAGS =
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
