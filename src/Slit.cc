@@ -354,13 +354,17 @@ void Slit::reconfigure(void) {
 void Slit::updateStrut(void) {
   strut.top = strut.bottom = strut.left = strut.right = 0;
 
+  // when not hidden both borders are in use, when hidden only one is
+  unsigned int border_width = screen->getBorderWidth();
+  if (! do_auto_hide)
+    border_width *= 2;
+
   if (! clientList.empty()) {
     switch (screen->getSlitDirection()) {
     case Vertical:
       switch (screen->getSlitPlacement()) {
       case TopCenter:
-        strut.top = getY() + getExposedHeight() +
-                    (screen->getBorderWidth() * 2);
+        strut.top = getY() + getExposedHeight() + border_width;
         break;
       case BottomCenter:
         strut.bottom = screen->getHeight() - getY();
@@ -368,12 +372,12 @@ void Slit::updateStrut(void) {
       case TopLeft:
       case CenterLeft:
       case BottomLeft:
-        strut.left = getExposedWidth() + (screen->getBorderWidth() * 2);
+        strut.left = getExposedWidth() + border_width;
         break;
       case TopRight:
       case CenterRight:
       case BottomRight:
-        strut.right = getExposedWidth() + (screen->getBorderWidth() * 2);
+        strut.right = getExposedWidth() + border_width;
         break;
       }
       break;
@@ -382,8 +386,7 @@ void Slit::updateStrut(void) {
       case TopCenter:
       case TopLeft:
       case TopRight:
-        strut.top = getY() + getExposedHeight() +
-                    (screen->getBorderWidth() * 2);
+        strut.top = getY() + getExposedHeight() + border_width;
         break;
       case BottomCenter:
       case BottomLeft:
@@ -391,10 +394,10 @@ void Slit::updateStrut(void) {
         strut.bottom = screen->getHeight() - getY();
         break;
       case CenterLeft:
-        strut.left = getExposedWidth() + (screen->getBorderWidth() * 2);
+        strut.left = getExposedWidth() + border_width;
         break;
       case CenterRight:
-        strut.right = getExposedWidth() + (screen->getBorderWidth() * 2);
+        strut.right = getExposedWidth() + border_width;
         break;
       }
       break;
