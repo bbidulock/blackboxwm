@@ -2053,13 +2053,17 @@ void BScreen::addIcon(BlackboxWindow *win) {
     workspace->removeWindow(win);
   }
 
-  int id = _iconmenu->insertItem(win->getIconTitle());
+  const std::string s = bt::ellideText(win->getIconTitle(), 60, "...");
+  int id = _iconmenu->insertItem(s);
+  blackbox->netwm().setWMVisibleIconName(win->getClientWindow(), s);
   win->setWindowNumber(id);
 }
 
 
 void BScreen::removeIcon(BlackboxWindow *win) {
   _iconmenu->removeItem(win->windowNumber());
+  blackbox->netwm().removeProperty(win->getClientWindow(),
+                                   blackbox->netwm().wmVisibleIconName());
 
   Workspace *workspace = getWorkspace(current_workspace);
   assert(workspace != 0);

@@ -239,6 +239,9 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   timer = new bt::Timer(blackbox, this);
   timer->setTimeout(blackbox->resource().autoRaiseDelay());
 
+  client.title = readWMName();
+  client.icon_title = readWMIconName();
+
   // get size, aspect, minimum/maximum size, ewmh and other hints set by the
   // client
   getNetwmHints();
@@ -464,9 +467,6 @@ Window BlackboxWindow::createChildWindow(Window parent,
 
 void BlackboxWindow::associateClientWindow(void) {
   XSetWindowBorderWidth(blackbox->XDisplay(), client.window, 0);
-  getWMName();
-  getWMIconName();
-
   XChangeSaveSet(blackbox->XDisplay(), client.window, SetModeInsert);
 
   XSelectInput(blackbox->XDisplay(), frame.plate,
@@ -823,6 +823,15 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
                               frame.label_w, frame.style->label_height,
                               frame.ulabel);
     }
+
+    const std::string ellided =
+      bt::ellideText(client.title, frame.label_w, "...",
+                     screen->screenNumber(), frame.style->font);
+
+    if (ellided != client.visible_title) {
+      client.visible_title = ellided;
+      blackbox->netwm().setWMVisibleName(client.window, client.visible_title);
+    }
   } else {
     XUnmapWindow(blackbox->XDisplay(), frame.label);
   }
@@ -952,55 +961,35 @@ void BlackboxWindow::positionWindows(void) {
 }
 
 
-void BlackboxWindow::getWMName(void) {
-  XTextProperty text_prop;
-
+std::string BlackboxWindow::readWMName(void) {
   std::string name;
 
-  if (! blackbox->netwm().readWMName(client.window, name) || name.empty()) {
+  if (!blackbox->netwm().readWMName(client.window, name) || name.empty()) {
+    XTextProperty text_prop;
     if (XGetWMName(blackbox->XDisplay(), client.window, &text_prop)) {
       name = bt::textPropertyToString(blackbox->XDisplay(), text_prop);
       XFree((char *) text_prop.value);
     }
   }
 
-  if (! name.empty()) {
-    client.title = name;
-#if 0
-    // FIXME: need to ellide titles based on title bar length
-    if (name.length() <= 100) {
-      client.title = name;
-    } else {
-      client.title = bt::ellideText(name, 100, "...");
-      blackbox->netwm().setWMVisibleName(client.window, client.title);
-    }
-#endif
-  } else {
-    client.title = "Unnamed";
-    blackbox->netwm().setWMVisibleName(client.window, client.title);
-  }
+  if (name.empty()) name ="Unnamed";
+  return name;
 }
 
 
-void BlackboxWindow::getWMIconName(void) {
-  XTextProperty text_prop;
-
+std::string BlackboxWindow::readWMIconName(void) {
   std::string name;
 
-  if (! blackbox->netwm().readWMIconName(client.window, name) ||
-      name.empty()) {
+  if (!blackbox->netwm().readWMIconName(client.window, name) || name.empty()) {
+    XTextProperty text_prop;
     if (XGetWMIconName(blackbox->XDisplay(), client.window, &text_prop)) {
       name = bt::textPropertyToString(blackbox->XDisplay(), text_prop);
       XFree((char *) text_prop.value);
     }
   }
 
-  if (! name.empty()) {
-    client.icon_title = name;
-  } else {
-    client.icon_title = client.title;
-    blackbox->netwm().setWMVisibleIconName(client.window, client.icon_title);
-  }
+  if (name.empty()) name = client.title;
+  return name;
 }
 
 
@@ -2149,7 +2138,7 @@ void BlackboxWindow::redrawLabel(void) const {
               u.right() - frame.style->bevel_width,
               u.bottom() - frame.style->bevel_width);
   bt::drawText(frame.style->font, pen, frame.label, u,
-               frame.style->alignment, client.title);
+               frame.style->alignment, client.visible_title);
 }
 
 
@@ -2561,19 +2550,27 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
     getWMHints();
     break;
 
-  case XA_WM_ICON_NAME:
-    getWMIconName();
-    if (client.state.iconic) screen->propagateWindowName(this);
+  case XA_WM_ICON_NAME: {
+    client.icon_title = readWMIconName();
+    if (client.state.iconic)
+      screen->propagateWindowName(this);
     break;
+  }
 
-  case XA_WM_NAME:
-    getWMName();
+  case XA_WM_NAME: {
+    client.title = readWMName();
+
+    client.visible_title =
+      bt::ellideText(client.title, frame.label_w, "...",
+                     screen->screenNumber(), frame.style->font);
+    blackbox->netwm().setWMVisibleName(client.window, client.visible_title);
 
     if (client.decorations & WindowDecorationTitlebar)
       redrawLabel();
 
     screen->propagateWindowName(this);
     break;
+  }
 
   case XA_WM_NORMAL_HINTS: {
     getWMNormalHints();

@@ -122,7 +122,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
     BlackboxWindow *transient_for;  // which window are we a transient for?
     BlackboxWindowList transientList; // which windows are our transients?
 
-    std::string title, icon_title;
+    std::string title, visible_title, icon_title;
 
     bt::Rect rect, premax;
 
@@ -207,9 +207,10 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   Window createChildWindow(Window parent, unsigned long event_mask,
                            Cursor = None);
 
+  std::string readWMName(void);
+  std::string readWMIconName(void);
+
   void getNetwmHints(void);
-  void getWMName(void);
-  void getWMIconName(void);
   void getWMNormalHints(void);
   void getWMProtocols(void);
   void getWMHints(void);
