@@ -1014,6 +1014,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     if (win) {
       win->addTransient(this);
       client.ewmh.workspace = win->workspace();
+      setLayer(win->layer());
     }
   }
 
@@ -1972,6 +1973,40 @@ void BlackboxWindow::changeWorkspace(unsigned int new_workspace,
 }
 
 
+void BlackboxWindow::changeLayer(StackingList::Layer new_layer) {
+  if (layer() == new_layer)
+    return;
+
+  bool restack = false;
+  if (isTransient()) {
+    BlackboxWindow *win = findTransientFor();
+    if (win) {
+      if (win->layer() != new_layer) {
+        win->changeLayer(new_layer);
+        return;
+      } else {
+        restack = true;
+      }
+    }
+  } else {
+    assert(hasWindowFunction(WindowFunctionChangeLayer));
+    restack = true;
+  }
+
+  _screen->stackingList().changeLayer(this, new_layer);
+
+  if (!client.transientList.empty()) {
+    BlackboxWindowList::iterator it = client.transientList.begin();
+    const BlackboxWindowList::iterator end = client.transientList.end();
+    for (; it != end; ++it)
+      (*it)->changeLayer(new_layer);
+  }
+
+  if (restack)
+    _screen->restackWindows();
+}
+
+
 bool BlackboxWindow::setInputFocus(void) {
   if (!isVisible())
     return false;
@@ -2342,7 +2377,7 @@ void BlackboxWindow::setFullScreen(bool b) {
     configure(r);
 
     if (isVisible())
-      _screen->changeLayer(this, StackingList::LayerFullScreen);
+      changeLayer(StackingList::LayerFullScreen);
 
     updateEWMHState();
     updateEWMHAllowedActions();
@@ -2358,7 +2393,7 @@ void BlackboxWindow::setFullScreen(bool b) {
     frame.margin = ::update_margin(client.decorations, frame.style);
 
     if (isVisible())
-      _screen->changeLayer(this, StackingList::LayerNormal);
+      changeLayer(StackingList::LayerNormal);
 
     if (isMaximized()) {
       remaximize();
@@ -2414,7 +2449,7 @@ void BlackboxWindow::setFocused(bool focused) {
       XInstallColormap(blackbox->XDisplay(), client.colormap);
     } else {
       if (client.ewmh.fullscreen && layer() != StackingList::LayerBelow)
-        _screen->changeLayer(this, StackingList::LayerBelow);
+        changeLayer(StackingList::LayerBelow);
     }
   }
 }
@@ -2854,10 +2889,10 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
         if (action == ewmh.wmStateAdd() ||
             (action == ewmh.wmStateToggle() &&
              layer() != StackingList::LayerAbove)) {
-          _screen->changeLayer(this, StackingList::LayerAbove);
+          changeLayer(StackingList::LayerAbove);
         } else if (action == ewmh.wmStateToggle() ||
                    action == ewmh.wmStateRemove()) {
-          _screen->changeLayer(this, StackingList::LayerNormal);
+          changeLayer(StackingList::LayerNormal);
         }
       }
 
@@ -2866,10 +2901,10 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
         if (action == ewmh.wmStateAdd() ||
             (action == ewmh.wmStateToggle() &&
              layer() != StackingList::LayerBelow)) {
-          _screen->changeLayer(this, StackingList::LayerBelow);
+          changeLayer(StackingList::LayerBelow);
         } else if (action == ewmh.wmStateToggle() ||
                    action == ewmh.wmStateRemove()) {
-          _screen->changeLayer(this, StackingList::LayerNormal);
+          changeLayer(StackingList::LayerNormal);
         }
       }
     }
@@ -2962,18 +2997,8 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
         if (win) {
           // add ourselves to our new transient_for
           win->addTransient(this);
-
-          if (workspace() != win->workspace())
-            setWorkspace(win->workspace());
-
-          if (isVisible() && workspace() != bt::BSENTINEL
-              && workspace() != _screen->currentWorkspace()) {
-            hide();
-          } else if (!isVisible()
-                     && (workspace() == bt::BSENTINEL
-                         || workspace() == _screen->currentWorkspace())) {
-            show();
-          }
+          changeWorkspace(win->workspace());
+          changeLayer(win->layer());
         }
       }
     }

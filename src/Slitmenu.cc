@@ -100,9 +100,11 @@ void Slitmenu::itemClicked(unsigned int id, unsigned int button) {
     res.saveSlitOnTop(!res.isSlitOnTop());
     _bscreen->saveResource();
     if (slit) {
-      _bscreen->changeLayer(slit, (res.isSlitOnTop()
-                                   ? StackingList::LayerAbove
-                                   : StackingList::LayerNormal));
+      StackingList::Layer new_layer = (res.isSlitOnTop()
+                                       ? StackingList::LayerAbove
+                                       : StackingList::LayerNormal);
+      _bscreen->stackingList().changeLayer(slit, new_layer);
+      _bscreen->restackWindows();
     }
     break;
 

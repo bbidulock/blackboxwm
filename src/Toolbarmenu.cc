@@ -95,9 +95,11 @@ void Toolbarmenu::itemClicked(unsigned int id, unsigned int button) {
     res.saveToolbarOnTop(!res.isToolbarOnTop());
     _bscreen->saveResource();
     if (toolbar) {
-      _bscreen->changeLayer(toolbar, (res.isToolbarOnTop()
-                                      ? StackingList::LayerAbove
-                                      : StackingList::LayerNormal));
+      StackingList::Layer new_layer = (res.isToolbarOnTop()
+                                       ? StackingList::LayerAbove
+                                       : StackingList::LayerNormal);
+      _bscreen->stackingList().changeLayer(toolbar, new_layer);
+      _bscreen->restackWindows();
     }
     break;
 

@@ -34,9 +34,9 @@
 
 
 enum {
+  Icons,
   NewWorkspace,
   RemoveLastWorkspace,
-  Icons,
   WorkspaceIDDelta
 };
 

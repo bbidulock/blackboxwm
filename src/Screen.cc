@@ -158,7 +158,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   _toolbar = 0;
   if (_resource.isToolbarEnabled()) {
     _toolbar = new Toolbar(this);
-    stackingList.insert(_toolbar);
+    _stackingList.insert(_toolbar);
   }
 
   InitMenu();
@@ -492,8 +492,8 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
 
     // withdraw windows in reverse order to minimize the number of
     // Expose events
-    StackingList::const_reverse_iterator it = stackingList.rbegin();
-    const StackingList::const_reverse_iterator end = stackingList.rend();
+    StackingList::const_reverse_iterator it = _stackingList.rbegin();
+    const StackingList::const_reverse_iterator end = _stackingList.rend();
     for (; it != end; ++it) {
       BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(*it);
       if (win && win->workspace() == current_workspace)
@@ -515,8 +515,8 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
   {
     _workspacemenu->setWorkspaceChecked(current_workspace, true);
 
-    StackingList::const_iterator it = stackingList.begin();
-    const StackingList::const_iterator end = stackingList.end();
+    StackingList::const_iterator it = _stackingList.begin();
+    const StackingList::const_iterator end = _stackingList.end();
     for (; it != end; ++it) {
       BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(*it);
       if (win && win->workspace() == current_workspace)
@@ -538,7 +538,7 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
         workspace->focusedWindow()->setInputFocus();
       } else {
         // focus the top-most window in the stack
-        for (it = stackingList.begin(); it != end; ++it) {
+        for (it = _stackingList.begin(); it != end; ++it) {
           BlackboxWindow * const tmp = dynamic_cast<BlackboxWindow *>(*it);
           if (!tmp
               || !tmp->isVisible()
@@ -627,7 +627,7 @@ void BScreen::manageWindow(Window w) {
   windowList.push_back(win);
 
   // insert window at the top of the stack
-  stackingList.insert(win);
+  _stackingList.insert(win);
   if (!_blackbox->startingUp())
     restackWindows();
 
@@ -683,7 +683,7 @@ void BScreen::unmanageWindow(BlackboxWindow *win) {
   }
 
   windowList.remove(win);
-  stackingList.remove(win);
+  _stackingList.remove(win);
 
   delete win;
 }
@@ -702,8 +702,8 @@ bool BScreen::focusFallback(const BlackboxWindow *win) {
     // focus the top-most window in the group
     BlackboxWindowList::const_iterator git = group->windows().begin(),
                                       gend = group->windows().end();
-    StackingList::iterator it = stackingList.begin(),
-                          end = stackingList.end();
+    StackingList::iterator it = _stackingList.begin(),
+                          end = _stackingList.end();
     for (; it != end; ++it) {
       BlackboxWindow * const tmp = dynamic_cast<BlackboxWindow *>(*it);
       if (!tmp
@@ -732,9 +732,9 @@ bool BScreen::focusFallback(const BlackboxWindow *win) {
     }
 
     // try to focus the top-most window in the same layer as win
-    StackingList::iterator it = stackingList.layer(win->layer()),
-                          end = std::find(it, stackingList.end(), zero);
-    assert(it != stackingList.end() && end != stackingList.end());
+    StackingList::iterator it = _stackingList.layer(win->layer()),
+                          end = std::find(it, _stackingList.end(), zero);
+    assert(it != _stackingList.end() && end != _stackingList.end());
     for (; it != end; ++it) {
       BlackboxWindow * const tmp = dynamic_cast<BlackboxWindow *>(*it);
       if (!tmp)
@@ -750,8 +750,8 @@ bool BScreen::focusFallback(const BlackboxWindow *win) {
   }
 
   // focus the top-most window in the stack
-  StackingList::iterator it = stackingList.begin(),
-                        end = stackingList.end();
+  StackingList::iterator it = _stackingList.begin(),
+                        end = _stackingList.end();
   for (; it != end; ++it) {
     BlackboxWindow * const tmp = dynamic_cast<BlackboxWindow *>(*it);
     if (!tmp
@@ -779,7 +779,8 @@ void BScreen::raiseWindow(StackEntity *entity) {
 
     if (win->isFullScreen() && win->layer() != StackingList::LayerFullScreen) {
       // move full-screen windows over all other windows when raising
-      changeLayer(win, StackingList::LayerFullScreen);
+      win->changeLayer(StackingList::LayerFullScreen);
+      restackWindows();
       return;
     }
 
@@ -789,8 +790,8 @@ void BScreen::raiseWindow(StackEntity *entity) {
   // find the first window above us (if any)
   StackEntity *above = 0;
   {
-    StackingList::const_iterator begin = stackingList.begin(),
-                                 layer = stackingList.layer(top->layer()),
+    StackingList::const_iterator begin = _stackingList.begin(),
+                                 layer = _stackingList.layer(top->layer()),
                                     it = layer;
     if (*it == top) {
       // entity already on top of layer
@@ -814,14 +815,14 @@ void BScreen::raiseWindow(StackEntity *entity) {
         BlackboxWindow * const tmp = *it;
         if (tmp->isTransient())
           continue;
-        stackingList.raise(tmp);
+        _stackingList.raise(tmp);
         raiseTransients(tmp->transients());
       }
       // ... and group transients on top
       raiseTransients(group->transients());
     } else {
       // restack the window
-      stackingList.raise(win);
+      _stackingList.raise(win);
       // ... with all transients above
       raiseTransients(win->transients());
       // ... and group transients on top
@@ -829,7 +830,7 @@ void BScreen::raiseWindow(StackEntity *entity) {
         raiseTransients(group->transients());
     }
   } else {
-    stackingList.raise(top);
+    _stackingList.raise(top);
   }
 
   WindowStack stack;
@@ -884,8 +885,8 @@ void BScreen::lowerWindow(StackEntity *entity) {
   // find window at the bottom of the layer (if any)
   StackEntity *above = 0;
   {
-    StackingList::const_iterator it, layer = stackingList.layer(top->layer()),
-                                       end = stackingList.end();
+    StackingList::const_iterator it, layer = _stackingList.layer(top->layer()),
+                                       end = _stackingList.end();
     it = std::find(layer, end, (StackEntity *) 0);
     assert(it != end);
 
@@ -912,16 +913,16 @@ void BScreen::lowerWindow(StackEntity *entity) {
         if (tmp == win || tmp->isTransient())
           continue;
         lowerTransients(tmp->transients());
-        stackingList.lower(tmp);
+        _stackingList.lower(tmp);
       }
     } else {
       if (group)
         lowerTransients(group->transients());
       lowerTransients(win->transients());
-      stackingList.lower(win);
+      _stackingList.lower(win);
     }
   } else {
-    stackingList.lower(top);
+    _stackingList.lower(top);
   }
 
   WindowStack stack;
@@ -967,19 +968,13 @@ void BScreen::restackWindows(void) {
   WindowStack stack;
   stack.push_back(empty_window);
 
-  StackingList::const_iterator it, end = stackingList.end();
-  for (it = stackingList.begin(); it != end; ++it)
+  StackingList::const_iterator it, end = _stackingList.end();
+  for (it = _stackingList.begin(); it != end; ++it)
     if (*it) stack.push_back((*it)->windowID());
 
   XRestackWindows(_blackbox->XDisplay(), &stack[0], stack.size());
 
   updateClientListStackingHint();
-}
-
-
-void BScreen::changeLayer(StackEntity *entity, StackingList::Layer new_layer) {
-  stackingList.changeLayer(entity, new_layer);
-  restackWindows();
 }
 
 
@@ -1725,8 +1720,8 @@ void BScreen::updateClientListStackingHint(void) const {
 
   // we store windows in top-to-bottom order, but the EWMH wants
   // bottom-to-top...
-  StackingList::const_reverse_iterator it = stackingList.rbegin(),
-                                      end = stackingList.rend();
+  StackingList::const_reverse_iterator it = _stackingList.rbegin(),
+                                      end = _stackingList.rend();
   for (; it != end; ++it) {
     const BlackboxWindow * const win = dynamic_cast<BlackboxWindow *>(*it);
     if (win) stack.push_back(win->clientWindow());
@@ -1763,8 +1758,8 @@ void BScreen::readDesktopNames(void) {
 
 
 BlackboxWindow *BScreen::window(unsigned int workspace, unsigned int id) {
-  StackingList::const_iterator it = stackingList.begin(),
-                              end = stackingList.end();
+  StackingList::const_iterator it = _stackingList.begin(),
+                              end = _stackingList.end();
   for (; it != end; ++it) {
     BlackboxWindow * const win = dynamic_cast<BlackboxWindow *>(*it);
     if (win && win->workspace() == workspace && win->windowNumber() == id)
@@ -1784,7 +1779,7 @@ void BScreen::raiseTransients(const BlackboxWindowList &transients) {
     BlackboxWindow * const tmp = *it;
     if (tmp->workspace() == current_workspace
         || tmp->workspace() == bt::BSENTINEL) {
-      stackingList.raise(tmp);
+      _stackingList.raise(tmp);
       raiseTransients(tmp->transients());
     }
   }
@@ -1801,7 +1796,7 @@ void BScreen::lowerTransients(const BlackboxWindowList &transients) {
     if (tmp->workspace() == current_workspace
         || tmp->workspace() == bt::BSENTINEL) {
       lowerTransients(tmp->transients());
-      stackingList.lower(tmp);
+      _stackingList.lower(tmp);
     }
   }
 }
@@ -1909,11 +1904,11 @@ bool BScreen::smartPlacement(unsigned int workspace, bt::Rect& rect,
     std::vector must do.. we allocate as much memory as we would need
     in the worst case scenario and work with that
   */
-  std::vector<int> coords(stackingList.size() * 4 + 4);
+  std::vector<int> coords(_stackingList.size() * 4 + 4);
   std::vector<int>::iterator
     x_begin = coords.begin(),
     x_end   = x_begin,
-    y_begin = coords.begin() + stackingList.size() * 2 + 2,
+    y_begin = coords.begin() + _stackingList.size() * 2 + 2,
     y_end   = y_begin;
 
   {
@@ -1928,7 +1923,7 @@ bool BScreen::smartPlacement(unsigned int workspace, bt::Rect& rect,
     y_end += 2;
 
 
-    for (w_it  = stackingList.begin(), w_end = stackingList.end();
+    for (w_it  = _stackingList.begin(), w_end = _stackingList.end();
          w_it != w_end; ++w_it) {
       const BlackboxWindow * const win =
         dynamic_cast<const BlackboxWindow *>(*w_it);
@@ -1971,7 +1966,7 @@ bool BScreen::smartPlacement(unsigned int workspace, bt::Rect& rect,
   std::vector<bool> used_grid(gw * gh);
   std::fill_n(used_grid.begin(), used_grid.size(), false);
 
-  for (w_it = stackingList.begin(), w_end = stackingList.end();
+  for (w_it = _stackingList.begin(), w_end = _stackingList.end();
        w_it != w_end; ++w_it) {
     const BlackboxWindow * const win =
       dynamic_cast<const BlackboxWindow *>(*w_it);
@@ -2161,7 +2156,7 @@ void BScreen::createSlit(void) {
   assert(_slit == 0);
 
   _slit = new Slit(this);
-  stackingList.insert(_slit);
+  _stackingList.insert(_slit);
   restackWindows();
 }
 
@@ -2169,7 +2164,7 @@ void BScreen::createSlit(void) {
 void BScreen::destroySlit(void) {
   assert(_slit != 0);
 
-  stackingList.remove(_slit);
+  _stackingList.remove(_slit);
   delete _slit;
   _slit = 0;
 }
@@ -2179,7 +2174,7 @@ void BScreen::createToolbar(void) {
   assert(_toolbar == 0);
 
   _toolbar = new Toolbar(this);
-  stackingList.insert(_toolbar);
+  _stackingList.insert(_toolbar);
   restackWindows();
 }
 
@@ -2187,7 +2182,7 @@ void BScreen::createToolbar(void) {
 void BScreen::destroyToolbar(void) {
   assert(_toolbar != 0);
 
-  stackingList.remove(_toolbar);
+  _stackingList.remove(_toolbar);
   delete _toolbar;
   _toolbar = 0;
 }
@@ -2238,8 +2233,8 @@ void BScreen::removeIcon(BlackboxWindow *win) {
 
 
 BlackboxWindow *BScreen::icon(unsigned int id) {
-  StackingList::const_iterator it = stackingList.begin(),
-                              end = stackingList.end();
+  StackingList::const_iterator it = _stackingList.begin(),
+                              end = _stackingList.end();
   for (; it != end; ++it) {
     BlackboxWindow * const win = dynamic_cast<BlackboxWindow *>(*it);
     if (win && win->isIconic() && win->windowNumber() == id)

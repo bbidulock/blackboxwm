@@ -173,21 +173,21 @@ void Windowmenu::itemClicked(unsigned int id, unsigned int) {
 
   case AlwaysOnTop:
     {
-      BScreen *screen = _window->screen();
       StackingList::Layer new_layer =
-        (_window->layer() == StackingList::LayerAbove ?
-         StackingList::LayerNormal : StackingList::LayerAbove);
-      screen->changeLayer(_window, new_layer);
+        (_window->layer() == StackingList::LayerAbove
+         ? StackingList::LayerNormal
+         : StackingList::LayerAbove);
+      _window->changeLayer(new_layer);
       break;
     }
 
   case AlwaysOnBottom:
     {
-      BScreen *screen = _window->screen();
       StackingList::Layer new_layer =
-        (_window->layer() == StackingList::LayerBelow ?
-         StackingList::LayerNormal : StackingList::LayerBelow);
-      screen->changeLayer(_window, new_layer);
+        (_window->layer() == StackingList::LayerBelow
+         ? StackingList::LayerNormal
+         : StackingList::LayerBelow);
+      _window->changeLayer(new_layer);
       break;
     }
 

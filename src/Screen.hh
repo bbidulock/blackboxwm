@@ -74,7 +74,7 @@ private:
   Workspacemenu *_workspacemenu;
 
   BlackboxWindowList windowList;
-  StackingList stackingList;
+  StackingList _stackingList;
   unsigned int current_workspace;
 
   Slit *_slit;
@@ -193,9 +193,10 @@ public:
 
   void raiseWindow(StackEntity *entity);
   void lowerWindow(StackEntity *entity);
-  void restackWindows(void);
 
-  void changeLayer(StackEntity *entity, StackingList::Layer new_layer);
+  inline StackingList &stackingList()
+  { return _stackingList; }
+  void restackWindows(void);
 
   void addIcon(BlackboxWindow *win);
   void removeIcon(BlackboxWindow *win);

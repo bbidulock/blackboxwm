@@ -329,6 +329,8 @@ public:
   void changeWorkspace(unsigned int new_workspace,
                        ChangeWorkspaceOption how = StayOnCurrentWorkspace);
 
+  void changeLayer(StackingList::Layer new_layer);
+
   inline unsigned int windowNumber(void) const
   { return window_number; }
   inline void setWindowNumber(int n)
