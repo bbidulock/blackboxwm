@@ -1192,7 +1192,8 @@ void bt::Image::vgradient(const Color &from, const Color &to,
       const RGB rgb = {
         static_cast<unsigned char>((y & 1) ? (yr * 3. / 4.) : yr),
         static_cast<unsigned char>((y & 1) ? (yg * 3. / 4.) : yg),
-        static_cast<unsigned char>((y & 1) ? (yb * 3. / 4.) : yb)
+        static_cast<unsigned char>((y & 1) ? (yb * 3. / 4.) : yb),
+        0
       };
       for (x = 0; x < width; ++x, ++p)
         *p = rgb;
@@ -1207,7 +1208,8 @@ void bt::Image::vgradient(const Color &from, const Color &to,
       const RGB rgb = {
         static_cast<unsigned char>(yr),
         static_cast<unsigned char>(yg),
-        static_cast<unsigned char>(yb)
+        static_cast<unsigned char>(yb),
+        0
       };
       for (x = 0; x < width; ++x, ++p)
         *p = rgb;
