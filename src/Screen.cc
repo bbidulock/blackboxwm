@@ -1870,14 +1870,14 @@ void BScreen::clientMessageEvent(const XClientMessageEvent * const event) {
 
 
 void BScreen::buttonPressEvent(const XButtonEvent * const event) {
-  if (event->button == 1) {
-    /*
-      set this screen active.  keygrabs and input focus will stay on
-      this screen until the user focuses a window on another screen or
-      makes another screen active.
-    */
-    _blackbox->setActiveScreen(this);
-  } else if (event->button == 2) {
+  /*
+    set this screen active.  keygrabs and input focus will stay on
+    this screen until the user focuses a window on another screen or
+    makes another screen active.
+  */
+  _blackbox->setActiveScreen(this);
+
+  if (event->button == 2) {
     _workspacemenu->popup(event->x_root, event->y_root);
   } else if (event->button == 3) {
     _blackbox->checkMenu();
