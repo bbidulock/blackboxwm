@@ -458,11 +458,11 @@ Pixmap BImageControl::renderImage(unsigned int width, unsigned int height,
   cache.push_back(tmp);
 
   if ((unsigned) cache.size() > cache_max) {
-    //#ifdef    DEBUG
+#ifdef    DEBUG
     fprintf(stderr, i18n(ImageSet, ImagePixmapCacheLarge,
 			 "BImageControl::renderImage: cache is large, "
 			 "forcing cleanout\n"));
-    //#endif // DEBUG
+#endif // DEBUG
 
     timeout();
   }
