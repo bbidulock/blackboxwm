@@ -1,22 +1,4 @@
--- data/README.style for Blackbox 0.50.x - an X11 Window manager
--- Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
---
---  This program is free software; you can redistribute it and/or modify
---  it under the terms of the GNU General Public License as published by
---  the Free Software Foundation; either version 2 of the License, or
---  (at your option) any later version.
---
---  This program is distributed in the hope that it will be useful,
---  but WITHOUT ANY WARRANTY; without even the implied warranty of
---  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
---  GNU General Public License for more details.
---
---  You should have received a copy of the GNU General Public License
---  along with this program; if not, write to the Free Software
---  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
---
--- (See the included file COPYING / GPL-2.0)
---
+-- data/README.style for Blackbox - an X11 Window manager
 
 Creating a new style (aka "theme"):
 -----------------------------------
@@ -28,13 +10,11 @@ put anywhere on the filesystem; as long as you have read access to the file,
 Blackbox can use it.
 
 First, we need to decide where to put our style file, and what to name it.
-I recommend using the naming scheme described on http://blackbox.themes.org/
-when creating styles.
+I recommend using the naming scheme described here when creating styles.
 
 Let's get started.  Let's put our new style into a file named `results.'
-Following the themes.org naming scheme, this file will go into
-.blackbox/Styles.  Same as with the menu file, we use our favorite text editor
-to create the new style.
+Following the naming scheme, this file will go into .blackbox/styles.  Same as
+with the menu file, we use our favorite text editor to create the new style.
 
 X resources consist of a key and a value.  The key is constructed of several
 smaller keys, delimited by a period (`.').  Keys may also contain a star (`*')
@@ -54,7 +34,7 @@ A texture is comprised of the following elements:
 					or flat appearance (respectively)
 
 	Solid / Gradient		tell Blackbox whether to draw a solid
-					or gradiented texture
+					or gradient texture
 
 	Interlaced			tells Blackbox to interlace a
 					gradient (and gradient ONLY) texture
@@ -85,7 +65,7 @@ NOTE: the texture strings don't have to be capitalized like they did in
 previous versions.  They are still placed in capitals here, because things like
 the bbtools still use the old method.
 
-Next we define colors for the textures.  Colors can be any valid X colorname
+Next we define colors for the textures.  Colors can be any valid X color name
 (from the RGB database) or it can be a color specifier, as described by
 'man 1 X.'
 
@@ -116,10 +96,8 @@ are required for gradient images.  For solids, only color is needed.  You will
 also notice that we have supplied the color for the text on the toolbar.  Not
 all textures have a text color, just certain base textures.
 
-Next, let's move onto the menus.  Since Blackbox was written in C++, all of
-the menus used in it are subclasses of one generic base class.  Blackbox reads
-the style for the configuration for that base class, which applies to all
-the menus used in Blackbox.
+Next, let's move onto the menus.  All of the menus in Blackbox share their
+settings.
 
 The menu has two main parts, the title and the frame.  There is nothing
 visible under them, so we only configure these two components.  The menu frame
@@ -161,12 +139,12 @@ menu.frame.hiTextColor:         grey20
 ...
 
 Next, we need to configure our windows.  Windows are like buttons, they have
-two states, focused and unfocused.  There for we define a separate texture
-for unfocused windows and focused windows.  The buttons on the titlebar
-are focus dependant also, so we need to configure them as well.  The buttons
-only have one "pressed" state, so we only have to define that once, instead of
-having a focus.pressed state and an unfocus.pressed state.  The window frame
-is the thin border around the client window. Let's be sure to catch it as well.
+two states, focused and unfocused.  Thus we define a separate texture for
+unfocused windows and focused windows.  The buttons on the titlebar are focus
+dependent also, so we need to configure them as well.  The buttons only have
+one "pressed" state, so we only have to define that once, instead of having a
+focus.pressed state and an unfocus.pressed state.  The window frame is the
+thin border around the client window. Let's be sure to catch it as well.
 
 After adding the window config, our style now looks like this:
 
@@ -224,9 +202,9 @@ window.button.pressed.colorTo:  rgb:f/f/d
 window.frame.color:             grey85
 ...
 
-Now all we have to do is finish off the style with a few miscellanous options.
+Now all we have to do is finish off the style with a few miscellaneous options.
 These include the title and menu fonts/justification, border color, bevel and
-handle widths, window move style and the root command.
+handle widths, and the root command.
 
 Fonts must be a valid X11 font screen, or a valid font alias.  Use a utility
 like `xfontsel' (and others) to preview fonts.  Also use the utility
@@ -236,21 +214,20 @@ the X server.
 Justification can be one of three things:  LeftJustify, CenterJustify or
 RightJustify.
 
-The border color is the color applied to the 1 pixel border around the menu
+The border color is the color applied to the pixel border around the menu
 frame/title and the window titlebar/buttons/handle/etc.  Setting this color
 can have drastic effects on your style, so don't just leave it set to `black'
 all the time.  ;)
 
 The bevel and handle widths control the size and spacing of decorations in
-Blackbox.  The larger the number, the more space Blackbox takes up.
-
-The window move style tells Blackbox how to move windows when you drag them
-with your mouse.  There are two options for it: Opaque or Wire.
+Blackbox.  The larger the number, the more space Blackbox windows takes up.
 
 The root command is the command run every time the style is loaded (either at
 startup or after a reconfigure/style-change).  It is used to run a program
-like xv, Esetroot, wmsetbg, etc. to set an image/color/pattern on the root
-window.  Just supply a command and it will be run.
+like bsetbg or bsetroot to set an image/color/pattern on the root window.
+Just supply a command and it will be run.  Note you can specify any command
+here.  Using bsetbg exclusively ensures that everyone can use your style
+without editing it to reflect their choice in background program.
 
 Also, as a note, an X resource file can have comments.  Precede the line with
 and exclamation mark `!' and the rest of the line will be ignored.
@@ -258,11 +235,9 @@ and exclamation mark `!' and the rest of the line will be ignored.
 Let's finish off the details and take a look at our finished style:
 
 ...
-! Results - theme for Blackbox 0.50.x
+! Results - theme for Blackbox
 ! by Brad Hughes bhughes@tcac.net
 
-! define the toolbars textures... note that the interlaced option is new
-! in 0.50.5
 toolbar:                        Raised Diagonal Gradient Bevel1
 toolbar.button:                 Raised Diagonal Gradient Bevel1
 toolbar.button.pressed:         Sunken Diagonal Interlaced Gradient Bevel1
@@ -322,8 +297,6 @@ window.frame.color:             grey85
 ! misc...
 borderColor:                    rgb:2/2/1c
 
-moveStyle:                      Opaque
-
 menuJustify:                    CenterJustify
 titleJustify:                   CenterJustify
 
@@ -340,9 +313,9 @@ Alright!  Our style is finished.  Let's see how the sucker looks.  First we
 need to tell Blackbox to use the new style.  The way to do that is to edit
 your menu (refer to README.menu for this) and add:
 
-[style] (Results) {~/.blackbox/Styles/results}
+[style] (Results) {~/.blackbox/styles/results}
 
-somewhere in our menu.  Taking advantage of Blackbox 0.50.5's (and up)
-automagic menu updates, all we have to do is close and reopen the root menu
-and our new style entry will be visible.  Select it and Blackbox will apply
-the new style we just created.
+somewhere in our menu.  Taking advantage of Blackbox' automatic menu updates,
+all we have to do is close and reopen the root menu and our new style entry
+will be visible.  Select it and Blackbox will apply the new style we just
+created.

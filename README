@@ -1,241 +1,101 @@
 -- README for Blackbox - an X11 Window manager
--- Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
---
---  This program is free software; you can redistribute it and/or modify
---  it under the terms of the GNU General Public License as published by
---  the Free Software Foundation; either version 2 of the License, or
---  (at your option) any later version.
---
---  This program is distributed in the hope that it will be useful,
---  but WITHOUT ANY WARRANTY; without even the implied warranty of
---  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
---  GNU General Public License for more details.
---
---  You should have received a copy of the GNU General Public License
---  along with this program; if not, write to the Free Software
---  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
---
--- (See the included file COPYING / GPL-2.0)
--- 
 
-This file covers operation and configuration of Blackbox.  Since it is still in
-development, many things may or may not work properly (or at all).  This code 
-was written from scratch (save for a bit of the 8bpp code, which was 
-implemented from WindowMaker 0.11.0 source code, and the dgradient code, 
-courtesy of Frank R. Belew <frb@umr.edu>).  I plan to make a list of testers 
-and code contributors in the future, which will appear here.
+This is the README for Blackbox 0.62.x release.
 
-NOTE:  The 8bpp code is unfinished and mostly untested.  I do not make any 
-guarantees or promises that you can run blackbox on an 8bpp X server.  I plan
-to work on the 8bpp code more, but at the moment it is unfinished and should be
-considered pre-alpha quality.
+The source tree for Blackbox is comprised of five subdirectories:
 
-Author:
-	Brad Hughes <bhughes@arn.net>
+	data/		- this holds the default data files that Blackbox
+                          requires for proper operation
 
-Contributors:
-	Jeffrey Sean Connell <ankh@canuck.gen.nz>
-	  - debugger class code
-	Frank Belew <frb@umr.edu>
-	  - dgradient code
+	doc/		- this holds the documentation files that explain
+	                  the various aspects of Blackbox
+
+	nls/		- this holds the message files used to generate
+			  message catalogs for different languages
+
+	src/		- this holds the actual C++ source code for the window
+			  manager.
+
+	util/		- this holds source code for small utility programs
+			  that help Blackbox do what it does best.
 
 
-Compilation and Installation:
---------------------------------
-Blackbox uses an Imakefile to better configure and allow for various system 
-types.  Compiler flags, libraries and paths are automatically set in the 
-various imake rules and templates files.
+Quick Start:
+------------
+The quickest and easiest way to get Blackbox up and running is to run the
+following commands:
 
-To fully compile and install blackbox, issue the following commands:
-	xmkmf -a
-	make
-	make install (as root, for permissions)
+# cd blackbox-version
+# ./configure
+# make
+# su -c 'make install'
 
-Each user should edit their appropriate .xinitrc or .xsession files to use the 
-newly installed blackbox executable file.
+This will configure, compile and install Blackbox the quickest.  For those
+who like to spend the extra 15 seconds reading ./configure --help, some
+compile time options can be turned on and off before the build.
 
-
-Operation:
--------------
-Operation of blackbox is similar to many other window managers.  A list of 
-functions and their default behaviour (read, some behaviours are 
-modifiable/configurable) is included below.
-
-Function:		Behaviour:
- - button press		button 1 -
-			  titlebar, side handle - raises window
-			  titlebar buttons - iconify, maximize (unimplemented),
-				close
-			  workspace button - shows/hides workspaces menu
-			  menu title - raises menu
-			  menu items - executes menu item behaviour
-			  icon - deiconifies window
-			  w/ control key pressed - ascends workspace list
-				(i.e. changes from Workspace 2 to Workspace 1)
-
-			button 2 -
-			  titlebar, side handle - lowers window
-
-			button 3 -
-			  titlebar - shows/hides window menu
-			  root - shows/hides main menu
-			  menu title - hides menu
-			  menu item - shows/hides submenu (if there is one)
-			  w/ control key pressed - descends workspace list
-				(i.e. changes from Workspace 1 to Workspace 2)
-
-- key press		all key presses are reported to the client with input 
-			focus
-
-- mouse motion		no default behaviour
-			w/ button 1 pressed -
-			  window titlebar - begins window move (ended on button
-				release)
-			  menu titlebar - begins menu move (ended on button 
-				release)
-			  resize handle button - resizes window interactively
-				(ended on button release)
+For general information on GNU's ./configure, see the file INSTALL.
 
 
-Configuration:
------------------
-Configuration of blackbox is not handled by rc files in a users home 
-directory, rather X resources are used to control the look of the window 
-manager.  These resources can be set by the default configuration (which is 
-installed with the program) or by a user (by using xrdb or some other 
-resource loading mechanism).  The default resources are ALWAYS read when the 
-program starts, unless the default resource files cannot be found, then 
-blackbox uses a hard coded default (using flat textures).
-
-The X resources that blackbox recognizes:
+Configuring Blackbox:
+---------------------
+The next thing most users want to do after installing Blackbox is to configure
+the colors, fonts, menus, etc. to their liking.  This is covered by the files
+data/README, data/README.menu and data/README.style.  These files give
+detailed information on how to customize your new window manager.
 
 
-Name:					Class:
---------				---------
-blackbox.session.frameTexture		Blackbox.Session.FrameTexture
-blackbox.window.buttonTexture		Blackbox.Window.ButtonTexture
-blackbox.menu.menuTexture		Blackbox.Menu.MenuTexture
-blackbox.menu.menuItemPressedTexture	Blackbox.Menu.MenuItemPressedTexture
-blackbox.menu.menuItemTexture		Blackbox.Menu.MenuItemTexture
-
-Values Accepted:
-    Solid / SolidRaised			(solid color w/ raised bevel)
-    SolidSunken				(solid color w/ sunken bevel)
-    SolidFlat				(solid color w/ no bevel)
-    DGradient / DGradientRaised		(diagonal gradient w/ raised bevel)
-    DGradientSunken			(diagonal gradient w/ sunken bevel)
-    DGradientFlat			(diagonal gradient w/ no bevel)
-
-	The various textures give a better appearance to blackbox.  The frame 
-	texture controls the toolbar on the left side of the screen
+Included utilities:
+-------------------
+Currently, the only included utilities are a program named bsetroot and a
+script called bsetbg. bsetroot is a replacement for xsetroot, minus a few
+options.  The difference between xsetroot and bsetroot is that bsetroot has
+been coded for multiple screens (e.g. multi-headed displays), where as the
+stock xsetroot is not. The bsetbg script acts as a wrapper for most of the
+popular programs used to set background pixmaps, making it possible
+for styles to provide a machine-independent rootCommand.
 
 
-Name:					Class:
---------				---------
-blackbox.session.frameColor		Blackbox.Session.FrameColor
-blackbox.session.frameToColor		Blackbox.Session.FrameToColor
-blackbox.window.focusColor		Blackbox.Window.FocusColor
-blackbox.window.focusToColor		Blackbox.Window.FocusToColor
-blackbox.window.unfocusColor		Blackbox.Window.UnfocusColor
-blackbox.window.unfocusToColor		Blackbox.Window.UnfocusToColor
-blackbox.window.buttonColor		Blackbox.Window.ButtonColor
-blackbox.window.buttonToColor		Blackbox.Window.ButtonToColor
-blackbox.session.iconColor		Blackbox.Session.IconColor
-blackbox.menu.menuColor			Blackbox.Menu.MenuColor
-blackbox.menu.menuToColor		Blackbox.Menu.MenuToColor
-blackbox.menu.menuItemColor		Blackbox.Menu.MenuItemColor
-blackbox.menu.menuItemToColor		Blackbox.Menu.MenuItemToColor
+Third-party utilities:
+----------------------
+With the start of the 0.60.x series Blackbox no longer handles any
+keyboard shortcuts; instead it supports a communication protocol which
+allows other programs to handle these and related tasks. If you'd like
+to be able to use keyboard shortcuts with Blackbox, bbkeys (available at
+http://http://bbkeys.sourceforge.net) can provide you with all the previous
+functionality and more.
+If you're looking for a GUI with which to configure your blackbox menu and/or
+styles, check out http://bbconf.sourceforge.net. bbconf is a QT program that
+does just that, as well as providing a GUI for editing your keybindings for the
+above mentioned bbkeys.
 
-Accepted Values:
-	color specification of the form:
+Supported Platforms:
+--------------------
+ix86-Linux 2.0.x (libc5 and glibc2)
+ix86-Linux 2.1.x (libc5 and glibc2)
+ix86-Linux 2.2.x (libc5 and glibc2)
+ix86-Linux 2.3.x (glibc2.1)
+ix86-FreeBSD 4.0-current
+ix86-FreeBSD 3.3-{stable,release}
+ix86-FreeBSD 3.2-{stable,release}
+ix86-FreeBSD 3.1-{stable,release}
+ix86-FreeBSD 2.2.x-stable
+ix86-NetBSD 1.3.3
+ix86-NetBSD 1.4.1
+ix86-OpenBSD 2.6
+ix86-BSDi 4.0
+PPC-mkLinux (version?)
+ix86-Solaris 2.6
+Sparc-Solaris 2.6 (2.5 anyone?)
+Sparc-Solaris 2.7
+ix86-Solaris 7 (== 2.7?)
+Alpha-Digital UNIX 4.0D
+Alpha-Linux 2.2.x
+rs6k-AIX 4.1.3
+rs6k-AIX 4.3.2
+MIPS-IRIX 6.5 (requires gcc, MIPSpro didn't like some of the template-fu)
+ix86-OS/2 (version? recent successes?)
+hp9000/715-HP/UX 10.20 (with egcs 1.1.1)
 
-		rgb:%x/%x/%x	where %x is a hexadecimal integer (OBSOLETE)
+Please email shaleh@debian.org for other success reports.
 
-		Blackbox has been updated so that it now takes any X color
-		name in defining it's colors.
-
-	These color specs control the appearance of blackbox.  A note about 
-	frame(To) and icon Color.  The frame and frameTo colors control the 
-	toolbar on the left side of the screen.  The icon color is the color 
-	of the icon tray in the toolbar.
-
-
-Name:					Class:
---------				---------
-blackbox.session.menuFile		Blackbox.Session.MenuFile
-
-Accepted Value:
-	a character string.  Be warned... if the file cannot be opened 
-	blackbox's root menu will revert to xterm, Restart and Exit.
-
-
-Name:					Class:
---------				---------
-blackbox.session.workspaces		Blackbox.Session.Workspaces
-
-Accepted Value:
-	an integer.  This resource controls how many workspaces are created 
-	when blackbox starts a new session (read, assumes control of an X 
-	display).
-
-
-As an idea of how to configure blackbox, here is a snippet of my .Xdefaults 
-file:
-
-! Blackbox window manager resource defaults
-! (c) 1997 Brad Hughes
-
-blackbox*frameColor:            rgb:30/0/60
-blackbox*frameToColor:          rgb:10/0/20
-blackbox*frameTexture:          dgradient
-blackbox*focusColor:            rgb:60/0/c0
-blackbox*focusToColor:          rgb:0/0/0
-blackbox*unfocusColor:          rgb:20/0/40
-blackbox*unfocusToColor:        rgb:0/0/0
-
-blackbox*buttonTexture:         dgradient
-blackbox*buttonColor:           rgb:80/80/80
-blackbox*buttonToColor:         rgb:c0/c0/c0
-
-blackbox*iconColor:             rgb:20/0/40
-blackbox*menuTexture:           dgradientsunken
-blackbox*menuColor:             rgb:60/0/c0
-blackbox*menuToColor:           rgb:0/0/0
-blackbox*menuItemTexture:       dgradient
-blackbox*menuItemPressedTexture:        dgradientsunken
-blackbox*menuItemColor:         rgb:40/0/80
-blackbox*menuItemToColor:       rgb:30/0/60
-blackbox*menuFile:              /home/bhughes/.blackboxmenu
-
-
-The Menu File:
------------------
-The menu file is still in it's infancy, so only a single level of the root 
-menu is able to be created.  The format is shown below:
-
-begin (menu label)
-  "item label" (command -switches args)
-  ...
-  "item label" (Restart)   <- restarts blackbox
-  "item label" (Exit)      <- exits blackbox
-end
-
-
-Again for an idea of how to configure the menu, here is my .blackboxmenu file 
-(set by the resource in my .Xdefaults file):
-
-begin (Precursor)
-  "xterm" (xterm -ls)
-  "ircII undernet" (xterm -name irc -e irc)
-  "ircII epic" (xterm -name irc -e irc nyz ion.xtn.net:6667)
-  "xemacs" (xemacs)
-  "xv 3.10a" (xv -bg rgb:c0/c0/c0 -fg black -hi rgb:e0/e0/e0 -lo rgb:a0/a0/a0)
-  "Image Magick" (display)
-  "Communicator 4.04" (netscape)
-  "Restart" (Restart)
-  "Exit" (Exit)
-end
-
-
-Questions comments and flames welcome.  bhughes@arn.net
-Enjoy blackbox, I have enjoyed coding it.

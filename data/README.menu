@@ -1,22 +1,4 @@
--- data/README.menu for Blackbox 0.50.x - an X11 Window manager
--- Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
---
---  This program is free software; you can redistribute it and/or modify
---  it under the terms of the GNU General Public License as published by
---  the Free Software Foundation; either version 2 of the License, or
---  (at your option) any later version.
---
---  This program is distributed in the hope that it will be useful,
---  but WITHOUT ANY WARRANTY; without even the implied warranty of
---  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
---  GNU General Public License for more details.
---
---  You should have received a copy of the GNU General Public License
---  along with this program; if not, write to the Free Software
---  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
---
--- (See the included file COPYING / GPL-2.0)
---
+-- data/README.menu for Blackbox - an X11 Window manager
 
 Creating a user defined menu:
 -----------------------------
@@ -34,7 +16,7 @@ As an example, let's assume that my home directory is `/home/bhughes' (which it
 is).  I've decided to keep all my Blackbox related files in a directory named
 `blackbox.'  After creating the directory, I now have two options for creating
 my new menu.  I can either copy the system default (usually in
-`/usr/local/share/Blackbox/menu') to this directory, or I can create a new
+`/usr/local/share/blackbox/menu') to this directory, or I can create a new
 one from scratch.  Let's do the latter, for the sake of completeness.
 
 I've decided to name the file `rootmenu.'  I fire up my favorite text editor
@@ -43,7 +25,7 @@ and now have a clean file.  So let's begin.
 
 Menu syntax:
 ------------
-The menu syntax is very simple and very effective.  There are upto three
+The menu syntax is very simple and very effective.  There are up to three
 fields in a menu line. They are of the form:
 
 	[tag] (label or filename) {command or filename}
@@ -70,14 +52,13 @@ The supported tags are as follows:
 [exit] (label for exit)
 
 	This tells Blackbox to insert an item that shuts down and exits
-	Blackbox.  Any open windows are reparented to the root window before
-	Blackbox exits.
+	Blackbox.  Any open applications are left running.
 
 [include] (filename)
 
 	This tells Blackbox to parse the file specified by `filename' inline
 	with the current menu.  `filename' can be the full path to a file
-	(such as /usr/local/share/Blackbox/brueghel/stylesmenu) or it can
+	(such as /usr/local/share/blackbox/brueghel/stylesmenu) or it can
 	begin with `~/', which will be expanded into your home directory
 	(e.g. [include] (~/blackbox/stylesmenu) will include
 	/home/bhughes/blackbox/stylesmenu in my menu)
@@ -97,7 +78,7 @@ The supported tags are as follows:
 	colors and fonts to the current running session.  The filename is
 	just like the [include] tag, it can be the full path to the file,
 	or it can be of the form `~/path/from/home/dir.'  Blackbox also
-	re-reads the entire menu structure from disk, incase the menu has
+	re-reads the entire menu structure from disk, in case the menu has
 	changed.
 
 [submenu] (label) {title for menu - optional}
@@ -131,6 +112,12 @@ The supported tags are as follows:
 	will display the same workspace menu, so expect it to move around if
 	you do so. ;)
 
+[config] (label)
+
+	This tells Blackbox to insert the ConfigMenu into your menu.  From
+	this menu you can configure several options stored in your
+	~/.blackboxrc, and the changes take effect immediately.
+
 Comments may be inserted on any line of the file, as long as the first
 character on the line is a `#.'
 
@@ -144,10 +131,9 @@ Using `\\' inserts a literal back-slash into the label/command/filename field.
 
 Putting it all together:
 ------------------------
-Alrighty, so let's see if we can understand the arcane incantation above.  It
-says we have to have a [begin] and an [end] tag, which create our menu and
-give it a title.  Let's do that first:
-
+So let's see if we can understand the arcane incantation above.  It says we
+have to have a [begin] and an [end] tag, which create our menu and give it a
+title.  Let's do that first:
 
 	[begin] (Example \[Menu\])
 	
@@ -163,15 +149,14 @@ So we add the item to our menu, and it now looks like this:
 [end]
 ...
 
-Great!  Now let's add us some items to run an irc client, netscape, xv and
+Great!  Now let's add us some items to run an irc client, a web browser and
 some other common programs.  This gives up this:
 
 ...
 [begin] (Example \[Menu\])
 [exec] (xterm) {xterm -ls}
-[exec] (efnet irc) {xterm -e irc fnord irc.efnet.net}
-[exec] (Netscape Navigator) {netscape}
-[exec] (xv 3.10a) {xv}
+[exec] (openprojects irc) {xterm -e irc fnord irc.openprojects.net}
+[exec] (Mozilla Navigator) {mozilla}
 [exec] (XEmacs) {xemacs}
 [exec] (The GIMP) {gimp}
 [exec] (Video Tune) {xvidtune}
@@ -185,12 +170,11 @@ do this with our menu file, so let's clean it up a bit:
 ...
 [begin] (Example \[Menu\])
 	[exec] (xterm) {xterm -ls}
-	[exec] (efnet irc) {xterm -e irc fnord irc.efnet.net}
+	[exec] (openprojects irc) {xterm -e irc fnord irc.openprojects.net}
 
-	[exec] (Netscape Navigator) {netscape}
+	[exec] (Mozilla Navigator) {mozilla}
 	[exec] (XEmacs) {xemacs}
 
-	[exec] (xv 3.10a) {xv}
 	[exec] (The GIMP) {gimp}
 
 	[exec] (Video Tune) {xvidtune}
@@ -204,16 +188,15 @@ we take advantage of the [nop] tag:
 ...
 [begin] (Example \[Menu\])
 	[exec] (xterm) {xterm -ls}
-	[exec] (efnet irc) {xterm -e irc fnord irc.efnet.net}
+	[exec] (openprojects irc) {xterm -e irc fnord irc.openprojects.net}
 
 	[nop]
 
-	[exec] (Netscape Navigator) {netscape}
+	[exec] (Mozilla Navigator) {mozilla}
 	[exec] (XEmacs) {xemacs}
 
 	[nop]
 
-	[exec] (xv 3.10a) {xv}
 	[exec] (The GIMP) {gimp}
 
 	[nop]
@@ -223,39 +206,38 @@ we take advantage of the [nop] tag:
 ...
 
 Now, let's create a submenu to put some items to change between all these
-themes we downloaded from http://blackbox.themes.org/.  Let's assume we
-untarred the themes into the ~/.blackbox directory like the documentation on
-the themes.org site recommends.
+themes we downloaded from http://themes.fresh,eat.net/.  Let's assume we
+untarred the themes into the ~/.blackbox directory like the documentation
+recommends.
 
 ...
 [begin] (Example \[Menu\])
 	[exec] (xterm) {xterm -ls}
-	[exec] (efnet irc) {xterm -e irc fnord irc.efnet.net}
+	[exec] (openprojects irc) {xterm -e irc fnord irc.openprojects.net}
 
 	[nop]
 
-	[exec] (Netscape Navigator) {netscape}
+	[exec] (Mozilla Navigator) {mozilla}
 	[exec] (XEmacs) {xemacs}
 
 	[nop]
 
-	[exec] (xv 3.10a) {xv}
 	[exec] (The GIMP) {gimp}
 
 	[nop]
 
 	[exec] (Video Tune) {xvidtune}
 
-	[submenu] (Themes) {Themes from blackbox.themes.org}
-		[style] (Blackbox) {~/.blackbox/Styles/blackbox}
-		[style] (Blackbox II) {~/.blackbox/Styles/blackbox2}
-		[style] (Hardware) {~/.blackbox/Styles/hardware}
-		[style] (Nova) {~/.blackbox/Styles/nova}
-		[style] (Orbital) {~/.blackbox/Styles/orbital}
-		[style] (Orbital II) {~/.blackbox/Styles/orbital2}
-		[style] (Seething) {~/.blackbox/Styles/seething}
-		[style] (Zero) {~/.blackbox/Styles/zero}
-		[style] (Cold Fusion) {~/.blackbox/Styles/coldfusion}
+	[submenu] (Themes) {Themes from themes.freshmeat.net}
+		[style] (Blackbox) {~/.blackbox/styles/blackbox}
+		[style] (Blackbox II) {~/.blackbox/styles/blackbox2}
+		[style] (Hardware) {~/.blackbox/styles/hardware}
+		[style] (Nova) {~/.blackbox/styles/nova}
+		[style] (Orbital) {~/.blackbox/styles/orbital}
+		[style] (Orbital II) {~/.blackbox/styles/orbital2}
+		[style] (Seething) {~/.blackbox/styles/seething}
+		[style] (Zero) {~/.blackbox/styles/zero}
+		[style] (Cold Fusion) {~/.blackbox/styles/coldfusion}
 	[end]
 [end]
 ...
@@ -265,9 +247,8 @@ Even better.  Now hold on a second, if we have our themes and styles in
 This is where the choice comes.  Do we keep our stuff in two separate
 directories? Do we put it all in one directory?  That is up to you to decide.
 I personally prefer to keep everything in one directory (but, I use ~/blackbox
-and have been for a long, long time; long before blackbox.themes.org was
-even thought of... and again that is *personal* preference, not a hard-fast
-rule).
+and have been for a long, long time; and again that is *personal* preference,
+not a hard-fast rule).
 
 Now that we've gotten a feel for the menu syntax, we decide to finish off our
 menu.  In addition to the styles we downloaded, we decide we also want to
@@ -275,22 +256,20 @@ keep a submenu for the default styles that came with Blackbox.  All we need
 to do is [include] the styles file from the share directory for Blackbox.
 After putting everything together, we have:
 
-
 ...
 # custom menu file for Blackbox
 
 [begin] (Example \[Menu\])
 	[exec] (xterm) {xterm -ls}
-	[exec] (efnet irc) {xterm -e irc fnord irc.efnet.net}
+	[exec] (openprojects irc) {xterm -e irc fnord irc.openprojects.net}
 
 	[nop]
 
-	[exec] (Netscape Navigator) {netscape}
+	[exec] (Mozilla Browser) {mozilla}
 	[exec] (XEmacs) {xemacs}
 
 	[nop]
 
-	[exec] (xv 3.10a) {xv}
 	[exec] (The GIMP) {gimp}
 
 	[nop]
@@ -300,22 +279,22 @@ After putting everything together, we have:
 	[nop] (...)
 
 	[submenu] (Themes) {Themes from blackbox.themes.org}
-		[style] (Blackbox) {~/.blackbox/Styles/blackbox}
-		[style] (Blackbox II) {~/.blackbox/Styles/blackbox2}
-		[style] (Hardware) {~/.blackbox/Styles/hardware}
-		[style] (Nova) {~/.blackbox/Styles/nova}
-		[style] (Orbital) {~/.blackbox/Styles/orbital}
-		[style] (Orbital II) {~/.blackbox/Styles/orbital2}
-		[style] (Seething) {~/.blackbox/Styles/seething}
-		[style] (Zero) {~/.blackbox/Styles/zero}
-		[style] (Cold Fusion) {~/.blackbox/Styles/coldfusion}
+		[style] (Blackbox) {~/.blackbox/styles/blackbox}
+		[style] (Blackbox II) {~/.blackbox/styles/blackbox2}
+		[style] (Hardware) {~/.blackbox/styles/hardware}
+		[style] (Nova) {~/.blackbox/styles/nova}
+		[style] (Orbital) {~/.blackbox/styles/orbital}
+		[style] (Orbital II) {~/.blackbox/styles/orbital2}
+		[style] (Seething) {~/.blackbox/styles/seething}
+		[style] (Zero) {~/.blackbox/styles/zero}
+		[style] (Cold Fusion) {~/.blackbox/styles/coldfusion}
 
 # include the default style menu... this is assuming Blackbox was installed
 # into /usr/local
 
 		[nop]
 
-		[include] (/usr/local/share/Blackbox/styles/stylesmenu)
+		[include] (/usr/local/share/blackbox/styles/stylesmenu)
 	[end]
 
 	[workspaces] (Workspace list)
@@ -338,10 +317,10 @@ After putting everything together, we have:
 [end]
 ...
 
-And voila!  our menu file is finished.  Now we need to tell Blackbox to read
+And voila! our menu file is finished.  Now we need to tell Blackbox to read
 this menu file.  We do this by editing the file ~/.blackboxrc.
 
-NOTE: your ~/.blackboxrc is auotmatically updated every time Blackbox restarts,
+NOTE: your ~/.blackboxrc is automatically updated every time Blackbox restarts,
 reconfigures, changes styles or exits.  Changes to dynamic data like workspace
 count, names, etc. is lost.  About the only thing you can change and have it
 preserved is the menu filename, which is what we are about to change.
@@ -375,10 +354,10 @@ is now ready for use.  If something doesn't work, read over the above example
 again to make sure you didn't forget a step or leave out the necessary tags.
 
 Now that Blackbox has been told where to find it's menu, it does a little more.
-Blackbox 0.50.5 introduces automagic menu updates.  As long as you never
+Blackbox 0.51.x introduced automatic menu updates.  As long as you never
 change session.menuFile, you will never have to restart or reconfigure Blackbox
 whenever you change your menu.  Blackbox watches the timestamps on all the
 files it reads to build your menu.  If any of them change, they are reread and
-your menu updated.  This check is done everytime you open the root menu.  Like
-I said... it is a check, it doesn't reread the menu everytime, it just looks
+your menu updated.  This check is done every time you open the root menu.  Like
+I said... it is a check, it doesn't reread the menu every time, it just looks
 at the modification time and rereads when it changes.
