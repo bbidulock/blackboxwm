@@ -199,7 +199,6 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
 
     if (! win->hasTransient() || ! win->getTransient())
       break;
-    fprintf(stderr, "yet another loop\n");
     win = win->getTransient();
   }
 

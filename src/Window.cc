@@ -335,8 +335,6 @@ BlackboxWindow::~BlackboxWindow(void) {
     BlackboxWindow *bw = blackbox->searchWindow(client.transient_for);
     if (bw) bw->client.transient = client.transient;
   }
-  if (client.transient)
-    client.transient->client.transient_for = client.transient_for;
 
   if (frame.close_button) {
     blackbox->removeWindowSearch(frame.close_button);
