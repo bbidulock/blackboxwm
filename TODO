@@ -11,9 +11,6 @@ refactoring:
 -----------------------------
 * look into public v. private members of all classes
 
-* cleanup the headers so there are less depends and we are sure that
-  only what is needed is used
-
 warts:
 -----------------------------
 * vnc in full screen mode does not get focus, but apparently works
