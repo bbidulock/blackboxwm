@@ -150,7 +150,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
 
     bt::ustring title, visible_title, icon_title;
 
-    bt::Rect rect;
+    bt::Rect rect, premax;
 
     int old_bw;                     // client's borderwidth
 
@@ -205,7 +205,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
       right_grip, left_grip;
 
     // frame geometry
-    bt::Rect rect, premax, changing;
+    bt::Rect rect, changing;
 
     /*
      * margins between the frame and client, this has nothing to do

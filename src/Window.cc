@@ -972,6 +972,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     window's gravity to find the window's initial position.
   */
   client.rect.setRect(wattrib.x, wattrib.y, wattrib.width, wattrib.height);
+  client.premax = client.rect;
   client.old_bw = wattrib.border_width;
   client.current_state = NormalState;
 
@@ -1114,8 +1115,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   grabButtons();
 
   XMapSubwindows(blackbox->XDisplay(), frame.window);
-
-  frame.premax = frame.rect;
 
   if (isShaded()) {
     client.ewmh.shaded = false;
@@ -1620,25 +1619,31 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
 
 
 void BlackboxWindow::reconfigure(void) {
-  // get the client window geometry as if it was unmanaged
-  bt::Rect r = frame.rect;
-  if (client.ewmh.shaded)
-    r.setHeight(client.rect.height() + frame.margin.top + frame.margin.bottom);
-  r = ::restoreGravity(r, frame.margin, client.wmnormal.win_gravity);
-
-  // update the frame margin in case the style has changed
-  frame.margin = ::update_margin(client.decorations, frame.style);
-
-  // get the frame window geometry from the client window geometry
-  // calculated above
-  r = ::applyGravity(r, frame.margin, client.wmnormal.win_gravity);
-  if (client.ewmh.shaded)
-    r.setHeight(frame.style->title_height);
   if (isMaximized()) {
+    // update the frame margin in case the style has changed
+    frame.margin = ::update_margin(client.decorations, frame.style);
+
     // make sure maximized windows have the correct size after a style
     // change
     remaximize();
   } else {
+    // get the client window geometry as if it was unmanaged
+    bt::Rect r = frame.rect;
+    if (client.ewmh.shaded) {
+      r.setHeight(client.rect.height() + frame.margin.top
+                  + frame.margin.bottom);
+    }
+    r = ::restoreGravity(r, frame.margin, client.wmnormal.win_gravity);
+
+    // update the frame margin in case the style has changed
+    frame.margin = ::update_margin(client.decorations, frame.style);
+
+    // get the frame window geometry from the client window geometry
+    // calculated above
+    r = ::applyGravity(r, frame.margin, client.wmnormal.win_gravity);
+    if (client.ewmh.shaded)
+      r.setHeight(frame.style->title_height);
+
     // trick configure into working
     frame.rect = bt::Rect();
     configure(r);
@@ -2105,6 +2110,7 @@ void BlackboxWindow::maximize(unsigned int button) {
                        + frame.margin.bottom);
 
   if (isMaximized()) {
+    // restore from maximized
     client.ewmh.maxh = client.ewmh.maxv = false;
 
     if (!isFullScreen()) {
@@ -2114,8 +2120,15 @@ void BlackboxWindow::maximize(unsigned int button) {
         it is maximized.  so we do not need to call configure()
         because resizing will handle it
       */
-      if (! client.state.resizing)
-        configure(frame.premax);
+      if (! client.state.resizing) {
+        bt::Rect r = ::applyGravity(client.premax,
+                                    frame.margin,
+                                    client.wmnormal.win_gravity);
+        r = ::constrain(r, frame.margin, client.wmnormal, TopLeft);
+        // trick configure into working
+        frame.rect = bt::Rect();
+        configure(r);
+      }
 
       redrawAllButtons(); // in case it is not called in configure()
     }
@@ -2146,27 +2159,27 @@ void BlackboxWindow::maximize(unsigned int button) {
   }
 
   if (!isFullScreen()) {
-    // store the current frame geometry, so that we can restore it later
-    frame.premax = frame.rect;
-
+    // go go gadget-maximize!
     bt::Rect r = _screen->availableArea();
 
     if (!client.ewmh.maxh) {
-      r.setX(frame.premax.x());
-      r.setWidth(frame.premax.width());
+      r.setX(frame.rect.x());
+      r.setWidth(frame.rect.width());
     }
     if (!client.ewmh.maxv) {
-      r.setY(frame.premax.y());
-      r.setHeight(frame.premax.height());
+      r.setY(frame.rect.y());
+      r.setHeight(frame.rect.height());
     }
 
-    r = ::constrain(r, frame.margin, client.wmnormal, TopLeft);
+    // store the current frame geometry, so that we can restore it later
+    client.premax = ::restoreGravity(frame.rect,
+                                     frame.margin,
+                                     client.wmnormal.win_gravity);
 
+    r = ::constrain(r, frame.margin, client.wmnormal, TopLeft);
     // trick configure into working
     frame.rect = bt::Rect();
     configure(r);
-
-    redrawAllButtons(); // in case it is not called in configure()
   }
 
   setState(client.current_state);
@@ -2187,9 +2200,9 @@ void BlackboxWindow::remaximize(void) {
   // trick maximize() into working
   client.ewmh.maxh = client.ewmh.maxv = false;
 
-  const bt::Rect tmp = frame.premax;
+  const bt::Rect tmp = client.premax;
   maximize(button);
-  frame.premax = tmp;
+  client.premax = tmp;
 }
 
 
@@ -2231,9 +2244,20 @@ void BlackboxWindow::setFullScreen(bool b) {
   if (client.ewmh.fullscreen == b)
     return;
 
+  // any fullscreen operation always unshades
+  client.ewmh.shaded = false;
+  frame.rect.setHeight(client.rect.height() + frame.margin.top
+                       + frame.margin.bottom);
+
   bool refocus = isFocused();
   client.ewmh.fullscreen = b;
   if (isFullScreen()) {
+    // go go gadget-fullscreen!
+    if (!isMaximized())
+      client.premax = ::restoreGravity(frame.rect,
+                                       frame.margin,
+                                       client.wmnormal.win_gravity);
+
     // modify decorations, functions and frame margin
     client.decorations = NoWindowDecorations;
     client.functions &= ~(WindowFunctionMove |
@@ -2242,19 +2266,20 @@ void BlackboxWindow::setFullScreen(bool b) {
                           WindowFunctionChangeLayer);
     frame.margin = ::update_margin(client.decorations, frame.style);
 
-    if (!isMaximized())
-      frame.premax = frame.rect;
-
+    bt::Rect r = ::constrain(_screen->screenInfo().rect(),
+                             frame.margin,
+                             client.wmnormal,
+                             TopLeft);
     // trick configure() into working
     frame.rect = bt::Rect();
-
-    bt::Rect r = ::constrain(_screen->screenInfo().rect(), frame.margin,
-                             client.wmnormal, TopLeft);
     configure(r);
+
     if (isVisible())
       _screen->changeLayer(this, StackingList::LayerFullScreen);
+
     setState(client.current_state);
   } else {
+    // restore from fullscreen
     ::update_decorations(client.decorations,
                          client.functions,
                          isTransient(),
@@ -2264,23 +2289,21 @@ void BlackboxWindow::setFullScreen(bool b) {
                          client.wmprotocols);
     frame.margin = ::update_margin(client.decorations, frame.style);
 
-    if (client.decorations & WindowDecorationTitlebar)
-      createTitlebar();
-    if (client.decorations & WindowDecorationHandle)
-      createHandle();
+    if (isVisible())
+      _screen->changeLayer(this, StackingList::LayerNormal);
 
-    // trick configure() into working
-    frame.rect = bt::Rect();
-
-    if (!isMaximized()) {
-      configure(frame.premax);
-      if (isVisible())
-        _screen->changeLayer(this, StackingList::LayerNormal);
-      setState(client.current_state);
-    } else {
-      if (isVisible())
-        _screen->changeLayer(this, StackingList::LayerNormal);
+    if (isMaximized()) {
       remaximize();
+    } else {
+      bt::Rect r = ::applyGravity(client.premax,
+                                  frame.margin,
+                                  client.wmnormal.win_gravity);
+      r = ::constrain(r, frame.margin, client.wmnormal, TopLeft);
+
+      // trick configure into working
+      frame.rect = bt::Rect();
+      configure(r);
+      setState(client.current_state);
     }
   }
 
@@ -3488,13 +3511,12 @@ void BlackboxWindow::restore(void) {
   XSetWindowBorderWidth(blackbox->XDisplay(), client.window, client.old_bw);
   if (isMaximized()) {
     // preserve the original size
+    client.rect = client.premax;
     XMoveResizeWindow(blackbox->XDisplay(), client.window,
-                      client.rect.x() - frame.rect.x(),
-                      client.rect.y() - frame.rect.y(),
-                      frame.premax.width() - (frame.margin.left
-                                               + frame.margin.right),
-                      frame.premax.height() - (frame.margin.top
-                                                + frame.margin.bottom));
+                      client.premax.x(),
+                      client.premax.y(),
+                      client.premax.width(),
+                      client.premax.height());
   } else {
     XMoveWindow(blackbox->XDisplay(), client.window,
                 client.rect.x() - frame.rect.x(),
