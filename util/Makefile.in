@@ -107,12 +107,12 @@ bin_SCRIPTS = bsetbg
 bin_PROGRAMS = bsetroot bstyleconvert
 
 bsetroot_SOURCES = bsetroot.cc
-bsetroot_DEPENDENCIES = $(top_srcdir)/lib/libbt.a
-bsetroot_LDADD = -L$(top_srcdir)/lib -lbt
+bsetroot_DEPENDENCIES = $(top_builddir)/lib/libbt.a
+bsetroot_LDADD = -L$(top_builddir)/lib -lbt
 
 bstyleconvert_SOURCES = bstyleconvert.cc
-bstyleconvert_DEPENDENCIES = $(top_srcdir)/lib/libbt.a
-bstyleconvert_LDADD = -L$(top_srcdir)/lib -lbt
+bstyleconvert_DEPENDENCIES = $(top_builddir)/lib/libbt.a
+bstyleconvert_LDADD = -L$(top_builddir)/lib -lbt
 
 MAINTAINERCLEANFILES = Makefile.in
 subdir = util
