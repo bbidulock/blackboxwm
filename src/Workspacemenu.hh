@@ -39,9 +39,9 @@ public:
   void insertIconMenu(Iconmenu *iconmenu);
 
   void insertWorkspace(Workspace *workspace);
-  void removeWorkspace(Workspace *workspace);
+  void removeWorkspace(unsigned int id);
 
-  void setWorkspaceChecked(Workspace *workspace, bool checked);
+  void setWorkspaceChecked(unsigned int id, bool checked);
 
 protected:
   virtual void itemClicked(unsigned int id, unsigned int);

@@ -63,14 +63,12 @@ void Workspacemenu::insertWorkspace(Workspace *workspace) {
 }
 
 
-void Workspacemenu::removeWorkspace(Workspace *workspace) {
-  removeItem(workspace->id() + WorkspaceIDDelta);
-}
+void Workspacemenu::removeWorkspace(unsigned int id)
+{ removeItem(id + WorkspaceIDDelta); }
 
 
-void Workspacemenu::setWorkspaceChecked(Workspace *workspace, bool checked) {
-  setItemChecked(workspace->id() + WorkspaceIDDelta, checked);
-}
+void Workspacemenu::setWorkspaceChecked(unsigned int id, bool checked)
+{ setItemChecked(id + WorkspaceIDDelta, checked); }
 
 
 void Workspacemenu::insertIconMenu(Iconmenu *iconmenu) {

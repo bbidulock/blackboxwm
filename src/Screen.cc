@@ -122,7 +122,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
   current_workspace = workspacesList.front();
   current_workspace_id = current_workspace->id();
-  workspacemenu->setWorkspaceChecked(current_workspace, true);
+  workspacemenu->setWorkspaceChecked(current_workspace_id, true);
 
   // the Slit will be created on demand
   _slit = 0;
@@ -468,7 +468,7 @@ unsigned int BScreen::removeLastWorkspace(void) {
 
   wkspc->transferWindows(*(workspacesList.back()));
 
-  workspacemenu->removeWorkspace(wkspc);
+  workspacemenu->removeWorkspace(wkspc->id());
 
   delete wkspc;
 
@@ -487,14 +487,14 @@ void BScreen::changeWorkspaceID(unsigned int id) {
 
   current_workspace->hide();
 
-  workspacemenu->setWorkspaceChecked(current_workspace, false);
+  workspacemenu->setWorkspaceChecked(current_workspace_id, false);
 
   current_workspace = getWorkspace(id);
   current_workspace_id = current_workspace->id();
 
   current_workspace->show();
 
-  workspacemenu->setWorkspaceChecked(current_workspace, true);
+  workspacemenu->setWorkspaceChecked(current_workspace_id, true);
   if (_toolbar) _toolbar->redrawWorkspaceLabel();
 
   blackbox->netwm().setCurrentDesktop(screen_info.rootWindow(),
