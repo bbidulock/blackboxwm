@@ -878,7 +878,6 @@ void BlackboxWindow::getWMName(void) {
   else
     client.title = i18n(WindowSet, WindowUnnamed, "Unnamed");
 
-#define DEBUG_WITH_ID 1
 #ifdef DEBUG_WITH_ID
   // the 16 is the 8 chars of the debug text plus the number
   char *tmp = new char[client.title.length() + 16];
