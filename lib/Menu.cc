@@ -101,51 +101,51 @@ bt::MenuStyle::~MenuStyle(void) {
 void bt::MenuStyle::load(const Resource &resource) {
   // menu textures
   title.texture =
-    bt::textureResource(resource, "menu.title", "Menu.Title", "white",
+    bt::textureResource(resource, "menu.title", "Menu.Title", "black",
                         &_app.getDisplay(), _screen, _imagecontrol);
   frame.texture =
-    bt::textureResource(resource, "menu.frame", "Menu.Frame", "black",
+    bt::textureResource(resource, "menu.frame", "Menu.Frame", "white",
                         &_app.getDisplay(), _screen, _imagecontrol);
   active.texture =
-    bt::textureResource(resource, "menu.active", "Menu.Active", "white",
+    bt::textureResource(resource, "menu.active", "Menu.Active", "black",
                         &_app.getDisplay(), _screen, _imagecontrol);
 
   // non-texture colors
   title.foreground =
     bt::Color(resource.read("menu.title.foregroundColor",
                             "Menu.Title.ForegroundColor",
-                            "black"),
+                            "white"),
               &_app.getDisplay(), _screen);
   title.text =
     bt::Color(resource.read("menu.title.textColor",
                             "Menu.Title.TextColor",
-                            "black"),
+                            "white"),
               &_app.getDisplay(), _screen);
   frame.foreground =
     bt::Color(resource.read("menu.frame.foregroundColor",
                             "Menu.Frame.ForegroundColor",
-                            "white"),
+                            "black"),
               &_app.getDisplay(), _screen);
   frame.text =
     bt::Color(resource.read("menu.frame.textColor",
                             "Menu.Frame.TextColor",
-                            "white"),
+                            "black"),
               &_app.getDisplay(), _screen);
   frame.disabled =
     bt::Color(resource.read("menu.frame.disabledColor",
                             "Menu.Frame.DisabledColor",
-                            "white"),
+                            "black"),
               &_app.getDisplay(), _screen);
 
   active.foreground =
     bt::Color(resource.read("menu.active.foregroundColor",
                             "Menu.Active.ForegroundColor",
-                            "black"),
+                            "white"),
               &_app.getDisplay(), _screen);
   active.text =
     bt::Color(resource.read("menu.active.textColor",
                             "Menu.Active.TextColor",
-                            "black"),
+                            "white"),
               &_app.getDisplay(), _screen);
 
   // fonts
@@ -318,7 +318,7 @@ namespace bt {
 static bt::ShowDelay showdelay;
 
 
-bt::Menu::Menu(bt::Application &app, unsigned int screen)
+bt::Menu::Menu(Application &app, unsigned int screen)
   : _app(app),
     _screen(screen),
     _tpixmap(0),
@@ -461,9 +461,7 @@ void bt::Menu::setItemEnabled(unsigned int id, bool enabled) {
 bool bt::Menu::isItemEnabled(unsigned int id) const {
   ItemList::const_iterator it =
     std::find_if(items.begin(), items.end(), IdentMatch(id));
-  if (it != items.end())
-    return it->isEnabled();
-  return false; // item not found
+  return (it != items.end() && it->enabled);
 }
 
 
@@ -499,9 +497,7 @@ void bt::Menu::setItemChecked(unsigned int id, bool checked) {
 bool bt::Menu::isItemChecked(unsigned int id) const {
   ItemList::const_iterator it =
     std::find_if(items.begin(), items.end(), IdentMatch(id));
-  if (it != items.end())
-    return it->isChecked();
-  return false; // item not found
+  return (it != items.end() && it->checked);
 }
 
 
@@ -548,7 +544,7 @@ void bt::Menu::removeIndex(unsigned int index) {
 
 
 void bt::Menu::clear(void) {
-  while (count())
+  while (! items.empty())
     removeIndex(0);
 
   if (isVisible()) {
@@ -628,6 +624,7 @@ void bt::Menu::show(void) {
   if (isVisible()) return;
 
   XMapRaised(_app.getXDisplay(), _window);
+  XSync(_app.getXDisplay(), False);
   _app.openMenu(this);
   _visible = true;
 }
@@ -989,9 +986,9 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
   case XK_Down: {
     ItemList::const_iterator anchor = items.begin(), end = items.end();
     if (_active_index != ~0u) {
+      std::advance(anchor, _active_index);
+
       // go one paste the current active index
-      register unsigned int x = _active_index;
-      while (x-- && anchor != end) ++anchor;
       if (anchor != end && ! anchor->separator) ++anchor;
     }
 
@@ -1006,9 +1003,9 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
     ItemList::const_reverse_iterator anchor = items.rbegin(),
                                         end = items.rend();
     if (_active_index != ~0u) {
+      std::advance(anchor, items.size() - _active_index - 1);
+
       // go one item past the current active index
-      unsigned int x = items.size() - _active_index - 1;
-      while (x-- && anchor != end) ++anchor;
       if (anchor != end && ! anchor->separator) ++anchor;
     }
 
