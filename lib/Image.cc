@@ -115,7 +115,6 @@ namespace bt {
   static XShmSegmentInfo shm_info;
   static bool use_shm = false;
   static bool shm_attached = false;
-  static const unsigned int shm_limit = 400*300*4; // 400x300 @ 32-bit default
   static int shm_id = -1;
   static char *shm_addr = reinterpret_cast<char *>(-1);
 
