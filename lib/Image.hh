@@ -75,11 +75,6 @@ namespace bt {
                               unsigned int bytes_per_line,
                               unsigned char *pixel_data);
 
-    Pixmap render_solid(const Display &display, unsigned int screen,
-                        const Texture &texture);
-    Pixmap render_gradient(const Display &display, unsigned int screen,
-                           const Texture &texture);
-
     Pixmap renderPixmap(const Display &display, unsigned int screen);
     XImage *renderXImage(const Display &display, unsigned int screen);
 

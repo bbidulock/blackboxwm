@@ -325,75 +325,11 @@ Pixmap bt::Image::render(const Display &display, unsigned int screen,
                          const bt::Texture &texture) {
   if (texture.texture() & bt::Texture::Parent_Relative)
     return ParentRelative;
-  else if (texture.texture() & bt::Texture::Solid)
-    return render_solid(display, screen, texture);
-  else if (texture.texture() & bt::Texture::Gradient)
-    return render_gradient(display, screen, texture);
-  return None;
-}
-
-
-Pixmap bt::Image::render_solid(const Display &display, unsigned int screen,
-                               const bt::Texture &texture) {
-  const ScreenInfo &screeninfo = display.screenInfo(screen);
-
-  Pixmap pixmap =
-    XCreatePixmap(display.XDisplay(), screeninfo.rootWindow(),
-                  width, height, screeninfo.depth());
-  if (pixmap == None)
+  if (texture.texture() & bt::Texture::Solid)
+    return None;
+  if (! (texture.texture() & bt::Texture::Gradient))
     return None;
 
-  Pen pen(screen, texture.color());
-  Pen penlight(screen, texture.lightColor());
-  Pen penshadow(screen, texture.shadowColor());
-
-  XFillRectangle(display.XDisplay(), pixmap, pen.gc(), 0, 0, width, height);
-
-  unsigned int bw = 0;
-  if (texture.texture() & bt::Texture::Border) {
-    Pen penborder(screen, texture.borderColor());
-    bw = texture.borderWidth();
-
-    for (unsigned int i = 0; i < bw; ++i)
-      XDrawRectangle(display.XDisplay(), pixmap, penborder.gc(),
-                     i, i, width - (i * 2) - 1, height - (i * 2) - 1);
-  }
-
-  if (texture.texture() & bt::Texture::Interlaced) {
-    Pen peninterlace(screen, texture.colorTo());
-    for (unsigned int i = bw; i < height - (bw * 2); i += 2)
-      XDrawLine(display.XDisplay(), pixmap, peninterlace.gc(),
-                bw, i, width - (bw * 2), i);
-  }
-
-  if (texture.texture() & bt::Texture::Raised) {
-    XDrawLine(display.XDisplay(), pixmap, penshadow.gc(),
-              bw, height - bw - 1, width - bw - 1, height - bw - 1);
-    XDrawLine(display.XDisplay(), pixmap, penshadow.gc(),
-              width - bw - 1, height - bw - 1, width - bw - 1, bw);
-
-    XDrawLine(display.XDisplay(), pixmap, penlight.gc(),
-              bw, bw, width - bw - 1, bw);
-    XDrawLine(display.XDisplay(), pixmap, penlight.gc(),
-              bw, height - bw - 1, bw, bw);
-  } else if (texture.texture() & bt::Texture::Sunken) {
-    XDrawLine(display.XDisplay(), pixmap, penlight.gc(),
-              bw, height - bw - 1, width - bw - 1, height - bw - 1);
-    XDrawLine(display.XDisplay(), pixmap, penlight.gc(),
-              width - bw - 1, height - bw - 1, width - bw - 1, bw);
-
-    XDrawLine(display.XDisplay(), pixmap, penshadow.gc(),
-              bw, bw, width - bw - 1, bw);
-    XDrawLine(display.XDisplay(), pixmap, penshadow.gc(),
-              bw, height - bw - 1, bw, bw);
-  }
-
-  return pixmap;
-}
-
-
-Pixmap bt::Image::render_gradient(const Display &display, unsigned int screen,
-                                  const bt::Texture &texture) {
   Color from, to;
   bool inverted = false;
   bool interlaced = texture.texture() & bt::Texture::Interlaced;
