@@ -787,15 +787,46 @@ void Basemenu::showSubmenu( const Rect &r, const Item &item )
   if ( ! item.submenu() )
     return;
 
-  // show the submenu
+  // position the submenu
   if ( item.submenu()->size_dirty )
     item.submenu()->updateSize();
 
-  Point p = pos() + Point( r.x() + r.width(),
-                           r.y() - ( item.submenu()->show_title ?
-                                     item.submenu()->title_rect.height() + 1  : 1 ) );
+  BScreen *scr = Blackbox::instance()->screen( screen() );
+
+  int px = x() + r.x() + r.width();
+  int py = y() + r.y() - 1;
+  bool on_left = false;
+
+  if ( parent_menu && parent_menu->x() > x() )
+    on_left = true;
+  // move the submenu to the left side of the menu, where there is hopefully more space
+  if ( px + item.submenu()->width() > scr->width() || on_left )
+    px -= item.submenu()->width() + r.width();
+  if ( px < 0 ) {
+    if ( on_left )
+      // wow, lots of nested menus - move submenus back to the right side
+      px = x() + r.x() + r.width();
+    else
+      px = 0;
+  }
+
+  if ( item.submenu()->show_title ) {
+    py -= item.submenu()->title_rect.y() + item.submenu()->title_rect.height();
+    if ( py + item.submenu()->height() > scr->height() )
+      py -= item.submenu()->items_rect.height() - r.height();
+    if ( py < 0 )
+      py = 0;
+  } else {
+    if ( py + item.submenu()->height() > scr->height() )
+      py -= item.submenu()->items_rect.height() - r.height();
+    if ( py < 0 )
+      py = 0;
+  }
+
+
+  // show the submenu
   current_submenu = item.submenu();
-  current_submenu->move( p );
+  current_submenu->move( px, py );
   current_submenu->show();
 }
 
