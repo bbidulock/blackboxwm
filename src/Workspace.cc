@@ -95,7 +95,7 @@ unsigned int Workspace::removeWindow(BlackboxWindow *w) {
 
   stackingList.remove(w);
 
-  if (w->isFocused()) {
+  if (w->isFocused() && ! screen->getBlackbox()->doShutdown()) {
     BlackboxWindow *newfocus = 0;
     if (w->isTransient())
       newfocus = w->getTransientFor();
