@@ -1493,16 +1493,16 @@ void BlackboxWindow::maximize(unsigned int button) {
     blackbox_attrib.flags |= AttribMaxVert;
     blackbox_attrib.attrib |= AttribMaxVert;
 
-    frame.changing.setX(frame.rect.x());
-    frame.changing.setWidth(frame.rect.width());
+    frame.changing.setX(blackbox_attrib.premax_x);
+    frame.changing.setWidth(blackbox_attrib.premax_w);
     break;
 
   case 3:
     blackbox_attrib.flags |= AttribMaxHoriz;
     blackbox_attrib.attrib |= AttribMaxHoriz;
 
-    frame.changing.setY(frame.rect.y());
-    frame.changing.setHeight(frame.rect.height());
+    frame.changing.setY(blackbox_attrib.premax_y);
+    frame.changing.setHeight(blackbox_attrib.premax_h);
     break;
   }
 
@@ -1523,6 +1523,8 @@ void BlackboxWindow::maximize(unsigned int button) {
 
 // re-maximizes the window to take into account availableArea changes
 void BlackboxWindow::remaximize(void) {
+  if (flags.shaded) return;
+
   // save the original dimensions because maximize will wipe them out
   int premax_x = blackbox_attrib.premax_x,
     premax_y = blackbox_attrib.premax_y,
@@ -1549,17 +1551,21 @@ void BlackboxWindow::setWorkspace(unsigned int n) {
 
 void BlackboxWindow::shade(void) {
   if (flags.shaded) {
-    XResizeWindow(blackbox->getXDisplay(), frame.window,
-                  frame.inside_w, frame.inside_h);
     flags.shaded = False;
     blackbox_attrib.flags ^= AttribShaded;
     blackbox_attrib.attrib ^= AttribShaded;
 
-    setState(NormalState);
+    if (flags.maximized) {
+      remaximize();
+    } else {
+      XResizeWindow(blackbox->getXDisplay(), frame.window,
+                    frame.inside_w, frame.inside_h);
+      // set the frame rect to the normal size
+      frame.rect.setHeight(client.rect.height() + frame.margin.top +
+                           frame.margin.bottom);
+    }
 
-    // set the frame rect to the normal size
-    frame.rect.setHeight(client.rect.height() + frame.margin.top +
-                         frame.margin.bottom);
+    setState(NormalState);
   } else {
     if (! (decorations & Decor_Titlebar))
       return;
@@ -1680,11 +1686,11 @@ void BlackboxWindow::setFocusFlag(bool focus) {
   }
 
   if (screen->isSloppyFocus() && screen->doAutoRaise()) {
-    if (isFocused()) timer->start();
+    if (flags.focused) timer->start();
     else timer->stop();
   }
 
-  if (isFocused())
+  if (flags.focused)
     blackbox->setFocusedWindow(this);
 }
 
@@ -2354,8 +2360,7 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
     // position of the menu with the coordinates of the client to
     // make the comparisions easier.
     // XXX: this needs some work!
-    if (mx > client.rect.right() -
-        static_cast<signed>(windowmenu->getWidth()))
+    if (mx > client.rect.right() - static_cast<signed>(windowmenu->getWidth()))
       mx = frame.rect.right() - windowmenu->getWidth() - frame.border_w + 1;
     if (mx < client.rect.left())
       mx = frame.rect.x();
