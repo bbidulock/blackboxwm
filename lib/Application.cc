@@ -301,7 +301,6 @@ void bt::Application::process_event(XEvent *event) {
         // recent menu instead.
         handler = dynamic_cast<EventHandler*>(menus.front());
       }
-      XAllowEvents(_display->XDisplay(), SyncPointer, xserver_time);
       break;
     }
     case EnterNotify:
@@ -317,7 +316,6 @@ void bt::Application::process_event(XEvent *event) {
       // we have active menus.  we should send all key events to the most
       // recent popup menu, regardless of where the pointer is
       handler = dynamic_cast<EventHandler*>(menus.front());
-      XAllowEvents(_display->XDisplay(), SyncKeyboard, xserver_time);
       break;
     }
     default:
@@ -591,14 +589,13 @@ void bt::Application::openMenu(Menu *menu) {
   menus.push_front(menu);
 
   if (! menu_grab && // grab mouse and keyboard for the menu
-      XGrabKeyboard(_display->XDisplay(), menu->windowID(), True, GrabModeSync,
+      XGrabKeyboard(_display->XDisplay(), menu->windowID(), True, GrabModeAsync,
                     GrabModeAsync, xserver_time) == GrabSuccess &&
       XGrabPointer(_display->XDisplay(), menu->windowID(), True,
                    (ButtonPressMask | ButtonReleaseMask | ButtonMotionMask |
                     PointerMotionMask | LeaveWindowMask),
-                   GrabModeSync, GrabModeAsync, None, None,
+                   GrabModeAsync, GrabModeAsync, None, None,
                    xserver_time) == GrabSuccess) {
-    XAllowEvents(_display->XDisplay(), SyncPointer, xserver_time);
   }
   menu_grab = true;
 }
@@ -614,8 +611,6 @@ void bt::Application::closeMenu(Menu *menu) {
   menus.pop_front();
   if (! menus.empty())
     return;
-
-  XAllowEvents(_display->XDisplay(), ReplayPointer, xserver_time);
 
   XUngrabKeyboard(_display->XDisplay(), xserver_time);
   XUngrabPointer(_display->XDisplay(), xserver_time);
