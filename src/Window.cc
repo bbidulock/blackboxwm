@@ -1908,6 +1908,8 @@ void BlackboxWindow::setState(unsigned long new_state) {
                   blackbox->getBlackboxAttributesAtom(), 32, PropModeReplace,
                   (unsigned char *) &blackbox_attrib,
                   PropBlackboxAttributesElements);
+
+  blackbox->netwm()->setWMDesktop(client.window, blackbox_attrib.workspace);
 }
 
 
@@ -2352,8 +2354,9 @@ void BlackboxWindow::netwmEvent(const XClientMessageEvent* const ce) {
   } else if (ce->message_type == blackbox->netwm()->wmDesktop()) {
     const unsigned int desktop = ce->data.l[0];
     if (desktop != 0xFFFFFFFF) {
+      withdraw();
+      screen->reassociateWindow(this, desktop);
     }
-    // *** IMPLEMENT ME ***
   }
 }
 

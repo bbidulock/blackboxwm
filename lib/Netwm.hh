@@ -75,6 +75,7 @@ public:
   void setWMName(Window target, const std::string& name) const;
   bool readWMName(Window target, std::string& name) const;
   bool readWMIconName(Window target, std::string& name) const;
+  void setWMDesktop(Window target, unsigned int desktop) const;
   bool readWMDesktop(Window target, unsigned int& desktop) const;
 
   // utility

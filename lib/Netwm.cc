@@ -174,6 +174,13 @@ bool Netwm::readWMIconName(Window target, std::string& name) const {
 }
 
 
+void Netwm::setWMDesktop(Window target, unsigned int desktop) const {
+  XChangeProperty(display, target, net_wm_desktop, XA_CARDINAL,
+                  32, PropModeReplace,
+                  reinterpret_cast<uchar*>(&desktop), 1);
+}
+
+
 bool Netwm::readWMDesktop(Window target, unsigned int& desktop) const {
   return getCardinalProperty(target, net_wm_desktop, desktop);
 }
