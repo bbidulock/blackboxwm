@@ -159,7 +159,7 @@ void bexec(const string& command, const string& displaystring) {
     assert(ret != -1);
     string cmd = "exec ";
     cmd += command;
-    execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL);
+    ret = execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL);
     exit(ret);
   }
 #else //   __EMX__
