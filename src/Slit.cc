@@ -44,7 +44,7 @@ Slit::Slit(BScreen *scr) {
   on_top = screen->isSlitOnTop();
   hidden = do_auto_hide = screen->doSlitAutoHide();
 
-  display = screen->getScreenInfo().getDisplay().XDisplay();
+  display = screen->getDisplay().XDisplay();
   frame.window = frame.pixmap = None;
 
   timer = new bt::Timer(blackbox, this);
@@ -400,7 +400,7 @@ void Slit::updateStrut(void) {
           pos = frame.y_hidden;
         else
           pos = frame.rect.y();
-        strut.bottom = (screen->getScreenInfo().getRect().bottom() - pos);
+        strut.bottom = (screen->getRect().bottom() - pos);
         break;
       case CenterLeft:
         strut.left = getExposedWidth() + border_width;

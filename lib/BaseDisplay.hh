@@ -144,8 +144,8 @@ namespace bt {
     Application(const char *app_name, const char *dpy_name = 0);
     virtual ~Application(void);
 
-    const ScreenInfo& getScreenInfo(unsigned int s) const
-    { return *(display.screenNumber(s)); }
+    const ScreenInfo* getScreenInfo(unsigned int s) const
+    { return display.screenNumber(s); }
 
     inline bool hasShapeExtensions(void) const
     { return shape.extensions; }
@@ -155,7 +155,7 @@ namespace bt {
     { return run_state == STARTUP; }
 
     inline ::Display *getXDisplay(void) const { return display.XDisplay(); }
-    inline const Display& getDisplay(void) const { return display; }
+    inline Display& getDisplay(void) { return display; }
 
     inline const char *getApplicationName(void) const
     { return application_name; }
