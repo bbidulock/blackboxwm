@@ -1,7 +1,7 @@
 dnl configure.in for Blackbox - an X11 Window manager
 dnl Initialize autoconf and automake
 AC_INIT(src/blackbox.cc)
-AM_INIT_AUTOMAKE(blackbox,0.65.0pre1,no-define)
+AM_INIT_AUTOMAKE(blackbox,0.65.0pre2,no-define)
 
 dnl Determine default prefix
 test x$prefix = "xNONE" && prefix="$ac_default_prefix"
@@ -218,12 +218,12 @@ nls/da_DK/Makefile
 nls/de_DE/Makefile
 nls/es_AR/Makefile
 nls/es_ES/Makefile
-nls/et_EE/Makefile
 nls/fr_FR/Makefile
 nls/hu_HU/Makefile
 nls/it_IT/Makefile
 nls/ja_JP/Makefile
 nls/ko_KR/Makefile
+nls/lv_LV/Makefile
 nls/nl_NL/Makefile
 nls/no_NO/Makefile
 nls/pl_PL/Makefile
@@ -233,7 +233,6 @@ nls/ru_RU/Makefile
 nls/sk_SK/Makefile
 nls/sl_SI/Makefile
 nls/sv_SE/Makefile
-nls/tr_TR/Makefile
 nls/uk_UA/Makefile
 nls/zh_CN/Makefile
 nls/zh_TW/Makefile
