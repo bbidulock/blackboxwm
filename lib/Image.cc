@@ -44,7 +44,7 @@ static const unsigned int maximumHeight = 3000;
 
 bt::Image::Buffer bt::Image::buffer;
 unsigned int bt::Image::global_colorsPerChannel = 4;
-bool bt::Image::global_ditherEnabled = true;
+bool bt::Image::global_ditherEnabled = false;
 bt::Image::XColorTableList bt::Image::colorTableList;
 
 
