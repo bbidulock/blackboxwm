@@ -177,6 +177,9 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   } else if (client.window_type == blackbox->netwm()->wmWindowTypeUtility()) {
     client.decorations &= ~(Decor_Maximize | Decor_Iconify);
     client.functions   &= ~(Func_Maximize | Func_Iconify);
+  } else if (client.window_type == blackbox->netwm()->wmWindowTypeDock()) {
+    client.decorations = 0l;
+    client.functions = 0l;
   } else if (client.window_type == blackbox->netwm()->wmWindowTypeDesktop()) {
     client.decorations = client.functions = 0l;
   } else if (isTransient()) {
