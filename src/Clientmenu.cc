@@ -39,17 +39,19 @@
 
 
 Clientmenu::Clientmenu(Workspace *ws)
-    : Basemenu( ws->getScreen()->screen() )
+  : Basemenu( ws->getScreen()->screen() )
 {
-    wkspc = ws;
-    screen = wkspc->getScreen();
+  wkspc = ws;
+  screen = wkspc->getScreen();
 }
 
 
-void Clientmenu::itemSelected(int button, int index) {
-  if (button > 2) return;
+void Clientmenu::itemClicked( const Point &, const Item &item, int button )
+{
+  if (button > 2)
+    return;
 
-  BlackboxWindow *win = wkspc->getWindow(index);
+  BlackboxWindow *win = wkspc->getWindow(item.index());
   if (win) {
     if (button == 1) {
       if (! wkspc->isCurrent()) wkspc->setCurrent();
