@@ -282,14 +282,19 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
                                         usableArea.height(),
                                         blackbox->getXDisplay(),
                                         getRootWindow());
+  blackbox->netwm()->setDesktopViewport(0, 0,
+                                        blackbox->getXDisplay(),
+                                        getRootWindow());
 
   Atom supported[] = {
     blackbox->netwm()->numberOfDesktops(),
     blackbox->netwm()->desktopGeometry(),
+    blackbox->netwm()->desktopViewport(),
     blackbox->netwm()->currentDesktop(),
+    blackbox->netwm()->desktopNames()
   };
 
-  blackbox->netwm()->setSupported(supported, 3, blackbox->getXDisplay(),
+  blackbox->netwm()->setSupported(supported, 5, blackbox->getXDisplay(),
                                   getRootWindow());
 
   unsigned int i, j, nchild;
@@ -369,11 +374,13 @@ BScreen::~BScreen(void) {
                                     blackbox->getXDisplay(), getRootWindow());
   blackbox->netwm()->removeProperty(blackbox->netwm()->supported(),
                                     blackbox->getXDisplay(), getRootWindow());
-  blackbox->netwm()->removeProperty(blackbox->netwm()->currentDesktop(),
-                                    blackbox->getXDisplay(), getRootWindow());
   blackbox->netwm()->removeProperty(blackbox->netwm()->numberOfDesktops(),
                                     blackbox->getXDisplay(), getRootWindow());
   blackbox->netwm()->removeProperty(blackbox->netwm()->desktopGeometry(),
+                                    blackbox->getXDisplay(), getRootWindow());
+  blackbox->netwm()->removeProperty(blackbox->netwm()->desktopViewport(),
+                                    blackbox->getXDisplay(), getRootWindow());
+  blackbox->netwm()->removeProperty(blackbox->netwm()->currentDesktop(),
                                     blackbox->getXDisplay(), getRootWindow());
 
   if (resource.wstyle.fontset)
