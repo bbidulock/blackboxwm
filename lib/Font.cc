@@ -24,6 +24,12 @@
 // DEALINGS IN THE SOFTWARE.
 
 #include "Font.hh"
+
+extern "C" {
+#include <stdio.h>
+#include <assert.h>
+}
+
 #include "BaseDisplay.hh"
 #include "Color.hh"
 #include "GCCache.hh"

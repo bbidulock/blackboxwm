@@ -25,6 +25,7 @@ CPPFLAGS		= @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ @DEBUG@ @NLS@ \
 noinst_LIBRARIES	= libbt.a
 libbt_a_SOURCES		= BaseDisplay.cc				\
 			  Color.cc					\
+			  Font.cc					\
 			  GCCache.cc					\
 			  Image.cc					\
 			  ImageControl.cc				\
