@@ -192,6 +192,8 @@ install-data-local: blackbox.cat
 		ln -f -s C $(DESTDIR)$(pkgdatadir)/nls/POSIX; \
 		rm -f $(DESTDIR)$(pkgdatadir)/nls/en_US; \
 		ln -f -s C $(DESTDIR)$(pkgdatadir)/nls/en_US; \
+		rm -f $(DESTDIR)$(pkgdatadir)/nls/en_GB; \
+		ln -f -s C $(DESTDIR)$(pkgdatadir)/nls/en_GB; \
 		rm -f $(DESTDIR)$(pkgdatadir)/nls/en; \
 		ln -f -s C $(DESTDIR)$(pkgdatadir)/nls/en; \
 	fi
