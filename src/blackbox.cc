@@ -304,7 +304,6 @@ void Blackbox::process_event(XEvent *e) {
     bool no_focus = true;   // did another window get focus?
 
     XEvent event;
-    XSync(XDisplay(), false);
     if (XCheckIfEvent(XDisplay(), &event, scanForFocusIn, NULL)) {
       process_event(&event);
 
