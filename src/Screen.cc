@@ -278,13 +278,18 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   blackbox->netwm()->setNumberOfDesktops(workspacesList.size(),
                                          blackbox->getXDisplay(),
                                          getRootWindow());
+  blackbox->netwm()->setDesktopGeometry(usableArea.width(),
+                                        usableArea.height(),
+                                        blackbox->getXDisplay(),
+                                        getRootWindow());
 
   Atom supported[] = {
+    blackbox->netwm()->numberOfDesktops(),
+    blackbox->netwm()->desktopGeometry(),
     blackbox->netwm()->currentDesktop(),
-    blackbox->netwm()->numberOfDesktops()
   };
 
-  blackbox->netwm()->setSupported(supported, 2, blackbox->getXDisplay(),
+  blackbox->netwm()->setSupported(supported, 3, blackbox->getXDisplay(),
                                   getRootWindow());
 
   unsigned int i, j, nchild;
@@ -367,6 +372,8 @@ BScreen::~BScreen(void) {
   blackbox->netwm()->removeProperty(blackbox->netwm()->currentDesktop(),
                                     blackbox->getXDisplay(), getRootWindow());
   blackbox->netwm()->removeProperty(blackbox->netwm()->numberOfDesktops(),
+                                    blackbox->getXDisplay(), getRootWindow());
+  blackbox->netwm()->removeProperty(blackbox->netwm()->desktopGeometry(),
                                     blackbox->getXDisplay(), getRootWindow());
 
   if (resource.wstyle.fontset)
@@ -1728,6 +1735,11 @@ void BScreen::updateAvailableArea(void) {
     for (; it != end; ++it)
       if ((*it)->isMaximized()) (*it)->remaximize();
   }
+
+  blackbox->netwm()->setDesktopGeometry(usableArea.width(),
+                                        usableArea.height(),
+                                        blackbox->getXDisplay(),
+                                        getRootWindow());
 }
 
 

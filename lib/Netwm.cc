@@ -28,19 +28,21 @@ Netwm::Netwm(Display* display) {
     "UTF8_STRING",
     "_NET_SUPPORTED",
     "_NET_NUMBER_OF_DESKTOPS",
+    "_NET_DESKTOP_GEOMETRY",
     "_NET_CURRENT_DESKTOP",
     "_NET_SUPPORTING_WM_CHECK",
     "_NET_WM_NAME"
   };
-  Atom atoms_return[6];
-  XInternAtoms(display, atoms, 6, False, atoms_return);
+  Atom atoms_return[7];
+  XInternAtoms(display, atoms, 7, False, atoms_return);
 
   utf8_string = atoms_return[0];
   net_supported = atoms_return[1];
   net_number_of_desktops = atoms_return[2];
-  net_current_desktop = atoms_return[3];
-  net_supporting_wm_check = atoms_return[4];
-  net_wm_name = atoms_return[5];
+  net_desktop_geometry = atoms_return[3];
+  net_current_desktop = atoms_return[4];
+  net_supporting_wm_check = atoms_return[5];
+  net_wm_name = atoms_return[6];
 }
 
 
@@ -48,7 +50,7 @@ Netwm::Netwm(Display* display) {
 // root window properties
 
 void Netwm::setSupported(Atom* supported, unsigned int count,
-                         Display *display,Window target) {
+                         Display* display, Window target) const {
   XChangeProperty(display, target, net_supported, XA_ATOM,
                   32, PropModeReplace,
                   reinterpret_cast<unsigned char*>(supported), count);
@@ -56,15 +58,24 @@ void Netwm::setSupported(Atom* supported, unsigned int count,
 
 
 void Netwm::setNumberOfDesktops(unsigned int number, Display* display,
-                                Window target) {
+                                Window target) const {
   XChangeProperty(display, target, net_number_of_desktops, XA_CARDINAL,
                   32, PropModeReplace,
                   reinterpret_cast<unsigned char*>(&number), 1);
 }
 
 
+void Netwm::setDesktopGeometry(unsigned int width, unsigned int height,
+                               Display* display, Window target) const {
+  unsigned int geometry[] = {width, height};
+  XChangeProperty(display, target, net_desktop_geometry, XA_CARDINAL,
+                  32, PropModeReplace,
+                  reinterpret_cast<unsigned char*>(geometry), 2);
+}
+
+
 void Netwm::setCurrentDesktop(unsigned int number, Display* display,
-                              Window target) {
+                              Window target) const {
   XChangeProperty(display, target, net_current_desktop, XA_CARDINAL,
                   32, PropModeReplace,
                   reinterpret_cast<unsigned char*>(&number), 1);
@@ -72,18 +83,18 @@ void Netwm::setCurrentDesktop(unsigned int number, Display* display,
 
 
 void Netwm::setSupportingWMCheck(Window target, Window data,
-                                 Display* display) {
+                                 Display* display) const {
   XChangeProperty(display, target, net_supporting_wm_check, XA_WINDOW,
-                  sizeof(Window), PropModeReplace,
+                  32, PropModeReplace,
                   reinterpret_cast<unsigned char*>(&data), 1);
 }
 
 
 // application properties
 
-void Netwm::setWMName(const string& name, Window w, Display *display) {
+void Netwm::setWMName(const string& name, Window w, Display *display) const {
   XChangeProperty(display, w, net_wm_name, utf8_string,
-                  sizeof(char), PropModeReplace,
+                  8, PropModeReplace,
                   reinterpret_cast<uchar*>(const_cast<char*>(name.c_str())),
                   name.length());
 }
