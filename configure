@@ -1233,7 +1233,7 @@ fi
 
 # Define the identity of the package.
 PACKAGE=blackbox
-VERSION=0.62.2pre0
+VERSION=moving_target
 
 # Autoconf 2.50 wants to disallow AM_ names.  We explicitly allow
 # the ones we care about.
