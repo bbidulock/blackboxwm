@@ -22,19 +22,19 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include "Resource.hh"
+
 extern "C" {
 #include <assert.h>
 }
 
+#include <algorithm>
+#include <cctype>
+#include <fstream>
 #include <iostream>
 #include <iomanip>
-#include <fstream>
 #include <string>
 #include <vector>
-#include <cctype>
-#include <algorithm>
-
-#include "Resource.hh"
 
 
 std::string normalize(const std::string& input) {

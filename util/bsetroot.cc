@@ -26,6 +26,11 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
+#include "bsetroot.hh"
+#include "Pen.hh"
+#include "Texture.hh"
+#include "i18n.hh"
+
 extern "C" {
 #include <X11/Xatom.h>
 #include <stdio.h>
@@ -38,16 +43,10 @@ extern "C" {
 // add ifdefs to every call to getMessage
 #include "../nls/blackbox-nls.hh"
 
-#include "bsetroot.hh"
-#include "Pen.hh"
-#include "Texture.hh"
-#include "i18n.hh"
 
-
-static int x11_error(::Display *, XErrorEvent *) {
-  // ignore all X errors
-  return 0;
-}
+// ignore all X errors
+static int x11_error(::Display *, XErrorEvent *)
+{ return 0; }
 
 
 bt::I18n bt::i18n;
