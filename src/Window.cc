@@ -1958,7 +1958,7 @@ void BlackboxWindow::applyGravity(Rect &r) {
   case NorthEastGravity:
   case SouthEastGravity:
   case EastGravity:
-    r.setX(client.rect.x() - frame.margin.left - frame.margin.right);
+    r.setX(client.rect.x() - (frame.margin.left + frame.margin.right) + 2);
     break;
 
   case ForgetGravity:
@@ -1979,13 +1979,13 @@ void BlackboxWindow::applyGravity(Rect &r) {
   case CenterGravity:
   case EastGravity:
   case WestGravity:
-    r.setY(client.rect.y() - (frame.margin.top + frame.margin.bottom) / 2);
+    r.setY(client.rect.y() - ((frame.margin.top + frame.margin.bottom) / 2));
     break;
 
   case SouthWestGravity:
   case SouthEastGravity:
   case SouthGravity:
-    r.setY(client.rect.y() - frame.margin.top - frame.margin.bottom);
+    r.setY(client.rect.y() - (frame.margin.bottom + frame.margin.top) + 2);
     break;
 
   case ForgetGravity:
@@ -2021,7 +2021,7 @@ void BlackboxWindow::restoreGravity(Rect &r) {
   case NorthEastGravity:
   case SouthEastGravity:
   case EastGravity:
-    r.setX(frame.rect.x() + frame.margin.left + frame.margin.right);
+    r.setX(frame.rect.x() + (frame.margin.left + frame.margin.right) - 2);
     break;
 
   case ForgetGravity:
@@ -2048,7 +2048,7 @@ void BlackboxWindow::restoreGravity(Rect &r) {
   case SouthWestGravity:
   case SouthEastGravity:
   case SouthGravity:
-    r.setY(frame.rect.y() + frame.margin.top + frame.margin.bottom);
+    r.setY(frame.rect.y() + (frame.margin.top + frame.margin.bottom) - 2);
     break;
 
   case ForgetGravity:
