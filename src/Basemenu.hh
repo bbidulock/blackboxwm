@@ -91,10 +91,13 @@ public:
   inline const char *getLabel(void) const { return menu.label; }
 
   int insert(BasemenuItem *item, int pos);
-  int insert(const char *l, int function = 0, const char *e = (const char *)0,
+  int insert(const char *l, int function = 0, const char *e = (const char*)0,
              int pos = -1);
+  int insert(const std::string& l, int function = 0,
+             const char *e = (const char*) 0, int pos = -1);
   int insert(const char **ulabel, int pos = -1, int function = 0);
   int insert(const char *l, Basemenu *submenu, int pos = -1);
+  int insert(const std::string &l, Basemenu *submenu, int pos = -1);
   int remove(int);
 
   inline const int getX(void) const { return menu.x; }
@@ -124,7 +127,8 @@ public:
   void leaveNotifyEvent(XCrossingEvent *ce);
   void exposeEvent(XExposeEvent *ee);
   void reconfigure(void);
-  void setLabel(const char *n);
+  void setLabel(const char *l);
+  void setLabel(const std::string& l);
   void move(int x, int y);
   void update(void);
   void setItemSelected(int index, Bool sel);

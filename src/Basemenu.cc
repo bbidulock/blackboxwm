@@ -245,6 +245,16 @@ int Basemenu::insert(const char *l, Basemenu *submenu, int pos) {
 }
 
 
+int Basemenu::insert(const string& l, Basemenu *submenu, int pos) {
+  return insert(l.c_str(), submenu, pos);
+}
+
+
+int Basemenu::insert(const string& l, int function, const char *e, int pos) {
+  return insert(l.c_str(), function, e, pos);
+}
+
+
 int Basemenu::insert(const char **ulabel, int pos, int function) {
   BasemenuItem *item = new BasemenuItem(ulabel, function);
 
@@ -768,6 +778,11 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clear,
       break;
     }
   }
+}
+
+
+void Basemenu::setLabel(const string& l) {
+  setLabel(l.c_str());
 }
 
 

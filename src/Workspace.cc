@@ -340,17 +340,26 @@ void Workspace::setCurrent(void) {
 }
 
 
-void Workspace::setName(const char* const new_name) {
-  if (new_name) {
-    name = string(new_name);
+void Workspace::setName(const char* new_name) {
+  if (new_name && *new_name) {
+    fprintf(stderr, "setName(a): %s\n", new_name);
+    name = new_name;
   } else {
     char default_name[32];
-    snprintf(default_name, 32, "Workspace %d", id + 1);
-    name = i18n(WorkspaceSet, WorkspaceDefaultNameFormat, default_name);
+    snprintf(default_name, 32,
+             i18n(WorkspaceSet, WorkspaceDefaultNameFormat, "Workspace %d"),
+             id + 1);
+    name = default_name;
+    fprintf(stderr, "setName(b): %s\n", default_name);
   }
   
-  clientmenu->setLabel(name.c_str());
+  clientmenu->setLabel(name);
   clientmenu->update();
+}
+
+
+void Workspace::setName(const string& new_name) {
+  setName(new_name.c_str());
 }
 
 

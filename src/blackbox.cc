@@ -1065,20 +1065,19 @@ void Blackbox::save_rc(void) {
 
     // write out the user's workspace names
     int len = 0;
-    for (unsigned int i = 0; i < screen->getWorkspaceCount(); i++)
-      len += strlen((screen->getWorkspace(i)->getName()) ?
-                    screen->getWorkspace(i)->getName() : "Null") + 1;
+    for (unsigned int i = 0; i < screen->getWorkspaceCount(); i++) {
+      const char* const name = screen->getWorkspace(i)->getName().c_str();
+      len += strlen(name) + 1;
+    }
 
     char *resource_string = new char[len + 1024],
       *save_string = new char[len], *save_string_pos = save_string,
       *name_string_pos;
     if (save_string) {
       for (unsigned i = 0; i < screen->getWorkspaceCount(); i++) {
-        len = strlen((screen->getWorkspace(i)->getName()) ?
-                     screen->getWorkspace(i)->getName() : "Null") + 1;
-        name_string_pos =
-          (char *) ((screen->getWorkspace(i)->getName()) ?
-                    screen->getWorkspace(i)->getName() : "Null");
+        const char* const name = screen->getWorkspace(i)->getName().c_str();
+        len = strlen(name) + 1;
+        name_string_pos = (char *) name;
 
         while (--len) *(save_string_pos++) = *(name_string_pos++);
         *(save_string_pos++) = ',';
@@ -1306,11 +1305,9 @@ void Blackbox::load_rc(BScreen *screen) {
     for (unsigned int i = 0; i < screen->getNumberOfWorkspaces(); i++) {
       char *nn;
 
-      if (! i) nn = strtok(search, ",");
-      else nn = strtok(NULL, ",");
+      nn = strsep(&search, ",");
 
-      if (nn) screen->addWorkspaceName(nn);
-      else break;
+      screen->addWorkspaceName(nn);
     }
 
     delete [] search;

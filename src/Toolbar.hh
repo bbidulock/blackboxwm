@@ -102,7 +102,7 @@ private:
   Toolbarmenu *toolbarmenu;
   NETStrut strut;
 
-  char *new_workspace_name;
+  std::string new_workspace_name;
   size_t new_name_pos;
 
   friend class HideHandler;

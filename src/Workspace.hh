@@ -66,7 +66,7 @@ public:
   
   inline Clientmenu *getMenu(void) { return clientmenu; }
 
-  inline const char *getName(void) const { return name.c_str(); }
+  inline const std::string& getName(void) const { return name; }
 
   inline const unsigned int getID(void) const { return id; }
   
@@ -95,6 +95,7 @@ public:
   void update(void);
   void setCurrent(void);
   void setName(const char* new_name);
+  void setName(const std::string& new_name);
   void shutdown(void);
 };
 

@@ -59,6 +59,9 @@
 # endif // HAVE_SYS_TIME_H
 #endif // TIME_WITH_SYS_TIME
 
+#include <string>
+using std::string;
+
 
 static const long aMinuteFromNow(void) {
   timeval now;
@@ -87,7 +90,6 @@ Toolbar::Toolbar(BScreen *scrn) {
   hidden = do_auto_hide = screen->doToolbarAutoHide();
 
   editing = False;
-  new_workspace_name = (char *) 0;
   new_name_pos = 0;
   frame.grab_x = frame.grab_y = 0;
 
@@ -315,17 +317,16 @@ void Toolbar::reconfigure(void) {
   frame.workspace_label_w = 0;
 
   for (unsigned int i = 0; i < screen->getWorkspaceCount(); i++) {
+    const string& workspace_name = screen->getWorkspace(i)->getName();
     if (i18n.multibyte()) {
       XRectangle ink, logical;
       XmbTextExtents(screen->getToolbarStyle()->fontset,
-                     screen->getWorkspace(i)->getName(),
-                     strlen(screen->getWorkspace(i)->getName()),
+                     workspace_name.c_str(), workspace_name.size(),
                      &ink, &logical);
       w = logical.width;
     } else {
       w = XTextWidth(screen->getToolbarStyle()->font,
-                     screen->getWorkspace(i)->getName(),
-                     strlen(screen->getWorkspace(i)->getName()));
+                     workspace_name.c_str(), workspace_name.size());
     }
     w += (frame.bevel_w * 4);
 
@@ -654,22 +655,21 @@ void Toolbar::redrawWindowLabel(Bool redraw) {
  
  
 void Toolbar::redrawWorkspaceLabel(Bool redraw) {
-  const char *name = screen->getCurrentWorkspace()->getName();
-  if (! name)
-    return;
+  const string& name = screen->getCurrentWorkspace()->getName();
+
   if (redraw)
     XClearWindow(display, frame.workspace_label);
     
-  int dx = (frame.bevel_w * 2), dlen = strlen(name);
+  int dx = (frame.bevel_w * 2), dlen = name.size();
   unsigned int l;
     
   if (i18n.multibyte()) {
     XRectangle ink, logical;
-    XmbTextExtents(screen->getToolbarStyle()->fontset, name, dlen,
-                   &ink, &logical);
+    XmbTextExtents(screen->getToolbarStyle()->fontset, name.c_str(),
+                   dlen, &ink, &logical);
     l = logical.width;
   } else {
-    l = XTextWidth(screen->getToolbarStyle()->font, name, dlen);
+    l = XTextWidth(screen->getToolbarStyle()->font, name.c_str(), dlen);
   }
   l += (frame.bevel_w * 4);
     
@@ -677,11 +677,11 @@ void Toolbar::redrawWorkspaceLabel(Bool redraw) {
     for (; dlen >= 0; dlen--) {
       if (i18n.multibyte()) {
         XRectangle ink, logical;
-        XmbTextExtents(screen->getToolbarStyle()->fontset, name, dlen,
+        XmbTextExtents(screen->getToolbarStyle()->fontset, name.c_str(), dlen,
                        &ink, &logical);
         l = logical.width;
       } else {
-        l = XTextWidth(screen->getWindowStyle()->font, name, dlen);
+        l = XTextWidth(screen->getWindowStyle()->font, name.c_str(), dlen);
       }
       l += (frame.bevel_w * 4);
         
@@ -704,11 +704,11 @@ void Toolbar::redrawWorkspaceLabel(Bool redraw) {
     XmbDrawString(display, frame.workspace_label, style->fontset,
                   style->l_text_gc, dx,
                   (1 - style->fontset_extents->max_ink_extent.y),
-                  name, dlen);
+                  name.c_str(), dlen);
   else
     XDrawString(display, frame.workspace_label, style->l_text_gc, dx,
                 (style->font->ascent + 1),
-                name, dlen);
+                name.c_str(), dlen);
 }
 
 
@@ -981,21 +981,16 @@ void Toolbar::exposeEvent(XExposeEvent *ee) {
 
 void Toolbar::keyPressEvent(XKeyEvent *ke) {
   if (ke->window == frame.workspace_label && editing) {
-    if (! new_workspace_name) {
-      new_workspace_name = new char[128];
+    if (new_workspace_name.empty()) {
       new_name_pos = 0;
-
-      if (! new_workspace_name) return;
     }
 
     KeySym ks;
     char keychar[1];
     XLookupString(ke, keychar, 1, &ks, 0);
 
-    // either we are told to end with a return or we hit the end of the buffer
+    // either we are told to end with a return or we hit 127 chars
     if (ks == XK_Return || new_name_pos == 127) {
-      *(new_workspace_name + new_name_pos + 1) = 0;
-
       editing = False;
 
       blackbox->setNoFocus(False);
@@ -1005,25 +1000,19 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
       } else {
         XSetInputFocus(display, PointerRoot, None, CurrentTime);
       }
-      // check to make sure that new_name[0] != 0... otherwise we have a null
-      // workspace name which causes serious problems, especially for the
-      // Blackbox::LoadRC() method.
-      if (*new_workspace_name) {
-        Workspace *wkspc = screen->getCurrentWorkspace();
-        wkspc->setName(new_workspace_name);
-        wkspc->getMenu()->hide();
+      if (new_workspace_name.empty())
+        new_workspace_name = " "; // avoids empty names but looks empty
+      Workspace *wkspc = screen->getCurrentWorkspace();
+      wkspc->setName(new_workspace_name);
+      wkspc->getMenu()->hide();
 
-        screen->getWorkspacemenu()->remove(wkspc->getID() + 2);
-        screen->getWorkspacemenu()->insert(wkspc->getName(),
-                                           wkspc->getMenu(),
-                                           wkspc->getID() + 2);
-        screen->getWorkspacemenu()->update();
-      }
+      screen->getWorkspacemenu()->remove(wkspc->getID() + 2);
+      screen->getWorkspacemenu()->insert(wkspc->getName(),
+                                         wkspc->getMenu(),
+                                         wkspc->getID() + 2);
+      screen->getWorkspacemenu()->update();
 
-      // this looks obsessive, but the string is part of the screen so if we
-      // do not clean up it will think it is still in edit mode
-      delete [] new_workspace_name;
-      new_workspace_name = (char *) 0;
+      new_workspace_name.clear();
       new_name_pos = 0;
 
       reconfigure();
@@ -1037,42 +1026,41 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
       if (ks == XK_BackSpace) {
         if (new_name_pos > 0) {
           --new_name_pos;
-          *(new_workspace_name + new_name_pos) = '\0';
+          new_workspace_name.erase(new_name_pos);
         } else {
-          *new_workspace_name = '\0';
+          new_workspace_name.clear();
         }
       } else {
-        *(new_workspace_name + new_name_pos) = *keychar;
+        new_workspace_name.push_back(*keychar);
         ++new_name_pos;
-        *(new_workspace_name + new_name_pos) = '\0';
       }
 
       XClearWindow(display, frame.workspace_label);
-      int l = strlen(new_workspace_name), tw, x;
+      unsigned int l = new_workspace_name.size(), tw, x;
 
       if (i18n.multibyte()) {
         XRectangle ink, logical;
         XmbTextExtents(screen->getToolbarStyle()->fontset,
-                       new_workspace_name, l, &ink, &logical);
+                       new_workspace_name.c_str(), l, &ink, &logical);
         tw = logical.width;
       } else {
         tw = XTextWidth(screen->getToolbarStyle()->font,
-                        new_workspace_name, l);
+                        new_workspace_name.c_str(), l);
       }
       x = (frame.workspace_label_w - tw) / 2;
 
-      if (x < (signed) frame.bevel_w) x = frame.bevel_w;
+      if (x < frame.bevel_w) x = frame.bevel_w;
 
       WindowStyle *style = screen->getWindowStyle();
       if (i18n.multibyte())
         XmbDrawString(display, frame.workspace_label, style->fontset,
                       style->l_text_focus_gc, x,
                       (1 - style->fontset_extents->max_ink_extent.y),
-                      new_workspace_name, l);
+                      new_workspace_name.c_str(), l);
       else
         XDrawString(display, frame.workspace_label, style->l_text_focus_gc, x,
                     (style->font->ascent + 1),
-                    new_workspace_name, l);
+                    new_workspace_name.c_str(), l);
       
       XDrawRectangle(display, frame.workspace_label,
                      screen->getWindowStyle()->l_text_focus_gc, x + tw, 0, 1,

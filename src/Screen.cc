@@ -1542,6 +1542,7 @@ void BScreen::saveStrftimeFormat(char *format) {
 
 
 void BScreen::addWorkspaceName(const char *name) {
+  fprintf(stderr, "addWorkspaceName: %s\n", name);
   workspaceNames.push_back(std::string(name));
 }
 
