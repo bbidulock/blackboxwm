@@ -896,20 +896,22 @@ void Basemenu::motionNotifyEvent(XMotionEvent *me) {
       if (which_press != -1 && which_sbl != -1) {
         int p = (which_sbl * menu.persub) + which_press;
         BasemenuItem *item = find(p);
+        if (! item) return;
 
         drawItem(p, False, True);
-        if (item->submenu())
-          if (item->submenu()->isVisible() &&
-              ! item->submenu()->isTorn()) {
-            item->submenu()->internal_hide();
-            which_sub = -1;
-          }
+        if (item->submenu() &&
+            item->submenu()->isVisible() &&
+            ! item->submenu()->isTorn()) {
+          item->submenu()->internal_hide();
+          which_sub = -1;
+        }
       }
 
       which_press = i;
       which_sbl = sbl;
 
       BasemenuItem *itmp = find(w);
+      if (! itmp) return;
 
       if (itmp->submenu())
         drawSubmenu(w);
@@ -924,27 +926,27 @@ void Basemenu::exposeEvent(XExposeEvent *ee) {
   if (ee->window == menu.title) {
     redrawTitle();
   } else if (ee->window == menu.frame) {
-    // this is a compilicated algorithm... lets do it step by step...
+    // this is a complicated algorithm... lets do it step by step...
     // first... we see in which sub level the expose starts... and how many
     // items down in that sublevel
 
-    int sbl = (ee->x / menu.item_w), id = (ee->y / menu.item_h),
+    const int sbl = (ee->x / menu.item_w), id = (ee->y / menu.item_h),
       // next... figure out how many sublevels over the redraw spans
-      sbl_d = ((ee->x + ee->width) / menu.item_w),
+      sbl_d = ((ee->x + ee->width) / menu.item_w);
       // then we see how many items down to redraw
-      id_d = ((ee->y + ee->height) / menu.item_h);
+    int id_d = ((ee->y + ee->height) / menu.item_h);
 
     if (id_d > menu.persub) id_d = menu.persub;
 
     // draw the sublevels and the number of items the exposure spans
     MenuItems::iterator it,
       end = menuitems.end();
-    int i, ii;
-    for (i = sbl; i <= sbl_d; i++) {
+
+    for (int i = sbl; i <= sbl_d; i++) {
       // set the iterator to the first item in the sublevel needing redrawing
       it = menuitems.begin() + (id + (i * menu.persub));
-      for (ii = id; ii <= id_d && it != end; ++it, ii++) {
-        int index = ii + (i * menu.persub);
+      for (int ii = id; ii <= id_d && it != end; ++it, ii++) {
+        const int index = ii + (i * menu.persub);
         // redraw the item
         drawItem(index, (which_sub == index), False,
                  ee->x, ee->y, ee->width, ee->height);
