@@ -113,12 +113,17 @@ void StackingList::changeLayer(StackEntity *entity, Layer new_layer) {
 StackingList::iterator StackingList::raise(StackEntity *entity) {
   assert(entity);
 
+  // find the top of the layer and given entity
   iterator& pos = layer(entity->layer());
   iterator it = std::find(pos, stack.end(), entity);
   assert(it != stack.end());
-  if (it == pos)
-    ++pos;
 
+  if (it == pos) {
+    // entity is already at the top
+    return pos;
+  }
+
+  // raise the entity
   (void) stack.erase(it);
   return pos = stack.insert(pos, entity);
 }
