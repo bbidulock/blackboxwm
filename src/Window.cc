@@ -330,7 +330,7 @@ BlackboxWindow::~BlackboxWindow(void) {
  * width.
  * Returns: the newly created window
  */
-Window BlackboxWindow::createToplevelWindow() {
+Window BlackboxWindow::createToplevelWindow(void) {
   XSetWindowAttributes attrib_create;
   unsigned long create_mask = CWBackPixmap | CWBorderPixel | CWColormap |
                               CWOverrideRedirect | CWEventMask;
@@ -2817,14 +2817,15 @@ void BlackboxWindow::constrain(Corner anchor, int *pw, int *ph) {
   int dw = frame.changing.width();
   int dh = frame.changing.height();
 
-  // contrain
+  // constrain
   if (dw < static_cast<signed>(client.min_width)) dw = client.min_width;
   if (dh < static_cast<signed>(client.min_height)) dh = client.min_height;
   if (dw > static_cast<signed>(client.max_width)) dw = client.max_width;
   if (dh > static_cast<signed>(client.max_height)) dh = client.max_height;
 
-  dw /= client.width_inc;
-  dh /= client.height_inc;
+
+  dw = (dw - client.base_width) / client.width_inc;
+  dh = (dh - client.base_height) / client.height_inc;
 
   if (pw) *pw = dw;
   if (ph) *ph = dh;
