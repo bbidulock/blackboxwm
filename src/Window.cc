@@ -2124,13 +2124,11 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
       }
     }
 
-    int x = frame.rect.x(), y = frame.rect.y();
-    unsigned int w = frame.rect.width(), h = frame.rect.height();
+    Rect old_rect = frame.rect;
 
     upsize();
 
-    if ((x != frame.rect.x()) || (y != frame.rect.y()) ||
-        (w != frame.rect.width()) || (h != frame.rect.height()))
+    if (old_rect != frame.rect)
       reconfigure();
 
     break;
@@ -2221,9 +2219,6 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
     } else if (frame.close_button == be->window) {
       redrawCloseButton(True);
     } else if (frame.plate == be->window) {
-      if (! flags.focused)
-        setInputFocus();
-
       if (windowmenu && windowmenu->isVisible()) windowmenu->hide();
 
       screen->getWorkspace(blackbox_attrib.workspace)->raiseWindow(this);
