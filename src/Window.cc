@@ -1658,7 +1658,6 @@ void BlackboxWindow::remaximize(void) {
 void BlackboxWindow::setWorkspace(unsigned int n) {
   blackbox_attrib.flags |= AttribWorkspace;
   blackbox_attrib.workspace = n;
-  setState(current_state);
 }
 
 
