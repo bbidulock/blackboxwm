@@ -965,7 +965,7 @@ void Toolbar::toggleOnTop(void) {
 
 
 void Toolbar::setPlacement(Placement place) {
-  screen->saveToolbarPlacement(place);
+  screen->resource().saveToolbarPlacement(place);
   reconfigure();
 
   // reposition the slit as well to make sure it doesn't intersect the

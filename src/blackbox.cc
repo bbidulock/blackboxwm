@@ -868,29 +868,29 @@ void Blackbox::load_rc(BScreen *screen) {
           screen_number);
   sprintf(class_lookup, "Session.Screen%d.Toolbar.WidthPercent",
           screen_number);
-  screen->saveToolbarWidthPercent(66);
+  screen->resource().saveToolbarWidthPercent(66);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value) &&
       sscanf(value.addr, "%d", &int_value) == 1 &&
       int_value > 0 && int_value <= 100) {
-    screen->saveToolbarWidthPercent(int_value);
+    screen->resource().saveToolbarWidthPercent(int_value);
   }
 
   sprintf(name_lookup, "session.screen%d.toolbar.placement", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Toolbar.Placement", screen_number);
-  screen->saveToolbarPlacement(Toolbar::BottomCenter);
+  screen->resource().saveToolbarPlacement(Toolbar::BottomCenter);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value)) {
     if (! strncasecmp(value.addr, "TopLeft", value.size))
-      screen->saveToolbarPlacement(Toolbar::TopLeft);
+      screen->resource().saveToolbarPlacement(Toolbar::TopLeft);
     else if (! strncasecmp(value.addr, "BottomLeft", value.size))
-      screen->saveToolbarPlacement(Toolbar::BottomLeft);
+      screen->resource().saveToolbarPlacement(Toolbar::BottomLeft);
     else if (! strncasecmp(value.addr, "TopCenter", value.size))
-      screen->saveToolbarPlacement(Toolbar::TopCenter);
+      screen->resource().saveToolbarPlacement(Toolbar::TopCenter);
     else if (! strncasecmp(value.addr, "TopRight", value.size))
-      screen->saveToolbarPlacement(Toolbar::TopRight);
+      screen->resource().saveToolbarPlacement(Toolbar::TopRight);
     else if (! strncasecmp(value.addr, "BottomRight", value.size))
-      screen->saveToolbarPlacement(Toolbar::BottomRight);
+      screen->resource().saveToolbarPlacement(Toolbar::BottomRight);
   }
 
   sprintf(name_lookup,  "session.screen%d.workspaceNames", screen_number);
@@ -911,20 +911,20 @@ void Blackbox::load_rc(BScreen *screen) {
 
   sprintf(name_lookup,  "session.screen%d.toolbar.onTop", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Toolbar.OnTop", screen_number);
-  screen->saveToolbarOnTop(False);
+  screen->resource().saveToolbarOnTop(False);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value) &&
       ! strncasecmp(value.addr, "true", value.size)) {
-    screen->saveToolbarOnTop(True);
+    screen->resource().saveToolbarOnTop(True);
   }
 
   sprintf(name_lookup,  "session.screen%d.toolbar.autoHide", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Toolbar.autoHide", screen_number);
-  screen->saveToolbarAutoHide(False);
+  screen->resource().saveToolbarAutoHide(False);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value) &&
       ! strncasecmp(value.addr, "true", value.size)) {
-    screen->saveToolbarAutoHide(True);
+    screen->resource().saveToolbarAutoHide(True);
   }
 
   sprintf(name_lookup,  "session.screen%d.focusModel", screen_number);

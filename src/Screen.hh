@@ -100,14 +100,19 @@ struct ScreenResource {
   ToolbarConfig tconfig;
   SlitConfig sconfig;
 
-  bool auto_edge_balance, allow_scroll_lock;
+  bool allow_scroll_lock;
   unsigned int workspaces, bevel_width, border_width;
   bt::Color border_color;
 
-  void saveSlitPlacement(int p) { sconfig.placement = p; }
-  void saveSlitDirection(int d) { sconfig.direction = d; }
-  void saveSlitOnTop(bool t)    { sconfig.on_top = t;    }
-  void saveSlitAutoHide(bool t) { sconfig.auto_hide = t; }
+  void saveSlitPlacement(int i) { sconfig.placement = i; }
+  void saveSlitDirection(int i) { sconfig.direction = i; }
+  void saveSlitOnTop(bool b)    { sconfig.on_top = b;    }
+  void saveSlitAutoHide(bool b) { sconfig.auto_hide = b; }
+
+  void saveToolbarOnTop(bool b)       { tconfig.on_top = b;        }
+  void saveToolbarAutoHide(bool b)    { tconfig.auto_hide = b;     }
+  void saveToolbarWidthPercent(int i) { tconfig.width_percent = i; }
+  void saveToolbarPlacement(int i)    { tconfig.placement = i;     }
 };
 
 typedef std::list<BlackboxWindow*> BlackboxWindowList;
@@ -244,11 +249,6 @@ public:
   void saveAutoRaise(bool a) { _resource.wconfig.auto_raise = a; }
   void saveClickRaise(bool c) { _resource.wconfig.click_raise = c; }
   void saveWorkspaces(unsigned int w) { _resource.workspaces = w; }
-  void saveToolbarOnTop(bool r) { _resource.tconfig.on_top = r; }
-  void saveToolbarAutoHide(bool r) { _resource.tconfig.auto_hide = r; }
-  void saveToolbarWidthPercent(int w)
-  { _resource.tconfig.width_percent = w; }
-  void saveToolbarPlacement(int p) { _resource.tconfig.placement = p; }
   void savePlacementPolicy(int p) { _resource.wconfig.placement_policy = p; }
   void saveRowPlacementDirection(int d) { _resource.wconfig.row_direction = d; }
   void saveColPlacementDirection(int d) { _resource.wconfig.col_direction = d; }
