@@ -972,6 +972,20 @@ void Toolbar::HideHandler::timeout(void) {
 }
 
 
+void Toolbar::toggleAutoHide(void) {
+  do_auto_hide = (do_auto_hide) ?  False : True;
+
+  updateStrut();
+  screen->getSlit()->reposition();
+
+  if (do_auto_hide == False && hidden) {
+    // force the slit to be visible
+    if (hide_timer->isTiming()) hide_timer->stop();
+    hide_handler.timeout();
+  }
+}
+
+
 Toolbarmenu::Toolbarmenu(Toolbar *tb) : Basemenu(tb->screen) {
   toolbar = tb;
 
@@ -1016,13 +1030,9 @@ void Toolbarmenu::itemSelected(int button, unsigned int index) {
   }
 
   case 2: { // auto hide
-    toolbar->do_auto_hide = ((toolbar->doAutoHide()) ?  False : True);;
+    toolbar->toggleAutoHide();
     setItemSelected(2, toolbar->do_auto_hide);
 
-    toolbar->updateStrut();
-    getScreen()->getSlit()->reposition();
-
-    toolbar->hide_handler.timeout();
     break;
   }
 

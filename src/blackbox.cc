@@ -333,7 +333,7 @@ void Blackbox::process_event(XEvent *e) {
     if ((win = searchWindow(e->xunmap.window))) {
       win->unmapNotifyEvent(&e->xunmap);
     } else if ((slit = searchSlit(e->xunmap.window))) {
-      slit->removeClient(e->xunmap.window);
+      slit->unmapNotifyEvent(&e->xunmap);
     }
 
     break;
@@ -615,7 +615,6 @@ void Blackbox::process_event(XEvent *e) {
           setFocusedWindow(0);
         }
       }
-
     }
 
     break;

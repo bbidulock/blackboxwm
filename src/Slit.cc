@@ -638,6 +638,29 @@ void Slit::timeout(void) {
 }
 
 
+void Slit::toggleAutoHide(void) {
+  do_auto_hide = (do_auto_hide) ?  False : True;
+
+  updateStrut();
+
+  if (do_auto_hide == False && hidden) {
+    // force the slit to be visible
+    if (timer->isTiming()) timer->stop();
+    timeout();
+  }
+}
+
+
+void Slit::unmapNotifyEvent(XUnmapEvent *e) {
+  XEvent event;
+  if (XCheckTypedEvent(display, ReparentNotify, &event)) {
+    // ignore the unmap and let the Reparent handler deal with it
+    return;
+  }
+  removeClient(e->window);
+}
+
+
 Slitmenu::Slitmenu(Slit *sl) : Basemenu(sl->screen) {
   slit = sl;
 
@@ -684,12 +707,9 @@ void Slitmenu::itemSelected(int button, unsigned int index) {
   }
 
   case 2: { // auto hide
-    slit->do_auto_hide = ((slit->doAutoHide()) ?  False : True);;
+    slit->toggleAutoHide();
     setItemSelected(3, slit->do_auto_hide);
 
-    slit->updateStrut();
-
-    slit->timeout(); // hide or unhide self
     break;
   }
   } // switch

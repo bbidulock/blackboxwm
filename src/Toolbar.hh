@@ -158,6 +158,7 @@ public:
 
   void edit(void);
   void reconfigure(void);
+  void toggleAutoHide(void);
 
   void redrawWindowLabel(bool redraw = False);
   void redrawWorkspaceLabel(bool redraw = False);

@@ -167,11 +167,13 @@ public:
   void updateSlit(void);
   void reposition(void);
   void shutdown(void);
+  void toggleAutoHide(void);
 
   void buttonPressEvent(XButtonEvent *e);
   void enterNotifyEvent(XCrossingEvent * /*unused*/);
   void leaveNotifyEvent(XCrossingEvent * /*unused*/);
   void configureRequestEvent(XConfigureRequestEvent *e);
+  void unmapNotifyEvent(XUnmapEvent *e);
 
   virtual void timeout(void);
 
