@@ -861,6 +861,7 @@ void bt::Menu::motionNotifyEvent(const XMotionEvent * const event) {
   Rect r(_irect.x(), _irect.y(), _itemw, 0);
   int row = 0, col = 0;
   unsigned int index = 0;
+  const unsigned int old_active = _active_index;
   const ItemList::iterator &end = _items.end();
   ItemList::iterator it;
   for (it = _items.begin(); it != end; ++it, ++index) {
@@ -876,7 +877,7 @@ void bt::Menu::motionNotifyEvent(const XMotionEvent * const event) {
     positionRect(r, row, col);
   }
 
-  if (menudelay.showmenu || menudelay.hidemenu)
+  if (_active_index != old_active)
     _timer.start();
 }
 
