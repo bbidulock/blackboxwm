@@ -897,9 +897,16 @@ void BScreen::unmanageWindow(BlackboxWindow *w) {
 
   windowList.remove(w);
 
+  if (blackbox->getFocusedWindow() == w)
+    blackbox->setFocusedWindow((BlackboxWindow *) 0);
+
   getToolbar()->redrawWindowLabel(True);
 
   removeNetizen(w->getClientWindow());
+
+  delete w;
+
+  w = (BlackboxWindow*) 0;
 }
 
 

@@ -383,7 +383,6 @@ BlackboxWindow::~BlackboxWindow(void) {
 
   if (flags.managed) {
     blackbox->removeWindowSearch(client.window);
-    screen->unmanageWindow(this);
   }
 }
 
@@ -2173,7 +2172,10 @@ void BlackboxWindow::mapNotifyEvent(XMapEvent *ne) {
 }
 
 
-void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *) {
+void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
+  if (ue->window != client.window || ! validateClient())
+    return;
+
 #ifdef    DEBUG
   fprintf(stderr, i18n(WindowSet, WindowUnmapNotify,
                        "BlackboxWindow::unmapNotifyEvent() for 0x%lx\n"),
@@ -2203,18 +2205,24 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *) {
 
   XFlush(display);
 
-  delete this;
+  screen->unmanageWindow(this);
 }
 
 
-void BlackboxWindow::destroyNotifyEvent(XDestroyWindowEvent *) {
+void BlackboxWindow::destroyNotifyEvent(XDestroyWindowEvent *de) {
+  if (de->window != client.window)
+    return;
+
   XUnmapWindow(display, frame.window);
 
-  delete this;
+  screen->unmanageWindow(this);
 }
 
 
-void BlackboxWindow::reparentNotifyEvent(XReparentEvent *) {
+void BlackboxWindow::reparentNotifyEvent(XReparentEvent *re) {
+  if (re->window != client.window)
+    return;
+
 #ifdef    DEBUG
   fprintf(stderr,
           i18n(WindowSet, WindowReparentNotify,
@@ -2223,7 +2231,8 @@ void BlackboxWindow::reparentNotifyEvent(XReparentEvent *) {
 #endif // DEBUG
 
   restoreGravity();
-  delete this;
+
+  screen->unmanageWindow(this);
 }
 
 

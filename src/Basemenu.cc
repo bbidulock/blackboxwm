@@ -211,7 +211,7 @@ int Basemenu::insert(BasemenuItem *item, int pos) {
   if (pos < 0) {
     menuitems.push_back(item);
   } else {
-    assert(pos >= (signed)menuitems.size());
+    assert(pos < (signed)menuitems.size());
     menuitems.insert((menuitems.begin() + pos), item);
   }
   return menuitems.size();
