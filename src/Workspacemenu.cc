@@ -27,9 +27,6 @@
 #include "Iconmenu.hh"
 #include "Screen.hh"
 #include "Workspace.hh"
-#include "../nls/blackbox-nls.hh"
-
-#include <i18n.hh>
 
 #include <assert.h>
 
@@ -45,14 +42,11 @@ Workspacemenu::Workspacemenu(bt::Application &app, unsigned int screen,
                              BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen) {
   setAutoDelete(false);
-  setTitle(bt::i18n(WorkspacemenuSet, WorkspacemenuWorkspacesTitle,
-                    "Workspaces"));
+  setTitle("Workspaces");
   showTitle();
 
-  insertItem(bt::i18n(WorkspacemenuSet, WorkspacemenuNewWorkspace,
-                      "New Workspace"), NewWorkspace);
-  insertItem(bt::i18n(WorkspacemenuSet, WorkspacemenuRemoveLast,
-                      "Remove Last"), RemoveLastWorkspace);
+  insertItem("New Workspace", NewWorkspace);
+  insertItem("Remove Last Workspace", RemoveLastWorkspace);
   insertSeparator();
 }
 
@@ -73,8 +67,7 @@ void Workspacemenu::setWorkspaceChecked(unsigned int id, bool checked)
 
 void Workspacemenu::insertIconMenu(Iconmenu *iconmenu) {
   insertSeparator();
-  insertItem(bt::i18n(IconSet, IconIcons, "Icons"), iconmenu,
-             Icons);
+  insertItem("Iconified Windows", iconmenu, Icons);
 }
 
 
