@@ -1102,8 +1102,8 @@ void BlackboxWindow::getWMNormalHints(void) {
     rendering bugs.
   */
   const bt::Rect& screen_area = screen->getRect();
-  client.max_width = screen_area.width();
-  client.max_height = screen_area.height();
+  client.max_width = (unsigned)-1;
+  client.max_height = (unsigned)-1;
 
   if (! XGetWMNormalHints(blackbox->getXDisplay(), client.window,
                           &sizehint, &icccm_mask))
