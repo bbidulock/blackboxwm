@@ -214,11 +214,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
       place_window = False;
   }
 
-#ifdef    SHAPE
-  if (blackbox->hasShapeExtensions() && flags.shaped)
-    configureShape();
-#endif // SHAPE
-
   /*
     the server needs to be grabbed here to prevent client's from sending
     events while we are in the process of configuring their window.
@@ -247,6 +242,11 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   positionWindows();
 
   XUngrabServer(blackbox->getXDisplay());
+
+#ifdef    SHAPE
+  if (blackbox->hasShapeExtensions() && flags.shaped)
+    configureShape();
+#endif // SHAPE
 
   // now that we know where to put the window and what it should look like
   // we apply the decorations
