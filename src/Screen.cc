@@ -1286,7 +1286,9 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
           break;
 
         case 333: // nop
-          menu->insert("");
+          if (! *label)
+            label[0] = '\0';
+          menu->insert(label);
 
           break;
 
