@@ -52,10 +52,18 @@ public:
   void addWindow(BlackboxWindow *win);
   void removeWindow(BlackboxWindow *win);
 
+  inline BlackboxWindow *focusedWindow(void) const
+  { return focused_window; }
+  inline void setFocusedWindow(BlackboxWindow *win)
+  { focused_window = win; }
+  inline void clearFocusedWindow(void)
+  { focused_window = 0; }
+
 private:
   BScreen *_screen;
   Clientmenu *clientmenu;
   unsigned int _id;
+  BlackboxWindow *focused_window;
 };
 
 #endif // __Workspace_hh

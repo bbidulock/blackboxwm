@@ -476,7 +476,8 @@ void BScreen::removeLastWorkspace(void) {
 
 
 void BScreen::setCurrentWorkspace(unsigned int id) {
-  if (id == current_workspace) return;
+  if (id == current_workspace)
+    return;
 
   assert(id < workspacesList.size());
 
@@ -485,6 +486,8 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
   // show the empty window... this will prevent unnecessary exposure
   // of the root window
   XMapWindow(_blackbox->XDisplay(), empty_window);
+
+  BlackboxWindow * const focused_window = _blackbox->focusedWindow();
 
   {
     _workspacemenu->setWorkspaceChecked(current_workspace, false);
@@ -496,6 +499,15 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
       BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(*it);
       if (win && win->workspace() == current_workspace)
         win->hide();
+    }
+
+    Workspace *workspace = findWorkspace(current_workspace);
+    assert(workspace != 0);
+    if (focused_window && focused_window->workspace() != bt::BSENTINEL) {
+      // remember the window that last had focus
+      workspace->setFocusedWindow(focused_window);
+    } else {
+      workspace->clearFocusedWindow();
     }
   }
 
@@ -510,10 +522,34 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
       if (win && win->workspace() == current_workspace)
         win->show();
     }
+
+    if (!focused_window || focused_window->workspace() != bt::BSENTINEL) {
+      Workspace *workspace = findWorkspace(current_workspace);
+      assert(workspace != 0);
+
+      if (workspace->focusedWindow()) {
+        // focus the window that last had focus
+        workspace->focusedWindow()->setInputFocus();
+      } else {
+        // focus the top-most window in the stack
+        StackingList::iterator it = stackingList.begin(),
+                              end = stackingList.end();
+        for (; it != end; ++it) {
+          BlackboxWindow * const tmp = dynamic_cast<BlackboxWindow *>(*it);
+          if (!tmp
+              || !tmp->isVisible()
+              || (tmp->workspace() != current_workspace
+                  && tmp->workspace() != bt::BSENTINEL))
+            continue;
+          if (tmp->setInputFocus())
+            break;
+        }
+      }
+    }
   }
 
   _blackbox->netwm().setCurrentDesktop(screen_info.rootWindow(),
-                                      current_workspace);
+                                       current_workspace);
 
   XUnmapWindow(_blackbox->XDisplay(), empty_window);
 
@@ -624,8 +660,11 @@ void BScreen::unmanageWindow(BlackboxWindow *win) {
     _iconmenu->removeItem(win->windowNumber());
   } else {
     Workspace *workspace = findWorkspace(win->workspace());
-    if (workspace)
+    if (workspace) {
       workspace->menu()->removeItem(win->windowNumber());
+      if (workspace->focusedWindow() == win)
+        workspace->clearFocusedWindow();
+    }
   }
 
   if (_blackbox->running() && win->isFocused()) {

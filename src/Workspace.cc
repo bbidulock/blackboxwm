@@ -40,6 +40,8 @@ Workspace::Workspace(BScreen *scrn, unsigned int i) {
   clientmenu = new Clientmenu(*_screen->blackbox(), *_screen, _id);
 
   setName(_screen->resource().nameOfWorkspace(i));
+
+  focused_window = 0;
 }
 
 
