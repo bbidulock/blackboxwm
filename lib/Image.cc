@@ -27,6 +27,7 @@
 
 extern "C" {
 #include <stdio.h>
+#include <math.h>
 }
 
 #include <algorithm>
@@ -46,8 +47,6 @@ bt::Image::Image(bt::ImageControl *c, int w, int h) {
   red = new unsigned char[width * height];
   green = new unsigned char[width * height];
   blue = new unsigned char[width * height];
-
-  xtable = ytable = (unsigned int *) 0;
 
   cpc = control->getColorsPerChannel();
   cpccpc = cpc * cpc;
@@ -153,8 +152,6 @@ Pixmap bt::Image::render_gradient(const bt::Texture &texture) {
 
     if (texture.texture() & bt::Texture::Invert) inverted = True;
   }
-
-  control->getGradientBuffers(width, height, &xtable, &ytable);
 
   if (texture.texture() & bt::Texture::Diagonal) dgradient();
   else if (texture.texture() & bt::Texture::Elliptic) egradient();
@@ -704,6 +701,7 @@ void bt::Image::dgradient(void) {
     xg = (float) from.green(),
     xb = (float) from.blue();
   unsigned char *pr = red, *pg = green, *pb = blue;
+  unsigned int xtable[6000], ytable[6000];
   unsigned int w = width * 2, h = height * 2, *xt = xtable, *yt = ytable;
 
   register unsigned int x, y;
@@ -970,6 +968,7 @@ void bt::Image::pgradient(void) {
     xr, xg, xb;
   int rsign, gsign, bsign;
   unsigned char *pr = red, *pg = green, *pb = blue;
+  unsigned int xtable[2048], ytable[2048];
   unsigned int tr = to.red(), tg = to.green(), tb = to.blue(),
     *xt = xtable, *yt = ytable;
 
@@ -1079,6 +1078,7 @@ void bt::Image::rgradient(void) {
   float drx, dgx, dbx, dry, dgy, dby, xr, xg, xb, yr, yg, yb;
   int rsign, gsign, bsign;
   unsigned char *pr = red, *pg = green, *pb = blue;
+  unsigned int xtable[2048], ytable[2048];
   unsigned int tr = to.red(), tg = to.green(), tb = to.blue(),
     *xt = xtable, *yt = ytable;
 
@@ -1194,6 +1194,7 @@ void bt::Image::egradient(void) {
   float drx, dgx, dbx, dry, dgy, dby, yr, yg, yb, xr, xg, xb;
   int rsign, gsign, bsign;
   unsigned char *pr = red, *pg = green, *pb = blue;
+  unsigned int xtable[2048], ytable[2048];
   unsigned int *xt = xtable, *yt = ytable,
     tr = (unsigned long) to.red(),
     tg = (unsigned long) to.green(),
@@ -1250,11 +1251,11 @@ void bt::Image::egradient(void) {
     for (yt = ytable, y = 0; y < height; y++, yt += 3) {
       for (xt = xtable, x = 0; x < width; x++) {
         *(pr++) = (unsigned char)
-          (tr - (rsign * control->getSqrt(*(xt++) + *(yt))));
+          (tr - (rsign * static_cast<int>(sqrt((*(xt++) + *(yt))))));
         *(pg++) = (unsigned char)
-          (tg - (gsign * control->getSqrt(*(xt++) + *(yt + 1))));
+          (tg - (gsign * static_cast<int>(sqrt((*(xt++) + *(yt + 1))))));
         *(pb++) = (unsigned char)
-          (tb - (bsign * control->getSqrt(*(xt++) + *(yt + 2))));
+          (tb - (bsign * static_cast<int>(sqrt((*(xt++) + *(yt + 2))))));
       }
     }
   } else {
@@ -1265,37 +1266,37 @@ void bt::Image::egradient(void) {
       for (xt = xtable, x = 0; x < width; x++) {
         if (y & 1) {
           channel = (unsigned char)
-            (tr - (rsign * control->getSqrt(*(xt++) + *(yt))));
+            (tr - (rsign * static_cast<int>(sqrt((*(xt++) + *(yt))))));
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pr++) = channel2;
 
           channel = (unsigned char)
-            (tg - (gsign * control->getSqrt(*(xt++) + *(yt + 1))));
+            (tg - (gsign * static_cast<int>(sqrt((*(xt++) + *(yt + 1))))));
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pg++) = channel2;
 
           channel = (unsigned char)
-            (tb - (bsign * control->getSqrt(*(xt++) + *(yt + 2))));
+            (tb - (bsign * static_cast<int>(sqrt((*(xt++) + *(yt + 2))))));
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pb++) = channel2;
         } else {
           channel = (unsigned char)
-            (tr - (rsign * control->getSqrt(*(xt++) + *(yt))));
+            (tr - (rsign * static_cast<int>(sqrt((*(xt++) + *(yt))))));
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pr++) = channel2;
 
           channel = (unsigned char)
-          (tg - (gsign * control->getSqrt(*(xt++) + *(yt + 1))));
+          (tg - (gsign * static_cast<int>(sqrt((*(xt++) + *(yt + 1))))));
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pg++) = channel2;
 
           channel = (unsigned char)
-            (tb - (bsign * control->getSqrt(*(xt++) + *(yt + 2))));
+            (tb - (bsign * static_cast<int>(sqrt((*(xt++) + *(yt + 2))))));
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pb++) = channel2;
@@ -1314,6 +1315,7 @@ void bt::Image::pcgradient(void) {
   float drx, dgx, dbx, dry, dgy, dby, xr, xg, xb, yr, yg, yb;
   int rsign, gsign, bsign;
   unsigned char *pr = red, *pg = green, *pb = blue;
+  unsigned int xtable[2048], ytable[2048];
   unsigned int *xt = xtable, *yt = ytable,
     tr = to.red(),
     tg = to.green(),
@@ -1433,6 +1435,7 @@ void bt::Image::cdgradient(void) {
     xg = (float) from.green(),
     xb = (float) from.blue();
   unsigned char *pr = red, *pg = green, *pb = blue;
+  unsigned int xtable[2048], ytable[2048];
   unsigned int w = width * 2, h = height * 2, *xt, *yt;
 
   register unsigned int x, y;

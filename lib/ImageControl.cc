@@ -42,24 +42,11 @@ extern "C" {
 #include "Image.hh"
 #include "Texture.hh"
 
-static unsigned long bsqrt(unsigned long x) {
-  if (x <= 0) return 0;
-  if (x == 1) return 1;
-
-  unsigned long r = x >> 1;
-  unsigned long q;
-
-  while (1) {
-    q = x / r;
-    if (q >= r) return r;
-    r = (r + q) >> 1;
-  }
-}
 
 bt::ImageControl *ctrl = 0;
 
 bt::ImageControl::ImageControl(TimerQueueManager *app,
-                               Display &_display, 
+                               Display &_display,
                                const ScreenInfo *scrn,
                                bool _dither, int _cpc,
                                unsigned long cache_timeout,
@@ -82,11 +69,6 @@ bt::ImageControl::ImageControl(TimerQueueManager *app,
 
   colors = (XColor *) 0;
   ncolors = 0;
-
-  grad_xbuffer = grad_ybuffer = (unsigned int *) 0;
-  grad_buffer_width = grad_buffer_height = 0;
-
-  sqrt_table = (unsigned long *) 0;
 
   screen_depth = screeninfo->getDepth();
   window = screeninfo->getRootWindow();
@@ -321,10 +303,6 @@ bt::ImageControl::ImageControl(TimerQueueManager *app,
 
 
 bt::ImageControl::~ImageControl(void) {
-  delete [] sqrt_table;
-  delete [] grad_xbuffer;
-  delete [] grad_ybuffer;
-
   if (colors) {
     unsigned long *pixels = new unsigned long [ncolors];
 
@@ -456,33 +434,6 @@ void bt::ImageControl::getXColorTable(XColor **c, int *n) {
 }
 
 
-void bt::ImageControl::getGradientBuffers(unsigned int w,
-				       unsigned int h,
-				       unsigned int **xbuf,
-				       unsigned int **ybuf) {
-  if (w > grad_buffer_width) {
-    if (grad_xbuffer)
-      delete [] grad_xbuffer;
-
-    grad_buffer_width = w;
-
-    grad_xbuffer = new unsigned int[grad_buffer_width * 3];
-  }
-
-  if (h > grad_buffer_height) {
-    if (grad_ybuffer)
-      delete [] grad_ybuffer;
-
-    grad_buffer_height = h;
-
-    grad_ybuffer = new unsigned int[grad_buffer_height * 3];
-  }
-
-  *xbuf = grad_xbuffer;
-  *ybuf = grad_ybuffer;
-}
-
-
 void bt::ImageControl::installRootColormap(void) {
   int ncmap = 0;
   Colormap *cmaps =
@@ -507,20 +458,6 @@ void bt::ImageControl::setColorsPerChannel(int cpc) {
   if (cpc > 6) cpc = 6;
 
   colors_per_channel = cpc;
-}
-
-
-unsigned long bt::ImageControl::getSqrt(unsigned int x) {
-  if (! sqrt_table) {
-    // build sqrt table for use with elliptic gradient
-
-    sqrt_table = new unsigned long[(256 * 256 * 2) + 1];
-
-    for (int i = 0; i < (256 * 256 * 2); i++)
-      *(sqrt_table + i) = bsqrt(i);
-  }
-
-  return (*(sqrt_table + x));
 }
 
 

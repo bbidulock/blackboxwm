@@ -51,7 +51,7 @@ namespace bt {
     int red_offset, green_offset, blue_offset, red_bits, green_bits, blue_bits,
       ncolors, cpc, cpccpc;
     unsigned char *red, *green, *blue, *red_table, *green_table, *blue_table;
-    unsigned int width, height, *xtable, *ytable;
+    unsigned int width, height;
 
     void TrueColorDither(unsigned int bit_depth, int bytes_per_line,
                          unsigned char *pixel_data);
@@ -118,8 +118,6 @@ namespace bt {
     inline int getColorsPerChannel(void) const
     { return colors_per_channel; }
 
-    unsigned long getSqrt(unsigned int x);
-
     Pixmap renderImage(unsigned int width, unsigned int height,
                        const Texture &texture);
 
@@ -130,8 +128,6 @@ namespace bt {
                         int *roff, int *goff, int *boff,
                         int *rbit, int *gbit, int *bbit);
     void getXColorTable(XColor **c, int *n);
-    void getGradientBuffers(unsigned int w, unsigned int h,
-                            unsigned int **xbuf, unsigned int **ybuf);
     void setDither(bool d) { dither = d; }
     void setColorsPerChannel(int cpc);
 
@@ -152,9 +148,7 @@ namespace bt {
       red_bits, green_bits, blue_bits;
     unsigned char red_color_table[256], green_color_table[256],
       blue_color_table[256];
-    unsigned int *grad_xbuffer, *grad_ybuffer, grad_buffer_width,
-      grad_buffer_height;
-    unsigned long *sqrt_table, cache_max;
+    unsigned long cache_max;
 
     typedef std::list<CachedImage> CacheContainer;
     CacheContainer cache;
