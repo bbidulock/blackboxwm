@@ -129,7 +129,7 @@ private:
   TimerQueue timerList;
 
   char *display_name, *application_name;
-  int number_of_screens, colors_per_channel;
+  int screen_count, colors_per_channel;
 
 
 protected:
@@ -269,6 +269,7 @@ public:
 
 #endif // NEWWMSPEC
 
+  int screenCount() const { return screen_count; }
   ScreenInfo *screenInfo( int s ) { return (ScreenInfo *) screenInfoList->find( s ); }
 
   inline const Bool &hasShapeExtensions(void) const
@@ -294,8 +295,6 @@ public:
   inline const char *getApplicationName(void) const
   { return (const char *) application_name; }
 
-  inline const int &getNumberOfScreens(void) const
-  { return number_of_screens; }
   inline const int &getShapeEventBase(void) const
   { return shape.event_basep; }
 

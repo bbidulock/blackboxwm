@@ -192,7 +192,7 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
 #endif // HAVE_GETPID
 
   screenList = new LinkedList<BScreen>;
-  for ( int i = 0; i < getNumberOfScreens(); i++ ) {
+  for ( int i = 0; i < screenCount(); i++ ) {
     BScreen *screen = new BScreen( this, i );
 
     if (! screen->isScreenManaged()) {

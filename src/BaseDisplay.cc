@@ -226,7 +226,7 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name)
     ::exit(2);
   }
 
-  number_of_screens = ScreenCount(_display);
+  screen_count = ScreenCount(_display);
   display_name = XDisplayName(dpy_name);
 
 #ifdef    SHAPE
@@ -317,7 +317,7 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name)
   XSetErrorHandler((XErrorHandler) handleXErrors);
 
   screenInfoList = new LinkedList<ScreenInfo>;
-  for (int i = 0; i < number_of_screens; i++) {
+  for (int i = 0; i < screenCount(); i++) {
     ScreenInfo *screeninfo = new ScreenInfo(this, i);
     screenInfoList->insert(screeninfo);
   }
@@ -487,24 +487,37 @@ void BaseDisplay::process_event(XEvent *e)
     widget = (*it).second;
 
   if (! widget) {
-    // unknown window
-    if (popwidget) {
-      // close all popups
-      switch(e->type) {
-      case ButtonPress:
-      case ButtonRelease:
-      case KeyPress:
-      case KeyRelease:
-        do {
-          popwidget->hide();
-        } while (popwidget);
-        return;
+    // unknown window - perhaps a root window?
+    bool root = false;
+    int i;
+    for (i = 0; ! root && i < screenCount(); i++) {
+      if (screenInfo(i)->rootWindow() == e->xany.window)
+        root = true;
+    }
 
-      default:
-        break;
+    if (popwidget) {
+      if (root) {
+        widget = popwidget;
+      } else {
+        // close all popups
+        switch(e->type) {
+        case ButtonPress:
+        case ButtonRelease:
+        case KeyPress:
+        case KeyRelease:
+          do {
+            popwidget->hide();
+          } while (popwidget);
+          return;
+
+        default:
+          break;
+        }
       }
     }
-    return;
+
+    if (! widget)
+      return;
   }
 
 #define CHECK_MOUSE_POPUP() \
@@ -536,7 +549,7 @@ void BaseDisplay::process_event(XEvent *e)
       XEvent realevent;
       unsigned int i = 0;
       while(XCheckTypedWindowEvent(*this, e->xmotion.window, MotionNotify,
-                                     &realevent))
+                                   &realevent))
         i++;
       if (i > 0)
         e = &realevent;
@@ -547,8 +560,8 @@ void BaseDisplay::process_event(XEvent *e)
 
   case EnterNotify:
     if (e->xcrossing.mode != NotifyNormal ||
-         e->xcrossing.detail == NotifyVirtual  ||
-         e->xcrossing.detail == NotifyNonlinearVirtual)
+        e->xcrossing.detail == NotifyVirtual  ||
+        e->xcrossing.detail == NotifyNonlinearVirtual)
       break;
     widget->enterEvent(e);
     break;
@@ -580,7 +593,7 @@ void BaseDisplay::process_event(XEvent *e)
       XEvent realevent;
       unsigned int i = 0;
       while(XCheckTypedWindowEvent(*this, e->xconfigure.window, ConfigureNotify,
-                                    &realevent))
+                                   &realevent))
         i++;
       if (i > 0)
         e = &realevent;
@@ -598,16 +611,16 @@ void BaseDisplay::process_event(XEvent *e)
 
   case FocusIn:
     if (e->xfocus.detail != NotifyAncestor &&
-         e->xfocus.detail != NotifyInferior &&
-         e->xfocus.detail != NotifyNonlinear)
+        e->xfocus.detail != NotifyInferior &&
+        e->xfocus.detail != NotifyNonlinear)
       break;
     widget->focusInEvent(e);
     break;
 
   case FocusOut:
     if (e->xfocus.detail != NotifyAncestor &&
-         e->xfocus.detail != NotifyInferior &&
-         e->xfocus.detail != NotifyNonlinear)
+        e->xfocus.detail != NotifyInferior &&
+        e->xfocus.detail != NotifyNonlinear)
       break;
     widget->focusOutEvent(e);
     break;
@@ -619,9 +632,9 @@ void BaseDisplay::process_event(XEvent *e)
       unsigned int i = 0;
       Rect r(e->xexpose.x, e->xexpose.y, e->xexpose.width, e->xexpose.height);
       while (XCheckTypedWindowEvent(*this, e->xexpose.window,
-                                      Expose, &realevent)) {
+                                    Expose, &realevent)) {
         Rect r2(realevent.xexpose.x, realevent.xexpose.y,
-                 realevent.xexpose.width, realevent.xexpose.height);
+                realevent.xexpose.width, realevent.xexpose.height);
         if (r.intersects(r2)) {
           // merge expose area
           r |= r2;

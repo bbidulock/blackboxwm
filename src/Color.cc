@@ -200,7 +200,7 @@ void BColor::doCacheCleanup()
     unsigned long *pixels = new unsigned long[ colorcache.size() ];
     int i, count;
 
-    for ( i = 0; i < display->getNumberOfScreens(); i++ ) {
+    for ( i = 0; i < display->screenCount(); i++ ) {
 	count = 0;
 	ColorCache::iterator it = colorcache.begin();
 	while ( it != colorcache.end() ) {
