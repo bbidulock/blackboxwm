@@ -166,6 +166,8 @@ void StackingList::remove(BlackboxWindow* w) {
 
 
 BlackboxWindow* StackingList::front(void) const {
+  assert(stack.size() > 5);
+
   if (*fullscreen) return *fullscreen;
   if (*above) return *above;
   if (*normal) return *normal;
@@ -174,7 +176,20 @@ BlackboxWindow* StackingList::front(void) const {
   assert(0);
 
   // this point is never reached, but the compiler doesn't know that.
-  // so, we shut it up
+  return (BlackboxWindow*) 0;
+}
+
+
+BlackboxWindow* StackingList::back(void) const {
+  assert(stack.size() > 5);
+
+  WindowStack::const_iterator it = desktop, _end = stack.begin();
+  for (--it; it != _end; --it) {
+    if (*it)
+      return *it;
+  }
+  assert(0);
+
   return (BlackboxWindow*) 0;
 }
 
@@ -204,7 +219,6 @@ void Workspace::addWindow(BlackboxWindow *w, bool place) {
   w->setWindowNumber(wid);
 
   stackingList.insert(w);
-  windowList.push_back(w);
 
   if (! w->isIconic())
     raiseWindow(w);
@@ -224,10 +238,9 @@ void Workspace::removeWindow(BlackboxWindow *w) {
 
   screen->updateClientListStackingHint();
 
-  windowList.remove(w);
   clientmenu->removeItem(w->getWindowNumber());
 
-  if (windowList.empty())
+  if (stackingList.empty())
     cascade_x = cascade_y = 32;
 }
 
@@ -250,8 +263,8 @@ void Workspace::focusFallback(const BlackboxWindow *old_window) {
     }
 
     if (! newfocus) {
-      BlackboxWindowList::iterator it = stackingList.begin(),
-                                  end = stackingList.end();
+      StackingList::iterator it = stackingList.begin(),
+        end = stackingList.end();
       for (; it != end; ++it) {
         BlackboxWindow *tmp = *it;
         if (tmp && tmp->setInputFocus()) {
@@ -278,9 +291,10 @@ void Workspace::focusFallback(const BlackboxWindow *old_window) {
 
 
 void Workspace::transferWindows(Workspace& wkspc) {
-  while (! windowList.empty()) {
-    wkspc.addWindow(windowList.back());
-    windowList.pop_back();
+  while (! stackingList.empty()) {
+    BlackboxWindow* w = stackingList.back();
+    wkspc.addWindow(w);
+    stackingList.remove(w);
   }
 }
 
@@ -453,16 +467,20 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
 
 void Workspace::reconfigure(void) {
   clientmenu->reconfigure();
-  std::for_each(windowList.begin(), windowList.end(),
-                std::mem_fun(&BlackboxWindow::reconfigure));
+  StackingList::iterator it = stackingList.begin(), end = stackingList.end();
+  for (; it != end; ++it)
+    if (*it) (*it)->reconfigure();
 }
 
 
 BlackboxWindow *Workspace::getWindow(unsigned int index) {
-  if (index < windowList.size()) {
-    BlackboxWindowList::iterator it = windowList.begin();
-    std::advance(it, index);
-    return *it;
+  if (index < stackingList.size()) {
+    StackingList::iterator it = stackingList.begin(),
+      end = stackingList.end();
+    for (; it != end; ++it) {
+      if (*it && (*it)->getWindowNumber() == index)
+        return *it;
+    }
   }
 
   return 0;
@@ -471,25 +489,25 @@ BlackboxWindow *Workspace::getWindow(unsigned int index) {
 
 BlackboxWindow*
 Workspace::getNextWindowInList(BlackboxWindow *w) {
-  BlackboxWindowList::iterator it = std::find(windowList.begin(),
-                                              windowList.end(),
-                                              w);
-  assert(it != windowList.end());   // window must be in list
-  ++it;                             // next window
-  if (it == windowList.end())
-    return windowList.front();      // if we walked off the end, wrap around
+  StackingList::iterator it = std::find(stackingList.begin(),
+                                        stackingList.end(),
+                                        w);
+  assert(it != stackingList.end());   // window must be in list
+  ++it;                               // next window
+  if (it == stackingList.end())
+    return stackingList.front();      // if we walked off the end, wrap around
 
   return *it;
 }
 
 
 BlackboxWindow* Workspace::getPrevWindowInList(BlackboxWindow *w) {
-  BlackboxWindowList::iterator it = std::find(windowList.begin(),
-                                              windowList.end(),
-                                              w);
-  assert(it != windowList.end()); // window must be in list
-  if (it == windowList.begin())
-    return windowList.back();     // if we walked of the front, wrap around
+  StackingList::iterator it = std::find(stackingList.begin(),
+                                        stackingList.end(),
+                                        w);
+  assert(it != stackingList.end()); // window must be in list
+  if (it == stackingList.begin())
+    return stackingList.back();     // if we walked of the front, wrap around
 
   return *(--it);
 }
@@ -502,7 +520,7 @@ BlackboxWindow* Workspace::getTopWindowOnStack(void) const {
 
 
 unsigned int Workspace::getCount(void) const {
-  return windowList.size();
+  return stackingList.size();
 }
 
 
@@ -531,10 +549,8 @@ void Workspace::hide(void) {
 void Workspace::show(void) {
   StackingList::iterator it = stackingList.begin(),
     end = stackingList.end();
-  for (; it != end; ++it) {
-    if (*it)
-      (*it)->show();
-  }
+  for (; it != end; ++it)
+    if (*it) (*it)->show();
 
   XSync(screen->getBlackbox()->getXDisplay(), False);
 
@@ -550,11 +566,6 @@ void Workspace::show(void) {
 
 bool Workspace::isCurrent(void) const {
   return (id == screen->getCurrentWorkspaceID());
-}
-
-
-bool Workspace::isLastWindow(const BlackboxWindow* const w) const {
-  return (w == windowList.back());
 }
 
 
@@ -681,12 +692,12 @@ bool Workspace::smartPlacement(bt::Rect& win, const bt::Rect& availableArea) {
   spaces.push_back(availableArea); //initially the entire screen is free
 
   //Find Free Spaces
-  BlackboxWindowList::const_iterator wit = windowList.begin(),
-    end = windowList.end();
+  StackingList::const_iterator wit = stackingList.begin(),
+    end = stackingList.end();
   bt::Rect tmp;
   for (; wit != end; ++wit) {
     const BlackboxWindow* const curr = *wit;
-    if (curr->isShaded()) continue;
+    if (! curr || curr->isShaded()) continue;
 
     tmp.setRect(curr->frameRect().x(), curr->frameRect().y(),
                 curr->frameRect().width() + screen->getBorderWidth(),
@@ -801,8 +812,6 @@ void
 Workspace::updateClientListStacking(bt::Netwm::WindowList& clientList) const {
   StackingList::const_iterator it = stackingList.begin(),
     end = stackingList.end();
-  for (; it != end; ++it) {
-    if (*it)
-      clientList.push_back((*it)->getClientWindow());
-  }
+  for (; it != end; ++it)
+    if (*it) clientList.push_back((*it)->getClientWindow());
 }

@@ -61,6 +61,7 @@ public:
   bool empty(void) const { return (stack.size() == 5); }
   WindowStack::size_type size(void) const { return stack.size() - 5; }
   BlackboxWindow* front(void) const;
+  BlackboxWindow* back(void) const;
   iterator begin(void) { return stack.begin(); }
   iterator end(void) { return stack.end(); }
   reverse_iterator rbegin(void) { return stack.rbegin(); }
@@ -76,21 +77,17 @@ private:
 };
 
 
-class Workspace {
+class Workspace: public bt::NoCopy {
 private:
   BScreen *screen;
   BlackboxWindow *lastfocus;
   Clientmenu *clientmenu;
 
-  BlackboxWindowList windowList;
   StackingList stackingList;
 
   std::string name;
   unsigned int id;
   unsigned int cascade_x, cascade_y;
-
-  Workspace(const Workspace&);
-  Workspace& operator=(const Workspace&);
 
   void raiseTransients(const BlackboxWindow * const win,
                        WindowStack& stack);
@@ -124,7 +121,6 @@ public:
   void focusFallback(const BlackboxWindow *old_window);
 
   bool isCurrent(void) const;
-  bool isLastWindow(const BlackboxWindow* w) const;
 
   void addWindow(BlackboxWindow *w, bool place = False);
   void removeWindow(BlackboxWindow *w);
