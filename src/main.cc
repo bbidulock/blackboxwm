@@ -22,6 +22,15 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+// #define PRINT_SIZES
+
+#if defined(PRINT_SIZES)
+#  include "Screen.hh"
+#  include "Slit.hh"
+#  include "Toolbar.hh"
+#  include "Window.hh"
+#endif
+
 #include "blackbox.hh"
 #include "../version.h"
 
@@ -120,6 +129,19 @@ int main(int argc, char **argv) {
   if (rc_file.empty())
     rc_file = "~/.blackboxrc";
   rc_file = bt::expandTilde(rc_file);
+
+#if defined(PRINT_SIZES)
+  printf("Blackbox      : %4d bytes\n"
+         "BScreen       : %4d bytes\n"
+         "BlackboxWindow: %4d bytes\n"
+         "Toolbar       : %4d bytes\n"
+         "Slit          : %4d bytes\n",
+         sizeof(Blackbox),
+         sizeof(BScreen),
+         sizeof(BlackboxWindow),
+         sizeof(Toolbar),
+         sizeof(Slit));
+#endif
 
   Blackbox blackbox(argv, dpy_name, rc_file, multi_head);
   blackbox.run();
