@@ -259,19 +259,17 @@ static unsigned int countTransients(const BlackboxWindow * const win) {
  * stack[1], etc...
  */
 void Workspace::raiseTransients(const BlackboxWindow * const win,
-                                WindowStack::iterator &stack) {
+                                WindowStack& stack) {
   if (win->getTransients().empty()) return; // nothing to do
 
   // put win's transients in the stack
   BlackboxWindowList::const_iterator it, end = win->getTransients().end();
   for (it = win->getTransients().begin(); it != end; ++it) {
     BlackboxWindow *w = *it;
-    *(stack++) = w->getFrameWindow();
-
-    if (! w->isIconic()) {
-      Workspace *wkspc = screen->getWorkspace(w->getWorkspaceNumber());
-      wkspc->stackingList.remove(w);
-      wkspc->stackingList.insert(w);
+    if (! w->isIconic() && w->getWorkspaceNumber() == id) {
+      stack.push_back(w->getFrameWindow());
+      stackingList.remove(w);
+      stackingList.insert(w);
     }
   }
 
@@ -282,7 +280,7 @@ void Workspace::raiseTransients(const BlackboxWindow * const win,
 
 
 void Workspace::lowerTransients(const BlackboxWindow * const win,
-                                WindowStack::iterator &stack) {
+                                WindowStack& stack) {
   if (win->getTransients().empty()) return; // nothing to do
 
   // put transients of win's transients in the stack
@@ -294,12 +292,10 @@ void Workspace::lowerTransients(const BlackboxWindow * const win,
   // put win's transients in the stack
   for (it = win->getTransients().rbegin(); it != end; ++it) {
     BlackboxWindow *w = *it;
-    *stack++ = w->getFrameWindow();
-
-    if (! w->isIconic()) {
-      Workspace *wkspc = screen->getWorkspace(w->getWorkspaceNumber());
-      wkspc->stackingList.remove(w);
-      wkspc->stackingList.insert(w);
+    if (! w->isIconic() && w->getWorkspaceNumber() == id) {
+      stack.push_back(w->getFrameWindow());
+      stackingList.remove(w);
+      stackingList.insert(w);
     }
   }
 }
@@ -312,21 +308,16 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
   while (win->isTransient() && win->getTransientFor())
     win = win->getTransientFor();
 
-  // get the total window count (win and all transients)
-  unsigned int i = 1 + countTransients(win);
-
   // stack the window with all transients above
-  WindowStack stack_vector(i);
-  WindowStack::iterator stack = stack_vector.begin();
+  WindowStack stack_vector;
 
-  *(stack++) = win->getFrameWindow();
-  if (! win->isIconic()) {
-    Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
-    wkspc->stackingList.remove(win);
-    wkspc->stackingList.insert(win);
+  if (! win->isIconic() && win->getWorkspaceNumber() == id) {
+    stack_vector.push_back(win->getFrameWindow());
+    stackingList.remove(win);
+    stackingList.insert(win);
   }
 
-  raiseTransients(win, stack);
+  raiseTransients(win, stack_vector);
 
   screen->raiseWindows(&stack_vector);
 }
@@ -339,20 +330,15 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
   while (win->isTransient() && win->getTransientFor())
     win = win->getTransientFor();
 
-  // get the total window count (win and all transients)
-  unsigned int i = 1 + countTransients(win);
-
   // stack the window with all transients above
-  WindowStack stack_vector(i);
-  WindowStack::iterator stack = stack_vector.begin();
+  WindowStack stack_vector;
 
-  lowerTransients(win, stack);
+  lowerTransients(win, stack_vector);
 
-  *(stack++) = win->getFrameWindow();
-  if (! win->isIconic()) {
-    Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
-    wkspc->stackingList.remove(win);
-    wkspc->stackingList.insert(win);
+  if (! win->isIconic() && win->getWorkspaceNumber() == id) {
+    stack_vector.push_back(win->getFrameWindow());
+    stackingList.remove(win);
+    stackingList.insert(win);
   }
 
   XLowerWindow(screen->getBaseDisplay()->getXDisplay(), stack_vector.front());

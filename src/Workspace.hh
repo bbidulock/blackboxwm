@@ -90,9 +90,9 @@ private:
   Workspace& operator=(const Workspace&);
 
   void raiseTransients(const BlackboxWindow * const win,
-                       WindowStack::iterator &stack);
+                       WindowStack& stack);
   void lowerTransients(const BlackboxWindow * const win,
-                       WindowStack::iterator &stack);
+                       WindowStack& stack);
 
   void placeWindow(BlackboxWindow *win);
   bool cascadePlacement(bt::Rect& win, const bt::Rect& availableArea);
