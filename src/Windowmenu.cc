@@ -41,8 +41,6 @@ class SendToMenu : public Basemenu
 public:
     SendToMenu( int src, BlackboxWindow *w );
 
-    void popup( int, int, bool = true );
-    void popup( const Point &, bool = true );
     void refresh();
 
     void itemClicked( const Point &, const Item &, int );
@@ -54,18 +52,6 @@ private:
 SendToMenu::SendToMenu( int scr, BlackboxWindow *w )
     : Basemenu( scr ), window( w )
 {
-}
-
-void SendToMenu::popup( int x, int y, bool centerOnTitle )
-{
-    refresh();
-    Basemenu::popup( x, y, centerOnTitle );
-}
-
-void SendToMenu::popup( const Point &p, bool centerOnTitle )
-{
-    refresh();
-    Basemenu::popup( p, centerOnTitle );
 }
 
 void SendToMenu::refresh()
