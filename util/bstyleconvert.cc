@@ -36,6 +36,15 @@
 using namespace bt;
 
 
+std::string normalize(const std::string& input) {
+  std::string output;
+  std::string::const_iterator it = input.begin(), end = input.end();
+  for (; it != end; ++it)
+    output.push_back(tolower(*it));
+  return output;
+}
+
+
 struct Style {
   struct Window {
     std::string font, title_focus, title_focus_color, title_focus_colorTo,
@@ -86,14 +95,18 @@ void Style::read(const Resource& res) {
     res.read("window.font", "Window.Font", "fixed");
 
   window.title_focus =
-    res.read("window.title.focus", "Window.Title.Focus", "flat solid");
+    normalize(res.read("window.title.focus",
+                       "Window.Title.Focus", "flat solid"));
   window.title_focus_color =
-    res.read("window.title.focus.color", "Window.Title.Focus.Color", "white");
+    res.read("window.title.focus.color",
+             "Window.Title.Focus.Color", "white");
   window.title_focus_colorTo =
-    res.read("window.title.focus.colorTo", "Window.Title.Focus.ColorTo", "");
+    res.read("window.title.focus.colorTo",
+             "Window.Title.Focus.ColorTo", "");
 
   window.title_unfocus =
-    res.read("window.title.unfocus", "Window.Title.Unfocus", "flat solid");
+    normalize(res.read("window.title.unfocus",
+                       "Window.Title.Unfocus", "flat solid"));
   window.title_unfocus_color =
     res.read("window.title.unfocus.color",
              "Window.Title.Unfocus.Color", "black");
@@ -102,11 +115,14 @@ void Style::read(const Resource& res) {
              "Window.Title.Unfocus.ColorTo", "");
 
   window.label_focus =
-    res.read("window.label.focus", "Window.Label.Focus", "flat solid" );
+    normalize(res.read("window.label.focus",
+                       "Window.Label.Focus", "flat solid" ));
   window.label_focus_color =
-    res.read("window.label.focus.color", "Window.Label.Focus.Color", "white");
+    res.read("window.label.focus.color",
+             "Window.Label.Focus.Color", "white");
   window.label_focus_colorTo =
-    res.read("window.label.focus.colorTo", "Window.Label.Focus.ColorTo", "");
+    res.read("window.label.focus.colorTo",
+             "Window.Label.Focus.ColorTo", "");
 
   window.label_focus_textColor  =
     res.read("window.label.focus.textColor",
@@ -117,7 +133,8 @@ void Style::read(const Resource& res) {
              "Window.Label.Unfocus.TextColor", "white");
 
   window.label_unfocus =
-    res.read("window.label.unfocus", "Window.Label.Unfocus", "flat solid");
+    normalize(res.read("window.label.unfocus",
+                       "Window.Label.Unfocus", "flat solid"));
   window.label_unfocus_color =
     res.read("window.label.unfocus.color",
              "Window.Label.Unfocus.Color", "black");
@@ -126,7 +143,8 @@ void Style::read(const Resource& res) {
              "Window.Label.Unfocus.ColorTo", "");
 
   window.handle_focus =
-    res.read("window.handle.focus", "Window.Handle.Focus", "flat solid");
+    normalize(res.read("window.handle.focus",
+                       "Window.Handle.Focus", "flat solid"));
   window.handle_focus_color =
     res.read("window.handle.focus.color",
              "Window.Handle.Focus.Color", "white");
@@ -134,7 +152,8 @@ void Style::read(const Resource& res) {
     res.read("window.handle.focus.colorTo", "Window.Handle.Focus.ColorTo", "");
 
   window.handle_unfocus =
-    res.read("window.handle.unfocus", "Window.Handle.Unfocus", "flat solid");
+    normalize(res.read("window.handle.unfocus",
+                       "Window.Handle.Unfocus", "flat solid"));
   window.handle_unfocus_color =
     res.read("window.handle.unfocus.color",
              "Window.Handle.Unfocus.Color", "black");
@@ -143,7 +162,8 @@ void Style::read(const Resource& res) {
              "Window.Handle.Unfocus.ColorTo", "");
 
   window.grip_focus =
-    res.read("window.grip.focus", "Window.Grip.Focus", "flat solid");
+    normalize(res.read("window.grip.focus",
+                       "Window.Grip.Focus", "flat solid"));
   window.grip_focus_color =
     res.read("window.grip.focus.color",
              "Window.Grip.Focus.Color", "white");
@@ -152,7 +172,8 @@ void Style::read(const Resource& res) {
              "Window.Grip.Focus.ColorTo", "");
 
   window.grip_unfocus =
-    res.read("window.grip.unfocus", "Window.Grip.Unfocus", "flat solid");
+    normalize(res.read("window.grip.unfocus",
+                       "Window.Grip.Unfocus", "flat solid"));
   window.grip_unfocus_color =
     res.read("window.grip.unfocus.color",
              "Window.Grip.Unfocus.Color", "black");
@@ -161,7 +182,8 @@ void Style::read(const Resource& res) {
              "Window.Grip.Unfocus.ColorTo", "");
 
   window.button_focus =
-    res.read("window.button.focus", "Window.Button.Focus", "flat solid");
+    normalize(res.read("window.button.focus",
+                       "Window.Button.Focus", "flat solid"));
   window.button_focus_color =
     res.read("window.button.focus.color",
              "Window.Button.Focus.Color", "white");
@@ -170,7 +192,8 @@ void Style::read(const Resource& res) {
              "Window.Button.Focus.ColorTo", "");
 
   window.button_unfocus =
-    res.read("window.button.unfocus", "Window.Button.Unfocus", "flat solid");
+    normalize(res.read("window.button.unfocus",
+                       "Window.Button.Unfocus", "flat solid"));
   window.button_unfocus_color =
     res.read("window.button.unfocus.color",
              "Window.Button.Unfocus.Color", "black");
@@ -179,7 +202,8 @@ void Style::read(const Resource& res) {
              "Window.Button.Unfocus.ColorTo", "");
 
   window.button_pressed =
-    res.read("window.button.pressed", "Window.Button.Pressed", "flat solid");
+    normalize(res.read("window.button.pressed",
+                       "Window.Button.Pressed", "flat solid"));
   window.button_pressed_color =
     res.read("window.button.pressed.color",
              "Window.Button.Pressed.Color", "black");
@@ -207,34 +231,38 @@ void Style::read(const Resource& res) {
   // load toolbar config
   toolbar.font = res.read("toolbar.font", "Toolbar.Font", "fixed");
 
-  toolbar.frame = res.read("toolbar", "Toolbar", "flat solid");
+  toolbar.frame = normalize(res.read("toolbar", "Toolbar", "flat solid"));
   toolbar.frame_color =
     res.read("toolbar.color", "Toolbar.Color", "black");
   toolbar.frame_colorTo =
     res.read("toolbar.colorTo", "Toolbar.ColorTo", "");
 
-  toolbar.label = res.read("toolbar.label", "Toolbar.Label", "flat solid");
+  toolbar.label =
+    normalize(res.read("toolbar.label", "Toolbar.Label", "flat solid"));
   toolbar.label_color =
     res.read("toolbar.label.color", "Toolbar.Label.Color", "black");
   toolbar.label_colorTo =
     res.read("toolbar.label.colorTo", "Toolbar.Label.ColorTo", "");
 
   toolbar.window =
-    res.read("toolbar.windowLabel", "Toolbar.WindowLabel", "flat solid");
+    normalize(res.read("toolbar.windowLabel",
+                       "Toolbar.WindowLabel", "flat solid"));
   toolbar.window_color =
-    res.read("toolbar.window.color", "Toolbar.Window.Color", "black");
+    res.read("toolbar.windowLabel.color",
+             "Toolbar.WindowLabel.Color", "black");
   toolbar.window_colorTo =
-    res.read("toolbar.window.colorTo", "Toolbar.Window.ColorTo", "");
+    res.read("toolbar.windowLabel.colorTo", "Toolbar.WindowLabel.ColorTo", "");
 
-  toolbar.button = res.read("toolbar.button", "Toolbar.Button", "flat solid");
+  toolbar.button =
+    normalize(res.read("toolbar.button", "Toolbar.Button", "flat solid"));
   toolbar.button_color =
     res.read("toolbar.button.color", "Toolbar.Button.Color", "white");
   toolbar.button_colorTo =
     res.read("toolbar.button.colorTo", "Toolbar.Button.ColorTo", "");
 
   toolbar.button_pressed =
-    res.read("toolbar.button.pressed",
-             "Toolbar.Button.Pressed", "flat solid");
+    normalize(res.read("toolbar.button.pressed",
+                       "Toolbar.Button.Pressed", "flat solid"));
   toolbar.button_pressed_color =
     res.read("toolbar.button.pressed.color",
              "Toolbar.Button.Pressed.Color", "black");
@@ -242,7 +270,8 @@ void Style::read(const Resource& res) {
     res.read("toolbar.button.pressed.colorTo",
              "Toolbar.Button.Pressed.ColorTo", "");
 
-  toolbar.clock = res.read("toolbar.clock", "Toolbar.Clock", "flat solid");
+  toolbar.clock =
+    normalize(res.read("toolbar.clock", "Toolbar.Clock", "flat solid"));
   toolbar.clock_color =
     res.read("toolbar.clock.color", "Toolbar.Clock.Color", "black");
   toolbar.clock_colorTo =
@@ -269,19 +298,20 @@ void Style::read(const Resource& res) {
 
   menu.frame_font = res.read("menu.frame.font", "Menu.Frame.Font", "fixed");
 
-  menu.title = res.read("menu.title", "Menu.Title", "flat solid");
+  menu.title = normalize(res.read("menu.title", "Menu.Title", "flat solid"));
   menu.title_color =
     res.read("menu.title.color", "Menu.Title.Color", "white");
   menu.title_colorTo =
     res.read("menu.title.colorTo", "Menu.Title.ColorTo", "");
 
-  menu.frame = res.read("menu.frame", "Menu.Frame", "flat solid");
+  menu.frame = normalize(res.read("menu.frame", "Menu.Frame", "flat solid"));
   menu.frame_color =
     res.read("menu.frame.color", "Menu.Frame.Color", "black");
   menu.frame_colorTo =
     res.read("menu.frame.colorTo", "Menu.Frame.ColorTo", "");
 
-  menu.active = res.read("menu.hilite", "Menu.Hilite", "flat solid");
+  menu.active = normalize(res.read("menu.hilite",
+                                   "Menu.Hilite", "flat solid"));
   menu.active_color =
     res.read("menu.hilite.color", "Menu.Hilite.Color", "white");
   menu.active_colorTo =
@@ -451,6 +481,8 @@ void convert(const Style& style, const char* const filename) {
   writeTexture(fout, "window.label.focus", style.window.label_focus,
                style.window.label_focus_color,
                style.window.label_focus_colorTo);
+  writeValue(fout, "window.label.focus.textColor",
+             style.window.label_focus_textColor);
   fout << '\n';
   writeTexture(fout, "window.handle.focus", style.window.handle_focus,
                style.window.handle_focus_color,
@@ -463,6 +495,8 @@ void convert(const Style& style, const char* const filename) {
   writeTexture(fout, "window.button.focus", style.window.button_focus,
                style.window.button_focus_color,
                style.window.button_focus_colorTo);
+  writeValue(fout, "window.button.focus.picColor",
+             style.window.button_focus_picColor);
   fout << '\n';
   writeTexture(fout, "window.button.pressed", style.window.button_pressed,
                style.window.button_pressed_color,
@@ -478,6 +512,8 @@ void convert(const Style& style, const char* const filename) {
   writeTexture(fout, "window.label.unfocus", style.window.label_unfocus,
                style.window.label_unfocus_color,
                style.window.label_unfocus_colorTo);
+  writeValue(fout, "window.label.unfocus.textColor",
+             style.window.label_unfocus_textColor);
   fout << '\n';
   writeTexture(fout, "window.handle.unfocus", style.window.handle_unfocus,
                style.window.handle_unfocus_color,
@@ -490,6 +526,8 @@ void convert(const Style& style, const char* const filename) {
   writeTexture(fout, "window.button.unfocus", style.window.button_unfocus,
                style.window.button_unfocus_color,
                style.window.button_unfocus_colorTo);
+  writeValue(fout, "window.button.unfocus.picColor",
+             style.window.button_unfocus_picColor);
   fout << '\n';
   writeValue(fout, "window.frame.unfocusColor",
              style.window.frame_unfocusColor);
