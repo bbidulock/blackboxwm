@@ -24,7 +24,9 @@
 #ifndef   __Toolbar_hh
 #define   __Toolbar_hh
 
+extern "C" {
 #include <X11/Xlib.h>
+}
 
 #include "Screen.hh"
 #include "Basemenu.hh"

@@ -24,7 +24,9 @@
 #ifndef COLOR_HH
 #define COLOR_HH
 
+extern "C" {
 #include <X11/Xlib.h>
+}
 
 #include <map>
 #include <string>

@@ -24,7 +24,9 @@
 #ifndef   __Netizen_hh
 #define   __Netizen_hh
 
+extern "C" {
 #include <X11/Xlib.h>
+}
 
 // forward declaration
 class Blackbox;

@@ -24,11 +24,13 @@
 #ifndef   __Window_hh
 #define   __Window_hh
 
+extern "C" {
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #ifdef    SHAPE
 #  include <X11/extensions/shape.h>
 #endif // SHAPE
+}
 
 #include <string>
 

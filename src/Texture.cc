@@ -25,10 +25,12 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
+extern "C" {
 #include <stdio.h>
 #ifdef HAVE_CTYPE_H
 #include <ctype.h>
 #endif
+}
 
 #include "Texture.hh"
 #include "BaseDisplay.hh"

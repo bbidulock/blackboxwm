@@ -25,6 +25,7 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
+extern "C" {
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
@@ -47,6 +48,7 @@
 #if defined(HAVE_PROCESS_H) && defined(__EMX__)
 #  include <process.h>
 #endif //   HAVE_PROCESS_H             __EMX__
+}
 
 #include "Util.hh"
 

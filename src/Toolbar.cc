@@ -25,20 +25,7 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
-#include "i18n.hh"
-#include "blackbox.hh"
-#include "Clientmenu.hh"
-#include "GCCache.hh"
-#include "Iconmenu.hh"
-#include "Image.hh"
-#include "Rootmenu.hh"
-#include "Screen.hh"
-#include "Toolbar.hh"
-#include "Window.hh"
-#include "Workspace.hh"
-#include "Workspacemenu.hh"
-#include "Slit.hh"
-
+extern "C" {
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 
@@ -60,9 +47,24 @@
 #  include <time.h>
 # endif // HAVE_SYS_TIME_H
 #endif // TIME_WITH_SYS_TIME
+}
 
 #include <string>
 using std::string;
+
+#include "i18n.hh"
+#include "blackbox.hh"
+#include "Clientmenu.hh"
+#include "GCCache.hh"
+#include "Iconmenu.hh"
+#include "Image.hh"
+#include "Rootmenu.hh"
+#include "Screen.hh"
+#include "Toolbar.hh"
+#include "Window.hh"
+#include "Workspace.hh"
+#include "Workspacemenu.hh"
+#include "Slit.hh"
 
 
 static long aMinuteFromNow(void) {
@@ -275,7 +277,7 @@ void Toolbar::reconfigure(void) {
   case TopLeft:
   case TopCenter:
   case TopRight:
-    strut.top = getY() + 1;
+    strut.top = getHeight() + 1;
     break;
   default:
     strut.bottom = screen->getHeight() - getY() - 1;

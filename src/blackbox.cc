@@ -25,6 +25,7 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
+extern "C" {
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
@@ -88,6 +89,7 @@
 #ifdef    HAVE_LIBGEN_H
 #  include <libgen.h>
 #endif // HAVE_LIBGEN_H
+}
 
 #include <algorithm>
 

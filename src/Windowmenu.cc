@@ -25,16 +25,18 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
+extern "C" {
+#ifdef HAVE_STRING_H
+#  include <string.h>
+#endif // HAVE_STRING_H
+}
+
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "Screen.hh"
 #include "Window.hh"
 #include "Windowmenu.hh"
 #include "Workspace.hh"
-
-#ifdef HAVE_STRING_H
-#  include <string.h>
-#endif // HAVE_STRING_H
 
 
 Windowmenu::Windowmenu(BlackboxWindow *win) : Basemenu(win->getScreen()) {

@@ -30,7 +30,9 @@
 #include "Color.hh"
 #include "Util.hh"
 
+extern "C" {
 #include <stdio.h>
+}
 
 
 void BGCCacheContext::set(const BColor &_color,

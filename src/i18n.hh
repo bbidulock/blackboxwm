@@ -29,15 +29,15 @@
 // add ifdefs to every call to getMessage
 #include "../nls/blackbox-nls.hh"
 
+extern "C" {
 #ifdef    HAVE_LOCALE_H
 #  include <locale.h>
 #endif // HAVE_LOCALE_H
 
 #ifdef    HAVE_NL_TYPES_H
-extern "C" {
 #  include <nl_types.h>
-}
 #endif // HAVE_NL_TYPES_H
+}
 
 
 class I18n {

@@ -25,6 +25,7 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
+extern "C" {
 #include <X11/Xatom.h>
 #include <X11/keysym.h>
 
@@ -37,6 +38,7 @@
 #    include <stdio.h>
 #  endif // HAVE_STDIO_H
 #endif // DEBUG
+}
 
 #include "i18n.hh"
 #include "blackbox.hh"
@@ -1467,6 +1469,7 @@ void BlackboxWindow::maximize(unsigned int button) {
   int dx = screen_area.x, dy = screen_area.y;
   unsigned int dw = screen_area.width, dh = screen_area.height;
 
+  fprintf(stderr, "dx: %d, dy: %d, dw: %d, dh: %d\n", dx, dy, dw, dh);
   dw -= frame.border_w * 2;
   dw -= frame.mwm_border_w * 2;
   dw -= client.base_width;

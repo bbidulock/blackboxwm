@@ -24,7 +24,9 @@
 #ifndef   __Workspace_hh
 #define   __Workspace_hh
 
+extern "C" {
 #include <X11/Xlib.h>
+}
 
 #include <list>
 #include <string>

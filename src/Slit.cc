@@ -25,7 +25,9 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
+extern "C" {
 #include <X11/keysym.h>
+}
 
 #include "i18n.hh"
 #include "blackbox.hh"

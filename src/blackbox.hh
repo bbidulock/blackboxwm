@@ -24,6 +24,7 @@
 #ifndef   __blackbox_hh
 #define   __blackbox_hh
 
+extern "C" {
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
 
@@ -41,6 +42,7 @@
 #    include <time.h>
 #  endif // HAVE_SYS_TIME_H
 #endif // TIME_WITH_SYS_TIME
+}
 
 #include <list>
 #include <map>

@@ -25,6 +25,7 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
+extern "C" {
 #include <X11/Xatom.h>
 #include <X11/keysym.h>
 
@@ -65,6 +66,7 @@
 #ifdef    HAVE_STDARG_H
 #  include <stdarg.h>
 #endif // HAVE_STDARG_H
+}
 
 #include "i18n.hh"
 #include "blackbox.hh"
@@ -1671,28 +1673,33 @@ void BScreen::updateAvailableArea(void) {
     old_width = usableArea.width, old_height = usableArea.height;
 
   StrutList::iterator it = strutList.begin();
+  unsigned int current_left = 0, current_right = 0, current_top = 0,
+    current_bottom = 0;
 
   usableArea = getRect(); // reset to full screen
   for(; it != strutList.end(); ++it) {
     NETStrut *strut = *it;
-    if ((signed)strut->left > usableArea.x)
-      usableArea.x = strut->left;
-
-    if ((signed)strut->top > usableArea.y)
-      usableArea.y = strut->top;
-
-    if (((usableArea.width + old_x) - strut->right) < usableArea.width)
-      usableArea.width = getWidth() - strut->right - usableArea.x;
-
-    if (((usableArea.height + old_y) - strut->bottom) < usableArea.height)
-      usableArea.height = getHeight() - strut->bottom - usableArea.y;
+    fprintf(stderr, "screen: %d; left: %d, top: %d, right: %d, bottom: %d\n",
+            getScreenNumber(),
+            strut->left, strut->top, strut->right, strut->bottom);
+    if (strut->left > current_left)
+      current_left = strut->left;
+    if (strut->top > current_top)
+      current_top = strut->top;
+    if (strut->right > current_right)
+      current_right = strut->right;
+    if (strut->bottom > current_bottom)
+      current_bottom = strut->bottom;
   }
+
+  usableArea.x = current_left;
+  usableArea.width -= usableArea.x + current_right;
+  usableArea.y = current_top;
+  usableArea.height -= usableArea.y + current_bottom;
 
   // if area changed
   if (old_x != usableArea.x || old_y != usableArea.y ||
       old_width != usableArea.width || old_height != usableArea.height) {
-    usableArea.width += old_x - usableArea.x;
-    usableArea.height += old_y - usableArea.y;
     BlackboxWindowList::iterator it = windowList.begin(),
       end = windowList.end();
     for(; it != end; ++it)

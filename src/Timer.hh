@@ -24,6 +24,7 @@
 #ifndef   _BLACKBOX_Timer_hh
 #define   _BLACKBOX_Timer_hh
 
+extern "C" {
 #ifdef    TIME_WITH_SYS_TIME
 #  include <sys/time.h>
 #  include <time.h>
@@ -34,6 +35,7 @@
 #    include <time.h>
 #  endif // HAVE_SYS_TIME_H
 #endif // TIME_WITH_SYS_TIME
+}
 
 // forward declaration
 class TimerQueueManager;

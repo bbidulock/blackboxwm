@@ -27,6 +27,7 @@
 
 #include "i18n.hh"
 
+extern "C" {
 #include <X11/Xlocale.h>
 
 #ifdef HAVE_STDLIB_H
@@ -44,6 +45,7 @@
 #ifdef    HAVE_LOCALE_H
 #  include <locale.h>
 #endif // HAVE_LOCALE_H
+}
 
 #include <string>
 using std::string;

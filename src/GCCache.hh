@@ -24,7 +24,9 @@
 #ifndef GCCACHE_HH
 #define GCCACHE_HH
 
+extern "C" {
 #include <X11/Xlib.h>
+}
 
 #include "BaseDisplay.hh"
 #include "Color.hh"

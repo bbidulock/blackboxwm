@@ -25,6 +25,7 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
+extern "C" {
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -75,6 +76,7 @@
 #  include <sys/types.h>
 #  include <sys/wait.h>
 #endif // HAVE_SYS_WAIT_H
+}
 
 #include "i18n.hh"
 #include "BaseDisplay.hh"

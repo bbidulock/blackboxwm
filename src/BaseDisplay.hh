@@ -24,8 +24,10 @@
 #ifndef   __BaseDisplay_hh
 #define   __BaseDisplay_hh
 
+extern "C" {
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+}
 
 #include <vector>
 

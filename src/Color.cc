@@ -28,7 +28,10 @@
 #include "Color.hh"
 #include "BaseDisplay.hh"
 
+extern "C" {
 #include <stdio.h>
+}
+
 
 BColor::ColorCache BColor::colorcache;
 bool BColor::cleancache = false;

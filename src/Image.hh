@@ -24,8 +24,10 @@
 #ifndef   __Image_hh
 #define   __Image_hh
 
+extern "C" {
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+}
 
 #include <list>
 

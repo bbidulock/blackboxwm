@@ -24,7 +24,9 @@
 #ifndef   __Basemenu_hh
 #define   __Basemenu_hh
 
+extern "C" {
 #include <X11/Xlib.h>
+}
 
 #include <string>
 #include <deque>
@@ -98,7 +100,7 @@ public:
   int insert(const std::string &label, Basemenu *submenu, int pos = -1);
   int remove(int index);
 
-  void changeItemLabel(unsigned int index, const string& label);
+  void changeItemLabel(unsigned int index, const std::string& label);
 
   inline int getX(void) const { return menu.x; }
   inline int getY(void) const { return menu.y; }

@@ -25,6 +25,7 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
+extern "C" {
 #ifdef    HAVE_STDIO_H
 #  include <stdio.h>
 #endif // HAVE_STDIO_H
@@ -34,6 +35,7 @@
 #endif // HAVE_CTYPE_H
 
 #include <X11/Xlib.h>
+}
 
 #include <algorithm>
 

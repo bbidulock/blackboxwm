@@ -27,9 +27,7 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
-#include "i18n.hh"
-#include "blackbox.hh"
-
+extern "C" {
 #ifdef    HAVE_STDIO_H
 #  include <stdio.h>
 #endif // HAVE_STDIO_H
@@ -49,6 +47,13 @@
 #ifdef    HAVE_SYS_PARAM_H
 #  include <sys/param.h>
 #endif // HAVE_SYS_PARAM_H
+}
+
+#include <string>
+using std::string;
+
+#include "i18n.hh"
+#include "blackbox.hh"
 
 
 I18n i18n; // initialized in main
