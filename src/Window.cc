@@ -1805,8 +1805,7 @@ void BlackboxWindow::restoreAttributes(void) {
 
   if (net->flags & AttribShaded &&
       net->attrib & AttribShaded) {
-    int save_state =
-      ((current_state == IconicState) ? NormalState : current_state);
+    int save_state = current_state;
 
     flags.shaded = False;
     shade();
