@@ -117,8 +117,8 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   XSelectInput(screen_info.display().XDisplay(),
                screen_info.rootWindow(),
                ColormapChangeMask | EnterWindowMask | PropertyChangeMask |
-               SubstructureRedirectMask | 
-	       StructureNotifyMask | SubstructureNotifyMask |
+               StructureNotifyMask | // this really should go away
+               SubstructureRedirectMask |
 	       ButtonPressMask | ButtonReleaseMask);
 
   XSync(screen_info.display().XDisplay(), False);
