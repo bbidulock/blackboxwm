@@ -242,6 +242,14 @@ void Blackbox::process_event(XEvent *e) {
       for (; it != screenList.end(); ++it) {
         if (e->xbutton.window == (*it)->getRootWindow()) {
           (*it)->buttonPressEvent(&e->xbutton);
+
+          if (active_screen != (*it)) {
+            active_screen = (*it);
+            // first, set no focus window on the old screen
+            setFocusedWindow(0);
+            // and move focus to this screen
+            setFocusedWindow(0);
+          }
           break;
         }
       }
