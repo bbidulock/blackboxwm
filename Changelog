@@ -2,6 +2,16 @@ At the request of some people, here is a Change log starting with 0.33.0.
 Enjoy! :)
 
 
+Changes from 0.34.3 to 0.34.4:
+	- changed the window stacking code to stack windows and their menus
+	  more sanely... window menus are stacked directly ontop of the client
+	  windows... instead of on top of every other client window... the
+	  workspace manager is now by default stacked above client windows...
+	- reworked alot of code in Window.cc, blackbox.cc, Workspace.cc and
+	  WorkspaceManager.cc to properly handle ICCCM state hints... the
+	  startup and shutdown code has been completely reworked as a result of
+	  this
+
 Changes from 0.34.2 to 0.34.3:
 	- this was a small change in the code... but a BIG change for the user
 	  base... the X error handler is now non fatal... yes... this means if

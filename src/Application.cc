@@ -39,6 +39,8 @@ Application::Application(Blackbox *bb, Window w) {
 
   blackbox->saveAppSearch(topLevelWindow, this);
   blackbox->workspaceManager()->addApplication(this);
+
+  XChangeSaveSet(display, topLevelWindow, SetModeInsert);
 }
 
 

@@ -28,6 +28,32 @@
 #  include <X11/extensions/shape.h>
 #endif // SHAPE
 
+#ifdef MWM_HINTS
+
+#define MWM_HINTS_FUNCTIONS     (1L << 0)
+#define MWM_HINTS_DECORATIONS   (1L << 1)
+
+#define MWM_FUNC_ALL            (1L << 0)
+#define MWM_FUNC_RESIZE         (1L << 1)
+#define MWM_FUNC_MOVE           (1L << 2)
+#define MWM_FUNC_MINIMIZE       (1L << 3)
+#define MWM_FUNC_MAXIMIZE       (1L << 4)
+#define MWM_FUNC_CLOSE          (1L << 5)
+
+#define MWM_DECOR_ALL           (1L << 0)
+#define MWM_DECOR_BORDER        (1L << 1)
+#define MWM_DECOR_RESIZEH       (1L << 2)
+#define MWM_DECOR_TITLE         (1L << 3)
+#define MWM_DECOR_MENU          (1L << 4)
+#define MWM_DECOR_MINIMIZE      (1L << 5)
+#define MWM_DECOR_MAXIMIZE      (1L << 6)
+
+typedef struct MwmHints {
+  unsigned long flags, functions, decorations, junk, junk2;
+} MwmHints;
+
+#endif // MWM_HINTS
+
 // forward declaration
 class BlackboxWindow;
 
@@ -60,7 +86,11 @@ private:
       inc_w, inc_h,
       min_w, min_h, max_w, max_h,
       min_ax, min_ay, max_ax, max_ay;
-    long hint_flags;
+    long normal_hint_flags, wmhint_flags, initial_state;
+
+#ifdef MWM_HINTS
+    MwmHints mwm_hints;
+#endif // MWM_HINTS
   } client;
   
   struct frame {
@@ -107,6 +137,7 @@ protected:
   void configureWindow(int, int, unsigned int, unsigned int);
 
   Bool validateClient(void);
+  Bool fetchWMState(unsigned long *);
 
 
 public:
@@ -131,10 +162,10 @@ public:
   int setWindowNumber(int);
   int setWorkspace(int);
   void setFocusFlag(Bool);
-  void iconifyWindow(void);
-  void deiconifyWindow(void);
+  void iconifyWindow(Bool = True);
+  void deiconifyWindow(Bool = True);
   void closeWindow(void);
-  void withdrawWindow(void);
+  void withdrawWindow(Bool = True);
   void maximizeWindow(void);
   void shadeWindow(void);
   void unstickWindow(void);
@@ -163,6 +194,8 @@ public:
   unsigned int clientWidth(void) { return client.width; }
   void removeIcon(void) { icon = NULL; }
   void stickWindow(Bool s) { stuck = s; }
+
+  Windowmenu *Menu(void) { return windowmenu; }
 };
 
 

@@ -155,6 +155,7 @@ void SendtoWorkspaceMenu::itemSelected(int button, int index) {
       if ((index + 1) != wsManager->currentWorkspaceID()) {
 	wsManager->workspace(window->workspace())->removeWindow(window);
 	wsManager->workspace(index + 1)->addWindow(window);
+	if (window->isStuck()) window->stickWindow(False);
 	window->withdrawWindow();
       }
   } else

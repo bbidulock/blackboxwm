@@ -75,7 +75,6 @@ public:
   int removeLastWorkspace(void);
   void changeWorkspaceID(int);
   Workspace *workspace(int);
-  void DissociateAll(void);
   void addIcon(BlackboxIcon *i);
   void removeIcon(BlackboxIcon *i);
   void addApplication(Application *);

@@ -363,7 +363,6 @@ void Basemenu::Update(void) {
     drawItem(i, (i == which_sub), 0);
 
   XMapSubwindows(display, menu.frame);
-  //  XSync(display, False);
 }
 
 

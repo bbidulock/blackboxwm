@@ -42,6 +42,10 @@ LDLIBS :=	$(LDLIBS) -lm
 LDLIBS :=       -N $(LDLIBS) ../ccmalloc-0.2.3/src/ccmalloc.o -ldl
 #endif
 
+#ifdef MWM_HINTS
+CXXFLAGS :=	$(CXXFLAGS) -DMWM_HINTS
+#endif
+
 XCOMM
 XCOMM Homebrew target for imake - form used from $(CONFIGDUR)/Imake.rules
 XCOMM

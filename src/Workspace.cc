@@ -26,6 +26,7 @@
 #include "blackbox.hh"
 #include "Window.hh"
 #include "Workspace.hh"
+#include "Windowmenu.hh"
 
 #include <stdio.h>
 
@@ -55,6 +56,8 @@ Workspace::~Workspace(void) {
   delete windowList;
   delete cMenu;
 
+  if (stack) delete [] stack;
+
   delete [] name;
   delete [] label;
 }
@@ -63,39 +66,43 @@ Workspace::~Workspace(void) {
 const int Workspace::addWindow(BlackboxWindow *w) {
   w->setWorkspace(id);
   w->setWindowNumber(windowList->count());
-
+  
   windowList->insert(w);
   sprintf(label, "%d window(s)", windowList->count());
   wsManager->redrawWSD(True);
-
+  
   cMenu->insert(w->Title());
   cMenu->Update();
-
-  Window *tmp_stack = new Window[windowList->count()];
-  int i;
-  for (i = 0; i < (windowList->count() - 1); ++i)
+  
+  int i, k = windowList->count() * 3;
+  Window *tmp_stack = new Window[k];
+  for (i = 0; i < k - 3; i++)
     *(tmp_stack + i) = *(stack + i);
-
-  *(tmp_stack + i) = w->frameWindow();
-
-  delete [] stack;
+  
+  *(tmp_stack + i++) = w->frameWindow();
+  *(tmp_stack + i++) = w->Menu()->WindowID();
+  *(tmp_stack + i) = w->Menu()->SendToMenu()->WindowID();
+  
+  if (stack) delete [] stack;
   stack = tmp_stack;
   if (wsManager->currentWorkspaceID() == id)
-    wsManager->stackWindows(stack, windowList->count());
-
+    wsManager->stackWindows(stack, k);
+  
   return w->windowNumber();
 }
 
 
 const int Workspace::removeWindow(BlackboxWindow *w) {
-  Window *tmp_stack = new Window[windowList->count() - 1];
-
-  int i = 0, ii = 0;
-  for (i = 0; i < windowList->count(); ++i)
-    if (*(stack + i) != w->frameWindow())
+  int i = 0, ii = 0, k = (windowList->count() - 1) * 3;
+  Window *tmp_stack = new Window[k];
+  
+  for (i = 0; i < k + 3; i++)
+    if (*(stack + i) != w->frameWindow() &&
+	*(stack + i) != w->Menu()->WindowID() &&
+	*(stack + i) != w->Menu()->SendToMenu()->WindowID())
       *(tmp_stack + (ii++)) = *(stack + i);
-
-  delete [] stack;
+  
+  if (stack) delete [] stack;
   stack = tmp_stack;
 
   windowList->remove((const int) w->windowNumber());
@@ -106,8 +113,8 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
   cMenu->Update();
 
   if (wsManager->currentWorkspaceID() == id)
-    wsManager->stackWindows(stack, windowList->count());
-
+    wsManager->stackWindows(stack, k);
+  
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (i = 0; it.current(); it++, i++)
     it.current()->setWindowNumber(i);
@@ -119,7 +126,7 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
 int Workspace::showAll(void) {
   BlackboxWindow *win;
 
-  wsManager->stackWindows(stack, windowList->count());
+  wsManager->stackWindows(stack, windowList->count() * 3);
 
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (; it.current(); it++) {
@@ -164,50 +171,29 @@ int Workspace::removeAll(void) {
 }
 
 
-void Workspace::Dissociate(void) {
-  Display *display = wsManager->_blackbox()->control();
-
-  XGrabServer(display);
-  LinkedListIterator<BlackboxWindow> it(windowList);
-  for (; it.current(); it++) {
-    if (wsManager->_blackbox()->validateWindow(it.current()->clientWindow())) {
-      XUnmapWindow(display, it.current()->frameWindow());
-      XReparentWindow(display, it.current()->clientWindow(),
-		      wsManager->_blackbox()->Root(), it.current()->XClient(),
-		      it.current()->YClient());
-      XMoveResizeWindow(display, it.current()->clientWindow(),
-			it.current()->XClient(),
-			it.current()->YClient(),
-			it.current()->clientWidth(),
-			it.current()->clientHeight());
-      XMapWindow(display, it.current()->clientWindow());
-    }
-  }
-  
-  XSync(display, False);
-  XUngrabServer(display);
-}
-
-
 void Workspace::raiseWindow(BlackboxWindow *w) {
   // this just arranges the windows... and then passes it to the workspace
   // manager... which adds this stack to it's own stack... and the workspace
   // manager then tells the X server to restack the windows
 
-  Window *tmp_stack = new Window[windowList->count()];
+  int i = 0, ii = 0, k = windowList->count() * 3;
+  Window *tmp_stack = new Window[k];
   static int re_enter = 0;
-  int i = 0, ii = 0;
-
+  
   if (w->isTransient() && ! re_enter) {
     raiseWindow(w->TransientFor());
   } else {
-    for (i = 0; i < windowList->count(); ++i)
-      if (*(stack + i) != w->frameWindow())
+    for (i = 0; i < k; i++)
+      if (*(stack + i) != w->frameWindow() &&
+	  *(stack + i) != w->Menu()->WindowID() &&
+	  *(stack + i) != w->Menu()->SendToMenu()->WindowID())
         *(tmp_stack + (ii++)) = *(stack + i);
-  
-    *(tmp_stack + windowList->count() - 1) = w->frameWindow();
-  
-    for (i = 0; i < windowList->count(); ++i)
+    
+    *(tmp_stack + ii++) = w->frameWindow();
+    *(tmp_stack + ii++) = w->Menu()->WindowID();
+    *(tmp_stack + ii) = w->Menu()->SendToMenu()->WindowID();
+    
+    for (i = 0; i < k; ++i)
       *(stack + i) = *(tmp_stack + i);
 
     delete [] tmp_stack;
@@ -222,26 +208,30 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
     }
 
     if (! re_enter && id == wsManager->currentWorkspaceID())
-      wsManager->stackWindows(stack, windowList->count());
+      wsManager->stackWindows(stack, k);
   }
 }
 
 
 void Workspace::lowerWindow(BlackboxWindow *w) {
-  Window *tmp_stack = new Window[windowList->count()];
-  int i, ii = 1;
+  int i, ii = 3, k = windowList->count() * 3;
+  Window *tmp_stack = new Window[k];
   static int re_enter = 0;
   
   if (w->hasTransient() && ! re_enter) {
     lowerWindow(w->Transient());
   } else {
-    for (i = 0; i < windowList->count(); ++i)
-      if (*(stack + i) != w->frameWindow())
+    for (i = 0; i < k; ++i)
+      if (*(stack + i) != w->frameWindow() &&
+	  *(stack + i) != w->Menu()->WindowID() &&
+	  *(stack + i) != w->Menu()->SendToMenu()->WindowID())
 	*(tmp_stack + (ii++)) = *(stack + i);
     
     *(tmp_stack) = w->frameWindow();
-    
-    for (i = 0; i < windowList->count(); ++i)
+    *(tmp_stack + 1) = w->Menu()->WindowID();
+    *(tmp_stack + 2) = w->Menu()->SendToMenu()->WindowID();
+
+    for (i = 0; i < k; ++i)
       *(stack + i) = *(tmp_stack + i);
     
     delete [] tmp_stack;
@@ -256,7 +246,7 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
     }
     
     if (! re_enter && id == wsManager->currentWorkspaceID())
-      wsManager->stackWindows(stack, windowList->count());
+      wsManager->stackWindows(stack, k);
   }
 }
 
@@ -290,5 +280,5 @@ void Workspace::Update(void) {
 
 
 void Workspace::restackWindows(void) {
-  wsManager->stackWindows(stack, windowList->count());
+  wsManager->stackWindows(stack, windowList->count() * 3);
 }

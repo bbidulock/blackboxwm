@@ -42,6 +42,7 @@
 
 #include "../lib/libBoxdefs.h"
 
+#include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -130,6 +131,12 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   if ((display = XOpenDisplay(dpy_name)) == NULL) {
     fprintf(stderr, "%s: connection to X server failed\n", b_argv[0]);
     exit(2);
+
+    if (fcntl(ConnectionNumber(display), F_SETFD, 1) == -1) {
+      fprintf(stderr, "%s: mark close-on-exec on display connection failed\n",
+              b_argv[0]);
+      exit(2);
+    }
   }
 
   screen = DefaultScreen(display);
@@ -148,9 +155,9 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   }
   if (bpp == 0) bpp = depth;
 
-  event_mask = LeaveWindowMask | EnterWindowMask | PropertyChangeMask |
-    SubstructureNotifyMask | PointerMotionMask | SubstructureRedirectMask |
-    ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask;
+  event_mask = ColormapChangeMask | EnterWindowMask | PropertyChangeMask |
+    SubstructureRedirectMask | KeyPressMask | ButtonPressMask |
+    ButtonReleaseMask;
   
   // grab the display server... so that when we select the input events we
   // want, we don't loose any events
@@ -228,7 +235,7 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
 	unsigned long ulfoo, nitems;
 	unsigned char *state;
 
-	if (XGetWindowProperty(display, children[i], _BLACKBOX_CONTROL, 0, 3,
+	if (XGetWindowProperty(display, children[i], _BLACKBOX_CONTROL, 0l, 1l,
 			       False, _BLACKBOX_CONTROL, &atom, &foo, &nitems,
 			       &ulfoo, &state) == Success)
 	  if (state && atom == _BLACKBOX_CONTROL) {
@@ -236,44 +243,19 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
 	    (void) new Application(this, children[i]);
 	    XFree(state);
 	  } else {
-	    if (XGetWindowProperty(display, children[i], _XA_WM_STATE, 0, 3,
-				   False, _XA_WM_STATE, &atom, &foo,
-				   &nitems, &ulfoo, &state) == Success) {
-	      BlackboxWindow *nWin = new BlackboxWindow(this, children[i]);
-	      
-	      if (atom == _XA_WM_STATE && state) {
-		switch (*((unsigned long *) state)) {
-		case WithdrawnState:
-		  nWin->deiconifyWindow();
-		  nWin->setFocusFlag(False);
-		  break;
-		  
-		case IconicState:
-		  nWin->iconifyWindow();
-		  break;
-		  
-		case NormalState:
-		default:
-		  nWin->deiconifyWindow();
-		  nWin->setFocusFlag(False);
-		  break;
-		}
-		
-		XFree(state);
-		state = 0;
-	      } else {
-		nWin->deiconifyWindow();
-		nWin->setFocusFlag(False);
-	      }
-	    }
-	  }
+	    BlackboxWindow *nWin = new BlackboxWindow(this, children[i]);
+
+	    XMapRequestEvent mre;
+	    mre.window = children[i];
+	    nWin->mapRequestEvent(&mre);
+          }
       }
   }
-  
-  while (XPending(display)) {
-    XEvent foo;
-    XNextEvent(display, &foo);
-  }
+
+  //  while (XPending(display)) {
+  //    XEvent foo;
+  //    XNextEvent(display, &foo);
+  //  }
   
   XSynchronize(display, False);
   XSync(display, False);
@@ -283,7 +265,6 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
 
 Blackbox::~Blackbox(void) {
   XSelectInput(display, root, NoEventMask);
-
   XDeleteProperty(display, root, _BLACKBOX_CONTROL);
 
   delete [] resource.menuFile;
@@ -363,8 +344,6 @@ void Blackbox::EventLoop(void) {
       }
     }
   }
-    
-  Dissociate();
 }
 
 
@@ -436,8 +415,6 @@ void Blackbox::ProcessEvent(XEvent *e) {
     break; }
   
   case MapRequest: {
-    XGrabServer(display);
-
     BlackboxWindow *rWin = searchWindow(e->xmaprequest.window);
     
     if (rWin == NULL && validateWindow(e->xmaprequest.window))
@@ -446,7 +423,6 @@ void Blackbox::ProcessEvent(XEvent *e) {
     if ((rWin = searchWindow(e->xmaprequest.window)) != NULL)
 	rWin->mapRequestEvent(&e->xmaprequest);
 
-    XUngrabServer(display);
     break; }
   
   case MapNotify: {
@@ -897,11 +873,6 @@ void Blackbox::removeAppSearch(Window window) {
 // Exit, Shutdown and Restart methods
 // *************************************************************************
 
-void Blackbox::Dissociate(void) {
-  wsManager->DissociateAll();
-}
-
-
 void Blackbox::Exit(void) {
   XSetInputFocus(display, PointerRoot, RevertToParent, CurrentTime);
   shutdown = True;
@@ -909,8 +880,6 @@ void Blackbox::Exit(void) {
 
 
 void Blackbox::Restart(char *prog) {
-  Dissociate();
-  XSync(display, False);
   XSetInputFocus(display, PointerRoot, RevertToParent, CurrentTime);
 
   if (prog) {
@@ -927,7 +896,6 @@ void Blackbox::Restart(char *prog) {
 
 
 void Blackbox::Shutdown(Bool do_delete) {
-  Dissociate();
   if (do_delete)
     delete this;
 }

@@ -381,22 +381,6 @@ void WorkspaceManager::removeApplication(Application *app) {
 }
 
 
-void WorkspaceManager::DissociateAll(void) {
-  LinkedListIterator<Application> at(applicationList);
-  for (; at.current(); at++) {
-    XUnmapWindow(display, at.current()->window());
-    XReparentWindow(display, at.current()->window(), blackbox->Root(), 0, 0);
-    XMoveResizeWindow(display, at.current()->window(), 0, 0, frame.apps_w,
-                      frame.apps_h);
-    XMapWindow(display, at.current()->window());
-  }
-
-  LinkedListIterator<Workspace> it(workspacesList);
-  for (; it.current(); it++)
-    it.current()->Dissociate();
-}
-
-
 Workspace *WorkspaceManager::workspace(int w) {
   return workspacesList->find(w);
 }
@@ -424,7 +408,7 @@ void WorkspaceManager::stackWindows(Window *workspace_stack, int num) {
   // number of total workspaces (to stack the workspace menus)
 
   Window *session_stack =
-    new Window[(num + zero->Count() + workspacesList->count() + 4)];
+    new Window[(num + (zero->Count() * 3) + workspacesList->count() + 4)];
   
   int i = 0;
   *(session_stack + i++) = blackbox->Menu()->WindowID();
@@ -440,7 +424,9 @@ void WorkspaceManager::stackWindows(Window *workspace_stack, int num) {
     *(session_stack + i++) = it.current()->Menu()->WindowID();
   }
 
-  int k = zero->Count();
+  *(session_stack + i++) = frame.base;
+
+  int k = zero->Count() * 3;
   while (k--)
     *(session_stack + i++) = *(zero->windowStack() + k);
 
@@ -448,8 +434,6 @@ void WorkspaceManager::stackWindows(Window *workspace_stack, int num) {
   while (k--)
     *(session_stack + i++) = *(workspace_stack + k);
   
-  *(session_stack + i++) = frame.base;
-
   XRestackWindows(display, session_stack, i);
   delete [] session_stack;
 }
@@ -495,8 +479,8 @@ void WorkspaceManager::Reconfigure(void) {
 		    (frame.button_w * 2) + 3, frame.bevel_w, frame.ib_w,
 		    frame.ib_h);
   XMoveResizeWindow(display, frame.applicationDock, frame.wsd_w +
-		    (frame.button_w * 2) + frame.ib_w + (frame.bevel_w * 2) + 4,
-		    frame.bevel_w, frame.app_w, frame.app_h);
+		    (frame.button_w * 2) + frame.ib_w + (frame.bevel_w * 2) +
+		    4, frame.bevel_w, frame.app_w, frame.app_h);
   XMoveResizeWindow(display, frame.clock, frame.width - frame.clock_w -
 		    frame.bevel_w, frame.bevel_w, frame.clock_w,
 		    frame.clock_h);

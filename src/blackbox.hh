@@ -21,7 +21,7 @@
 
 #ifndef __Blackbox_hh
 #define __Blackbox_hh
-#define __blackbox_version "beta zero point three four point three"
+#define __blackbox_version "beta zero point three four point four"
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
@@ -154,7 +154,6 @@ protected:
   void ProcessEvent(XEvent *);
 
   // internal routines
-  void Dissociate(void);
   void do_reconfigure(void);
 
   // value lookups and retrieval

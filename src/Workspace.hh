@@ -59,7 +59,6 @@ public:
   int showAll(void);
   int hideAll(void);
   int removeAll(void);
-  void Dissociate(void);
   void raiseWindow(BlackboxWindow *);
   void lowerWindow(BlackboxWindow *);
   void restackWindows(void);
