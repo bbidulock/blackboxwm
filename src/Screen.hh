@@ -58,36 +58,20 @@ typedef std::vector<Window> WindowStack;
 class Rootmenu;
 class Slit;
 
-enum TextJustify { LeftJustify = 1, RightJustify, CenterJustify };
-
 struct WindowStyle {
   bt::Color l_text_focus, l_text_unfocus, b_pic_focus,
     b_pic_unfocus;
   bt::Texture f_focus, f_unfocus, t_focus, t_unfocus, l_focus, l_unfocus,
     h_focus, h_unfocus, b_focus, b_unfocus, b_pressed, g_focus, g_unfocus;
-
-  XFontSet fontset;
-  XFontSetExtents *fontset_extents;
-  XFontStruct *font;
-
-  TextJustify justify;
-
-  int doJustify(const char *text, int &start_pos, unsigned int max_length,
-                unsigned int modifier, bool multibyte) const;
+  bt::Font font;
+  bt::Alignment alignment;
 };
 
 struct ToolbarStyle {
   bt::Color l_text, w_text, c_text, b_pic;
   bt::Texture toolbar, label, window, button, pressed, clock;
-
-  XFontSet fontset;
-  XFontSetExtents *fontset_extents;
-  XFontStruct *font;
-
-  TextJustify justify;
-
-  int doJustify(const char *text, int &start_pos, unsigned int max_length,
-                unsigned int modifier, bool multibyte) const;
+  bt::Font font;
+  bt::Alignment alignment;
 };
 
 
@@ -145,25 +129,13 @@ private:
 
     unsigned int handle_width, bevel_width, frame_width, border_width;
 
-#ifdef    HAVE_STRFTIME
     std::string strftime_format;
-#else // !HAVE_STRFTIME
-    bool clock24hour;
-    int date_format;
-#endif // HAVE_STRFTIME
-
   } resource;
 
   bt::Timer *timer;
 
   bool parseMenuFile(FILE *file, Rootmenu *menu);
 
-  bt::Texture readDatabaseTexture(const std::string &rname,
-                                  const std::string &rclass,
-                                  const std::string &default_color);
-  bt::Color readDatabaseColor(const std::string &rname,
-                           const std::string &rclass,
-                           const std::string &default_color);
   XFontSet readDatabaseFontSet(const std::string &rname,
                                const std::string &rclass);
   XFontStruct *readDatabaseFont(const std::string &rname,
@@ -305,16 +277,9 @@ public:
   void saveFocusLast(bool f) { resource.focus_last = f; }
   void saveAllowScrollLock(bool a) { resource.allow_scroll_lock = a; }
 
-#ifdef    HAVE_STRFTIME
   const char *getStrftimeFormat(void)
   { return resource.strftime_format.c_str(); }
   void saveStrftimeFormat(const std::string& format);
-#else // !HAVE_STRFTIME
-  int getDateFormat(void) { return resource.date_format; }
-  void saveDateFormat(int f) { resource.date_format = f; }
-  bool isClock24Hour(void) { return resource.clock24hour; }
-  void saveClock24Hour(bool c) { resource.clock24hour = c; }
-#endif // HAVE_STRFTIME
 
   WindowStyle *getWindowStyle(void) { return &resource.wstyle; }
   ToolbarStyle *getToolbarStyle(void) { return &resource.tstyle; }

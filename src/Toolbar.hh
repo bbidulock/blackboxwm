@@ -80,11 +80,7 @@ private:
 
   void updateStrut(void);
 
-#ifdef    HAVE_STRFTIME
   void checkClock(bool redraw = False);
-#else //  HAVE_STRFTIME
-  void checkClock(bool redraw = False, bool date = False);
-#endif // HAVE_STRFTIME
 
   Toolbar(const Toolbar&);
   Toolbar& operator=(const Toolbar&);

@@ -2110,22 +2110,14 @@ void BlackboxWindow::redrawLabel(void) const {
   XClearWindow(blackbox->getXDisplay(), frame.label);
 
   WindowStyle *style = screen->getWindowStyle();
-
-  int pos = frame.bevel_w * 2,
-    dlen = style->doJustify(client.title.c_str(), pos, frame.label_w,
-                            frame.bevel_w * 4, bt::i18n.multibyte());
-
   bt::Pen pen(((client.state.focused) ?
                style->l_text_focus : style->l_text_unfocus),
-              style->font);
-  if (bt::i18n.multibyte())
-    XmbDrawString(blackbox->getXDisplay(), frame.label, style->fontset,
-                  pen.gc(), pos,
-                  (1 - style->fontset_extents->max_ink_extent.y),
-                  client.title.c_str(), dlen);
-  else
-    XDrawString(blackbox->getXDisplay(), frame.label, pen.gc(), pos,
-                (style->font->ascent + 1), client.title.c_str(), dlen);
+              style->font.font());
+  bt::Rect rect(frame.bevel_w, frame.bevel_w,
+                frame.label_w - (frame.bevel_w * 2),
+                frame.label_h - (frame.bevel_w * 2));
+  bt::drawText(style->font, pen, frame.label, rect, style->alignment,
+               client.title);
 }
 
 
@@ -3124,22 +3116,16 @@ void BlackboxWindow::upsize(void) {
     // the height of the titlebar is based upon the height of the font being
     // used to display the window's title
     WindowStyle *style = screen->getWindowStyle();
-    if (bt::i18n.multibyte())
-      frame.title_h = (style->fontset_extents->max_ink_extent.height +
-                       (frame.bevel_w * 2) + 2);
-    else
-      frame.title_h = (style->font->ascent + style->font->descent +
-                       (frame.bevel_w * 2) + 2);
-
-    frame.label_h = frame.title_h - (frame.bevel_w * 2);
+    frame.label_h = bt::textHeight(style->font) + 2;
+    frame.title_h = frame.label_h + (frame.bevel_w * 2);
     frame.button_w = (frame.label_h - 2);
 
     // set the top frame margin
     frame.margin.top = frame.border_w + frame.title_h +
                        frame.border_w + frame.mwm_border_w;
   } else {
-    frame.title_h = 0;
     frame.label_h = 0;
+    frame.title_h = 0;
     frame.button_w = 0;
 
     // set the top frame margin
@@ -3264,41 +3250,6 @@ void BlackboxWindow::constrain(Corner anchor,
     frame.changing.setPos(frame.changing.x() + dx, frame.changing.y());
     break;
   }
-}
-
-
-int WindowStyle::doJustify(const char *text, int &start_pos,
-                           unsigned int max_length, unsigned int modifier,
-                           bool multibyte) const {
-  size_t text_len = strlen(text);
-  unsigned int length;
-
-  do {
-    if (multibyte) {
-      XRectangle ink, logical;
-      XmbTextExtents(fontset, text, text_len, &ink, &logical);
-      length = logical.width;
-    } else {
-      length = XTextWidth(font, text, text_len);
-    }
-    length += modifier;
-  } while (length > max_length && text_len-- > 0);
-
-  switch (justify) {
-  case RightJustify:
-    start_pos += max_length - length;
-    break;
-
-  case CenterJustify:
-    start_pos += (max_length - length) / 2;
-    break;
-
-  case LeftJustify:
-  default:
-    break;
-  }
-
-  return text_len;
 }
 
 

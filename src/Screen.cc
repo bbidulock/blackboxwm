@@ -178,25 +178,11 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   opGC = XCreateGC(blackbox->getXDisplay(), screen_info.getRootWindow(),
                    GCForeground | GCFunction | GCSubwindowMode, &gcv);
 
-  const char *s =  bt::i18n(ScreenSet, ScreenPositionLength,
-                            "0: 0000 x 0: 0000");
-  int l = strlen(s);
-
-  if (bt::i18n.multibyte()) {
-    XRectangle ink, logical;
-    XmbTextExtents(resource.wstyle.fontset, s, l, &ink, &logical);
-    geom_w = logical.width;
-
-    geom_h = resource.wstyle.fontset_extents->max_ink_extent.height;
-  } else {
-    geom_h = resource.wstyle.font->ascent +
-             resource.wstyle.font->descent;
-
-    geom_w = XTextWidth(resource.wstyle.font, s, l);
-  }
-
-  geom_w += (resource.bevel_width * 2);
-  geom_h += (resource.bevel_width * 2);
+  const char *s =
+    bt::i18n(ScreenSet, ScreenPositionLength, "0: 0000 x 0: 0000");
+  bt::Rect geomr = bt::textRect(resource.wstyle.font, s);
+  geom_w = geomr.width() + (resource.bevel_width * 2);
+  geom_h = geomr.height() + (resource.bevel_width * 2);
 
   XSetWindowAttributes setattrib;
   unsigned long mask = CWBorderPixel | CWColormap | CWSaveUnder;
@@ -426,16 +412,6 @@ BScreen::~BScreen(void) {
   blackbox->netwm()->removeProperty(screen_info.getRootWindow(),
                                     blackbox->netwm()->workarea());
 
-  if (resource.wstyle.fontset)
-    XFreeFontSet(blackbox->getXDisplay(), resource.wstyle.fontset);
-  if (resource.tstyle.fontset)
-    XFreeFontSet(blackbox->getXDisplay(), resource.tstyle.fontset);
-
-  if (resource.wstyle.font)
-    XFreeFont(blackbox->getXDisplay(), resource.wstyle.font);
-  if (resource.tstyle.font)
-    XFreeFont(blackbox->getXDisplay(), resource.tstyle.font);
-
   XFreeGC(blackbox->getXDisplay(), opGC);
 }
 
@@ -459,24 +435,11 @@ void BScreen::reconfigure(void) {
   XChangeGC(blackbox->getXDisplay(), opGC,
             GCForeground | GCFunction | GCSubwindowMode, &gcv);
 
-  const char *s = bt::i18n(ScreenSet, ScreenPositionLength,
-                       "0: 0000 x 0: 0000");
-  int l = strlen(s);
-
-  if (bt::i18n.multibyte()) {
-    XRectangle ink, logical;
-    XmbTextExtents(resource.wstyle.fontset, s, l, &ink, &logical);
-    geom_w = logical.width;
-
-    geom_h = resource.wstyle.fontset_extents->max_ink_extent.height;
-  } else {
-    geom_w = XTextWidth(resource.wstyle.font, s, l);
-
-    geom_h = resource.wstyle.font->ascent + resource.wstyle.font->descent;
-  }
-
-  geom_w += (resource.bevel_width * 2);
-  geom_h += (resource.bevel_width * 2);
+  const char *s =
+    bt::i18n(ScreenSet, ScreenPositionLength, "0: 0000 x 0: 0000");
+  bt::Rect geomr = bt::textRect(resource.wstyle.font, s);
+  geom_w = geomr.width() + (resource.bevel_width * 2);
+  geom_h = geomr.height() + (resource.bevel_width * 2);
 
   bt::Texture* texture = &(resource.wstyle.l_focus);
   geom_pixmap = texture->render(geom_w, geom_h, geom_pixmap);
@@ -532,121 +495,264 @@ void BScreen::rereadMenu(void) {
 
 
 void BScreen::LoadStyle(void) {
-  {
-    bt::Resource res(std::string(blackbox->getStyleFilename()));
-    if (! res.valid()) res.load(std::string(DEFAULTSTYLE));
+  // use the user selected style
+  bt::Resource res(std::string(blackbox->getStyleFilename()));
+  if (! res.valid())
+    res.load(std::string(DEFAULTSTYLE));
 
-    bt::MenuStyle::get(*blackbox, getScreenInfo().getScreenNumber(),
-                       image_control)->load(res);
-  }
+  // load menu style
+  bt::MenuStyle::get(*blackbox, getScreenInfo().getScreenNumber(),
+                     image_control)->load(res);
 
-
-  resource.stylerc = XrmGetFileDatabase(blackbox->getStyleFilename());
-  if (! resource.stylerc)
-    resource.stylerc = XrmGetFileDatabase(DEFAULTSTYLE);
-
-  XrmValue value;
-  char *value_type;
-
-  // load fonts/fontsets
-  if (resource.wstyle.fontset)
-    XFreeFontSet(blackbox->getXDisplay(), resource.wstyle.fontset);
-  if (resource.tstyle.fontset)
-    XFreeFontSet(blackbox->getXDisplay(), resource.tstyle.fontset);
-  resource.wstyle.fontset = 0;
-  resource.tstyle.fontset = 0;
-  if (resource.wstyle.font)
-    XFreeFont(blackbox->getXDisplay(), resource.wstyle.font);
-  if (resource.tstyle.font)
-    XFreeFont(blackbox->getXDisplay(), resource.tstyle.font);
-  resource.wstyle.font = 0;
-  resource.tstyle.font = 0;
-
-  if (bt::i18n.multibyte()) {
-    resource.wstyle.fontset =
-      readDatabaseFontSet("window.font", "Window.Font");
-    resource.tstyle.fontset =
-      readDatabaseFontSet("toolbar.font", "Toolbar.Font");
-
-    resource.tstyle.fontset_extents =
-      XExtentsOfFontSet(resource.tstyle.fontset);
-    resource.wstyle.fontset_extents =
-      XExtentsOfFontSet(resource.wstyle.fontset);
-  } else {
-    resource.wstyle.font =
-      readDatabaseFont("window.font", "Window.Font");
-    resource.tstyle.font =
-      readDatabaseFont("toolbar.font", "Toolbar.Font");
-  }
+  // load fonts
+  resource.wstyle.font = bt::Font(res.read("window.font",
+                                           "Window.Font",
+                                           "fixed"),
+                                  &blackbox->getDisplay());
+  resource.tstyle.font = bt::Font(res.read("toolbar.font",
+                                           "Toolbar.Font",
+                                           "fixed"),
+                                  &blackbox->getDisplay());
 
   // load window config
   resource.wstyle.t_focus =
-    readDatabaseTexture("window.title.focus", "Window.Title.Focus", "white");
+    bt::textureResource(res,
+                        "window.title.focus",
+                        "Window.Title.Focus",
+                        "white",
+                        &getScreenInfo().getDisplay(),
+                        getScreenInfo().getScreenNumber(),
+                        image_control);
   resource.wstyle.t_unfocus =
-    readDatabaseTexture("window.title.unfocus",
-                        "Window.Title.Unfocus", "black");
+    bt::textureResource(res,
+                        "window.title.unfocus",
+                        "Window.Title.Unfocus",
+                        "black",
+                        &getScreenInfo().getDisplay(),
+                        getScreenInfo().getScreenNumber(),
+                        image_control);
   resource.wstyle.l_focus =
-    readDatabaseTexture("window.label.focus", "Window.Label.Focus", "white" );
+    bt::textureResource(res,
+                        "window.label.focus",
+                        "Window.Label.Focus",
+                        "white",
+                        &getScreenInfo().getDisplay(),
+                        getScreenInfo().getScreenNumber(),
+                        image_control);
+
   resource.wstyle.l_unfocus =
-    readDatabaseTexture("window.label.unfocus", "Window.Label.Unfocus",
-                        "black");
+    bt::textureResource(res,
+                        "window.label.unfocus",
+                        "Window.Label.Unfocus",
+                        "black",
+                        &getScreenInfo().getDisplay(),
+                        getScreenInfo().getScreenNumber(),
+                        image_control);
+
   resource.wstyle.h_focus =
-    readDatabaseTexture("window.handle.focus", "Window.Handle.Focus", "white");
+    bt::textureResource(res,
+                        "window.handle.focus",
+                        "Window.Handle.Focus",
+                        "white",
+                        &getScreenInfo().getDisplay(),
+                        getScreenInfo().getScreenNumber(),
+                        image_control);
+
   resource.wstyle.h_unfocus =
-    readDatabaseTexture("window.handle.unfocus",
-                        "Window.Handle.Unfocus", "black");
+    bt::textureResource(res,
+                        "window.handle.unfocus",
+                        "Window.Handle.Unfocus",
+                        "black",
+                        &getScreenInfo().getDisplay(),
+                        getScreenInfo().getScreenNumber(),
+                        image_control);
+
   resource.wstyle.g_focus =
-    readDatabaseTexture("window.grip.focus", "Window.Grip.Focus", "white");
+    bt::textureResource(res,
+                        "window.grip.focus",
+                        "Window.Grip.Focus",
+                        "white",
+                        &getScreenInfo().getDisplay(),
+                        getScreenInfo().getScreenNumber(),
+                        image_control);
+
   resource.wstyle.g_unfocus =
-    readDatabaseTexture("window.grip.unfocus", "Window.Grip.Unfocus", "black");
+    bt::textureResource(res,
+                        "window.grip.unfocus",
+                        "Window.Grip.Unfocus",
+                        "black",
+                        &getScreenInfo().getDisplay(),
+                        getScreenInfo().getScreenNumber(),
+                        image_control);
+
   resource.wstyle.b_focus =
-    readDatabaseTexture("window.button.focus", "Window.Button.Focus", "white");
+    bt::textureResource(res,
+                        "window.button.focus",
+                        "Window.Button.Focus",
+                        "white",
+                        &getScreenInfo().getDisplay(),
+                        getScreenInfo().getScreenNumber(),
+                        image_control);
   resource.wstyle.b_unfocus =
-    readDatabaseTexture("window.button.unfocus",
-                        "Window.Button.Unfocus", "black");
+    bt::textureResource(res,
+                        "window.button.unfocus",
+                        "Window.Button.Unfocus",
+                        "black",
+                        &getScreenInfo().getDisplay(),
+                        getScreenInfo().getScreenNumber(),
+                        image_control);
+
   resource.wstyle.b_pressed =
-    readDatabaseTexture("window.button.pressed",
-                        "Window.Button.Pressed", "black");
+    bt::textureResource(res,
+                        "window.button.pressed",
+                        "Window.Button.Pressed",
+                        "black",
+                        &getScreenInfo().getDisplay(),
+                        getScreenInfo().getScreenNumber(),
+                        image_control);
+
 
   // we create the window.frame texture by hand because it exists only to
   // make the code cleaner and is not actually used for display
-  bt::Color color = readDatabaseColor("window.frame.focusColor",
-                                   "Window.Frame.FocusColor", "white");
+  bt::Color color = bt::Color(res.read("window.frame.focusColor",
+                                       "Window.Frame.FocusColor",
+                                       "white"));
   resource.wstyle.f_focus = bt::Texture("solid flat",
-                                        &screen_info.getDisplay(),
-                                        screen_info.getScreenNumber(),
+                                        &getScreenInfo().getDisplay(),
+                                        getScreenInfo().getScreenNumber(),
                                         image_control);
   resource.wstyle.f_focus.setColor(color);
 
-  color = readDatabaseColor("window.frame.unfocusColor",
-                            "Window.Frame.UnfocusColor", "white");
+  color = bt::Color(res.read("window.frame.unfocusColor",
+                             "Window.Frame.UnfocusColor",
+                             "white"));
   resource.wstyle.f_unfocus = bt::Texture("solid flat",
-                                          &screen_info.getDisplay(),
-                                          screen_info.getScreenNumber(),
+                                          &getScreenInfo().getDisplay(),
+                                          getScreenInfo().getScreenNumber(),
                                           image_control);
   resource.wstyle.f_unfocus.setColor(color);
 
   resource.wstyle.l_text_focus =
-    readDatabaseColor("window.label.focus.textColor",
-                      "Window.Label.Focus.TextColor", "black");
+    bt::Color(res.read("window.label.focus.textColor",
+                       "Window.Label.Focus.TextColor",
+                       "black"),
+              &getScreenInfo().getDisplay(),
+              getScreenInfo().getScreenNumber());
   resource.wstyle.l_text_unfocus =
-    readDatabaseColor("window.label.unfocus.textColor",
-                      "Window.Label.Unfocus.TextColor", "white");
+    bt::Color(res.read("window.label.unfocus.textColor",
+                       "Window.Label.Unfocus.TextColor",
+                       "white"),
+              &getScreenInfo().getDisplay(),
+              getScreenInfo().getScreenNumber());
   resource.wstyle.b_pic_focus =
-    readDatabaseColor("window.button.focus.picColor",
-                      "Window.Button.Focus.PicColor", "black");
+    bt::Color(res.read("window.button.focus.picColor",
+                       "Window.Button.Focus.PicColor",
+                       "black"),
+              &getScreenInfo().getDisplay(),
+              getScreenInfo().getScreenNumber());
   resource.wstyle.b_pic_unfocus =
-    readDatabaseColor("window.button.unfocus.picColor",
-                      "Window.Button.Unfocus.PicColor", "white");
+    bt::Color(res.read("window.button.unfocus.picColor",
+                       "Window.Button.Unfocus.PicColor",
+                       "white"),
+              &getScreenInfo().getDisplay(),
+              getScreenInfo().getScreenNumber());
 
-  resource.wstyle.justify = LeftJustify;
-  if (XrmGetResource(resource.stylerc, "window.justify", "Window.Justify",
-                     &value_type, &value)) {
-    if (strstr(value.addr, "right") || strstr(value.addr, "Right"))
-      resource.wstyle.justify = RightJustify;
-    else if (strstr(value.addr, "center") || strstr(value.addr, "Center"))
-      resource.wstyle.justify = CenterJustify;
-  }
+  resource.wstyle.alignment =
+    bt::alignResource(res, "window.alignment", "Window.Alignment");
+
+  // load toolbar config
+  resource.tstyle.toolbar =
+    bt::textureResource(res, "toolbar", "Toolbar", "black",
+                        &getScreenInfo().getDisplay(),
+                        getScreenInfo().getScreenNumber(),
+                        image_control);
+  resource.tstyle.label =
+    bt::textureResource(res, "toolbar.label", "Toolbar.Label", "black",
+                        &getScreenInfo().getDisplay(),
+                        getScreenInfo().getScreenNumber(),
+                        image_control);
+
+  resource.tstyle.window =
+    bt::textureResource(res, "toolbar.windowLabel", "Toolbar.WindowLabel",
+                        "black", &getScreenInfo().getDisplay(),
+                        getScreenInfo().getScreenNumber(),
+                        image_control);
+
+  resource.tstyle.button =
+    bt::textureResource(res, "toolbar.button", "Toolbar.Button", "white",
+                        &getScreenInfo().getDisplay(),
+                        getScreenInfo().getScreenNumber(),
+                        image_control);
+
+  resource.tstyle.pressed =
+    bt::textureResource(res,
+                        "toolbar.button.pressed",
+                        "Toolbar.Button.Pressed",
+                        "black",
+                        &getScreenInfo().getDisplay(),
+                        getScreenInfo().getScreenNumber(),
+                        image_control);
+
+  resource.tstyle.clock =
+    bt::textureResource(res, "toolbar.clock", "Toolbar.Clock", "black",
+                        &getScreenInfo().getDisplay(),
+                        getScreenInfo().getScreenNumber(),
+                        image_control);
+
+  resource.tstyle.l_text =
+    bt::Color(res.read("toolbar.label.textColor",
+                       "Toolbar.Label.TextColor",
+                       "white"),
+              &getScreenInfo().getDisplay(),
+              getScreenInfo().getScreenNumber());
+
+  resource.tstyle.w_text =
+    bt::Color(res.read("toolbar.windowLabel.textColor",
+                       "Toolbar.WindowLabel.TextColor",
+                       "white"),
+              &getScreenInfo().getDisplay(),
+              getScreenInfo().getScreenNumber());
+
+  resource.tstyle.c_text =
+    bt::Color(res.read("toolbar.clock.textColor",
+                       "Toolbar.Clock.TextColor",
+                       "white"),
+              &getScreenInfo().getDisplay(),
+              getScreenInfo().getScreenNumber());
+
+  resource.tstyle.b_pic =
+    bt::Color(res.read("toolbar.button.picColor",
+                       "Toolbar.Button.PicColor",
+                       "black"),
+              &getScreenInfo().getDisplay(),
+              getScreenInfo().getScreenNumber());
+
+  resource.border_color =
+    bt::Color(res.read("borderColor", "BorderColor", "black"),
+              &getScreenInfo().getDisplay(),
+              getScreenInfo().getScreenNumber());
+
+  resource.tstyle.alignment =
+    bt::alignResource(res, "toolbar.alignment", "Toolbar.Alignment");
+
+  // load bevel, border and handle widths
+  std::string wstr = res.read("handleWidth", "HandleWidth", "6");
+  resource.handle_width =
+    static_cast<unsigned int>(strtoul(wstr.c_str(), 0, 0));
+  wstr = res.read("borderWidth", "BorderWidth", "1");
+  resource.border_width =
+    static_cast<unsigned int>(strtoul(wstr.c_str(), 0, 0));
+  wstr = res.read("bevelWidth", "BevelWidth", "3");
+  resource.bevel_width =
+    static_cast<unsigned int>(strtoul(wstr.c_str(), 0, 0));
+  wstr = res.read("frameWidth", "FrameWidth",
+                  bt::itostring(resource.bevel_width));
+  resource.frame_width =
+    static_cast<unsigned int>(strtoul(wstr.c_str(), 0, 0));
+
+  std::string root_command = res.read("rootCommand", "RootCommand");
+  if (! root_command.empty())
+    bt::bexec(root_command, displayString());
 
   // sanity checks
   if (resource.wstyle.t_focus.texture() == bt::Texture::Parent_Relative)
@@ -658,43 +764,6 @@ void BScreen::LoadStyle(void) {
   if (resource.wstyle.h_unfocus.texture() == bt::Texture::Parent_Relative)
     resource.wstyle.h_unfocus = resource.wstyle.f_unfocus;
 
-  // load toolbar config
-  resource.tstyle.toolbar =
-    readDatabaseTexture("toolbar", "Toolbar", "black");
-  resource.tstyle.label =
-    readDatabaseTexture("toolbar.label", "Toolbar.Label", "black");
-  resource.tstyle.window =
-    readDatabaseTexture("toolbar.windowLabel", "Toolbar.WindowLabel", "black");
-  resource.tstyle.button =
-    readDatabaseTexture("toolbar.button", "Toolbar.Button", "white");
-  resource.tstyle.pressed =
-    readDatabaseTexture("toolbar.button.pressed",
-                        "Toolbar.Button.Pressed", "black");
-  resource.tstyle.clock =
-    readDatabaseTexture("toolbar.clock", "Toolbar.Clock", "black");
-  resource.tstyle.l_text =
-    readDatabaseColor("toolbar.label.textColor",
-                      "Toolbar.Label.TextColor", "white");
-  resource.tstyle.w_text =
-    readDatabaseColor("toolbar.windowLabel.textColor",
-                      "Toolbar.WindowLabel.TextColor", "white");
-  resource.tstyle.c_text =
-    readDatabaseColor("toolbar.clock.textColor",
-                      "Toolbar.Clock.TextColor", "white");
-  resource.tstyle.b_pic =
-    readDatabaseColor("toolbar.button.picColor",
-                      "Toolbar.Button.PicColor", "black");
-
-  resource.tstyle.justify = LeftJustify;
-  if (XrmGetResource(resource.stylerc, "toolbar.justify",
-                     "Toolbar.Justify", &value_type, &value)) {
-    if (strstr(value.addr, "right") || strstr(value.addr, "Right"))
-      resource.tstyle.justify = RightJustify;
-    else if (strstr(value.addr, "center") || strstr(value.addr, "Center"))
-      resource.tstyle.justify = CenterJustify;
-  }
-
-  // sanity checks
   if (resource.tstyle.toolbar.texture() == bt::Texture::Parent_Relative) {
     resource.tstyle.toolbar = bt::Texture("solid flat",
                                           &screen_info.getDisplay(),
@@ -705,54 +774,13 @@ void BScreen::LoadStyle(void) {
                                                screen_info.getScreenNumber()));
   }
 
-  resource.border_color =
-    readDatabaseColor("borderColor", "BorderColor", "black");
-
-  unsigned int uint_value;
-
-  // load bevel, border and handle widths
-  resource.handle_width = 6;
-  if (XrmGetResource(resource.stylerc, "handleWidth", "HandleWidth",
-                     &value_type, &value) &&
-      sscanf(value.addr, "%u", &uint_value) == 1 &&
-      uint_value <= (screen_info.getWidth() / 2) && uint_value != 0) {
-    resource.handle_width = uint_value;
-  }
-
-  resource.border_width = 1;
-  if (XrmGetResource(resource.stylerc, "borderWidth", "BorderWidth",
-                     &value_type, &value) &&
-      sscanf(value.addr, "%u", &uint_value) == 1) {
-    resource.border_width = uint_value;
-  }
-
-  resource.bevel_width = 3;
-  if (XrmGetResource(resource.stylerc, "bevelWidth", "BevelWidth",
-                     &value_type, &value) &&
-      sscanf(value.addr, "%u", &uint_value) == 1 &&
-      uint_value <= (screen_info.getWidth() / 2) && uint_value != 0) {
-    resource.bevel_width = uint_value;
-  }
-
-  resource.frame_width = resource.bevel_width;
-  if (XrmGetResource(resource.stylerc, "frameWidth", "FrameWidth",
-                     &value_type, &value) &&
-      sscanf(value.addr, "%u", &uint_value) == 1 &&
-      uint_value <= (screen_info.getWidth() / 2)) {
-    resource.frame_width = uint_value;
-  }
-
-  if (XrmGetResource(resource.stylerc, "rootCommand", "RootCommand",
-                     &value_type, &value)) {
-    bt::bexec(value.addr, displayString());
-  }
-
   XrmDestroyDatabase(resource.stylerc);
+  resource.stylerc = 0;
 }
 
 
 void BScreen::addIcon(BlackboxWindow *w) {
-  if (! w) return;
+  assert(w != 0);
 
   iconList.push_back(w);
   int id = iconmenu->insertItem(bt::ellideText(w->getIconTitle(), 60, "..."));
@@ -762,7 +790,7 @@ void BScreen::addIcon(BlackboxWindow *w) {
 
 
 void BScreen::removeIcon(BlackboxWindow *w) {
-  if (! w) return;
+  assert(w != 0);
   iconList.remove(w);
   iconmenu->removeItem(w->getWindowNumber());
 }
@@ -923,18 +951,17 @@ BScreen::raiseWindows(const bt::Netwm::WindowList* const workspace_stack) {
 
   if (! session_stack.empty()) {
     XRaiseWindow(blackbox->getXDisplay(), session_stack[0]);
-  XRestackWindows(blackbox->getXDisplay(), &session_stack[0],
-                  session_stack.size());
+    XRestackWindows(blackbox->getXDisplay(), &session_stack[0],
+                    session_stack.size());
   }
+
   updateClientListStackingHint();
 }
 
 
-#ifdef    HAVE_STRFTIME
 void BScreen::saveStrftimeFormat(const std::string& format) {
   resource.strftime_format = format;
 }
-#endif // HAVE_STRFTIME
 
 
 void BScreen::addWorkspaceName(const std::string& name) {
@@ -1463,25 +1490,17 @@ void BScreen::showPosition(int x, int y) {
   }
 
   char label[1024];
-
   sprintf(label, bt::i18n(ScreenSet, ScreenPositionFormat,
                       "X: %4d x Y: %4d"), x, y);
 
   XClearWindow(blackbox->getXDisplay(), geom_window);
 
-  bt::Pen pen(resource.wstyle.l_text_focus, resource.wstyle.font);
-  if (bt::i18n.multibyte()) {
-    XmbDrawString(blackbox->getXDisplay(), geom_window,
-                  resource.wstyle.fontset, pen.gc(),
-                  resource.bevel_width, resource.bevel_width -
-                  resource.wstyle.fontset_extents->max_ink_extent.y,
-                  label, strlen(label));
-  } else {
-    XDrawString(blackbox->getXDisplay(), geom_window,
-                pen.gc(), resource.bevel_width,
-                resource.wstyle.font->ascent + resource.bevel_width,
-                label, strlen(label));
-  }
+  bt::Pen pen(resource.wstyle.l_text_focus, resource.wstyle.font.font());
+  bt::Rect rect(resource.bevel_width, resource.bevel_width,
+                geom_w - (resource.bevel_width * 2),
+                geom_h - (resource.bevel_width * 2));
+  bt::drawText(resource.wstyle.font, pen, geom_window, rect,
+               resource.wstyle.alignment, label);
 }
 
 
@@ -1499,23 +1518,16 @@ void BScreen::showGeometry(unsigned int gx, unsigned int gy) {
   char label[1024];
 
   sprintf(label, bt::i18n(ScreenSet, ScreenGeometryFormat,
-                      "W: %4d x H: %4d"), gx, gy);
+                          "W: %4d x H: %4d"), gx, gy);
 
   XClearWindow(blackbox->getXDisplay(), geom_window);
 
-  bt::Pen pen(resource.wstyle.l_text_focus, resource.wstyle.font);
-  if (bt::i18n.multibyte()) {
-    XmbDrawString(blackbox->getXDisplay(), geom_window,
-                  resource.wstyle.fontset, pen.gc(),
-                  resource.bevel_width, resource.bevel_width -
-                  resource.wstyle.fontset_extents->max_ink_extent.y,
-                  label, strlen(label));
-  } else {
-    XDrawString(blackbox->getXDisplay(), geom_window,
-                pen.gc(), resource.bevel_width,
-                resource.wstyle.font->ascent +
-                resource.bevel_width, label, strlen(label));
-  }
+  bt::Pen pen(resource.wstyle.l_text_focus, resource.wstyle.font.font());
+  bt::Rect rect(resource.bevel_width, resource.bevel_width,
+                geom_w - (resource.bevel_width * 2),
+                geom_h - (resource.bevel_width * 2));
+  bt::drawText(resource.wstyle.font, pen, geom_window, rect,
+               resource.wstyle.alignment, label);
 }
 
 
@@ -1677,49 +1689,6 @@ void BScreen::toggleFocusModel(FocusModel model) {
 
   std::for_each(windowList.begin(), windowList.end(),
                 std::mem_fun(&BlackboxWindow::grabButtons));
-}
-
-
-bt::Texture BScreen::readDatabaseTexture(const std::string &rname,
-                                         const std::string &rclass,
-                                         const std::string &default_color) {
-  bt::Texture texture;
-  XrmValue value;
-  char *value_type;
-
-  if (XrmGetResource(resource.stylerc, rname.c_str(), rclass.c_str(),
-                     &value_type, &value))
-    texture = bt::Texture(value.addr);
-  else
-    texture.setTexture(bt::Texture::Solid | bt::Texture::Flat);
-
-  // associate this texture with this screen
-  texture.setDisplay(&screen_info.getDisplay(), screen_info.getScreenNumber());
-  texture.setImageControl(image_control);
-
-  texture.setColor(readDatabaseColor(rname + ".color", rclass + ".Color",
-                                     default_color));
-  texture.setColorTo(readDatabaseColor(rname + ".colorTo", rclass + ".ColorTo",
-                                       default_color));
-
-  return texture;
-}
-
-
-bt::Color BScreen::readDatabaseColor(const std::string &rname,
-                                     const std::string &rclass,
-                                     const std::string &default_color) {
-  bt::Color color;
-  XrmValue value;
-  char *value_type;
-  if (XrmGetResource(resource.stylerc, rname.c_str(), rclass.c_str(),
-                     &value_type, &value))
-    color = bt::Color(value.addr, &screen_info.getDisplay(),
-                      screen_info.getScreenNumber());
-  else
-    color = bt::Color(default_color, &screen_info.getDisplay(),
-                      screen_info.getScreenNumber());
-  return color;
 }
 
 

@@ -57,9 +57,9 @@ bt::I18n bt::i18n; // initialized in main
 
 static void showHelp(int exitval) {
   // print version - this should not be localized!
-  printf("Blackbox %s\n\n"
-         "Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry\n",
-         "Copyright (c) 1997 - 2000, 2002 Bradley T Hughes\n"
+  printf("Blackbox %s\n"
+         "Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry\n"
+         "Copyright (c) 1997 - 2000, 2002 Bradley T Hughes\n",
          __blackbox_version);
 
   // print program usage and command line options
@@ -72,10 +72,10 @@ static void showHelp(int exitval) {
   // some people have requested that we print out compile options
   // as well
   printf(bt::i18n(mainSet, mainCompileOptions,
-              "Compile time options:\n"
-              "  Debugging:\t\t\t%s\n"
-              "  Shape:\t\t\t%s\n"
-              "  8bpp Ordered Dithering:\t%s\n\n"),
+                  "Compile time options:\n"
+                  "  Debugging:\t\t\t%s\n"
+                  "  Shape:\t\t\t%s\n"
+                  "  8bpp Ordered Dithering:\t%s\n\n"),
 #ifdef    DEBUG
          bt::i18n(CommonSet, CommonYes, "yes"),
 #else // !DEBUG
@@ -93,7 +93,7 @@ static void showHelp(int exitval) {
 #else // !ORDEREDPSEUDO
          bt::i18n(CommonSet, CommonNo, "no")
 #endif // ORDEREDPSEUDO
-          );
+         );
 
   ::exit(exitval);
 }
@@ -139,10 +139,10 @@ int main(int argc, char **argv) {
         perror("putenv()");
       }
     } else if (! strcmp(argv[i], "-version")) {
-      // print current version string
-      printf("Blackbox %s\n\n"
-             "Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry\n",
-             "Copyright (c) 1997 - 2000, 2002 Bradley T Hughes\n"
+      // print current version string, this should not be localized!
+      printf("Blackbox %s\n"
+             "Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry\n"
+             "Copyright (c) 1997 - 2000, 2002 Bradley T Hughes\n",
              __blackbox_version);
 
       ::exit(0);

@@ -645,20 +645,9 @@ void Blackbox::save_rc(void) {
     // time... but loading the defaults before saving allows us to rewrite the
     // users changes...
 
-#ifdef    HAVE_STRFTIME
     sprintf(rc_string, "session.screen%d.strftimeFormat: %s", screen_number,
             screen->getStrftimeFormat());
     XrmPutLineResource(&new_blackboxrc, rc_string);
-#else // !HAVE_STRFTIME
-    sprintf(rc_string, "session.screen%d.dateFormat:  %s", screen_number,
-            ((screen->getDateFormat() == B_EuropeanDate) ?
-             "European" : "American"));
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    sprintf(rc_string, "session.screen%d.clockFormat:  %d", screen_number,
-            ((screen->isClock24Hour()) ? 24 : 12));
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-#endif // HAVE_STRFTIME
 
     sprintf(rc_string, "session.screen%d.edgeSnapThreshold: %d",
             screen_number, screen->getEdgeSnapThreshold());
@@ -985,7 +974,6 @@ void Blackbox::load_rc(BScreen *screen) {
     screen->saveSlitAutoHide(True);
   }
 
-#ifdef    HAVE_STRFTIME
   sprintf(name_lookup,  "session.screen%d.strftimeFormat", screen_number);
   sprintf(class_lookup, "Session.Screen%d.StrftimeFormat", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
@@ -994,25 +982,6 @@ void Blackbox::load_rc(BScreen *screen) {
   } else {
     screen->saveStrftimeFormat("%I:%M %p");
   }
-#else //  HAVE_STRFTIME
-  sprintf(name_lookup,  "session.screen%d.dateFormat", screen_number);
-  sprintf(class_lookup, "Session.Screen%d.DateFormat", screen_number);
-  screen->saveDateFormat(B_AmericanDate);
-  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-                     &value)) {
-    if (! strncasecmp(value.addr, "european", value.size))
-      screen->saveDateFormat(B_EuropeanDate);
-  }
-
-  sprintf(name_lookup,  "session.screen%d.clockFormat", screen_number);
-  sprintf(class_lookup, "Session.Screen%d.ClockFormat", screen_number);
-  screen->saveClock24Hour(False);
-  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-                     &value) &&
-      sscanf(value.addr, "%d", &int_value) == 1 && int_value == 24) {
-    screen->saveClock24Hour(True);
-  }
-#endif // HAVE_STRFTIME
 
   sprintf(name_lookup,  "session.screen%d.edgeSnapThreshold", screen_number);
   sprintf(class_lookup, "Session.Screen%d.EdgeSnapThreshold", screen_number);

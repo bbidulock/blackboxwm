@@ -189,10 +189,6 @@ public:
 
   virtual void timeout(void);
 
-#ifndef   HAVE_STRFTIME
-  enum { B_AmericanDate = 1, B_EuropeanDate };
-#endif // HAVE_STRFTIME
-
   inline Atom getWMChangeStateAtom(void) const
     { return xa_wm_change_state; }
   inline Atom getWMStateAtom(void) const
