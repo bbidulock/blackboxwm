@@ -296,9 +296,14 @@ public:
   inline const char *getIconTitle(void) const
   { return client.icon_title.c_str(); }
 
-  inline unsigned int getWorkspaceNumber(void) const
+  inline unsigned int workspace(void) const
   { return client.workspace; }
-  inline unsigned int getWindowNumber(void) const { return window_number; }
+  void setWorkspace(unsigned int n);
+
+  inline unsigned int windowNumber(void) const
+  { return window_number; }
+  inline void setWindowNumber(int n)
+  { window_number = n; }
 
   inline const bt::Rect &frameRect(void) const { return frame.rect; }
   inline const bt::Rect &clientRect(void) const { return client.rect; }
@@ -312,8 +317,6 @@ public:
 
   unsigned long normalHintFlags(void) const
   { return client.normal_hint_flags; }
-
-  inline void setWindowNumber(int n) { window_number = n; }
 
   inline void setModal(bool flag) { client.state.modal = flag; }
 
@@ -344,7 +347,6 @@ public:
   void configure(int dx, int dy, unsigned int dw, unsigned int dh);
   inline void configure(const bt::Rect &r)
   { configure(r.x(), r.y(), r.width(), r.height()); }
-  void setWorkspace(unsigned int n);
 
   void clientMessageEvent(const XClientMessageEvent * const ce);
   void buttonPressEvent(const XButtonEvent * const be);

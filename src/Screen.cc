@@ -123,9 +123,8 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     workspacemenu->insertWorkspace(wkspc);
   }
 
-  current_workspace = workspacesList.front();
-  current_workspace_id = current_workspace->id();
-  workspacemenu->setWorkspaceChecked(current_workspace_id, true);
+  current_workspace = workspacesList.front()->id();
+  workspacemenu->setWorkspaceChecked(current_workspace, true);
 
   // the Slit will be created on demand
   _slit = 0;
@@ -416,8 +415,8 @@ void BScreen::LoadStyle(void) {
 void BScreen::iconifyWindow(BlackboxWindow *w) {
   assert(w != 0);
 
-  if (w->getWorkspaceNumber() != bt::BSENTINEL) {
-    Workspace* wkspc = getWorkspace(w->getWorkspaceNumber());
+  if (w->workspace() != bt::BSENTINEL) {
+    Workspace* wkspc = getWorkspace(w->workspace());
     wkspc->removeWindow(w);
     w->setWorkspace(bt::BSENTINEL);
   }
@@ -431,7 +430,7 @@ void BScreen::iconifyWindow(BlackboxWindow *w) {
 void BScreen::removeIcon(BlackboxWindow *w) {
   assert(w != 0);
   iconList.remove(w);
-  iconmenu->removeItem(w->getWindowNumber());
+  iconmenu->removeItem(w->windowNumber());
 }
 
 
@@ -469,8 +468,8 @@ unsigned int BScreen::removeLastWorkspace(void) {
   Workspace *wkspc = workspacesList.back();
   workspacesList.pop_back();
 
-  if (current_workspace->id() == wkspc->id())
-    changeWorkspaceID(current_workspace->id() - 1);
+  if (current_workspace == wkspc->id())
+    setCurrentWorkspace(current_workspace - 1);
 
   wkspc->transferWindows(*(workspacesList.back()));
 
@@ -488,23 +487,22 @@ unsigned int BScreen::removeLastWorkspace(void) {
 }
 
 
-void BScreen::changeWorkspaceID(unsigned int id) {
-  if (! current_workspace || id == current_workspace->id()) return;
+void BScreen::setCurrentWorkspace(unsigned int id) {
+  if (id == current_workspace) return;
 
-  current_workspace->hide();
+  assert(id < workspacesList.size());
 
-  workspacemenu->setWorkspaceChecked(current_workspace_id, false);
+  workspacemenu->setWorkspaceChecked(current_workspace, false);
+  getWorkspace(current_workspace)->hide();
 
-  current_workspace = getWorkspace(id);
-  current_workspace_id = current_workspace->id();
+  current_workspace = id;
 
-  current_workspace->show();
+  workspacemenu->setWorkspaceChecked(current_workspace, true);
+  getWorkspace(current_workspace)->show();
 
-  workspacemenu->setWorkspaceChecked(current_workspace_id, true);
   if (_toolbar) _toolbar->redrawWorkspaceLabel();
-
   blackbox->netwm().setCurrentDesktop(screen_info.rootWindow(),
-                                       current_workspace->id());
+                                       current_workspace);
 }
 
 
@@ -531,8 +529,9 @@ void BScreen::manageWindow(Window w) {
     return;
 
   Workspace* wkspc =
-    (win->getWorkspaceNumber() >= _resource.numberOfWorkspaces()) ?
-    current_workspace : getWorkspace(win->getWorkspaceNumber());
+    getWorkspace(win->workspace() >= _resource.numberOfWorkspaces()
+                 ? current_workspace
+                 : win->workspace());
 
   bool place_window = True;
   if (blackbox->startingUp() ||
@@ -560,9 +559,9 @@ void BScreen::unmanageWindow(BlackboxWindow *w, bool remap) {
 
   if (w->isModal()) w->setModal(False);
 
-  if (w->getWorkspaceNumber() != bt::BSENTINEL &&
-      w->getWindowNumber() != bt::BSENTINEL)
-    getWorkspace(w->getWorkspaceNumber())->removeWindow(w);
+  if (w->workspace() != bt::BSENTINEL &&
+      w->windowNumber() != bt::BSENTINEL)
+    getWorkspace(w->workspace())->removeWindow(w);
   else if (w->isIconic())
     removeIcon(w);
 
@@ -583,13 +582,13 @@ void BScreen::unmanageWindow(BlackboxWindow *w, bool remap) {
 
 
 void BScreen::raiseWindow(BlackboxWindow *w) {
-  Workspace *wkspc = getWorkspace(w->getWorkspaceNumber());
+  Workspace *wkspc = getWorkspace(w->workspace());
   wkspc->raiseWindow(w);
 }
 
 
 void BScreen::lowerWindow(BlackboxWindow *w) {
-  Workspace *wkspc = getWorkspace(w->getWorkspaceNumber());
+  Workspace *wkspc = getWorkspace(w->workspace());
   wkspc->lowerWindow(w);
 }
 
@@ -625,16 +624,16 @@ void BScreen::reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id) {
   if (! w) return;
 
   if (wkspc_id == bt::BSENTINEL)
-    wkspc_id = current_workspace->id();
+    wkspc_id = current_workspace;
 
-  if (w->getWorkspaceNumber() == wkspc_id)
+  if (w->workspace() == wkspc_id)
     return;
 
   if (w->isIconic()) {
     removeIcon(w);
     getWorkspace(wkspc_id)->addWindow(w);
   } else {
-    getWorkspace(w->getWorkspaceNumber())->removeWindow(w);
+    getWorkspace(w->workspace())->removeWindow(w);
     getWorkspace(wkspc_id)->addWindow(w);
   }
 }
@@ -642,60 +641,64 @@ void BScreen::reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id) {
 
 void BScreen::propagateWindowName(const BlackboxWindow *w) {
   if (! w->isIconic()) {
-    Clientmenu *clientmenu = getWorkspace(w->getWorkspaceNumber())->menu();
-    clientmenu->changeItem(w->getWindowNumber(),
+    Clientmenu *clientmenu = getWorkspace(w->workspace())->menu();
+    clientmenu->changeItem(w->windowNumber(),
                            bt::ellideText(w->getTitle(), 60, "..."));
 
     if (_toolbar && blackbox->getFocusedWindow() == w)
       _toolbar->redrawWindowLabel();
   } else {
-    iconmenu->changeItem(w->getWindowNumber(), w->getIconTitle());
+    iconmenu->changeItem(w->windowNumber(), w->getIconTitle());
   }
 }
 
 
 void BScreen::nextFocus(void) const {
   BlackboxWindow *focused = blackbox->getFocusedWindow(),
-    *next = focused;
+                    *next = focused;
+  Workspace *workspace = getWorkspace(current_workspace);
+  assert(workspace != 0);
 
   if (focused &&
       focused->getScreen()->screen_info.screenNumber() ==
       screen_info.screenNumber() &&
-      current_workspace->windowCount() > 1) {
+      workspace->windowCount() > 1) {
     do {
-      next = current_workspace->getNextWindowInList(next);
+      next = workspace->getNextWindowInList(next);
     } while(next != focused && ! next->setInputFocus());
 
     if (next != focused)
-      current_workspace->raiseWindow(next);
-  } else if (current_workspace->windowCount() > 0) {
-    next = current_workspace->getTopWindowOnStack();
+      workspace->raiseWindow(next);
+  } else if (workspace->windowCount() > 0) {
+    next = workspace->getTopWindowOnStack();
 
     next->setInputFocus();
-    current_workspace->raiseWindow(next);
+    workspace->raiseWindow(next);
   }
 }
 
 
 void BScreen::prevFocus(void) const {
   BlackboxWindow *focused = blackbox->getFocusedWindow(),
-    *next = focused;
+                    *next = focused;
+  Workspace *workspace = getWorkspace(current_workspace);
+  assert(workspace != 0);
 
   if (focused &&
       focused->getScreen()->screen_info.screenNumber() ==
       screen_info.screenNumber() &&
-      current_workspace->windowCount() > 1) {
+      workspace->windowCount() > 1) {
     do {
-      next = current_workspace->getPrevWindowInList(next);
+      next = workspace->getPrevWindowInList(next);
     } while(next != focused && ! next->setInputFocus());
 
     if (next != focused)
-      current_workspace->raiseWindow(next);
-  } else if (current_workspace->windowCount() > 0) {
-    next = current_workspace->getTopWindowOnStack();
+      workspace->raiseWindow(next);
+  } else if (workspace->windowCount() > 0) {
+    next = workspace->getTopWindowOnStack();
 
     next->setInputFocus();
-    current_workspace->raiseWindow(next);
+    workspace->raiseWindow(next);
   }
 }
 
@@ -708,7 +711,7 @@ void BScreen::raiseFocus(void) const {
   // if on this Screen, raise it
   if (focused->getScreen()->screen_info.screenNumber() ==
       screen_info.screenNumber()) {
-    Workspace *workspace = getWorkspace(focused->getWorkspaceNumber());
+    Workspace *workspace = getWorkspace(focused->workspace());
     workspace->raiseWindow(focused);
   }
 }
@@ -1273,8 +1276,8 @@ void BScreen::clientMessageEvent(const XClientMessageEvent * const event) {
   } else if (event->message_type == blackbox->netwm().currentDesktop()) {
     const unsigned int workspace = event->data.l[0];
     if (workspace < _resource.numberOfWorkspaces() &&
-        workspace != getCurrentWorkspaceID())
-      changeWorkspaceID(workspace);
+        workspace != current_workspace)
+      setCurrentWorkspace(workspace);
   }
 }
 

@@ -42,9 +42,9 @@ void Clientmenu::itemClicked(unsigned int id, unsigned int button) {
   BlackboxWindow *window = _screen.getWindow(_workspace, id);
   assert(window != 0);
 
-  if (_workspace != _screen.getCurrentWorkspaceID()) {
+  if (_workspace != _screen.currentWorkspace()) {
     if (button == 2) window->deiconify(true, false);
-    else  _screen.changeWorkspaceID(_workspace);
+    else  _screen.setCurrentWorkspace(_workspace);
   }
 
   _screen.raiseWindow(window);

@@ -66,8 +66,7 @@ private:
 
   Slit *_slit;
   Toolbar *_toolbar;
-  Workspace *current_workspace;
-  unsigned int current_workspace_id;
+  unsigned int current_workspace;
   Workspacemenu *workspacemenu;
 
   unsigned int geom_w, geom_h;
@@ -130,12 +129,12 @@ public:
 
   Workspace *getWorkspace(unsigned int index) const;
 
-  Workspace *getCurrentWorkspace(void) { return current_workspace; }
-
   Workspacemenu *getWorkspacemenu(void) { return workspacemenu; }
 
-  unsigned int getCurrentWorkspaceID(void) const
-  { return current_workspace_id; }
+  inline unsigned int currentWorkspace(void)
+  { return current_workspace; }
+  void setCurrentWorkspace(unsigned int id);
+
   unsigned int getIconCount(void) const { return iconList.size(); }
 
   BlackboxWindow* getWindow(unsigned int workspace, unsigned int id);
@@ -154,7 +153,6 @@ public:
 
   unsigned int addWorkspace(void);
   unsigned int removeLastWorkspace(void);
-  void changeWorkspaceID(unsigned int id);
 
   void iconifyWindow(BlackboxWindow *w);
   void removeIcon(BlackboxWindow *w);

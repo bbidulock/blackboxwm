@@ -528,7 +528,7 @@ void Toolbar::redrawWindowLabel(void) {
 
 void Toolbar::redrawWorkspaceLabel(void) {
   const std::string& name =
-    _screen->resource().nameOfWorkspace(_screen->getCurrentWorkspaceID());
+    _screen->resource().nameOfWorkspace(_screen->currentWorkspace());
   const ScreenResource::ToolbarStyle* const style =
     _screen->resource().toolbarStyle();
 
@@ -729,20 +729,21 @@ void Toolbar::buttonReleaseEvent(const XButtonEvent *re) {
       redrawPrevWorkspaceButton(False);
 
       if (bt::within(re->x, re->y, frame.button_w, frame.button_w)) {
-        if (_screen->getCurrentWorkspaceID() > 0)
-          _screen->changeWorkspaceID(_screen->getCurrentWorkspaceID() - 1);
+        if (_screen->currentWorkspace() > 0)
+          _screen->setCurrentWorkspace(_screen->currentWorkspace() - 1);
         else
-          _screen->changeWorkspaceID(_screen->resource().numberOfWorkspaces() - 1);
+          _screen->setCurrentWorkspace(_screen->resource().
+                                       numberOfWorkspaces() - 1);
       }
     } else if (re->window == frame.nsbutton) {
       redrawNextWorkspaceButton(False);
 
       if (bt::within(re->x, re->y, frame.button_w, frame.button_w))
-        if (_screen->getCurrentWorkspaceID() <
+        if (_screen->currentWorkspace() <
             _screen->resource().numberOfWorkspaces() - 1)
-          _screen->changeWorkspaceID(_screen->getCurrentWorkspaceID() + 1);
+          _screen->setCurrentWorkspace(_screen->currentWorkspace() + 1);
         else
-          _screen->changeWorkspaceID(0);
+          _screen->setCurrentWorkspace(0);
     } else if (re->window == frame.pwbutton) {
       redrawPrevWindowButton(False);
 
@@ -823,12 +824,13 @@ void Toolbar::keyPressEvent(const XKeyEvent *ke) {
       else
         blackbox->setFocusedWindow(0);
 
-      _screen->resource().saveWorkspaceName(_screen->getCurrentWorkspaceID(),
+      _screen->resource().saveWorkspaceName(_screen->currentWorkspace(),
                                            new_workspace_name);
 
       _screen->getWorkspacemenu()->
-        changeItem(_screen->getCurrentWorkspaceID(),
-                   _screen->resource().nameOfWorkspace(_screen->getCurrentWorkspaceID()));
+        changeItem(_screen->currentWorkspace(),
+                   _screen->resource().
+                   nameOfWorkspace(_screen->currentWorkspace()));
       _screen->updateDesktopNamesHint();
 
       new_workspace_name.erase();

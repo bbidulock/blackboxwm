@@ -77,7 +77,7 @@ void Workspace::removeWindow(BlackboxWindow *w) {
 
   _screen->updateClientListStackingHint();
 
-  clientmenu->removeItem(w->getWindowNumber());
+  clientmenu->removeItem(w->windowNumber());
 
   if (stackingList.empty())
     cascade_x = cascade_y = 32;
@@ -87,7 +87,7 @@ void Workspace::removeWindow(BlackboxWindow *w) {
 void Workspace::focusFallback(const BlackboxWindow *old_window) {
   BlackboxWindow *newfocus = 0;
 
-  if (_id == _screen->getCurrentWorkspaceID()) {
+  if (_id == _screen->currentWorkspace()) {
     // The window is on the visible workspace.
 
     // if it's a transient, then try to focus its parent
@@ -95,8 +95,8 @@ void Workspace::focusFallback(const BlackboxWindow *old_window) {
       newfocus = old_window->getTransientFor();
 
       if (! newfocus ||
-          newfocus->isIconic() ||                   // do not focus icons
-          newfocus->getWorkspaceNumber() != _id ||  // or other workspaces
+          newfocus->isIconic() ||         // do not focus icons
+          newfocus->workspace() != _id || // or other workspaces
           ! newfocus->setInputFocus())
         newfocus = 0;
     }
@@ -175,7 +175,7 @@ void Workspace::raiseTransients(const BlackboxWindow * const win,
   // put win's transients in the stack
   for (it = win->getTransients().rbegin(); it != end; ++it) {
     BlackboxWindow *w = *it;
-    if (! w->isIconic() && w->getWorkspaceNumber() == _id) {
+    if (! w->isIconic() && w->workspace() == _id) {
       stack.push_back(w->getFrameWindow());
       stackingList.raise(w);
     }
@@ -196,7 +196,7 @@ void Workspace::lowerTransients(const BlackboxWindow * const win,
   // put win's transients in the stack
   for (it = win->getTransients().rbegin(); it != end; ++it) {
     BlackboxWindow *w = *it;
-    if (! w->isIconic() && w->getWorkspaceNumber() == _id) {
+    if (! w->isIconic() && w->workspace() == _id) {
       stack.push_back(w->getFrameWindow());
       stackingList.lower(w);
     }
@@ -227,7 +227,7 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
 
   raiseTransients(win, stack_vector);
 
-  if (win->getWorkspaceNumber() == _id) {
+  if (win->workspace() == _id) {
     stack_vector.push_back(win->getFrameWindow());
     stackingList.raise(win);
   }
@@ -266,7 +266,7 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
   // stack the window with all transients above
   lowerTransients(win, stack_vector);
 
-  if (! win->isIconic() && win->getWorkspaceNumber() == _id) {
+  if (! win->isIconic() && win->workspace() == _id) {
     stack_vector.push_back(win->getFrameWindow());
     stackingList.lower(win);
   }
@@ -316,7 +316,7 @@ BlackboxWindow *Workspace::window(unsigned int index) const {
                                 end = stackingList.end();
     for (; it != end; ++it) {
       BlackboxWindow *win = *it;
-      if (win && win->getWindowNumber() == index)
+      if (win && win->windowNumber() == index)
         return win;
     }
   }
@@ -367,7 +367,7 @@ unsigned int Workspace::windowCount(void) const {
 void Workspace::hide(void) {
   BlackboxWindow *focused = _screen->getBlackbox()->getFocusedWindow();
   if (focused && focused->getScreen() == _screen) {
-    assert(focused->getWorkspaceNumber() == _id);
+    assert(focused->workspace() == _id);
 
     lastfocus = focused;
   } else {
@@ -403,16 +403,6 @@ void Workspace::show(void) {
     if (lastfocus)
       lastfocus->setInputFocus();
   }
-}
-
-
-bool Workspace::isCurrent(void) const {
-  return (_id == _screen->getCurrentWorkspaceID());
-}
-
-
-void Workspace::setCurrent(void) {
-  _screen->changeWorkspaceID(_id);
 }
 
 

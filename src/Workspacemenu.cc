@@ -94,8 +94,8 @@ void Workspacemenu::itemClicked(unsigned int id, unsigned int) {
   default:
     id -= WorkspaceIDDelta;
     assert(id < _bscreen->resource().numberOfWorkspaces());
-    if (_bscreen->getCurrentWorkspaceID() != id) {
-      _bscreen->changeWorkspaceID(id);
+    if (_bscreen->currentWorkspace() != id) {
+      _bscreen->setCurrentWorkspace(id);
       hideAll();
     }
     break;

@@ -169,13 +169,13 @@ void SendToWorkspacemenu::refresh(void) {
     the window is on.  you obviously can't send a window to the workspace
     the window is already on, which is why it is checked and disabled
   */
-  setItemEnabled(_window->getWorkspaceNumber(), false);
-  setItemChecked(_window->getWorkspaceNumber(), true);
+  setItemEnabled(_window->workspace(), false);
+  setItemChecked(_window->workspace(), true);
 }
 
 
 void SendToWorkspacemenu::itemClicked(unsigned int id, unsigned int button) {
   if (button != 2) _window->withdraw();
   _window->getScreen()->reassociateWindow(_window, id);
-  if (button == 2) _window->getScreen()->changeWorkspaceID(id);
+  if (button == 2) _window->getScreen()->setCurrentWorkspace(id);
 }

@@ -213,7 +213,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   client.state.maximized = 0;
   client.state.skip = SKIP_NONE;
   client.state.layer = StackingList::LayerNormal;
-  client.workspace = screen->getCurrentWorkspaceID();
+  client.workspace = screen->currentWorkspace();
   window_number = bt::BSENTINEL;
   client.normal_hint_flags = 0;
   client.window_group = None;
@@ -309,7 +309,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     // prepare the window to be iconified
     client.current_state = IconicState;
     client.state.iconic = False;
-  } else if (client.workspace != screen->getCurrentWorkspaceID()) {
+  } else if (client.workspace != screen->currentWorkspace()) {
     client.current_state = WithdrawnState;
   }
 
@@ -1630,7 +1630,7 @@ void BlackboxWindow::show(void) {
 void BlackboxWindow::deiconify(bool reassoc, bool raise) {
   if (client.state.iconic || reassoc)
     screen->reassociateWindow(this, bt::BSENTINEL);
-  else if (client.workspace != screen->getCurrentWorkspaceID())
+  else if (client.workspace != screen->currentWorkspace())
     return;
 
   show();
@@ -2353,8 +2353,8 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
     if (client.state.iconic)
       deiconify(False, False);
 
-    if (client.workspace != screen->getCurrentWorkspaceID())
-      screen->changeWorkspaceID(client.workspace);
+    if (client.workspace != screen->currentWorkspace())
+      screen->setCurrentWorkspace(client.workspace);
 
     if (setInputFocus())
       screen->raiseWindow(this);

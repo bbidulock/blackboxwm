@@ -67,8 +67,6 @@ public:
 
   void focusFallback(const BlackboxWindow *old_window);
 
-  bool isCurrent(void) const;
-
   void addWindow(BlackboxWindow *w, bool place = false);
   void removeWindow(BlackboxWindow *w);
   unsigned int windowCount(void) const;
@@ -80,7 +78,6 @@ public:
   void raiseWindow(BlackboxWindow *w);
   void lowerWindow(BlackboxWindow *w);
   void reconfigure(void);
-  void setCurrent(void);
   void setName(const std::string& new_name);
 
 private:
