@@ -43,43 +43,6 @@
 #include <assert.h>
 
 
-// this structure only contains 3 elements, even though the Motif 2.0
-// structure contains 5, because we only use the first 3
-struct MwmHints {
-  unsigned long flags;
-  unsigned long functions;
-  unsigned long decorations;
-};
-static const unsigned int PROP_MWM_HINTS_ELEMENTS = 3u;
-
-// MWM flags
-enum {
-  MWM_HINTS_FUNCTIONS   = 1<<0,
-  MWM_HINTS_DECORATIONS = 1<<1
-};
-
-// MWM functions
-enum {
-  MWM_FUNC_ALL      = 1<<0,
-  MWM_FUNC_RESIZE   = 1<<1,
-  MWM_FUNC_MOVE     = 1<<2,
-  MWM_FUNC_MINIMIZE = 1<<3,
-  MWM_FUNC_MAXIMIZE = 1<<4,
-  MWM_FUNC_CLOSE    = 1<<5
-};
-
-// MWM decorations
-enum {
-  MWM_DECOR_ALL      = 1<<0,
-  MWM_DECOR_BORDER   = 1<<1,
-  MWM_DECOR_RESIZEH  = 1<<2,
-  MWM_DECOR_TITLE    = 1<<3,
-  MWM_DECOR_MENU     = 1<<4,
-  MWM_DECOR_MINIMIZE = 1<<5,
-  MWM_DECOR_MAXIMIZE = 1<<6
-};
-
-
 #if 0
 static
 void watch_decorations(const char *msg, WindowDecorationFlags flags) {
@@ -1226,11 +1189,40 @@ void BlackboxWindow::getWMNormalHints(void) {
  * false if they are not.
  */
 void BlackboxWindow::getMWMHints(void) {
-  int format;
-  Atom atom_return;
-  unsigned long num, len;
-  MwmHints *mwmhints = 0;
+  // this structure only contains 3 elements, even though the Motif 2.0
+  // structure contains 5, because we only use the first 3
+  struct PropMwmHints {
+    unsigned long flags;
+    unsigned long functions;
+    unsigned long decorations;
+  };
+  static const unsigned int PROP_MWM_HINTS_ELEMENTS = 3u;
+  enum { // MWM flags
+    MWM_HINTS_FUNCTIONS   = 1<<0,
+    MWM_HINTS_DECORATIONS = 1<<1
+  };
+  enum { // MWM functions
+    MWM_FUNC_ALL      = 1<<0,
+    MWM_FUNC_RESIZE   = 1<<1,
+    MWM_FUNC_MOVE     = 1<<2,
+    MWM_FUNC_MINIMIZE = 1<<3,
+    MWM_FUNC_MAXIMIZE = 1<<4,
+    MWM_FUNC_CLOSE    = 1<<5
+  };
+  enum { // MWM decorations
+    MWM_DECOR_ALL      = 1<<0,
+    MWM_DECOR_BORDER   = 1<<1,
+    MWM_DECOR_RESIZEH  = 1<<2,
+    MWM_DECOR_TITLE    = 1<<3,
+    MWM_DECOR_MENU     = 1<<4,
+    MWM_DECOR_MINIMIZE = 1<<5,
+    MWM_DECOR_MAXIMIZE = 1<<6
+  };
 
+  Atom atom_return;
+  PropMwmHints *mwmhints = 0;
+  int format;
+  unsigned long num, len;
   int ret = XGetWindowProperty(blackbox->XDisplay(), client.window,
                                blackbox->getMotifWMHintsAtom(), 0,
                                PROP_MWM_HINTS_ELEMENTS, False,
