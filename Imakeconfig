@@ -32,7 +32,7 @@ XCOMM Define this to get MwmHints window property support (alpha quality)
 XCOMM #define MWM_HINTS
 
 XCOMM Put any compiler specific flags here for building Blackbox
-CXXFLAGS :=	-Wall -W -pipe  $(CXXFLAGS)
+CXXFLAGS :=	-Wall -W -pipe $(CXXFLAGS)
 XCOMM CXXFLAGS :=	$(CXXFLAGS) -g
 
 XCOMM Put any compiler specific flags here for building libBox

@@ -6,3 +6,6 @@ all:
 install:
 	@echo "No rule yet"
 
+clean:
+	@echo "No rule yet"
+

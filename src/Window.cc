@@ -382,7 +382,8 @@ void BlackboxWindow::associateClientWindow(void) {
     XSelectInput(display, frame.window, NoEventMask);
     XReparentWindow(display, client.window, frame.window, 0,
 		    frame.title_h + 1);
-    XSelectInput(display, frame.window, ButtonPressMask | EnterWindowMask);
+    XSelectInput(display, frame.window, ButtonPressMask | EnterWindowMask |
+	SubstructureRedirectMask);
   } else {
     XSelectInput(display, frame.border, NoEventMask);
     XReparentWindow(display, client.window, frame.border, frame.bevel_w,
@@ -390,7 +391,7 @@ void BlackboxWindow::associateClientWindow(void) {
 
     XSelectInput(display, frame.border, KeyPressMask | KeyReleaseMask |
 		 ButtonPressMask | ButtonReleaseMask | ExposureMask | 
-		 EnterWindowMask | LeaveWindowMask);
+		 EnterWindowMask | LeaveWindowMask | SubstructureRedirectMask);
   }
 
   XFlush(display);
@@ -1184,11 +1185,12 @@ Bool BlackboxWindow::setInputFocus(void) {
   case F_LocallyActive:
   case F_Passive:
     if (! validateClient()) return False;
-    XSetInputFocus(display, client.window, RevertToParent, CurrentTime);
+    if (XSetInputFocus(display, client.window, RevertToParent, CurrentTime))
+      return True;
     break;
   }
 
-  return True;
+  return False;
 }
 
 

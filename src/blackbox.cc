@@ -57,20 +57,30 @@
 
 Blackbox *blackbox;
 
-static void signalhandler(int i) {
+static void signalhandler(int sig) {
   static int re_enter = 0;
   
-  fprintf(stderr, "%s: toplevel:\n\t[ signal %d caught ]\n", __FILE__, i);
-  if (! re_enter) {
-    re_enter = 1;
-    fprintf(stderr, "\t[ shutting down ]\n");
-    blackbox->Shutdown(False);
-  }
+  switch (sig) {
+  case SIGHUP:
+    blackbox->Reconfigure();
+    break;
 
-  fprintf(stderr, "\t[ exiting ]\n");
-  if (i != SIGTERM)
-    abort();
-  exit(0);
+  default:
+    fprintf(stderr, "%s: toplevel:\n\t[ signal %d caught ]\n", __FILE__, sig);
+    if (! re_enter) {
+      re_enter = 1;
+      fprintf(stderr, "\t[ shutting down ]\n");
+      blackbox->Shutdown(False);
+    }
+
+    if (sig != SIGTERM && sig != SIGINT) {
+      fprintf(stderr, "\t[ aborting... dumping core ]\n");
+      abort();
+    } else
+      fprintf(stderr, "\t[ exiting ]\n");
+    exit(0);
+    break;
+  }
 }
 
 
@@ -110,11 +120,14 @@ static int handleXErrors(Display *d, XErrorEvent *e) {
 // *************************************************************************
 
 Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
-  // install signal handlers for fatal signals
+  // install signal handler for fatal signals
   signal(SIGSEGV, (void (*)(int)) signalhandler);
+  signal(SIGFPE, (void (*)(int)) signalhandler);
   signal(SIGTERM, (void (*)(int)) signalhandler);
   signal(SIGINT, (void (*)(int)) signalhandler);
-  signal(SIGFPE, (void (*)(int)) signalhandler);
+
+  // sighup will cause blackbox to reconfigure itself
+  signal(SIGHUP, (void (*)(int)) signalhandler);
 
   ::blackbox = this;
   b_argc = argc;
@@ -593,10 +606,6 @@ void Blackbox::ProcessEvent(XEvent *e) {
       }
     }
 
-    break;
-  }
-
-  case KeyRelease: {
     break;
   }
 

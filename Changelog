@@ -2,6 +2,17 @@ At the request of some people, here is a Change log starting with 0.33.0.
 Enjoy! :)
 
 
+Changes from 0.34.4 to 0.34.5:
+	- hopefully... this will be the last bug fix... so i can begin working
+	  on new features... i fixed event mask selection on client windows
+	  after reparenting them to the decoration frame... this should get
+	  xv working again...
+	- changed the signal hander to core on sigsegv and sigfpe... sigint and
+	  sigterm will just exit blackbox cleanly... sighup will cause blackbox
+	  to reconfigure itself
+	- changed the way the version string is printed... 
+
+
 Changes from 0.34.3 to 0.34.4:
 	- changed the window stacking code to stack windows and their menus
 	  more sanely... window menus are stacked directly ontop of the client

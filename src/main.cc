@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
       }
     } else if (! strcmp(argv[i], "-version")) {
       // print current version string
-      printf("Blackbox %s : (c) 1997, 1998 Brad Hughes\n\n",
+      printf("Blackbox %s\n\t(c) 1997, 1998 Brad Hughes\n\n",
              __blackbox_version);
       exit(0);
     } else if (! strcmp(argv[i], "-help")) {
