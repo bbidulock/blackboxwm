@@ -419,11 +419,6 @@ void bt::Application::process_event(XEvent *event) {
     break;
   }
 
-  case ConfigureRequest: {
-    handler->configureRequestEvent(&event->xconfigurerequest);
-    break;
-  }
-
   case Expose: {
     // compress expose events
     XEvent realevent;

@@ -1460,31 +1460,6 @@ void BScreen::buttonPressEvent(const XButtonEvent * const event) {
 }
 
 
-void BScreen::configureRequestEvent(const XConfigureRequestEvent * const event)
-{
-  /*
-    handle configure requests for windows that have no EventHandlers
-    by simply configuring them as requested.
-
-    note: the event->window parameter points to the window being
-    configured, and event->parent points to the window that received
-    the event (in this case, the root window, since
-    SubstructureRedirect has been selected).
-  */
-  XWindowChanges xwc;
-  xwc.x = event->x;
-  xwc.y = event->y;
-  xwc.width = event->width;
-  xwc.height = event->height;
-  xwc.border_width = event->border_width;
-  xwc.sibling = event->above;
-  xwc.stack_mode = event->detail;
-
-  XConfigureWindow(blackbox->XDisplay(), event->window,
-                   event->value_mask, &xwc);
-}
-
-
 void BScreen::toggleFocusModel(FocusModel model) {
   std::for_each(windowList.begin(), windowList.end(),
                 std::mem_fun(&BlackboxWindow::ungrabButtons));

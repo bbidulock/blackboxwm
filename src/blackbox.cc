@@ -172,6 +172,36 @@ void Blackbox::process_event(XEvent *e) {
     break;
   }
 
+  case ConfigureRequest: {
+    BlackboxWindow *win = findWindow(e->xconfigurerequest.window);
+    if (win) {
+      win->configureRequestEvent(&e->xconfigurerequest);
+    } else {
+      /*
+        handle configure requests for windows that have no EventHandlers
+        by simply configuring them as requested.
+
+        note: the event->window parameter points to the window being
+        configured, and event->parent points to the window that received
+        the event (in this case, the root window, since
+        SubstructureRedirect has been selected).
+      */
+      XWindowChanges xwc;
+      xwc.x = e->xconfigurerequest.x;
+      xwc.y = e->xconfigurerequest.y;
+      xwc.width = e->xconfigurerequest.width;
+      xwc.height = e->xconfigurerequest.height;
+      xwc.border_width = e->xconfigurerequest.border_width;
+      xwc.sibling = e->xconfigurerequest.above;
+      xwc.stack_mode = e->xconfigurerequest.detail;
+      XConfigureWindow(XDisplay(),
+                       e->xconfigurerequest.window,
+                       e->xconfigurerequest.value_mask,
+                       &xwc);
+    }
+    break;
+  }
+
   case FocusIn: {
     if (e->xfocus.detail != NotifyNonlinear) {
       /*

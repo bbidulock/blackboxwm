@@ -73,9 +73,6 @@ namespace bt {
     // Window property changed/added/deleted.
     virtual void propertyNotifyEvent(const XPropertyEvent * const) {}
 
-    // Window size/position/stacking/etc. change request.
-    virtual void configureRequestEvent(const XConfigureRequestEvent * const) {}
-
     // Message passing.
     virtual void clientMessageEvent(const XClientMessageEvent * const) {}
 

@@ -210,7 +210,6 @@ public:
 
   void clientMessageEvent(const XClientMessageEvent * const event);
   void buttonPressEvent(const XButtonEvent * const event);
-  void configureRequestEvent(const XConfigureRequestEvent * const event);
 };
 
 #endif // __Screen_hh
