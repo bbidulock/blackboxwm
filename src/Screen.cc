@@ -1679,9 +1679,6 @@ void BScreen::updateAvailableArea(void) {
   usableArea = getRect(); // reset to full screen
   for(; it != strutList.end(); ++it) {
     NETStrut *strut = *it;
-    fprintf(stderr, "screen: %d; left: %d, top: %d, right: %d, bottom: %d\n",
-            getScreenNumber(),
-            strut->left, strut->top, strut->right, strut->bottom);
     if (strut->left > current_left)
       current_left = strut->left;
     if (strut->top > current_top)

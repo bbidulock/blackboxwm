@@ -1469,7 +1469,6 @@ void BlackboxWindow::maximize(unsigned int button) {
   int dx = screen_area.x, dy = screen_area.y;
   unsigned int dw = screen_area.width, dh = screen_area.height;
 
-  fprintf(stderr, "dx: %d, dy: %d, dw: %d, dh: %d\n", dx, dy, dw, dh);
   dw -= frame.border_w * 2;
   dw -= frame.mwm_border_w * 2;
   dw -= client.base_width;
