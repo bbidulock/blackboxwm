@@ -32,6 +32,7 @@ extern "C" {
 #include <stdio.h>
 }
 
+#include <assert.h>
 
 BColor::ColorCache BColor::colorcache;
 bool BColor::cleancache = false;

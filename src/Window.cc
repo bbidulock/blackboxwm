@@ -1274,6 +1274,7 @@ void BlackboxWindow::configureShape(void) {
 
 
 bool BlackboxWindow::setInputFocus(void) {
+  fprintf(stderr, "setInputFocus: focusing %s\n", getTitle());
   if (flags.focused) return True;
 
   if (! client.rect.intersects(screen->getRect())) {
@@ -1285,6 +1286,7 @@ bool BlackboxWindow::setInputFocus(void) {
 
   if (client.transientList.size() > 0) {
     // transfer focus to any modal transients
+    fprintf(stderr, "setInputyFocus: looking for a modal transient\n");
     BlackboxWindowList::iterator it, end = client.transientList.end();
     for (it = client.transientList.begin(); it != end; ++it) {
       if ((*it)->flags.modal) return (*it)->setInputFocus();
@@ -1305,6 +1307,7 @@ bool BlackboxWindow::setInputFocus(void) {
     ret = False;
   }
 
+  fprintf(stderr, "setInputFocus: %s now has focus\n", getTitle());
   if (flags.send_focus_message) {
     XEvent ce;
     ce.xclient.type = ClientMessage;

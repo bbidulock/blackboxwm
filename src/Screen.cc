@@ -70,6 +70,7 @@ extern "C" {
 
 #include <algorithm>
 #include <functional>
+#include <assert.h>
 using std::string;
 
 #include "i18n.hh"
@@ -789,7 +790,7 @@ void BScreen::changeWorkspaceID(unsigned int id) {
 
     if (blackbox->getFocusedWindow() &&
         blackbox->getFocusedWindow()->getScreen() == this &&
-        (! blackbox->getFocusedWindow()->isStuck())) {
+        ! blackbox->getFocusedWindow()->isStuck()) {
       current_workspace->setLastFocusedWindow(blackbox->getFocusedWindow());
       blackbox->setFocusedWindow((BlackboxWindow *) 0);
     }
@@ -803,6 +804,8 @@ void BScreen::changeWorkspaceID(unsigned int id) {
 
     if (resource.focus_last && current_workspace->getLastFocusedWindow()) {
       XSync(blackbox->getXDisplay(), False);
+      BlackboxWindow *window = current_workspace->getLastFocusedWindow();
+      fprintf(stderr, "giving focus to %s", window->getTitle());
       current_workspace->getLastFocusedWindow()->setInputFocus();
     }
   }
