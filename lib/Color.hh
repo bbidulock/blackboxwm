@@ -39,37 +39,49 @@ namespace bt {
   */
   class Color {
   public:
+    /*
+      Frees unused colors on all screens.
+     */
     static void clearCache(void);
 
+    /*
+      Returns the named color on the specified display and screen.  If
+      the color couldn't be found, an invalid color is returned.
+    */
     static Color namedColor(const Display &display, unsigned int screen,
                             const std::string &colorname);
 
-    explicit Color(int r = -1, int g = -1, int b = -1);
-    Color(const Color &c);
-    ~Color(void);
+    explicit inline Color(int r = -1, int g = -1, int b = -1)
+      : _red(r), _green(g), _blue(b),
+        _screen(~0u), _pixel(0ul)
+    { }
+    inline Color(const Color &c)
+      : _red(c._red), _green(c._green), _blue(c._blue),
+        _screen(~0u), _pixel(0ul)
+    { }
+    inline ~Color(void)
+    { deallocate(); }
 
-    int   red(void) const { return _red; }
-    int green(void) const { return _green; }
-    int  blue(void) const { return _blue; }
-    void setRGB(int r, int g, int b) {
-      deallocate();
-      _red   = r;
-      _green = g;
-      _blue  = b;
-    }
+    inline int   red(void) const
+    { return _red; }
+    inline int green(void) const
+    { return _green; }
+    inline int  blue(void) const
+    { return _blue; }
+    inline void setRGB(int r, int g, int b)
+    { deallocate(); _red = r; _green = g; _blue = b; }
 
     unsigned long pixel(unsigned int screen) const;
 
-    bool allocated(void) const { return _screen != ~0u; }
-    bool valid(void) const
+    inline bool valid(void) const
     { return _red != -1 && _green != -1 && _blue != -1; }
 
     // operators
-    Color &operator=(const Color &c)
+    inline Color &operator=(const Color &c)
     { setRGB(c._red, c._green, c._blue); return *this; }
-    bool operator==(const Color &c) const
+    inline bool operator==(const Color &c) const
     { return _red == c._red && _green == c._green && _blue == c._blue; }
-    bool operator!=(const Color &c) const
+    inline bool operator!=(const Color &c) const
     { return !operator==(c); }
 
   private:

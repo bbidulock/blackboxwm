@@ -238,45 +238,8 @@ void bt::ColorCache::clear(bool force) {
 }
 
 
-bt::Color::Color(int r, int g, int b)
-  : _red(r), _green(g), _blue(b), _screen(~0u), _pixel(0ul) { }
-
-
-bt::Color::Color(const Color &c)
-  : _red(c._red), _green(c._green), _blue(c._blue),
-    _screen(~0u), _pixel(0ul) { }
-
-
-bt::Color::~Color(void) {
-  deallocate();
-}
-
-
-unsigned long bt::Color::pixel(unsigned int screen) const {
-  if ( _screen == screen) return _pixel; // already allocated on this screen
-
-  assert(colorcache != 0);
-  // deallocate() isn't const, so we don't call it from here
-  if (_screen != ~0u) colorcache->release(_screen, _red, _green, _blue);
-
-  _screen = screen;
-  _pixel = colorcache->find(_screen, _red, _green, _blue);
-  return _pixel;
-}
-
-
-void bt::Color::deallocate(void) {
-  if (_screen == ~0u) return; // not allocated
-  assert(colorcache != 0);
-  colorcache->release(_screen, _red, _green, _blue);
-  _screen = ~0u;
-  _pixel = 0ul;
-}
-
-
-void bt::Color::clearCache(void) {
-  if (colorcache) colorcache->clear(false);
-}
+void bt::Color::clearCache(void)
+{ if (colorcache) colorcache->clear(false); }
 
 
 bt::Color bt::Color::namedColor(const Display &display, unsigned int screen,
@@ -301,4 +264,29 @@ bt::Color bt::Color::namedColor(const Display &display, unsigned int screen,
   }
 
   return Color(xcol.red >> 8, xcol.green >> 8, xcol.blue >> 8);
+}
+
+
+unsigned long bt::Color::pixel(unsigned int screen) const {
+  if ( _screen == screen) return _pixel; // already allocated on this screen
+
+  assert(colorcache != 0);
+  // deallocate() isn't const, so we can't call it from here
+  if (_screen != ~0u)
+    colorcache->release(_screen, _red, _green, _blue);
+
+  _screen = screen;
+  _pixel = colorcache->find(_screen, _red, _green, _blue);
+  return _pixel;
+}
+
+
+void bt::Color::deallocate(void) {
+  if (_screen == ~0u) return; // not allocated
+
+  assert(colorcache != 0);
+  colorcache->release(_screen, _red, _green, _blue);
+
+  _screen = ~0u;
+  _pixel = 0ul;
 }
