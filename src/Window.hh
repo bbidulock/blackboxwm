@@ -76,6 +76,17 @@ enum WindowDecoration {
 };
 typedef unsigned char WindowDecorationFlags;
 
+struct WMNormalHints {
+  long flags;
+  unsigned int min_width, min_height;
+  unsigned int max_width, max_height;
+  unsigned int width_inc, height_inc;
+  unsigned int min_aspect_x, min_aspect_y;
+  unsigned int max_aspect_x, max_aspect_y;
+  unsigned int base_width, base_height;
+  unsigned int win_gravity;
+};
+
 
 class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
                                                       public bt::EventHandler, public bt::NoCopy {
@@ -128,16 +139,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
 
     int old_bw;                       // client's borderwidth
 
-    unsigned int
-    min_width, min_height,        // can not be resized smaller
-      max_width, max_height,        // can not be resized larger
-      width_inc, height_inc,        // increment step
-      min_aspect_x, min_aspect_y,   // minimum aspect ratio
-      max_aspect_x, max_aspect_y,   // maximum aspect ratio
-      base_width, base_height,
-      win_gravity;
-
-    unsigned long current_state, normal_hint_flags;
+    unsigned long current_state;
     unsigned int workspace;
 
     bt::Netwm::Strut *strut;
@@ -146,6 +148,8 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
     WindowType window_type;
     WindowFunctionFlags functions;
     WindowDecorationFlags decorations;
+
+    WMNormalHints wmnormal;
   } client;
 
   /*
@@ -210,8 +214,9 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   std::string readWMName(void);
   std::string readWMIconName(void);
 
+  WMNormalHints readWMNormalHints(void);
+
   void getNetwmHints(void);
-  void getWMNormalHints(void);
   void getWMProtocols(void);
   void getWMHints(void);
   void getMWMHints(void);
@@ -313,8 +318,8 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   inline unsigned int getTitleHeight(void) const
   { return frame.style->title_height; }
 
-  unsigned long normalHintFlags(void) const
-  { return client.normal_hint_flags; }
+  const WMNormalHints &wmNormalHints(void) const
+  { return client.wmnormal; }
 
   unsigned long currentState(void) const
   { return client.current_state; }

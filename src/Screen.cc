@@ -517,7 +517,7 @@ void BScreen::manageWindow(Window w) {
   bool place_window = true;
   if (blackbox->startingUp()
       || ((win->isTransient() || win->isDesktop()
-           || (win->normalHintFlags() & (PPosition|USPosition)))
+           || (win->wmNormalHints().flags & (PPosition|USPosition)))
           && win->clientRect().intersects(screen_info.rect())))
     place_window = false;
   if (place_window) placeWindow(win);

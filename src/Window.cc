@@ -175,7 +175,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   client.colormap = wattrib.colormap;
   client.workspace = screen->currentWorkspace();
   window_number = bt::BSENTINEL;
-  client.normal_hint_flags = 0;
   client.window_group = None;
   client.transient_for = 0;
   client.window_type = WindowTypeNormal;
@@ -210,7 +209,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   getNetwmHints();
   getWMProtocols();
   getWMHints();
-  getWMNormalHints();
+  client.wmnormal = readWMNormalHints();
   getTransientInfo();
   if (client.window_type == WindowTypeNormal && isTransient())
     client.window_type = WindowTypeDialog;
@@ -218,13 +217,13 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   ::get_decorations(client.window_type, client.decorations, client.functions);
   getMWMHints();
 
-
-  if ((client.normal_hint_flags & PMinSize) &&
-      (client.normal_hint_flags & PMaxSize) &&
-      client.max_width <= client.min_width &&
-      client.max_height <= client.min_height) {
-    client.decorations &= ~(WindowDecorationMaximize | WindowDecorationGrip);
-    client.functions &= ~(WindowFunctionResize | WindowFunctionMaximize);
+  if ((client.wmnormal.flags & (PMinSize|PMaxSize)) == (PMinSize|PMaxSize)
+      && client.wmnormal.max_width <= client.wmnormal.min_width
+      && client.wmnormal.max_height <= client.wmnormal.min_height) {
+    client.decorations &= ~(WindowDecorationMaximize |
+                            WindowDecorationGrip);
+    client.functions   &= ~(WindowFunctionResize |
+                            WindowFunctionMaximize);
   }
 
   frame.window = createToplevelWindow();
@@ -1118,19 +1117,18 @@ void BlackboxWindow::getWMHints(void) {
 
 
 /*
- * Gets the value of the WM_NORMAL_HINTS property.  If the property is
- * not set, then use a set of default values.
+ * Returns the value of the WM_NORMAL_HINTS property.  If the property
+ * is not set, a set of default values is returned instead.
  */
-void BlackboxWindow::getWMNormalHints(void) {
-  long icccm_mask;
-  XSizeHints sizehint;
-
-  client.min_width = client.min_height =
-    client.width_inc = client.height_inc = 1;
-  client.base_width = client.base_height = 0;
-  client.win_gravity = NorthWestGravity;
-  client.min_aspect_x = client.min_aspect_y =
-    client.max_aspect_x = client.max_aspect_y = 1;
+WMNormalHints BlackboxWindow::readWMNormalHints(void) {
+  WMNormalHints wmnormal;
+  wmnormal.flags = 0;
+  wmnormal.min_width    = wmnormal.min_height   = 1u;
+  wmnormal.width_inc    = wmnormal.height_inc   = 1u;
+  wmnormal.min_aspect_x = wmnormal.min_aspect_y = 1u;
+  wmnormal.max_aspect_x = wmnormal.max_aspect_y = 1u;
+  wmnormal.base_width   = wmnormal.base_height  = 0u;
+  wmnormal.win_gravity  = NorthWestGravity;
 
   /*
     use the full screen, not the strut modified size. otherwise when
@@ -1138,53 +1136,57 @@ void BlackboxWindow::getWMNormalHints(void) {
     lead to odd rendering bugs.
   */
   const bt::Rect &rect = screen->screenInfo().rect();
-  client.max_width = rect.width();
-  client.max_height = rect.height();
+  wmnormal.max_width = rect.width();
+  wmnormal.max_height = rect.height();
 
+  XSizeHints sizehint;
+  long unused;
   if (! XGetWMNormalHints(blackbox->XDisplay(), client.window,
-                          &sizehint, &icccm_mask))
-    return;
+                          &sizehint, &unused))
+    return wmnormal;
 
-  client.normal_hint_flags = sizehint.flags;
+  wmnormal.flags = sizehint.flags;
 
   if (sizehint.flags & PMinSize) {
-    if (sizehint.min_width >= 0)
-      client.min_width = sizehint.min_width;
-    if (sizehint.min_height >= 0)
-      client.min_height = sizehint.min_height;
+    if (sizehint.min_width > 0)
+      wmnormal.min_width  = sizehint.min_width;
+    if (sizehint.min_height > 0)
+      wmnormal.min_height = sizehint.min_height;
   }
 
   if (sizehint.flags & PMaxSize) {
-    if (sizehint.max_width > static_cast<signed>(client.min_width))
-      client.max_width = sizehint.max_width;
+    if (sizehint.max_width > static_cast<signed>(wmnormal.min_width))
+      wmnormal.max_width  = sizehint.max_width;
     else
-      client.max_width = client.min_width;
+      wmnormal.max_width  = wmnormal.min_width;
 
-    if (sizehint.max_height > static_cast<signed>(client.min_height))
-      client.max_height = sizehint.max_height;
+    if (sizehint.max_height > static_cast<signed>(wmnormal.min_height))
+      wmnormal.max_height = sizehint.max_height;
     else
-      client.max_height = client.min_height;
+      wmnormal.max_height = wmnormal.min_height;
   }
 
   if (sizehint.flags & PResizeInc) {
-    client.width_inc = sizehint.width_inc;
-    client.height_inc = sizehint.height_inc;
+    wmnormal.width_inc  = sizehint.width_inc;
+    wmnormal.height_inc = sizehint.height_inc;
   }
 
   if (sizehint.flags & PAspect) {
-    client.min_aspect_x = sizehint.min_aspect.x;
-    client.min_aspect_y = sizehint.min_aspect.y;
-    client.max_aspect_x = sizehint.max_aspect.x;
-    client.max_aspect_y = sizehint.max_aspect.y;
+    wmnormal.min_aspect_x = sizehint.min_aspect.x;
+    wmnormal.min_aspect_y = sizehint.min_aspect.y;
+    wmnormal.max_aspect_x = sizehint.max_aspect.x;
+    wmnormal.max_aspect_y = sizehint.max_aspect.y;
   }
 
   if (sizehint.flags & PBaseSize) {
-    client.base_width = sizehint.base_width;
-    client.base_height = sizehint.base_height;
+    wmnormal.base_width  = sizehint.base_width;
+    wmnormal.base_height = sizehint.base_height;
   }
 
   if (sizehint.flags & PWinGravity)
-    client.win_gravity = sizehint.win_gravity;
+    wmnormal.win_gravity = sizehint.win_gravity;
+
+  return wmnormal;
 }
 
 
@@ -1989,7 +1991,7 @@ void BlackboxWindow::clearState(void) {
  */
 void BlackboxWindow::applyGravity(bt::Rect &r) {
   // apply horizontal window gravity
-  switch (client.win_gravity) {
+  switch (client.wmnormal.win_gravity) {
   default:
   case NorthWestGravity:
   case SouthWestGravity:
@@ -2016,7 +2018,7 @@ void BlackboxWindow::applyGravity(bt::Rect &r) {
   }
 
   // apply vertical window gravity
-  switch (client.win_gravity) {
+  switch (client.wmnormal.win_gravity) {
   default:
   case NorthWestGravity:
   case NorthEastGravity:
@@ -2052,7 +2054,7 @@ void BlackboxWindow::applyGravity(bt::Rect &r) {
  */
 void BlackboxWindow::restoreGravity(bt::Rect &r) {
   // restore horizontal window gravity
-  switch (client.win_gravity) {
+  switch (client.wmnormal.win_gravity) {
   default:
   case NorthWestGravity:
   case SouthWestGravity:
@@ -2079,7 +2081,7 @@ void BlackboxWindow::restoreGravity(bt::Rect &r) {
   }
 
   // restore vertical window gravity
-  switch (client.win_gravity) {
+  switch (client.wmnormal.win_gravity) {
   default:
   case NorthWestGravity:
   case NorthEastGravity:
@@ -2325,13 +2327,13 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
     request.height = event->data.l[4];
     request.value_mask = CWX | CWY | CWWidth | CWHeight;
 
-    const int old_gravity = client.win_gravity;
+    const int old_gravity = client.wmnormal.win_gravity;
     if (event->data.l[0] != 0)
-      client.win_gravity = event->data.l[0];
+      client.wmnormal.win_gravity = event->data.l[0];
 
     configureRequestEvent(&request);
 
-    client.win_gravity = old_gravity;
+    client.wmnormal.win_gravity = old_gravity;
   } else if (event->message_type == netwm.wmDesktop()) {
     const unsigned int desktop = event->data.l[0];
     if (desktop != 0xFFFFFFFF && desktop != client.workspace) {
@@ -2586,15 +2588,14 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
   }
 
   case XA_WM_NORMAL_HINTS: {
-    getWMNormalHints();
+    client.wmnormal = readWMNormalHints();
 
-    if ((client.normal_hint_flags & PMinSize) &&
-        (client.normal_hint_flags & PMaxSize)) {
+    if ((client.wmnormal.flags & (PMinSize|PMaxSize)) == (PMinSize|PMaxSize)) {
       // the window now can/can't resize itself, so the buttons need to be
       // regrabbed.
       ungrabButtons();
-      if (client.max_width <= client.min_width &&
-          client.max_height <= client.min_height) {
+      if (client.wmnormal.max_width <= client.wmnormal.min_width &&
+          client.wmnormal.max_height <= client.wmnormal.min_height) {
         client.decorations &= ~(WindowDecorationMaximize |
                                 WindowDecorationGrip);
         client.functions   &= ~(WindowFunctionResize |
@@ -2613,9 +2614,7 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
     }
 
     bt::Rect old_rect = frame.rect;
-
     upsize();
-
     if (old_rect != frame.rect)
       reconfigure();
 
@@ -3250,14 +3249,18 @@ void BlackboxWindow::showGeometry(const bt::Rect &r) const {
   w -= frame.margin.left + frame.margin.right;
   h -= frame.margin.top + frame.margin.bottom;
 
-  if (client.normal_hint_flags & PResizeInc) {
-    if (client.normal_hint_flags & (PMinSize|PBaseSize)) {
-      w -= (client.base_width) ? client.base_width : client.min_width;
-      h -= (client.base_height) ? client.base_height : client.min_height;
+  if (client.wmnormal.flags & PResizeInc) {
+    if (client.wmnormal.flags & (PMinSize|PBaseSize)) {
+      w -= ((client.wmnormal.base_width)
+            ? client.wmnormal.base_width
+            : client.wmnormal.min_width);
+      h -= ((client.wmnormal.base_height)
+            ? client.wmnormal.base_height
+            : client.wmnormal.min_height);
     }
 
-    w /= client.width_inc;
-    h /= client.height_inc;
+    w /= client.wmnormal.width_inc;
+    h /= client.wmnormal.height_inc;
   }
 
   screen->showGeometry(w, h);
@@ -3282,25 +3285,27 @@ void BlackboxWindow::constrain(Corner anchor) {
               static_cast<signed>(frame.margin.bottom));
 
   unsigned int dw = frame.changing.width(), dh = frame.changing.height();
-  const unsigned int base_width = (client.base_width) ? client.base_width :
-                                                        client.min_width,
-                     base_height = (client.base_height) ? client.base_height :
-                                                          client.min_height;
+  const unsigned int base_width = ((client.wmnormal.base_width)
+                                   ? client.wmnormal.base_width
+                                   : client.wmnormal.min_width),
+                    base_height = ((client.wmnormal.base_height)
+                                   ? client.wmnormal.base_height
+                                   : client.wmnormal.min_height);
 
   // constrain to min and max sizes
-  if (dw < client.min_width) dw = client.min_width;
-  if (dh < client.min_height) dh = client.min_height;
-  if (dw > client.max_width) dw = client.max_width;
-  if (dh > client.max_height) dh = client.max_height;
+  if (dw < client.wmnormal.min_width) dw = client.wmnormal.min_width;
+  if (dh < client.wmnormal.min_height) dh = client.wmnormal.min_height;
+  if (dw > client.wmnormal.max_width) dw = client.wmnormal.max_width;
+  if (dh > client.wmnormal.max_height) dh = client.wmnormal.max_height;
 
   assert(dw >= base_width && dh >= base_height);
 
   // fit to size increments
-  if (client.normal_hint_flags & PResizeInc) {
-    dw = (((dw - base_width) / client.width_inc) * client.width_inc)
-         + base_width;
-    dh = (((dh - base_height) / client.height_inc) * client.height_inc)
-         + base_height;
+  if (client.wmnormal.flags & PResizeInc) {
+    dw = (((dw - base_width) / client.wmnormal.width_inc)
+          * client.wmnormal.width_inc) + base_width;
+    dh = (((dh - base_height) / client.wmnormal.height_inc)
+          * client.wmnormal.height_inc) + base_height;
   }
 
   /*
@@ -3319,30 +3324,30 @@ void BlackboxWindow::constrain(Corner anchor) {
    * maxAspectX * dheight < maxAspectY * dwidth
    *
    */
-  if (client.normal_hint_flags & PAspect) {
+  if (client.wmnormal.flags & PAspect) {
     unsigned int delta;
-    const unsigned int min_asp_x = client.min_aspect_x,
-                       min_asp_y = client.min_aspect_y,
-                       max_asp_x = client.max_aspect_x,
-                       max_asp_y = client.max_aspect_y,
-                       w_inc = client.width_inc,
-                       h_inc = client.height_inc;
+    const unsigned int min_asp_x = client.wmnormal.min_aspect_x,
+                       min_asp_y = client.wmnormal.min_aspect_y,
+                       max_asp_x = client.wmnormal.max_aspect_x,
+                       max_asp_y = client.wmnormal.max_aspect_y,
+                       w_inc = client.wmnormal.width_inc,
+                       h_inc = client.wmnormal.height_inc;
     if (min_asp_x * dh > min_asp_y * dw) {
       delta = ((min_asp_x * dh / min_asp_y - dw) * w_inc) / w_inc;
-      if (dw + delta <= client.max_width) {
+      if (dw + delta <= client.wmnormal.max_width) {
         dw += delta;
       } else {
         delta = ((dh - (dw * min_asp_y) / min_asp_x) * h_inc) / h_inc;
-        if (dh - delta >= client.min_height) dh -= delta;
+        if (dh - delta >= client.wmnormal.min_height) dh -= delta;
       }
     }
     if (max_asp_x * dh < max_asp_y * dw) {
       delta = ((max_asp_y * dw / max_asp_x - dh) * h_inc) / h_inc;
-      if (dh + delta <= client.max_height) {
+      if (dh + delta <= client.wmnormal.max_height) {
         dh += delta;
       } else {
         delta = ((dw - (dh * max_asp_x) / max_asp_y) * w_inc) / w_inc;
-        if (dw - delta >= client.min_width) dw -= delta;
+        if (dw - delta >= client.wmnormal.min_width) dw -= delta;
       }
     }
   }
