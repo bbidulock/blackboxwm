@@ -119,7 +119,7 @@ WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
   blackbox->saveWSManagerSearch(frame.bButton, this);
   
   frame.fButton =
-    XCreateWindow(display, frame.window, frame.button_w + frame.wsd_w + 4, 3,
+    XCreateWindow(display, frame.window, frame.button_w + frame.wsd_w + 3, 3,
 		  frame.button_w, frame.button_h, 0, blackbox->Depth(),
 		  InputOutput, blackbox->visual(), create_mask,
 		  &attrib_create);
@@ -378,7 +378,7 @@ void WorkspaceManager::Reconfigure(void) {
 		    frame.wsd_h);
   XMoveResizeWindow(display, frame.bButton, 3 + frame.wsd_w, 3,
 		    frame.button_w, frame.button_h);
-  XMoveResizeWindow(display, frame.fButton, 4 + frame.wsd_w + frame.button_w,
+  XMoveResizeWindow(display, frame.fButton, 3 + frame.wsd_w + frame.button_w,
 		    3, frame.button_w, frame.button_h);
   XMoveResizeWindow(display, frame.clock, frame.width - frame.clock_w - 3,
 		    3, frame.clock_w, frame.clock_h);

@@ -39,6 +39,7 @@ Windowmenu::Windowmenu(BlackboxWindow *win, Blackbox *bb) : Basemenu(bb) {
 
   setTitleVisibility(False);
   setMovable(False);
+  defaultMenu();
 
   sendToMenu = new SendtoWorkspaceMenu(win, bb);
   insert("Send To ...", sendToMenu);
@@ -52,6 +53,7 @@ Windowmenu::Windowmenu(BlackboxWindow *win, Blackbox *bb) : Basemenu(bb) {
   insert("Lower", Blackbox::B_WindowLower);
   insert("(Un)Stick", Blackbox::B_WindowStick);
   insert("Close", Blackbox::B_WindowClose);
+  insert("Kill Client", Blackbox::B_WindowKill);
   
   Update();
 }
@@ -117,6 +119,11 @@ void Windowmenu::itemSelected(int button, int index) {
 
       wsManager->currentWorkspace()->restackWindows();
       break;
+
+    case Blackbox::B_WindowKill:
+      Hide();
+      XKillClient(wsManager->_blackbox()->control(), window->clientWindow());
+      break;
     }
   }
 }
@@ -143,9 +150,7 @@ SendtoWorkspaceMenu::SendtoWorkspaceMenu(BlackboxWindow *win, Blackbox *bb) :
 
 
 SendtoWorkspaceMenu::~SendtoWorkspaceMenu(void) {
-  int i, r = Count();
-  for (i = 0; i < r; i++)
-    remove(0);
+
 }
 
 

@@ -35,6 +35,7 @@ Clientmenu::Clientmenu(Blackbox *bb, Workspace *ws) :
 
   setMovable(False);
   setTitleVisibility(False);
+  defaultMenu();
 }
 
 

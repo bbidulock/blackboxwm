@@ -21,7 +21,7 @@
 
 #ifndef __Blackbox_hh
 #define __Blackbox_hh
-#define __blackbox_version "beta zero point three three point one"
+#define __blackbox_version "beta zero point three three point three"
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
@@ -295,7 +295,7 @@ public:
   enum { B_Restart = 1, B_RestartOther, B_Exit, B_Shutdown, B_Execute,
 	 B_Reconfigure, B_ExecReconfigure, B_WindowShade, B_WindowIconify,
 	 B_WindowMaximize, B_WindowClose, B_WindowRaise, B_WindowLower,
-	 B_WindowStick };
+	 B_WindowStick, B_WindowKill };
   enum { B_LeftJustify, B_RightJustify, B_CenterJustify };
 };
 

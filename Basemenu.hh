@@ -40,7 +40,7 @@ private:
   Blackbox *blackbox;
   Basemenu *parent;
 
-  Bool moving, visible, movable, user_moved, title_vis, default_menu;
+  Bool moving, visible, movable, user_moved, default_menu, title_vis, shifted;
   Display *display;
   GC titleGC, itemGC, hitemGC, hbgGC;
   int which_sub, which_press, which_sbl;
@@ -50,7 +50,7 @@ private:
     Window frame, iframe, title;
 
     char *label;
-    int x, y, x_move, y_move, sublevels, persub, use_sublevels;
+    int x, y, x_move, y_move, x_shift, y_shift, sublevels, persub;
     unsigned int width, height, title_h, iframe_h, item_w, item_h;
   } menu;
 
@@ -62,7 +62,6 @@ protected:
   BasemenuItem *find(int index) { return menuitems->find(index); }
   void setTitleVisibility(Bool b) { title_vis = b; }
   void setMovable(Bool b) { movable = b; }
-  void useSublevels(int s) { menu.use_sublevels = s; }
 
   virtual void itemSelected(int, int) = 0;
 
@@ -96,7 +95,7 @@ public:
   int Visible(void) { return visible; }
   const char *Label(void) const { return menu.label; }
   int Count(void) { return menuitems->count(); }
-  void setMenuLabel(char *);
+  void setMenuLabel(char *n) { menu.label = n; }
   void Show(void);
   void Hide(void);
   void Move(int, int);

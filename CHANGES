@@ -1,12 +1,24 @@
 At the request of some people, here is a Change log starting with 0.33.0.
 Enjoy! :)
 
-Changes from 0.33.1 to 0.33.2:
+Changes from 0.33.2 to 0.33.3: 
+	- changed some of the menu code ("updated" in 0.33.1) back to the
+	  original 0.33.0, which seems to perform better.  Reason behind it? -
+	  blackbox died too often with 0.33.1/2
+	- added "Kill Client" option to window menus... for those applications
+	  that don't accept the WM_DELETE_WINDOW atom
+	- menus that are not partially moved off the root window are shifted to
+	  a visible position when the pointer enters the frame... it is also
+	  shifted back to it's original position when left (this is new... let
+	  me know how it works)
+
+
+Changes from 0.33.1 to 0.33.2: (unreleased)
 	- changed BlackboxIcon to not try and read its config when it was
 	  created.  This was forgotten from the 0.31.0 -> 0.33.0 move :/
 
 
-Changes from 0.33.0 to 0.33.1:
+Changes from 0.33.0 to 0.33.1: (unreleased)
 	- improved menu handling, less possibilty for SIGSEGV
 	- menus now make copies of all label, exec strings and titles, to
 	  make less loose pointers

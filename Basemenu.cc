@@ -42,11 +42,9 @@ Basemenu::Basemenu(Blackbox *ctrl) {
   parent = (Basemenu *) 0;
 
   title_vis = movable = True;
-  moving = False;
-  user_moved = False;
-  menu.x = 10;
-  menu.y = 10;
-  visible = False;
+  shifted = default_menu = moving = user_moved = visible = False;
+  menu.x = menu.y = menu.x_shift = menu.y_shift = menu.x_move =
+    menu.y_move = 0;
   which_sub = which_press = which_sbl = -1;
 
   menu.iframe_pixmap = None;
@@ -54,7 +52,7 @@ Basemenu::Basemenu(Blackbox *ctrl) {
   menu.width= menu.title_h = menu.item_w = menu.iframe_h =
     blackbox->titleFont()->ascent + blackbox->titleFont()->descent + 8;
   menu.label = 0;
-  menu.sublevels = menu.persub = menu.use_sublevels = 0;
+  menu.sublevels = menu.persub = 0;
   menu.item_h = blackbox->menuFont()->ascent +
     blackbox->menuFont()->descent + 4;
   menu.height = menu.title_h + 1 + menu.iframe_h;
@@ -148,10 +146,11 @@ Basemenu::~Basemenu(void) {
 // insertion and removal methods
 // *************************************************************************
 
-int Basemenu::insert(char *l, int function, char *e) {
+int Basemenu::insert(char *label, int function, char *exec) {
   int ret = 0;
   if (function)
     switch (function) {
+    case Blackbox::B_WindowKill:
     case Blackbox::B_WindowStick:
     case Blackbox::B_WindowShade:
     case Blackbox::B_WindowIconify:
@@ -162,8 +161,6 @@ int Basemenu::insert(char *l, int function, char *e) {
     case Blackbox::B_Exit:
     case Blackbox::B_Restart:
     case Blackbox::B_Reconfigure: {
-      char *label = new char[strlen(l) + 1];
-      strcpy(label, l);
       BasemenuItem *item = new BasemenuItem(label, function);
       ret = menuitems->insert(item);
       
@@ -173,29 +170,20 @@ int Basemenu::insert(char *l, int function, char *e) {
     case Blackbox::B_Execute:
     case Blackbox::B_ExecReconfigure:
     case Blackbox::B_RestartOther: {
-      char *label = new char[strlen(l) + 1], *exec = new char[strlen(e) + 1];
-      strcpy(label, l);
-      strcpy(exec, e);
-
       BasemenuItem *item = new BasemenuItem(label, function, exec);
       ret = menuitems->insert(item);
       
       ret = menuitems->count();
       break; }
     }
-  else {
-    char *label = new char[strlen(l) + 1];
-    strcpy(label, l);
+  else
     ret = menuitems->insert(new BasemenuItem(label, 0));
-  }
   
   return ret;
 }
 
 
-int Basemenu::insert(char *l, Basemenu *submenu) {
-  char *label = new char[strlen(l) + 1];
-  strcpy(label, l);
+int Basemenu::insert(char *label, Basemenu *submenu) {
   BasemenuItem *item = new BasemenuItem(label, submenu);
   menuitems->insert(item);
   submenu->parent = this;
@@ -230,20 +218,12 @@ int Basemenu::remove(int index) {
   }
   
   delete item;
-  
+
   if (which_sub != -1)
     if ((--which_sub) == index)
       which_sub = -1;
-  
+
   return menuitems->count();
-}
-
-
-void Basemenu::setMenuLabel(char *n) {
-  if (menu.label) delete [] menu.label;
-
-  menu.label = new char[strlen(n) + 1];
-  strcpy(menu.label, n);
 }
 
 
@@ -281,16 +261,12 @@ void Basemenu::Update(void) {
   }
   
   if (menuitems->count()) {
-    if (menu.use_sublevels) {
-      menu.sublevels = menu.use_sublevels;
-    } else {
-      menu.sublevels = 1;
-      while ((((menu.item_h + 1) * (menuitems->count() + 1) / menu.sublevels)
-	      + menu.title_h + 1) >
-	     blackbox->YResolution())
-	menu.sublevels++;
-    }
-    
+    menu.sublevels = 1;
+    while ((((menu.item_h + 1) * (menuitems->count() + 1) / menu.sublevels)
+	    + menu.title_h + 1) >
+	   blackbox->YResolution())
+      menu.sublevels++;
+  
     menu.persub = menuitems->count() / menu.sublevels;
     if (menuitems->count() % menu.sublevels) menu.sublevels++;
   } else {
@@ -428,14 +404,18 @@ void Basemenu::drawSubmenu(int index, Bool) {
       drawItem(index, True);
 
       int sbl = index / menu.persub, i = index - (sbl * menu.persub),
-	x = menu.x + (menu.item_w * (sbl + 1)) + 1,
-	y =  menu.y + ((menu.item_h + 1) * i) +
-	((title_vis) ? menu.title_h + 1 : 0) -
+	x = ((shifted) ? menu.x_shift : menu.x) +
+	(menu.item_w * (sbl + 1)) + 1,
+	y = ((shifted) ? menu.y_shift : menu.y) +
+	((menu.item_h + 1) * i) + ((title_vis) ? menu.title_h + 1 : 0) -
 	((item->sub_menu->title_vis) ? item->sub_menu->menu.title_h + 1 : 0);
       
-      if (x + item->sub_menu->Width() > blackbox->XResolution())
-	x = menu.x - item->sub_menu->Width() - 1;
+      if ((x + item->sub_menu->Width()) > blackbox->XResolution())
+	x = ((shifted) ? menu.x_shift : menu.x) - item->sub_menu->Width() - 1;
       
+      if ((y + item->sub_menu->Height()) > blackbox->YResolution())
+	y = blackbox->YResolution() - item->sub_menu->Height() - 1;
+
       item->sub_menu->Move(x, y);
 
       if (! item->sub_menu->visible)
@@ -716,6 +696,20 @@ void Basemenu::enterNotifyEvent(XCrossingEvent *ce) {
 		 GrabModeAsync, GrabModeAsync,  None,
 		 blackbox->sessionCursor(), CurrentTime);
     
+    menu.x_shift = menu.x, menu.y_shift = menu.y;
+    if (menu.x + menu.width > blackbox->XResolution()) {
+      menu.x_shift = blackbox->XResolution() - menu.width - 1;
+      shifted = True;
+    }
+
+    if (menu.y + menu.height > blackbox->YResolution()) {
+      menu.y_shift = blackbox->YResolution() - menu.height - 1;
+      shifted = True;
+    }
+
+    if (shifted)
+      XMoveWindow(display, menu.frame, menu.x_shift, menu.y_shift);
+
     if (which_sub != -1) {
       BasemenuItem *tmp = menuitems->find(which_sub);
       if (tmp->sub_menu->Visible()) {
@@ -747,6 +741,11 @@ void Basemenu::leaveNotifyEvent(XCrossingEvent *ce) {
     
     if (! (ce->state & Button1Mask))
       XUngrabPointer(display, CurrentTime);
+
+    if (shifted) {
+      XMoveWindow(display, menu.frame, menu.x, menu.y);
+      shifted = False;
+    }
   }
 }
 

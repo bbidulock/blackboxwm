@@ -43,7 +43,7 @@ OtherLibs :=
 #ifdef SupportShapeExtension
 CXXFLAGS :=	$(CXXFLAGS) -DSHAPE
 #endif
-CXXFLAGS :=	-Wall -W $(CXXFLAGS) -fno-exceptions
+CXXFLAGS :=	-Wall -W $(CXXFLAGS)
 
 PROGRAMS := blackbox
 SRCS1 := $(Sources)

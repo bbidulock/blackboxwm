@@ -34,6 +34,7 @@ Workspacemenu::Workspacemenu(Blackbox *bb, WorkspaceManager *wsm) :
   wsManager = wsm;
   setTitleVisibility(False);
   setMovable(False);
+  defaultMenu();
 
   insert("New Workspace");
   insert("Remove Last");
