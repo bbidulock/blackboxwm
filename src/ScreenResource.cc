@@ -249,7 +249,7 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
   _windowStyle.focus.foreground =
     bt::Color::namedColor(display, screen_num,
                           res.read("window.button.focus.foregroundColor",
-                                   "Window.Button.Focus.Foreground",
+                                   "Window.Button.Focus.ForegroundColor",
                                    res.read("window.button.focus.picColor",
                                             "Window.Button.Focus.PicColor",
                                             "black")));
@@ -288,7 +288,7 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
   _windowStyle.unfocus.foreground =
     bt::Color::namedColor(display, screen_num,
                           res.read("window.button.unfocus.foregroundColor",
-                                   "Window.Button.Unfocus.Foreground",
+                                   "Window.Button.Unfocus.ForegroundColor",
                                    res.read("window.button.unfocus.picColor",
                                             "Window.Button.Unfocus.PicColor",
                                             "white")));
@@ -428,7 +428,7 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
   _toolbarStyle.foreground =
     bt::Color::namedColor(display, screen_num,
                           res.read("toolbar.button.foregroundColor",
-                                   "Toolbar.Button.Foreground",
+                                   "Toolbar.Button.ForegroundColor",
                                    res.read("toolbar.button.picColor",
                                             "Toolbar.Button.PicColor",
                                             "black")));
