@@ -13,5 +13,5 @@ $ #MapRequest
 # BlackboxWindow::mapRequestEvent() za 0x%lx\n
 $ #UnmapNotify
 # BlackboxWindow::unmapNotifyEvent() za 0x%lx\n
-$ #UnmapNotifyReparent
-# BlackboxWindow::unmapnotifyEvent: ponovno prikljuèeno 0x%lx korenskemu oknu\n
+$ #ReparentNotify
+# BlackboxWindow::unmapnotifyEvent: ponovno prikljuèeno 0x%lx korenskemu oknu 0x%lx\n

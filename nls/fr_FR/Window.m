@@ -13,5 +13,5 @@ $ #MapRequest
 # BlackboxWindow::mapRequestEvent() pour 0x%lx\n
 $ #UnmapNotify
 # BlackboxWindow::unmapNotifyEvent() pour 0x%lx\n
-$ #UnmapNotifyReparent
-# BlackboxWindow::unmapnotifyEvent: réattribue 0x%lx à la fenêtre principale\n
+$ #ReparentNotify
+# BlackboxWindow::reparentNotifyEvent: réattribue 0x%lx à la 0x%lx\n

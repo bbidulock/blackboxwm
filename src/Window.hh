@@ -307,6 +307,7 @@ public:
   void mapRequestEvent(XMapRequestEvent *);
   void mapNotifyEvent(XMapEvent *);
   void unmapNotifyEvent(XUnmapEvent *);
+  void reparentNotifyEvent(XReparentEvent *);
   void propertyNotifyEvent(Atom);
   void exposeEvent(XExposeEvent *);
   void configureRequestEvent(XConfigureRequestEvent *);

@@ -2251,18 +2251,10 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
     XUnmapWindow(display, frame.window);
     XUnmapWindow(display, client.window);
 
-    XEvent dummy;
-    if (! XCheckTypedWindowEvent(display, client.window, ReparentNotify,
-				 &dummy)) {
-#ifdef    DEBUG
-      fprintf(stderr, i18n->getMessage(WindowSet, WindowUnmapNotifyReparent,
-		       "BlackboxWindow::unmapNotifyEvent(): reparent 0x%lx to "
-		       "root.\n"), client.window);
-#endif // DEBUG
-
-      restoreGravity();
-      XReparentWindow(display, client.window, screen->getRootWindow(),
-		      client.x, client.y);
+    XEvent ev;
+    if (! XCheckTypedWindowEvent(display, client.window, ReparentNotify,&ev)) {
+      // calls 'delete this' so we never get past the next line
+      reparentNotifyEvent(&(ev.xreparent));
     }
 
     XFlush(display);
@@ -2280,6 +2272,22 @@ void BlackboxWindow::destroyNotifyEvent(XDestroyWindowEvent *de) {
 
     delete this;
   }
+}
+
+
+void BlackboxWindow::reparentNotifyEvent(XReparentEvent *re) {
+  if (re->window != client.window)
+    return;
+
+#ifdef    DEBUG
+  fprintf(stderr,
+	  i18n->getMessage(WindowSet, WindowReparentNotify,
+		"BlackboxWindow::reparentNotifyEvent(): reparent 0x%lx to "
+		"0x%lx.\n"), client.window, re->parent);
+#endif // DEBUG
+
+  restoreGravity();
+  delete this;
 }
 
 

@@ -605,8 +605,9 @@ create_tempfile() {
         THETMP=/tmp/.bsetbg.$$
         if [ -f $THETMP ]; then
             rm -f $THETMP
-            chmod 600 $THETMP
         fi
+	touch $THETMP
+        chmod 600 $THETMP
     fi
     TMPFILE=$THETMP
 }
@@ -677,9 +678,6 @@ case $1 in
     *-version|-v|v)
 	echo; echo "    $NAME version $VERSION"; echo "    $MORE";  exit 0
 	;;
-    *-help|-h|h)
-	help_msg
-	;;
     -r)
 	case $UID in
 	    0)
@@ -692,6 +690,9 @@ case $1 in
 	    *)
 		exit 1
 	esac
+	;;
+    *-help|-h|h|-?)
+	help_msg
 	;;
     *)
 	if [ -n "$1" ]; then

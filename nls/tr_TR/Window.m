@@ -13,5 +13,5 @@ $ #MapRequest
 # 0x%lx için BlackboxWindow::mapRequestEvent()\n
 $ #UnmapNotify
 # 0x%lx için BlackboxWindow::unmapNotifyEvent()\n
-$ #UnmapNotifyReparent
-# BlackboxWindow::unmapnotifyEvent: 0x%lx'i ana pencereyi boya\n
+$ #ReparentNotify
+# BlackboxWindow::reparentNotifyEvent: 0x%lx'i ana pencereyi boya 0x%lx\n

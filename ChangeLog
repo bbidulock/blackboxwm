@@ -4,6 +4,16 @@ Changes from 0.62.1:
   - bsetroot now sets _XROOTPMAP_ID, so pseudo transparent apps will be happy
   - beginnings of a strut implementation.  toolbar and slit are removed from
     the available screen area
+  - bsetbg now tries to use tempfile, then mktemp and finally defaults to
+    creating a .$$ temporary file itself if none of the commands are found.
+    Also updated the command line argument parser to handler unknown single
+    letter arguments.
+  - handle the odd edge case where a reparent event occurs while the window
+    is unmapped.  XReparentWindow sends an UnmapNotify to the window manager
+    however the window is already unmapped so the window manager never gets
+    the event and the unmapNotify event is where reparentNotify was handled.
+    Added a reparentNotifyEvent handler in the BlackboxWindow class and a new
+    case in the Blackbox class's process_event function.
 
 Changes from 0.62.0 to 0.62.1:
   - the lock modifier code handles user redefined modifiers better

@@ -13,5 +13,5 @@ $ #MapRequest
 # BlackboxWindow::mapRequestEvent() 0x%lx'le\n
 $ #UnmapNotify
 # BlackboxWindow::unmapNotifyEvent() 0x%lx'le\n
-$ #UnmapNotifyReparent
-# BlackboxWindow::unmapnotifyEvent: 0x%lx juurele\n
+$ #ReparentNotify
+# BlackboxWindow::reparentNotifyEvent: 0x%lx juurele 0x%lx\n
