@@ -23,6 +23,11 @@ warts:
 
 Stuff TODO or On The Way(tm):
 -----------------------------
+
+ADD: more user-friendly and intuitive method of moving a window to
+another workspace: grab the window like you would for a move, switch
+workspaces (like with bbkeys) and let go of the window.
+
 ADD: use a fullscreen window with no background color/pixmap to hide
      flicker when switching to/from a workspaces with fullscreen and/or
      maximized windows.
