@@ -2017,7 +2017,7 @@ bool BScreen::smartPlacement(unsigned int workspace, bt::Rect& rect,
     const int screen_area = avail.width() * avail.height();
     const int window_area = rect.width() * rect.height();
     if (window_area > screen_area / 8) {
-      // center windows that don't fix (except for small windows)
+      // center windows that don't fit (except for small windows)
       rect.setPos((avail.x() + avail.width() - rect.width()) / 2,
                   (avail.y() + avail.height() - rect.height()) / 2);
       return true;
