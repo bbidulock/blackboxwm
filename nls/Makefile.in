@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4-p4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -74,7 +74,7 @@ gencat_cmd = @gencat_cmd@
 regex_cmd = @regex_cmd@
 
 NLSTEST = @NLS@
-SUBDIRS = C da_DK de_DE es_ES et_EE fr_FR hu_HU it_IT ja_JP nl_NL pt_BR ru_RU 	sl_SI sv_SE tr_TR uk_UA zh_CN zh_TW
+SUBDIRS = C da_DK de_DE es_ES et_EE fr_FR hu_HU it_IT ja_JP ko_KR nl_NL pt_BR 	ru_RU sl_SI sv_SE tr_TR uk_UA zh_CN zh_TW
 
 MAINTAINERCLEANFILES = Makefile.in blackbox-nls.hh
 DISTCLEANFILES = blackbox-nls.hh
@@ -134,7 +134,7 @@ maintainer-clean-recursive:
 	dot_seen=no; \
 	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
 	  rev="$$subdir $$rev"; \
-	  test "$$subdir" = "." && dot_seen=yes; \
+	  test "$$subdir" != "." || dot_seen=yes; \
 	done; \
 	test "$$dot_seen" = "no" && rev=". $$rev"; \
 	target=`echo $@ | sed s/-recursive//`; \
@@ -176,7 +176,7 @@ TAGS: tags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
 	  awk '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
 	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
-	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+	  || (cd $(srcdir) && etags -o $$here/TAGS $(ETAGS_ARGS) $$tags  $$unique $(LISP))
 
 mostlyclean-tags:
 

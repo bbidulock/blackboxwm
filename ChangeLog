@@ -30,8 +30,8 @@ Changes from 0.62.1 to 0.65.0:
     function ensures that client.transient != this.
     The new transient code also allows for one window to have multiple
     transients so applications like xmms and web browsers are better behaved.
-  - added zh_TW (Taiwan Chinese), Hungarian (hu_HU), Ukrainian (uk_UA) nls
-    files and updated the most of the others.
+  - added Taiwan Chinese (zh_TW), Hungarian (hu_HU), Ukrainian (uk_UA), and
+    Korean (ko_KR) nls files and updated the most of the others.
   - added French man pages
   - remove slit and netwm as compile time options
   - strip much of BaseDisplay's original functionality and move it to the

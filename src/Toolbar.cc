@@ -166,6 +166,9 @@ Toolbar::Toolbar(BScreen *scrn) {
 
 
 Toolbar::~Toolbar(void) {
+  screen->removeStrut(&strut);
+  screen->updateAvailableArea();
+
   XUnmapWindow(display, frame.window);
 
   if (frame.base) screen->getImageControl()->removeImage(frame.base);

@@ -217,8 +217,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   }
 #endif // SHAPE
 
-  grabButtons();
-
   windowmenu = new Windowmenu(this);
 
   if (blackbox_attrib.workspace >= screen->getWorkspaceCount())
@@ -277,6 +275,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
  
   positionWindows();
   decorate();
+  grabButtons();
 
   XMapSubwindows(blackbox->getXDisplay(), frame.window);
 
@@ -722,10 +721,12 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
 
 void BlackboxWindow::reconfigure(void) {
   upsize();
-
   positionWindows();
   decorate();
   redrawWindowFrame();
+
+  ungrabButtons();
+  grabButtons();
 
   if (windowmenu) {
     windowmenu->move(windowmenu->getX(), frame.rect.y() + frame.title_h);
@@ -782,10 +783,8 @@ void BlackboxWindow::positionWindows(void) {
   XMoveResizeWindow(blackbox->getXDisplay(), client.window,
                     0, 0, client.rect.width(), client.rect.height());
   // ensure client.rect contains the real location
-  client.rect.setCoords(frame.rect.left() + frame.margin.left,
-                        frame.rect.top() + frame.margin.top,
-                        frame.rect.right() - frame.margin.right,
-                        frame.rect.bottom() - frame.margin.bottom);
+  client.rect.setPos(frame.rect.left() + frame.margin.left,
+                     frame.rect.top() + frame.margin.top);
 
   if (decorations & Decor_Titlebar) {
     if (frame.title == None) createTitlebar();
@@ -828,6 +827,7 @@ void BlackboxWindow::positionWindows(void) {
   } else if (frame.handle) {
     destroyHandle();
   }
+  XSync(blackbox->getXDisplay(), False);
 }
 
 
@@ -952,6 +952,9 @@ void BlackboxWindow::getWMNormalHints(void) {
   client.min_width = client.min_height =
     client.width_inc = client.height_inc = 1;
   client.base_width = client.base_height = 0;
+  client.min_aspect_x = client.min_aspect_y =
+    client.max_aspect_x = client.max_aspect_y = 1;
+  client.win_gravity = NorthWestGravity;
 
   /*
     use the full screen, not the strut modified size. otherwise when the
@@ -962,10 +965,6 @@ void BlackboxWindow::getWMNormalHints(void) {
   client.max_width = screen_area.width();
   client.max_height = screen_area.height();
 
-  client.min_aspect_x = client.min_aspect_y =
-    client.max_aspect_x = client.max_aspect_y = 1;
-  client.win_gravity = NorthWestGravity;
-
   if (! XGetWMNormalHints(blackbox->getXDisplay(), client.window,
                           &sizehint, &icccm_mask))
     return;
@@ -973,13 +972,22 @@ void BlackboxWindow::getWMNormalHints(void) {
   client.normal_hint_flags = sizehint.flags;
 
   if (sizehint.flags & PMinSize) {
-    client.min_width = sizehint.min_width;
-    client.min_height = sizehint.min_height;
+    if (sizehint.min_width != 0)
+      client.min_width = sizehint.min_width;
+    if (sizehint.min_height != 0)
+      client.min_height = sizehint.min_height;
   }
 
   if (sizehint.flags & PMaxSize) {
-    client.max_width = sizehint.max_width;
-    client.max_height = sizehint.max_height;
+    if (sizehint.max_width != 0)
+      client.max_width = sizehint.max_width;
+    else if (client.min_width > 1)
+      client.max_width = client.min_width;
+
+    if (sizehint.max_height != 0)
+      client.max_height = sizehint.max_height;
+    else if (client.min_height > 1)
+      client.max_height = client.min_height;
   }
 
   if (sizehint.flags & PResizeInc) {
@@ -1280,6 +1288,7 @@ void BlackboxWindow::configure(int dx, int dy,
     XSendEvent(blackbox->getXDisplay(), client.window, False,
                StructureNotifyMask, &event);
     screen->updateNetizenConfigNotify(&event);
+    XFlush(blackbox->getXDisplay());
   }
 }
 
@@ -1381,6 +1390,7 @@ bool BlackboxWindow::setInputFocus(void) {
     ce.xclient.data.l[4] = 0l;
     XSendEvent(blackbox->getXDisplay(), client.window, False,
                NoEventMask, &ce);
+    XFlush(blackbox->getXDisplay());
   }
 
   return ret;
@@ -1501,6 +1511,7 @@ void BlackboxWindow::close(void) {
   ce.xclient.data.l[3] = 0l;
   ce.xclient.data.l[4] = 0l;
   XSendEvent(blackbox->getXDisplay(), client.window, False, NoEventMask, &ce);
+  XFlush(blackbox->getXDisplay());
 }
 
 
@@ -2349,8 +2360,11 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
         decorations &= ~(Decor_Maximize | Decor_Handle);
         functions &= ~(Func_Resize | Func_Maximize);
       } else {
-        decorations |= Decor_Maximize | Decor_Handle;
-        functions |= Func_Resize | Func_Maximize;
+        if (! isTransient()) {
+          decorations |= Decor_Maximize | Decor_Handle;
+          functions |= Func_Maximize;
+        }
+        functions |= Func_Resize;
       }
       grabButtons();
     }
