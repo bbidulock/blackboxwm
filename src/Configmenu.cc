@@ -34,27 +34,26 @@
 Configmenu::Configmenu(BScreen *scr) : Basemenu(scr) {
   screen = scr;
   blackbox = screen->getBlackbox();
-  setLabel(i18n->getMessage(ConfigmenuSet, ConfigmenuConfigOptions,
-			    "Config options"));
+  setLabel(i18n(ConfigmenuSet, ConfigmenuConfigOptions, "Config options"));
   setInternalMenu();
 
   focusmenu = new Focusmenu(this);
   placementmenu = new Placementmenu(this);
 
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuFocusModel,
-			  "Focus Model"), focusmenu);
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuWindowPlacement,
-			  "Window Placement"), placementmenu);
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuImageDithering,
-			  "Image Dithering"), 1);
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuOpaqueMove,
-			  "Opaque Window Moving"), 2);
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuFullMax,
-			  "Full Maximization"), 3);
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuFocusNew,
-			  "Focus New Windows"), 4);
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuFocusLast,
-			  "Focus Last Window on Workspace"), 5);
+  insert(i18n(ConfigmenuSet, ConfigmenuFocusModel,
+              "Focus Model"), focusmenu);
+  insert(i18n(ConfigmenuSet, ConfigmenuWindowPlacement,
+              "Window Placement"), placementmenu);
+  insert(i18n(ConfigmenuSet, ConfigmenuImageDithering,
+              "Image Dithering"), 1);
+  insert(i18n(ConfigmenuSet, ConfigmenuOpaqueMove,
+              "Opaque Window Moving"), 2);
+  insert(i18n(ConfigmenuSet, ConfigmenuFullMax,
+              "Full Maximization"), 3);
+  insert(i18n(ConfigmenuSet, ConfigmenuFocusNew,
+              "Focus New Windows"), 4);
+  insert(i18n(ConfigmenuSet, ConfigmenuFocusLast,
+              "Focus Last Window on Workspace"), 5);
   update();
 
   setItemSelected(2, screen->getImageControl()->doDither());
@@ -128,16 +127,16 @@ void Configmenu::reconfigure(void) {
 Configmenu::Focusmenu::Focusmenu(Configmenu *cm) : Basemenu(cm->screen) {
   configmenu = cm;
 
-  setLabel(i18n->getMessage(ConfigmenuSet, ConfigmenuFocusModel,
-			    "Focus Model"));
+  setLabel(i18n(ConfigmenuSet, ConfigmenuFocusModel,
+                "Focus Model"));
   setInternalMenu();
 
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuClickToFocus,
-			  "Click To Focus"), 1);
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuSloppyFocus,
-			  "Sloppy Focus"), 2);
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuAutoRaise,
-			  "Auto Raise"), 3);
+  insert(i18n(ConfigmenuSet, ConfigmenuClickToFocus,
+              "Click To Focus"), 1);
+  insert(i18n(ConfigmenuSet, ConfigmenuSloppyFocus,
+              "Sloppy Focus"), 2);
+  insert(i18n(ConfigmenuSet, ConfigmenuAutoRaise,
+              "Auto Raise"), 3);
   update();
 
   setItemSelected(0, (! configmenu->screen->isSloppyFocus()));
@@ -195,29 +194,29 @@ void Configmenu::Focusmenu::itemSelected(int button, int index) {
 }
 
 Configmenu::Placementmenu::Placementmenu(Configmenu *cm) :
- Basemenu(cm->screen) {
+  Basemenu(cm->screen) {
   configmenu = cm;
 
-  setLabel(i18n->getMessage(ConfigmenuSet, ConfigmenuWindowPlacement,
-			    "Window Placement"));
+  setLabel(i18n(ConfigmenuSet, ConfigmenuWindowPlacement,
+                "Window Placement"));
   setInternalMenu();
 
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuSmartRows,
-			  "Smart Placement (Rows)"),
+  insert(i18n(ConfigmenuSet, ConfigmenuSmartRows,
+              "Smart Placement (Rows)"),
 	 BScreen::RowSmartPlacement);
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuSmartCols,
-			  "Smart Placement (Columns)"),
+  insert(i18n(ConfigmenuSet, ConfigmenuSmartCols,
+              "Smart Placement (Columns)"),
 	 BScreen::ColSmartPlacement);
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuCascade,
-			  "Cascade Placement"), BScreen::CascadePlacement);
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuLeftRight,
-			  "Left to Right"), BScreen::LeftRight);
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuRightLeft,
-			  "Right to Left"), BScreen::RightLeft);
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuTopBottom,
-			  "Top to Bottom"), BScreen::TopBottom);
-  insert(i18n->getMessage(ConfigmenuSet, ConfigmenuBottomTop,
-			  "Bottom to Top"), BScreen::BottomTop);
+  insert(i18n(ConfigmenuSet, ConfigmenuCascade,
+              "Cascade Placement"), BScreen::CascadePlacement);
+  insert(i18n(ConfigmenuSet, ConfigmenuLeftRight,
+              "Left to Right"), BScreen::LeftRight);
+  insert(i18n(ConfigmenuSet, ConfigmenuRightLeft,
+              "Right to Left"), BScreen::RightLeft);
+  insert(i18n(ConfigmenuSet, ConfigmenuTopBottom,
+              "Top to Bottom"), BScreen::TopBottom);
+  insert(i18n(ConfigmenuSet, ConfigmenuBottomTop,
+              "Bottom to Top"), BScreen::BottomTop);
   update();
 
   switch (configmenu->screen->getPlacementPolicy()) {
@@ -236,8 +235,8 @@ Configmenu::Placementmenu::Placementmenu(Configmenu *cm) :
 
   Bool rl = (configmenu->screen->getRowPlacementDirection() ==
 	     BScreen::LeftRight),
-       tb = (configmenu->screen->getColPlacementDirection() ==
-	     BScreen::TopBottom);
+    tb = (configmenu->screen->getColPlacementDirection() ==
+          BScreen::TopBottom);
 
   setItemSelected(3, rl);
   setItemSelected(4, ! rl);

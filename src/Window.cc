@@ -56,8 +56,9 @@
  */
 BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 #ifdef    DEBUG
-  fprintf(stderr, i18n->getMessage(WindowSet, WindowCreating,
-		     "BlackboxWindow::BlackboxWindow(): creating 0x%lx\n"),
+  fprintf(stderr,
+          i18n(WindowSet, WindowCreating,
+               "BlackboxWindow::BlackboxWindow(): creating 0x%lx\n"),
 	  w);
 #endif // DEBUG
 
@@ -73,7 +74,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
       (! wattrib.screen) || wattrib.override_redirect) {
 #ifdef    DEBUG
     fprintf(stderr,
-	    i18n->getMessage(WindowSet, WindowXGetWindowAttributesFail,
+	    i18n(WindowSet, WindowXGetWindowAttributesFail,
 	       "BlackboxWindow::BlackboxWindow(): XGetWindowAttributes "
 	       "failed\n"));
 #endif // DEBUG
@@ -87,10 +88,11 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     screen = blackbox->searchScreen(RootWindowOfScreen(wattrib.screen));
     if (! screen) {
 #ifdef    DEBUG
-      fprintf(stderr, i18n->getMessage(WindowSet, WindowCannotFindScreen,
-		      "BlackboxWindow::BlackboxWindow(): can't find screen\n"
-		      "\tfor root window 0x%lx\n"),
-	              RootWindowOfScreen(wattrib.screen));
+      fprintf(stderr,
+              i18n(WindowSet, WindowCannotFindScreen,
+                   "BlackboxWindow::BlackboxWindow(): can't find screen\n"
+                   "\tfor root window 0x%lx\n"),
+              RootWindowOfScreen(wattrib.screen));
 #endif // DEBUG
 
       return;
@@ -424,8 +426,7 @@ BlackboxWindow::~BlackboxWindow(void) {
  */
 Window BlackboxWindow::createToplevelWindow(int x, int y, unsigned int width,
 					    unsigned int height,
-					    unsigned int borderwidth)
-{
+					    unsigned int borderwidth) {
   XSetWindowAttributes attrib_create;
   unsigned long create_mask = CWBackPixmap | CWBorderPixel | CWColormap |
                               CWOverrideRedirect | CWEventMask;
@@ -537,7 +538,7 @@ void BlackboxWindow::associateClientWindow(void) {
       XSetWindowBackgroundPixmap(display, frame.maximize_button,
 				 frame.ubutton);
     if (frame.iconify_button)
-      XSetWindowBackgroundPixmap(display, frame.iconify_button, frame.ubutton);
+      XSetWindowBackgroundPixmap(display, frame.iconify_button,frame.ubutton);
   } else {
     if (frame.close_button)
       XSetWindowBackground(display, frame.close_button, frame.ubutton_pixel);
@@ -545,7 +546,7 @@ void BlackboxWindow::associateClientWindow(void) {
       XSetWindowBackground(display, frame.maximize_button,
 			   frame.ubutton_pixel);
     if (frame.iconify_button)
-      XSetWindowBackground(display, frame.iconify_button, frame.ubutton_pixel);
+      XSetWindowBackground(display, frame.iconify_button,frame.ubutton_pixel);
   }
 }
 
@@ -786,7 +787,7 @@ void BlackboxWindow::reconfigure(void) {
 	     frame.border_w;
 
   if (client.title) {
-    if (i18n->multibyte()) {
+    if (i18n.multibyte()) {
       XRectangle ink, logical;
       XmbTextExtents(screen->getWindowStyle()->fontset,
 		     client.title, client.title_len, &ink, &logical);
@@ -826,7 +827,8 @@ void BlackboxWindow::positionWindows(void) {
   XSetWindowBorderWidth(display, frame.plate, frame.mwm_border_w);
   XMoveResizeWindow(display, frame.plate, 0, frame.y_border,
                     client.width, client.height);
-  XMoveResizeWindow(display, client.window, 0, 0, client.width, client.height);
+  XMoveResizeWindow(display, client.window, 0, 0,
+                    client.width, client.height);
 
   if (decorations.titlebar) {
     XSetWindowBorderWidth(display, frame.title, frame.border_w);
@@ -885,16 +887,16 @@ void BlackboxWindow::getWMName(void) {
       }
       XFree((char *) text_prop.value);
     } else {
-      client.title = bstrdup(i18n->getMessage(WindowSet, WindowUnnamed,
+      client.title = bstrdup(i18n(WindowSet, WindowUnnamed,
 					      "Unnamed"));
     }
   } else {
-    client.title = bstrdup(i18n->getMessage(WindowSet, WindowUnnamed,
+    client.title = bstrdup(i18n(WindowSet, WindowUnnamed,
 					    "Unnamed"));
   }
   client.title_len = strlen(client.title);
 
-  if (i18n->multibyte()) {
+  if (i18n.multibyte()) {
     XRectangle ink, logical;
     XmbTextExtents(screen->getWindowStyle()->fontset,
 		   client.title, client.title_len, &ink, &logical);
@@ -1079,8 +1081,8 @@ void BlackboxWindow::getWMNormalHints(void) {
  * Gets the MWM hints for the class' contained window.
  * This is used while initializing the window to its first state, and not
  * thereafter.
- * Returns: true if the MWM hints are successfully retreived and applied; false
- * if they are not.
+ * Returns: true if the MWM hints are successfully retreived and applied;
+ * false if they are not.
  */
 void BlackboxWindow::getMWMHints(void) {
   int format;
@@ -1330,7 +1332,8 @@ Bool BlackboxWindow::setInputFocus(void) {
                 frame.width, frame.height);
     else if (frame.y > (signed) screen->getHeight())
       configure(screen->getWidth() - frame.width,
-	        screen->getHeight() - frame.height, frame.width, frame.height);
+	        screen->getHeight() - frame.height,
+                frame.width, frame.height);
     else
       configure(screen->getWidth() - frame.width,
                 frame.y + frame.border_w, frame.width, frame.height);
@@ -1412,7 +1415,8 @@ void BlackboxWindow::iconify(void) {
 void BlackboxWindow::deiconify(Bool reassoc, Bool raise) {
   if (flags.iconic || reassoc)
     screen->reassociateWindow(this, -1, False);
-  else if (workspace_number != screen->getCurrentWorkspace()->getWorkspaceID())
+  else if (workspace_number !=
+           screen->getCurrentWorkspace()->getWorkspaceID())
     return;
 
   setState(NormalState);
@@ -1996,7 +2000,7 @@ void BlackboxWindow::redrawLabel(void) {
 
   if (client.title_text_w > frame.label_w) {
     for (; dlen >= 0; dlen--) {
-      if (i18n->multibyte()) {
+      if (i18n.multibyte()) {
 	XRectangle ink, logical;
 	XmbTextExtents(screen->getWindowStyle()->fontset, client.title, dlen,
 		       &ink, &logical);
@@ -2024,7 +2028,7 @@ void BlackboxWindow::redrawLabel(void) {
   WindowStyle *style = screen->getWindowStyle();
   GC text_gc = (flags.focused) ? style->l_text_focus_gc :
     style->l_text_unfocus_gc;
-  if (i18n->multibyte())
+  if (i18n.multibyte())
     XmbDrawString(display, frame.label, style->fontset, text_gc, dx,
 		  (1 - style->fontset_extents->max_ink_extent.y),
 		  client.title, dlen);
@@ -2060,9 +2064,9 @@ void BlackboxWindow::redrawIconifyButton(Bool pressed) {
     }
   } else {
     if (frame.pbutton)
-      XSetWindowBackgroundPixmap(display, frame.iconify_button, frame.pbutton);
+      XSetWindowBackgroundPixmap(display, frame.iconify_button,frame.pbutton);
     else
-      XSetWindowBackground(display, frame.iconify_button, frame.pbutton_pixel);
+      XSetWindowBackground(display, frame.iconify_button,frame.pbutton_pixel);
   }
   XClearWindow(display, frame.iconify_button);
 
@@ -2151,7 +2155,7 @@ void BlackboxWindow::redrawCloseButton(Bool pressed) {
 void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
   if (re->window == client.window) {
 #ifdef    DEBUG
-    fprintf(stderr, i18n->getMessage(WindowSet, WindowMapRequest,
+    fprintf(stderr, i18n(WindowSet, WindowMapRequest,
 			     "BlackboxWindow::mapRequestEvent() for 0x%lx\n"),
             client.window);
 #endif // DEBUG
@@ -2214,8 +2218,8 @@ void BlackboxWindow::mapNotifyEvent(XMapEvent *ne) {
 void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
   if (ue->window == client.window) {
 #ifdef    DEBUG
-    fprintf(stderr, i18n->getMessage(WindowSet, WindowUnmapNotify,
-			     "BlackboxWindow::unmapNotifyEvent() for 0x%lx\n"),
+    fprintf(stderr, i18n(WindowSet, WindowUnmapNotify,
+                         "BlackboxWindow::unmapNotifyEvent() for 0x%lx\n"),
             client.window);
 #endif // DEBUG
 
@@ -2234,7 +2238,7 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
     XSync( display, False );
 
     XEvent ev;
-    if (! XCheckTypedWindowEvent(display, client.window, ReparentNotify,&ev)) {
+    if (! XCheckTypedWindowEvent(display, client.window,ReparentNotify,&ev)) {
       // according to the ICCCM - if the client doesn't reparent to
       // root, then we have to do it for them
       restoreGravity();
@@ -2264,7 +2268,7 @@ void BlackboxWindow::reparentNotifyEvent(XReparentEvent *re) {
 
 #ifdef    DEBUG
   fprintf(stderr,
-	  i18n->getMessage(WindowSet, WindowReparentNotify,
+	  i18n(WindowSet, WindowReparentNotify,
 		"BlackboxWindow::reparentNotifyEvent(): reparent 0x%lx to "
 		"0x%lx.\n"), client.window, re->parent);
 #endif // DEBUG
@@ -2687,8 +2691,9 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
       screen->showPosition(dx, dy);
     }
   } else if (functions.resize &&
-	     (((me->state & Button1Mask) && (me->window == frame.right_grip ||
-					     me->window == frame.left_grip)) ||
+	     (((me->state & Button1Mask) &&
+               (me->window == frame.right_grip ||
+                me->window == frame.left_grip)) ||
 	      (me->state & (Mod1Mask | Button3Mask) &&
 	                                     me->window == frame.window))) {
     Bool left = (me->window == frame.left_grip);
@@ -2859,7 +2864,8 @@ void BlackboxWindow::changeBlackboxHints(BlackboxHints *net) {
       (workspace_number != (signed) net->workspace)) {
     screen->reassociateWindow(this, net->workspace, True);
 
-    if (screen->getCurrentWorkspaceID() != (signed) net->workspace) withdraw();
+    if (screen->getCurrentWorkspaceID() != (signed) net->workspace)
+      withdraw();
     else deiconify();
   }
 
@@ -2925,7 +2931,7 @@ void BlackboxWindow::upsize(void) {
     // the height of the titlebar is based upon the height of the font being
     // used to display the window's title
     WindowStyle *style = screen->getWindowStyle();
-    if (i18n->multibyte())
+    if (i18n.multibyte())
       frame.title_h = (style->fontset_extents->max_ink_extent.height +
 		       (frame.bevel_w * 2) + 2);
     else

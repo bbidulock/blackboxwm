@@ -631,18 +631,18 @@ void Slit::timeout(void) {
 Slitmenu::Slitmenu(Slit *sl) : Basemenu(sl->screen) {
   slit = sl;
 
-  setLabel(i18n->getMessage(SlitSet, SlitSlitTitle, "Slit"));
+  setLabel(i18n(SlitSet, SlitSlitTitle, "Slit"));
   setInternalMenu();
 
   directionmenu = new Directionmenu(this);
   placementmenu = new Placementmenu(this);
 
-  insert(i18n->getMessage(CommonSet, CommonDirectionTitle, "Direction"),
+  insert(i18n(CommonSet, CommonDirectionTitle, "Direction"),
 	 directionmenu);
-  insert(i18n->getMessage(CommonSet, CommonPlacementTitle, "Placement"),
+  insert(i18n(CommonSet, CommonPlacementTitle, "Placement"),
 	 placementmenu);
-  insert(i18n->getMessage(CommonSet, CommonAlwaysOnTop, "Always on top"), 1);
-  insert(i18n->getMessage(CommonSet, CommonAutoHide, "Auto hide"), 2);
+  insert(i18n(CommonSet, CommonAlwaysOnTop, "Always on top"), 1);
+  insert(i18n(CommonSet, CommonAutoHide, "Auto hide"), 2);
 
   update();
 
@@ -704,12 +704,12 @@ Slitmenu::Directionmenu::Directionmenu(Slitmenu *sm)
   : Basemenu(sm->slit->screen) {
   slitmenu = sm;
 
-  setLabel(i18n->getMessage(SlitSet, SlitSlitDirection, "Slit Direction"));
+  setLabel(i18n(SlitSet, SlitSlitDirection, "Slit Direction"));
   setInternalMenu();
 
-  insert(i18n->getMessage(CommonSet, CommonDirectionHoriz, "Horizontal"),
+  insert(i18n(CommonSet, CommonDirectionHoriz, "Horizontal"),
 	 Slit::Horizontal);
-  insert(i18n->getMessage(CommonSet, CommonDirectionVert, "Vertical"),
+  insert(i18n(CommonSet, CommonDirectionVert, "Vertical"),
 	 Slit::Vertical);
 
   update();
@@ -747,28 +747,28 @@ Slitmenu::Placementmenu::Placementmenu(Slitmenu *sm)
   : Basemenu(sm->slit->screen) {
   slitmenu = sm;
 
-  setLabel(i18n->getMessage(SlitSet, SlitSlitPlacement, "Slit Placement"));
+  setLabel(i18n(SlitSet, SlitSlitPlacement, "Slit Placement"));
   setMinimumSublevels(3);
   setInternalMenu();
 
-  insert(i18n->getMessage(CommonSet, CommonPlacementTopLeft, "Top Left"),
+  insert(i18n(CommonSet, CommonPlacementTopLeft, "Top Left"),
 	 Slit::TopLeft);
-  insert(i18n->getMessage(CommonSet, CommonPlacementCenterLeft, "Center Left"),
+  insert(i18n(CommonSet, CommonPlacementCenterLeft, "Center Left"),
 	 Slit::CenterLeft);
-  insert(i18n->getMessage(CommonSet, CommonPlacementBottomLeft, "Bottom Left"),
+  insert(i18n(CommonSet, CommonPlacementBottomLeft, "Bottom Left"),
 	 Slit::BottomLeft);
-  insert(i18n->getMessage(CommonSet, CommonPlacementTopCenter, "Top Center"),
+  insert(i18n(CommonSet, CommonPlacementTopCenter, "Top Center"),
 	 Slit::TopCenter);
   insert("");
-  insert(i18n->getMessage(CommonSet, CommonPlacementBottomCenter, 
+  insert(i18n(CommonSet, CommonPlacementBottomCenter, 
 			  "Bottom Center"),
 	 Slit::BottomCenter);
-  insert(i18n->getMessage(CommonSet, CommonPlacementTopRight, "Top Right"),
+  insert(i18n(CommonSet, CommonPlacementTopRight, "Top Right"),
 	 Slit::TopRight);
-  insert(i18n->getMessage(CommonSet, CommonPlacementCenterRight,
+  insert(i18n(CommonSet, CommonPlacementCenterRight,
 			  "Center Right"),
 	 Slit::CenterRight);
-  insert(i18n->getMessage(CommonSet, CommonPlacementBottomRight,
+  insert(i18n(CommonSet, CommonPlacementBottomRight,
 			  "Bottom Right"),
 	 Slit::BottomRight);
 

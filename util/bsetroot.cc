@@ -15,6 +15,8 @@
 #include "bsetroot.hh"
 
 
+I18n i18n;
+
 bsetroot::bsetroot(int argc, char **argv, char *dpy_name)
   : BaseDisplay(argv[0], dpy_name)
 {
@@ -70,8 +72,8 @@ bsetroot::bsetroot(int argc, char **argv, char *dpy_name)
 
   if ((mod + sol + grd) != True) {
     fprintf(stderr,
-	    i18n->getMessage(bsetrootSet, bsetrootMustSpecify,
-		  "%s: error: must specify one of: -solid, -mod, -gradient\n"),
+	    i18n(bsetrootSet, bsetrootMustSpecify,
+	         "%s: error: must specify one of: -solid, -mod, -gradient\n"),
 	    getApplicationName());
     
     usage(2);
@@ -286,37 +288,34 @@ void bsetroot::gradient(void) {
 
 void bsetroot::usage(int exit_code) {
   fprintf(stderr,
-          i18n->
-	  getMessage(bsetrootSet, bsetrootUsage,
-	             "%s 2.0 : (c) 1997-1999 Brad Hughes\n\n"
-		     "  -display <string>        display connection\n"
-		     "  -mod <x> <y>             modula pattern\n"
-		     "  -foreground, -fg <color> modula foreground color\n"
-		     "  -background, -bg <color> modula background color\n\n"
-		     "  -gradient <texture>      gradient texture\n"
-		     "  -from <color>            gradient start color\n"
-		     "  -to <color>              gradient end color\n\n"
-		     "  -solid <color>           solid color\n\n"
-		     "  -help                    print this help text and exit\n"),
+          i18n(bsetrootSet, bsetrootUsage,
+	       "%s 2.0 : (c) 1997-1999 Brad Hughes\n\n"
+	       "  -display <string>        display connection\n"
+	       "  -mod <x> <y>             modula pattern\n"
+	       "  -foreground, -fg <color> modula foreground color\n"
+	       "  -background, -bg <color> modula background color\n\n"
+	       "  -gradient <texture>      gradient texture\n"
+	       "  -from <color>            gradient start color\n"
+	       "  -to <color>              gradient end color\n\n"
+	       "  -solid <color>           solid color\n\n"
+	       "  -help                    print this help text and exit\n"),
 	  getApplicationName());
   
   exit(exit_code);
 }
 
-
 int main(int argc, char **argv) {
   char *display_name = (char *) 0;
   
-  NLSInit("blackbox.cat");
+  i18n.openCatalog("blackbox.cat");
   
   for (int i = 1; i < argc; i++) {
     if (! strcmp(argv[i], "-display")) {
       // check for -display option
       
       if ((++i) >= argc) {
-        fprintf(stderr,
-		i18n->getMessage(mainSet, mainDISPLAYRequiresArg,
-				 "error: '-display' requires an argument\n"));
+        fprintf(stderr, i18n(mainSet, mainDISPLAYRequiresArg,
+		             "error: '-display' requires an argument\n"));
 	
         ::exit(1);
       }

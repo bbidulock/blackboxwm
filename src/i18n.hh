@@ -54,14 +54,8 @@ public:
 
   inline bool multibyte(void) const { return mb; }
 
-  const char *getMessage(int set, int msg, const char *msgString) const;
+  const char *operator()(int set, int msg, const char *msgString) const;
   void openCatalog(const char *catalog);
 };
-
-
-extern I18n *i18n;
-extern void NLSInit(const char *);
-
-
 
 #endif // __i18n_h

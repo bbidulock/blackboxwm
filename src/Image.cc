@@ -26,6 +26,7 @@
 #endif // HAVE_CONFIG_H
 
 #include "i18n.hh"
+#include "blackbox.hh"
 #include "BaseDisplay.hh"
 #include "Image.hh"
 
@@ -121,11 +122,11 @@ Pixmap BImage::render(BTexture *texture) {
 
 Pixmap BImage::render_solid(BTexture *texture) {
   Pixmap pixmap = XCreatePixmap(control->getBaseDisplay()->getXDisplay(),
-				control->getDrawable(), width,
-				height, control->getDepth());
+                                control->getDrawable(), width,
+                                height, control->getDepth());
   if (pixmap == None) {
-    fprintf(stderr, i18n->getMessage(ImageSet, ImageErrorCreatingSolidPixmap,
-		       "BImage::render_solid: error creating pixmap\n"));
+    fprintf(stderr, i18n(ImageSet, ImageErrorCreatingSolidPixmap,
+                         "BImage::render_solid: error creating pixmap\n"));
     return None;
   }
 
@@ -135,15 +136,15 @@ Pixmap BImage::render_solid(BTexture *texture) {
   gcv.foreground = texture->getColor()->getPixel();
   gcv.fill_style = FillSolid;
   gc = XCreateGC(control->getBaseDisplay()->getXDisplay(), pixmap,
-		 GCForeground | GCFillStyle, &gcv);
+                 GCForeground | GCFillStyle, &gcv);
 
   gcv.foreground = texture->getHiColor()->getPixel();
   hgc = XCreateGC(control->getBaseDisplay()->getXDisplay(), pixmap,
-		  GCForeground, &gcv);
+                  GCForeground, &gcv);
 
   gcv.foreground = texture->getLoColor()->getPixel();
   lgc = XCreateGC(control->getBaseDisplay()->getXDisplay(), pixmap,
-		  GCForeground, &gcv);
+                  GCForeground, &gcv);
 
   XFillRectangle(control->getBaseDisplay()->getXDisplay(), pixmap, gc, 0, 0,
 		 width, height);
@@ -267,7 +268,7 @@ XImage *BImage::renderXImage(void) {
                  width, height, 32, 0);
 
   if (! image) {
-    fprintf(stderr, i18n->getMessage(ImageSet, ImageErrorCreatingXImage,
+    fprintf(stderr, i18n(ImageSet, ImageErrorCreatingXImage,
 		       "BImage::renderXImage: error creating XImage\n"));
     return (XImage *) 0;
   }
@@ -500,7 +501,7 @@ XImage *BImage::renderXImage(void) {
     break; }
 
     default:
-      fprintf(stderr, i18n->getMessage(ImageSet, ImageUnsupVisual,
+      fprintf(stderr, i18n(ImageSet, ImageUnsupVisual,
 			 "BImage::renderXImage: unsupported visual\n"));
       delete [] d;
       XDestroyImage(image);
@@ -600,7 +601,7 @@ XImage *BImage::renderXImage(void) {
     break;
 
   default:
-    fprintf(stderr, i18n->getMessage(ImageSet, ImageUnsupVisual,
+    fprintf(stderr, i18n(ImageSet, ImageUnsupVisual,
 		       "BImage::renderXImage: unsupported visual\n"));
     delete [] d;
     XDestroyImage(image);
@@ -619,7 +620,7 @@ Pixmap BImage::renderPixmap(void) {
                   control->getDrawable(), width, height, control->getDepth());
 
   if (pixmap == None) {
-    fprintf(stderr, i18n->getMessage(ImageSet, ImageErrorCreatingPixmap,
+    fprintf(stderr, i18n(ImageSet, ImageErrorCreatingPixmap,
 	                     "BImage::renderPixmap: error creating pixmap\n"));
     return None;
   }
@@ -1848,7 +1849,7 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
       }
 
       if (colors_per_channel < 2 || ncolors > (1 << screen_depth)) {
-	fprintf(stderr, i18n->getMessage(ImageSet, ImageInvalidColormapSize,
+	fprintf(stderr, i18n(ImageSet, ImageInvalidColormapSize,
                       "BImageControl::BImageControl: invalid colormap size %d "
 		           "(%d/%d/%d) - reducing"),
                 ncolors, colors_per_channel, colors_per_channel,
@@ -1859,7 +1860,7 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
 
       colors = new XColor[ncolors];
       if (! colors) {
-	fprintf(stderr, i18n->getMessage(ImageSet,
+	fprintf(stderr, i18n(ImageSet,
 	                                 ImageErrorAllocatingColormap,
 	        	   "BImageControl::BImageControl: error allocating "
 		           "colormap\n"));
@@ -1891,7 +1892,7 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
 
       for (i = 0; i < ncolors; i++)
 	if (! XAllocColor(basedisplay->getXDisplay(), colormap, &colors[i])) {
-	  fprintf(stderr, i18n->getMessage(ImageSet, ImageColorAllocFail,
+	  fprintf(stderr, i18n(ImageSet, ImageColorAllocFail,
 		                   "couldn't alloc color %i %i %i\n"),
 		  colors[i].red, colors[i].green, colors[i].blue);
 	  colors[i].flags = 0;
@@ -1956,7 +1957,7 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
       }
 
       if (colors_per_channel < 2 || ncolors > (1 << screen_depth)) {
-	fprintf(stderr,	i18n->getMessage(ImageSet, ImageInvalidColormapSize,
+	fprintf(stderr,	i18n(ImageSet, ImageInvalidColormapSize,
                       "BImageControl::BImageControl: invalid colormap size %d "
 		           "(%d/%d/%d) - reducing"),
 		ncolors, colors_per_channel, colors_per_channel,
@@ -1967,7 +1968,7 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
 
       colors = new XColor[ncolors];
       if (! colors) {
-	fprintf(stderr, i18n->getMessage(ImageSet,
+	fprintf(stderr, i18n(ImageSet,
 	                                 ImageErrorAllocatingColormap,
 			   "BImageControl::BImageControl: error allocating "
        	                   "colormap\n"));
@@ -1989,7 +1990,7 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
 
 	if (! XAllocColor(basedisplay->getXDisplay(), colormap,
 			  &colors[i])) {
-	  fprintf(stderr, i18n->getMessage(ImageSet, ImageColorAllocFail,
+	  fprintf(stderr, i18n(ImageSet, ImageColorAllocFail,
 		             "couldn't alloc color %i %i %i\n"),
 		  colors[i].red, colors[i].green, colors[i].blue);
 	  colors[i].flags = 0;
@@ -2040,7 +2041,7 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
     }
 
   default:
-    fprintf(stderr, i18n->getMessage(ImageSet, ImageUnsupVisual,
+    fprintf(stderr, i18n(ImageSet, ImageUnsupVisual,
                "BImageControl::BImageControl: unsupported visual %d\n"),
 	    getVisual()->c_class);
     exit(1);
@@ -2077,7 +2078,7 @@ BImageControl::~BImageControl(void) {
 
   if (cache->count()) {
     int i, n = cache->count();
-    fprintf(stderr, i18n->getMessage(ImageSet, ImagePixmapRelease,
+    fprintf(stderr, i18n(ImageSet, ImagePixmapRelease,
 		       "BImageContol::~BImageControl: pixmap cache - "
 	               "releasing %d pixmaps\n"), n);
 
@@ -2155,7 +2156,7 @@ Pixmap BImageControl::renderImage(unsigned int width, unsigned int height,
 
     if ((unsigned) cache->count() > cache_max) {
 #ifdef    DEBUG
-      fprintf(stderr, i18n->getMessage(ImageSet, ImagePixmapCacheLarge,
+      fprintf(stderr, i18n(ImageSet, ImagePixmapCacheLarge,
                          "BImageControl::renderImage: cache is large, "
                          "forcing cleanout\n"));
 #endif // DEBUG

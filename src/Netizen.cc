@@ -34,7 +34,8 @@ Netizen::Netizen(BScreen *scr, Window win) {
   window = win;
 
   event.type = ClientMessage;
-  event.xclient.message_type = basedisplay->getBlackboxStructureMessagesAtom();
+  event.xclient.message_type =
+    basedisplay->getBlackboxStructureMessagesAtom();
   event.xclient.display = basedisplay->getXDisplay();
   event.xclient.window = window;
   event.xclient.format = 32;
@@ -47,7 +48,8 @@ Netizen::Netizen(BScreen *scr, Window win) {
 
 
 void Netizen::sendWorkspaceCount(void) {
-  event.xclient.data.l[0] = basedisplay->getBlackboxNotifyWorkspaceCountAtom();
+  event.xclient.data.l[0] =
+    basedisplay->getBlackboxNotifyWorkspaceCountAtom();
   event.xclient.data.l[1] = screen->getCount();
 
   XSendEvent(basedisplay->getXDisplay(), window, False, NoEventMask, &event);
@@ -55,7 +57,8 @@ void Netizen::sendWorkspaceCount(void) {
 
 
 void Netizen::sendCurrentWorkspace(void) {
-  event.xclient.data.l[0] = basedisplay->getBlackboxNotifyCurrentWorkspaceAtom();
+  event.xclient.data.l[0] =
+    basedisplay->getBlackboxNotifyCurrentWorkspaceAtom();
   event.xclient.data.l[1] = screen->getCurrentWorkspaceID();
 
   XSendEvent(basedisplay->getXDisplay(), window, False, NoEventMask, &event);

@@ -81,14 +81,14 @@ Basemenu::Basemenu(BScreen *scrn) {
 
   menu.bevel_w = screen->getBevelWidth();
 
-  if (i18n->multibyte())
+  if (i18n.multibyte())
     menu.width = menu.title_h = menu.item_w = menu.frame_h =
       screen->getMenuStyle()->t_fontset_extents->max_ink_extent.height +
-	(menu.bevel_w  * 2);
+      (menu.bevel_w  * 2);
   else
     menu.width = menu.title_h = menu.item_w = menu.frame_h =
       screen->getMenuStyle()->t_font->ascent +
-        screen->getMenuStyle()->t_font->descent + (menu.bevel_w * 2);
+      screen->getMenuStyle()->t_font->descent + (menu.bevel_w * 2);
   
   menu.label = 0;
   
@@ -97,30 +97,31 @@ Basemenu::Basemenu(BScreen *scrn) {
     menu.minsub = 0;
   
   MenuStyle *style = screen->getMenuStyle();
-  if (i18n->multibyte()) {
+  if (i18n.multibyte()) {
     menu.item_h = style->f_fontset_extents->max_ink_extent.height +
       (menu.bevel_w);
   } else {
     menu.item_h = style->f_font->ascent + style->f_font->descent +
-		  (menu.bevel_w);
+      (menu.bevel_w);
   }
   
   menu.height = menu.title_h + screen->getBorderWidth() + menu.frame_h;
   
   unsigned long attrib_mask = CWBackPixmap | CWBackPixel | CWBorderPixel |
-			      CWColormap | CWOverrideRedirect | CWEventMask;
+    CWColormap | CWOverrideRedirect | CWEventMask;
   XSetWindowAttributes attrib;
   attrib.background_pixmap = None;
   attrib.background_pixel = attrib.border_pixel =
-			    screen->getBorderColor()->getPixel();
+    screen->getBorderColor()->getPixel();
   attrib.colormap = screen->getColormap();
   attrib.override_redirect = True;
   attrib.event_mask = ButtonPressMask | ButtonReleaseMask |
-                      ButtonMotionMask | ExposureMask;
+    ButtonMotionMask | ExposureMask;
 
   menu.window =
-    XCreateWindow(display, screen->getRootWindow(), menu.x, menu.y, menu.width,
-		  menu.height, screen->getBorderWidth(), screen->getDepth(),
+    XCreateWindow(display, screen->getRootWindow(),
+                  menu.x, menu.y, menu.width, menu.height,
+                  screen->getBorderWidth(), screen->getDepth(),
                   InputOutput, screen->getVisual(), attrib_mask, &attrib);
   blackbox->saveMenuSearch(menu.window, this);
 
@@ -258,26 +259,26 @@ int Basemenu::remove(int index) {
 
 void Basemenu::update(void) {
   MenuStyle *style = screen->getMenuStyle();
-  if (i18n->multibyte()) {
+  if (i18n.multibyte()) {
     menu.item_h = style->f_fontset_extents->max_ink_extent.height +
-		  menu.bevel_w;
+      menu.bevel_w;
     menu.title_h = style->t_fontset_extents->max_ink_extent.height +
-                   (menu.bevel_w * 2);
+      (menu.bevel_w * 2);
   } else {
     menu.item_h = style->f_font->ascent + style->f_font->descent +
-		  menu.bevel_w;
+      menu.bevel_w;
     menu.title_h = style->t_font->ascent + style->t_font->descent +
-		   (menu.bevel_w * 2);
+      (menu.bevel_w * 2);
   }
     
   if (title_vis) {
     const char *s = (menu.label) ? menu.label :
-		    i18n->getMessage(BasemenuSet, BasemenuBlackboxMenu,
-				     "Blackbox Menu");
+      i18n(BasemenuSet, BasemenuBlackboxMenu,
+           "Blackbox Menu");
     int l = strlen(s);
     
 
-    if (i18n->multibyte()) {
+    if (i18n.multibyte()) {
       XRectangle ink, logical;
       XmbTextExtents(screen->getMenuStyle()->t_fontset, s, l, &ink, &logical);
       menu.item_w = logical.width;
@@ -297,7 +298,7 @@ void Basemenu::update(void) {
 		     ((tmp->l) ? tmp->l : (const char *) 0));
     int l = strlen(s);
 
-    if (i18n->multibyte()) {
+    if (i18n.multibyte()) {
       XRectangle ink, logical;
       XmbTextExtents(screen->getMenuStyle()->f_fontset, s, l, &ink, &logical);
       ii = logical.width;
@@ -331,7 +332,7 @@ void Basemenu::update(void) {
 
   menu.frame_h = (menu.item_h * menu.persub);
   menu.height = ((title_vis) ? menu.title_h + screen->getBorderWidth() : 0) +
-		menu.frame_h;
+    menu.frame_h;
   if (! menu.frame_h) menu.frame_h = 1;
   if (menu.height < 1) menu.height = 1;
 
@@ -425,7 +426,7 @@ void Basemenu::show(void) {
 
   if (! parent) {
     if (shown && (! shown->torn))
-       shown->hide();
+      shown->hide();
 
     shown = this;
   }
@@ -476,14 +477,15 @@ void Basemenu::move(int x, int y) {
 
 void Basemenu::redrawTitle(void) {
   char *text = (char *) ((menu.label) ? menu.label :
-			 i18n->getMessage(BasemenuSet, BasemenuBlackboxMenu,
-					  "Blackbox Menu"));
+			 i18n(BasemenuSet, BasemenuBlackboxMenu,
+                              "Blackbox Menu"));
   int dx = menu.bevel_w, len = strlen(text);
   unsigned int l;
 
-  if (i18n->multibyte()) {
+  if (i18n.multibyte()) {
     XRectangle ink, logical;
-    XmbTextExtents(screen->getMenuStyle()->t_fontset, text, len, &ink, &logical);
+    XmbTextExtents(screen->getMenuStyle()->t_fontset, text, len,
+                   &ink, &logical);
     l = logical.width;
   } else {
     l = XTextWidth(screen->getMenuStyle()->t_font, text, len);
@@ -502,7 +504,7 @@ void Basemenu::redrawTitle(void) {
   }
 
   MenuStyle *style = screen->getMenuStyle();
-  if (i18n->multibyte())
+  if (i18n.multibyte())
     XmbDrawString(display, menu.title, style->t_fontset, style->t_text_gc, dx,
 		  (menu.bevel_w - style->t_fontset_extents->max_ink_extent.y),
 		  text, len);
@@ -526,8 +528,8 @@ void Basemenu::drawSubmenu(int index) {
 	item->isEnabled()) {
       if (item->submenu()->parent != this) item->submenu()->parent = this;
       int sbl = index / menu.persub, i = index - (sbl * menu.persub),
-	    x = menu.x +
-		((menu.item_w * (sbl + 1)) + screen->getBorderWidth()), y;
+        x = menu.x +
+        ((menu.item_w * (sbl + 1)) + screen->getBorderWidth()), y;
     
       if (alignment == AlignTop)
 	y = (((shifted) ? menu.y_shift : menu.y) +
@@ -549,14 +551,14 @@ void Basemenu::drawSubmenu(int index) {
 
       if ((x + item->submenu()->getWidth()) > screen->getWidth()) {
 	x = ((shifted) ? menu.x_shift : menu.x) -
-	    item->submenu()->getWidth() - screen->getBorderWidth();
+          item->submenu()->getWidth() - screen->getBorderWidth();
       }
       
       if (x < 0) x = 0;
 
       if ((y + item->submenu()->getHeight()) > screen->getHeight())
 	y = screen->getHeight() - item->submenu()->getHeight() -
-	    (screen->getBorderWidth() * 2);
+          (screen->getBorderWidth() * 2);
       if (y < 0) y = 0;
       
       item->submenu()->move(x, y);
@@ -601,18 +603,18 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clear,
   unsigned int half_w = menu.item_h / 2, quarter_w = menu.item_h / 4;
   
   if (text) {
-    if (i18n->multibyte()) {
+    if (i18n.multibyte()) {
       XRectangle ink, logical;
       XmbTextExtents(screen->getMenuStyle()->f_fontset,
 		     text, len, &ink, &logical);
       text_w = logical.width;
       text_y = item_y + (menu.bevel_w / 2) -
-	       screen->getMenuStyle()->f_fontset_extents->max_ink_extent.y;
+        screen->getMenuStyle()->f_fontset_extents->max_ink_extent.y;
     } else {
       text_w = XTextWidth(screen->getMenuStyle()->f_font, text, len);
       text_y =  item_y +
-		screen->getMenuStyle()->f_font->ascent +
-		(menu.bevel_w / 2);
+        screen->getMenuStyle()->f_font->ascent +
+        (menu.bevel_w / 2);
     }
     
     switch(screen->getMenuStyle()->f_justify) {
@@ -685,7 +687,7 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clear,
 		     screen->getMenuStyle()->hilite_gc,
 		     hilite_x, hilite_y, hilite_w, hilite_h);
   } else if (dosel && item->isSelected() &&
-	                 (menu.sel_pixmap != ParentRelative)) {
+             (menu.sel_pixmap != ParentRelative)) {
     if (menu.sel_pixmap)
       XCopyArea(display, menu.sel_pixmap, menu.frame,
 		screen->getMenuStyle()->hilite_gc, 0, 0,
@@ -697,7 +699,7 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clear,
   }
   
   if (dotext && text) {
-    if (i18n->multibyte())
+    if (i18n.multibyte())
       XmbDrawString(display, menu.frame, screen->getMenuStyle()->f_fontset,
 		    tgc, text_x, text_y, text, len);
     else
@@ -847,9 +849,9 @@ void Basemenu::buttonReleaseEvent(XButtonEvent *re) {
       hide();
     } else {
       int sbl = (re->x / menu.item_w), i = (re->y / menu.item_h),
-	   ix = sbl * menu.item_w, iy = i * menu.item_h,
-	    w = (sbl * menu.persub) + i,
-	    p = (which_sbl * menu.persub) + which_press;
+        ix = sbl * menu.item_w, iy = i * menu.item_h,
+        w = (sbl * menu.persub) + i,
+        p = (which_sbl * menu.persub) + which_press;
 
       if (w < menuitems->count() && w >= 0) {
 	drawItem(p, (p == which_sub), True);
@@ -882,7 +884,7 @@ void Basemenu::motionNotifyEvent(XMotionEvent *me) {
 	  drawSubmenu(which_sub);
       } else {
 	menu.x = me->x_root - menu.x_move,
-	menu.y = me->y_root - menu.y_move;
+          menu.y = me->y_root - menu.y_move;
 	
 	XMoveWindow(display, menu.window, menu.x, menu.y);
 	  
@@ -894,7 +896,7 @@ void Basemenu::motionNotifyEvent(XMotionEvent *me) {
 	     me->x >= 0 && me->x < (signed) menu.width &&
 	     me->y >= 0 && me->y < (signed) menu.frame_h) {
     int sbl = (me->x / menu.item_w), i = (me->y / menu.item_h),
-	  w = (sbl * menu.persub) + i;
+      w = (sbl * menu.persub) + i;
 
     if ((i != which_press || sbl != which_sbl) &&
 	(w < menuitems->count() && w >= 0)) {

@@ -43,6 +43,7 @@
 #endif // TIME_WITH_SYS_TIME
 
 
+#include "i18n.hh"
 #include "LinkedList.hh"
 #include "BaseDisplay.hh"
 #include "Timer.hh"
@@ -57,6 +58,8 @@ class Toolbar;
 #ifdef    SLIT
 class Slit;
 #endif // SLIT
+
+extern I18n i18n;
 
 template <class Z>
 class DataSearch {

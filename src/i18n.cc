@@ -43,16 +43,6 @@
 #define True true
 #define False false
 
-static I18n static_i18n;
-I18n *i18n;
-
-void NLSInit(const char *catalog) {
-  i18n = &static_i18n;
-
-  i18n->openCatalog(catalog);
-}
-
-
 I18n::I18n(void) {
   mb = False;
 #ifdef    HAVE_SETLOCALE
@@ -118,8 +108,7 @@ void I18n::openCatalog(const char *catalog) {
 #endif // HAVE_CATOPEN
 }
 
-
-const char *I18n::getMessage(int set, int msg, const char *msgString) const {
+const char* I18n::operator()(int set, int msg, const char *msgString) const {
 #if   defined(NLS) && defined(HAVE_CATGETS)
   if (catalog_fd != (nl_catd) -1)
     return (const char *) catgets(catalog_fd, set, msg, msgString);

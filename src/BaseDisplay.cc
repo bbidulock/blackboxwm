@@ -79,6 +79,7 @@
 #endif //   HAVE_PROCESS_H             __EMX__
 
 #include "i18n.hh"
+#include "blackbox.hh"
 #include "BaseDisplay.hh"
 #include "LinkedList.hh"
 #include "Timer.hh"
@@ -95,8 +96,9 @@ static int handleXErrors(Display *d, XErrorEvent *e) {
   char errtxt[128];
 
   XGetErrorText(d, e->error_code, errtxt, 128);
-  fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplayXError,
-		     "%s:  X error: %s(%d) opcodes %d/%d\n  resource 0x%lx\n"),
+  fprintf(stderr,
+          i18n(BaseDisplaySet, BaseDisplayXError,
+               "%s:  X error: %s(%d) opcodes %d/%d\n  resource 0x%lx\n"),
           base_display->getApplicationName(), errtxt, e->error_code,
           e->request_code, e->minor_code, e->resourceid);
 #endif // DEBUG
@@ -141,22 +143,22 @@ static void signalhandler(int sig) {
       return;
     }
 
-    fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplaySignalCaught,
-				     "%s:  signal %d caught\n"),
-	    base_display->getApplicationName(), sig);
+    fprintf(stderr, i18n(BaseDisplaySet, BaseDisplaySignalCaught,
+                         "%s:  signal %d caught\n"),
+            base_display->getApplicationName(), sig);
 
     if (! base_display->isStartup() && ! re_enter) {
       internal_error = True;
 
       re_enter = 1;
-      fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplayShuttingDown,
-				       "shutting down\n"));
+      fprintf(stderr, i18n(BaseDisplaySet, BaseDisplayShuttingDown,
+                           "shutting down\n"));
       base_display->shutdown();
     }
 
     if (sig != SIGTERM && sig != SIGINT) {
-      fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplayAborting,
-				       "aborting... dumping core\n"));
+      fprintf(stderr, i18n(BaseDisplaySet, BaseDisplayAborting,
+                           "aborting... dumping core\n"));
       abort();
     }
 
@@ -218,14 +220,15 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
 #endif // HAVE_SIGACTION
 
   if (! (display = XOpenDisplay(dpy_name))) {
-    fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplayXConnectFail,
-	       "BaseDisplay::BaseDisplay: connection to X server failed.\n"));
+    fprintf(stderr,
+            i18n(BaseDisplaySet, BaseDisplayXConnectFail,
+               "BaseDisplay::BaseDisplay: connection to X server failed.\n"));
     ::exit(2);
   } else if (fcntl(ConnectionNumber(display), F_SETFD, 1) == -1) {
     fprintf(stderr,
-	    i18n->getMessage(BaseDisplaySet, BaseDisplayCloseOnExecFail,
-	       "BaseDisplay::BaseDisplay: couldn't mark display connection "
-	       "as close-on-exec\n"));
+            i18n(BaseDisplaySet, BaseDisplayCloseOnExecFail,
+                 "BaseDisplay::BaseDisplay: couldn't mark display connection "
+                 "as close-on-exec\n"));
     ::exit(2);
   }
 
@@ -338,16 +341,16 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
     // get the values of the keyboard lock modifiers
     // Note: Caps lock is not retrieved the same way as Scroll and Num lock
     // since it doesn't need to be.
-    const KeyCode num_lock_code = XKeysymToKeycode(display, XK_Num_Lock);
-    const KeyCode scroll_lock_code = XKeysymToKeycode(display, XK_Scroll_Lock);
-    
+    const KeyCode num_lock = XKeysymToKeycode(display, XK_Num_Lock);
+    const KeyCode scroll_lock = XKeysymToKeycode(display, XK_Scroll_Lock);
+
     for (size_t cnt = 0; cnt < size; ++cnt) {
       if (! modmap->modifiermap[cnt]) continue;
 
-      if (num_lock_code == modmap->modifiermap[cnt])
-	NumLockMask = mask_table[cnt / modmap->max_keypermod];
-      if (scroll_lock_code == modmap->modifiermap[cnt])
-	ScrollLockMask = mask_table[cnt / modmap->max_keypermod];
+      if (num_lock == modmap->modifiermap[cnt])
+        NumLockMask = mask_table[cnt / modmap->max_keypermod];
+      if (scroll_lock == modmap->modifiermap[cnt])
+        ScrollLockMask = mask_table[cnt / modmap->max_keypermod];
     }
   }
 
@@ -393,13 +396,12 @@ void BaseDisplay::eventLoop(void) {
 
       if (last_bad_window != None && e.xany.window == last_bad_window) {
 #ifdef    DEBUG
-      fprintf(stderr, i18n->getMessage(BaseDisplaySet,
-				       BaseDisplayBadWindowRemove,
-			 "BaseDisplay::eventLoop(): removing bad window "
-			 "from event queue\n"));
+        fprintf(stderr, i18n(BaseDisplaySet, BaseDisplayBadWindowRemove,
+                             "BaseDisplay::eventLoop(): removing bad window "
+                             "from event queue\n"));
 #endif // DEBUG
       } else {
-	last_bad_window = None;
+        last_bad_window = None;
         process_event(&e);
       }
     } else {
@@ -465,19 +467,18 @@ void BaseDisplay::removeTimer(BTimer *timer) {
 
 
 /*
- * Grabs a button, but also grabs the button in every possible combination with
- * the keyboard lock keys, so that they do not cancel out the event.
+ * Grabs a button, but also grabs the button in every possible combination
+ * with the keyboard lock keys, so that they do not cancel out the event.
  */
 void BaseDisplay::grabButton(unsigned int button, unsigned int modifiers,
-			     Window grab_window, Bool owner_events,
-			     unsigned int event_mask, int pointer_mode,
-			     int keybaord_mode, Window confine_to,
-			     Cursor cursor) const
-{
+                             Window grab_window, Bool owner_events,
+                             unsigned int event_mask, int pointer_mode,
+                             int keybaord_mode, Window confine_to,
+                             Cursor cursor) const {
   for (size_t cnt = 0; cnt < MaskListLength; ++cnt) {
     XGrabButton(display, button, modifiers | MaskList[cnt], grab_window,
-        owner_events, event_mask, pointer_mode, keybaord_mode, confine_to,
-        cursor);
+                owner_events, event_mask, pointer_mode, keybaord_mode,
+                confine_to, cursor);
   }
 }
 
@@ -486,7 +487,7 @@ void BaseDisplay::grabButton(unsigned int button, unsigned int modifiers,
  * keyboard lock keys.
  */
 void BaseDisplay::ungrabButton(unsigned int button, unsigned int modifiers,
-			       Window grab_window) const {
+                               Window grab_window) const {
   for (size_t cnt = 0; cnt < MaskListLength; ++cnt) {
     XUngrabButton(display, button, modifiers | MaskList[cnt], grab_window);
   }
@@ -516,10 +517,10 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, int num) {
 
   visual = (Visual *) 0;
 
-  if ((vinfo_return = XGetVisualInfo(basedisplay->getXDisplay(),
-                                     VisualScreenMask | VisualClassMask,
-                                     &vinfo_template, &vinfo_nitems)) &&
-      vinfo_nitems > 0) {
+  vinfo_return = XGetVisualInfo(basedisplay->getXDisplay(),
+                                VisualScreenMask | VisualClassMask,
+                                &vinfo_template, &vinfo_nitems);
+  if (vinfo_return && vinfo_nitems > 0) {
     for (int i = 0; i < vinfo_nitems; i++) {
       if (depth < (vinfo_return + i)->depth) {
         depth = (vinfo_return + i)->depth;
@@ -532,7 +533,7 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, int num) {
 
   if (visual) {
     colormap = XCreateColormap(basedisplay->getXDisplay(), root_window,
-			       visual, AllocNone);
+                               visual, AllocNone);
   } else {
     visual = DefaultVisual(basedisplay->getXDisplay(), screen_number);
     colormap = DefaultColormap(basedisplay->getXDisplay(), screen_number);

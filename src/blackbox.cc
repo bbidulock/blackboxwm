@@ -198,8 +198,8 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
 
   if (! screenList->count()) {
     fprintf(stderr,
-	    i18n->getMessage(blackboxSet, blackboxNoManagableScreens,
-	       "Blackbox::Blackbox: no managable screens found, aborting.\n"));
+	    i18n(blackboxSet, blackboxNoManagableScreens,
+              "Blackbox::Blackbox: no managable screens found, aborting.\n"));
     ::exit(3);
   }
 
@@ -338,9 +338,9 @@ void Blackbox::process_event(XEvent *e) {
 		screen->getBorderWidth();
 
 	    if (my + screen->getRootmenu()->getHeight() > screen->getHeight())
-		my = screen->getHeight() -
-		  screen->getRootmenu()->getHeight() -
-		  screen->getBorderWidth();
+              my = screen->getHeight() -
+                screen->getRootmenu()->getHeight() -
+                screen->getBorderWidth();
 
 	    screen->getRootmenu()->move(mx, my);
 
@@ -424,7 +424,7 @@ void Blackbox::process_event(XEvent *e) {
   case MapRequest: {
 #ifdef    DEBUG
     fprintf(stderr,
-	    i18n->getMessage(blackboxSet, blackboxMapRequest,
+	    i18n(blackboxSet, blackboxMapRequest,
 		 "Blackbox::process_event(): MapRequest for 0x%lx\n"),
 	    e->xmaprequest.window);
 #endif // DEBUG
@@ -446,7 +446,7 @@ void Blackbox::process_event(XEvent *e) {
     if (win)
       win->mapNotifyEvent(&e->xmap);
 
-      break;
+    break;
   }
 
   case UnmapNotify: {
@@ -490,10 +490,10 @@ void Blackbox::process_event(XEvent *e) {
     break;
   }
 
-  // this event is quite rare and is usually handled in unmapNotify
-  // however, if the window is unmapped when the reparent event occurs
-  // the window manager never sees it because an unmap event is not sent
-  // to an already unmapped window  
+    // this event is quite rare and is usually handled in unmapNotify
+    // however, if the window is unmapped when the reparent event occurs
+    // the window manager never sees it because an unmap event is not sent
+    // to an already unmapped window  
   case ReparentNotify: {
     BlackboxWindow *win = searchWindow(e->xreparent.window);
     if (win) {
@@ -702,7 +702,7 @@ void Blackbox::process_event(XEvent *e) {
 	  win->iconify();
         if (e->xclient.data.l[0] == NormalState)
           win->deiconify();
-      } else if (e->xclient.message_type == getBlackboxChangeWorkspaceAtom()) {
+      } else if(e->xclient.message_type == getBlackboxChangeWorkspaceAtom()) {
 	BScreen *screen = searchScreen(e->xclient.window);
 
 	if (screen && e->xclient.data.l[0] >= 0 &&
@@ -1040,7 +1040,7 @@ void Blackbox::save_rc(void) {
 
     sprintf(rc_string, "session.screen%d.slit.direction: %s", screen_number,
             ((screen->getSlitDirection() == Slit::Horizontal) ? "Horizontal" :
-                                                                "Vertical"));
+             "Vertical"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.slit.onTop: %s", screen_number,
@@ -1118,7 +1118,8 @@ void Blackbox::save_rc(void) {
 	    ((screen->getToolbar()->isOnTop()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
-    sprintf(rc_string, "session.screen%d.toolbar.autoHide:  %s", screen_number,
+    sprintf(rc_string, "session.screen%d.toolbar.autoHide:  %s",
+            screen_number,
 	    ((screen->getToolbar()->doAutoHide()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
@@ -1134,7 +1135,8 @@ void Blackbox::save_rc(void) {
       toolbar_placement = "BottomCenter"; break;
     }
 
-    sprintf(rc_string, "session.screen%d.toolbar.placement: %s", screen_number,
+    sprintf(rc_string, "session.screen%d.toolbar.placement: %s",
+            screen_number,
             toolbar_placement);
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
@@ -1160,7 +1162,8 @@ void Blackbox::save_rc(void) {
     XrmPutLineResource(&new_blackboxrc, rc_string);
 #endif // HAVE_STRFTIME
 
-    sprintf(rc_string, "session.screen%d.edgeSnapThreshold: %d", screen_number,
+    sprintf(rc_string, "session.screen%d.edgeSnapThreshold: %d",
+            screen_number,
 	    screen->getEdgeSnapThreshold());
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
@@ -1450,7 +1453,7 @@ void Blackbox::load_rc(BScreen *screen) {
     if (! strncasecmp(value.addr, "clicktofocus", value.size)) {
       screen->saveAutoRaise(False);
       screen->saveSloppyFocus(False);
-    } else if (! strncasecmp(value.addr, "autoraisesloppyfocus", value.size)) {
+    } else if(! strncasecmp(value.addr, "autoraisesloppyfocus", value.size)) {
       screen->saveSloppyFocus(True);
       screen->saveAutoRaise(True);
     } else {

@@ -46,23 +46,23 @@ Windowmenu::Windowmenu(BlackboxWindow *win) : Basemenu(win->getScreen()) {
   setInternalMenu();
 
   sendToMenu = new SendtoWorkspacemenu(this);
-  insert(i18n->getMessage(WindowmenuSet, WindowmenuSendTo, "Send To ..."),
+  insert(i18n(WindowmenuSet, WindowmenuSendTo, "Send To ..."),
 	 sendToMenu);
-  insert(i18n->getMessage(WindowmenuSet, WindowmenuShade, "Shade"),
+  insert(i18n(WindowmenuSet, WindowmenuShade, "Shade"),
 	 BScreen::WindowShade);
-  insert(i18n->getMessage(WindowmenuSet, WindowmenuIconify, "Iconify"),
+  insert(i18n(WindowmenuSet, WindowmenuIconify, "Iconify"),
 	 BScreen::WindowIconify);
-  insert(i18n->getMessage(WindowmenuSet, WindowmenuMaximize, "Maximize"),
+  insert(i18n(WindowmenuSet, WindowmenuMaximize, "Maximize"),
 	 BScreen::WindowMaximize);
-  insert(i18n->getMessage(WindowmenuSet, WindowmenuRaise,"Raise"),
+  insert(i18n(WindowmenuSet, WindowmenuRaise,"Raise"),
 	 BScreen::WindowRaise);
-  insert(i18n->getMessage(WindowmenuSet, WindowmenuLower, "Lower"),
+  insert(i18n(WindowmenuSet, WindowmenuLower, "Lower"),
 	 BScreen::WindowLower);
-  insert(i18n->getMessage(WindowmenuSet, WindowmenuStick, "Stick"),
+  insert(i18n(WindowmenuSet, WindowmenuStick, "Stick"),
 	 BScreen::WindowStick);
-  insert(i18n->getMessage(WindowmenuSet, WindowmenuKillClient, "Kill Client"),
+  insert(i18n(WindowmenuSet, WindowmenuKillClient, "Kill Client"),
 	 BScreen::WindowKill);
-  insert(i18n->getMessage(WindowmenuSet, WindowmenuClose, "Close"),
+  insert(i18n(WindowmenuSet, WindowmenuClose, "Close"),
 	 BScreen::WindowClose);
 
   update();

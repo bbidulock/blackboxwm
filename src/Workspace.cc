@@ -302,8 +302,8 @@ void Workspace::setName(char *new_name) {
     name = bstrdup(new_name);
   } else {
     name = new char[128];
-    sprintf(name, i18n->getMessage(WorkspaceSet, WorkspaceDefaultNameFormat,
-				   "Workspace %d"), id + 1);
+    sprintf(name, i18n(WorkspaceSet, WorkspaceDefaultNameFormat,
+                       "Workspace %d"), id + 1);
   }
   
   clientmenu->setLabel(name);
@@ -355,9 +355,9 @@ void Workspace::placeWindow(BlackboxWindow *win) {
         for (BlackboxWindow *curr = it.current(); placed && curr;
 	     it++, curr = it.current()) {
           int curr_w = curr->getWidth() + (screen->getBorderWidth() * 4);
-          int curr_h =
-	    ((curr->isShaded()) ? curr->getTitleHeight() : curr->getHeight()) +
-            (screen->getBorderWidth() * 4);
+          int curr_h = ((curr->isShaded()) ?
+                        curr->getTitleHeight() :
+                        curr->getHeight()) + (screen->getBorderWidth() * 4);
 	  
           if (curr->getXFrame() < place_x + win_w &&
               curr->getXFrame() + curr_w > place_x &&
@@ -390,16 +390,16 @@ void Workspace::placeWindow(BlackboxWindow *win) {
       
       while (!placed &&
 	     ((screen->getColPlacementDirection() == BScreen::BottomTop) ?
-	      place_y > 0 : place_y + win_h < (signed) availableArea.height)) {
+	      place_y > 0 : place_y + win_h < (signed) availableArea.height)){
         placed = True;
 
         it.reset();
         for (BlackboxWindow *curr = it.current(); placed && curr;
 	     it++, curr = it.current()) {
           int curr_w = curr->getWidth() + (screen->getBorderWidth() * 4);
-          int curr_h =
-            ((curr->isShaded()) ? curr->getTitleHeight() : curr->getHeight()) +
-            (screen->getBorderWidth() * 4);
+          int curr_h = ((curr->isShaded()) ?
+                        curr->getTitleHeight() :
+                        curr->getHeight()) + (screen->getBorderWidth() * 4);
 
           if (curr->getXFrame() < place_x + win_w &&
               curr->getXFrame() + curr_w > place_x &&
