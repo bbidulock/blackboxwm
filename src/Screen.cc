@@ -665,7 +665,8 @@ bool BScreen::focusFallback(const BlackboxWindow *win) {
           || tmp == win
           || std::find(git, gend, tmp) == gend
           || !tmp->isVisible()
-          || tmp->workspace() != current_workspace)
+          || (tmp->workspace() != current_workspace
+              && tmp->workspace() != bt::BSENTINEL))
         continue;
       if (tmp->setInputFocus())
         return true;
@@ -679,7 +680,8 @@ bool BScreen::focusFallback(const BlackboxWindow *win) {
       BlackboxWindow * const tmp = win->findTransientFor();
       if (tmp
           && tmp->isVisible()
-          && tmp->workspace() == current_workspace
+          && (tmp->workspace() == current_workspace
+              || tmp->workspace() == bt::BSENTINEL)
           && tmp->setInputFocus())
         return true;
     }
@@ -694,7 +696,8 @@ bool BScreen::focusFallback(const BlackboxWindow *win) {
         break;
       if (tmp == win
           || !tmp->isVisible()
-          || tmp->workspace() != current_workspace)
+          || (tmp->workspace() != current_workspace
+              && tmp->workspace() != bt::BSENTINEL))
         continue;
       if (tmp->setInputFocus())
         return true;
@@ -709,7 +712,8 @@ bool BScreen::focusFallback(const BlackboxWindow *win) {
     if (!tmp
         || tmp == win
         || !tmp->isVisible()
-        || tmp->workspace() != current_workspace)
+        || (tmp->workspace() != current_workspace
+            && tmp->workspace() != bt::BSENTINEL))
       continue;
     if (tmp->setInputFocus())
       return true;
@@ -1737,7 +1741,8 @@ void BScreen::raiseTransients(const BlackboxWindowList &transients) {
                                     end = transients.end();
   for (; it != end; ++it) {
     BlackboxWindow * const tmp = *it;
-    if (tmp->workspace() == current_workspace) {
+    if (tmp->workspace() == current_workspace
+        || tmp->workspace() == bt::BSENTINEL) {
       stackingList.raise(tmp);
       raiseTransients(tmp->transients());
     }
@@ -1752,7 +1757,8 @@ void BScreen::lowerTransients(const BlackboxWindowList &transients) {
                                     end = transients.end();
   for (; it != end; ++it) {
     BlackboxWindow * const tmp = *it;
-    if (tmp->workspace() == current_workspace) {
+    if (tmp->workspace() == current_workspace
+        || tmp->workspace() == bt::BSENTINEL) {
       lowerTransients(tmp->transients());
       stackingList.lower(tmp);
     }
@@ -1768,7 +1774,8 @@ void BScreen::stackTransients(const BlackboxWindowList &transients,
                                     end = transients.end();
   for (; it != end; ++it) {
     BlackboxWindow * const tmp = *it;
-    if (tmp->workspace() == current_workspace) {
+    if (tmp->workspace() == current_workspace
+        || tmp->workspace() == bt::BSENTINEL) {
       stackTransients(tmp->transients(), stack);
       stack.push_back(tmp->windowID());
     }
