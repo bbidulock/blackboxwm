@@ -119,7 +119,7 @@ private:
 
     bool toolbar_on_top, toolbar_auto_hide, sloppy_focus, auto_raise,
       auto_edge_balance, image_dither, ordered_dither, opaque_move, full_max,
-      focus_new, focus_last, click_raise, allow_scroll_lock;
+      ignore_shaded, focus_new, focus_last, click_raise, allow_scroll_lock;
     bt::Color border_color;
     XrmDatabase stylerc;
 
@@ -147,8 +147,8 @@ private:
   void updateWorkareaHint(void) const;
 
 public:
-  enum { RowSmartPlacement = 1, ColSmartPlacement, CascadePlacement, LeftRight,
-         RightLeft, TopBottom, BottomTop };
+  enum { RowSmartPlacement = 400, ColSmartPlacement, CascadePlacement,
+         LeftRight, RightLeft, TopBottom, BottomTop };
   enum { RoundBullet = 1, TriangleBullet, SquareBullet, NoBullet };
   enum { Restart = 1, RestartOther, Exit, Shutdown, Execute, Reconfigure,
          WindowShade, WindowIconify, WindowMaximize, WindowClose, WindowRaise,
@@ -175,6 +175,7 @@ public:
   { return resource.ordered_dither; }
   bool doOpaqueMove(void) const { return resource.opaque_move; }
   bool doFullMax(void) const { return resource.full_max; }
+  bool placementIgnoresShaded(void) const { return resource.ignore_shaded; }
   bool doFocusNew(void) const { return resource.focus_new; }
   bool doFocusLast(void) const { return resource.focus_last; }
   bool allowScrollLock(void) const { return resource.allow_scroll_lock;}
@@ -268,6 +269,7 @@ public:
   void saveImageDither(bool d) { resource.image_dither = d; }
   void saveOpaqueMove(bool o) { resource.opaque_move = o; }
   void saveFullMax(bool f) { resource.full_max = f; }
+  void savePlacementIgnoresShaded(bool f) { resource.ignore_shaded = f; }
   void saveFocusNew(bool f) { resource.focus_new = f; }
   void saveFocusLast(bool f) { resource.focus_last = f; }
   void saveAllowScrollLock(bool a) { resource.allow_scroll_lock = a; }

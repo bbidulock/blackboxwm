@@ -110,16 +110,11 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
 
 
 void Configmenu::refresh(void) {
-  setItemChecked(ConfigmenuOpaqueMove,
-                 _bscreen->doOpaqueMove());
-  setItemChecked(ConfigmenuFullMax,
-                 _bscreen->doFullMax());
-  setItemChecked(ConfigmenuFocusNew,
-                 _bscreen->doFocusNew());
-  setItemChecked(ConfigmenuFocusLast,
-                 _bscreen->doFocusLast());
-  setItemChecked(ConfigmenuDisableBindings,
-                 _bscreen->allowScrollLock());
+  setItemChecked(ConfigmenuOpaqueMove, _bscreen->doOpaqueMove());
+  setItemChecked(ConfigmenuFullMax, _bscreen->doFullMax());
+  setItemChecked(ConfigmenuFocusNew, _bscreen->doFocusNew());
+  setItemChecked(ConfigmenuFocusLast, _bscreen->doFocusLast());
+  setItemChecked(ConfigmenuDisableBindings, _bscreen->allowScrollLock());
 }
 
 
@@ -237,6 +232,9 @@ ConfigPlacementmenu::ConfigPlacementmenu(bt::Application &app,
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuBottomTop,
                       "Bottom to Top"),
              BScreen::BottomTop);
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuIgnoreShaded,
+                      "Ignore Shaded Windows"),
+             ConfigmenuIgnoreShaded);
 }
 
 
@@ -262,6 +260,8 @@ void ConfigPlacementmenu::refresh(void) {
 
   setItemEnabled(BScreen::BottomTop, ! cascade);
   setItemChecked(BScreen::BottomTop, ! cascade && ! tb);
+
+  setItemChecked(ConfigmenuIgnoreShaded, _bscreen->placementIgnoresShaded());
 }
 
 
@@ -284,6 +284,9 @@ void ConfigPlacementmenu::itemClicked(unsigned int id, unsigned int button) {
   case BScreen::BottomTop:
     _bscreen->saveColPlacementDirection(id);
     break;
+
+  case ConfigmenuIgnoreShaded:
+    _bscreen->savePlacementIgnoresShaded(! _bscreen->placementIgnoresShaded());
   } // switch
 }
 

@@ -12,6 +12,8 @@ $ #OpaqueMove
 # Opaque Window Moving
 $ #FullMax
 # Full Maximization
+$ #IgnoreShaded
+# Ignore Shaded Windows
 $ #FocusNew
 # Focus New Windows
 $ #FocusLast

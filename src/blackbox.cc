@@ -558,6 +558,11 @@ void Blackbox::save_rc(void) {
     sprintf(rc_string, "session.imageDither: %s", ditherMode);
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
+    sprintf(rc_string, "session.screen%d.placementIgnoresShaded: %s",
+            screen_number,
+            (screen->placementIgnoresShaded()) ? "True" : "False");
+    XrmPutLineResource(&new_blackboxrc, rc_string);
+
     sprintf(rc_string, "session.screen%d.fullMaximization: %s", screen_number,
             ((screen->doFullMax()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
@@ -758,6 +763,17 @@ void Blackbox::load_rc(BScreen *screen) {
   char *value_type, name_lookup[1024], class_lookup[1024];
   int screen_number = screen->screenNumber();
   int int_value;
+
+  sprintf(name_lookup,  "session.screen%d.placementIgnoresShaded",
+          screen_number);
+  sprintf(class_lookup, "Session.Screen%d.placementIgnoresShaded",
+          screen_number);
+  screen->savePlacementIgnoresShaded(True);
+  if (XrmGetResource(database, name_lookup, class_lookup,
+                     &value_type, &value) &&
+      ! strncasecmp(value.addr, "false", value.size)) {
+    screen->savePlacementIgnoresShaded(False);
+  }
 
   sprintf(name_lookup,  "session.screen%d.fullMaximization", screen_number);
   sprintf(class_lookup, "Session.Screen%d.FullMaximization", screen_number);
