@@ -39,7 +39,7 @@ public:
   void refresh(void);
 
 protected:
-  void itemClicked(unsigned int id, unsigned int button);
+  void itemClicked(unsigned int id, unsigned int);
 
 private:
   BScreen *_bscreen;
@@ -54,7 +54,7 @@ public:
   void refresh(void);
 
 protected:
-  void itemClicked(unsigned int id, unsigned int button);
+  void itemClicked(unsigned int id, unsigned int);
 
 private:
   BScreen *_bscreen;
@@ -68,7 +68,7 @@ public:
   void refresh(void);
 
 protected:
-  void itemClicked(unsigned int id, unsigned int button);
+  void itemClicked(unsigned int id, unsigned int);
 };
 
 
@@ -118,9 +118,7 @@ void Configmenu::refresh(void) {
 }
 
 
-void Configmenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button != 1) return;
-
+void Configmenu::itemClicked(unsigned int id, unsigned int) {
   switch (id) {
   case ConfigmenuOpaqueMove: // opaque move
     _bscreen->saveOpaqueMove(! _bscreen->doOpaqueMove());
@@ -181,9 +179,7 @@ void ConfigFocusmenu::refresh(void) {
 }
 
 
-void ConfigFocusmenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button != 1) return;
-
+void ConfigFocusmenu::itemClicked(unsigned int id, unsigned int) {
   switch (id) {
   case BScreen::ClickToFocus:
   case BScreen::SloppyFocus:
@@ -265,9 +261,7 @@ void ConfigPlacementmenu::refresh(void) {
 }
 
 
-void ConfigPlacementmenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button != 1) return;
-
+void ConfigPlacementmenu::itemClicked(unsigned int id, unsigned int) {
   switch (id) {
   case BScreen::RowSmartPlacement:
   case BScreen::ColSmartPlacement:
@@ -320,8 +314,6 @@ void ConfigDithermenu::refresh(void) {
 }
 
 
-void ConfigDithermenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button != 1) return;
-
+void ConfigDithermenu::itemClicked(unsigned int id, unsigned int) {
   bt::Image::setDitherMode((bt::DitherMode) id);
 }

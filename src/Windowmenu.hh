@@ -39,7 +39,7 @@ public:
   void refresh(void);
 
 protected:
-  virtual void itemClicked(unsigned int id, unsigned int button);
+  virtual void itemClicked(unsigned int id, unsigned int);
 
 private:
   BlackboxWindow *_window;

@@ -29,9 +29,14 @@ extern "C" {
 #include <assert.h>
 }
 
+#include "Workspacemenu.hh"
+#include "Iconmenu.hh"
 #include "Screen.hh"
 #include "i18n.hh"
-#include "Workspacemenu.hh"
+
+static const unsigned int NewWorkspaceId = 497u;
+static const unsigned int RemoveLastId   = 498u;
+static const unsigned int IconmenuId     = 499u;
 
 
 Workspacemenu::Workspacemenu(bt::Application &app, unsigned int screen,
@@ -43,27 +48,30 @@ Workspacemenu::Workspacemenu(bt::Application &app, unsigned int screen,
   showTitle();
 
   insertItem(bt::i18n(WorkspacemenuSet, WorkspacemenuNewWorkspace,
-                      "New Workspace"), 497);
+                      "New Workspace"), NewWorkspaceId);
   insertItem(bt::i18n(WorkspacemenuSet, WorkspacemenuRemoveLast,
-                      "Remove Last"), 498);
+                      "Remove Last"), RemoveLastId);
   insertSeparator();
 }
 
 
-void Workspacemenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button != 1)
-    return;
+void Workspacemenu::insertIconMenu(Iconmenu *iconmenu) {
+  insertSeparator();
+  insertItem(bt::i18n(IconSet, IconIcons, "Icons"), iconmenu, IconmenuId);
+}
 
+
+void Workspacemenu::itemClicked(unsigned int id, unsigned int) {
   switch (id) {
-  case 497:
+  case NewWorkspaceId:
     _bscreen->addWorkspace();
     break;
 
-  case 498:
+  case RemoveLastId:
     _bscreen->removeLastWorkspace();
     break;
 
-  case 499: // iconmenu
+  case IconmenuId:
     break;
 
   default:

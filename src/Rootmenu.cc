@@ -50,9 +50,7 @@ void Rootmenu::insertFunction(const std::string &label,
 }
 
 
-void Rootmenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button != 1) return;
-
+void Rootmenu::itemClicked(unsigned int id, unsigned int) {
   FunctionMap::const_iterator it = _funcmap.find(id);
   if (it == _funcmap.end()) return;
 

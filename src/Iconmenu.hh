@@ -34,7 +34,7 @@ public:
   Iconmenu(bt::Application &app, unsigned int screen, BScreen *bscreen);
 
 protected:
-  virtual void itemClicked(unsigned int id, unsigned int button);
+  virtual void itemClicked(unsigned int id, unsigned int);
 
 private:
   BScreen *_bscreen;

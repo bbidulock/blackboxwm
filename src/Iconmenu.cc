@@ -45,9 +45,7 @@ Iconmenu::Iconmenu(bt::Application &app, unsigned int screen,
 }
 
 
-void Iconmenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button != 1) return;
-
+void Iconmenu::itemClicked(unsigned int id, unsigned int) {
   assert(id < _bscreen->getIconCount());
 
   BlackboxWindow *window = _bscreen->getIcon(id);

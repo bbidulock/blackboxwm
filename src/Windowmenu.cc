@@ -82,9 +82,7 @@ void Windowmenu::refresh(void) {
 }
 
 
-void Windowmenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button != 1) return;
-
+void Windowmenu::itemClicked(unsigned int id, unsigned int) {
   switch (id) {
   case BScreen::WindowShade:
     _window->shade();
@@ -95,7 +93,7 @@ void Windowmenu::itemClicked(unsigned int id, unsigned int button) {
     break;
 
   case BScreen::WindowMaximize:
-    _window->maximize(button);
+    _window->maximize(0);
     break;
 
   case BScreen::WindowClose:
@@ -144,9 +142,7 @@ void SendToWorkspacemenu::refresh(void) {
 
 
 void SendToWorkspacemenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button > 2) return;
-
-  if (button == 1) _window->withdraw();
+  if (button != 2) _window->withdraw();
   _window->getScreen()->reassociateWindow(_window, id);
   if (button == 2) _window->getScreen()->changeWorkspaceID(id);
 }

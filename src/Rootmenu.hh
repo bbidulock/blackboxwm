@@ -43,7 +43,7 @@ public:
                       unsigned int index = ~0u);
 
 protected:
-  void itemClicked(unsigned int id, unsigned int button);
+  void itemClicked(unsigned int id, unsigned int);
 
 private:
   BScreen *_bscreen;

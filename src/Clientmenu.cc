@@ -45,14 +45,12 @@ Clientmenu::Clientmenu(bt::Application &app, BScreen& screen,
 
 
 void Clientmenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button > 2) return;
-
   BlackboxWindow *window = _screen.getWindow(_workspace, id);
   assert(window != 0);
 
   if (_workspace != _screen.getCurrentWorkspaceID()) {
-    if (button == 1) _screen.changeWorkspaceID(_workspace);
-    else if (button == 2) window->deiconify(true, false);
+    if (button == 2) window->deiconify(true, false);
+    else  _screen.changeWorkspaceID(_workspace);
   }
 
   _screen.raiseWindow(window);

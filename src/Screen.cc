@@ -228,9 +228,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
                               wkspc->getID());
   }
 
-  workspacemenu->insertSeparator();
-  workspacemenu->insertItem(bt::i18n(IconSet, IconIcons, "Icons"),
-                            iconmenu, 499u);
+  workspacemenu->insertIconMenu(iconmenu);
 
   current_workspace = workspacesList.front();
   current_workspace_id = current_workspace->getID();

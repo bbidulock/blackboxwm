@@ -27,14 +27,17 @@
 #include "Menu.hh"
 
 class BScreen;
+class Iconmenu;
 
 
 class Workspacemenu : public bt::Menu {
 public:
   Workspacemenu(bt::Application &app, unsigned int screen, BScreen *bscreen);
 
+  void insertIconMenu(Iconmenu *iconmenu);
+
 protected:
-  virtual void itemClicked(unsigned int id, unsigned int button);
+  virtual void itemClicked(unsigned int id, unsigned int);
 
 private:
   BScreen *_bscreen;
