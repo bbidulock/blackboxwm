@@ -546,9 +546,8 @@ static const unsigned int dither16[16][16] = {
  * This handles the proper setting of the image data based on the image depth
  * and the machine's byte ordering
  */
-static inline
-void assignPixelData(unsigned int bit_depth, unsigned char **data,
-                     unsigned long pixel) {
+static void assignPixelData(unsigned int bit_depth, unsigned char **data,
+                            unsigned long pixel) {
   unsigned char *pixel_data = *data;
   switch (bit_depth) {
   case  8: //  8bpp
