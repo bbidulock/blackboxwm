@@ -141,9 +141,10 @@ void Workspace::focusFallback(const BlackboxWindow *old_window) {
   // if it's a transient, then try to focus its parent
   if (old_window && old_window->isTransient()) {
     newfocus = old_window->getTransientFor();
-    if (newfocus &&
-        (newfocus->isIconic() ||                  // do not focus icons
-         newfocus->getWorkspaceNumber() != id) || // or other workspaces
+
+    if (! newfocus ||
+        newfocus->isIconic() ||                  // do not focus icons
+        newfocus->getWorkspaceNumber() != id ||  // or other workspaces
         ! newfocus->setInputFocus())
       newfocus = 0;
   }
