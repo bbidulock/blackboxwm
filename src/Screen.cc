@@ -2036,9 +2036,11 @@ Windowmenu *BScreen::windowmenu(BlackboxWindow *win) {
 
 
 void BScreen::addIcon(BlackboxWindow *win) {
-  Workspace *workspace = getWorkspace(win->workspace());
-  assert(workspace != 0);
-  workspace->removeWindow(win);
+  if (win->workspace() != bt::BSENTINEL) {
+    Workspace *workspace = getWorkspace(win->workspace());
+    assert(workspace != 0);
+    workspace->removeWindow(win);
+  }
 
   int id = _iconmenu->insertItem(win->getIconTitle());
   win->setWindowNumber(id);
