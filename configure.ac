@@ -47,6 +47,11 @@ if test x$regex_cmd = "x"; then
   AC_MSG_ERROR([error. sed is required to build the default menu file.])
 fi
 
+AC_CHECK_PROGS([gencat_cmd], [gencat])
+if test x$gencat_cmd = "x"; then
+  NLS=
+fi
+
 dnl Check for system header files
 AC_CHECK_HEADERS(ctype.h dirent.h fcntl.h libgen.h locale.h nl_types.h process.h signal.h stdarg.h time.h sys/param.h sys/select.h sys/signal.h sys/time.h sys/wait.h)
 AC_HEADER_TIME
@@ -60,7 +65,15 @@ AC_CHECK_FUNCS([basename],
 			      LIBS="$LIBS -lgen"])
                ])
 
-AC_CHECK_FUNCS(getpid setlocale sigaction strftime strcasestr snprintf vsnprintf catopen catgets catclose)
+AC_CHECK_FUNCS([setlocale],
+               [],
+               [AC_CHECK_LIB([xpg4],
+                             [setlocale],
+                             [AC_DEFINE([HAVE_SETLOCALE])
+                              LIBS="$LIBS -lxpg4"])
+               ])
+
+AC_CHECK_FUNCS(getpid sigaction strftime strcasestr snprintf vsnprintf catopen catgets catclose)
 AC_CHECK_LIB([nsl],
              [t_open],
 	     [LIBS="$LIBS -lnsl"])
@@ -199,13 +212,6 @@ AC_ARG_ENABLE([nls],
   NLS="-DNLS"
               ])
 AC_SUBST(NLS)
-
-AC_CHECK_LIB([xpg4], [setlocale], [LIBS="$LIBS -lxpg4"])
-
-AC_CHECK_PROGS([gencat_cmd], [gencat])
-if test x$gencat_cmd = "x"; then
-  NLS=
-fi
 
 dnl Determine if maintainer portions of the Makefiles should be included.
 AM_MAINTAINER_MODE
