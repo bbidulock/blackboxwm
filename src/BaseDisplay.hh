@@ -72,7 +72,7 @@ public:
 class BaseDisplay: public TimerQueueManager {
 private:
   struct BShape {
-    Bool extensions;
+    bool extensions;
     int event_basep, error_basep;
   };
   BShape shape;
@@ -112,11 +112,11 @@ public:
 
   BGCCache *gcCache(void) const;
 
-  inline Bool hasShapeExtensions(void) const
+  inline bool hasShapeExtensions(void) const
     { return shape.extensions; }
-  inline Bool doShutdown(void) const
+  inline bool doShutdown(void) const
     { return run_state == SHUTDOWN; }
-  inline Bool isStartup(void) const
+  inline bool isStartup(void) const
     { return run_state == STARTUP; }
 
   inline Display *getXDisplay(void) const { return display; }
@@ -135,7 +135,7 @@ public:
   inline void run(void) { run_state = RUNNING; }
 
   void grabButton(unsigned int button, unsigned int modifiers,
-                  Window grab_window, Bool owner_events,
+                  Window grab_window, bool owner_events,
                   unsigned int event_mask, int pointer_mode,
                   int keyboard_mode, Window confine_to, Cursor cursor) const;
   void ungrabButton(unsigned int button, unsigned int modifiers,
@@ -149,7 +149,7 @@ public:
 
   // another pure virtual... this is used to handle signals that BaseDisplay
   // doesn't understand itself
-  virtual Bool handleSignal(int sig) = 0;
+  virtual bool handleSignal(int sig) = 0;
 };
 
 

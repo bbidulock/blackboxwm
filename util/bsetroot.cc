@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
+// -*- mode++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Window.cc for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
 // Copyright (c) 1997 - 2000, 2002 Brad Hughes <bhughes at trolltech.com>
@@ -53,7 +53,7 @@ bsetroot::bsetroot(int argc, char **argv, char *dpy_name)
 {
   grad = fore = back = (char *) 0;
 
-  Bool mod = False, sol = False, grd = False;
+  bool mod = False, sol = False, grd = False;
   int mod_x = 0, mod_y = 0;
 
   for (int i = 1; i < argc; i++) {

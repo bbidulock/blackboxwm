@@ -103,7 +103,7 @@ timeval BTimer::endpoint(void) const {
 }
 
 
-Bool BTimer::shouldFire(const timeval &tm) const {
+bool BTimer::shouldFire(const timeval &tm) const {
   timeval end = endpoint();
 
   return !((tm.tv_sec < end.tv_sec) ||

@@ -102,7 +102,7 @@ public:
 private:
   typedef std::list<SlitClient*> SlitClientList;
 
-  Bool on_top, hidden, do_auto_hide;
+  bool on_top, hidden, do_auto_hide;
   Display *display;
 
   Blackbox *blackbox;
@@ -132,9 +132,9 @@ public:
   Slit(BScreen *scr);
   virtual ~Slit(void);
 
-  inline Bool isOnTop(void) const { return on_top; }
-  inline Bool isHidden(void) const { return hidden; }
-  inline Bool doAutoHide(void) const { return do_auto_hide; }
+  inline bool isOnTop(void) const { return on_top; }
+  inline bool isHidden(void) const { return hidden; }
+  inline bool doAutoHide(void) const { return do_auto_hide; }
 
   inline Slitmenu *getMenu(void) { return slitmenu; }
 
@@ -149,8 +149,8 @@ public:
   inline unsigned int getHeight(void) const { return frame.rect.height(); }
 
   void addClient(Window w);
-  void removeClient(SlitClient *client, Bool remap = True);
-  void removeClient(Window w, Bool remap = True);
+  void removeClient(SlitClient *client, bool remap = True);
+  void removeClient(Window w, bool remap = True);
   void reconfigure(void);
   void reposition(void);
   void shutdown(void);

@@ -59,17 +59,17 @@ public:
   void setDisplay(const BaseDisplay * const _display,
                   unsigned int _screen = ~(0u));
 
-  inline Bool isAllocated(void) const { return allocated; }
+  inline bool isAllocated(void) const { return allocated; }
 
-  inline Bool isValid(void) const { return r != -1 && g != -1 && b != -1; }
+  inline bool isValid(void) const { return r != -1 && g != -1 && b != -1; }
 
   unsigned long pixel(void) const;
 
   // operators
   BColor &operator=(const BColor &c);
-  inline Bool operator==(const BColor &c) const
+  inline bool operator==(const BColor &c) const
   { return (r == c.r && b == c.b && b == c.b); }
-  inline Bool operator!=(const BColor &c) const
+  inline bool operator!=(const BColor &c) const
   { return (! operator==(c)); }
 
   static void cleanupColorCache(void);
@@ -79,7 +79,7 @@ private:
   void allocate(void);
   void deallocate(void);
 
-  Bool allocated;
+  bool allocated;
   int r, g, b;
   unsigned long p;
   const BaseDisplay *dpy;
@@ -99,13 +99,13 @@ private:
     RGB(const RGB &x)
       : display(x.display), screen(x.screen), r(x.r), g(x.g), b(x.b) {}
 
-    inline Bool operator==(const RGB &x) const {
+    inline bool operator==(const RGB &x) const {
       return display == x.display &&
-        screen == x.screen &&
-        r == x.r && g == x.g && b == x.b;
+              screen == x.screen &&
+                   r == x.r && g == x.g && b == x.b;
     }
 
-    inline Bool operator<(const RGB &x) const {
+    inline bool operator<(const RGB &x) const {
       unsigned long p1, p2;
       p1 = (screen << 24 | r << 16 | g << 8 | b) & 0x00ffffff;
       p2 = (x.screen << 24 | x.r << 16 | x.g << 8 | x.b) & 0x00ffffff;

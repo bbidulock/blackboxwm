@@ -70,7 +70,7 @@ Workspace::Workspace(BScreen *scrn, unsigned int i) {
 }
 
 
-void Workspace::addWindow(BlackboxWindow *w, Bool place) {
+void Workspace::addWindow(BlackboxWindow *w, bool place) {
   assert(w != 0);
 
   if (place) placeWindow(w);
@@ -355,12 +355,12 @@ unsigned int Workspace::getCount(void) const {
 }
 
 
-Bool Workspace::isCurrent(void) const {
+bool Workspace::isCurrent(void) const {
   return (id == screen->getCurrentWorkspaceID());
 }
 
 
-Bool Workspace::isLastWindow(const BlackboxWindow* const w) const {
+bool Workspace::isLastWindow(const BlackboxWindow* const w) const {
   return (w == windowList.back());
 }
 
@@ -432,56 +432,56 @@ static rectList calcSpace(const Rect &win, const rectList &spaces) {
 }
 
 
-static Bool rowRLBT(const Rect &first, const Rect &second) {
+static bool rowRLBT(const Rect &first, const Rect &second) {
   if (first.bottom() == second.bottom())
     return first.right() > second.right();
   return first.bottom() > second.bottom();
 }
 
-static Bool rowRLTB(const Rect &first, const Rect &second) {
+static bool rowRLTB(const Rect &first, const Rect &second) {
   if (first.y() == second.y())
     return first.right() > second.right();
   return first.y() < second.y();
 }
 
-static Bool rowLRBT(const Rect &first, const Rect &second) {
+static bool rowLRBT(const Rect &first, const Rect &second) {
   if (first.bottom() == second.bottom())
     return first.x() < second.x();
   return first.bottom() > second.bottom();
 }
 
-static Bool rowLRTB(const Rect &first, const Rect &second) {
+static bool rowLRTB(const Rect &first, const Rect &second) {
   if (first.y() == second.y())
     return first.x() < second.x();
   return first.y() < second.y();
 }
 
-static Bool colLRTB(const Rect &first, const Rect &second) {
+static bool colLRTB(const Rect &first, const Rect &second) {
   if (first.x() == second.x())
     return first.y() < second.y();
   return first.x() < second.x();
 }
 
-static Bool colLRBT(const Rect &first, const Rect &second) {
+static bool colLRBT(const Rect &first, const Rect &second) {
   if (first.x() == second.x())
     return first.bottom() > second.bottom();
   return first.x() < second.x();
 }
 
-static Bool colRLTB(const Rect &first, const Rect &second) {
+static bool colRLTB(const Rect &first, const Rect &second) {
   if (first.right() == second.right())
     return first.y() < second.y();
   return first.right() > second.right();
 }
 
-static Bool colRLBT(const Rect &first, const Rect &second) {
+static bool colRLBT(const Rect &first, const Rect &second) {
   if (first.right() == second.right())
     return first.bottom() > second.bottom();
   return first.right() > second.right();
 }
 
 
-Bool Workspace::smartPlacement(Rect& win, const Rect& availableArea) {
+bool Workspace::smartPlacement(Rect& win, const Rect& availableArea) {
   rectList spaces;
   spaces.push_back(availableArea); //initially the entire screen is free
 
@@ -553,7 +553,7 @@ Bool Workspace::smartPlacement(Rect& win, const Rect& availableArea) {
 }
 
 
-Bool Workspace::cascadePlacement(Rect &win, const Rect &availableArea) {
+bool Workspace::cascadePlacement(Rect &win, const Rect &availableArea) {
   if ((cascade_x > static_cast<signed>(availableArea.width() / 2)) ||
       (cascade_y > static_cast<signed>(availableArea.height() / 2)))
     cascade_x = cascade_y = 32;
@@ -572,7 +572,7 @@ void Workspace::placeWindow(BlackboxWindow *win) {
   Rect availableArea(screen->availableArea()),
     new_win(availableArea.x(), availableArea.y(),
             win->frameRect().width(), win->frameRect().height());
-  Bool placed = False;
+  bool placed = False;
 
   switch (screen->getPlacementPolicy()) {
   case BScreen::RowSmartPlacement:

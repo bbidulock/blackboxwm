@@ -63,7 +63,7 @@ static unsigned long bsqrt(unsigned long x) {
 BImageControl *ctrl = 0;
 
 BImageControl::BImageControl(BaseDisplay *dpy, const ScreenInfo *scrn,
-                             Bool _dither, int _cpc,
+                             bool _dither, int _cpc,
                              unsigned long cache_timeout,
                              unsigned long cmax)
 {
@@ -544,7 +544,7 @@ void BImageControl::installRootColormap(void) {
     XListInstalledColormaps(basedisplay->getXDisplay(), window, &ncmap);
 
   if (cmaps) {
-    Bool install = True;
+    bool install = True;
     for (int i = 0; i < ncmap; i++)
       if (*(cmaps + i) == colormap)
 	install = False;
@@ -580,7 +580,7 @@ unsigned long BImageControl::getSqrt(unsigned int x) {
 
 
 struct ZeroRefCheck {
-  inline Bool operator()(const BImageControl::CachedImage &image) const {
+  inline bool operator()(const BImageControl::CachedImage &image) const {
     return (image.count == 0);
   }
 };

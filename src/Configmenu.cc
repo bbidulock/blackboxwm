@@ -216,7 +216,7 @@ Configmenu::Placementmenu::Placementmenu(Configmenu *cm):
     break;
   }
 
-  Bool rl = (getScreen()->getRowPlacementDirection() ==
+  bool rl = (getScreen()->getRowPlacementDirection() ==
              BScreen::LeftRight),
     tb = (getScreen()->getColPlacementDirection() ==
           BScreen::TopBottom);

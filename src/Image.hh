@@ -42,7 +42,7 @@ class BImageCache;
 class BImage {
 private:
   BImageControl *control;
-  Bool interlaced;
+  bool interlaced;
   XColor *colors;
 
   BColor from, to;
@@ -106,14 +106,14 @@ public:
   };
 
   BImageControl(BaseDisplay *dpy, const ScreenInfo *scrn,
-                Bool _dither= False, int _cpc = 4,
+                bool _dither= False, int _cpc = 4,
                 unsigned long cache_timeout = 300000l,
                 unsigned long cmax = 200l);
   virtual ~BImageControl(void);
 
   inline BaseDisplay *getBaseDisplay(void) const { return basedisplay; }
 
-  inline Bool doDither(void) { return dither; }
+  inline bool doDither(void) { return dither; }
 
   inline const ScreenInfo *getScreenInfo(void) { return screeninfo; }
 
@@ -140,13 +140,13 @@ public:
   void getXColorTable(XColor **c, int *n);
   void getGradientBuffers(unsigned int w, unsigned int h,
                           unsigned int **xbuf, unsigned int **ybuf);
-  void setDither(Bool d) { dither = d; }
+  void setDither(bool d) { dither = d; }
   void setColorsPerChannel(int cpc);
 
   virtual void timeout(void);
 
 private:
-  Bool dither;
+  bool dither;
   BaseDisplay *basedisplay;
   const ScreenInfo *screeninfo;
 #ifdef    TIMEDCACHE

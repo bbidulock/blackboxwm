@@ -60,9 +60,9 @@ extern "C" {
  * Initializes the class with default values/the window's set initial values.
  */
 BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
+  fprintf(stderr, "BlackboxWindow size: %d bytes\n", sizeof(BlackboxWindow));
 
 #ifdef    DEBUG
-  fprintf(stderr, "BlackboxWindow size: %d bytes\n", sizeof(BlackboxWindow));
   fprintf(stderr, "BlackboxWindow::BlackboxWindow(): creating 0x%lx\n", w);
 #endif // DEBUG
 
@@ -201,7 +201,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   }
   upsize();
 
-  Bool place_window = True;
+  bool place_window = True;
   if (blackbox->isStartup() || isTransient() ||
       client.normal_hint_flags & (PPosition|USPosition)) {
     setGravityOffsets();
@@ -387,12 +387,14 @@ void BlackboxWindow::associateClientWindow(void) {
     XShapeSelectInput(blackbox->getXDisplay(), client.window,
                       ShapeNotifyMask);
 
+    Bool shaped = False;
     int foo;
     unsigned int ufoo;
 
-    XShapeQueryExtents(blackbox->getXDisplay(), client.window, &flags.shaped,
+    XShapeQueryExtents(blackbox->getXDisplay(), client.window, &shaped,
                        &foo, &foo, &ufoo, &ufoo, &foo, &foo, &foo,
                        &ufoo, &ufoo);
+    flags.shaped = shaped;
   }
 #endif // SHAPE
 
@@ -639,7 +641,7 @@ void BlackboxWindow::destroyMaximizeButton(void) {
 }
 
 
-void BlackboxWindow::positionButtons(Bool redecorate_label) {
+void BlackboxWindow::positionButtons(bool redecorate_label) {
   unsigned int bw = frame.button_w + frame.bevel_w + 1,
     by = frame.bevel_w + 1, lx = by, lw = frame.inside_w - by;
 
@@ -964,7 +966,7 @@ void BlackboxWindow::getMWMHints(void) {
   if (mwm_hint->flags & MwmHintsDecorations) {
     if (mwm_hint->decorations & MwmDecorAll) {
       decorations = Decor_Titlebar | Decor_Handle | Decor_Border |
-        Decor_Iconify | Decor_Maximize | Decor_Close;
+                    Decor_Iconify | Decor_Maximize | Decor_Close;
     } else {
       decorations = 0;
 
@@ -1011,7 +1013,7 @@ void BlackboxWindow::getMWMHints(void) {
  * Returns: true if the hints are successfully retreived and applied; false if
  * they are not.
  */
-Bool BlackboxWindow::getBlackboxHints(void) {
+bool BlackboxWindow::getBlackboxHints(void) {
   int format;
   Atom atom_return;
   unsigned long num, len;
@@ -1144,7 +1146,7 @@ void BlackboxWindow::getTransientInfo(void) {
 
 void BlackboxWindow::configure(int dx, int dy,
                                unsigned int dw, unsigned int dh) {
-  Bool send_event = (frame.rect.x() != dx || frame.rect.y() != dy);
+  bool send_event = (frame.rect.x() != dx || frame.rect.y() != dy);
 
   if ((dw != frame.rect.width()) || (dh != frame.rect.height())) {
     frame.rect.setRect(dx, dy, dw, dh);
@@ -1240,7 +1242,7 @@ void BlackboxWindow::configureShape(void) {
 #endif // SHAPE
 
 
-Bool BlackboxWindow::setInputFocus(void) {
+bool BlackboxWindow::setInputFocus(void) {
   if (flags.focused) return True;
 
   if (! client.rect.intersects(screen->getRect())) {
@@ -1351,7 +1353,7 @@ void BlackboxWindow::show(void) {
 }
 
 
-void BlackboxWindow::deiconify(Bool reassoc, Bool raise) {
+void BlackboxWindow::deiconify(bool reassoc, bool raise) {
   if (flags.iconic || reassoc)
     screen->reassociateWindow(this, BSENTINEL, False);
   else if (blackbox_attrib.workspace != screen->getCurrentWorkspace()->getID())
@@ -1559,7 +1561,7 @@ void BlackboxWindow::stick(void) {
 }
 
 
-void BlackboxWindow::setFocusFlag(Bool focus) {
+void BlackboxWindow::setFocusFlag(bool focus) {
   flags.focused = focus;
 
   if (decorations & Decor_Titlebar) {
@@ -1648,7 +1650,7 @@ void BlackboxWindow::setFocusFlag(Bool focus) {
 }
 
 
-void BlackboxWindow::installColormap(Bool install) {
+void BlackboxWindow::installColormap(bool install) {
   int i = 0, ncmap = 0;
   Colormap *cmaps = XListInstalledColormaps(blackbox->getXDisplay(),
                                             client.window, &ncmap);
@@ -1699,11 +1701,11 @@ void BlackboxWindow::setState(unsigned long new_state) {
 }
 
 
-Bool BlackboxWindow::getState(void) {
+bool BlackboxWindow::getState(void) {
   current_state = 0;
 
   Atom atom_return;
-  Bool ret = False;
+  bool ret = False;
   int foo;
   unsigned long *state, ulfoo, nitems;
 
@@ -1918,7 +1920,7 @@ void BlackboxWindow::redrawAllButtons(void) {
 }
 
 
-void BlackboxWindow::redrawIconifyButton(Bool pressed) {
+void BlackboxWindow::redrawIconifyButton(bool pressed) {
   if (! pressed) {
     if (flags.focused) {
       if (frame.fbutton)
@@ -1952,7 +1954,7 @@ void BlackboxWindow::redrawIconifyButton(Bool pressed) {
 }
 
 
-void BlackboxWindow::redrawMaximizeButton(Bool pressed) {
+void BlackboxWindow::redrawMaximizeButton(bool pressed) {
   if (! pressed) {
     if (flags.focused) {
       if (frame.fbutton)
@@ -1988,7 +1990,7 @@ void BlackboxWindow::redrawMaximizeButton(Bool pressed) {
 }
 
 
-void BlackboxWindow::redrawCloseButton(Bool pressed) {
+void BlackboxWindow::redrawCloseButton(bool pressed) {
   if (! pressed) {
     if (flags.focused) {
       if (frame.fbutton)
@@ -2032,7 +2034,7 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
           client.window);
 #endif // DEBUG
 
-  Bool get_state_ret = getState();
+  bool get_state_ret = getState();
   if (! (get_state_ret && blackbox->isStartup())) {
     if ((client.wm_hint_flags & StateHint) &&
         (! (current_state == NormalState || current_state == IconicState)))
@@ -2513,7 +2515,7 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
                 me->window == frame.left_grip)) ||
               (me->state & (Mod1Mask | Button3Mask) &&
                me->window == frame.window))) {
-    Bool left = (me->window == frame.left_grip);
+    bool left = (me->window == frame.left_grip);
 
     if (! flags.resizing) {
       XGrabServer(blackbox->getXDisplay());
@@ -2579,7 +2581,7 @@ void BlackboxWindow::shapeEvent(XShapeEvent *) {
 #endif // SHAPE
 
 
-Bool BlackboxWindow::validateClient(void) {
+bool BlackboxWindow::validateClient(void) {
   XSync(blackbox->getXDisplay(), False);
 
   XEvent e;
@@ -2596,7 +2598,7 @@ Bool BlackboxWindow::validateClient(void) {
 }
 
 
-void BlackboxWindow::restore(Bool remap) {
+void BlackboxWindow::restore(bool remap) {
   XChangeSaveSet(blackbox->getXDisplay(), client.window, SetModeDelete);
   XSelectInput(blackbox->getXDisplay(), client.window, NoEventMask);
   XSelectInput(blackbox->getXDisplay(), frame.plate, NoEventMask);
@@ -2853,7 +2855,7 @@ void BlackboxWindow::constrain(Corner anchor, int *pw, int *ph) {
 
 int WindowStyle::doJustify(const char *text, int &start_pos,
                            unsigned int max_length, unsigned int modifier,
-                           Bool multibyte) const {
+                           bool multibyte) const {
   size_t text_len = strlen(text);
   unsigned int length;
 

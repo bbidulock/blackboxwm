@@ -74,7 +74,7 @@ public:
 
 class Toolbar : public TimeoutHandler {
 private:
-  Bool on_top, editing, hidden, do_auto_hide;
+  bool on_top, editing, hidden, do_auto_hide;
   Display *display;
 
   struct ToolbarFrame {
@@ -120,10 +120,10 @@ public:
 
   inline Toolbarmenu *getMenu(void) { return toolbarmenu; }
 
-  inline Bool isEditing(void) const { return editing; }
-  inline Bool isOnTop(void) const { return on_top; }
-  inline Bool isHidden(void) const { return hidden; }
-  inline Bool doAutoHide(void) const { return do_auto_hide; }
+  inline bool isEditing(void) const { return editing; }
+  inline bool isOnTop(void) const { return on_top; }
+  inline bool isHidden(void) const { return hidden; }
+  inline bool doAutoHide(void) const { return do_auto_hide; }
 
   inline Window getWindowID(void) const { return frame.window; }
 
@@ -144,19 +144,19 @@ public:
   void exposeEvent(XExposeEvent *ee);
   void keyPressEvent(XKeyEvent *ke);
 
-  void redrawWindowLabel(Bool redraw = False);
-  void redrawWorkspaceLabel(Bool redraw = False);
-  void redrawPrevWorkspaceButton(Bool pressed = False, Bool redraw = False);
-  void redrawNextWorkspaceButton(Bool pressed = False, Bool redraw = False);
-  void redrawPrevWindowButton(Bool preseed = False, Bool redraw = False);
-  void redrawNextWindowButton(Bool preseed = False, Bool redraw = False);
+  void redrawWindowLabel(bool redraw = False);
+  void redrawWorkspaceLabel(bool redraw = False);
+  void redrawPrevWorkspaceButton(bool pressed = False, bool redraw = False);
+  void redrawNextWorkspaceButton(bool pressed = False, bool redraw = False);
+  void redrawPrevWindowButton(bool preseed = False, bool redraw = False);
+  void redrawNextWindowButton(bool preseed = False, bool redraw = False);
   void edit(void);
   void reconfigure(void);
 
 #ifdef    HAVE_STRFTIME
-  void checkClock(Bool redraw = False);
+  void checkClock(bool redraw = False);
 #else //  HAVE_STRFTIME
-  void checkClock(Bool redraw = False, Bool date = False);
+  void checkClock(bool redraw = False, bool date = False);
 #endif // HAVE_STRFTIME
 
   virtual void timeout(void);

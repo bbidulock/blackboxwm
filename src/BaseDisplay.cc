@@ -90,7 +90,7 @@ using std::string;
 
 // X error handler to handle any and all X errors while the application is
 // running
-static Bool internal_error = False;
+static bool internal_error = False;
 static Window last_bad_window = None;
 
 BaseDisplay *base_display;
@@ -362,7 +362,7 @@ void BaseDisplay::removeTimer(BTimer *timer) {
  * with the keyboard lock keys, so that they do not cancel out the event.
  */
 void BaseDisplay::grabButton(unsigned int button, unsigned int modifiers,
-                             Window grab_window, Bool owner_events,
+                             Window grab_window, bool owner_events,
                              unsigned int event_mask, int pointer_mode,
                              int keyboard_mode, Window confine_to,
                              Cursor cursor) const {
@@ -448,7 +448,7 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, unsigned int num) {
   const string::size_type pos = default_string.rfind(".");
   if (pos != string::npos)
     default_string.resize(pos);
-  
+
   std::ostringstream formatter;
   formatter << "DISPLAY=" << default_string << '.' << screen_number;
   display_string = formatter.str();

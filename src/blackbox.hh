@@ -140,7 +140,7 @@ private:
   BlackboxWindow *focused_window;
   BTimer *timer;
 
-  Bool no_focus, reconfigure_wait, reread_menu_wait;
+  bool no_focus, reconfigure_wait, reread_menu_wait;
   Time last_time;
   char **argv;
   std::string rc_file;
@@ -243,7 +243,7 @@ public:
   inline unsigned long getCacheMax(void) const
     { return resource.cache_max; }
 
-  inline void setNoFocus(Bool f) { no_focus = f; }
+  inline void setNoFocus(bool f) { no_focus = f; }
 
   inline Cursor getSessionCursor(void) const
     { return cursor.session; }
@@ -264,9 +264,9 @@ public:
   void rereadMenu(void);
   void checkMenu(void);
 
-  Bool validateWindow(Window window);
+  bool validateWindow(Window window);
 
-  virtual Bool handleSignal(int sig);
+  virtual bool handleSignal(int sig);
 
   virtual void timeout(void);
 

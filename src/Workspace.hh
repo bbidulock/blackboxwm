@@ -62,8 +62,8 @@ private:
                        StackVector::iterator &stack);
 
   void placeWindow(BlackboxWindow *win);
-  Bool cascadePlacement(Rect& win, const Rect& availableArea);
-  Bool smartPlacement(Rect& win, const Rect& availableArea);
+  bool cascadePlacement(Rect& win, const Rect& availableArea);
+  bool smartPlacement(Rect& win, const Rect& availableArea);
 
 public:
   Workspace(BScreen *scrn, unsigned int i = 0);
@@ -86,10 +86,10 @@ public:
   BlackboxWindow* getTopWindowOnStack(void) const;
   void sendWindowList(Netizen &n);
 
-  Bool isCurrent(void) const;
-  Bool isLastWindow(const BlackboxWindow* w) const;
+  bool isCurrent(void) const;
+  bool isLastWindow(const BlackboxWindow* w) const;
 
-  void addWindow(BlackboxWindow *w, Bool place = False);
+  void addWindow(BlackboxWindow *w, bool place = False);
   unsigned int removeWindow(BlackboxWindow *w);
   unsigned int getCount(void) const;
 

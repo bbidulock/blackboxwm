@@ -362,7 +362,7 @@ void Toolbar::reconfigure(void) {
                      frame.workspace_label_w + frame.window_label_w + 4),
                     frame.bevel_w + 1, frame.button_w, frame.button_w);
   XMoveResizeWindow(display, frame.nwbutton,
-                    ((frame.bevel_w * 6) + (frame.button_w * 3) + 
+                    ((frame.bevel_w * 6) + (frame.button_w * 3) +
                      frame.workspace_label_w + frame.window_label_w + 5),
                     frame.bevel_w + 1, frame.button_w, frame.button_w);
   XMoveResizeWindow(display, frame.clock,
@@ -446,9 +446,9 @@ void Toolbar::reconfigure(void) {
 
 
 #ifdef    HAVE_STRFTIME
-void Toolbar::checkClock(Bool redraw) {
+void Toolbar::checkClock(bool redraw) {
 #else // !HAVE_STRFTIME
-void Toolbar::checkClock(Bool redraw, Bool date) {
+void Toolbar::checkClock(bool redraw, bool date) {
 #endif // HAVE_STRFTIME
   time_t tmp = 0;
   struct tm *tt = 0;
@@ -515,7 +515,7 @@ void Toolbar::checkClock(Bool redraw, Bool date) {
 }
 
 
-void Toolbar::redrawWindowLabel(Bool redraw) {
+void Toolbar::redrawWindowLabel(bool redraw) {
   BlackboxWindow *foc = screen->getBlackbox()->getFocusedWindow();
   if (! foc) {
     XClearWindow(display, frame.window_label);
@@ -544,7 +544,7 @@ void Toolbar::redrawWindowLabel(Bool redraw) {
 }
 
 
-void Toolbar::redrawWorkspaceLabel(Bool redraw) {
+void Toolbar::redrawWorkspaceLabel(bool redraw) {
   const string& name = screen->getCurrentWorkspace()->getName();
 
   if (redraw)
@@ -567,7 +567,7 @@ void Toolbar::redrawWorkspaceLabel(Bool redraw) {
 }
 
 
-void Toolbar::redrawPrevWorkspaceButton(Bool pressed, Bool redraw) {
+void Toolbar::redrawPrevWorkspaceButton(bool pressed, bool redraw) {
   if (redraw) {
     if (pressed) {
       if (frame.pbutton)
@@ -597,7 +597,7 @@ void Toolbar::redrawPrevWorkspaceButton(Bool pressed, Bool redraw) {
 }
 
 
-void Toolbar::redrawNextWorkspaceButton(Bool pressed, Bool redraw) {
+void Toolbar::redrawNextWorkspaceButton(bool pressed, bool redraw) {
   if (redraw) {
     if (pressed) {
       if (frame.pbutton)
@@ -627,7 +627,7 @@ void Toolbar::redrawNextWorkspaceButton(Bool pressed, Bool redraw) {
 }
 
 
-void Toolbar::redrawPrevWindowButton(Bool pressed, Bool redraw) {
+void Toolbar::redrawPrevWindowButton(bool pressed, bool redraw) {
   if (redraw) {
     if (pressed) {
       if (frame.pbutton)
@@ -657,7 +657,7 @@ void Toolbar::redrawPrevWindowButton(Bool pressed, Bool redraw) {
 }
 
 
-void Toolbar::redrawNextWindowButton(Bool pressed, Bool redraw) {
+void Toolbar::redrawNextWindowButton(bool pressed, bool redraw) {
   if (redraw) {
     if (pressed) {
       if (frame.pbutton)
@@ -1084,7 +1084,7 @@ void Toolbarmenu::Placementmenu::itemSelected(int button, unsigned int index) {
 
 int ToolbarStyle::doJustify(const char *text, int &start_pos,
                             unsigned int max_length, unsigned int modifier,
-                            Bool multibyte) const {
+                            bool multibyte) const {
   size_t text_len = strlen(text);
   unsigned int length;
 

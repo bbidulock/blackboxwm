@@ -70,7 +70,7 @@ struct WindowStyle {
   TextJustify justify;
 
   int doJustify(const char *text, int &start_pos, unsigned int max_length,
-                unsigned int modifier, Bool multibyte) const;
+                unsigned int modifier, bool multibyte) const;
 };
 
 struct ToolbarStyle {
@@ -84,7 +84,7 @@ struct ToolbarStyle {
   TextJustify justify;
 
   int doJustify(const char *text, int &start_pos, unsigned int max_length,
-                unsigned int modifier, Bool multibyte) const;
+                unsigned int modifier, bool multibyte) const;
 };
 
 struct MenuStyle {
@@ -107,7 +107,7 @@ struct Strut {
 
 class BScreen : public ScreenInfo {
 private:
-  Bool root_colormap_installed, managed, geom_visible;
+  bool root_colormap_installed, managed, geom_visible;
   GC opGC;
   Pixmap geom_pixmap;
   Window geom_window;
@@ -147,7 +147,7 @@ private:
     ToolbarStyle tstyle;
     MenuStyle mstyle;
 
-    Bool toolbar_on_top, toolbar_auto_hide, sloppy_focus, auto_raise,
+    bool toolbar_on_top, toolbar_auto_hide, sloppy_focus, auto_raise,
       auto_edge_balance, image_dither, ordered_dither, opaque_move, full_max,
       focus_new, focus_last, click_raise;
     BColor border_color;
@@ -157,7 +157,7 @@ private:
     int toolbar_placement, toolbar_width_percent, placement_policy,
       edge_snap_threshold, row_direction, col_direction;
 
-    Bool slit_on_top, slit_auto_hide;
+    bool slit_on_top, slit_auto_hide;
     int slit_placement, slit_direction;
 
     unsigned int handle_width, bevel_width, frame_width, border_width;
@@ -165,7 +165,7 @@ private:
 #ifdef    HAVE_STRFTIME
     std::string strftime_format;
 #else // !HAVE_STRFTIME
-    Bool clock24hour;
+    bool clock24hour;
     int date_format;
 #endif // HAVE_STRFTIME
 
@@ -174,7 +174,7 @@ private:
   BScreen(const BScreen&);
   BScreen& operator=(const BScreen&);
 
-  Bool parseMenuFile(FILE *file, Rootmenu *menu);
+  bool parseMenuFile(FILE *file, Rootmenu *menu);
 
   BTexture readDatabaseTexture(const std::string &rname,
                                const std::string &rclass,
@@ -204,25 +204,25 @@ public:
   BScreen(Blackbox *bb, unsigned int scrn);
   ~BScreen(void);
 
-  inline Bool isToolbarOnTop(void) const
+  inline bool isToolbarOnTop(void) const
   { return resource.toolbar_on_top; }
-  inline Bool doToolbarAutoHide(void) const
+  inline bool doToolbarAutoHide(void) const
   { return resource.toolbar_auto_hide; }
-  inline Bool isSloppyFocus(void) const
+  inline bool isSloppyFocus(void) const
   { return resource.sloppy_focus; }
-  inline Bool isRootColormapInstalled(void) const
+  inline bool isRootColormapInstalled(void) const
   { return root_colormap_installed; }
-  inline Bool doAutoRaise(void) const { return resource.auto_raise; }
-  inline Bool doClickRaise(void) const { return resource.click_raise; }
-  inline Bool isScreenManaged(void) const { return managed; }
-  inline Bool doImageDither(void) const
+  inline bool doAutoRaise(void) const { return resource.auto_raise; }
+  inline bool doClickRaise(void) const { return resource.click_raise; }
+  inline bool isScreenManaged(void) const { return managed; }
+  inline bool doImageDither(void) const
   { return resource.image_dither; }
-  inline Bool doOrderedDither(void) const
+  inline bool doOrderedDither(void) const
   { return resource.ordered_dither; }
-  inline Bool doOpaqueMove(void) const { return resource.opaque_move; }
-  inline Bool doFullMax(void) const { return resource.full_max; }
-  inline Bool doFocusNew(void) const { return resource.focus_new; }
-  inline Bool doFocusLast(void) const { return resource.focus_last; }
+  inline bool doOpaqueMove(void) const { return resource.opaque_move; }
+  inline bool doFullMax(void) const { return resource.full_max; }
+  inline bool doFocusNew(void) const { return resource.focus_new; }
+  inline bool doFocusLast(void) const { return resource.focus_last; }
 
   inline const GC &getOpGC(void) const { return opGC; }
 
@@ -231,8 +231,8 @@ public:
   inline BImageControl *getImageControl(void) { return image_control; }
   inline Rootmenu *getRootmenu(void) { return rootmenu; }
 
-  inline Bool isSlitOnTop(void) const { return resource.slit_on_top; }
-  inline Bool doSlitAutoHide(void) const
+  inline bool isSlitOnTop(void) const { return resource.slit_on_top; }
+  inline bool doSlitAutoHide(void) const
   { return resource.slit_auto_hide; }
   inline Slit *getSlit(void) { return slit; }
   inline int getSlitPlacement(void) const
@@ -241,8 +241,8 @@ public:
   { return resource.slit_direction; }
   inline void saveSlitPlacement(int p) { resource.slit_placement = p; }
   inline void saveSlitDirection(int d) { resource.slit_direction = d; }
-  inline void saveSlitOnTop(Bool t)    { resource.slit_on_top = t; }
-  inline void saveSlitAutoHide(Bool t) { resource.slit_auto_hide = t; }
+  inline void saveSlitOnTop(bool t)    { resource.slit_on_top = t; }
+  inline void saveSlitAutoHide(bool t) { resource.slit_auto_hide = t; }
 
   inline Toolbar *getToolbar(void) { return toolbar; }
 
@@ -281,13 +281,13 @@ public:
   inline int getColPlacementDirection(void) const
   { return resource.col_direction; }
 
-  inline void setRootColormapInstalled(Bool r) { root_colormap_installed = r; }
-  inline void saveSloppyFocus(Bool s) { resource.sloppy_focus = s; }
-  inline void saveAutoRaise(Bool a) { resource.auto_raise = a; }
-  inline void saveClickRaise(Bool c) { resource.click_raise = c; }
+  inline void setRootColormapInstalled(bool r) { root_colormap_installed = r; }
+  inline void saveSloppyFocus(bool s) { resource.sloppy_focus = s; }
+  inline void saveAutoRaise(bool a) { resource.auto_raise = a; }
+  inline void saveClickRaise(bool c) { resource.click_raise = c; }
   inline void saveWorkspaces(unsigned int w) { resource.workspaces = w; }
-  inline void saveToolbarOnTop(Bool r) { resource.toolbar_on_top = r; }
-  inline void saveToolbarAutoHide(Bool r) { resource.toolbar_auto_hide = r; }
+  inline void saveToolbarOnTop(bool r) { resource.toolbar_on_top = r; }
+  inline void saveToolbarAutoHide(bool r) { resource.toolbar_auto_hide = r; }
   inline void saveToolbarWidthPercent(int w)
   { resource.toolbar_width_percent = w; }
   inline void saveToolbarPlacement(int p) { resource.toolbar_placement = p; }
@@ -296,11 +296,11 @@ public:
   inline void saveColPlacementDirection(int d) { resource.col_direction = d; }
   inline void saveEdgeSnapThreshold(int t)
   { resource.edge_snap_threshold = t; }
-  inline void saveImageDither(Bool d) { resource.image_dither = d; }
-  inline void saveOpaqueMove(Bool o) { resource.opaque_move = o; }
-  inline void saveFullMax(Bool f) { resource.full_max = f; }
-  inline void saveFocusNew(Bool f) { resource.focus_new = f; }
-  inline void saveFocusLast(Bool f) { resource.focus_last = f; }
+  inline void saveImageDither(bool d) { resource.image_dither = d; }
+  inline void saveOpaqueMove(bool o) { resource.opaque_move = o; }
+  inline void saveFullMax(bool f) { resource.full_max = f; }
+  inline void saveFocusNew(bool f) { resource.focus_new = f; }
+  inline void saveFocusLast(bool f) { resource.focus_last = f; }
   inline void iconUpdate(void) { iconmenu->update(); }
 
 #ifdef    HAVE_STRFTIME
@@ -310,8 +310,8 @@ public:
 #else // !HAVE_STRFTIME
   inline int getDateFormat(void) { return resource.date_format; }
   inline void saveDateFormat(int f) { resource.date_format = f; }
-  inline Bool isClock24Hour(void) { return resource.clock24hour; }
-  inline void saveClock24Hour(Bool c) { resource.clock24hour = c; }
+  inline bool isClock24Hour(void) { return resource.clock24hour; }
+  inline void saveClock24Hour(bool c) { resource.clock24hour = c; }
 #endif // HAVE_STRFTIME
 
   inline WindowStyle *getWindowStyle(void) { return &resource.wstyle; }
@@ -339,10 +339,10 @@ public:
   void removeIcon(BlackboxWindow *w);
 
   void manageWindow(Window w);
-  void unmanageWindow(BlackboxWindow *w, Bool remap);
+  void unmanageWindow(BlackboxWindow *w, bool remap);
   void raiseWindows(Window *workspace_stack, unsigned int num);
   void reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id,
-                         Bool ignore_sticky);
+                         bool ignore_sticky);
   void propagateWindowName(const BlackboxWindow *bw);
   void prevFocus(void);
   void nextFocus(void);

@@ -79,10 +79,10 @@ public:
   void addTexture(const unsigned long _texture) { t |= _texture; }
 
   BTexture &operator=(const BTexture &tt);
-  inline Bool operator==(const BTexture &tt)
+  inline bool operator==(const BTexture &tt)
   { return (c == tt.c && ct == tt.ct && lc == tt.lc &&
             sc == tt.sc && t == tt.t); }
-  inline Bool operator!=(const BTexture &tt)
+  inline bool operator!=(const BTexture &tt)
   { return (! operator==(tt)); }
 
   const BaseDisplay *display(void) const { return dpy; }

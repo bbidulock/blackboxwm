@@ -47,7 +47,7 @@ private:
   BImageControl *image_ctrl;
   BScreen *screen;
 
-  Bool moving, visible, movable, torn, internal_menu, title_vis, shifted,
+  bool moving, visible, movable, torn, internal_menu, title_vis, shifted,
     hide_tree;
   Display *display;
   int which_sub, which_press, which_sbl, alignment;
@@ -68,13 +68,13 @@ private:
 
 protected:
   BasemenuItem *find(int index);
-  inline void setTitleVisibility(Bool b) { title_vis = b; }
-  inline void setMovable(Bool b) { movable = b; }
-  inline void setHideTree(Bool h) { hide_tree = h; }
+  inline void setTitleVisibility(bool b) { title_vis = b; }
+  inline void setMovable(bool b) { movable = b; }
+  inline void setHideTree(bool h) { hide_tree = h; }
   inline void setMinimumSublevels(int m) { menu.minsub = m; }
 
   virtual void itemSelected(int button, unsigned int index) = 0;
-  virtual void drawItem(int index, Bool highlight = False, Bool clear = False,
+  virtual void drawItem(int index, bool highlight = False, bool clear = False,
                         int x = -1, int y = -1,
                         unsigned int w = 0, unsigned int h = 0);
   virtual void redrawTitle(void);
@@ -85,8 +85,8 @@ public:
   Basemenu(BScreen *scrn);
   virtual ~Basemenu(void);
 
-  inline Bool isTorn(void) const { return torn; }
-  inline Bool isVisible(void) const { return visible; }
+  inline bool isTorn(void) const { return torn; }
+  inline bool isVisible(void) const { return visible; }
 
   inline BScreen *getScreen(void) { return screen; }
 
@@ -118,9 +118,9 @@ public:
   inline void removeParent(void)
   { if (internal_menu) parent = (Basemenu *) 0; }
 
-  Bool hasSubmenu(int index);
-  Bool isItemSelected(int index);
-  Bool isItemEnabled(int index);
+  bool hasSubmenu(int index);
+  bool isItemSelected(int index);
+  bool isItemEnabled(int index);
 
   void buttonPressEvent(XButtonEvent *be);
   void buttonReleaseEvent(XButtonEvent *be);
@@ -132,8 +132,8 @@ public:
   void setLabel(const std::string& label);
   void move(int x, int y);
   void update(void);
-  void setItemSelected(int index, Bool sel);
-  void setItemEnabled(int index, Bool enable);
+  void setItemSelected(int index, bool sel);
+  void setItemEnabled(int index, bool enable);
 
   virtual void drawSubmenu(int index);
   virtual void show(void);

@@ -583,7 +583,7 @@ void Basemenu::drawSubmenu(int index) {
 }
 
 
-Bool Basemenu::hasSubmenu(int index) {
+bool Basemenu::hasSubmenu(int index) {
   BasemenuItem *item = find(index);
   if (item && item->submenu())
     return True;
@@ -591,13 +591,13 @@ Bool Basemenu::hasSubmenu(int index) {
 }
 
 
-void Basemenu::drawItem(int index, Bool highlight, Bool clear,
+void Basemenu::drawItem(int index, bool highlight, bool clear,
                         int x, int y, unsigned int w, unsigned int h)
 {
   BasemenuItem *item = find(index);
   if (! item) return;
 
-  Bool dotext = True, dohilite = True, dosel = True;
+  bool dotext = True, dohilite = True, dosel = True;
   const char *text = item->label();
   int sbl = index / menu.persub, i = index - (sbl * menu.persub);
   int item_x = (sbl * menu.item_w), item_y = (i * menu.item_h);
@@ -760,7 +760,7 @@ void Basemenu::setLabel(const string& label) {
 }
 
 
-void Basemenu::setItemSelected(int index, Bool sel) {
+void Basemenu::setItemSelected(int index, bool sel) {
   assert(index >= 0);
   BasemenuItem *item = find(index);
   if (! item) return;
@@ -770,7 +770,7 @@ void Basemenu::setItemSelected(int index, Bool sel) {
 }
 
 
-Bool Basemenu::isItemSelected(int index) {
+bool Basemenu::isItemSelected(int index) {
   assert(index >= 0);
   BasemenuItem *item = find(index);
   if (! item) return False;
@@ -779,7 +779,7 @@ Bool Basemenu::isItemSelected(int index) {
 }
 
 
-void Basemenu::setItemEnabled(int index, Bool enable) {
+void Basemenu::setItemEnabled(int index, bool enable) {
   assert(index >= 0);
   BasemenuItem *item = find(index);
   if (! item) return;
@@ -789,7 +789,7 @@ void Basemenu::setItemEnabled(int index, Bool enable) {
 }
 
 
-Bool Basemenu::isItemEnabled(int index) {
+bool Basemenu::isItemEnabled(int index) {
   assert(index >= 0);
   BasemenuItem *item = find(index);
   if (! item) return False;

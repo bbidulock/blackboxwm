@@ -100,7 +100,7 @@ private:
   FocusMode focus_mode;
 
   struct _flags {
-    Bool moving,             // is moving?
+    bool moving,             // is moving?
       resizing,              // is resizing?
       shaded,                // is shaded?
       visible,               // is visible?
@@ -204,7 +204,7 @@ private:
   BlackboxWindow(const BlackboxWindow&);
   BlackboxWindow& operator=(const BlackboxWindow&);
 
-  Bool getState(void);
+  bool getState(void);
   Window createToplevelWindow();
   Window createChildWindow(Window parent, Cursor = None);
 
@@ -214,13 +214,13 @@ private:
   void getWMProtocols(void);
   void getWMHints(void);
   void getMWMHints(void);
-  Bool getBlackboxHints(void);
+  bool getBlackboxHints(void);
   void getTransientInfo(void);
   void setNetWMAttributes(void);
   void associateClientWindow(void);
   void decorate(void);
   void decorateLabel(void);
-  void positionButtons(Bool redecorate_label = False);
+  void positionButtons(bool redecorate_label = False);
   void positionWindows(void);
   void createHandle(void);
   void destroyHandle(void);
@@ -234,9 +234,9 @@ private:
   void destroyMaximizeButton(void);
   void redrawLabel(void);
   void redrawAllButtons(void);
-  void redrawCloseButton(Bool pressed);
-  void redrawIconifyButton(Bool pressed);
-  void redrawMaximizeButton(Bool pressed);
+  void redrawCloseButton(bool pressed);
+  void redrawIconifyButton(bool pressed);
+  void redrawMaximizeButton(bool pressed);
   void restoreGravity(void);
   void setGravityOffsets(void);
   void setState(unsigned long new_state);
@@ -249,24 +249,24 @@ public:
   BlackboxWindow(Blackbox *b, Window w, BScreen *s = (BScreen *) 0);
   virtual ~BlackboxWindow(void);
 
-  inline Bool isTransient(void) const { return client.transient_for != 0; }
-  inline Bool isFocused(void) const { return flags.focused; }
-  inline Bool isVisible(void) const { return flags.visible; }
-  inline Bool isIconic(void) const { return flags.iconic; }
-  inline Bool isShaded(void) const { return flags.shaded; }
-  inline Bool isMaximized(void) const { return flags.maximized; }
-  inline Bool isStuck(void) const { return flags.stuck; }
-  inline Bool isIconifiable(void) const { return functions & Func_Iconify; }
-  inline Bool isMaximizable(void) const { return functions & Func_Maximize; }
-  inline Bool isResizable(void) const { return functions & Func_Resize; }
-  inline Bool isClosable(void) const { return functions & Func_Close; }
+  inline bool isTransient(void) const { return client.transient_for != 0; }
+  inline bool isFocused(void) const { return flags.focused; }
+  inline bool isVisible(void) const { return flags.visible; }
+  inline bool isIconic(void) const { return flags.iconic; }
+  inline bool isShaded(void) const { return flags.shaded; }
+  inline bool isMaximized(void) const { return flags.maximized; }
+  inline bool isStuck(void) const { return flags.stuck; }
+  inline bool isIconifiable(void) const { return functions & Func_Iconify; }
+  inline bool isMaximizable(void) const { return functions & Func_Maximize; }
+  inline bool isResizable(void) const { return functions & Func_Resize; }
+  inline bool isClosable(void) const { return functions & Func_Close; }
 
-  inline Bool hasTitlebar(void) const { return decorations & Decor_Titlebar; }
+  inline bool hasTitlebar(void) const { return decorations & Decor_Titlebar; }
 
   inline const BlackboxWindowList &getTransients(void) const
   { return client.transientList; }
   inline BlackboxWindow *getTransientFor(void) const
-  { return client.transient_for; }
+  { return (client.transient_for && client.transient_for != reinterpret_cast<BlackboxWindow*>(~0)) ? client.transient_for : 0; }
 
   inline BScreen *getScreen(void) { return screen; }
 
@@ -292,12 +292,12 @@ public:
 
   inline void setWindowNumber(int n) { window_number = n; }
 
-  Bool validateClient(void);
-  Bool setInputFocus(void);
+  bool validateClient(void);
+  bool setInputFocus(void);
 
-  void setFocusFlag(Bool focus);
+  void setFocusFlag(bool focus);
   void iconify(void);
-  void deiconify(Bool reassoc = True, Bool raise = True);
+  void deiconify(bool reassoc = True, bool raise = True);
   void show(void);
   void close(void);
   void withdraw(void);
@@ -308,8 +308,8 @@ public:
   void unstick(void);
   void reconfigure(void);
   void updateFocusModel(void);
-  void installColormap(Bool install);
-  void restore(Bool remap);
+  void installColormap(bool install);
+  void restore(bool remap);
   void configure(int dx, int dy, unsigned int dw, unsigned int dh);
   void setWorkspace(unsigned int n);
   void changeBlackboxHints(BlackboxHints *net);

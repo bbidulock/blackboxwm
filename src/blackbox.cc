@@ -114,7 +114,7 @@ using std::string;
 // X event scanner for enter/leave notifies - adapted from twm
 struct scanargs {
   Window w;
-  Bool leave, inferior, enter;
+  bool leave, inferior, enter;
 };
 
 static Bool queueScanner(Display *, XEvent *e, char *args) {
@@ -613,10 +613,9 @@ void Blackbox::process_event(XEvent *e) {
 #ifdef    SHAPE
     if (e->type == getShapeEventBase()) {
       XShapeEvent *shape_event = (XShapeEvent *) e;
-      BlackboxWindow *win = (BlackboxWindow *) 0;
+      BlackboxWindow *win = searchWindow(e->xany.window);
 
-      if ((win = searchWindow(e->xany.window)) ||
-          (shape_event->kind != ShapeBounding))
+      if (win)
         win->shapeEvent(shape_event);
     }
 #endif // SHAPE
@@ -625,7 +624,7 @@ void Blackbox::process_event(XEvent *e) {
 }
 
 
-Bool Blackbox::handleSignal(int sig) {
+bool Blackbox::handleSignal(int sig) {
   switch (sig) {
   case SIGHUP:
     reconfigure();
@@ -737,7 +736,7 @@ void Blackbox::init_icccm(void) {
 }
 
 
-Bool Blackbox::validateWindow(Window window) {
+bool Blackbox::validateWindow(Window window) {
   XEvent event;
   if (XCheckTypedWindowEvent(getXDisplay(), window, DestroyNotify, &event)) {
     XPutBackEvent(getXDisplay(), &event);
@@ -1127,7 +1126,7 @@ void Blackbox::load_rc(void) {
     resource.style_file = expandTilde(value.addr);
   else
     resource.style_file = DEFAULTSTYLE;
-  
+
   resource.double_click_interval = 250;
   if (XrmGetResource(database, "session.doubleClickInterval",
                      "Session.DoubleClickInterval", &value_type, &value) &&
@@ -1365,7 +1364,7 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(class_lookup, "Session.Screen%d.Slit.OnTop", screen_number);
   screen->saveSlitOnTop(False);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-                     &value) && 
+                     &value) &&
       ! strncasecmp(value.addr, "True", value.size)) {
     screen->saveSlitOnTop(True);
   }
@@ -1474,7 +1473,7 @@ void Blackbox::real_reconfigure(void) {
 
 
 void Blackbox::checkMenu(void) {
-  Bool reread = False;
+  bool reread = False;
   MenuTimestampList::iterator it = menuTimestamps.begin();
   for(; it != menuTimestamps.end(); ++it) {
     MenuTimestamp *tmp = *it;
@@ -1517,7 +1516,7 @@ void Blackbox::saveStyleFilename(const string& filename) {
 
 void Blackbox::saveMenuFilename(const string& filename) {
   assert(! filename.empty());
-  Bool found = False;
+  bool found = False;
 
   MenuTimestampList::iterator it = menuTimestamps.begin();
   for (; it != menuTimestamps.end() && !found; ++it) {

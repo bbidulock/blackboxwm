@@ -152,7 +152,7 @@ void Slit::addClient(Window w) {
 }
 
 
-void Slit::removeClient(SlitClient *client, Bool remap) {
+void Slit::removeClient(SlitClient *client, bool remap) {
   blackbox->removeSlitSearch(client->client_window);
   blackbox->removeSlitSearch(client->icon_window);
   clientList.remove(client);
@@ -178,13 +178,13 @@ void Slit::removeClient(SlitClient *client, Bool remap) {
 struct SlitClientMatch {
   Window window;
   SlitClientMatch(Window w): window(w) {}
-  inline Bool operator()(const Slit::SlitClient* client) const {
+  inline bool operator()(const Slit::SlitClient* client) const {
     return (client->window == window);
   }
 };
 
 
-void Slit::removeClient(Window w, Bool remap) {
+void Slit::removeClient(Window w, bool remap) {
   SlitClientList::iterator it = clientList.begin();
   const SlitClientList::iterator end = clientList.end();
 
@@ -665,7 +665,7 @@ void Slitmenu::itemSelected(int button, unsigned int index) {
 
   switch (item->function()) {
   case 1: { // always on top
-    slit->on_top = ((slit->isOnTop()) ?  False : True); 
+    slit->on_top = ((slit->isOnTop()) ?  False : True);
     setItemSelected(2, slit->on_top);
 
     if (slit->isOnTop()) slit->screen->raiseWindows((Window *) 0, 0);
@@ -699,7 +699,7 @@ void Slitmenu::reconfigure(void) {
 
 Slitmenu::Directionmenu::Directionmenu(Slitmenu *sm)
   : Basemenu(sm->slit->screen) {
-  
+
   setLabel(i18n(SlitSet, SlitSlitDirection, "Slit Direction"));
   setInternalMenu();
 

@@ -92,7 +92,7 @@ using std::string;
 #endif // FONT_ELEMENT_SIZE
 
 
-static Bool running = True;
+static bool running = True;
 
 static int anotherWMRunning(Display *display, XErrorEvent *) {
   fprintf(stderr, i18n(ScreenSet, ScreenAnotherWMRunning,
@@ -829,7 +829,7 @@ void BScreen::manageWindow(Window w) {
 }
 
 
-void BScreen::unmanageWindow(BlackboxWindow *w, Bool remap) {
+void BScreen::unmanageWindow(BlackboxWindow *w, bool remap) {
   w->restore(remap);
 
   if (w->getWorkspaceNumber() != BSENTINEL &&
@@ -1015,7 +1015,7 @@ const string BScreen::getNameOfWorkspace(unsigned int id) {
 
 
 void BScreen::reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id,
-                                Bool ignore_sticky) {
+                                bool ignore_sticky) {
   if (! w) return;
 
   if (wkspc_id == BSENTINEL)
@@ -1130,7 +1130,7 @@ void BScreen::InitMenu(void) {
   } else {
     rootmenu = new Rootmenu(this);
   }
-  Bool defaultMenu = True;
+  bool defaultMenu = True;
 
   if (blackbox->getMenuFilename()) {
     FILE *menu_file = fopen(blackbox->getMenuFilename(), "r");
@@ -1201,7 +1201,7 @@ void BScreen::InitMenu(void) {
 }
 
 
-Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
+bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
   char line[1024], label[1024], command[1024];
 
   while (! feof(file)) {
@@ -1423,7 +1423,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
         case 995: // stylesdir
         case 1113: // stylesmenu
           {
-            Bool newmenu = ((key == 1113) ? True : False);
+            bool newmenu = ((key == 1113) ? True : False);
 
             if ((! *label) || ((! *command) && newmenu)) {
               fprintf(stderr,
@@ -1800,7 +1800,7 @@ XFontSet BScreen::readDatabaseFontSet(const string &rname,
                                       const string &rclass) {
   char *defaultFont = "fixed";
 
-  Bool load_default = True;
+  bool load_default = True;
   XrmValue value;
   char *value_type;
   XFontSet fontset = 0;
@@ -1829,7 +1829,7 @@ XFontStruct *BScreen::readDatabaseFont(const string &rname,
                                        const string &rclass) {
   char *defaultFont = "fixed";
 
-  Bool load_default = False;
+  bool load_default = False;
   XrmValue value;
   char *value_type;
   XFontStruct *font = 0;
