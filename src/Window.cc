@@ -2709,12 +2709,13 @@ void BlackboxWindow::changeBlackboxHints(BlackboxHints *net) {
     } else {
       int button = 0;
 
-      if ((net->flags & AttribMaxHoriz) && (net->flags & AttribMaxVert))
-        button = ((net->attrib & (AttribMaxHoriz | AttribMaxVert)) ?  1 : 0);
-      else if (net->flags & AttribMaxVert)
-        button = ((net->attrib & AttribMaxVert) ? 2 : 0);
-      else if (net->flags & AttribMaxHoriz)
-        button = ((net->attrib & AttribMaxHoriz) ? 3 : 0);
+      if (net->flags & AttribMaxHoriz && net->flags & AttribMaxVert &&
+          net->attrib & (AttribMaxHoriz | AttribMaxVert))
+        button = 1;
+      else if (net->flags & AttribMaxVert && net->attrib & AttribMaxVert)
+        button = 2;
+      else if (net->flags & AttribMaxHoriz && net->attrib & AttribMaxHoriz)
+        button = 3;
 
       maximize(button);
     }
