@@ -113,10 +113,17 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   blackbox_attrib.premax_x = blackbox_attrib.premax_y = 0;
   blackbox_attrib.premax_w = blackbox_attrib.premax_h = 0;
 
+  frame.x = frame.y = 0;
+  frame.width = frame.height = frame.border_w = 1;
   frame.window = frame.plate = frame.title = frame.handle = None;
   frame.close_button = frame.iconify_button = frame.maximize_button = None;
   frame.right_grip = frame.left_grip = None;
 
+  frame.ulabel_pixel = frame.flabel_pixel = frame.utitle_pixel =
+  frame.ftitle_pixel = frame.uhandle_pixel = frame.fhandle_pixel =
+ frame.ubutton_pixel = frame.fbutton_pixel = frame.pbutton_pixel =
+ frame.uborder_pixel = frame.fborder_pixel = frame.ugrip_pixel =
+   frame.fgrip_pixel = 0;
   frame.utitle = frame.ftitle = frame.uhandle = frame.fhandle = None;
   frame.ulabel = frame.flabel = frame.ubutton = frame.fbutton = None;
   frame.pbutton = frame.ugrip = frame.fgrip = None;
@@ -245,6 +252,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
       GrabModeAsync, None, blackbox->getLowerRightAngleCursor());
 
   positionWindows();
+  decorate();
+
   XRaiseWindow(display, frame.plate);
   XMapSubwindows(display, frame.plate);
   if (decorations.titlebar) XMapSubwindows(display, frame.title);
@@ -252,8 +261,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   if (decorations.menu)
     windowmenu = new Windowmenu(this);
-
-  decorate();
 
   if (workspace_number >= screen->getWorkspaceCount())
     screen->getCurrentWorkspace()->addWindow(this, place_window);
@@ -483,24 +490,6 @@ void BlackboxWindow::associateClientWindow(void) {
   if (decorations.iconify) createIconifyButton();
   if (decorations.maximize) createMaximizeButton();
   if (decorations.close) createCloseButton();
-
-  if (frame.ubutton) {
-    if (frame.close_button)
-      XSetWindowBackgroundPixmap(display, frame.close_button, frame.ubutton);
-    if (frame.maximize_button)
-      XSetWindowBackgroundPixmap(display, frame.maximize_button,
-                                 frame.ubutton);
-    if (frame.iconify_button)
-      XSetWindowBackgroundPixmap(display, frame.iconify_button,frame.ubutton);
-  } else {
-    if (frame.close_button)
-      XSetWindowBackground(display, frame.close_button, frame.ubutton_pixel);
-    if (frame.maximize_button)
-      XSetWindowBackground(display, frame.maximize_button,
-                           frame.ubutton_pixel);
-    if (frame.iconify_button)
-      XSetWindowBackground(display, frame.iconify_button,frame.ubutton_pixel);
-  }
 }
 
 
