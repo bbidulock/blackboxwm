@@ -1,7 +1,7 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // main.cc for Blackbox - an X11 Window manager
-// Copyright (c) 2001 - 2003 Sean 'Shaleh' Perry <shaleh@debian.org>
-// Copyright (c) 1997 - 2000, 2002 - 2003
+// Copyright (c) 2001 - 2004 Sean 'Shaleh' Perry <shaleh@debian.org>
+// Copyright (c) 1997 - 2000, 2002 - 2004
 //         Bradley T Hughes <bhughes at trolltech.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -40,8 +40,8 @@
 static void showHelp(int exitval) {
   // print version - this should not be localized!
   printf("Blackbox %s\n"
-         "Copyright (c) 2001 - 2003 Sean 'Shaleh' Perry\n"
-         "Copyright (c) 1997 - 2000, 2002 - 2003 Bradley T Hughes\n",
+         "Copyright (c) 2001 - 2004 Sean 'Shaleh' Perry\n"
+         "Copyright (c) 1997 - 2000, 2002 - 2004 Bradley T Hughes\n",
          __blackbox_version);
 
   // print program usage and command line options
@@ -83,8 +83,8 @@ int main(int argc, char **argv) {
     } else if (! strcmp(argv[i], "-version")) {
       // print current version string, this should not be localized!
       printf("Blackbox %s\n"
-             "Copyright (c) 2001 - 2003 Sean 'Shaleh' Perry\n"
-             "Copyright (c) 1997 - 2000, 2002 - 2003 Bradley T Hughes\n",
+             "Copyright (c) 2001 - 2004 Sean 'Shaleh' Perry\n"
+             "Copyright (c) 1997 - 2000, 2002 - 2004 Bradley T Hughes\n",
              __blackbox_version);
 
       ::exit(0);

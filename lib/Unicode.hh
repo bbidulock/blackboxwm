@@ -1,6 +1,6 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Unicode.hh for Blackbox - an X11 Window manager
-// Copyright (c) 2001 - 2003 Sean 'Shaleh' Perry <shaleh@debian.org>
+// Copyright (c) 2001 - 2004 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000, 2002 - 2004
 //         Bradley T Hughes <bhughes at trolltech.com>
 //
