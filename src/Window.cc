@@ -1350,7 +1350,6 @@ void BlackboxWindow::configure(int dx, int dy,
 
     XSendEvent(blackbox->getXDisplay(), client.window, False,
                StructureNotifyMask, &event);
-    screen->updateNetizenConfigNotify(&event);
     XFlush(blackbox->getXDisplay());
   }
 }

@@ -133,7 +133,7 @@ Blackbox::Blackbox(char **m_argv, char *dpy_name, char *rc)
 
   resource.auto_raise_delay.tv_sec = resource.auto_raise_delay.tv_usec = 0;
 
-  active_screen = 0;
+  active_screen = (BScreen*) 0;
   focused_window = (BlackboxWindow *) 0;
   _netwm = (Netwm*) 0;
 
@@ -1329,7 +1329,6 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
 
   if (active_screen && active_screen->isScreenManaged()) {
     active_screen->getToolbar()->redrawWindowLabel(True);
-    active_screen->updateNetizenWindowFocus();
     Window active = (focused_window) ? focused_window->getClientWindow() :
                                        None;
     netwm()->setActiveWindow(active_screen->getRootWindow(), active);
@@ -1337,7 +1336,6 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
 
   if (old_screen && old_screen != active_screen) {
     old_screen->getToolbar()->redrawWindowLabel(True);
-    old_screen->updateNetizenWindowFocus();
     Window active = (focused_window) ? focused_window->getClientWindow() :
                                        None;
     netwm()->setActiveWindow(old_screen->getRootWindow(), active);

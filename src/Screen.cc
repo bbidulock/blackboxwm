@@ -400,8 +400,6 @@ BScreen::~BScreen(void) {
 
   std::for_each(iconList.begin(), iconList.end(), PointerAssassin());
 
-  std::for_each(netizenList.begin(), netizenList.end(), PointerAssassin());
-
   delete rootmenu;
   delete workspacemenu;
   delete iconmenu;
@@ -884,7 +882,6 @@ unsigned int BScreen::addWorkspace(void) {
 
   toolbar->reconfigure();
 
-  updateNetizenWorkspaceCount();
   blackbox->netwm()->setNumberOfDesktops(getRootWindow(),
                                          workspacesList.size());
   updateDesktopNamesHint();
@@ -912,7 +909,6 @@ unsigned int BScreen::removeLastWorkspace(void) {
 
   toolbar->reconfigure();
 
-  updateNetizenWorkspaceCount();
   blackbox->netwm()->setNumberOfDesktops(getRootWindow(),
                                          workspacesList.size());
   updateDesktopNamesHint();
@@ -935,7 +931,6 @@ void BScreen::changeWorkspaceID(unsigned int id) {
   workspacemenu->setItemSelected(current_workspace->getID() + 2, True);
   toolbar->redrawWorkspaceLabel(True);
 
-  updateNetizenCurrentWorkspace();
   blackbox->netwm()->setCurrentDesktop(getRootWindow(),
                                        current_workspace->getID());
 }
@@ -993,8 +988,6 @@ void BScreen::unmanageWindow(BlackboxWindow *w, bool remap) {
   if (blackbox->getFocusedWindow() == w)
     blackbox->setFocusedWindow((BlackboxWindow *) 0);
 
-  removeNetizen(w->getClientWindow());
-
   /*
     some managed windows can also be window group controllers.  when
     unmanaging such windows, we should also delete the window group.
@@ -1003,92 +996,6 @@ void BScreen::unmanageWindow(BlackboxWindow *w, bool remap) {
   delete group;
 
   delete w;
-}
-
-
-void BScreen::addNetizen(Netizen *n) {
-  netizenList.push_back(n);
-
-  n->sendWorkspaceCount();
-  n->sendCurrentWorkspace();
-
-  WorkspaceList::iterator it = workspacesList.begin();
-  const WorkspaceList::iterator end = workspacesList.end();
-  for (; it != end; ++it)
-    (*it)->sendWindowList(*n);
-
-  Window f = ((blackbox->getFocusedWindow()) ?
-              blackbox->getFocusedWindow()->getClientWindow() : None);
-  n->sendWindowFocus(f);
-}
-
-
-void BScreen::removeNetizen(Window w) {
-  NetizenList::iterator it = netizenList.begin();
-  for (; it != netizenList.end(); ++it) {
-    if ((*it)->getWindowID() == w) {
-      delete *it;
-      netizenList.erase(it);
-      break;
-    }
-  }
-}
-
-
-void BScreen::updateNetizenCurrentWorkspace(void) {
-  std::for_each(netizenList.begin(), netizenList.end(),
-                std::mem_fun(&Netizen::sendCurrentWorkspace));
-}
-
-
-void BScreen::updateNetizenWorkspaceCount(void) {
-  std::for_each(netizenList.begin(), netizenList.end(),
-                std::mem_fun(&Netizen::sendWorkspaceCount));
-}
-
-
-void BScreen::updateNetizenWindowFocus(void) {
-  Window f = ((blackbox->getFocusedWindow()) ?
-              blackbox->getFocusedWindow()->getClientWindow() : None);
-  NetizenList::iterator it = netizenList.begin();
-  for (; it != netizenList.end(); ++it)
-    (*it)->sendWindowFocus(f);
-}
-
-
-void BScreen::updateNetizenWindowAdd(Window w, unsigned long p) {
-  NetizenList::iterator it = netizenList.begin();
-  for (; it != netizenList.end(); ++it) {
-    (*it)->sendWindowAdd(w, p);
-  }
-}
-
-
-void BScreen::updateNetizenWindowDel(Window w) {
-  NetizenList::iterator it = netizenList.begin();
-  for (; it != netizenList.end(); ++it)
-    (*it)->sendWindowDel(w);
-}
-
-
-void BScreen::updateNetizenWindowRaise(Window w) {
-  NetizenList::iterator it = netizenList.begin();
-  for (; it != netizenList.end(); ++it)
-    (*it)->sendWindowRaise(w);
-}
-
-
-void BScreen::updateNetizenWindowLower(Window w) {
-  NetizenList::iterator it = netizenList.begin();
-  for (; it != netizenList.end(); ++it)
-    (*it)->sendWindowLower(w);
-}
-
-
-void BScreen::updateNetizenConfigNotify(XEvent *e) {
-  NetizenList::iterator it = netizenList.begin();
-  for (; it != netizenList.end(); ++it)
-    (*it)->sendConfigNotify(e);
 }
 
 

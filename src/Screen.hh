@@ -48,7 +48,6 @@ typedef std::vector<Window> WindowStack;
 #include "Texture.hh"
 #include "Configmenu.hh"
 #include "Iconmenu.hh"
-#include "Netizen.hh"
 #include "Netwm.hh"
 #include "Rootmenu.hh"
 #include "Timer.hh"
@@ -117,8 +116,6 @@ private:
   typedef std::list<Rootmenu*> RootmenuList;
   RootmenuList rootmenuList;
 
-  typedef std::list<Netizen*> NetizenList;
-  NetizenList netizenList;
   BlackboxWindowList iconList, windowList;
 
   Slit *slit;
@@ -339,9 +336,6 @@ public:
   void changeWorkspaceID(unsigned int id);
   void getDesktopNames(void);
 
-  void addNetizen(Netizen *n);
-  void removeNetizen(Window w);
-
   void addIcon(BlackboxWindow *w);
   void removeIcon(BlackboxWindow *w);
 
@@ -364,15 +358,6 @@ public:
 
   void buttonPressEvent(const XButtonEvent * const event);
   void configureRequestEvent(const XConfigureRequestEvent * const event);
-
-  void updateNetizenCurrentWorkspace(void);
-  void updateNetizenWorkspaceCount(void);
-  void updateNetizenWindowFocus(void);
-  void updateNetizenWindowAdd(Window w, unsigned long p);
-  void updateNetizenWindowDel(Window w);
-  void updateNetizenConfigNotify(XEvent *e);
-  void updateNetizenWindowRaise(Window w);
-  void updateNetizenWindowLower(Window w);
 };
 
 

@@ -46,7 +46,6 @@ extern "C" {
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "Clientmenu.hh"
-#include "Netizen.hh"
 #include "Screen.hh"
 #include "Toolbar.hh"
 #include "Util.hh"
@@ -84,8 +83,6 @@ void Workspace::addWindow(BlackboxWindow *w, bool place) {
   clientmenu->insert(w->getTitle());
   clientmenu->update();
 
-  screen->updateNetizenWindowAdd(w->getClientWindow(), id);
-
   raiseWindow(w);
 }
 
@@ -104,8 +101,6 @@ unsigned int Workspace::removeWindow(BlackboxWindow *w) {
   windowList.remove(w);
   clientmenu->remove(w->getWindowNumber());
   clientmenu->update();
-
-  screen->updateNetizenWindowDel(w->getClientWindow());
 
   BlackboxWindowList::iterator it = windowList.begin();
   const BlackboxWindowList::iterator end = windowList.end();
@@ -204,7 +199,6 @@ void Workspace::raiseTransients(const BlackboxWindow * const win,
   for (it = win->getTransients().begin(); it != end; ++it) {
     BlackboxWindow *w = *it;
     *(stack++) = w->getFrameWindow();
-    screen->updateNetizenWindowRaise(w->getClientWindow());
 
     if (! w->isIconic()) {
       Workspace *wkspc = screen->getWorkspace(w->getWorkspaceNumber());
@@ -233,7 +227,6 @@ void Workspace::lowerTransients(const BlackboxWindow * const win,
   for (it = win->getTransients().rbegin(); it != end; ++it) {
     BlackboxWindow *w = *it;
     *stack++ = w->getFrameWindow();
-    screen->updateNetizenWindowLower(w->getClientWindow());
 
     if (! w->isIconic()) {
       Workspace *wkspc = screen->getWorkspace(w->getWorkspaceNumber());
@@ -259,7 +252,6 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
   WindowStack::iterator stack = stack_vector.begin();
 
   *(stack++) = win->getFrameWindow();
-  screen->updateNetizenWindowRaise(win->getClientWindow());
   if (! win->isIconic()) {
     Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
     wkspc->stackingList.remove(win);
@@ -289,7 +281,6 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
   lowerTransients(win, stack);
 
   *(stack++) = win->getFrameWindow();
-  screen->updateNetizenWindowLower(win->getClientWindow());
   if (! win->isIconic()) {
     Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
     wkspc->stackingList.remove(win);
@@ -350,14 +341,6 @@ BlackboxWindow* Workspace::getPrevWindowInList(BlackboxWindow *w) {
 BlackboxWindow* Workspace::getTopWindowOnStack(void) const {
   assert(! stackingList.empty());
   return stackingList.front();
-}
-
-
-void Workspace::sendWindowList(Netizen &n) {
-  BlackboxWindowList::iterator it = windowList.begin(),
-    end = windowList.end();
-  for(; it != end; ++it)
-    n.sendWindowAdd((*it)->getClientWindow(), getID());
 }
 
 
