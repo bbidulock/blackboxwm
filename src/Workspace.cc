@@ -62,7 +62,7 @@ StackingList::StackingList(void) {
 
 
 StackingList::iterator&
-StackingList::findLocation(const BlackboxWindow* const w) {
+StackingList::findLayer(const BlackboxWindow* const w) {
   if (w->getLayer() == BlackboxWindow::LAYER_NORMAL)
     return normal;
   else if (w->getLayer() == BlackboxWindow::LAYER_ABOVE)
@@ -81,7 +81,7 @@ StackingList::findLocation(const BlackboxWindow* const w) {
 void StackingList::insert(BlackboxWindow* w) {
   assert(w);
 
-  StackingList::iterator& it = findLocation(w);
+  StackingList::iterator& it = findLayer(w);
   it = stack.insert(it, w);
 }
 
@@ -89,7 +89,7 @@ void StackingList::insert(BlackboxWindow* w) {
 void StackingList::remove(BlackboxWindow* w) {
   assert(w);
 
-  iterator& pos = findLocation(w);
+  iterator& pos = findLayer(w);
   iterator it = std::find(pos, stack.end(), w);
   assert(it != stack.end());
   if (it == pos)

@@ -53,6 +53,8 @@ public:
   void insert(BlackboxWindow* w);
   void remove(BlackboxWindow* w);
 
+  iterator& findLayer(const BlackboxWindow* const w);
+
   bool empty(void) const { return (stack.size() == 5); }
   WindowStack::size_type size(void) const { return stack.size() - 5; }
   BlackboxWindow* front(void) const;
@@ -68,8 +70,6 @@ public:
 private:
   WindowStack stack;
   iterator fullscreen, above, normal, below, desktop;
-
-  iterator& findLocation(const BlackboxWindow* const w);
 };
 
 
