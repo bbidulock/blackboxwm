@@ -232,7 +232,6 @@ namespace bt {
 
   private:
     typedef std::list<MenuItem> ItemList;
-    typedef std::bit_vector IdBits;
 
     unsigned int verifyId(unsigned int id = ~0u);
     void activateItem(const Rect &rect, MenuItem &item);
@@ -264,7 +263,7 @@ namespace bt {
     std::string _title;
 
     ItemList _items;
-    IdBits _id_bits;
+    std::bit_vector _id_bits;
 
     Menu *_parent_menu;
     Menu *_active_submenu;
