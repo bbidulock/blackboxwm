@@ -168,7 +168,6 @@ private:
   BScreen(const BScreen&);
   BScreen& operator=(const BScreen&);
 
-protected:
   Bool parseMenuFile(FILE *file, Rootmenu *menu);
 
   BTexture readDatabaseTexture(const std::string &rname,

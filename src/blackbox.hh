@@ -191,7 +191,6 @@ private:
   Blackbox(const Blackbox&);
   Blackbox& operator=(const Blackbox&);
 
-protected:
   void load_rc(void);
   void save_rc(void);
   void reload_rc(void);

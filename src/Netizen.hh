@@ -40,8 +40,6 @@ private:
   Window window;
   XEvent event;
 
-protected:
-
 public:
   Netizen(BScreen *, Window);
 

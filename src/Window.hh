@@ -202,7 +202,6 @@ private:
   BlackboxWindow(const BlackboxWindow&);
   BlackboxWindow& operator=(const BlackboxWindow&);
 
-protected:
   Bool getState(void);
   Window createToplevelWindow(int x, int y, unsigned int width,
                               unsigned int height, unsigned int borderwidth);
@@ -244,7 +243,6 @@ protected:
   void downsize(void);
   void right_fixsize(int *gx = 0, int *gy = 0);
   void left_fixsize(int *gx = 0, int *gy = 0);
-
 
 public:
   BlackboxWindow(Blackbox *b, Window w, BScreen *s = (BScreen *) 0);

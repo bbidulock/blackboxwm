@@ -54,9 +54,7 @@ private:
   Workspace(const Workspace&);
   Workspace& operator=(const Workspace&);
 
-protected:
   void placeWindow(BlackboxWindow *win);
-
 
 public:
   Workspace(BScreen *scrn, unsigned int i = 0);

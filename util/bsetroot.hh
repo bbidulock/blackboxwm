@@ -15,7 +15,6 @@ private:
   bsetroot(const bsetroot &);
   bsetroot& operator=(const bsetroot&);
 
-protected:
   inline virtual void process_event(XEvent * /*unused*/) { }
 
 public:

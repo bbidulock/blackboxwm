@@ -58,7 +58,6 @@ private:
   void OrderedPseudoColorDither(int bytes_per_line, unsigned char *pixel_data);
 #endif
 
-protected:
   Pixmap renderPixmap(void);
 
   XImage *renderXImage(void);
@@ -170,7 +169,6 @@ private:
   typedef std::list<CachedImage> CacheContainer;
   CacheContainer cache;
 
-protected:
   Pixmap searchCache(const unsigned int width, const unsigned int height,
                      const unsigned long texture,
                      const BColor &c1, const BColor &c2);
