@@ -136,8 +136,9 @@ void Blackbox::process_event(XEvent *e) {
         focus = True;
       }
 
-      if (focus && (win->isTransient() ||
-                    win->getScreen()->resource().doFocusNew()))
+      if (focus &&
+          (!activeScreen() || activeScreen() == win->getScreen()) &&
+          (win->isTransient() || win->getScreen()->resource().doFocusNew()))
         win->setInputFocus();
     } else {
       BScreen *screen = findScreen(e->xmaprequest.parent);
