@@ -1,0 +1,8 @@
+#
+
+DefaultsPath = /usr/X11R6/lib/app-defaults
+
+install:
+	install -c -m 0444 Blackbox.ad $(DefaultsPath)/Blackbox.ad
+	install -c -m 0444 BlackboxMenu.ad $(DefaultsPath)/BlackboxMenu.ad
+
