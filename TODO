@@ -23,6 +23,9 @@ CVS warts:
 
 Stuff TODO or On The Way(tm):
 -----------------------------
+CHECK: getBlackboxHints() and restoreAttributes() do a lot of the same work
+       should look into whether it can be combined or not
+
 ADD: sticky windows are not considered
 
 CHANGE: Send to menu should not list the current workspace
