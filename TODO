@@ -5,25 +5,17 @@ CVS Bugs:
 * windows that set WM_DELETE_WINDOW protocol after creation do not get a close
   button
 
-temporarily fixed, blackbox needs real focus handling fixes for this to really
- go away:
-* use bbkeys to open a window and then close it via bbkeys.  If it is the only
-  window left open, blackbox will spin in a screen->unmanageWindow loop and
-  then die.  Tons of X BadWindow messages will appear as well. (nyz)
-
 CVS warts:
 -----------------------------
-* Basemenu.cc has the string "Blackbox menu" embedded in it as the default name.
-  This needs to be removed.
+* Basemenu.cc has the string "Blackbox menu" embedded in it as the default
+  name.  This needs to be removed.
 
 * Send to menu should not list the current workspace
 
-* strut does not handle hidden toolbar or slit properly
+* strut does not handle hidden toolbar or slit properly, but how should it?
 
 * look into centering the window when maximizing and the window can not grow
   to fill the area
-
-* kill that ugly ass macro in GCCache
 
 Stuff TODO or On The Way(tm):
 -----------------------------
@@ -54,6 +46,15 @@ ADD: always on top/bottom support
 CHECK: look at why memory usage is up... RSS won't go < 1mb now
        i noticed a memory leak from improper handling of non-existant
        windows... this fixes this some... this will be on going
+
+ADD: way to empty a menu with one method call something like menu.erase() or
+     menu.removeAll()
+
+ADD: way to have items in menu and store data other than their index number.
+     The reason the Send To menu lists every workspace is because if it did
+     not blackbox would have no way to know that the one labelled "Workspace 2"
+     actually was workspace #2 and was referenced by workspace[1].
+     something like menu.insert(item, data).
 
 (still here) better support for window groups... i don't know when i'm going to
     ever get to this
