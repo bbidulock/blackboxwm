@@ -26,7 +26,7 @@
 typedef unsigned char uchar;
 
 Netwm::Netwm(Display* _display): display(_display) {
-  char* atoms[51] = {
+  char* atoms[52] = {
     "UTF8_STRING",
     "_NET_SUPPORTED",
     "_NET_CLIENT_LIST",
@@ -77,10 +77,11 @@ Netwm::Netwm(Display* _display): display(_display) {
     "_NET_WM_ALLOWED_ACTION_MAXIMIZE_VERT",
     "_NET_WM_ALLOWED_ACTION_FULLSCREEN",
     "_NET_WM_ALLOWED_ACTION_CHANGE_DESKTOP",
-    "_NET_WM_ALLOWED_ACTION_CLOSE"
+    "_NET_WM_ALLOWED_ACTION_CLOSE",
+    "_NET_WM_STRUT"
   };
-  Atom atoms_return[51];
-  XInternAtoms(display, atoms, 51, False, atoms_return);
+  Atom atoms_return[52];
+  XInternAtoms(display, atoms, 52, False, atoms_return);
 
   utf8_string = atoms_return[0];
   net_supported = atoms_return[1];
@@ -133,6 +134,7 @@ Netwm::Netwm(Display* _display): display(_display) {
   net_wm_action_fullscreen = atoms_return[48];
   net_wm_action_change_desktop = atoms_return[49];
   net_wm_action_close = atoms_return[50];
+  net_wm_strut = atoms_return[51];
 }
 
 
@@ -292,6 +294,31 @@ void Netwm::setWMAllowedActions(Window target, AtomList& atoms) const {
 }
 
 
+bool Netwm::readWMStrut(Window target, Strut* strut) const {
+  Atom atom_return;
+  int size;
+  unsigned long nitems, bytes_left;
+  unsigned char *data;
+
+  int ret = XGetWindowProperty(display, target, net_wm_strut,
+                               0l, 4l, False,
+                               XA_CARDINAL, &atom_return, &size,
+                               &nitems, &bytes_left, &data);
+  if (ret != Success || nitems < 4)
+    return False;
+
+  unsigned int* const values = reinterpret_cast<unsigned int*>(data);
+  strut->left   = values[0];
+  strut->right  = values[1];
+  strut->top    = values[2];
+  strut->bottom = values[3];
+
+  XFree(data);
+
+  return True;
+}
+
+
 // utility
 
 void Netwm::removeProperty(Window target, Atom atom) const {
@@ -347,6 +374,8 @@ bool Netwm::getCardinalProperty(Window target, Atom property,
     return False;
 
   value = * (reinterpret_cast<int*>(data));
+
+  XFree(data);
 
   return True;
 }

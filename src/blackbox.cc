@@ -135,6 +135,7 @@ Blackbox::Blackbox(char **m_argv, char *dpy_name, char *rc)
 
   active_screen = 0;
   focused_window = (BlackboxWindow *) 0;
+  _netwm = (Netwm*) 0;
 
   XrmInitialize();
   load_rc();

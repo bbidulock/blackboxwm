@@ -101,7 +101,7 @@ private:
   BScreen *screen;
   BTimer *clock_timer, *hide_timer;
   Toolbarmenu *toolbarmenu;
-  Strut strut;
+  Netwm::Strut strut;
 
   std::string new_workspace_name;
   size_t new_name_pos;

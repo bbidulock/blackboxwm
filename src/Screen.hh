@@ -49,6 +49,7 @@ typedef std::vector<Window> WindowStack;
 #include "Configmenu.hh"
 #include "Iconmenu.hh"
 #include "Netizen.hh"
+#include "Netwm.hh"
 #include "Rootmenu.hh"
 #include "Timer.hh"
 #include "Workspace.hh"
@@ -100,12 +101,6 @@ struct MenuStyle {
   int bullet, bullet_pos;
 };
 
-struct Strut {
-  unsigned int top, bottom, left, right;
-
-  Strut(void): top(0), bottom(0), left(0), right(0) {}
-};
-
 class BScreen : public ScreenInfo, public EventHandler {
 private:
   bool root_colormap_installed, managed, geom_visible;
@@ -136,7 +131,7 @@ private:
 
   Rect usableArea;
 
-  typedef std::list<Strut*> StrutList;
+  typedef std::list<Netwm::Strut*> StrutList;
   StrutList strutList;
   typedef std::vector<std::string> WorkspaceNamesList;
   WorkspaceNamesList workspaceNames;
@@ -333,8 +328,8 @@ public:
   BlackboxWindow *getIcon(unsigned int index);
 
   const Rect& availableArea(void) const;
-  void addStrut(Strut *strut);
-  void removeStrut(Strut *strut);
+  void addStrut(Netwm::Strut *strut);
+  void removeStrut(Netwm::Strut *strut);
 
   unsigned int addWorkspace(void);
   unsigned int removeLastWorkspace(void);

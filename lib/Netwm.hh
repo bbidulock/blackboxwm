@@ -37,6 +37,12 @@ public:
   explicit Netwm(Display *_display);
 
   typedef std::vector<Atom> AtomList;
+  struct Strut {
+    unsigned int left, right, top, bottom;
+
+    Strut(void): left(0), right(0), top(0), bottom(0) {}
+  };
+
 
   inline Atom utf8String(void) const { return utf8_string; }
 
@@ -129,6 +135,7 @@ public:
   inline Atom wmActionChangeDesktop(void) const
   { return net_wm_action_change_desktop; }
   inline Atom wmActionClose(void) const { return net_wm_action_close; }
+  inline Atom wmStrut(void) const { return net_wm_strut; }
 
   void setWMName(Window target, const std::string& name) const;
   bool readWMName(Window target, std::string& name) const;
@@ -139,6 +146,7 @@ public:
   void setWMState(Window target, AtomList& atoms) const;
   bool readWMState(Window target, AtomList& states) const;
   void setWMAllowedActions(Window target, AtomList& atoms) const;
+  bool readWMStrut(Window target, Strut* strut) const;
 
   // utility
   void removeProperty(Window target, Atom atom) const;
@@ -175,7 +183,7 @@ private:
     net_wm_action_minimize, net_wm_action_shade, net_wm_action_stick,
     net_wm_action_maximize_horz, net_wm_action_maximize_vert,
     net_wm_action_fullscreen, net_wm_action_change_desktop,
-    net_wm_action_close;
+    net_wm_action_close, net_wm_strut;
 };
 
 #endif // _blackbox_netwm_hh

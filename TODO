@@ -13,6 +13,8 @@ netwm:
 
 * support all wm_state's
 
+* always on top/bottom support, layers, etc
+
 refactoring:
 -----------------------------
 * look into public v. private members of all classes
@@ -57,8 +59,6 @@ ADD: get volunteers to translate blackbox into other languages
 
 ADD: draw resize frames using the styles borderWidth... should be fairly
      simple to do...
-
-ADD: always on top/bottom support, layers, etc
 
 ADD: a regression test suite
      items to test:

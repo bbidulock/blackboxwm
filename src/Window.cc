@@ -127,6 +127,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   client.window_group = None;
   client.transient_for = 0;
   client.window_type = None;
+  client.strut = (Netwm::Strut*) 0;
   /*
     set the initial size and location of client window (relative to the
     _root window_). This position is the reference point used with the
@@ -312,6 +313,11 @@ BlackboxWindow::~BlackboxWindow(void) {
   delete timer;
 
   delete windowmenu;
+
+  if (client.strut) {
+    screen->removeStrut(client.strut);
+    delete client.strut;
+  }
 
   if (client.window_group) {
     BWindowGroup *group = blackbox->findWindowGroup(client.window_group);
@@ -2331,6 +2337,17 @@ void BlackboxWindow::netwmEvent(const XClientMessageEvent* const ce) {
     }
     
     setState(client.current_state);
+  } else if (ce->message_type == blackbox->netwm()->wmStrut()) {
+    if (! client.strut)
+      client.strut = new Netwm::Strut;
+    blackbox->netwm()->readWMStrut(client.window, client.strut);
+    if (client.strut->left || client.strut->right ||
+        client.strut->top || client.strut->bottom) {
+      screen->addStrut(client.strut);
+    } else {
+      screen->removeStrut(client.strut);
+      delete client.strut;
+    }
   }
 }
 

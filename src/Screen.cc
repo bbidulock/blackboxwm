@@ -262,75 +262,75 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
 
   changeWorkspaceID(0);
 
+  const Netwm* const netwm = blackbox->netwm();
   /*
     netwm requires the window manager to set a property on a window it creates
     which is the id of that window.  We must also set an equivalent property
     on the root window.  Then we must set _NET_WM_NAME on the child window
     to be the name of the wm.
   */
-  blackbox->netwm()->setSupportingWMCheck(getRootWindow(), geom_window);
-  blackbox->netwm()->setSupportingWMCheck(geom_window, geom_window);
-  blackbox->netwm()->setWMName(geom_window, "Blackbox");
+  netwm->setSupportingWMCheck(getRootWindow(), geom_window);
+  netwm->setSupportingWMCheck(geom_window, geom_window);
+  netwm->setWMName(geom_window, "Blackbox");
 
-  blackbox->netwm()->setNumberOfDesktops(getRootWindow(),
-                                         workspacesList.size());
-  blackbox->netwm()->setDesktopGeometry(getRootWindow(),
-                                        getWidth(), getHeight());
-  blackbox->netwm()->setActiveWindow(getRootWindow(), None);
+  netwm->setNumberOfDesktops(getRootWindow(), workspacesList.size());
+  netwm->setDesktopGeometry(getRootWindow(), getWidth(), getHeight());
+  netwm->setActiveWindow(getRootWindow(), None);
   updateWorkareaHint();
   updateDesktopNamesHint();
 
-  Atom supported[46] = {
-    blackbox->netwm()->clientList(),
-    blackbox->netwm()->clientListStacking(),
-    blackbox->netwm()->numberOfDesktops(),
-    blackbox->netwm()->desktopGeometry(),
-    blackbox->netwm()->currentDesktop(),
-    blackbox->netwm()->desktopNames(),
-    blackbox->netwm()->activeWindow(),
-    blackbox->netwm()->workarea(),
-    blackbox->netwm()->closeWindow(),
-    blackbox->netwm()->moveresizeWindow(),
-    blackbox->netwm()->wmName(),
-    blackbox->netwm()->wmIconName(),
-    blackbox->netwm()->wmDesktop(),
-    blackbox->netwm()->wmWindowType(),
-    blackbox->netwm()->wmWindowTypeDesktop(),
-    blackbox->netwm()->wmWindowTypeDock(),
-    blackbox->netwm()->wmWindowTypeToolbar(),
-    blackbox->netwm()->wmWindowTypeMenu(),
-    blackbox->netwm()->wmWindowTypeUtility(),
-    blackbox->netwm()->wmWindowTypeSplash(),
-    blackbox->netwm()->wmWindowTypeDialog(),
-    blackbox->netwm()->wmWindowTypeNormal(),
-    blackbox->netwm()->wmState(),
-    blackbox->netwm()->wmStateModal(),
+  Atom supported[47] = {
+    netwm->clientList(),
+    netwm->clientListStacking(),
+    netwm->numberOfDesktops(),
+    netwm->desktopGeometry(),
+    netwm->currentDesktop(),
+    netwm->desktopNames(),
+    netwm->activeWindow(),
+    netwm->workarea(),
+    netwm->closeWindow(),
+    netwm->moveresizeWindow(),
+    netwm->wmName(),
+    netwm->wmIconName(),
+    netwm->wmDesktop(),
+    netwm->wmWindowType(),
+    netwm->wmWindowTypeDesktop(),
+    netwm->wmWindowTypeDock(),
+    netwm->wmWindowTypeToolbar(),
+    netwm->wmWindowTypeMenu(),
+    netwm->wmWindowTypeUtility(),
+    netwm->wmWindowTypeSplash(),
+    netwm->wmWindowTypeDialog(),
+    netwm->wmWindowTypeNormal(),
+    netwm->wmState(),
+    netwm->wmStateModal(),
     /* sticky would go here, but we do not need it */
-    blackbox->netwm()->wmStateMaximizedVert(),
-    blackbox->netwm()->wmStateMaximizedHorz(),
-    blackbox->netwm()->wmStateShaded(),
-    blackbox->netwm()->wmStateSkipTaskbar(),
-    blackbox->netwm()->wmStateSkipPager(),
-    blackbox->netwm()->wmStateHidden(),
-    blackbox->netwm()->wmStateFullscreen(),
-    blackbox->netwm()->wmStateAbove(),
-    blackbox->netwm()->wmStateBelow(),
-    blackbox->netwm()->wmStateRemove(),
-    blackbox->netwm()->wmStateAdd(),
-    blackbox->netwm()->wmStateToggle(),
-    blackbox->netwm()->wmAllowedActions(),
-    blackbox->netwm()->wmActionMove(),
-    blackbox->netwm()->wmActionResize(),
-    blackbox->netwm()->wmActionMinimize(),
-    blackbox->netwm()->wmActionShade(),
-    blackbox->netwm()->wmActionMaximizeHorz(),
-    blackbox->netwm()->wmActionMaximizeVert(),
-    blackbox->netwm()->wmActionFullscreen(),
-    blackbox->netwm()->wmActionChangeDesktop(),
-    blackbox->netwm()->wmActionClose()
+    netwm->wmStateMaximizedVert(),
+    netwm->wmStateMaximizedHorz(),
+    netwm->wmStateShaded(),
+    netwm->wmStateSkipTaskbar(),
+    netwm->wmStateSkipPager(),
+    netwm->wmStateHidden(),
+    netwm->wmStateFullscreen(),
+    netwm->wmStateAbove(),
+    netwm->wmStateBelow(),
+    netwm->wmStateRemove(),
+    netwm->wmStateAdd(),
+    netwm->wmStateToggle(),
+    netwm->wmAllowedActions(),
+    netwm->wmActionMove(),
+    netwm->wmActionResize(),
+    netwm->wmActionMinimize(),
+    netwm->wmActionShade(),
+    netwm->wmActionMaximizeHorz(),
+    netwm->wmActionMaximizeVert(),
+    netwm->wmActionFullscreen(),
+    netwm->wmActionChangeDesktop(),
+    netwm->wmActionClose(),
+    netwm->wmStrut()
   };
 
-  blackbox->netwm()->setSupported(getRootWindow(), supported, 46);
+  netwm->setSupported(getRootWindow(), supported, 47);
 
   unsigned int i, j, nchild;
   Window r, p, *children;
@@ -1746,13 +1746,13 @@ void BScreen::hideGeometry(void) {
 }
 
 
-void BScreen::addStrut(Strut *strut) {
+void BScreen::addStrut(Netwm::Strut *strut) {
   strutList.push_back(strut);
   updateAvailableArea();
 }
 
 
-void BScreen::removeStrut(Strut *strut) {
+void BScreen::removeStrut(Netwm::Strut *strut) {
   strutList.remove(strut);
   updateAvailableArea();
 }
@@ -1774,26 +1774,25 @@ void BScreen::updateAvailableArea(void) {
    * all at once
    * do not be confused by the similarity to the names of Rect's members
    */
-  unsigned int current_left = 0, current_right = 0, current_top = 0,
-    current_bottom = 0;
+  Netwm::Strut current;
 
   StrutList::const_iterator sit = strutList.begin(), send = strutList.end();
 
   for(; sit != send; ++sit) {
-    Strut *strut = *sit;
-    if (strut->left > current_left)
-      current_left = strut->left;
-    if (strut->top > current_top)
-      current_top = strut->top;
-    if (strut->right > current_right)
-      current_right = strut->right;
-    if (strut->bottom > current_bottom)
-      current_bottom = strut->bottom;
+    const Netwm::Strut* const strut = *sit;
+    if (strut->left > current.left)
+      current.left = strut->left;
+    if (strut->top > current.top)
+      current.top = strut->top;
+    if (strut->right > current.right)
+      current.right = strut->right;
+    if (strut->bottom > current.bottom)
+      current.bottom = strut->bottom;
   }
 
-  usableArea.setPos(current_left, current_top);
-  usableArea.setSize(usableArea.width() - (current_left + current_right),
-                     usableArea.height() - (current_top + current_bottom));
+  usableArea.setPos(current.left, current.top);
+  usableArea.setSize(usableArea.width() - (current.left + current.right),
+                     usableArea.height() - (current.top + current.bottom));
 
   if (old_area != usableArea) {
     BlackboxWindowList::iterator wit = windowList.begin(),

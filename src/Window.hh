@@ -169,6 +169,7 @@ private:
     unsigned long current_state;
     unsigned int workspace;
 
+    Netwm::Strut *strut;
     FocusMode focus_mode;
     WMState state;
     Atom window_type;
@@ -224,7 +225,9 @@ private:
     Rect changing;
 
     Rect rect;                  // frame geometry
-    Strut margin;               // margins between the frame and client
+    Netwm::Strut margin;        // margins between the frame and client,
+                                // this has nothing to do with netwm, it is
+                                // simply code reuse for similar functionality
 
     int grab_x, grab_y;         // where was the window when it was grabbed?
 

@@ -108,7 +108,7 @@ private:
   Blackbox *blackbox;
   BScreen *screen;
   BTimer *timer;
-  Strut strut;
+  Netwm::Strut strut;
 
   SlitClientList clientList;
   Slitmenu *slitmenu;
