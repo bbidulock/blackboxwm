@@ -4,11 +4,11 @@ $set 9 #Window
 $ #Creating
 # BlackboxWindow::BlackboxWindow: создается 0x%lx\n
 $ #XGetWindowAttributesFail
-# BlackboxWindow::BlackboxWindow: провален процесс XGetWindowAttributres\n
+# BlackboxWindow::BlackboxWindow: ошибка процесса XGetWindowAttributres\n
 $ #CannotFindScreen
-# BlackboxWindow::BlackboxWindow: нет возможности найти экран для корневого окна 0x%lx\n
+# BlackboxWindow::BlackboxWindow: не найден экран для корневого окна 0x%lx\n
 $ #Unnamed
-# Безымянное
+# Без имени
 $ #MapRequest
 # BlackboxWindow::mapRequestEvent() для 0x%lx\n
 $ #UnmapNotify
