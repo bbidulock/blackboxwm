@@ -88,14 +88,14 @@ Pixmap BImage::render_solid(const bt::Texture &texture) {
 
   Display *display = control->getBaseDisplay()->getXDisplay();
 
-  BPen pen(texture.color());
-  BPen penlight(texture.lightColor());
-  BPen penshadow(texture.shadowColor());
+  bt::Pen pen(texture.color());
+  bt::Pen penlight(texture.lightColor());
+  bt::Pen penshadow(texture.shadowColor());
 
   XFillRectangle(display, pixmap, pen.gc(), 0, 0, width, height);
 
   if (texture.texture() & bt::Texture::Interlaced) {
-    BPen peninterlace(texture.colorTo());
+    bt::Pen peninterlace(texture.colorTo());
     for (unsigned int i = 0; i < height; i += 2)
       XDrawLine(display, pixmap, peninterlace.gc(), 0, i, width, i);
   }

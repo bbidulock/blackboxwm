@@ -41,9 +41,9 @@ extern "C" {
 
 // forward declaration
 class BaseDisplay;
-class BGCCache;
 namespace bt {
   class EventHandler;
+  class GCCache;
 }
 
 
@@ -92,7 +92,7 @@ private:
   RunState run_state;
 
   Display *display;
-  mutable BGCCache *gccache;
+  mutable bt::GCCache *gccache;
 
   typedef std::vector<ScreenInfo> ScreenInfoList;
   ScreenInfoList screenInfoList;
@@ -127,7 +127,7 @@ public:
 
   const ScreenInfo* getScreenInfo(const unsigned int s) const;
 
-  BGCCache *gcCache(void) const;
+  bt::GCCache *gcCache(void) const;
 
   inline bool hasShapeExtensions(void) const
   { return shape.extensions; }

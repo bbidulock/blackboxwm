@@ -219,7 +219,7 @@ void bsetroot::solid(void) {
     Pixmap pixmap = XCreatePixmap(getXDisplay(),
 				  screen_info->getRootWindow(),
 				  8, 8, DefaultDepth(getXDisplay(), screen));
-    BPen pen(c);
+    bt::Pen pen(c);
     XFillRectangle(getXDisplay(), pixmap, pen.gc(), 0, 0, 8, 8);
 
     setPixmapProperty(screen, duplicatePixmap(screen, pixmap, 8, 8));

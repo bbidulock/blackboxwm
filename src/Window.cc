@@ -2101,7 +2101,7 @@ void BlackboxWindow::redrawLabel(void) const {
     dlen = style->doJustify(client.title.c_str(), pos, frame.label_w,
                             frame.bevel_w * 4, bt::i18n.multibyte());
 
-  BPen pen((client.state.focused) ? style->l_text_focus : style->l_text_unfocus,
+  bt::Pen pen((client.state.focused) ? style->l_text_focus : style->l_text_unfocus,
            style->font);
   if (bt::i18n.multibyte())
     XmbDrawString(blackbox->getXDisplay(), frame.label, style->fontset,
@@ -2148,7 +2148,7 @@ void BlackboxWindow::redrawIconifyButton(bool pressed) const {
   }
   XClearWindow(blackbox->getXDisplay(), frame.iconify_button);
 
-  BPen pen((client.state.focused) ? screen->getWindowStyle()->b_pic_focus :
+  bt::Pen pen((client.state.focused) ? screen->getWindowStyle()->b_pic_focus :
            screen->getWindowStyle()->b_pic_unfocus);
   XDrawRectangle(blackbox->getXDisplay(), frame.iconify_button, pen.gc(),
                  2, (frame.button_w - 5), (frame.button_w - 5), 2);
@@ -2182,7 +2182,7 @@ void BlackboxWindow::redrawMaximizeButton(bool pressed) const {
   }
   XClearWindow(blackbox->getXDisplay(), frame.maximize_button);
 
-  BPen pen((client.state.focused) ? screen->getWindowStyle()->b_pic_focus :
+  bt::Pen pen((client.state.focused) ? screen->getWindowStyle()->b_pic_focus :
            screen->getWindowStyle()->b_pic_unfocus);
   XDrawRectangle(blackbox->getXDisplay(), frame.maximize_button, pen.gc(),
                  2, 2, (frame.button_w - 5), (frame.button_w - 5));
@@ -2218,7 +2218,7 @@ void BlackboxWindow::redrawCloseButton(bool pressed) const {
   }
   XClearWindow(blackbox->getXDisplay(), frame.close_button);
 
-  BPen pen((client.state.focused) ? screen->getWindowStyle()->b_pic_focus :
+  bt::Pen pen((client.state.focused) ? screen->getWindowStyle()->b_pic_focus :
            screen->getWindowStyle()->b_pic_unfocus);
   XDrawLine(blackbox->getXDisplay(), frame.close_button, pen.gc(),
             2, 2, (frame.button_w - 3), (frame.button_w - 3));

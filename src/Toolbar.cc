@@ -508,7 +508,7 @@ void Toolbar::checkClock(bool redraw, bool date) {
     int pos = frame.bevel_w * 2, // this is modified by doJustify()
       dlen = style->doJustify(t, pos, frame.clock_w,
                               frame.bevel_w * 4, bt::i18n.multibyte());
-    BPen pen(style->c_text, style->font);
+    bt::Pen pen(style->c_text, style->font);
     if (bt::i18n.multibyte())
       XmbDrawString(display, frame.clock, style->fontset, pen.gc(),
                     pos, (1 - style->fontset_extents->max_ink_extent.y),
@@ -538,7 +538,7 @@ void Toolbar::redrawWindowLabel(bool redraw) {
   int pos = frame.bevel_w * 2, // modified by doJustify()
     dlen = style->doJustify(title, pos, frame.window_label_w,
                             frame.bevel_w * 4, bt::i18n.multibyte());
-  BPen pen(style->w_text, style->font);
+  bt::Pen pen(style->w_text, style->font);
   if (bt::i18n.multibyte())
     XmbDrawString(display, frame.window_label, style->fontset, pen.gc(), pos,
                   (1 - style->fontset_extents->max_ink_extent.y),
@@ -560,7 +560,7 @@ void Toolbar::redrawWorkspaceLabel(bool redraw) {
   int pos = frame.bevel_w * 2,
     dlen = style->doJustify(name.c_str(), pos, frame.workspace_label_w,
                             frame.bevel_w * 4, bt::i18n.multibyte());
-  BPen pen(style->l_text, style->font);
+  bt::Pen pen(style->l_text, style->font);
   if (bt::i18n.multibyte())
     XmbDrawString(display, frame.workspace_label, style->fontset, pen.gc(),
                   pos, (1 - style->fontset_extents->max_ink_extent.y),
@@ -596,7 +596,7 @@ void Toolbar::redrawPrevWorkspaceButton(bool pressed, bool redraw) {
   pts[2].x = 0; pts[2].y = -4;
 
   ToolbarStyle *style = screen->getToolbarStyle();
-  BPen pen(style->b_pic, style->font);
+  bt::Pen pen(style->b_pic, style->font);
   XFillPolygon(display, frame.psbutton, pen.gc(),
                pts, 3, Convex, CoordModePrevious);
 }
@@ -626,7 +626,7 @@ void Toolbar::redrawNextWorkspaceButton(bool pressed, bool redraw) {
   pts[2].x = -4; pts[2].y = 2;
 
   ToolbarStyle *style = screen->getToolbarStyle();
-  BPen pen(style->b_pic, style->font);
+  bt::Pen pen(style->b_pic, style->font);
   XFillPolygon(display, frame.nsbutton, pen.gc(),
                pts, 3, Convex, CoordModePrevious);
 }
@@ -656,7 +656,7 @@ void Toolbar::redrawPrevWindowButton(bool pressed, bool redraw) {
   pts[2].x = 0; pts[2].y = -4;
 
   ToolbarStyle *style = screen->getToolbarStyle();
-  BPen pen(style->b_pic, style->font);
+  bt::Pen pen(style->b_pic, style->font);
   XFillPolygon(display, frame.pwbutton, pen.gc(),
                pts, 3, Convex, CoordModePrevious);
 }
@@ -686,7 +686,7 @@ void Toolbar::redrawNextWindowButton(bool pressed, bool redraw) {
   pts[2].x = -4; pts[2].y = 2;
 
   ToolbarStyle *style = screen->getToolbarStyle();
-  BPen pen(style->b_pic, style->font);
+  bt::Pen pen(style->b_pic, style->font);
   XFillPolygon(display, frame.nwbutton, pen.gc(), pts, 3, Convex,
                CoordModePrevious);
 }
@@ -710,7 +710,7 @@ void Toolbar::edit(void) {
     blackbox->getFocusedWindow()->setFocusFlag(False);
 
   ToolbarStyle *style = screen->getToolbarStyle();
-  BPen pen(style->l_text, style->font);
+  bt::Pen pen(style->l_text, style->font);
   XDrawRectangle(display, frame.workspace_label, pen.gc(),
                  frame.workspace_label_w / 2, 0, 1,
                  frame.label_h - 1);
@@ -939,7 +939,7 @@ void Toolbar::keyPressEvent(const XKeyEvent *ke) {
       if (x < frame.bevel_w) x = frame.bevel_w;
 
       ToolbarStyle *style = screen->getToolbarStyle();
-      BPen pen(style->l_text, style->font);
+      bt::Pen pen(style->l_text, style->font);
       if (bt::i18n.multibyte())
         XmbDrawString(display, frame.workspace_label, style->fontset,
                       pen.gc(), x,

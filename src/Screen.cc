@@ -1605,7 +1605,7 @@ void BScreen::showPosition(int x, int y) {
 
   XClearWindow(blackbox->getXDisplay(), geom_window);
 
-  BPen pen(resource.wstyle.l_text_focus, resource.wstyle.font);
+  bt::Pen pen(resource.wstyle.l_text_focus, resource.wstyle.font);
   if (bt::i18n.multibyte()) {
     XmbDrawString(blackbox->getXDisplay(), geom_window,
                   resource.wstyle.fontset, pen.gc(),
@@ -1639,7 +1639,7 @@ void BScreen::showGeometry(unsigned int gx, unsigned int gy) {
 
   XClearWindow(blackbox->getXDisplay(), geom_window);
 
-  BPen pen(resource.wstyle.l_text_focus, resource.wstyle.font);
+  bt::Pen pen(resource.wstyle.l_text_focus, resource.wstyle.font);
   if (bt::i18n.multibyte()) {
     XmbDrawString(blackbox->getXDisplay(), geom_window,
                   resource.wstyle.fontset, pen.gc(),

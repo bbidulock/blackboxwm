@@ -505,7 +505,7 @@ void Basemenu::redrawTitle(void) {
   }
 
   const MenuStyle* const style = screen->getMenuStyle();
-  const BPen pen(style->t_text, style->t_font);
+  const bt::Pen pen(style->t_text, style->t_font);
   if (bt::i18n.multibyte())
     XmbDrawString(display, menu.title, style->t_fontset, pen.gc(), dx,
                   (menu.bevel_w - style->t_fontset_extents->max_ink_extent.y),
@@ -633,7 +633,7 @@ void Basemenu::drawItem(int index, bool highlight, bool clear,
   }
 
   const MenuStyle* const style = screen->getMenuStyle();
-  const BPen pen((highlight || item->isSelected()) ? style->h_text :
+  const bt::Pen pen((highlight || item->isSelected()) ? style->h_text :
                  style->f_text),
     textpen((highlight) ? style->h_text :
             item->isEnabled() ? style->f_text : style->d_text, style->f_font),

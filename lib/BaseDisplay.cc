@@ -545,9 +545,9 @@ const ScreenInfo* BaseDisplay::getScreenInfo(unsigned int s) const {
 }
 
 
-BGCCache* BaseDisplay::gcCache(void) const {
+bt::GCCache* BaseDisplay::gcCache(void) const {
   if (! gccache)
-    gccache = new BGCCache(this, screenInfoList.size());
+    gccache = new bt::GCCache(this, screenInfoList.size());
   return gccache;
 }
 
