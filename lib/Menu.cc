@@ -874,24 +874,30 @@ void bt::Menu::buttonReleaseEvent(const XButtonEvent * const event) {
   int row = 0, col = 0;
   unsigned int index = 0;
   ItemList::iterator it, end;
-  for (it = items.begin(), end = items.end(); it != end; ++it, ++index) {
-    r.setHeight(it->height);
+  for (it = items.begin(), end = items.end(); it != end; ++index) {
+    /*
+      increment the iterator here, since the item could be removed
+      below (which invalidates the iterator, and we will get a crash
+      when we loop)
+    */
+    MenuItem &item = *it++;
+    r.setHeight(item.height);
 
-    if (it->enabled && r.contains(event->x, event->y) && once) {
+    if (item.enabled && r.contains(event->x, event->y) && once) {
       once = false;
 
-      if (it->sub) {
+      if (item.sub) {
         // clicked an item w/ a submenu, make sure the submenu is shown,
         // and keep the menu open
         do_hide = false;
-        if (! it->active)
-          activateItem(r, *it);
+        if (! item.active)
+          activateItem(r, item);
         // ensure the submenu is visible
         showActiveSubmenu();
       }
 
       // clicked an enabled item
-      itemClicked(it->id(), event->button);
+      itemClicked(item.ident, event->button);
     }
 
     r.setY(r.y() + r.height());
@@ -1121,8 +1127,13 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
     it = std::find_if(it, end, IndexMatch(_active_index));
     if (it == end) break;
 
+    /*
+      the item could be removed in in the itemClicked call, so don't use
+      the iterator after calling itemClicked
+    */
+    bool do_hide = (! it->sub);
     itemClicked(it->ident, 1);
-    if (! it->sub) hideAll();
+    if (do_hide) hideAll();
     break;
   }
   } // switch
