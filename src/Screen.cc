@@ -314,15 +314,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
       if (attrib.override_redirect) continue;
 
       if (attrib.map_state != IsUnmapped) {
-        new BlackboxWindow(blackbox, children[i], this);
-
-        BlackboxWindow *win = blackbox->searchWindow(children[i]);
-        if (win) {
-          XMapRequestEvent mre;
-          mre.window = children[i];
-          win->restoreAttributes();
-          win->mapRequestEvent(&mre);
-        }
+        manageWindow(children[i]);
       }
     }
   }
@@ -880,12 +872,30 @@ void BScreen::changeWorkspaceID(unsigned int id) {
 }
 
 
+void BScreen::manageWindow(Window w) {
+  new BlackboxWindow(blackbox, w, this);
+
+  BlackboxWindow *win = blackbox->searchWindow(w);
+  if (! win)
+    return;
+
+  windowList.push_back(win);
+
+  XMapRequestEvent mre;
+  mre.window = w;
+  win->restoreAttributes();
+  win->mapRequestEvent(&mre);
+}
+
+
 void BScreen::unmanageWindow(BlackboxWindow *w) {
   if (w->getWorkspaceNumber() != BSENTINEL &&
       w->getWindowNumber() != BSENTINEL)
     getWorkspace(w->getWorkspaceNumber())->removeWindow(w);
   else if (w->isIconic())
     removeIcon(w);
+
+  windowList.remove(w);
 
   getToolbar()->redrawWindowLabel(True);
 

@@ -313,11 +313,11 @@ void Blackbox::process_event(XEvent *e) {
 
     BlackboxWindow *win = searchWindow(e->xmaprequest.window);
 
-    if (! win)
-      win = new BlackboxWindow(this, e->xmaprequest.window);
-
-    if ((win = searchWindow(e->xmaprequest.window)))
-      win->mapRequestEvent(&e->xmaprequest);
+    if (! win) {
+      BScreen *screen = searchScreen(e->xmaprequest.parent);
+      if (screen)
+        screen->manageWindow(e->xmaprequest.window);
+    }
 
     break;
   }

@@ -115,7 +115,7 @@ private:
 
   typedef std::list<Netizen*> NetizenList;
   NetizenList netizenList;
-  BlackboxWindowList iconList;
+  BlackboxWindowList iconList, windowList;
 
   Slit *slit;
   Toolbar *toolbar;
@@ -322,6 +322,7 @@ public:
   void addIcon(BlackboxWindow *w);
   void removeIcon(BlackboxWindow *w);
 
+  void manageWindow(Window w);
   void unmanageWindow(BlackboxWindow *w);
   void raiseWindows(Window *workspace_stack, unsigned int num);
   void reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id,
