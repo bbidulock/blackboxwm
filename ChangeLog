@@ -52,6 +52,8 @@ Changes from 0.62.1 to 0.65.0:
     parentrelative setting better
   - improved edge snap support (still no window to window snapping)
   - changing preferences no longer leads to windows being raised
+  - the window's send to menu disables the current workspace, which is a
+    better UI approach
   - removed several unused variables and otherwise reduced the memory usage
     of the objects in Blackbox.  For the record we are about 100k larger than
     0.62.0 and that is mostly due to the STL.  However for the most part
