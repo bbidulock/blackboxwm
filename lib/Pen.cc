@@ -39,10 +39,6 @@
 #include <algorithm>
 
 
-static const unsigned int cache_size    = 32u;
-static const unsigned int cache_buckets =  8u;
-static const unsigned int context_count = cache_size * cache_buckets;
-
 /*
   The Pen cache is comprised of multiple arrays of cache buckets.  The
   bucket arrays are small to allow for fast lookups. A simple hash is
@@ -77,6 +73,9 @@ static const unsigned int context_count = cache_size * cache_buckets;
 
                     ^------------- cache_buckets -----------^
 */
+static const unsigned int cache_size    = 32u;
+static const unsigned int cache_buckets =  8u;
+static const unsigned int context_count = cache_size * cache_buckets;
 
 
 namespace bt {
