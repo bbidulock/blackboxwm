@@ -86,28 +86,43 @@ MAKEINFO = @MAKEINFO@
 NLS = @NLS@
 ORDEREDPSEUDO = @ORDEREDPSEUDO@
 PACKAGE = @PACKAGE@
-RANLIB = @RANLIB@
 SHAPE = @SHAPE@
 TIMEDCACHE = @TIMEDCACHE@
 VERSION = @VERSION@
 gencat_cmd = @gencat_cmd@
 regex_cmd = @regex_cmd@
+# src/Makefile.am for Blackbox - an X11 Window manager
+# Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the 
+# Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in 
+# all copies or substantial portions of the Software. 
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+# DEALINGS IN THE SOFTWARE.
 
-DEFAULT_MENU = $(pkgdatadir)/menu
-DEFAULT_STYLE = $(pkgdatadir)/styles/Results
-
-CPPFLAGS = @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ @DEBUG@ @NLS@ @TIMEDCACHE@ -DLOCALEPATH=\"$(pkgdatadir)/nls\" -DDEFAULTMENU=\"$(DEFAULT_MENU)\" -DDEFAULTSTYLE=\"$(DEFAULT_STYLE)\"
+CPPFLAGS = @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ @DEBUG@ @NLS@ @TIMEDCACHE@ -DLOCALEPATH=\"$(pkgdatadir)/nls\"
 
 
-bin_PROGRAMS = blackbox
-
-blackbox_SOURCES = BaseDisplay.cc Basemenu.cc Clientmenu.cc Color.cc Configmenu.cc GCCache.cc Iconmenu.cc Image.cc ImageControl.cc Netizen.cc Rootmenu.cc Screen.cc Slit.cc Texture.cc Timer.cc Toolbar.cc Util.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc i18n.cc main.cc
+LIBRARIES = libblackbox.a
+noinst_LIBRARIES = libblackbox.a
+libblackbox_a_SOURCES = BaseDisplay.cc Color.cc GCCache.cc Image.cc ImageControl.cc Texture.cc Timer.cc Util.cc i18n.cc
 
 MAINTAINERCLEANFILES = Makefile.in
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
-PROGRAMS =  $(bin_PROGRAMS)
 
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I..
@@ -117,13 +132,11 @@ X_CFLAGS = @X_CFLAGS@
 X_LIBS = @X_LIBS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
-blackbox_OBJECTS =  BaseDisplay.o Basemenu.o Clientmenu.o Color.o \
-Configmenu.o GCCache.o Iconmenu.o Image.o ImageControl.o Netizen.o \
-Rootmenu.o Screen.o Slit.o Texture.o Timer.o Toolbar.o Util.o Window.o \
-Windowmenu.o Workspace.o Workspacemenu.o blackbox.o i18n.o main.o
-blackbox_LDADD = $(LDADD)
-blackbox_DEPENDENCIES = 
-blackbox_LDFLAGS = 
+libblackbox_a_LIBADD = 
+libblackbox_a_OBJECTS =  BaseDisplay.o Color.o GCCache.o Image.o \
+ImageControl.o Texture.o Timer.o Util.o i18n.o
+AR = ar
+RANLIB = @RANLIB@
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
@@ -135,44 +148,28 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP_ENV = --best
-SOURCES = $(blackbox_SOURCES)
-OBJECTS = $(blackbox_OBJECTS)
+SOURCES = $(libblackbox_a_SOURCES)
+OBJECTS = $(libblackbox_a_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .cc .o .s
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps src/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps lib/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
 
-mostlyclean-binPROGRAMS:
+mostlyclean-noinstLIBRARIES:
 
-clean-binPROGRAMS:
-	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+clean-noinstLIBRARIES:
+	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
 
-distclean-binPROGRAMS:
+distclean-noinstLIBRARIES:
 
-maintainer-clean-binPROGRAMS:
-
-install-binPROGRAMS: $(bin_PROGRAMS)
-	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  if test -f $$p; then \
-	    echo "  $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
-	     $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
-	  else :; fi; \
-	done
-
-uninstall-binPROGRAMS:
-	@$(NORMAL_UNINSTALL)
-	list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  rm -f $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
-	done
+maintainer-clean-noinstLIBRARIES:
 
 .c.o:
 	$(COMPILE) -c $<
@@ -193,9 +190,10 @@ distclean-compile:
 
 maintainer-clean-compile:
 
-blackbox: $(blackbox_OBJECTS) $(blackbox_DEPENDENCIES)
-	@rm -f blackbox
-	$(CXXLINK) $(blackbox_LDFLAGS) $(blackbox_OBJECTS) $(blackbox_LDADD) $(LIBS)
+libblackbox.a: $(libblackbox_a_OBJECTS) $(libblackbox_a_DEPENDENCIES)
+	-rm -f libblackbox.a
+	$(AR) cru libblackbox.a $(libblackbox_a_OBJECTS) $(libblackbox_a_LIBADD)
+	$(RANLIB) libblackbox.a
 .cc.o:
 	$(CXXCOMPILE) -c $<
 
@@ -230,7 +228,7 @@ maintainer-clean-tags:
 
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 
-subdir = src
+subdir = lib
 
 distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
@@ -251,7 +249,7 @@ check-am: all-am
 check: check-am
 installcheck-am:
 installcheck: installcheck-am
-install-exec-am: install-binPROGRAMS
+install-exec-am:
 install-exec: install-exec-am
 
 install-data-am:
@@ -260,14 +258,13 @@ install-data: install-data-am
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-am
-uninstall-am: uninstall-binPROGRAMS
+uninstall-am:
 uninstall: uninstall-am
-all-am: Makefile $(PROGRAMS)
+all-am: Makefile $(LIBRARIES)
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
 installdirs:
-	$(mkinstalldirs)  $(DESTDIR)$(bindir)
 
 
 mostlyclean-generic:
@@ -280,22 +277,23 @@ distclean-generic:
 
 maintainer-clean-generic:
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
-mostlyclean-am:  mostlyclean-binPROGRAMS mostlyclean-compile \
+mostlyclean-am:  mostlyclean-noinstLIBRARIES mostlyclean-compile \
 		mostlyclean-tags mostlyclean-generic
 
 mostlyclean: mostlyclean-am
 
-clean-am:  clean-binPROGRAMS clean-compile clean-tags clean-generic \
+clean-am:  clean-noinstLIBRARIES clean-compile clean-tags clean-generic \
 		mostlyclean-am
 
 clean: clean-am
 
-distclean-am:  distclean-binPROGRAMS distclean-compile distclean-tags \
-		distclean-generic clean-am distclean-local
+distclean-am:  distclean-noinstLIBRARIES distclean-compile \
+		distclean-tags distclean-generic clean-am \
+		distclean-local
 
 distclean: distclean-am
 
-maintainer-clean-am:  maintainer-clean-binPROGRAMS \
+maintainer-clean-am:  maintainer-clean-noinstLIBRARIES \
 		maintainer-clean-compile maintainer-clean-tags \
 		maintainer-clean-generic distclean-am
 	@echo "This command is intended for maintainers to use;"
@@ -303,8 +301,8 @@ maintainer-clean-am:  maintainer-clean-binPROGRAMS \
 
 maintainer-clean: maintainer-clean-am
 
-.PHONY: mostlyclean-binPROGRAMS distclean-binPROGRAMS clean-binPROGRAMS \
-maintainer-clean-binPROGRAMS uninstall-binPROGRAMS install-binPROGRAMS \
+.PHONY: mostlyclean-noinstLIBRARIES distclean-noinstLIBRARIES \
+clean-noinstLIBRARIES maintainer-clean-noinstLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile tags mostlyclean-tags distclean-tags \
 clean-tags maintainer-clean-tags distdir info-am info dvi-am dvi check \
@@ -323,87 +321,43 @@ distclean-local:
 BaseDisplay.o: BaseDisplay.cc ../config.h i18n.hh \
  ../nls/blackbox-nls.hh BaseDisplay.hh Timer.hh GCCache.hh Color.hh \
  Util.hh
-Basemenu.o: Basemenu.cc ../config.h i18n.hh ../nls/blackbox-nls.hh \
- blackbox.hh BaseDisplay.hh Timer.hh Basemenu.hh GCCache.hh Color.hh \
- Image.hh Screen.hh Texture.hh Util.hh Configmenu.hh Iconmenu.hh \
- Netizen.hh Rootmenu.hh Workspace.hh Workspacemenu.hh
-Clientmenu.o: Clientmenu.cc ../config.h blackbox.hh i18n.hh \
- ../nls/blackbox-nls.hh BaseDisplay.hh Timer.hh Clientmenu.hh \
- Basemenu.hh Screen.hh Color.hh Texture.hh Util.hh Configmenu.hh \
- Iconmenu.hh Netizen.hh Rootmenu.hh Workspace.hh Workspacemenu.hh \
- Window.hh Windowmenu.hh
 Color.o: Color.cc ../config.h Color.hh BaseDisplay.hh Timer.hh
-Configmenu.o: Configmenu.cc ../config.h i18n.hh ../nls/blackbox-nls.hh \
- Configmenu.hh Basemenu.hh Image.hh Timer.hh BaseDisplay.hh Color.hh \
- Toolbar.hh Screen.hh Texture.hh Util.hh Iconmenu.hh Netizen.hh \
- Rootmenu.hh Workspace.hh Workspacemenu.hh blackbox.hh Window.hh \
- Windowmenu.hh
 GCCache.o: GCCache.cc ../config.h GCCache.hh BaseDisplay.hh Timer.hh \
  Color.hh Util.hh
-Iconmenu.o: Iconmenu.cc ../config.h i18n.hh ../nls/blackbox-nls.hh \
- Iconmenu.hh Basemenu.hh Screen.hh Color.hh Texture.hh Util.hh \
- Configmenu.hh Netizen.hh Rootmenu.hh Timer.hh Workspace.hh \
- Workspacemenu.hh blackbox.hh BaseDisplay.hh Window.hh Windowmenu.hh
-Image.o: Image.cc ../config.h blackbox.hh i18n.hh \
+Image.o: Image.cc ../config.h i18n.hh \
  ../nls/blackbox-nls.hh BaseDisplay.hh Timer.hh GCCache.hh Color.hh \
  Image.hh Texture.hh Util.hh
-ImageControl.o: ImageControl.cc ../config.h blackbox.hh i18n.hh \
+ImageControl.o: ImageControl.cc ../config.h i18n.hh \
  ../nls/blackbox-nls.hh BaseDisplay.hh Timer.hh Color.hh Image.hh \
  Texture.hh Util.hh
-Netizen.o: Netizen.cc ../config.h Netizen.hh Screen.hh Color.hh \
- Texture.hh Util.hh Configmenu.hh Basemenu.hh Iconmenu.hh Rootmenu.hh \
- Timer.hh Workspace.hh Workspacemenu.hh blackbox.hh i18n.hh \
- ../nls/blackbox-nls.hh BaseDisplay.hh
-Rootmenu.o: Rootmenu.cc ../config.h blackbox.hh i18n.hh \
- ../nls/blackbox-nls.hh BaseDisplay.hh Timer.hh Rootmenu.hh \
- Basemenu.hh Screen.hh Color.hh Texture.hh Util.hh Configmenu.hh \
- Iconmenu.hh Netizen.hh Workspace.hh Workspacemenu.hh
-Screen.o: Screen.cc ../config.h i18n.hh ../nls/blackbox-nls.hh \
- blackbox.hh BaseDisplay.hh Timer.hh Clientmenu.hh Basemenu.hh \
- GCCache.hh Color.hh Iconmenu.hh Image.hh Screen.hh Texture.hh Util.hh \
- Configmenu.hh Netizen.hh Rootmenu.hh Workspace.hh Workspacemenu.hh \
- Slit.hh Toolbar.hh Window.hh Windowmenu.hh
-Slit.o: Slit.cc ../config.h i18n.hh ../nls/blackbox-nls.hh blackbox.hh \
- BaseDisplay.hh Timer.hh Image.hh Color.hh Screen.hh Texture.hh \
- Util.hh Configmenu.hh Basemenu.hh Iconmenu.hh Netizen.hh Rootmenu.hh \
- Workspace.hh Workspacemenu.hh Slit.hh Toolbar.hh
 Texture.o: Texture.cc ../config.h Texture.hh Color.hh Util.hh \
- BaseDisplay.hh Timer.hh Image.hh Screen.hh Configmenu.hh Basemenu.hh \
- Iconmenu.hh Netizen.hh Rootmenu.hh Workspace.hh Workspacemenu.hh \
- blackbox.hh i18n.hh ../nls/blackbox-nls.hh
+ BaseDisplay.hh Timer.hh Image.hh i18n.hh ../nls/blackbox-nls.hh
 Timer.o: Timer.cc ../config.h BaseDisplay.hh Timer.hh Util.hh
-Toolbar.o: Toolbar.cc ../config.h i18n.hh ../nls/blackbox-nls.hh \
- blackbox.hh BaseDisplay.hh Timer.hh Clientmenu.hh Basemenu.hh \
- GCCache.hh Color.hh Iconmenu.hh Image.hh Rootmenu.hh Screen.hh \
- Texture.hh Util.hh Configmenu.hh Netizen.hh Workspace.hh \
- Workspacemenu.hh Toolbar.hh Window.hh Windowmenu.hh Slit.hh
 Util.o: Util.cc ../config.h Util.hh
-Window.o: Window.cc ../config.h i18n.hh ../nls/blackbox-nls.hh \
- blackbox.hh BaseDisplay.hh Timer.hh GCCache.hh Color.hh Iconmenu.hh \
- Basemenu.hh Image.hh Screen.hh Texture.hh Util.hh Configmenu.hh \
- Netizen.hh Rootmenu.hh Workspace.hh Workspacemenu.hh Toolbar.hh \
- Window.hh Windowmenu.hh Slit.hh
-Windowmenu.o: Windowmenu.cc ../config.h i18n.hh ../nls/blackbox-nls.hh \
- blackbox.hh BaseDisplay.hh Timer.hh Screen.hh Color.hh Texture.hh \
- Util.hh Configmenu.hh Basemenu.hh Iconmenu.hh Netizen.hh Rootmenu.hh \
- Workspace.hh Workspacemenu.hh Window.hh Windowmenu.hh
-Workspace.o: Workspace.cc ../config.h i18n.hh ../nls/blackbox-nls.hh \
- blackbox.hh BaseDisplay.hh Timer.hh Clientmenu.hh Basemenu.hh \
- Netizen.hh Screen.hh Color.hh Texture.hh Util.hh Configmenu.hh \
- Iconmenu.hh Rootmenu.hh Workspace.hh Workspacemenu.hh Toolbar.hh \
- Window.hh Windowmenu.hh
-Workspacemenu.o: Workspacemenu.cc ../config.h i18n.hh \
- ../nls/blackbox-nls.hh blackbox.hh BaseDisplay.hh Timer.hh Screen.hh \
- Color.hh Texture.hh Util.hh Configmenu.hh Basemenu.hh Iconmenu.hh \
- Netizen.hh Rootmenu.hh Workspace.hh Workspacemenu.hh Toolbar.hh
-blackbox.o: blackbox.cc ../config.h i18n.hh ../nls/blackbox-nls.hh \
- blackbox.hh BaseDisplay.hh Timer.hh Basemenu.hh Clientmenu.hh \
- GCCache.hh Color.hh Image.hh Rootmenu.hh Screen.hh Texture.hh Util.hh \
- Configmenu.hh Iconmenu.hh Netizen.hh Workspace.hh Workspacemenu.hh \
- Slit.hh Toolbar.hh Window.hh Windowmenu.hh
 i18n.o: i18n.cc ../config.h i18n.hh ../nls/blackbox-nls.hh
-main.o: main.cc ../version.h ../config.h i18n.hh \
- ../nls/blackbox-nls.hh blackbox.hh BaseDisplay.hh Timer.hh
+
+distclean-local:
+	rm -f *\~ *.orig *.rej .\#*
+
+# local dependencies
+
+BaseDisplay.o: BaseDisplay.cc ../config.h i18n.hh \
+ ../nls/blackbox-nls.hh BaseDisplay.hh Timer.hh GCCache.hh Color.hh \
+ Util.hh
+Color.o: Color.cc ../config.h Color.hh BaseDisplay.hh Timer.hh
+GCCache.o: GCCache.cc ../config.h GCCache.hh BaseDisplay.hh Timer.hh \
+ Color.hh Util.hh
+Image.o: Image.cc ../config.h i18n.hh \
+ ../nls/blackbox-nls.hh BaseDisplay.hh Timer.hh GCCache.hh Color.hh \
+ Image.hh Texture.hh Util.hh
+ImageControl.o: ImageControl.cc ../config.h i18n.hh \
+ ../nls/blackbox-nls.hh BaseDisplay.hh Timer.hh Color.hh Image.hh \
+ Texture.hh Util.hh
+Texture.o: Texture.cc ../config.h Texture.hh Color.hh Util.hh \
+ BaseDisplay.hh Timer.hh Image.hh i18n.hh ../nls/blackbox-nls.hh
+Timer.o: Timer.cc ../config.h BaseDisplay.hh Timer.hh Util.hh
+Util.o: Util.cc ../config.h Util.hh
+i18n.o: i18n.cc ../config.h i18n.hh ../nls/blackbox-nls.hh
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

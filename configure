@@ -707,7 +707,7 @@ fi
 
 PACKAGE=blackbox
 
-VERSION=0.65.0
+VERSION=0.70.0broken
 
 if test "`cd $srcdir && pwd`" != "`pwd`" && test -f $srcdir/config.status; then
   { echo "configure: error: source directory already configured; run "make distclean" there first" 1>&2; exit 1; }
@@ -2991,6 +2991,7 @@ ac_given_srcdir=$srcdir
 ac_given_INSTALL="$INSTALL"
 
 trap 'rm -fr `echo "Makefile
+lib/Makefile
 src/Makefile
 util/Makefile
 data/Makefile
@@ -3122,6 +3123,7 @@ EOF
 cat >> $CONFIG_STATUS <<EOF
 
 CONFIG_FILES=\${CONFIG_FILES-"Makefile
+lib/Makefile
 src/Makefile
 util/Makefile
 data/Makefile
