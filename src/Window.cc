@@ -55,7 +55,6 @@ extern "C" {
 #include "Window.hh"
 #include "Windowmenu.hh"
 #include "Workspace.hh"
-#include "Slit.hh"
 
 
 /*

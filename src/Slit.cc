@@ -132,6 +132,16 @@ void Slit::addClient(Window w) {
     client->rect.setSize(64, 64);
   }
 
+  Atom *proto;
+  int num_return = 0;
+  if (XGetWMProtocols(display, client->window, &proto, &num_return)) {
+    for (int i = 0; i < num_return; ++i) {
+      if (proto[i] == blackbox->getBlackboxStructureMessagesAtom()) {
+        screen->addNetizen(new Netizen(screen, client->window));
+      }
+    }
+  }
+
   XSetWindowBorderWidth(display, client->window, 0);
 
   XGrabServer(display);
