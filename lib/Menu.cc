@@ -171,7 +171,7 @@ void bt::MenuStyle::load(const Resource &resource) {
 
 unsigned int bt::MenuStyle::separatorHeight(void) const {
   return (frame.texture.borderWidth() > 0 ?
-          frame.texture.borderWidth() : 1) + (margin_w * 2);
+          frame.texture.borderWidth() : 1) + 2;
 }
 
 
@@ -186,7 +186,7 @@ unsigned int bt::MenuStyle::frameMargin(void) const {
 
 
 unsigned int bt::MenuStyle::itemMargin(void) const {
-  return active.texture.borderWidth() + margin_w;
+  return active.texture.borderWidth() + 1;
 }
 
 
@@ -225,7 +225,7 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
   if (item.isSeparator()) {
     Pen pen(_screen, frame.foreground);
     XFillRectangle(pen.XDisplay(), window, pen.gc(),
-                   r2.x(), r2.y() + margin_w, r2.width(),
+                   r2.x(), r2.y() + 1, r2.width(),
                    (frame.texture.borderWidth() > 0 ?
                     frame.texture.borderWidth() : 1));
     return;
@@ -235,16 +235,8 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
                                          frame.foreground) : frame.disabled));
   Pen tpen(_screen, (item.isEnabled() ? (item.isActive() ? active.text :
                                          frame.text) : frame.disabled));
-  if (item.isActive() && item.isEnabled()) {
-    Pen p2(_screen, active.texture.color());
-    if (pixmap) {
-      XCopyArea(p2.XDisplay(), pixmap, window, p2.gc(),
-                0, 0, rect.width(), rect.height(), rect.x(), rect.y());
-    } else {
-      XFillRectangle(p2.XDisplay(), window, p2.gc(),
-                     rect.x(), rect.y(), rect.width(), rect.height());
-    }
-  }
+  if (item.isActive() && item.isEnabled())
+    drawTexture(_screen, active.texture, window, rect, rect, pixmap);
   drawText(frame.font, tpen, window, r2, frame.alignment, item.label());
 
   if (item.isChecked()) {
@@ -405,12 +397,20 @@ unsigned int bt::Menu::insertItem(const MenuItem &item,
   }
 
   it = _items.insert(it, item);
-  if (! item.separator) it->ident = verifyId(id);
+  if (! item.separator) {
+    id = verifyId(id);
+    it->ident = id;
+  }
   it->indx = index;
+
+  // when inserting into the middle, update the index of all items
+  // after the insertion point
+  for (++it, ++index; it != _items.end(); ++it, ++index)
+    it->indx = index;
 
   invalidateSize();
 
-  return it->ident;
+  return id;
 }
 
 
@@ -999,7 +999,7 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
   }
 
   case XK_Left: {
-    if (_parent_menu)
+    if (_parent_menu && _parent_menu->isVisible())
       hide();
     return;
   }
