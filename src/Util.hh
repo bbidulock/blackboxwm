@@ -30,11 +30,10 @@ char* bstrdup(const char *s);
 struct timeval; // forward declare to avoid the header
 timeval normalizeTimeval(const timeval &tm);
 
-template<class T>
 struct PointerAssassin {
-  void operator()(T ptr) const {
+  template<typename T>
+  void operator()(const T ptr) const {
     delete ptr;
-    ptr = 0;
   }
 };
 
