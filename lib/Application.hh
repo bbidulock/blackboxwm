@@ -37,6 +37,11 @@ namespace bt {
   class EventHandler;
   class Menu;
 
+  /*
+    The application object.  It provides event delivery, timer
+    activation and signal handling functionality to fit most
+    application needs.
+  */
   class Application : public TimerQueueManager, public NoCopy {
   protected:
     enum RunState { STARTUP, RUNNING, SHUTDOWN, FATAL_SIGNAL };
@@ -77,7 +82,13 @@ namespace bt {
     inline void setRunState(RunState new_state)
     { run_state = new_state; }
 
+    /*
+      Called from run() just before the event loop starts.
+     */
     virtual void startup(void);
+    /*
+      Called from shutdown() after the event loop stops.
+    */
     virtual void shutdown(void);
 
     /*
@@ -112,8 +123,6 @@ namespace bt {
     inline bool shuttingDown(void) const
     { return run_state == SHUTDOWN; }
 
-    void quit(void) { setRunState( SHUTDOWN ); }
-
     ::Display *XDisplay(void) const;
     inline const Display& display(void) const
     { return *_display; }
@@ -130,6 +139,8 @@ namespace bt {
                       Window grab_window) const;
 
     void run(void);
+    inline void quit(void)
+    { setRunState( SHUTDOWN ); }
 
     inline unsigned int scrollLockMask(void) const
     { return ScrollLockMask; }

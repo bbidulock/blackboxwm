@@ -32,6 +32,11 @@ namespace bt {
   // forward declarations
   class Display;
 
+  /*
+    The color object.  Colors are stored in rgb format (screen
+    independent).  Screen dependent pixel values can be obtained using
+    the pixel() function.
+  */
   class Color {
   public:
     static void clearCache(void);

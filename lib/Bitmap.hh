@@ -35,9 +35,18 @@ namespace bt {
   class Pen;
   class Rect;
 
+  /*
+    Draws the specified bitmap with the specified pen on the specified
+    drawable in the specified area.  Note: the bitmap will be drawn
+    using the color of the pen.
+   */
   void drawBitmap(const Bitmap &bitmap, const Pen &pen,
                   ::Drawable drawable, const Rect &rect);
 
+  /*
+    The bitmap object.  You can create custom bitmaps from raw data,
+    or use one of 5 standard bitmaps.
+   */
   class Bitmap : public NoCopy {
   public:
     // standard bitmaps
@@ -71,7 +80,6 @@ namespace bt {
     ::Drawable _drawable;
     unsigned int _width, _height;
   };
-
 
 } // namespace bt
 

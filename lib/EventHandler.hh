@@ -29,6 +29,12 @@
 
 namespace bt {
 
+  /*
+    The abstract event handler.  You must register your event handler
+    with the application object.  See
+    bt::Application::insertEventHandler() and
+    bt::Application::removeEventHandler().
+  */
   class EventHandler
   {
   public:
