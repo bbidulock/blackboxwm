@@ -529,9 +529,6 @@ void Workspace::hide(void) {
     lastfocus = (BlackboxWindow *) 0;
   }
 
-  // when we switch workspaces, unfocus whatever was focused
-  screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
-
   // withdraw windows in reverse order to minimize the number of Expose events
 
   StackingList::reverse_iterator it = stackingList.rbegin(),

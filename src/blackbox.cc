@@ -127,7 +127,6 @@ Blackbox::Blackbox(char **m_argv, char *dpy_name, char *rc)
 
   resource.auto_raise_delay.tv_sec = resource.auto_raise_delay.tv_usec = 0;
 
-  active_screen = (BScreen*) 0;
   focused_window = (BlackboxWindow *) 0;
   _netwm = (bt::Netwm*) 0;
 
@@ -159,8 +158,7 @@ Blackbox::Blackbox(char **m_argv, char *dpy_name, char *rc)
     ::exit(3);
   }
 
-  // set the screen with mouse to the first managed screen
-  active_screen = screenList.front();
+  // set focus to PointerRoot
   setFocusedWindow(0);
 
   XSynchronize(getXDisplay(), False);
@@ -250,7 +248,11 @@ void Blackbox::process_event(XEvent *e) {
   }
 
   case FocusIn: {
+    printf("FocusIn : mode %d detail %d\n", e->xfocus.mode, e->xfocus.detail);
+
     if (e->xfocus.detail != NotifyNonlinear) {
+      printf("  ignore\n");
+
       /*
         don't process FocusIns when:
         1. the new focus window isn't an ancestor or inferior of the old
@@ -261,8 +263,10 @@ void Blackbox::process_event(XEvent *e) {
 
     BlackboxWindow *win = findWindow(e->xfocus.window);
     if (win) {
-      if (! win->isFocused())
+      if (! win->isFocused()) {
+        printf("  marking window focused\n");
         win->setFocusFlag(True);
+      }
 
       /*
         set the event window to None.  when the FocusOut event handler calls
@@ -276,7 +280,11 @@ void Blackbox::process_event(XEvent *e) {
   }
 
   case FocusOut: {
+    printf("FocusOut: mode %d detail %d\n", e->xfocus.mode, e->xfocus.detail);
+
     if (e->xfocus.detail != NotifyNonlinear) {
+      printf("  ignore\n");
+
       /*
         don't process FocusOuts when:
         2. the new focus window isn't an ancestor or inferior of the old
@@ -287,6 +295,8 @@ void Blackbox::process_event(XEvent *e) {
 
     BlackboxWindow *win = findWindow(e->xfocus.window);
     if (win && win->isFocused()) {
+      printf("  prepare to mark unfocused\n");
+
       /*
         before we mark "win" as unfocused, we need to verify that focus is
         going to a known location, is in a known location, or set focus
@@ -307,12 +317,15 @@ void Blackbox::process_event(XEvent *e) {
 
         process_event(&event);
         if (event.xfocus.window == None) {
+          printf("  focused has moved to a new window\n");
           // focus has moved
           check_focus = False;
         }
       }
 
       if (check_focus) {
+        printf("  focus has moved to an unknown location\n");
+
         /*
           Second, we query the X server for the current input focus.
           to make sure that we keep a consistent state.
@@ -323,6 +336,7 @@ void Blackbox::process_event(XEvent *e) {
         XGetInputFocus(getXDisplay(), &w, &revert);
         focus = findWindow(w);
         if (focus) {
+          printf("  focus went to a new window\n");
           /*
             focus got from "win" to "focus" under some very strange
             circumstances, and we need to make sure that the focus indication
@@ -330,7 +344,8 @@ void Blackbox::process_event(XEvent *e) {
           */
           setFocusedWindow(focus);
         } else {
-          // we have no idea where focus went... so we set it to somewhere
+          printf("  setting focus to pointerroot\n");
+          // we have no idea where focus went... so we set it to PointerRoot
           setFocusedWindow(0);
         }
       }
@@ -342,31 +357,6 @@ void Blackbox::process_event(XEvent *e) {
   default: {
     // Send the event through the default EventHandlers.
     bt::Application::process_event(e);
-
-    /*
-      Event post processing... in some cases, we need to do a few
-      extra things after the event has been delivered.  We do that
-      here.
-    */
-    switch (e->type) {
-    case ButtonPress: {
-      BScreen *screen = findScreen(e->xbutton.window);
-      if (screen && active_screen != screen) {
-        /*
-          The user clicked on the root window on a screen that is not
-          active... make it active.
-        */
-        active_screen = screen;
-        // first, set no focus window on the old screen
-        setFocusedWindow(0);
-        // and move focus to this screen
-        setFocusedWindow(0);
-      }
-      break;
-    }
-
-    default: break;
-    }
     break;
   }
   } // switch
@@ -501,7 +491,7 @@ void Blackbox::restart(const char *prog) {
 void Blackbox::shutdown(void) {
   bt::Application::shutdown();
 
-  XSetInputFocus(getXDisplay(), PointerRoot, None, CurrentTime);
+  XSetInputFocus(getXDisplay(), PointerRoot, RevertToNone, CurrentTime);
 
   std::for_each(screenList.begin(), screenList.end(),
                 std::mem_fun(&BScreen::shutdown));
@@ -1185,6 +1175,7 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
   if (focused_window && focused_window == win) // nothing to do
     return;
 
+  BScreen *active_screen = 0;
   BScreen *old_screen = 0;
 
   if (focused_window) {
@@ -1200,24 +1191,11 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
     active_screen = win->getScreen();
     focused_window = win;
   } else {
+    printf("Blackbox::setFocusedWindow: setting to PointerRoot\n");
+
     focused_window = 0;
-    if (! old_screen) {
-      if (active_screen) {
-        // set input focus to the toolbar of the screen with mouse
-        XSetInputFocus(getXDisplay(),
-                       active_screen->getToolbar()->getWindowID(),
-                       RevertToPointerRoot, CurrentTime);
-      } else {
-        // set input focus to the toolbar of the first managed screen
-        XSetInputFocus(getXDisplay(),
-                       screenList.front()->getToolbar()->getWindowID(),
-                       RevertToPointerRoot, CurrentTime);
-      }
-    } else {
-      // set input focus to the toolbar of the last screen
-      XSetInputFocus(getXDisplay(), old_screen->getToolbar()->getWindowID(),
-                     RevertToPointerRoot, CurrentTime);
-    }
+    // set input focus to PointerRoot
+    XSetInputFocus(getXDisplay(), PointerRoot, RevertToNone, CurrentTime);
   }
 
   if (active_screen && active_screen->isScreenManaged()) {

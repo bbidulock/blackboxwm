@@ -96,7 +96,6 @@ private:
   typedef std::list<BScreen*> ScreenList;
   ScreenList screenList;
 
-  BScreen *active_screen;
   BlackboxWindow *focused_window;
   bt::Timer *timer;
 
