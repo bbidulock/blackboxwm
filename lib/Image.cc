@@ -32,7 +32,6 @@
 #  include <sys/ipc.h>
 #  include <sys/shm.h>
 #  include <unistd.h>
-#  include <X11/Xlib.h>
 #  include <X11/extensions/XShm.h>
 #endif // MITSHM
 #include <assert.h>
