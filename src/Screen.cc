@@ -494,8 +494,6 @@ BScreen::~BScreen(void) {
   std::for_each(workspacesList.begin(), workspacesList.end(),
                 PointerAssassin());
 
-  std::for_each(rootmenuList.begin(), rootmenuList.end(), PointerAssassin());
-
   std::for_each(iconList.begin(), iconList.end(), PointerAssassin());
 
   std::for_each(netizenList.begin(), netizenList.end(), PointerAssassin());
@@ -902,7 +900,7 @@ void BScreen::reconfigure(void) {
     geom_w = XTextWidth(resource.wstyle.font, s, l);
 
     geom_h = resource.wstyle.font->ascent +
-      resource.wstyle.font->descent; 
+      resource.wstyle.font->descent;
   }
 
   geom_w += (resource.bevel_width * 2);
