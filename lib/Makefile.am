@@ -25,7 +25,7 @@ CPPFLAGS= @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ \
 -DLOCALEPATH=\"$(pkgdatadir)/nls\"
 
 noinst_LIBRARIES = libblackbox.a
-libblackbox_a_SOURCES= BaseDisplay.cc Color.cc GCCache.cc Image.cc ImageControl.cc Netwm.cc Texture.cc Timer.cc Util.cc i18n.cc
+libblackbox_a_SOURCES= BaseDisplay.cc Color.cc GCCache.cc Image.cc ImageControl.cc Netwm.cc Resource.cc Texture.cc Timer.cc Util.cc i18n.cc
 
 MAINTAINERCLEANFILES= Makefile.in
 

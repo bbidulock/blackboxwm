@@ -14,6 +14,7 @@
 @SET_MAKE@
 
 # src/Makefile.am for Blackbox - an X11 Window manager
+# Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
 # Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
@@ -92,10 +93,6 @@ RANLIB = @RANLIB@
 SHAPE = @SHAPE@
 TIMEDCACHE = @TIMEDCACHE@
 VERSION = @VERSION@
-X_CFLAGS = @X_CFLAGS@
-X_EXTRA_LIBS = @X_EXTRA_LIBS@
-X_LIBS = @X_LIBS@
-X_PRE_LIBS = @X_PRE_LIBS@
 am__include = @am__include@
 am__quote = @am__quote@
 gencat_cmd = @gencat_cmd@
@@ -108,7 +105,7 @@ CPPFLAGS = @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ \
 
 
 noinst_LIBRARIES = libblackbox.a
-libblackbox_a_SOURCES = BaseDisplay.cc Color.cc GCCache.cc Image.cc ImageControl.cc Netwm.cc Texture.cc Timer.cc Util.cc i18n.cc
+libblackbox_a_SOURCES = BaseDisplay.cc Color.cc GCCache.cc Image.cc ImageControl.cc Netwm.cc Resource.cc Texture.cc Timer.cc Util.cc i18n.cc
 
 MAINTAINERCLEANFILES = Makefile.in
 subdir = lib
@@ -121,8 +118,8 @@ libblackbox_a_AR = $(AR) cru
 libblackbox_a_LIBADD =
 am_libblackbox_a_OBJECTS = BaseDisplay.$(OBJEXT) Color.$(OBJEXT) \
 	GCCache.$(OBJEXT) Image.$(OBJEXT) ImageControl.$(OBJEXT) \
-	Netwm.$(OBJEXT) Texture.$(OBJEXT) Timer.$(OBJEXT) \
-	Util.$(OBJEXT) i18n.$(OBJEXT)
+	Netwm.$(OBJEXT) Resource.$(OBJEXT) Texture.$(OBJEXT) \
+	Timer.$(OBJEXT) Util.$(OBJEXT) i18n.$(OBJEXT)
 libblackbox_a_OBJECTS = $(am_libblackbox_a_OBJECTS)
 
 DEFS = @DEFS@
@@ -133,8 +130,9 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 @AMDEP_TRUE@DEP_FILES = $(DEPDIR)/BaseDisplay.Po $(DEPDIR)/Color.Po \
 @AMDEP_TRUE@	$(DEPDIR)/GCCache.Po $(DEPDIR)/Image.Po \
 @AMDEP_TRUE@	$(DEPDIR)/ImageControl.Po $(DEPDIR)/Netwm.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Texture.Po $(DEPDIR)/Timer.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Util.Po $(DEPDIR)/i18n.Po
+@AMDEP_TRUE@	$(DEPDIR)/Resource.Po $(DEPDIR)/Texture.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Timer.Po $(DEPDIR)/Util.Po \
+@AMDEP_TRUE@	$(DEPDIR)/i18n.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
@@ -178,6 +176,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Image.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/ImageControl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Netwm.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Resource.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Texture.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Timer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Util.Po@am__quote@
