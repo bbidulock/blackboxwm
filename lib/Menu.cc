@@ -988,6 +988,7 @@ void bt::Menu::activateSubmenu(void) {
     return;
 
   showActiveSubmenu();
+  assert(_current_submenu != 0);
 
   // activate the first item in the menu when shown with the keyboard
   const ItemList::const_iterator &end = _current_submenu->_items.end();
@@ -1007,8 +1008,12 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
   }
 
   case XK_Left: {
-    if (_parent_menu && _parent_menu->isVisible())
+    // hide() clears _parent_menu, but we want to remember it incase
+    // the user tries to reopen us
+    Menu * const p = _parent_menu;
+    if (p && p->isVisible())
       hide();
+    _parent_menu = p;
     return;
   }
   } // switch
