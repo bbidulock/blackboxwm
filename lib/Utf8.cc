@@ -1,5 +1,5 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
-#include "Utf8.hh"
+#include "Unicode.hh"
 
 #ifdef HAVE_CONFIG_H
 #  include "../config.h"
@@ -16,123 +16,124 @@ namespace bt {
 
   static const iconv_t invalid = reinterpret_cast<iconv_t>(-1);
 
-  static bool locale_is_utf8(void) {
-    static bool is_utf8 = false;
-    static bool done = false;
+  template <typename _Source, typename _Target>
+  static void convert(const char *target, const char *source,
+                      const _Source &in, _Target &out) {
+    iconv_t cd = iconv_open(target, source);
 
-    if (done)
-      return is_utf8;
+    const char *inp = reinterpret_cast<const char *>(in.c_str());
+    const typename _Source::size_type in_size =
+      in.size() * sizeof(typename _Source::size_type);
+    typename _Source::size_type in_bytes = in_size;
 
-    setlocale(LC_ALL, "");
+    out.resize(in_size);
 
-    std::string codeset;
-#ifdef HAVE_NL_LANGINFO
-    codeset = nl_langinfo(CODESET);
-#else
-    std::string locale = setlocale(LC_CTYPE, 0);
-    std::string::const_iterator it = locale.begin();
-    const std::string::const_iterator end = locale.end();
-    for (; it != end; ++it) {
-      if (*it == '.') {
-        // found codeset separator
-        ++it;
-        codeset = std::string(it, end);
-      }
-    }
-#endif // HAVE_NL_LANGINFO
-
-    is_utf8 = (codeset == "UTF-8");
-    done = true;
-    return is_utf8;
-  }
-
-  static std::string convert(iconv_t cd, const std::string &string) {
-    const char *in = string.c_str();
-    size_t in_sz = string.size();
-
-    std::string ret;
-    ret.resize(in_sz);
-
-    char *out = const_cast<char *>(ret.c_str());
-    size_t out_sz = ret.size();
+    char *outp =
+      reinterpret_cast<char *>(const_cast<typename _Target::value_type *>(out.c_str()));
+    typename _Target::size_type out_size =
+      out.size() * sizeof(typename _Target::size_type);
+    typename _Target::size_type out_bytes = out_size;
 
     do {
-      size_t l = iconv(cd, &in, &in_sz, &out, &out_sz);
+      size_t l = iconv(cd, &inp, &in_bytes, &outp, &out_bytes);
 
       if (l == (size_t) -1) {
         switch (errno) {
         case EILSEQ:
         case EINVAL:
           {
-            const size_t off = string.size() - in_sz + 1;
-            in = string.c_str() + off;
-            in_sz = string.size() - off;
+            const typename _Source::size_type off = in_size - in_bytes + 1;
+            inp = reinterpret_cast<const char *>(in.c_str()) + off;
+            in_bytes = in_size - off;
             break;
           }
         case E2BIG:
           {
-            const size_t off = ret.size() - out_sz;
-            ret.resize(ret.size() * 2);
-            out = const_cast<char *>(ret.c_str()) + off;
-            out_sz = ret.size() - off;
+            const typename _Target::size_type off = out_size - out_bytes;
+            out.resize(out.size() * 2);
+            out_size = out.size() * sizeof(typename _Target::size_type);
+
+            outp = reinterpret_cast<char *>(const_cast<typename _Target::value_type *>(out.c_str())) + off;
+            out_bytes = out_size - off;
             break;
           }
         default:
           perror("iconv");
-          return std::string();
+          return;
         }
       }
-    } while (in_sz != 0);
-    ret.resize(ret.size() - out_sz);
+    } while (in_bytes != 0);
 
-    return ret;
+    out.resize((out_size - out_bytes) / sizeof(typename _Target::size_type));
   }
 
 } // namespace bt
 
-bool bt::hasUtf8() {
-  static bool has_utf8 = false;
+bool bt::hasUnicode() {
+  static bool has_unicode = true;
   static bool done = false;
 
   if (done)
-    return has_utf8;
+    return has_unicode;
 
-  has_utf8 = locale_is_utf8();
+  struct {
+    const char *to;
+    const char *from;
+  } conversions[] = {
+    { "UTF-32", "" },
+    { "UTF-32", "UTF-8" },
+    { "UTF-8", "UTF-32" },
+    { "", "UTF-32" },
+  };
+  static const int conversions_count = 4;
 
-  if (!has_utf8) {
-    iconv_t utf8 = iconv_open("UTF-8", "");
-    iconv_t locale = iconv_open("", "UTF-8");
+  for (int x = 0; x < conversions_count; ++x) {
+    iconv_t cd = iconv_open(conversions[x].to, conversions[x].from);
 
-    has_utf8 = (utf8 != invalid && locale != invalid);
+    if (cd == invalid) {
+      has_unicode = false;
+      break;
+    }
 
-    if (utf8 != invalid)
-      iconv_close(utf8);
-    if (locale != invalid)
-      iconv_close(locale);
+    iconv_close(cd);
   }
 
   done = true;
-  return has_utf8;
+  return has_unicode;
 }
 
-std::string bt::toUtf8(const std::string &string) {
-  if (locale_is_utf8())
-    return string;
-  iconv_t utf8 = iconv_open("UTF-8", "");
-  if (utf8 == invalid)
-    return std::string();
-  std::string str = convert(utf8, string);
-  iconv_close(utf8);
-  return str;
+bt::ustring bt::toUnicode(const std::string &string) {
+  bt::ustring ret;
+  if (!hasUnicode())
+    return ret;
+  ret.reserve(string.size());
+  convert("UTF-32", "", string, ret);
+  return ret;
 }
 
-std::string bt::toLocale(const std::string &string) {
-  if (locale_is_utf8())
-    return string;
-  iconv_t locale = iconv_open("", "UTF-8");
-  if (locale == invalid)
-    return std::string();
-  std::string str = convert(locale, string);
-  iconv_close(locale);
-  return str;
+std::string bt::toLocale(const bt::ustring &string) {
+  std::string ret;
+  if (!hasUnicode())
+    return ret;
+  ret.reserve(string.size());
+  convert("", "UTF-32", string, ret);
+  return ret;
+}
+
+std::string bt::toUtf8(const bt::ustring &utf32) {
+  std::string ret;
+  if (!hasUnicode())
+    return ret;
+  ret.reserve(utf32.size());
+  convert("UTF-32", "UTF-8", utf32, ret);
+  return ret;
+}
+
+bt::ustring bt::toUtf32(const std::string &utf8) {
+  ustring ret;
+  if (!hasUnicode())
+    return ret;
+  ret.reserve(utf8.size());
+  convert("UTF-8", "UTF-32", utf8, ret);
+  return ret;
 }
