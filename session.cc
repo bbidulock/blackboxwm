@@ -29,6 +29,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <sys/time.h>
 
 
 static int anotherWMRunning(Display *, XErrorEvent *) {
@@ -94,7 +95,8 @@ void SessionMenu::itemReleased(int button, int index) {
 	break;
       }
 
-      if (! session->rootmenu->userMoved())
+      if (! session->rootmenu->userMoved() &&
+	  item->Function() != BlackboxSession::B_Reconfigure)
 	session->rootmenu->hideMenu();
     } else if (item->Exec()) {
       char *command = new char[strlen(item->Exec()) + 8];
@@ -112,18 +114,6 @@ void SessionMenu::drawSubmenu(int index)
 { BlackboxMenu::drawSubmenu(index); }
 
 
-/*
-
-  Resources allocated for each session:
-  linked list - ilist
-  Debugger - debug
-  XFontStruct = resource font title, menu
-  XpmAttributes - icon default attrib
-  GC - opGC
-  WorkspaceManager - ws_manager
-  SessionMenu - rootmenu
-
-*/
 
 BlackboxSession::BlackboxSession(char *display_name) {
   b1Pressed = False;
@@ -171,22 +161,6 @@ BlackboxSession::BlackboxSession(char *display_name) {
   InitScreen();
 }
 
-
-
-/*
-
-  Resources deallocated for each session:
-  linked list - ilist... the icon data is deallocated by each workspaces
-      Dissociate() call
-
-  Debugger - debug
-  XFontStruct = resource font title, menu
-  XpmAttributes - icon default attrib
-  GC - opGC
-  WorkspaceManager - ws_manager
-  SessionMenu - rootmenu
-
-*/
 
 BlackboxSession::~BlackboxSession() {
   XSelectInput(display, root, NoEventMask);
@@ -347,17 +321,33 @@ void BlackboxSession::EventLoop(void) {
   shutdown = False;
   startup = False;
 
+  int xfd = ConnectionNumber(display);
+
 #ifdef DEBUG
   XSynchronize(display, True);
 #endif
 
   for (; (! shutdown);) {
-    XEvent e;
-    XNextEvent(display, &e);
-
-    ProcessEvent(&e);
+    if (XPending(display)) {
+      XEvent e;
+      XNextEvent(display, &e);
+      ProcessEvent(&e);
+    } else {
+      // put a wait on the network file descriptor for the X connection...
+      // this saves blackbox from eating all available cpu
+      fd_set rfds;
+      FD_ZERO(&rfds);
+      FD_SET(xfd, &rfds);
+      
+      struct timeval tv;
+      tv.tv_sec = 0;
+      tv.tv_usec = 500;
+      
+      select(xfd + 1, &rfds, 0, 0, &tv);
+      ws_manager->checkClock();
+    }
   }
-
+    
   Dissociate();
 }
 

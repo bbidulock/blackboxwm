@@ -146,13 +146,8 @@ private:
 
   struct frame {
     Pixmap button, pbutton;
-    Window base,
-      icon,
-      window,
-      workspace_button;
-
-    unsigned int frame_w, frame_h,
-      button_w, button_h;
+    Window base, icon, window, workspace_button, clock;
+    unsigned int frame_w, frame_h, button_w, button_h;
     char *title;
   } frame;
 
@@ -182,7 +177,7 @@ public:
   void arrangeIcons(void);
   void stackWindows(Window *, int);
   void Reconfigure(void);
-
+  void checkClock(Bool = False);
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);

@@ -26,6 +26,7 @@
 #include "graphics.hh"
 
 #include <stdio.h>
+#include <sys/time.h>
 
 
 WorkspaceMenu::WorkspaceMenu(Workspace *w, BlackboxSession *s) :
@@ -435,16 +436,34 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
   
   XSetWindowBackgroundPixmap(display, frame.icon, p);
   if (p) XFreePixmap(display, p);
+
+  frame.clock =
+    XCreateWindow(display, frame.window, 3,
+		  frame.frame_h / 2 - frame.button_h - 2, frame.button_w,
+		  frame.button_h, 0, session->Depth(), InputOutput,
+		  session->visual(), create_mask, &attrib_create);
+  XSaveContext(display, frame.clock, session->wsContext(), (XPointer) this);
+
+  BImage cimage(session, frame.button_w, frame.button_h,
+		session->Depth(), session->toolboxColor());
+
+  p = cimage.renderInvertedImage(session->toolboxTexture(), 0,
+				 session->toolboxColor(),
+				 session->toolboxToColor());
+  
+  XSetWindowBackgroundPixmap(display, frame.clock, p);
+  if (p) XFreePixmap(display, p);
   
   XClearWindow(display, frame.window);
   XClearWindow(display, frame.workspace_button);
   XClearWindow(display, frame.icon);
+  XClearWindow(display, frame.clock);
 
   XMapSubwindows(display, frame.window);
   XMapSubwindows(display, frame.base);
   XMapWindow(display, frame.base);
 
-  XDrawString(display, frame.workspace_button, buttonGC, 4, 2 +
+  XDrawString(display, frame.workspace_button, buttonGC, 4, 3 +
 	      session->titleFont()->ascent, frame.title, strlen(frame.title));
 }
 
@@ -490,7 +509,7 @@ void WorkspaceManager::changeWorkspaceID(int id) {
     current = workspace(id);
     sprintf(frame.title, "Workspace %d", id);
     XClearWindow(display, frame.workspace_button);
-    XDrawString(display, frame.workspace_button, buttonGC, 4, 2 +
+    XDrawString(display, frame.workspace_button, buttonGC, 4, 3 +
                 session->titleFont()->ascent, frame.title,
 		strlen(frame.title));
     current->showAll();
@@ -539,9 +558,11 @@ void WorkspaceManager::buttonReleaseEvent(XButtonEvent *re) {
 
 void WorkspaceManager::exposeEvent(XExposeEvent *ee) {
   if (ee->window == frame.workspace_button)
-    XDrawString(display, frame.workspace_button, buttonGC, 4, 2 +
+    XDrawString(display, frame.workspace_button, buttonGC, 3, 2 +
 		session->titleFont()->ascent, frame.title,
 		strlen(frame.title));
+  else if (ee->window == frame.clock)
+    checkClock(True);
 }
 
 
@@ -549,7 +570,7 @@ void WorkspaceManager::showMenu(void) {
   XSetWindowBackgroundPixmap(display, frame.workspace_button,
 			     frame.pbutton);
   XClearWindow(display, frame.workspace_button);
-  XDrawString(display, frame.workspace_button, buttonGC, 4, 2 +
+  XDrawString(display, frame.workspace_button, buttonGC, 4, 3 +
 	      session->titleFont()->ascent, frame.title,
 	      strlen(frame.title));
   workspaces_menu->moveMenu(3, 3 + frame.button_h);
@@ -562,7 +583,7 @@ void WorkspaceManager::hideMenu(void) {
   XSetWindowBackgroundPixmap(display, frame.workspace_button,
 			     frame.button);
   XClearWindow(display, frame.workspace_button);
-  XDrawString(display, frame.workspace_button, buttonGC, 4, 2 +
+  XDrawString(display, frame.workspace_button, buttonGC, 4, 3 +
 	      session->titleFont()->ascent, frame.title,
 	      strlen(frame.title));
   workspaces_menu->hideMenu();
@@ -638,18 +659,59 @@ void WorkspaceManager::Reconfigure(void) {
   XSetWindowBackgroundPixmap(display, frame.icon, p);
   if (p) XFreePixmap(display, p);
 
+  BImage cimage(session, frame.button_w, frame.button_h,
+		session->Depth(), session->toolboxColor());
+
+  p = cimage.renderInvertedImage(session->toolboxTexture(), 0,
+				 session->toolboxColor(),
+				 session->toolboxToColor());
+  
+  XSetWindowBackgroundPixmap(display, frame.clock, p);
+  if (p) XFreePixmap(display, p);
+
   XSetWindowBorder(display, frame.base, session->frameColor().pixel);
   XClearWindow(display, frame.window);
   XClearWindow(display, frame.workspace_button);
   XClearWindow(display, frame.icon);
+  XClearWindow(display, frame.clock);
   
-  XDrawString(display, frame.workspace_button, buttonGC, 4, 2 +
+  XDrawString(display, frame.workspace_button, buttonGC, 4, 3 +
 	      session->titleFont()->ascent, frame.title,
 	      strlen(frame.title));
+  checkClock(True);
 
   workspaces_menu->Reconfigure();
   workspaces_menu->updateMenu();
 
   for (int i = 0; i < workspaces_list->count(); i++)
     workspace(i)->Reconfigure();
+}
+
+
+void WorkspaceManager::checkClock(Bool redraw) {
+  static int hour, minute;
+  time_t tmp;
+  struct tm *tt;
+  
+  if ((tmp = time(NULL)) != -1) {
+    tt = localtime(&tmp);
+    if (tt->tm_min != minute || tt->tm_hour != hour) {
+      hour = tt->tm_hour;
+      minute = tt->tm_min;
+      XClearWindow(display, frame.clock);
+      redraw = True;
+    }
+  }
+
+  if (redraw) {
+    char t[9];
+    sprintf(t, "%02d:%02d %cm", ((hour > 12) ? hour - 12 : hour), minute,
+	    ((hour > 12) ? 'p' : 'a'));
+	  
+    int len = strlen(t);
+    XDrawString(display, frame.clock, buttonGC,
+		(frame.button_w -
+		 XTextWidth(session->titleFont(), t, len)) / 2,
+		3 + session->titleFont()->ascent, t, len);
+  }
 }

@@ -222,9 +222,11 @@ Configuration of blackbox is not handled by rc files in a users home
 directory, rather X resources are used to control the look of the window 
 manager.  These resources can be set by the default configuration (which is 
 installed with the program) or by a user (by using xrdb or some other 
-resource loading mechanism).  The default resources are ALWAYS read when the 
-program starts, unless the default resource files cannot be found, then 
-blackbox uses a hard coded default (using flat textures).
+resource loading mechanism which sets the RESOURCE_MANAGER property on the root
+window, from which blackbox gets its defaults).  The default resources are
+read when there are no user defaults set in the RESOURCE_MANAGER string
+property on the root window.  If the default resource files cannot be found,
+then blackbox uses a hard coded default (using flat textures).
 
 The X resources that blackbox recognizes:
 
