@@ -74,8 +74,6 @@ protected:
 
   void showMenu(void);
   void hideMenu(void);
-  void showTitle(void);
-  void hideTitle(void);
   void moveMenu(int, int);
   void updateMenu(void);
 
@@ -84,8 +82,11 @@ protected:
   int insert(char *, int, char * = 0);
   int insert(char *, BlackboxMenu *);
   int remove(int);
-  BlackboxMenuItem *at(int);
-  BlackboxSession *Session(void);
+
+  void showTitle(void) { show_title = True; }
+  void hideTitle(void) { show_title = False; }
+  BlackboxMenuItem *at(int i) { return menuitems->at(i); }
+  BlackboxSession *Session(void) { return session; }
 
   void drawSubmenu(int);
   Window createItemWindow(void);
@@ -102,13 +103,14 @@ public:
   int X(void) { return menu.x; }
   int Y(void) { return menu.y; }
   int menuVisible(void) { return visible; }
-  void setMenuLabel(char *);
   const char *label(void) const { return menu.label; }
   int count(void) { return menuitems->count(); }
   Bool hasSubmenu(int);
-  void setMovable(Bool);
   Bool userMoved(void) { return user_moved; }
   void Reconfigure(void);
+
+  void setMenuLabel(char *n) { menu.label = n; }
+  void setMovable(Bool b) { movable = b; }
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);
@@ -144,7 +146,7 @@ public:
       function = 0; }
 
   ~BlackboxMenuItem(void)
-    { }
+    { /* the item doesn't delete any data it holds */ }
 
   char *Exec(void) { return exec; }
   char *Label(void) { return label; }

@@ -58,6 +58,7 @@ protected:
 
 public:
   SessionMenu(BlackboxSession *);
+  virtual ~SessionMenu(void);
   
   void showMenu(void);
   void hideMenu(void);
@@ -68,6 +69,7 @@ public:
   int insert(char *, void (*)());
   int insert(char *, int, char * = 0);
   int insert(char *, SessionMenu *);
+  int remove(int);
 };
 
 
@@ -110,7 +112,7 @@ private:
     struct color {
       BColor frame, toolbox, toolbox_to, focus, focus_to, unfocus, unfocus_to,
 	menu, menu_to, imenu, imenu_to, button, button_to, ftext, utext, mtext,
-	mitext, ptext, itext;
+	mitext, ptext, itext, ttext;
     } color;
     
     struct font {
@@ -159,16 +161,12 @@ public:
 
   WorkspaceManager *WSManager(void) { return ws_manager; }
   SessionMenu *menu(void) { return rootmenu; }
-  void addIcon(BlackboxIcon *);
-  void removeIcon(BlackboxIcon *i);
   void addWindow(BlackboxWindow *);
   void removeWindow(BlackboxWindow *);
   void reassociateWindow(BlackboxWindow *);
   void raiseWindow(BlackboxWindow *);
   void lowerWindow(BlackboxWindow *);
   void updateWorkspace(int);
-  int iconCount(void);
-  void arrangeIcons(void);
   void EventLoop(void);
   void Restart(void);
   void Exit(void);
@@ -226,6 +224,7 @@ public:
   const BColor &menuPressedTextColor(void)
     const { return resource.color.ptext; }
   const BColor &iconTextColor(void) const { return resource.color.itext; }
+  const BColor &toolboxTextColor(void) const { return resource.color.ttext; }
 
   XColor *Colors8bpp(void) { return colors_8bpp; }
 

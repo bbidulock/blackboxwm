@@ -24,26 +24,17 @@
 #include "icon.hh"
 #include "workspace.hh"
 
-/*
 
-  Resources allocated for each icon:
-
-  Debugger - debug
-  Window - icon window, label (no context), subwindow
-  GC - iconGC
-  XPointer - icon name,
-*/
-
-BlackboxIcon::BlackboxIcon(BlackboxSession *ctrl, Window c) {
-  session = ctrl;
-  display = session->control();
-
+BlackboxIcon::BlackboxIcon(BlackboxSession *s, Window c) {
   debug = new Debugger('$');
 #ifdef DEBUG
   debug->enable();
 #endif
-  debug->enter("BlackboxIcon::BlackboxIcon\n");
+  debug->msg("%s:%d: BlackboxIcon::BlackboxIcon\n", __FILE__, __LINE__);
 
+  session = s;
+  display = session->control();
+  ws_manager = session->WSManager();
   icon.client = c;
   focus = False;
 
@@ -74,13 +65,11 @@ BlackboxIcon::BlackboxIcon(BlackboxSession *ctrl, Window c) {
 		  session->visual(), attrib_mask, &attrib);
   XSaveContext(display, icon.window, session->iconContext(),
 	       (XPointer) this);
-  debug->msg("creating icon window %lx %lx\n", icon.window, icon.client);
 
   XGCValues gcv;
   gcv.foreground = session->iconTextColor().pixel;
   gcv.font = session->iconFont()->fid;
   iconGC = XCreateGC(display, icon.window, GCForeground|GCFont, &gcv);
-  icon.subwindow = None;
 
   attrib.event_mask |= EnterWindowMask|LeaveWindowMask;
   attrib.background_pixel = session->frameColor().pixel;
@@ -101,41 +90,25 @@ BlackboxIcon::BlackboxIcon(BlackboxSession *ctrl, Window c) {
   XClearWindow(display, icon.subwindow);
   XFreePixmap(display, p);
 
-  debug->msg("mapping icon\n");
   XMapSubwindows(display, icon.window);
   XMapRaised(display, icon.window);
-  session->addIcon(this);
+  ws_manager->addIcon(this);
 }
 
 
-/*
-
-  Resources deallocated for each icon:
-
-  Debugger - debug
-  Window - icon window, label (no context), subwindow
-  GC - iconGC
-  XPointer - icon name,
-*/
-
 BlackboxIcon::~BlackboxIcon(void) {
-  /*
-    remove icon from root window
-  */
+  debug->msg("%s:%d: BlackboxIcon::~BlackboxIcon\n", __FILE__, __LINE__);
   XUnmapWindow(display, icon.window);
 
-  /*
-    dissociate this icon from the controlling session
-  */
-  debug->msg("deleting icon\n");
-  session->removeIcon(this);
-  session->arrangeIcons();
+  ws_manager->removeIcon(this);
+  ws_manager->arrangeIcons();
 
   XFreeGC(display, iconGC);
+  if (icon.name) XFree(icon.name);
+
   XDeleteContext(display, icon.window, session->iconContext());
   XDeleteContext(display, icon.subwindow, session->iconContext());
-  if (icon.name) XFree(icon.name);
-  if (icon.subwindow != None) XDestroyWindow(display, icon.subwindow);
+  XDestroyWindow(display, icon.subwindow);
   XDestroyWindow(display, icon.window);
 
   delete debug;
@@ -143,19 +116,18 @@ BlackboxIcon::~BlackboxIcon(void) {
 
 
 void BlackboxIcon::buttonPressEvent(XButtonEvent *) {
-  debug->msg("icon pressed\n");
+  debug->msg("%s:%d: BlackboxIcon::buttonPressEvent\n", __FILE__, __LINE__);
   if (session->button1Pressed())
     XRaiseWindow(display, icon.window);
 }
 
 
 void BlackboxIcon::buttonReleaseEvent(XButtonEvent *be) {
-  debug->msg("icon released\n");
+  debug->msg("%s:%d: BlackboxIcon::buttonReleaseEvent\n", __FILE__, __LINE__);
   if (be->button == 1 &&
       be->x >= 0 && be->x <= (signed) icon.width &&
       be->y >= 0 && be->y <= (signed) icon.height) {
     XGrabServer(display);
-    debug->msg("deiconifying app\n");
     BlackboxWindow *win = session->getWindow(icon.client);
     XUnmapWindow(display, icon.window);
     XDrawString(display, session->Root(), session->GCOperations(), icon.x + 2, 
@@ -171,6 +143,7 @@ void BlackboxIcon::buttonReleaseEvent(XButtonEvent *be) {
 
 
 void BlackboxIcon::enterNotifyEvent(XCrossingEvent *) {
+  debug->msg("%s:%d: BlackboxIcon::enterNotifyEvent\n", __FILE__, __LINE__);
   focus = True;
   XClearWindow(display, icon.subwindow);
   XDrawString(display, session->Root(), session->GCOperations(), icon.x + 2,
@@ -181,6 +154,7 @@ void BlackboxIcon::enterNotifyEvent(XCrossingEvent *) {
 
 
 void BlackboxIcon::leaveNotifyEvent(XCrossingEvent *) {
+  debug->msg("%s:%d: BlackboxIcon::leaveNotifyEvent\n", __FILE__, __LINE__);
   focus = False;
   XDrawString(display, session->Root(), session->GCOperations(), icon.x + 2, 
               icon.y + 2 + session->iconFont()->ascent,
@@ -192,6 +166,7 @@ void BlackboxIcon::leaveNotifyEvent(XCrossingEvent *) {
 
 
 void BlackboxIcon::exposeEvent(XExposeEvent *) {
+  debug->msg("%s:%d: BlackboxIcon::exposeEvent\n", __FILE__, __LINE__);
   if (! focus) {
     int w = ((icon.name != NULL) ?
       XTextWidth(session->iconFont(), icon.name, strlen(icon.name)) :
@@ -222,6 +197,7 @@ void BlackboxIcon::exposeEvent(XExposeEvent *) {
 
 
 void BlackboxIcon::rereadLabel(void) {
+  debug->msg("%s:%d: BlackboxIcon::rereadLabel\n", __FILE__, __LINE__);
   if (! XGetIconName(display, icon.client, &icon.name))
     icon.name = 0;
   XClearWindow(display, icon.subwindow);
@@ -230,6 +206,7 @@ void BlackboxIcon::rereadLabel(void) {
 
 
 void BlackboxIcon::Reconfigure(void) {
+  debug->msg("%s:%d: BlackboxIcon::Reconfigure\n", __FILE__, __LINE__);
   XGCValues gcv;
   gcv.foreground = session->iconTextColor().pixel;
   gcv.font = session->iconFont()->fid;

@@ -40,6 +40,7 @@ class WorkspaceManagerMenu;
 #include "menu.hh"
 #include "llist.hh"
 #include "icon.hh"
+#include "debug.hh"
 
 
 class WorkspaceMenu : public BlackboxMenu {
@@ -156,6 +157,7 @@ private:
   WorkspaceManagerMenu *workspaces_menu;
   BlackboxSession *session;
   Workspace *current;
+  Debugger *debug;
   
   friend WorkspaceManagerMenu;
 

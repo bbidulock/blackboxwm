@@ -190,7 +190,7 @@ protected:
 
 
 public:
-  BlackboxWindow(BlackboxSession *, Window, Window);
+  BlackboxWindow(BlackboxSession *, Window);
   ~BlackboxWindow(void);
 
   //
@@ -217,22 +217,7 @@ public:
   Bool isFocused(void) { return focused; }
   Bool isVisible(void) { return visible; }
   Bool setInputFocus(void);
-  void setFocusFlag(Bool focus)
-    {
-      focused = focus;
-      XSetWindowBackgroundPixmap(display, frame.title,
-				 (focused) ? frame.ftitle : frame.utitle);
-      XClearWindow(display, frame.title);
-      
-      if (do_handle) {
-	XSetWindowBackgroundPixmap(display, frame.handle,
-				   (focused) ? frame.fhandle : frame.uhandle);
-	XClearWindow(display, frame.handle);
-      }
-      
-      drawTitleWin(0, 0, 0, 0);
-      drawAllButtons();
-    }
+  void setFocusFlag(Bool);
 
   //
   // Window control

@@ -101,7 +101,7 @@ void WorkspaceManagerMenu::itemReleased(int button, int item) {
           XClearWindow(ws_manager->display,
 		       ws_manager->frame.workspace_button);
           XDrawString(ws_manager->display, ws_manager->frame.workspace_button,
-                      ws_manager->buttonGC, 4, 2 +
+                      ws_manager->buttonGC, 4, 3 +
                       ws_manager->session->titleFont()->ascent,
                       ws_manager->frame.title,
 		      strlen(ws_manager->frame.title));
@@ -118,7 +118,7 @@ void WorkspaceManagerMenu::itemReleased(int button, int item) {
 				 ws_manager->frame.button);
       XClearWindow(ws_manager->display, ws_manager->frame.workspace_button);
       XDrawString(ws_manager->display, ws_manager->frame.workspace_button,
-		  ws_manager->buttonGC, 4, 2 +
+		  ws_manager->buttonGC, 4, 3 +
 		  ws_manager->session->titleFont()->ascent,
 		  ws_manager->frame.title, strlen(ws_manager->frame.title));
       hideMenu();
@@ -322,6 +322,12 @@ void Workspace::Reconfigure(void) {
 
 
 WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
+  debug = new Debugger('^');
+#ifdef DEBUG
+  debug->enable();
+#endif
+  debug->msg("%s: WorkspaceManager::WorkspaceManager\n", __FILE__);
+
   Workspace *wkspc = 0;
   session = s;
   
@@ -404,7 +410,7 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
 	       (XPointer) this);
   XGCValues gcv;
   gcv.font = session->titleFont()->fid;
-  gcv.foreground = session->menuTextColor().pixel;
+  gcv.foreground = session->toolboxTextColor().pixel;
   buttonGC = XCreateGC(display, frame.workspace_button,
 		       GCFont|GCForeground, &gcv);
 
@@ -469,9 +475,12 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
 
 
 WorkspaceManager::~WorkspaceManager(void) {
+  debug->msg("%s: WorkspaceManager::~WorkspaceManager\n", __FILE__);
+
   DissociateAll();
   delete ilist;
   delete workspaces_menu;
+  if (frame.title) delete frame.title;
 
   for (int i = 0; i < workspaces_list->count(); ++i) {
     delete workspaces_list->at(0);
@@ -487,6 +496,8 @@ WorkspaceManager::~WorkspaceManager(void) {
   XDeleteContext(display, frame.workspace_button, session->wsContext());
   XDestroyWindow(display, frame.window);
   XDestroyWindow(display, frame.base);
+
+  delete debug;
 }
 
 
@@ -558,7 +569,7 @@ void WorkspaceManager::buttonReleaseEvent(XButtonEvent *re) {
 
 void WorkspaceManager::exposeEvent(XExposeEvent *ee) {
   if (ee->window == frame.workspace_button)
-    XDrawString(display, frame.workspace_button, buttonGC, 3, 2 +
+    XDrawString(display, frame.workspace_button, buttonGC, 4, 3 +
 		session->titleFont()->ascent, frame.title,
 		strlen(frame.title));
   else if (ee->window == frame.clock)
@@ -616,9 +627,11 @@ void WorkspaceManager::stackWindows(Window *workspace_stack, int num) {
 
 
 void WorkspaceManager::Reconfigure(void) {
+  debug->msg("%s: WorkspaceManager::Reconfigure\n", __FILE__);
+
   XGCValues gcv;
   gcv.font = session->titleFont()->fid;
-  gcv.foreground = session->menuTextColor().pixel;
+  gcv.foreground = session->toolboxTextColor().pixel;
   XChangeGC(display, buttonGC, GCFont|GCForeground, &gcv);
 
   BImage image(session, frame.frame_w, frame.frame_h, session->Depth(),
@@ -680,11 +693,15 @@ void WorkspaceManager::Reconfigure(void) {
 	      strlen(frame.title));
   checkClock(True);
 
+  debug->msg("\t[ workspace menu update ]\n");
   workspaces_menu->Reconfigure();
   workspaces_menu->updateMenu();
 
+  debug->msg("\t[ workspace update ]\n");
   for (int i = 0; i < workspaces_list->count(); i++)
     workspace(i)->Reconfigure();
+
+  debug->msg("%s: leaving WorkspaceManager::Reconfigure\n", __FILE__);
 }
 
 

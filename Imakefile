@@ -21,12 +21,12 @@ XCOMM
 XCOMM
 XCOMM Various defines for building blackbox
 
-INC =		blackbox.hh debug.hh graphics.hh icon.hh llist.hh menu.hh \
-		session.hh window.hh workspace.hh
-SRC =		blackbox.cc debug.cc graphics.cc icon.cc llist.cc main.cc \
-		menu.cc session.cc window.cc workspace.cc
-OBJ =		blackbox.o debug.o graphics.o icon.o main.o menu.o llist.o \
-		session.o window.o workspace.o
+INC =		blackbox.hh debug.hh graphics.hh icon.hh llist.hh \
+		menu.hh session.hh window.hh workspace.hh
+SRC =		blackbox.cc debug.cc graphics.cc icon.cc llist.cc \
+		main.cc menu.cc session.cc window.cc workspace.cc
+OBJ =		blackbox.o debug.o graphics.o icon.o main.o menu.o \
+		llist.o session.o window.o workspace.o
 EXTRA_DEFS =	-Wall -W -DSHAPE
 DEFAULTS_PATH =	-DXAPPLOADDIR=\"$(XAPPLOADDIR)\" -DXLIBDIR=\"$(LIBDIR)\"
 LIBS =		$(XLIB) $(EXTENSIONLIB)
@@ -41,14 +41,17 @@ ComplexProgramTarget_1(blackbox, $(LIBS), $(OTHER_LIBS))
 
 .cc.o: $(SRC)
 	$(CXX) $(CXXFLAGS) $(EXTRA_DEFS) -c -o $@ $<
-
-session.o: session.cc
-	$(CXX) $(CXXFLAGS) $(EXTRA_DEFS) $(DEFAULTS_PATH) -c -o $@ $<
-
 XCOMM
 XCOMM Comment out the above and un-comment below to get debugging symbols
 XCOMM
 XCOMM	$(CXX) -g -I$(INCDIR) $(EXTRA_DEFS) -c -o $@ $<
+
+session.o: session.cc
+	$(CXX) $(CXXFLAGS) $(EXTRA_DEFS) $(DEFAULTS_PATH) -c -o $@ $<
+XCOMM
+XCOMM Comment out the above and un-comment below to get debugging symbols
+XCOMM
+XCOMM	$(CXX) -g -I$(INCDIR) $(EXTRA_DEFS) $(DEFAULTS_PATH) -c -o $@ $<
 
 depend:: 
 	rm -f Makefile.bak
@@ -58,11 +61,11 @@ install.app-defaults::
 	@if [ ! -d $(XAPPLOADDIR) ]; then \
 		$(MKDIRHIER) $(XAPPLOADDIR); \
 	fi
-	$(INSTALL) $(INSTALLFLAGS) $(INSTMANFLAGS) BlackboxAD $(XAPPLOADDIR)/BlackboxAD
+	$(INSTALL) $(INSTALLFLAGS) $(INSTMANFLAGS) Blackbox.ad $(XAPPLOADDIR)/Blackbox.ad
 	@if [ ! -d $(LIBDIR)/Blackbox ]; then \
 		$(MKDIRHIER) $(LIBDIR)/Blackbox; \
 	fi
-	$(INSTALL) $(INSTALLFLAGS) $(INSTMANFLAGS) MenuAD $(LIBDIR)/Blackbox/MenuAD
+	$(INSTALL) $(INSTALLFLAGS) $(INSTMANFLAGS) Menu.ad $(LIBDIR)/Blackbox/Menu.ad
 
 XCOMM
 XCOMM Make rules I enjoy

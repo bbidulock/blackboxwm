@@ -37,33 +37,30 @@
 Blackbox *blackbox;
 
 
-static void sig11handler(int i) {
+static void signalhandler(int i) {
   static int re_enter = 0;
   
-  fprintf(stderr, "%d sig 11 caught...", i);
+  fprintf(stderr, "%s: toplevel:\n\t[ signal %d caught ]\n", __FILE__, i);
   if (! re_enter) {
     re_enter = 1;
-    fprintf(stderr, "\nshutting down...");
+    fprintf(stderr, "\t[ shutting down ]\n");
     blackbox->Shutdown();
   }
 
-  fprintf(stderr, "exiting...\n");
+  fprintf(stderr, "\t[ exiting ]\n");
   abort();
 }
 
 
-/*
-
-  Resources allocated in the Blackbox constructor:
-
-    Debugger *debug
-    llist *session_list
-    BlackboxSession *session
-
-*/
-
 Blackbox::Blackbox(int argc, char **argv) {
-  signal(SIGSEGV, (void (*)(int)) sig11handler);
+  debug = new Debugger('!');
+#ifdef DEBUG
+  debug->enable();
+#endif
+  debug->msg("%s: Blackbox::Blackbox\n", __FILE__);
+
+  signal(SIGSEGV, (void (*)(int)) signalhandler);
+  signal(SIGTERM, (void (*)(int)) signalhandler);
 
   b_argc = argc;
   b_argv = argv;
@@ -74,13 +71,7 @@ Blackbox::Blackbox(int argc, char **argv) {
   //  Startup our window management session.
   //
 
-  debug = new Debugger('!');
 
-#ifdef DEBUG
-  debug->enable();
-#endif
-
-  debug->enter("Blackbox::Blackbox\n");
 
 
   session_list = new llist<BlackboxSession>;
@@ -101,7 +92,8 @@ Blackbox::Blackbox(int argc, char **argv) {
 	exit(1);
       }
       
-      debug->msg("beginning single display management '%s'\n", argv[i]);
+      debug->msg("%s: beginning single display management '%s'\n",
+		 __BASE_FILE__, argv[i]);
       session_display = argv[i];
 
       //
@@ -110,7 +102,7 @@ Blackbox::Blackbox(int argc, char **argv) {
       // multi X session management is finished... we'll need this set for
       // each separate X session.
       //
-      if (! setenv("DISPLAY", session_display, 1)) {
+      if (setenv("DISPLAY", session_display, 1)) {
 	fprintf(stderr, "couldn't set environment variable DISPLAY\n");
 	perror("setenv()");
       }
@@ -136,27 +128,24 @@ Blackbox::Blackbox(int argc, char **argv) {
   //
 
   session_list->insert(new BlackboxSession(session_display));
+  debug->msg("%s: leaving Blackbox::Blackbox\n", __FILE__);
 }
 
 
-/*
-
-  Resources deallocated:
-
-  Debugger  *debug
-  llist *session_list
-
-  BlackboxSession *session NOT deallocated... memleak?
-
-*/
-
 Blackbox::~Blackbox(void) {
+  debug->msg("%s: Blackbox::~Blackbox\n", __FILE__);
+
   delete session_list;
+
+  debug->msg("%s: leaving Blackbox::~Blackbox\n", __FILE__);
   delete debug;
+
 }
 
 
 void Blackbox::EventLoop(void) {
+  debug->msg("%s: Blackbox::EventLoop\n", __FILE__);
+
   //
   // When multiple X sessions are supported... this function will change to
   // create new threads of execution and start an session->EventLoop() in
@@ -167,10 +156,14 @@ void Blackbox::EventLoop(void) {
   //
 
   session_list->at(0)->EventLoop();
+
+  debug->msg("%s: leaving Blackbox::EventLoop\n", __FILE__);
 }
 
 
 void Blackbox::Restart(char *prog) {
+  debug->msg("%s: Blackbox::Restart\n", __FILE__);
+
   //
   // This function is just a quick "fix"
   // It is also subject to change when multithreads are incorporated...
@@ -187,12 +180,16 @@ void Blackbox::Restart(char *prog) {
 
     execvp(b_argv[0], b_argv);
   }
+
+  debug->msg("%s: leaving Blackbox::Restart\n", __FILE__);
 }
 
 
 void Blackbox::Shutdown(void) {
+  debug->msg("%s: Blackbox::Shutdown\n", __FILE__);
   for (int i = 0; i < session_list->count(); ++i)
     session_list->at(i)->Dissociate();
 
+  debug->msg("%s: leaving Blackbox::Shutdown\n", __FILE__);
   delete this;
 }

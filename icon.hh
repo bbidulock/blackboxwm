@@ -42,6 +42,7 @@ private:
 
   BlackboxSession *session;
   Debugger *debug;
+  WorkspaceManager *ws_manager;
 
 
 protected:
