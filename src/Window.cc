@@ -1215,16 +1215,21 @@ BlackboxWindow::~BlackboxWindow(void) {
   // remove ourselves from our transient_for
     BlackboxWindow *win = findTransientFor();
     if (win) {
+      printf("found transient for\n");
       win->removeTransient(this);
     } else if (isGroupTransient()) {
-      if (group)
+      if (group) {
+        printf("found group for group transient\n");
         group->removeTransient(this);
+      }
     }
     client.transient_for = 0;
   }
 
-  if (group)
+  if (group) {
+    printf("removing window from group");
     group->removeWindow(this);
+  }
 
   if (frame.title)
     destroyTitlebar();
