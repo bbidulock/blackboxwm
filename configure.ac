@@ -116,6 +116,8 @@ AC_CHECK_FUNCS([setlocale],
                ])
 AC_SUBST(LOCALE)
 
+AC_CHECK_FUNCS([nl_langinfo])
+
 dnl needed for some X11 libs
 AC_CHECK_LIB([nsl],
              [t_open],
