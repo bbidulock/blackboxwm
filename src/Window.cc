@@ -2208,10 +2208,105 @@ void BlackboxWindow::netwmEvent(const XClientMessageEvent* const ce) {
     client.win_gravity = old_gravity;
   } else if (ce->message_type == blackbox->netwm()->wmDesktop()) {
     const unsigned int desktop = ce->data.l[0];
-    if (desktop != 0xFFFFFFFF) {
+    if (desktop != 0xFFFFFFFF && desktop != client.workspace) {
       withdraw();
       screen->reassociateWindow(this, desktop);
     }
+  } else if (ce->message_type == blackbox->netwm()->wmState()) {
+    const Netwm* const netwm = blackbox->netwm();
+    Atom action = ce->data.l[0],
+      first = ce->data.l[1],
+      second = ce->data.l[2];
+
+    int max_horz = 0, max_vert = 0,
+      skip_taskbar = 0, skip_pager = 0;
+
+    if (first == netwm->wmStateModal() || second == netwm->wmStateModal()) {
+      if ((action == netwm->wmStateAdd() ||
+           (action == netwm->wmStateToggle() && ! client.state.modal)) &&
+          isTransient())
+        client.state.modal = True;
+      else
+        client.state.modal = False;
+    } else if (first == netwm->wmStateMaximizedHorz() ||
+               second == netwm->wmStateMaximizedHorz()) {
+      if (action == netwm->wmStateAdd() ||
+          (action == netwm->wmStateToggle() &&
+           ! (client.state.maximized == 1 || client.state.maximized == 3)))
+        max_horz = 1;
+      else
+        max_horz = -1;
+    } else if (first == netwm->wmStateMaximizedVert() ||
+               second == netwm->wmStateMaximizedVert()) {
+      if (action == netwm->wmStateAdd() ||
+          (action == netwm->wmStateToggle() &&
+           ! (client.state.maximized == 1 || client.state.maximized == 2)))
+        max_vert = 1;
+      else
+        max_vert = -1;
+    } else if (first == netwm->wmStateShaded() ||
+               second == netwm->wmStateShaded()) {
+      if (action == netwm->wmStateRemove() ||
+          action == netwm->wmStateToggle() ||
+          ! client.state.shaded)
+        shade();
+    } else if (first == netwm->wmStateSkipTaskbar() ||
+               second == netwm->wmStateSkipTaskbar()) {
+      if (action == netwm->wmStateAdd() ||
+          (action == netwm->wmStateToggle() &&
+           ! (client.state.skip == SKIP_TASKBAR ||
+              client.state.skip == SKIP_BOTH)))
+        skip_taskbar = 1;
+      else
+        skip_taskbar = -1;
+    } else if (first == netwm->wmStateSkipPager() ||
+               second == netwm->wmStateSkipPager()) {
+      if (action == netwm->wmStateAdd() ||
+          (action == netwm->wmStateToggle() &&
+           ! (client.state.skip == SKIP_PAGER ||
+              client.state.skip == SKIP_BOTH)))
+        skip_pager = 1;
+      else
+        skip_pager = -1;
+    } else if (first == netwm->wmStateHidden() ||
+               second == netwm->wmStateHidden()) {
+      /* ignore this message */
+    } else if (first == netwm->wmStateFullscreen() ||
+               second == netwm->wmStateFullscreen()) {
+      client.state.fullscreen = True;
+    } else if (first == netwm->wmStateAbove() ||
+               second == netwm->wmStateAbove()) {
+      client.state.layer = LAYER_ABOVE;
+    } else if (first == netwm->wmStateBelow() ||
+               second == netwm->wmStateBelow()) {
+      client.state.layer = LAYER_BELOW;
+    }
+    
+    if (max_horz != 0 || max_vert != 0) {
+      maximize(0);
+      unsigned int button = 0;
+      if (max_horz == 1 && max_vert != 1)
+        button = 3;
+      else if (max_vert == 1 && max_horz != 1)
+        button = 2;
+      else if (max_vert == 1 && max_horz == 1)
+        button = 1;
+      if (button)
+        maximize(button);
+    }
+
+    if (skip_taskbar != 0 || skip_pager != 0) {
+      if (skip_taskbar == 1 && skip_pager != 1)
+        client.state.skip = SKIP_TASKBAR;
+      else if (skip_pager == 1 && skip_taskbar != 1)
+        client.state.skip = SKIP_PAGER;
+      else if (skip_pager == 1 && skip_taskbar == 1)
+        client.state.skip = SKIP_BOTH;
+      else
+        client.state.skip = SKIP_NONE;
+    }
+    
+    setState(client.current_state);
   }
 }
 
