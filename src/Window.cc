@@ -2778,16 +2778,15 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
     if (event->atom == blackbox->wmProtocolsAtom()) {
       client.wmprotocols = readWMProtocols();
 
-      if (client.wmprotocols.wm_delete_window
-          && hasWindowDecoration(WindowDecorationTitlebar)) {
-        client.decorations |= WindowDecorationClose;
-        client.functions   |= WindowFunctionClose;
+      ::update_decorations(client.decorations,
+                           client.functions,
+                           isTransient(),
+                           client.ewmh,
+                           client.motif,
+                           client.wmnormal,
+                           client.wmprotocols);
 
-        if (!frame.close_button) {
-          createCloseButton();
-          positionButtons(True);
-        }
-      }
+      reconfigure();
     } else if (event->atom == blackbox->motifWmHintsAtom()) {
       client.motif = readMotifHints();
 
