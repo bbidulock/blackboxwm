@@ -1995,9 +1995,7 @@ void BlackboxWindow::changeLayer(StackingList::Layer new_layer) {
       }
     }
   } else {
-    assert(hasWindowFunction(WindowFunctionChangeLayer)
-           || (hasWindowFunction(WindowFunctionFullScreen)
-               && new_layer == StackingList::LayerFullScreen));
+    assert(hasWindowFunction(WindowFunctionChangeLayer));
     restack = true;
   }
 
@@ -2372,8 +2370,7 @@ void BlackboxWindow::setFullScreen(bool b) {
     client.decorations = NoWindowDecorations;
     client.functions &= ~(WindowFunctionMove |
                           WindowFunctionResize |
-                          WindowFunctionShade |
-                          WindowFunctionChangeLayer);
+                          WindowFunctionShade);
     frame.margin = ::update_margin(client.decorations, frame.style);
 
     bt::Rect r = ::constrain(_screen->screenInfo().rect(),
