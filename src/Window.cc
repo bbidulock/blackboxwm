@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Window.cc for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
@@ -1305,12 +1305,15 @@ Bool BlackboxWindow::setInputFocus(void) {
   if (client.transient && flags.modal) {
     ret = client.transient->setInputFocus();
   } else if (! flags.focused) {
-    if (focus_mode == F_LocallyActive || focus_mode == F_Passive)
+    if (focus_mode == F_LocallyActive || focus_mode == F_Passive) {
       XSetInputFocus(display, client.window,
                      RevertToPointerRoot, CurrentTime);
-    else
-      XSetInputFocus(display, screen->getRootWindow(),
-                     RevertToNone, CurrentTime);
+    } else {
+      // we could set the focus to none, since the window doesn't accept focus,
+      // but we shouldn't set focus to nothing since this would surely make
+      // someone angry
+      return False;
+    }
 
     blackbox->setFocusedWindow(this);
 
@@ -1346,7 +1349,7 @@ void BlackboxWindow::iconify(void) {
 
   setState(IconicState);
 
-  XSelectInput(display, client.window, NoEventMask);
+  XSelectInput(display, client.window, FocusChangeMask | PropertyChangeMask);
   XUnmapWindow(display, client.window);
   XSelectInput(display, client.window,
                PropertyChangeMask | StructureNotifyMask | FocusChangeMask);
@@ -1374,7 +1377,7 @@ void BlackboxWindow::iconify(void) {
 void BlackboxWindow::show(void) {
   setState(NormalState);
 
-  XSelectInput(display, client.window, NoEventMask);
+  XSelectInput(display, client.window, FocusChangeMask | PropertyChangeMask);
   XMapWindow(display, client.window);
   XSelectInput(display, client.window,
                PropertyChangeMask | StructureNotifyMask | FocusChangeMask);
@@ -1425,7 +1428,7 @@ void BlackboxWindow::withdraw(void) {
 
   XUnmapWindow(display, frame.window);
 
-  XSelectInput(display, client.window, NoEventMask);
+  XSelectInput(display, client.window, FocusChangeMask | PropertyChangeMask);
   XUnmapWindow(display, client.window);
   XSelectInput(display, client.window,
                PropertyChangeMask | StructureNotifyMask | FocusChangeMask);
@@ -1667,6 +1670,9 @@ void BlackboxWindow::setFocusFlag(Bool focus) {
 
   if (screen->isSloppyFocus() && screen->doAutoRaise() && timer->isTiming())
     timer->stop();
+
+  if (isFocused())
+    blackbox->setFocusedWindow(this);
 }
 
 

@@ -314,10 +314,6 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   // call this again just in case a window we found updates the Strut list
   updateAvailableArea();
 
-  if (! resource.sloppy_focus)
-    XSetInputFocus(blackbox->getXDisplay(), toolbar->getWindowID(),
-                   RevertToParent, CurrentTime);
-
   XFlush(blackbox->getXDisplay());
 }
 
@@ -1775,13 +1771,6 @@ void BScreen::toggleFocusModel(FocusModel model) {
   } else {
     saveSloppyFocus(False);
     saveAutoRaise(False);
-    if (! blackbox->getFocusedWindow())
-      XSetInputFocus(blackbox->getXDisplay(), toolbar->getWindowID(),
-                     RevertToParent, CurrentTime);
-    else
-      XSetInputFocus(blackbox->getXDisplay(),
-                     blackbox->getFocusedWindow()->getClientWindow(),
-                     RevertToParent, CurrentTime);
   }
 
   std::for_each(workspacesList.begin(), workspacesList.end(),

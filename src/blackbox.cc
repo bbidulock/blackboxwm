@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // blackbox.cc for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
@@ -152,6 +152,7 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
 
   resource.auto_raise_delay.tv_sec = resource.auto_raise_delay.tv_usec = 0;
 
+  active_screen = 0;
   focused_window = masked_window = (BlackboxWindow *) 0;
   masked = None;
 
@@ -182,6 +183,10 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
               "Blackbox::Blackbox: no managable screens found, aborting.\n"));
     ::exit(3);
   }
+
+  // set the screen with mouse to the first managed screen
+  active_screen = screenList.front();
+  setFocusedWindow(0);
 
   XSynchronize(getXDisplay(), False);
   XSync(getXDisplay(), False);
@@ -532,11 +537,20 @@ void Blackbox::process_event(XEvent *e) {
   case FocusIn: {
     if (e->xfocus.mode == NotifyUngrab || e->xfocus.detail == NotifyPointer)
       break;
-
     BlackboxWindow *win = searchWindow(e->xfocus.window);
-    if (win && ! win->isFocused())
-      setFocusedWindow(win);
+    if (win && ! win->isFocused()) {
+      win->setFocusFlag(True);
+    }
+    break;
+  }
 
+  case FocusOut: {
+    if (e->xfocus.mode == NotifyGrab || e->xfocus.detail != NotifyNonlinear )
+      break;
+    BlackboxWindow *win = searchWindow(e->xfocus.window);
+    if (win && win->isFocused()) {
+      win->setFocusFlag(False);
+    }
     break;
   }
 
@@ -589,7 +603,6 @@ void Blackbox::process_event(XEvent *e) {
     break;
   }
 
-  case FocusOut:
   case NoExpose:
   case ConfigureNotify:
     break; // not handled, just ignore
@@ -1580,40 +1593,45 @@ void Blackbox::timeout(void) {
 
 
 void Blackbox::setFocusedWindow(BlackboxWindow *win) {
-  BScreen *old_screen = (BScreen *) 0, *screen = (BScreen *) 0;
-  Toolbar *old_tbar = (Toolbar *) 0, *tbar = (Toolbar *) 0;
+  BScreen *old_screen = 0;
 
   if (focused_window) {
-    BlackboxWindow *old_win = focused_window;
-    old_screen = old_win->getScreen();
-    old_tbar = old_screen->getToolbar();
-    Workspace *old_wkspc =
-      old_screen->getWorkspace(old_win->getWorkspaceNumber());
-
-    old_win->setFocusFlag(False);
-    old_wkspc->getMenu()->setItemSelected(old_win->getWindowNumber(), False);
+    old_screen = focused_window->getScreen();
   }
 
   if (win && ! win->isIconic()) {
-    screen = win->getScreen();
-    tbar = screen->getToolbar();
-    Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
-
+    // the active screen is the one with the last focused window...
+    // this will keep focus on this screen no matter where the mouse goes,
+    // so multihead keybindings will continue to work on that screen until the
+    // user focuses a window on a different screen.
+    active_screen = win->getScreen();
     focused_window = win;
-
-    win->setFocusFlag(True);
-    wkspc->getMenu()->setItemSelected(win->getWindowNumber(), True);
   } else {
-    focused_window = (BlackboxWindow *) 0;
+    focused_window = 0;
+    if (! old_screen) {
+      if (active_screen) {
+        // set input focus to the toolbar of the screen with mouse
+        XSetInputFocus(getXDisplay(), active_screen->getToolbar()->getWindowID(),
+                       RevertToPointerRoot, CurrentTime);
+      } else {
+        // set input focus to the toolbar of the first managed screen
+        XSetInputFocus(getXDisplay(), screenList.front()->getToolbar()->getWindowID(),
+                       RevertToPointerRoot, CurrentTime);
+      }
+    } else {
+      // set input focus to the toolbar of the last screen
+      XSetInputFocus(getXDisplay(), old_screen->getToolbar()->getWindowID(),
+                     RevertToPointerRoot, CurrentTime);
+    }
   }
 
-  if (tbar)
-    tbar->redrawWindowLabel(True);
-  if (screen)
-    screen->updateNetizenWindowFocus();
+  if (active_screen && active_screen->isScreenManaged()) {
+    active_screen->getToolbar()->redrawWindowLabel(True);
+    active_screen->updateNetizenWindowFocus();
+  }
 
-  if (old_tbar && old_tbar != tbar)
-    old_tbar->redrawWindowLabel(True);
-  if (old_screen && old_screen != screen)
+  if (old_screen && old_screen != active_screen) {
+    old_screen->getToolbar()->redrawWindowLabel(True);
     old_screen->updateNetizenWindowFocus();
+  }
 }

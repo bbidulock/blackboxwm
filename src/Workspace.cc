@@ -99,22 +99,11 @@ unsigned int Workspace::removeWindow(BlackboxWindow *w) {
   stackingList.remove(w);
 
   if (w->isFocused()) {
-    if (w->isTransient()) {
-      BlackboxWindow *bw = w->getTransientFor();
-      if (bw && bw->isVisible())
-        bw->setInputFocus();
-    } else if (screen->isSloppyFocus()) {
-      screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
-    } else {
-      BlackboxWindow *top = 0;
-      if (! stackingList.empty())
-        top = stackingList.front();
-      if (! top || ! top->setInputFocus()) {
-        screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
-        XSetInputFocus(screen->getBlackbox()->getXDisplay(),
-                       screen->getToolbar()->getWindowID(),
-                       RevertToParent, CurrentTime);
-      }
+    BlackboxWindow *newfocus = 0;
+    if (w->isTransient()) newfocus = w->getTransientFor();
+    if (! newfocus && ! stackingList.empty()) newfocus = stackingList.front();
+    if (! newfocus || ! newfocus->setInputFocus()) {
+      screen->getBlackbox()->setFocusedWindow(0);
     }
   }
 

@@ -991,9 +991,8 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
       blackbox->setNoFocus(False);
       if (blackbox->getFocusedWindow()) {
         blackbox->getFocusedWindow()->setInputFocus();
-        blackbox->getFocusedWindow()->setFocusFlag(True);
       } else {
-        XSetInputFocus(display, PointerRoot, None, CurrentTime);
+        blackbox->setFocusedWindow(0);
       }
 
       Workspace *wkspc = screen->getCurrentWorkspace();
