@@ -1,4 +1,4 @@
--- data/README for Blackbox - an X11 Window manager
+-- data/README for Blackbox 0.50.x - an X11 Window manager
 -- Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 --
 --  This program is free software; you can redistribute it and/or modify
@@ -18,22 +18,18 @@
 -- (See the included file COPYING / GPL-2.0)
 --
 
-This README file covers the two controlling files for Blackbox.
+The data/ directory holds some menu and style (or theme) examples for Blackbox.
+These are installed as system defaults, and are ALWAYS overwritten when
+upgrading or otherwise re-installing Blackbox.  Changes to them are
+discouraged, because of this reason.
 
-In this directory, there are two files.
-	menu
-	rc
+In the data/ directory, you will find a file named `menu' and a directory
+named `styles.'  These are the system defaults that are installed when
+Blackbox is built, and they are intended as examples on how to customize and
+control the appearance of Blackbox.  In the event that a user does not have
+a defined menu and/or style, Blackbox falls back on the example menu and/or
+styles included here.
 
-rc
------------
-This is the template for each users ~/.blackboxrc.  This file should NOT be
-copied to ~/.blackboxrc, as Blackbox writes this file itself, saving various
-data that is restored the next time Blackbox is run.
+For information on creating/editing a menu, see the file README.menu.
 
-menu
-----------------
-This is the default menu file for Blackbox. Changes are also welcome, but a
-user defined menu file is the more sane approach, as not all users will have
-access to all the functions/programs/etc. that may be placed in the global menu
-file.
-
+For information on creating/editing a style, see the file README.style.

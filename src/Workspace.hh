@@ -19,8 +19,8 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef __blackbox_workspace_hh
-#define __blackbox_workspace_hh
+#ifndef   __Workspace_hh
+#define   __Workspace_hh
 
 #include <X11/Xlib.h>
 
@@ -37,9 +37,7 @@ private:
 #ifdef    KDE
   Atom desktop_name_atom;
 #endif // KDE
-
-  //  Window *stack;
-
+  
   BScreen *screen;
   Clientmenu *clientmenu;
 
@@ -64,8 +62,6 @@ public:
   BScreen *getScreen(void) { return screen; }
 
   Clientmenu *getMenu(void) { return clientmenu; }
-
-  //  Window *getWindowStack(void) { return stack; }
   
   char *getName(void) { return name; }
   char **getLabel(void) { return label; }
@@ -81,7 +77,6 @@ public:
   
   void raiseWindow(BlackboxWindow *);
   void lowerWindow(BlackboxWindow *);
-  //  void restackWindows(void);
   void setFocusWindow(int);
   void reconfigure();
   void update();
@@ -96,4 +91,4 @@ public:
 };
 
 
-#endif
+#endif // __Workspace_hh

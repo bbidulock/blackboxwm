@@ -19,8 +19,8 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef __Basemenu_hh
-#define __Basemenu_hh
+#ifndef   __Basemenu_hh
+#define   __Basemenu_hh
 
 #include <X11/Xlib.h>
 
@@ -53,7 +53,7 @@ private:
     Window frame, iframe, title;
 
     char *label;
-    int x, y, x_move, y_move, x_shift, y_shift, sublevels, persub;
+    int x, y, x_move, y_move, x_shift, y_shift, sublevels, persub, minsub;
     unsigned int width, height, title_h, iframe_h, item_w, item_h, bevel_w,
       bevel_h;
   } menu;
@@ -66,8 +66,9 @@ protected:
   BasemenuItem *find(int index) { return menuitems->find(index); }
   void setTitleVisibility(Bool b) { title_vis = b; }
   void setMovable(Bool b) { movable = b; }
-  void setHidable(Bool b) { hidable = b; }
+  void setHidable(Bool h) { hidable = h; }
   void setAlignment(int a) { alignment = a; }
+  void setMinimumSublevels(int m) { menu.minsub = m; }
 
   virtual void itemSelected(int, int) = 0;
 
@@ -86,13 +87,14 @@ public:
 
   const char *getLabel(void) const { return menu.label; }
 
-  int insert(char *, int = 0, char * = 0, int = -1);
+  int insert(char *, int = 0, char * = (char *) 0, int = -1);
   int insert(char **, int = -1);
   int insert(char *, Basemenu *, int = -1);
   int remove(int);
   int getX(void) { return menu.x; }
   int getY(void) { return menu.y; }
   int getCount(void) { return menuitems->count(); }
+  int getHighlight(void) { return always_highlight; }
 
   unsigned int getWidth(void) { return menu.width; }
   unsigned int getHeight(void) { return menu.height; }
@@ -105,7 +107,7 @@ public:
   void leaveNotifyEvent(XCrossingEvent *);
   void exposeEvent(XExposeEvent *);
   void reconfigure(void);
-  void setMenuLabel(char *n);
+  void setLabel(char *n);
   void move(int, int);
   void update(void);
   void defaultMenu(void) { default_menu = True; }
@@ -131,7 +133,7 @@ protected:
 
 
 public:
-  BasemenuItem(char *lp, int fp, char *ep = 0)
+  BasemenuItem(char *lp, int fp, char *ep = (char *) 0)
     { l = lp; e = ep; s = 0; f = fp; u = 0; }
 
   BasemenuItem(char *lp, Basemenu *mp)
@@ -139,9 +141,6 @@ public:
 
   BasemenuItem(char **up)
     { u = up; l = e = 0; f = 0; s = 0; }
-
-  ~BasemenuItem(void)
-    { /* the item doesn't delete any data it holds */ }
 
   char *exec(void) { return e; }
   char *label(void) { return l; }

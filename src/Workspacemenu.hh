@@ -19,8 +19,8 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef __Workspacemenu_hh
-#define __Workspacemenu_hh
+#ifndef   __Workspacemenu_hh
+#define   __Workspacemenu_hh
 
 // forward declaration
 class Workspacemenu;
@@ -29,8 +29,6 @@ class Toolbar;
 
 #include "Basemenu.hh"
 
-
-#ifdef __Basemenu_hh
 
 class Workspacemenu : public Basemenu {
 private:
@@ -43,11 +41,7 @@ protected:
 
 public:
   Workspacemenu(Blackbox *, BScreen *);
-
-  virtual void hide(void);
 };
-
-#endif // __Basemenu_hh
 
 
 #endif // __Workspacemenu_hh

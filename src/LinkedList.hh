@@ -19,14 +19,26 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef __LinkedList_hh
-#define __LinkedList_hh
+#ifndef   __LinkedList_hh
+#define   __LinkedList_hh
 
 
-typedef struct __llist_node {
-  __llist_node *prev, *next;
+class __llist_node {
+private:
+  __llist_node *next;
   void *data;
-} __llist_node;
+
+protected:
+
+public:
+  __llist_node(void) { next = (__llist_node *) 0; data = (void *) 0; }
+
+  void *getData(void) { return data; }
+  __llist_node *getNext(void) { return next; }
+
+  void setData(void *d) { data = d; }
+  void setNext(__llist_node *n) { next = n; }
+};
 
 
 // forward declaration
@@ -41,16 +53,13 @@ private:
 
 protected:
   __llist_iterator(__llist *);
-  ~__llist_iterator(void);
 
   const int set(const int);
 
   void *current(void);
   void reset(void);
-  void resetLast(void);
 
   void operator++(int);
-  void operator--(int);
 };
 
 
@@ -73,34 +82,30 @@ protected:
 
   void *find(const int);
   void *remove(const int);
-  void *first(void) { return _first->data; }
-  void *last(void) { return _last->data; }
+  void *first(void);
+  void *last(void);
 };
 
 
 template <class Z>
 class LinkedListIterator : public __llist_iterator {
 public:
-  LinkedListIterator(__llist *d = 0) : __llist_iterator(d) { }
-  ~LinkedListIterator(void) { }
+  LinkedListIterator(__llist *d = 0) : __llist_iterator(d) { return; }
 
   Z *current(void) { return (Z *) __llist_iterator::current(); }
 
   const int set(const int i) { return __llist_iterator::set(i); }
 
   void reset(void) { __llist_iterator::reset(); }
-  void resetLast(void) { __llist_iterator::resetLast(); }
-
+  
   void operator++(int a) { __llist_iterator::operator++(a); }
-  void operator--(int a) { __llist_iterator::operator--(a); }
 };
 
 
 template <class Z>
 class LinkedList : public __llist {
 public:
-  LinkedList(Z *d = 0) : __llist(d) { }
-  ~LinkedList(void) { }
+  LinkedList(Z *d = 0) : __llist(d) { return; }
   
   Z *find(const int i) { return (Z *) __llist::find(i); }
   Z *remove(const int i) { return (Z *) __llist::remove(i); }

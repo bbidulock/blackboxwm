@@ -19,47 +19,47 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#ifndef   _GNU_SOURCE
+#define   _GNU_SOURCE
+#endif // _GNU_SOURCE
 
-#ifdef HAVE_CONFIG_H
+#ifdef    HAVE_CONFIG_H
 #  include "../config.h"
-#endif
+#endif // HAVE_CONFIG_H
 
 #include "blackbox.hh"
 
-#ifdef HAVE_STDIO_H
+#ifdef    HAVE_STDIO_H
 #  include <stdio.h>
-#endif
+#endif // HAVE_STDIO_H
 
-#ifdef STDC_HEADERS
+#ifdef    STDC_HEADERS
 #  include <stdlib.h>
-#endif
+#endif // STDC_HEADERS
 
-#ifdef HAVE_LOCALE_H
+#ifdef    HAVE_LOCALE_H
 #  include <locale.h>
-#endif
+#endif // HAVE_LOCALE_H
 
-#ifdef HAVE_UNISTD_H
+#ifdef    HAVE_UNISTD_H
 #include <sys/types.h>
-#endif
+#endif // HAVE_UNISTD_H
 
-#ifdef HAVE_SYS_PARAM_H
+#ifdef    HAVE_SYS_PARAM_H
 #  include <sys/param.h>
-#endif
+#endif // HAVE_SYS_PARAM_H
 
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 255
-#endif
+#ifndef   MAXPATHLEN
+#define   MAXPATHLEN 255
+#endif // MAXPATHLEN
 
 
 int main(int argc, char **argv) {
-  char *session_display = NULL;
-
-#ifdef HAVE_SETLOCALE
+  char *session_display = (char *) 0;
+  
+#ifdef    HAVE_SETLOCALE
   setlocale(LC_ALL, "");
-#endif
+#endif // HAVE_SETLOCALE
 
   int i;
   for (i = 1; i < argc; ++i) {
@@ -99,12 +99,12 @@ int main(int argc, char **argv) {
     }
   }
 
-#ifdef __EMX__
+#ifdef    __EMX__
   _chdir2(getenv("X11ROOT"));
-#endif
+#endif // __EMX__
 
   Blackbox blackbox(argc, argv, session_display);
   blackbox.eventLoop();
-
+  
   return(0);
 }

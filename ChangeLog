@@ -1,6 +1,81 @@
 ChangeLog for Blackbox 0.50.xx
 Enjoy! :)
 
+Changes from 0.50.4. to 0.50.5:
+  - modified and merged some patches from several contributors.  added their
+    names to AUTHORS
+  - major documentation updates
+  - added a few more platform success reports.  changed development platform
+    again :)
+  - added new texture option: Interlaced... it is an extension to the gradient
+    texture that looks really neat... it is compiled in by default but may
+    be removed with --disable-interlace
+  - let's see... where do i begin... the code for 0.50.5 has been GREATLY
+    enhanced over 0.50.4 (and the stupid little compile error for KDE has been
+    fixed ;))  Blackbox has undergone major renovation... and i can proudly
+    say that this release is rock solid.  Also, i reinstated ccmalloc's tour
+    of duty, and spent several days with it stomping memory leaks in blackbox.
+    i can proudly say that there are no major memory leaks present in 0.50.5
+  - the toolbar has changed it appearance a little bit... the menu button has
+    been removed and the labels and buttons are now symmetrically placed on the
+    toolbar...  oh no!? how do you get to your icons/workspaces now?  the
+    middle click patch from Greg Barlow has been modified, enhanced and merged
+    with 0.50.5... the workspace menu now behaves just like the root menu...
+    and it can be pinned to the root window (just move it)
+  - the image code has once again been worked over... this time a local LUG
+    friend and i have hashed it out many times and into the wee hours of the
+    morning... this stuff is FAST now... before i added interlacing... we
+    had doubled the speed of the dgradient function... yes... *doubled*
+  - the code to generate error tables, color tables and other tables that are
+    used in image dithering has been rewritten, which severs the last tie to
+    window maker's wrlib that blackbox had.  i now understand why and how all
+    the code that i "borrowed" works... and it's been improved... because of
+    this change... dithering is a lot cleaner... and dithering on 8bpp displays
+    is less grainy and less obtrusive...
+  - the linked list code has also been rewritten... blackbox has been using
+    a doubly linked list, and not taking advantage of all the list's
+    capabilities (because it doesnt need them)... so the linked lists are now
+    single-link and much quicker at inserting, removing, searching...
+  - once again... the menu parsing code has been rewritten... this code is
+    very efficient and very extensible... so extensible infact that after
+    implementing the current menu syntax... i added a new tag! you can now
+    insert the workspaces list into your root menu with this:
+
+	[workspaces] (descriptive label)
+
+  - the slit menu is now spacially correct... if you want the slit in the top
+    right corner of the root menu... click the top right corner of the slit
+    menu... i think this is a little more user friendly
+  - window gravity should be better supported now... restarts and what not
+    shouldn't produce all those one pixel shifts or moves anymore...
+  - the modifiers for the keygrabs in blackbox are now configurable...
+    the "keys" are still hard wired (left/right for workspace changing, tab
+    for window cycling)... but you may now configure which modifiers to use
+    with the key combos...  this introduces two new resources into your
+    .blackboxrc:
+
+	session.workspaceChangeModifier
+
+    and
+
+	session.windowCycleModifier
+
+    these resources may be set to any combination of the following:
+
+	Control Mod1 Mod2 Mod3 Mod4 Mod5 Lock Shift
+
+    also... for convenience... "Alt" is parsed as "Mod1"...
+    session.workspaceChangeModifier defaults to "Control" and
+    session.windowCycleModifier defaults to "Mod1"
+  - smart placement has been made smarter thanks to Dyon Balding's smarter
+    placement patch... this patch has been modified from the original slightly
+    (mostly speed concerns)
+  - signal handling has been made more robust... this allows it to compile on
+    more platforms and now prefers to use sigaction() over signal()
+  - over all... many code clean ups were made and old commented code was
+    purged... this is a very clean very stable release... enjoy people :)
+
+
 Changes from 0.50.3 to 0.50.4:
   - changed some Copyright information to include the current year
   - added a number of platforms to the Supported Platforms section of the

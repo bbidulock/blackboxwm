@@ -19,8 +19,8 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef __Rootmenu_hh
-#define __Rootmenu_hh
+#ifndef   __Rootmenu_hh
+#define   __Rootmenu_hh
 
 // forward declarations
 class Rootmenu;
@@ -30,7 +30,6 @@ class BScreen;
 
 #include "Basemenu.hh"
 
-#ifdef __Basemenu_hh
 
 class Rootmenu : public Basemenu {
 private:
@@ -47,8 +46,6 @@ public:
 
   virtual void show(void);
 };
-
-#endif // __Basemenu_hh
 
 
 #endif // __Rootmenu_hh

@@ -1,77 +1,78 @@
+/* config.h.  Generated automatically by configure.  */
 /* config.h.in.  Generated automatically from configure.in by autoheader.  */
 
 /* Define if on AIX 3.
    System headers sometimes define this.
    We just want to avoid a redefinition error message.  */
 #ifndef _ALL_SOURCE
-#undef _ALL_SOURCE
+/* #undef _ALL_SOURCE */
 #endif
 
 /* Define if you need to in order for stat and other things to work.  */
-#undef _POSIX_SOURCE
+/* #undef _POSIX_SOURCE */
 
 /* Define as the return type of signal handlers (int or void).  */
-#undef RETSIGTYPE
+#define RETSIGTYPE void
 
 /* Define if you have the ANSI C header files.  */
-#undef STDC_HEADERS
+#define STDC_HEADERS 1
 
 /* Define if you can safely include both <sys/time.h> and <time.h>.  */
-#undef TIME_WITH_SYS_TIME
+#define TIME_WITH_SYS_TIME 1
 
 /* Define if the X Window System is missing or not being used.  */
-#undef X_DISPLAY_MISSING
+/* #undef X_DISPLAY_MISSING */
 
 /* Define if you have the basename function.  */
-#undef HAVE_BASENAME
+#define HAVE_BASENAME 1
 
 /* Define if you have the setlocale function.  */
-#undef HAVE_SETLOCALE
+#define HAVE_SETLOCALE 1
 
 /* Define if you have the strftime function.  */
-#undef HAVE_STRFTIME
+#define HAVE_STRFTIME 1
 
 /* Define if you have the <fcntl.h> header file.  */
-#undef HAVE_FCNTL_H
+#define HAVE_FCNTL_H 1
 
 /* Define if you have the <libgen.h> header file.  */
-#undef HAVE_LIBGEN_H
+#define HAVE_LIBGEN_H 1
 
 /* Define if you have the <locale.h> header file.  */
-#undef HAVE_LOCALE_H
+#define HAVE_LOCALE_H 1
 
 /* Define if you have the <malloc.h> header file.  */
-#undef HAVE_MALLOC_H
+#define HAVE_MALLOC_H 1
 
 /* Define if you have the <process.h> header file.  */
-#undef HAVE_PROCESS_H
+/* #undef HAVE_PROCESS_H */
 
 /* Define if you have the <signal.h> header file.  */
-#undef HAVE_SIGNAL_H
+#define HAVE_SIGNAL_H 1
 
 /* Define if you have the <stdio.h> header file.  */
-#undef HAVE_STDIO_H
+#define HAVE_STDIO_H 1
 
 /* Define if you have the <sys/param.h> header file.  */
-#undef HAVE_SYS_PARAM_H
+#define HAVE_SYS_PARAM_H 1
 
 /* Define if you have the <sys/select.h> header file.  */
-#undef HAVE_SYS_SELECT_H
+#define HAVE_SYS_SELECT_H 1
 
 /* Define if you have the <sys/stat.h> header file.  */
-#undef HAVE_SYS_STAT_H
+#define HAVE_SYS_STAT_H 1
 
 /* Define if you have the <sys/time.h> header file.  */
-#undef HAVE_SYS_TIME_H
+#define HAVE_SYS_TIME_H 1
 
 /* Define if you have the <sys/types.h> header file.  */
-#undef HAVE_SYS_TYPES_H
+#define HAVE_SYS_TYPES_H 1
 
 /* Define if you have the <sys/wait.h> header file.  */
-#undef HAVE_SYS_WAIT_H
+#define HAVE_SYS_WAIT_H 1
 
 /* Define if you have the <time.h> header file.  */
-#undef HAVE_TIME_H
+#define HAVE_TIME_H 1
 
 /* Define if you have the <unistd.h> header file.  */
-#undef HAVE_UNISTD_H
+#define HAVE_UNISTD_H 1

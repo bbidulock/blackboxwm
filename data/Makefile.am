@@ -21,7 +21,7 @@
 SUBDIRS = styles
 CLEANFILES = menu
 MAINTAINERCLEANFILES = Makefile.in
-pkgdata_DATA = rc menu
+pkgdata_DATA = menu
 
 distclean-local:
 	rm -f *\~

@@ -19,30 +19,30 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#ifndef   _GNU_SOURCE
+#define   _GNU_SOURCE
+#endif // _GNU_SOURCE
 
-#ifdef HAVE_CONFIG_H
+#ifdef    HAVE_CONFIG_H
 #  include "../config.h"
-#endif
+#endif // HAVE_CONFIG_H
 
 #include "blackbox.hh"
 #include "Rootmenu.hh"
 #include "Screen.hh"
 
-#if HAVE_STDIO_H
+#ifdef    HAVE_STDIO_H
 #  include <stdio.h>
-#endif
+#endif // HAVE_STDIO_H
 
-#if STDC_HEADERS
+#ifdef    STDC_HEADERS
 #  include <stdlib.h>
 #  include <string.h>
-#endif
+#endif // STDC_HEADERS
 
-#if HAVE_PROCESS_H && __EMX__
+#if defined(HAVE_PROCESS_H) && defined(__EMX__)
 #  include <process.h>
-#endif
+#endif //   HAVE_PROCESS_H             __EMX__
 
 
 Rootmenu::Rootmenu(Blackbox *bb, BScreen *scrn) : Basemenu(bb, scrn) {
@@ -59,7 +59,7 @@ void Rootmenu::itemSelected(int button, int index) {
       switch (item->function()) {
       case Blackbox::B_Execute:
 	if (item->exec()) {
-#ifndef __EMX__
+#ifndef   __EMX__
           int dslen = strlen(DisplayString(screen->getDisplay()));
 	  
           char *displaystring = new char[dslen + 32];
@@ -74,21 +74,13 @@ void Rootmenu::itemSelected(int button, int index) {
 
           delete [] displaystring;
           delete [] command;
-#else
+#else // !__EMX__
 	  spawnlp(P_NOWAIT, "cmd.exe", "cmd.exe", "/c", item->exec(), NULL);
-#endif
+#endif // __EMX__
 	}
 	
 	break;
-      
-      case Blackbox::B_ExecReconfigure:
-	if (item->exec()) {
-	  char *command = new char[strlen(item->exec()) + 1];
-	  sprintf(command, "%s", item->exec());
-	  system(command);
-	  delete [] command;
-	}
-	
+      	
       case Blackbox::B_Reconfigure:
 	blackbox->reconfigure();
 	break;
@@ -118,7 +110,6 @@ void Rootmenu::itemSelected(int button, int index) {
       
       if (! (screen->getRootmenu()->hasUserMoved() || hasUserMoved()) &&
 	  item->function() != Blackbox::B_Reconfigure &&
-	  item->function() != Blackbox::B_ExecReconfigure &&
 	  item->function() != Blackbox::B_SetStyle)
 	screen->getRootmenu()->hide();
     }

@@ -40,6 +40,12 @@ Contributors:
          - beta testing, bug reports
         Steve Udell <hettar@teleport.com>
          - beta testing, bug reports, questions (very good ones)
+        Jeff Raven <jraven@psu.edu>
+        - bug reports and fixes/patches/suggestions (excellent work)
+        Gregory Barlow <barlowg@ncssm-server.ncssm.edu>
+        - bug reports and patches/suggestions (original middle click advocate)
+        Dyon Balding <dyon.balding@eng.monash.edu.au>
+        - patch for Smart(er)Placement window placement
 
 I would also like to thank the creators of WindowMaker.  Reading the existing
 code has helped me immensely, and the BImage class follows the RImage data type

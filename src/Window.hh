@@ -19,12 +19,12 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef __Window_hh
-#define __Window_hh
+#ifndef   __Window_hh
+#define   __Window_hh
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#ifdef SHAPE
+#ifdef    SHAPE
 #  include <X11/extensions/shape.h>
 #endif // SHAPE
 
@@ -108,6 +108,7 @@ private:
       frame, rfhandle, ruhandle;
     Window window, title, border, handle, close_button, iconify_button,
       maximize_button, resize_handle;
+
     int x, y, x_resize, y_resize, x_move, y_move, x_grab, y_grab,
       x_maximize, y_maximize, y_border, x_handle;
     unsigned int width, height, title_h, title_w, handle_h, handle_w,
@@ -124,6 +125,7 @@ protected:
   Bool getWMNormalHints(void);
   Bool getWMProtocols(void);
   Bool getWMHints(void);
+  Bool getState(unsigned long *, unsigned long * = 0);
   Window createToplevelWindow(int, int, unsigned int, unsigned int,
 			      unsigned int);
   Window createChildWindow(Window, int ,int, unsigned int, unsigned int,
@@ -140,8 +142,8 @@ protected:
   void drawCloseButton(Bool);
   void drawIconifyButton(Bool);
   void drawMaximizeButton(Bool);
-  
-  Bool getState(unsigned long *, unsigned long * = 0);
+  void restoreGravity(void);
+  void setGravityOffsets(void);
   void setState(unsigned long);
   
   
@@ -159,7 +161,7 @@ public:
   void propertyNotifyEvent(Atom);
   void exposeEvent(XExposeEvent *);
   void configureRequestEvent(XConfigureRequestEvent *);
-#ifdef SHAPE
+#ifdef    SHAPE
   void shapeEvent(XShapeEvent *);
 #endif // SHAPE
   
@@ -205,7 +207,7 @@ public:
   unsigned int getClientWidth(void)  { return client.width; }
   unsigned int getTitleHeight(void)  { return frame.title_h; }
 
-  void removeIcon(void) { icon = NULL; }
+  void removeIcon(void) { icon = (BlackboxIcon *) 0; }
   void setFocusFlag(Bool);
   void iconify(void);
   void deiconify(Bool = True);

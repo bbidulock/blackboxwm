@@ -19,8 +19,8 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef __blackbox_icon_hh
-#define __blackbox_icon_hh
+#ifndef   __Icon_hh
+#define   __Icon_hh
 
 class IconMenu;
 class BlackboxIcon;
@@ -84,4 +84,4 @@ public:
 };
 
 
-#endif
+#endif // __Icon_hh

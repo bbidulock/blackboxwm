@@ -19,8 +19,8 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef __Clientmenu_hh
-#define __Clientmenu_hh
+#ifndef   __Clientmenu_hh
+#define   __Clientmenu_hh
 
 // forward declarations
 class Clientmenu;
@@ -30,8 +30,6 @@ class Workspace;
 
 #include "Basemenu.hh"
 
-
-#ifdef __Basemenu_hh
 
 class Clientmenu : public Basemenu {
 private:
@@ -46,8 +44,6 @@ protected:
 public:
   Clientmenu(Blackbox *, Workspace *);
 };
-
-#endif // __Basemenu_hh
 
 
 #endif // __Clientmenu_hh

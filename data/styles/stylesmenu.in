@@ -1,5 +1,6 @@
 # styles submenu fragment
 
+[style] (Results)          {@pkgdatadir@/styles/results}
 [style] (Black Magic)      {@pkgdatadir@/styles/blackmagic}
 [style] (Cold Steel)       {@pkgdatadir@/styles/coldsteel}
 [style] (The Color Purple) {@pkgdatadir@/styles/colorpurple}

@@ -19,8 +19,8 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef __Windowmenu_hh
-#define __Windowmenu_hh
+#ifndef   __Windowmenu_hh
+#define   __Windowmenu_hh
 
 // forward declaration
 class Windowmenu;

@@ -23,12 +23,11 @@
 #define   _GNU_SOURCE
 #endif // _GNU_SOURCE
 
-#ifdef HAVE_CONFIG_H
+#ifdef    HAVE_CONFIG_H
 #  include "../config.h"
-#endif
+#endif // HAVE_CONFIG_H
 
-#ifdef SLIT
-
+#ifdef    SLIT
 #include "blackbox.hh"
 #include "Image.hh"
 #include "Screen.hh"
@@ -52,7 +51,7 @@ Slit::Slit(Blackbox *bb, BScreen *scr) {
     CWOverrideRedirect | CWCursor | CWEventMask;
   attrib.background_pixmap = None;
   attrib.background_pixel = attrib.border_pixel =
-    screen->getBorderColor().pixel;
+    screen->getBorderColor()->getPixel();
   attrib.override_redirect = True;
   attrib.cursor = blackbox->getSessionCursor();
   attrib.event_mask = StructureNotifyMask | SubstructureRedirectMask |
@@ -72,13 +71,32 @@ Slit::Slit(Blackbox *bb, BScreen *scr) {
 }
 
 
-Slit::~Slit() {  
+Slit::~Slit() {
+  blackbox->grab();
+
+  while (clientList->count()) {
+    SlitClient *client = clientList->find(0);
+
+    XSelectInput(display, client->window, NoEventMask);
+    XReparentWindow(display, client->window, screen->getRootWindow(),
+		    frame.x + client->x, frame.y + client->y);
+    XMapWindow(display, client->window);
+
+    removeClient(client->window);
+  }
+
+  XSync(display, False);
+  
   delete clientList;
   delete slitmenu;
   
   screen->getImageControl()->removeImage(frame.pixmap);
   
+  blackbox->removeSlitSearch(frame.window);
+  
   XDestroyWindow(display, frame.window);
+
+  blackbox->ungrab();
 }
 
 
@@ -91,19 +109,26 @@ void Slit::addClient(Window w) {
     
     XWMHints *wmhints = XGetWMHints(display, w);
     
-    if (wmhints && (wmhints->flags & IconWindowHint) &&
-        (wmhints->icon_window != None)) {
-      XMoveWindow(display, client->client_window, screen->getXRes() + 10,
-		  screen->getYRes() + 10);
-      XMapWindow(display, client->client_window);
+    if (wmhints) {
+      if ((wmhints->flags & IconWindowHint) &&
+	  (wmhints->icon_window != None)) {
+	XMoveWindow(display, client->client_window, screen->getXRes() + 10,
+		    screen->getYRes() + 10);
+	XMapWindow(display, client->client_window);
+	
+	client->icon_window = wmhints->icon_window;
+	client->window = client->icon_window;
+      } else {
+	client->icon_window = None;
+	client->window = client->client_window;
+      }
       
-      client->icon_window = wmhints->icon_window;
-      client->window = client->icon_window;
+      XFree(wmhints);
     } else {
       client->icon_window = None;
       client->window = client->client_window;
     }
-
+    
     XWindowAttributes attrib;  
     if (XGetWindowAttributes(display, client->window, &attrib)) {    
       client->width = attrib.width;
@@ -149,6 +174,8 @@ void Slit::removeClient(Window w) {
       blackbox->removeSlitSearch(client->client_window);
       blackbox->removeSlitSearch(client->icon_window);
       clientList->remove(client);
+
+      delete client;
       
       reconfigure();
       
@@ -370,9 +397,10 @@ SlitMenu::SlitMenu(Slit *sl, BScreen *scr) :
   slit = sl;
   screen = scr;
   
+  setMinimumSublevels(2);
   setTitleVisibility(False);
-  setMovable(False);
   setHidable(True);
+  setMovable(False);
 
   defaultMenu();
 
@@ -396,6 +424,4 @@ void SlitMenu::itemSelected(int button, int item) {
     slit->reconfigure();
   }
 }
-
-
-#endif
+#endif // SLIT

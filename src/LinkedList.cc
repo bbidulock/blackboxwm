@@ -19,211 +19,217 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#ifndef   _GNU_SOURCE
+#define   _GNU_SOURCE
+#endif // _GNU_SOURCE
 
 #include "LinkedList.hh"
+#include <stdio.h>
 
 
 __llist_iterator::__llist_iterator(__llist *l) {
+  // initialize the iterator...
   list = l;
+  
   reset();
 }
 
 
-__llist_iterator::~__llist_iterator(void) {
-}
-
-
 void *__llist_iterator::current(void) {
-  return ((node) ? node->data : 0);
+  // return the current node data... if any
+  return ((node) ? node->getData() : 0);
 }
 
 
 void __llist_iterator::reset(void) {
+  // update the iterator's current node to the first node in the linked list
   if (list)
     node = list->_first;
 }
 
 
-void __llist_iterator::resetLast(void) {
-  if (list)
-    node = list->_last;
-}
-
 const int __llist_iterator::set(const int index) {
+  // set the current node to index
   if (list) {
-    if (index < list->elements && index >= 0) {
+    if (index < list->elements && index >= 0 && list->_first) {
       node = list->_first;
       
-      register int i;
-      for (i = 0; i < index; i++)
-	node = node->next;
+      for (register int i = 0; i < index; i++)
+	node = node->getNext();
       
       return 1;
     }
   }
-
+  
   node = (__llist_node *) 0;
   return 0;
 }
 
 
 void __llist_iterator::operator++(int) {
-  node = ((node) ? node->next : 0);
-}
-
-
-void __llist_iterator::operator--(int) {
-  node = ((node) ? node->prev : 0);
+  // iterate to the next node in the list...
+  node = ((node) ? node->getNext() : 0);
 }
 
 
 __llist::__llist(void *d) {
-  if (! d) {
-    _first = (__llist_node *) 0;
-    _last = (__llist_node *) 0;
-    elements = 0;
-  } else {
-    _first = new __llist_node;
-    _first->data = d;
-    _first->next = (__llist_node *) 0;
-    _first->prev = (__llist_node *) 0;
-    _last = _first;
-    elements = 1;
-  }
+  // initialize the linked list...
+  _first = (__llist_node *) 0;
+  _last = (__llist_node *) 0;
+  elements = 0;
+  
+  if (d) insert(d);
 }
 
 
 __llist::~__llist(void) {
-  register int i, r = elements;
-  for (i = 0; i < r; i++)
+  // remove all the items in the list...
+  for (register int i = 0, r = elements; i < r; i++)
     remove(0);
 }
 
 
 const int __llist::insert(void *d, int index) {
-  if (! _first) {
+  // insert item into linked list at specified index...
+  
+  if ((! _first) || (! _last)) {
+    // list is empty... insert the item as the first item, regardless of the
+    // index given
     _first = new __llist_node;
-    _first->data = d;
-    _first->next = (__llist_node *) 0;
-    _first->prev = (__llist_node *) 0;
+    _first->setData(d);
+    _first->setNext((__llist_node *) 0);
     _last = _first;
   } else {
-    // if index is -1... append the data to the end of the list
-    if (index == -1) {
+    if (index == 0) {
+      // if index is 0... prepend the data on the list
       __llist_node *nnode = new __llist_node;
-      nnode->data = d;
-      nnode->next = (__llist_node *) 0;
+      
+      nnode->setData(d);
+      nnode->setNext(_first);
+      
+      _first = nnode;
+    } else if ((index == -1) || (index == elements)) {
+      // if index is -1... append the data on the list
+      __llist_node *nnode = new __llist_node;
+      
+      nnode->setData(d);
+      nnode->setNext((__llist_node *) 0);
+      _last->setNext(nnode);
 
-      nnode->prev = _last;
-      _last->next = nnode;
       _last = nnode;
-    } else {
-      __llist_node *nnode = new __llist_node, *inode = _first;
-      // otherwise... insert the item at the position specified by index
-      if (index > elements) return -1;
-
-      register int i;
-      for (i = 0; i < index; i++)
-	inode = inode->next;
+    } else if (index < elements) {
+      // otherwise... insert the item at the position specified by index      
+      __llist_node *nnode = new __llist_node, *inode = _first->getNext();
+      
+      if (! nnode)
+	return -1;
+      
+      nnode->setData(d);
+      
+      for (register int i = 1; i < index; i++)
+	if (inode)
+	  inode = inode->getNext();
+	else {
+	  delete nnode;
+	  return -1;
+	}
       
       if ((! inode) || inode == _last) {
-	nnode->data = d;
-	nnode->next = (__llist_node *) 0;
+	nnode->setNext((__llist_node *) 0);
+	_last->setNext(nnode);
 	
-	nnode->prev = _last;
-	_last->next = nnode;
 	_last = nnode;
       } else {
-	nnode->data = d;
-	nnode->next = inode->next;
-	nnode->prev = inode;
-	
-	inode->next->prev = nnode;
-	inode->next = nnode;
+	nnode->setNext(inode->getNext());
+	inode->setNext(nnode);
       }
     }
   }
-
+  
   return ++elements;
 }
 
-    
+
 const int __llist::remove(void *d) {
   // remove list item whose data pointer address matches the pointer address
   // given
   
-  __llist_node *rnode = _first;
-  
-  register int i;
-  for (i = 0; i < elements; i++) {
-    if (rnode->data == d) {
-      if (rnode->prev) {
-	rnode->prev->next = rnode->next;
-	if (rnode->next)
-	  rnode->next->prev = rnode->prev;
-      } else {
-	// we removed the _first item in the list... reflect that removal in
-	// the list internals
-	_first = rnode->next;
-	if (_first)
-	  _first->prev = (__llist_node *) 0;
-      }
-      
-      if (rnode == _last) {
-	_last = rnode->prev;
-	if (_last)
-	  _last->next = (__llist_node *) 0;
-      }
-      
-      --elements;
-      delete rnode;
-      break;
-    }
+  if ((! _first) || (! _last))
+    return -1;
+  else if (_first->getData() == d) {
+    // remove the first item in the list...
+    __llist_node *node = _first;
+    _first = _first->getNext();
     
-    if (rnode)
-      rnode = rnode->next;
-    else
-      return -1;
+    --elements;
+    delete node;
+    return 0;
+  } else {
+    // iterate through the list and remove the first occurance of the item
+    
+    // NOTE: we don't validate _first in this assignment, because it is checked
+    // for validity above...
+    __llist_node *rnode = _first->getNext(), *prev = _first;
+    
+    for (register int i = 1; i < elements; i++)
+      if (rnode)
+	if (rnode->getData() == d) {
+	  // we found the item... update the previous node and delete the
+	  // now useless rnode...
+	  prev->setNext(rnode->getNext());
+	  
+	  if (rnode == _last)
+	    _last = prev;
+	  
+	  --elements;
+	  delete rnode;
+	  return i;
+	} else {
+	  prev = rnode;
+	  rnode = rnode->getNext();
+	}
+    
+    return -1;
   }
-  
-  return i;
 }
 
 
 void *__llist::remove(const int index) {
-  if (index < elements && index >= 0) {
-    // remove list item at specified index within the list
+  if (index >= elements || index < 0 || (! _first) || (! _last))
+    return (void *) 0;
+  
+  // remove list item at specified index within the list
+  if (index == 0) {
+    // remove the first item in the list...
+    __llist_node *node = _first;
+    void *data_return = _first->getData();
     
-    __llist_node *rnode = _first;
-    void *data_return = 0;
-    
-    register int i;
-    for (i = 0; i < index; i++)
-      rnode = rnode->next;
-    
-    if (rnode->prev) {
-      rnode->prev->next = rnode->next;
-      if (rnode->next)
-	rnode->next->prev = rnode->prev;
-    } else {
-      // we removed the _first item in the list... reflect that removal in the
-      // list internals
-      _first = rnode->next;
-      if (_first)
-	_first->prev = (__llist_node *) 0;
-    }
-    
-    if (rnode == _last) {
-      _last = rnode->prev;
-      if (_last)
-	_last->next = (__llist_node *) 0;
-    }
+    _first = _first->getNext();
     
     --elements;
-    data_return = rnode->data;
+    delete node;
+    return data_return;
+  } else {
+    __llist_node *rnode = _first->getNext(), *prev = _first;
+    void *data_return = (void *) 0;
+    
+    for (register int i = 1; i < index; i++)
+      if (rnode) {
+	prev = rnode;
+	rnode = rnode->getNext();
+      } else
+	return (void *) 0;
+    
+    if (! rnode) return (void *) 0;
+    
+    prev->setNext(rnode->getNext());
+    data_return = rnode->getData();
+    
+    if (rnode == _last)
+      _last = prev;
+    
+    --elements;
+    data_return = rnode->getData();
     delete rnode;
     return data_return;
   }
@@ -233,15 +239,42 @@ void *__llist::remove(const int index) {
 
 
 void *__llist::find(const int index) {
-  if (index < elements && index >= 0) {
-    __llist_node *fnode = _first;
+  if (index >= elements || index < 0 || (! _first) || (! _last))
+    return (void *) 0;
+
+  if (index == 0) {
+    // return the first item
+    return first();
+  } else if (index == (elements - 1)) {
+    // return the last item
+    return last();
+  } else {
+    __llist_node *fnode = _first->getNext();
     
-    register int i;
-    for (i = 0; i < index; i++)
-      fnode = fnode->next;
+    for (register int i = 1; i < index; i++)
+      if (fnode)
+	fnode = fnode->getNext();
+      else
+	return (void *) 0;
     
-    return fnode->data;
+    return fnode->getData();
   }
+  
+  return (void *) 0;
+}
+
+
+void *__llist::first(void) {
+  if (_first)
+    return _first->getData();
+  
+  return (void *) 0;
+}
+
+
+void *__llist::last(void) {
+  if (_last)
+    return _last->getData();
   
   return (void *) 0;
 }

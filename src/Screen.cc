@@ -50,6 +50,10 @@
 #  include <string.h>
 #endif // STDC_HEADERS
 
+#ifndef   MAXPATHLEN
+#define   MAXPATHLEN 255
+#endif // MAXPATHLEN
+
 
 static Bool running = True;
 
@@ -63,28 +67,6 @@ static int anotherWMRunning(Display *display, XErrorEvent *) {
   
   return(-1);
 }
-
-
-/* Added by BS */
-static int removeRightParenEscapes(char line[], int len, int escapes) {
-  register int moves = escapes;
-  register int i;
-  
-  for(i = 0; i < len; ++i) {
-    if(escapes - moves > 0)
-      line[i-escapes+moves] = line[i];
-    
-    if(line[i] == '\\' && line[i+1] == ')')
-      --moves;
-    
-  }
-  
-  for ( i = i - escapes ; i < len ; ++i)
-    line[i] = 0;
-  
-  return i - escapes;
-}
-/* End addition by BS */
 
 
 BScreen::BScreen(Blackbox *bb, int scrn) {
@@ -112,84 +94,9 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
   resource.stylerc = 0;
   resource.font.menu = resource.font.title = (XFontStruct *) 0;
  
-#ifdef HAVE_STRFTIME
+#ifdef    HAVE_STRFTIME
   resource.strftime_format = 0;
-#endif
-  
-  resource.wres.decoration.focusTexture.color.allocated =
-    resource.wres.decoration.focusTexture.colorTo.allocated =
-    resource.wres.decoration.focusTexture.hiColor.allocated =
-    resource.wres.decoration.focusTexture.loColor.allocated =
-
-    resource.wres.decoration.unfocusTexture.color.allocated =
-    resource.wres.decoration.unfocusTexture.colorTo.allocated =
-    resource.wres.decoration.unfocusTexture.hiColor.allocated =
-    resource.wres.decoration.unfocusTexture.loColor.allocated =
-
-    resource.wres.decoration.focusTextColor.allocated =
-    resource.wres.decoration.unfocusTextColor.allocated =
-
-    resource.wres.button.focusTexture.color.allocated =
-    resource.wres.button.focusTexture.colorTo.allocated =
-    resource.wres.button.focusTexture.hiColor.allocated =
-    resource.wres.button.focusTexture.loColor.allocated =
-
-    resource.wres.button.unfocusTexture.color.allocated =
-    resource.wres.button.unfocusTexture.colorTo.allocated =
-    resource.wres.button.unfocusTexture.hiColor.allocated =
-    resource.wres.button.unfocusTexture.loColor.allocated =
-
-    resource.wres.button.pressedTexture.color.allocated =
-    resource.wres.button.pressedTexture.colorTo.allocated =
-    resource.wres.button.pressedTexture.hiColor.allocated =
-    resource.wres.button.pressedTexture.loColor.allocated =
-
-    resource.wres.frame.texture.color.allocated =
-    resource.wres.frame.texture.colorTo.allocated =
-    resource.wres.frame.texture.hiColor.allocated =
-    resource.wres.frame.texture.loColor.allocated =
-
-    resource.tres.toolbar.textColor.allocated =
-    resource.tres.toolbar.texture.color.allocated =
-    resource.tres.toolbar.texture.colorTo.allocated =
-    resource.tres.toolbar.texture.hiColor.allocated =
-    resource.tres.toolbar.texture.loColor.allocated =
-
-    resource.tres.label.texture.color.allocated =
-    resource.tres.label.texture.colorTo.allocated =
-    resource.tres.label.texture.hiColor.allocated =
-    resource.tres.label.texture.loColor.allocated =
-
-    resource.tres.button.texture.color.allocated =
-    resource.tres.button.texture.colorTo.allocated =
-    resource.tres.button.texture.hiColor.allocated =
-    resource.tres.button.texture.loColor.allocated =
-
-    resource.tres.button.pressedTexture.color.allocated =
-    resource.tres.button.pressedTexture.colorTo.allocated =
-    resource.tres.button.pressedTexture.hiColor.allocated =
-    resource.tres.button.pressedTexture.loColor.allocated =
-
-    resource.tres.clock.texture.color.allocated =
-    resource.tres.clock.texture.colorTo.allocated =
-    resource.tres.clock.texture.hiColor.allocated =
-    resource.tres.clock.texture.loColor.allocated =
-
-    resource.mres.title.textColor.allocated =
-    resource.mres.title.texture.color.allocated =
-    resource.mres.title.texture.colorTo.allocated =
-    resource.mres.title.texture.hiColor.allocated =
-    resource.mres.title.texture.loColor.allocated =
-
-    resource.mres.frame.hiColor.allocated =
-    resource.mres.frame.textColor.allocated =
-    resource.mres.frame.hiTextColor.allocated =
-    resource.mres.frame.texture.color.allocated =
-    resource.mres.frame.texture.colorTo.allocated =
-    resource.mres.frame.texture.hiColor.allocated =
-    resource.mres.frame.texture.loColor.allocated =
-
-    resource.border_color.allocated = 0;
+#endif // HAVE_STRFTIME
   
   XDefineCursor(display, root_window, blackbox->getSessionCursor());
 
@@ -198,7 +105,9 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
 
   workspaceNames = new LinkedList<char>;
   workspacesList = new LinkedList<Workspace>;
-
+  
+  rootmenuList = new LinkedList<Rootmenu>;
+  
 #ifdef    KDE  
   kwm_module_list = new LinkedList<Window>;
   kwm_window_list = new LinkedList<Window>;
@@ -266,29 +175,29 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
   opGC = XCreateGC(display, root_window,
 		   GCForeground|GCFunction|GCSubwindowMode, &gcv);
 
-  gcv.foreground = getWResource()->decoration.unfocusTextColor.pixel;
+  gcv.foreground = getWResource()->decoration.unfocusTextColor.getPixel();
   gcv.font = getTitleFont()->fid;
   wunfocusGC = XCreateGC(display, root_window, GCForeground|GCBackground|
 		       GCFont, &gcv);
   
-  gcv.foreground = getWResource()->decoration.focusTextColor.pixel;
+  gcv.foreground = getWResource()->decoration.focusTextColor.getPixel();
   gcv.font = getTitleFont()->fid;
   wfocusGC = XCreateGC(display, root_window, GCForeground|GCBackground|
 		       GCFont, &gcv);
 
-  gcv.foreground = getMResource()->title.textColor.pixel;
+  gcv.foreground = getMResource()->title.textColor.getPixel();
   gcv.font = getTitleFont()->fid;
   mtitleGC = XCreateGC(display, root_window, GCForeground|GCFont, &gcv);
 
-  gcv.foreground = getMResource()->frame.textColor.pixel;
+  gcv.foreground = getMResource()->frame.textColor.getPixel();
   gcv.font = getMenuFont()->fid;
   mframeGC = XCreateGC(display, root_window, GCForeground|GCFont, &gcv);
 
-  gcv.foreground = getMResource()->frame.hiTextColor.pixel;
+  gcv.foreground = getMResource()->frame.hiTextColor.getPixel();
   mhiGC = XCreateGC(display, root_window, GCForeground|GCBackground|GCFont,
                       &gcv);
 
-  gcv.foreground = getMResource()->frame.hiColor.pixel;
+  gcv.foreground = getMResource()->frame.hiColor.getPixel();
   gcv.arc_mode = ArcChord;
   gcv.fill_style = FillSolid;
   mhbgGC = XCreateGC(display, root_window, GCForeground|GCFillStyle|GCArcMode,
@@ -311,23 +220,23 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
   }
   
 #ifdef    KDE
-    unsigned long data = (unsigned long) workspacesList->count();
-    
-    XChangeProperty(display, root_window,
-		    blackbox->getKWMNumberOfDesktopsAtom(),
-		    blackbox->getKWMNumberOfDesktopsAtom(), 32,
-		    PropModeReplace, (unsigned char *) &data, 1);
-    
-    sendToKWMModules(blackbox->getKWMModuleDesktopNumberChangeAtom(),
-		     (XID) data);
+  data = (unsigned long) workspacesList->count();
+
+  XChangeProperty(display, root_window,
+		  blackbox->getKWMNumberOfDesktopsAtom(),
+		  blackbox->getKWMNumberOfDesktopsAtom(), 32,
+		  PropModeReplace, (unsigned char *) &data, 1);
+  
+  sendToKWMModules(blackbox->getKWMModuleDesktopNumberChangeAtom(),
+		   (XID) data);
 #endif // KDE
     
-    workspacemenu->insert("Icons", iconmenu);
+  workspacemenu->insert("Icons", iconmenu);
   workspacemenu->update();
   
   current_workspace = workspacesList->first();
   workspacemenu->setHighlight(2);
-
+  
   toolbar = new Toolbar(blackbox, this);
 
 #ifdef    SLIT
@@ -352,16 +261,18 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
 
     XWMHints *wmhints = XGetWMHints(display, children[i]);
 
-    if (wmhints && (wmhints->flags & IconWindowHint) &&
-	(wmhints->icon_window != children[i])) {
-      for (int j = 0; j < (int) nchild; j++) {
-        if (children[j] == wmhints->icon_window) {
-          children[j] = None;
-	  
-          break;
-        }
+    if (wmhints) {
+      if ((wmhints->flags & IconWindowHint) &&
+	  (wmhints->icon_window != children[i])) {
+        for (int j = 0; j < (int) nchild; j++) {
+          if (children[j] == wmhints->icon_window) {
+            children[j] = None;
+	    
+            break;
+          }
+	}
       }
-
+      
       XFree(wmhints);
     }
   }
@@ -379,44 +290,65 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
 #endif // KDE
       
       if (! attrib.override_redirect && attrib.map_state != IsUnmapped) {
+
+#ifdef    SLIT
 	XWMHints *wmhints = XGetWMHints(display, children[i]);
 	
+	if (wmhints) {
+	  if ((wmhints->flags & StateHint) &&
+	      (wmhints->initial_state == WithdrawnState)) {
+	    slit->addClient(children[i]);
+	  } else if (! blackbox->searchSlit(children[i])) {
+#endif // SLIT
+	    
+	    BlackboxWindow *win = new BlackboxWindow(blackbox, this,
+						     children[i]);
+	    
+	    XMapRequestEvent mre;
+	    mre.window = children[i];
+	    win->mapRequestEvent(&mre);
+	    
 #ifdef    SLIT
-	if (wmhints && (wmhints->flags & StateHint) &&
-	    (wmhints->initial_state == WithdrawnState)) {
-    	  slit->addClient(children[i]);
+	  }
 	  
 	  XFree(wmhints);
-	} else if (! blackbox->searchSlit(children[i])) {
-#endif // SLIT
-	  
+	} else {
 	  BlackboxWindow *win = new BlackboxWindow(blackbox, this,
-					           children[i]);
+						   children[i]);
 	  
 	  XMapRequestEvent mre;
 	  mre.window = children[i];
 	  win->mapRequestEvent(&mre);
-	  
-#ifdef    SLIT
 	}
 #endif // SLIT
 	
       }
     }
   }
-  
+
+  XFree(children);
   XSync(display, False);
 }
 
 
 BScreen::~BScreen(void) {
   if (! managed) return;
+
+  removeWorkspaceNames();
+
+  while (workspacesList->count())
+    delete workspacesList->remove(0);
+  
+  while (rootmenuList->count())
+    rootmenuList->remove(0);
   
 #ifdef    HAVE_STRFTIME
   if (resource.strftime_format) delete [] resource.strftime_format;
 #endif // HAVE_STRFTIME
 
   delete rootmenu;
+  delete workspacemenu;
+  delete iconmenu;
 
 #ifdef    SLIT
   delete slit;
@@ -427,6 +359,8 @@ BScreen::~BScreen(void) {
 
   delete workspacesList;
   delete workspaceNames;
+
+  delete rootmenuList;
 
 #ifdef    KDE
   delete kwm_module_list;
@@ -453,98 +387,110 @@ BScreen::~BScreen(void) {
 }
 
 void BScreen::readDatabaseTexture(char *rname, char *rclass,
-				  BTexture *texture)
-{
+				  BTexture *texture) {
   XrmValue value;
   char *value_type;
   
-  texture->texture = 0;
+  texture->setTexture(0);
   
   if (XrmGetResource(resource.stylerc, rname, rclass, &value_type,
 		     &value)) {
-    if (strstr(value.addr, "Solid")) {
-      texture->texture |= BImage_Solid;
-    } else if (strstr(value.addr, "Gradient")) {
-      texture->texture |= BImage_Gradient;
+    if (strstr(value.addr, "Solid") || strstr(value.addr, "solid")) {
+      texture->addTexture(BImage_Solid);
+    } else if (strstr(value.addr, "Gradient") ||
+               strstr(value.addr, "gradient")) {
+      texture->addTexture(BImage_Gradient);
+
+#ifdef    INTERLACE
+      if (strstr(value.addr, "Interlaced") ||
+          strstr(value.addr, "interlaced"))
+        texture->addTexture(BImage_Interlaced);
+#endif // INTERLACE
       
-      if (strstr(value.addr, "Diagonal")) {
-	texture->texture |= BImage_Diagonal;
-      } else if (strstr(value.addr, "Horizontal")) {
-	texture->texture |= BImage_Horizontal;
-      } else if (strstr(value.addr, "Vertical")) {
-	texture->texture |= BImage_Vertical;
+      if (strstr(value.addr, "Diagonal") ||
+          strstr(value.addr, "diagonal")) {
+	texture->addTexture(BImage_Diagonal);
+      } else if (strstr(value.addr, "Horizontal") ||
+                 strstr(value.addr, "horizontal")) {
+	texture->addTexture(BImage_Horizontal);
+      } else if (strstr(value.addr, "Vertical") ||
+                 strstr(value.addr, "vertical")) {
+	texture->addTexture(BImage_Vertical);
       } else
-	texture->texture |= BImage_Diagonal;
+	texture->addTexture(BImage_Diagonal);
     } else
-      texture->texture |= BImage_Solid;
+      texture->addTexture(BImage_Solid);
     
-    if (strstr(value.addr, "Raised"))
-      texture->texture |= BImage_Raised;
-    else if (strstr(value.addr, "Sunken"))
-      texture->texture |= BImage_Sunken;
-    else if (strstr(value.addr, "Flat"))
-      texture->texture |= BImage_Flat;
+    if (strstr(value.addr, "Raised") || strstr(value.addr, "raised"))
+      texture->addTexture(BImage_Raised);
+    else if (strstr(value.addr, "Sunken") || strstr(value.addr, "sunken"))
+      texture->addTexture(BImage_Sunken);
+    else if (strstr(value.addr, "Flat") || strstr(value.addr, "flat"))
+      texture->addTexture(BImage_Flat);
     else
-      texture->texture |= BImage_Raised;
+      texture->addTexture(BImage_Raised);
     
-    if (! (texture->texture & BImage_Flat))
-      if (strstr(value.addr, "Bevel"))
-	if (strstr(value.addr, "Bevel1"))
-	  texture->texture |= BImage_Bevel1;
-	else if (strstr(value.addr, "Bevel2"))
-	  texture->texture |= BImage_Bevel2;
+    if (! (texture->getTexture() & BImage_Flat))
+      if (strstr(value.addr, "Bevel")) {
+	if (strstr(value.addr, "Bevel2") || strstr(value.addr, "bevel2"))
+	  texture->addTexture(BImage_Bevel2);
 	else
-	  texture->texture |= BImage_Bevel1;
+	  texture->addTexture(BImage_Bevel1);
+      } else
+        texture->addTexture(BImage_Bevel1);
   }
   
-  if (texture->texture & BImage_Solid) {
+  if (texture->getTexture() & BImage_Solid) {
     int clen = strlen(rclass) + 8, nlen = strlen(rname) + 8;
     char *colorclass = new char[clen], *colorname = new char[nlen];
     
     sprintf(colorclass, "%s.Color", rclass);
     sprintf(colorname,  "%s.color", rname);
     
-    readDatabaseColor(colorname, colorclass, &(texture->color));
+    readDatabaseColor(colorname, colorclass, texture->getColor());
     
     delete [] colorclass;
     delete [] colorname;
     
-    if ((! texture->color.allocated) ||
-	(texture->texture & BImage_Flat))
+    if ((! texture->getColor()->isAllocated()) ||
+	(texture->getTexture() & BImage_Flat))
       return;
     
     XColor xcol;
     
-    xcol.red = (unsigned int) (texture->color.red +
-			       (texture->color.red >> 1));
+    xcol.red = (unsigned int) (texture->getColor()->getRed() +
+			       (texture->getColor()->getRed() >> 1));
     if (xcol.red >= 0xff) xcol.red = 0xffff;
     else xcol.red *= 0xff;
-    xcol.green = (unsigned int) (texture->color.green +
-				 (texture->color.green >> 1));
+    xcol.green = (unsigned int) (texture->getColor()->getGreen() +
+				 (texture->getColor()->getGreen() >> 1));
     if (xcol.green >= 0xff) xcol.green = 0xffff;
     else xcol.green *= 0xff;
-    xcol.blue = (unsigned int) (texture->color.blue +
-				(texture->color.blue >> 1));
+    xcol.blue = (unsigned int) (texture->getColor()->getBlue() +
+				(texture->getColor()->getBlue() >> 1));
     if (xcol.blue >= 0xff) xcol.blue = 0xffff;
     else xcol.blue *= 0xff;
     
     if (! XAllocColor(display, image_control->getColormap(), &xcol))
       xcol.pixel = 0;
     
-    texture->hiColor.pixel = xcol.pixel;
+    texture->getHiColor()->setPixel(xcol.pixel);
     
-    xcol.red = (unsigned int) ((texture->color.red >> 2) +
-			       (texture->color.red >> 1)) * 0xff;
-    xcol.green = (unsigned int) ((texture->color.green >> 2) +
-				 (texture->color.green >> 1)) * 0xff;
-    xcol.blue = (unsigned int) ((texture->color.blue >> 2) +
-				(texture->color.blue >> 1)) * 0xff;
+    xcol.red =
+      (unsigned int) ((texture->getColor()->getRed() >> 2) +
+		      (texture->getColor()->getRed() >> 1)) * 0xff;
+    xcol.green =
+      (unsigned int) ((texture->getColor()->getGreen() >> 2) +
+		      (texture->getColor()->getGreen() >> 1)) * 0xff;
+    xcol.blue =
+      (unsigned int) ((texture->getColor()->getBlue() >> 2) +
+		      (texture->getColor()->getBlue() >> 1)) * 0xff;
     
     if (! XAllocColor(display, image_control->getColormap(), &xcol))
       xcol.pixel = 0;
     
-    texture->loColor.pixel = xcol.pixel;
-  } else if (texture->texture & BImage_Gradient) {
+    texture->getLoColor()->setPixel(xcol.pixel);
+  } else if (texture->getTexture() & BImage_Gradient) {
     int clen = strlen(rclass) + 10, nlen = strlen(rname) + 10;
     char *colorclass = new char[clen], *colorname = new char[nlen],
       *colortoclass = new char[clen], *colortoname = new char[nlen];
@@ -555,8 +501,8 @@ void BScreen::readDatabaseTexture(char *rname, char *rclass,
     sprintf(colortoclass, "%s.ColorTo", rclass);
     sprintf(colortoname,  "%s.colorTo", rname);
     
-    readDatabaseColor(colorname, colorclass, &(texture->color));
-    readDatabaseColor(colortoname, colortoclass, &(texture->colorTo));
+    readDatabaseColor(colorname, colorclass, texture->getColor());
+    readDatabaseColor(colortoname, colortoclass, texture->getColorTo());
     
     delete [] colorclass;
     delete [] colorname;
@@ -570,19 +516,24 @@ void BScreen::readDatabaseColor(char *rname, char *rclass, BColor *color) {
   XrmValue value;
   char *value_type;
   
-  if (color->allocated) {
+  if (color->isAllocated()) {
+    unsigned long pixel = color->getPixel();
+
     XFreeColors(display, image_control->getColormap(),
-		&(color->pixel), 1, 0);
-    color->allocated = False;
+		&pixel, 1, 0);
+    color->setAllocated(False);
   }
   
   if (XrmGetResource(resource.stylerc, rname, rclass, &value_type,
 		     &value)) {
-    color->pixel = image_control->getColor(value.addr, &color->red,
-					   &color->green, &color->blue);
-    color->allocated = 1;
+    unsigned char r, g, b;
+
+    color->setPixel(image_control->getColor(value.addr, &r, &g, &b));
+    color->setRGB(r, g, b);
+    color->setAllocated(True);
   } else {
-    color->pixel = color->red = color->green = color->blue = 0;
+    color->setPixel(0);
+    color->setRGB(0, 0, 0);
   }
 }
 
@@ -597,41 +548,41 @@ void BScreen::reconfigure(void) {
   gcv.subwindow_mode = IncludeInferiors;
   XChangeGC(display, opGC, GCForeground|GCFunction|GCSubwindowMode, &gcv);
 
-  gcv.foreground = getWResource()->decoration.unfocusTextColor.pixel;
+  gcv.foreground = getWResource()->decoration.unfocusTextColor.getPixel();
   gcv.font = getTitleFont()->fid;
   XChangeGC(display, wunfocusGC, GCForeground|GCBackground| GCFont, &gcv);
 
-  gcv.foreground = getWResource()->decoration.focusTextColor.pixel;
+  gcv.foreground = getWResource()->decoration.focusTextColor.getPixel();
   gcv.font = getTitleFont()->fid;
   XChangeGC(display, wfocusGC, GCForeground|GCBackground| GCFont, &gcv);
 
-  gcv.foreground = getMResource()->title.textColor.pixel;
+  gcv.foreground = getMResource()->title.textColor.getPixel();
   gcv.font = getTitleFont()->fid;
   XChangeGC(display, mtitleGC, GCForeground|GCFont, &gcv);
   
-  gcv.foreground = getMResource()->frame.textColor.pixel;
+  gcv.foreground = getMResource()->frame.textColor.getPixel();
   gcv.font = getMenuFont()->fid;
   XChangeGC(display, mframeGC, GCForeground|GCFont, &gcv);
 
-  gcv.foreground = getMResource()->frame.hiTextColor.pixel;
+  gcv.foreground = getMResource()->frame.hiTextColor.getPixel();
   XChangeGC(display, mhiGC, GCForeground|GCBackground|GCFont, &gcv);
 
-  gcv.foreground = getMResource()->frame.hiColor.pixel;
+  gcv.foreground = getMResource()->frame.hiColor.getPixel();
   gcv.arc_mode = ArcChord;
   gcv.fill_style = FillSolid;
   XChangeGC(display, mhbgGC, GCForeground|GCFillStyle|GCArcMode, &gcv);
-  
-  InitMenu();
-   
+
   workspacemenu->reconfigure();
   iconmenu->reconfigure();
+  
+  InitMenu();
   rootmenu->reconfigure();
+
+  toolbar->reconfigure();
 
 #ifdef    SLIT
   slit->reconfigure();
 #endif // SLIT
-
-  toolbar->reconfigure();
 
   LinkedListIterator<Workspace> it(workspacesList);
   for (; it.current(); it++)
@@ -639,9 +590,16 @@ void BScreen::reconfigure(void) {
 }
 
 
+void BScreen::rereadMenu(void) {
+  InitMenu();
+
+  rootmenu->reconfigure();
+}
+
+
 void BScreen::removeWorkspaceNames(void) {
   while (workspaceNames->count())
-    workspaceNames->remove(0);
+    delete [] workspaceNames->remove(0);
 }
 
 
@@ -668,63 +626,24 @@ void BScreen::LoadStyle(void) {
 		      &(resource.wres.button.pressedTexture));
   readDatabaseColor("window.focus.textColor", "Window.Focus.TextColor",
 		    &(resource.wres.decoration.focusTextColor));
-  if (! resource.wres.decoration.focusTextColor.allocated)
-    resource.wres.decoration.focusTextColor.pixel =
-      image_control->getColor("white",
-			      &resource.wres.decoration.focusTextColor.red,
-			      &resource.wres.decoration.focusTextColor.green,
-			      &resource.wres.decoration.focusTextColor.blue);
   readDatabaseColor("window.unfocus.textColor", "Window.Unfocus.TextColor",
 		    &(resource.wres.decoration.unfocusTextColor));
-  if (! resource.wres.decoration.unfocusTextColor.allocated)
-    resource.wres.decoration.unfocusTextColor.pixel =
-      image_control->getColor("darkgrey",
-			      &resource.wres.decoration.unfocusTextColor.red,
-			      &resource.wres.decoration.unfocusTextColor.green,
-			      &resource.wres.decoration.unfocusTextColor.blue);
   
   // load menu configuration
   readDatabaseTexture("menu.title", "Menu.Title",
 		      &(resource.mres.title.texture));
   readDatabaseTexture("menu.frame", "Menu.Frame",
 		      &(resource.mres.frame.texture));
-  
   readDatabaseColor("menu.title.textColor", "Menu.Title.TextColor",
 		    &(resource.mres.title.textColor));
-  if (! resource.mres.title.textColor.allocated)
-    resource.mres.title.textColor.pixel =
-      image_control->getColor("white", &resource.mres.title.textColor.red,
-			      &resource.mres.title.textColor.green,
-			      &resource.mres.title.textColor.blue);
-  
   readDatabaseColor("menu.frame.highlightColor",
 			   "Menu.Frame.HighLightColor",
 			   &(resource.mres.frame.hiColor));
-  if (! resource.mres.frame.hiColor.allocated)
-    resource.mres.frame.hiColor.pixel =
-      image_control->getColor("black",
-			      &resource.mres.frame.hiColor.red,
-			      &resource.mres.frame.hiColor.green,
-			      &resource.mres.frame.hiColor.blue);
-
   readDatabaseColor("menu.frame.textColor", "Menu.Frame.TextColor",
 		    &(resource.mres.frame.textColor));
-  if (! resource.mres.frame.textColor.allocated)
-    resource.mres.frame.textColor.pixel =
-      image_control->getColor("black",
-			      &resource.mres.frame.textColor.red,
-			      &resource.mres.frame.textColor.green,
-			      &resource.mres.frame.textColor.blue);
-  
   readDatabaseColor("menu.frame.hiTextColor", "Menu.Frame.HiTextColor",
 		    &(resource.mres.frame.hiTextColor));
-  if (! resource.mres.frame.hiTextColor.allocated)
-    resource.mres.frame.hiTextColor.pixel =
-      image_control->getColor("white",
-			      &resource.mres.frame.hiTextColor.red,
-			      &resource.mres.frame.hiTextColor.green,
-			      &resource.mres.frame.hiTextColor.blue);
-
+  
   // toolbar configuration
   readDatabaseTexture("toolbar", "Toolbar",
 		      &(resource.tres.toolbar.texture));
@@ -736,24 +655,11 @@ void BScreen::LoadStyle(void) {
 		      &(resource.tres.button.texture));
   readDatabaseTexture("toolbar.button.pressed", "Toolbar.Button.Pressed",
 		      &(resource.tres.button.pressedTexture));
-  
   readDatabaseColor("toolbar.textColor", "Toolbar.TextColor",
-			   &(resource.tres.toolbar.textColor));
-  if (! resource.tres.toolbar.textColor.allocated)
-    resource.tres.toolbar.textColor.pixel =
-      image_control->getColor("black",
-			      &resource.tres.toolbar.textColor.red,
-			      &resource.tres.toolbar.textColor.green,
-			      &resource.tres.toolbar.textColor.blue);
+		    &(resource.tres.toolbar.textColor));
 
   // load border color
   readDatabaseColor("borderColor", "BorderColor", &(resource.border_color));
-  if (! resource.border_color.allocated)
-    resource.border_color.pixel =
-      image_control->getColor("black",
-			      &resource.border_color.red,
-			      &resource.border_color.green,
-			      &resource.border_color.blue);
   
   // load border and handle widths
   if (XrmGetResource(resource.stylerc,
@@ -830,22 +736,16 @@ void BScreen::LoadStyle(void) {
 		     "TitleFont", &value_type, &value)) {
     if ((resource.font.title = XLoadQueryFont(display, value.addr)) == NULL) {
       fprintf(stderr,
-	      "blackbox: couldn't load font '%s'\n"
-              "          reverting to default font.\n", value.addr);
+	      "BScreen::LoadStyle(): couldn't load font '%s'\n", value.addr);
       if ((resource.font.title = XLoadQueryFont(display, defaultFont))
 	  == NULL) {
-	fprintf(stderr,
-		"blackbox: couldn't load default font.  please check to\n"
-		"make sure the necessary font is installed '%s'\n",
-		defaultFont);
+	fprintf(stderr, "BScreen::LoadStyle(): couldn't load default font.\n");
 	exit(2);
       }  
     }
   } else {
     if ((resource.font.title = XLoadQueryFont(display, defaultFont)) == NULL) {
-      fprintf(stderr,
-	      "blackbox: couldn't load default font.  please check to\n"
-	      "make sure the necessary font is installed '%s'\n", defaultFont);
+      fprintf(stderr, "BScreen::LoadStyle(): couldn't load default font\n");
       exit(2);
     }
   }
@@ -860,22 +760,16 @@ void BScreen::LoadStyle(void) {
 		     "MenuFont", &value_type, &value)) {
     if ((resource.font.menu = XLoadQueryFont(display, value.addr)) == NULL) {
       fprintf(stderr,
-	      "blackbox: couldn't load font '%s'\n"
-	      "          reverting to default font.\n", value.addr);
+	      "BScreen::LoadStyle(): couldn't load font '%s'\n", value.addr);
       if ((resource.font.menu = XLoadQueryFont(display, defaultFont))
 	  == NULL) {
-	fprintf(stderr,
-		"blackbox: couldn't load default font.  please check to\n"
-		"make sure the necessary font is installed '%s'\n",
-		defaultFont);
+	fprintf(stderr, "BScreen::LoadStyle(): couldn't load default font.\n");
 	exit(2);
       }  
     }
   } else {
     if ((resource.font.menu = XLoadQueryFont(display, defaultFont)) == NULL) {
-      fprintf(stderr,
-	      "blackbox: couldn't load default font.  please check to\n"
-	      "make sure the necessary font is installed '%s'\n", defaultFont);
+      fprintf(stderr, "BScreen::LoadStyle: couldn't load default font.\n");
       exit(2);
     }
   }
@@ -883,7 +777,7 @@ void BScreen::LoadStyle(void) {
   if (XrmGetResource(resource.stylerc,
                      "rootCommand",
                      "RootCommand", &value_type, &value)) {
-#ifndef __EMX__
+#ifndef   __EMX__
     int dslen = strlen(DisplayString(display));
     
     char *displaystring = new char[dslen + 32];
@@ -897,9 +791,9 @@ void BScreen::LoadStyle(void) {
     
     delete [] displaystring;
     delete [] command;
-#else
+#else // !__EMX__
     spawnlp(P_NOWAIT, "cmd.exe", "cmd.exe", "/c", item->exec(), NULL);
-#endif
+#endif // __EMX__
   }
   
   XrmDestroyDatabase(resource.stylerc);
@@ -913,9 +807,6 @@ int BScreen::addWorkspace(void) {
   workspacemenu->insert(wkspc->getName(), wkspc->getMenu(),
 			wkspc->getWorkspaceID() + 1);
   workspacemenu->update();
-  if (workspacemenu->isVisible())
-    workspacemenu->move(toolbar->getX(), toolbar->getY() - 
-			workspacemenu->getHeight() - 1);
 
 #ifdef    KDE
   unsigned long data = (unsigned long) workspacesList->count();
@@ -944,9 +835,6 @@ int BScreen::removeLastWorkspace(void) {
     
     workspacemenu->remove(wkspc->getWorkspaceID() + 2);
     workspacemenu->update();
-    if (workspacemenu->isVisible())
-      workspacemenu->move(toolbar->getX(), toolbar->getY() -
-			  workspacemenu->getHeight() - 1);
 
     workspacesList->remove(wkspc);
     delete wkspc;
@@ -1002,12 +890,7 @@ void BScreen::changeWorkspaceID(int id) {
 	(! blackbox->getFocusedWindow()->isStuck()))
       current_workspace->setFocusWindow(-1);
     current_workspace = getWorkspace(id);
-   
-    if (workspacemenu->isVisible()) {
-      workspacemenu->hide();
-      toolbar->redrawMenuButton(False, True);
-    }
-
+    
     toolbar->redrawWorkspaceLabel(True);
     workspacemenu->setHighlight(id + 2);
     
@@ -1027,27 +910,27 @@ void BScreen::changeWorkspaceID(int id) {
 
 
 void BScreen::raiseWindows(Window *workspace_stack, int num) {
-  Window *session_stack = new Window[(num + workspacesList->count() + 4)];
-
+  Window *session_stack = new
+    Window[(num + workspacesList->count() + rootmenuList->count() + 4)];
+  int i = 0, k = num;
+  
   blackbox->grab();
   
-  int i = 0, k = 0;
-
-  XRaiseWindow(display, rootmenu->getWindowID());
   *(session_stack + i++) = rootmenu->getWindowID();
+  LinkedListIterator<Rootmenu> rit(rootmenuList);
+  for (; rit.current(); rit++)
+    *(session_stack + i++) = rit.current()->getWindowID();
   
-  if (toolbar->isOnTop()) {
-    *(session_stack + i++) = iconmenu->getWindowID();
-    *(session_stack + i++) = workspacemenu->getWindowID();
-    
-    LinkedListIterator<Workspace> it(workspacesList);
-    for (; it.current(); it++)
-      *(session_stack + i++) = it.current()->getMenu()->getWindowID();
-    
-    *(session_stack + i++) = toolbar->getWindowID();  
-  }
+  *(session_stack + i++) = workspacemenu->getWindowID();
+  *(session_stack + i++) = iconmenu->getWindowID();
   
-  k = num;
+  LinkedListIterator<Workspace> wit(workspacesList);
+  for (; wit.current(); wit++)
+    *(session_stack + i++) = wit.current()->getMenu()->getWindowID();
+  
+  if (toolbar->isOnTop())
+    *(session_stack + i++) = toolbar->getWindowID();
+  
   while (k--)
     *(session_stack + i++) = *(workspace_stack + k);
   
@@ -1070,7 +953,11 @@ void BScreen::saveStrftimeFormat(char *format) {
 
 
 void BScreen::addWorkspaceName(char *name) {
-  workspaceNames->insert(name);
+  int nlen = strlen(name) + 1;
+  char *wkspc_name = new char[nlen];
+  strncpy(wkspc_name, name, nlen);
+  
+  workspaceNames->insert(wkspc_name);
 }
 
 
@@ -1196,59 +1083,59 @@ void BScreen::raiseFocus(void) {
 
 void BScreen::InitMenu(void) {
   if (rootmenu) {
-    int i, n = rootmenu->getCount();
-    for (i = 0; i < n; i++)
+    while (rootmenuList->count())
+      rootmenuList->remove(0);
+    
+    while (rootmenu->getCount())
       rootmenu->remove(0);
   } else
     rootmenu = new Rootmenu(blackbox, this);
   
   Bool defaultMenu = True;
-
+  
   if (blackbox->getMenuFilename()) {
     FILE *menu_file = fopen(blackbox->getMenuFilename(), "r");
 
     if (menu_file) {
       if (! feof(menu_file)) {
-	char line[1024], tmp1[1024];
+	char line[1024], label[1024];
 	memset(line, 0, 1024);
-	memset(tmp1, 0, 1024);
-
+	memset(label, 0, 1024);
+	
 	while (fgets(line, 1024, menu_file) && ! feof(menu_file)) {
 	  if (line[0] != '#') {
-	    int i, ri, len = strlen(line);
+	    int i, key = 0, index = -1, len = strlen(line);
 	    
+	    key = 0;
 	    for (i = 0; i < len; i++)
-	      if (line[i] == '[') { i++; break; }
-	    for (ri = len; ri > 0; ri--)
-	      if (line[ri] == ']') break;
+	      if (line[i] == '[') index = 0;
+	      else if (line[i] == ']') break;
+	      else if (line[i] != ' ')
+		if (index++ >= 0)
+		  key += line[i] | 0x20;
 	    
-	    if (i < ri && ri > 0) {
-	      strncpy(tmp1, line + i, ri - i);
-	      *(tmp1 + (ri - i)) = '\0';
+	    if (key == 517) {
+	      index = -1;
+	      for (i = index; i < len; i++)
+		if (line[i] == '(') index = 0;
+		else if (line[i] == ')') break;
+		else if (index++ >= 0) {
+		  if (line[i] == '\\' && i < len - 1) i++;
+		  label[index - 1] = line[i];
+		}
 	      
-	      if (strstr(tmp1, "begin")) {
-		for (i = 0; i < len; i++)
-		  if (line[i] == '(') { i++; break; }
-		for (ri = len; i < len; ri--)
-		  if (line[ri] == ')') { break; }
-		
-		char label[1024];
-		if (i < ri && ri > 0) {
-		  strncpy(label, line + i, ri - i);
-		  *(label + (ri - i)) = '\0';
-		} else
-                  label[0] = '\0';
-		
-		rootmenu->setMenuLabel(label);
-		defaultMenu = parseMenuFile(menu_file, rootmenu);
-		break;
-	      }
+	      if (index == -1) index = 0;
+	      label[index] = '\0';
+	      
+	      rootmenu->setLabel(label);
+	      defaultMenu = parseMenuFile(menu_file, rootmenu);
+	      break;
 	    }
 	  }
 	}
       } else
 	fprintf(stderr, "%s: Empty menu file", blackbox->getMenuFilename());
-
+      
       fclose(menu_file);
     } else
       perror(blackbox->getMenuFilename());
@@ -1259,423 +1146,250 @@ void BScreen::InitMenu(void) {
     rootmenu->insert("xterm", Blackbox::B_Execute, "xterm");
     rootmenu->insert("Restart", Blackbox::B_Restart);
     rootmenu->insert("Exit", Blackbox::B_Exit);
-  }
+  } else
+    blackbox->saveMenuFilename(blackbox->getMenuFilename());
 }
 
 
 Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
-  char line[1024], tmp1[1024], tmp2[1024];
+  char line[1024], label[1024], command[1024];
   
   while (! feof(file)) {
     memset(line, 0, 1024);
-    memset(tmp1, 0, 1024);
-    memset(tmp2, 0, 1024);
+    memset(label, 0, 1024);
+    memset(command, 0, 1024);
     
     if (fgets(line, 1024, file)) {
       if (line[0] != '#') {
-	register int index, rear_index;
-	int old_rear_index, escapes, len = strlen(line);
+	int i, parse = 0, key = 0, index = -1, line_length = strlen(line),
+	  label_length = 0, command_length = 0;
 	
-	for (index = 0; index < len; ++index)
-	  if (line[index] == '[') {
-	    index++;
-	    break;
+	// determine the keyword
+	key = 0;
+	for (i = 0; i < line_length; i++)
+	  if (line[i] == '[') parse = 1;
+	  else if (line[i] == ']') break;
+	  else if (line[i] != ' ')
+	    if (parse)
+	      key += line[i] | 0x20;
+	
+	// get the label enclosed in ()'s
+	parse = 0;
+	for (i = 0; i < line_length; i++)
+	  if (line[i] == '(') {
+	    index = 0;
+	    parse = 1;
+	  } else if (line[i] == ')') break;
+	  else if (index++ >= 0) {
+	    if (line[i] == '\\' && i < line_length - 1) i++;
+	    label[index - 1] = line[i];
 	  }
 	
-	for (rear_index = index; rear_index < len; ++rear_index) 
-	  if (line[rear_index] == ']')
-	    break;
+	if (parse) {
+	  label[index] = '\0';
+	  label_length = index;
+	} else {
+	  label[0] = '\0';
+	  label_length = 0;
+	}
 	
-	if (index < rear_index && rear_index > 0) {
-	  strncpy(tmp1, line + index, rear_index - index);
-	  *(tmp1 + (rear_index - index)) = '\0';
-	  old_rear_index = rear_index;
+	// get the command enclosed in {}'s
+	parse = 0;
+	index = -1;
+	for (i = 0; i < line_length; i++)
+	  if (line[i] == '{') {
+	    index = 0;
+	    parse = 1;
+	  } else if (line[i] == '}') break;
+	  else if (index++ >= 0) {
+	    if (line[i] == '\\' && i < line_length - 1) i++;
+	    command[index - 1] = line[i];
+	  }
+	
+	if (parse) {
+	  command[index] = '\0';
+	  command_length = index;
+	} else {
+	  command[0] = '\0';
+	  command_length = 0;
+	}
+	
+	switch (key) {
+        case 311: //end
+          return ((menu->getCount() == 0) ? True : False);
+	  
+          break;
+	  
+        case 333: // nop
+	  menu->insert(label);
 
-	  // at this point, we've extracted what kind of menu 
-	  // entry we're dealing with.  Now parse the rest of the line
-	  if (strstr(tmp1, "nop"))  {
-	    for (index = old_rear_index; index < len; index++)
-	      if (line[index] == '(') {
-		index++;
-		break;
-	      }
-	    
-	    escapes = 0;
-	    for (rear_index =  index; rear_index < len; ++rear_index)
-	      if (line[rear_index] == ')')
-		if (line[rear_index - 1] == '\\')
-		  ++escapes;
-		else
-		  break;
-	    
-	    char *label = 0;
-	    if (index < rear_index && rear_index > 0) {
-	      label = new char[rear_index - index + 1];
-	      strncpy(label, line + index, rear_index - index);
-	      *(label + (rear_index - index)) = '\0';
-			
-	      if(escapes > 0)
-		removeRightParenEscapes(label, rear_index - index, escapes);
-	      
-	      old_rear_index = rear_index;
-	      
-	      menu->insert(label, 0);
-	    } else { // there was a problem with the parens
-	      label = new char[1];
-	      *label = '\0';
-	      menu->insert(label);
+	  break;
+
+	case 421: // exec 
+	  if ((! *label) && (! *command)) {
+	    fprintf(stderr," BScreen::parseMenuFile: [exec] error, "
+		    "no menu label and/or command defined\n");
+	    continue;
+	  }
+	  
+	  menu->insert(label, Blackbox::B_Execute, command);
+	  
+	  break;
+	  
+	case 442: // exit
+	  if (! *label) {
+	      fprintf(stderr, "BScreen::parseMenuFile: [exit] error, "
+		      "no menu label defined\n");
+	      continue;
+	  }
+	  
+	  menu->insert(label, Blackbox::B_Exit);
+	  
+	  break;
+
+	case 561: // style
+	  {
+	    if ((! *label) || (! *command)) {
+	      fprintf(stderr, "BScreen::parseMenuFile: [style] error, "
+		      "no menu label and/or filename defined\n");
+	      continue;
 	    }
-	  }  else if (strstr(tmp1, "exit")) {
-	    for (index = old_rear_index; index < len; ++index)
-	      if (line[index] == '(') {
-		index++;
-		break;
-	      }
-
-	    escapes = 0;
-	    for (rear_index = index; rear_index < len; ++rear_index)
-	      if (line[rear_index] == ')')
-		if (line[rear_index - 1] == '\\')
-		  ++escapes;
-		else
-		  break;
 	    
-	    if (index < rear_index && rear_index > 0)  {
-	      char *label = new char[rear_index - index + 1];
-	      strncpy(label, line + index, rear_index - index);
-	      *(label + (rear_index - index)) = '\0';
-	      
-	      if(escapes > 0)
-		removeRightParenEscapes(label, rear_index - index, escapes);
-	      
-	      old_rear_index = rear_index;
-	      
-	      menu->insert(label, Blackbox::B_Exit);
+	    char style[MAXPATHLEN];
+
+	    // perform shell style ~ home directory expansion
+	    char *homedir = 0;
+	    int homedir_len = 0;
+	    if (*command == '~' && *(command + 1) == '/') {
+	      homedir = getenv("HOME");
+	      homedir_len = strlen(homedir);
 	    }
-	  } else if (strstr(tmp1, "restart")) {
-	    for (index = old_rear_index; index < len; ++index)
-	      if (line[index] == '(') {
-		++index;
-		break;
-	      }
-
-	    escapes = 0;
-	    for (rear_index = index; rear_index < len; ++rear_index)
-	      if (line[rear_index] == ')')
-		if (line[rear_index - 1] == '\\')
-		  ++escapes;
-		else
-		  break;
-		    
-	    if (index < rear_index && rear_index > 0) {
-	      char *label = new char[rear_index - index + 1];
-	      strncpy(label, line + index, rear_index - index);
-	      *(label + (rear_index - index)) = '\0';
+	    	    
+	    if (homedir && homedir_len != 0) {
+	      strncpy(style, homedir, homedir_len);
 	      
-	      if(escapes > 0)
-		removeRightParenEscapes(label, rear_index - index, escapes);
-	      
-	      old_rear_index = rear_index;
-	      
-	      for (index = old_rear_index; index < len; index++)
-		if (line[index] == '{') {
-		  ++index;
-		  break;
-		}
-	      
-	      for (rear_index = len; rear_index > 0; --rear_index)
-		if (line[rear_index] == '}')
-		  break;
-	      
-	      char *other = 0;
-	      if (index < rear_index && rear_index > 0) {
-		other = new char[rear_index - index + 1];
-		strncpy(other, line + index, rear_index - index);
-		*(other + (rear_index - index)) = '\0';
-	      }
-	      
-	      if (other)
-		menu->insert(label, Blackbox::B_RestartOther, other);
-	      else
-		menu->insert(label, Blackbox::B_Restart);
-	    }
-	  } else if (strstr(tmp1, "reconfig")) {
-	    for (index = old_rear_index; index < len; ++index)
-	      if (line[index] == '(') {
-		++index;
-		break;
-	      }
-
-	    escapes = 0;
-	    for (rear_index = index; rear_index < len; ++rear_index)
-	      if (line[rear_index] == ')')
-		if (line[rear_index - 1] == '\\')
-		  ++escapes;
-		else
-		  break;
-	    
-	    if (index < rear_index && rear_index > 0) {
-	      char *label = new char[rear_index - index + 1];
-	      strncpy(label, line + index, rear_index - index);
-	      *(label + (rear_index - index)) = '\0';
-			
-	      if(escapes > 0)
-		removeRightParenEscapes(label, rear_index - index, escapes);
-	      
-	      old_rear_index = rear_index;
-
-	      for (index = old_rear_index; index < len; ++index)
-		if (line[index] == '{') {
-		  ++index;
-		  break;
-		}
-	      
-	      for (rear_index = len; rear_index > 0; --rear_index)
-		if (line[rear_index] == '}')
-		  break;
-	      
-	      char *exec = 0;
-	      if (index < rear_index && rear_index > 0) {
-		exec = new char[rear_index - index + 1];
-		strncpy(exec, line + index, rear_index - index);
-		*(exec + (rear_index - index)) = '\0';
-	      }
-	      
-	      if (exec)
-		menu->insert(label, Blackbox::B_ExecReconfigure, exec);
-	      else
-		menu->insert(label, Blackbox::B_Reconfigure);
-	    }
-	  } else if (strstr(tmp1, "submenu")) {
-	    for (index = old_rear_index; index < len; ++index)
-	      if (line[index] == '(') {
-		++index;
-		break;
-	      }
-
-	    escapes = 0;	    
-	    for (rear_index = index; rear_index < len; ++rear_index)
-	      if (line[rear_index] == ')')
-		if (line[rear_index - 1] == '\\')
-		  ++escapes;
-		else
-		  break;
-		    
-	    char *label = 0;
-	    if (index < rear_index && rear_index > 0) {
-	      label = new char[rear_index - index + 1];
-	      strncpy(label, line + index, rear_index - index);
-	      *(label + (rear_index - index)) = '\0';
-	      
-	      if(escapes > 0)
-		removeRightParenEscapes(label, rear_index - index, escapes);
-	      
-	      old_rear_index = rear_index;
-	    }
-		    
-	    // this is an optional feature
-	    for (index = old_rear_index; index < len; ++index)
-	      if (line[index] == '{') {
-		++index;
-		break;
-	      }
-
-	    for (rear_index = len; rear_index > 0; --rear_index)
-	      if (line[rear_index] == '}')
-		break;
-	    
-	    char title[1024];
-	    if (index < rear_index && rear_index > 0) {
-	      strncpy(title, line + index, rear_index - index);
-	      *(title + (rear_index - index)) = '\0';
+	      strncpy(style + homedir_len, command + 1,
+		      command_length - 1);
+	      *(style + command_length + homedir_len - 1) = '\0';
 	    } else {
-	      int l = strlen(label);
-	      strncpy(title, label, l + 1);
+	      strncpy(style, command, command_length);
+	      *(style + command_length) = '\0';
 	    }
 	    
-	    Rootmenu *submenu = new Rootmenu(blackbox, this);
-	    submenu->setMenuLabel(title);
-	    parseMenuFile(file, submenu);
-	    submenu->update();
-	    menu->insert(label, submenu);
-	  } else if (strstr(tmp1, "end")) {
+	    menu->insert(label, Blackbox::B_SetStyle, style);
+	  }
+	  
+	  break;
+	  
+	case 740: // include
+	  {
+	    if (! *label) {
+	      fprintf(stderr, "BScreen::parseMenuFile: [include] error, "
+		      "no filename defined\n");
+	      continue;
+	    }
+	    
+	    char newfile[MAXPATHLEN];
+
+	    // perform shell style ~ home directory expansion
+	    char *homedir = 0;
+	    int homedir_len = 0;
+	    if (*label == '~' && *(label + 1) == '/') {
+	      homedir = getenv("HOME");
+	      homedir_len = strlen(homedir);
+	    }
+	    
+	    if (homedir && homedir_len != 0) {
+	      strncpy(newfile, homedir, homedir_len);
+	      
+	      strncpy(newfile + homedir_len, label + 1,
+		      label_length - 1);
+	      *(newfile + label_length + homedir_len - 1) = '\0';
+	    } else {
+	      strncpy(newfile, label, label_length);
+	      *(newfile + label_length) = '\0';
+	    }
+	    
+	    if (newfile) {
+	      FILE *submenufile = fopen(newfile, "r");
+	      
+	      if (submenufile) {
+		if (! feof(submenufile)) {
+		  if (! parseMenuFile(submenufile, menu))
+		    blackbox->saveMenuFilename(newfile);
+		  
+		  fclose(submenufile);
+		}
+	      } else
+		perror(newfile);
+	    }
+	  }
+	  
+	  break;
+	  
+	  case 767: // submenu
+	    {
+	      Rootmenu *submenu = new Rootmenu(blackbox, this);
+	      
+	      if (! *label) {
+		fprintf(stderr, "BScreen::parseMenuFile: [submenu] error, "
+			"no menu label defined\n");
+		continue;
+	      }
+	      
+	      if (*command)
+		submenu->setLabel(command);
+	      else
+		submenu->setLabel(label);
+	      
+	      parseMenuFile(file, submenu);
+	      submenu->update();
+	      menu->insert(label, submenu);
+	      rootmenuList->insert(submenu);
+	    }
+	    
 	    break;
-	  } else if (strstr(tmp1, "exec")) {
-	    for (index = old_rear_index; index < len; index++)
-	      if (line[index] == '(') { ++index; break; }
 
-	    escapes = 0;
-	    for (rear_index = index; rear_index < len; ++rear_index)
-	      if (line[rear_index] == ')')
-		if (line[rear_index - 1] == '\\')
-		  ++escapes;
-		else
-		  break;
-	    
-	    if (index < rear_index && rear_index > 0) {
-	      char *label = new char[rear_index - index + 1];
-	      strncpy(label, line + index, rear_index - index);
-	      *(label + (rear_index - index)) = '\0';
-	      
-	      if(escapes > 0)
-		removeRightParenEscapes(label, rear_index - index, escapes);
-
-	      old_rear_index = rear_index;
-	      
-	      for (index = old_rear_index; index < len; ++index)
-		if (line[index] == '{') {
-		  ++index;
-		  break;
-		}
-	      
-	      for (rear_index = len; rear_index > 0; --rear_index)
-		if (line[rear_index] == '}')
-		  break;
-			
-	      if (index < rear_index && rear_index > 0) {
-		char *command = new char[rear_index - index + 1];
-		strncpy(command, line + index, rear_index - index);
-		*(command + (rear_index - index)) = '\0';
-		
-		if (label && command)
-		  menu->insert(label, Blackbox::B_Execute, command);
-		else
-		  fprintf(stderr, "BScreen::parseMenuFile: "
-			  "[exec] error: label(%s) == NULL"
-			  "|| command(%s) == NULL\n", label, command);
-	      } else
-		fprintf(stderr, "BScreen::parseMenuFile: "
-			"[exec] error: no command string (%s)\n", label);
-	    } else
-	      fprintf(stderr, "BScreen::parseMenuFile: "
-		      "[exec] error: no label string\n");
-	  } else if (strstr(tmp1, "include")) {
-	    for (index = old_rear_index; index < len; ++index)
-	      if (line[index] == '(') {
-		index++;
-		break;
-	      }
-
-	    escapes = 0;
-	    for (rear_index = index; rear_index < len; ++rear_index)
-	      if (line[rear_index] == ')')
-		if (line[rear_index - 1] == '\\')
-		  ++escapes;
-		else
-		  break;
-	    
-	    if (index < rear_index && rear_index > 0) {
-	      // perform shell style ~ home directory expansion
-	      char *homedir = 0;
-	      int homedir_len = 0;
-	      if (*(line + index) == '~' && *(line + index + 1) == '/') {
-		homedir = getenv("HOME");
-	        homedir_len = strlen(homedir);
-	      }
-	      
-	      char *newfile = new char[rear_index - index + homedir_len + 1];
-
-	      if (homedir && homedir_len != 0) {
-		strncpy(newfile, homedir, homedir_len);
-		
-		strncpy(newfile + homedir_len, line + index + 1,
-			rear_index - index - 1);
-		*(newfile + (rear_index - index) + homedir_len - 1) = '\0';
-	      } else {
-		strncpy(newfile, line + index, rear_index - index);
-		*(newfile + (rear_index - index)) = '\0';
-	      }
-	      
-	      if(escapes > 0)
-		removeRightParenEscapes(newfile, rear_index - index, escapes);
-	      
-	      old_rear_index = rear_index;
-	      
-	      if (newfile) {
-		FILE *submenufile = fopen(newfile, "r");
-		
-		if (submenufile) {
-		  if (! feof(submenufile)) {
-		    parseMenuFile(submenufile, menu);
-		    fclose(submenufile);
-		  }
-		} else
-		  perror(newfile);
-		
-		delete [] newfile;
-	      } else
-		fprintf(stderr, "BScreen::parseMenuFile: "
-			"[include] error: newfile(%s) == NULL\n", newfile);
+	case 773: // restart
+	  {
+	    if (! *label) {
+	      fprintf(stderr, "BScreen::parseMenuFile: [restart] error, "
+		      "no menu label defined\n");
+	      continue;
 	    }
-	  } else if (strstr(tmp1, "style")) {
-	    for (index = old_rear_index; index < len; ++index)
-	      if (line[index] == '(') {
-		++index;
-		break;
+	    
+	    if (*command)
+	      menu->insert(label, Blackbox::B_RestartOther, command);
+	    else
+	      menu->insert(label, Blackbox::B_Restart);
+	  }
+	  
+	  break;
+	  
+	  case 845: // reconfig
+	    {
+	      if (! *label) {
+		fprintf(stderr, "BScreen::parseMenuFile: [reconfig] error, "
+			"no menu label defined\n");
+		continue;
 	      }
+	      
+	      menu->insert(label, Blackbox::B_Reconfigure);
+	    }
 	    
-	    escapes = 0;
-	    for (rear_index = index; rear_index < len; ++rear_index)
-	      if (line[rear_index] == ')')
-		if (line[rear_index - 1] == '\\')
-		  ++escapes;
-		else
-		  break;
+	    break;
 	    
-	    if (index < rear_index && rear_index > 0) {
-	      char *label = new char[rear_index - index + 1];
-	      strncpy(label, line + index, rear_index - index);
-	      *(label + (rear_index - index)) = '\0';
+	case 1090: // workspaces
+	  {
+	    if (! *label) {
+	      fprintf(stderr, "BScreen:parseMenuFile: [workspaces] error, "
+		      "no menu label defined\n");
+	      continue;
+	    }
+	    
+	    menu->insert(label, workspacemenu);
 	      
-	      if(escapes > 0)
-		removeRightParenEscapes(label, rear_index - index, escapes);
-	      
-	      old_rear_index = rear_index;
-	      
-	      for (index = old_rear_index; index < len; index++)
-		if (line[index] == '{') {
-		  index++;
-		  break;
-		}
-
-	      for (rear_index = len; rear_index > 0; --rear_index)
-		if (line[rear_index] == '}')
-		  break;
-			
-	      if (index < rear_index && rear_index > 0) {
-		// perform shell style ~ home directory expansion
-		char *homedir = 0;
-		int homedir_len = 0;
-		if (*(line + index) == '~' && *(line + index + 1) == '/') {
-		  homedir = getenv("HOME");
-		  homedir_len = strlen(homedir);
-		}
-		
-		char *style = new char[rear_index - index + homedir_len + 1];
-
-		if (homedir && homedir_len != 0) {
-		  strncpy(style, homedir, homedir_len);
-		
-		  strncpy(style + homedir_len, line + index + 1,
-			  rear_index - index - 1);
-		  *(style + (rear_index - index) + homedir_len - 1) = '\0';
-		} else {
-		  strncpy(style, line + index, rear_index - index);
-		  *(style + (rear_index - index)) = '\0';
-		}
-		
-		if (label && style)
-		  menu->insert(label, Blackbox::B_SetStyle, style);
-		else
-		  fprintf(stderr, "BScreen::parseMenuFile: "
-			  "[style] error: label(%s) == NULL || "
-			  "style(%s) == NULL\n", label, style);
-	      } else
-		fprintf(stderr, "BScreen::parseMenuFile: "
-			"[style] error: no style filename (%s)\n", label);
-	    } else
-	      fprintf(stderr, "BScreen::parseMenuFile: "
-		      "[style] error: no label string\n");
+	    break;
 	  }
 	}
       }

@@ -19,13 +19,13 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#ifndef   _GNU_SOURCE
+#define   _GNU_SOURCE
+#endif // _GNU_SOURCE
 
-#ifdef HAVE_CONFIG_H
+#ifdef    HAVE_CONFIG_H
 #  include "../config.h"
-#endif
+#endif // HAVE_CONFIG_H
 
 #include "blackbox.hh"
 #include "Icon.hh"
@@ -38,13 +38,13 @@
 #include <X11/Xatom.h>
 #include <X11/keysym.h>
 
-#if HAVE_STDIO_H
+#ifdef    HAVE_STDIO_H
 #  include <stdio.h>
-#endif
+#endif // HAVE_STDIO_H
 
-#if STDC_HEADERS
+#ifdef    STDC_HEADERS
 #  include <string.h>
-#endif
+#endif // STDC_HEADERS
 
 
 BlackboxWindow::BlackboxWindow(Blackbox *ctrl, BScreen *scrn, Window window) {
@@ -104,14 +104,12 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, BScreen *scrn, Window window) {
       Window win;
       if (XGetTransientForHint(display, client.window, &win))
 	if (win && (win != client.window))
-	  if ((client.transient_for = blackbox->searchWindow(win))
-	      != NULL) {
+	  if ((client.transient_for = blackbox->searchWindow(win))) {
 	    client.transient_for->client.transient = this;	  
 	    stuck = client.transient_for->stuck;
 	    transient = True;
 	  } else if (win == client.window_group) {
-	    if ((client.transient_for = blackbox->searchGroup(win, this))
-		!= NULL) {
+	    if ((client.transient_for = blackbox->searchGroup(win, this))) {
 	      client.transient_for->client.transient = this;
 	      stuck = client.transient_for->stuck;
 	      transient = True;
@@ -220,77 +218,13 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, BScreen *scrn, Window window) {
       Bool place_window = True;
       if (blackbox->isStartup() || transient ||
 	  client.normal_hint_flags & (PPosition|USPosition)) {
-	if (client.normal_hint_flags & PWinGravity)
-	  switch (client.win_gravity) {
-	  case NorthGravity:
-	    frame.x = client.x -
-	      ((decorations.border) ? (frame.bevel_w + 1) : 1);
-	    frame.y = client.y;
-	    break;
-	    
-	  case NorthEastGravity:
-	    frame.x = (client.x + client.width) - frame.width;
-	    frame.y = client.y;
-	    break;
-	    
-	  case WestGravity:
-	    frame.x = client.x;
-	    frame.y = client.y - frame.y_border -
-	      ((decorations.border) ? (frame.bevel_w + 1) : 1);
-	    break;
-	    
-	  case EastGravity:
-	    frame.x = client.x + client.width - frame.width;
-	    frame.y = client.y - frame.y_border -
-	      ((decorations.border) ? (frame.bevel_w + 1): 1);
-	    break;
-	    
-	  case SouthWestGravity:
-	    frame.x = client.x;
-	    frame.y = client.y + client.height - frame.height;
-	    break;
-	    
-	  case SouthGravity:
-	    frame.x = client.x -
-	      ((decorations.border) ? (frame.bevel_w + 1) : 1);
-	    frame.y = client.y + client.height - frame.height;
-	    break;
-	    
-	  case SouthEastGravity:
-	    frame.x = client.x + client.width - frame.width;
-	    frame.y = client.y + client.height - frame.height;
-	    break;
-	    
-	  case CenterGravity:
-	    frame.x = (screen->getXRes() - client.width ) / 2;
-	    frame.y = (screen->getYRes() - client.height) / 2;
-	    break;
-	    
-	  case NorthWestGravity:
-	    frame.x = client.x;
-	    frame.y = client.y;
-	    break;
-	    
-	  case ForgetGravity:
-	  case StaticGravity:
-	  default:
-	    frame.x = client.x -
-	      ((decorations.border) ? (frame.bevel_w + 1) : 1);
-	    frame.y = client.y - frame.y_border -
-	      ((decorations.border) ? (frame.bevel_w + 1) : 1);
-	    break;
-	  }
-	else { 
-	  frame.x = client.x -
-	    ((decorations.border) ? (frame.bevel_w + 1) : 1);
-	  frame.y = client.y - frame.y_border -
-	    ((decorations.border) ? (frame.bevel_w + 1) : 1);
-	}
+	setGravityOffsets();
 	
 	if ((blackbox->isStartup()) ||
-	    (frame.x >= 0 && frame.y >= 0 &&
-	     (frame.x + frame.width <= screen->getXRes()) &&
-	     (frame.y + frame.height <= screen->getYRes())))
+	    (frame.x >= 0 &&
+             (signed) (frame.y + frame.y_border) >= 0 &&
+	     frame.x <= (signed) screen->getXRes() &&
+	     frame.y <= (signed) screen->getYRes()))
 	  place_window = False;
       }
       
@@ -326,17 +260,18 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, BScreen *scrn, Window window) {
       associateClientWindow();
       positionButtons();
       
-      XGrabKey(display, XKeysymToKeycode(display, XK_Tab), Mod1Mask,
-	       frame.window, True, GrabModeAsync, GrabModeAsync);
       XGrabKey(display, XKeysymToKeycode(display, XK_Tab),
-	       Mod1Mask | ShiftMask, frame.window, True, GrabModeAsync,
-	       GrabModeAsync);
+	       blackbox->getWindowCycleMask(), frame.window, True,
+	       GrabModeAsync, GrabModeAsync);
+      XGrabKey(display, XKeysymToKeycode(display, XK_Tab),
+	       blackbox->getWindowCycleMask() | ShiftMask, frame.window, True,
+	       GrabModeAsync, GrabModeAsync);
       XGrabKey(display, XKeysymToKeycode(display, XK_Left),
-               ControlMask | Mod1Mask, frame.window, True, GrabModeAsync,
-               GrabModeAsync);
+               blackbox->getWorkspaceChangeMask(), frame.window, True,
+	       GrabModeAsync, GrabModeAsync);
       XGrabKey(display, XKeysymToKeycode(display, XK_Right),
-               ControlMask | Mod1Mask, frame.window, True, GrabModeAsync,
-               GrabModeAsync);
+               blackbox->getWorkspaceChangeMask(), frame.window, True,
+	       GrabModeAsync, GrabModeAsync);
       XGrabButton(display, Button1, Mod1Mask, frame.window, True,
 		  ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
 		  GrabModeAsync, frame.window, blackbox->getMoveCursor());
@@ -352,20 +287,18 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, BScreen *scrn, Window window) {
       createDecorations();
 
 #ifdef    KDE
-      {
-	Atom ajunk;
-	
-	int ijunk;
-	unsigned long uljunk, *ret = 0;
-	
-	if (XGetWindowProperty(display, client.window,
-			       blackbox->getKWMWinStickyAtom(), 0l, 1l, False,
-			       blackbox->getKWMWinStickyAtom(), &ajunk, &ijunk,
-			       &uljunk, &uljunk,
-			       (unsigned char **) &ret) == Success && ret) {
-	  stuck = *ret;
-	  XFree((char *) ret);
-	}
+      Atom ajunk;
+      
+      int ijunk;
+      unsigned long uljunk, *ret = 0;
+      
+      if (XGetWindowProperty(display, client.window,
+			     blackbox->getKWMWinStickyAtom(), 0l, 1l, False,
+			     blackbox->getKWMWinStickyAtom(), &ajunk, &ijunk,
+			     &uljunk, &uljunk,
+			     (unsigned char **) &ret) == Success && ret) {
+	stuck = *ret;
+	XFree((char *) ret);
       }
 #endif // KDE
       
@@ -521,7 +454,7 @@ Window BlackboxWindow::createToplevelWindow(int x, int y, unsigned int width,
   
   attrib_create.background_pixmap = None;
   attrib_create.background_pixel = attrib_create.border_pixel =
-    screen->getBorderColor().pixel;
+    screen->getBorderColor()->getPixel();
   attrib_create.override_redirect = True;
   attrib_create.cursor = blackbox->getSessionCursor();
   attrib_create.event_mask = ButtonPressMask | EnterWindowMask;
@@ -544,7 +477,7 @@ Window BlackboxWindow::createChildWindow(Window parent, int x, int y,
   
   attrib_create.background_pixmap = None;
   attrib_create.background_pixel = attrib_create.border_pixel = 
-    screen->getBorderColor().pixel;
+    screen->getBorderColor()->getPixel();
   attrib_create.cursor = blackbox->getSessionCursor();
   attrib_create.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask |
     ButtonReleaseMask | ExposureMask | EnterWindowMask | LeaveWindowMask |
@@ -591,7 +524,7 @@ void BlackboxWindow::associateClientWindow(void) {
                           &attrib_set);
 
 
-#ifdef SHAPE
+#ifdef    SHAPE
   if (blackbox->hasShapeExtensions()) {
     XShapeSelectInput(display, client.window, ShapeNotifyMask);
     
@@ -626,7 +559,7 @@ void BlackboxWindow::associateClientWindow(void) {
 			      xrect, num, ShapeUnion, Unsorted);
     }
   }
-#endif
+#endif // SHAPE
   
   if (functions.iconify) createIconifyButton();
   if (functions.maximize) createMaximizeButton();
@@ -691,6 +624,36 @@ void BlackboxWindow::createDecorations(void) {
 }
 
 
+void BlackboxWindow::createCloseButton(void) {
+  if (decorations.close && frame.title != None &&
+      frame.close_button == None) {
+    frame.close_button =
+      createChildWindow(frame.title, 0, 0, frame.button_w, frame.button_h, 1);
+    if (frame.ubutton != None)
+      XSetWindowBackgroundPixmap(display, frame.close_button, frame.ubutton);
+    blackbox->saveWindowSearch(frame.close_button, this);
+  }
+}
+
+
+void BlackboxWindow::createIconifyButton(void) {
+  if (decorations.iconify && frame.title != None) {
+    frame.iconify_button =
+      createChildWindow(frame.title, 0, 0, frame.button_w, frame.button_h, 1);
+    blackbox->saveWindowSearch(frame.iconify_button, this);
+  }
+}
+
+
+void BlackboxWindow::createMaximizeButton(void) {
+  if (decorations.maximize && frame.title != None) {
+    frame.maximize_button =
+      createChildWindow(frame.title, 0, 0, frame.button_w, frame.button_h, 1);
+    blackbox->saveWindowSearch(frame.maximize_button, this);
+  }
+}
+
+
 void BlackboxWindow::positionButtons(void) {
   if ((frame.title_w > ((frame.button_w + 4) * 6)) &&
       (client.title_text_w + 4 +
@@ -724,36 +687,6 @@ void BlackboxWindow::positionButtons(void) {
     if (frame.iconify_button) XUnmapWindow(display, frame.iconify_button);
     if (frame.maximize_button) XUnmapWindow(display, frame.maximize_button);
     if (frame.close_button) XUnmapWindow(display, frame.close_button);
-  }
-}
-
-
-void BlackboxWindow::createCloseButton(void) {
-  if (decorations.close && frame.title != None &&
-      frame.close_button == None) {
-    frame.close_button =
-      createChildWindow(frame.title, 0, 0, frame.button_w, frame.button_h, 1);
-    if (frame.ubutton != None)
-      XSetWindowBackgroundPixmap(display, frame.close_button, frame.ubutton);
-    blackbox->saveWindowSearch(frame.close_button, this);
-  }
-}
-
-
-void BlackboxWindow::createIconifyButton(void) {
-  if (decorations.iconify && frame.title != None) {
-    frame.iconify_button =
-      createChildWindow(frame.title, 0, 0, frame.button_w, frame.button_h, 1);
-    blackbox->saveWindowSearch(frame.iconify_button, this);
-  }
-}
-
-
-void BlackboxWindow::createMaximizeButton(void) {
-  if (decorations.maximize && frame.title != None) {
-    frame.maximize_button =
-      createChildWindow(frame.title, 0, 0, frame.button_w, frame.button_h, 1);
-    blackbox->saveWindowSearch(frame.maximize_button, this);
   }
 }
 
@@ -817,7 +750,7 @@ void BlackboxWindow::reconfigure(void) {
 		      frame.rh_w, frame.rh_h);
   }
 
-#ifdef SHAPE
+#ifdef    SHAPE
   if (blackbox->hasShapeExtensions()) {
     if (frame.shaped) {
       XShapeCombineShape(display, frame.window, ShapeBounding,
@@ -844,7 +777,7 @@ void BlackboxWindow::reconfigure(void) {
 			      xrect, num, ShapeUnion, Unsorted);
     }
   }
-#endif
+#endif // SHAPE
 
   Pixmap tmp = frame.fbutton;
   
@@ -865,12 +798,15 @@ void BlackboxWindow::reconfigure(void) {
 			    &(screen->getWResource()->button.pressedTexture));
   if (tmp) image_ctrl->removeImage(tmp);
   
-  if (frame.iconify_button) XSetWindowBorder(display, frame.iconify_button,
-					     screen->getBorderColor().pixel);
-  if (frame.maximize_button) XSetWindowBorder(display, frame.maximize_button,
-					      screen->getBorderColor().pixel);
-  if (frame.close_button) XSetWindowBorder(display, frame.close_button,
-					   screen->getBorderColor().pixel);
+  if (frame.iconify_button)
+    XSetWindowBorder(display, frame.iconify_button,
+		     screen->getBorderColor()->getPixel());
+  if (frame.maximize_button)
+    XSetWindowBorder(display, frame.maximize_button,
+		     screen->getBorderColor()->getPixel());
+  if (frame.close_button)
+    XSetWindowBorder(display, frame.close_button,
+		     screen->getBorderColor()->getPixel());
   
   positionButtons();
   
@@ -929,8 +865,10 @@ void BlackboxWindow::reconfigure(void) {
     if (tmp) image_ctrl->removeImage(tmp);
   }
   
-  XSetWindowBorder(display, frame.window, screen->getBorderColor().pixel);
-  XSetWindowBackground(display, frame.window, screen->getBorderColor().pixel);
+  XSetWindowBorder(display, frame.window,
+		   screen->getBorderColor()->getPixel());
+  XSetWindowBackground(display, frame.window,
+		       screen->getBorderColor()->getPixel());
   XClearWindow(display, frame.window);
   setFocusFlag(focused);
   if (decorations.titlebar) drawTitleWin();
@@ -962,11 +900,11 @@ Bool BlackboxWindow::getWMProtocols(void) {
       } else if (proto[i] ==  blackbox->getWMFocusAtom()) {
 	focusable = True;
       } else if (proto[i] ==  blackbox->getWMStateAtom()) {
-	unsigned long *state = 0;
-	getState(state);
+	unsigned long state = 0;
+	getState(&state);
 	
 	if (state) {
-	  switch (*state) {
+	  switch (state) {
 	  case WithdrawnState:
 	    withdraw();
 	    setFocusFlag(False);
@@ -1035,6 +973,8 @@ Bool BlackboxWindow::getWMHints(void) {
       }
     } else
       client.window_group = None;
+
+    XFree(wmhint);
   }
   
   blackbox->ungrab();
@@ -1244,22 +1184,24 @@ void BlackboxWindow::configure(int dx, int dy, unsigned int dw,
     xwc.y = dy;
     XConfigureWindow(display, frame.window, CWX|CWY, &xwc);
   }
+
+  if (! moving) {
+    XEvent event;
+    event.type = ConfigureNotify;
   
-  XEvent event;
-  event.type = ConfigureNotify;
+    event.xconfigure.display = display;
+    event.xconfigure.event = client.window;
+    event.xconfigure.window = client.window;
+    event.xconfigure.x = client.x;
+    event.xconfigure.y = client.y;
+    event.xconfigure.width = client.width;
+    event.xconfigure.height = client.height;
+    event.xconfigure.border_width = 0;
+    event.xconfigure.above = frame.window;
+    event.xconfigure.override_redirect = False;
   
-  event.xconfigure.display = display;
-  event.xconfigure.event = client.window;
-  event.xconfigure.window = client.window;
-  event.xconfigure.x = client.x;
-  event.xconfigure.y = client.y;
-  event.xconfigure.width = client.width;
-  event.xconfigure.height = client.height;
-  event.xconfigure.border_width = 0;
-  event.xconfigure.above = frame.window;
-  event.xconfigure.override_redirect = False;
-  
-  XSendEvent(display, client.window, False, StructureNotifyMask, &event);
+    XSendEvent(display, client.window, False, StructureNotifyMask, &event);
+  }
 
   blackbox->ungrab();
 }
@@ -1330,9 +1272,9 @@ void BlackboxWindow::iconify(void) {
   XUnmapWindow(display, frame.window);
   visible = False;
   iconic = True;
-  focused = False;    
+  setFocusFlag(False);
   
-  if (transient) {
+  if (transient && client.transient_for) {
     if (! client.transient_for->iconic)
       client.transient_for->iconify();
   } else
@@ -1418,7 +1360,7 @@ void BlackboxWindow::withdraw(void) {
   blackbox->grab();
   if (! validateClient()) return;
 
-  focused = False;
+  setFocusFlag(False);
   visible = False;
   
   setState(WithdrawnState);
@@ -1432,28 +1374,6 @@ void BlackboxWindow::withdraw(void) {
 #endif // KDE
 
   blackbox->ungrab();
-}
-
-
-int BlackboxWindow::setWindowNumber(int n) {
-  window_number = n;
-  return window_number;
-}
-
-
-int BlackboxWindow::setWorkspace(int n) {
-  workspace_number = n;
-
-#ifdef    KDE
-  unsigned long data = (unsigned long) workspace_number + 1;
-  XChangeProperty(display, client.window, blackbox->getKWMWinDesktopAtom(),
-                  blackbox->getKWMWinDesktopAtom(), 32, PropModeReplace,
-                  (unsigned char *) &data, 1);
-  screen->sendToKWMModules(blackbox->getKWMModuleWinChangeAtom(),
-                           client.window);
-#endif // KDE
-  
-  return workspace_number;
 }
 
 
@@ -1590,9 +1510,31 @@ void BlackboxWindow::stick(void) {
 }
 
 
+int BlackboxWindow::setWindowNumber(int n) {
+  window_number = n;
+  return window_number;
+}
+
+
+int BlackboxWindow::setWorkspace(int n) {
+  workspace_number = n;
+
+#ifdef    KDE
+  unsigned long data = (unsigned long) workspace_number + 1;
+  XChangeProperty(display, client.window, blackbox->getKWMWinDesktopAtom(),
+                  blackbox->getKWMWinDesktopAtom(), 32, PropModeReplace,
+                  (unsigned char *) &data, 1);
+  screen->sendToKWMModules(blackbox->getKWMModuleWinChangeAtom(),
+                           client.window);
+#endif // KDE
+  
+  return workspace_number;
+}
+
+
 void BlackboxWindow::setFocusFlag(Bool focus) {
   focused = focus;
-
+  
   if (decorations.titlebar) {
     XSetWindowBackgroundPixmap(display, frame.title,
 			       (focused) ? frame.ftitle : frame.utitle);
@@ -1695,6 +1637,105 @@ Bool BlackboxWindow::getState(unsigned long *state_return,
   blackbox->ungrab();
   
   return ret;
+}
+
+
+void BlackboxWindow::setGravityOffsets(void) {
+  // translate x coordinate
+  switch (client.win_gravity) {
+    // handle Westward gravity
+  case NorthWestGravity:
+  case WestGravity:
+  case SouthWestGravity:
+    frame.x = client.x;
+      break;
+    
+    // handle Eastward gravity
+  case NorthEastGravity:
+  case EastGravity:
+  case SouthEastGravity:
+    frame.x = (client.x + client.width) - frame.width;
+    break;
+    
+    // no x translation desired - default
+  case StaticGravity:
+  case ForgetGravity:
+  case CenterGravity:
+  default:
+    frame.x = client.x -
+      ((decorations.border) ? (frame.bevel_w + 1) : 1);
+  }
+
+  // translate y coordinate
+  switch (client.win_gravity) {
+    // handle Northbound gravity
+  case NorthWestGravity:
+  case NorthGravity:
+  case NorthEastGravity:
+    frame.y = client.y;
+    break;
+
+    // handle Southbound gravity
+  case SouthWestGravity:
+  case SouthGravity:
+  case SouthEastGravity:
+    frame.y = (client.y + client.height) - frame.height;
+    break;
+
+    // no y translation desired - default
+  case StaticGravity:
+  case ForgetGravity:
+  case CenterGravity:
+  default:
+    frame.y =  client.y - frame.y_border -
+      ((decorations.border) ? (frame.bevel_w + 1): 1);
+    break;
+  }
+}
+
+
+void BlackboxWindow::restoreGravity(void) {
+  // restore x coordinate
+  switch (client.win_gravity) {
+    // handle Westward gravity
+  case NorthWestGravity:
+  case WestGravity:
+  case SouthWestGravity:
+    client.x = frame.x;
+    break;
+
+    // handle Eastward gravity
+  case NorthEastGravity:
+  case EastGravity:
+  case SouthEastGravity:
+    client.x = (frame.x + frame.width) - client.width;
+    break;
+  }
+  
+  // restore y coordinate
+  switch (client.win_gravity) {
+    // handle Northbound gravity
+  case NorthWestGravity:
+  case NorthGravity:
+  case NorthEastGravity:
+    client.y = frame.y;
+    break;
+   
+    // handle Southbound gravity
+  case SouthWestGravity:
+  case SouthGravity:
+  case SouthEastGravity:
+    client.y = (frame.y + frame.height) - client.height;
+    break;
+
+    // no y translation
+  case StaticGravity:
+  case ForgetGravity:
+  case CenterGravity:
+  default:
+    client.y += decorations.titlebar;
+    break;
+  }
 }
 
 
@@ -1965,9 +2006,11 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
     
     XEvent dummy;
     if (! XCheckTypedWindowEvent(display, client.window, ReparentNotify,
-				 &dummy))
+				 &dummy)) {
+      restoreGravity();
       XReparentWindow(display, client.window, screen->getRootWindow(),
 		      client.x, client.y);
+    }
     
     XChangeSaveSet(display, client.window, SetModeDelete);
     XSelectInput(display, client.window, NoEventMask);
@@ -2027,10 +2070,12 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
     client.title_text_w = XTextWidth(screen->getTitleFont(), client.title,
 				     client.title_len);
 
-    XClearWindow(display, frame.title);
-    if (decorations.titlebar) drawTitleWin();
+    if (decorations.titlebar) {
+      XClearWindow(display, frame.title);
+      drawTitleWin();
+    }
     screen->getWorkspace(workspace_number)->update();
-
+    
 #ifdef    KDE
     screen->sendToKWMModules(blackbox->getKWMModuleWinChangeAtom(),
 			     client.window);
@@ -2206,9 +2251,9 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
         frame.resize_handle == be->window || frame.border == be->window) {
       screen->getWorkspace(workspace_number)->lowerWindow(this);
     }
-  } else if (be->button == 3 && (frame.title == be->window ||
-				 frame.border == be->window ||
-				 frame.handle == be->window)) {
+  } else if (windowmenu && be->button == 3 && (frame.title == be->window ||
+			  		       frame.border == be->window ||
+				 	       frame.handle == be->window)) {
     int mx = 0, my = 0;
     
     if (frame.title == be->window) {
@@ -2262,6 +2307,8 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
     if (re->window == frame.title || re->window == frame.handle ||
 	re->window == frame.border || re->window == frame.window) {
       if (moving) {
+        moving = False;
+
         if (! screen->doOpaqueMove()) {
 	  if (shaded) {
 	    XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
@@ -2289,8 +2336,6 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
 	screen->sendToKWMModules(blackbox->getKWMModuleWinChangeAtom(),
 				 client.window);
 #endif // KDE
-	
-	moving = False;
 	XUngrabPointer(display, CurrentTime);
       } else if ((re->state & ControlMask))
 	shade();
@@ -2611,58 +2656,16 @@ Bool BlackboxWindow::validateClient(void) {
 
 
 void BlackboxWindow::restore(void) {
+  blackbox->grab();
+
   XSelectInput(display, client.window, NoEventMask);
 
-  if (client.normal_hint_flags & PWinGravity) {
-    int new_x = 0, new_y = 0;
+  restoreGravity();
 
-    switch (client.win_gravity) {
-    case NorthGravity:
-      new_y = client.y - frame.y + 1;
-      break;
-      
-    case SouthGravity:
-      new_y = (client.height + client.y) - (frame.y + frame.height);
-      break;
-    
-    case EastGravity:
-      new_x = (client.x + client.width) - (frame.x + frame.width);
-      break;
-    
-    case WestGravity:
-      new_x = client.x - frame.x + 1;
-      break;
-    
-    case NorthEastGravity:
-      new_x = (client.x + client.width) - (frame.x + frame.width);
-      new_y = client.y - frame.y + 1;
-      break;
-    
-    case SouthWestGravity:
-      new_x = client.x - frame.x + 1;
-      new_y = (client.y + client.height) - (frame.y + frame.height);
-      break;
-    
-    case SouthEastGravity:
-      new_x = (client.x + client.width) - (frame.x + frame.width);
-      new_y = (client.y + client.height) - (frame.y + frame.height);
-      break;
-    
-    case NorthWestGravity:
-      new_x = frame.x - client.x + 1;
-      new_y = frame.y - client.y + 1;
-      break;
-
-    case ForgetGravity:
-    case StaticGravity:
-    default:
-      new_x = new_y = frame.bevel_w - 1;
-      break;
-    }
-    
-    XMoveWindow (display, client.window, new_x, new_y);
-  }
-
+  XReparentWindow(display, client.window, screen->getRootWindow(),
+		  client.x, client.y);
+  XMapWindow(display, client.window);
+  
 #ifdef    KDE
   screen->removeKWMWindow(client.window);
 #endif // KDE

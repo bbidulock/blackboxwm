@@ -16,7 +16,7 @@
 --  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 --
 -- (See the included file COPYING / GPL-2.0)
--- 
+--
 
 This is the README for Blackbox 0.50.x Beta release.
 
@@ -29,6 +29,32 @@ The source tree for Blackbox is comprised of three subdirectories:
 	util/		- this holds source code for small utility programs
 			  that help Blackbox doing what it does best.
 
+
+Quick Start:
+------------
+The quickest and easiest way to get Blackbox up and running is to run the
+following commands:
+
+# cd blackbox-0.50.x
+# ./configure
+# make
+# su -c 'make install'
+
+This will configure, compile and install Blackbox the quickest.  For those
+who like to spend the extra 15 seconds reading ./configure --help, some
+compile time options can be turned on and off before the build.
+
+For general information on GNU's ./configure, see the file INSTALL.
+
+
+Configuring Blackbox:
+---------------------
+The next thing most users want to do after installing Blackbox is to configure
+the colors, fonts, menus, etc. to their liking.  This is covered by the files
+data/README, data/README.menu and data/README.style.  These files give
+detailed information on how to customize your new window manager.
+
+
 Included utilities:
 -------------------
 Currently, the only included utility is a program named bsetroot, which is a
@@ -37,12 +63,15 @@ xsetroot, minus a few options.  The difference between xsetroot and bsetroot
 is that bsetroot has been coded for multiple screens (e.g. multi-headed
 displays), where as the stock xsetroot is not.
 
+
 Supported Platforms:
 --------------------
 ix86-Linux 2.0.x (libc5 and glibc2)
 ix86-Linux 2.1.x (libc5 and glibc2)
 ix86-Linux 2.2.x (glibc2)
-ix86-FreeBSD 3.1-stable (development platform... yes... i changed OS's)
+ix86-Linux 2.3.x (glibc2.1 - development platform)
+ix86-FreeBSD 3.2-{stable,release}
+ix86-FreeBSD 3.1-{stable,release}
 ix86-FreeBSD 3.0-current (w/ elf kernel! -lukin)
 ix86-FreeBSD 2.2.x-stable
 ix86-BSDi 4.0
@@ -52,7 +81,7 @@ Sparc-Solaris 2.6 (2.5 anyone?)
 ix86-Solaris 7 (== 2.7?)
 Alpha-Digital UNIX 4.0D
 Alpha-Linux 2.2.2
-?-AIX (rs6k? version?)
+rs6k-AIX 4.1.3
 MIPS-IRIX 6.5 (requires gcc, MIPSpro didn't like some of the template-fu)
 ix86-OS/2 (version? recent successes?)
 hp9000/715-HP/UX 10.20 (with egcs 1.1.1)
@@ -60,6 +89,11 @@ hp9000/715-HP/UX 10.20 (with egcs 1.1.1)
 NOTE: OS/2 support was included sometime in the 0.40.x series, but I have lost
       touch with the person that contributed the patches.  The code is still in
       place, but I don't know if 0.50.x still runs on this platform.
+
+UPDATE: A report has been confirmed that 0.50.x doesn't run on OS/2 with out
+        some work.  This has to do with lack of a getitimer(3) function.
+        Currently, getitimer(3) is used for auto raising, and is due for 
+        replacement sometime soon.
 
 Please email bhughes@tcac.net for other success reports.
 

@@ -19,13 +19,13 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#ifndef   _GNU_SOURCE
+#define   _GNU_SOURCE
+#endif // _GNU_SOURCE
 
-#ifdef HAVE_CONFIG_H
+#ifdef    HAVE_CONFIG_H
 #  include "../config.h"
-#endif
+#endif // HAVE_CONFIG_H
 
 #include "blackbox.hh"
 #include "Screen.hh"
@@ -39,12 +39,14 @@ Workspacemenu::Workspacemenu(Blackbox *bb, BScreen *scrn) :
 {
   screen = scrn;
   
-  setTitleVisibility(False);
-  setMovable(False);
+  setTitleVisibility(True);
+  setMovable(True);
   setHidable(True);
   setAlignment(Basemenu::MenuAlignBottom);
   defaultMenu();
   
+  setLabel("Workspaces");
+
   insert("New Workspace");
   insert("Remove Last");
 }
@@ -52,22 +54,17 @@ Workspacemenu::Workspacemenu(Blackbox *bb, BScreen *scrn) :
 
 void Workspacemenu::itemSelected(int button, int index) {
   if (button == 1) {
-    if (index == 0) {
+    if (index == 0)
       screen->addWorkspace();
-    } else if (index == 1) {
+    else if (index == 1)
       screen->removeLastWorkspace();
-    } else if ((screen->getCurrentWorkspace()->getWorkspaceID() !=
+    else if ((screen->getCurrentWorkspace()->getWorkspaceID() !=
 		(index - 2)) &&
-               ((index - 2) < screen->getCount())) {
+               ((index - 2) < screen->getCount()))
       screen->changeWorkspaceID(index - 2);
-      hide();
-    }
-  }
-}
 
-
-void Workspacemenu::hide(void) {
-  screen->getToolbar()->redrawMenuButton(False, True);
-
-  Basemenu::hide();
+    if (! (screen->getWorkspacemenu()->hasUserMoved() || hasUserMoved()))
+      screen->getWorkspacemenu()->hide();
+  } else if (button == 3)
+    screen->getWorkspacemenu()->hide();
 }

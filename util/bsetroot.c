@@ -97,7 +97,7 @@ int number_of_screens;
 
 void usage(void) {
     fprintf(stderr,
-	    "%s 1.0 : (c) 1998 Brad Hughes\n\n"
+	    "%s 1.0a : (c) 1998 Brad Hughes\n\n"
 	    "  -display <string>\tuse display connection\n"
 	    "  -fg <color>\t\tuse foreground color\n"
 	    "  -bg <color>\t\tuse background color\n"
@@ -202,7 +202,7 @@ void cleanup(void) {
     }
   }
 
-  XSetCloseDownMode(display, RetainPermanent);
+  // XSetCloseDownMode(display, RetainPermanent);
 }
 
 

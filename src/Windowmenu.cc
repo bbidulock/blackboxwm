@@ -19,13 +19,13 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#ifndef   _GNU_SOURCE
+#define   _GNU_SOURCE
+#endif // _GNU_SOURCE
 
-#ifdef HAVE_CONFIG_H
+#ifdef    HAVE_CONFIG_H
 #  include "../config.h"
-#endif
+#endif // HAVE_CONFIG_H
 
 #include "blackbox.hh"
 #include "Screen.hh"
@@ -33,9 +33,9 @@
 #include "Windowmenu.hh"
 #include "Workspace.hh"
 
-#if STDC_HEADERS
+#ifdef    STDC_HEADERS
 #  include <string.h>
-#endif
+#endif // STDC_HEADERS
 
 
 Windowmenu::Windowmenu(BlackboxWindow *win, Blackbox *bb) :
@@ -162,14 +162,16 @@ SendtoWorkspaceMenu::SendtoWorkspaceMenu(BlackboxWindow *win, Blackbox *bb) :
 
 void SendtoWorkspaceMenu::itemSelected(int button, int index) {
   if (button == 1) {
-    if ((index) <= screen->getCount())
-      if ((index) != screen->getCurrentWorkspaceID()) {
+    if ((index) <= screen->getCount()) {
+      if ((index) != screen->getCurrentWorkspaceID()) {	
 	screen->getWorkspace(window->getWorkspaceNumber())->
 	  removeWindow(window);
 	screen->getWorkspace(index)->addWindow(window);
+	
 	if (window->isStuck()) window->stick();
 	window->withdraw();
       }
+    }
   } else
     update();
 }

@@ -25,6 +25,17 @@
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
 
+#ifdef    TIME_WITH_SYS_TIME
+#  include <sys/time.h>
+#  include <time.h>
+#else // !TIME_WITH_SYS_TIME
+#  ifdef    HAVE_SYS_TIME_H
+#    include <sys/time.h>
+#  else // !HAVE_SYS_TIME_H
+#    include <time.h>
+#  endif // HAVE_SYS_TIME_H
+#endif // TIME_WITH_SYS_TIME
+
 #include "LinkedList.hh"
 
 
@@ -89,7 +100,8 @@ private:
   BImageControl *image_control;
   Iconmenu *iconmenu;
   Rootmenu *rootmenu;
-
+  LinkedList<Rootmenu> *rootmenuList;
+  
 #ifdef    SLIT
   Slit *slit;
 #endif // SLIT
@@ -104,7 +116,7 @@ private:
   
   LinkedList<char> *workspaceNames;
   LinkedList<Workspace> *workspacesList;
-
+  
 #ifdef    KDE
   LinkedList<Window> *kwm_module_list;
   LinkedList<Window> *kwm_window_list;
@@ -134,7 +146,7 @@ private:
     
 #ifdef    HAVE_STRFTIME
     char *strftime_format;
-#else //  HAVE_STRFTIME
+#else // !HAVE_STRFTIME
     Bool clock24hour;
     int date_format;
 #endif // HAVE_STRFTIME
@@ -154,7 +166,7 @@ protected:
 public:
   BScreen(Blackbox *, int);
   ~BScreen(void);
-  
+
   Bool isToolbarOnTop(void)          { return resource.toolbar_on_top; }
   Bool isSloppyFocus(void)           { return resource.sloppy_focus; }
   Bool doAutoRaise(void)             { return resource.auto_raise; }
@@ -175,6 +187,7 @@ public:
   XFontStruct *getMenuFont(void)     { return resource.font.menu; }
   
   Blackbox *getBlackbox(void)            { return blackbox; }
+  BColor *getBorderColor(void)           { return &resource.border_color; }
   BImageControl *getImageControl(void)   { return image_control; }
   Rootmenu *getRootmenu(void)            { return rootmenu; }
 
@@ -189,7 +202,6 @@ public:
   Workspace *getCurrentWorkspace(void)   { return current_workspace; }
   Workspacemenu *getWorkspacemenu(void)  { return workspacemenu; }
 
-  const BColor &getBorderColor(void)         { return resource.border_color; }
   const int getJustification(void) const     { return resource.justify; }
   const int getMenuJustification(void) const { return resource.menu_justify; }
   const unsigned int getHandleWidth(void)    { return resource.handle_width; }
@@ -220,6 +232,7 @@ public:
   void raiseFocus(void);
   void setRootColormapInstalled(Bool c) { root_colormap_installed = c; }
   void reconfigure(void);
+  void rereadMenu(void);
   void shutdown(void);
 
   void saveSloppyFocus(Bool s)        { resource.sloppy_focus = s; }
@@ -234,7 +247,7 @@ public:
 #ifdef    HAVE_STRFTIME
   char *getStrftimeFormat(void) { return resource.strftime_format; }
   void saveStrftimeFormat(char *);
-#else //  HAVE_STRFTIME
+#else // !HAVE_STRFTIME
   int getDateFormat(void)       { return resource.date_format; }
   void saveDateFormat(int f)    { resource.date_format = f; }
   Bool isClock24Hour(void)      { return resource.clock24hour; }

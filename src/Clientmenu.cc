@@ -19,13 +19,13 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#ifndef   _GNU_SOURCE
+#define   _GNU_SOURCE
+#endif // _GNU_SOURCE
 
-#ifdef HAVE_CONFIG_H
+#ifdef    HAVE_CONFIG_H
 #  include "../config.h"
-#endif
+#endif // HAVE_CONFIG_H
 
 #include "blackbox.hh"
 #include "Clientmenu.hh"
@@ -41,9 +41,9 @@ Clientmenu::Clientmenu(Blackbox *bb, Workspace *ws) :
   wkspc = ws;
   screen = wkspc->getScreen();
 
-  setMovable(False);
-  setHidable(True);
-  setTitleVisibility(False);
+  setMovable(True);
+  setHidable(False);
+  setTitleVisibility(True);
   defaultMenu();
 }
 
@@ -52,21 +52,20 @@ void Clientmenu::itemSelected(int button, int index) {
   if (button == 1) {
     if (index >= 0 && index < wkspc->getCount()) {
       if (! wkspc->isCurrent()) wkspc->setCurrent();
-
+      
       BlackboxWindow *win = wkspc->getWindow(index);
       if (win) {
         if (win->isIconic())
           win->deiconify(True);
-
+	
         wkspc->raiseWindow(win);
         win->setInputFocus();
-	
-        hide();
-	screen->getWorkspacemenu()->hide();
       }
     }
-  } else if (button == 3) {
-    hide();
+
+    if (! (screen->getWorkspacemenu()->hasUserMoved() || hasUserMoved()))
+      screen->getWorkspacemenu()->hide();
+  } else if (button == 3)
     screen->getWorkspacemenu()->hide();
-  }
 }
+

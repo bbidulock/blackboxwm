@@ -19,8 +19,8 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef __Toolbar_hh
-#define __Toolbar_hh
+#ifndef   __Toolbar_hh
+#define   __Toolbar_hh
 
 #include <X11/Xlib.h>
 
@@ -46,7 +46,7 @@ private:
 
   struct frame {
     Pixmap frame, label, wlabel, button, pbutton, clk, reading;
-    Window window, menuButton, workspaceLabel, workspacePrev, workspaceNext,
+    Window window, workspaceLabel, workspacePrev, workspaceNext,
       windowLabel, windowPrev, windowNext, clock;
 
     int x, y, hour, minute;
@@ -67,16 +67,16 @@ protected:
 public:
   Toolbar(Blackbox *, BScreen *);
   ~Toolbar(void);
-
-  //  Blackbox *getBlackbox(void) { return blackbox; }
   
-  Bool isOnTop(void)       { return on_top; }
+  Bool isEditing(void) { return editing; }
+  Bool isOnTop(void) { return on_top; }
+
   Window getWindowID(void) { return frame.window; }
   
-  unsigned int getWidth(void)  { return frame.width; }
+  unsigned int getWidth(void) { return frame.width; }
   unsigned int getHeight(void) { return frame.height; }
-  unsigned int getX(void)   { return frame.x; }
-  unsigned int getY(void)   { return frame.y; }
+  unsigned int getX(void) { return frame.x; }
+  unsigned int getY(void) { return frame.y; }
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);
@@ -85,13 +85,12 @@ public:
 
   void redrawWindowLabel(Bool = False);
   void redrawWorkspaceLabel(Bool = False);
-  void redrawMenuButton(Bool = False, Bool = False);
   void redrawPrevWorkspaceButton(Bool = False, Bool = False);
   void redrawNextWorkspaceButton(Bool = False, Bool = False);
   void redrawPrevWindowButton(Bool = False, Bool = False);
   void redrawNextWindowButton(Bool = False, Bool = False);
   void reconfigure(void);
-
+  
 #ifdef    HAVE_STRFTIME
   void checkClock(Bool = False);
 #else //  HAVE_STRFTIME

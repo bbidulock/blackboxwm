@@ -18,20 +18,19 @@
 -- (See the included file COPYING / GPL-2.0)
 --
 
-Features I would like to see implemented:
------------------------------------------
-Better support for window groups - like group iconification/closing, etc...
-Function access via the menu (this would more than likely entail adding new
-  menu tags to access the functions)
+Stuff TODO or On The Way(tm):
+-----------------------------
 
-
-Features requested (reasonable):
---------------------------------
-Resizing via the handles and/or border.  Sounds like an idea, will have to see
-  how feasible it really is.
-
-Features requested (unreasonable):
-----------------------------------
-Any form of image loading.  This is what ails and bloats too many window
-  managers, Blackbox won't ever do this.
+Configurable menu "modes"... to select what type of indicators the menus use
+    (e.g. square/box, triangle, circle)
+Balancing SnapTo/EdgeResistance - this is a complicated idea to explain...
+    don't ask :)
+abstraction of BImage and BImageControl (this let's people like John Kennis
+    update to the newer image code a little easier)... this would also involve
+    creating a generic class for X display "control"...
+rework/rewrite the focus handling code... i don't like the way i'm doing it
+    at the moment... and with blackbox approaching it's 2nd birthday... i'm
+    a little wiser when it comes to how focus events are generated
+(still here) better support for window groups... i don't know when i'm going to
+    ever get to this
 

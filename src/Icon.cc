@@ -19,13 +19,13 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#ifndef   _GNU_SOURCE
+#define   _GNU_SOURCE
+#endif // _GNU_SOURCE
 
-#ifdef HAVE_CONFIG_H
+#ifdef    HAVE_CONFIG_H
 #  include "../config.h"
-#endif
+#endif // HAVE_CONFIG_H
 
 #include "blackbox.hh"
 #include "Icon.hh"
@@ -38,14 +38,17 @@
 
 Iconmenu::Iconmenu(Blackbox *bb, BScreen *scrn) : Basemenu(bb, scrn) {
   defaultMenu();
-  setMovable(False);
-  setHidable(True);
-  setTitleVisibility(False);
+  setHidable(False);
+  setMovable(True);
+  setTitleVisibility(True);
   update();
   
   blackbox = bb;
   screen = scrn;
   iconList = new LinkedList<BlackboxIcon>;
+
+  setLabel("Icons");
+  update();
 }
 
 
@@ -76,8 +79,6 @@ int Iconmenu::remove(BlackboxIcon *icon) {
 
   update();
 
-  if (! getCount()) hide();
-
   return ret;
 }
 
@@ -88,9 +89,10 @@ void Iconmenu::itemSelected(int button, int item) {
     screen->getWorkspace(window->getWorkspaceNumber())->raiseWindow(window);
     window->deiconify();
 
-    hide();
+    if (! (screen->getWorkspacemenu()->hasUserMoved()) || hasUserMoved())
+      screen->getWorkspacemenu()->hide();
+  } else if (button == 3)
     screen->getWorkspacemenu()->hide();
-  }
 }
 
 

@@ -1,3 +1,4 @@
+# Generated automatically from Makefile.in by configure.
 # Makefile.in generated automatically by automake 1.4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
@@ -10,7 +11,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-# src/Makefile.am for Blackbox 0.50.x beta - an X11 Window manager
+# util/Makefile.am for Blackbox 0.50.x beta - an X11 Window manager
 # Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -31,45 +32,44 @@
 #
 
 
-SHELL = @SHELL@
+SHELL = /bin/sh
 
-srcdir = @srcdir@
-top_srcdir = @top_srcdir@
-VPATH = @srcdir@
-prefix = @prefix@
-exec_prefix = @exec_prefix@
+srcdir = .
+top_srcdir = ..
+prefix = /usr/local
+exec_prefix = ${prefix}
 
-bindir = @bindir@
-sbindir = @sbindir@
-libexecdir = @libexecdir@
-datadir = @datadir@
-sysconfdir = @sysconfdir@
-sharedstatedir = @sharedstatedir@
-localstatedir = @localstatedir@
-libdir = @libdir@
-infodir = @infodir@
-mandir = @mandir@
-includedir = @includedir@
+bindir = ${exec_prefix}/bin
+sbindir = ${exec_prefix}/sbin
+libexecdir = ${exec_prefix}/libexec
+datadir = ${prefix}/share
+sysconfdir = ${prefix}/etc
+sharedstatedir = ${prefix}/com
+localstatedir = ${prefix}/var
+libdir = ${exec_prefix}/lib
+infodir = ${prefix}/info
+mandir = ${prefix}/man
+includedir = ${prefix}/include
 oldincludedir = /usr/include
 
 DESTDIR =
 
-pkgdatadir = $(datadir)/@PACKAGE@
-pkglibdir = $(libdir)/@PACKAGE@
-pkgincludedir = $(includedir)/@PACKAGE@
+pkgdatadir = $(datadir)/Blackbox
+pkglibdir = $(libdir)/Blackbox
+pkgincludedir = $(includedir)/Blackbox
 
 top_builddir = ..
 
-ACLOCAL = @ACLOCAL@
-AUTOCONF = @AUTOCONF@
-AUTOMAKE = @AUTOMAKE@
-AUTOHEADER = @AUTOHEADER@
+ACLOCAL = aclocal
+AUTOCONF = autoconf
+AUTOMAKE = automake
+AUTOHEADER = autoheader
 
-INSTALL = @INSTALL@
-INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
-INSTALL_DATA = @INSTALL_DATA@
-INSTALL_SCRIPT = @INSTALL_SCRIPT@
-transform = @program_transform_name@
+INSTALL = /usr/bin/install -c
+INSTALL_PROGRAM = ${INSTALL} $(AM_INSTALL_PROGRAM_FLAGS)
+INSTALL_DATA = ${INSTALL} -m 644
+INSTALL_SCRIPT = ${INSTALL_PROGRAM}
+transform = s,x,x,
 
 NORMAL_INSTALL = :
 PRE_INSTALL = :
@@ -77,24 +77,21 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-CC = @CC@
-CXX = @CXX@
-INTERLACE = @INTERLACE@
-KDE = @KDE@
-MAINT = @MAINT@
-MAKEINFO = @MAKEINFO@
-PACKAGE = @PACKAGE@
-SHAPE = @SHAPE@
-SLIT = @SLIT@
-VERSION = @VERSION@
-regex_cmd = @regex_cmd@
+CC = gcc
+CXX = gcc -pipe
+INTERLACE = -DINTERLACE
+KDE = 
+MAINT = 
+MAKEINFO = /home/bhughes/ion/blackbox-0.50.5/missing makeinfo
+PACKAGE = Blackbox
+SHAPE = -DSHAPE
+SLIT = -DSLIT
+VERSION = 0.50.5
+regex_cmd = sed
 
-CPPFLAGS = @CPPFLAGS@ @SHAPE@ @KDE@ @SLIT@ @INTERLACE@ -DDEFAULTMENU=\"$(pkgdatadir)/menu\" -DDEFAULTSTYLE=\"$(pkgdatadir)/styles/default\"
+bin_PROGRAMS = bsetroot
 
-
-bin_PROGRAMS = blackbox
-
-blackbox_SOURCES = Basemenu.cc Clientmenu.cc Icon.cc Image.cc LinkedList.cc Rootmenu.cc Screen.cc Slit.cc Toolbar.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc main.cc
+bsetroot_SOURCES = bsetroot.c
 
 MAINTAINERCLEANFILES = Makefile.in
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -103,23 +100,22 @@ CONFIG_CLEAN_FILES =
 PROGRAMS =  $(bin_PROGRAMS)
 
 
-DEFS = @DEFS@ -I. -I$(srcdir) -I..
-LDFLAGS = @LDFLAGS@
-LIBS = @LIBS@
-X_CFLAGS = @X_CFLAGS@
-X_LIBS = @X_LIBS@
-X_EXTRA_LIBS = @X_EXTRA_LIBS@
-X_PRE_LIBS = @X_PRE_LIBS@
-blackbox_OBJECTS =  Basemenu.o Clientmenu.o Icon.o Image.o LinkedList.o \
-Rootmenu.o Screen.o Slit.o Toolbar.o Window.o Windowmenu.o Workspace.o \
-Workspacemenu.o blackbox.o main.o
-blackbox_LDADD = $(LDADD)
-blackbox_DEPENDENCIES = 
-blackbox_LDFLAGS = 
-CXXFLAGS = @CXXFLAGS@
-CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-CXXLD = $(CXX)
-CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
+DEFS = -DHAVE_CONFIG_H -I. -I$(srcdir) -I..
+CPPFLAGS = 
+LDFLAGS = 
+LIBS =   -L/usr/X11R6/lib -lX11  -lXext
+X_CFLAGS =  -I/usr/X11R6/include
+X_LIBS =  -L/usr/X11R6/lib
+X_EXTRA_LIBS = 
+X_PRE_LIBS =  -lSM -lICE
+bsetroot_OBJECTS =  bsetroot.o
+bsetroot_LDADD = $(LDADD)
+bsetroot_DEPENDENCIES = 
+bsetroot_LDFLAGS = 
+CFLAGS = -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions  -I/usr/X11R6/include
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DIST_COMMON =  Makefile.am Makefile.in
 
 
@@ -127,14 +123,14 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP_ENV = --best
-SOURCES = $(blackbox_SOURCES)
-OBJECTS = $(blackbox_OBJECTS)
+SOURCES = $(bsetroot_SOURCES)
+OBJECTS = $(bsetroot_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .S .c .cc .o .s
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps src/Makefile
+.SUFFIXES: .S .c .o .s
+$(srcdir)/Makefile.in:  Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps util/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
@@ -185,11 +181,9 @@ distclean-compile:
 
 maintainer-clean-compile:
 
-blackbox: $(blackbox_OBJECTS) $(blackbox_DEPENDENCIES)
-	@rm -f blackbox
-	$(CXXLINK) $(blackbox_LDFLAGS) $(blackbox_OBJECTS) $(blackbox_LDADD) $(LIBS)
-.cc.o:
-	$(CXXCOMPILE) -c $<
+bsetroot: $(bsetroot_OBJECTS) $(bsetroot_DEPENDENCIES)
+	@rm -f bsetroot
+	$(LINK) $(bsetroot_LDFLAGS) $(bsetroot_OBJECTS) $(bsetroot_LDADD) $(LIBS)
 
 tags: TAGS
 
@@ -222,7 +216,7 @@ maintainer-clean-tags:
 
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 
-subdir = src
+subdir = util
 
 distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
@@ -308,48 +302,7 @@ mostlyclean distclean maintainer-clean
 
 
 distclean-local:
-	rm -f *\~ *.orig *.rej
-
-# local dependencies
-
-Basemenu.o: Basemenu.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Basemenu.hh Screen.hh
-Clientmenu.o: Clientmenu.cc ../config.h blackbox.hh ../version.h \
- Image.hh LinkedList.hh Clientmenu.hh Basemenu.hh Screen.hh Window.hh \
- Workspace.hh Workspacemenu.hh
-Icon.o: Icon.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Icon.hh Basemenu.hh Screen.hh Toolbar.hh Window.hh \
- Workspace.hh Workspacemenu.hh
-Image.o: Image.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Screen.hh
-LinkedList.o: LinkedList.cc LinkedList.hh
-Rootmenu.o: Rootmenu.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Rootmenu.hh Basemenu.hh Screen.hh
-Screen.o: Screen.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Clientmenu.hh Basemenu.hh Icon.hh Screen.hh Slit.hh \
- Rootmenu.hh Toolbar.hh Window.hh Workspace.hh Workspacemenu.hh
-Slit.o: Slit.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Screen.hh Slit.hh Basemenu.hh Toolbar.hh
-Toolbar.o: Toolbar.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Clientmenu.hh Basemenu.hh Icon.hh Rootmenu.hh Screen.hh \
- Toolbar.hh Workspace.hh Workspacemenu.hh
-Window.o: Window.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Icon.hh Basemenu.hh Screen.hh Toolbar.hh Window.hh \
- Windowmenu.hh Workspace.hh
-Windowmenu.o: Windowmenu.cc ../config.h blackbox.hh ../version.h \
- Image.hh LinkedList.hh Screen.hh Window.hh Windowmenu.hh Basemenu.hh \
- Workspace.hh
-Workspace.o: Workspace.cc ../config.h blackbox.hh ../version.h \
- Image.hh LinkedList.hh Clientmenu.hh Basemenu.hh Screen.hh Toolbar.hh \
- Window.hh Workspace.hh Windowmenu.hh
-Workspacemenu.o: Workspacemenu.cc ../config.h blackbox.hh ../version.h \
- Image.hh LinkedList.hh Screen.hh Toolbar.hh Workspacemenu.hh \
- Basemenu.hh Workspace.hh
-blackbox.o: blackbox.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Basemenu.hh Rootmenu.hh Screen.hh Slit.hh Toolbar.hh \
- Window.hh Workspace.hh Workspacemenu.hh
-main.o: main.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh
+	rm -f *\~
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

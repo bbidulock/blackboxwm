@@ -1,3 +1,4 @@
+# Generated automatically from Makefile.in by configure.
 # Makefile.in generated automatically by automake 1.4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
@@ -31,45 +32,44 @@
 #
 
 
-SHELL = @SHELL@
+SHELL = /bin/sh
 
-srcdir = @srcdir@
-top_srcdir = @top_srcdir@
-VPATH = @srcdir@
-prefix = @prefix@
-exec_prefix = @exec_prefix@
+srcdir = .
+top_srcdir = ..
+prefix = /usr/local
+exec_prefix = ${prefix}
 
-bindir = @bindir@
-sbindir = @sbindir@
-libexecdir = @libexecdir@
-datadir = @datadir@
-sysconfdir = @sysconfdir@
-sharedstatedir = @sharedstatedir@
-localstatedir = @localstatedir@
-libdir = @libdir@
-infodir = @infodir@
-mandir = @mandir@
-includedir = @includedir@
+bindir = ${exec_prefix}/bin
+sbindir = ${exec_prefix}/sbin
+libexecdir = ${exec_prefix}/libexec
+datadir = ${prefix}/share
+sysconfdir = ${prefix}/etc
+sharedstatedir = ${prefix}/com
+localstatedir = ${prefix}/var
+libdir = ${exec_prefix}/lib
+infodir = ${prefix}/info
+mandir = ${prefix}/man
+includedir = ${prefix}/include
 oldincludedir = /usr/include
 
 DESTDIR =
 
-pkgdatadir = $(datadir)/@PACKAGE@
-pkglibdir = $(libdir)/@PACKAGE@
-pkgincludedir = $(includedir)/@PACKAGE@
+pkgdatadir = $(datadir)/Blackbox
+pkglibdir = $(libdir)/Blackbox
+pkgincludedir = $(includedir)/Blackbox
 
 top_builddir = ..
 
-ACLOCAL = @ACLOCAL@
-AUTOCONF = @AUTOCONF@
-AUTOMAKE = @AUTOMAKE@
-AUTOHEADER = @AUTOHEADER@
+ACLOCAL = aclocal
+AUTOCONF = autoconf
+AUTOMAKE = automake
+AUTOHEADER = autoheader
 
-INSTALL = @INSTALL@
-INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
-INSTALL_DATA = @INSTALL_DATA@
-INSTALL_SCRIPT = @INSTALL_SCRIPT@
-transform = @program_transform_name@
+INSTALL = /usr/bin/install -c
+INSTALL_PROGRAM = ${INSTALL} $(AM_INSTALL_PROGRAM_FLAGS)
+INSTALL_DATA = ${INSTALL} -m 644
+INSTALL_SCRIPT = ${INSTALL_PROGRAM}
+transform = s,x,x,
 
 NORMAL_INSTALL = :
 PRE_INSTALL = :
@@ -77,19 +77,19 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-CC = @CC@
-CXX = @CXX@
-INTERLACE = @INTERLACE@
-KDE = @KDE@
-MAINT = @MAINT@
-MAKEINFO = @MAKEINFO@
-PACKAGE = @PACKAGE@
-SHAPE = @SHAPE@
-SLIT = @SLIT@
-VERSION = @VERSION@
-regex_cmd = @regex_cmd@
+CC = gcc
+CXX = gcc -pipe
+INTERLACE = -DINTERLACE
+KDE = 
+MAINT = 
+MAKEINFO = /home/bhughes/ion/blackbox-0.50.5/missing makeinfo
+PACKAGE = Blackbox
+SHAPE = -DSHAPE
+SLIT = -DSLIT
+VERSION = 0.50.5
+regex_cmd = sed
 
-CPPFLAGS = @CPPFLAGS@ @SHAPE@ @KDE@ @SLIT@ @INTERLACE@ -DDEFAULTMENU=\"$(pkgdatadir)/menu\" -DDEFAULTSTYLE=\"$(pkgdatadir)/styles/default\"
+CPPFLAGS =  -DSHAPE  -DSLIT -DINTERLACE -DDEFAULTMENU=\"$(pkgdatadir)/menu\" -DDEFAULTSTYLE=\"$(pkgdatadir)/styles/default\"
 
 
 bin_PROGRAMS = blackbox
@@ -103,20 +103,20 @@ CONFIG_CLEAN_FILES =
 PROGRAMS =  $(bin_PROGRAMS)
 
 
-DEFS = @DEFS@ -I. -I$(srcdir) -I..
-LDFLAGS = @LDFLAGS@
-LIBS = @LIBS@
-X_CFLAGS = @X_CFLAGS@
-X_LIBS = @X_LIBS@
-X_EXTRA_LIBS = @X_EXTRA_LIBS@
-X_PRE_LIBS = @X_PRE_LIBS@
+DEFS = -DHAVE_CONFIG_H -I. -I$(srcdir) -I..
+LDFLAGS = 
+LIBS =   -L/usr/X11R6/lib -lX11  -lXext
+X_CFLAGS =  -I/usr/X11R6/include
+X_LIBS =  -L/usr/X11R6/lib
+X_EXTRA_LIBS = 
+X_PRE_LIBS =  -lSM -lICE
 blackbox_OBJECTS =  Basemenu.o Clientmenu.o Icon.o Image.o LinkedList.o \
 Rootmenu.o Screen.o Slit.o Toolbar.o Window.o Windowmenu.o Workspace.o \
 Workspacemenu.o blackbox.o main.o
 blackbox_LDADD = $(LDADD)
 blackbox_DEPENDENCIES = 
 blackbox_LDFLAGS = 
-CXXFLAGS = @CXXFLAGS@
+CXXFLAGS = -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions  -I/usr/X11R6/include
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
@@ -133,7 +133,7 @@ OBJECTS = $(blackbox_OBJECTS)
 all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .cc .o .s
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+$(srcdir)/Makefile.in:  Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps src/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status

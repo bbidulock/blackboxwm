@@ -19,8 +19,8 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef __blackbox_hh
-#define __blackbox_hh
+#ifndef   __blackbox_hh
+#define   __blackbox_hh
 
 #include "../version.h"
 
@@ -44,9 +44,9 @@ class Workspacemenu;
 #include "Image.hh"
 #include "LinkedList.hh"
 
-#ifdef HAVE_STDIO_H
+#ifdef    HAVE_STDIO_H
 # include <stdio.h>
-#endif
+#endif // HAVE_STDIO_H
 
 
 class Blackbox {
@@ -71,6 +71,11 @@ private:
     Window window;
   } ToolbarSearch;
 
+  typedef struct MenuTimestamp {
+    char *filename;
+    time_t timestamp;
+  } MenuTimestamp;
+
 #ifdef    SLIT
   typedef struct SlitSearch {
     Slit *data;
@@ -88,6 +93,7 @@ private:
     
     char *menu_file, *style_file;
     int colors_per_channel;
+    unsigned long wkspc_change_mask, cycle_mask;
   } resource;
   
   struct shape {
@@ -105,6 +111,7 @@ private:
   LinkedList<ToolbarSearch> *toolbarSearchList;
   LinkedList<GroupSearch> *groupSearchList;
   LinkedList<BScreen> *screenList;
+  LinkedList<MenuTimestamp> *menuTimestamps;
 
   BlackboxWindow *focused_window, *auto_raise_window;
 
@@ -123,7 +130,7 @@ private:
     kwm_module_win_add, kwm_module_win_remove;
 #endif // KDE
 
-  Bool _startup, _shutdown, _reconfigure, auto_raise_pending;
+  Bool _startup, _shutdown, _reconfigure, _reread_menu, auto_raise_pending;
   Display *display;
   char *display_name;
   char **argv;
@@ -208,8 +215,14 @@ public:
   int getColorsPerChannel(void) { return resource.colors_per_channel; }
   int getNumberOfScreens(void)  { return number_of_screens; }
 
+  unsigned long getWorkspaceChangeMask(void)
+    { return resource.wkspc_change_mask; }
+  unsigned long getWindowCycleMask(void)
+    { return resource.cycle_mask; }
+
   void load_rc(BScreen *);
   void saveStyleFilename(char *);
+  void saveMenuFilename(char *);
   void grab(void);
   void ungrab(void);
   void saveMenuSearch(Window, Basemenu *);
@@ -224,6 +237,8 @@ public:
   void exit(void);
   void restart(char * = 0);
   void reconfigure(void);
+  void rereadMenu(void);
+  void checkMenu(void);
   void shutdown(void);
 
 #ifdef    SLIT
@@ -234,14 +249,14 @@ public:
 #endif // SLIT
   
   enum { B_Restart = 1, B_RestartOther, B_Exit, B_Shutdown, B_Execute,
-	 B_Reconfigure, B_ExecReconfigure, B_WindowShade, B_WindowIconify,
-	 B_WindowMaximize, B_WindowClose, B_WindowRaise, B_WindowLower,
-	 B_WindowStick, B_WindowKill, B_SetStyle };
+	 B_Reconfigure, B_WindowShade, B_WindowIconify, B_WindowMaximize,
+	 B_WindowClose, B_WindowRaise, B_WindowLower, B_WindowStick,
+	 B_WindowKill, B_SetStyle };
   enum { B_LeftJustify = 1, B_RightJustify, B_CenterJustify };
 
-#ifndef HAVE_STRFTIME
+#ifndef   HAVE_STRFTIME
   enum { B_AmericanDate = 1, B_EuropeanDate };
-#endif
+#endif // HAVE_STRFTIME
 };
 
 

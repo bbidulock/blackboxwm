@@ -19,13 +19,13 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#ifndef   _GNU_SOURCE
+#define   _GNU_SOURCE
+#endif // _GNU_SOURCE
 
-#ifdef HAVE_CONFIG_H
+#ifdef    HAVE_CONFIG_H
 #  include "../config.h"
-#endif
+#endif // HAVE_CONFIG_H
 
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
@@ -38,13 +38,16 @@
 #include "Workspace.hh"
 #include "Windowmenu.hh"
 
-#if HAVE_STDIO_H
+#ifdef    HAVE_STDIO_H
 #  include <stdio.h>
-#endif
+#endif // HAVE_STDIO_H
 
-#if STDC_HEADERS
+#ifdef    STDC_HEADERS
 #  include <string.h>
-#endif
+#endif // STDC_HEADERS
+
+#define MIN(x,y) ((x < y) ? x : y)
+#define MAX(x,y) ((x > y) ? x : y)
 
 
 Workspace::Workspace(BScreen *scrn, int i) {
@@ -56,15 +59,13 @@ Workspace::Workspace(BScreen *scrn, int i) {
 
   windowList = new LinkedList<BlackboxWindow>;
   clientmenu = new Clientmenu(screen->getBlackbox(), this);
-  clientmenu->update();
+  //  clientmenu->update();
 
 #ifdef    KDE
-  {
-    char t[1024];
-    sprintf(t, "KWM_DESKTOP_NAME_%d", id + 1);
-    
-    desktop_name_atom = XInternAtom(screen->getDisplay(), t, False);
-  }
+  char t[1024];
+  sprintf(t, "KWM_DESKTOP_NAME_%d", id + 1);
+  
+  desktop_name_atom = XInternAtom(screen->getDisplay(), t, False);
 #endif // KDE
   
   char *tmp;  
@@ -79,6 +80,9 @@ Workspace::Workspace(BScreen *scrn, int i) {
 
 
 Workspace::~Workspace(void) {
+  while (windowList->count())
+    delete windowList->remove(0);
+  
   delete windowList;
   delete clientmenu;
 
@@ -104,17 +108,18 @@ const int Workspace::addWindow(BlackboxWindow *w, Bool place) {
 
 
 const int Workspace::removeWindow(BlackboxWindow *w) {
-  int i = 0;
-  
   windowList->remove((const int) w->getWindowNumber());
   
+  if (clientmenu->getHighlight() == w->getWindowNumber())
+    setFocusWindow(-1);
+
   clientmenu->remove(w->getWindowNumber());
   clientmenu->update();
 
   if (! clientmenu->getCount()) clientmenu->hide();
 
   LinkedListIterator<BlackboxWindow> it(windowList);
-  for (i = 0; it.current(); it++, i++)
+  for (int i = 0; it.current(); it++, i++)
     it.current()->setWindowNumber(i);
   
   return windowList->count();
@@ -127,7 +132,7 @@ void Workspace::setFocusWindow(int w) {
   else
     label = 0;
 
-  clientmenu->setHighlight(w);  
+  clientmenu->setHighlight(w);
   screen->getToolbar()->redrawWindowLabel(True);
 }
 
@@ -147,11 +152,9 @@ int Workspace::showAll(void) {
 
 
 int Workspace::hideAll(void) {
-  BlackboxWindow *win;
-
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (; it.current(); it++) {
-    win = it.current();
+    BlackboxWindow *win = it.current();
     if ((! win->isIconic()) && (! win->isStuck()))
       win->withdraw();
   }
@@ -164,11 +167,9 @@ int Workspace::hideAll(void) {
 
 
 int Workspace::removeAll(void) {
-  BlackboxWindow *win;
-
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (; it.current(); it++) {
-    win = it.current();
+    BlackboxWindow *win = it.current();
     screen->getCurrentWorkspace()->addWindow(win);
     if (! win->isIconic())
       win->iconify();
@@ -299,12 +300,15 @@ void Workspace::setName(char *new_name) {
       sprintf(name, "Workspace %d", id + 1);
   }
 
+  clientmenu->setLabel(name);
+  clientmenu->update();
+
 #ifdef    KDE
   if (desktop_name_atom) {
     XChangeProperty(screen->getDisplay(), screen->getRootWindow(),
                     desktop_name_atom, XA_STRING, 8, PropModeReplace,
                     (unsigned char *) name, strlen(name) + 1);
-
+    
     screen->sendToKWMModules(screen->getBlackbox()->
 			     getKWMModuleDesktopNameChangeAtom(), (XID) id);
   }
@@ -326,77 +330,68 @@ void Workspace::placeWindow(BlackboxWindow *win) {
   case BScreen::SmartPlacement:
     {
       Bool done = False;
-      int x_origin = 0, y_origin = 0;
-      register int test_x = 0, test_y = 0, test_w = 0, test_h = 0,
-        extra = screen->getBevelWidth() * 2;
-      
+      LinkedListIterator<BlackboxWindow> it(windowList);
+
+      register int x_origin = 0, y_origin = 0, lap_x, lap_y, test_x, test_y;
+      long best_cover = 0, cover = 0;
+      unsigned int best_x = 0, best_y = 0, test_w = 0, test_h = 0,
+        win_w = win->getWidth() + 2, win_h = win->getHeight() + 2,
+        max_x = (unsigned) screen->getXRes(),
+        max_y = (unsigned) (screen->getYRes() -
+                            screen->getToolbar()->getHeight() - 1);
+
 #ifdef    KDE
-      {
-	int junk;
-	
-	getKWMWindowRegion(&x_origin, &y_origin, &junk, &junk);
-      }
+      int junk;
+      
+      getKWMWindowRegion(&x_origin, &y_origin, &junk, &junk);
 #endif // KDE
       
-      test_x = x_origin + screen->getBevelWidth();
-      test_y = y_origin + screen->getBevelWidth();
-      
-      // adaptation from Window Maker's smart window placement
-      
-      while (((test_y + win->getHeight()) <
-	      (unsigned) (screen->getYRes() -
-			  screen->getToolbar()->getHeight() - 1)) &&
-	     (! done)) {
-	test_x = x_origin + screen->getBevelWidth();
+      // smarterplacement from Dyon Balding... modified by Brad Hughes
+     
+      test_y = y_origin;
+
+      while (((test_y + win_h) < max_y) && (! done)) {
+	test_x = x_origin;
 	
-	while (((test_x + win->getWidth()) < (unsigned) screen->getXRes()) &&
-	       (! done)) {
+	while (((test_x + win_w) < max_x) && (! done)) {
 	  done = True;
+          cover = 0;
 	  
-	  LinkedListIterator<BlackboxWindow> it(windowList);
-	  for (; it.current() && done; it++) {
-            test_w = it.current()->getWidth() + extra;
-
-	    if (it.current()->isShaded())
-	      test_h = it.current()->getTitleHeight() + extra;
-	    else
-	      test_h = it.current()->getHeight() + extra;
+	  for (; it.current(); it++) {
+	    if ((! it.current()->isStuck()) && (! it.current()->isVisible()) &&
+		(! it.current()->isShaded() || (it.current()->isIconic())))
+	      continue;
 	    
-	    if ((it.current()->getXFrame() <
-		 (signed) (test_x + it.current()->getWidth())) &&
-		((it.current()->getXFrame() + test_w) > test_x) &&
-		(it.current()->getYFrame() <
-		 (signed) (test_y + it.current()->getHeight())) &&
-		((it.current()->getYFrame() + test_h) > test_y) &&
-		(it.current()->isVisible() ||
-		 (it.current()->isShaded() && (! it.current()->isIconic()))))
+	    test_w = it.current()->getXFrame() + it.current()->getWidth() + 2;
+	    test_h = it.current()->getYFrame() + it.current()->getHeight() + 2;
+	    
+	    lap_x =MIN(test_x + win_w, test_w) -
+	      MAX(test_x, it.current()->getXFrame());
+	    lap_y = MIN(test_y + win_h, test_h) -
+	      MAX(test_y, it.current()->getYFrame());
+	    
+	    if (lap_x < 0)
+	      lap_x = 0;
+	    if (lap_y < 0)
+	      lap_y = 0;
+	    
+	    cover += (lap_x * lap_y);
+	    if (lap_x && lap_y)
 	      done = False;
 	  }
 
-	  it.reset();
-	  for (; it.current() && done; it++) {
-	    test_w = it.current()->getWidth() + extra;
-	    
-	    if (it.current()->isShaded())
-	      test_h = it.current()->getTitleHeight() + extra;
-	    else
-	      test_h = it.current()->getHeight() + extra;
-	    
-	    if ((it.current()->getXFrame() <
-		 (signed) (test_x + it.current()->getWidth())) &&
-		((it.current()->getXFrame() + test_w) > test_x) &&
-		(it.current()->getYFrame() <
-		 (signed) (test_y + it.current()->getHeight())) &&
-		((it.current()->getYFrame() + test_h) > test_y) &&
-		(it.current()->isVisible() ||
-		 (it.current()->isShaded() && (! it.current()->isIconic()))))
-	      done = False;
-	  }
+          it.reset();
 	  
 	  if (done) {
 	    place_x = test_x;
 	    place_y = test_y;
 	    break;
+	  }
+
+	  if ((cover < best_cover) || (! best_cover)) {
+	    best_x = test_x;
+	    best_y = test_y;
+	    best_cover = cover;
 	  }
 	  
 	  test_x += 2;
@@ -407,6 +402,11 @@ void Workspace::placeWindow(BlackboxWindow *win) {
       
       if (done)
 	break;
+      
+      place_x = best_x;
+      place_y = best_y;
+      
+      break;
     }
     
   case BScreen::CascadePlacement:
@@ -415,15 +415,13 @@ void Workspace::placeWindow(BlackboxWindow *win) {
 	((unsigned) cascade_y > (screen->getYRes() / 2)))
       cascade_x = cascade_y = 32;
     
-
+    
 #ifdef    KDE
-    {
-      int x_origin = 0, y_origin = 0, junk = 0;
-      getKWMWindowRegion(&x_origin, &y_origin, &junk, &junk);
-      
-      place_x = cascade_x + x_origin;
-      place_y = cascade_y + y_origin;
-    }
+    int x_origin = 0, y_origin = 0, junk = 0;
+    getKWMWindowRegion(&x_origin, &y_origin, &junk, &junk);
+    
+    place_x = cascade_x + x_origin;
+    place_y = cascade_y + y_origin;
 #else  // KDE
     place_x = cascade_x;
     place_y = cascade_y;
@@ -447,7 +445,6 @@ void Workspace::placeWindow(BlackboxWindow *win) {
 
 
 #ifdef    KDE
-
 void Workspace::getKWMWindowRegion(int *x1, int *y1, int *x2, int *y2) {
   Atom ajunk;
 
@@ -490,5 +487,4 @@ void Workspace::rereadName(void) {
     XFree((char *) new_name);
   }
 }
-
 #endif // KDE

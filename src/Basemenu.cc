@@ -19,25 +19,26 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#ifndef   _GNU_SOURCE
+#define   _GNU_SOURCE
+#endif // _GNU_SOURCE
 
-#ifdef HAVE_CONFIG_H
+#ifdef    HAVE_CONFIG_H
 #  include "../config.h"
-#endif
+#endif // HAVE_CONFIG_H
 
 #include "blackbox.hh"
 #include "Basemenu.hh"
 #include "Screen.hh"
 
-#if HAVE_STDIO_H
+#ifdef    HAVE_STDIO_H
 #  include <stdio.h>
-#endif
+#endif // HAVE_STDIO_H
 
-#if STDC_HEADERS
+#ifdef    STDC_HEADERS
 #  include <stdlib.h>
-#endif
+#  include <string.h>
+#endif // STDC_HEADERS
 
 
 static Basemenu *shown = (Basemenu *) 0;
@@ -63,7 +64,7 @@ Basemenu::Basemenu(Blackbox *ctrl, BScreen *scrn) {
     screen->getTitleFont()->ascent + screen->getTitleFont()->descent +
     (menu.bevel_w * 2);
   menu.label = 0;
-  menu.sublevels = menu.persub = 0;
+  menu.sublevels = menu.persub = menu.minsub = 0;
   menu.item_h = screen->getMenuFont()->ascent +
     screen->getMenuFont()->descent + (menu.bevel_w);
   menu.height = menu.title_h + 1 + menu.iframe_h;
@@ -73,7 +74,7 @@ Basemenu::Basemenu(Blackbox *ctrl, BScreen *scrn) {
   XSetWindowAttributes attrib;
   attrib.background_pixmap = None;
   attrib.background_pixel = attrib.border_pixel =
-    screen->getBorderColor().pixel;
+    screen->getBorderColor()->getPixel();
   attrib.override_redirect = True;
   attrib.cursor = blackbox->getSessionCursor();
   attrib.event_mask = ButtonPressMask | ButtonReleaseMask | ButtonMotionMask |
@@ -86,7 +87,7 @@ Basemenu::Basemenu(Blackbox *ctrl, BScreen *scrn) {
   blackbox->saveMenuSearch(menu.frame, this);
   
   attrib_mask = CWBackPixmap|CWBackPixel|CWBorderPixel|CWCursor|CWEventMask;
-  attrib.background_pixel = screen->getBorderColor().pixel;
+  attrib.background_pixel = screen->getBorderColor()->getPixel();
   attrib.event_mask |= EnterWindowMask|LeaveWindowMask;
 
   menu.title =
@@ -143,7 +144,22 @@ Basemenu::~Basemenu(void) {
 }
 
 
-int Basemenu::insert(char *label, int function, char *exec, int pos) {
+int Basemenu::insert(char *l, int function, char *e, int pos) {
+  char *label = 0, *exec = 0;
+  int llen, elen;
+  
+  if (l) {
+    llen = strlen(l) + 1;
+    label = new char[llen];
+    strncpy(label, l, llen);
+  }
+  
+  if (e) {
+    elen = strlen(e) + 1;
+    exec = new char[elen + 1];
+    strncpy(exec, e, elen + 1);
+  }
+  
   BasemenuItem *item = new BasemenuItem(label, function, exec);
   menuitems->insert(item, pos);
   
@@ -151,13 +167,22 @@ int Basemenu::insert(char *label, int function, char *exec, int pos) {
 }
 
 
-int Basemenu::insert(char *label, Basemenu *submenu, int pos) {
+int Basemenu::insert(char *l, Basemenu *submenu, int pos) {
+  char *label = 0;
+  int llen = strlen(l);
+
+  if (llen) {
+    label = new char[llen + 1];
+    strncpy(label, l, llen + 1);
+  }
+  
   BasemenuItem *item = new BasemenuItem(label, submenu);
   menuitems->insert(item, pos);
+  
   submenu->parent = this;
-  submenu->setMovable(True);
-  submenu->setHidable(False);
-
+  if (submenu->title_vis) submenu->setMovable(True);
+  if (! submenu->default_menu) submenu->setHidable(False);
+  
   return menuitems->count();
 }
 
@@ -165,32 +190,35 @@ int Basemenu::insert(char *label, Basemenu *submenu, int pos) {
 int Basemenu::insert(char **ulabel, int pos) {
   BasemenuItem *item = new BasemenuItem(ulabel);
   menuitems->insert(item, pos);
-
+  
   return menuitems->count();
 }
 
 
 int Basemenu::remove(int index) {
+  if (index < 0 || index > menuitems->count()) return -1;
+
   BasemenuItem *item = menuitems->remove(index);
 
-  if (! default_menu) {
-    if (item->submenu()) {
+  if (item) {
+    if ((! default_menu) && (item->submenu()) &&
+	(! item->submenu()->default_menu)) {
       Basemenu *tmp = (Basemenu *) item->submenu();
       delete tmp;
     }
-    if (item->label()) {
+    
+    if (item->label())
       delete [] item->label();
-    }
-    if (item->exec()) {
+    
+    if (item->exec())
       delete [] item->exec();
-    }
+    
+    delete item;
   }
-  
-  delete item;
 
   if (which_sub == index)
     which_sub = -1;
-  
+
   if (always_highlight == index)
     always_highlight = -1;
 
@@ -232,6 +260,8 @@ void Basemenu::update(void) {
 	    + menu.title_h + 1) >
 	   screen->getYRes())
       menu.sublevels++;
+
+    if (menu.sublevels < menu.minsub) menu.sublevels = menu.minsub;
     
     menu.persub = menuitems->count() / menu.sublevels;
     if (menuitems->count() % menu.sublevels) menu.sublevels++;
@@ -365,7 +395,8 @@ void Basemenu::hide(void) {
     parent->drawItem(parent->which_sub,
 		     (parent->always_highlight == parent->which_sub),
 		     False, True);
-    hidable = False;
+
+    if (! default_menu) hidable = False;
     parent->which_sub = -1;
   } else if (shown && shown->getWindowID() == getWindowID())
     shown = (Basemenu *) 0;
@@ -529,12 +560,13 @@ void Basemenu::drawItem(int index, Bool frame, Bool highlight, Bool clear) {
 }
 
 
-void Basemenu::setMenuLabel(char *l) {
+void Basemenu::setLabel(char *l) {
   if (menu.label) delete [] menu.label;
 
   if (l) {
-    menu.label = new char[strlen(l) + 1];
-    sprintf(menu.label, "%s", l);
+    int mlen = strlen(l) + 1;
+    menu.label = new char[mlen];
+    strncpy(menu.label, l, mlen);
   } else
     menu.label = 0;
 }
@@ -553,11 +585,7 @@ void Basemenu::setHighlight(int index) {
 
 
 void Basemenu::buttonPressEvent(XButtonEvent *be) {
-  if (be->window == menu.title) {
-    if (be->x >= 0 && be->x <= (signed) menu.width &&
-	be->y >= 0 && be->y <= (signed) menu.title_h) {
-    }
-  } else if (be->window == menu.iframe) {
+  if (be->window == menu.iframe) {
     int sbl = (be->x / menu.item_w), i = (be->y / (menu.item_h + 1));
     int w = (sbl * menu.persub) + i;
 
@@ -768,16 +796,22 @@ void Basemenu::enterNotifyEvent(XCrossingEvent *ce) {
     if (menu.x + menu.width > screen->getXRes()) {
       menu.x_shift = screen->getXRes() - menu.width - 1;
       shifted = True;
+    } else if (menu.x < 0) {
+      menu.x_shift = 0;
+      shifted = True;
     }
     
     if (menu.y + menu.height > screen->getYRes()) {
       menu.y_shift = screen->getYRes() - menu.height - 1;
       shifted = True;
+    } else if (menu.y < 0) {
+      menu.y_shift = 0;
+      shifted = True;
     }
-
+    
     if (shifted)
       XMoveWindow(display, menu.frame, menu.x_shift, menu.y_shift);
-
+    
     if (which_sub != -1) {
       BasemenuItem *tmp = menuitems->find(which_sub);
       if (tmp->submenu()->isVisible()) {
@@ -819,8 +853,10 @@ void Basemenu::leaveNotifyEvent(XCrossingEvent *ce) {
 
 
 void Basemenu::reconfigure(void) {
-  XSetWindowBackground(display, menu.frame, screen->getBorderColor().pixel);
-  XSetWindowBorder(display, menu.frame, screen->getBorderColor().pixel);
+  XSetWindowBackground(display, menu.frame,
+		       screen->getBorderColor()->getPixel());
+  XSetWindowBorder(display, menu.frame,
+		   screen->getBorderColor()->getPixel());
 
   menu.bevel_w = screen->getBevelWidth();
   update();
