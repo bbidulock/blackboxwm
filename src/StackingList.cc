@@ -172,60 +172,31 @@ StackEntity *StackingList::back(void) const {
 }
 
 
+static void print_entity(StackEntity *entity)
+{
+  BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(entity);
+  if (win) {
+    fprintf(stderr, "  0x%lx: window 0x%lx '%s'\n",
+            win->windowID(), win->clientWindow(), win->title());
+  } else if (entity) {
+    fprintf(stderr, "  0x%lx: unknown entity\n",
+            entity->windowID());
+  } else {
+    fprintf(stderr, "  zero\n");
+  }
+}
+
+
 void StackingList::dump(void) const {
   const_iterator it = stack.begin(), _end = stack.end();
-  BlackboxWindow *win;
-  StackEntity *entity;
   fprintf(stderr, "Stack:\n");
-  for (; it != _end; ++it) {
-    entity = *it;
-    win = dynamic_cast<BlackboxWindow *>(entity);
-    if (win)
-      fprintf(stderr, "%s: 0x%lx\n", win->title(), win->clientWindow());
-    else if (entity)
-      fprintf(stderr, "entity: 0x%lx\n", entity->windowID());
-    else
-      fprintf(stderr, "zero\n");
-  }
-  fprintf(stderr, "the layers:\n");
-  entity = *fullscreen;
-  win = dynamic_cast<BlackboxWindow *>(entity);
-  if (win)
-    fprintf(stderr, "%s: 0x%lx\n", win->title(), win->clientWindow());
-  else if (entity)
-    fprintf(stderr, "entity: 0x%lx\n", entity->windowID());
-  else
-    fprintf(stderr, "zero\n");
-  entity = *above;
-  win = dynamic_cast<BlackboxWindow *>(entity);
-  if (win)
-    fprintf(stderr, "%s: 0x%lx\n", win->title(), win->clientWindow());
-  else if (entity)
-    fprintf(stderr, "entity: 0x%lx\n", entity->windowID());
-  else
-    fprintf(stderr, "zero\n");
-  entity = *normal;
-  win = dynamic_cast<BlackboxWindow *>(entity);
-  if (win)
-    fprintf(stderr, "%s: 0x%lx\n", win->title(), win->clientWindow());
-  else if (entity)
-    fprintf(stderr, "entity: 0x%lx\n", entity->windowID());
-  else
-    fprintf(stderr, "zero\n");
-  entity = *below;
-  win = dynamic_cast<BlackboxWindow *>(entity);
-  if (win)
-    fprintf(stderr, "%s: 0x%lx\n", win->title(), win->clientWindow());
-  else if (entity)
-    fprintf(stderr, "entity: 0x%lx\n", entity->windowID());
-  else
-    fprintf(stderr, "zero\n");
-  entity = *desktop;
-  win = dynamic_cast<BlackboxWindow *>(entity);
-  if (win)
-    fprintf(stderr, "%s: 0x%lx\n", win->title(), win->clientWindow());
-  else if (entity)
-    fprintf(stderr, "entity: 0x%lx\n", entity->windowID());
-  else
-    fprintf(stderr, "zero\n");
+  for (; it != _end; ++it)
+    print_entity(*it);
+
+  fprintf(stderr, "Layers:\n");
+  print_entity(*fullscreen);
+  print_entity(*above);
+  print_entity(*normal);
+  print_entity(*below);
+  print_entity(*desktop);
 }
