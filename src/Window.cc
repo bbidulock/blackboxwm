@@ -278,6 +278,12 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
 
 BlackboxWindow::~BlackboxWindow(void) {
+
+#ifdef    DEBUG
+  fprintf(stderr, "BlackboxWindow::~BlackboxWindow: destroying 0x%lx\n",
+          client.window);
+#endif // DEBUG
+
   if (! timer) // window not managed...
     return;
 
@@ -2086,6 +2092,11 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
 void BlackboxWindow::destroyNotifyEvent(XDestroyWindowEvent *de) {
   if (de->window != client.window)
     return;
+
+#ifdef    DEBUG
+  fprintf(stderr, "BlackboxWindow::destroyNotifyEvent() for 0x%lx\n",
+          client.window);
+#endif // DEBUG
 
   screen->unmanageWindow(this, False);
 }
