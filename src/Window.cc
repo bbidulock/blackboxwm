@@ -2669,7 +2669,7 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
           client.window);
 #endif
 
-  if (frame.maximize_button == be->window) {
+  if (frame.maximize_button == be->window && be->button < 4) {
     redrawMaximizeButton(True);
   } else if (be->button == 1 || (be->button == 3 && be->state == Mod1Mask)) {
     if (! client.state.focused)
@@ -2774,11 +2774,9 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const re) {
     }
   } else if (re->window == frame.close_button && re->button == 1) {
     if ((re->x >= 0 && re->x <= static_cast<signed>(frame.button_w)) &&
-        (re->y >= 0 && re->y <= static_cast<signed>(frame.button_w))) {
+        (re->y >= 0 && re->y <= static_cast<signed>(frame.button_w)))
       close();
-    } else {
-      redrawCloseButton(False);
-    }
+    redrawCloseButton(False);
   } else if (client.state.moving) {
     client.state.moving = False;
 
