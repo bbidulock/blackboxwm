@@ -80,7 +80,7 @@ private:
 
 class BGCCache {
 public:
-  BGCCache(const BaseDisplay * const _display);
+  explicit BGCCache(const BaseDisplay * const _display);
   ~BGCCache(void);
 
   // cleans up the cache
@@ -114,7 +114,7 @@ public:
       cache(_color.display()->gcCache()), item(0) { }
   inline ~BPen(void) { if (item) cache->release(item); }
 
-  inline const GC &gc() const {
+  inline const GC &gc(void) const {
     if (! item) item = cache->find(color, font, function, subwindow);
     return item->gc();
   }

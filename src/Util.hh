@@ -34,7 +34,7 @@ public:
   explicit Rect(const XRectangle& xrect)
   { setRect(xrect.x, xrect.y, xrect.width, xrect.height); }
 
-  bool valid() const { return _x2 > _x1 && _y2 > _y1; }
+  bool valid(void) const { return _x2 > _x1 && _y2 > _y1; }
 
   int left(void) const { return _x1; }
   int top(void) const { return _y1; }

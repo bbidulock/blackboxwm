@@ -218,6 +218,7 @@ void BColor::doCacheCleanup(void) {
   for (i = 0; i < display->getNumberOfScreens(); i++) {
     count = 0;
     it = colorcache.begin();
+
     while (it != colorcache.end()) {
       if ((*it).second.count != 0 || (*it).first.screen != i) {
         ++it;

@@ -122,7 +122,7 @@ private:
   typedef ColorCache::value_type ColorCacheItem;
   static ColorCache colorcache;
   static bool cleancache;
-  static void doCacheCleanup();
+  static void doCacheCleanup(void);
 };
 
 #endif // COLOR_HH

@@ -79,7 +79,7 @@ Slit::Slit(BScreen *scr) {
 }
 
 
-Slit::~Slit() {
+Slit::~Slit(void) {
   if (timer->isTiming()) timer->stop();
   delete timer;
 
