@@ -3,17 +3,22 @@
 Before 0.70.0 release:
 -----------------------------
 
-* Documentation updates
+* Fix regressions from 0.65.0
 
-* i18n/l10n (translations) support
+* Fix serious bugs (e.g. crashes) that make Blackbox unusable
 
-netwm:
------------------------------
-* if we have N workspaces NET_DESKTOP_NAMES could supply us with N+M
-  names.  When we create a new workspace we should consult this list.
+* Make sure bstyleconvert properly converts 0.65.0 styles to 0.70.0
+  format
+
+* Add code to automatically convert 0.65.0 ~/.blackboxrc to 0.70.0
+  format
 
 Stuff TODO or On The Way(tm):
 -----------------------------
+
+* i18n/l10n (translations) support, need something else that can
+  translate into either UTF-8 (needed for NETWM and Xft) or locale
+  (for Xmb).
 
 * make sure transients are correctly associated at startup
 
@@ -24,23 +29,12 @@ Stuff TODO or On The Way(tm):
 * see about supporting specifications at www.freedesktop.org (for
   example, the xdg-file location spec)
 
-bt::i18n is very awkward to use - replace it with something else that
-can translate into either UTF-8 (needed for NETWM and Xft) or locale
-(for Xmb).
-
-ADD: documentation and examples for Rect, since the implementation seems
-     to confuse people
-
 ADD: add _BLACKBOX_STYLE and _BLACKBOX_MENU atoms so that bbtools, bbconf,
      etc. can get the current path to the style in use and menu.
 
 ADD: support user controlled window decoration
 
 ADD: subdirs in stylesmenu/dir will create a new submenu
-
-CHANGE: rework the .blackboxrc resources so that they give a more
-        uniform behavior across screens. (Still not sure how I want
-	to do this, so it'll have to wait.)
 
 ADD: get volunteers to translate blackbox into other languages
 
