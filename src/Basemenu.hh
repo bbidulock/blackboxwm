@@ -39,22 +39,22 @@ public:
   class Item {
   public:
     enum Type { Default, Separator };
-    Item( Type t = Default )
-      : def( t == Default ), sep( t == Separator ),
-        active( false ), title( false ), enable( true ), checked( false ),
-        sub( 0 ), fun( Custom ), idx( -1 ), height( 0 ) { }
-    Item( int f )
-      : def( false ), sep( false ),
-        active( false ), title( false ), enable( true ), checked( false ),
-        sub( 0 ), fun( f ), idx( -1 ), height( 0 ) { }
-    Item( int f, const string &c )
-      : def( false ), sep( false ),
-        active( false ), title( false ), enable( true ), checked( false ),
-        sub( 0 ), fun( f ), idx( -1 ), height( 0 ), cmd( c ) { }
-    Item( Basemenu *s )
-      : def( false ), sep( false ),
-        active( false ), title( false ), enable( true ), checked( false ),
-        sub( s ), fun( Submenu ), idx( -1 ), height( 0 ) { }
+    Item(Type t = Default)
+      : def(t == Default), sep(t == Separator),
+        active(false), title(false), enable(true), checked(false),
+        sub(0), fun(Custom), idx(-1), height(0) { }
+    Item(int f)
+      : def(false), sep(false),
+        active(false), title(false), enable(true), checked(false),
+        sub(0), fun(f), idx(-1), height(0) { }
+    Item(int f, const string &c)
+      : def(false), sep(false),
+        active(false), title(false), enable(true), checked(false),
+        sub(0), fun(f), idx(-1), height(0), cmd(c) { }
+    Item(Basemenu *s)
+      : def(false), sep(false),
+        active(false), title(false), enable(true), checked(false),
+        sub(s), fun(Submenu), idx(-1), height(0) { }
 
     bool isDefault() const { return def; }
     bool isSeparator() const { return sep; }
@@ -84,55 +84,59 @@ public:
     friend class Basemenu;
   };
 
-  Basemenu( int scr );
+  Basemenu(int scr);
   virtual ~Basemenu();
 
-  int insert( const string &label, const Item &item = Item::Default, int index = -1 );
-  int insertSeparator() { return insert( string(), Item::Separator ); }
-  void change( int index, const string &label, const Item &item = Item::Default );
-  void remove( int index );
+  int insert(const string &label, const Item &item = Item::Default, int index = -1);
+  int insertSeparator() { return insert(string(), Item::Separator); }
+  void change(int index, const string &label, const Item &item = Item::Default);
+  void remove(int index);
 
   bool autoDelete() const { return auto_delete; }
   void setAutoDelete(bool ad) { auto_delete = ad; }
   void clear();
 
-  int count() const { return items.size() - show_title ? 1 : 0; }
+  int count() const { return items.size() - (show_title ? 1 : 0); }
 
-  void setItemEnabled( int, bool );
-  bool isItemEnabled( int ) const;
+  void setItemEnabled(int, bool);
+  bool isItemEnabled(int) const;
 
-  void setItemChecked( int, bool );
-  bool isItemChecked( int ) const;
+  void setItemChecked(int, bool);
+  bool isItemChecked(int) const;
 
   void showTitle();
   void hideTitle();
 
-  virtual void popup( int, int, bool = true );
-  virtual void popup( const Point &, bool = true );
+  virtual void popup(int, int, bool = true);
+  virtual void popup(const Point &, bool = true);
   virtual void hide();
 
   virtual void refresh() { }
   virtual void reconfigure();
 
 protected:
-  virtual void setActiveItem( const Rect &, Item & );
-  virtual void showSubmenu( const Rect &, const Item & );
+  virtual void setActiveItem(int);
+  virtual void setActiveItem(const Rect &, Item &);
+  virtual void showActiveSubmenu();
+  virtual void showSubmenu(const Rect &, const Item &);
   virtual void updateSize();
 
-  virtual void buttonPressEvent( XEvent * );
-  virtual void buttonReleaseEvent( XEvent * );
-  virtual void pointerMotionEvent( XEvent * );
-  virtual void leaveEvent( XEvent * );
-  virtual void exposeEvent( XEvent *);
+  virtual void buttonPressEvent(XEvent *);
+  virtual void buttonReleaseEvent(XEvent *);
+  virtual void pointerMotionEvent(XEvent *);
+  virtual void leaveEvent(XEvent *);
+  virtual void exposeEvent(XEvent *);
+  virtual void keyPressEvent(XEvent *);
 
-  virtual void titleClicked( const Point &, int );
-  virtual void itemClicked( const Point &, const Item &, int );
+  virtual void titleClicked(const Point &, int);
+  virtual void itemClicked(const Point &, const Item &, int);
 
   virtual void hideAll();
 
 private:
   void drawTitle();
-  void drawItem( const Rect &, const Item & );
+  void drawItem(const Rect &, const Item &);
+  void clickActiveItem();
 
   Pixmap title_pixmap, items_pixmap, highlight_pixmap;
   Rect title_rect;
@@ -144,6 +148,7 @@ private:
   int rows, cols;
   int itemw;
   int indent;
+  int active_item;
   bool show_title;
   bool size_dirty;
   bool pressed;
