@@ -61,6 +61,8 @@ BlackboxSession::BlackboxSession(char *display_name) {
   b1Pressed = False;
   b2Pressed = False;
   b3Pressed = False;
+  reconfigure = False;
+  shutdown = False;
   startup = True;
   focus_window_number = -1;
 
@@ -139,6 +141,7 @@ void BlackboxSession::InitScreen(void) {
   yres = HeightOfScreen(ScreenOfDisplay(display, screen));
 
   InitColor();
+  XrmInitialize();
   LoadDefaults();
 
   XGCValues gcv;
@@ -153,6 +156,8 @@ void BlackboxSession::InitScreen(void) {
   InitMenu();
   ws_manager = new WorkspaceManager(this, resource.workspaces);
   ws_manager->stackWindows(0, 0);
+
+  createAutoConfigDialog();
 
   unsigned int nchild;
   Window r, p, *children;
@@ -222,9 +227,11 @@ void BlackboxSession::EventLoop(void) {
 
   for (; (! shutdown);) {
     if (XPending(display)) {
-      XEvent e;
-      XNextEvent(display, &e);
-      ProcessEvent(&e);
+      if (! reconfigure) {
+	XEvent e;
+	XNextEvent(display, &e);
+	ProcessEvent(&e);
+      }
     } else {
       // put a wait on the network file descriptor for the X connection...
       // this saves blackbox from eating all available cpu
@@ -259,7 +266,12 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
     case 3: b3Pressed = True; break;
     }
     
-    if ((bWin = searchWindow(e->xbutton.window)) != NULL) {
+    if (e->xbutton.window == ReconfigureDialog.yes_button) {
+      ReconfigureDialog.dialog->withdrawWindow();
+      Reconfigure();
+    } else if (e->xbutton.window == ReconfigureDialog.no_button) {
+      ReconfigureDialog.dialog->withdrawWindow();
+    } else if ((bWin = searchWindow(e->xbutton.window)) != NULL) {
       bWin->buttonPressEvent(&e->xbutton);
     } else if ((bIcon = searchIcon(e->xbutton.window)) != NULL) {
       bIcon->buttonPressEvent(&e->xbutton);
@@ -375,8 +387,8 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
     if (e->xproperty.state != PropertyDelete) {
       if (e->xproperty.atom == XA_RESOURCE_MANAGER &&
 	  e->xproperty.window == root) {
-	XSync(display, False);
-	Reconfigure();
+	ReconfigureDialog.dialog->deiconifyWindow();
+	raiseWindow(ReconfigureDialog.dialog);
       } else {
 	BlackboxWindow *pWin = searchWindow(e->xproperty.window);
 	if (pWin != NULL)
@@ -431,6 +443,21 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
       eMenu->exposeEvent(&e->xexpose);
     else if ((wsMan = searchWSManager(e->xexpose.window)) != NULL)
       wsMan->exposeEvent(&e->xexpose);
+    else if (e->xexpose.window == ReconfigureDialog.text_window)
+      for (int i = 0; i < 6; i++)
+	XDrawString(display, ReconfigureDialog.text_window,
+		    ReconfigureDialog.dialogGC, 3,
+		    (ReconfigureDialog.line_h - 3) * (i + 1),
+		    ReconfigureDialog.DialogText[i],
+		    strlen(ReconfigureDialog.DialogText[i]));
+    else if (e->xexpose.window == ReconfigureDialog.yes_button)
+      XDrawString(display, ReconfigureDialog.yes_button,
+		  ReconfigureDialog.dialogGC, 3, ReconfigureDialog.line_h - 3,
+		  "Yes", 3);
+    else if (e->xexpose.window == ReconfigureDialog.no_button)
+      XDrawString(display, ReconfigureDialog.no_button,
+		  ReconfigureDialog.dialogGC, 3, ReconfigureDialog.line_h - 3,
+		  "No", 2);
     
     break;
   } 
@@ -758,32 +785,22 @@ void BlackboxSession::lowerWindow(BlackboxWindow *w) {
 
 void BlackboxSession::LoadDefaults(void) {
   XGrabServer(display);
-  XrmInitialize();
   
 #define BLACKBOXAD XAPPLOADDIR##"/Blackbox.ad"
-  XrmDatabase blackbox_database = NULL,
-    default_database = NULL, resource_database = NULL;
+  XrmDatabase blackbox_database = NULL, resource_database = NULL;
   
-  XTextProperty xtext;
-  if (XGetTextProperty(display, root, &xtext, XA_RESOURCE_MANAGER)) {
-    char **rmstringlist;
-    int n;
-    XTextPropertyToStringList(&xtext, &rmstringlist, &n);
-  
-    if (n)
-      if (rmstringlist[0] != NULL) {
-	resource_database = XrmGetStringDatabase(rmstringlist[0]);
-	XFreeStringList(rmstringlist);
-      }
+  XTextProperty resource_manager_string;
+  if (XGetTextProperty(display, root, &resource_manager_string,
+		       XA_RESOURCE_MANAGER)) {
+    resource_database =
+      XrmGetStringDatabase((const char *) resource_manager_string.value);
   }
   
-  if (resource_database != NULL)
+  if (resource_database != NULL) {
     XrmCombineDatabase(resource_database, &blackbox_database, True);
-  else
-    default_database = XrmGetFileDatabase(BLACKBOXAD);
-
-  if (default_database != NULL)
-    XrmCombineDatabase(default_database, &blackbox_database, False);
+  } else {
+    blackbox_database = XrmGetFileDatabase(BLACKBOXAD);
+  }
 
   XrmValue value;
   char *value_type;
@@ -1342,10 +1359,10 @@ void BlackboxSession::LoadDefaults(void) {
     }
   }
 
-  if (blackbox_database != NULL)
-    XrmDestroyDatabase(blackbox_database);
-
+  printf("destroying database\n");
+  XrmDestroyDatabase(blackbox_database);
   XUngrabServer(display);
+  printf("resources loaded\n");
 }
 
 
@@ -1650,6 +1667,7 @@ void BlackboxSession::parseSubMenu(FILE *menu_file, SessionMenu *menu) {
 // *************************************************************************
 
 void BlackboxSession::Reconfigure(void) {
+  XGrabServer(display);
   XSynchronize(display, True);
   LoadDefaults();
 
@@ -1662,6 +1680,8 @@ void BlackboxSession::Reconfigure(void) {
   XChangeGC(display, opGC, GCForeground|GCFunction|GCSubwindowMode|GCFont,
 	    &gcv);
 
+  ws_manager->Reconfigure();
+
   Bool m = rootmenu->menuVisible();
   int x = rootmenu->X(), y = rootmenu->Y();
   rootmenu->hideMenu();
@@ -1671,6 +1691,87 @@ void BlackboxSession::Reconfigure(void) {
     rootmenu->showMenu();
   }
 
-  ws_manager->Reconfigure();
   XSynchronize(display, False);
+  XUngrabServer(display);
+}
+
+
+void BlackboxSession::createAutoConfigDialog(void) {
+  XSetWindowAttributes attrib_create;
+  unsigned long create_mask = CWBackPixmap|CWBackPixel|CWBorderPixel|
+    CWOverrideRedirect |CWCursor|CWEventMask; 
+  
+  attrib_create.background_pixmap = None;
+  attrib_create.background_pixel = toolboxColor().pixel;
+  attrib_create.border_pixel = toolboxTextColor().pixel;
+  attrib_create.override_redirect = False;
+  attrib_create.cursor = sessionCursor();
+  attrib_create.event_mask = SubstructureRedirectMask|ButtonPressMask|
+    ButtonReleaseMask|ButtonMotionMask|ExposureMask|EnterWindowMask;
+  
+  ReconfigureDialog.DialogText[0] =
+    "Blackbox has capabilities to perform an automatic";
+  ReconfigureDialog.DialogText[1] =
+    "reconfiguration, but this capability can best be described as";
+  ReconfigureDialog.DialogText[2] =
+    "buggy and unreliable.  If you want to allow Blackbox to";
+  ReconfigureDialog.DialogText[3] =
+    "reconfigure itself, choose \"Yes\" and be aware that Blackbox";
+  ReconfigureDialog.DialogText[4] =
+    "may dump core.  Choose \"No\" and you can either restart or";
+  ReconfigureDialog.DialogText[5] =
+    "choose the Reconfigure option from your root menu.";
+
+  ReconfigureDialog.line_h = titleFont()->ascent + titleFont()->descent + 6;
+  ReconfigureDialog.text_w = 0;
+  ReconfigureDialog.text_h = ReconfigureDialog.line_h * 6;
+ 
+  for (int i = 0; i < 6; i++) {
+    int tmp =
+      XTextWidth(titleFont(), ReconfigureDialog.DialogText[i],
+		 strlen(ReconfigureDialog.DialogText[i])) + 6;
+    ReconfigureDialog.text_w = ((ReconfigureDialog.text_w < tmp) ? tmp :
+				ReconfigureDialog.text_w);
+  }
+
+  ReconfigureDialog.window =
+    XCreateWindow(display, root, 200, 200, ReconfigureDialog.text_w + 10,
+		  ReconfigureDialog.text_h + (ReconfigureDialog.line_h * 3),
+		  0, depth, InputOutput, v, create_mask, &attrib_create);
+  XStoreName(display, ReconfigureDialog.window,
+	     "Perform Auto-Reconfiguration?");
+
+  ReconfigureDialog.text_window =
+    XCreateWindow(display, ReconfigureDialog.window, 5, 5,
+		  ReconfigureDialog.text_w, ReconfigureDialog.text_h, 0,
+		  depth, InputOutput, v, create_mask, &attrib_create);
+
+  ReconfigureDialog.yes_button = 
+    XCreateWindow(display, ReconfigureDialog.window, 5,
+		  ReconfigureDialog.text_h + ReconfigureDialog.line_h,
+		  (ReconfigureDialog.text_w / 2) - 10,
+		  ReconfigureDialog.line_h, 1, depth, InputOutput, v,
+		  create_mask, &attrib_create);
+
+  ReconfigureDialog.no_button = 
+    XCreateWindow(display, ReconfigureDialog.window,
+		  (ReconfigureDialog.text_w / 2) + 10,
+		  ReconfigureDialog.text_h + ReconfigureDialog.line_h,
+		  (ReconfigureDialog.text_w / 2) - 10,
+		  ReconfigureDialog.line_h, 1, depth, InputOutput, v,
+		  create_mask, &attrib_create);
+
+  XGCValues gcv;
+  gcv.font = titleFont()->fid;
+  gcv.foreground = toolboxTextColor().pixel;
+  ReconfigureDialog.dialogGC = XCreateGC(display,
+					 ReconfigureDialog.text_window,
+					 GCFont|GCForeground, &gcv);
+
+  ReconfigureDialog.dialog = new BlackboxWindow(this,
+						ReconfigureDialog.window,
+						True);
+
+  XMapSubwindows(display, ReconfigureDialog.window);
+  XMapWindow(display, ReconfigureDialog.window);
 }

@@ -21,7 +21,9 @@
 
 #ifndef _blackbox_hh
 #define _blackbox_hh
-#define _blackbox_version "zero point one five point three beta"
+#define _blackbox_version "zero point one five point four beta"
+
+#include <X11/Xlib.h>
 
 #include "llist.hh"
 
@@ -47,7 +49,7 @@ public:
 
   void EventLoop(void);
   void Restart(char * = 0);
-  void Shutdown(void);
+  void Shutdown(Bool = True);
 };
 
 

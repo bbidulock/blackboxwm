@@ -87,13 +87,20 @@ private:
   Atom _XA_WM_COLORMAP_WINDOWS, _XA_WM_PROTOCOLS, _XA_WM_STATE,
     _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS;
 
-  Bool shutdown;
+  Bool shutdown, reconfigure;
   Display *display;
   GC opGC;
   Visual *v;
   Window root;
   XColor *colors_8bpp;
 
+  struct __reconfigure__dialog__ {
+    BlackboxWindow *dialog;
+    GC dialogGC;
+    Window window, text_window, yes_button, no_button;
+    char *DialogText[6];
+    int text_w, text_h, line_h;
+  } ReconfigureDialog;
 
   typedef struct __window_search__ {
     BlackboxWindow *data;
@@ -161,6 +168,7 @@ protected:
   void InitColor(void);
   void ProcessEvent(XEvent *);
   void Reconfigure(void);
+  void createAutoConfigDialog(void);
 
 
 public:

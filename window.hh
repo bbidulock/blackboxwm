@@ -172,7 +172,7 @@ protected:
 
 
 public:
-  BlackboxWindow(BlackboxSession *, Window);
+  BlackboxWindow(BlackboxSession *, Window, Bool = False);
   ~BlackboxWindow(void);
 
   void buttonPressEvent(XButtonEvent *);

@@ -44,7 +44,9 @@
 // 
 // *************************************************************************
 
-BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window window) {
+BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window window,
+			       Bool internal_window)
+{
   moving = False;
   resizing = False;
   shaded = False;
@@ -77,25 +79,32 @@ BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window window) {
 
   getWMHints();
 
-  transient = False;
-  do_handle = True;
-  do_iconify = True;
-  do_maximize = True;
-  
-  Window win;
-  if (XGetTransientForHint(display, client.window, &win)) {
-    if (win && (win != client.window_group)) {
-      if ((client.transient_for = session->searchWindow(win)) != NULL) {
-	client.transient_for->client.transient = this;
-      
-        transient = True;
-        do_iconify = True;
-        do_handle = False;
-        do_maximize = False;
+  if (! internal_window) {
+    transient = False;
+    do_handle = True;
+    do_iconify = True;
+    do_maximize = True;
+    
+    Window win;
+    if (XGetTransientForHint(display, client.window, &win)) {
+      if (win && (win != client.window_group)) {
+	if ((client.transient_for = session->searchWindow(win)) != NULL) {
+	  client.transient_for->client.transient = this;
+	
+	  transient = True;
+	  do_iconify = True;
+	  do_handle = False;
+	  do_maximize = False;
+	}
       }
     }
+  } else {
+    transient = False;
+    do_handle = False;
+    do_iconify = False;
+    do_maximize = False;
   }
-    
+
   XSizeHints sizehint;
   getWMNormalHints(&sizehint);
   if ((client.hint_flags & PMinSize) && (client.hint_flags & PMaxSize))
@@ -178,7 +187,11 @@ BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window window) {
   if (do_handle) XMapSubwindows(display, frame.handle);
   XMapSubwindows(display, frame.window);
   
-  window_menu = new BlackboxWindowMenu(this, session);
+  if (! internal_window)
+    window_menu = new BlackboxWindowMenu(this, session);
+  else
+    window_menu = 0;
+
   session->addWindow(this);
   configureWindow(frame.x, frame.y, frame.width, frame.height);
 
@@ -190,9 +203,8 @@ BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window window) {
 BlackboxWindow::~BlackboxWindow(void) {
   XGrabServer(display);
 
-  delete window_menu;
-  if (icon)
-    delete icon;
+  if (window_menu) delete window_menu;
+  if (icon) delete icon;
 
   session->removeWindow(this);
   if (transient && client.transient_for)
@@ -541,9 +553,11 @@ void BlackboxWindow::Reconfigure(void) {
   gcv.font = session->titleFont()->fid;
   XChangeGC(display, frame.ftextGC, GCForeground|GCBackground|GCFont, &gcv);
 
-  window_menu->Reconfigure();
-  window_menu->updateMenu();
-
+  if (window_menu) {
+    window_menu->Reconfigure();
+    window_menu->updateMenu();
+  }
+  
   if (session->Orientation() == BlackboxSession::B_RightHandedUser)
     client.x = frame.x + 1;
   else 
@@ -1056,7 +1070,7 @@ Bool BlackboxWindow::setInputFocus(void) {
 
 
 void BlackboxWindow::iconifyWindow(void) {
-  window_menu->hideMenu();
+  if (window_menu) window_menu->hideMenu();
   menu_visible = False;
 
   XUnmapWindow(display, frame.window);
@@ -1132,7 +1146,7 @@ void BlackboxWindow::withdrawWindow(void) {
 
   visible = False;
   XUnmapWindow(display, frame.window);
-  window_menu->hideMenu();
+  if (window_menu) window_menu->hideMenu();
   
   XEvent foo;
   if (! XCheckTypedWindowEvent(display, client.window, DestroyNotify,
@@ -1536,13 +1550,14 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
     }
   } else if (session->button3Pressed()) {
     if (frame.title == be->window) {
-      if (! menu_visible) {
-	window_menu->moveMenu(be->x_root - (window_menu->Width() / 2),
-			      frame.y + frame.title_h);
-	XRaiseWindow(display, window_menu->windowID());
-	window_menu->showMenu();
-      } else
-	window_menu->hideMenu();
+      if (window_menu)
+	if (! menu_visible) {
+	  window_menu->moveMenu(be->x_root - (window_menu->Width() / 2),
+				frame.y + frame.title_h);
+	  XRaiseWindow(display, window_menu->windowID());
+	  window_menu->showMenu();
+	} else
+	  window_menu->hideMenu();
     }
   }
 }

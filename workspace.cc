@@ -593,7 +593,7 @@ void WorkspaceManager::stackWindows(Window *workspace_stack, int num) {
 void WorkspaceManager::Reconfigure(void) {
   frame.button_w = XTextWidth(session->titleFont(), "Workspace 00", 13) + 8;
   frame.button_h = session->titleFont()->ascent +
-    session->titleFont()->descent + 8; 
+    session->titleFont()->descent + 8;
 
   frame.frame_w = frame.button_w + 6;
   frame.frame_h = session->YResolution() - 2;

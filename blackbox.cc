@@ -43,7 +43,7 @@ static void signalhandler(int i) {
   if (! re_enter) {
     re_enter = 1;
     fprintf(stderr, "\t[ shutting down ]\n");
-    blackbox->Shutdown();
+    blackbox->Shutdown(False);
   }
 
   fprintf(stderr, "\t[ exiting ]\n");
@@ -150,7 +150,7 @@ void Blackbox::Restart(char *prog) {
 }
 
 
-void Blackbox::Shutdown(void) {
+void Blackbox::Shutdown(Bool do_delete) {
   // end management for all sessions and quit
   for (int i = 0; i < session_list->count(); ++i) {
     BlackboxSession *tmp = session_list->at(i);
@@ -158,5 +158,6 @@ void Blackbox::Shutdown(void) {
     delete tmp;
   }
 
-  delete this;
+  if (do_delete)
+    delete this;
 }

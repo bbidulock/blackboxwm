@@ -19,23 +19,18 @@ XCOMM (See the included file COPYING / GPL-2.0)
 
 XCOMM Source files from which blackbox is built
 
-Includes =		blackbox.hh graphics.hh icon.hh llist.hh menu.hh \
-			session.hh window.hh workspace.hh
-Sources =		blackbox.cc graphics.cc icon.cc llist.cc main.cc \
-			menu.cc session.cc sessionmenu.cc window.cc \
-			windowmenu.cc workspace.cc workspacemenu.cc
-Objects =		blackbox.o graphics.o icon.o main.o menu.o llist.o \
-			session.o sessionmenu.o window.o windowmenu.o \
-			workspace.o workspacemenu.o
+Includes =		blackbox.hh graphics.hh icon.hh llist.hh menu.hh session.hh window.hh workspace.hh
+Sources =		blackbox.cc graphics.cc icon.cc llist.cc main.cc menu.cc session.cc sessionmenu.cc window.cc windowmenu.cc workspace.cc workspacemenu.cc
+Objects =		blackbox.o graphics.o icon.o main.o menu.o llist.o session.o sessionmenu.o window.o windowmenu.o workspace.o workspacemenu.o
 
 XCOMM Add the name of a directory to search for includes (/include is appended)
 XPROJECTROOT =		/usr/local
 
 XCOMM Add compiler options here
-CompileOptions =	-Wall -W -DSHAPE -pipe $(CXXFLAGS)
+XCOMM CompileOptions =	-Wall -W -DSHAPE -pipe $(CXXFLAGS)
 
 XCOMM Comment out the above and use this line for debugging
-XCOMM CompileOptions =	-Wall -W -DSHAPE -I$(INCROOT) -g -O2
+CompileOptions =	-Wall -W -DSHAPE -I$(INCROOT) -g -O6 -mpentium -malign-functions=2 -malign-jumps=2 -malign-loops=2 -ffast-math -finline-functions -pipe
 
 DefaultsPath =		-DXAPPLOADDIR=\"$(XAPPLOADDIR)\" -DXLIBDIR=\"$(LIBDIR)\"
 Libraries =		$(XLIB) $(EXTENSIONLIB)
