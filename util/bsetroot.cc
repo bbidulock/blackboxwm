@@ -132,11 +132,8 @@ bsetroot::~bsetroot(void) {
 
 // adapted from wmsetbg
 void bsetroot::setPixmapProperty(int screen, Pixmap pixmap) {
-  static Atom rootpmap_id = None, esetroot_id = None;
-  if (rootpmap_id == None) {
-    rootpmap_id = XInternAtom(display.XDisplay(), "_XROOTPMAP_ID", False);
-    esetroot_id = XInternAtom(display.XDisplay(), "ESETROOT_PMAP_ID", False);
-  }
+  Atom rootpmap_id = XInternAtom(display.XDisplay(), "_XROOTPMAP_ID", False),
+       esetroot_id = XInternAtom(display.XDisplay(), "ESETROOT_PMAP_ID", False);
 
   const bt::ScreenInfo &screen_info = display.screenInfo(screen);
 
@@ -144,7 +141,6 @@ void bsetroot::setPixmapProperty(int screen, Pixmap pixmap) {
   int format;
   unsigned long length, after;
   unsigned char *data = 0;
-  unsigned char* data_esetroot = 0;
   Pixmap xrootpmap = None;
   Pixmap esetrootpmap = None;
 
@@ -161,12 +157,12 @@ void bsetroot::setPixmapProperty(int screen, Pixmap pixmap) {
   // Clear out the old ESETROOT_PMAP_ID property
   XGetWindowProperty(display.XDisplay(), screen_info.rootWindow(),
                      esetroot_id, 0L, 1L, True, AnyPropertyType,
-                     &type, &format, &length, &after, &data_esetroot);
+                     &type, &format, &length, &after, &data);
 
-  if (data_esetroot && type == XA_PIXMAP && format == 32 && length == 1)
-    esetrootpmap = *(reinterpret_cast<Pixmap *>(data_esetroot));
+  if (data && type == XA_PIXMAP && format == 32 && length == 1)
+    esetrootpmap = *(reinterpret_cast<Pixmap *>(data));
 
-  if (data_esetroot) XFree(data_esetroot);
+  if (data) XFree(data);
 
   // Destroy the old pixmaps
   if (xrootpmap)
