@@ -107,6 +107,10 @@ BlackboxWindow* StackingList::front(void) const {
   if (*below) return *below;
   // we do not return desktop windows
   assert(0);
+
+  // this point is never reached, but the compiler doesn't know that.
+  // so, we shut it up
+  return 0;
 }
 
 
