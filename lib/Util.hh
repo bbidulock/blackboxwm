@@ -49,54 +49,6 @@ namespace bt {
     NoCopy& operator=(const NoCopy&);
   };
 
-  class Rect {
-  public:
-    Rect(void) : _x1(0), _y1(0), _x2(0), _y2(0) { }
-    Rect(int x_, int y_, unsigned int w, unsigned int h)
-      : _x1(x_), _y1(y_), _x2(w + x_ - 1), _y2(h + y_ - 1) { }
-    explicit Rect(const XRectangle& xrect)
-      : _x1(xrect.x), _y1(xrect.y), _x2(xrect.width + xrect.x - 1),
-        _y2(xrect.height + xrect.y - 1) { }
-
-    int left(void) const { return _x1; }
-    int top(void) const { return _y1; }
-    int right(void) const { return _x2; }
-    int bottom(void) const { return _y2; }
-
-    int x(void) const { return _x1; }
-    int y(void) const { return _y1; }
-    void setX(int x_);
-    void setY(int y_);
-    void setPos(int x_, int y_);
-
-    unsigned int width(void) const { return _x2 - _x1 + 1; }
-    unsigned int height(void) const { return _y2 - _y1 + 1; }
-    void setWidth(unsigned int w);
-    void setHeight(unsigned int h);
-    void setSize(unsigned int w, unsigned int h);
-
-    void setRect(int x_, int y_, unsigned int w, unsigned int h);
-
-    void setCoords(int l, int t, int r, int b);
-
-    bool operator==(const Rect &a)
-    { return _x1 == a._x1 && _y1 == a._y1 && _x2 == a._x2 && _y2 == a._y2; }
-    bool operator!=(const Rect &a) { return ! operator==(a); }
-
-    Rect operator|(const Rect &a) const;
-    Rect operator&(const Rect &a) const;
-    Rect &operator|=(const Rect &a) { *this = *this | a; return *this; }
-    Rect &operator&=(const Rect &a) { *this = *this & a; return *this; }
-
-    bool valid(void) const { return _x2 > _x1 && _y2 > _y1; }
-
-    bool intersects(const Rect &a) const;
-    bool contains(int x_, int y_) const;
-
-  private:
-    int _x1, _y1, _x2, _y2;
-  };
-
   inline bool within(int x, int y, int width, int height) {
     return ((x >= 0 && x <= width) && (y >= 0 && y <= height));
   }
@@ -125,6 +77,7 @@ namespace bt {
   std::string itostring(int i);
   std::string itostring(unsigned short i);
   std::string itostring(short i);
+
 } // namespace bt
 
 #endif // __Util_hh

@@ -33,6 +33,7 @@ extern "C" {
 #endif // SHAPE
 }
 
+#include "Rect.hh"
 #include "Util.hh"
 
 

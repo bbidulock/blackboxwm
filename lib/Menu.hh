@@ -32,6 +32,7 @@ extern "C" {
 #include "Color.hh"
 #include "EventHandler.hh"
 #include "Font.hh"
+#include "Rect.hh"
 #include "Texture.hh"
 #include "Timer.hh"
 #include "Util.hh"

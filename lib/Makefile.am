@@ -33,6 +33,7 @@ libbt_a_SOURCES		= Application.cc				\
 			  Netwm.cc					\
 			  Pen.cc					\
 			  PixmapCache.cc				\
+			  Rect.cc					\
 			  Resource.cc					\
 			  Texture.cc					\
 			  Timer.cc					\
