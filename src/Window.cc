@@ -1728,6 +1728,9 @@ void BlackboxWindow::iconify(void) {
 void BlackboxWindow::maximize(unsigned int button) {
   assert(hasWindowFunction(WindowFunctionMaximize));
 
+  // any maximize operation always unshades
+  client.ewmh.shaded = false;
+
   if (isMaximized()) {
     client.ewmh.maxh = client.ewmh.maxv = false;
 
@@ -1771,6 +1774,8 @@ void BlackboxWindow::maximize(unsigned int button) {
 
   if (!isFullScreen()) {
     frame.changing = _screen->availableArea();
+
+    upsize();
     client.premax = frame.rect;
 
     if (!client.ewmh.maxh) {
@@ -1784,9 +1789,7 @@ void BlackboxWindow::maximize(unsigned int button) {
 
     constrain(TopLeft);
 
-    if (isShaded())
-      client.ewmh.shaded = false;
-
+    frame.rect = bt::Rect(); // trick configure into working
     configure(frame.changing);
     redrawAllButtons(); // in case it is not called in configure()
   }
