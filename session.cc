@@ -42,15 +42,15 @@ void SessionMenu::showMenu(void)
 { BlackboxMenu::showMenu(); }
 void SessionMenu::moveMenu(int x, int y)
 { BlackboxMenu::moveMenu(x, y); }
-void SessionMenu::raiseMenu(void)
-{ BlackboxMenu::raiseMenu(); }
 void SessionMenu::updateMenu(void)
 { BlackboxMenu::updateMenu(); }
 Window SessionMenu::windowID(void)
 { return BlackboxMenu::windowID(); }
 void SessionMenu::itemPressed(int button, int item) {
-  if (button == 1 && hasSubmenu(item))
+  if (button == 1 && hasSubmenu(item)) {
     drawSubmenu(item);
+    XRaiseWindow(session->control(), at(item)->Submenu()->windowID());
+  }
 }
 
 
@@ -211,7 +211,7 @@ void BlackboxSession::InitScreen(void) {
   XSetErrorHandler((XErrorHandler) anotherWMRunning);
   XSelectInput(display, root, event_mask);
   XSync(display, 0);
-  XSetErrorHandler((XErrorHandler) errorHandler);
+  XSetErrorHandler((XErrorHandler) NULL);
 
   XModifierKeymap *defmap = XGetModifierMapping(display);
   debug->msg("shift   mod: %x %x\n", defmap->modifiermap[0],
@@ -470,8 +470,7 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
 			     e->xbutton.y_root -
 			     (rootmenu->titleHeight() / 2));
 	  rootmenu->showMenu();
-	} else
-	  rootmenu->raiseMenu();
+	}
       }
     }
 
@@ -766,19 +765,6 @@ void BlackboxSession::removeWindow(BlackboxWindow *w)
 { ws_manager->workspace(w->workspace())->removeWindow(w); }
 
 
-int BlackboxSession::errorHandler(Display *d, XErrorEvent *e) {
-  fprintf(stderr, "error in window manager\n");
-
-  char err[80];
-  XGetErrorText(d, e->error_code, err, 79);
-  fprintf(stderr, "error code %d - %s\n", e->error_code, err);
-  fprintf(stderr, "major/minor opcode - %d/%d XID %lx\n", e->request_code,
-    e->minor_code, e->resourceid);
-
-  Dissociate();
-  exit(1);
-}
-
 void BlackboxSession::sig11handler(int i) {
   static int re_enter = 0;
 
@@ -799,6 +785,18 @@ void BlackboxSession::reassociateWindow(BlackboxWindow *w) {
     ws_manager->workspace(w->workspace())->removeWindow(w);
     ws_manager->currentWorkspace()->addWindow(w);
   }
+}
+
+
+void BlackboxSession::raiseWindow(BlackboxWindow *w) {
+  if (w->workspace() == ws_manager->currentWorkspaceID())
+    ws_manager->currentWorkspace()->raiseWindow(w);
+}
+
+
+void BlackboxSession::lowerWindow(BlackboxWindow *w) {
+  if (w->workspace() == ws_manager->currentWorkspaceID())
+    ws_manager->currentWorkspace()->lowerWindow(w);
 }
 
 
@@ -1543,6 +1541,7 @@ void BlackboxSession::parseSubMenu(FILE *menu_file, SessionMenu *menu) {
 	    debug->msg("%s-inserting submenu -%s-\n", menu->label(), l);
 	    menu->insert(l, newmenu);
 	    newmenu->setMovable(False);
+	    XRaiseWindow(display, newmenu->windowID());
 	  } else if (! strcasecmp(c, "end")) {
 	    delete [] c;
 	    debug->msg("%s-end of submenu\n", menu->label());

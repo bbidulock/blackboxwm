@@ -95,12 +95,12 @@ void BlackboxWindowMenu::itemReleased(int button, int item) {
 	
       case 4:
 	hideMenu();
-	window->raiseWindow();
+	session->raiseWindow(window);
 	break;
 	
       case 5:
 	hideMenu();
-	window->lowerWindow();
+	session->lowerWindow(window);
 	break;
       }
     else
@@ -117,12 +117,12 @@ void BlackboxWindowMenu::itemReleased(int button, int item) {
 	
       case 3:
 	hideMenu();
-	window->raiseWindow();
+	session->raiseWindow(window);
 	break;
 	
       case 4:
 	hideMenu();
-	window->lowerWindow();
+	session->lowerWindow(window);
 	break;
       }
   }
@@ -525,16 +525,22 @@ void BlackboxWindow::associateClientWindow(void) {
   if (! XFetchName(display, client.window, &client.title))
     client.title = "Unnamed";
 
-  if (session->Orientation() == BlackboxSession::B_LeftHandedUser)
-    XReparentWindow(display, client.window, frame.window,
-		    ((do_handle) ? frame.handle_w + 1 : 0),
-		    frame.title_h + 1);
-  else
-    XReparentWindow(display, client.window, frame.window, 0,
-		    frame.title_h + 1);
+  XEvent foo;
+  if (! XCheckTypedWindowEvent(display, client.window, DestroyNotify,
+                               &foo)) {
+    if (session->Orientation() == BlackboxSession::B_LeftHandedUser)
+      XReparentWindow(display, client.window, frame.window,
+		      ((do_handle) ? frame.handle_w + 1 : 0),
+		      frame.title_h + 1);
+    else
+      XReparentWindow(display, client.window, frame.window, 0,
+		      frame.title_h + 1);
+  }
 
+#ifdef SHAPE
   if (session->shapeExtensions())
     XShapeSelectInput(display, client.window, ShapeNotifyMask);
+#endif
 
   XSaveContext(display, client.window, session->winContext(), (XPointer) this);
   createIconifyButton();
@@ -791,12 +797,10 @@ Bool BlackboxWindow::getWMHints(void) {
   
   if (wmhints->flags & IconPixmapHint) {
     client.icon_pixmap = wmhints->icon_pixmap;
-    useIconWindow = False;
   }
   
   if (wmhints->flags & IconWindowHint) {
     client.icon_window = wmhints->icon_window;
-    useIconWindow = True;
   }
   
   /* icon position hint would be next, but as the ICCCM says, we can ignore
@@ -902,7 +906,11 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
     frame.height = dh;
     frame.title_w = frame.width;
     frame.handle_h = dh - frame.title_h - 1;
-    client.x = dx + frame.border;
+    if (session->Orientation() == BlackboxSession::B_RightHandedUser)
+      client.x = dx + frame.border;
+    else 
+      client.x = dx + ((do_handle) ? frame.handle_w + 1 : 0) + frame.border;
+
     client.y = dy + frame.title_h + frame.border + 1;
     client.width = dw - ((do_handle) ? (frame.handle_w + 1) : 0);
     client.height = dh - frame.title_h - 1;
@@ -976,7 +984,11 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
   } else {
     frame.x = dx;
     frame.y = dy;
-    client.x = dx + frame.border;
+    if (session->Orientation() == BlackboxSession::B_RightHandedUser)
+      client.x = dx + frame.border;
+    else 
+      client.x = dx + ((do_handle) ? frame.handle_w + 1 : 0) + frame.border;
+
     client.y = dy + frame.title_h + frame.border + 1;
    
     XWindowChanges xwc;
@@ -1002,20 +1014,6 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
 
     XSendEvent(display, client.window, False, StructureNotifyMask, &event);
   }
-}
-
-
-void BlackboxWindow::setFGColor(GC *gc, char *color) {
-  XGCValues gcv;
-  gcv.foreground = session->getColor(color);
-  XChangeGC(display, *gc, GCForeground, &gcv);
-}
-
-
-void BlackboxWindow::setFGColor(GC *gc, unsigned long color) {
-  XGCValues gcv;
-  gcv.foreground = color;
-  XChangeGC(display, *gc, GCForeground, &gcv);
 }
 
 
@@ -1079,7 +1077,7 @@ void BlackboxWindow::iconifyWindow(void) {
 
 
 void BlackboxWindow::deiconifyWindow(void) {
-  XMapRaised(display, frame.window);
+  XMapWindow(display, frame.window);
   visible = True;
   iconic = False;
 
@@ -1159,32 +1157,6 @@ int BlackboxWindow::setWorkspace(int n) {
 }
 
 
-void BlackboxWindow::raiseWindow(void) {
-  XGrabServer(display);
-
-  XRaiseWindow(display, frame.window);
-  if (client.transient)
-    client.transient->raiseWindow();
-  if (menu_visible)
-    XRaiseWindow(display, window_menu->windowID());
-
-  XUngrabServer(display);
-}
-
-
-void BlackboxWindow::lowerWindow(void) {
-  XGrabServer(display);
-
-  if (client.transient)
-    client.transient->lowerWindow();
-  if (menu_visible)
-    XLowerWindow(display, window_menu->windowID());
-  XLowerWindow(display, frame.window);
-
-  XUngrabServer(display);
-}
-
-
 void BlackboxWindow::maximizeWindow(void) {
   XGrabServer(display);
 
@@ -1221,7 +1193,7 @@ void BlackboxWindow::maximizeWindow(void) {
 
     unmaximize = 1;
     configureWindow(dx, dy, dw, dh);
-    raiseWindow();
+    session->raiseWindow(this);
   } else {
     configureWindow(px, py, pw, ph);
     unmaximize = 0;
@@ -1362,7 +1334,7 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
 
       setFocusFlag(false);
       XMapSubwindows(display, frame.window);
-      XMapRaised(display, frame.window);
+      XMapWindow(display, frame.window);
       XUngrabServer(display);
     }
   }
@@ -1483,7 +1455,7 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
       if (strcmp(client.title, "Unnamed"))
 	XFree(client.title);
     if (! XFetchName(display, client.window, &client.title))
-      client.title = 0;
+      client.title = "Unnamed";
     XClearWindow(display, frame.title);
     debug->msg("new window title: (%s)\n", client.title);
     drawTitleWin(0, 0, frame.title_w, frame.title_h);
@@ -1552,7 +1524,7 @@ void BlackboxWindow::configureRequestEvent(XConfigureRequestEvent *cr) {
 void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
   if (session->button1Pressed()) {
     if (frame.title == be->window || frame.handle == be->window)
-      raiseWindow();
+      session->raiseWindow(this);
     else if (frame.iconify_button == be->window)
       drawIconifyButton(True);
     else if (frame.maximize_button == be->window)
@@ -1560,10 +1532,10 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
     else if (frame.close_button == be->window)
       drawCloseButton(True);
     else if (frame.resize_handle == be->window)
-      raiseWindow();
+      session->raiseWindow(this);
   } else if (session->button2Pressed()) {
     if (frame.title == be->window || frame.handle == be->window) {
-      lowerWindow();
+      session->lowerWindow(this);
     }
   } else if (session->button3Pressed()) {
     if (frame.title == be->window) {

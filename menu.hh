@@ -74,7 +74,6 @@ protected:
 
   void showMenu(void);
   void hideMenu(void);
-  void raiseMenu(void);
   void showTitle(void);
   void hideTitle(void);
   void moveMenu(int, int);
@@ -97,7 +96,7 @@ public:
   BlackboxMenu(BlackboxSession *);
   virtual ~BlackboxMenu(void);
 
-  Window windowID(void);
+  Window windowID(void) { return menu.frame; }
   unsigned int Width(void) { return menu.width; }
   unsigned int Height(void) { return menu.height; }
   unsigned int titleHeight(void) { return menu.title_h; }

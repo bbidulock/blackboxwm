@@ -44,6 +44,7 @@ class WorkspaceManagerMenu;
 
 class WorkspaceMenu : public BlackboxMenu {
 private:
+  BlackboxSession *session;
   Workspace *workspace;
 
 
@@ -95,6 +96,7 @@ public:
 
 class Workspace {
 private:
+  Window *window_stack;
   WorkspaceManager *ws_manager;
   llist<BlackboxWindow> *workspace_list;
   WorkspaceMenu *workspace_menu;
@@ -118,6 +120,8 @@ public:
   int hideAll(void);
   int removeAll(void);
   void Dissociate(void);
+  void raiseWindow(BlackboxWindow *);
+  void lowerWindow(BlackboxWindow *);
   void showMenu(void);
   void hideMenu(void);
   void moveMenu(int, int);
@@ -175,6 +179,7 @@ public:
   void addIcon(BlackboxIcon *i) { ilist->insert(i); arrangeIcons(); }
   void removeIcon(BlackboxIcon *i) { ilist->remove(i); arrangeIcons(); }
   void arrangeIcons(void);
+  void stackWindows(Window *, int);
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);

@@ -149,11 +149,10 @@ private:
     visible:1,
     iconic:1,
     transient:1,
-    useIconWindow:1,
     focused:1,
     icccm_compliant:1,
     menu_visible:1,
-    extra:1; /* keep data aligned better */
+    extra:2; /* keep data aligned better */
 
 
 protected:
@@ -183,8 +182,6 @@ protected:
   //
   // various functions
   //
-  void setFGColor(GC *, char *);
-  void setFGColor(GC *, unsigned long);
   void configureWindow(int, int, unsigned int, unsigned int);
   Bool getWMNormalHints(XSizeHints *);
   Bool getWMProtocols(void);
@@ -209,6 +206,9 @@ public:
   Window clientWindow(void) { return client.window; }
   unsigned int clientHeight(void) { return client.height; }
   unsigned int clientWidth(void) { return client.width; }
+  Bool isTransient(void) { return transient; }
+  Bool hasTransient(void) { return ((client.transient) ? True : False); }
+  BlackboxWindow *Transient(void) { return client.transient; }
 
   //
   // Focus control
@@ -234,10 +234,13 @@ public:
     }
 
   //
-  // Icon control
+  // Window control
   //
   void iconifyWindow(void);
   void deiconifyWindow(void);
+  void closeWindow(void);
+  void withdrawWindow(void);
+  void maximizeWindow(void);
   void removeIcon(void) { icon = NULL; }
   Bool isIconic(void) { return iconic; }
   Bool resizable(void) { return (do_maximize|do_handle); }
@@ -259,11 +262,6 @@ public:
   //
   // various window functions
   //
-  void closeWindow(void);
-  void withdrawWindow(void);
-  void raiseWindow(void);
-  void lowerWindow(void);
-  void maximizeWindow(void);
   int setWindowNumber(int);
   int setWorkspace(int);
   int workspace(void)

@@ -62,7 +62,6 @@ public:
   void showMenu(void);
   void moveMenu(int, int);
   void updateMenu(void);
-  void raiseMenu(void);
   Window windowID(void);
 
   int insert(char *, void (*)());
@@ -166,7 +165,6 @@ private:
 
 protected:
   int anotherWMRunning(Display *, XErrorEvent *);
-  int errorHandler(Display *, XErrorEvent *);
   void sig11handler(int);
 
   void Dissociate(void);
@@ -190,11 +188,14 @@ public:
   Bool shapeExtensions(void) { return shape.extensions; }
 
   WorkspaceManager *WSManager(void) { return ws_manager; }
+  SessionMenu *menu(void) { return rootmenu; }
   void addIcon(BlackboxIcon *);
   void removeIcon(BlackboxIcon *i);
   void addWindow(BlackboxWindow *);
   void removeWindow(BlackboxWindow *);
   void reassociateWindow(BlackboxWindow *);
+  void raiseWindow(BlackboxWindow *);
+  void lowerWindow(BlackboxWindow *);
   void updateWorkspace(int);
   int iconCount(void);
   void arrangeIcons(void);

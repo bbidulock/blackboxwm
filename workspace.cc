@@ -29,7 +29,7 @@
 
 
 WorkspaceMenu::WorkspaceMenu(Workspace *w, BlackboxSession *s) :
-  BlackboxMenu(s) { workspace = w; setMovable(False); }
+  BlackboxMenu(s) { session = s; workspace = w; setMovable(False); }
 void WorkspaceMenu::showMenu(void)
 { BlackboxMenu::showMenu(); }
 void WorkspaceMenu::hideMenu(void)
@@ -55,7 +55,7 @@ void WorkspaceMenu::itemReleased(int button, int item) {
       hideMenu();
       BlackboxWindow *w = workspace->workspace_list->at(item);
       if (w->isIconic()) w->deiconifyWindow();
-      w->raiseWindow();
+      session->raiseWindow(w);
       w->setInputFocus();
 
       workspace->ws_manager->hideMenu();
@@ -126,6 +126,7 @@ void WorkspaceManagerMenu::itemReleased(int button, int item) {
 Workspace::Workspace(WorkspaceManager *m, int id) {
   ws_manager = m;
   workspace_id = id;
+  window_stack = 0;
 
   workspace_list = new llist<BlackboxWindow>;
   workspace_menu = new WorkspaceMenu(this, ws_manager->Session());
@@ -156,11 +157,33 @@ const int Workspace::addWindow(BlackboxWindow *w) {
   workspace_list->append(w);
   workspace_menu->insert(w->Title());
   workspace_menu->updateMenu();
+
+  Window *tmp_stack = new Window[workspace_list->count()];
+  int i;
+  for (i = 0; i < (workspace_list->count() - 1); ++i)
+    *(tmp_stack + i) = *(window_stack + i);
+
+  *(tmp_stack + i) = w->frameWindow();
+
+  delete [] window_stack;
+  window_stack = tmp_stack;
+  ws_manager->stackWindows(window_stack, workspace_list->count());
+
   return w->windowNumber();
 }
 
 
 const int Workspace::removeWindow(BlackboxWindow *w) {
+  Window *tmp_stack = new Window[workspace_list->count() - 1];
+  int ii = 0;
+  for (int i = 0; i < workspace_list->count(); ++i)
+    if (*(window_stack + i) != w->frameWindow())
+      *(tmp_stack + (ii++)) = *(window_stack + i);
+
+  delete [] window_stack;
+  window_stack = tmp_stack;
+  ws_manager->stackWindows(window_stack, workspace_list->count() - 1);
+
   workspace_menu->remove((const int) w->windowNumber());
   workspace_list->remove((const int) w->windowNumber());
   for (int i = 0; i < workspace_list->count(); ++i)
@@ -238,6 +261,49 @@ void Workspace::Dissociate(void) {
 
 int Workspace::menuVisible(void)
 { return workspace_menu->menuVisible(); }
+
+
+void Workspace::raiseWindow(BlackboxWindow *w) {
+  // this just arranges the windows... and then passes it to the workspace
+  // manager... which adds this stack to it's own stack... and the workspace
+  // manager then tells the X server to restack the windows
+
+  Window *tmp_stack = new Window[workspace_list->count()];
+  int i = 0, ii = 0;
+
+  for (i = 0; i < workspace_list->count(); ++i)
+    if (*(window_stack + i) != w->frameWindow())
+      *(tmp_stack + (ii++)) = *(window_stack + i);
+  
+  *(tmp_stack + workspace_list->count() - 1) = w->frameWindow();
+  
+  for (i = 0; i < workspace_list->count(); ++i)
+    *(window_stack + i) = *(tmp_stack + i);
+
+  delete [] tmp_stack;
+  if (w->hasTransient()) raiseWindow(w->Transient());
+  ws_manager->stackWindows(window_stack, workspace_list->count());
+}
+
+
+void Workspace::lowerWindow(BlackboxWindow *w) {
+  Window *tmp_stack = new Window[workspace_list->count()];
+  int i, ii = 1;
+  
+  if (w->hasTransient()) lowerWindow(w->Transient());
+  
+  for (i = 0; i < workspace_list->count(); ++i)
+    if (*(window_stack + i) != w->frameWindow())
+      *(tmp_stack + (ii++)) = *(window_stack + i);
+  
+  *(tmp_stack) = w->frameWindow();
+  
+  for (i = 0; i < workspace_list->count(); ++i)
+    *(window_stack + i) = *(tmp_stack + i);
+
+  delete [] tmp_stack;
+  ws_manager->stackWindows(window_stack, workspace_list->count());
+}
 
 
 WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
@@ -435,12 +501,7 @@ void WorkspaceManager::arrangeIcons(void) {
 
 
 void WorkspaceManager::buttonPressEvent(XButtonEvent *be) {
-  if (be->window == frame.window) {
-    if (be->button == 1)
-      XRaiseWindow(display, frame.window);
-    else if (be->button == 2)
-      XLowerWindow(display, frame.window);
-  } else if (be->window == frame.workspace_button)
+  if (be->window == frame.workspace_button)
     if (be->button == 1)
       if (! workspaces_menu->menuVisible())
 	showMenu();
@@ -488,4 +549,34 @@ void WorkspaceManager::hideMenu(void) {
 	      session->titleFont()->ascent, frame.title,
 	      strlen(frame.title));
   workspaces_menu->hideMenu();
+}
+
+
+void WorkspaceManager::stackWindows(Window *workspace_stack, int num) {
+  // create window stack... the number of windows for the current workspace,
+  // 3 windows for the toolbar, root menu, and workspaces menu and then the
+  // number of total workspaces (to stack the workspace menus)
+
+  Window *session_stack = new Window[num + 3 + workspaces_list->count()];
+
+  // stack our workspace manager menu and root menu on top
+  int i = 0;
+  *(session_stack + i++) = session->menu()->windowID();
+  *(session_stack + i++) = workspaces_menu->windowID();
+
+  // stack the workspace menus under them
+  for (int j = 0; j < workspaces_list->count(); j++)
+    *(session_stack + i++) = workspaces_list->at(j)->menu()->windowID();
+    
+  // stack the windows next
+  int k = num;
+  while (k--)
+    *(session_stack + i++) = *(workspace_stack + k);
+
+  // and the toolbar frame is last
+  *(session_stack + i++) = frame.base;
+
+  // tell the X server what to do
+  XRestackWindows(display, session_stack, i);
+  delete [] session_stack;
 }
