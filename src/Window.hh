@@ -356,6 +356,8 @@ public:
   void propertyNotifyEvent(const XPropertyEvent *pe);
   void exposeEvent(const XExposeEvent *ee);
   void configureRequestEvent(const XConfigureRequestEvent *cr);
+  void enterNotifyEvent(const XCrossingEvent* ce);
+  void leaveNotifyEvent(const XCrossingEvent* /*unused*/);
 
 #ifdef    SHAPE
   void configureShape(void);

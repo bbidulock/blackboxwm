@@ -363,7 +363,8 @@ Window BlackboxWindow::createToplevelWindow(void) {
   attrib_create.colormap = screen->getColormap();
   attrib_create.override_redirect = True;
   attrib_create.event_mask = ButtonPressMask | ButtonReleaseMask |
-                             ButtonMotionMask | EnterWindowMask;
+                             ButtonMotionMask |
+                             EnterWindowMask | LeaveWindowMask;
 
   return XCreateWindow(blackbox->getXDisplay(), screen->getRootWindow(),
                        0, 0, 1, 1, frame.border_w, screen->getDepth(),
@@ -1819,11 +1820,6 @@ void BlackboxWindow::setFocusFlag(bool focus) {
 
   redrawWindowFrame();
 
-  if (screen->isSloppyFocus() && screen->doAutoRaise()) {
-    if (flags.focused) timer->start();
-    else timer->stop();
-  }
-
   if (flags.focused)
     blackbox->setFocusedWindow(this);
 }
@@ -2875,6 +2871,43 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
       screen->showGeometry(gw, gh);
     }
   }
+}
+
+
+void BlackboxWindow::enterNotifyEvent(const XCrossingEvent* ce) {
+  if (! (screen->isSloppyFocus() && isVisible()))
+    return;
+
+  XEvent e;
+  bool leave = False, inferior = False;
+
+  while (XCheckTypedWindowEvent(blackbox->getXDisplay(), ce->window,
+                                LeaveNotify, &e)) {
+    if (e.type == LeaveNotify && e.xcrossing.mode == NotifyNormal) {
+      leave = True;
+      inferior = (e.xcrossing.detail == NotifyInferior);
+    }
+  }
+
+  if ((! leave || inferior) && ! isFocused()) {
+    bool success = setInputFocus();
+    if (success)    // if focus succeeded install the colormap
+      installColormap(True); // XXX: shouldnt we honour no install?
+  }
+
+  if (screen->doAutoRaise())
+    timer->start();
+}
+
+
+void BlackboxWindow::leaveNotifyEvent(const XCrossingEvent*) {
+  if (! (screen->isSloppyFocus() && screen->doAutoRaise()))
+    return;
+
+  installColormap(False);
+
+  if (timer->isTiming())
+    timer->stop();
 }
 
 
