@@ -16,6 +16,8 @@ $ #FocusNew
 # Attribuer le clavier à la nouvelle fenêtre
 $ #FocusLast
 # Attribuer le clavier en changeant d'espace de travail
+$ #DisableBindings
+# Désactiver les modificateurs avec Vérouillage Défilement
 $ #ClickToFocus
 # Cliquer pour obtenir le clavier
 $ #SloppyFocus
