@@ -342,15 +342,6 @@ void bt::FontCache::clear(bool force) {
 }
 
 
-bt::Font::Font(const std::string &name)
-  : _fontname(name), _fontset(0), _xftfont(0), _screen(~0u) { }
-
-
-bt::Font::~Font(void) {
-  unload();
-}
-
-
 XFontSet bt::Font::fontSet(void) const {
   if (_fontset) return _fontset;
 

@@ -64,8 +64,11 @@ namespace bt {
   public:
     static void clearCache(void);
 
-    explicit Font(const std::string &name = std::string());
-    ~Font(void);
+    explicit inline Font(const std::string &name = std::string())
+      : _fontname(name), _fontset(0), _xftfont(0), _screen(~0u)
+    { }
+    inline ~Font(void)
+    { unload(); }
 
     const std::string& fontName(void) const { return _fontname; }
     void setFontName(const std::string &new_fontname)
