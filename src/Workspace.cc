@@ -47,10 +47,12 @@
 #endif // STDC_HEADERS
 
 
-Workspace::Workspace(BScreen *scrn, int i) {
+Workspace::Workspace(BScreen *scrn, int i)
+  : screen(scrn)
+{
   screen = scrn;
 
-  cascade_x = cascade_y = 32;
+  cascade_x = cascade_y = 0;
 
   id = i;
 
@@ -314,125 +316,351 @@ void Workspace::shutdown(void) {
   }
 }
 
+#define CALC_POSSIBLE_X() \
+  { \
+    if (r.right() > x) \
+      possible = possible < r.right() ? possible : r.right(); \
+    if (r.left() - width > x) \
+      possible = possible < r.left() - width ? possible : r.left() - width; \
+  }
+
+#define CALC_POSSIBLE_Y() \
+  { \
+    if (r.bottom() > y) \
+      possible = possible < r.bottom() ? possible : r.bottom(); \
+    if (r.top() - height > y) \
+      possible = possible < r.top() - height ? possible : r.top() - height; \
+  }
+
+#define CALC_OVERLAP() \
+  { \
+    overlap = 0; \
+    Rect one(x, y, width, height); \
+    BlackboxWindow *c; \
+    LinkedListIterator<BlackboxWindow> it(windowList); \
+    while ( it.current() ) { \
+      c = it.current(); \
+      it++; \
+      if (c != win) { \
+        int h = c->isShaded() ? c->getTitleHeight() : c->getHeight(); \
+        Rect two(c->getXFrame(), c->getYFrame(), \
+                 c->getWidth() + screen->style()->borderWidth() * 2, \
+                 h + screen->style()->borderWidth() * 2); \
+        if (two.intersects(one)) { \
+          two &= one; \
+          overlap += (two.right() - two.left()) * \
+                     (two.bottom() - two.top()); \
+        } \
+      } \
+    } \
+  }
+
 void Workspace::placeWindow(BlackboxWindow *win) {
-  Bool placed = False;
+  Rect avail = screen->availableArea();
+  int x = avail.x(), y = avail.y(), place_x = x, place_y = y;
+  int width = win->getWidth() + screen->style()->borderWidth() * 2,
+     height = win->getHeight() + screen->style()->borderWidth() * 2;
 
-  XRectangle availableArea = screen->availableArea();
+  switch (screen->windowPlacement()) {
+  case BScreen::SmartRow:
+    {
+      int overlap = 0, min = INT_MAX, possible = 0;
 
-  const int win_w = win->getWidth() + (screen->style()->borderWidth() * 4),
+      do {
+        if (y + height > avail.bottom()) {
+          overlap = -1;
+        } else if (x + width > avail.right()) {
+          overlap = -2;
+        } else {
+          CALC_OVERLAP();
+        }
+
+        if (overlap == 0) {
+          place_x = x;
+          place_y = y;
+          break;
+        }
+
+        if (overlap >= 0 && overlap < min) {
+          min = overlap;
+          place_x = x;
+          place_y = y;
+        }
+
+        if (overlap > 0) {
+          possible = avail.right();
+          if (possible - width > x)
+            possible -= width;
+
+          BlackboxWindow *c;
+          LinkedListIterator<BlackboxWindow> it(windowList);
+          while ( it.current() ) {
+            c = it.current();
+            it++;
+            if (c != win) {
+              int h = c->isShaded() ? c->getTitleHeight() : c->getHeight();
+              Rect r(c->getXFrame(), c->getYFrame(),
+                     c->getWidth() + screen->style()->borderWidth() * 2,
+                     h + screen->style()->borderWidth() * 2);
+
+              if ((y < r.bottom()) && (r.top() < y + height)) {
+                CALC_POSSIBLE_X();
+              }
+            }
+          }
+
+          x = possible;
+        } else if (overlap == -2) {
+          x = avail.x();
+          possible = avail.bottom();
+          if (possible - height > y)
+            possible -= height;
+
+          BlackboxWindow *c;
+          LinkedListIterator<BlackboxWindow> it(windowList);
+          while (it.current()) {
+            c = it.current();
+            it++;
+            if (c != win) {
+              int h = c->isShaded() ? c->getTitleHeight() : c->getHeight();
+              Rect r(c->getXFrame(), c->getYFrame(),
+                     c->getWidth() + screen->style()->borderWidth() * 2,
+                     h + screen->style()->borderWidth() * 2);
+              CALC_POSSIBLE_Y();
+            }
+          }
+
+          y = possible;
+        }
+
+        if (width > avail.width() || height > avail.height())
+          break;
+      } while (overlap != 0 && overlap != -1);
+      break;
+    }
+
+  case BScreen::SmartColumn:
+    {
+      int overlap = 0, min = INT_MAX, possible = 0;
+
+      do {
+        if (y + height > avail.bottom()) {
+          overlap = -2;
+        } else if (x + width > avail.right()) {
+          overlap = -1;
+        } else {
+          CALC_OVERLAP();
+        }
+
+        if (overlap == 0) {
+          place_x = x;
+          place_y = y;
+          break;
+        }
+
+        if (overlap >= 0 && overlap < min) {
+          min = overlap;
+          place_x = x;
+          place_y = y;
+        }
+
+        if (overlap > 0) {
+          possible = avail.bottom();
+          if (possible - height > y)
+            possible -= height;
+
+          BlackboxWindow *c;
+          LinkedListIterator<BlackboxWindow> it(windowList);
+          while ( it.current() ) {
+            c = it.current();
+            it++;
+            if (c != win) {
+              int h = c->isShaded() ? c->getTitleHeight() : c->getHeight();
+              Rect r(c->getXFrame(), c->getYFrame(),
+                     c->getWidth() + screen->style()->borderWidth() * 2,
+                     h + screen->style()->borderWidth() * 2);
+
+              if ((x < r.right()) && (r.left() < x + width)) {
+                CALC_POSSIBLE_Y();
+              }
+            }
+          }
+
+          y = possible;
+        } else if (overlap == -2) {
+          y = avail.y();
+          possible = avail.right();
+          if (possible - width > x)
+            possible -= width;
+
+          BlackboxWindow *c;
+          LinkedListIterator<BlackboxWindow> it(windowList);
+          while (it.current()) {
+            c = it.current();
+            it++;
+            if (c != win) {
+              int h = c->isShaded() ? c->getTitleHeight() : c->getHeight();
+              Rect r(c->getXFrame(), c->getYFrame(),
+                     c->getWidth() + screen->style()->borderWidth() * 2,
+                     h + screen->style()->borderWidth() * 2);
+              CALC_POSSIBLE_X();
+            }
+          }
+
+          x = possible;
+        }
+
+        if (width > avail.width() || height > avail.height())
+          break;
+      } while (overlap != 0 && overlap != -1);
+      break;
+    }
+
+  case BScreen::Cascade:
+    {
+      place_x = cascade_x;
+      place_y = cascade_y;
+
+      // if the window is off the edge of the screen, center it
+      if (place_x + width > avail.right() ||
+          place_y + height > avail.bottom()) {
+        place_x = (avail.width() - width) / 2;
+        place_y = (avail.height() - height) / 2;
+      }
+
+      // go to next cascade placement point
+      cascade_x += 32;
+      cascade_y += 32;
+      // wrap if necessary
+      cascade_x %= avail.width();
+      cascade_y %= avail.height();
+      break;
+    }
+  }
+
+  win->configure(place_x, place_y, win->getWidth(), win->getHeight());
+
+  /*
+    Bool placed = False;
+
+    XRectangle availableArea = screen->availableArea();
+
+    const int win_w = win->getWidth() + (screen->style()->borderWidth() * 4),
     win_h = win->getHeight() + (screen->style()->borderWidth() * 4),
     start_pos_x = availableArea.x, start_pos_y = availableArea.y,
     change_y =
-      ((screen->getColPlacementDirection() == BScreen::TopBottom) ? 1 : -1),
+    ((screen->getColPlacementDirection() == BScreen::TopBottom) ? 1 : -1),
     change_x =
-      ((screen->getRowPlacementDirection() == BScreen::LeftRight) ? 1 : -1),
+    ((screen->getRowPlacementDirection() == BScreen::LeftRight) ? 1 : -1),
     delta_x = 8, delta_y = 8;
 
-  int place_x = start_pos_x, place_y = start_pos_y;
-  LinkedListIterator<BlackboxWindow> it(windowList);
+    int place_x = start_pos_x, place_y = start_pos_y;
+    LinkedListIterator<BlackboxWindow> it(windowList);
 
-  switch (screen->getPlacementPolicy()) {
-  case BScreen::RowSmartPlacement: {
+    switch (screen->getPlacementPolicy()) {
+    case BScreen::RowSmartPlacement: {
     place_y = (screen->getColPlacementDirection() == BScreen::TopBottom) ?
-      start_pos_y : availableArea.height - win_h - start_pos_y;
+    start_pos_y : availableArea.height - win_h - start_pos_y;
 
     while (!placed &&
-	   ((screen->getColPlacementDirection() == BScreen::BottomTop) ?
-	    place_y > 0 : place_y + win_h < (signed) availableArea.height)) {
-      place_x = (screen->getRowPlacementDirection() == BScreen::LeftRight) ?
-	start_pos_x : availableArea.width - win_w - start_pos_x;
-
-      while (!placed &&
-	     ((screen->getRowPlacementDirection() == BScreen::RightLeft) ?
-	      place_x > 0 : place_x + win_w < (signed) availableArea.width)) {
-        placed = True;
-
-        it.reset();
-        for (BlackboxWindow *curr = it.current(); placed && curr;
-	     it++, curr = it.current()) {
-          int curr_w = curr->getWidth() + (screen->style()->borderWidth() * 4);
-          int curr_h =
-	    ((curr->isShaded()) ? curr->getTitleHeight() : curr->getHeight()) +
-            (screen->style()->borderWidth() * 4);
-
-          if (curr->getXFrame() < place_x + win_w &&
-              curr->getXFrame() + curr_w > place_x &&
-              curr->getYFrame() < place_y + win_h &&
-              curr->getYFrame() + curr_h > place_y) {
-            placed = False;
-	  }
-        }
-
-        if (! placed)
-	  place_x += (change_x * delta_x);
-      }
-
-      if (! placed)
-	place_y += (change_y * delta_y);
-    }
-
-    break;
-  }
-
-  case BScreen::ColSmartPlacement: {
+    ((screen->getColPlacementDirection() == BScreen::BottomTop) ?
+    place_y > 0 : place_y + win_h < (signed) availableArea.height)) {
     place_x = (screen->getRowPlacementDirection() == BScreen::LeftRight) ?
-      start_pos_x : availableArea.width - win_w - start_pos_x;
+    start_pos_x : availableArea.width - win_w - start_pos_x;
 
     while (!placed &&
-	   ((screen->getRowPlacementDirection() == BScreen::RightLeft) ?
-	    place_x > 0 : place_x + win_w < (signed) availableArea.width)) {
-      place_y = (screen->getColPlacementDirection() == BScreen::TopBottom) ?
-	start_pos_y : availableArea.height - win_h - start_pos_y;
+    ((screen->getRowPlacementDirection() == BScreen::RightLeft) ?
+    place_x > 0 : place_x + win_w < (signed) availableArea.width)) {
+    placed = True;
 
-      while (!placed &&
-	     ((screen->getColPlacementDirection() == BScreen::BottomTop) ?
-	      place_y > 0 : place_y + win_h < (signed) availableArea.height)) {
-        placed = True;
+    it.reset();
+    for (BlackboxWindow *curr = it.current(); placed && curr;
+    it++, curr = it.current()) {
+    int curr_w = curr->getWidth() + (screen->style()->borderWidth() * 4);
+    int curr_h =
+    ((curr->isShaded()) ? curr->getTitleHeight() : curr->getHeight()) +
+    (screen->style()->borderWidth() * 4);
 
-        it.reset();
-        for (BlackboxWindow *curr = it.current(); placed && curr;
-	     it++, curr = it.current()) {
-          int curr_w = curr->getWidth() + (screen->style()->borderWidth() * 4);
-          int curr_h =
-            ((curr->isShaded()) ? curr->getTitleHeight() : curr->getHeight()) +
-            (screen->style()->borderWidth() * 4);
+    if (curr->getXFrame() < place_x + win_w &&
+    curr->getXFrame() + curr_w > place_x &&
+    curr->getYFrame() < place_y + win_h &&
+    curr->getYFrame() + curr_h > place_y) {
+    placed = False;
+    }
+    }
 
-          if (curr->getXFrame() < place_x + win_w &&
-              curr->getXFrame() + curr_w > place_x &&
-              curr->getYFrame() < place_y + win_h &&
-              curr->getYFrame() + curr_h > place_y) {
-            placed = False;
-	  }
-        }
+    if (! placed)
+    place_x += (change_x * delta_x);
+    }
 
-	if (! placed)
-	  place_y += (change_y * delta_y);
-      }
-
-      if (! placed)
-	place_x += (change_x * delta_x);
+    if (! placed)
+    place_y += (change_y * delta_y);
     }
 
     break;
-  }
-  } // switch
+    }
 
-  if (! placed) {
+    case BScreen::ColSmartPlacement: {
+    place_x = (screen->getRowPlacementDirection() == BScreen::LeftRight) ?
+    start_pos_x : availableArea.width - win_w - start_pos_x;
+
+    while (!placed &&
+    ((screen->getRowPlacementDirection() == BScreen::RightLeft) ?
+    place_x > 0 : place_x + win_w < (signed) availableArea.width)) {
+    place_y = (screen->getColPlacementDirection() == BScreen::TopBottom) ?
+    start_pos_y : availableArea.height - win_h - start_pos_y;
+
+    while (!placed &&
+    ((screen->getColPlacementDirection() == BScreen::BottomTop) ?
+    place_y > 0 : place_y + win_h < (signed) availableArea.height)) {
+    placed = True;
+
+    it.reset();
+    for (BlackboxWindow *curr = it.current(); placed && curr;
+    it++, curr = it.current()) {
+    int curr_w = curr->getWidth() + (screen->style()->borderWidth() * 4);
+    int curr_h =
+    ((curr->isShaded()) ? curr->getTitleHeight() : curr->getHeight()) +
+    (screen->style()->borderWidth() * 4);
+
+    if (curr->getXFrame() < place_x + win_w &&
+    curr->getXFrame() + curr_w > place_x &&
+    curr->getYFrame() < place_y + win_h &&
+    curr->getYFrame() + curr_h > place_y) {
+    placed = False;
+    }
+    }
+
+    if (! placed)
+    place_y += (change_y * delta_y);
+    }
+
+    if (! placed)
+    place_x += (change_x * delta_x);
+    }
+
+    break;
+    }
+    } // switch
+
+    if (! placed) {
     if (((unsigned) cascade_x > (availableArea.width / (unsigned) 2)) ||
-	((unsigned) cascade_y > (availableArea.height / (unsigned) 2)))
-      cascade_x = cascade_y = 32;
+    ((unsigned) cascade_y > (availableArea.height / (unsigned) 2)))
+    cascade_x = cascade_y = 32;
 
     place_x = cascade_x;
     place_y = cascade_y;
 
     cascade_x += win->getTitleHeight();
     cascade_y += win->getTitleHeight();
-  }
+    }
 
-  if (place_x + win_w > (signed) availableArea.width)
+    if (place_x + win_w > (signed) availableArea.width)
     place_x = (((signed) availableArea.width) - win_w) / 2;
-  if (place_y + win_h > (signed) availableArea.height)
+    if (place_y + win_h > (signed) availableArea.height)
     place_y = (((signed) availableArea.height) - win_h) / 2;
 
-  win->configure(place_x, place_y, win->getWidth(), win->getHeight());
+    win->configure(place_x, place_y, win->getWidth(), win->getHeight());
+
+  */
 }
