@@ -1904,7 +1904,8 @@ void BlackboxWindow::setState(unsigned long new_state) {
   atoms.clear();
 
   if (! client.state.iconic) {
-    atoms.push_back(netwm.wmActionChangeDesktop());
+    if (hasWindowFunction(WindowFunctionChangeWorkspace))
+      atoms.push_back(netwm.wmActionChangeDesktop());
 
     if (client.functions & WindowFunctionMove)
       atoms.push_back(netwm.wmActionMove());

@@ -43,19 +43,21 @@ enum WindowType {
 };
 
 enum WindowFunction {
-  WindowFunctionResize   = 1<<0,
-  WindowFunctionMove     = 1<<1,
-  WindowFunctionShade    = 1<<2,
-  WindowFunctionIconify  = 1<<3,
-  WindowFunctionMaximize = 1<<4,
-  WindowFunctionClose    = 1<<5,
-  NoWindowFunctions      = 0,
-  AllWindowFunctions     = (WindowFunctionResize |
-                            WindowFunctionMove |
-                            WindowFunctionShade |
-                            WindowFunctionIconify |
-                            WindowFunctionMaximize |
-                            WindowFunctionClose)
+  WindowFunctionResize          = 1<<0,
+  WindowFunctionMove            = 1<<1,
+  WindowFunctionShade           = 1<<2,
+  WindowFunctionIconify         = 1<<3,
+  WindowFunctionMaximize        = 1<<4,
+  WindowFunctionClose           = 1<<5,
+  WindowFunctionChangeWorkspace = 1<<6,
+  NoWindowFunctions             = 0,
+  AllWindowFunctions            = (WindowFunctionResize |
+                                   WindowFunctionMove |
+                                   WindowFunctionShade |
+                                   WindowFunctionIconify |
+                                   WindowFunctionMaximize |
+                                   WindowFunctionClose |
+                                   WindowFunctionChangeWorkspace)
 };
 typedef unsigned char WindowFunctionFlags;
 

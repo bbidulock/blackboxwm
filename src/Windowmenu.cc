@@ -95,7 +95,11 @@ void Windowmenu::refresh(void) {
   assert(_window != 0);
 
   setItemEnabled(SendToWorkspace,
-                 _window->workspace() != bt::BSENTINEL);
+                 _window->hasWindowFunction(WindowFunctionChangeWorkspace)
+                 && _window->workspace() != bt::BSENTINEL);
+
+  setItemEnabled(OccupyAllWorkspaces,
+                 _window->hasWindowFunction(WindowFunctionChangeWorkspace));
   setItemChecked(OccupyAllWorkspaces,
                  _window->workspace() == bt::BSENTINEL);
 
