@@ -1,8 +1,8 @@
 #!/bin/sh
 
 libtoolize -c
-aclocal
+aclocal -I /usr/local/share/aclocal
 autoheader
-automake --foreign -a -c 
+automake --foreign -a -c
 autoconf
 
