@@ -31,6 +31,7 @@ namespace bt {
 
   // forward declarations
   class Display;
+  class PenCache;
 
   /*
     The color object.  Colors are stored in rgb format (screen
@@ -90,6 +91,8 @@ namespace bt {
     int _red, _green, _blue;
     mutable unsigned int _screen;
     mutable unsigned long _pixel;
+
+    friend class PenCache;
   };
 
 } // namespace bt

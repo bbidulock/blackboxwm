@@ -37,6 +37,7 @@
 
 #include <algorithm>
 
+// #define PENCACHE_DEBUG
 
 /*
   The Pen cache is comprised of multiple arrays of cache buckets.  The
@@ -265,6 +266,9 @@ void bt::PenCache::purge(void) {
     PenCacheItem *d = cache[ i ];
 
     if (d->_ctx && d->_count == 0) {
+#ifdef PENCACHE_DEBUG
+      fprintf(stderr, "bt::PenCache: GC : context %03u release\n", i);
+#endif
       release(d->_ctx);
       d->_ctx = 0;
     }
@@ -281,6 +285,9 @@ bt::PenCacheContext *bt::PenCache::nextContext(unsigned int screen) {
     c = contexts + i;
 
     if (! c->_gc) {
+#ifdef PENCACHE_DEBUG
+      fprintf(stderr, "bt::PenCache: GC : context %03u create\n", i);
+#endif
       c->_gc = XCreateGC(pencache->_display.XDisplay(), hd, 0, 0);
       c->_used = false;
       c->_screen = screen;
@@ -298,6 +305,7 @@ bt::PenCacheContext *bt::PenCache::nextContext(unsigned int screen) {
 
 void bt::PenCache::release(PenCacheContext *ctx) {
   ctx->_used = false;
+  ctx->_color.deallocate(); // allows unused colors to be freed
 }
 
 
@@ -327,7 +335,9 @@ bt::PenCacheItem *bt::PenCache::find(unsigned int screen,
       continue;
     }
     if (c->_count == 0 && c->_ctx->_screen == screen) {
-      // printf("GC : k %03d hijack\n", k);
+#ifdef PENCACHE_DEBUG
+      fprintf(stderr, "bt::PenCache: GC : key %03d hijack\n", k);
+#endif
       // use this cache item
       c->_ctx->set(color, function, linewidth, subwindow);
       c->_ctx->_used = true;
@@ -344,7 +354,9 @@ bt::PenCacheItem *bt::PenCache::find(unsigned int screen,
   }
 
   if (c->_ctx) {
-    // printf("GC : k %03d cache hit\n", k);
+#ifdef PENCACHE_DEBUG
+    fprintf(stderr, "bt::PenCache: GC : key %03d cache hit\n", k);
+#endif
     // reuse existing context
     c->_count++;
     c->_hits++;
@@ -353,8 +365,10 @@ bt::PenCacheItem *bt::PenCache::find(unsigned int screen,
       cache[ k - 1 ] = c;
     }
   } else {
-    // printf("GC : k %03d new context\n", k);
     c->_ctx = nextContext(screen);
+#ifdef PENCACHE_DEBUG
+    fprintf(stderr, "bt::PenCache: GC : key %03d new context\n", k);
+#endif
     c->_ctx->set(color, function, linewidth, subwindow);
     c->_ctx->_used = true;
     c->_count = 1;
@@ -380,6 +394,9 @@ bt::XftCacheContext *bt::PenCache::nextXftContext(unsigned int screen) {
     c = xftcontexts + i;
 
     if (! c->_xftdraw) {
+#ifdef PENCACHE_DEBUG
+      fprintf(stderr, "bt::PenCache: Xft: context %03u create\n", i);
+#endif
       c->_xftdraw =
         XftDrawCreate(_display.XDisplay(), screeninfo.rootWindow(),
                       screeninfo.visual(), screeninfo.colormap());
@@ -421,7 +438,9 @@ bt::XftCacheItem *bt::PenCache::findXft(unsigned int screen, Drawable drawable)
       continue;
     }
     if (c->_count == 0 && c->_ctx->_screen == screen) {
-      // printf("Xft: k %03d hijack\n", k);
+#ifdef PENCACHE_DEBUG
+      fprintf(stderr, "bt::PenCache: Xft: key %03d hijack\n", k);
+#endif
       // use this cache item
       if (drawable != c->_ctx->_drawable)
         c->_ctx->set(drawable);
@@ -439,7 +458,9 @@ bt::XftCacheItem *bt::PenCache::findXft(unsigned int screen, Drawable drawable)
   }
 
   if (c->_ctx) {
-    // printf("Xft: k %03d cache hit\n", k);
+#ifdef PENCACHE_DEBUG
+    fprintf(stderr, "bt::PenCache: Xft: key %03d cache hit\n", k);
+#endif
     // reuse existing context
     if (drawable != c->_ctx->_drawable)
       c->_ctx->set(drawable);
@@ -450,8 +471,10 @@ bt::XftCacheItem *bt::PenCache::findXft(unsigned int screen, Drawable drawable)
       xftcache[ k - 1 ] = c;
     }
   } else {
-    // printf("Xft: k %03d new context\n", k);
     c->_ctx = nextXftContext(screen);
+#ifdef PENCACHE_DEBUG
+    fprintf(stderr, "bt::PenCache: Xft: key %03d new context\n", k);
+#endif
     c->_ctx->set(drawable);
     c->_ctx->_used = true;
     c->_count = 1;

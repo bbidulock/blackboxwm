@@ -488,14 +488,17 @@ void Blackbox::timeout(bt::Timer *) {
                 bt::PointerAssassin());
   menuTimestamps.clear();
 
-  bt::Color::clearCache();
-  bt::Font::clearCache();
-  bt::Pen::clearCache();
 
   std::for_each(screen_list, screen_list + screen_list_count,
                 std::mem_fun(&BScreen::reconfigure));
 
+  bt::Font::clearCache();
   bt::PixmapCache::clearCache();
+  bt::Pen::clearCache();
+
+  // clear the color cache here to allow the pen cache to deallocate
+  // all unused colors
+  bt::Color::clearCache();
 }
 
 
