@@ -623,7 +623,7 @@ void BScreen::LoadStyle(void) {
 
   // we create the window.frame texture by hand because it exists only to
   // make the code cleaner and is not actually used for display
-  BColor color = readDatabaseColor("window.frame.focusColor",
+  bt::Color color = readDatabaseColor("window.frame.focusColor",
                                    "Window.Frame.FocusColor", "white");
   resource.wstyle.f_focus = bt::Texture("solid flat", getBaseDisplay(),
                                      getScreenNumber(), image_control);
@@ -707,7 +707,7 @@ void BScreen::LoadStyle(void) {
   if (resource.tstyle.toolbar.texture() == bt::Texture::Parent_Relative) {
     resource.tstyle.toolbar = bt::Texture("solid flat", getBaseDisplay(),
                                        getScreenNumber(), image_control);
-    resource.tstyle.toolbar.setColor(BColor("black", getBaseDisplay(),
+    resource.tstyle.toolbar.setColor(bt::Color("black", getBaseDisplay(),
                                             getScreenNumber()));
   }
 
@@ -771,7 +771,7 @@ void BScreen::LoadStyle(void) {
   if (resource.mstyle.frame.texture() == bt::Texture::Parent_Relative) {
     resource.mstyle.frame = bt::Texture("solid flat", getBaseDisplay(),
                                      getScreenNumber(), image_control);
-    resource.mstyle.frame.setColor(BColor("black", getBaseDisplay(),
+    resource.mstyle.frame.setColor(bt::Color("black", getBaseDisplay(),
                                           getScreenNumber()));
   }
 
@@ -1870,17 +1870,17 @@ bt::Texture BScreen::readDatabaseTexture(const std::string &rname,
 }
 
 
-BColor BScreen::readDatabaseColor(const std::string &rname,
+bt::Color BScreen::readDatabaseColor(const std::string &rname,
                                   const std::string &rclass,
 				  const std::string &default_color) {
-  BColor color;
+  bt::Color color;
   XrmValue value;
   char *value_type;
   if (XrmGetResource(resource.stylerc, rname.c_str(), rclass.c_str(),
                      &value_type, &value))
-    color = BColor(value.addr, getBaseDisplay(), getScreenNumber());
+    color = bt::Color(value.addr, getBaseDisplay(), getScreenNumber());
   else
-    color = BColor(default_color, getBaseDisplay(), getScreenNumber());
+    color = bt::Color(default_color, getBaseDisplay(), getScreenNumber());
   return color;
 }
 

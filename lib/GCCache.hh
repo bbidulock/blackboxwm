@@ -35,7 +35,7 @@ class BGCCacheItem;
 
 class BGCCacheContext {
 public:
-  void set(const BColor &_color, const XFontStruct * const _font,
+  void set(const bt::Color &_color, const XFontStruct * const _font,
            const int _function, const int _subwindow);
   void set(const XFontStruct * const _font);
 
@@ -88,7 +88,8 @@ public:
   // cleans up the cache
   void purge(void);
 
-  BGCCacheItem *find(const BColor &_color, const XFontStruct * const _font = 0,
+  BGCCacheItem *find(const bt::Color &_color,
+                     const XFontStruct * const _font = 0,
                      int _function = GXcopy, int _subwindow = ClipByChildren);
   void release(BGCCacheItem *_item);
 
@@ -110,7 +111,7 @@ private:
 
 class BPen {
 public:
-  inline BPen(const BColor &_color,  const XFontStruct * const _font = 0,
+  inline BPen(const bt::Color &_color,  const XFontStruct * const _font = 0,
               int _function = GXcopy, int _subwindow = ClipByChildren)
     : color(_color), font(_font), function(_function), subwindow(_subwindow),
       cache(_color.display()->gcCache()), item(0) { }
@@ -122,7 +123,7 @@ public:
   }
 
 private:
-  const BColor &color;
+  const bt::Color &color;
   const XFontStruct *font;
   int function;
   int subwindow;

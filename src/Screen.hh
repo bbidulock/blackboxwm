@@ -59,7 +59,7 @@ class Slit; // forward reference
 enum TextJustify { LeftJustify = 1, RightJustify, CenterJustify };
 
 struct WindowStyle {
-  BColor l_text_focus, l_text_unfocus, b_pic_focus,
+  bt::Color l_text_focus, l_text_unfocus, b_pic_focus,
     b_pic_unfocus;
   bt::Texture f_focus, f_unfocus, t_focus, t_unfocus, l_focus, l_unfocus,
     h_focus, h_unfocus, b_focus, b_unfocus, b_pressed, g_focus, g_unfocus;
@@ -75,7 +75,7 @@ struct WindowStyle {
 };
 
 struct ToolbarStyle {
-  BColor l_text, w_text, c_text, b_pic;
+  bt::Color l_text, w_text, c_text, b_pic;
   bt::Texture toolbar, label, window, button, pressed, clock;
 
   XFontSet fontset;
@@ -89,7 +89,7 @@ struct ToolbarStyle {
 };
 
 struct MenuStyle {
-  BColor t_text, f_text, h_text, d_text;
+  bt::Color t_text, f_text, h_text, d_text;
   bt::Texture title, frame, hilite;
 
   XFontSet t_fontset, f_fontset;
@@ -143,7 +143,7 @@ private:
     bool toolbar_on_top, toolbar_auto_hide, sloppy_focus, auto_raise,
       auto_edge_balance, image_dither, ordered_dither, opaque_move, full_max,
       focus_new, focus_last, click_raise, allow_scroll_lock;
-    BColor border_color;
+    bt::Color border_color;
     XrmDatabase stylerc;
 
     unsigned int workspaces;
@@ -172,7 +172,7 @@ private:
   bt::Texture readDatabaseTexture(const std::string &rname,
                                   const std::string &rclass,
                                   const std::string &default_color);
-  BColor readDatabaseColor(const std::string &rname,
+  bt::Color readDatabaseColor(const std::string &rname,
                            const std::string &rclass,
                            const std::string &default_color);
   XFontSet readDatabaseFontSet(const std::string &rname,
@@ -226,7 +226,7 @@ public:
   inline const GC &getOpGC(void) const { return opGC; }
 
   inline Blackbox *getBlackbox(void) { return blackbox; }
-  inline BColor *getBorderColor(void) { return &resource.border_color; }
+  inline bt::Color *getBorderColor(void) { return &resource.border_color; }
   inline BImageControl *getImageControl(void) { return image_control; }
   inline Rootmenu *getRootmenu(void) { return rootmenu; }
 

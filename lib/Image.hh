@@ -47,7 +47,7 @@ private:
   bool interlaced;
   XColor *colors;
 
-  BColor from, to;
+  bt::Color from, to;
   int red_offset, green_offset, blue_offset, red_bits, green_bits, blue_bits,
     ncolors, cpc, cpccpc;
   unsigned char *red, *green, *blue, *red_table, *green_table, *blue_table;
@@ -163,7 +163,7 @@ private:
 
   Pixmap searchCache(const unsigned int width, const unsigned int height,
                      const unsigned long texture,
-                     const BColor &c1, const BColor &c2);
+                     const bt::Color &c1, const bt::Color &c2);
 };
 
 

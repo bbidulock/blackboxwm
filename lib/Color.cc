@@ -25,29 +25,30 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
+extern "C" {
+#include <X11/Xlib.h>
+#include <stdio.h>
+#include <assert.h>
+}
+
 #include "Color.hh"
 #include "BaseDisplay.hh"
 
-extern "C" {
-#include <stdio.h>
-}
 
-#include <assert.h>
+bt::Color::ColorCache bt::Color::colorcache;
+bool bt::Color::cleancache = false;
 
-BColor::ColorCache BColor::colorcache;
-bool BColor::cleancache = false;
-
-BColor::BColor(const BaseDisplay * const _display, unsigned int _screen)
+bt::Color::Color(const BaseDisplay * const _display, unsigned int _screen)
   : allocated(false), r(-1), g(-1), b(-1), p(0), dpy(_display), scrn(_screen)
 {}
 
-BColor::BColor(int _r, int _g, int _b,
+bt::Color::Color(int _r, int _g, int _b,
                const BaseDisplay * const _display, unsigned int _screen)
   : allocated(false), r(_r), g(_g), b(_b), p(0), dpy(_display), scrn(_screen)
 {}
 
 
-BColor::BColor(const std::string &_name,
+bt::Color::Color(const std::string &_name,
                const BaseDisplay * const _display, unsigned int _screen)
   : allocated(false), r(-1), g(-1), b(-1), p(0), dpy(_display), scrn(_screen),
     colorname(_name) {
@@ -55,12 +56,12 @@ BColor::BColor(const std::string &_name,
 }
 
 
-BColor::~BColor(void) {
+bt::Color::~Color(void) {
   deallocate();
 }
 
 
-void BColor::setDisplay(const BaseDisplay * const _display,
+void bt::Color::setDisplay(const BaseDisplay * const _display,
                         unsigned int _screen) {
   if (_display == display() && _screen == screen()) {
     // nothing to do
@@ -78,10 +79,10 @@ void BColor::setDisplay(const BaseDisplay * const _display,
 }
 
 
-unsigned long BColor::pixel(void) const {
+unsigned long bt::Color::pixel(void) const {
   if (! allocated) {
     // mutable
-    BColor *that = (BColor *) this;
+    Color *that = (Color *) this;
     that->allocate();
   }
 
@@ -89,11 +90,11 @@ unsigned long BColor::pixel(void) const {
 }
 
 
-void BColor::parseColorName(void) {
+void bt::Color::parseColorName(void) {
   assert(dpy != 0);
 
   if (colorname.empty()) {
-    fprintf(stderr, "BColor: empty colorname, cannot parse (using black)\n");
+    fprintf(stderr, "Color: empty colorname, cannot parse (using black)\n");
     setRGB(0, 0, 0);
   }
 
@@ -110,7 +111,7 @@ void BColor::parseColorName(void) {
 
   if (! XParseColor(display()->getXDisplay(), colormap,
                     colorname.c_str(), &xcol)) {
-    fprintf(stderr, "BColor::allocate: color parse error: \"%s\"\n",
+    fprintf(stderr, "Color::allocate: color parse error: \"%s\"\n",
             colorname.c_str());
     setRGB(0, 0, 0);
     return;
@@ -120,7 +121,7 @@ void BColor::parseColorName(void) {
 }
 
 
-void BColor::allocate(void) {
+void bt::Color::allocate(void) {
   assert(dpy != 0);
 
   if (scrn == ~(0u)) scrn = DefaultScreen(display()->getXDisplay());
@@ -128,7 +129,7 @@ void BColor::allocate(void) {
 
   if (! isValid()) {
     if (colorname.empty()) {
-      fprintf(stderr, "BColor: cannot allocate invalid color (using black)\n");
+      fprintf(stderr, "Color: cannot allocate invalid color (using black)\n");
       setRGB(0, 0, 0);
     } else {
       parseColorName();
@@ -154,7 +155,7 @@ void BColor::allocate(void) {
   xcol.pixel = 0;
 
   if (! XAllocColor(display()->getXDisplay(), colormap, &xcol)) {
-    fprintf(stderr, "BColor::allocate: color alloc error: rgb:%x/%x/%x\n",
+    fprintf(stderr, "Color::allocate: color alloc error: rgb:%x/%x/%x\n",
             r, g, b);
     xcol.pixel = 0;
   }
@@ -169,7 +170,7 @@ void BColor::allocate(void) {
 }
 
 
-void BColor::deallocate(void) {
+void bt::Color::deallocate(void) {
   if (! allocated)
     return;
 
@@ -188,7 +189,7 @@ void BColor::deallocate(void) {
 }
 
 
-BColor &BColor::operator=(const BColor &c) {
+bt::Color &bt::Color::operator=(const Color &c) {
   deallocate();
 
   setRGB(c.r, c.g, c.b);
@@ -199,12 +200,12 @@ BColor &BColor::operator=(const BColor &c) {
 }
 
 
-void BColor::cleanupColorCache(void) {
+void bt::Color::cleanupColorCache(void) {
   cleancache = true;
 }
 
 
-void BColor::doCacheCleanup(void) {
+void bt::Color::doCacheCleanup(void) {
   // ### TODO - support multiple displays!
   ColorCache::iterator it = colorcache.begin();
   if (it == colorcache.end()) {

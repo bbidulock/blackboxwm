@@ -56,7 +56,7 @@ bt::Texture::Texture(const std::string &d, const BaseDisplay * const _display,
 }
 
 
-void bt::Texture::setColor(const BColor &cc) {
+void bt::Texture::setColor(const bt::Color &cc) {
   c = cc;
   c.setDisplay(display(), screen());
 
@@ -72,7 +72,7 @@ void bt::Texture::setColor(const BColor &cc) {
   if (rr < r) rr = ~0;
   if (gg < g) gg = ~0;
   if (bb < b) bb = ~0;
-  lc = BColor(rr, gg, bb, display(), screen());
+  lc = bt::Color(rr, gg, bb, display(), screen());
 
   // calculate the shadow color
   r = c.red();
@@ -84,7 +84,7 @@ void bt::Texture::setColor(const BColor &cc) {
   if (rr > r) rr = 0;
   if (gg > g) gg = 0;
   if (bb > b) bb = 0;
-  sc = BColor(rr, gg, bb, display(), screen());
+  sc = bt::Color(rr, gg, bb, display(), screen());
 }
 
 

@@ -41,7 +41,7 @@ BGCCacheContext::~BGCCacheContext(void) {
 }
 
 
-void BGCCacheContext::set(const BColor &_color,
+void BGCCacheContext::set(const bt::Color &_color,
                           const XFontStruct * const _font,
                           const int _function, const int _subwindow) {
   XGCValues gcv;
@@ -128,7 +128,7 @@ void BGCCache::release(BGCCacheContext *ctx) {
 }
 
 
-BGCCacheItem *BGCCache::find(const BColor &_color,
+BGCCacheItem *BGCCache::find(const bt::Color &_color,
                              const XFontStruct * const _font,
                              int _function, int _subwindow) {
   const unsigned long pixel = _color.pixel();

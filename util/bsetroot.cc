@@ -209,7 +209,7 @@ Pixmap bsetroot::duplicatePixmap(int screen, Pixmap pixmap,
 
 void bsetroot::solid(void) {
   for (unsigned int screen = 0; screen < getNumberOfScreens(); screen++) {
-    BColor c(fore, this, screen);
+    bt::Color c(fore, this, screen);
     const ScreenInfo *screen_info = getScreenInfo(screen);
 
     XSetWindowBackground(getXDisplay(), screen_info->getRootWindow(),
@@ -252,7 +252,7 @@ void bsetroot::modula(int x, int y) {
       }
     }
 
-    BColor f(fore, this, screen), b(back, this, screen);
+    bt::Color f(fore, this, screen), b(back, this, screen);
     GC gc;
     Pixmap bitmap;
     const ScreenInfo *screen_info = getScreenInfo(screen);
@@ -320,8 +320,8 @@ void bsetroot::gradient(void) {
     bt::Texture texture(descr, this, screen, img_ctrl[screen]);
     const ScreenInfo *screen_info = getScreenInfo(screen);
 
-    texture.setColor(BColor(fore, this, screen));
-    texture.setColorTo(BColor(back, this, screen));
+    texture.setColor(bt::Color(fore, this, screen));
+    texture.setColorTo(bt::Color(back, this, screen));
 
     Pixmap pixmap =
       img_ctrl[screen]->renderImage(screen_info->getWidth(),

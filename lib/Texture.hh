@@ -29,6 +29,7 @@
 #include <string>
 
 class BImageControl;
+typedef unsigned long Pixmap;
 
 
 namespace bt {
@@ -69,13 +70,13 @@ namespace bt {
             const BaseDisplay * const _display = 0,
             unsigned int _screen = ~(0u), BImageControl* _ctrl = 0);
 
-    void setColor(const BColor &_color);
-    void setColorTo(const BColor &_colorTo) { ct = _colorTo; }
+    void setColor(const bt::Color &_color);
+    void setColorTo(const bt::Color &_colorTo) { ct = _colorTo; }
 
-    const BColor &color(void) const { return c; }
-    const BColor &colorTo(void) const { return ct; }
-    const BColor &lightColor(void) const { return lc; }
-    const BColor &shadowColor(void) const { return sc; }
+    const bt::Color &color(void) const { return c; }
+    const bt::Color &colorTo(void) const { return ct; }
+    const bt::Color &lightColor(void) const { return lc; }
+    const bt::Color &shadowColor(void) const { return sc; }
 
     unsigned long texture(void) const { return t; }
     void setTexture(const unsigned long _texture) { t  = _texture; }
@@ -100,7 +101,7 @@ namespace bt {
                   const Pixmap old = 0);
 
   private:
-    BColor c, ct, lc, sc;
+    bt::Color c, ct, lc, sc;
     std::string descr;
     unsigned long t;
     const BaseDisplay *dpy;
