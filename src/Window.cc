@@ -1492,9 +1492,6 @@ void BlackboxWindow::maximize(unsigned int button) {
   dh += ((frame.handle_h + frame.border_w) * decorations.handle);
   dh += frame.mwm_border_w * 2;
 
-  //  dx += ((screen_area.width - dw) / 2) - frame.border_w;
-  //  dy += ((screen_area.height - dh) / 2) - frame.border_w;
-
   switch(button) {
   case 1:
     blackbox_attrib.flags |= AttribMaxHoriz | AttribMaxVert;

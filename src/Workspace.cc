@@ -343,7 +343,7 @@ void Workspace::setName(const string& new_name) {
     name = new_name;
   } else {
     string tmp =i18n(WorkspaceSet, WorkspaceDefaultNameFormat, "Workspace %d");
-    assert(tmp.size() < 32);
+    assert(tmp.length() < 32);
     char default_name[32];
     sprintf(default_name, tmp.c_str(), id + 1);
     name = default_name;

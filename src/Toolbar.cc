@@ -324,12 +324,12 @@ void Toolbar::reconfigure(void) {
     if (i18n.multibyte()) {
       XRectangle ink, logical;
       XmbTextExtents(screen->getToolbarStyle()->fontset,
-                     workspace_name.c_str(), workspace_name.size(),
+                     workspace_name.c_str(), workspace_name.length(),
                      &ink, &logical);
       w = logical.width;
     } else {
       w = XTextWidth(screen->getToolbarStyle()->font,
-                     workspace_name.c_str(), workspace_name.size());
+                     workspace_name.c_str(), workspace_name.length());
     }
     w += (frame.bevel_w * 4);
 
@@ -627,7 +627,7 @@ void Toolbar::redrawWorkspaceLabel(Bool redraw) {
   if (redraw)
     XClearWindow(display, frame.workspace_label);
 
-  int dx = (frame.bevel_w * 2), dlen = name.size();
+  int dx = (frame.bevel_w * 2), dlen = name.length();
   unsigned int l;
 
   if (i18n.multibyte()) {
@@ -1010,7 +1010,7 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
       }
 
       XClearWindow(display, frame.workspace_label);
-      unsigned int l = new_workspace_name.size(), tw, x;
+      unsigned int l = new_workspace_name.length(), tw, x;
 
       if (i18n.multibyte()) {
         XRectangle ink, logical;
