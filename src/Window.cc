@@ -149,7 +149,11 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   timer = new BTimer(blackbox, this);
   timer->setTimeout(blackbox->getAutoRaiseDelay());
 
-  if (! getBlackboxHints())
+  bool read_mwm = True;
+  if (blackbox->isStartup())
+    read_mwm = ! getBlackboxHints();
+
+  if (read_mwm)
     getMWMHints();
 
   // get size, aspect, minimum/maximum size and other hints set by the
@@ -266,7 +270,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
 
 BlackboxWindow::~BlackboxWindow(void) {
-
 #ifdef    DEBUG
   fprintf(stderr, "BlackboxWindow::~BlackboxWindow: destroying 0x%lx\n",
           client.window);
@@ -1274,7 +1277,6 @@ void BlackboxWindow::configureShape(void) {
 
 
 bool BlackboxWindow::setInputFocus(void) {
-  fprintf(stderr, "setInputFocus: focusing %s\n", getTitle());
   if (flags.focused) return True;
 
   if (! client.rect.intersects(screen->getRect())) {
@@ -1286,7 +1288,6 @@ bool BlackboxWindow::setInputFocus(void) {
 
   if (client.transientList.size() > 0) {
     // transfer focus to any modal transients
-    fprintf(stderr, "setInputyFocus: looking for a modal transient\n");
     BlackboxWindowList::iterator it, end = client.transientList.end();
     for (it = client.transientList.begin(); it != end; ++it) {
       if ((*it)->flags.modal) return (*it)->setInputFocus();
@@ -1307,7 +1308,6 @@ bool BlackboxWindow::setInputFocus(void) {
     ret = False;
   }
 
-  fprintf(stderr, "setInputFocus: %s now has focus\n", getTitle());
   if (flags.send_focus_message) {
     XEvent ce;
     ce.xclient.type = ClientMessage;
