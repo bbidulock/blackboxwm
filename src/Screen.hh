@@ -125,7 +125,7 @@ private:
   unsigned int geom_w, geom_h;
   unsigned long event_mask;
 
-  XRectangle usableArea;
+  Rect usableArea;
 
   typedef std::list<NETStrut*> StrutList;
   StrutList strutList;
@@ -313,7 +313,7 @@ public:
 
   BlackboxWindow *getIcon(unsigned int index);
 
-  const XRectangle& availableArea(void) const;
+  const Rect& availableArea(void) const;
   void updateAvailableArea(void);
   void addStrut(NETStrut *strut);
 

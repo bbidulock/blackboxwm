@@ -37,7 +37,7 @@ class BaseDisplay;
 class BGCCache;
 
 #include "Timer.hh"
-
+#include "Util.hh"
 
 class ScreenInfo {
 private:
@@ -49,10 +49,10 @@ private:
   int depth;
   unsigned int screen_number;
   std::string display_string;
-  XRectangle rect;
+  Rect rect;
 
 protected:
-  const XRectangle& getRect(void) const { return rect; }
+  const Rect& getRect(void) const { return rect; }
 
 public:
   ScreenInfo(BaseDisplay *d, unsigned int num);
@@ -64,8 +64,8 @@ public:
   inline int getDepth(void) const { return depth; }
   inline unsigned int getScreenNumber(void) const
     { return screen_number; }
-  inline unsigned int getWidth(void) const { return rect.width; }
-  inline unsigned int getHeight(void) const { return rect.height; }
+  inline unsigned int getWidth(void) const { return rect.width(); }
+  inline unsigned int getHeight(void) const { return rect.height(); }
   inline const std::string& displayString(void) const
   { return display_string; }
 };

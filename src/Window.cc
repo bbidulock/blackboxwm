@@ -941,13 +941,13 @@ void BlackboxWindow::getWMNormalHints(void) {
   long icccm_mask;
   XSizeHints sizehint;
 
-  const XRectangle& screen_area = screen->availableArea();
+  const Rect& screen_area = screen->availableArea();
 
   client.min_width = client.min_height =
     client.base_width = client.base_height =
     client.width_inc = client.height_inc = 1;
-  client.max_width = screen_area.width;
-  client.max_height = screen_area.height;
+  client.max_width = screen_area.width();
+  client.max_height = screen_area.height();
   client.min_aspect_x = client.min_aspect_y =
     client.max_aspect_x = client.max_aspect_y = 1;
   client.win_gravity = NorthWestGravity;
@@ -1462,10 +1462,10 @@ void BlackboxWindow::maximize(unsigned int button) {
   blackbox_attrib.premax_w = frame.rect.width();
   blackbox_attrib.premax_h = frame.rect.height();
 
-  const XRectangle &screen_area = screen->availableArea();
+  const Rect &screen_area = screen->availableArea();
 
-  int dx = screen_area.x, dy = screen_area.y;
-  unsigned int dw = screen_area.width, dh = screen_area.height;
+  int dx = screen_area.x(), dy = screen_area.y();
+  unsigned int dw = screen_area.width(), dh = screen_area.height();
 
   dw -= frame.border_w * 2;
   dw -= frame.mwm_border_w * 2;
@@ -2527,12 +2527,12 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
       const int snap_distance = screen->getEdgeSnapThreshold();
 
       if (snap_distance) {
-        const XRectangle &srect = screen->availableArea();
+        const Rect &srect = screen->availableArea();
         // screen corners
-        const int sleft = srect.x,
-                 sright = srect.x + srect.width - 1,
-                   stop = srect.y,
-                sbottom = srect.y + srect.height - 1;
+        const int sleft = srect.x(),
+                 sright = srect.right(),
+                   stop = srect.y(),
+                sbottom = srect.bottom();
         // window corners
         const int wleft = dx,
                  wright = dx + snap_w - 1,

@@ -406,11 +406,10 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, unsigned int num) {
   root_window = RootWindow(basedisplay->getXDisplay(), screen_number);
   depth = DefaultDepth(basedisplay->getXDisplay(), screen_number);
 
-  rect.width =
-    WidthOfScreen(ScreenOfDisplay(basedisplay->getXDisplay(), screen_number));
-  rect.height =
-    HeightOfScreen(ScreenOfDisplay(basedisplay->getXDisplay(), screen_number));
-  rect.x = rect.y = 0;
+  rect.setSize(WidthOfScreen(ScreenOfDisplay(basedisplay->getXDisplay(),
+                                             screen_number)),
+               HeightOfScreen(ScreenOfDisplay(basedisplay->getXDisplay(),
+                                              screen_number)));
 
   // search for a TrueColor Visual... if we can't find one... we will use the
   // default visual for the screen

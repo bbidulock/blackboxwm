@@ -147,9 +147,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
                 blackbox->getSessionCursor());
 
   // start off full screen, top left.
-  usableArea.x = usableArea.y = 0;
-  usableArea.width = getWidth();
-  usableArea.height = getHeight();
+  usableArea.setSize(getWidth(), getHeight());
 
   image_control =
     new BImageControl(blackbox, this, True, blackbox->getColorsPerChannel(),
@@ -1633,7 +1631,7 @@ void BScreen::addStrut(NETStrut *strut) {
 }
 
 
-const XRectangle& BScreen::availableArea(void) const {
+const Rect& BScreen::availableArea(void) const {
   if (doFullMax())
     return getRect(); // return the full screen
   return usableArea;
@@ -1641,14 +1639,19 @@ const XRectangle& BScreen::availableArea(void) const {
 
 
 void BScreen::updateAvailableArea(void) {
-  int old_x = usableArea.x, old_y = usableArea.y,
-    old_width = usableArea.width, old_height = usableArea.height;
+  Rect old_area = usableArea;
+  usableArea = getRect(); // reset to full screen
 
-  StrutList::iterator it = strutList.begin();
+  /* these values represent offsets from the screen edge
+   * we look for the biggest offset on each edge and then apply them
+   * all at once
+   * do not be confused by the similarity to the names of Rect's members
+   */
   unsigned int current_left = 0, current_right = 0, current_top = 0,
     current_bottom = 0;
 
-  usableArea = getRect(); // reset to full screen
+  StrutList::iterator it = strutList.begin();
+
   for(; it != strutList.end(); ++it) {
     NETStrut *strut = *it;
     if (strut->left > current_left)
@@ -1661,14 +1664,11 @@ void BScreen::updateAvailableArea(void) {
       current_bottom = strut->bottom;
   }
 
-  usableArea.x = current_left;
-  usableArea.width -= usableArea.x + current_right;
-  usableArea.y = current_top;
-  usableArea.height -= usableArea.y + current_bottom;
+  usableArea.setPos(current_left, current_top);
+  usableArea.setSize(usableArea.width() - (current_left + current_right),
+                     usableArea.height() - (current_top + current_bottom));
 
-  // if area changed
-  if (old_x != usableArea.x || old_y != usableArea.y ||
-      old_width != usableArea.width || old_height != usableArea.height) {
+  if (old_area != usableArea) {
     BlackboxWindowList::iterator it = windowList.begin(),
       end = windowList.end();
     for(; it != end; ++it)
