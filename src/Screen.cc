@@ -63,10 +63,10 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   XErrorHandler old = XSetErrorHandler((XErrorHandler) anotherWMRunning);
   XSelectInput(screen_info.display().XDisplay(),
                screen_info.rootWindow(),
-               ColormapChangeMask | EnterWindowMask | PropertyChangeMask |
-               StructureNotifyMask | // this really should go away
+               PropertyChangeMask |
+               StructureNotifyMask |
                SubstructureRedirectMask |
-	       ButtonPressMask | ButtonReleaseMask);
+	       ButtonPressMask);
 
   XSync(screen_info.display().XDisplay(), False);
   XSetErrorHandler((XErrorHandler) old);
@@ -111,6 +111,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   geom_pixmap = None;
   geom_visible = False;
   geom_window = None;
+  updateGeomWindow();
 
   empty_window =
     XCreateSimpleWindow(blackbox->XDisplay(), screen_info.rootWindow(),
@@ -118,7 +119,12 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
                         0l, 0l);
   XSetWindowBackgroundPixmap(blackbox->XDisplay(), empty_window, None);
 
-  updateGeomWindow();
+  no_focus_window =
+    XCreateSimpleWindow(blackbox->XDisplay(), screen_info.rootWindow(),
+                        screen_info.width(), screen_info.height(), 1, 1,
+                        0, 0l, 0l);
+  XSelectInput(blackbox->XDisplay(), no_focus_window, NoEventMask);
+  XMapWindow(blackbox->XDisplay(), no_focus_window);
 
   _iconmenu =
     new Iconmenu(*blackbox, screen_info.screenNumber(), this);
@@ -257,7 +263,8 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
   // preen the window list of all icon windows... for better dockapp support
   for (i = 0; i < nchild; i++) {
-    if (children[i] == None) continue;
+    if (children[i] == None || children[i] == no_focus_window)
+      continue;
 
     XWMHints *wmhints = XGetWMHints(blackbox->XDisplay(),
                                     children[i]);
@@ -279,7 +286,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
   // manage shown windows
   for (i = 0; i < nchild; ++i) {
-    if (children[i] == None)
+    if (children[i] == None || children[i] == no_focus_window)
       continue;
 
     XWindowAttributes attrib;
@@ -619,10 +626,15 @@ void BScreen::unmanageWindow(BlackboxWindow *win) {
       workspace->menu()->removeItem(win->windowNumber());
   }
 
-  // pass focus to the next appropriate window
-  if (win->isFocused() && blackbox->running()) {
-    if (!focusFallback(win))
+  if (blackbox->running() && win->isFocused()) {
+    // pass focus to the next appropriate window
+    if (focusFallback(win)) {
+      // focus is going somewhere, but we want to avoid dangling pointers
+      blackbox->forgetFocusedWindow();
+    } else {
+      // explicitly clear the focus
       blackbox->setFocusedWindow(0);
+    }
   }
 
   windowList.remove(win);
@@ -1497,8 +1509,6 @@ void BScreen::clientMessageEvent(const XClientMessageEvent * const event) {
 
 void BScreen::buttonPressEvent(const XButtonEvent * const event) {
   if (event->button == 1) {
-    XInstallColormap(blackbox->XDisplay(), screen_info.colormap());
-
     /*
       set this screen active.  keygrabs and input focus will stay on
       this screen until the user focuses a window on another screen or
@@ -1511,6 +1521,12 @@ void BScreen::buttonPressEvent(const XButtonEvent * const event) {
     blackbox->checkMenu();
     rootmenu->popup(event->x_root, event->y_root);
   }
+}
+
+
+void BScreen::propertyNotifyEvent(const XPropertyEvent * const event) {
+  if (event->atom == blackbox->netwm().activeWindow() && toolbar)
+    _toolbar->redrawWindowLabel();
 }
 
 

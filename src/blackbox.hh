@@ -82,6 +82,8 @@ private:
 
   void init_icccm(void);
 
+  void updateActiveWindow() const;
+
   virtual void process_event(XEvent *e);
   virtual bool process_signal(int sig);
 
@@ -113,6 +115,8 @@ public:
   const bt::Netwm& netwm(void) { return *_netwm; }
 
   void setFocusedWindow(BlackboxWindow *win);
+  inline void forgetFocusedWindow(void)
+  { focused_window = 0; }
   inline BlackboxWindow *getFocusedWindow(void)
   { return focused_window; }
 

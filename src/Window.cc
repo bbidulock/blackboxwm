@@ -242,8 +242,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   // set the eventmask early in the game so that we make sure we get
   // all the events we are interested in
   XSetWindowAttributes attrib_set;
-  attrib_set.event_mask = PropertyChangeMask | FocusChangeMask |
-                          StructureNotifyMask;
+  attrib_set.event_mask = PropertyChangeMask | StructureNotifyMask;
   attrib_set.do_not_propagate_mask = ButtonPressMask | ButtonReleaseMask |
                                      ButtonMotionMask;
   XChangeWindowAttributes(blackbox->XDisplay(), client.window,
@@ -537,8 +536,7 @@ void BlackboxWindow::associateClientWindow(void) {
   XSelectInput(blackbox->XDisplay(), frame.plate,
                FocusChangeMask | SubstructureRedirectMask);
 
-  unsigned long event_mask = PropertyChangeMask | FocusChangeMask |
-                             StructureNotifyMask;
+  unsigned long event_mask = PropertyChangeMask | StructureNotifyMask;
   XSelectInput(blackbox->XDisplay(), client.window,
                event_mask & ~StructureNotifyMask);
   XReparentWindow(blackbox->XDisplay(), client.window, frame.plate, 0, 0);
@@ -1558,23 +1556,14 @@ bool BlackboxWindow::setInputFocus(void) {
     // transfer focus to any modal transients
     BlackboxWindowList::iterator it, end = client.transientList.end();
     for (it = client.transientList.begin(); it != end; ++it) {
-      if ((*it)->isModal())
-        return (*it)->setInputFocus();
+      BlackboxWindow * const tmp = *it;
+      if (tmp->isVisible() && tmp->isModal())
+        return tmp->setInputFocus();
     }
   }
 
-  if (client.wmhints.accept_focus) {
-    XSetInputFocus(blackbox->XDisplay(), client.window,
-                   RevertToPointerRoot, blackbox->XTime());
-  } else {
-    /*
-     * we could set the focus to none, since the window doesn't accept
-     * focus, but we shouldn't set focus to nothing since this would
-     * surely make someone angry.  instead, set the focus to the plate
-     */
-    XSetInputFocus(blackbox->XDisplay(), frame.plate,
-                   RevertToPointerRoot, blackbox->XTime());
-  }
+  XSetInputFocus(blackbox->XDisplay(), client.window,
+                 RevertToPointerRoot, blackbox->XTime());
 
   if (client.wmprotocols.wm_take_focus) {
     XEvent ce;
@@ -1590,8 +1579,6 @@ bool BlackboxWindow::setInputFocus(void) {
     ce.xclient.data.l[4] = 0l;
     XSendEvent(blackbox->XDisplay(), client.window, False, NoEventMask, &ce);
   }
-
-  blackbox->setFocusedWindow(this);
 
   return true;
 }
@@ -1646,8 +1633,7 @@ void BlackboxWindow::hide(void) {
    * could be destroyed in that split second, leaving us with a ghost
    * window... so, we need to do this while the X server is grabbed
    */
-  unsigned long event_mask = PropertyChangeMask | FocusChangeMask |
-                             StructureNotifyMask;
+  unsigned long event_mask = PropertyChangeMask | StructureNotifyMask;
   blackbox->XGrabServer();
   XSelectInput(blackbox->XDisplay(), client.window,
                event_mask & ~StructureNotifyMask);
@@ -1902,15 +1888,20 @@ void BlackboxWindow::redrawWindowFrame(void) const {
 
 
 void BlackboxWindow::setFocused(bool focused) {
-  if (focused && !isVisible()) return;
+  if (focused == client.state.focused)
+    return;
 
-  client.state.focused = focused;
+  client.state.focused = isVisible() ? focused : false;
 
-  redrawWindowFrame();
+  if (isVisible()) {
+    redrawWindowFrame();
 
-  if (client.state.focused) {
-    blackbox->setFocusedWindow(this);
-    XInstallColormap(blackbox->XDisplay(), client.colormap);
+    if (client.state.focused) {
+      XInstallColormap(blackbox->XDisplay(), client.colormap);
+    } else {
+      if (client.ewmh.fullscreen && layer() != StackingList::LayerBelow)
+        screen->changeLayer(this, StackingList::LayerBelow);
+    }
   }
 }
 
@@ -3183,7 +3174,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
 
 
 void BlackboxWindow::enterNotifyEvent(const XCrossingEvent * const event) {
-  if (event->window != frame.window)
+  if (event->window != frame.window || event->mode != NotifyNormal)
     return;
 
   if (!screen->resource().isSloppyFocus() || !isVisible())

@@ -61,6 +61,7 @@ private:
   Pixmap geom_pixmap;
   Window geom_window;
   Window empty_window;
+  Window no_focus_window;
 
   const bt::ScreenInfo& screen_info;
   Blackbox *blackbox;
@@ -121,6 +122,9 @@ public:
 
   BScreen(Blackbox *bb, unsigned int scrn);
   ~BScreen(void);
+
+  inline Window noFocusWindow() const
+  { return no_focus_window; }
 
   // information about the screen
   const bt::ScreenInfo &screenInfo(void) const { return screen_info; }
@@ -209,6 +213,7 @@ public:
 
   void clientMessageEvent(const XClientMessageEvent * const event);
   void buttonPressEvent(const XButtonEvent * const event);
+  void propertyNotifyEvent(const XPropertyEvent * const event);
 };
 
 #endif // __Screen_hh
