@@ -327,6 +327,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
                        client.wmnormal,
                        client.wmprotocols);
 
+  // sanity checks
   if (client.wmhints.initial_state == IconicState
       && !hasWindowFunction(WindowFunctionIconify))
     client.wmhints.initial_state = NormalState;
@@ -625,6 +626,9 @@ void BlackboxWindow::decorate(void) {
                             frame.style->label_height,
                             frame.ulabel);
   }
+
+  XSetWindowBorder(blackbox->XDisplay(), frame.plate,
+                   frame.style->frame_border.pixel(screen->screenNumber()));
 
   if (client.decorations & WindowDecorationHandle) {
     frame.fhandle =
@@ -1106,7 +1110,7 @@ EWMH BlackboxWindow::readEWMH(void) {
           state, not the application
          */
       } else if (state == netwm.wmStateFullscreen()) {
-        ewmh.fullscreen = True;
+        ewmh.fullscreen = true;
       } else if (state == netwm.wmStateAbove()) {
         ewmh.above = true;
       } else if (state == netwm.wmStateBelow()) {
@@ -2891,9 +2895,9 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const event) {
     } else if (event->button == 3) {
       const int extra = frame.style->frame_border_width;
       const bt::Rect rect(client.rect.x() - extra,
-                    client.rect.y() - extra,
-                    client.rect.width() + (extra * 2),
-                    client.rect.height() + (extra * 2));
+                          client.rect.y() - extra,
+                          client.rect.width() + (extra * 2),
+                          client.rect.height() + (extra * 2));
 
       Windowmenu *windowmenu = screen->windowmenu(this);
       windowmenu->popup(event->x_root, event->y_root, rect);
