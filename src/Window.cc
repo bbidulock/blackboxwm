@@ -719,7 +719,9 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
 
 
 void BlackboxWindow::reconfigure(void) {
+  restoreGravity(client.rect);
   upsize();
+  applyGravity(frame.rect);
   positionWindows();
   decorate();
   redrawWindowFrame();
@@ -2495,7 +2497,7 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent *be) {
       if (frame.title == be->window || frame.label == be->window) {
         if (((be->time - lastButtonPressTime) <=
              blackbox->getDoubleClickInterval()) ||
-            (be->state & ControlMask)) {
+            (be->state == ControlMask)) {
           lastButtonPressTime = 0;
           shade();
         } else {
@@ -2636,8 +2638,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
           client.window);
 #endif
 
-  if (!flags.resizing && (me->state & Button1Mask) &&
-      (functions & Func_Move) &&
+  if (!flags.resizing && me->state & Button1Mask && (functions & Func_Move) &&
       (frame.title == me->window || frame.label == me->window ||
        frame.handle == me->window || frame.window == me->window)) {
     if (! flags.moving) {
@@ -2745,11 +2746,10 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
       screen->showPosition(dx, dy);
     }
   } else if ((functions & Func_Resize) &&
-             (((me->state & Button1Mask) &&
-               (me->window == frame.right_grip ||
-                me->window == frame.left_grip)) ||
-              (me->state & (Mod1Mask | Button3Mask) &&
-               me->window == frame.window))) {
+             (me->state & Button1Mask && (me->window == frame.right_grip ||
+                                          me->window == frame.left_grip)) ||
+             (me->state & Button3Mask && me->state & Mod1Mask &&
+              me->window == frame.window)) {
     bool left = (me->window == frame.left_grip);
 
     if (! flags.resizing) {
