@@ -516,7 +516,7 @@ void BScreen::manageWindow(Window w) {
 
   bool place_window = true;
   if (blackbox->startingUp()
-      || ((win->isTransient() || win->isDesktop()
+      || ((win->isTransient() || win->windowType() == WindowTypeDesktop
            || (win->wmNormalHints().flags & (PPosition|USPosition)))
           && win->clientRect().intersects(screen_info.rect())))
     place_window = false;
@@ -1787,7 +1787,7 @@ bool BScreen::smartPlacement(unsigned int workspace, bt::Rect& rect,
         dynamic_cast<const BlackboxWindow *>(*w_it);
       if (!win) continue;
 
-      if (win->isDesktop())
+      if (win->windowType() == WindowTypeDesktop)
         continue;
       if (win->isIconic())
         continue;
@@ -1830,7 +1830,7 @@ bool BScreen::smartPlacement(unsigned int workspace, bt::Rect& rect,
       dynamic_cast<const BlackboxWindow *>(*w_it);
     if (!win) continue;
 
-    if (win->isDesktop())
+    if (win->windowType() == WindowTypeDesktop)
       continue;
     if (win->isIconic())
       continue;

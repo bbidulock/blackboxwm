@@ -283,7 +283,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   enum Corner { TopLeft, TopRight, BottomLeft, BottomRight };
   void constrain(Corner anchor);
 
- public:
+public:
   BlackboxWindow(Blackbox *b, Window w, BScreen *s);
   virtual ~BlackboxWindow(void);
 
@@ -294,8 +294,6 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
 
   inline WindowType windowType(void) const
   { return client.window_type; }
-  inline bool isDesktop(void) const
-  { return client.window_type == WindowTypeDesktop; }
 
   inline bool hasWindowFunction(WindowFunction function) const
   { return client.functions & function; }
