@@ -168,14 +168,14 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   for (unsigned int i = 0; i < _resource.numberOfWorkspaces(); ++i) {
     Workspace *wkspc = new Workspace(this, i);
     workspacesList.push_back(wkspc);
-    workspacemenu->insertItem(wkspc->name(), wkspc->getMenu(), wkspc->getID());
+    workspacemenu->insertItem(wkspc->name(), wkspc->menu(), wkspc->id());
   }
 
   workspacemenu->insertIconMenu(iconmenu);
 
   current_workspace = workspacesList.front();
-  current_workspace_id = current_workspace->getID();
-  workspacemenu->setItemChecked(current_workspace->getID(), true);
+  current_workspace_id = current_workspace->id();
+  workspacemenu->setItemChecked(current_workspace->id(), true);
 
   toolbar = new Toolbar(this);
 
@@ -404,7 +404,7 @@ void BScreen::updateOpGC(void) {
   if (! opGC)
     opGC = XCreateGC(blackbox->XDisplay(), screen_info.rootWindow(),
                      GCForeground | GCFunction | GCSubwindowMode, &gcv);
-  else 
+  else
     XChangeGC(blackbox->XDisplay(), opGC,
               GCForeground | GCFunction | GCSubwindowMode, &gcv);
 }
@@ -495,8 +495,8 @@ unsigned int BScreen::addWorkspace(void) {
   Workspace *wkspc = new Workspace(this, workspacesList.size());
   workspacesList.push_back(wkspc);
 
-  workspacemenu->insertItem(wkspc->name(), wkspc->getMenu(),
-                            wkspc->getID(), workspacemenu->count() - 2);
+  workspacemenu->insertItem(wkspc->name(), wkspc->menu(),
+                            wkspc->id(), workspacemenu->count() - 2);
 
   toolbar->reconfigure();
 
@@ -515,12 +515,12 @@ unsigned int BScreen::removeLastWorkspace(void) {
   Workspace *wkspc = workspacesList.back();
   workspacesList.pop_back();
 
-  if (current_workspace->getID() == wkspc->getID())
-    changeWorkspaceID(current_workspace->getID() - 1);
+  if (current_workspace->id() == wkspc->id())
+    changeWorkspaceID(current_workspace->id() - 1);
 
   wkspc->transferWindows(*(workspacesList.back()));
 
-  workspacemenu->removeItem(wkspc->getID());
+  workspacemenu->removeItem(wkspc->id());
 
   delete wkspc;
 
@@ -535,22 +535,22 @@ unsigned int BScreen::removeLastWorkspace(void) {
 
 
 void BScreen::changeWorkspaceID(unsigned int id) {
-  if (! current_workspace || id == current_workspace->getID()) return;
+  if (! current_workspace || id == current_workspace->id()) return;
 
   current_workspace->hide();
 
-  workspacemenu->setItemChecked(current_workspace->getID(), false);
+  workspacemenu->setItemChecked(current_workspace->id(), false);
 
   current_workspace = getWorkspace(id);
-  current_workspace_id = current_workspace->getID();
+  current_workspace_id = current_workspace->id();
 
   current_workspace->show();
 
-  workspacemenu->setItemChecked(current_workspace->getID(), true);
+  workspacemenu->setItemChecked(current_workspace->id(), true);
   toolbar->redrawWorkspaceLabel();
 
   blackbox->netwm().setCurrentDesktop(screen_info.rootWindow(),
-                                       current_workspace->getID());
+                                       current_workspace->id());
 }
 
 
@@ -671,7 +671,7 @@ void BScreen::reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id) {
   if (! w) return;
 
   if (wkspc_id == bt::BSENTINEL)
-    wkspc_id = current_workspace->getID();
+    wkspc_id = current_workspace->id();
 
   if (w->getWorkspaceNumber() == wkspc_id)
     return;
@@ -688,7 +688,7 @@ void BScreen::reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id) {
 
 void BScreen::propagateWindowName(const BlackboxWindow *w) {
   if (! w->isIconic()) {
-    Clientmenu *clientmenu = getWorkspace(w->getWorkspaceNumber())->getMenu();
+    Clientmenu *clientmenu = getWorkspace(w->getWorkspaceNumber())->menu();
     clientmenu->changeItem(w->getWindowNumber(),
                            bt::ellideText(w->getTitle(), 60, "..."));
 
@@ -707,14 +707,14 @@ void BScreen::nextFocus(void) const {
   if (focused &&
       focused->getScreen()->screen_info.screenNumber() ==
       screen_info.screenNumber() &&
-      current_workspace->getCount() > 1) {
+      current_workspace->windowCount() > 1) {
     do {
       next = current_workspace->getNextWindowInList(next);
     } while(next != focused && ! next->setInputFocus());
 
     if (next != focused)
       current_workspace->raiseWindow(next);
-  } else if (current_workspace->getCount() > 0) {
+  } else if (current_workspace->windowCount() > 0) {
     next = current_workspace->getTopWindowOnStack();
 
     next->setInputFocus();
@@ -730,14 +730,14 @@ void BScreen::prevFocus(void) const {
   if (focused &&
       focused->getScreen()->screen_info.screenNumber() ==
       screen_info.screenNumber() &&
-      current_workspace->getCount() > 1) {
+      current_workspace->windowCount() > 1) {
     do {
       next = current_workspace->getPrevWindowInList(next);
     } while(next != focused && ! next->setInputFocus());
 
     if (next != focused)
       current_workspace->raiseWindow(next);
-  } else if (current_workspace->getCount() > 0) {
+  } else if (current_workspace->windowCount() > 0) {
     next = current_workspace->getTopWindowOnStack();
 
     next->setInputFocus();
@@ -1470,6 +1470,5 @@ void BScreen::getDesktopNames(void) {
 
 
 BlackboxWindow* BScreen::getWindow(unsigned int workspace, unsigned int id) {
-  return getWorkspace(workspace)->getWindow(id);
+  return getWorkspace(workspace)->window(id);
 }
-

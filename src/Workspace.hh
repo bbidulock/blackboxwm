@@ -30,7 +30,6 @@ extern "C" {
 }
 
 #include <list>
-#include <vector>
 #include <string>
 
 class BScreen;
@@ -82,19 +81,24 @@ class Workspace: public bt::NoCopy {
 public:
   Workspace(BScreen *scrn, unsigned int i);
 
-  BScreen *getScreen(void) { return screen; }
+  inline BScreen *screen(void) const
+  { return _screen; }
 
-  BlackboxWindow *getLastFocusedWindow(void) { return lastfocus; }
+  inline Clientmenu *menu(void) const
+  { return clientmenu; }
 
-  Clientmenu *getMenu(void) { return clientmenu; }
+  inline unsigned int id(void) const
+  { return _id; }
 
   const std::string& name(void) const;
 
-  unsigned int getID(void) const { return id; }
+  inline BlackboxWindow *lastFocusedWindow(void) const
+  { return lastfocus; }
+  inline void setLastFocusedWindow(BlackboxWindow *w)
+  { lastfocus = w; }
 
-  void setLastFocusedWindow(BlackboxWindow *w) { lastfocus = w; }
+  BlackboxWindow* window(unsigned int index) const;
 
-  BlackboxWindow* getWindow(unsigned int index);
   BlackboxWindow* getNextWindowInList(BlackboxWindow *w);
   BlackboxWindow* getPrevWindowInList(BlackboxWindow *w);
   BlackboxWindow* getTopWindowOnStack(void) const;
@@ -105,7 +109,7 @@ public:
 
   void addWindow(BlackboxWindow *w, bool place = False);
   void removeWindow(BlackboxWindow *w);
-  unsigned int getCount(void) const;
+  unsigned int windowCount(void) const;
   void updateClientListStacking(bt::Netwm::WindowList& clientList) const;
 
   void show(void);
@@ -118,13 +122,13 @@ public:
   void setName(const std::string& new_name);
 
 private:
-  BScreen *screen;
+  BScreen *_screen;
   BlackboxWindow *lastfocus;
   Clientmenu *clientmenu;
 
   StackingList stackingList;
 
-  unsigned int id;
+  unsigned int _id;
   unsigned int cascade_x, cascade_y;
 
   void raiseTransients(const BlackboxWindow * const win,

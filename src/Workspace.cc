@@ -196,17 +196,17 @@ BlackboxWindow* StackingList::back(void) const {
 
 
 Workspace::Workspace(BScreen *scrn, unsigned int i) {
-  screen = scrn;
+  _screen = scrn;
 
   cascade_x = cascade_y = 32;
 
-  id = i;
+  _id = i;
 
-  clientmenu = new Clientmenu(*screen->getBlackbox(), *screen, id);
+  clientmenu = new Clientmenu(*_screen->getBlackbox(), *_screen, _id);
 
   lastfocus = (BlackboxWindow *) 0;
 
-  setName(screen->resource().nameOfWorkspace(i));
+  setName(_screen->resource().nameOfWorkspace(i));
 }
 
 
@@ -216,7 +216,7 @@ void Workspace::addWindow(BlackboxWindow *w, bool place) {
   if (place) placeWindow(w);
 
   int wid = clientmenu->insertItem(bt::ellideText(w->getTitle(), 60, "..."));
-  w->setWorkspace(id);
+  w->setWorkspace(_id);
   w->setWindowNumber(wid);
 
   stackingList.insert(w);
@@ -232,11 +232,11 @@ void Workspace::removeWindow(BlackboxWindow *w) {
 
   // pass focus to the next appropriate window
   if ((w->isFocused() || w == lastfocus) &&
-      screen->getBlackbox()->running() ) {
+      _screen->getBlackbox()->running() ) {
     focusFallback(w);
   }
 
-  screen->updateClientListStackingHint();
+  _screen->updateClientListStackingHint();
 
   clientmenu->removeItem(w->getWindowNumber());
 
@@ -248,7 +248,7 @@ void Workspace::removeWindow(BlackboxWindow *w) {
 void Workspace::focusFallback(const BlackboxWindow *old_window) {
   BlackboxWindow *newfocus = 0;
 
-  if (id == screen->getCurrentWorkspaceID()) {
+  if (_id == _screen->getCurrentWorkspaceID()) {
     // The window is on the visible workspace.
 
     // if it's a transient, then try to focus its parent
@@ -257,7 +257,7 @@ void Workspace::focusFallback(const BlackboxWindow *old_window) {
 
       if (! newfocus ||
           newfocus->isIconic() ||                   // do not focus icons
-          newfocus->getWorkspaceNumber() != id ||  // or other workspaces
+          newfocus->getWorkspaceNumber() != _id ||  // or other workspaces
           ! newfocus->setInputFocus())
         newfocus = 0;
     }
@@ -275,7 +275,7 @@ void Workspace::focusFallback(const BlackboxWindow *old_window) {
       }
     }
 
-    screen->getBlackbox()->setFocusedWindow(newfocus);
+    _screen->getBlackbox()->setFocusedWindow(newfocus);
   } else {
     // The window is not on the visible workspace.
 
@@ -336,7 +336,7 @@ void Workspace::raiseTransients(const BlackboxWindow * const win,
   // put win's transients in the stack
   for (it = win->getTransients().rbegin(); it != end; ++it) {
     BlackboxWindow *w = *it;
-    if (! w->isIconic() && w->getWorkspaceNumber() == id) {
+    if (! w->isIconic() && w->getWorkspaceNumber() == _id) {
       stack.push_back(w->getFrameWindow());
       stackingList.remove(w);
       stackingList.insert(w);
@@ -358,7 +358,7 @@ void Workspace::lowerTransients(const BlackboxWindow * const win,
   // put win's transients in the stack
   for (it = win->getTransients().rbegin(); it != end; ++it) {
     BlackboxWindow *w = *it;
-    if (! w->isIconic() && w->getWorkspaceNumber() == id) {
+    if (! w->isIconic() && w->getWorkspaceNumber() == _id) {
       stack.push_back(w->getFrameWindow());
       stackingList.remove(w);
       stackingList.append(w);
@@ -390,7 +390,7 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
 
   raiseTransients(win, stack_vector);
 
-  if (win->getWorkspaceNumber() == id) {
+  if (win->getWorkspaceNumber() == _id) {
     stack_vector.push_back(win->getFrameWindow());
     stackingList.remove(win);
     stackingList.insert(win);
@@ -398,12 +398,12 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
 
   assert(! stack_vector.empty());
   if (! layer_above)
-    XRaiseWindow(screen->getBlackbox()->XDisplay(),
+    XRaiseWindow(_screen->getBlackbox()->XDisplay(),
                  stack_vector.front());
 
-  XRestackWindows(screen->getBlackbox()->XDisplay(), &stack_vector[0],
+  XRestackWindows(_screen->getBlackbox()->XDisplay(), &stack_vector[0],
                   stack_vector.size());
-  screen->raiseWindows(0);
+  _screen->raiseWindows(0);
 }
 
 
@@ -430,7 +430,7 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
   // stack the window with all transients above
   lowerTransients(win, stack_vector);
 
-  if (! win->isIconic() && win->getWorkspaceNumber() == id) {
+  if (! win->isIconic() && win->getWorkspaceNumber() == _id) {
     stack_vector.push_back(win->getFrameWindow());
     stackingList.remove(win);
     stackingList.append(win);
@@ -450,18 +450,18 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
       XWindowChanges changes;
       changes.sibling = (*tmp)->getFrameWindow();
       changes.stack_mode = Above;
-      XConfigureWindow(screen->getBlackbox()->XDisplay(),
+      XConfigureWindow(_screen->getBlackbox()->XDisplay(),
                        stack_vector.front(), CWStackMode | CWSibling,
                        &changes);
     } else {
-      XLowerWindow(screen->getBlackbox()->XDisplay(),
+      XLowerWindow(_screen->getBlackbox()->XDisplay(),
                    stack_vector.front());
     }
   }
 
-  XRestackWindows(screen->getBlackbox()->XDisplay(), &stack_vector[0],
+  XRestackWindows(_screen->getBlackbox()->XDisplay(), &stack_vector[0],
                   stack_vector.size());
-  screen->raiseWindows(0);
+  _screen->raiseWindows(0);
 }
 
 
@@ -473,9 +473,9 @@ void Workspace::reconfigure(void) {
 }
 
 
-BlackboxWindow *Workspace::getWindow(unsigned int index) {
+BlackboxWindow *Workspace::window(unsigned int index) const {
   if (index < stackingList.size()) {
-    StackingList::iterator it = stackingList.begin(),
+    StackingList::const_iterator it = stackingList.begin(),
       end = stackingList.end();
     for (; it != end; ++it) {
       if (*it && (*it)->getWindowNumber() == index)
@@ -519,15 +519,15 @@ BlackboxWindow* Workspace::getTopWindowOnStack(void) const {
 }
 
 
-unsigned int Workspace::getCount(void) const {
+unsigned int Workspace::windowCount(void) const {
   return stackingList.size();
 }
 
 
 void Workspace::hide(void) {
-  BlackboxWindow *focused = screen->getBlackbox()->getFocusedWindow();
-  if (focused && focused->getScreen() == screen) {
-    assert(focused->getWorkspaceNumber() == id);
+  BlackboxWindow *focused = _screen->getBlackbox()->getFocusedWindow();
+  if (focused && focused->getScreen() == _screen) {
+    assert(focused->getWorkspaceNumber() == _id);
 
     lastfocus = focused;
   } else {
@@ -552,10 +552,10 @@ void Workspace::show(void) {
   for (; it != end; ++it)
     if (*it) (*it)->show();
 
-  XSync(screen->getBlackbox()->XDisplay(), False);
+  XSync(_screen->getBlackbox()->XDisplay(), False);
 
-  if (screen->resource().doFocusLast()) {
-    if (! (screen->resource().isSloppyFocus() ||
+  if (_screen->resource().doFocusLast()) {
+    if (! (_screen->resource().isSloppyFocus() ||
            lastfocus || stackingList.empty()))
       lastfocus = stackingList.front();
 
@@ -566,12 +566,12 @@ void Workspace::show(void) {
 
 
 bool Workspace::isCurrent(void) const {
-  return (id == screen->getCurrentWorkspaceID());
+  return (_id == _screen->getCurrentWorkspaceID());
 }
 
 
 void Workspace::setCurrent(void) {
-  screen->changeWorkspaceID(id);
+  _screen->changeWorkspaceID(_id);
 }
 
 
@@ -585,11 +585,11 @@ void Workspace::setName(const std::string& new_name) {
       bt::i18n(WorkspaceSet, WorkspaceDefaultNameFormat, "Workspace %d");
     assert(tmp.length() < 32);
     char default_name[32];
-    sprintf(default_name, tmp.c_str(), id + 1);
+    sprintf(default_name, tmp.c_str(), _id + 1);
     the_name = default_name;
   }
 
-  screen->resource().saveWorkspaceName(id, the_name);
+  _screen->resource().saveWorkspaceName(_id, the_name);
   clientmenu->setTitle(the_name);
 }
 
@@ -701,37 +701,37 @@ bool Workspace::smartPlacement(bt::Rect& win, const bt::Rect& availableArea) {
   bt::Rect tmp;
   for (; wit != end; ++wit) {
     const BlackboxWindow* const curr = *wit;
-    if (! curr || (screen->resource().placementIgnoresShaded() &&
+    if (! curr || (_screen->resource().placementIgnoresShaded() &&
                    curr->isShaded()))
         continue;
 
     tmp.setRect(curr->frameRect().x(), curr->frameRect().y(),
-                curr->frameRect().width() + screen->resource().borderWidth(),
-                curr->frameRect().height() + screen->resource().borderWidth());
+                curr->frameRect().width() + _screen->resource().borderWidth(),
+                curr->frameRect().height() + _screen->resource().borderWidth());
 
     spaces = calcSpace(tmp, spaces);
   }
 
-  if (screen->resource().placementPolicy() == RowSmartPlacement) {
-    if(screen->resource().rowPlacementDirection() == LeftRight) {
-      if(screen->resource().colPlacementDirection() == TopBottom)
+  if (_screen->resource().placementPolicy() == RowSmartPlacement) {
+    if(_screen->resource().rowPlacementDirection() == LeftRight) {
+      if(_screen->resource().colPlacementDirection() == TopBottom)
         std::sort(spaces.begin(), spaces.end(), rowLRTB);
       else
         std::sort(spaces.begin(), spaces.end(), rowLRBT);
     } else {
-      if(screen->resource().colPlacementDirection() == TopBottom)
+      if(_screen->resource().colPlacementDirection() == TopBottom)
         std::sort(spaces.begin(), spaces.end(), rowRLTB);
       else
         std::sort(spaces.begin(), spaces.end(), rowRLBT);
     }
   } else {
-    if(screen->resource().colPlacementDirection() == TopBottom) {
-      if(screen->resource().rowPlacementDirection() == LeftRight)
+    if(_screen->resource().colPlacementDirection() == TopBottom) {
+      if(_screen->resource().rowPlacementDirection() == LeftRight)
         std::sort(spaces.begin(), spaces.end(), colLRTB);
       else
         std::sort(spaces.begin(), spaces.end(), colRLTB);
     } else {
-      if(screen->resource().rowPlacementDirection() == LeftRight)
+      if(_screen->resource().rowPlacementDirection() == LeftRight)
         std::sort(spaces.begin(), spaces.end(), colLRBT);
       else
         std::sort(spaces.begin(), spaces.end(), colRLBT);
@@ -753,15 +753,15 @@ bool Workspace::smartPlacement(bt::Rect& win, const bt::Rect& availableArea) {
   win.setY(where.y());
 
   // adjust the location() based on left/right and top/bottom placement
-  if (screen->resource().placementPolicy() == RowSmartPlacement) {
-    if (screen->resource().rowPlacementDirection() == RightLeft)
+  if (_screen->resource().placementPolicy() == RowSmartPlacement) {
+    if (_screen->resource().rowPlacementDirection() == RightLeft)
       win.setX(where.right() - win.width());
-    if (screen->resource().colPlacementDirection() == BottomTop)
+    if (_screen->resource().colPlacementDirection() == BottomTop)
       win.setY(where.bottom() - win.height());
   } else {
-    if (screen->resource().colPlacementDirection() == BottomTop)
+    if (_screen->resource().colPlacementDirection() == BottomTop)
       win.setY(win.y() + where.height() - win.height());
-    if (screen->resource().rowPlacementDirection() == RightLeft)
+    if (_screen->resource().rowPlacementDirection() == RightLeft)
       win.setX(win.x() + where.width() - win.width());
   }
   return True;
@@ -786,12 +786,12 @@ bool Workspace::cascadePlacement(bt::Rect &win,
 
 
 void Workspace::placeWindow(BlackboxWindow *win) {
-  bt::Rect availableArea(screen->availableArea()),
+  bt::Rect availableArea(_screen->availableArea()),
     new_win(availableArea.x(), availableArea.y(),
             win->frameRect().width(), win->frameRect().height());
   bool placed = False;
 
-  switch (screen->resource().placementPolicy()) {
+  switch (_screen->resource().placementPolicy()) {
   case RowSmartPlacement:
   case ColSmartPlacement:
     placed = smartPlacement(new_win, availableArea);
@@ -803,9 +803,9 @@ void Workspace::placeWindow(BlackboxWindow *win) {
   if (placed == False) {
     cascadePlacement(new_win, availableArea);
     cascade_x += win->getTitleHeight() +
-      (screen->resource().borderWidth() * 2);
+      (_screen->resource().borderWidth() * 2);
     cascade_y += win->getTitleHeight() +
-      (screen->resource().borderWidth() * 2);
+      (_screen->resource().borderWidth() * 2);
   }
 
   if (new_win.right() > availableArea.right())
@@ -826,5 +826,5 @@ Workspace::updateClientListStacking(bt::Netwm::WindowList& clientList) const {
 
 
 const std::string& Workspace::name(void) const {
-  return screen->resource().nameOfWorkspace(id);
+  return _screen->resource().nameOfWorkspace(_id);
 }
