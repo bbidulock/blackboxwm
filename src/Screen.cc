@@ -68,6 +68,10 @@ extern "C" {
 #endif // HAVE_STDARG_H
 }
 
+#include <algorithm>
+#include <functional>
+using std::string;
+
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "Clientmenu.hh"
@@ -86,10 +90,6 @@ extern "C" {
 #ifndef   FONT_ELEMENT_SIZE
 #define   FONT_ELEMENT_SIZE 50
 #endif // FONT_ELEMENT_SIZE
-
-#include <algorithm>
-#include <functional>
-using std::string;
 
 
 static Bool running = True;
@@ -547,15 +547,18 @@ void BScreen::LoadStyle(void) {
   resource.wstyle.t_focus =
     readDatabaseTexture("window.title.focus", "Window.Title.Focus", "white");
   resource.wstyle.t_unfocus =
-    readDatabaseTexture("window.title.unfocus", "Window.Title.Unfocus", "black");
+    readDatabaseTexture("window.title.unfocus",
+                        "Window.Title.Unfocus", "black");
   resource.wstyle.l_focus =
     readDatabaseTexture("window.label.focus", "Window.Label.Focus", "white" );
   resource.wstyle.l_unfocus =
-    readDatabaseTexture("window.label.unfocus", "Window.Label.Unfocus", "black");
+    readDatabaseTexture("window.label.unfocus", "Window.Label.Unfocus",
+                        "black");
   resource.wstyle.h_focus =
     readDatabaseTexture("window.handle.focus", "Window.Handle.Focus", "white");
   resource.wstyle.h_unfocus =
-    readDatabaseTexture("window.handle.unfocus", "Window.Handle.Unfocus", "black");
+    readDatabaseTexture("window.handle.unfocus",
+                        "Window.Handle.Unfocus", "black");
   resource.wstyle.g_focus =
     readDatabaseTexture("window.grip.focus", "Window.Grip.Focus", "white");
   resource.wstyle.g_unfocus =
@@ -563,9 +566,11 @@ void BScreen::LoadStyle(void) {
   resource.wstyle.b_focus =
     readDatabaseTexture("window.button.focus", "Window.Button.Focus", "white");
   resource.wstyle.b_unfocus =
-    readDatabaseTexture("window.button.unfocus", "Window.Button.Unfocus", "black");
+    readDatabaseTexture("window.button.unfocus",
+                        "Window.Button.Unfocus", "black");
   resource.wstyle.b_pressed =
-    readDatabaseTexture("window.button.pressed", "Window.Button.Pressed", "black");
+    readDatabaseTexture("window.button.pressed",
+                        "Window.Button.Pressed", "black");
   resource.wstyle.f_focus =
     readDatabaseColor("window.frame.focusColor",
                       "Window.Frame.FocusColor", "white");
@@ -606,18 +611,22 @@ void BScreen::LoadStyle(void) {
   resource.tstyle.button =
     readDatabaseTexture("toolbar.button", "Toolbar.Button", "white");
   resource.tstyle.pressed =
-    readDatabaseTexture("toolbar.button.pressed", "Toolbar.Button.Pressed", "black");
+    readDatabaseTexture("toolbar.button.pressed",
+                        "Toolbar.Button.Pressed", "black");
   resource.tstyle.clock =
     readDatabaseTexture("toolbar.clock", "Toolbar.Clock", "black");
   resource.tstyle.l_text =
-    readDatabaseColor("toolbar.label.textColor", "Toolbar.Label.TextColor", "white");
+    readDatabaseColor("toolbar.label.textColor",
+                      "Toolbar.Label.TextColor", "white");
   resource.tstyle.w_text =
     readDatabaseColor("toolbar.windowLabel.textColor",
                       "Toolbar.WindowLabel.TextColor", "white");
   resource.tstyle.c_text =
-    readDatabaseColor("toolbar.clock.textColor", "Toolbar.Clock.TextColor", "white");
+    readDatabaseColor("toolbar.clock.textColor",
+                      "Toolbar.Clock.TextColor", "white");
   resource.tstyle.b_pic =
-    readDatabaseColor("toolbar.button.picColor", "Toolbar.Button.PicColor", "black");
+    readDatabaseColor("toolbar.button.picColor",
+                      "Toolbar.Button.PicColor", "black");
 
   if (XrmGetResource(resource.stylerc, "toolbar.justify",
                      "Toolbar.Justify", &value_type, &value)) {
@@ -642,9 +651,11 @@ void BScreen::LoadStyle(void) {
   resource.mstyle.f_text =
     readDatabaseColor("menu.frame.textColor", "Menu.Frame.TextColor", "white");
   resource.mstyle.d_text =
-    readDatabaseColor("menu.frame.disableColor", "Menu.Frame.DisableColor", "black");
+    readDatabaseColor("menu.frame.disableColor",
+                      "Menu.Frame.DisableColor", "black");
   resource.mstyle.h_text =
-    readDatabaseColor("menu.hilite.textColor", "Menu.Hilite.TextColor", "black");
+    readDatabaseColor("menu.hilite.textColor",
+                      "Menu.Hilite.TextColor", "black");
 
   if (XrmGetResource(resource.stylerc, "menu.title.justify",
                      "Menu.Title.Justify",
@@ -762,8 +773,9 @@ void BScreen::removeIcon(BlackboxWindow *w) {
   iconmenu->remove(w->getWindowNumber());
   iconmenu->update();
 
-  BlackboxWindowList::iterator it = iconList.begin();
-  for (int i = 0; it != iconList.end(); ++it)
+  BlackboxWindowList::iterator it = iconList.begin(),
+    end = iconList.end();
+  for (int i = 0; it != end; ++it)
     (*it)->setWindowNumber(i++);
 }
 
@@ -1046,8 +1058,8 @@ void BScreen::addWorkspaceName(const string& name) {
  * later for constructing the workspaces.  It is only used during initial
  * BScreen creation.
  */
-const string& BScreen::getNameOfWorkspace(unsigned int id) {
-  static std::string empty;
+const string BScreen::getNameOfWorkspace(unsigned int id) {
+  std::string empty;
   if (id < workspaceNames.size())
     return workspaceNames[id];
   return empty;
@@ -1566,10 +1578,8 @@ void BScreen::shutdown(void) {
   XSelectInput(blackbox->getXDisplay(), getRootWindow(), NoEventMask);
   XSync(blackbox->getXDisplay(), False);
 
-  while(! windowList.empty()) {
-    BlackboxWindow *bw = windowList.front();
-    unmanageWindow(bw, True);
-  }
+  while(! windowList.empty())
+    unmanageWindow(windowList.front(), True);
 
   slit->shutdown();
 }
@@ -1700,16 +1710,6 @@ void BScreen::updateAvailableArea(void) {
 }
 
 
-struct WorkspaceMatch {
-  unsigned int number;
-  WorkspaceMatch(unsigned int n): number(n) {}
-
-  inline Bool operator()(const Workspace* workspace) const {
-    return (workspace->getID() == number);
-  }
-};
-
-
 Workspace* BScreen::getWorkspace(unsigned int index) {
   assert(index < workspacesList.size());
   return workspacesList[index];
@@ -1777,6 +1777,7 @@ void BScreen::toggleFocusModel(FocusModel model) {
   }
 }
 
+
 BTexture BScreen::readDatabaseTexture(const string &rname,
                                       const string &rclass,
                                       const string &default_color) {
@@ -1813,9 +1814,9 @@ BTexture BScreen::readDatabaseTexture(const string &rname,
   return texture;
 }
 
+
 BColor BScreen::readDatabaseColor(const string &rname, const string &rclass,
-				  const string &default_color)
-{
+				  const string &default_color) {
   BColor color;
   XrmValue value;
   char *value_type;
@@ -1827,10 +1828,10 @@ BColor BScreen::readDatabaseColor(const string &rname, const string &rclass,
   return color;
 }
 
+
 XFontSet BScreen::readDatabaseFontSet(const string &rname,
-                                      const string &rclass)
-{
-  static char *defaultFont = "fixed";
+                                      const string &rclass) {
+  char *defaultFont = "fixed";
 
   Bool load_default = False;
   XrmValue value;
@@ -1857,9 +1858,10 @@ XFontSet BScreen::readDatabaseFontSet(const string &rname,
   return fontset;
 }
 
-XFontStruct *BScreen::readDatabaseFont(const string &rname, const string &rclass)
-{
-  static char *defaultFont = "fixed";
+
+XFontStruct *BScreen::readDatabaseFont(const string &rname,
+                                       const string &rclass) {
+  char *defaultFont = "fixed";
 
   Bool load_default = False;
   XrmValue value;
@@ -1880,7 +1882,8 @@ XFontStruct *BScreen::readDatabaseFont(const string &rname, const string &rclass
 
 
   if (load_default) {
-    if ((font = XLoadQueryFont(blackbox->getXDisplay(), defaultFont)) == NULL) {
+    font = XLoadQueryFont(blackbox->getXDisplay(), defaultFont);
+    if (font == NULL) {
       fprintf(stderr,
               i18n(ScreenSet, ScreenDefaultFontLoadFail,
                    "BScreen::setCurrentStyle(): couldn't load default font.\n"));
@@ -1890,6 +1893,7 @@ XFontStruct *BScreen::readDatabaseFont(const string &rname, const string &rclass
 
   return font;
 }
+
 
 #ifndef    HAVE_STRCASESTR
 static const char * strcasestr(const char *str, const char *ptn) {
@@ -1904,8 +1908,9 @@ static const char * strcasestr(const char *str, const char *ptn) {
 }
 #endif // HAVE_STRCASESTR
 
-static const char *getFontElement(const char *pattern, char *buf, int bufsiz, ...)
-{
+
+static const char *getFontElement(const char *pattern, char *buf,
+                                  int bufsiz, ...) {
   const char *p, *v;
   char *p2;
   va_list va;
@@ -1928,8 +1933,8 @@ static const char *getFontElement(const char *pattern, char *buf, int bufsiz, ..
   return NULL;
 }
 
-static const char *getFontSize(const char *pattern, int *size)
-{
+
+static const char *getFontSize(const char *pattern, int *size) {
   const char *p;
   const char *p2=NULL;
   int n=0;
@@ -1956,8 +1961,8 @@ static const char *getFontSize(const char *pattern, int *size)
   }
 }
 
-XFontSet BScreen::createFontSet(const string &fontname)
-{
+
+XFontSet BScreen::createFontSet(const string &fontname) {
   XFontSet fs;
   char **missing, *def = "-";
   int nmissing, pixel_size = 0, buf_size = 0;

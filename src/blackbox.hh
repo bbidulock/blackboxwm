@@ -145,7 +145,6 @@ private:
   Time last_time;
   Window masked;
   char **argv;
-  int argc;
   std::string rc_file;
 
   Atom xa_wm_colormap_windows, xa_wm_protocols, xa_wm_state,
@@ -203,7 +202,7 @@ private:
 
 
 public:
-  Blackbox(int m_argc, char **m_argv, char *dpy_name = 0, char *rc = 0);
+  Blackbox(char **m_argv, char *dpy_name = 0, char *rc = 0);
   virtual ~Blackbox(void);
 
   Basemenu *searchMenu(Window window);

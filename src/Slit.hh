@@ -42,8 +42,6 @@ class Slitmenu : public Basemenu {
 private:
   class Directionmenu : public Basemenu {
   private:
-    Slitmenu *slitmenu;
-
     Directionmenu(const Directionmenu&);
     Directionmenu& operator=(const Directionmenu&);
 
@@ -56,8 +54,6 @@ private:
 
   class Placementmenu : public Basemenu {
   private:
-    Slitmenu *slitmenu;
-
     Placementmenu(const Placementmenu&);
     Placementmenu& operator=(const Placementmenu&);
 
@@ -83,7 +79,6 @@ private:
 protected:
   virtual void itemSelected(int button, int index);
   virtual void internal_hide(void);
-
 
 public:
   Slitmenu(Slit *sl);

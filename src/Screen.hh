@@ -55,8 +55,6 @@ extern "C" {
 #include "blackbox.hh"
 class Slit; // forward reference
 
-// forward declaration
-class BScreen;
 
 struct WindowStyle {
   BColor f_focus, f_unfocus, l_text_focus, l_text_unfocus, b_pic_focus,
@@ -321,7 +319,7 @@ public:
   unsigned int removeLastWorkspace(void);
   void removeWorkspaceNames(void);
   void addWorkspaceName(const std::string& name);
-  const std::string& getNameOfWorkspace(unsigned int id);
+  const std::string getNameOfWorkspace(unsigned int id);
   void changeWorkspaceID(unsigned int id);
 
   void addNetizen(Netizen *n);

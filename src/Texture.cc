@@ -40,30 +40,24 @@ extern "C" {
 
 using std::string;
 
+
 BTexture::BTexture(const BaseDisplay * const _display,
                    unsigned int _screen, BImageControl* _ctrl)
   : c(_display, _screen), ct(_display, _screen),
     lc(_display, _screen), sc(_display, _screen), t(0),
-    dpy(_display), ctrl(_ctrl), scrn(_screen)
-{
-}
+    dpy(_display), ctrl(_ctrl), scrn(_screen) { }
 
-BTexture::BTexture(const string &d,
-                   const BaseDisplay * const _display,
+
+BTexture::BTexture(const string &d, const BaseDisplay * const _display,
                    unsigned int _screen, BImageControl* _ctrl)
   : c(_display, _screen), ct(_display, _screen),
     lc(_display, _screen), sc(_display, _screen), t(0),
-    dpy(_display), ctrl(_ctrl), scrn(_screen)
-{
+    dpy(_display), ctrl(_ctrl), scrn(_screen) {
   setDescription(d);
 }
 
-BTexture::~BTexture()
-{
-}
 
-void BTexture::setColor(const BColor &cc)
-{
+void BTexture::setColor(const BColor &cc) {
   c = cc;
   c.setDisplay(display(), screen());
 
@@ -94,8 +88,8 @@ void BTexture::setColor(const BColor &cc)
   sc = BColor(rr, gg, bb, display(), screen());
 }
 
-void BTexture::setDescription(const string &d)
-{
+
+void BTexture::setDescription(const string &d) {
   descr.erase();
   descr.reserve(d.length());
 
@@ -108,9 +102,7 @@ void BTexture::setDescription(const string &d)
   } else {
     setTexture(0);
 
-    if (descr.find("solid") != string::npos)
-      addTexture(BTexture::Solid);
-    else if (descr.find("gradient") != string::npos) {
+    if (descr.find("gradient") != string::npos) {
       addTexture(BTexture::Gradient);
       if (descr.find("crossdiagonal") != string::npos)
         addTexture(BTexture::CrossDiagonal);
@@ -156,12 +148,12 @@ void BTexture::setDescription(const string &d)
 }
 
 void BTexture::setDisplay(const BaseDisplay * const _display,
-                          const unsigned int _screen)
-{
+                          const unsigned int _screen) {
   if (_display == display() && _screen == screen()) {
     // nothing to do
     return;
   }
+
   dpy = _display;
   scrn = _screen;
   c.setDisplay(_display, _screen);
@@ -171,8 +163,7 @@ void BTexture::setDisplay(const BaseDisplay * const _display,
 }
 
 
-BTexture& BTexture::operator=(const BTexture &tt)
-{
+BTexture& BTexture::operator=(const BTexture &tt) {
   c  = tt.c;
   ct = tt.ct;
   lc = tt.lc;
@@ -186,10 +177,9 @@ BTexture& BTexture::operator=(const BTexture &tt)
   return *this;
 }
 
-// Pixmap BTexture::render(const Size &s, Pixmap old)
+
 Pixmap BTexture::render(const unsigned int width, const unsigned int height,
-                        const Pixmap old)
-{
+                        const Pixmap old) {
   assert(display() != 0);
 
   if (texture() == (BTexture::Flat | BTexture::Solid))

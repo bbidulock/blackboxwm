@@ -156,7 +156,7 @@ int main(int argc, char **argv) {
   _chdir2(getenv("X11ROOT"));
 #endif // __EMX__
 
-  Blackbox blackbox(argc, argv, session_display, rc_file);
+  Blackbox blackbox(argv, session_display, rc_file);
   blackbox.eventLoop();
 
   return(0);

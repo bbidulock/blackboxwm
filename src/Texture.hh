@@ -65,7 +65,6 @@ public:
   BTexture(const std::string &_description,
            const BaseDisplay * const _display = 0,
            unsigned int _screen = ~(0u), BImageControl* _ctrl = 0);
-  ~BTexture(void);
 
   void setColor(const BColor &_color);
   void setColorTo(const BColor &_colorTo) { ct = _colorTo; }
@@ -81,9 +80,10 @@ public:
 
   BTexture &operator=(const BTexture &tt);
   inline Bool operator==(const BTexture &tt)
-    { return (c == tt.c  && ct == tt.ct && lc == tt.lc && sc == tt.sc && t == tt.t); }
+  { return (c == tt.c && ct == tt.ct && lc == tt.lc &&
+            sc == tt.sc && t == tt.t); }
   inline Bool operator!=(const BTexture &tt)
-    { return (! operator==(tt)); }
+  { return (! operator==(tt)); }
 
   const BaseDisplay *display(void) const { return dpy; }
   unsigned int screen(void) const { return scrn; }
@@ -93,7 +93,6 @@ public:
   const std::string &description(void) const { return descr; }
   void setDescription(const std::string &d);
 
-  // Pixmap render(const Size &, Pixmap old = 0);
   Pixmap render(const unsigned int width, const unsigned int height,
                 const Pixmap old = 0);
 

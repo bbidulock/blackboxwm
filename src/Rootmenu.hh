@@ -25,9 +25,6 @@
 #define   __Rootmenu_hh
 
 // forward declarations
-class Rootmenu;
-
-class Blackbox;
 class BScreen;
 
 #include "Basemenu.hh"
@@ -35,15 +32,11 @@ class BScreen;
 
 class Rootmenu : public Basemenu {
 private:
-  Blackbox *blackbox;
-  BScreen *screen;
-
   Rootmenu(const Rootmenu&);
   Rootmenu& operator=(const Rootmenu&);
 
 protected:
   virtual void itemSelected(int button, int index);
-
 
 public:
   Rootmenu(BScreen *scrn);

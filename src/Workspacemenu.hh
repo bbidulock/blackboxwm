@@ -32,8 +32,6 @@ class Toolbar;
 
 class Workspacemenu : public Basemenu {
 private:
-  BScreen *screen;
-
   Workspacemenu(const Workspacemenu&);
   Workspacemenu& operator=(const Workspacemenu&);
 

@@ -174,8 +174,7 @@ void BColor::deallocate(void) {
 
   assert(dpy != 0);
 
-  RGB rgb(display(), scrn, r, g, b);
-  ColorCache::iterator it = colorcache.find(rgb);
+  ColorCache::iterator it = colorcache.find(RGB(display(), scrn, r, g, b));
   if (it != colorcache.end()) {
     if ((*it).second.count >= 1)
       (*it).second.count--;
@@ -212,7 +211,7 @@ void BColor::doCacheCleanup(void) {
     return;
   }
 
-  const BaseDisplay * const display = (*it).first.display;
+  const BaseDisplay* const display = (*it).first.display;
   unsigned long *pixels = new unsigned long[ colorcache.size() ];
   unsigned int i, count;
 

@@ -25,8 +25,6 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
-#include "i18n.hh"
-
 extern "C" {
 #include <X11/Xlocale.h>
 
@@ -49,6 +47,9 @@ extern "C" {
 
 #include <string>
 using std::string;
+
+#include "i18n.hh"
+
 
 // the rest of bb source uses True and False from X, so we continue that
 #define True true

@@ -25,20 +25,19 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
+extern "C" {
+#include <stdio.h>
+}
+
 #include "GCCache.hh"
 #include "BaseDisplay.hh"
 #include "Color.hh"
 #include "Util.hh"
 
-extern "C" {
-#include <stdio.h>
-}
-
 
 void BGCCacheContext::set(const BColor &_color,
                           const XFontStruct * const _font,
-                          const int _function,
-                          const int _subwindow) {
+                          const int _function, const int _subwindow) {
   XGCValues gcv;
   pixel = gcv.foreground = _color.pixel();
   function = gcv.function = _function;
@@ -79,9 +78,9 @@ BGCCache::BGCCache(const BaseDisplay * const _display)
     contexts[i] = new BGCCacheContext(display);
   }
 
-  cache = new BGCCacheItem*[ cache_total_size ];
+  cache = new BGCCacheItem*[cache_total_size];
   for (i = 0; i < cache_total_size; ++i) {
-    cache[ i ] = new BGCCacheItem;
+    cache[i] = new BGCCacheItem;
   }
 }
 
@@ -100,9 +99,9 @@ BGCCacheContext *BGCCache::nextContext(unsigned int scr) {
   Window hd = display->getScreenInfo(scr)->getRootWindow();
 
   BGCCacheContext *c;
-  unsigned int i = 0;
-  while (i < context_count) {
-    c = contexts[i++];
+
+  for (unsigned int i = 0; i < context_count; ++i) {
+    c = contexts[i];
 
     if (! c->gc) {
       c->gc = XCreateGC(display->getXDisplay(), hd, 0, 0);

@@ -501,10 +501,8 @@ void Toolbar::checkClock(Bool redraw, Bool date) {
                 ((frame.hour > 12) ? frame.hour - 12 :
                  ((frame.hour == 0) ? 12 : frame.hour)), frame.minute,
                 ((frame.hour >= 12) ?
-                 i18n(ToolbarSet,
-                                  ToolbarNoStrftimeTimeFormatP, "p") :
-                 i18n(ToolbarSet,
-                                  ToolbarNoStrftimeTimeFormatA, "a")));
+                 i18n(ToolbarSet, ToolbarNoStrftimeTimeFormatP, "p") :
+                 i18n(ToolbarSet, ToolbarNoStrftimeTimeFormatA, "a")));
     }
 #endif // HAVE_STRFTIME
 
@@ -1135,7 +1133,7 @@ void Toolbarmenu::itemSelected(int button, int index) {
     toolbar->on_top = change;
     setItemSelected(1, change);
 
-    if (toolbar->isOnTop()) toolbar->screen->raiseWindows((Window *) 0, 0);
+    if (toolbar->isOnTop()) getScreen()->raiseWindows((Window *) 0, 0);
     break;
   }
 
@@ -1144,7 +1142,7 @@ void Toolbarmenu::itemSelected(int button, int index) {
     toolbar->do_auto_hide = change;
     setItemSelected(2, change);
 
-    toolbar->screen->getSlit()->reposition();
+    getScreen()->getSlit()->reposition();
     break;
   }
 
@@ -1174,8 +1172,6 @@ void Toolbarmenu::reconfigure(void) {
 
 Toolbarmenu::Placementmenu::Placementmenu(Toolbarmenu *tm)
   : Basemenu(tm->toolbar->screen) {
-  toolbarmenu = tm;
-
   setLabel(i18n(ToolbarSet, ToolbarToolbarPlacement, "Toolbar Placement"));
   setInternalMenu();
   setMinimumSublevels(3);
@@ -1203,11 +1199,11 @@ void Toolbarmenu::Placementmenu::itemSelected(int button, int index) {
   BasemenuItem *item = find(index);
   if (! item) return;
 
-  toolbarmenu->toolbar->screen->saveToolbarPlacement(item->function());
+  getScreen()->saveToolbarPlacement(item->function());
   hide();
-  toolbarmenu->toolbar->reconfigure();
+  getScreen()->getToolbar()->reconfigure();
 
   // reposition the slit as well to make sure it doesn't intersect the
   // toolbar
-  toolbarmenu->toolbar->screen->getSlit()->reposition();
+  getScreen()->getSlit()->reposition();
 }

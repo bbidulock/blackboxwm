@@ -41,7 +41,6 @@ extern "C" {
 
 Windowmenu::Windowmenu(BlackboxWindow *win) : Basemenu(win->getScreen()) {
   window = win;
-  screen = window->getScreen();
 
   setTitleVisibility(False);
   setMovable(False);
@@ -111,12 +110,16 @@ void Windowmenu::itemSelected(int button, int index) {
     window->close();
     break;
 
-  case BScreen::WindowRaise:
-    screen->getWorkspace(window->getWorkspaceNumber())->raiseWindow(window);
+  case BScreen::WindowRaise: {
+    Workspace *wkspc = getScreen()->getWorkspace(window->getWorkspaceNumber());
+    wkspc->raiseWindow(window);
+  }
     break;
 
-  case BScreen::WindowLower:
-    screen->getWorkspace(window->getWorkspaceNumber())->lowerWindow(window);
+  case BScreen::WindowLower: {
+    Workspace *wkspc = getScreen()->getWorkspace(window->getWorkspaceNumber());
+    wkspc->lowerWindow(window);
+  }
     break;
 
   case BScreen::WindowStick:
@@ -124,7 +127,7 @@ void Windowmenu::itemSelected(int button, int index) {
     break;
 
   case BScreen::WindowKill:
-    XKillClient(screen->getBaseDisplay()->getXDisplay(),
+    XKillClient(getScreen()->getBaseDisplay()->getXDisplay(),
                 window->getClientWindow());
     break;
   }
@@ -144,8 +147,9 @@ void Windowmenu::reconfigure(void) {
 
 
 Windowmenu::SendtoWorkspacemenu::SendtoWorkspacemenu(Windowmenu *w)
-  : Basemenu(w->screen) {
-  windowmenu = w;
+  : Basemenu(w->getScreen()) {
+
+  window = w->window;
 
   setTitleVisibility(False);
   setMovable(False);
@@ -157,13 +161,13 @@ Windowmenu::SendtoWorkspacemenu::SendtoWorkspacemenu(Windowmenu *w)
 void Windowmenu::SendtoWorkspacemenu::itemSelected(int button, int index) {
   if (button > 2) return;
 
-  if (index <= (signed)windowmenu->screen->getWorkspaceCount()) {
-    if (index == (signed)windowmenu->screen->getCurrentWorkspaceID()) return;
-    if (windowmenu->window->isStuck()) windowmenu->window->stick();
+  if (index <= (signed)getScreen()->getWorkspaceCount()) {
+    if (index == (signed)getScreen()->getCurrentWorkspaceID()) return;
+    if (window->isStuck()) window->stick();
 
-    if (button == 1) windowmenu->window->withdraw();
-    windowmenu->screen->reassociateWindow(windowmenu->window, index, True);
-    if (button == 2) windowmenu->screen->changeWorkspaceID(index);
+    if (button == 1) window->withdraw();
+    getScreen()->reassociateWindow(window, index, True);
+    if (button == 2) getScreen()->changeWorkspaceID(index);
   }
   hide();
 }
@@ -171,7 +175,7 @@ void Windowmenu::SendtoWorkspacemenu::itemSelected(int button, int index) {
 
 void Windowmenu::SendtoWorkspacemenu::update(void) {
   unsigned int i, r = getCount(),
-    workspace_count = windowmenu->screen->getWorkspaceCount();
+    workspace_count = getScreen()->getWorkspaceCount();
   if (r > workspace_count) {
     for (i = r; i < workspace_count; ++i)
       remove(0);
@@ -180,10 +184,10 @@ void Windowmenu::SendtoWorkspacemenu::update(void) {
 
   for (i = 0; i < workspace_count; ++i) {
     if (r < workspace_count) {
-      insert(windowmenu->screen->getWorkspace(i)->getName());
+      insert(getScreen()->getWorkspace(i)->getName());
       ++r;
     } else {
-      changeItemLabel(i, windowmenu->screen->getWorkspace(i)->getName());
+      changeItemLabel(i, getScreen()->getWorkspace(i)->getName());
     }
   }
 

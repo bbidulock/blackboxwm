@@ -58,7 +58,6 @@ private:
 
 public:
   Workspace(BScreen *scrn, unsigned int i = 0);
-  ~Workspace(void);
 
   inline BScreen *getScreen(void) { return screen; }
 

@@ -38,6 +38,11 @@ extern "C" {
 #endif // HAVE_STRING_H
 }
 
+#include <functional>
+#include <string>
+
+using std::string;
+
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "Clientmenu.hh"
@@ -48,10 +53,6 @@ extern "C" {
 #include "Window.hh"
 #include "Workspace.hh"
 #include "Windowmenu.hh"
-
-#include <functional>
-
-using std::string;
 
 
 Workspace::Workspace(BScreen *scrn, unsigned int i) {
@@ -67,12 +68,6 @@ Workspace::Workspace(BScreen *scrn, unsigned int i) {
 
   setName(screen->getNameOfWorkspace(id));
 }
-
-
-/*
- * nothing to do here, BScreen actually controls all of the resources
- */
-Workspace::~Workspace(void) {}
 
 
 void Workspace::addWindow(BlackboxWindow *w, Bool place) {
@@ -272,8 +267,7 @@ Workspace::getNextWindowInList(BlackboxWindow *w) {
 }
 
 
-BlackboxWindow*
-Workspace::getPrevWindowInList(BlackboxWindow *w) {
+BlackboxWindow* Workspace::getPrevWindowInList(BlackboxWindow *w) {
   BlackboxWindowList::iterator it = std::find(windowList.begin(),
                                               windowList.end(),
                                               w);

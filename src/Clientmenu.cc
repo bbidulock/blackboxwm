@@ -35,7 +35,6 @@
 
 Clientmenu::Clientmenu(Workspace *ws) : Basemenu(ws->getScreen()) {
   wkspc = ws;
-  screen = wkspc->getScreen();
 
   setInternalMenu();
 }
@@ -55,5 +54,6 @@ void Clientmenu::itemSelected(int button, int index) {
     win->setInputFocus();
   }
 
-  if (! (screen->getWorkspacemenu()->isTorn() || isTorn())) hide();
+  Workspacemenu* wkspcmenu = wkspc->getScreen()->getWorkspacemenu();
+  if (! (wkspcmenu->isTorn() || isTorn())) hide();
 }

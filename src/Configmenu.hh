@@ -35,8 +35,6 @@ class Configmenu : public Basemenu {
 private:
   class Focusmenu : public Basemenu {
   private:
-    Configmenu *configmenu;
-
     Focusmenu(const Focusmenu&);
     Focusmenu& operator=(const Focusmenu&);
 
@@ -49,8 +47,6 @@ private:
 
   class Placementmenu : public Basemenu {
   private:
-    Configmenu *configmenu;
-
     Placementmenu(const Placementmenu&);
     Placementmenu& operator=(const Placementmenu&);
 
@@ -61,8 +57,6 @@ private:
     Placementmenu(Configmenu *cm);
   };
 
-  Blackbox *blackbox;
-  BScreen *screen;
   Focusmenu *focusmenu;
   Placementmenu *placementmenu;
 

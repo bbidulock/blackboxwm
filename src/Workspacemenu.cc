@@ -34,8 +34,6 @@
 
 
 Workspacemenu::Workspacemenu(BScreen *scrn) : Basemenu(scrn) {
-  screen = scrn;
-
   setInternalMenu();
 
   setLabel(i18n(WorkspacemenuSet, WorkspacemenuWorkspacesTitle, "Workspaces"));
@@ -48,14 +46,16 @@ void Workspacemenu::itemSelected(int button, int index) {
   if (button != 1)
     return;
 
-  if (index == 0)
-    screen->addWorkspace();
-  else if (index == 1)
-    screen->removeLastWorkspace();
-  else if (((signed)screen->getCurrentWorkspace()->getID() != (index - 2)) &&
-           ((index - 2) < (signed)screen->getWorkspaceCount()))
-    screen->changeWorkspaceID(index - 2);
-
-  if (! (screen->getWorkspacemenu()->isTorn() || isTorn()))
+  if (index == 0) {
+    getScreen()->addWorkspace();
+  } else if (index == 1) {
+    getScreen()->removeLastWorkspace();
+  } else {
+    const Workspace* const wkspc = getScreen()->getCurrentWorkspace();
+    if ((signed)wkspc->getID() != (index - 2) &&
+        (index - 2) < (signed)getScreen()->getWorkspaceCount())
+      getScreen()->changeWorkspaceID(index - 2);
+  }
+  if (! (getScreen()->getWorkspacemenu()->isTorn() || isTorn()))
     hide();
 }

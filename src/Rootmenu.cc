@@ -49,10 +49,7 @@ extern "C" {
 #include "Util.hh"
 
 
-Rootmenu::Rootmenu(BScreen *scrn) : Basemenu(scrn) {
-  screen = scrn;
-  blackbox = screen->getBlackbox();
-}
+Rootmenu::Rootmenu(BScreen *scrn) : Basemenu(scrn) { }
 
 
 void Rootmenu::itemSelected(int button, int index) {
@@ -67,32 +64,32 @@ void Rootmenu::itemSelected(int button, int index) {
   switch (item->function()) {
   case BScreen::Execute:
     if (item->exec())
-      bexec(item->exec(), screen->displayString());
+      bexec(item->exec(), getScreen()->displayString());
     break;
 
   case BScreen::Restart:
-    blackbox->restart();
+    getScreen()->getBlackbox()->restart();
     break;
 
   case BScreen::RestartOther:
     if (item->exec())
-      blackbox->restart(item->exec());
+      getScreen()->getBlackbox()->restart(item->exec());
     break;
 
   case BScreen::Exit:
-    blackbox->shutdown();
+    getScreen()->getBlackbox()->shutdown();
     break;
 
   case BScreen::SetStyle:
     if (item->exec())
-      blackbox->saveStyleFilename(item->exec());
+      getScreen()->getBlackbox()->saveStyleFilename(item->exec());
 
   case BScreen::Reconfigure:
-    blackbox->reconfigure();
+    getScreen()->getBlackbox()->reconfigure();
     return;
   }
 
-  if (! (screen->getRootmenu()->isTorn() || isTorn()) &&
+  if (! (getScreen()->getRootmenu()->isTorn() || isTorn()) &&
       item->function() != BScreen::Reconfigure &&
       item->function() != BScreen::SetStyle)
     hide();

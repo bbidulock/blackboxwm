@@ -32,8 +32,6 @@ class BScreen;
 
 class Iconmenu : public Basemenu {
 private:
-  BScreen *screen;
-
   Iconmenu(const Iconmenu&);
   Iconmenu& operator=(const Iconmenu&);
 

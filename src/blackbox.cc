@@ -134,9 +134,8 @@ static Bool queueScanner(Display *, XEvent *e, char *args) {
 Blackbox *blackbox;
 
 
-Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
-  : BaseDisplay(m_argv[0], dpy_name)
-{
+Blackbox::Blackbox(char **m_argv, char *dpy_name, char *rc)
+  : BaseDisplay(m_argv[0], dpy_name) {
   if (! XSupportsLocale())
     fprintf(stderr, "X server does not support locale\n");
 
@@ -144,7 +143,6 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
     fprintf(stderr, "cannot set locale modifiers\n");
 
   ::blackbox = this;
-  argc = m_argc;
   argv = m_argv;
   if (! rc) rc = "~/.blackboxrc";
   rc_file = expandTilde(rc);
@@ -480,7 +478,7 @@ void Blackbox::process_event(XEvent *e) {
     // compress expose events
     XEvent realevent;
     unsigned int i = 0;
-    int  ex1, ey1, ex2, ey2;
+    int ex1, ey1, ex2, ey2;
     ex1 = e->xexpose.x;
     ey1 = e->xexpose.y;
     ex2 = ex1 + e->xexpose.width - 1;
@@ -492,10 +490,8 @@ void Blackbox::process_event(XEvent *e) {
       // merge expose area
       ex1 = std::min(realevent.xexpose.x, ex1);
       ey1 = std::min(realevent.xexpose.y, ey1);
-      ex2 = std::max(realevent.xexpose.x + realevent.xexpose.width - 1,
-                     ex2);
-      ey2 = std::max(realevent.xexpose.y + realevent.xexpose.height - 1,
-                     ey2);
+      ex2 = std::max(realevent.xexpose.x + realevent.xexpose.width - 1, ex2);
+      ey2 = std::max(realevent.xexpose.y + realevent.xexpose.height - 1, ey2);
     }
     if ( i > 0 )
       e = &realevent;
@@ -540,7 +536,8 @@ void Blackbox::process_event(XEvent *e) {
   }
 
   case FocusIn: {
-    if (e->xfocus.detail != NotifyAncestor && e->xfocus.detail != NotifyInferior &&
+    if (e->xfocus.detail != NotifyAncestor &&
+        e->xfocus.detail != NotifyInferior &&
         e->xfocus.detail != NotifyNonlinear)
       break;
     BlackboxWindow *win = searchWindow(e->xfocus.window);
@@ -551,7 +548,8 @@ void Blackbox::process_event(XEvent *e) {
   }
 
   case FocusOut: {
-    if ((e->xfocus.mode != NotifyNormal && e->xfocus.mode != NotifyWhileGrabbed) ||
+    if ((e->xfocus.mode != NotifyNormal &&
+         e->xfocus.mode != NotifyWhileGrabbed) ||
         (e->xfocus.detail != NotifyAncestor &&
          e->xfocus.detail != NotifyNonlinearVirtual &&
          e->xfocus.detail != NotifyNonlinear))
@@ -772,6 +770,7 @@ BScreen *Blackbox::searchScreen(Window window) {
 
 BlackboxWindow *Blackbox::searchWindow(Window window) {
   WindowLookup::iterator it = windowSearchList.find(window);
+
   if (it == windowSearchList.end())
     return (BlackboxWindow*) 0;
 
@@ -791,28 +790,28 @@ BlackboxWindow *Blackbox::searchGroup(Window window, BlackboxWindow *win) {
 
 Basemenu *Blackbox::searchMenu(Window window) {
   MenuLookup::iterator it = menuSearchList.find(window);
-  if (it == menuSearchList.end())
-    return (Basemenu*) 0;
-
-  return it->second;
+  if (it != menuSearchList.end())
+    return it->second;
+  
+  return (Basemenu*) 0;
 }
 
 
 Toolbar *Blackbox::searchToolbar(Window window) {
   ToolbarLookup::iterator it = toolbarSearchList.find(window);
-  if (it == toolbarSearchList.end())
-    return (Toolbar*) 0;
+  if (it != toolbarSearchList.end())
+    return it->second;
 
-  return it->second;
+  return (Toolbar*) 0;
 }
 
 
 Slit *Blackbox::searchSlit(Window window) {
   SlitLookup::iterator it = slitSearchList.find(window);
-  if (it == slitSearchList.end())
-    return (Slit*) 0;
-
-  return it->second;
+  if (it != slitSearchList.end())
+    return it->second;
+  
+  return (Slit*) 0;
 }
 
 
@@ -1038,13 +1037,11 @@ void Blackbox::save_rc(void) {
     case Toolbar::TopCenter: placement = "TopCenter"; break;
     case Toolbar::TopRight: placement = "TopRight"; break;
     case Toolbar::BottomRight: placement = "BottomRight"; break;
-    case Toolbar::BottomCenter: default:
-      placement = "BottomCenter"; break;
+    case Toolbar::BottomCenter: default: placement = "BottomCenter"; break;
     }
 
     sprintf(rc_string, "session.screen%d.toolbar.placement: %s",
-            screen_number,
-            placement);
+            screen_number, placement);
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     load_rc(screen);
@@ -1627,11 +1624,13 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
     if (! old_screen) {
       if (active_screen) {
         // set input focus to the toolbar of the screen with mouse
-        XSetInputFocus(getXDisplay(), active_screen->getToolbar()->getWindowID(),
+        XSetInputFocus(getXDisplay(),
+                       active_screen->getToolbar()->getWindowID(),
                        RevertToPointerRoot, CurrentTime);
       } else {
         // set input focus to the toolbar of the first managed screen
-        XSetInputFocus(getXDisplay(), screenList.front()->getToolbar()->getWindowID(),
+        XSetInputFocus(getXDisplay(),
+                       screenList.front()->getToolbar()->getWindowID(),
                        RevertToPointerRoot, CurrentTime);
       }
     } else {

@@ -34,93 +34,9 @@ extern "C" {
 
 // forward declaration
 class BaseDisplay;
-class ScreenInfo;
 class BGCCache;
 
 #include "Timer.hh"
-
-
-class BaseDisplay: public TimerQueueManager {
-private:
-  struct BShape {
-    Bool extensions;
-    int event_basep, error_basep;
-  };
-  BShape shape;
-
-  unsigned int MaskList[8];
-  size_t MaskListLength;
-
-  Bool _startup, _shutdown;
-  Display *display;
-  mutable BGCCache *gccache;
-
-  typedef std::vector<ScreenInfo> ScreenInfoList;
-  ScreenInfoList screenInfoList;
-  TimerQueue timerList;
-
-  const char *display_name, *application_name;
-  unsigned int number_of_screens;
-
-  // no copying!
-  BaseDisplay(const BaseDisplay &);
-  BaseDisplay& operator=(const BaseDisplay&);
-
-protected:
-  // pure virtual function... you must override this
-  virtual void process_event(XEvent *e) = 0;
-
-  // the masks of the modifiers which are ignored in button events.
-  int NumLockMask, ScrollLockMask;
-
-
-public:
-  BaseDisplay(const char *app_name, const char *dpy_name = 0);
-  virtual ~BaseDisplay(void);
-
-  const ScreenInfo* getScreenInfo(const unsigned int s) const;
-
-  BGCCache *gcCache(void) const;
-
-  inline Bool hasShapeExtensions(void) const
-    { return shape.extensions; }
-  inline Bool doShutdown(void) const
-    { return _shutdown; }
-  inline Bool isStartup(void) const
-    { return _startup; }
-
-  inline Display *getXDisplay(void) const { return display; }
-
-  inline const char *getXDisplayName(void) const
-    { return display_name; }
-  inline const char *getApplicationName(void) const
-    { return application_name; }
-
-  inline unsigned int getNumberOfScreens(void) const
-    { return number_of_screens; }
-  inline int getShapeEventBase(void) const
-    { return shape.event_basep; }
-
-  inline void shutdown(void) { _shutdown = True; }
-  inline void run(void) { _startup = _shutdown = False; }
-
-  void grabButton(unsigned int button, unsigned int modifiers,
-                  Window grab_window, Bool owner_events,
-                  unsigned int event_mask, int pointer_mode,
-                  int keyboard_mode, Window confine_to, Cursor cursor) const;
-  void ungrabButton(unsigned int button, unsigned int modifiers,
-                    Window grab_window) const;
-
-  void eventLoop(void);
-
-  // from TimerQueueManager interface
-  virtual void addTimer(BTimer *timer);
-  virtual void removeTimer(BTimer *timer);
-
-  // another pure virtual... this is used to handle signals that BaseDisplay
-  // doesn't understand itself
-  virtual Bool handleSignal(int sig) = 0;
-};
 
 
 class ScreenInfo {
@@ -152,6 +68,90 @@ public:
   inline unsigned short getHeight(void) const { return rect.height; }
   inline const std::string& displayString(void) const
   { return display_string; }
+};
+
+
+class BaseDisplay: public TimerQueueManager {
+private:
+  struct BShape {
+    Bool extensions;
+    int event_basep, error_basep;
+  };
+  BShape shape;
+
+  unsigned int MaskList[8];
+  size_t MaskListLength;
+
+  enum RunState { STARTUP, RUNNING, SHUTDOWN };
+  RunState run_state;
+
+  Display *display;
+  mutable BGCCache *gccache;
+
+  typedef std::vector<ScreenInfo> ScreenInfoList;
+  ScreenInfoList screenInfoList;
+  TimerQueue timerList;
+
+  const char *display_name, *application_name;
+
+  // no copying!
+  BaseDisplay(const BaseDisplay &);
+  BaseDisplay& operator=(const BaseDisplay&);
+
+protected:
+  // pure virtual function... you must override this
+  virtual void process_event(XEvent *e) = 0;
+
+  // the masks of the modifiers which are ignored in button events.
+  int NumLockMask, ScrollLockMask;
+
+
+public:
+  BaseDisplay(const char *app_name, const char *dpy_name = 0);
+  virtual ~BaseDisplay(void);
+
+  const ScreenInfo* getScreenInfo(const unsigned int s) const;
+
+  BGCCache *gcCache(void) const;
+
+  inline Bool hasShapeExtensions(void) const
+    { return shape.extensions; }
+  inline Bool doShutdown(void) const
+    { return run_state == SHUTDOWN; }
+  inline Bool isStartup(void) const
+    { return run_state == STARTUP; }
+
+  inline Display *getXDisplay(void) const { return display; }
+
+  inline const char *getXDisplayName(void) const
+    { return display_name; }
+  inline const char *getApplicationName(void) const
+    { return application_name; }
+
+  inline unsigned int getNumberOfScreens(void) const
+    { return screenInfoList.size(); }
+  inline int getShapeEventBase(void) const
+    { return shape.event_basep; }
+
+  inline void shutdown(void) { run_state = SHUTDOWN; }
+  inline void run(void) { run_state = RUNNING; }
+
+  void grabButton(unsigned int button, unsigned int modifiers,
+                  Window grab_window, Bool owner_events,
+                  unsigned int event_mask, int pointer_mode,
+                  int keyboard_mode, Window confine_to, Cursor cursor) const;
+  void ungrabButton(unsigned int button, unsigned int modifiers,
+                    Window grab_window) const;
+
+  void eventLoop(void);
+
+  // from TimerQueueManager interface
+  virtual void addTimer(BTimer *timer);
+  virtual void removeTimer(BTimer *timer);
+
+  // another pure virtual... this is used to handle signals that BaseDisplay
+  // doesn't understand itself
+  virtual Bool handleSignal(int sig) = 0;
 };
 
 

@@ -34,8 +34,6 @@
 Iconmenu::Iconmenu(BScreen *scrn) : Basemenu(scrn) {
   setInternalMenu();
 
-  screen = scrn;
-
   setLabel(i18n(IconSet, IconIcons, "Icons"));
   update();
 }
@@ -45,8 +43,8 @@ void Iconmenu::itemSelected(int button, int index) {
   if (button != 1)
     return;
 
-  if (index >= 0 && index < (signed) screen->getIconCount()) {
-    BlackboxWindow *win = screen->getIcon(index);
+  if (index >= 0 && index < (signed) getScreen()->getIconCount()) {
+    BlackboxWindow *win = getScreen()->getIcon(index);
 
     if (win) {
       win->deiconify();
@@ -54,6 +52,6 @@ void Iconmenu::itemSelected(int button, int index) {
     }
   }
 
-  if (! (screen->getWorkspacemenu()->isTorn() || isTorn()))
+  if (! (getScreen()->getWorkspacemenu()->isTorn() || isTorn()))
     hide();
 }

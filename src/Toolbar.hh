@@ -39,8 +39,6 @@ class Toolbarmenu : public Basemenu {
 private:
   class Placementmenu : public Basemenu {
   private:
-    Toolbarmenu *toolbarmenu;
-
     Placementmenu(const Placementmenu&);
     Placementmenu& operator=(const Placementmenu&);
 

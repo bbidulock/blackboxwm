@@ -404,66 +404,36 @@ void BlackboxWindow::associateClientWindow(void) {
 
 
 void BlackboxWindow::decorate(void) {
-  Pixmap tmp = frame.fbutton;
-  BTexture *texture = &(screen->getWindowStyle()->b_focus);
-  if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
-    frame.fbutton = None;
+  BTexture* texture;
+  
+  texture = &(screen->getWindowStyle()->b_focus);
+  frame.fbutton = texture->render(frame.button_w, frame.button_h,
+                                  frame.fbutton);
+  if (! frame.fbutton)
     frame.fbutton_pixel = texture->color().pixel();
-  } else {
-    frame.fbutton =
-      screen->getImageControl()->renderImage(frame.button_w, frame.button_h,
-                                             *texture);
-  }
-  if (tmp) screen->getImageControl()->removeImage(tmp);
 
-  tmp = frame.ubutton;
   texture = &(screen->getWindowStyle()->b_unfocus);
-  if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
-    frame.ubutton = None;
+  frame.ubutton = texture->render(frame.button_w, frame.button_h,
+                                  frame.ubutton);
+  if (! frame.ubutton)
     frame.ubutton_pixel = texture->color().pixel();
-  } else {
-    frame.ubutton =
-      screen->getImageControl()->renderImage(frame.button_w, frame.button_h,
-                                             *texture);
-  }
-  if (tmp) screen->getImageControl()->removeImage(tmp);
 
-  tmp = frame.pbutton;
   texture = &(screen->getWindowStyle()->b_pressed);
-  if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
-    frame.pbutton = None;
+  frame.pbutton = texture->render(frame.button_w, frame.button_h,
+                                  frame.pbutton);
+  if (! frame.pbutton)
     frame.pbutton_pixel = texture->color().pixel();
-  } else {
-    frame.pbutton =
-      screen->getImageControl()->renderImage(frame.button_w, frame.button_h,
-                                             *texture);
-  }
-  if (tmp) screen->getImageControl()->removeImage(tmp);
 
   if (decorations.titlebar) {
-    tmp = frame.ftitle;
     texture = &(screen->getWindowStyle()->t_focus);
-    if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
-      frame.ftitle = None;
+    frame.ftitle = texture->render(frame.width, frame.title_h, frame.ftitle);
+    if (! frame.ftitle)
       frame.ftitle_pixel = texture->color().pixel();
-    } else {
-      frame.ftitle =
-        screen->getImageControl()->renderImage(frame.width, frame.title_h,
-                                               *texture);
-    }
-    if (tmp) screen->getImageControl()->removeImage(tmp);
 
-    tmp = frame.utitle;
     texture = &(screen->getWindowStyle()->t_unfocus);
-    if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
-      frame.utitle = None;
+    frame.utitle = texture->render(frame.width, frame.title_h, frame.utitle);
+    if (! frame.utitle)
       frame.utitle_pixel = texture->color().pixel();
-    } else {
-      frame.utitle =
-        screen->getImageControl()->renderImage(frame.width, frame.title_h,
-                                               *texture);
-    }
-    if (tmp) screen->getImageControl()->removeImage(tmp);
 
     XSetWindowBorder(blackbox->getXDisplay(), frame.title,
                      screen->getBorderColor()->pixel());
@@ -481,30 +451,19 @@ void BlackboxWindow::decorate(void) {
     blackbox_attrib.decoration = DecorNone;
   }
 
+  Pixmap tmp;
   if (decorations.handle) {
-    tmp = frame.fhandle;
     texture = &(screen->getWindowStyle()->h_focus);
-    if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
-      frame.fhandle = None;
+    frame.fhandle = texture->render(frame.width, frame.handle_h,
+                                    frame.fhandle);
+    if (! frame.fhandle)
       frame.fhandle_pixel = texture->color().pixel();
-    } else {
-      frame.fhandle =
-        screen->getImageControl()->renderImage(frame.width, frame.handle_h,
-                                               *texture);
-    }
-    if (tmp) screen->getImageControl()->removeImage(tmp);
 
-    tmp = frame.uhandle;
     texture = &(screen->getWindowStyle()->h_unfocus);
-    if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
-      frame.uhandle = None;
+    frame.uhandle = texture->render(frame.width, frame.handle_h,
+                                    frame.uhandle);
+    if (! frame.uhandle)
       frame.uhandle_pixel = texture->color().pixel();
-    } else {
-      frame.uhandle =
-        screen->getImageControl()->renderImage(frame.width, frame.handle_h,
-                                               *texture);
-    }
-    if (tmp) screen->getImageControl()->removeImage(tmp);
 
     tmp = frame.fgrip;
     texture = &(screen->getWindowStyle()->g_focus);

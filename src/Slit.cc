@@ -704,8 +704,7 @@ void Slitmenu::reconfigure(void) {
 
 Slitmenu::Directionmenu::Directionmenu(Slitmenu *sm)
   : Basemenu(sm->slit->screen) {
-  slitmenu = sm;
-
+  
   setLabel(i18n(SlitSet, SlitSlitDirection, "Slit Direction"));
   setInternalMenu();
 
@@ -716,7 +715,7 @@ Slitmenu::Directionmenu::Directionmenu(Slitmenu *sm)
 
   update();
 
-  if (sm->slit->screen->getSlitDirection() == Slit::Horizontal)
+  if (getScreen()->getSlitDirection() == Slit::Horizontal)
     setItemSelected(0, True);
   else
     setItemSelected(1, True);
@@ -730,7 +729,7 @@ void Slitmenu::Directionmenu::itemSelected(int button, int index) {
   BasemenuItem *item = find(index);
   if (! item) return;
 
-  slitmenu->slit->screen->saveSlitDirection(item->function());
+  getScreen()->saveSlitDirection(item->function());
 
   if (item->function() == Slit::Horizontal) {
     setItemSelected(0, True);
@@ -741,13 +740,12 @@ void Slitmenu::Directionmenu::itemSelected(int button, int index) {
   }
 
   hide();
-  slitmenu->slit->reconfigure();
+  getScreen()->getSlit()->reconfigure();
 }
 
 
 Slitmenu::Placementmenu::Placementmenu(Slitmenu *sm)
   : Basemenu(sm->slit->screen) {
-  slitmenu = sm;
 
   setLabel(i18n(SlitSet, SlitSlitPlacement, "Slit Placement"));
   setMinimumSublevels(3);
@@ -782,8 +780,8 @@ void Slitmenu::Placementmenu::itemSelected(int button, int index) {
   BasemenuItem *item = find(index);
   if (! (item && item->function())) return;
 
-  slitmenu->slit->screen->saveSlitPlacement(item->function());
+  getScreen()->saveSlitPlacement(item->function());
   hide();
-  slitmenu->slit->reconfigure();
+  getScreen()->getSlit()->reconfigure();
 }
 

@@ -29,19 +29,15 @@
 class Windowmenu;
 class SendtoWorkspaceMenu;
 
-class Blackbox;
 class BlackboxWindow;
-class Toolbar;
 
 class Windowmenu : public Basemenu {
 private:
   BlackboxWindow *window;
-  BScreen *screen;
 
   class SendtoWorkspacemenu : public Basemenu {
   private:
-    Windowmenu *windowmenu;
-
+    BlackboxWindow *window;
     SendtoWorkspacemenu(const SendtoWorkspacemenu&);
     SendtoWorkspacemenu& operator=(const SendtoWorkspacemenu&);
 

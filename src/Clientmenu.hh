@@ -30,7 +30,6 @@ class BScreen;
 
 class Clientmenu : public Basemenu {
 private:
-  BScreen *screen;
   Workspace *wkspc;
 
   Clientmenu(const Clientmenu&);

@@ -178,8 +178,7 @@ static void signalhandler(int sig) {
 BaseDisplay::BaseDisplay(const char *app_name, const char *dpy_name) {
   application_name = app_name;
 
-  _startup = True;
-  _shutdown = False;
+  run_state = STARTUP;
   last_bad_window = None;
 
   ::base_display = this;
@@ -225,7 +224,6 @@ BaseDisplay::BaseDisplay(const char *app_name, const char *dpy_name) {
     ::exit(2);
   }
 
-  number_of_screens = ScreenCount(display);
   display_name = XDisplayName(dpy_name);
 
 #ifdef    SHAPE
@@ -237,11 +235,9 @@ BaseDisplay::BaseDisplay(const char *app_name, const char *dpy_name) {
 
   XSetErrorHandler((XErrorHandler) handleXErrors);
 
-  screenInfoList.reserve(number_of_screens);
-  for (unsigned int i = 0; i < number_of_screens; ++i) {
-    ScreenInfo screeninfo(this, i);
-    screenInfoList.push_back(screeninfo);
-  }
+  screenInfoList.reserve(ScreenCount(display));
+  for (int i = 0; i < ScreenCount(display); ++i)
+    screenInfoList.push_back(ScreenInfo(this, i));
 
   NumLockMask = ScrollLockMask = 0;
 
@@ -295,9 +291,9 @@ BaseDisplay::~BaseDisplay(void) {
 void BaseDisplay::eventLoop(void) {
   run();
 
-  int xfd = ConnectionNumber(display);
+  const int xfd = ConnectionNumber(display);
 
-  while ((! _shutdown) && (! internal_error)) {
+  while (run_state == RUNNING && ! internal_error) {
     if (XPending(display)) {
       XEvent e;
       XNextEvent(display, &e);
@@ -315,7 +311,7 @@ void BaseDisplay::eventLoop(void) {
       FD_SET(xfd, &rfds);
 
       if (! timerList.empty()) {
-        BTimer *timer = timerList.top();
+        const BTimer* const timer = timerList.top();
 
         gettimeofday(&now, 0);
         tm = timer->timeRemaining(now);
@@ -450,7 +446,7 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, unsigned int num) {
 
   // get the default display string and strip the screen number
   string default_string = DisplayString(basedisplay->getXDisplay());
-  string::size_type pos = default_string.rfind(".");
+  const string::size_type pos = default_string.rfind(".");
   if (pos != string::npos)
     default_string.resize(pos);
   

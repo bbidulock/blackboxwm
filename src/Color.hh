@@ -89,11 +89,11 @@ private:
 
   // global color allocator/deallocator
   struct RGB {
-    const BaseDisplay * const display;
+    const BaseDisplay* const display;
     const unsigned int screen;
     const int r, g, b;
 
-    RGB() : display(0), screen(~(0u)), r(-1), g(-1), b(-1) { }
+    RGB(void) : display(0), screen(~(0u)), r(-1), g(-1), b(-1) { }
     RGB(const BaseDisplay * const a, const unsigned int b,
         const int x, const int y, const int z)
       : display(a), screen(b), r(x), g(y), b(z) {}
@@ -116,7 +116,7 @@ private:
   struct PixelRef {
     const unsigned long p;
     unsigned int count;
-    inline PixelRef() : p(0), count(0) { }
+    inline PixelRef(void) : p(0), count(0) { }
     inline PixelRef(const unsigned long x) : p(x), count(1) { }
   };
   typedef std::map<RGB,PixelRef> ColorCache;
