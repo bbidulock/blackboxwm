@@ -175,27 +175,6 @@ void Workspace::focusFallback(const BlackboxWindow *old_window) {
 }
 
 
-void Workspace::showAll(void) {
-  std::for_each(stackingList.begin(), stackingList.end(),
-                std::mem_fun(&BlackboxWindow::show));
-}
-
-
-void Workspace::hideAll(void) {
-  // withdraw in reverse order to minimize the number of Expose events
-
-  BlackboxWindowList lst(stackingList.rbegin(), stackingList.rend());
-
-  BlackboxWindowList::iterator it = lst.begin();
-  const BlackboxWindowList::iterator end = lst.end();
-  for (; it != end; ++it) {
-    BlackboxWindow *bw = *it;
-    if (! bw->isStuck())
-      bw->withdraw();
-  }
-}
-
-
 void Workspace::removeAll(void) {
   while (! windowList.empty())
     windowList.front()->iconify();
@@ -393,6 +372,48 @@ void Workspace::sendWindowList(Netizen &n) {
 
 unsigned int Workspace::getCount(void) const {
   return windowList.size();
+}
+
+
+void Workspace::hide(void) {
+  BlackboxWindow *focused = screen->getBlackbox()->getFocusedWindow();
+  if (focused && focused->getScreen() == screen) {
+    assert(focused->isStuck() || focused->getWorkspaceNumber() == id);
+
+    lastfocus = focused;
+  } else {
+    // if no window had focus, no need to store a last focus
+    lastfocus = (BlackboxWindow *) 0;
+  }
+
+  // when we switch workspaces, unfocus whatever was focused
+  screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
+
+  // withdraw windows in reverse order to minimize the number of Expose events
+
+  BlackboxWindowList::reverse_iterator it = stackingList.rbegin();
+  const BlackboxWindowList::reverse_iterator end = stackingList.rend();
+  for (; it != end; ++it) {
+    BlackboxWindow *bw = *it;
+    if (! bw->isStuck())
+      bw->withdraw();
+  }
+}
+
+
+void Workspace::show(void) {
+  std::for_each(stackingList.begin(), stackingList.end(),
+                std::mem_fun(&BlackboxWindow::show));
+
+  XSync(screen->getBlackbox()->getXDisplay(), False);
+
+  if (screen->doFocusLast()) {
+    if (! screen->isSloppyFocus() && ! lastfocus && ! stackingList.empty())
+      lastfocus = stackingList.front();
+
+    if (lastfocus)
+      lastfocus->setInputFocus();
+  }
 }
 
 

@@ -94,8 +94,8 @@ public:
   unsigned int removeWindow(BlackboxWindow *w);
   unsigned int getCount(void) const;
 
-  void showAll(void);
-  void hideAll(void);
+  void show(void);
+  void hide(void);
   void removeAll(void);
   void raiseWindow(BlackboxWindow *w);
   void lowerWindow(BlackboxWindow *w);

@@ -791,34 +791,17 @@ unsigned int BScreen::removeLastWorkspace(void) {
 void BScreen::changeWorkspaceID(unsigned int id) {
   if (! current_workspace || id == current_workspace->getID()) return;
 
-  BlackboxWindow *focused = blackbox->getFocusedWindow();
-  if (focused && focused->getScreen() == this) {
-    assert(focused->isStuck() ||
-           focused->getWorkspaceNumber() == current_workspace->getID());
+  current_workspace->hide();
 
-    current_workspace->setLastFocusedWindow(focused);
-  } else {
-    // if no window had focus, no need to store a last focus
-    current_workspace->setLastFocusedWindow((BlackboxWindow *) 0);
-  }
-
-  // when we switch workspaces, unfocus whatever was focused
-  blackbox->setFocusedWindow((BlackboxWindow *) 0);
+  toolbar->redrawWorkspaceLabel(True);
     
-  current_workspace->hideAll();
   workspacemenu->setItemSelected(current_workspace->getID() + 2, False);
 
   current_workspace = getWorkspace(id);
 
+  current_workspace->show();
+
   workspacemenu->setItemSelected(current_workspace->getID() + 2, True);
-  toolbar->redrawWorkspaceLabel(True);
-
-  current_workspace->showAll();
-
-  if (resource.focus_last && current_workspace->getLastFocusedWindow()) {
-    XSync(blackbox->getXDisplay(), False);
-    current_workspace->getLastFocusedWindow()->setInputFocus();
-  }
 
   updateNetizenCurrentWorkspace();
 }
