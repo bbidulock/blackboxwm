@@ -274,8 +274,8 @@ BScreen::~BScreen(void) {
   delete configmenu;
   delete _windowmenu;
 
-  destroySlit();
-  destroyToolbar();
+  delete _slit;
+  delete _toolbar;
 
   blackbox->netwm().removeProperty(screen_info.rootWindow(),
                                    blackbox->netwm().supportingWMCheck());
