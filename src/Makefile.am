@@ -28,8 +28,7 @@ CPPFLAGS		= @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ @DEBUG@ @NLS@ \
 			  -DDEFAULTSTYLE=\"$(DEFAULT_STYLE)\" \
 			  -I$(top_srcdir)/lib
 bin_PROGRAMS		= blackbox
-blackbox_SOURCES	= Basemenu.cc					\
-                          Clientmenu.cc					\
+blackbox_SOURCES	= Clientmenu.cc					\
 			  Configmenu.cc					\
 			  Iconmenu.cc					\
 			  Rootmenu.cc					\

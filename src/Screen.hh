@@ -90,17 +90,6 @@ struct ToolbarStyle {
                 unsigned int modifier, bool multibyte) const;
 };
 
-struct MenuStyle {
-  bt::Color t_text, f_text, h_text, d_text;
-  bt::Texture title, frame, hilite;
-
-  XFontSet t_fontset, f_fontset;
-  XFontSetExtents *t_fontset_extents, *f_fontset_extents;
-  XFontStruct *t_font, *f_font;
-
-  TextJustify t_justify, f_justify;
-  int bullet, bullet_pos;
-};
 
 class BScreen : public bt::NoCopy, public bt::EventHandler,
                 public bt::TimeoutHandler {
@@ -140,7 +129,6 @@ private:
   struct screen_resource {
     WindowStyle wstyle;
     ToolbarStyle tstyle;
-    MenuStyle mstyle;
 
     bool toolbar_on_top, toolbar_auto_hide, sloppy_focus, auto_raise,
       auto_edge_balance, image_dither, ordered_dither, opaque_move, full_max,
@@ -329,7 +317,6 @@ public:
 #endif // HAVE_STRFTIME
 
   WindowStyle *getWindowStyle(void) { return &resource.wstyle; }
-  MenuStyle *getMenuStyle(void) { return &resource.mstyle; }
   ToolbarStyle *getToolbarStyle(void) { return &resource.tstyle; }
 
   BlackboxWindow *getIcon(unsigned int index);

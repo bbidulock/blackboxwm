@@ -24,60 +24,22 @@
 #ifndef   __Configmenu_hh
 #define   __Configmenu_hh
 
-#include "Basemenu.hh"
+#include "Menu.hh"
 
-// forward declaration
-class Blackbox;
 class BScreen;
-class Configmenu;
 
-class Configmenu : public Basemenu {
-private:
-  class Focusmenu : public Basemenu {
-  private:
-    Focusmenu(const Focusmenu&);
-    Focusmenu& operator=(const Focusmenu&);
 
-  protected:
-    virtual void itemSelected(int button, unsigned int index);
+class Configmenu : public bt::Menu {
+public:
+    Configmenu(bt::Application &app, unsigned int screen, BScreen *bscreen);
 
-  public:
-    Focusmenu(Configmenu *cm);
-  };
-
-  class Placementmenu : public Basemenu {
-  private:
-    Placementmenu(const Placementmenu&);
-    Placementmenu& operator=(const Placementmenu&);
-
-  protected:
-    virtual void itemSelected(int button, unsigned int index);
-
-  public:
-    Placementmenu(Configmenu *cm);
-    virtual void reconfigure(void);
-  };
-
-  Focusmenu *focusmenu;
-  Placementmenu *placementmenu;
-
-  friend class Focusmenu;
-  friend class Placementmenu;
-
-  Configmenu(const Configmenu&);
-  Configmenu& operator=(const Configmenu&);
+    void refresh(void);
 
 protected:
-  virtual void itemSelected(int button, unsigned int index);
+    void itemClicked(unsigned int id, unsigned int button);
 
-public:
-  Configmenu(BScreen *scr);
-  virtual ~Configmenu(void);
-
-  inline Basemenu *getFocusmenu(void) { return focusmenu; }
-  inline Basemenu *getPlacementmenu(void) { return placementmenu; }
-
-  void reconfigure(void);
+private:
+    BScreen *_bscreen;
 };
 
 #endif // __Configmenu_hh

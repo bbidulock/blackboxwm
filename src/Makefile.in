@@ -108,8 +108,7 @@ CPPFLAGS = @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ @DEBUG@ @NLS@ \
 			  -I$(top_srcdir)/lib
 
 bin_PROGRAMS = blackbox
-blackbox_SOURCES = Basemenu.cc					\
-                          Clientmenu.cc					\
+blackbox_SOURCES = Clientmenu.cc					\
 			  Configmenu.cc					\
 			  Iconmenu.cc					\
 			  Rootmenu.cc					\
@@ -134,10 +133,10 @@ CONFIG_CLEAN_FILES =
 bin_PROGRAMS = blackbox$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS)
 
-am_blackbox_OBJECTS = Basemenu.$(OBJEXT) Clientmenu.$(OBJEXT) \
-	Configmenu.$(OBJEXT) Iconmenu.$(OBJEXT) Rootmenu.$(OBJEXT) \
-	Screen.$(OBJEXT) Slit.$(OBJEXT) Toolbar.$(OBJEXT) \
-	Window.$(OBJEXT) Windowmenu.$(OBJEXT) Workspace.$(OBJEXT) \
+am_blackbox_OBJECTS = Clientmenu.$(OBJEXT) Configmenu.$(OBJEXT) \
+	Iconmenu.$(OBJEXT) Rootmenu.$(OBJEXT) Screen.$(OBJEXT) \
+	Slit.$(OBJEXT) Toolbar.$(OBJEXT) Window.$(OBJEXT) \
+	Windowmenu.$(OBJEXT) Workspace.$(OBJEXT) \
 	Workspacemenu.$(OBJEXT) blackbox.$(OBJEXT) main.$(OBJEXT)
 blackbox_OBJECTS = $(am_blackbox_OBJECTS)
 blackbox_LDFLAGS =
@@ -147,13 +146,13 @@ DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
-@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/Basemenu.Po $(DEPDIR)/Clientmenu.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Configmenu.Po $(DEPDIR)/Iconmenu.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Rootmenu.Po $(DEPDIR)/Screen.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Slit.Po $(DEPDIR)/Toolbar.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Window.Po $(DEPDIR)/Windowmenu.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Workspace.Po $(DEPDIR)/Workspacemenu.Po \
-@AMDEP_TRUE@	$(DEPDIR)/blackbox.Po $(DEPDIR)/main.Po
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/Clientmenu.Po $(DEPDIR)/Configmenu.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Iconmenu.Po $(DEPDIR)/Rootmenu.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Screen.Po $(DEPDIR)/Slit.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Toolbar.Po $(DEPDIR)/Window.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Windowmenu.Po $(DEPDIR)/Workspace.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Workspacemenu.Po $(DEPDIR)/blackbox.Po \
+@AMDEP_TRUE@	$(DEPDIR)/main.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
@@ -208,7 +207,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Basemenu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Clientmenu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Configmenu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Iconmenu.Po@am__quote@

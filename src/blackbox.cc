@@ -96,7 +96,6 @@ extern "C" {
 
 #include "i18n.hh"
 #include "blackbox.hh"
-#include "Basemenu.hh"
 #include "Clientmenu.hh"
 #include "GCCache.hh"
 #include "Image.hh"

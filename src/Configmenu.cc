@@ -25,298 +25,259 @@
 # include "../config.h"
 #endif // HAVE_CONFIG_H
 
-#include "i18n.hh"
 #include "Configmenu.hh"
+
 #include "Image.hh"
-#include "Toolbar.hh"
-#include "Window.hh"
 #include "Screen.hh"
+#include "i18n.hh"
 
-Configmenu::Configmenu(BScreen *scr) : Basemenu(scr) {
-  setLabel(bt::i18n(ConfigmenuSet, ConfigmenuConfigOptions, "Config options"));
-  setInternalMenu();
 
-  focusmenu = new Focusmenu(this);
-  placementmenu = new Placementmenu(this);
+class ConfigFocusmenu : public bt::Menu {
+public:
+  ConfigFocusmenu(bt::Application &app, unsigned int screen, BScreen *bscreen);
 
-  insert(bt::i18n(ConfigmenuSet, ConfigmenuFocusModel,
-              "Focus Model"), focusmenu);
-  insert(bt::i18n(ConfigmenuSet, ConfigmenuWindowPlacement,
-              "Window Placement"), placementmenu);
-  insert(bt::i18n(ConfigmenuSet, ConfigmenuImageDithering,
-              "Image Dithering"), 1);
-  insert(bt::i18n(ConfigmenuSet, ConfigmenuOpaqueMove,
-              "Opaque Window Moving"), 2);
-  insert(bt::i18n(ConfigmenuSet, ConfigmenuFullMax,
-              "Full Maximization"), 3);
-  insert(bt::i18n(ConfigmenuSet, ConfigmenuFocusNew,
-              "Focus New Windows"), 4);
-  insert(bt::i18n(ConfigmenuSet, ConfigmenuFocusLast,
-              "Focus Last Window on Workspace"), 5);
-  insert(bt::i18n(ConfigmenuSet, ConfigmenuDisableBindings,
-              "Disable Bindings with Scroll Lock"), 6);
-  update();
+  void refresh(void);
 
-  setItemSelected(2, getScreen()->getImageControl()->doDither());
-  setItemSelected(3, getScreen()->doOpaqueMove());
-  setItemSelected(4, getScreen()->doFullMax());
-  setItemSelected(5, getScreen()->doFocusNew());
-  setItemSelected(6, getScreen()->doFocusLast());
-  setItemSelected(7, getScreen()->allowScrollLock());
+protected:
+  void itemClicked(unsigned int id, unsigned int button);
+
+private:
+  BScreen *_bscreen;
+};
+
+
+class ConfigPlacementmenu : public bt::Menu {
+public:
+  ConfigPlacementmenu(bt::Application &app, unsigned int screen,
+                      BScreen *bscreen);
+
+  void refresh(void);
+
+protected:
+  void itemClicked(unsigned int id, unsigned int button);
+
+private:
+  BScreen *_bscreen;
+};
+
+
+Configmenu::Configmenu(bt::Application &app, unsigned int screen,
+                       BScreen *bscreen)
+  : bt::Menu(app, screen), _bscreen(bscreen) {
+  setTitle(bt::i18n(ConfigmenuSet, ConfigmenuConfigOptions, "Config options"));
+  showTitle();
+
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuFocusModel,
+                      "Focus Model"),
+             new ConfigFocusmenu(app, screen, bscreen),
+             ConfigmenuFocusModel);
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuWindowPlacement,
+                      "Window Placement"),
+             new ConfigPlacementmenu(app, screen, bscreen),
+             ConfigmenuWindowPlacement);
+
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuImageDithering,
+                      "Image Dithering"),
+             ConfigmenuImageDithering);
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuOpaqueMove,
+                      "Opaque Window Moving"),
+             ConfigmenuOpaqueMove);
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuFullMax,
+                      "Full Maximization"),
+             ConfigmenuFullMax);
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuFocusNew,
+                      "Focus New Windows"),
+             ConfigmenuFocusNew);
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuFocusLast,
+                      "Focus Last Window on Workspace"),
+             ConfigmenuFocusLast);
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuDisableBindings,
+                      "Disable Bindings with Scroll Lock"),
+             ConfigmenuDisableBindings);
 }
 
 
-Configmenu::~Configmenu(void) {
-  delete focusmenu;
-  delete placementmenu;
+void Configmenu::refresh(void) {
+  setItemChecked(ConfigmenuImageDithering,
+                 _bscreen->getImageControl()->doDither());
+  setItemChecked(ConfigmenuOpaqueMove,
+                 _bscreen->doOpaqueMove());
+  setItemChecked(ConfigmenuFullMax,
+                 _bscreen->doFullMax());
+  setItemChecked(ConfigmenuFocusNew,
+                 _bscreen->doFocusNew());
+  setItemChecked(ConfigmenuFocusLast,
+                 _bscreen->doFocusLast());
+  setItemChecked(ConfigmenuDisableBindings,
+                 _bscreen->allowScrollLock());
 }
 
 
-void Configmenu::itemSelected(int button, unsigned int index) {
-  if (button != 1)
-    return;
+void Configmenu::itemClicked(unsigned int id, unsigned int button) {
+  if (button != 1) return;
 
-  BasemenuItem *item = find(index);
-
-  if (!item->function())
-    return;
-
-  switch(item->function()) {
-  case 1: { // dither
-    getScreen()->getImageControl()->
-      setDither(! getScreen()->getImageControl()->doDither());
-
-    setItemSelected(index, getScreen()->getImageControl()->doDither());
-
+  switch (id) {
+  case ConfigmenuImageDithering: // dither
+    _bscreen->getImageControl()->
+      setDither(! _bscreen->getImageControl()->doDither());
     break;
-  }
 
-  case 2: { // opaque move
-    getScreen()->saveOpaqueMove(! getScreen()->doOpaqueMove());
-
-    setItemSelected(index, getScreen()->doOpaqueMove());
-
+  case ConfigmenuOpaqueMove: // opaque move
+    _bscreen->saveOpaqueMove(! _bscreen->doOpaqueMove());
     break;
-  }
 
-  case 3: { // full maximization
-    getScreen()->saveFullMax(! getScreen()->doFullMax());
-
-    setItemSelected(index, getScreen()->doFullMax());
-
+  case ConfigmenuFullMax: // full maximization
+    _bscreen->saveFullMax(! _bscreen->doFullMax());
     break;
-  }
-  case 4: { // focus new windows
-    getScreen()->saveFocusNew(! getScreen()->doFocusNew());
 
-    setItemSelected(index, getScreen()->doFocusNew());
+  case ConfigmenuFocusNew: // focus new windows
+    _bscreen->saveFocusNew(! _bscreen->doFocusNew());
     break;
-  }
 
-  case 5: { // focus last window on workspace
-    getScreen()->saveFocusLast(! getScreen()->doFocusLast());
-    setItemSelected(index, getScreen()->doFocusLast());
+  case ConfigmenuFocusLast: // focus last window on workspace
+    _bscreen->saveFocusLast(! _bscreen->doFocusLast());
     break;
-  }
 
-  case 6: { // disable keybindings with Scroll Lock
-    getScreen()->saveAllowScrollLock(! getScreen()->allowScrollLock());
-    setItemSelected(index, getScreen()->allowScrollLock());
-    getScreen()->reconfigure();
+  case ConfigmenuDisableBindings: // disable keybindings with Scroll Lock
+    _bscreen->saveAllowScrollLock(! _bscreen->allowScrollLock());
+    _bscreen->reconfigure();
     break;
-  }
+  } // switch
+}
+
+static const unsigned int AutoRaiseID = BScreen::SloppyFocus + 10;
+static const unsigned int ClickRaiseID = BScreen::SloppyFocus + 11;
+
+ConfigFocusmenu::ConfigFocusmenu(bt::Application &app, unsigned int screen,
+                                 BScreen *bscreen)
+  : bt::Menu(app, screen), _bscreen(bscreen) {
+  setTitle(bt::i18n(ConfigmenuSet, ConfigmenuFocusModel, "Focus Model"));
+  showTitle();
+
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuClickToFocus, "Click To Focus"),
+             BScreen::ClickToFocus);
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuSloppyFocus, "Sloppy Focus"),
+             BScreen::SloppyFocus);
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuAutoRaise, "Auto Raise"),
+             AutoRaiseID);
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuClickRaise, "Click Raise"),
+             ClickRaiseID);
+}
+
+
+void ConfigFocusmenu::refresh(void) {
+  setItemChecked(BScreen::ClickToFocus,
+                 !_bscreen->isSloppyFocus());
+  setItemChecked(BScreen::SloppyFocus,
+                 _bscreen->isSloppyFocus());
+  setItemEnabled(AutoRaiseID,
+                 _bscreen->isSloppyFocus());
+  setItemChecked(AutoRaiseID,
+                 _bscreen->doAutoRaise());
+  setItemEnabled(ClickRaiseID,
+                 _bscreen->isSloppyFocus());
+  setItemChecked(ClickRaiseID,
+                 _bscreen->doClickRaise());
+}
+
+
+void ConfigFocusmenu::itemClicked(unsigned int id, unsigned int button) {
+  if (button != 1) return;
+
+  switch (id) {
+  case BScreen::ClickToFocus:
+  case BScreen::SloppyFocus:
+    _bscreen->toggleFocusModel((BScreen::FocusModel) id);
+    break;
+
+  case AutoRaiseID: // auto raise with sloppy focus
+    _bscreen->saveAutoRaise(! _bscreen->doAutoRaise());
+    break;
+
+  case ClickRaiseID: // click raise with sloppy focus
+    _bscreen->saveClickRaise(! _bscreen->doClickRaise());
+    // make sure the appropriate mouse buttons are grabbed on the windows
+    _bscreen->toggleFocusModel(BScreen::SloppyFocus);
+    break;
   } // switch
 }
 
 
-void Configmenu::reconfigure(void) {
-  focusmenu->reconfigure();
-  placementmenu->reconfigure();
-
-  Basemenu::reconfigure();
-}
-
-
-Configmenu::Focusmenu::Focusmenu(Configmenu *cm) : Basemenu(cm->getScreen()) {
-  setLabel(bt::i18n(ConfigmenuSet, ConfigmenuFocusModel, "Focus Model"));
-  setInternalMenu();
-
-  insert(bt::i18n(ConfigmenuSet, ConfigmenuClickToFocus, "Click To Focus"), 1);
-  insert(bt::i18n(ConfigmenuSet, ConfigmenuSloppyFocus, "Sloppy Focus"), 2);
-  insert(bt::i18n(ConfigmenuSet, ConfigmenuAutoRaise, "Auto Raise"), 3);
-  insert(bt::i18n(ConfigmenuSet, ConfigmenuClickRaise, "Click Raise"), 4);
-  update();
-
-  setItemSelected(0, ! getScreen()->isSloppyFocus());
-  setItemSelected(1, getScreen()->isSloppyFocus());
-  setItemEnabled(2, getScreen()->isSloppyFocus());
-  setItemSelected(2, getScreen()->doAutoRaise());
-  setItemEnabled(3, getScreen()->isSloppyFocus());
-  setItemSelected(3, getScreen()->doClickRaise());
-}
-
-
-void Configmenu::Focusmenu::itemSelected(int button, unsigned int index) {
-  if (button != 1)
-    return;
-
-  BasemenuItem *item = find(index);
-
-  if (!item->function())
-    return;
-
-  switch (item->function()) {
-  case 1: // click to focus
-    getScreen()->toggleFocusModel(BScreen::ClickToFocus);
-    break;
-
-  case 2: // sloppy focus
-    getScreen()->toggleFocusModel(BScreen::SloppyFocus);
-    break;
-
-  case 3: // auto raise with sloppy focus
-    getScreen()->saveAutoRaise(! getScreen()->doAutoRaise());
-    break;
-
-  case 4: // click raise with sloppy focus
-    getScreen()->saveClickRaise(! getScreen()->doClickRaise());
-    // make sure the appropriate mouse buttons are grabbed on the windows
-    getScreen()->toggleFocusModel(BScreen::SloppyFocus);
-    break;
-  }
-
-  setItemSelected(0, ! getScreen()->isSloppyFocus());
-  setItemSelected(1, getScreen()->isSloppyFocus());
-  setItemEnabled(2, getScreen()->isSloppyFocus());
-  setItemSelected(2, getScreen()->doAutoRaise());
-  setItemEnabled(3, getScreen()->isSloppyFocus());
-  setItemSelected(3, getScreen()->doClickRaise());
-}
-
-
-Configmenu::Placementmenu::Placementmenu(Configmenu *cm):
-  Basemenu(cm->getScreen()) {
-  setLabel(bt::i18n(ConfigmenuSet, ConfigmenuWindowPlacement,
+ConfigPlacementmenu::ConfigPlacementmenu(bt::Application &app,
+                                         unsigned int screen,
+                                         BScreen *bscreen)
+  : bt::Menu(app, screen), _bscreen(bscreen) {
+  setTitle(bt::i18n(ConfigmenuSet, ConfigmenuWindowPlacement,
                     "Window Placement"));
-  setInternalMenu();
+  showTitle();
 
-  insert(bt::i18n(ConfigmenuSet, ConfigmenuSmartRows,
-                  "Smart Placement (Rows)"), BScreen::RowSmartPlacement);
-  insert(bt::i18n(ConfigmenuSet, ConfigmenuSmartCols,
-                  "Smart Placement (Columns)"), BScreen::ColSmartPlacement);
-  insert(bt::i18n(ConfigmenuSet, ConfigmenuCascade,
-                  "Cascade Placement"), BScreen::CascadePlacement);
-  insert(bt::i18n(ConfigmenuSet, ConfigmenuLeftRight,
-                  "Left to Right"), BScreen::LeftRight);
-  insert(bt::i18n(ConfigmenuSet, ConfigmenuRightLeft,
-                  "Right to Left"), BScreen::RightLeft);
-  insert(bt::i18n(ConfigmenuSet, ConfigmenuTopBottom,
-                  "Top to Bottom"), BScreen::TopBottom);
-  insert(bt::i18n(ConfigmenuSet, ConfigmenuBottomTop,
-                  "Bottom to Top"), BScreen::BottomTop);
-  update();
-
-  switch (getScreen()->getPlacementPolicy()) {
-  case BScreen::RowSmartPlacement:
-    setItemSelected(0, True);
-    break;
-
-  case BScreen::ColSmartPlacement:
-    setItemSelected(1, True);
-    break;
-
-  case BScreen::CascadePlacement:
-    setItemSelected(2, True);
-    break;
-  }
-
-  reconfigure();
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuSmartRows,
+                      "Smart Placement (Rows)"),
+             BScreen::RowSmartPlacement);
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuSmartCols,
+                      "Smart Placement (Columns)"),
+             BScreen::ColSmartPlacement);
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuCascade,
+                      "Cascade Placement"),
+             BScreen::CascadePlacement);
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuLeftRight,
+                      "Left to Right"),
+             BScreen::LeftRight);
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuRightLeft,
+                      "Right to Left"),
+             BScreen::RightLeft);
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuTopBottom,
+                      "Top to Bottom"),
+             BScreen::TopBottom);
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuBottomTop,
+                      "Bottom to Top"),
+             BScreen::BottomTop);
 }
 
 
-void Configmenu::Placementmenu::reconfigure(void) {
-  bool cascade =
-    getScreen()->getPlacementPolicy() == BScreen::CascadePlacement;
+void ConfigPlacementmenu::refresh(void) {
+  bool rowsmart = _bscreen->getPlacementPolicy() == BScreen::RowSmartPlacement,
+       colsmart = _bscreen->getPlacementPolicy() == BScreen::ColSmartPlacement,
+        cascade = _bscreen->getPlacementPolicy() == BScreen::CascadePlacement,
+             rl = _bscreen->getRowPlacementDirection() == BScreen::LeftRight,
+             tb = _bscreen->getColPlacementDirection() == BScreen::TopBottom;
 
-  setItemEnabled(3, ! cascade);
-  setItemEnabled(4, ! cascade);
-  setItemEnabled(5, ! cascade);
-  setItemEnabled(6, ! cascade);
+  setItemChecked(BScreen::RowSmartPlacement, rowsmart);
+  setItemChecked(BScreen::ColSmartPlacement, colsmart);
+  setItemChecked(BScreen::CascadePlacement, cascade);
 
-  bool rl = (getScreen()->getRowPlacementDirection() ==
-             BScreen::LeftRight),
-    tb = (getScreen()->getColPlacementDirection() ==
-          BScreen::TopBottom);
+  setItemEnabled(BScreen::LeftRight, ! cascade);
+  setItemChecked(BScreen::LeftRight, cascade || rl);
 
-  // cascade is always LeftRight, TopBottom
+  setItemEnabled(BScreen::RightLeft, ! cascade);
+  setItemChecked(BScreen::RightLeft, ! cascade && ! rl);
 
-  setItemSelected(3, cascade || rl);
-  setItemSelected(4, ! cascade && ! rl);
+  setItemEnabled(BScreen::TopBottom, ! cascade);
+  setItemChecked(BScreen::TopBottom, cascade || tb);
 
-  setItemSelected(5, cascade || tb);
-  setItemSelected(6, ! cascade && ! tb);
-
-  Basemenu::reconfigure();
+  setItemEnabled(BScreen::BottomTop, ! cascade);
+  setItemChecked(BScreen::BottomTop, ! cascade && ! tb);
 }
 
 
-void Configmenu::Placementmenu::itemSelected(int button, unsigned int index) {
-  if (button != 1)
-    return;
+void ConfigPlacementmenu::itemClicked(unsigned int id, unsigned int button) {
+  if (button != 1) return;
 
-  BasemenuItem *item = find(index);
-
-  if (!item->function())
-    return;
-
-  switch (item->function()) {
+  switch (id) {
   case BScreen::RowSmartPlacement:
-    getScreen()->savePlacementPolicy(item->function());
-
-    setItemSelected(0, True);
-    setItemSelected(1, False);
-    setItemSelected(2, False);
-
-    break;
-
   case BScreen::ColSmartPlacement:
-    getScreen()->savePlacementPolicy(item->function());
-
-    setItemSelected(0, False);
-    setItemSelected(1, True);
-    setItemSelected(2, False);
-
-    break;
-
   case BScreen::CascadePlacement:
-    getScreen()->savePlacementPolicy(item->function());
-
-    setItemSelected(0, False);
-    setItemSelected(1, False);
-    setItemSelected(2, True);
-
+    _bscreen->savePlacementPolicy(id);
     break;
 
   case BScreen::LeftRight:
-    getScreen()->saveRowPlacementDirection(BScreen::LeftRight);
-
-    break;
-
   case BScreen::RightLeft:
-    getScreen()->saveRowPlacementDirection(BScreen::RightLeft);
-
+    _bscreen->saveRowPlacementDirection(id);
     break;
 
   case BScreen::TopBottom:
-    getScreen()->saveColPlacementDirection(BScreen::TopBottom);
-
-    break;
-
   case BScreen::BottomTop:
-    getScreen()->saveColPlacementDirection(BScreen::BottomTop);
-
+    _bscreen->saveColPlacementDirection(id);
     break;
-  }
-
-  reconfigure();
+  } // switch
 }

@@ -139,11 +139,6 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   rootmenu = 0;
   resource.stylerc = 0;
 
-  resource.mstyle.t_fontset = resource.mstyle.f_fontset =
-    resource.tstyle.fontset = resource.wstyle.fontset = (XFontSet) 0;
-  resource.mstyle.t_font = resource.mstyle.f_font = resource.tstyle.font =
-    resource.wstyle.font = (XFontStruct *) 0;
-
   geom_pixmap = None;
 
   timer = new bt::Timer(blackbox, this);
@@ -234,7 +229,8 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     new Workspacemenu(*blackbox, screen_info.getScreenNumber(), this);
   iconmenu =
     new Iconmenu(*blackbox, screen_info.getScreenNumber(), this);
-  configmenu = new Configmenu(this);
+  configmenu =
+    new Configmenu(*blackbox, screen_info.getScreenNumber(), this);
 
   Workspace *wkspc = (Workspace *) 0;
   if (resource.workspaces != 0) {
@@ -432,19 +428,11 @@ BScreen::~BScreen(void) {
 
   if (resource.wstyle.fontset)
     XFreeFontSet(blackbox->getXDisplay(), resource.wstyle.fontset);
-  if (resource.mstyle.t_fontset)
-    XFreeFontSet(blackbox->getXDisplay(), resource.mstyle.t_fontset);
-  if (resource.mstyle.f_fontset)
-    XFreeFontSet(blackbox->getXDisplay(), resource.mstyle.f_fontset);
   if (resource.tstyle.fontset)
     XFreeFontSet(blackbox->getXDisplay(), resource.tstyle.fontset);
 
   if (resource.wstyle.font)
     XFreeFont(blackbox->getXDisplay(), resource.wstyle.font);
-  if (resource.mstyle.t_font)
-    XFreeFont(blackbox->getXDisplay(), resource.mstyle.t_font);
-  if (resource.mstyle.f_font)
-    XFreeFont(blackbox->getXDisplay(), resource.mstyle.f_font);
   if (resource.tstyle.font)
     XFreeFont(blackbox->getXDisplay(), resource.tstyle.font);
 
@@ -565,41 +553,21 @@ void BScreen::LoadStyle(void) {
     XFreeFontSet(blackbox->getXDisplay(), resource.wstyle.fontset);
   if (resource.tstyle.fontset)
     XFreeFontSet(blackbox->getXDisplay(), resource.tstyle.fontset);
-  if (resource.mstyle.f_fontset)
-    XFreeFontSet(blackbox->getXDisplay(), resource.mstyle.f_fontset);
-  if (resource.mstyle.t_fontset)
-    XFreeFontSet(blackbox->getXDisplay(), resource.mstyle.t_fontset);
   resource.wstyle.fontset = 0;
   resource.tstyle.fontset = 0;
-  resource.mstyle.f_fontset = 0;
-  resource.mstyle.t_fontset = 0;
   if (resource.wstyle.font)
     XFreeFont(blackbox->getXDisplay(), resource.wstyle.font);
   if (resource.tstyle.font)
     XFreeFont(blackbox->getXDisplay(), resource.tstyle.font);
-  if (resource.mstyle.f_font)
-    XFreeFont(blackbox->getXDisplay(), resource.mstyle.f_font);
-  if (resource.mstyle.t_font)
-    XFreeFont(blackbox->getXDisplay(), resource.mstyle.t_font);
   resource.wstyle.font = 0;
   resource.tstyle.font = 0;
-  resource.mstyle.f_font = 0;
-  resource.mstyle.t_font = 0;
 
   if (bt::i18n.multibyte()) {
     resource.wstyle.fontset =
       readDatabaseFontSet("window.font", "Window.Font");
     resource.tstyle.fontset =
       readDatabaseFontSet("toolbar.font", "Toolbar.Font");
-    resource.mstyle.t_fontset =
-      readDatabaseFontSet("menu.title.font", "Menu.Title.Font");
-    resource.mstyle.f_fontset =
-      readDatabaseFontSet("menu.frame.font", "Menu.Frame.Font");
 
-    resource.mstyle.t_fontset_extents =
-      XExtentsOfFontSet(resource.mstyle.t_fontset);
-    resource.mstyle.f_fontset_extents =
-      XExtentsOfFontSet(resource.mstyle.f_fontset);
     resource.tstyle.fontset_extents =
       XExtentsOfFontSet(resource.tstyle.fontset);
     resource.wstyle.fontset_extents =
@@ -609,10 +577,6 @@ void BScreen::LoadStyle(void) {
       readDatabaseFont("window.font", "Window.Font");
     resource.tstyle.font =
       readDatabaseFont("toolbar.font", "Toolbar.Font");
-    resource.mstyle.t_font =
-      readDatabaseFont("menu.title.font", "Menu.Title.Font");
-    resource.mstyle.f_font =
-      readDatabaseFont("menu.frame.font", "Menu.Frame.Font");
   }
 
   // load window config
@@ -739,73 +703,6 @@ void BScreen::LoadStyle(void) {
     resource.tstyle.toolbar.setColor(bt::Color("black",
                                                &screen_info.getDisplay(),
                                                screen_info.getScreenNumber()));
-  }
-
-  // load menu config
-  resource.mstyle.title =
-    readDatabaseTexture("menu.title", "Menu.Title", "white");
-  resource.mstyle.frame =
-    readDatabaseTexture("menu.frame", "Menu.Frame", "black");
-  resource.mstyle.hilite =
-    readDatabaseTexture("menu.hilite", "Menu.Hilite", "white");
-  resource.mstyle.t_text =
-    readDatabaseColor("menu.title.textColor", "Menu.Title.TextColor", "black");
-  resource.mstyle.f_text =
-    readDatabaseColor("menu.frame.textColor", "Menu.Frame.TextColor", "white");
-  resource.mstyle.d_text =
-    readDatabaseColor("menu.frame.disableColor",
-                      "Menu.Frame.DisableColor", "black");
-  resource.mstyle.h_text =
-    readDatabaseColor("menu.hilite.textColor",
-                      "Menu.Hilite.TextColor", "black");
-
-  resource.mstyle.t_justify = LeftJustify;
-  if (XrmGetResource(resource.stylerc, "menu.title.justify",
-                     "Menu.Title.Justify",
-                     &value_type, &value)) {
-    if (strstr(value.addr, "right") || strstr(value.addr, "Right"))
-      resource.mstyle.t_justify = RightJustify;
-    else if (strstr(value.addr, "center") || strstr(value.addr, "Center"))
-      resource.mstyle.t_justify = CenterJustify;
-  }
-
-  resource.mstyle.f_justify = LeftJustify;
-  if (XrmGetResource(resource.stylerc, "menu.frame.justify",
-                     "Menu.Frame.Justify",
-                     &value_type, &value)) {
-    if (strstr(value.addr, "right") || strstr(value.addr, "Right"))
-      resource.mstyle.f_justify = RightJustify;
-    else if (strstr(value.addr, "center") || strstr(value.addr, "Center"))
-      resource.mstyle.f_justify = CenterJustify;
-  }
-
-  resource.mstyle.bullet = Basemenu::Triangle;
-  if (XrmGetResource(resource.stylerc, "menu.bullet", "Menu.Bullet",
-                     &value_type, &value)) {
-    if (! strncasecmp(value.addr, "empty", value.size))
-      resource.mstyle.bullet = Basemenu::Empty;
-    else if (! strncasecmp(value.addr, "square", value.size))
-      resource.mstyle.bullet = Basemenu::Square;
-    else if (! strncasecmp(value.addr, "diamond", value.size))
-      resource.mstyle.bullet = Basemenu::Diamond;
-  }
-
-  resource.mstyle.bullet_pos = Basemenu::Left;
-  if (XrmGetResource(resource.stylerc, "menu.bullet.position",
-                     "Menu.Bullet.Position", &value_type, &value)) {
-    if (! strncasecmp(value.addr, "right", value.size))
-      resource.mstyle.bullet_pos = Basemenu::Right;
-  }
-
-  // sanity checks
-  if (resource.mstyle.frame.texture() == bt::Texture::Parent_Relative) {
-    resource.mstyle.frame = bt::Texture("solid flat",
-                                        &screen_info.getDisplay(),
-                                        screen_info.getScreenNumber(),
-                                        image_control);
-    resource.mstyle.frame.setColor(bt::Color("black",
-                                             &screen_info.getDisplay(),
-                                             screen_info.getScreenNumber()));
   }
 
   resource.border_color =
@@ -1012,15 +909,8 @@ BScreen::raiseWindows(const bt::Netwm::WindowList* const workspace_stack) {
   // the 8 represents the number of blackbox windows such as menus
   const unsigned int workspace_stack_size =
     (workspace_stack) ? workspace_stack->size() : 0;
-  std::vector<Window> session_stack(workspace_stack_size + 8);
+  std::vector<Window> session_stack(workspace_stack_size + 2);
   std::back_insert_iterator<std::vector<Window> > it(session_stack);
-
-  XRaiseWindow(blackbox->getXDisplay(),
-               configmenu->getFocusmenu()->getWindowID());
-
-  *(it++) = configmenu->getFocusmenu()->getWindowID();
-  *(it++) = configmenu->getPlacementmenu()->getWindowID();
-  *(it++) = configmenu->getWindowID();
 
   if (toolbar->isOnTop())
     *(it++) = toolbar->getWindowID();
@@ -1031,9 +921,11 @@ BScreen::raiseWindows(const bt::Netwm::WindowList* const workspace_stack) {
   if (workspace_stack_size)
     std::copy(workspace_stack->rbegin(), workspace_stack->rend(), it);
 
+  if (! session_stack.empty()) {
+    XRaiseWindow(blackbox->getXDisplay(), session_stack[0]);
   XRestackWindows(blackbox->getXDisplay(), &session_stack[0],
                   session_stack.size());
-
+  }
   updateClientListStackingHint();
 }
 
@@ -1358,8 +1250,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
         continue;
       }
 
-#warning "fix me"
-      // menu->insertItem(label, configmenu);
+      menu->insertItem(label, configmenu);
       break;
 
     case 740: { // include
