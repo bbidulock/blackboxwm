@@ -1,6 +1,10 @@
 ChangeLog for 0.51.x
 
 
+Changes from 0.51.3 to 0.51.3.1:
+  - silly fix for new linked list cde and KDE removeWindow operation... nothing
+    to warrant a full rev number increase
+
 Changes from 0.51.2 to 0.51.3:
   - made linked lists a little smarter... they now know which iterator is
     accessing them, and don't let more than one at at time access them...

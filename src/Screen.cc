@@ -1641,18 +1641,20 @@ void BScreen::addKWMWindow(Window win) {
 
 
 void BScreen::removeKWMWindow(Window win) {
-  LinkedListIterator<Window> mod_it(kwm_module_list);
-  for (; mod_it.current(); mod_it++)
-    if (*(mod_it.current()) == win)
-      break;
+  {
+    LinkedListIterator<Window> mod_it(kwm_module_list);
+    for (; mod_it.current(); mod_it++)
+      if (*(mod_it.current()) == win)
+        break;
   
-  if (mod_it.current()) {
-    Window *w = mod_it.current();
+    if (mod_it.current()) {
+      Window *w = mod_it.current();
 
-    kwm_module_list->remove(w);
-    delete w;
+      kwm_module_list->remove(w);
+      delete w;
+    }
   }
-  
+
   LinkedListIterator<Window> win_it(kwm_window_list);
   for (; win_it.current(); win_it++)
     if (*(win_it.current()) == win)

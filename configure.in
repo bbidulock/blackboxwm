@@ -20,7 +20,7 @@ dnl
 
 dnl Initialize autoconf and automake
 AC_INIT(src/blackbox.cc)
-AM_INIT_AUTOMAKE(Blackbox,0.51.3,no-define)
+AM_INIT_AUTOMAKE(Blackbox,0.51.3.1,no-define)
 
 dnl Determine default prefix
 test x$prefix = "xNONE" && prefix="$ac_default_prefix"
