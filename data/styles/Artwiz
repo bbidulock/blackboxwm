@@ -2,14 +2,14 @@
 menu.frame.font:                        -*-lucidatypewriter-medium-r-*-*-*-100-*-*-*-*-*-*
 menu.title.font:                        -*-lucidatypewriter-medium-r-*-*-*-100-*-*-*-*-*-*
 
-menu.title:                             raised gradient diagonal border
+menu.title:                             raised gradient diagonal border border
      menu.title.color:                  rgb:90/94/98
      menu.title.colorTo:                rgb:20/24/28
 menu.title.borderWidth:                 1
 menu.title.borderColor:                 black
 menu.title.textColor:                   white
 
-menu.frame:                             sunken gradient diagonal border
+menu.frame:                             sunken gradient diagonal border border
      menu.frame.color:                  rgb:10/20/30
      menu.frame.colorTo:                rgb:70/80/90
 menu.frame.borderWidth:                 1

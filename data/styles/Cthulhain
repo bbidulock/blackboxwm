@@ -2,14 +2,14 @@
 menu.frame.font:                        -*-lucida-medium-r-*-*-*-100-*-*-*-*-*
 menu.title.font:                        -*-lucida-medium-r-*-*-*-100-*-*-*-*-*
 
-menu.title:                             raised gradient crossdiagonal border
+menu.title:                             raised gradient crossdiagonal border border
      menu.title.color:                  #151a22
      menu.title.colorTo:                #7a8290
 menu.title.borderWidth:                 1
 menu.title.borderColor:                 #202020
 menu.title.textColor:                   #ffffff
 
-menu.frame:                             sunken gradient crossdiagonal border
+menu.frame:                             sunken gradient crossdiagonal border border
      menu.frame.color:                  #0f1319
      menu.frame.colorTo:                gray40
 menu.frame.borderWidth:                 1

@@ -2,14 +2,14 @@
 menu.frame.font:                        -b&h-lucida-medium-r-normal-*-*-100-*-*-p-*-iso8859-1
 menu.title.font:                        -b&h-lucida-medium-r-normal-*-*-100-*-*-p-*-iso8859-1
 
-menu.title:                             raised diagonal gradient bevel1 border
+menu.title:                             raised diagonal gradient bevel1 border border
      menu.title.color:                  rgb:b/b/b
      menu.title.colorTo:                rgb:1/9/9
 menu.title.borderWidth:                 1
 menu.title.borderColor:                 rgb:0/0/0
 menu.title.textColor:                   black
 
-menu.frame:                             raised diagonal gradient bevel1 border
+menu.frame:                             raised diagonal gradient bevel1 border border
      menu.frame.color:                  rgb:b/b/b
      menu.frame.colorTo:                rgb:c/c/c
 menu.frame.borderWidth:                 1

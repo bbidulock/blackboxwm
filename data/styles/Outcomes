@@ -2,14 +2,14 @@
 menu.frame.font:                        lucidasans-10
 menu.title.font:                        lucidasans-bold-10
 
-menu.title:                             raised diagonal interlaced gradient bevel1 border
+menu.title:                             raised diagonal interlaced gradient bevel1 border border
      menu.title.color:                  grey20
      menu.title.colorTo:                rgb:7/8/8
 menu.title.borderWidth:                 1
 menu.title.borderColor:                 rgb:1c/2/2
 menu.title.textColor:                   grey85
 
-menu.frame:                             raised diagonal gradient bevel1 border
+menu.frame:                             raised diagonal gradient bevel1 border border
      menu.frame.color:                  rgb:7/8/8
      menu.frame.colorTo:                grey10
 menu.frame.borderWidth:                 1

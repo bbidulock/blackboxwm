@@ -2,14 +2,14 @@
 menu.frame.font:                        -*-helvetica-*-r-*-*-12-*-*-*-*-*-*-*
 menu.title.font:                        -*-helvetica-*-r-*-*-12-*-*-*-*-*-*-*
 
-menu.title:                             flat solid border
+menu.title:                             flat solid border border
      menu.title.color:                  Black
      menu.title.colorTo:                
 menu.title.borderWidth:                 1
 menu.title.borderColor:                 Black
 menu.title.textColor:                   White
 
-menu.frame:                             flat solid border
+menu.frame:                             flat solid border border
      menu.frame.color:                  MidnightBlue
      menu.frame.colorTo:                
 menu.frame.borderWidth:                 1

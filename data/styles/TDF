@@ -2,14 +2,14 @@
 menu.frame.font:                        lucidasans-10
 menu.title.font:                        lucidasans-10
 
-menu.title:                             raised gradient pipecross bevel1 border
+menu.title:                             raised gradient pipecross bevel1 border border
      menu.title.color:                  rgb:4e/38/32
      menu.title.colorTo:                rgb:af/89/7c
 menu.title.borderWidth:                 1
 menu.title.borderColor:                 rgb:00/00/00
 menu.title.textColor:                   black
 
-menu.frame:                             raised gradient elliptic bevel1 border
+menu.frame:                             raised gradient elliptic bevel1 border border
      menu.frame.color:                  black
      menu.frame.colorTo:                rgb:af/89/7c
 menu.frame.borderWidth:                 1

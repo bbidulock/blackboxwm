@@ -2,14 +2,14 @@
 menu.frame.font:                        lucidasans-10
 menu.title.font:                        lucidasans-10
 
-menu.title:                             flat crossdiagonal gradient border
+menu.title:                             flat crossdiagonal gradient border border
      menu.title.color:                  rgb:8/8/7
      menu.title.colorTo:                rgb:f/f/d
 menu.title.borderWidth:                 2
 menu.title.borderColor:                 rgb:2/2/1c
 menu.title.textColor:                   rgb:2/2/1c
 
-menu.frame:                             flat solid border
+menu.frame:                             flat solid border border
      menu.frame.color:                  rgb:6/6/54
      menu.frame.colorTo:                
 menu.frame.borderWidth:                 2
