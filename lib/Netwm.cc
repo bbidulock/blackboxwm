@@ -355,7 +355,7 @@ void bt::Netwm::setWMVisibleIconName(Window target,
 
 
 void bt::Netwm::setWMDesktop(Window target, unsigned int desktop) const {
-  setProperty(target, XA_WINDOW, net_wm_desktop,
+  setProperty(target, XA_CARDINAL, net_wm_desktop,
               reinterpret_cast<uchar*>(&desktop), 1);
 }
 
