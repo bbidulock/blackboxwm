@@ -1215,8 +1215,7 @@ bool BlackboxWindow::getBlackboxHints(void) {
 void BlackboxWindow::getTransientInfo(void) {
   if (client.transient_for &&
       client.transient_for != (BlackboxWindow *) ~0ul) {
-    // the transient for hint was removed, so we need to tell our
-    // previous transient_for that we are going away
+    // reset transient_for in preparation of looking for a new owner
     client.transient_for->client.transientList.remove(this);
   }
 
@@ -1387,15 +1386,7 @@ bool BlackboxWindow::setInputFocus(void) {
   assert(! flags.iconic &&
          (flags.stuck ||  // window must be on the current workspace or sticky
           blackbox_attrib.workspace == screen->getCurrentWorkspaceID()));
-#if 0
-  // if the window is not visible, mark the window as wanting focus rather
-  // than give it focus.
-  if (! flags.visible) {
-    Workspace *wkspc = screen->getWorkspace(blackbox_attrib.workspace);
-    wkspc->setLastFocusedWindow(this);
-    return True;
-  }
-#endif
+
   if (! frame.rect.intersects(screen->getRect())) {
     // client is outside the screen, move it to the center
     configure((screen->getWidth() - frame.rect.width()) / 2,
