@@ -1344,6 +1344,9 @@ void BlackboxWindow::configureShape(void) {
 bool BlackboxWindow::setInputFocus(void) {
   if (flags.focused) return True;
 
+  // do not give focus to a window that is about to close
+  if (! validateClient()) return False;
+
   assert(! flags.iconic &&
          (flags.stuck ||  // window must be on the current workspace or sticky
           blackbox_attrib.workspace == screen->getCurrentWorkspaceID()));
