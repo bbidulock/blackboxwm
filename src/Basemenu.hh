@@ -46,10 +46,15 @@ public:
       : def( false ), sep( false ),
         active( false ), title( false ), enable( true ), checked( false ),
         sub( 0 ), fun( f ), idx( -1 ), height( 0 ) { }
+    Item( int f, const string &c )
+      : def( false ), sep( false ),
+        active( false ), title( false ), enable( true ), checked( false ),
+        sub( 0 ), fun( f ), idx( -1 ), height( 0 ), cmd( c ) { }
     Item( Basemenu *s )
       : def( false ), sep( false ),
         active( false ), title( false ), enable( true ), checked( false ),
         sub( s ), fun( Submenu ), idx( -1 ), height( 0 ) { }
+    virtual ~Item() { }
 
     bool isDefault() const { return def; }
     bool isSeparator() const { return sep; }
@@ -57,10 +62,11 @@ public:
     bool isActive() const { return active; }
     bool isEnabled() const { return enable; }
     bool isChecked() const { return checked; }
-    const string &label() const { return lbl; }
-    int function() const { return fun; }
     Basemenu *submenu() const { return sub; }
+    int function() const { return fun; }
     int index() const { return idx; }
+    const string &label() const { return lbl; }
+    const string &command() const { return cmd; }
 
   private:
     unsigned int     def : 1;
@@ -74,7 +80,7 @@ public:
     int idx;
     int height;
     string lbl;
-
+    string cmd;
     friend class Basemenu;
   };
 
@@ -101,6 +107,7 @@ public:
   virtual void popup( const Point &, bool = true );
   virtual void hide();
 
+  virtual void refresh() { }
   virtual void reconfigure();
 
 protected:

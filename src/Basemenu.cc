@@ -328,6 +328,11 @@ void Basemenu::reconfigure()
 void Basemenu::popup( int x, int y, bool centerOnTitle )
 {
   motion = 0;
+
+  // let dynamic menus do any needed inserts/changes/removes before we call
+  // updateSize()
+  refresh();
+
   if ( size_dirty )
     updateSize();
 
@@ -786,6 +791,10 @@ void Basemenu::showSubmenu( const Rect &r, const Item &item )
 
   if ( ! item.submenu() )
     return;
+
+  // let dynamic menus do any needed inserts/changes/removes before we call
+  // updateSize()
+  item.submenu()->refresh();
 
   // position the submenu
   if ( item.submenu()->size_dirty )
