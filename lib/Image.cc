@@ -46,7 +46,7 @@ static const unsigned int maximumHeight = 6000;
 
 bt::Image::Buffer bt::Image::buffer;
 unsigned int bt::Image::global_colorsPerChannel = 6;
-bool bt::Image::global_ditherEnabled = true;
+bt::DitherMode bt::Image::global_ditherMode = bt::OrderedDither;
 bt::Image::XColorTableList bt::Image::colorTableList;
 
 
@@ -58,12 +58,6 @@ namespace bt {
                 unsigned int colors_per_channel);
     ~XColorTable(void);
 
-    void mapDither(unsigned int &red,
-                   unsigned int &green,
-                   unsigned int &blue,
-                   unsigned int &red_error,
-                   unsigned int &green_error,
-                   unsigned int &blue_error);
     void map(unsigned int &red,
              unsigned int &green,
              unsigned int &blue);
@@ -114,7 +108,7 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
     }
 
     if (_cpc < 2u || ncolors > (1u << depth)) {
-      // invalid colormap size, reducing
+      // invalid colormap size, reduce
       _cpc = (1u << depth) / 3u;
     }
 
@@ -133,7 +127,7 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
     }
 
     if (_cpc < 2u || ncolors > (1u << depth)) {
-      // invalid colormap size, reducing
+      // invalid colormap size, reduce
       _cpc = (1u << depth) / 3u;
     }
 
@@ -149,13 +143,13 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
                 green_mask = screeninfo->getVisual()->green_mask,
                  blue_mask = screeninfo->getVisual()->blue_mask;
 
-    while (! (red_mask & 1)) { red_offset++; red_mask >>= 1; }
+    while (! (  red_mask & 1)) {   red_offset++;   red_mask >>= 1; }
     while (! (green_mask & 1)) { green_offset++; green_mask >>= 1; }
-    while (! (blue_mask & 1)) { blue_offset++; blue_mask >>= 1; }
+    while (! ( blue_mask & 1)) {  blue_offset++;  blue_mask >>= 1; }
 
-    red_bits = 255u / red_mask;
+    red_bits   = 255u /   red_mask;
     green_bits = 255u / green_mask;
-    blue_bits = 255u / blue_mask;
+    blue_bits  = 255u /  blue_mask;
 
     break;
   }
@@ -232,9 +226,9 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
           }
         }
 
-        colors[i].red = icolors[close].red;
+        colors[i].red   = icolors[close].red;
         colors[i].green = icolors[close].green;
-        colors[i].blue = icolors[close].blue;
+        colors[i].blue  = icolors[close].blue;
 
         if (XAllocColor(_dpy.XDisplay(), colormap,
                         &colors[i])) {
@@ -277,26 +271,12 @@ bt::XColorTable::~XColorTable(void) {
 }
 
 
-void bt::XColorTable::mapDither(unsigned int &red,
-                                unsigned int &green,
-                                unsigned int &blue,
-                                unsigned int &red_error,
-                                unsigned int &green_error,
-                                unsigned int &blue_error) {
-  red_error =   red   & (red_bits - 1);
-  green_error = green & (green_bits - 1);
-  blue_error =  blue  & (blue_bits - 1);
-
-  map(red, green, blue);
-}
-
-
 void bt::XColorTable::map(unsigned int &red,
                           unsigned int &green,
                           unsigned int &blue) {
-  red   = _red  [red  ];
+  red   = _red  [  red];
   green = _green[green];
-  blue  = _blue [blue ];
+  blue  = _blue [ blue];
 }
 
 
@@ -581,31 +561,27 @@ void assignPixelData(unsigned int bit_depth, unsigned char **data,
 // algorithm: ordered dithering... many many thanks to rasterman
 // (raster@rasterman.com) for telling me about this... portions of this
 // code is based off of his code in Imlib
-void bt::Image::TrueColorDither(XColorTable *colortable,
-                                unsigned int bit_depth,
-                                int bytes_per_line,
-                                unsigned char *pixel_data) {
-  unsigned int x, y, dithx, dithy, r, g, b, er, eg, eb, offset;
+void bt::Image::OrderedDither(XColorTable *colortable,
+                              unsigned int bit_depth,
+                              unsigned int bytes_per_line,
+                              unsigned char *pixel_data) {
+  unsigned int x, y, dithx, dithy, r, g, b, error, offset;
   unsigned char *ppixel_data = pixel_data;
-  unsigned int maxr = 255, maxg = 255, maxb = 255;
 
+  unsigned int maxr = 255, maxg = 255, maxb = 255;
   colortable->map(maxr, maxg, maxb);
 
   for (y = 0, offset = 0; y < height; ++y) {
-    dithy = y & 3;
+    dithy = y & 15;
 
     for (x = 0; x < width; ++x, ++offset) {
-      dithx = x & 3;
+      dithx = x & 15;
 
-      r = red[offset];
-      g = green[offset];
-      b = blue[offset];
+      error = dither16[dithy][dithx];
 
-      colortable->mapDither(r, g, b, er, eg, eb);
-
-      if ((dither4[dithy][dithx] < er) && (r < maxr)) r++;
-      if ((dither4[dithy][dithx] < eg) && (g < maxg)) g++;
-      if ((dither4[dithy][dithx] < eb) && (b < maxb)) b++;
+      r = (((256 * maxr + maxr + 1) * red  [offset] + error) / 65536);
+      g = (((256 * maxg + maxg + 1) * green[offset] + error) / 65536);
+      b = (((256 * maxb + maxb + 1) * blue [offset] + error) / 65536);
 
       assignPixelData(bit_depth, &pixel_data, colortable->pixel(r, g, b));
     }
@@ -615,126 +591,104 @@ void bt::Image::TrueColorDither(XColorTable *colortable,
 }
 
 
-void bt::Image::OrderedPseudoColorDither(XColorTable *colortable,
-                                         int bytes_per_line,
-                                         unsigned char *pixel_data) {
-  unsigned int x, y, dithx, dithy, r, g, b, error, offset;
-  unsigned int cpc = colorsPerChannel() - 1;
-  unsigned char *ppixel_data = pixel_data;
+void bt::Image::FloydSteinbergDither(XColorTable *colortable,
+                                     unsigned int bit_depth,
+                                     unsigned int bytes_per_line,
+                                     unsigned char *pixel_data) {
+  int *err[2][3], *terr;
+  err[0][0] = new int[width + 2];
+  err[0][1] = new int[width + 2];
+  err[0][2] = new int[width + 2];
+  err[1][0] = new int[width + 2];
+  err[1][1] = new int[width + 2];
+  err[1][2] = new int[width + 2];
 
-  for (y = 0, offset = 0; y < height; y++) {
-    dithy = y & 15;
-
-    for (x = 0; x < width; x++, offset++) {
-      dithx = x & 15;
-
-      error = dither16[dithy][dithx];
-
-      r = (((256 * cpc + cpc + 1) * red  [offset] + error) / 65536);
-      g = (((256 * cpc + cpc + 1) * green[offset] + error) / 65536);
-      b = (((256 * cpc + cpc + 1) * blue [offset] + error) / 65536);
-
-      *(pixel_data++) = colortable->pixel(r, g, b);
-    }
-
-    pixel_data = (ppixel_data += bytes_per_line);
-  }
-}
-
-
-void bt::Image::PseudoColorDither(XColorTable *colortable,
-                                  int bytes_per_line,
-                                  unsigned char *pixel_data) {
-  short *terr,
-    *rerr = new short[width + 2],
-    *gerr = new short[width + 2],
-    *berr = new short[width + 2],
-    *nrerr = new short[width + 2],
-    *ngerr = new short[width + 2],
-    *nberr = new short[width + 2];
-
-  int rr, gg, bb, rer, ger, ber;
-  int dd = 255 / (colorsPerChannel() - 1);
+  int rer, ger, ber;
   unsigned int x, y, r, g, b, offset;
   unsigned char *ppixel_data = pixel_data;
 
-  for (x = 0; x < width; x++) {
-    *(rerr + x) = *(red + x);
-    *(gerr + x) = *(green + x);
-    *(berr + x) = *(blue + x);
+  unsigned int maxr = 255, maxg = 255, maxb = 255;
+  colortable->map(maxr, maxg, maxb);
+  maxr = 255u / maxr;
+  maxg = 255u / maxg;
+  maxb = 255u / maxb;
+
+  for (x = 0; x < width; ++x) {
+    err[0][0][x] = static_cast<int>(  red[x]);
+    err[0][1][x] = static_cast<int>(green[x]);
+    err[0][2][x] = static_cast<int>( blue[x]);
   }
 
-  *(rerr + x) = *(gerr + x) = *(berr + x) = 0;
+  err[0][0][x] = err[0][1][x] = err[0][2][x] = 0;
 
-  for (y = 0, offset = 0; y < height; y++) {
+  for (y = 0, offset = 0; y < height; ++y) {
     if (y < (height - 1)) {
-      int i = offset + width;
-      for (x = 0; x < width; x++, i++) {
-	*(nrerr + x) = *(red + i);
-	*(ngerr + x) = *(green + i);
-	*(nberr + x) = *(blue + i);
+      for (x = 0; x < width; ++x) {
+	err[1][0][x] = static_cast<int>(  red[offset + width + x]);
+	err[1][1][x] = static_cast<int>(green[offset + width + x]);
+	err[1][2][x] = static_cast<int>( blue[offset + width + x]);
       }
 
-      *(nrerr + x) = *(red + (--i));
-      *(ngerr + x) = *(green + i);
-      *(nberr + x) = *(blue + i);
+      err[1][0][x] = err[1][0][x + 1];
+      err[1][1][x] = err[1][1][x + 1];
+      err[1][2][x] = err[1][2][x + 1];
     }
 
-    for (x = 0; x < width; x++) {
-      rr = rerr[x];
-      gg = gerr[x];
-      bb = berr[x];
-
-      if (rr > 255) rr = 255; else if (rr < 0) rr = 0;
-      if (gg > 255) gg = 255; else if (gg < 0) gg = 0;
-      if (bb > 255) bb = 255; else if (bb < 0) bb = 0;
-
-      r =   red[offset + x];
-      g = green[offset + x];
-      b =  blue[offset + x];
+    for (x = 0; x < width; ++x) {
+      r = static_cast<unsigned int>(std::max(std::min(err[0][0][x], 255), 0));
+      g = static_cast<unsigned int>(std::max(std::min(err[0][1][x], 255), 0));
+      b = static_cast<unsigned int>(std::max(std::min(err[0][2][x], 255), 0));
 
       colortable->map(r, g, b);
+      assignPixelData(bit_depth, &pixel_data, colortable->pixel(r, g, b));
 
-      rer = rerr[x] - r*dd;
-      ger = gerr[x] - g*dd;
-      ber = berr[x] - b*dd;
+      rer = err[0][0][x] - static_cast<int>(r * maxr);
+      ger = err[0][1][x] - static_cast<int>(g * maxg);
+      ber = err[0][2][x] - static_cast<int>(b * maxb);
 
-      *pixel_data++ = colortable->pixel(r, g, b);
+      err[0][0][x + 1]   += rer * 7 / 16;
+      err[0][1][x + 1]   += ger * 7 / 16;
+      err[0][2][x + 1]   += ber * 7 / 16;
 
-      r = rer >> 1;
-      g = ger >> 1;
-      b = ber >> 1;
-      rerr[x+1] += r;
-      gerr[x+1] += g;
-      berr[x+1] += b;
-      nrerr[x] += r;
-      ngerr[x] += g;
-      nberr[x] += b;
+      if (x > 0) {
+        err[1][0][x - 1] += rer * 3 / 16;
+        err[1][1][x - 1] += ger * 3 / 16;
+        err[1][2][x - 1] += ber * 3 / 16;
+      }
+
+      err[1][0][x]       += rer * 5 / 16;
+      err[1][1][x]       += ger * 5 / 16;
+      err[1][2][x]       += ber * 5 / 16;
+
+      err[1][0][x + 1]   += rer / 16;
+      err[1][1][x + 1]   += ger / 16;
+      err[1][2][x + 1]   += ber / 16;
+
     }
 
     offset += width;
 
     pixel_data = (ppixel_data += bytes_per_line);
 
-    terr = rerr;
-    rerr = nrerr;
-    nrerr = terr;
+    terr      = err[0][0];
+    err[0][0] = err[1][0];
+    err[1][0] = terr;
 
-    terr = gerr;
-    gerr = ngerr;
-    ngerr = terr;
+    terr      = err[0][1];
+    err[0][1] = err[1][1];
+    err[1][1] = terr;
 
-    terr = berr;
-    berr = nberr;
-    nberr = terr;
+    terr      = err[0][2];
+    err[0][2] = err[1][2];
+    err[1][2] = terr;
   }
 
-  delete [] rerr;
-  delete [] gerr;
-  delete [] berr;
-  delete [] nrerr;
-  delete [] ngerr;
-  delete [] nberr;
+  delete [] err[0][0];
+  delete [] err[0][1];
+  delete [] err[0][2];
+  delete [] err[1][0];
+  delete [] err[1][1];
+  delete [] err[1][2];
 }
 
 
@@ -768,29 +722,20 @@ XImage *bt::Image::renderXImage(const Display &display, unsigned int screen) {
   unsigned int o = image->bits_per_pixel +
                    ((image->byte_order == MSBFirst) ? 1 : 0);
 
-  if ( isDitherEnabled() && screeninfo->getDepth() < 24 &&
-       width > 1 && height > 1) {
-    switch (screeninfo->getVisual()->c_class) {
-    case TrueColor:
-    case DirectColor:
-      TrueColorDither(colortable, o, image->bytes_per_line, d);
-      break;
+  DitherMode dmode = NoDither;
+  if ( screeninfo->getDepth() < 24 && width > 1 && height > 1)
+    dmode = ditherMode();
 
-    case StaticColor:
-    case PseudoColor: {
-      // PseudoColorDither(colortable, image->bytes_per_line, d);
-      OrderedPseudoColorDither(colortable, image->bytes_per_line, d);
-      break;
-    }
+  switch (dmode) {
+  case bt::FloydSteinbergDither:
+    FloydSteinbergDither(colortable, o, image->bytes_per_line, d);
+    break;
 
-    default: {
-      // unsupported visual...
-      image->data = NULL;
-      XDestroyImage(image);
-      return (XImage *) 0;
-    }
-    } // switch
-  } else {
+  case bt::OrderedDither:
+    OrderedDither(colortable, o, image->bytes_per_line, d);
+    break;
+
+  case bt::NoDither: {
     unsigned int x, y, offset, r, g, b;
     unsigned char *pixel_data = d, *ppixel_data = d;
 
@@ -806,7 +751,9 @@ XImage *bt::Image::renderXImage(const Display &display, unsigned int screen) {
 
       pixel_data = (ppixel_data += image->bytes_per_line);
     }
+    break;
   }
+  } // switch dmode
 
   image->data = (char *) d;
   return image;
@@ -847,8 +794,8 @@ Pixmap bt::Image::renderPixmap(const Display &display, unsigned int screen) {
 
 
 void bt::Image::bevel(unsigned int border_width) {
-  if (width < 2 || height < 2 ||
-      width  < (border_width * 4) || height < (border_width * 4))
+  if (width <= 2 || height <= 2 ||
+      width <= (border_width * 4) || height <= (border_width * 4))
     return;
 
   unsigned char *pr = red   + (border_width * width) + border_width;

@@ -42,6 +42,8 @@ namespace bt {
   class Texture;
   class XColorTable;
 
+  enum DitherMode { NoDither, OrderedDither, FloydSteinbergDither };
+
   class Image {
   public:
     static unsigned int colorsPerChannel(void)
@@ -49,10 +51,10 @@ namespace bt {
     static void setColorsPerChannel(unsigned int newval)
     { global_colorsPerChannel = newval > 2 ? newval < 6 ? newval : 6 : 2; }
 
-    static bool isDitherEnabled(void)
-    { return global_ditherEnabled; }
-    static void setDitherEnabled(bool enabled)
-    { global_ditherEnabled = enabled; }
+    static DitherMode ditherMode(void)
+    { return global_ditherMode; }
+    static void setDitherMode(DitherMode dithermode)
+    { global_ditherMode = dithermode; }
 
     Image(unsigned int w, unsigned int h);
     ~Image(void);
@@ -64,16 +66,14 @@ namespace bt {
     unsigned char *red, *green, *blue;
     unsigned int width, height;
 
-    void TrueColorDither(XColorTable *colortable,
-                         unsigned int bit_depth,
-                         int bytes_per_line,
-                         unsigned char *pixel_data);
-    void PseudoColorDither(XColorTable *colortable,
-                           int bytes_per_line,
-                           unsigned char *pixel_data);
-    void OrderedPseudoColorDither(XColorTable *colortable,
-                                  int bytes_per_line,
-                                  unsigned char *pixel_data);
+    void OrderedDither(XColorTable *colortable,
+                       unsigned int bit_depth,
+                       unsigned int bytes_per_line,
+                       unsigned char *pixel_data);
+    void FloydSteinbergDither(XColorTable *colortable,
+                              unsigned int bit_depth,
+                              unsigned int bytes_per_line,
+                              unsigned char *pixel_data);
 
     Pixmap render_solid(const Display &display, unsigned int screen,
                         const Texture &texture);
@@ -97,7 +97,7 @@ namespace bt {
     typedef std::vector<unsigned char> Buffer;
     static Buffer buffer;
     static unsigned int global_colorsPerChannel;
-    static bool global_ditherEnabled;
+    static DitherMode global_ditherMode;
 
     typedef std::vector<XColorTable*> XColorTableList;
     static XColorTableList colorTableList;
