@@ -2257,12 +2257,11 @@ void BlackboxWindow::redrawIconifyButton(bool pressed) const {
                     frame.iconify_button, u, u, p);
   }
 
-  bt::drawBitmap(frame.style->iconify,
-                 bt::Pen(screen->screenNumber(),
-                         client.state.focused
-                         ? frame.style->focus.foreground
-                         : frame.style->unfocus.foreground),
-                 frame.iconify_button, u);
+  const bt::Pen pen(screen->screenNumber(),
+                    (client.state.focused
+                     ? frame.style->focus.foreground
+                     : frame.style->unfocus.foreground));
+  bt::drawBitmap(frame.style->iconify, pen, frame.iconify_button, u);
 }
 
 
@@ -2290,12 +2289,12 @@ void BlackboxWindow::redrawMaximizeButton(bool pressed) const {
                     frame.maximize_button, u, u, p);
   }
 
+  const bt::Pen pen(screen->screenNumber(),
+                    (client.state.focused
+                     ? frame.style->focus.foreground
+                     : frame.style->unfocus.foreground));
   bt::drawBitmap(isMaximized() ? frame.style->restore : frame.style->maximize,
-                 bt::Pen(screen->screenNumber(),
-                         client.state.focused
-                         ? frame.style->focus.foreground
-                         : frame.style->unfocus.foreground),
-                 frame.maximize_button, u);
+                 pen, frame.maximize_button, u);
 }
 
 
@@ -2322,12 +2321,11 @@ void BlackboxWindow::redrawCloseButton(bool pressed) const {
                     frame.close_button, u, u, p);
   }
 
-  bt::drawBitmap(frame.style->close,
-                 bt::Pen(screen->screenNumber(),
-                         client.state.focused
-                         ? frame.style->focus.foreground
-                         : frame.style->unfocus.foreground),
-                 frame.close_button, u);
+  const bt::Pen pen(screen->screenNumber(),
+                    (client.state.focused
+                     ? frame.style->focus.foreground
+                     : frame.style->unfocus.foreground));
+  bt::drawBitmap(frame.style->close, pen, frame.close_button, u);
 }
 
 

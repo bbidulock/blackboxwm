@@ -1324,19 +1324,15 @@ void BScreen::showGeometry(GeometryType type, const bt::Rect &rect) {
     (style->focus.label.texture() == bt::Texture::Parent_Relative)
     ? style->focus.title
     : style->focus.label;
-  bt::Rect u(0, 0, geom_w, geom_h);
-  bt::drawTexture(screen_info.screenNumber(), texture,
-                  geom_window, u, u, geom_pixmap);
-  bt::drawText(style->font,
-               bt::Pen(screen_info.screenNumber(),
-                       style->focus.text),
-               geom_window,
-               bt::Rect(style->bevel_width,
+  const bt::Rect u(0, 0, geom_w, geom_h);
+  const bt::Rect t(style->bevel_width,
                         style->bevel_width,
                         geom_w - (style->bevel_width * 2),
-                        geom_h - (style->bevel_width * 2)),
-               style->alignment,
-               label);
+                        geom_h - (style->bevel_width * 2));
+  const bt::Pen pen(screen_info.screenNumber(), style->focus.text);
+  bt::drawTexture(screen_info.screenNumber(), texture, geom_window,
+                  u, u, geom_pixmap);
+  bt::drawText(style->font, pen, geom_window, t, style->alignment, label);
 }
 
 
