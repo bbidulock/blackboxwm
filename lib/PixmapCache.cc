@@ -53,7 +53,6 @@ namespace bt {
 
     void clear(bool force);
 
-  private:
     struct CacheItem {
       const Texture texture;
       const unsigned int screen;
