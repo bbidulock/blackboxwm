@@ -254,7 +254,7 @@ void bsetroot::modula(int x, int y) {
 
 void bsetroot::gradient(void) {
   for (unsigned int screen = 0; screen < getNumberOfScreens(); screen++) {
-    BTexture texture(grad, this, screen);
+    BTexture texture(grad, this, screen, img_ctrl[screen]);
     const ScreenInfo *screen_info = getScreenInfo(screen);
 
     texture.setColor(BColor(fore, this, screen));

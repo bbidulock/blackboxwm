@@ -78,7 +78,8 @@ extern "C" {
 #endif // HAVE_SYS_WAIT_H
 }
 
-#include <strstream>
+#include <sstream>
+using std::string;
 
 #include "i18n.hh"
 #include "BaseDisplay.hh"
@@ -448,10 +449,12 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, unsigned int num) {
   }
 
   // get the default display string and strip the screen number
-  std::string default_string = DisplayString(basedisplay->getXDisplay());
-  default_string.replace(default_string.rfind("."), std::string::npos, "");
-
-  std::ostrstream formatter;
+  string default_string = DisplayString(basedisplay->getXDisplay());
+  string::size_type pos = default_string.rfind(".");
+  if (pos != string::npos)
+    default_string.resize(pos);
+  
+  std::ostringstream formatter;
   formatter << "DISPLAY=" << default_string << '.' << screen_number;
   display_string = formatter.str();
 }

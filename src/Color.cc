@@ -175,9 +175,7 @@ void BColor::deallocate(void)
   RGB rgb(display(), scrn, r, g, b);
   ColorCache::iterator it = colorcache.find(rgb);
   if (it != colorcache.end()) {
-    if ((*it).second.count < 1)
-      (*it).second.count = 0;
-    else
+    if ((*it).second.count >= 1)
       (*it).second.count--;
   }
 

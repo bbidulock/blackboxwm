@@ -150,8 +150,8 @@ public:
     { return screen_number; }
   inline unsigned short getWidth(void) const { return rect.width; }
   inline unsigned short getHeight(void) const { return rect.height; }
-  inline const char* displayString(void) const
-  { return display_string.c_str(); }
+  inline const std::string& displayString(void) const
+  { return display_string; }
 };
 
 

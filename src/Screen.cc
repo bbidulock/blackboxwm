@@ -1788,7 +1788,8 @@ void BScreen::toggleFocusModel(FocusModel model) {
                 std::mem_fun(&Workspace::updateFocusModel));
 }
 
-BTexture BScreen::readDatabaseTexture(const string &rname, const string &rclass,
+BTexture BScreen::readDatabaseTexture(const string &rname,
+                                      const string &rclass,
                                       const string &default_color) {
   BTexture texture;
   XrmValue value;
@@ -1802,6 +1803,7 @@ BTexture BScreen::readDatabaseTexture(const string &rname, const string &rclass,
 
   // associate this texture with this screen
   texture.setDisplay(getBaseDisplay(), getScreenNumber());
+  texture.setImageControl(image_control);
 
   if (texture.texture() & BTexture::Solid) {
     texture.setColor(readDatabaseColor(rname + ".color",
@@ -1836,7 +1838,8 @@ BColor BScreen::readDatabaseColor(const string &rname, const string &rclass,
   return color;
 }
 
-XFontSet BScreen::readDatabaseFontSet(const string &rname, const string &rclass)
+XFontSet BScreen::readDatabaseFontSet(const string &rname,
+                                      const string &rclass)
 {
   static char *defaultFont = "fixed";
 

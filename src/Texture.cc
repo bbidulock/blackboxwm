@@ -38,18 +38,22 @@ extern "C" {
 #include "Screen.hh"
 #include "blackbox.hh"
 
-BTexture::BTexture(const BaseDisplay * const _display, unsigned int _screen)
+using std::string;
+
+BTexture::BTexture(const BaseDisplay * const _display,
+                   unsigned int _screen, BImageControl* _ctrl)
   : c(_display, _screen), ct(_display, _screen),
     lc(_display, _screen), sc(_display, _screen), t(0),
-    dpy(_display), scrn(_screen)
+    dpy(_display), ctrl(_ctrl), scrn(_screen)
 {
 }
 
 BTexture::BTexture(const string &d,
-                   const BaseDisplay * const _display, unsigned int _screen)
+                   const BaseDisplay * const _display,
+                   unsigned int _screen, BImageControl* _ctrl)
   : c(_display, _screen), ct(_display, _screen),
     lc(_display, _screen), sc(_display, _screen), t(0),
-    dpy(_display), scrn(_screen)
+    dpy(_display), ctrl(_ctrl), scrn(_screen)
 {
   setDescription(d);
 }
@@ -166,7 +170,8 @@ void BTexture::setDisplay(const BaseDisplay * const _display,
   sc.setDisplay(_display, _screen);
 }
 
-BTexture &BTexture::operator=(const BTexture &tt)
+
+BTexture& BTexture::operator=(const BTexture &tt)
 {
   c  = tt.c;
   ct = tt.ct;
@@ -176,6 +181,8 @@ BTexture &BTexture::operator=(const BTexture &tt)
   t  = tt.t;
   dpy = tt.dpy;
   scrn = tt.scrn;
+  ctrl = tt.ctrl;
+
   return *this;
 }
 
@@ -193,8 +200,7 @@ Pixmap BTexture::render(const unsigned int width, const unsigned int height,
   if (screen() == ~(0u))
     scrn = DefaultScreen(display()->getXDisplay());
 
-  extern BImageControl *ctrl; // HACK!
-  // BImageControl *ctrl = blackbox->getScreen(screen())->getImageControl();
+  assert(ctrl != 0);
   Pixmap ret = ctrl->renderImage(width, height, *this);
 
   if (old)

@@ -67,7 +67,8 @@ void bexec(const string& command, const string& displaystring) {
 #ifndef    __EMX__
   if (! fork()) {
     setsid();
-    putenv(const_cast<char *>(displaystring.c_str()));
+    int ret = putenv(const_cast<char *>(displaystring.c_str()));
+    assert(ret != -1);
     string cmd = "exec ";
     cmd += command;
     execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL);

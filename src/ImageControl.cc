@@ -400,7 +400,8 @@ BImageControl::~BImageControl(void) {
 }
 
 
-Pixmap BImageControl::searchCache(const unsigned int width, const unsigned int height,
+Pixmap BImageControl::searchCache(const unsigned int width,
+                                  const unsigned int height,
                                   const unsigned long texture,
                                   const BColor &c1, const BColor &c2) {
   if (cache.empty())

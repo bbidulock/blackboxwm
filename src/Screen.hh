@@ -171,11 +171,17 @@ private:
 protected:
   Bool parseMenuFile(FILE *file, Rootmenu *menu);
 
-  BTexture readDatabaseTexture(const string &, const string &, const string &);
-  BColor readDatabaseColor(const string &, const string &, const string &);
-  XFontSet readDatabaseFontSet(const string &, const string &);
-  XFontStruct *readDatabaseFont(const string &, const string &);
-  XFontSet createFontSet(const string &);
+  BTexture readDatabaseTexture(const std::string &rname,
+                               const std::string &rclass,
+                               const std::string &default_color);
+  BColor readDatabaseColor(const std::string &rname,
+                           const std::string &rclass,
+                           const std::string &default_color);
+  XFontSet readDatabaseFontSet(const std::string &rname,
+                               const std::string &rclass);
+  XFontStruct *readDatabaseFont(const std::string &rname,
+                                const std::string &rclass);
+  XFontSet createFontSet(const std::string &fontname);
 
   void InitMenu(void);
   void LoadStyle(void);

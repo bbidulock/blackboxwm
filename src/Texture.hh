@@ -26,9 +26,9 @@
 
 #include "Color.hh"
 #include "Util.hh"
+class BImageControl;
 
 #include <string>
-using std::string;
 
 class BTexture {
 public:
@@ -60,9 +60,11 @@ public:
     Interlaced          = (1l<<17)
   };
 
-  BTexture(const BaseDisplay * const _display = 0, unsigned int _screen = ~(0u));
-  BTexture(const string &_description,
-           const BaseDisplay * const _display = 0, unsigned int _screen = ~(0u));
+  BTexture(const BaseDisplay * const _display = 0,
+           unsigned int _screen = ~(0u), BImageControl* _ctrl = 0);
+  BTexture(const std::string &_description,
+           const BaseDisplay * const _display = 0,
+           unsigned int _screen = ~(0u), BImageControl* _ctrl = 0);
   ~BTexture(void);
 
   void setColor(const BColor &_color);
@@ -87,9 +89,9 @@ public:
   unsigned int screen(void) const { return scrn; }
   void setDisplay(const BaseDisplay * const _display,
                   const unsigned int _screen);
-
+  void setImageControl(BImageControl* _ctrl) { ctrl = _ctrl; }
   const std::string &description(void) const { return descr; }
-  void setDescription(const std::string &);
+  void setDescription(const std::string &d);
 
   // Pixmap render(const Size &, Pixmap old = 0);
   Pixmap render(const unsigned int width, const unsigned int height,
@@ -97,9 +99,10 @@ public:
 
 private:
   BColor c, ct, lc, sc;
-  string descr;
+  std::string descr;
   unsigned long t;
   const BaseDisplay *dpy;
+  BImageControl *ctrl;
   unsigned int scrn;
 };
 
