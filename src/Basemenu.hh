@@ -91,6 +91,7 @@ public:
   int insertSeparator() { return insert( string(), Item::Separator ); }
   void change( int index, const string &label, const Item &item = Item::Default );
   void remove( int index );
+  void clear();
 
   int count() const { return items.size(); }
 

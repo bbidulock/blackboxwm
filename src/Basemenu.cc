@@ -567,6 +567,12 @@ void Basemenu::remove( int index )
     size_dirty = true;
 }
 
+void Basemenu::clear()
+{
+  while ( count() > 0 )
+    remove(0);
+}
+
 bool Basemenu::isItemEnabled( int index ) const
 {
   Items::const_iterator it = items.begin();
