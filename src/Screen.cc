@@ -27,7 +27,10 @@
 #  include "../config.h"
 #endif
 
+#include <X11/Xatom.h>
+
 #include "blackbox.hh"
+#include "Clientmenu.hh"
 #include "Icon.hh"
 #include "Image.hh"
 #include "Screen.hh"
@@ -173,7 +176,7 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
   image_control->installRootColormap();
   root_colormap_installed = True;
 
-  blackbox->LoadRC(this);
+  blackbox->load_rc(this);
   LoadStyle();
   
   XGCValues gcv;
@@ -214,19 +217,18 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
   
   workspacemenu = new Workspacemenu(blackbox, this);
   iconmenu = new Iconmenu(blackbox, this);
-  toolbar = new Toolbar(blackbox, this);
   
-  Workspace *wkspc = new Workspace(toolbar, this, workspacesList->count());
+  Workspace *wkspc = new Workspace(this, workspacesList->count());
   workspacesList->insert(wkspc);
     
   if (resource.workspaces != 0) {
     for (int i = 0; i < resource.workspaces; ++i) {
-      wkspc = new Workspace(toolbar, this, workspacesList->count());
+      wkspc = new Workspace(this, workspacesList->count());
       workspacesList->insert(wkspc);
       workspacemenu->insert(wkspc->getName(), wkspc->getMenu());
     }
   } else {
-    wkspc = new Workspace(toolbar, this, workspacesList->count());
+    wkspc = new Workspace(this, workspacesList->count());
     workspacesList->insert(wkspc);
     workspacemenu->insert(wkspc->getName(), wkspc->getMenu());
   }
@@ -237,6 +239,8 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
   zero = workspacesList->first();
   current_workspace = workspacesList->find(1);
   workspacemenu->setHighlight(2);
+
+  toolbar = new Toolbar(blackbox, this);
 
   InitMenu();
 
@@ -746,7 +750,7 @@ void BScreen::LoadStyle(void) {
 
 
 int BScreen::addWorkspace(void) {
-  Workspace *wkspc = new Workspace(toolbar, this, workspacesList->count());
+  Workspace *wkspc = new Workspace(this, workspacesList->count());
   workspacesList->insert(wkspc);
 
   workspacemenu->insert(wkspc->getName(), wkspc->getMenu(),
@@ -1012,11 +1016,7 @@ void BScreen::raiseFocus(void) {
     getWorkspace(blackbox->getFocusedWindow()->getWorkspaceNumber())->
       raiseWindow(blackbox->getFocusedWindow()); 
 }
- 
 
-// *************************************************************************
-// Menu loading
-// *************************************************************************
 
 void BScreen::InitMenu(void) {
   if (rootmenu) {
@@ -1331,4 +1331,17 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
   }
   
   return ((menu->getCount() == 0) ? True : False);
+}
+
+
+void BScreen::shutdown(void) {
+  blackbox->grab();
+
+  XSelectInput(display, root_window, NoEventMask);
+  
+  LinkedListIterator<Workspace> it(workspacesList);
+  for (; it.current(); it ++)
+    it.current()->shutdown();
+  
+  blackbox->ungrab();
 }

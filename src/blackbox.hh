@@ -91,10 +91,16 @@ private:
 
   BlackboxWindow *focused_window;
 
-  Atom _XA_WM_COLORMAP_WINDOWS, _XA_WM_PROTOCOLS, _XA_WM_STATE,
-    _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS, _XA_WM_CHANGE_STATE,
-    _MOTIF_WM_HINTS;
-  Bool startup, shutdown, reconfigure;
+  Atom xa_wm_colormap_windows, xa_wm_protocols, xa_wm_state,
+    xa_wm_delete_window, xa_wm_take_focus, xa_wm_change_state,
+    motif_wm_hints;
+  /* kwm_current_desktop, kwm_number_of_desktops, kwm_active_window,
+     kwm_win_iconified, kwm_win_sticky, kwm_win_maximized, kwm_win_decoration,
+     kwm_win_icon, kwm_win_desktop, kwm_win_frame_geometry, kwm_command,
+     kwm_do_not_manage, kwm_activate_window, kw_running;
+  */
+
+  Bool _startup, _shutdown, _reconfigure;
   Display *display;
   char *display_name;
   char **argv;
@@ -102,10 +108,10 @@ private:
 
 
 protected:
-  void LoadRC(void);
-  void SaveRC(void);
+  void load_rc(void);
+  void save_rc(void);
 
-  void ProcessEvent(XEvent *);
+  void process_event(XEvent *);
 
   void do_reconfigure(void);
 
@@ -114,13 +120,14 @@ public:
   Blackbox(int, char **, char * = 0);
   ~Blackbox(void);
 
-  Atom getChangeStateAtom(void) { return _XA_WM_CHANGE_STATE; }
-  Atom getStateAtom(void)       { return _XA_WM_STATE; }
-  Atom getDeleteAtom(void)      { return _XA_WM_DELETE_WINDOW; }
-  Atom getProtocolsAtom(void)   { return _XA_WM_PROTOCOLS; }
-  Atom getFocusAtom(void)       { return _XA_WM_TAKE_FOCUS; }
-  Atom getColormapAtom(void)    { return _XA_WM_COLORMAP_WINDOWS; }
-  Atom getMwmHintsAtom(void)    { return _MOTIF_WM_HINTS; }
+  Atom getWMChangeStateAtom(void) { return xa_wm_change_state; }
+  Atom getWMStateAtom(void)       { return xa_wm_state; }
+  Atom getWMDeleteAtom(void)      { return xa_wm_delete_window; }
+  Atom getWMProtocolsAtom(void)   { return xa_wm_protocols; }
+  Atom getWMFocusAtom(void)       { return xa_wm_take_focus; }
+  Atom getWMColormapAtom(void)    { return xa_wm_colormap_windows; }
+
+  Atom getMotifWMHintsAtom(void) { return motif_wm_hints; }
 
   Basemenu *searchMenu(Window);
 
@@ -130,7 +137,7 @@ public:
 
   Bool hasShapeExtensions(void) { return shape.extensions; }
   Bool hasImageDither(void)     { return resource.image_dither; }
-  Bool isStartup(void)          { return startup; }
+  Bool isStartup(void)          { return _startup; }
   Bool validateWindow(Window);
 
   Cursor getSessionCursor(void) { return cursor.session; }
@@ -151,7 +158,7 @@ public:
   int getColorsPerChannel(void) { return resource.colors_per_channel; }
   int getNumberOfScreens(void)  { return number_of_screens; }
 
-  void LoadRC(BScreen *);
+  void load_rc(BScreen *);
   void saveStyleFilename(char *);
   void grab(void);
   void ungrab(void);
@@ -163,11 +170,11 @@ public:
   void removeWindowSearch(Window);
   void removeToolbarSearch(Window);
   void removeGroupSearch(Window);
-  void EventLoop(void);
-  void Exit(void);
-  void Restart(char * = 0);
-  void Reconfigure(void);
-  void Shutdown(void);
+  void eventLoop(void);
+  void exit(void);
+  void restart(char * = 0);
+  void reconfigure(void);
+  void shutdown(void);
 
   enum { B_Restart = 1, B_RestartOther, B_Exit, B_Shutdown, B_Execute,
 	 B_Reconfigure, B_ExecReconfigure, B_WindowShade, B_WindowIconify,

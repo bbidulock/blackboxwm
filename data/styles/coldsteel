@@ -1,7 +1,7 @@
 ! Blackbox window manager resource defaults
 ! (c) 1997, 1998 Brad Hughes
 
-toolbar.:				Raised Vertical   Gradient Bevel1
+toolbar:				Raised Vertical   Gradient Bevel1
 toolbar.label:				Raised Diagonal   Gradient Bevel1
 toolbar.clock:				Sunken Diagonal   Gradient Bevel1
 toolbar.button:				Flat   Vertical   Gradient

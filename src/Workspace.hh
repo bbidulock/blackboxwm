@@ -25,12 +25,11 @@
 #include <X11/Xlib.h>
 
 class BScreen;
+class Clientmenu;
 class Workspace;
+class BlackboxWindow;
 
-#include "Clientmenu.hh"
 #include "LinkedList.hh"
-#include "Toolbar.hh"
-#include "Window.hh"
 
 
 class Workspace {
@@ -38,20 +37,20 @@ private:
   Window *stack;
 
   BScreen *screen;
-  Clientmenu *cMenu;
-  Toolbar *toolbar;
+  Clientmenu *clientmenu;
 
   LinkedList<BlackboxWindow> *windowList;
 
   char *name, **label;
-  int id;
+  int id, cascade_x, cascade_y;
 
 
 protected:
+  void placeWindow(BlackboxWindow *);
 
 
 public:
-  Workspace(Toolbar *, BScreen *, int = 0);
+  Workspace(BScreen *, int = 0);
   ~Workspace(void);
 
   BlackboxWindow *getWindow(int);
@@ -60,14 +59,14 @@ public:
 
   BScreen *getScreen(void) { return screen; }
 
-  Clientmenu *getMenu(void) { return cMenu; }
+  Clientmenu *getMenu(void) { return clientmenu; }
 
   Window *getWindowStack(void) { return stack; }
   
   char *getName(void) { return name; }
   char **getLabel(void) { return label; }
   
-  const int addWindow(BlackboxWindow *);
+  const int addWindow(BlackboxWindow *, Bool = False);
   const int removeWindow(BlackboxWindow *);
   const int getCount(void);
   
@@ -84,6 +83,7 @@ public:
   void update();
   void setCurrent(void);
   void setName(char *);
+  void shutdown(void);
 };
 
 

@@ -42,10 +42,6 @@
 
 static Basemenu *shown = (Basemenu *) 0;
 
-// *************************************************************************
-// Basemenu constructor and destructor
-// *************************************************************************
-
 Basemenu::Basemenu(Blackbox *ctrl, BScreen *scrn) {
   blackbox = ctrl;
   screen = scrn;
@@ -108,7 +104,7 @@ Basemenu::Basemenu(Blackbox *ctrl, BScreen *scrn) {
   menuitems = new LinkedList<BasemenuItem>;
   
   // even though this is the end of the constructor the menu is still not
-  // completely created.  items must be inserted and it must be Update()'d
+  // completely created.  items must be inserted and it must be update()'d
 }
 
 
@@ -146,10 +142,6 @@ Basemenu::~Basemenu(void) {
   XDestroyWindow(display, menu.frame);
 }
 
-
-// *************************************************************************
-// insertion and removal methods
-// *************************************************************************
 
 int Basemenu::insert(char *label, int function, char *exec, int pos) {
   BasemenuItem *item = new BasemenuItem(label, function, exec);
@@ -205,10 +197,6 @@ int Basemenu::remove(int index) {
   return menuitems->count();
 }
 
-
-// *************************************************************************
-// Menu maintainence and utility methods
-// *************************************************************************
 
 void Basemenu::update(void) {
   menu.item_h = screen->getMenuFont()->ascent +
@@ -564,10 +552,6 @@ void Basemenu::setHighlight(int index) {
 }
 
 
-// *************************************************************************
-// Menu event handling
-// *************************************************************************
-
 void Basemenu::buttonPressEvent(XButtonEvent *be) {
   if (be->window == menu.title) {
     if (be->x >= 0 && be->x <= (signed) menu.width &&
@@ -833,10 +817,6 @@ void Basemenu::leaveNotifyEvent(XCrossingEvent *ce) {
   }
 }
 
-
-// *************************************************************************
-// Resource reconfiguration
-// *************************************************************************
 
 void Basemenu::reconfigure(void) {
   XSetWindowBackground(display, menu.frame, screen->getBorderColor().pixel);

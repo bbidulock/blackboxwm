@@ -29,6 +29,7 @@
 
 #include "blackbox.hh"
 #include "Screen.hh"
+#include "Toolbar.hh"
 #include "Workspacemenu.hh"
 #include "Workspace.hh"
 
@@ -40,7 +41,7 @@ Workspacemenu::Workspacemenu(Blackbox *bb, BScreen *scrn) :
   
   setTitleVisibility(False);
   setMovable(False);
-  setHidable(False);
+  setHidable(True);
   setAlignment(Basemenu::MenuAlignBottom);
   defaultMenu();
   

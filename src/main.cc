@@ -55,7 +55,6 @@
 
 
 int main(int argc, char **argv) {
-  // scan the command line for a list of servers to manage.
   char *session_display = NULL;
 
 #ifdef HAVE_SETLOCALE
@@ -69,25 +68,15 @@ int main(int argc, char **argv) {
     if (! strcmp(argv[i], "-display")) {
       if ((++i) >= argc) {
 	fprintf(stderr, "error: '-display' requires and argument\n");
-	exit(1);
-      }
-      
-      // since we're using a different display... set the DISPLAY environment
-      // variable appropriately
-      session_display = argv[i];
-      char tmp[MAXPATHLEN];
-      sprintf(tmp, "DISPLAY=%s", session_display);
 
-      if (putenv(tmp)) {
-	fprintf(stderr, "%s: couldn't set environment variable DISPLAY\n",
-		argv[0]);
-	perror("putenv()");
+	::exit(1);
       }
     } else if (! strcmp(argv[i], "-version")) {
       // print current version string
       printf("Blackbox %s : (c) 1997, 1998 Brad Hughes\n\n",
              __blackbox_version);
-      exit(0);
+
+      ::exit(0);
     } else if (! strcmp(argv[i], "-help")) {
       // print program usage and command line options
       printf("Blackbox %s : (c) 1997, 1998 Brad Hughes\n\n"
@@ -95,7 +84,8 @@ int main(int argc, char **argv) {
 	     "  -version\t\tdisplay version and exit.\n"
              "  -help\t\t\tdisplay this help text and exit.\n\n",
 	     __blackbox_version);
-      exit(0);
+
+      ::exit(0);
     }
   }
 
@@ -104,7 +94,7 @@ int main(int argc, char **argv) {
 #endif
 
   Blackbox blackbox(argc, argv, session_display);
-  blackbox.EventLoop();
+  blackbox.eventLoop();
 
   return(0);
 }

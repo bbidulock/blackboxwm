@@ -45,13 +45,13 @@ private:
   GC buttonGC;
 
   struct frame {
-    Pixmap frame, label, button, pbutton, clk, reading;
+    Pixmap frame, label, wlabel, button, pbutton, clk, reading;
     Window window, menuButton, workspaceLabel, workspacePrev, workspaceNext,
       windowLabel, windowPrev, windowNext, clock;
 
-    int x, y;
+    int x, y, hour, minute;
     unsigned int width, height, button_w, button_h, label_w, label_h,
-      clock_w, clock_h, bevel_w;
+      wlabel_w, wlabel_h, clock_w, clock_h, bevel_w;
   } frame;
   
   Blackbox *blackbox;

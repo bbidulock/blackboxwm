@@ -30,17 +30,16 @@
 #include "blackbox.hh"
 #include "Icon.hh"
 #include "Screen.hh"
+#include "Toolbar.hh"
 #include "Window.hh"
 #include "Workspace.hh"
+#include "Workspacemenu.hh"
 
-
-// *************************************************************************
-// Icon class code
-// *************************************************************************
 
 Iconmenu::Iconmenu(Blackbox *bb, BScreen *scrn) : Basemenu(bb, scrn) {
   defaultMenu();
   setMovable(False);
+  setHidable(True);
   setTitleVisibility(False);
   update();
   
@@ -88,13 +87,11 @@ void Iconmenu::itemSelected(int button, int item) {
     BlackboxWindow *window = iconList->find(item)->getWindow();
     screen->getWorkspace(window->getWorkspaceNumber())->raiseWindow(window);
     window->deiconify();
+
+    screen->getWorkspacemenu()->hide();
   }
 }
 
-
-// *************************************************************************
-// Icon class code
-// *************************************************************************
 
 BlackboxIcon::BlackboxIcon(Blackbox *bb, BlackboxWindow *win) {
   display = bb->getDisplay();

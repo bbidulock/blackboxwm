@@ -44,10 +44,6 @@
 #endif
 
 
-// *************************************************************************
-// Graphics engine class code
-// *************************************************************************
-
 BImage::BImage(BImageControl *c, unsigned int w, unsigned int h) {
   control = c;
 
@@ -836,10 +832,6 @@ void BImage::vgradient(void) {
 }
 
 
-// *************************************************************************
-// Image control class code
-// *************************************************************************
-
 BImageControl::BImageControl(Blackbox *bb, BScreen *scrn) {
   blackbox = bb;
   screen = scrn;
@@ -1064,10 +1056,6 @@ Visual *BImageControl::getVisual(void) {
   return screen->getVisual();
 }
 
-
-// *************************************************************************
-// pixmap cache control
-// *************************************************************************
 
 Pixmap BImageControl::searchCache(unsigned int width, unsigned int height,
 				  unsigned long texture, const BColor &c1,

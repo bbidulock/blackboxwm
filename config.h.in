@@ -22,9 +22,6 @@
 /* Define if the X Window System is missing or not being used.  */
 #undef X_DISPLAY_MISSING
 
-/* Define if you have the XConvertCase function.  */
-#undef HAVE_XCONVERTCASE
-
 /* Define if you have the basename function.  */
 #undef HAVE_BASENAME
 
@@ -36,6 +33,9 @@
 
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
+
+/* Define if you have the <libgen.h> header file.  */
+#undef HAVE_LIBGEN_H
 
 /* Define if you have the <locale.h> header file.  */
 #undef HAVE_LOCALE_H

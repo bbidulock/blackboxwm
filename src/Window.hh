@@ -28,23 +28,23 @@
 #  include <X11/extensions/shape.h>
 #endif // SHAPE
 
-#define MwmHintsFunctions     (1L << 0)
-#define MwmHintsDecorations   (1L << 1)
+#define MwmHintsFunctions     (1l << 0)
+#define MwmHintsDecorations   (1l << 1)
 
-#define MwmFuncAll            (1L << 0)
-#define MwmFuncResize         (1L << 1)
-#define MwmFuncMove           (1L << 2)
-#define MwmFuncIconify        (1L << 3)
-#define MwmFuncMaximize       (1L << 4)
-#define MwmFuncClose          (1L << 5)
+#define MwmFuncAll            (1l << 0)
+#define MwmFuncResize         (1l << 1)
+#define MwmFuncMove           (1l << 2)
+#define MwmFuncIconify        (1l << 3)
+#define MwmFuncMaximize       (1l << 4)
+#define MwmFuncClose          (1l << 5)
 
-#define MwmDecorAll           (1L << 0)
-#define MwmDecorBorder        (1L << 1)
-#define MwmDecorHandle        (1L << 2)
-#define MwmDecorTitle         (1L << 3)
-#define MwmDecorMenu          (1L << 4)
-#define MwmDecorIconify       (1L << 5)
-#define MwmDecorMaximize      (1L << 6)
+#define MwmDecorAll           (1l << 0)
+#define MwmDecorBorder        (1l << 1)
+#define MwmDecorHandle        (1l << 2)
+#define MwmDecorTitle         (1l << 3)
+#define MwmDecorMenu          (1l << 4)
+#define MwmDecorIconify       (1l << 5)
+#define MwmDecorMaximize      (1l << 6)
 
 // this structure only contains 3 elements... the Motif 2.0 structure contains
 // 5... we only need the first 3... so that is all we will define
@@ -55,7 +55,7 @@ typedef struct MwmHints {
 #define PropMwmHintsElements  3
 
 // extended state information
-#define ShadeState    1
+#define ShadeState            (1l << 0)
 
 // forward declaration
 class BlackboxWindow;
@@ -143,7 +143,6 @@ protected:
   void drawCloseButton(Bool);
   void drawIconifyButton(Bool);
   void drawMaximizeButton(Bool);
-  void configure(int, int, unsigned int, unsigned int);
   
   Bool getState(unsigned long *, unsigned long * = 0, unsigned long * = 0);
   void setState(unsigned long, unsigned long);
@@ -172,6 +171,7 @@ public:
   Bool isFocused(void) { return focused; }
   Bool isVisible(void) { return visible; }
   Bool isIconic(void) { return iconic; }
+  Bool isShaded(void) { return shaded; }
   Bool isIconifiable(void) { return functions.iconify; }
   Bool isMaximizable(void) { return functions.maximize; }
   Bool isResizable(void) { return functions.resize; }
@@ -185,7 +185,6 @@ public:
   
   BlackboxWindow *getTransient(void) { return client.transient; }
   BlackboxWindow *getTransientFor(void) { return client.transient_for; }
-
 
   Window getFrameWindow(void) { return frame.window; }
   Window getClientWindow(void) { return client.window; }
@@ -203,9 +202,12 @@ public:
   int setWindowNumber(int);
   int setWorkspace(int);
 
+  unsigned int getWidth(void)        { return frame.width; }
+  unsigned int getHeight(void)       { return frame.height; }
   unsigned int getClientHeight(void) { return client.height; }
-  unsigned int getClientWidth(void) { return client.width; }
-  
+  unsigned int getClientWidth(void)  { return client.width; }
+  unsigned int getTitleHeight(void)  { return frame.title_h; }
+
   void removeIcon(void) { icon = NULL; }
   void setFocusFlag(Bool);
   void iconify(void);
@@ -218,6 +220,8 @@ public:
   void unstick(void);
   void reconfigure(void);
   void installColormap(Bool);
+  void restore(void);
+  void configure(int, int, unsigned int, unsigned int);
 };
 
 

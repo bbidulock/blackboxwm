@@ -73,7 +73,9 @@
     [exec] (Xload)    {xload}
   [end]
  
-  [include] (:pkgdatadir:/styles/stylesmenu)
+  [submenu] (Styles) {Choose a style...}
+    [include] (:pkgdatadir:/styles/stylesmenu)
+  [end]
 
   [reconfig] (Reconfigure)
   [restart] (Restart)

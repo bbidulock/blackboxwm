@@ -20,7 +20,7 @@ dnl
 
 dnl Initialize autoconf and automake
 AC_INIT(src/blackbox.cc)
-AM_INIT_AUTOMAKE(Blackbox,0.50.0,no-define)
+AM_INIT_AUTOMAKE(Blackbox,0.50.1,no-define)
 
 dnl Determine default prefix
 test x$prefix = "xNONE" && prefix="$ac_default_prefix"
@@ -41,10 +41,10 @@ AC_ISC_POSIX
 
 dnl Check for system header files
 AC_HEADER_STDC
-AC_CHECK_HEADERS(fcntl.h locale.h malloc.h process.h signal.h stdio.h time.h unistd.h sys/param.h sys/select.h sys/time.h sys/types.h)
+AC_CHECK_HEADERS(fcntl.h libgen.h locale.h malloc.h process.h signal.h stdio.h time.h unistd.h sys/param.h sys/select.h sys/time.h sys/types.h)
 AC_HEADER_TIME
 
-dnl Check for existance of basename()
+dnl Check for existance of basename(), setlocale() and strftime()
 AC_CHECK_FUNCS(basename setlocale strftime)
 
 dnl Check for X headers and libraries
@@ -68,9 +68,6 @@ AC_CHECK_LIB(X11, XOpenDisplay,
 )
 
 LDFLAGS="$LDFLAGS $X_EXTRA_LIBS"
-
-dnl Check for the existance of XConvertCase
-AC_CHECK_FUNCS(XConvertCase)
 
 dnl Check for XShape extension support and proper library files.
 SHAPE=""

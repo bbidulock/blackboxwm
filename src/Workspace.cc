@@ -28,6 +28,7 @@
 #endif
 
 #include "blackbox.hh"
+#include "Clientmenu.hh"
 #include "Screen.hh"
 #include "Toolbar.hh"
 #include "Window.hh"
@@ -42,20 +43,18 @@
 #  include <string.h>
 #endif
 
-// *************************************************************************
-// Workspace class code
-// *************************************************************************
 
-Workspace::Workspace(Toolbar *tbar, BScreen *scrn, int i) {
-  toolbar = tbar;
+Workspace::Workspace(BScreen *scrn, int i) {
   screen = scrn;
+
+  cascade_x = cascade_y = 32;
 
   id = i;
   stack = 0;
 
   windowList = new LinkedList<BlackboxWindow>;
-  cMenu = new Clientmenu(screen->getBlackbox(), this);
-  cMenu->update();
+  clientmenu = new Clientmenu(screen->getBlackbox(), this);
+  clientmenu->update();
   
   screen->getNameOfWorkspace(id, &name);
   
@@ -71,21 +70,23 @@ Workspace::Workspace(Toolbar *tbar, BScreen *scrn, int i) {
 
 Workspace::~Workspace(void) {
   delete windowList;
-  delete cMenu;
+  delete clientmenu;
 
   if (stack) delete [] stack;
   if (name) delete [] name;
 }
 
 
-const int Workspace::addWindow(BlackboxWindow *w) {
+const int Workspace::addWindow(BlackboxWindow *w, Bool place) {
+  if (place) placeWindow(w);
+
   w->setWorkspace(id);
   w->setWindowNumber(windowList->count());
   
   windowList->insert(w);
   
-  cMenu->insert(w->getTitle());
-  cMenu->update();
+  clientmenu->insert(w->getTitle());
+  clientmenu->update();
   
   int i, k = windowList->count();
   Window *tmp_stack = new Window[k];
@@ -116,10 +117,10 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
 
   windowList->remove((const int) w->getWindowNumber());
   
-  cMenu->remove(w->getWindowNumber());
-  cMenu->update();
+  clientmenu->remove(w->getWindowNumber());
+  clientmenu->update();
 
-  if (! cMenu->getCount()) cMenu->hide();
+  if (! clientmenu->getCount()) clientmenu->hide();
 
   if (screen->getCurrentWorkspaceID() == id)
     screen->stackWindows(stack, k);
@@ -127,7 +128,7 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (i = 0; it.current(); it++, i++)
     it.current()->setWindowNumber(i);
-  
+
   return windowList->count();
 }
 
@@ -138,8 +139,8 @@ void Workspace::setFocusWindow(int w) {
   else
     label = 0;
 
-  cMenu->setHighlight(w);  
-  toolbar->redrawWindowLabel(True);
+  clientmenu->setHighlight(w);  
+  screen->getToolbar()->redrawWindowLabel(True);
 }
 
 
@@ -169,8 +170,8 @@ int Workspace::hideAll(void) {
       win->withdraw();
   }
 
-  if (cMenu->isVisible())
-    cMenu->hide();
+  if (clientmenu->isVisible())
+    clientmenu->hide();
 
   return windowList->count();
 } 
@@ -192,10 +193,6 @@ int Workspace::removeAll(void) {
 
 
 void Workspace::raiseWindow(BlackboxWindow *w) {
-  // this just arranges the windows... and then passes it to the workspace
-  // manager... which adds this stack to it's own stack... and the workspace
-  // manager then tells the X server to restack the windows
-
   int i = 0, ii = 0, k = windowList->count();
   Window *tmp_stack = new Window[k];
   static int re_enter = 0;
@@ -264,7 +261,7 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
 
 
 void Workspace::reconfigure(void) {
-  cMenu->reconfigure();
+  clientmenu->reconfigure();
 
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (; it.current(); it++)
@@ -287,8 +284,8 @@ const int Workspace::getCount(void) {
 
 
 void Workspace::update(void) {
-  cMenu->update();
-  toolbar->redrawWindowLabel(True);
+  clientmenu->update();
+  screen->getToolbar()->redrawWindowLabel(True);
 }
 
 
@@ -321,4 +318,115 @@ void Workspace::setName(char *new_name) {
     if (name)
       sprintf(name, "Workspace %d", id);
   }
+}
+
+
+void Workspace::shutdown(void) {
+  LinkedListIterator<BlackboxWindow> it(windowList);
+  for (; it.current(); it++)
+    it.current()->restore();
+}
+
+
+void Workspace::placeWindow(BlackboxWindow *win) {
+  int place_x = 0, place_y = 0;
+
+  switch (screen->getPlacementPolicy()) {
+  case BScreen::SmartPlacement:
+    {
+      Bool done = False;
+      int test_x = 0, test_y = 0, test_w = 0, test_h = 0,
+	extra = screen->getBevelWidth() * 2;
+      
+      test_y = extra;
+      
+      // adaptation from Window Maker's smart window placement
+      
+      while (((test_y + win->getHeight()) <
+	      (unsigned) (screen->getYRes() -
+			  screen->getToolbar()->getHeight() - 1)) &&
+	     (! done)) {
+	test_x = extra;
+	
+	while (((test_x + win->getWidth()) < (unsigned) screen->getXRes()) &&
+	       (! done)) {
+	  done = True;
+	  
+	  LinkedListIterator<BlackboxWindow> it(windowList);
+	  for (; it.current() && done; it++) {
+	    if (it.current()->isShaded())
+	      test_h = it.current()->getTitleHeight();
+	    else
+	      test_h = it.current()->getHeight() + extra;
+	    
+	    if ((it.current()->getXFrame() <
+		 (signed) (test_x + it.current()->getWidth())) &&
+		((it.current()->getXFrame() + test_w) > test_x) &&
+		(it.current()->getYFrame() <
+		 (signed) (test_y + it.current()->getHeight())) &&
+		((it.current()->getYFrame() + test_h) > test_y) &&
+		(it.current()->isVisible() ||
+		 (it.current()->isShaded() && (! it.current()->isIconic()))))
+	      done = False;
+	  }
+
+	  it.reset();
+	  for (; it.current() && done; it++) {
+	    test_w = it.current()->getWidth();
+	    
+	    if (it.current()->isShaded())
+	      test_h = it.current()->getTitleHeight();
+	    else
+	      test_h = it.current()->getHeight() + extra;
+	    
+	    if ((it.current()->getXFrame() <
+		 (signed) (test_x + it.current()->getWidth())) &&
+		((it.current()->getXFrame() + test_w) > test_x) &&
+		(it.current()->getYFrame() <
+		 (signed) (test_y + it.current()->getHeight())) &&
+		((it.current()->getYFrame() + test_h) > test_y) &&
+		(it.current()->isVisible() ||
+		 (it.current()->isShaded() && (! it.current()->isIconic()))))
+	      done = False;
+	  }
+	  
+	  if (done) {
+	    place_x = test_x;
+	    place_y = test_y;
+	    break;
+	  }
+	  
+	  test_x += extra;
+	}
+	
+	test_y += extra;
+      }
+      
+      if (done)
+	break;
+    }
+    
+  case BScreen::CascadePlacement:
+  default:
+    if (((unsigned) cascade_x > (screen->getXRes() / 2)) ||
+	((unsigned) cascade_y > (screen->getYRes() / 2)))
+      cascade_x = cascade_y = 32;
+    
+    place_x = cascade_x;
+    place_y = cascade_y;
+    
+    cascade_x += win->getTitleHeight();
+    cascade_y += win->getTitleHeight();
+    
+    break;
+  }
+  
+  if (place_x + win->getWidth() > screen->getXRes())
+    place_x = (screen->getXRes() - win->getWidth()) / 2;
+  if (place_y + win->getHeight() >
+      (screen->getYRes() - screen->getToolbar()->getHeight() - 1))
+    place_y = ((screen->getYRes() - screen->getToolbar()->getHeight() - 1) -
+	       win->getHeight()) / 2;
+  
+  win->configure(place_x, place_y, win->getWidth(), win->getHeight());
 }

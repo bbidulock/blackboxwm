@@ -37,6 +37,7 @@
 
 #if STDC_HEADERS
 #  include <stdlib.h>
+#  include <string.h>
 #endif
 
 #if HAVE_PROCESS_H && __EMX__
@@ -59,11 +60,20 @@ void Rootmenu::itemSelected(int button, int index) {
       case Blackbox::B_Execute:
 	if (item->exec()) {
 #ifndef __EMX__
-          char *command = new char[strlen(item->exec()) + 8];
-
-	  sprintf(command, "exec %s &", item->exec());
+          int dslen = strlen(DisplayString(screen->getDisplay()));
+	  
+          char *displaystring = new char[dslen + 32];
+          char *command = new char[strlen(item->exec()) + dslen + 64];
+	  
+          strncpy(displaystring, DisplayString(screen->getDisplay()),
+                  dslen - 1);
+          // gotta love pointer math
+          sprintf(displaystring + dslen - 1, "%d", screen->getScreenNumber());
+	  sprintf(command, "DISPLAY=%s exec %s &", displaystring,
+		  item->exec());
 	  system(command);
-
+	  
+          delete [] displaystring;
           delete [] command;
 #else
 	  spawnlp(P_NOWAIT, "cmd.exe", "cmd.exe", "/c", item->exec(), NULL);
@@ -81,27 +91,27 @@ void Rootmenu::itemSelected(int button, int index) {
 	}
 	
       case Blackbox::B_Reconfigure:
-	blackbox->Reconfigure();
+	blackbox->reconfigure();
 	break;
 	
       case Blackbox::B_Restart:
-	blackbox->Restart();
+	blackbox->restart();
 	break;
 	
       case Blackbox::B_RestartOther:
 	if (item->exec())
-	  blackbox->Restart(item->exec());
+	  blackbox->restart(item->exec());
 
 	break;
 	
       case Blackbox::B_Exit:
-	blackbox->Exit();
+	blackbox->exit();
 	break;
 
       case Blackbox::B_SetStyle:
 	if (item->exec()) {
 	  blackbox->saveStyleFilename(item->exec());
-	  blackbox->Reconfigure();
+	  blackbox->reconfigure();
 	}
 	
 	break;

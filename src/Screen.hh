@@ -111,7 +111,8 @@ private:
     BColor border_color;
     XrmDatabase stylerc;
     
-    int workspaces, justify, menu_justify;
+    int workspaces, justify, menu_justify, toolbar_width_percent,
+      placement_policy;
     unsigned int handle_width, bevel_width;
 
 #ifdef    HAVE_STRFTIME
@@ -169,13 +170,15 @@ public:
   const unsigned int getHandleWidth(void)    { return resource.handle_width; }
   const unsigned int getBevelWidth(void)     { return resource.bevel_width; }
 
-  int getDepth(void)              { return depth; }
-  int getScreenNumber(void)       { return screen_number; }
+  int getDepth(void)               { return depth; }
+  int getScreenNumber(void)        { return screen_number; }
   int addWorkspace(void);
   int removeLastWorkspace(void);
-  int getCount(void)              { return workspacesList->count(); }
+  int getCount(void)               { return workspacesList->count(); }
   int getCurrentWorkspaceID(void);
-  int getNumberOfWorkspaces(void) { return resource.workspaces; }
+  int getNumberOfWorkspaces(void)  { return resource.workspaces; }
+  int getToolbarWidthPercent(void) { return resource.toolbar_width_percent; }
+  int getPlacementPolicy(void)     { return resource.placement_policy; }
 
   unsigned int getXRes(void) { return xres; }
   unsigned int getYRes(void) { return yres; }
@@ -192,13 +195,16 @@ public:
   void raiseFocus(void);
   void setRootColormapInstalled(Bool c) { root_colormap_installed = c; }
   void reconfigure(void);
+  void shutdown(void);
 
-  void saveSloppyFocus(Bool s)   { resource.sloppy_focus = s; }
-  void saveAutoRaise(Bool a)     { resource.auto_raise = a; }
-  void saveWorkspaces(int w)     { resource.workspaces = w; }
+  void saveSloppyFocus(Bool s)        { resource.sloppy_focus = s; }
+  void saveAutoRaise(Bool a)          { resource.auto_raise = a; }
+  void saveWorkspaces(int w)          { resource.workspaces = w; }
   void removeWorkspaceNames(void);
   void addWorkspaceName(char *);
-  void saveToolbarRaised(Bool r) { resource.toolbar_raised = r; }
+  void saveToolbarRaised(Bool r)      { resource.toolbar_raised = r; }
+  void saveToolbarWidthPercent(int w) { resource.toolbar_width_percent = w; }
+  void savePlacementPolicy(int p)     { resource.placement_policy = p; }
   
 #ifdef    HAVE_STRFTIME
   char *getStrftimeFormat(void) { return resource.strftime_format; }
@@ -213,6 +219,8 @@ public:
   windowResource *getWResource(void)  { return &resource.wres; }
   menuResource *getMResource(void)    { return &resource.mres; }
   toolbarResource *getTResource(void) { return &resource.tres; }
+  
+  enum { SmartPlacement = 1, CascadePlacement };
 };
 
 

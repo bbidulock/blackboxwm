@@ -42,13 +42,14 @@ Clientmenu::Clientmenu(Blackbox *bb, Workspace *ws) :
   screen = wkspc->getScreen();
 
   setMovable(False);
+  setHidable(True);
   setTitleVisibility(False);
   defaultMenu();
 }
 
 
 void Clientmenu::itemSelected(int button, int index) {
-  if (button == 1)
+  if (button == 1) {
     if (index >= 0 && index < wkspc->getCount()) {
       if (! wkspc->isCurrent()) wkspc->setCurrent();
 
@@ -59,9 +60,10 @@ void Clientmenu::itemSelected(int button, int index) {
         wkspc->raiseWindow(win);
         win->setInputFocus();
 	
-        hide();
 	screen->getWorkspacemenu()->hide();
       }
     }
+  } else if (button == 3) {
+    screen->getWorkspacemenu()->hide();
+  }
 }
-

@@ -1,6 +1,38 @@
 ChangeLog for Blackbox 0.50.xx
 Enjoy! :)
 
+Changes from 0.50.0 to 0.50.1:
+  - eliminated the need for XConvertCase... workspace editing should now print
+    any and all characters correctly
+  - added check for libgen.h (which provides the prototype for basename() on
+    some systems, like OpenBSD)
+  - some code obfuscation (i've been removing comments, as some of them don't
+    relate to some of the code below them... i plan on recommenting the code
+    some time soon)
+  - clicking button 3 will hide ANY menu now, and in the case of the workspace
+    and or client menus, any other menus and/or buttons associated will be
+    closed as well
+  - added a patch for multi-screen which sets the DISPLAY env variable so that
+    items selected from one screen don't show up on another... many thanks to
+    F Harvell <fharvell@fts.net> for this
+  - fixed a clock bug... again thanks to F Harvell for this one
+  - complete and proper window placement and window restore has been
+    implemented... windows that are partially off screen will be placed in the
+    center of the root window
+  - the toolbar's workspace label is now dynamically sized according to the
+    length of the workspace names
+  - as stated above... workspace name editing has been completely redone, i
+    discovered XLookupString() this weekend and have deemed it the function of
+    the week... any and all characters should be printed properly now
+  - window placement now has it's own resource...
+    session.screen<NUM>.windowPlacement which may be set to SmartPlacement
+    (which has been implemented) or anything else to default back to cascade
+    placement
+  - a new resource, session.screen<NUM>.toolbarWidthPercent has been added, and
+    should be set to an integer representing what percentage of the root window
+    width the toolbar should occupy (default has been changed back to 67)
+
+
 Changes from 0.40.14 to 0.50.0:
   - added util/ subdirectory to place small, utility programs to use in
     conjunction with blackbox.
