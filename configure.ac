@@ -253,11 +253,8 @@ AM_MAINTAINER_MODE
 dnl Output files
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_FILES([
+version.h
 Makefile
-lib/Makefile
-lib/libbt.pc
-src/Makefile
-util/Makefile
 data/Makefile
 data/styles/Makefile
 doc/Makefile
@@ -265,33 +262,11 @@ doc/fr_FR/Makefile
 doc/ja_JP/Makefile
 doc/nl_NL/Makefile
 doc/sl_SI/Makefile
-nls/Makefile
-nls/C/Makefile
-nls/da_DK/Makefile
-nls/de_DE/Makefile
-nls/es_AR/Makefile
-nls/es_ES/Makefile
-nls/et_EE/Makefile
-nls/fr_FR/Makefile
-nls/hu_HU/Makefile
-nls/it_IT/Makefile
-nls/ja_JP/Makefile
-nls/ko_KR/Makefile
-nls/lv_LV/Makefile
-nls/nl_NL/Makefile
-nls/no_NO/Makefile
-nls/pl_PL/Makefile
-nls/pt_BR/Makefile
-nls/ro_RO/Makefile
-nls/ru_RU/Makefile
-nls/sk_SK/Makefile
-nls/sl_SI/Makefile
-nls/sv_SE/Makefile
-nls/tr_TR/Makefile
-nls/uk_UA/Makefile
-nls/zh_CN/Makefile
-nls/zh_TW/Makefile
-version.h])
+lib/Makefile
+lib/libbt.pc
+src/Makefile
+util/Makefile
+])
 AC_OUTPUT
 
 dnl Print results

@@ -4,7 +4,6 @@ AUTOMAKE_OPTIONS	= foreign
 
 SUBDIRS			= data \
 			  doc \
-			  nls \
 			  lib \
 			  src \
 			  util
