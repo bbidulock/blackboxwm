@@ -1,7 +1,7 @@
 // -*- mode: C++; indent-tabs-mode: nil; -*-
 // Util.cc for Blackbox - an X11 Window manager
 // Copyright (c) 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
-// Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
+// Copyright (c) 1997 - 2000, 2002 Brad Hughes (bhughes@tcac.net)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -57,37 +57,43 @@ extern "C" {
 using std::string;
 
 
-Rect Rect::operator|(const Rect &a) const
-{
-    Rect b;
-    b._x1 = std::min(_x1, a._x1);
-    b._y1 = std::min(_y1, a._y1);
-    b._x2 = std::max(_x2, a._x2);
-    b._y2 = std::max(_y2, a._y2);
-    return b;
-}
-Rect Rect::operator&(const Rect &a) const
-{
-    Rect b;
-    b._x1 = std::max(_x1, a._x1);
-    b._y1 = std::max(_y1, a._y1);
-    b._x2 = std::min(_x2, a._x2);
-    b._y2 = std::min(_y2, a._y2);
-    return b;
+Rect Rect::operator|(const Rect &a) const {
+  Rect b;
+
+  b._x1 = std::min(_x1, a._x1);
+  b._y1 = std::min(_y1, a._y1);
+  b._x2 = std::max(_x2, a._x2);
+  b._y2 = std::max(_y2, a._y2);
+
+  return b;
 }
 
-bool Rect::intersects(const Rect &a) const
-{
-    return std::max(_x1, a._x1) <= std::min(_x2, a._x2) &&
-           std::max(_y1, a._y1) <= std::min(_y2, a._y2);
+
+Rect Rect::operator&(const Rect &a) const {
+  Rect b;
+
+  b._x1 = std::max(_x1, a._x1);
+  b._y1 = std::max(_y1, a._y1);
+  b._x2 = std::min(_x2, a._x2);
+  b._y2 = std::min(_y2, a._y2);
+  
+  return b;
 }
+
+
+bool Rect::intersects(const Rect &a) const {
+  return std::max(_x1, a._x1) <= std::min(_x2, a._x2) &&
+    std::max(_y1, a._y1) <= std::min(_y2, a._y2);
+}
+
 
 string expandTilde(const string& s) {
   if (s[0] != '~') return s;
 
-  string ret = getenv("HOME");
-  ret += s.substr(s.find('/'));
-  return ret;
+  const char* const home = getenv("HOME");
+  if (home == NULL) return s;
+
+  return string(home + s.substr(s.find('/')));
 }
 
 
