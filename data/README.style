@@ -80,6 +80,21 @@ general, width and height specify the full extent, where as margin
 specifies the space around another element.
 
 
+Setting the Background
+------------------------------------------------------------------------------
+
+You can set the desktop background (i.e. root window) by specifying a
+command to run in the 'rootCommand' resource.  Blackbox includes the
+'bsetroot' and 'bsetbg' utilities; their use is recommended.  Also,
+you can override the styles 'rootCommand' by putting your own in your
+~/.blackboxrc file.  This allows you to always use a custom
+background, regardless of which style you are using.
+
+Note: Questions about security have been raised about 'rootCommand.'
+There is an inherent risk when using styles from 3rd parties; use them
+with caution.
+
+
 Menu Style
 ------------------------------------------------------------------------------
 
