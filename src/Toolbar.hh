@@ -72,7 +72,7 @@ public:
 };
 
 
-class Toolbar : public TimeoutHandler {
+class Toolbar : public TimeoutHandler, public EventHandler {
 private:
   bool on_top, editing, hidden, do_auto_hide;
   Display *display;

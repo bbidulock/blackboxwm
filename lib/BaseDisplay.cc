@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // BaseDisplay.cc for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
@@ -81,6 +81,7 @@ extern "C" {
 #include <string>
 
 #include "BaseDisplay.hh"
+#include "EventHandler.hh"
 #include "GCCache.hh"
 #include "Timer.hh"
 #include "Util.hh"
@@ -115,11 +116,11 @@ static int handleXErrors(Display *d, XErrorEvent *e) {
 // signal handler to allow for proper and gentle shutdown
 
 #ifndef   HAVE_SIGACTION
-static RETSIGTYPE signalhandler(int sig) {
+static RETSIGTYPE signalhandler(int sig)
 #else //  HAVE_SIGACTION
-static void signalhandler(int sig) {
+static void signalhandler(int sig)
 #endif // HAVE_SIGACTION
-
+{
   static int re_enter = 0;
 
   switch (sig) {
@@ -317,10 +318,185 @@ void BaseDisplay::eventLoop(void) {
   }
 }
 
+void BaseDisplay::process_event(XEvent *event) {
+  EventHandlerMap::iterator it = eventhandlers.find(event->xany.window);
+  if (it == eventhandlers.end()) return;
+  EventHandler *handler = it->second;
+
+  // deliver the event
+  switch (event->type) {
+  case ButtonPress: {
+    // last_time = event->xbutton.time
+
+    // strip the lock key modifiers
+    event->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
+    handler->buttonPressEvent(&event->xbutton);
+    break;
+  }
+
+  case ButtonRelease: {
+    // last_time = event->xbutton.time
+
+    // strip the lock key modifiers
+    event->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
+    handler->buttonReleaseEvent(&event->xbutton);
+    break;
+  }
+
+  case KeyPress: {
+    // strip the lock key modifiers, except numlock, which can be useful
+    event->xkey.state &= ~(ScrollLockMask | LockMask);
+    handler->keyPressEvent(&event->xkey);
+    break;
+  }
+
+  case KeyRelease: {
+    // strip the lock key modifiers, except numlock, which can be useful
+    event->xkey.state &= ~(ScrollLockMask | LockMask);
+    handler->keyReleaseEvent(&event->xkey);
+    break;
+  }
+
+  case MapNotify: {
+    handler->mapNotifyEvent(&event->xmap);
+    break;
+  }
+
+  case UnmapNotify: {
+    handler->unmapNotifyEvent(&event->xunmap);
+    break;
+  }
+
+  case ReparentNotify: {
+    handler->reparentNotifyEvent(&event->xreparent);
+    break;
+  }
+
+  case DestroyNotify: {
+    handler->destroyNotifyEvent(&event->xdestroywindow);
+    break;
+  }
+
+  case EnterNotify: {
+    // last_time = event->xcrossing.time;
+
+    handler->enterNotifyEvent(&event->xcrossing);
+    break;
+  }
+
+  case LeaveNotify: {
+    // last_time = event->xcrossing.time;
+
+    handler->leaveNotifyEvent(&event->xcrossing);
+    break;
+  }
+
+  case PropertyNotify: {
+    // last_time = event->xproperty.time;
+
+    handler->propertyNotifyEvent(&event->xproperty);
+    break;
+  }
+
+  case ConfigureRequest: {
+    handler->configureRequestEvent(&event->xconfigurerequest);
+    break;
+  }
+
+  case MotionNotify: {
+    // last_time = event->xmotion.time;
+
+    // compress motion notify events
+    XEvent realevent;
+    unsigned int i = 0;
+    while (XCheckTypedWindowEvent(getXDisplay(), event->xmotion.window,
+                                  MotionNotify, &realevent)) {
+      ++i;
+    }
+
+    // if we have compressed some motion events, use the last one
+    if ( i > 0 )
+      event = &realevent;
+
+    // strip the lock key modifiers
+    event->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
+    handler->motionNotifyEvent(&event->xmotion);
+    break;
+  }
+
+  case Expose: {
+    // compress expose events
+    XEvent realevent;
+    unsigned int i = 0;
+    int ex1, ey1, ex2, ey2;
+    ex1 = event->xexpose.x;
+    ey1 = event->xexpose.y;
+    ex2 = ex1 + event->xexpose.width - 1;
+    ey2 = ey1 + event->xexpose.height - 1;
+    while (XCheckTypedWindowEvent(getXDisplay(), event->xexpose.window,
+                                  Expose, &realevent)) {
+      ++i;
+
+      // merge expose area
+      ex1 = std::min(realevent.xexpose.x, ex1);
+      ey1 = std::min(realevent.xexpose.y, ey1);
+      ex2 = std::max(realevent.xexpose.x + realevent.xexpose.width - 1, ex2);
+      ey2 = std::max(realevent.xexpose.y + realevent.xexpose.height - 1, ey2);
+    }
+    if ( i > 0 )
+      event = &realevent;
+
+    // use the merged area
+    event->xexpose.x = ex1;
+    event->xexpose.y = ey1;
+    event->xexpose.width = ex2 - ex1 + 1;
+    event->xexpose.height = ey2 - ey1 + 1;
+
+    handler->exposeEvent(&event->xexpose);
+    break;
+  }
+
+  case ConfigureNotify: {
+    // compress configure notify events
+    XEvent realevent;
+    unsigned int i = 0;
+    while (XCheckTypedWindowEvent(getXDisplay(), event->xconfigure.window,
+                                  ConfigureNotify, &realevent)) {
+      ++i;
+    }
+
+    // if we have compressed some configure notify events, use the last one
+    if ( i > 0 )
+      event = &realevent;
+
+    handler->configureNotifyEvent(&event->xconfigure);
+    break;
+  }
+
+  case NoExpose: {
+    // not handled, ignore
+    break;
+  }
+
+  default: {
+#ifdef    SHAPE
+    if (event->type == getShapeEventBase()) {
+      handler->shapeEvent((XShapeEvent *) event);
+    } else
+#endif // SHAPE
+      {
+#ifdef    DEBUG
+        fprintf(stderr, "unhandled event %d\n", event->type);
+#endif // DEBUG
+      }
+    break;
+  }
+  } // switch
+}
+
 
 void BaseDisplay::addTimer(BTimer *timer) {
   if (! timer) return;
-
   timerList.push(timer);
 }
 
@@ -374,10 +550,18 @@ const ScreenInfo* BaseDisplay::getScreenInfo(unsigned int s) const {
 BGCCache* BaseDisplay::gcCache(void) const {
   if (! gccache)
     gccache = new BGCCache(this, screenInfoList.size());
-
   return gccache;
 }
 
+void BaseDisplay::insertEventHandler(Window _window, EventHandler *_handler)
+{
+  eventhandlers.insert(std::pair<Window,EventHandler*>(_window, _handler));
+}
+
+void BaseDisplay::removeEventHandler(Window _window)
+{
+  eventhandlers.erase(_window);
+}
 
 ScreenInfo::ScreenInfo(BaseDisplay *d, unsigned int num) {
   basedisplay = d;

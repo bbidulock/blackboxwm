@@ -91,7 +91,7 @@ public:
 };
 
 
-class BlackboxWindow : public TimeoutHandler {
+class BlackboxWindow : public TimeoutHandler, public EventHandler {
 public:
   enum Function { Func_Resize   = (1l << 0),
                   Func_Move     = (1l << 1),
@@ -347,22 +347,22 @@ public:
   void changeBlackboxHints(const BlackboxHints *net);
   void restoreAttributes(void);
 
-  void buttonPressEvent(const XButtonEvent *be);
-  void buttonReleaseEvent(const XButtonEvent *re);
-  void motionNotifyEvent(const XMotionEvent *me);
-  void destroyNotifyEvent(const XDestroyWindowEvent */*unused*/);
-  void mapRequestEvent(const XMapRequestEvent *mre);
-  void unmapNotifyEvent(const XUnmapEvent */*unused*/);
-  void reparentNotifyEvent(const XReparentEvent */*unused*/);
-  void propertyNotifyEvent(const XPropertyEvent *pe);
-  void exposeEvent(const XExposeEvent *ee);
-  void configureRequestEvent(const XConfigureRequestEvent *cr);
-  void enterNotifyEvent(const XCrossingEvent* ce);
-  void leaveNotifyEvent(const XCrossingEvent* /*unused*/);
+  void buttonPressEvent(const XButtonEvent * const be);
+  void buttonReleaseEvent(const XButtonEvent * const re);
+  void motionNotifyEvent(const XMotionEvent * const me);
+  void destroyNotifyEvent(const XDestroyWindowEvent * const /*unused*/);
+  void mapRequestEvent(const XMapRequestEvent * const /*unused*/);
+  void unmapNotifyEvent(const XUnmapEvent * const /*unused*/);
+  void reparentNotifyEvent(const XReparentEvent * const /*unused*/);
+  void propertyNotifyEvent(const XPropertyEvent * const pe);
+  void exposeEvent(const XExposeEvent * const ee);
+  void configureRequestEvent(const XConfigureRequestEvent * const cr);
+  void enterNotifyEvent(const XCrossingEvent * const ce);
+  void leaveNotifyEvent(const XCrossingEvent * const /*unused*/);
 
 #ifdef    SHAPE
   void configureShape(void);
-  void shapeEvent(XShapeEvent * /*unused*/);
+  void shapeEvent(const XShapeEvent * const /*unused*/);
 #endif // SHAPE
 
   virtual void timeout(void);

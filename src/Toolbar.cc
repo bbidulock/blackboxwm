@@ -110,7 +110,7 @@ Toolbar::Toolbar(BScreen *scrn) {
     XCreateWindow(display, screen->getRootWindow(), 0, 0, 1, 1, 0,
                   screen->getDepth(), InputOutput, screen->getVisual(),
                   create_mask, &attrib);
-  blackbox->saveToolbarSearch(frame.window, this);
+  blackbox->insertEventHandler(frame.window, this);
 
   attrib.event_mask = ButtonPressMask | ButtonReleaseMask | ExposureMask |
                       KeyPressMask | EnterWindowMask;
@@ -118,37 +118,37 @@ Toolbar::Toolbar(BScreen *scrn) {
   frame.workspace_label =
     XCreateWindow(display, frame.window, 0, 0, 1, 1, 0, screen->getDepth(),
                   InputOutput, screen->getVisual(), create_mask, &attrib);
-  blackbox->saveToolbarSearch(frame.workspace_label, this);
+  blackbox->insertEventHandler(frame.workspace_label, this);
 
   frame.window_label =
     XCreateWindow(display, frame.window, 0, 0, 1, 1, 0, screen->getDepth(),
                   InputOutput, screen->getVisual(), create_mask, &attrib);
-  blackbox->saveToolbarSearch(frame.window_label, this);
+  blackbox->insertEventHandler(frame.window_label, this);
 
   frame.clock =
     XCreateWindow(display, frame.window, 0, 0, 1, 1, 0, screen->getDepth(),
                   InputOutput, screen->getVisual(), create_mask, &attrib);
-  blackbox->saveToolbarSearch(frame.clock, this);
+  blackbox->insertEventHandler(frame.clock, this);
 
   frame.psbutton =
     XCreateWindow(display ,frame.window, 0, 0, 1, 1, 0, screen->getDepth(),
                   InputOutput, screen->getVisual(), create_mask, &attrib);
-  blackbox->saveToolbarSearch(frame.psbutton, this);
+  blackbox->insertEventHandler(frame.psbutton, this);
 
   frame.nsbutton =
     XCreateWindow(display ,frame.window, 0, 0, 1, 1, 0, screen->getDepth(),
                   InputOutput, screen->getVisual(), create_mask, &attrib);
-  blackbox->saveToolbarSearch(frame.nsbutton, this);
+  blackbox->insertEventHandler(frame.nsbutton, this);
 
   frame.pwbutton =
     XCreateWindow(display ,frame.window, 0, 0, 1, 1, 0, screen->getDepth(),
                   InputOutput, screen->getVisual(), create_mask, &attrib);
-  blackbox->saveToolbarSearch(frame.pwbutton, this);
+  blackbox->insertEventHandler(frame.pwbutton, this);
 
   frame.nwbutton =
     XCreateWindow(display ,frame.window, 0, 0, 1, 1, 0, screen->getDepth(),
                   InputOutput, screen->getVisual(), create_mask, &attrib);
-  blackbox->saveToolbarSearch(frame.nwbutton, this);
+  blackbox->insertEventHandler(frame.nwbutton, this);
 
   frame.base = frame.label = frame.wlabel = frame.clk = frame.button =
     frame.pbutton = None;
@@ -175,14 +175,14 @@ Toolbar::~Toolbar(void) {
   if (frame.button) screen->getImageControl()->removeImage(frame.button);
   if (frame.pbutton) screen->getImageControl()->removeImage(frame.pbutton);
 
-  blackbox->removeToolbarSearch(frame.window);
-  blackbox->removeToolbarSearch(frame.workspace_label);
-  blackbox->removeToolbarSearch(frame.window_label);
-  blackbox->removeToolbarSearch(frame.clock);
-  blackbox->removeToolbarSearch(frame.psbutton);
-  blackbox->removeToolbarSearch(frame.nsbutton);
-  blackbox->removeToolbarSearch(frame.pwbutton);
-  blackbox->removeToolbarSearch(frame.nwbutton);
+  blackbox->removeEventHandler(frame.window);
+  blackbox->removeEventHandler(frame.workspace_label);
+  blackbox->removeEventHandler(frame.window_label);
+  blackbox->removeEventHandler(frame.clock);
+  blackbox->removeEventHandler(frame.psbutton);
+  blackbox->removeEventHandler(frame.nsbutton);
+  blackbox->removeEventHandler(frame.pwbutton);
+  blackbox->removeEventHandler(frame.nwbutton);
 
   XDestroyWindow(display, frame.workspace_label);
   XDestroyWindow(display, frame.window_label);

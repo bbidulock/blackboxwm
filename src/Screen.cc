@@ -129,6 +129,8 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
           getScreenNumber(), XVisualIDFromVisual(getVisual()),
           getDepth());
 
+  blackbox->insertEventHandler(getRootWindow(), this);
+
   rootmenu = 0;
   resource.stylerc = 0;
 
@@ -341,6 +343,8 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
 
 BScreen::~BScreen(void) {
   if (! managed) return;
+
+  blackbox->removeEventHandler(getRootWindow());
 
   if (geom_pixmap != None)
     image_control->removeImage(geom_pixmap);
@@ -904,7 +908,7 @@ void BScreen::manageWindow(Window w) {
 
   new BlackboxWindow(blackbox, w, this);
 
-  BlackboxWindow *win = blackbox->searchWindow(w);
+  BlackboxWindow *win = blackbox->findWindow(w);
   if (! win)
     return;
 
@@ -939,7 +943,7 @@ void BScreen::unmanageWindow(BlackboxWindow *w, bool remap) {
     some managed windows can also be window group controllers.  when
     unmanaging such windows, we should also delete the window group.
   */
-  BWindowGroup *group = blackbox->searchGroup(w->getClientWindow());
+  BWindowGroup *group = blackbox->findWindowGroup(w->getClientWindow());
   delete group;
 
   delete w;
@@ -1748,8 +1752,8 @@ Workspace* BScreen::getWorkspace(unsigned int index) const {
 }
 
 
-void BScreen::buttonPressEvent(const XButtonEvent *xbutton) {
-  if (xbutton->button == 1) {
+void BScreen::buttonPressEvent(const XButtonEvent * const event) {
+  if (event->button == 1) {
     if (! isRootColormapInstalled())
       image_control->installRootColormap();
 
@@ -1758,9 +1762,9 @@ void BScreen::buttonPressEvent(const XButtonEvent *xbutton) {
 
     if (rootmenu->isVisible())
       rootmenu->hide();
-  } else if (xbutton->button == 2) {
-    int mx = xbutton->x_root - (workspacemenu->getWidth() / 2);
-    int my = xbutton->y_root - (workspacemenu->getTitleHeight() / 2);
+  } else if (event->button == 2) {
+    int mx = event->x_root - (workspacemenu->getWidth() / 2);
+    int my = event->y_root - (workspacemenu->getTitleHeight() / 2);
 
     if (mx < 0) mx = 0;
     if (my < 0) my = 0;
@@ -1777,9 +1781,9 @@ void BScreen::buttonPressEvent(const XButtonEvent *xbutton) {
       workspacemenu->removeParent();
       workspacemenu->show();
     }
-  } else if (xbutton->button == 3) {
-    int mx = xbutton->x_root - (rootmenu->getWidth() / 2);
-    int my = xbutton->y_root - (rootmenu->getTitleHeight() / 2);
+  } else if (event->button == 3) {
+    int mx = event->x_root - (rootmenu->getWidth() / 2);
+    int my = event->y_root - (rootmenu->getTitleHeight() / 2);
 
     if (mx < 0) mx = 0;
     if (my < 0) my = 0;
@@ -1797,6 +1801,29 @@ void BScreen::buttonPressEvent(const XButtonEvent *xbutton) {
       rootmenu->show();
     }
   }
+}
+
+void BScreen::configureRequestEvent(const XConfigureRequestEvent * const event) {
+  /*
+    handle configure requests for windows that have no EventHandlers
+    by simply configuring them as requested.
+
+    note: the event->window parameter points to the window being
+    configured, and event->parent points to the window that received
+    the event (in this case, the root window, since
+    SubstructureRedirect has been selected).
+  */
+  XWindowChanges xwc;
+  xwc.x = event->x;
+  xwc.y = event->y;
+  xwc.width = event->width;
+  xwc.height = event->height;
+  xwc.border_width = event->border_width;
+  xwc.sibling = event->above;
+  xwc.stack_mode = event->detail;
+
+  XConfigureWindow(blackbox->getXDisplay(), event->window,
+                   event->value_mask, &xwc);
 }
 
 

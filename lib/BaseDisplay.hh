@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // BaseDisplay.hh for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
@@ -27,14 +27,19 @@
 extern "C" {
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#ifdef    SHAPE
+#  include <X11/extensions/shape.h>
+#endif // SHAPE
 }
 
+#include <map>
 #include <vector>
 #include <string>
 
 // forward declaration
 class BaseDisplay;
 class BGCCache;
+class EventHandler;
 
 #include "Timer.hh"
 #include "Util.hh"
@@ -96,9 +101,18 @@ private:
   BaseDisplay(const BaseDisplay &);
   BaseDisplay& operator=(const BaseDisplay&);
 
+  typedef std::map<Window,EventHandler*> EventHandlerMap;
+  EventHandlerMap eventhandlers;
+
 protected:
-  // pure virtual function... you must override this
-  virtual void process_event(XEvent *e) = 0;
+  /*
+    Processes the X11 event {event} by delivering the event to the
+    appropriate EventHandler.
+
+    Reimplement this function if you need to filter/intercept events
+    before normal processing.
+  */
+  virtual void process_event(XEvent *event);
 
   // the masks of the modifiers which are ignored in button events.
   int NumLockMask, ScrollLockMask;
@@ -151,7 +165,16 @@ public:
   // another pure virtual... this is used to handle signals that BaseDisplay
   // doesn't understand itself
   virtual bool handleSignal(int sig) = 0;
-};
 
+  /*
+    Inserts the EventHandler {_handler} for Window {_window}.  All
+    events generated for {_window} will be sent through {_handler}.
+   */
+  void insertEventHandler(Window _window, EventHandler *_handler);
+  /*
+    Removes all EventHandlers for Window {_window}.
+  */
+  void removeEventHandler(Window _window);
+};
 
 #endif // __BaseDisplay_hh

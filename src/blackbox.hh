@@ -124,18 +124,6 @@ private:
   typedef GroupLookup::value_type GroupLookupPair;
   GroupLookup groupSearchList;
 
-  typedef std::map<Window, Basemenu*> MenuLookup;
-  typedef MenuLookup::value_type MenuLookupPair;
-  MenuLookup menuSearchList;
-
-  typedef std::map<Window, Toolbar*> ToolbarLookup;
-  typedef ToolbarLookup::value_type ToolbarLookupPair;
-  ToolbarLookup toolbarSearchList;
-
-  typedef std::map<Window, Slit*> SlitLookup;
-  typedef SlitLookup::value_type SlitLookupPair;
-  SlitLookup slitSearchList;
-
   typedef std::list<MenuTimestamp*> MenuTimestampList;
   MenuTimestampList menuTimestamps;
 
@@ -192,23 +180,15 @@ public:
   Blackbox(char **m_argv, char *dpy_name = 0, char *rc = 0);
   virtual ~Blackbox(void);
 
-  Basemenu *searchMenu(Window window);
-  BWindowGroup *searchGroup(Window window);
-  BlackboxWindow *searchWindow(Window window);
-  BScreen *searchScreen(Window window);
-  Toolbar *searchToolbar(Window);
-  Slit *searchSlit(Window);
+  BScreen *findScreen(Window window);
 
-  void saveMenuSearch(Window window, Basemenu *data);
-  void saveWindowSearch(Window window, BlackboxWindow *data);
-  void saveGroupSearch(Window window, BWindowGroup *data);
-  void saveToolbarSearch(Window window, Toolbar *data);
-  void saveSlitSearch(Window window, Slit *data);
-  void removeMenuSearch(Window window);
-  void removeWindowSearch(Window window);
-  void removeGroupSearch(Window window);
-  void removeToolbarSearch(Window window);
-  void removeSlitSearch(Window window);
+  BlackboxWindow *findWindow(Window window);
+  void insertWindow(Window window, BlackboxWindow *data);
+  void removeWindow(Window window);
+
+  BWindowGroup *findWindowGroup(Window window);
+  void insertWindowGroup(Window window, BWindowGroup *data);
+  void removeWindowGroup(Window window);
 
   inline Netwm* netwm(void) { return _netwm; }
 

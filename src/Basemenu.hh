@@ -24,9 +24,7 @@
 #ifndef   __Basemenu_hh
 #define   __Basemenu_hh
 
-extern "C" {
-#include <X11/Xlib.h>
-}
+#include "EventHandler.hh"
 
 #include <string>
 #include <vector>
@@ -37,7 +35,7 @@ class BScreen;
 class BasemenuItem;
 
 
-class Basemenu {
+class Basemenu : public EventHandler {
 private:
   typedef std::vector<BasemenuItem*> MenuItems;
   MenuItems menuitems;
@@ -120,12 +118,13 @@ public:
   bool isItemEnabled(int index);
   BasemenuItem *find(int index);
 
-  void buttonPressEvent(XButtonEvent *be);
-  void buttonReleaseEvent(XButtonEvent *be);
-  void motionNotifyEvent(XMotionEvent *me);
-  void enterNotifyEvent(XCrossingEvent *ce);
-  void leaveNotifyEvent(XCrossingEvent *ce);
-  void exposeEvent(XExposeEvent *ee);
+  void buttonPressEvent(const XButtonEvent * const be);
+  void buttonReleaseEvent(const XButtonEvent * const be);
+  void motionNotifyEvent(const XMotionEvent * const me);
+  void enterNotifyEvent(const XCrossingEvent * const ce);
+  void leaveNotifyEvent(const XCrossingEvent * const ce);
+  void exposeEvent(const XExposeEvent * const ee);
+
   void reconfigure(void);
   void setLabel(const std::string& label);
   void move(int x, int y);

@@ -191,98 +191,13 @@ Blackbox::~Blackbox(void) {
 
 void Blackbox::process_event(XEvent *e) {
   switch (e->type) {
-  case ButtonPress: {
-    // strip the lock key modifiers
-    e->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
-
-    last_time = e->xbutton.time;
-
-    BlackboxWindow *win = (BlackboxWindow *) 0;
-    Basemenu *menu = (Basemenu *) 0;
-    Slit *slit = (Slit *) 0;
-    Toolbar *tbar = (Toolbar *) 0;
-    BScreen *scrn = (BScreen *) 0;
-
-    if ((win = searchWindow(e->xbutton.window))) {
-      win->buttonPressEvent(&e->xbutton);
-
-      /* XXX: is this sane on low colour desktops? */
-      if (e->xbutton.button == 1)
-        win->installColormap(True);
-    } else if ((menu = searchMenu(e->xbutton.window))) {
-      menu->buttonPressEvent(&e->xbutton);
-    } else if ((slit = searchSlit(e->xbutton.window))) {
-      slit->buttonPressEvent(&e->xbutton);
-    } else if ((tbar = searchToolbar(e->xbutton.window))) {
-      tbar->buttonPressEvent(&e->xbutton);
-    } else if ((scrn = searchScreen(e->xbutton.window))) {
-      scrn->buttonPressEvent(&e->xbutton);
-      if (active_screen != scrn) {
-        active_screen = scrn;
-        // first, set no focus window on the old screen
-        setFocusedWindow(0);
-        // and move focus to this screen
-        setFocusedWindow(0);
-      }
-    }
-    break;
-  }
-
-  case ButtonRelease: {
-    // strip the lock key modifiers
-    e->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
-
-    last_time = e->xbutton.time;
-
-    BlackboxWindow *win = (BlackboxWindow *) 0;
-    Basemenu *menu = (Basemenu *) 0;
-    Toolbar *tbar = (Toolbar *) 0;
-
-    if ((win = searchWindow(e->xbutton.window)))
-      win->buttonReleaseEvent(&e->xbutton);
-    else if ((menu = searchMenu(e->xbutton.window)))
-      menu->buttonReleaseEvent(&e->xbutton);
-    else if ((tbar = searchToolbar(e->xbutton.window)))
-      tbar->buttonReleaseEvent(&e->xbutton);
-
-    break;
-  }
-
-  case ConfigureRequest: {
-    BlackboxWindow *win = (BlackboxWindow *) 0;
-    Slit *slit = (Slit *) 0;
-
-    if ((win = searchWindow(e->xconfigurerequest.window))) {
-      win->configureRequestEvent(&e->xconfigurerequest);
-    } else if ((slit = searchSlit(e->xconfigurerequest.window))) {
-      slit->configureRequestEvent(&e->xconfigurerequest);
-    } else {
-      if (validateWindow(e->xconfigurerequest.window)) {
-        XWindowChanges xwc;
-
-        xwc.x = e->xconfigurerequest.x;
-        xwc.y = e->xconfigurerequest.y;
-        xwc.width = e->xconfigurerequest.width;
-        xwc.height = e->xconfigurerequest.height;
-        xwc.border_width = e->xconfigurerequest.border_width;
-        xwc.sibling = e->xconfigurerequest.above;
-        xwc.stack_mode = e->xconfigurerequest.detail;
-
-        XConfigureWindow(getXDisplay(), e->xconfigurerequest.window,
-                         e->xconfigurerequest.value_mask, &xwc);
-      }
-    }
-
-    break;
-  }
-
   case MapRequest: {
 #ifdef    DEBUG
     fprintf(stderr, "Blackbox::process_event(): MapRequest for 0x%lx\n",
             e->xmaprequest.window);
 #endif // DEBUG
 
-    BlackboxWindow *win = searchWindow(e->xmaprequest.window);
+    BlackboxWindow *win = findWindow(e->xmaprequest.window);
 
     if (win) {
       bool focus = False;
@@ -298,16 +213,16 @@ void Blackbox::process_event(XEvent *e) {
       if (focus && (win->isTransient() || win->getScreen()->doFocusNew()))
         win->setInputFocus();
     } else {
-      BScreen *screen = searchScreen(e->xmaprequest.parent);
+      BScreen *screen = findScreen(e->xmaprequest.parent);
 
       if (! screen) {
         /*
           we got a map request for a window who's parent isn't root. this
           can happen in only one circumstance:
 
-            a client window unmapped a managed window, and then remapped it
-            somewhere between unmapping the client window and reparenting it
-            to root.
+          a client window unmapped a managed window, and then remapped it
+          somewhere between unmapping the client window and reparenting it
+          to root.
 
           regardless of how it happens, we need to find the screen that
           the window is on
@@ -320,7 +235,7 @@ void Blackbox::process_event(XEvent *e) {
           break;
         }
 
-        screen = searchScreen(wattrib.root);
+        screen = findScreen(wattrib.root);
         assert(screen != 0); // this should never happen
       }
       screen->manageWindow(e->xmaprequest.window);
@@ -329,190 +244,8 @@ void Blackbox::process_event(XEvent *e) {
     break;
   }
 
-  case UnmapNotify: {
-    BlackboxWindow *win = (BlackboxWindow *) 0;
-    Slit *slit = (Slit *) 0;
-
-    if ((win = searchWindow(e->xunmap.window))) {
-      win->unmapNotifyEvent(&e->xunmap);
-    } else if ((slit = searchSlit(e->xunmap.window))) {
-      slit->unmapNotifyEvent(&e->xunmap);
-    }
-
-    break;
-  }
-
-  case DestroyNotify: {
-    BlackboxWindow *win = (BlackboxWindow *) 0;
-    Slit *slit = (Slit *) 0;
-    BWindowGroup *group = (BWindowGroup *) 0;
-
-    if ((win = searchWindow(e->xdestroywindow.window))) {
-      win->destroyNotifyEvent(&e->xdestroywindow);
-    } else if ((slit = searchSlit(e->xdestroywindow.window))) {
-      slit->removeClient(e->xdestroywindow.window, False);
-    } else if ((group = searchGroup(e->xdestroywindow.window))) {
-      delete group;
-    }
-
-    break;
-  }
-
-  case ReparentNotify: {
-    /*
-      this event is quite rare and is usually handled in unmapNotify
-      however, if the window is unmapped when the reparent event occurs
-      the window manager never sees it because an unmap event is not sent
-      to an already unmapped window.
-    */
-    BlackboxWindow *win = searchWindow(e->xreparent.window);
-    if (win) {
-      win->reparentNotifyEvent(&e->xreparent);
-    } else {
-      Slit *slit = searchSlit(e->xreparent.window);
-      if (slit && slit->getWindowID() != e->xreparent.parent)
-        slit->removeClient(e->xreparent.window, True);
-    }
-    break;
-  }
-
-  case MotionNotify: {
-    // motion notify compression...
-    XEvent realevent;
-    unsigned int i = 0;
-    while (XCheckTypedWindowEvent(getXDisplay(), e->xmotion.window,
-                                  MotionNotify, &realevent)) {
-      i++;
-    }
-
-    // if we have compressed some motion events, use the last one
-    if ( i > 0 )
-      e = &realevent;
-
-    // strip the lock key modifiers
-    e->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
-
-    last_time = e->xmotion.time;
-
-    BlackboxWindow *win = (BlackboxWindow *) 0;
-    Basemenu *menu = (Basemenu *) 0;
-
-    if ((win = searchWindow(e->xmotion.window)))
-      win->motionNotifyEvent(&e->xmotion);
-    else if ((menu = searchMenu(e->xmotion.window)))
-      menu->motionNotifyEvent(&e->xmotion);
-
-    break;
-  }
-
-  case PropertyNotify: {
-    last_time = e->xproperty.time;
-
-    BlackboxWindow *win = searchWindow(e->xproperty.window);
-    if (win)
-      win->propertyNotifyEvent(&e->xproperty);
-    break;
-  }
-
-  case EnterNotify: {
-    last_time = e->xcrossing.time;
-
-    BScreen *screen = (BScreen *) 0;
-    BlackboxWindow *win = (BlackboxWindow *) 0;
-    Basemenu *menu = (Basemenu *) 0;
-    Toolbar *tbar = (Toolbar *) 0;
-    Slit *slit = (Slit *) 0;
-
-    if (e->xcrossing.mode == NotifyGrab) break;
-
-    if ((e->xcrossing.window == e->xcrossing.root) &&
-        (screen = searchScreen(e->xcrossing.window))) {
-      screen->getImageControl()->installRootColormap();
-    } else if ((win = searchWindow(e->xcrossing.window))) {
-      if (! no_focus)
-        win->enterNotifyEvent(&e->xcrossing);
-    } else if ((menu = searchMenu(e->xcrossing.window))) {
-      menu->enterNotifyEvent(&e->xcrossing);
-    } else if ((tbar = searchToolbar(e->xcrossing.window))) {
-      tbar->enterNotifyEvent(&e->xcrossing);
-    } else if ((slit = searchSlit(e->xcrossing.window))) {
-      slit->enterNotifyEvent(&e->xcrossing);
-    }
-    break;
-  }
-
-  case LeaveNotify: {
-    last_time = e->xcrossing.time;
-
-    BlackboxWindow *win = (BlackboxWindow *) 0;
-    Basemenu *menu = (Basemenu *) 0;
-    Toolbar *tbar = (Toolbar *) 0;
-    Slit *slit = (Slit *) 0;
-
-    if ((menu = searchMenu(e->xcrossing.window)))
-      menu->leaveNotifyEvent(&e->xcrossing);
-    else if ((win = searchWindow(e->xcrossing.window)))
-      win->leaveNotifyEvent(&e->xcrossing);
-    else if ((tbar = searchToolbar(e->xcrossing.window)))
-      tbar->leaveNotifyEvent(&e->xcrossing);
-    else if ((slit = searchSlit(e->xcrossing.window)))
-      slit->leaveNotifyEvent(&e->xcrossing);
-    break;
-  }
-
-  case Expose: {
-    // compress expose events
-    XEvent realevent;
-    unsigned int i = 0;
-    int ex1, ey1, ex2, ey2;
-    ex1 = e->xexpose.x;
-    ey1 = e->xexpose.y;
-    ex2 = ex1 + e->xexpose.width - 1;
-    ey2 = ey1 + e->xexpose.height - 1;
-    while (XCheckTypedWindowEvent(getXDisplay(), e->xexpose.window,
-                                  Expose, &realevent)) {
-      i++;
-
-      // merge expose area
-      ex1 = std::min(realevent.xexpose.x, ex1);
-      ey1 = std::min(realevent.xexpose.y, ey1);
-      ex2 = std::max(realevent.xexpose.x + realevent.xexpose.width - 1, ex2);
-      ey2 = std::max(realevent.xexpose.y + realevent.xexpose.height - 1, ey2);
-    }
-    if ( i > 0 )
-      e = &realevent;
-
-    // use the merged area
-    e->xexpose.x = ex1;
-    e->xexpose.y = ey1;
-    e->xexpose.width = ex2 - ex1 + 1;
-    e->xexpose.height = ey2 - ey1 + 1;
-
-    BlackboxWindow *win = (BlackboxWindow *) 0;
-    Basemenu *menu = (Basemenu *) 0;
-    Toolbar *tbar = (Toolbar *) 0;
-
-    if ((win = searchWindow(e->xexpose.window)))
-      win->exposeEvent(&e->xexpose);
-    else if ((menu = searchMenu(e->xexpose.window)))
-      menu->exposeEvent(&e->xexpose);
-    else if ((tbar = searchToolbar(e->xexpose.window)))
-      tbar->exposeEvent(&e->xexpose);
-
-    break;
-  }
-
-  case KeyPress: {
-    Toolbar *tbar = searchToolbar(e->xkey.window);
-
-    if (tbar && tbar->isEditing())
-      tbar->keyPressEvent(&e->xkey);
-
-    break;
-  }
-
   case ColormapNotify: {
-    BScreen *screen = searchScreen(e->xcolormap.window);
+    BScreen *screen = findScreen(e->xcolormap.window);
 
     if (screen)
       screen->setRootColormapInstalled((e->xcolormap.state ==
@@ -531,7 +264,7 @@ void Blackbox::process_event(XEvent *e) {
       break;
     }
 
-    BlackboxWindow *win = searchWindow(e->xfocus.window);
+    BlackboxWindow *win = findWindow(e->xfocus.window);
     if (win) {
       if (! win->isFocused())
         win->setFocusFlag(True);
@@ -557,7 +290,7 @@ void Blackbox::process_event(XEvent *e) {
       break;
     }
 
-    BlackboxWindow *win = searchWindow(e->xfocus.window);
+    BlackboxWindow *win = findWindow(e->xfocus.window);
     if (win && win->isFocused()) {
       /*
         before we mark "win" as unfocused, we need to verify that focus is
@@ -593,7 +326,7 @@ void Blackbox::process_event(XEvent *e) {
         Window w;
         int revert;
         XGetInputFocus(getXDisplay(), &w, &revert);
-        focus = searchWindow(w);
+        focus = findWindow(w);
         if (focus) {
           /*
             focus got from "win" to "focus" under some very strange
@@ -614,21 +347,21 @@ void Blackbox::process_event(XEvent *e) {
   case ClientMessage: {
     if (e->xclient.format == 32) {
       if (e->xclient.message_type == getWMChangeStateAtom()) {
-        BlackboxWindow *win = searchWindow(e->xclient.window);
+        BlackboxWindow *win = findWindow(e->xclient.window);
         if (! win || ! win->validateClient()) return;
 
         if (e->xclient.data.l[0] == IconicState)
           win->iconify();
         if (e->xclient.data.l[0] == NormalState)
           win->deiconify();
-      } else if(e->xclient.message_type == getBlackboxChangeWorkspaceAtom() ||
-                e->xclient.message_type == netwm()->currentDesktop()) {
-        BScreen *screen = searchScreen(e->xclient.window);
+      } else if (e->xclient.message_type == getBlackboxChangeWorkspaceAtom() ||
+                 e->xclient.message_type == netwm()->currentDesktop()) {
+        BScreen *screen = findScreen(e->xclient.window);
         unsigned int workspace = e->xclient.data.l[0];
         if (screen && workspace < screen->getWorkspaceCount())
           screen->changeWorkspaceID(workspace);
       } else if (e->xclient.message_type == netwm()->numberOfDesktops()) {
-        BScreen *screen = searchScreen(e->xclient.window);
+        BScreen *screen = findScreen(e->xclient.window);
         if (screen) {
           unsigned int number = e->xclient.data.l[0];
           unsigned int wkspc_count = screen->getWorkspaceCount();
@@ -640,13 +373,14 @@ void Blackbox::process_event(XEvent *e) {
               screen->removeLastWorkspace();
           }
         }
-      } else if (e->xclient.message_type == getBlackboxChangeWindowFocusAtom()) {
-        BlackboxWindow *win = searchWindow(e->xclient.window);
+      } else if (e->xclient.message_type ==
+                 getBlackboxChangeWindowFocusAtom()) {
+        BlackboxWindow *win = findWindow(e->xclient.window);
 
         if (win && win->isVisible() && win->setInputFocus())
           win->installColormap(True);
       } else if (e->xclient.message_type == netwm()->activeWindow()) {
-        BlackboxWindow *win = searchWindow(e->xclient.window);
+        BlackboxWindow *win = findWindow(e->xclient.window);
         if (win) {
           if (win->isIconic())
             win->deiconify(False, False);
@@ -662,8 +396,9 @@ void Blackbox::process_event(XEvent *e) {
             win->installColormap(True);
           }
         }
-      } else if (e->xclient.message_type == getBlackboxCycleWindowFocusAtom()) {
-        BScreen *screen = searchScreen(e->xclient.window);
+      } else if (e->xclient.message_type ==
+                 getBlackboxCycleWindowFocusAtom()) {
+        BScreen *screen = findScreen(e->xclient.window);
 
         if (screen) {
           if (! e->xclient.data.l[0])
@@ -671,8 +406,9 @@ void Blackbox::process_event(XEvent *e) {
           else
             screen->nextFocus();
         }
-      } else if (e->xclient.message_type == getBlackboxChangeAttributesAtom()) {
-        BlackboxWindow *win = searchWindow(e->xclient.window);
+      } else if (e->xclient.message_type ==
+                 getBlackboxChangeAttributesAtom()) {
+        BlackboxWindow *win = findWindow(e->xclient.window);
 
         if (win && win->validateClient()) {
           BlackboxHints net;
@@ -690,21 +426,35 @@ void Blackbox::process_event(XEvent *e) {
     break;
   }
 
-  case NoExpose:
-  case ConfigureNotify:
-  case MapNotify:
-    break; // not handled, just ignore
-
   default: {
-#ifdef    SHAPE
-    if (e->type == getShapeEventBase()) {
-      XShapeEvent *shape_event = (XShapeEvent *) e;
-      BlackboxWindow *win = searchWindow(e->xany.window);
+    // Send the event through the default EventHandlers.
+    BaseDisplay::process_event(e);
 
-      if (win)
-        win->shapeEvent(shape_event);
+    /*
+      Event post processing... in some cases, we need to do a few
+      extra things after the event has been delivered.  We do that
+      here.
+    */
+    switch (e->type) {
+    case ButtonPress: {
+      BScreen *screen = findScreen(e->xbutton.window);
+      if (screen && active_screen != screen) {
+        /*
+          The user clicked on the root window on a screen that is not
+          active... make it active.
+        */
+        active_screen = screen;
+        // first, set no focus window on the old screen
+        setFocusedWindow(0);
+        // and move focus to this screen
+        setFocusedWindow(0);
+      }
+      break;
     }
-#endif // SHAPE
+
+    default: break;
+    }
+    break;
   }
   } // switch
 }
@@ -798,30 +548,33 @@ bool Blackbox::validateWindow(Window window) {
   return True;
 }
 
-
-BScreen *Blackbox::searchScreen(Window window) {
+BScreen *Blackbox::findScreen(Window window) {
   ScreenList::iterator it = screenList.begin();
-
-  for (; it != screenList.end(); ++it) {
-    BScreen *s = *it;
-    if (s->getRootWindow() == window)
-      return s;
-  }
-
-  return (BScreen *) 0;
+  for (; it != screenList.end(); ++it)
+    if ((*it)->getRootWindow() == window)
+      return *it;
+  return 0;
 }
 
-
-BlackboxWindow *Blackbox::searchWindow(Window window) {
+BlackboxWindow *Blackbox::findWindow(Window window) {
   WindowLookup::iterator it = windowSearchList.find(window);
   if (it != windowSearchList.end())
     return it->second;
-
-  return (BlackboxWindow*) 0;
+  return 0;
 }
 
 
-BWindowGroup *Blackbox::searchGroup(Window window) {
+void Blackbox::insertWindow(Window window, BlackboxWindow *data) {
+  windowSearchList.insert(WindowLookupPair(window, data));
+}
+
+
+void Blackbox::removeWindow(Window window) {
+  windowSearchList.erase(window);
+}
+
+
+BWindowGroup *Blackbox::findWindowGroup(Window window) {
   GroupLookup::iterator it = groupSearchList.find(window);
   if (it != groupSearchList.end())
     return it->second;
@@ -830,80 +583,13 @@ BWindowGroup *Blackbox::searchGroup(Window window) {
 }
 
 
-Basemenu *Blackbox::searchMenu(Window window) {
-  MenuLookup::iterator it = menuSearchList.find(window);
-  if (it != menuSearchList.end())
-    return it->second;
-
-  return (Basemenu*) 0;
-}
-
-
-Toolbar *Blackbox::searchToolbar(Window window) {
-  ToolbarLookup::iterator it = toolbarSearchList.find(window);
-  if (it != toolbarSearchList.end())
-    return it->second;
-
-  return (Toolbar*) 0;
-}
-
-
-Slit *Blackbox::searchSlit(Window window) {
-  SlitLookup::iterator it = slitSearchList.find(window);
-  if (it != slitSearchList.end())
-    return it->second;
-
-  return (Slit*) 0;
-}
-
-
-void Blackbox::saveWindowSearch(Window window, BlackboxWindow *data) {
-  windowSearchList.insert(WindowLookupPair(window, data));
-}
-
-
-void Blackbox::saveGroupSearch(Window window, BWindowGroup *data) {
+void Blackbox::insertWindowGroup(Window window, BWindowGroup *data) {
   groupSearchList.insert(GroupLookupPair(window, data));
 }
 
 
-void Blackbox::saveMenuSearch(Window window, Basemenu *data) {
-  menuSearchList.insert(MenuLookupPair(window, data));
-}
-
-
-void Blackbox::saveToolbarSearch(Window window, Toolbar *data) {
-  toolbarSearchList.insert(ToolbarLookupPair(window, data));
-}
-
-
-void Blackbox::saveSlitSearch(Window window, Slit *data) {
-  slitSearchList.insert(SlitLookupPair(window, data));
-}
-
-
-void Blackbox::removeWindowSearch(Window window) {
-  windowSearchList.erase(window);
-}
-
-
-void Blackbox::removeGroupSearch(Window window) {
+void Blackbox::removeWindowGroup(Window window) {
   groupSearchList.erase(window);
-}
-
-
-void Blackbox::removeMenuSearch(Window window) {
-  menuSearchList.erase(window);
-}
-
-
-void Blackbox::removeToolbarSearch(Window window) {
-  toolbarSearchList.erase(window);
-}
-
-
-void Blackbox::removeSlitSearch(Window window) {
-  slitSearchList.erase(window);
 }
 
 

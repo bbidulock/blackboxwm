@@ -129,7 +129,7 @@ Basemenu::Basemenu(BScreen *scrn) {
                   menu.x, menu.y, menu.width, menu.height,
                   screen->getBorderWidth(), screen->getDepth(),
                   InputOutput, screen->getVisual(), attrib_mask, &attrib);
-  blackbox->saveMenuSearch(menu.window, this);
+  blackbox->insertEventHandler(menu.window, this);
 
   attrib_mask = CWBackPixmap | CWBackPixel | CWBorderPixel | CWEventMask;
   attrib.background_pixel = screen->getBorderColor()->pixel();
@@ -139,7 +139,7 @@ Basemenu::Basemenu(BScreen *scrn) {
     XCreateWindow(display, menu.window, 0, 0, menu.width, menu.height, 0,
                   screen->getDepth(), InputOutput, screen->getVisual(),
                   attrib_mask, &attrib);
-  blackbox->saveMenuSearch(menu.title, this);
+  blackbox->insertEventHandler(menu.title, this);
 
   attrib.event_mask |= PointerMotionMask;
   menu.frame = XCreateWindow(display, menu.window, 0,
@@ -147,7 +147,7 @@ Basemenu::Basemenu(BScreen *scrn) {
                              menu.width, menu.frame_h, 0,
                              screen->getDepth(), InputOutput,
                              screen->getVisual(), attrib_mask, &attrib);
-  blackbox->saveMenuSearch(menu.frame, this);
+  blackbox->insertEventHandler(menu.frame, this);
 
   // even though this is the end of the constructor the menu is still not
   // completely created.  items must be inserted and it must be update()'d
@@ -188,13 +188,12 @@ Basemenu::~Basemenu(void) {
   if (menu.sel_pixmap)
     image_ctrl->removeImage(menu.sel_pixmap);
 
-  blackbox->removeMenuSearch(menu.title);
+  blackbox->removeEventHandler(menu.title);
+  blackbox->removeEventHandler(menu.frame);
+  blackbox->removeEventHandler(menu.window);
+
   XDestroyWindow(display, menu.title);
-
-  blackbox->removeMenuSearch(menu.frame);
   XDestroyWindow(display, menu.frame);
-
-  blackbox->removeMenuSearch(menu.window);
   XDestroyWindow(display, menu.window);
 }
 
@@ -799,7 +798,7 @@ bool Basemenu::isItemEnabled(int index) {
 }
 
 
-void Basemenu::buttonPressEvent(XButtonEvent *be) {
+void Basemenu::buttonPressEvent(const XButtonEvent * const be) {
   if (be->window == menu.frame) {
     const int sbl = (be->x / menu.item_w), i = (be->y / menu.item_h),
       w = (sbl * menu.persub) + i;
@@ -822,7 +821,7 @@ void Basemenu::buttonPressEvent(XButtonEvent *be) {
 }
 
 
-void Basemenu::buttonReleaseEvent(XButtonEvent *re) {
+void Basemenu::buttonReleaseEvent(const XButtonEvent * const re) {
   if (re->window == menu.title) {
     if (moving) {
       moving = False;
@@ -863,7 +862,7 @@ void Basemenu::buttonReleaseEvent(XButtonEvent *re) {
 }
 
 
-void Basemenu::motionNotifyEvent(XMotionEvent *me) {
+void Basemenu::motionNotifyEvent(const XMotionEvent * const me) {
   if (me->window == menu.title && (me->state & Button1Mask)) {
     if (movable) {
       if (! moving) {
@@ -923,7 +922,7 @@ void Basemenu::motionNotifyEvent(XMotionEvent *me) {
 }
 
 
-void Basemenu::exposeEvent(XExposeEvent *ee) {
+void Basemenu::exposeEvent(const XExposeEvent * const ee) {
   if (ee->window == menu.title) {
     redrawTitle();
   } else if (ee->window == menu.frame) {
@@ -957,7 +956,7 @@ void Basemenu::exposeEvent(XExposeEvent *ee) {
 }
 
 
-void Basemenu::enterNotifyEvent(XCrossingEvent *ce) {
+void Basemenu::enterNotifyEvent(const XCrossingEvent * const ce) {
   if (ce->window == menu.frame) {
     menu.x_shift = menu.x, menu.y_shift = menu.y;
     if (menu.x + menu.width > screen->getWidth()) {
@@ -999,7 +998,7 @@ void Basemenu::enterNotifyEvent(XCrossingEvent *ce) {
 }
 
 
-void Basemenu::leaveNotifyEvent(XCrossingEvent *ce) {
+void Basemenu::leaveNotifyEvent(const XCrossingEvent * const ce) {
   if (ce->window == menu.frame) {
     if (which_press != -1 && which_sbl != -1 && ! menuitems.empty()) {
       const int p = (which_sbl * menu.persub) + which_press;

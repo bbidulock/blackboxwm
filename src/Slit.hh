@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Slit.hh for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
@@ -91,7 +91,7 @@ public:
 };
 
 
-class Slit : public TimeoutHandler {
+class Slit : public TimeoutHandler, public EventHandler {
 public:
   struct SlitClient {
     Window window, client_window, icon_window;
@@ -169,11 +169,13 @@ public:
   void shutdown(void);
   void toggleAutoHide(void);
 
-  void buttonPressEvent(const XButtonEvent *e);
-  void enterNotifyEvent(const XCrossingEvent * /*unused*/);
-  void leaveNotifyEvent(const XCrossingEvent * /*unused*/);
-  void configureRequestEvent(const XConfigureRequestEvent *e);
-  void unmapNotifyEvent(const XUnmapEvent *e);
+  // EventHandler interface
+  void buttonPressEvent(const XButtonEvent * const e);
+  void enterNotifyEvent(const XCrossingEvent * const /*unused*/);
+  void leaveNotifyEvent(const XCrossingEvent * const /*unused*/);
+  void configureRequestEvent(const XConfigureRequestEvent * const e);
+  void unmapNotifyEvent(const XUnmapEvent * const e);
+  void reparentNotifyEvent(const XReparentEvent * const event);
 
   virtual void timeout(void);
 

@@ -168,10 +168,10 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   getWMNormalHints();
 
   frame.window = createToplevelWindow();
-  blackbox->saveWindowSearch(frame.window, this);
+  blackbox->insertEventHandler(frame.window, this);
 
   frame.plate = createChildWindow(frame.window, ExposureMask);
-  blackbox->saveWindowSearch(frame.plate, this);
+  blackbox->insertEventHandler(frame.plate, this);
 
   // determine if this is a transient window
   getTransientInfo();
@@ -222,7 +222,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   associateClientWindow();
 
-  blackbox->saveWindowSearch(client.window, this);
+  blackbox->insertEventHandler(client.window, this);
+  blackbox->insertWindow(client.window, this);
 
   if (blackbox_attrib.workspace >= screen->getWorkspaceCount())
     screen->getCurrentWorkspace()->addWindow(this, place_window);
@@ -309,7 +310,7 @@ BlackboxWindow::~BlackboxWindow(void) {
   delete windowmenu;
 
   if (client.window_group) {
-    BWindowGroup *group = blackbox->searchGroup(client.window_group);
+    BWindowGroup *group = blackbox->findWindowGroup(client.window_group);
     if (group) group->removeWindow(this);
   }
 
@@ -335,16 +336,17 @@ BlackboxWindow::~BlackboxWindow(void) {
     destroyHandle();
 
   if (frame.plate) {
-    blackbox->removeWindowSearch(frame.plate);
+    blackbox->removeEventHandler(frame.plate);
     XDestroyWindow(blackbox->getXDisplay(), frame.plate);
   }
 
   if (frame.window) {
-    blackbox->removeWindowSearch(frame.window);
+    blackbox->removeEventHandler(frame.window);
     XDestroyWindow(blackbox->getXDisplay(), frame.window);
   }
 
-  blackbox->removeWindowSearch(client.window);
+  blackbox->removeEventHandler(client.window);
+  blackbox->removeWindow(client.window);
 }
 
 
@@ -541,21 +543,21 @@ void BlackboxWindow::createHandle(void) {
   frame.handle = createChildWindow(frame.window,
                                    ButtonPressMask | ButtonReleaseMask |
                                    ButtonMotionMask | ExposureMask);
-  blackbox->saveWindowSearch(frame.handle, this);
+  blackbox->insertEventHandler(frame.handle, this);
 
   frame.left_grip =
     createChildWindow(frame.handle,
                       ButtonPressMask | ButtonReleaseMask |
                       ButtonMotionMask | ExposureMask,
                       blackbox->getLowerLeftAngleCursor());
-  blackbox->saveWindowSearch(frame.left_grip, this);
+  blackbox->insertEventHandler(frame.left_grip, this);
 
   frame.right_grip =
     createChildWindow(frame.handle,
                       ButtonPressMask | ButtonReleaseMask |
                       ButtonMotionMask | ExposureMask,
                       blackbox->getLowerRightAngleCursor());
-  blackbox->saveWindowSearch(frame.right_grip, this);
+  blackbox->insertEventHandler(frame.right_grip, this);
 }
 
 
@@ -572,14 +574,14 @@ void BlackboxWindow::destroyHandle(void) {
   if (frame.ugrip)
     screen->getImageControl()->removeImage(frame.ugrip);
 
-  blackbox->removeWindowSearch(frame.left_grip);
-  blackbox->removeWindowSearch(frame.right_grip);
+  blackbox->removeEventHandler(frame.left_grip);
+  blackbox->removeEventHandler(frame.right_grip);
 
   XDestroyWindow(blackbox->getXDisplay(), frame.left_grip);
   XDestroyWindow(blackbox->getXDisplay(), frame.right_grip);
   frame.left_grip = frame.right_grip = None;
 
-  blackbox->removeWindowSearch(frame.handle);
+  blackbox->removeEventHandler(frame.handle);
   XDestroyWindow(blackbox->getXDisplay(), frame.handle);
   frame.handle = None;
 }
@@ -592,8 +594,8 @@ void BlackboxWindow::createTitlebar(void) {
   frame.label = createChildWindow(frame.title,
                                   ButtonPressMask | ButtonReleaseMask |
                                   ButtonMotionMask | ExposureMask);
-  blackbox->saveWindowSearch(frame.title, this);
-  blackbox->saveWindowSearch(frame.label, this);
+  blackbox->insertEventHandler(frame.title, this);
+  blackbox->insertEventHandler(frame.label, this);
 
   if (decorations & Decor_Iconify) createIconifyButton();
   if (decorations & Decor_Maximize) createMaximizeButton();
@@ -632,8 +634,8 @@ void BlackboxWindow::destroyTitlebar(void) {
   if (frame.pbutton)
     screen->getImageControl()->removeImage(frame.pbutton);
 
-  blackbox->removeWindowSearch(frame.title);
-  blackbox->removeWindowSearch(frame.label);
+  blackbox->removeEventHandler(frame.title);
+  blackbox->removeEventHandler(frame.label);
 
   XDestroyWindow(blackbox->getXDisplay(), frame.label);
   XDestroyWindow(blackbox->getXDisplay(), frame.title);
@@ -647,13 +649,13 @@ void BlackboxWindow::createCloseButton(void) {
                                            ButtonPressMask |
                                            ButtonReleaseMask |
                                            ButtonMotionMask | ExposureMask);
-    blackbox->saveWindowSearch(frame.close_button, this);
+    blackbox->insertEventHandler(frame.close_button, this);
   }
 }
 
 
 void BlackboxWindow::destroyCloseButton(void) {
-  blackbox->removeWindowSearch(frame.close_button);
+  blackbox->removeEventHandler(frame.close_button);
   XDestroyWindow(blackbox->getXDisplay(), frame.close_button);
   frame.close_button = None;
 }
@@ -665,13 +667,13 @@ void BlackboxWindow::createIconifyButton(void) {
                                              ButtonPressMask |
                                              ButtonReleaseMask |
                                              ButtonMotionMask | ExposureMask);
-    blackbox->saveWindowSearch(frame.iconify_button, this);
+    blackbox->insertEventHandler(frame.iconify_button, this);
   }
 }
 
 
 void BlackboxWindow::destroyIconifyButton(void) {
-  blackbox->removeWindowSearch(frame.iconify_button);
+  blackbox->removeEventHandler(frame.iconify_button);
   XDestroyWindow(blackbox->getXDisplay(), frame.iconify_button);
   frame.iconify_button = None;
 }
@@ -683,13 +685,13 @@ void BlackboxWindow::createMaximizeButton(void) {
                                               ButtonPressMask |
                                               ButtonReleaseMask |
                                               ButtonMotionMask | ExposureMask);
-    blackbox->saveWindowSearch(frame.maximize_button, this);
+    blackbox->insertEventHandler(frame.maximize_button, this);
   }
 }
 
 
 void BlackboxWindow::destroyMaximizeButton(void) {
-  blackbox->removeWindowSearch(frame.maximize_button);
+  blackbox->removeEventHandler(frame.maximize_button);
   XDestroyWindow(blackbox->getXDisplay(), frame.maximize_button);
   frame.maximize_button = None;
 }
@@ -942,7 +944,7 @@ void BlackboxWindow::getWMHints(void) {
 
   // remove from current window group
   if (client.window_group) {
-    BWindowGroup *group = blackbox->searchGroup(client.window_group);
+    BWindowGroup *group = blackbox->findWindowGroup(client.window_group);
     if (group) group->removeWindow(this);
   }
   client.window_group = None;
@@ -970,10 +972,10 @@ void BlackboxWindow::getWMHints(void) {
     client.window_group = wmhint->window_group;
 
     // add window to the appropriate group
-    BWindowGroup *group = blackbox->searchGroup(client.window_group);
+    BWindowGroup *group = blackbox->findWindowGroup(client.window_group);
     if (! group) { // no group found, create it!
       new BWindowGroup(blackbox, client.window_group);
-      group = blackbox->searchGroup(client.window_group);
+      group = blackbox->findWindowGroup(client.window_group);
     }
     if (group)
       group->addWindow(this);
@@ -1236,11 +1238,11 @@ void BlackboxWindow::getTransientInfo(void) {
     return;
   }
 
-  client.transient_for = blackbox->searchWindow(trans_for);
+  client.transient_for = blackbox->findWindow(trans_for);
   if (! client.transient_for &&
       client.window_group && trans_for == client.window_group) {
     // no direct transient_for, perhaps this is a group transient?
-    BWindowGroup *group = blackbox->searchGroup(client.window_group);
+    BWindowGroup *group = blackbox->findWindowGroup(client.window_group);
     if (group) client.transient_for = group->find(screen);
   }
 
@@ -2579,7 +2581,7 @@ void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent *cr) {
 }
 
 
-void BlackboxWindow::buttonPressEvent(const XButtonEvent *be) {
+void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
 #ifdef DEBUG
   fprintf(stderr, "BlackboxWindow::buttonPressEvent() for 0x%lx\n",
           client.window);
@@ -2667,7 +2669,7 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent *be) {
 }
 
 
-void BlackboxWindow::buttonReleaseEvent(const XButtonEvent *re) {
+void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const re) {
 #ifdef DEBUG
   fprintf(stderr, "BlackboxWindow::buttonReleaseEvent() for 0x%lx\n",
           client.window);
@@ -2953,7 +2955,7 @@ void BlackboxWindow::leaveNotifyEvent(const XCrossingEvent*) {
 
 
 #ifdef    SHAPE
-void BlackboxWindow::shapeEvent(XShapeEvent *) {
+void BlackboxWindow::shapeEvent(const XShapeEvent * const) {
   if (blackbox->hasShapeExtensions() && flags.shaped) {
     configureShape();
   }
@@ -3333,12 +3335,12 @@ BWindowGroup::BWindowGroup(Blackbox *b, Window _group)
   XSelectInput(blackbox->getXDisplay(), group,
                PropertyChangeMask | FocusChangeMask | StructureNotifyMask);
 
-  blackbox->saveGroupSearch(group, this);
+  blackbox->insertWindowGroup(group, this);
 }
 
 
 BWindowGroup::~BWindowGroup(void) {
-  blackbox->removeGroupSearch(group);
+  blackbox->removeWindowGroup(group);
 }
 
 
