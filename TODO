@@ -19,6 +19,10 @@ warts:
 
 Stuff TODO or On The Way(tm):
 -----------------------------
+ADD: proper support for omnipresent windows
+
+DEL: blackbox's Netizen implementation
+
 CHANGE: sigaction is defined by POSIX.1, so we should drop the older
         signal mechanism for easier code maintenance.  anyone with
         objects to making blackbox require a POSIX.1 compliant host
@@ -30,8 +34,6 @@ CHANGE: use a single XInternAtoms call to initialize all atoms in the
 FIX: window colormap installation should follow focus... it doesn't at
      the moment, and the changes in the event handling have removed
      colormap installation completely.
-
-CHANGE: sticky windows are not handled well
 
 ADD: add _BLACKBOX_STYLE and _BLACKBOX_MENU atoms so that bbtools, bbconf,
      etc. can get the current path to the style in use and menu.
