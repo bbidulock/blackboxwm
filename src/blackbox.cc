@@ -658,3 +658,9 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
     _netwm->setActiveWindow(old_screen->screenInfo().rootWindow(), active);
   }
 }
+
+
+BScreen* Blackbox::screenNumber(unsigned int n) {
+  assert(n < screen_list_count);
+  return screen_list[n];
+}

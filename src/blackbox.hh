@@ -132,10 +132,7 @@ public:
   BScreen *activeScreen(void) const { return active_screen; }
   void setActiveScreen(BScreen *screen);
   unsigned int screenCount(void) const { return screen_list_count; }
-  BScreen* screenNumber(unsigned int n) {
-    assert(n < screen_list_count);
-    return screen_list[n];
-  }
+  BScreen* screenNumber(unsigned int n);
 
   BlackboxWindow *findWindow(Window window);
   void insertWindow(Window window, BlackboxWindow *data);
