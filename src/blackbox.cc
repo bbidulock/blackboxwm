@@ -550,7 +550,7 @@ void Blackbox::save_rc(void) {
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.imageDither: %s",
-            ((screen->getImageControl()->doDither()) ? "True" : "False"));
+            (bt::Image::isDitherEnabled() ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.fullMaximization: %s", screen_number,

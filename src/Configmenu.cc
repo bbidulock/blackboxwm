@@ -99,7 +99,7 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
 
 void Configmenu::refresh(void) {
   setItemChecked(ConfigmenuImageDithering,
-                 _bscreen->getImageControl()->doDither());
+                 bt::Image::isDitherEnabled());
   setItemChecked(ConfigmenuOpaqueMove,
                  _bscreen->doOpaqueMove());
   setItemChecked(ConfigmenuFullMax,
@@ -118,8 +118,7 @@ void Configmenu::itemClicked(unsigned int id, unsigned int button) {
 
   switch (id) {
   case ConfigmenuImageDithering: // dither
-    _bscreen->getImageControl()->
-      setDither(! _bscreen->getImageControl()->doDither());
+    bt::Image::setDitherEnabled(! bt::Image::isDitherEnabled());
     break;
 
   case ConfigmenuOpaqueMove: // opaque move

@@ -43,21 +43,13 @@ extern "C" {
 #include "Texture.hh"
 
 
-bt::ImageControl *ctrl = 0;
-
 bt::ImageControl::ImageControl(TimerQueueManager *app,
                                Display &_display,
                                const ScreenInfo *scrn,
-                               bool _dither, int _cpc,
+                               bool, int,
                                unsigned long cache_timeout,
-                               unsigned long cmax): display(_display)
+                               unsigned long cmax) : display(_display)
 {
-  if (! ctrl) ctrl = this;
-
-  screeninfo = scrn;
-  setDither(_dither);
-  setColorsPerChannel(_cpc);
-
   cache_max = cmax;
   if (cache_timeout) {
     timer = new Timer(app, this);
@@ -66,11 +58,8 @@ bt::ImageControl::ImageControl(TimerQueueManager *app,
   } else {
     timer = (bt::Timer *) 0;
   }
-
-  screen_depth = screeninfo->getDepth();
-  window = screeninfo->getRootWindow();
-  screen_number = screeninfo->getScreenNumber();
-  colormap = screeninfo->getColormap();
+  window = scrn->getRootWindow();
+  colormap = scrn->getColormap();
 }
 
 
@@ -186,14 +175,6 @@ void bt::ImageControl::installRootColormap(void) {
 
     XFree(cmaps);
   }
-}
-
-
-void bt::ImageControl::setColorsPerChannel(int cpc) {
-  if (cpc < 2) cpc = 2;
-  if (cpc > 6) cpc = 6;
-
-  colors_per_channel = cpc;
 }
 
 

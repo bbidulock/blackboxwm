@@ -157,7 +157,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
   blackbox->load_rc(this);
 
-  image_control->setDither(resource.image_dither);
+  // image_control->setDither(resource.image_dither);
 
   LoadStyle();
 

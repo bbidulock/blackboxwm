@@ -123,40 +123,19 @@ namespace bt {
                  unsigned long cmax = 200l);
     virtual ~ImageControl(void);
 
-    inline Display& getDisplay(void) const { return display; }
-
-    inline bool doDither(void) { return dither; }
-
-    inline const ScreenInfo *getScreenInfo(void) { return screeninfo; }
-
-    inline Window getDrawable(void) const { return window; }
-
-    inline Visual *getVisual(void) { return screeninfo->getVisual(); }
-
-    inline int getDepth(void) const { return screen_depth; }
-    inline int getColorsPerChannel(void) const
-    { return colors_per_channel; }
-
     Pixmap renderImage(unsigned int width, unsigned int height,
                        const Texture &texture);
 
     void installRootColormap(void);
     void removeImage(Pixmap pixmap);
-    void setDither(bool d) { dither = d; }
-    void setColorsPerChannel(int cpc);
 
     virtual void timeout(void);
 
   private:
-    bool dither;
-    Display& display;
-    const ScreenInfo *screeninfo;
-    Timer *timer;
-
-    Colormap colormap;
-
+    Display &display;
     Window window;
-    int colors_per_channel, screen_number, screen_depth;
+    Colormap colormap;
+    Timer *timer;
     unsigned long cache_max;
 
     typedef std::list<CachedImage> CacheContainer;
