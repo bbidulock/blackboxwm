@@ -1,4 +1,4 @@
--- README for Blackbox 0.40.x Beta - an X11 Window manager
+-- README for Blackbox 0.50.x Beta - an X11 Window manager
 -- Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
 --
 --  This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
 -- (See the included file COPYING / GPL-2.0)
 -- 
 
-This is the README for Blackbox 0.40.x Beta release.
+This is the README for Blackbox 0.50.x Beta release.
 
 The source tree for Blackbox is comprised of three subdirectories:
 
@@ -36,4 +36,24 @@ replacement for xsetroot.  Operation of bsetroot is almost the same as
 xsetroot, minus a few options.  The difference between xsetroot and bsetroot
 is that bsetroot has been coded for multiple screens (e.g. multi-headed
 displays), where as the stock xsetroot is not.
+
+Supported Platforms:
+--------------------
+ix86-Linux 2.0.x (libc5 and glibc2)
+ix86-Linux 2.1.x (libc5 and glibc2 - development platform)
+ix86-FreeBSD 3.0-current (w/ elf kernel! -lukin)
+ix86-FreeBSD 2.2.x-stable
+PPC-mkLinux (version?)
+Sparc-Solaris 2.6 (2.5 anyone?)
+ix86-Solaris 7 (== 2.7?)
+Alpha-Digital UNIX (version?)
+?-AIX (rs6k? version?)
+MIPS-IRIX 6.5 (requires gcc, MIPSpro didn't like some of the template-fu)
+ix86-OS/2 (version? recent successes?)
+
+NOTE: OS/2 support was included sometime in the 0.40.x series, but I have lost
+      touch with the person that contributed the patches.  The code is still in
+      place, but I don't know if 0.50.x still runs on this platform.
+
+Please email bhughes@tcac.net for other success reports.
 

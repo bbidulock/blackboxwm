@@ -88,6 +88,7 @@ void Iconmenu::itemSelected(int button, int item) {
     screen->getWorkspace(window->getWorkspaceNumber())->raiseWindow(window);
     window->deiconify();
 
+    hide();
     screen->getWorkspacemenu()->hide();
   }
 }

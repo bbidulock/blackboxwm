@@ -797,23 +797,27 @@ void Blackbox::process_event(XEvent *e) {
       Toolbar *tbar = (Toolbar *) 0;
 
       if (screen)
-	if (e->xkey.state & Mod1Mask) {
-	  if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Tab) {
-	    screen->nextFocus();
-	  }
-	} else if (e->xkey.state & ControlMask) {
+	if (e->xkey.state == (ControlMask | Mod1Mask)) {
 	  if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Left){
 	    if (screen->getCurrentWorkspaceID() > 0)
 	      screen->changeWorkspaceID(screen->getCurrentWorkspaceID() - 1);
 	    else
 	      screen->changeWorkspaceID(screen->getCount() - 1);
 	  } else if (XKeycodeToKeysym(display, e->xkey.keycode, 0) ==
-		     XK_Right){
+		     XK_Right) {
 	    if (screen->getCurrentWorkspaceID() != screen->getCount() - 1)
 	      screen->changeWorkspaceID(screen->getCurrentWorkspaceID() + 1);
 	    else
 	      screen->changeWorkspaceID(0);
 	  }
+	} else if (e->xkey.state == Mod1Mask) {
+          if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Tab) {
+            screen->nextFocus();
+          }
+        } else if (e->xkey.state & (Mod1Mask | ShiftMask)) {
+          if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Tab) {
+              screen->prevFocus();
+          }
 	} else if ((tbar = searchToolbar(e->xkey.window))) {
 	  tbar->keyPressEvent(&e->xkey);
 	}
@@ -1304,13 +1308,11 @@ void Blackbox::load_rc(void) {
 		     &value_type, &value)) {
     int len = strlen(value.addr);
     resource.menu_file = new char[len + 1];
-    memset(resource.menu_file, 0, len + 1);
-    strncpy(resource.menu_file, value.addr, len);
+    sprintf(resource.menu_file, "%s", value.addr);
   } else {
     int len = strlen(DEFAULTMENU);
     resource.menu_file = new char[len + 1];
-    memset(resource.menu_file, 0, len + 1);
-    strncpy(resource.menu_file, DEFAULTMENU, len);
+    sprintf(resource.menu_file, "%s", DEFAULTMENU);
   }
   
   if (XrmGetResource(database, "session.imageDither", "Session.ImageDither",
@@ -1322,7 +1324,7 @@ void Blackbox::load_rc(void) {
   } else
     resource.image_dither = True;
   
-  if (XrmGetResource(database, "session.colorPerChannel",
+  if (XrmGetResource(database, "session.colorsPerChannel",
 		     "Session.ColorsPerChannel", &value_type, &value)) {
     if (sscanf(value.addr, "%d", &resource.colors_per_channel) != 1) {
       resource.colors_per_channel = 4;
@@ -1338,13 +1340,11 @@ void Blackbox::load_rc(void) {
 		     &value_type, &value)) {
     int len = strlen(value.addr);
     resource.style_file = new char[len + 1];
-    memset(resource.style_file, 0, len + 1);
-    strncpy(resource.style_file, value.addr, len);
+    sprintf(resource.style_file, "%s", value.addr);
   } else {
     int len = strlen(DEFAULTSTYLE);
     resource.style_file = new char[len + 1];
-    memset(resource.style_file, 0, len + 1);
-    strncpy(resource.style_file, DEFAULTSTYLE, len);
+    sprintf(resource.style_file, "%s", DEFAULTSTYLE);
   }
 
   if (XrmGetResource(database, "session.doubleClickInterval",
@@ -1421,7 +1421,7 @@ void Blackbox::load_rc(BScreen *screen) {
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
 		     &value)) {
     char *search = new char[value.size];
-    strncpy(search, value.addr, value.size);
+    sprintf(search, "%s", value.addr);
     
     int i;
     for (i = 0; i < screen->getNumberOfWorkspaces(); i++) {
@@ -1477,7 +1477,7 @@ void Blackbox::load_rc(BScreen *screen) {
     screen->savePlacementPolicy(BScreen::SmartPlacement);
   
 #ifdef    HAVE_STRFTIME
-  char *format;
+  char *format = 0;
 
   sprintf(name_lookup,  "session.screen%d.strftimeFormat", screen_number);
   sprintf(class_lookup, "Session.Screen%d.StrftimeFormat", screen_number);
@@ -1485,17 +1485,13 @@ void Blackbox::load_rc(BScreen *screen) {
 		     &value)) {
     int len = strlen(value.addr);
     format = new char[len + 1];
-    memset(format, 0, len + 1);
-    strncpy(format, value.addr, len);
-    *(format + len + 1) = '\0';
+    sprintf (format, "%s", value.addr);
 
     screen->saveStrftimeFormat(format);
   } else {
     int len = strlen("%I:%M %p");
     format = new char[len + 1];
-    memset(format, 0, len + 1);
-    strncpy(format, "%I:%M %p", len);
-    *(format + len + 1) = '\0';
+    sprintf (format, "%%I:%%M %%p");
 
     screen->saveStrftimeFormat(format);
   }

@@ -1,5 +1,5 @@
 /*
- * bsetroot.c for Blackbox 0.40.x beta - an X11 Window manager
+ * bsetroot.c for Blackbox 0.50.x beta - an X11 Window manager
  * Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
  *
  *  This program is free software; you can redistribute it and/or modify

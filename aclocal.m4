@@ -1,7 +1,7 @@
-dnl aclocal.m4 generated automatically by aclocal 1.3
+dnl aclocal.m4 generated automatically by aclocal 1.4
 
-dnl Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
-dnl This Makefile.in is free software; the Free Software Foundation
+dnl Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
 
@@ -20,7 +20,7 @@ dnl Usage:
 dnl AM_INIT_AUTOMAKE(package,version, [no-define])
 
 AC_DEFUN(AM_INIT_AUTOMAKE,
-[AC_REQUIRE([AM_PROG_INSTALL])
+[AC_REQUIRE([AC_PROG_INSTALL])
 PACKAGE=[$1]
 AC_SUBST(PACKAGE)
 VERSION=[$2]
@@ -30,8 +30,8 @@ if test "`cd $srcdir && pwd`" != "`pwd`" && test -f $srcdir/config.status; then
   AC_MSG_ERROR([source directory already configured; run "make distclean" there first])
 fi
 ifelse([$3],,
-AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
-AC_DEFINE_UNQUOTED(VERSION, "$VERSION"))
+AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of package])
+AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package]))
 AC_REQUIRE([AM_SANITY_CHECK])
 AC_REQUIRE([AC_ARG_PROGRAM])
 dnl FIXME This is truly gross.
@@ -42,15 +42,6 @@ AM_MISSING_PROG(AUTOMAKE, automake, $missing_dir)
 AM_MISSING_PROG(AUTOHEADER, autoheader, $missing_dir)
 AM_MISSING_PROG(MAKEINFO, makeinfo, $missing_dir)
 AC_REQUIRE([AC_PROG_MAKE_SET])])
-
-
-# serial 1
-
-AC_DEFUN(AM_PROG_INSTALL,
-[AC_REQUIRE([AC_PROG_INSTALL])
-test -z "$INSTALL_SCRIPT" && INSTALL_SCRIPT='${INSTALL_PROGRAM}'
-AC_SUBST(INSTALL_SCRIPT)dnl
-])
 
 #
 # Check to make sure that the build environment is sane.
@@ -125,14 +116,24 @@ AC_DEFUN(AM_MAINTAINER_MODE,
       USE_MAINTAINER_MODE=$enableval,
       USE_MAINTAINER_MODE=no)
   AC_MSG_RESULT($USE_MAINTAINER_MODE)
-  if test $USE_MAINTAINER_MODE = yes; then
-    MAINT=
-  else
-    MAINT='#M#'
-  fi
+  AM_CONDITIONAL(MAINTAINER_MODE, test $USE_MAINTAINER_MODE = yes)
+  MAINT=$MAINTAINER_MODE_TRUE
   AC_SUBST(MAINT)dnl
 ]
 )
+
+# Define a conditional.
+
+AC_DEFUN(AM_CONDITIONAL,
+[AC_SUBST($1_TRUE)
+AC_SUBST($1_FALSE)
+if $2; then
+  $1_TRUE=
+  $1_FALSE='#'
+else
+  $1_TRUE='#'
+  $1_FALSE=
+fi])
 
 # Like AC_CONFIG_HEADER, but automatically create stamp file.
 

@@ -18,7 +18,7 @@
 #  (See the included file COPYING / GPL-2.0)
 #
 
-SUBDIRS = styles
+SUBDIRS = brueghel styles
 CLEANFILES = menu
 MAINTAINERCLEANFILES = Makefile.in
 pkgdata_DATA = rc menu
@@ -29,5 +29,5 @@ distclean-local:
 all-local: menu
 
 menu: menu.in
-	@regex_cmd@ -e "s,:pkgdatadir:,$(pkgdatadir)," menu.in > menu
+	@regex_cmd@ -e "s,@pkgdatadir@,$(pkgdatadir)," menu.in > menu
 

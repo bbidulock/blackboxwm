@@ -58,6 +58,7 @@ void Clientmenu::itemSelected(int button, int index) {
         if (win->isIconic())
           win->deiconify(True);
 
+        wkspc->raiseWindow(win);
         win->setInputFocus();
 	
         hide();

@@ -1,6 +1,27 @@
 ChangeLog for Blackbox 0.50.xx
 Enjoy! :)
 
+Changes from 0.50.2 to 0.50.3:
+  - few documentation updates
+  - fixes to let -lgen actually get linked with the executable (fixes compile
+    errors on some platforms, most notably, IRIX 6.5)
+  - a new series of styles has been added to the distribution (this accounts
+    for the increased size)
+  - fix to let 16 color servers run blackbox (colormap reduction)
+  - various bug fixes... numerous strncpy's changed to sprintfs...
+  - default font set internally to "fixed" (to let it run on servers that don't
+    have any fonts installed)
+  - fixed bug to let blackbox remove all but the last workspace (instead of the
+    last two)
+  - window gravity offset changes
+  - the default key grabs have changed... there are now 4: alt-tab,
+    shift-alt-tab, ctrl-alt-right, ctrl-alt-left... these keys perform
+    as would be expected
+  - fixed wire move bug for transient windows
+  - passified error handing for the main window class
+  - fixed gravity restore for restart/exit purposes
+
+
 Changes from 0.50.1 to 0.50.2:
   - minimal KDE integration (configure/compile time option, turned off by
     default).  This is unfinished and i can't really say if i ever will finish

@@ -96,7 +96,8 @@ Pixmap BImage::render_solid(const BTexture *texture) {
   
   gcv.foreground = texture->color.pixel;
   gcv.fill_style = FillSolid;
-  gc = XCreateGC(control->getDisplay(), pixmap, GCForeground | GCFillStyle, &gcv);
+  gc = XCreateGC(control->getDisplay(), pixmap, GCForeground | GCFillStyle,
+		 &gcv);
   
   gcv.foreground = texture->hiColor.pixel;
   hgc = XCreateGC(control->getDisplay(), pixmap, GCForeground, &gcv);
@@ -907,9 +908,11 @@ BImageControl::BImageControl(Blackbox *bb, BScreen *scrn) {
       if (colors_per_channel < 2 || ncolors > (1 << screen_depth)) {
 	fprintf(stderr,
 		"BImageControl::BImageControl: invalid colormap size %d "
-		"(%d/%d/%d)", ncolors, colors_per_channel, colors_per_channel,
-		colors_per_channel);
-	exit(1);
+		"(%d/%d/%d) - reducing",
+                ncolors, colors_per_channel, colors_per_channel,
+                colors_per_channel);
+
+        colors_per_channel = (1 << screen_depth) / 3; 
       }
       
       colors = new XColor[ncolors];

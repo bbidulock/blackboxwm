@@ -1,4 +1,4 @@
-# src/Makefile.am for Blackbox 0.40.x beta - an X11 Window manager
+# src/Makefile.am for Blackbox 0.50.x beta - an X11 Window manager
 # Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -18,11 +18,11 @@
 #  (See the included file COPYING / GPL-2.0)
 #
 
-CPPFLAGS =		@CPPFLAGS@				\
-			@SHAPE@					\
-			@KDE@					\
-			-DDEFAULTRC=\"$(pkgdatadir)/rc\"	\
-			-DDEFAULTMENU=\"$(pkgdatadir)/menu\"	\
+CPPFLAGS =		@CPPFLAGS@ \
+			@SHAPE@ \
+			@KDE@ \
+			-DDEFAULTRC=\"$(pkgdatadir)/rc\" \
+			-DDEFAULTMENU=\"$(pkgdatadir)/menu\" \
 			-DDEFAULTSTYLE=\"$(pkgdatadir)/styles/default\"
 
 bin_PROGRAMS =		blackbox
@@ -49,39 +49,38 @@ distclean-local:
 
 # local dependencies
 
-Basemenu.o: Basemenu.cc ../config.h blackbox.hh ../version.h Image.hh \
+Basemenu.o: Basemenu.cc blackbox.hh ../version.h Image.hh \
  LinkedList.hh Basemenu.hh Screen.hh
-Clientmenu.o: Clientmenu.cc ../config.h blackbox.hh ../version.h \
- Image.hh LinkedList.hh Clientmenu.hh Basemenu.hh Screen.hh Window.hh \
+Clientmenu.o: Clientmenu.cc blackbox.hh ../version.h Image.hh \
+ LinkedList.hh Clientmenu.hh Basemenu.hh Screen.hh Window.hh \
  Workspace.hh Workspacemenu.hh
-Icon.o: Icon.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Icon.hh Basemenu.hh Screen.hh Toolbar.hh Window.hh \
- Workspace.hh Workspacemenu.hh
-Image.o: Image.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Screen.hh
+Icon.o: Icon.cc blackbox.hh ../version.h Image.hh LinkedList.hh \
+ Icon.hh Basemenu.hh Screen.hh Toolbar.hh Window.hh Workspace.hh \
+ Workspacemenu.hh
+Image.o: Image.cc blackbox.hh ../version.h Image.hh LinkedList.hh \
+ Screen.hh
 LinkedList.o: LinkedList.cc LinkedList.hh
-Rootmenu.o: Rootmenu.cc ../config.h blackbox.hh ../version.h Image.hh \
+Rootmenu.o: Rootmenu.cc blackbox.hh ../version.h Image.hh \
  LinkedList.hh Rootmenu.hh Basemenu.hh Screen.hh
-Screen.o: Screen.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Clientmenu.hh Basemenu.hh Icon.hh Screen.hh Rootmenu.hh \
- Toolbar.hh Window.hh Workspace.hh Workspacemenu.hh
-Toolbar.o: Toolbar.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Clientmenu.hh Basemenu.hh Icon.hh Rootmenu.hh Screen.hh \
- Toolbar.hh Workspace.hh Workspacemenu.hh
-Window.o: Window.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Icon.hh Basemenu.hh Screen.hh Toolbar.hh Window.hh \
- Windowmenu.hh Workspace.hh
-Windowmenu.o: Windowmenu.cc ../config.h blackbox.hh ../version.h \
- Image.hh LinkedList.hh Screen.hh Window.hh Windowmenu.hh Basemenu.hh \
+Screen.o: Screen.cc blackbox.hh ../version.h Image.hh LinkedList.hh \
+ Clientmenu.hh Basemenu.hh Icon.hh Screen.hh Rootmenu.hh Toolbar.hh \
+ Window.hh Workspace.hh Workspacemenu.hh
+Toolbar.o: Toolbar.cc blackbox.hh ../version.h Image.hh LinkedList.hh \
+ Clientmenu.hh Basemenu.hh Icon.hh Rootmenu.hh Screen.hh Toolbar.hh \
+ Workspace.hh Workspacemenu.hh
+Window.o: Window.cc blackbox.hh ../version.h Image.hh LinkedList.hh \
+ Icon.hh Basemenu.hh Screen.hh Toolbar.hh Window.hh Windowmenu.hh \
  Workspace.hh
-Workspace.o: Workspace.cc ../config.h blackbox.hh ../version.h \
- Image.hh LinkedList.hh Clientmenu.hh Basemenu.hh Screen.hh Toolbar.hh \
+Windowmenu.o: Windowmenu.cc blackbox.hh ../version.h Image.hh \
+ LinkedList.hh Screen.hh Window.hh Windowmenu.hh Basemenu.hh \
+ Workspace.hh
+Workspace.o: Workspace.cc blackbox.hh ../version.h Image.hh \
+ LinkedList.hh Clientmenu.hh Basemenu.hh Screen.hh Toolbar.hh \
  Window.hh Workspace.hh Windowmenu.hh
-Workspacemenu.o: Workspacemenu.cc ../config.h blackbox.hh ../version.h \
- Image.hh LinkedList.hh Screen.hh Toolbar.hh Workspacemenu.hh \
- Basemenu.hh Workspace.hh
-blackbox.o: blackbox.cc ../config.h blackbox.hh ../version.h Image.hh \
+Workspacemenu.o: Workspacemenu.cc blackbox.hh ../version.h Image.hh \
+ LinkedList.hh Screen.hh Toolbar.hh Workspacemenu.hh Basemenu.hh \
+ Workspace.hh
+blackbox.o: blackbox.cc blackbox.hh ../version.h Image.hh \
  LinkedList.hh Basemenu.hh Rootmenu.hh Screen.hh Toolbar.hh Window.hh \
  Workspace.hh
-main.o: main.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh
+main.o: main.cc blackbox.hh ../version.h Image.hh LinkedList.hh

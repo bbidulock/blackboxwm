@@ -742,7 +742,7 @@ void BScreen::LoadStyle(void) {
   } else
     resource.opaque_move = False;
 
-  const char *defaultFont = "-*-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*";
+  const char *defaultFont = "fixed";
   if (resource.font.title) {
     XFreeFont(display, resource.font.title);
     resource.font.title = 0;
@@ -753,8 +753,8 @@ void BScreen::LoadStyle(void) {
 		     "TitleFont", &value_type, &value)) {
     if ((resource.font.title = XLoadQueryFont(display, value.addr)) == NULL) {
       fprintf(stderr,
-	      " blackbox: couldn't load font '%s'\n"
-	      "  ...  reverting to default font.", value.addr);
+	      "blackbox: couldn't load font '%s'\n"
+              "          reverting to default font.\n", value.addr);
       if ((resource.font.title = XLoadQueryFont(display, defaultFont))
 	  == NULL) {
 	fprintf(stderr,
@@ -783,8 +783,8 @@ void BScreen::LoadStyle(void) {
 		     "MenuFont", &value_type, &value)) {
     if ((resource.font.menu = XLoadQueryFont(display, value.addr)) == NULL) {
       fprintf(stderr,
-	      " blackbox: couldn't load font '%s'\n"
-	      "  ...  reverting to default font.", value.addr);
+	      "blackbox: couldn't load font '%s'\n"
+	      "          reverting to default font.\n", value.addr);
       if ((resource.font.menu = XLoadQueryFont(display, defaultFont))
 	  == NULL) {
 	fprintf(stderr,
@@ -812,7 +812,7 @@ void BScreen::LoadStyle(void) {
     char *displaystring = new char[dslen + 32];
     char *command = new char[strlen(value.addr) + dslen + 64];
     
-    strncpy(displaystring, DisplayString(display), dslen - 1);
+    sprintf(displaystring, "%s", DisplayString(display));
     // gotta love pointer math
     sprintf(displaystring + dslen - 1, "%d", screen_number);
     sprintf(command, "DISPLAY=%s exec %s &", displaystring, value.addr);
@@ -857,7 +857,7 @@ int BScreen::addWorkspace(void) {
 
 
 int BScreen::removeLastWorkspace(void) {
-  if (workspacesList->count() > 2) {
+  if (workspacesList->count() > 1) {
     Workspace *wkspc = workspacesList->last();
     
     if (current_workspace->getWorkspaceID() == wkspc->getWorkspaceID())
@@ -1004,7 +1004,7 @@ void BScreen::getNameOfWorkspace(int id, char **name) {
     if (wkspc_name) {
       int len = strlen(wkspc_name) + 1;
       *name = new char [len];
-      strncpy(*name, wkspc_name, len);
+      sprintf(*name, "%s", wkspc_name);
     }
   } else
     *name = 0;
@@ -1300,13 +1300,12 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	    for (ri = len; ri > 0; ri--)
 	      if (line[ri] == ')') break;
 
-	    char *label;
+	    char *label = 0;
 	    if (i < ri && ri > 0) {
 	      label = new char[ri - i + 1];
 	      strncpy(label, line + i, ri - i);
 	      *(label + (ri - i)) = '\0';
-	    } else
-	      label = "(nil)";
+	    }
 	    
 	    // this is an optional feature
 	    for (i = 0; i < len; i++)
@@ -1437,6 +1436,7 @@ void BScreen::shutdown(void) {
   blackbox->grab();
 
   XSelectInput(display, root_window, NoEventMask);
+  XSync(display, False);
 
 #ifdef    KDE
   XDeleteProperty(display, root_window, blackbox->getKWMRunningAtom());

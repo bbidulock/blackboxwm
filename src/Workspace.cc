@@ -290,13 +290,13 @@ void Workspace::setName(char *new_name) {
 
     int len = strlen(new_name) + 1;
     name = new char[len];
-    strncpy(name, new_name, len);
+    sprintf(name, "%s", new_name);
   } else {
     if (name) delete [] name;
     
     name = new char[32];
     if (name)
-      sprintf(name, "Workspace %d", id);
+      sprintf(name, "Workspace %d", id + 1);
   }
 
 #ifdef    KDE

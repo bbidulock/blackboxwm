@@ -10,25 +10,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-# data/styles/Makefile.am for Blackbox 0.40.x beta - an X11 Window manager
-# Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
-#
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-#
-#  (See the included file COPYING / GPL-2.0)
-#
+# Makefile.am for blackbox-brueghel
 
 
 SHELL = @SHELL@
@@ -87,17 +69,19 @@ SHAPE = @SHAPE@
 VERSION = @VERSION@
 regex_cmd = @regex_cmd@
 
-styledir = $(pkgdatadir)/styles
-CLEANFILES = stylesmenu
+SUFFIXES = .in
+
+bruegheldir = $(pkgdatadir)/brueghel
 MAINTAINERCLEANFILES = Makefile.in
-style_DATA = blackmagic				coldsteel				colorpurple				darkgreen				default					gnoid					green					onoid					pnoid					slatebox				steelblue				steelbox				stylesmenu
+CLEANFILES = babel icarus littlebabel rebelangels stylesmenu
+brueghel_DATA = babel babel.gif babel.txt						icarus icarus.gif icarus.txt						littlebabel littlebabel.gif littlebabel.txt				rebelangels rebelangels.gif rebelangels.txt				stylesmenu
 
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../../config.h
 CONFIG_CLEAN_FILES = 
-DATA =  $(style_DATA)
+DATA =  $(brueghel_DATA)
 
-DIST_COMMON =  Makefile.am Makefile.in
+DIST_COMMON =  README Makefile.am Makefile.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -106,31 +90,32 @@ TAR = tar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
+.SUFFIXES: .in
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps data/styles/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps data/brueghel/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
 
-install-styleDATA: $(style_DATA)
+install-brueghelDATA: $(brueghel_DATA)
 	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(styledir)
-	@list='$(style_DATA)'; for p in $$list; do \
+	$(mkinstalldirs) $(DESTDIR)$(bruegheldir)
+	@list='$(brueghel_DATA)'; for p in $$list; do \
 	  if test -f $(srcdir)/$$p; then \
-	    echo " $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(styledir)/$$p"; \
-	    $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(styledir)/$$p; \
+	    echo " $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(bruegheldir)/$$p"; \
+	    $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(bruegheldir)/$$p; \
 	  else if test -f $$p; then \
-	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(styledir)/$$p"; \
-	    $(INSTALL_DATA) $$p $(DESTDIR)$(styledir)/$$p; \
+	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(bruegheldir)/$$p"; \
+	    $(INSTALL_DATA) $$p $(DESTDIR)$(bruegheldir)/$$p; \
 	  fi; fi; \
 	done
 
-uninstall-styleDATA:
+uninstall-brueghelDATA:
 	@$(NORMAL_UNINSTALL)
-	list='$(style_DATA)'; for p in $$list; do \
-	  rm -f $(DESTDIR)$(styledir)/$$p; \
+	list='$(brueghel_DATA)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(bruegheldir)/$$p; \
 	done
 tags: TAGS
 TAGS:
@@ -138,7 +123,7 @@ TAGS:
 
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 
-subdir = data/styles
+subdir = data/brueghel
 
 distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
@@ -162,20 +147,20 @@ installcheck: installcheck-am
 install-exec-am:
 install-exec: install-exec-am
 
-install-data-am: install-styleDATA
+install-data-am: install-brueghelDATA
 install-data: install-data-am
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-am
-uninstall-am: uninstall-styleDATA
+uninstall-am: uninstall-brueghelDATA
 uninstall: uninstall-am
 all-am: Makefile $(DATA) all-local
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
 installdirs:
-	$(mkinstalldirs)  $(DESTDIR)$(styledir)
+	$(mkinstalldirs)  $(DESTDIR)$(bruegheldir)
 
 
 mostlyclean-generic:
@@ -207,21 +192,27 @@ maintainer-clean-am:  maintainer-clean-generic distclean-am
 
 maintainer-clean: maintainer-clean-am
 
-.PHONY: uninstall-styleDATA install-styleDATA tags distdir info-am info \
-dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
-install-exec install-data-am install-data install-am install \
-uninstall-am uninstall all-local all-redirect all-am all installdirs \
-mostlyclean-generic distclean-generic clean-generic \
+.PHONY: uninstall-brueghelDATA install-brueghelDATA tags distdir info-am \
+info dvi-am dvi check check-am installcheck-am installcheck \
+install-exec-am install-exec install-data-am install-data install-am \
+install uninstall-am uninstall all-local all-redirect all-am all \
+installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
 distclean-local:
-	rm -f *\~
+	rm -f */~
 
-all-local: stylesmenu
+all-local: $(brueghel_DATA)
 
+.in:
+	@regex_cmd@ -e "s,:pkgdatadir:,$(bruegheldir)," $< > $@
+
+babel: babel.in
+icarus: icarus.in
+littlebabel: littlebabel.in
+rebelangels: rebelangels.in
 stylesmenu: stylesmenu.in
-	@regex_cmd@ -e "s,@pkgdatadir@,$(pkgdatadir)," stylesmenu.in > stylesmenu
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

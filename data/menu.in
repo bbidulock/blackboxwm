@@ -74,7 +74,8 @@
   [end]
  
   [submenu] (Styles) {Choose a style...}
-    [include] (:pkgdatadir:/styles/stylesmenu)
+    [include] (@pkgdatadir@/brueghel/stylesmenu)
+    [include] (@pkgdatadir@/styles/stylesmenu)
   [end]
 
   [reconfig] (Reconfigure)

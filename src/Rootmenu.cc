@@ -65,14 +65,13 @@ void Rootmenu::itemSelected(int button, int index) {
           char *displaystring = new char[dslen + 32];
           char *command = new char[strlen(item->exec()) + dslen + 64];
 	  
-          strncpy(displaystring, DisplayString(screen->getDisplay()),
-                  dslen - 1);
+          sprintf(displaystring, "%s", DisplayString(screen->getDisplay()));
           // gotta love pointer math
           sprintf(displaystring + dslen - 1, "%d", screen->getScreenNumber());
 	  sprintf(command, "DISPLAY=%s exec %s &", displaystring,
 		  item->exec());
 	  system(command);
-	  
+
           delete [] displaystring;
           delete [] command;
 #else
