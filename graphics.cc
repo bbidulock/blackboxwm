@@ -588,6 +588,12 @@ Pixmap BImage::renderImage(int texture, int bevel, const BColor &color1,
   case BlackboxSession::B_TextureRDGradient:
   case BlackboxSession::B_TextureSDGradient:
   case BlackboxSession::B_TextureFDGradient:
+  case BlackboxSession::B_TextureRHGradient:
+  case BlackboxSession::B_TextureSHGradient:
+  case BlackboxSession::B_TextureFHGradient:
+  case BlackboxSession::B_TextureRVGradient:
+  case BlackboxSession::B_TextureSVGradient:
+  case BlackboxSession::B_TextureFVGradient:
     return renderGradientImage(texture, bevel, color1, color2);
     break;
   }
@@ -651,6 +657,60 @@ Pixmap BImage::renderInvertedImage(int texture, int bevel,
 
   case BlackboxSession::B_TextureFDGradient:
     renderDGradient(color1, color2);
+    invertImage();
+    return convertToPixmap();
+    break;
+
+  case BlackboxSession::B_TextureRHGradient:
+    renderHGradient(color1, color2);
+    if (bevel)
+      renderBevel();
+    else
+      renderButton();
+    
+    invertImage();
+    return convertToPixmap();
+    break;
+
+  case BlackboxSession::B_TextureSHGradient:
+    renderHGradient(color2, color1);
+    if (bevel)
+      renderBevel();
+    else
+      renderButton();
+    
+    return convertToPixmap();
+    break;
+
+  case BlackboxSession::B_TextureFHGradient:
+    renderHGradient(color1, color2);
+    invertImage();
+    return convertToPixmap();
+    break;
+
+  case BlackboxSession::B_TextureRVGradient:
+    renderVGradient(color1, color2);
+    if (bevel)
+      renderBevel();
+    else
+      renderButton();
+    
+    invertImage();
+    return convertToPixmap();
+    break;
+
+  case BlackboxSession::B_TextureSVGradient:
+    renderVGradient(color2, color1);
+    if (bevel)
+      renderBevel();
+    else
+      renderButton();
+    
+    return convertToPixmap();
+    break;
+
+  case BlackboxSession::B_TextureFVGradient:
+    renderVGradient(color1, color2);
     invertImage();
     return convertToPixmap();
     break;
@@ -723,7 +783,153 @@ Pixmap BImage::renderGradientImage(int texture, int bevel,
     renderDGradient(from, to);
     return convertToPixmap();
     break;
+
+  case BlackboxSession::B_TextureRHGradient:
+    renderHGradient(from, to);
+    if (bevel)
+      renderBevel();
+    else
+      renderButton();
+    
+    return convertToPixmap();
+    break;
+
+  case BlackboxSession::B_TextureSHGradient:
+    renderHGradient(to, from);
+    if (bevel)
+      renderBevel();
+    else
+      renderButton();
+    
+    invertImage();
+    return convertToPixmap();
+    break;
+
+  case BlackboxSession::B_TextureFHGradient:
+    renderHGradient(from, to);
+    return convertToPixmap();
+    break;
+
+  case BlackboxSession::B_TextureRVGradient:
+    renderVGradient(from, to);
+    if (bevel)
+      renderBevel();
+    else
+      renderButton();
+    
+    return convertToPixmap();
+    break;
+
+  case BlackboxSession::B_TextureSVGradient:
+    renderVGradient(to, from);
+    if (bevel)
+      renderBevel();
+    else
+      renderButton();
+    
+    invertImage();
+    return convertToPixmap();
+    break;
+
+  case BlackboxSession::B_TextureFVGradient:
+    renderVGradient(from, to);
+    return convertToPixmap();
+    break;
   }
 
   return None;
+}
+
+
+void BImage::renderHGradient(const BColor &from, const BColor &to) {
+  float fr, fg, fb, tr, tg, tb, dr, dg, db, dx, xr, xg, xb;
+  
+  fr = (float) from.r;
+  fg = (float) from.g;
+  fb = (float) from.b;
+
+  tr = (float) to.r;
+  tg = (float) to.g;
+  tb = (float) to.b;
+
+  dr = tr - fr;
+  dg = tg - fg;
+  db = tb - fb;
+
+  unsigned long *p = data, *d = new unsigned long[width], *dd = d;
+  unsigned char r = from.r, g = from.g, b = from.b;
+
+  // this renders one line of the hgradient to a buffer...
+
+  unsigned int ii;
+  float w = (float) width;
+  for (ii = 0; ii < width; ++ii) {
+    dx = ii / w;
+
+    xr = (dr * dx) + fr;
+    xg = (dg * dx) + fg;
+    xb = (db * dx) + fb;
+      
+    r = (unsigned char) (xr);
+    g = (unsigned char) (xg);
+    b = (unsigned char) (xb);
+    *(dd++) = (unsigned long) ((((unsigned char) r)<<16)|
+			      (((unsigned char) g)<<8)|
+			      ((unsigned char) b));
+  }
+
+  // and this copies the buffer to the image...
+  unsigned int wh = width * height;
+
+  ii = 0;
+  while (--wh) {
+    *(p++) = *(d + ii++);
+    if (ii == width) ii = 0;
+  }
+
+  *p = *d;
+  delete [] d;
+}
+
+
+void BImage::renderVGradient(const BColor &from, const BColor &to) {
+  float fr, fg, fb, tr, tg, tb, dr, dg, db, dy, yr, yg, yb;
+  
+  fr = (float) from.r;
+  fg = (float) from.g;
+  fb = (float) from.b;
+
+  tr = (float) to.r;
+  tg = (float) to.g;
+  tb = (float) to.b;
+
+  dr = tr - fr;
+  dg = tg - fg;
+  db = tb - fb;
+
+  unsigned long *p = data;
+  unsigned char r = from.r, g = from.g, b = from.b;
+  unsigned int ii;
+  float h = (float) height;
+
+  for (ii = 0; ii < height; ++ii) {
+    dy = ii / h;
+
+    yr = (dr * dy) + fr;
+    yg = (dg * dy) + fg;
+    yb = (db * dy) + fb;
+      
+    r = (unsigned char) (yr);
+    g = (unsigned char) (yg);
+    b = (unsigned char) (yb);
+
+    unsigned int w = width;
+    while (--w) 
+      *(p++) = (unsigned long) ((((unsigned char) r)<<16)|
+				 (((unsigned char) g)<<8)|
+				 ((unsigned char) b));
+    *(p++) = (unsigned long) ((((unsigned char) r)<<16)|
+			      (((unsigned char) g)<<8)|
+			      ((unsigned char) b));
+  }
 }

@@ -53,6 +53,8 @@ protected:
   void renderButton(void);
   void invertImage(void);
   void renderDGradient(const BColor &, const BColor &);
+  void renderHGradient(const BColor &, const BColor &);
+  void renderVGradient(const BColor &, const BColor &);
   void setBackgroundColor(const BColor &);
   void setBackgroundColor(unsigned char, unsigned char, unsigned char);
   

@@ -156,6 +156,7 @@ BlackboxSession::~BlackboxSession() {
   // XFreeFont(display, resource.font.menu);
   XFreeGC(display, opGC);
   
+  delete [] resource.menuFile;
   delete rootmenu;
   delete ws_manager;
   debug->msg("closing X connection\n");
@@ -966,6 +967,20 @@ void BlackboxSession::LoadDefaults(void) {
       resource.texture.frame = B_TextureSDGradient;
     else if (! strcasecmp(value.addr, "dgradientflat"))
       resource.texture.frame = B_TextureFDGradient;
+    else if ((! strcasecmp(value.addr, "hgradient")) ||
+	     (! strcasecmp(value.addr, "hgradientraised")))
+      resource.texture.frame = B_TextureRHGradient;
+    else if (! strcasecmp(value.addr, "hgradientsunken"))
+      resource.texture.frame = B_TextureSHGradient;
+    else if (! strcasecmp(value.addr, "hgradientflat"))
+      resource.texture.frame = B_TextureFHGradient;
+    else if ((! strcasecmp(value.addr, "vgradient")) ||
+	     (! strcasecmp(value.addr, "vgradientraised")))
+      resource.texture.frame = B_TextureRVGradient;
+    else if (! strcasecmp(value.addr, "vgradientsunken"))
+      resource.texture.frame = B_TextureSVGradient;
+    else if (! strcasecmp(value.addr, "vgradientflat"))
+      resource.texture.frame = B_TextureFVGradient;
   } else
     resource.texture.frame = B_TextureRSolid;
 
@@ -987,6 +1002,20 @@ void BlackboxSession::LoadDefaults(void) {
       resource.texture.button = B_TextureSDGradient;
     else if (! strcasecmp(value.addr, "dgradientflat"))
       resource.texture.button = B_TextureFDGradient;
+    else if ((! strcasecmp(value.addr, "hgradient")) ||
+	     (! strcasecmp(value.addr, "hgradientraised")))
+      resource.texture.button = B_TextureRHGradient;
+    else if (! strcasecmp(value.addr, "hgradientsunken"))
+      resource.texture.button = B_TextureSHGradient;
+    else if (! strcasecmp(value.addr, "hgradientflat"))
+      resource.texture.button = B_TextureFHGradient;
+    else if ((! strcasecmp(value.addr, "vgradient")) ||
+	     (! strcasecmp(value.addr, "vgradientraised")))
+      resource.texture.button = B_TextureRVGradient;
+    else if (! strcasecmp(value.addr, "vgradientsunken"))
+      resource.texture.button = B_TextureSVGradient;
+    else if (! strcasecmp(value.addr, "vgradientflat"))
+      resource.texture.button = B_TextureFVGradient;
   } else
     resource.texture.button = B_TextureRSolid;
 
@@ -1007,6 +1036,20 @@ void BlackboxSession::LoadDefaults(void) {
       resource.texture.menu = B_TextureSDGradient;
     else if (! strcasecmp(value.addr, "dgradientflat"))
       resource.texture.menu = B_TextureFDGradient;
+    else if ((! strcasecmp(value.addr, "hgradient")) ||
+	     (! strcasecmp(value.addr, "hgradientraised")))
+      resource.texture.menu = B_TextureRHGradient;
+    else if (! strcasecmp(value.addr, "hgradientsunken"))
+      resource.texture.menu = B_TextureSHGradient;
+    else if (! strcasecmp(value.addr, "hgradientflat"))
+      resource.texture.menu = B_TextureFHGradient;
+    else if ((! strcasecmp(value.addr, "vgradient")) ||
+	     (! strcasecmp(value.addr, "vgradientraised")))
+      resource.texture.menu = B_TextureRVGradient;
+    else if (! strcasecmp(value.addr, "vgradientsunken"))
+      resource.texture.menu = B_TextureSVGradient;
+    else if (! strcasecmp(value.addr, "vgradientflat"))
+      resource.texture.menu = B_TextureFVGradient;
   } else
     resource.texture.menu = B_TextureRSolid;
 
@@ -1027,6 +1070,20 @@ void BlackboxSession::LoadDefaults(void) {
       resource.texture.pimenu = B_TextureSDGradient;
     else if (! strcasecmp(value.addr, "dgradientflat"))
       resource.texture.pimenu = B_TextureFDGradient;
+    else if ((! strcasecmp(value.addr, "hgradient")) ||
+	     (! strcasecmp(value.addr, "hgradientraised")))
+      resource.texture.pimenu = B_TextureRHGradient;
+    else if (! strcasecmp(value.addr, "hgradientsunken"))
+      resource.texture.pimenu = B_TextureSHGradient;
+    else if (! strcasecmp(value.addr, "hgradientflat"))
+      resource.texture.pimenu = B_TextureFHGradient;
+    else if ((! strcasecmp(value.addr, "vgradient")) ||
+	     (! strcasecmp(value.addr, "vgradientraised")))
+      resource.texture.pimenu = B_TextureRVGradient;
+    else if (! strcasecmp(value.addr, "vgradientsunken"))
+      resource.texture.pimenu = B_TextureSVGradient;
+    else if (! strcasecmp(value.addr, "vgradientflat"))
+      resource.texture.pimenu = B_TextureFVGradient;
   } else
     resource.texture.pimenu = B_TextureFSolid;
 
@@ -1047,6 +1104,20 @@ void BlackboxSession::LoadDefaults(void) {
       resource.texture.imenu = B_TextureSDGradient;
     else if (! strcasecmp(value.addr, "dgradientflat"))
       resource.texture.imenu = B_TextureFDGradient;
+    else if ((! strcasecmp(value.addr, "hgradient")) ||
+	     (! strcasecmp(value.addr, "hgradientraised")))
+      resource.texture.imenu = B_TextureRHGradient;
+    else if (! strcasecmp(value.addr, "hgradientsunken"))
+      resource.texture.imenu = B_TextureSHGradient;
+    else if (! strcasecmp(value.addr, "hgradientflat"))
+      resource.texture.imenu = B_TextureFHGradient;
+    else if ((! strcasecmp(value.addr, "vgradient")) ||
+	     (! strcasecmp(value.addr, "vgradientraised")))
+      resource.texture.imenu = B_TextureRVGradient;
+    else if (! strcasecmp(value.addr, "vgradientsunken"))
+      resource.texture.imenu = B_TextureSVGradient;
+    else if (! strcasecmp(value.addr, "vgradientflat"))
+      resource.texture.imenu = B_TextureFVGradient;
   } else
     resource.texture.imenu = B_TextureRSolid;
 
@@ -1158,10 +1229,16 @@ void BlackboxSession::LoadDefaults(void) {
   if (XrmGetResource(blackbox_database,
 		     "blackbox.session.menuFile",
 		     "Blackbox.Session.MenuFile", &value_type, &value)) {
-    resource.menuFile = value.addr;
+    int len = strlen(value.addr);
+    resource.menuFile = new char[len + 1];
+    memset(resource.menuFile, 0, len + 1);
+    strncpy(resource.menuFile, value.addr, len);
   } else {
 #define BLACKBOXMENUAD XLIBDIR##"/Blackbox/MenuAD"
-    resource.menuFile = BLACKBOXMENUAD;
+    int len = strlen(BLACKBOXMENUAD);
+    resource.menuFile = new char[len + 1];
+    memset(resource.menuFile, 0, len + 1);
+    strncpy(resource.menuFile, BLACKBOXMENUAD, len);
   }
   
   if (XrmGetResource(blackbox_database,

@@ -27,23 +27,6 @@
 
 
 class BlackboxIcon {
-public:
-  BlackboxIcon(BlackboxSession *, Window);
-  ~BlackboxIcon(void);
-
-  Window iconWindow(void) { return icon.window; }
-  unsigned int Width(void) { return icon.width; }
-  unsigned int Height(void) { return icon.height; }
-  void move(int x, int y) { icon.x = x; icon.y = y; }
-
-  void buttonPressEvent(XButtonEvent *);
-  void buttonReleaseEvent(XButtonEvent *);
-  void enterNotifyEvent(XCrossingEvent *);
-  void leaveNotifyEvent(XCrossingEvent *);
-  void exposeEvent(XExposeEvent *);
-
-protected:
-
 private:
   Bool focus;
   Display *display;
@@ -59,6 +42,26 @@ private:
 
   BlackboxSession *session;
   Debugger *debug;
+
+
+protected:
+
+
+public:
+  BlackboxIcon(BlackboxSession *, Window);
+  ~BlackboxIcon(void);
+
+  Window iconWindow(void) { return icon.window; }
+  unsigned int Width(void) { return icon.width; }
+  unsigned int Height(void) { return icon.height; }
+  void move(int x, int y) { icon.x = x; icon.y = y; }
+  void rereadLabel(void);
+
+  void buttonPressEvent(XButtonEvent *);
+  void buttonReleaseEvent(XButtonEvent *);
+  void enterNotifyEvent(XCrossingEvent *);
+  void leaveNotifyEvent(XCrossingEvent *);
+  void exposeEvent(XExposeEvent *);
 };
 
 

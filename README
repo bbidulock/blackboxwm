@@ -127,6 +127,12 @@ Values Accepted:
     DGradient / DGradientRaised		(diagonal gradient w/ raised bevel)
     DGradientSunken			(diagonal gradient w/ sunken bevel)
     DGradientFlat			(diagonal gradient w/ no bevel)
+    HGradient / HGradientRaised		(horizontal gradient w/ raised bevel)
+    HGradientSunken			(horizontal gradient w/ sunken bevel)
+    HGradientFlat			(horizontal gradient w/ no bevel)
+    VGradient / VGradientRaised		(vertical gradient w/ raised bevel)
+    VGradientSunken			(vertical gradient w/ sunken bevel)
+    VGradientFlat			(vertical gradient w/ no bevel)
 
 	The various textures give a better appearance to blackbox.  The frame 
 	texture controls the toolbar on the left side of the screen
@@ -147,6 +153,8 @@ blackbox.menu.menuColor			Blackbox.Menu.MenuColor
 blackbox.menu.menuToColor		Blackbox.Menu.MenuToColor
 blackbox.menu.menuItemColor		Blackbox.Menu.MenuItemColor
 blackbox.menu.menuItemToColor		Blackbox.Menu.MenuItemToColor
+blackbox.session.focusTextColor		Blackbox.Session.FocusTextColor
+blackbox.session.unfocusTextColor	Blackbox.Session.UnfocusTextColor
 
 Accepted Values:
 	color specification of the form:
@@ -179,6 +187,18 @@ Accepted Value:
 	an integer.  This resource controls how many workspaces are created 
 	when blackbox starts a new session (read, assumes control of an X 
 	display).
+
+
+Name:					Class:
+--------				---------
+blackbox.session.orientation		Blackbox.Session.Orientation
+
+Accepted Values:
+	either "LeftHanded" or "RightHanded" (case insensitive).  This resource
+	changes the appearance and orientation of some window decorations
+	to allow for easier and more natural access for left handed and/or
+	right handed users.  (Note:  resizing from left handed orientation is
+	a bit awkward.  fix is forthcoming)
 
 
 As an idea of how to configure blackbox, here is a snippet of my .Xdefaults 

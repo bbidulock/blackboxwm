@@ -50,7 +50,7 @@ BlackboxWindowMenu::BlackboxWindowMenu(BlackboxWindow *w, BlackboxSession *s) :
   insert("Send To ...",
          send_to_menu = new SendToWorkspaceMenu(window, session));
   insert("Iconify", BlackboxSession::B_WindowIconify);
-  //  insert("Maximize", BlackboxSession::B_WindowMaximize);
+  insert("(Un)Maximize", BlackboxSession::B_WindowMaximize);
   insert("Close", BlackboxSession::B_WindowClose);
   insert("Raise", BlackboxSession::B_WindowRaise);
   insert("Lower", BlackboxSession::B_WindowLower);
@@ -81,15 +81,20 @@ void BlackboxWindowMenu::itemReleased(int button, int item) {
 
     case 2:
       hideMenu();
-      window->closeWindow();
+      window->maximizeWindow();
       break;
 
     case 3:
       hideMenu();
+      window->closeWindow();
+      break;
+
+    case 4:
+      hideMenu();
       window->raiseWindow();
       break;
       
-    case 4:
+    case 5:
       hideMenu();
       window->lowerWindow();
       break;
@@ -1147,6 +1152,51 @@ void BlackboxWindow::lowerWindow(void) {
 }
 
 
+void BlackboxWindow::maximizeWindow(void) {
+  XGrabServer(display);
+
+  static int unmaximize = 0, px, py;
+  static unsigned int pw, ph;
+
+  if (! unmaximize) {
+    int dx, dy;
+    unsigned int dw, dh;
+
+    px = frame.x;
+    py = frame.y;
+    pw = frame.width;
+    ph = frame.height;
+
+    dw = session->XResolution() - session->WSManager()->Width() -
+      ((do_handle) ? frame.handle_w + 1 : 0) - frame.border;
+    dw -= client.base_w;
+    dw -= (dw % client.inc_w);
+    dw -= client.inc_w;
+    dw += ((do_handle) ? frame.handle_w + 1 : 0) + frame.border +
+      client.base_w;
+    
+    dx = (((session->XResolution() - session->WSManager()->Width()) - dw) / 2)
+      + session->WSManager()->Width();
+
+    dh = session->YResolution() - frame.title_h - 1 - frame.border;
+    dh -= client.base_h;
+    dh -= (dh % client.inc_h);
+    dh -= client.inc_h;
+    dh += frame.title_h + 1 + frame.border + client.base_h;
+    
+    dy = ((session->YResolution()) - dh) / 2;
+
+    unmaximize = 1;
+    configureWindow(dx, dy, dw, dh);
+    raiseWindow();
+  } else {
+    configureWindow(px, py, pw, ph);
+    unmaximize = 0;
+  }
+
+  XUngrabServer(display);
+}
+
 // *************************************************************************
 // Window drawing code
 // *************************************************************************
@@ -1387,6 +1437,7 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
 	  
   case XA_WM_ICON_NAME:
     debug->msg("wm icon name\n");
+    if (icon) icon->rereadLabel();
     break;
     
   case XA_WM_ICON_SIZE:
@@ -1538,7 +1589,7 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
     } else if (re->window == frame.maximize_button) {
       if ((re->x >= 0) && ((unsigned int) re->x <= frame.button_w) &&
 	  (re->y >= 0) && ((unsigned int) re->y <= frame.button_h)) {
-
+	maximizeWindow();
       } else
 	drawMaximizeButton(False);
     } else if (re->window == frame.close_button) {

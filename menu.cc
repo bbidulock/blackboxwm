@@ -209,6 +209,7 @@ int BlackboxMenu::insert(char *label, int function, char *exec) {
   case BlackboxSession::B_WindowIconify:
   case BlackboxSession::B_WindowRaise:
   case BlackboxSession::B_WindowLower:
+  case BlackboxSession::B_WindowMaximize:
     if (! show_title) {
       BlackboxMenuItem *item =
 	new BlackboxMenuItem(createItemWindow(), label, function);

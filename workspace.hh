@@ -189,6 +189,10 @@ public:
     { return workspaces_list->count(); }
   int currentWorkspaceID(void)
     { return current->workspaceID(); }
+  unsigned int Width(void)
+    { return frame.frame_w; }
+  unsigned int Height(void)
+    { return frame.frame_h; }
 };
 
 

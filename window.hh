@@ -166,6 +166,10 @@ protected:
 			   unsigned int);
   void associateClientWindow(void);
   void createDecorations(void);
+  void positionButtons(void);
+  void createCloseButton(void);
+  void createIconifyButton(void);
+  void createMaximizeButton(void);
 
   //
   // drawing functions
@@ -175,14 +179,6 @@ protected:
   void drawCloseButton(Bool);
   void drawIconifyButton(Bool);
   void drawMaximizeButton(Bool);
-
-  //
-  // button creation
-  //
-  void positionButtons(void);
-  void createCloseButton(void);
-  void createIconifyButton(void);
-  void createMaximizeButton(void);
 
   //
   // various functions
@@ -266,6 +262,7 @@ public:
   void withdrawWindow(void);
   void raiseWindow(void);
   void lowerWindow(void);
+  void maximizeWindow(void);
   int setWindowNumber(int);
   int setWorkspace(int);
   int workspace(void)

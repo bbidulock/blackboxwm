@@ -217,3 +217,11 @@ void BlackboxIcon::exposeEvent(XExposeEvent *) {
     }
   }
 }
+
+
+void BlackboxIcon::rereadLabel(void) {
+  if (! XGetIconName(display, icon.client, &icon.name))
+    icon.name = 0;
+  XClearWindow(display, icon.subwindow);
+  exposeEvent(NULL);
+}
