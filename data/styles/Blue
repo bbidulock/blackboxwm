@@ -1,0 +1,72 @@
+*button.pressed: sunken solid
+*button.pressed.color: darkgrey
+*button: parentrelative
+*button.foregroundColor: black
+
+*color: rgb:dd/dd/d7
+*colorTo: rgb:ee/ee/e7
+
+*font: Bitstream Vera Sans-9
+
+*borderColor: black
+*borderWidth: 1
+*marginWidth: 2
+
+menu.title: flat solid border
+menu.title.color: grey
+menu.title.foregroundColor: black
+menu.title.textColor: black
+menu.title.alignment: center
+menu.title.font: Bitstream Vera Sans-9:style=Bold
+
+menu.frame: raised gradient border
+menu.frame.textColor: black
+menu.frame.foregroundColor: grey40
+menu.frame.disabledColor: darkgrey
+menu.frame.alignment: left
+
+menu.active: flat solid border
+menu.active.color: rgb:77/77/74
+menu.active.foregroundColor: white
+menu.active.textColor: white
+
+rootCommand: bsetroot -solid rgb:77/90/aa
+
+slit: raised solid
+slit.color: rgb:77/90/aa
+slit.marginWidth: 3
+
+toolbar: raised gradient border
+toolbar.alignment: center
+toolbar*textColor: black
+toolbar.label: parentrelative
+toolbar.clock: parentrelative
+toolbar.windowLabel: parentrelative
+
+window.title.focus: raised gradient border
+window.title.focus.color: rgb:66/66/63
+window.title.focus.colorTo: rgb:88/88/84
+window.title.unfocus: raised gradient border
+
+window.label.focus: parentrelative
+window.label.focus.textColor: white
+window.label.unfocus: parentrelative
+window.label.unfocus.textColor: darkgrey
+window.label.marginWidth: 1
+
+window.button.focus: parentrelative
+window.button.focus.foregroundColor: white
+
+window.button.unfocus: parentrelative
+window.button.unfocus.foregroundColor: darkgrey
+
+window.handle.focus: raised solid border
+window.handle.unfocus: raised solid border
+
+window.grip.focus: raised solid border
+window.grip.focus.color: rgb:77/77/74
+window.grip.unfocus: raised solid border
+
+window*alignment: center
+window.font: Bitstream Vera Sans-9:style=Bold
+window.handleHeight: 8
