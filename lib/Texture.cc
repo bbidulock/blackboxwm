@@ -185,7 +185,7 @@ void bt::drawTexture(unsigned int screen,
                      unsigned long pixmap) {
   Pen pen(screen, texture.color());
 
-  if (pixmap) {
+  if ((texture.texture() & Texture::Gradient) && pixmap) {
     XCopyArea(pen.display().XDisplay(), pixmap, drawable, pen.gc(),
               urect.x() - trect.x(), urect.y() - trect.y(),
               urect.width(), urect.height(), urect.x(), urect.y());
