@@ -2,6 +2,10 @@
 
 CVS Bugs:
 -----------------------------
+* image dither option ignored
+
+* windows will not resize to the right edge of the screen
+
 * sticky windows are not considered
 
 * colour issue under Irix

@@ -14,13 +14,14 @@ Changes from 0.62.1 to 0.65.0:
     the event and the unmapNotify event is where reparentNotify was handled.
     Added a reparentNotifyEvent handler in the BlackboxWindow class and a new
     case in the Blackbox class's process_event function.
-  - applied a patch from the long lost in the tundra Brad.  This one's a doozy.
+  - applied a patch from the long lost in the tundra Brad. This one's a doozy.
     * no more blackbox->grab/ungrab calls everywhere
     * compression of motion, expose, and configure events
   - added a Util.cc file which contains expandTilde() and bexec().  Now we
     have one function which turns ~/ into /home/user/.  This is now called
     everywhere this expansion should be done.  Even added this to the
-    resource.menu_file so now the menu file may be specified as ~/blackbox_menu
+    resource.menu_file so now the menu file may be specified as
+    ~/blackbox_menu.
     Also moved several functions into Util for use later in the class lib
   - added a TimerQueue which is a priority_queue with the ability to release
     items it contains before they reach the top of the queue.  Also added a
@@ -30,10 +31,10 @@ Changes from 0.62.1 to 0.65.0:
   - added emacs local variables that prevent the addition of tabs to each file
   - XGetInputFocus() is void yet we were using it in a if() test.
   - update transient handling, should solve issues with apps like acroread.
-    added a getTransientInfo() method of the BlackboxWindow class which handles
-    checking the transient state in X and setting the appropriate variables
-    on the window.  To further attack the infinite loops this function ensures
-    that client.transient != this.
+    added a getTransientInfo() method of the BlackboxWindow class which
+    handles checking the transient state in X and setting the appropriate
+    variables on the window.  To further attack the infinite loops this
+    function ensures that client.transient != this.
   - added zh_TW (Taiwan Chinese) and Hungarian (hu_HU)
   - updated the French nls support and added French man pages
   - remove slit and netwm as compile time options
@@ -43,8 +44,8 @@ Changes from 0.62.1 to 0.65.0:
 
 Changes from 0.62.0 to 0.62.1:
   - the lock modifier code handles user redefined modifiers better
-  - check if the locale actually needs multibyte support before using multibyte
-    functions
+  - check if the locale actually needs multibyte support before using
+    multibyte functions
   - use srcdir in all of the makefiles
   - added zh_CN (Chinese) nls support
 
@@ -183,4 +184,3 @@ Changes from 0.60.3 to 0.61.0:
   - added cthulhain's bsetbg script to the util directory... see the
     file README.bsetbg for more information
   - added Estonian, French and Danish translations
-
