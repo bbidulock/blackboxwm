@@ -714,14 +714,7 @@ void Toolbar::buttonPressEvent(const XButtonEvent * const event) {
     else if (event->window == frame.nwbutton)
       redrawNextWindowButton(True);
   } else if (event->button == 2) {
-    if (event->window == frame.workspace_label &&
-        _screen->iconmenu()->count() > 0) {
-      _screen->iconmenu()->hideTitle();
-      _screen->iconmenu()->popup(event->x_root, event->y_root,
-                                 _screen->availableArea());
-    } else {
-      _screen->lowerWindow(this);
-    }
+    _screen->lowerWindow(this);
   } else if (event->button == 3) {
     BlackboxWindow *focus = blackbox->getFocusedWindow();
     if (event->window == frame.window_label &&
