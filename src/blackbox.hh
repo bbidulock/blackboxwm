@@ -45,7 +45,6 @@
 #include <map>
 
 #include "i18n.hh"
-#include "LinkedList.hh"
 #include "BaseDisplay.hh"
 #include "Timer.hh"
 
