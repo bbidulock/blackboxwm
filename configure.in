@@ -249,4 +249,5 @@ nls/sl_SI/Makefile
 nls/sv_SE/Makefile
 nls/tr_TR/Makefile
 nls/zh_CN/Makefile
+nls/zh_TW/Makefile
 version.h)

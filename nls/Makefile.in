@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -10,7 +10,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-# nls/Makefile.am for Blackbox 0.60.x - an X11 Window Manager
+# nls/Makefile.am for Blackbox - an X11 Window Manager
 
 
 SHELL = @SHELL@
@@ -59,9 +59,9 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+CC = @CC@
 CXX = @CXX@
 DEBUG = @DEBUG@
-GENCAT_TYPE = @GENCAT_TYPE@
 INTERLACE = @INTERLACE@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
@@ -77,9 +77,10 @@ gencat_cmd = @gencat_cmd@
 regex_cmd = @regex_cmd@
 
 NLSTEST = @NLS@
-SUBDIRS = C es_ES pt_BR
-CLEANFILES = blackbox-nls.hh
-MAINTAINERCLEANFILES = Makefile.in
+SUBDIRS = C da_DK de_DE es_ES et_EE fr_FR it_IT ja_JP nl_NL pt_BR ru_RU 	sl_SI sv_SE tr_TR zh_CN zh_TW
+
+MAINTAINERCLEANFILES = Makefile.in blackbox-nls.hh
+DISTCLEANFILES = blackbox-nls.hh
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -226,14 +227,12 @@ install-exec-am:
 install-exec: install-exec-recursive
 
 install-data-am:
-	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
 install-data: install-data-recursive
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-recursive
-uninstall-am:
+uninstall-am: uninstall-local
 uninstall: uninstall-recursive
 all-am: Makefile
 all-redirect: all-recursive
@@ -246,11 +245,11 @@ installdirs-am:
 mostlyclean-generic:
 
 clean-generic:
-	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-rm -f Makefile $(CONFIG_CLEAN_FILES)
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
 
 maintainer-clean-generic:
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
@@ -282,21 +281,18 @@ maintainer-clean-recursive tags tags-recursive mostlyclean-tags \
 distclean-tags clean-tags maintainer-clean-tags distdir info-am info \
 dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
 install-exec install-data-am install-data install-am install \
-uninstall-am uninstall all-redirect all-am all installdirs-am \
-installdirs mostlyclean-generic distclean-generic clean-generic \
-maintainer-clean-generic clean mostlyclean distclean maintainer-clean
+uninstall-local uninstall-am uninstall all-redirect all-am all \
+installdirs-am installdirs mostlyclean-generic distclean-generic \
+clean-generic maintainer-clean-generic clean mostlyclean distclean \
+maintainer-clean
 
 
+uninstall-local:
+	@if test x$(NLSTEST) = "x-DNLS"; then \
+		rmdir $(DESTDIR)$(pkgdatadir)/nls; \
+	fi
 distclean-local:
 	rm -f *\~
-
-install-data-hook:
-	@if test x$(NLSTEST) = "x-DNLS"; then \
-		ln -fs $(pkgdatadir)/nls/C $(pkgdatadir)/nls/US_ASCII; \
-		ln -fs $(pkgdatadir)/nls/C $(pkgdatadir)/nls/POSIX; \
-		ln -fs $(pkgdatadir)/nls/C $(pkgdatadir)/nls/en_US; \
-		ln -fs $(pkgdatadir)/nls/C $(pkgdatadir)/nls/en; \
-	fi
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

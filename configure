@@ -3154,6 +3154,7 @@ nls/sl_SI/Makefile
 nls/sv_SE/Makefile
 nls/tr_TR/Makefile
 nls/zh_CN/Makefile
+nls/zh_TW/Makefile
 version.h config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
@@ -3283,6 +3284,7 @@ nls/sl_SI/Makefile
 nls/sv_SE/Makefile
 nls/tr_TR/Makefile
 nls/zh_CN/Makefile
+nls/zh_TW/Makefile
 version.h"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF
