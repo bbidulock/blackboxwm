@@ -2762,14 +2762,16 @@ void BlackboxWindow::upsize(void) {
  */
 void BlackboxWindow::constrain(Corner anchor, int *pw, int *ph) {
   // frame.changing represents the requested frame size, we need to
-  // strip the frame margin off and contrain the client size
+  // strip the frame margin off and constrain the client size
   frame.changing.setCoords(frame.changing.left() + frame.margin.left,
                            frame.changing.top() + frame.margin.top,
                            frame.changing.right() - frame.margin.right,
                            frame.changing.bottom() - frame.margin.bottom);
 
-  int dw = frame.changing.width();
-  int dh = frame.changing.height();
+  int dw = frame.changing.width(), dh = frame.changing.height(),
+    base_width = (client.base_width) ? client.base_width : client.min_width,
+    base_height = (client.base_height) ? client.base_height :
+                                         client.min_height;
 
   // constrain
   if (dw < static_cast<signed>(client.min_width)) dw = client.min_width;
@@ -2778,16 +2780,16 @@ void BlackboxWindow::constrain(Corner anchor, int *pw, int *ph) {
   if (dh > static_cast<signed>(client.max_height)) dh = client.max_height;
 
 
-  dw = (dw - client.base_width) / client.width_inc;
-  dh = (dh - client.base_height) / client.height_inc;
+  dw = (dw - base_width) / client.width_inc;
+  dh = (dh - base_height) / client.height_inc;
 
   if (pw) *pw = dw;
   if (ph) *ph = dh;
 
   dw *= client.width_inc;
-  dw += client.base_width;
+  dw += base_width;
   dh *= client.height_inc;
-  dh += client.base_height;
+  dh += base_height;
 
   frame.changing.setSize(dw, dh);
 
