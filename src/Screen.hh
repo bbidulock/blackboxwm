@@ -88,7 +88,6 @@ private:
 
   const bt::ScreenInfo& screen_info;
   Blackbox *blackbox;
-  bt::ImageControl *image_control;
   Configmenu *configmenu;
   Iconmenu *iconmenu;
   Rootmenu *rootmenu;
@@ -187,7 +186,6 @@ public:
   const GC &getOpGC(void) const { return opGC; }
   Blackbox *getBlackbox(void) { return blackbox; }
   bt::Color *getBorderColor(void) { return &resource.border_color; }
-  bt::ImageControl *getImageControl(void) { return image_control; }
   Rootmenu *getRootmenu(void) { return rootmenu; }
 
   bool isSlitOnTop(void) const { return resource.slit_on_top; }
