@@ -581,7 +581,8 @@ Pixmap bt::Image::renderPixmap(void) {
 
 
 void bt::Image::bevel(unsigned int border_width) {
-  if (width  < (border_width * 4) || height < (border_width * 4))
+  if (width < 2 || height < 2 ||
+      width  < (border_width * 4) || height < (border_width * 4))
     return;
 
   unsigned char *pr = red   + (border_width * width) + border_width;
