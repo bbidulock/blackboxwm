@@ -5,8 +5,6 @@ netwm:
 * if we have N workspaces NET_DESKTOP_NAMES could supply us with N+M
   names.  When we create a new workspace we should consult this list.
 
-* support omnipresence
-
 * if the wm name changes check if visible name can be removed
 
 refactoring:
@@ -56,9 +54,6 @@ CHANGE: rework the .blackboxrc resources so that they give a more
         uniform behavior across screens. (Still not sure how I want
 	to do this, so it'll have to wait.)
 
-CHANGE: allow blackboxrc to be editing while the wm is running without
-        losing changes
-
 ADD: get volunteers to translate blackbox into other languages
 
 ADD: draw resize frames using the styles borderWidth... should be fairly
@@ -73,12 +68,6 @@ Code cleanup:
 -----------------------------
 CHANGE: look into the settings stored in client.decorations and
         .functions.
-
-CHANGE: deiconify() is overloaded, we need a "place window on Workspace N" and
-        "bring this window back from icon land"
-
-CHANGE: as a corrolary to the above, BlackboxWindow::mapRequest should actually
-        be called for map requests
 
 CHANGE: look into centering the window when maximizing and the window can not
         grow to fill the area
