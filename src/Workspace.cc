@@ -472,8 +472,7 @@ void Workspace::reconfigure(void) {
 BlackboxWindow *Workspace::getWindow(unsigned int index) {
   if (index < windowList.size()) {
     BlackboxWindowList::iterator it = windowList.begin();
-    while (index-- > 0)
-      it = bt::next_it(it);
+    std::advance(it, index);
     return *it;
   }
 
