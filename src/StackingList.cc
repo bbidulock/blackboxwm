@@ -110,7 +110,7 @@ void StackingList::changeLayer(StackEntity *entity, Layer new_layer) {
 }
 
 
-void StackingList::raise(StackEntity *entity) {
+StackingList::iterator StackingList::raise(StackEntity *entity) {
   assert(entity);
 
   iterator& pos = layer(entity->layer());
@@ -120,11 +120,11 @@ void StackingList::raise(StackEntity *entity) {
     ++pos;
 
   (void) stack.erase(it);
-  pos = stack.insert(pos, entity);
+  return pos = stack.insert(pos, entity);
 }
 
 
-void StackingList::lower(StackEntity *entity) {
+StackingList::iterator StackingList::lower(StackEntity *entity) {
   assert(entity);
 
   iterator& pos = layer(entity->layer());
@@ -135,14 +135,14 @@ void StackingList::lower(StackEntity *entity) {
 
   (void) stack.erase(it);
 
-  if (!*pos) { // empty layer
-    pos = stack.insert(pos, entity);
-    return;
+  if (!*pos) {
+    // empty layer
+    return pos = stack.insert(pos, entity);
   }
 
   it = std::find(pos, stack.end(), zero);
   assert(it != stack.end());
-  (void) stack.insert(it, entity);
+  return stack.insert(it, entity);
 }
 
 

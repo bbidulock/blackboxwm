@@ -38,7 +38,7 @@ typedef std::list<StackEntity *> StackEntityList;
 typedef std::vector<Window> WindowStack;
 
 class StackingList {
- public:
+public:
   enum Layer {
     LayerNormal,
     LayerFullScreen,
@@ -61,8 +61,8 @@ class StackingList {
   iterator& layer(Layer which);
   void changeLayer(StackEntity *entity, Layer new_layer);
 
-  void raise(StackEntity *entity);
-  void lower(StackEntity *entity);
+  iterator raise(StackEntity *entity);
+  iterator lower(StackEntity *entity);
 
   bool empty(void) const { return (stack.size() == 5); }
   StackEntityList::size_type size(void) const { return stack.size() - 5; }
@@ -79,7 +79,7 @@ class StackingList {
 
   void dump(void) const;
 
- private:
+private:
   StackEntityList stack;
   iterator fullscreen, above, normal, below, desktop;
 };
