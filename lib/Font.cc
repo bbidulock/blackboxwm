@@ -387,7 +387,7 @@ bt::Font::~Font(void) {
 }
 
 
-XFontSet bt::Font::fontset(void) const {
+XFontSet bt::Font::fontSet(void) const {
   if (_fontset) return _fontset;
 
   _fontset = fontcache->findFontSet(_fontname);
@@ -418,7 +418,7 @@ void bt::Font::unload(void) {
   /*
     yes, we really want to check _fontset, _font and _xftfont separately.
 
-    if the user has called fontset(), font() and xftFont(), then the
+    if the user has called fontSet(), font() and xftFont(), then the
     _fontname in the cache will be counted multiple times, so we will
     need to release multiple times
   */
@@ -449,7 +449,7 @@ unsigned int bt::textHeight(unsigned int screen, const Font &font) {
   }
 #endif
   if (i18n.multibyte())
-    return XExtentsOfFontSet(font.fontset())->max_ink_extent.height;
+    return XExtentsOfFontSet(font.fontSet())->max_ink_extent.height;
   return font.font()->ascent + font.font()->descent;
 }
 
@@ -468,9 +468,9 @@ bt::Rect bt::textRect(unsigned int screen, const Font &font,
 #endif
   if (i18n.multibyte()) {
     XRectangle ink, unused;
-    XmbTextExtents(font.fontset(), text.c_str(), text.length(), &ink, &unused);
+    XmbTextExtents(font.fontSet(), text.c_str(), text.length(), &ink, &unused);
     return Rect(0, 0, ink.width,
-                XExtentsOfFontSet(font.fontset())->max_ink_extent.height);
+                XExtentsOfFontSet(font.fontSet())->max_ink_extent.height);
   }
   return Rect(0, 0, XTextWidth(font.font(), text.c_str(), text.length()),
               font.font()->ascent + font.font()->descent);
@@ -520,10 +520,9 @@ void bt::drawText(const Font &font, Pen &pen, Window window,
   // set the font on the pen
   pen.setFont(font);
 
-  ::Display *xdpy = pen.display().XDisplay();
   if (i18n.multibyte()) {
-    XmbDrawString(pen.XDisplay(), window, font.fontset(), pen.gc(), tr.x(),
-                  tr.y() - XExtentsOfFontSet(font.fontset())->max_ink_extent.y,
+    XmbDrawString(pen.XDisplay(), window, font.fontSet(), pen.gc(), tr.x(),
+                  tr.y() - XExtentsOfFontSet(font.fontSet())->max_ink_extent.y,
                   text.c_str(), text.length());
   } else {
     XDrawString(pen.XDisplay(), window, pen.gc(), tr.x(),

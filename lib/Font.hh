@@ -56,7 +56,7 @@ namespace bt {
     void setFontName(const std::string &new_fontname)
     { unload(); _fontname = new_fontname; }
 
-    XFontSet fontset(void) const;
+    XFontSet fontSet(void) const;
     XFontStruct *font(void) const;
     XftFont *xftFont(unsigned int screen) const;
 
