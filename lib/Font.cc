@@ -255,6 +255,8 @@ XFontSet bt::FontCache::findFontSet(const std::string &fontsetname) {
 #ifdef XFT
 XftFont *bt::FontCache::findXftFont(const std::string &fontname,
                                     unsigned int screen) {
+  if (!xft_initialized) return 0;
+
   if (fontname.empty()) return findXftFont(defaultXftFont, screen);
 
   // see if the font is in the cache
@@ -273,20 +275,37 @@ XftFont *bt::FontCache::findXftFont(const std::string &fontname,
     return it->second.xftfont;
   }
 
-  XftFont *ret =
-    XftFontOpenName(_display.XDisplay(), screen, fontname.c_str());
-  if (ret == NULL) {
-    // Xft will never return NULL, but it doesn't hurt to be cautious
-    fprintf(stderr, "bt::Font: couldn't load Xft%d '%s'\n",
-            screen, fontname.c_str());
-    ret = XftFontOpenName(_display.XDisplay(), screen, defaultXftFont);
-  }
-  assert(ret != NULL);
+  XftFont *ret = 0;
+  bool use_xft = true;
+  int unused = 0;
+  char **list =
+    XListFonts(_display.XDisplay(), fontname.c_str(), 1, &unused);
+  if (list != NULL) {
+    // if fontname is a valid XLFD or alias, use a fontset instead of Xft
+    use_xft = false;
+    XFreeFontNames(list);
 
 #ifdef FONTCACHE_DEBUG
-  fprintf(stderr, "bt::FontCache: add Xft%d '%s'\n",
-          screen, fontname.c_str());
+    fprintf(stderr, "bt::FontCache: skp Xft%d '%s'\n",
+            screen, fontname.c_str());
 #endif // FONTCACHE_DEBUG
+  }
+
+  if (use_xft) {
+    ret = XftFontOpenName(_display.XDisplay(), screen, fontname.c_str());
+    if (ret == NULL) {
+      // Xft will never return NULL, but it doesn't hurt to be cautious
+      fprintf(stderr, "bt::Font: couldn't load Xft%d '%s'\n",
+              screen, fontname.c_str());
+      ret = XftFontOpenName(_display.XDisplay(), screen, defaultXftFont);
+    }
+    assert(ret != NULL);
+
+#ifdef FONTCACHE_DEBUG
+    fprintf(stderr, "bt::FontCache: add Xft%d '%s'\n",
+            screen, fontname.c_str());
+#endif // FONTCACHE_DEBUG
+  }
 
   cache.insert(CacheItem(fn, FontRef(ret)));
   return ret;
@@ -343,7 +362,8 @@ void bt::FontCache::clear(bool force) {
 
 
 XFontSet bt::Font::fontSet(void) const {
-  if (_fontset) return _fontset;
+  if (_fontset)
+    return _fontset;
 
   _fontset = fontcache->findFontSet(_fontname);
   return _fontset;
@@ -352,7 +372,8 @@ XFontSet bt::Font::fontSet(void) const {
 
 #ifdef XFT
 XftFont *bt::Font::xftFont(unsigned int screen) const {
-  if (_xftfont && _screen == screen) return _xftfont;
+  if (_screen != ~0u && _screen == screen)
+    return _xftfont;
 
   _screen = screen;
   _xftfont = fontcache->findXftFont(_fontname, _screen);
@@ -363,11 +384,11 @@ XftFont *bt::Font::xftFont(unsigned int screen) const {
 
 void bt::Font::unload(void) {
   /*
-    yes, we really want to check _fontset, _font and _xftfont separately.
+    yes, we really want to check _fontset and _xftfont separately.
 
-    if the user has called fontSet(), font() and xftFont(), then the
-    _fontname in the cache will be counted multiple times, so we will
-    need to release multiple times
+    if the user has called fontSet() and xftFont(), then the _fontname
+    in the cache will be counted multiple times, so we will need to
+    release multiple times
   */
   if (_fontset) fontcache->release(_fontname, _screen);
   _fontset = 0;
@@ -387,10 +408,8 @@ void bt::Font::clearCache(void) {
 
 unsigned int bt::textHeight(unsigned int screen, const Font &font) {
 #ifdef XFT
-  if (fontcache->xft_initialized) {
-    const XftFont * const f = font.xftFont(screen);
-    return f->ascent + f->descent;
-  }
+  const XftFont * const f = font.xftFont(screen);
+  if (f) return f->ascent + f->descent;
 #endif
 
   return XExtentsOfFontSet(font.fontSet())->max_ink_extent.height;
@@ -400,9 +419,9 @@ unsigned int bt::textHeight(unsigned int screen, const Font &font) {
 bt::Rect bt::textRect(unsigned int screen, const Font &font,
                       const std::string &text) {
 #ifdef XFT
-  if (fontcache->xft_initialized) {
+  XftFont * const f = font.xftFont(screen);
+  if (f) {
     XGlyphInfo xgi;
-    XftFont * const f = font.xftFont(screen);
     XftTextExtentsUtf8(fontcache->_display.XDisplay(), f,
                        reinterpret_cast<const FcChar8 *>(text.c_str()),
                        text.length(), &xgi);
@@ -441,7 +460,8 @@ void bt::drawText(const Font &font, const Pen &pen,
   }
 
 #ifdef XFT
-  if (fontcache->xft_initialized) {
+  XftFont * const f = font.xftFont(pen.screen());
+  if (f) {
     XftColor col;
     col.color.red   = pen.color().red()   | pen.color().red()   << 8;
     col.color.green = pen.color().green() | pen.color().green() << 8;
@@ -449,8 +469,8 @@ void bt::drawText(const Font &font, const Pen &pen,
     col.color.alpha = 0xffff;
     col.pixel = pen.color().pixel(pen.screen());
 
-    XftDrawStringUtf8(pen.xftDraw(drawable), &col, font.xftFont(pen.screen()),
-                      tr.x(), tr.y() + font.xftFont(pen.screen())->ascent,
+    XftDrawStringUtf8(pen.xftDraw(drawable), &col, f,
+                      tr.x(), tr.y() + f->ascent,
                       reinterpret_cast<const FcChar8 *>(text.c_str()),
                       text.length());
     return;
