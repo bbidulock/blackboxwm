@@ -1,0 +1,875 @@
+.\" Stran man o upravljalniku Blackbox
+.\"
+.\" Copyright (c) 2000, Wilbert Berendsen <wbsoft@xs4all.nl>
+.\"
+.\" Copyright (c) 2000, prevod v sloven¹èino Ale¹ Ko¹ir
+.\" <ales.kosir@hermes.si>
+.\"
+.\" Prièujoèe strani s pomoèjo smete prosto raz¹irjati in spreminjati.
+.\" Deli besedila so vzeti z Blackboxovega spletnega mesta in iz datotek
+.\" README, ki jih je pripravilo velièanstvo hrabri Hugh osebno. Le zakaj
+.\" bi ponovno izumljali kolo?
+.\"
+.\" Datoteko sem pripravil z urejevalnikom NEdit, preskusil pa s
+.\" programoma ``man'' in ``tkman.''  Uporabljeni so le obièajni makroji
+.\" groff in tmac.an.  Vsem prevajalcem, ki tako kot jaz ¹e niso
+.\" pripravljali strani s pomoèjo, svetujem, naj si preberejo
+.\"  Man-Page-Mini-HOWTO in stran man LDP ``man 7 man''
+.\" Tu je vse, kar sem potreboval za te makre.
+.\"
+.\" Osve¾eno za bb 0.61 v soboto, 9. septembra, 06:56:04 CEST 2000
+.\"
+.de EX
+.ne 5
+.if n .sp 1
+.if t .sp .5
+.nf
+.in +.5i
+..
+.de EE
+.fi
+.in -.5i
+.if n .sp 1
+.if t .sp .5
+..
+.TH blackbox 1 "4. oktober, 2000" "0.61.1"
+.SH IME
+blackbox \- upravljalnik oken za sistem oken X11
+.SH POVZETEK
+.BR blackbox " \-help | \-version"
+.br
+.B blackbox
+.RI "[ \-rc" " rcfile " "] [ \-display" " display " ]
+.SH OPIS
+.\"
+.\" Par prvih podatkov pokradenih iz blackbox.alug.org
+.\"
+Blackbox je ¹e en v seznamu upravljalnikov oken za sistem oken X
+skupine Open v razlièici 11 in ¹esti ali kasnej¹i izdaji.  Blackbox je
+napisan v jeziku C++ in ne vsebuje kode z drugega upravljalnika oken,
+èetudi je videti, da grafièna izvedba spominja na Window Maker.
+.PP
+Odkar je bila napisana prva vrstica, se je Blackbox razvijal iz ene
+premise, minimalizma. Ni mi¹ljeno, da bo najbolj nali¹pan ali najbolj
+oblo¾en z lastnostmi ali najbolj prikladen za izdelavo splo¹no
+priznanega vmesnika za NeXT.  Mi¹ljeno je bilo, da bo
+.BR hiter .
+.PP
+Blackbox omogoèa nastavljive okraske oken, menu na podlagi, od koder
+lahko poganjamo namenske programe, in orodno letev. Orodna letev pove
+ime trenutnega navideznega namizja, ime delovnega namenskega programa
+in trenutni èas. V menuju z navideznimi namizji lahko namizja dodajamo
+ali odvzemamo. ,,Re¾o'' (angl. slit) uporabljamo za gostenje majhnih
+namenskih programov, kakr¹ni so zbrani v paketu bbtools.
+.PP
+Blackbox obravnava ikone po svoje: ko pomanj¹amo okno, se ne pojavi
+njegova ikona. Namesto tega vse pomanj¹ane namenske programe vidimo v
+podmenuju ,,Ikone'' v glavnem menuju podlage.  Namizja zato nikoli ne
+bomo nasmetili z ikonami. Kot zamenjavo za ikone lahko uporabljamo
+zastrta okna: dvoklik naslovne letve bo okno zastrl, kar pomeni, da bo
+okno zginilo, vidna bo ostala le njegova naslovna letev.
+.PP
+Blackbox uporablja za sprotno prikazovanje slik svoj grafièni razred.
+S slogovnimi datotekami lahko natanèno doloèimo, kako bo videti na¹e
+namizje. Blackbox zaenkrat za komunikacijo z odjemalci, denimo
+upravljalnikom strani (pager) uporablja svoj
+protokol. Trudimo se podpreti nova doloèila, kot ju uporabljata Gnome in KDE.
+.SH IZBIRE
+Blackbox podpira v ukazni vrstici naslednje izbire:
+.TP
+.B \-help
+Prika¾e vse izbire iz ukazne vrstice in tiste lastnosti, ki smo jih
+pri prevajanju omogoèili. Zatem izvajanje konèa.
+.TP
+.B \-version
+Prika¾e podatke o razlièici in konèa izvajanje.
+.TP
+.BI \-rc \ rcfile
+Namesto privzete zagonske datoteke uporabi navedeno datoteko. Privzeta
+je datoteka:
+.IR  "~/.blackboxrc" .
+.TP
+.BI \-display \ display
+Po¾ene Blackbox na podanem prikazovalniku. Programi, ki jih bomo
+pognali v Blackboxu, bodo imeli nastavljeno spremenljivko okolja
+.B DISPLAY
+na podano vrednost.
+.SH POGANJANJE UPRAVLJALNIKA BLACKBOX
+Program obièajno po¾enemo z uporabnikovim zagonskim skriptom, ki je
+obièajno imenovan
+.IR ~/.xinitrc .
+Da bi pognali blackbox, spremenimo skript tako, da dodamo
+.EX 0
+exec blackbox
+.EE
+kot zadnje izvedeni ukaz skripta.  Ko se Blackbox konèa, se bo
+zakljuèila tudi seja X.
+.PP
+Ko po¾enemo Blackbox, bo ta posku¹al poiskati privzeto datoteko z
+menuji v imeniku
+.IR @defaultmenu@ .
+Èe ¾elimo ponuditi enotne menuje, da jih bodo uporabljali vsi
+uporabniki v sistemu, to storimo tu.
+.PP
+Ob izhodu ali ob ponovnem zagonu Blackbox shrani uporabni¹ke
+nastavitve v datoteko
+.I ~/.blackboxrc
+v uporabni¹kem domaèem imeniku. Nekatere vire v tej datoteki lahko
+urejamo roèno.
+.SH UPORABA BLACKBOXA
+Od razlièice 0.60.x Blackbox ne upravlja veè samostojno
+tipkovnice. Namesto tega se zana¹a na zunanji program
+.IR bbkeys (1).
+V tem razdelku zato opisujemo vse ukaze z mi¹ko.
+.SS Podlaga (korensko okno):
+Desni klik (tretji gumb) odpre korenski menu, v katerem lahko po¾enemo
+svoj namenski program. Ta menu lahko prilagodimo svojim potrebam.
+.PP
+Srednji klik (drugi gumb) odpre menu z navideznimi namizji.  Z njim
+lahko dodajamo ali odvzemamo navidezna namizja, pregledujemo namenske
+programe, ki jih poganjamo na vseh navideznim namizjih, opazujemo
+ikone in skaèemo na katerokoli navidezno namizje ali namenski program.
+.PP
+Levi klik (prvi gumb) imena namenskega programa na navideznem namizju
+nas posadi v okno s tem programom, okno pa napravi vidno in ,,v
+fokusu'', kar pomeni, da je okno dejavno. Srednji gumb (drugi gumb)
+prestavi namenski program na trenutno navidezno namizje.
+.SS Orodna letev:
+Orodno letev sestavlja troje polj: ime navideznega namizja, ime
+dejavnega okna in trenutni èas. Levi klik orodne letve jo napravi vidno,
+srednji klik pa skrije za vsa ostala okna, èe le ni omogoèena izbira
+AlwaysOnTop. Desni klik odpre majhni menu.
+.PP
+V tem menuju lahko poimenujemo trenutno navidezno namizje. Vnos
+konèamo s tipko Enter.  Izberemo lahko ¹e lego orodne letve, ali naj
+bo ta vselej vidna ali ne, kar pomeni, ali jo sme zakriti katero okno,
+ter to, ali naj se letev skrije, ko jo z mi¹ko zapustimo.
+.PP
+Opomba: V razlièicah Blackboxa pred razlièico 0.60.0 je
+desni klik orodne letve takoj skoèil na urejanje imena navideznega
+namizja.
+.SS Naslovna letev in obroba okna:
+Levi klik na obrobo okna napravi okno vidno. Vlek z mi¹ko potegne za
+seboj okno. Poteg oprijemk za spreminjanje velikost okna v spodnjem
+levem ali desnem vogalu obrobe na oknu spremeni njegovo velikost.
+Srednji klik po oknu zakrije okno. Desni klik po obrobi ali naslovni
+vrstici okna prika¾e menu z naslednjimi mo¾nostmi:
+.TP
+.B Na navidezno namizje...
+Preseli okno na novo navidezno namizje.  Ko izberemo navidezno namizje
+s srednjim klikom, nas bo Blackbox skupaj z namenskim programov
+postavil na novo navidezno namizje.
+.TP
+.B Zastri
+Zastri okno in pusti vidno le njegovo naslovno letev.
+.TP
+.B Pomanj¹aj
+Pomanj¹aj okno v ikono.
+Ikono lahko najdemo v podmenuju s seznamom vseh ikon glavnega menuja
+navideznega namizja.
+.TP
+.B Poveèaj
+Poveèaj okno.  Ko s srednjim gumbom kliknemo na to mo¾nost, se okno
+poveèa v vzdol¾ni smeri.
+.TP
+.B Prika¾i
+Prika¾i okno.
+.TP
+.B Zakrij
+Zakrij okno.
+.TP
+.B Prilepi
+Prilepi ali odlepi okno.  Prilepljeno okno bo vidno na vseh navideznih
+namizjih na istem mestu.
+.TP
+.B Zaustavi
+S signalom -SIGKILL zaustavi program, ki teèe o oknu. Tako zaustavljamo le
+programe, ki se ne odzivajo.
+.TP
+.B Zapusti
+Zapusti namenski program na blag naèin.
+.PP
+Ko dvokliknemo naslovno letev okna, se bo okno zastrlo, vidna bo
+ostala le naslovna letev.  Naslednji dvoklik bo odstrl okno, da bo
+ponovno vidno v celoti.
+.SS Okenski gumbi:
+Gumb v zgornjem levem kotu okna je gumb za pomanj¹avo okna. Klik nanj
+s katerimkoli gumbom okno ikonizira. Klik skrajno desnega gumba z
+oznako X pa zaustavi namenski program.  Drugi gumb na desni strani, èe
+le obstaja, poveèa okno na tri naèine: klik z levim gumbom mi¹ke
+poveèa okno èez ves zaslon, klik s srednjim gumbom poveèa okno
+vzdol¾no, klik z desnim gumbom pa preèno.
+.SS Katerikoli menu:
+Klik menuja z desnim gumbom odpre menu. Klik naslovne letve
+kateregakoli podmenuja z levim gumbom in poteg odpre menu in ga
+napravi vidnega, dokler ne kliknemo na izbiro v menuju.
+.SS Razno:
+Ko ¾elimo premakniti okno, pa ne vidimo oprijemk za spreminjanje
+velikosti okna, pritisnemo Alt in levi gumb kjerkoli v oknu. Okno bomo
+lahko s potegom mi¹ke premaknili.  S tem prijemom lahko delno vidno
+okno prika¾emo v celoti. S pritiskom na Alt in srednji gumb zakrijemo
+okno, z Alt in tretjim gumbom pa spremenimo njegovo velikost.
+.SH MENUJSKA DATOTEKA
+Privzeta menujska datoteka je name¹èena v
+.IR @defaultmenu@ .
+S to sistemsko datoteko lahko prilagodimo menuje za vse uporabnike
+naenkrat. Mo¾no pa je tudi ustvariti osebni menu.  Po dogovoru
+ustvarimo v svojem domaèem imeniku imenik
+.IR "~/.blackbox/" " (ali " "~/blackbox/" ")"
+in v njem datoteko
+.I menu.
+Za zaèetek lahko v to datoteko prepi¹emo kar sistemsko menujsko
+datoteko.  Nato moramo ukazati programu Blackbox, naj namesto
+sistemske nalo¾i na¹o menujsko datoteko.  To storimo tako, da
+nastavimo ali spremenimo vrednost vira v datoteki
+.I ~/.blackboxrc,
+in sicer takole:
+.EX
+session.menuFile:       ~/.blackbox/menu
+.EE
+Da je ta sprememba upo¹tevana, moramo ponovno zagnati Blackbox.
+Preprièajmo se, da je datoteka menu uporabna, in nato izberemo gumb
+,,Ponovni zagon'' na privzetem korenskem menuju Blackboxa.
+.SS Menujska skladnja
+Menujska skladnja je zelo preprosta, a hkrati zelo uèinkovita.  V
+menujski vrstici so do tri polja.  Polja so naslednje oblike:
+.EX
+[znaèka] (oznaka ali ime datoteke) {ukaz ali ime datoteke}
+.EE
+Podprte so naslednje znaèke:
+.TP
+.B [begin] (oznaka korenskega menuja)
+Ta uka¾e Blackboxu, naj prebere menujsko datoteko.  Znaèka [begin] je
+pogoj za to, da Blackbox prebere menujsko datoteko.  Èe znaèke ne
+najde, prebere privzeto sistemsko menujsko datoteko.
+.TP
+.B [end]
+Ta sporoèi Blackboxu, da je na koncu menuja.  To je lahko konec
+podmenuja ali korenskega menuja.  Da pravilno zakljuèimo predpisano
+znaèko [begin], mora biti v datoteki vsaj ena zakljuèna znaèka [end].
+.TP
+.B [exec] (oznaka ukaza) {ukaz v ukazni lupini}
+Doda izbiro v seznam menujskih ukazov.  Ko kliknemo ta izbor v
+menuju, Blackbox po¾ene ,,ukaz v ukazni lupini''.
+.TP
+.B [exit] (oznaka izhoda)
+Doda na seznam izbiro, ki prekine in zaustavi Blackbox.  Pred
+Blackboxovim koncem pa korensko okno (podlaga) posvoji vsa odprta
+okna.
+.TP
+.B [include] (ime datoteke)
+Na mestu prebere datoteko
+.I ime datoteke.
+Ime datoteke je lahko navedeno s polno absolutno potjo do datoteke ali
+pa se zaène z
+.IR ~/ ,
+kar bo nadome¹èeno z imenom domaèega imenika. Na primer:
+.EX
+[include] (~/blackbox/stylesmenu)
+.EE
+bo prebral datoteko
+.I /home/bhughes/blackbox/stylesmenu
+.TP
+.B [nop] (oznaka - po izbiri)
+V menu vnese izbor brez uèinka. Z njim si lahko pomagamo pri
+preglednem oblikovanju menuja v razdelke, èe tako ¾elimo.
+.B [nop]
+sprejme oznako, èe je ta podana, vendar je ne zahteva. Èe ni podana,
+bo izbor na tistem mestu prazen.
+.TP
+.B [style] (oznaka) {ime datoteke}
+Ta uka¾e Blackboxu naj v menu vstavi izbor, ki bo, ko ga izberemo, prebral
+datoteko s slogom, poimenovano
+.I ime datoteke,
+in v zdaj¹nji seji upo¹teval nove teksture, barve in pisave, kot je
+doloèeno v datoteki z opisom sloga.
+.TP
+.B [stylesdir] (ime imenika)
+Prebere imena vseh datotek iz podanega imenika, pri èemer privzame, da
+so vse datoteke slogovne datoteke. Morebitnih podimenikov ne
+upo¹teva. Pripravi menujski nabor v trenutnem menuju, pri èemer je v
+vsaki vrstici po ena slogovna datoteka. Èe uporabnik datoteko izbere,
+nalo¾i predpisani slog in ga uporabi v trenutni seji.  Imena menujev
+so imena slogovnih datotek.
+.TP
+.B [stylesmenu] (oznaka) {ime imenika}
+Ustvari podmenu z imenom
+.I oznaka,
+ki je hkrati tudi naslov novega podmenuja. V podmenu vstavi vse
+datoteke v navedenem imeniku, pri èemer privzame, da so vse datoteke
+slogovne datoteke, enako kot pri znaèki
+.B [stylesdir].
+.IP
+.RB Obe\  znaèki\  [stylesdir] \ in\  [stylesmenu]
+omogoèata, da namestimo nov slog, ne da bi bilo treba urediti menujsko
+datoteko.
+.TP
+.B [submenu] (oznaka) {naslov podmenuja - po izbiri}
+Znaèka pove Blackboxu, naj ustvari in prebere nov menu.  Menu je kot
+podmenu vstavljen v star¹evski menu.  Ti menuji se preberejo
+rekurzivno in ni omejitve v ¹tevilu ravni njihovega gnezdenja. Ime
+podmenuja je opcijsko.  Èe ga ne podamo, je naslov podmenuja enak podani
+oznaki. Podmenu vselej zakljuèimo z znaèko
+.B [end].
+.TP
+.B [reconfig] (oznaka)
+Ko izberemo to izbiro, Blackbox ponovno prebere trenutno slogovno in
+menujsko datoteko in upo¹teva vse spremembe.  Ko presku¹amo nov slog
+ali temo, je ukaz uporaben, da nam ni treba vselej po spremembah
+zaganjati Blackboxa, da bi videli uèinek sprememb.  Ne glede na to pa
+Blackbox èude¾no ponovno prebere menujsko datoteko, kadar se ta
+spremeni.
+.TP
+.B [restart] (oznaka) {ukaz v ukazni vrstici - po izbiri}
+Ta znaèka  uka¾e ponovni zagon Blackboxa. Èe navedemo ,,ukaz v ukazni
+vrstici'', se ta izvede ob zaustavitvi Blackboxa. Namenjen je temu, da
+z njim po¾enemo kak drug upravljalnik oken. Èe ukaz izpustimo, se
+Blackbox samodejno ponovno za¾ene.
+.TP
+.B [config] (oznaka)
+Vstavi domorodni Blackboxov podmenu z mnogimi nastavitvenimi
+mo¾nostmi, ki vkljuèujejo naèin poleganja oken, slog fokusiranja,
+naèin premikanja okna in podobno.
+.TP
+.B [workspaces] (oznaka)
+To pove Blackboxu, naj na tem mestu vstavi povezavo do menuja z
+navideznimi namizji . To je uporabno posebej za tiste uporabnike, ki
+na morejo preprosto priti do menuja z navideznimi namizji, ker
+morebiti nimajo mi¹ke s tremi gumbi.
+.PP
+Katerakoli vrstica, ki se zaène z znakom ,,#'', predstavlja komentar
+in jo Blackbox ignorira. V poljih z oznakami, ukazi ali imeni datotek
+lahko katerikoli znak zapi¹emo z ube¾nimi zaporedji takole:
+.EX
+[exec] (\\(krasni\\) \\{XTERM\\}) {xterm -T \\"krasni XTERM\\"}
+.EE
+Z uporabo ,,\\\\'' vpi¹emo znak za povratno nagibnico (\\) v polje z
+oznakami, ukazi ali imeni datotek.
+.SS Zgled menuja
+Zdaj pa si oglejmo, kako doslej povedano pove¾emo v zgled.  Prikazan
+je zgled za menujsko datoteko:
+.PP
+.nf
+# Menujska datoteka upravljalnika oken Blackbox
+[begin] (Blackbox 0.60.3)
+  [exec] (rxvt) {rxvt -ls}
+  [exec] (netscape) {netscape -install}
+  [exec] (GIMP) {gimp}
+  [exec] (XV) {xv}
+  [submenu] (pine)
+    [exec] (dospela pisma) {rxvt -name pine -e pine -i}
+    [exec] (novo sporoèilo) {rxvt -name pine -e pine ""}
+  [end]
+  [submenu] (Upravljalnik oken)
+    [exec] (Uredi menuje) {nedit .blackbox/Menu}
+    [submenu] (Slog) {Kateri slog?}
+      [stylesdir] (~/.blackbox/styles)
+      [stylesmenu] (Slogi Blackboxa) {@pkgdatadir@/styles}
+    [end]
+    [config] (Nastavitvene mo¾nosti)
+    [reconfig] (Ponastavitev)
+    [restart] (Ponovni zagon)
+  [end]
+  [exit] (Izhod)
+[end]
+# konec menujske datoteke
+.fi
+.SH SLOGI
+Blackbox omogoèa, da uporabljamo posebne datoteke, ki predpisujejo vire
+.IR X (1),
+denimo barve, teksture ali pisave in prilagajamo videz okenske obrobe,
+menujev in orodne letve.
+.PP
+Privzeta namestitev Blackboxa ¾e ponuja nekaj teh slogovnih
+datotek. Obièajno so slogovne datoteke shranjene v
+.IR @pkgdatadir@/styles .
+Lahko si ogledamo te datoteke ali pa jih uredimo, tako da se nauèimo,
+kako deluje Blackboxova mehanika slogov. V svoji menujski datoteki
+lahko uporabimo menujske znaèke
+.BR [style] ", " [stylesdir] " in " [stylesmenu],
+da preprosto sproti spreminjamo slogovne datoteke.
+.PP
+Lahko pa v svojem domaèem imeniku naredimo imenik z imenom
+.I ~/.blackbox/styles
+in shranimo slogovne datoteke vanj. Seveda lahko izberemo katerokoli
+ime imenika, a veliko tem, ki jih prenesemo s spleta, prièakuje in
+uporablja to pot. Ime imenika
+.I styles
+sledi priporoèilom poimenovanja bb.themes.org.
+.PP
+Da bi razumeli, kako deluje mehanizem slogov, moramo nekaj malega
+vedeti o tem, kako delujejo viri X (angl. X resources).
+.PP
+Viri X so sestavljeni iz kljuèa in njegove vrednosti. Kljuè je nadalje
+sestavljen in mnogih manj¹ih kljuèev, ki se vèasih imenujejo tudi
+otroci, loèeni pa so s piko (.). Kljuè lahko vsebuje tudi nadomestni
+znak zvezdico (*), ki na tistem mestu nadomesti katerikoli znak ali
+njihovo zaporedje, tako zapisan kljuè pa bo oznaèeval veè kljuèev, ki
+jim vzorec ustreza.  To je, denimo, uporabno pri slogih, ki slonijo na
+eni ali dveh barvah.
+.PP
+Blackbox omogoèa nastavljanje treh glavnih komponent: orodne letve,
+menujev in okenskih okraskov.
+.PP
+Okence, ki se odpre, ko premikamo okna, in ki vsebuje podatke o legi
+premikajoèega se okna, podeduje svoje lastnosti od naslovne letve.
+.PP
+Nekaj kratkih zgledov:
+.EX
+toolbar.clock.color:	green
+.EE
+To nastavi barvni vir za uro v orodni letvi na zeleno
+(angl. green). Naslednji zgled:
+.EX
+menu*color:	rgb:3/4/5
+.EE
+nastavi barvni vir menuja
+.I in vseh njegovih potomcev
+na ,,rgb:3/4/5''.
+(Pojasnilo o oznakah barv najdemo v
+.IR X (1).)
+Potemtakem se to doloèilo nana¹a tudi na
+.IR menu.title.color " in " menu.frame.color .
+.PP
+In z doloèilom
+.EX
+*font:	-b&h-lucida-medium-r-normal-*-*-140-*-2
+.EE
+za vse gumbe naenkrat nastavimo vir pisave  na podano pisavo, ki
+vsebuje ¹umnike.  (Da bi zvedeli, katere pisave imamo name¹èene v
+sistemu, uporabimo programe
+.IR xfontsel "(1), " gtkfontsel " ali " xlsfonts "(1).)"
+.PP
+Kar dela Blackbox tako presenetljiv, je njegova zmo¾nost, da sproti
+prika¾e teksture. Opisi teksture so dani neposredno gumbu, v katerem
+naj se prika¾ejo, na primer:
+.ta \w'toolbar.clock.colorTo:\ 'u
+.EX
+toolbar.clock:	Raised Gradient Diagonal Bevel1
+toolbar.clock.color:	rgb:8/6/4
+toolbar.clock.colorTo:	rgb:4/3/2
+.EE
+Ne skrbimo, takoj bo pojasnjeno, kaj ukazi pomenijo!
+Opis teksture je sestavljen iz naslednjih petih polj:
+.TP
+.B Flat / Raised / Sunken
+ki ustvarijo videz ravnosti (angl. flat), dvignjenosti (angl. raised)
+ali ugreznjenosti (angl. sunken).
+.TP
+.B Gradient / Solid
+ki pove Blackboxu, naj bo tekstura barvni preliv (angl. Gradient) ali
+pa enobarvna (angl. Solid)
+.TP
+.B Horizontal / Vertical / Diagonal / Crossdiagonal / Pipecross / Elliptic / Rectangle / Pyramid
+doloèa vrsto teksture. Deluje pa le, èe smo pred tem izbrali preliv:
+.B Gradient
+.TP
+.B Interlaced
+pove Blackboxu naj teksturo preplete. To pomeni, da bo vsaka druga
+vrstica temne barve. To izbiro najpogosteje uporabljamo s
+prelivajoèimi se teksturami, od razlièice Blackboxa 0.60.3 naprej pa
+deluje tudi z enobarvnimi teksturami.
+.TP
+.B Bevel1 / Bevel2
+pove Blackboxu, kak¹no vrsto klina (angl. bevel) naj
+uporablja. Privzeta izbira za klin je Bevel1. Pri tej se senca gumba
+izri¹e na robu slike. Dodatna mo¾nost je Bevel2. Pri tej pa se senca
+izri¹e za eno piko od roba proti sredini slike.
+.PP
+Namesto podrobnega opisa teksture lahko uporabimo izbiro
+.B ParentRelative,
+ki prika¾e komponento kot del vi¹je komponente, to pa pomeni, da je
+popolnoma prosojna.
+.PP
+Vse teksture s prelivi pa so sestavljene iz dveh barvnih vrednosti:
+.IR " color " in " colorTo ".
+èe izberemo prepletanje
+.B (Interlaced)
+v enobarvnem naèinu
+.B (Solid),
+je barva
+.I colorTo
+uporabljena za drugo plepletajoèo se barvo.
+.PP
+Tako, tu pa je celotni seznam komponent, skupaj z vrednostmi, ki jih
+komponente lahko dobijo. Komentarji so predznaèeni s klicajem (!),
+kakor so lahko komentarji oznaèeni v Blackboxovih datotekah z viri,
+podobno kot pri datotekah virov X.
+.PP
+.ta \w'window.button.unfocus.picColor:\ 'u
+.nf
+.\"
+! Orodna letev
+toolbar:	tekstura
+toolbar.color:	barva
+toolbar.colorTo:	barva
+
+! Gumbi orodne letve
+toolbar.button:	tekstura ali \fIParentRelative\fR
+toolbar.button.color:	barva
+toolbar.button.colorTo:	barva
+
+! Barva gumbov s pu¹èicami
+toolbar.button.picColor:	barva
+
+! Pritisnjeni gumbi
+toolbar.button.pressed:	tekstura \fI(na primer Sunken \fR ali \fIParentRelative)\fR
+toolbar.button.pressed.color:	barva
+toolbar.button.pressed.colorTo:	barva
+
+! Barva pritisnjenih gumbov s pu¹èicami
+toolbar.button.pressed.picColor:	barva
+
+! Oznaka navideznega namizja v orodni letvi
+toolbar.oznaka:	tekstura ali \fIParentRelative\fR
+toolbar.oznaka.color:	barva
+toolbar.oznaka.colorTo:	barva
+toolbar.oznaka.textColor:	barva
+
+! Oznaka okna v orodni letvi
+toolbar.windowLabel:	tekstura ali \fIParentRelative\fR
+toolbar.windowLabel.color:	barva
+toolbar.windowLabel.colorTo:	barva
+toolbar.windowLabel.textColor:	barva
+
+! Ura v orodni vrstici
+toolbar.clock:	tekstura ali \fIParentRelative\fR
+toolbar.clock.color:	barva
+toolbar.clock.colorTo:	barva
+toolbar.clock.textColor:	barva
+
+! Naèin poravnave besedila v orodni vrstici (osredinjeno, levo ali desno)
+toolbar.justify:	\fIcenter\fR, \fIleft\fR ali \fIright\fR
+
+! Pisava za vse komponente v orodni letvi
+toolbar.font:	pisava \fI(e.g. -*-helvetica-medium-r-normal-*-*-100-*-2)\fR
+
+! Naslovna vrstica menuja
+menu.title:	tekstura
+menu.title.color:	barva
+menu.title.colorTo:	barva
+menu.title.textColor:	barva
+menu.title.font:	pisava
+menu.title.justify:	\fIcenter\fR, \fIleft\fR ali \fIright\fR
+
+! Okvir menuja
+menu.frame:	tekstura
+menu.frame.color:	barva
+menu.frame.colorTo:	barva
+menu.frame.textColor:	barva
+menu.frame.disableColor:	barva
+menu.frame.font:	pisava
+menu.frame.justify:	\fIcenter\fR, \fIleft\fR ali \fIright\fR
+
+! Oznake (angl. bullet) podenot v podmenujih
+menu.bullet:	\fIempty\fR, \fItriangle\fR, \fIsquare\fR ali \fIdiamond\fR
+menu.bullet.position:	\fIright\fR ali \fIleft\fR
+
+! Poudarjeno izpisana enota v menuju
+menu.hilite:	tekstura (na primer \fIRaised\fR)
+menu.hilite.color:	barva
+menu.hilite.colorTo:	barva
+menu.hilite.textColor:	barva
+
+! Dejavno okno
+window.title.focus:	tekstura
+window.title.focus.color:	barva
+window.title.focus.colorTo:	barva
+
+! Nedejavno okno
+window.title.unfocus:	tekstura
+window.title.unfocus.color:	barva
+window.title.unfocus.colorTo:	barva
+
+! Oznaka okna
+window.oznaka.focus:	tekstura ali \fIParentRelative\fR
+window.oznaka.focus.color:	barva
+window.oznaka.focus.colorTo:	barva
+window.oznaka.focus.textColor:	barva
+
+window.oznaka.unfocus:	tekstura ali \fIParentRelative\fR
+window.oznaka.unfocus.color:	barva
+window.oznaka.unfocus.colorTo:	barva
+window.oznaka.unfocus.textColor:	barva
+
+! Oprijemna letev (angl. handlebar)
+window.handle.focus:	tekstura
+window.handle.focus.color:	barva
+window.handle.focus.colorTo:	barva
+
+window.handle.unfocus:	tekstura
+window.handle.unfocus.color:	barva
+window.handle.unfocus.colorTo:	barva
+
+! Oprijemke za spreminjanje velikosti okna
+window.grip.focus:	tekstura
+window.grip.focus.color:	barva
+window.grip.focus.colorTo:	barva
+
+window.grip.unfocus:	tekstura
+window.grip.unfocus.color:	barva
+window.grip.unfocus.colorTo:	barva
+
+! Gumbi na oknu
+window.button.focus:	tekstura ali \fIParentRelative\fR
+window.button.focus.color:	barva
+window.button.focus.colorTo:	barva
+window.button.focus.picColor:	barva
+
+window.button.unfocus:	tekstura ali \fIParentRelative\fR
+window.button.unfocus.color:	barva
+window.button.unfocus.colorTo:	barva
+window.button.unfocus.picColor:	barva
+
+window.button.pressed:	tekstura (na primer \fISunken\fR)
+window.button.pressed.color:	barva
+window.button.pressed.colorTo:	barva
+
+! Okvir okrog okna
+window.frame.focusColor:	barva
+window.frame.unfocusColor:	barva
+
+! Pisava za oznake v oknu in poravnavanje oznak
+window.font:	pisava
+window.justify:	\fIcenter\fR, \fIleft\fR ali \fIright\fR
+
+! Ostali viri
+
+! Vse komponente lahko obrobimo
+borderWidth:	¹tevilo pik, na primer \fI1\fR
+borderColor:	barva
+
+bevelWidth:	¹tevilo pik > 0
+handleWidth:	¹tevilo pik > 0
+
+! ©irina okenskega okvirja (od razlièice  0.61 naprej)
+! Èe ni podana, je frameWidth enak vrednosti bevelWidth
+frameWidth:	¹tevilo pik >= 0
+
+
+! Ta ukaz se izvede vsakiè, ko izberemo ta slog
+! Obièajno na podlago prilepi kak¹no sliko
+rootCommand:	ukaz iz ukazne vrstice, na primer \fIbsetroot -mod 4 4 -fg rgb:	5/6/6 -bg grey20\fR
+
+! Nekatera orodja iz bbtools ali WindowMakerjauporabljajo stare vire iz razlièice 0.51
+menuFont:	pisava
+titleFont:	pisava
+! Konec datoteke
+.fi
+.PP
+Videti je, da je tole zelo dolg seznam. A pomnite, da lahko pri svojem
+slogu dostikrat veè kljuèev nastavimo z enim doloèilom, na primer
+takole:
+.EX
+.ta \w'*unfocus.textColor:\ 'u
+*color:	slategrey
+*colorTo:	darkslategrey
+*unfocus.color:	darkslategrey
+*unfocus.colorTo:	black
+*textColor:	white
+*unfocus.textColor:	lightgrey
+*font:	*-lucida-medium-r-*-sans-10-*-2
+.EE
+To nastavi liène in primerne vrednosti za mnoge komponente.
+.SH RE®A
+Re¾a (angl. slit) je posebni okenski okvir Blackboxa, ki lahko vsebuje
+vstavne namenske programe (angl. dockable applications), kakr¹ni so v
+paketih ,,bbtools'' ali ,,WindowMaker''.  Ko namenski program po¾enemo v re¾i, okno nima
+svojega okvira, paè pa vse obroblja re¾a in okna so vidna v vseh
+navideznih namizjih.  Èe kliknemo tretji gumb na meji re¾e, se odpre
+menu s podatki o legi, o tem, ali naj bodo namenski programu v re¾i
+zdru¾eni preèno ali vzdol¾no, in ali naj se re¾a skrije, ko se z mi¹ko
+odmaknemo od nje.
+.PP
+Veèina vstavnih namenskih program pozna izbiro
+.B -w,
+s katero jih lahko po¾enemo v re¾i.
+Na primer, v zagonsko datoteko
+.IR ~/.xinitrc
+lahko postavimo:
+.EX
+bbmail -w &
+bbpager -w &
+exec blackbox
+.EE
+Da lahko v Blackboxu uporabljamo re¾e, pa smo seveda pred tem pri
+prevajanju morali omogoèiti podporo zanje. Èe nastavitev nismo
+spreminjali, se je podpora dodala samodejno.
+.SH DATOTEKA Z VIRI
+Datoteko z viri (angl. resource file)
+.I ~/.blackboxrc
+samodejno ustvari in vzdr¾uje Blackbox sam.  V njej so od razlièice
+0.60.x naprej shranjene vse izbire iz menuja
+.B [config],
+zadnje izbrana datoteka s slogom, imena navideznih namizij in
+podobno. Ne glede na to pa bomo morda ¾eleli sami urediti nekatere
+vire, ki so shranjeni v tej datoteki:
+.TP
+.B session.menuFile:
+Ta vir pove Blackboxu, kje naj i¹èe svoje datoteke z menuji.
+.TP
+.B session.screen0.toolbar.widthPercent:
+Ta vir pove dele¾ v odstotkih ¹irine zaslona, ki jo naj orodna letev
+zavzame.  Privzeta vrednost je:
+.IR 66 .
+.TP
+.B session.screen0.strftimeFormat:
+To prilagodi naèin, na katerega je v orodni vrstici izpisan trenutni
+èas.  Uporabljen je zapis
+.IR strftime (3)
+Privzeta vrednost je:
+.IR "%I:%M %p" .
+.TP
+.B session.autoRaiseDelay:
+Nastavi zakasnitev v milisekundah, po kateri bo dejavno okno postalo
+v naèinu Autoraise vidno.  Privzeta vrednost je:
+.IR 250 .
+.TP
+.B session.doubleClickInterval:
+Nastavi dobo v milisekundah, ki mora preteèi med dvema zaporednima
+klikoma, da Blackbox razpozna dvoklik.  Privzeta vrednost je:
+.IR 250 .
+.TP
+.B session.screen0.edgeSnapThreshold:
+Ko premikamo okno prek zaslona, Blackbox okno lahko zaradi la¾jega
+postavljanja prisloni tik ob rob zaslona. Ta vir pove razdaljo v
+¹tevilu pik do roba zaslona, tako da bo okno samodejno zdrsnilo do
+roba.  Privzeta vrednost je:
+.IR 0 .
+.TP
+.B session.cacheMax:
+To pove Blackboxu, koliko pomnilnika v kilobajtih (kB) naj porabi za
+vmesno shranjevanje slikic stre¾nika za X.  Èe ima raèunalnik na voljo
+malo pomnilnika, to vrednost zni¾ajmo.  Privzeta vrednost je
+.IR 200 .
+.TP
+.B session.cacheLife:
+Ta vrednost pove Blackboxu, koliko èasa v minutah naj hrani nerabljene
+slikice v pomnilniku stre¾nika X, preden jih zavr¾e. Privzeta vrednost
+je:
+.IR 5 .
+.TP
+.B session.colorsPerChannel:
+Ta vrednost pove Blackboxu, koliko barv naj si rezervira na stre¾nikih
+X z navideznimi barvami. Kanal je lahko rdeè, zelen ali moder.
+Blackbox bo rezerviral barve za tretjo potenco te vrednosti in jih dal
+na voljo. Vrednost vira mora biti med 2 in 6.  Èe poganjamo Blackbox na
+osembitnem zaslonu, moramo to vrednost postaviti na 4.  Privzeta
+vrednost je:
+.IR 4.
+.PP
+Èe poganjamo Blackbox v okolju z veè zasloni, lahko namesto kljuèa
+.B screen0
+za ustrezno namizje uporabljamo tudi
+.B screen1, 2...
+.SH OKOLJE
+.TP
+.B HOME
+Blackbox uporablja spremenljivko okolja
+.RB $ HOME
+da ugotovi, kje le¾i datoteka
+.I .blackboxrc,
+da poi¹èe datoteko s slogom in da doloèi druga imena imenikov.
+.TP
+.B DISPLAY
+Èe v ukazni vrstici ne podamo oznake zaslona, na katerem naj se
+Blackbox izri¹e, bo Blackbox za to uporabil vrednost spremenljivke
+okolja.
+.SH AVTOR in ZAHVALE
+Vso kodo za Blacbox sta napisala in jo vzdr¾evala Brad Hughes
+.nh \" hyphenation off
+(blackbox@alug.org)
+.hy \" on again
+in kasneje Jeff Raven
+.nh
+(jraven@psu.edu)
+.hy
+s prispevki in krparijami mnogih z vsega sveta. Zdaj za to skrbi 
+Sean 'Shaleh' Perry
+.nh
+(shaleh@debian.org)
+.hy
+.PP
+Uradno spletno mesto Blackboxa je:
+.nh
+.B http://blackbox.alug.org/
+.hy
+.br
+Poroèila o napakah in zahtevke za izbolj¹ave naslovite na  
+.nh
+.B http://sf.net/projects/blackboxwm
+.hy
+.br
+Mnogo tem in drugih prispevkov je najti na:
+.nh
+.B http://bb.themes.org/
+.hy
+.PP
+To stran je napisal Wilbert Berendsen
+.nh
+(wbsoft@xs4all.nl).
+.hy
+Prevod v sloven¹èino je pripravil Ale¹ Ko¹ir
+.nh
+(ales.kosir@hermes.si).
+.hy
+Dostopna bo ¹e v mnogih jezikih.
+.SH GLEJ TUDI
+.IR bsetroot (1), \ bbkeys (1)  \" ni ¹e èisto narejen ;-(
+.\"
+.\" $Log: blackbox.1.in,v $
+.\" Revision 1.1  2002/01/25 10:25:28  shaleh
+.\" Initial revision
+.\"
+.\" Revision 1.5  2002/1/13 18:12:44  kosir
+.\" Dopolnjeno za blackbox-0.62.0pre4
+.\"
+.\" Revision 1.4  2000/11/21 22:12:44  kosir
+.\" Pregledano pred po¹iljko vzdr¾evalcem.
+.\"
+.\" Revision 1.3  2000/11/17 15:28:10  kosir
+.\" Pred izdajo na lugos-slo@lugos.si.
+.\"
+.\" Revision 1.2  2000/11/17 13:30:51  kosir
+.\" Pregledano s èrkovalnikom.
+.\"
+.\" Local Variables: 
+.\" mode: nroff 
+.\" coding: iso-latin-2 
+.\" Local IspellDict: "slovensko" 
+.\" LocalWords: "Ale¹ Ko¹ir"
+.\" LocalWords: "Berendsen Bevel Blacbox Blackboxovim"
+.\" LocalWords: "datotekami klin klina krparijami menujsko nadomestni namestitev"
+.\" LocalWords: "namizju premise slikice slogovnimi teksturami tipkovnice zagonske"
+.\" LocalWords: "Blackbox Blackboxa Blackboxov Blackboxova Blackboxovega Blackboxovih"
+.\" LocalWords: "Blackboxu Copyright datoteko Enter Gnome KDE menujska nastavitvene"
+.\" LocalWords: "nefokusirano nedejavno okence oprijemke oprijemna orodna osve¾eno poganjanje"
+.\" LocalWords: "povzetek PP pomanj¹aj ponastavitev poteg prièujoèe READMEnerabljene"
+.\" LocalWords: "vlek vnos blackbox br datotek datoteka datotekah datoteke datoteki"
+.\" LocalWords: "datoteko domorodni dvignjenosti dvoklik dvokliknemo enobarvna"
+.\" LocalWords: "enobarvnem enobarvnimi fokus fokusiranja fokusom fokusu gnezdenja"
+.\" LocalWords: "gostenje grafièna grafièni hrabri ikon ikona ikonami ikone ikonizira"
+.\" LocalWords: "ikono izri¹e izvedba kB kilobajtih klicajem klik kliknemo klikom"
+.\" LocalWords: "klikoma komponent komponente komponento letev letve letvi makre"
+.\" LocalWords: "makroji menu menuja menuje menujem menujev menuji menujska menujske"
+.\" LocalWords: "menujski menujskih menujsko menuju milisekundah minimalizma mi¹ke"
+.\" LocalWords: "mi¹ko nabor nagibnico nali¹pan namizij namizja namizje namizji"
+.\" LocalWords: "namizjih naslovna naslovne naslovni naslovno nasmetili nastavi"
+.\" LocalWords: "nastavimo nastavitvenimi nastavljanje nastavljeno nastavljive obroba"
+.\" LocalWords: "obrobe obrobi obrobimo obroblja obrobo odstrl okraske okraskov"
+.\" LocalWords: "opcijsko oprijemk orodna orodne orodni orodno osembitnem osredinjeno"
+.\" LocalWords: "paketu plepletajoèo podanega podanem podenot podimenikov podmenu"
+.\" LocalWords: "podmenuja podmenujev podmenujih podmenuju pokradenih poleganja"
+.\" LocalWords: "pomanj¹amo pomanj¹ane pomanj¹avo pomnilnika pomnilniku poravnave"
+.\" LocalWords: "posvoji poteg potegom potenco predznaèeni preglednem prelivajoèimi"
+.\" LocalWords: "presku¹amo prevajalcem prikazovalniku prikladen priporoèilom"
+.\" LocalWords: "pritisnjenih ravnosti razdelke razdelku razpozna rekurzivno rezervira"
+.\" LocalWords: "rezerviral shranjevanje skript skripta skriptom slikic slogovna"
+.\" LocalWords: "slogovne slogovnih slogovno spremenljivke spremenljivko sprotno"
+.\" LocalWords: "star¹evski tekstura teksture teksturo tipko tipkovnico tkman"
+.\" LocalWords: "ugreznjenosti ukazne ukazni uporabnik uporabnike uporabniki"
+.\" LocalWords: "uporabnikovim uporabni¹ke uporabni¹kem upo¹tevana upravljalnik"
+.\" LocalWords: "upravljalnika upravljalnikov upravljalniku urejevalnikom vmesnika"
+.\" LocalWords: "vnese vstavne vstavnih vzdol¾ni vzdol¾no zagonskim zagonsko"
+.\" LocalWords: "zaporednima zaslon zaslona zasloni zaslonu zaustavitvi ¹umnike"
+.\" End:

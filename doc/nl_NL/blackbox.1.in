@@ -1,0 +1,833 @@
+.\"
+.\" Man page for Blackbox
+.\"
+.\" Copyright (c) 2002 by Wilbert Berendsen <wbsoft@xs4all.nl>
+.\"
+.\" This manual page may be freely distributed and modified.
+.\" Parts of the text are taken from website and several README's
+.\" by His Great Hughesness himself. Why reinvent wheels?
+.\"
+.\" Created with NEdit, tested with ``man'' and ``tkman.''
+.\" This manpage uses only standard groff and tmac.an macros.
+.\" To all translators who didn't do manpages earlier (like me ;-):
+.\" Read the Man-Page-Mini-HOWTO and the LDP manpage ``man 7 man''
+.\" There's all I needed to know about these macros.
+.\"
+.\" Dutch Version, first created Mon Oct 23 2000
+.\"                updated Tue Jan 15 2002
+.\"
+.\" ..define sort of <blockquote><pre> macro
+.de EX
+.ne 5
+.if n .sp 1
+.if t .sp .5
+.nf
+.in +.5i
+..
+.de EE
+.fi
+.in -.5i
+.if n .sp 1
+.if t .sp .5
+..
+.TH blackbox 1 "Oktober 2002" "0.62.0"
+.SH NAAM
+blackbox \- een window manager voor X11
+.SH SYNOPSIS
+.BR blackbox " \-help | \-version"
+.br
+.B blackbox 
+.RI "[ \-rc" " rcfile " "] [ \-display" " display " ]
+.SH BESCHRIJVING
+.\"
+.\" Phirst Phew ParagraPhs taken from blackbox.alug.org
+.\"
+Blackbox is een window manager voor het
+X Window System van de Open Group, versie 11 release 6 en daarboven.
+Blackbox is geschreven in C++, zonder code van enige andere window manager,
+hoewel de implementatie van de graphics lijkt op die van Window Maker.
+.PP
+Vanaf het moment dat de eerste regel code werd geschreven, groeide Blackbox rond
+een enkel premisse: minimalisme.
+Het is niet bedoeld als de meest oogstrelende, uitgebreide, of versierde NeXT
+look-alike.
+Het is slechts bedoeld
+.BR snel
+te zijn.
+.PP
+Blackbox biedt configureerbare venster-decoraties, een startmenu om programma's
+op te starten en een werkbalk die de naam van het huidige werkblad laat zien, de
+naam van de huidige toepassing en een klok.
+Er is ook een werkbladmenu om werkbladen toe te voegen of te verwijderen.
+De `slit' kan worden gebruikt om speciale, kleine applicaties in af te beelden.
+De meeste bbtools (kleine programma's bedoeld voor gebruik bij Blackbox)
+kunnen de slit gebruiken.
+.PP
+Blackbox behandelt ikonen op een speciale manier: Als je een venster
+minimaliseert verschijnt er geen ikoon; in plaats daarvan kun je het programma
+terug vinden in het `Ikonen' submenu van het Werkblad menu.
+Je bureaublad zal dus nooit propvol ikonen komen te zitten.
+Als alternatief voor ikonen kun je dubbelklikken op de titelbalk van een
+venster, het venster zal nu dichtklappen en alleen de titelbalk blijft
+zichtbaar.
+.PP
+Blackbox heeft zijn eigen mogelijkheden om de achtergronden van menu's
+en borders te creëren.
+Door stijlbestanden te gebruiken kun je in hoge mate bepalen hoe je
+bureaublad eruit ziet.
+Momenteel gebruikt Blackbox een eigen protocol om met andere programma's te
+communiceren, maar ondersteuning van de nieuwe window manager specificatie
+die Gnome en KDE gebruiken is in voorbereiding.
+.SH OPTIES
+Blackbox ondersteunt de volgende commandoregel-opties:
+.TP
+.B \-help
+Toon commandoregel-opties en ingecompileerde mogelijkheden en stop.
+.TP
+.B \-version
+Toon versie info en stop.
+.TP
+.BI \-rc \ rcfile
+Gebruik een ander run-control bestand dan het standaard
+.IR  "~/.blackboxrc" .
+.TP
+.BI \-display \ display
+Start Blackbox op de aangegeven display.
+Programma's die door Blackbox worden gestart hebben de
+.B DISPLAY
+omgevingsvariabele ook gezet op deze waarde.
+.SH BLACKBOX STARTEN
+Normaal gesproken wordt Blackbox gestart door het startup-script van de
+gebruiker, meestal
+.IR ~/.xinitrc .
+Om Blackbox op te starten, voeg het commando
+.EX 0
+exec blackbox
+.EE
+als het laatst uitgevoerde commando in dit script.
+Als Blackbox stopt, zal de X sessie ook stoppen.
+.PP
+Bij het opstarten zoekt Blackbox een standaard menu bestand in
+.IR @defaultmenu@ .
+Je kunt hier een systeem-breed menu opnemen voor alle gebruikers.
+.PP
+Bij herstarten of afsluiten zal Blackbox de gebruikers instellingen opslaan in
+het bestand
+.I ~/.blackboxrc
+in de homedirectory van de gebruiker.
+Sommige resources in dit bestand kunnen handmatig worden bewerkt.
+.SH BLACKBOX GEBRUIKEN
+Vanaf versie 0.60.x ondersteunt Blackbox geen sneltoetsen meer, maar laat dit
+over aan een extern programma, 
+.IR bbkeys (1).
+In deze afdeling zullen we dus alle muiscommando's de revue laten passeren.
+.SS Achtergrond (bureaublad):
+Met de rechter muisknop (vanaf hier knop 3) roep je het startmenu op.
+Hiermee kun je je programma's opstarten.
+Je kunt dit menu aan je wensen aanpassen.
+Met de middelste muisknop (knop 2) roep je het werkblad menu op.
+Je kunt werkbladen toevoegen of verwijderen, de ikonen bekijken, en direct naar
+een applicatie of werkblad toespringen.
+.PP
+Met de linker muisknop (knop 1) op een toepassing in het werkblad (sub)menu
+spring je naar dat werkblad en krijgt die toepassing de focus;
+klik je met de knop 2 op een toepassing in het werkblad (sub)menu, dan wordt de
+toepassing naar het huidige werkblad gehaald.
+.SS Werkbalk:
+De werkbalk bestaat uit drie velden: de naam van het werkblad, de naam van de
+toepassing die momenteel toetsenbordfocus heeft, en een klok.
+Een muisklik met knop 1 brengt de werkbalk naar de voorgrond, met knop 2 naar de
+achtergrond, en met knop3 roep je het werkbalk menu op.
+.PP
+Met dit menu kun je de naam voor het huidige werkblad aanpassen (druk op Enter
+om het invoeren van de naam te beëindigen).
+Ook kun je kiezen waar de werkbalk moet worden geplaatst, of het altijd op de
+voorgrond moet blijven of zich automatisch moet verbergen als de muis de
+werkbalk verlaat.
+.PP
+Let wel: In Blackbox versies beneden 0.60.0 roept een muisklik met knop 3 direct
+de `Naam werkblad wijzigen' modus op.
+.SS Titelbalk en border van vensters:
+Links klikken op titel of border van een venster plaatst dit venster naar de
+voorgrond.
+Slepen verplaatst vervolgens het venster.
+Slepen met de kleine grepen links en rechts onder (beneden versie 0.60: alleen
+rechts onder) verandert de grootte van het venster.
+Klikken met knop 2 op titel of border van een venster plaatst dit venster naar
+de achtergrond.
+Een klik met knop 3 op titel of border van een venster roept het venster menu
+op, dat de volgende commando's bevat:
+.TP
+.B Verplaats naar...
+Verplaats het venster naar een ander werkblad.
+Als je het werkblad in dit submenu selecteert met knop 2 stuurt Blackbox jouw
+mét de toepassing naar dat werkblad
+.TP
+.B Alleen Titel
+Klapt het venster dicht.
+Alleen de titelbalk blijft zichtbaar
+.TP
+.B Minimaliseren
+Minimaliseer venster.
+Het venster verdwijnt van het scherm en
+kan gevonden worden in het submenu `Ikonen' van het werkblad menu
+.TP
+.B Maximaliseren
+Vergroot het venster tot volledig scherm.
+Klik je met knop 2 op dit item, dan wordt het venster alleen in vertikale
+richting vergroot
+.TP
+.B Naar Voorgrond
+Haal venster naar voorgrond (i.e. niet bedekt door andere vensters)
+.TP
+.B Naar Achtergrond
+Breng venster naar achtergrond (i.e. achter alle andere vensters)
+.TP
+.B Altijd Zichtbaar
+Maakt dat dit venster altijd zichtbaar blijft in alle werkbladen
+.TP
+.B Afbreken
+Stuur een KILL signaal naar de eigenaar van het venster
+.TP
+.B Sluiten
+Sluit de applicatie netjes af
+.PP
+Als je dubbelklikt op de titelbalk van een venster, klapt het venster dicht en
+alleen de titelbalk blijft zichtbaar.
+Nogmaals dubbelklikken beeldt het venster weer af.
+.SS Venster knoppen:
+De knop uiterst linksboven aan een venster is de Minimaliseer knop.
+Erop klikken heeft tot resultaat dat het venster van het scherm verdwijnt en
+terug te vinden is in het submenu 'Ikonen' van het werkblad menu.
+De knop uiterst rechtsboven (met de X) sluit de toepassing.
+De andere knop rechtsboven (indien aanwezig) kan gebruikt worden om het venster
+op drie manieren te vergroten:
+Muisknop 1 maximaliseert het venster naar volledig scherm, muisknop 2 alleen in
+vertikale richting, en knop 3 alleen in horizontale richting.
+.SS Elk menu:
+Klikken met knop 3 in een menu laat het verdwijnen.
+Klikken en slepen met knop 1 op de titelbalk van een (sub)menu verplaatst het
+menu over het scherm.
+Het menu blijft dan zichtbaar, ook als een item gekozen wordt!
+.SS Overig:
+Als je een venster wilt verslepen, maar de randen vallen geheel buiten het
+scherm, kun je Alt + muisknop 1 gebruiken om het venster te verslepen.
+Je kunt Alt + knop 1 ook gebruiken om een gedeeltelijk zichtbaar venster naar de
+voorgrond te halen.
+Tot slot, Alt + knop 2 brengt een venster naar de achtergrond, en Alt + knop 3
+verandert de grootte van het venster.
+.SH HET MENU BESTAND
+Een standaard menu bestand wordt geïnstalleerd in
+.IR @defaultmenu@ .
+Dit systeem-brede menu kan worden aangepast voor alle gebruikers tegelijk.
+Maar het is ook mogelijk een persoonlijk menu aan te leggen.
+Het is een conventie om een directory
+.IR "~/.blackbox/" " (of " "~/blackbox/" ")"
+aan te maken in je home directory, en een menu bestand, bijvoorbeeld
+.I menu
+aan te maken, of het systeem-brede menu naar deze lokatie te kopiëren.
+Vervolgens moeten we Blackbox vertellen ons menu te laden in plaats van het
+standaard menu.
+Dit krijgen we voor elkaar door een resource waarde in te voegen (of, indien
+reeds aanwezig, te wijzigen) in het
+.I ~/.blackboxrc
+bestand, bijvoorbeeld:
+.EX
+session.menuFile:       ~/.blackbox/menu
+.EE
+Om Blackbox deze verandering te laten merken moet Blackbox herstart worden.
+Wees er zeker van dat dit menu werkbaar is, kies dan `Herstarten' van het
+standaard menu.
+.SS Syntax van het Menu bestand
+De schrijfwijze in het menu bestand is zeer eenvoudig en effectief.
+Er zijn per regel drie velden, in de volgende vorm:
+.EX
+[soort item] (label of bestandsnaam) {shell commando of bestandsnaam}
+.EE
+De volgende soorten items zijn er:
+.TP
+.B [begin] (label voor startmenu)
+Dit item moet het eerste item zijn.
+Wordt het niet gevonden, dan zal Blackbox het standaard menu afbeelden.
+.TP
+.B [end]
+Hier eindigt een menu.
+Dit kan zowel het hoofdmenu als een submenu zijn.
+In elk geval een [end] item moet aanwezig zijn, hetwelk correspondeert met het
+bijbehorende [begin] item.
+.TP
+.B [exec] (label) {shell commando}
+Voegt een commando item in het menu in.
+Als de gebruiker hierop klikt, wordt het shell commando uitgevoerd.
+.TP
+.B [exit] (label)
+Voegt een item in dat Blackbox laat stoppen.
+Alle open vensters worden aan de achtergrond geplant voordat Blackbox afsluit.
+.TP
+.B [include] (bestandsnaam)
+Voegt op deze plaats een ander menubestand in met
+.IR bestandsnaam .
+De bestandsnaam kan het volledige pad aangeven of met
+.I ~/
+beginnen, wat wordt geëxpandeerd naar de home directory van de gebruiker,
+bijvoorbeeld:
+.EX
+[include] (~/blackbox/stylesmenu)
+.EE
+zal
+.I /home/bhughes/blackbox/stylesmenu
+toevoegen in het menu).
+.TP
+.B [nop] (label - optioneel)
+Voegt een leeg item toe.
+Hiermee kun je items groeperen in een menu als dat gewenst is.
+.B [nop]
+accepteert een label, maar dat is niet noodzakelijk.
+Als geen label wordt opgegeven wordt een blanco item ingevoegd.
+.TP 
+.B [style] (label) {bestandsnaam}
+Voegt een item in, dat de opgegeven
+.I bestandsnaam
+als een stijl bestand leest en interpreteert en de nieuwe texturen, kleuren en
+lettertypen toepast op de huidige sessie.
+.TP
+.B [stylesdir] (directory naam)
+Leest alle bestandsnamen van de aangegeven directory, aannemend dat het allemaal
+geldige stijlbestanden zijn (directories worden genegeerd), en maakt menu items
+aan in het huidige menu, een voor elk stijlbestand.
+De gebruiker kan op de naam klikken om die stijl te selecteren.
+.TP
+.B [stylesmenu] (label) {directory naam}
+Maakt een submenu aan met
+.I label 
+(wat ook gelijk de titel van het nieuwe submenu is),
+en voegt in dat submenu alle bestandsnamen van de aangegeven directory in, op
+dezelfde manier als het
+.B [stylesdir]
+commando dat doet.
+.IP
+.RB Zowel\ de [stylesdir] \ als\  [stylesmenu]
+commando's maken het mogelijk om stijlbestanden toe te voegen zonder het
+menubestand te hoeven bewerken.
+.TP
+.B [submenu] (label) {title voor submenu - optioneel}
+Geeft aan dat hier een submenu wordt ingevoegd.
+Er kan een titel voor het submenu worden aangegeven, maar als dat wordt
+weggelaten krijgt het submenu dezelfde titel als het item dat in het huidige
+menu verschijnt.
+Er is geen limiet wat de diepte van submenu structuren betreft. Elke submenu mag
+weer nieuwe submenu's bevatten.
+Een
+.B [end]
+item is verplicht om het submenu weer te eindigen.
+.TP
+.B [reconfig] (label)
+Als dit item wordt geselecteerd, leest Blackbox opnieuw de huidige menu- en
+stijlbestanden in.
+Dit is handig als je een stijlbestand aan het bewerken bent, je hoeft dan niet
+steeds de stijl te selecteren.
+De menubestanden worden automatisch opnieuw gelezen als zij gewijzigd worden.
+.TP
+.B [restart] (label) {shell commando - optioneel}
+Herstart Blackbox.
+Als het shell commando wordt aangegeven is dat het commando dat Blackbox
+uitvoert bij afsluiten.
+Hiermee kan bijvoorbeeld een andere window manager wordt gestart zonder de
+sessie af te breken.
+Wordt het commando niet aangegeven, dan start Blackbox zichzelf opnieuw.
+.TP
+.B [config] (label)
+Voegt een ingebouwd Blackbox menu in, bedoeld voor talrijke instellingen zoals
+plaatsing van vensters, focus stijl etc.
+.TP
+.B [workspaces] (label)
+Voegt een link naar het werkbladmenu in op deze plek.
+Dit is vooral handig voor mensen die een muis met minder dan 3 knoppen hebben.
+.PP
+Regels in het menubestand die met een `#' beginnen worden beschouwd als
+commentaar en worden genegeerd door Blackbox.
+In de label en commando velden kunnen karakters worden `ge-escaped' door er
+backslashes voor te plaatsen, bijvoorbeeld:
+.EX
+[exec] (\\(my cool\\) \\{XTERM\\}) {xterm -T \\"cool XTERM\\"}
+.EE
+Gebruik `\\\\' om een letterlijke backslash in te voegen.
+.SS Menu voorbeeld
+Ok, laten we eens wat dingen op een rijtje zetten.
+Hier is een kort voorbeeld van een menu bestand:
+.PP
+.nf
+# Blackbox menu file
+[begin] (Blackbox 0.60.3)
+  [exec] (rxvt) {rxvt -ls}
+  [exec] (netscape) {netscape -install}
+  [exec] (The GIMP) {gimp}
+  [exec] (XV) {xv}
+  [submenu] (pine)
+    [exec] (inkomend) {rxvt -name pine -e pine -i}
+    [exec] (nieuw bericht) {rxvt -name pine -e pine ""}
+  [end]
+  [submenu] (Window Manager)
+    [exec] (Menu bewerken) {nedit .blackbox/Menu}
+    [submenu] (Stijl) {Welke stijl?}
+      [stylesdir] (~/.blackbox/styles)
+      [stylesmenu] (Blackbox Stijlen) {@pkgdatadir@/styles}
+    [end]
+    [config] (Instellingen)
+    [reconfig] (Reconfigure)
+    [restart] (Restart)
+  [end]
+  [exit] (Uitloggen)
+[end]
+# end of menu file
+.fi
+.SH STIJLEN
+Blackbox maakt het mogelijk speciale bestanden te gebruiken die zogenaamde
+.IR X (1)
+resources bevatten om kleuren, texturen en lettertypen in te stellen, en daarmee
+de aanblik van je vensters, menu's en de werkbalk.
+.PP
+De standaard installatie van Blackbox plaatst enkele fraaie stijlbestanden in
+.IR @pkgdatadir@/styles .
+Je kunt deze bekijken of bewerken om erachter te komen hoe het Blackbox
+stijlmechanisme werkt.
+Je kunt de
+.BR [style] ", " [stylesdir] " en " [stylesmenu]
+menu commando's in je menu bestand gebruiken om deze stijlen te selecteren
+terwijl Blackbox draait.
+.PP
+Maar je kunt ook een directory
+.I ~/.blackbox/styles
+in je home directory aanmaken en je eigen stijlen daar opslaan.
+Natuurlijk kun je je stijlen overal opslaan, maar als je stijlen downloadt van
+bb.themes.org is de naam
+.I styles
+de beste keuze.
+.PP
+Om te begrijpen hoe het stijlmechanisme van Blackbox precies werkt, moet je een
+beetje kennis hebben van hoe X resources werken.
+.PP
+X resources bestaan uit een sleutel en een waarde.
+De sleutel kan bestaan uit verschillende kleinere sleutels (kinderen genaamd),
+verbonden met punten (`.').
+Sleutels mogen ook een asterisk (`*') bevatten, zodat een enkele regel tekst
+vele verschillende sleutels kan beslaan.
+Dit is bijvoorbeeld handig voor stijlen die uit slechts een of twee kleuren
+bestaan.
+.PP
+De drie belangrijkste componenten van Blackbox zijn de werkbalk, de menu's en de
+venster omramingen. Deze kunnen door middel van de resources in een stijlbestand
+geconfigureerd worden.
+.PP
+Het kleine venster dat Blackbox toont bij verslepen van vensters heeft dezelfde
+stijl als de titelbalk van een venster.
+.PP
+Hier zijn wat voorbeelden:
+.EX
+toolbar.clock.color:	green
+.EE
+Dit zet de `color' sleutel van de klokl in de werkbalk op `green'.
+Het resultaat is dat de klok op een groene achtergrond verschijnt.
+Een ander voorbeeld:
+.EX
+menu*color:	rgb:3/4/5
+.EE
+Dit stelt de `color' sleutel van het menu
+.I en alle kinderen daarvan
+in op `rgb:3/4/5'.
+(Voor een beschrijving van kleurnamen zie
+.IR X (1).)
+Dus de waarde `rgb:3/4/5' geldt nu ook voor
+.IR menu.title.color " en " menu.frame.color .
+En met
+.EX
+*font:	-b&h-lucida-medium-r-normal-*-*-140-*
+.EE
+kun je het lettertype voor alle componenten van Blackbox in een keer instellen.
+(Voor informatie over de lettertypen die op je systeem geïnstalleerd zijn kun je
+een programma als
+.IR xfontsel "(1), " gtkfontsel ", of " xlsfonts "(1) gebruiken.)"
+.PP
+Welnu, wat Blackbox zo interessant maakt, is de mogelijkheid om grafische
+texturen on-the-fly te genereren.
+Textuur omschrijvingen worden direct aan de sleutel toegekend waarvoor zij
+moeten gelden, bijvoorbeeld:
+.ta \w'toolbar.clock.colorTo:\ 'u
+.EX
+toolbar.clock:	Raised Gradient Diagonal Bevel1
+toolbar.clock.color:	rgb:8/6/4
+toolbar.clock.colorTo:	rgb:4/3/2
+.EE
+Schrik niet, we leggen dit meteen uit!
+Een textuur omschrijving bestaat uit maximaal vijf velden, als volgt:
+.TP
+.B Flat / Raised / Sunken
+geeft de component een platte, opliggende of verzonken aanblik.
+.TP
+.B Gradient / Solid
+geeft aan of Blackbox een kleurverloop (gradient) moet genereren of een effen
+kleur (solid).
+.TP
+.B Horizontal / Vertical / Diagonal / Crossdiagonal / Pipecross / Elliptic / Rectangle / Pyramid
+Kies een van deze textuur soorten. Ze werken alleen als je het 
+.B Gradient
+type kiest!
+.TP
+.B Interlaced
+geeft aan dat Blackbox om de andere beeldlijn een lijn donkerder moet maken.
+Deze mogelijkheid wordt meestal gebruikt met kleurverlopende texturen, maar
+vanaf Blackbox versie 0.60.3 werkt dit ook met effen kleuren.
+.TP
+.B Bevel1 / Bevel2
+stelt het soort omranding in dat Blackbox moet gebruiken in geval van een
+`Raised' of `Sunken' textuur.
+`Bevel1' is standaard.
+De afschuining is 1 pixel breed.
+Bevel2 is een alternatief.
+De afschuining is ook 1 pixel breed, maar nu 1 pixel vanaf de rand naar binnen
+geplaatst.
+.PP
+In plaats van een textuur omschrijving, kun je ook de optie
+.B ParentRelative
+gebruiken, waardoor de component als deel van de onderliggende component (ouder)
+verschijnt, dus eigenlijk transparant.
+.PP
+Alle texturen met kleurverloop zijn samengesteld uit twee kleuren, de
+.IR color " en " colorTo " sleutels."
+Wanneer de
+.B Interlaced 
+modus wordt gecombineerd met
+.BR Solid ,
+dan wordt de
+.I colorTo
+sleutel gebruikt om de alternerende kleur te bepalen.
+.PP
+Okay, hier is de complete componentenlijst, waarin aangegeven wordt welk soort
+waarde de sleutels kunnen bevatten.
+Commentaar wordt voorafgegaan door een uitroepteken (`!'), dat ook kan worden
+gebruikt in de Blackbox stijlbestanden, die in werkelijkheid gewoon X resource
+bestanden zijn.
+.PP
+.ta \w'window.button.unfocus.picColor:\ 'u 
+.nf
+.\"
+.\" The comments also to be translated!
+.\"
+! De werkbalk zelf
+toolbar:	Textuur omschrijving
+toolbar.color:	Kleur
+toolbar.colorTo:	Kleur
+
+! De knoppen op de werkbalk
+toolbar.button:	Textuur omschrijving of \fIParentRelative\fR
+toolbar.button.color:	Kleur
+toolbar.button.colorTo:	Kleur
+
+! Kleur van de pijlen op de werkbalk-knoppen
+toolbar.button.picColor:	Kleur
+
+! Knoppen in ingedrukte toestand
+toolbar.button.pressed:	Textuur omschrijving \fI(bijv. Sunken)\fR of \fIParentRelative\fR
+toolbar.button.pressed.color:	Kleur
+toolbar.button.pressed.colorTo:	Kleur
+
+! Kleur van de pijlen in ingedrukte toestand
+toolbar.button.pressed.picColor:	Kleur
+
+! Werkbalk, naam
+toolbar.label:	Textuur omschrijving of \fIParentRelative\fR
+toolbar.label.color:	Kleur
+toolbar.label.colorTo:	Kleur
+toolbar.label.textColor:	Kleur
+
+! Werkbalk, naam van gefocust venster
+toolbar.windowLabel:	Textuur omschrijving of \fIParentRelative\fR
+toolbar.windowLabel.color:	Kleur
+toolbar.windowLabel.colorTo:	Kleur
+toolbar.windowLabel.textColor:	Kleur
+
+! Werkbalk, klok
+toolbar.clock:	Textuur omschrijving of \fIParentRelative\fR
+toolbar.clock.color:	Kleur
+toolbar.clock.colorTo:	Kleur
+toolbar.clock.textColor:	Kleur
+
+! Hoe de tekst op de werkbalk moet worden uitgelijnd
+toolbar.justify:	\fIcenter\fR, \fIleft\fR, of \fIright\fR
+
+! Lettertype voor alle werkbalk componenten
+toolbar.font:	Lettertype \fI(bijv. -*-helvetica-medium-r-normal-*-*-100-*)\fR
+
+! Titelbalk van menu's
+menu.title:	Textuur omschrijving
+menu.title.color:	Kleur
+menu.title.colorTo:	Kleur
+menu.title.textColor:	Kleur
+menu.title.font:	Lettertype
+menu.title.justify:	\fIcenter\fR, \fIleft\fR, of \fIright\fR
+
+! Body van menu's
+menu.frame:	Textuur omschrijving
+menu.frame.color:	Kleur
+menu.frame.colorTo:	Kleur
+menu.frame.textColor:	Kleur
+! Kleur van uitgeschakelde menu items
+menu.frame.disableColor:	Kleur
+menu.frame.font:	Lettertype
+menu.frame.justify:	\fIcenter\fR, \fIleft\fR, of \fIright\fR
+
+! Kogeltjes voor menu items
+menu.bullet:	\fIempty\fR, \fItriangle\fR, \fIsquare\fR, of \fIdiamond\fR
+menu.bullet.position:	\fIright\fR of \fIleft\fR
+
+! Het actieve menu item
+menu.hilite:	Textuur omschrijving (bijv. \fIRaised\fR)
+menu.hilite.color:	Kleur
+menu.hilite.colorTo:	Kleur
+menu.hilite.textColor:	Kleur
+
+! Het actieve venster
+window.title.focus:	Textuur omschrijving
+window.title.focus.color:	Kleur
+window.title.focus.colorTo:	Kleur
+
+! Inactieve vensters
+window.title.unfocus:	Textuur omschrijving
+window.title.unfocus.color:	Kleur
+window.title.unfocus.colorTo:	Kleur
+
+! Label van vensters, actief (focus) of inactief (unfocus)
+window.label.focus:	Textuur omschrijving of \fIParentRelative\fR
+window.label.focus.color:	Kleur
+window.label.focus.colorTo:	Kleur
+window.label.focus.textColor:	Kleur
+
+window.label.unfocus:	Textuur omschrijving of \fIParentRelative\fR
+window.label.unfocus.color:	Kleur
+window.label.unfocus.colorTo:	Kleur
+window.label.unfocus.textColor:	Kleur
+
+! Balk onderaan venster
+window.handle.focus:	Textuur omschrijving
+window.handle.focus.color:	Kleur
+window.handle.focus.colorTo:	Kleur
+
+window.handle.unfocus:	Textuur omschrijving
+window.handle.unfocus.color:	Kleur
+window.handle.unfocus.colorTo:	Kleur
+
+! Hoeken voor het veranderen van de grootte
+window.grip.focus:	Textuur omschrijving
+window.grip.focus.color:	Kleur
+window.grip.focus.colorTo:	Kleur
+
+window.grip.unfocus:	Textuur omschrijving
+window.grip.unfocus.color:	Kleur
+window.grip.unfocus.colorTo:	Kleur
+
+! Knoppen op titelbalk
+window.button.focus:	Textuur omschrijving of \fIParentRelative\fR
+window.button.focus.color:	Kleur
+window.button.focus.colorTo:	Kleur
+window.button.focus.picKleur:	Kleur
+
+window.button.unfocus:	Textuur omschrijving of \fIParentRelative\fR
+window.button.unfocus.color:	Kleur
+window.button.unfocus.colorTo:	Kleur
+window.button.unfocus.picColor:	Kleur
+
+window.button.pressed:	Textuur omschrijving (bijv. \fISunken\fR)
+window.button.pressed.color:	Kleur
+window.button.pressed.colorTo:	Kleur
+
+! Frame rond venster
+window.frame.focusColor:	Kleur
+window.frame.unfocusColor:	Kleur
+
+! Lettertype en uitlijning voor de titelbalk van vensters
+window.font:	Lettertype
+window.justify:	\fIcenter\fR, \fIleft\fR, of \fIright\fR
+
+! Andere sleutels
+
+! Een border kan rond alle componenten worden getekend
+borderWidth:	aantal pixels, bijv. \fI1\fR
+borderColor:	Kleur
+
+bevelWidth:	aantal pixels > 0
+handleWidth:	aantal pixels > 0
+
+! Breedte van het frame rond een venster (vanaf 0.61)
+! Als deze waarde niet wordt aangegeven wordt de waarde van
+! bevelWidth gebruikt.
+frameWidth:	aantal pixels >= 0
+
+
+! Dit shell commando wordt uitgevoerd als het stijlbestand wordt gelezen
+! Meestal wordt het gebruikt om de achtergrond aan te passen.
+rootCommand:	Shell commando, bijv. \fIbsetroot -mod 4 4 -fg rgb:	5/6/6 -bg grey20\fR
+
+! Sommige van de bbtools lezen deze oude 0.51.x sleutels
+menuFont:	Lettertype
+titleFont:	Lettertype
+.fi
+.PP
+Dit lijkt een erg lange lijst, maar denk eraan, wanneer je je eigen stijl
+creëert, kun je heel eenvoudig met een paar regels vele instellingen maken,
+bijvoorbeeld:
+.EX
+.ta \w'*unfocus.textColor:\ 'u
+*color:	slategrey
+*colorTo:	darkslategrey
+*unfocus.color:	darkslategrey
+*unfocus.colorTo:	black
+*textColor:	white
+*unfocus.textColor:	lightgrey
+*font:	lucidasans-10
+.EE
+Hiermee worden al heel veel componenten van goede instellingen voorzien.
+.SH DE SLIT
+De Slit is een speciaal frame dat zogenaamde `dockable' applicaties kan
+bevatten, bijvoorbeeld de `bbtools.'
+Als applicaties in de slit draaien, hebben je geen vensteromraming van zichzelf,
+maar worden ze netjes geordend in de slit, en zijn ze altijd zichbaar in het
+huidige werkblad.
+Klik met muisknop 3 op de rand van de slit voor een menu met instellingen
+betreffende positie, automatisch verbergen, en of de programma's in de slit
+vertikaal of horizontaal gegroepeerd moeten worden.
+.PP
+De meeste dockable toepassingen bedoeld voor de slit gebruiken de
+.B -w
+commandoregeloptie om in de slit te draaien.
+Je kunt slit applicaties bijvoorbeeld starten vanuit je
+.IR ~/.xinitrc :
+.EX
+bbmail -w &
+bbpager -w &
+exec blackbox
+.EE
+Uiteraard moet Blackbox gecompileerd zijn met Slit ondersteuning om de slit te
+kunnen gebruiken.
+.SH RESOURCE BESTAND
+Normaal gesproken wordt het
+.I ~/.blackboxrc
+resource bestand aangemaakt en bijgehouden door Blackbox zelf.
+Alle instellingen van het
+.B [config]
+menu (vanaf versie 0.60.x), de laatst geselecteerde stijl,
+de namen van werkbladen enz. worden opgeslagen in dit bestand.
+Er zijn echter een paar sleutels in dit bestand die je zelf kan aanpassen:
+.TP
+.B session.menuFile:
+Hier kun je het complete pad naar het te gebruiken menubestand aangeven.
+.TP
+.B session.screen0.toolbar.widthPercent:
+Geeft aan hoe breed de werkbalk mag zijn in verhouding tot de volledige breedte
+van het scherm (in %).
+Standaard waarde:
+.IR 66 .
+.TP
+.B session.screen0.strftimeFormat:
+Geeft aan hoe de huidige tijd moet worden aangegeven in de werkbalk.
+Het
+.IR strftime (3)
+formaat wordt hiervoor gebruikt.
+Standaard waarde (afhankelijk van locale):
+.IR "%I:%M %p" .
+.TP
+.B session.autoRaiseDelay:
+Geeft aan hoe snel (in ms) een venster naar de voorgrond moet worden gehaald als
+het focus van de muis krijgt (als de Autoraise optie gebruikt wordt).
+Standaard waarde:
+.IR 250 .
+.TP
+.B session.doubleClickInterval:
+Geeft aan hoe snel (in ms) twee muisklikken elkaar op moeten volgen wil Blackbox ze als
+een dubbelklik beschouwen.
+Standaard waarde:
+.IR 250 .
+.TP
+.B session.screen0.edgeSnapThreshold:
+Als je een venster vlak bij de rand van het scherm beweegt, kan Blackbox het
+automatisch naar de rand laten trekken.
+Hier kun je instellen vanaf hoeveel pixels uit de rand van het scherm een
+venster `magnetisch' wordt.
+Standaard waarde:
+.IR 0 .
+.TP
+.B session.cacheMax:
+Geeft aan hoeveel geheugen (in Kb) Blackbox mag gebruiken om pixmaps te cachen
+op de X server.
+Als je weinig geheugen in je computer hebt, kun je deze waarde lager maken.
+Standaard waarde:
+.IR 200 .
+.TP
+.B session.cacheLife:
+Geeft aan hoe lang (in minuten) ongebruikte pixmaps in de X server cache mogen
+blijven.
+Standaard waarde:
+.IR 5 .
+.TP
+.B session.colorsPerChannel:
+Geeft aan hoeveel kleuren Blackbox mag gebruiken per kanaal (rood, groen of
+blauw) van de X server op pseudocolor displays.
+Blackbox reserveert dan deze waarde ^ 3 kleuren en maakt ze beschikbaar.
+De waarde moet tussen 2 en 6 liggen.
+Gebruik je Blackbox op een 8 bits kleurdiepte, dan moet deze waarde op 4 gesteld
+worden!
+Standaard waarde:
+.IR 4.
+.PP
+Als je Blackbox `multihead' gebruikt, kan de
+.B screen0
+sleutel ook
+.B screen1, 2
+enz. zijn, voor elk scherm.
+.SH OMGEVINGSVARIABELEN
+.TP
+.B HOME
+Blackbox gebruikt
+.RB $ HOME
+om het
+.I .blackboxrc
+resource bestand te vinden en om de ~ prefix in menubestanden te vinden.
+.TP
+.B DISPLAY
+Als geen andere display werd aangegeven op de commandoregel, zal Blackbox
+starten op de door deze variabele aangegeven display.
+.SH AUTEUR en DANKBETUIGING
+Alle code is geschreven en wordt primair onderhouden door Brad Hughes
+.nh \" hyphenation off
+(blackbox@alug.org)
+.hy \" on again
+en daarna Jeff Raven
+.nh
+(jraven@psu.edu),
+.hy
+en wordt nu onderhouden door Sean 'Shaleh' Perry
+.nh
+(shaleh@debian.org)
+.hy
+met bijdragen en patches van vele anderen, wereldwijd.
+.PP
+De officiële Blackbox website:
+.nh
+.B http://blackbox.alug.org/
+.hy
+.br
+De ontwikkelaars pagina, voor bug-rapportage en nieuwste versies:
+.nh
+.B http://sf.net/projects/blackboxwm
+.hy
+Heel veel stijlen en andere bijdragen:
+.nh
+.B http://www.themes.org/themes/blackbox/
+.hy
+.PP
+Deze handleiding is geschreven en naar het Nederlands
+vertaald door Wilbert Berendsen
+.nh
+(wbsoft@xs4all.nl).
+.hy
+.SH ZIE OOK
+.IR bsetroot (1), \ bbkeys (1)  \" not there, yet ;-(
