@@ -25,28 +25,22 @@
 #include "Iconmenu.hh"
 #include "Screen.hh"
 #include "Window.hh"
-#include "../nls/blackbox-nls.hh"
-
-#include <i18n.hh>
-
-#include <assert.h>
 
 
 Iconmenu::Iconmenu(bt::Application &app, unsigned int screen,
                    BScreen *bscreen)
-  : bt::Menu(app, screen), _bscreen(bscreen) {
+  : bt::Menu(app, screen), _bscreen(bscreen)
+{
   setAutoDelete(false);
-  setTitle(bt::i18n(IconSet, IconIcons, "Icons"));
+  setTitle("Iconified Windows");
   showTitle();
 }
 
 
 void Iconmenu::itemClicked(unsigned int id, unsigned int) {
-  assert(id < _bscreen->getIconCount());
+  BlackboxWindow *win = _bscreen->getIcon(id);
+  assert(win != 0);
 
-  BlackboxWindow *window = _bscreen->getIcon(id);
-  assert(window != 0);
-
-  window->deiconify();
-  window->setInputFocus();
+  win->deiconify();
+  win->setInputFocus();
 }
