@@ -2,14 +2,9 @@
 
 CVS Bugs:
 -----------------------------
-* windows that set WM_DELETE_WINDOW protocol after creation do not get a close
-  button
-
 * right to left placement is broken
 
 * sticky windows are not considered
-
-* starting blackbox with iconified apps can trigger an assert()
 
 * colour issue under Irix
 
