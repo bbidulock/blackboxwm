@@ -31,13 +31,16 @@ extern "C" {
 }
 
 #include "Workspacemenu.hh"
+#include "Clientmenu.hh"
 #include "Iconmenu.hh"
 #include "Screen.hh"
+#include "Workspace.hh"
 #include "i18n.hh"
 
-static const unsigned int NewWorkspaceId = 497u;
-static const unsigned int RemoveLastId   = 498u;
-static const unsigned int IconmenuId     = 499u;
+static const unsigned int NewWorkspaceId = 0u;
+static const unsigned int RemoveLastId   = 1u;
+static const unsigned int IconmenuId     = 2u;
+static const unsigned int WorkspaceDelta = 3u;
 
 
 Workspacemenu::Workspacemenu(bt::Application &app, unsigned int screen,
@@ -53,6 +56,22 @@ Workspacemenu::Workspacemenu(bt::Application &app, unsigned int screen,
   insertItem(bt::i18n(WorkspacemenuSet, WorkspacemenuRemoveLast,
                       "Remove Last"), RemoveLastId);
   insertSeparator();
+}
+
+
+void Workspacemenu::insertWorkspace(Workspace *workspace) {
+  insertItem(workspace->name(), workspace->menu(),
+             workspace->id() + WorkspaceDelta, count() - 2);
+}
+
+
+void Workspacemenu::removeWorkspace(Workspace *workspace) {
+  removeItem(workspace->id() + WorkspaceDelta);
+}
+
+
+void Workspacemenu::setWorkspaceChecked(Workspace *workspace, bool checked) {
+  setItemChecked(workspace->id() + WorkspaceDelta, checked);
 }
 
 
@@ -76,6 +95,7 @@ void Workspacemenu::itemClicked(unsigned int id, unsigned int) {
     break;
 
   default:
+    id -= WorkspaceDelta;
     assert(id < _bscreen->resource().numberOfWorkspaces());
     if (_bscreen->getCurrentWorkspaceID() != id) {
       _bscreen->changeWorkspaceID(id);

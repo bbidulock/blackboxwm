@@ -29,6 +29,7 @@
 
 class BScreen;
 class Iconmenu;
+class Workspace;
 
 
 class Workspacemenu : public bt::Menu {
@@ -36,6 +37,11 @@ public:
   Workspacemenu(bt::Application &app, unsigned int screen, BScreen *bscreen);
 
   void insertIconMenu(Iconmenu *iconmenu);
+
+  void insertWorkspace(Workspace *workspace);
+  void removeWorkspace(Workspace *workspace);
+
+  void setWorkspaceChecked(Workspace *workspace, bool checked);
 
 protected:
   virtual void itemClicked(unsigned int id, unsigned int);

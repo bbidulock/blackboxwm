@@ -165,17 +165,16 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   if (_resource.numberOfWorkspaces() == 0) // there is always 1 workspace
     _resource.saveWorkspaces(1);
 
+  workspacemenu->insertIconMenu(iconmenu);
   for (unsigned int i = 0; i < _resource.numberOfWorkspaces(); ++i) {
     Workspace *wkspc = new Workspace(this, i);
     workspacesList.push_back(wkspc);
-    workspacemenu->insertItem(wkspc->name(), wkspc->menu(), wkspc->id());
+    workspacemenu->insertWorkspace(wkspc);
   }
-
-  workspacemenu->insertIconMenu(iconmenu);
 
   current_workspace = workspacesList.front();
   current_workspace_id = current_workspace->id();
-  workspacemenu->setItemChecked(current_workspace->id(), true);
+  workspacemenu->setWorkspaceChecked(current_workspace, true);
 
   toolbar = new Toolbar(this);
 
@@ -495,8 +494,7 @@ unsigned int BScreen::addWorkspace(void) {
   Workspace *wkspc = new Workspace(this, workspacesList.size());
   workspacesList.push_back(wkspc);
 
-  workspacemenu->insertItem(wkspc->name(), wkspc->menu(),
-                            wkspc->id(), workspacemenu->count() - 2);
+  workspacemenu->insertWorkspace(wkspc);
 
   toolbar->reconfigure();
 
@@ -520,7 +518,7 @@ unsigned int BScreen::removeLastWorkspace(void) {
 
   wkspc->transferWindows(*(workspacesList.back()));
 
-  workspacemenu->removeItem(wkspc->id());
+  workspacemenu->removeItem(wkspc->id() + 3);
 
   delete wkspc;
 
@@ -539,14 +537,14 @@ void BScreen::changeWorkspaceID(unsigned int id) {
 
   current_workspace->hide();
 
-  workspacemenu->setItemChecked(current_workspace->id(), false);
+  workspacemenu->setItemChecked(current_workspace->id() + 3, false);
 
   current_workspace = getWorkspace(id);
   current_workspace_id = current_workspace->id();
 
   current_workspace->show();
 
-  workspacemenu->setItemChecked(current_workspace->id(), true);
+  workspacemenu->setItemChecked(current_workspace->id() + 3, true);
   toolbar->redrawWorkspaceLabel();
 
   blackbox->netwm().setCurrentDesktop(screen_info.rootWindow(),
