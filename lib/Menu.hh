@@ -58,18 +58,18 @@ namespace bt {
       : sub(s), lbl(l), ident(~0u), indx(~0u), height(0), separator(0),
         active(0), title(0), enabled(1), checked(0) { }
 
-    inline bool isSeparator(void) const { return bool(separator); }
-    inline bool isActive(void) const { return bool(active); }
-    inline bool isTitle(void) const { return bool(title); }
-    inline bool isEnabled(void) const { return bool(enabled); }
-    inline bool isChecked(void) const { return bool(checked); }
+    bool isSeparator(void) const { return bool(separator); }
+    bool isActive(void) const { return bool(active); }
+    bool isTitle(void) const { return bool(title); }
+    bool isEnabled(void) const { return bool(enabled); }
+    bool isChecked(void) const { return bool(checked); }
 
-    inline unsigned int id(void) const { return ident; }
-    inline unsigned int index(void) const { return indx; }
+    unsigned int id(void) const { return ident; }
+    unsigned int index(void) const { return indx; }
 
-    inline Menu *submenu(void) const { return sub; }
+    Menu *submenu(void) const { return sub; }
 
-    inline const std::string& label(void) const { return lbl; }
+    const std::string& label(void) const { return lbl; }
 
   private:
     Menu *sub;
@@ -104,25 +104,25 @@ namespace bt {
     unsigned int itemMargin(void) const;
 
     // textures
-    inline const Texture &titleTexture(void) const
+    const Texture &titleTexture(void) const
     { return title.texture; }
-    inline const Texture &frameTexture(void) const
+    const Texture &frameTexture(void) const
     { return frame.texture; }
 
     // colors
-    inline const bt::Color &titleForegroundColor(void) const
+    const bt::Color &titleForegroundColor(void) const
     { return title.foreground; }
-    inline const bt::Color &titleTextColor(void) const
+    const bt::Color &titleTextColor(void) const
     { return title.text; }
-    inline const bt::Color &frameForegroundColor(void) const
+    const bt::Color &frameForegroundColor(void) const
     { return frame.foreground; }
-    inline const bt::Color &frameTextColor(void) const
+    const bt::Color &frameTextColor(void) const
     { return frame.text; }
 
     // fonts
-    inline const Font &titleFont(void) const
+    const Font &titleFont(void) const
     { return title.font; }
-    inline const Font &frameFont(void) const
+    const Font &frameFont(void) const
     { return frame.font; }
 
     // convenience
@@ -195,7 +195,7 @@ namespace bt {
     Menu(Application &app, unsigned int screen);
     virtual ~Menu(void);
 
-    inline Window windowID(void) const { return _window; }
+    Window windowID(void) const { return _window; }
 
     unsigned int insertItem(const MenuItem &item, unsigned int id = ~0u,
                             unsigned int index = ~0u);
@@ -218,14 +218,14 @@ namespace bt {
     void removeIndex(unsigned int index);
     void clear(void);
 
-    inline unsigned int count(void) const { return items.size(); }
+    unsigned int count(void) const { return items.size(); }
 
-    inline const std::string& title(void) const { return _title; }
-    inline void setTitle(const std::string& newtitle) { _title = newtitle; }
+    const std::string& title(void) const { return _title; }
+    void setTitle(const std::string& newtitle) { _title = newtitle; }
     void showTitle(void);
     void hideTitle(void);
 
-    inline bool isVisible(void) const { return _visible; }
+    bool isVisible(void) const { return _visible; }
     virtual void popup(int x, int y, bool centered = true);
     void move(int x, int y);
     virtual void show(void);
@@ -234,8 +234,8 @@ namespace bt {
     virtual void refresh(void) { }
     virtual void reconfigure(void);
 
-    inline bool autoDelete(void) const { return _auto_delete; }
-    inline void setAutoDelete(bool ad) { _auto_delete = ad; }
+    bool autoDelete(void) const { return _auto_delete; }
+    void setAutoDelete(bool ad) { _auto_delete = ad; }
 
   protected:
     virtual void updateSize(void);
