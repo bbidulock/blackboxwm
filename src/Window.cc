@@ -3097,6 +3097,9 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
         BWindowGroup *group = findWindowGroup();
         if (group)
           group->addTransient(this);
+      } else {
+        // broken client
+        client.transient_for = 0;
       }
     }
 
@@ -3116,7 +3119,7 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
     // remove from current window group
     BWindowGroup *group = findWindowGroup();
     if (group) {
-      if (isTransient() && isGroupTransient())
+      if (isTransient() && !findTransientFor() && isGroupTransient())
         group->removeTransient(this);
       group->removeWindow(this);
       group = 0;
@@ -3129,7 +3132,7 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
       group = ::update_window_group(client.wmhints.window_group,
                                     blackbox,
                                     this);
-      if (isTransient() && isGroupTransient()) {
+      if (isTransient() && !findTransientFor() && isGroupTransient()) {
         if (group)
           group->addTransient(this);
       }
