@@ -45,6 +45,11 @@
 #include <assert.h>
 
 
+// Event mask used for managed client windows.
+const unsigned long client_window_event_mask =
+  (PropertyChangeMask | StructureNotifyMask);
+
+
 /*
  * Returns the appropriate WindowType based on the _NET_WM_WINDOW_TYPE
  */
@@ -957,7 +962,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   // set the eventmask early in the game so that we make sure we get
   // all the events we are interested in
   XSetWindowAttributes attrib_set;
-  attrib_set.event_mask = PropertyChangeMask | StructureNotifyMask;
+  attrib_set.event_mask = ::client_window_event_mask;
   attrib_set.do_not_propagate_mask = ButtonPressMask | ButtonReleaseMask |
                                      ButtonMotionMask;
   XChangeWindowAttributes(blackbox->XDisplay(), client.window,
@@ -1251,11 +1256,10 @@ void BlackboxWindow::associateClientWindow(void) {
   XSelectInput(blackbox->XDisplay(), frame.plate,
                FocusChangeMask | SubstructureRedirectMask);
 
-  unsigned long event_mask = PropertyChangeMask | StructureNotifyMask;
   XSelectInput(blackbox->XDisplay(), client.window,
-               event_mask & ~StructureNotifyMask);
+               client_window_event_mask & ~StructureNotifyMask);
   XReparentWindow(blackbox->XDisplay(), client.window, frame.plate, 0, 0);
-  XSelectInput(blackbox->XDisplay(), client.window, event_mask);
+  XSelectInput(blackbox->XDisplay(), client.window, client_window_event_mask);
 
 #ifdef    SHAPE
   if (blackbox->hasShapeExtensions()) {
@@ -2032,12 +2036,11 @@ void BlackboxWindow::hide(void) {
    * could be destroyed in that split second, leaving us with a ghost
    * window... so, we need to do this while the X server is grabbed
    */
-  unsigned long event_mask = PropertyChangeMask | StructureNotifyMask;
   blackbox->XGrabServer();
   XSelectInput(blackbox->XDisplay(), client.window,
-               event_mask & ~StructureNotifyMask);
+               client_window_event_mask & ~StructureNotifyMask);
   XUnmapWindow(blackbox->XDisplay(), client.window);
-  XSelectInput(blackbox->XDisplay(), client.window, event_mask);
+  XSelectInput(blackbox->XDisplay(), client.window, client_window_event_mask);
   blackbox->XUngrabServer();
 }
 
