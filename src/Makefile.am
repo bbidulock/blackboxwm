@@ -1,30 +1,34 @@
-# src/Makefile.am for Blackbox 0.51.x  - an X11 Window manager
-# Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
+# src/Makefile.am for Blackbox 0.60.x  - an X11 Window manager
+# Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 #
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the 
+# Software is furnished to do so, subject to the following conditions:
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in 
+# all copies or substantial portions of the Software. 
 #
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-#
-#  (See the included file COPYING / GPL-2.0)
-#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+# DEALINGS IN THE SOFTWARE.
 
-CPPFLAGS= @CPPFLAGS@ @SHAPE@ @KDE@ @SLIT@ @INTERLACE@ \
--DDEFAULTMENU=\"$(pkgdatadir)/menu\" \
--DDEFAULTSTYLE=\"$(pkgdatadir)/styles/default\"
+DEFAULT_MENU=$(pkgdatadir)/menu
+DEFAULT_STYLE=$(pkgdatadir)/styles/Results
+  
+CPPFLAGS= @CPPFLAGS@ @SHAPE@ @SLIT@ @INTERLACE@ @ORDEREDPSEUDO@ @DEBUG@ \
+-DDEFAULTMENU=\"$(DEFAULT_MENU)\" \
+-DDEFAULTSTYLE=\"$(DEFAULT_STYLE)\"
 
 bin_PROGRAMS= blackbox
 
-blackbox_SOURCES= BaseDisplay.cc Basemenu.cc Clientmenu.cc Icon.cc Image.cc LinkedList.cc Rootmenu.cc Screen.cc Slit.cc Toolbar.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc main.cc
+blackbox_SOURCES= BaseDisplay.cc Basemenu.cc Clientmenu.cc Configmenu.cc Icon.cc Image.cc LinkedList.cc Netizen.cc Rootmenu.cc Screen.cc Slit.cc Timer.cc Toolbar.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc main.cc
 
 MAINTAINERCLEANFILES= Makefile.in
 
@@ -33,40 +37,61 @@ distclean-local:
 
 # local dependencies
 
-BaseDisplay.o: BaseDisplay.cc BaseDisplay.hh LinkedList.hh
+BaseDisplay.o: BaseDisplay.cc BaseDisplay.hh LinkedList.hh Timer.hh
 Basemenu.o: Basemenu.cc blackbox.hh BaseDisplay.hh LinkedList.hh \
- Image.hh Basemenu.hh Screen.hh
+ Timer.hh Image.hh Window.hh Icon.hh Basemenu.hh Windowmenu.hh \
+ Screen.hh Configmenu.hh Netizen.hh Rootmenu.hh Workspace.hh \
+ Workspacemenu.hh
 Clientmenu.o: Clientmenu.cc blackbox.hh BaseDisplay.hh LinkedList.hh \
- Image.hh Clientmenu.hh Basemenu.hh Screen.hh Window.hh Workspace.hh \
- Workspacemenu.hh
-Icon.o: Icon.cc blackbox.hh BaseDisplay.hh LinkedList.hh Image.hh \
- Icon.hh Basemenu.hh Screen.hh Toolbar.hh Window.hh Workspace.hh \
- Workspacemenu.hh
-Image.o: Image.cc Image.hh LinkedList.hh Screen.hh BaseDisplay.hh \
- blackbox.hh
+ Timer.hh Image.hh Window.hh Icon.hh Basemenu.hh Windowmenu.hh \
+ Clientmenu.hh Workspace.hh Screen.hh Configmenu.hh Netizen.hh \
+ Rootmenu.hh Workspacemenu.hh
+Configmenu.o: Configmenu.cc Configmenu.hh Basemenu.hh LinkedList.hh \
+ Screen.hh BaseDisplay.hh Timer.hh Icon.hh Netizen.hh Rootmenu.hh \
+ Workspace.hh Workspacemenu.hh blackbox.hh Image.hh Window.hh \
+ Windowmenu.hh Toolbar.hh
+Icon.o: Icon.cc blackbox.hh BaseDisplay.hh LinkedList.hh Timer.hh \
+ Image.hh Window.hh Icon.hh Basemenu.hh Windowmenu.hh Screen.hh \
+ Configmenu.hh Netizen.hh Rootmenu.hh Workspace.hh Workspacemenu.hh \
+ Toolbar.hh
+Image.o: Image.cc BaseDisplay.hh LinkedList.hh Timer.hh Image.hh
 LinkedList.o: LinkedList.cc LinkedList.hh
+Netizen.o: Netizen.cc Netizen.hh BaseDisplay.hh LinkedList.hh Timer.hh \
+ Screen.hh Configmenu.hh Basemenu.hh blackbox.hh Image.hh Window.hh \
+ Icon.hh Windowmenu.hh Rootmenu.hh Workspace.hh Workspacemenu.hh
 Rootmenu.o: Rootmenu.cc blackbox.hh BaseDisplay.hh LinkedList.hh \
- Image.hh Rootmenu.hh Basemenu.hh Screen.hh
-Screen.o: Screen.cc blackbox.hh BaseDisplay.hh LinkedList.hh Image.hh \
- Clientmenu.hh Basemenu.hh Icon.hh Screen.hh Rootmenu.hh Toolbar.hh \
- Window.hh Workspace.hh Workspacemenu.hh
+ Timer.hh Image.hh Window.hh Icon.hh Basemenu.hh Windowmenu.hh \
+ Rootmenu.hh Screen.hh Configmenu.hh Netizen.hh Workspace.hh \
+ Workspacemenu.hh
+Screen.o: Screen.cc blackbox.hh BaseDisplay.hh LinkedList.hh Timer.hh \
+ Image.hh Window.hh Icon.hh Basemenu.hh Windowmenu.hh Clientmenu.hh \
+ Workspace.hh Screen.hh Configmenu.hh Netizen.hh Rootmenu.hh \
+ Workspacemenu.hh Toolbar.hh
 Slit.o: Slit.cc
+Timer.o: Timer.cc BaseDisplay.hh LinkedList.hh Timer.hh
 Toolbar.o: Toolbar.cc blackbox.hh BaseDisplay.hh LinkedList.hh \
- Image.hh Clientmenu.hh Basemenu.hh Icon.hh Rootmenu.hh Screen.hh \
- Toolbar.hh Window.hh Workspace.hh Workspacemenu.hh
-Window.o: Window.cc blackbox.hh BaseDisplay.hh LinkedList.hh Image.hh \
- Icon.hh Basemenu.hh Screen.hh Toolbar.hh Window.hh Windowmenu.hh \
- Workspace.hh
+ Timer.hh Image.hh Window.hh Icon.hh Basemenu.hh Windowmenu.hh \
+ Clientmenu.hh Workspace.hh Rootmenu.hh Screen.hh Configmenu.hh \
+ Netizen.hh Workspacemenu.hh Toolbar.hh
+Window.o: Window.cc blackbox.hh BaseDisplay.hh LinkedList.hh Timer.hh \
+ Image.hh Window.hh Icon.hh Basemenu.hh Windowmenu.hh Screen.hh \
+ Configmenu.hh Netizen.hh Rootmenu.hh Workspace.hh Workspacemenu.hh \
+ Toolbar.hh
 Windowmenu.o: Windowmenu.cc blackbox.hh BaseDisplay.hh LinkedList.hh \
- Image.hh Screen.hh Window.hh Windowmenu.hh Basemenu.hh Workspace.hh
+ Timer.hh Image.hh Window.hh Icon.hh Basemenu.hh Windowmenu.hh \
+ Screen.hh Configmenu.hh Netizen.hh Rootmenu.hh Workspace.hh \
+ Workspacemenu.hh
 Workspace.o: Workspace.cc blackbox.hh BaseDisplay.hh LinkedList.hh \
- Image.hh Clientmenu.hh Basemenu.hh Screen.hh Toolbar.hh Window.hh \
- Workspace.hh Windowmenu.hh
+ Timer.hh Image.hh Window.hh Icon.hh Basemenu.hh Windowmenu.hh \
+ Clientmenu.hh Workspace.hh Screen.hh Configmenu.hh Netizen.hh \
+ Rootmenu.hh Workspacemenu.hh Toolbar.hh
 Workspacemenu.o: Workspacemenu.cc blackbox.hh BaseDisplay.hh \
- LinkedList.hh Image.hh Screen.hh Toolbar.hh Workspacemenu.hh \
- Basemenu.hh Workspace.hh
+ LinkedList.hh Timer.hh Image.hh Window.hh Icon.hh Basemenu.hh \
+ Windowmenu.hh Screen.hh Configmenu.hh Netizen.hh Rootmenu.hh \
+ Workspace.hh Workspacemenu.hh Toolbar.hh
 blackbox.o: blackbox.cc blackbox.hh BaseDisplay.hh LinkedList.hh \
- Image.hh Basemenu.hh Rootmenu.hh Screen.hh Toolbar.hh Window.hh \
- Workspace.hh Workspacemenu.hh
+ Timer.hh Image.hh Window.hh Icon.hh Basemenu.hh Windowmenu.hh \
+ Rootmenu.hh Screen.hh Configmenu.hh Netizen.hh Workspace.hh \
+ Workspacemenu.hh Toolbar.hh
 main.o: main.cc ../version.h blackbox.hh BaseDisplay.hh LinkedList.hh \
- Image.hh
+ Timer.hh Image.hh Window.hh Icon.hh Basemenu.hh Windowmenu.hh

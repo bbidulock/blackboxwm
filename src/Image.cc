@@ -1,23 +1,26 @@
 // Image.cc for Blackbox - an X11 Window manager
-// Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
+// Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the 
+// Software is furnished to do so, subject to the following conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software. 
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//
-// (See the included file COPYING / GPL-2.0)
-//
-
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// DEALINGS IN THE SOFTWARE.
+  
+// stupid macros needed to access some functions in version 2 of the GNU C 
+// library
 #ifndef   _GNU_SOURCE
 #define   _GNU_SOURCE
 #endif // _GNU_SOURCE
@@ -54,18 +57,17 @@ typedef unsigned int u_int32_t;
 #  include <stdio.h>
 #endif // HAVE_STDIO_H
 
-#ifndef   MIN
-#  define MIN(a, b) ((a < b) ? a : b)
-#endif // MIN
+#ifdef    HAVE_CTYPE_H
+#  include <ctype.h>
+#endif // HAVE_CTYPE_H
 
-#ifndef   MAX
-#  define MAX(a, b) ((a < b) ? b : a)
-#endif // MAX
+template <typename Z> inline Z min(Z a, Z b) { return ((a < b) ? a : b); }
+template <typename Z> inline Z max(Z a, Z b) { return ((a > b) ? a : b); }
 
 static unsigned long bsqrt(unsigned long x) {
   if (x <= 0) return 0;
   if (x == 1) return 1;
-
+  
   unsigned long r = x >> 1;
   unsigned long q;
 
@@ -82,19 +84,19 @@ BImage::BImage(BImageControl *c, unsigned int w, unsigned int h) {
 
   width = ((signed) w > 0) ? w : 1;
   height = ((signed) h > 0) ? h : 1;
-
+  
   red = new unsigned char[width * height];
   green = new unsigned char[width * height];
   blue = new unsigned char[width * height];
-
-  xtable = new unsigned int[width * 3];
-  ytable = new unsigned int[height * 3];
+  
+  xtable = ytable = (unsigned int *) 0;
 
   cpc = control->getColorsPerChannel();
   cpccpc = cpc * cpc;
   
   control->getColorTables(&red_table, &green_table, &blue_table,
-                          &red_offset, &green_offset, &blue_offset);
+                          &red_offset, &green_offset, &blue_offset,
+                          &red_bits, &green_bits, &blue_bits);
   
   if (control->getVisual()->c_class != TrueColor)
     control->getXColorTable(&colors, &ncolors);
@@ -105,16 +107,15 @@ BImage::~BImage(void) {
   if (red) delete [] red;
   if (green) delete [] green;
   if (blue) delete [] blue;
-
-  if (xtable) delete [] xtable;
-  if (ytable) delete [] ytable;
 }
 
 
 Pixmap BImage::render(BTexture *texture) {
-  if (texture->getTexture() & BImage_Solid) {
+  if (texture->getTexture() & BImage_ParentRelative)
+    return ParentRelative;
+  else if (texture->getTexture() & BImage_Solid)
     return render_solid(texture);
-  } else if (texture->getTexture() & BImage_Gradient)
+  else if (texture->getTexture() & BImage_Gradient)
     return render_gradient(texture);
   
   return None;
@@ -122,7 +123,7 @@ Pixmap BImage::render(BTexture *texture) {
 
 
 Pixmap BImage::render_solid(BTexture *texture) {
-  Pixmap pixmap = XCreatePixmap(control->getDisplay()->getDisplay(),
+  Pixmap pixmap = XCreatePixmap(control->getBaseDisplay()->getXDisplay(),
 				control->getDrawable(), width,
 				height, control->getDepth());
   if (pixmap == None) {
@@ -135,69 +136,85 @@ Pixmap BImage::render_solid(BTexture *texture) {
   
   gcv.foreground = texture->getColor()->getPixel();
   gcv.fill_style = FillSolid;
-  gc = XCreateGC(control->getDisplay()->getDisplay(), pixmap, GCForeground |
-    GCFillStyle, &gcv);
+  gc = XCreateGC(control->getBaseDisplay()->getXDisplay(), pixmap,
+    GCForeground | GCFillStyle, &gcv);
   
   gcv.foreground = texture->getHiColor()->getPixel();
-  hgc = XCreateGC(control->getDisplay()->getDisplay(), pixmap, GCForeground,
-    &gcv);
+  hgc = XCreateGC(control->getBaseDisplay()->getXDisplay(), pixmap,
+    GCForeground, &gcv);
   
   gcv.foreground = texture->getLoColor()->getPixel();
-  lgc = XCreateGC(control->getDisplay()->getDisplay(), pixmap, GCForeground,
-    &gcv);
+  lgc = XCreateGC(control->getBaseDisplay()->getXDisplay(), pixmap,
+    GCForeground, &gcv);
   
-  XFillRectangle(control->getDisplay()->getDisplay(), pixmap, gc, 0, 0,
+  XFillRectangle(control->getBaseDisplay()->getXDisplay(), pixmap, gc, 0, 0,
     width, height);
+
+#ifdef    INTERLACE
+    if (texture->getTexture() & BImage_Interlaced) {
+      gcv.foreground = texture->getColorTo()->getPixel();
+      GC igc = XCreateGC(control->getBaseDisplay()->getXDisplay(), pixmap,
+                         GCForeground, &gcv);
+
+      register unsigned int i = 0;
+      for (; i < height; i += 2)
+        XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, igc,
+                  0, i, width, i);
+
+      XFreeGC(control->getBaseDisplay()->getXDisplay(), igc);
+    }
+#endif // INTERLACE
+
   
   if (texture->getTexture() & BImage_Bevel1) {
     if (texture->getTexture() & BImage_Raised) {
-      XDrawLine(control->getDisplay()->getDisplay(), pixmap, lgc,
+      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, lgc,
                 0, height - 1, width - 1, height - 1);
-      XDrawLine(control->getDisplay()->getDisplay(), pixmap, lgc,
+      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, lgc,
                 width - 1, height - 1, width - 1, 0);
       
-      XDrawLine(control->getDisplay()->getDisplay(), pixmap, hgc,
+      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, hgc,
                 0, 0, width - 1, 0);
-      XDrawLine(control->getDisplay()->getDisplay(), pixmap, hgc,
+      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, hgc,
                 0, height - 1, 0, 0);
     } else if (texture->getTexture() & BImage_Sunken) {
-      XDrawLine(control->getDisplay()->getDisplay(), pixmap, hgc,
+      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, hgc,
                 0, height - 1, width - 1, height - 1);
-      XDrawLine(control->getDisplay()->getDisplay(), pixmap, hgc,
+      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, hgc,
                 width - 1, height - 1, width - 1, 0);
       
-      XDrawLine(control->getDisplay()->getDisplay(), pixmap, lgc,
+      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, lgc,
                 0, 0, width - 1, 0);
-      XDrawLine(control->getDisplay()->getDisplay(), pixmap, lgc,
+      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, lgc,
                 0, height - 1, 0, 0);
     }
   } else if (texture->getTexture() & BImage_Bevel2) {
     if (texture->getTexture() & BImage_Raised) {
-      XDrawLine(control->getDisplay()->getDisplay(), pixmap, lgc,
+      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, lgc,
                 1, height - 3, width - 3, height - 3);
-      XDrawLine(control->getDisplay()->getDisplay(), pixmap, lgc,
+      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, lgc,
                 width - 3, height - 3, width - 3, 1);
       
-      XDrawLine(control->getDisplay()->getDisplay(), pixmap, hgc,
+      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, hgc,
                 1, 1, width - 3, 1);
-      XDrawLine(control->getDisplay()->getDisplay(), pixmap, hgc,
+      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, hgc,
                 1, height - 3, 1, 1);
     } else if (texture->getTexture() & BImage_Sunken) {
-      XDrawLine(control->getDisplay()->getDisplay(), pixmap, hgc,
+      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, hgc,
                 1, height - 3, width - 3, height - 3);
-      XDrawLine(control->getDisplay()->getDisplay(), pixmap, hgc,
+      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, hgc,
                 width - 3, height - 3, width - 3, 1);
       
-      XDrawLine(control->getDisplay()->getDisplay(), pixmap, lgc,
+      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, lgc,
                 1, 1, width - 3, 1);
-      XDrawLine(control->getDisplay()->getDisplay(), pixmap, lgc,
+      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, lgc,
                 1, height - 3, 1, 1);
     }
   }
   
-  XFreeGC(control->getDisplay()->getDisplay(), gc);
-  XFreeGC(control->getDisplay()->getDisplay(), hgc);
-  XFreeGC(control->getDisplay()->getDisplay(), lgc);
+  XFreeGC(control->getBaseDisplay()->getXDisplay(), gc);
+  XFreeGC(control->getBaseDisplay()->getXDisplay(), hgc);
+  XFreeGC(control->getBaseDisplay()->getXDisplay(), lgc);
   
   return pixmap;
 }
@@ -221,7 +238,9 @@ Pixmap BImage::render_gradient(BTexture *texture) {
     
     if (texture->getTexture() & BImage_Invert) inverted = 1;
   }
-  
+
+  control->getGradientBuffers(width, height, &xtable, &ytable); 
+
   if (texture->getTexture() & BImage_Diagonal) dgradient();
   else if (texture->getTexture() & BImage_Elliptic) egradient();
   else if (texture->getTexture() & BImage_Horizontal) hgradient();
@@ -244,9 +263,10 @@ Pixmap BImage::render_gradient(BTexture *texture) {
 
 
 XImage *BImage::renderXImage(void) {
-  XImage *image =
-    XCreateImage(control->getDisplay()->getDisplay(), control->getVisual(),
-	         control->getDepth(), ZPixmap, 0, 0, width, height, 32, 0);
+  XImage *image = 
+    XCreateImage(control->getBaseDisplay()->getXDisplay(),
+                 control->getVisual(), control->getDepth(), ZPixmap, 0, 0,
+                 width, height, 32, 0);
 
   if (! image) {
     fprintf(stderr, "BImage::renderXImage: error creating XImage\n");
@@ -257,201 +277,368 @@ XImage *BImage::renderXImage(void) {
   image->data = (char *) 0;
 
   unsigned char *d = new unsigned char[image->bytes_per_line * (height + 1)];
-  if (! d) {
-    fprintf(stderr,
-	    "BImage::renderXImage: error allocating memory for image\n");
-    XDestroyImage(image);
-    return (XImage *) 0;
-  }
-  
-  register unsigned int x, y, r = 0, g = 0, b = 0, i, offset;
- 
-  unsigned char *pixel_data = d, *ppixel_data = d, *pred, *pgreen, *pblue;
+  register unsigned int x, y, dithx, dithy, r, g, b, o, er, eg, eb, offset;
+
+  unsigned char *pixel_data = d, *ppixel_data = d;
   unsigned long pixel;
 
-  if ((! red_table) || (! green_table) || (! blue_table)) {
-    fprintf(stderr, "BImage::renderXImage: error getting color mask tables\n");
-    delete [] d;
-    XDestroyImage(image);
-    return (XImage *) 0;
-  }
-  
-  if (control->getVisual()->c_class != TrueColor)
-    if ((! colors) || (! ncolors)) {
-      fprintf(stderr,
-	      "BImage::renderXImage: error getting pseudo color tables\n");
-      delete [] d;
-      XDestroyImage(image);
-      return (XImage *) 0;
-    }
+  o = image->bits_per_pixel + ((image->byte_order == MSBFirst) ? 1 : 0);
 
   if (control->doDither() && width > 1 && height > 1) {
-    unsigned char *red_error_table, *green_error_table, *blue_error_table,
-      *red_error_4_table, *green_error_4_table, *blue_error_4_table;
-    short *red_buffer, *green_buffer, *blue_buffer,
-      *nred_buffer, *ngreen_buffer, *nblue_buffer,
-      *pred_buffer, *pgreen_buffer, *pblue_buffer;
+    unsigned char dither4[4][4] = { {0, 4, 1, 5},
+                                    {6, 2, 7, 3},
+                                    {1, 5, 0, 4},  
+                                    {7, 3, 6, 2} };
+
+#ifdef    ORDEREDPSEUDO
+    unsigned char dither8[8][8] = { { 0,  32, 8,  40, 2,  34, 10, 42 },
+                                    { 48, 16, 56, 24, 50, 18, 58, 26 },
+                                    { 12, 44, 4,  36, 14, 46, 6,  38 },
+                                    { 60, 28, 52, 20, 62, 30, 54, 22 },
+                                    { 3,  35, 11, 43, 1,  33, 9,  41 },
+                                    { 51, 19, 59, 27, 49, 17, 57, 25 },
+                                    { 15, 47, 7,  39, 13, 45, 5,  37 },
+                                    { 63, 31, 55, 23, 61, 29, 53, 21 } };
+#endif // ORDEREDPSEUDO
  
-    control->
-      getDitherBuffers(width + 2,
-                       &red_buffer, &green_buffer, &blue_buffer,
-                       &nred_buffer, &ngreen_buffer, &nblue_buffer,
-		       &red_error_table, &green_error_table, &blue_error_table,
-		       &red_error_4_table,
-		       &green_error_4_table,
-		       &blue_error_4_table);
-    
-    if ((! red_buffer) || (! green_buffer) || (! blue_buffer) ||
-        (! nred_buffer) || (! ngreen_buffer) || (! nblue_buffer) ||
-	(! red_error_table) || (! green_error_table) || (! blue_error_table) ||
-        (! red_error_4_table) ||
-	(! green_error_4_table) ||
-        (! blue_error_4_table)) {
-      fprintf(stderr,
-	      "BImage::renderXImage: error getting dither information\n");
-      delete [] d;
-      XDestroyImage(image);
-      return (XImage *) 0;
-    }
-    
     char pbytes = image->bits_per_pixel >> 3;
-    u_int32_t *pixel_data_32 = (u_int32_t *) pixel_data;
-    
-    x = width;
- 
-    pred_buffer = red_buffer;
-    pgreen_buffer = green_buffer;
-    pblue_buffer = blue_buffer;
 
-    pred = red;
-    pgreen = green;
-    pblue = blue;
+    switch (control->getVisual()->c_class) {
+    case TrueColor:
+      // algorithm: ordered dithering... many many thanks to rasterman
+      // (raster@rasterman.com) for telling me about this... portions of this
+      // code is based off of his code in Imlib
+      for (y = 0, offset = 0; y < height; y++) {
+	dithy = y & 0x3;
+	
+	for (x = 0; x < width; x++, offset++) {
+          dithx = x & 0x3;
+          r = red[offset];
+          g = green[offset];
+          b = blue[offset];
 
-    while (x--) {
-      *(pred_buffer++) = *(pred++);
-      *(pgreen_buffer++) = *(pgreen++);
-      *(pblue_buffer++) = *(pblue++);
-    }
+          er = r & (red_bits - 1);
+          eg = g & (green_bits - 1);
+          eb = b & (blue_bits - 1);
     
-    for (y = 0, offset = 0; y < height; y++) {
-      if (y < (height - 1)) {
-	for (x = 0, i = offset + width; x < width; x++, i++) {
-	  *(nred_buffer + x) = *(red + i);
-	  *(ngreen_buffer + x) = *(green + i);
-	  *(nblue_buffer + x) = *(blue + i);
+          r = red_table[r];
+          g = green_table[g];
+          b = blue_table[b];
+
+          if ((dither4[dithy][dithx] < er) && (r < red_table[255])) r++;
+          if ((dither4[dithy][dithx] < eg) && (g < green_table[255])) g++;
+          if ((dither4[dithy][dithx] < eb) && (b < blue_table[255])) b++;
+	  
+	  pixel = (r << red_offset) | (g << green_offset) | (b << blue_offset);
+
+          switch (o) {
+          case 16: // 16bpp LSB
+            *pixel_data++ = pixel;
+	    *pixel_data++ = pixel >> 8;
+            break;
+
+          case 17: // 16bpp MSB
+	    *pixel_data++ = pixel >> 8;
+	    *pixel_data++ = pixel;
+            break;
+
+	  case 24: // 24bpp LSB
+	    *pixel_data++ = pixel;
+	    *pixel_data++ = pixel >> 8;
+	    *pixel_data++ = pixel >> 16;
+	    break;
+
+          case 25: // 24bpp MSB
+            *pixel_data++ = pixel >> 16;
+            *pixel_data++ = pixel >> 8;
+            *pixel_data++ = pixel;
+            break;
+
+          case 32: // 32bpp LSB
+            *pixel_data++ = pixel;
+            *pixel_data++ = pixel >> 8;
+            *pixel_data++ = pixel >> 16;
+            *pixel_data++ = pixel >> 24;
+            break;
+
+          case 33: // 32bpp MSB
+            *pixel_data++ = pixel >> 24;
+            *pixel_data++ = pixel >> 16;
+            *pixel_data++ = pixel >> 8;
+            *pixel_data++ = pixel;
+            break;
+          }
 	}
 	
-	i--;
-	*(nred_buffer + x) = *(red + i);
-	*(ngreen_buffer + x) = *(green + i);
-	*(nblue_buffer + x) = *(blue + i);
+	pixel_data = (ppixel_data += image->bytes_per_line);
+      } 
+      
+      break;
+      
+    case StaticColor:
+    case PseudoColor: {
+#ifndef   ORDEREDPSEUDO
+      short *terr,
+	*rerr = new short[width + 2],
+	*gerr = new short[width + 2],
+	*berr = new short[width + 2],
+	*nrerr = new short[width + 2],
+	*ngerr = new short[width + 2],
+	*nberr = new short[width + 2];
+      int rr, gg, bb, rer, ger, ber;
+      int dd = 255 / control->getColorsPerChannel();
+      
+      for (x = 0; x < width; x++) {
+	*(rerr + x) = *(red + x);
+	*(gerr + x) = *(green + x);
+	*(berr + x) = *(blue + x);
+      }
+      
+      *(rerr + x) = *(gerr + x) = *(berr + x) = 0;
+#endif // ORDEREDPSEUDO
+      
+      for (y = 0, offset = 0; y < height; y++) {
+#ifdef    ORDEREDPSEUDO
+        dithy = y & 7;
+	
+        for (x = 0; x < width; x++, offset++) {
+          dithx = x & 7;
+	  
+          r = red[offset];
+          g = green[offset];
+          b = blue[offset];
+	  
+          er = r & (red_bits - 1);
+          eg = g & (green_bits - 1);
+          eb = b & (blue_bits - 1);
+	  
+          r = red_table[r];
+          g = green_table[g];
+          b = blue_table[b];
+	  
+          if ((dither8[dithy][dithx] < er) && (r < red_table[255])) r++;
+          if ((dither8[dithy][dithx] < eg) && (g < green_table[255])) g++;
+          if ((dither8[dithy][dithx] < eb) && (b < blue_table[255])) b++;
+	  
+          pixel = (r * cpccpc) + (g * cpc) + b;
+          *(pixel_data++) = colors[pixel].pixel;
+        }
+	
+        pixel_data = (ppixel_data += image->bytes_per_line);
+      }
+#else // !ORDEREDPSEUDO
+      if (y < (height - 1)) {
+	int i = offset + width;
+	for (x = 0; x < width; x++, i++) {
+	  *(nrerr + x) = *(red + i);
+	  *(ngerr + x) = *(green + i);
+	  *(nberr + x) = *(blue + i);
+	}
+	
+	*(nrerr + x) = *(red + (--i));
+	*(ngerr + x) = *(green + i);
+	*(nberr + x) = *(blue + i);
       }
       
       for (x = 0; x < width; x++) {
-	if (*(red_buffer + x) > 255) *(red_buffer + x) = 255;
-	else if (*(red_buffer + x) < 0) *(red_buffer + x) = 0;
-	if (*(green_buffer + x) > 255) *(green_buffer + x) = 255;
-	else if (*(green_buffer + x) < 0) *(green_buffer + x) = 0;
-	if (*(blue_buffer + x) > 255) *(blue_buffer + x) = 255;
-	else if (*(blue_buffer + x) < 0) *(blue_buffer + x) = 0;
+	rr = rerr[x];
+	gg = gerr[x];
+	bb = berr[x];
 	
-	r = *(red_table + *(red_buffer + x));
-	g = *(green_table + *(green_buffer + x));
-	b = *(blue_table + *(blue_buffer + x));
+	if (rr > 255) rr = 255; else if (rr < 0) rr = 0;
+	if (gg > 255) gg = 255; else if (gg < 0) gg = 0;
+	if (bb > 255) bb = 255; else if (bb < 0) bb = 0;
 	
-	switch (control->getVisual()->c_class) {
-	case StaticColor:
-	case PseudoColor:
-	  pixel = (r * cpccpc) + (g * cpc) + b;
-	  *pixel_data++ = colors[pixel].pixel;
-	  
-	  break;
-	  
-	case TrueColor:
-	  pixel = (r << red_offset) | (g << green_offset) | (b << blue_offset);
-
-          pixel_data_32 = (u_int32_t *) pixel_data;
-          *pixel_data_32 = pixel;
-          pixel_data += pbytes;
-	  
-	  break;
-	  
-	default:
-	  fprintf(stderr, "BImage::renderXImage: unsupported visual\n");
-	  delete [] d;
-	  XDestroyImage(image);
-	  return (XImage *) 0;
-	}
-
-	*(red_buffer + x + 1) += *(red_error_table + *(red_buffer + x));
-	*(green_buffer + x + 1) += *(green_error_table + *(green_buffer + x));
-	*(blue_buffer + x + 1) += *(blue_error_table + *(blue_buffer + x));
+	r = red_table[rr];
+	g = green_table[gg];
+	b = blue_table[bb];
 	
-        *(nred_buffer + x) += *(red_error_table + *(red_buffer + x));
-        *(ngreen_buffer + x) += *(green_error_table + *(green_buffer + x));
-        *(nblue_buffer + x) += *(blue_error_table + *(blue_buffer + x));
-
-	*(nred_buffer + x + 1) -=
-          *(red_error_4_table + *(red_buffer + x));
-	*(ngreen_buffer + x + 1) -=
-          *(green_error_4_table + *(green_buffer + x));
-	*(nblue_buffer + x + 1) -=
-          *(blue_error_4_table + *(blue_buffer + x));
+	rer = rerr[x] - r*dd;
+	ger = gerr[x] - g*dd;
+	ber = berr[x] - b*dd;
+	
+	pixel = (r * cpccpc) + (g * cpc) + b;
+	*pixel_data++ = colors[pixel].pixel;
+	
+	r = rer >> 1;
+	g = ger >> 1;
+	b = ber >> 1;
+	rerr[x+1] += r;
+	gerr[x+1] += g;
+	berr[x+1] += b;
+	nrerr[x] += r;
+	ngerr[x] += g;
+	nberr[x] += b;
       }
       
-      offset += image->width;
+      offset += width;
+      
       pixel_data = (ppixel_data += image->bytes_per_line);
       
-      pred_buffer = red_buffer;
-      red_buffer = nred_buffer;
-      nred_buffer = pred_buffer;
-
-      pgreen_buffer = green_buffer;
-      green_buffer = ngreen_buffer;
-      ngreen_buffer = pgreen_buffer;
-
-      pblue_buffer = blue_buffer;
-      blue_buffer = nblue_buffer;
-      nblue_buffer = pblue_buffer;
+      terr = rerr;
+      rerr = nrerr;
+      nrerr = terr;
+      
+      terr = gerr;
+      gerr = ngerr;
+      ngerr = terr; 
+      
+      terr = berr;
+      berr = nberr;
+      nberr = terr;
+    }
+    
+    delete [] rerr;
+    delete [] gerr;
+    delete [] berr;
+    delete [] nrerr;
+    delete [] ngerr;
+    delete [] nberr;
+#endif // ORDEREDPSUEDO
+    
+    break; }
+    
+    /* 
+       case StaticGray:
+       case GrayScale:
+       for (y = 0, offset = 0; y < height; y++) {
+       dithy = y & 0x3;
+       
+       for (x = 0; x < width; x++, offset++) {
+       dithx = x & 0x3;
+       
+       r = *(red + offset);
+       g = *(green + offset);
+       b = *(blue + offset);
+       
+       er = r & 0x7;
+       eg = g & 0x7;
+       eb = b & 0x7;
+       
+       if ((dither[dithy][dithx] < er) && (r < (256 - 8)))        
+       r += 8;
+       if ((dither[dithy][dithx] < (eg << 1)) && (g < (256 - 4)))
+       g += 4;
+       if ((dither[dithy][dithx] < eb) && (b < (256 - 8)))
+       b += 8;
+       
+       r = *(red_table + r);
+       g = *(green_table + g);
+       b = *(blue_table + b);
+       
+       g = ((r * 30) + (g * 59) + (b * 11)) / 100;
+       *pixel_data++ = colors[g].pixel;
+       }
+       
+       pixel_data = (ppixel_data += image->bytes_per_line);
+       }
+       
+       break;
+    */
+    
+    default:
+      fprintf(stderr, "BImage::renderXImage: unsupported visual\n");
+      delete [] d;
+      XDestroyImage(image);
+      return (XImage *) 0;
     }
   } else {
-    u_int32_t *pixel_data_32 = (u_int32_t *) pixel_data;
-    char pbytes = image->bits_per_pixel >> 3;
+    switch (control->getVisual()->c_class) {
+    case StaticColor:
+    case PseudoColor:
+      for (y = 0, offset = 0; y < height; y++) {
+        for (x = 0; x < width; x++, offset++) {
+  	  r = red_table[red[offset]];
+          g = green_table[green[offset]];
+	  b = blue_table[blue[offset]];
+	
+	  pixel = (r * cpccpc) + (g * cpc) + b;
+	  *pixel_data++ = colors[pixel].pixel;  
+        }
+      
+        pixel_data = (ppixel_data += image->bytes_per_line);
+      }
+    
+      break;
+    
+  case TrueColor:
+    for (y = 0, offset = 0; y < height; y++) {
+      for (x = 0; x < width; x++, offset++) {
+	r = red_table[red[offset]];
+	g = green_table[green[offset]];
+	b = blue_table[blue[offset]];
+	
+	pixel = (r << red_offset) | (g << green_offset) | (b << blue_offset);
 
+        switch (o) {
+        case 16: // 16bpp LSB
+          *pixel_data++ = pixel;
+          *pixel_data++ = pixel >> 8;
+          break;
+
+        case 17: // 16bpp MSB
+          *pixel_data++ = pixel >> 8;
+          *pixel_data++ = pixel;
+          break;
+
+        case 24: // 24bpp LSB
+          *pixel_data++ = pixel;
+          *pixel_data++ = pixel >> 8;
+          *pixel_data++ = pixel >> 16;
+          break;
+
+        case 25: // 24bpp MSB
+          *pixel_data++ = pixel >> 16;
+          *pixel_data++ = pixel >> 8;
+          *pixel_data++ = pixel;
+          break;
+
+        case 32: // 32bpp LSB
+          *pixel_data++ = pixel;
+          *pixel_data++ = pixel >> 8;
+          *pixel_data++ = pixel >> 16;
+          *pixel_data++ = pixel >> 24;
+          break;
+
+        case 33: // 32bpp MSB
+          *pixel_data++ = pixel >> 24;
+          *pixel_data++ = pixel >> 16;
+          *pixel_data++ = pixel >> 8;
+          *pixel_data++ = pixel;
+          break;
+        }
+      }
+      
+      pixel_data = (ppixel_data += image->bytes_per_line);
+    }
+    
+    break;
+    
+  case StaticGray:
+  case GrayScale:
     for (y = 0, offset = 0; y < height; y++) {
       for (x = 0; x < width; x++, offset++) {
 	r = *(red_table + *(red + offset));
 	g = *(green_table + *(green + offset));
 	b = *(blue_table + *(blue + offset));
 	
-	switch (control->getVisual()->c_class) {
-	case StaticColor:
-	case PseudoColor:
-	  pixel = (r * cpccpc) + (g * cpc) + b;
-	  *pixel_data++ = colors[pixel].pixel;
-	  break;
-	  
-	case TrueColor:
-	  pixel = (r << red_offset) | (g << green_offset) | (b << blue_offset);
-
-          pixel_data_32 = (u_int32_t *) pixel_data;
-          *pixel_data_32 = pixel;
-          pixel_data += pbytes;
-
-	  break;
-
-	default:
-	  fprintf(stderr, "BImage::renderXImage: unsupported visual\n");
-	  delete [] d;
-	  XDestroyImage(image);
-	  return (XImage *) 0; 
-	}
+	g = ((r * 30) + (g * 59) + (b * 11)) / 100;
+	*pixel_data++ = colors[g].pixel;
       }
-
+      
       pixel_data = (ppixel_data += image->bytes_per_line);
     }
+    
+    break;
+    
+  default:
+    fprintf(stderr, "BImage::renderXImage: unsupported visual\n");
+    delete [] d;
+    XDestroyImage(image);
+    return (XImage *) 0; 
   }
-  
+}
+
   image->data = (char *) d;
   return image;
 }
@@ -459,31 +646,35 @@ XImage *BImage::renderXImage(void) {
 
 Pixmap BImage::renderPixmap(void) {
   Pixmap pixmap =
-    XCreatePixmap(control->getDisplay()->getDisplay(), control->getDrawable(),
-                  width, height, control->getDepth());
+    XCreatePixmap(control->getBaseDisplay()->getXDisplay(),
+                  control->getDrawable(), width, height, control->getDepth());
 
   if (pixmap == None) {
     fprintf(stderr, "BImage::renderPixmap: error creating pixmap\n");
     return None;
   }
- 
+
   XImage *image = renderXImage();
 
   if (! image) {
-    XFreePixmap(control->getDisplay()->getDisplay(), pixmap);
+    XFreePixmap(control->getBaseDisplay()->getXDisplay(), pixmap);
     return None;
   } else if (! image->data) {
     XDestroyImage(image);
-    XFreePixmap(control->getDisplay()->getDisplay(), pixmap);
+    XFreePixmap(control->getBaseDisplay()->getXDisplay(), pixmap);
     return None;
   }
   
-  XPutImage(control->getDisplay()->getDisplay(), pixmap,
-	    DefaultGC(control->getDisplay()->getDisplay(),
+  XPutImage(control->getBaseDisplay()->getXDisplay(), pixmap,
+	    DefaultGC(control->getBaseDisplay()->getXDisplay(),
 		      control->getScreenInfo()->getScreenNumber()),
             image, 0, 0, 0, 0, width, height);
 
-  if (image->data) { delete [] image->data; image->data = NULL; }
+  if (image->data) {
+    delete [] image->data;
+    image->data = NULL;
+  }
+
   XDestroyImage(image);
 
   return pixmap;
@@ -520,7 +711,7 @@ void BImage::bevel1(void) {
       if (gg > g) gg = 0;
       b = *(pb + wh);
       bb = (b >> 2) + (b >> 1);
-      if (bb > b) bb = 0;
+if (bb > b) bb = 0;
       
       *((pr++) + wh) = rr;
       *((pg++) + wh) = gg;
@@ -622,7 +813,7 @@ void BImage::bevel1(void) {
     if (bb > b) bb = 0;
     
     *pr = rr;
-    *pg = gg;
+*pg = gg;
     *pb = bb;
   }
 }
@@ -636,7 +827,7 @@ void BImage::bevel2(void) {
     
     while (--w) {
       r = *pr;
-      rr = r + (r >> 1);
+rr = r + (r >> 1);
       if (rr < r) rr = ~0;
       g = *pg;
       gg = g + (g >> 1);
@@ -731,14 +922,14 @@ void BImage::dgradient(void) {
   // diagonal gradient code was written by Mike Cole <mike@mydot.com>
   // modified for interlacing by Brad Hughes
 
-  float yr = 0.0, yg = 0.0, yb = 0.0, drx, dgx, dbx, dry, dgy, dby,
+  float drx, dgx, dbx, dry, dgy, dby, yr = 0.0, yg = 0.0, yb = 0.0,
     xr = (float) from->getRed(),
     xg = (float) from->getGreen(),
     xb = (float) from->getBlue();
   unsigned char *pr = red, *pg = green, *pb = blue;
-  unsigned int w = width * 2, h = height * 2;
+  unsigned int w = width * 2, h = height * 2, *xt = xtable, *yt = ytable;
   
-  register unsigned int i, x, y;
+  register unsigned int x, y;
 
   dry = drx = (float) (to->getRed() - from->getRed());
   dgy = dgx = (float) (to->getGreen() - from->getGreen());
@@ -749,10 +940,10 @@ void BImage::dgradient(void) {
   dgx /= w;
   dbx /= w;
   
-  for (i = 0, x = 0; x < width; x++) {
-    *(xtable + (i++)) = (unsigned char) (xr);
-    *(xtable + (i++)) = (unsigned char) (xg);
-    *(xtable + (i++)) = (unsigned char) (xb);
+  for (x = 0; x < width; x++) {
+    *(xt++) = (unsigned char) (xr);
+    *(xt++) = (unsigned char) (xg);
+    *(xt++) = (unsigned char) (xb);
 
     xr += drx;
     xg += dgx;
@@ -764,10 +955,10 @@ void BImage::dgradient(void) {
   dgy /= h;
   dby /= h;
   
-  for (i = 0, y = 0; y < height; y++) {   
-    *(ytable + (i++)) = ((unsigned char) yr);
-    *(ytable + (i++)) = ((unsigned char) yg);
-    *(ytable + (i++)) = ((unsigned char) yb);
+  for (y = 0; y < height; y++) {   
+    *(yt++) = ((unsigned char) yr);
+    *(yt++) = ((unsigned char) yg);
+    *(yt++) = ((unsigned char) yb);
 
     yr += dry;
     yg += dgy;
@@ -781,11 +972,11 @@ void BImage::dgradient(void) {
 #endif // INTERLACE
 
     // normal dgradient
-    for (y = 0; y < height; y++) {
-      for (x = 0; x < width; x++) {
-        *(pr++) = *(xtable + (x * 3)) + *(ytable + (y * 3));
-        *(pg++) = *(xtable + (x * 3) + 1) + *(ytable + (y * 3) + 1);
-        *(pb++) = *(xtable + (x * 3) + 2) + *(ytable + (y * 3) + 2);
+    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
+      for (xt = xtable, x = 0; x < width; x++) {
+        *(pr++) = *(xt++) + *(yt);
+        *(pg++) = *(xt++) + *(yt + 1);
+        *(pb++) = *(xt++) + *(yt + 2);
       }
     }
 
@@ -794,35 +985,35 @@ void BImage::dgradient(void) {
     // faked interlacing effect
     unsigned char channel, channel2;
 
-    for (y = 0; y < height; y++) {
-      for (x = 0; x < width; x++) {
+    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
+      for (xt = xtable, x = 0; x < width; x++) {
         if (y & 1) {
-          channel = *(xtable + (x * 3)) + *(ytable + (y * 3));
+          channel = *(xt++) + *(yt);
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pr++) = channel2;
 
-          channel = *(xtable + (x * 3) + 1) + *(ytable + (y * 3) + 1);
+          channel = *(xt++) + *(yt + 1);
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pg++) = channel2;
 
-          channel = *(xtable + (x * 3) + 2) + *(ytable + (y * 3) + 2);
+          channel = *(xt++) + *(yt + 2);
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pb++) = channel2;
         } else {
-          channel = *(xtable + (x * 3)) + *(ytable + (y * 3));
+          channel = *(xt++) + *(yt);
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pr++) = channel2;
 
-          channel = *(xtable + (x * 3) + 1) + *(ytable + (y * 3) + 1);
+          channel = *(xt++) + *(yt + 1);
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pg++) = channel2;
 
-          channel = *(xtable + (x * 3) + 2) + *(ytable + (y * 3) + 2);
+          channel = *(xt++) + *(yt + 2);
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pb++) = channel2;
@@ -1019,43 +1210,36 @@ void BImage::pgradient(void) {
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
  
-  float yr = 0.0, yg = 0.0, yb = 0.0, drx, dgx, dbx, dry, dgy, dby,
-    xr = (float) from->getRed(),
-    xg = (float) from->getGreen(),
-    xb = (float) from->getBlue(),
-    tr = (float) to->getRed(),
-    tg = (float) to->getGreen(),
-    tb = (float) to->getBlue();
+  float yr, yg, yb, drx, dgx, dbx, dry, dgy, dby,
+    xr, xg, xb;
   int rsign, gsign, bsign;
   unsigned char *pr = red, *pg = green, *pb = blue;
+  unsigned int tr = to->getRed(), tg = to->getGreen(), tb = to->getBlue(),
+    *xt = xtable, *yt = ytable;
  
-  register unsigned int i, x, y;
+  register unsigned int x, y;
 
   dry = drx = (float) (to->getRed() - from->getRed());
   dgy = dgx = (float) (to->getGreen() - from->getGreen());
   dby = dbx = (float) (to->getBlue() - from->getBlue());
- 
+
   rsign = (drx < 0) ? -1 : 1;
   gsign = (dgx < 0) ? -1 : 1;
   bsign = (dbx < 0) ? -1 : 1;
  
-  xr = drx / 2;
-  xg = dgx / 2;
-  xb = dbx / 2;
- 
-  yr = dry / 2;
-  yg = dgy / 2;
-  yb = dby / 2;
+  xr = yr = (drx / 2);
+  xg = yg = (dgx / 2);
+  xb = yb = (dbx / 2);
  
   // Create X table
   drx /= width;
   dgx /= width;
   dbx /= width;
  
-  for (i = 0, x = 0; x < width; x++) {
-    *(xtable + (i++)) = (unsigned char) ((xr < 0) ? -xr : xr);
-    *(xtable + (i++)) = (unsigned char) ((xg < 0) ? -xg : xg);
-    *(xtable + (i++)) = (unsigned char) ((xb < 0) ? -xb : xb);
+  for (x = 0; x < width; x++) {
+    *(xt++) = (unsigned char) ((xr < 0) ? -xr : xr);
+    *(xt++) = (unsigned char) ((xg < 0) ? -xg : xg);
+    *(xt++) = (unsigned char) ((xb < 0) ? -xb : xb);
  
     xr -= drx;
     xg -= dgx;
@@ -1067,10 +1251,10 @@ void BImage::pgradient(void) {
   dgy /= height;
   dby /= height;
  
-  for (i = 0, y = 0; y < height; y++) {
-    *(ytable + (i++)) = ((unsigned char) ((yr < 0) ? -yr : yr));
-    *(ytable + (i++)) = ((unsigned char) ((yg < 0) ? -yg : yg));
-    *(ytable + (i++)) = ((unsigned char) ((yb < 0) ? -yb : yb));
+  for (y = 0; y < height; y++) {
+    *(yt++) = ((unsigned char) ((yr < 0) ? -yr : yr));
+    *(yt++) = ((unsigned char) ((yg < 0) ? -yg : yg));
+    *(yt++) = ((unsigned char) ((yb < 0) ? -yb : yb));
 
     yr -= dry;
     yg -= dgy;
@@ -1084,14 +1268,11 @@ void BImage::pgradient(void) {
 #endif // INTERLACE
 
     // normal pgradient
-    for (y = 0; y < height; y++) {
-      for (x = 0; x < width; x++) {
-        *(pr++) = (unsigned char) tr -
-          (rsign * (*(xtable + (x * 3)) + *(ytable + (y * 3))));
-        *(pg++) = (unsigned char) tg -
-          (gsign * (*(xtable + (x * 3) + 1) + *(ytable + (y * 3) + 1)));
-        *(pb++) = (unsigned char) tb -
-          (bsign * (*(xtable + (x * 3) + 2) + *(ytable + (y * 3) + 2)));
+    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
+      for (xt = xtable, x = 0; x < width; x++) {
+        *(pr++) = (unsigned char) (tr - (rsign * (*(xt++) + *(yt))));
+        *(pg++) = (unsigned char) (tg - (gsign * (*(xt++) + *(yt + 1))));
+        *(pb++) = (unsigned char) (tb - (bsign * (*(xt++) + *(yt + 2))));
       }
     }
 
@@ -1100,41 +1281,35 @@ void BImage::pgradient(void) {
     // faked interlacing effect
     unsigned char channel, channel2;
    
-    for (y = 0; y < height; y++) {
-      for (x = 0; x < width; x++) {
+    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
+      for (xt = xtable, x = 0; x < width; x++) {
         if (y & 1) {
-          channel = (unsigned char) tr -
-            (rsign * (*(xtable + (x * 3)) + *(ytable + (y * 3))));
+          channel = (unsigned char) (tr - (rsign * (*(xt++) + *(yt))));
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pr++) = channel2;
    
-          channel = (unsigned char) tg -
-            (gsign * (*(xtable + (x * 3) + 1) + *(ytable + (y * 3) + 1)));
+          channel = (unsigned char) (tg - (gsign * (*(xt++) + *(yt + 1))));
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pg++) = channel2;
    
-          channel = (unsigned char) tb -
-            (bsign * (*(xtable + (x * 3) + 2) + *(ytable + (y * 3) + 2)));
+          channel = (unsigned char) (tb - (bsign * (*(xt++) + *(yt + 2))));
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pb++) = channel2;
         } else {
-          channel = (unsigned char) tr -
-            (rsign * (*(xtable + (x * 3)) + *(ytable + (y * 3))));
+          channel = (unsigned char) (tr - (rsign * (*(xt++) + *(yt))));
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pr++) = channel2;
    
-          channel = (unsigned char) tg -
-            (gsign * (*(xtable + (x * 3) + 1) + *(ytable + (y * 3) + 1)));
+          channel = (unsigned char) (tg - (gsign * (*(xt++) + *(yt + 1))));
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pg++) = channel2;
    
-          channel = (unsigned char) tb -
-            (bsign * (*(xtable + (x * 3) + 2) + *(ytable + (y * 3) + 2)));
+          channel = (unsigned char) (tb - (bsign * (*(xt++) + *(yt + 2))));
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pb++) = channel2; 
@@ -1152,43 +1327,35 @@ void BImage::rgradient(void) {
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
   
-  float yr = 0.0, yg = 0.0, yb = 0.0, drx, dgx, dbx, dry, dgy, dby,
-    xr = (float) from->getRed(),
-    xg = (float) from->getGreen(), 
-    xb = (float) from->getBlue(),
-    tr = (float) to->getRed(),
-    tg = (float) to->getGreen(),
-    tb = (float) to->getBlue();  
+  float drx, dgx, dbx, dry, dgy, dby, xr, xg, xb, yr, yg, yb;
   int rsign, gsign, bsign;
   unsigned char *pr = red, *pg = green, *pb = blue;
+  unsigned int tr = to->getRed(), tg = to->getGreen(), tb = to->getBlue(),
+    *xt = xtable, *yt = ytable;
 
-  register unsigned int i, x, y;
+  register unsigned int x, y;
 
   dry = drx = (float) (to->getRed() - from->getRed());
   dgy = dgx = (float) (to->getGreen() - from->getGreen());  
   dby = dbx = (float) (to->getBlue() - from->getBlue());
-  
+
   rsign = (drx < 0) ? -2 : 2;
   gsign = (dgx < 0) ? -2 : 2;
   bsign = (dbx < 0) ? -2 : 2;
-
-  xr = drx / 2;
-  xg = dgx / 2; 
-  xb = dbx / 2;
   
-  yr = dry / 2;
-  yg = dgy / 2;
-  yb = dby / 2;
-
+  xr = yr = (drx / 2);
+  xg = yg = (dgx / 2); 
+  xb = yb = (dbx / 2);
+  
   // Create X table
   drx /= width;
   dgx /= width;
   dbx /= width;
 
-  for (i = 0, x = 0; x < width; x++) {
-    *(xtable + (i++)) = (unsigned char) ((xr < 0) ? -xr : xr);
-    *(xtable + (i++)) = (unsigned char) ((xg < 0) ? -xg : xg);
-    *(xtable + (i++)) = (unsigned char) ((xb < 0) ? -xb : xb);
+  for (x = 0; x < width; x++) {
+    *(xt++) = (unsigned char) ((xr < 0) ? -xr : xr);
+    *(xt++) = (unsigned char) ((xg < 0) ? -xg : xg);
+    *(xt++) = (unsigned char) ((xb < 0) ? -xb : xb);
 
     xr -= drx;
     xg -= dgx;
@@ -1201,9 +1368,9 @@ void BImage::rgradient(void) {
   dby /= height;
   
   for (y = 0; y < height; y++) {
-    *(ytable + (y * 3)) = ((unsigned char) ((yr < 0) ? -yr : yr));
-    *(ytable + (y * 3) + 1) = ((unsigned char) ((yg < 0) ? -yg : yg));
-    *(ytable + (y * 3) + 2) = ((unsigned char) ((yb < 0) ? -yb : yb));
+    *(yt++) = ((unsigned char) ((yr < 0) ? -yr : yr));
+    *(yt++) = ((unsigned char) ((yg < 0) ? -yg : yg));
+    *(yt++) = ((unsigned char) ((yb < 0) ? -yb : yb));
           
     yr -= dry;
     yg -= dgy;
@@ -1217,14 +1384,11 @@ void BImage::rgradient(void) {
 #endif // INTERLACE
 
     // normal rgradient
-    for (y = 0; y < height; y++) {
-      for (x = 0; x < width; x++) {
-        *(pr++) = (unsigned char) tr -
-          (rsign * MAX(*(xtable + (x * 3)), *(ytable + (y * 3))));
-        *(pg++) = (unsigned char) tg -
-          (gsign * MAX(*(xtable + (x * 3) + 1), *(ytable + (y * 3) + 1)));
-        *(pb++) = (unsigned char) tb -
-          (bsign * MAX(*(xtable + (x * 3) + 2), *(ytable + (y * 3) + 2)));
+    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
+      for (xt = xtable, x = 0; x < width; x++) {
+        *(pr++) = (unsigned char) (tr - (rsign * max(*(xt++), *(yt))));
+        *(pg++) = (unsigned char) (tg - (gsign * max(*(xt++), *(yt + 1))));
+        *(pb++) = (unsigned char) (tb - (bsign * max(*(xt++), *(yt + 2))));
       }
     }
 
@@ -1233,41 +1397,35 @@ void BImage::rgradient(void) {
     // faked interlacing effect
     unsigned char channel, channel2;
     
-    for (y = 0; y < height; y++) {
-      for (x = 0; x < width; x++) {
+    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
+      for (xt = xtable, x = 0; x < width; x++) {
         if (y & 1) {
-          channel = (unsigned char) tr - 
-            (rsign * MAX(*(xtable + (x * 3)), *(ytable + (y * 3))));
+          channel = (unsigned char) (tr - (rsign * max(*(xt++), *(yt))));
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pr++) = channel2;
   
-          channel = (unsigned char) tg -
-            (gsign * MAX(*(xtable + (x * 3) + 1), *(ytable + (y * 3) + 1)));
+          channel = (unsigned char) (tg - (gsign * max(*(xt++), *(yt + 1))));
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pg++) = channel2;
   
-          channel = (unsigned char) tb -
-            (bsign * MAX(*(xtable + (x * 3) + 2), *(ytable + (y * 3) + 2)));
+          channel = (unsigned char) (tb - (bsign * max(*(xt++), *(yt + 2))));
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pb++) = channel2;
         } else {
-          channel = (unsigned char) tr -
-            (rsign * MAX(*(xtable + (x * 3)), *(ytable + (y * 3))));
+          channel = (unsigned char) (tr - (rsign * max(*(xt++), *(yt))));
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pr++) = channel2;
   
-          channel = (unsigned char) tg -
-            (gsign * MAX(*(xtable + (x * 3) + 1), *(ytable + (y * 3) + 1)));
+          channel = (unsigned char) (tg - (gsign * max(*(xt++), *(yt + 1))));
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pg++) = channel2;
   
-          channel = (unsigned char) tb -
-            (bsign * MAX(*(xtable + (x * 3) + 2), *(ytable + (y * 3) + 2)));
+          channel = (unsigned char) (tb - (bsign * max(*(xt++), *(yt + 2))));
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pb++) = channel2;
@@ -1285,17 +1443,15 @@ void BImage::egradient(void) {
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
 
-  float yr = 0.0, yg = 0.0, yb = 0.0, drx, dgx, dbx, dry, dgy, dby,
-    xr = (float) from->getRed(),
-    xg = (float) from->getGreen(),
-    xb = (float) from->getBlue();
+  float drx, dgx, dbx, dry, dgy, dby, yr, yg, yb, xr, xg, xb;
+  int rsign, gsign, bsign;
   unsigned char *pr = red, *pg = green, *pb = blue;
-  unsigned int rsign, gsign, bsign,
+  unsigned int *xt = xtable, *yt = ytable,
     tr = (unsigned long) to->getRed(),
     tg = (unsigned long) to->getGreen(),
     tb = (unsigned long) to->getBlue();
 
-  register unsigned int i, x, y;
+  register unsigned int x, y;
 
   dry = drx = (float) (to->getRed() - from->getRed());
   dgy = dgx = (float) (to->getGreen() - from->getGreen());
@@ -1305,23 +1461,19 @@ void BImage::egradient(void) {
   gsign = (dgx < 0) ? -1 : 1;
   bsign = (dbx < 0) ? -1 : 1;
 
-  xr = drx / 2;
-  xg = dgx / 2;
-  xb = dbx / 2;
-
-  yr = dry / 2;
-  yg = dgy / 2;
-  yb = dby / 2;
+  xr = yr = (drx / 2);
+  xg = yg = (dgx / 2);
+  xb = yb = (dbx / 2);
 
   // Create X table
   drx /= width;
   dgx /= width;
   dbx /= width;
 
-  for (i = 0, x = 0; x < width; x++) {
-    *(xtable + (i++)) = ((unsigned long) (xr * xr));
-    *(xtable + (i++)) = ((unsigned long) (xg * xg));
-    *(xtable + (i++)) = ((unsigned long) (xb * xb));
+  for (x = 0; x < width; x++) {
+    *(xt++) = (unsigned long) (xr * xr);
+    *(xt++) = (unsigned long) (xg * xg);
+    *(xt++) = (unsigned long) (xb * xb);
 
     xr -= drx;
     xg -= dgx;
@@ -1333,10 +1485,10 @@ void BImage::egradient(void) {
   dgy /= height;
   dby /= height;
   
-  for (i = 0, y = 0; y < height; y++) {
-    *(ytable + (i++)) = ((unsigned long) (yr * yr));
-    *(ytable + (i++)) = ((unsigned long) (yg * yg));
-    *(ytable + (i++)) = ((unsigned long) (yb * yb));
+  for (y = 0; y < height; y++) {
+    *(yt++) = (unsigned long) (yr * yr);
+    *(yt++) = (unsigned long) (yg * yg);
+    *(yt++) = (unsigned long) (yb * yb);
   
     yr -= dry;
     yg -= dgy;
@@ -1349,21 +1501,15 @@ void BImage::egradient(void) {
   if (! interlaced) {
 #endif // INTERLACE
     
-    // normal pcgradient
-    for (y = 0; y < height; y++) {
-      for (x = 0; x < width; x++) {
-        *(pr++) =
-          (unsigned char) (tr -
-                           (rsign * control->getSqrt(*(xtable + (x * 3)) +
-                                                     *(ytable + (y * 3)))));
-        *(pg++) =
-          (unsigned char) (tg -
-                           (gsign * control->getSqrt(*(xtable + (x * 3) + 1) +
-                                                     *(ytable + (y * 3) + 1))));
-        *(pb++) =
-          (unsigned char) (tb -
-                           (bsign * control->getSqrt(*(xtable + (x * 3) + 2) +
-                                                     *(ytable + (y * 3) + 2))));
+    // normal egradient
+    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
+      for (xt = xtable, x = 0; x < width; x++) {
+        *(pr++) = (unsigned char)
+          (tr - (rsign * control->getSqrt(*(xt++) + *(yt))));
+        *(pg++) = (unsigned char)
+          (tg - (gsign * control->getSqrt(*(xt++) + *(yt + 1))));
+        *(pb++) = (unsigned char)
+          (tb - (bsign * control->getSqrt(*(xt++) + *(yt + 2))));
       } 
     } 
 
@@ -1372,47 +1518,41 @@ void BImage::egradient(void) {
     // faked interlacing effect
     unsigned char channel, channel2;
   
-    for (y = 0; y < height; y++) {
-      for (x = 0; x < width; x++) {
+    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
+      for (xt = xtable, x = 0; x < width; x++) {
         if (y & 1) {
-          channel =
-            (unsigned char) (tr - (rsign * control->getSqrt(*(xtable + (x * 3)) +
-                             *(ytable + (y * 3)))));
+          channel = (unsigned char)
+            (tr - (rsign * control->getSqrt(*(xt++) + *(yt))));
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pr++) = channel2;
   
-          channel =
-            (unsigned char) (tg - (gsign * control->getSqrt(*(xtable + (x * 3) + 1) +
-                             *(ytable + (y * 3) + 1))));
+          channel = (unsigned char)
+            (tg - (gsign * control->getSqrt(*(xt++) + *(yt + 1))));
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pg++) = channel2;
     
-          channel =
-            (unsigned char) (tb - (bsign * control->getSqrt(*(xtable + (x * 3) + 2) +
-                             *(ytable + (y * 3) + 2))));
+          channel = (unsigned char)
+            (tb - (bsign * control->getSqrt(*(xt++) + *(yt + 2))));
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pb++) = channel2;
         } else {
-          channel =
-            (unsigned char) (tr - (rsign * control->getSqrt(*(xtable + (x * 3)) +
-                             *(ytable + (y * 3)))));
+          channel = (unsigned char)
+            (tr - (rsign * control->getSqrt(*(xt++) + *(yt))));
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pr++) = channel2;
 
-          channel =
-            (unsigned char) (tg - (gsign * control->getSqrt(*(xtable + (x * 3) + 1) +
-                             *(ytable + (y * 3) + 1))));
+          channel = (unsigned char)
+          (tg - (gsign * control->getSqrt(*(xt++) + *(yt + 1))));
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pg++) = channel2;
     
-          channel =
-            (unsigned char) (tb - (bsign * control->getSqrt(*(xtable + (x * 3) + 2) +
-                             *(ytable + (y * 3) + 2))));
+          channel = (unsigned char)
+            (tb - (bsign * control->getSqrt(*(xt++) + *(yt + 2))));
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pb++) = channel2; 
@@ -1430,17 +1570,15 @@ void BImage::pcgradient(void) {
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
 
-  float yr = 0.0, yg = 0.0, yb = 0.0, drx, dgx, dbx, dry, dgy, dby,
-    xr = (float) from->getRed(),
-    xg = (float) from->getGreen(),
-    xb = (float) from->getBlue(),
-    tr = (float) to->getRed(),
-    tg = (float) to->getGreen(),
-    tb = (float) to->getBlue();
+  float drx, dgx, dbx, dry, dgy, dby, xr, xg, xb, yr, yg, yb;
   int rsign, gsign, bsign;
   unsigned char *pr = red, *pg = green, *pb = blue;
+  unsigned int *xt = xtable, *yt = ytable,
+    tr = to->getRed(),
+    tg = to->getGreen(),
+    tb = to->getBlue();
 
-  register unsigned int i, x, y;
+  register unsigned int x, y;
 
   dry = drx = (float) (to->getRed() - from->getRed());
   dgy = dgx = (float) (to->getGreen() - from->getGreen());
@@ -1448,25 +1586,21 @@ void BImage::pcgradient(void) {
 
   rsign = (drx < 0) ? -2 : 2;
   gsign = (dgx < 0) ? -2 : 2;
-  bsign = (dbx < 0) ? -2 : 2; 
+  bsign = (dbx < 0) ? -2 : 2;
 
-  xr = drx / 2;
-  xg = dgx / 2;
-  xb = dbx / 2;
-
-  yr = dry / 2;
-  yg = dgy / 2;
-  yb = dby / 2; 
+  xr = yr = (drx / 2);
+  xg = yg = (dgx / 2);
+  xb = yb = (dbx / 2);
 
   // Create X table
   drx /= width;
   dgx /= width;
   dbx /= width;
 
-  for (i = 0, x = 0; x < width; x++) {
-    *(xtable + (i++)) = (unsigned char) ((xr < 0) ? -xr : xr);
-    *(xtable + (i++)) = (unsigned char) ((xg < 0) ? -xg : xg);
-    *(xtable + (i++)) = (unsigned char) ((xb < 0) ? -xb : xb);
+  for (x = 0; x < width; x++) {
+    *(xt++) = (unsigned char) ((xr < 0) ? -xr : xr);
+    *(xt++) = (unsigned char) ((xg < 0) ? -xg : xg);
+    *(xt++) = (unsigned char) ((xb < 0) ? -xb : xb);
 
     xr -= drx;
     xg -= dgx;
@@ -1478,10 +1612,10 @@ void BImage::pcgradient(void) {
   dgy /= height;
   dby /= height;
 
-  for (i = 0, y = 0; y < height; y++) {
-    *(ytable + (i++)) = ((unsigned char) ((yr < 0) ? -yr : yr));
-    *(ytable + (i++)) = ((unsigned char) ((yg < 0) ? -yg : yg));
-    *(ytable + (i++)) = ((unsigned char) ((yb < 0) ? -yb : yb));
+  for (y = 0; y < height; y++) {
+    *(yt++) = ((unsigned char) ((yr < 0) ? -yr : yr));
+    *(yt++) = ((unsigned char) ((yg < 0) ? -yg : yg));
+    *(yt++) = ((unsigned char) ((yb < 0) ? -yb : yb));
 
     yr -= dry;
     yg -= dgy;
@@ -1495,14 +1629,11 @@ void BImage::pcgradient(void) {
 #endif // INTERLACE
 
     // normal pcgradient
-    for (y = 0; y < height; y++) {
-      for (x = 0; x < width; x++) {
-        *(pr++) = (unsigned char) tr -
-          (rsign * MIN(*(xtable + (x * 3)), *(ytable + (y * 3))));
-        *(pg++) = (unsigned char) tg -
-          (gsign * MIN(*(xtable + (x * 3) + 1), *(ytable + (y * 3) + 1)));
-        *(pb++) = (unsigned char) tb -
-          (bsign * MIN(*(xtable + (x * 3) + 2), *(ytable + (y * 3) + 2)));
+    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
+      for (xt = xtable, x = 0; x < width; x++) {
+        *(pr++) = (unsigned char) (tr - (rsign * min(*(xt++), *(yt))));
+        *(pg++) = (unsigned char) (tg - (gsign * min(*(xt++), *(yt + 1))));
+        *(pb++) = (unsigned char) (tb - (bsign * min(*(xt++), *(yt + 2))));
       }
     }
     
@@ -1511,41 +1642,35 @@ void BImage::pcgradient(void) {
     // faked interlacing effect
     unsigned char channel, channel2;
     
-    for (y = 0; y < height; y++) {
-      for (x = 0; x < width; x++) {
+    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
+      for (xt = xtable, x = 0; x < width; x++) {
         if (y & 1) {
-          channel = (unsigned char) tr -
-            (rsign * MIN(*(xtable + (x * 3)), *(ytable + (y * 3))));
+          channel = (unsigned char) (tr - (rsign * min(*(xt++), *(yt))));
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pr++) = channel2;
     
-          channel = (unsigned char) tg -
-            (gsign * MIN(*(xtable + (x * 3) + 1), *(ytable + (y * 3) + 1)));
+          channel = (unsigned char) (tg - (bsign * min(*(xt++), *(yt + 1))));
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pg++) = channel2;
     
-          channel = (unsigned char) tb -
-            (bsign * MIN(*(xtable + (x * 3) + 2), *(ytable + (y * 3) + 2)));
+          channel = (unsigned char) (tb - (gsign * min(*(xt++), *(yt + 2))));
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pb++) = channel2;
         } else {
-          channel = (unsigned char) tr -
-            (rsign * MIN(*(xtable + (x * 3)), *(ytable + (y * 3))));
+          channel = (unsigned char) (tr - (rsign * min(*(xt++), *(yt))));
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pr++) = channel2;
     
-          channel = (unsigned char) tg -
-            (gsign * MIN(*(xtable + (x * 3) + 1), *(ytable + (y * 3) + 1)));
+          channel = (unsigned char) (tg - (gsign * min(*(xt++), *(yt + 1))));
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pg++) = channel2;
     
-          channel = (unsigned char) tb -
-            (bsign * MIN(*(xtable + (x * 3) + 2), *(ytable + (y * 3) + 2)));
+          channel = (unsigned char) (tb - (bsign * min(*(xt++), *(yt + 2))));
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pb++) = channel2;
@@ -1563,14 +1688,14 @@ void BImage::cdgradient(void) {
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
 
-  float yr = 0.0, yg = 0.0, yb = 0.0, drx, dgx, dbx, dry, dgy, dby,
+  float drx, dgx, dbx, dry, dgy, dby, yr = 0.0, yg = 0.0, yb = 0.0,
     xr = (float) from->getRed(),
-    xg = (float) from->getGreen(),  
+    xg = (float) from->getGreen(),
     xb = (float) from->getBlue();
   unsigned char *pr = red, *pg = green, *pb = blue;
-  unsigned int w = width * 2, h = height * 2;
+  unsigned int w = width * 2, h = height * 2, *xt, *yt;
 
-  register unsigned int i, x, y; 
+  register unsigned int x, y; 
 
   dry = drx = (float) (to->getRed() - from->getRed());
   dgy = dgx = (float) (to->getGreen() - from->getGreen());
@@ -1581,10 +1706,10 @@ void BImage::cdgradient(void) {
   dgx /= w;
   dbx /= w;
 
-  for (x = 0; x < width; x++) {
-    *(xtable + ((width - 1 - x) * 3)) = ((unsigned char) xr);
-    *(xtable + ((width - 1 - x) * 3) + 1) = ((unsigned char) xg);
-    *(xtable + ((width - 1 - x) * 3) + 2) = ((unsigned char) xb);
+  for (xt = (xtable + (width * 3) - 1), x = 0; x < width; x++) {
+    *(xt--) = (unsigned char) xb;
+    *(xt--) = (unsigned char) xg;
+    *(xt--) = (unsigned char) xr;
 
     xr += drx;
     xg += dgx;
@@ -1596,10 +1721,10 @@ void BImage::cdgradient(void) {
   dgy /= h;
   dby /= h;
     
-  for (i = 0, y = 0; y < height; y++) {
-    *(ytable + (i++)) = ((unsigned char) yr);
-    *(ytable + (i++)) = ((unsigned char) yg);
-    *(ytable + (i++)) = ((unsigned char) yb);
+  for (yt = ytable, y = 0; y < height; y++) {
+    *(yt++) = (unsigned char) yr;
+    *(yt++) = (unsigned char) yg;
+    *(yt++) = (unsigned char) yb;
     
     yr += dry;
     yg += dgy;
@@ -1613,11 +1738,11 @@ void BImage::cdgradient(void) {
 #endif // INTERLACE
   
     // normal cdgradient
-    for (y = 0; y < height; y++) {
-      for (x = 0; x < width; x++) {
-        *(pr++) = *(xtable + (x * 3)) + *(ytable + (y * 3));
-        *(pg++) = *(xtable + (x * 3) + 1) + *(ytable + (y * 3) + 1);
-        *(pb++) = *(xtable + (x * 3) + 2) + *(ytable + (y * 3) + 2);
+    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
+      for (xt = xtable, x = 0; x < width; x++) {
+        *(pr++) = *(xt++) + *(yt);
+        *(pg++) = *(xt++) + *(yt + 1);
+        *(pb++) = *(xt++) + *(yt + 2);
       }
     }
   
@@ -1626,35 +1751,35 @@ void BImage::cdgradient(void) {
     // faked interlacing effect
     unsigned char channel, channel2; 
 
-    for (y = 0; y < height; y++) {
-      for (x = 0; x < width; x++) {
+    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
+      for (xt = xtable, x = 0; x < width; x++) {
         if (y & 1) {
-          channel = *(xtable + (x * 3)) + *(ytable + (y * 3));
+          channel = *(xt++) + *(yt);
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pr++) = channel2;
     
-          channel = *(xtable + (x * 3) + 1) + *(ytable + (y * 3) + 1);
+          channel = *(xt++) + *(yt + 1);
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pg++) = channel2;
     
-          channel = *(xtable + (x * 3) + 2) + *(ytable + (y * 3) + 2);
+          channel = *(xt++) + *(yt + 2);
           channel2 = (channel >> 1) + (channel >> 2);
           if (channel2 > channel) channel2 = 0;
           *(pb++) = channel2;
         } else {
-          channel = *(xtable + (x * 3)) + *(ytable + (y * 3));
+          channel = *(xt++) + *(yt);
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pr++) = channel2; 
     
-          channel = *(xtable + (x * 3) + 1) + *(ytable + (y * 3) + 1);
+          channel = *(xt++) + *(yt + 1);
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pg++) = channel2;
     
-          channel = *(xtable + (x * 3) + 2) + *(ytable + (y * 3) + 2);
+          channel = *(xt++) + *(yt + 2);
           channel2 = channel + (channel >> 3);
           if (channel2 < channel) channel2 = ~0;
           *(pb++) = channel2;
@@ -1668,23 +1793,35 @@ void BImage::cdgradient(void) {
 
 
 BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
-                             int _cpc)
+                             int _cpc, unsigned long cache_timeout,
+                             unsigned long cmax)
 {
-  display = dpy;
+  basedisplay = dpy;
   screeninfo = scrn;
   setDither(_dither);
   setColorsPerChannel(_cpc);
- 
+
+  cache_max = cmax;
+  timer = new BTimer(basedisplay, this);
+  timer->setTimeout(cache_timeout);
+  timer->fireOnce(True); 
+
+  colors = (XColor *) 0;
+  ncolors = 0;
+
+  grad_xbuffer = grad_ybuffer = (unsigned int *) 0;
+  grad_buffer_width = grad_buffer_height = 0;
+
+  sqrt_table = (unsigned long *) 0;
+
   screen_depth = screeninfo->getDepth();
   window = screeninfo->getRootWindow();
   screen_number = screeninfo->getScreenNumber();
 
-  colors = (XColor *) 0;
-  ncolors = 0;
-  
   int count;
-  XPixmapFormatValues *pmv = XListPixmapFormats(display->getDisplay(), &count);
-  root_colormap = DefaultColormap(display->getDisplay(), screen_number);
+  XPixmapFormatValues *pmv = XListPixmapFormats(basedisplay->getXDisplay(),
+                                                &count);
+  root_colormap = DefaultColormap(basedisplay->getXDisplay(), screen_number);
   
   if (pmv) {
     bits_per_pixel = 0;
@@ -1698,18 +1835,19 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
   }
   
   if (bits_per_pixel == 0) bits_per_pixel = screen_depth;
+  if (bits_per_pixel >= 24) setDither(False);
 
   red_offset = green_offset = blue_offset = 0;
 
-  switch (screeninfo->getVisual()->c_class) {
+  switch (getVisual()->c_class) {
   case TrueColor:
     {
-      int i, red_bits, green_bits, blue_bits;
+      int i;
 
       // compute color tables
-      unsigned long red_mask = screeninfo->getVisual()->red_mask,
-        green_mask = screeninfo->getVisual()->green_mask,
-        blue_mask = screeninfo->getVisual()->blue_mask;
+      unsigned long red_mask = getVisual()->red_mask,
+        green_mask = getVisual()->green_mask,
+        blue_mask = getVisual()->blue_mask;
 
       while (! (red_mask & 1)) { red_offset++; red_mask >>= 1; }
       while (! (green_mask & 1)) { green_offset++; green_mask >>= 1; }
@@ -1721,16 +1859,8 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
 
       for (i = 0; i < 256; i++) {
 	red_color_table[i] = i / red_bits;
-	red_error_table[i] = (i % red_bits) * 3 / 4;
-	red_error38_table[i] = red_error_table[i] / 4;
-
         green_color_table[i] = i / green_bits;
-        green_error_table[i] = (i % green_bits) * 3 / 4;
-        green_error38_table[i] = green_error_table[i] / 4;
-
         blue_color_table[i] = i / blue_bits;
-        blue_error_table[i] = (i % blue_bits) * 3 / 4;
-        blue_error38_table[i] = blue_error_table[i] / 4;
       }
     }
 
@@ -1755,7 +1885,7 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
 
         colors_per_channel = (1 << screen_depth) / 3; 
       }
-      
+
       colors = new XColor[ncolors];
       if (! colors) {
 	fprintf(stderr, "BImageControl::BImageControl: error allocating "
@@ -1763,15 +1893,19 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
 	exit(1);
       }
 
-      int i = 0, ii, p, r, g, b, bits = 255 / (colors_per_channel - 1);
-      for (i = 0; i < 256; i++) {
+      int i = 0, ii, p, r, g, b,
+
+#ifdef    ORDEREDPSEUDO
+        bits = 256 / colors_per_channel;
+#else // !ORDEREDPSEUDO
+        bits = 255 / (colors_per_channel - 1);
+#endif // ORDEREDPSEUDO
+
+      red_bits = green_bits = blue_bits = bits;
+
+      for (i = 0; i < 256; i++)
 	red_color_table[i] = green_color_table[i] = blue_color_table[i] =
 	  i / bits;
-	red_error_table[i] = green_error_table[i] = blue_error_table[i] =
-	  (i % bits) * 3 / 4;
-        red_error38_table[i] = green_error38_table[i] = blue_error38_table[i] =
-          red_error_table[i] / 4;
-      }
       
       for (r = 0, i = 0; r < colors_per_channel; r++)
 	for (g = 0; g < colors_per_channel; g++)
@@ -1782,17 +1916,18 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
 	    colors[i].flags = DoRed|DoGreen|DoBlue;
 	  }
       
-      display->grab();
+      basedisplay->grab();
       
       for (i = 0; i < ncolors; i++)
-	if (! XAllocColor(display->getDisplay(), root_colormap, &colors[i])) {
+	if (! XAllocColor(basedisplay->getXDisplay(), getColormap(),
+                          &colors[i])) {
 	  fprintf(stderr, "couldn't alloc color %i %i %i\n", colors[i].red,
 		  colors[i].green, colors[i].blue);
 	  colors[i].flags = 0;
 	} else
 	  colors[i].flags = DoRed|DoGreen|DoBlue;
       
-      display->ungrab();
+      basedisplay->ungrab();
       
       XColor icolors[256];
       int incolors = (((1 << screen_depth) > 256) ? 256 : (1 << screen_depth));
@@ -1800,7 +1935,8 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
       for (i = 0; i < incolors; i++)
 	icolors[i].pixel = i;
       
-      XQueryColors(display->getDisplay(), root_colormap, icolors, incolors);
+      XQueryColors(basedisplay->getXDisplay(), getColormap(), icolors,
+                   incolors);
       for (i = 0; i < ncolors; i++) {
 	if (! colors[i].flags) {
 	  unsigned long chk = 0xffffffff, pixel, close = 0;
@@ -1822,7 +1958,7 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
 	      colors[i].green = icolors[close].green;
 	      colors[i].blue = icolors[close].blue;
 	      
-	      if (XAllocColor(display->getDisplay(), root_colormap,
+	      if (XAllocColor(basedisplay->getXDisplay(), getColormap(),
                               &colors[i])) {
 		colors[i].flags = DoRed|DoGreen|DoBlue;
 		break;
@@ -1837,38 +1973,127 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
     
   case GrayScale:
   case StaticGray:
-    fprintf(stderr, "BImageControl::BImageControl: GrayScale/StaticGray "
-                    "visual unsupported\n");
-    break;
+    {    
+      
+      if (getVisual()->c_class == StaticGray) {
+	ncolors = 1 << screen_depth;
+      } else {
+	ncolors = colors_per_channel * colors_per_channel * colors_per_channel;
+	
+	if (ncolors > (1 << screen_depth)) {
+	  colors_per_channel = (1 << screen_depth) / 3;
+	  ncolors =
+	    colors_per_channel * colors_per_channel * colors_per_channel;
+	}
+      }
+	
+      if (colors_per_channel < 2 || ncolors > (1 << screen_depth)) {
+	fprintf(stderr,
+		"BImageControl::BImageControl: invalid colormap size %d "
+		"(%d/%d/%d) - reducing",
+		ncolors, colors_per_channel, colors_per_channel,
+		colors_per_channel);
+	
+	colors_per_channel = (1 << screen_depth) / 3; 
+      }
+      
+      colors = new XColor[ncolors];
+      if (! colors) {
+	fprintf(stderr, "BImageControl::BImageControl: error allocating "
+		"colormap\n");
+	exit(1);
+      }
+      
+      int i = 0, ii, p, bits = 255 / (colors_per_channel - 1);
+      red_bits = green_bits = blue_bits = bits;
+
+      for (i = 0; i < 256; i++)
+	red_color_table[i] = green_color_table[i] = blue_color_table[i] =
+	  i / bits;
+      
+      basedisplay->grab();
+      for (i = 0; i < ncolors; i++) {
+	colors[i].red = (i * 0xffff) / (colors_per_channel - 1);
+	colors[i].green = (i * 0xffff) / (colors_per_channel - 1);
+	colors[i].blue = (i * 0xffff) / (colors_per_channel - 1);;
+	colors[i].flags = DoRed|DoGreen|DoBlue;
+	
+	if (! XAllocColor(basedisplay->getXDisplay(), getColormap(),
+			  &colors[i])) {
+	  fprintf(stderr, "couldn't alloc color %i %i %i\n", colors[i].red,
+		  colors[i].green, colors[i].blue);
+	  colors[i].flags = 0;
+	} else
+	  colors[i].flags = DoRed|DoGreen|DoBlue;
+      }
+      
+      basedisplay->ungrab();
+      
+      XColor icolors[256];
+      int incolors = (((1 << screen_depth) > 256) ? 256 :
+		      (1 << screen_depth));
+      
+      for (i = 0; i < incolors; i++)
+	icolors[i].pixel = i;
+      
+      XQueryColors(basedisplay->getXDisplay(), getColormap(), icolors,
+		   incolors);
+      for (i = 0; i < ncolors; i++) {
+	if (! colors[i].flags) {
+	  unsigned long chk = 0xffffffff, pixel, close = 0;
+	  
+	  p = 2;
+	  while (p--) {
+	    for (ii = 0; ii < incolors; ii++) {
+	      int r = (colors[i].red - icolors[i].red) >> 8;
+	      int g = (colors[i].green - icolors[i].green) >> 8;
+	      int b = (colors[i].blue - icolors[i].blue) >> 8;
+	      pixel = (r * r) + (g * g) + (b * b);
+	      
+	      if (pixel < chk) {
+		chk = pixel;
+		close = ii;
+	      }
+	      
+	      colors[i].red = icolors[close].red;
+	      colors[i].green = icolors[close].green;
+  	      colors[i].blue = icolors[close].blue;
+	      
+	      if (XAllocColor(basedisplay->getXDisplay(), getColormap(),
+			      &colors[i])) {
+		colors[i].flags = DoRed|DoGreen|DoBlue;
+		break;
+	      }
+	    }
+	  }
+	}
+      }
+      
+      break;
+    }    
     
   default:
     fprintf(stderr, "BImageControl::BImageControl: unsupported visual %d\n",
-	    screeninfo->getVisual()->c_class);
+	    getVisual()->c_class);
     exit(1);
   }
 
-  // build sqrt table for use with elliptic gradient
-  sqrt_table = new unsigned long[256 * 256 * 2];
-  int i = 0;
-  for (; i < (256 * 256 * 2); i++)
-    *(sqrt_table + i) = bsqrt(i);
- 
   cache = new LinkedList<Cache>;
-  
-  dither_buffer_width = 0;
-  red_buffer = green_buffer = blue_buffer =
-    next_red_buffer = next_green_buffer = next_blue_buffer = (short *) 0;
 }
 
 
 BImageControl::~BImageControl(void) {
-  if (red_buffer) delete [] red_buffer;
-  if (green_buffer) delete [] green_buffer;
-  if (blue_buffer) delete [] blue_buffer;
-  if (next_red_buffer) delete [] next_red_buffer;
-  if (next_green_buffer) delete [] next_green_buffer;
-  if (next_blue_buffer) delete [] next_blue_buffer;
-  if (sqrt_table) delete [] sqrt_table;
+  if (sqrt_table) {
+    delete [] sqrt_table;
+  }
+
+  if (grad_xbuffer) {
+    delete [] grad_xbuffer;
+  }
+
+  if (grad_ybuffer) {
+    delete [] grad_ybuffer;
+  }
 
   if (colors) {
     unsigned long *pixels = new unsigned long [ncolors];
@@ -1877,8 +2102,7 @@ BImageControl::~BImageControl(void) {
     for (i = 0; i < ncolors; i++)
       *(pixels + i) = (*(colors + i)).pixel;
 
-    XFreeColors(display->getDisplay(),
-                DefaultColormap(display->getDisplay(), screen_number),
+    XFreeColors(basedisplay->getXDisplay(), getColormap(),
 		pixels, ncolors, 0);
 
     delete [] colors;
@@ -1891,7 +2115,7 @@ BImageControl::~BImageControl(void) {
     
     for (i = 0; i < n; i++) {
       Cache *tmp = cache->first();
-      XFreePixmap(display->getDisplay(), tmp->pixmap);
+      XFreePixmap(basedisplay->getXDisplay(), tmp->pixmap);
       cache->remove(tmp);
       delete tmp;
     }
@@ -1901,39 +2125,37 @@ BImageControl::~BImageControl(void) {
 }
 
 
-Visual *BImageControl::getVisual(void) {
-  return screeninfo->getVisual();
-}
-
-
 Pixmap BImageControl::searchCache(unsigned int width, unsigned int height,
-				  unsigned long texture,
-				  BColor *c1, BColor *c2) {
+		  unsigned long texture,
+		  BColor *c1, BColor *c2) {
   if (cache->count()) {
     LinkedListIterator<Cache> it(cache);
-    
+
     for (; it.current(); it++) {
       if ((it.current()->width == width) &&
-	  (it.current()->height == height) &&
-	  (it.current()->texture == texture) &&
-	  (it.current()->pixel1 == c1->getPixel()))
-	if (texture & BImage_Gradient) {
-	  if (it.current()->pixel2 == c2->getPixel()) {
-	    it.current()->count++;
-	    return it.current()->pixmap;
-	  }
-	} else {
-	  it.current()->count++;
-	  return it.current()->pixmap;
-	}
-    }
+          (it.current()->height == height) &&
+          (it.current()->texture == texture) &&
+          (it.current()->pixel1 == c1->getPixel()))
+          if (texture & BImage_Gradient) {
+            if (it.current()->pixel2 == c2->getPixel()) {
+              it.current()->count++;
+              return it.current()->pixmap;
+            }
+          } else {
+            it.current()->count++;
+            return it.current()->pixmap;
+          }
+        }
   }
 
   return None;
 }
 
+
 Pixmap BImageControl::renderImage(unsigned int width, unsigned int height,
-				  BTexture *texture) {
+      BTexture *texture) {
+  if (texture->getTexture() & BImage_ParentRelative) return ParentRelative;
+
   Pixmap pixmap = searchCache(width, height, texture->getTexture(),
 			      texture->getColor(), texture->getColorTo());
   if (pixmap) return pixmap;
@@ -1957,7 +2179,16 @@ Pixmap BImageControl::renderImage(unsigned int width, unsigned int height,
       tmp->pixel2 = 0l;
     
     cache->insert(tmp);
-    
+
+    if (cache->count() > cache_max) {
+#ifdef    DEBUG
+      fprintf(stderr, "BImageControl::renderImage: cache is large, "
+              "forcing cleanout\n");
+#endif // DEBUG
+
+      timeout();
+    }
+
     return pixmap;
   }
   
@@ -1968,18 +2199,17 @@ Pixmap BImageControl::renderImage(unsigned int width, unsigned int height,
 void BImageControl::removeImage(Pixmap pixmap) {
   if (pixmap) {
     LinkedListIterator<Cache> it(cache);
-    
     for (; it.current(); it++) {
       if (it.current()->pixmap == pixmap) {
 	Cache *tmp = it.current();
-	tmp->count--;
-	
-	if (! tmp->count) {	  
-	  XFreePixmap(display->getDisplay(), tmp->pixmap);
-	  cache->remove(tmp);
-	  delete tmp;
-	}
-	
+
+        if (tmp->count) {
+	  tmp->count--;
+
+          if (timer->isTiming()) timer->stop();
+          timer->start();
+        } 
+
 	return;
       }
     }
@@ -1994,14 +2224,11 @@ unsigned long BImageControl::getColor(const char *colorname,
   XColor color;
   color.pixel = 0;
   
-  if (! XParseColor(display->getDisplay(),
-                    DefaultColormap(display->getDisplay(), screen_number),
+  if (! XParseColor(basedisplay->getXDisplay(), getColormap(),
 		    colorname, &color)) {
     fprintf(stderr, "BImageControl::getColor: color parse error: \"%s\"\n",
 	    colorname);
-  } else if (! XAllocColor(display->getDisplay(),
-                           DefaultColormap(display->getDisplay(),
-                                           screen_number),
+  } else if (! XAllocColor(basedisplay->getXDisplay(), getColormap(),
 			   &color)) {
     fprintf(stderr, "BImageControl::getColor: color alloc error: \"%s\"\n",
 	    colorname);
@@ -2022,14 +2249,11 @@ unsigned long BImageControl::getColor(const char *colorname) {
   XColor color;
   color.pixel = 0;
 
-  if (! XParseColor(display->getDisplay(),
-                    DefaultColormap(display->getDisplay(), screen_number),
+  if (! XParseColor(basedisplay->getXDisplay(), getColormap(),
 		    colorname, &color)) {
     fprintf(stderr, "BImageControl::getColor: color parse error: \"%s\"\n",
 	    colorname);
-  } else if (! XAllocColor(display->getDisplay(),
-                           DefaultColormap(display->getDisplay(),
-                                           screen_number),
+  } else if (! XAllocColor(basedisplay->getXDisplay(), getColormap(),
 			   &color)) {
     fprintf(stderr, "BImageControl::getColor: color alloc error: \"%s\"\n",
 	    colorname);
@@ -2041,7 +2265,8 @@ unsigned long BImageControl::getColor(const char *colorname) {
 
 void BImageControl::getColorTables(unsigned char **rmt, unsigned char **gmt,
 				   unsigned char **bmt,
-				   int *roff, int *goff, int *boff) {
+				   int *roff, int *goff, int *boff,
+                                   int *rbit, int *gbit, int *bbit) {
   if (rmt) *rmt = red_color_table;
   if (gmt) *gmt = green_color_table;
   if (bmt) *bmt = blue_color_table;
@@ -2049,6 +2274,10 @@ void BImageControl::getColorTables(unsigned char **rmt, unsigned char **gmt,
   if (roff) *roff = red_offset;
   if (goff) *goff = green_offset;
   if (boff) *boff = blue_offset;
+
+  if (rbit) *rbit = red_bits;
+  if (gbit) *gbit = green_bits;
+  if (bbit) *bbit = blue_bits;
 }
 
 
@@ -2058,68 +2287,56 @@ void BImageControl::getXColorTable(XColor **c, int *n) {
 }
 
 
-void BImageControl::getDitherBuffers(unsigned int w,
-				     short **r, short **g, short **b,
-				     short **nr, short **ng, short **nb,
-				     unsigned char **ret,
-				     unsigned char **get,
-				     unsigned char **bet,
-				     unsigned char **ret38,
-				     unsigned char **get38,
-				     unsigned char **bet38) {
-  if (w > dither_buffer_width) {
-    if (red_buffer) delete [] red_buffer;
-    if (green_buffer) delete [] green_buffer;
-    if (blue_buffer) delete [] blue_buffer;
-    if (next_red_buffer) delete [] next_red_buffer;
-    if (next_green_buffer) delete [] next_green_buffer;
-    if (next_blue_buffer) delete [] next_blue_buffer;
+void BImageControl::getGradientBuffers(unsigned int w,
+				       unsigned int h,
+				       unsigned int **xbuf,
+				       unsigned int **ybuf)
+{
+  if (w > grad_buffer_width) {
+    if (grad_xbuffer) {
+      delete [] grad_xbuffer;
+    }
     
-    dither_buffer_width = w;
+    grad_buffer_width = w;
     
-    red_buffer = new short[dither_buffer_width];
-    green_buffer = new short[dither_buffer_width];
-    blue_buffer = new short[dither_buffer_width];
-    next_red_buffer = new short[dither_buffer_width];
-    next_green_buffer = new short[dither_buffer_width];
-    next_blue_buffer = new short[dither_buffer_width];
+    grad_xbuffer = new unsigned int[grad_buffer_width * 3];
+  }
+  
+  if (h > grad_buffer_height) {
+    if (grad_ybuffer) {
+      delete [] grad_ybuffer;
+    }
+    
+    grad_buffer_height = h;
+    
+    grad_ybuffer = new unsigned int[grad_buffer_height * 3];
   }
 
-  *r = red_buffer;
-  *g = green_buffer;
-  *b = blue_buffer;
-  *nr = next_red_buffer;
-  *ng = next_green_buffer;
-  *nb = next_blue_buffer;
-  *ret = red_error_table;
-  *get = green_error_table;
-  *bet = blue_error_table;
-  *ret38 = red_error38_table;
-  *get38 = green_error38_table;
-  *bet38 = blue_error38_table;
+  *xbuf = grad_xbuffer;
+  *ybuf = grad_ybuffer;
 }
 
 
 void BImageControl::installRootColormap(void) {
-  display->grab();
+  basedisplay->grab();
   
   Bool install = True;
   int i = 0, ncmap = 0;
   Colormap *cmaps =
-    XListInstalledColormaps(display->getDisplay(), window, &ncmap);
-  
+    XListInstalledColormaps(basedisplay->getXDisplay(), window, &ncmap);
+ 
   if (cmaps) {
     for (i = 0; i < ncmap; i++)
-      if (*(cmaps + i) == root_colormap)
+      if (*(cmaps + i) == getColormap())
 	install = False;
     
     if (install)
-      XInstallColormap(display->getDisplay(), root_colormap);
+      XInstallColormap(basedisplay->getXDisplay(), getColormap());
     
     XFree(cmaps);
   }
   
-  display->ungrab();
+  basedisplay->ungrab();
 }
 
 
@@ -2132,6 +2349,16 @@ void BImageControl::setColorsPerChannel(int cpc) {
 
 
 unsigned long BImageControl::getSqrt(unsigned int x) {
+  if (! sqrt_table) {
+    // build sqrt table for use with elliptic gradient
+
+    sqrt_table = new unsigned long[(256 * 256 * 2) + 1];
+    int i = 0;
+
+    for (; i < (256 * 256 * 2); i++)
+      *(sqrt_table + i) = bsqrt(i);
+  }
+
   return (*(sqrt_table + x));
 }
 
@@ -2145,55 +2372,58 @@ void BImageControl::parseTexture(BTexture *texture, char *t) {
 
   // convert to lower case
   for (i = 0; i < t_len; i++)
-    *(ts + i) = (*(t + i) | 0x20);
-
-  texture->setTexture(0);
-
-  if (strstr(ts, "solid"))
-    texture->addTexture(BImage_Solid);
-  else if (strstr(ts, "gradient")) {
-    texture->addTexture(BImage_Gradient);
-
+    *(ts + i) = tolower(*(t + i));
+  
+  if (strstr(ts, "parentrelative")) {
+    texture->setTexture(BImage_ParentRelative);
+  } else {
+    texture->setTexture(0);
+    
+    if (strstr(ts, "solid"))
+      texture->addTexture(BImage_Solid);
+    else if (strstr(ts, "gradient")) {
+      texture->addTexture(BImage_Gradient);
+      if (strstr(ts, "crossdiagonal"))
+	texture->addTexture(BImage_CrossDiagonal);
+      else if (strstr(ts, "rectangle"))
+	texture->addTexture(BImage_Rectangle);
+      else if (strstr(ts, "pyramid"))
+	texture->addTexture(BImage_Pyramid);
+      else if (strstr(ts, "pipecross"))
+	texture->addTexture(BImage_PipeCross);
+      else if (strstr(ts, "elliptic"))
+	texture->addTexture(BImage_Elliptic);
+      else if (strstr(ts, "diagonal"))
+	texture->addTexture(BImage_Diagonal);
+      else if (strstr(ts, "horizontal"))
+	texture->addTexture(BImage_Horizontal);
+      else if (strstr(ts, "vertical"))
+	texture->addTexture(BImage_Vertical);
+      else
+	texture->addTexture(BImage_Diagonal);
+    } else
+      texture->addTexture(BImage_Solid);
+    
+    if (strstr(ts, "raised"))
+      texture->addTexture(BImage_Raised);
+    else if (strstr(ts, "sunken"))
+      texture->addTexture(BImage_Sunken);
+    else if (strstr(ts, "flat"))
+      texture->addTexture(BImage_Flat);
+    else
+      texture->addTexture(BImage_Raised);
+    
+    if (! (texture->getTexture() & BImage_Flat))
+      if (strstr(ts, "bevel2"))
+	texture->addTexture(BImage_Bevel2);
+      else
+	texture->addTexture(BImage_Bevel1);
+    
 #ifdef    INTERLACE
     if (strstr(ts, "interlaced"))
       texture->addTexture(BImage_Interlaced);
 #endif // INTERLACE
-
-    if (strstr(ts, "crossdiagonal"))
-      texture->addTexture(BImage_CrossDiagonal);
-    else if (strstr(ts, "rectangle"))
-      texture->addTexture(BImage_Rectangle);
-    else if (strstr(ts, "pyramid"))
-      texture->addTexture(BImage_Pyramid);
-    else if (strstr(ts, "pipecross"))
-      texture->addTexture(BImage_PipeCross);
-    else if (strstr(ts, "elliptic"))
-      texture->addTexture(BImage_Elliptic);
-    else if (strstr(ts, "diagonal"))
-      texture->addTexture(BImage_Diagonal);
-    else if (strstr(ts, "horizontal"))
-      texture->addTexture(BImage_Horizontal);
-    else if (strstr(ts, "vertical"))
-      texture->addTexture(BImage_Vertical);
-    else
-      texture->addTexture(BImage_Diagonal);
-  } else
-    texture->addTexture(BImage_Solid);
-
-  if (strstr(ts, "raised"))
-    texture->addTexture(BImage_Raised);
-  else if (strstr(ts, "sunken"))
-    texture->addTexture(BImage_Sunken);
-  else if (strstr(ts, "flat"))
-    texture->addTexture(BImage_Flat);
-  else
-    texture->addTexture(BImage_Raised);
-   
-  if (! (texture->getTexture() & BImage_Flat))
-    if (strstr(ts, "bevel2"))
-      texture->addTexture(BImage_Bevel2);
-    else
-      texture->addTexture(BImage_Bevel1);
+  }
 
   delete [] ts;
 }
@@ -2205,7 +2435,7 @@ void BImageControl::parseColor(BColor *color, char *c) {
   if (color->isAllocated()) {
     unsigned long pixel = color->getPixel();
   
-    XFreeColors(display->getDisplay(), getColormap(), &pixel, 1, 0);
+    XFreeColors(basedisplay->getXDisplay(), getColormap(), &pixel, 1, 0);
 
     color->setPixel(0l);
     color->setRGB(0, 0, 0);
@@ -2221,3 +2451,16 @@ void BImageControl::parseColor(BColor *color, char *c) {
   }
 }
 
+
+void BImageControl::timeout(void) {
+  LinkedListIterator<Cache> it(cache);
+  for (; it.current(); it++) {
+    Cache *tmp = it.current();
+
+    if (tmp->count <= 0) {
+      XFreePixmap(basedisplay->getXDisplay(), tmp->pixmap);
+      cache->remove(tmp);
+      delete tmp;
+    }
+  }
+}

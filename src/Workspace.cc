@@ -1,23 +1,26 @@
 // Workspace.cc for Blackbox - an X11 Window manager
-// Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
+// Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the 
+// Software is furnished to do so, subject to the following conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software. 
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//
-// (See the included file COPYING / GPL-2.0)
-//
-
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// DEALINGS IN THE SOFTWARE.
+  
+// stupid macros needed to access some functions in version 2 of the GNU C 
+// library
 #ifndef   _GNU_SOURCE
 #define   _GNU_SOURCE
 #endif // _GNU_SOURCE
@@ -37,6 +40,10 @@
 #include "Workspace.hh"
 #include "Windowmenu.hh"
 
+#ifdef    DEBUG
+#  include "mem.h"
+#endif // DEBUG
+
 #ifdef    HAVE_STDIO_H
 #  include <stdio.h>
 #endif // HAVE_STDIO_H
@@ -50,6 +57,10 @@
 
 
 Workspace::Workspace(BScreen *scrn, int i) {
+#ifdef    DEBUG
+  allocate(sizeof(Workspace), "Workspace.cc");
+#endif // DEBUG
+
   screen = scrn;
 
   cascade_x = cascade_y = 32;
@@ -57,34 +68,46 @@ Workspace::Workspace(BScreen *scrn, int i) {
   id = i;
 
   windowList = new LinkedList<BlackboxWindow>;
-  clientmenu = new Clientmenu(screen->getBlackbox(), this);
+  clientmenu = new Clientmenu(this);
 
-#ifdef    KDE
-  char t[1024];
-  sprintf(t, "KWM_DESKTOP_NAME_%d", id + 1);
-  
-  desktop_name_atom =
-    XInternAtom(screen->getDisplay()->getDisplay(), t, False);
-#endif // KDE
-  
   char *tmp;  
   name = (char *) 0;
   screen->getNameOfWorkspace(id, &tmp);
   setName(tmp);
   
-  if (tmp) delete [] tmp;
+  if (tmp) {
+    // this is the memory that is allocated in Screen.cc... see the note in
+    // BScreen::getNameOfWorkspace()
+    //
+    //     deallocate(sizeof(char) * (strlen(tmp) + 1), "Workspace.cc");
+    //
+
+    delete [] tmp;
+  }
 }
 
 
 Workspace::~Workspace(void) {
+#ifdef    DEBUG
+  deallocate(sizeof(Workspace), "Workspace.cc");
+#endif // DEBUG
+
   delete windowList;
   delete clientmenu;
 
-  if (name) delete [] name;
+  if (name) {
+#ifdef    DEBUG
+    deallocate(sizeof(char) * (strlen(name) + 1), "Workspace.cc");
+#endif // DEBUG
+
+    delete [] name;
+  }
 }
 
 
 const int Workspace::addWindow(BlackboxWindow *w, Bool place) {
+  if (! w) return -1;
+
   if (place) placeWindow(w);
 
   w->setWorkspace(id);
@@ -95,6 +118,8 @@ const int Workspace::addWindow(BlackboxWindow *w, Bool place) {
   clientmenu->insert(w->getTitle());
   clientmenu->update();
 
+  screen->updateNetizenWindowAdd(w->getClientWindow(), id);
+
   raiseWindow(w);
   
   return w->getWindowNumber();
@@ -102,13 +127,17 @@ const int Workspace::addWindow(BlackboxWindow *w, Bool place) {
 
 
 const int Workspace::removeWindow(BlackboxWindow *w) {
+  if (! w) return -1;
+
   windowList->remove((const int) w->getWindowNumber());
   
-  if (clientmenu->getHighlight() == w->getWindowNumber())
-    setFocusWindow(-1);
-
+  if (w->isFocused())
+    screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
+  
   clientmenu->remove(w->getWindowNumber());
   clientmenu->update();
+
+  screen->updateNetizenWindowDel(w->getClientWindow());
 
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (int i = 0; it.current(); it++, i++)
@@ -118,49 +147,7 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
 }
 
 
-void Workspace::setFocusWindow(int w) {
-  if (w == clientmenu->getHighlight() &&
-      (! screen->getBlackbox()->getFocusedWindow())) return;
-
-  BlackboxWindow *foc = screen->getBlackbox()->getFocusedWindow(),
-    *win = (BlackboxWindow *) 0;
-
-  if (w >= 0 && w < windowList->count())
-    win = getWindow(w);
-
-  if (foc == win) return;
-
-  if (foc && foc->validateClient()) {
-    if (foc->getWorkspaceNumber() != id)
-      screen->getWorkspace(foc->getWorkspaceNumber())->
-        clientmenu->setHighlight(-1);
-
-    foc->setFocusFlag(False);
-  }
-
-  screen->getBlackbox()->setFocusedWindow(win);
-  clientmenu->setHighlight(w);
-
-  if (id == screen->getCurrentWorkspaceID())
-    screen->getToolbar()->redrawWindowLabel(True);
-
-#ifdef    KDE
-  Blackbox *blackbox = screen->getBlackbox();
-  if (screen->getBlackbox()->getFocusedWindow() &&
-      screen->getBlackbox()->getFocusedWindow()->validateClient())
-    foc = screen->getBlackbox()->getFocusedWindow();
-
-  Window fwin = ((foc) ? foc->getClientWindow() : None);
-  XChangeProperty(blackbox->getDisplay(), screen->getRootWindow(),
-                  blackbox->getKWMWinActiveAtom(),
-                  blackbox->getKWMWinActiveAtom(), 32, PropModeReplace,
-                  ((unsigned char *) &fwin), 1);
-  screen->sendToKWMModules(blackbox->getKWMModuleWinActivateAtom(), fwin);
-#endif // KDE
-}
-
-
-int Workspace::showAll(void) {
+void Workspace::showAll(void) {
   BlackboxWindow *win;
   
   LinkedListIterator<BlackboxWindow> it(windowList);
@@ -169,24 +156,20 @@ int Workspace::showAll(void) {
     if (! win->isIconic())
       win->deiconify(False);
   }
-  
-  return windowList->count();
 }
 
 
-int Workspace::hideAll(void) {
+void Workspace::hideAll(void) {
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (; it.current(); it++) {
     BlackboxWindow *win = it.current();
     if ((! win->isIconic()) && (! win->isStuck()))
       win->withdraw();
   }
-
-  return windowList->count();
 } 
 
 
-int Workspace::removeAll(void) {
+void Workspace::removeAll(void) {
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (; it.current(); it++) {
     BlackboxWindow *win = it.current();
@@ -194,8 +177,6 @@ int Workspace::removeAll(void) {
     if (! win->isIconic())
       win->iconify();
   }
-
-  return windowList->count();
 }
 
 
@@ -213,30 +194,30 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
     i++;
   }
   
+#ifdef    DEBUG
+  allocate(sizeof(Window) * i, "Workspace.cc");
+#endif // DEBUG
+
   Window *nstack = new Window[i];
   
   i = 0;
   win = bottom;
   while (win->hasTransient() && win->getTransient()) {
     *(nstack + (i++)) = win->getFrameWindow();
-
-#ifdef    KDE
-    screen->sendToKWMModules(screen->getBlackbox()->getKWMModuleWinRaiseAtom(),
-                             win->getFrameWindow());
-#endif // KDE
+    screen->updateNetizenWindowRaise(win->getClientWindow());
 
     win = win->getTransient();
   }
   
   *(nstack + (i++)) = win->getFrameWindow();
+  screen->updateNetizenWindowRaise(win->getClientWindow());
 
-#ifdef    KDE
-  screen->sendToKWMModules(screen->getBlackbox()->getKWMModuleWinRaiseAtom(),
-                           win->getClientWindow());
-#endif // KDE
-  
   screen->raiseWindows(nstack, i);
   
+#ifdef    DEBUG
+  deallocate(sizeof(Window) * i, "Workspace.cc");
+#endif // DEBUG
+
   delete [] nstack;
 }
 
@@ -255,34 +236,34 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
     i++;
   }
  
+#ifdef    DEBUG
+  allocate(sizeof(Window) * i, "Workspace.cc");
+#endif // DEBUG
+
   Window *nstack = new Window[i];
  
   i = 0;
   while (win->getTransientFor()) {
     *(nstack + (i++)) = win->getFrameWindow();
-
-#ifdef    KDE
-    screen->sendToKWMModules(screen->getBlackbox()->getKWMModuleWinLowerAtom(),
-                             win->getFrameWindow());
-#endif // KDE
+    screen->updateNetizenWindowLower(win->getClientWindow());
 
     win = win->getTransientFor();
   }
   
   *(nstack + (i++)) = win->getFrameWindow();
+  screen->updateNetizenWindowLower(win->getClientWindow());
 
-#ifdef    KDE
-  screen->sendToKWMModules(screen->getBlackbox()->getKWMModuleWinLowerAtom(),
-                           win->getClientWindow());
-#endif // KDE
-  
   screen->getBlackbox()->grab();
   
-  XLowerWindow(screen->getDisplay()->getDisplay(), *nstack);
-  XRestackWindows(screen->getDisplay()->getDisplay(), nstack, i);
+  XLowerWindow(screen->getBaseDisplay()->getXDisplay(), *nstack);
+  XRestackWindows(screen->getBaseDisplay()->getXDisplay(), nstack, i);
   
   screen->getBlackbox()->ungrab();
-  
+
+#ifdef    DEBUG  
+  deallocate(sizeof(Window) * i, "Workspace.cc");
+#endif // DEBUG
+
   delete [] nstack;
 }
 
@@ -327,33 +308,36 @@ void Workspace::setCurrent(void) {
 
 
 void Workspace::setName(char *new_name) {
-  if (new_name) {
-    if (name) delete [] name;
+  if (name) {
+#ifdef    DEBUG
+    deallocate(sizeof(char) * (strlen(name) + 1), "Workspace.cc");
+#endif // DEBUG
 
+    delete [] name;
+  }
+  
+  if (new_name) {  
     int len = strlen(new_name) + 1;
+
+#ifdef    DEBUG
+    allocate(sizeof(char) * len, "Workspace.cc");
+#endif // DEBUG
+
     name = new char[len];
     sprintf(name, "%s", new_name);
   } else {
-    if (name) delete [] name;
-    
     name = new char[32];
-    if (name)
+    if (name) {
       sprintf(name, "Workspace %d", id + 1);
-  }
 
+#ifdef    DEBUG
+      allocate(sizeof(char) * (strlen(name) + 1), "Workspace.cc");
+#endif // DEBUG
+    }
+  }
+  
   clientmenu->setLabel(name);
   clientmenu->update();
-
-#ifdef    KDE
-  if (desktop_name_atom) {
-    XChangeProperty(screen->getDisplay()->getDisplay(), screen->getRootWindow(),
-                    desktop_name_atom, XA_STRING, 8, PropModeReplace,
-                    (unsigned char *) name, strlen(name) + 1);
-    
-    screen->sendToKWMModules(screen->getBlackbox()->
-			     getKWMModuleDesktopNameChangeAtom(), (XID) id);
-  }
-#endif // KDE
 }
 
 
@@ -366,171 +350,152 @@ void Workspace::shutdown(void) {
 
 
 void Workspace::placeWindow(BlackboxWindow *win) {
-  int place_x = 0, place_y = 0;
+  Bool placed = False;
+  LinkedListIterator<BlackboxWindow> it(windowList);
+  int win_w = win->getWidth() + screen->getBorderWidth2x(),
+    win_h = win->getHeight() + screen->getBorderWidth2x(),
+#ifdef    SLIT
+    slit_w = screen->getSlit()->getWidth() + screen->getBorderWidth2x(),
+    slit_h = screen->getSlit()->getHeight() + screen->getBorderWidth2x(),
+#endif // SLIT
+    toolbar_w = screen->getToolbar()->getWidth() + screen->getBorderWidth2x(),
+    toolbar_h = screen->getToolbar()->getHeight() + screen->getBorderWidth2x(),
+    place_x = 0, place_y = 0;
+
+  register int test_x, test_y, curr_w, curr_h;
 
   switch (screen->getPlacementPolicy()) {
-  case BScreen::SmartPlacement:
-    {
-      Bool done = False;
-      int x_origin = 0, y_origin = 0;
-      register int test_x = 0, test_y = 0, test_w = 0, test_h = 0,
-        extra = screen->getBevelWidth() * 2;
-      
-#ifdef    KDE
-      int junk;
-      
-      getKWMWindowRegion(&x_origin, &y_origin, &junk, &junk);
-#endif // KDE
-      
-      test_x = x_origin + screen->getBevelWidth();
-      test_y = y_origin + screen->getBevelWidth();
-      
-      // adaptation from Window Maker's smart window placement
-      
-      while (((test_y + win->getHeight()) <
-	      (unsigned) (screen->getHeight() -
-			  screen->getToolbar()->getHeight() - 1)) &&
-	     (! done)) {
-	test_x = x_origin + screen->getBevelWidth();
-	
-	while (((test_x + win->getWidth()) < (unsigned) screen->getWidth()) &&
-	       (! done)) {
-	  done = True;
-	  
-	  LinkedListIterator<BlackboxWindow> it(windowList);
-	  for (; it.current() && done; it++) {
-            test_w = it.current()->getWidth() + extra;
+  case BScreen::RowSmartPlacement: {
+    test_x = test_y = screen->getBorderWidth() +
+      screen->getEdgeSnapThreshold();
 
-	    if (it.current()->isShaded())
-	      test_h = it.current()->getTitleHeight() + extra;
-	    else
-	      test_h = it.current()->getHeight() + extra;
-	    
-	    if ((it.current()->getXFrame() <
-		 (signed) (test_x + it.current()->getWidth())) &&
-		((it.current()->getXFrame() + test_w) > test_x) &&
-		(it.current()->getYFrame() <
-		 (signed) (test_y + it.current()->getHeight())) &&
-		((it.current()->getYFrame() + test_h) > test_y) &&
-		(it.current()->isVisible() ||
-		 (it.current()->isShaded() && (! it.current()->isIconic()))))
-	      done = False;
-	  }
+    while (test_y + win_h < (signed) screen->getHeight() && ! placed) {
+      test_x = screen->getBorderWidth() + screen->getEdgeSnapThreshold();
 
-	  it.reset();
-	  for (; it.current() && done; it++) {
-	    test_w = it.current()->getWidth() + extra;
-	    
-	    if (it.current()->isShaded())
-	      test_h = it.current()->getTitleHeight() + extra;
-	    else
-	      test_h = it.current()->getHeight() + extra;
-	    
-	    if ((it.current()->getXFrame() <
-		 (signed) (test_x + it.current()->getWidth())) &&
-		((it.current()->getXFrame() + test_w) > test_x) &&
-		(it.current()->getYFrame() <
-		 (signed) (test_y + it.current()->getHeight())) &&
-		((it.current()->getYFrame() + test_h) > test_y) &&
-		(it.current()->isVisible() ||
-		 (it.current()->isShaded() && (! it.current()->isIconic()))))
-	      done = False;
-	  }
-	  
-	  if (done) {
-	    place_x = test_x;
-	    place_y = test_y;
-	    break;
-	  }
-	  
-	  test_x += 2;
-	}
-	
-	test_y += 2;
+      while (test_x + win_w < (signed) screen->getWidth() && ! placed) {
+        placed = True;
+
+        it.reset();
+        for (; it.current() && placed; it++) {
+          if (it.current()->isIconic()) continue;
+
+          curr_w = it.current()->getWidth() + screen->getBorderWidth2x() +
+            screen->getBorderWidth2x();
+          curr_h =
+            ((it.current()->isShaded()) ? it.current()->getTitleHeight() :
+                                          it.current()->getHeight()) +
+            screen->getBorderWidth2x() + screen->getBorderWidth2x();
+
+          if (it.current()->getXFrame() < test_x + win_w &&
+              it.current()->getXFrame() + curr_w > test_x &&
+              it.current()->getYFrame() < test_y + win_h &&
+              it.current()->getYFrame() + curr_h > test_y) 
+            placed = False;
+        }
+
+        if ((screen->getToolbar()->getX() < test_x + win_w &&
+             screen->getToolbar()->getX() + toolbar_w > test_x &&
+             screen->getToolbar()->getY() < test_y + win_h &&
+             screen->getToolbar()->getY() + toolbar_h > test_y)
+#ifdef    SLIT
+             ||
+            (screen->getSlit()->getX() < test_x + win_w &&
+             screen->getSlit()->getX() + slit_w > test_x &&
+             screen->getSlit()->getY() < test_y + win_h &&
+             screen->getSlit()->getY() + slit_h > test_y)
+#endif // SLIT
+          )
+          placed = False;
+
+        if (placed) {
+          place_x = test_x;
+          place_y = test_y;
+
+          break;
+        }
+
+        test_x += 2;
       }
-      
-      if (done)
-	break;
+
+      test_y += 2;
     }
+
+    break; }
+
+  case BScreen::ColSmartPlacement: {
+    test_x = test_y = screen->getBorderWidth() +
+      screen->getEdgeSnapThreshold();
+
+    while (test_x + win_w < (signed) screen->getWidth() && ! placed) {
+      test_y = screen->getBorderWidth() + screen->getEdgeSnapThreshold();
+
+      while (test_y + win_h < (signed) screen->getHeight() && ! placed) {
+        placed = True;
+
+        it.reset();
+        for (; it.current() && placed; it++) {
+          if (it.current()->isIconic()) continue;
+
+          curr_w = it.current()->getWidth() + screen->getBorderWidth2x() +
+            screen->getBorderWidth2x();
+          curr_h =
+            ((it.current()->isShaded()) ? it.current()->getTitleHeight() :
+                                          it.current()->getHeight()) +
+            screen->getBorderWidth2x() + screen->getBorderWidth2x();
+
+          if (it.current()->getXFrame() < test_x + win_w &&
+              it.current()->getXFrame() + curr_w > test_x &&
+              it.current()->getYFrame() < test_y + win_h &&
+              it.current()->getYFrame() + curr_h > test_y) 
+            placed = False;
+        }
+
+        if ((screen->getToolbar()->getX() < test_x + win_w &&
+             screen->getToolbar()->getX() + toolbar_w > test_x &&
+             screen->getToolbar()->getY() < test_y + win_h &&
+             screen->getToolbar()->getY() + toolbar_h > test_y)
+#ifdef    SLIT
+             ||
+            (screen->getSlit()->getX() < test_x + win_w &&
+             screen->getSlit()->getX() + slit_w > test_x &&
+             screen->getSlit()->getY() < test_y + win_h &&
+             screen->getSlit()->getY() + slit_h > test_y)
+#endif // SLIT
+         )
+         placed = False;
+
+       if (placed) {
+         place_x = test_x;
+         place_y = test_y;
+
+         break;
+       }
+
+       test_y += 2;
+     }
+
+     test_x += 2;
+   }
+
+   break; }
+  }
     
-  case BScreen::CascadePlacement:
-  default:
+  if (! placed) {
     if (((unsigned) cascade_x > (screen->getWidth() / 2)) ||
 	((unsigned) cascade_y > (screen->getHeight() / 2)))
       cascade_x = cascade_y = 32;
     
-
-#ifdef    KDE
-    int x_origin = 0, y_origin = 0, junk = 0;
-    getKWMWindowRegion(&x_origin, &y_origin, &junk, &junk);
-    
-    place_x = cascade_x + x_origin;
-    place_y = cascade_y + y_origin;
-#else  // KDE
     place_x = cascade_x;
     place_y = cascade_y;
-#endif // KDE
     
     cascade_x += win->getTitleHeight();
     cascade_y += win->getTitleHeight();
-    
-    break;
   }
   
-  if (place_x + win->getWidth() > screen->getWidth())
-    place_x = (screen->getWidth() - win->getWidth()) / 2;
-  if (place_y + win->getHeight() >
-      (screen->getHeight() - screen->getToolbar()->getHeight() - 1))
-    place_y = ((screen->getHeight() - screen->getToolbar()->getHeight() - 1) -
-	       win->getHeight()) / 2;
+  if (place_x + win_w > (signed) screen->getWidth())
+    place_x = (screen->getWidth() - win_w) / 2;
+  if (place_y + win_h > (signed) screen->getHeight())
+    place_y = (screen->getHeight() - win_h) / 2;
   
   win->configure(place_x, place_y, win->getWidth(), win->getHeight());
 }
-
-
-#ifdef    KDE
-void Workspace::getKWMWindowRegion(int *x1, int *y1, int *x2, int *y2) {
-  Atom ajunk;
-
-  int ijunk;
-  unsigned long uljunk, *data = (unsigned long *) 0;
-
-  if (XGetWindowProperty(screen->getDisplay()->getDisplay(),
-                         screen->getRootWindow(),
-                         screen->getBlackbox()->getKWMWindowRegion1Atom(),
-                         0l, 4l, False,
-                         screen->getBlackbox()->getKWMWindowRegion1Atom(),
-                         &ajunk, &ijunk, &uljunk, &uljunk,
-                         (unsigned char **) &data) == Success && data) {
-    *x1 = (int) data[0];
-    *y1 = (int) data[1];
-    *x2 = (int) data[2];
-    *y2 = (int) data[3];
-
-    XFree((char *) data);
-  }
-}
-
-
-void Workspace::rereadName(void) {
-  Atom ajunk;
-  
-  char *new_name = 0;
-  int ijunk;
-  unsigned long uljunk;
-  
-  if (XGetWindowProperty(screen->getDisplay()->getDisplay(),
-                         screen->getRootWindow(),
-			 desktop_name_atom, 0l, ~0l, False, XA_STRING,
-			 &ajunk, &ijunk, &uljunk, &uljunk,
-			 (unsigned char **) &new_name) == Success &&
-      new_name) {
-    if (strcmp(new_name, name)) {
-      setName(new_name);
-      screen->getToolbar()->redrawWorkspaceLabel(True);
-    }
-    
-    XFree((char *) new_name);
-  }
-}
-#endif // KDE

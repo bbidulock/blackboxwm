@@ -11,24 +11,6 @@
 # PARTICULAR PURPOSE.
 
 # data/styles/Makefile.am for Blackbox 0.51.x  - an X11 Window manager
-# Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
-#
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-#
-#  (See the included file COPYING / GPL-2.0)
-#
 
 
 SHELL = @SHELL@
@@ -77,12 +59,12 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-CC = @CC@
 CXX = @CXX@
+DEBUG = @DEBUG@
 INTERLACE = @INTERLACE@
-KDE = @KDE@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
+ORDEREDPSEUDO = @ORDEREDPSEUDO@
 PACKAGE = @PACKAGE@
 SHAPE = @SHAPE@
 SLIT = @SLIT@
@@ -90,9 +72,8 @@ VERSION = @VERSION@
 regex_cmd = @regex_cmd@
 
 styledir = $(pkgdatadir)/styles
-CLEANFILES = stylesmenu
 MAINTAINERCLEANFILES = Makefile.in
-style_DATA = blackmagic	coldsteel colorpurple darkgreen default	gnoid green onoid pnoid previous results slatebox steelblue steelbox stylesmenu
+style_DATA = Artwiz Flux Nyz Operation Outcomes Rampage Rancor Results Shade Spiff TDF Twice
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../../config.h
 CONFIG_CLEAN_FILES = 
@@ -108,7 +89,7 @@ GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps data/styles/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps data/styles/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
@@ -171,7 +152,7 @@ install-am: all-am
 install: install-am
 uninstall-am: uninstall-styleDATA
 uninstall: uninstall-am
-all-am: Makefile $(DATA) all-local
+all-am: Makefile $(DATA)
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
@@ -182,7 +163,6 @@ installdirs:
 mostlyclean-generic:
 
 clean-generic:
-	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-rm -f Makefile $(CONFIG_CLEAN_FILES)
@@ -211,18 +191,13 @@ maintainer-clean: maintainer-clean-am
 .PHONY: uninstall-styleDATA install-styleDATA tags distdir info-am info \
 dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
 install-exec install-data-am install-data install-am install \
-uninstall-am uninstall all-local all-redirect all-am all installdirs \
+uninstall-am uninstall all-redirect all-am all installdirs \
 mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
 distclean-local:
 	rm -f *\~
-
-all-local: stylesmenu
-
-stylesmenu: stylesmenu.in
-	@regex_cmd@ -e "s,@pkgdatadir@,$(pkgdatadir)," stylesmenu.in > stylesmenu
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -1,22 +1,24 @@
 /*
- * bsetroot.c for Blackbox 0.51.x  - an X11 Window manager
- * Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
+ * bsetroot.c for Blackbox 0.60.x  - an X11 Window manager
+ * Copyright (c) 1997 - 1999 Brad Hughes (bhughes@tcac.net)
  *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the 
+ * Software is furnished to do so, subject to the following conditions:
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * The above copyright notice and this permission notice shall be included in 
+ * all copies or substantial portions of the Software. 
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- *   (See the included file COPYING / GPL-2.0)
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * DEALINGS IN THE SOFTWARE.
  *
  * Part of this code were derived from xsetroot. The Copyright for xsetroot is
  * included below.
@@ -97,7 +99,7 @@ int number_of_screens;
 
 void usage(void) {
     fprintf(stderr,
-	    "%s 1.0a : (c) 1998 Brad Hughes\n\n"
+	    "%s 1.0a : (c) 1997-1999 Brad Hughes\n\n"
 	    "  -display <string>\tuse display connection\n"
 	    "  -fg <color>\t\tuse foreground color\n"
 	    "  -bg <color>\t\tuse background color\n"
@@ -155,7 +157,7 @@ unsigned long getColor(int screen, const char *colorname, unsigned long
   if ((color.pixel != BlackPixel(display, screen)) &&
       (color.pixel != WhitePixel(display, screen)) &&
       (DefaultVisual(display, screen)->class & 1))
-    save_colors = 1;
+    save_colors = True;
   
   return color.pixel;
 }
@@ -168,7 +170,7 @@ void cleanup(void) {
   unsigned long length, after;
   unsigned char *data;
 
-  prop = XInternAtom(display, "_XSETROOT_ID", False);
+  prop = XInternAtom(display, "_BSETROOT_ID", False);
   
   for (i = 0; i < number_of_screens; i++) {
     unsave_past_for_screen = unsave_past;
@@ -180,15 +182,15 @@ void cleanup(void) {
       continue;
   
     if (unsave_past_for_screen) {
-      XGetWindowProperty(display, RootWindow(display, i), prop, 0L, 1L, True,
+      XGetWindowProperty(display, RootWindow(display, i), prop, 0l, 1l, True,
 			 AnyPropertyType, &type, &format, &length,
 			 &after, &data);
       
       if ((type == XA_PIXMAP) && (format == 32) &&
 	  (length == 1) && (after == 0))
-	XKillClient(display, *((Pixmap *) data));
+	XKillClient(display, ((Pixmap) data[0]));
       else if (type != None)
-	fprintf(stderr, "%s: warning: _XSETROOT_ID property is garbage\n",
+	fprintf(stderr, "%s: warning: _BSETROOT_ID property is garbage\n",
 		program_name);
     }
 
@@ -202,7 +204,7 @@ void cleanup(void) {
     }
   }
 
-  // XSetCloseDownMode(display, RetainPermanent);
+  //XSetCloseDownMode(display, RetainPermanent);
 }
 
 

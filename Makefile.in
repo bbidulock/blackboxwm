@@ -10,25 +10,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-# Makefile.am for Blackbox 0.51.x  - an X11 Window manager
-# Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
-#
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-#
-#  (See the included file COPYING / GPL-2.0)
-#
+# Makefile.am for Blackbox 0.60.x  - an X11 Window manager
 
 
 SHELL = @SHELL@
@@ -77,27 +59,27 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-CC = @CC@
 CXX = @CXX@
+DEBUG = @DEBUG@
 INTERLACE = @INTERLACE@
-KDE = @KDE@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
+ORDEREDPSEUDO = @ORDEREDPSEUDO@
 PACKAGE = @PACKAGE@
 SHAPE = @SHAPE@
 SLIT = @SLIT@
 VERSION = @VERSION@
 regex_cmd = @regex_cmd@
 
-SUBDIRS = data util src
+SUBDIRS = data src util
 MAINTAINERCLEANFILES = aclocal.m4 config.h.in configure Makefile.in stamp-h.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =  version.h
-DIST_COMMON =  README ./stamp-h.in AUTHORS COPYING ChangeLog INSTALL \
-Makefile.am Makefile.in NEWS TODO aclocal.m4 config.h.in configure \
-configure.in install-sh missing mkinstalldirs version.h.in
+DIST_COMMON =  README ./stamp-h.in AUTHORS COPYING INSTALL Makefile.am \
+Makefile.in NEWS TODO aclocal.m4 config.h.in configure configure.in \
+install-sh missing mkinstalldirs version.h.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -107,7 +89,7 @@ GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \

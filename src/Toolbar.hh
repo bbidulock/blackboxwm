@@ -1,23 +1,24 @@
 // Toolbar.hh for Blackbox - an X11 Window manager
-// Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
+// Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the 
+// Software is furnished to do so, subject to the following conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software. 
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//
-// (See the included file COPYING / GPL-2.0)
-//
-
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// DEALINGS IN THE SOFTWARE.
+  
 #ifndef   __Toolbar_hh
 #define   __Toolbar_hh
 
@@ -26,55 +27,89 @@
 // forward declaration
 class Toolbar;
 
-class Blackbox;
-class BlackboxIcon;
-class Iconmenu;
-class Workspacemenu;
-class BImageControl;
-class BScreen;
-
+#include "Basemenu.hh"
 #include "LinkedList.hh"
+#include "Timer.hh"
 
 
-class Toolbar {
+class Toolbarmenu : public Basemenu {
 private:
-  Bool wait_button, on_top, editing;
+  class Placementmenu : public Basemenu {
+  private:
+    Toolbarmenu *toolbarmenu;
+
+  protected:
+    virtual void itemSelected(int, int);
+
+  public:
+    Placementmenu(Toolbarmenu *);
+  };
+
+  Toolbar *toolbar;
+  Placementmenu *placementmenu;
+
+  friend Placementmenu;
+
+
+protected:
+  virtual void itemSelected(int, int);
+
+public:
+  Toolbarmenu(Toolbar *);
+  ~Toolbarmenu(void);
+
+  inline Basemenu *getPlacementmenu(void) { return placementmenu; }
+
+  void reconfigure(void);
+};
+
+
+class Toolbar : public TimeoutHandler {
+private:
+  Bool on_top, editing;
   Display *display;
-  GC buttonGC;
 
   struct frame {
-    Pixmap base, label, wlabel, button, pbutton, clk, reading;
-    Window window, workspaceLabel, workspacePrev, workspaceNext,
-      windowLabel, windowPrev, windowNext, clock;
+    Pixmap base, label, wlabel, clk, button, pbutton;
+    Window window, workspace_label, window_label, clock, psbutton, nsbutton,
+      pwbutton, nwbutton;
 
-    int x, y, hour, minute;
-    unsigned int width, height, button_w, button_h, label_w, label_h,
-      wlabel_w, wlabel_h, clock_w, clock_h, bevel_w;
+    int x, y, hour, minute, grab_x, grab_y;
+    unsigned int width, height, window_label_w, window_label_h,
+      workspace_label_w, workspace_label_h, clock_w, clock_h,
+      button_w, button_h, bevel_w, label_h_2x;
   } frame;
   
   Blackbox *blackbox;
   BImageControl *image_ctrl;
   BScreen *screen;
-  
+  BTimer *timer;
+  Toolbarmenu *toolbarmenu;
+ 
   char *new_workspace_name, *new_name_pos;
+
+  friend Toolbarmenu;
+  friend Toolbarmenu::Placementmenu;
 
 
 protected:
 
 
 public:
-  Toolbar(Blackbox *, BScreen *);
-  ~Toolbar(void);
-  
-  Bool isEditing(void) { return editing; }
-  Bool isOnTop(void) { return on_top; }
+  Toolbar(BScreen *);
+  virtual ~Toolbar(void);
 
-  Window getWindowID(void) { return frame.window; }
+  inline Toolbarmenu *getMenu(void) { return toolbarmenu; }
   
-  unsigned int getWidth(void) { return frame.width; }
-  unsigned int getHeight(void) { return frame.height; }
-  unsigned int getX(void) { return frame.x; }
-  unsigned int getY(void) { return frame.y; }
+  inline const Bool &isEditing(void) const { return editing; }
+  inline const Bool &isOnTop(void) const { return on_top; }
+
+  inline const Window &getWindowID(void) const { return frame.window; }
+  
+  inline const unsigned int &getWidth(void) const { return frame.width; }
+  inline const unsigned int &getHeight(void) const { return frame.height; }
+  inline const int &getX(void) const { return frame.x; }
+  inline const int &getY(void) const { return frame.y; }
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);
@@ -87,6 +122,7 @@ public:
   void redrawNextWorkspaceButton(Bool = False, Bool = False);
   void redrawPrevWindowButton(Bool = False, Bool = False);
   void redrawNextWindowButton(Bool = False, Bool = False);
+  void edit(void);
   void reconfigure(void);
   
 #ifdef    HAVE_STRFTIME
@@ -94,6 +130,11 @@ public:
 #else //  HAVE_STRFTIME
   void checkClock(Bool = False, Bool = False);
 #endif // HAVE_STRFTIME
+
+  virtual void timeout(void);
+
+  enum { TopLeft = 1, BottomLeft, TopCenter,
+         BottomCenter, TopRight, BottomRight };
 };
 
 

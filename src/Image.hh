@@ -1,31 +1,32 @@
 // Image.hh for Blackbox - an X11 Window manager
-// Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
+// Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the 
+// Software is furnished to do so, subject to the following conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software. 
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//
-// (See the included file COPYING / GPL-2.0)
-//
-
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// DEALINGS IN THE SOFTWARE.
+  
 #ifndef   __Image_hh
 #define   __Image_hh
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-class BaseDisplay;
-class ScreenInfo;
+#include "Timer.hh"
+
 class BImage;
 class BImageControl;
 
@@ -40,20 +41,17 @@ public:
   BColor(char r = 0, char g = 0, char b = 0)
     { red = r; green = g; blue = b; pixel = 0; allocated = 0; }
 
-  int isAllocated(void) { return allocated; }
+  inline const int &isAllocated(void) const { return allocated; }
 
-  unsigned char getRed(void) { return red; }
-  unsigned char getGreen(void) { return green; }
-  unsigned char getBlue(void) { return blue; }
+  inline const unsigned char &getRed(void) const { return red; }
+  inline const unsigned char &getGreen(void) const { return green; }
+  inline const unsigned char &getBlue(void) const { return blue; }
 
-  unsigned long getPixel(void) { return pixel; }
+  inline const unsigned long &getPixel(void) const { return pixel; }
 
-  void setAllocated(int a)
-    { allocated = a; }
-  void setRGB(char r, char g, char b)
-    { red = r; green = g; blue = b; }
-  void setPixel(unsigned long p)
-    { pixel = p; }
+  inline void setAllocated(int a) { allocated = a; }
+  inline void setRGB(char r, char g, char b) { red = r; green = g; blue = b; }
+  inline void setPixel(unsigned long p) { pixel = p; }
 };
 
 
@@ -65,19 +63,17 @@ private:
 public:
   BTexture(void) { texture = 0; }
 
-  BColor *getColor(void) { return &color; }
-  BColor *getColorTo(void) { return &colorTo; }
-  BColor *getHiColor(void) { return &hiColor; }
-  BColor *getLoColor(void) { return &loColor; }
+  inline BColor *getColor(void) { return &color; }
+  inline BColor *getColorTo(void) { return &colorTo; }
+  inline BColor *getHiColor(void) { return &hiColor; }
+  inline BColor *getLoColor(void) { return &loColor; }
 
-  unsigned long getTexture(void) { return texture; }
+  inline const unsigned long &getTexture(void) const { return texture; }
   
-  void setTexture(unsigned long t) { texture = t; }
-  void addTexture(unsigned long t) { texture |= t; }
+  inline void setTexture(unsigned long t) { texture = t; }
+  inline void addTexture(unsigned long t) { texture |= t; }
 };
 
-
-#include "LinkedList.hh"
 
 // bevel options
 #define BImage_Flat		(1l<<1)
@@ -105,10 +101,16 @@ public:
 // inverted image
 #define BImage_Invert		(1l<<16)
 
+// parent relative image
+#define BImage_ParentRelative   (1l<<17)
+
 #ifdef    INTERLACE
 // fake interlaced image
-#  define BImage_Interlaced	(1l<<17)
+#  define BImage_Interlaced	(1l<<18)
 #endif // INTERLACE
+
+#include "BaseDisplay.hh"
+#include "LinkedList.hh"
 
 
 class BImage {
@@ -122,7 +124,8 @@ private:
   XColor *colors;
 
   BColor *from, *to;
-  int red_offset, green_offset, blue_offset, ncolors, cpc, cpccpc;
+  int red_offset, green_offset, blue_offset, red_bits, green_bits, blue_bits,
+    ncolors, cpc, cpccpc;
   unsigned char *red, *green, *blue, *red_table, *green_table, *blue_table;
   unsigned int width, height, *xtable, *ytable;
 
@@ -154,26 +157,25 @@ public:
   Pixmap render_gradient(BTexture *);
 };
 
-class BImageControl {
+
+class BImageControl : public TimeoutHandler {
 private:
   Bool dither;
-  BaseDisplay *display;
+  BaseDisplay *basedisplay;
   ScreenInfo *screeninfo;
+  BTimer *timer;
 
   Colormap root_colormap;
   Window window;
   XColor *colors;
   int colors_per_channel, ncolors, screen_number, screen_depth,
-    bits_per_pixel, red_offset, green_offset, blue_offset;
+    bits_per_pixel, red_offset, green_offset, blue_offset,
+    red_bits, green_bits, blue_bits;
   unsigned char red_color_table[256], green_color_table[256],
-    blue_color_table[256], red_error_table[256], green_error_table[256],
-    blue_error_table[256], red_error38_table[256], green_error38_table[256],
-    blue_error38_table[256];
-  unsigned long *sqrt_table;
-  
-  short *red_buffer, *green_buffer, *blue_buffer, *next_red_buffer,
-    *next_green_buffer, *next_blue_buffer;
-  unsigned int dither_buffer_width;
+    blue_color_table[256];
+  unsigned int *grad_xbuffer, *grad_ybuffer, grad_buffer_width,
+    grad_buffer_height;
+  unsigned long *sqrt_table, cache_max;
   
   typedef struct Cache {
     Pixmap pixmap;
@@ -191,46 +193,47 @@ protected:
 
 
 public:
-  BImageControl(BaseDisplay *, ScreenInfo *, Bool = False, int = 4);
+  BImageControl(BaseDisplay *, ScreenInfo *, Bool = False, int = 4,
+                unsigned long = 300000l, unsigned long = 200l);
   ~BImageControl(void);
+
+  inline BaseDisplay *getBaseDisplay(void) { return basedisplay; }
+ 
+  inline const Bool &doDither(void) { return dither; }
+
+  inline const Colormap &getColormap(void) const { return root_colormap; }
   
-  Bool doDither(void) { return dither; }
-  
-  ScreenInfo *getScreenInfo(void) { return screeninfo; }
+  inline ScreenInfo *getScreenInfo(void) { return screeninfo; }
 
-  Colormap getColormap(void) { return root_colormap; }
+  inline const Window &getDrawable(void) const { return window; }
 
-  BaseDisplay *getDisplay(void) { return display; }
+  inline Visual *getVisual(void) { return screeninfo->getVisual(); }
 
-  Pixmap renderImage(unsigned int, unsigned int, BTexture *);
-
-  Visual *getVisual(void);
-
-  Window getDrawable(void) { return window; }
-
-  int getBitsPerPixel(void) { return bits_per_pixel; }
-  int getDepth(void) { return screen_depth; }
-  int getColorsPerChannel(void) { return colors_per_channel; }
+  inline const int &getBitsPerPixel(void) const { return bits_per_pixel; }
+  inline const int &getDepth(void) const { return screen_depth; }
+  inline const int &getColorsPerChannel(void) const
+    { return colors_per_channel; }
 
   unsigned long getColor(const char *);
   unsigned long getColor(const char *, unsigned char *, unsigned char *,
                          unsigned char *);
   unsigned long getSqrt(unsigned int);
 
+  Pixmap renderImage(unsigned int, unsigned int, BTexture *);
+
   void installRootColormap(void);
   void removeImage(Pixmap);
-  void getDitherBuffers(unsigned int,
-			short **, short **, short **,
-			short **, short **, short **,
-			unsigned char **, unsigned char **, unsigned char **,
-			unsigned char **, unsigned char **, unsigned char **);
   void getColorTables(unsigned char **, unsigned char **, unsigned char **,
-		      int *, int *, int *);
+                      int *, int *, int *, int *, int *, int *);
   void getXColorTable(XColor **, int *);
+  void getGradientBuffers(unsigned int, unsigned int,
+                          unsigned int **, unsigned int **);
   void setDither(Bool d) { dither = d; }
   void setColorsPerChannel(int);
   void parseTexture(BTexture *, char *);
   void parseColor(BColor *, char * = 0);
+
+  virtual void timeout(void);
 };
 
 

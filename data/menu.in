@@ -43,7 +43,7 @@
 #
 # example:
 
-[begin] (Blackbox 0.51.x)
+[begin] (Blackbox 0.60.x)
   [exec] (xterm)    {xterm -ls}
   [exec] (rxvt)     {rxvt}
 
@@ -74,9 +74,11 @@
   [end]
  
   [submenu] (Styles) {Choose a style...}
-    [include] (@pkgdatadir@/brueghel/stylesmenu)
-    [include] (@pkgdatadir@/styles/stylesmenu)
+    [stylesdir] (@pkgdatadir@/styles)
   [end]
+
+  [workspaces] (Workspace List)
+  [config] (Configuration)
 
   [reconfig] (Reconfigure)
   [restart] (Restart)

@@ -1,23 +1,26 @@
 // Windowmenu.cc for Blackbox - an X11 Window manager
-// Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
+// Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the 
+// Software is furnished to do so, subject to the following conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software. 
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//
-// (See the included file COPYING / GPL-2.0)
-//
-
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// DEALINGS IN THE SOFTWARE.
+  
+// stupid macros needed to access some functions in version 2 of the GNU C 
+// library
 #ifndef   _GNU_SOURCE
 #define   _GNU_SOURCE
 #endif // _GNU_SOURCE
@@ -32,42 +35,62 @@
 #include "Windowmenu.hh"
 #include "Workspace.hh"
 
+#ifdef    DEBUG
+#  include "mem.h"
+#endif // DEBUG
+
 #ifdef    STDC_HEADERS
 #  include <string.h>
 #endif // STDC_HEADERS
 
 
-Windowmenu::Windowmenu(BlackboxWindow *win, Blackbox *bb) :
-  Basemenu(bb, win->getScreen())
-{
+Windowmenu::Windowmenu(BlackboxWindow *win) : Basemenu(win->getScreen()) {
+#ifdef    DEBUG
+  allocate(sizeof(Windowmenu), "Windowmenu.cc");
+#endif // DEBUG
+  
   window = win;
   screen = window->getScreen();
-
+  
   setTitleVisibility(False);
   setMovable(False);
-  defaultMenu();
-
-  sendToMenu = new SendtoWorkspaceMenu(win, bb);
+  setInternalMenu();
+  
+  sendToMenu = new SendtoWorkspacemenu(this);
   insert("Send To ...", sendToMenu);
-  if (window->hasTitlebar())
-    insert("(Un)Shade", BScreen::WindowShade);
-  if (window->isIconifiable())
-    insert("Iconify", BScreen::WindowIconify);
-  if (window->isMaximizable())
-    insert("(Un)Maximize", BScreen::WindowMaximize);  
+  insert("Shade", BScreen::WindowShade);
+  insert("Iconify", BScreen::WindowIconify);
+  insert("Maximize", BScreen::WindowMaximize);  
   insert("Raise", BScreen::WindowRaise);
   insert("Lower", BScreen::WindowLower);
-  insert("(Un)Stick", BScreen::WindowStick);
+  insert("Stick", BScreen::WindowStick);
   insert("Kill Client", BScreen::WindowKill);
-  if (window->isClosable())
-    insert("Close", BScreen::WindowClose);
-  
+  insert("Close", BScreen::WindowClose);
+
   update();
+  
+  setItemEnabled(1, window->hasTitlebar());
+  setItemEnabled(2, window->isIconifiable());
+  setItemEnabled(3, window->isMaximizable());
+  setItemEnabled(8, window->isClosable());
 }
 
 
 Windowmenu::~Windowmenu(void) {
+#ifdef    DEBUG
+  deallocate(sizeof(Windowmenu), "Windowmenu.cc");
+#endif // DEBUG
+
   delete sendToMenu;
+}
+
+
+void Windowmenu::show(void) {
+  if (isItemEnabled(1)) setItemSelected(1, window->isShaded());
+  if (isItemEnabled(3)) setItemSelected(3, window->isMaximized());
+  if (isItemEnabled(6)) setItemSelected(6, window->isStuck());
+  
+  Basemenu::show();
 }
 
 
@@ -112,62 +135,58 @@ void Windowmenu::itemSelected(int button, int index) {
 
   case BScreen::WindowKill:
     hide();
-    XKillClient(screen->getDisplay()->getDisplay(), window->getClientWindow());
+    XKillClient(screen->getBaseDisplay()->getXDisplay(),
+                window->getClientWindow());
     break;
   }
 }
 
 
 void Windowmenu::reconfigure(void) {
+  setItemEnabled(1, window->hasTitlebar());
+  setItemEnabled(2, window->isIconifiable());
+  setItemEnabled(3, window->isMaximizable());
+  setItemEnabled(8, window->isClosable());
+  
   sendToMenu->reconfigure();
   
   Basemenu::reconfigure();
 }
 
 
-void Windowmenu::setClosable(void) {
-  int i, n = getCount();
-
-  for (i = 0; i < n; i++) {
-    BasemenuItem *item = find(i);
-
-    if (item && (item->function() == BScreen::WindowClose)) {
-      remove(i);
-
-      break;
-    }
-  }
-
-  if (window->isClosable())
-    insert("Close", BScreen::WindowClose);
-      
-  update();
-}
-
-
-SendtoWorkspaceMenu::SendtoWorkspaceMenu(BlackboxWindow *win, Blackbox *bb) :
-  Basemenu(bb, win->getScreen())
-{
-  window = win;
-  screen = window->getScreen();
-
+Windowmenu::SendtoWorkspacemenu::SendtoWorkspacemenu(Windowmenu *w) : Basemenu(w->screen) {
+#ifdef    DEBUG
+  allocate(sizeof(SendtoWorkspacemenu), "Windowmenu.cc");
+#endif // DEBUG
+  
+  windowmenu = w;
+  
   setTitleVisibility(False);
   setMovable(False);
-  defaultMenu();
+  setInternalMenu();
   update();
 }
 
 
-void SendtoWorkspaceMenu::itemSelected(int button, int index) {
+#ifdef    DEBUG
+Windowmenu::SendtoWorkspacemenu::~SendtoWorkspacemenu(void) {
+  deallocate(sizeof(SendtoWorkspacemenu), "Windowmenu.cc");
+}
+#endif // DEBUG
+
+
+void Windowmenu::SendtoWorkspacemenu::itemSelected(int button, int index) {
   if (button == 1) {
-    if ((index) <= screen->getCount()) {
-      if ((index) != screen->getCurrentWorkspaceID()) {	
-	screen->getWorkspace(window->getWorkspaceNumber())->
-	  removeWindow(window);
-	screen->getWorkspace(index)->addWindow(window);
+    if ((index) <= windowmenu->screen->getCount()) {
+      if ((index) != windowmenu->screen->getCurrentWorkspaceID()) {
+        if (windowmenu->window->isStuck()) windowmenu->window->stick();
+
+	windowmenu->screen->
+          getWorkspace(windowmenu->window->getWorkspaceNumber())->
+          removeWindow(windowmenu->window);
+	windowmenu->screen->getWorkspace(index)->addWindow(windowmenu->window);
 	
-	if (window->isStuck()) window->stick();
-	window->withdraw();
+	windowmenu->window->withdraw();
       }
     }
   } else
@@ -175,21 +194,21 @@ void SendtoWorkspaceMenu::itemSelected(int button, int index) {
 }
 
 
-void SendtoWorkspaceMenu::update(void) {
+void Windowmenu::SendtoWorkspacemenu::update(void) {
   int i, r = getCount();
   
   if (getCount() != 0)
     for (i = 0; i < r; ++i)
       remove(0);
   
-  for (i = 0; i < screen->getCount(); ++i)
-    insert(screen->getWorkspace(i)->getName());
+  for (i = 0; i < windowmenu->screen->getCount(); ++i)
+    insert(windowmenu->screen->getWorkspace(i)->getName());
   
   Basemenu::update();
 }
 
 
-void SendtoWorkspaceMenu::show(void) {
+void Windowmenu::SendtoWorkspacemenu::show(void) {
   update();
 
   Basemenu::show();

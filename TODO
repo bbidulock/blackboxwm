@@ -1,28 +1,23 @@
--- TODO for Blackbox 0.51.x  - an X11 Window manager
--- Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
---
---  This program is free software; you can redistribute it and/or modify
---  it under the terms of the GNU General Public License as published by
---  the Free Software Foundation; either version 2 of the License, or
---  (at your option) any later version.
---
---  This program is distributed in the hope that it will be useful,
---  but WITHOUT ANY WARRANTY; without even the implied warranty of
---  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
---  GNU General Public License for more details.
---
---  You should have received a copy of the GNU General Public License
---  along with this program; if not, write to the Free Software
---  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
---
--- (See the included file COPYING / GPL-2.0)
---
+-- TODO for Blackbox 0.60.x  - an X11 Window manager
 
 Stuff TODO or On The Way(tm):
 -----------------------------
+FIX: focus handling needs revisiting for multiple screen displays... the
+     method i have now seems to work fine for single screen...
 
-Balancing SnapTo/EdgeResistance - this is a complicated idea to explain...
-    don't ask :)
+DONE: get screen information from the XWindowAttributes.screen after calling
+      XGetWindowAttributes... instead of looking XMapRequest.root and trying to
+      search for a the BScreen*
+
+DONE: when starting a resize... the vertical size will reduce slightly... fix it
+
+ADD: draw resize frames using the styles borderWidth... should be fairly
+     simple to do...
+
+CHECK: look at why memory usage is up... RSS won't go < 1mb now
+       i noticed a memory leak from improper handling of non-existant
+       windows... this fixes this some... this will be on going
+
 (still here) better support for window groups... i don't know when i'm going to
     ever get to this
 

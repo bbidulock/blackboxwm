@@ -1,123 +1,115 @@
 // blackbox.hh for Blackbox - an X11 Window manager
-// Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
+// Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the 
+// Software is furnished to do so, subject to the following conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software. 
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//
-// (See the included file COPYING / GPL-2.0)
-//
-
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// DEALINGS IN THE SOFTWARE.
+  
 #ifndef   __blackbox_hh
 #define   __blackbox_hh
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
 
-class Basemenu;
-class BlackboxWindow;
-class BlackboxIcon;
-class BScreen;
-class Iconmenu;
-class Rootmenu;
-
-#ifdef    SLIT
-class Slit;
-#endif // SLIT
-
-class Toolbar;
-class Workspace;
-class Workspacemenu;
-
-#include "BaseDisplay.hh"
-#include "Image.hh"
-#include "LinkedList.hh"
-
 #ifdef    HAVE_STDIO_H
 # include <stdio.h>
 #endif // HAVE_STDIO_H
 
+#ifdef    TIME_WITH_SYS_TIME
+#  include <sys/time.h>
+#  include <time.h>
+#else // !TIME_WITH_SYS_TIME
+#  ifdef    HAVE_SYS_TIME_H
+#    include <sys/time.h>
+#  else // !HAVE_SYS_TIME_H
+#    include <time.h>
+#  endif // HAVE_SYS_TIME_H
+#endif // TIME_WITH_SYS_TIME
 
-class Blackbox : public BaseDisplay {
+//forward declaration
+class Blackbox;
+
+#include "BaseDisplay.hh"
+#include "Image.hh"
+#include "LinkedList.hh"
+#include "Timer.hh"
+#include "Window.hh"
+
+#ifdef    SLIT
+#  include "Slit.hh"
+#endif // SLIT
+
+
+template <class Z>
+class DataSearch { 
 private:
-  typedef struct GroupSearch {
-    BlackboxWindow *data;
-    Window window;
-  } GroupSearch;
+  Window window;
+  Z *data;
 
-  typedef struct WindowSearch {
-    BlackboxWindow *data;
-    Window window;
-  } WindowSearch;
 
-  typedef struct MenuSearch {
-    Basemenu *data;
-    Window window;
-  } MenuSearch;
+public: 
+  DataSearch(Window w, Z *d) { window = w; data = d; }
 
-  typedef struct ToolbarSearch {
-    Toolbar *data;
-    Window window;
-  } ToolbarSearch;
+  inline const Window &getWindow(void) const { return window; }
+  inline Z *getData(void) { return data; }
+}; 
 
+
+class Blackbox : public BaseDisplay, public TimeoutHandler {
+private:
   typedef struct MenuTimestamp {
     char *filename;
     time_t timestamp;
   } MenuTimestamp;
 
-#ifdef    SLIT
-  typedef struct SlitSearch {
-    Slit *data;
-    Window window;
-  } SlitSearch;
-#endif // SLIT
-
   struct resource {
-    Bool image_dither, colormap_focus_follows_mouse, opaque_move;
-    Time double_click_interval, auto_raise_delay_sec, auto_raise_delay_usec;
+    Time double_click_interval;
     
     char *menu_file, *style_file;
     int colors_per_channel;
-    unsigned long wkspc_change_mask, cycle_mask;
+    timeval auto_raise_delay;
+    unsigned long cache_life, cache_max;
   } resource;
-  
-  LinkedList<WindowSearch> *windowSearchList;
+ 
+  typedef DataSearch<BlackboxWindow> WindowSearch; 
+  LinkedList<WindowSearch> *windowSearchList, *groupSearchList;
+  typedef DataSearch<Basemenu> MenuSearch;
   LinkedList<MenuSearch> *menuSearchList;
+  typedef DataSearch<Toolbar> ToolbarSearch;
+  LinkedList<ToolbarSearch> *toolbarSearchList;
 
 #ifdef    SLIT
+  typedef DataSearch<Slit> SlitSearch;
   LinkedList<SlitSearch> *slitSearchList;
 #endif // SLIT
 
-  LinkedList<ToolbarSearch> *toolbarSearchList;
-  LinkedList<GroupSearch> *groupSearchList;
   LinkedList<MenuTimestamp> *menuTimestamps;
   LinkedList<BScreen> *screenList;
 
-  BlackboxWindow *focused_window, *auto_raise_window;
+  BlackboxWindow *focused_window, *masked_window;
+  BTimer *timer;
 
-#ifdef    KDE
-  Atom kwm_current_desktop, kwm_number_of_desktops, kwm_active_window,
-    kwm_win_iconified, kwm_win_sticky, kwm_win_maximized, kwm_win_decoration,
-    kwm_win_icon, kwm_win_desktop, kwm_win_frame_geometry, kwm_command,
-    kwm_do_not_manage, kwm_activate_window, kwm_running,
-    kwm_module, kwm_module_init, kwm_module_initialized,
-    kwm_module_desktop_change, kwm_module_win_change, kwm_window_region_1,
-    kwm_module_desktop_number_change, kwm_module_desktop_name_change,
-    kwm_module_win_add, kwm_module_win_remove, kwm_module_win_raise, 
-    kwm_module_win_lower, kwm_module_win_activate;
-#endif // KDE
+#ifdef    HAVE_GETPID
+  Atom blackbox_pid;
+#endif // HAVE_GETPID
 
-  Bool _reconfigure, _reread_menu, auto_raise_pending, no_focus;
+  Bool no_focus, reconfigure_wait, reread_menu_wait;
+  Time last_time;
+  Window masked;
   char *rc_file, **argv;
   int argc;
 
@@ -125,78 +117,61 @@ private:
 protected:
   void load_rc(void);
   void save_rc(void);
+  void reload_rc(void);
+  void real_rereadMenu(void);
+  void real_reconfigure(void);
 
   virtual void process_event(XEvent *);
-
-  void do_reconfigure(void);
 
 
 public:
   Blackbox(int, char **, char * = 0, char * = 0);
   virtual ~Blackbox(void);
 
-#ifdef    KDE
-  Atom getKWMRunningAtom(void)             { return kwm_running; }
-  Atom getKWMModuleAtom(void)              { return kwm_module; }
-  Atom getKWMModuleInitAtom(void)          { return kwm_module_init; }
-  Atom getKWMModuleInitializedAtom(void)   { return kwm_module_initialized; }
-  Atom getKWMCurrentDesktopAtom(void)      { return kwm_current_desktop; }
-  Atom getKWMNumberOfDesktopsAtom(void)    { return kwm_number_of_desktops; }
-
-  Atom getKWMWinStickyAtom(void)           { return kwm_win_sticky; }
-  Atom getKWMWinIconifiedAtom(void)        { return kwm_win_iconified; }
-  Atom getKWMWinMaximizedAtom(void)        { return kwm_win_maximized; }
-  Atom getKWMWinDesktopAtom(void)          { return kwm_win_desktop; }
-  Atom getKWMWindowRegion1Atom(void)       { return kwm_window_region_1; }
-  Atom getKWMWinActiveAtom(void)           { return kwm_active_window; }
-
-  Atom getKWMModuleDesktopChangeAtom(void)
-    { return kwm_module_desktop_change; }
-  Atom getKWMModuleWinChangeAtom(void)     { return kwm_module_win_change; }
-  Atom getKWMModuleDesktopNameChangeAtom(void)
-    { return kwm_module_desktop_name_change; }
-  Atom getKWMModuleWinAddAtom(void)        { return kwm_module_win_add; }
-  Atom getKWMModuleWinRemoveAtom(void)     { return kwm_module_win_remove; }
-  Atom getKWMModuleDesktopNumberChangeAtom(void)
-    { return kwm_module_desktop_number_change; }
-  Atom getKWMModuleWinRaiseAtom(void)      { return kwm_module_win_raise; }
-  Atom getKWMModuleWinLowerAtom(void)      { return kwm_module_win_lower; }
-  Atom getKWMModuleWinActivateAtom(void)   { return kwm_module_win_activate; }
-#endif // KDE
+#ifdef    HAVE_GETPID
+  inline const Atom &getBlackboxPidAtom(void) const { return blackbox_pid; }
+#endif // HAVE_GETPID
 
   Basemenu *searchMenu(Window);
 
   BlackboxWindow *searchGroup(Window, BlackboxWindow *);
   BlackboxWindow *searchWindow(Window);
-  BlackboxWindow *getFocusedWindow(void) { return focused_window; }
-
-  Bool hasImageDither(void)     { return resource.image_dither; }
-  Bool doOpaqueMove(void)       { return resource.opaque_move; }
+  inline BlackboxWindow *getFocusedWindow(void) { return focused_window; }
 
   BScreen *getScreen(int);
   BScreen *searchScreen(Window);
 
-  Time getDoubleClickInterval(void) { return resource.double_click_interval; }
+  inline const Time &getDoubleClickInterval(void) const
+    { return resource.double_click_interval; }
+  inline const Time &getLastTime(void) const { return last_time; }
 
   Toolbar *searchToolbar(Window);
 
-  char *getStyleFilename(void) { return resource.style_file; }
-  char *getMenuFilename(void)  { return resource.menu_file; }
+  inline const char *getStyleFilename(void) const
+    { return resource.style_file; }
+  inline const char *getMenuFilename(void) const
+    { return resource.menu_file; }
 
-  int getColorsPerChannel(void) { return resource.colors_per_channel; }
+  inline const int &getColorsPerChannel(void) const
+    { return resource.colors_per_channel; }
 
-  unsigned long getWorkspaceChangeMask(void)
-    { return resource.wkspc_change_mask; }
-  unsigned long getWindowCycleMask(void)
-    { return resource.cycle_mask; }
+  inline const timeval &getAutoRaiseDelay(void) const
+    { return resource.auto_raise_delay; }
 
-  void eventLoop(void);
+  inline const unsigned long &getCacheLife(void) const
+    { return resource.cache_life; }
+  inline const unsigned long &getCacheMax(void) const
+    { return resource.cache_max; }
+
+  inline void maskWindowEvents(Window w, BlackboxWindow *bw)
+    { masked = w; masked_window = bw; }
+  inline void setNoFocus(Bool f) { no_focus = f; }
+
+  void setFocusedWindow(BlackboxWindow *w);
   void shutdown(void);
-  void setNoFocus(Bool f) { no_focus = f; }
-  void setFocusedWindow(BlackboxWindow *w) { focused_window = w; }
   void load_rc(BScreen *);
   void saveStyleFilename(char *);
-  void saveMenuFilename(char *);
+  void saveMenuFilename(const char *);
   void saveMenuSearch(Window, Basemenu *);
   void saveWindowSearch(Window, BlackboxWindow *);
   void saveToolbarSearch(Window, Toolbar *);
@@ -209,6 +184,10 @@ public:
   void reconfigure(void);
   void rereadMenu(void);
   void checkMenu(void);
+
+  virtual Bool handleSignal(int);
+
+  virtual void timeout(void);
 
 #ifdef    SLIT
   Slit *searchSlit(Window);

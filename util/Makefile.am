@@ -1,29 +1,16 @@
-# util/Makefile.am for Blackbox 0.51.x  - an X11 Window manager
-# Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
-#
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-#
-#  (See the included file COPYING / GPL-2.0)
-#
+# util/Makefile.am for Blackbox 0.60.x  - an X11 Window manager
+
+CPPFLAGS= @CPPFLAGS@ @DEBUG@
 
 bin_PROGRAMS =		bsetroot
 
-bsetroot_SOURCES =	bsetroot.c
+bsetroot_SOURCES =	bsetroot.cc
+bsetroot_LDADD =	../src/BaseDisplay.o ../src/LinkedList.o ../src/Timer.o ../src/Image.o
 
 MAINTAINERCLEANFILES =	Makefile.in
 
 distclean-local:
 	rm -f *\~
 
+bsetroot.o: bsetroot.cc ../config.h bsetroot.hh ../src/BaseDisplay.hh \
+ ../src/LinkedList.hh ../src/Timer.hh ../src/Image.hh

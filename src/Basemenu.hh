@@ -1,22 +1,23 @@
-// Basemenu.hh for Blackbox - an X11 Window manager
-// Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
+// bASEMEnu.hh for Blackbox - an X11 Window manager
+// Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the 
+// Software is furnished to do so, subject to the following conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software. 
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//
-// (See the included file COPYING / GPL-2.0)
-//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// DEALINGS IN THE SOFTWARE.
 
 #ifndef   __Basemenu_hh
 #define   __Basemenu_hh
@@ -33,6 +34,10 @@ class BScreen;
 
 #include "LinkedList.hh"
 
+#ifdef    DEBUG
+#  include "mem.h"
+#endif // DEBUG
+
 
 class Basemenu {
 private:
@@ -42,66 +47,73 @@ private:
   BImageControl *image_ctrl;
   BScreen *screen;
 
-  Bool moving, visible, movable, user_moved, default_menu, title_vis, shifted,
-    hidable;
+  Bool moving, visible, movable, torn, internal_menu, title_vis, shifted,
+    hide_tree;
   Display *display;
-  int which_sub, which_press, which_sbl, alignment, always_highlight,
-    indicator, indicator_position;
+  int which_sub, which_press, which_sbl, alignment;
 
-  struct menu {
-    Pixmap iframe_pixmap, title_pixmap;
-    Window frame, iframe, title;
-
+  struct _menu {
+    Pixmap frame_pixmap, title_pixmap, hilite_pixmap, sel_pixmap;
+    Window window, frame, title;
+    
     char *label;
-    int x, y, x_move, y_move, x_shift, y_shift, sublevels, persub, minsub;
-    unsigned int width, height, title_h, iframe_h, item_w, item_h, bevel_w,
+    int x, y, x_move, y_move, x_shift, y_shift, sublevels, persub, minsub,
+      grab_x, grab_y;
+    unsigned int width, height, title_h, frame_h, item_w, item_h, bevel_w,
       bevel_h;
   } menu;
-
-  virtual void drawSubmenu(int);
-  virtual void drawItem(int, Bool = False, Bool = False, Bool = False);
-
+  
 
 protected:
-  BasemenuItem *find(int index) { return menuitems->find(index); }
-  void setTitleVisibility(Bool b) { title_vis = b; }
-  void setMovable(Bool b) { movable = b; }
-  void setHidable(Bool h) { hidable = h; }
-  void setAlignment(int a) { alignment = a; }
-  void setMinimumSublevels(int m) { menu.minsub = m; }
-  void setItemIndicator(int = -1, int = 0);
+  inline BasemenuItem *find(int index) { return menuitems->find(index); }
+  inline void setTitleVisibility(Bool b) { title_vis = b; }
+  inline void setMovable(Bool b) { movable = b; }
+  inline void setHideTree(Bool h) { hide_tree = h; }
+  inline void setMinimumSublevels(int m) { menu.minsub = m; }
 
   virtual void itemSelected(int, int) = 0;
+  virtual void drawSubmenu(int);
+  virtual void drawItem(int, Bool = False, Bool = False);
+  virtual void redrawTitle();
+  virtual void internal_hide(void);
 
 
 public:
-  Basemenu(Blackbox *, BScreen *);
+  Basemenu(BScreen *);
   virtual ~Basemenu(void);
 
-  Bool hasSubmenu(int);
-  Bool hasUserMoved(void) { return user_moved; }
-  Bool isVisible(void) { return visible; }
+  inline const Bool &isTorn(void) const { return torn; }
+  inline const Bool &isVisible(void) const { return visible; }
+  
+  inline BScreen *getScreen(void) { return screen; }
 
-  BScreen *getScreen(void) { return screen; }
+  inline const Window &getWindowID(void) const { return menu.window; }
 
-  Window getWindowID(void) { return menu.frame; }
-
-  const char *getLabel(void) const { return menu.label; }
+  inline const char *getLabel(void) const { return menu.label; }
 
   int insert(char *, int = 0, char * = (char *) 0, int = -1);
-  int insert(char **, int = -1);
+  int insert(char **, int = -1, int = 0);
   int insert(char *, Basemenu *, int = -1);
   int remove(int);
-  int getX(void) { return menu.x; }
-  int getY(void) { return menu.y; }
-  int getCount(void) { return menuitems->count(); }
-  int getHighlight(void) { return always_highlight; }
-  int getIndicatorPosition(void) { return indicator_position; }
 
-  unsigned int getWidth(void) { return menu.width; }
-  unsigned int getHeight(void) { return menu.height; }
-  unsigned int getTitleHeight(void) { return menu.title_h; }
+  inline const int &getX(void) const { return menu.x; }
+  inline const int &getY(void) const { return menu.y; }
+  inline int getCount(void) { return menuitems->count(); }
+  
+  inline const unsigned int &getWidth(void) const { return menu.width; }
+  inline const unsigned int &getHeight(void) const { return menu.height; }
+  inline const unsigned int &getTitleHeight(void) const { return menu.title_h; }
 
+  inline void setInternalMenu(void) { internal_menu = True; }
+  inline void setAlignment(int a) { alignment = a; }
+  inline void setTorn(void) { torn = True; }
+  inline void removeParent(void)
+    { if (internal_menu) parent = (Basemenu *) 0; }
+  
+  Bool hasSubmenu(int);
+  Bool isItemSelected(int);
+  Bool isItemEnabled(int);
+  
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);
   void motionNotifyEvent(XMotionEvent *);
@@ -112,17 +124,15 @@ public:
   void setLabel(char *n);
   void move(int, int);
   void update(void);
-  void defaultMenu(void) { default_menu = True; }
-  void setHighlight(int = -1);
-  void setSubmenuIndicator(int = 1);
-  void setIndicatorPosition(int = 1);
+  void setItemSelected(int, Bool);
+  void setItemEnabled(int, Bool);
    
   virtual void show(void);
   virtual void hide(void);
 
   enum { AlignDontCare = 1, AlignTop, AlignBottom };
   enum { Right = 1, Left };
-  enum { Empty = 0, Round, Square, Triangle, Diamond };
+  enum { Empty = 0, Square, Triangle, Diamond };
 };
 
 
@@ -130,7 +140,7 @@ class BasemenuItem {
 private:
   Basemenu *s;
   char **u, *l, *e;
-  int f;
+  int f, enabled, selected;
 
   friend Basemenu;
 
@@ -139,20 +149,63 @@ protected:
 
 
 public:
-  BasemenuItem(char *lp, int fp, char *ep = (char *) 0)
-    { l = lp; e = ep; s = 0; f = fp; u = 0; }
+  BasemenuItem(char *lp, int fp, char *ep = (char *) 0) {
+    l = lp;
+    e = ep;
+    s = 0;
+    f = fp;
+    u = 0;
+    enabled = 1;
+    selected = 0;
 
-  BasemenuItem(char *lp, Basemenu *mp)
-    { l = lp; s = mp; e = 0; f = 0; u = 0; }
+#ifdef    DEBUG
+    allocate(sizeof(BasemenuItem), __FUNCTION__);
+#endif // DEBUG
+  }
 
-  BasemenuItem(char **up)
-    { u = up; l = e = 0; f = 0; s = 0; }
+  BasemenuItem(char *lp, Basemenu *mp) {
+    l = lp;
+    s = mp;
+    e = 0;
+    f = 0;
+    u = 0;
+    enabled = 1;
+    selected = 0;
 
-  char *exec(void) { return e; }
-  char *label(void) { return l; }
-  char **ulabel(void) { return u; }
-  int function(void) { return f; }
-  Basemenu *submenu(void) { return s; }
+#ifdef    DEBUG
+    allocate(sizeof(BasemenuItem), __FUNCTION__);
+#endif // DEBUG
+  }
+
+  BasemenuItem(char **up, int fp) {
+    u = up;
+    l = e = 0;
+    f = fp;
+    s = 0;
+    enabled = 1;
+    selected = 0;
+
+#ifdef    DEBUG
+    allocate(sizeof(BasemenuItem), __FUNCTION__);
+#endif // DEBUG
+  }
+
+#ifdef    DEBUG
+  ~BasemenuItem(void) {
+    deallocate(sizeof(BasemenuItem), __FUNCTION__);
+  }
+#endif // DEBUG
+
+  inline char *exec(void) { return e; }
+  inline char *label(void) { return l; }
+  inline char **ulabel(void) { return u; }
+  inline const int &function(void) const { return f; }
+  inline Basemenu *submenu(void) { return s; }
+
+  inline const int &isEnabled(void) const { return enabled; }
+  inline void setEnabled(int e) { enabled = e; }
+  inline const int &isSelected(void) const { return selected; }
+  inline void setSelected(int s) { selected = s; }
 };
 
 

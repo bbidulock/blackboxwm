@@ -1,15 +1,5 @@
 /* config.h.in.  Generated automatically from configure.in by autoheader.  */
 
-/* Define if on AIX 3.
-   System headers sometimes define this.
-   We just want to avoid a redefinition error message.  */
-#ifndef _ALL_SOURCE
-#undef _ALL_SOURCE
-#endif
-
-/* Define if you need to in order for stat and other things to work.  */
-#undef _POSIX_SOURCE
-
 /* Define as the return type of signal handlers (int or void).  */
 #undef RETSIGTYPE
 
@@ -25,6 +15,9 @@
 /* Define if you have the basename function.  */
 #undef HAVE_BASENAME
 
+/* Define if you have the getpid function.  */
+#undef HAVE_GETPID
+
 /* Define if you have the setlocale function.  */
 #undef HAVE_SETLOCALE
 
@@ -33,6 +26,9 @@
 
 /* Define if you have the strftime function.  */
 #undef HAVE_STRFTIME
+
+/* Define if you have the <ctype.h> header file.  */
+#undef HAVE_CTYPE_H
 
 /* Define if you have the <dirent.h> header file.  */
 #undef HAVE_DIRENT_H

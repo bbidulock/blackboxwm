@@ -1,22 +1,26 @@
 // BaseDisplay.cc for Blackbox - an X11 Window manager
-// Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
+// Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//
-// (See the included file COPYING / GPL-2.0)
-//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
+
+// stupid macros needed to access some functions in version 2 of the GNU C
+// library
 
 #ifndef   _GNU_SOURCE
 #define   _GNU_SOURCE
@@ -36,20 +40,176 @@
 #endif // SHAPE
 
 #include "BaseDisplay.hh"
+#include "LinkedList.hh"
+#include "Timer.hh"
+
+#ifdef    DEBUG
+#  include "mem.h"
+#endif // DEBUG
+
+#ifdef    HAVE_FCNTL_H
+#  include <fcntl.h>  
+#endif // HAVE_FCNTL_H
 
 #ifdef    HAVE_STDIO_H
 #  include <stdio.h>
 #endif // HAVE_STDIO_H
 
-#ifdef    HAVE_FCNTL_H
-#  include <fcntl.h>
-#endif // HAVE_FCNTL_H
+#ifdef    STDC_HEADERS
+#  include <stdlib.h>
+#  include <string.h>
+#endif // STDC_HEADERS 
+
+#ifdef    HAVE_UNISTD_H
+#  include <sys/types.h>
+#  include <unistd.h>
+#endif // HAVE_UNISTD_H
+
+#ifdef    HAVE_SYS_SELECT_H
+#  include <sys/select.h>
+#endif // HAVE_SYS_SELECT_H
+
+#ifdef    HAVE_SIGNAL_H
+#  include <signal.h>  
+#endif // HAVE_SIGNAL_H
+
+#ifdef    HAVE_SYS_SIGNAL_H
+// #  include <sys/signal.h>
+#endif // HAVE_SYS_SIGNAL_H
+
+#ifndef   SA_NODEFER
+#  ifdef   SA_INTERRUPT
+#    define SA_NODEFER SA_INTERRUPT
+#  else // !SA_INTERRUPT
+#    define SA_NODEFER (0)
+#  endif // SA_INTERRUPT
+#endif // SA_NODEFER
+
+#ifdef    HAVE_SYS_WAIT_H
+#  include <sys/types.h>
+#  include <sys/wait.h>
+#endif // HAVE_SYS_WAIT_H
 
 
-BaseDisplay::BaseDisplay(char *dpy_name) {
+// X error handler to handle any and all X errors while the application is
+// running
+static Bool internal_error = False;
+static Window last_bad_window = None;
+
+BaseDisplay *base_display;
+
+static int handleXErrors(Display *d, XErrorEvent *e) {
+#ifdef    DEBUG
+  char errtxt[128];
+
+  XGetErrorText(d, e->error_code, errtxt, 128);
+  fprintf(stderr, "%s:  X error: %s(%d) opcodes %d/%d\n"
+                  "  resource 0x%lx\n",
+          base_display->getApplicationName(), errtxt, e->error_code,
+          e->request_code, e->minor_code, e->resourceid);
+#endif // DEBUG
+  if (e->error_code == BadWindow) last_bad_window = e->resourceid;
+  if (internal_error) abort();
+
+  return(False);
+}
+
+
+// signal handler to allow for proper and gentle shutdown
+
+#ifndef   HAVE_SIGACTION
+static RETSIGTYPE signalhandler(int sig) {
+#else //  HAVE_SIGACTION
+static void signalhandler(int sig) {
+#endif // HAVE_SIGACTION
+
+  static int re_enter = 0;
+
+  switch (sig) {
+  case SIGCHLD:
+    int status;
+    waitpid(-1, &status, WNOHANG | WUNTRACED);
+
+#ifndef   HAVE_SIGACTION
+    // assume broken, braindead sysv signal semantics
+    signal(SIGCHLD, (RETSIGTYPE (*)(int)) signalhandler);
+#endif // HAVE_SIGACTION
+
+    break;
+
+  default:
+    if (base_display->handleSignal(sig)) {
+
+#ifndef   HAVE_SIGACTION
+      // assume broken, braindead sysv signal semantics
+      signal(sig, (RETSIGTYPE (*)(int)) signalhandler);
+#endif // HAVE_SIGACTION
+
+      return;
+    }
+
+    fprintf(stderr, "%s:  signal %d caught\n",
+            base_display->getApplicationName(), sig);
+
+    if (! base_display->isStartup() && ! re_enter) {
+      internal_error = True;
+
+      re_enter = 1;
+      fprintf(stderr, "shutting down\n");
+      base_display->shutdown();
+    }
+
+    if (sig != SIGTERM && sig != SIGINT) {
+      fprintf(stderr, "aborting... dumping core\n");
+      abort();
+    }
+
+    exit(0);
+
+    break;
+  }
+}
+
+
+BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
+#ifdef    DEBUG
+  allocate(sizeof(BaseDisplay), "BaseDisplay.cc");
+#endif // DEBUG
+
+  application_name = app_name;
+
   _startup = True;
   _shutdown = False;
   server_grabs = 0;
+  last_bad_window = None;
+
+  ::base_display = this;
+
+#ifdef    HAVE_SIGACTION
+  struct sigaction action;
+
+  action.sa_handler = signalhandler;    
+  action.sa_mask = sigset_t();
+  action.sa_flags = SA_NOCLDSTOP | SA_NODEFER;
+    
+  sigaction(SIGSEGV, &action, NULL);
+  sigaction(SIGFPE, &action, NULL);
+  sigaction(SIGTERM, &action, NULL);
+  sigaction(SIGINT, &action, NULL);
+  sigaction(SIGCHLD, &action, NULL);
+  sigaction(SIGHUP, &action, NULL);
+  sigaction(SIGUSR1, &action, NULL);
+  sigaction(SIGUSR2, &action, NULL);
+#else // !HAVE_SIGACTION
+  signal(SIGSEGV, (RETSIGTYPE (*)(int)) signalhandler);
+  signal(SIGFPE, (RETSIGTYPE (*)(int)) signalhandler);
+  signal(SIGTERM, (RETSIGTYPE (*)(int)) signalhandler);
+  signal(SIGINT, (RETSIGTYPE (*)(int)) signalhandler);
+  signal(SIGUSR1, (RETSIGTYPE (*)(int)) signalhandler);
+  signal(SIGUSR2, (RETSIGTYPE (*)(int)) signalhandler);
+  signal(SIGHUP, (RETSIGTYPE (*)(int)) signalhandler);
+  signal(SIGCHLD, (RETSIGTYPE (*)(int)) signalhandler);
+#endif // HAVE_SIGACTION
 
   if (! (display = XOpenDisplay(dpy_name))) {
     fprintf(stderr,
@@ -80,24 +240,74 @@ BaseDisplay::BaseDisplay(char *dpy_name) {
   xa_wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", False);
   xa_wm_take_focus = XInternAtom(display, "WM_TAKE_FOCUS", False);
   motif_wm_hints = XInternAtom(display, "_MOTIF_WM_HINTS", False);
+
+  net_hints = XInternAtom(display, "_NET_HINTS", False);
+  net_attributes = XInternAtom(display, "_NET_ATTRIBUTES", False);
+  net_change_attributes =
+    XInternAtom(display, "_NET_CHANGE_ATTRIBUTES", False);
+
+  net_structure_messages =
+    XInternAtom(display, "_NET_STRUCTURE_MESSAGES", False);
+  net_notify_startup =
+    XInternAtom(display, "_NET_NOTIFY_STARTUP", False);
+  net_notify_window_add =
+    XInternAtom(display, "_NET_NOTIFY_WINDOW_ADD", False);
+  net_notify_window_del =
+    XInternAtom(display, "_NET_NOTIFY_WINDOW_DEL", False);
+  net_notify_current_workspace =
+    XInternAtom(display, "_NET_NOTIFY_CURRENT_WORKSPACE", False);
+  net_notify_workspace_count =
+    XInternAtom(display, "_NET_NOTIFY_WORKSPACE_COUNT", False);
+  net_notify_window_focus =
+    XInternAtom(display, "_NET_NOTIFY_WINDOW_FOCUS", False);
+  net_notify_window_raise =
+    XInternAtom(display, "_NET_NOTIFY_WINDOW_RAISE", False);
+  net_notify_window_lower =
+    XInternAtom(display, "_NET_NOTIFY_WINDOW_LOWER", False);
+
+  net_change_workspace= XInternAtom(display, "_NET_CHANGE_WORKSPACE", False);
+  net_change_window_focus =
+    XInternAtom(display, "_NET_CHANGE_WINDOW_FOCUS", False);
+  net_cycle_window_focus =
+    XInternAtom(display, "_NET_CYCLE_WINDOW_FOCUS", False); 
   
   cursor.session = XCreateFontCursor(display, XC_left_ptr);
   cursor.move = XCreateFontCursor(display, XC_fleur);
+  cursor.ll_angle = XCreateFontCursor(display, XC_ll_angle);
+  cursor.lr_angle = XCreateFontCursor(display, XC_lr_angle);
+
+  XSetErrorHandler((XErrorHandler) handleXErrors);
+
+  timerList = new LinkedList<BTimer>;
 
   screenInfoList = new LinkedList<ScreenInfo>;
   int i;
   for (i = 0; i < number_of_screens; i++) {
     ScreenInfo *screeninfo = new ScreenInfo(this, i);
     screenInfoList->insert(screeninfo);
-  } 
+  }
 }
 
 
 BaseDisplay::~BaseDisplay(void) {
-  while (screenInfoList->count())
-    delete screenInfoList->remove(0);
+#ifdef    DEBUG
+  deallocate(sizeof(BaseDisplay), "BaseDisplay.cc");
+#endif // DEBUG
+
+  while (screenInfoList->count()) {
+    ScreenInfo *si = screenInfoList->first();
+
+    screenInfoList->remove(si);
+    delete si;
+  }
 
   delete screenInfoList;
+
+  // we don't create the BTimers, we don't delete them
+  while (timerList->count())
+    timerList->remove(0);
+
+  delete timerList;
 
   XCloseDisplay(display);
 }
@@ -106,15 +316,87 @@ BaseDisplay::~BaseDisplay(void) {
 void BaseDisplay::eventLoop(void) {
   run();
 
-  while (! _shutdown) {
-    XEvent e;
-    XNextEvent(display, &e);
-    process_event(&e);
+  int xfd = ConnectionNumber(display);
+
+  while ((! _shutdown) && (! internal_error)) {
+    if (XPending(display)) {
+      XEvent e;
+      XNextEvent(display, &e);
+
+      if (last_bad_window != None && e.xany.window == last_bad_window) {
+#ifdef    DEBUG
+      fprintf(stderr, "BaseDisplay::eventLoop(): "
+              "removing bad window from event queue\n");
+#endif // DEBUG
+      } else { 
+        last_bad_window = None;
+        process_event(&e);
+      }
+    } else {
+      fd_set rfds;
+      timeval now, tm, *timeout = (timeval *) 0;
+
+      FD_ZERO(&rfds);
+      FD_SET(xfd, &rfds);
+
+      if (timerList->count()) {
+        gettimeofday(&now, 0);
+
+        tm.tv_sec = tm.tv_usec = 0l;
+
+        BTimer *timer = timerList->first();
+
+        tm.tv_sec = timer->getStartTime().tv_sec +
+          timer->getTimeout().tv_sec - now.tv_sec;
+        tm.tv_usec = timer->getStartTime().tv_usec +
+          timer->getTimeout().tv_usec - now.tv_usec;
+
+        while (tm.tv_usec >= 1000000) {
+          tm.tv_sec++;
+          tm.tv_usec -= 1000000;
+        }
+
+        while (tm.tv_usec < 0) {
+          if (tm.tv_sec > 0) {
+            tm.tv_sec--;
+            tm.tv_usec += 1000000;
+          } else {
+            tm.tv_usec = 0;
+            break;
+          }
+        }
+
+        timeout = &tm;
+      }
+
+      select(xfd + 1, &rfds, 0, 0, timeout);
+
+      // check for timer timeout
+      gettimeofday(&now, 0);
+
+      LinkedListIterator<BTimer> it(timerList);
+      for(; it.current(); it++) {
+        tm.tv_sec = it.current()->getStartTime().tv_sec +
+          it.current()->getTimeout().tv_sec;
+        tm.tv_usec = it.current()->getStartTime().tv_usec +
+          it.current()->getTimeout().tv_usec;
+
+        if ((now.tv_sec < tm.tv_sec) ||
+            (now.tv_sec == tm.tv_sec && now.tv_usec < tm.tv_usec))
+          break;
+
+        it.current()->fireTimeout();
+  
+        // restart the current timer so that the start time is updated
+        if (! it.current()->doOnce()) it.current()->start();
+        else it.current()->stop();
+      }
+    }
   }
 }
 
 
-Bool BaseDisplay::validateWindow(Window window) {  
+const Bool BaseDisplay::validateWindow(Window window) {  
   XEvent event;
   if (XCheckTypedWindowEvent(display, window, DestroyNotify, &event)) {
     XPutBackEvent(display, &event);
@@ -129,8 +411,6 @@ Bool BaseDisplay::validateWindow(Window window) {
 void BaseDisplay::grab(void) {
   if (! server_grabs++)
     XGrabServer(display);
-
-  XSync(display, False);
 }
 
 
@@ -142,17 +422,73 @@ void BaseDisplay::ungrab(void) {
 }
 
 
-ScreenInfo::ScreenInfo(BaseDisplay *d, int num) {
-  display = d;
-  screen_number = num;
+void BaseDisplay::addTimer(BTimer *timer) {
+  if (! timer) return;
 
-  root_window = RootWindow(display->getDisplay(), screen_number);
-  visual = DefaultVisual(display->getDisplay(), screen_number);
-  depth = DefaultDepth(display->getDisplay(), screen_number);
+  LinkedListIterator<BTimer> it(timerList);
+  int index = 0;
+  for (; it.current(); it++, index++)
+    if ((it.current()->getTimeout().tv_sec > timer->getTimeout().tv_sec) ||
+        ((it.current()->getTimeout().tv_sec == timer->getTimeout().tv_sec) &&
+         (it.current()->getTimeout().tv_usec >= timer->getTimeout().tv_usec)))
+      break;
 
-  width =
-    WidthOfScreen(ScreenOfDisplay(display->getDisplay(), screen_number));
-  height =
-    HeightOfScreen(ScreenOfDisplay(display->getDisplay(), screen_number));
+  timerList->insert(timer, index);
 }
 
+
+void BaseDisplay::removeTimer(BTimer *timer) {
+  timerList->remove(timer);
+}
+
+
+ScreenInfo::ScreenInfo(BaseDisplay *d, int num) {
+#ifdef    DEBUG
+  allocate(sizeof(ScreenInfo), "BaseDisplay.cc");
+#endif // DEBUG
+
+  basedisplay = d;
+  screen_number = num;
+
+  root_window = RootWindow(basedisplay->getXDisplay(), screen_number);
+  depth = DefaultDepth(basedisplay->getXDisplay(), screen_number);
+
+  width =
+    WidthOfScreen(ScreenOfDisplay(basedisplay->getXDisplay(), screen_number));
+  height =
+    HeightOfScreen(ScreenOfDisplay(basedisplay->getXDisplay(), screen_number));
+
+  // search for a TrueColor Visual... if we can't find one... we will use the
+  // default visual for the screen
+  XVisualInfo vinfo_template, *vinfo_return;
+  int vinfo_nitems;
+
+  vinfo_template.screen = screen_number;
+  vinfo_template.c_class = TrueColor;
+
+  visual = (Visual *) 0;
+
+  if ((vinfo_return = XGetVisualInfo(basedisplay->getXDisplay(),
+                                     VisualScreenMask | VisualClassMask,
+                                     &vinfo_template, &vinfo_nitems)) &&
+      vinfo_nitems > 0) {
+    for (int i = 0; i < vinfo_nitems; i++) {
+      if (depth < (vinfo_return + i)->depth) {
+        depth = (vinfo_return + i)->depth;
+        visual = (vinfo_return + i)->visual;
+      }
+    }
+    
+    XFree(vinfo_return);
+  }
+  
+  if (! visual)
+    visual = DefaultVisual(basedisplay->getXDisplay(), screen_number);
+}
+ 
+ 
+#ifdef    DEBUG
+ScreenInfo::~ScreenInfo(void) {
+  deallocate(sizeof(ScreenInfo), "BaseDisplay.cc");
+}
+#endif // DEBUG

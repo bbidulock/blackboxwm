@@ -10,25 +10,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-# data/Makefile.am for Blackbox 0.51.x  - an X11 Window manager
-# Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
-#
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-#
-#  (See the included file COPYING / GPL-2.0)
-#
+# data/Makefile.am for Blackbox 0.60.x  - an X11 Window manager
 
 
 SHELL = @SHELL@
@@ -77,12 +59,12 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-CC = @CC@
 CXX = @CXX@
+DEBUG = @DEBUG@
 INTERLACE = @INTERLACE@
-KDE = @KDE@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
+ORDEREDPSEUDO = @ORDEREDPSEUDO@
 PACKAGE = @PACKAGE@
 SHAPE = @SHAPE@
 SLIT = @SLIT@
@@ -108,7 +90,7 @@ GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps data/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps data/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \

@@ -10,25 +10,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-# util/Makefile.am for Blackbox 0.51.x  - an X11 Window manager
-# Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
-#
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-#
-#  (See the included file COPYING / GPL-2.0)
-#
+# util/Makefile.am for Blackbox 0.60.x  - an X11 Window manager
 
 
 SHELL = @SHELL@
@@ -77,21 +59,24 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-CC = @CC@
 CXX = @CXX@
+DEBUG = @DEBUG@
 INTERLACE = @INTERLACE@
-KDE = @KDE@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
+ORDEREDPSEUDO = @ORDEREDPSEUDO@
 PACKAGE = @PACKAGE@
 SHAPE = @SHAPE@
 SLIT = @SLIT@
 VERSION = @VERSION@
 regex_cmd = @regex_cmd@
 
+CPPFLAGS = @CPPFLAGS@ @DEBUG@
+
 bin_PROGRAMS = bsetroot
 
-bsetroot_SOURCES = bsetroot.c
+bsetroot_SOURCES = bsetroot.cc
+bsetroot_LDADD = ../src/BaseDisplay.o ../src/LinkedList.o ../src/Timer.o ../src/Image.o
 
 MAINTAINERCLEANFILES = Makefile.in
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -101,7 +86,6 @@ PROGRAMS =  $(bin_PROGRAMS)
 
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I..
-CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 X_CFLAGS = @X_CFLAGS@
@@ -109,13 +93,13 @@ X_LIBS = @X_LIBS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 bsetroot_OBJECTS =  bsetroot.o
-bsetroot_LDADD = $(LDADD)
-bsetroot_DEPENDENCIES = 
+bsetroot_DEPENDENCIES =  ../src/BaseDisplay.o ../src/LinkedList.o \
+../src/Timer.o ../src/Image.o
 bsetroot_LDFLAGS = 
-CFLAGS = @CFLAGS@
-COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-CCLD = $(CC)
-LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+CXXFLAGS = @CXXFLAGS@
+CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+CXXLD = $(CXX)
+CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
 DIST_COMMON =  Makefile.am Makefile.in
 
 
@@ -128,9 +112,9 @@ OBJECTS = $(bsetroot_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .S .c .o .s
+.SUFFIXES: .S .c .cc .o .s
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps util/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps util/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
@@ -183,7 +167,9 @@ maintainer-clean-compile:
 
 bsetroot: $(bsetroot_OBJECTS) $(bsetroot_DEPENDENCIES)
 	@rm -f bsetroot
-	$(LINK) $(bsetroot_LDFLAGS) $(bsetroot_OBJECTS) $(bsetroot_LDADD) $(LIBS)
+	$(CXXLINK) $(bsetroot_LDFLAGS) $(bsetroot_OBJECTS) $(bsetroot_LDADD) $(LIBS)
+.cc.o:
+	$(CXXCOMPILE) -c $<
 
 tags: TAGS
 
@@ -303,6 +289,9 @@ mostlyclean distclean maintainer-clean
 
 distclean-local:
 	rm -f *\~
+
+bsetroot.o: bsetroot.cc ../config.h bsetroot.hh ../src/BaseDisplay.hh \
+ ../src/LinkedList.hh ../src/Timer.hh ../src/Image.hh
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

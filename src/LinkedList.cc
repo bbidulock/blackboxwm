@@ -1,30 +1,39 @@
 // LinkedList.cc for Blackbox - an X11 Window manager
-// Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
+// Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the 
+// Software is furnished to do so, subject to the following conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software. 
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//
-// (See the included file COPYING / GPL-2.0)
-//
-
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// DEALINGS IN THE SOFTWARE.
+  
+// stupid macros needed to access some functions in version 2 of the GNU C 
+// library
 #ifndef   _GNU_SOURCE
 #define   _GNU_SOURCE
 #endif // _GNU_SOURCE
 
 #include "LinkedList.hh"
 
-#include <stdio.h>
+#ifdef    HAVE_CONFIG_H
+#  include "../config.h"
+#endif // HAVE_CONFIG_H
+
+#ifdef    HAVE_STDIO_H
+#  include <stdio.h>
+#endif // HAVE_STDIO_H
 
 
 __llist_iterator::__llist_iterator(__llist *l) {
@@ -32,13 +41,10 @@ __llist_iterator::__llist_iterator(__llist *l) {
   list = l;
 
   if (list) {
-    if (list->iterator && list->iterator != this) {
-      fprintf(stderr,
-              "\nFATAL:  more than one iterator assigned to list %p\n", list);
-      abort();
-    }    
+    if (! list->iterators)
+      list->iterators = new __llist;
 
-    list->iterator = this;
+    list->iterators->insert(this);
   }
 
   reset();
@@ -46,8 +52,8 @@ __llist_iterator::__llist_iterator(__llist *l) {
 
 
 __llist_iterator::~__llist_iterator(void) {
-  if (list && list->iterator == this)
-    list->iterator = (__llist_iterator *) 0; 
+  if (list && list->iterators)
+    list->iterators->remove(this);
 }
 
 
@@ -98,7 +104,7 @@ __llist::__llist(void *d) {
   // initialize the linked list...
   _first = (__llist_node *) 0;
   _last = (__llist_node *) 0;
-  iterator = (__llist_iterator *) 0;
+  iterators = (__llist *) 0;
   elements = 0;
   
   if (d) insert(d);
@@ -110,7 +116,18 @@ __llist::~__llist(void) {
   for (register int i = 0, r = elements; i < r; i++)
     remove(0);
 
-  if (iterator && iterator->list == this) iterator->list = (__llist *) 0;
+  if (iterators) {
+    __llist_node *n = iterators->_first;
+
+    while (n) {
+      ((__llist_iterator *) n->getData())->list = (__llist *) 0;
+      ((__llist_iterator *) n->getData())->node = (__llist_node *) 0;
+
+      n = n->getNext();
+    }
+
+    delete iterators;
+  }
 }
 
 
@@ -143,7 +160,7 @@ const int __llist::insert(void *d, int index) {
 
       _last = nnode;
     } else if (index < elements) {
-      // otherwise... insert the item at the position specified by index      
+      // otherwise... insert the item at the position specified by index
       __llist_node *nnode = new __llist_node, *inode = _first->getNext();
       
       if (! nnode)
@@ -186,9 +203,14 @@ const int __llist::remove(void *d) {
     __llist_node *node = _first;
     _first = _first->getNext();
 
-    if (iterator && iterator->node == node)
-        iterator->reset();
-    
+    if (iterators && iterators->_first) {
+      __llist_node *n = iterators->_first;
+      while (n) {
+        ((__llist_iterator *) n->getData())->reset();
+        n = n->getNext();
+      }
+    }
+ 
     --elements;
     delete node;
     return 0;
@@ -209,8 +231,13 @@ const int __llist::remove(void *d) {
 	  if (rnode == _last)
 	    _last = prev;
 
-          if (iterator && iterator->node == rnode)
-              iterator->node = prev;
+          if (iterators && iterators->_first) {
+            __llist_node *n = iterators->_first;
+            while (n) {
+              ((__llist_iterator *) n->getData())->reset();
+              n = n->getNext();
+            }
+          }
 
 	  --elements;
 	  delete rnode;
@@ -237,8 +264,13 @@ void *__llist::remove(const int index) {
     
     _first = _first->getNext();
 
-    if (iterator && iterator->node == node)
-        iterator->reset();
+    if (iterators && iterators->_first) {
+      __llist_node *n = iterators->_first;
+      while (n) {
+        ((__llist_iterator *) n->getData())->reset();
+        n = n->getNext();
+      }
+    }
 
     --elements;
     delete node;
@@ -263,8 +295,13 @@ void *__llist::remove(const int index) {
     if (rnode == _last)
       _last = prev;
 
-    if (iterator && iterator->node == rnode)
-        iterator->node = prev;
+    if (iterators && iterators->_first) {
+      __llist_node *n = iterators->_first;
+      while (n) {
+        ((__llist_iterator *) n->getData())->reset();
+        n = n->getNext();
+      }
+    }
 
     --elements;
     data_return = rnode->getData();

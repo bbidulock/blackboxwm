@@ -1,23 +1,24 @@
 // Workspace.hh for Blackbox - an X11 Window manager
-// Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
+// Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the 
+// Software is furnished to do so, subject to the following conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software. 
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//
-// (See the included file COPYING / GPL-2.0)
-//
-
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// DEALINGS IN THE SOFTWARE.
+  
 #ifndef   __Workspace_hh
 #define   __Workspace_hh
 
@@ -33,10 +34,6 @@ class BlackboxWindow;
 
 class Workspace {
 private:
-#ifdef    KDE
-  Atom desktop_name_atom;
-#endif // KDE
-  
   BScreen *screen;
   Clientmenu *clientmenu;
 
@@ -54,39 +51,35 @@ public:
   Workspace(BScreen *, int = 0);
   ~Workspace(void);
 
+  inline BScreen *getScreen(void) { return screen; }
+
+  inline Clientmenu *getMenu(void) { return clientmenu; }
+ 
+  inline char *getName(void) { return name; }
+
+  inline const int &getWorkspaceID(void) const { return id; }
+
   BlackboxWindow *getWindow(int);
 
   Bool isCurrent(void);
 
-  BScreen *getScreen(void) { return screen; }
-
-  Clientmenu *getMenu(void) { return clientmenu; }
-  
-  char *getName(void) { return name; }
-  
   const int addWindow(BlackboxWindow *, Bool = False);
   const int removeWindow(BlackboxWindow *);
   const int getCount(void);
   
-  int getWorkspaceID(void) { return id; }
-  int showAll(void);
-  int hideAll(void);
-  int removeAll(void);
-  
+  void showAll(void);
+  void hideAll(void);
+  void removeAll(void);
   void raiseWindow(BlackboxWindow *);
   void lowerWindow(BlackboxWindow *);
-  void setFocusWindow(int);
+  // void setFocusWindow(int);
   void reconfigure();
   void update();
   void setCurrent(void);
   void setName(char *);
   void shutdown(void);
-
-#ifdef    KDE
-  void getKWMWindowRegion(int *, int *, int *, int *);
-  void rereadName(void);
-#endif // KDE
 };
 
 
 #endif // __Workspace_hh
+
