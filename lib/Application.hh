@@ -109,8 +109,8 @@ namespace bt {
     virtual bool process_signal(int signal);
 
   public:
-    Application(const std::string &app_name, const char *dpy_name,
-                bool multi_head);
+    Application(const std::string &app_name, const char *dpy_name = 0,
+                bool multi_head = false);
     virtual ~Application(void);
 
     inline bool hasShapeExtensions(void) const
