@@ -123,60 +123,60 @@ unsigned long bt::RealPixmapCache::find(unsigned int screen,
 					unsigned int width,
 					unsigned int height,
 					unsigned long old_pixmap) {
+  release(old_pixmap);
+
+  if (texture.texture() == (Texture::Flat | Texture::Solid))
+    return None;
+  
+  if (texture.texture() == Texture::Parent_Relative)
+    return ParentRelative;
+
   Pixmap p;
-  if (texture.texture() == (Texture::Flat | Texture::Solid)) {
-    p = None;
-  } else if (texture.texture() == Texture::Parent_Relative) {
-    p = ParentRelative;
+  // find one in the cache
+  CacheItem item(screen, texture, width, height);
+  Cache::iterator it = std::find(cache.begin(), cache.end(), item);
+
+  if (it != cache.end()) {
+    // found
+    ++(it->count);
+    
+    p = it->pixmap;
+
+#ifdef PIXMAPCACHE_DEBUG
+    fprintf(stderr, "bt::PixmapCache: use %08lx %4dx%4d, count %4d\n",
+            it->pixmap, width, height, it->count);
+#endif // PIXMAPCACHE_DEBUG
   } else {
-    // find one in the cache
-    CacheItem item(screen, texture, width, height);
-    Cache::iterator it = std::find(cache.begin(), cache.end(), item);
+    Image image(width, height);
+    p = image.render(_display, screen, texture);
 
-    if (it != cache.end()) {
-      // found
-      ++(it->count);
-
-      p = it->pixmap;
+    if (p) {
+      item.pixmap = p;
 
 #ifdef PIXMAPCACHE_DEBUG
-      fprintf(stderr, "bt::PixmapCache: use %08lx %4dx%4d, count %4d\n",
-              it->pixmap, width, height, it->count);
+      fprintf(stderr,
+              "bt::PixmapCache: add %08lx %4dx%4d\n"
+              "                 mem %8ld max %8ld\n",
+              p, width, height, mem_usage, maxmem_usage);
 #endif // PIXMAPCACHE_DEBUG
-    } else {
-      Image image(width, height);
-      p = image.render(_display, screen, texture);
 
-      if (p) {
-        item.pixmap = p;
+      cache.push_front(item);
 
-#ifdef PIXMAPCACHE_DEBUG
+      // keep track of memory usage server side
+      const unsigned long mem =
+        ( ( width * height ) * (_display.screenInfo(screen).depth() / 8 ) );
+      mem_usage += mem;
+      if (mem_usage > maxmem_usage)
+        clear(false);
+      
+      if (mem_usage > maxmem_usage) {
         fprintf(stderr,
-                "bt::PixmapCache: add %08lx %4dx%4d\n"
-                "                 mem %8ld max %8ld\n",
-                p, width, height, mem_usage, maxmem_usage);
-#endif // PIXMAPCACHE_DEBUG
-
-        cache.push_front(item);
-
-        // keep track of memory usage server side
-        const unsigned long mem =
-          ( ( width * height ) * (_display.screenInfo(screen).depth() / 8 ) );
-        mem_usage += mem;
-        if (mem_usage > maxmem_usage)
-          clear(false);
-
-        if (mem_usage > maxmem_usage) {
-          fprintf(stderr,
-                  "bt::PixmapCache: maximum size (%ld kb) exceeded\n"
-                  "bt::PixmapCache: current size: %ld kb\n",
-                  maxmem_usage / 1024, mem_usage / 1024);
-        }
+                "bt::PixmapCache: maximum size (%ld kb) exceeded\n"
+                "bt::PixmapCache: current size: %ld kb\n",
+                maxmem_usage / 1024, mem_usage / 1024);
       }
     }
   }
-
-  release(old_pixmap);
 
   return p;
 }
