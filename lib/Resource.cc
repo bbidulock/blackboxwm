@@ -63,7 +63,7 @@ std::string bt::Resource::read(const std::string &name,
   XrmValue value;
   char *value_type;
   if (XrmGetResource(db, name.c_str(), classname.c_str(), &value_type, &value))
-    return std::string(value.addr, value.size);
+    return std::string(value.addr, value.size - 1);
   return default_value;
 }
 
