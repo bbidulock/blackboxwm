@@ -1914,7 +1914,7 @@ BlackboxWindow *BlackboxWindow::findNonTransientParent(void) const {
   Returns a list of all transients.  This is recursive, so it returns
   all transients of transients as well.
 */
-BlackboxWindowList BlackboxWindow::buildFullTransientList() const {
+BlackboxWindowList BlackboxWindow::buildFullTransientList(void) const {
   BlackboxWindowList all = client.transientList;
   BlackboxWindowList::const_iterator it = client.transientList.begin(),
                                     end = client.transientList.end();
