@@ -32,6 +32,18 @@ static char check_bits[] = { 0x40, 0x60, 0x71, 0x3b, 0x1f, 0x0e, 0x04 };
 #define arrow_height 7
 static char arrow_bits[] = { 0x00, 0x10, 0x30, 0x70, 0x30, 0x10, 0x00 };
 
+#define iconify_width 7
+#define iconify_height 7
+static char iconify_bits[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x7f, 0x7f};
+
+#define maximize_width 7
+#define maximize_height 7
+static char maximize_bits[] = { 0x7f, 0x7f, 0x41, 0x41, 0x41, 0x41, 0x7f };
+
+#define close_width 7
+#define close_height 7
+static char close_bits[] = { 0x41, 0x22, 0x14, 0x08, 0x14, 0x22, 0x41 };
+
 
 BStyle::BStyle( int scr )
   : screen( scr )
@@ -46,14 +58,26 @@ BStyle::BStyle( int scr )
   menustyle.titlestyle.font = 0;
 
   // ### TODO - make this configurable
-  menustyle.arrow =
+  bitmap.arrow =
     XCreateBitmapFromData( *BaseDisplay::instance(),
                            BaseDisplay::instance()->screenInfo( scr )->rootWindow(),
                            arrow_bits, arrow_width, arrow_height );
-  menustyle.check =
+  bitmap.check =
     XCreateBitmapFromData( *BaseDisplay::instance(),
                            BaseDisplay::instance()->screenInfo( scr )->rootWindow(),
                            check_bits, check_width, check_height );
+  bitmap.iconify =
+    XCreateBitmapFromData( *BaseDisplay::instance(),
+                           BaseDisplay::instance()->screenInfo( scr )->rootWindow(),
+                           iconify_bits, iconify_width, iconify_height );
+  bitmap.maximize =
+    XCreateBitmapFromData( *BaseDisplay::instance(),
+                           BaseDisplay::instance()->screenInfo( scr )->rootWindow(),
+                           maximize_bits, maximize_width, maximize_height );
+  bitmap.close =
+    XCreateBitmapFromData( *BaseDisplay::instance(),
+                           BaseDisplay::instance()->screenInfo( scr )->rootWindow(),
+                           close_bits, close_width, close_height );
 }
 
 BStyle::~BStyle()
@@ -74,10 +98,16 @@ BStyle::~BStyle()
     XFreeFont( *BaseDisplay::instance(), menustyle.font );
   if ( menustyle.titlestyle.font )
     XFreeFont( *BaseDisplay::instance(), menustyle.titlestyle.font );
-  if ( menustyle.arrow )
-    XFreePixmap( *BaseDisplay::instance(), menustyle.arrow );
-  if ( menustyle.check )
-    XFreePixmap( *BaseDisplay::instance(), menustyle.check );
+  if ( bitmap.arrow )
+    XFreePixmap( *BaseDisplay::instance(), bitmap.arrow );
+  if ( bitmap.check )
+    XFreePixmap( *BaseDisplay::instance(), bitmap.check );
+  if ( bitmap.iconify )
+    XFreePixmap( *BaseDisplay::instance(), bitmap.iconify );
+  if ( bitmap.maximize )
+    XFreePixmap( *BaseDisplay::instance(), bitmap.maximize );
+  if ( bitmap.close )
+    XFreePixmap( *BaseDisplay::instance(), bitmap.close );
 }
 
 static XrmDatabase stylerc = 0;

@@ -815,6 +815,9 @@ void BlackboxWindow::reconfigure(void)
     setFocusFlag(flags.focused);
 
     configure(frame.x, frame.y, frame.width, frame.height);
+
+    if (windowmenu)
+      windowmenu->reconfigure();
 }
 
 
@@ -2075,12 +2078,17 @@ void BlackboxWindow::redrawIconifyButton(Bool pressed) {
   }
   XClearWindow(*blackbox, frame.iconify_button);
 
+  BStyle *style = screen->style();
   BGCCache::Item &gc =
-      BGCCache::instance()->find( ( flags.focused ?
-				    screen->style()->windowButtonFocusPicColor() :
-				    screen->style()->windowButtonUnfocusPicColor() ) );
-  XDrawRectangle(*blackbox, frame.iconify_button, gc.gc(),
-		 2, (frame.button_h - 5), (frame.button_w - 5), 2);
+    BGCCache::instance()->find( ( flags.focused ?
+                                  screen->style()->windowButtonFocusPicColor() :
+                                  screen->style()->windowButtonUnfocusPicColor() ) );
+  int off = ( frame.button_w -  7 ) / 2;
+  XSetClipMask( *blackbox, gc.gc(), style->iconifyBitmap() );
+  XSetClipOrigin( *blackbox, gc.gc(), off, off );
+  XFillRectangle( *blackbox, frame.iconify_button, gc.gc(), off, off, 7, 7 );
+  XSetClipOrigin( *blackbox, gc.gc(), 0, 0 );
+  XSetClipMask( *blackbox, gc.gc(), None );
   BGCCache::instance()->release( gc );
 }
 
@@ -2114,13 +2122,15 @@ void BlackboxWindow::redrawMaximizeButton(Bool pressed) {
 
   BStyle *style = screen->style();
   BGCCache::Item &gc =
-      BGCCache::instance()->find( ( flags.focused ?
-				    style->windowButtonFocusPicColor() :
-				    style->windowButtonUnfocusPicColor() ) );
-  XDrawRectangle(*blackbox, frame.maximize_button, gc.gc(),
-		 2, 2, (frame.button_w - 5), (frame.button_h - 5));
-  XDrawLine(*blackbox, frame.maximize_button, gc.gc(),
-	    2, 3, (frame.button_w - 3), 3);
+    BGCCache::instance()->find( ( flags.focused ?
+                                  style->windowButtonFocusPicColor() :
+                                  style->windowButtonUnfocusPicColor() ) );
+  int off = ( frame.button_w -  7 ) / 2;
+  XSetClipMask( *blackbox, gc.gc(), style->maximizeBitmap() );
+  XSetClipOrigin( *blackbox, gc.gc(), off, off );
+  XFillRectangle( *blackbox, frame.maximize_button, gc.gc(), off, off, 7, 7 );
+  XSetClipOrigin( *blackbox, gc.gc(), 0, 0 );
+  XSetClipMask( *blackbox, gc.gc(), None );
   BGCCache::instance()->release( gc );
 }
 
@@ -2152,13 +2162,15 @@ void BlackboxWindow::redrawCloseButton(Bool pressed) {
 
   BStyle *style = screen->style();
   BGCCache::Item &gc =
-      BGCCache::instance()->find( ( flags.focused ?
-				    style->windowButtonFocusPicColor() :
-				    style->windowButtonUnfocusPicColor() ) );
-  XDrawLine(*blackbox, frame.close_button, gc.gc(),
-	    2, 2, (frame.button_w - 3), (frame.button_h - 3));
-  XDrawLine(*blackbox, frame.close_button, gc.gc(),
-	    2, (frame.button_h - 3), (frame.button_w - 3), 2);
+    BGCCache::instance()->find( ( flags.focused ?
+                                  style->windowButtonFocusPicColor() :
+                                  style->windowButtonUnfocusPicColor() ) );
+  int off = ( frame.button_w -  7 ) / 2;
+  XSetClipMask( *blackbox, gc.gc(), style->closeBitmap() );
+  XSetClipOrigin( *blackbox, gc.gc(), off, off );
+  XFillRectangle( *blackbox, frame.close_button, gc.gc(), off, off, 7, 7 );
+  XSetClipOrigin( *blackbox, gc.gc(), 0, 0 );
+  XSetClipMask( *blackbox, gc.gc(), None );
   BGCCache::instance()->release( gc );
 }
 

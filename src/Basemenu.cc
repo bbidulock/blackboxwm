@@ -173,7 +173,7 @@ void Basemenu::drawItem( const Rect &r, const Item &item )
     // draw check mark
     int cx = r.x() + ( indent - 7 ) / 2;
     int cy = r.y() + ( indent - 7 ) / 2;
-    XSetClipMask( *display, gc.gc(), style->menuCheckBitmap() );
+    XSetClipMask( *display, gc.gc(), style->checkBitmap() );
     XSetClipOrigin( *display, gc.gc(), cx, cy );
     XFillRectangle( *display, windowID(), gc.gc(), cx, cy, 7, 7 );
     XSetClipOrigin( *display, gc.gc(), 0, 0 );
@@ -184,7 +184,7 @@ void Basemenu::drawItem( const Rect &r, const Item &item )
     // draw submenu arrow
     int ax = r.x() + r.width() - indent + ( indent - 7 ) / 2;
     int ay = r.y() + ( indent - 7 ) / 2;
-    XSetClipMask( *display, gc.gc(), style->menuArrowBitmap() );
+    XSetClipMask( *display, gc.gc(), style->arrowBitmap() );
     XSetClipOrigin( *display, gc.gc(), ax, ay );
     XFillRectangle( *display, windowID(), gc.gc(), ax, ay, 7, 7 );
     XSetClipOrigin( *display, gc.gc(), 0, 0 );

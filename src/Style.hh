@@ -39,8 +39,6 @@ public:
   const BColor &menuDisabledTextColor() const { return menustyle.disabledcolor; }
   BTexture &menu() { return menustyle.texture; }
   BTexture &menuHighlight() { return menustyle.highlight; }
-  Pixmap menuArrowBitmap() const { return menustyle.arrow; }
-  Pixmap menuCheckBitmap() const { return menustyle.check; }
 
   // toolbar
   const XFontSet &toolbarFontSet() const { return toolbarstyle.fontset; }
@@ -81,12 +79,20 @@ public:
   BTexture &windowGripFocus() { return windowstyle.focus.grip; }
   BTexture &windowGripUnfocus() { return windowstyle.unfocus.grip; }
 
+  // bitmaps
+  Pixmap arrowBitmap() const { return bitmap.arrow; }
+  Pixmap checkBitmap() const { return bitmap.check; }
+  Pixmap iconifyBitmap() const { return bitmap.iconify; }
+  Pixmap maximizeBitmap() const { return bitmap.maximize; }
+  Pixmap closeBitmap() const { return bitmap.close; }
+
   // general
   const BColor &borderColor() const { return bordercolor; }
   int bevelWidth() const { return bevel_width; }
   int borderWidth() const { return border_width; }
   int frameWidth() const { return frame_width; }
   int handleWidth() const { return handle_width; }
+
 
 private:
   BTexture readDatabaseTexture( const string &, const string &, const string & );
@@ -111,7 +117,6 @@ private:
     Justify justify;
     BColor textcolor, hicolor, hitextcolor, disabledcolor;
     BTexture texture, highlight;
-    Pixmap arrow, check;
   } menustyle;
 
   struct toolbarstyle {
@@ -142,73 +147,14 @@ private:
     BTexture buttonpressed;
   } windowstyle;
 
+  struct bitmap {
+    Pixmap arrow, check, iconify, maximize, close;
+  } bitmap;
+
   BColor bordercolor;
   int bevel_width, border_width, frame_width, handle_width;
   int screen;
   string currentstyle;
-
-  /*
-    struct resource {
-    Bool toolbar_on_top, toolbar_auto_hide, sloppy_focus, auto_raise,
-    auto_edge_balance, image_dither, ordered_dither, opaque_move, full_max,
-    focus_new, focus_last;
-    BColor border_color;
-    XrmDatabase stylerc;
-
-    int workspaces, toolbar_placement, toolbar_width_percent, placement_policy,
-    edge_snap_threshold, row_direction, col_direction;
-
-    #ifdef    SLIT
-    Bool slit_on_top, slit_auto_hide;
-    int slit_placement, slit_direction;
-    #endif // SLIT
-
-    unsigned int handle_width, bevel_width, frame_width, border_width;
-
-    #ifdef    HAVE_STRFTIME
-    char *strftime_format;
-    #else // !HAVE_STRFTIME
-    Bool clock24hour;
-    int date_format;
-    #endif // HAVE_STRFTIME
-
-    } resource;
-
-    struct WindowStyle {
-    BColor f_focus, f_unfocus, l_text_focus, l_text_unfocus, b_pic_focus,
-    b_pic_unfocus;
-    BTexture t_focus, t_unfocus, l_focus, l_unfocus, h_focus, h_unfocus,
-    b_focus, b_unfocus, b_pressed, g_focus, g_unfocus;
-
-    XFontSet fontset;
-    XFontSetExtents *fontset_extents;
-    XFontStruct *font;
-
-    int justify;
-    };
-
-    struct ToolbarStyle {
-    BColor l_text, w_text, c_text, b_pic;
-    BTexture toolbar, label, window, button, pressed, clock;
-
-    XFontSet fontset;
-    XFontSetExtents *fontset_extents;
-    XFontStruct *font;
-
-    int justify;
-    };
-
-    struct MenuStyle {
-    BColor t_text, f_text, h_text, d_text;
-    BTexture title, frame, hilite;
-
-    XFontSet t_fontset, f_fontset;
-    XFontSetExtents *t_fontset_extents, *f_fontset_extents;
-    XFontStruct *t_font, *f_font;
-
-    int t_justify, f_justify, bullet, bullet_pos;
-    };
-  */
 };
 
 #endif // STYLE_HH
