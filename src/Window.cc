@@ -67,9 +67,11 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   fprintf(stderr, "BlackboxWindow::BlackboxWindow(): creating 0x%lx\n", w);
 #endif // DEBUG
 
-  // set timer to zero... it is initialized properly later, so we check
-  // if timer is zero in the destructor, and assume that the window is not
-  // fully constructed if timer is zero...
+  /*
+    set timer to zero... it is initialized properly later, so we check
+    if timer is zero in the destructor, and assume that the window is not
+    fully constructed if timer is zero...
+  */
   timer = 0;
   blackbox = b;
   client.window = w;
@@ -137,9 +139,11 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   client.wm_hint_flags = client.normal_hint_flags = 0;
   client.transient_for = 0;
 
-  // get the initial size and location of client window (relative to the
-  // _root window_). This position is the reference point used with the
-  // window's gravity to find the window's initial position.
+  /*
+    get the initial size and location of client window (relative to the
+    _root window_). This position is the reference point used with the
+    window's gravity to find the window's initial position.
+  */
   client.rect.setRect(wattrib.x, wattrib.y, wattrib.width, wattrib.height);
   client.old_bw = wattrib.border_width;
 
@@ -252,14 +256,47 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
               frame.rect.width(), frame.rect.height());
   }
 
+  // preserve the window's initial state on first map, and its current state
+  // across a restart
+  if (! getState()) {
+    if (client.wm_hint_flags & StateHint)
+      current_state = client.initial_state;
+    else
+      current_state = NormalState;
+  }
+
   if (flags.shaded) {
     flags.shaded = False;
     shade();
+    
+    /*
+      Because the iconic'ness of shaded windows is lost, we need to set the
+      state to NormalState so that shaded windows on other workspaces will not
+      get shown on the first workspace.
+      At this point in the life of a window, current_state should only be set
+      to IconicState if the window was an *icon*, not if it was shaded.
+    */
+    current_state = NormalState;
+  }
+
+  if (flags.stuck) {
+    flags.stuck = False;
+    stick();
   }
 
   if (flags.maximized && (functions & Func_Maximize)) {
     remaximize();
   }
+
+  /*
+    When the window is mapped (and also when its attributes are restored), the
+    current_state that was set here will be used.
+    It is set to Normal if the window is to be mapped or it is set to Iconic
+    if the window is to be iconified.
+    *Note* that for sticky windows, the same rules apply here, they are in fact
+    never set to Iconic since there is no way for us to tell if a sticky window
+    was iconified previously.
+  */
 
   setFocusFlag(False);
 }
@@ -1389,7 +1426,8 @@ void BlackboxWindow::iconify(void) {
 
 
 void BlackboxWindow::show(void) {
-  setState(NormalState);
+  current_state = (flags.shaded) ? IconicState : NormalState;
+  setState(current_state);
 
   XMapWindow(blackbox->getXDisplay(), client.window);
   XMapSubwindows(blackbox->getXDisplay(), frame.window);
@@ -1787,8 +1825,6 @@ bool BlackboxWindow::getState(void) {
 
 
 void BlackboxWindow::restoreAttributes(void) {
-  if (! getState()) current_state = NormalState;
-
   Atom atom_return;
   int foo;
   unsigned long ulfoo, nitems;
@@ -1804,20 +1840,28 @@ void BlackboxWindow::restoreAttributes(void) {
     return;
 
   if (net->flags & AttribShaded && net->attrib & AttribShaded) {
-    int save_state = current_state;
-
     flags.shaded = False;
     shade();
 
-    current_state = save_state;
+    /*
+      Because the iconic'ness of shaded windows is lost, we need to set the
+      state to NormalState so that shaded windows on other workspaces will not
+      get shown on the first workspace.
+      At this point in the life of a window, current_state should only be set
+      to IconicState if the window was an *icon*, not if it was shaded.
+    */
+    current_state = NormalState;
   }
 
   if ((net->workspace != screen->getCurrentWorkspaceID()) &&
       (net->workspace < screen->getWorkspaceCount())) {
     screen->reassociateWindow(this, net->workspace, True);
 
+    // set to WithdrawnState so it will be mapped on the new workspace
     if (current_state == NormalState) current_state = WithdrawnState;
   } else if (current_state == WithdrawnState) {
+    // the window is on this workspace and is Withdrawn, so it is waiting to
+    // be mapped
     current_state = NormalState;
   }
 
@@ -1825,7 +1869,9 @@ void BlackboxWindow::restoreAttributes(void) {
     flags.stuck = False;
     stick();
 
-    current_state = NormalState;
+    // if the window was on another workspace, it was going to be hidden. this
+    // specifies that the window should be mapped since it is sticky.
+    if (current_state == WithdrawnState) current_state = NormalState;
   }
 
   if (net->flags & AttribMaxHoriz || net->flags & AttribMaxVert) {
@@ -1847,7 +1893,8 @@ void BlackboxWindow::restoreAttributes(void) {
     if (flags.maximized) remaximize();
   }
 
-  setState(current_state);
+  // with the state set it will then be the map events job to read the window's
+  // state and behave accordingly
 
   XFree((void *) net);
 }
@@ -2085,17 +2132,6 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
   fprintf(stderr, "BlackboxWindow::mapRequestEvent() for 0x%lx\n",
           client.window);
 #endif // DEBUG
-
-  bool get_state_ret = getState();
-  if (! (get_state_ret && blackbox->isStartup())) {
-    if ((client.wm_hint_flags & StateHint) &&
-        (! (current_state == NormalState || current_state == IconicState)))
-      current_state = client.initial_state;
-    else
-      current_state = NormalState;
-  } else if (flags.iconic) {
-    current_state = NormalState;
-  }
 
   switch (current_state) {
   case IconicState:
