@@ -7,6 +7,8 @@
 #include <Menu.hh>
 #include <Resource.hh>
 
+#include <assert.h>
+
 
 static const int iconify_width  = 9;
 static const int iconify_height = 9;
