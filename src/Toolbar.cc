@@ -295,12 +295,10 @@ void Toolbar::reconfigure(void) {
       int len = strftime(t, 1024, screen->getStrftimeFormat(), tt);
       // XXX: check for len == 0 and handle it
       if (i18n.multibyte()) {
-        XRectangle ink, logical;
-        XmbTextExtents(screen->getToolbarStyle()->fontset, t, len,
-                       &ink, &logical);
-        frame.clock_w = logical.width;
+        frame.clock_w =
+          screen->getToolbarStyle()->fontset_extents->max_logical_extent.width * len;
       } else {
-        frame.clock_w = XTextWidth(screen->getToolbarStyle()->font, t, len);
+        frame.clock_w = screen->getToolbarStyle()->font->max_bounds.width * len;
       }
       frame.clock_w += (frame.bevel_w * 4);
     } else {
