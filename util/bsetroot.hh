@@ -24,15 +24,14 @@
 #ifndef   __bsetroot2_hh
 #define   __bsetroot2_hh
 
-#include "BaseDisplay.hh"
+#include "Display.hh"
 #include "Image.hh"
-#include "Timer.hh"
 #include "Util.hh"
 
 #include <string>
 
 
-class bsetroot: public bt::NoCopy, public bt::TimerQueueManager {
+class bsetroot: public bt::NoCopy {
 public:
   bsetroot(int argc, char **argv, char *dpy_name = 0);
   virtual ~bsetroot(void);
