@@ -569,8 +569,7 @@ void BScreen::manageWindow(Window w) {
     return;
   }
 
-  new BlackboxWindow(blackbox, w, this);
-
+  (void) new BlackboxWindow(blackbox, w, this);
   BlackboxWindow *win = blackbox->findWindow(w);
   if (! win)
     return;
