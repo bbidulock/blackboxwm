@@ -32,8 +32,8 @@ CPPFLAGS= @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ \
 bin_PROGRAMS= blackbox
 
 blackbox_SOURCES= Basemenu.cc Clientmenu.cc Configmenu.cc Iconmenu.cc Rootmenu.cc Screen.cc Slit.cc Toolbar.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc main.cc
-blackbox_DEPENDENCIES= $(top_srcdir)/lib/libblackbox.a
-blackbox_LDADD= -L$(top_srcdir)/lib -lblackbox
+blackbox_DEPENDENCIES= $(top_builddir)/lib/libblackbox.a
+blackbox_LDADD= -L$(top_builddir)/lib -lblackbox
 
 MAINTAINERCLEANFILES= Makefile.in
 

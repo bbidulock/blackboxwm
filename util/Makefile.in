@@ -89,8 +89,8 @@ bin_SCRIPTS = bsetbg
 bin_PROGRAMS = bsetroot
 
 bsetroot_SOURCES = bsetroot.cc
-bsetroot_DEPENDENCIES = $(top_srcdir)/lib/libblackbox.a
-bsetroot_LDADD = -L$(top_srcdir)/lib -lblackbox
+bsetroot_DEPENDENCIES = $(top_builddir)/lib/libblackbox.a
+bsetroot_LDADD = -L$(top_builddir)/lib -lblackbox
 
 MAINTAINERCLEANFILES = Makefile.in
 subdir = util
@@ -128,7 +128,7 @@ all: all-am
 .SUFFIXES: .cc .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am  $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  util/Makefile
+	  $(AUTOMAKE) --gnu  util/Makefile
 Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && \
 	  CONFIG_HEADERS= CONFIG_LINKS= \
