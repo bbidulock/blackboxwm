@@ -26,7 +26,6 @@
 #include "Font.hh"
 
 extern "C" {
-#include <stdio.h>
 #include <assert.h>
 }
 
@@ -38,71 +37,95 @@ extern "C" {
 static const char * const defaultFont = "fixed";
 
 
+bt::Font::FontCache bt::Font::fontcache;
+
 bt::Font::Font(const std::string &name, const bt::Display * const dpy )
   : _fontname(name), _dpy(dpy), _fontset(NULL), _font(NULL) {
-  load();
+  if (_dpy) load();
 }
 
 
 bt::Font::~Font(void) {
-  unload();
+  if (_dpy) unload();
 }
 
 
 bt::Font &bt::Font::operator=(const Font &f) {
-  unload();
+  if (_dpy) unload();
 
   _fontname = f._fontname;
   _dpy = f._dpy;
 
-  load();
+  if (_dpy) load();
 
   return *this;
 }
 
 
 void bt::Font::load(void) {
-  if (! display()) return;
+  if (_font || _fontset) return;
+  assert(_dpy != 0);
 
-  bool load_default = true;
+  if (_fontname.empty())
+    _fontname = defaultFont;
+
+  // see if this font is in the cache
+  FontCache::iterator it = fontcache.find(_fontname);
+  if (it != fontcache.end()) {
+    // found
+    _fontset = it->second.fontset;
+    _font = it->second.font;
+    ++it->second.count;
+    return;
+  }
 
   if (bt::i18n.multibyte()) {
-    if (! fontname().empty()) {
-      // _fontset = createFontSet(fontname().c_str());
-      if (_fontset != NULL)
-        load_default = false;
-    }
+    // _fontset = createFontSet(_fontname.c_str());
 
-    if (load_default) {
-      // _fontset = createFontSet(defaultFont);
-      assert(_fontset != NULL);
+    if (_fontset == NULL) {
+      _fontname = defaultFont;
+      // _fontset = createFontSet(_fontname.c_str());
     }
+    assert(_fontset != NULL);
   } else {
-    if (! fontname().empty()) {
-      fprintf(stderr, "loading font '%s'\n", fontname().c_str());
-      _font = XLoadQueryFont(display()->XDisplay(), fontname().c_str());
-      if (_font != NULL)
-        load_default = false;
-    }
+    _font = XLoadQueryFont(display()->XDisplay(), _fontname.c_str());
 
-    if (load_default) {
-      fprintf(stderr, "loading default font '%s'\n", defaultFont);
-      _font = XLoadQueryFont(display()->XDisplay(), defaultFont);
-      assert(_font != NULL);
+    if (_font == NULL) {
+      _fontname = defaultFont;
+      _font = XLoadQueryFont(display()->XDisplay(), _fontname.c_str());
     }
+    assert(_font != NULL);
   }
+
+  // insert new item into the cache
+
+  fontcache.insert(FontCacheItem(_fontname, FontRef(_fontset, _font)));
 }
 
 
 void bt::Font::unload(void) {
-  if (! display()) return;
+  if (!_font && !_fontset) return;
+  assert(_dpy != 0);
 
-  if (_fontset != NULL)
-    XFreeFontSet(display()->XDisplay(), _fontset);
+  // see if this font is in the cache
+  FontCache::iterator it = fontcache.find(_fontname);
+  if (it != fontcache.end()) {
+    // found
+    if (--it->second.count == 0) {
+      // no more references to this font, free it
+      fprintf(stderr, "  removing from cache\n");
+
+      if (it->second.fontset != NULL)
+        XFreeFontSet(display()->XDisplay(), it->second.fontset);
+      if (it->second.font != NULL)
+        XFreeFont(display()->XDisplay(), it->second.font);
+
+      // remove from the cache
+      fontcache.erase(it);
+    }
+  }
+
   _fontset = NULL;
-
-  if (_font != NULL)
-    XFreeFont(display()->XDisplay(), _font);
   _font = NULL;
 }
 

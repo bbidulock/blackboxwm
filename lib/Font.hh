@@ -30,6 +30,7 @@ extern "C" {
 #include <X11/Xlib.h>
 }
 
+#include <map>
 #include <string>
 
 
@@ -73,6 +74,20 @@ namespace bt {
     const bt::Display *_dpy;
     XFontSet _fontset;
     XFontStruct *_font;
+
+    // global font cache
+    struct FontRef {
+      XFontSet fontset;
+      XFontStruct *font;
+      unsigned int count;
+      inline FontRef(void)
+        : fontset(NULL), font(NULL), count(0u) { }
+      inline FontRef(XFontSet fs, XFontStruct *f)
+        : fontset(fs), font(f), count(1u) { }
+    };
+    typedef std::map<std::string,FontRef> FontCache;
+    typedef FontCache::value_type FontCacheItem;
+    static FontCache fontcache;
   };
 
   unsigned int textHeight(const bt::Font &font);
