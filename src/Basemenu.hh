@@ -25,6 +25,8 @@
 #define   __Basemenu_hh
 
 #include <X11/Xlib.h>
+
+#include <string>
 #include <deque>
 
 class Blackbox;
