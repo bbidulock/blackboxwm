@@ -36,6 +36,7 @@ class BlackboxWindow;
 
 class Iconmenu : public Basemenu {
 private:
+  Blackbox *blackbox;
   LinkedList<BlackboxIcon> *iconList;
 
 

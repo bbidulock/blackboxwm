@@ -27,6 +27,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/param.h>
 
 
 int main(int argc, char **argv) {
@@ -47,9 +49,12 @@ int main(int argc, char **argv) {
       // since we're using a different display... set the DISPLAY environment
       // variable appropriately
       session_display = argv[i];
-      if (setenv("DISPLAY", session_display, 1)) {
+      char tmp[PATH_MAX];
+      sprintf(tmp, "DISPLAY=%s", session_display);
+
+      if (putenv(tmp)) {
 	fprintf(stderr, "couldn't set environment variable DISPLAY\n");
-	perror("setenv()");
+	perror("putenv()");
       }
     } else if (! strcmp(argv[i], "-version")) {
       // print current version string
@@ -67,6 +72,10 @@ int main(int argc, char **argv) {
       exit(0);
     }
   }
+
+#ifdef __EMX__
+  _chdir2(getenv("X11ROOT"));
+#endif
 
   Blackbox box(argc, argv, session_display);
   box.EventLoop();

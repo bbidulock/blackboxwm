@@ -1,4 +1,4 @@
 
-InstallNonExecFile(Blackbox.ad, $(XAPPLOADDIR))
-InstallNonExecFile(BlackboxMenu.ad, $(XAPPLOADDIR))
+InstallNonExecFile(Blackbox.ad,$(XAPPLOADDIR))
+InstallNonExecFile(BlackboxMenu.ad,$(XAPPLOADDIR))
 

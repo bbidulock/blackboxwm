@@ -2,6 +2,30 @@ At the request of some people, here is a Change log starting with 0.33.0.
 Enjoy! :)
 
 
+Changes from 0.33.6 to 0.34.0:
+	- edited some Imakefiles so that rpm creaters have an easier time
+	- added stuff to lib/  which contains a small (VERY small) library for
+	  letting applications open a window on the workspace manager toolbar
+	  this is very very new... restarting will cause the app to crash
+	  (at best) or take X with it (the worst)... play with it an let me
+	  know how it works
+	- further revised window.cc and blackbox.cc to provide better error
+	  checking... window.cc received the most updates... validating a
+	  window is now done in the statement before the window is used... not
+	  at the beginning of the function the window is used in...
+	- fixed the stacking order bug when changing workspaces... the windows
+	  will now be restored in the order that you left them... not in the
+	  order they were created in...
+	- updated the README... a little bit anyway :)
+	- updated BlackboxWindow::maximizeWindow() in window.cc to properly
+	  maximize windows that have specified size increments
+	- fixed BlackboxWindow::configureWindow so that shaded windows that re
+	  size themselves only resize the titlebar
+	- added ccmalloc 0.2.3 to the main source tree to aid in debugging...
+	  this is NOT maintained by myself, see the source tree for details
+	- eliminated a double delete call with the aid of ccmalloc!@#!
+	
+
 Changes from 0.33.5 to 0.33.6:
 	- added Makefile.generic for those of you with foobared imake configs.
 	  the use of xmkmf -a (i.e. imake) is still prefered... but this should
@@ -112,4 +136,3 @@ Changes from 0.31.0 to 0.33.0:
 	  performed after the initial setup (save for reconfiguring).
 	- configuration has changed to be a little cleaner, and a little more
           thorough.  See the Blackbox.ad and BlackboxMenu.ad for exmaples.
-

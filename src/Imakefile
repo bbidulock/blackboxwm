@@ -20,7 +20,7 @@ XCOMM (See the included file COPYING / GPL-2.0)
 XCOMM Uncomment this line to get debugging symbols in the executable
 XCOMM 
 XCOMM You may also put any compiler specific flags here
-XCOMM CXXFLAGS :=	$(CXXFLAGS) -Wall -W -fno-strength-reduce -pipe
+CXXFLAGS :=	-Wall -W -fno-strength-reduce -pipe $(CXXFLAGS)
 XCOMM CXXFLAGS :=	$(CXXFLAGS) -g
 
 XCOMM Define this to get XShapeExtention support
@@ -29,6 +29,8 @@ XCOMM Define this to get XShapeExtention support
 XCOMM Define this to get Jon Denardis' curved gradient hack
 XCOMM #define GradientHack
 
+XCOMM Define this to get the facilities provided by ccmalloc
+XCOMM #define MallocDebug
 
 XCOMM
 XCOMM  END OF USER CONFIGURABLE ITEMS
@@ -39,8 +41,8 @@ XCOMM
 
 XCOMM Source files from which blackbox is built
 
-SRCS :=		Basemenu.cc Clientmenu.cc LinkedList.cc Rootmenu.cc Windowmenu.cc Workspace.cc WorkspaceManager.cc Workspacemenu.cc blackbox.cc graphics.cc icon.cc main.cc window.cc
-OBJS :=		Basemenu.o  Clientmenu.o  LinkedList.o  Rootmenu.o  Windowmenu.o  Workspace.o  WorkspaceManager.o  Workspacemenu.o  blackbox.o graphics.o icon.o main.o window.o
+SRCS :=		Application.cc Basemenu.cc Clientmenu.cc LinkedList.cc Rootmenu.cc Window.cc Windowmenu.cc Workspace.cc WorkspaceManager.cc Workspacemenu.cc blackbox.cc graphics.cc icon.cc main.cc
+OBJS :=		Application.o  Basemenu.o  Clientmenu.o  LinkedList.o  Rootmenu.o  Window.o  Windowmenu.o  Workspace.o  WorkspaceManager.o  Workspacemenu.o  blackbox.o graphics.o icon.o main.o
 
 LDLIBS :=	$(XLIB) $(EXTENSIONLIB)
 CXXFLAGS :=	$(CXXFLAGS) -DXAPPLOADDIR=\"$(XAPPLOADDIR)\"
@@ -54,11 +56,22 @@ CXXFLAGS :=	$(CXXFLAGS) -DGradientHack
 LDLIBS :=	$(LDLIBS) -lm
 #endif
 
+#ifdef MallocDebug
+LDLIBS :=       -N $(LDLIBS) ../ccmalloc-0.2.3/src/ccmalloc.o -ldl
+#endif
+
 XCOMM
 XCOMM Homebrew target for imake - form used from $(CONFIGDUR)/Imake.rules
 XCOMM
 XCOMM DO NOT EDIT THIS UNLESS YOU KNOW WHAT YOU ARE DOING
 XCOMM
+
+#ifdef OS2Architecture
+#undef StrcasecmpDefines
+#define StrcasecmpDefines	-Dstrcasecmp=stricmp -Dstrncasecmp=strnicmp
+#endif
+
+CXXFLAGS :=	$(CXXFLAGS) StrcasecmpDefines
 
 #ifndef CplusplusProgramTargetHelperNoMan
 #define CplusplusProgramTargetHelperNoMan(program,srcs,objs,deplib,locallib,syslib) @@\
@@ -76,9 +89,9 @@ InstallProgram(program,$(BINDIR))
 
 #ifndef ComplexCplusplusProgramTargetNoMan
 #define ComplexCplusplusProgramTargetNoMan(program)                     @@\
-	PROGRAM = program                                               @@\
+	PROGRAM = ProgramTargetName(program)                            @@\
                                                                         @@\
-AllTarget(program)                                                      @@\
+AllTarget(ProgramTargetName(program))                                   @@\
                                                                         @@\
 CplusplusProgramTargetHelperNoMan(program,SRCS,OBJS,DEPLIBS,$(LOCAL_LIBRARIES),NullParameter) @@\
                                                                         @@\
@@ -91,3 +104,8 @@ clean::                                                                 @@\
 
 ComplexCplusplusProgramTargetNoMan(blackbox)
 
+#ifdef MallocDebug
+blackbox: .ccmalloc
+clean::
+	Removefile(ccmalloc.log)
+#endif

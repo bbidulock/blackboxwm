@@ -1,0 +1,26 @@
+------------------------------------------------------------------------------
+BUGS:
+------------------------------------------------------------------------------
+
+(1) If you call malloc and free only implicitly over library functions
+of the C-library like strdup then the linker does not link the malloc
+called by strdup to the malloc supported by ccmalloc and you do not
+get any ccmalloc report at all! To avoid this make sure that your object
+file has malloc or free as external symbols (e.g. the leak in the program
+`main(){strdup();}' can not be detected)
+
+(2) Some standard libraries like libc or lg++ may also have memory leaks.
+ccmalloc tries to exclude these leaks from the report (see `library-leaks'
+in `start-up-file' or `.ccmalloc'). But in some cases it did not classify
+such leaks correct (especially under SunOS 4.X).
+
+(3) In one project (under Solaris) I had the problem that printf printed
+garbage when linking with ccmalloc. Must have something to do with the
+static allocator.
+
+(4) On SUNOS test_C_19 didn't work (no time to fix it ...)
+
+------------------------------------------------------------------------------
+(C) 1997-1998 Armin Biere
+$Id: BUGS,v 1.1.1.1 2001/11/30 07:54:36 shaleh Exp $
+------------------------------------------------------------------------------

@@ -32,6 +32,7 @@ class BlackboxIcon;
 class Iconmenu;
 class Workspace;
 class Workspacemenu;
+class Application;
 
 #include "LinkedList.hh"
 #include "graphics.hh"
@@ -45,13 +46,15 @@ private:
 
   struct frame {
     Pixmap button, pbutton, ibutton, pibutton;
-    Window base, window, workspaceDock, fButton, bButton, iconButton, clock;
+    Window base, window, workspaceDock, fButton, bButton, iconButton, clock,
+      applicationDock, appNextButton, appPrevButton;
 
     int x, y;
     unsigned int width, height, button_w, button_h, wsd_w, wsd_h, ib_w, ib_h,
-      clock_w, clock_h, bevel_w;
+      clock_w, clock_h, bevel_w, app_w, app_h, apps_w, apps_h;
   } frame;
   
+  LinkedList<Application> *applicationList;
   LinkedList<Workspace> *workspacesList;
   Blackbox *blackbox;
   Iconmenu *iconMenu;
@@ -75,6 +78,8 @@ public:
   void DissociateAll(void);
   void addIcon(BlackboxIcon *i);
   void removeIcon(BlackboxIcon *i);
+  void addApplication(Application *);
+  void removeApplication(Application *);
   void iconUpdate(void);
   void stackWindows(Window *, int);
   void Reconfigure(void);

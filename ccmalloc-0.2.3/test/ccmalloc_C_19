@@ -1,0 +1,4 @@
+file test_C_19.exe
+log test_C_19.log
+set load-dynlibs 1
+set library-chains

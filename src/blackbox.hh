@@ -21,7 +21,7 @@
 
 #ifndef __Blackbox_hh
 #define __Blackbox_hh
-#define __blackbox_version "beta zero point three three point six"
+#define __blackbox_version "beta zero point three four point zero"
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
@@ -33,6 +33,7 @@ class Basemenu;
 class Rootmenu;
 class BlackboxIcon;
 class BlackboxWindow;
+class Application;
 
 #include "LinkedList.hh"
 #include "graphics.hh"
@@ -62,6 +63,11 @@ private:
     WorkspaceManager *data;
     Window window;
   } WSManagerSearch;
+
+  typedef struct ApplicationSearch {
+    Application *data;
+    Window window;
+  } ApplicationSearch;
 
   struct cursor {
     Cursor session, move;
@@ -115,13 +121,15 @@ private:
   LinkedList<MenuSearch> *menuSearchList;
   LinkedList<WSManagerSearch> *wsManagerSearchList;
   LinkedList<GroupSearch> *groupSearchList;
+  LinkedList<ApplicationSearch> *appSearchList;
 
   // internal variables for operation
   Rootmenu *rootmenu;
   WorkspaceManager *wsManager;
 
   Atom _XA_WM_COLORMAP_WINDOWS, _XA_WM_PROTOCOLS, _XA_WM_STATE,
-    _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS, _BLACKBOX_MESSAGE;
+    _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS, _BLACKBOX_MESSAGE,
+    _BLACKBOX_CONTROL;
   Bool startup, shutdown, reconfigure;
   Display *display;
   GC opGC;
@@ -171,6 +179,7 @@ public:
   BlackboxWindow *searchWindow(Window);
   WorkspaceManager *searchWSManager(Window);
   BlackboxWindow *searchGroup(Window, BlackboxWindow *);
+  Application *searchApp(Window);
 
   // reassociated a window with the current workspace
   void reassociateWindow(BlackboxWindow *);
@@ -180,10 +189,12 @@ public:
   void saveWindowSearch(Window, BlackboxWindow *);
   void saveWSManagerSearch(Window, WorkspaceManager *);
   void saveGroupSearch(Window, BlackboxWindow *);
+  void saveAppSearch(Window, Application *);
   void removeMenuSearch(Window);
   void removeWindowSearch(Window);
   void removeWSManagerSearch(Window);
   void removeGroupSearch(Window);
+  void removeAppSearch(Window);
 
   // main event loop
   void EventLoop(void);

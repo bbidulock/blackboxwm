@@ -28,7 +28,7 @@
 #include "WorkspaceManager.hh"
 
 #include "blackbox.hh"
-#include "window.hh"
+#include "Window.hh"
 
 #include <string.h>
 
@@ -146,11 +146,6 @@ SendtoWorkspaceMenu::SendtoWorkspaceMenu(BlackboxWindow *win, Blackbox *bb) :
   setMovable(False);
   defaultMenu();
   Update();
-}
-
-
-SendtoWorkspaceMenu::~SendtoWorkspaceMenu(void) {
-
 }
 
 

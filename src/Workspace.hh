@@ -30,7 +30,7 @@ class Workspace;
 #include "Clientmenu.hh"
 #include "LinkedList.hh"
 #include "WorkspaceManager.hh"
-#include "window.hh"
+#include "Window.hh"
 
 
 class Workspace {

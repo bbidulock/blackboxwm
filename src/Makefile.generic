@@ -30,8 +30,8 @@ DefaultsPath:=		\"/usr/X11R6/lib/app-defaults\"
 #
 # sources, includes, objects and target variables... DO NOT EDIT
 
-SRCS :=		Basemenu.cc Clientmenu.cc LinkedList.cc Rootmenu.cc Windowmenu.cc Workspace.cc WorkspaceManager.cc Workspacemenu.cc blackbox.cc graphics.cc icon.cc main.cc window.cc
-OBJS :=		Basemenu.o  Clientmenu.o  LinkedList.o  Rootmenu.o  Windowmenu.o  Workspace.o  WorkspaceManager.o  Workspacemenu.o  blackbox.o graphics.o icon.o main.o window.o
+SRCS :=		Application.cc Basemenu.cc Clientmenu.cc LinkedList.cc Rootmenu.cc Windowmenu.cc Workspace.cc WorkspaceManager.cc Workspacemenu.cc blackbox.cc graphics.cc icon.cc main.cc window.cc
+OBJS :=		Application.o  Basemenu.o  Clientmenu.o  LinkedList.o  Rootmenu.o  Windowmenu.o  Workspace.o  WorkspaceManager.o  Workspacemenu.o  blackbox.o graphics.o icon.o main.o window.o
 
 PROGRAMS := blackbox
 
@@ -62,6 +62,8 @@ install::
 
 # dependencies - gcc -MM -I/usr/X11R6/include output
 
+Application.o: Application.cc blackbox.hh LinkedList.hh graphics.hh \
+ Application.hh WorkspaceManager.hh ../lib/libBoxdefs.h
 Basemenu.o: Basemenu.cc blackbox.hh LinkedList.hh graphics.hh \
  Basemenu.hh Rootmenu.hh
 Clientmenu.o: Clientmenu.cc Clientmenu.hh Basemenu.hh LinkedList.hh \
@@ -76,13 +78,14 @@ Workspace.o: Workspace.cc blackbox.hh LinkedList.hh graphics.hh \
  window.hh Workspace.hh Clientmenu.hh Basemenu.hh WorkspaceManager.hh
 WorkspaceManager.o: WorkspaceManager.cc WorkspaceManager.hh \
  LinkedList.hh graphics.hh Workspacemenu.hh Basemenu.hh blackbox.hh \
- Rootmenu.hh Workspace.hh Clientmenu.hh window.hh icon.hh
+ Rootmenu.hh Workspace.hh Clientmenu.hh window.hh icon.hh \
+ Application.hh
 Workspacemenu.o: Workspacemenu.cc WorkspaceManager.hh LinkedList.hh \
  graphics.hh Workspacemenu.hh Basemenu.hh Workspace.hh Clientmenu.hh \
  window.hh
 blackbox.o: blackbox.cc blackbox.hh LinkedList.hh graphics.hh \
  Rootmenu.hh Basemenu.hh window.hh Workspace.hh Clientmenu.hh \
- WorkspaceManager.hh
+ WorkspaceManager.hh Application.hh ../lib/libBoxdefs.h
 graphics.o: graphics.cc blackbox.hh LinkedList.hh graphics.hh
 icon.o: icon.cc Workspace.hh Clientmenu.hh Basemenu.hh LinkedList.hh \
  graphics.hh WorkspaceManager.hh window.hh blackbox.hh icon.hh
@@ -90,4 +93,3 @@ main.o: main.cc blackbox.hh LinkedList.hh graphics.hh
 window.o: window.cc Windowmenu.hh Basemenu.hh LinkedList.hh \
  graphics.hh Workspace.hh Clientmenu.hh WorkspaceManager.hh window.hh \
  blackbox.hh icon.hh
-

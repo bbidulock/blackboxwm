@@ -124,6 +124,7 @@ Basemenu::~Basemenu(void) {
   int n = menuitems->count();
   for (int i = 0; i < n; ++i)
     remove(0);
+  
   delete menuitems;
 
   XFreeGC(display, titleGC);

@@ -30,6 +30,7 @@
 
 #ifdef GradientHack
 #  include <math.h>
+#  include <float.h>
 #endif
 
 
@@ -284,33 +285,58 @@ XImage *BImage::convertToXImage(Bool dither) {
   case 32: {
     unsigned char *im = (unsigned char *) image->data;
     
-    while (--wh) {
+    if (image->byte_order == LSBFirst) {
+      while (--wh) {
+	*(im++) = (unsigned char) (*p);
+	*(im++) = (unsigned char) ((*p) >> 8);
+	*(im++) = (unsigned char) ((*(p++)) >> 16);
+	*(im++) = (unsigned char) 0;
+      }
+      
       *(im++) = (unsigned char) (*p);
       *(im++) = (unsigned char) ((*p) >> 8);
       *(im++) = (unsigned char) ((*(p++)) >> 16);
-      *(im++) = (unsigned char) 0;
+      *(im) = (unsigned char) 0;
+    } else if (image->byte_order == MSBFirst) {
+      while (--wh) {
+	*(im++) = (unsigned char) ((*p) >> 16);
+	*(im++) = (unsigned char) ((*p) >> 8);
+	*(im++) = (unsigned char) (*(p++));
+	*(im++) = (unsigned char) 0;
+      }
+      
+      *(im++) = (unsigned char) ((*p) >> 16);
+      *(im++) = (unsigned char) ((*p) >> 8);
+      *(im++) = (unsigned char) (*(p++));
+      *(im) = (unsigned char) 0;
     }
-
-    *(im++) = (unsigned char) (*p);
-    *(im++) = (unsigned char) ((*p) >> 8);
-    *(im++) = (unsigned char) ((*(p++)) >> 16);
-    *(im) = (unsigned char) 0;
-
+    
     break; }
 
   case 24: {
     unsigned char *im = (unsigned char *) image->data;
 
-    while (--wh) {
+    if (image->byte_order == LSBFirst) {
+      while (--wh) {
+	*(im++) = (unsigned char) (*p);
+	*(im++) = (unsigned char) ((*p) >> 8);
+	*(im++) = (unsigned char) ((*(p++)) >> 16);
+      }
+      
       *(im++) = (unsigned char) (*p);
       *(im++) = (unsigned char) ((*p) >> 8);
-      *(im++) = (unsigned char) ((*(p++)) >> 16);
+      *(im) = (unsigned char) ((*p) >> 16);
+    } else if (image->byte_order == MSBFirst) {
+      while (--wh) {
+	*(im++) = (unsigned char) ((*p) >> 16);
+	*(im++) = (unsigned char) ((*p) >> 8);
+	*(im++) = (unsigned char) (*(p++));
+      }
+
+      *(im++) = (unsigned char) ((*p) >> 16);
+      *(im++) = (unsigned char) ((*p) >> 8);
+      *(im) = (unsigned char) (*p);
     }
-
-    *(im++) = (unsigned char) (*p);
-    *(im++) = (unsigned char) ((*p) >> 8);
-    *(im) = (unsigned char) ((*p) >> 16);
-
     break; }
 
   case 16: {
@@ -987,7 +1013,7 @@ void BImage::renderDGradient(const BColor &from, const BColor &to) {
 
     for (ii = 0; ii < width; ++ii) {
 #ifdef GradientHack
-      dx = cos((ii / w) * M_PI_4);
+      dx = cos((ii / w) * M_PI_2);
 #else
       dx = ii / w;
 #endif
@@ -1029,7 +1055,7 @@ void BImage::renderHGradient(const BColor &from, const BColor &to) {
   float w = (float) width;
   for (ii = 0; ii < width; ++ii) {
 #ifdef GradientHack
-    dx = cos((ii / w) * M_PI_4);
+    dx = cos((ii / w) * M_PI_2);
 #else
     dx = ii / w;
 #endif
@@ -1080,7 +1106,7 @@ void BImage::renderVGradient(const BColor &from, const BColor &to) {
 
   for (ii = 0; ii < height; ++ii) {
 #ifdef GradientHack
-    dy = sin((ii/ h) * M_PI_4);
+    dy = sin((ii/ h) * M_PI_2);
 #else
     dy = ii / h;
 #endif

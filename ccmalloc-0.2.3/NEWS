@@ -1,0 +1,75 @@
+------------------------------------------------------------------------------
+NEWS for version 0.2.3
+------------------------------------------------------------------------------
+
+new features:
+=============
+
+o  Change the cmp_CallChains_by_*_for_Qsort functions to not return 0 so
+   often by comparing them on address data, too. (This means we have to
+   read in the data from gdb before sorting the callchains.) This allows
+   one to compare resulting log files from different runs of the same
+   program with, e.g. diff or emacs ediff, without getting too many
+   irrelevant differences (Johannes).
+
+o  Last, but not least, read address data for dynamic libraries from gdb
+   as well. Only works for those dynamic libraries that the program is
+   linked with, not the ones that are dlopen'ed explicitly. Controlled
+   by a flag called `load-dynlibs' (Johannes).
+
+o  new flag `align-8-byte' to align memory to 8 byte on Linux.
+
+bugfixes:
+=========
+
+o  The configure script now tries to find the standard C library (libc.so)
+   and checks if it can be opened with dlopen.  This should make ccmalloc
+   run on Redhat 5.0 Linux out of the box.
+
+o  GPL ;-)
+
+o  Fix the src/Makefile so that it also installs the config file and
+   so that install depends on ccmalloc.o (Johannes).
+
+------------------------------------------------------------------------------
+NEWS for version 0.2.2
+------------------------------------------------------------------------------
+
+bug fixes:
+==========
+
+o  `wrapper.c' did not handle realloc correctly while in state INITIALIZING.
+
+   This lead to `*** realloc(0x8065f3d) called with non valid argument'
+   before the program was even started. This bug occured when using KDE
+   together with Qt. Now even the static allocator in wrapper.c saves the
+   size of the allocated data.
+
+------------------------------------------------------------------------------
+NEWS for version 0.2.1
+------------------------------------------------------------------------------
+
+bug fixes:
+==========
+
+o  returned data is now 8 byte aligned on SunOS and Solaris. This avoids
+   a Bus Error when allocating heap memory for doubles.
+   (a lot of people reported that bug)
+
+o  shrinking allocated data with realloc works now
+   (a lot of people reported that bug)
+
+o  fixed dereferencing bug in cmpAddr (Johannes Keukelaar)
+
+o  calls fflush before killing itself
+
+new features:
+=============
+
+o  `only-log-chain' and `dont-log-chain' (Johannes Keukelaar)
+
+o  `logpid' (Didier Remy)
+------------------------------------------------------------------------------
+(C) 1997-1998 Armin Biere
+$Id: NEWS,v 1.1.1.1 2001/11/30 07:54:36 shaleh Exp $
+------------------------------------------------------------------------------

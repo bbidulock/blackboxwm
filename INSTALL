@@ -56,8 +56,8 @@ Blackbox uses an Imakefile to better configure and allow for various
 system types.  Compiler flags, libraries and paths are automatically set
 in the various imake rules and templates files.
 
-Edit the Imakefile and #define the options that you want compiled into (or
-out of) blackbox.
+Edit Imakefile, lib/Imakefile and src/Imakefile to #define the options that
+you want compiled into (or out of) blackbox.
 
 To fully compile and install blackbox, issue the following commands:
 	xmkmf -a

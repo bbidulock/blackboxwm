@@ -1,0 +1,5 @@
+file test_C_15.exe
+set library-chains
+set statistics
+set keep-deallocated-data
+log test_C_15.log

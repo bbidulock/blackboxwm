@@ -1,0 +1,5 @@
+file test_C_03.exe
+log test_C_03.log
+set statistics
+set keep-deallocated-data 1
+set print-addresses

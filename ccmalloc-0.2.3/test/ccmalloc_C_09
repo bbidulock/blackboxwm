@@ -1,0 +1,6 @@
+set keep-deallocated-data
+set continue
+set statistics
+set print-addresses
+file test_C_09.exe
+log test_C_09.log.gz

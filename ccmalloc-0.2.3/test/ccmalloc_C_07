@@ -1,0 +1,5 @@
+set keep-deallocated-data
+set check-free-space
+file test_C_07.exe
+log test_C_07.log
+set continue

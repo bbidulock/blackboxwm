@@ -1,0 +1,46 @@
+------------------------------------------------------------------------------
+USAGE:
+------------------------------------------------------------------------------
+
+To use the memory profiler you just have to link it to your programs.
+
+Makefile:
+
+	$(CC) -o $@ $(OBJS) -lccmalloc -ldl
+
+shell:
+
+	gcc -o a.out obj1.o obj2.o obj3.o -lm -lccmalloc -ldl
+
+for C projects. Do not put `-lccmalloc -ldl' in front of `$(OBJS)'.
+Make sure that `-lccmalloc -ldl' are the last two libraries linked
+to your program! Another compiler should work too.
+
+For C++ you should do the following:
+
+Makefile (gnu make):
+	
+	gcc -o $@ $(OBJS) ccmalloc.o -ldl
+
+shell:
+	gcc -o a.out c++-obj1.o c++-obj2.o c-obj.o ccmalloc.o -ldl
+
+You can also use the method for C if you only want to profile
+calls to `malloc' (not operator new) and `free' (not operator
+delete) and do not use `free' in statically allocated objects.
+But the library will warn you if your program does not respect
+these restrictions.
+
+Note, that using g++ instead of gcc should work too but the clean
+way is to execute
+
+	gcc -o a.out c++-obj1.o c++-obj2.o -lg++ -lstdc++ ccmalloc.o -ldl
+
+  instead of
+
+	g++ -o a.out c++-obj1.o c++-obj2.o ccmalloc.o -ldl
+
+------------------------------------------------------------------------------
+(C) 1997-1998 Armin Biere
+$Id: USAGE,v 1.1.1.1 2001/11/30 07:54:36 shaleh Exp $
+------------------------------------------------------------------------------

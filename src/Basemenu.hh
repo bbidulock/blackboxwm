@@ -97,7 +97,7 @@ public:
   const char *Label(void) const { return menu.label; }
   int Count(void) { return menuitems->count(); }
   void setMenuLabel(char *n) { menu.label = n; }
-  void Show(void);
+  virtual void Show(void);
   void Hide(void);
   void Move(int, int);
   void Update(void);

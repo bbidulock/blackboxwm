@@ -1,26 +1,26 @@
-
-
-#ifdef _libBox_h
-#define _libBox_h
-
-#include <X11/Xlib.h>
+#ifndef __libBox_h
+#define __libBox_h
 
 #include "libBoxdefs.h"
 
-
-typedef struct BlackboxInterface {
-  Atom _BLACKBOX_MESSAGE;
-  Display *display;
-} BlackboxInterface;
+#include <X11/Xlib.h>
 
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
-
+  
+  Atom _BLACKBOX_MESSAGE, _BLACKBOX_CONTROL;
+  
+  Bool BlackboxAddWindow(Display *, Window);
+  Bool BlackboxConfirmControl(Display *, Window);
+  Bool BlackboxOpenApp(Display *, Window);
+  Bool BlackboxRemoveWindow(Display *, Window);
+  
 #if defined(__cplusplus) || defined(c_plusplus)
 }
 #endif
 
-#endif // _libBox_h
+
+#endif // __libBox_h
 

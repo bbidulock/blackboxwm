@@ -59,7 +59,7 @@ baseMenu.title.color:                   rgb:c/9/6
 baseMenu.title.colorTo:                 rgb:8/6/4
 baseMenu.frame.color:                   slategrey
 baseMenu.frame.colorTo:                 darkslategrey
-baseMenu.frame.highlightColor:          rgb:c0/90/60
+baseMenu.frame.highlightColor:          rgb:c/9/6
 baseMenu.title.textColor:               white
 baseMenu.frame.textColor:               lightgrey
 baseMenu.frame.hiTextColor:             white
@@ -100,7 +100,7 @@ session.imageDither:                            True
 ! a value between 2 and 6 is accepted, 4 or 5 providing the best color
 ! correctness, and 6 being the highest (which allocates 216 of 256 colors on an
 ! 8bpp display)
-session.colorsPerChannel:                       5
+session.colorsPerChannel:                       4
 
 
 ! the menu file is not set in Blackbox.ad
@@ -109,4 +109,4 @@ session.colorsPerChannel:                       5
 ! the fonts to use
 session.titleFont:     -adobe-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*
 session.menuFont:      -adobe-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*
-session.iconFont:      -adobe-helvetica-medium-r-*-*-*-100-*-*-*-*-*-*
+

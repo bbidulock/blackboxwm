@@ -1,0 +1,9 @@
+set keep-deallocated-data
+set check-free-space
+set check-overwrites 10
+set check-underwrites 10
+set continue
+set check-interval 10
+set check-start 28
+file test_C_08.exe
+log test_C_08.log

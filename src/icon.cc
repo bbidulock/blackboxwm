@@ -28,7 +28,7 @@
 
 #include "blackbox.hh"
 #include "graphics.hh"
-#include "window.hh"
+#include "Window.hh"
 #include "icon.hh"
 
 
@@ -42,6 +42,7 @@ Iconmenu::Iconmenu(Blackbox *bb) : Basemenu(bb) {
   setTitleVisibility(False);
   Update();
 
+  blackbox = bb;
   iconList = new LinkedList<BlackboxIcon>;
 }
 
@@ -79,7 +80,10 @@ int Iconmenu::remove(BlackboxIcon *icon) {
 
 void Iconmenu::itemSelected(int button, int item) {
   if (button == 1) {
-    iconList->find(item)->bWindow()->deiconifyWindow();
+    BlackboxWindow *window = iconList->find(item)->bWindow();
+    blackbox->workspaceManager()->workspace(window->workspace())->
+      raiseWindow(window);
+    window->deiconifyWindow();
   }
 }
 

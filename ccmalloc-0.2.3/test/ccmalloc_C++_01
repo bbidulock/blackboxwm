@@ -1,0 +1,4 @@
+file test_C++_01.exe
+log test_C++_01.log
+set keep-deallocated-data
+set statistics

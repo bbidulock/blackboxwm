@@ -1,0 +1,24 @@
+------------------------------------------------------------------------------
+README:
+------------------------------------------------------------------------------
+
+ccmalloc-0.2.3 (C) 1997-1998 Armin Biere
+
+Thanks to everyone sending me bug reports, patches, or just a small note.
+This increases the probability that ccmalloc will be developed further ;-)
+
+First have a look at NEWS, FEATURES, test/logs, ccmalloc.cfg, INSTALL, and
+finally USAGE.
+
+NOTE that ccmalloc.cfg contains the most important information.
+
+If you have any questions, comments, or additions to this software then
+please feel free to contact me.
+
+Armin Biere.
+(armin@ira.uka.de + armin+@cs.cmu.edu, http://iseran.ira.uka.de/~armin)
+
+------------------------------------------------------------------------------
+(C) 1997-1998 Armin Biere
+$Id: README,v 1.1.1.1 2001/11/30 07:54:36 shaleh Exp $
+------------------------------------------------------------------------------

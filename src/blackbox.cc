@@ -35,17 +35,28 @@
 
 #include "blackbox.hh"
 #include "Rootmenu.hh"
-#include "window.hh"
+#include "Window.hh"
 #include "Workspace.hh"
 #include "WorkspaceManager.hh"
+#include "Application.hh"
+
+#include "../lib/libBoxdefs.h"
 
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/types.h>
 #include <sys/time.h>
+#include <sys/select.h>
 
+#ifdef NEED_STRCASECMP
+int strncasecmp(const char *string1, const char *string2, size_t count)
+{
+  // implement it here.
+}
+#endif
 
 // *************************************************************************
 // signal handler to allow for proper and gentle shutdown
@@ -64,8 +75,9 @@ static void signalhandler(int i) {
   }
 
   fprintf(stderr, "\t[ exiting ]\n");
-  abort();
-  exit(1);
+  if (i != SIGTERM)
+    abort();
+  exit(0);
 }
 
 
@@ -73,17 +85,10 @@ static void signalhandler(int i) {
 // X error handler to detect a running window manager
 // *************************************************************************
 
-static int anotherWMRunning(Display *d, XErrorEvent *e) {
-  char errtxt[128];
-  XGetErrorText(d, e->error_code, errtxt, 128);
+static int anotherWMRunning(Display *, XErrorEvent *) {
   fprintf(stderr,
 	  "blackbox: a fatal error occured while querying the X server.\n"
-	  "X Error of failed request: %d\n"
-	  "  (major/minor: %d/%d resource: 0x%08lx)\n"
-	  "  %s\n\n"
-	  " - There is another window manager already running. -\n",
-	  e->error_code, e->request_code, e->minor_code, e->resourceid,
-	  errtxt);
+	  " - There is another window manager already running. -\n");
   exit(1);
   return(-1);
 }
@@ -99,10 +104,17 @@ static int handleXErrors(Display *d, XErrorEvent *e) {
           "blackbox:  [ X Error event received. ]\n"
           "X Error of failed request:  %s(%d)\n"
           "  Major/minor opcode of failed request:  %d / %d\n"
-          "  Resource id in failed request:  0x%lx\n\n"
-          "           [ exiting ]\n", errtxt, e->error_code,
+          "  Resource id in failed request:  0x%lx\n", errtxt, e->error_code,
           e->request_code, e->minor_code, e->resourceid);
 
+  static int re_enter = 0;
+  if (! re_enter) {
+    re_enter = 1;
+    fprintf(stderr, "\t[ shutting down ]\n");
+    blackbox->Shutdown(False);
+  }
+  
+  fprintf(stderr, "\t[ exiting ]\n");
   abort();
   return(-1);
 }
@@ -170,6 +182,7 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   _XA_WM_TAKE_FOCUS = XInternAtom(display, "WM_TAKE_FOCUS", False);
 
   _BLACKBOX_MESSAGE = XInternAtom(display, "BLACKBOX_MESSAGE", False);
+  _BLACKBOX_CONTROL = XInternAtom(display, "BLACKBOX_CONTROL", False);
   
   cursor.session = XCreateFontCursor(display, XC_left_ptr);
   cursor.move = XCreateFontCursor(display, XC_fleur);
@@ -182,6 +195,7 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   menuSearchList = new LinkedList<MenuSearch>;
   wsManagerSearchList = new LinkedList<WSManagerSearch>;
   groupSearchList = new LinkedList<GroupSearch>;
+  appSearchList = new LinkedList<ApplicationSearch>;
 
   XrmInitialize();
   LoadDefaults();
@@ -200,6 +214,10 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   wsManager->stackWindows(0, 0);
   rootmenu->Update();
 
+  unsigned long foo = wsManager->windowID();
+  XChangeProperty(display, root, _BLACKBOX_CONTROL, _BLACKBOX_CONTROL, 32,
+		  PropModeReplace, (unsigned char *) &foo, 1);
+
   unsigned int nchild;
   Window r, p, *children;
   XQueryTree(display, root, &r, &p, &children, &nchild);
@@ -211,37 +229,53 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
     if (XGetWindowAttributes(display, children[i], &attrib)) {
       if ((! attrib.override_redirect) && (attrib.map_state != IsUnmapped)) {
 	XSync(display, False);
-	BlackboxWindow *nWin = new BlackboxWindow(this, children[i]);
 		
 	Atom atom;
+	Bool app = False;
 	int foo;
 	unsigned long ulfoo, nitems;
 	unsigned char *state;
-	XGetWindowProperty(display, nWin->clientWindow(), _XA_WM_STATE,
-			   0, 3, False, _XA_WM_STATE, &atom, &foo, &nitems,
-			   &ulfoo, &state);
 
-	if (state != NULL) {
-	  switch (*((unsigned long *) state)) {
-	  case WithdrawnState:
-	    nWin->deiconifyWindow();
-            nWin->setFocusFlag(False);
-	    break;
-	    
-	  case IconicState:
-	    nWin->iconifyWindow();
-	    break;
-	    
-	  case NormalState:
-	  default:
-	    nWin->deiconifyWindow();
-	    nWin->setFocusFlag(False);
-	    break;
+	if (XGetWindowProperty(display, children[i], _BLACKBOX_CONTROL, 0, 3,
+			       False, _BLACKBOX_CONTROL, &atom, &foo, &nitems,
+			       &ulfoo, &state) == Success)
+	  if (state && atom == _BLACKBOX_CONTROL) {
+	    app = True;
+	    (void) new Application(this, children[i]);
+	    XFree(state);
 	  }
-	} else {
-	  nWin->deiconifyWindow();
-	  nWin->setFocusFlag(False);
-	} 
+	
+	if (XGetWindowProperty(display, children[i], _XA_WM_STATE, 0, 3,
+			       False, _XA_WM_STATE, &atom, &foo,
+			       &nitems, &ulfoo, &state) == Success)
+	  if (atom == _XA_WM_STATE) {
+	    BlackboxWindow *nWin = new BlackboxWindow(this, children[i]);
+	    
+	    if (state) {
+	      switch (*((unsigned long *) state)) {
+	      case WithdrawnState:
+		nWin->deiconifyWindow();
+		nWin->setFocusFlag(False);
+		break;
+		
+	      case IconicState:
+		nWin->iconifyWindow();
+		break;
+		
+	      case NormalState:
+	      default:
+		nWin->deiconifyWindow();
+		nWin->setFocusFlag(False);
+		break;
+	      }
+	    
+	      XFree(state);
+	      state = 0;
+	    } else {
+	      nWin->deiconifyWindow();
+	      nWin->setFocusFlag(False);
+	    }
+	  }
       }
     }
   }
@@ -260,6 +294,8 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
 Blackbox::~Blackbox(void) {
   XSelectInput(display, root, NoEventMask);
 
+  XDeleteProperty(display, root, _BLACKBOX_CONTROL);
+
   delete [] resource.menuFile;
   delete rootmenu;
   delete wsManager;
@@ -268,12 +304,20 @@ Blackbox::~Blackbox(void) {
   delete menuSearchList;
   delete wsManagerSearchList;
   delete groupSearchList;
+  delete appSearchList;
   
-  if (resource.font.title) XFreeFont(display, resource.font.title);
-  if (resource.font.menu) XFreeFont(display, resource.font.menu);
+  if (resource.font.title) {
+    XFreeFont(display, resource.font.title);
+    resource.font.title = 0;
+  }
+
+  if (resource.font.menu) {
+    XFreeFont(display, resource.font.menu);
+    resource.font.menu = 0;
+  }
+
   XFreeGC(display, opGC);
   
-  XSync(display, False);
   XCloseDisplay(display);
 }
 
@@ -427,9 +471,13 @@ void Blackbox::ProcessEvent(XEvent *e) {
     break; }
   
   case DestroyNotify: {
-    BlackboxWindow *dWin = searchWindow(e->xdestroywindow.window);
-    if (dWin != NULL)
+    BlackboxWindow *dWin = NULL;
+    Application *app = NULL;
+
+    if ((dWin = searchWindow(e->xdestroywindow.window)) != NULL)
       dWin->destroyNotifyEvent(&e->xdestroywindow);
+    else if ((app = searchApp(e->xdestroywindow.window)) != NULL)
+      delete app;
     
     break;
   }
@@ -452,8 +500,12 @@ void Blackbox::ProcessEvent(XEvent *e) {
       
       if (pWin != NULL)
 	pWin->propertyNotifyEvent(e->xproperty.atom);
+    } else if (e->xproperty.atom == _BLACKBOX_CONTROL) {
+      unsigned long foo = wsManager->windowID();
+      XChangeProperty(display, root, _BLACKBOX_CONTROL, _BLACKBOX_CONTROL, 32,
+		      PropModeReplace, (unsigned char *) &foo, 1);      
     }
-
+    
     break;
   }
   
@@ -580,10 +632,27 @@ void Blackbox::ProcessEvent(XEvent *e) {
   }
 
   case ClientMessage: {
-    if (e->xclient.message_type == _BLACKBOX_MESSAGE) {
-      printf("Ahh! You've found me!\n");
+    if (e->xclient.message_type == _BLACKBOX_MESSAGE &&
+	e->xclient.format == 32) {
+      if (e->xclient.data.l[0] == __blackbox_confirmControl) {
+	e->xclient.data.l[2] = __blackbox_accept;
+	XSendEvent(display, e->xclient.data.l[1], False, NoEventMask, e);
+      } else if (e->xclient.data.l[0] == __blackbox_addTopLevelWindow) {
+	new Application(this, e->xclient.data.l[1]);
+	e->xclient.data.l[2] = __blackbox_accept;
+        XSendEvent(display, e->xclient.data.l[1], False, NoEventMask, e);
+	
+	unsigned long foo = e->xclient.data.l[1];
+	XChangeProperty(display, (Window) e->xclient.data.l[1],
+			_BLACKBOX_CONTROL, _BLACKBOX_CONTROL, 32,
+			PropModeReplace, (unsigned char *) &foo, 1);
+      } else {
+	Application *app = searchApp((Window) e->xclient.data.l[1]);
+	if (app  != NULL)
+	  app->clientMessageEvent(&e->xclient);
+      }
     }
-
+    
     break;
   }
 
@@ -615,6 +684,25 @@ Bool Blackbox::validateWindow(Window window) {
   }
 
   return True;
+}
+
+
+Application *Blackbox::searchApp(Window window) {
+  if (validateWindow(window)) {
+    Application *app;
+    LinkedListIterator<ApplicationSearch> it(appSearchList);
+
+    for (; it.current(); it++) {
+      ApplicationSearch *tmp = it.current();
+      if (tmp)
+	if (tmp->window == window) {
+	  app = tmp->data;
+	  return app;
+	}
+    }
+  }
+  
+  return 0;
 }
 
 
@@ -721,12 +809,19 @@ void Blackbox::saveMenuSearch(Window window, Basemenu *data) {
 }
 
 
-void Blackbox::saveWSManagerSearch(Window window,
-					  WorkspaceManager *data) {
+void Blackbox::saveWSManagerSearch(Window window, WorkspaceManager *data) {
   WSManagerSearch *tmp = new WSManagerSearch;
   tmp->window = window;
   tmp->data = data;
   wsManagerSearchList->insert(tmp);
+}
+
+
+void Blackbox::saveAppSearch(Window window, Application *data) {
+  ApplicationSearch *tmp = new ApplicationSearch;
+  tmp->window = window;
+  tmp->data = data;
+  appSearchList->insert(tmp);
 }
 
 
@@ -790,6 +885,21 @@ void Blackbox::removeWSManagerSearch(Window window) {
 }
 
 
+void Blackbox::removeAppSearch(Window window) {
+  LinkedListIterator<ApplicationSearch> it(appSearchList);
+  for (; it.current(); it++) {
+    ApplicationSearch *tmp = it.current();
+
+    if (tmp)
+      if (tmp->window == window) {
+	appSearchList->remove(tmp);
+	delete tmp;
+	break;
+      }
+  }
+}
+
+
 // *************************************************************************
 // Exit, Shutdown and Restart methods
 // *************************************************************************
@@ -807,6 +917,7 @@ void Blackbox::Exit(void) {
 
 void Blackbox::Restart(char *prog) {
   Dissociate();
+  XSync(display, False);
   XSetInputFocus(display, PointerRoot, RevertToParent, CurrentTime);
 
   if (prog) {
@@ -846,12 +957,10 @@ void Blackbox::reassociateWindow(BlackboxWindow *w) {
 // *************************************************************************
 
 void Blackbox::InitMenu(void) {
-  if (rootmenu) {
-    int n = rootmenu->Count();
-    for (int i = 0; i < n; i++)
-      rootmenu->remove(0);
-  } else
-    rootmenu = new Rootmenu(this);
+  if (rootmenu) 
+    delete rootmenu;
+  
+  rootmenu = new Rootmenu(this);
   
   Bool defaultMenu = True;
 
@@ -1024,15 +1133,20 @@ Bool Blackbox::parseMenuFile(FILE *file, Rootmenu *menu) {
 	    for (ri = len; ri > 0; ri--)
 	      if (line[ri] == '}') break;
 	    
-	    char *optTitle = 0;
+	    char *title = 0;
 	    if (i < ri && ri > 0) {
-	      optTitle = new char[ri - i + 1];
-	      strncpy(optTitle, line + i, ri - i);
-	      *(optTitle + (ri - i)) = '\0';
+	      title = new char[ri - i + 1];
+	      strncpy(title, line + i, ri - i);
+	      *(title + (ri - i)) = '\0';
+	    } else {
+	      int l = strlen(label);
+	      title = new char[l + 1];
+	      strncpy(title, label, l + 1);
+	      //	      *(title + l + 1) = '\0';
 	    }
 	    
 	    Rootmenu *submenu = new Rootmenu(this);
-	    submenu->setMenuLabel((optTitle) ? optTitle : label);
+	    submenu->setMenuLabel(title);
 	    parseMenuFile(file, submenu);
 	    submenu->Update();
 	    menu->insert(label, submenu);
@@ -1522,7 +1636,11 @@ void Blackbox::LoadDefaults(void) {
     resource.clock24hour = False;
 
   const char *defaultFont = "-*-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*";
-  if (resource.font.title) XFreeFont(display, resource.font.title);
+  if (resource.font.title) {
+    XFreeFont(display, resource.font.title);
+    resource.font.title = 0;
+  }
+
   if (XrmGetResource(resource.blackboxrc,
 		     "session.titleFont",
 		     "Session.TitleFont", &value_type, &value)) {
@@ -1548,7 +1666,11 @@ void Blackbox::LoadDefaults(void) {
     }
   }
 
-  if (resource.font.menu) XFreeFont(display, resource.font.menu);
+  if (resource.font.menu) {
+    XFreeFont(display, resource.font.menu);
+    resource.font.menu = 0;
+  }
+
   if (XrmGetResource(resource.blackboxrc,
 		     "session.menuFont",
 		     "Session.MenuFont", &value_type, &value)) {

@@ -28,6 +28,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef __EMX__
+#include <process.h>
+#endif
 
 
 Rootmenu::Rootmenu(Blackbox *bb) : Basemenu(bb) {
@@ -49,8 +52,13 @@ void Rootmenu::itemSelected(int button, int index) {
       case Blackbox::B_Execute: {
 	if (item->Exec()) {
 	  char *command = new char[strlen(item->Exec()) + 8];
+#ifndef __EMX__
 	  sprintf(command, "exec %s &", item->Exec());
 	  system(command);
+#else
+	  sprintf(command, "%s", item->Exec());
+	  spawnlp(P_NOWAIT, "cmd.exe", "cmd.exe", "/c", command, NULL);
+#endif
 	  delete [] command;
 	}
 	

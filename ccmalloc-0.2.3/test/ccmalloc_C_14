@@ -1,0 +1,3 @@
+file test_C_14.exe
+set library-chains
+log test_C_14.log

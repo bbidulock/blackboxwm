@@ -1,0 +1,62 @@
+#!/bin/sh
+
+if [ x"$LD_LIBRARY_PATH" = x ]
+then
+  LD_LIBRARY_PATH=.
+else
+  LD_LIBRARY_PATH=$LD_LIBRARY_PATH:.
+fi
+
+export LD_LIBRARY_PATH
+
+if test "x$1" = x
+then
+  echo "*** $0: argument is missing" 2>&1
+  exit 1
+fi
+
+if test ! -f "$1"
+then
+  echo "*** $0: could not find $1" 2>&1
+  exit 1
+fi
+
+base=`basename "$1" .c`
+if test ! "${base}.c" = "$1"
+then
+  base=`basename "$1" .cc`
+  if test ! "${base}.cc" = "$1"
+  then
+    echo "*** $0: could not recognize extension" 2>&1
+    exit 1
+  fi
+fi
+
+startupfile=`echo "$base" | sed -e 's,test,ccmalloc,'`
+if test ! -f "$startupfile"
+then
+  echo "*** $0: could not find startup file $startupfile" 2>&1
+  exit 1
+fi
+
+rm -f .ccmalloc
+ln -s $startupfile .ccmalloc
+
+target=${base}.exe
+
+echo "compiling" $1
+make $target 2>&1 > /dev/null || exit 1
+
+if test ! "x$REMOVE_TEMPORARIES" = x
+then
+  rm -f ${base}.o
+fi
+
+echo "running  " $target
+./execute $target
+
+if test ! "x$REMOVE_TEMPORARIES" = x
+then
+  rm -f $target
+fi
+

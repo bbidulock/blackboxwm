@@ -1,13 +1,12 @@
-#ifndef _libBoxdefs_h
-#define _libBoxdefs_h
+#ifndef __libBoxdefs_h
+#define __libBoxdefs_h
 
-#define BlackboxAccept			0
-#define BlackboxError			1
+#define __blackbox_accept			(1 << 1)
+#define __blackbox_error			(1 << 2)
 
-#define BlackboxRunning			(1<<1)
-#define BlackboxAddTopLevelWindow	(1<<2)
-#define BlackboxRemoveTopLeveWindow	(1<<3)
-#define BlackboxResizeTopLevelWindow	(1<<4)
+#define __blackbox_confirmControl		(1 << 3)
+#define __blackbox_addTopLevelWindow	        (1 << 4)
+#define __blackbox_removeTopLevelWindow	        (1 << 5)
 
-#endif // _libBoxdefs_h
+#endif // __libBoxdefs_h
 

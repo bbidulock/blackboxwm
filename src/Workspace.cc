@@ -24,7 +24,7 @@
 #endif
 
 #include "blackbox.hh"
-#include "window.hh"
+#include "Window.hh"
 #include "Workspace.hh"
 
 #include <stdio.h>

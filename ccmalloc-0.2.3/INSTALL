@@ -1,0 +1,35 @@
+------------------------------------------------------------------------------
+INSTALL:
+------------------------------------------------------------------------------
+
+just change to the `src' directory and type
+
+  make
+
+and optionally
+
+  make test
+  less test/test*.log
+  gunzip -c test/test*.log.gz | less
+
+then move `libccmalloc.a', `ccmalloc.o', and `ccmalloc.cfg' somewhere with
+
+  make install
+
+or
+  
+  PREFIX=/usr/local/lib make install
+
+etc.
+
+Then you should read `USAGE' and `ccmalloc.cfg'.
+
+Copy `ccmalloc.cfg' to `.ccmalloc' in your project directory or to
+`$(HOME)/.ccmalloc'.
+
+On SunOS 4.X have a look at the section about `file-info'.
+
+------------------------------------------------------------------------------
+(C) 1997-1998 Armin Biere
+$Id: INSTALL,v 1.1.1.1 2001/11/30 07:54:36 shaleh Exp $
+------------------------------------------------------------------------------
