@@ -1510,6 +1510,7 @@ void BlackboxWindow::iconify(void) {
 
 void BlackboxWindow::show(void) {
   client.current_state = (client.state.shaded) ? IconicState : NormalState;
+  client.state.iconic = False;
   setState(client.current_state);
 
   XMapWindow(blackbox->getXDisplay(), client.window);
@@ -1526,8 +1527,6 @@ void BlackboxWindow::show(void) {
           client.rect.left(), client.rect.top(), real_x, real_y);
   assert(client.rect.left() == real_x && client.rect.top() == real_y);
 #endif
-
-  client.state.iconic = False;
 }
 
 

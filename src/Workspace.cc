@@ -98,6 +98,8 @@ unsigned int Workspace::removeWindow(BlackboxWindow *w) {
     focusFallback(w);
   }
 
+  screen->updateClientListStackingHint();
+
   windowList.remove(w);
   clientmenu->remove(w->getWindowNumber());
   clientmenu->update();

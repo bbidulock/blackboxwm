@@ -84,7 +84,8 @@ Window.o: Window.cc $(top_srcdir)/config.h $(top_srcdir)/lib/i18n.hh $(top_srcdi
  blackbox.hh $(top_srcdir)/lib/BaseDisplay.hh $(top_srcdir)/lib/Timer.hh $(top_srcdir)/lib/GCCache.hh \
  $(top_srcdir)/lib/Color.hh Iconmenu.hh Basemenu.hh $(top_srcdir)/lib/Image.hh Screen.hh \
  $(top_srcdir)/lib/Texture.hh $(top_srcdir)/lib/Util.hh Configmenu.hh Rootmenu.hh \
- Workspace.hh Workspacemenu.hh Toolbar.hh Window.hh Windowmenu.hh Slit.hh
+ Workspace.hh Workspacemenu.hh Toolbar.hh Window.hh Windowmenu.hh Slit.hh \
+$(top_srcdir)/lib/Netwm.hh
 Windowmenu.o: Windowmenu.cc $(top_srcdir)/config.h $(top_srcdir)/lib/i18n.hh $(top_srcdir)/nls/blackbox-nls.hh \
  blackbox.hh $(top_srcdir)/lib/BaseDisplay.hh $(top_srcdir)/lib/Timer.hh Screen.hh $(top_srcdir)/lib/Color.hh \
  $(top_srcdir)/lib/Texture.hh $(top_srcdir)/lib/Util.hh Configmenu.hh Basemenu.hh Iconmenu.hh \
@@ -102,6 +103,7 @@ blackbox.o: blackbox.cc $(top_srcdir)/config.h $(top_srcdir)/lib/i18n.hh $(top_s
  blackbox.hh $(top_srcdir)/lib/BaseDisplay.hh $(top_srcdir)/lib/Timer.hh Basemenu.hh Clientmenu.hh \
  $(top_srcdir)/lib/GCCache.hh $(top_srcdir)/lib/Color.hh $(top_srcdir)/lib/Image.hh Rootmenu.hh Screen.hh \
  $(top_srcdir)/lib/Texture.hh $(top_srcdir)/lib/Util.hh Configmenu.hh Iconmenu.hh \
- Workspace.hh Workspacemenu.hh Slit.hh Toolbar.hh Window.hh Windowmenu.hh
+ Workspace.hh Workspacemenu.hh Slit.hh Toolbar.hh Window.hh Windowmenu.hh \
+$(top_srcdir)/lib/Netwm.hh
 main.o: main.cc $(top_srcdir)/version.h $(top_srcdir)/config.h $(top_srcdir)/lib/i18n.hh \
  $(top_srcdir)/nls/blackbox-nls.hh blackbox.hh $(top_srcdir)/lib/BaseDisplay.hh $(top_srcdir)/lib/Timer.hh

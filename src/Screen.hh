@@ -190,8 +190,6 @@ private:
   void updateAvailableArea(void);
   void updateWorkareaHint(void) const;
   void updateDesktopNamesHint(void) const;
-  void updateClientListHint(void) const;
-  void updateClientListStackingHint(void) const;
 
 public:
   enum { RowSmartPlacement = 1, ColSmartPlacement, CascadePlacement, LeftRight,
@@ -327,6 +325,9 @@ public:
   const Rect& availableArea(void) const;
   void addStrut(Netwm::Strut *strut);
   void removeStrut(Netwm::Strut *strut);
+
+  void updateClientListHint(void) const;
+  void updateClientListStackingHint(void) const;
 
   unsigned int addWorkspace(void);
   unsigned int removeLastWorkspace(void);

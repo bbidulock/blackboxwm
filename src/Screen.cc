@@ -2102,8 +2102,6 @@ void BScreen::updateClientListHint(void) const {
   if (windowList.empty()) {
     blackbox->netwm()->removeProperty(getRootWindow(),
                                       blackbox->netwm()->clientList());
-    blackbox->netwm()->removeProperty(getRootWindow(),
-                                      blackbox->netwm()->clientListStacking());
     return;
   }
 
