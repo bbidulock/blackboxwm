@@ -32,11 +32,11 @@ protected:
 public:
   __llist_node(void) { next = (__llist_node *) 0; data = (void *) 0; }
 
-  void *getData(void) { return data; }
-  __llist_node *getNext(void) { return next; }
+  inline __llist_node *getNext(void) { return next; }
 
-  void setData(void *d) { data = d; }
-  void setNext(__llist_node *n) { next = n; }
+  inline void *getData(void) { return data; }
+  inline void setData(void *d) { data = d; }
+  inline void setNext(__llist_node *n) { next = n; }
 };
 
 
@@ -49,15 +49,19 @@ private:
   __llist *list;
   __llist_node *node;
 
+  friend __llist;
+
 
 protected:
   __llist_iterator(__llist *);
+  ~__llist_iterator(void);
 
   const int set(const int);
 
   void *current(void);
   void reset(void);
 
+  void operator++(void);
   void operator++(int);
 };
 
@@ -66,6 +70,7 @@ class __llist {
 private:
   int elements;
   __llist_node *_first, *_last;
+  __llist_iterator *iterator;
 
   friend __llist_iterator;
 
@@ -74,8 +79,9 @@ protected:
   __llist(void * = 0);
   ~__llist(void);
 
-  const int count(void) const { return elements; }
-  const int empty(void) const { return (elements == 0); }
+  inline const int count(void) const { return elements; }
+  inline const int empty(void) const { return (elements == 0); }
+
   const int insert(void *, int = -1);
   const int remove(void *);
 
@@ -91,13 +97,14 @@ class LinkedListIterator : public __llist_iterator {
 public:
   LinkedListIterator(__llist *d = 0) : __llist_iterator(d) { return; }
 
-  Z *current(void) { return (Z *) __llist_iterator::current(); }
+  inline Z *current(void) { return (Z *) __llist_iterator::current(); }
 
-  const int set(const int i) { return __llist_iterator::set(i); }
+  inline const int set(const int i) { return __llist_iterator::set(i); }
 
-  void reset(void) { __llist_iterator::reset(); }
-  
-  void operator++(int a) { __llist_iterator::operator++(a); }
+  inline void reset(void) { __llist_iterator::reset(); }
+ 
+  inline void operator++(void) { __llist_iterator::operator++(); } 
+  inline void operator++(int) { __llist_iterator::operator++(0); }
 };
 
 
@@ -106,16 +113,18 @@ class LinkedList : public __llist {
 public:
   LinkedList(Z *d = 0) : __llist(d) { return; }
   
-  Z *find(const int i) { return (Z *) __llist::find(i); }
-  Z *remove(const int i) { return (Z *) __llist::remove(i); }
-  Z *first(void) { return (Z *) __llist::first(); }
-  Z *last(void) { return (Z *) __llist::last(); }
+  inline Z *find(const int i) { return (Z *) __llist::find(i); }
+  inline Z *remove(const int i) { return (Z *) __llist::remove(i); }
+  inline Z *first(void) { return (Z *) __llist::first(); }
+  inline Z *last(void) { return (Z *) __llist::last(); }
   
-  const int count(void) const { return __llist::count(); }
-  const int empty(void) const { return __llist::empty(); }
-  const int insert(Z *d, int i = -1) { return __llist::insert((void *) d, i); }
-  const int remove(Z *d) { return __llist::remove((void *) d); }
+  inline const int count(void) const { return __llist::count(); }
+  inline const int empty(void) const { return __llist::empty(); }
+  inline const int insert(Z *d, int i = -1)
+    { return __llist::insert((void *) d, i); }
+  inline const int remove(Z *d) { return __llist::remove((void *) d); }
 };
 
 
 #endif // __LinkedList_hh
+

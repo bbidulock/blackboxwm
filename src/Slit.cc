@@ -164,21 +164,27 @@ void Slit::addClient(Window w) {
 void Slit::removeClient(Window w) {
   blackbox->grab();
   
-  LinkedListIterator<SlitClient> it(clientList);
-  for (; it.current(); it++)
-    if (it.current()->window == w) {
-      SlitClient *client = it.current();
-      
-      blackbox->removeSlitSearch(client->client_window);
-      blackbox->removeSlitSearch(client->icon_window);
-      clientList->remove(client);
+  Bool reconf = False;
 
-      delete client;
+  {
+    LinkedListIterator<SlitClient> it(clientList);
+    for (; it.current(); it++)
+      if (it.current()->window == w) {
+        SlitClient *client = it.current();
       
-      reconfigure();
+        blackbox->removeSlitSearch(client->client_window);
+        blackbox->removeSlitSearch(client->icon_window);
+        clientList->remove(client);
+
+        delete client;
       
-      break;
-    }
+        reconf = True;
+ 
+        break;
+      }
+  }
+
+  if (reconf) reconfigure();
 
   blackbox->ungrab();
 }
@@ -372,19 +378,24 @@ void Slit::configureRequestEvent(XConfigureRequestEvent *e) {
     
     XConfigureWindow(display, e->window, e->value_mask, &xwc);
     
-    LinkedListIterator<SlitClient> it(clientList);
-    
-    for (; it.current(); it++)
-      if (it.current()->window == e->window)
-	if (it.current()->width != ((unsigned) e->width) ||
-	    it.current()->height != ((unsigned) e->height)) {
-	  it.current()->width = (unsigned) e->width;
-	  it.current()->height = (unsigned) e->height;
+    Bool reconf = False;
+
+    {
+      LinkedListIterator<SlitClient> it(clientList);
+      for (; it.current(); it++)
+        if (it.current()->window == e->window)
+	  if (it.current()->width != ((unsigned) e->width) ||
+	      it.current()->height != ((unsigned) e->height)) {
+	    it.current()->width = (unsigned) e->width;
+	    it.current()->height = (unsigned) e->height;
 	  
-	  reconfigure();
-	  
-	  break;
-	}
+	    reconf = True;
+ 
+            break;
+	  }
+    }
+
+    if (reconf) reconfigure();
   }
   
   blackbox->ungrab();

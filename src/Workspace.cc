@@ -122,17 +122,15 @@ void Workspace::setFocusWindow(int w) {
   if (w == clientmenu->getHighlight() &&
       (! screen->getBlackbox()->getFocusedWindow())) return;
 
-  BlackboxWindow *foc = (BlackboxWindow *) 0, *win = (BlackboxWindow *) 0;
-  if (screen->getBlackbox()->getFocusedWindow() &&
-      screen->getBlackbox()->getFocusedWindow()->validateClient())
-    foc = screen->getBlackbox()->getFocusedWindow();
+  BlackboxWindow *foc = screen->getBlackbox()->getFocusedWindow(),
+    *win = (BlackboxWindow *) 0;
 
   if (w >= 0 && w < windowList->count())
     win = getWindow(w);
 
   if (foc == win) return;
 
-  if (foc) {
+  if (foc && foc->validateClient()) {
     if (foc->getWorkspaceNumber() != id)
       screen->getWorkspace(foc->getWorkspaceNumber())->
         clientmenu->setHighlight(-1);
@@ -360,12 +358,10 @@ void Workspace::setName(char *new_name) {
 
 
 void Workspace::shutdown(void) {
-  LinkedListIterator<BlackboxWindow> it(windowList);
-  for (; it.current(); it++)
-    it.current()->restore();
-
-  while (windowList->count())
+  while (windowList->count()) {
+    windowList->first()->restore();
     delete windowList->first();
+  }
 }
 
 

@@ -23,14 +23,31 @@
 #endif // _GNU_SOURCE
 
 #include "LinkedList.hh"
+
 #include <stdio.h>
 
 
 __llist_iterator::__llist_iterator(__llist *l) {
   // initialize the iterator...
   list = l;
-  
+
+  if (list) {
+    if (list->iterator && list->iterator != this) {
+      fprintf(stderr,
+              "\nFATAL:  more than one iterator assigned to list %p\n", list);
+      abort();
+    }    
+
+    list->iterator = this;
+  }
+
   reset();
+}
+
+
+__llist_iterator::~__llist_iterator(void) {
+  if (list && list->iterator == this)
+    list->iterator = (__llist_iterator *) 0; 
 }
 
 
@@ -65,6 +82,12 @@ const int __llist_iterator::set(const int index) {
 }
 
 
+void __llist_iterator::operator++(void) {
+  // iterate to the next node in the list...
+  node = ((node) ? node->getNext() : 0);
+}     
+
+
 void __llist_iterator::operator++(int) {
   // iterate to the next node in the list...
   node = ((node) ? node->getNext() : 0);
@@ -75,6 +98,7 @@ __llist::__llist(void *d) {
   // initialize the linked list...
   _first = (__llist_node *) 0;
   _last = (__llist_node *) 0;
+  iterator = (__llist_iterator *) 0;
   elements = 0;
   
   if (d) insert(d);
@@ -85,6 +109,8 @@ __llist::~__llist(void) {
   // remove all the items in the list...
   for (register int i = 0, r = elements; i < r; i++)
     remove(0);
+
+  if (iterator && iterator->list == this) iterator->list = (__llist *) 0;
 }
 
 
@@ -152,13 +178,16 @@ const int __llist::insert(void *d, int index) {
 const int __llist::remove(void *d) {
   // remove list item whose data pointer address matches the pointer address
   // given
-  
+
   if ((! _first) || (! _last))
     return -1;
   else if (_first->getData() == d) {
     // remove the first item in the list...
     __llist_node *node = _first;
     _first = _first->getNext();
+
+    if (iterator && iterator->node == node)
+        iterator->reset();
     
     --elements;
     delete node;
@@ -179,7 +208,10 @@ const int __llist::remove(void *d) {
 	  
 	  if (rnode == _last)
 	    _last = prev;
-	  
+
+          if (iterator && iterator->node == rnode)
+              iterator->node = prev;
+
 	  --elements;
 	  delete rnode;
 	  return i;
@@ -196,7 +228,7 @@ const int __llist::remove(void *d) {
 void *__llist::remove(const int index) {
   if (index >= elements || index < 0 || (! _first) || (! _last))
     return (void *) 0;
-  
+
   // remove list item at specified index within the list
   if (index == 0) {
     // remove the first item in the list...
@@ -204,9 +236,13 @@ void *__llist::remove(const int index) {
     void *data_return = _first->getData();
     
     _first = _first->getNext();
-    
+
+    if (iterator && iterator->node == node)
+        iterator->reset();
+
     --elements;
     delete node;
+
     return data_return;
   } else {
     __llist_node *rnode = _first->getNext(), *prev = _first;
@@ -226,7 +262,10 @@ void *__llist::remove(const int index) {
     
     if (rnode == _last)
       _last = prev;
-    
+
+    if (iterator && iterator->node == rnode)
+        iterator->node = prev;
+
     --elements;
     data_return = rnode->getData();
     delete rnode;

@@ -1,6 +1,14 @@
 ChangeLog for 0.51.x
 
 
+Changes from 0.51.2 to 0.51.3:
+  - made linked lists a little smarter... they now know which iterator is
+    accessing them, and don't let more than one at at time access them...
+    this fixes some problems with removing data items from a linked list
+    while an iterator is walking through them...
+  - applied Jeff Raven's focus-fix patch for the segfault related to
+    blackbox crashing after trying to authenticate on a webpage with netscape
+
 Changes from 0.51.1. to 0.51.2:
   - some menu/focus bug fixes (related to multiple windows getting focused
     decorations)

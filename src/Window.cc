@@ -1843,7 +1843,7 @@ void BlackboxWindow::drawTitleWin(void) {
     
     XDrawString(display, frame.title,
 		((focused) ? screen->getWindowFocusGC() :
-		 screen->getWindowUnfocusGC()),dx,
+		 screen->getWindowUnfocusGC()), dx,
 		screen->getTitleFont()->ascent + frame.bevel_w, client.title,
 		dlen);
     break;  }

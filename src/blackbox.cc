@@ -1295,9 +1295,11 @@ void Blackbox::shutdown(void) {
 
   XSetInputFocus(getDisplay(), PointerRoot, None, CurrentTime);
   
-  LinkedListIterator<BScreen> it(screenList);
-  for (; it.current(); it++)
-    it.current()->shutdown();
+  {
+    LinkedListIterator<BScreen> it(screenList);
+    for (; it.current(); it++)
+      it.current()->shutdown();
+  }
 
   save_rc();
 }
