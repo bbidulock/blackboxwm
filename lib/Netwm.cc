@@ -64,19 +64,19 @@ Netwm::Netwm(Display* _display): display(_display) {
 
 // root window properties
 
-void Netwm::setSupported(Window target, Atom supported[],
+void Netwm::setSupported(Window target, Atom atoms[],
                          unsigned int count) const {
   XChangeProperty(display, target, net_supported, XA_ATOM,
                   32, PropModeReplace,
-                  reinterpret_cast<uchar*>(supported), count);
+                  reinterpret_cast<uchar*>(atoms), count);
 }
 
 
-void Netwm::setClientList(Window target, const Window clientList[],
+void Netwm::setClientList(Window target, const Window windows[],
                           unsigned int count) const {
   XChangeProperty(display, target, net_client_list, XA_WINDOW,
                   32, PropModeReplace,
-                  reinterpret_cast<uchar*>(&clientList), count);
+                  reinterpret_cast<uchar*>(&windows), count);
 }
 
 
@@ -96,11 +96,11 @@ void Netwm::setDesktopGeometry(Window target,
 }
 
 
-void Netwm::setWorkarea(Window target, unsigned long workarea[],
+void Netwm::setWorkarea(Window target, unsigned long workareas[],
                         unsigned int count) const {
   XChangeProperty(display, target, net_workarea,
                   XA_CARDINAL, 32, PropModeReplace,
-                  reinterpret_cast<uchar*>(workarea), count * 4);
+                  reinterpret_cast<uchar*>(workareas), count * 4);
 }
 
 
@@ -196,10 +196,10 @@ bool Netwm::getUTF8StringProperty(Window target, Atom property,
   if (bytes_left != 0) {
     XFree(data);
     unsigned long remain = ((size / 8) * nitems) + bytes_left;
-    int ret = XGetWindowProperty(display, target,
-                                 property, 0l, remain, False,
-                                 utf8_string, &atom_return, &size,
-                                 &nitems, &bytes_left, &data);
+    ret = XGetWindowProperty(display, target,
+                             property, 0l, remain, False,
+                             utf8_string, &atom_return, &size,
+                             &nitems, &bytes_left, &data);
     if (ret != Success)
       return False;
   }

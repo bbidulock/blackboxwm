@@ -49,8 +49,8 @@ public:
   inline Atom workarea(void) const { return net_workarea; }
   inline Atom supportingWMCheck(void) const { return net_supporting_wm_check; }
 
-  void setSupported(Window target, Atom supported[], unsigned int count) const;
-  void setClientList(Window target, const Window clientList[],
+  void setSupported(Window target, Atom atoms[], unsigned int count) const;
+  void setClientList(Window target, const Window windows[],
                      unsigned int count) const;
   void setNumberOfDesktops(Window target, unsigned int count) const;
   void setDesktopGeometry(Window target,
@@ -59,7 +59,7 @@ public:
   void setDesktopNames(Window target, const std::string& names) const;
   std::vector<std::string> readDesktopNames(Window target) const;
   void setActiveWindow(Window target, Window data) const;
-  void setWorkarea(Window target, unsigned long workarea[],
+  void setWorkarea(Window target, unsigned long workareas[],
                    unsigned int count) const;
   void setSupportingWMCheck(Window target, Window data) const;
 
