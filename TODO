@@ -1,14 +1,12 @@
 -- TODO for Blackbox - an X11 Window manager
 
-Before 0.65.0 full release:
+netwm:
 -----------------------------
-* double check man pages
+* _NET_NUMBER_OF_DESKTOPS requires that we move windows to the next
+   workspace when the one they are on is closed.  However we currently
+   iconify them instead
 
-CVS Bugs:
------------------------------
-* acroread transients <-- seems ok
-
-CVS warts:
+warts:
 -----------------------------
 * vnc in full screen mode does not get focus
 
@@ -24,9 +22,6 @@ CHECK: getBlackboxHints() and restoreAttributes() do a lot of the same work
        should look into whether it can be combined or not
 
 CHANGE: sticky windows are not handled well
-
-CHANGE: Send to menu should not list the current workspace
-        idea -- we could store the workspace number in the BasemenuItem
 
 CHANGE: look into centering the window when maximizing and the window can not
         grow to fill the area
@@ -46,9 +41,6 @@ CHANGE: when workspace name is greater than the width of its text area the
 CHANGE: rework the .blackboxrc resources so that they give a more
         uniform behavior across screens. (Still not sure how I want
 	to do this, so it'll have to wait.)
-
-ADD: support for KDE and GNOME via the new WM Spec at
-     http://www.freedesktop.org/standards/wm-spec/
 
 ADD: get volunteers to translate blackbox into other languages
 
