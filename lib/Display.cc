@@ -44,6 +44,9 @@ namespace bt {
   void createPenCache(const Display &display);
   void destroyPenCache(void);
 
+  void createPixmapCache(const Display &display);
+  void destroyPixmapCache(void);
+
 } // namespace bt
 
 
@@ -61,10 +64,12 @@ bt::Display::Display(const char *dpy_name) {
   createColorCache(*this);
   createFontCache(*this);
   createPenCache(*this);
+  createPixmapCache(*this);
 }
 
 
 bt::Display::~Display() {
+  destroyPixmapCache();
   destroyPenCache();
   destroyFontCache();
   destroyColorCache();
