@@ -9,8 +9,8 @@ dnl Determine default prefix
 test "x$prefix" = "xNONE" && prefix="$ac_default_prefix"
 
 dnl Look in the most logical places for external libraries
-CPPFLAGS="$CPPFLAGS -I$prefix"
-LDFLAGS="$LDFLAGS -L$prefix"
+CPPFLAGS="$CPPFLAGS -I$prefix/include"
+LDFLAGS="$LDFLAGS -L$prefix/lib"
 if test "x$prefix" != "x/usr/local"; then
   CPPFLAGS="$CPPFLAGS -I/usr/local/include"
   LDFLAGS="$LDFLAGS -L/usr/local/lib"
