@@ -556,13 +556,13 @@ void BScreen::LoadStyle(void) {
   if (XrmGetResource(resource.stylerc, "window.justify", "Window.Justify",
                      &value_type, &value)) {
     if (strstr(value.addr, "right") || strstr(value.addr, "Right"))
-      resource.wstyle.justify = BScreen::RightJustify;
+      resource.wstyle.justify = RightJustify;
     else if (strstr(value.addr, "center") || strstr(value.addr, "Center"))
-      resource.wstyle.justify = BScreen::CenterJustify;
+      resource.wstyle.justify = CenterJustify;
     else
-      resource.wstyle.justify = BScreen::LeftJustify;
+      resource.wstyle.justify = LeftJustify;
   } else {
-    resource.wstyle.justify = BScreen::LeftJustify;
+    resource.wstyle.justify = LeftJustify;
   }
   // load toolbar config
   resource.tstyle.toolbar =
@@ -594,13 +594,13 @@ void BScreen::LoadStyle(void) {
   if (XrmGetResource(resource.stylerc, "toolbar.justify",
                      "Toolbar.Justify", &value_type, &value)) {
     if (strstr(value.addr, "right") || strstr(value.addr, "Right"))
-      resource.tstyle.justify = BScreen::RightJustify;
+      resource.tstyle.justify = RightJustify;
     else if (strstr(value.addr, "center") || strstr(value.addr, "Center"))
-      resource.tstyle.justify = BScreen::CenterJustify;
+      resource.tstyle.justify = CenterJustify;
     else
-      resource.tstyle.justify = BScreen::LeftJustify;
+      resource.tstyle.justify = LeftJustify;
   } else {
-    resource.tstyle.justify = BScreen::LeftJustify;
+    resource.tstyle.justify = LeftJustify;
   }
   // load menu config
   resource.mstyle.title =
@@ -624,25 +624,25 @@ void BScreen::LoadStyle(void) {
                      "Menu.Title.Justify",
                      &value_type, &value)) {
     if (strstr(value.addr, "right") || strstr(value.addr, "Right"))
-      resource.mstyle.t_justify = BScreen::RightJustify;
+      resource.mstyle.t_justify = RightJustify;
     else if (strstr(value.addr, "center") || strstr(value.addr, "Center"))
-      resource.mstyle.t_justify = BScreen::CenterJustify;
+      resource.mstyle.t_justify = CenterJustify;
     else
-      resource.mstyle.t_justify = BScreen::LeftJustify;
+      resource.mstyle.t_justify = LeftJustify;
   } else {
-    resource.mstyle.t_justify = BScreen::LeftJustify;
+    resource.mstyle.t_justify = LeftJustify;
   }
   if (XrmGetResource(resource.stylerc, "menu.frame.justify",
                      "Menu.Frame.Justify",
                      &value_type, &value)) {
     if (strstr(value.addr, "right") || strstr(value.addr, "Right"))
-      resource.mstyle.f_justify = BScreen::RightJustify;
+      resource.mstyle.f_justify = RightJustify;
     else if (strstr(value.addr, "center") || strstr(value.addr, "Center"))
-      resource.mstyle.f_justify = BScreen::CenterJustify;
+      resource.mstyle.f_justify = CenterJustify;
     else
-      resource.mstyle.f_justify = BScreen::LeftJustify;
+      resource.mstyle.f_justify = LeftJustify;
   } else {
-    resource.mstyle.f_justify = BScreen::LeftJustify;
+    resource.mstyle.f_justify = LeftJustify;
   }
   if (XrmGetResource(resource.stylerc, "menu.bullet", "Menu.Bullet",
                      &value_type, &value)) {

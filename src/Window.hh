@@ -130,7 +130,6 @@ private:
     int old_bw;                       // client's borderwidth
 
     unsigned int
-      title_text_w,                 // width as rendered in the current font
       min_width, min_height,        // can not be resized smaller
       max_width, max_height,        // can not be resized larger
       width_inc, height_inc,        // increment step

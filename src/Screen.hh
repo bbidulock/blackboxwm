@@ -55,6 +55,7 @@ extern "C" {
 #include "blackbox.hh"
 class Slit; // forward reference
 
+enum TextJustify { LeftJustify = 1, RightJustify, CenterJustify };
 
 struct WindowStyle {
   BColor f_focus, f_unfocus, l_text_focus, l_text_unfocus, b_pic_focus,
@@ -66,7 +67,10 @@ struct WindowStyle {
   XFontSetExtents *fontset_extents;
   XFontStruct *font;
 
-  int justify;
+  TextJustify justify;
+
+  int doJustify(const char *text, int &start_pos, unsigned int max_length,
+                unsigned int modifier, Bool multibyte) const;
 };
 
 struct ToolbarStyle {
@@ -77,7 +81,10 @@ struct ToolbarStyle {
   XFontSetExtents *fontset_extents;
   XFontStruct *font;
 
-  int justify;
+  TextJustify justify;
+
+  int doJustify(const char *text, int &start_pos, unsigned int max_length,
+                unsigned int modifier, Bool multibyte) const;
 };
 
 struct MenuStyle {
@@ -88,7 +95,8 @@ struct MenuStyle {
   XFontSetExtents *t_fontset_extents, *f_fontset_extents;
   XFontStruct *t_font, *f_font;
 
-  int t_justify, f_justify, bullet, bullet_pos;
+  TextJustify t_justify, f_justify;
+  int bullet, bullet_pos;
 };
 
 struct NETStrut {
@@ -187,7 +195,6 @@ private:
 public:
   enum { RowSmartPlacement = 1, ColSmartPlacement, CascadePlacement, LeftRight,
          RightLeft, TopBottom, BottomTop };
-  enum { LeftJustify = 1, RightJustify, CenterJustify };
   enum { RoundBullet = 1, TriangleBullet, SquareBullet, NoBullet };
   enum { Restart = 1, RestartOther, Exit, Shutdown, Execute, Reconfigure,
          WindowShade, WindowIconify, WindowMaximize, WindowClose, WindowRaise,

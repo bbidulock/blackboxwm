@@ -499,12 +499,16 @@ void Basemenu::redrawTitle(void) {
   l +=  (menu.bevel_w * 2);
 
   switch (screen->getMenuStyle()->t_justify) {
-  case BScreen::RightJustify:
+  case RightJustify:
     dx += menu.width - l;
     break;
 
-  case BScreen::CenterJustify:
+  case CenterJustify:
     dx += (menu.width - l) / 2;
+    break;
+
+  case LeftJustify:
+  default:
     break;
   }
 
@@ -619,15 +623,15 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clear,
     }
 
     switch(screen->getMenuStyle()->f_justify) {
-    case BScreen::LeftJustify:
+    case LeftJustify:
       text_x = item_x + menu.bevel_w + menu.item_h + 1;
       break;
 
-    case BScreen::RightJustify:
+    case RightJustify:
       text_x = item_x + menu.item_w - (menu.item_h + menu.bevel_w + text_w);
       break;
 
-    case BScreen::CenterJustify:
+    case CenterJustify:
       text_x = item_x + ((menu.item_w + 1 - text_w) / 2);
       break;
     }

@@ -693,21 +693,6 @@ void BlackboxWindow::reconfigure(void) {
   client.rect.setPos(frame.rect.left() + frame.margin.left,
                      frame.rect.top() + frame.margin.top);
 
-  if (! client.title.empty()) {
-    if (i18n.multibyte()) {
-      XRectangle ink, logical;
-      XmbTextExtents(screen->getWindowStyle()->fontset,
-                     client.title.c_str(), client.title.length(),
-                     &ink, &logical);
-      client.title_text_w = logical.width;
-    } else {
-      client.title_text_w = XTextWidth(screen->getWindowStyle()->font,
-                                       client.title.c_str(),
-                                       client.title.length());
-    }
-    client.title_text_w += (frame.bevel_w * 4);
-  }
-
   positionWindows();
   decorate();
 
@@ -814,20 +799,6 @@ void BlackboxWindow::getWMName(void) {
   } else {
     client.title = i18n(WindowSet, WindowUnnamed, "Unnamed");
   }
-
-  if (i18n.multibyte()) {
-    XRectangle ink, logical;
-    XmbTextExtents(screen->getWindowStyle()->fontset,
-                   client.title.c_str(), client.title.length(),
-                   &ink, &logical);
-    client.title_text_w = logical.width;
-  } else {
-    client.title_text_w = XTextWidth(screen->getWindowStyle()->font,
-                                     client.title.c_str(),
-                                     client.title.length());
-  }
-
-  client.title_text_w += (frame.bevel_w * 4);
 }
 
 
@@ -1897,9 +1868,6 @@ void BlackboxWindow::restoreGravity(void) {
 
 
 void BlackboxWindow::redrawLabel(void) {
-  int dx = frame.bevel_w * 2, dlen = client.title.length();
-  unsigned int l = client.title_text_w;
-
   if (flags.focused) {
     if (frame.flabel)
       XSetWindowBackgroundPixmap(blackbox->getXDisplay(),
@@ -1917,43 +1885,21 @@ void BlackboxWindow::redrawLabel(void) {
   }
   XClearWindow(blackbox->getXDisplay(), frame.label);
 
-  if (client.title_text_w > frame.label_w) {
-    for (; dlen >= 0; dlen--) {
-      if (i18n.multibyte()) {
-        XRectangle ink, logical;
-        XmbTextExtents(screen->getWindowStyle()->fontset,
-                       client.title.c_str(), dlen, &ink, &logical);
-        l = logical.width;
-      } else {
-        l = XTextWidth(screen->getWindowStyle()->font,
-                       client.title.c_str(), dlen);
-      }
-      l += (frame.bevel_w * 4);
-
-      if (l < frame.label_w)
-        break;
-    }
-  }
-
-  switch (screen->getWindowStyle()->justify) {
-  case BScreen::RightJustify:
-    dx += frame.label_w - l;
-    break;
-
-  case BScreen::CenterJustify:
-    dx += (frame.label_w - l) / 2;
-    break;
-  }
-
   WindowStyle *style = screen->getWindowStyle();
+
+  int pos = frame.bevel_w * 2,
+    dlen = style->doJustify(client.title.c_str(), pos, frame.label_w,
+                            frame.bevel_w * 4, i18n.multibyte());
+
   BPen pen((flags.focused) ? style->l_text_focus : style->l_text_unfocus,
            style->font);
   if (i18n.multibyte())
     XmbDrawString(blackbox->getXDisplay(), frame.label, style->fontset,
-                  pen.gc(), dx, (1 - style->fontset_extents->max_ink_extent.y),
+                  pen.gc(), pos,
+                  (1 - style->fontset_extents->max_ink_extent.y),
                   client.title.c_str(), dlen);
   else
-    XDrawString(blackbox->getXDisplay(), frame.label, pen.gc(), dx,
+    XDrawString(blackbox->getXDisplay(), frame.label, pen.gc(), pos,
                 (style->font->ascent + 1), client.title.c_str(), dlen);
 }
 
@@ -2873,4 +2819,39 @@ void BlackboxWindow::constrain(Corner anchor, int *pw, int *ph) {
     frame.changing.setPos(frame.changing.x() + dx, frame.changing.y());
     break;
   }
+}
+
+
+int WindowStyle::doJustify(const char *text, int &start_pos,
+                           unsigned int max_length, unsigned int modifier,
+                           Bool multibyte) const {
+  size_t text_len = strlen(text);
+  unsigned int length;
+
+  do {
+    if (multibyte) {
+      XRectangle ink, logical;
+      XmbTextExtents(fontset, text, text_len, &ink, &logical);
+      length = logical.width;
+    } else {
+      length = XTextWidth(font, text, text_len);
+    }
+    length += modifier;
+  } while (length > max_length && text_len-- > 0);
+
+  switch (justify) {
+  case RightJustify:
+    start_pos += max_length - length;
+    break;
+
+  case CenterJustify:
+    start_pos += (max_length - length) / 2;
+    break;
+
+  case LeftJustify:
+  default:
+    break;
+  }
+
+  return text_len;
 }

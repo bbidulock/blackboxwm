@@ -214,13 +214,19 @@ void Toolbar::reconfigure(void) {
 
   frame.rect.setSize(width, height);
 
-  // left and right are always 0
-  strut.top = strut.bottom = 0;
-
   int x, y;
   switch (screen->getToolbarPlacement()) {
   case TopLeft:
-    x = 0;
+  case TopRight:
+  case TopCenter:
+    if (screen->getToolbarPlacement() == TopLeft)
+      x = 0;
+    else if (screen->getToolbarPlacement() == TopRight)
+      x = screen->getWidth() - frame.rect.width()
+        - (screen->getBorderWidth() * 2);
+    else
+      x = (screen->getWidth() - frame.rect.width()) / 2;
+
     y = 0;
 
     frame.x_hidden = x;
@@ -229,48 +235,17 @@ void Toolbar::reconfigure(void) {
     break;
 
   case BottomLeft:
-    x = 0;
-    y = screen->getHeight() - frame.rect.height()
-      - (screen->getBorderWidth() * 2);
-
-    frame.x_hidden = x;
-    frame.y_hidden = screen->getHeight() - screen->getBevelWidth()
-                     - screen->getBorderWidth();
-    break;
-
-  case TopCenter:
-    x = (screen->getWidth() - frame.rect.width()) / 2;
-    y = 0;
-
-    frame.x_hidden = x;
-    frame.y_hidden = screen->getBevelWidth() - screen->getBorderWidth()
-                     - frame.rect.height();
-    break;
-
+  case BottomRight:
   case BottomCenter:
   default:
-    x = (screen->getWidth() - frame.rect.width()) / 2;
-    y = screen->getHeight() - frame.rect.height()
-      - (screen->getBorderWidth() * 2);
+    if (screen->getToolbarPlacement() == BottomLeft)
+      x = 0;
+    else if (screen->getToolbarPlacement() == BottomRight)
+      x = screen->getWidth() - frame.rect.width()
+        - (screen->getBorderWidth() * 2);
+    else
+      x = (screen->getWidth() - frame.rect.width()) / 2;
 
-    frame.x_hidden = x;
-    frame.y_hidden = screen->getHeight() - screen->getBevelWidth()
-                     - screen->getBorderWidth();
-    break;
-
-  case TopRight:
-    x = screen->getWidth() - frame.rect.width()
-      - (screen->getBorderWidth() * 2);
-    y = 0;
-
-    frame.x_hidden = x;
-    frame.y_hidden = screen->getBevelWidth() - screen->getBorderWidth()
-                     - frame.rect.height();
-    break;
-
-  case BottomRight:
-    x = screen->getWidth() - frame.rect.width()
-      - (screen->getBorderWidth() * 2);
     y = screen->getHeight() - frame.rect.height()
       - (screen->getBorderWidth() * 2);
 
@@ -281,6 +256,9 @@ void Toolbar::reconfigure(void) {
   }
 
   frame.rect.setPos(x, y);
+
+  // left and right are always 0
+  strut.top = strut.bottom = 0;
 
   switch(screen->getToolbarPlacement()) {
   case TopLeft:
@@ -296,10 +274,10 @@ void Toolbar::reconfigure(void) {
 
 #ifdef    HAVE_STRFTIME
   time_t ttmp = time(NULL);
-  struct tm *tt = 0;
 
+  frame.clock_w = 0;
   if (ttmp != -1) {
-    tt = localtime(&ttmp);
+    struct tm *tt = localtime(&ttmp);
     if (tt) {
       char t[1024];
       int len = strftime(t, 1024, screen->getStrftimeFormat(), tt);
@@ -313,11 +291,7 @@ void Toolbar::reconfigure(void) {
         frame.clock_w = XTextWidth(screen->getToolbarStyle()->font, t, len);
       }
       frame.clock_w += (frame.bevel_w * 4);
-    } else {
-      frame.clock_w = 0;
     }
-  } else {
-    frame.clock_w = 0;
   }
 #else // !HAVE_STRFTIME
   frame.clock_w =
@@ -519,54 +493,18 @@ void Toolbar::checkClock(Bool redraw, Bool date) {
     }
 #endif // HAVE_STRFTIME
 
-    int dx = (frame.bevel_w * 2), dlen = strlen(t);
-    unsigned int l;
-
-    if (i18n.multibyte()) {
-      XRectangle ink, logical;
-      XmbTextExtents(screen->getToolbarStyle()->fontset,
-                     t, dlen, &ink, &logical);
-      l = logical.width;
-    } else {
-      l = XTextWidth(screen->getToolbarStyle()->font, t, dlen);
-    }
-
-    l += (frame.bevel_w * 4);
-
-    if (l > frame.clock_w) {
-      for (; dlen >= 0; dlen--) {
-        if (i18n.multibyte()) {
-          XRectangle ink, logical;
-          XmbTextExtents(screen->getToolbarStyle()->fontset,
-                         t, dlen, &ink, &logical);
-          l = logical.width;
-        } else {
-          l = XTextWidth(screen->getToolbarStyle()->font, t, dlen);
-        }
-        l+= (frame.bevel_w * 4);
-
-        if (l < frame.clock_w)
-          break;
-      }
-    }
-    switch (screen->getToolbarStyle()->justify) {
-    case BScreen::RightJustify:
-      dx += frame.clock_w - l;
-      break;
-
-    case BScreen::CenterJustify:
-      dx += (frame.clock_w - l) / 2;
-      break;
-    }
-
     ToolbarStyle *style = screen->getToolbarStyle();
+
+    int pos = frame.bevel_w * 2, // this is modified by doJustify()
+      dlen = style->doJustify(t, pos, frame.clock_w,
+                              frame.bevel_w * 4, i18n.multibyte());
     BPen pen(style->c_text, style->font);
     if (i18n.multibyte())
       XmbDrawString(display, frame.clock, style->fontset, pen.gc(),
-                    dx, (1 - style->fontset_extents->max_ink_extent.y),
+                    pos, (1 - style->fontset_extents->max_ink_extent.y),
                     t, dlen);
     else
-      XDrawString(display, frame.clock, pen.gc(), dx,
+      XDrawString(display, frame.clock, pen.gc(), pos,
                   (style->font->ascent + 1), t, dlen);
   }
 }
@@ -585,53 +523,18 @@ void Toolbar::redrawWindowLabel(Bool redraw) {
   if (foc->getScreen() != screen) return;
 
   const char *title = foc->getTitle();
-  int dx = (frame.bevel_w * 2), dlen = strlen(title);
-  unsigned int l;
-
-  if (i18n.multibyte()) {
-    XRectangle ink, logical;
-    XmbTextExtents(screen->getToolbarStyle()->fontset, title, dlen,
-                   &ink, &logical);
-    l = logical.width;
-  } else {
-    l = XTextWidth(screen->getToolbarStyle()->font, title, dlen);
-  }
-  l += (frame.bevel_w * 4);
-
-  if (l > frame.window_label_w) {
-    for (; dlen >= 0; dlen--) {
-      if (i18n.multibyte()) {
-        XRectangle ink, logical;
-        XmbTextExtents(screen->getToolbarStyle()->fontset, title, dlen,
-                       &ink, &logical);
-        l = logical.width;
-      } else {
-        l = XTextWidth(screen->getToolbarStyle()->font, title, dlen);
-      }
-      l += (frame.bevel_w * 4);
-
-      if (l < frame.window_label_w)
-        break;
-    }
-  }
-  switch (screen->getToolbarStyle()->justify) {
-  case BScreen::RightJustify:
-    dx += frame.window_label_w - l;
-    break;
-
-  case BScreen::CenterJustify:
-    dx += (frame.window_label_w - l) / 2;
-    break;
-  }
-
   ToolbarStyle *style = screen->getToolbarStyle();
+
+  int pos = frame.bevel_w * 2, // modified by doJustify()
+    dlen = style->doJustify(title, pos, frame.window_label_w,
+                            frame.bevel_w * 4, i18n.multibyte());
   BPen pen(style->w_text, style->font);
   if (i18n.multibyte())
-    XmbDrawString(display, frame.window_label, style->fontset, pen.gc(), dx,
+    XmbDrawString(display, frame.window_label, style->fontset, pen.gc(), pos,
                   (1 - style->fontset_extents->max_ink_extent.y),
                   title, dlen);
   else
-    XDrawString(display, frame.window_label, pen.gc(), dx,
+    XDrawString(display, frame.window_label, pen.gc(), pos,
                 (style->font->ascent + 1), title, dlen);
 }
 
@@ -642,53 +545,18 @@ void Toolbar::redrawWorkspaceLabel(Bool redraw) {
   if (redraw)
     XClearWindow(display, frame.workspace_label);
 
-  int dx = (frame.bevel_w * 2), dlen = name.length();
-  unsigned int l;
-
-  if (i18n.multibyte()) {
-    XRectangle ink, logical;
-    XmbTextExtents(screen->getToolbarStyle()->fontset, name.c_str(),
-                   dlen, &ink, &logical);
-    l = logical.width;
-  } else {
-    l = XTextWidth(screen->getToolbarStyle()->font, name.c_str(), dlen);
-  }
-  l += (frame.bevel_w * 4);
-
-  if (l > frame.workspace_label_w) {
-    for (; dlen >= 0; dlen--) {
-      if (i18n.multibyte()) {
-        XRectangle ink, logical;
-        XmbTextExtents(screen->getToolbarStyle()->fontset, name.c_str(), dlen,
-                       &ink, &logical);
-        l = logical.width;
-      } else {
-        l = XTextWidth(screen->getWindowStyle()->font, name.c_str(), dlen);
-      }
-      l += (frame.bevel_w * 4);
-
-      if (l < frame.workspace_label_w)
-        break;
-    }
-  }
-  switch (screen->getToolbarStyle()->justify) {
-  case BScreen::RightJustify:
-    dx += frame.workspace_label_w - l;
-    break;
-
-  case BScreen::CenterJustify:
-    dx += (frame.workspace_label_w - l) / 2;
-    break;
-  }
-
   ToolbarStyle *style = screen->getToolbarStyle();
+
+  int pos = frame.bevel_w * 2,
+    dlen = style->doJustify(name.c_str(), pos, frame.workspace_label_w,
+                            frame.bevel_w * 4, i18n.multibyte());
   BPen pen(style->l_text, style->font);
   if (i18n.multibyte())
-    XmbDrawString(display, frame.workspace_label, style->fontset, pen.gc(), dx,
-                  (1 - style->fontset_extents->max_ink_extent.y),
+    XmbDrawString(display, frame.workspace_label, style->fontset, pen.gc(),
+                  pos, (1 - style->fontset_extents->max_ink_extent.y),
                   name.c_str(), dlen);
   else
-    XDrawString(display, frame.workspace_label, pen.gc(), dx,
+    XDrawString(display, frame.workspace_label, pen.gc(), pos,
                 (style->font->ascent + 1),
                 name.c_str(), dlen);
 }
@@ -1208,4 +1076,39 @@ void Toolbarmenu::Placementmenu::itemSelected(int button, unsigned int index) {
   // reposition the slit as well to make sure it doesn't intersect the
   // toolbar
   getScreen()->getSlit()->reposition();
+}
+
+
+int ToolbarStyle::doJustify(const char *text, int &start_pos,
+                            unsigned int max_length, unsigned int modifier,
+                            Bool multibyte) const {
+  size_t text_len = strlen(text);
+  unsigned int length;
+
+  do {
+    if (multibyte) {
+      XRectangle ink, logical;
+      XmbTextExtents(fontset, text, text_len, &ink, &logical);
+      length = logical.width;
+    } else {
+      length = XTextWidth(font, text, text_len);
+    }
+    length += modifier;
+  } while (length > max_length && text_len-- > 0);
+
+  switch (justify) {
+  case RightJustify:
+    start_pos += max_length - length;
+    break;
+
+  case CenterJustify:
+    start_pos += (max_length - length) / 2;
+    break;
+
+  case LeftJustify:
+  default:
+    break;
+  }
+
+  return text_len;
 }
