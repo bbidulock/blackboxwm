@@ -689,7 +689,7 @@ void BScreen::unmanageWindow(BlackboxWindow *win) {
   windowList.remove(win);
   _stackingList.remove(win);
 
-  if (_windowmenu->window() == win)
+  if (_windowmenu && _windowmenu->window() == win)
     _windowmenu->hide();
 
   delete win;
