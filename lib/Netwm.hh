@@ -51,6 +51,8 @@ public:
   void setSupportingWMCheck(Window target, Window data, Display* display);
   void setWMName(const std::string& name, Window w, Display *display);
 
+  void removeProperty(Atom atom, Display* display, Window target) const;
+
 private:
   Netwm(const Netwm&);
   Netwm& operator=(const Netwm&);

@@ -360,6 +360,15 @@ BScreen::~BScreen(void) {
   delete toolbar;
   delete image_control;
 
+  blackbox->netwm()->removeProperty(blackbox->netwm()->supportingWMCheck(),
+                                    blackbox->getXDisplay(), getRootWindow());
+  blackbox->netwm()->removeProperty(blackbox->netwm()->supported(),
+                                    blackbox->getXDisplay(), getRootWindow());
+  blackbox->netwm()->removeProperty(blackbox->netwm()->currentDesktop(),
+                                    blackbox->getXDisplay(), getRootWindow());
+  blackbox->netwm()->removeProperty(blackbox->netwm()->numberOfDesktops(),
+                                    blackbox->getXDisplay(), getRootWindow());
+
   if (resource.wstyle.fontset)
     XFreeFontSet(blackbox->getXDisplay(), resource.wstyle.fontset);
   if (resource.mstyle.t_fontset)

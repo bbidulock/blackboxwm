@@ -88,3 +88,8 @@ void Netwm::setWMName(const string& name, Window w, Display *display) {
                   name.length());
 }
 #undef uchar
+
+
+void Netwm::removeProperty(Atom atom, Display *display, Window target) const {
+  XDeleteProperty(display, target, atom);
+}

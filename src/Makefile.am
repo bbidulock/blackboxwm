@@ -107,4 +107,5 @@ blackbox.o: blackbox.cc ../config.h ../lib/i18n.hh ../nls/blackbox-nls.hh \
  ../lib/Texture.hh ../lib/Util.hh Configmenu.hh Iconmenu.hh Netizen.hh \
  Workspace.hh Workspacemenu.hh Slit.hh Toolbar.hh Window.hh Windowmenu.hh
 main.o: main.cc ../version.h ../config.h ../lib/i18n.hh \
- ../nls/blackbox-nls.hh blackbox.hh ../lib/BaseDisplay.hh ../lib/Timer.hh
+ ../nls/blackbox-nls.hh blackbox.hh ../lib/BaseDisplay.hh ../lib/Timer.hh \
+ ../lib/libblackbox.a
