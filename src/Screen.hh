@@ -131,7 +131,7 @@ public:
 
   Workspacemenu *getWorkspacemenu(void) { return workspacemenu; }
 
-  inline unsigned int currentWorkspace(void)
+  inline unsigned int currentWorkspace(void) const
   { return current_workspace; }
   void setCurrentWorkspace(unsigned int id);
 
