@@ -46,8 +46,16 @@ std::string normalize(const std::string& input) {
 }
 
 
-struct Style {
-  struct Window {
+class Style {
+public:
+  Style(void);
+  ~Style(void);
+
+  class Window {
+  public:
+    Window(void);
+    ~Window(void);
+
     std::string font, title_focus, title_focus_color, title_focus_colorTo,
       title_unfocus, title_unfocus_color, title_unfocus_colorTo,
       label_focus, label_focus_color, label_focus_colorTo,
@@ -64,7 +72,11 @@ struct Style {
       button_focus_picColor, button_unfocus_picColor,
       frame_focusColor, frame_unfocusColor, frame_width, alignment;
   };
-  struct Toolbar {
+  class Toolbar {
+  public:
+    Toolbar(void);
+    ~Toolbar(void);
+
     std::string font, frame, frame_color, frame_colorTo,
       label, label_color, label_colorTo,
       window, window_color, window_colorTo,
@@ -73,7 +85,10 @@ struct Style {
       button_pressed, button_pressed_color, button_pressed_colorTo,
       label_text, window_text, clock_text, button_pic, alignment;
   };
-  struct Menu {
+  class Menu {
+  public:
+    Menu(void);
+    ~Menu(void);
     std::string title_font, frame_font, title, title_color, title_colorTo,
       frame, frame_color, frame_colorTo, active, active_color, active_colorTo,
       title_text, frame_text, frame_foreground, disabledColor, active_text,
@@ -88,6 +103,16 @@ struct Style {
 
   void read(const bt::Resource& res);
 };
+
+
+Style::Style(void) { }
+Style::~Style(void) { }
+Style::Window::Window(void) { }
+Style::Window::~Window(void) { }
+Style::Toolbar::Toolbar(void) { }
+Style::Toolbar::~Toolbar(void) { }
+Style::Menu::Menu(void) { }
+Style::Menu::~Menu(void) { }
 
 
 void Style::read(const bt::Resource& res) {
