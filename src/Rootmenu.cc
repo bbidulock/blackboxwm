@@ -40,6 +40,10 @@ void Rootmenu::insertFunction(const std::string &label,
 }
 
 
+void Rootmenu::clear(void)
+{ _funcmap.clear(); }
+
+
 void Rootmenu::itemClicked(unsigned int id, unsigned int) {
   FunctionMap::const_iterator it = _funcmap.find(id);
   if (it == _funcmap.end()) return;

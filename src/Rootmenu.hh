@@ -41,6 +41,7 @@ public:
                       const std::string &exec = std::string(),
                       unsigned int id = ~0u,
                       unsigned int index = ~0u);
+  void clear(void);
 
 protected:
   void itemClicked(unsigned int id, unsigned int);
