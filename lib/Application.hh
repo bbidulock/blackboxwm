@@ -160,6 +160,11 @@ namespace bt {
       Removes all EventHandlers for Window {window}.
     */
     void removeEventHandler(Window window);
+    /*
+      Returns the event handler registered for Window {window}.  If no
+      handler has been registered, this function returns zero.
+    */
+    EventHandler *findEventHandler(Window window);
   };
 
 } // namespace bt

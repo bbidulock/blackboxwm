@@ -287,10 +287,8 @@ void bt::Application::run(void) {
 }
 
 void bt::Application::process_event(XEvent *event) {
-  EventHandlerMap::iterator it = eventhandlers.find(event->xany.window);
-  if (it == eventhandlers.end()) return;
-
-  bt::EventHandler *handler = it->second;
+  bt::EventHandler *handler = findEventHandler(event->xany.window);
+  if (!handler) return;
 
   // if there is an active menu, pre-process the events
   if (menu_grab) {
@@ -577,6 +575,15 @@ void bt::Application::insertEventHandler(Window window,
 
 void bt::Application::removeEventHandler(Window window) {
   eventhandlers.erase(window);
+}
+
+
+bt::EventHandler *bt::Application::findEventHandler(Window window)
+{
+  EventHandlerMap::iterator it = eventhandlers.find(window);
+  if (it == eventhandlers.end())
+    return 0;
+  return it->second;
 }
 
 
