@@ -2205,6 +2205,9 @@ void BlackboxWindow::reparentNotifyEvent(XReparentEvent *re) {
                 "0x%lx.\n"), client.window, re->parent);
 #endif // DEBUG
 
+  XEvent ev;
+  ev.xreparent = *re;
+  XPutBackEvent(display, &ev);
   screen->unmanageWindow(this);
 }
 
@@ -2697,8 +2700,15 @@ void BlackboxWindow::restore(void) {
   XUnmapWindow(display, client.window);
 
   XSetWindowBorderWidth(display, client.window, client.old_bw);
-  XReparentWindow(display, client.window, screen->getRootWindow(),
-                  client.x, client.y);
+
+  XEvent ev;
+  if (! XCheckTypedWindowEvent(display, client.window, ReparentNotify, &ev)) {
+    // according to the ICCCM - if the client doesn't reparent to
+    // root, then we have to do it for them
+    XReparentWindow(display, client.window, screen->getRootWindow(),
+                    client.x, client.y );
+  }
+
   XMapWindow(display, client.window);
 
   XFlush(display);
