@@ -53,8 +53,25 @@ namespace bt {
                 Drawable drawable, const Rect &rect,
                 Alignment alignment, const std::string &text);
 
-  std::string ellideText(const std::string& text, size_t count,
+  /*
+   * Take a string and make it 'count' chars long by removing the
+   * middle and replacing it with the string in 'ellide'.
+   */
+  std::string ellideText(const std::string& text,
+                         size_t count,
                          const char* ellide);
+
+  /*
+   * Take a string and make no more than 'max_width' pixels wide by
+   * removing the middle and replacing it with the string in 'ellide'.
+   * The on-screen size of the string font is determined using the
+   * specified font on the specified screen.
+   */
+  std::string ellideText(const std::string &text,
+                         unsigned int max_width,
+                         const char *ellide,
+                         unsigned int screen,
+                         const bt::Font &font);
 
   Alignment alignResource(const Resource &resource,
                           const char* name, const char* classname,

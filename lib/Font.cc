@@ -483,10 +483,6 @@ void bt::drawText(const Font &font, const Pen &pen,
 }
 
 
-/*
- * Take a string and make it 'count' chars long by removing the middle
- * and replacing it with the string in 'ellide'
- */
 std::string bt::ellideText(const std::string& text, size_t count,
                            const char* ellide) {
   const std::string::size_type len = text.length();
@@ -500,6 +496,29 @@ std::string bt::ellideText(const std::string& text, size_t count,
 
   return ret.replace(ret.begin() + (count / 2) - (ellide_len / 2),
                      ret.end() - (count / 2) + ((ellide_len / 2) + 1), ellide);
+}
+
+
+std::string bt::ellideText(const std::string &text,
+                           unsigned int max_width,
+                           const char *ellide,
+                           unsigned int screen,
+                           const bt::Font &font) {
+  std::string visible = text;
+  bt::Rect r = bt::textRect(screen, font, visible);
+
+  if (r.width() > max_width) {
+    const size_t ellide_len = strlen(ellide);
+    const int min_c = (ellide_len * 3) - 1;
+    int c = visible.size();
+    while (--c > min_c && r.width() > max_width) {
+      visible = bt::ellideText(text, c, "...");
+      r = bt::textRect(screen, font, visible);
+    }
+    if (c <= min_c) visible = "..."; // couldn't ellide enough
+  }
+
+  return visible;
 }
 
 
