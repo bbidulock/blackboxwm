@@ -92,6 +92,26 @@ public:
   { return net_wm_window_type_dialog; }
   inline Atom wmWindowTypeNormal(void) const
   { return net_wm_window_type_normal; }
+  inline Atom wmState(void) const { return net_wm_state; }
+  inline Atom wmStateModal(void) const { return net_wm_state_modal; }
+  inline Atom wmStateSticky(void) const { return net_wm_state_sticky; }
+  inline Atom wmStateMaximizedVert(void) const
+  { return net_wm_state_maximized_vert; }
+  inline Atom wmStateMaximizedHorz(void) const
+  { return net_wm_state_maximized_horz; }
+  inline Atom wmStateShaded(void) const { return net_wm_state_shaded; }
+  inline Atom wmStateSkipTaskbar(void) const
+  { return net_wm_state_skip_taskbar; }
+  inline Atom wmStateSkipPager(void) const
+  { return net_wm_state_skip_pager; }
+  inline Atom wmStateHidden(void) const { return net_wm_state_hidden; }
+  inline Atom wmStateFullscreen(void) const
+  { return net_wm_state_fullscreen; }
+  inline Atom wmStateAbove(void) const { return net_wm_state_above; }
+  inline Atom wmStateBelow(void) const { return net_wm_state_below; }
+  inline Atom wmStateRemove(void) const { return net_wm_state_remove; }
+  inline Atom wmStateAdd(void) const { return net_wm_state_add; }
+  inline Atom wmStateToggle(void) const { return net_wm_state_toggle; }
 
   void setWMName(Window target, const std::string& name) const;
   bool readWMName(Window target, std::string& name) const;
@@ -99,6 +119,7 @@ public:
   void setWMDesktop(Window target, unsigned int desktop) const;
   bool readWMDesktop(Window target, unsigned int& desktop) const;
   bool readWMWindowType(Window target, AtomList& types) const;
+  bool readWMState(Window target, AtomList& states) const;
 
   // utility
   void removeProperty(Window target, Atom atom) const;
@@ -125,7 +146,12 @@ private:
     net_wm_window_type_desktop, net_wm_window_type_dock,
     net_wm_window_type_toolbar, net_wm_window_type_menu,
     net_wm_window_type_utility, net_wm_window_type_splash,
-    net_wm_window_type_dialog, net_wm_window_type_normal;
+    net_wm_window_type_dialog, net_wm_window_type_normal, net_wm_state,
+    net_wm_state_modal, net_wm_state_sticky, net_wm_state_maximized_vert,
+    net_wm_state_maximized_horz, net_wm_state_shaded,
+    net_wm_state_skip_taskbar, net_wm_state_skip_pager, net_wm_state_hidden,
+    net_wm_state_fullscreen, net_wm_state_above, net_wm_state_below,
+    net_wm_state_remove, net_wm_state_add, net_wm_state_toggle;
 };
 
 #endif // _blackbox_netwm_hh

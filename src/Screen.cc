@@ -302,10 +302,25 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
     blackbox->netwm()->wmWindowTypeUtility(),
     blackbox->netwm()->wmWindowTypeSplash(),
     blackbox->netwm()->wmWindowTypeDialog(),
-    blackbox->netwm()->wmWindowTypeNormal()
+    blackbox->netwm()->wmWindowTypeNormal(),
+    blackbox->netwm()->wmState(),
+    blackbox->netwm()->wmStateModal(),
+    /* sticky would go here, but we do not need it */
+    blackbox->netwm()->wmStateMaximizedVert(),
+    blackbox->netwm()->wmStateMaximizedHorz(),
+    blackbox->netwm()->wmStateShaded(),
+    blackbox->netwm()->wmStateSkipTaskbar(),
+    blackbox->netwm()->wmStateSkipPager(),
+    blackbox->netwm()->wmStateHidden(),
+    blackbox->netwm()->wmStateFullscreen(),
+    blackbox->netwm()->wmStateAbove(),
+    blackbox->netwm()->wmStateBelow(),
+    blackbox->netwm()->wmStateRemove(),
+    blackbox->netwm()->wmStateAdd(),
+    blackbox->netwm()->wmStateToggle()
   };
 
-  blackbox->netwm()->setSupported(getRootWindow(), supported, 21);
+  blackbox->netwm()->setSupported(getRootWindow(), supported, 36);
 
   unsigned int i, j, nchild;
   Window r, p, *children;

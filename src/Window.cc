@@ -143,9 +143,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   client.normal_hint_flags = 0;
   client.window_group = None;
   client.transient_for = 0;
-
-  current_state = NormalState;
-
+  client.window_type = None;
   /*
     set the initial size and location of client window (relative to the
     _root window_). This position is the reference point used with the
@@ -153,6 +151,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   */
   client.rect.setRect(wattrib.x, wattrib.y, wattrib.width, wattrib.height);
   client.old_bw = wattrib.border_width;
+
+  current_state = NormalState;
 
   windowmenu = 0;
   lastButtonPressTime = 0;
@@ -921,25 +921,58 @@ bool BlackboxWindow::getNetwmHints(void) {
   unsigned int count = 0;
   bool ret;
 
-  Netwm::AtomList types;
-  ret = blackbox->netwm()->readWMWindowType(client.window, types);
+  Netwm::AtomList atoms;
+  ret = blackbox->netwm()->readWMWindowType(client.window, atoms);
   if (ret) {
-    Netwm::AtomList::iterator it = types.begin(), end = types.end();
+    ++count;
+    Netwm::AtomList::iterator it = atoms.begin(), end = atoms.end();
     for (; it != end; ++it) {
       if (blackbox->netwm()->isSupportedWMWindowType(*it)) {
         client.window_type = *it;
         break;
       }
     }
+  }
+
+  atoms.clear();
+  ret = blackbox->netwm()->readWMState(client.window, atoms);
+  if (ret) {
     ++count;
+    Netwm::AtomList::iterator it = atoms.begin(), end = atoms.end();
+    const Netwm* const netwm = blackbox->netwm();
+    for (; it != end; ++it) {
+      Atom state = *it;
+      if (state == netwm->wmStateModal()) {
+      } else if (state == netwm->wmStateMaximizedVert()) {
+        if (flags.maximized == 0)
+          flags.maximized = 2;
+        else if (flags.maximized == 3)
+          flags.maximized = 1;
+      } else if (state == netwm->wmStateMaximizedHorz()) {
+        if (flags.maximized == 0)
+          flags.maximized = 3;
+        else if (flags.maximized == 2)
+          flags.maximized = 1;
+      } else if (state == netwm->wmStateShaded()) {
+        flags.shaded = True;
+      } else if (state == netwm->wmStateSkipTaskbar()) {
+      } else if (state == netwm->wmStateSkipPager()) {
+      } else if (state == netwm->wmStateHidden()) {
+        flags.iconic = True;
+        current_state = IconicState;
+      } else if (state == netwm->wmStateFullscreen()) {
+      } else if (state == netwm->wmStateAbove()) {
+      } else if (state == netwm->wmStateBelow()) {
+      }
+    }
   }
 
   unsigned int desktop;
   ret = blackbox->netwm()->readWMDesktop(client.window, desktop);
   if (ret) {
+    ++count;
     if (desktop != 0xFFFFFFFF)
       setWorkspace(desktop);
-    ++count;
   } else if (client.window_type == blackbox->netwm()->wmWindowTypeDesktop()) {
     // make me omnipresent
   }

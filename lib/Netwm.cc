@@ -52,9 +52,24 @@ Netwm::Netwm(Display* _display): display(_display) {
     "_NET_WM_WINDOW_TYPE_SPLASH",
     "_NET_WM_WINDOW_TYPE_DIALOG",
     "_NET_WM_WINDOW_TYPE_NORMAL",
+    "_NET_WM_STATE",
+    "_NET_WM_STATE_MODAL",
+    "_NET_WM_STATE_STICKY",
+    "_NET_WM_STATE_MAXIMIZED_VERT",
+    "_NET_WM_STATE_MAXIMIZED_HORZ",
+    "_NET_WM_STATE_SHADED",
+    "_NET_WM_STATE_SKIP_TASKBAR",
+    "_NET_WM_STATE_SKIP_PAGER",
+    "_NET_WM_STATE_HIDDEN",
+    "_NET_WM_STATE_FULLSCREEN",
+    "_NET_WM_STATE_ABOVE",
+    "_NET_WM_STATE_BELOW",
+    "_NET_WM_STATE_REMOVE",
+    "_NET_WM_STATE_ADD",
+    "_NET_WM_STATE_TOGGLE"
   };
-  Atom atoms_return[25];
-  XInternAtoms(display, atoms, 25, False, atoms_return);
+  Atom atoms_return[40];
+  XInternAtoms(display, atoms, 40, False, atoms_return);
 
   utf8_string = atoms_return[0];
   net_supported = atoms_return[1];
@@ -81,6 +96,21 @@ Netwm::Netwm(Display* _display): display(_display) {
   net_wm_window_type_splash = atoms_return[22];
   net_wm_window_type_dialog = atoms_return[23];
   net_wm_window_type_normal = atoms_return[24];
+  net_wm_state = atoms_return[25];
+  net_wm_state_modal = atoms_return[26];
+  net_wm_state_sticky = atoms_return[27];
+  net_wm_state_maximized_vert = atoms_return[28];
+  net_wm_state_maximized_horz = atoms_return[29];
+  net_wm_state_shaded = atoms_return[30];
+  net_wm_state_skip_taskbar = atoms_return[31];
+  net_wm_state_skip_pager = atoms_return[32];
+  net_wm_state_hidden = atoms_return[33];
+  net_wm_state_fullscreen = atoms_return[34];
+  net_wm_state_above = atoms_return[35];
+  net_wm_state_below = atoms_return[36];
+  net_wm_state_remove = atoms_return[37];
+  net_wm_state_add = atoms_return[38];
+  net_wm_state_toggle = atoms_return[39];
 }
 
 
@@ -217,6 +247,12 @@ bool Netwm::readWMDesktop(Window target, unsigned int& desktop) const {
 bool Netwm::readWMWindowType(Window target, AtomList& types) const {
   return (getAtomListProperty(target, net_wm_window_type, types) &&
           ! types.empty());
+}
+
+
+bool Netwm::readWMState(Window target, AtomList& states) const {
+  return (getAtomListProperty(target, net_wm_state, states) &&
+          ! states.empty());
 }
 
 
