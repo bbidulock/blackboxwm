@@ -2481,12 +2481,18 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent *be) {
       // snap the window menu into a corner/side if necessary
       int left_edge, right_edge, top_edge, bottom_edge;
 
+      /*
+         the " + (frame.border_w * 2) - 1" bits are to get the proper width
+         and height of the menu, as the sizes returned by it do not include
+         the borders.
+       */
       left_edge = frame.rect.x();
       right_edge = frame.rect.right() -
         (windowmenu->getWidth() + (frame.border_w * 2) - 1);
-      top_edge = client.rect.top() - (frame.border_w * 2);
+      top_edge = client.rect.top() - (frame.border_w + frame.mwm_border_w);
       bottom_edge = client.rect.bottom() -
-        (windowmenu->getHeight() + (frame.border_w * 2) - 1);
+        (windowmenu->getHeight() + (frame.border_w * 2) - 1) +
+        (frame.border_w + frame.mwm_border_w);
 
       if (mx < left_edge)
         mx = left_edge;
