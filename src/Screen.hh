@@ -312,14 +312,17 @@ public:
   unsigned int addWorkspace(void);
   unsigned int removeLastWorkspace(void);
   void removeWorkspaceNames(void);
-
   void addWorkspaceName(const char *name);
-  void addNetizen(Netizen *n);
-  void removeNetizen(Window w);
-  void addIcon(BlackboxWindow *w);
-  void removeIcon(BlackboxWindow *w);
   const std::string& getNameOfWorkspace(unsigned int id);
   void changeWorkspaceID(unsigned int id);
+
+  void addNetizen(Netizen *n);
+  void removeNetizen(Window w);
+
+  void addIcon(BlackboxWindow *w);
+  void removeIcon(BlackboxWindow *w);
+
+  void unmanageWindow(BlackboxWindow *w);
   void raiseWindows(Window *workspace_stack, unsigned int num);
   void reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id,
                          Bool ignore_sticky);

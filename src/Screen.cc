@@ -880,6 +880,19 @@ void BScreen::changeWorkspaceID(unsigned int id) {
 }
 
 
+void BScreen::unmanageWindow(BlackboxWindow *w) {
+  if (w->getWorkspaceNumber() != BSENTINEL &&
+      w->getWindowNumber() != BSENTINEL)
+    getWorkspace(w->getWorkspaceNumber())->removeWindow(w);
+  else if (w->isIconic())
+    removeIcon(w);
+
+  getToolbar()->redrawWindowLabel(True);
+
+  removeNetizen(w->getClientWindow());
+}
+
+
 void BScreen::addNetizen(Netizen *n) {
   netizenList.push_back(n);
 

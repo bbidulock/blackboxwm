@@ -275,7 +275,7 @@ public:
   inline int getYClient(void) const { return client.y; }
   inline unsigned int getWorkspaceNumber(void) const
   { return workspace_number; }
-  inline int getWindowNumber(void) const { return window_number; }
+  inline unsigned int getWindowNumber(void) const { return window_number; }
 
   inline unsigned int getWidth(void) const { return frame.width; }
   inline unsigned int getHeight(void) const { return frame.height; }

@@ -286,11 +286,6 @@ BlackboxWindow::~BlackboxWindow(void) {
     XUngrabPointer(display, CurrentTime);
   }
 
-  if (workspace_number != BSENTINEL && window_number != BSENTINEL)
-    screen->getWorkspace(workspace_number)->removeWindow(this);
-  else if (flags.iconic)
-    screen->removeIcon(this);
-
   if (timer) {
     if (timer->isTiming()) timer->stop();
     delete timer;
@@ -388,7 +383,7 @@ BlackboxWindow::~BlackboxWindow(void) {
 
   if (flags.managed) {
     blackbox->removeWindowSearch(client.window);
-    screen->removeNetizen(client.window);
+    screen->unmanageWindow(this);
   }
 }
 
