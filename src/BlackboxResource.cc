@@ -202,47 +202,47 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
   case Slit::CenterRight: default: placement = "CenterRight"; break;
   }
 
-  sprintf(rc_string, "session.screen%d.slit.placement", number);
+  sprintf(rc_string, "session.screen%u.slit.placement", number);
   res.write(rc_string, placement);
 
-  sprintf(rc_string, "session.screen%d.slit.direction", number);
+  sprintf(rc_string, "session.screen%u.slit.direction", number);
   res.write(rc_string, (sconfig.direction == Slit::Horizontal) ?
             "Horizontal" : "Vertical");
 
-  sprintf(rc_string, "session.screen%d.slit.onTop", number);
+  sprintf(rc_string, "session.screen%u.slit.onTop", number);
   res.write(rc_string, sconfig.on_top);
 
-  sprintf(rc_string, "session.screen%d.slit.autoHide", number);
+  sprintf(rc_string, "session.screen%u.slit.autoHide", number);
   res.write(rc_string, sconfig.auto_hide);
 
-  sprintf(rc_string, "session.screen%d.placementIgnoresShaded", number);
+  sprintf(rc_string, "session.screen%u.placementIgnoresShaded", number);
   res.write(rc_string, wconfig.ignore_shaded);
 
-  sprintf(rc_string, "session.screen%d.fullMaximization", number);
+  sprintf(rc_string, "session.screen%u.fullMaximization", number);
   res.write(rc_string, wconfig.full_max);
 
-  sprintf(rc_string, "session.screen%d.focusNewWindows", number);
+  sprintf(rc_string, "session.screen%u.focusNewWindows", number);
   res.write(rc_string, wconfig.focus_new);
 
-  sprintf(rc_string, "session.screen%d.focusLastWindow", number);
+  sprintf(rc_string, "session.screen%u.focusLastWindow", number);
   res.write(rc_string, wconfig.focus_last);
 
-  sprintf(rc_string, "session.screen%d.opaqueMove", number);
+  sprintf(rc_string, "session.screen%u.opaqueMove", number);
   res.write(rc_string, wconfig.opaque_move);
 
-  sprintf(rc_string, "session.screen%d.disableBindingsWithScrollLock",
+  sprintf(rc_string, "session.screen%u.disableBindingsWithScrollLock",
 	  number);
   res.write(rc_string, allow_scroll_lock);
 
-  sprintf(rc_string,  "session.screen%d.enableToolbar", number);
+  sprintf(rc_string,  "session.screen%u.enableToolbar", number);
   res.write(rc_string, enable_toolbar);
 
-  sprintf(rc_string, "session.screen%d.rowPlacementDirection", number);
+  sprintf(rc_string, "session.screen%u.rowPlacementDirection", number);
   res.write(rc_string,
             (wconfig.row_direction == LeftRight) ? "LeftToRight" :
                                                    "RightToLeft");
 
-  sprintf(rc_string, "session.screen%d.colPlacementDirection", number);
+  sprintf(rc_string, "session.screen%u.colPlacementDirection", number);
   res.write(rc_string,
             (wconfig.col_direction == TopBottom) ? "TopToBottom" :
                                                    "BottomToTop");
@@ -259,7 +259,7 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
     placement = "RowSmartPlacement";
     break;
   }
-  sprintf(rc_string, "session.screen%d.windowPlacement", number);
+  sprintf(rc_string, "session.screen%u.windowPlacement", number);
   res.write(rc_string, placement);
 
   std::string fmodel;
@@ -271,16 +271,16 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
     if (wconfig.click_raise) fmodel += " ClickRaise";
   }
 
-  sprintf(rc_string, "session.screen%d.focusModel", number);
+  sprintf(rc_string, "session.screen%u.focusModel", number);
   res.write(rc_string, fmodel.c_str());
 
-  sprintf(rc_string, "session.screen%d.workspaces", number);
+  sprintf(rc_string, "session.screen%u.workspaces", number);
   res.write(rc_string, workspace_count);
 
-  sprintf(rc_string, "session.screen%d.toolbar.onTop", number);
+  sprintf(rc_string, "session.screen%u.toolbar.onTop", number);
   res.write(rc_string, tconfig.on_top);
 
-  sprintf(rc_string, "session.screen%d.toolbar.autoHide", number);
+  sprintf(rc_string, "session.screen%u.toolbar.autoHide", number);
   res.write(rc_string, tconfig.auto_hide);
 
   switch (tconfig.placement) {
@@ -292,7 +292,7 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
   case Toolbar::BottomCenter: default: placement = "BottomCenter"; break;
   }
 
-  sprintf(rc_string, "session.screen%d.toolbar.placement", number);
+  sprintf(rc_string, "session.screen%u.toolbar.placement", number);
   res.write(rc_string, placement);
 
   std::vector<std::string>::const_iterator it = workspaces.begin(),
@@ -303,18 +303,18 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
     save_string += *it;
   }
 
-  sprintf(rc_string, "session.screen%d.workspaceNames", number);
+  sprintf(rc_string, "session.screen%u.workspaceNames", number);
   res.write(rc_string, save_string.c_str());
 
   // these options can not be modified at runtime currently
 
-  sprintf(rc_string, "session.screen%d.strftimeFormat", number);
+  sprintf(rc_string, "session.screen%u.strftimeFormat", number);
   res.write(rc_string, tconfig.strftime_format.c_str());
 
-  sprintf(rc_string, "session.screen%d.edgeSnapThreshold", number);
+  sprintf(rc_string, "session.screen%u.edgeSnapThreshold", number);
   res.write(rc_string, wconfig.edge_snap_threshold);
 
-  sprintf(rc_string, "session.screen%d.toolbar.widthPercent", number);
+  sprintf(rc_string, "session.screen%u.toolbar.widthPercent", number);
   res.write(rc_string, tconfig.width_percent);
 }
 
@@ -324,38 +324,38 @@ void ScreenResource::load(bt::Resource& res, unsigned int screen) {
 
   // window settings and behavior
 
-  sprintf(name_lookup,  "session.screen%d.placementIgnoresShaded", screen);
-  sprintf(class_lookup, "Session.Screen%d.placementIgnoresShaded", screen);
+  sprintf(name_lookup,  "session.screen%u.placementIgnoresShaded", screen);
+  sprintf(class_lookup, "Session.screen%u.placementIgnoresShaded", screen);
   wconfig.ignore_shaded = res.read(name_lookup, class_lookup, true);
 
-  sprintf(name_lookup,  "session.screen%d.fullMaximization", screen);
-  sprintf(class_lookup, "Session.Screen%d.FullMaximization", screen);
+  sprintf(name_lookup,  "session.screen%u.fullMaximization", screen);
+  sprintf(class_lookup, "Session.screen%u.FullMaximization", screen);
   wconfig.full_max = res.read(name_lookup, class_lookup, false);
 
-  sprintf(name_lookup,  "session.screen%d.focusNewWindows", screen);
-  sprintf(class_lookup, "Session.Screen%d.FocusNewWindows", screen);
+  sprintf(name_lookup,  "session.screen%u.focusNewWindows", screen);
+  sprintf(class_lookup, "Session.screen%u.FocusNewWindows", screen);
   wconfig.focus_new = res.read(name_lookup, class_lookup, false);
 
-  sprintf(name_lookup,  "session.screen%d.focusLastWindow", screen);
-  sprintf(class_lookup, "Session.Screen%d.focusLastWindow", screen);
+  sprintf(name_lookup,  "session.screen%u.focusLastWindow", screen);
+  sprintf(class_lookup, "Session.screen%u.focusLastWindow", screen);
   wconfig.focus_last = res.read(name_lookup, class_lookup, false);
 
   std::string tmp;
 
-  sprintf(name_lookup,  "session.screen%d.rowPlacementDirection", screen);
-  sprintf(class_lookup, "Session.Screen%d.RowPlacementDirection", screen);
+  sprintf(name_lookup,  "session.screen%u.rowPlacementDirection", screen);
+  sprintf(class_lookup, "Session.screen%u.RowPlacementDirection", screen);
   tmp = res.read(name_lookup, class_lookup, "lefttoright");
   wconfig.row_direction =
     (strcasecmp(tmp.c_str(), "righttoleft") == 0) ? RightLeft : LeftRight;
 
-  sprintf(name_lookup,  "session.screen%d.colPlacementDirection", screen);
-  sprintf(class_lookup, "Session.Screen%d.ColPlacementDirection", screen);
+  sprintf(name_lookup,  "session.screen%u.colPlacementDirection", screen);
+  sprintf(class_lookup, "Session.screen%u.ColPlacementDirection", screen);
   tmp = res.read(name_lookup, class_lookup, "toptobottom");
   wconfig.col_direction =
     (strcasecmp(tmp.c_str(), "bottomtotop") == 0) ? BottomTop : TopBottom;
 
-  sprintf(name_lookup,  "session.screen%d.windowPlacement", screen);
-  sprintf(class_lookup, "Session.Screen%d.WindowPlacement", screen);
+  sprintf(name_lookup,  "session.screen%u.windowPlacement", screen);
+  sprintf(class_lookup, "Session.screen%u.WindowPlacement", screen);
   tmp = res.read(name_lookup, class_lookup, "RowSmartPlacement");
   if (strcasecmp(tmp.c_str(), "ColSmartPlacement") == 0)
     wconfig.placement_policy = ColSmartPlacement;
@@ -364,8 +364,8 @@ void ScreenResource::load(bt::Resource& res, unsigned int screen) {
   else
     wconfig.placement_policy = RowSmartPlacement;
 
-  sprintf(name_lookup,  "session.screen%d.focusModel", screen);
-  sprintf(class_lookup, "Session.Screen%d.FocusModel", screen);
+  sprintf(name_lookup,  "session.screen%u.focusModel", screen);
+  sprintf(class_lookup, "Session.screen%u.FocusModel", screen);
   wconfig.sloppy_focus = True;
   wconfig.auto_raise = False;
   wconfig.click_raise = False;
@@ -380,22 +380,22 @@ void ScreenResource::load(bt::Resource& res, unsigned int screen) {
       wconfig.click_raise = True;
   }
 
-  sprintf(name_lookup,  "session.screen%d.edgeSnapThreshold", screen);
-  sprintf(class_lookup, "Session.Screen%d.EdgeSnapThreshold", screen);
+  sprintf(name_lookup,  "session.screen%u.edgeSnapThreshold", screen);
+  sprintf(class_lookup, "Session.screen%u.EdgeSnapThreshold", screen);
   wconfig.edge_snap_threshold = res.read(name_lookup, class_lookup, 0);
 
-  sprintf(name_lookup,  "session.screen%d.opaqueMove", screen);
-  sprintf(class_lookup, "Session.Screen%d.OpaqueMove", screen);
+  sprintf(name_lookup,  "session.screen%u.opaqueMove", screen);
+  sprintf(class_lookup, "Session.screen%u.OpaqueMove", screen);
   wconfig.opaque_move = res.read(name_lookup, class_lookup, false);
 
   // toolbar settings
 
-  sprintf(name_lookup,  "session.screen%d.toolbar.widthPercent", screen);
-  sprintf(class_lookup, "Session.Screen%d.Toolbar.WidthPercent", screen);
+  sprintf(name_lookup,  "session.screen%u.toolbar.widthPercent", screen);
+  sprintf(class_lookup, "Session.screen%u.Toolbar.WidthPercent", screen);
   tconfig.width_percent = res.read(name_lookup, class_lookup, 66);
 
-  sprintf(name_lookup, "session.screen%d.toolbar.placement", screen);
-  sprintf(class_lookup, "Session.Screen%d.Toolbar.Placement", screen);
+  sprintf(name_lookup, "session.screen%u.toolbar.placement", screen);
+  sprintf(class_lookup, "Session.screen%u.Toolbar.Placement", screen);
   tmp = res.read(name_lookup, class_lookup, "BottomCenter");
   if (! strcasecmp(tmp.c_str(), "TopLeft"))
     tconfig.placement = Toolbar::TopLeft;
@@ -410,21 +410,21 @@ void ScreenResource::load(bt::Resource& res, unsigned int screen) {
   else
     tconfig.placement = Toolbar::BottomCenter;
 
-  sprintf(name_lookup,  "session.screen%d.toolbar.onTop", screen);
-  sprintf(class_lookup, "Session.Screen%d.Toolbar.OnTop", screen);
+  sprintf(name_lookup,  "session.screen%u.toolbar.onTop", screen);
+  sprintf(class_lookup, "Session.screen%u.Toolbar.OnTop", screen);
   tconfig.on_top = res.read(name_lookup, class_lookup, false);
 
-  sprintf(name_lookup,  "session.screen%d.toolbar.autoHide", screen);
-  sprintf(class_lookup, "Session.Screen%d.Toolbar.autoHide", screen);
+  sprintf(name_lookup,  "session.screen%u.toolbar.autoHide", screen);
+  sprintf(class_lookup, "Session.screen%u.Toolbar.autoHide", screen);
   tconfig.auto_hide = res.read(name_lookup, class_lookup, false);
 
-  sprintf(name_lookup,  "session.screen%d.strftimeFormat", screen);
-  sprintf(class_lookup, "Session.Screen%d.StrftimeFormat", screen);
+  sprintf(name_lookup,  "session.screen%u.strftimeFormat", screen);
+  sprintf(class_lookup, "Session.screen%u.StrftimeFormat", screen);
   tconfig.strftime_format = res.read(name_lookup, class_lookup, "%I:%M %p");
 
   // slit settings
-  sprintf(name_lookup, "session.screen%d.slit.placement", screen);
-  sprintf(class_lookup, "Session.Screen%d.Slit.Placement", screen);
+  sprintf(name_lookup, "session.screen%u.slit.placement", screen);
+  sprintf(class_lookup, "Session.screen%u.Slit.Placement", screen);
   tmp = res.read(name_lookup, class_lookup, "CenterRight");
   if (! strcasecmp(tmp.c_str(), "TopLeft"))
     sconfig.placement = Slit::TopLeft;
@@ -443,43 +443,43 @@ void ScreenResource::load(bt::Resource& res, unsigned int screen) {
   else
     sconfig.placement = Slit::CenterRight;
 
-  sprintf(name_lookup, "session.screen%d.slit.direction", screen);
-  sprintf(class_lookup, "Session.Screen%d.Slit.Direction", screen);
+  sprintf(name_lookup, "session.screen%u.slit.direction", screen);
+  sprintf(class_lookup, "Session.screen%u.Slit.Direction", screen);
   tmp = res.read(name_lookup, class_lookup, "Vertical");
   if (! strcasecmp(tmp.c_str(), "Horizontal"))
     sconfig.direction = Slit::Horizontal;
   else
     sconfig.direction = Slit::Vertical;
 
-  sprintf(name_lookup, "session.screen%d.slit.onTop", screen);
-  sprintf(class_lookup, "Session.Screen%d.Slit.OnTop", screen);
+  sprintf(name_lookup, "session.screen%u.slit.onTop", screen);
+  sprintf(class_lookup, "Session.screen%u.Slit.OnTop", screen);
   sconfig.on_top = res.read(name_lookup, class_lookup, false);
 
-  sprintf(name_lookup, "session.screen%d.slit.autoHide", screen);
-  sprintf(class_lookup, "Session.Screen%d.Slit.AutoHide", screen);
+  sprintf(name_lookup, "session.screen%u.slit.autoHide", screen);
+  sprintf(class_lookup, "Session.screen%u.Slit.AutoHide", screen);
   sconfig.auto_hide = res.read(name_lookup, class_lookup, false);
 
   // general screen settings
 
-  sprintf(name_lookup,  "session.screen%d.disableBindingsWithScrollLock",
+  sprintf(name_lookup,  "session.screen%u.disableBindingsWithScrollLock",
           screen);
-  sprintf(class_lookup, "Session.Screen%d.disableBindingsWithScrollLock",
+  sprintf(class_lookup, "Session.screen%u.disableBindingsWithScrollLock",
           screen);
   allow_scroll_lock = res.read(name_lookup, class_lookup, false);
 
-  sprintf(name_lookup,  "session.screen%d.enableToolbar", screen);
-  sprintf(class_lookup, "Session.Screen%d.enableToolbar", screen);
+  sprintf(name_lookup,  "session.screen%u.enableToolbar", screen);
+  sprintf(class_lookup, "Session.screen%u.enableToolbar", screen);
   enable_toolbar = res.read(name_lookup, class_lookup, true);
 
-  sprintf(name_lookup,  "session.screen%d.workspaces", screen);
-  sprintf(class_lookup, "Session.Screen%d.Workspaces", screen);
+  sprintf(name_lookup,  "session.screen%u.workspaces", screen);
+  sprintf(class_lookup, "Session.screen%u.Workspaces", screen);
   workspace_count = res.read(name_lookup, class_lookup, 1);
 
   if (! workspaces.empty())
     workspaces.clear();
 
-  sprintf(name_lookup,  "session.screen%d.workspaceNames", screen);
-  sprintf(class_lookup, "Session.Screen%d.WorkspaceNames", screen);
+  sprintf(name_lookup,  "session.screen%u.workspaceNames", screen);
+  sprintf(class_lookup, "Session.screen%u.WorkspaceNames", screen);
   tmp = res.read(name_lookup, class_lookup);
   if (! tmp.empty()) {
     std::string::const_iterator it = tmp.begin(), end = tmp.end();

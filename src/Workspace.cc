@@ -56,7 +56,7 @@ void Workspace::setName(const std::string& new_name) {
     the_name = new_name;
   } else {
     char default_name[80];
-    sprintf(default_name, "Workspace %d", _id + 1);
+    sprintf(default_name, "Workspace %u", _id + 1);
     the_name = default_name;
   }
 

@@ -78,7 +78,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     return;
   }
 
-  fprintf(stderr, "%s: managing screen %d using visual 0x%lx, depth %d\n",
+  fprintf(stderr, "%s: managing screen %u using visual 0x%lx, depth %d\n",
           blackbox->applicationName().c_str(), screen_info.screenNumber(),
           XVisualIDFromVisual(screen_info.visual()), screen_info.depth());
 
@@ -1296,7 +1296,7 @@ void BScreen::showGeometry(unsigned int gx, unsigned int gy) {
   }
 
   char label[80];
-  sprintf(label, "W:%4d    H:%4d", gx, gy);
+  sprintf(label, "W:%4u    H:%4u", gx, gy);
 
   XClearWindow(blackbox->XDisplay(), geom_window);
 
