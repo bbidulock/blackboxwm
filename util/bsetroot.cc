@@ -46,7 +46,8 @@ static int x11_error(::Display *, XErrorEvent *) {
 
 bt::I18n bt::i18n;
 
-bsetroot::bsetroot(int argc, char **argv, char *dpy_name): display(dpy_name) {
+bsetroot::bsetroot(int argc, char **argv, char *dpy_name,
+                   bool multi_head): display(dpy_name, multi_head) {
   XSetErrorHandler(x11_error); // silently handle all errors
 
   bool mod = False, sol = False, grd = False;
@@ -360,6 +361,7 @@ void bsetroot::usage(int exit_code) {
 
 int main(int argc, char **argv) {
   char *display_name = (char *) 0;
+  bool multi_head = False;
 
   bt::i18n.openCatalog("blackbox.cat");
 
@@ -375,9 +377,11 @@ int main(int argc, char **argv) {
       }
 
       display_name = argv[i];
+    } else if (! strcmp(argv[i], "-multi")) {
+      multi_head = True;
     }
   }
 
-  bsetroot app(argc, argv, display_name);
+  bsetroot app(argc, argv, display_name, multi_head);
   return 0;
 }

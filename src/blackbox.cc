@@ -110,8 +110,9 @@ extern "C" {
 #include "Window.hh"
 
 
-Blackbox::Blackbox(char **m_argv, const char *dpy_name, const char *rc)
-  : bt::Application(m_argv[0], dpy_name) {
+Blackbox::Blackbox(char **m_argv, const char *dpy_name, const char *rc,
+                   bool multi_head)
+  : bt::Application(m_argv[0], dpy_name, multi_head) {
   if (! XSupportsLocale())
     fprintf(stderr, "X server does not support locale\n");
 
@@ -139,18 +140,33 @@ Blackbox::Blackbox(char **m_argv, const char *dpy_name, const char *rc)
   cursor.ll_angle = XCreateFontCursor(XDisplay(), XC_ll_angle);
   cursor.lr_angle = XCreateFontCursor(XDisplay(), XC_lr_angle);
 
-  for (unsigned int i = 0; i < display().screenCount(); i++) {
-    BScreen *screen = new BScreen(this, i);
+  screen_list_count = 0;
+  if (! multi_head || display().screenCount() == 1) {
+    BScreen* screen = new BScreen(this, DefaultScreen(XDisplay()));
 
     if (! screen->isScreenManaged()) {
       delete screen;
-      continue;
+    } else {
+      ++screen_list_count;
+      screen_list = new BScreen*[screen_list_count];
+      screen_list[0] = screen;
     }
+  } else {
+    screen_list = new BScreen*[display().screenCount()];
+    for (unsigned int i = 0; i < display().screenCount(); i++) {
+      BScreen *screen = new BScreen(this, i);
 
-    screenList.push_back(screen);
+      if (! screen->isScreenManaged()) {
+        delete screen;
+        continue;
+      }
+
+      screen_list[i] = screen;
+      ++screen_list_count;
+    }
   }
 
-  if (screenList.empty()) {
+  if (screen_list_count == 0) {
     fprintf(stderr,
             bt::i18n(blackboxSet, blackboxNoManagableScreens,
               "Blackbox::Blackbox: no managable screens found, aborting.\n"));
@@ -171,8 +187,10 @@ Blackbox::Blackbox(char **m_argv, const char *dpy_name, const char *rc)
 
 
 Blackbox::~Blackbox(void) {
-  std::for_each(screenList.begin(), screenList.end(), bt::PointerAssassin());
+  std::for_each(screen_list, screen_list + screen_list_count,
+                bt::PointerAssassin());
 
+  delete [] screen_list;
   std::for_each(menuTimestamps.begin(), menuTimestamps.end(),
                 bt::PointerAssassin());
 
@@ -410,10 +428,9 @@ bool Blackbox::validateWindow(Window window) {
 }
 
 BScreen *Blackbox::findScreen(Window window) {
-  ScreenList::iterator it = screenList.begin();
-  for (; it != screenList.end(); ++it)
-    if ((*it)->screenInfo().rootWindow() == window)
-      return *it;
+  for (unsigned int i = 0; i < screen_list_count; ++i)
+    if (screen_list[i]->screenInfo().rootWindow() == window)
+      return screen_list[i];
   return 0;
 }
 
@@ -476,7 +493,7 @@ void Blackbox::shutdown(void) {
 
   XSetInputFocus(XDisplay(), PointerRoot, RevertToNone, CurrentTime);
 
-  std::for_each(screenList.begin(), screenList.end(),
+  std::for_each(screen_list, screen_list + screen_list_count,
                 std::mem_fun(&BScreen::shutdown));
 
   XSync(XDisplay(), False);
@@ -513,9 +530,8 @@ void Blackbox::save_rc(void) {
   sprintf(rc_string, "session.cacheMax: %lu", resource.cache_max);
   XrmPutLineResource(&new_blackboxrc, rc_string);
 
-  ScreenList::iterator it = screenList.begin();
-  for (; it != screenList.end(); ++it) {
-    BScreen *screen = *it;
+  for (unsigned int i = 0; i < screen_list_count; ++i) {
+    BScreen *screen = screen_list[i];
     int screen_number = screen->screenNumber();
 
     char *placement = (char *) 0;
@@ -651,7 +667,7 @@ void Blackbox::save_rc(void) {
 
     load_rc(screen);
 
-    // these are static, but may not be saved in the users .blackboxrc,
+    // these are static, but may not be saved in the user's .blackboxrc,
     // writing these resources will allow the user to edit them at a later
     // time... but loading the defaults before saving allows us to rewrite the
     // users changes...
@@ -669,11 +685,10 @@ void Blackbox::save_rc(void) {
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     // write out the user's workspace names
-
     std::string save_string = screen->getWorkspaceName(0);
-    for (unsigned int i = 1; i < screen->getWorkspaceCount(); ++i) {
+    for (unsigned int j = 1; j < screen->getWorkspaceCount(); ++j) {
       save_string += ',';
-      save_string += screen->getWorkspaceName(i);
+      save_string += screen->getWorkspaceName(j);
     }
 
     char *resource_string = new char[save_string.length() + 48];
@@ -1067,7 +1082,7 @@ void Blackbox::real_reconfigure(void) {
   bt::Font::clearCache();
   bt::Pen::clearCache();
 
-  std::for_each(screenList.begin(), screenList.end(),
+  std::for_each(screen_list, screen_list + screen_list_count,
                 std::mem_fun(&BScreen::reconfigure));
 
   bt::PixmapCache::clearCache();
@@ -1105,7 +1120,7 @@ void Blackbox::real_rereadMenu(void) {
                 bt::PointerAssassin());
   menuTimestamps.clear();
 
-  std::for_each(screenList.begin(), screenList.end(),
+  std::for_each(screen_list, screen_list + screen_list_count,
                 std::mem_fun(&BScreen::rereadMenu));
 }
 

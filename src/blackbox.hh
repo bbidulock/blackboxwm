@@ -92,8 +92,8 @@ private:
   typedef std::list<MenuTimestamp*> MenuTimestampList;
   MenuTimestampList menuTimestamps;
 
-  typedef std::list<BScreen*> ScreenList;
-  ScreenList screenList;
+  BScreen** screen_list;
+  size_t screen_list_count;
 
   BlackboxWindow *focused_window;
   bt::Timer *timer;
@@ -124,7 +124,8 @@ private:
 
 
 public:
-  Blackbox(char **m_argv, const char *dpy_name, const char *rc);
+  Blackbox(char **m_argv, const char *dpy_name, const char *rc,
+           bool multi_head);
   virtual ~Blackbox(void);
 
   BScreen *findScreen(Window window);

@@ -33,8 +33,6 @@ extern "C" {
 #endif // SHAPE
 }
 
-#include <vector>
-
 #include "Util.hh"
 
 
@@ -46,16 +44,16 @@ namespace bt {
   private:
     ::Display *xdisplay;
 
-    typedef std::vector<ScreenInfo*> ScreenInfoList;
-    ScreenInfoList screenInfoList;
+    ScreenInfo** screen_info_list;
+    size_t screen_info_count;
 
   public:
-    Display(const char *dpy_name);
+    Display(const char *dpy_name, bool multi_head);
     ~Display(void);
 
     ::Display* XDisplay(void) const { return xdisplay; }
 
-    unsigned int screenCount(void) const { return screenInfoList.size(); }
+    unsigned int screenCount(void) const { return screen_info_count; }
     const ScreenInfo &screenInfo(unsigned int i) const;
   };
 

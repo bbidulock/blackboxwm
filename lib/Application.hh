@@ -81,7 +81,8 @@ namespace bt {
     virtual void process_event(XEvent *event);
 
   public:
-    Application(const std::string &app_name, const char *dpy_name);
+    Application(const std::string &app_name, const char *dpy_name,
+                bool multi_head);
     virtual ~Application(void);
 
     bool hasShapeExtensions(void) const

@@ -82,7 +82,7 @@ namespace bt {
                 const Rect &rect, Alignment alignment,
                 const std::string &text);
 
-  std::string ellideText(const std::string& text, unsigned int count,
+  std::string ellideText(const std::string& text, size_t count,
                          const char* ellide);
 
   Alignment alignResource(const Resource &resource,

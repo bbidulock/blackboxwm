@@ -95,11 +95,22 @@ static void showHelp(int exitval) {
 
 int main(int argc, char **argv) {
   const char *dpy_name = 0, *rc_file = 0;
+  bool multi_head = False;
 
   bt::i18n.openCatalog("blackbox.cat");
 
   for (int i = 1; i < argc; ++i) {
-    if (! strcmp(argv[i], "-rc")) {
+    if (! strcmp(argv[i], "-help")) {
+      showHelp(0);
+    } else if (! strcmp(argv[i], "-version")) {
+      // print current version string, this should not be localized!
+      printf("Blackbox %s\n"
+             "Copyright (c) 2001 - 2003 Sean 'Shaleh' Perry\n"
+             "Copyright (c) 1997 - 2000, 2002 - 2003 Bradley T Hughes\n",
+             __blackbox_version);
+
+      ::exit(0);
+    } else if (! strcmp(argv[i], "-rc")) {
       // look for alternative rc file to use
 
       if ((++i) >= argc) {
@@ -132,16 +143,8 @@ int main(int argc, char **argv) {
                 "warning: couldn't set environment variable 'DISPLAY'\n"));
         perror("putenv()");
       }
-    } else if (! strcmp(argv[i], "-version")) {
-      // print current version string, this should not be localized!
-      printf("Blackbox %s\n"
-             "Copyright (c) 2001 - 2003 Sean 'Shaleh' Perry\n"
-             "Copyright (c) 1997 - 2000, 2002 - 2003 Bradley T Hughes\n",
-             __blackbox_version);
-
-      ::exit(0);
-    } else if (! strcmp(argv[i], "-help")) {
-      showHelp(0);
+    } else if (! strcmp(argv[i], "-multi")) {
+      multi_head = True;
     } else { // invalid command line option
       showHelp(-1);
     }
@@ -151,7 +154,7 @@ int main(int argc, char **argv) {
   _chdir2(getenv("X11ROOT"));
 #endif // __EMX__
 
-  Blackbox blackbox(argv, dpy_name, rc_file);
+  Blackbox blackbox(argv, dpy_name, rc_file, multi_head);
   blackbox.eventLoop();
 
   return(0);

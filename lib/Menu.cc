@@ -56,14 +56,17 @@ bt::MenuStyle **bt::MenuStyle::styles = 0;
 
 bt::MenuStyle *bt::MenuStyle::get(Application &app,
                                   unsigned int screen) {
+  const size_t screen_count = app.display().screenCount();
   if (! styles) {
-    styles = new MenuStyle*[app.display().screenCount()];
-    for (unsigned int i = 0; i < app.display().screenCount(); ++i)
+    styles = new MenuStyle*[screen_count];
+    for (unsigned int i = 0; i < screen_count; ++i)
       styles[i] = 0;
   }
-  if (! styles[screen])
-    styles[screen] = new MenuStyle(app, screen);
-  return styles[screen];
+  // we need to remap screen N to 0 if there is only one
+  const size_t index = (screen_count == 1) ? 0 : screen;
+  if (! styles[index])
+    styles[index] = new MenuStyle(app, screen);
+  return styles[index];
 }
 
 

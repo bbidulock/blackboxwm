@@ -61,17 +61,23 @@ namespace bt {
 } // namespace bt
 
 
-bt::Display::Display(const char *dpy_name) {
+bt::Display::Display(const char *dpy_name, bool multi_head) {
   if (! (xdisplay = XOpenDisplay(dpy_name)))
     ::exit(2);
 
   if (fcntl(ConnectionNumber(xdisplay), F_SETFD, 1) == -1)
     ::exit(2);
 
-  screenInfoList.reserve(ScreenCount(xdisplay));
-  for (int i = 0; i < ScreenCount(xdisplay); ++i)
-    screenInfoList.push_back(new bt::ScreenInfo(*this, i));
-
+  if (! multi_head || ScreenCount(xdisplay) == 1) {
+    screen_info_count = 1;
+    screen_info_list = new bt::ScreenInfo*[screen_info_count];
+    screen_info_list[0] = new bt::ScreenInfo(*this, DefaultScreen(xdisplay));
+  } else {
+    screen_info_count = ScreenCount(xdisplay);
+    screen_info_list = new bt::ScreenInfo*[screen_info_count];
+    for (int i = 0; i < ScreenCount(xdisplay); ++i)
+      screen_info_list[i] = new bt::ScreenInfo(*this, i);
+  }
   createColorCache(*this);
   createFontCache(*this);
   createPenCache(*this);
@@ -94,16 +100,20 @@ bt::Display::~Display() {
   destroyFontCache();
   destroyColorCache();
 
-  std::for_each(screenInfoList.begin(), screenInfoList.end(),
+  std::for_each(screen_info_list, screen_info_list + screen_info_count,
                 bt::PointerAssassin());
+  delete [] screen_info_list;
 
   XCloseDisplay(xdisplay);
 }
 
 
 const bt::ScreenInfo &bt::Display::screenInfo(unsigned int i) const {
-  assert(i < screenInfoList.size());
-  return *screenInfoList[i];
+  if (screen_info_count == 1)
+    return *(screen_info_list[0]);
+
+  assert(i < screen_info_count);
+  return *screen_info_list[i];
 }
 
 

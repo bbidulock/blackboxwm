@@ -398,23 +398,20 @@ void bt::drawText(const Font &font, Pen &pen, Window window,
 /*
  * Take a string and make it 'count' chars long by removing the middle
  * and replacing it with the string in 'ellide'
- *
- * FIXME: this function currently assumes that ellide is 3 chars long
  */
-std::string bt::ellideText(const std::string& text, unsigned int count,
+std::string bt::ellideText(const std::string& text, size_t count,
                            const char* ellide) {
-  unsigned int len = text.length();
+  std::string::size_type len = text.length();
   if (len <= count)
     return text;
 
+  size_t ellide_len = strlen(ellide);
+  assert(ellide_len < (count / 2));
+
   std::string ret = text;
 
-  // delta represents the amount of text to remove from the right hand side
-  unsigned int delta = std::min(len - count, (count/2) - 2);
-
-  ret.replace(ret.begin() + (count/2) - 1, ret.end() - delta, ellide);
-
-  return ret;
+  return ret.replace(ret.begin() + (count / 2) - (ellide_len / 2),
+                     ret.end() - (count / 2) + ((ellide_len / 2) + 1), ellide);
 }
 
 

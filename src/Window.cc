@@ -898,10 +898,13 @@ void BlackboxWindow::getWMName(void) {
   if (! name.empty()) {
     client.title = name;
 #if 0
-    // need to ellide titles that are longer than the titlebar
-    client.title = bt::ellideText(name, 60, "...");
-    if (client.title != name)
+    // FIXME: need to ellide titles based on title bar length
+    if (name.length() <= 100) {
+      client.title = name;
+    } else { 
+      client.title = bt::ellideText(name, 100, "...");
       blackbox->netwm().setWMVisibleName(client.window, client.title);
+    }
 #endif
   } else {
     client.title = bt::i18n(WindowSet, WindowUnnamed, "Unnamed");

@@ -34,7 +34,7 @@
 
 class bsetroot: public bt::NoCopy {
 public:
-  bsetroot(int argc, char **argv, char *dpy_name = 0);
+  bsetroot(int argc, char **argv, char *dpy_name, bool multi_head);
   virtual ~bsetroot(void);
 
   void setPixmapProperty(int screen, Pixmap pixmap);
