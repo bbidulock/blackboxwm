@@ -386,14 +386,19 @@ void Toolbar::updateStrut(void) {
   // left and right are always 0
   strut.top = strut.bottom = 0;
 
+  const unsigned int exposed_height =
+    _screen->resource().doToolbarAutoHide()
+    ? _screen->resource().toolbarStyle()->hidden_height
+    : _screen->resource().toolbarStyle()->toolbar_height;
+
   switch(_screen->resource().toolbarPlacement()) {
   case TopLeft:
   case TopCenter:
   case TopRight:
-    strut.top = getExposedHeight();
+    strut.top = exposed_height;
     break;
   default:
-    strut.bottom = getExposedHeight();
+    strut.bottom = exposed_height;
   }
 
   _screen->updateStrut();

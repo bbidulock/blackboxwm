@@ -73,15 +73,10 @@ public:
   // StackEntity interface
   Window windowID(void) const { return frame.window; }
 
-  const bt::Rect& getRect(void) const { return frame.rect; }
-  unsigned int getWidth(void) const { return frame.rect.width(); }
-  unsigned int getHeight(void) const { return frame.rect.height(); }
-  unsigned int getExposedHeight(void) const {
-    return (_screen->resource().doToolbarAutoHide()
-            ? _screen->resource().toolbarStyle()->hidden_height
-            : _screen->resource().toolbarStyle()->toolbar_height);
-  }
+  // TimeoutHandler interface
+  void timeout(bt::Timer *timer);
 
+  // EventHandler interface
   void buttonPressEvent(const XButtonEvent * const event);
   void buttonReleaseEvent(const XButtonEvent * const event);
   void enterNotifyEvent(const XCrossingEvent * const /*unused*/);
@@ -93,8 +88,6 @@ public:
 
   void redrawWindowLabel(void);
   void redrawWorkspaceLabel(void);
-
-  virtual void timeout(bt::Timer *timer);
 
   enum Placement { TopLeft = 1, BottomLeft, TopCenter,
                    BottomCenter, TopRight, BottomRight };
