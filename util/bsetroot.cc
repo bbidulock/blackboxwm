@@ -27,6 +27,7 @@
 #endif // HAVE_CONFIG_H
 
 extern "C" {
+#include <X11/Xatom.h>
 #include <stdio.h>
 }
 
