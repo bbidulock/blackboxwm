@@ -177,7 +177,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   current_workspace_id = current_workspace->id();
   workspacemenu->setWorkspaceChecked(current_workspace, true);
 
-  // ths Slit will be created on demand
+  // the Slit will be created on demand
   _slit = 0;
 
   toolbar = new Toolbar(this);
