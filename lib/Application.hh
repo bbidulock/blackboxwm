@@ -38,9 +38,6 @@ namespace bt {
   class EventHandler;
   class Menu;
 
-
-
-
   class Application: public TimerQueueManager, public NoCopy {
   protected:
     enum RunState { STARTUP, RUNNING, SHUTDOWN, FATAL_SIGNAL };
@@ -118,8 +115,6 @@ namespace bt {
     const Display& display(void) const { return _display; }
 
     const std::string &applicationName(void) const { return _app_name; }
-
-
 
     void grabButton(unsigned int button, unsigned int modifiers,
                     Window grab_window, bool owner_events,
