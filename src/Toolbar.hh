@@ -83,9 +83,11 @@ private:
     Window window, workspace_label, window_label, clock, psbutton, nsbutton,
       pwbutton, nwbutton;
 
-    int x, y, x_hidden, y_hidden, hour, minute, grab_x, grab_y;
-    unsigned int width, height, window_label_w, workspace_label_w, clock_w,
+    int x_hidden, y_hidden, hour, minute, grab_x, grab_y;
+    unsigned int window_label_w, workspace_label_w, clock_w,
       button_w, bevel_w, label_h;
+
+    Rect rect;
   } frame;
 
   class HideHandler : public TimeoutHandler {
@@ -125,14 +127,14 @@ public:
 
   inline Window getWindowID(void) const { return frame.window; }
 
-  inline unsigned int getWidth(void) const { return frame.width; }
-  inline unsigned int getHeight(void) const { return frame.height; }
+  inline unsigned int getWidth(void) const { return frame.rect.width(); }
+  inline unsigned int getHeight(void) const { return frame.rect.height(); }
   inline unsigned int getExposedHeight(void) const
-  { return ((do_auto_hide) ? frame.bevel_w : frame.height); }
+  { return ((do_auto_hide) ? frame.bevel_w : frame.rect.height()); }
   inline int getX(void) const
-  { return ((hidden) ? frame.x_hidden : frame.x); }
+  { return ((hidden) ? frame.x_hidden : frame.rect.x()); }
   inline int getY(void) const
-  { return ((hidden) ? frame.y_hidden : frame.y); }
+  { return ((hidden) ? frame.y_hidden : frame.rect.y()); }
 
   void buttonPressEvent(XButtonEvent *be);
   void buttonReleaseEvent(XButtonEvent *re);

@@ -197,78 +197,90 @@ Toolbar::~Toolbar(void) {
 
 
 void Toolbar::reconfigure(void) {
-  frame.bevel_w = screen->getBevelWidth();
-  frame.width = screen->getWidth() * screen->getToolbarWidthPercent() / 100;
+  unsigned int height = 0,
+    width = (screen->getWidth() * screen->getToolbarWidthPercent()) / 100;
 
   if (i18n.multibyte())
-    frame.height =
-      screen->getToolbarStyle()->fontset_extents->max_ink_extent.height;
+    height = screen->getToolbarStyle()->fontset_extents->max_ink_extent.height;
   else
-    frame.height = screen->getToolbarStyle()->font->ascent +
-                   screen->getToolbarStyle()->font->descent;
-  frame.button_w = frame.height;
-  frame.height += 2;
-  frame.label_h = frame.height;
-  frame.height += (frame.bevel_w * 2);
+    height = screen->getToolbarStyle()->font->ascent +
+      screen->getToolbarStyle()->font->descent;
+
+  frame.bevel_w = screen->getBevelWidth();
+  frame.button_w = height;
+  height += 2;
+  frame.label_h = height;
+  height += (frame.bevel_w * 2);
+
+  frame.rect.setSize(width, height);
 
   // left and right are always 0
   strut.top = strut.bottom = 0;
 
+  int x, y;
   switch (screen->getToolbarPlacement()) {
   case TopLeft:
-    frame.x = 0;
-    frame.y = 0;
-    frame.x_hidden = 0;
+    x = 0;
+    y = 0;
+
+    frame.x_hidden = x;
     frame.y_hidden = screen->getBevelWidth() - screen->getBorderWidth()
-                     - frame.height;
+                     - frame.rect.height();
     break;
 
   case BottomLeft:
-    frame.x = 0;
-    frame.y = screen->getHeight() - frame.height
+    x = 0;
+    y = screen->getHeight() - frame.rect.height()
       - (screen->getBorderWidth() * 2);
-    frame.x_hidden = 0;
+
+    frame.x_hidden = x;
     frame.y_hidden = screen->getHeight() - screen->getBevelWidth()
                      - screen->getBorderWidth();
     break;
 
   case TopCenter:
-    frame.x = (screen->getWidth() - frame.width) / 2;
-    frame.y = 0;
-    frame.x_hidden = frame.x;
+    x = (screen->getWidth() - frame.rect.width()) / 2;
+    y = 0;
+
+    frame.x_hidden = x;
     frame.y_hidden = screen->getBevelWidth() - screen->getBorderWidth()
-                     - frame.height;
+                     - frame.rect.height();
     break;
 
   case BottomCenter:
   default:
-    frame.x = (screen->getWidth() - frame.width) / 2;
-    frame.y = screen->getHeight() - frame.height
+    x = (screen->getWidth() - frame.rect.width()) / 2;
+    y = screen->getHeight() - frame.rect.height()
       - (screen->getBorderWidth() * 2);
-    frame.x_hidden = frame.x;
+
+    frame.x_hidden = x;
     frame.y_hidden = screen->getHeight() - screen->getBevelWidth()
                      - screen->getBorderWidth();
     break;
 
   case TopRight:
-    frame.x = screen->getWidth() - frame.width
+    x = screen->getWidth() - frame.rect.width()
       - (screen->getBorderWidth() * 2);
-    frame.y = 0;
-    frame.x_hidden = frame.x;
+    y = 0;
+
+    frame.x_hidden = x;
     frame.y_hidden = screen->getBevelWidth() - screen->getBorderWidth()
-                     - frame.height;
+                     - frame.rect.height();
     break;
 
   case BottomRight:
-    frame.x = screen->getWidth() - frame.width
+    x = screen->getWidth() - frame.rect.width()
       - (screen->getBorderWidth() * 2);
-    frame.y = screen->getHeight() - frame.height
+    y = screen->getHeight() - frame.rect.height()
       - (screen->getBorderWidth() * 2);
-    frame.x_hidden = frame.x;
+
+    frame.x_hidden = x;
     frame.y_hidden = screen->getHeight() - screen->getBevelWidth()
                      - screen->getBorderWidth();
     break;
   }
+
+  frame.rect.setPos(x, y);
 
   switch(screen->getToolbarPlacement()) {
   case TopLeft:
@@ -341,43 +353,46 @@ void Toolbar::reconfigure(void) {
     frame.clock_w = frame.workspace_label_w;
 
   frame.window_label_w =
-    (frame.width - (frame.clock_w + (frame.button_w * 4) +
+    (frame.rect.width() - (frame.clock_w + (frame.button_w * 4) +
                     frame.workspace_label_w + (frame.bevel_w * 8) + 6));
 
   if (hidden) {
     XMoveResizeWindow(display, frame.window, frame.x_hidden, frame.y_hidden,
-                      frame.width, frame.height);
+                      frame.rect.width(), frame.rect.height());
   } else {
-    XMoveResizeWindow(display, frame.window, frame.x, frame.y,
-                      frame.width, frame.height);
+    XMoveResizeWindow(display, frame.window, frame.rect.x(), frame.rect.y(),
+                      frame.rect.width(), frame.rect.height());
   }
 
   XMoveResizeWindow(display, frame.workspace_label, frame.bevel_w,
                     frame.bevel_w, frame.workspace_label_w,
                     frame.label_h);
-  XMoveResizeWindow(display, frame.psbutton, (frame.bevel_w * 2) +
-                    frame.workspace_label_w + 1, frame.bevel_w + 1,
-                    frame.button_w, frame.button_w);
-  XMoveResizeWindow(display ,frame.nsbutton, (frame.bevel_w * 3) +
-                    frame.workspace_label_w + frame.button_w + 2,
+  XMoveResizeWindow(display, frame.psbutton,
+                    ((frame.bevel_w * 2) + frame.workspace_label_w + 1),
                     frame.bevel_w + 1, frame.button_w, frame.button_w);
-  XMoveResizeWindow(display, frame.window_label, (frame.bevel_w * 4) +
-                    (frame.button_w * 2) + frame.workspace_label_w + 3,
-                    frame.bevel_w, frame.window_label_w, frame.label_h);
-  XMoveResizeWindow(display, frame.pwbutton, (frame.bevel_w * 5) +
-                    (frame.button_w * 2) + frame.workspace_label_w +
-                    frame.window_label_w + 4, frame.bevel_w + 1,
-                    frame.button_w, frame.button_w);
-  XMoveResizeWindow(display, frame.nwbutton, (frame.bevel_w * 6) +
-                    (frame.button_w * 3) + frame.workspace_label_w +
-                    frame.window_label_w + 5, frame.bevel_w + 1,
-                    frame.button_w, frame.button_w);
-  XMoveResizeWindow(display, frame.clock, frame.width - frame.clock_w -
-                    frame.bevel_w, frame.bevel_w, frame.clock_w,
-                    frame.label_h);
+  XMoveResizeWindow(display, frame.nsbutton,
+                    ((frame.bevel_w * 3) + frame.workspace_label_w +
+                     frame.button_w + 2), frame.bevel_w + 1, frame.button_w,
+                    frame.button_w);
+  XMoveResizeWindow(display, frame.window_label,
+                    ((frame.bevel_w * 4) + (frame.button_w * 2) +
+                     frame.workspace_label_w + 3), frame.bevel_w,
+                    frame.window_label_w, frame.label_h);
+  XMoveResizeWindow(display, frame.pwbutton,
+                    ((frame.bevel_w * 5) + (frame.button_w * 2) +
+                     frame.workspace_label_w + frame.window_label_w + 4),
+                    frame.bevel_w + 1, frame.button_w, frame.button_w);
+  XMoveResizeWindow(display, frame.nwbutton,
+                    ((frame.bevel_w * 6) + (frame.button_w * 3) + 
+                     frame.workspace_label_w + frame.window_label_w + 5),
+                    frame.bevel_w + 1, frame.button_w, frame.button_w);
+  XMoveResizeWindow(display, frame.clock,
+                    frame.rect.width() - frame.clock_w - frame.bevel_w,
+                    frame.bevel_w, frame.clock_w, frame.label_h);
 
   ToolbarStyle *style = screen->getToolbarStyle();
-  frame.base = style->toolbar.render(frame.width, frame.height, frame.base);
+  frame.base = style->toolbar.render(frame.rect.width(), frame.rect.height(),
+                                     frame.base);
   if (! frame.base)
     XSetWindowBackground(display, frame.window,
                          style->toolbar.color().pixel());
@@ -1076,7 +1091,7 @@ void Toolbar::HideHandler::timeout(void) {
                 toolbar->frame.x_hidden, toolbar->frame.y_hidden);
   else
     XMoveWindow(toolbar->display, toolbar->frame.window,
-                toolbar->frame.x, toolbar->frame.y);
+                toolbar->frame.rect.x(), toolbar->frame.rect.y());
 }
 
 
