@@ -118,7 +118,7 @@ void BColor::parseColorName()
 void BColor::allocate()
 {
   assert(dpy != 0);
-  if (scrn == -1) scrn = DefaultScreen(display()->getXDisplay());
+  if (scrn == ~(0u)) scrn = DefaultScreen(display()->getXDisplay());
   Colormap colormap = display()->getScreenInfo(scrn)->getColormap();
 
   if (! isValid()) {
@@ -210,7 +210,7 @@ void BColor::doCacheCleanup()
 
   const BaseDisplay * const display = (*it).first.display;
   unsigned long *pixels = new unsigned long[ colorcache.size() ];
-  int i, count;
+  unsigned int i, count;
 
   for (i = 0; i < display->getNumberOfScreens(); i++) {
     count = 0;

@@ -91,7 +91,7 @@ private:
     const unsigned int screen;
     const int r, g, b;
 
-    RGB() : r(-1), g(-1), b(-1), screen(~(0u)) { }
+    RGB() : display(0), screen(~(0u)),  r(-1), g(-1), b(-1) { }
     RGB(const BaseDisplay * const a, const unsigned int b,
         const int x, const int y, const int z)
       : display(a), screen(b), r(x), g(y), b(z)

@@ -119,11 +119,11 @@ void BGCCache::release(Context *ctx)
 
 BGCCache::Item *BGCCache::find(const BColor &_color,
                                const XFontStruct * const _font,
-				int _function, int _subwindow)
+                               int _function, int _subwindow)
 {
   unsigned long pixel = _color.pixel();
   unsigned long fontid = _font ? _font->fid : 0;
-  int screen = _color.screen();
+  unsigned int screen = _color.screen();
   int key = _color.red() ^ _color.green() ^ _color.blue();
   int k = (key % cache_size) * cache_buckets;
   Item *c = cache[ k ], *prev = 0;
