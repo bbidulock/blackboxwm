@@ -62,7 +62,7 @@ static int handleXErrors(Display *d, XErrorEvent *e) {
 
   XGetErrorText(d, e->error_code, errtxt, 128);
   fprintf(stderr, "%s:  X error: %s(%d) opcodes %d/%d\n  resource 0x%lx\n",
-          base_app->getApplicationName(), errtxt, e->error_code,
+          base_app->applicationName().c_str(), errtxt, e->error_code,
           e->request_code, e->minor_code, e->resourceid);
 #else
   // shutup gcc
