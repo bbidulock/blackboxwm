@@ -174,11 +174,40 @@ Pixmap bsetroot::duplicatePixmap(int screen, Pixmap pixmap,
 			       display.screenNumber(screen)->getRootWindow(),
 			       width, height,
 			       DefaultDepth(display.XDisplay(), screen));
-  XCopyArea(display.XDisplay(), pixmap, copyP, DefaultGC(display.XDisplay(), screen),
+  XCopyArea(display.XDisplay(), pixmap, copyP,
+            DefaultGC(display.XDisplay(), screen),
 	    0, 0, width, height, 0, 0);
   XSync(display.XDisplay(), False);
 
   return copyP;
+}
+
+
+unsigned long bsetroot::duplicateColor(unsigned int screen,
+                                       const bt::Color &color) {
+  /*
+    When using a colormap that is not read-only, we need to
+    reallocate the color we are using.  The application's color cache
+    will be freed on exit, and another client can allocate a new
+    color at the same pixel value, which will immediately change the
+    color of the root window.
+
+    this is not what we want, so we need to make sure that the pixel
+    we are using is doubly allocated, so that it stays around with the
+    pixmap.  It will be released when we use
+    XKillClient(..., AllTemporary);
+  */
+  const bt::ScreenInfo * const screen_info = display.screenNumber(screen);
+  unsigned long pixel = color.pixel(screen);
+  XColor xcolor;
+  xcolor.pixel = pixel;
+  XQueryColor(display.XDisplay(), screen_info->getColormap(), &xcolor);
+  if (! XAllocColor(display.XDisplay(), screen_info->getColormap(),
+                    &xcolor)) {
+    fprintf(stderr, "warning: couldn't duplicate color %02x/%02x/%02x\n",
+            color.red(), color.green(), color.blue());
+  }
+  return pixel;
 }
 
 
@@ -187,8 +216,10 @@ void bsetroot::solid(void) {
 
   for (unsigned int screen = 0; screen < display.screenCount(); screen++) {
     const bt::ScreenInfo * const screen_info = display.screenNumber(screen);
+    unsigned long pixel = duplicateColor(screen, c);
+
     XSetWindowBackground(display.XDisplay(), screen_info->getRootWindow(),
-                         c.pixel(screen));
+                         pixel);
     XClearWindow(display.XDisplay(), screen_info->getRootWindow());
 
     Pixmap pixmap =
@@ -240,8 +271,8 @@ void bsetroot::modula(int x, int y) {
                             data, 16, 16);
 
     XGCValues gcv;
-    gcv.foreground = f.pixel(screen);
-    gcv.background = b.pixel(screen);
+    gcv.foreground = duplicateColor(screen, f);
+    gcv.background = duplicateColor(screen, b);
 
     gc = XCreateGC(display.XDisplay(), screen_info->getRootWindow(),
                    GCForeground | GCBackground, &gcv);

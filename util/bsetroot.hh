@@ -39,6 +39,7 @@ public:
 
   void setPixmapProperty(int screen, Pixmap pixmap);
   Pixmap duplicatePixmap(int screen, Pixmap pixmap, int width, int height);
+  unsigned long duplicateColor(unsigned int screen, const bt::Color &color);
 
   void gradient(void);
   void modula(int x, int y);
