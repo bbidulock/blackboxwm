@@ -1012,7 +1012,7 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
                                          wkspc->getID() + 2);
       screen->getWorkspacemenu()->update();
 
-      new_workspace_name.clear();
+      new_workspace_name.resize(0);
       new_name_pos = 0;
 
       reconfigure();
@@ -1028,7 +1028,7 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
           --new_name_pos;
           new_workspace_name.erase(new_name_pos);
         } else {
-          new_workspace_name.clear();
+          new_workspace_name.resize(0);
         }
       } else {
         new_workspace_name.push_back(*keychar);
