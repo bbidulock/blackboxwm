@@ -53,6 +53,8 @@ void Clientmenu::itemSelected(int button, int index) {
           win->deiconifyWindow();
         wkspc->raiseWindow(win);
         win->setInputFocus();
+
+        Hide();
       }
     }
 }

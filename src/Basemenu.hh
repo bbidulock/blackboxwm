@@ -33,7 +33,7 @@ class BImageControl;
 
 #include "LinkedList.hh"
 
-// base menu class... it is inherited for sessions, windows, and workspaces
+
 class Basemenu {
 private:
   LinkedList<BasemenuItem> *menuitems;
@@ -105,12 +105,11 @@ public:
 };
 
 
-// menu items held in the menus
 class BasemenuItem {
 private:
-  Basemenu *sub_menu;
-  char **ulabel, *label, *exec;
-  int function;
+  Basemenu *s;
+  char **u, *l, *e;
+  int f;
 
   friend Basemenu;
 
@@ -119,23 +118,23 @@ protected:
 
 
 public:
-  BasemenuItem(char *l, int f, char *e = 0)
-    { label = l; exec = e; sub_menu = 0; function = f; ulabel = 0; }
+  BasemenuItem(char *lp, int fp, char *ep = 0)
+    { l = lp; e = ep; s = 0; f = fp; u = 0; }
 
-  BasemenuItem(char *l, Basemenu *m)
-    { label = l; sub_menu = m; exec = 0; function = 0; ulabel = 0; }
+  BasemenuItem(char *lp, Basemenu *mp)
+    { l = lp; s = mp; e = 0; f = 0; u = 0; }
 
-  BasemenuItem(char **u)
-    { ulabel = u; label = 0; exec = 0; function = 0; sub_menu = 0; }
+  BasemenuItem(char **up)
+    { u = up; l = e = 0; f = 0; s = 0; }
 
   ~BasemenuItem(void)
     { /* the item doesn't delete any data it holds */ }
 
-  char *Exec(void) { return exec; }
-  char *Label(void) { return label; }
-  char **ULabel(void) { return ulabel; }
-  int Function(void) { return function; }
-  Basemenu *Submenu(void) { return sub_menu; }
+  char *exec(void) { return e; }
+  char *label(void) { return l; }
+  char **ulabel(void) { return u; }
+  int function(void) { return f; }
+  Basemenu *submenu(void) { return s; }
 };
 
 

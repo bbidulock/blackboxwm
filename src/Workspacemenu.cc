@@ -28,10 +28,10 @@
 #include "Workspace.hh"
 
 
-Workspacemenu::Workspacemenu(Blackbox *bb, Toolbar *wsm) :
+Workspacemenu::Workspacemenu(Blackbox *bb, Toolbar *tb) :
   Basemenu(bb)
 {
-  toolbar = wsm;
+  toolbar = tb;
   setTitleVisibility(False);
   setMovable(False);
   defaultMenu();

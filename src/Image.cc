@@ -352,17 +352,21 @@ XImage *BImage::renderXImage(Bool dither) {
 	  return 0;
 	}
 
-	*(or + x + 1) += (er >> 3) + (er >> 2);
-	*(og + x + 1) += (eg >> 3) + (eg >> 2);
-	*(ob + x + 1) += (eb >> 3) + (eb >> 2);
+        r = (er >> 3) + (er >> 2);
+        g = (eg >> 3) + (eg >> 2);
+        b = (eb >> 3) + (eb >> 2);
+
+	*(or + x + 1) += r;
+	*(og + x + 1) += g;
+	*(ob + x + 1) += b;
 	
-	*(nor + x) += (er >> 1) + (er >> 2);
-	*(nog + x) += (eg >> 1) + (eg >> 2);
-	*(nob + x) += (eb >> 1) + (eb >> 2);
+	*(nor + x) += r;
+	*(nog + x) += g;
+	*(nob + x) += b;
 	
-	*(nor + x + 1) += (er >> 2);
-	*(nog + x + 1) += (eg >> 2);
-	*(nob + x + 1) += (eb >> 2);
+	*(nor + x + 1) += er - (r << 1);
+	*(nog + x + 1) += eg - (g << 1);
+	*(nob + x + 1) += eb - (b << 1);
       }
       
       ofs += image->width;
@@ -459,7 +463,7 @@ Pixmap BImage::renderPixmap(Bool dither) {
   }
 
   XPutImage(control->d(), pixmap,
-	    DefaultGC(control->d(), DefaultScreen(control->d())),
+	    DefaultGC(control->d(), control->screen()),
             image, 0, 0, 0, 0, width, height);
 
   XDestroyImage(image);
@@ -685,13 +689,14 @@ void BImage::bevel1(Bool solid, Bool solidblack) {
 
 void BImage::bevel2(Bool solid, Bool solidblack) {
   if (width > 4 && height > 4) {
-    unsigned char r, g, b, rr, gg, bb;
-    unsigned int i, off, wh = width * (height - 3);
+    unsigned char r, g, b, rr ,gg ,bb, *pr = red + width + 1,
+      *pg = green + width + 1, *pb = blue + width + 1;
+    unsigned int w = width - 2, h = height - 1, wh = width * (height - 3);
     
     if (solid) {
       if (solidblack) {
 	r = g = b = 0xc0;
-	rr = gg = bb = 0x60;  
+	rr = gg = bb = 0x60;
       } else {
 	r = bg.red * 3 / 2;
 	if (r < bg.red) r = ~0;
@@ -708,88 +713,103 @@ void BImage::bevel2(Bool solid, Bool solidblack) {
 	if (bb > bg.blue) bb = 0;
       }      
 
-      for (i = 0, off = width + 1; i < width; i++, off++) {
-	*(red + off) = r;
-	*(green + off) = g;
-	*(blue + off) = b;
-
-	off += wh;
-	*(red + off) = rr;
-	*(green + off) = gg;
-	*(blue + off) = bb;
+      while (--w) {
+	*pr = r;
+	*pg = g;
+	*pb = b;
+	*((pr++) + wh) = rr;
+	*((pg++) + wh) = gg;
+	*((pb++) + wh) = bb;
       }
       
-      for (i = 0, off = width + 1; i < height; i++, off++) {
-       	*(red + off) = r;
-	*(green + off) = g;
-	*(blue + off) = b;
+      pr = red + width;
+      pg = green + width;
+      pb = blue + width;
+      
+      while (--h) {
+	*(++pr) = r;
+	*(++pg) = g;
+	*(++pb) = b;
+	
+	pr += width - 3;
+	pg += width - 3;
+	pb += width - 3;
+	
+	*(pr++) = rr;
+	*(pg++) = gg;
+	*(pb++) = bb;
 
-        off += width - 3;
-	*(red + off) = rr;
-	*(green + off) = gg;
-	*(blue + off) = bb;
+        pr++; pg++; pb++;
       }
     } else {
-      for (i = 0, off = width + 1; i < width; i++, off++) {
-	r = *(red + i);
-	r *= 3 / 2;
-	if (r < *(red + i)) r = ~0;
-	g = *(green + i);
-	g *= 3 / 2;
-	if (g < *(green + i)) g = ~0;
-	b = *(blue + i);
-	b *= 3 / 2;
-	if (b < *(blue + i)) b = ~0;
-	
-	*(red + i) = r;
-	*(green + i) = g;
-	*(blue + i) = b;
-	
-	off += wh;
-	rr = *(red + off);
-	rr *= 3 / 2;
-	if (rr < *(red + off)) rr = 0;
-	gg = *(green + off);
-	gg *= 3 / 2;
-	if (gg < *(green + off)) gg = 0;
-	bb = *(blue + off);
-	bb *= 3 / 2;
-	if (bb < *(blue + off)) bb = 0;
+      while (--w) {
+	r = *pr;
+	rr = r * 3 / 2;
+	if (rr < r) rr = ~0;
+	g = *pg;
+	gg = g * 3 / 2;
+	if (gg < g) gg = ~0;
+	b = *pb;
+	bb = b * 3 / 2;
+	if (bb < b) bb = ~0;
 
-	*(red + off) = rr;
-	*(green + off) = gg;
-	*(blue + off) = bb;
+	*pr = rr;
+	*pg = gg;
+	*pb = bb;
+
+	r = *(pr + wh);
+	rr = r * 3 / 4;
+	if (rr > r) rr = 0;
+	g = *(pg + wh);
+	gg = g * 3 / 4;
+	if (gg > g) gg = 0;
+	b = *(pb + wh);
+	bb = b * 3 / 4;
+	if (bb > b) bb = 0;
+
+	*((pr++) + wh) = rr;
+	*((pg++) + wh) = gg;
+	*((pb++) + wh) = bb;
       }
       
-      for (i = 0, off = width + 1; i < height; i++, off++) {
-	r = *(red + off);
-	r *= 3 / 2;
-	if (r < *(red + off)) r = ~0;
-	g = *(green + off);
-	g *= 3 / 2;
-	if (g < *(green + off)) g = ~0;
-	b = *(blue + off);
-	b *= 3 / 2;
-	if (b < *(blue + off)) b = ~0;
+      pr = red + width;
+      pg = green + width;
+      pb = blue + width;
+      
+      while (--h) {
+	r = *pr;
+	rr = r * 3 / 2;
+	if (rr < r) rr = ~0;
+	g = *pg;
+	gg = g * 3 / 2;
+	if (gg < g) gg = ~0;
+	b = *pb;
+	bb = b * 3 / 2;
+	if (bb < b) bb = ~0;
 	
-       	*(red + off) = r;
-	*(green + off) = g;
-	*(blue + off) = b;
+	*(++pr) = rr;
+	*(++pg) = gg;
+	*(++pb) = bb;
+	
+	pr += width - 3;
+	pg += width - 3;
+	pb += width - 3;
+	
+	r = *pr;
+	rr = r * 3 / 4;
+	if (rr > r) rr = 0;
+	g = *pg;
+	gg = g * 3 / 4;
+	if (gg > g) gg = 0;
+	b = *pb;
+	bb = b * 3 / 4;
+	if (bb > b) bb = 0;
 
-	off += width - 3;
-	rr = *(red + off);
-	rr *= 3 / 2;
-	if (rr < *(red + off)) rr = 0;
-	gg = *(green + off);
-	gg *= 3 / 2;
-	if (gg < *(green + off)) gg = 0;
-	bb = *(blue + off);
-	bb *= 3 / 2;
-	if (bb < *(blue + off)) bb = 0;
+	*(pr++) = rr;
+	*(pg++) = gg;
+	*(pb++) = bb;
 
-	*(red + off) = rr;
-	*(green + off) = gg;
-	*(blue + off) = bb;
+        pr++; pg++; pb++;
       }
     }
   }
@@ -988,6 +1008,7 @@ BImageControl::BImageControl(Blackbox *bb) {
   display = blackbox->control();
   screen_depth = blackbox->Depth();
   window = blackbox->Root();
+  screen_number = blackbox->Screen();
 
   colors = 0;
   colors_per_channel = ncolors = 0;
@@ -1012,24 +1033,24 @@ BImageControl::BImageControl(Blackbox *bb) {
   case TrueColor:
     {
       int i;
-	unsigned long mask = blackbox->visual()->red_mask;
-	while (! (mask & 1)) { red_offset++; mask >>= 1; }
-	for (i = 0; i < 256; i++)
-	  rmask_table[i] = (i * mask + 0x7f) / 0xff;
-	
-	mask = blackbox->visual()->green_mask;
-	while (! (mask & 1)) { green_offset++; mask >>= 1; }
-	for (i = 0; i < 256; i++)
-	  gmask_table[i] = (i * mask + 0x7f) / 0xff;
-	
-	mask = blackbox->visual()->blue_mask;
-	while (! (mask & 1)) { blue_offset++; mask >>= 1; }
-	for (i = 0; i < 256; i++)
-	  bmask_table[i] = (i * mask + 0x7f) / 0xff;
+      unsigned long mask = blackbox->visual()->red_mask;
+      while (! (mask & 1)) { red_offset++; mask >>= 1; }
+      for (i = 0; i < 256; i++)
+	rmask_table[i] = (i * mask + 0x7f) / 0xff;
+      
+      mask = blackbox->visual()->green_mask;
+      while (! (mask & 1)) { green_offset++; mask >>= 1; }
+      for (i = 0; i < 256; i++)
+	gmask_table[i] = (i * mask + 0x7f) / 0xff;
+      
+      mask = blackbox->visual()->blue_mask;
+      while (! (mask & 1)) { blue_offset++; mask >>= 1; }
+      for (i = 0; i < 256; i++)
+	bmask_table[i] = (i * mask + 0x7f) / 0xff;
     }
-
+    
     break;
-
+    
   case PseudoColor:
   case StaticColor:
     {
@@ -1074,7 +1095,7 @@ BImageControl::BImageControl(Blackbox *bb) {
       
       XGrabServer(display);
       
-      Colormap colormap = DefaultColormap(display, DefaultScreen(display));
+      Colormap colormap = DefaultColormap(display, screen_number);
       for (i = 0; i < ncolors; i++)
 	if (! XAllocColor(display, colormap, &colors[i])) {
 	  fprintf(stderr, "couldn't alloc color %i %i %i\n", colors[i].red,
@@ -1154,7 +1175,14 @@ BImageControl::~BImageControl(void) {
   if (next_blue_err) delete [] next_blue_err;
 
   if (colors) {
-    // fixme to free all the allocated colors
+    unsigned long *pixels = new unsigned long [ncolors];
+
+    int i;
+    for (i = 0; i < ncolors; i++)
+      *(pixels + i) = (*(colors + i)).pixel;
+
+    XFreeColors(display, DefaultColormap(display, screen_number),
+		pixels, ncolors, 0);
 
     delete [] colors;
   }

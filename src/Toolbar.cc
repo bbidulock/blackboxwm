@@ -444,7 +444,7 @@ void Toolbar::stackWindows(Window *workspace_stack, int num) {
   Window *session_stack =
     new Window[(num + zero->Count() + workspacesList->count() + 4)];
   
-  int i = 0;
+  int i = 0, k;
   *(session_stack + i++) = blackbox->Menu()->WindowID();
 
   if (raised) {
@@ -462,11 +462,11 @@ void Toolbar::stackWindows(Window *workspace_stack, int num) {
     }
 
     *(session_stack + i++) = frame.base;
-  }
 
-  int k = zero->Count();
-  while (k--)
-    *(session_stack + i++) = *(zero->windowStack() + k);
+    k = zero->Count();
+    while (k--)
+      *(session_stack + i++) = *(zero->windowStack() + k);
+  }
 
   k = num;
   while (k--)
@@ -487,6 +487,10 @@ void Toolbar::stackWindows(Window *workspace_stack, int num) {
     }
 
     *(session_stack + i++) = frame.base;
+
+    k = zero->Count();
+    while (k--)
+      *(session_stack + i++) = *(zero->windowStack() + k);
   }
   
   XRestackWindows(display, session_stack, i);

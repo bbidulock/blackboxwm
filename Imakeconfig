@@ -28,9 +28,6 @@ XCOMM Define this to get XShapeExtention support
 XCOMM Define this to get Jon Denardis' curved gradient hack
 XCOMM #define GradientHack
 
-XCOMM Define this to get MwmHints window property support (non existant)
-XCOMM #define MWM_HINTS
-
 XCOMM Put any compiler specific flags here for building Blackbox
-CXXFLAGS :=	-Wall -W -pipe $(CXXFLAGS)
+CXXFLAGS :=	-Wall -W -pipe -fomit-frame-pointer -fforce-addr -fforce-mem -finline-functions $(CXXFLAGS)
 

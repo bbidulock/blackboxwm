@@ -19,19 +19,19 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef __Blackbox_hh
-#define __Blackbox_hh
-#define __blackbox_version "beta zero . four zero . three"
+#ifndef __blackbox_hh
+#define __blackbox_hh
+#define __blackbox_version "beta zero . four zero . four"
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
 
 // forward declarations
 class Blackbox;
-class Toolbar;
+
 class Basemenu;
 class Rootmenu;
-class BlackboxIcon;
+class Toolbar;
 class BlackboxWindow;
 
 #include "Image.hh"
@@ -47,14 +47,9 @@ typedef struct windowResource {
   } decoration;
   
   struct button {
-    BColor pressed, pressedTo;
-    unsigned long texture, ptexture;
+    BColor fcolor, fcolorTo, ucolor, ucolorTo, pressed, pressedTo;
+    unsigned long ftexture, utexture, ptexture;
   } button;
-  
-  struct handle {
-    BColor color, colorTo;
-    unsigned long texture;
-  } handle;
 
   struct frame {
     BColor color;
@@ -135,11 +130,12 @@ private:
     toolbarResource tres;
     menuResource mres;
 
-    Bool opaqueMove, imageDither, clock24hour, toolbarRaised, sloppyFocus;
+    Bool opaqueMove, imageDither, clock24hour, toolbarRaised, sloppyFocus,
+      autoRaise;
     BColor borderColor;
     XrmDatabase stylerc;
     char *menuFile, *styleFile;
-    int workspaces, justify, menu_justify, cpc8bpp;
+    int workspaces, justify, menu_justify, colors_per_channel;
     unsigned int handleWidth, bevelWidth;
   } resource;
 
@@ -161,16 +157,15 @@ private:
   BImageControl *image_control;
 
   Atom _XA_WM_COLORMAP_WINDOWS, _XA_WM_PROTOCOLS, _XA_WM_STATE,
-    _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS;
+    _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS, _MOTIF_WM_HINTS;
   Bool startup, shutdown, reconfigure;
   Display *display;
   GC opGC, wfocusGC, wunfocusGC, mtitleGC, mframeGC, mhiGC, mhbgGC;
   Visual *v;
   Window root;
-  XColor *colors_8bpp;
   char *display_name;
   char **b_argv;
-  int bpp, depth, screen, event_mask, focus_window_number, b_argc,
+  int depth, screen, event_mask, focus_window_number, b_argc,
     red_offset, green_offset, blue_offset;
   unsigned int xres, yres;
 
@@ -246,6 +241,7 @@ public:
   Atom ProtocolsAtom(void) { return _XA_WM_PROTOCOLS; }
   Atom FocusAtom(void) { return _XA_WM_TAKE_FOCUS; }
   Atom ColormapAtom(void) { return _XA_WM_COLORMAP_WINDOWS; }
+  Atom MwmHintsAtom(void) { return _MOTIF_WM_HINTS; }
 
   Bool shapeExtensions(void) { return shape.extensions; }
   Bool Startup(void) { return startup; }
@@ -277,37 +273,32 @@ public:
   Bool toolbarRaised(void) { return resource.toolbarRaised; }
   Bool sloppyFocus(void) { return resource.sloppyFocus; }
   Bool imageDither(void) { return resource.imageDither; }
-
-  // window controls
-  windowResource *wResource(void) { return &resource.wres; }
-
-  // menu controls
-  menuResource *mResource(void) { return &resource.mres; }
-
-  // workspace manager controls
-  toolbarResource *tResource(void) { return &resource.tres; }
-
-  // session information
-  int Depth(void) { return depth; }
-  int BitsPerPixel(void) { return bpp; }
-  int colorsPerChannel(void) { return resource.cpc8bpp; }
-  unsigned int xRes(void) { return xres; }
-  unsigned int yRes(void) { return yres; }
+  Bool autoRaise(void) { return resource.autoRaise; }
+  Bool opaqueMove(void) { return resource.opaqueMove; }
 
   // controls for arrangement of decorations
   const int Justification(void) const { return resource.justify; }
   const int MenuJustification(void) const { return resource.menu_justify; }
   
-  // window move style
-  Bool opaqueMove(void) { return resource.opaqueMove; }
-  
+  // resources
+  windowResource *wResource(void) { return &resource.wres; }
+  menuResource *mResource(void) { return &resource.mres; }
+  toolbarResource *tResource(void) { return &resource.tres; }
+
+  // session information
+  int Depth(void) { return depth; }
+  int Screen(void) { return screen; }
+  int colorsPerChannel(void) { return resource.colors_per_channel; }
+  unsigned int xRes(void) { return xres; }
+  unsigned int yRes(void) { return yres; }
+
   // public constants
   enum { B_Restart = 1, B_RestartOther, B_Exit, B_Shutdown, B_Execute,
 	 B_Reconfigure, B_ExecReconfigure, B_WindowShade, B_WindowIconify,
 	 B_WindowMaximize, B_WindowClose, B_WindowRaise, B_WindowLower,
 	 B_WindowStick, B_WindowKill, B_SetStyle };
-  enum { B_LeftJustify, B_RightJustify, B_CenterJustify };
+  enum { B_LeftJustify = 1, B_RightJustify, B_CenterJustify };
 };
 
 
-#endif // __Blackbox_hh
+#endif // __blackbox_hh

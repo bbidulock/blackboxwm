@@ -48,6 +48,7 @@
 #include <sys/types.h>
 #include <sys/time.h>
 
+
 // *************************************************************************
 // signal handler to allow for proper and gentle shutdown
 // *************************************************************************
@@ -183,6 +184,7 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   _XA_WM_STATE = XInternAtom(display, "WM_STATE", False);
   _XA_WM_DELETE_WINDOW = XInternAtom(display, "WM_DELETE_WINDOW", False);
   _XA_WM_TAKE_FOCUS = XInternAtom(display, "WM_TAKE_FOCUS", False);
+  _MOTIF_WM_HINTS = XInternAtom(display, "_MOTIF_WM_HINTS", False);
   
   cursor.session = XCreateFontCursor(display, XC_left_ptr);
   cursor.move = XCreateFontCursor(display, XC_fleur);
@@ -495,8 +497,9 @@ void Blackbox::ProcessEvent(XEvent *e) {
       
       if (validateWindow(eWin->clientWindow()))
 	if ((! eWin->isFocused()) && eWin->isVisible())
-	  eWin->setInputFocus();
-      
+	  if (eWin->setInputFocus() && resource.autoRaise)    
+            tool_bar->currentWorkspace()->raiseWindow(eWin);
+
       XUngrabServer(display);
     } else if ((eMenu = searchMenu(e->xcrossing.window)) != NULL)
       eMenu->enterNotifyEvent(&e->xcrossing);
@@ -843,7 +846,8 @@ void Blackbox::SaveRC(void) {
   // writing these resources will allow the user to edit them at a later
   // time... but loading the defaults before saving allows us to rewrite the
   // users changes...
-  sprintf(rc_string, "session.colorsPerChannel:  %d", resource.cpc8bpp);
+  sprintf(rc_string, "session.colorsPerChannel:  %d",
+	  resource.colors_per_channel);
   XrmPutLineResource(&new_blackboxrc, rc_string);
   sprintf(rc_string, "session.clockFormat:  %d",
 	  ((resource.clock24hour) ? 24 : 12));
@@ -854,7 +858,9 @@ void Blackbox::SaveRC(void) {
   sprintf(rc_string, "session.menuFile:  %s", resource.menuFile);
   XrmPutLineResource(&new_blackboxrc, rc_string);
   sprintf(rc_string, "session.focusModel:  %s",
-	  ((resource.sloppyFocus) ? "SloppyFocus" : "ClickToFocus"));
+	  ((resource.sloppyFocus) ?
+	   ((resource.autoRaise) ? "AutoRaiseSloppyFocus" : "SloppyFocus") :
+	   "ClickToFocus"));
   XrmPutLineResource(&new_blackboxrc, rc_string);
 
   XrmPutFileDatabase(new_blackboxrc, rcfile);
@@ -1295,14 +1301,14 @@ void Blackbox::LoadRC(void) {
 		     "session.colorsPerChannel",
 		     "Session.ColorsPerChannel", &value_type,
 		     &value)) {
-    if (sscanf(value.addr, "%d", &resource.cpc8bpp) != 1) {
-      resource.cpc8bpp = 5;
+    if (sscanf(value.addr, "%d", &resource.colors_per_channel) != 1) {
+      resource.colors_per_channel = 4;
     } else {
-      if (resource.cpc8bpp < 1) resource.cpc8bpp = 1;
-      if (resource.cpc8bpp > 6) resource.cpc8bpp = 6;
+      if (resource.colors_per_channel < 2) resource.colors_per_channel = 2;
+      if (resource.colors_per_channel > 6) resource.colors_per_channel = 6;
     }
   } else
-    resource.cpc8bpp = 5;
+    resource.colors_per_channel = 4;
   
   if (XrmGetResource(database,
 		     "session.clockFormat",
@@ -1329,12 +1335,20 @@ void Blackbox::LoadRC(void) {
 
   if (XrmGetResource(database, "session.focusModel", "Session.FocusModel",
 		     &value_type, &value)) {
-    if (! strncasecmp(value.addr, "clicktofocus", value.size))
+    if (! strncasecmp(value.addr, "clicktofocus", value.size)) {
+      resource.autoRaise = False;
       resource.sloppyFocus = False;
-    else
+    } else if (! strncasecmp(value.addr, "autoraisesloppyfocus", value.size)) {
       resource.sloppyFocus = True;
-  } else
+      resource.autoRaise = True;
+    } else {
+      resource.sloppyFocus = True;
+      resource.autoRaise = False;
+    }
+  } else {
     resource.sloppyFocus = True;
+    resource.autoRaise = False;
+  }
 
   if (resource.styleFile) delete [] resource.styleFile;
   if (XrmGetResource(database, "session.styleFile", "Session.StyleFile",
@@ -1366,38 +1380,45 @@ void Blackbox::LoadStyle(void) {
   if (! (resource.wres.decoration.ftexture =
 	 blackbox->readDatabaseTexture("window.focus",
 				       "Window.Focus")))
-    resource.wres.decoration.ftexture = BImage_Raised|BImage_Solid|
+    resource.wres.decoration.ftexture = BImage_Raised | BImage_Solid |
       BImage_Bevel2;
   
   if (! (resource.wres.decoration.utexture =
 	 blackbox->readDatabaseTexture("window.unfocus",
 				       "Window.Unfocus")))
-    resource.wres.decoration.utexture = BImage_Raised|BImage_Solid|BImage_Bevel2;
-  
-
-  if (! (resource.wres.handle.texture =
-	 blackbox->readDatabaseTexture("window.handle",
-				       "Window.Handle")))
-    resource.wres.handle.texture = BImage_Raised|BImage_Solid|BImage_Bevel2;
+    resource.wres.decoration.utexture = BImage_Raised | BImage_Solid |
+      BImage_Bevel2;  
 
   if (! (resource.wres.frame.texture =
 	 blackbox->readDatabaseTexture("window.frame",
 				       "Window.Frame")))
-    resource.wres.frame.texture = BImage_Raised|BImage_Bevel2|BImage_Solid;
+    resource.wres.frame.texture = BImage_Raised | BImage_Bevel2 | BImage_Solid;
+  if (resource.wres.frame.texture & BImage_Gradient)
+    resource.wres.frame.texture = BImage_Solid |
+      (resource.wres.frame.texture & (BImage_Raised | BImage_Flat |
+				      BImage_Sunken)) |
+      (resource.wres.frame.texture & (BImage_Bevel1 | BImage_Bevel2));
 
-  if (! (resource.wres.button.texture =
-	 blackbox->readDatabaseTexture("window.button",
-				       "Window.Button")))
-    resource.wres.button.texture = BImage_Raised|BImage_Bevel2|BImage_Solid;
+  if (! (resource.wres.button.ftexture =
+	 blackbox->readDatabaseTexture("window.focus.button",
+				       "Window.Focus.Button")))
+    resource.wres.button.ftexture = BImage_Raised | BImage_Bevel2 |
+      BImage_Solid;
   
+  if (! (resource.wres.button.utexture =
+	 blackbox->readDatabaseTexture("window.unfocus.button",
+				       "Window.Unfocus.Button")))
+    resource.wres.button.utexture = BImage_Raised | BImage_Bevel2 |
+      BImage_Solid;
+
   if (! (resource.wres.button.ptexture =
 	 blackbox->readDatabaseTexture("window.button.pressed",
 				       "Window.Button.Pressed")))
-    resource.wres.button.ptexture = resource.wres.button.texture |
+    resource.wres.button.ptexture = resource.wres.button.ftexture |
       BImage_Invert;
-
+  
   if (resource.wres.button.ptexture == BImage_Invert)
-    resource.wres.button.ptexture = resource.wres.button.texture |
+    resource.wres.button.ptexture = resource.wres.button.ftexture |
       BImage_Invert;
   
   // button, focused and unfocused colors
@@ -1417,18 +1438,17 @@ void Blackbox::LoadStyle(void) {
 			 &resource.wres.decoration.ucolor.green,
 			 &resource.wres.decoration.ucolor.blue);
 
-  if ((resource.wres.decoration.ftexture & BImage_Gradient) ||
-      (resource.wres.button.texture & BImage_Gradient))
+  if (resource.wres.decoration.ftexture & BImage_Gradient)
     if (! blackbox->readDatabaseColor("window.focus.colorTo",
 				      "Window.Focus.ColorTo",
 				      &resource.wres.decoration.fcolorTo))
       resource.wres.decoration.fcolorTo.pixel =
-	image_control->getColor("black", &resource.wres.decoration.fcolorTo.red,
-			   &resource.wres.decoration.fcolorTo.green,
-			   &resource.wres.decoration.fcolorTo.blue);
+	image_control->getColor("black",
+				&resource.wres.decoration.fcolorTo.red,
+				&resource.wres.decoration.fcolorTo.green,
+				&resource.wres.decoration.fcolorTo.blue);
 
-  if ((resource.wres.decoration.utexture & BImage_Gradient) ||
-      (resource.wres.button.texture & BImage_Gradient))
+  if (resource.wres.decoration.utexture & BImage_Gradient)
     if (! blackbox->readDatabaseColor("window.unfocus.colorTo",
 				      "Window.Unfocus.ColorTo",
 				      &resource.wres.decoration.ucolorTo))
@@ -1438,65 +1458,82 @@ void Blackbox::LoadStyle(void) {
 				&resource.wres.decoration.ucolorTo.green,
 				&resource.wres.decoration.ucolorTo.blue);
 
-  if (! blackbox->readDatabaseColor("window.handle.color",
-				    "Window.Handle.Color",
-				    &resource.wres.handle.color))
-    resource.wres.handle.color.pixel =
-      image_control->getColor("grey", &resource.wres.handle.color.red,
-			      &resource.wres.handle.color.green,
-			      &resource.wres.handle.color.blue);
+  if (! blackbox->readDatabaseColor("window.focus.button.color",
+				    "Window.Focus.Button.Color",
+				    &resource.wres.button.fcolor))
+    resource.wres.button.fcolor.pixel =
+      image_control->getColor("grey", &resource.wres.button.fcolor.red,
+			      &resource.wres.button.fcolor.green,
+			      &resource.wres.button.fcolor.blue);
 
-  if (resource.wres.handle.texture & BImage_Gradient)
-    if (! blackbox->readDatabaseColor("window.handle.colorTo",
-				      "Window.Handle.ColorTo",
-				      &resource.wres.handle.colorTo))
-      resource.wres.handle.colorTo.pixel =
-	image_control->getColor("grey", &resource.wres.handle.colorTo.red,
-			   &resource.wres.handle.colorTo.green,
-			   &resource.wres.handle.colorTo.blue);
+  if (! blackbox->readDatabaseColor("window.focus.button.colorTo",
+				    "Window.Focus.Button.ColorTo",
+				    &resource.wres.button.fcolorTo))
+    resource.wres.button.fcolorTo.pixel =
+      image_control->getColor("darkgrey", &resource.wres.button.fcolorTo.red,
+			      &resource.wres.button.fcolorTo.green,
+			      &resource.wres.button.fcolorTo.blue);
+  
+  if (! blackbox->readDatabaseColor("window.unfocus.button.color",
+				    "Window.Unfocus.Button.Color",
+				    &resource.wres.button.ucolor))
+    resource.wres.button.ucolor.pixel =
+      image_control->getColor("grey", &resource.wres.button.ucolor.red,
+			      &resource.wres.button.ucolor.green,
+			      &resource.wres.button.ucolor.blue);
+  
+  if (! blackbox->readDatabaseColor("window.unfocus.button.colorTo",
+				    "Window.Unfocus.Button.ColorTo",
+				    &resource.wres.button.ucolorTo))
+    resource.wres.button.ucolorTo.pixel =
+      image_control->getColor("darkgrey", &resource.wres.button.ucolorTo.red,
+			      &resource.wres.button.ucolorTo.green,
+			      &resource.wres.button.ucolorTo.blue);
 
   if (! blackbox->readDatabaseColor("window.button.pressed.color",
 				    "Window.Button.Pressed.Color",
 				    &resource.wres.button.pressed))
     resource.wres.button.pressed.pixel =
       image_control->getColor("grey", &resource.wres.button.pressed.red,
-			 &resource.wres.button.pressed.green,
-			 &resource.wres.button.pressed.blue);
-
+			      &resource.wres.button.pressed.green,
+			      &resource.wres.button.pressed.blue);
+  
   if (resource.wres.button.ptexture & BImage_Gradient)
     if (! blackbox->readDatabaseColor("window.button.pressed.colorTo",
 				      "Window.Button.Pressed.ColorTo",
 				      &resource.wres.button.pressedTo))
       resource.wres.button.pressedTo.pixel =
 	image_control->getColor("grey", &resource.wres.button.pressedTo.red,
-			   &resource.wres.button.pressedTo.green,
-			   &resource.wres.button.pressedTo.blue);
+				&resource.wres.button.pressedTo.green,
+				&resource.wres.button.pressedTo.blue);
   
   // focused and unfocused text colors
   if (! blackbox->readDatabaseColor("window.focus.textColor",
 				    "Window.Focus.TextColor",
 				    &resource.wres.decoration.ftextColor))
     resource.wres.decoration.ftextColor.pixel =
-      image_control->getColor("white", &resource.wres.decoration.ftextColor.red,
-			 &resource.wres.decoration.ftextColor.green,
-			 &resource.wres.decoration.ftextColor.blue);
+      image_control->getColor("white",
+			      &resource.wres.decoration.ftextColor.red,
+			      &resource.wres.decoration.ftextColor.green,
+			      &resource.wres.decoration.ftextColor.blue);
   
   if (! blackbox->readDatabaseColor("window.unfocus.textColor",
 				    "Window.Unfocus.TextColor",
 				    &resource.wres.decoration.utextColor))
     resource.wres.decoration.utextColor.pixel =
-      image_control->getColor("black", &resource.wres.decoration.utextColor.red,
-			 &resource.wres.decoration.utextColor.green,
-			 &resource.wres.decoration.utextColor.blue);
+      image_control->getColor("black",
+			      &resource.wres.decoration.utextColor.red,
+			      &resource.wres.decoration.utextColor.green,
+			      &resource.wres.decoration.utextColor.blue);
   
   if (! (blackbox->readDatabaseColor("window.frame.color",
 				     "Window.Frame.Color",
 				     &resource.wres.frame.color)))
     resource.wres.frame.color.pixel =
       image_control->getColor("grey", &resource.wres.frame.color.red,
-			 &resource.wres.frame.color.green,
-			 &resource.wres.frame.color.blue);
-
+			      &resource.wres.frame.color.green,
+			      &resource.wres.frame.color.blue);
+  
   // load menu configuration
   if (! (resource.mres.title.texture =
 	 blackbox->readDatabaseTexture("menu.title", "Menu.Title")))

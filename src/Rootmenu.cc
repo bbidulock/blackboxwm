@@ -47,16 +47,16 @@ void Rootmenu::itemSelected(int button, int index) {
   if (button == 1) {
     BasemenuItem *item = find(index);
 
-    if (item->Function()) {
-      switch (item->Function()) {
+    if (item->function()) {
+      switch (item->function()) {
       case Blackbox::B_Execute:
-	if (item->Exec()) {
-	  char *command = new char[strlen(item->Exec()) + 8];
+	if (item->exec()) {
+	  char *command = new char[strlen(item->exec()) + 8];
 #ifndef __EMX__
-	  sprintf(command, "exec %s &", item->Exec());
+	  sprintf(command, "exec %s &", item->exec());
 	  system(command);
 #else
-	  sprintf(command, "%s", item->Exec());
+	  sprintf(command, "%s", item->exec());
 	  spawnlp(P_NOWAIT, "cmd.exe", "cmd.exe", "/c", command, NULL);
 #endif
 	  delete [] command;
@@ -65,9 +65,9 @@ void Rootmenu::itemSelected(int button, int index) {
 	break;
       
       case Blackbox::B_ExecReconfigure:
-	if (item->Exec()) {
-	  char *command = new char[strlen(item->Exec()) + 1];
-	  sprintf(command, "%s", item->Exec());
+	if (item->exec()) {
+	  char *command = new char[strlen(item->exec()) + 1];
+	  sprintf(command, "%s", item->exec());
 	  system(command);
 	  delete [] command;
 	}
@@ -81,8 +81,8 @@ void Rootmenu::itemSelected(int button, int index) {
 	break;
 	
       case Blackbox::B_RestartOther:
-	if (item->Exec())
-	  blackbox->Restart(item->Exec());
+	if (item->exec())
+	  blackbox->Restart(item->exec());
 
 	break;
 	
@@ -91,8 +91,8 @@ void Rootmenu::itemSelected(int button, int index) {
 	break;
 
       case Blackbox::B_SetStyle:
-	if (item->Exec()) {
-	  blackbox->setStyle(item->Exec());
+	if (item->exec()) {
+	  blackbox->setStyle(item->exec());
 	  blackbox->Reconfigure();
 	}
 	
@@ -100,9 +100,9 @@ void Rootmenu::itemSelected(int button, int index) {
       }
       
       if (! blackbox->Menu()->userMoved() &&
-	  item->Function() != Blackbox::B_Reconfigure &&
-	  item->Function() != Blackbox::B_ExecReconfigure &&
-	  item->Function() != Blackbox::B_SetStyle)
+	  item->function() != Blackbox::B_Reconfigure &&
+	  item->function() != Blackbox::B_ExecReconfigure &&
+	  item->function() != Blackbox::B_SetStyle)
 	blackbox->Menu()->Hide();
     }
   }

@@ -43,17 +43,19 @@ Windowmenu::Windowmenu(BlackboxWindow *win, Blackbox *bb) : Basemenu(bb) {
 
   sendToMenu = new SendtoWorkspaceMenu(win, bb);
   insert("Send To ...", sendToMenu);
-  insert("(Un)Shade", Blackbox::B_WindowShade);
-  insert("Iconify", Blackbox::B_WindowIconify);
-
-  if (window->isResizable())
+  if (window->hasTitlebar())
+    insert("(Un)Shade", Blackbox::B_WindowShade);
+  if (window->isIconifiable())
+    insert("Iconify", Blackbox::B_WindowIconify);
+  if (window->isMaximizable())
     insert("(Un)Maximize", Blackbox::B_WindowMaximize);  
-
   insert("Raise", Blackbox::B_WindowRaise);
   insert("Lower", Blackbox::B_WindowLower);
   insert("(Un)Stick", Blackbox::B_WindowStick);
-  insert("Close", Blackbox::B_WindowClose);
-  insert("Kill Client", Blackbox::B_WindowKill);
+  if (window->isClosable())
+    insert("Close", Blackbox::B_WindowClose);
+  else
+    insert("Kill Client", Blackbox::B_WindowKill);
   
   Update();
 }
@@ -68,7 +70,7 @@ void Windowmenu::itemSelected(int button, int index) {
   if (button == 1) {
     BasemenuItem *item = find(index);
     
-    switch (item->Function()) {
+    switch (item->function()) {
     case Blackbox::B_WindowShade:
       Hide();
       window->shadeWindow();

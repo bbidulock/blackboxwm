@@ -34,7 +34,7 @@ CXXFLAGS :=	$(CXXFLAGS) -DSHAPE
 
 #ifdef GradientHack
 CXXFLAGS :=	$(CXXFLAGS) -DGradientHack
-LDLIBS =	$(LDLIBS) -lm
+LDLIBS :=	$(LDLIBS) -lm
 #endif
 
 #ifdef MallocDebug

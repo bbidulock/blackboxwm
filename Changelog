@@ -2,6 +2,46 @@ At the request of some people, here is a Change log starting with 0.33.0.
 Enjoy! :)
 
 
+Changes from 0.40.3 to 0.40.4:
+	- removed the window.handle{.color,.colorTo} resources... the handle
+	  is now treated as a button, and uses the button resources
+	- added window.focus.button and window.unfocus.button resources to the
+	  style file... this allows colors to be set different from the
+	  titlebar... the colors are controlled with window.focus.button.color,
+	  window.focus.button.colorTo, window.unfocus.button.color and
+	  window.unfocus.button.colorTo
+	- transient focus policy has changed... if any window has an open
+	  transient window... focus is awarded to the trasient instead of the
+	  parent window, even if the mouse doesn't occupy the trasient window
+	- cleaned up some namespace in Basemenu.cc and Basemenu.hh
+	- changed dithering error diffusion
+	- fixed Bevel2 so that it doesn't sig11 anymore
+	- changed stacking code slightly... "stuck" windows now are placed
+	  in relation to the toolbar... i.e. if the toolbar is on top... stuck
+	  windows are on top of any other client windows... if the toolbar
+	  is underneath client windows... stuck windows are also stacked
+	  underneath the client windows
+	- major reworking of Window.cc and Window.hh to fully support the
+	  _MOTIF_WM_HINTS on client windows... if this hint is present... then
+	  the window is decorated according to those hints... all the move/
+	  resize/configure code had to be updated because of this... one step
+	  closer to gnome compliance
+	- window menus now contain different items based on the functions
+	  available to the client window... if a window cannot be maximized...
+	  then no maximize item is present in the window menu... also, "Close"
+	  and "Kill Client" are no longer present at the same time... if the
+	  client supports the WM_DELETE_WINDOW Protocol, then "Close" is
+	  present, "Kill Client" is only present for clients that do not
+	  support the protocol
+	- windows may now be moved by the titlebar, handle or thin border
+	  around the window... window menus are also accessible by pressing
+	  button 3 on any of these 3 windows
+	- a new focus model has been added... it works... but is mostly
+	  untested... session.focusModel: AutoRaiseSloppyFocus in .blackboxrc
+	  will retain the sloppy focus model... but raise windows to the
+	  top when focused...
+
+
 Changes from 0.40.2 to 0.40.3:
 	- fixed a bug in Blackbox::nextFocus that would put blackbox into an
 	  infinite loop when 2 windows where open, window 0 was iconified and
@@ -316,3 +356,4 @@ Changes from 0.31.0 to 0.33.0:
 	  performed after the initial setup (save for reconfiguring).
 	- configuration has changed to be a little cleaner, and a little more
           thorough.  See the Blackbox.ad and BlackboxMenu.ad for exmaples.
+
