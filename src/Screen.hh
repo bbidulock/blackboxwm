@@ -41,6 +41,7 @@ class Iconmenu;
 class Rootmenu;
 class Slit;
 class Toolbar;
+class Windowmenu;
 class Workspace;
 class Workspacemenu;
 
@@ -60,7 +61,7 @@ private:
   Configmenu *configmenu;
   Iconmenu *iconmenu;
   Rootmenu *rootmenu;
-
+  Windowmenu *_windowmenu;
   BlackboxWindowList iconList, windowList;
 
   Slit *_slit;
@@ -115,6 +116,7 @@ public:
   Blackbox *getBlackbox(void) { return blackbox; }
 
   Rootmenu *getRootmenu(void) { return rootmenu; }
+  Windowmenu *windowmenu(BlackboxWindow *win);
 
   inline Slit *slit(void) const
   { return _slit; }
@@ -180,6 +182,5 @@ public:
   void buttonPressEvent(const XButtonEvent * const event);
   void configureRequestEvent(const XConfigureRequestEvent * const event);
 };
-
 
 #endif // __Screen_hh

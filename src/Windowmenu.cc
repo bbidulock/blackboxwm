@@ -29,11 +29,15 @@
 
 #include <i18n.hh>
 
+#include <assert.h>
+
 
 class SendToWorkspacemenu : public bt::Menu {
 public:
-  SendToWorkspacemenu(bt::Application &app, unsigned int screen,
-                      BlackboxWindow *window);
+  SendToWorkspacemenu(bt::Application &app, unsigned int screen);
+
+  inline void setWindow(BlackboxWindow *win)
+  { _window = win; }
 
   void refresh(void);
 
@@ -56,10 +60,9 @@ enum {
   Close
 };
 
-Windowmenu::Windowmenu(bt::Application &app, unsigned int screen,
-                       BlackboxWindow *window)
-  : bt::Menu(app, screen), _window(window) {
-  _sendto = new SendToWorkspacemenu(app, screen, _window);
+Windowmenu::Windowmenu(bt::Application &app, unsigned int screen)
+  : bt::Menu(app, screen), _window(0) {
+  _sendto = new SendToWorkspacemenu(app, screen);
   insertItem(bt::i18n(WindowmenuSet, WindowmenuSendTo, "Send To ..."),
              _sendto, SendTo);
   insertSeparator();
@@ -81,7 +84,21 @@ Windowmenu::Windowmenu(bt::Application &app, unsigned int screen,
 }
 
 
+void Windowmenu::setWindow(BlackboxWindow *win) {
+  _window = win;
+  _sendto->setWindow(win);
+}
+
+
+void Windowmenu::hide(void) {
+  bt::Menu::hide();
+  setWindow(0);
+}
+
+
 void Windowmenu::refresh(void) {
+  assert(_window != 0);
+
   setItemEnabled(Shade,
                  _window->hasFunction(BlackboxWindow::Func_Shade));
   setItemChecked(Shade, _window->isShaded());
@@ -134,12 +151,14 @@ void Windowmenu::itemClicked(unsigned int id, unsigned int) {
 
 
 SendToWorkspacemenu::SendToWorkspacemenu(bt::Application &app,
-                                         unsigned int screen,
-                                         BlackboxWindow *window)
-  : bt::Menu(app, screen), _window(window) { }
+                                         unsigned int screen)
+  : bt::Menu(app, screen), _window(0)
+{ }
 
 
 void SendToWorkspacemenu::refresh(void) {
+  assert(_window != 0);
+
   clear();
   const unsigned num = _window->getScreen()->resource().numberOfWorkspaces();
   for (unsigned int i = 0; i < num; ++i)

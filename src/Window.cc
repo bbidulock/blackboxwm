@@ -174,7 +174,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   blackbox = b;
   client.window = w;
   screen = s;
-  windowmenu = (Windowmenu*) 0;
   lastButtonPressTime = 0;
 
   if (! validateClient()) {
@@ -360,9 +359,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   } else if (client.state.maximized) {
     remaximize();
   }
-
-  // create this last so it only needs to be configured once
-  windowmenu = new Windowmenu(*blackbox, screen->screenNumber(), this);
 }
 
 
@@ -381,8 +377,6 @@ BlackboxWindow::~BlackboxWindow(void) {
   }
 
   delete timer;
-
-  delete windowmenu;
 
   if (client.strut) {
     screen->removeStrut(client.strut);
@@ -866,8 +860,6 @@ void BlackboxWindow::reconfigure(void) {
 
   ungrabButtons();
   grabButtons();
-
-  if (windowmenu) windowmenu->reconfigure();
 }
 
 
@@ -1578,8 +1570,6 @@ void BlackboxWindow::iconify(void) {
   XUnmapWindow(blackbox->XDisplay(), frame.window);
   client.state.iconic = True;
 
-  if (windowmenu) windowmenu->hide();
-
   setState(IconicState);
 
   // iconify all transients first
@@ -1691,15 +1681,11 @@ void BlackboxWindow::withdraw(void) {
   XSelectInput(blackbox->XDisplay(), client.window, event_mask);
 
   XUngrabServer(blackbox->XDisplay());
-
-  if (windowmenu) windowmenu->hide();
 }
 
 
 void BlackboxWindow::maximize(unsigned int button) {
   // handle case where menu is open then the max button is used instead
-  if (windowmenu && windowmenu->isVisible()) windowmenu->hide();
-
   if (client.state.maximized) {
     client.state.maximized = 0;
 
@@ -2703,7 +2689,6 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
           positionButtons(True);
           XMapSubwindows(blackbox->XDisplay(), frame.title);
         }
-        if (windowmenu) windowmenu->reconfigure();
       }
     }
 
@@ -2785,8 +2770,6 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
           client.window);
 #endif
 
-  if (windowmenu && windowmenu->isVisible()) windowmenu->hide();
-
   if (frame.maximize_button == be->window) {
     if (be->button < 4)
       redrawMaximizeButton(True);
@@ -2802,8 +2785,6 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
         setInputFocus();
       else
         XInstallColormap(blackbox->XDisplay(), client.colormap);
-
-      if (windowmenu && windowmenu->isVisible()) windowmenu->hide();
 
       screen->raiseWindow(this);
       XAllowEvents(blackbox->XDisplay(), ReplayPointer, be->time);
@@ -2832,13 +2813,14 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
       screen->raiseWindow(this);
     } else if (be->button == 2) {
       screen->lowerWindow(this);
-    } else if (windowmenu && be->button == 3) {
+    } else if (be->button == 3) {
       const int extra = frame.border_w + frame.mwm_border_w;
       bt::Rect rect(client.rect.x() - extra,
                     client.rect.y() - extra,
                     client.rect.width() + (extra * 2),
                     client.rect.height() + (extra * 2));
 
+      Windowmenu *windowmenu = screen->windowmenu(this);
       windowmenu->popup(be->x_root, be->y_root, rect);
     }
   }
@@ -2958,9 +2940,6 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
   fprintf(stderr, "BlackboxWindow::motionNotifyEvent() for 0x%lx\n",
           client.window);
 #endif
-
-  if (windowmenu && windowmenu->isVisible())
-    windowmenu->hide();
 
   if ((client.functions & Func_Move) && ! client.state.resizing &&
       me->state & Button1Mask &&

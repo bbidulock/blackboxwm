@@ -31,6 +31,7 @@
 #include "Toolbar.hh"
 #include "Window.hh"
 #include "WindowGroup.hh"
+#include "Windowmenu.hh"
 #include "Workspace.hh"
 #include "Workspacemenu.hh"
 #include "../nls/blackbox-nls.hh"
@@ -86,7 +87,8 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
   blackbox->insertEventHandler(screen_info.rootWindow(), this);
 
-  rootmenu = (Rootmenu *) 0;
+  rootmenu = 0;
+  _windowmenu = 0;
 
   XDefineCursor(blackbox->XDisplay(), screen_info.rootWindow(),
                 blackbox->resource().sessionCursor());
@@ -273,6 +275,7 @@ BScreen::~BScreen(void) {
   delete workspacemenu;
   delete iconmenu;
   delete configmenu;
+  delete _windowmenu;
 
   destroySlit();
   destroyToolbar();
@@ -373,9 +376,11 @@ void BScreen::reconfigure(void) {
 
   InitMenu();
   raiseWindows((WindowStack*) 0);
-  rootmenu->reconfigure();
 
+  rootmenu->reconfigure();
   configmenu->reconfigure();
+  if (_windowmenu)
+    _windowmenu->reconfigure();
 
   if (_toolbar) _toolbar->reconfigure();
   if (_slit) _slit->reconfigure();
@@ -1452,4 +1457,12 @@ void BScreen::createToolbar(void) {
 void BScreen::destroyToolbar(void) {
   delete _toolbar;
   _toolbar = 0;
+}
+
+
+Windowmenu *BScreen::windowmenu(BlackboxWindow *win) {
+  if (!_windowmenu)
+    _windowmenu = new Windowmenu(*blackbox, screen_info.screenNumber());
+  _windowmenu->setWindow(win);
+  return _windowmenu;
 }

@@ -33,9 +33,10 @@ class BlackboxWindow;
 
 class Windowmenu : public bt::Menu {
 public:
-  Windowmenu(bt::Application &app, unsigned int screen,
-             BlackboxWindow *window);
+  Windowmenu(bt::Application &app, unsigned int screen);
 
+  void setWindow(BlackboxWindow *win);
+  void hide(void);
   void refresh(void);
 
 protected:

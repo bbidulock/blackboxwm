@@ -35,7 +35,6 @@
 #include <Util.hh>
 
 class Blackbox;
-class Windowmenu;
 
 class BlackboxWindow : public bt::TimeoutHandler, public bt::EventHandler,
                        public bt::NoCopy {
@@ -91,7 +90,6 @@ private:
   bt::Timer *timer;
 
   Time lastButtonPressTime;  // used for double clicks, when were we clicked
-  Windowmenu *windowmenu;
 
   unsigned int window_number;
 
@@ -292,8 +290,6 @@ public:
   inline Window getFrameWindow(void) const { return frame.window; }
   inline Window getClientWindow(void) const { return client.window; }
   inline Window getGroupWindow(void) const { return client.window_group; }
-
-  inline Windowmenu* getWindowmenu(void) const { return windowmenu; }
 
   inline const char *getTitle(void) const
   { return client.title.c_str(); }

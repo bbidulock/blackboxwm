@@ -26,6 +26,7 @@
 #include "Screen.hh"
 #include "Slit.hh"
 #include "Window.hh"
+#include "Windowmenu.hh"
 #include "Workspacemenu.hh"
 #include "../nls/blackbox-nls.hh"
 
@@ -708,7 +709,16 @@ void Toolbar::buttonPressEvent(const XButtonEvent *be) {
   } else if (be->button == 2 && (! isOnTop())) {
     XLowerWindow(display, frame.window);
   } else if (be->button == 3) {
-    toolbarmenu->popup(be->x_root, be->y_root, _screen->availableArea());
+    BlackboxWindow *win = blackbox->getFocusedWindow();
+    if (be->window == frame.window_label
+        && win && win->getScreen() == _screen) {
+      Windowmenu *windowmenu = _screen->windowmenu(win);
+      windowmenu->popup(be->x_root, be->y_root,
+                        _screen->availableArea());
+    } else {
+      toolbarmenu->popup(be->x_root, be->y_root,
+                         _screen->availableArea());
+    }
   }
 }
 
