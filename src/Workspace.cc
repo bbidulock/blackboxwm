@@ -304,7 +304,6 @@ void Workspace::setName(char *new_name) {
 
   clientmenu->setTitle(name);
   clientmenu->showTitle();
-  // clientmenu->update();
 }
 
 

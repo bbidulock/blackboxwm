@@ -296,11 +296,12 @@ void BScreen::initialize()
     workspacemenu->insert(wkspc->getName(), wkspc->getMenu());
   }
 
+  workspacemenu->insertSeparator();
   workspacemenu->insert(i18n->getMessage(IconSet, IconIcons, "Icons"),
                         iconmenu);
 
   current_workspace = workspacesList->first();
-  workspacemenu->setItemChecked( 2, true );
+  workspacemenu->setItemChecked( 3, true );
 
   toolbar = new Toolbar(this);
 
@@ -515,7 +516,7 @@ int BScreen::addWorkspace(void) {
   workspacesList->insert(wkspc);
 
   workspacemenu->insert(wkspc->getName(), wkspc->getMenu(),
-			wkspc->getWorkspaceID() + 2);
+			wkspc->getWorkspaceID() + 3);
 
   toolbar->reconfigure();
 
@@ -536,7 +537,7 @@ int BScreen::removeLastWorkspace(void) {
 
   wkspc->removeAll();
 
-  workspacemenu->remove(wkspc->getWorkspaceID() + 2);
+  workspacemenu->remove(wkspc->getWorkspaceID() + 3);
 
   workspacesList->remove(wkspc);
   delete wkspc;
@@ -555,7 +556,7 @@ void BScreen::changeWorkspaceID(int id) {
   if (id != current_workspace->getWorkspaceID()) {
     current_workspace->hideAll();
 
-    workspacemenu->setItemChecked( current_workspace->getWorkspaceID() + 2,
+    workspacemenu->setItemChecked( current_workspace->getWorkspaceID() + 3,
 				  false );
 
     if (blackbox->getFocusedWindow() &&
@@ -567,7 +568,7 @@ void BScreen::changeWorkspaceID(int id) {
 
     current_workspace = getWorkspace(id);
 
-    workspacemenu->setItemChecked( current_workspace->getWorkspaceID() + 2,
+    workspacemenu->setItemChecked( current_workspace->getWorkspaceID() + 3,
 				   true);
     toolbar->redrawWorkspaceLabel(True);
 

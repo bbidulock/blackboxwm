@@ -51,6 +51,7 @@ Workspacemenu::Workspacemenu(BScreen *scrn)
                             WorkspacemenuNewWorkspace, "New Workspace" ) );
   insert( i18n->getMessage( WorkspacemenuSet,
                             WorkspacemenuRemoveLast, "Remove Last" ) );
+  insertSeparator();
 }
 
 
@@ -64,8 +65,8 @@ void Workspacemenu::itemClicked( const Point &, const Item &item, int button )
   else if ( item.index() == 1 )
     screen->removeLastWorkspace();
   else if ( ( screen->getCurrentWorkspace()->getWorkspaceID() !=
-              ( item.index() - 2)) && ( ( item.index() - 2) < screen->getCount() ) ) {
-    screen->changeWorkspaceID( item.index() - 2 );
+              ( item.index() - 3)) && ( ( item.index() - 3) < screen->getCount() ) ) {
+    screen->changeWorkspaceID( item.index() - 3 );
     hideAll();
   }
 }

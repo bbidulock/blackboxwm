@@ -1000,12 +1000,8 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
  	screen->getCurrentWorkspace()->setName(new_workspace_name);
 	screen->getCurrentWorkspace()->getMenu()->hide();
 	screen->getWorkspacemenu()->
-	  remove(screen->getCurrentWorkspace()->getWorkspaceID() + 2);
-	screen->getWorkspacemenu()->
-	  insert(screen->getCurrentWorkspace()->getName(),
-		 screen->getCurrentWorkspace()->getMenu(),
-		 screen->getCurrentWorkspace()->getWorkspaceID() + 2);
-	// screen->getWorkspacemenu()->update();
+          change(screen->getCurrentWorkspace()->getWorkspaceID() + 3,
+                 screen->getCurrentWorkspace()->getName());
       }
 
       delete [] new_workspace_name;
