@@ -1,4 +1,4 @@
--- TODO for Blackbox 0.50.x Beta - an X11 Window manager
+-- TODO for Blackbox 0.51.x  - an X11 Window manager
 -- Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 --
 --  This program is free software; you can redistribute it and/or modify
@@ -18,20 +18,11 @@
 -- (See the included file COPYING / GPL-2.0)
 --
 
-Features I would like to see implemented:
------------------------------------------
-Better support for window groups - like group iconification/closing, etc...
-Function access via the menu (this would more than likely entail adding new
-  menu tags to access the functions)
+Stuff TODO or On The Way(tm):
+-----------------------------
 
-
-Features requested (reasonable):
---------------------------------
-Resizing via the handles and/or border.  Sounds like an idea, will have to see
-  how feasible it really is.
-
-Features requested (unreasonable):
-----------------------------------
-Any form of image loading.  This is what ails and bloats too many window
-  managers, Blackbox won't ever do this.
+Balancing SnapTo/EdgeResistance - this is a complicated idea to explain...
+    don't ask :)
+(still here) better support for window groups... i don't know when i'm going to
+    ever get to this
 
