@@ -1,8 +1,0 @@
-#
-
-all:
-	@echo "No rule yet"
-
-install:
-	@echo "No rule yet"
-
