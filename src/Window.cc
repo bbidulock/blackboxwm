@@ -40,6 +40,8 @@ extern "C" {
 #endif // DEBUG
 }
 
+#include <cstdlib>
+
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "GCCache.hh"
@@ -238,17 +240,17 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   // grab button 1 for changing focus
   blackbox->grabButton(Button1, 0, frame.plate, True, ButtonPressMask,
-                       GrabModeSync, GrabModeSync, None, None);
+                       GrabModeSync, GrabModeSync, frame.plate, None);
 
   blackbox->grabButton(Button1, Mod1Mask, frame.window, True,
                        ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
-                       GrabModeAsync, None, blackbox->getMoveCursor());
+                       GrabModeAsync, frame.window, blackbox->getMoveCursor());
   blackbox->grabButton(Button2, Mod1Mask, frame.window, True,
                        ButtonReleaseMask, GrabModeAsync, GrabModeAsync,
-                       None, None);
+                       frame.window, None);
   blackbox->grabButton(Button3, Mod1Mask, frame.window, True,
                        ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
-                       GrabModeAsync, None,
+                       GrabModeAsync, frame.window,
                        blackbox->getLowerRightAngleCursor());
 
   positionWindows();
