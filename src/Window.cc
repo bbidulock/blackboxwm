@@ -200,8 +200,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
       client.normal_hint_flags & (PPosition|USPosition)) {
     applyGravity(frame.rect);
 
-    if (blackbox->isStartup() ||
-        client.rect.intersects(screen->availableArea()))
+    if (blackbox->isStartup() || client.rect.intersects(screen->getRect()))
       place_window = False;
   }
 

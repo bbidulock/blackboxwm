@@ -42,6 +42,8 @@ nls contributors:
 	 - updated French (fr_FR) nls and added French man pages
 	Volodymyr M. Lisivka <lvm@mystery.lviv.net>
 	 - Ukrainian nls support
+	Hyun Suk Noh <tzesti@users.sourceforge.net>
+	 - Korean nls support
 
 Past Contributors:
         Jeffrey Sean Connell <ankh@canuck.gen.nz>

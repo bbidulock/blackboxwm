@@ -313,7 +313,12 @@ void Blackbox::process_event(XEvent *e) {
 
     BlackboxWindow *win = searchWindow(e->xmaprequest.window);
 
-    if (! win) {
+    if (win) {
+      if (win->isIconic()) {
+        win->deiconify();
+        win->setInputFocus();
+      }
+    } else {
       BScreen *screen = searchScreen(e->xmaprequest.parent);
 
       if (! screen) {
