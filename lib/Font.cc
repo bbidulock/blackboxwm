@@ -255,7 +255,7 @@ XFontSet bt::FontCache::findFontSet(const std::string &fontsetname) {
 #ifdef XFT
 XftFont *bt::FontCache::findXftFont(const std::string &fontname,
                                     unsigned int screen) {
-  if (!xft_initialized) return 0;
+  if (!xft_initialized || _display.screenInfo(screen).depth() <= 8) return 0;
 
   if (fontname.empty()) return findXftFont(defaultXftFont, screen);
 
@@ -267,10 +267,10 @@ XftFont *bt::FontCache::findXftFont(const std::string &fontname,
     assert(it->first.screen == screen);
 
 #ifdef FONTCACHE_DEBUG
-    fprintf(stderr, "bt::FontCache: ref Xft%d '%s'\n",
+    fprintf(stderr, "bt::FontCache: %s Xft%u '%s'\n",
+            it->second.xftfont ? "ref" : "skp",
             screen, fontname.c_str());
 #endif // FONTCACHE_DEBUG
-
     ++it->second.count;
     return it->second.xftfont;
   }
@@ -286,7 +286,7 @@ XftFont *bt::FontCache::findXftFont(const std::string &fontname,
     XFreeFontNames(list);
 
 #ifdef FONTCACHE_DEBUG
-    fprintf(stderr, "bt::FontCache: skp Xft%d '%s'\n",
+    fprintf(stderr, "bt::FontCache: skp Xft%u '%s'\n",
             screen, fontname.c_str());
 #endif // FONTCACHE_DEBUG
   }
@@ -302,7 +302,7 @@ XftFont *bt::FontCache::findXftFont(const std::string &fontname,
     assert(ret != NULL);
 
 #ifdef FONTCACHE_DEBUG
-    fprintf(stderr, "bt::FontCache: add Xft%d '%s'\n",
+    fprintf(stderr, "bt::FontCache: add Xft%u '%s'\n",
             screen, fontname.c_str());
 #endif // FONTCACHE_DEBUG
   }
@@ -331,7 +331,7 @@ void bt::FontCache::clear(bool force) {
   if (it == cache.end()) return; // nothing to do
 
 #ifdef FONTCACHE_DEBUG
-  fprintf(stderr, "bt::FontCache: clearing cache, %d entries\n", cache.size());
+  fprintf(stderr, "bt::FontCache: clearing cache, %u entries\n", cache.size());
 #endif // FONTCACHE_DEBUG
 
   while (it != cache.end()) {
@@ -356,7 +356,7 @@ void bt::FontCache::clear(bool force) {
   }
 
 #ifdef FONTCACHE_DEBUG
-  fprintf(stderr, "bt::FontCache: cleared, %d entries remain\n", cache.size());
+  fprintf(stderr, "bt::FontCache: cleared, %u entries remain\n", cache.size());
 #endif // FONTCACHE_DEBUG
 }
 
@@ -390,7 +390,7 @@ void bt::Font::unload(void) {
     in the cache will be counted multiple times, so we will need to
     release multiple times
   */
-  if (_fontset) fontcache->release(_fontname, _screen);
+  if (_fontset) fontcache->release(_fontname, ~0u); // fontsets have no screen
   _fontset = 0;
 
 #ifdef XFT
