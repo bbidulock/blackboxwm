@@ -81,7 +81,7 @@ static void signalhandler(int sig) {
   sig_atomic_t mask = 1 << sig;
   if (pending_signals & mask) {
     fprintf(stderr, "%s: Recursive signal %d caught. dumping core...\n",
-            base_app ? base_app->applicationName() : "unknown", sig );
+            base_app ? base_app->applicationName().c_str() : "unknown", sig );
     abort();
   }
 
