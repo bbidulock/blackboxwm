@@ -1021,6 +1021,9 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
       BWindowGroup *group = findWindowGroup();
       if (group)
         group->addTransient(this);
+    } else {
+      // broken client
+      client.transient_for = 0;
     }
   }
 
