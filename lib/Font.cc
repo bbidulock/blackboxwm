@@ -404,11 +404,11 @@ void bt::drawText(const Font &font, Pen &pen, Window window,
  */
 std::string bt::ellideText(const std::string& text, size_t count,
                            const char* ellide) {
-  std::string::size_type len = text.length();
+  const std::string::size_type len = text.length();
   if (len <= count)
     return text;
 
-  size_t ellide_len = strlen(ellide);
+  const size_t ellide_len = strlen(ellide);
   assert(ellide_len < (count / 2));
 
   std::string ret = text;
