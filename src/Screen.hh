@@ -123,17 +123,22 @@ public:
   BScreen(Blackbox *bb, unsigned int scrn);
   ~BScreen(void);
 
+  inline bool isScreenManaged(void) const
+  { return managed; }
+
   inline Window noFocusWindow() const
   { return no_focus_window; }
 
   // information about the screen
-  const bt::ScreenInfo &screenInfo(void) const { return screen_info; }
-  unsigned int screenNumber(void) const { return screen_info.screenNumber(); }
+  inline const bt::ScreenInfo &screenInfo(void) const
+  { return screen_info; }
+  inline unsigned int screenNumber(void) const
+  { return screen_info.screenNumber(); }
 
-  ScreenResource& resource(void) { return _resource; }
-  void saveResource(void) { _blackbox->resource().save(*_blackbox); }
-
-  bool isScreenManaged(void) const { return managed; }
+  inline ScreenResource& resource(void)
+  { return _resource; }
+  inline void saveResource(void)
+  { _blackbox->resource().save(*_blackbox); }
 
   inline Blackbox *blackbox(void) const
   { return _blackbox; }
