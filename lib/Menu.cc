@@ -360,7 +360,7 @@ unsigned int bt::Menu::insertItem(const MenuItem &item,
     index = _items.size();
     it = _items.end();
   } else {
-    index = std::min(index, _items.size());
+    index = std::min(static_cast<size_t>(index), _items.size());
     it = _items.begin();
     std::advance<ItemList::iterator, signed>(it, index);
   }
