@@ -21,33 +21,33 @@ Current Contributors:
 
 nls contributors:
 	Mads Martin Joergensen <mmj@suse.de>
-	 - Dutch nls support
- 	Wilbert Berendsen <wbsoft@xs4all.nl>
-	 - man pages and Dutch nls support
-	Luca Marrazzo <marra.luca@libero.it>
-	 - Italian nls support
-	Ales Kosir <ales.kosir@telemach.net>
-	 - Slovenian man pages and nls support
-	SATO Satoru <ssato@adachi.ne.jp>
-	 - Japanese nls support and man pages
+	 - Danish (da_DK) nls support
 	Jan Schaumann <jschauma@netmeister.org>
-	 - German nls support
-	Wang Tiejun <wtj@dept3.buaa.edu.cn>
-	 - Chinese nls support
-	Moto Chen <han_yi_chen@yahoo.com.tw>
-	 - Taiwan Chinese (zh_TW) support
-	Bodnar Istvan <piggy@dub.hu>
-	 - Hungarian (hu_HU) support
+	 - German (de_DE) nls support
 	Duret Bertrand <bertrand.duret@libertysurf.fr>
 	 - updated French (fr_FR) nls and added French man pages
-	Volodymyr M. Lisivka <lvm@mystery.lviv.net>
-	 - Ukrainian nls support
+	Bodnar Istvan <piggy@dub.hu>
+	 - Hungarian (hu_HU) support
+	Luca Marrazzo <marra.luca@libero.it>
+	 - Italian (it_IT) nls support
+	SATO Satoru <ssato@adachi.ne.jp>
+	 - Japanese (ja_JP) nls support and man pages
 	Hyun Suk Noh <tzesti@users.sourceforge.net>
-	 - Korean nls support
+	 - Korean (ko_KR) nls support
+ 	Wilbert Berendsen <wbsoft@xs4all.nl>
+	 - man pages and Dutch (nl_NL) nls support
 	Øyvind Stegard <oyvind.stegard@bluezone.no>
-	 - Norwegian nls support
+	 - Norwegian (no_NO) nls support
 	Ciprian Popovici <ciprian@zuavra.net>
-	 - Romanian nls support
+	 - Romanian (ro_RO) nls support
+	Ales Kosir <ales.kosir@telemach.net>
+	 - Slovenian man pages and (sl_SI) nls support
+	Volodymyr M. Lisivka <lvm@mystery.lviv.net>
+	 - Ukrainian (uk_UA) nls support
+	Wang Tiejun <wtj@dept3.buaa.edu.cn>
+	 - Chinese (zh_CN) nls support
+	Moto Chen <han_yi_chen@yahoo.com.tw>
+	 - Taiwan Chinese (zh_TW) support
 
 Past Contributors:
         Jeffrey Sean Connell <ankh@canuck.gen.nz>

@@ -16,16 +16,20 @@ $ #FocusNew
 # 聚焦新窗口
 $ #FocusLast
 # 桌面改变时聚焦窗口
+$ #DisableBindings
+# Scroll Lock取消热键
 $ #ClickToFocus
 # 点击聚焦
 $ #SloppyFocus
 # 自动聚焦
 $ #AutoRaise
-# 自动放前
+# 自动升起
+$ #ClickRaise
+# 点击升起
 $ #SmartRows
-# 自动放置 (行)
+# 自动放置(行)
 $ #SmartCols
-# 自动放置 (列)
+# 自动放置(列)
 $ #Cascade
 # 层叠放置
 $ #LeftRight

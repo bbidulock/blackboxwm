@@ -16,6 +16,8 @@ $ #FocusNew
 # Focus nieuwe vensters
 $ #FocusLast
 # Focus venster bij werkblad wissel
+$ #DisableBindings
+# Scroll Lock schakelt bindingen uit
 $ #ClickToFocus
 # Focus met muisklik
 $ #SloppyFocus
