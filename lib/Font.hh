@@ -30,9 +30,7 @@ extern "C" {
 #include <X11/Xlib.h>
 }
 
-#include <map>
 #include <string>
-#include <vector>
 
 
 namespace bt {

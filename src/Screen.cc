@@ -724,7 +724,7 @@ void BScreen::removeIcon(BlackboxWindow *w) {
 BlackboxWindow *BScreen::getIcon(unsigned int index) {
   if (index < iconList.size()) {
     BlackboxWindowList::iterator it = iconList.begin();
-    std::advance<BlackboxWindowList::iterator>(it, index);
+    std::advance<BlackboxWindowList::iterator,signed>(it, index);
     return *it;
   }
 

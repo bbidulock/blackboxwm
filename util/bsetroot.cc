@@ -29,6 +29,8 @@ extern "C" {
 #include <stdio.h>
 }
 
+#include <cctype>
+
 #include "bsetroot.hh"
 #include "Pen.hh"
 #include "Texture.hh"

@@ -32,6 +32,9 @@ extern "C" {
 #include <stdio.h>
 }
 
+#include <map>
+#include <vector>
+
 #include "BaseDisplay.hh"
 #include "Color.hh"
 #include "Pen.hh"
@@ -83,9 +86,9 @@ namespace bt {
   static FontCache *fontcache = 0;
 
 
-  void createFontCache(const Display &display) {
+  void createFontCache(const Display &dpy) {
     assert(fontcache == 0);
-    fontcache = new FontCache(display);
+    fontcache = new FontCache(dpy);
   }
 
 
@@ -138,7 +141,7 @@ namespace bt {
 
 
 
-bt::FontCache::FontCache(const Display &display) : _display(display) { }
+bt::FontCache::FontCache(const Display &dpy) : _display(dpy) { }
 
 
 bt::FontCache::~FontCache(void) { clear(true); }
