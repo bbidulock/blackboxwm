@@ -2624,7 +2624,7 @@ void BlackboxWindow::shapeEvent(XShapeEvent *) {
 #endif // SHAPE
 
 
-bool BlackboxWindow::validateClient(void) {
+bool BlackboxWindow::validateClient(void) const {
   XSync(blackbox->getXDisplay(), False);
 
   XEvent e;
