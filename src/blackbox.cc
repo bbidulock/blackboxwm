@@ -787,81 +787,81 @@ void Blackbox::load_rc(BScreen *screen) {
           screen_number);
   sprintf(class_lookup, "Session.Screen%d.placementIgnoresShaded",
           screen_number);
-  screen->savePlacementIgnoresShaded(True);
+  screen->resource().savePlacementIgnoresShaded(True);
   if (XrmGetResource(database, name_lookup, class_lookup,
                      &value_type, &value) &&
       ! strncasecmp(value.addr, "false", value.size)) {
-    screen->savePlacementIgnoresShaded(False);
+    screen->resource().savePlacementIgnoresShaded(False);
   }
 
   sprintf(name_lookup,  "session.screen%d.fullMaximization", screen_number);
   sprintf(class_lookup, "Session.Screen%d.FullMaximization", screen_number);
-  screen->saveFullMax(False);
+  screen->resource().saveFullMax(False);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value) &&
       ! strncasecmp(value.addr, "true", value.size)) {
-    screen->saveFullMax(True);
+    screen->resource().saveFullMax(True);
   }
 
   sprintf(name_lookup,  "session.screen%d.focusNewWindows", screen_number);
   sprintf(class_lookup, "Session.Screen%d.FocusNewWindows", screen_number);
-  screen->saveFocusNew(False);
+  screen->resource().saveFocusNew(False);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value) &&
       ! strncasecmp(value.addr, "true", value.size)) {
-    screen->saveFocusNew(True);
+    screen->resource().saveFocusNew(True);
   }
 
   sprintf(name_lookup,  "session.screen%d.focusLastWindow", screen_number);
   sprintf(class_lookup, "Session.Screen%d.focusLastWindow", screen_number);
-  screen->saveFocusLast(False);
+  screen->resource().saveFocusLast(False);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value) &&
       ! strncasecmp(value.addr, "true", value.size)) {
-    screen->saveFocusLast(True);
+    screen->resource().saveFocusLast(True);
   }
 
   sprintf(name_lookup,  "session.screen%d.disableBindingsWithScrollLock",
           screen_number);
   sprintf(class_lookup, "Session.Screen%d.disableBindingsWithScrollLock",
           screen_number);
-  screen->saveAllowScrollLock(False);
+  screen->resource().saveAllowScrollLock(False);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value) &&
       ! strncasecmp(value.addr, "true", value.size)) {
-    screen->saveAllowScrollLock(True);
+    screen->resource().saveAllowScrollLock(True);
   }
 
   sprintf(name_lookup,  "session.screen%d.rowPlacementDirection",
           screen_number);
   sprintf(class_lookup, "Session.Screen%d.RowPlacementDirection",
           screen_number);
-  screen->saveRowPlacementDirection(BScreen::LeftRight);
+  screen->resource().saveRowPlacementDirection(BScreen::LeftRight);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value) &&
       ! strncasecmp(value.addr, "righttoleft", value.size)) {
-    screen->saveRowPlacementDirection(BScreen::RightLeft);
+    screen->resource().saveRowPlacementDirection(BScreen::RightLeft);
   }
 
   sprintf(name_lookup,  "session.screen%d.colPlacementDirection",
           screen_number);
   sprintf(class_lookup, "Session.Screen%d.ColPlacementDirection",
           screen_number);
-  screen->saveColPlacementDirection(BScreen::TopBottom);
+  screen->resource().saveColPlacementDirection(BScreen::TopBottom);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value) &&
       ! strncasecmp(value.addr, "bottomtotop", value.size)) {
-    screen->saveColPlacementDirection(BScreen::BottomTop);
+    screen->resource().saveColPlacementDirection(BScreen::BottomTop);
   }
 
   sprintf(name_lookup,  "session.screen%d.workspaces", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Workspaces", screen_number);
-  screen->saveWorkspaces(1);
+  screen->resource().saveWorkspaces(1);
   if (XrmGetResource(database, name_lookup, class_lookup,
                      &value_type, &value) &&
       sscanf(value.addr, "%d", &int_value) == 1 &&
       int_value > 0 && int_value < 128) {
-    screen->saveWorkspaces(int_value);
+    screen->resource().saveWorkspaces(int_value);
   }
 
   sprintf(name_lookup,  "session.screen%d.toolbar.widthPercent",
@@ -929,36 +929,36 @@ void Blackbox::load_rc(BScreen *screen) {
 
   sprintf(name_lookup,  "session.screen%d.focusModel", screen_number);
   sprintf(class_lookup, "Session.Screen%d.FocusModel", screen_number);
-  screen->saveSloppyFocus(True);
-  screen->saveAutoRaise(False);
-  screen->saveClickRaise(False);
+  screen->resource().saveSloppyFocus(True);
+  screen->resource().saveAutoRaise(False);
+  screen->resource().saveClickRaise(False);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value)) {
     std::string fmodel = value.addr;
 
     if (fmodel.find("ClickToFocus") != std::string::npos) {
-      screen->saveSloppyFocus(False);
+      screen->resource().saveSloppyFocus(False);
     } else {
       // must be sloppy
 
       if (fmodel.find("AutoRaise") != std::string::npos)
-        screen->saveAutoRaise(True);
+        screen->resource().saveAutoRaise(True);
       if (fmodel.find("ClickRaise") != std::string::npos)
-        screen->saveClickRaise(True);
+        screen->resource().saveClickRaise(True);
     }
   }
 
   sprintf(name_lookup,  "session.screen%d.windowPlacement", screen_number);
   sprintf(class_lookup, "Session.Screen%d.WindowPlacement", screen_number);
-  screen->savePlacementPolicy(BScreen::RowSmartPlacement);
+  screen->resource().savePlacementPolicy(BScreen::RowSmartPlacement);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value)) {
     if (! strncasecmp(value.addr, "RowSmartPlacement", value.size))
       /* pass */;
     else if (! strncasecmp(value.addr, "ColSmartPlacement", value.size))
-      screen->savePlacementPolicy(BScreen::ColSmartPlacement);
+      screen->resource().savePlacementPolicy(BScreen::ColSmartPlacement);
     else if (! strncasecmp(value.addr, "CascadePlacement", value.size))
-      screen->savePlacementPolicy(BScreen::CascadePlacement);
+      screen->resource().savePlacementPolicy(BScreen::CascadePlacement);
   }
 
   sprintf(name_lookup, "session.screen%d.slit.placement", screen_number);
@@ -1013,18 +1013,18 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(class_lookup, "Session.Screen%d.StrftimeFormat", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value)) {
-    screen->saveStrftimeFormat(value.addr);
+    screen->resource().saveStrftimeFormat(value.addr);
   } else {
-    screen->saveStrftimeFormat("%I:%M %p");
+    screen->resource().saveStrftimeFormat("%I:%M %p");
   }
 
   sprintf(name_lookup,  "session.screen%d.edgeSnapThreshold", screen_number);
   sprintf(class_lookup, "Session.Screen%d.EdgeSnapThreshold", screen_number);
-  screen->saveEdgeSnapThreshold(0);
+  screen->resource().saveEdgeSnapThreshold(0);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value) &&
       sscanf(value.addr, "%d", &int_value) == 1) {
-    screen->saveEdgeSnapThreshold(int_value);
+    screen->resource().saveEdgeSnapThreshold(int_value);
   }
 
   bt::DitherMode ditherMode = bt::OrderedDither;
@@ -1039,11 +1039,11 @@ void Blackbox::load_rc(BScreen *screen) {
   }
   bt::Image::setDitherMode(ditherMode);
 
-  screen->saveOpaqueMove(False);
+  screen->resource().saveOpaqueMove(False);
   if (XrmGetResource(database, "session.opaqueMove", "Session.OpaqueMove",
                      &value_type, &value) &&
       ! strncasecmp("true", value.addr, value.size)) {
-    screen->saveOpaqueMove(True);
+    screen->resource().saveOpaqueMove(True);
   }
 
   XrmDestroyDatabase(database);

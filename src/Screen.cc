@@ -889,11 +889,6 @@ BScreen::raiseWindows(const bt::Netwm::WindowList* const workspace_stack) {
 }
 
 
-void BScreen::saveStrftimeFormat(const std::string& format) {
-  _resource.tconfig.strftime_format = format;
-}
-
-
 void BScreen::addWorkspaceName(const std::string& name) {
   workspaceNames.push_back(name);
 }
@@ -1621,11 +1616,11 @@ void BScreen::toggleFocusModel(FocusModel model) {
                 std::mem_fun(&BlackboxWindow::ungrabButtons));
 
   if (model == SloppyFocus) {
-    saveSloppyFocus(True);
+    _resource.saveSloppyFocus(True);
   } else {
-    saveSloppyFocus(False);
-    saveAutoRaise(False);
-    saveClickRaise(False);
+    _resource.saveSloppyFocus(False);
+    _resource.saveAutoRaise(False);
+    _resource.saveClickRaise(False);
   }
 
   std::for_each(windowList.begin(), windowList.end(),

@@ -122,23 +122,23 @@ void Configmenu::refresh(void) {
 void Configmenu::itemClicked(unsigned int id, unsigned int) {
   switch (id) {
   case ConfigmenuOpaqueMove: // opaque move
-    _bscreen->saveOpaqueMove(! _bscreen->doOpaqueMove());
+    _bscreen->resource().saveOpaqueMove(! _bscreen->doOpaqueMove());
     break;
 
   case ConfigmenuFullMax: // full maximization
-    _bscreen->saveFullMax(! _bscreen->doFullMax());
+    _bscreen->resource().saveFullMax(! _bscreen->doFullMax());
     break;
 
   case ConfigmenuFocusNew: // focus new windows
-    _bscreen->saveFocusNew(! _bscreen->doFocusNew());
+    _bscreen->resource().saveFocusNew(! _bscreen->doFocusNew());
     break;
 
   case ConfigmenuFocusLast: // focus last window on workspace
-    _bscreen->saveFocusLast(! _bscreen->doFocusLast());
+    _bscreen->resource().saveFocusLast(! _bscreen->doFocusLast());
     break;
 
   case ConfigmenuDisableBindings: // disable keybindings with Scroll Lock
-    _bscreen->saveAllowScrollLock(! _bscreen->allowScrollLock());
+    _bscreen->resource().saveAllowScrollLock(! _bscreen->allowScrollLock());
     _bscreen->reconfigure();
     break;
   } // switch
@@ -188,11 +188,11 @@ void ConfigFocusmenu::itemClicked(unsigned int id, unsigned int) {
     break;
 
   case AutoRaiseID: // auto raise with sloppy focus
-    _bscreen->saveAutoRaise(! _bscreen->doAutoRaise());
+    _bscreen->resource().saveAutoRaise(! _bscreen->doAutoRaise());
     break;
 
   case ClickRaiseID: // click raise with sloppy focus
-    _bscreen->saveClickRaise(! _bscreen->doClickRaise());
+    _bscreen->resource().saveClickRaise(! _bscreen->doClickRaise());
     // make sure the appropriate mouse buttons are grabbed on the windows
     _bscreen->toggleFocusModel(BScreen::SloppyFocus);
     break;
@@ -267,21 +267,21 @@ void ConfigPlacementmenu::itemClicked(unsigned int id, unsigned int) {
   case BScreen::RowSmartPlacement:
   case BScreen::ColSmartPlacement:
   case BScreen::CascadePlacement:
-    _bscreen->savePlacementPolicy(id);
+    _bscreen->resource().savePlacementPolicy(id);
     break;
 
   case BScreen::LeftRight:
   case BScreen::RightLeft:
-    _bscreen->saveRowPlacementDirection(id);
+    _bscreen->resource().saveRowPlacementDirection(id);
     break;
 
   case BScreen::TopBottom:
   case BScreen::BottomTop:
-    _bscreen->saveColPlacementDirection(id);
+    _bscreen->resource().saveColPlacementDirection(id);
     break;
 
   case ConfigmenuIgnoreShaded:
-    _bscreen->savePlacementIgnoresShaded(! _bscreen->placementIgnoresShaded());
+    _bscreen->resource().savePlacementIgnoresShaded(! _bscreen->placementIgnoresShaded());
   } // switch
 }
 

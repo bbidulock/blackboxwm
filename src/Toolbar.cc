@@ -360,11 +360,15 @@ void Toolbar::reconfigure(void) {
       char t[1024];
       int len = strftime(t, 1024, screen->getStrftimeFormat(), tt);
       if (len == 0) { // invalid time format found
-        screen->saveStrftimeFormat("%I:%M %p"); // so use the default
+        // so use the default
+        screen->resource().saveStrftimeFormat("%I:%M %p");
         len = strftime(t, 1024, screen->getStrftimeFormat(), tt);
       }
-      // find the length of the rendered string and add room for two extra
-      // characters to it.  This allows for variable width output of the fonts
+      /* 
+       * find the length of the rendered string and add room for two extra
+       * characters to it.  This allows for variable width output of the fonts.
+       * two 'w' are used to get the widest possible width
+       */
       frame.clock_w = bt::textRect(style->font, t).width() +
                       bt::textRect(style->font, "ww").width();
     }

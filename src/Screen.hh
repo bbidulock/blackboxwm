@@ -104,15 +104,33 @@ struct ScreenResource {
   unsigned int workspaces, bevel_width, border_width;
   bt::Color border_color;
 
+  void saveWorkspaces(unsigned int w) { workspaces = w;        }
+  void saveAllowScrollLock(bool a)    { allow_scroll_lock = a; }
+
   void saveSlitPlacement(int i) { sconfig.placement = i; }
   void saveSlitDirection(int i) { sconfig.direction = i; }
   void saveSlitOnTop(bool b)    { sconfig.on_top = b;    }
   void saveSlitAutoHide(bool b) { sconfig.auto_hide = b; }
 
-  void saveToolbarOnTop(bool b)       { tconfig.on_top = b;        }
-  void saveToolbarAutoHide(bool b)    { tconfig.auto_hide = b;     }
-  void saveToolbarWidthPercent(int i) { tconfig.width_percent = i; }
-  void saveToolbarPlacement(int i)    { tconfig.placement = i;     }
+  void saveToolbarOnTop(bool b)       { tconfig.on_top = b;          }
+  void saveToolbarAutoHide(bool b)    { tconfig.auto_hide = b;       }
+  void saveToolbarWidthPercent(int i) { tconfig.width_percent = i;   }
+  void saveToolbarPlacement(int i)    { tconfig.placement = i;       }
+  void saveStrftimeFormat(const std::string& f)
+                                      { tconfig.strftime_format = f; }
+
+  void saveOpaqueMove(bool o)             { wconfig.opaque_move = o;         }
+  void saveFullMax(bool f)                { wconfig.full_max = f;            }
+  void saveFocusNew(bool f)               { wconfig.focus_new = f;           }
+  void saveFocusLast(bool f)              { wconfig.focus_last = f;          }
+  void saveSloppyFocus(bool s)            { wconfig.sloppy_focus = s;        }
+  void saveAutoRaise(bool a)              { wconfig.auto_raise = a;          }
+  void saveClickRaise(bool c)             { wconfig.click_raise = c;         }
+  void savePlacementPolicy(int p)         { wconfig.placement_policy = p;    }
+  void saveRowPlacementDirection(int d)   { wconfig.row_direction = d;       }
+  void saveColPlacementDirection(int d)   { wconfig.col_direction = d;       }
+  void savePlacementIgnoresShaded(bool f) { wconfig.ignore_shaded = f;       }
+  void saveEdgeSnapThreshold(int t)       { wconfig.edge_snap_threshold = t; }
 };
 
 typedef std::list<BlackboxWindow*> BlackboxWindowList;
@@ -245,26 +263,9 @@ public:
   BlackboxWindow* getWindow(unsigned int workspace, unsigned int id);
 
   void setRootColormapInstalled(bool r) { root_colormap_installed = r; }
-  void saveSloppyFocus(bool s) { _resource.wconfig.sloppy_focus = s; }
-  void saveAutoRaise(bool a) { _resource.wconfig.auto_raise = a; }
-  void saveClickRaise(bool c) { _resource.wconfig.click_raise = c; }
-  void saveWorkspaces(unsigned int w) { _resource.workspaces = w; }
-  void savePlacementPolicy(int p) { _resource.wconfig.placement_policy = p; }
-  void saveRowPlacementDirection(int d) { _resource.wconfig.row_direction = d; }
-  void saveColPlacementDirection(int d) { _resource.wconfig.col_direction = d; }
-  void saveEdgeSnapThreshold(int t)
-  { _resource.wconfig.edge_snap_threshold = t; }
-  void saveOpaqueMove(bool o) { _resource.wconfig.opaque_move = o; }
-  void saveFullMax(bool f) { _resource.wconfig.full_max = f; }
-  void savePlacementIgnoresShaded(bool f)
-  { _resource.wconfig.ignore_shaded = f; }
-  void saveFocusNew(bool f) { _resource.wconfig.focus_new = f; }
-  void saveFocusLast(bool f) { _resource.wconfig.focus_last = f; }
-  void saveAllowScrollLock(bool a) { _resource.allow_scroll_lock = a; }
 
   const char *getStrftimeFormat(void)
   { return _resource.tconfig.strftime_format.c_str(); }
-  void saveStrftimeFormat(const std::string& format);
 
   WindowStyle *getWindowStyle(void) { return &_resource.wstyle; }
   ToolbarStyle *getToolbarStyle(void) { return &_resource.tstyle; }
