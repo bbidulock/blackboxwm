@@ -2294,9 +2294,9 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
         max_vert = -1;
     } else if (first == netwm->wmStateShaded() ||
                second == netwm->wmStateShaded()) {
-      if (action == netwm->wmStateRemove() ||
+      if ((action == netwm->wmStateRemove() && client.state.shaded) ||
           action == netwm->wmStateToggle() ||
-          ! client.state.shaded)
+          (action == netwm->wmStateAdd() && ! client.state.shaded))
         shade();
     } else if (first == netwm->wmStateSkipTaskbar() ||
                second == netwm->wmStateSkipTaskbar()) {

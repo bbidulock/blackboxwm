@@ -72,6 +72,9 @@ public:
   // Window size/position/stacking/etc. change request.
   virtual void configureRequestEvent(const XConfigureRequestEvent * const) { }
 
+  // Message passing
+  virtual void clientMessageEvent(const XClientMessageEvent * const) {}
+
 #ifdef    SHAPE
   // Window shape changed.
   virtual void shapeEvent(const XShapeEvent * const) { }

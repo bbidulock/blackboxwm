@@ -37,6 +37,7 @@ public:
   explicit Netwm(Display *_display);
 
   typedef std::vector<Atom> AtomList;
+  typedef std::vector<Window> WindowList;
   struct Strut {
     unsigned int left, right, top, bottom;
 
@@ -60,13 +61,17 @@ public:
   inline Atom supportingWMCheck(void) const { return net_supporting_wm_check; }
 
   void setSupported(Window target, Atom atoms[], unsigned int count) const;
-  void setClientList(Window target, const Window windows[],
-                     unsigned int count) const;
-  void setClientListStacking(Window target, const Window windows[],
-                             unsigned int count) const;
+  bool readSupported(Window target, AtomList& atoms) const;
+  void setClientList(Window target, WindowList& windows) const;
+  bool readClientList(Window target, WindowList& windows) const;
+  void setClientListStacking(Window target, WindowList& windows) const;
+  bool readClientListStacking(Window target, WindowList& windows) const;
   void setNumberOfDesktops(Window target, unsigned int count) const;
+  bool readNumberOfDesktops(Window target, unsigned int* number) const;
   void setDesktopGeometry(Window target,
                           unsigned int width, unsigned int height) const;
+  bool readDesktopGeometry(Window target,
+                           unsigned int* width, unsigned int* height) const;
   void setCurrentDesktop(Window target, unsigned int number) const;
   void setDesktopNames(Window target, const std::string& names) const;
   std::vector<std::string> readDesktopNames(Window target) const;
@@ -74,6 +79,7 @@ public:
   void setWorkarea(Window target, unsigned long workareas[],
                    unsigned int count) const;
   void setSupportingWMCheck(Window target, Window data) const;
+  bool readSupportingWMCheck(Window target, Window* window) const;
 
   // other root messages
   inline Atom closeWindow(void) const { return net_close_window; }
@@ -115,9 +121,9 @@ public:
   { return net_wm_state_fullscreen; }
   inline Atom wmStateAbove(void) const { return net_wm_state_above; }
   inline Atom wmStateBelow(void) const { return net_wm_state_below; }
-  inline Atom wmStateRemove(void) const { return net_wm_state_remove; }
-  inline Atom wmStateAdd(void) const { return net_wm_state_add; }
-  inline Atom wmStateToggle(void) const { return net_wm_state_toggle; }
+  inline Atom wmStateRemove(void) const { return 0; }
+  inline Atom wmStateAdd(void) const { return 1; }
+  inline Atom wmStateToggle(void) const { return 2; }
   inline Atom wmAllowedActions(void) const { return net_wm_allowed_actions; }
   inline Atom wmActionMove(void) const { return net_wm_action_move; }
   inline Atom wmActionResize(void) const
@@ -158,10 +164,10 @@ private:
 
   bool getUTF8StringProperty(Window target, Atom property,
                              std::string& value) const;
-  bool getCardinalProperty(Window target, Atom property,
-                           unsigned int& value) const;
-  bool getAtomListProperty(Window target, Atom property,
-                           AtomList& atoms) const;
+  bool getProperty(Window target, Atom type, Atom property,
+                   unsigned char** data) const;
+  bool getListProperty(Window target, Atom type, Atom property,
+                       unsigned char** data, unsigned long* count) const;
 
   Display *display;
   Atom utf8_string,

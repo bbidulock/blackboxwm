@@ -470,6 +470,11 @@ void BaseDisplay::process_event(XEvent *event) {
     break;
   }
 
+  case ClientMessage: {
+    handler->clientMessageEvent(&event->xclient);
+    break;
+  }
+
   case NoExpose: {
     // not handled, ignore
     break;

@@ -26,7 +26,7 @@
 typedef unsigned char uchar;
 
 Netwm::Netwm(Display* _display): display(_display) {
-  char* atoms[52] = {
+  char* atoms[49] = {
     "UTF8_STRING",
     "_NET_SUPPORTED",
     "_NET_CLIENT_LIST",
@@ -64,9 +64,6 @@ Netwm::Netwm(Display* _display): display(_display) {
     "_NET_WM_STATE_FULLSCREEN",
     "_NET_WM_STATE_ABOVE",
     "_NET_WM_STATE_BELOW",
-    "_NET_WM_STATE_REMOVE",
-    "_NET_WM_STATE_ADD",
-    "_NET_WM_STATE_TOGGLE",
     "_NET_WM_ALLOWED_ACTIONS",
     "_NET_WM_ALLOWED_ACTION_MOVE",
     "_NET_WM_ALLOWED_ACTION_RESIZE",
@@ -80,8 +77,8 @@ Netwm::Netwm(Display* _display): display(_display) {
     "_NET_WM_ALLOWED_ACTION_CLOSE",
     "_NET_WM_STRUT"
   };
-  Atom atoms_return[52];
-  XInternAtoms(display, atoms, 52, False, atoms_return);
+  Atom atoms_return[49];
+  XInternAtoms(display, atoms, 49, False, atoms_return);
 
   utf8_string = atoms_return[0];
   net_supported = atoms_return[1];
@@ -120,21 +117,18 @@ Netwm::Netwm(Display* _display): display(_display) {
   net_wm_state_fullscreen = atoms_return[34];
   net_wm_state_above = atoms_return[35];
   net_wm_state_below = atoms_return[36];
-  net_wm_state_remove = atoms_return[37];
-  net_wm_state_add = atoms_return[38];
-  net_wm_state_toggle = atoms_return[39];
-  net_wm_allowed_actions = atoms_return[40];
-  net_wm_action_move = atoms_return[41];
-  net_wm_action_resize = atoms_return[42];
-  net_wm_action_minimize = atoms_return[43];
-  net_wm_action_shade = atoms_return[44];
-  net_wm_action_stick = atoms_return[45];
-  net_wm_action_maximize_horz = atoms_return[46];
-  net_wm_action_maximize_vert = atoms_return[47];
-  net_wm_action_fullscreen = atoms_return[48];
-  net_wm_action_change_desktop = atoms_return[49];
-  net_wm_action_close = atoms_return[50];
-  net_wm_strut = atoms_return[51];
+  net_wm_allowed_actions = atoms_return[37];
+  net_wm_action_move = atoms_return[38];
+  net_wm_action_resize = atoms_return[39];
+  net_wm_action_minimize = atoms_return[40];
+  net_wm_action_shade = atoms_return[41];
+  net_wm_action_stick = atoms_return[42];
+  net_wm_action_maximize_horz = atoms_return[43];
+  net_wm_action_maximize_vert = atoms_return[44];
+  net_wm_action_fullscreen = atoms_return[45];
+  net_wm_action_change_desktop = atoms_return[46];
+  net_wm_action_close = atoms_return[47];
+  net_wm_strut = atoms_return[48];
 }
 
 
@@ -148,19 +142,63 @@ void Netwm::setSupported(Window target, Atom atoms[],
 }
 
 
-void Netwm::setClientList(Window target, const Window windows[],
-                          unsigned int count) const {
-  XChangeProperty(display, target, net_client_list, XA_WINDOW,
-                  32, PropModeReplace,
-                  reinterpret_cast<uchar*>(&windows), count);
+bool Netwm::readSupported(Window target, AtomList& atoms) const {
+  unsigned char* data = NULL;
+  unsigned long nitems;
+  if (getListProperty(target, XA_ATOM, net_supported, &data, &nitems)) {
+    Atom* values = reinterpret_cast<Atom*>(data);
+
+    std::copy(values, values + nitems, std::back_inserter(atoms));
+
+    XFree(data);
+  }
+
+  return (! atoms.empty());
 }
 
 
-void Netwm::setClientListStacking(Window target, const Window windows[],
-                                  unsigned int count) const {
+void Netwm::setClientList(Window target, WindowList& windows) const {
+  XChangeProperty(display, target, net_client_list, XA_WINDOW,
+                  32, PropModeReplace,
+                  reinterpret_cast<uchar*>(&windows[0]), windows.size());
+}
+
+
+bool Netwm::readClientList(Window target, WindowList& windows) const {
+  unsigned char* data = NULL;
+  unsigned long nitems;
+  if (getListProperty(target, XA_WINDOW, net_client_list, &data, &nitems)) {
+    Window* values = reinterpret_cast<Window*>(data);
+
+    std::copy(values, values + nitems, std::back_inserter(windows));
+
+    XFree(data);
+  }
+
+  return (! windows.empty());
+}
+
+
+void Netwm::setClientListStacking(Window target, WindowList& windows) const {
   XChangeProperty(display, target, net_client_list_stacking, XA_WINDOW,
                   32, PropModeReplace,
-                  reinterpret_cast<uchar*>(&windows), count);
+                  reinterpret_cast<uchar*>(&windows[0]), windows.size());
+}
+
+
+bool Netwm::readClientListStacking(Window target, WindowList& windows) const {
+  unsigned char* data = NULL;
+  unsigned long nitems;
+  if (getListProperty(target, XA_WINDOW, net_client_list_stacking,
+                  &data, &nitems)) {
+    Window* values = reinterpret_cast<Window*>(data);
+
+    std::copy(values, values + nitems, std::back_inserter(windows));
+
+    XFree(data);
+  }
+
+  return (! windows.empty());
 }
 
 
@@ -171,12 +209,44 @@ void Netwm::setNumberOfDesktops(Window target, unsigned int number) const {
 }
 
 
+bool Netwm::readNumberOfDesktops(Window target, unsigned int* number) const {
+  unsigned char* data = NULL;
+  if (getProperty(target, XA_CARDINAL, net_number_of_desktops, &data)) {
+    *number = * (reinterpret_cast<unsigned int*>(data));
+
+    XFree(data);
+    return True;
+  }
+  return False;
+}
+
+
 void Netwm::setDesktopGeometry(Window target,
                                unsigned int width, unsigned int height) const {
   unsigned int geometry[] = {width, height};
   XChangeProperty(display, target, net_desktop_geometry, XA_CARDINAL,
                   32, PropModeReplace,
                   reinterpret_cast<uchar*>(geometry), 2);
+}
+
+
+bool Netwm::readDesktopGeometry(Window target,
+                                unsigned int* width,
+                                unsigned int* height) const {
+  unsigned char* data = NULL;
+  unsigned long nitems;
+  if (getListProperty(target, XA_CARDINAL, net_desktop_geometry,
+                      &data, &nitems) && nitems == 2) {
+    unsigned int* values = reinterpret_cast<unsigned int*>(data);
+
+    *width = values[0];
+    *height = values[1];
+
+    XFree(data);
+    return True;
+  }
+
+  return False;
 }
 
 
@@ -236,6 +306,18 @@ void Netwm::setSupportingWMCheck(Window target, Window data) const {
 }
 
 
+bool Netwm::readSupportingWMCheck(Window target, Window* window) const {
+  unsigned char* data = NULL;
+  if (getProperty(target, XA_WINDOW, net_supporting_wm_check, &data)) {
+    *window = * (reinterpret_cast<Window*>(data));
+
+    XFree(data);
+    return True;
+  }
+  return False;
+}
+
+
 // application properties
 
 void Netwm::setWMName(Window target, const std::string &name) const {
@@ -264,13 +346,29 @@ void Netwm::setWMDesktop(Window target, unsigned int desktop) const {
 
 
 bool Netwm::readWMDesktop(Window target, unsigned int& desktop) const {
-  return getCardinalProperty(target, net_wm_desktop, desktop);
+  unsigned char* data = NULL;
+  if (getProperty(target, XA_CARDINAL, net_wm_desktop, &data)) {
+    desktop = * (reinterpret_cast<int*>(data));
+
+    XFree(data);
+    return True;
+  }
+  return False;
 }
 
 
 bool Netwm::readWMWindowType(Window target, AtomList& types) const {
-  return (getAtomListProperty(target, net_wm_window_type, types) &&
-          ! types.empty());
+  unsigned char* data = NULL;
+  unsigned long nitems;
+  if (getListProperty(target, XA_ATOM, net_wm_window_type, &data, &nitems)) {
+    Atom* values = reinterpret_cast<Atom*>(data);
+
+    std::copy(values, values + nitems, std::back_inserter(types));
+
+    XFree(data);
+  }
+
+  return (! types.empty());
 }
 
 
@@ -282,8 +380,17 @@ void Netwm::setWMState(Window target, AtomList& atoms) const {
 
 
 bool Netwm::readWMState(Window target, AtomList& states) const {
-  return (getAtomListProperty(target, net_wm_state, states) &&
-          ! states.empty());
+  unsigned char* data = NULL;
+  unsigned long nitems;
+  if (getListProperty(target, XA_ATOM, net_wm_state, &data, &nitems)) {
+    Atom* values = reinterpret_cast<Atom*>(data);
+
+    std::copy(values, values + nitems, std::back_inserter(states));
+
+    XFree(data);
+  }
+
+  return (! states.empty());
 }
 
 
@@ -359,59 +466,48 @@ bool Netwm::getUTF8StringProperty(Window target, Atom property,
 }
 
 
-bool Netwm::getCardinalProperty(Window target, Atom property,
-                                unsigned int& value) const {
+bool Netwm::getProperty(Window target, Atom type, Atom property,
+                        unsigned char** data) const {
   Atom atom_return;
   int size;
   unsigned long nitems, bytes_left;
-  unsigned char *data;
 
   int ret = XGetWindowProperty(display, target, property,
                                0l, 1l, False,
-                               XA_CARDINAL, &atom_return, &size,
-                               &nitems, &bytes_left, &data);
-  if (ret != Success || nitems < 1)
+                               type, &atom_return, &size,
+                               &nitems, &bytes_left, data);
+  if (ret != Success || nitems != 1)
     return False;
-
-  value = * (reinterpret_cast<int*>(data));
-
-  XFree(data);
 
   return True;
 }
 
 
-bool Netwm::getAtomListProperty(Window target, Atom property,
-                                AtomList& atoms) const {
+bool Netwm::getListProperty(Window target, Atom type, Atom property,
+                        unsigned char** data, unsigned long* count) const {
   Atom atom_return;
   int size;
   unsigned long nitems, bytes_left;
-  unsigned char *data;
 
   int ret = XGetWindowProperty(display, target, property,
                                0l, 1l, False,
-                               XA_ATOM, &atom_return, &size,
-                               &nitems, &bytes_left, &data);
+                               type, &atom_return, &size,
+                               &nitems, &bytes_left, data);
   if (ret != Success || nitems < 1)
     return False;
 
   if (bytes_left != 0) {
-    XFree(data);
+    XFree(*data);
     unsigned long remain = ((size / 8) * nitems) + bytes_left;
     ret = XGetWindowProperty(display, target,
                              property, 0l, remain, False,
-                             XA_ATOM, &atom_return, &size,
-                             &nitems, &bytes_left, &data);
+                             type, &atom_return, &size,
+                             &nitems, &bytes_left, data);
     if (ret != Success)
       return False;
   }
 
-  Atom* values = reinterpret_cast<Atom*>(data);
-
-  std::copy(values, values + (nitems * (size/8)), std::back_inserter(atoms));
-
-  XFree(data);
-
+  *count = nitems;
   return True;
 }
 
