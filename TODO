@@ -1,0 +1,39 @@
+-- TODO for Blackbox 0.40.x Beta - an X11 Window manager
+-- Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
+--
+--  This program is free software; you can redistribute it and/or modify
+--  it under the terms of the GNU General Public License as published by
+--  the Free Software Foundation; either version 2 of the License, or
+--  (at your option) any later version.
+--
+--  This program is distributed in the hope that it will be useful,
+--  but WITHOUT ANY WARRANTY; without even the implied warranty of
+--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+--  GNU General Public License for more details.
+--
+--  You should have received a copy of the GNU General Public License
+--  along with this program; if not, write to the Free Software
+--  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+--
+-- (See the included file COPYING / GPL-2.0)
+--
+
+Features I would like to see implemented:
+-----------------------------------------
+Better support for window groups - like group iconification/closing, etc...
+Multiple screens support (I have the ideas in place, implementation is next)
+Function access via the menu (this would more than likely entail adding new
+  menu tags to access the functions)
+Use strftime() instead of the current method for displaying the time/date.
+
+
+Features requested (reasonable):
+--------------------------------
+Resizing via the handles and/or border.  Sounds like an idea, will have to see
+  how feasible it really is.
+
+Features requested (unreasonable):
+----------------------------------
+Any form of image loading.  This is what ails and bloats too many window
+  managers, Blackbox won't ever do this.
+
