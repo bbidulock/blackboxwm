@@ -1,4 +1,4 @@
--- README for Blackbox - an X11 Window manager
+ai-- README for Blackbox - an X11 Window manager
 -- Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
 --
 --  This program is free software; you can redistribute it and/or modify
@@ -52,13 +52,17 @@ Contributors:
 	Frank Belew <frb@umr.edu>
 	  - dgradient code
 	Scott Garner <mrfab@arn.net>
-	  - suggestions and bug reports/beta testing
+	  - suggestions, bug reports and beta testing (*the* beta moron)
         David Doan <ddoan@usa.net>
 	 - testing of 8bpp code
 	Mark Seward <illuzion@paradise.net.nz>
 	 - beta testing, bug reports and 32bpp testing
 	Keith Bolland <prime@strip.net.nz>
 	 - beta testing, bug reports and suggestions
+	James Spooner <spoons@xtra.co.nz>
+	 - beta testing, bug reports
+	Fred Knieper <derf@tamu.edu>
+	 - beta testing (beta moron)
 
 
 Compilation and Installation:
@@ -142,11 +146,16 @@ a maximized xterm may not take up the full screen).
 Client windows have a window menu accessable by clicking mouse button 3 (by
 default, the right button on a right handed mouse) on the window titlebar.
 This window menu includes a submenu for sending the window to a different
-workspace, iconify, maximize/unmaximize (if the client can be resized), close,
-raise, and lower functions.  The "Send To ..." submenu displays a list of
-available workspaces, which will send the window to the desired workspace
-if one is selected from the menu.  The window menu is retractable by pressing
-mouse button 3 on the window titlebar a second time.
+workspace, shade/unshade, iconify, maximize/unmaximize (if the client can be
+resized), close, raise, and lower functions.  The "Send To ..." submenu
+displays a list of available workspaces, which will send the window to the
+desired workspace if one is selected from the menu.  The window menu is
+retractable by pressing mouse button 3 on the window titlebar a second time.
+
+Window shading can be simply explained as hiding all of the client window and
+decorations except for the title bar.  A window may be shaded or unshaded by
+either selecting the option from the window menu, or by clicking mouse button 1
+on the titlebar while holding either of the control keys down.
 
 About menus in blackbox.  Other graphical interfaces allow menus to be
 traversed by holding mouse button 1 and moving the pointer.  With blackbox,
@@ -186,25 +195,28 @@ and awarded keyboard input focus.
 
 Keyboard input focus is also awarded to those clients who accept it (again,
 the client specifies if it can take focus through ICCCM protocol requests).
-Since X exists to "provide mechanism, not policy," blackbox does not honor any
-hotkey or shortcut key combinations to its functions.  However,  the user may
-circulate through available workspaces by holding a Mod1 key (see xmodmap(1))
-and pressing either mouse button 1 or 3 (button 1 ascends the workspace list,
-while button 3 ascends it, or button 1 would change from Workspace 2 to
-Workspace 1, and button 3 would change from Workspace 1 to Workspace 2 for
-example).
+Blackbox disobeys the terms dicated by the ICCCM by allowing certain keyboard
+shortcuts (the ICCCM instructs window manager clients to not trap any key or
+pointer events from clients, until certain window manager function keys/key
+combinations are implemented).  The shortcut keys are as follows.  Mod1+Tab
+cycles window focus (skipping windows that do not accept focus and windows that
+are iconified).  Mod1+Left/Right arrow key combinations will circulate through
+available workspaces, by ascending the workspace list (ALT+Left arrow) or
+descending it (ALT+Right arrow).  If the user tries to acsend above the first
+workspace, Blackbox will change to the last workspace (and vice vera for trying
+to descend past the last).
 
 Icons are placed on the bottom half of the toolbox.  These icons are present
 in all workspaces,  thus it is possible to move a window to another workspace
 by iconifying it and then deiconifying it on a new workspace (but the Send
 To ... window menu function is much easier).  Blackbox reads the icon label
 from the ICCCM hints the client window sets.  If there is no icon label
-available, "Unnamed" is used (same for window titles).  If the icon label is
-longer than the icon, the label is clipped.  If the user places the pointer
-over an icon, the full icon label is displayed in the window title font,
-drawing onto the root window (and possibly others) if necessary to show the
-full label.  Pressing the icon with mouse button 1 will deiconify the window
-on the current workspace (dissociating it from its original workspace if
+available, "Unnamed" is used (the same is true for window titles).  If the
+icon label is longer than the icon, the label is clipped.  If the user places
+the pointer over an icon, the full icon label is displayed in the window title
+font, drawing onto the root window (and possibly others) if necessary to show
+the full label.  Pressing the icon with mouse button 1 will deiconify the
+window on the current workspace (dissociating it from its original workspace if
 necessary).
 
 Blackbox operates the same way any other window manager operates.  It monitors
@@ -214,6 +226,10 @@ monitors is a PropertyNotify event on the root window.  If the RESOURCE_MANAGER
 property should change, blackbox rereads its configuration and applies it to
 current and future windows, menus, icons, etc.  Blackbox can also be forced to
 reread its configuration via the menu (see the menu section below).
+
+NOTE:  Reading the RESOURCE_MANAGER property has proven to be less than stable,
+as it appears to work properly at times, and at times blackbox will core and
+exit.
 
 
 Configuration:
@@ -273,6 +289,7 @@ blackbox.menu.menuColor			Blackbox.Menu.MenuColor
 blackbox.menu.menuToColor		Blackbox.Menu.MenuToColor
 blackbox.menu.menuItemColor		Blackbox.Menu.MenuItemColor
 blackbox.menu.menuItemToColor		Blackbox.Menu.MenuItemToColor
+	--					--
 blackbox.session.focusTextColor		Blackbox.Session.FocusTextColor
 blackbox.session.unfocusTextColor	Blackbox.Session.UnfocusTextColor
 blackbox.session.menuTextColor		Blackbox.Session.MenuTextColor

@@ -363,15 +363,20 @@ void BlackboxWindow::associateClientWindow(void) {
     frame.shaped = bShaped;
 
     if (frame.shaped) {
-      XShapeCombineShape(display, frame.window, ShapeBounding, 0,
-			 frame.title_h + 1, client.window, ShapeBounding,
-			 ShapeSet);
+      if (session->Orientation() == BlackboxSession::B_RightHandedUser)
+        XShapeCombineShape(display, frame.window, ShapeBounding, 0,
+  			   frame.title_h + 1, client.window, ShapeBounding,
+			   ShapeSet);
+      else
+        XShapeCombineShape(display, frame.window, ShapeBounding,
+			   frame.handle_w + 1, frame.title_h + 1,
+			   client.window, ShapeBounding, ShapeSet);
 
       int num = 1;
       XRectangle xrect[2];
       xrect[0].x = xrect[0].y = 0;
       xrect[0].width = frame.title_w;
-      xrect[0].height = frame.title_h;
+      xrect[0].height = frame.title_h + 1;
 
       if (do_handle) {
 	if (session->Orientation() == BlackboxSession::B_RightHandedUser)
@@ -379,7 +384,7 @@ void BlackboxWindow::associateClientWindow(void) {
 	else
 	  xrect[1].x = 0;
 	xrect[1].y = frame.title_h;
-	xrect[1].width = frame.handle_w;
+	xrect[1].width = frame.handle_w + 1;
 	xrect[1].height = frame.handle_h + frame.button_h + 1;
 	num++;
       }
@@ -558,7 +563,6 @@ void BlackboxWindow::Reconfigure(void) {
   debug->msg("%s: BlackboxWindow::Reconfigure\n", __FILE__);
 
   XGrabServer(display);
-  XSync(display, False);
 
   XGCValues gcv;
   gcv.foreground = session->unfocusTextColor().pixel;
@@ -707,7 +711,6 @@ void BlackboxWindow::Reconfigure(void) {
   
   XSendEvent(display, client.window, False, StructureNotifyMask, &event);
 
-  XSync(display, False);
   XUngrabServer(display);
 
   debug->msg("%s: leaving BlackboxWindow::Reconfigure\n", __FILE__);
@@ -1422,6 +1425,8 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
       XMapSubwindows(display, frame.window);
       XMapWindow(display, frame.window);
       setFocusFlag(False);
+      drawTitleWin(0, 0, 0, 0);
+      drawAllButtons();
       XUngrabServer(display);
     }
   }
@@ -1451,6 +1456,8 @@ void BlackboxWindow::mapNotifyEvent(XMapEvent *ne) {
       iconic = False;
       XMapSubwindows(display, frame.window);
       XMapWindow(display, frame.window);
+      drawTitleWin(0, 0, 0, 0);
+      drawAllButtons();
       XUngrabServer(display);
     }
   }

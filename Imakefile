@@ -29,12 +29,14 @@ SRC =		blackbox.cc debug.cc graphics.cc icon.cc llist.cc \
 OBJ =		blackbox.o debug.o graphics.o icon.o main.o menu.o \
 		llist.o session.o sessionmenu.o window.o windowmenu.o \
 		workspace.o workspacemenu.o
-EXTRA_DEFS =	-Wall -W -DSHAPE
-DEFAULTS_PATH =	-DXAPPLOADDIR=\"$(XAPPLOADDIR)\" -DXLIBDIR=\"$(LIBDIR)\"
-LIBS =		$(XLIB) $(EXTENSIONLIB)
 
 XCOMM
-XCOMM Tell imake to generate our rules
+XCOMM Add any compiler specific options here
+XCOMM
+EXTRA_DEFS =	-Wall -W -DSHAPE -fno-strength-reduce
+
+DEFAULTS_PATH =	-DXAPPLOADDIR=\"$(XAPPLOADDIR)\" -DXLIBDIR=\"$(LIBDIR)\"
+LIBS =		$(XLIB) $(EXTENSIONLIB)
 
 PROGRAMS = blackbox
 SRCS1 = $(SRC)
@@ -54,6 +56,11 @@ XCOMM
 XCOMM Comment out the above and un-comment below to get debugging symbols
 XCOMM
 XCOMM	$(CXX) -g -I$(INCDIR) $(EXTRA_DEFS) $(DEFAULTS_PATH) -c -o $@ $<
+
+
+XCOMM
+XCOMM  %%% *** %%% *** Do not edit the lines below *** %%% *** %%%
+XCOMM
 
 depend:: 
 	rm -f Makefile.bak

@@ -546,25 +546,40 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
     BlackboxWindow *oWin = getWindow(e->xfocus.window);
     if (oWin != NULL && e->xfocus.mode == NotifyNormal)
       oWin->setFocusFlag(False);
-    
+
+    if ((e->xfocus.mode == NotifyNormal) &&
+        (e->xfocus.detail == NotifyAncestor)) {
+      XSetInputFocus(display, PointerRoot, RevertToParent, CurrentTime);
+      focus_window_number = -1;
+    }
+
     break;
   }
   
   case KeyPress: {
+    debug->msg("%s: BlackboxSession::ProcessEvent:\n\t"
+               "[ key press state %x keycode %x (%x %s)]\n", __FILE__,
+               e->xkey.state, e->xkey.keycode,
+               XKeycodeToKeysym(display, e->xkey.keycode, 0),
+               XKeysymToString(XKeycodeToKeysym(display,
+                                                e->xkey.keycode, 0)));
+
     if (e->xkey.state == Mod1Mask) {
       if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Tab) {
-	if (ws_manager->currentWorkspace()->count() > 1) {
+	if ((ws_manager->currentWorkspace()->count() > 1) &&
+            (focus_window_number >= 0)) {
 	  BlackboxWindow *next, *current =
 	    ws_manager->currentWorkspace()->window(focus_window_number);
 	  
 	  int next_window_number, level = 0;
 	  do {
-	    next_window_number =
-	      ((focus_window_number + (++level)) <
-	       ws_manager->currentWorkspace()->count())
-	      ? focus_window_number + level : 0;
-	    next = ws_manager->currentWorkspace()->window(next_window_number);
-	    
+            do {
+	      next_window_number =
+	        ((focus_window_number + (++level)) <
+	         ws_manager->currentWorkspace()->count())
+	        ? focus_window_number + level : 0;
+	      next = ws_manager->currentWorkspace()->window(next_window_number);
+	    } while (next->isIconic());
 	  } while ((! next->setInputFocus()) &&
 		   (next_window_number != focus_window_number));
 
@@ -572,7 +587,7 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
 	    current->setFocusFlag(False);
 	    ws_manager->currentWorkspace()->raiseWindow(next);
 	  }
-	} else if (ws_manager->currentWorkspace()->count() == 1) {
+	} else if (ws_manager->currentWorkspace()->count() >= 1) {
 	  ws_manager->currentWorkspace()->window(0)->setInputFocus();
 	}
       } else if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Left){
@@ -586,12 +601,6 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
 	else
 	  ws_manager->changeWorkspaceID(0);
       }
-    } else {
-      debug->msg("%s: BlackboxSession::ProcessEvent:\n\t"
-		 "[ key press state %x keycode %x (%s)]\n", __FILE__,
-		 e->xkey.state, e->xkey.keycode,
-		 XKeysymToString(XKeycodeToKeysym(display,
-						  e->xkey.keycode, 0)));
     }
 
     break;
@@ -1583,6 +1592,7 @@ void BlackboxSession::parseSubMenu(FILE *menu_file, SessionMenu *menu) {
 void BlackboxSession::Reconfigure(void) {
   debug->msg("%s: BlackboxSession::Reconfigure\n", __FILE__);
 
+  XSynchronize(display, True);
   LoadDefaults();
 
   XGCValues gcv;
@@ -1604,5 +1614,6 @@ void BlackboxSession::Reconfigure(void) {
   }
 
   ws_manager->Reconfigure();
+  XSynchronize(display, False);
   debug->msg("%s: leaving BlackboxSession::Reconfigure\n", __FILE__);
 }
