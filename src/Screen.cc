@@ -1570,8 +1570,10 @@ void BScreen::updateClientListHint(void) const {
 void BScreen::updateClientListStackingHint(void) const {
   bt::Netwm::WindowList stack;
 
-  StackingList::const_iterator it = stackingList.begin(),
-                              end = stackingList.end();
+  // we store windows in top-to-bottom order, but the EWMH wants
+  // bottom-to-top...
+  StackingList::const_reverse_iterator it = stackingList.rbegin(),
+                                      end = stackingList.rend();
   for (; it != end; ++it) {
     const BlackboxWindow * const win = dynamic_cast<BlackboxWindow *>(*it);
     if (win) stack.push_back(win->getClientWindow());
