@@ -25,25 +25,22 @@
 #ifndef   __Image_hh
 #define   __Image_hh
 
-extern "C" {
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-}
-
-#include <list>
-#include <vector>
-
-#include "Color.hh"
-
+#include "Util.hh"
 
 namespace bt {
 
+  // forward declarations
+  class Color;
   class Display;
   class ScreenInfo;
   class Texture;
   class XColorTable;
 
-  enum DitherMode { NoDither, OrderedDither, FloydSteinbergDither };
+  enum DitherMode {
+    NoDither,
+    OrderedDither,
+    FloydSteinbergDither
+  };
 
   struct RGB {
     unsigned int red      : 8;
@@ -52,7 +49,7 @@ namespace bt {
     unsigned int reserved : 8;
   };
 
-  class Image {
+  class Image : public NoCopy {
   public:
     static unsigned int colorsPerChannel(void)
     { return global_colorsPerChannel; }

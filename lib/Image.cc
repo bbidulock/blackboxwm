@@ -22,11 +22,11 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifdef    HAVE_CONFIG_H
-#  include "../config.h"
-#endif // HAVE_CONFIG_H
+#include "Image.hh"
+#include "Display.hh"
+#include "Pen.hh"
+#include "Texture.hh"
 
-extern "C" {
 #ifdef    MITSHM
 #  include <sys/types.h>
 #  include <sys/ipc.h>
@@ -35,19 +35,13 @@ extern "C" {
 #  include <X11/Xlib.h>
 #  include <X11/extensions/XShm.h>
 #endif // MITSHM
-
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-}
 
 #include <algorithm>
-
-#include "Display.hh"
-#include "Image.hh"
-#include "Pen.hh"
-#include "Texture.hh"
+#include <vector>
 
 // #define COLORTABLE_DEBUG
 // #define MITSHM_DEBUG
