@@ -25,6 +25,7 @@ CPPFLAGS		= @CPPFLAGS@ @SHAPE@ @MITSHM@ @XFT@ @DEBUG@ @NLS@ \
 			  -DLOCALEPATH=\"$(pkgdatadir)/nls\"
 noinst_LIBRARIES	= libbt.a
 libbt_a_SOURCES		= Application.cc				\
+			  Bitmap.cc					\
 			  Color.cc					\
 			  Display.cc					\
 			  Font.cc					\
