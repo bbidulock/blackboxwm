@@ -278,8 +278,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   blackbox->netwm()->setNumberOfDesktops(workspacesList.size(),
                                          blackbox->getXDisplay(),
                                          getRootWindow());
-  blackbox->netwm()->setDesktopGeometry(usableArea.width(),
-                                        usableArea.height(),
+  blackbox->netwm()->setDesktopGeometry(getWidth(), getHeight(),
                                         blackbox->getXDisplay(),
                                         getRootWindow());
   blackbox->netwm()->setDesktopViewport(0, 0,
@@ -287,16 +286,19 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
                                         getRootWindow());
   blackbox->netwm()->setActiveWindow(getRootWindow(), None,
                                      blackbox->getXDisplay());
+  blackbox->netwm()->setWorkarea(0, 0, usableArea.width(), usableArea.height(),
+                                 blackbox->getXDisplay(), getRootWindow());
 
   Atom supported[] = {
     blackbox->netwm()->numberOfDesktops(),
     blackbox->netwm()->desktopGeometry(),
     blackbox->netwm()->desktopViewport(),
     blackbox->netwm()->currentDesktop(),
-    blackbox->netwm()->activeWindow()
+    blackbox->netwm()->activeWindow(),
+    blackbox->netwm()->workarea()
   };
 
-  blackbox->netwm()->setSupported(supported, 5, blackbox->getXDisplay(),
+  blackbox->netwm()->setSupported(supported, 6, blackbox->getXDisplay(),
                                   getRootWindow());
 
   unsigned int i, j, nchild;
@@ -385,6 +387,8 @@ BScreen::~BScreen(void) {
   blackbox->netwm()->removeProperty(blackbox->netwm()->currentDesktop(),
                                     blackbox->getXDisplay(), getRootWindow());
   blackbox->netwm()->removeProperty(blackbox->netwm()->activeWindow(),
+                                    blackbox->getXDisplay(), getRootWindow());
+  blackbox->netwm()->removeProperty(blackbox->netwm()->workarea(),
                                     blackbox->getXDisplay(), getRootWindow());
 
   if (resource.wstyle.fontset)
@@ -1747,10 +1751,8 @@ void BScreen::updateAvailableArea(void) {
       if ((*it)->isMaximized()) (*it)->remaximize();
   }
 
-  blackbox->netwm()->setDesktopGeometry(usableArea.width(),
-                                        usableArea.height(),
-                                        blackbox->getXDisplay(),
-                                        getRootWindow());
+  blackbox->netwm()->setWorkarea(0, 0, usableArea.width(), usableArea.height(),
+                                 blackbox->getXDisplay(), getRootWindow());
 }
 
 

@@ -32,11 +32,12 @@ Netwm::Netwm(Display* display) {
     "_NET_DESKTOP_VIEWPORT",
     "_NET_CURRENT_DESKTOP",
     "_NET_ACTIVE_WINDOW",
+    "_NET_WORKAREA",
     "_NET_SUPPORTING_WM_CHECK",
     "_NET_WM_NAME"
   };
-  Atom atoms_return[9];
-  XInternAtoms(display, atoms, 9, False, atoms_return);
+  Atom atoms_return[10];
+  XInternAtoms(display, atoms, 10, False, atoms_return);
 
   utf8_string = atoms_return[0];
   net_supported = atoms_return[1];
@@ -45,8 +46,9 @@ Netwm::Netwm(Display* display) {
   net_desktop_viewport = atoms_return[4];
   net_current_desktop = atoms_return[5];
   net_active_window = atoms_return[6];
-  net_supporting_wm_check = atoms_return[7];
-  net_wm_name = atoms_return[8];
+  net_workarea = atoms_return[7];
+  net_supporting_wm_check = atoms_return[8];
+  net_wm_name = atoms_return[9];
 }
 
 
@@ -75,6 +77,16 @@ void Netwm::setDesktopGeometry(unsigned int width, unsigned int height,
   XChangeProperty(display, target, net_desktop_geometry, XA_CARDINAL,
                   32, PropModeReplace,
                   reinterpret_cast<unsigned char*>(geometry), 2);
+}
+
+
+void Netwm::setWorkarea(unsigned int x, unsigned y,
+                        unsigned int width, unsigned int height,
+                        Display* display, Window target) const {
+  unsigned int area[] = {x, y, width, height};
+  XChangeProperty(display, target, net_workarea, XA_CARDINAL,
+                  32, PropModeReplace,
+                  reinterpret_cast<unsigned char*>(area), 4);
 }
 
 
