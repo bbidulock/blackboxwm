@@ -84,22 +84,6 @@ AC_SUBST(SHAPE)
 
 LIBS="$LIBS $Xext_lib"
 
-dnl Check for Interlacing
-INTERLACE=""
-AC_MSG_CHECKING([whether to include interlacing image code])
-AC_ARG_ENABLE(
-  interlace, [  --enable-interlace      include code for image interlacing [default=yes]],
-  if test x$enableval = "xyes"; then
-    AC_MSG_RESULT([yes])
-    INTERLACE="-DINTERLACE"
-  else
-    AC_MSG_RESULT([no])
-  fi,
-  AC_MSG_RESULT([yes])
-  INTERLACE="-DINTERLACE"
-)
-AC_SUBST(INTERLACE)
-
 dnl Check for ordered 8bpp dithering
 ORDEREDPSEUDO=""
 AC_MSG_CHECKING([whether to include Pseudocolor ordered dithering code])
