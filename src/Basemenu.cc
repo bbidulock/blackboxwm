@@ -109,8 +109,8 @@ void Basemenu::drawItem( const Rect &r, const Item &item )
 
   if ( item.isSeparator() ) {
     BGCCache::Item &gc = cache->find( style->menuTextColor() );
-    XDrawLine( *display, windowID(), gc.gc(),
-               r.x() + indent / 2, r.y(), r.x() + r.width() - indent / 2, r.y() );
+    XFillRectangle( *display, windowID(), gc.gc(),
+                    r.x() + indent / 2, r.y(), r.width() - indent, r.height() );
     cache->release( gc );
     return;
   }
@@ -195,20 +195,25 @@ void Basemenu::drawItem( const Rect &r, const Item &item )
 
 void Basemenu::updateSize()
 {
-  int w = 1, h = 1, iw;
+  int w = 0, h = 0, iw;
   int index, titleh, itemh, colh = 0, maxcolh = 0;
 
   BScreen *scr = Blackbox::instance()->screen( screen() );
   BStyle *style = scr->style();
   if (i18n->multibyte()) {
-    maxcolh = itemh = style->menuFontSetExtents()->max_ink_extent.height + 2;
-    titleh = style->menuTitleFontSetExtents()->max_ink_extent.height + 2;
+    maxcolh = itemh = style->menuFontSetExtents()->max_ink_extent.height +
+              style->bevelWidth() * 2;
+    titleh = style->menuTitleFontSetExtents()->max_ink_extent.height +
+             style->bevelWidth() * 2;
   } else {
-    maxcolh = itemh = style->menuFont()->ascent + style->menuFont()->descent + 2;
-    titleh = style->menuTitleFont()->ascent + style->menuTitleFont()->descent + 2;
+    maxcolh = itemh = style->menuFont()->ascent + style->menuFont()->descent +
+              style->bevelWidth() * 2;
+    titleh = style->menuTitleFont()->ascent + style->menuTitleFont()->descent +
+             style->bevelWidth() * 2;
   }
 
   indent = itemh;
+  h = style->borderWidth();
 
   Items::iterator it = items.begin();
   if ( show_title ) {
@@ -224,11 +229,11 @@ void Basemenu::updateSize()
       XRectangle ink, logical;
       XmbTextExtents( style->menuTitleFontSet(), item.label().c_str(),
                       item.label().length(), &ink, &logical );
-      logical.width += 2;
+      logical.width += style->bevelWidth() * 2;
       iw = int( logical.width );
     } else
       iw = XTextWidth( style->menuTitleFont(), item.label().c_str(),
-                       item.label().length() ) + 2;
+                       item.label().length() ) + style->bevelWidth() * 2;
 
     iw += indent + indent;
     item.height = titleh;
@@ -236,7 +241,7 @@ void Basemenu::updateSize()
 
     w = std::max( w, iw );
     h += item.height;
-    h += 1;
+    h += style->borderWidth();
   }
 
   rows = 0;
@@ -250,17 +255,17 @@ void Basemenu::updateSize()
 
     if ( item.isSeparator() ) {
       iw = 80;
-      item.height = 1;
+      item.height = style->borderWidth();
     } else {
       if ( i18n->multibyte() ) {
         XRectangle ink, logical;
         XmbTextExtents( style->menuFontSet(), item.label().c_str(),
                         item.label().length(), &ink, &logical );
-        logical.width += 2;
+        logical.width += style->bevelWidth() * 2;
         iw = std::max( w, int( logical.width ) );
       } else
         iw = XTextWidth( style->menuFont(), item.label().c_str(),
-                         item.label().length() ) + 2;
+                         item.label().length() ) + style->bevelWidth() * 2;
 
       iw += indent + indent;
       item.height = itemh;
@@ -279,7 +284,7 @@ void Basemenu::updateSize()
   }
 
   maxcolh = std::max( maxcolh, colh );
-  h += maxcolh + 1;
+  h += maxcolh + style->borderWidth();
   w *= cols;
 
   if ( w < 80 )
@@ -288,8 +293,10 @@ void Basemenu::updateSize()
     h = 6;
 
   if ( show_title ) {
-    Rect tr( 1, 1, w - 2, titleh );
-    Rect ir( 1, titleh + 2, w - 2, h - titleh - 3 );
+    Rect tr( style->borderWidth(), style->borderWidth(),
+             w - style->borderWidth() * 2, titleh );
+    Rect ir( style->borderWidth(), titleh + style->borderWidth() * 2,
+             w - style->borderWidth() * 2, h - titleh - style->borderWidth() * 3 );
     if ( tr != title_rect || ! title_pixmap ) {
       title_rect = tr;
       title_pixmap = style->menuTitle().render( title_rect.size(), title_pixmap );
@@ -302,7 +309,8 @@ void Basemenu::updateSize()
                                                         highlight_pixmap );
     }
   } else {
-    Rect ir( 1, 1, w - 2, h - 2 );
+    Rect ir( style->borderWidth(), style->borderWidth(),
+             w - style->borderWidth() * 2, h - style->borderWidth() * 2 );
     if ( ir != items_rect || ! items_pixmap ) {
       items_rect = ir;
       itemw = items_rect.width() / cols;
@@ -347,7 +355,8 @@ void Basemenu::popup( int x, int y, bool centerOnTitle )
       x = p.x();
       y = p.y();
       if ( y + height() > scr->height() )
-        y -= items_rect.height() + title_rect.height() / 2;
+        y -= items_rect.height() + title_rect.height() / 2 +
+             scr->style()->borderWidth() * 2;
       if ( y < 0 )
         y = 0;
       if ( x + width() > scr->width() )
@@ -367,11 +376,11 @@ void Basemenu::popup( int x, int y, bool centerOnTitle )
     }
   } else {
     if ( y + height() > scr->height() )
-      y -= items_rect.height();
+      y -= height();
     if ( y < 0 )
       y = 0;
     if ( x + width() > scr->width() )
-      x -= items_rect.width();
+      x -= width();
     if ( x < 0 )
       x = 0;
   }
@@ -387,7 +396,7 @@ void Basemenu::popup( const Point &p, bool centerOnTitle )
 
 void Basemenu::hide()
 {
-  if ( current_submenu )
+  if ( current_submenu && current_submenu->isVisible() )
     current_submenu->hide();
   current_submenu = 0;
 
@@ -411,8 +420,6 @@ void Basemenu::hide()
 
     if ( item.active ) {
       item.active = false;
-      XClearArea( *BaseDisplay::instance(), windowID(),
-                  r.x(), r.y(), r.width(), r.height(), True );
     }
 
     y += item.height;
@@ -650,9 +657,10 @@ void Basemenu::setItemEnabled( int index, bool enabled )
   }
 
   (*it).enable = enabled;
-  if ( isVisible() )
-    XClearArea( *BaseDisplay::instance(), windowID(),
-                r.x(), r.y(), r.width(), r.height(), True );
+  if ( isVisible() ) {
+     XClearArea( *BaseDisplay::instance(), windowID(),
+                  r.x(), r.y(), r.width(), r.height(), True );
+  }
 }
 
 bool Basemenu::isItemChecked( int index ) const
@@ -739,9 +747,10 @@ void Basemenu::setItemChecked( int index, bool check )
   }
 
   (*it).checked = check;
-  if ( isVisible() )
+  if ( isVisible() ) {
     XClearArea( *BaseDisplay::instance(), windowID(),
                 r.x(), r.y(), r.width(), r.height(), True );
+  }
 }
 
 void Basemenu::showTitle()
@@ -793,7 +802,7 @@ void Basemenu::setActiveItem( const Rect &r, Item &item )
 
 void Basemenu::showSubmenu( const Rect &r, const Item &item )
 {
-  if ( current_submenu )
+  if ( current_submenu && current_submenu->isVisible() )
     current_submenu->hide();
   current_submenu = 0;
 
@@ -811,7 +820,7 @@ void Basemenu::showSubmenu( const Rect &r, const Item &item )
   BScreen *scr = Blackbox::instance()->screen( screen() );
 
   int px = x() + r.x() + r.width();
-  int py = y() + r.y() - 1;
+  int py = y() + r.y() - scr->style()->borderWidth();
   bool on_left = false;
 
   if ( parent_menu && parent_menu->isVisible() && parent_menu->x() > x() )
@@ -1005,16 +1014,22 @@ void Basemenu::pointerMotionEvent( XEvent *e )
     r.setRect( x, y, itemw, item.height );
 
     if ( r.contains( p ) ) {
+      if ( current_submenu && item.submenu() != current_submenu ) {
+        current_submenu->hide();
+        current_submenu = 0;
+      }
+
       title_pressed = false;
       setActiveItem( r, item );
     } else if ( item.active ) {
-      item.active = false;
-      XClearArea( *BaseDisplay::instance(), windowID(),
-                  r.x(), r.y(), r.width(), r.height(), True );
       if ( current_submenu && item.submenu() == current_submenu ) {
         current_submenu->hide();
         current_submenu = 0;
       }
+
+      item.active = false;
+      XClearArea( *BaseDisplay::instance(), windowID(),
+                  r.x(), r.y(), r.width(), r.height(), True );
     }
 
     y += item.height;
@@ -1078,6 +1093,56 @@ void Basemenu::exposeEvent( XEvent *e )
   BGCCache *cache = BGCCache::instance();
   BGCCache::Item &tgc = cache->find( style->menuTitle().color() ),
                  &igc = cache->find( style->menu().color() );
+
+  if ( style->borderWidth() ) {
+    // draw the borders of the menu if they need updating
+    XRectangle xrects[5];
+    int num = 0;
+    if ( todo.y() < style->borderWidth() ) {
+      // top line
+      xrects[num].x = style->borderWidth();
+      xrects[num].y = 0;
+      xrects[num].width = width() - style->borderWidth() * 2;
+      xrects[num].height = style->borderWidth();
+      num++;
+    }
+    if ( todo.y() + todo.height() > height() - style->borderWidth() ) {
+      xrects[num].x = style->borderWidth();
+      xrects[num].y = height() - style->borderWidth();
+      xrects[num].width = width() - style->borderWidth() * 2;
+      xrects[num].height = style->borderWidth();
+      num++;
+    }
+    if ( todo.x() < style->borderWidth() ) {
+      xrects[num].x = 0;
+      xrects[num].y = 0;
+      xrects[num].width = style->borderWidth();
+      xrects[num].height = height();
+      num++;
+    }
+    if ( todo.x() + todo.width() > width() - style->borderWidth() ) {
+      xrects[num].x = width() - style->borderWidth();
+      xrects[num].y = 0;
+      xrects[num].width = style->borderWidth();
+      xrects[num].height = height();
+      num++;
+    }
+    if ( show_title &&
+         ( todo.y() < title_rect.y() + title_rect.height() ||
+           todo.y() + todo.height() > title_rect.y() + title_rect.height() ) ) {
+      xrects[num].x = style->borderWidth();
+      xrects[num].y = title_rect.y() + title_rect.height();
+      xrects[num].width = width() - style->borderWidth() * 2;
+      xrects[num].height = style->borderWidth();
+      num++;
+    }
+    if ( num > 0 ) {
+      BGCCache::Item &bgc = cache->find( style->borderColor() );
+      XFillRectangles(*display, windowID(), bgc.gc(), xrects, num );
+      cache->release( bgc );
+    }
+  }
+
   if ( show_title && todo.intersects( title_rect ) ) {
     Rect up = title_rect & todo;
     if ( style->menuTitle().texture() == ( BImage_Solid | BImage_Flat ) )
