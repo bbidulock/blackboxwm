@@ -166,6 +166,8 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
   cursor.ll_angle = XCreateFontCursor(getXDisplay(), XC_ll_angle);
   cursor.lr_angle = XCreateFontCursor(getXDisplay(), XC_lr_angle);
 
+  XGrabServer(getXDisplay());
+
   for (unsigned int i = 0; i < getNumberOfScreens(); i++) {
     BScreen *screen = new BScreen(this, i);
 
@@ -195,6 +197,8 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
 
   timer = new BTimer(this, this);
   timer->setTimeout(0l);
+
+  XUngrabServer(getXDisplay());
 }
 
 
@@ -325,8 +329,9 @@ void Blackbox::process_event(XEvent *e) {
   case MapNotify: {
     BlackboxWindow *win = searchWindow(e->xmap.window);
 
-    if (win)
+    if (win) {
       win->mapNotifyEvent(&e->xmap);
+    }
 
     break;
   }
@@ -872,6 +877,8 @@ void Blackbox::restart(const char *prog) {
 
 
 void Blackbox::shutdown(void) {
+  XGrabServer(blackbox->getXDisplay());
+
   BaseDisplay::shutdown();
 
   XSetInputFocus(getXDisplay(), PointerRoot, None, CurrentTime);
@@ -880,6 +887,8 @@ void Blackbox::shutdown(void) {
                 std::mem_fun(&BScreen::shutdown));
 
   XSync(getXDisplay(), False);
+
+  XUngrabServer(blackbox->getXDisplay());
 
   save_rc();
 }
