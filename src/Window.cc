@@ -2365,7 +2365,8 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
     }
 
     if (max_horz != 0 || max_vert != 0) {
-      maximize(0);
+      if (client.state.maximized)
+        maximize(0);
       unsigned int button = 0;
       if (max_horz == 1 && max_vert != 1)
         button = 3;
