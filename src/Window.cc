@@ -251,8 +251,10 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   if (! place_window) {
     // don't need to call configure if we are letting the workspace
     // place the window
-    configure(frame.rect.x(), frame.rect.y(),
-              frame.rect.width(), frame.rect.height());
+    client.rect.setCoords(frame.rect.left() + frame.margin.left,
+                          frame.rect.top() + frame.margin.top,
+                          frame.rect.right() - frame.margin.right,
+                          frame.rect.bottom() - frame.margin.bottom);
   }
 
   // preserve the window's initial state on first map, and its current state
@@ -1441,6 +1443,18 @@ void BlackboxWindow::show(void) {
   XMapSubwindows(blackbox->getXDisplay(), frame.window);
   XMapWindow(blackbox->getXDisplay(), frame.window);
 
+#ifdef DEBUG
+  int real_x, real_y;
+  Window child;
+  XTranslateCoordinates(blackbox->getXDisplay(), client.window,
+                        screen->getRootWindow(),
+                        0, 0, &real_x, &real_y, &child);
+  fprintf(stderr, "%s -- assumed: (%d, %d), real: (%d, %d)\n", getTitle(),
+          client.rect.left(), client.rect.top(), real_x, real_y);
+  assert(client.rect.left() == real_x && client.rect.top() == real_y);
+#endif
+#undef DEBUG
+
   flags.visible = True;
   flags.iconic = False;
 }
@@ -2451,50 +2465,36 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
   } else if (windowmenu && be->button == 3 &&
              (frame.title == be->window || frame.label == be->window ||
               frame.handle == be->window || frame.window == be->window)) {
-    int mx = 0, my = 0;
-
-    if (frame.title == be->window || frame.label == be->window) {
-      mx = be->x_root - (windowmenu->getWidth() / 2);
-      my = frame.rect.y() + frame.title_h + frame.border_w;
-    } else if (frame.handle == be->window) {
-      mx = be->x_root - (windowmenu->getWidth() / 2);
-      my = frame.rect.bottom() - frame.handle_h - (frame.border_w * 3) -
-           windowmenu->getHeight();
+    if (windowmenu->isVisible()) {
+      windowmenu->hide();
     } else {
-      mx = be->x_root - (windowmenu->getWidth() / 2);
+      int mx = be->x_root - windowmenu->getWidth() / 2,
+          my = be->y_root - windowmenu->getHeight() / 2;
 
-      if (be->y <= static_cast<signed>(frame.bevel_w))
-        my = frame.rect.y() + frame.title_h;
-      else
-        my = be->y_root - (windowmenu->getHeight() / 2);
-    }
+      // snap the window menu into a corner/side if necessary
+      int left_edge, right_edge, top_edge, bottom_edge;
 
-    // snap the window menu into a corner if necessary - we check the
-    // position of the menu with the coordinates of the client to
-    // make the comparisions easier.
-    // XXX: this needs some work!
-    if (mx > client.rect.right() - static_cast<signed>(windowmenu->getWidth()))
-      mx = frame.rect.right() - windowmenu->getWidth() - frame.border_w + 1;
-    if (mx < client.rect.left())
-      mx = frame.rect.x();
+      left_edge = frame.rect.x();
+      right_edge = frame.rect.right() -
+        (windowmenu->getWidth() + (frame.border_w * 2) - 1);
+      top_edge = client.rect.top() - (frame.border_w * 2);
+      bottom_edge = client.rect.bottom() -
+        (windowmenu->getHeight() + (frame.border_w * 2) - 1);
 
-    if (my > client.rect.bottom() -
-        static_cast<signed>(windowmenu->getHeight()))
-      my = frame.rect.bottom() - windowmenu->getHeight() - frame.border_w + 1;
-    if (my < client.rect.top())
-      my = frame.rect.y() + ((decorations & Decor_Titlebar) ?
-                             frame.title_h : 0);
+      if (mx < left_edge)
+        mx = left_edge;
+      if (mx > right_edge)
+        mx = right_edge;
+      if (my < top_edge)
+        my = top_edge;
+      if (my > bottom_edge)
+        my = bottom_edge;
 
-    if (windowmenu) {
-      if (! windowmenu->isVisible()) {
-        windowmenu->move(mx, my);
-        windowmenu->show();
-        XRaiseWindow(blackbox->getXDisplay(), windowmenu->getWindowID());
-        XRaiseWindow(blackbox->getXDisplay(),
-                     windowmenu->getSendToMenu()->getWindowID());
-      } else {
-        windowmenu->hide();
-      }
+      windowmenu->move(mx, my);
+      windowmenu->show();
+      XRaiseWindow(blackbox->getXDisplay(), windowmenu->getWindowID());
+      XRaiseWindow(blackbox->getXDisplay(),
+                   windowmenu->getSendToMenu()->getWindowID());
     }
   }
 }
