@@ -315,10 +315,12 @@ BScreen::~BScreen(void) {
   std::for_each(workspacesList.begin(), workspacesList.end(),
                 bt::PointerAssassin());
 
-  delete configmenu;
-  delete _iconmenu;
   delete rootmenu;
+  delete configmenu;
+
   delete workspacemenu;
+  delete _iconmenu;
+
   delete _windowmenu;
 
   delete _slit;
