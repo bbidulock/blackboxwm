@@ -665,11 +665,11 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
     bt::alignResource(res, "toolbar.alignment", "Toolbar.Alignment");
 
   toolbar_style.frame_margin =
-    res.read("toolbar.marginWidth", "Toolbar.Margin", 2);
+    res.read("toolbar.marginWidth", "Toolbar.MarginWidth", 2);
   toolbar_style.label_margin =
-    res.read("toolbar.label.marginWidth", "Toolbar.Label.Margin", 2);
+    res.read("toolbar.label.marginWidth", "Toolbar.Label.MarginWidth", 2);
   toolbar_style.button_margin =
-    res.read("toolbar.button.marginWidth", "Toolbar.Button.Margin", 2);
+    res.read("toolbar.button.marginWidth", "Toolbar.Button.MarginWidth", 2);
 
   const bt::Bitmap &left = bt::Bitmap::leftArrow(screen_num),
                   &right = bt::Bitmap::rightArrow(screen_num);
@@ -698,7 +698,7 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
                                         "slit",
                                         "Slit",
                                         "white");
-  slit_style.margin = res.read("slit.marginWidth", "Slit.Margin", 2);
+  slit_style.margin = res.read("slit.marginWidth", "Slit.MarginWidth", 2);
 
   root_command = res.read("rootCommand", "RootCommand");
 
