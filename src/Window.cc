@@ -3228,18 +3228,23 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const event) {
     _screen->hideGeometry();
     XUngrabPointer(blackbox->XDisplay(), blackbox->XTime());
   } else if (client.state.resizing) {
-    bt::Pen pen(_screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
-    const int bw = frame.style->frame_border_width, hw = bw / 2;
-    pen.setGCFunction(GXxor);
-    pen.setLineWidth(bw);
-    pen.setSubWindowMode(IncludeInferiors);
-    XDrawRectangle(blackbox->XDisplay(), _screen->screenInfo().rootWindow(),
-                   pen.gc(),
-                   frame.changing.x() + hw,
-                   frame.changing.y() + hw,
-                   frame.changing.width() - bw,
-                   frame.changing.height() - bw);
-    blackbox->XUngrabServer();
+    client.state.resizing = False;
+
+    if (!_screen->resource().doOpaqueResize()) {
+      bt::Pen pen(_screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
+      const int bw = frame.style->frame_border_width, hw = bw / 2;
+      pen.setGCFunction(GXxor);
+      pen.setLineWidth(bw);
+      pen.setSubWindowMode(IncludeInferiors);
+      XDrawRectangle(blackbox->XDisplay(),
+                     _screen->screenInfo().rootWindow(),
+                     pen.gc(),
+                     frame.changing.x() + hw,
+                     frame.changing.y() + hw,
+                     frame.changing.width() - bw,
+                     frame.changing.height() - bw);
+      blackbox->XUngrabServer();
+    }
 
     _screen->hideGeometry();
 
@@ -3250,7 +3255,6 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const event) {
     // unset maximized state when resized after fully maximized
     if (isMaximized())
       maximize(0);
-    client.state.resizing = False;
     configure(frame.changing.x(), frame.changing.y(),
               frame.changing.width(), frame.changing.height());
 
@@ -3380,7 +3384,6 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
 
     if (! client.state.resizing) {
       // begin a resize
-      blackbox->XGrabServer();
       XGrabPointer(blackbox->XDisplay(), event->window, False,
                    ButtonMotionMask | ButtonReleaseMask,
                    GrabModeAsync, GrabModeAsync, None,
@@ -3396,17 +3399,22 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
       frame.changing = constrain(frame.rect, frame.margin, client.wmnormal,
                                  left ? TopRight : TopLeft);
 
-      bt::Pen pen(_screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
-      const int bw = frame.style->frame_border_width, hw = bw / 2;
-      pen.setGCFunction(GXxor);
-      pen.setLineWidth(bw);
-      pen.setSubWindowMode(IncludeInferiors);
-      XDrawRectangle(blackbox->XDisplay(), _screen->screenInfo().rootWindow(),
-                     pen.gc(),
-                     frame.changing.x() + hw,
-                     frame.changing.y() + hw,
-                     frame.changing.width() - bw,
-                     frame.changing.height() - bw);
+      if (!_screen->resource().doOpaqueResize()) {
+        blackbox->XGrabServer();
+
+        bt::Pen pen(_screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
+        const int bw = frame.style->frame_border_width, hw = bw / 2;
+        pen.setGCFunction(GXxor);
+        pen.setLineWidth(bw);
+        pen.setSubWindowMode(IncludeInferiors);
+        XDrawRectangle(blackbox->XDisplay(),
+                       _screen->screenInfo().rootWindow(),
+                       pen.gc(),
+                       frame.changing.x() + hw,
+                       frame.changing.y() + hw,
+                       frame.changing.width() - bw,
+                       frame.changing.height() - bw);
+      }
 
       showGeometry(frame.changing);
     } else {
@@ -3434,24 +3442,30 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
                                  left ? TopRight : TopLeft);
 
       if (curr != frame.changing) {
-        bt::Pen pen(_screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
-        const int bw = frame.style->frame_border_width, hw = bw / 2;
-        pen.setGCFunction(GXxor);
-        pen.setLineWidth(bw);
-        pen.setSubWindowMode(IncludeInferiors);
-        XDrawRectangle(blackbox->XDisplay(), _screen->screenInfo().rootWindow(),
-                       pen.gc(),
-                       curr.x() + hw,
-                       curr.y() + hw,
-                       curr.width() - bw,
-                       curr.height() - bw);
+        if (_screen->resource().doOpaqueResize()) {
+          configure(frame.changing);
+        } else {
+          bt::Pen pen(_screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
+          const int bw = frame.style->frame_border_width, hw = bw / 2;
+          pen.setGCFunction(GXxor);
+          pen.setLineWidth(bw);
+          pen.setSubWindowMode(IncludeInferiors);
+          XDrawRectangle(blackbox->XDisplay(),
+                         _screen->screenInfo().rootWindow(),
+                         pen.gc(),
+                         curr.x() + hw,
+                         curr.y() + hw,
+                         curr.width() - bw,
+                         curr.height() - bw);
 
-        XDrawRectangle(blackbox->XDisplay(), _screen->screenInfo().rootWindow(),
-                       pen.gc(),
-                       frame.changing.x() + hw,
-                       frame.changing.y() + hw,
-                       frame.changing.width() - bw,
-                       frame.changing.height() - bw);
+          XDrawRectangle(blackbox->XDisplay(),
+                         _screen->screenInfo().rootWindow(),
+                         pen.gc(),
+                         frame.changing.x() + hw,
+                         frame.changing.y() + hw,
+                         frame.changing.width() - bw,
+                         frame.changing.height() - bw);
+        }
 
         showGeometry(frame.changing);
       }

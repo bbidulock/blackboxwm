@@ -212,6 +212,9 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
   sprintf(rc_string, "session.screen%u.opaqueMove", number);
   res.write(rc_string, wconfig.opaque_move);
 
+  sprintf(rc_string, "session.screen%u.opaqueResize", number);
+  res.write(rc_string, wconfig.opaque_resize);
+
   sprintf(rc_string, "session.screen%u.disableBindingsWithScrollLock",
 	  number);
   res.write(rc_string, allow_scroll_lock);
@@ -369,6 +372,10 @@ void ScreenResource::load(bt::Resource& res, unsigned int screen) {
   sprintf(name_lookup,  "session.screen%u.opaqueMove", screen);
   sprintf(class_lookup, "Session.screen%u.OpaqueMove", screen);
   wconfig.opaque_move = res.read(name_lookup, class_lookup, false);
+
+  sprintf(name_lookup,  "session.screen%u.opaqueResize", screen);
+  sprintf(class_lookup, "Session.screen%u.OpaqueResize", screen);
+  wconfig.opaque_resize = res.read(name_lookup, class_lookup, false);
 
   // toolbar settings
 

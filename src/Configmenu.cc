@@ -81,6 +81,7 @@ enum {
   WindowPlacement,
   ImageDithering,
   OpaqueWindowMoving,
+  OpaqueWindowResizing,
   FullMaximization,
   FocusNewWindows,
   FocusLastWindowOnWorkspace,
@@ -114,6 +115,7 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
   insertItem(bt::toUnicode("Image Dithering"), dithermenu, ImageDithering);
   insertSeparator();
   insertItem(bt::toUnicode("Opaque Window Moving"), OpaqueWindowMoving);
+  insertItem(bt::toUnicode("Opaque Window Resizing"), OpaqueWindowResizing);
   insertItem(bt::toUnicode("Full Maximization"), FullMaximization);
   insertItem(bt::toUnicode("Focus New Windows"), FocusNewWindows);
   insertItem(bt::toUnicode("Focus Last Window on Workspace"), FocusLastWindowOnWorkspace);
@@ -127,6 +129,7 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
 void Configmenu::refresh(void) {
   ScreenResource& res = _bscreen->resource();
   setItemChecked(OpaqueWindowMoving, res.doOpaqueMove());
+  setItemChecked(OpaqueWindowResizing, res.doOpaqueResize());
   setItemChecked(FullMaximization, res.doFullMax());
   setItemChecked(FocusNewWindows, res.doFocusNew());
   setItemChecked(FocusLastWindowOnWorkspace, res.doFocusLast());
@@ -139,6 +142,10 @@ void Configmenu::itemClicked(unsigned int id, unsigned int) {
   switch (id) {
   case OpaqueWindowMoving: // opaque move
     res.saveOpaqueMove(! res.doOpaqueMove());
+    break;
+
+  case OpaqueWindowResizing:
+    res.saveOpaqueResize(!res.doOpaqueResize());
     break;
 
   case FullMaximization: // full maximization

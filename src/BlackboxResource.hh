@@ -99,6 +99,7 @@ public:
   bool doAutoRaise(void) const          { return wconfig.auto_raise;    }
   bool doClickRaise(void) const         { return wconfig.click_raise;   }
   bool doOpaqueMove(void) const         { return wconfig.opaque_move;   }
+  bool doOpaqueResize(void) const       { return wconfig.opaque_resize; }
   bool doFullMax(void) const            { return wconfig.full_max;      }
   bool placementIgnoresShaded(void) const
   { return wconfig.ignore_shaded; }
@@ -141,6 +142,7 @@ public:
   { tconfig.strftime_format = f; }
 
   void saveOpaqueMove(bool o)             { wconfig.opaque_move = o;         }
+  void saveOpaqueResize(bool o)           { wconfig.opaque_resize = o;       }
   void saveFullMax(bool f)                { wconfig.full_max = f;            }
   void saveFocusNew(bool f)               { wconfig.focus_new = f;           }
   void saveFocusLast(bool f)              { wconfig.focus_last = f;          }
@@ -164,8 +166,8 @@ public:
 
 private:
   struct WindowConfig {
-    bool sloppy_focus, auto_raise, opaque_move, full_max, ignore_shaded,
-      focus_new, focus_last, click_raise;
+    bool sloppy_focus, auto_raise, opaque_move, opaque_resize, full_max,
+      ignore_shaded, focus_new, focus_last, click_raise;
     unsigned int edge_snap_threshold;
     PlacementPolicy placement_policy;
     PlacementDirection row_direction, col_direction;
