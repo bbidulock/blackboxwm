@@ -1456,8 +1456,8 @@ void BlackboxWindow::configure(int dx, int dy,
 }
 
 
-void BlackboxWindow::configureShape(void) {
 #ifdef SHAPE
+void BlackboxWindow::configureShape(void) {
   XShapeCombineShape(blackbox->XDisplay(), frame.window, ShapeBounding,
                      frame.margin.left - frame.border_w,
                      frame.margin.top - frame.border_w,
@@ -1485,8 +1485,8 @@ void BlackboxWindow::configureShape(void) {
   XShapeCombineRectangles(blackbox->XDisplay(), frame.window,
                           ShapeBounding, 0, 0, xrect, num,
                           ShapeUnion, Unsorted);
-#endif // SHAPE
 }
+#endif // SHAPE
 
 
 bool BlackboxWindow::setInputFocus(void) {
