@@ -150,7 +150,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
 
     bt::ustring title, visible_title, icon_title;
 
-    bt::Rect rect, premax;
+    bt::Rect rect;
 
     int old_bw;                     // client's borderwidth
 
@@ -204,14 +204,8 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
       close_button, iconify_button, maximize_button,
       right_grip, left_grip;
 
-    /*
-     * size and location of the box drawn while the window dimensions or
-     * location is being changed, ie. resized or moved
-     */
-    bt::Rect changing;
-
     // frame geometry
-    bt::Rect rect;
+    bt::Rect rect, premax, changing;
 
     /*
      * margins between the frame and client, this has nothing to do
@@ -226,16 +220,6 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   Window createToplevelWindow();
   Window createChildWindow(Window parent, unsigned long event_mask,
                            Cursor = None);
-
-  bt::ustring readWMName(void);
-  bt::ustring readWMIconName(void);
-
-  EWMH readEWMH(void);
-  MotifHints readMotifHints(void);
-  WMHints readWMHints(void);
-  WMNormalHints readWMNormalHints(void);
-  WMProtocols readWMProtocols(void);
-  Window readTransientInfo(void);
 
   void associateClientWindow(void);
 
@@ -267,19 +251,9 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   void redrawHandle(void) const;
   void redrawGrips(void) const;
 
-  void applyGravity(bt::Rect &r);
-  void restoreGravity(bt::Rect &r);
-
-  bool readState(void);
   void setState(unsigned long new_state);
-  void clearState(void);
-
-  void upsize(void);
 
   void showGeometry(const bt::Rect &r) const;
-
-  enum Corner { TopLeft, TopRight, BottomLeft, BottomRight };
-  void constrain(Corner anchor);
 
 public:
   BlackboxWindow(Blackbox *b, Window w, BScreen *s);

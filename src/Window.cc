@@ -45,28 +45,6 @@
 #include <assert.h>
 
 
-#if 0
-static
-void watch_decorations(const char *msg, WindowDecorationFlags flags) {
-  fprintf(stderr, "Decorations: %s\n", msg);
-  fprintf(stderr, "title   : %d\n",
-          (flags & WindowDecorationTitlebar) != 0);
-  fprintf(stderr, "handle  : %d\n",
-          (flags & WindowDecorationHandle) != 0);
-  fprintf(stderr, "grips   : %d\n",
-          (flags & WindowDecorationGrip) != 0);
-  fprintf(stderr, "border  : %d\n",
-          (flags & WindowDecorationBorder) != 0);
-  fprintf(stderr, "iconify : %d\n",
-          (flags & WindowDecorationIconify) != 0);
-  fprintf(stderr, "maximize: %d\n",
-          (flags & WindowDecorationMaximize) != 0);
-  fprintf(stderr, "close   : %d\n",
-          (flags & WindowDecorationClose) != 0);
-}
-#endif
-
-
 /*
  * Returns the appropriate WindowType based on the _NET_WM_WINDOW_TYPE
  */
@@ -179,6 +157,27 @@ static void update_decorations(WindowDecorationFlags &decorations,
 
 
 /*
+ * Calculate the frame margin based on the given decorations and
+ * style.
+ */
+static void update_margin(bt::EWMH::Strut &margin,
+                          WindowDecorationFlags decorations,
+                          const ScreenResource::WindowStyle *style) {
+  const unsigned int bw = ((decorations & WindowDecorationBorder)
+                           ? style->frame_border_width
+                           : 0u);
+
+  margin.top = margin.bottom = margin.left = margin.right = bw;
+
+  if (decorations & WindowDecorationTitlebar)
+    margin.top += style->title_height - bw;
+
+  if (decorations & WindowDecorationHandle)
+    margin.bottom += style->handle_height - bw;
+}
+
+
+/*
  * Add specified window to the appropriate window group, creating a
  * new group if necessary.
  */
@@ -192,6 +191,732 @@ static void update_window_group(Window window_group,
     assert(group != 0);
   }
   group->addWindow(win);
+}
+
+
+/*
+ * Calculate the size of the client window and constrain it to the
+ * size specified by the size hints of the client window.
+ *
+ * 'rect' refers to the geometry of the frame in pixels.
+ */
+enum Corner {
+  TopLeft,
+  TopRight,
+  BottomLeft,
+  BottomRight
+};
+static bt::Rect constrain(const bt::Rect &rect,
+                          const bt::EWMH::Strut &margin,
+                          const WMNormalHints &wmnormal,
+                          Corner corner) {
+  bt::Rect r;
+
+  // 'rect' represents the requested frame size, we need to strip
+  // 'margin' off and constrain the client size
+  r.setCoords(rect.left() + static_cast<signed>(margin.left),
+              rect.top() + static_cast<signed>(margin.top),
+              rect.right() - static_cast<signed>(margin.right),
+              rect.bottom() - static_cast<signed>(margin.bottom));
+
+  unsigned int dw = r.width(), dh = r.height();
+
+  const unsigned int base_width = (wmnormal.base_width
+                                   ? wmnormal.base_width
+                                   : wmnormal.min_width),
+                    base_height = (wmnormal.base_height
+                                   ? wmnormal.base_height
+                                   : wmnormal.min_height);
+
+  // fit to min/max size
+  if (dw < wmnormal.min_width)
+    dw = wmnormal.min_width;
+  if (dh < wmnormal.min_height)
+    dh = wmnormal.min_height;
+
+  if (dw > wmnormal.max_width)
+    dw = wmnormal.max_width;
+  if (dh > wmnormal.max_height)
+    dh = wmnormal.max_height;
+
+  assert(dw >= base_width && dh >= base_height);
+
+  // fit to size increments
+  if (wmnormal.flags & PResizeInc) {
+    dw = (((dw - base_width) / wmnormal.width_inc)
+          * wmnormal.width_inc) + base_width;
+    dh = (((dh - base_height) / wmnormal.height_inc)
+          * wmnormal.height_inc) + base_height;
+  }
+
+  /*
+   * honor aspect ratios (based on twm which is based on uwm)
+   *
+   * The math looks like this:
+   *
+   * minAspectX    dwidth     maxAspectX
+   * ---------- <= ------- <= ----------
+   * minAspectY    dheight    maxAspectY
+   *
+   * If that is multiplied out, then the width and height are
+   * invalid in the following situations:
+   *
+   * minAspectX * dheight > minAspectY * dwidth
+   * maxAspectX * dheight < maxAspectY * dwidth
+   *
+   */
+  if (wmnormal.flags & PAspect) {
+    unsigned int delta;
+    const unsigned int min_asp_x = wmnormal.min_aspect_x,
+                       min_asp_y = wmnormal.min_aspect_y,
+                       max_asp_x = wmnormal.max_aspect_x,
+                       max_asp_y = wmnormal.max_aspect_y,
+                           w_inc = wmnormal.width_inc,
+                           h_inc = wmnormal.height_inc;
+    if (min_asp_x * dh > min_asp_y * dw) {
+      delta = ((min_asp_x * dh / min_asp_y - dw) * w_inc) / w_inc;
+      if (dw + delta <= wmnormal.max_width) {
+        dw += delta;
+      } else {
+        delta = ((dh - (dw * min_asp_y) / min_asp_x) * h_inc) / h_inc;
+        if (dh - delta >= wmnormal.min_height) dh -= delta;
+      }
+    }
+    if (max_asp_x * dh < max_asp_y * dw) {
+      delta = ((max_asp_y * dw / max_asp_x - dh) * h_inc) / h_inc;
+      if (dh + delta <= wmnormal.max_height) {
+        dh += delta;
+      } else {
+        delta = ((dw - (dh * max_asp_x) / max_asp_y) * w_inc) / w_inc;
+        if (dw - delta >= wmnormal.min_width) dw -= delta;
+      }
+    }
+  }
+
+  r.setSize(dw, dh);
+
+  // add 'margin' back onto 'r'
+  r.setCoords(r.left() - margin.left, r.top() - margin.top,
+              r.right() + margin.right, r.bottom() + margin.bottom);
+
+  // move 'r' to the specified corner
+  int dx = rect.right() - r.right();
+  int dy = rect.bottom() - r.bottom();
+
+  switch (corner) {
+  case TopLeft:
+    // nothing to do
+    break;
+
+  case TopRight:
+    r.setPos(r.x() + dx, r.y());
+    break;
+
+  case BottomLeft:
+    r.setPos(r.x(), r.y() + dy);
+    break;
+
+  case BottomRight:
+    r.setPos(r.x() + dx, r.y() + dy);
+    break;
+  }
+
+  return r;
+}
+
+
+/*
+ * Positions the given 'rect' according to the window position and
+ * window gravity.
+ */
+static void applyGravity(bt::Rect &r,
+                         const bt::Rect &rect,
+                         const bt::EWMH::Strut &margin,
+                         int gravity) {
+  // apply horizontal window gravity
+  switch (gravity) {
+  default:
+  case NorthWestGravity:
+  case SouthWestGravity:
+  case WestGravity:
+    r.setX(rect.x());
+    break;
+
+  case NorthGravity:
+  case SouthGravity:
+  case CenterGravity:
+    r.setX(rect.x() - (margin.left + margin.right) / 2);
+    break;
+
+  case NorthEastGravity:
+  case SouthEastGravity:
+  case EastGravity:
+    r.setX(rect.x() - (margin.left + margin.right) + 2);
+    break;
+
+  case ForgetGravity:
+  case StaticGravity:
+    r.setX(rect.x() - margin.left);
+    break;
+  }
+
+  // apply vertical window gravity
+  switch (gravity) {
+  default:
+  case NorthWestGravity:
+  case NorthEastGravity:
+  case NorthGravity:
+    r.setY(rect.y());
+    break;
+
+  case CenterGravity:
+  case EastGravity:
+  case WestGravity:
+    r.setY(rect.y() - ((margin.top + margin.bottom) / 2));
+    break;
+
+  case SouthWestGravity:
+  case SouthEastGravity:
+  case SouthGravity:
+    r.setY(rect.y() - (margin.bottom + margin.top) + 2);
+    break;
+
+  case ForgetGravity:
+  case StaticGravity:
+    r.setY(rect.y() - margin.top);
+    break;
+  }
+}
+
+
+/*
+ * The reverse of the applyGravity function.
+ *
+ * Positions the bt::Rect r according to the frame window position and
+ * window gravity.
+ */
+static void restoreGravity(bt::Rect &r,
+                           const bt::Rect &rect,
+                           const bt::EWMH::Strut &margin,
+                           int gravity) {
+  // restore horizontal window gravity
+  switch (gravity) {
+  default:
+  case NorthWestGravity:
+  case SouthWestGravity:
+  case WestGravity:
+    r.setX(rect.x());
+    break;
+
+  case NorthGravity:
+  case SouthGravity:
+  case CenterGravity:
+    r.setX(rect.x() + (margin.left + margin.right) / 2);
+    break;
+
+  case NorthEastGravity:
+  case SouthEastGravity:
+  case EastGravity:
+    r.setX(rect.x() + (margin.left + margin.right) - 2);
+    break;
+
+  case ForgetGravity:
+  case StaticGravity:
+    r.setX(rect.x() + margin.left);
+    break;
+  }
+
+  // restore vertical window gravity
+  switch (gravity) {
+  default:
+  case NorthWestGravity:
+  case NorthEastGravity:
+  case NorthGravity:
+    r.setY(rect.y());
+    break;
+
+  case CenterGravity:
+  case EastGravity:
+  case WestGravity:
+    r.setY(rect.y() + (margin.top + margin.bottom) / 2);
+    break;
+
+  case SouthWestGravity:
+  case SouthEastGravity:
+  case SouthGravity:
+    r.setY(rect.y() + (margin.top + margin.bottom) - 2);
+    break;
+
+  case ForgetGravity:
+  case StaticGravity:
+    r.setY(rect.y() + margin.top);
+    break;
+  }
+}
+
+
+/*
+ * Set the sizes of all components of the window frame (the window
+ * decorations).  These values are based upon the current style
+ * settings and the client window's dimensions.
+ */
+static bt::Rect upsize(const bt::Rect &rect,
+                       const ScreenResource::WindowStyle *style,
+                       const bt::EWMH::Strut &margin,
+                       bool shaded) {
+  /*
+    We first get the normal dimensions and use this to define the
+    width/height then we modify the height if shading is in effect.
+    If the shade state is not considered then frame.rect gets reset to
+    the normal window size on a reconfigure() call resulting in
+    improper dimensions appearing in move/resize and other events.
+  */
+  return bt::Rect(0, 0,
+                  rect.width() + margin.left + margin.right,
+                  (shaded
+                   ? style->title_height
+                   : rect.height() + margin.top + margin.bottom));
+}
+
+
+static bt::ustring readWMName(Blackbox *blackbox, Window window) {
+  bt::ustring name;
+
+  if (!blackbox->ewmh().readWMName(window, name) || name.empty()) {
+    XTextProperty text_prop;
+
+    if (XGetWMName(blackbox->XDisplay(), window, &text_prop)) {
+      name = bt::toUnicode(bt::textPropertyToString(blackbox->XDisplay(),
+                                                    text_prop));
+      XFree((char *) text_prop.value);
+    }
+  }
+
+  if (name.empty())
+    name = bt::toUnicode("Unnamed");
+
+  return name;
+}
+
+
+static bt::ustring readWMIconName(Blackbox *blackbox, Window window) {
+  bt::ustring name;
+
+  if (!blackbox->ewmh().readWMIconName(window, name) || name.empty()) {
+    XTextProperty text_prop;
+    if (XGetWMIconName(blackbox->XDisplay(), window, &text_prop)) {
+      name = bt::toUnicode(bt::textPropertyToString(blackbox->XDisplay(),
+                                                    text_prop));
+      XFree((char *) text_prop.value);
+    }
+  }
+
+  if (name.empty())
+    return bt::ustring();
+
+  return name;
+}
+
+
+static EWMH readEWMH(const bt::EWMH &bewmh,
+                     Window window,
+                     int currentWorkspace) {
+  EWMH ewmh;
+  ewmh.window_type  = WindowTypeNormal;
+  ewmh.workspace    = 0; // initialized properly below
+  ewmh.modal        = false;
+  ewmh.maxv         = false;
+  ewmh.maxh         = false;
+  ewmh.shaded       = false;
+  ewmh.skip_taskbar = false;
+  ewmh.skip_pager   = false;
+  ewmh.hidden       = false;
+  ewmh.fullscreen   = false;
+  ewmh.above        = false;
+  ewmh.below        = false;
+
+  // note: wm_name and wm_icon_name are read separately
+
+  bool ret;
+
+  bt::EWMH::AtomList atoms;
+  ret = bewmh.readWMWindowType(window, atoms);
+  if (ret) {
+    bt::EWMH::AtomList::iterator it = atoms.begin(), end = atoms.end();
+    for (; it != end; ++it) {
+      if (bewmh.isSupportedWMWindowType(*it)) {
+        ewmh.window_type = ::window_type_from_atom(bewmh, *it);
+        break;
+      }
+    }
+  }
+
+  atoms.clear();
+  ret = bewmh.readWMState(window, atoms);
+  if (ret) {
+    bt::EWMH::AtomList::iterator it = atoms.begin(), end = atoms.end();
+    for (; it != end; ++it) {
+      Atom state = *it;
+      if (state == bewmh.wmStateModal()) {
+        ewmh.modal = true;
+      } else if (state == bewmh.wmStateMaximizedVert()) {
+        ewmh.maxv = true;
+      } else if (state == bewmh.wmStateMaximizedHorz()) {
+        ewmh.maxh = true;
+      } else if (state == bewmh.wmStateShaded()) {
+        ewmh.shaded = true;
+      } else if (state == bewmh.wmStateSkipTaskbar()) {
+        ewmh.skip_taskbar = true;
+      } else if (state == bewmh.wmStateSkipPager()) {
+        ewmh.skip_pager = true;
+      } else if (state == bewmh.wmStateHidden()) {
+        /*
+          ignore _NET_WM_STATE_HIDDEN if present, the wm sets this
+          state, not the application
+        */
+      } else if (state == bewmh.wmStateFullscreen()) {
+        ewmh.fullscreen = true;
+      } else if (state == bewmh.wmStateAbove()) {
+        ewmh.above = true;
+      } else if (state == bewmh.wmStateBelow()) {
+        ewmh.below = true;
+      }
+    }
+  }
+
+  switch (ewmh.window_type) {
+  case WindowTypeDesktop:
+  case WindowTypeDock:
+    // these types should occupy all workspaces by default
+    ewmh.workspace = bt::BSENTINEL;
+    break;
+
+  default:
+    if (!bewmh.readWMDesktop(window, ewmh.workspace))
+      ewmh.workspace = currentWorkspace;
+    break;
+  } //switch
+
+  return ewmh;
+}
+
+
+/*
+ * Returns the MotifWM hints for the specified window.
+ */
+static MotifHints readMotifWMHints(Blackbox *blackbox, Window window) {
+  MotifHints motif;
+  motif.decorations = AllWindowDecorations;
+  motif.functions   = AllWindowFunctions;
+
+  /*
+    this structure only contains 3 elements, even though the Motif 2.0
+    structure contains 5, because we only use the first 3
+  */
+  struct PropMotifhints {
+    unsigned long flags;
+    unsigned long functions;
+    unsigned long decorations;
+  };
+  static const unsigned int PROP_MWM_HINTS_ELEMENTS = 3u;
+  enum { // MWM flags
+    MWM_HINTS_FUNCTIONS   = 1<<0,
+    MWM_HINTS_DECORATIONS = 1<<1
+  };
+  enum { // MWM functions
+    MWM_FUNC_ALL      = 1<<0,
+    MWM_FUNC_RESIZE   = 1<<1,
+    MWM_FUNC_MOVE     = 1<<2,
+    MWM_FUNC_MINIMIZE = 1<<3,
+    MWM_FUNC_MAXIMIZE = 1<<4,
+    MWM_FUNC_CLOSE    = 1<<5
+  };
+  enum { // MWM decorations
+    MWM_DECOR_ALL      = 1<<0,
+    MWM_DECOR_BORDER   = 1<<1,
+    MWM_DECOR_RESIZEH  = 1<<2,
+    MWM_DECOR_TITLE    = 1<<3,
+    MWM_DECOR_MENU     = 1<<4,
+    MWM_DECOR_MINIMIZE = 1<<5,
+    MWM_DECOR_MAXIMIZE = 1<<6
+  };
+
+  Atom atom_return;
+  PropMotifhints *prop = 0;
+  int format;
+  unsigned long num, len;
+  int ret = XGetWindowProperty(blackbox->XDisplay(), window,
+                               blackbox->motifWmHintsAtom(), 0,
+                               PROP_MWM_HINTS_ELEMENTS, False,
+                               blackbox->motifWmHintsAtom(), &atom_return,
+                               &format, &num, &len,
+                               (unsigned char **) &prop);
+
+  if (ret != Success || !prop || num != PROP_MWM_HINTS_ELEMENTS) {
+    if (prop) XFree(prop);
+    return motif;
+  }
+
+  if (prop->flags & MWM_HINTS_FUNCTIONS) {
+    if (prop->functions & MWM_FUNC_ALL) {
+      motif.functions = AllWindowFunctions;
+    } else {
+      motif.functions = NoWindowFunctions;
+
+      if (prop->functions & MWM_FUNC_RESIZE)
+        motif.functions |= WindowFunctionResize;
+      if (prop->functions & MWM_FUNC_MOVE)
+        motif.functions |= WindowFunctionMove;
+      if (prop->functions & MWM_FUNC_MINIMIZE)
+        motif.functions |= WindowFunctionIconify;
+      if (prop->functions & MWM_FUNC_MAXIMIZE)
+        motif.functions |= WindowFunctionMaximize;
+      if (prop->functions & MWM_FUNC_CLOSE)
+        motif.functions |= WindowFunctionClose;
+    }
+  }
+
+  if (prop->flags & MWM_HINTS_DECORATIONS) {
+    if (prop->decorations & MWM_DECOR_ALL) {
+      motif.decorations = AllWindowDecorations;
+    } else {
+      motif.decorations = NoWindowDecorations;
+
+      if (prop->decorations & MWM_DECOR_BORDER)
+        motif.decorations |= WindowDecorationBorder;
+      if (prop->decorations & MWM_DECOR_RESIZEH) {
+        motif.decorations |= (WindowDecorationHandle |
+                              WindowDecorationGrip);
+      }
+      if (prop->decorations & MWM_DECOR_TITLE) {
+        motif.decorations |= (WindowDecorationTitlebar |
+                              WindowDecorationClose);
+      }
+      if (prop->decorations & MWM_DECOR_MINIMIZE)
+        motif.decorations |= WindowDecorationIconify;
+      if (prop->decorations & MWM_DECOR_MAXIMIZE)
+        motif.decorations |= WindowDecorationMaximize;
+    }
+  }
+
+  XFree(prop);
+
+  return motif;
+}
+
+
+/*
+ * Returns the value of the WM_HINTS property.  If the property is not
+ * set, a set of default values is returned instead.
+ */
+static WMHints readWMHints(Blackbox *blackbox, Window window) {
+  WMHints wmh;
+  wmh.accept_focus = false;
+  wmh.window_group = None;
+  wmh.initial_state = NormalState;
+
+  XWMHints *wmhint = XGetWMHints(blackbox->XDisplay(), window);
+  if (!wmhint) return wmh;
+
+  if (wmhint->flags & InputHint)
+    wmh.accept_focus = (wmhint->input == True);
+  if (wmhint->flags & StateHint)
+    wmh.initial_state = wmhint->initial_state;
+  if (wmhint->flags & WindowGroupHint)
+    wmh.window_group = wmhint->window_group;
+
+  XFree(wmhint);
+
+  return wmh;
+}
+
+
+/*
+ * Returns the value of the WM_NORMAL_HINTS property.  If the property
+ * is not set, a set of default values is returned instead.
+ */
+static WMNormalHints readWMNormalHints(Blackbox *blackbox,
+                                       Window window,
+                                       const bt::ScreenInfo &screenInfo) {
+  WMNormalHints wmnormal;
+  wmnormal.flags = 0;
+  wmnormal.min_width    = wmnormal.min_height   = 1u;
+  wmnormal.width_inc    = wmnormal.height_inc   = 1u;
+  wmnormal.min_aspect_x = wmnormal.min_aspect_y = 1u;
+  wmnormal.max_aspect_x = wmnormal.max_aspect_y = 1u;
+  wmnormal.base_width   = wmnormal.base_height  = 0u;
+  wmnormal.win_gravity  = NorthWestGravity;
+
+  /*
+    use the full screen, not the strut modified size. otherwise when
+    the availableArea changes max_width/height will be incorrect and
+    lead to odd rendering bugs.
+  */
+  const bt::Rect &rect = screenInfo.rect();
+  wmnormal.max_width = rect.width();
+  wmnormal.max_height = rect.height();
+
+  XSizeHints sizehint;
+  long unused;
+  if (! XGetWMNormalHints(blackbox->XDisplay(), window, &sizehint, &unused))
+    return wmnormal;
+
+  wmnormal.flags = sizehint.flags;
+
+  if (sizehint.flags & PMinSize) {
+    if (sizehint.min_width > 0)
+      wmnormal.min_width  = sizehint.min_width;
+    if (sizehint.min_height > 0)
+      wmnormal.min_height = sizehint.min_height;
+  }
+
+  if (sizehint.flags & PMaxSize) {
+    if (sizehint.max_width > static_cast<signed>(wmnormal.min_width))
+      wmnormal.max_width  = sizehint.max_width;
+    else
+      wmnormal.max_width  = wmnormal.min_width;
+
+    if (sizehint.max_height > static_cast<signed>(wmnormal.min_height))
+      wmnormal.max_height = sizehint.max_height;
+    else
+      wmnormal.max_height = wmnormal.min_height;
+  }
+
+  if (sizehint.flags & PResizeInc) {
+    wmnormal.width_inc  = sizehint.width_inc;
+    wmnormal.height_inc = sizehint.height_inc;
+  }
+
+  if (sizehint.flags & PAspect) {
+    wmnormal.min_aspect_x = sizehint.min_aspect.x;
+    wmnormal.min_aspect_y = sizehint.min_aspect.y;
+    wmnormal.max_aspect_x = sizehint.max_aspect.x;
+    wmnormal.max_aspect_y = sizehint.max_aspect.y;
+  }
+
+  if (sizehint.flags & PBaseSize) {
+    wmnormal.base_width  = sizehint.base_width;
+    wmnormal.base_height = sizehint.base_height;
+
+    // sanity checks
+    wmnormal.min_width  = std::max(wmnormal.min_width,  wmnormal.base_width);
+    wmnormal.min_height = std::max(wmnormal.min_height, wmnormal.base_height);
+  }
+
+  if (sizehint.flags & PWinGravity)
+    wmnormal.win_gravity = sizehint.win_gravity;
+
+  return wmnormal;
+}
+
+
+/*
+ * Retrieve which Window Manager Protocols are supported by the client
+ * window.
+ */
+static WMProtocols readWMProtocols(Blackbox *blackbox,
+                                   Window window) {
+  WMProtocols protocols;
+  protocols.wm_delete_window = false;
+  protocols.wm_take_focus    = false;
+
+  Atom *proto;
+  int num_return = 0;
+
+  if (XGetWMProtocols(blackbox->XDisplay(), window,
+                      &proto, &num_return)) {
+    for (int i = 0; i < num_return; ++i) {
+      if (proto[i] == blackbox->wmDeleteWindowAtom()) {
+        protocols.wm_delete_window = true;
+      } else if (proto[i] == blackbox->wmTakeFocusAtom()) {
+        protocols.wm_take_focus = true;
+      }
+    }
+    XFree(proto);
+  }
+
+  return protocols;
+}
+
+
+/*
+ * Reads the value of the WM_TRANSIENT_FOR property and returns a
+ * pointer to the transient parent for this window.  If the
+ * WM_TRANSIENT_FOR is missing or invalid, this function returns 0.
+ *
+ * 'client.wmhints' should be properly updated before calling this
+ * function.
+ *
+ * Note: a return value of ~0ul signifies a window that should be
+ * transient but has no discernible parent.
+ */
+static Window readTransientInfo(Blackbox *blackbox,
+                                Window window,
+                                const bt::ScreenInfo &screenInfo,
+                                const WMHints &wmhints) {
+  Window trans_for = None;
+
+  if (!XGetTransientForHint(blackbox->XDisplay(), window, &trans_for)) {
+    // WM_TRANSIENT_FOR hint not set
+    return 0;
+  }
+
+  if (trans_for == window) {
+    // wierd client... treat this window as a normal window
+    return 0;
+  }
+
+  if (trans_for == None || trans_for == screenInfo.rootWindow()) {
+    /*
+      this is a violation of the ICCCM, yet the EWMH allows this as a
+      way to signify a group transient.
+    */
+    trans_for = wmhints.window_group;
+  }
+
+  return trans_for;
+}
+
+
+static bool readState(unsigned long &current_state,
+                      Blackbox *blackbox,
+                      Window window) {
+  current_state = NormalState;
+
+  Atom atom_return;
+  bool ret = false;
+  int foo;
+  unsigned long *state, ulfoo, nitems;
+
+  if ((XGetWindowProperty(blackbox->XDisplay(), window,
+                          blackbox->wmStateAtom(),
+                          0l, 2l, False, blackbox->wmStateAtom(),
+                          &atom_return, &foo, &nitems, &ulfoo,
+                          (unsigned char **) &state) != Success) ||
+      (! state)) {
+    return false;
+  }
+
+  if (nitems >= 1) {
+    current_state = static_cast<unsigned long>(state[0]);
+    ret = true;
+  }
+
+  XFree((void *) state);
+
+  return ret;
+}
+
+
+static void clearState(Blackbox *blackbox, Window window) {
+  XDeleteProperty(blackbox->XDisplay(), window, blackbox->wmStateAtom());
+
+  const bt::EWMH& ewmh = blackbox->ewmh();
+  ewmh.removeProperty(window, ewmh.wmDesktop());
+  ewmh.removeProperty(window, ewmh.wmState());
+  ewmh.removeProperty(window, ewmh.wmAllowedActions());
+  ewmh.removeProperty(window, ewmh.wmVisibleName());
+  ewmh.removeProperty(window, ewmh.wmVisibleIconName());
 }
 
 
@@ -272,17 +997,21 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   timer = new bt::Timer(blackbox, this);
   timer->setTimeout(blackbox->resource().autoRaiseDelay());
 
-  client.title = readWMName();
-  client.icon_title = readWMIconName();
+  client.title = ::readWMName(blackbox, client.window);
+  client.icon_title = ::readWMIconName(blackbox, client.window);
 
   // get size, aspect, minimum/maximum size, ewmh and other hints set
   // by the client
-  client.ewmh = readEWMH();
-  client.motif = readMotifHints();
-  client.wmhints = readWMHints();
-  client.wmnormal = readWMNormalHints();
-  client.wmprotocols = readWMProtocols();
-  client.transient_for = readTransientInfo();
+  client.ewmh = ::readEWMH(blackbox->ewmh(), client.window,
+                         _screen->currentWorkspace());
+  client.motif = ::readMotifWMHints(blackbox, client.window);
+  client.wmhints = ::readWMHints(blackbox, client.window);
+  client.wmnormal = ::readWMNormalHints(blackbox, client.window,
+                                        _screen->screenInfo());
+  client.wmprotocols = ::readWMProtocols(blackbox, client.window);
+  client.transient_for = ::readTransientInfo(blackbox, client.window,
+                                             _screen->screenInfo(),
+                                             client.wmhints);
 
   if (isTransient()) {
     // add ourselves to our transient_for
@@ -321,6 +1050,9 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
                        client.motif,
                        client.wmnormal,
                        client.wmprotocols);
+  ::update_margin(frame.margin,
+                  client.decorations,
+                  frame.style);
 
   // sanity checks
   if (client.wmhints.initial_state == IconicState
@@ -350,9 +1082,13 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   if (client.decorations & WindowDecorationHandle)
     createHandle();
 
-  // apply the size and gravity hint to the frame
-  upsize();
-  applyGravity(frame.rect);
+  // apply the size and gravity to the frame
+  frame.rect = ::upsize(client.rect,
+                        frame.style,
+                        frame.margin,
+                        client.ewmh.shaded);
+  ::applyGravity(frame.rect, client.rect, frame.margin,
+                 client.wmnormal.win_gravity);
 
   associateClientWindow();
 
@@ -362,7 +1098,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   // preserve the window's initial state on first map, and its current
   // state across a restart
-  if (!readState())
+  if (!readState(client.current_state, blackbox, client.window))
     client.current_state = client.wmhints.initial_state;
 
   if (client.state.iconic) {
@@ -393,7 +1129,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   XMapSubwindows(blackbox->XDisplay(), frame.window);
 
-  client.premax = frame.rect;
+  frame.premax = frame.rect;
 
   if (isShaded()) {
     client.ewmh.shaded = false;
@@ -898,9 +1634,20 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
 
 
 void BlackboxWindow::reconfigure(void) {
-  restoreGravity(client.rect);
-  upsize();
-  applyGravity(frame.rect);
+  ::restoreGravity(client.rect, frame.rect, frame.margin,
+                   client.wmnormal.win_gravity);
+
+  ::update_margin(frame.margin,
+                  client.decorations,
+                  frame.style);
+  frame.rect = ::upsize(client.rect,
+                        frame.style,
+                        frame.margin,
+                        client.ewmh.shaded);
+
+  ::applyGravity(frame.rect, client.rect, frame.margin,
+                 client.wmnormal.win_gravity);
+
   positionWindows();
   decorate();
   redrawWindowFrame();
@@ -1005,399 +1752,6 @@ void BlackboxWindow::positionWindows(void) {
   } else if (frame.handle) {
     destroyHandle();
   }
-}
-
-
-bt::ustring BlackboxWindow::readWMName(void) {
-  bt::ustring name;
-
-  if (!blackbox->ewmh().readWMName(client.window, name) || name.empty()) {
-    XTextProperty text_prop;
-    if (XGetWMName(blackbox->XDisplay(), client.window, &text_prop)) {
-      name =
-        bt::toUnicode(bt::textPropertyToString(blackbox->XDisplay(),
-                                               text_prop));
-      XFree((char *) text_prop.value);
-    }
-  }
-  if (name.empty())
-    name = bt::toUnicode("Unnamed");
-
-  return name;
-}
-
-
-bt::ustring BlackboxWindow::readWMIconName(void) {
-  bt::ustring name;
-
-  if (!blackbox->ewmh().readWMIconName(client.window, name) || name.empty()) {
-    XTextProperty text_prop;
-    if (XGetWMIconName(blackbox->XDisplay(), client.window, &text_prop)) {
-      name =
-        bt::toUnicode(bt::textPropertyToString(blackbox->XDisplay(),
-                                               text_prop));
-      XFree((char *) text_prop.value);
-    }
-  }
-  if (name.empty())
-    return bt::ustring();
-
-  return name;
-}
-
-
-EWMH BlackboxWindow::readEWMH(void) {
-  EWMH ewmh;
-  ewmh.window_type  = WindowTypeNormal;
-  ewmh.workspace    = 0; // initialized properly below
-  ewmh.modal        = false;
-  ewmh.maxv         = false;
-  ewmh.maxh         = false;
-  ewmh.shaded       = false;
-  ewmh.skip_taskbar = false;
-  ewmh.skip_pager   = false;
-  ewmh.hidden       = false;
-  ewmh.fullscreen   = false;
-  ewmh.above        = false;
-  ewmh.below        = false;
-
-  // note: wm_name and wm_icon_name are read separately
-
-  bool ret;
-  const bt::EWMH &bewmh = blackbox->ewmh();
-
-  bt::EWMH::AtomList atoms;
-  ret = bewmh.readWMWindowType(client.window, atoms);
-  if (ret) {
-    bt::EWMH::AtomList::iterator it = atoms.begin(), end = atoms.end();
-    for (; it != end; ++it) {
-      if (bewmh.isSupportedWMWindowType(*it)) {
-        ewmh.window_type = ::window_type_from_atom(bewmh, *it);
-        break;
-      }
-    }
-  }
-
-  atoms.clear();
-  ret = bewmh.readWMState(client.window, atoms);
-  if (ret) {
-    bt::EWMH::AtomList::iterator it = atoms.begin(), end = atoms.end();
-    for (; it != end; ++it) {
-      Atom state = *it;
-      if (state == bewmh.wmStateModal()) {
-        ewmh.modal = true;
-      } else if (state == bewmh.wmStateMaximizedVert()) {
-        ewmh.maxv = true;
-      } else if (state == bewmh.wmStateMaximizedHorz()) {
-        ewmh.maxh = true;
-      } else if (state == bewmh.wmStateShaded()) {
-        ewmh.shaded = true;
-      } else if (state == bewmh.wmStateSkipTaskbar()) {
-        ewmh.skip_taskbar = true;
-      } else if (state == bewmh.wmStateSkipPager()) {
-        ewmh.skip_pager = true;
-      } else if (state == bewmh.wmStateHidden()) {
-        /*
-          ignore _NET_WM_STATE_HIDDEN if present, the wm sets this
-          state, not the application
-         */
-      } else if (state == bewmh.wmStateFullscreen()) {
-        ewmh.fullscreen = true;
-      } else if (state == bewmh.wmStateAbove()) {
-        ewmh.above = true;
-      } else if (state == bewmh.wmStateBelow()) {
-        ewmh.below = true;
-      }
-    }
-  }
-
-  switch (ewmh.window_type) {
-  case WindowTypeDesktop:
-  case WindowTypeDock:
-    // these types should occupy all workspaces by default
-    ewmh.workspace = bt::BSENTINEL;
-    break;
-
-  default:
-    if (!bewmh.readWMDesktop(client.window, ewmh.workspace))
-      ewmh.workspace = _screen->currentWorkspace();
-    break;
-  } //switch
-
-  return ewmh;
-}
-
-
-/*
- * Retrieve which Window Manager Protocols are supported by the client
- * window.
- */
-WMProtocols BlackboxWindow::readWMProtocols(void) {
-  WMProtocols protocols;
-  protocols.wm_delete_window = false;
-  protocols.wm_take_focus    = false;
-
-  Atom *proto;
-  int num_return = 0;
-
-  if (XGetWMProtocols(blackbox->XDisplay(), client.window,
-                      &proto, &num_return)) {
-    for (int i = 0; i < num_return; ++i) {
-      if (proto[i] == blackbox->wmDeleteWindowAtom()) {
-        protocols.wm_delete_window = true;
-      } else if (proto[i] == blackbox->wmTakeFocusAtom()) {
-        protocols.wm_take_focus = true;
-      }
-    }
-    XFree(proto);
-  }
-
-  return protocols;
-}
-
-
-/*
- * Returns the value of the WM_HINTS property.  If the property is not
- * set, a set of default values is returned instead.
- */
-WMHints BlackboxWindow::readWMHints(void) {
-  WMHints wmh;
-  wmh.accept_focus = false;
-  wmh.window_group = None;
-  wmh.initial_state = NormalState;
-
-  XWMHints *wmhint = XGetWMHints(blackbox->XDisplay(), client.window);
-  if (!wmhint) return wmh;
-
-  if (wmhint->flags & InputHint)
-    wmh.accept_focus = (wmhint->input == True);
-  if (wmhint->flags & StateHint)
-    wmh.initial_state = wmhint->initial_state;
-  if (wmhint->flags & WindowGroupHint
-      && wmhint->window_group != _screen->screenInfo().rootWindow())
-    wmh.window_group = wmhint->window_group;
-
-  XFree(wmhint);
-
-  return wmh;
-}
-
-
-/*
- * Returns the value of the WM_NORMAL_HINTS property.  If the property
- * is not set, a set of default values is returned instead.
- */
-WMNormalHints BlackboxWindow::readWMNormalHints(void) {
-  WMNormalHints wmnormal;
-  wmnormal.flags = 0;
-  wmnormal.min_width    = wmnormal.min_height   = 1u;
-  wmnormal.width_inc    = wmnormal.height_inc   = 1u;
-  wmnormal.min_aspect_x = wmnormal.min_aspect_y = 1u;
-  wmnormal.max_aspect_x = wmnormal.max_aspect_y = 1u;
-  wmnormal.base_width   = wmnormal.base_height  = 0u;
-  wmnormal.win_gravity  = NorthWestGravity;
-
-  /*
-    use the full screen, not the strut modified size. otherwise when
-    the availableArea changes max_width/height will be incorrect and
-    lead to odd rendering bugs.
-  */
-  const bt::Rect &rect = _screen->screenInfo().rect();
-  wmnormal.max_width = rect.width();
-  wmnormal.max_height = rect.height();
-
-  XSizeHints sizehint;
-  long unused;
-  if (! XGetWMNormalHints(blackbox->XDisplay(), client.window,
-                          &sizehint, &unused))
-    return wmnormal;
-
-  wmnormal.flags = sizehint.flags;
-
-  if (sizehint.flags & PMinSize) {
-    if (sizehint.min_width > 0)
-      wmnormal.min_width  = sizehint.min_width;
-    if (sizehint.min_height > 0)
-      wmnormal.min_height = sizehint.min_height;
-  }
-
-  if (sizehint.flags & PMaxSize) {
-    if (sizehint.max_width > static_cast<signed>(wmnormal.min_width))
-      wmnormal.max_width  = sizehint.max_width;
-    else
-      wmnormal.max_width  = wmnormal.min_width;
-
-    if (sizehint.max_height > static_cast<signed>(wmnormal.min_height))
-      wmnormal.max_height = sizehint.max_height;
-    else
-      wmnormal.max_height = wmnormal.min_height;
-  }
-
-  if (sizehint.flags & PResizeInc) {
-    wmnormal.width_inc  = sizehint.width_inc;
-    wmnormal.height_inc = sizehint.height_inc;
-  }
-
-  if (sizehint.flags & PAspect) {
-    wmnormal.min_aspect_x = sizehint.min_aspect.x;
-    wmnormal.min_aspect_y = sizehint.min_aspect.y;
-    wmnormal.max_aspect_x = sizehint.max_aspect.x;
-    wmnormal.max_aspect_y = sizehint.max_aspect.y;
-  }
-
-  if (sizehint.flags & PBaseSize) {
-    wmnormal.base_width  = sizehint.base_width;
-    wmnormal.base_height = sizehint.base_height;
-
-    // sanity checks
-    wmnormal.min_width  = std::max(wmnormal.min_width,  wmnormal.base_width);
-    wmnormal.min_height = std::max(wmnormal.min_height, wmnormal.base_height);
-  }
-
-  if (sizehint.flags & PWinGravity)
-    wmnormal.win_gravity = sizehint.win_gravity;
-
-  return wmnormal;
-}
-
-
-/*
- * Returns the Motif hints for the class' contained window.
- */
-MotifHints BlackboxWindow::readMotifHints(void) {
-  MotifHints motif;
-  motif.decorations = AllWindowDecorations;
-  motif.functions   = AllWindowFunctions;
-
-  /*
-    this structure only contains 3 elements, even though the Motif 2.0
-    structure contains 5, because we only use the first 3
-  */
-  struct PropMotifhints {
-    unsigned long flags;
-    unsigned long functions;
-    unsigned long decorations;
-  };
-  static const unsigned int PROP_MWM_HINTS_ELEMENTS = 3u;
-  enum { // MWM flags
-    MWM_HINTS_FUNCTIONS   = 1<<0,
-    MWM_HINTS_DECORATIONS = 1<<1
-  };
-  enum { // MWM functions
-    MWM_FUNC_ALL      = 1<<0,
-    MWM_FUNC_RESIZE   = 1<<1,
-    MWM_FUNC_MOVE     = 1<<2,
-    MWM_FUNC_MINIMIZE = 1<<3,
-    MWM_FUNC_MAXIMIZE = 1<<4,
-    MWM_FUNC_CLOSE    = 1<<5
-  };
-  enum { // MWM decorations
-    MWM_DECOR_ALL      = 1<<0,
-    MWM_DECOR_BORDER   = 1<<1,
-    MWM_DECOR_RESIZEH  = 1<<2,
-    MWM_DECOR_TITLE    = 1<<3,
-    MWM_DECOR_MENU     = 1<<4,
-    MWM_DECOR_MINIMIZE = 1<<5,
-    MWM_DECOR_MAXIMIZE = 1<<6
-  };
-
-  Atom atom_return;
-  PropMotifhints *prop = 0;
-  int format;
-  unsigned long num, len;
-  int ret = XGetWindowProperty(blackbox->XDisplay(), client.window,
-                               blackbox->motifWmHintsAtom(), 0,
-                               PROP_MWM_HINTS_ELEMENTS, False,
-                               blackbox->motifWmHintsAtom(), &atom_return,
-                               &format, &num, &len,
-                               (unsigned char **) &prop);
-
-  if (ret != Success || !prop || num != PROP_MWM_HINTS_ELEMENTS) {
-    if (prop) XFree(prop);
-    return motif;
-  }
-
-  if (prop->flags & MWM_HINTS_FUNCTIONS) {
-    if (prop->functions & MWM_FUNC_ALL) {
-      motif.functions = AllWindowFunctions;
-    } else {
-      motif.functions = NoWindowFunctions;
-
-      if (prop->functions & MWM_FUNC_RESIZE)
-        motif.functions |= WindowFunctionResize;
-      if (prop->functions & MWM_FUNC_MOVE)
-        motif.functions |= WindowFunctionMove;
-      if (prop->functions & MWM_FUNC_MINIMIZE)
-        motif.functions |= WindowFunctionIconify;
-      if (prop->functions & MWM_FUNC_MAXIMIZE)
-        motif.functions |= WindowFunctionMaximize;
-      if (prop->functions & MWM_FUNC_CLOSE)
-        motif.functions |= WindowFunctionClose;
-    }
-  }
-
-  if (prop->flags & MWM_HINTS_DECORATIONS) {
-    if (prop->decorations & MWM_DECOR_ALL) {
-      motif.decorations = AllWindowDecorations;
-    } else {
-      motif.decorations = NoWindowDecorations;
-
-      if (prop->decorations & MWM_DECOR_BORDER)
-        motif.decorations |= WindowDecorationBorder;
-      if (prop->decorations & MWM_DECOR_RESIZEH) {
-        motif.decorations |= (WindowDecorationHandle |
-                              WindowDecorationGrip);
-      }
-      if (prop->decorations & MWM_DECOR_TITLE) {
-        motif.decorations |= (WindowDecorationTitlebar |
-                              WindowDecorationClose);
-      }
-      if (prop->decorations & MWM_DECOR_MINIMIZE)
-        motif.decorations |= WindowDecorationIconify;
-      if (prop->decorations & MWM_DECOR_MAXIMIZE)
-        motif.decorations |= WindowDecorationMaximize;
-    }
-  }
-
-  XFree(prop);
-
-  return motif;
-}
-
-
-/*
- * Reads the value of the WM_TRANSIENT_FOR property and returns a
- * pointer to the transient parent for this window.  If the
- * WM_TRANSIENT_FOR is missing or invalid, this function returns 0.
- *
- * 'client.wmhints' should be properly updated before calling this
- * function.
- *
- * Note: a return value of ~0ul signifies a window that should be
- * transient but has no discernible parent.
- */
-Window BlackboxWindow::readTransientInfo(void) {
-  Window trans_for = None;
-
-  if (!XGetTransientForHint(blackbox->XDisplay(), client.window, &trans_for)) {
-    // WM_TRANSIENT_FOR hint not set
-    return 0;
-  }
-
-  if (trans_for == client.window) {
-    // wierd client... treat this window as a normal window
-    return 0;
-  }
-
-  if (trans_for == None || trans_for == _screen->screenInfo().rootWindow()) {
-    /*
-      this is a violation of the ICCCM, yet the EWMH allows this as a
-      way to signify a group transient.
-    */
-    trans_for = client.wmhints.window_group;
-  }
-
-  return trans_for;
 }
 
 
@@ -1767,7 +2121,7 @@ void BlackboxWindow::maximize(unsigned int button) {
         because resizing will handle it
       */
       if (! client.state.resizing)
-        configure(client.premax);
+        configure(frame.premax);
 
       redrawAllButtons(); // in case it is not called in configure()
     }
@@ -1798,24 +2152,29 @@ void BlackboxWindow::maximize(unsigned int button) {
   }
 
   if (!isFullScreen()) {
-    frame.changing = _screen->availableArea();
-
-    upsize();
-    client.premax = frame.rect;
-
-    if (!client.ewmh.maxh) {
-      frame.changing.setX(client.premax.x());
-      frame.changing.setWidth(client.premax.width());
-    }
-    if (!client.ewmh.maxv) {
-      frame.changing.setY(client.premax.y());
-      frame.changing.setHeight(client.premax.height());
-    }
-
-    constrain(TopLeft);
+    // store the current frame geometry, so that we can restore it later
+    frame.premax = ::upsize(client.rect,
+                            frame.style,
+                            frame.margin,
+                            false);
+    frame.premax.setPos(frame.rect.x(), frame.rect.y());
 
     frame.rect = bt::Rect(); // trick configure into working
-    configure(frame.changing);
+
+    bt::Rect r = _screen->availableArea();
+
+    if (!client.ewmh.maxh) {
+      r.setX(frame.premax.x());
+      r.setWidth(frame.premax.width());
+    }
+    if (!client.ewmh.maxv) {
+      r.setY(frame.premax.y());
+      r.setHeight(frame.premax.height());
+    }
+
+    r = ::constrain(r, frame.margin, client.wmnormal, TopLeft);
+    configure(r);
+
     redrawAllButtons(); // in case it is not called in configure()
   }
 
@@ -1837,9 +2196,9 @@ void BlackboxWindow::remaximize(void) {
   // trick maximize() into working
   client.ewmh.maxh = client.ewmh.maxv = false;
 
-  const bt::Rect tmp = client.premax;
+  const bt::Rect tmp = frame.premax;
   maximize(button);
-  client.premax = tmp;
+  frame.premax = tmp;
 }
 
 
@@ -1884,21 +2243,24 @@ void BlackboxWindow::setFullScreen(bool b) {
   bool refocus = isFocused();
   client.ewmh.fullscreen = b;
   if (isFullScreen()) {
+    // modify decorations, functions and frame margin
     client.decorations = NoWindowDecorations;
     client.functions &= ~(WindowFunctionMove |
                           WindowFunctionResize |
                           WindowFunctionShade |
                           WindowFunctionChangeLayer);
+    ::update_margin(frame.margin,
+                    client.decorations,
+                    frame.style);
 
     if (!isMaximized())
-      client.premax = frame.rect;
+      frame.premax = frame.rect;
 
-    upsize();
     frame.rect = bt::Rect(); // trick configure() into working
 
-    frame.changing = _screen->screenInfo().rect();
-    constrain(TopLeft);
-    configure(frame.changing);
+    bt::Rect r = ::constrain(_screen->screenInfo().rect(), frame.margin,
+                             client.wmnormal, TopLeft);
+    configure(r);
     if (isVisible())
       _screen->changeLayer(this, StackingList::LayerFullScreen);
     setState(client.current_state);
@@ -1910,17 +2272,17 @@ void BlackboxWindow::setFullScreen(bool b) {
                          client.motif,
                          client.wmnormal,
                          client.wmprotocols);
+    ::update_margin(frame.margin, client.decorations, frame.style);
 
     if (client.decorations & WindowDecorationTitlebar)
       createTitlebar();
     if (client.decorations & WindowDecorationHandle)
       createHandle();
 
-    upsize();
     frame.rect = bt::Rect(); // trick configure() into working
 
     if (!isMaximized()) {
-      configure(client.premax);
+      configure(frame.premax);
       if (isVisible())
         _screen->changeLayer(this, StackingList::LayerNormal);
       setState(client.current_state);
@@ -2052,175 +2414,6 @@ void BlackboxWindow::setState(unsigned long new_state) {
     atoms.push_back(ewmh.wmActionClose());
 
   ewmh.setWMAllowedActions(client.window, atoms);
-}
-
-
-bool BlackboxWindow::readState(void) {
-  client.current_state = NormalState;
-
-  Atom atom_return;
-  bool ret = False;
-  int foo;
-  unsigned long *state, ulfoo, nitems;
-
-  if ((XGetWindowProperty(blackbox->XDisplay(), client.window,
-                          blackbox->wmStateAtom(),
-                          0l, 2l, False, blackbox->wmStateAtom(),
-                          &atom_return, &foo, &nitems, &ulfoo,
-                          (unsigned char **) &state) != Success) ||
-      (! state)) {
-    return False;
-  }
-
-  if (nitems >= 1) {
-    client.current_state = static_cast<unsigned long>(state[0]);
-    ret = True;
-  }
-
-  XFree((void *) state);
-
-  return ret;
-}
-
-
-/*
- *
- */
-void BlackboxWindow::clearState(void) {
-  XDeleteProperty(blackbox->XDisplay(), client.window,
-                  blackbox->wmStateAtom());
-
-  const bt::EWMH& ewmh = blackbox->ewmh();
-  ewmh.removeProperty(client.window, ewmh.wmDesktop());
-  ewmh.removeProperty(client.window, ewmh.wmState());
-  ewmh.removeProperty(client.window, ewmh.wmAllowedActions());
-  ewmh.removeProperty(client.window, ewmh.wmVisibleName());
-  ewmh.removeProperty(client.window, ewmh.wmVisibleIconName());
-}
-
-
-
-/*
- * Positions the bt::Rect r according the the client window position and
- * window gravity.
- */
-void BlackboxWindow::applyGravity(bt::Rect &r) {
-  // apply horizontal window gravity
-  switch (client.wmnormal.win_gravity) {
-  default:
-  case NorthWestGravity:
-  case SouthWestGravity:
-  case WestGravity:
-    r.setX(client.rect.x());
-    break;
-
-  case NorthGravity:
-  case SouthGravity:
-  case CenterGravity:
-    r.setX(client.rect.x() - (frame.margin.left + frame.margin.right) / 2);
-    break;
-
-  case NorthEastGravity:
-  case SouthEastGravity:
-  case EastGravity:
-    r.setX(client.rect.x() - (frame.margin.left + frame.margin.right) + 2);
-    break;
-
-  case ForgetGravity:
-  case StaticGravity:
-    r.setX(client.rect.x() - frame.margin.left);
-    break;
-  }
-
-  // apply vertical window gravity
-  switch (client.wmnormal.win_gravity) {
-  default:
-  case NorthWestGravity:
-  case NorthEastGravity:
-  case NorthGravity:
-    r.setY(client.rect.y());
-    break;
-
-  case CenterGravity:
-  case EastGravity:
-  case WestGravity:
-    r.setY(client.rect.y() - ((frame.margin.top + frame.margin.bottom) / 2));
-    break;
-
-  case SouthWestGravity:
-  case SouthEastGravity:
-  case SouthGravity:
-    r.setY(client.rect.y() - (frame.margin.bottom + frame.margin.top) + 2);
-    break;
-
-  case ForgetGravity:
-  case StaticGravity:
-    r.setY(client.rect.y() - frame.margin.top);
-    break;
-  }
-}
-
-
-/*
- * The reverse of the applyGravity function.
- *
- * Positions the bt::Rect r according to the frame window position and
- * window gravity.
- */
-void BlackboxWindow::restoreGravity(bt::Rect &r) {
-  // restore horizontal window gravity
-  switch (client.wmnormal.win_gravity) {
-  default:
-  case NorthWestGravity:
-  case SouthWestGravity:
-  case WestGravity:
-    r.setX(frame.rect.x());
-    break;
-
-  case NorthGravity:
-  case SouthGravity:
-  case CenterGravity:
-    r.setX(frame.rect.x() + (frame.margin.left + frame.margin.right) / 2);
-    break;
-
-  case NorthEastGravity:
-  case SouthEastGravity:
-  case EastGravity:
-    r.setX(frame.rect.x() + (frame.margin.left + frame.margin.right) - 2);
-    break;
-
-  case ForgetGravity:
-  case StaticGravity:
-    r.setX(frame.rect.x() + frame.margin.left);
-    break;
-  }
-
-  // restore vertical window gravity
-  switch (client.wmnormal.win_gravity) {
-  default:
-  case NorthWestGravity:
-  case NorthEastGravity:
-  case NorthGravity:
-    r.setY(frame.rect.y());
-    break;
-
-  case CenterGravity:
-  case EastGravity:
-  case WestGravity:
-    r.setY(frame.rect.y() + (frame.margin.top + frame.margin.bottom) / 2);
-    break;
-
-  case SouthWestGravity:
-  case SouthEastGravity:
-  case SouthGravity:
-    r.setY(frame.rect.y() + (frame.margin.top + frame.margin.bottom) - 2);
-    break;
-
-  case ForgetGravity:
-  case StaticGravity:
-    r.setY(frame.rect.y() + frame.margin.top);
-    break;
-  }
 }
 
 
@@ -2660,7 +2853,10 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
     }
 
     // determine if this is a transient window
-    client.transient_for = readTransientInfo();
+    client.transient_for = ::readTransientInfo(blackbox,
+                                               client.window,
+                                               _screen->screenInfo(),
+                                               client.wmhints);
     if (isTransient()) {
       BlackboxWindow *win = findTransientFor();
       if (win) {
@@ -2688,6 +2884,9 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
                          client.motif,
                          client.wmnormal,
                          client.wmprotocols);
+    ::update_margin(frame.margin,
+                    client.decorations,
+                    frame.style);
 
     reconfigure();
 
@@ -2700,7 +2899,7 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
     if (group)
       group->removeWindow(this);
 
-    client.wmhints = readWMHints();
+    client.wmhints = ::readWMHints(blackbox, client.window);
 
     if (client.wmhints.window_group != None)
       ::update_window_group(client.wmhints.window_group, blackbox, this);
@@ -2709,14 +2908,14 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
   }
 
   case XA_WM_ICON_NAME: {
-    client.icon_title = readWMIconName();
+    client.icon_title = ::readWMIconName(blackbox, client.window);
     if (client.state.iconic)
       _screen->propagateWindowName(this);
     break;
   }
 
   case XA_WM_NAME: {
-    client.title = readWMName();
+    client.title = ::readWMName(blackbox, client.window);
 
     client.visible_title =
       bt::ellideText(client.title, frame.label_w, bt::toUnicode("..."),
@@ -2732,7 +2931,8 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
   }
 
   case XA_WM_NORMAL_HINTS: {
-    client.wmnormal = readWMNormalHints();
+    client.wmnormal = ::readWMNormalHints(blackbox, client.window,
+                                          _screen->screenInfo());
 
     if ((client.wmnormal.flags & (PMinSize|PMaxSize)) == (PMinSize|PMaxSize)) {
       /*
@@ -2748,9 +2948,16 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
                            client.motif,
                            client.wmnormal,
                            client.wmprotocols);
+      ::update_margin(frame.margin,
+                      client.decorations,
+                      frame.style);
 
       // update frame.rect based on the new decorations
-      upsize();
+      bt::Rect r = ::upsize(client.rect,
+                            frame.style,
+                            frame.margin,
+                            client.ewmh.shaded);
+      frame.rect.setSize(r.width(), r.height());
 
       grabButtons();
     }
@@ -2759,18 +2966,17 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
       Update the current geometry by constraining it (the current
       geometry) based on the information from the property.
     */
-    frame.changing = frame.rect;
-    constrain(TopLeft);
-
-    if (frame.rect != frame.changing)
-      configure(frame.changing);
+    bt::Rect r = ::constrain(frame.rect, frame.margin,
+                             client.wmnormal, TopLeft);
+    if (frame.rect != r)
+      configure(r);
 
     break;
   }
 
   default: {
     if (event->atom == blackbox->wmProtocolsAtom()) {
-      client.wmprotocols = readWMProtocols();
+      client.wmprotocols = ::readWMProtocols(blackbox, client.window);
 
       ::update_decorations(client.decorations,
                            client.functions,
@@ -2779,10 +2985,13 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
                            client.motif,
                            client.wmnormal,
                            client.wmprotocols);
+      ::update_margin(frame.margin,
+                      client.decorations,
+                      frame.style);
 
       reconfigure();
     } else if (event->atom == blackbox->motifWmHintsAtom()) {
-      client.motif = readMotifHints();
+      client.motif = ::readMotifWMHints(blackbox, client.window);
 
       ::update_decorations(client.decorations,
                            client.functions,
@@ -2791,6 +3000,9 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
                            client.motif,
                            client.wmnormal,
                            client.wmprotocols);
+      ::update_margin(frame.margin,
+                      client.decorations,
+                      frame.style);
 
       reconfigure();
     } else if (event->atom == blackbox->ewmh().wmStrut()) {
@@ -2850,12 +3062,14 @@ void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent *
     bt::Rect req = frame.rect;
 
     if (event->value_mask & (CWX | CWY)) {
-      restoreGravity(client.rect);
+      ::restoreGravity(client.rect, frame.rect, frame.margin,
+                       client.wmnormal.win_gravity);
       if (event->value_mask & CWX)
         client.rect.setX(event->x);
       if (event->value_mask & CWY)
         client.rect.setY(event->y);
-      applyGravity(req);
+      ::applyGravity(req, client.rect, frame.margin,
+                     client.wmnormal.win_gravity);
     }
 
     if (event->value_mask & (CWWidth | CWHeight)) {
@@ -2979,7 +3193,7 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const event) {
 
     if (! _screen->resource().doOpaqueMove()) {
       /* when drawing the rubber band, we need to make sure we only
-       * draw inside the frame... frame.changing_* contain the new
+       * draw inside the frame... frame.changing contain the new
        * coords for the window, so we need to subtract 1 from
        * changing_w/changing_h every where we draw the rubber band
        * (for both moving and resizing)
@@ -3021,7 +3235,9 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const event) {
 
     _screen->hideGeometry();
 
-    constrain((event->window == frame.left_grip) ? TopRight : TopLeft);
+    frame.changing =
+      constrain(frame.changing, frame.margin, client.wmnormal,
+                (event->window == frame.left_grip) ? TopRight : TopLeft);
 
     // unset maximized state when resized after fully maximized
     if (isMaximized())
@@ -3168,9 +3384,9 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
 
       frame.grab_x = event->x;
       frame.grab_y = event->y;
-      frame.changing = frame.rect;
 
-      constrain(left ? TopRight : TopLeft);
+      frame.changing = constrain(frame.rect, frame.margin, client.wmnormal,
+                                 left ? TopRight : TopLeft);
 
       bt::Pen pen(_screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
       const int bw = frame.style->frame_border_width, hw = bw / 2;
@@ -3206,7 +3422,8 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
                                 frame.margin.top + frame.margin.bottom + 1);
       frame.changing.setHeight(nh);
 
-      constrain(left ? TopRight : TopLeft);
+      frame.changing = constrain(frame.changing, frame.margin, client.wmnormal,
+                                 left ? TopRight : TopLeft);
 
       if (curr != frame.changing) {
         bt::Pen pen(_screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
@@ -3303,13 +3520,14 @@ void BlackboxWindow::restore(void) {
     want to make sure we preserve the state across restarts).
   */
   if (!blackbox->shuttingDown()) {
-    clearState();
+    clearState(blackbox, client.window);
   } else if (isShaded() && !isIconic()) {
     // do not leave a shaded window as an icon unless it was an icon
     setState(NormalState);
   }
 
-  restoreGravity(client.rect);
+  ::restoreGravity(client.rect, frame.rect, frame.margin,
+                   client.wmnormal.win_gravity);
 
   blackbox->XGrabServer();
 
@@ -3322,9 +3540,9 @@ void BlackboxWindow::restore(void) {
     XMoveResizeWindow(blackbox->XDisplay(), client.window,
                       client.rect.x() - frame.rect.x(),
                       client.rect.y() - frame.rect.y(),
-                      client.premax.width() - (frame.margin.left
+                      frame.premax.width() - (frame.margin.left
                                                + frame.margin.right),
-                      client.premax.height() - (frame.margin.top
+                      frame.premax.height() - (frame.margin.top
                                                 + frame.margin.bottom));
   } else {
     XMoveWindow(blackbox->XDisplay(), client.window,
@@ -3359,42 +3577,6 @@ void BlackboxWindow::timeout(bt::Timer *)
 
 
 /*
- * Set the sizes of all components of the window frame
- * (the window decorations).
- * These values are based upon the current style settings and the client
- * window's dimensions.
- */
-void BlackboxWindow::upsize(void) {
-  const unsigned int bw = (hasWindowDecoration(WindowDecorationBorder)
-                           ? frame.style->frame_border_width
-                           : 0);
-
-  frame.margin.top = frame.margin.bottom =
-    frame.margin.left = frame.margin.right = bw;
-
-  if (client.decorations & WindowDecorationTitlebar)
-    frame.margin.top += frame.style->title_height - bw;
-
-  if (client.decorations & WindowDecorationHandle)
-    frame.margin.bottom += frame.style->handle_height - bw;
-
-  /*
-    We first get the normal dimensions and use this to define the
-    width/height then we modify the height if shading is in effect.
-    If the shade state is not considered then frame.rect gets reset to
-    the normal window size on a reconfigure() call resulting in
-    improper dimensions appearing in move/resize and other events.
-  */
-  unsigned int
-    height = client.rect.height() + frame.margin.top + frame.margin.bottom,
-    width = client.rect.width() + frame.margin.left + frame.margin.right;
-
-  if (isShaded())
-    height = frame.style->title_height;
-  frame.rect.setSize(width, height);
-}
-
-/*
  * show the geometry of the window based on rectangle r.
  * The logical width and height are used here.  This refers to the user's
  * perception of the window size (for example an xterm resizes in cells,
@@ -3423,121 +3605,4 @@ void BlackboxWindow::showGeometry(const bt::Rect &r) const {
   }
 
   _screen->showGeometry(BScreen::Size, bt::Rect(0, 0, w, h));
-}
-
-
-/*
- * Calculate the size of the client window and constrain it to the
- * size specified by the size hints of the client window.
- *
- * The physical geometry is placed into frame.changing.  Physical
- * geometry refers to the geometry of the window in pixels.
- */
-void BlackboxWindow::constrain(Corner anchor) {
-  // frame.changing represents the requested frame size, we need to
-  // strip the frame margin off and constrain the client size
-  frame.changing.
-    setCoords(frame.changing.left() + static_cast<signed>(frame.margin.left),
-              frame.changing.top() + static_cast<signed>(frame.margin.top),
-              frame.changing.right() - static_cast<signed>(frame.margin.right),
-              frame.changing.bottom() -
-              static_cast<signed>(frame.margin.bottom));
-
-  unsigned int dw = frame.changing.width(), dh = frame.changing.height();
-  const unsigned int base_width = ((client.wmnormal.base_width)
-                                   ? client.wmnormal.base_width
-                                   : client.wmnormal.min_width),
-                    base_height = ((client.wmnormal.base_height)
-                                   ? client.wmnormal.base_height
-                                   : client.wmnormal.min_height);
-
-  // constrain to min and max sizes
-  if (dw < client.wmnormal.min_width) dw = client.wmnormal.min_width;
-  if (dh < client.wmnormal.min_height) dh = client.wmnormal.min_height;
-  if (dw > client.wmnormal.max_width) dw = client.wmnormal.max_width;
-  if (dh > client.wmnormal.max_height) dh = client.wmnormal.max_height;
-
-  assert(dw >= base_width && dh >= base_height);
-
-  // fit to size increments
-  if (client.wmnormal.flags & PResizeInc) {
-    dw = (((dw - base_width) / client.wmnormal.width_inc)
-          * client.wmnormal.width_inc) + base_width;
-    dh = (((dh - base_height) / client.wmnormal.height_inc)
-          * client.wmnormal.height_inc) + base_height;
-  }
-
-  /*
-   * honor aspect ratios (based on twm which is based on uwm)
-   *
-   * The math looks like this:
-   *
-   * minAspectX    dwidth     maxAspectX
-   * ---------- <= ------- <= ----------
-   * minAspectY    dheight    maxAspectY
-   *
-   * If that is multiplied out, then the width and height are
-   * invalid in the following situations:
-   *
-   * minAspectX * dheight > minAspectY * dwidth
-   * maxAspectX * dheight < maxAspectY * dwidth
-   *
-   */
-  if (client.wmnormal.flags & PAspect) {
-    unsigned int delta;
-    const unsigned int min_asp_x = client.wmnormal.min_aspect_x,
-                       min_asp_y = client.wmnormal.min_aspect_y,
-                       max_asp_x = client.wmnormal.max_aspect_x,
-                       max_asp_y = client.wmnormal.max_aspect_y,
-                       w_inc = client.wmnormal.width_inc,
-                       h_inc = client.wmnormal.height_inc;
-    if (min_asp_x * dh > min_asp_y * dw) {
-      delta = ((min_asp_x * dh / min_asp_y - dw) * w_inc) / w_inc;
-      if (dw + delta <= client.wmnormal.max_width) {
-        dw += delta;
-      } else {
-        delta = ((dh - (dw * min_asp_y) / min_asp_x) * h_inc) / h_inc;
-        if (dh - delta >= client.wmnormal.min_height) dh -= delta;
-      }
-    }
-    if (max_asp_x * dh < max_asp_y * dw) {
-      delta = ((max_asp_y * dw / max_asp_x - dh) * h_inc) / h_inc;
-      if (dh + delta <= client.wmnormal.max_height) {
-        dh += delta;
-      } else {
-        delta = ((dw - (dh * max_asp_x) / max_asp_y) * w_inc) / w_inc;
-        if (dw - delta >= client.wmnormal.min_width) dw -= delta;
-      }
-    }
-  }
-
-  frame.changing.setSize(dw, dh);
-
-  // add the frame margin back onto frame.changing
-  frame.changing.setCoords(frame.changing.left() - frame.margin.left,
-                           frame.changing.top() - frame.margin.top,
-                           frame.changing.right() + frame.margin.right,
-                           frame.changing.bottom() + frame.margin.bottom);
-
-  // move frame.changing to the specified anchor
-  int dx = frame.rect.right() - frame.changing.right();
-  int dy = frame.rect.bottom() - frame.changing.bottom();
-
-  switch (anchor) {
-  case TopLeft:
-    // nothing to do
-    break;
-
-  case TopRight:
-    frame.changing.setPos(frame.changing.x() + dx, frame.changing.y());
-    break;
-
-  case BottomLeft:
-    frame.changing.setPos(frame.changing.x(), frame.changing.y() + dy);
-    break;
-
-  case BottomRight:
-    frame.changing.setPos(frame.changing.x() + dx, frame.changing.y() + dy);
-    break;
-  }
 }
