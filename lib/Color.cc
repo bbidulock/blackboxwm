@@ -38,21 +38,28 @@ extern "C" {
 bt::Color::ColorCache bt::Color::colorcache;
 bool bt::Color::cleancache = false;
 
-bt::Color::Color(const bt::Display * const _display, unsigned int _screen)
-  : allocated(false), r(-1), g(-1), b(-1), p(0), dpy(_display), scrn(_screen)
+bt::Color::Color(const bt::Display * const _display,
+                 unsigned int _screen)
+  : allocated(false), r(-1), g(-1), b(-1), p(0),
+    dpy(_display), scrn(_screen)
 {}
 
 bt::Color::Color(int _r, int _g, int _b,
-               const bt::Display * const _display, unsigned int _screen)
-  : allocated(false), r(_r), g(_g), b(_b), p(0), dpy(_display), scrn(_screen)
+                 const bt::Display * const _display,
+                 unsigned int _screen)
+  : allocated(false), r(_r), g(_g), b(_b), p(0),
+    dpy(_display), scrn(_screen)
 {}
 
 
 bt::Color::Color(const std::string &_name,
-               const bt::Display * const _display, unsigned int _screen)
-  : allocated(false), r(-1), g(-1), b(-1), p(0), dpy(_display), scrn(_screen),
+                 const bt::Display * const _display,
+                 unsigned int _screen)
+  : allocated(false), r(-1), g(-1), b(-1), p(0),
+    dpy(_display), scrn(_screen),
     colorname(_name) {
-  parseColorName();
+  if (dpy)
+    parseColorName();
 }
 
 
@@ -62,7 +69,7 @@ bt::Color::~Color(void) {
 
 
 void bt::Color::setDisplay(const bt::Display * const _display,
-                        unsigned int _screen) {
+                           unsigned int _screen) {
   if (_display == display() && _screen == screen()) {
     // nothing to do
     return;
