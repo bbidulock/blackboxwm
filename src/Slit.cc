@@ -105,10 +105,6 @@ void Slit::addClient(Window w) {
   if (wmhints) {
     if ((wmhints->flags & IconWindowHint) &&
         (wmhints->icon_window != None)) {
-      XMoveWindow(display, client->client_window, screen->getWidth() + 10,
-                  screen->getHeight() + 10);
-      XMapWindow(display, client->client_window);
-
       client->icon_window = wmhints->icon_window;
       client->window = client->icon_window;
     } else {
