@@ -48,10 +48,6 @@
 // #define MITSHM_DEBUG
 
 
-static const unsigned int maximumWidth  = 8000;
-static const unsigned int maximumHeight = 6000;
-
-
 unsigned int bt::Image::global_colorsPerChannel = 6;
 bt::DitherMode bt::Image::global_ditherMode = bt::OrderedDither;
 
@@ -436,8 +432,8 @@ unsigned long bt::XColorTable::pixel(unsigned int red,
 
 bt::Image::Image(unsigned int w, unsigned int h)
   :  width(w), height(h) {
-  assert(width > 0  && width  < maximumWidth);
-  assert(height > 0 && height < maximumHeight);
+  assert(width > 0);
+  assert(height > 0);
 
   data = static_cast<RGB *>(malloc(width * height * sizeof(RGB)));
 }
@@ -552,7 +548,7 @@ static const unsigned int dither16[16][16] = {
  */
 static inline
 void assignPixelData(unsigned int bit_depth, unsigned char **data,
-		     unsigned long pixel) {
+                     unsigned long pixel) {
   unsigned char *pixel_data = *data;
   switch (bit_depth) {
   case  8: //  8bpp
@@ -643,17 +639,18 @@ void bt::Image::FloydSteinbergDither(XColorTable *colortable,
                                      unsigned int bit_depth,
                                      unsigned int bytes_per_line,
                                      unsigned char *pixel_data) {
-  int *err[2][3], *terr;
-  err[0][0] = new int[width + 2];
-  err[0][1] = new int[width + 2];
-  err[0][2] = new int[width + 2];
-  err[1][0] = new int[width + 2];
-  err[1][1] = new int[width + 2];
-  err[1][2] = new int[width + 2];
+  int * const error = new int[width * 6];
+  int * const r_line1 = error + (width * 0);
+  int * const g_line1 = error + (width * 1);
+  int * const b_line1 = error + (width * 2);
+  int * const r_line2 = error + (width * 3);
+  int * const g_line2 = error + (width * 4);
+  int * const b_line2 = error + (width * 5);
 
   int rer, ger, ber;
   unsigned int x, y, r, g, b, offset;
   unsigned char *ppixel_data = pixel_data;
+  RGB *pixels = new RGB[width];
 
   unsigned int maxr = 255, maxg = 255, maxb = 255;
   colortable->map(maxr, maxg, maxb);
@@ -661,81 +658,108 @@ void bt::Image::FloydSteinbergDither(XColorTable *colortable,
   maxg = 255u / maxg;
   maxb = 255u / maxb;
 
-  for (x = 0; x < width; ++x) {
-    err[0][0][x] = static_cast<int>(data[x].red  );
-    err[0][1][x] = static_cast<int>(data[x].green);
-    err[0][2][x] = static_cast<int>(data[x].blue );
-  }
-
-  err[0][0][x] = err[0][1][x] = err[0][2][x] = 0;
-
   for (y = 0, offset = 0; y < height; ++y) {
-    if (y < (height - 1)) {
-      for (x = 0; x < width; ++x) {
-	err[1][0][x] = static_cast<int>(data[offset + width + x].red  );
-	err[1][1][x] = static_cast<int>(data[offset + width + x].green);
-	err[1][2][x] = static_cast<int>(data[offset + width + x].blue );
-      }
+    const bool reverse = bool(y & 1);
 
-      err[1][0][x] = err[1][0][x + 1];
-      err[1][1][x] = err[1][1][x + 1];
-      err[1][2][x] = err[1][2][x + 1];
+    int * const rl1 = (reverse) ? r_line2 : r_line1;
+    int * const gl1 = (reverse) ? g_line2 : g_line1;
+    int * const bl1 = (reverse) ? b_line2 : b_line1;
+    int * const rl2 = (reverse) ? r_line1 : r_line2;
+    int * const gl2 = (reverse) ? g_line1 : g_line2;
+    int * const bl2 = (reverse) ? b_line1 : b_line2;
+
+    if (y == 0) {
+      for (x = 0; x < width; ++x) {
+        rl1[x] = static_cast<int>(data[x].red);
+        gl1[x] = static_cast<int>(data[x].green);
+        bl1[x] = static_cast<int>(data[x].blue);
+      }
+    }
+    if (y+1 < height) {
+      for (x = 0; x < width; ++x) {
+        rl2[x] = static_cast<int>(data[offset + width + x].red);
+        gl2[x] = static_cast<int>(data[offset + width + x].green);
+        bl2[x] = static_cast<int>(data[offset + width + x].blue);
+      }
     }
 
-    for (x = 0; x < width; ++x) {
-      r = static_cast<unsigned int>(std::max(std::min(err[0][0][x], 255), 0));
-      g = static_cast<unsigned int>(std::max(std::min(err[0][1][x], 255), 0));
-      b = static_cast<unsigned int>(std::max(std::min(err[0][2][x], 255), 0));
+    // bi-directional dither
+    if (reverse) {
+      for (x = 0; x < width; ++x) {
+        r = static_cast<unsigned int>(std::max(std::min(rl1[x], 255), 0));
+        g = static_cast<unsigned int>(std::max(std::min(gl1[x], 255), 0));
+        b = static_cast<unsigned int>(std::max(std::min(bl1[x], 255), 0));
+        colortable->map(r, g, b);
+        pixels[x].red   = r;
+        pixels[x].green = g;
+        pixels[x].blue  = b;
 
-      colortable->map(r, g, b);
-      assignPixelData(bit_depth, &pixel_data, colortable->pixel(r, g, b));
+        rer = rl1[x] - static_cast<int>(r * maxr);
+        ger = gl1[x] - static_cast<int>(g * maxg);
+        ber = bl1[x] - static_cast<int>(b * maxb);
 
-      rer = err[0][0][x] - static_cast<int>(r * maxr);
-      ger = err[0][1][x] - static_cast<int>(g * maxg);
-      ber = err[0][2][x] - static_cast<int>(b * maxb);
-
-      err[0][0][x + 1]   += rer * 7 / 16;
-      err[0][1][x + 1]   += ger * 7 / 16;
-      err[0][2][x + 1]   += ber * 7 / 16;
-
-      if (x > 0) {
-        err[1][0][x - 1] += rer * 3 / 16;
-        err[1][1][x - 1] += ger * 3 / 16;
-        err[1][2][x - 1] += ber * 3 / 16;
+        if (x+1 < width) {
+          rl1[x+1] += rer * 7 / 16;
+          gl1[x+1] += ger * 7 / 16;
+          bl1[x+1] += ber * 7 / 16;
+          rl2[x+1] += rer * 1 / 16;
+          gl2[x+1] += ger * 1 / 16;
+          bl2[x+1] += ber * 1 / 16;
+        }
+        rl2[x] += rer * 5 / 16;
+        gl2[x] += ger * 5 / 16;
+        bl2[x] += ber * 5 / 16;
+        if (x > 0) {
+          rl2[x-1] += rer * 3 / 16;
+          gl2[x-1] += ger * 3 / 16;
+          bl2[x-1] += ber * 3 / 16;
+        }
       }
+    } else {
+      for (x = width; x-- > 0; ) {
+        r = static_cast<unsigned int>(std::max(std::min(rl1[x], 255), 0));
+        g = static_cast<unsigned int>(std::max(std::min(gl1[x], 255), 0));
+        b = static_cast<unsigned int>(std::max(std::min(bl1[x], 255), 0));
+        colortable->map(r, g, b);
+        pixels[x].red   = r;
+        pixels[x].green = g;
+        pixels[x].blue  = b;
 
-      err[1][0][x]       += rer * 5 / 16;
-      err[1][1][x]       += ger * 5 / 16;
-      err[1][2][x]       += ber * 5 / 16;
+        rer = rl1[x] - static_cast<int>(r * maxr);
+        ger = gl1[x] - static_cast<int>(g * maxg);
+        ber = bl1[x] - static_cast<int>(b * maxb);
 
-      err[1][0][x + 1]   += rer / 16;
-      err[1][1][x + 1]   += ger / 16;
-      err[1][2][x + 1]   += ber / 16;
+        if (x > 0) {
+          rl1[x-1] += rer * 7 / 16;
+          gl1[x-1] += ger * 7 / 16;
+          bl1[x-1] += ber * 7 / 16;
+          rl2[x-1] += rer * 1 / 16;
+          gl2[x-1] += ger * 1 / 16;
+          bl2[x-1] += ber * 1 / 16;
+        }
+        rl2[x] += rer * 5 / 16;
+        gl2[x] += ger * 5 / 16;
+        bl2[x] += ber * 5 / 16;
+        if (x+1 < width) {
+          rl2[x+1] += rer * 3 / 16;
+          gl2[x+1] += ger * 3 / 16;
+          bl2[x+1] += ber * 3 / 16;
+        }
+      }
+    }
+    for (x = 0; x < width; ++x) {
+      r = pixels[x].red;
+      g = pixels[x].green;
+      b = pixels[x].blue;
+      assignPixelData(bit_depth, &pixel_data, colortable->pixel(r, g, b));
     }
 
     offset += width;
-
     pixel_data = (ppixel_data += bytes_per_line);
-
-    terr      = err[0][0];
-    err[0][0] = err[1][0];
-    err[1][0] = terr;
-
-    terr      = err[0][1];
-    err[0][1] = err[1][1];
-    err[1][1] = terr;
-
-    terr      = err[0][2];
-    err[0][2] = err[1][2];
-    err[1][2] = terr;
   }
 
-  delete [] err[0][0];
-  delete [] err[0][1];
-  delete [] err[0][2];
-  delete [] err[1][0];
-  delete [] err[1][1];
-  delete [] err[1][2];
+  delete [] error;
+  delete [] pixels;
 }
 
 
@@ -940,9 +964,17 @@ void bt::Image::dgradient(const Color &from, const Color &to,
 
   RGB *p = data;
   unsigned int w = width * 2, h = height * 2;
-  unsigned int xt[maximumWidth][3], yt[maximumHeight][3];
-
   unsigned int x, y;
+
+  const unsigned int dimension = std::max(width, height);
+  unsigned int *alloc = new unsigned int[dimension * 6];
+  unsigned int *xt[3], *yt[3];
+  xt[0] = alloc + (dimension * 0);
+  xt[1] = alloc + (dimension * 1);
+  xt[2] = alloc + (dimension * 2);
+  yt[0] = alloc + (dimension * 3);
+  yt[1] = alloc + (dimension * 4);
+  yt[2] = alloc + (dimension * 5);
 
   dry = drx = static_cast<double>(to.red()   - from.red());
   dgy = dgx = static_cast<double>(to.green() - from.green());
@@ -954,9 +986,9 @@ void bt::Image::dgradient(const Color &from, const Color &to,
   dbx /= w;
 
   for (x = 0; x < width; ++x) {
-    xt[x][0] = static_cast<unsigned char>(xr);
-    xt[x][1] = static_cast<unsigned char>(xg);
-    xt[x][2] = static_cast<unsigned char>(xb);
+    xt[0][x] = static_cast<unsigned char>(xr);
+    xt[1][x] = static_cast<unsigned char>(xg);
+    xt[2][x] = static_cast<unsigned char>(xb);
 
     xr += drx;
     xg += dgx;
@@ -969,9 +1001,9 @@ void bt::Image::dgradient(const Color &from, const Color &to,
   dby /= h;
 
   for (y = 0; y < height; ++y) {
-    yt[y][0] = static_cast<unsigned char>(yr);
-    yt[y][1] = static_cast<unsigned char>(yg);
-    yt[y][2] = static_cast<unsigned char>(yb);
+    yt[0][y] = static_cast<unsigned char>(yr);
+    yt[1][y] = static_cast<unsigned char>(yg);
+    yt[2][y] = static_cast<unsigned char>(yb);
 
     yr += dry;
     yg += dgy;
@@ -984,9 +1016,9 @@ void bt::Image::dgradient(const Color &from, const Color &to,
     // normal dgradient
     for (y = 0; y < height; ++y) {
       for (x = 0; x < width; ++x, ++p) {
-        p->red   = xt[x][0] + yt[y][0];
-        p->green = xt[x][1] + yt[y][1];
-        p->blue  = xt[x][2] + yt[y][2];
+        p->red   = xt[0][x] + yt[0][y];
+        p->green = xt[1][x] + yt[1][y];
+        p->blue  = xt[2][x] + yt[2][y];
       }
     }
     return;
@@ -995,9 +1027,9 @@ void bt::Image::dgradient(const Color &from, const Color &to,
   // interlacing effect
   for (y = 0; y < height; ++y) {
     for (x = 0; x < width; ++x, ++p) {
-      p->red   = xt[x][0] + yt[y][0];
-      p->green = xt[x][1] + yt[y][1];
-      p->blue  = xt[x][2] + yt[y][2];
+      p->red   = xt[0][x] + yt[0][y];
+      p->green = xt[1][x] + yt[1][y];
+      p->blue  = xt[2][x] + yt[2][y];
 
       if (y & 1) {
         p->red   = (p->red   >> 1) + (p->red   >> 2);
@@ -1006,6 +1038,8 @@ void bt::Image::dgradient(const Color &from, const Color &to,
       }
     }
   }
+
+  delete [] alloc;
 }
 
 
@@ -1148,8 +1182,17 @@ void bt::Image::pgradient(const Color &from, const Color &to,
   int rsign, gsign, bsign;
   RGB *p = data;
   unsigned int tr = to.red(), tg = to.green(), tb = to.blue();
-  unsigned int xt[maximumWidth][3], yt[maximumHeight][3];
   unsigned int x, y;
+
+  const unsigned int dimension = std::max(width, height);
+  unsigned int *alloc = new unsigned int[dimension * 6];
+  unsigned int *xt[3], *yt[3];
+  xt[0] = alloc + (dimension * 0);
+  xt[1] = alloc + (dimension * 1);
+  xt[2] = alloc + (dimension * 2);
+  yt[0] = alloc + (dimension * 3);
+  yt[1] = alloc + (dimension * 4);
+  yt[2] = alloc + (dimension * 5);
 
   dry = drx = static_cast<double>(to.red()   - from.red());
   dgy = dgx = static_cast<double>(to.green() - from.green());
@@ -1169,9 +1212,9 @@ void bt::Image::pgradient(const Color &from, const Color &to,
   dbx /= width;
 
   for (x = 0; x < width; ++x) {
-    xt[x][0] = static_cast<unsigned char>(fabs(xr));
-    xt[x][1] = static_cast<unsigned char>(fabs(xg));
-    xt[x][2] = static_cast<unsigned char>(fabs(xb));
+    xt[0][x] = static_cast<unsigned char>(fabs(xr));
+    xt[1][x] = static_cast<unsigned char>(fabs(xg));
+    xt[2][x] = static_cast<unsigned char>(fabs(xb));
 
     xr -= drx;
     xg -= dgx;
@@ -1184,9 +1227,9 @@ void bt::Image::pgradient(const Color &from, const Color &to,
   dby /= height;
 
   for (y = 0; y < height; ++y) {
-    yt[y][0] = static_cast<unsigned char>(fabs(yr));
-    yt[y][1] = static_cast<unsigned char>(fabs(yg));
-    yt[y][2] = static_cast<unsigned char>(fabs(yb));
+    yt[0][y] = static_cast<unsigned char>(fabs(yr));
+    yt[1][y] = static_cast<unsigned char>(fabs(yg));
+    yt[2][y] = static_cast<unsigned char>(fabs(yb));
 
     yr -= dry;
     yg -= dgy;
@@ -1200,11 +1243,11 @@ void bt::Image::pgradient(const Color &from, const Color &to,
     for (y = 0; y < height; ++y) {
       for (x = 0; x < width; ++x, ++p) {
         p->red =
-          static_cast<unsigned char>(tr - (rsign * (xt[x][0] + yt[y][0])));
+          static_cast<unsigned char>(tr - (rsign * (xt[0][x] + yt[0][y])));
         p->green =
-          static_cast<unsigned char>(tg - (gsign * (xt[x][1] + yt[y][1])));
+          static_cast<unsigned char>(tg - (gsign * (xt[1][x] + yt[1][y])));
         p->blue =
-          static_cast<unsigned char>(tb - (bsign * (xt[x][2] + yt[y][2])));
+          static_cast<unsigned char>(tb - (bsign * (xt[2][x] + yt[2][y])));
       }
     }
     return;
@@ -1214,11 +1257,11 @@ void bt::Image::pgradient(const Color &from, const Color &to,
   for (y = 0; y < height; ++y) {
     for (x = 0; x < width; ++x, ++p) {
       p->red =
-        static_cast<unsigned char>(tr - (rsign * (xt[x][0] + yt[y][0])));
+        static_cast<unsigned char>(tr - (rsign * (xt[0][x] + yt[0][y])));
       p->green =
-        static_cast<unsigned char>(tg - (gsign * (xt[x][1] + yt[y][1])));
+        static_cast<unsigned char>(tg - (gsign * (xt[1][x] + yt[1][y])));
       p->blue =
-        static_cast<unsigned char>(tb - (bsign * (xt[x][2] + yt[y][2])));
+        static_cast<unsigned char>(tb - (bsign * (xt[2][x] + yt[2][y])));
 
       if (y & 1) {
         p->red   = (p->red   >> 1) + (p->red   >> 2);
@@ -1227,6 +1270,8 @@ void bt::Image::pgradient(const Color &from, const Color &to,
       }
     }
   }
+
+  delete [] alloc;
 }
 
 
@@ -1240,8 +1285,17 @@ void bt::Image::rgradient(const Color &from, const Color &to,
   int rsign, gsign, bsign;
   RGB *p = data;
   unsigned int tr = to.red(), tg = to.green(), tb = to.blue();
-  unsigned int xt[maximumWidth][3], yt[maximumHeight][3];
   unsigned int x, y;
+
+  const unsigned int dimension = std::max(width, height);
+  unsigned int *alloc = new unsigned int[dimension * 6];
+  unsigned int *xt[3], *yt[3];
+  xt[0] = alloc + (dimension * 0);
+  xt[1] = alloc + (dimension * 1);
+  xt[2] = alloc + (dimension * 2);
+  yt[0] = alloc + (dimension * 3);
+  yt[1] = alloc + (dimension * 4);
+  yt[2] = alloc + (dimension * 5);
 
   dry = drx = static_cast<double>(to.red()   - from.red());
   dgy = dgx = static_cast<double>(to.green() - from.green());
@@ -1261,9 +1315,9 @@ void bt::Image::rgradient(const Color &from, const Color &to,
   dbx /= width;
 
   for (x = 0; x < width; ++x) {
-    xt[x][0] = static_cast<unsigned char>(fabs(xr));
-    xt[x][1] = static_cast<unsigned char>(fabs(xg));
-    xt[x][2] = static_cast<unsigned char>(fabs(xb));
+    xt[0][x] = static_cast<unsigned char>(fabs(xr));
+    xt[1][x] = static_cast<unsigned char>(fabs(xg));
+    xt[2][x] = static_cast<unsigned char>(fabs(xb));
 
     xr -= drx;
     xg -= dgx;
@@ -1276,9 +1330,9 @@ void bt::Image::rgradient(const Color &from, const Color &to,
   dby /= height;
 
   for (y = 0; y < height; ++y) {
-    yt[y][0] = static_cast<unsigned char>(fabs(yr));
-    yt[y][1] = static_cast<unsigned char>(fabs(yg));
-    yt[y][2] = static_cast<unsigned char>(fabs(yb));
+    yt[0][y] = static_cast<unsigned char>(fabs(yr));
+    yt[1][y] = static_cast<unsigned char>(fabs(yg));
+    yt[2][y] = static_cast<unsigned char>(fabs(yb));
 
     yr -= dry;
     yg -= dgy;
@@ -1293,13 +1347,13 @@ void bt::Image::rgradient(const Color &from, const Color &to,
       for (x = 0; x < width; ++x, ++p) {
         p->red =
           static_cast<unsigned char>(tr - (rsign *
-                                           std::max(xt[x][0], yt[y][0])));
+                                           std::max(xt[0][x], yt[0][y])));
         p->green =
           static_cast<unsigned char>(tg - (gsign *
-                                           std::max(xt[x][1], yt[y][1])));
+                                           std::max(xt[1][x], yt[1][y])));
         p->blue =
           static_cast<unsigned char>(tb - (bsign *
-                                           std::max(xt[x][2], yt[y][2])));
+                                           std::max(xt[2][x], yt[2][y])));
       }
     }
     return;
@@ -1310,13 +1364,13 @@ void bt::Image::rgradient(const Color &from, const Color &to,
     for (x = 0; x < width; ++x, ++p) {
       p->red =
         static_cast<unsigned char>(tr - (rsign *
-                                         std::max(xt[x][0], yt[y][0])));
+                                         std::max(xt[0][x], yt[0][y])));
       p->green =
         static_cast<unsigned char>(tg - (gsign *
-                                         std::max(xt[x][1], yt[y][1])));
+                                         std::max(xt[1][x], yt[1][y])));
       p->blue =
         static_cast<unsigned char>(tb - (bsign *
-                                         std::max(xt[x][2], yt[y][2])));
+                                         std::max(xt[2][x], yt[2][y])));
 
       if (y & 1) {
         p->red   = (p->red   >> 1) + (p->red   >> 2);
@@ -1325,6 +1379,8 @@ void bt::Image::rgradient(const Color &from, const Color &to,
       }
     }
   }
+
+  delete [] alloc;
 }
 
 
@@ -1338,8 +1394,17 @@ void bt::Image::egradient(const Color &from, const Color &to,
   int rsign, gsign, bsign;
   RGB *p = data;
   unsigned int tr = to.red(), tg = to.green(), tb = to.blue();
-  unsigned int xt[maximumWidth][3], yt[maximumHeight][3];
   unsigned int x, y;
+
+  const unsigned int dimension = std::max(width, height);
+  unsigned int *alloc = new unsigned int[dimension * 6];
+  unsigned int *xt[3], *yt[3];
+  xt[0] = alloc + (dimension * 0);
+  xt[1] = alloc + (dimension * 1);
+  xt[2] = alloc + (dimension * 2);
+  yt[0] = alloc + (dimension * 3);
+  yt[1] = alloc + (dimension * 4);
+  yt[2] = alloc + (dimension * 5);
 
   dry = drx = static_cast<double>(to.red() - from.red());
   dgy = dgx = static_cast<double>(to.green() - from.green());
@@ -1359,9 +1424,9 @@ void bt::Image::egradient(const Color &from, const Color &to,
   dbx /= width;
 
   for (x = 0; x < width; x++) {
-    xt[x][0] = static_cast<unsigned int>(xr * xr);
-    xt[x][1] = static_cast<unsigned int>(xg * xg);
-    xt[x][2] = static_cast<unsigned int>(xb * xb);
+    xt[0][x] = static_cast<unsigned int>(xr * xr);
+    xt[1][x] = static_cast<unsigned int>(xg * xg);
+    xt[2][x] = static_cast<unsigned int>(xb * xb);
 
     xr -= drx;
     xg -= dgx;
@@ -1374,9 +1439,9 @@ void bt::Image::egradient(const Color &from, const Color &to,
   dby /= height;
 
   for (y = 0; y < height; y++) {
-    yt[y][0] = static_cast<unsigned int>(yr * yr);
-    yt[y][1] = static_cast<unsigned int>(yg * yg);
-    yt[y][2] = static_cast<unsigned int>(yb * yb);
+    yt[0][y] = static_cast<unsigned int>(yr * yr);
+    yt[1][y] = static_cast<unsigned int>(yg * yg);
+    yt[2][y] = static_cast<unsigned int>(yb * yb);
 
     yr -= dry;
     yg -= dgy;
@@ -1390,14 +1455,14 @@ void bt::Image::egradient(const Color &from, const Color &to,
     for (y = 0; y < height; ++y) {
       for (x = 0; x < width; ++x, ++p) {
         p->red   = static_cast<unsigned char>
-                   (tr - (rsign * static_cast<int>(sqrt(xt[x][0] +
-                                                        yt[y][0]))));
+                   (tr - (rsign * static_cast<int>(sqrt(xt[0][x] +
+                                                        yt[0][y]))));
         p->green = static_cast<unsigned char>
-                   (tg - (gsign * static_cast<int>(sqrt(xt[x][1] +
-                                                        yt[y][1]))));
+                   (tg - (gsign * static_cast<int>(sqrt(xt[1][x] +
+                                                        yt[1][y]))));
         p->blue  = static_cast<unsigned char>
-                   (tb - (bsign * static_cast<int>(sqrt(xt[x][2] +
-                                                        yt[y][2]))));
+                   (tb - (bsign * static_cast<int>(sqrt(xt[2][x] +
+                                                        yt[2][y]))));
       }
     }
     return;
@@ -1407,11 +1472,11 @@ void bt::Image::egradient(const Color &from, const Color &to,
   for (y = 0; y < height; ++y) {
     for (x = 0; x < width; ++x, ++p) {
       p->red   = static_cast<unsigned char>
-                 (tr - (rsign * static_cast<int>(sqrt(xt[x][0] + yt[y][0]))));
+                 (tr - (rsign * static_cast<int>(sqrt(xt[0][x] + yt[0][y]))));
       p->green = static_cast<unsigned char>
-                 (tg - (gsign * static_cast<int>(sqrt(xt[x][1] + yt[y][1]))));
+                 (tg - (gsign * static_cast<int>(sqrt(xt[1][x] + yt[1][y]))));
       p->blue  = static_cast<unsigned char>
-                 (tb - (bsign * static_cast<int>(sqrt(xt[x][2] + yt[y][2]))));
+                 (tb - (bsign * static_cast<int>(sqrt(xt[2][x] + yt[2][y]))));
 
       if (y & 1) {
         p->red   = (p->red   >> 1) + (p->red   >> 2);
@@ -1420,6 +1485,8 @@ void bt::Image::egradient(const Color &from, const Color &to,
       }
     }
   }
+
+  delete [] alloc;
 }
 
 
@@ -1433,8 +1500,17 @@ void bt::Image::pcgradient(const Color &from, const Color &to,
   int rsign, gsign, bsign;
   RGB *p = data;
   unsigned int tr = to.red(), tg = to.green(), tb = to.blue();
-  unsigned int xt[maximumWidth][3], yt[maximumHeight][3];
   unsigned int x, y;
+
+  const unsigned int dimension = std::max(width, height);
+  unsigned int *alloc = new unsigned int[dimension * 6];
+  unsigned int *xt[3], *yt[3];
+  xt[0] = alloc + (dimension * 0);
+  xt[1] = alloc + (dimension * 1);
+  xt[2] = alloc + (dimension * 2);
+  yt[0] = alloc + (dimension * 3);
+  yt[1] = alloc + (dimension * 4);
+  yt[2] = alloc + (dimension * 5);
 
   dry = drx = static_cast<double>(to.red()   - from.red());
   dgy = dgx = static_cast<double>(to.green() - from.green());
@@ -1454,9 +1530,9 @@ void bt::Image::pcgradient(const Color &from, const Color &to,
   dbx /= width;
 
   for (x = 0; x < width; ++x) {
-    xt[x][0] = static_cast<unsigned char>(fabs(xr));
-    xt[x][1] = static_cast<unsigned char>(fabs(xg));
-    xt[x][2] = static_cast<unsigned char>(fabs(xb));
+    xt[0][x] = static_cast<unsigned char>(fabs(xr));
+    xt[1][x] = static_cast<unsigned char>(fabs(xg));
+    xt[2][x] = static_cast<unsigned char>(fabs(xb));
 
     xr -= drx;
     xg -= dgx;
@@ -1469,9 +1545,9 @@ void bt::Image::pcgradient(const Color &from, const Color &to,
   dby /= height;
 
   for (y = 0; y < height; ++y) {
-    yt[y][0] = static_cast<unsigned char>(fabs(yr));
-    yt[y][1] = static_cast<unsigned char>(fabs(yg));
-    yt[y][2] = static_cast<unsigned char>(fabs(yb));
+    yt[0][y] = static_cast<unsigned char>(fabs(yr));
+    yt[1][y] = static_cast<unsigned char>(fabs(yg));
+    yt[2][y] = static_cast<unsigned char>(fabs(yb));
 
     yr -= dry;
     yg -= dgy;
@@ -1486,13 +1562,13 @@ void bt::Image::pcgradient(const Color &from, const Color &to,
       for (x = 0; x < width; ++x, ++p) {
         p->red =
           static_cast<unsigned char>(tr - (rsign *
-                                           std::min(xt[x][0], yt[y][0])));
+                                           std::min(xt[0][x], yt[0][y])));
         p->green =
           static_cast<unsigned char>(tg - (gsign *
-                                           std::min(xt[x][1], yt[y][1])));
+                                           std::min(xt[1][x], yt[1][y])));
         p->blue =
           static_cast<unsigned char>(tb - (bsign *
-                                           std::min(xt[x][2], yt[y][2])));
+                                           std::min(xt[2][x], yt[2][y])));
       }
     }
     return;
@@ -1503,13 +1579,13 @@ void bt::Image::pcgradient(const Color &from, const Color &to,
     for (x = 0; x < width; ++x, ++p) {
       p->red =
         static_cast<unsigned char>(tr - (rsign *
-                                         std::min(xt[x][0], yt[y][0])));
+                                         std::min(xt[0][x], yt[0][y])));
       p->green =
         static_cast<unsigned char>(tg - (gsign *
-                                         std::min(xt[x][1], yt[y][1])));
+                                         std::min(xt[1][x], yt[1][y])));
       p->blue =
         static_cast<unsigned char>(tb - (bsign *
-                                         std::min(xt[x][2], yt[y][2])));
+                                         std::min(xt[2][x], yt[2][y])));
 
       if (y & 1) {
         p->red   = (p->red   >> 1) + (p->red   >> 2);
@@ -1518,6 +1594,8 @@ void bt::Image::pcgradient(const Color &from, const Color &to,
       }
     }
   }
+
+  delete [] alloc;
 }
 
 
@@ -1534,8 +1612,17 @@ void bt::Image::cdgradient(const Color &from, const Color &to,
          xb = static_cast<double>(from.blue() );
   RGB *p = data;
   unsigned int w = width * 2, h = height * 2;
-  unsigned int xt[maximumWidth][3], yt[maximumHeight][3];
   unsigned int x, y;
+
+  const unsigned int dimension = std::max(width, height);
+  unsigned int *alloc = new unsigned int[dimension * 6];
+  unsigned int *xt[3], *yt[3];
+  xt[0] = alloc + (dimension * 0);
+  xt[1] = alloc + (dimension * 1);
+  xt[2] = alloc + (dimension * 2);
+  yt[0] = alloc + (dimension * 3);
+  yt[1] = alloc + (dimension * 4);
+  yt[2] = alloc + (dimension * 5);
 
   dry = drx = static_cast<double>(to.red()   - from.red()  );
   dgy = dgx = static_cast<double>(to.green() - from.green());
@@ -1547,18 +1634,18 @@ void bt::Image::cdgradient(const Color &from, const Color &to,
   dbx /= w;
 
   for (x = width - 1; x != 0; --x) {
-    xt[x][0] = static_cast<unsigned char>(xr);
-    xt[x][1] = static_cast<unsigned char>(xg);
-    xt[x][2] = static_cast<unsigned char>(xb);
+    xt[0][x] = static_cast<unsigned char>(xr);
+    xt[1][x] = static_cast<unsigned char>(xg);
+    xt[2][x] = static_cast<unsigned char>(xb);
 
     xr += drx;
     xg += dgx;
     xb += dbx;
   }
 
-  xt[x][0] = static_cast<unsigned char>(xr);
-  xt[x][1] = static_cast<unsigned char>(xg);
-  xt[x][2] = static_cast<unsigned char>(xb);
+  xt[0][x] = static_cast<unsigned char>(xr);
+  xt[1][x] = static_cast<unsigned char>(xg);
+  xt[2][x] = static_cast<unsigned char>(xb);
 
   // Create Y table
   dry /= h;
@@ -1566,9 +1653,9 @@ void bt::Image::cdgradient(const Color &from, const Color &to,
   dby /= h;
 
   for (y = 0; y < height; ++y) {
-    yt[y][0] = static_cast<unsigned char>(yr);
-    yt[y][1] = static_cast<unsigned char>(yg);
-    yt[y][2] = static_cast<unsigned char>(yb);
+    yt[0][y] = static_cast<unsigned char>(yr);
+    yt[1][y] = static_cast<unsigned char>(yg);
+    yt[2][y] = static_cast<unsigned char>(yb);
 
     yr += dry;
     yg += dgy;
@@ -1581,9 +1668,9 @@ void bt::Image::cdgradient(const Color &from, const Color &to,
     // normal dgradient
     for (y = 0; y < height; ++y) {
       for (x = 0; x < width; ++x, ++p) {
-        p->red   = xt[x][0] + yt[y][0];
-        p->green = xt[x][1] + yt[y][1];
-        p->blue  = xt[x][2] + yt[y][2];
+        p->red   = xt[0][x] + yt[0][y];
+        p->green = xt[1][x] + yt[1][y];
+        p->blue  = xt[2][x] + yt[2][y];
       }
     }
     return;
@@ -1592,9 +1679,9 @@ void bt::Image::cdgradient(const Color &from, const Color &to,
   // interlacing effect
   for (y = 0; y < height; ++y) {
     for (x = 0; x < width; ++x, ++p) {
-      p->red   = xt[x][0] + yt[y][0];
-      p->green = xt[x][1] + yt[y][1];
-      p->blue  = xt[x][2] + yt[y][2];
+      p->red   = xt[0][x] + yt[0][y];
+      p->green = xt[1][x] + yt[1][y];
+      p->blue  = xt[2][x] + yt[2][y];
 
       if (y & 1) {
         p->red   = (p->red   >> 1) + (p->red   >> 2);
@@ -1603,4 +1690,6 @@ void bt::Image::cdgradient(const Color &from, const Color &to,
       }
     }
   }
+
+  delete [] alloc;
 }
