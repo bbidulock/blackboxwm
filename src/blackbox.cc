@@ -237,6 +237,8 @@ Blackbox::~Blackbox(void) {
     delete ts;
   }
 
+  delete [] rc_file;
+
   if (resource.menu_file)
     delete [] resource.menu_file;
 
