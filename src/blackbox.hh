@@ -44,7 +44,7 @@ class Blackbox : public bt::Application, public bt::TimeoutHandler {
 private:
   struct MenuTimestamp {
     std::string filename;
-    time_t timestamp;
+    unsigned long timestamp;
   };
 
   BlackboxResource _resource;
