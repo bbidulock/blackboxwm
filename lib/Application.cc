@@ -127,11 +127,12 @@ bt::Application::Application(const std::string &app_name, const char *dpy_name,
   sigaction(SIGSEGV, &action, NULL);
 
   // non-fatal signals
-  sigaction(SIGPIPE, &action, NULL);
-  sigaction(SIGTERM, &action, NULL);
-  sigaction(SIGINT,  &action, NULL);
   sigaction(SIGCHLD, &action, NULL);
   sigaction(SIGHUP,  &action, NULL);
+  sigaction(SIGINT,  &action, NULL);
+  sigaction(SIGPIPE, &action, NULL);
+  sigaction(SIGQUIT, &action, NULL);
+  sigaction(SIGTERM, &action, NULL);
   sigaction(SIGUSR1, &action, NULL);
   sigaction(SIGUSR2, &action, NULL);
 
@@ -564,6 +565,7 @@ bool bt::Application::process_signal(int signal) {
     break;
 
   case SIGINT:
+  case SIGQUIT:
   case SIGTERM:
     setRunState(SHUTDOWN);
     break;
