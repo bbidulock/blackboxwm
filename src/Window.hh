@@ -306,13 +306,17 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   { return ((client.transient_for == (BlackboxWindow*) ~0ul)
             ? 0 : client.transient_for); }
 
-  inline BScreen *getScreen(void) const { return screen; }
+  inline BScreen *getScreen(void) const
+  { return screen; }
 
   // StackEntity interface
-  inline Window windowID(void) const { return frame.window; }
+  inline Window windowID(void) const
+  { return frame.window; }
 
-  inline Window getFrameWindow(void) const { return frame.window; }
-  inline Window getClientWindow(void) const { return client.window; }
+  inline Window getFrameWindow(void) const
+  { return frame.window; }
+  inline Window getClientWindow(void) const
+  { return client.window; }
 
   inline const char *getTitle(void) const
   { return client.title.c_str(); }
@@ -328,8 +332,10 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   inline void setWindowNumber(int n)
   { window_number = n; }
 
-  inline const bt::Rect &frameRect(void) const { return frame.rect; }
-  inline const bt::Rect &clientRect(void) const { return client.rect; }
+  inline const bt::Rect &frameRect(void) const
+  { return frame.rect; }
+  inline const bt::Rect &clientRect(void) const
+  { return client.rect; }
 
   inline unsigned int getTitleHeight(void) const
   { return frame.style->title_height; }
