@@ -227,7 +227,10 @@ bt::Rect bt::MenuStyle::itemRect(const MenuItem &item) const {
 void bt::MenuStyle::drawTitle(Window window, const Rect &rect,
                               const std::string &text) const {
   Pen pen(title.text, title.font.font());
-  drawText(title.font, pen, window, rect, title.alignment, text);
+  Rect r;
+  r.setCoords(rect.left() + titleMargin(), rect.top(),
+              rect.right() - titleMargin(), rect.bottom());
+  drawText(title.font, pen, window, r, title.alignment, text);
 }
 
 
@@ -687,6 +690,8 @@ void bt::Menu::show(void) {
   XSync(_app.getXDisplay(), False);
   _app.openMenu(this);
   _visible = true;
+  _pressed = _parent_menu ? _parent_menu->_pressed : false;
+  _title_pressed = false;
 }
 
 
@@ -712,6 +717,7 @@ void bt::Menu::hide(void) {
   _app.closeMenu(this);
   XUnmapWindow(_app.getXDisplay(), _window);
   _visible = false;
+  _pressed = false;
 }
 
 
