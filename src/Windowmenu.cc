@@ -58,9 +58,9 @@ Windowmenu::Windowmenu(BlackboxWindow *win, Blackbox *bb) :
   insert("Raise", BScreen::WindowRaise);
   insert("Lower", BScreen::WindowLower);
   insert("(Un)Stick", BScreen::WindowStick);
+  insert("Kill Client", BScreen::WindowKill);
   if (window->isClosable())
     insert("Close", BScreen::WindowClose);
-  insert("Kill Client", BScreen::WindowKill);
   
   update();
 }
@@ -131,17 +131,6 @@ void Windowmenu::setClosable(void) {
   for (i = 0; i < n; i++) {
     BasemenuItem *item = find(i);
 
-    if (item && (item->function() == BScreen::WindowKill)) {
-      remove(i);
-
-      break;
-    }
-  }
-
-  n = getCount();
-  for (i = 0; i < n; i++) {
-    BasemenuItem *item = find(i);
-
     if (item && (item->function() == BScreen::WindowClose)) {
       remove(i);
 
@@ -151,7 +140,6 @@ void Windowmenu::setClosable(void) {
 
   if (window->isClosable())
     insert("Close", BScreen::WindowClose);
-  insert("Kill Client", BScreen::WindowKill);
       
   update();
 }

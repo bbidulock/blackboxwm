@@ -219,9 +219,13 @@ int Basemenu::remove(int index) {
 
   if (which_sub == index)
     which_sub = -1;
+  else if (which_sub > index)
+    which_sub--;
 
   if (always_highlight == index)
     always_highlight = -1;
+  else if (always_highlight > index)
+    always_highlight--;
 
   return menuitems->count();
 }
@@ -845,7 +849,7 @@ void Basemenu::enterNotifyEvent(XCrossingEvent *ce) {
     
     menu.x_shift = menu.x, menu.y_shift = menu.y;
     if (menu.x + menu.width > screen->getWidth()) {
-      menu.x_shift = screen->getWidth() - menu.width - 1;
+      menu.x_shift = screen->getWidth() - menu.width - screen->getBorderWidth();
       shifted = True;
     } else if (menu.x < 0) {
       menu.x_shift = 0;
@@ -853,9 +857,10 @@ void Basemenu::enterNotifyEvent(XCrossingEvent *ce) {
     }
     
     if (menu.y + menu.height > screen->getHeight()) {
-      menu.y_shift = screen->getHeight() - menu.height - 1;
+      menu.y_shift = screen->getHeight() - menu.height -
+        screen->getBorderWidth();
       shifted = True;
-    } else if (menu.y < 0) {
+    } else if (menu.y + (signed) menu.title_h < 0) {
       menu.y_shift = 0;
       shifted = True;
     }

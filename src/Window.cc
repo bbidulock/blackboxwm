@@ -331,12 +331,6 @@ BlackboxWindow::~BlackboxWindow(void) {
 
   screen->getWorkspace(workspace_number)->removeWindow(this);
 
-  if (blackbox->getFocusedWindow() == this)
-    // the workspace didn't set the focus window to zero when we removed
-    // ourself... can't send a boy to do a man's job
-    blackbox->setFocusedWindow((BlackboxWindow *) 0);
-
-  
   if (windowmenu) delete windowmenu;
   if (icon) delete icon;
 
@@ -1299,17 +1293,15 @@ Bool BlackboxWindow::setInputFocus(void) {
     if (client.transient)
       ret = client.transient->setInputFocus();
     else {
-      if (! focused)
-	if (XSetInputFocus(display, client.window, RevertToPointerRoot,
-			   CurrentTime)) {
-          screen->getWorkspace(workspace_number)->
-            setFocusWindow(window_number);
-          setFocusFlag(True);
+      if (! focused) {
+	XSetInputFocus(display, client.window, RevertToPointerRoot,
+                       CurrentTime);
+        screen->getWorkspace(workspace_number)->
+          setFocusWindow(window_number);
+        setFocusFlag(True);
+      }
 
-	  ret = True;
-        }
-      else
-	ret = True;
+      ret = True;
     }
  
     break;

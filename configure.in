@@ -20,7 +20,7 @@ dnl
 
 dnl Initialize autoconf and automake
 AC_INIT(src/blackbox.cc)
-AM_INIT_AUTOMAKE(Blackbox,0.51.1,no-define)
+AM_INIT_AUTOMAKE(Blackbox,0.51.2,no-define)
 
 dnl Determine default prefix
 test x$prefix = "xNONE" && prefix="$ac_default_prefix"
@@ -41,7 +41,7 @@ fi
 
 dnl Check for system header files
 AC_HEADER_STDC
-AC_CHECK_HEADERS(fcntl.h libgen.h locale.h process.h signal.h stdio.h time.h unistd.h sys/param.h sys/select.h sys/signal.h sys/stat.h sys/time.h sys/types.h sys/wait.h)
+AC_CHECK_HEADERS(dirent.h fcntl.h libgen.h locale.h process.h signal.h stdio.h time.h unistd.h sys/param.h sys/select.h sys/signal.h sys/stat.h sys/time.h sys/types.h sys/wait.h)
 AC_HEADER_TIME
 
 dnl Check for existance of basename(), setlocale() and strftime()

@@ -69,7 +69,7 @@ void Rootmenu::itemSelected(int button, int index) {
             DisplayString(screen->getDisplay()->getDisplay()));
           // gotta love pointer math
           sprintf(displaystring + dslen - 1, "%d", screen->getScreenNumber());
-	  sprintf(command, "DISPLAY=%s exec %s &", displaystring,
+	  sprintf(command, "DISPLAY=\"%s\" exec %s &", displaystring,
 		  item->exec());
 	  system(command);
 

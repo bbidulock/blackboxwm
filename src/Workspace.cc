@@ -119,30 +119,28 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
 
 
 void Workspace::setFocusWindow(int w) {
-  if (w == clientmenu->getHighlight()) return;
+  if (w == clientmenu->getHighlight() &&
+      (! screen->getBlackbox()->getFocusedWindow())) return;
 
-  BlackboxWindow *foc = (BlackboxWindow *) 0;
+  BlackboxWindow *foc = (BlackboxWindow *) 0, *win = (BlackboxWindow *) 0;
   if (screen->getBlackbox()->getFocusedWindow() &&
       screen->getBlackbox()->getFocusedWindow()->validateClient())
-    foc = screen->getBlackbox()->getFocusedWindow();  
+    foc = screen->getBlackbox()->getFocusedWindow();
 
-  if (w >= 0 && w < windowList->count()) {
-    BlackboxWindow *win = getWindow(w);
+  if (w >= 0 && w < windowList->count())
+    win = getWindow(w);
 
-    if (foc) {
-      if (foc->getWorkspaceNumber() != id)
-        screen->getWorkspace(foc->getWorkspaceNumber())->
-          clientmenu->setHighlight(-1);
+  if (foc == win) return;
 
-      foc->setFocusFlag(False);
-    }
+  if (foc) {
+    if (foc->getWorkspaceNumber() != id)
+      screen->getWorkspace(foc->getWorkspaceNumber())->
+        clientmenu->setHighlight(-1);
 
-    screen->getBlackbox()->setFocusedWindow(win);
-  } else if (! foc)
-    screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
-  else if (! foc->isStuck())
-    screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
+    foc->setFocusFlag(False);
+  }
 
+  screen->getBlackbox()->setFocusedWindow(win);
   clientmenu->setHighlight(w);
 
   if (id == screen->getCurrentWorkspaceID())

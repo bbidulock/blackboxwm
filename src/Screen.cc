@@ -48,7 +48,16 @@
 #ifdef    STDC_HEADERS
 #  include <stdlib.h>
 #  include <string.h>
+#  include <sys/types.h>
 #endif // STDC_HEADERS
+
+#ifdef    HAVE_DIRENT_H
+#  include <dirent.h>
+#endif // HAVE_DIRENT_H
+
+#ifdef    HAVE_SYS_STAT_H
+#  include <sys/stat.h>
+#endif // HAVE_SYS_STAT_H
 
 #ifndef   MAXPATHLEN
 #define   MAXPATHLEN 255
@@ -66,6 +75,10 @@ static int anotherWMRunning(Display *display, XErrorEvent *) {
   running = False;
   
   return(-1);
+}
+
+static int dcmp(const void *one, const void *two) {
+  return (strcmp((*(char **) one), (*(char **) two)));
 }
 
 
@@ -804,7 +817,7 @@ void BScreen::LoadStyle(void) {
     sprintf(displaystring, "%s", DisplayString(getDisplay()->getDisplay()));
     // gotta love pointer math
     sprintf(displaystring + dslen - 1, "%d", getScreenNumber());
-    sprintf(command, "DISPLAY=%s exec %s &",  displaystring, value.addr);
+    sprintf(command, "DISPLAY=\"%s\" exec %s &",  displaystring, value.addr);
     system(command);
     
     delete [] displaystring;
@@ -943,7 +956,10 @@ void BScreen::raiseWindows(Window *workspace_stack, int num) {
     *(session_stack + i++) = wit.current()->getMenu()->getWindowID();
  
   *(session_stack + i++) = workspacemenu->getWindowID();
+
+#ifdef    SLIT
   *(session_stack + i++) = slit->getMenu()->getWindowID();
+#endif // SLIT
 
   LinkedListIterator<Rootmenu> rit(rootmenuList);
   for (; rit.current(); rit++)
@@ -952,7 +968,10 @@ void BScreen::raiseWindows(Window *workspace_stack, int num) {
 
   if (toolbar->isOnTop()) {
     *(session_stack + i++) = toolbar->getWindowID();
+
+#ifdef    SLIT
     *(session_stack + i++) = slit->getWindowID();
+#endif // SLIT
   }
   
   while (k--)
@@ -1388,6 +1407,110 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	    }
 	    
 	    break;
+
+        case 995: // stylesdir
+        case 1113: // stylesmenu
+          {
+            Bool newmenu = ((key == 1113) ? True : False);
+
+            if ((! *label) || ((! *command) && newmenu)) { 
+              fprintf(stderr, "BScreen::parseMenuFile: [stylesdir/stylesmenu]"
+                      " error, no directory defined\n");
+              continue; 
+            } 
+
+            char stylesdir[MAXPATHLEN];
+
+            char *directory = ((newmenu) ? command : label);
+            int directory_length = ((newmenu) ? command_length : label_length);
+
+            // perform shell style ~ home directory expansion
+            char *homedir = 0;
+            int homedir_len = 0;
+
+            if (*directory == '~' && *(directory + 1) == '/') {
+              homedir = getenv("HOME");
+              homedir_len = strlen(homedir);
+            }
+               
+            if (homedir && homedir_len != 0) {
+              strncpy(stylesdir, homedir, homedir_len);
+
+              strncpy(stylesdir + homedir_len, directory + 1,
+                      directory_length - 1);
+              *(stylesdir + directory_length + homedir_len - 1) = '\0';
+            } else {
+              strncpy(stylesdir, directory, directory_length);
+              *(stylesdir + directory_length) = '\0';
+            }
+
+            struct stat statbuf;
+
+            if (! stat(stylesdir, &statbuf)) {
+              if (S_ISDIR(statbuf.st_mode)) {
+                Rootmenu *stylesmenu;
+
+                if (newmenu)
+                  stylesmenu = new Rootmenu(blackbox, this);
+                else
+                  stylesmenu = menu;
+
+                DIR *d = opendir(stylesdir);
+                int entries = 0;
+                struct dirent *p;
+
+                // get the total number of directory entries
+                while ((p = readdir(d))) entries++;
+                rewinddir(d);
+
+                char **ls = new char* [entries];
+                int index = 0;
+                while ((p = readdir(d))) {
+                  int nlen = strlen(p->d_name) + 1;
+                  ls[index] = new char[nlen];
+                  strncpy(ls[index++], p->d_name, nlen);
+                }
+
+                qsort(ls, entries, sizeof(char *), dcmp);
+
+                int n, slen = strlen(stylesdir);
+                for (n = 0; n < entries; n++) {
+                  int nlen = strlen(ls[n]);
+                  char style[MAXPATHLEN + 1];
+
+                  strncpy(style, stylesdir, slen);
+                  *(style + slen) = '/';
+                  strncpy(style + slen + 1, ls[n], nlen + 1);
+
+                  if ((! stat(style, &statbuf)) && S_ISREG(statbuf.st_mode))
+                    stylesmenu->insert(ls[n], BScreen::SetStyle, style);
+
+                  delete [] ls[n];
+                }
+
+                delete [] ls;
+
+                stylesmenu->update();
+
+                if (newmenu) {
+                  stylesmenu->setLabel(label);
+                  menu->insert(label, stylesmenu);
+                  rootmenuList->insert(stylesmenu);
+                }
+
+                blackbox->saveMenuFilename(stylesdir);
+              } else {
+                fprintf(stderr, "BScreen::parseMenuFile: "
+                        "[stylesdir/stylesmenu] error, %s is not a"
+                        " directory\n", stylesdir);
+              }
+            } else {
+              fprintf(stderr, "BScreen::parseMenuFile: [stylesdir/stylesmenu]"
+                      " error, %s does not exist\n", stylesdir);
+            }
+
+            break;
+          }
 	    
 	case 1090: // workspaces
 	  {

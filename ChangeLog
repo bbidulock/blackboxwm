@@ -1,5 +1,27 @@
 ChangeLog for 0.51.x
 
+
+Changes from 0.51.1. to 0.51.2:
+  - some menu/focus bug fixes (related to multiple windows getting focused
+    decorations)
+  - commands are now run with the DISPLAY environment variable enclosed in
+    quotation marks... tell me if this fixes some of the problems with
+    multiple screened/headed displays on certain platforms
+  - fixed compile error when passing --disable-slit to configure
+  - added 2 new menu syntax keys... [stylesdir] and [stylesmenu]...
+    syntax:
+
+	[stylesdir] (/path/to/styles/directory)
+        [stylesmenu] (Label) {/path/to/styles/directory}
+
+    [stylesdir] reads all of the files in a directory... and then includes
+    them into the current menu... each of the files is assumed to be a valid
+    blackbox stylefile...
+
+    [stylesmenu] does the same as above, but it creates a submenu instead (with
+    the label/title for the submenu)
+  - fixed bug with blackbox not saving the slit position in .blackboxrc
+
 Changes from 0.51.0 to 0.51.1:
   - add a check for sys/signal.h and include it if found... some systems may
     need this for sigaction support...

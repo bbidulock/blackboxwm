@@ -58,6 +58,10 @@
 #  include <sys/signal.h>
 #endif // HAVE_SYS_SIGNAL_H
 
+#if ((! defined(SA_NODEFER)) && defined(SA_INTERRUPT))
+#  define SA_NODEFER SA_INTERRUPT
+#endif
+
 #ifdef    HAVE_STDIO_H
 #  include <stdio.h>
 #endif // HAVE_STDIO_H
@@ -469,13 +473,10 @@ void Blackbox::eventLoop(void) {
 
   if (internal_error) {
     shutdown();
-    save_rc();
 
     fprintf(stderr, "aborting... dumping core\n");
     abort();
   }
-
-  save_rc();
 }
 
 
@@ -1274,7 +1275,6 @@ void Blackbox::removeSlitSearch(Window window) {
 
 void Blackbox::restart(char *prog) {
   shutdown();
-  save_rc();
   
   if (prog) {
     execlp(prog, prog, NULL);
@@ -1465,7 +1465,7 @@ void Blackbox::save_rc(void) {
       slit_placement = "CenterRight";
       break;
     }
-    
+
     sprintf(rc_string, "session.screen%d.slitPlacement: %s", screen_number,
 	    slit_placement);
     XrmPutLineResource(&new_blackboxrc, rc_string);
