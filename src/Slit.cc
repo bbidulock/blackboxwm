@@ -32,6 +32,7 @@
 #include <algorithm>
 
 #include <X11/Xutil.h>
+#include <assert.h>
 
 
 Slit::Slit(BScreen *scr) {
@@ -72,8 +73,6 @@ Slit::Slit(BScreen *scr) {
   blackbox->insertEventHandler(frame.window, this);
 
   screen->addStrut(&strut);
-
-  reconfigure();
 }
 
 
@@ -181,24 +180,18 @@ void Slit::removeClient(Window w, bool remap) {
   const SlitClientList::iterator end = clientList.end();
 
   it = std::find_if(it, end, SlitClientMatch(w));
-  if (it != end) {
+  if (it != end)
     removeClient(*it, remap);
-    if (!clientList.empty())
-      reconfigure();
-  }
 
   if (clientList.empty())
     screen->destroySlit();
+  else
+    reconfigure();
 }
 
 
 void Slit::reconfigure(void) {
-  if (clientList.empty()) {
-    XUnmapWindow(display, frame.window);
-    strut.left = strut.right = strut.top = strut.bottom = 0;
-    updateStrut();
-    return;
-  }
+  assert(!clientList.empty());
 
   SlitClientList::iterator it = clientList.begin();
   const SlitClientList::iterator end = clientList.end();
@@ -331,53 +324,52 @@ void Slit::reconfigure(void) {
 void Slit::updateStrut(void) {
   strut.top = strut.bottom = strut.left = strut.right = 0;
 
-  if (! clientList.empty()) {
-    switch (screen->resource().slitDirection()) {
-    case Vertical:
-      switch (screen->resource().slitPlacement()) {
-      case TopCenter:
-        strut.top = getExposedHeight();
-        break;
-      case BottomCenter:
-        strut.bottom = getExposedHeight();
-        break;
-      case TopLeft:
-      case CenterLeft:
-      case BottomLeft:
-        strut.left = getExposedWidth();
-        break;
-      case TopRight:
-      case CenterRight:
-      case BottomRight:
-        strut.right = getExposedWidth();
-        break;
-      }
+  switch (screen->resource().slitDirection()) {
+  case Vertical:
+    switch (screen->resource().slitPlacement()) {
+    case TopCenter:
+      strut.top = getExposedHeight();
       break;
-    case Horizontal:
-      switch (screen->resource().slitPlacement()) {
-      case TopCenter:
-      case TopLeft:
-      case TopRight:
-        strut.top = frame.rect.top() + getExposedHeight();
-        break;
-      case BottomCenter:
-      case BottomLeft:
-      case BottomRight:
-        strut.bottom = (screen->screenInfo().rect().bottom() -
-                        ((screen->resource().doSlitAutoHide())
-                         ? frame.y_hidden
-                         : frame.rect.y()));
-        break;
-      case CenterLeft:
-        strut.left = getExposedWidth();
-        break;
-      case CenterRight:
-        strut.right = getExposedWidth();
-        break;
-      }
+    case BottomCenter:
+      strut.bottom = getExposedHeight();
+      break;
+    case TopLeft:
+    case CenterLeft:
+    case BottomLeft:
+      strut.left = getExposedWidth();
+      break;
+    case TopRight:
+    case CenterRight:
+    case BottomRight:
+      strut.right = getExposedWidth();
       break;
     }
+    break;
+  case Horizontal:
+    switch (screen->resource().slitPlacement()) {
+    case TopCenter:
+    case TopLeft:
+    case TopRight:
+      strut.top = frame.rect.top() + getExposedHeight();
+      break;
+    case BottomCenter:
+    case BottomLeft:
+    case BottomRight:
+      strut.bottom = (screen->screenInfo().rect().bottom() -
+                      ((screen->resource().doSlitAutoHide())
+                       ? frame.y_hidden
+                       : frame.rect.y()));
+      break;
+    case CenterLeft:
+      strut.left = getExposedWidth();
+      break;
+    case CenterRight:
+      strut.right = getExposedWidth();
+      break;
+    }
+    break;
   }
+
   screen->updateStrut();
 }
 
@@ -467,8 +459,11 @@ void Slit::reposition(void) {
 
 
 void Slit::shutdown(void) {
-  while (! clientList.empty())
+  for (;;) {
+    bool done = clientList.size() == 1;
     removeClient(clientList.front());
+    if (done) break;
+  }
 }
 
 
