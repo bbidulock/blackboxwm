@@ -22,6 +22,10 @@ CVS warts:
   group transients... with group operations (iconify all, deiconify all,
   send all to workspace, etc.)
 
+* the Xlib manual describes how the X server delivers focus events under
+  all situations... generate a visual reference for all these circumstances.
+  use this to solve all focusing issues.
+
 * Send to menu should not list the current workspace
   idea: we could store the workspace number in the BasemenuItem
 
