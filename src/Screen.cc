@@ -908,6 +908,10 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
       break;
 
+    case 328: // sep
+      menu->insertSeparator();
+      break;
+
     case 333: // nop
       if (! *label)
         label[0] = '\0';
