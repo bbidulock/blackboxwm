@@ -221,6 +221,9 @@ ConfigPlacementmenu::ConfigPlacementmenu(bt::Application &app,
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuCascade,
                       "Cascade Placement"),
              CascadePlacement);
+
+  insertSeparator();
+
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuLeftRight,
                       "Left to Right"),
              LeftRight);
@@ -233,6 +236,9 @@ ConfigPlacementmenu::ConfigPlacementmenu(bt::Application &app,
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuBottomTop,
                       "Bottom to Top"),
              BottomTop);
+
+  insertSeparator();
+
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuIgnoreShaded,
                       "Ignore Shaded Windows"),
              ConfigmenuIgnoreShaded);
@@ -294,6 +300,7 @@ void ConfigPlacementmenu::itemClicked(unsigned int id, unsigned int) {
 
   case ConfigmenuIgnoreShaded:
     res.savePlacementIgnoresShaded(! res.placementIgnoresShaded());
+    break;
 
   default:
     return;
