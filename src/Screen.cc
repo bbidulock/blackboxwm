@@ -46,6 +46,7 @@
 
 #include "Rootmenu.hh"
 #include "Toolbar.hh"
+#include "Util.hh"
 #include "Window.hh"
 #include "Workspace.hh"
 #include "Workspacemenu.hh"
@@ -1277,7 +1278,8 @@ void BScreen::LoadStyle(void) {
   if (XrmGetResource(resource.stylerc, "handleWidth", "HandleWidth",
                      &value_type, &value)) {
     if (sscanf(value.addr, "%u", &resource.handle_width) != 1 ||
-	resource.handle_width > getWidth() / 2 || resource.handle_width == 0)
+	resource.handle_width > (unsigned int) getWidth() / 2 ||
+	resource.handle_width == 0)
       resource.handle_width = 6;
   } else {
     resource.handle_width = 6;
@@ -1293,7 +1295,8 @@ void BScreen::LoadStyle(void) {
   if (XrmGetResource(resource.stylerc, "bevelWidth", "BevelWidth",
                      &value_type, &value)) {
     if (sscanf(value.addr, "%u", &resource.bevel_width) != 1 ||
-	resource.bevel_width > getWidth() / 2 || resource.bevel_width == 0)
+	resource.bevel_width > (unsigned int) getWidth() / 2 ||
+	resource.bevel_width == 0)
       resource.bevel_width = 3;
   } else {
     resource.bevel_width = 3;
@@ -1301,7 +1304,7 @@ void BScreen::LoadStyle(void) {
   if (XrmGetResource(resource.stylerc, "frameWidth", "FrameWidth",
                      &value_type, &value)) {
     if (sscanf(value.addr, "%u", &resource.frame_width) != 1 ||
-	resource.frame_width > getWidth() / 2)
+	resource.frame_width > (unsigned int) getWidth() / 2)
       resource.frame_width = resource.bevel_width;
   } else {
     resource.frame_width = resource.bevel_width;
@@ -2031,7 +2034,6 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
             }
 
             char *directory = ((newmenu) ? command : label);
-            int directory_length = ((newmenu) ? command_length : label_length);
 
 	    char *stylesdir = expandTilde(directory);
 

@@ -1,74 +1,172 @@
-//
 // main.cc for Blackbox - an X11 Window manager
-// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
+// Copyright (c) 2001 Sean 'Shaleh' Perry <shaleh@debian.org>
+// Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//
-// (See the included file COPYING / GPL-2.0)
-//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#include "../version.h"
 
+#ifdef    HAVE_CONFIG_H
+#  include "../config.h"
+#endif // HAVE_CONFIG_H
+
+#include "i18n.hh"
 #include "blackbox.hh"
 
-#include <stdio.h>
-#include <stdlib.h>
+#ifdef    HAVE_STDIO_H
+#  include <stdio.h>
+#endif // HAVE_STDIO_H
 
+#ifdef    STDC_HEADERS
+#  include <stdlib.h>
+#  include <string.h>
+#endif // STDC_HEADERS
+
+#ifdef    HAVE_UNISTD_H
+#include <sys/types.h>
+#endif // HAVE_UNISTD_H
+
+#ifdef    HAVE_SYS_PARAM_H
+#  include <sys/param.h>
+#endif // HAVE_SYS_PARAM_H
+
+#ifndef   MAXPATHLEN
+#define   MAXPATHLEN 255
+#endif // MAXPATHLEN
+
+
+static void showHelp(int exitval) {
+  // print program usage and command line options
+  printf(i18n->getMessage(mainSet, mainUsage,
+			  "Blackbox %s : (c) 2001 Sean 'Shaleh' Perry\n"
+			  "\t\t\t  1997 - 2000 Brad Hughes\n\n"
+			  "  -display <string>\t\tuse display connection.\n"
+			  "  -rc <string>\t\t\tuse alternate resource file.\n"
+			  "  -version\t\t\tdisplay version and exit.\n"
+			  "  -help\t\t\t\tdisplay this help text and exit.\n\n"),
+	 __blackbox_version);
+
+  // some people have requested that we print out compile options
+  // as well
+  fprintf(stdout,i18n->getMessage(mainSet, mainCompileOptions,
+				  "Compile time options:\n"
+				  "  Debugging:\t\t\t%s\n"
+				  "  Interlacing:\t\t\t%s\n"
+				  "  Shape:\t\t\t%s\n"
+				  "  Slit:\t\t\t\t%s\n"
+				  "  8bpp Ordered Dithering:\t%s\n\n"),
+#ifdef    DEBUG
+	  i18n->getMessage(CommonSet, CommonYes, "yes"),
+#else // !DEBUG
+	  i18n->getMessage(CommonSet, CommonNo, "no"),
+#endif // DEBUG
+
+#ifdef    INTERLACE
+	  i18n->getMessage(CommonSet, CommonYes, "yes"),
+#else // !INTERLACE
+	  i18n->getMessage(CommonSet, CommonNo, "no"),
+#endif // INTERLACE
+
+#ifdef    SHAPE
+	  i18n->getMessage(CommonSet, CommonYes, "yes"),
+#else // !SHAPE
+	  i18n->getMessage(CommonSet, CommonNo, "no"),
+#endif // SHAPE
+
+#ifdef    SLIT
+	  i18n->getMessage(CommonSet, CommonYes, "yes"),
+#else // !SLIT
+	  i18n->getMessage(CommonSet, CommonNo, "no"),
+#endif // SLIT
+
+#ifdef    ORDEREDPSEUDO
+	  i18n->getMessage(CommonSet, CommonYes, "yes")
+#else // !ORDEREDPSEUDO
+	  i18n->getMessage(CommonSet, CommonNo, "no")
+#endif // ORDEREDPSEUDO
+	  );
+
+  ::exit(exitval);
+}
 
 int main(int argc, char **argv) {
-  // scan the command line for a list of servers to manage.
-  char *session_display = NULL;
+  char *session_display = (char *) 0;
+  char *rc_file = (char *) 0;
 
-  int i;
-  for (i = 1; i < argc; ++i) {
+  NLSInit("blackbox.cat");
 
-    // check for -display option... to run on a display other than the one
-    // set by the environment variable DISPLAY
-    if (! strcmp(argv[i], "-display")) {
+  for (int i = 1; i < argc; ++i) {
+    if (! strcmp(argv[i], "-rc")) {
+      // look for alternative rc file to use
+
       if ((++i) >= argc) {
-	fprintf(stderr, "error: '-display' requires and argument\n");
-	exit(1);
+        fprintf(stderr,
+		i18n->getMessage(mainSet, mainRCRequiresArg,
+				 "error: '-rc' requires and argument\n"));
+
+        ::exit(1);
       }
-      
-      // since we're using a different display... set the DISPLAY environment
-      // variable appropriately
+
+      rc_file = argv[i];
+    } else if (! strcmp(argv[i], "-display")) {
+      // check for -display option... to run on a display other than the one
+      // set by the environment variable DISPLAY
+
+      if ((++i) >= argc) {
+	fprintf(stderr,
+		i18n->getMessage(mainSet, mainDISPLAYRequiresArg,
+				 "error: '-display' requires an argument\n"));
+
+	::exit(1);
+      }
+
       session_display = argv[i];
-      if (setenv("DISPLAY", session_display, 1)) {
-	fprintf(stderr, "couldn't set environment variable DISPLAY\n");
-	perror("setenv()");
+      char dtmp[MAXPATHLEN];
+      sprintf(dtmp, "DISPLAY=%s", session_display);
+
+      if (putenv(dtmp)) {
+	fprintf(stderr,
+		i18n->
+		getMessage(mainSet, mainWarnDisplaySet,
+		   "warning: couldn't set environment variable 'DISPLAY'\n"));
+	perror("putenv()");
       }
     } else if (! strcmp(argv[i], "-version")) {
       // print current version string
-      printf("Blackbox %s : (c) 1997, 1998 Brad Hughes\n\n",
+      printf("Blackbox %s : (c) 1997 - 2000 Brad Hughes\n"
+	     "\t\t\t  2001 - 2002 Sean 'Shaleh' Perry\n",
              __blackbox_version);
-      exit(0);
+
+      ::exit(0);
     } else if (! strcmp(argv[i], "-help")) {
-      // print program usage and command line options
-      printf("Blackbox %s : (c) 1997, 1998 Brad Hughes\n",
-             __blackbox_version);
-      printf("\n"
-             "  -display <string>\tuse display connection.\n"
-	     "  -version\t\tdisplay version and exit.\n"
-             "  -help\t\t\tdisplay this help text and exit.\n\n");
-      exit(0);
+      showHelp(0);
+    } else { // invalid command line option
+      showHelp(-1);
     }
   }
 
-  Blackbox box(argc, argv, session_display);
-  box.EventLoop();
+#ifdef    __EMX__
+  _chdir2(getenv("X11ROOT"));
+#endif // __EMX__
+
+  Blackbox blackbox(argc, argv, session_display, rc_file);
+  blackbox.eventLoop();
+
   return(0);
 }

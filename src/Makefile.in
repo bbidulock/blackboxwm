@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.3 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p4 from Makefile.am
 
-# Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -10,28 +10,29 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-# src/Makefile.am for Blackbox 0.40.x beta - an X11 Window manager
-# Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
+# src/Makefile.am for Blackbox - an X11 Window manager
+# Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 #
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the 
+# Software is furnished to do so, subject to the following conditions:
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
+# The above copyright notice and this permission notice shall be included in 
+# all copies or substantial portions of the Software. 
 #
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-#
-#  (See the included file COPYING / GPL-2.0)
-#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+# DEALINGS IN THE SOFTWARE.
 
 
-SHELL = /bin/sh
+SHELL = @SHELL@
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -52,7 +53,7 @@ mandir = @mandir@
 includedir = @includedir@
 oldincludedir = /usr/include
 
-DISTDIR =
+DESTDIR =
 
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
@@ -66,7 +67,7 @@ AUTOMAKE = @AUTOMAKE@
 AUTOHEADER = @AUTOHEADER@
 
 INSTALL = @INSTALL@
-INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 transform = @program_transform_name@
@@ -79,37 +80,32 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 CC = @CC@
 CXX = @CXX@
+DEBUG = @DEBUG@
+INTERLACE = @INTERLACE@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
+NEWWMSPEC = @NEWWMSPEC@
+NLS = @NLS@
+ORDEREDPSEUDO = @ORDEREDPSEUDO@
 PACKAGE = @PACKAGE@
 SHAPE = @SHAPE@
+SLIT = @SLIT@
+TIMEDCACHE = @TIMEDCACHE@
 VERSION = @VERSION@
+gencat_cmd = @gencat_cmd@
 regex_cmd = @regex_cmd@
 
-CPPFLAGS =		@CPPFLAGS@				\
-			@SHAPE@					\
-			-DDEFAULTRC=\"$(pkgdatadir)/rc\"	\
-			-DDEFAULTMENU=\"$(pkgdatadir)/menu\"	\
-			-DDEFAULTSTYLE=\"$(pkgdatadir)/styles/default\"
+DEFAULT_MENU = $(pkgdatadir)/menu
+DEFAULT_STYLE = $(pkgdatadir)/styles/Results
 
-bin_PROGRAMS =		blackbox
+CPPFLAGS = @CPPFLAGS@ @SHAPE@ @SLIT@ @INTERLACE@ @ORDEREDPSEUDO@ @DEBUG@ @NEWWMSPEC@ @NLS@ @TIMEDCACHE@ -DLOCALEPATH=\"$(pkgdatadir)/nls\" -DDEFAULTMENU=\"$(DEFAULT_MENU)\" -DDEFAULTSTYLE=\"$(DEFAULT_STYLE)\"
 
-blackbox_SOURCES =	Basemenu.cc		\
-			Clientmenu.cc		\
-			Icon.cc			\
-			Image.cc		\
-			LinkedList.cc		\
-			Rootmenu.cc		\
-			Screen.cc		\
-			Toolbar.cc		\
-			Window.cc		\
-			Windowmenu.cc		\
-			Workspace.cc		\
-			Workspacemenu.cc	\
-			blackbox.cc		\
-			main.cc
 
-MAINTAINERCLEANFILES =	Makefile.in
+bin_PROGRAMS = blackbox
+
+blackbox_SOURCES = BaseDisplay.cc Basemenu.cc Clientmenu.cc Configmenu.cc Iconmenu.cc Image.cc LinkedList.cc Netizen.cc Rootmenu.cc Screen.cc Slit.cc Timer.cc Toolbar.cc Util.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc bsd-snprintf.c i18n.cc main.cc
+
+MAINTAINERCLEANFILES = Makefile.in
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -123,31 +119,36 @@ X_CFLAGS = @X_CFLAGS@
 X_LIBS = @X_LIBS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
-blackbox_OBJECTS =  Basemenu.o Clientmenu.o Icon.o Image.o LinkedList.o \
-Rootmenu.o Screen.o Toolbar.o Window.o Windowmenu.o Workspace.o \
-Workspacemenu.o blackbox.o main.o
+blackbox_OBJECTS =  BaseDisplay.o Basemenu.o Clientmenu.o Configmenu.o \
+Iconmenu.o Image.o LinkedList.o Netizen.o Rootmenu.o Screen.o Slit.o \
+Timer.o Toolbar.o Util.o Window.o Windowmenu.o Workspace.o \
+Workspacemenu.o blackbox.o bsd-snprintf.o i18n.o main.o
 blackbox_LDADD = $(LDADD)
 blackbox_DEPENDENCIES = 
 blackbox_LDFLAGS = 
 CXXFLAGS = @CXXFLAGS@
-CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CXXFLAGS)
-CXXLINK = $(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@
+CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+CXXLD = $(CXX)
+CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DIST_COMMON =  Makefile.am Makefile.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
-GZIP = --best
+GZIP_ENV = --best
 SOURCES = $(blackbox_SOURCES)
 OBJECTS = $(blackbox_OBJECTS)
 
-all: Makefile $(PROGRAMS)
-
+all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .cc .o .s
-$(srcdir)/Makefile.in: @MAINT@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4)
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps src/Makefile
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps src/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
@@ -168,15 +169,15 @@ install-binPROGRAMS: $(bin_PROGRAMS)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	@list='$(bin_PROGRAMS)'; for p in $$list; do \
 	  if test -f $$p; then \
-	    echo "  $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed '$(transform)'`"; \
-	     $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed '$(transform)'`; \
+	    echo "  $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
+	     $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
 	  else :; fi; \
 	done
 
 uninstall-binPROGRAMS:
 	@$(NORMAL_UNINSTALL)
 	list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  rm -f $(DESTDIR)$(bindir)/`echo $$p|sed '$(transform)'`; \
+	  rm -f $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
 	done
 
 .c.o:
@@ -207,8 +208,12 @@ blackbox: $(blackbox_OBJECTS) $(blackbox_DEPENDENCIES)
 tags: TAGS
 
 ID: $(HEADERS) $(SOURCES) $(LISP)
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
 	here=`pwd` && cd $(srcdir) \
-	  && mkid -f$$here/ID $(SOURCES) $(HEADERS) $(LISP)
+	  && mkid -f$$here/ID $$unique $(LISP)
 
 TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
 	tags=; \
@@ -236,113 +241,159 @@ subdir = src
 distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
-	  test -f $(distdir)/$$file \
-	  || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
-	  || cp -p $$d/$$file $(distdir)/$$file; \
+	  if test -d $$d/$$file; then \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
+	  else \
+	    test -f $(distdir)/$$file \
+	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	    || cp -p $$d/$$file $(distdir)/$$file || :; \
+	  fi; \
 	done
-info:
-dvi:
-check: all
-	$(MAKE)
-installcheck:
-install-exec: install-binPROGRAMS
-	@$(NORMAL_INSTALL)
+info-am:
+info: info-am
+dvi-am:
+dvi: dvi-am
+check-am: all-am
+check: check-am
+installcheck-am:
+installcheck: installcheck-am
+install-exec-am: install-binPROGRAMS
+install-exec: install-exec-am
 
-install-data: 
-	@$(NORMAL_INSTALL)
+install-data-am:
+install-data: install-data-am
 
-install: install-exec install-data all
-	@:
-
-uninstall: uninstall-binPROGRAMS
-
+install-am: all-am
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
+install: install-am
+uninstall-am: uninstall-binPROGRAMS
+uninstall: uninstall-am
+all-am: Makefile $(PROGRAMS)
+all-redirect: all-am
 install-strip:
-	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' INSTALL_SCRIPT='$(INSTALL_PROGRAM)' install
+	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
 installdirs:
-	$(mkinstalldirs)  $(DATADIR)$(bindir)
+	$(mkinstalldirs)  $(DESTDIR)$(bindir)
 
 
 mostlyclean-generic:
-	-test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
 
 clean-generic:
-	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
-	-rm -f Makefile $(DISTCLEANFILES)
+	-rm -f Makefile $(CONFIG_CLEAN_FILES)
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
-	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 
 maintainer-clean-generic:
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
-	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
-mostlyclean:  mostlyclean-binPROGRAMS mostlyclean-compile \
+mostlyclean-am:  mostlyclean-binPROGRAMS mostlyclean-compile \
 		mostlyclean-tags mostlyclean-generic
 
-clean:  clean-binPROGRAMS clean-compile clean-tags clean-generic \
-		mostlyclean
+mostlyclean: mostlyclean-am
 
-distclean:  distclean-binPROGRAMS distclean-compile distclean-tags \
-		distclean-generic clean distclean-local
-	-rm -f config.status
+clean-am:  clean-binPROGRAMS clean-compile clean-tags clean-generic \
+		mostlyclean-am
 
-maintainer-clean:  maintainer-clean-binPROGRAMS maintainer-clean-compile \
-		maintainer-clean-tags maintainer-clean-generic \
-		distclean
+clean: clean-am
+
+distclean-am:  distclean-binPROGRAMS distclean-compile distclean-tags \
+		distclean-generic clean-am distclean-local
+
+distclean: distclean-am
+
+maintainer-clean-am:  maintainer-clean-binPROGRAMS \
+		maintainer-clean-compile maintainer-clean-tags \
+		maintainer-clean-generic distclean-am
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
+
+maintainer-clean: maintainer-clean-am
 
 .PHONY: mostlyclean-binPROGRAMS distclean-binPROGRAMS clean-binPROGRAMS \
 maintainer-clean-binPROGRAMS uninstall-binPROGRAMS install-binPROGRAMS \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile tags mostlyclean-tags distclean-tags \
-clean-tags maintainer-clean-tags distdir info dvi installcheck \
-install-exec install-data install uninstall all installdirs \
-mostlyclean-generic distclean-generic clean-generic \
-maintainer-clean-generic clean mostlyclean distclean maintainer-clean
+clean-tags maintainer-clean-tags distdir info-am info dvi-am dvi check \
+check-am installcheck-am installcheck install-exec-am install-exec \
+install-data-am install-data install-am install uninstall-am uninstall \
+all-redirect all-am all installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
 
 
 distclean-local:
-	rm -f *\~
+	rm -f *\~ *.orig *.rej
 
 # local dependencies
 
-Basemenu.o: Basemenu.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Basemenu.hh Screen.hh
-Clientmenu.o: Clientmenu.cc ../config.h blackbox.hh ../version.h \
- Image.hh LinkedList.hh Clientmenu.hh Basemenu.hh Screen.hh Toolbar.hh \
- Window.hh Workspace.hh Workspacemenu.hh
-Icon.o: Icon.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Icon.hh Basemenu.hh Screen.hh Window.hh Workspace.hh \
- Clientmenu.hh Toolbar.hh
-Image.o: Image.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Screen.hh
+BaseDisplay.o: BaseDisplay.cc i18n.hh BaseDisplay.hh LinkedList.hh \
+ Timer.hh
+Basemenu.o: Basemenu.cc i18n.hh blackbox.hh BaseDisplay.hh \
+ LinkedList.hh Timer.hh Image.hh Window.hh Iconmenu.hh Basemenu.hh \
+ Windowmenu.hh Slit.hh Screen.hh Configmenu.hh Netizen.hh Rootmenu.hh \
+ Workspace.hh Workspacemenu.hh
+Clientmenu.o: Clientmenu.cc blackbox.hh BaseDisplay.hh LinkedList.hh \
+ Timer.hh Image.hh Window.hh Iconmenu.hh Basemenu.hh Windowmenu.hh Slit.hh \
+ Clientmenu.hh Workspace.hh Screen.hh Configmenu.hh Netizen.hh \
+ Rootmenu.hh Workspacemenu.hh
+Configmenu.o: Configmenu.cc i18n.hh Configmenu.hh Basemenu.hh \
+ LinkedList.hh Screen.hh BaseDisplay.hh Timer.hh Iconmenu.hh Netizen.hh \
+ Rootmenu.hh Workspace.hh Workspacemenu.hh blackbox.hh Image.hh \
+ Window.hh Windowmenu.hh Slit.hh Toolbar.hh
+Icon.o: Iconmenu.cc i18n.hh blackbox.hh BaseDisplay.hh LinkedList.hh \
+ Timer.hh Image.hh Window.hh Iconmenu.hh Basemenu.hh Windowmenu.hh Slit.hh \
+ Screen.hh Configmenu.hh Netizen.hh Rootmenu.hh Workspace.hh \
+ Workspacemenu.hh Toolbar.hh
+Image.o: Image.cc i18n.hh BaseDisplay.hh LinkedList.hh Timer.hh \
+ Image.hh
 LinkedList.o: LinkedList.cc LinkedList.hh
-Rootmenu.o: Rootmenu.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Rootmenu.hh Basemenu.hh Screen.hh
-Screen.o: Screen.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Icon.hh Basemenu.hh Screen.hh Rootmenu.hh Toolbar.hh \
- Window.hh Workspace.hh Clientmenu.hh Workspacemenu.hh
-Toolbar.o: Toolbar.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Icon.hh Basemenu.hh Rootmenu.hh Screen.hh Toolbar.hh \
- Workspace.hh Clientmenu.hh Window.hh Workspacemenu.hh
-Window.o: Window.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Icon.hh Basemenu.hh Screen.hh Window.hh Windowmenu.hh \
- Workspace.hh Clientmenu.hh Toolbar.hh
-Windowmenu.o: Windowmenu.cc ../config.h blackbox.hh ../version.h \
- Image.hh LinkedList.hh Screen.hh Window.hh Windowmenu.hh Basemenu.hh \
- Workspace.hh Clientmenu.hh Toolbar.hh
-Workspace.o: Workspace.cc ../config.h blackbox.hh ../version.h \
- Image.hh LinkedList.hh Screen.hh Toolbar.hh Window.hh Workspace.hh \
- Clientmenu.hh Basemenu.hh Windowmenu.hh
-Workspacemenu.o: Workspacemenu.cc ../config.h blackbox.hh ../version.h \
- Image.hh LinkedList.hh Screen.hh Workspacemenu.hh Basemenu.hh \
- Workspace.hh Clientmenu.hh Toolbar.hh Window.hh
-blackbox.o: blackbox.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh Basemenu.hh Rootmenu.hh Screen.hh Toolbar.hh Window.hh \
- Workspace.hh Clientmenu.hh
-main.o: main.cc ../config.h blackbox.hh ../version.h Image.hh \
- LinkedList.hh
+Netizen.o: Netizen.cc Netizen.hh BaseDisplay.hh LinkedList.hh Timer.hh \
+ Screen.hh Configmenu.hh Basemenu.hh blackbox.hh Image.hh Window.hh \
+ Iconmenu.hh Windowmenu.hh Slit.hh Rootmenu.hh Workspace.hh \
+ Workspacemenu.hh
+Rootmenu.o: Rootmenu.cc blackbox.hh BaseDisplay.hh LinkedList.hh \
+ Timer.hh Image.hh Window.hh Iconmenu.hh Basemenu.hh Windowmenu.hh Slit.hh \
+ Rootmenu.hh Screen.hh Configmenu.hh Netizen.hh Workspace.hh \
+ Workspacemenu.hh
+Screen.o: Screen.cc i18n.hh bsd-snprintf.h blackbox.hh BaseDisplay.hh \
+ LinkedList.hh Timer.hh Image.hh Window.hh Iconmenu.hh Basemenu.hh \
+ Windowmenu.hh Slit.hh Clientmenu.hh Workspace.hh Screen.hh Configmenu.hh \
+ Netizen.hh Rootmenu.hh Workspacemenu.hh Toolbar.hh
+Slit.o: Slit.cc i18n.hh blackbox.hh BaseDisplay.hh LinkedList.hh \
+ Timer.hh Image.hh Window.hh Iconmenu.hh Basemenu.hh Windowmenu.hh Slit.hh \
+ Screen.hh Configmenu.hh Netizen.hh Rootmenu.hh Workspace.hh \
+ Workspacemenu.hh Toolbar.hh
+Timer.o: Timer.cc BaseDisplay.hh LinkedList.hh Timer.hh
+Toolbar.o: Toolbar.cc i18n.hh blackbox.hh BaseDisplay.hh LinkedList.hh \
+ Timer.hh Image.hh Window.hh Iconmenu.hh Basemenu.hh Windowmenu.hh Slit.hh \
+ Clientmenu.hh Workspace.hh Rootmenu.hh Screen.hh Configmenu.hh \
+ Netizen.hh Workspacemenu.hh Toolbar.hh
+Util.o: Util.cc Util.hh
+Window.o: Window.cc i18n.hh blackbox.hh BaseDisplay.hh LinkedList.hh \
+ Timer.hh Image.hh Window.hh Iconmenu.hh Basemenu.hh Windowmenu.hh Slit.hh \
+ Screen.hh Configmenu.hh Netizen.hh Rootmenu.hh Workspace.hh \
+ Workspacemenu.hh Toolbar.hh
+Windowmenu.o: Windowmenu.cc i18n.hh blackbox.hh BaseDisplay.hh \
+ LinkedList.hh Timer.hh Image.hh Window.hh Iconmenu.hh Basemenu.hh \
+ Windowmenu.hh Slit.hh Screen.hh Configmenu.hh Netizen.hh Rootmenu.hh \
+ Workspace.hh Workspacemenu.hh
+Workspace.o: Workspace.cc i18n.hh blackbox.hh BaseDisplay.hh \
+ LinkedList.hh Timer.hh Image.hh Window.hh Iconmenu.hh Basemenu.hh \
+ Windowmenu.hh Slit.hh Clientmenu.hh Workspace.hh Screen.hh \
+ Configmenu.hh Netizen.hh Rootmenu.hh Workspacemenu.hh Toolbar.hh
+Workspacemenu.o: Workspacemenu.cc i18n.hh blackbox.hh BaseDisplay.hh \
+ LinkedList.hh Timer.hh Image.hh Window.hh Iconmenu.hh Basemenu.hh \
+ Windowmenu.hh Slit.hh Screen.hh Configmenu.hh Netizen.hh Rootmenu.hh \
+ Workspace.hh Workspacemenu.hh Toolbar.hh
+blackbox.o: blackbox.cc i18n.hh blackbox.hh BaseDisplay.hh \
+ LinkedList.hh Timer.hh Image.hh Window.hh Iconmenu.hh Basemenu.hh \
+ Windowmenu.hh Slit.hh Clientmenu.hh Workspace.hh Rootmenu.hh \
+ Screen.hh Configmenu.hh Netizen.hh Workspacemenu.hh Toolbar.hh
+bsd-snprintf.o: bsd-snprintf.c bsd-snprintf.h
+i18n.o: i18n.cc i18n.hh
+main.o: main.cc ../version.h i18n.hh blackbox.hh BaseDisplay.hh \
+ LinkedList.hh Timer.hh Image.hh Window.hh Iconmenu.hh Basemenu.hh \
+ Windowmenu.hh Slit.hh
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
