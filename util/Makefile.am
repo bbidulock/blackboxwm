@@ -18,4 +18,4 @@ distclean-local:
 bsetroot.o: bsetroot.cc ../config.h ../lib/i18n.hh \
  ../lib/../nls/blackbox-nls.hh ../lib/GCCache.hh ../lib/BaseDisplay.hh \
  ../lib/Timer.hh ../lib/Color.hh ../lib/Texture.hh ../lib/Util.hh \
- bsetroot.hh ../lib/Image.hh
+ bsetroot.hh ../lib/Image.hh ../lib/libblackbox.a

@@ -318,7 +318,7 @@ distclean-local:
 bsetroot.o: bsetroot.cc ../config.h ../lib/i18n.hh \
  ../lib/../nls/blackbox-nls.hh ../lib/GCCache.hh ../lib/BaseDisplay.hh \
  ../lib/Timer.hh ../lib/Color.hh ../lib/Texture.hh ../lib/Util.hh \
- bsetroot.hh ../lib/Image.hh
+ bsetroot.hh ../lib/Image.hh ../lib/libblackbox.a
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
