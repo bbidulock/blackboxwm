@@ -714,7 +714,7 @@ fi
 
 PACKAGE=blackbox
 
-VERSION=0.62.0pre2
+VERSION=0.62.0pre3
 
 if test "`cd $srcdir && pwd`" != "`pwd`" && test -f $srcdir/config.status; then
   { echo "configure: error: source directory already configured; run "make distclean" there first" 1>&2; exit 1; }
@@ -3147,6 +3147,7 @@ nls/sv_SE/Makefile
 nls/tr_TR/Makefile
 nls/ja_JP/Makefile
 nls/nl_NL/Makefile
+nls/it_IT/Makefile
 version.h config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
@@ -3269,6 +3270,7 @@ nls/sv_SE/Makefile
 nls/tr_TR/Makefile
 nls/ja_JP/Makefile
 nls/nl_NL/Makefile
+nls/it_IT/Makefile
 version.h"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF

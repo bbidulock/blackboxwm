@@ -11,9 +11,11 @@ Current Contributors:
         Jason 'vanRijn' Kasper <vR@movingparts.net>
 	- bbkeys, ideas, support
 	Wilbert Berendsen <wbsoft@xs4all.nl>
-	 - man pages
+	 - man pages and dutch nls file
 	Chris Mecca <flip@linuxguide.org>
 	 - use of his irix machine for testing
+	Luca Marrazzo <marra.luca@libero.it>
+	 - italian nls files
 
 Original Author:
         Brad Hughes <bhughes@trolltech.com>

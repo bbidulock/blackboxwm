@@ -64,13 +64,9 @@ Workspace::Workspace(BScreen *scrn, int i) {
 
   lastfocus = (BlackboxWindow *) 0;
 
-  char *tmp;
   name = (char *) 0;
-  screen->getNameOfWorkspace(id, &tmp);
+  char *tmp = screen->getNameOfWorkspace(id);
   setName(tmp);
-
-  if (tmp)
-    delete [] tmp;
 }
 
 

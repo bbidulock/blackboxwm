@@ -24,7 +24,8 @@
 #define   __i18n_h
 
 // always include this just for the #defines
-// this keeps the calls to i18n->getMessage clean
+// this keeps the calls to i18n->getMessage clean, otherwise we have to
+// add ifdefs to every call to getMessage
 #include "../nls/blackbox-nls.hh"
 
 #ifdef    HAVE_LOCALE_H
@@ -32,7 +33,6 @@
 #endif // HAVE_LOCALE_H
 
 #ifdef    HAVE_NL_TYPES_H
-// this is needed for linux libc5 systems
 extern "C" {
 #  include <nl_types.h>
 }
@@ -42,26 +42,19 @@ extern "C" {
 class I18n {
 private:
   char *locale, *catalog_filename;
-  int mb;
+  bool mb;
+#ifdef HAVE_NL_TYPES_H
   nl_catd catalog_fd;
-
-
-protected:
-
+#endif
 
 public:
   I18n(void);
   ~I18n(void);
 
-  inline const char *getLocale(void) const { return locale; }
-  inline const char *getCatalogFilename(void) const { return catalog_filename; }
-  
-  inline const int &multibyte(void) const { return mb; }
+  inline bool multibyte(void) const { return mb; }
 
-  inline const nl_catd &getCatalogFd(void) const { return catalog_fd; }
-
-  const char *getMessage(int, int, const char * = 0);
-  void openCatalog(const char *);
+  const char *getMessage(int set, int msg, const char *msgString) const;
+  void openCatalog(const char *catalog);
 };
 
 

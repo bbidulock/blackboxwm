@@ -1576,15 +1576,16 @@ void BScreen::addWorkspaceName(char *name) {
 }
 
 
-void BScreen::getNameOfWorkspace(int id, char **name) {
+char* BScreen::getNameOfWorkspace(int id) {
+  char *name = (char *) 0;
+
   if (id >= 0 && id < workspaceNames->count()) {
     char *wkspc_name = workspaceNames->find(id);
 
     if (wkspc_name)
-      *name = bstrdup(wkspc_name);
-  } else {
-    *name = 0;
+      name = wkspc_name;
   }
+  return name;
 }
 
 

@@ -37,11 +37,21 @@ Changes from 0.61.1 to 0.62.0:
   - BlackboxWindow::withdraw no longet sets the state to Withdrawn.
     This confused some X clients.
   - updated the manpages and added Dutch NLS support (thanks Wilbert)
+  - added it_IT nls files, thanks Luca Marrazzo <marra.luca@libero.it>
   - the menu file mentioned in the manpage is now based on DEFAULT_MENU
   - configure script found basename in -lgen, but did not set HAVE_BASENAME
     causing compilation problems on irix and possibly others.  Added a call
     to AC_DEFINE in AC_CHECK_LIB to fix this.
   - menu is no longer installed, you need to copy it yourself
+  - cleaned up i18n code a little.  Several member functions were declared
+    but never used and getMessage() had a default argument which was also
+    never used.
+  - i18n will now compile cleanly on machines without nl_types.h
+  - the lock modifiers no longer stop blackbox!
+  - maximize a window via bbkeys and the maximize button is not redrawn, fixed
+  - now exit with an error code if an unknown option is passed
+  - autoraise and multiple dialog windows yields segv bug fixed
+  - check if the window is visible before changeBlackboxHints() calls maximize
   - added my name to the code, updated the version output
     
 Changes from 0.61.0 to 0.61.1:

@@ -1,13 +1,2 @@
 0.62.0pre2:
-  launching blackbox sometimes causes clients to disappear -- they are not
-    icons nor are they mapped.  Opening new windows seems to take the hidden
-    window into account.  It is most odd.
-
-  restarting bb causes it to lose the settings on existing windows -- they
-    are no longer iconified or on the right workspace
-
   vertical maximization moves the window and does not quite reach the toolbar
-
-  sylpheed crashes, again!@!
-
-  need better argument parsing --display goes though unchecked

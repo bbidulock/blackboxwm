@@ -44,6 +44,10 @@
 #  include <locale.h>
 #endif // HAVE_LOCALE_H
 
+// the rest of bb source uses True and False from X, so we continue that
+#define True true
+#define False false
+
 static I18n static_i18n;
 I18n *i18n;
 
@@ -61,20 +65,21 @@ I18n::I18n(void) {
     fprintf(stderr, "failed to set locale, reverting to \"C\"\n");
 #endif // HAVE_SETLOCALE
     locale = "C";
-    mb = 0;
+    mb = False;
 #ifdef    HAVE_SETLOCALE
   } else if (! strcmp(locale, "C") || ! strcmp(locale, "POSIX")) {
-    mb = 0;
+    mb = False;
   } else {
-    mb = 1;
+    mb = True;
     // truncate any encoding off the end of the locale
     char *l = strchr(locale, '.');
     if (l) *l = '\0';
   }
+
+  catalog_fd = (nl_catd) -1;
 #endif // HAVE_SETLOCALE
 
   catalog_filename = (char *) 0;
-  catalog_fd = (nl_catd) -1;
 }
 
 
@@ -109,17 +114,17 @@ void I18n::openCatalog(const char *catalog) {
   if (catalog_fd == (nl_catd) -1)
     fprintf(stderr, "failed to open catalog, using default messages\n");
 #else // !HAVE_CATOPEN
-  catalog_fd = (nl_catd) -1;
+
   catalog_filename = (char *) 0;
 #endif // HAVE_CATOPEN
 }
 
 
-const char *I18n::getMessage(int set, int msg, const char *s) {
+const char *I18n::getMessage(int set, int msg, const char *msgString) const {
 #if   defined(NLS) && defined(HAVE_CATGETS)
   if (catalog_fd != (nl_catd) -1)
-    return (const char *) catgets(catalog_fd, set, msg, s);
+    return (const char *) catgets(catalog_fd, set, msg, msgString);
   else
 #endif
-    return s;
+    return msgString;
 }

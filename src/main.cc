@@ -57,6 +57,60 @@
 #endif // MAXPATHLEN
 
 
+static void showHelp(int exitval) {
+  // print program usage and command line options
+  printf(i18n->getMessage(mainSet, mainUsage,
+			  "Blackbox %s : (c) 2001 Sean 'Shaleh' Perry\n"
+			  "\t\t\t  1997 - 2000 Brad Hughes\n\n"
+			  "  -display <string>\t\tuse display connection.\n"
+			  "  -rc <string>\t\t\tuse alternate resource file.\n"
+			  "  -version\t\t\tdisplay version and exit.\n"
+			  "  -help\t\t\t\tdisplay this help text and exit.\n\n"),
+	 __blackbox_version);
+
+  // some people have requested that we print out compile options
+  // as well
+  fprintf(stdout,i18n->getMessage(mainSet, mainCompileOptions,
+				  "Compile time options:\n"
+				  "  Debugging:\t\t\t%s\n"
+				  "  Interlacing:\t\t\t%s\n"
+				  "  Shape:\t\t\t%s\n"
+				  "  Slit:\t\t\t\t%s\n"
+				  "  8bpp Ordered Dithering:\t%s\n\n"),
+#ifdef    DEBUG
+	  i18n->getMessage(CommonSet, CommonYes, "yes"),
+#else // !DEBUG
+	  i18n->getMessage(CommonSet, CommonNo, "no"),
+#endif // DEBUG
+
+#ifdef    INTERLACE
+	  i18n->getMessage(CommonSet, CommonYes, "yes"),
+#else // !INTERLACE
+	  i18n->getMessage(CommonSet, CommonNo, "no"),
+#endif // INTERLACE
+
+#ifdef    SHAPE
+	  i18n->getMessage(CommonSet, CommonYes, "yes"),
+#else // !SHAPE
+	  i18n->getMessage(CommonSet, CommonNo, "no"),
+#endif // SHAPE
+
+#ifdef    SLIT
+	  i18n->getMessage(CommonSet, CommonYes, "yes"),
+#else // !SLIT
+	  i18n->getMessage(CommonSet, CommonNo, "no"),
+#endif // SLIT
+
+#ifdef    ORDEREDPSEUDO
+	  i18n->getMessage(CommonSet, CommonYes, "yes")
+#else // !ORDEREDPSEUDO
+	  i18n->getMessage(CommonSet, CommonNo, "no")
+#endif // ORDEREDPSEUDO
+	  );
+
+  ::exit(exitval);
+}
+
 int main(int argc, char **argv) {
   char *session_display = (char *) 0;
   char *rc_file = (char *) 0;
@@ -101,62 +155,15 @@ int main(int argc, char **argv) {
       }
     } else if (! strcmp(argv[i], "-version")) {
       // print current version string
-      printf("Blackbox %s : (c) 1997 - 2000 Brad Hughes\n\n",
+      printf("Blackbox %s : (c) 1997 - 2000 Brad Hughes\n"
+	     "\t\t\t  2002 - 2001 Sean 'Shaleh' Perry\n",
              __blackbox_version);
 
       ::exit(0);
     } else if (! strcmp(argv[i], "-help")) {
-      // print program usage and command line options
-      printf(i18n->getMessage(mainSet, mainUsage,
-                        "Blackbox %s : (c) 2001 Sean 'Shaleh' Perry\n"
-			"\t\t 1997 - 2000 Brad Hughes\n\n"
-			"  -display <string>\t\tuse display connection.\n"
-			"  -rc <string>\t\t\tuse alternate resource file.\n"
-			"  -version\t\t\tdisplay version and exit.\n"
-			"  -help\t\t\t\tdisplay this help text and exit.\n\n"),
-	     __blackbox_version);
-
-      // some people have requested that we print out compile options
-      // as well
-      fprintf(stdout,i18n->getMessage(mainSet, mainCompileOptions,
-				      "Compile time options:\n"
-				      "  Debugging:\t\t\t%s\n"
-				      "  Interlacing:\t\t\t%s\n"
-				      "  Shape:\t\t\t%s\n"
-				      "  Slit:\t\t\t\t%s\n"
-				      "  8bpp Ordered Dithering:\t%s\n\n"),
-#ifdef    DEBUG
-	     i18n->getMessage(CommonSet, CommonYes, "yes"),
-#else // !DEBUG
-	     i18n->getMessage(CommonSet, CommonNo, "no"),
-#endif // DEBUG
-
-#ifdef    INTERLACE
-	     i18n->getMessage(CommonSet, CommonYes, "yes"),
-#else // !INTERLACE
-	     i18n->getMessage(CommonSet, CommonNo, "no"),
-#endif // INTERLACE
-
-#ifdef    SHAPE
-	     i18n->getMessage(CommonSet, CommonYes, "yes"),
-#else // !SHAPE
-	     i18n->getMessage(CommonSet, CommonNo, "no"),
-#endif // SHAPE
-
-#ifdef    SLIT
-	     i18n->getMessage(CommonSet, CommonYes, "yes"),
-#else // !SLIT
-	     i18n->getMessage(CommonSet, CommonNo, "no"),
-#endif // SLIT
-
-#ifdef    ORDEREDPSEUDO
-	     i18n->getMessage(CommonSet, CommonYes, "yes")
-#else // !ORDEREDPSEUDO
-	     i18n->getMessage(CommonSet, CommonNo, "no")
-#endif // ORDEREDPSEUDO
-	     );
-
-      ::exit(0);
+      showHelp(0);
+    } else { // invalid command line option
+      showHelp(-1);
     }
   }
 

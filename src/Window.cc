@@ -265,17 +265,17 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   associateClientWindow();
 
   if (! screen->isSloppyFocus())
-    XGrabButton(display, Button1, 0, frame.plate, True, ButtonPressMask,
-		GrabModeSync, GrabModeSync, None, None);
+    blackbox->grabButton(Button1, 0, frame.plate, True, ButtonPressMask,
+        GrabModeSync, GrabModeSync, None, None);
 
-  XGrabButton(display, Button1, Mod1Mask, frame.window, True,
-	      ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
-	      GrabModeAsync, None, blackbox->getMoveCursor());
-  XGrabButton(display, Button2, Mod1Mask, frame.window, True,
-	      ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
-  XGrabButton(display, Button3, Mod1Mask, frame.window, True,
-	      ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
-	      GrabModeAsync, None, blackbox->getLowerRightAngleCursor());
+  blackbox->grabButton(Button1, Mod1Mask, frame.window, True,
+      ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
+      GrabModeAsync, None, blackbox->getMoveCursor());
+  blackbox->grabButton(Button2, Mod1Mask, frame.window, True,
+      ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
+  blackbox->grabButton(Button3, Mod1Mask, frame.window, True,
+      ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
+      GrabModeAsync, None, blackbox->getLowerRightAngleCursor());
 
   positionWindows();
   XRaiseWindow(display, frame.plate);
@@ -637,8 +637,6 @@ void BlackboxWindow::decorate(void) {
     blackbox_attrib.decoration = DecorNone;
   }
 
-  setState(current_state);
-
   if (decorations.handle) {
     tmp = frame.fhandle;
     texture = &(screen->getWindowStyle()->h_focus);
@@ -823,10 +821,10 @@ void BlackboxWindow::reconfigure(void) {
   configure(frame.x, frame.y, frame.width, frame.height);
 
   if (! screen->isSloppyFocus())
-    XGrabButton(display, Button1, 0, frame.plate, True, ButtonPressMask,
-		GrabModeSync, GrabModeSync, None, None);
+    blackbox->grabButton(Button1, 0, frame.plate, True, ButtonPressMask,
+        GrabModeSync, GrabModeSync, None, None);
   else
-    XUngrabButton(display, Button1, 0, frame.plate);
+    blackbox->ungrabButton(Button1, 0, frame.plate);
 
   if (windowmenu) {
     windowmenu->move(windowmenu->getX(), frame.y + frame.title_h);
@@ -1596,6 +1594,7 @@ void BlackboxWindow::maximize(unsigned int button) {
 
   configure(dx, dy, dw, dh);
   screen->getWorkspace(workspace_number)->raiseWindow(this);
+  redrawAllButtons();
   setState(current_state);
 }
 
@@ -1713,7 +1712,8 @@ void BlackboxWindow::setFocusFlag(Bool focus) {
       XSetWindowBorder(display, frame.plate, frame.uborder_pixel);
   }
 
-  if (screen->isSloppyFocus() && screen->doAutoRaise()) timer->stop();
+  if (screen->isSloppyFocus() && screen->doAutoRaise() && timer->isTiming())
+    timer->stop();
 }
 
 
@@ -1948,12 +1948,12 @@ void BlackboxWindow::restoreAttributes(void) {
 void BlackboxWindow::restoreGravity(void) {
   // x coordinates for each gravity type
   const int x_west = frame.x;
-  const int x_east = frame.x + frame.width - 1;
-  const int x_center = frame.x + frame.width/2 - 1;
+  const int x_east = frame.x + frame.width - client.width;
+  const int x_center = frame.x + (frame.width/2) - client.width;
   // y coordinates for each gravity type
   const int y_north = frame.y;
-  const int y_south = frame.y + frame.height - 1;
-  const int y_center = frame.y + frame.height/2 - 1;
+  const int y_south = frame.y + frame.height - client.height;
+  const int y_center = frame.y + (frame.height/2) - client.height;
 
   switch(client.win_gravity) {
   default:
@@ -2859,7 +2859,8 @@ void BlackboxWindow::changeBlackboxHints(BlackboxHints *net) {
        (net->attrib & AttribShaded)))
     shade();
 
-  if ((net->flags & (AttribMaxVert | AttribMaxHoriz)) &&
+  if (flags.visible && // watch out for requests when we can not be seen
+      (net->flags & (AttribMaxVert | AttribMaxHoriz)) &&
       ((blackbox_attrib.attrib & (AttribMaxVert | AttribMaxHoriz)) !=
        (net->attrib & (AttribMaxVert | AttribMaxHoriz)))) {
     if (flags.maximized) {
@@ -2925,6 +2926,7 @@ void BlackboxWindow::changeBlackboxHints(BlackboxHints *net) {
     }
 
     reconfigure();
+    setState(current_state);
   }
 }
 
@@ -3017,9 +3019,10 @@ void BlackboxWindow::right_fixsize(int *gx, int *gy) {
   // calculate the size of the client window and conform it to the
   // size specified by the size hints of the client window...
   int dx = frame.resize_w - client.base_width - (frame.mwm_border_w * 2) -
-    (frame.border_w * 2);
+    (frame.border_w * 2) + (client.width_inc / 2);
   int dy = frame.resize_h - frame.y_border - client.base_height -
-    frame.handle_h - (frame.border_w * 3) - (frame.mwm_border_w * 2);
+    frame.handle_h - (frame.border_w * 3) - (frame.mwm_border_w * 2)
+    + (client.height_inc / 2);
 
   if (dx < (signed) client.min_width) dx = client.min_width;
   if (dy < (signed) client.min_height) dy = client.min_height;
@@ -3045,9 +3048,10 @@ void BlackboxWindow::left_fixsize(int *gx, int *gy) {
   // calculate the size of the client window and conform it to the
   // size specified by the size hints of the client window...
   int dx = frame.x + frame.width - frame.resize_x - client.base_width -
-    (frame.mwm_border_w * 2);
+    (frame.mwm_border_w * 2) + (client.width_inc / 2);
   int dy = frame.resize_h - frame.y_border - client.base_height -
-    frame.handle_h - (frame.border_w * 3) - (frame.mwm_border_w * 2);
+    frame.handle_h - (frame.border_w * 3) - (frame.mwm_border_w * 2)
+    + (client.height_inc / 2);
 
   if (dx < (signed) client.min_width) dx = client.min_width;
   if (dy < (signed) client.min_height) dy = client.min_height;

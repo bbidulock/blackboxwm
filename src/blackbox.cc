@@ -264,6 +264,9 @@ void Blackbox::process_event(XEvent *e) {
 
   switch (e->type) {
   case ButtonPress: {
+    // strip the lock key modifiers
+    e->xbutton.state &= ~(NumLockMask | CapsLockMask | ScrollLockMask);
+
     last_time = e->xbutton.time;
 
     BlackboxWindow *win = (BlackboxWindow *) 0;
@@ -365,6 +368,9 @@ void Blackbox::process_event(XEvent *e) {
   }
 
   case ButtonRelease: {
+    // strip the lock key modifiers
+    e->xbutton.state &= ~(NumLockMask | CapsLockMask | ScrollLockMask);
+
     last_time = e->xbutton.time;
 
     BlackboxWindow *win = (BlackboxWindow *) 0;
@@ -488,6 +494,9 @@ void Blackbox::process_event(XEvent *e) {
   }
 
   case MotionNotify: {
+    // strip the lock key modifiers
+    e->xbutton.state &= ~(NumLockMask | CapsLockMask | ScrollLockMask);
+    
     last_time = e->xmotion.time;
 
     BlackboxWindow *win = (BlackboxWindow *) 0;

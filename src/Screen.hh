@@ -296,7 +296,7 @@ public:
   void removeNetizen(Window);
   void addIcon(BlackboxWindow *);
   void removeIcon(BlackboxWindow *);
-  void getNameOfWorkspace(int, char **);
+  char* getNameOfWorkspace(int);
   void changeWorkspaceID(int);
   void raiseWindows(Window *, int);
   void reassociateWindow(BlackboxWindow *, int, Bool);

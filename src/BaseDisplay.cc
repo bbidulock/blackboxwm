@@ -34,6 +34,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
+#include <X11/keysym.h>
 
 #ifdef    SHAPE
 #  include <X11/extensions/shape.h>
@@ -337,6 +338,44 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
     ScreenInfo *screeninfo = new ScreenInfo(this, i);
     screenInfoList->insert(screeninfo);
   }
+
+  // get the values of the keyboard lock modifiers
+  KeyCode num_lock_code = XKeysymToKeycode(display, XK_Num_Lock);
+  KeyCode caps_lock_code = XKeysymToKeycode(display, XK_Caps_Lock);
+  KeyCode scroll_lock_code = XKeysymToKeycode(display, XK_Scroll_Lock);
+  if (num_lock_code && caps_lock_code && scroll_lock_code) {
+    XModifierKeymap *modmap;
+    if ((modmap = XGetModifierMapping(display))) {
+      int mask_table[] = {
+        ShiftMask, LockMask, ControlMask, Mod1Mask,
+        Mod2Mask, Mod3Mask, Mod4Mask, Mod5Mask
+      };
+      int size = (sizeof(mask_table) / sizeof(mask_table[0])) *
+        modmap->max_keypermod;
+      for (int cnt = 0; cnt < size; cnt++) {
+        if (num_lock_code == modmap->modifiermap[cnt])
+          NumLockMask = mask_table[cnt / modmap->max_keypermod];
+        if (scroll_lock_code == modmap->modifiermap[cnt])
+          ScrollLockMask = mask_table[cnt / modmap->max_keypermod];
+        if (caps_lock_code == modmap->modifiermap[cnt])
+          CapsLockMask = mask_table[cnt / modmap->max_keypermod];
+      }
+      MaskList[0] = 0;
+      MaskList[1] = CapsLockMask;
+      MaskList[2] = NumLockMask;
+      MaskList[3] = ScrollLockMask;
+      MaskList[4] = CapsLockMask | NumLockMask;
+      MaskList[5] = NumLockMask  | ScrollLockMask;
+      MaskList[6] = CapsLockMask | ScrollLockMask;
+      MaskList[7] = CapsLockMask | NumLockMask | ScrollLockMask;
+      MaskListLength = sizeof(MaskList) / sizeof(MaskList[0]);
+      XFreeModifiermap(modmap);
+    } else {
+      NumLockMask = ScrollLockMask = CapsLockMask = 0;
+      MaskList[0] = 0;
+      MaskListLength = 1;
+    }
+  }
 }
 
 
@@ -534,4 +573,27 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, int num) {
     visual = DefaultVisual(basedisplay->getXDisplay(), screen_number);
     colormap = DefaultColormap(basedisplay->getXDisplay(), screen_number);
   }
+}
+
+/*
+ * Grabs a button, but also grabs the button in every possible combination with
+ * the keyboard lock keys, so that they do not cancel out the event.
+ */
+void BaseDisplay::grabButton(unsigned int button, unsigned int modifiers,
+    Window grab_window, Bool owner_events, unsigned int event_mask,
+    int pointer_mode, int keybaord_mode, Window confine_to, Cursor cursor) const
+{
+  for (unsigned int cnt = 0; cnt < MaskListLength; cnt++)
+    XGrabButton(display, button, modifiers | MaskList[cnt], grab_window,
+        owner_events, event_mask, pointer_mode, keybaord_mode, confine_to,
+        cursor);
+}
+/*
+ * Releases the grab on a button, and ungrabs all possible combinations of the
+ * keyboard lock keys.
+ */
+void BaseDisplay::ungrabButton(unsigned int button, unsigned int modifiers,
+    Window grab_window) const {
+  for (unsigned int cnt = 0; cnt < MaskListLength; cnt++)
+    XUngrabButton(display, button, modifiers | MaskList[cnt], grab_window);
 }
