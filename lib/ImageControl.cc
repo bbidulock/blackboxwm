@@ -67,253 +67,14 @@ bt::ImageControl::ImageControl(TimerQueueManager *app,
     timer = (bt::Timer *) 0;
   }
 
-  colors = (XColor *) 0;
-  ncolors = 0;
-
   screen_depth = screeninfo->getDepth();
   window = screeninfo->getRootWindow();
   screen_number = screeninfo->getScreenNumber();
   colormap = screeninfo->getColormap();
-
-  int count;
-  XPixmapFormatValues *pmv = XListPixmapFormats(display.XDisplay(),
-                                                &count);
-  if (pmv) {
-    bits_per_pixel = 0;
-    for (int i = 0; i < count; i++)
-      if (pmv[i].depth == screen_depth) {
-	bits_per_pixel = pmv[i].bits_per_pixel;
-	break;
-      }
-
-    XFree(pmv);
-  }
-
-  if (bits_per_pixel == 0) bits_per_pixel = screen_depth;
-  if (bits_per_pixel >= 24) setDither(False);
-
-  red_offset = green_offset = blue_offset = 0;
-
-  switch (getVisual()->c_class) {
-  case TrueColor: {
-    // compute color tables
-    unsigned long red_mask = getVisual()->red_mask,
-      green_mask = getVisual()->green_mask,
-      blue_mask = getVisual()->blue_mask;
-
-    while (! (red_mask & 1)) { red_offset++; red_mask >>= 1; }
-    while (! (green_mask & 1)) { green_offset++; green_mask >>= 1; }
-    while (! (blue_mask & 1)) { blue_offset++; blue_mask >>= 1; }
-
-    red_bits = 255 / red_mask;
-    green_bits = 255 / green_mask;
-    blue_bits = 255 / blue_mask;
-
-    for (int i = 0; i < 256; i++) {
-      red_color_table[i] = i / red_bits;
-      green_color_table[i] = i / green_bits;
-      blue_color_table[i] = i / blue_bits;
-    }
-    break;
-  }
-
-  case PseudoColor:
-  case StaticColor: {
-    ncolors = colors_per_channel * colors_per_channel * colors_per_channel;
-
-    if (ncolors > (1 << screen_depth)) {
-      colors_per_channel = (1 << screen_depth) / 3;
-      ncolors = colors_per_channel * colors_per_channel * colors_per_channel;
-    }
-
-    if (colors_per_channel < 2 || ncolors > (1 << screen_depth)) {
-      // invalid colormap size, reducing
-
-      colors_per_channel = (1 << screen_depth) / 3;
-    }
-
-    colors = new XColor[ncolors];
-    if (! colors)
-      exit(1);
-
-    int
-#ifdef ORDEREDPSEUDO
-      bits = 256 / colors_per_channel;
-#else // !ORDEREDPSEUDO
-      bits = 255 / (colors_per_channel - 1);
-#endif // ORDEREDPSEUDO
-
-    red_bits = green_bits = blue_bits = bits;
-
-    int i = 0, ii, p, r, g, b;
-
-    for (i = 0; i < 256; i++)
-      red_color_table[i] = green_color_table[i] = blue_color_table[i] =
-	i / bits;
-
-    for (r = 0, i = 0; r < colors_per_channel; r++)
-      for (g = 0; g < colors_per_channel; g++)
-	for (b = 0; b < colors_per_channel; b++, i++) {
-	  colors[i].red = (r * 0xffff) / (colors_per_channel - 1);
-	  colors[i].green = (g * 0xffff) / (colors_per_channel - 1);
-	  colors[i].blue = (b * 0xffff) / (colors_per_channel - 1);;
-	  colors[i].flags = DoRed|DoGreen|DoBlue;
-	}
-
-    for (i = 0; i < ncolors; i++) {
-      if (! XAllocColor(display.XDisplay(), colormap, &colors[i]))
-	colors[i].flags = 0;
-      else
-	colors[i].flags = DoRed|DoGreen|DoBlue;
-    }
-
-    XColor icolors[256];
-    int incolors = (((1 << screen_depth) > 256) ? 256 : (1 << screen_depth));
-
-    for (i = 0; i < incolors; i++)
-      icolors[i].pixel = i;
-
-    XQueryColors(display.XDisplay(), colormap, icolors, incolors);
-    for (i = 0; i < ncolors; i++) {
-      if (! colors[i].flags) {
-	unsigned long chk = 0xffffffff, pixel, close = 0;
-
-	p = 2;
-	while (p--) {
-	  for (ii = 0; ii < incolors; ii++) {
-	    r = (colors[i].red - icolors[i].red) >> 8;
-	    g = (colors[i].green - icolors[i].green) >> 8;
-	    b = (colors[i].blue - icolors[i].blue) >> 8;
-	    pixel = (r * r) + (g * g) + (b * b);
-
-	    if (pixel < chk) {
-	      chk = pixel;
-	      close = ii;
-	    }
-
-	    colors[i].red = icolors[close].red;
-	    colors[i].green = icolors[close].green;
-	    colors[i].blue = icolors[close].blue;
-
-	    if (XAllocColor(display.XDisplay(), colormap,
-			    &colors[i])) {
-	      colors[i].flags = DoRed|DoGreen|DoBlue;
-	      break;
-	    }
-	  }
-	}
-      }
-    }
-
-    break;
-  }
-
-  case GrayScale:
-  case StaticGray: {
-    if (getVisual()->c_class == StaticGray) {
-      ncolors = 1 << screen_depth;
-    } else {
-      ncolors = colors_per_channel * colors_per_channel * colors_per_channel;
-
-      if (ncolors > (1 << screen_depth)) {
-	colors_per_channel = (1 << screen_depth) / 3;
-	ncolors =
-	  colors_per_channel * colors_per_channel * colors_per_channel;
-      }
-    }
-
-    if (colors_per_channel < 2 || ncolors > (1 << screen_depth)) {
-      // invalid colormap size, reducing
-
-      colors_per_channel = (1 << screen_depth) / 3;
-    }
-
-    colors = new XColor[ncolors];
-    if (! colors) {
-      exit(1);
-    }
-
-    int i = 0, ii, p, bits = 255 / (colors_per_channel - 1);
-    red_bits = green_bits = blue_bits = bits;
-
-    for (i = 0; i < 256; i++)
-      red_color_table[i] = green_color_table[i] = blue_color_table[i] =
-	i / bits;
-
-    for (i = 0; i < ncolors; i++) {
-      colors[i].red = (i * 0xffff) / (colors_per_channel - 1);
-      colors[i].green = (i * 0xffff) / (colors_per_channel - 1);
-      colors[i].blue = (i * 0xffff) / (colors_per_channel - 1);;
-      colors[i].flags = DoRed|DoGreen|DoBlue;
-
-      if (! XAllocColor(display.XDisplay(), colormap,
-			&colors[i]))
-	colors[i].flags = 0;
-      else
-	colors[i].flags = DoRed|DoGreen|DoBlue;
-    }
-
-    XColor icolors[256];
-    int incolors = (((1 << screen_depth) > 256) ? 256 :
-		    (1 << screen_depth));
-
-    for (i = 0; i < incolors; i++)
-      icolors[i].pixel = i;
-
-    XQueryColors(display.XDisplay(), colormap, icolors, incolors);
-    for (i = 0; i < ncolors; i++) {
-      if (! colors[i].flags) {
-	unsigned long chk = 0xffffffff, pixel, close = 0;
-
-	p = 2;
-	while (p--) {
-	  for (ii = 0; ii < incolors; ii++) {
-	    int r = (colors[i].red - icolors[i].red) >> 8;
-	    int g = (colors[i].green - icolors[i].green) >> 8;
-	    int b = (colors[i].blue - icolors[i].blue) >> 8;
-	    pixel = (r * r) + (g * g) + (b * b);
-
-	    if (pixel < chk) {
-	      chk = pixel;
-	      close = ii;
-	    }
-
-	    colors[i].red = icolors[close].red;
-	    colors[i].green = icolors[close].green;
-	    colors[i].blue = icolors[close].blue;
-
-	    if (XAllocColor(display.XDisplay(), colormap,
-			    &colors[i])) {
-	      colors[i].flags = DoRed|DoGreen|DoBlue;
-	      break;
-	    }
-	  }
-	}
-      }
-    }
-
-    break;
-  }
-
-  default:
-    // unsupported visual
-    exit(1);
-  }
 }
 
 
 bt::ImageControl::~ImageControl(void) {
-  if (colors) {
-    unsigned long *pixels = new unsigned long [ncolors];
-
-    for (int i = 0; i < ncolors; i++)
-      *(pixels + i) = (*(colors + i)).pixel;
-
-    XFreeColors(display.XDisplay(), colormap, pixels, ncolors, 0);
-
-    delete [] colors;
-  }
-
   if (!cache.empty()) {
     CacheContainer::iterator it = cache.begin();
     const CacheContainer::iterator end = cache.end();
@@ -363,7 +124,7 @@ Pixmap bt::ImageControl::renderImage(unsigned int width, unsigned int height,
 			      texture.color(), texture.colorTo());
   if (pixmap) return pixmap;
 
-  bt::Image image(this, width, height);
+  bt::Image image(width, height);
   pixmap = image.render(texture);
 
   if (!pixmap)
@@ -406,31 +167,6 @@ void bt::ImageControl::removeImage(Pixmap pixmap) {
 
   if (! timer)
     timeout();
-}
-
-
-void bt::ImageControl::getColorTables(unsigned char **rmt,
-                                      unsigned char **gmt,
-                                      unsigned char **bmt,
-                                      int *roff, int *goff, int *boff,
-                                      int *rbit, int *gbit, int *bbit) {
-  if (rmt) *rmt = red_color_table;
-  if (gmt) *gmt = green_color_table;
-  if (bmt) *bmt = blue_color_table;
-
-  if (roff) *roff = red_offset;
-  if (goff) *goff = green_offset;
-  if (boff) *boff = blue_offset;
-
-  if (rbit) *rbit = red_bits;
-  if (gbit) *gbit = green_bits;
-  if (bbit) *bbit = blue_bits;
-}
-
-
-void bt::ImageControl::getXColorTable(XColor **c, int *n) {
-  if (c) *c = colors;
-  if (n) *n = ncolors;
 }
 
 

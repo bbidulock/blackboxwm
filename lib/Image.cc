@@ -43,24 +43,253 @@ static const unsigned int maximumWidth  = 4000;
 static const unsigned int maximumHeight = 3000;
 
 
-bt::Image::Image(bt::ImageControl *c, unsigned int w, unsigned int h)
-  : control(c), width(w), height(h) {
+bt::Image::Buffer bt::Image::buffer;
+unsigned int bt::Image::global_colorsPerChannel = 4;
+bool bt::Image::global_ditherEnabled = true;
+bt::Image::XColorTableList bt::Image::colorTableList;
+
+
+namespace bt {
+  class XColorTable {
+  public:
+    XColorTable(Display &dpy, unsigned int screen,
+                unsigned int colors_per_channel);
+    ~XColorTable(void);
+
+    void mapDither(unsigned int &red,
+                   unsigned int &green,
+                   unsigned int &blue,
+                   unsigned int &red_error,
+                   unsigned int &green_error,
+                   unsigned int &blue_error);
+    void map(unsigned int &red,
+             unsigned int &green,
+             unsigned int &blue);
+    unsigned long pixel(unsigned int red,
+                        unsigned int green,
+                        unsigned int blue);
+
+  private:
+    Display &_dpy;
+    unsigned int _screen;
+    int _vclass;
+    unsigned int _cpc, _cpcsq;
+    int red_offset, green_offset, blue_offset;
+    unsigned int red_bits, green_bits, blue_bits;
+
+    unsigned char _red[256];
+    unsigned char _green[256];
+    unsigned char _blue[256];
+    std::vector<XColor> colors;
+  };
+} // namespace bt
+
+
+bt::XColorTable::XColorTable(Display &dpy, unsigned int screen,
+                             unsigned int colors_per_channel)
+  : _dpy(dpy), _screen(screen),
+    _cpc(colors_per_channel), _cpcsq(_cpc * _cpc) {
+  const ScreenInfo * const screeninfo = _dpy.screenNumber(_screen);
+  _vclass = screeninfo->getVisual()->c_class;
+  unsigned int depth = screeninfo->getDepth();
+
+  red_offset = green_offset = blue_offset = 0;
+  red_bits = green_bits = blue_bits = 0;
+
+  switch (_vclass) {
+  case StaticGray:
+  case GrayScale: {
+    unsigned int ncolors;
+    if (_vclass == StaticGray)
+      ncolors = 1u << depth;
+    else
+      ncolors = _cpc * _cpc * _cpc;
+
+    if (ncolors > (1u << depth)) {
+      _cpc = (1u << depth) / 3u;
+      ncolors = _cpc * _cpc * _cpc;
+    }
+
+    if (_cpc < 2u || ncolors > (1u << depth)) {
+      // invalid colormap size, reducing
+      _cpc = (1u << depth) / 3u;
+    }
+
+    colors.resize(ncolors);
+    red_bits = green_bits = blue_bits = 255u / (_cpc - 1);
+    break;
+  }
+
+  case StaticColor:
+  case PseudoColor: {
+    unsigned int ncolors = _cpc * _cpc * _cpc;
+
+    if (ncolors > (1u << depth)) {
+      _cpc = (1u << depth) / 3u;
+      ncolors = _cpc * _cpc * _cpc;
+    }
+
+    if (_cpc < 2u || ncolors > (1u << depth)) {
+      // invalid colormap size, reducing
+      _cpc = (1u << depth) / 3u;
+    }
+
+    colors.resize(ncolors);
+#ifdef ORDEREDPSEUDO
+    red_bits = green_bits = blue_bits = 256u / _cpc;
+#else // !ORDEREDPSEUDO
+    red_bits = green_bits = blue_bits = 255u / (_cpc - 1);
+#endif // ORDEREDPSEUDO
+    break;
+  }
+
+  case TrueColor:
+  case DirectColor: {
+    // compute color tables
+    unsigned long red_mask = screeninfo->getVisual()->red_mask,
+                green_mask = screeninfo->getVisual()->green_mask,
+                 blue_mask = screeninfo->getVisual()->blue_mask;
+
+    while (! (red_mask & 1)) { red_offset++; red_mask >>= 1; }
+    while (! (green_mask & 1)) { green_offset++; green_mask >>= 1; }
+    while (! (blue_mask & 1)) { blue_offset++; blue_mask >>= 1; }
+
+    red_bits = 255u / red_mask;
+    green_bits = 255u / green_mask;
+    blue_bits = 255u / blue_mask;
+
+    break;
+  }
+  } // switch
+
+  // initialize color tables
+  for (unsigned int i = 0; i < 256u; i++) {
+    _red[i] = i / red_bits;
+    _green[i] = i / green_bits;
+    _blue[i] = i / blue_bits;
+  }
+
+  if (! colors.empty()) {
+    // allocate color cube
+    unsigned int i = 0, ii, p, r, g, b;
+    for (r = 0, i = 0; r < _cpc; r++)
+      for (g = 0; g < _cpc; g++)
+	for (b = 0; b < _cpc; b++, i++) {
+	  colors[i].red = (r * 0xffff) / (_cpc - 1);
+	  colors[i].green = (g * 0xffff) / (_cpc - 1);
+	  colors[i].blue = (b * 0xffff) / (_cpc - 1);;
+	  colors[i].flags = DoRed|DoGreen|DoBlue;
+	}
+
+    const Colormap colormap = screeninfo->getColormap();
+    for (i = 0; i < colors.size(); i++) {
+      if (! XAllocColor(_dpy.XDisplay(), colormap, &colors[i]))
+	colors[i].flags = 0;
+      else
+	colors[i].flags = DoRed|DoGreen|DoBlue;
+    }
+
+    XColor icolors[256];
+    unsigned int incolors = (((1u << depth) > 256u) ? 256u : (1u << depth));
+
+    for (i = 0; i < incolors; i++)
+      icolors[i].pixel = i;
+
+    XQueryColors(_dpy.XDisplay(), colormap, icolors, incolors);
+    for (i = 0; i < colors.size(); i++) {
+      if (! colors[i].flags) {
+	unsigned long chk = 0xffffffff, pix, close = 0;
+
+	p = 2;
+	while (p--) {
+	  for (ii = 0; ii < incolors; ii++) {
+	    r = (colors[i].red - icolors[i].red) >> 8;
+	    g = (colors[i].green - icolors[i].green) >> 8;
+	    b = (colors[i].blue - icolors[i].blue) >> 8;
+	    pix = (r * r) + (g * g) + (b * b);
+
+	    if (pix < chk) {
+	      chk = pix;
+	      close = ii;
+	    }
+
+	    colors[i].red = icolors[close].red;
+	    colors[i].green = icolors[close].green;
+	    colors[i].blue = icolors[close].blue;
+
+	    if (XAllocColor(_dpy.XDisplay(), colormap,
+			    &colors[i])) {
+	      colors[i].flags = DoRed|DoGreen|DoBlue;
+	      break;
+	    }
+	  }
+	}
+      }
+    }
+  }
+}
+
+
+bt::XColorTable::~XColorTable(void) {
+
+}
+
+
+void bt::XColorTable::mapDither(unsigned int &red,
+                                unsigned int &green,
+                                unsigned int &blue,
+                                unsigned int &red_error,
+                                unsigned int &green_error,
+                                unsigned int &blue_error) {
+  red_error =   red   & (red_bits - 1);
+  green_error = green & (green_bits - 1);
+  blue_error =  blue  & (blue_bits - 1);
+
+  map(red, green, blue);
+}
+
+
+void bt::XColorTable::map(unsigned int &red,
+                          unsigned int &green,
+                          unsigned int &blue) {
+  red = _red[red];
+  green = _green[green];
+  blue = _blue[blue];
+}
+
+
+unsigned long bt::XColorTable::pixel(unsigned int red,
+                                     unsigned int green,
+                                     unsigned int blue) {
+  switch (_vclass) {
+  case StaticGray:
+  case GrayScale:
+    return ((red * 30) + (green * 59) + (blue * 11)) / 100;
+
+  case StaticColor:
+  case PseudoColor:
+    return (red * _cpcsq) + (green * _cpc) + blue;
+
+  case TrueColor:
+  case DirectColor:
+    return ((red << red_offset) |
+            (green << green_offset) |
+            (blue << blue_offset));
+  }
+
+  // not reached
+  return 0; // shut up compiler warning
+}
+
+
+bt::Image::Image(unsigned int w, unsigned int h)
+  : _dpy(0), _screen(~0u), _colortable(0), width(w), height(h) {
   assert(width > 0  && width  < maximumWidth);
   assert(height > 0 && height < maximumHeight);
 
   red = new unsigned char[width * height];
   green = new unsigned char[width * height];
   blue = new unsigned char[width * height];
-
-  cpc = control->getColorsPerChannel();
-  cpccpc = cpc * cpc;
-
-  control->getColorTables(&red_table, &green_table, &blue_table,
-                          &red_offset, &green_offset, &blue_offset,
-                          &red_bits, &green_bits, &blue_bits);
-
-  if (control->getVisual()->c_class != TrueColor)
-    control->getXColorTable(&colors, &ncolors);
 }
 
 
@@ -72,6 +301,9 @@ bt::Image::~Image(void) {
 
 
 Pixmap bt::Image::render(const bt::Texture &texture) {
+  _dpy = const_cast<Display*>(texture.display());
+  _screen = texture.screen();
+
   if (texture.texture() & bt::Texture::Parent_Relative)
     return ParentRelative;
   else if (texture.texture() & bt::Texture::Solid)
@@ -83,13 +315,13 @@ Pixmap bt::Image::render(const bt::Texture &texture) {
 
 
 Pixmap bt::Image::render_solid(const bt::Texture &texture) {
-  Pixmap pixmap = XCreatePixmap(control->getDisplay().XDisplay(),
-				control->getDrawable(), width,
-				height, control->getDepth());
+  const ScreenInfo * const screeninfo = _dpy->screenNumber(_screen);
+  Pixmap pixmap = XCreatePixmap(_dpy->XDisplay(), screeninfo->getRootWindow(),
+                                width, height, screeninfo->getDepth());
   if (pixmap == None)
     return None;
 
-  ::Display *display = control->getDisplay().XDisplay();
+  ::Display *display = _dpy->XDisplay();
 
   bt::Pen pen(texture.color());
   bt::Pen penlight(texture.lightColor());
@@ -179,8 +411,7 @@ Pixmap bt::Image::render_gradient(const bt::Texture &texture) {
     bw = texture.borderWidth();
 
     for (unsigned int i = 0; i < bw; ++i)
-      XDrawRectangle(control->getDisplay().XDisplay(),
-                     pixmap, penborder.gc(),
+      XDrawRectangle(_dpy->XDisplay(), pixmap, penborder.gc(),
                      i, i, width - (i * 2) - 1, height - (i * 2) - 1);
   }
 
@@ -278,31 +509,27 @@ void bt::Image::TrueColorDither(unsigned int bit_depth, int bytes_per_line,
                                 unsigned char *pixel_data) {
   unsigned int x, y, dithx, dithy, r, g, b, er, eg, eb, offset;
   unsigned char *ppixel_data = pixel_data;
-  unsigned long pixel;
+  unsigned int maxr = 255, maxg = 255, maxb = 255;
+
+  _colortable->map(maxr, maxg, maxb);
 
   for (y = 0, offset = 0; y < height; ++y) {
     dithy = y & 0x3;
 
     for (x = 0; x < width; ++x, ++offset) {
       dithx = x & 0x3;
+
       r = red[offset];
       g = green[offset];
       b = blue[offset];
 
-      er = r & (red_bits - 1);
-      eg = g & (green_bits - 1);
-      eb = b & (blue_bits - 1);
+      _colortable->mapDither(r, g, b, er, eg, eb);
 
-      r = red_table[r];
-      g = green_table[g];
-      b = blue_table[b];
+      if ((dither4[dithy][dithx] < er) && (r < maxr)) r++;
+      if ((dither4[dithy][dithx] < eg) && (g < maxg)) g++;
+      if ((dither4[dithy][dithx] < eb) && (b < maxb)) b++;
 
-      if ((dither4[dithy][dithx] < er) && (r < red_table[255])) r++;
-      if ((dither4[dithy][dithx] < eg) && (g < green_table[255])) g++;
-      if ((dither4[dithy][dithx] < eb) && (b < blue_table[255])) b++;
-
-      pixel = (r << red_offset) | (g << green_offset) | (b << blue_offset);
-      assignPixelData(bit_depth, &pixel_data, pixel);
+      assignPixelData(bit_depth, &pixel_data, _colortable->pixel(r, g, b));
     }
 
     pixel_data = (ppixel_data += bytes_per_line);
@@ -314,8 +541,10 @@ void bt::Image::TrueColorDither(unsigned int bit_depth, int bytes_per_line,
 void bt::Image::OrderedPseudoColorDither(int bytes_per_line,
                                          unsigned char *pixel_data) {
   unsigned int x, y, dithx, dithy, r, g, b, er, eg, eb, offset;
-  unsigned long pixel;
   unsigned char *ppixel_data = pixel_data;
+  unsigned int maxr = 255, maxg = 255, maxb = 255;
+
+  _colortable->map(maxr, maxg, maxb);
 
   for (y = 0, offset = 0; y < height; y++) {
     dithy = y & 7;
@@ -327,20 +556,13 @@ void bt::Image::OrderedPseudoColorDither(int bytes_per_line,
       g = green[offset];
       b = blue[offset];
 
-      er = r & (red_bits - 1);
-      eg = g & (green_bits - 1);
-      eb = b & (blue_bits - 1);
+      _colortable->mapDither(r, g, b, er, eg, eb);
 
-      r = red_table[r];
-      g = green_table[g];
-      b = blue_table[b];
+      if ((dither8[dithy][dithx] < er) && (r < maxr)) r++;
+      if ((dither8[dithy][dithx] < eg) && (g < maxg)) g++;
+      if ((dither8[dithy][dithx] < eb) && (b < maxb)) b++;
 
-      if ((dither8[dithy][dithx] < er) && (r < red_table[255])) r++;
-      if ((dither8[dithy][dithx] < eg) && (g < green_table[255])) g++;
-      if ((dither8[dithy][dithx] < eb) && (b < blue_table[255])) b++;
-
-      pixel = (r * cpccpc) + (g * cpc) + b;
-      *(pixel_data++) = colors[pixel].pixel;
+      *(pixel_data++) = _colortable->pixel(r, g, b);
     }
 
     pixel_data = (ppixel_data += bytes_per_line);
@@ -359,9 +581,8 @@ void bt::Image::PseudoColorDither(int bytes_per_line,
     *nberr = new short[width + 2];
 
   int rr, gg, bb, rer, ger, ber;
-  int dd = 255 / control->getColorsPerChannel();
+  int dd = 255 / (colorsPerChannel() - 1);
   unsigned int x, y, r, g, b, offset;
-  unsigned long pixel;
   unsigned char *ppixel_data = pixel_data;
 
   for (x = 0; x < width; x++) {
@@ -395,16 +616,13 @@ void bt::Image::PseudoColorDither(int bytes_per_line,
       if (gg > 255) gg = 255; else if (gg < 0) gg = 0;
       if (bb > 255) bb = 255; else if (bb < 0) bb = 0;
 
-      r = red_table[rr];
-      g = green_table[gg];
-      b = blue_table[bb];
+      _colortable->map(r, g, b);
 
       rer = rerr[x] - r*dd;
       ger = gerr[x] - g*dd;
       ber = berr[x] - b*dd;
 
-      pixel = (r * cpccpc) + (g * cpc) + b;
-      *pixel_data++ = colors[pixel].pixel;
+      *pixel_data++ = _colortable->pixel(r, g, b);
 
       r = rer >> 1;
       g = ger >> 1;
@@ -444,10 +662,22 @@ void bt::Image::PseudoColorDither(int bytes_per_line,
 
 
 XImage *bt::Image::renderXImage(void) {
+  // get the colortable for the screen. if necessary, we will create one.
+  if (colorTableList.empty())
+    colorTableList.resize(_dpy->screenCount(), 0);
+
+  if (! colorTableList[_screen])
+    colorTableList[_screen] =
+      new XColorTable(*_dpy, _screen, colorsPerChannel());
+
+  _colortable = colorTableList[_screen];
+
+  // create XImage
+  const ScreenInfo * const screeninfo = _dpy->screenNumber(_screen);
   XImage *image =
-    XCreateImage(control->getDisplay().XDisplay(),
-                 control->getVisual(), control->getDepth(), ZPixmap, 0, 0,
-                 width, height, 32, 0);
+    XCreateImage(_dpy->XDisplay(), screeninfo->getVisual(),
+                 screeninfo->getDepth(), ZPixmap,
+                 0, 0, width, height, 32, 0);
 
   if (! image)
     return (XImage *) 0;
@@ -455,16 +685,17 @@ XImage *bt::Image::renderXImage(void) {
   // insurance policy
   image->data = (char *) 0;
 
-  unsigned char *d = new unsigned char[image->bytes_per_line * (height + 1)];
+  buffer.reserve(image->bytes_per_line * (height + 1));
+  unsigned char *d = &buffer[0];
 
   unsigned int o = image->bits_per_pixel +
-    ((image->byte_order == MSBFirst) ? 1 : 0);
+                   ((image->byte_order == MSBFirst) ? 1 : 0);
 
-  bool unsupported = False;
 
-  if (control->doDither() && width > 1 && height > 1) {
-    switch (control->getVisual()->c_class) {
+  if ( isDitherEnabled() && width > 1 && height > 1) {
+    switch (screeninfo->getVisual()->c_class) {
     case TrueColor:
+    case DirectColor:
       TrueColorDither(o, image->bytes_per_line, d);
       break;
 
@@ -478,86 +709,41 @@ XImage *bt::Image::renderXImage(void) {
       break;
     }
 
-    default:
-      unsupported = True;
+    default: {
+      // unsupported visual...
+      image->data = NULL;
+      XDestroyImage(image);
+      return (XImage *) 0;
     }
+    } // switch
   } else {
-    unsigned int x, y, r, g, b, offset;
+    unsigned int x, y, offset, r, g, b;
     unsigned char *pixel_data = d, *ppixel_data = d;
-    unsigned long pixel;
 
-    switch (control->getVisual()->c_class) {
-    case StaticColor:
-    case PseudoColor:
-      for (y = 0, offset = 0; y < height; ++y) {
-        for (x = 0; x < width; ++x, ++offset) {
-  	  r = red_table[red[offset]];
-          g = green_table[green[offset]];
-	  b = blue_table[blue[offset]];
+    for (y = 0, offset = 0; y < height; ++y) {
+      for (x = 0; x < width; ++x, ++offset) {
+        r = red[offset];
+        g = green[offset];
+        b = blue[offset];
 
-	  pixel = (r * cpccpc) + (g * cpc) + b;
-	  *pixel_data++ = colors[pixel].pixel;
-        }
-
-        pixel_data = (ppixel_data += image->bytes_per_line);
+        _colortable->map(r, g, b);
+        assignPixelData(o, &pixel_data, _colortable->pixel(r, g, b));
       }
 
-      break;
-
-    case TrueColor:
-      for (y = 0, offset = 0; y < height; y++) {
-        for (x = 0; x < width; x++, offset++) {
-	  r = red_table[red[offset]];
-	  g = green_table[green[offset]];
-	  b = blue_table[blue[offset]];
-
-	  pixel = (r << red_offset) | (g << green_offset) | (b << blue_offset);
-	  assignPixelData(o, &pixel_data, pixel);
-        }
-
-        pixel_data = (ppixel_data += image->bytes_per_line);
-      }
-
-      break;
-
-    case StaticGray:
-    case GrayScale:
-      for (y = 0, offset = 0; y < height; y++) {
-	for (x = 0; x < width; x++, offset++) {
-	  r = *(red_table + *(red + offset));
-	  g = *(green_table + *(green + offset));
-	  b = *(blue_table + *(blue + offset));
-
-	  g = ((r * 30) + (g * 59) + (b * 11)) / 100;
-	  *pixel_data++ = colors[g].pixel;
-	}
-
-	pixel_data = (ppixel_data += image->bytes_per_line);
-      }
-
-      break;
-
-    default:
-      unsupported = True;
+      pixel_data = (ppixel_data += image->bytes_per_line);
     }
-  }
-
-  if (unsupported) {
-    delete [] d;
-    XDestroyImage(image);
-    return (XImage *) 0;
   }
 
   image->data = (char *) d;
-
   return image;
 }
 
 
 Pixmap bt::Image::renderPixmap(void) {
+  const ScreenInfo * const screeninfo = _dpy->screenNumber(_screen);
   Pixmap pixmap =
-    XCreatePixmap(control->getDisplay().XDisplay(),
-                  control->getDrawable(), width, height, control->getDepth());
+    XCreatePixmap(_dpy->XDisplay(), screeninfo->getRootWindow(),
+                  width, height, screeninfo->getDepth());
 
   if (pixmap == None)
     return None;
@@ -565,26 +751,21 @@ Pixmap bt::Image::renderPixmap(void) {
   XImage *image = renderXImage();
 
   if (! image) {
-    XFreePixmap(control->getDisplay().XDisplay(), pixmap);
+    XFreePixmap(_dpy->XDisplay(), pixmap);
     return None;
   }
 
   if (! image->data) {
     XDestroyImage(image);
-    XFreePixmap(control->getDisplay().XDisplay(), pixmap);
+    XFreePixmap(_dpy->XDisplay(), pixmap);
     return None;
   }
 
-  XPutImage(control->getDisplay().XDisplay(), pixmap,
-	    DefaultGC(control->getDisplay().XDisplay(),
-		      control->getScreenInfo()->getScreenNumber()),
-            image, 0, 0, 0, 0, width, height);
+  Pen pen(Color(0, 0, 0, _dpy, _screen));
+  XPutImage(_dpy->XDisplay(), pixmap, pen.gc(), image,
+            0, 0, 0, 0, width, height);
 
-  if (image->data) {
-    delete [] image->data;
-    image->data = NULL;
-  }
-
+  image->data = NULL;
   XDestroyImage(image);
 
   return pixmap;

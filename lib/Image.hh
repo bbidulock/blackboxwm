@@ -30,6 +30,7 @@ extern "C" {
 }
 
 #include <list>
+#include <vector>
 
 #include "Timer.hh"
 #include "BaseDisplay.hh"
@@ -39,18 +40,34 @@ extern "C" {
 namespace bt {
 
   class Texture;
-  class ImageControl;
+  class XColorTable;
 
   class Image {
+  public:
+    static unsigned int colorsPerChannel(void)
+    { return global_colorsPerChannel; }
+    static void setColorsPerChannel(unsigned int newval)
+    { global_colorsPerChannel = newval > 2 ? newval < 6 ? newval : 6 : 2; }
+
+    static bool isDitherEnabled(void)
+    { return global_ditherEnabled; }
+    static void setDitherEnabled(bool enabled)
+    { global_ditherEnabled = enabled; }
+
+    Image(unsigned int w, unsigned int h);
+    ~Image(void);
+
+    Pixmap render(const Texture &texture);
+
   private:
-    ImageControl *control;
+    Display *_dpy;
+    unsigned int _screen;
+    XColorTable *_colortable;
+
     bool interlaced;
-    XColor *colors;
 
     Color from, to;
-    int red_offset, green_offset, blue_offset, red_bits, green_bits, blue_bits,
-      ncolors, cpc, cpccpc;
-    unsigned char *red, *green, *blue, *red_table, *green_table, *blue_table;
+    unsigned char *red, *green, *blue;
     unsigned int width, height;
 
     void TrueColorDither(unsigned int bit_depth, int bytes_per_line,
@@ -77,12 +94,13 @@ namespace bt {
     void cdgradient(void);
     void pcgradient(void);
 
+    typedef std::vector<unsigned char> Buffer;
+    static Buffer buffer;
+    static unsigned int global_colorsPerChannel;
+    static bool global_ditherEnabled;
 
-  public:
-    Image(ImageControl *c, unsigned int w, unsigned int h);
-    ~Image(void);
-
-    Pixmap render(const Texture &texture);
+    typedef std::vector<XColorTable*> XColorTableList;
+    static XColorTableList colorTableList;
   };
 
 
@@ -112,7 +130,6 @@ namespace bt {
 
     inline Visual *getVisual(void) { return screeninfo->getVisual(); }
 
-    inline int getBitsPerPixel(void) const { return bits_per_pixel; }
     inline int getDepth(void) const { return screen_depth; }
     inline int getColorsPerChannel(void) const
     { return colors_per_channel; }
@@ -122,11 +139,6 @@ namespace bt {
 
     void installRootColormap(void);
     void removeImage(Pixmap pixmap);
-    void getColorTables(unsigned char **rmt, unsigned char **gmt,
-                        unsigned char **bmt,
-                        int *roff, int *goff, int *boff,
-                        int *rbit, int *gbit, int *bbit);
-    void getXColorTable(XColor **c, int *n);
     void setDither(bool d) { dither = d; }
     void setColorsPerChannel(int cpc);
 
@@ -141,12 +153,7 @@ namespace bt {
     Colormap colormap;
 
     Window window;
-    XColor *colors;
-    int colors_per_channel, ncolors, screen_number, screen_depth,
-      bits_per_pixel, red_offset, green_offset, blue_offset,
-      red_bits, green_bits, blue_bits;
-    unsigned char red_color_table[256], green_color_table[256],
-      blue_color_table[256];
+    int colors_per_channel, screen_number, screen_depth;
     unsigned long cache_max;
 
     typedef std::list<CachedImage> CacheContainer;
