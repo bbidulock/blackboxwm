@@ -113,12 +113,14 @@ static int anotherWMRunning(Display *display, XErrorEvent *) {
 BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   screen_info(bb->display().screenInfo(scrn)), blackbox(bb) {
 
-  event_mask = ColormapChangeMask | EnterWindowMask | PropertyChangeMask |
-               SubstructureRedirectMask | ButtonPressMask | ButtonReleaseMask;
-
   XErrorHandler old = XSetErrorHandler((XErrorHandler) anotherWMRunning);
   XSelectInput(screen_info.display().XDisplay(),
-               screen_info.rootWindow(), event_mask);
+               screen_info.rootWindow(),
+               ColormapChangeMask | EnterWindowMask | PropertyChangeMask |
+               SubstructureRedirectMask | 
+	       StructureNotifyMask | SubstructureNotifyMask |
+	       ButtonPressMask | ButtonReleaseMask;
+
   XSync(screen_info.display().XDisplay(), False);
   XSetErrorHandler((XErrorHandler) old);
 

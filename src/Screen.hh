@@ -225,7 +225,6 @@ private:
   Workspacemenu *workspacemenu;
 
   unsigned int geom_w, geom_h;
-  unsigned long event_mask;
 
   bt::Rect usableArea;
 
