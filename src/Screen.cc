@@ -128,277 +128,273 @@ static const char * strcasestr(const char *str, const char *ptn) {
 BScreen::BScreen( Blackbox *bb, int scrn )
     : ScreenInfo( bb, scrn ), _style( scrn )
 {
-    blackbox = bb;
+  blackbox = bb;
 
-    event_mask = ColormapChangeMask | PropertyChangeMask |
+  event_mask = ColormapChangeMask | PropertyChangeMask |
 
-		 EnterWindowMask | LeaveWindowMask |
-		 SubstructureRedirectMask | KeyPressMask | KeyReleaseMask |
-		 ButtonPressMask | ButtonReleaseMask;
+               EnterWindowMask | LeaveWindowMask |
+               SubstructureRedirectMask | KeyPressMask | KeyReleaseMask |
+               ButtonPressMask | ButtonReleaseMask;
 
-    XErrorHandler old = XSetErrorHandler((XErrorHandler) anotherWMRunning);
-    XSelectInput(*blackbox, rootWindow(), event_mask);
-    XSync(*blackbox, False);
-    XSetErrorHandler((XErrorHandler) old);
+  XErrorHandler old = XSetErrorHandler((XErrorHandler) anotherWMRunning);
+  XSelectInput(*blackbox, rootWindow(), event_mask);
+  XSync(*blackbox, False);
+  XSetErrorHandler((XErrorHandler) old);
 
-    managed = running;
-    if (! managed)
-	return;
+  managed = running;
+  if (! managed)
+    return;
 }
 
-BScreen::~BScreen(void) {
-    if (! managed) return;
+BScreen::~BScreen(void)
+{
+  if (! managed) return;
 
-    /*
-      if (geom_pixmap != None)
-      image_control->removeImage(geom_pixmap);
+  /*
+    if (geom_pixmap != None)
+    image_control->removeImage(geom_pixmap);
 
-      if (geom_window != None)
-      XDestroyWindow(*blackbox, geom_window);
-    */
+    if (geom_window != None)
+    XDestroyWindow(*blackbox, geom_window);
+  */
 
-    removeWorkspaceNames();
+  removeWorkspaceNames();
 
-    while (workspacesList->count())
-	delete workspacesList->remove(0);
+  while (workspacesList->count())
+    delete workspacesList->remove(0);
 
-    while (rootmenuList->count())
-	rootmenuList->remove(0);
+  while (iconList->count())
+    delete iconList->remove(0);
 
-    while (iconList->count())
-	delete iconList->remove(0);
-
-    while (netizenList->count())
-	delete netizenList->remove(0);
+  while (netizenList->count())
+    delete netizenList->remove(0);
 
 #ifdef    HAVE_STRFTIME
-    if (resource.strftime_format)
-	delete [] resource.strftime_format;
+  if (resource.strftime_format)
+    delete [] resource.strftime_format;
 #endif // HAVE_STRFTIME
 
-    delete rootmenu;
-    delete workspacemenu;
-    delete iconmenu;
-    // delete configmenu;
+  delete rootmenu;
+  delete workspacemenu;
+  delete iconmenu;
+  // delete configmenu;
 
 #ifdef    SLIT
-    delete slit;
+  delete slit;
 #endif // SLIT
 
-    delete toolbar;
-    delete image_control;
+  delete toolbar;
+  delete image_control;
 
-    delete workspacesList;
-    delete workspaceNames;
-    delete rootmenuList;
-    delete iconList;
-    delete netizenList;
-    delete strutList;
+  delete workspacesList;
+  delete workspaceNames;
+  delete iconList;
+  delete netizenList;
+  delete strutList;
 }
 
 void BScreen::initialize()
 {
 #ifdef    HAVE_GETPID
-    pid_t bpid = getpid();
-    XChangeProperty(*blackbox, rootWindow(),
-		    blackbox->getBlackboxPidAtom(), XA_CARDINAL,
-		    sizeof(pid_t) * 8, PropModeReplace,
-		    (unsigned char *) &bpid, 1);
+  pid_t bpid = getpid();
+  XChangeProperty(*blackbox, rootWindow(),
+                  blackbox->getBlackboxPidAtom(), XA_CARDINAL,
+                  sizeof(pid_t) * 8, PropModeReplace,
+                  (unsigned char *) &bpid, 1);
 #endif // HAVE_GETPID
 
-    XDefineCursor(*blackbox, rootWindow(),
-		  blackbox->getSessionCursor());
+  XDefineCursor(*blackbox, rootWindow(),
+                blackbox->getSessionCursor());
 
-    rootmenu = 0;
+  rootmenu = 0;
 
 #ifdef    HAVE_STRFTIME
-    resource.strftime_format = 0;
+  resource.strftime_format = 0;
 #endif // HAVE_STRFTIME
 
-    workspaceNames = new LinkedList<char>;
-    workspacesList = new LinkedList<Workspace>;
-    rootmenuList = new LinkedList<Rootmenu>;
-    netizenList = new LinkedList<Netizen>;
-    iconList = new LinkedList<BlackboxWindow>;
-    strutList = new LinkedList<NETStrut>;
+  workspaceNames = new LinkedList<char>;
+  workspacesList = new LinkedList<Workspace>;
+  netizenList = new LinkedList<Netizen>;
+  iconList = new LinkedList<BlackboxWindow>;
+  strutList = new LinkedList<NETStrut>;
 
-    // start off full screen, top left.
-    usableArea.x = usableArea.y = 0;
-    usableArea.width = width();
-    usableArea.height = height();
+  // start off full screen, top left.
+  usableArea.x = usableArea.y = 0;
+  usableArea.width = width();
+  usableArea.height = height();
 
-    image_control =
-	new BImageControl(blackbox, this, True, blackbox->getColorsPerChannel(),
-			  blackbox->getCacheLife(), blackbox->getCacheMax());
-    image_control->installRootColormap();
-    root_colormap_installed = True;
+  image_control =
+    new BImageControl(blackbox, this, True, blackbox->getColorsPerChannel(),
+                      blackbox->getCacheLife(), blackbox->getCacheMax());
+  image_control->installRootColormap();
+  root_colormap_installed = True;
 
-    blackbox->load_rc(this);
+  blackbox->load_rc(this);
 
-    image_control->setDither(resource.image_dither);
+  image_control->setDither(resource.image_dither);
 
-    style()->setCurrentStyle( blackbox->getStyleFilename() );
+  style()->setCurrentStyle( blackbox->getStyleFilename() );
 
-    /*
-      ### TODO - make the geom window a separate widget
+  /*
+    ### TODO - make the geom window a separate widget
 
-      const char *s =  i18n->getMessage(ScreenSet, ScreenPositionLength,
-      "0: 0000 x 0: 0000");
-      int l = strlen(s);
+    const char *s =  i18n->getMessage(ScreenSet, ScreenPositionLength,
+    "0: 0000 x 0: 0000");
+    int l = strlen(s);
 
-      if (i18n->multibyte()) {
-      XRectangle ink, logical;
-      XmbTextExtents(resource.wstyle.fontset, s, l, &ink, &logical);
-      geom_w = logical.width;
+    if (i18n->multibyte()) {
+    XRectangle ink, logical;
+    XmbTextExtents(resource.wstyle.fontset, s, l, &ink, &logical);
+    geom_w = logical.width;
 
-      geom_h = resource.wstyle.fontset_extents->max_ink_extent.height;
-      } else {
-      geom_h = resource.wstyle.font->ascent +
-      resource.wstyle.font->descent;
-
-      geom_w = XTextWidth(resource.wstyle.font, s, l);
-      }
-
-      geom_w += (resource.bevel_width * 2);
-      geom_h += (resource.bevel_width * 2);
-
-      XSetWindowAttributes attrib;
-      unsigned long mask = CWBorderPixel | CWColormap | CWSaveUnder;
-      attrib.border_pixel = getBorderColor()->pixel();
-      attrib.colormap = colormap();
-      attrib.save_under = True;
-
-      geom_window =
-      XCreateWindow(*blackbox, rootWindow(),
-      0, 0, geom_w, geom_h, resource.border_width, depth(),
-      InputOutput, visual(), mask, &attrib);
-      geom_visible = False;
-
-      if (resource.wstyle.l_focus.texture() & BImage_ParentRelative) {
-      if (resource.wstyle.t_focus.texture() ==
-      (BImage_Flat | BImage_Solid)) {
-      geom_pixmap = None;
-      XSetWindowBackground(*blackbox, geom_window,
-      resource.wstyle.t_focus.color().pixel());
-      } else {
-      geom_pixmap = image_control->renderImage(geom_w, geom_h,
-      resource.wstyle.t_focus);
-      XSetWindowBackgroundPixmap(*blackbox,
-      geom_window, geom_pixmap);
-      }
-      } else {
-      if (resource.wstyle.l_focus.texture() ==
-      (BImage_Flat | BImage_Solid)) {
-      geom_pixmap = None;
-      XSetWindowBackground(*blackbox, geom_window,
-      resource.wstyle.l_focus.color().pixel());
-      } else {
-      geom_pixmap = image_control->renderImage(geom_w, geom_h,
-      resource.wstyle.l_focus);
-      XSetWindowBackgroundPixmap(*blackbox,
-      geom_window, geom_pixmap);
-      }
-      }
-    */
-
-    workspacemenu = new Workspacemenu(this);
-    iconmenu = new Iconmenu(this);
-    // configmenu = new Configmenu(this);
-
-    Workspace *wkspc = (Workspace *) 0;
-    if (resource.workspaces != 0) {
-	for (int i = 0; i < resource.workspaces; ++i) {
-	    wkspc = new Workspace(this, workspacesList->count());
-	    workspacesList->insert(wkspc);
-	    workspacemenu->insert(wkspc->getName(), wkspc->getMenu());
-	}
+    geom_h = resource.wstyle.fontset_extents->max_ink_extent.height;
     } else {
-	wkspc = new Workspace(this, workspacesList->count());
-	workspacesList->insert(wkspc);
-	workspacemenu->insert(wkspc->getName(), wkspc->getMenu());
+    geom_h = resource.wstyle.font->ascent +
+    resource.wstyle.font->descent;
+
+    geom_w = XTextWidth(resource.wstyle.font, s, l);
     }
 
-    workspacemenu->insert(i18n->getMessage(IconSet, IconIcons, "Icons"),
-			  iconmenu);
+    geom_w += (resource.bevel_width * 2);
+    geom_h += (resource.bevel_width * 2);
 
-    current_workspace = workspacesList->first();
-    workspacemenu->setItemChecked( 2, true );
+    XSetWindowAttributes attrib;
+    unsigned long mask = CWBorderPixel | CWColormap | CWSaveUnder;
+    attrib.border_pixel = getBorderColor()->pixel();
+    attrib.colormap = colormap();
+    attrib.save_under = True;
 
-    toolbar = new Toolbar(this);
+    geom_window =
+    XCreateWindow(*blackbox, rootWindow(),
+    0, 0, geom_w, geom_h, resource.border_width, depth(),
+    InputOutput, visual(), mask, &attrib);
+    geom_visible = False;
+
+    if (resource.wstyle.l_focus.texture() & BImage_ParentRelative) {
+    if (resource.wstyle.t_focus.texture() ==
+    (BImage_Flat | BImage_Solid)) {
+    geom_pixmap = None;
+    XSetWindowBackground(*blackbox, geom_window,
+    resource.wstyle.t_focus.color().pixel());
+    } else {
+    geom_pixmap = image_control->renderImage(geom_w, geom_h,
+    resource.wstyle.t_focus);
+    XSetWindowBackgroundPixmap(*blackbox,
+    geom_window, geom_pixmap);
+    }
+    } else {
+    if (resource.wstyle.l_focus.texture() ==
+    (BImage_Flat | BImage_Solid)) {
+    geom_pixmap = None;
+    XSetWindowBackground(*blackbox, geom_window,
+    resource.wstyle.l_focus.color().pixel());
+    } else {
+    geom_pixmap = image_control->renderImage(geom_w, geom_h,
+    resource.wstyle.l_focus);
+    XSetWindowBackgroundPixmap(*blackbox,
+    geom_window, geom_pixmap);
+    }
+    }
+  */
+
+  workspacemenu = new Workspacemenu(this);
+  iconmenu = new Iconmenu(this);
+  // configmenu = new Configmenu(this);
+
+  Workspace *wkspc = (Workspace *) 0;
+  if (resource.workspaces != 0) {
+    for (int i = 0; i < resource.workspaces; ++i) {
+      wkspc = new Workspace(this, workspacesList->count());
+      workspacesList->insert(wkspc);
+      workspacemenu->insert(wkspc->getName(), wkspc->getMenu());
+    }
+  } else {
+    wkspc = new Workspace(this, workspacesList->count());
+    workspacesList->insert(wkspc);
+    workspacemenu->insert(wkspc->getName(), wkspc->getMenu());
+  }
+
+  workspacemenu->insert(i18n->getMessage(IconSet, IconIcons, "Icons"),
+                        iconmenu);
+
+  current_workspace = workspacesList->first();
+  workspacemenu->setItemChecked( 2, true );
+
+  toolbar = new Toolbar(this);
 
 #ifdef    SLIT
-    slit = new Slit(this);
+  slit = new Slit(this);
 #endif // SLIT
 
-    InitMenu();
+  InitMenu();
 
-    raiseWindows(0, 0);
+  raiseWindows(0, 0);
 
-    updateAvailableArea();
+  updateAvailableArea();
 
-    changeWorkspaceID(0);
+  changeWorkspaceID(0);
 
-    int i;
-    unsigned int nchild;
-    Window r, p, *children;
-    XQueryTree(*blackbox, rootWindow(), &r, &p,
-	       &children, &nchild);
+  int i;
+  unsigned int nchild;
+  Window r, p, *children;
+  XQueryTree(*blackbox, rootWindow(), &r, &p,
+             &children, &nchild);
 
-    // preen the window list of all icon windows... for better dockapp support
-    for (i = 0; i < (int) nchild; i++) {
-	if (children[i] == None) continue;
+  // preen the window list of all icon windows... for better dockapp support
+  for (i = 0; i < (int) nchild; i++) {
+    if (children[i] == None) continue;
 
-	XWMHints *wmhints = XGetWMHints(*blackbox,
-					children[i]);
+    XWMHints *wmhints = XGetWMHints(*blackbox,
+                                    children[i]);
 
-	if (wmhints) {
-	    if ((wmhints->flags & IconWindowHint) &&
-		(wmhints->icon_window != children[i]))
-		for (int j = 0; j < (int) nchild; j++)
-		    if (children[j] == wmhints->icon_window) {
-			children[j] = None;
+    if (wmhints) {
+      if ((wmhints->flags & IconWindowHint) &&
+          (wmhints->icon_window != children[i]))
+        for (int j = 0; j < (int) nchild; j++)
+          if (children[j] == wmhints->icon_window) {
+            children[j] = None;
 
-			break;
-		    }
+            break;
+          }
 
-	    XFree(wmhints);
-	}
+      XFree(wmhints);
     }
+  }
 
-    // manage shown windows
-    for (i = 0; i < (int) nchild; ++i) {
-	if (children[i] == None || (! blackbox->validateWindow(children[i])))
-	    continue;
+  // manage shown windows
+  for (i = 0; i < (int) nchild; ++i) {
+    if (children[i] == None || (! blackbox->validateWindow(children[i])))
+      continue;
 
-	XWindowAttributes attrib;
-	if (XGetWindowAttributes(*blackbox, children[i],
-				 &attrib)) {
-	    if (attrib.override_redirect) continue;
+    XWindowAttributes attrib;
+    if (XGetWindowAttributes(*blackbox, children[i],
+                             &attrib)) {
+      if (attrib.override_redirect) continue;
 
-	    if (attrib.map_state != IsUnmapped) {
-		new BlackboxWindow(blackbox, children[i], this);
+      if (attrib.map_state != IsUnmapped) {
+        new BlackboxWindow(blackbox, children[i], this);
 
-		BlackboxWindow *win = blackbox->searchWindow(children[i]);
-		if (win) {
-		    XMapRequestEvent mre;
-		    mre.window = children[i];
-		    win->restoreAttributes();
-		    win->mapRequestEvent(&mre);
-		}
-	    }
-	}
+        BlackboxWindow *win = blackbox->searchWindow(children[i]);
+        if (win) {
+          XMapRequestEvent mre;
+          mre.window = children[i];
+          win->restoreAttributes();
+          win->mapRequestEvent(&mre);
+        }
+      }
     }
+  }
 
-    XFree(children);
+  XFree(children);
 
-    // call this again just in case a window we found updates the Strut list
-    updateAvailableArea();
+  // call this again just in case a window we found updates the Strut list
+  updateAvailableArea();
 
-    if (! resource.sloppy_focus)
-	XSetInputFocus(*blackbox, toolbar->getWindowID(),
-		       RevertToParent, CurrentTime);
+  if (! resource.sloppy_focus)
+    XSetInputFocus(*blackbox, toolbar->getWindowID(),
+                   RevertToParent, CurrentTime);
 
-    XFlush(*blackbox);
+  XFlush(*blackbox);
 }
 
 void BScreen::reconfigure(void)
@@ -698,27 +694,26 @@ void BScreen::updateNetizenConfigNotify(XEvent *e) {
 
 void BScreen::raiseWindows(Window *workspace_stack, int num)
 {
-    Window *session_stack =
-	new Window[(num + workspacesList->count() + rootmenuList->count() + 13)];
-    int i = 0, k = num;
+  Window *session_stack = new Window[num + 2];
+  int i = 0, k = num;
 
-    if (toolbar->isOnTop())
-	*(session_stack + i++) = toolbar->getWindowID();
+  if (toolbar->isOnTop())
+    *(session_stack + i++) = toolbar->getWindowID();
 
 #ifdef    SLIT
-    if (slit->isOnTop())
-	*(session_stack + i++) = slit->getWindowID();
+  if (slit->isOnTop())
+    *(session_stack + i++) = slit->getWindowID();
 #endif // SLIT
 
-    while (k--)
-	*(session_stack + i++) = *(workspace_stack + k);
+  while (k--)
+    *(session_stack + i++) = *(workspace_stack + k);
 
-    if ( i > 0 ) {
-	XRaiseWindow( *blackbox, *session_stack );
-	XRestackWindows(*blackbox, session_stack, i);
-    }
+  if ( i > 0 ) {
+    XRaiseWindow( *blackbox, *session_stack );
+    XRestackWindows(*blackbox, session_stack, i);
+  }
 
-    delete [] session_stack;
+  delete [] session_stack;
 }
 
 
@@ -855,86 +850,83 @@ void BScreen::raiseFocus(void) {
 }
 
 
-void BScreen::InitMenu(void) {
-    if (rootmenu) {
-	while (rootmenuList->count() > 0)
-	    rootmenuList->remove(0);
+void BScreen::InitMenu(void)
+{
+  if (rootmenu)
+    rootmenu->clear();
+  else
+    rootmenu = new Rootmenu(this);
 
-	while (rootmenu->count() > 0)
-	    rootmenu->remove(0);
+  Bool defaultMenu = True;
+
+  if (blackbox->getMenuFilename()) {
+    FILE *menu_file = fopen(blackbox->getMenuFilename(), "r");
+
+    if (!menu_file) {
+      perror(blackbox->getMenuFilename());
     } else {
-	rootmenu = new Rootmenu(this);
+      if (feof(menu_file)) {
+        fprintf(stderr, i18n->getMessage(ScreenSet, ScreenEmptyMenuFile,
+                                         "%s: Empty menu file"),
+                blackbox->getMenuFilename());
+      } else {
+        char line[1024], label[1024];
+        memset(line, 0, 1024);
+        memset(label, 0, 1024);
+
+        while (fgets(line, 1024, menu_file) && ! feof(menu_file)) {
+          if (line[0] != '#') {
+            int i, key = 0, index = -1, len = strlen(line);
+
+            key = 0;
+            for (i = 0; i < len; i++) {
+              if (line[i] == '[') index = 0;
+              else if (line[i] == ']') break;
+              else if (line[i] != ' ')
+                if (index++ >= 0)
+                  key += tolower(line[i]);
+            }
+
+            if (key == 517) {
+              index = -1;
+              for (i = index; i < len; i++) {
+                if (line[i] == '(') index = 0;
+                else if (line[i] == ')') break;
+                else if (index++ >= 0) {
+                  if (line[i] == '\\' && i < len - 1) i++;
+                  label[index - 1] = line[i];
+                }
+              }
+
+              if (index == -1) index = 0;
+              label[index] = '\0';
+
+              rootmenu->setTitle(label);
+              rootmenu->showTitle();
+              defaultMenu = parseMenuFile(menu_file, rootmenu);
+              break;
+            }
+          }
+        }
+      }
+      fclose(menu_file);
     }
-    Bool defaultMenu = True;
+  }
 
-    if (blackbox->getMenuFilename()) {
-	FILE *menu_file = fopen(blackbox->getMenuFilename(), "r");
-
-	if (!menu_file) {
-	    perror(blackbox->getMenuFilename());
-	} else {
-	    if (feof(menu_file)) {
-		fprintf(stderr, i18n->getMessage(ScreenSet, ScreenEmptyMenuFile,
-						 "%s: Empty menu file"),
-			blackbox->getMenuFilename());
-	    } else {
-		char line[1024], label[1024];
-		memset(line, 0, 1024);
-		memset(label, 0, 1024);
-
-		while (fgets(line, 1024, menu_file) && ! feof(menu_file)) {
-		    if (line[0] != '#') {
-			int i, key = 0, index = -1, len = strlen(line);
-
-			key = 0;
-			for (i = 0; i < len; i++) {
-			    if (line[i] == '[') index = 0;
-			    else if (line[i] == ']') break;
-			    else if (line[i] != ' ')
-				if (index++ >= 0)
-				    key += tolower(line[i]);
-			}
-
-			if (key == 517) {
-			    index = -1;
-			    for (i = index; i < len; i++) {
-				if (line[i] == '(') index = 0;
-				else if (line[i] == ')') break;
-				else if (index++ >= 0) {
-				    if (line[i] == '\\' && i < len - 1) i++;
-				    label[index - 1] = line[i];
-				}
-			    }
-
-			    if (index == -1) index = 0;
-			    label[index] = '\0';
-
-			    rootmenu->setTitle(label);
-			    rootmenu->showTitle();
-			    defaultMenu = parseMenuFile(menu_file, rootmenu);
-			    break;
-			}
-		    }
-		}
-	    }
-	    fclose(menu_file);
-	}
-    }
-
-    if (defaultMenu) {
-	// rootmenu->setInternalMenu();
-	/*
-	  rootmenu->insert(i18n->getMessage(ScreenSet, Screenxterm, "xterm"),
-	  BScreen::Execute,
-	  i18n->getMessage(ScreenSet, Screenxterm, "xterm"));
-	  rootmenu->insert(i18n->getMessage(ScreenSet, ScreenRestart, "Restart"),
-	  BScreen::Restart);
-	  rootmenu->insert(i18n->getMessage(ScreenSet, ScreenExit, "Exit"),
-	  BScreen::Exit);
-	*/
-    } else {
-	blackbox->saveMenuFilename(blackbox->getMenuFilename());
-    }
+  if (defaultMenu) {
+    // rootmenu->setInternalMenu();
+    /*
+      rootmenu->insert(i18n->getMessage(ScreenSet, Screenxterm, "xterm"),
+      BScreen::Execute,
+      i18n->getMessage(ScreenSet, Screenxterm, "xterm"));
+      rootmenu->insert(i18n->getMessage(ScreenSet, ScreenRestart, "Restart"),
+      BScreen::Restart);
+      rootmenu->insert(i18n->getMessage(ScreenSet, ScreenExit, "Exit"),
+      BScreen::Exit);
+    */
+  } else {
+    blackbox->saveMenuFilename(blackbox->getMenuFilename());
+  }
 }
 
 
@@ -1161,7 +1153,6 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
             parseMenuFile(file, submenu);
             menu->insert(label, submenu);
-            rootmenuList->insert(submenu);
           }
 
           break;
@@ -1287,7 +1278,6 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
                   stylesmenu->setTitle(label);
                   stylesmenu->showTitle();
                   menu->insert(label, stylesmenu);
-                  rootmenuList->insert(stylesmenu);
                 }
 
                 blackbox->saveMenuFilename(stylesdir);

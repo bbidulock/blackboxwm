@@ -217,7 +217,6 @@ private:
   Iconmenu *iconmenu;
   Rootmenu *rootmenu;
 
-  LinkedList<Rootmenu> *rootmenuList;
   LinkedList<Netizen> *netizenList;
   LinkedList<BlackboxWindow> *iconList;
 
