@@ -3547,6 +3547,10 @@ void BlackboxWindow::startResize(Window window) {
                    frame.changing.y() + hw,
                    frame.changing.width() - bw,
                    frame.changing.height() - bw);
+  } else {
+    // unset maximized state when resized
+    if (isMaximized())
+      maximize(0);
   }
 
   showGeometry(frame.changing);
@@ -3638,9 +3642,6 @@ void BlackboxWindow::continueResize(int x_root, int y_root) {
 
 
 void BlackboxWindow::finishResize() {
-  XUngrabPointer(blackbox->XDisplay(), blackbox->XTime());
-
-  client.state.resizing = false;
 
   if (!blackbox->resource().opaqueResize()) {
     bt::Pen pen(_screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
@@ -3655,17 +3656,22 @@ void BlackboxWindow::finishResize() {
                    frame.changing.y() + hw,
                    frame.changing.width() - bw,
                    frame.changing.height() - bw);
+
     blackbox->XUngrabServer();
+
+    // unset maximized state when resized
+    if (isMaximized())
+      maximize(0);
   }
+
+  client.state.resizing = false;
+
+  XUngrabPointer(blackbox->XDisplay(), blackbox->XTime());
 
   _screen->hideGeometry();
 
   frame.changing = constrain(frame.changing, frame.margin, client.wmnormal,
                              Corner(frame.corner));
-
-  // unset maximized state when resized after fully maximized
-  if (isMaximized())
-    maximize(0);
   configure(frame.changing);
 }
 
