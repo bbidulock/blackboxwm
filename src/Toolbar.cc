@@ -257,20 +257,7 @@ void Toolbar::reconfigure(void) {
 
   frame.rect.setPos(x, y);
 
-  // left and right are always 0
-  strut.top = strut.bottom = 0;
-
-  switch(screen->getToolbarPlacement()) {
-  case TopLeft:
-  case TopCenter:
-  case TopRight:
-    strut.top = getHeight() + 1;
-    break;
-  default:
-    strut.bottom = screen->getHeight() - getY() - 1;
-  }
-
-  screen->updateAvailableArea();
+  updateStrut();
 
 #ifdef    HAVE_STRFTIME
   time_t ttmp = time(NULL);
@@ -442,6 +429,24 @@ void Toolbar::reconfigure(void) {
   checkClock(True);
 
   toolbarmenu->reconfigure();
+}
+
+
+void Toolbar::updateStrut(void) {
+  // left and right are always 0
+  strut.top = strut.bottom = 0;
+
+  switch(screen->getToolbarPlacement()) {
+  case TopLeft:
+  case TopCenter:
+  case TopRight:
+    strut.top = getExposedHeight() + 1;
+    break;
+  default:
+    strut.bottom = getExposedHeight() + 1;
+  }
+
+  screen->updateAvailableArea();
 }
 
 
@@ -1015,6 +1020,7 @@ void Toolbarmenu::itemSelected(int button, unsigned int index) {
     toolbar->do_auto_hide = ((toolbar->doAutoHide()) ?  False : True);;
     setItemSelected(2, toolbar->do_auto_hide);
 
+    toolbar->updateStrut();
     getScreen()->getSlit()->reposition();
     break;
   }

@@ -271,7 +271,6 @@ void Slit::reconfigure(void) {
 
   it = clientList.begin();
 
-  strut.top = strut.bottom = strut.left = strut.right = 0;
   int x, y;
 
   switch (screen->getSlitDirection()) {
@@ -309,24 +308,6 @@ void Slit::reconfigure(void) {
       y += client->rect.height() + screen->getBevelWidth();
     }
 
-    switch (screen->getSlitPlacement()) {
-    case TopCenter:
-      strut.top = getY() + getHeight() + 1;
-      break;
-    case BottomCenter:
-      strut.bottom = screen->getHeight() - getY() - 1;
-      break;
-    case TopLeft:
-    case CenterLeft:
-    case BottomLeft:
-      strut.left = getWidth() + 1;
-      break;
-    case TopRight:
-    case CenterRight:
-    case BottomRight:
-      strut.right = screen->getWidth() - getX() - 1;
-      break;
-    }
     break;
 
   case Horizontal:
@@ -362,22 +343,54 @@ void Slit::reconfigure(void) {
 
       x += client->rect.width() + screen->getBevelWidth();
     }
+    break;
+  }
+
+  slitmenu->reconfigure();
+}
+
+
+void Slit::updateStrut(void) {
+  strut.top = strut.bottom = strut.left = strut.right = 0;
+  
+  switch (screen->getSlitDirection()) {
+  case Vertical:
+    switch (screen->getSlitPlacement()) {
+    case TopCenter:
+      strut.top = getY() + getExposedHeight() + 1;
+      break;
+    case BottomCenter:
+      strut.bottom = getExposedHeight() + 1;
+      break;
+    case TopLeft:
+    case CenterLeft:
+    case BottomLeft:
+      strut.left = getExposedWidth() + 1;
+      break;
+    case TopRight:
+    case CenterRight:
+    case BottomRight:
+      strut.right = getExposedWidth() + 1;
+      break;
+    }
+    break;
+  case Horizontal:
     switch (screen->getSlitPlacement()) {
     case TopCenter:
     case TopLeft:
     case TopRight:
-      strut.top = getY() + getHeight() + 1;
+      strut.top = getY() + getExposedHeight() + 1;
       break;
     case BottomCenter:
     case BottomLeft:
     case BottomRight:
-      strut.bottom = screen->getHeight() - getY() - 1;
+      strut.bottom = screen->getHeight() - getY();
       break;
     case CenterLeft:
-      strut.left = getWidth() + 1;
+      strut.left = getExposedWidth() + 1;
       break;
     case CenterRight:
-      strut.right = screen->getWidth() - getX() - 1;
+      strut.right = getExposedWidth() + 1;
       break;
     }
     break;
@@ -385,8 +398,6 @@ void Slit::reconfigure(void) {
 
   // update area with new Strut info
   screen->updateAvailableArea();
-
-  slitmenu->reconfigure();
 }
 
 
@@ -492,8 +503,8 @@ void Slit::reposition(void) {
   }
 
   Rect tbar_rect = screen->getToolbar()->getRect();
-  tbar_rect.setSize(tbar_rect.width() + screen->getBorderWidth(),
-                    tbar_rect.height() + screen->getBorderWidth());
+  tbar_rect.setSize(tbar_rect.width() + (screen->getBorderWidth() * 2),
+                    tbar_rect.height() + (screen->getBorderWidth() * 2));
   Rect slit_rect = frame.rect;
   slit_rect.setSize(slit_rect.width() + (screen->getBorderWidth() * 2),
                     slit_rect.height() + (screen->getBorderWidth() * 2));
@@ -502,16 +513,16 @@ void Slit::reposition(void) {
     Toolbar *tbar = screen->getToolbar();
     frame.y_hidden = frame.rect.y();
 
-    if (frame.rect.bottom() > tbar_rect.bottom()) {
-      frame.rect.setY(frame.rect.y() + tbar->getExposedHeight());
-      if (screen->getSlitDirection() == Vertical)
-        frame.y_hidden += tbar->getExposedHeight();
-    } else {
-      frame.rect.setY(frame.rect.y() - tbar->getExposedHeight());
-      if (screen->getSlitDirection() == Vertical)
-        frame.y_hidden -= tbar->getExposedHeight();
+    int delta = tbar->getExposedHeight() + 1;
+    if (frame.rect.bottom() <= tbar_rect.bottom()) {
+      delta = -delta;
     }
+    frame.rect.setY(frame.rect.y() + delta);
+    if (screen->getSlitDirection() == Vertical)
+      frame.y_hidden += delta;
   }
+
+  updateStrut();
 
   if (hidden)
     XMoveResizeWindow(display, frame.window, frame.x_hidden,
@@ -676,6 +687,7 @@ void Slitmenu::itemSelected(int button, unsigned int index) {
     slit->do_auto_hide = ((slit->doAutoHide()) ?  False : True);;
     setItemSelected(3, slit->do_auto_hide);
 
+    slit->updateStrut();
     break;
   }
   } // switch

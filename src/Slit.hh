@@ -121,6 +121,8 @@ private:
     Rect rect;
   } frame;
 
+  void updateStrut(void);
+
   friend class Slitmenu;
   friend class Slitmenu::Directionmenu;
   friend class Slitmenu::Placementmenu;
@@ -146,12 +148,23 @@ public:
   { return ((hidden) ? frame.y_hidden : frame.rect.y()); }
 
   inline unsigned int getWidth(void) const { return frame.rect.width(); }
+  inline unsigned int getExposedWidth(void) const {
+    if (screen->getSlitDirection() == Vertical && do_auto_hide)
+      return screen->getBevelWidth();
+    return frame.rect.width();
+  }
   inline unsigned int getHeight(void) const { return frame.rect.height(); }
+  inline unsigned int getExposedHeight(void) const {
+    if (screen->getSlitDirection() == Horizontal && do_auto_hide)
+      return screen->getBevelWidth();
+    return frame.rect.height();
+  }
 
   void addClient(Window w);
   void removeClient(SlitClient *client, bool remap = True);
   void removeClient(Window w, bool remap = True);
   void reconfigure(void);
+  void updateSlit(void);
   void reposition(void);
   void shutdown(void);
 

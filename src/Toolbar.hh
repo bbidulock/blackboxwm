@@ -110,6 +110,18 @@ private:
   friend class Toolbarmenu;
   friend class Toolbarmenu::Placementmenu;
 
+  void redrawPrevWorkspaceButton(bool pressed = False, bool redraw = False);
+  void redrawNextWorkspaceButton(bool pressed = False, bool redraw = False);
+  void redrawPrevWindowButton(bool preseed = False, bool redraw = False);
+  void redrawNextWindowButton(bool preseed = False, bool redraw = False);
+
+  void updateStrut(void);
+
+#ifdef    HAVE_STRFTIME
+  void checkClock(bool redraw = False);
+#else //  HAVE_STRFTIME
+  void checkClock(bool redraw = False, bool date = False);
+#endif // HAVE_STRFTIME
 
   Toolbar(const Toolbar&);
   Toolbar& operator=(const Toolbar&);
@@ -144,20 +156,11 @@ public:
   void exposeEvent(XExposeEvent *ee);
   void keyPressEvent(XKeyEvent *ke);
 
-  void redrawWindowLabel(bool redraw = False);
-  void redrawWorkspaceLabel(bool redraw = False);
-  void redrawPrevWorkspaceButton(bool pressed = False, bool redraw = False);
-  void redrawNextWorkspaceButton(bool pressed = False, bool redraw = False);
-  void redrawPrevWindowButton(bool preseed = False, bool redraw = False);
-  void redrawNextWindowButton(bool preseed = False, bool redraw = False);
   void edit(void);
   void reconfigure(void);
 
-#ifdef    HAVE_STRFTIME
-  void checkClock(bool redraw = False);
-#else //  HAVE_STRFTIME
-  void checkClock(bool redraw = False, bool date = False);
-#endif // HAVE_STRFTIME
+  void redrawWindowLabel(bool redraw = False);
+  void redrawWorkspaceLabel(bool redraw = False);
 
   virtual void timeout(void);
 
