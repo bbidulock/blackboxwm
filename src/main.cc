@@ -74,8 +74,7 @@ static void showHelp(int exitval) {
   printf(bt::i18n(mainSet, mainCompileOptions,
                   "Compile time options:\n"
                   "  Debugging:\t\t\t%s\n"
-                  "  Shape:\t\t\t%s\n"
-                  "  8bpp Ordered Dithering:\t%s\n\n"),
+                  "  Shape:\t\t\t%s\n\n"),
 #ifdef    DEBUG
          bt::i18n(CommonSet, CommonYes, "yes"),
 #else // !DEBUG
@@ -83,16 +82,11 @@ static void showHelp(int exitval) {
 #endif // DEBUG
 
 #ifdef    SHAPE
-         bt::i18n(CommonSet, CommonYes, "yes"),
+         bt::i18n(CommonSet, CommonYes, "yes")
 #else // !SHAPE
-         bt::i18n(CommonSet, CommonNo, "no"),
+         bt::i18n(CommonSet, CommonNo, "no")
 #endif // SHAPE
 
-#ifdef    ORDEREDPSEUDO
-         bt::i18n(CommonSet, CommonYes, "yes")
-#else // !ORDEREDPSEUDO
-         bt::i18n(CommonSet, CommonNo, "no")
-#endif // ORDEREDPSEUDO
          );
 
   ::exit(exitval);
