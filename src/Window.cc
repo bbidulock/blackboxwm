@@ -291,7 +291,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     ::update_window_group(client.wmhints.window_group, blackbox, this);
 
   client.state.visible = false;
-  client.state.iconic = client.ewmh.hidden;
+  client.state.iconic = false;
   client.state.moving = false;
   client.state.resizing = false;
   client.state.focused = false;
@@ -1102,7 +1102,10 @@ EWMH BlackboxWindow::readEWMH(void) {
       } else if (state == netwm.wmStateSkipPager()) {
         ewmh.skip_pager = true;
       } else if (state == netwm.wmStateHidden()) {
-        ewmh.hidden = true;
+        /*
+          ignore _NET_WM_STATE_HIDDEN if present, the wm sets this
+          state, not the application
+         */
       } else if (state == netwm.wmStateFullscreen()) {
         ewmh.fullscreen = True;
       } else if (state == netwm.wmStateAbove()) {
@@ -2463,7 +2466,10 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
     }
     if (first == netwm.wmStateHidden() ||
         second == netwm.wmStateHidden()) {
-      /* ignore this message */
+      /*
+        ignore _NET_WM_STATE_HIDDEN, the wm sets this state, not the
+        application
+      */
     }
     if (first == netwm.wmStateFullscreen() ||
         second == netwm.wmStateFullscreen()) {
