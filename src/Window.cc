@@ -1145,9 +1145,10 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     client.current_state = WithdrawnState;
   }
 
-  configure(frame.rect);
-
-  positionWindows();
+  bt::Rect r = frame.rect;
+  // trick configure into working
+  frame.rect = bt::Rect();
+  configure(r);
 
   blackbox->XUngrabServer();
 
@@ -1694,12 +1695,21 @@ void BlackboxWindow::reconfigure(void) {
     // get the frame window geometry from the client window geometry
     // calculated above
     r = ::applyGravity(r, frame.margin, client.wmnormal.win_gravity);
-    if (client.ewmh.shaded)
-      r.setHeight(style.title_height);
+    if (client.ewmh.shaded) {
+      frame.rect = r;
 
-    // trick configure into working
-    frame.rect = bt::Rect();
-    configure(r);
+      positionWindows();
+      decorate();
+
+      // keep the window shaded
+      frame.rect.setHeight(style.title_height);
+      XResizeWindow(blackbox->XDisplay(), frame.window,
+                    frame.rect.width(), frame.rect.height());
+    } else {
+      // trick configure into working
+      frame.rect = bt::Rect();
+      configure(r);
+    }
   }
 
   ungrabButtons();
@@ -1748,9 +1758,6 @@ void BlackboxWindow::positionWindows(void) {
                            ? style.frame_border_width
                            : 0);
 
-  XMoveResizeWindow(blackbox->XDisplay(), frame.window,
-                    frame.rect.x(), frame.rect.y(),
-                    frame.rect.width(), frame.rect.height());
   XMoveResizeWindow(blackbox->XDisplay(), frame.plate,
                     frame.margin.left - bw,
                     frame.margin.top - bw,
@@ -1830,6 +1837,10 @@ void BlackboxWindow::configure(int dx, int dy,
     if (client.state.shaped)
       configureShape();
 #endif // SHAPE
+
+    XMoveResizeWindow(blackbox->XDisplay(), frame.window,
+                      frame.rect.x(), frame.rect.y(),
+                      frame.rect.width(), frame.rect.height());
 
     positionWindows();
     decorate();
