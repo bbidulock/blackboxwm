@@ -274,7 +274,7 @@ private:
   void redrawMaximizeButton(bool pressed) const;
   void applyGravity(Rect &r);
   void restoreGravity(Rect &r);
-  void setState(unsigned long new_state);
+  void setState(unsigned long new_state, bool closing = False);
   void upsize(void);
 
   enum Corner { TopLeft, TopRight };

@@ -1813,7 +1813,7 @@ void BlackboxWindow::installColormap(bool install) {
 }
 
 
-void BlackboxWindow::setState(unsigned long new_state) {
+void BlackboxWindow::setState(unsigned long new_state, bool closing) {
   client.current_state = new_state;
 
   unsigned long state[2];
@@ -1823,14 +1823,20 @@ void BlackboxWindow::setState(unsigned long new_state) {
                   blackbox->getWMStateAtom(), blackbox->getWMStateAtom(), 32,
                   PropModeReplace, (unsigned char *) state, 2);
 
-  Netwm::AtomList atoms;
   const Netwm* const netwm = blackbox->netwm();
+
+  if (closing) {
+    netwm->removeProperty(client.window, netwm->wmDesktop());
+    netwm->removeProperty(client.window, netwm->wmState());
+    return;
+  }
 
   if (client.state.iconic)
     netwm->removeProperty(client.window, netwm->wmDesktop());
   else
     blackbox->netwm()->setWMDesktop(client.window, client.workspace);
 
+  Netwm::AtomList atoms;
   if (client.state.modal)
     atoms.push_back(netwm->wmStateModal());
 
@@ -1871,7 +1877,10 @@ void BlackboxWindow::setState(unsigned long new_state) {
   else if (client.state.layer == LAYER_BELOW)
     atoms.push_back(netwm->wmStateAbove());
 
-  netwm->setWMState(client.window, atoms);
+  if (atoms.empty())
+    netwm->removeProperty(client.window, netwm->wmState());
+  else
+    netwm->setWMState(client.window, atoms);
 }
 
 
@@ -2845,11 +2854,20 @@ void BlackboxWindow::restore(bool remap) {
   XSelectInput(blackbox->getXDisplay(), client.window, NoEventMask);
   XSelectInput(blackbox->getXDisplay(), frame.plate, NoEventMask);
 
+  bool reparent = False;
+  XEvent ev;
+  if (XCheckTypedWindowEvent(blackbox->getXDisplay(), client.window,
+                             ReparentNotify, &ev)) {
+    reparent = True;
+    remap = True;
+  }
+
   // do not leave a shaded window as an icon unless it was an icon
   if (client.state.shaded && ! client.state.iconic)
     client.current_state = NormalState;
 
-  setState(client.current_state);
+  // remove the wm hints unless the window is being remapped
+  setState(client.current_state, ! remap);
 
   restoreGravity(client.rect);
 
@@ -2865,11 +2883,7 @@ void BlackboxWindow::restore(bool remap) {
 
   XUngrabServer(blackbox->getXDisplay());
 
-  XEvent ev;
-  if (XCheckTypedWindowEvent(blackbox->getXDisplay(), client.window,
-                             ReparentNotify, &ev)) {
-    remap = True;
-  } else {
+  if (! reparent) {
     // according to the ICCCM - if the client doesn't reparent to
     // root, then we have to do it for them
     XReparentWindow(blackbox->getXDisplay(), client.window,
@@ -2886,99 +2900,6 @@ void BlackboxWindow::timeout(void) {
   screen->getWorkspace(client.workspace)->raiseWindow(this);
 }
 
-
-#if 0
-void BlackboxWindow::changeBlackboxHints(const BlackboxHints *net) {
-  if ((net->flags & AttribShaded) &&
-      ((blackbox_attrib.attrib & AttribShaded) !=
-       (net->attrib & AttribShaded)))
-    shade();
-
-  if (isVisible() && // watch out for requests when not visible
-      (net->flags & (AttribMaxVert | AttribMaxHoriz)) &&
-      ((blackbox_attrib.attrib & (AttribMaxVert | AttribMaxHoriz)) !=
-       (net->attrib & (AttribMaxVert | AttribMaxHoriz)))) {
-    if (client.state.maximized) {
-      maximize(0);
-    } else {
-      int button = 0;
-
-      if (net->flags & AttribMaxHoriz && net->flags & AttribMaxVert &&
-          net->attrib & (AttribMaxHoriz | AttribMaxVert))
-        button = 1;
-      else if (net->flags & AttribMaxVert && net->attrib & AttribMaxVert)
-        button = 2;
-      else if (net->flags & AttribMaxHoriz && net->attrib & AttribMaxHoriz)
-        button = 3;
-
-      maximize(button);
-    }
-  }
-
-  if ((net->flags & AttribWorkspace) &&
-      (client.workspace != net->workspace)) {
-    screen->reassociateWindow(this, net->workspace);
-
-    if (screen->getCurrentWorkspaceID() != net->workspace) {
-      withdraw();
-    } else {
-      show();
-      screen->getWorkspace(client.workspace)->raiseWindow(this);
-    }
-  }
-
-  if (net->flags & AttribDecoration) {
-    switch (net->decoration) {
-    case DecorNone:
-      client.decorations = 0;
-
-      break;
-
-    default:
-    case DecorNormal:
-      client.decorations |= Decor_Titlebar | Decor_Handle | Decor_Border |
-        Decor_Iconify | Decor_Maximize;
-
-      break;
-
-    case DecorTiny:
-      client.decorations |= Decor_Titlebar | Decor_Iconify;
-      client.decorations &= ~(Decor_Border | Decor_Handle | Decor_Maximize);
-
-      break;
-
-    case DecorTool:
-      client.decorations |= Decor_Titlebar;
-      client.decorations &= ~(Decor_Iconify | Decor_Border | Decor_Handle);
-
-      break;
-    }
-
-    // sanity check the new decor
-    if (! (client.functions & Func_Resize) || isTransient())
-      client.decorations &= ~(Decor_Maximize | Decor_Handle);
-    if (! (client.functions & Func_Maximize))
-      client.decorations &= ~Decor_Maximize;
-    if (! (client.functions & Func_Iconify))
-      client.decorations &= ~Decor_Iconify;
-    if (client.decorations & Decor_Titlebar) {
-      if (client.functions & Func_Close)   // close button is controlled by function
-        client.decorations |= Decor_Close; // not decor type
-    } else {
-      if (client.state.shaded) // we can not be shaded if we lack a titlebar
-        shade();
-    }
-
-    if (isVisible() && frame.window) {
-      XMapSubwindows(blackbox->getXDisplay(), frame.window);
-      XMapWindow(blackbox->getXDisplay(), frame.window);
-    }
-
-    reconfigure();
-    setState(client.current_state);
-  }
-}
-#endif
 
 /*
  * Set the sizes of all components of the window frame

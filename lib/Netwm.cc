@@ -251,11 +251,6 @@ bool Netwm::readWMWindowType(Window target, AtomList& types) const {
 
 
 void Netwm::setWMState(Window target, AtomList& atoms) const {
-  if (atoms.empty()) {
-    removeProperty(target, net_wm_state);
-    return;
-  }
-
   XChangeProperty(display, target, net_wm_state, XA_ATOM,
                   32, PropModeReplace,
                   reinterpret_cast<uchar*>(&(atoms[0])), atoms.size());

@@ -13,9 +13,6 @@ netwm:
 
 * support all wm_state's
 
-* use state_hidden to help deal with the iconified, shaded window
-  conundrum.
-
 refactoring:
 -----------------------------
 * look into public v. private members of all classes
