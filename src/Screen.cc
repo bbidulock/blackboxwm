@@ -544,6 +544,7 @@ void BScreen::manageWindow(Window w) {
     break;
   }
 
+  // focus the new window if appropriate
   if (!blackbox->startingUp() &&
       (!blackbox->activeScreen() || blackbox->activeScreen() == this) &&
       (win->isTransient() || resource().doFocusNew())) {

@@ -428,6 +428,11 @@ Window BlackboxWindow::createChildWindow(Window parent,
 }
 
 
+/*
+ * Reparents the client window into the newly created frame.
+ *
+ * Note: the server must be grabbed before calling this function.
+ */
 void BlackboxWindow::associateClientWindow(void) {
   XSetWindowBorderWidth(blackbox->XDisplay(), client.window, 0);
   XChangeSaveSet(blackbox->XDisplay(), client.window, SetModeInsert);
@@ -435,10 +440,6 @@ void BlackboxWindow::associateClientWindow(void) {
   XSelectInput(blackbox->XDisplay(), frame.plate,
                FocusChangeMask | SubstructureRedirectMask);
 
-  /*
-    note we used to grab around this call to XReparentWindow however the
-    server is now grabbed before this method is called
-  */
   unsigned long event_mask = PropertyChangeMask | FocusChangeMask |
                              StructureNotifyMask;
   XSelectInput(blackbox->XDisplay(), client.window,
@@ -537,7 +538,8 @@ void BlackboxWindow::decorate(void) {
                             frame.uhandle);
 
     XSetWindowBorder(blackbox->XDisplay(), frame.handle,
-                     screen->resource().borderColor()->pixel(screen->screenNumber()));
+                     screen->resource().borderColor()->
+                     pixel(screen->screenNumber()));
   }
 
   if (client.decorations & WindowDecorationGrip) {
@@ -552,13 +554,16 @@ void BlackboxWindow::decorate(void) {
                             frame.style->handle_height, frame.ugrip);
 
     XSetWindowBorder(blackbox->XDisplay(), frame.left_grip,
-                     screen->resource().borderColor()->pixel(screen->screenNumber()));
+                     screen->resource().borderColor()->
+                     pixel(screen->screenNumber()));
     XSetWindowBorder(blackbox->XDisplay(), frame.right_grip,
-                     screen->resource().borderColor()->pixel(screen->screenNumber()));
+                     screen->resource().borderColor()->
+                     pixel(screen->screenNumber()));
   }
 
   XSetWindowBorder(blackbox->XDisplay(), frame.window,
-                   screen->resource().borderColor()->pixel(screen->screenNumber()));
+                   screen->resource().borderColor()->
+                   pixel(screen->screenNumber()));
 }
 
 
@@ -589,16 +594,18 @@ void BlackboxWindow::destroyHandle(void) {
 
 
 void BlackboxWindow::createGrips(void) {
-  frame.left_grip = createChildWindow(frame.handle,
-                                      ButtonPressMask | ButtonReleaseMask |
-                                      ButtonMotionMask | ExposureMask,
-                                      blackbox->resource().resizeBottomLeftCursor());
+  frame.left_grip =
+    createChildWindow(frame.handle,
+                      ButtonPressMask | ButtonReleaseMask |
+                      ButtonMotionMask | ExposureMask,
+                      blackbox->resource().resizeBottomLeftCursor());
   blackbox->insertEventHandler(frame.left_grip, this);
 
-  frame.right_grip = createChildWindow(frame.handle,
-                                       ButtonPressMask | ButtonReleaseMask |
-                                       ButtonMotionMask | ExposureMask,
-                                       blackbox->resource().resizeBottomRightCursor());
+  frame.right_grip =
+    createChildWindow(frame.handle,
+                      ButtonPressMask | ButtonReleaseMask |
+                      ButtonMotionMask | ExposureMask,
+                      blackbox->resource().resizeBottomRightCursor());
   blackbox->insertEventHandler(frame.right_grip, this);
 }
 
@@ -957,7 +964,7 @@ std::string BlackboxWindow::readWMIconName(void) {
 
 
 void BlackboxWindow::getNetwmHints(void) {
-  // wm_name and wm_icon_name are read separately
+  // note: wm_name and wm_icon_name are read separately
 
   bool ret;
   const bt::Netwm& netwm = blackbox->netwm();
@@ -1034,10 +1041,10 @@ void BlackboxWindow::getNetwmHints(void) {
 
 
 /*
- * Retrieve which WM Protocols are supported by the client window.
- * If the WM_DELETE_WINDOW protocol is supported, add the close button to the
- * window's decorations and allow the close behavior.
- * If the WM_TAKE_FOCUS protocol is supported, save a value that indicates
+ * Retrieve which WM Protocols are supported by the client window.  If
+ * the WM_DELETE_WINDOW protocol is supported, add the close button to
+ * the window's decorations and allow the close behavior.  If the
+ * WM_TAKE_FOCUS protocol is supported, save a value that indicates
  * this.
  */
 void BlackboxWindow::getWMProtocols(void) {
@@ -1060,8 +1067,8 @@ void BlackboxWindow::getWMProtocols(void) {
 
 
 /*
- * Gets the value of the WM_HINTS property.
- * If the property is not set, then use a set of default values.
+ * Gets the value of the WM_HINTS property.  If the property is not
+ * set, then use a set of default values.
  */
 void BlackboxWindow::getWMHints(void) {
   client.focus_mode = F_Passive;
@@ -1111,8 +1118,8 @@ void BlackboxWindow::getWMHints(void) {
 
 
 /*
- * Gets the value of the WM_NORMAL_HINTS property.
- * If the property is not set, then use a set of default values.
+ * Gets the value of the WM_NORMAL_HINTS property.  If the property is
+ * not set, then use a set of default values.
  */
 void BlackboxWindow::getWMNormalHints(void) {
   long icccm_mask;
@@ -1126,9 +1133,9 @@ void BlackboxWindow::getWMNormalHints(void) {
     client.max_aspect_x = client.max_aspect_y = 1;
 
   /*
-    use the full screen, not the strut modified size. otherwise when the
-    availableArea changes max_width/height will be incorrect and lead to odd
-    rendering bugs.
+    use the full screen, not the strut modified size. otherwise when
+    the availableArea changes max_width/height will be incorrect and
+    lead to odd rendering bugs.
   */
   const bt::Rect &rect = screen->screenInfo().rect();
   client.max_width = rect.width();
@@ -1182,15 +1189,18 @@ void BlackboxWindow::getWMNormalHints(void) {
 
 
 /*
- * Gets the MWM hints for the class' contained window.
- * This is used while initializing the window to its first state, and not
+ * Gets the MWM hints for the class' contained window.  This is used
+ * while initializing the window to its first state, and not
  * thereafter.
- * Returns: true if the MWM hints are successfully retreived and applied;
- * false if they are not.
+ *
+ * Returns: true if the MWM hints are successfully retreived and
+ * applied; false if they are not.
  */
 void BlackboxWindow::getMWMHints(void) {
-  // this structure only contains 3 elements, even though the Motif 2.0
-  // structure contains 5, because we only use the first 3
+  /*
+    this structure only contains 3 elements, even though the Motif 2.0
+    structure contains 5, because we only use the first 3
+  */
   struct PropMwmHints {
     unsigned long flags;
     unsigned long functions;
@@ -1298,11 +1308,13 @@ void BlackboxWindow::getTransientInfo(void) {
   }
 
   if (trans_for == None || trans_for == screen->screenInfo().rootWindow()) {
-    // this is an undocumented interpretation of the ICCCM. a transient
-    // associated with None/Root/itself is assumed to be a modal root
-    // transient.  we don't support the concept of a global transient,
-    // so we just associate this transient with nothing, and perhaps
-    // we will add support later for global modality.
+    /*
+      this is an undocumented interpretation of the ICCCM. a transient
+      associated with None/Root/itself is assumed to be a modal root
+      transient.  we don't support the concept of a global transient,
+      so we just associate this transient with nothing, and perhaps we
+      will add support later for global modality.
+    */
     client.transient_for = (BlackboxWindow *) ~0ul;
     client.state.modal = True;
     return;
@@ -1317,14 +1329,19 @@ void BlackboxWindow::getTransientInfo(void) {
   }
 
   if (! client.transient_for || client.transient_for == this) {
-    // no transient_for found, or we have a wierd client that wants to be
-    // a transient for itself, so we treat this window as a normal window
+    /*
+      no transient_for found, or we have a wierd client that wants to
+      be a transient for itself, so we treat this window as a normal
+      window
+    */
     client.transient_for = (BlackboxWindow*) 0;
     return;
   }
 
-  // Check for a circular transient state: this can lock up Blackbox
-  // when it tries to find the non-transient window for a transient.
+  /*
+    Check for a circular transient state: this can lock up Blackbox
+    when it tries to find the non-transient window for a transient.
+  */
   BlackboxWindow *w = this;
   while (w->client.transient_for &&
          w->client.transient_for != (BlackboxWindow *) ~0ul) {
@@ -1352,10 +1369,9 @@ BlackboxWindow *BlackboxWindow::getTransientFor(void) const {
 
 
 /*
- * This function is responsible for updating both the client and the frame
- * rectangles.
- * According to the ICCCM a client message is not sent for a resize, only a
- * move.
+ * This function is responsible for updating both the client and the
+ * frame rectangles.  According to the ICCCM a client message is not
+ * sent for a resize, only a move.
  */
 void BlackboxWindow::configure(int dx, int dy,
                                unsigned int dw, unsigned int dh) {
@@ -1389,9 +1405,10 @@ void BlackboxWindow::configure(int dx, int dy,
     XMoveWindow(blackbox->XDisplay(), frame.window,
                 frame.rect.x(), frame.rect.y());
     /*
-      we may have been called just after an opaque window move, so even though
-      the old coords match the new ones no ConfigureNotify has been sent yet.
-      There are likely other times when this will be relevant as well.
+      we may have been called just after an opaque window move, so
+      even though the old coords match the new ones no ConfigureNotify
+      has been sent yet.  There are likely other times when this will
+      be relevant as well.
     */
     if (! client.state.moving) send_event = True;
   }
@@ -1498,9 +1515,9 @@ bool BlackboxWindow::setInputFocus(void) {
   case F_GloballyActive:
   case F_NoInput:
     /*
-     * we could set the focus to none, since the window doesn't accept focus,
-     * but we shouldn't set focus to nothing since this would surely make
-     * someone angry.  instead, set the focus to the plate
+     * we could set the focus to none, since the window doesn't accept
+     * focus, but we shouldn't set focus to nothing since this would
+     * surely make someone angry.  instead, set the focus to the plate
      */
     XSetInputFocus(blackbox->XDisplay(), frame.plate,
                    RevertToPointerRoot, CurrentTime);
@@ -1636,9 +1653,10 @@ void BlackboxWindow::maximize(unsigned int button) {
 
     if (!client.state.fullscreen) {
       /*
-        when a resize is begun, maximize(0) is called to clear any maximization
-        flags currently set.  Otherwise it still thinks it is maximized.
-        so we do not need to call configure() because resizing will handle it
+        when a resize is begun, maximize(0) is called to clear any
+        maximization flags currently set.  Otherwise it still thinks
+        it is maximized.  so we do not need to call configure()
+        because resizing will handle it
       */
       if (! client.state.resizing)
         configure(client.premax);
@@ -2531,8 +2549,11 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
 
     // adjust the window decorations based on transience
     if (isTransient()) {
-      client.decorations &= ~(WindowDecorationIconify | WindowDecorationMaximize);
-      client.functions &= ~(WindowFunctionShade | WindowFunctionIconify | WindowFunctionMaximize);
+      client.decorations &= ~(WindowDecorationIconify |
+                              WindowDecorationMaximize);
+      client.functions   &= ~(WindowFunctionShade |
+                              WindowFunctionIconify |
+                              WindowFunctionMaximize);
     }
 
     reconfigure();
@@ -2574,12 +2595,17 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
       ungrabButtons();
       if (client.max_width <= client.min_width &&
           client.max_height <= client.min_height) {
-        client.decorations &= ~(WindowDecorationMaximize | WindowDecorationGrip);
-        client.functions &= ~(WindowFunctionResize | WindowFunctionMaximize);
+        client.decorations &= ~(WindowDecorationMaximize |
+                                WindowDecorationGrip);
+        client.functions   &= ~(WindowFunctionResize |
+                                WindowFunctionMaximize);
       } else {
         if (! isTransient()) {
-          client.decorations |= WindowDecorationIconify | WindowDecorationMaximize;
-          client.functions |= WindowFunctionShade | WindowFunctionIconify | WindowFunctionMaximize;
+          client.decorations |= (WindowDecorationIconify |
+                                 WindowDecorationMaximize);
+          client.functions   |= (WindowFunctionShade |
+                                 WindowFunctionIconify |
+                                 WindowFunctionMaximize );
         }
         client.functions |= WindowFunctionResize;
       }
@@ -2639,7 +2665,8 @@ void BlackboxWindow::exposeEvent(const XExposeEvent * const event) {
 }
 
 
-void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent * const event) {
+void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent *
+                                           const event) {
   if (event->window != client.window || client.state.iconic)
     return;
 
@@ -2700,7 +2727,8 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const event) {
     if (event->button == 1)
       redrawCloseButton(True);
   } else if (frame.plate == event->window) {
-    if (event->button == 1 || (event->button == 3 && event->state == Mod1Mask)) {
+    if (event->button == 1
+        || (event->button == 3 && event->state == Mod1Mask)) {
       if (! client.state.focused)
         setInputFocus();
       else
@@ -2711,7 +2739,8 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const event) {
     }
   } else if (frame.title == event->window || frame.label == event->window ||
              frame.handle) {
-    if (event->button == 1 || (event->button == 3 && event->state == Mod1Mask)) {
+    if (event->button == 1
+        || (event->button == 3 && event->state == Mod1Mask)) {
       if (! client.state.focused)
         setInputFocus();
       else
@@ -3268,10 +3297,10 @@ void BlackboxWindow::constrain(Corner anchor) {
 
   // fit to size increments
   if (client.normal_hint_flags & PResizeInc) {
-    dw = (((dw - base_width) / client.width_inc) * client.width_inc) \
-      + base_width;
-    dh = (((dh - base_height) / client.height_inc) * client.height_inc) \
-      + base_height;
+    dw = (((dw - base_width) / client.width_inc) * client.width_inc)
+         + base_width;
+    dh = (((dh - base_height) / client.height_inc) * client.height_inc)
+         + base_height;
   }
 
   /*
