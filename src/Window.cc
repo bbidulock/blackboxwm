@@ -679,7 +679,12 @@ static MotifHints readMotifWMHints(Blackbox *blackbox, Window window) {
     if (prop->functions & MWM_FUNC_ALL) {
       motif.functions = AllWindowFunctions;
     } else {
-      motif.functions = NoWindowFunctions;
+      // default to the functions that cannot be set through
+      // _MOTIF_WM_HINTS
+      motif.functions = (WindowFunctionShade
+                         | WindowFunctionChangeWorkspace
+                         | WindowFunctionChangeLayer
+                         | WindowFunctionFullScreen);
 
       if (prop->functions & MWM_FUNC_RESIZE)
         motif.functions |= WindowFunctionResize;
@@ -3301,8 +3306,8 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const event) {
 
       if (frame.plate == event->window) {
         XAllowEvents(blackbox->XDisplay(), ReplayPointer, event->time);
-      } else if (frame.title == event->window
-                 || frame.label == event->window
+      } else if ((frame.title == event->window
+                  || frame.label == event->window)
                  && hasWindowFunction(WindowFunctionShade)) {
         if ((event->time - lastButtonPressTime <=
              blackbox->resource().doubleClickInterval()) ||
