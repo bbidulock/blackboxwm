@@ -28,22 +28,24 @@
 extern "C" {
 #include <assert.h>
 #include <math.h>
+#include <stdio.h>
 }
 
 #include <algorithm>
 
 #include "BaseDisplay.hh"
-#include "GCCache.hh"
 #include "Image.hh"
+#include "Pen.hh"
 #include "Texture.hh"
 
+// #define COLORTABLE_DEBUG
 
-static const unsigned int maximumWidth  = 4000;
-static const unsigned int maximumHeight = 3000;
+static const unsigned int maximumWidth  = 8000;
+static const unsigned int maximumHeight = 6000;
 
 
 bt::Image::Buffer bt::Image::buffer;
-unsigned int bt::Image::global_colorsPerChannel = 4;
+unsigned int bt::Image::global_colorsPerChannel = 6;
 bool bt::Image::global_ditherEnabled = true;
 bt::Image::XColorTableList bt::Image::colorTableList;
 
@@ -90,7 +92,6 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
                              unsigned int colors_per_channel)
   : _dpy(dpy), _screen(screen),
     _cpc(colors_per_channel), _cpcsq(_cpc * _cpc) {
-
   const ScreenInfo * const screeninfo = _dpy.screenNumber(_screen);
   _vclass = screeninfo->getVisual()->c_class;
   unsigned int depth = screeninfo->getDepth();
@@ -137,11 +138,7 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
     }
 
     colors.resize(ncolors);
-//#ifdef ORDEREDPSEUDO
-  //  red_bits = green_bits = blue_bits = 256u / _cpc;
-//#else // !ORDEREDPSEUDO
     red_bits = green_bits = blue_bits = 255u / (_cpc - 1);
-// #endif // ORDEREDPSEUDO
     break;
   }
 
@@ -165,67 +162,97 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
   } // switch
 
   // initialize color tables
-  for (unsigned int i = 0; i < 256u; i++) {
-    _red[i] = i / red_bits;
+  unsigned int i;
+  for (i = 0; i < 256u; i++) {
+    _red[i]   = i / red_bits;
     _green[i] = i / green_bits;
-    _blue[i] = i / blue_bits;
+    _blue[i]  = i / blue_bits;
   }
 
   if (! colors.empty()) {
-    // allocate color cube
-    unsigned int i = 0, ii, p, r, g, b;
-    for (r = 0, i = 0; r < _cpc; r++)
-      for (g = 0; g < _cpc; g++)
-	for (b = 0; b < _cpc; b++, i++) {
-	  colors[i].red = (r * 0xffff) / (_cpc - 1);
-	  colors[i].green = (g * 0xffff) / (_cpc - 1);
-	  colors[i].blue = (b * 0xffff) / (_cpc - 1);;
-	  colors[i].flags = DoRed|DoGreen|DoBlue;
-	}
-
+    // query existing colormap
     const Colormap colormap = screeninfo->getColormap();
-    for (i = 0; i < colors.size(); i++) {
-      if (! XAllocColor(_dpy.XDisplay(), colormap, &colors[i]))
-	colors[i].flags = 0;
-      else
-	colors[i].flags = DoRed|DoGreen|DoBlue;
-    }
-
     XColor icolors[256];
     unsigned int incolors = (((1u << depth) > 256u) ? 256u : (1u << depth));
-
-    for (i = 0; i < incolors; i++)
-      icolors[i].pixel = i;
+    for (i = 0; i < incolors; i++) icolors[i].pixel = i;
 
     XQueryColors(_dpy.XDisplay(), colormap, icolors, incolors);
+
+#ifdef COLORTABLE_DEBUG
+    for (i = 0; i < incolors; ++i) {
+      fprintf(stderr, "query %3d: %02x/%02x/%02x %d/%d/%d flags %x\n", i,
+              (icolors[i].red   >> 8),
+              (icolors[i].green >> 8),
+              (icolors[i].blue  >> 8),
+              (icolors[i].red   >> 8) / red_bits,
+              (icolors[i].green >> 8) / green_bits,
+              (icolors[i].blue  >> 8) / blue_bits,
+              icolors[i].flags);
+    }
+#endif // COLORTABLE_DEBUG
+
+    // create color cube
+    unsigned int ii, p, r, g, b;
+    for (r = 0, i = 0; r < _cpc; r++) {
+      for (g = 0; g < _cpc; g++) {
+     	for (b = 0; b < _cpc; b++, i++) {
+     	  colors[i].red   = (r * 0xffff) / (_cpc - 1);
+     	  colors[i].green = (g * 0xffff) / (_cpc - 1);
+     	  colors[i].blue  = (b * 0xffff) / (_cpc - 1);
+     	  colors[i].flags = DoRed|DoGreen|DoBlue;
+
+#ifdef COLORTABLE_DEBUG
+          fprintf(stderr, "req   %3d: %02x/%02x/%02x %1d/%1d/%1d\n", i,
+                  (colors[i].red   >> 8),
+                  (colors[i].green >> 8),
+                  (colors[i].blue  >> 8),
+                  (colors[i].red   >> 8) / red_bits,
+                  (colors[i].green >> 8) / green_bits,
+                  (colors[i].blue  >> 8) / blue_bits);
+#endif // COLORTABLE_DEBUG
+     	}
+      }
+    }
+
+    // for missing colors, find the closest color in the existing colormap
     for (i = 0; i < colors.size(); i++) {
-      if (! colors[i].flags) {
-	unsigned long chk = 0xffffffff, pix, close = 0;
+      unsigned long chk = 0xffffffff, pix, close = 0;
 
-	p = 2;
-	while (p--) {
-	  for (ii = 0; ii < incolors; ii++) {
-	    r = (colors[i].red - icolors[i].red) >> 8;
-	    g = (colors[i].green - icolors[i].green) >> 8;
-	    b = (colors[i].blue - icolors[i].blue) >> 8;
-	    pix = (r * r) + (g * g) + (b * b);
+      p = 2;
+      while (p--) {
+        for (ii = 0; ii < incolors; ii++) {
+          r = (colors[i].red   - icolors[ii].red)   >> 8;
+          g = (colors[i].green - icolors[ii].green) >> 8;
+          b = (colors[i].blue  - icolors[ii].blue)  >> 8;
+          pix = (r * r) + (g * g) + (b * b);
 
-	    if (pix < chk) {
-	      chk = pix;
-	      close = ii;
-	    }
+          if (pix < chk) {
+            chk = pix;
+            close = ii;
+          }
+        }
 
-	    colors[i].red = icolors[close].red;
-	    colors[i].green = icolors[close].green;
-	    colors[i].blue = icolors[close].blue;
+        colors[i].red = icolors[close].red;
+        colors[i].green = icolors[close].green;
+        colors[i].blue = icolors[close].blue;
 
-	    if (XAllocColor(_dpy.XDisplay(), colormap,
-			    &colors[i])) {
-	      colors[i].flags = DoRed|DoGreen|DoBlue;
-	      break;
-	    }
-	  }
-	}
+        if (XAllocColor(_dpy.XDisplay(), colormap,
+                        &colors[i])) {
+
+#ifdef COLORTABLE_DEBUG
+          fprintf(stderr, "close %3d: %02x/%02x/%02x %1d/%1d/%1d (%d)\n", i,
+                  (colors[i].red   >> 8),
+                  (colors[i].green >> 8),
+                  (colors[i].blue  >> 8),
+                  (colors[i].red   >> 8) / red_bits,
+                  (colors[i].green >> 8) / green_bits,
+                  (colors[i].blue  >> 8) / blue_bits,
+                  colors[i].pixel);
+#endif // COLORTABLE_DEBUG
+
+          colors[i].flags = DoRed|DoGreen|DoBlue;
+          break;
+        }
       }
     }
   }
@@ -267,9 +294,9 @@ void bt::XColorTable::mapDither(unsigned int &red,
 void bt::XColorTable::map(unsigned int &red,
                           unsigned int &green,
                           unsigned int &blue) {
-  red = _red[red];
+  red   = _red  [red  ];
   green = _green[green];
-  blue = _blue[blue];
+  blue  = _blue [blue ];
 }
 
 
@@ -283,13 +310,13 @@ unsigned long bt::XColorTable::pixel(unsigned int red,
 
   case StaticColor:
   case PseudoColor:
-    return (red * _cpcsq) + (green * _cpc) + blue;
+    return colors[(red * _cpcsq) + (green * _cpc) + blue].pixel;
 
   case TrueColor:
   case DirectColor:
-    return ((red << red_offset) |
+    return ((red   << red_offset) |
             (green << green_offset) |
-            (blue << blue_offset));
+            (blue  << blue_offset));
   }
 
   // not reached
@@ -302,9 +329,9 @@ bt::Image::Image(unsigned int w, unsigned int h)
   assert(width > 0  && width  < maximumWidth);
   assert(height > 0 && height < maximumHeight);
 
-  red = new unsigned char[width * height];
+  red   = new unsigned char[width * height];
   green = new unsigned char[width * height];
-  blue = new unsigned char[width * height];
+  blue  = new unsigned char[width * height];
 }
 
 
@@ -337,15 +364,15 @@ Pixmap bt::Image::render_solid(const Display &display, unsigned int screen,
   if (pixmap == None)
     return None;
 
-  bt::Pen pen(display, screen, texture.color());
-  bt::Pen penlight(display, screen, texture.lightColor());
-  bt::Pen penshadow(display, screen, texture.shadowColor());
+  Pen pen(screen, texture.color());
+  Pen penlight(screen, texture.lightColor());
+  Pen penshadow(screen, texture.shadowColor());
 
   XFillRectangle(display.XDisplay(), pixmap, pen.gc(), 0, 0, width, height);
 
   unsigned int bw = 0;
   if (texture.texture() & bt::Texture::Border) {
-    bt::Pen penborder(display, screen, texture.borderColor());
+    Pen penborder(screen, texture.borderColor());
     bw = texture.borderWidth();
 
     for (unsigned int i = 0; i < bw; ++i)
@@ -354,7 +381,7 @@ Pixmap bt::Image::render_solid(const Display &display, unsigned int screen,
   }
 
   if (texture.texture() & bt::Texture::Interlaced) {
-    bt::Pen peninterlace(display, screen, texture.colorTo());
+    Pen peninterlace(screen, texture.colorTo());
     for (unsigned int i = bw; i < height - (bw * 2); i += 2)
       XDrawLine(display.XDisplay(), pixmap, peninterlace.gc(),
                 bw, i, width - (bw * 2), i);
@@ -432,7 +459,7 @@ Pixmap bt::Image::render_gradient(const Display &display, unsigned int screen,
 
   unsigned int bw = 0;
   if (texture.texture() & bt::Texture::Border) {
-    bt::Pen penborder(display, screen, texture.borderColor());
+    Pen penborder(screen, texture.borderColor());
     bw = texture.borderWidth();
 
     for (unsigned int i = 0; i < bw; ++i)
@@ -453,15 +480,39 @@ static const unsigned char dither4[4][4] = {
   { 1, 5, 0, 4 },
   { 7, 3, 6, 2 }
 };
-static const unsigned char dither8[8][8] = {
-  {  0, 32,  8, 40,  2, 34, 10, 42 },
-  { 48, 16, 56, 24, 50, 18, 58, 26 },
-  { 12, 44,  4, 36, 14, 46,  6, 38 },
-  { 60, 28, 52, 20, 62, 30, 54, 22 },
-  {  3, 35, 11, 43,  1, 33,  9, 41 },
-  { 51, 19, 59, 27, 49, 17, 57, 25 },
-  { 15, 47,  7, 39, 13, 45,  5, 37 },
-  { 63, 31, 55, 23, 61, 29, 53, 21 }
+static const unsigned int dither16[16][16] = {
+  {     0, 49152, 12288, 61440,  3072, 52224, 15360, 64512,
+      768, 49920, 13056, 62208,  3840, 52992, 16128, 65280 },
+  { 32768, 16384, 45056, 28672, 35840, 19456, 48128, 31744,
+    33536, 17152, 45824, 29440, 36608, 20224, 48896, 32512 },
+  {  8192, 57344,  4096, 53248, 11264, 60416,  7168, 56320,
+     8960, 58112,  4864, 54016, 12032, 61184,  7936, 57088 },
+  { 40960, 24576, 36864, 20480, 44032, 27648, 39936, 23552,
+    41728, 25344, 37632, 21248, 44800, 28416, 40704, 24320 },
+  {  2048, 51200, 14336, 63488,  1024, 50176, 13312, 62464,
+     2816, 51968, 15104, 64256,  1792, 50944, 14080, 63232 },
+  { 34816, 18432, 47104, 30720, 33792, 17408, 46080, 29696,
+    35584, 19200, 47872, 31488, 34560, 18176, 46848, 30464 },
+  { 10240, 59392,  6144, 55296,  9216, 58368,  5120, 54272,
+    11008, 60160,  6912, 56064,  9984, 59136,  5888, 55040 },
+  { 43008, 26624, 38912, 22528, 41984, 25600, 37888, 21504,
+    43776, 27392, 39680, 23296, 42752, 26368, 38656, 22272 },
+  {   512, 49664, 12800, 61952,  3584, 52736, 15872, 65024,
+      256, 49408, 12544, 61696,  3328, 52480, 15616, 64768 },
+  { 33280, 16896, 45568, 29184, 36352, 19968, 48640, 32256,
+    33024, 16640, 45312, 28928, 36096, 19712, 48384, 32000 },
+  {  8704, 57856,  4608, 53760, 11776, 60928,  7680, 56832,
+     8448, 57600,  4352, 53504, 11520, 60672,  7424, 56576 },
+  { 41472, 25088, 37376, 20992, 44544, 28160, 40448, 24064,
+    41216, 24832, 37120, 20736, 44288, 27904, 40192, 23808 },
+  {  2560, 51712, 14848, 64000,  1536, 50688, 13824, 62976,
+     2304, 51456, 14592, 63744,  1280, 50432, 13568, 62720 },
+  { 35328, 18944, 47616, 31232, 34304, 17920, 46592, 30208,
+    35072, 18688, 47360, 30976, 34048, 17664, 46336, 29952 },
+  { 10752, 59904,  6656, 55808,  9728, 58880,  5632, 54784,
+    10496, 59648,  6400, 55552,  9472, 58624,  5376, 54528 },
+  { 43520, 27136, 39424, 23040, 42496, 26112, 38400, 22016,
+    43264, 26880, 39168, 22784, 42240, 25856, 38144, 21760 }
 };
 
 
@@ -541,10 +592,10 @@ void bt::Image::TrueColorDither(XColorTable *colortable,
   colortable->map(maxr, maxg, maxb);
 
   for (y = 0, offset = 0; y < height; ++y) {
-    dithy = y & 0x3;
+    dithy = y & 3;
 
     for (x = 0; x < width; ++x, ++offset) {
-      dithx = x & 0x3;
+      dithx = x & 3;
 
       r = red[offset];
       g = green[offset];
@@ -567,27 +618,21 @@ void bt::Image::TrueColorDither(XColorTable *colortable,
 void bt::Image::OrderedPseudoColorDither(XColorTable *colortable,
                                          int bytes_per_line,
                                          unsigned char *pixel_data) {
-  unsigned int x, y, dithx, dithy, r, g, b, er, eg, eb, offset;
+  unsigned int x, y, dithx, dithy, r, g, b, error, offset;
+  unsigned int cpc = colorsPerChannel() - 1;
   unsigned char *ppixel_data = pixel_data;
-  unsigned int maxr = 255, maxg = 255, maxb = 255;
-
-  colortable->map(maxr, maxg, maxb);
 
   for (y = 0, offset = 0; y < height; y++) {
-    dithy = y & 7;
+    dithy = y & 15;
 
     for (x = 0; x < width; x++, offset++) {
-      dithx = x & 7;
+      dithx = x & 15;
 
-      r = red[offset];
-      g = green[offset];
-      b = blue[offset];
+      error = dither16[dithy][dithx];
 
-      colortable->mapDither(r, g, b, er, eg, eb);
-
-      if ((dither8[dithy][dithx] < er) && (r < maxr)) r++;
-      if ((dither8[dithy][dithx] < eg) && (g < maxg)) g++;
-      if ((dither8[dithy][dithx] < eb) && (b < maxb)) b++;
+      r = (((256 * cpc + cpc + 1) * red  [offset] + error) / 65536);
+      g = (((256 * cpc + cpc + 1) * green[offset] + error) / 65536);
+      b = (((256 * cpc + cpc + 1) * blue [offset] + error) / 65536);
 
       *(pixel_data++) = colortable->pixel(r, g, b);
     }
@@ -643,6 +688,10 @@ void bt::Image::PseudoColorDither(XColorTable *colortable,
       if (rr > 255) rr = 255; else if (rr < 0) rr = 0;
       if (gg > 255) gg = 255; else if (gg < 0) gg = 0;
       if (bb > 255) bb = 255; else if (bb < 0) bb = 0;
+
+      r =   red[offset + x];
+      g = green[offset + x];
+      b =  blue[offset + x];
 
       colortable->map(r, g, b);
 
@@ -729,11 +778,8 @@ XImage *bt::Image::renderXImage(const Display &display, unsigned int screen) {
 
     case StaticColor:
     case PseudoColor: {
-#ifdef ORDEREDPSEUDO
+      // PseudoColorDither(colortable, image->bytes_per_line, d);
       OrderedPseudoColorDither(colortable, image->bytes_per_line, d);
-#else
-      PseudoColorDither(colortable, image->bytes_per_line, d);
-#endif
       break;
     }
 
@@ -789,7 +835,7 @@ Pixmap bt::Image::renderPixmap(const Display &display, unsigned int screen) {
     return None;
   }
 
-  Pen pen(display, screen, Color(0, 0, 0));
+  Pen pen(screen, Color(0, 0, 0));
   XPutImage(display.XDisplay(), pixmap, pen.gc(), image,
             0, 0, 0, 0, width, height);
 
@@ -915,7 +961,8 @@ void bt::Image::invert(void) {
 }
 
 
-void bt::Image::dgradient(const Color &from, const Color &to, bool interlaced) {
+void bt::Image::dgradient(const Color &from, const Color &to,
+                          bool interlaced) {
   // diagonal gradient code was written by Mike Cole <mike@mydot.com>
   // modified for interlacing by Brad Hughes
 
@@ -996,7 +1043,8 @@ void bt::Image::dgradient(const Color &from, const Color &to, bool interlaced) {
 }
 
 
-void bt::Image::hgradient(const Color &from, const Color &to, bool interlaced) {
+void bt::Image::hgradient(const Color &from, const Color &to,
+                          bool interlaced) {
   double drx, dgx, dbx,
     xr = static_cast<double>(from.red()),
     xg = static_cast<double>(from.green()),
@@ -1079,7 +1127,8 @@ void bt::Image::hgradient(const Color &from, const Color &to, bool interlaced) {
 }
 
 
-void bt::Image::vgradient(const Color &from, const Color &to, bool interlaced) {
+void bt::Image::vgradient(const Color &from, const Color &to,
+                          bool interlaced) {
   double dry, dgy, dby,
     yr = static_cast<double>(from.red()),
     yg = static_cast<double>(from.green()),
@@ -1135,7 +1184,8 @@ void bt::Image::vgradient(const Color &from, const Color &to, bool interlaced) {
 }
 
 
-void bt::Image::pgradient(const Color &from, const Color &to, bool interlaced) {
+void bt::Image::pgradient(const Color &from, const Color &to,
+                          bool interlaced) {
   // pyramid gradient -  based on original dgradient, written by
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
@@ -1220,7 +1270,8 @@ void bt::Image::pgradient(const Color &from, const Color &to, bool interlaced) {
 }
 
 
-void bt::Image::rgradient(const Color &from, const Color &to, bool interlaced) {
+void bt::Image::rgradient(const Color &from, const Color &to,
+                          bool interlaced) {
   // rectangle gradient -  based on original dgradient, written by
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
@@ -1311,7 +1362,8 @@ void bt::Image::rgradient(const Color &from, const Color &to, bool interlaced) {
 }
 
 
-void bt::Image::egradient(const Color &from, const Color &to, bool interlaced) {
+void bt::Image::egradient(const Color &from, const Color &to,
+                          bool interlaced) {
   // elliptic gradient -  based on original dgradient, written by
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
@@ -1402,7 +1454,8 @@ void bt::Image::egradient(const Color &from, const Color &to, bool interlaced) {
 }
 
 
-void bt::Image::pcgradient(const Color &from, const Color &to, bool interlaced) {
+void bt::Image::pcgradient(const Color &from, const Color &to,
+                           bool interlaced) {
   // pipe cross gradient -  based on original dgradient, written by
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
@@ -1493,7 +1546,8 @@ void bt::Image::pcgradient(const Color &from, const Color &to, bool interlaced) 
 }
 
 
-void bt::Image::cdgradient(const Color &from, const Color &to, bool interlaced) {
+void bt::Image::cdgradient(const Color &from, const Color &to,
+                           bool interlaced) {
   // cross diagonal gradient -  based on original dgradient, written by
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
@@ -1526,6 +1580,10 @@ void bt::Image::cdgradient(const Color &from, const Color &to, bool interlaced) 
     xg += dgx;
     xb += dbx;
   }
+
+  xt[x][0] = static_cast<unsigned char>(xr);
+  xt[x][1] = static_cast<unsigned char>(xg);
+  xt[x][2] = static_cast<unsigned char>(xb);
 
   // Create Y table
   dry /= h;
