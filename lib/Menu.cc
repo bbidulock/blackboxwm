@@ -410,7 +410,7 @@ unsigned int bt::Menu::insertItem(const MenuItem &item,
   } else {
     index = std::min(index, items.size());
     it = items.begin();
-    std::advance(it, index);
+    std::advance<ItemList::iterator, signed>(it, index);
   }
 
   it = items.insert(it, item);
@@ -580,7 +580,7 @@ void bt::Menu::removeItem(unsigned int id) {
 void bt::Menu::removeIndex(unsigned int index) {
   ItemList::iterator it = items.begin();
 
-  std::advance(it, index);
+  std::advance<ItemList::iterator, signed>(it, index);
   if (it == items.end())
     return; // item not found
 
@@ -1073,7 +1073,7 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
   case XK_Down: {
     ItemList::const_iterator anchor = items.begin(), end = items.end();
     if (_active_index != ~0u) {
-      std::advance(anchor, _active_index);
+      std::advance<ItemList::const_iterator, signed>(anchor, _active_index);
 
       // go one paste the current active index
       if (anchor != end && ! anchor->separator) ++anchor;
@@ -1090,7 +1090,7 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
     ItemList::const_reverse_iterator anchor = items.rbegin(),
                                         end = items.rend();
     if (_active_index != ~0u) {
-      std::advance(anchor, items.size() - _active_index - 1);
+      std::advance<ItemList::const_reverse_iterator, signed>(anchor, items.size() - _active_index - 1);
 
       // go one item past the current active index
       if (anchor != end && ! anchor->separator) ++anchor;
