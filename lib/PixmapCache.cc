@@ -52,8 +52,6 @@ namespace bt {
     void clear(bool force);
 
   private:
-    const Display &_display;
-
     struct CacheItem {
       const Texture texture;
       const unsigned int screen;
@@ -77,10 +75,20 @@ namespace bt {
                 height == x.height;
       }
     };
+
+    struct PixmapMatch {
+      PixmapMatch(Pixmap p): pixmap(p) {}
+      bool operator()(const RealPixmapCache::CacheItem& item) const
+      { return item.pixmap == pixmap; }
+    
+      const Pixmap pixmap;
+    };
+
+    const Display &_display;
+
     typedef std::list<CacheItem> Cache;
     Cache cache;
   };
-
 
   static RealPixmapCache *realpixmapcache = 0;
   static unsigned long maxmem_usage = 1048576ul; // 1mb default
@@ -122,22 +130,18 @@ unsigned long bt::RealPixmapCache::find(unsigned int screen,
   } else {
     // find one in the cache
     CacheItem item(screen, texture, width, height);
-    Cache::iterator it = cache.begin();
-    while (it != cache.end()) {
-      if (*it == item) break;
-      ++it;
-    }
+    Cache::iterator it = std::find(cache.begin(), cache.end(), item);
 
     if (it != cache.end()) {
       // found
-      ++it->count;
+      ++(it->count);
+
+      p = it->pixmap;
 
 #ifdef PIXMAPCACHE_DEBUG
       fprintf(stderr, "bt::PixmapCache: use %08lx %4dx%4d, count %4d\n",
               it->pixmap, width, height, it->count);
 #endif // PIXMAPCACHE_DEBUG
-
-      p = it->pixmap;
     } else {
       Image image(width, height);
       p = image.render(_display, screen, texture);
@@ -155,7 +159,7 @@ unsigned long bt::RealPixmapCache::find(unsigned int screen,
         cache.push_front(item);
 
         // keep track of memory usage server side
-        unsigned long mem =
+        const unsigned long mem =
           ( ( width * height ) * (_display.screenInfo(screen).depth() / 8 ) );
         mem_usage += mem;
         if (mem_usage > maxmem_usage)
@@ -167,8 +171,6 @@ unsigned long bt::RealPixmapCache::find(unsigned int screen,
                   "bt::PixmapCache: current size: %ld kb\n",
                   maxmem_usage / 1024, mem_usage / 1024);
         }
-      } else {
-        p = None;
       }
     }
   }
@@ -180,17 +182,14 @@ unsigned long bt::RealPixmapCache::find(unsigned int screen,
 
 
 void bt::RealPixmapCache::release(unsigned long pixmap) {
-  if (!pixmap || pixmap == ParentRelative) return;
+  if (! pixmap || pixmap == ParentRelative) return;
 
-  Cache::iterator it = cache.begin();
-  while (it != cache.end()) {
-    if (it->pixmap == pixmap) break;
-    ++it;
-  }
+  Cache::iterator it = std::find_if(cache.begin(), cache.end(),
+                                    PixmapMatch(pixmap));
+  assert(it != cache.end() && it->count > 0);
 
   // decrement the refcount
-  assert(it != cache.end() && it->count > 0);
-  --it->count;
+  --(it->count);
 
 #ifdef PIXMAPCACHE_DEBUG
   fprintf(stderr, "bt::PixmapCache: rel %08lx %4dx%4d, count %4d\n",
@@ -200,16 +199,16 @@ void bt::RealPixmapCache::release(unsigned long pixmap) {
 
 
 void bt::RealPixmapCache::clear(bool force) {
-  Cache::iterator it = cache.begin();
-  if (it == cache.end()) return; // nothing to do
+  if (cache.empty()) return; // nothing to do
 
 #ifdef PIXMAPCACHE_DEBUG
   fprintf(stderr, "bt::PixmapCache: clearing cache, %d entries\n",
           cache.size());
 #endif // PIXMAPCACHE_DEBUG
 
+  Cache::iterator it = cache.begin();
   while (it != cache.end()) {
-    if (it->count != 0 && !force) {
+    if (it->count != 0 && ! force) {
 #ifdef PIXMAPCACHE_DEBUG
       fprintf(stderr, "bt::PixmapCache: skp %08lx %4dx%4d, count %4d\n",
               it->pixmap, it->width, it->height, it->count);
@@ -225,7 +224,7 @@ void bt::RealPixmapCache::clear(bool force) {
 #endif // PIXMAPCACHE_DEBUG
 
     // keep track of memory usage server side
-    unsigned long mem =
+    const unsigned long mem =
       ( ( it->width * it->height ) *
         (_display.screenInfo(it->screen).depth() / 8 ) );
     assert(mem <= mem_usage);
@@ -235,8 +234,7 @@ void bt::RealPixmapCache::clear(bool force) {
     XFreePixmap(_display.XDisplay(), it->pixmap);
 
     // remove from cache
-    Cache::iterator r = it++;
-    cache.erase(r);
+    it = cache.erase(it);
   }
 
 #ifdef PIXMAPCACHE_DEBUG
