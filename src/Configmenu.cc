@@ -106,10 +106,6 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
     new ConfigPlacementmenu(app, screen, bscreen);
   ConfigDithermenu *dithermenu =
     new ConfigDithermenu(app, screen, bscreen);
-  Toolbarmenu *toolbarmenu =
-    new Toolbarmenu(app, screen, _bscreen);
-  Slitmenu *slitmenu =
-    new Slitmenu(app, screen, _bscreen);
 
   insertItem("Focus Model", focusmenu, FocusModel);
   insertItem("Window Placement", placementmenu, WindowPlacement);
@@ -121,8 +117,8 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
   insertItem("Focus Last Window on Workspace", FocusLastWindowOnWorkspace);
   insertItem("Disable Bindings with Scroll Lock", DisableBindings);
   insertSeparator();
-  insertItem("Toolbar Options", toolbarmenu, ToolbarOptions);
-  insertItem("Slit Options", slitmenu, SlitOptions);
+  insertItem("Toolbar Options", bscreen->toolbarmenu(), ToolbarOptions);
+  insertItem("Slit Options", bscreen->slitmenu(), SlitOptions);
 }
 
 

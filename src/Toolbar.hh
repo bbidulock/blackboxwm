@@ -30,9 +30,6 @@
 
 #include "Screen.hh"
 
-// forward declarations
-class Toolbarmenu;
-
 class Toolbar : public StackEntity, public bt::TimeoutHandler,
                 public bt::EventHandler, public bt::NoCopy
 {
@@ -54,7 +51,6 @@ private:
   Blackbox *blackbox;
   BScreen *_screen;
   bt::Timer *clock_timer, *hide_timer;
-  Toolbarmenu *toolbarmenu;
   bt::Netwm::Strut strut;
 
   std::string new_workspace_name;

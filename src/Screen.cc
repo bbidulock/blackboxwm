@@ -28,7 +28,9 @@
 #include "Iconmenu.hh"
 #include "Rootmenu.hh"
 #include "Slit.hh"
+#include "Slitmenu.hh"
 #include "Toolbar.hh"
+#include "Toolbarmenu.hh"
 #include "Window.hh"
 #include "WindowGroup.hh"
 #include "Windowmenu.hh"
@@ -118,12 +120,17 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
   updateGeomWindow();
 
-  configmenu =
-    new Configmenu(*blackbox, screen_info.screenNumber(), this);
   _iconmenu =
     new Iconmenu(*blackbox, screen_info.screenNumber(), this);
+  _slitmenu =
+    new Slitmenu(*blackbox, screen_info.screenNumber(), this);
+  _toolbarmenu =
+    new Toolbarmenu(*blackbox, screen_info.screenNumber(), this);
   workspacemenu =
     new Workspacemenu(*blackbox, screen_info.screenNumber(), this);
+
+  configmenu =
+    new Configmenu(*blackbox, screen_info.screenNumber(), this);
 
   if (_resource.numberOfWorkspaces() == 0) // there is always 1 workspace
     _resource.saveWorkspaces(1);

@@ -30,9 +30,6 @@
 #include "BlackboxResource.hh"
 #include "Screen.hh"
 
-// forward declarations
-class Slitmenu;
-
 class Slit : public StackEntity, public bt::TimeoutHandler,
              public bt::EventHandler, public bt::NoCopy
 {
@@ -56,7 +53,6 @@ private:
   bt::Netwm::Strut strut;
 
   SlitClientList clientList;
-  Slitmenu *slitmenu;
 
   struct SlitFrame {
     Pixmap pixmap;
@@ -67,8 +63,6 @@ private:
   } frame;
 
   void updateStrut(void);
-
-  friend class Slitmenu;
 
 public:
   Slit(BScreen *scr);

@@ -71,8 +71,6 @@ Toolbar::Toolbar(BScreen *scrn) {
   editing = False;
   new_name_pos = 0;
 
-  toolbarmenu = new Toolbarmenu(*blackbox, _screen->screenNumber(), _screen);
-
   display = blackbox->XDisplay();
   XSetWindowAttributes attrib;
   unsigned long create_mask = CWColormap | CWOverrideRedirect | CWEventMask;
@@ -178,7 +176,6 @@ Toolbar::~Toolbar(void) {
 
   delete hide_timer;
   delete clock_timer;
-  delete toolbarmenu;
 }
 
 
@@ -384,8 +381,6 @@ void Toolbar::reconfigure(void) {
              style->button_width, style->button_width, True);
   XClearArea(display, frame.nwbutton, 0, 0,
              style->button_width, style->button_width, True);
-
-  toolbarmenu->reconfigure();
 }
 
 
@@ -637,8 +632,8 @@ void Toolbar::buttonPressEvent(const XButtonEvent * const event) {
       windowmenu->popup(event->x_root, event->y_root,
                         _screen->availableArea());
     } else {
-      toolbarmenu->popup(event->x_root, event->y_root,
-                         _screen->availableArea());
+      _screen->toolbarmenu()->popup(event->x_root, event->y_root,
+                                    _screen->availableArea());
     }
   }
 }

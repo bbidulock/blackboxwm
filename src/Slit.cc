@@ -53,8 +53,6 @@ Slit::Slit(BScreen *scr) {
   timer = new bt::Timer(blackbox, this);
   timer->setTimeout(blackbox->resource().autoRaiseDelay());
 
-  slitmenu = new Slitmenu(*blackbox, screen->screenNumber(), screen);
-
   XSetWindowAttributes attrib;
   unsigned long create_mask = CWColormap | CWEventMask;
   attrib.colormap = screen->screenInfo().colormap();
@@ -86,7 +84,6 @@ Slit::~Slit(void) {
   XDestroyWindow(display, frame.window);
 
   delete timer;
-  delete slitmenu;
 }
 
 
@@ -316,8 +313,6 @@ void Slit::reconfigure(void) {
     }
     break;
   }
-
-  slitmenu->reconfigure();
 }
 
 
@@ -478,7 +473,8 @@ void Slit::buttonPressEvent(const XButtonEvent * const event) {
     screen->lowerWindow(this);
     break;
   case Button3:
-    slitmenu->popup(event->x_root, event->y_root, screen->availableArea());
+    screen->slitmenu()->popup(event->x_root, event->y_root,
+                              screen->availableArea());
     break;
   }
 }
@@ -501,9 +497,11 @@ void Slit::leaveNotifyEvent(const XCrossingEvent * const /*unused*/) {
     return;
 
   if (hidden) {
-    if (timer->isTiming()) timer->stop();
-  } else if (! slitmenu->isVisible()) {
-    if (! timer->isTiming()) timer->start();
+    if (timer->isTiming())
+      timer->stop();
+  } else if (! screen->slitmenu()->isVisible()) {
+    if (! timer->isTiming())
+      timer->start();
   }
 }
 

@@ -43,7 +43,9 @@ class Configmenu;
 class Iconmenu;
 class Rootmenu;
 class Slit;
+class Slitmenu;
 class Toolbar;
+class Toolbarmenu;
 class Windowmenu;
 class Workspace;
 class Workspacemenu;
@@ -65,6 +67,8 @@ private:
   Configmenu *configmenu;
   Iconmenu *_iconmenu;
   Rootmenu *rootmenu;
+  Slitmenu *_slitmenu;
+  Toolbarmenu *_toolbarmenu;
   Windowmenu *_windowmenu;
   Workspacemenu *workspacemenu;
 
@@ -136,6 +140,10 @@ public:
 
   inline Iconmenu *iconmenu(void) const
   { return _iconmenu; }
+  inline Slitmenu *slitmenu(void) const
+  { return _slitmenu; }
+  inline Toolbarmenu *toolbarmenu(void) const
+  { return _toolbarmenu; }
 
   Windowmenu *windowmenu(BlackboxWindow *win);
 
