@@ -37,6 +37,8 @@ FIX: window colormap installation should follow focus... it doesn't at
 ADD: add _BLACKBOX_STYLE and _BLACKBOX_MENU atoms so that bbtools, bbconf,
      etc. can get the current path to the style in use and menu.
 
+ADD: support user controlled window decoration
+
 ADD: subdirs in stylesmenu/dir will create a new submenu
 
 ADD: UTF8 support
@@ -64,6 +66,9 @@ ADD: a regression test suite
 
 Code cleanup:
 -----------------------------
+CHANGE: look into the settings stored in client.decorations and
+        .functions.
+
 CHANGE: deiconify() is overloaded, we need a "place window on Workspace N" and
         "bring this window back from icon land"
 
@@ -73,16 +78,11 @@ CHANGE: as a corrolary to the above, BlackboxWindow::mapRequest should actually
 CHANGE: look into centering the window when maximizing and the window can not
         grow to fill the area
 
-ADD: way to empty a menu with one method call something like menu.erase() or
-     menu.removeAll()
-
 ADD: way to have items in menu and store data other than their index number.
      The reason the Send To menu lists every workspace is because if it did
      not blackbox would have no way to know that the one labelled
      "Workspace 2" actually was workspace #2 and was referenced by
      workspace[1]. Something like menu.insert(item, data).
-
-CHANGE: use a Workspace* instead of a number in BlackboxWindow
 
 CHANGE: move all of the fprintf() messages to a message function /
         class.  Something like message(WARN, "this is broken") and use

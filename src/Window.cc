@@ -57,6 +57,26 @@ extern "C" {
 #include "Windowmenu.hh"
 
 
+if 0
+static
+void watch_decorations(const char *msg,BlackboxWindow::DecorationFlags flags) {
+  fprintf(stderr, "Decorations: %s\n", msg);
+  fprintf(stderr, "title   : %d\n",
+          (flags & BlackboxWindow::Decor_Titlebar) != 0);
+  fprintf(stderr, "handle  : %d\n",
+          (flags & BlackboxWindow::Decor_Handle) != 0);
+  fprintf(stderr, "border  : %d\n",
+          (flags & BlackboxWindow::Decor_Border) != 0);
+  fprintf(stderr, "iconify : %d\n",
+          (flags & BlackboxWindow::Decor_Iconify) != 0);
+  fprintf(stderr, "maximize: %d\n",
+          (flags & BlackboxWindow::Decor_Maximize) != 0);
+  fprintf(stderr, "close   : %d\n",
+          (flags & BlackboxWindow::Decor_Close) != 0);
+}
+#endif
+
+
 /*
  * Initializes the class with default values/the window's set initial values.
  */
@@ -449,40 +469,40 @@ void BlackboxWindow::associateClientWindow(void) {
 void BlackboxWindow::decorate(void) {
   bt::Texture* texture;
 
-  texture = &(screen->getWindowStyle()->b_focus);
-  frame.fbutton = texture->render(blackbox->getDisplay(),
-                                  screen->getScreenInfo().getScreenNumber(),
-                                  *screen->getImageControl(),
-                                  frame.button_w, frame.button_w,
-                                  frame.fbutton);
-  if (! frame.fbutton)
-    frame.fbutton_pixel = texture->color().pixel(blackbox->getDisplay(),
-                                                 screen->getScreenInfo().
-                                                 getScreenNumber());
-
-  texture = &(screen->getWindowStyle()->b_unfocus);
-  frame.ubutton = texture->render(blackbox->getDisplay(),
-                                  screen->getScreenInfo().getScreenNumber(),
-                                  *screen->getImageControl(),
-                                  frame.button_w, frame.button_w,
-                                  frame.ubutton);
-  if (! frame.ubutton)
-    frame.ubutton_pixel = texture->color().pixel(blackbox->getDisplay(),
-                                                 screen->getScreenInfo().
-                                                 getScreenNumber());
-
-  texture = &(screen->getWindowStyle()->b_pressed);
-  frame.pbutton = texture->render(blackbox->getDisplay(),
-                                  screen->getScreenInfo().getScreenNumber(),
-                                  *screen->getImageControl(),
-                                  frame.button_w, frame.button_w,
-                                  frame.pbutton);
-  if (! frame.pbutton)
-    frame.pbutton_pixel = texture->color().pixel(blackbox->getDisplay(),
-                                                 screen->getScreenInfo().
-                                                 getScreenNumber());
-
   if (client.decorations & Decor_Titlebar) {
+    texture = &(screen->getWindowStyle()->b_focus);
+    frame.fbutton = texture->render(blackbox->getDisplay(),
+                                    screen->getScreenInfo().getScreenNumber(),
+                                    *screen->getImageControl(),
+                                    frame.button_w, frame.button_w,
+                                    frame.fbutton);
+    if (! frame.fbutton)
+      frame.fbutton_pixel = texture->color().pixel(blackbox->getDisplay(),
+                                                   screen->getScreenInfo().
+                                                   getScreenNumber());
+
+    texture = &(screen->getWindowStyle()->b_unfocus);
+    frame.ubutton = texture->render(blackbox->getDisplay(),
+                                    screen->getScreenInfo().getScreenNumber(),
+                                    *screen->getImageControl(),
+                                    frame.button_w, frame.button_w,
+                                    frame.ubutton);
+    if (! frame.ubutton)
+      frame.ubutton_pixel = texture->color().pixel(blackbox->getDisplay(),
+                                                   screen->getScreenInfo().
+                                                   getScreenNumber());
+
+    texture = &(screen->getWindowStyle()->b_pressed);
+    frame.pbutton = texture->render(blackbox->getDisplay(),
+                                    screen->getScreenInfo().getScreenNumber(),
+                                    *screen->getImageControl(),
+                                    frame.button_w, frame.button_w,
+                                    frame.pbutton);
+    if (! frame.pbutton)
+      frame.pbutton_pixel = texture->color().pixel(blackbox->getDisplay(),
+                                                   screen->getScreenInfo().
+                                                   getScreenNumber());
+
     texture = &(screen->getWindowStyle()->t_focus);
     frame.ftitle = texture->render(blackbox->getDisplay(),
                                    screen->getScreenInfo().getScreenNumber(),
@@ -519,9 +539,9 @@ void BlackboxWindow::decorate(void) {
                                                       screen->getScreenInfo().
                                                       getScreenNumber());
     frame.uborder_pixel =
-      screen->getWindowStyle()->f_unfocus.color().pixel(blackbox->getDisplay(),
-                                                        screen->getScreenInfo().
-                                                        getScreenNumber());
+      screen->getWindowStyle()->
+      f_unfocus.color().pixel(blackbox->getDisplay(),
+                              screen->getScreenInfo().getScreenNumber());
   }
 
   if (client.decorations & Decor_Handle) {
@@ -1259,8 +1279,8 @@ void BlackboxWindow::getMWMHints(void) {
 
   if (mwm_hint->flags & MwmHintsFunctions) {
     if (mwm_hint->functions & MwmFuncAll) {
-      client.functions = Func_Resize | Func_Move | Func_Iconify | Func_Maximize |
-                  Func_Close;
+      client.functions = Func_Resize | Func_Move | Func_Iconify |
+        Func_Maximize | Func_Close;
     } else {
       client.functions = 0l;
 
