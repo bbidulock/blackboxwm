@@ -1246,14 +1246,8 @@ WMNormalHints BlackboxWindow::readWMNormalHints(void) {
   }
 
   if (sizehint.flags & PBaseSize) {
-    if (sizehint.base_width > static_cast<signed>(wmnormal.min_width))
-      wmnormal.base_width  = sizehint.base_width;
-    else
-      wmnormal.base_width = wmnormal.min_width;
-    if (sizehint.base_height > static_cast<signed>(wmnormal.min_height))
-      wmnormal.base_height = sizehint.base_height;
-    else
-      wmnormal.base_height = sizehint.min_height;
+    wmnormal.base_width  = sizehint.base_width;
+    wmnormal.base_height = sizehint.base_height;
 
     // sanity checks
     wmnormal.min_width  = std::max(wmnormal.min_width,  wmnormal.base_width);
