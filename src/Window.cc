@@ -157,8 +157,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   timer = new BTimer(blackbox, this);
   timer->setTimeout(blackbox->getAutoRaiseDelay());
 
-  windowmenu = new Windowmenu(this);
-
   // get size, aspect, minimum/maximum size and other hints set by the
   // client
 
@@ -286,6 +284,9 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   if (flags.maximized && (functions & Func_Maximize))
     remaximize();
+
+  // create this last so it only needs to be configured once
+  windowmenu = new Windowmenu(this);
 }
 
 
