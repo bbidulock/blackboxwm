@@ -3,6 +3,10 @@
 CVS Bugs:
 -----------------------------
 maximize gets the dimensions very wrong
+[nop] in menu segfaults
+solid styles do not change properly
+solid styles have improper menu highlights
+styles trying to load fonts that do not exist lead to segfaults
 
 Stuff TODO or On The Way(tm):
 -----------------------------
