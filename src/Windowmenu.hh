@@ -35,7 +35,10 @@ class Windowmenu : public bt::Menu {
 public:
   Windowmenu(bt::Application &app, unsigned int screen);
 
+  inline BlackboxWindow *window() const
+  { return _window; }
   void setWindow(BlackboxWindow *win);
+
   void hide(void);
   void refresh(void);
 
@@ -45,8 +48,6 @@ protected:
 private:
   BlackboxWindow *_window;
   SendToWorkspacemenu *_sendto;
-
-  friend class SendtoWorkspacemenu;
 };
 
 #endif // __Windowmenu_hh
