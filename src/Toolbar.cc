@@ -570,16 +570,9 @@ void Toolbar::redrawPrevWorkspaceButton(bool pressed) {
                     frame.psbutton, u, u, p);
   }
 
-  int hh = frame.button_w / 2, hw = frame.button_w / 2;
-
-  XPoint pts[3];
-  pts[0].x = hw - 2; pts[0].y = hh;
-  pts[1].x = 4; pts[1].y = 2;
-  pts[2].x = 0; pts[2].y = -4;
-
-  bt::Pen pen(_screen->screenNumber(), style->b_pic);
-  XFillPolygon(pen.XDisplay(), frame.psbutton, pen.gc(),
-               pts, 3, Convex, CoordModePrevious);
+  bt::drawBitmap(bt::Bitmap::leftArrow(_screen->screenNumber()),
+                 bt::Pen(_screen->screenNumber(), style->b_pic),
+                 frame.psbutton, u);
 }
 
 
@@ -603,16 +596,9 @@ void Toolbar::redrawNextWorkspaceButton(bool pressed) {
                     frame.nsbutton, u, u, p);
   }
 
-  int hh = frame.button_w / 2, hw = frame.button_w / 2;
-
-  XPoint pts[3];
-  pts[0].x = hw - 2; pts[0].y = hh - 2;
-  pts[1].x = 4; pts[1].y =  2;
-  pts[2].x = -4; pts[2].y = 2;
-
-  bt::Pen pen(_screen->screenNumber(), style->b_pic);
-  XFillPolygon(pen.XDisplay(), frame.nsbutton, pen.gc(),
-               pts, 3, Convex, CoordModePrevious);
+  bt::drawBitmap(bt::Bitmap::rightArrow(_screen->screenNumber()),
+                 bt::Pen(_screen->screenNumber(), style->b_pic),
+                 frame.nsbutton, u);
 }
 
 
@@ -636,16 +622,9 @@ void Toolbar::redrawPrevWindowButton(bool pressed) {
                     frame.pwbutton, u, u, p);
   }
 
-  int hh = frame.button_w / 2, hw = frame.button_w / 2;
-
-  XPoint pts[3];
-  pts[0].x = hw - 2; pts[0].y = hh;
-  pts[1].x = 4; pts[1].y = 2;
-  pts[2].x = 0; pts[2].y = -4;
-
-  bt::Pen pen(_screen->screenNumber(), style->b_pic);
-  XFillPolygon(pen.XDisplay(), frame.pwbutton, pen.gc(),
-               pts, 3, Convex, CoordModePrevious);
+  bt::drawBitmap(bt::Bitmap::leftArrow(_screen->screenNumber()),
+                 bt::Pen(_screen->screenNumber(), style->b_pic),
+                 frame.pwbutton, u);
 }
 
 
@@ -669,16 +648,9 @@ void Toolbar::redrawNextWindowButton(bool pressed) {
                     frame.nwbutton, u, u, p);
   }
 
-  int hh = frame.button_w / 2, hw = frame.button_w / 2;
-
-  XPoint pts[3];
-  pts[0].x = hw - 2; pts[0].y = hh - 2;
-  pts[1].x = 4; pts[1].y =  2;
-  pts[2].x = -4; pts[2].y = 2;
-
-  bt::Pen pen(_screen->screenNumber(), style->b_pic);
-  XFillPolygon(pen.XDisplay(), frame.nwbutton, pen.gc(),
-               pts, 3, Convex, CoordModePrevious);
+  bt::drawBitmap(bt::Bitmap::rightArrow(_screen->screenNumber()),
+                 bt::Pen(_screen->screenNumber(), style->b_pic),
+                 frame.nwbutton, u);
 }
 
 
