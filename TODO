@@ -6,6 +6,12 @@ CVS Bugs:
 
 * colour issue under Irix
 
+* acroread transients
+
+* xnc
+
+* mozilla right click focus bug
+
 CVS warts:
 -----------------------------
 * transient handling should be properly done for cases where a single toplevel
