@@ -483,8 +483,14 @@ void Slit::reposition(void) {
     frame.rect.setY(frame.rect.y() + delta);
   }
 
-  // now that we are sure of frame.rect.y we can use it
-  frame.y_hidden = frame.rect.y();
+  if (screen->getSlitPlacement() == TopCenter)
+    frame.y_hidden = 0 - frame.rect.height() + screen->getBorderWidth() 
+      + screen->getBevelWidth();
+  else if (screen->getSlitPlacement() == BottomCenter)
+    frame.y_hidden = screen->getHeight() - screen->getBorderWidth()
+      - screen->getBevelWidth();
+  else
+    frame.y_hidden = frame.rect.y();
 
   updateStrut();
 
