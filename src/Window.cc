@@ -2498,14 +2498,14 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
         if (dleft < snap_distance && dleft <= dright)
           dx = srect.left();
         // snap right?
-        else if (dright < snap_distance && dright < dleft)
+        else if (dright < snap_distance)
           dx = srect.right() - frame.rect.width() + 1;
 
         // snap top?
         if (dtop < snap_distance && dtop <= dbottom)
           dy = srect.top();
         // snap bottom?
-        else if (dbottom < snap_distance && dbottom < dtop)
+        else if (dbottom < snap_distance)
           dy = srect.bottom() - frame.rect.height() + 1;
         
         if (! screen->doFullMax()) {
@@ -2517,17 +2517,17 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
             dbottom = std::abs(wbottom - srect.bottom());
 
           // snap left?
-          if (dleft < snap_distance && dleft < dright)
+          if (dleft < snap_distance && dleft <= dright)
             dx = srect.left();
           // snap right?
-          else if (dright < snap_distance && dright < dleft)
+          else if (dright < snap_distance)
             dx = srect.right() - frame.rect.width() + 1;
 
           // snap top?
-          if (dtop < snap_distance && dtop < dbottom)
+          if (dtop < snap_distance && dtop <= dbottom)
             dy = srect.top();
           // snap bottom?
-          else if (dbottom < snap_distance && dbottom < dtop)
+          else if (dbottom < snap_distance)
             dy = srect.bottom() - frame.rect.height() + 1;
         }
       }
