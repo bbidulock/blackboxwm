@@ -108,9 +108,10 @@ private:
                       const bt::Rect& avail);
   unsigned int cascade_x, cascade_y;
 
-  void raiseTransients(const BlackboxWindow * const win);
-  void lowerTransients(const BlackboxWindow * const win);
-  void stackTransients(const BlackboxWindow * const win, WindowStack &stack);
+  void raiseTransients(const BlackboxWindowList &transients);
+  void lowerTransients(const BlackboxWindowList &transients);
+  void stackTransients(const BlackboxWindowList &transients,
+                       WindowStack &stack);
 
   void updateAvailableArea(void);
   void updateWorkareaHint(void) const;
