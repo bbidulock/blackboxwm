@@ -177,6 +177,7 @@ XFontSet bt::FontCache::findFontSet(const std::string &fontsetname) {
   if (fontsetname.empty()) return findFontSet(defaultFont);
 
   // see if the font is in the cache
+  assert(!fontsetname.empty());
   FontName fn(fontsetname, ~0u);
   Cache::iterator it = cache.find(fn);
   if (it != cache.end()) {
@@ -260,6 +261,7 @@ XftFont *bt::FontCache::findXftFont(const std::string &fontname,
   if (fontname.empty()) return findXftFont(defaultXftFont, screen);
 
   // see if the font is in the cache
+  assert(!fontname.empty());
   FontName fn(fontname, screen);
   Cache::iterator it = cache.find(fn);
   if (it != cache.end()) {
@@ -314,10 +316,21 @@ XftFont *bt::FontCache::findXftFont(const std::string &fontname,
 
 
 void bt::FontCache::release(const std::string &fontname, unsigned int screen) {
+  if (fontname.empty()) {
+#ifdef XFT
+    if (screen != ~0u)
+      release(defaultXftFont, screen);
+    else
+#endif // XFT
+      release(defaultFont, screen);
+    return;
+  }
+
 #ifdef FONTCACHE_DEBUG
   fprintf(stderr, "bt::FontCache: rel      '%s'\n", fontname.c_str());
 #endif // FONTCACHE_DEBUG
 
+  assert(!fontname.empty());
   FontName fn(fontname, screen);
   Cache::iterator it = cache.find(fn);
 
