@@ -97,11 +97,12 @@ unsigned int Workspace::removeWindow(BlackboxWindow *w) {
 
   if (w->isFocused()) {
     BlackboxWindow *newfocus = 0;
-    if (w->isTransient()) newfocus = w->getTransientFor();
-    if (! newfocus && ! stackingList.empty()) newfocus = stackingList.front();
-    if (! newfocus || ! newfocus->setInputFocus()) {
+    if (w->isTransient())
+      newfocus = w->getTransientFor();
+    if (! newfocus && ! stackingList.empty())
+      newfocus = stackingList.front();
+    if (! newfocus || ! newfocus->setInputFocus())
       screen->getBlackbox()->setFocusedWindow(0);
-    }
   }
 
   if (lastfocus == w)
