@@ -2477,8 +2477,8 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
 
     if (! screen->doOpaqueMove()) {
       XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
-                     frame.move_x, frame.move_y, frame.resize_w,
-                     frame.resize_h);
+                     frame.move_x, frame.move_y, frame.resize_w - 1,
+                     frame.resize_h - 1);
       XUngrabServer( display );
 
       configure(frame.move_x, frame.move_y, frame.width, frame.height);
@@ -2490,7 +2490,7 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
   } else if (flags.resizing) {
     XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
                    frame.resize_x, frame.resize_y,
-                   frame.resize_w, frame.resize_h);
+                   frame.resize_w - 1, frame.resize_h - 1);
     XUngrabServer( display );
 
     screen->hideGeometry();
@@ -2588,15 +2588,15 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
         configure(dx, dy, frame.width, frame.height);
       } else {
         XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
-                       frame.move_x, frame.move_y, frame.resize_w,
-                       frame.resize_h);
+                       frame.move_x, frame.move_y, frame.resize_w - 1,
+                       frame.resize_h - 1);
 
         frame.move_x = dx;
         frame.move_y = dy;
 
         XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
-                       frame.move_x, frame.move_y, frame.resize_w,
-                       frame.resize_h);
+                       frame.move_x, frame.move_y, frame.resize_w - 1,
+                       frame.resize_h - 1);
       }
 
       screen->showPosition(dx, dy);
@@ -2636,11 +2636,11 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
 
       XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
                      frame.resize_x, frame.resize_y,
-                     frame.resize_w, frame.resize_h);
+                     frame.resize_w - 1, frame.resize_h - 1);
     } else {
       XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
                      frame.resize_x, frame.resize_y,
-                     frame.resize_w, frame.resize_h);
+                     frame.resize_w - 1, frame.resize_h - 1);
 
       int gx, gy;
 
@@ -2662,7 +2662,7 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
 
       XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
                      frame.resize_x, frame.resize_y,
-                     frame.resize_w, frame.resize_h);
+                     frame.resize_w - 1, frame.resize_h - 1);
 
       screen->showGeometry(gx, gy);
     }

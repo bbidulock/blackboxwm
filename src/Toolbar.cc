@@ -381,21 +381,24 @@ void Toolbar::reconfigure(void) {
   ToolbarStyle *style = screen->getToolbarStyle();
   frame.base = style->toolbar.render(frame.width, frame.height, frame.base);
   if (! frame.base)
-    XSetWindowBackground(display, frame.window, style->toolbar.color().pixel());
+    XSetWindowBackground(display, frame.window,
+                         style->toolbar.color().pixel());
   else
     XSetWindowBackgroundPixmap(display, frame.window, frame.base);
 
   frame.label = style->window.render(frame.window_label_w, frame.label_h,
                                      frame.label);
   if (! frame.label)
-    XSetWindowBackground(display, frame.window_label, style->window.color().pixel());
+    XSetWindowBackground(display, frame.window_label,
+                         style->window.color().pixel());
   else
     XSetWindowBackgroundPixmap(display, frame.window_label, frame.label);
 
   frame.wlabel = style->label.render(frame.workspace_label_w, frame.label_h,
                                 frame.wlabel);
   if (! frame.wlabel)
-    XSetWindowBackground(display, frame.workspace_label, style->label.color().pixel());
+    XSetWindowBackground(display, frame.workspace_label,
+                         style->label.color().pixel());
   else
     XSetWindowBackgroundPixmap(display, frame.workspace_label, frame.wlabel);
 
@@ -795,7 +798,8 @@ void Toolbar::redrawNextWindowButton(Bool pressed, Bool redraw) {
 
   ToolbarStyle *style = screen->getToolbarStyle();
   BPen pen(style->b_pic, style->font);
-  XFillPolygon(display, frame.nwbutton, pen.gc(), pts, 3, Convex, CoordModePrevious);
+  XFillPolygon(display, frame.nwbutton, pen.gc(), pts, 3, Convex,
+               CoordModePrevious);
 }
 
 
@@ -822,6 +826,20 @@ void Toolbar::edit(void) {
   XDrawRectangle(display, frame.workspace_label, pen.gc(),
                  frame.workspace_label_w / 2, 0, 1,
                  frame.label_h - 1);
+  // change the background of the window to that of an active window label
+  Pixmap tmp = frame.wlabel;
+  BTexture *texture = &(screen->getWindowStyle()->l_focus);
+  if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
+    frame.wlabel = None;
+    XSetWindowBackground(display, frame.workspace_label,
+                         texture->color().pixel());
+  } else {
+    frame.wlabel =
+      image_ctrl->renderImage(frame.workspace_label_w, frame.label_h,
+                              *texture);
+    XSetWindowBackgroundPixmap(display, frame.workspace_label, frame.wlabel);
+  }
+  if (tmp) image_ctrl->removeImage(tmp);
 }
 
 
@@ -977,8 +995,7 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
       } else {
         XSetInputFocus(display, PointerRoot, None, CurrentTime);
       }
-      //      if (new_workspace_name.empty())
-      //        new_workspace_name = " "; // avoids empty names but looks empty
+
       Workspace *wkspc = screen->getCurrentWorkspace();
       wkspc->setName(new_workspace_name);
       wkspc->getMenu()->hide();
@@ -987,8 +1004,25 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
                                                   wkspc->getName());
       screen->getWorkspacemenu()->update();
 
-      new_workspace_name.resize(0);
+      new_workspace_name.erase();
       new_name_pos = 0;
+
+      // reset the background to that of the workspace label (its normal
+      // setting)
+      Pixmap tmp = frame.wlabel;
+      BTexture *texture = &(screen->getToolbarStyle()->label);
+      if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
+        frame.wlabel = None;
+        XSetWindowBackground(display, frame.workspace_label,
+                             texture->color().pixel());
+      } else {
+        frame.wlabel =
+          image_ctrl->renderImage(frame.workspace_label_w, frame.label_h,
+                                  *texture);
+        XSetWindowBackgroundPixmap(display, frame.workspace_label,
+                                   frame.wlabel);
+      }
+      if (tmp) image_ctrl->removeImage(tmp);
 
       reconfigure();
     } else if (! (ks == XK_Shift_L || ks == XK_Shift_R ||
@@ -1029,7 +1063,8 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
       ToolbarStyle *style = screen->getToolbarStyle();
       BPen pen(style->l_text, style->font);
       if (i18n.multibyte())
-        XmbDrawString(display, frame.workspace_label, style->fontset, pen.gc(), x,
+        XmbDrawString(display, frame.workspace_label, style->fontset,
+                      pen.gc(), x,
                       (1 - style->fontset_extents->max_ink_extent.y),
                       new_workspace_name.c_str(), l);
       else
