@@ -201,7 +201,7 @@ private:
 
   void init_icccm(void);
 
-  virtual void process_event(XEvent *);
+  void process_event(XEvent *e);
 
 
 public:

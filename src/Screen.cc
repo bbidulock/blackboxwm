@@ -787,20 +787,25 @@ void BScreen::changeWorkspaceID(unsigned int id) {
   if (! current_workspace) return;
 
   if (id != current_workspace->getID()) {
-    current_workspace->hideAll();
-
-    workspacemenu->setItemSelected(current_workspace->getID() + 2, False);
-
+    fprintf(stderr, "leaving %d for %d\n", current_workspace->getID(), id);
     BlackboxWindow *focused = blackbox->getFocusedWindow();
     if (focused && focused->getScreen() == this && ! focused->isStuck()) {
       if (focused->getWorkspaceNumber() != current_workspace->getID()) {
         fprintf(stderr, "%s is on the wrong workspace, aborting\n",
                 focused->getTitle());
+        fprintf(stderr, "it is supposed to be on %d while current is actually %d and we are changing to %d\n", focused->getWorkspaceNumber(), current_workspace->getID(), id);
         abort();
       }
       current_workspace->setLastFocusedWindow(focused);
-      blackbox->setFocusedWindow((BlackboxWindow *) 0);
+    } else {
+      // if no window had focus, no need to store a last focus
+      current_workspace->setLastFocusedWindow((BlackboxWindow *) 0);
     }
+    // when we switch workspaces, unfocus whatever was focused
+    blackbox->setFocusedWindow((BlackboxWindow *) 0);
+    
+    current_workspace->hideAll();
+    workspacemenu->setItemSelected(current_workspace->getID() + 2, False);
 
     current_workspace = getWorkspace(id);
 

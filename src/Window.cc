@@ -1312,6 +1312,8 @@ void BlackboxWindow::configureShape(void) {
 bool BlackboxWindow::setInputFocus(void) {
   if (flags.focused) return True;
 
+  assert(screen->getCurrentWorkspace()->getID() == blackbox_attrib.workspace);
+
   if (! client.rect.intersects(screen->getRect())) {
     // client is outside the screen, move it to the center
     configure((screen->getWidth() - frame.rect.width()) / 2,
@@ -1484,11 +1486,13 @@ void BlackboxWindow::withdraw(void) {
   XUnmapWindow(blackbox->getXDisplay(), frame.window);
 
   XGrabServer(blackbox->getXDisplay());
+
   XSelectInput(blackbox->getXDisplay(), client.window, NoEventMask);
   XUnmapWindow(blackbox->getXDisplay(), client.window);
   XSelectInput(blackbox->getXDisplay(), client.window,
                PropertyChangeMask | FocusChangeMask | StructureNotifyMask);
-    XUngrabServer(blackbox->getXDisplay());
+
+  XUngrabServer(blackbox->getXDisplay());
 
   if (windowmenu) windowmenu->hide();
 }
@@ -1656,6 +1660,11 @@ void BlackboxWindow::stick(void) {
 
 
 void BlackboxWindow::setFocusFlag(bool focus) {
+  // only focus a window if it is on the current workspace
+  if (focus &&
+      screen->getCurrentWorkspace()->getID() != blackbox_attrib.workspace)
+    return;
+
   flags.focused = focus;
 
   if (decorations & Decor_Titlebar) {
