@@ -25,6 +25,7 @@
 #include "Windowmenu.hh"
 #include "Screen.hh"
 #include "Window.hh"
+#include "Workspace.hh"
 
 #include <assert.h>
 
@@ -47,12 +48,14 @@ private:
 
 
 enum {
-  SendTo,
+  SendToWorkspace,
+  OccupyAllWorkspaces,
   Shade,
   Iconify,
   Maximize,
-  Raise,
-  Lower,
+  FullScreen,
+  AlwaysOnTop,
+  AlwaysOnBottom,
   KillClient,
   Close
 };
@@ -61,13 +64,15 @@ Windowmenu::Windowmenu(bt::Application &app, unsigned int screen)
   : bt::Menu(app, screen), _window(0)
 {
   _sendto = new SendToWorkspacemenu(app, screen);
-  insertItem("Send To ...", _sendto, SendTo);
+  insertItem("Send to Workspace", _sendto, SendToWorkspace);
+  insertItem("Occupy all Workspaces", OccupyAllWorkspaces);
   insertSeparator();
   insertItem("Shade", Shade);
   insertItem("Iconify", Iconify);
   insertItem("Maximize", Maximize);
-  insertItem("Raise", Raise);
-  insertItem("Lower", Lower);
+  // insertItem("Full Screen", FullScreen);
+  insertItem("Always on top", AlwaysOnTop);
+  insertItem("Always on bottom", AlwaysOnBottom);
   insertSeparator();
   insertItem("Kill Client", KillClient);
   insertItem("Close", Close);
@@ -89,48 +94,91 @@ void Windowmenu::hide(void) {
 void Windowmenu::refresh(void) {
   assert(_window != 0);
 
+  setItemEnabled(SendToWorkspace,
+                 _window->workspace() != bt::BSENTINEL);
+  setItemChecked(OccupyAllWorkspaces,
+                 _window->workspace() == bt::BSENTINEL);
+
   setItemEnabled(Shade, _window->hasWindowFunction(WindowFunctionShade));
   setItemChecked(Shade, _window->isShaded());
+
+  setItemEnabled(Iconify, _window->hasWindowFunction(WindowFunctionIconify));
+  setItemChecked(Iconify, _window->isIconic());
 
   setItemEnabled(Maximize, _window->hasWindowFunction(WindowFunctionMaximize));
   setItemChecked(Maximize, _window->isMaximized());
 
-  setItemEnabled(Iconify, _window->hasWindowFunction(WindowFunctionIconify));
+  // setItemChecked(FullScreen, _window->isFullScreen());
+
+  setItemEnabled(AlwaysOnTop, !_window->isFullScreen());
+  setItemEnabled(AlwaysOnBottom, !_window->isFullScreen());
+  setItemChecked(AlwaysOnTop, _window->layer() == StackingList::LayerAbove);
+  setItemChecked(AlwaysOnBottom, _window->layer() == StackingList::LayerBelow);
+
   setItemEnabled(Close, _window->hasWindowFunction(WindowFunctionClose));
 }
 
 
 void Windowmenu::itemClicked(unsigned int id, unsigned int) {
   switch (id) {
+  case OccupyAllWorkspaces:
+    {
+      BScreen *screen = _window->getScreen();
+      Workspace *workspace = screen->getWorkspace(_window->workspace());
+      if (workspace) {
+        // stick window
+        workspace->removeWindow(_window);
+      } else {
+        // unstick window
+        workspace = screen->getWorkspace(screen->currentWorkspace());
+        workspace->addWindow(_window);
+      }
+      break;
+    }
+
   case Shade:
-    _window->shade();
+    _window->setShaded(!_window->isShaded());
     break;
 
   case Iconify:
-    _window->iconify();
+    _window->setIconic(true);
     break;
 
   case Maximize:
     _window->maximize(1);
     break;
 
-  case Close:
-    _window->close();
-    break;
+    // case FullScreen:
+    //   _window->setFullScreen(!_window->isFullScreen());
+    //   break;
 
-  case Raise: {
-    _window->getScreen()->raiseWindow(_window);
-    break;
-  }
+  case AlwaysOnTop:
+    {
+      BScreen *screen = _window->getScreen();
+      StackingList::Layer new_layer =
+        (_window->layer() == StackingList::LayerAbove ?
+         StackingList::LayerNormal : StackingList::LayerAbove);
+      screen->changeLayer(_window, new_layer);
+      break;
+    }
 
-  case Lower: {
-    _window->getScreen()->lowerWindow(_window);
-    break;
-  }
+  case AlwaysOnBottom:
+    {
+      BScreen *screen = _window->getScreen();
+      StackingList::Layer new_layer =
+        (_window->layer() == StackingList::LayerBelow ?
+         StackingList::LayerNormal : StackingList::LayerBelow);
+      screen->changeLayer(_window, new_layer);
+      break;
+    }
 
   case KillClient:
     XKillClient(_window->getScreen()->screenInfo().display().XDisplay(),
                 _window->getClientWindow());
+    break;
+
+  case Close:
+    _window->close();
     break;
   } // switch
 }
@@ -161,7 +209,17 @@ void SendToWorkspacemenu::refresh(void) {
 
 
 void SendToWorkspacemenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button != 2) _window->withdraw();
-  _window->getScreen()->reassociateWindow(_window, id);
-  if (button == 2) _window->getScreen()->setCurrentWorkspace(id);
+  if (button != 2) _window->hide();
+
+  BScreen *screen = _window->getScreen();
+  Workspace *workspace = screen->getWorkspace(_window->workspace());
+  assert(workspace != 0);
+
+  workspace->removeWindow(_window);
+  workspace = screen->getWorkspace(id);
+  assert(workspace != 0);
+  workspace->addWindow(_window);
+
+  if (button == 2)
+    _window->getScreen()->setCurrentWorkspace(id);
 }

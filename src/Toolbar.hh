@@ -30,12 +30,12 @@
 
 #include "Screen.hh"
 
-// forward declaration
+// forward declarations
 class Toolbarmenu;
 
-
-class Toolbar : public bt::TimeoutHandler, public bt::EventHandler,
-                public bt::NoCopy {
+class Toolbar : public StackEntity, public bt::TimeoutHandler,
+                public bt::EventHandler, public bt::NoCopy
+{
 private:
   bool editing, hidden;
   Display *display;
@@ -70,7 +70,6 @@ private:
 
   void updateStrut(void);
 
-
 public:
   Toolbar(BScreen *scrn);
   virtual ~Toolbar(void);
@@ -81,7 +80,8 @@ public:
   bool doAutoHide(void) const
   { return _screen->resource().doToolbarAutoHide(); }
 
-  Window getWindowID(void) const { return frame.window; }
+  // StackEntity interface
+  Window windowID(void) const { return frame.window; }
 
   const bt::Rect& getRect(void) const { return frame.rect; }
   unsigned int getWidth(void) const { return frame.rect.width(); }
@@ -111,6 +111,5 @@ public:
 
   void setPlacement(Placement placement);
 };
-
 
 #endif // __Toolbar_hh

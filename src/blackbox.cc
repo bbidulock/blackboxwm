@@ -124,14 +124,14 @@ void Blackbox::process_event(XEvent *e) {
     BlackboxWindow *win = findWindow(e->xmaprequest.window);
 
     if (win) {
-      bool focus = False;
+      bool focus = false;
       if (win->isIconic()) {
-        win->deiconify();
-        focus = True;
+        win->setIconic(false);
+        focus = true;
       }
       if (win->isShaded()) {
-        win->shade();
-        focus = True;
+        win->setShaded(false);
+        focus = true;
       }
 
       if (focus &&
@@ -526,6 +526,13 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
   if (focused_window) {
     focused_window->setFocused(false);
     old_screen = focused_window->getScreen();
+
+    if (focused_window->isFullScreen() &&
+        focused_window->layer() != StackingList::LayerBelow) {
+      // move full-screen windows under all other windows (except
+      // desktop windows) when loosing focus
+      old_screen->changeLayer(focused_window, StackingList::LayerBelow);
+    }
   }
 
   if (win && ! win->isIconic()) {

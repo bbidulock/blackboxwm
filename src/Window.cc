@@ -305,7 +305,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     // prepare the window to be iconified
     client.current_state = IconicState;
     client.state.iconic = False;
-  } else if (client.workspace != screen->currentWorkspace()) {
+  } else if (client.workspace != bt::BSENTINEL &&
+             client.workspace != screen->currentWorkspace()) {
     client.current_state = WithdrawnState;
   }
 
@@ -315,7 +316,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   XUngrabServer(blackbox->XDisplay());
 
-#ifdef    SHAPE
+#ifdef SHAPE
   if (blackbox->hasShapeExtensions() && client.state.shaped)
     configureShape();
 #endif // SHAPE
@@ -334,9 +335,9 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   client.premax = frame.rect;
 
   if (client.state.shaded) {
-    client.state.shaded = False;
+    client.state.shaded = false;
     initial_state = client.current_state;
-    shade();
+    setShaded(true);
 
     /*
       At this point in the life of a window, current_state should only be set
@@ -820,24 +821,24 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
   }
 
   if (lw > by) {
-  frame.label_w = lw - by;
-  XMoveResizeWindow(blackbox->XDisplay(), frame.label, lx,
-                    frame.style->bevel_width,
-                    frame.label_w, frame.style->label_height);
-  XMapWindow(blackbox->XDisplay(), frame.label);
+    frame.label_w = lw - by;
+    XMoveResizeWindow(blackbox->XDisplay(), frame.label, lx,
+                      frame.style->bevel_width,
+                      frame.label_w, frame.style->label_height);
+    XMapWindow(blackbox->XDisplay(), frame.label);
 
-  if (redecorate_label) {
-    frame.flabel =
-      bt::PixmapCache::find(screen->screenNumber(),
-                            frame.style->l_focus,
-                            frame.label_w, frame.style->label_height,
-                            frame.flabel);
-    frame.ulabel =
-      bt::PixmapCache::find(screen->screenNumber(),
-                            frame.style->l_unfocus,
-                            frame.label_w, frame.style->label_height,
-                            frame.ulabel);
-  }
+    if (redecorate_label) {
+      frame.flabel =
+        bt::PixmapCache::find(screen->screenNumber(),
+                              frame.style->l_focus,
+                              frame.label_w, frame.style->label_height,
+                              frame.flabel);
+      frame.ulabel =
+        bt::PixmapCache::find(screen->screenNumber(),
+                              frame.style->l_unfocus,
+                              frame.label_w, frame.style->label_height,
+                              frame.ulabel);
+    }
   } else {
     XUnmapWindow(blackbox->XDisplay(), frame.label);
   }
@@ -1037,7 +1038,7 @@ void BlackboxWindow::getNetwmHints(void) {
     }
     if (client.window_type == WindowTypeDesktop) {
       // make me omnipresent
-      client.state.layer = StackingList::LayerDesktop;
+      setLayer(StackingList::LayerDesktop);
     }
   }
 
@@ -1076,11 +1077,11 @@ void BlackboxWindow::getNetwmHints(void) {
         client.state.iconic = True;
       } else if (state == netwm.wmStateFullscreen()) {
         client.state.fullscreen = True;
-        client.state.layer = StackingList::LayerFullScreen;
+        setLayer(StackingList::LayerFullScreen);
       } else if (state == netwm.wmStateAbove()) {
-        client.state.layer = StackingList::LayerAbove;
+        setLayer(StackingList::LayerAbove);
       } else if (state == netwm.wmStateBelow()) {
-        client.state.layer = StackingList::LayerBelow;
+        setLayer(StackingList::LayerBelow);
       }
     }
   }
@@ -1090,6 +1091,8 @@ void BlackboxWindow::getNetwmHints(void) {
   if (ret) {
     if (desktop != 0xFFFFFFFF)
       client.workspace = desktop;
+    else
+      client.workspace = bt::BSENTINEL;
   }
 }
 
@@ -1407,7 +1410,7 @@ void BlackboxWindow::configure(int dx, int dy,
                           frame.rect.right() - frame.margin.right,
                           frame.rect.bottom() - frame.margin.bottom);
 
-#ifdef    SHAPE
+#ifdef SHAPE
     if (client.state.shaped)
       configureShape();
 #endif // SHAPE
@@ -1487,6 +1490,12 @@ void BlackboxWindow::configureShape(void) {
 #endif // SHAPE
 
 
+void BlackboxWindow::setWorkspace(unsigned int new_workspace) {
+  client.workspace = new_workspace;
+  blackbox->netwm().setWMDesktop(client.window, client.workspace);
+}
+
+
 bool BlackboxWindow::setInputFocus(void) {
   if (!isVisible())
     return false;
@@ -1555,64 +1564,12 @@ bool BlackboxWindow::setInputFocus(void) {
 }
 
 
-void BlackboxWindow::iconify(void) {
-  // walk up to the topmost transient_for that is not iconified
-  if (isTransient() &&
-      client.transient_for != (BlackboxWindow *) ~0ul &&
-      ! client.transient_for->isIconic()) {
-
-    client.transient_for->iconify();
-    return;
-  }
-
-  if (client.state.iconic) return;
-
-  /*
-   * unmap the frame window first, so when all the transients are
-   * unmapped, we don't get an enter event in sloppy focus mode
-   */
-  XUnmapWindow(blackbox->XDisplay(), frame.window);
-  client.state.iconic = True;
-
-  setState(IconicState);
-
-  // iconify all transients first
-  if (! client.transientList.empty()) {
-    std::for_each(client.transientList.begin(), client.transientList.end(),
-                  std::mem_fun(&BlackboxWindow::iconify));
-  }
-
-  /*
-   * remove the window from the workspace and add it to the screen's
-   * icons *AFTER* we have process all transients.  since we always
-   * iconify transients, it's pointless to have focus reverted to one
-   * of them (since they are above their transient_for) for a split
-   * second
-   */
-  screen->iconifyWindow(this);
-
-  /*
-   * we don't want this XUnmapWindow call to generate an UnmapNotify event, so
-   * we need to clear the event mask on client.window for a split second.
-   * HOWEVER, since X11 is asynchronous, the window could be destroyed in that
-   * split second, leaving us with a ghost window... so, we need to do this
-   * while the X server is grabbed
-   */
-  unsigned long event_mask = PropertyChangeMask | FocusChangeMask |
-                             StructureNotifyMask;
-  XGrabServer(blackbox->XDisplay());
-  XSelectInput(blackbox->XDisplay(), client.window,
-               event_mask & ~StructureNotifyMask);
-  XUnmapWindow(blackbox->XDisplay(), client.window);
-  XSelectInput(blackbox->XDisplay(), client.window, event_mask);
-  XUngrabServer(blackbox->XDisplay());
-}
-
-
 void BlackboxWindow::show(void) {
-  client.current_state = (client.state.shaded) ? IconicState : NormalState;
-  client.state.iconic = False;
-  setState(client.current_state);
+  if (client.state.visible) return;
+
+  client.state.iconic = false;
+  client.state.visible = true;
+  setState((client.state.shaded) ? IconicState : NormalState);
 
   XMapWindow(blackbox->XDisplay(), client.window);
   XMapSubwindows(blackbox->XDisplay(), frame.window);
@@ -1631,23 +1588,29 @@ void BlackboxWindow::show(void) {
 }
 
 
-void BlackboxWindow::deiconify(bool reassoc, bool raise) {
-  if (client.state.iconic || reassoc)
-    screen->reassociateWindow(this, bt::BSENTINEL);
-  else if (client.workspace != screen->currentWorkspace())
-    return;
+void BlackboxWindow::hide(void) {
+  if (!client.state.visible) return;
 
-  show();
+  client.state.visible = false;
+  setState(client.state.iconic ? IconicState : client.current_state);
 
-  // reassociate and deiconify all transients
-  if (reassoc && ! client.transientList.empty()) {
-    BlackboxWindowList::iterator it, end = client.transientList.end();
-    for (it = client.transientList.begin(); it != end; ++it)
-      (*it)->deiconify(True, False);
-  }
+  XUnmapWindow(blackbox->XDisplay(), frame.window);
 
-  if (raise)
-    screen->raiseWindow(this);
+  /*
+   * we don't want this XUnmapWindow call to generate an UnmapNotify
+   * event, so we need to clear the event mask on client.window for a
+   * split second.  HOWEVER, since X11 is asynchronous, the window
+   * could be destroyed in that split second, leaving us with a ghost
+   * window... so, we need to do this while the X server is grabbed
+   */
+  unsigned long event_mask = PropertyChangeMask | FocusChangeMask |
+                             StructureNotifyMask;
+  XGrabServer(blackbox->XDisplay());
+  XSelectInput(blackbox->XDisplay(), client.window,
+               event_mask & ~StructureNotifyMask);
+  XUnmapWindow(blackbox->XDisplay(), client.window);
+  XSelectInput(blackbox->XDisplay(), client.window, event_mask);
+  XUngrabServer(blackbox->XDisplay());
 }
 
 
@@ -1668,28 +1631,46 @@ void BlackboxWindow::close(void) {
 }
 
 
-void BlackboxWindow::withdraw(void) {
-  setState(client.current_state);
+void BlackboxWindow::setIconic(bool iconic) {
+  if (client.state.iconic == iconic) return;
 
-  client.state.iconic = False;
+  if (iconic) {
+    // iconify
+    if (client.transient_for &&
+        client.transient_for != (BlackboxWindow *) ~0ul &&
+        !client.transient_for->isIconic()) {
+      client.transient_for->setIconic(true);
+    }
 
-  XUnmapWindow(blackbox->XDisplay(), frame.window);
+    screen->addIcon(this);
 
-  XGrabServer(blackbox->XDisplay());
+    client.state.iconic = true;
+    hide();
 
-  unsigned long event_mask = PropertyChangeMask | FocusChangeMask |
-                             StructureNotifyMask;
-  XSelectInput(blackbox->XDisplay(), client.window,
-               event_mask & ~StructureNotifyMask);
-  XUnmapWindow(blackbox->XDisplay(), client.window);
-  XSelectInput(blackbox->XDisplay(), client.window, event_mask);
+    // iconify all transients first
+    if (!client.transientList.empty()) {
+      BlackboxWindowList::iterator it = client.transientList.begin(),
+                                  end = client.transientList.end();
+      for (; it != end; ++it)
+        (*it)->setIconic(true);
+    }
+  } else {
+    screen->removeIcon(this);
 
-  XUngrabServer(blackbox->XDisplay());
+    // de-iconify
+    show();
+
+    if (!client.transientList.empty()) {
+      BlackboxWindowList::iterator it = client.transientList.begin(),
+                                  end = client.transientList.end();
+      for (; it != end; ++it)
+        (*it)->show();
+    }
+  }
 }
 
 
 void BlackboxWindow::maximize(unsigned int button) {
-  // handle case where menu is open then the max button is used instead
   if (client.state.maximized) {
     client.state.maximized = 0;
 
@@ -1738,7 +1719,6 @@ void BlackboxWindow::maximize(unsigned int button) {
     if (client.state.shaded)
       client.state.shaded = False;
 
-
     configure(frame.changing);
     redrawAllButtons(); // in case it is not called in configure()
   }
@@ -1760,15 +1740,14 @@ void BlackboxWindow::remaximize(void) {
 }
 
 
-void BlackboxWindow::setWorkspace(unsigned int new_workspace) {
-  client.workspace = new_workspace;
-}
+void BlackboxWindow::setShaded(bool shaded) {
+  assert(client.decorations & WindowDecorationTitlebar);
 
+  if (!!client.state.shaded == !!shaded)
+    return;
 
-void BlackboxWindow::shade(void) {
-  if (client.state.shaded) {
-    client.state.shaded = False;
-
+  client.state.shaded = shaded;
+  if (!shaded) {
     if (client.state.maximized) {
       remaximize();
     } else {
@@ -1781,34 +1760,13 @@ void BlackboxWindow::shade(void) {
 
     setState(NormalState);
   } else {
-    if (! (client.decorations & WindowDecorationTitlebar))
-      return; // can't shade it without a titlebar!
-
     XResizeWindow(blackbox->XDisplay(), frame.window,
                   frame.inside_w, frame.style->title_height);
-    client.state.shaded = True;
-
-    setState(IconicState);
-
     // set the frame rect to the shaded size
     frame.rect.setHeight(frame.style->title_height + (frame.border_w * 2));
+
+    setState(IconicState);
   }
-}
-
-
-void BlackboxWindow::setLayer(StackingList::Layer layer) {
-  if (window_number == bt::BSENTINEL) {
-    // not in a workspace, simply set the layer
-    client.state.layer = layer;
-    return;
-  }
-
-  Workspace *workspace = screen->getWorkspace(client.workspace);
-  assert(workspace != 0);
-
-  workspace->removeWindow(this);
-  client.state.layer = layer;
-  workspace->addWindow(this, false);
 }
 
 
@@ -1830,8 +1788,8 @@ void BlackboxWindow::setFullScreen(bool b) {
     frame.changing = screen->screenInfo().rect();
     constrain(TopLeft);
     configure(frame.changing);
-
-    setLayer(StackingList::LayerFullScreen);
+    if (isVisible())
+      screen->changeLayer(this, StackingList::LayerFullScreen);
     setState(client.current_state);
   } else {
     ::get_decorations(client.window_type, client.decorations,
@@ -1839,7 +1797,6 @@ void BlackboxWindow::setFullScreen(bool b) {
 
     if (client.decorations & WindowDecorationTitlebar)
       createTitlebar();
-
     if (client.decorations & WindowDecorationHandle)
       createHandle();
 
@@ -1847,11 +1804,12 @@ void BlackboxWindow::setFullScreen(bool b) {
 
     if (!client.state.maximized) {
       configure(client.premax);
-
-      setLayer(StackingList::LayerNormal);
+      if (isVisible())
+        screen->changeLayer(this, StackingList::LayerNormal);
       setState(client.current_state);
     } else {
-      setLayer(StackingList::LayerNormal);
+      if (isVisible())
+        screen->changeLayer(this, StackingList::LayerNormal);
       remaximize();
     }
   }
@@ -1889,7 +1847,7 @@ void BlackboxWindow::redrawWindowFrame(void) const {
 
 
 void BlackboxWindow::setFocused(bool focused) {
-  if (focused && ! isVisible()) return;
+  if (focused && !isVisible()) return;
 
   client.state.focused = focused;
 
@@ -1902,7 +1860,7 @@ void BlackboxWindow::setFocused(bool focused) {
 }
 
 
-void BlackboxWindow::setState(unsigned long new_state, bool closing) {
+void BlackboxWindow::setState(unsigned long new_state) {
   client.current_state = new_state;
 
   unsigned long state[2];
@@ -1914,19 +1872,7 @@ void BlackboxWindow::setState(unsigned long new_state, bool closing) {
 
   const bt::Netwm& netwm = blackbox->netwm();
 
-  if (closing) {
-    netwm.removeProperty(client.window, netwm.wmDesktop());
-    netwm.removeProperty(client.window, netwm.wmState());
-    netwm.removeProperty(client.window, netwm.wmAllowedActions());
-    netwm.removeProperty(client.window, netwm.wmVisibleName());
-    netwm.removeProperty(client.window, netwm.wmVisibleIconName());
-    return;
-  }
-
-  if (client.state.iconic)
-    netwm.removeProperty(client.window, netwm.wmDesktop());
-  else
-    netwm.setWMDesktop(client.window, client.workspace);
+  netwm.setWMDesktop(client.window, client.workspace);
 
   bt::Netwm::AtomList atoms;
   if (client.state.modal)
@@ -1946,28 +1892,38 @@ void BlackboxWindow::setState(unsigned long new_state, bool closing) {
   if (client.state.shaded)
     atoms.push_back(netwm.wmStateShaded());
 
-  if (client.state.skip == SKIP_NONE) {
+  switch (client.state.skip) {
+  case SKIP_NONE:
     /* do nothing */
-  } else if (client.state.skip == SKIP_BOTH) {
+    break;
+  case SKIP_BOTH:
     atoms.push_back(netwm.wmStateSkipTaskbar());
     atoms.push_back(netwm.wmStateSkipPager());
-  } else if (client.state.skip == SKIP_TASKBAR) {
+    break;
+  case SKIP_TASKBAR:
     atoms.push_back(netwm.wmStateSkipTaskbar());
-  }  else if (client.state.skip == SKIP_PAGER) {
+    break;
+  case SKIP_PAGER:
     atoms.push_back(netwm.wmStateSkipPager());
+    break;
   }
 
   if (client.state.iconic)
     atoms.push_back(netwm.wmStateHidden());
 
-  if (client.state.layer == StackingList::LayerNormal)
-    /* do nothing */;
-  else if (client.state.layer == StackingList::LayerFullScreen)
+  if (client.state.fullscreen)
     atoms.push_back(netwm.wmStateFullscreen());
-  else if (client.state.layer == StackingList::LayerAbove)
+
+  switch (layer()) {
+  case StackingList::LayerAbove:
     atoms.push_back(netwm.wmStateAbove());
-  else if (client.state.layer == StackingList::LayerBelow)
+    break;
+  case StackingList::LayerBelow:
     atoms.push_back(netwm.wmStateBelow());
+    break;
+  default:
+    break;
+  }
 
   if (atoms.empty())
     netwm.removeProperty(client.window, netwm.wmState());
@@ -2031,6 +1987,23 @@ bool BlackboxWindow::getState(void) {
 
   return ret;
 }
+
+
+/*
+ *
+ */
+void BlackboxWindow::clearState(void) {
+  XDeleteProperty(blackbox->XDisplay(), client.window,
+                  blackbox->getWMStateAtom());
+
+  const bt::Netwm& netwm = blackbox->netwm();
+  netwm.removeProperty(client.window, netwm.wmDesktop());
+  netwm.removeProperty(client.window, netwm.wmState());
+  netwm.removeProperty(client.window, netwm.wmAllowedActions());
+  netwm.removeProperty(client.window, netwm.wmVisibleName());
+  netwm.removeProperty(client.window, netwm.wmVisibleIconName());
+}
+
 
 
 /*
@@ -2222,6 +2195,7 @@ void BlackboxWindow::redrawIconifyButton(bool pressed) const {
                      frame.style->t_unfocus),
                     frame.iconify_button, t, u,
                     (client.state.focused ? frame.ftitle : frame.utitle));
+
   } else {
     bt::drawTexture(screen->screenNumber(),
                     (pressed ? frame.style->b_pressed :
@@ -2343,56 +2317,61 @@ void BlackboxWindow::redrawGrips(void) const {
 }
 
 
-void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
-  if (ce->format != 32) return;
+void
+BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
+  if (event->format != 32) return;
 
   const bt::Netwm& netwm = blackbox->netwm();
 
-  if (ce->message_type == blackbox->getWMChangeStateAtom()) {
-    if (ce->data.l[0] == IconicState)
-      iconify();
-    if (ce->data.l[0] == NormalState)
-      deiconify();
-  } else if (ce->message_type == netwm.activeWindow()) {
-    if (client.state.iconic)
-      deiconify(False, False);
-
+  if (event->message_type == blackbox->getWMChangeStateAtom()) {
+    if (event->data.l[0] == IconicState)
+      setIconic(true);
+    else if (event->data.l[0] == NormalState)
+      setIconic(false);
+  } else if (event->message_type == netwm.activeWindow()) {
     if (client.workspace != screen->currentWorkspace())
       screen->setCurrentWorkspace(client.workspace);
 
+    if (client.state.iconic)
+      setIconic(false);
+
     if (setInputFocus())
       screen->raiseWindow(this);
-  } else if (ce->message_type == netwm.closeWindow()) {
+  } else if (event->message_type == netwm.closeWindow()) {
     close();
-  } else if (ce->message_type == netwm.moveresizeWindow()) {
+  } else if (event->message_type == netwm.moveresizeWindow()) {
     XConfigureRequestEvent request;
-    request.window = ce->window;
-    request.x = ce->data.l[1];
-    request.y = ce->data.l[2];
-    request.width = ce->data.l[3];
-    request.height = ce->data.l[4];
+    request.window = event->window;
+    request.x = event->data.l[1];
+    request.y = event->data.l[2];
+    request.width = event->data.l[3];
+    request.height = event->data.l[4];
     request.value_mask = CWX | CWY | CWWidth | CWHeight;
 
     const int old_gravity = client.win_gravity;
-    if (ce->data.l[0] != 0)
-      client.win_gravity = ce->data.l[0];
+    if (event->data.l[0] != 0)
+      client.win_gravity = event->data.l[0];
 
     configureRequestEvent(&request);
 
     client.win_gravity = old_gravity;
-  } else if (ce->message_type == netwm.wmDesktop()) {
-    const unsigned int desktop = ce->data.l[0];
+  } else if (event->message_type == netwm.wmDesktop()) {
+    const unsigned int desktop = event->data.l[0];
     if (desktop != 0xFFFFFFFF && desktop != client.workspace) {
-      withdraw();
-      screen->reassociateWindow(this, desktop);
+      hide();
+      setWorkspace(desktop);
+    } else if (desktop == 0xFFFFFFFF) {
+      setWorkspace(bt::BSENTINEL);
+      if (!isVisible())
+        show();
     }
-  } else if (ce->message_type == netwm.wmState()) {
-    Atom action = ce->data.l[0],
-      first = ce->data.l[1],
-      second = ce->data.l[2];
+  } else if (event->message_type == netwm.wmState()) {
+    Atom action = event->data.l[0],
+          first = event->data.l[1],
+         second = event->data.l[2];
 
     int max_horz = 0, max_vert = 0,
-      skip_taskbar = 0, skip_pager = 0;
+    skip_taskbar = 0, skip_pager = 0;
 
     if (first == netwm.wmStateModal() || second == netwm.wmStateModal()) {
       if ((action == netwm.wmStateAdd() ||
@@ -2422,10 +2401,12 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
     }
     if (first == netwm.wmStateShaded() ||
         second == netwm.wmStateShaded()) {
-      if ((action == netwm.wmStateRemove() && client.state.shaded) ||
-          action == netwm.wmStateToggle() ||
-          (action == netwm.wmStateAdd() && ! client.state.shaded))
-        shade();
+      if (action == netwm.wmStateRemove())
+        setShaded(false);
+      else if (action == netwm.wmStateAdd())
+        setShaded(true);
+      else if (action == netwm.wmStateToggle())
+        setShaded(!client.state.shaded);
     }
     if (first == netwm.wmStateSkipTaskbar() ||
         second == netwm.wmStateSkipTaskbar()) {
@@ -2466,22 +2447,22 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
         second == netwm.wmStateAbove()) {
       if (action == netwm.wmStateAdd() ||
           (action == netwm.wmStateToggle() &&
-           client.state.layer != StackingList::LayerAbove)) {
-        client.state.layer = StackingList::LayerAbove;
+           layer() != StackingList::LayerAbove)) {
+        screen->changeLayer(this, StackingList::LayerAbove);
       } else if (action == netwm.wmStateToggle() ||
                  action == netwm.wmStateRemove()) {
-        client.state.layer = StackingList::LayerNormal;
+        screen->changeLayer(this, StackingList::LayerNormal);
       }
     }
     if (first == netwm.wmStateBelow() ||
         second == netwm.wmStateBelow()) {
       if (action == netwm.wmStateAdd() ||
           (action == netwm.wmStateToggle() &&
-           client.state.layer != StackingList::LayerBelow)) {
-        client.state.layer = StackingList::LayerBelow;
+           layer() != StackingList::LayerBelow)) {
+        screen->changeLayer(this, StackingList::LayerBelow);
       } else if (action == netwm.wmStateToggle() ||
                  action == netwm.wmStateRemove()) {
-        client.state.layer = StackingList::LayerNormal;
+        screen->changeLayer(this, StackingList::LayerNormal);
       }
     }
 
@@ -2509,9 +2490,7 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
       else
         client.state.skip = SKIP_NONE;
     }
-
-    setState(client.current_state);
-  } else if (ce->message_type == netwm.wmStrut()) {
+  } else if (event->message_type == netwm.wmStrut()) {
     if (! client.strut) {
       client.strut = new bt::Netwm::Strut;
       screen->addStrut(client.strut);
@@ -2529,8 +2508,8 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
 }
 
 
-void BlackboxWindow::mapRequestEvent(const XMapRequestEvent* const re) {
-  if (re->window != client.window)
+void BlackboxWindow::mapRequestEvent(const XMapRequestEvent * const event) {
+  if (event->window != client.window)
     return;
 
 #ifdef    DEBUG
@@ -2540,11 +2519,11 @@ void BlackboxWindow::mapRequestEvent(const XMapRequestEvent* const re) {
 
   switch (client.current_state) {
   case IconicState:
-    iconify();
+    setIconic(true);
     break;
 
   case WithdrawnState:
-    withdraw();
+    hide();
     break;
 
   case NormalState:
@@ -2553,18 +2532,13 @@ void BlackboxWindow::mapRequestEvent(const XMapRequestEvent* const re) {
   default:
     show();
     screen->raiseWindow(this);
-    if (! blackbox->startingUp() &&
-        (isTransient() || screen->resource().doFocusNew())) {
-      XSync(blackbox->XDisplay(), False); // make sure the frame is mapped..
-      setInputFocus();
-    }
     break;
   }
 }
 
 
-void BlackboxWindow::unmapNotifyEvent(const XUnmapEvent *ue) {
-  if (ue->window != client.window)
+void BlackboxWindow::unmapNotifyEvent(const XUnmapEvent * const event) {
+  if (event->window != client.window)
     return;
 
 #ifdef    DEBUG
@@ -2576,8 +2550,9 @@ void BlackboxWindow::unmapNotifyEvent(const XUnmapEvent *ue) {
 }
 
 
-void BlackboxWindow::destroyNotifyEvent(const XDestroyWindowEvent *de) {
-  if (de->window != client.window)
+void
+BlackboxWindow::destroyNotifyEvent(const XDestroyWindowEvent * const event) {
+  if (event->window != client.window)
     return;
 
 #ifdef    DEBUG
@@ -2589,24 +2564,24 @@ void BlackboxWindow::destroyNotifyEvent(const XDestroyWindowEvent *de) {
 }
 
 
-void BlackboxWindow::reparentNotifyEvent(const XReparentEvent *re) {
-  if (re->window != client.window || re->parent == frame.plate)
+void BlackboxWindow::reparentNotifyEvent(const XReparentEvent * const event) {
+  if (event->window != client.window || event->parent == frame.plate)
     return;
 
 #ifdef    DEBUG
   fprintf(stderr, "BlackboxWindow::reparentNotifyEvent(): reparent 0x%lx to "
-          "0x%lx.\n", client.window, re->parent);
+          "0x%lx.\n", client.window, event->parent);
 #endif // DEBUG
 
-  XEvent ev;
-  ev.xreparent = *re;
-  XPutBackEvent(blackbox->XDisplay(), &ev);
+  XEvent replay;
+  replay.xreparent = *event;
+  XPutBackEvent(blackbox->XDisplay(), &replay);
   screen->releaseWindow(this, True);
 }
 
 
-void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
-  if (pe->state == PropertyDelete || ! validateClient())
+void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
+  if (event->state == PropertyDelete || ! validateClient())
     return;
 
 #ifdef    DEBUG
@@ -2614,7 +2589,7 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
           client.window);
 #endif
 
-  switch(pe->atom) {
+  switch(event->atom) {
   case XA_WM_CLASS:
   case XA_WM_CLIENT_MACHINE:
   case XA_WM_COMMAND:
@@ -2684,7 +2659,7 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
   }
 
   default:
-    if (pe->atom == blackbox->getWMProtocolsAtom()) {
+    if (event->atom == blackbox->getWMProtocolsAtom()) {
       getWMProtocols();
 
       if (client.decorations & WindowDecorationClose && !frame.close_button) {
@@ -2701,58 +2676,59 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
 }
 
 
-void BlackboxWindow::exposeEvent(const XExposeEvent *ee) {
+void BlackboxWindow::exposeEvent(const XExposeEvent * const event) {
 #ifdef DEBUG
   fprintf(stderr, "BlackboxWindow::exposeEvent() for 0x%lx\n", client.window);
 #endif
 
-  if (frame.title == ee->window)
+  if (frame.title == event->window)
     redrawTitle();
-  else if (frame.label == ee->window)
+  else if (frame.label == event->window)
     redrawLabel();
-  else if (frame.close_button == ee->window)
+  else if (frame.close_button == event->window)
     redrawCloseButton(False);
-  else if (frame.maximize_button == ee->window)
+  else if (frame.maximize_button == event->window)
     redrawMaximizeButton(client.state.maximized);
-  else if (frame.iconify_button == ee->window)
+  else if (frame.iconify_button == event->window)
     redrawIconifyButton(False);
-  else if (frame.handle == ee->window)
+  else if (frame.handle == event->window)
     redrawHandle();
-  else if (frame.left_grip == ee->window || frame.right_grip == ee->window)
+  else if (frame.left_grip == event->window ||
+           frame.right_grip == event->window)
     redrawGrips();
 }
 
 
-void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent *cr) {
-  if (cr->window != client.window || client.state.iconic)
+void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent * const event) {
+  if (event->window != client.window || client.state.iconic)
     return;
 
-  if (cr->value_mask & CWBorderWidth)
-    client.old_bw = cr->border_width;
+  if (event->value_mask & CWBorderWidth)
+    client.old_bw = event->border_width;
 
-  if (cr->value_mask & (CWX | CWY | CWWidth | CWHeight)) {
+  if (event->value_mask & (CWX | CWY | CWWidth | CWHeight)) {
     bt::Rect req = frame.rect;
 
-    if (cr->value_mask & (CWX | CWY)) {
-      if (cr->value_mask & CWX)
-        client.rect.setX(cr->x);
-      if (cr->value_mask & CWY)
-        client.rect.setY(cr->y);
+    if (event->value_mask & (CWX | CWY)) {
+      if (event->value_mask & CWX)
+        client.rect.setX(event->x);
+      if (event->value_mask & CWY)
+        client.rect.setY(event->y);
 
       applyGravity(req);
     }
 
-    if (cr->value_mask & CWWidth)
-      req.setWidth(cr->width + frame.margin.left + frame.margin.right);
+    if (event->value_mask & CWWidth)
+      req.setWidth(event->width + frame.margin.left + frame.margin.right);
 
-    if (cr->value_mask & CWHeight)
-      req.setHeight(cr->height + frame.margin.top + frame.margin.bottom);
+    if (event->value_mask & CWHeight)
+      req.setHeight(event->height + frame.margin.top + frame.margin.bottom);
 
     configure(req.x(), req.y(), req.width(), req.height());
   }
 
-  if (cr->value_mask & CWStackMode) {
-    switch (cr->detail) {
+  if (event->value_mask & CWStackMode) {
+    switch (event->detail) {
     case Below:
     case BottomIf:
       screen->lowerWindow(this);
@@ -2768,56 +2744,56 @@ void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent *cr) {
 }
 
 
-void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
+void BlackboxWindow::buttonPressEvent(const XButtonEvent * const event) {
 #ifdef DEBUG
   fprintf(stderr, "BlackboxWindow::buttonPressEvent() for 0x%lx\n",
           client.window);
 #endif
 
-  if (frame.maximize_button == be->window) {
-    if (be->button < 4)
+  if (frame.maximize_button == event->window) {
+    if (event->button < 4)
       redrawMaximizeButton(True);
-  } else if (frame.iconify_button == be->window) {
-    if (be->button == 1)
+  } else if (frame.iconify_button == event->window) {
+    if (event->button == 1)
       redrawIconifyButton(True);
-  } else if (frame.close_button == be->window) {
-    if (be->button == 1)
+  } else if (frame.close_button == event->window) {
+    if (event->button == 1)
       redrawCloseButton(True);
-  } else if (frame.plate == be->window) {
-    if (be->button == 1 || (be->button == 3 && be->state == Mod1Mask)) {
+  } else if (frame.plate == event->window) {
+    if (event->button == 1 || (event->button == 3 && event->state == Mod1Mask)) {
       if (! client.state.focused)
         setInputFocus();
       else
         XInstallColormap(blackbox->XDisplay(), client.colormap);
 
       screen->raiseWindow(this);
-      XAllowEvents(blackbox->XDisplay(), ReplayPointer, be->time);
+      XAllowEvents(blackbox->XDisplay(), ReplayPointer, event->time);
     }
-  } else if (frame.title == be->window || frame.label == be->window ||
+  } else if (frame.title == event->window || frame.label == event->window ||
              frame.handle) {
-    if (be->button == 1 || (be->button == 3 && be->state == Mod1Mask)) {
+    if (event->button == 1 || (event->button == 3 && event->state == Mod1Mask)) {
       if (! client.state.focused)
         setInputFocus();
       else
         XInstallColormap(blackbox->XDisplay(), client.colormap);
 
-      if (frame.title == be->window || frame.label == be->window &&
+      if (frame.title == event->window || frame.label == event->window &&
           (client.functions & WindowFunctionShade)) {
-        if ((be->time - lastButtonPressTime <=
+        if ((event->time - lastButtonPressTime <=
              blackbox->resource().doubleClickInterval()) ||
-            be->state == ControlMask) {
+            event->state == ControlMask) {
           lastButtonPressTime = 0;
-          shade();
+          setShaded(!client.state.shaded);
         } else {
-          lastButtonPressTime = be->time;
+          lastButtonPressTime = event->time;
         }
       }
-      frame.grab_x = be->x_root - frame.rect.x() - frame.border_w;
-      frame.grab_y = be->y_root - frame.rect.y() - frame.border_w;
+      frame.grab_x = event->x_root - frame.rect.x() - frame.border_w;
+      frame.grab_y = event->y_root - frame.rect.y() - frame.border_w;
       screen->raiseWindow(this);
-    } else if (be->button == 2) {
+    } else if (event->button == 2) {
       screen->lowerWindow(this);
-    } else if (be->button == 3) {
+    } else if (event->button == 3) {
       const int extra = frame.border_w + frame.mwm_border_w;
       bt::Rect rect(client.rect.x() - extra,
                     client.rect.y() - extra,
@@ -2825,39 +2801,39 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
                     client.rect.height() + (extra * 2));
 
       Windowmenu *windowmenu = screen->windowmenu(this);
-      windowmenu->popup(be->x_root, be->y_root, rect);
+      windowmenu->popup(event->x_root, event->y_root, rect);
     }
   }
 }
 
 
-void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const re) {
+void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const event) {
 #ifdef DEBUG
   fprintf(stderr, "BlackboxWindow::buttonReleaseEvent() for 0x%lx\n",
           client.window);
 #endif
 
-  if (re->window == frame.maximize_button) {
-    if (re->button < 4) {
-      if (bt::within(re->x, re->y,
+  if (event->window == frame.maximize_button) {
+    if (event->button < 4) {
+      if (bt::within(event->x, event->y,
                      frame.style->button_width, frame.style->button_width)) {
-        maximize(re->button);
+        maximize(event->button);
         screen->raiseWindow(this);
       } else {
         redrawMaximizeButton(client.state.maximized);
       }
     }
-  } else if (re->window == frame.iconify_button) {
-    if (re->button == 1) {
-      if (bt::within(re->x, re->y,
+  } else if (event->window == frame.iconify_button) {
+    if (event->button == 1) {
+      if (bt::within(event->x, event->y,
                      frame.style->button_width, frame.style->button_width))
-        iconify();
+        setIconic(true);
       else
         redrawIconifyButton(False);
     }
-  } else if (re->window == frame.close_button) {
-    if (re->button == 1) {
-      if (bt::within(re->x, re->y,
+  } else if (event->window == frame.close_button) {
+    if (event->button == 1) {
+      if (bt::within(event->x, event->y,
                      frame.style->button_width, frame.style->button_width))
         close();
       redrawCloseButton(False);
@@ -2899,7 +2875,7 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const re) {
 
     screen->hideGeometry();
 
-    constrain((re->window == frame.left_grip) ? TopRight : TopLeft);
+    constrain((event->window == frame.left_grip) ? TopRight : TopLeft);
 
     // unset maximized state when resized after fully maximized
     if (client.state.maximized == 1)
@@ -2909,8 +2885,8 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const re) {
               frame.changing.width(), frame.changing.height());
 
     XUngrabPointer(blackbox->XDisplay(), CurrentTime);
-  } else if (re->window == frame.window) {
-    if (re->button == 2 && re->state == Mod1Mask)
+  } else if (event->window == frame.window) {
+    if (event->button == 2 && event->state == Mod1Mask)
       XUngrabPointer(blackbox->XDisplay(), CurrentTime);
   }
 }
@@ -2946,19 +2922,19 @@ void collisionAdjust(int* x, int* y, unsigned int width, unsigned int height,
 }
 
 
-void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
+void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
 #ifdef DEBUG
   fprintf(stderr, "BlackboxWindow::motionNotifyEvent() for 0x%lx\n",
           client.window);
 #endif
 
   if ((client.functions & WindowFunctionMove) && ! client.state.resizing &&
-      me->state & Button1Mask &&
-      (frame.title == me->window || frame.label == me->window ||
-       frame.handle == me->window || frame.window == me->window)) {
+      event->state & Button1Mask &&
+      (frame.title == event->window || frame.label == event->window ||
+       frame.handle == event->window || frame.window == event->window)) {
     if (! client.state.moving) {
       // begin a move
-      XGrabPointer(blackbox->XDisplay(), me->window, False,
+      XGrabPointer(blackbox->XDisplay(), event->window, False,
                    Button1MotionMask | ButtonReleaseMask,
                    GrabModeAsync, GrabModeAsync,
                    None, blackbox->resource().moveCursor(), CurrentTime);
@@ -2981,7 +2957,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
       }
     } else {
       // continue a move
-      int dx = me->x_root - frame.grab_x, dy = me->y_root - frame.grab_y;
+      int dx = event->x_root - frame.grab_x, dy = event->y_root - frame.grab_y;
       dx -= frame.border_w;
       dy -= frame.border_w;
 
@@ -3017,17 +2993,17 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
       screen->showPosition(dx, dy);
     }
   } else if ((client.functions & WindowFunctionResize) &&
-             (me->state & Button1Mask &&
-              (me->window == frame.right_grip ||
-               me->window == frame.left_grip)) ||
-             (me->state & Button3Mask && me->state & Mod1Mask &&
-              me->window == frame.window)) {
-    bool left = (me->window == frame.left_grip);
+             (event->state & Button1Mask &&
+              (event->window == frame.right_grip ||
+               event->window == frame.left_grip)) ||
+             (event->state & Button3Mask && event->state & Mod1Mask &&
+              event->window == frame.window)) {
+    bool left = (event->window == frame.left_grip);
 
     if (! client.state.resizing) {
       // begin a resize
       XGrabServer(blackbox->XDisplay());
-      XGrabPointer(blackbox->XDisplay(), me->window, False,
+      XGrabPointer(blackbox->XDisplay(), event->window, False,
                    ButtonMotionMask | ButtonReleaseMask,
                    GrabModeAsync, GrabModeAsync, None,
                    ((left) ? blackbox->resource().resizeBottomLeftCursor() :
@@ -3036,8 +3012,8 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
 
       client.state.resizing = True;
 
-      frame.grab_x = me->x;
-      frame.grab_y = me->y;
+      frame.grab_x = event->x;
+      frame.grab_y = event->y;
       frame.changing = frame.rect;
 
       constrain(left ? TopRight : TopLeft);
@@ -3057,18 +3033,18 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
 
       if (left) {
         int delta =
-          std::min<signed>(me->x_root - frame.grab_x,
+          std::min<signed>(event->x_root - frame.grab_x,
                            frame.rect.right() -
                            (frame.margin.left + frame.margin.right + 1));
         frame.changing.setCoords(delta, frame.rect.top(),
                                  frame.rect.right(), frame.rect.bottom());
       } else {
-        int nw = std::max<signed>(me->x - frame.grab_x + frame.rect.width(),
+        int nw = std::max<signed>(event->x - frame.grab_x + frame.rect.width(),
                                   frame.margin.left + frame.margin.right + 1);
         frame.changing.setWidth(nw);
       }
 
-      int nh = std::max<signed>(me->y - frame.grab_y + frame.rect.height(),
+      int nh = std::max<signed>(event->y - frame.grab_y + frame.rect.height(),
                                 frame.margin.top + frame.margin.bottom + 1);
       frame.changing.setHeight(nh);
 
@@ -3078,7 +3054,6 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
         bt::Pen pen(screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
         pen.setGCFunction(GXxor);
         pen.setSubWindowMode(IncludeInferiors);
-
         XDrawRectangle(blackbox->XDisplay(), screen->screenInfo().rootWindow(),
                        pen.gc(), curr.x(), curr.y(),
                        curr.width() - 1, curr.height() - 1);
@@ -3095,18 +3070,30 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
 }
 
 
-void BlackboxWindow::enterNotifyEvent(const XCrossingEvent* ce) {
-  if (! (screen->resource().isSloppyFocus() && isVisible()))
+void BlackboxWindow::enterNotifyEvent(const XCrossingEvent * const event) {
+  if (event->window != frame.window)
     return;
 
-  XEvent e;
+  if (!screen->resource().isSloppyFocus() || !isVisible())
+    return;
+
+  switch (client.window_type) {
+  case WindowTypeDesktop:
+  case WindowTypeDock:
+    return;
+
+  default:
+    break;
+  }
+
+  XEvent next;
   bool leave = False, inferior = False;
 
-  while (XCheckTypedWindowEvent(blackbox->XDisplay(), ce->window,
-                                LeaveNotify, &e)) {
-    if (e.type == LeaveNotify && e.xcrossing.mode == NotifyNormal) {
+  while (XCheckTypedWindowEvent(blackbox->XDisplay(), event->window,
+                                LeaveNotify, &next)) {
+    if (next.type == LeaveNotify && next.xcrossing.mode == NotifyNormal) {
       leave = True;
-      inferior = (e.xcrossing.detail == NotifyInferior);
+      inferior = (next.xcrossing.detail == NotifyInferior);
     }
   }
 
@@ -3118,7 +3105,8 @@ void BlackboxWindow::enterNotifyEvent(const XCrossingEvent* ce) {
 }
 
 
-void BlackboxWindow::leaveNotifyEvent(const XCrossingEvent*) {
+void
+BlackboxWindow::leaveNotifyEvent(const XCrossingEvent * const /*unused*/) {
   if (! (screen->resource().isSloppyFocus() &&
          screen->resource().doAutoRaise()))
     return;
@@ -3151,6 +3139,9 @@ bool BlackboxWindow::validateClient(void) const {
 }
 
 
+/*
+ *
+ */
 void BlackboxWindow::restore(bool remap) {
   XChangeSaveSet(blackbox->XDisplay(), client.window, SetModeDelete);
   XSelectInput(blackbox->XDisplay(), client.window, NoEventMask);
@@ -3169,7 +3160,7 @@ void BlackboxWindow::restore(bool remap) {
     client.current_state = NormalState;
 
   // remove the wm hints unless the window is being remapped
-  setState(client.current_state, ! remap);
+  setState(client.current_state);
 
   restoreGravity(client.rect);
 

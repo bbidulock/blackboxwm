@@ -31,10 +31,11 @@
 #include <vector>
 
 class BlackboxWindow;
+class StackEntity;
 
+typedef std::list<BlackboxWindow *> BlackboxWindowList;
+typedef std::list<StackEntity *> StackEntityList;
 typedef std::vector<Window> WindowStack;
-typedef std::list<Window> WindowList;
-typedef std::list<BlackboxWindow*> BlackboxWindowList;
 
 class StackingList {
  public:
@@ -46,28 +47,27 @@ class StackingList {
     LayerDesktop
   };
 
-  typedef std::list<BlackboxWindow *> _List;
-  typedef _List::iterator iterator;
-  typedef _List::reverse_iterator reverse_iterator;
-  typedef _List::const_iterator const_iterator;
-  typedef _List::const_reverse_iterator const_reverse_iterator;
+  typedef StackEntityList::iterator iterator;
+  typedef StackEntityList::reverse_iterator reverse_iterator;
+  typedef StackEntityList::const_iterator const_iterator;
+  typedef StackEntityList::const_reverse_iterator const_reverse_iterator;
 
   StackingList(void);
 
-  iterator insert(BlackboxWindow *win);
-  iterator append(BlackboxWindow *win);
-  iterator remove(BlackboxWindow *win);
+  iterator insert(StackEntity *entity);
+  iterator append(StackEntity *entity);
+  iterator remove(StackEntity *entity);
 
-  iterator& layer(Layer layer);
-  void changeLayer(BlackboxWindow *win, Layer new_layer);
+  iterator& layer(Layer which);
+  void changeLayer(StackEntity *entity, Layer new_layer);
 
-  void raise(BlackboxWindow *win);
-  void lower(BlackboxWindow *win);
+  void raise(StackEntity *entity);
+  void lower(StackEntity *entity);
 
   bool empty(void) const { return (stack.size() == 5); }
-  _List::size_type size(void) const { return stack.size() - 5; }
-  BlackboxWindow *front(void) const;
-  BlackboxWindow *back(void) const;
+  StackEntityList::size_type size(void) const { return stack.size() - 5; }
+  StackEntity *front(void) const;
+  StackEntity *back(void) const;
   iterator begin(void) { return stack.begin(); }
   iterator end(void) { return stack.end(); }
   reverse_iterator rbegin(void) { return stack.rbegin(); }
@@ -80,8 +80,20 @@ class StackingList {
   void dump(void) const;
 
  private:
-  _List stack;
+  StackEntityList stack;
   iterator fullscreen, above, normal, below, desktop;
+};
+
+class StackEntity {
+private:
+  StackingList::Layer _layer;
+public:
+  inline StackEntity() : _layer(StackingList::LayerNormal) { }
+  inline void setLayer(StackingList::Layer new_layer)
+  { _layer = new_layer; }
+  inline StackingList::Layer layer(void) const
+  { return _layer; }
+  virtual Window windowID(void) const = 0;
 };
 
 #endif // __StackingList_hh

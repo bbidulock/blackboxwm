@@ -26,27 +26,32 @@
 #include "Window.hh"
 #include "Screen.hh"
 
-#include <assert.h>
-
 
 Clientmenu::Clientmenu(bt::Application &app, BScreen& screen,
                        unsigned int workspace)
   : bt::Menu(app, screen.screenNumber()),
-    _workspace(workspace), _screen(screen) {
+    _workspace(workspace), _screen(screen)
+{
   setAutoDelete(false);
   showTitle();
 }
 
 
 void Clientmenu::itemClicked(unsigned int id, unsigned int button) {
-  BlackboxWindow *window = _screen.getWindow(_workspace, id);
-  assert(window != 0);
+  BlackboxWindow *win = _screen.getWindow(_workspace, id);
 
-  if (_workspace != _screen.currentWorkspace()) {
-    if (button == 2) window->deiconify(true, false);
-    else  _screen.setCurrentWorkspace(_workspace);
+  if (button == 2) {
+    // move win to current workspace
+    if (_workspace != _screen.currentWorkspace())
+      _screen.changeWorkspace(win, _screen.currentWorkspace());
+  } else {
+    // change to the win's workspace
+    if (_workspace != _screen.currentWorkspace())
+      _screen.setCurrentWorkspace(_workspace);
   }
 
-  _screen.raiseWindow(window);
-  window->setInputFocus();
+  if (!win->isVisible())
+    win->show();
+  _screen.raiseWindow(win);
+  win->setInputFocus();
 }

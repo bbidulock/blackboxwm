@@ -168,6 +168,7 @@ Slit::Slit(BScreen *scr) {
 
   ScreenResource& res = screen->resource();
 
+  setLayer(isOnTop() ? StackingList::LayerAbove : StackingList::LayerNormal);
   hidden = doAutoHide();
 
   display = screen->screenInfo().display().XDisplay();
@@ -631,14 +632,16 @@ void Slit::shutdown(void) {
 void Slit::buttonPressEvent(const XButtonEvent * const event) {
   if (event->window != frame.window) return;
 
-  if (event->button == Button1 && ! isOnTop()) {
-    WindowStack w;
-    w.push_back(frame.window);
-    screen->raiseWindows(&w);
-  } else if (event->button == Button2 && ! isOnTop()) {
-    XLowerWindow(display, frame.window);
-  } else if (event->button == Button3) {
+  switch (event->button) {
+  case Button1:
+    screen->raiseWindow(this);
+    break;
+  case Button2:
+    screen->lowerWindow(this);
+    break;
+  case Button3:
     slitmenu->popup(event->x_root, event->y_root, screen->availableArea());
+    break;
   }
 }
 
@@ -709,10 +712,11 @@ void Slit::timeout(bt::Timer *) {
 
 
 void Slit::toggleOnTop(void) {
-  screen->resource().saveSlitOnTop(!isOnTop);
+  screen->resource().saveSlitOnTop(!isOnTop());
   screen->saveResource();
-  if (isOnTop())
-    screen->raiseWindows((WindowStack *) 0);
+  screen->changeLayer(this, (isOnTop()
+                             ? StackingList::LayerAbove
+                             : StackingList::LayerNormal));
 }
 
 

@@ -34,6 +34,9 @@
 
 #include <stdio.h>
 
+#include <list>
+#include <vector>
+
 // forward declarations
 class BlackboxWindow;
 class Configmenu;
@@ -49,6 +52,7 @@ namespace bt {
   class ScreenInfo;
 }
 
+
 class BScreen : public bt::NoCopy, public bt::EventHandler {
 private:
   bool managed, geom_visible;
@@ -58,15 +62,17 @@ private:
   const bt::ScreenInfo& screen_info;
   Blackbox *blackbox;
   Configmenu *configmenu;
-  Iconmenu *iconmenu;
+  Iconmenu *_iconmenu;
   Rootmenu *rootmenu;
   Windowmenu *_windowmenu;
-  BlackboxWindowList iconList, windowList;
+  Workspacemenu *workspacemenu;
+
+  BlackboxWindowList windowList;
+  StackingList stackingList;
+  unsigned int current_workspace;
 
   Slit *_slit;
   Toolbar *_toolbar;
-  unsigned int current_workspace;
-  Workspacemenu *workspacemenu;
 
   unsigned int geom_w, geom_h;
 
@@ -87,7 +93,19 @@ private:
   void LoadStyle(void);
 
   void manageWindow(Window w);
-  void unmanageWindow(BlackboxWindow *w, bool remap);
+  void unmanageWindow(BlackboxWindow *win, bool remap);
+
+  void focusFallback(const BlackboxWindow *old_window);
+
+  void placeWindow(BlackboxWindow *win);
+  bool cascadePlacement(bt::Rect& win, const bt::Rect& avail);
+  bool smartPlacement(unsigned int workspace, bt::Rect& win,
+                      const bt::Rect& avail);
+  unsigned int cascade_x, cascade_y;
+
+  void raiseTransients(const BlackboxWindow * const win);
+  void lowerTransients(const BlackboxWindow * const win);
+  void stackTransients(const BlackboxWindow * const win, WindowStack &stack);
 
   void updateAvailableArea(void);
   void updateWorkareaHint(void) const;
@@ -112,6 +130,12 @@ public:
   Blackbox *getBlackbox(void) { return blackbox; }
 
   Rootmenu *getRootmenu(void) { return rootmenu; }
+
+  Workspacemenu *getWorkspacemenu(void) { return workspacemenu; }
+
+  inline Iconmenu *iconmenu(void) const
+  { return _iconmenu; }
+
   Windowmenu *windowmenu(BlackboxWindow *win);
 
   inline Slit *slit(void) const
@@ -126,17 +150,9 @@ public:
 
   Workspace *getWorkspace(unsigned int index) const;
 
-  Workspacemenu *getWorkspacemenu(void) { return workspacemenu; }
-
   inline unsigned int currentWorkspace(void) const
   { return current_workspace; }
   void setCurrentWorkspace(unsigned int id);
-
-  unsigned int getIconCount(void) const { return iconList.size(); }
-
-  BlackboxWindow* getWindow(unsigned int workspace, unsigned int id);
-
-  BlackboxWindow *getIcon(unsigned int index);
 
   const bt::Rect& availableArea(void);
   void addStrut(bt::Netwm::Strut *strut);
@@ -151,20 +167,27 @@ public:
   unsigned int addWorkspace(void);
   unsigned int removeLastWorkspace(void);
 
-  void iconifyWindow(BlackboxWindow *w);
-  void removeIcon(BlackboxWindow *w);
   void addWindow(Window w);
-  void releaseWindow(BlackboxWindow *w, bool remap);
-  void raiseWindow(BlackboxWindow *w);
-  void lowerWindow(BlackboxWindow *w);
-  void reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id);
-  void propagateWindowName(const BlackboxWindow *w);
+  void releaseWindow(BlackboxWindow *win, bool remap);
+  BlackboxWindow* getWindow(unsigned int workspace, unsigned int id);
 
-  void raiseWindows(const bt::Netwm::WindowList* const workspace_stack);
+  void raiseWindow(StackEntity *entity);
+  void lowerWindow(StackEntity *entity);
+  void restackWindows(void);
 
-  void nextFocus(void) const;
-  void prevFocus(void) const;
-  void raiseFocus(void) const;
+  void changeLayer(StackEntity *entity, StackingList::Layer new_layer);
+  void changeWorkspace(BlackboxWindow *win, unsigned int id);
+
+  void addIcon(BlackboxWindow *win);
+  void removeIcon(BlackboxWindow *win);
+  BlackboxWindow *icon(unsigned int id);
+
+  void nextFocus(void);
+  void prevFocus(void);
+  void raiseFocus(void);
+
+  void propagateWindowName(const BlackboxWindow * const win);
+
   void reconfigure(void);
   void toggleFocusModel(FocusModel model);
   void rereadMenu(void);

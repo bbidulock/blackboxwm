@@ -26,13 +26,9 @@
 #define   __Window_hh
 
 #include "BlackboxResource.hh"
-#include "StackingList.hh"
+#include "Screen.hh"
 
-#include <EventHandler.hh>
 #include <Netwm.hh>
-#include <Rect.hh>
-#include <Timer.hh>
-#include <Util.hh>
 
 
 enum WindowType {
@@ -80,9 +76,9 @@ enum WindowDecoration {
 };
 typedef unsigned char WindowDecorationFlags;
 
-class BlackboxWindow : public bt::TimeoutHandler, public bt::EventHandler,
-                       public bt::NoCopy
-{
+
+class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
+                                                      public bt::EventHandler, public bt::NoCopy {
   Blackbox *blackbox;
   BScreen *screen;
   bt::Timer *timer;
@@ -96,7 +92,8 @@ class BlackboxWindow : public bt::TimeoutHandler, public bt::EventHandler,
   enum WMSkip { SKIP_NONE, SKIP_TASKBAR, SKIP_PAGER, SKIP_BOTH };
 
   struct WMState {
-    bool modal,              // is modal? (must be dismissed to continue)
+    bool visible,            // is visible?
+      modal,                 // is modal? (must be dismissed to continue)
       shaded,                // is shaded?
       iconic,                // is iconified?
       fullscreen,            // is a full screen window
@@ -109,17 +106,12 @@ class BlackboxWindow : public bt::TimeoutHandler, public bt::EventHandler,
                              // with a mouse button
                              // if 0, not maximized
                              // 1 = HorizVert, 2 = Vertical, 3 = Horizontal
-
-    // full screen, above, normal, below, desktop
-    StackingList::Layer layer;
-
     WMSkip skip;             // none, taskbar, pager, both
 
     inline WMState(void)
-      : modal(false), shaded(false), iconic(false), fullscreen(false),
-        moving(false), resizing(false), focused(false),
-        send_focus_message(false), shaped(false), maximized(0),
-        layer(StackingList::LayerNormal), skip(SKIP_NONE)
+      : visible(false), modal(false), shaded(false), iconic(false),
+        fullscreen(false), moving(false), resizing(false), focused(false),
+        send_focus_message(false), shaped(false), maximized(0), skip(SKIP_NONE)
     { }
   };
 
@@ -137,7 +129,7 @@ class BlackboxWindow : public bt::TimeoutHandler, public bt::EventHandler,
     int old_bw;                       // client's borderwidth
 
     unsigned int
-      min_width, min_height,        // can not be resized smaller
+    min_width, min_height,        // can not be resized smaller
       max_width, max_height,        // can not be resized larger
       width_inc, height_inc,        // increment step
       min_aspect_x, min_aspect_y,   // minimum aspect ratio
@@ -230,7 +222,7 @@ class BlackboxWindow : public bt::TimeoutHandler, public bt::EventHandler,
 
   void decorate(void);
 
-  void positionButtons(bool redecorate_label = False);
+  void positionButtons(bool redecorate_label = false);
   void positionWindows(void);
 
   void createTitlebar(void);
@@ -260,7 +252,8 @@ class BlackboxWindow : public bt::TimeoutHandler, public bt::EventHandler,
   void restoreGravity(bt::Rect &r);
 
   bool getState(void);
-  void setState(unsigned long new_state, bool closing = False);
+  void setState(unsigned long new_state);
+  void clearState(void);
 
   void upsize(void);
 
@@ -269,16 +262,11 @@ class BlackboxWindow : public bt::TimeoutHandler, public bt::EventHandler,
   enum Corner { TopLeft, TopRight, BottomLeft, BottomRight };
   void constrain(Corner anchor);
 
-public:
+ public:
   BlackboxWindow(Blackbox *b, Window w, BScreen *s);
   virtual ~BlackboxWindow(void);
 
   inline bool isTransient(void) const { return client.transient_for != 0; }
-  inline bool isVisible(void) const
-  { return (! (client.current_state == 0 || client.state.iconic)); }
-  inline bool isIconic(void) const { return client.state.iconic; }
-  inline bool isShaded(void) const { return client.state.shaded; }
-  inline bool isMaximized(void) const { return client.state.maximized; }
   inline bool isModal(void) const { return client.state.modal; }
 
   inline WindowType windowType(void) const
@@ -296,6 +284,9 @@ public:
   BlackboxWindow *getTransientFor(void) const;
 
   inline BScreen *getScreen(void) const { return screen; }
+
+  // StackEntity interface
+  inline Window windowID(void) const { return frame.window; }
 
   inline Window getFrameWindow(void) const { return frame.window; }
   inline Window getClientWindow(void) const { return client.window; }
@@ -321,10 +312,6 @@ public:
   inline unsigned int getTitleHeight(void) const
   { return frame.style->title_height; }
 
-  inline StackingList::Layer layer(void) const
-  { return client.state.layer; }
-  void setLayer(StackingList::Layer layer);
-
   unsigned long normalHintFlags(void) const
   { return client.normal_hint_flags; }
 
@@ -337,14 +324,25 @@ public:
   void setFocused(bool focused);
   bool setInputFocus(void);
 
-  void iconify(void);
-  void deiconify(bool reassoc = True, bool raise = True);
+  inline bool isVisible(void) const
+  { return client.state.visible; }
   void show(void);
+  void hide(void);
   void close(void);
-  void withdraw(void);
+
+  inline bool isShaded(void) const
+  { return client.state.shaded; }
+  void setShaded(bool shaded);
+
+  inline bool isIconic(void) const
+  { return client.state.iconic; }
+  void setIconic(bool iconic);
+
+  inline bool isMaximized(void) const
+  { return client.state.maximized; }
+  // ### change to setMaximized()
   void maximize(unsigned int button);
   void remaximize(void);
-  void shade(void);
 
   inline bool isFullScreen(void) const
   { return client.state.fullscreen; }
@@ -372,13 +370,12 @@ public:
   void enterNotifyEvent(const XCrossingEvent * const ce);
   void leaveNotifyEvent(const XCrossingEvent * const /*unused*/);
 
-#ifdef    SHAPE
+#ifdef SHAPE
   void configureShape(void);
   void shapeEvent(const XEvent * const /*unused*/);
 #endif // SHAPE
 
   virtual void timeout(bt::Timer *);
 };
-
 
 #endif // __Window_hh

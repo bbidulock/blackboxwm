@@ -25,19 +25,13 @@
 #ifndef   __Workspace_hh
 #define   __Workspace_hh
 
-#include "StackingList.hh"
-
-#include <Netwm.hh>
+#include "Netwm.hh"
+#include "Util.hh"
 
 // forward declarations
+class BlackboxWindow;
 class BScreen;
 class Clientmenu;
-class Workspace;
-class BlackboxWindow;
-
-namespace bt {
-  class Rect;
-}
 
 class Workspace: public bt::NoCopy {
 public:
@@ -53,51 +47,21 @@ public:
   { return _id; }
 
   const std::string& name(void) const;
+  void setName(const std::string& new_name);
+
+  void addWindow(BlackboxWindow *win);
+  void removeWindow(BlackboxWindow *win);
 
   inline BlackboxWindow *lastFocusedWindow(void) const
   { return lastfocus; }
   inline void setLastFocusedWindow(BlackboxWindow *w)
   { lastfocus = w; }
 
-  BlackboxWindow* window(unsigned int index) const;
-
-  BlackboxWindow* getNextWindowInList(BlackboxWindow *w);
-  BlackboxWindow* getPrevWindowInList(BlackboxWindow *w);
-  BlackboxWindow* getTopWindowOnStack(void) const;
-
-  void focusFallback(const BlackboxWindow *old_window);
-
-  void addWindow(BlackboxWindow *w, bool place = false);
-  void removeWindow(BlackboxWindow *w);
-  unsigned int windowCount(void) const;
-  void updateClientListStacking(bt::Netwm::WindowList& clientList) const;
-
-  void show(void);
-  void hide(void);
-  void transferWindows(Workspace& wkspc);
-  void raiseWindow(BlackboxWindow *w);
-  void lowerWindow(BlackboxWindow *w);
-  void reconfigure(void);
-  void setName(const std::string& new_name);
-
 private:
   BScreen *_screen;
   BlackboxWindow *lastfocus;
   Clientmenu *clientmenu;
-
-  StackingList stackingList;
-
   unsigned int _id;
-  unsigned int cascade_x, cascade_y;
-
-  void raiseTransients(const BlackboxWindow * const win,
-                       WindowStack& stack);
-  void lowerTransients(const BlackboxWindow * const win,
-                       WindowStack& stack);
-
-  void placeWindow(BlackboxWindow *win);
-  bool cascadePlacement(bt::Rect& win, const bt::Rect& availableArea);
-  bool smartPlacement(bt::Rect& win, const bt::Rect& availableArea);
 };
 
 #endif // __Workspace_hh

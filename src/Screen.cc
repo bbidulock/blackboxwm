@@ -26,8 +26,8 @@
 #include "Clientmenu.hh"
 #include "Configmenu.hh"
 #include "Iconmenu.hh"
-#include "Slit.hh"
 #include "Rootmenu.hh"
+#include "Slit.hh"
 #include "Toolbar.hh"
 #include "Window.hh"
 #include "WindowGroup.hh"
@@ -39,6 +39,7 @@
 #include <PixmapCache.hh>
 
 #include <X11/Xutil.h>
+#include <sys/types.h>
 #include <sys/stat.h>
 #include <assert.h>
 #include <ctype.h>
@@ -83,6 +84,8 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
   blackbox->insertEventHandler(screen_info.rootWindow(), this);
 
+  cascade_x = cascade_y = ~0;
+
   rootmenu = 0;
   _windowmenu = 0;
 
@@ -100,17 +103,17 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
   updateGeomWindow();
 
-  workspacemenu =
-    new Workspacemenu(*blackbox, screen_info.screenNumber(), this);
-  iconmenu =
-    new Iconmenu(*blackbox, screen_info.screenNumber(), this);
   configmenu =
     new Configmenu(*blackbox, screen_info.screenNumber(), this);
+  _iconmenu =
+    new Iconmenu(*blackbox, screen_info.screenNumber(), this);
+  workspacemenu =
+    new Workspacemenu(*blackbox, screen_info.screenNumber(), this);
 
   if (_resource.numberOfWorkspaces() == 0) // there is always 1 workspace
     _resource.saveWorkspaces(1);
 
-  workspacemenu->insertIconMenu(iconmenu);
+  workspacemenu->insertIconMenu(_iconmenu);
   for (unsigned int i = 0; i < _resource.numberOfWorkspaces(); ++i) {
     Workspace *wkspc = new Workspace(this, i);
     workspacesList.push_back(wkspc);
@@ -124,10 +127,9 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   _slit = 0;
 
   _toolbar = new Toolbar(this);
+  stackingList.insert(_toolbar);
 
   InitMenu();
-
-  raiseWindows((WindowStack*) 0);
 
   const bt::Netwm& netwm = blackbox->netwm();
   /*
@@ -141,9 +143,9 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   netwm.setWMName(geom_window, "Blackbox");
 
   netwm.setNumberOfDesktops(screen_info.rootWindow(),
-                             workspacesList.size());
+                            workspacesList.size());
   netwm.setDesktopGeometry(screen_info.rootWindow(),
-                            screen_info.width(), screen_info.height());
+                           screen_info.width(), screen_info.height());
   netwm.setActiveWindow(screen_info.rootWindow(), None);
   updateWorkareaHint();
   updateDesktopNamesHint();
@@ -245,7 +247,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   XFree(children);
 
   updateClientListHint();
-  updateClientListStackingHint();
+  restackWindows();
 }
 
 
@@ -262,12 +264,10 @@ BScreen::~BScreen(void) {
   std::for_each(workspacesList.begin(), workspacesList.end(),
                 bt::PointerAssassin());
 
-  std::for_each(iconList.begin(), iconList.end(), bt::PointerAssassin());
-
+  delete configmenu;
+  delete _iconmenu;
   delete rootmenu;
   delete workspacemenu;
-  delete iconmenu;
-  delete configmenu;
   delete _windowmenu;
 
   delete _slit;
@@ -305,11 +305,11 @@ void BScreen::updateGeomWindow(void) {
     setattrib.colormap = screen_info.colormap();
     setattrib.save_under = True;
 
-    geom_window = XCreateWindow(blackbox->XDisplay(),
-                                screen_info.rootWindow(),
-                                0, 0, geom_w, geom_h, _resource.borderWidth(),
-                                screen_info.depth(), InputOutput,
-                                screen_info.visual(), mask, &setattrib);
+    geom_window =
+      XCreateWindow(blackbox->XDisplay(), screen_info.rootWindow(),
+                    0, 0, geom_w, geom_h, _resource.borderWidth(),
+                    screen_info.depth(), InputOutput,
+                    screen_info.visual(), mask, &setattrib);
   } else {
     XSetWindowBorderWidth(blackbox->XDisplay(), geom_window,
                           _resource.borderWidth());
@@ -339,36 +339,35 @@ void BScreen::reconfigure(void) {
 
   updateGeomWindow();
 
-  workspacemenu->reconfigure();
-  iconmenu->reconfigure();
-
-  InitMenu();
-  raiseWindows((WindowStack*) 0);
-
-  rootmenu->reconfigure();
-  configmenu->reconfigure();
-  if (_windowmenu)
-    _windowmenu->reconfigure();
-
   if (_toolbar) _toolbar->reconfigure();
   if (_slit) _slit->reconfigure();
 
-  std::for_each(workspacesList.begin(), workspacesList.end(),
-                std::mem_fun(&Workspace::reconfigure));
+  {
+    BlackboxWindowList::iterator it = windowList.begin(),
+                                end = windowList.end();
+    for (; it != end; ++it)
+      if (*it) (*it)->reconfigure();
+  }
 
-  BlackboxWindowList::iterator iit = iconList.begin();
-  for (; iit != iconList.end(); ++iit) {
-    BlackboxWindow *bw = *iit;
-    if (bw->validateClient())
-      bw->reconfigure();
+  InitMenu();
+
+  configmenu->reconfigure();
+  rootmenu->reconfigure();
+  workspacemenu->reconfigure();
+  if (_windowmenu)
+    _windowmenu->reconfigure();
+
+  {
+    WorkspaceList::iterator it = workspacesList.begin(),
+                           end = workspacesList.end();
+    for (; it != end; ++it)
+      (*it)->menu()->reconfigure();
   }
 }
 
 
 void BScreen::rereadMenu(void) {
   InitMenu();
-  raiseWindows((WindowStack*) 0);
-
   rootmenu->reconfigure();
 }
 
@@ -378,37 +377,6 @@ void BScreen::LoadStyle(void) {
 
   if (! _resource.rootCommand().empty())
     bt::bexec(_resource.rootCommand(), screen_info.displayString());
-}
-
-
-void BScreen::iconifyWindow(BlackboxWindow *w) {
-  assert(w != 0);
-
-  if (w->workspace() != bt::BSENTINEL) {
-    Workspace* wkspc = getWorkspace(w->workspace());
-    wkspc->removeWindow(w);
-    w->setWorkspace(bt::BSENTINEL);
-  }
-
-  int id = iconmenu->insertItem(bt::ellideText(w->getIconTitle(), 60, "..."));
-  w->setWindowNumber(id);
-  iconList.push_back(w);
-}
-
-
-void BScreen::removeIcon(BlackboxWindow *w) {
-  assert(w != 0);
-  iconList.remove(w);
-  iconmenu->removeItem(w->windowNumber());
-}
-
-
-BlackboxWindow *BScreen::getIcon(unsigned int index) {
-  assert(index < iconList.size());
-
-  BlackboxWindowList::iterator it = iconList.begin();
-  std::advance<BlackboxWindowList::iterator,signed>(it, index);
-  return *it;
 }
 
 
@@ -432,17 +400,21 @@ unsigned int BScreen::removeLastWorkspace(void) {
   if (workspacesList.size() == 1)
     return 1;
 
-  Workspace *wkspc = workspacesList.back();
+  Workspace *workspace = workspacesList.back();
   workspacesList.pop_back();
 
-  if (current_workspace == wkspc->id())
-    setCurrentWorkspace(current_workspace - 1);
+  if (current_workspace == workspace->id())
+    setCurrentWorkspace(workspace->id() - 1);
 
-  wkspc->transferWindows(*(workspacesList.back()));
+  BlackboxWindowList::iterator it, end = windowList.end();
+  for (it = windowList.begin(); it != end; ++it) {
+    BlackboxWindow *win = *it;
+    if (win->workspace() == workspace->id())
+      win->setWorkspace(workspace->id() - 1);
+  }
 
-  workspacemenu->removeWorkspace(wkspc->id());
-
-  delete wkspc;
+  workspacemenu->removeWorkspace(workspace->id());
+  delete workspace;
 
   if (_toolbar) _toolbar->reconfigure();
 
@@ -459,17 +431,35 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
 
   assert(id < workspacesList.size());
 
-  workspacemenu->setWorkspaceChecked(current_workspace, false);
-  getWorkspace(current_workspace)->hide();
+  {
+    workspacemenu->setWorkspaceChecked(current_workspace, false);
+
+    // withdraw windows in reverse order to minimize the number of
+    // Expose events
+    StackingList::reverse_iterator it, end = stackingList.rend();
+    for (it = stackingList.rbegin(); it != end; ++it) {
+      BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(*it);
+      if (win && win->workspace() == current_workspace)
+        win->hide();
+    }
+  }
 
   current_workspace = id;
 
-  workspacemenu->setWorkspaceChecked(current_workspace, true);
-  getWorkspace(current_workspace)->show();
+  {
+    workspacemenu->setWorkspaceChecked(current_workspace, true);
+
+    StackingList::iterator it, end = stackingList.end();
+    for (it = stackingList.begin(); it != end; ++it) {
+      BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(*it);
+      if (win && win->workspace() == current_workspace)
+        win->show();
+    }
+  }
 
   if (_toolbar) _toolbar->redrawWorkspaceLabel();
   blackbox->netwm().setCurrentDesktop(screen_info.rootWindow(),
-                                       current_workspace);
+                                      current_workspace);
 }
 
 
@@ -494,196 +484,313 @@ void BScreen::manageWindow(Window w) {
   }
 
   (void) new BlackboxWindow(blackbox, w, this);
+  // verify that we have managed the window
   BlackboxWindow *win = blackbox->findWindow(w);
-  if (! win)
-    return;
+  if (! win) return;
 
-  Workspace* wkspc =
-    getWorkspace(win->workspace() >= _resource.numberOfWorkspaces()
-                 ? current_workspace
-                 : win->workspace());
+  if (win->workspace() >= _resource.numberOfWorkspaces() &&
+      win->workspace() != bt::BSENTINEL)
+    win->setWorkspace(current_workspace);
 
-  bool place_window = True;
+  Workspace *workspace = getWorkspace(win->workspace());
+  if (!workspace) {
+    win->setWorkspace(bt::BSENTINEL);
+    win->setWindowNumber(bt::BSENTINEL);
+  } else {
+    workspace->addWindow(win);
+  }
+
+  bool place_window = true;
   if (blackbox->startingUp() ||
       ((win->isTransient() || (win->normalHintFlags() & USPosition))
        && win->clientRect().intersects(screen_info.rect())))
     place_window = False;
+  if (place_window) placeWindow(win);
 
-  wkspc->addWindow(win, place_window);
   windowList.push_back(win);
 
-  XMapRequestEvent mre;
-  mre.window = w;
-  win->mapRequestEvent(&mre);
+  // insert window at the top of the stack
+  stackingList.insert(win);
+  if (!blackbox->startingUp())
+    restackWindows();
+
+  // 'show' window in it's initial state
+  XEvent event;
+  event.xmaprequest.window = w;
+  win->mapRequestEvent(&event.xmaprequest);
+
+  if (!blackbox->startingUp() &&
+      (!blackbox->activeScreen() || blackbox->activeScreen() == this) &&
+      (win->isTransient() || resource().doFocusNew())) {
+    XSync(blackbox->XDisplay(), False); // make sure the frame is mapped..
+    win->setInputFocus();
+  }
 }
 
 
 void BScreen::releaseWindow(BlackboxWindow *w, bool remap) {
   unmanageWindow(w, remap);
+
   updateClientListHint();
+  updateClientListStackingHint();
 }
 
 
-void BScreen::unmanageWindow(BlackboxWindow *w, bool remap) {
-  w->restore(remap);
+void BScreen::unmanageWindow(BlackboxWindow *win, bool remap) {
+  win->restore(remap);
 
-  if (w->isModal()) w->setModal(False);
+  // pass focus to the next appropriate window
+  if (win->isFocused() && blackbox->running())
+    focusFallback(win);
 
-  if (w->workspace() != bt::BSENTINEL &&
-      w->windowNumber() != bt::BSENTINEL)
-    getWorkspace(w->workspace())->removeWindow(w);
-  else if (w->isIconic())
-    removeIcon(w);
-
-  windowList.remove(w);
-
-  if (blackbox->getFocusedWindow() == w)
+  if (blackbox->getFocusedWindow() == win)
     blackbox->setFocusedWindow((BlackboxWindow *) 0);
+
+  Workspace *workspace = getWorkspace(win->workspace());
+  if (workspace)
+    workspace->menu()->removeItem(win->windowNumber());
+
+  windowList.remove(win);
+  stackingList.remove(win);
 
   /*
     some managed windows can also be window group controllers.  when
     unmanaging such windows, we should also delete the window group.
   */
-  BWindowGroup *group = blackbox->findWindowGroup(w->getClientWindow());
+  BWindowGroup *group = blackbox->findWindowGroup(win->getClientWindow());
   delete group;
 
-  delete w;
+  delete win;
 }
 
 
-void BScreen::raiseWindow(BlackboxWindow *w) {
-  Workspace *wkspc = getWorkspace(w->workspace());
-  wkspc->raiseWindow(w);
-}
+void BScreen::raiseWindow(StackEntity *entity) {
+  StackEntity *top = entity;
 
+  BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(top);
+  if (win) {
+    // walk up the transient_for's to the window that is not a transient
+    while (win->isTransient() && win->getTransientFor())
+      win = win->getTransientFor();
 
-void BScreen::lowerWindow(BlackboxWindow *w) {
-  Workspace *wkspc = getWorkspace(w->workspace());
-  wkspc->lowerWindow(w);
-}
+    if (win->isFullScreen() && win->layer() != StackingList::LayerFullScreen) {
+      // move full-screen windows over all other windows when raising
+      changeLayer(win, StackingList::LayerFullScreen);
+      return;
+    }
 
-
-void
-BScreen::raiseWindows(const bt::Netwm::WindowList* const workspace_stack) {
-  // the 8 represents the number of blackbox windows such as menus
-  const unsigned int workspace_stack_size =
-    (workspace_stack) ? workspace_stack->size() : 0;
-  std::vector<Window> session_stack(workspace_stack_size + 2);
-  std::back_insert_iterator<std::vector<Window> > it(session_stack);
-
-  if (_toolbar && _toolbar->isOnTop())
-    *(it++) = _toolbar->getWindowID();
-
-  if (_slit && _slit->isOnTop())
-    *(it++) = _slit->getWindowID();
-
-  if (workspace_stack_size)
-    std::copy(workspace_stack->rbegin(), workspace_stack->rend(), it);
-
-  if (! session_stack.empty()) {
-    XRaiseWindow(blackbox->XDisplay(), session_stack[0]);
-    XRestackWindows(blackbox->XDisplay(), &session_stack[0],
-                    session_stack.size());
+    top = win;
   }
+
+  // find the first window above us (if any)
+  StackEntity *above = 0;
+  {
+    StackingList::const_iterator begin = stackingList.begin(),
+                                 layer = stackingList.layer(top->layer()),
+                                    it = layer;
+    if (*it == top) {
+      // entity already on top of layer
+      return;
+    }
+
+    for (--it; it != begin; --it) {
+      if (*it) {
+        above = *it;
+        break;
+      }
+    }
+  }
+
+  // restack the window
+  stackingList.raise(top);
+  if (win) {
+    // ... with all transients above
+    raiseTransients(win);
+  }
+
+  WindowStack stack;
+  bool raise = true;
+
+  if (above) {
+    // found another entity above the one we are raising
+    stack.push_back(above->windowID());
+    raise = false;
+  }
+
+  if (win) {
+    // put transients into window stack
+    stackTransients(win, stack);
+  }
+  stack.push_back(top->windowID());
+
+  if (raise)
+    XRaiseWindow(blackbox->XDisplay(), stack.front());
+  XRestackWindows(blackbox->XDisplay(), &stack[0], stack.size());
 
   updateClientListStackingHint();
 }
 
 
-void BScreen::reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id) {
-  if (! w) return;
+void BScreen::lowerWindow(StackEntity *entity) {
+  StackEntity *top = entity;
 
-  if (wkspc_id == bt::BSENTINEL)
-    wkspc_id = current_workspace;
-
-  if (w->workspace() == wkspc_id)
-    return;
-
-  if (w->isIconic()) {
-    removeIcon(w);
-    getWorkspace(wkspc_id)->addWindow(w);
-  } else {
-    getWorkspace(w->workspace())->removeWindow(w);
-    getWorkspace(wkspc_id)->addWindow(w);
+  BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(top);
+  if (win) {
+    // walk up the transient_for's to the window that is not a transient
+    while (win->isTransient() && win->getTransientFor())
+      win = win->getTransientFor();
+    top = win;
   }
+
+  // find window at the bottom of the layer (if any)
+  StackEntity *above = 0;
+  {
+    StackingList::const_iterator it, layer = stackingList.layer(top->layer()),
+                                       end = stackingList.end();
+    it = std::find(layer, end, (StackEntity *) 0);
+    assert(it != end);
+
+    if (*--it == top) {
+      // entity already on bottom of layer
+      return;
+    }
+
+    for (; it != layer; --it) {
+      if (*it && *it != top) {
+        above = *it;
+        break;
+      }
+    }
+  }
+
+  // restack the window
+  if (win) {
+    // ... with all transients above
+    lowerTransients(win);
+  }
+  stackingList.lower(top);
+
+  WindowStack stack;
+  bool lower = true;
+
+  if (above) {
+    // found another entity above the one we are lowering
+    stack.push_back(above->windowID());
+    lower = false;
+  }
+
+  if (win) {
+    // put transients into window stack
+    stackTransients(win, stack);
+  }
+  stack.push_back(top->windowID());
+
+  if (lower)
+    XLowerWindow(blackbox->XDisplay(), stack.front());
+  XRestackWindows(blackbox->XDisplay(), &stack[0], stack.size());
+
+  updateClientListStackingHint();
 }
 
 
-void BScreen::propagateWindowName(const BlackboxWindow *w) {
-  if (! w->isIconic()) {
-    Clientmenu *clientmenu = getWorkspace(w->workspace())->menu();
-    clientmenu->changeItem(w->windowNumber(),
-                           bt::ellideText(w->getTitle(), 60, "..."));
+void BScreen::restackWindows(void) {
+  WindowStack stack_vector;
+  StackingList::const_iterator it, end = stackingList.end();
+  for (it = stackingList.begin(); it != end; ++it)
+    if (*it) stack_vector.push_back((*it)->windowID());
 
-    if (_toolbar && blackbox->getFocusedWindow() == w)
-      _toolbar->redrawWindowLabel();
-  } else {
-    iconmenu->changeItem(w->windowNumber(), w->getIconTitle());
-  }
+  XRestackWindows(blackbox->XDisplay(), &stack_vector[0], stack_vector.size());
+
+  updateClientListStackingHint();
 }
 
 
-void BScreen::nextFocus(void) const {
-  BlackboxWindow *focused = blackbox->getFocusedWindow(),
-                    *next = focused;
-  Workspace *workspace = getWorkspace(current_workspace);
+void BScreen::changeLayer(StackEntity *entity, StackingList::Layer new_layer) {
+  stackingList.changeLayer(entity, new_layer);
+  restackWindows();
+}
+
+
+void BScreen::changeWorkspace(BlackboxWindow *win, unsigned int id) {
+  Workspace *workspace = getWorkspace(win->workspace());
   assert(workspace != 0);
 
-  if (focused &&
-      focused->getScreen()->screen_info.screenNumber() ==
-      screen_info.screenNumber() &&
-      workspace->windowCount() > 1) {
-    do {
-      next = workspace->getNextWindowInList(next);
-    } while(next != focused && ! next->setInputFocus());
-
-    if (next != focused)
-      workspace->raiseWindow(next);
-  } else if (workspace->windowCount() > 0) {
-    next = workspace->getTopWindowOnStack();
-
-    next->setInputFocus();
-    workspace->raiseWindow(next);
-  }
-}
-
-
-void BScreen::prevFocus(void) const {
-  BlackboxWindow *focused = blackbox->getFocusedWindow(),
-                    *next = focused;
-  Workspace *workspace = getWorkspace(current_workspace);
+  workspace->removeWindow(win);
+  workspace = getWorkspace(id);
   assert(workspace != 0);
+  workspace->addWindow(win);
 
-  if (focused &&
-      focused->getScreen()->screen_info.screenNumber() ==
-      screen_info.screenNumber() &&
-      workspace->windowCount() > 1) {
-    do {
-      next = workspace->getPrevWindowInList(next);
-    } while(next != focused && ! next->setInputFocus());
-
-    if (next != focused)
-      workspace->raiseWindow(next);
-  } else if (workspace->windowCount() > 0) {
-    next = workspace->getTopWindowOnStack();
-
-    next->setInputFocus();
-    workspace->raiseWindow(next);
-  }
+  if (current_workspace != win->workspace())
+    win->hide();
+  else if (!win->isVisible())
+    win->show();
 }
 
 
-void BScreen::raiseFocus(void) const {
+void BScreen::propagateWindowName(const BlackboxWindow * const win) {
+  Workspace *workspace = getWorkspace(win->workspace());
+  if (!workspace) return;
+
+  const std::string s = bt::ellideText(win->getTitle(), 60, "...");
+  workspace->menu()->changeItem(win->windowNumber(), s);
+
+  if (_toolbar && blackbox->getFocusedWindow() == win)
+    _toolbar->redrawWindowLabel();
+}
+
+
+void BScreen::nextFocus(void) {
+//   BlackboxWindow *focused = blackbox->getFocusedWindow(),
+//                     *next = focused;
+
+//   if (focused &&
+//       focused->getScreen()->screen_info.screenNumber() ==
+//       screen_info.screenNumber() &&
+//       current_workspace->windowCount() > 1) {
+//     do {
+//       next = current_workspace->getNextWindowInList(next);
+//     } while(next != focused && ! next->setInputFocus());
+
+//     if (next != focused)
+//       raiseWindow(next);
+//   } else if (current_workspace->windowCount() > 0) {
+//     next = current_workspace->getTopWindowOnStack();
+
+//     next->setInputFocus();
+//     raiseWindow(next);
+//   }
+}
+
+
+void BScreen::prevFocus(void) {
+//   BlackboxWindow *focused = blackbox->getFocusedWindow(),
+//                     *next = focused;
+
+//   if (focused &&
+//       focused->getScreen()->screen_info.screenNumber() ==
+//       screen_info.screenNumber() &&
+//       current_workspace->windowCount() > 1) {
+//     do {
+//       next = current_workspace->getPrevWindowInList(next);
+//     } while(next != focused && ! next->setInputFocus());
+
+//     if (next != focused)
+//       raiseWindow(next);
+//   } else if (current_workspace->windowCount() > 0) {
+//     next = current_workspace->getTopWindowOnStack();
+
+//     next->setInputFocus();
+//     raiseWindow(next);
+//   }
+}
+
+
+void BScreen::raiseFocus(void) {
   BlackboxWindow *focused = blackbox->getFocusedWindow();
-  if (! focused)
+  if (! focused || focused->getScreen() != this)
     return;
 
-  // if on this Screen, raise it
-  if (focused->getScreen()->screen_info.screenNumber() ==
-      screen_info.screenNumber()) {
-    Workspace *workspace = getWorkspace(focused->workspace());
-    workspace->raiseWindow(focused);
-  }
+  raiseWindow(focused);
 }
 
 
@@ -1071,7 +1178,8 @@ void BScreen::shutdown(void) {
   while(! windowList.empty())
     unmanageWindow(windowList.back(), True);
 
-  if (_slit) _slit->shutdown();
+  if (_slit)
+    _slit->shutdown();
 }
 
 
@@ -1091,7 +1199,8 @@ void BScreen::showPosition(int x, int y) {
 
   XClearWindow(blackbox->XDisplay(), geom_window);
 
-  bt::Pen pen(screen_info.screenNumber(), _resource.windowStyle()->l_text_focus);
+  bt::Pen pen(screen_info.screenNumber(),
+              _resource.windowStyle()->l_text_focus);
   bt::Rect rect(_resource.bevelWidth(), _resource.bevelWidth(),
                 geom_w - (_resource.bevelWidth() * 2),
                 geom_h - (_resource.bevelWidth() * 2));
@@ -1199,6 +1308,7 @@ void BScreen::updateAvailableArea(void) {
 
 
 Workspace* BScreen::getWorkspace(unsigned int index) const {
+  if (index == bt::BSENTINEL) return 0;
   assert(index < workspacesList.size());
   return workspacesList[index];
 }
@@ -1247,7 +1357,7 @@ void BScreen::buttonPressEvent(const XButtonEvent * const event) {
 }
 
 
-void BScreen::configureRequestEvent(const XConfigureRequestEvent* const event)
+void BScreen::configureRequestEvent(const XConfigureRequestEvent * const event)
 {
   /*
     handle configure requests for windows that have no EventHandlers
@@ -1341,10 +1451,10 @@ void BScreen::updateClientListHint(void) const {
 void BScreen::updateClientListStackingHint(void) const {
   bt::Netwm::WindowList stack;
 
-  WorkspaceList::const_iterator it = workspacesList.begin(),
-    end = workspacesList.end();
+  StackingList::const_iterator it = stackingList.begin(),
+                              end = stackingList.end();
   for (; it != end; ++it)
-    (*it)->updateClientListStacking(stack);
+    if (*it) stack.push_back((*it)->windowID());
 
   if (stack.empty()) {
     blackbox->netwm().removeProperty(screen_info.rootWindow(),
@@ -1376,8 +1486,454 @@ void BScreen::getDesktopNames(void) {
 }
 
 
-BlackboxWindow* BScreen::getWindow(unsigned int workspace, unsigned int id) {
-  return getWorkspace(workspace)->window(id);
+BlackboxWindow *BScreen::getWindow(unsigned int workspace, unsigned int id) {
+  StackingList::const_iterator it = stackingList.begin(),
+                              end = stackingList.end();
+  for (; it != end; ++it) {
+    BlackboxWindow * const win = dynamic_cast<BlackboxWindow *>(*it);
+    if (win && win->workspace() == workspace && win->windowNumber() == id)
+      return win;
+  }
+  assert(false); // should not happen
+  return 0;
+}
+
+
+void BScreen::focusFallback(const BlackboxWindow *old_window) {
+  BlackboxWindow *newfocus = 0;
+
+  Workspace *workspace = getWorkspace(old_window->workspace());
+  if (!workspace)
+    workspace = getWorkspace(current_workspace);
+
+  if (workspace->id() == current_workspace) {
+    // The window is on the visible workspace.
+
+    if (old_window && old_window->isTransient()) {
+      // 1. if it's a transient, then try to focus its parent
+      newfocus = old_window->getTransientFor();
+
+      if (! newfocus ||
+          newfocus->isIconic() || // do not focus icons
+          newfocus->workspace() != workspace->id() || // or other workspaces
+          ! newfocus->setInputFocus())
+        newfocus = 0;
+    }
+
+    if (! newfocus) {
+      // 2. try to focus the top window in the same layer as old_window
+      const BlackboxWindow * const zero = 0;
+      StackingList::iterator it = stackingList.layer(old_window->layer()),
+                            end = std::find(it, stackingList.end(), zero);
+      assert(it != stackingList.end() && end != stackingList.end());
+      for (; it != end; ++it) {
+        BlackboxWindow * const tmp = dynamic_cast<BlackboxWindow *>(*it);
+        if (tmp && tmp->setInputFocus()) {
+          // we found our new focus target
+          newfocus = tmp;
+          break;
+        }
+      }
+    }
+
+    if (!newfocus && !stackingList.empty()) {
+      // 3. focus the top-most window in the stack (regardless of layer)
+      newfocus = dynamic_cast<BlackboxWindow *>(stackingList.front());
+    }
+
+    blackbox->setFocusedWindow(newfocus);
+  } else {
+    // The window is not on the visible workspace.
+
+    if (old_window && workspace->lastFocusedWindow() == old_window) {
+      // The window was the last-focus target, so we need to replace it.
+      BlackboxWindow *win = (BlackboxWindow *) 0;
+      if (! stackingList.empty())
+        win = dynamic_cast<BlackboxWindow *>(stackingList.front());
+      workspace->setLastFocusedWindow(win);
+    }
+  }
+}
+
+
+/*
+ * puts the transients of win into the stack. windows are stacked
+ * above the window before it in the stackvector being iterated,
+ * meaning stack[0] is on bottom, stack[1] is above stack[0], stack[2]
+ * is above stack[1], etc...
+ */
+void BScreen::raiseTransients(const BlackboxWindow * const win) {
+  if (win->getTransients().empty())
+    return; // nothing to do
+
+  // put win's transients in the stack
+  BlackboxWindowList::const_reverse_iterator it,
+    end = win->getTransients().rend();
+  for (it = win->getTransients().rbegin(); it != end; ++it) {
+    BlackboxWindow *w = *it;
+    if (w->workspace() == current_workspace) {
+      stackingList.raise(w);
+      raiseTransients(w);
+    }
+  }
+}
+
+
+void BScreen::lowerTransients(const BlackboxWindow * const win) {
+  if (win->getTransients().empty())
+    return; // nothing to do
+
+  // put win's transients in the stack
+  BlackboxWindowList::const_reverse_iterator it,
+    end = win->getTransients().rend();
+  for (it = win->getTransients().rbegin(); it != end; ++it) {
+    BlackboxWindow *w = *it;
+    if (w->workspace() == current_workspace) {
+      lowerTransients(w);
+      stackingList.lower(w);
+    }
+  }
+}
+
+
+void BScreen::stackTransients(const BlackboxWindow * const win,
+                              WindowStack &stack) {
+  const BlackboxWindowList &list = win->getTransients();
+  if (list.empty()) return;
+
+  BlackboxWindowList::const_reverse_iterator it, end = list.rend();
+  for (it = list.rbegin(); it != end; ++it) {
+    stackTransients(*it, stack);
+    stack.push_back((*it)->getFrameWindow());
+  }
+}
+
+
+void BScreen::placeWindow(BlackboxWindow *win) {
+  const bt::Rect &avail = availableArea();
+  bt::Rect new_win(avail.x(), avail.y(),
+                   win->frameRect().width(), win->frameRect().height());
+  bool placed = False;
+
+  switch (_resource.placementPolicy()) {
+  case RowSmartPlacement:
+  case ColSmartPlacement:
+    placed = smartPlacement(win->workspace(), new_win, avail);
+    break;
+  default:
+    break; // handled below
+  } // switch
+
+  if (placed == False) {
+    cascadePlacement(new_win, avail);
+    cascade_x += win->getTitleHeight() +
+                 (_resource.borderWidth() * 2);
+    cascade_y += win->getTitleHeight() +
+                 (_resource.borderWidth() * 2);
+  }
+
+  if (new_win.right() > avail.right())
+    new_win.setX(avail.left());
+  if (new_win.bottom() > avail.bottom())
+    new_win.setY(avail.top());
+
+  win->configure(new_win.x(), new_win.y(), new_win.width(), new_win.height());
+}
+
+
+bool BScreen::cascadePlacement(bt::Rect &win,
+                               const bt::Rect &avail) {
+  if (cascade_x > (avail.width() / 2) ||
+      cascade_y > (avail.height() / 2))
+    cascade_x = cascade_y = 32;
+
+  if (cascade_x == 32) {
+    cascade_x += avail.x();
+    cascade_y += avail.y();
+  }
+
+  win.setPos(cascade_x, cascade_y);
+
+  if (win.right()  > avail.right() ||
+      win.bottom() > avail.bottom()) {
+    cascade_x = cascade_y = 32;
+
+    cascade_x += avail.x();
+    cascade_y += avail.y();
+
+    win.setPos(cascade_x, cascade_y);
+  }
+
+  return True;
+}
+
+
+bool BScreen::smartPlacement(unsigned int workspace, bt::Rect& rect,
+                             const bt::Rect& avail) {
+  // constants
+  const bool row_placement =
+    (_resource.placementPolicy() == RowSmartPlacement);
+  const bool leftright =
+    (_resource.rowPlacementDirection() == LeftRight);
+  const bool topbottom =
+    (_resource.colPlacementDirection() == TopBottom);
+  const bool ignore_shaded = _resource.placementIgnoresShaded();
+
+  const int border_width = _resource.borderWidth();
+  const int left_border   = leftright ? 0 : -border_width-1;
+  const int top_border    = topbottom ? 0 : -border_width-1;
+  const int right_border  = leftright ? border_width+1 : 0;
+  const int bottom_border = topbottom ? border_width+1 : 0;
+
+  StackingList::const_iterator w_it, w_end;
+
+  /*
+    build a sorted vector of x and y grid boundaries
+
+    note: we use one vector to reduce the number of allocations
+    std::vector must do.. we allocate as much memory as we would need
+    in the worst case scenario and work with that
+  */
+  std::vector<int> coords(stackingList.size() * 4 + 4);
+  std::vector<int>::iterator
+    x_begin = coords.begin(),
+    x_end   = x_begin,
+    y_begin = coords.begin() + stackingList.size() * 2 + 2,
+    y_end   = y_begin;
+
+  {
+    std::vector<int>::iterator x_it = x_begin, y_it = y_begin;
+
+    *x_it++ = avail.left();
+    *x_it++ = avail.right();
+    x_end += 2;
+
+    *y_it++ = avail.top();
+    *y_it++ = avail.bottom();
+    y_end += 2;
+
+
+    for (w_it  = stackingList.begin(), w_end = stackingList.end();
+         w_it != w_end; ++w_it) {
+      const BlackboxWindow * const win =
+        dynamic_cast<const BlackboxWindow *>(*w_it);
+      if (!win) continue;
+
+      if (win->isDesktop())
+        continue;
+      if (win->isIconic())
+        continue;
+      if (win->workspace() != bt::BSENTINEL && win->workspace() != workspace)
+        continue;
+      if (ignore_shaded && win->isShaded())
+        continue;
+
+      *x_it++ = std::max(win->frameRect().left() + left_border,
+                         avail.left());
+      *x_it++ = std::min(win->frameRect().right() + right_border,
+                         avail.right());
+      x_end += 2;
+
+      *y_it++ = std::max(win->frameRect().top() + top_border,
+                         avail.top());
+      *y_it++ = std::min(win->frameRect().bottom() + bottom_border,
+                         avail.bottom());
+      y_end += 2;
+    }
+
+    assert(x_end <= y_begin);
+  }
+
+  std::sort(x_begin, x_end);
+  x_end = std::unique(x_begin, x_end);
+
+  std::sort(y_begin, y_end);
+  y_end = std::unique(y_begin, y_end);
+
+  // build a distribution grid
+  unsigned int gw = x_end - x_begin - 1,
+               gh = y_end - y_begin - 1;
+  std::bit_vector used_grid(gw * gh);
+  std::fill_n(used_grid.begin(), used_grid.size(), false);
+
+  for (w_it = stackingList.begin(), w_end = stackingList.end();
+       w_it != w_end; ++w_it) {
+    const BlackboxWindow * const win =
+      dynamic_cast<const BlackboxWindow *>(*w_it);
+    if (!win) continue;
+
+    if (win->isDesktop())
+      continue;
+    if (win->isIconic())
+      continue;
+    if (win->workspace() != bt::BSENTINEL && win->workspace() != workspace)
+      continue;
+    if (ignore_shaded && win->isShaded())
+      continue;
+
+    const int w_left =
+      std::max(win->frameRect().left() + left_border,
+               avail.left());
+    const int w_top =
+      std::max(win->frameRect().top() + top_border,
+               avail.top());
+    const int w_right =
+      std::min(win->frameRect().right() + right_border,
+               avail.right());
+    const int w_bottom =
+      std::min(win->frameRect().bottom() + bottom_border,
+               avail.bottom());
+
+    // which areas of the grid are used by this window?
+    std::vector<int>::iterator l_it = std::find(x_begin, x_end, w_left),
+                               r_it = std::find(x_begin, x_end, w_right),
+                               t_it = std::find(y_begin, y_end, w_top),
+                               b_it = std::find(y_begin, y_end, w_bottom);
+    assert(l_it != x_end &&
+           r_it != x_end &&
+           t_it != y_end &&
+           b_it != y_end);
+
+    const unsigned int left   = l_it - x_begin,
+                       right  = r_it - x_begin,
+                       top    = t_it - y_begin,
+                       bottom = b_it - y_begin;
+
+    for (unsigned int gy = top; gy < bottom; ++gy)
+      for (unsigned int gx = left; gx < right; ++gx)
+        used_grid[(gy * gw) + gx] = true;
+  }
+
+  /*
+    Attempt to fit the window into any of the empty areas in the grid.
+    The exact order is dependent upon the users configuration (as
+    shown below).
+
+    row placement:
+    - outer -> vertical axis
+    - inner -> horizontal axis
+
+    col placement:
+    - outer -> horizontal axis
+    - inner -> vertical axis
+  */
+
+  int gx, gy;
+  int &outer = row_placement ? gy : gx;
+  int &inner = row_placement ? gx : gy;
+  const int outer_delta =
+    row_placement ? (topbottom ? 1 : -1) : (leftright ? 1 : -1);
+  const int inner_delta =
+    row_placement ? (leftright ? 1 : -1) : (topbottom ? 1 : -1);
+  const int outer_begin =
+    row_placement ? (topbottom ? 0 : gh) : (leftright ? 0 : gw);
+  const int outer_end = row_placement ?
+                        (topbottom ? static_cast<int>(gh) : -1) :
+                        (leftright ? static_cast<int>(gw) : -1);
+  const int inner_begin =
+    row_placement ? (leftright ? 0 : gw) : (topbottom ? 0 : gh);
+  const int inner_end = row_placement ?
+                        (leftright ? static_cast<int>(gw) : -1) :
+                        (topbottom ? static_cast<int>(gh) : -1);
+
+  bt::Rect where;
+  bool fit = false;
+  for (outer = outer_begin; ! fit && outer != outer_end;
+       outer += outer_delta) {
+    for (inner = inner_begin; ! fit && inner != inner_end;
+         inner += inner_delta) {
+      // see if the window fits in a single unused area
+      if (used_grid[(gy * gw) + gx]) continue;
+
+      where.setCoords(*(x_begin + gx), *(y_begin + gy),
+                      *(x_begin + gx + 1), *(y_begin + gy + 1));
+
+      if (where.width()  >= rect.width() &&
+          where.height() >= rect.height()) {
+        fit = true;
+        break;
+      }
+
+      /*
+        see if we neighboring spaces are unused
+
+        TODO: we should grid fit in the same direction as above,
+        instead of always right->left and top->bottom
+      */
+      int gx2 = gx, gy2 = gy;
+
+      if (rect.width() > where.width()) {
+        for (gx2 = gx+1; gx2 < static_cast<int>(gw); ++gx2) {
+          if (used_grid[(gy * gw) + gx2]) {
+            --gx2;
+            break;
+          }
+
+          where.setCoords(*(x_begin + gx), *(y_begin + gy),
+                          *(x_begin + gx2 + 1), *(y_begin + gy2 + 1));
+
+          if (where.width() >= rect.width()) break;
+        }
+
+        if (gx2 >= static_cast<int>(gw)) --gx2;
+      }
+
+      if (rect.height() > where.height()) {
+        for (gy2 = gy; gy2 < static_cast<int>(gh); ++gy2) {
+          if (used_grid[(gy2 * gw) + gx]) {
+            --gy2;
+            break;
+          }
+
+          where.setCoords(*(x_begin + gx), *(y_begin + gy),
+                          *(x_begin + gx2 + 1), *(y_begin + gy2 + 1));
+
+          if (where.height() >= rect.height()) break;
+        }
+
+        if (gy2 >= static_cast<int>(gh)) --gy2;
+      }
+
+      if (where.width()  >= rect.width() &&
+          where.height() >= rect.height()) {
+        fit = true;
+
+        // make sure all spaces are really available
+        for (int gy3 = gy; gy3 <= gy2; ++gy3) {
+          for (int gx3 = gx; gx3 <= gx2; ++gx3) {
+            if (used_grid[(gy3 * gw) + gx3]) {
+              fit = false;
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (! fit) {
+    const int screen_area = avail.width() * avail.height();
+    const int window_area = rect.width() * rect.height();
+    if (window_area > screen_area / 6) {
+      // center windows that don't fix (except for small windows)
+      rect.setPos((avail.x() + avail.width() -
+                   rect.width()) / 2,
+                  (avail.y() + avail.height() -
+                   rect.height()) / 2);
+      return true;
+    }
+    return false;
+  }
+
+  // adjust the location() based on left/right and top/bottom placement
+  if (! leftright)
+    where.setX(where.right() - rect.width() + 1);
+  if (! topbottom)
+    where.setY(where.bottom() - rect.height() + 1);
+
+  rect.setPos(where.x(), where.y());
+
+  return true;
 }
 
 
@@ -1385,11 +1941,15 @@ void BScreen::createSlit(void) {
   assert(_slit == 0);
 
   _slit = new Slit(this);
-  raiseWindows(0);
+  stackingList.insert(_slit);
+  restackWindows();
 }
 
 
 void BScreen::destroySlit(void) {
+  assert(_slit != 0);
+
+  stackingList.remove(_slit);
   delete _slit;
   _slit = 0;
 }
@@ -1399,11 +1959,15 @@ void BScreen::createToolbar(void) {
   assert(_toolbar == 0);
 
   _toolbar = new Toolbar(this);
-  raiseWindows(0);
+  stackingList.insert(_toolbar);
+  restackWindows();
 }
 
 
 void BScreen::destroyToolbar(void) {
+  assert(_toolbar != 0);
+
+  stackingList.remove(_toolbar);
   delete _toolbar;
   _toolbar = 0;
 }
@@ -1414,4 +1978,36 @@ Windowmenu *BScreen::windowmenu(BlackboxWindow *win) {
     _windowmenu = new Windowmenu(*blackbox, screen_info.screenNumber());
   _windowmenu->setWindow(win);
   return _windowmenu;
+}
+
+
+void BScreen::addIcon(BlackboxWindow *win) {
+  Workspace *workspace = getWorkspace(win->workspace());
+  assert(workspace != 0);
+  workspace->removeWindow(win);
+
+  int id = _iconmenu->insertItem(win->getIconTitle());
+  win->setWindowNumber(id);
+}
+
+
+void BScreen::removeIcon(BlackboxWindow *win) {
+  _iconmenu->removeItem(win->windowNumber());
+
+  Workspace *workspace = getWorkspace(current_workspace);
+  assert(workspace != 0);
+  workspace->addWindow(win);
+}
+
+
+BlackboxWindow *BScreen::icon(unsigned int id) {
+  StackingList::const_iterator it = stackingList.begin(),
+                              end = stackingList.end();
+  for (; it != end; ++it) {
+    BlackboxWindow * const win = dynamic_cast<BlackboxWindow *>(*it);
+    if (win && win->isIconic() && win->windowNumber() == id)
+      return win;
+  }
+  assert(false); // should not happen
+  return 0;
 }

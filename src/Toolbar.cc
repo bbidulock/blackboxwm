@@ -23,6 +23,7 @@
 // DEALINGS IN THE SOFTWARE.
 
 #include "Toolbar.hh"
+#include "Iconmenu.hh"
 #include "Screen.hh"
 #include "Slit.hh"
 #include "Window.hh"
@@ -160,6 +161,7 @@ Toolbar::Toolbar(BScreen *scrn) {
   hide_timer = new bt::Timer(blackbox, this);
   hide_timer->setTimeout(blackbox->resource().autoRaiseDelay());
 
+  setLayer(isOnTop() ? StackingList::LayerAbove : StackingList::LayerNormal);
   hidden = doAutoHide();
 
   editing = False;
@@ -178,7 +180,8 @@ Toolbar::Toolbar(BScreen *scrn) {
   frame.window =
     XCreateWindow(display, _screen->screenInfo().rootWindow(), 0, 0, 1, 1, 0,
                   _screen->screenInfo().depth(), InputOutput,
-                  _screen->screenInfo().visual(), create_mask, &attrib);
+                  _screen->screenInfo().visual(),
+                  create_mask, &attrib);
   blackbox->insertEventHandler(frame.window, this);
 
   attrib.event_mask = ButtonPressMask | ButtonReleaseMask | ExposureMask |
@@ -187,47 +190,54 @@ Toolbar::Toolbar(BScreen *scrn) {
   frame.workspace_label =
     XCreateWindow(display, frame.window, 0, 0, 1, 1, 0,
                   _screen->screenInfo().depth(), InputOutput,
-                  _screen->screenInfo().visual(), create_mask, &attrib);
+                  _screen->screenInfo().visual(),
+                  create_mask, &attrib);
   blackbox->insertEventHandler(frame.workspace_label, this);
 
   frame.window_label =
     XCreateWindow(display, frame.window, 0, 0, 1, 1, 0,
                   _screen->screenInfo().depth(), InputOutput,
-                  _screen->screenInfo().visual(), create_mask, &attrib);
+                  _screen->screenInfo().visual(),
+                  create_mask, &attrib);
   blackbox->insertEventHandler(frame.window_label, this);
 
   frame.clock =
     XCreateWindow(display, frame.window, 0, 0, 1, 1, 0,
                   _screen->screenInfo().depth(), InputOutput,
-                  _screen->screenInfo().visual(), create_mask, &attrib);
+                  _screen->screenInfo().visual(),
+                  create_mask, &attrib);
   blackbox->insertEventHandler(frame.clock, this);
 
   frame.psbutton =
     XCreateWindow(display ,frame.window, 0, 0, 1, 1, 0,
                   _screen->screenInfo().depth(), InputOutput,
-                  _screen->screenInfo().visual(), create_mask, &attrib);
+                  _screen->screenInfo().visual(),
+                  create_mask, &attrib);
   blackbox->insertEventHandler(frame.psbutton, this);
 
   frame.nsbutton =
     XCreateWindow(display ,frame.window, 0, 0, 1, 1, 0,
                   _screen->screenInfo().depth(), InputOutput,
-                  _screen->screenInfo().visual(), create_mask, &attrib);
+                  _screen->screenInfo().visual(),
+                  create_mask, &attrib);
   blackbox->insertEventHandler(frame.nsbutton, this);
 
   frame.pwbutton =
     XCreateWindow(display ,frame.window, 0, 0, 1, 1, 0,
                   _screen->screenInfo().depth(), InputOutput,
-                  _screen->screenInfo().visual(), create_mask, &attrib);
+                  _screen->screenInfo().visual(),
+                  create_mask, &attrib);
   blackbox->insertEventHandler(frame.pwbutton, this);
 
   frame.nwbutton =
     XCreateWindow(display ,frame.window, 0, 0, 1, 1, 0,
                   _screen->screenInfo().depth(), InputOutput,
-                  _screen->screenInfo().visual(), create_mask, &attrib);
+                  _screen->screenInfo().visual(),
+                  create_mask, &attrib);
   blackbox->insertEventHandler(frame.nwbutton, this);
 
   frame.base = frame.label = frame.wlabel = frame.clk = frame.button =
-    frame.pbutton = None;
+ frame.pbutton = None;
 
   _screen->addStrut(&strut);
 
@@ -694,6 +704,7 @@ void Toolbar::edit(void) {
 
 void Toolbar::buttonPressEvent(const XButtonEvent * const event) {
   if (event->button == 1) {
+    _screen->raiseWindow(this);
     if (event->window == frame.psbutton)
       redrawPrevWorkspaceButton(True);
     else if (event->window == frame.nsbutton)
@@ -702,18 +713,20 @@ void Toolbar::buttonPressEvent(const XButtonEvent * const event) {
       redrawPrevWindowButton(True);
     else if (event->window == frame.nwbutton)
       redrawNextWindowButton(True);
-    else if (! isOnTop()) {
-      WindowStack w;
-      w.push_back(frame.window);
-      _screen->raiseWindows(&w);
+  } else if (event->button == 2) {
+    if (event->window == frame.workspace_label &&
+        _screen->iconmenu()->count() > 0) {
+      _screen->iconmenu()->hideTitle();
+      _screen->iconmenu()->popup(event->x_root, event->y_root,
+                                 _screen->availableArea());
+    } else {
+      _screen->lowerWindow(this);
     }
-  } else if (event->button == 2 && (! isOnTop())) {
-    XLowerWindow(display, frame.window);
   } else if (event->button == 3) {
-    BlackboxWindow *win = blackbox->getFocusedWindow();
-    if (event->window == frame.window_label
-        && win && win->getScreen() == _screen) {
-      Windowmenu *windowmenu = _screen->windowmenu(win);
+    BlackboxWindow *focus = blackbox->getFocusedWindow();
+    if (event->window == frame.window_label &&
+        focus && focus->getScreen() == _screen) {
+      Windowmenu *windowmenu = _screen->windowmenu(focus);
       windowmenu->popup(event->x_root, event->y_root,
                         _screen->availableArea());
     } else {
@@ -730,11 +743,12 @@ void Toolbar::buttonReleaseEvent(const XButtonEvent * const event) {
       redrawPrevWorkspaceButton(False);
 
       if (bt::within(event->x, event->y, frame.button_w, frame.button_w)) {
+        int new_workspace;
         if (_screen->currentWorkspace() > 0)
-          _screen->setCurrentWorkspace(_screen->currentWorkspace() - 1);
+          new_workspace = _screen->currentWorkspace() - 1;
         else
-          _screen->setCurrentWorkspace(_screen->resource().
-                                       numberOfWorkspaces() - 1);
+          new_workspace = _screen->resource().numberOfWorkspaces() - 1;
+        _screen->setCurrentWorkspace(new_workspace);
       }
     } else if (event->window == frame.nsbutton) {
       redrawNextWorkspaceButton(False);
@@ -929,10 +943,11 @@ void Toolbar::toggleAutoHide(void) {
 
 
 void Toolbar::toggleOnTop(void) {
-  _screen->resource().saveSlitOnTop(!isOnTop());
+  _screen->resource().saveToolbarOnTop(!isOnTop());
   _screen->saveResource();
-  if (isOnTop())
-    _screen->raiseWindows((WindowStack *) 0);
+  _screen->changeLayer(this, (isOnTop()
+                              ? StackingList::LayerAbove
+                              : StackingList::LayerNormal));
 }
 
 

@@ -30,14 +30,11 @@
 #include "BlackboxResource.hh"
 #include "Screen.hh"
 
-#include <list>
-
-// forward declaration
+// forward declarations
 class Slitmenu;
 
-
-class Slit : public bt::TimeoutHandler, public bt::EventHandler,
-             public bt::NoCopy
+class Slit : public StackEntity, public bt::TimeoutHandler,
+             public bt::EventHandler, public bt::NoCopy
 {
 public:
   struct SlitClient {
@@ -81,7 +78,8 @@ public:
   bool isHidden(void) const { return hidden; }
   bool doAutoHide(void) const { return screen->resource().doSlitAutoHide(); }
 
-  Window getWindowID(void) const { return frame.window; }
+  // StackEntity interface
+  Window windowID(void) const { return frame.window; }
 
   unsigned int getWidth(void) const { return frame.rect.width(); }
   unsigned int getExposedWidth(void) const {
@@ -127,6 +125,5 @@ public:
   Placement placement(void) const;
   void setPlacement(Placement new_placement);
 };
-
 
 #endif // __Slit_hh

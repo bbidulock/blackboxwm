@@ -29,7 +29,7 @@
 #include <cstdio>
 
 
-static BlackboxWindow * const zero = 0;
+static StackEntity * const zero = 0;
 
 
 StackingList::StackingList(void) {
@@ -41,49 +41,47 @@ StackingList::StackingList(void) {
 }
 
 
-StackingList::iterator StackingList::insert(BlackboxWindow *win) {
-  assert(win);
+StackingList::iterator StackingList::insert(StackEntity *entity) {
+  assert(entity);
 
-  iterator& it = layer(win->layer());
-  it = stack.insert(it, win);
+  iterator& it = layer(entity->layer());
+  it = stack.insert(it, entity);
   return it;
 }
 
 
-StackingList::iterator StackingList::append(BlackboxWindow *win) {
-  assert(win);
+StackingList::iterator StackingList::append(StackEntity *entity) {
+  assert(entity);
 
-  iterator& it = layer(win->layer());
+  iterator& it = layer(entity->layer());
   if (!*it) { // empty layer
-    it = stack.insert(it, win);
+    it = stack.insert(it, entity);
     return it;
   }
 
   // find the end of the layer (the zero pointer)
   iterator tmp = std::find(it, stack.end(), zero);
   assert(tmp != stack.end());
-  tmp = stack.insert(tmp, win);
+  tmp = stack.insert(tmp, entity);
   return tmp;
 }
 
 
-StackingList::iterator StackingList::remove(BlackboxWindow *win) {
-  assert(win);
+StackingList::iterator StackingList::remove(StackEntity *entity) {
+  assert(entity);
 
-  iterator& pos = layer(win->layer());
-  iterator it = std::find(pos, stack.end(), win);
+  iterator& pos = layer(entity->layer());
+  iterator it = std::find(pos, stack.end(), entity);
   assert(it != stack.end());
-  if (it == pos)
-    ++pos;
-
+  if (it == pos) ++pos;
   it = stack.erase(it);
   assert(stack.size() >= 5);
   return it;
 }
 
 
-StackingList::iterator& StackingList::layer(Layer layer) {
-  switch (layer) {
+StackingList::iterator& StackingList::layer(Layer which) {
+  switch (which) { // teehee
   case LayerNormal:
     return normal;
   case LayerFullScreen:
@@ -101,32 +99,34 @@ StackingList::iterator& StackingList::layer(Layer layer) {
 }
 
 
-void StackingList::changeLayer(BlackboxWindow *win, Layer new_layer) {
-  (void) remove(win);
-  win->setLayer(new_layer);
-  (void) insert(win);
+void StackingList::changeLayer(StackEntity *entity, Layer new_layer) {
+  assert(entity);
+
+  (void) remove(entity);
+  entity->setLayer(new_layer);
+  (void) insert(entity);
 }
 
 
-void StackingList::raise(BlackboxWindow *win) {
-  assert(win);
+void StackingList::raise(StackEntity *entity) {
+  assert(entity);
 
-  iterator& pos = layer(win->layer());
-  iterator it = std::find(pos, stack.end(), win);
+  iterator& pos = layer(entity->layer());
+  iterator it = std::find(pos, stack.end(), entity);
   assert(it != stack.end());
   if (it == pos)
     ++pos;
 
   (void) stack.erase(it);
-  pos = stack.insert(pos, win);
+  pos = stack.insert(pos, entity);
 }
 
 
-void StackingList::lower(BlackboxWindow *win) {
-  assert(win);
+void StackingList::lower(StackEntity *entity) {
+  assert(entity);
 
-  iterator& pos = layer(win->layer());
-  iterator it = std::find(pos, stack.end(), win);
+  iterator& pos = layer(entity->layer());
+  iterator it = std::find(pos, stack.end(), entity);
   assert(it != stack.end());
   if (it == pos)
     ++pos;
@@ -134,17 +134,17 @@ void StackingList::lower(BlackboxWindow *win) {
   (void) stack.erase(it);
 
   if (!*pos) { // empty layer
-    pos = stack.insert(pos, win);
+    pos = stack.insert(pos, entity);
     return;
   }
 
   it = std::find(pos, stack.end(), zero);
   assert(it != stack.end());
-  (void) stack.insert(it, win);
+  (void) stack.insert(it, entity);
 }
 
 
-BlackboxWindow *StackingList::front(void) const {
+StackEntity *StackingList::front(void) const {
   assert(stack.size() > 5);
 
   if (*fullscreen) return *fullscreen;
@@ -159,7 +159,7 @@ BlackboxWindow *StackingList::front(void) const {
 }
 
 
-BlackboxWindow *StackingList::back(void) const {
+StackEntity *StackingList::back(void) const {
   assert(stack.size() > 5);
 
   const_iterator it = desktop, _end = stack.begin();
@@ -173,40 +173,59 @@ BlackboxWindow *StackingList::back(void) const {
 
 
 void StackingList::dump(void) const {
-  const_iterator it = stack.begin(), end = stack.end();
+  const_iterator it = stack.begin(), _end = stack.end();
   BlackboxWindow *win;
+  StackEntity *entity;
   fprintf(stderr, "Stack:\n");
-  for (; it != end; ++it) {
-    win = *it;
+  for (; it != _end; ++it) {
+    entity = *it;
+    win = dynamic_cast<BlackboxWindow *>(entity);
     if (win)
       fprintf(stderr, "%s: 0x%lx\n", win->getTitle(), win->getClientWindow());
+    else if (entity)
+      fprintf(stderr, "entity: 0x%lx\n", entity->windowID());
     else
       fprintf(stderr, "zero\n");
   }
   fprintf(stderr, "the layers:\n");
-  win = *fullscreen;
+  entity = *fullscreen;
+  win = dynamic_cast<BlackboxWindow *>(entity);
   if (win)
     fprintf(stderr, "%s: 0x%lx\n", win->getTitle(), win->getClientWindow());
+  else if (entity)
+    fprintf(stderr, "entity: 0x%lx\n", entity->windowID());
   else
     fprintf(stderr, "zero\n");
-  win = *above;
+  entity = *above;
+  win = dynamic_cast<BlackboxWindow *>(entity);
   if (win)
     fprintf(stderr, "%s: 0x%lx\n", win->getTitle(), win->getClientWindow());
+  else if (entity)
+    fprintf(stderr, "entity: 0x%lx\n", entity->windowID());
   else
     fprintf(stderr, "zero\n");
-  win = *normal;
+  entity = *normal;
+  win = dynamic_cast<BlackboxWindow *>(entity);
   if (win)
     fprintf(stderr, "%s: 0x%lx\n", win->getTitle(), win->getClientWindow());
+  else if (entity)
+    fprintf(stderr, "entity: 0x%lx\n", entity->windowID());
   else
     fprintf(stderr, "zero\n");
-  win = *below;
+  entity = *below;
+  win = dynamic_cast<BlackboxWindow *>(entity);
   if (win)
     fprintf(stderr, "%s: 0x%lx\n", win->getTitle(), win->getClientWindow());
+  else if (entity)
+    fprintf(stderr, "entity: 0x%lx\n", entity->windowID());
   else
     fprintf(stderr, "zero\n");
-  win = *desktop;
+  entity = *desktop;
+  win = dynamic_cast<BlackboxWindow *>(entity);
   if (win)
     fprintf(stderr, "%s: 0x%lx\n", win->getTitle(), win->getClientWindow());
+  else if (entity)
+    fprintf(stderr, "entity: 0x%lx\n", entity->windowID());
   else
     fprintf(stderr, "zero\n");
 }
