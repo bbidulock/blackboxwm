@@ -1,5 +1,14 @@
 -- TODO for Blackbox - an X11 Window manager
 
+Before 0.70.0 release:
+-----------------------------
+
+* Documentation updates
+
+* Focus Last Window on Workspace
+
+* i18n/l10n (translations) support
+
 netwm:
 -----------------------------
 * if we have N workspaces NET_DESKTOP_NAMES could supply us with N+M
@@ -9,13 +18,10 @@ refactoring:
 -----------------------------
 * look into public v. private members of all classes
 
-warts:
------------------------------
-* vnc in full screen mode does not get focus, but apparently works
-  with openbox
-
 Stuff TODO or On The Way(tm):
 -----------------------------
+
+* re-add support for tear-off menus to bt::Menu
 
 bt::i18n is very awkward to use - replace it with something else that
 can translate into either UTF-8 (needed for NETWM and Xft) or locale
@@ -30,8 +36,6 @@ ADD: add _BLACKBOX_STYLE and _BLACKBOX_MENU atoms so that bbtools, bbconf,
 ADD: support user controlled window decoration
 
 ADD: subdirs in stylesmenu/dir will create a new submenu
-
-ADD: UTF8 support
 
 CHANGE: when workspace name is greater than the width of its text area the
 	toolbar gets very ugly.  Elliding code was recently added for
@@ -50,8 +54,6 @@ ADD: a regression test suite
 
 Code cleanup:
 -----------------------------
-CHANGE: look into the settings stored in client.decorations and
-        .functions.
 
 CHANGE: look into centering the window when maximizing and the window can not
         grow to fill the area
