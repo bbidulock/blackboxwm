@@ -279,7 +279,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
   // manage shown windows
   for (i = 0; i < nchild; ++i) {
-    if (children[i] == None || ! blackbox->validateWindow(children[i]))
+    if (children[i] == None)
       continue;
 
     XWindowAttributes attrib;

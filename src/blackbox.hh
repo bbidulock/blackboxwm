@@ -124,8 +124,6 @@ public:
   void checkMenu(void);
   void rereadMenu(void);
 
-  bool validateWindow(Window window);
-
   virtual void timeout(bt::Timer *);
 
   Atom getWMChangeStateAtom(void) const { return xa_wm_change_state; }

@@ -352,18 +352,6 @@ void Blackbox::init_icccm(void) {
 }
 
 
-bool Blackbox::validateWindow(Window window) {
-  XEvent event;
-  if (XCheckTypedWindowEvent(XDisplay(), window, DestroyNotify, &event)) {
-    XPutBackEvent(XDisplay(), &event);
-
-    return False;
-  }
-
-  return True;
-}
-
-
 void Blackbox::XGrabServer(void) {
   if (grab_count == 0)
     ::XGrabServer(XDisplay());

@@ -224,12 +224,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   blackbox->XGrabServer();
 
-  if (! validateClient()) {
-    blackbox->XUngrabServer();
-    delete this;
-    return;
-  }
-
   // fetch client size and placement
   XWindowAttributes wattrib;
   if (! XGetWindowAttributes(blackbox->XDisplay(),
@@ -1552,10 +1546,6 @@ bool BlackboxWindow::setInputFocus(void) {
   if (client.state.focused)
     return true;
 
-  // do not give focus to a window that is about to close
-  if (!validateClient())
-    return false;
-
   const bt::Rect &scr = screen->screenInfo().rect();
   if (!frame.rect.intersects(scr)) {
     // client is outside the screen, move it to the center
@@ -2602,9 +2592,6 @@ void BlackboxWindow::reparentNotifyEvent(const XReparentEvent * const event) {
 
 
 void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
-  if (event->state == PropertyDelete || ! validateClient())
-    return;
-
 #ifdef    DEBUG
   fprintf(stderr, "BlackboxWindow::propertyNotifyEvent(): for 0x%lx\n",
           client.window);
@@ -3246,23 +3233,6 @@ BlackboxWindow::leaveNotifyEvent(const XCrossingEvent * const /*unused*/) {
 void BlackboxWindow::shapeEvent(const XEvent * const /*unused*/)
 { if (client.state.shaped) configureShape(); }
 #endif // SHAPE
-
-
-bool BlackboxWindow::validateClient(void) const {
-  XSync(blackbox->XDisplay(), False);
-
-  XEvent e;
-  if (XCheckTypedWindowEvent(blackbox->XDisplay(), client.window,
-                             DestroyNotify, &e) ||
-      XCheckTypedWindowEvent(blackbox->XDisplay(), client.window,
-                             UnmapNotify, &e)) {
-    XPutBackEvent(blackbox->XDisplay(), &e);
-
-    return False;
-  }
-
-  return True;
-}
 
 
 /*

@@ -88,9 +88,6 @@ Slit::~Slit(void) {
 
 
 void Slit::addClient(Window w) {
-  if (! blackbox->validateWindow(w))
-    return;
-
   SlitClient *client = new SlitClient;
   client->client_window = w;
 
@@ -149,7 +146,7 @@ void Slit::removeClient(SlitClient *client, bool remap) {
   blackbox->removeEventHandler(client->icon_window);
   clientList.remove(client);
 
-  if (remap && blackbox->validateWindow(client->window)) {
+  if (remap) {
     blackbox->XGrabServer();
     XSelectInput(display, client->window, NoEventMask);
     XReparentWindow(display, client->window, screen->screenInfo().rootWindow(),
@@ -507,9 +504,6 @@ void Slit::leaveNotifyEvent(const XCrossingEvent * const /*unused*/) {
 
 
 void Slit::configureRequestEvent(const XConfigureRequestEvent * const event) {
-  if (! blackbox->validateWindow(event->window))
-    return;
-
   XWindowChanges xwc;
 
   xwc.x = event->x;

@@ -348,8 +348,6 @@ public:
   unsigned long currentState(void) const
   { return client.current_state; }
 
-  bool validateClient(void) const;
-
   inline bool isFocused(void) const
   { return client.state.focused; }
   void setFocused(bool focused);
