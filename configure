@@ -854,7 +854,7 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-dependency-tracking Speeds up one-time builds
   --enable-dependency-tracking  Do not reject slow dependency extractors
-  --enable-shape          enable support of the XShape extension
+  --enable-shape          enable support of the SHAPE extension
                           [default=yes]
   --enable-mitshm         enable support of the MIT-SHM extension
                           [default=yes]
@@ -4261,13 +4261,14 @@ test "x$XLIB" = "xno" && { { echo "$as_me:$LINENO: error: standard X11 headers n
 echo "$as_me: error: standard X11 headers not found" >&2;}
    { (exit 1); exit 1; }; }
 
-echo "$as_me:$LINENO: checking whether to build support for the XShape extension" >&5
-echo $ECHO_N "checking whether to build support for the XShape extension... $ECHO_C" >&6
+echo "$as_me:$LINENO: checking whether to build support for the SHAPE extension" >&5
+echo $ECHO_N "checking whether to build support for the SHAPE extension... $ECHO_C" >&6
 # Check whether --enable-shape or --disable-shape was given.
 if test "${enable_shape+set}" = set; then
   enableval="$enable_shape"
   SHAPE="$enableval"
-	      SHAPE=yes
+else
+  SHAPE=yes
 fi;
 echo "$as_me:$LINENO: result: $SHAPE" >&5
 echo "${ECHO_T}$SHAPE" >&6
@@ -4403,7 +4404,11 @@ done
       SHAPE=
       LIBS="$save_LIBS"
     fi
+  else
+    SHAPE=
   fi
+else
+  SHAPE=
 fi
 
 
@@ -4548,7 +4553,11 @@ done
       MITSHM=
       LIBS="$save_LIBS"
     fi
+  else
+    MITSHM=
   fi
+else
+  MITSHM=
 fi
 
 

@@ -108,12 +108,12 @@ AC_CHECK_HEADERS([X11/Xatom.h X11/Xlocale.h X11/Xresource.h X11/Xutil.h X11/keys
 ])
 test "x$XLIB" = "xno" && AC_MSG_ERROR([standard X11 headers not found])
 
-dnl Check for XShape extension support and proper library files.
-AC_MSG_CHECKING([whether to build support for the XShape extension])
+dnl Check for SHAPE extension support and proper library files.
+AC_MSG_CHECKING([whether to build support for the SHAPE extension])
 AC_ARG_ENABLE([shape],
               AC_HELP_STRING([--enable-shape],
-	                     [enable support of the XShape extension @<:@default=yes@:>@]),
-	      [SHAPE="$enableval"]
+	                     [enable support of the SHAPE extension @<:@default=yes@:>@]),
+	      [SHAPE="$enableval"],
 	      [SHAPE=yes])
 AC_MSG_RESULT([$SHAPE])
 
@@ -137,7 +137,11 @@ if test "x$SHAPE" = "xyes"; then
       SHAPE=
       LIBS="$save_LIBS"
     fi
+  else
+    SHAPE=
   fi
+else
+  SHAPE=
 fi
 AC_SUBST([SHAPE])
 
@@ -168,7 +172,11 @@ if test "x$MITSHM" = "xyes"; then
       MITSHM=
       LIBS="$save_LIBS"
     fi
+  else
+    MITSHM=
   fi
+else
+  MITSHM=
 fi
 AC_SUBST([MITSHM])
 
