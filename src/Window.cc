@@ -2315,7 +2315,26 @@ void BlackboxWindow::redrawCloseButton(bool pressed) const {
 }
 
 
-void BlackboxWindow::mapRequestEvent(const XMapRequestEvent *re) {
+void BlackboxWindow::netwmMoveResize(const XClientMessageEvent* const ce) {
+  XConfigureRequestEvent request;
+  request.window = ce->window;
+  request.x = ce->data.l[1];
+  request.y = ce->data.l[2];
+  request.width = ce->data.l[3];
+  request.height = ce->data.l[4];
+  request.value_mask = CWX | CWY | CWWidth | CWHeight;
+
+  const int old_gravity = client.win_gravity;
+  if (ce->data.l[0] != 0)
+    client.win_gravity = ce->data.l[0];
+
+  configureRequestEvent(&request);
+
+  client.win_gravity = old_gravity;
+}
+
+
+void BlackboxWindow::mapRequestEvent(const XMapRequestEvent* const re) {
   if (re->window != client.window)
     return;
 

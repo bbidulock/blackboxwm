@@ -403,6 +403,10 @@ void Blackbox::process_event(XEvent *e) {
         BlackboxWindow *win = findWindow(e->xclient.window);
         if (win)
           win->close();
+      } else if (e->xclient.message_type == netwm()->moveresizeWindow()) {
+        BlackboxWindow *win = findWindow(e->xclient.window);
+        if (win)
+          win->netwmMoveResize(&(e->xclient));
       } else if (e->xclient.message_type ==
                  getBlackboxCycleWindowFocusAtom()) {
         BScreen *screen = findScreen(e->xclient.window);

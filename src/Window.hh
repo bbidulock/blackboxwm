@@ -362,6 +362,8 @@ public:
   void shapeEvent(const XShapeEvent * const /*unused*/);
 #endif // SHAPE
 
+  void netwmMoveResize(const XClientMessageEvent* const ce);
+
   virtual void timeout(void);
 };
 
