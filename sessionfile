@@ -1,0 +1,141 @@
+
+
+XFree86 Version 3.3.1 / X Window System
+(protocol Version 11, revision 0, vendor release 6300)
+Release Date: August 4 1997
+	If the server is older than 6-12 months, or if your card is newer
+	than the above date, look for a newer version before reporting
+	problems.  (see http://www.XFree86.Org/FAQ)
+Operating System: Linux 2.1.80 i586 [ELF] 
+Configured drivers:
+  SVGA: server for SVGA graphics adaptors (Patchlevel 0):
+      s3_virge
+(using VT number 4)
+
+XF86Config: /etc/XF86Config
+(**) stands for supplied, (--) stands for probed/default values
+(**) XKB: disabled
+(**) XKB: keymap: "xfree86(us)" (overrides other XKB settings)
+(**) Mouse: type: PS/2, device: /dev/mouse, baudrate: 1200,
+       3 button emulation (timeout: 50ms)
+(**) SVGA: Graphics device ID: "Diamond Stealth 3d 2000"
+(**) SVGA: Monitor ID: "Acerview"
+(**) FontPath set to "/usr/X11R6.3/lib/X11/fonts/misc/,/usr/X11R6.3/lib/X11/fonts/75dpi/:unscaled,/usr/X11R6.3/lib/X11/fonts/100dpi/:unscaled,/usr/X11R6.3/lib/X11/fonts/Type1/,/usr/X11R6.3/lib/X11/fonts/Speedo/,/usr/X11R6.3/lib/X11/fonts/75dpi/,/usr/X11R6.3/lib/X11/fonts/100dpi/"
+(--) SVGA: PCI: S3 ViRGE rev 6, Memory @ 0x08000000
+(--) SVGA: S3V: ViRGE rev 6, Linear FB @ 0x08000000
+(--) SVGA: Detected S3 ViRGE
+(--) SVGA: using driver for chipset "s3_virge"
+(--) SVGA: videoram:  4096k
+(--) SVGA: Ramdac speed: 135 MHz  (57 MHz for 24 bpp)
+(--) SVGA: Detected current MCLK value of 69.801 MHz
+(--) SVGA: chipset:  s3_virge
+(--) SVGA: videoram: 4096k
+(**) SVGA: Option "fifo_moderate"
+(**) SVGA: Option "pci_burst_on"
+(**) SVGA: Option "hw_cursor"
+(**) SVGA: Option "xaa_benchmark"
+(**) SVGA: Option "pci_retry"
+(**) SVGA: Using 24 bpp, Depth 24, Color weight: 888
+(--) SVGA: Maximum allowed dot-clock: 57.000 MHz
+(--) SVGA: Interlace modes are not supported at 24 bpp
+(**) SVGA: Mode "800x600": mode clock =  36.000
+(**) SVGA: Mode "640x480": mode clock =  25.175
+(--) SVGA: There is no mode definition named "512x384"
+(--) SVGA: Removing mode "512x384" from list of valid modes.
+(**) SVGA: Virtual resolution set to 1152x900
+(--) SVGA: SpeedUp code selection modified because virtualX != 1024
+(--) SVGA: s3_virge: Using hardware cursor
+ViRGE register cache hits: 0 misses: 4
+(--) SVGA: Using XAA (XFree86 Acceleration Architecture)
+(--) SVGA: XAA: Solid filled rectangles
+(--) SVGA: XAA: Screen-to-screen copy
+(--) SVGA: XAA: 8x8 pattern fill
+(--) SVGA: XAA: 8x8 color expand pattern fill
+(--) SVGA: XAA: CPU to screen color expansion (bitmap, TE/NonTE imagetext, TE/NonTE polytext)
+(--) SVGA: XAA: Using 9 128x128 areas for pixmap caching
+(--) SVGA: XAA: Caching tiles and stipples
+(--) SVGA: XAA: Horizontal and vertical lines and segments
+CPU to framebuffer                                5.25 Mpix/sec (15.75 MB/s)
+10x1 solid rectangle fill                        15.12 Mpix/sec (45.36 MB/s)
+40x40 solid rectangle fill                       95.30 Mpix/sec (285.90 MB/s)
+400x400 solid rectangle fill                    176.04 Mpix/sec (528.12 MB/s)
+10x10 screen copy                                23.54 Mpix/sec (70.62 MB/s)
+40x40 screen copy                                45.60 Mpix/sec (136.80 MB/s)
+400x400 screen copy                              51.00 Mpix/sec (153.00 MB/s)
+400x400 aligned screen copy (scroll)             51.45 Mpix/sec (154.35 MB/s)
+10x10 8x8 pattern fill                           45.60 Mpix/sec (136.80 MB/s)
+400x400 8x8 pattern fill                        160.85 Mpix/sec (482.55 MB/s)
+10x10 8x8 color expand pattern fill              49.00 Mpix/sec (147.00 MB/s)
+400x400 8x8 color expand pattern fill           175.95 Mpix/sec (527.85 MB/s)
+10x10 CPU-to-screen color expand                  3.03 Mpix/sec (9.09 MB/s)
+416x400 CPU-to-screen color expand              123.55 Mpix/sec (370.65 MB/s)
+parsing menu -Precursor-
+Precursor-new line -  "xterm" (xterm -ls)
+-
+Precursor-checking for command: 3 8
+Precursor-inserting command -xterm xterm -ls-
+Precursor-new line -  "ircII undernet" (xterm -name irc -e irc)
+-
+Precursor-checking for command: 3 17
+Precursor-inserting command -ircII undernet xterm -name irc -e irc-
+Precursor-new line -  "ircII epic" (xterm -name irc -e irc nyz irc.miranda.org:6667)
+-
+Precursor-checking for command: 3 13
+Precursor-inserting command -ircII epic xterm -name irc -e irc nyz irc.miranda.org:6667-
+Precursor-new line -  "xemacs" (xemacs)
+-
+Precursor-checking for command: 3 9
+Precursor-inserting command -xemacs xemacs-
+Precursor-new line -  "xv 3.10a" (xv -bg rgb:c0/c0/c0 -fg black -hi rgb:e0/e0/e0 -lo rgb:a0/a0/a0)
+-
+Precursor-checking for command: 3 11
+Precursor-inserting command -xv 3.10a xv -bg rgb:c0/c0/c0 -fg black -hi rgb:e0/e0/e0 -lo rgb:a0/a0/a0-
+Precursor-new line -  "Image Magick" (display)
+-
+Precursor-checking for command: 3 15
+Precursor-inserting command -Image Magick display-
+Precursor-new line -  "Communicator 4.04" (netscape)
+-
+Precursor-checking for command: 3 20
+Precursor-inserting command -Communicator 4.04 netscape-
+Precursor-new line -  [begin] (PPP link)
+-
+Precursor-checking for command: 21 0
+Precursor-checking for submenu
+parsing menu -PPP link-
+PPP link-new line -    "ppp up" (/usr/sbin/pppd)
+-
+PPP link-checking for command: 5 11
+PPP link-inserting command -ppp up /usr/sbin/pppd-
+PPP link-new line -    "ppp down" (killall pppd)
+-
+PPP link-checking for command: 5 13
+PPP link-inserting command -ppp down killall pppd-
+PPP link-new line -  [end]
+-
+PPP link-checking for command: 8 0
+PPP link-checking for submenu
+PPP link-end of submenu
+PPP link-end of parse
+Precursor-inserting submenu -PPP link-
+Precursor-new line -  "Restart" (Restart)
+-
+Precursor-checking for command: 3 10
+Precursor-inserting command -Restart Restart-
+Precursor-new line -  "Exit" (Exit)
+-
+Precursor-checking for command: 3 7
+Precursor-inserting command -Exit Exit-
+Precursor-new line -end
+-
+Precursor-checking for command: 4 0
+Precursor-checking for submenu
+Precursor-new line --
+Precursor-checking for command: 0 0
+Precursor-checking for submenu
+Precursor-end of parse
+
+waiting for X server to shut down xterm:  fatal IO error 32 (Broken pipe) or KillClient on X server ":1.0"
+ViRGE register cache hits: 229391 misses: 2327
+
+

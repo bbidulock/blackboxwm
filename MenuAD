@@ -1,0 +1,6 @@
+begin (Blackbox 0.10.0)
+  "xterm" (xterm -ls)
+  "XEmacs" (xemacs)
+  "Restart" (Restart)
+  "Shutdown" (Exit)
+end
