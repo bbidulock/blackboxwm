@@ -2050,7 +2050,7 @@ void BlackboxWindow::restoreAttributes(void) {
     if (decorations & Decor_Titlebar) {
       if (functions & Func_Close)   // close button is controlled by function
         decorations |= Decor_Close; // not decor type
-    } else { 
+    } else {
       if (flags.shaded) // we can not be shaded if we lack a titlebar
         shade();
     }
@@ -2986,15 +2986,22 @@ void BlackboxWindow::restore(bool remap) {
   // do not leave a shaded window as an icon unless it was an icon
   if (flags.shaded && ! flags.iconic)
     current_state = NormalState;
-  
+
   setState(current_state);
 
   restoreGravity(client.rect);
+
+  XGrabServer(blackbox->getXDisplay());
 
   XUnmapWindow(blackbox->getXDisplay(), frame.window);
   XUnmapWindow(blackbox->getXDisplay(), client.window);
 
   XSetWindowBorderWidth(blackbox->getXDisplay(), client.window, client.old_bw);
+  XMoveWindow(blackbox->getXDisplay(), client.window,
+              client.rect.x() - frame.rect.x(),
+              client.rect.y() - frame.rect.y());
+
+  XUngrabServer(blackbox->getXDisplay());
 
   XEvent ev;
   if (XCheckTypedWindowEvent(blackbox->getXDisplay(), client.window,
@@ -3099,7 +3106,7 @@ void BlackboxWindow::changeBlackboxHints(const BlackboxHints *net) {
     if (decorations & Decor_Titlebar) {
       if (functions & Func_Close)   // close button is controlled by function
         decorations |= Decor_Close; // not decor type
-    } else { 
+    } else {
       if (flags.shaded) // we can not be shaded if we lack a titlebar
         shade();
     }
