@@ -233,7 +233,8 @@ private:
 
   bool getState(void);
   Window createToplevelWindow();
-  Window createChildWindow(Window parent, Cursor = None);
+  Window createChildWindow(Window parent, unsigned long event_mask,
+                           Cursor = None);
 
   void getWMName(void);
   void getWMIconName(void);
