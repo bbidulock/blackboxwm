@@ -1274,6 +1274,8 @@ void BlackboxWindow::configureShape(void) {
 
 
 Bool BlackboxWindow::setInputFocus(void) {
+  if (! validateClient()) return False;
+
   if (((signed) (frame.x + frame.width)) < 0) {
     if (((signed) (frame.y + frame.y_border)) < 0)
       configure(frame.border_w, frame.border_w, frame.width, frame.height);
@@ -1295,8 +1297,6 @@ Bool BlackboxWindow::setInputFocus(void) {
       configure(screen->getWidth() - frame.width,
                 frame.y + frame.border_w, frame.width, frame.height);
   }
-
-  if (! validateClient()) return False;
 
   Bool ret = False;
 
