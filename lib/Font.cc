@@ -160,7 +160,10 @@ XFontStruct *bt::FontCache::findFont(const std::string &fontname) {
   }
 
   XFontStruct *ret = XLoadQueryFont(_display.XDisplay(), fontname.c_str());
-  if (ret == NULL) ret = XLoadQueryFont(_display.XDisplay(), defaultFont);
+  if (ret == NULL) {
+    fprintf(stderr, "bt::Font: couldn't load font '%s'\n", fontname.c_str());
+    ret = XLoadQueryFont(_display.XDisplay(), defaultFont);
+  }
   assert(ret != NULL);
 
 #ifdef FONTCACHE_DEBUG
