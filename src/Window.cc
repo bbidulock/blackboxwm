@@ -202,9 +202,9 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   client.colormap = wattrib.colormap;
   client.state.moving = client.state.resizing = client.state.shaded =
-    client.state.iconic = client.state.focused = client.state.modal =
-    client.state.fullscreen = client.state.send_focus_message =
-    client.state.shaped = False;
+  client.state.iconic = client.state.focused = client.state.modal =
+ client.state.fullscreen = client.state.send_focus_message =
+  client.state.shaped = False;
   client.state.maximized = 0;
   client.state.skip = SKIP_NONE;
   client.state.layer = StackingList::LayerNormal;
@@ -276,9 +276,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   upsize();
 
   if (blackbox->startingUp() || isTransient() || isDesktop() ||
-      client.normal_hint_flags & (PPosition|USPosition)) {
+      (client.normal_hint_flags & USPosition))
     applyGravity(frame.rect);
-  }
 
   /*
     the server needs to be grabbed here to prevent client's from sending
