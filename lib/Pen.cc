@@ -33,6 +33,7 @@
 #  include <X11/Xft/Xft.h>
 #endif
 
+#include <assert.h>
 #include <stdio.h>
 
 #include <algorithm>
@@ -477,10 +478,10 @@ void bt::PenCache::release(XftCacheItem *xftitem) {
 #endif
 
 
-bt::Pen::Pen(unsigned int screen_, const Color &color_,
-             int function, int subwindow)
+bt::Pen::Pen(unsigned int screen_, const Color &color_)
   : _screen(screen_), _color(color_), _fontid(0ul),
-    _function(function), _subwindow(subwindow), _item(0), _xftitem(0)
+    _function(GXcopy), _subwindow(ClipByChildren),
+    _item(0), _xftitem(0)
 { }
 
 
@@ -503,6 +504,22 @@ void bt::Pen::setFont(const Font &font) {
 }
 
 
+void bt::Pen::setGCFunction(int function) {
+  if (_item) pencache->release(_item);
+  _item = 0;
+
+  _function = function;
+}
+
+
+void bt::Pen::setSubWindowMode(int subwindow) {
+  if (_item) pencache->release(_item);
+  _item = 0;
+
+  _subwindow = subwindow;
+}
+
+
 const bt::Display &bt::Pen::display(void) const {
   return pencache->_display;
 }
@@ -511,6 +528,7 @@ const bt::Display &bt::Pen::display(void) const {
 const GC &bt::Pen::gc(void) const {
   if (! _item)
     _item = pencache->find(_screen, _color, _fontid, _function, _subwindow);
+  assert(_item != 0);
   return _item->gc();
 }
 
@@ -524,6 +542,7 @@ XftDraw *bt::Pen::xftDraw(Drawable drawable) const {
   if (! _xftitem) {
     _xftitem = pencache->findXft(_screen, drawable);
   }
+  assert(_xftitem != 0);
   return _xftitem->xftdraw();
 #else
   return 0;

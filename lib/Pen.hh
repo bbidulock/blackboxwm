@@ -42,14 +42,15 @@ namespace bt {
   public:
     static void clearCache(void);
 
-    Pen(unsigned int screen_, const Color &color_,
-        int function = GXcopy, int subwindow = ClipByChildren);
+    Pen(unsigned int screen_, const Color &color_);
     ~Pen(void);
 
     inline unsigned int screen(void) const { return _screen; }
     inline const Color &color(void) const { return _color; }
 
     void setFont(const Font &font);
+    void setGCFunction(int function);
+    void setSubWindowMode(int subwindow);
 
     const Display &display(void) const;
     const GC &gc(void) const;
