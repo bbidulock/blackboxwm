@@ -97,6 +97,7 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
                        BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
+  setAutoDelete(false);
   setTitle("Configuration Options");
   showTitle();
 

@@ -285,7 +285,7 @@ bt::Menu::Menu(Application &app, unsigned int screen)
     _motion(0),
     _itemw(1),
     _active_index(~0u),
-    _auto_delete(false),
+    _auto_delete(true),
     _pressed(false),
     _title_pressed(false),
     _size_dirty(true),
