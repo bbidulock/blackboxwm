@@ -2821,28 +2821,24 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const event) {
   } else if (frame.close_button == event->window) {
     if (event->button == 1)
       redrawCloseButton(true);
-  } else if (frame.plate == event->window) {
+  } else {
     if (event->button == 1
         || (event->button == 3 && event->state == Mod1Mask)) {
-      if (! client.state.focused)
-        setInputFocus();
-      else
-        XInstallColormap(blackbox->XDisplay(), client.colormap);
+      frame.grab_x = event->x_root - frame.rect.x() - frame.border_w;
+      frame.grab_y = event->y_root - frame.rect.y() - frame.border_w;
 
       screen->raiseWindow(this);
-      XAllowEvents(blackbox->XDisplay(), ReplayPointer, event->time);
-    }
-  } else if (frame.title == event->window || frame.label == event->window ||
-             frame.handle) {
-    if (event->button == 1
-        || (event->button == 3 && event->state == Mod1Mask)) {
+
       if (! client.state.focused)
         setInputFocus();
       else
         XInstallColormap(blackbox->XDisplay(), client.colormap);
 
-      if (frame.title == event->window || frame.label == event->window &&
-          hasWindowFunction(WindowFunctionShade)) {
+      if (frame.plate == event->window) {
+        XAllowEvents(blackbox->XDisplay(), ReplayPointer, event->time);
+      } else if (frame.title == event->window
+                 || frame.label == event->window
+                 && hasWindowFunction(WindowFunctionShade)) {
         if ((event->time - lastButtonPressTime <=
              blackbox->resource().doubleClickInterval()) ||
             event->state == ControlMask) {
@@ -2852,9 +2848,6 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const event) {
           lastButtonPressTime = event->time;
         }
       }
-      frame.grab_x = event->x_root - frame.rect.x() - frame.border_w;
-      frame.grab_y = event->y_root - frame.rect.y() - frame.border_w;
-      screen->raiseWindow(this);
     } else if (event->button == 2) {
       screen->lowerWindow(this);
     } else if (event->button == 3) {
