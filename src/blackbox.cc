@@ -381,7 +381,7 @@ void Blackbox::process_event(XEvent *e) {
                  getBlackboxChangeWindowFocusAtom()) {
         BlackboxWindow *win = findWindow(e->xclient.window);
 
-        if (win && win->isVisible() && win->setInputFocus())
+        if (win && ! win->isHidden() && win->setInputFocus())
           win->installColormap(True);
       } else if (e->xclient.message_type == netwm()->activeWindow()) {
         BlackboxWindow *win = findWindow(e->xclient.window);
@@ -393,7 +393,7 @@ void Blackbox::process_event(XEvent *e) {
           if (win->getWorkspaceNumber() != screen->getCurrentWorkspaceID())
             screen->changeWorkspaceID(win->getWorkspaceNumber());
 
-          if (win->isVisible() && win->setInputFocus()) {
+          if (! win->isHidden() && win->setInputFocus()) {
             Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
             wkspc->raiseWindow(win);
             win->installColormap(True);
@@ -414,20 +414,6 @@ void Blackbox::process_event(XEvent *e) {
             screen->prevFocus();
           else
             screen->nextFocus();
-        }
-      } else if (e->xclient.message_type ==
-                 getBlackboxChangeAttributesAtom()) {
-        BlackboxWindow *win = findWindow(e->xclient.window);
-
-        if (win && win->validateClient()) {
-          BlackboxHints net;
-          net.flags = e->xclient.data.l[0];
-          net.attrib = e->xclient.data.l[1];
-          net.workspace = e->xclient.data.l[2];
-          net.stack = e->xclient.data.l[3];
-          net.decoration = e->xclient.data.l[4];
-
-          win->changeBlackboxHints(&net);
         }
       }
     }

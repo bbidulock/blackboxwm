@@ -76,10 +76,12 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     if timer is zero in the destructor, and assume that the window is not
     fully constructed if timer is zero...
   */
-  timer = 0;
+  timer = (BTimer*) 0;
   blackbox = b;
   client.window = w;
   screen = s;
+  windowmenu = (Windowmenu*) 0;
+  lastButtonPressTime = 0;
 
   if (! validateClient()) {
     delete this;
@@ -110,36 +112,17 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   XChangeWindowAttributes(blackbox->getXDisplay(), client.window,
                           CWEventMask|CWDontPropagate, &attrib_set);
 
-  flags.moving = flags.resizing = flags.shaded = flags.visible =
-    flags.iconic = flags.focused = flags.modal =
-    flags.send_focus_message = flags.shaped = False;
-  flags.maximized = 0;
-
-  blackbox_attrib.workspace = window_number = BSENTINEL;
-
-  blackbox_attrib.flags = blackbox_attrib.attrib = blackbox_attrib.stack
-    = blackbox_attrib.decoration = 0l;
-  blackbox_attrib.premax_x = blackbox_attrib.premax_y = 0;
-  blackbox_attrib.premax_w = blackbox_attrib.premax_h = 0;
-
-  frame.border_w = 1;
-  frame.window = frame.plate = frame.title = frame.handle = None;
-  frame.close_button = frame.iconify_button = frame.maximize_button = None;
-  frame.right_grip = frame.left_grip = None;
-
-  frame.ulabel_pixel = frame.flabel_pixel = frame.utitle_pixel =
-  frame.ftitle_pixel = frame.uhandle_pixel = frame.fhandle_pixel =
-    frame.ubutton_pixel = frame.fbutton_pixel = frame.pbutton_pixel =
-    frame.uborder_pixel = frame.fborder_pixel = frame.ugrip_pixel =
-    frame.fgrip_pixel = 0;
-  frame.utitle = frame.ftitle = frame.uhandle = frame.fhandle = None;
-  frame.ulabel = frame.flabel = frame.ubutton = frame.fbutton = None;
-  frame.pbutton = frame.ugrip = frame.fgrip = None;
-
-  decorations = Decor_Titlebar | Decor_Border | Decor_Handle |
-                Decor_Iconify | Decor_Maximize;
-  functions = Func_Resize | Func_Move | Func_Iconify | Func_Maximize;
-
+  client.state.moving = client.state.resizing = client.state.shaded =
+    client.state.hidden = client.state.iconic = client.state.focused =
+    client.state.modal = client.state.fullscreen =
+    client.state.send_focus_message = client.state.shaped = False;
+  client.state.maximized = 0;
+  client.state.skip = SKIP_NONE;
+  client.state.layer = LAYER_NORMAL;
+  client.workspace = window_number = BSENTINEL;
+  client.decorations = Decor_Titlebar | Decor_Border | Decor_Handle |
+    Decor_Iconify | Decor_Maximize;
+  client.functions = Func_Resize | Func_Move | Func_Iconify | Func_Maximize;
   client.normal_hint_flags = 0;
   client.window_group = None;
   client.transient_for = 0;
@@ -151,21 +134,28 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   */
   client.rect.setRect(wattrib.x, wattrib.y, wattrib.width, wattrib.height);
   client.old_bw = wattrib.border_width;
+  client.current_state = NormalState;
 
-  current_state = NormalState;
-
-  windowmenu = 0;
-  lastButtonPressTime = 0;
+  frame.border_w = 1;
+  frame.window = frame.plate = frame.title = frame.handle = None;
+  frame.close_button = frame.iconify_button = frame.maximize_button = None;
+  frame.right_grip = frame.left_grip = None;
+  frame.ulabel_pixel = frame.flabel_pixel = frame.utitle_pixel =
+  frame.ftitle_pixel = frame.uhandle_pixel = frame.fhandle_pixel =
+    frame.ubutton_pixel = frame.fbutton_pixel = frame.pbutton_pixel =
+    frame.uborder_pixel = frame.fborder_pixel = frame.ugrip_pixel =
+    frame.fgrip_pixel = 0;
+  frame.utitle = frame.ftitle = frame.uhandle = frame.fhandle = None;
+  frame.ulabel = frame.flabel = frame.ubutton = frame.fbutton = None;
+  frame.pbutton = frame.ugrip = frame.fgrip = None;
 
   timer = new BTimer(blackbox, this);
   timer->setTimeout(blackbox->getAutoRaiseDelay());
 
   // get size, aspect, minimum/maximum size, ewmh and other hints set by the
   // client
-
-  if (! (getNetwmHints() || getBlackboxHints()))
+  if (! getNetwmHints())
     getMWMHints();
-
   getWMProtocols();
   getWMHints();
   getWMNormalHints();
@@ -178,32 +168,32 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
       client.window_type = blackbox->netwm()->wmWindowTypeNormal();
   }
 
-  frame.window = createToplevelWindow();
-  blackbox->insertEventHandler(frame.window, this);
-
-  frame.plate = createChildWindow(frame.window, ExposureMask);
-  blackbox->insertEventHandler(frame.plate, this);
-
   // adjust the window decorations based on transience and window sizes
   if (isTransient()) {
-    decorations &= ~(Decor_Maximize | Decor_Handle);
-    functions &= ~Func_Maximize;
+    client.decorations &= ~(Decor_Maximize | Decor_Handle);
+    client.functions &= ~Func_Maximize;
+  } else if (client.window_type == blackbox->netwm()->wmWindowTypeDesktop()) {
+    client.decorations = client.functions = 0l;
   }
 
   if ((client.normal_hint_flags & PMinSize) &&
       (client.normal_hint_flags & PMaxSize) &&
       client.max_width <= client.min_width &&
       client.max_height <= client.min_height) {
-    decorations &= ~(Decor_Maximize | Decor_Handle);
-    functions &= ~(Func_Resize | Func_Maximize);
+    client.decorations &= ~(Decor_Maximize | Decor_Handle);
+    client.functions &= ~(Func_Resize | Func_Maximize);
   }
 
-  // now that we know what decorations are required, create them
+  frame.window = createToplevelWindow();
+  blackbox->insertEventHandler(frame.window, this);
 
-  if (decorations & Decor_Titlebar)
+  frame.plate = createChildWindow(frame.window, ExposureMask);
+  blackbox->insertEventHandler(frame.plate, this);
+
+  if (client.decorations & Decor_Titlebar)
     createTitlebar();
 
-  if (decorations & Decor_Handle)
+  if (client.decorations & Decor_Handle)
     createHandle();
 
   // apply the size and gravity hint to the frame
@@ -232,11 +222,19 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   blackbox->insertEventHandler(client.window, this);
   blackbox->insertWindow(client.window, this);
 
-  if (blackbox_attrib.workspace >= screen->getWorkspaceCount())
+  // preserve the window's initial state on first map, and its current state
+  // across a restart
+  unsigned long initial_state = client.current_state;
+  if (! getState())
+    client.current_state = initial_state;
+
+  if (client.workspace >= screen->getWorkspaceCount()) {
     screen->getCurrentWorkspace()->addWindow(this, place_window);
-  else
-    screen->getWorkspace(blackbox_attrib.workspace)->
-      addWindow(this, place_window);
+  } else {
+    screen->getWorkspace(client.workspace)->addWindow(this, place_window);
+    if (client.workspace != screen->getCurrentWorkspace()->getID())
+      client.current_state = WithdrawnState;
+  }
 
   if (! place_window) {
     // don't need to call configure if we are letting the workspace
@@ -250,7 +248,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   XUngrabServer(blackbox->getXDisplay());
 
 #ifdef    SHAPE
-  if (blackbox->hasShapeExtensions() && flags.shaped)
+  if (blackbox->hasShapeExtensions() && client.state.shaped)
     configureShape();
 #endif // SHAPE
 
@@ -265,16 +263,11 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   // this ensures the title, buttons, and other decor are properly displayed
   redrawWindowFrame();
 
-  // preserve the window's initial state on first map, and its current state
-  // across a restart
-  unsigned long initial_state = current_state;
-  if (! getState())
-    current_state = initial_state;
+  client.premax = frame.rect;
 
-  // the following flags are set by blackbox native apps only
-  if (flags.shaded) {
-    flags.shaded = False;
-    initial_state = current_state;
+  if (client.state.shaded) {
+    client.state.shaded = False;
+    initial_state = client.current_state;
     shade();
 
     /*
@@ -282,10 +275,10 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
       to IconicState if the window was an *icon*, not if it was shaded.
     */
     if (initial_state != IconicState)
-      current_state = NormalState;
+      client.current_state = initial_state;
   }
 
-  if (flags.maximized && (functions & Func_Maximize))
+  if (client.state.maximized && (client.functions & Func_Maximize))
     remaximize();
 
   // create this last so it only needs to be configured once
@@ -302,7 +295,7 @@ BlackboxWindow::~BlackboxWindow(void) {
   if (! timer) // window not managed...
     return;
 
-  if (flags.moving || flags.resizing) {
+  if (client.state.moving || client.state.resizing) {
     screen->hideGeometry();
     XUngrabPointer(blackbox->getXDisplay(), CurrentTime);
   }
@@ -434,7 +427,7 @@ void BlackboxWindow::associateClientWindow(void) {
     XShapeQueryExtents(blackbox->getXDisplay(), client.window, &shaped,
                        &foo, &foo, &ufoo, &ufoo, &foo, &foo, &foo,
                        &ufoo, &ufoo);
-    flags.shaped = shaped;
+    client.state.shaped = shaped;
   }
 #endif // SHAPE
 }
@@ -461,7 +454,7 @@ void BlackboxWindow::decorate(void) {
   if (! frame.pbutton)
     frame.pbutton_pixel = texture->color().pixel();
 
-  if (decorations & Decor_Titlebar) {
+  if (client.decorations & Decor_Titlebar) {
     texture = &(screen->getWindowStyle()->t_focus);
     frame.ftitle = texture->render(frame.inside_w, frame.title_h,
                                    frame.ftitle);
@@ -480,17 +473,12 @@ void BlackboxWindow::decorate(void) {
     decorateLabel();
   }
 
-  if (decorations & Decor_Border) {
+  if (client.decorations & Decor_Border) {
     frame.fborder_pixel = screen->getWindowStyle()->f_focus.color().pixel();
     frame.uborder_pixel = screen->getWindowStyle()->f_unfocus.color().pixel();
-    blackbox_attrib.flags |= AttribDecoration;
-    blackbox_attrib.decoration = DecorNormal;
-  } else {
-    blackbox_attrib.flags |= AttribDecoration;
-    blackbox_attrib.decoration = DecorNone;
   }
 
-  if (decorations & Decor_Handle) {
+  if (client.decorations & Decor_Handle) {
     texture = &(screen->getWindowStyle()->h_focus);
     frame.fhandle = texture->render(frame.inside_w, frame.handle_h,
                                     frame.fhandle);
@@ -599,9 +587,9 @@ void BlackboxWindow::createTitlebar(void) {
   blackbox->insertEventHandler(frame.title, this);
   blackbox->insertEventHandler(frame.label, this);
 
-  if (decorations & Decor_Iconify) createIconifyButton();
-  if (decorations & Decor_Maximize) createMaximizeButton();
-  if (decorations & Decor_Close) createCloseButton();
+  if (client.decorations & Decor_Iconify) createIconifyButton();
+  if (client.decorations & Decor_Maximize) createMaximizeButton();
+  if (client.decorations & Decor_Close) createCloseButton();
 }
 
 
@@ -703,7 +691,7 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
   unsigned int bw = frame.button_w + frame.bevel_w + 1,
     by = frame.bevel_w + 1, lx = by, lw = frame.inside_w - by;
 
-  if (decorations & Decor_Iconify) {
+  if (client.decorations & Decor_Iconify) {
     if (frame.iconify_button == None) createIconifyButton();
 
     XMoveResizeWindow(blackbox->getXDisplay(), frame.iconify_button, by, by,
@@ -718,7 +706,7 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
   }
   int bx = frame.inside_w - bw;
 
-  if (decorations & Decor_Close) {
+  if (client.decorations & Decor_Close) {
     if (frame.close_button == None) createCloseButton();
 
     XMoveResizeWindow(blackbox->getXDisplay(), frame.close_button, bx, by,
@@ -731,7 +719,7 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
   } else if (frame.close_button) {
     destroyCloseButton();
   }
-  if (decorations & Decor_Maximize) {
+  if (client.decorations & Decor_Maximize) {
     if (frame.maximize_button == None) createMaximizeButton();
 
     XMoveResizeWindow(blackbox->getXDisplay(), frame.maximize_button, bx, by,
@@ -778,13 +766,13 @@ void BlackboxWindow::grabButtons(void) {
                          GrabModeSync, GrabModeSync, frame.plate, None,
                          screen->allowScrollLock());
 
-  if (functions & Func_Move)
+  if (client.functions & Func_Move)
     blackbox->grabButton(Button1, Mod1Mask, frame.window, True,
                          ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
                          GrabModeAsync, frame.window,
                          blackbox->getMoveCursor(),
                          screen->allowScrollLock());
-  if (functions & Func_Resize)
+  if (client.functions & Func_Resize)
     blackbox->grabButton(Button3, Mod1Mask, frame.window, True,
                          ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
                          GrabModeAsync, frame.window,
@@ -808,7 +796,7 @@ void BlackboxWindow::ungrabButtons(void) {
 void BlackboxWindow::positionWindows(void) {
   XMoveResizeWindow(blackbox->getXDisplay(), frame.window,
                     frame.rect.x(), frame.rect.y(), frame.inside_w,
-                    (flags.shaded) ? frame.title_h : frame.inside_h);
+                    (client.state.shaded) ? frame.title_h : frame.inside_h);
   XSetWindowBorderWidth(blackbox->getXDisplay(), frame.window,
                         frame.border_w);
   XSetWindowBorderWidth(blackbox->getXDisplay(), frame.plate,
@@ -823,7 +811,7 @@ void BlackboxWindow::positionWindows(void) {
   client.rect.setPos(frame.rect.left() + frame.margin.left,
                      frame.rect.top() + frame.margin.top);
 
-  if (decorations & Decor_Titlebar) {
+  if (client.decorations & Decor_Titlebar) {
     if (frame.title == None) createTitlebar();
 
     XSetWindowBorderWidth(blackbox->getXDisplay(), frame.title,
@@ -837,7 +825,8 @@ void BlackboxWindow::positionWindows(void) {
   } else if (frame.title) {
     destroyTitlebar();
   }
-  if (decorations & Decor_Handle) {
+
+  if (client.decorations & Decor_Handle) {
     if (frame.handle == None) createHandle();
     XSetWindowBorderWidth(blackbox->getXDisplay(), frame.handle,
                           frame.border_w);
@@ -864,6 +853,7 @@ void BlackboxWindow::positionWindows(void) {
   } else if (frame.handle) {
     destroyHandle();
   }
+
   XSync(blackbox->getXDisplay(), False);
 }
 
@@ -884,14 +874,6 @@ void BlackboxWindow::getWMName(void) {
     client.title = name;
   else
     client.title = i18n(WindowSet, WindowUnnamed, "Unnamed");
-
-#ifdef DEBUG_WITH_ID
-  // the 16 is the 8 chars of the debug text plus the number
-  char *tmp = new char[client.title.length() + 16];
-  sprintf(tmp, "%s; id: 0x%lx", client.title.c_str(), client.window);
-  client.title = tmp;
-  delete tmp;
-#endif
 }
 
 
@@ -943,26 +925,40 @@ bool BlackboxWindow::getNetwmHints(void) {
     for (; it != end; ++it) {
       Atom state = *it;
       if (state == netwm->wmStateModal()) {
+        if (isTransient())
+          client.state.modal = True;
       } else if (state == netwm->wmStateMaximizedVert()) {
-        if (flags.maximized == 0)
-          flags.maximized = 2;
-        else if (flags.maximized == 3)
-          flags.maximized = 1;
+        if (client.state.maximized == 0)
+          client.state.maximized = 2;
+        else if (client.state.maximized == 3)
+          client.state.maximized = 1;
       } else if (state == netwm->wmStateMaximizedHorz()) {
-        if (flags.maximized == 0)
-          flags.maximized = 3;
-        else if (flags.maximized == 2)
-          flags.maximized = 1;
+        if (client.state.maximized == 0)
+          client.state.maximized = 3;
+        else if (client.state.maximized == 2)
+          client.state.maximized = 1;
       } else if (state == netwm->wmStateShaded()) {
-        flags.shaded = True;
+        client.state.shaded = True;
       } else if (state == netwm->wmStateSkipTaskbar()) {
+        if (client.state.skip == SKIP_NONE)
+          client.state.skip = SKIP_TASKBAR;
+        else if (client.state.skip == SKIP_PAGER)
+          client.state.skip = SKIP_BOTH;
       } else if (state == netwm->wmStateSkipPager()) {
+        if (client.state.skip == SKIP_NONE)
+          client.state.skip = SKIP_PAGER;
+        else if (client.state.skip == SKIP_TASKBAR)
+          client.state.skip = SKIP_BOTH;
       } else if (state == netwm->wmStateHidden()) {
-        flags.iconic = True;
-        current_state = IconicState;
+        client.state.iconic = True;
+        client.state.hidden = True;
+        client.current_state = IconicState;
       } else if (state == netwm->wmStateFullscreen()) {
+        client.state.fullscreen = True;
       } else if (state == netwm->wmStateAbove()) {
+        client.state.layer = LAYER_ABOVE;
       } else if (state == netwm->wmStateBelow()) {
+        client.state.layer = LAYER_BELOW;
       }
     }
   }
@@ -972,9 +968,10 @@ bool BlackboxWindow::getNetwmHints(void) {
   if (ret) {
     ++count;
     if (desktop != 0xFFFFFFFF)
-      setWorkspace(desktop);
+      client.workspace = desktop;
   } else if (client.window_type == blackbox->netwm()->wmWindowTypeDesktop()) {
     // make me omnipresent
+    client.state.layer = LAYER_DESKTOP;
   }
 
   return (count > 0);
@@ -996,15 +993,12 @@ void BlackboxWindow::getWMProtocols(void) {
                       &proto, &num_return)) {
     for (int i = 0; i < num_return; ++i) {
       if (proto[i] == blackbox->getWMDeleteAtom()) {
-        decorations |= Decor_Close;
-        functions |= Func_Close;
+        client.decorations |= Decor_Close;
+        client.functions |= Func_Close;
       } else if (proto[i] == blackbox->getWMTakeFocusAtom()) {
-        flags.send_focus_message = True;
-      } else if (proto[i] == blackbox->getBlackboxStructureMessagesAtom()) {
-        screen->addNetizen(new Netizen(screen, client.window));
+        client.state.send_focus_message = True;
       }
     }
-
     XFree(proto);
   }
 }
@@ -1015,7 +1009,7 @@ void BlackboxWindow::getWMProtocols(void) {
  * If the property is not set, then use a set of default values.
  */
 void BlackboxWindow::getWMHints(void) {
-  focus_mode = F_Passive;
+  client.focus_mode = F_Passive;
 
   // remove from current window group
   if (client.window_group) {
@@ -1030,18 +1024,18 @@ void BlackboxWindow::getWMHints(void) {
 
   if (wmhint->flags & InputHint) {
     if (wmhint->input == True) {
-      if (flags.send_focus_message)
-        focus_mode = F_LocallyActive;
+      if (client.state.send_focus_message)
+        client.focus_mode = F_LocallyActive;
     } else {
-      if (flags.send_focus_message)
-        focus_mode = F_GloballyActive;
+      if (client.state.send_focus_message)
+        client.focus_mode = F_GloballyActive;
       else
-        focus_mode = F_NoInput;
+        client.focus_mode = F_NoInput;
     }
   }
 
   if (wmhint->flags & StateHint)
-    current_state = wmhint->initial_state;
+    client.current_state = wmhint->initial_state;
 
   if (wmhint->flags & WindowGroupHint) {
     client.window_group = wmhint->window_group;
@@ -1160,120 +1154,44 @@ void BlackboxWindow::getMWMHints(void) {
 
   if (mwm_hint->flags & MwmHintsDecorations) {
     if (mwm_hint->decorations & MwmDecorAll) {
-      decorations = Decor_Titlebar | Decor_Handle | Decor_Border |
+      client.decorations = Decor_Titlebar | Decor_Handle | Decor_Border |
                     Decor_Iconify | Decor_Maximize | Decor_Close;
     } else {
-      decorations = 0;
+      client.decorations = 0;
 
       if (mwm_hint->decorations & MwmDecorBorder)
-        decorations |= Decor_Border;
+        client.decorations |= Decor_Border;
       if (mwm_hint->decorations & MwmDecorHandle)
-        decorations |= Decor_Handle;
+        client.decorations |= Decor_Handle;
       if (mwm_hint->decorations & MwmDecorTitle)
-        decorations |= Decor_Titlebar;
+        client.decorations |= Decor_Titlebar;
       if (mwm_hint->decorations & MwmDecorIconify)
-        decorations |= Decor_Iconify;
+        client.decorations |= Decor_Iconify;
       if (mwm_hint->decorations & MwmDecorMaximize)
-        decorations |= Decor_Maximize;
+        client.decorations |= Decor_Maximize;
     }
   }
 
   if (mwm_hint->flags & MwmHintsFunctions) {
     if (mwm_hint->functions & MwmFuncAll) {
-      functions = Func_Resize | Func_Move | Func_Iconify | Func_Maximize |
+      client.functions = Func_Resize | Func_Move | Func_Iconify | Func_Maximize |
                   Func_Close;
     } else {
-      functions = 0;
+      client.functions = 0;
 
       if (mwm_hint->functions & MwmFuncResize)
-        functions |= Func_Resize;
+        client.functions |= Func_Resize;
       if (mwm_hint->functions & MwmFuncMove)
-        functions |= Func_Move;
+        client.functions |= Func_Move;
       if (mwm_hint->functions & MwmFuncIconify)
-        functions |= Func_Iconify;
+        client.functions |= Func_Iconify;
       if (mwm_hint->functions & MwmFuncMaximize)
-        functions |= Func_Maximize;
+        client.functions |= Func_Maximize;
       if (mwm_hint->functions & MwmFuncClose)
-        functions |= Func_Close;
+        client.functions |= Func_Close;
     }
   }
   XFree(mwm_hint);
-}
-
-
-/*
- * Gets the blackbox hints from the class' contained window.
- * This is used while initializing the window to its first state, and not
- * thereafter.
- * Returns: true if the hints are successfully retreived and applied; false if
- * they are not.
- */
-bool BlackboxWindow::getBlackboxHints(void) {
-  int format;
-  Atom atom_return;
-  unsigned long num, len;
-  BlackboxHints *blackbox_hint = 0;
-
-  int ret = XGetWindowProperty(blackbox->getXDisplay(), client.window,
-                               blackbox->getBlackboxHintsAtom(), 0,
-                               PropBlackboxHintsElements, False,
-                               blackbox->getBlackboxHintsAtom(), &atom_return,
-                               &format, &num, &len,
-                               (unsigned char **) &blackbox_hint);
-  if (ret != Success || ! blackbox_hint || num != PropBlackboxHintsElements)
-    return False;
-
-  if (blackbox_hint->flags & AttribShaded)
-    flags.shaded = (blackbox_hint->attrib & AttribShaded);
-
-  if ((blackbox_hint->flags & AttribMaxHoriz) &&
-      (blackbox_hint->flags & AttribMaxVert))
-    flags.maximized = (blackbox_hint->attrib &
-                       (AttribMaxHoriz | AttribMaxVert)) ? 1 : 0;
-  else if (blackbox_hint->flags & AttribMaxVert)
-    flags.maximized = (blackbox_hint->attrib & AttribMaxVert) ? 2 : 0;
-  else if (blackbox_hint->flags & AttribMaxHoriz)
-    flags.maximized = (blackbox_hint->attrib & AttribMaxHoriz) ? 3 : 0;
-
-  if (blackbox_hint->flags & AttribWorkspace)
-    blackbox_attrib.workspace = blackbox_hint->workspace;
-
-  // if (blackbox_hint->flags & AttribStack)
-  //   don't yet have always on top/bottom for blackbox yet... working
-  //   on that
-
-  if (blackbox_hint->flags & AttribDecoration) {
-    switch (blackbox_hint->decoration) {
-    case DecorNone:
-      decorations = 0;
-
-      break;
-
-    case DecorTiny:
-      decorations |= Decor_Titlebar | Decor_Iconify;
-      decorations &= ~(Decor_Border | Decor_Handle | Decor_Maximize);
-      functions &= ~(Func_Resize | Func_Maximize);
-
-      break;
-
-    case DecorTool:
-      decorations |= Decor_Titlebar;
-      decorations &= ~(Decor_Iconify | Decor_Border | Decor_Handle);
-      functions &= ~(Func_Resize | Func_Maximize | Func_Iconify);
-
-      break;
-
-    case DecorNormal:
-    default:
-      decorations |= Decor_Titlebar | Decor_Border | Decor_Handle |
-                     Decor_Iconify | Decor_Maximize;
-      break;
-    }
-
-    reconfigure();
-  }
-  XFree(blackbox_hint);
-  return True;
 }
 
 
@@ -1306,7 +1224,7 @@ void BlackboxWindow::getTransientInfo(void) {
     // so we just associate this transient with nothing, and perhaps
     // we will add support later for global modality.
     client.transient_for = (BlackboxWindow *) ~0ul;
-    flags.modal = True;
+    client.state.modal = True;
     return;
   }
 
@@ -1361,7 +1279,7 @@ BlackboxWindow *BlackboxWindow::getTransientFor(void) const {
 void BlackboxWindow::configure(int dx, int dy,
                                unsigned int dw, unsigned int dh) {
   bool send_event = ((frame.rect.x() != dx || frame.rect.y() != dy) &&
-                     ! flags.moving);
+                     ! client.state.moving);
 
   if (dw != frame.rect.width() || dh != frame.rect.height()) {
     frame.rect.setRect(dx, dy, dw, dh);
@@ -1377,7 +1295,7 @@ void BlackboxWindow::configure(int dx, int dy,
                           frame.rect.bottom() - frame.margin.bottom);
 
 #ifdef    SHAPE
-    if (blackbox->hasShapeExtensions() && flags.shaped) {
+    if (blackbox->hasShapeExtensions() && client.state.shaped) {
       configureShape();
     }
 #endif // SHAPE
@@ -1395,7 +1313,7 @@ void BlackboxWindow::configure(int dx, int dy,
       the old coords match the new ones no ConfigureNotify has been sent yet.
       There are likely other times when this will be relevant as well.
     */
-    if (! flags.moving) send_event = True;
+    if (! client.state.moving) send_event = True;
   }
 
   if (send_event) {
@@ -1435,14 +1353,14 @@ void BlackboxWindow::configureShape(void) {
   int num = 0;
   XRectangle xrect[2];
 
-  if (decorations & Decor_Titlebar) {
+  if (client.decorations & Decor_Titlebar) {
     xrect[0].x = xrect[0].y = -frame.border_w;
     xrect[0].width = frame.rect.width();
     xrect[0].height = frame.title_h + (frame.border_w * 2);
     ++num;
   }
 
-  if (decorations & Decor_Handle) {
+  if (client.decorations & Decor_Handle) {
     xrect[1].x = -frame.border_w;
     xrect[1].y = frame.rect.height() - frame.margin.bottom +
                  frame.mwm_border_w - frame.border_w;
@@ -1459,14 +1377,14 @@ void BlackboxWindow::configureShape(void) {
 
 
 bool BlackboxWindow::setInputFocus(void) {
-  if (flags.focused) return True;
+  if (client.state.focused) return True;
 
   // do not give focus to a window that is about to close
   if (! validateClient()) return False;
 
-  assert(! flags.iconic &&
+  assert(! client.state.iconic &&
          // window must be on the current workspace
-         blackbox_attrib.workspace == screen->getCurrentWorkspaceID());
+         client.workspace == screen->getCurrentWorkspaceID());
 
   if (! frame.rect.intersects(screen->getRect())) {
     // client is outside the screen, move it to the center
@@ -1479,11 +1397,11 @@ bool BlackboxWindow::setInputFocus(void) {
     // transfer focus to any modal transients
     BlackboxWindowList::iterator it, end = client.transientList.end();
     for (it = client.transientList.begin(); it != end; ++it)
-      if ((*it)->flags.modal) return (*it)->setInputFocus();
+      if ((*it)->client.state.modal) return (*it)->setInputFocus();
   }
 
   bool ret = True;
-  switch (focus_mode) {
+  switch (client.focus_mode) {
   case F_Passive:
   case F_LocallyActive:
     XSetInputFocus(blackbox->getXDisplay(), client.window,
@@ -1502,7 +1420,7 @@ bool BlackboxWindow::setInputFocus(void) {
     break;
   }
 
-  if (flags.send_focus_message) {
+  if (client.state.send_focus_message) {
     XEvent ce;
     ce.xclient.type = ClientMessage;
     ce.xclient.message_type = blackbox->getWMProtocolsAtom();
@@ -1533,15 +1451,15 @@ void BlackboxWindow::iconify(void) {
     return;
   }
 
-  if (flags.iconic) return;
+  if (client.state.iconic) return;
 
   /*
    * unmap the frame window first, so when all the transients are
    * unmapped, we don't get an enter event in sloppy focus mode
    */
   XUnmapWindow(blackbox->getXDisplay(), frame.window);
-  flags.visible = False;
-  flags.iconic = True;
+  client.state.hidden = True;
+  client.state.iconic = True;
 
   if (windowmenu) windowmenu->hide();
 
@@ -1560,7 +1478,7 @@ void BlackboxWindow::iconify(void) {
    * of them (since they are above their transient_for) for a split
    * second
    */
-  screen->getWorkspace(blackbox_attrib.workspace)->removeWindow(this);
+  screen->getWorkspace(client.workspace)->removeWindow(this);
   screen->addIcon(this);
 
   /*
@@ -1582,8 +1500,8 @@ void BlackboxWindow::iconify(void) {
 
 
 void BlackboxWindow::show(void) {
-  current_state = (flags.shaded) ? IconicState : NormalState;
-  setState(current_state);
+  client.current_state = (client.state.shaded) ? IconicState : NormalState;
+  setState(client.current_state);
 
   XMapWindow(blackbox->getXDisplay(), client.window);
   XMapSubwindows(blackbox->getXDisplay(), frame.window);
@@ -1600,15 +1518,15 @@ void BlackboxWindow::show(void) {
   assert(client.rect.left() == real_x && client.rect.top() == real_y);
 #endif
 
-  flags.visible = True;
-  flags.iconic = False;
+  client.state.hidden = False;
+  client.state.iconic = False;
 }
 
 
 void BlackboxWindow::deiconify(bool reassoc, bool raise) {
-  if (flags.iconic || reassoc)
+  if (client.state.iconic || reassoc)
     screen->reassociateWindow(this, BSENTINEL);
-  else if (blackbox_attrib.workspace != screen->getCurrentWorkspaceID())
+  else if (client.workspace != screen->getCurrentWorkspaceID())
     return;
 
   show();
@@ -1621,7 +1539,7 @@ void BlackboxWindow::deiconify(bool reassoc, bool raise) {
   }
 
   if (raise)
-    screen->getWorkspace(blackbox_attrib.workspace)->raiseWindow(this);
+    screen->getWorkspace(client.workspace)->raiseWindow(this);
 }
 
 
@@ -1643,10 +1561,10 @@ void BlackboxWindow::close(void) {
 
 
 void BlackboxWindow::withdraw(void) {
-  setState(current_state);
+  setState(client.current_state);
 
-  flags.visible = False;
-  flags.iconic = False;
+  client.state.hidden = True;
+  client.state.iconic = False;
 
   XUnmapWindow(blackbox->getXDisplay(), frame.window);
 
@@ -1669,133 +1587,79 @@ void BlackboxWindow::maximize(unsigned int button) {
   // handle case where menu is open then the max button is used instead
   if (windowmenu && windowmenu->isVisible()) windowmenu->hide();
 
-  if (flags.maximized) {
-    flags.maximized = 0;
-
-    blackbox_attrib.flags &= ! (AttribMaxHoriz | AttribMaxVert);
-    blackbox_attrib.attrib &= ! (AttribMaxHoriz | AttribMaxVert);
+  if (client.state.maximized) {
+    client.state.maximized = 0;
 
     /*
       when a resize is begun, maximize(0) is called to clear any maximization
       flags currently set.  Otherwise it still thinks it is maximized.
       so we do not need to call configure() because resizing will handle it
     */
-    if (!flags.resizing)
-      configure(blackbox_attrib.premax_x, blackbox_attrib.premax_y,
-                blackbox_attrib.premax_w, blackbox_attrib.premax_h);
-
-    blackbox_attrib.premax_x = blackbox_attrib.premax_y = 0;
-    blackbox_attrib.premax_w = blackbox_attrib.premax_h = 0;
+    if (!client.state.resizing)
+      configure(client.premax.x(), client.premax.y(),
+                client.premax.width(), client.premax.height());
 
     redrawAllButtons(); // in case it is not called in configure()
-    setState(current_state);
+    setState(client.current_state);
     return;
   }
 
-  blackbox_attrib.premax_x = frame.rect.x();
-  blackbox_attrib.premax_y = frame.rect.y();
-  blackbox_attrib.premax_w = frame.rect.width();
-  // use client.rect so that clients can be restored even if shaded
-  blackbox_attrib.premax_h =
-    client.rect.height() + frame.margin.top + frame.margin.bottom;
-
   const Rect &screen_area = screen->availableArea();
   frame.changing = screen_area;
+  client.premax = frame.rect;
 
   switch(button) {
   case 1:
-    blackbox_attrib.flags |= AttribMaxHoriz | AttribMaxVert;
-    blackbox_attrib.attrib |= AttribMaxHoriz | AttribMaxVert;
     break;
 
   case 2:
-    blackbox_attrib.flags |= AttribMaxVert;
-    blackbox_attrib.attrib |= AttribMaxVert;
-
-    frame.changing.setX(blackbox_attrib.premax_x);
-    frame.changing.setWidth(blackbox_attrib.premax_w);
+    frame.changing.setX(client.premax.x());
+    frame.changing.setWidth(client.premax.width());
     break;
 
   case 3:
-    blackbox_attrib.flags |= AttribMaxHoriz;
-    blackbox_attrib.attrib |= AttribMaxHoriz;
-
-    frame.changing.setY(blackbox_attrib.premax_y);
-    frame.changing.setHeight(blackbox_attrib.premax_h);
+    frame.changing.setY(client.premax.y());
+    frame.changing.setHeight(client.premax.height());
     break;
   }
 
   constrain(TopLeft);
 
-  if (flags.shaded) {
-    blackbox_attrib.flags ^= AttribShaded;
-    blackbox_attrib.attrib ^= AttribShaded;
-    flags.shaded = False;
-  }
+  if (client.state.shaded)
+    client.state.shaded = False;
 
-  flags.maximized = button;
+  client.state.maximized = button;
 
   configure(frame.changing.x(), frame.changing.y(),
             frame.changing.width(), frame.changing.height());
   redrawAllButtons(); // in case it is not called in configure()
-  setState(current_state);
+  setState(client.current_state);
 }
 
 
 // re-maximizes the window to take into account availableArea changes
 void BlackboxWindow::remaximize(void) {
-  if (flags.shaded) {
-    // we only update the window's attributes otherwise we lose the shade bit
-    switch(flags.maximized) {
-    case 1:
-      blackbox_attrib.flags |= AttribMaxHoriz | AttribMaxVert;
-      blackbox_attrib.attrib |= AttribMaxHoriz | AttribMaxVert;
-      break;
-
-    case 2:
-      blackbox_attrib.flags |= AttribMaxVert;
-      blackbox_attrib.attrib |= AttribMaxVert;
-      break;
-
-    case 3:
-      blackbox_attrib.flags |= AttribMaxHoriz;
-      blackbox_attrib.attrib |= AttribMaxHoriz;
-      break;
-    }
+  if (client.state.shaded)
     return;
-  }
 
-  // save the original dimensions because maximize will wipe them out
-  int premax_x = blackbox_attrib.premax_x,
-    premax_y = blackbox_attrib.premax_y,
-    premax_w = blackbox_attrib.premax_w,
-    premax_h = blackbox_attrib.premax_h;
-
-  unsigned int button = flags.maximized;
-  flags.maximized = 0; // trick maximize() into working
+  Rect tmp = client.premax;
+  unsigned int button = client.state.maximized;
+  client.state.maximized = 0; // trick maximize() into working
   maximize(button);
-
-  // restore saved values
-  blackbox_attrib.premax_x = premax_x;
-  blackbox_attrib.premax_y = premax_y;
-  blackbox_attrib.premax_w = premax_w;
-  blackbox_attrib.premax_h = premax_h;
+  client.premax = tmp;
 }
 
 
 void BlackboxWindow::setWorkspace(unsigned int n) {
-  blackbox_attrib.flags |= AttribWorkspace;
-  blackbox_attrib.workspace = n;
+  client.workspace = n;
 }
 
 
 void BlackboxWindow::shade(void) {
-  if (flags.shaded) {
-    flags.shaded = False;
-    blackbox_attrib.flags ^= AttribShaded;
-    blackbox_attrib.attrib ^= AttribShaded;
+  if (client.state.shaded) {
+    client.state.shaded = False;
 
-    if (flags.maximized) {
+    if (client.state.maximized) {
       remaximize();
     } else {
       XResizeWindow(blackbox->getXDisplay(), frame.window,
@@ -1807,14 +1671,12 @@ void BlackboxWindow::shade(void) {
 
     setState(NormalState);
   } else {
-    if (! (decorations & Decor_Titlebar))
+    if (! (client.decorations & Decor_Titlebar))
       return; // can't shade it without a titlebar!
 
     XResizeWindow(blackbox->getXDisplay(), frame.window,
                   frame.inside_w, frame.title_h);
-    flags.shaded = True;
-    blackbox_attrib.flags |= AttribShaded;
-    blackbox_attrib.attrib |= AttribShaded;
+    client.state.shaded = True;
 
     setState(IconicState);
 
@@ -1825,8 +1687,8 @@ void BlackboxWindow::shade(void) {
 
 
 void BlackboxWindow::redrawWindowFrame(void) const {
-  if (decorations & Decor_Titlebar) {
-    if (flags.focused) {
+  if (client.decorations & Decor_Titlebar) {
+    if (client.state.focused) {
       if (frame.ftitle)
         XSetWindowBackgroundPixmap(blackbox->getXDisplay(),
                                    frame.title, frame.ftitle);
@@ -1847,8 +1709,8 @@ void BlackboxWindow::redrawWindowFrame(void) const {
     redrawAllButtons();
   }
 
-  if (decorations & Decor_Handle) {
-    if (flags.focused) {
+  if (client.decorations & Decor_Handle) {
+    if (client.state.focused) {
       if (frame.fhandle)
         XSetWindowBackgroundPixmap(blackbox->getXDisplay(),
                                    frame.handle, frame.fhandle);
@@ -1892,8 +1754,8 @@ void BlackboxWindow::redrawWindowFrame(void) const {
     XClearWindow(blackbox->getXDisplay(), frame.right_grip);
   }
 
-  if (decorations & Decor_Border) {
-    if (flags.focused)
+  if (client.decorations & Decor_Border) {
+    if (client.state.focused)
       XSetWindowBorder(blackbox->getXDisplay(),
                        frame.plate, frame.fborder_pixel);
     else
@@ -1905,14 +1767,14 @@ void BlackboxWindow::redrawWindowFrame(void) const {
 
 void BlackboxWindow::setFocusFlag(bool focus) {
   // only focus a window if it is visible
-  if (focus && ! flags.visible)
+  if (focus && client.state.hidden)
     return;
 
-  flags.focused = focus;
+  client.state.focused = focus;
 
   redrawWindowFrame();
 
-  if (flags.focused)
+  if (client.state.focused)
     blackbox->setFocusedWindow(this);
 }
 
@@ -1951,27 +1813,65 @@ void BlackboxWindow::installColormap(bool install) {
 
 
 void BlackboxWindow::setState(unsigned long new_state) {
-  current_state = new_state;
+  client.current_state = new_state;
 
   unsigned long state[2];
-  state[0] = current_state;
+  state[0] = client.current_state;
   state[1] = None;
   XChangeProperty(blackbox->getXDisplay(), client.window,
                   blackbox->getWMStateAtom(), blackbox->getWMStateAtom(), 32,
                   PropModeReplace, (unsigned char *) state, 2);
 
-  XChangeProperty(blackbox->getXDisplay(), client.window,
-                  blackbox->getBlackboxAttributesAtom(),
-                  blackbox->getBlackboxAttributesAtom(), 32, PropModeReplace,
-                  (unsigned char *) &blackbox_attrib,
-                  PropBlackboxAttributesElements);
+  blackbox->netwm()->setWMDesktop(client.window, client.workspace);
 
-  blackbox->netwm()->setWMDesktop(client.window, blackbox_attrib.workspace);
+  Netwm::AtomList atoms;
+  const Netwm* const netwm = blackbox->netwm();
+  if (client.state.modal)
+    atoms.push_back(netwm->wmStateModal());
+
+  if (client.state.maximized == 0) {
+    /* do nothing */
+  } else if (client.state.maximized == 1) {
+    atoms.push_back(netwm->wmStateMaximizedVert());
+    atoms.push_back(netwm->wmStateMaximizedHorz());
+  } else if (client.state.maximized == 2) {
+    atoms.push_back(netwm->wmStateMaximizedVert());
+  }  else if (client.state.maximized == 3) {
+    atoms.push_back(netwm->wmStateMaximizedHorz());
+  }
+
+  if (client.state.shaded)
+    atoms.push_back(netwm->wmStateShaded());
+
+  if (client.state.skip == SKIP_NONE) {
+    /* do nothing */
+  } else if (client.state.skip == SKIP_BOTH) {
+    atoms.push_back(netwm->wmStateSkipTaskbar());
+    atoms.push_back(netwm->wmStateSkipPager());
+  } else if (client.state.skip == SKIP_TASKBAR) {
+    atoms.push_back(netwm->wmStateSkipTaskbar());
+  }  else if (client.state.skip == SKIP_PAGER) {
+    atoms.push_back(netwm->wmStateSkipPager());
+  }
+
+  if (client.state.hidden)
+    atoms.push_back(netwm->wmStateHidden());
+
+  if (client.state.layer == LAYER_NORMAL)
+    /* do nothing */;
+  else if (client.state.layer == LAYER_FULLSCREEN)
+    atoms.push_back(netwm->wmStateFullscreen());
+  else if (client.state.layer == LAYER_ABOVE)
+    atoms.push_back(netwm->wmStateAbove());
+  else if (client.state.layer == LAYER_BELOW)
+    atoms.push_back(netwm->wmStateAbove());
+
+  netwm->setWMState(client.window, atoms);
 }
 
 
 bool BlackboxWindow::getState(void) {
-  current_state = 0;
+  client.current_state = 0;
 
   Atom atom_return;
   bool ret = False;
@@ -1988,7 +1888,7 @@ bool BlackboxWindow::getState(void) {
   }
 
   if (nitems >= 1) {
-    current_state = static_cast<unsigned long>(state[0]);
+    client.current_state = static_cast<unsigned long>(state[0]);
 
     ret = True;
   }
@@ -1996,122 +1896,6 @@ bool BlackboxWindow::getState(void) {
   XFree((void *) state);
 
   return ret;
-}
-
-
-void BlackboxWindow::restoreAttributes(void) {
-  Atom atom_return;
-  int foo;
-  unsigned long ulfoo, nitems;
-
-  BlackboxAttributes *net;
-  int ret = XGetWindowProperty(blackbox->getXDisplay(), client.window,
-                               blackbox->getBlackboxAttributesAtom(), 0l,
-                               PropBlackboxAttributesElements, False,
-                               blackbox->getBlackboxAttributesAtom(),
-                               &atom_return, &foo, &nitems, &ulfoo,
-                               (unsigned char **) &net);
-  if (ret != Success || !net || nitems != PropBlackboxAttributesElements)
-    return;
-
-  if (net->flags & AttribShaded && net->attrib & AttribShaded) {
-    flags.shaded = False;
-    unsigned long orig_state = current_state;
-    shade();
-
-    /*
-      At this point in the life of a window, current_state should only be set
-      to IconicState if the window was an *icon*, not if it was shaded.
-    */
-    if (orig_state != IconicState)
-      current_state = WithdrawnState;
-  }
-
-  if (net->workspace != screen->getCurrentWorkspaceID() &&
-      net->workspace < screen->getWorkspaceCount()) {
-    screen->reassociateWindow(this, net->workspace);
-
-    // set to WithdrawnState so it will be mapped on the new workspace
-    if (current_state == NormalState) current_state = WithdrawnState;
-  } else if (current_state == WithdrawnState) {
-    // the window is on this workspace and is Withdrawn, so it is waiting to
-    // be mapped
-    current_state = NormalState;
-  }
-
-  if (net->flags & AttribMaxHoriz || net->flags & AttribMaxVert) {
-    blackbox_attrib.premax_x = net->premax_x;
-    blackbox_attrib.premax_y = net->premax_y;
-    blackbox_attrib.premax_w = net->premax_w;
-    blackbox_attrib.premax_h = net->premax_h;
-
-    flags.maximized = 0;
-
-    if (net->flags & AttribMaxHoriz && net->flags & AttribMaxVert &&
-        net->attrib & (AttribMaxHoriz | AttribMaxVert))
-      flags.maximized = 1;
-    else if (net->flags & AttribMaxVert && net->attrib & AttribMaxVert)
-        flags.maximized = 2;
-    else if (net->flags & AttribMaxHoriz && net->attrib & AttribMaxHoriz)
-        flags.maximized = 3;
-
-    if (flags.maximized) remaximize();
-  }
-
-  if (net->flags & AttribDecoration) {
-    switch (net->decoration) {
-    case DecorNone:
-      decorations = 0;
-
-      break;
-
-    default:
-    case DecorNormal:
-      decorations |= Decor_Titlebar | Decor_Handle | Decor_Border |
-        Decor_Iconify | Decor_Maximize;
-
-      break;
-
-    case DecorTiny:
-      decorations |= Decor_Titlebar | Decor_Iconify;
-      decorations &= ~(Decor_Border | Decor_Handle | Decor_Maximize);
-
-      break;
-
-    case DecorTool:
-      decorations |= Decor_Titlebar;
-      decorations &= ~(Decor_Iconify | Decor_Border | Decor_Handle);
-
-      break;
-    }
-
-    // sanity check the new decor
-    if (! (functions & Func_Resize) || isTransient())
-      decorations &= ~(Decor_Maximize | Decor_Handle);
-    if (! (functions & Func_Maximize))
-      decorations &= ~Decor_Maximize;
-
-    if (decorations & Decor_Titlebar) {
-      if (functions & Func_Close)   // close button is controlled by function
-        decorations |= Decor_Close; // not decor type
-    } else {
-      if (flags.shaded) // we can not be shaded if we lack a titlebar
-        shade();
-    }
-
-    if (flags.visible && frame.window) {
-      XMapSubwindows(blackbox->getXDisplay(), frame.window);
-      XMapWindow(blackbox->getXDisplay(), frame.window);
-    }
-
-    reconfigure();
-    setState(current_state);
-  }
-
-  // with the state set it will then be the map event's job to read the
-  // window's state and behave accordingly
-
-  XFree((void *) net);
 }
 
 
@@ -2240,7 +2024,7 @@ void BlackboxWindow::restoreGravity(Rect &r) {
 
 
 void BlackboxWindow::redrawLabel(void) const {
-  if (flags.focused) {
+  if (client.state.focused) {
     if (frame.flabel)
       XSetWindowBackgroundPixmap(blackbox->getXDisplay(),
                                  frame.label, frame.flabel);
@@ -2263,7 +2047,7 @@ void BlackboxWindow::redrawLabel(void) const {
     dlen = style->doJustify(client.title.c_str(), pos, frame.label_w,
                             frame.bevel_w * 4, i18n.multibyte());
 
-  BPen pen((flags.focused) ? style->l_text_focus : style->l_text_unfocus,
+  BPen pen((client.state.focused) ? style->l_text_focus : style->l_text_unfocus,
            style->font);
   if (i18n.multibyte())
     XmbDrawString(blackbox->getXDisplay(), frame.label, style->fontset,
@@ -2278,14 +2062,14 @@ void BlackboxWindow::redrawLabel(void) const {
 
 void BlackboxWindow::redrawAllButtons(void) const {
   if (frame.iconify_button) redrawIconifyButton(False);
-  if (frame.maximize_button) redrawMaximizeButton(flags.maximized);
+  if (frame.maximize_button) redrawMaximizeButton(client.state.maximized);
   if (frame.close_button) redrawCloseButton(False);
 }
 
 
 void BlackboxWindow::redrawIconifyButton(bool pressed) const {
   if (! pressed) {
-    if (flags.focused) {
+    if (client.state.focused) {
       if (frame.fbutton)
         XSetWindowBackgroundPixmap(blackbox->getXDisplay(),
                                    frame.iconify_button, frame.fbutton);
@@ -2310,7 +2094,7 @@ void BlackboxWindow::redrawIconifyButton(bool pressed) const {
   }
   XClearWindow(blackbox->getXDisplay(), frame.iconify_button);
 
-  BPen pen((flags.focused) ? screen->getWindowStyle()->b_pic_focus :
+  BPen pen((client.state.focused) ? screen->getWindowStyle()->b_pic_focus :
            screen->getWindowStyle()->b_pic_unfocus);
   XDrawRectangle(blackbox->getXDisplay(), frame.iconify_button, pen.gc(),
                  2, (frame.button_w - 5), (frame.button_w - 5), 2);
@@ -2319,7 +2103,7 @@ void BlackboxWindow::redrawIconifyButton(bool pressed) const {
 
 void BlackboxWindow::redrawMaximizeButton(bool pressed) const {
   if (! pressed) {
-    if (flags.focused) {
+    if (client.state.focused) {
       if (frame.fbutton)
         XSetWindowBackgroundPixmap(blackbox->getXDisplay(),
                                    frame.maximize_button, frame.fbutton);
@@ -2344,7 +2128,7 @@ void BlackboxWindow::redrawMaximizeButton(bool pressed) const {
   }
   XClearWindow(blackbox->getXDisplay(), frame.maximize_button);
 
-  BPen pen((flags.focused) ? screen->getWindowStyle()->b_pic_focus :
+  BPen pen((client.state.focused) ? screen->getWindowStyle()->b_pic_focus :
            screen->getWindowStyle()->b_pic_unfocus);
   XDrawRectangle(blackbox->getXDisplay(), frame.maximize_button, pen.gc(),
                  2, 2, (frame.button_w - 5), (frame.button_w - 5));
@@ -2355,7 +2139,7 @@ void BlackboxWindow::redrawMaximizeButton(bool pressed) const {
 
 void BlackboxWindow::redrawCloseButton(bool pressed) const {
   if (! pressed) {
-    if (flags.focused) {
+    if (client.state.focused) {
       if (frame.fbutton)
         XSetWindowBackgroundPixmap(blackbox->getXDisplay(), frame.close_button,
                                    frame.fbutton);
@@ -2380,7 +2164,7 @@ void BlackboxWindow::redrawCloseButton(bool pressed) const {
   }
   XClearWindow(blackbox->getXDisplay(), frame.close_button);
 
-  BPen pen((flags.focused) ? screen->getWindowStyle()->b_pic_focus :
+  BPen pen((client.state.focused) ? screen->getWindowStyle()->b_pic_focus :
            screen->getWindowStyle()->b_pic_unfocus);
   XDrawLine(blackbox->getXDisplay(), frame.close_button, pen.gc(),
             2, 2, (frame.button_w - 3), (frame.button_w - 3));
@@ -2427,7 +2211,7 @@ void BlackboxWindow::mapRequestEvent(const XMapRequestEvent* const re) {
           client.window);
 #endif // DEBUG
 
-  switch (current_state) {
+  switch (client.current_state) {
   case IconicState:
     iconify();
     break;
@@ -2441,7 +2225,7 @@ void BlackboxWindow::mapRequestEvent(const XMapRequestEvent* const re) {
   case ZoomState:
   default:
     show();
-    screen->getWorkspace(blackbox_attrib.workspace)->raiseWindow(this);
+    screen->getWorkspace(client.workspace)->raiseWindow(this);
     if (! blackbox->isStartup() && (isTransient() || screen->doFocusNew())) {
       XSync(blackbox->getXDisplay(), False); // make sure the frame is mapped..
       setInputFocus();
@@ -2514,8 +2298,8 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
 
     // adjust the window decorations based on transience
     if (isTransient()) {
-      decorations &= ~(Decor_Maximize | Decor_Handle);
-      functions &= ~Func_Maximize;
+      client.decorations &= ~(Decor_Maximize | Decor_Handle);
+      client.functions &= ~Func_Maximize;
     }
 
     reconfigure();
@@ -2528,13 +2312,13 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
 
   case XA_WM_ICON_NAME:
     getWMIconName();
-    if (flags.iconic) screen->propagateWindowName(this);
+    if (client.state.iconic) screen->propagateWindowName(this);
     break;
 
   case XA_WM_NAME:
     getWMName();
 
-    if (decorations & Decor_Titlebar)
+    if (client.decorations & Decor_Titlebar)
       redrawLabel();
 
     screen->propagateWindowName(this);
@@ -2550,14 +2334,14 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
       ungrabButtons();
       if (client.max_width <= client.min_width &&
           client.max_height <= client.min_height) {
-        decorations &= ~(Decor_Maximize | Decor_Handle);
-        functions &= ~(Func_Resize | Func_Maximize);
+        client.decorations &= ~(Decor_Maximize | Decor_Handle);
+        client.functions &= ~(Func_Resize | Func_Maximize);
       } else {
         if (! isTransient()) {
-          decorations |= Decor_Maximize | Decor_Handle;
-          functions |= Func_Maximize;
+          client.decorations |= Decor_Maximize | Decor_Handle;
+          client.functions |= Func_Maximize;
         }
-        functions |= Func_Resize;
+        client.functions |= Func_Resize;
       }
       grabButtons();
     }
@@ -2576,9 +2360,9 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
     if (pe->atom == blackbox->getWMProtocolsAtom()) {
       getWMProtocols();
 
-      if (decorations & Decor_Close && ! frame.close_button) {
+      if (client.decorations & Decor_Close && ! frame.close_button) {
         createCloseButton();
-        if (decorations & Decor_Titlebar) {
+        if (client.decorations & Decor_Titlebar) {
           positionButtons(True);
           XMapSubwindows(blackbox->getXDisplay(), frame.title);
         }
@@ -2596,19 +2380,19 @@ void BlackboxWindow::exposeEvent(const XExposeEvent *ee) {
   fprintf(stderr, "BlackboxWindow::exposeEvent() for 0x%lx\n", client.window);
 #endif
 
-  if (frame.label == ee->window && (decorations & Decor_Titlebar))
+  if (frame.label == ee->window && (client.decorations & Decor_Titlebar))
     redrawLabel();
   else if (frame.close_button == ee->window)
     redrawCloseButton(False);
   else if (frame.maximize_button == ee->window)
-    redrawMaximizeButton(flags.maximized);
+    redrawMaximizeButton(client.state.maximized);
   else if (frame.iconify_button == ee->window)
     redrawIconifyButton(False);
 }
 
 
 void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent *cr) {
-  if (cr->window != client.window || flags.iconic)
+  if (cr->window != client.window || client.state.iconic)
     return;
 
   if (cr->value_mask & CWBorderWidth)
@@ -2639,13 +2423,13 @@ void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent *cr) {
     switch (cr->detail) {
     case Below:
     case BottomIf:
-      screen->getWorkspace(blackbox_attrib.workspace)->lowerWindow(this);
+      screen->getWorkspace(client.workspace)->lowerWindow(this);
       break;
 
     case Above:
     case TopIf:
     default:
-      screen->getWorkspace(blackbox_attrib.workspace)->raiseWindow(this);
+      screen->getWorkspace(client.workspace)->raiseWindow(this);
       break;
     }
   }
@@ -2661,7 +2445,7 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
   if (frame.maximize_button == be->window) {
     redrawMaximizeButton(True);
   } else if (be->button == 1 || (be->button == 3 && be->state == Mod1Mask)) {
-    if (! flags.focused)
+    if (! client.state.focused)
       setInputFocus();
 
     if (frame.iconify_button == be->window) {
@@ -2671,7 +2455,7 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
     } else if (frame.plate == be->window) {
       if (windowmenu && windowmenu->isVisible()) windowmenu->hide();
 
-      screen->getWorkspace(blackbox_attrib.workspace)->raiseWindow(this);
+      screen->getWorkspace(client.workspace)->raiseWindow(this);
 
       XAllowEvents(blackbox->getXDisplay(), ReplayPointer, be->time);
     } else {
@@ -2691,11 +2475,11 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
 
       if (windowmenu && windowmenu->isVisible()) windowmenu->hide();
 
-      screen->getWorkspace(blackbox_attrib.workspace)->raiseWindow(this);
+      screen->getWorkspace(client.workspace)->raiseWindow(this);
     }
   } else if (be->button == 2 && (be->window != frame.iconify_button) &&
              (be->window != frame.close_button)) {
-    screen->getWorkspace(blackbox_attrib.workspace)->lowerWindow(this);
+    screen->getWorkspace(client.workspace)->lowerWindow(this);
   } else if (windowmenu && be->button == 3 &&
              (frame.title == be->window || frame.label == be->window ||
               frame.handle == be->window || frame.window == be->window)) {
@@ -2750,9 +2534,9 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const re) {
     if ((re->x >= 0 && re->x <= static_cast<signed>(frame.button_w)) &&
         (re->y >= 0 && re->y <= static_cast<signed>(frame.button_w))) {
       maximize(re->button);
-      screen->getWorkspace(blackbox_attrib.workspace)->raiseWindow(this);
+      screen->getWorkspace(client.workspace)->raiseWindow(this);
     } else {
-      redrawMaximizeButton(flags.maximized);
+      redrawMaximizeButton(client.state.maximized);
     }
   } else if (re->window == frame.iconify_button) {
     if ((re->x >= 0 && re->x <= static_cast<signed>(frame.button_w)) &&
@@ -2766,8 +2550,8 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const re) {
         (re->y >= 0 && re->y <= static_cast<signed>(frame.button_w)))
       close();
     redrawCloseButton(False);
-  } else if (flags.moving) {
-    flags.moving = False;
+  } else if (client.state.moving) {
+    client.state.moving = False;
 
     if (! screen->doOpaqueMove()) {
       /* when drawing the rubber band, we need to make sure we only draw inside
@@ -2788,7 +2572,7 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const re) {
     }
     screen->hideGeometry();
     XUngrabPointer(blackbox->getXDisplay(), CurrentTime);
-  } else if (flags.resizing) {
+  } else if (client.state.resizing) {
     XDrawRectangle(blackbox->getXDisplay(), screen->getRootWindow(),
                    screen->getOpGC(), frame.changing.x(), frame.changing.y(),
                    frame.changing.width() - 1, frame.changing.height() - 1);
@@ -2799,9 +2583,9 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const re) {
     constrain((re->window == frame.left_grip) ? TopRight : TopLeft);
 
     // unset maximized state when resized after fully maximized
-    if (flags.maximized == 1)
+    if (client.state.maximized == 1)
       maximize(0);
-    flags.resizing = False;
+    client.state.resizing = False;
     configure(frame.changing.x(), frame.changing.y(),
               frame.changing.width(), frame.changing.height());
 
@@ -2819,10 +2603,10 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
           client.window);
 #endif
 
-  if (!flags.resizing && me->state & Button1Mask && (functions & Func_Move) &&
+  if (!client.state.resizing && me->state & Button1Mask && (client.functions & Func_Move) &&
       (frame.title == me->window || frame.label == me->window ||
        frame.handle == me->window || frame.window == me->window)) {
-    if (! flags.moving) {
+    if (! client.state.moving) {
       XGrabPointer(blackbox->getXDisplay(), me->window, False,
                    Button1MotionMask | ButtonReleaseMask,
                    GrabModeAsync, GrabModeAsync,
@@ -2831,7 +2615,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
       if (windowmenu && windowmenu->isVisible())
         windowmenu->hide();
 
-      flags.moving = True;
+      client.state.moving = True;
 
       if (! screen->doOpaqueMove()) {
         XGrabServer(blackbox->getXDisplay());
@@ -2926,14 +2710,14 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
 
       screen->showPosition(dx, dy);
     }
-  } else if ((functions & Func_Resize) &&
+  } else if ((client.functions & Func_Resize) &&
              (me->state & Button1Mask && (me->window == frame.right_grip ||
                                           me->window == frame.left_grip)) ||
              (me->state & Button3Mask && me->state & Mod1Mask &&
               me->window == frame.window)) {
     bool left = (me->window == frame.left_grip);
 
-    if (! flags.resizing) {
+    if (! client.state.resizing) {
       XGrabServer(blackbox->getXDisplay());
       XGrabPointer(blackbox->getXDisplay(), me->window, False,
                    ButtonMotionMask | ButtonReleaseMask,
@@ -2942,7 +2726,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
                     blackbox->getLowerRightAngleCursor()),
                    CurrentTime);
 
-      flags.resizing = True;
+      client.state.resizing = True;
 
       unsigned int gw, gh;
       frame.grab_x = me->x;
@@ -2989,7 +2773,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
 
 
 void BlackboxWindow::enterNotifyEvent(const XCrossingEvent* ce) {
-  if (! (screen->isSloppyFocus() && isVisible()))
+  if (! (screen->isSloppyFocus() && ! client.state.hidden))
     return;
 
   XEvent e;
@@ -3027,7 +2811,7 @@ void BlackboxWindow::leaveNotifyEvent(const XCrossingEvent*) {
 
 #ifdef    SHAPE
 void BlackboxWindow::shapeEvent(const XShapeEvent * const) {
-  if (blackbox->hasShapeExtensions() && flags.shaped) {
+  if (blackbox->hasShapeExtensions() && client.state.shaped) {
     configureShape();
   }
 }
@@ -3057,10 +2841,10 @@ void BlackboxWindow::restore(bool remap) {
   XSelectInput(blackbox->getXDisplay(), frame.plate, NoEventMask);
 
   // do not leave a shaded window as an icon unless it was an icon
-  if (flags.shaded && ! flags.iconic)
-    current_state = NormalState;
+  if (client.state.shaded && ! client.state.iconic)
+    client.current_state = NormalState;
 
-  setState(current_state);
+  setState(client.current_state);
 
   restoreGravity(client.rect);
 
@@ -3094,21 +2878,22 @@ void BlackboxWindow::restore(bool remap) {
 
 // timer for autoraise
 void BlackboxWindow::timeout(void) {
-  screen->getWorkspace(blackbox_attrib.workspace)->raiseWindow(this);
+  screen->getWorkspace(client.workspace)->raiseWindow(this);
 }
 
 
+#if 0
 void BlackboxWindow::changeBlackboxHints(const BlackboxHints *net) {
   if ((net->flags & AttribShaded) &&
       ((blackbox_attrib.attrib & AttribShaded) !=
        (net->attrib & AttribShaded)))
     shade();
 
-  if (flags.visible && // watch out for requests when we can not be seen
+  if (! client.state.hidden && // watch out for requests when not visible
       (net->flags & (AttribMaxVert | AttribMaxHoriz)) &&
       ((blackbox_attrib.attrib & (AttribMaxVert | AttribMaxHoriz)) !=
        (net->attrib & (AttribMaxVert | AttribMaxHoriz)))) {
-    if (flags.maximized) {
+    if (client.state.maximized) {
       maximize(0);
     } else {
       int button = 0;
@@ -3126,69 +2911,69 @@ void BlackboxWindow::changeBlackboxHints(const BlackboxHints *net) {
   }
 
   if ((net->flags & AttribWorkspace) &&
-      (blackbox_attrib.workspace != net->workspace)) {
+      (client.workspace != net->workspace)) {
     screen->reassociateWindow(this, net->workspace);
 
     if (screen->getCurrentWorkspaceID() != net->workspace) {
       withdraw();
     } else {
       show();
-      screen->getWorkspace(blackbox_attrib.workspace)->raiseWindow(this);
+      screen->getWorkspace(client.workspace)->raiseWindow(this);
     }
   }
 
   if (net->flags & AttribDecoration) {
     switch (net->decoration) {
     case DecorNone:
-      decorations = 0;
+      client.decorations = 0;
 
       break;
 
     default:
     case DecorNormal:
-      decorations |= Decor_Titlebar | Decor_Handle | Decor_Border |
+      client.decorations |= Decor_Titlebar | Decor_Handle | Decor_Border |
         Decor_Iconify | Decor_Maximize;
 
       break;
 
     case DecorTiny:
-      decorations |= Decor_Titlebar | Decor_Iconify;
-      decorations &= ~(Decor_Border | Decor_Handle | Decor_Maximize);
+      client.decorations |= Decor_Titlebar | Decor_Iconify;
+      client.decorations &= ~(Decor_Border | Decor_Handle | Decor_Maximize);
 
       break;
 
     case DecorTool:
-      decorations |= Decor_Titlebar;
-      decorations &= ~(Decor_Iconify | Decor_Border | Decor_Handle);
+      client.decorations |= Decor_Titlebar;
+      client.decorations &= ~(Decor_Iconify | Decor_Border | Decor_Handle);
 
       break;
     }
 
     // sanity check the new decor
-    if (! (functions & Func_Resize) || isTransient())
-      decorations &= ~(Decor_Maximize | Decor_Handle);
-    if (! (functions & Func_Maximize))
-      decorations &= ~Decor_Maximize;
-    if (! (functions & Func_Iconify))
-      decorations &= ~Decor_Iconify;
-    if (decorations & Decor_Titlebar) {
-      if (functions & Func_Close)   // close button is controlled by function
-        decorations |= Decor_Close; // not decor type
+    if (! (client.functions & Func_Resize) || isTransient())
+      client.decorations &= ~(Decor_Maximize | Decor_Handle);
+    if (! (client.functions & Func_Maximize))
+      client.decorations &= ~Decor_Maximize;
+    if (! (client.functions & Func_Iconify))
+      client.decorations &= ~Decor_Iconify;
+    if (client.decorations & Decor_Titlebar) {
+      if (client.functions & Func_Close)   // close button is controlled by function
+        client.decorations |= Decor_Close; // not decor type
     } else {
-      if (flags.shaded) // we can not be shaded if we lack a titlebar
+      if (client.state.shaded) // we can not be shaded if we lack a titlebar
         shade();
     }
 
-    if (flags.visible && frame.window) {
+    if (! client.state.hidden && frame.window) {
       XMapSubwindows(blackbox->getXDisplay(), frame.window);
       XMapWindow(blackbox->getXDisplay(), frame.window);
     }
 
     reconfigure();
-    setState(current_state);
+    setState(client.current_state);
   }
 }
-
+#endif
 
 /*
  * Set the sizes of all components of the window frame
@@ -3199,7 +2984,7 @@ void BlackboxWindow::changeBlackboxHints(const BlackboxHints *net) {
 void BlackboxWindow::upsize(void) {
   frame.bevel_w = screen->getBevelWidth();
 
-  if (decorations & Decor_Border) {
+  if (client.decorations & Decor_Border) {
     frame.border_w = screen->getBorderWidth();
     if (!isTransient())
       frame.mwm_border_w = screen->getFrameWidth();
@@ -3209,7 +2994,7 @@ void BlackboxWindow::upsize(void) {
     frame.mwm_border_w = frame.border_w = 0;
   }
 
-  if (decorations & Decor_Titlebar) {
+  if (client.decorations & Decor_Titlebar) {
     // the height of the titlebar is based upon the height of the font being
     // used to display the window's title
     WindowStyle *style = screen->getWindowStyle();
@@ -3238,7 +3023,7 @@ void BlackboxWindow::upsize(void) {
   // set the left/right frame margin
   frame.margin.left = frame.margin.right = frame.border_w + frame.mwm_border_w;
 
-  if (decorations & Decor_Handle) {
+  if (client.decorations & Decor_Handle) {
     frame.grip_w = frame.button_w * 2;
     frame.handle_h = screen->getHandleWidth();
 
@@ -3267,7 +3052,7 @@ void BlackboxWindow::upsize(void) {
   frame.inside_w = width - (frame.border_w * 2);
   frame.inside_h = height - (frame.border_w * 2);
 
-  if (flags.shaded)
+  if (client.state.shaded)
     height = frame.title_h + (frame.border_w * 2);
   frame.rect.setSize(width, height);
 }

@@ -112,33 +112,36 @@ private:
   Blackbox *blackbox;
   BScreen *screen;
   BTimer *timer;
-  BlackboxAttributes blackbox_attrib;
 
   Time lastButtonPressTime;  // used for double clicks, when were we clicked
   Windowmenu *windowmenu;
 
   unsigned int window_number;
-  unsigned long current_state;
 
   enum FocusMode { F_NoInput = 0, F_Passive,
                    F_LocallyActive, F_GloballyActive };
-  FocusMode focus_mode;
+  enum WMLayer { LAYER_NORMAL, LAYER_FULLSCREEN, LAYER_ABOVE, LAYER_BELOW,
+                  LAYER_DESKTOP };
+  enum WMSkip { SKIP_NONE, SKIP_TASKBAR, SKIP_PAGER, SKIP_BOTH };
 
-  struct _flags {
-    bool moving,             // is moving?
-      resizing,              // is resizing?
+  struct WMState {
+    bool modal,              // is modal? (must be dismissed to continue)
       shaded,                // is shaded?
-      visible,               // is visible?
+      hidden,                // is hidden?
       iconic,                // is iconified?
+      fullscreen,            // is a full screen window
+      moving,                // is moving?
+      resizing,              // is resizing?
       focused,               // has focus?
-      modal,                 // is modal? (must be dismissed to continue)
       send_focus_message,    // should we send focus messages to our client?
       shaped;                // does the frame use the shape extension?
     unsigned int maximized;  // maximize is special, the number corresponds
                              // with a mouse button
                              // if 0, not maximized
                              // 1 = HorizVert, 2 = Vertical, 3 = Horizontal
-  } flags;
+    WMLayer layer;           // full screen, above, normal, below, desktop
+    WMSkip skip;             // none, taskbar, pager, both
+  };
 
   struct _client {
     Window window,                  // the client's window
@@ -148,7 +151,7 @@ private:
 
     std::string title, icon_title;
 
-    Rect rect;
+    Rect rect, premax;
 
     int old_bw;                       // client's borderwidth
 
@@ -164,16 +167,20 @@ private:
       win_gravity;
 
     unsigned long initial_state, normal_hint_flags;
-    Atom window_type;
-  } client;
+    unsigned long current_state;
+    unsigned int workspace;
 
-  FunctionFlags functions;
-  /*
-   * what decorations do we have?
-   * this is based on the type of the client window as well as user input
-   * the menu is not really decor, but it goes hand in hand with the decor
-   */
-  DecorationFlags decorations;
+    FocusMode focus_mode;
+    WMState state;
+    Atom window_type;
+    FunctionFlags functions;
+    /*
+     * what decorations do we have?
+     * this is based on the type of the client window as well as user input
+     * the menu is not really decor, but it goes hand in hand with the decor
+     */
+    DecorationFlags decorations;
+  } client;
 
   /*
    * client window = the application's window
@@ -243,7 +250,6 @@ private:
   void getWMProtocols(void);
   void getWMHints(void);
   void getMWMHints(void);
-  bool getBlackboxHints(void);
   void getTransientInfo(void);
   void setNetWMAttributes(void);
   void associateClientWindow(void);
@@ -280,18 +286,22 @@ public:
   virtual ~BlackboxWindow(void);
 
   inline bool isTransient(void) const { return client.transient_for != 0; }
-  inline bool isFocused(void) const { return flags.focused; }
-  inline bool isVisible(void) const { return flags.visible; }
-  inline bool isIconic(void) const { return flags.iconic; }
-  inline bool isShaded(void) const { return flags.shaded; }
-  inline bool isMaximized(void) const { return flags.maximized; }
-  inline bool isModal(void) const { return flags.modal; }
-  inline bool isIconifiable(void) const { return functions & Func_Iconify; }
-  inline bool isMaximizable(void) const { return functions & Func_Maximize; }
-  inline bool isResizable(void) const { return functions & Func_Resize; }
-  inline bool isClosable(void) const { return functions & Func_Close; }
+  inline bool isFocused(void) const { return client.state.focused; }
+  inline bool isHidden(void) const { return client.state.hidden; }
+  inline bool isIconic(void) const { return client.state.iconic; }
+  inline bool isShaded(void) const { return client.state.shaded; }
+  inline bool isMaximized(void) const { return client.state.maximized; }
+  inline bool isModal(void) const { return client.state.modal; }
+  inline bool isIconifiable(void) const
+  { return client.functions & Func_Iconify; }
+  inline bool isMaximizable(void) const
+  { return client.functions & Func_Maximize; }
+  inline bool isResizable(void) const
+  { return client.functions & Func_Resize; }
+  inline bool isClosable(void) const { return client.functions & Func_Close; }
 
-  inline bool hasTitlebar(void) const { return decorations & Decor_Titlebar; }
+  inline bool hasTitlebar(void) const
+  { return client.decorations & Decor_Titlebar; }
 
   inline const BlackboxWindowList &getTransients(void) const
   { return client.transientList; }
@@ -311,7 +321,7 @@ public:
   { return client.icon_title.c_str(); }
 
   inline unsigned int getWorkspaceNumber(void) const
-  { return blackbox_attrib.workspace; }
+  { return client.workspace; }
   inline unsigned int getWindowNumber(void) const { return window_number; }
 
   inline const Rect &frameRect(void) const { return frame.rect; }
@@ -322,7 +332,7 @@ public:
 
   inline void setWindowNumber(int n) { window_number = n; }
 
-  inline void setModal(bool flag) { flags.modal = flag; }
+  inline void setModal(bool flag) { client.state.modal = flag; }
 
   bool validateClient(void) const;
   bool setInputFocus(void);
@@ -343,8 +353,6 @@ public:
   void restore(bool remap);
   void configure(int dx, int dy, unsigned int dw, unsigned int dh);
   void setWorkspace(unsigned int n);
-  void changeBlackboxHints(const BlackboxHints *net);
-  void restoreAttributes(void);
 
   void netwmEvent(const XClientMessageEvent * const ce);
   void buttonPressEvent(const XButtonEvent * const be);

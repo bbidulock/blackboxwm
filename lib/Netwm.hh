@@ -119,6 +119,7 @@ public:
   void setWMDesktop(Window target, unsigned int desktop) const;
   bool readWMDesktop(Window target, unsigned int& desktop) const;
   bool readWMWindowType(Window target, AtomList& types) const;
+  void setWMState(Window target, AtomList& atoms) const;
   bool readWMState(Window target, AtomList& states) const;
 
   // utility

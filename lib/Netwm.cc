@@ -26,7 +26,7 @@
 typedef unsigned char uchar;
 
 Netwm::Netwm(Display* _display): display(_display) {
-  char* atoms[] = {
+  char* atoms[40] = {
     "UTF8_STRING",
     "_NET_SUPPORTED",
     "_NET_CLIENT_LIST",
@@ -42,7 +42,7 @@ Netwm::Netwm(Display* _display): display(_display) {
     "_NET_MOVERESIZE_WINDOW",
     "_NET_WM_NAME",
     "_NET_WM_ICON_NAME",
-    "_NET_WM_DESKTOP"
+    "_NET_WM_DESKTOP",
     "_NET_WM_WINDOW_TYPE",
     "_NET_WM_WINDOW_TYPE_DESKTOP",
     "_NET_WM_WINDOW_TYPE_DOCK",
@@ -247,6 +247,18 @@ bool Netwm::readWMDesktop(Window target, unsigned int& desktop) const {
 bool Netwm::readWMWindowType(Window target, AtomList& types) const {
   return (getAtomListProperty(target, net_wm_window_type, types) &&
           ! types.empty());
+}
+
+
+void Netwm::setWMState(Window target, AtomList& atoms) const {
+  if (atoms.empty()) {
+    removeProperty(target, net_wm_state);
+    return;
+  }
+
+  XChangeProperty(display, target, net_wm_state, XA_ATOM,
+                  32, PropModeReplace,
+                  reinterpret_cast<uchar*>(&(atoms[0])), atoms.size());
 }
 
 
