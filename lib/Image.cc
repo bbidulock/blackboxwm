@@ -959,13 +959,13 @@ void bt::Image::bevel(unsigned int border_width) {
 
 
 void bt::Image::invert(void) {
-  unsigned int i, j, wh = (width * height) - 1;
+  register unsigned int i = 0, j = (width * height) - 1;
   RGB tmp;
 
-  for (i = 0, j = wh; j > i; j--, i++) {
-    tmp = *(data + j);
-    *(data + j) = *(data + i);
-    *(data + i) = tmp;
+  for (; j > i; j--, i++) {
+    tmp = data[j];
+    data[j] = data[i];
+    data[i] = tmp;
   }
 }
 
