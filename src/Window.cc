@@ -23,6 +23,7 @@
 // DEALINGS IN THE SOFTWARE.
 
 // make sure we get bt::textPropertyToString()
+#include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
 #include "Window.hh"
@@ -88,35 +89,87 @@ static WindowType window_type_from_atom(const bt::Netwm &netwm, Atom atom) {
 
 
 /*
- * Determine the appropriate decorations and functions for the
- * specified window type.
+ * Determine the appropriate decorations and functions based on the
+ * given properties and hints.
  */
-static void get_decorations(WindowType window_type,
-                            WindowDecorationFlags &decorations,
-                            WindowFunctionFlags &functions) {
+static void update_decorations(WindowDecorationFlags &decorations,
+                               WindowFunctionFlags &functions,
+                               bool transient,
+                               const EWMH &ewmh,
+                               const MotifHints &motifhints,
+                               const WMNormalHints &wmnormal,
+                               const WMProtocols &wmprotocols) {
   decorations = AllWindowDecorations;
-  functions = AllWindowFunctions;
+  functions   = AllWindowFunctions;
+
+  // transients should be kept on the same workspace are their parents
+  if (transient)
+    functions &= ~WindowFunctionChangeWorkspace;
 
   // modify the window decorations/functions based on window type
-  switch (window_type) {
+  switch (ewmh.window_type) {
   case WindowTypeDialog:
-    decorations &= ~(WindowDecorationIconify | WindowDecorationMaximize);
-    functions &= ~(WindowFunctionShade | WindowFunctionIconify |
-                   WindowFunctionMaximize);
+    decorations &= ~(WindowDecorationIconify |
+                     WindowDecorationMaximize);
+    functions   &= ~(WindowFunctionShade |
+                     WindowFunctionIconify |
+                     WindowFunctionMaximize);
     break;
 
   case WindowTypeDesktop:
   case WindowTypeDock:
   case WindowTypeSplash:
-    decorations = functions = 0;
+    decorations = NoWindowDecorations;
+    functions   = NoWindowFunctions;
+    break;
+
+  case WindowTypeToolbar:
+  case WindowTypeMenu:
+    decorations &= ~(WindowDecorationHandle |
+                     WindowDecorationGrip |
+                     WindowDecorationBorder |
+                     WindowDecorationIconify |
+                     WindowDecorationMaximize);
+    functions   &= ~(WindowFunctionResize |
+                     WindowFunctionShade |
+                     WindowFunctionIconify |
+                     WindowFunctionMaximize);
     break;
 
   case WindowTypeUtility:
-    decorations &= ~(WindowDecorationMaximize | WindowDecorationIconify);
-    functions   &= ~(WindowFunctionMaximize | WindowFunctionIconify);
+    decorations &= ~(WindowDecorationIconify |
+                     WindowDecorationMaximize);
+    functions   &= ~(WindowFunctionShade |
+                     WindowFunctionIconify |
+                     WindowFunctionMaximize);
     break;
 
-  default:break;
+  default:
+    break;
+  }
+
+  // mask away stuff turned off by Motif hints
+  decorations &= motifhints.decorations;
+  functions   &= motifhints.functions;
+
+  // disable shade if we do not have a titlebar
+  if (!(decorations & WindowDecorationTitlebar))
+    functions &= ~WindowFunctionShade;
+
+  // disable grips and maximize if we have a fixed size window
+  if ((wmnormal.flags & (PMinSize|PMaxSize)) == (PMinSize|PMaxSize)
+      && wmnormal.max_width <= wmnormal.min_width
+      && wmnormal.max_height <= wmnormal.min_height) {
+    decorations &= ~(WindowDecorationMaximize |
+                     WindowDecorationGrip);
+    functions   &= ~(WindowFunctionResize |
+                     WindowFunctionMaximize);
+  }
+
+  // cannot close if client doesn't understand WM_DELETE_WINDOW
+  if (!wmprotocols.wm_delete_window) {
+    decorations &= ~WindowDecorationClose;
+    functions   &= ~WindowFunctionClose;
   }
 }
 
@@ -190,9 +243,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
                           CWEventMask|CWDontPropagate, &attrib_set);
 
   client.colormap = wattrib.colormap;
-  client.workspace = screen->currentWorkspace();
   window_number = bt::BSENTINEL;
-  client.window_type = WindowTypeNormal;
   client.strut = 0;
   /*
     set the initial size and location of client window (relative to the
@@ -219,9 +270,9 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   client.title = readWMName();
   client.icon_title = readWMIconName();
 
-  // get size, aspect, minimum/maximum size, ewmh and other hints set by the
-  // client
-  getNetwmHints();
+  // get size, aspect, minimum/maximum size, ewmh and other hints set
+  // by the client
+  client.ewmh = readEWMH();
   client.motif = readMotifHints();
   client.wmhints = readWMHints();
   client.wmnormal = readWMNormalHints();
@@ -232,30 +283,36 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     if (client.transient_for != (BlackboxWindow *) ~0ul) {
       // register ourselves with our new transient_for
       client.transient_for->client.transientList.push_back(this);
-      client.workspace = client.transient_for->client.workspace;
+      client.ewmh.workspace = client.transient_for->workspace();
     }
-
-    if (client.window_type == WindowTypeNormal)
-      client.window_type = WindowTypeDialog;
   }
 
   if (client.wmhints.window_group != None)
     ::update_window_group(client.wmhints.window_group, blackbox, this);
 
-  ::get_decorations(client.window_type, client.decorations, client.functions);
+  client.state.visible = false;
+  client.state.iconic = client.ewmh.hidden;
+  client.state.moving = false;
+  client.state.resizing = false;
+  client.state.focused = false;
 
-  // mask away stuff turned off by Motif hints
-  client.decorations &= client.motif.decorations;
-  client.functions   &= client.motif.functions;
+  switch (windowType()) {
+  case WindowTypeDesktop:
+    setLayer(StackingList::LayerDesktop);
+    break;
 
-  if ((client.wmnormal.flags & (PMinSize|PMaxSize)) == (PMinSize|PMaxSize)
-      && client.wmnormal.max_width <= client.wmnormal.min_width
-      && client.wmnormal.max_height <= client.wmnormal.min_height) {
-    client.decorations &= ~(WindowDecorationMaximize |
-                            WindowDecorationGrip);
-    client.functions   &= ~(WindowFunctionResize |
-                            WindowFunctionMaximize);
-  }
+  case WindowTypeDock:
+    setLayer(StackingList::LayerAbove);
+    break;
+  } // switch
+
+  ::update_decorations(client.decorations,
+                       client.functions,
+                       isTransient(),
+                       client.ewmh,
+                       client.motif,
+                       client.wmnormal,
+                       client.wmprotocols);
 
   frame.window = createToplevelWindow();
   blackbox->insertEventHandler(frame.window, this);
@@ -296,8 +353,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     // prepare the window to be iconified
     client.current_state = IconicState;
     client.state.iconic = False;
-  } else if (client.workspace != bt::BSENTINEL &&
-             client.workspace != screen->currentWorkspace()) {
+  } else if (workspace() != bt::BSENTINEL &&
+             workspace() != screen->currentWorkspace()) {
     client.current_state = WithdrawnState;
   }
 
@@ -316,7 +373,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   // we apply the decorations
   decorate();
 
-  if (client.decorations & WindowDecorationBorder)
+  if (hasWindowDecoration(WindowDecorationBorder))
     XSetWindowBorder(blackbox->XDisplay(), frame.plate, frame.uborder_pixel);
 
   grabButtons();
@@ -325,8 +382,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   client.premax = frame.rect;
 
-  if (client.state.shaded) {
-    client.state.shaded = false;
+  if (isShaded()) {
+    client.ewmh.shaded = false;
     unsigned long save_state = client.current_state;
     setShaded(true);
 
@@ -338,13 +395,13 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
       client.current_state = save_state;
   }
 
-  if (!(client.functions & WindowFunctionMaximize))
-    client.state.maximized = 0;
+  if (!hasWindowFunction(WindowFunctionMaximize))
+    client.ewmh.maxh = client.ewmh.maxv = false;
 
-  if (client.state.fullscreen) {
-    client.state.fullscreen = false; // trick setFullScreen into working
+  if (isFullScreen()) {
+    client.ewmh.fullscreen = false; // trick setFullScreen into working
     setFullScreen(true);
-  } else if (client.state.maximized) {
+  } else if (isMaximized()) {
     remaximize();
   }
 }
@@ -860,13 +917,13 @@ void BlackboxWindow::grabButtons(void) {
                          GrabModeSync, GrabModeSync, frame.plate, None,
                          screen->resource().allowScrollLock());
 
-  if (client.functions & WindowFunctionMove)
+  if (hasWindowFunction(WindowFunctionMove))
     blackbox->grabButton(Button1, Mod1Mask, frame.window, True,
                          ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
                          GrabModeAsync, frame.window,
                          blackbox->resource().moveCursor(),
                          screen->resource().allowScrollLock());
-  if (client.functions & WindowFunctionResize)
+  if (hasWindowFunction(WindowFunctionResize))
     blackbox->grabButton(Button3, Mod1Mask, frame.window, True,
                          ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
                          GrabModeAsync, frame.window,
@@ -891,8 +948,9 @@ void BlackboxWindow::ungrabButtons(void) {
 void BlackboxWindow::positionWindows(void) {
   XMoveResizeWindow(blackbox->XDisplay(), frame.window,
                     frame.rect.x(), frame.rect.y(), frame.inside_w,
-                    (client.state.shaded) ? frame.style->title_height :
-                                            frame.inside_h);
+                    ((isShaded())
+                     ? frame.style->title_height
+                     : frame.inside_h));
   XSetWindowBorderWidth(blackbox->XDisplay(), frame.window, frame.border_w);
   XSetWindowBorderWidth(blackbox->XDisplay(), frame.plate, frame.mwm_border_w);
   XMoveResizeWindow(blackbox->XDisplay(), frame.plate,
@@ -991,7 +1049,21 @@ std::string BlackboxWindow::readWMIconName(void) {
 }
 
 
-void BlackboxWindow::getNetwmHints(void) {
+EWMH BlackboxWindow::readEWMH(void) {
+  EWMH ewmh;
+  ewmh.window_type  = WindowTypeNormal;
+  ewmh.workspace    = 0; // initialized properly below
+  ewmh.modal        = false;
+  ewmh.maxv         = false;
+  ewmh.maxh         = false;
+  ewmh.shaded       = false;
+  ewmh.skip_taskbar = false;
+  ewmh.skip_pager   = false;
+  ewmh.hidden       = false;
+  ewmh.fullscreen   = false;
+  ewmh.above        = false;
+  ewmh.below        = false;
+
   // note: wm_name and wm_icon_name are read separately
 
   bool ret;
@@ -1003,13 +1075,9 @@ void BlackboxWindow::getNetwmHints(void) {
     bt::Netwm::AtomList::iterator it = atoms.begin(), end = atoms.end();
     for (; it != end; ++it) {
       if (netwm.isSupportedWMWindowType(*it)) {
-        client.window_type = ::window_type_from_atom(netwm, *it);
+        ewmh.window_type = ::window_type_from_atom(netwm, *it);
         break;
       }
-    }
-    if (client.window_type == WindowTypeDesktop) {
-      // make me omnipresent
-      setLayer(StackingList::LayerDesktop);
     }
   }
 
@@ -1020,51 +1088,43 @@ void BlackboxWindow::getNetwmHints(void) {
     for (; it != end; ++it) {
       Atom state = *it;
       if (state == netwm.wmStateModal()) {
-        if (isTransient())
-          client.state.modal = True;
+        ewmh.modal = true;
       } else if (state == netwm.wmStateMaximizedVert()) {
-        if (client.state.maximized == 0)
-          client.state.maximized = 2;
-        else if (client.state.maximized == 3)
-          client.state.maximized = 1;
+        ewmh.maxv = true;
       } else if (state == netwm.wmStateMaximizedHorz()) {
-        if (client.state.maximized == 0)
-          client.state.maximized = 3;
-        else if (client.state.maximized == 2)
-          client.state.maximized = 1;
+        ewmh.maxh = true;
       } else if (state == netwm.wmStateShaded()) {
-        client.state.shaded = True;
+        ewmh.shaded = true;
       } else if (state == netwm.wmStateSkipTaskbar()) {
-        if (client.state.skip == SKIP_NONE)
-          client.state.skip = SKIP_TASKBAR;
-        else if (client.state.skip == SKIP_PAGER)
-          client.state.skip = SKIP_BOTH;
+        ewmh.skip_taskbar = true;
       } else if (state == netwm.wmStateSkipPager()) {
-        if (client.state.skip == SKIP_NONE)
-          client.state.skip = SKIP_PAGER;
-        else if (client.state.skip == SKIP_TASKBAR)
-          client.state.skip = SKIP_BOTH;
+        ewmh.skip_pager = true;
       } else if (state == netwm.wmStateHidden()) {
-        client.state.iconic = True;
+        ewmh.hidden = true;
       } else if (state == netwm.wmStateFullscreen()) {
-        client.state.fullscreen = True;
-        setLayer(StackingList::LayerFullScreen);
+        ewmh.fullscreen = True;
       } else if (state == netwm.wmStateAbove()) {
-        setLayer(StackingList::LayerAbove);
+        ewmh.above = true;
       } else if (state == netwm.wmStateBelow()) {
-        setLayer(StackingList::LayerBelow);
+        ewmh.below = true;
       }
     }
   }
 
-  unsigned int desktop;
-  ret = netwm.readWMDesktop(client.window, desktop);
-  if (ret) {
-    if (desktop != 0xFFFFFFFF)
-      client.workspace = desktop;
-    else
-      client.workspace = bt::BSENTINEL;
-  }
+  switch (ewmh.window_type) {
+  case WindowTypeDesktop:
+  case WindowTypeDock:
+    // these types should occupy all workspaces by default
+    ewmh.workspace = bt::BSENTINEL;
+    break;
+
+  default:
+    if (!netwm.readWMDesktop(client.window, ewmh.workspace))
+      ewmh.workspace = screen->currentWorkspace();
+    break;
+  } //switch
+
+  return ewmh;
 }
 
 
@@ -1203,7 +1263,7 @@ WMNormalHints BlackboxWindow::readWMNormalHints(void) {
 MotifHints BlackboxWindow::readMotifHints(void) {
   MotifHints motif;
   motif.decorations = AllWindowDecorations;
-  motif.functions     = AllWindowFunctions;
+  motif.functions   = AllWindowFunctions;
 
   /*
     this structure only contains 3 elements, even though the Motif 2.0
@@ -1219,7 +1279,7 @@ MotifHints BlackboxWindow::readMotifHints(void) {
     MWM_HINTS_FUNCTIONS   = 1<<0,
     MWM_HINTS_DECORATIONS = 1<<1
   };
-  enum { // MWM functions (aka actions)
+  enum { // MWM functions
     MWM_FUNC_ALL      = 1<<0,
     MWM_FUNC_RESIZE   = 1<<1,
     MWM_FUNC_MOVE     = 1<<2,
@@ -1282,11 +1342,11 @@ MotifHints BlackboxWindow::readMotifHints(void) {
         motif.decorations |= WindowDecorationBorder;
       if (prop->decorations & MWM_DECOR_RESIZEH) {
         motif.decorations |= (WindowDecorationHandle |
-                                   WindowDecorationGrip);
+                              WindowDecorationGrip);
       }
       if (prop->decorations & MWM_DECOR_TITLE) {
         motif.decorations |= (WindowDecorationTitlebar |
-                                   WindowDecorationClose);
+                              WindowDecorationClose);
       }
       if (prop->decorations & MWM_DECOR_MINIMIZE)
         motif.decorations |= WindowDecorationIconify;
@@ -1473,8 +1533,8 @@ void BlackboxWindow::configureShape(void) {
 
 
 void BlackboxWindow::setWorkspace(unsigned int new_workspace) {
-  client.workspace = new_workspace;
-  blackbox->netwm().setWMDesktop(client.window, client.workspace);
+  client.ewmh.workspace = new_workspace;
+  blackbox->netwm().setWMDesktop(client.window, client.ewmh.workspace);
 }
 
 
@@ -1500,7 +1560,7 @@ bool BlackboxWindow::setInputFocus(void) {
     // transfer focus to any modal transients
     BlackboxWindowList::iterator it, end = client.transientList.end();
     for (it = client.transientList.begin(); it != end; ++it) {
-      if ((*it)->client.state.modal)
+      if ((*it)->isModal())
         return (*it)->setInputFocus();
     }
   }
@@ -1548,7 +1608,7 @@ void BlackboxWindow::show(void) {
 
   client.state.iconic = false;
   client.state.visible = true;
-  setState((client.state.shaded) ? IconicState : NormalState);
+  setState(isShaded() ? IconicState : NormalState);
 
   XMapWindow(blackbox->XDisplay(), client.window);
   XMapSubwindows(blackbox->XDisplay(), frame.window);
@@ -1641,10 +1701,10 @@ void BlackboxWindow::iconify(void) {
 
 
 void BlackboxWindow::maximize(unsigned int button) {
-  if (client.state.maximized) {
-    client.state.maximized = 0;
+  if (isMaximized()) {
+    client.ewmh.maxh = client.ewmh.maxv = false;
 
-    if (!client.state.fullscreen) {
+    if (!isFullScreen()) {
       /*
         when a resize is begun, maximize(0) is called to clear any
         maximization flags currently set.  Otherwise it still thinks
@@ -1661,34 +1721,44 @@ void BlackboxWindow::maximize(unsigned int button) {
     return;
   }
 
-  client.state.maximized = button;
+  switch (button) {
+  case 1:
+    client.ewmh.maxh = true;
+    client.ewmh.maxv = true;
+    break;
 
-  if (!client.state.fullscreen) {
+  case 2:
+    client.ewmh.maxh = false;
+    client.ewmh.maxv = true;
+    break;
+
+  case 3:
+    client.ewmh.maxh = true;
+    client.ewmh.maxv = false;
+    break;
+
+  default:
+    assert(0);
+    break;
+  }
+
+  if (!isFullScreen()) {
     frame.changing = screen->availableArea();
     client.premax = frame.rect;
 
-    switch(button) {
-    case 1:
-      break;
-
-    case 2:
+    if (!client.ewmh.maxh) {
       frame.changing.setX(client.premax.x());
       frame.changing.setWidth(client.premax.width());
-      break;
-
-    case 3:
+    }
+    if (!client.ewmh.maxv) {
       frame.changing.setY(client.premax.y());
       frame.changing.setHeight(client.premax.height());
-      break;
-
-    default:
-      assert(0);
     }
 
     constrain(TopLeft);
 
-    if (client.state.shaded)
-      client.state.shaded = False;
+    if (isShaded())
+      client.ewmh.shaded = false;
 
     configure(frame.changing);
     redrawAllButtons(); // in case it is not called in configure()
@@ -1700,12 +1770,19 @@ void BlackboxWindow::maximize(unsigned int button) {
 
 // re-maximizes the window to take into account availableArea changes
 void BlackboxWindow::remaximize(void) {
-  if (client.state.shaded)
-    return;
+  if (isShaded()) return;
+
+  unsigned int button = 0u;
+  if (client.ewmh.maxv) {
+    button = (client.ewmh.maxh) ? 1u : 2u;
+  } else if (client.ewmh.maxh) {
+    button = (client.ewmh.maxv) ? 1u : 3u;
+  }
+
+  // trick maximize() into working
+  client.ewmh.maxh = client.ewmh.maxv = false;
 
   bt::Rect tmp = client.premax;
-  const unsigned int button = client.state.maximized;
-  client.state.maximized = 0; // trick maximize() into working
   maximize(button);
   client.premax = tmp;
 }
@@ -1714,12 +1791,12 @@ void BlackboxWindow::remaximize(void) {
 void BlackboxWindow::setShaded(bool shaded) {
   assert(client.decorations & WindowDecorationTitlebar);
 
-  if (!!client.state.shaded == !!shaded)
+  if (!!client.ewmh.shaded == !!shaded)
     return;
 
-  client.state.shaded = shaded;
-  if (!shaded) {
-    if (client.state.maximized) {
+  client.ewmh.shaded = shaded;
+  if (!isShaded()) {
+    if (isMaximized()) {
       remaximize();
     } else {
       XResizeWindow(blackbox->XDisplay(), frame.window,
@@ -1742,17 +1819,18 @@ void BlackboxWindow::setShaded(bool shaded) {
 
 
 void BlackboxWindow::setFullScreen(bool b) {
-  if (!!client.state.fullscreen == !!b)
+  if (!!client.ewmh.fullscreen == !!b)
     return;
 
   bool refocus = isFocused();
-  client.state.fullscreen = b;
-  if (client.state.fullscreen) {
-    client.decorations = 0;
-    client.functions &= ~(WindowFunctionResize | WindowFunctionMove |
+  client.ewmh.fullscreen = b;
+  if (isFullScreen()) {
+    client.decorations = NoWindowDecorations;
+    client.functions &= ~(WindowFunctionMove |
+                          WindowFunctionResize |
                           WindowFunctionShade);
 
-    if (!client.state.maximized)
+    if (!isMaximized())
       client.premax = frame.rect;
     upsize();
 
@@ -1763,8 +1841,13 @@ void BlackboxWindow::setFullScreen(bool b) {
       screen->changeLayer(this, StackingList::LayerFullScreen);
     setState(client.current_state);
   } else {
-    ::get_decorations(client.window_type, client.decorations,
-                      client.functions);
+    ::update_decorations(client.decorations,
+                         client.functions,
+                         isTransient(),
+                         client.ewmh,
+                         client.motif,
+                         client.wmnormal,
+                         client.wmprotocols);
 
     if (client.decorations & WindowDecorationTitlebar)
       createTitlebar();
@@ -1773,7 +1856,7 @@ void BlackboxWindow::setFullScreen(bool b) {
 
     upsize();
 
-    if (!client.state.maximized) {
+    if (!isMaximized()) {
       configure(client.premax);
       if (isVisible())
         screen->changeLayer(this, StackingList::LayerNormal);
@@ -1843,47 +1926,25 @@ void BlackboxWindow::setState(unsigned long new_state) {
 
   const bt::Netwm& netwm = blackbox->netwm();
 
-  netwm.setWMDesktop(client.window, client.workspace);
+  netwm.setWMDesktop(client.window, workspace());
 
   bt::Netwm::AtomList atoms;
-  if (client.state.modal)
+  if (isModal())
     atoms.push_back(netwm.wmStateModal());
-
-  if (client.state.maximized == 0) {
-    /* do nothing */
-  } else if (client.state.maximized == 1) {
-    atoms.push_back(netwm.wmStateMaximizedVert());
-    atoms.push_back(netwm.wmStateMaximizedHorz());
-  } else if (client.state.maximized == 2) {
-    atoms.push_back(netwm.wmStateMaximizedVert());
-  }  else if (client.state.maximized == 3) {
-    atoms.push_back(netwm.wmStateMaximizedHorz());
-  }
-
-  if (client.state.shaded)
+  if (isShaded())
     atoms.push_back(netwm.wmStateShaded());
-
-  switch (client.state.skip) {
-  case SKIP_NONE:
-    /* do nothing */
-    break;
-  case SKIP_BOTH:
-    atoms.push_back(netwm.wmStateSkipTaskbar());
-    atoms.push_back(netwm.wmStateSkipPager());
-    break;
-  case SKIP_TASKBAR:
-    atoms.push_back(netwm.wmStateSkipTaskbar());
-    break;
-  case SKIP_PAGER:
-    atoms.push_back(netwm.wmStateSkipPager());
-    break;
-  }
-
-  if (client.state.iconic)
+  if (isIconic())
     atoms.push_back(netwm.wmStateHidden());
-
-  if (client.state.fullscreen)
+  if (isFullScreen())
     atoms.push_back(netwm.wmStateFullscreen());
+  if (client.ewmh.maxh)
+    atoms.push_back(netwm.wmStateMaximizedHorz());
+  if (client.ewmh.maxv)
+    atoms.push_back(netwm.wmStateMaximizedVert());
+  if (client.ewmh.skip_taskbar)
+    atoms.push_back(netwm.wmStateSkipTaskbar());
+  if (client.ewmh.skip_pager)
+    atoms.push_back(netwm.wmStateSkipPager());
 
   switch (layer()) {
   case StackingList::LayerAbove:
@@ -1907,25 +1968,24 @@ void BlackboxWindow::setState(unsigned long new_state) {
     if (hasWindowFunction(WindowFunctionChangeWorkspace))
       atoms.push_back(netwm.wmActionChangeDesktop());
 
-    if (client.functions & WindowFunctionMove)
-      atoms.push_back(netwm.wmActionMove());
-
-    if (client.functions & WindowFunctionIconify)
+    if (hasWindowFunction(WindowFunctionIconify))
       atoms.push_back(netwm.wmActionMinimize());
 
-    if (client.functions & WindowFunctionResize) {
+    if (hasWindowFunction(WindowFunctionShade))
+      atoms.push_back(netwm.wmActionShade());
+
+    if (hasWindowFunction(WindowFunctionMove))
+      atoms.push_back(netwm.wmActionMove());
+
+    if (hasWindowFunction(WindowFunctionResize)) {
       atoms.push_back(netwm.wmActionResize());
       atoms.push_back(netwm.wmActionMaximizeHorz());
       atoms.push_back(netwm.wmActionMaximizeVert());
       atoms.push_back(netwm.wmActionFullscreen());
     }
-
-    if ((client.decorations & WindowDecorationTitlebar) &&
-        (client.functions & WindowFunctionShade))
-      atoms.push_back(netwm.wmActionShade());
   }
 
-  if (client.functions & WindowFunctionClose)
+  if (hasWindowFunction(WindowFunctionClose))
     atoms.push_back(netwm.wmActionClose());
 
   netwm.setWMAllowedActions(client.window, atoms);
@@ -2301,8 +2361,8 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
       show();
     }
   } else if (event->message_type == netwm.activeWindow()) {
-    if (client.workspace != screen->currentWorkspace())
-      screen->setCurrentWorkspace(client.workspace);
+    if (workspace() != screen->currentWorkspace())
+      screen->setCurrentWorkspace(workspace());
 
     if (client.state.iconic)
       show();
@@ -2328,44 +2388,43 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
     client.wmnormal.win_gravity = old_gravity;
   } else if (event->message_type == netwm.wmDesktop()) {
     const unsigned int desktop = event->data.l[0];
-    if (desktop != 0xFFFFFFFF && desktop != client.workspace) {
+    setWorkspace(desktop);
+
+    if (isVisible() && workspace() != bt::BSENTINEL
+        && workspace() != screen->currentWorkspace()) {
       hide();
-      setWorkspace(desktop);
-    } else if (desktop == 0xFFFFFFFF) {
-      setWorkspace(bt::BSENTINEL);
-      if (!isVisible())
-        show();
+    } else if (!isVisible()
+               && (workspace() == bt::BSENTINEL
+                   || workspace() == screen->currentWorkspace())) {
+      show();
     }
   } else if (event->message_type == netwm.wmState()) {
     Atom action = event->data.l[0],
           first = event->data.l[1],
          second = event->data.l[2];
 
-    int max_horz = 0, max_vert = 0,
-    skip_taskbar = 0, skip_pager = 0;
+    int max_horz = 0, max_vert = 0;
 
     if (first == netwm.wmStateModal() || second == netwm.wmStateModal()) {
       if ((action == netwm.wmStateAdd() ||
-           (action == netwm.wmStateToggle() && ! client.state.modal)) &&
+           (action == netwm.wmStateToggle() && ! client.ewmh.modal)) &&
           isTransient())
-        client.state.modal = True;
+        client.ewmh.modal = true;
       else
-        client.state.modal = False;
+        client.ewmh.modal = false;
     }
     if (first == netwm.wmStateMaximizedHorz() ||
         second == netwm.wmStateMaximizedHorz()) {
-      if (action == netwm.wmStateAdd() ||
-          (action == netwm.wmStateToggle() &&
-           ! (client.state.maximized == 1 || client.state.maximized == 3)))
+      if (action == netwm.wmStateAdd()
+          || (action == netwm.wmStateToggle() && !client.ewmh.maxh))
         max_horz = 1;
       else
         max_horz = -1;
     }
     if (first == netwm.wmStateMaximizedVert() ||
         second == netwm.wmStateMaximizedVert()) {
-      if (action == netwm.wmStateAdd() ||
-          (action == netwm.wmStateToggle() &&
-           ! (client.state.maximized == 1 || client.state.maximized == 2)))
+      if (action == netwm.wmStateAdd()
+          || (action == netwm.wmStateToggle() && !client.ewmh.maxv))
         max_vert = 1;
       else
         max_vert = -1;
@@ -2377,27 +2436,27 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
       else if (action == netwm.wmStateAdd())
         setShaded(true);
       else if (action == netwm.wmStateToggle())
-        setShaded(!client.state.shaded);
+        setShaded(!isShaded());
     }
-    if (first == netwm.wmStateSkipTaskbar() ||
-        second == netwm.wmStateSkipTaskbar()) {
-      if (action == netwm.wmStateAdd() ||
-          (action == netwm.wmStateToggle() &&
-           ! (client.state.skip == SKIP_TASKBAR ||
-              client.state.skip == SKIP_BOTH)))
-        skip_taskbar = 1;
-      else
-        skip_taskbar = -1;
-    }
-    if (first == netwm.wmStateSkipPager() ||
-        second == netwm.wmStateSkipPager()) {
-      if (action == netwm.wmStateAdd() ||
-          (action == netwm.wmStateToggle() &&
-           ! (client.state.skip == SKIP_PAGER ||
-              client.state.skip == SKIP_BOTH)))
-        skip_pager = 1;
-      else
-        skip_pager = -1;
+    if (first == netwm.wmStateSkipTaskbar()
+        || second == netwm.wmStateSkipTaskbar()
+        || first == netwm.wmStateSkipPager()
+        || second == netwm.wmStateSkipPager()) {
+      if (first == netwm.wmStateSkipTaskbar()
+          || second == netwm.wmStateSkipTaskbar()) {
+        client.ewmh.skip_taskbar = (action == netwm.wmStateAdd()
+                                    || (action == netwm.wmStateToggle()
+                                        && !client.ewmh.skip_taskbar));
+      }
+      if (first == netwm.wmStateSkipPager()
+          || second == netwm.wmStateSkipPager()) {
+        client.ewmh.skip_pager = (action == netwm.wmStateAdd()
+                                  || (action == netwm.wmStateToggle()
+                                      && !client.ewmh.skip_pager));
+      }
+      // we do nothing with skip_*, but others might... we should at
+      // least make sure these are present in _NET_WM_STATE
+      setState(client.current_state);
     }
     if (first == netwm.wmStateHidden() ||
         second == netwm.wmStateHidden()) {
@@ -2407,7 +2466,7 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
         second == netwm.wmStateFullscreen()) {
       if (action == netwm.wmStateAdd() ||
           (action == netwm.wmStateToggle() &&
-           ! client.state.fullscreen)) {
+           ! client.ewmh.fullscreen)) {
         setFullScreen(true);
       } else if (action == netwm.wmStateToggle() ||
                  action == netwm.wmStateRemove()) {
@@ -2438,28 +2497,17 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
     }
 
     if (max_horz != 0 || max_vert != 0) {
-      if (client.state.maximized)
+      if (isMaximized())
         maximize(0);
-      unsigned int button = 0;
+      unsigned int button = 0u;
       if (max_horz == 1 && max_vert != 1)
-        button = 3;
+        button = 3u;
       else if (max_vert == 1 && max_horz != 1)
-        button = 2;
+        button = 2u;
       else if (max_vert == 1 && max_horz == 1)
-        button = 1;
+        button = 1u;
       if (button)
         maximize(button);
-    }
-
-    if (skip_taskbar != 0 || skip_pager != 0) {
-      if (skip_taskbar == 1 && skip_pager != 1)
-        client.state.skip = SKIP_TASKBAR;
-      else if (skip_pager == 1 && skip_taskbar != 1)
-        client.state.skip = SKIP_PAGER;
-      else if (skip_pager == 1 && skip_taskbar == 1)
-        client.state.skip = SKIP_BOTH;
-      else
-        client.state.skip = SKIP_NONE;
     }
   } else if (event->message_type == netwm.wmStrut()) {
     if (! client.strut) {
@@ -2532,11 +2580,6 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
 #endif
 
   switch(event->atom) {
-  case XA_WM_CLASS:
-  case XA_WM_CLIENT_MACHINE:
-  case XA_WM_COMMAND:
-    break;
-
   case XA_WM_TRANSIENT_FOR: {
     if (isTransient() && client.transient_for != (BlackboxWindow *) ~0ul) {
       // reset transient_for in preparation of looking for a new owner
@@ -2545,21 +2588,30 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
 
     // determine if this is a transient window
     client.transient_for = readTransientInfo();
+    if (isTransient() && client.transient_for != (BlackboxWindow *) ~0ul) {
+      // register ourselves with our new transient_for
+      client.transient_for->client.transientList.push_back(this);
 
-    if (isTransient()) {
-      if (client.transient_for != (BlackboxWindow *) ~0ul) {
-        // register ourselves with our new transient_for
-        client.transient_for->client.transientList.push_back(this);
-        client.workspace = client.transient_for->client.workspace;
+      if (workspace() != client.transient_for->workspace())
+        setWorkspace(client.transient_for->workspace());
+
+      if (isVisible() && workspace() != bt::BSENTINEL
+          && workspace() != screen->currentWorkspace()) {
+        hide();
+      } else if (!isVisible()
+                 && (workspace() == bt::BSENTINEL
+                     || workspace() == screen->currentWorkspace())) {
+        show();
       }
-
-      // adjust the window decorations based on transience
-      client.decorations &= ~(WindowDecorationIconify |
-                              WindowDecorationMaximize);
-      client.functions   &= ~(WindowFunctionShade |
-                              WindowFunctionIconify |
-                              WindowFunctionMaximize);
     }
+
+    ::update_decorations(client.decorations,
+                         client.functions,
+                         isTransient(),
+                         client.ewmh,
+                         client.motif,
+                         client.wmnormal,
+                         client.wmprotocols);
 
     reconfigure();
 
@@ -2601,6 +2653,7 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
       redrawLabel();
 
     screen->propagateWindowName(this);
+
     break;
   }
 
@@ -2611,22 +2664,13 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
       // the window now can/can't resize itself, so the buttons need to be
       // regrabbed.
       ungrabButtons();
-      if (client.wmnormal.max_width <= client.wmnormal.min_width &&
-          client.wmnormal.max_height <= client.wmnormal.min_height) {
-        client.decorations &= ~(WindowDecorationMaximize |
-                                WindowDecorationGrip);
-        client.functions   &= ~(WindowFunctionResize |
-                                WindowFunctionMaximize);
-      } else {
-        if (! isTransient()) {
-          client.decorations |= (WindowDecorationIconify |
-                                 WindowDecorationMaximize);
-          client.functions   |= (WindowFunctionShade |
-                                 WindowFunctionIconify |
-                                 WindowFunctionMaximize );
-        }
-        client.functions |= WindowFunctionResize;
-      }
+      ::update_decorations(client.decorations,
+                           client.functions,
+                           isTransient(),
+                           client.ewmh,
+                           client.motif,
+                           client.wmnormal,
+                           client.wmprotocols);
       grabButtons();
     }
 
@@ -2638,7 +2682,7 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
     break;
   }
 
-  default:
+  default: {
     if (event->atom == blackbox->getWMProtocolsAtom()) {
       client.wmprotocols = readWMProtocols();
 
@@ -2655,19 +2699,20 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
     } else if (event->atom == blackbox->getMotifWMHintsAtom()) {
       client.motif = readMotifHints();
 
-      ::get_decorations(client.window_type,
-                        client.decorations,
-                        client.functions);
-
-      // mask away stuff turned off by Motif hints
-      client.decorations &= client.motif.decorations;
-      client.functions   &= client.motif.functions;
+      ::update_decorations(client.decorations,
+                           client.functions,
+                           isTransient(),
+                           client.ewmh,
+                           client.motif,
+                           client.wmnormal,
+                           client.wmprotocols);
 
       reconfigure();
     }
 
     break;
   }
+  } // switch
 }
 
 
@@ -2776,12 +2821,12 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const event) {
         XInstallColormap(blackbox->XDisplay(), client.colormap);
 
       if (frame.title == event->window || frame.label == event->window &&
-          (client.functions & WindowFunctionShade)) {
+          hasWindowFunction(WindowFunctionShade)) {
         if ((event->time - lastButtonPressTime <=
              blackbox->resource().doubleClickInterval()) ||
             event->state == ControlMask) {
           lastButtonPressTime = 0;
-          setShaded(!client.state.shaded);
+          setShaded(!isShaded());
         } else {
           lastButtonPressTime = event->time;
         }
@@ -2886,7 +2931,7 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const event) {
     constrain((event->window == frame.left_grip) ? TopRight : TopLeft);
 
     // unset maximized state when resized after fully maximized
-    if (client.state.maximized == 1)
+    if (isMaximized())
       maximize(0);
     client.state.resizing = False;
     configure(frame.changing.x(), frame.changing.y(),
@@ -2936,7 +2981,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
           client.window);
 #endif
 
-  if ((client.functions & WindowFunctionMove) && ! client.state.resizing &&
+  if (hasWindowFunction(WindowFunctionMove) && ! client.state.resizing &&
       event->state & Button1Mask &&
       (frame.title == event->window || frame.label == event->window ||
        frame.handle == event->window || frame.window == event->window)) {
@@ -3010,7 +3055,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
 
       screen->showPosition(dx, dy);
     }
-  } else if ((client.functions & WindowFunctionResize) &&
+  } else if (hasWindowFunction(WindowFunctionResize) &&
              (event->state & Button1Mask &&
               (event->window == frame.right_grip ||
                event->window == frame.left_grip)) ||
@@ -3106,9 +3151,10 @@ void BlackboxWindow::enterNotifyEvent(const XCrossingEvent * const event) {
   if (!screen->resource().isSloppyFocus() || !isVisible())
     return;
 
-  switch (client.window_type) {
+  switch (windowType()) {
   case WindowTypeDesktop:
   case WindowTypeDock:
+    // these types cannot be focused w/ sloppy focus
     return;
 
   default:
@@ -3185,7 +3231,7 @@ void BlackboxWindow::restore(bool remap) {
   }
 
   // do not leave a shaded window as an icon unless it was an icon
-  if (client.state.shaded && ! client.state.iconic)
+  if (isShaded() && !isIconic())
     client.current_state = NormalState;
 
   // remove the wm hints unless the window is being remapped
@@ -3271,7 +3317,7 @@ void BlackboxWindow::upsize(void) {
   frame.inside_w = width - (frame.border_w * 2);
   frame.inside_h = height - (frame.border_w * 2);
 
-  if (client.state.shaded)
+  if (isShaded())
     height = frame.style->title_height + (frame.border_w * 2);
   frame.rect.setSize(width, height);
 }

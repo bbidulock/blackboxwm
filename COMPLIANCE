@@ -89,10 +89,10 @@ _NET_WM_DESKTOP:			supported
 _NET_WM_WINDOW_TYPE:			supported
 	_NET_WM_WINDOW_TYPE_DESKTOP:	supported
 	_NET_WM_WINDOW_TYPE_DOCK:	supported
-	_NET_WM_WINDOW_TYPE_TOOLBAR:	NOT supported
-	_NET_WM_WINDOW_TYPE_MENU:	NOT supported
-	_NET_WM_WINDOW_TYPE_UTILITY:	NOT supported
-	_NET_WM_WINDOW_TYPE_SPLASH:	NOT supported
+	_NET_WM_WINDOW_TYPE_TOOLBAR:	supported
+	_NET_WM_WINDOW_TYPE_MENU:	supported
+	_NET_WM_WINDOW_TYPE_UTILITY:	supported
+	_NET_WM_WINDOW_TYPE_SPLASH:	supported
 	_NET_WM_WINDOW_TYPE_DIALOG:	supported
 	_NET_WM_WINDOW_TYPE_NORMAL:	supported
 _NET_WM_STATE:				supported
@@ -108,11 +108,11 @@ _NET_WM_STATE:				supported
 	_NET_WM_STATE_ABOVE:		supported
 	_NET_WM_STATE_BELOW:		supported
 _NET_WM_ALLOWED_ACTIONS:		supported
-	_NET_WM_ACTION_MOVE:		NOT supported
-	_NET_WM_ACTION_RESIZE:		NOT supported
+	_NET_WM_ACTION_MOVE:		supported
+	_NET_WM_ACTION_RESIZE:          supported
 	_NET_WM_ACITON_MINIMIZE:	supported
 	_NET_WM_ACTION_SHADE:		supported
-	_NET_WM_ACTION_STICK:		NOT supported
+ 	_NET_WM_ACTION_STICK:		NOT supported
 	_NET_WM_ACTION_MAXIMIZE_HORZ:	supported
 	_NET_WM_ACTION_MAXIMIZE_VERT:	supported
 	_NET_WM_ACTION_FULLSCREEN:	supported

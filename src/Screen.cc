@@ -547,11 +547,20 @@ void BScreen::manageWindow(Window w) {
   } // switch
 
   // focus the new window if appropriate
-  if (!blackbox->startingUp() &&
-      (!blackbox->activeScreen() || blackbox->activeScreen() == this) &&
-      (win->isTransient() || resource().doFocusNew())) {
-    XSync(blackbox->XDisplay(), False); // make sure the frame is mapped..
-    win->setInputFocus();
+  switch (win->windowType()) {
+  case WindowTypeDesktop:
+  case WindowTypeDock:
+    // these types should not be focused when managed
+    break;
+
+  default:
+    if (!blackbox->startingUp() &&
+        (!blackbox->activeScreen() || blackbox->activeScreen() == this) &&
+        (win->isTransient() || resource().doFocusNew())) {
+      XSync(blackbox->XDisplay(), False); // make sure the frame is mapped..
+      win->setInputFocus();
+      break;
+    }
   }
 }
 

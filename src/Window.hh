@@ -80,6 +80,20 @@ enum WindowDecoration {
 };
 typedef unsigned char WindowDecorationFlags;
 
+struct EWMH {
+  WindowType window_type;
+  unsigned int workspace;
+  unsigned int modal        : 1;
+  unsigned int maxv         : 1;
+  unsigned int maxh         : 1;
+  unsigned int shaded       : 1;
+  unsigned int skip_taskbar : 1;
+  unsigned int skip_pager   : 1;
+  unsigned int hidden       : 1;
+  unsigned int fullscreen   : 1;
+  unsigned int above        : 1;
+  unsigned int below        : 1;
+};
 struct MotifHints {
   WindowDecorationFlags decorations;
   WindowFunctionFlags functions;
@@ -100,13 +114,13 @@ struct WMNormalHints {
   unsigned int win_gravity;
 };
 struct WMProtocols {
-  bool wm_delete_window;
-  bool wm_take_focus;
+  unsigned int wm_delete_window : 1;
+  unsigned int wm_take_focus    : 1;
 };
 
 
 class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
-                                                      public bt::EventHandler, public bt::NoCopy {
+                       public bt::EventHandler, public bt::NoCopy {
   Blackbox *blackbox;
   BScreen *screen;
   bt::Timer *timer;
@@ -115,29 +129,13 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
 
   unsigned int window_number;
 
-  enum WMSkip { SKIP_NONE, SKIP_TASKBAR, SKIP_PAGER, SKIP_BOTH };
-
-  struct WMState {
-    bool visible,            // is visible?
-      modal,                 // is modal? (must be dismissed to continue)
-      shaded,                // is shaded?
-      iconic,                // is iconified?
-      fullscreen,            // is a full screen window
-      moving,                // is moving?
-      resizing,              // is resizing?
-      focused,               // has focus?
-      shaped;                // does the frame use the shape extension?
-    unsigned int maximized;  // maximize is special, the number corresponds
-                             // with a mouse button
-                             // if 0, not maximized
-                             // 1 = HorizVert, 2 = Vertical, 3 = Horizontal
-    WMSkip skip;             // none, taskbar, pager, both
-
-    inline WMState(void)
-      : visible(false), modal(false), shaded(false), iconic(false),
-        fullscreen(false), moving(false), resizing(false), focused(false),
-        shaped(false), maximized(0), skip(SKIP_NONE)
-    { }
+  struct ClientState {
+    unsigned int visible  : 1; // is visible?
+    unsigned int iconic   : 1; // is iconified?
+    unsigned int moving   : 1; // is moving?
+    unsigned int resizing : 1; // is resizing?
+    unsigned int focused  : 1; // has focus?
+    unsigned int shaped   : 1; // does the frame use the shape extension?
   };
 
   struct _client {
@@ -150,17 +148,18 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
 
     bt::Rect rect, premax;
 
-    int old_bw;                       // client's borderwidth
+    int old_bw;                     // client's borderwidth
 
     unsigned long current_state;
-    unsigned int workspace;
 
     bt::Netwm::Strut *strut;
-    WMState state;
-    WindowType window_type;
+
     WindowFunctionFlags functions;
     WindowDecorationFlags decorations;
 
+    ClientState state;
+
+    EWMH ewmh;
     MotifHints motif;
     WMHints wmhints;
     WMNormalHints wmnormal;
@@ -229,15 +228,12 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   std::string readWMName(void);
   std::string readWMIconName(void);
 
+  EWMH readEWMH(void);
   MotifHints readMotifHints(void);
   WMHints readWMHints(void);
   WMNormalHints readWMNormalHints(void);
   WMProtocols readWMProtocols(void);
   BlackboxWindow *readTransientInfo(void);
-
-  void getNetwmHints(void);
-
-  void setNetWMAttributes(void);
 
   void associateClientWindow(void);
 
@@ -290,10 +286,10 @@ public:
   inline bool isTransient(void) const
   { return client.transient_for != 0; }
   inline bool isModal(void) const
-  { return client.state.modal; }
+  { return client.ewmh.modal; }
 
   inline WindowType windowType(void) const
-  { return client.window_type; }
+  { return client.ewmh.window_type; }
 
   inline bool hasWindowFunction(WindowFunction function) const
   { return client.functions & function; }
@@ -324,7 +320,7 @@ public:
   { return client.icon_title.c_str(); }
 
   inline unsigned int workspace(void) const
-  { return client.workspace; }
+  { return client.ewmh.workspace; }
   void setWorkspace(unsigned int new_workspace);
 
   inline unsigned int windowNumber(void) const
@@ -364,7 +360,7 @@ public:
   void close(void);
 
   inline bool isShaded(void) const
-  { return client.state.shaded; }
+  { return client.ewmh.shaded; }
   void setShaded(bool shaded);
 
   inline bool isIconic(void) const
@@ -372,13 +368,13 @@ public:
   void iconify(void); // call show() to deiconify
 
   inline bool isMaximized(void) const
-  { return client.state.maximized; }
+  { return client.ewmh.maxh || client.ewmh.maxv; }
   // ### change to setMaximized()
   void maximize(unsigned int button);
   void remaximize(void);
 
   inline bool isFullScreen(void) const
-  { return client.state.fullscreen; }
+  { return client.ewmh.fullscreen; }
   void setFullScreen(bool);
 
   void reconfigure(void);
