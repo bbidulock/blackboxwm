@@ -28,7 +28,7 @@
 #include "BlackboxResource.hh"
 #include "Screen.hh"
 
-#include <Netwm.hh>
+#include <EWMH.hh>
 
 
 enum WindowType {
@@ -156,7 +156,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
 
     unsigned long current_state;
 
-    bt::Netwm::Strut *strut;
+    bt::EWMH::Strut *strut;
 
     WindowFunctionFlags functions;
     WindowDecorationFlags decorations;
@@ -215,9 +215,9 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
 
     /*
      * margins between the frame and client, this has nothing to do
-     * with netwm, it is simply code reuse for similar functionality
+     * with EWMH, it is simply code reuse for similar functionality
      */
-    bt::Netwm::Strut margin;
+    bt::EWMH::Strut margin;
     int grab_x, grab_y;         // where was the window when it was grabbed?
 
     unsigned int label_w;       // width of the label

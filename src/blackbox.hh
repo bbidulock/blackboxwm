@@ -37,7 +37,7 @@ class BlackboxWindow;
 class BWindowGroup;
 
 namespace bt {
-  class Netwm;
+  class EWMH;
 }
 
 class Blackbox : public bt::Application, public bt::TimeoutHandler {
@@ -74,7 +74,7 @@ private:
     xa_wm_delete_window, xa_wm_take_focus, xa_wm_change_state,
     motif_wm_hints;
 
-  bt::Netwm* _netwm;
+  bt::EWMH* _ewmh;
 
   void load_rc(void);
   void save_rc(void);
@@ -112,7 +112,8 @@ public:
   void insertWindowGroup(Window window, BWindowGroup *data);
   void removeWindowGroup(Window window);
 
-  const bt::Netwm& netwm(void) { return *_netwm; }
+  inline const bt::EWMH &ewmh(void) const
+  { return *_ewmh; }
 
   void setFocusedWindow(BlackboxWindow *win);
   inline void forgetFocusedWindow(void)

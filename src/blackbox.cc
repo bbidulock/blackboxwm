@@ -87,7 +87,7 @@ Blackbox::Blackbox(char **m_argv, const char *dpy_name,
 
   active_screen = 0;
   focused_window = (BlackboxWindow *) 0;
-  _netwm = (bt::Netwm*) 0;
+  _ewmh = (bt::EWMH*) 0;
 
   init_icccm();
 
@@ -140,7 +140,7 @@ Blackbox::~Blackbox(void) {
                 bt::PointerAssassin());
 
   delete timer;
-  delete _netwm;
+  delete _ewmh;
 }
 
 
@@ -383,7 +383,7 @@ void Blackbox::init_icccm(void) {
   xa_wm_take_focus = atoms_return[5];
   motif_wm_hints = atoms_return[6];
 
-  _netwm = new bt::Netwm(XDisplay());
+  _ewmh = new bt::EWMH(display());
 }
 
 
@@ -624,7 +624,7 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
 void Blackbox::updateActiveWindow() const {
   Window active = (focused_window) ? focused_window->clientWindow() : None;
   for (unsigned int i = 0; i < display().screenCount(); ++i)
-    _netwm->setActiveWindow(display().screenInfo(i).rootWindow(), active);
+    _ewmh->setActiveWindow(display().screenInfo(i).rootWindow(), active);
 }
 
 

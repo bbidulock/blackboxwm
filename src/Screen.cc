@@ -163,85 +163,85 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
   InitMenu();
 
-  const bt::Netwm& netwm = _blackbox->netwm();
+  const bt::EWMH& ewmh = _blackbox->ewmh();
   /*
-    netwm requires the window manager to set a property on a window it creates
+    ewmh requires the window manager to set a property on a window it creates
     which is the id of that window.  We must also set an equivalent property
     on the root window.  Then we must set _NET_WM_NAME on the child window
     to be the name of the wm.
   */
-  netwm.setSupportingWMCheck(screen_info.rootWindow(), geom_window);
-  netwm.setSupportingWMCheck(geom_window, geom_window);
-  netwm.setWMName(geom_window, bt::toUnicode("Blackbox"));
+  ewmh.setSupportingWMCheck(screen_info.rootWindow(), geom_window);
+  ewmh.setSupportingWMCheck(geom_window, geom_window);
+  ewmh.setWMName(geom_window, bt::toUnicode("Blackbox"));
 
-  netwm.setNumberOfDesktops(screen_info.rootWindow(),
+  ewmh.setNumberOfDesktops(screen_info.rootWindow(),
                             workspacesList.size());
-  netwm.setDesktopGeometry(screen_info.rootWindow(),
+  ewmh.setDesktopGeometry(screen_info.rootWindow(),
                            screen_info.width(), screen_info.height());
-  netwm.setDesktopViewport(screen_info.rootWindow(), 0, 0);
-  netwm.setActiveWindow(screen_info.rootWindow(), None);
+  ewmh.setDesktopViewport(screen_info.rootWindow(), 0, 0);
+  ewmh.setActiveWindow(screen_info.rootWindow(), None);
   updateWorkareaHint();
   updateDesktopNamesHint();
 
   Atom supported[] = {
-    netwm.clientList(),
-    netwm.clientListStacking(),
-    netwm.numberOfDesktops(),
+    ewmh.clientList(),
+    ewmh.clientListStacking(),
+    ewmh.numberOfDesktops(),
     // _NET_DESKTOP_GEOMETRY is not supported
     // _NET_DESKTOP_VIEWPORT is not supported
-    netwm.currentDesktop(),
-    netwm.desktopNames(),
-    netwm.activeWindow(),
-    netwm.workarea(),
+    ewmh.currentDesktop(),
+    ewmh.desktopNames(),
+    ewmh.activeWindow(),
+    ewmh.workarea(),
     // _NET_VIRTUAL_ROOTS   is not supported
     // _NET_SHOWING_DESKTOP is not supported
 
-    netwm.closeWindow(),
-    netwm.moveresizeWindow(),
+    ewmh.closeWindow(),
+    ewmh.moveresizeWindow(),
     // _NET_WM_MOVERESIZE is not supported
 
-    netwm.wmName(),
-    netwm.wmVisibleName(),
-    netwm.wmIconName(),
-    netwm.wmVisibleIconName(),
-    netwm.wmDesktop(),
+    ewmh.wmName(),
+    ewmh.wmVisibleName(),
+    ewmh.wmIconName(),
+    ewmh.wmVisibleIconName(),
+    ewmh.wmDesktop(),
 
-    netwm.wmWindowType(),
-    netwm.wmWindowTypeDesktop(),
-    netwm.wmWindowTypeDock(),
-    netwm.wmWindowTypeToolbar(),
-    netwm.wmWindowTypeMenu(),
-    netwm.wmWindowTypeUtility(),
-    netwm.wmWindowTypeSplash(),
-    netwm.wmWindowTypeDialog(),
-    netwm.wmWindowTypeNormal(),
+    ewmh.wmWindowType(),
+    ewmh.wmWindowTypeDesktop(),
+    ewmh.wmWindowTypeDock(),
+    ewmh.wmWindowTypeToolbar(),
+    ewmh.wmWindowTypeMenu(),
+    ewmh.wmWindowTypeUtility(),
+    ewmh.wmWindowTypeSplash(),
+    ewmh.wmWindowTypeDialog(),
+    ewmh.wmWindowTypeNormal(),
 
-    netwm.wmState(),
-    netwm.wmStateModal(),
+    ewmh.wmState(),
+    ewmh.wmStateModal(),
     // _NET_WM_STATE_STICKY is not supported
-    netwm.wmStateMaximizedVert(),
-    netwm.wmStateMaximizedHorz(),
-    netwm.wmStateShaded(),
-    netwm.wmStateSkipTaskbar(),
-    netwm.wmStateSkipPager(),
-    netwm.wmStateHidden(),
-    netwm.wmStateFullscreen(),
-    netwm.wmStateAbove(),
-    netwm.wmStateBelow(),
+    ewmh.wmStateMaximizedVert(),
+    ewmh.wmStateMaximizedHorz(),
+    ewmh.wmStateShaded(),
+    ewmh.wmStateSkipTaskbar(),
+    ewmh.wmStateSkipPager(),
+    ewmh.wmStateHidden(),
+    ewmh.wmStateFullscreen(),
+    ewmh.wmStateAbove(),
+    ewmh.wmStateBelow(),
 
-    netwm.wmAllowedActions(),
-    netwm.wmActionMove(),
-    netwm.wmActionResize(),
-    netwm.wmActionMinimize(),
-    netwm.wmActionShade(),
+    ewmh.wmAllowedActions(),
+    ewmh.wmActionMove(),
+    ewmh.wmActionResize(),
+    ewmh.wmActionMinimize(),
+    ewmh.wmActionShade(),
     // _NET_WM_ACTION_STICK is not supported
-    netwm.wmActionMaximizeHorz(),
-    netwm.wmActionMaximizeVert(),
-    netwm.wmActionFullscreen(),
-    netwm.wmActionChangeDesktop(),
-    netwm.wmActionClose(),
+    ewmh.wmActionMaximizeHorz(),
+    ewmh.wmActionMaximizeVert(),
+    ewmh.wmActionFullscreen(),
+    ewmh.wmActionChangeDesktop(),
+    ewmh.wmActionClose(),
 
-    netwm.wmStrut()
+    ewmh.wmStrut()
     // _NET_WM_STRUT_PARTIAL is not supported
     // _NET_WM_ICON_GEOMETRY is not supported
     // _NET_WM_ICON          is not supported
@@ -252,7 +252,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     // _NET_WM_PING          is not supported
   };
 
-  netwm.setSupported(screen_info.rootWindow(), supported,
+  ewmh.setSupported(screen_info.rootWindow(), supported,
                      sizeof(supported) / sizeof(Atom));
 
   _blackbox->XGrabServer();
@@ -334,22 +334,22 @@ BScreen::~BScreen(void) {
   delete _slit;
   delete _toolbar;
 
-  _blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                   _blackbox->netwm().supportingWMCheck());
-  _blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                   _blackbox->netwm().supported());
-  _blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                   _blackbox->netwm().numberOfDesktops());
-  _blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                   _blackbox->netwm().desktopGeometry());
-  _blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                   _blackbox->netwm().desktopViewport());
-  _blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                   _blackbox->netwm().currentDesktop());
-  _blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                   _blackbox->netwm().activeWindow());
-  _blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                   _blackbox->netwm().workarea());
+  _blackbox->ewmh().removeProperty(screen_info.rootWindow(),
+                                   _blackbox->ewmh().supportingWMCheck());
+  _blackbox->ewmh().removeProperty(screen_info.rootWindow(),
+                                   _blackbox->ewmh().supported());
+  _blackbox->ewmh().removeProperty(screen_info.rootWindow(),
+                                   _blackbox->ewmh().numberOfDesktops());
+  _blackbox->ewmh().removeProperty(screen_info.rootWindow(),
+                                   _blackbox->ewmh().desktopGeometry());
+  _blackbox->ewmh().removeProperty(screen_info.rootWindow(),
+                                   _blackbox->ewmh().desktopViewport());
+  _blackbox->ewmh().removeProperty(screen_info.rootWindow(),
+                                   _blackbox->ewmh().currentDesktop());
+  _blackbox->ewmh().removeProperty(screen_info.rootWindow(),
+                                   _blackbox->ewmh().activeWindow());
+  _blackbox->ewmh().removeProperty(screen_info.rootWindow(),
+                                   _blackbox->ewmh().workarea());
 }
 
 
@@ -439,7 +439,7 @@ void BScreen::addWorkspace(void) {
   workspacesList.push_back(wkspc);
   _workspacemenu->insertWorkspace(wkspc);
 
-  _blackbox->netwm().setNumberOfDesktops(screen_info.rootWindow(),
+  _blackbox->ewmh().setNumberOfDesktops(screen_info.rootWindow(),
                                          workspacesList.size());
   updateDesktopNamesHint();
 }
@@ -466,7 +466,7 @@ void BScreen::removeLastWorkspace(void) {
   workspacesList.pop_back();
   delete workspace;
 
-  _blackbox->netwm().setNumberOfDesktops(screen_info.rootWindow(),
+  _blackbox->ewmh().setNumberOfDesktops(screen_info.rootWindow(),
                                          workspacesList.size());
   updateDesktopNamesHint();
 }
@@ -546,7 +546,7 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
     }
   }
 
-  _blackbox->netwm().setCurrentDesktop(screen_info.rootWindow(),
+  _blackbox->ewmh().setCurrentDesktop(screen_info.rootWindow(),
                                        current_workspace);
 
   XUnmapWindow(_blackbox->XDisplay(), empty_window);
@@ -1534,13 +1534,13 @@ void BScreen::hideGeometry(void) {
 }
 
 
-void BScreen::addStrut(bt::Netwm::Strut *strut) {
+void BScreen::addStrut(bt::EWMH::Strut *strut) {
   strutList.push_back(strut);
   updateAvailableArea();
 }
 
 
-void BScreen::removeStrut(bt::Netwm::Strut *strut) {
+void BScreen::removeStrut(bt::EWMH::Strut *strut) {
   strutList.remove(strut);
   updateAvailableArea();
 }
@@ -1566,12 +1566,12 @@ void BScreen::updateAvailableArea(void) {
    * all at once
    * do not be confused by the similarity to the names of Rect's members
    */
-  bt::Netwm::Strut current;
+  bt::EWMH::Strut current;
 
   StrutList::const_iterator sit = strutList.begin(), send = strutList.end();
 
   for(; sit != send; ++sit) {
-    const bt::Netwm::Strut* const strut = *sit;
+    const bt::EWMH::Strut* const strut = *sit;
     if (strut->left > current.left)
       current.left = strut->left;
     if (strut->top > current.top)
@@ -1609,7 +1609,7 @@ Workspace* BScreen::findWorkspace(unsigned int index) const {
 void BScreen::clientMessageEvent(const XClientMessageEvent * const event) {
   if (event->format != 32) return;
 
-  if (event->message_type == _blackbox->netwm().numberOfDesktops()) {
+  if (event->message_type == _blackbox->ewmh().numberOfDesktops()) {
     unsigned int number = event->data.l[0];
     if (number > workspaceCount()) {
       for (; number != workspaceCount(); --number)
@@ -1618,9 +1618,9 @@ void BScreen::clientMessageEvent(const XClientMessageEvent * const event) {
       for (; number != workspaceCount(); ++number)
         removeLastWorkspace();
     }
-  } else if (event->message_type == _blackbox->netwm().desktopNames()) {
+  } else if (event->message_type == _blackbox->ewmh().desktopNames()) {
     readDesktopNames();
-  } else if (event->message_type == _blackbox->netwm().currentDesktop()) {
+  } else if (event->message_type == _blackbox->ewmh().currentDesktop()) {
     const unsigned int workspace = event->data.l[0];
     if (workspace < workspaceCount() && workspace != current_workspace)
       setCurrentWorkspace(workspace);
@@ -1646,7 +1646,7 @@ void BScreen::buttonPressEvent(const XButtonEvent * const event) {
 
 
 void BScreen::propertyNotifyEvent(const XPropertyEvent * const event) {
-  if (event->atom == _blackbox->netwm().activeWindow() && _toolbar)
+  if (event->atom == _blackbox->ewmh().activeWindow() && _toolbar)
     _toolbar->redrawWindowLabel();
 }
 
@@ -1681,7 +1681,7 @@ void BScreen::updateWorkareaHint(void) const {
     tmp += 4;
   }
 
-  _blackbox->netwm().setWorkarea(screen_info.rootWindow(),
+  _blackbox->ewmh().setWorkarea(screen_info.rootWindow(),
                                  workarea, workspaceCount());
 
   delete [] workarea;
@@ -1694,28 +1694,28 @@ void BScreen::updateDesktopNamesHint(void) const {
   const WorkspaceList::const_iterator end = workspacesList.end();
   for (; it != end; ++it)
     names.push_back((*it)->name());
-  _blackbox->netwm().setDesktopNames(screen_info.rootWindow(), names);
+  _blackbox->ewmh().setDesktopNames(screen_info.rootWindow(), names);
 }
 
 
 void BScreen::updateClientListHint(void) const {
   if (windowList.empty()) {
-    _blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                      _blackbox->netwm().clientList());
+    _blackbox->ewmh().removeProperty(screen_info.rootWindow(),
+                                      _blackbox->ewmh().clientList());
     return;
   }
 
-  bt::Netwm::WindowList clientList(windowList.size());
+  bt::EWMH::WindowList clientList(windowList.size());
 
   std::transform(windowList.begin(), windowList.end(), clientList.begin(),
                  std::mem_fun(&BlackboxWindow::clientWindow));
 
-  _blackbox->netwm().setClientList(screen_info.rootWindow(), clientList);
+  _blackbox->ewmh().setClientList(screen_info.rootWindow(), clientList);
 }
 
 
 void BScreen::updateClientListStackingHint(void) const {
-  bt::Netwm::WindowList stack;
+  bt::EWMH::WindowList stack;
 
   // we store windows in top-to-bottom order, but the EWMH wants
   // bottom-to-top...
@@ -1727,18 +1727,18 @@ void BScreen::updateClientListStackingHint(void) const {
   }
 
   if (stack.empty()) {
-    _blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                     _blackbox->netwm().clientListStacking());
+    _blackbox->ewmh().removeProperty(screen_info.rootWindow(),
+                                     _blackbox->ewmh().clientListStacking());
     return;
   }
 
-  _blackbox->netwm().setClientListStacking(screen_info.rootWindow(), stack);
+  _blackbox->ewmh().setClientListStacking(screen_info.rootWindow(), stack);
 }
 
 
 void BScreen::readDesktopNames(void) {
   std::vector<bt::ustring> names;
-  if(! _blackbox->netwm().readDesktopNames(screen_info.rootWindow(), names))
+  if(! _blackbox->ewmh().readDesktopNames(screen_info.rootWindow(), names))
     return;
 
   std::vector<bt::ustring>::const_iterator it = names.begin();
@@ -2203,15 +2203,15 @@ void BScreen::addIcon(BlackboxWindow *win) {
   const bt::ustring s =
     bt::ellideText(win->iconTitle(), 60, bt::toUnicode("..."));
   int id = _iconmenu->insertItem(s);
-  _blackbox->netwm().setWMVisibleIconName(win->clientWindow(), s);
+  _blackbox->ewmh().setWMVisibleIconName(win->clientWindow(), s);
   win->setWindowNumber(id);
 }
 
 
 void BScreen::removeIcon(BlackboxWindow *win) {
   _iconmenu->removeItem(win->windowNumber());
-  _blackbox->netwm().removeProperty(win->clientWindow(),
-                                   _blackbox->netwm().wmVisibleIconName());
+  _blackbox->ewmh().removeProperty(win->clientWindow(),
+                                   _blackbox->ewmh().wmVisibleIconName());
 
   Workspace *workspace = findWorkspace(current_workspace);
   assert(workspace != 0);

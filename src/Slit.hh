@@ -50,7 +50,7 @@ private:
   Blackbox *blackbox;
   BScreen *screen;
   bt::Timer *timer;
-  bt::Netwm::Strut strut;
+  bt::EWMH::Strut strut;
 
   SlitClientList clientList;
 

@@ -29,8 +29,8 @@
 #include "blackbox.hh"
 
 #include <Display.hh>
+#include <EWMH.hh>
 #include <EventHandler.hh>
-#include <Netwm.hh>
 
 #include <stdio.h>
 
@@ -84,7 +84,7 @@ private:
 
   bt::Rect usableArea;
 
-  typedef std::list<bt::Netwm::Strut*> StrutList;
+  typedef std::list<bt::EWMH::Strut*> StrutList;
   StrutList strutList;
   typedef std::vector<Workspace*> WorkspaceList;
   WorkspaceList workspacesList;
@@ -171,8 +171,8 @@ public:
   void setCurrentWorkspace(unsigned int id);
 
   const bt::Rect& availableArea(void);
-  void addStrut(bt::Netwm::Strut *strut);
-  void removeStrut(bt::Netwm::Strut *strut);
+  void addStrut(bt::EWMH::Strut *strut);
+  void removeStrut(bt::EWMH::Strut *strut);
   void updateStrut(void);
 
   void updateClientListHint(void) const;

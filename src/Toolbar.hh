@@ -51,7 +51,7 @@ private:
   Blackbox *blackbox;
   BScreen *_screen;
   bt::Timer *clock_timer, *hide_timer;
-  bt::Netwm::Strut strut;
+  bt::EWMH::Strut strut;
 
   int clock_timer_resolution;
 

@@ -70,20 +70,20 @@ void watch_decorations(const char *msg, WindowDecorationFlags flags) {
 /*
  * Returns the appropriate WindowType based on the _NET_WM_WINDOW_TYPE
  */
-static WindowType window_type_from_atom(const bt::Netwm &netwm, Atom atom) {
-  if (atom == netwm.wmWindowTypeDialog())
+static WindowType window_type_from_atom(const bt::EWMH &ewmh, Atom atom) {
+  if (atom == ewmh.wmWindowTypeDialog())
     return WindowTypeDialog;
-  if (atom == netwm.wmWindowTypeDesktop())
+  if (atom == ewmh.wmWindowTypeDesktop())
     return WindowTypeDesktop;
-  if (atom == netwm.wmWindowTypeDock())
+  if (atom == ewmh.wmWindowTypeDock())
     return WindowTypeDock;
-  if (atom == netwm.wmWindowTypeMenu())
+  if (atom == ewmh.wmWindowTypeMenu())
     return WindowTypeMenu;
-  if (atom == netwm.wmWindowTypeSplash())
+  if (atom == ewmh.wmWindowTypeSplash())
     return WindowTypeSplash;
-  if (atom == netwm.wmWindowTypeToolbar())
+  if (atom == ewmh.wmWindowTypeToolbar())
     return WindowTypeToolbar;
-  if (atom == netwm.wmWindowTypeUtility())
+  if (atom == ewmh.wmWindowTypeUtility())
     return WindowTypeUtility;
   return WindowTypeNormal;
 }
@@ -331,9 +331,9 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   if (isFullScreen() && !hasWindowFunction(WindowFunctionFullScreen))
     client.ewmh.fullscreen = false;
 
-  bt::Netwm::Strut strut;
-  if (blackbox->netwm().readWMStrut(client.window, &strut)) {
-    client.strut = new bt::Netwm::Strut;
+  bt::EWMH::Strut strut;
+  if (blackbox->ewmh().readWMStrut(client.window, &strut)) {
+    client.strut = new bt::EWMH::Strut;
     *client.strut = strut;
     _screen->addStrut(client.strut);
   }
@@ -886,7 +886,7 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
 
     if (ellided != client.visible_title) {
       client.visible_title = ellided;
-      blackbox->netwm().setWMVisibleName(client.window, client.visible_title);
+      blackbox->ewmh().setWMVisibleName(client.window, client.visible_title);
     }
   } else {
     XUnmapWindow(blackbox->XDisplay(), frame.label);
@@ -1011,7 +1011,7 @@ void BlackboxWindow::positionWindows(void) {
 bt::ustring BlackboxWindow::readWMName(void) {
   bt::ustring name;
 
-  if (!blackbox->netwm().readWMName(client.window, name) || name.empty()) {
+  if (!blackbox->ewmh().readWMName(client.window, name) || name.empty()) {
     XTextProperty text_prop;
     if (XGetWMName(blackbox->XDisplay(), client.window, &text_prop)) {
       name =
@@ -1030,7 +1030,7 @@ bt::ustring BlackboxWindow::readWMName(void) {
 bt::ustring BlackboxWindow::readWMIconName(void) {
   bt::ustring name;
 
-  if (!blackbox->netwm().readWMIconName(client.window, name) || name.empty()) {
+  if (!blackbox->ewmh().readWMIconName(client.window, name) || name.empty()) {
     XTextProperty text_prop;
     if (XGetWMIconName(blackbox->XDisplay(), client.window, &text_prop)) {
       name =
@@ -1064,48 +1064,48 @@ EWMH BlackboxWindow::readEWMH(void) {
   // note: wm_name and wm_icon_name are read separately
 
   bool ret;
-  const bt::Netwm& netwm = blackbox->netwm();
+  const bt::EWMH &bewmh = blackbox->ewmh();
 
-  bt::Netwm::AtomList atoms;
-  ret = netwm.readWMWindowType(client.window, atoms);
+  bt::EWMH::AtomList atoms;
+  ret = bewmh.readWMWindowType(client.window, atoms);
   if (ret) {
-    bt::Netwm::AtomList::iterator it = atoms.begin(), end = atoms.end();
+    bt::EWMH::AtomList::iterator it = atoms.begin(), end = atoms.end();
     for (; it != end; ++it) {
-      if (netwm.isSupportedWMWindowType(*it)) {
-        ewmh.window_type = ::window_type_from_atom(netwm, *it);
+      if (bewmh.isSupportedWMWindowType(*it)) {
+        ewmh.window_type = ::window_type_from_atom(bewmh, *it);
         break;
       }
     }
   }
 
   atoms.clear();
-  ret = netwm.readWMState(client.window, atoms);
+  ret = bewmh.readWMState(client.window, atoms);
   if (ret) {
-    bt::Netwm::AtomList::iterator it = atoms.begin(), end = atoms.end();
+    bt::EWMH::AtomList::iterator it = atoms.begin(), end = atoms.end();
     for (; it != end; ++it) {
       Atom state = *it;
-      if (state == netwm.wmStateModal()) {
+      if (state == bewmh.wmStateModal()) {
         ewmh.modal = true;
-      } else if (state == netwm.wmStateMaximizedVert()) {
+      } else if (state == bewmh.wmStateMaximizedVert()) {
         ewmh.maxv = true;
-      } else if (state == netwm.wmStateMaximizedHorz()) {
+      } else if (state == bewmh.wmStateMaximizedHorz()) {
         ewmh.maxh = true;
-      } else if (state == netwm.wmStateShaded()) {
+      } else if (state == bewmh.wmStateShaded()) {
         ewmh.shaded = true;
-      } else if (state == netwm.wmStateSkipTaskbar()) {
+      } else if (state == bewmh.wmStateSkipTaskbar()) {
         ewmh.skip_taskbar = true;
-      } else if (state == netwm.wmStateSkipPager()) {
+      } else if (state == bewmh.wmStateSkipPager()) {
         ewmh.skip_pager = true;
-      } else if (state == netwm.wmStateHidden()) {
+      } else if (state == bewmh.wmStateHidden()) {
         /*
           ignore _NET_WM_STATE_HIDDEN if present, the wm sets this
           state, not the application
          */
-      } else if (state == netwm.wmStateFullscreen()) {
+      } else if (state == bewmh.wmStateFullscreen()) {
         ewmh.fullscreen = true;
-      } else if (state == netwm.wmStateAbove()) {
+      } else if (state == bewmh.wmStateAbove()) {
         ewmh.above = true;
-      } else if (state == netwm.wmStateBelow()) {
+      } else if (state == bewmh.wmStateBelow()) {
         ewmh.below = true;
       }
     }
@@ -1119,7 +1119,7 @@ EWMH BlackboxWindow::readEWMH(void) {
     break;
 
   default:
-    if (!netwm.readWMDesktop(client.window, ewmh.workspace))
+    if (!bewmh.readWMDesktop(client.window, ewmh.workspace))
       ewmh.workspace = _screen->currentWorkspace();
     break;
   } //switch
@@ -1561,7 +1561,7 @@ BWindowGroup *BlackboxWindow::findWindowGroup(void) const {
 
 void BlackboxWindow::setWorkspace(unsigned int new_workspace) {
   client.ewmh.workspace = new_workspace;
-  blackbox->netwm().setWMDesktop(client.window, client.ewmh.workspace);
+  blackbox->ewmh().setWMDesktop(client.window, client.ewmh.workspace);
 }
 
 
@@ -1990,74 +1990,74 @@ void BlackboxWindow::setState(unsigned long new_state) {
                   blackbox->wmStateAtom(), blackbox->wmStateAtom(), 32,
                   PropModeReplace, (unsigned char *) state, 2);
 
-  const bt::Netwm& netwm = blackbox->netwm();
+  const bt::EWMH& ewmh = blackbox->ewmh();
 
   // set _NET_WM_STATE
-  bt::Netwm::AtomList atoms;
+  bt::EWMH::AtomList atoms;
   if (isModal())
-    atoms.push_back(netwm.wmStateModal());
+    atoms.push_back(ewmh.wmStateModal());
   if (isShaded())
-    atoms.push_back(netwm.wmStateShaded());
+    atoms.push_back(ewmh.wmStateShaded());
   if (isIconic())
-    atoms.push_back(netwm.wmStateHidden());
+    atoms.push_back(ewmh.wmStateHidden());
   if (isFullScreen())
-    atoms.push_back(netwm.wmStateFullscreen());
+    atoms.push_back(ewmh.wmStateFullscreen());
   if (client.ewmh.maxh)
-    atoms.push_back(netwm.wmStateMaximizedHorz());
+    atoms.push_back(ewmh.wmStateMaximizedHorz());
   if (client.ewmh.maxv)
-    atoms.push_back(netwm.wmStateMaximizedVert());
+    atoms.push_back(ewmh.wmStateMaximizedVert());
   if (client.ewmh.skip_taskbar)
-    atoms.push_back(netwm.wmStateSkipTaskbar());
+    atoms.push_back(ewmh.wmStateSkipTaskbar());
   if (client.ewmh.skip_pager)
-    atoms.push_back(netwm.wmStateSkipPager());
+    atoms.push_back(ewmh.wmStateSkipPager());
 
   switch (layer()) {
   case StackingList::LayerAbove:
-    atoms.push_back(netwm.wmStateAbove());
+    atoms.push_back(ewmh.wmStateAbove());
     break;
   case StackingList::LayerBelow:
-    atoms.push_back(netwm.wmStateBelow());
+    atoms.push_back(ewmh.wmStateBelow());
     break;
   default:
     break;
   }
 
   if (atoms.empty())
-    netwm.removeProperty(client.window, netwm.wmState());
+    ewmh.removeProperty(client.window, ewmh.wmState());
   else
-    netwm.setWMState(client.window, atoms);
+    ewmh.setWMState(client.window, atoms);
 
   // set _NET_WM_ALLOWED_ACTIONS
   atoms.clear();
 
   if (! client.state.iconic) {
     if (hasWindowFunction(WindowFunctionChangeWorkspace))
-      atoms.push_back(netwm.wmActionChangeDesktop());
+      atoms.push_back(ewmh.wmActionChangeDesktop());
 
     if (hasWindowFunction(WindowFunctionIconify))
-      atoms.push_back(netwm.wmActionMinimize());
+      atoms.push_back(ewmh.wmActionMinimize());
 
     if (hasWindowFunction(WindowFunctionShade))
-      atoms.push_back(netwm.wmActionShade());
+      atoms.push_back(ewmh.wmActionShade());
 
     if (hasWindowFunction(WindowFunctionMove))
-      atoms.push_back(netwm.wmActionMove());
+      atoms.push_back(ewmh.wmActionMove());
 
     if (hasWindowFunction(WindowFunctionResize))
-      atoms.push_back(netwm.wmActionResize());
+      atoms.push_back(ewmh.wmActionResize());
 
     if (hasWindowFunction(WindowFunctionMaximize)) {
-      atoms.push_back(netwm.wmActionMaximizeHorz());
-      atoms.push_back(netwm.wmActionMaximizeVert());
+      atoms.push_back(ewmh.wmActionMaximizeHorz());
+      atoms.push_back(ewmh.wmActionMaximizeVert());
     }
 
-    atoms.push_back(netwm.wmActionFullscreen());
+    atoms.push_back(ewmh.wmActionFullscreen());
   }
 
   if (hasWindowFunction(WindowFunctionClose))
-    atoms.push_back(netwm.wmActionClose());
+    atoms.push_back(ewmh.wmActionClose());
 
-  netwm.setWMAllowedActions(client.window, atoms);
+  ewmh.setWMAllowedActions(client.window, atoms);
 }
 
 
@@ -2096,12 +2096,12 @@ void BlackboxWindow::clearState(void) {
   XDeleteProperty(blackbox->XDisplay(), client.window,
                   blackbox->wmStateAtom());
 
-  const bt::Netwm& netwm = blackbox->netwm();
-  netwm.removeProperty(client.window, netwm.wmDesktop());
-  netwm.removeProperty(client.window, netwm.wmState());
-  netwm.removeProperty(client.window, netwm.wmAllowedActions());
-  netwm.removeProperty(client.window, netwm.wmVisibleName());
-  netwm.removeProperty(client.window, netwm.wmVisibleIconName());
+  const bt::EWMH& ewmh = blackbox->ewmh();
+  ewmh.removeProperty(client.window, ewmh.wmDesktop());
+  ewmh.removeProperty(client.window, ewmh.wmState());
+  ewmh.removeProperty(client.window, ewmh.wmAllowedActions());
+  ewmh.removeProperty(client.window, ewmh.wmVisibleName());
+  ewmh.removeProperty(client.window, ewmh.wmVisibleIconName());
 }
 
 
@@ -2426,7 +2426,7 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
   if (event->format != 32)
     return;
 
-  const bt::Netwm& netwm = blackbox->netwm();
+  const bt::EWMH& ewmh = blackbox->ewmh();
 
   if (event->message_type == blackbox->wmChangeStateAtom()) {
     if (event->data.l[0] == IconicState) {
@@ -2435,12 +2435,12 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
     } else if (event->data.l[0] == NormalState) {
       activate();
     }
-  } else if (event->message_type == netwm.activeWindow()) {
+  } else if (event->message_type == ewmh.activeWindow()) {
     activate();
-  } else if (event->message_type == netwm.closeWindow()) {
+  } else if (event->message_type == ewmh.closeWindow()) {
     if (hasWindowFunction(WindowFunctionClose))
       close();
-  } else if (event->message_type == netwm.moveresizeWindow()) {
+  } else if (event->message_type == ewmh.moveresizeWindow()) {
     XConfigureRequestEvent request;
     request.window = event->window;
     request.x = event->data.l[1];
@@ -2456,7 +2456,7 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
     configureRequestEvent(&request);
 
     client.wmnormal.win_gravity = old_gravity;
-  } else if (event->message_type == netwm.wmDesktop()) {
+  } else if (event->message_type == ewmh.wmDesktop()) {
     if (hasWindowFunction(WindowFunctionChangeWorkspace)) {
       const unsigned int desktop = event->data.l[0];
       setWorkspace(desktop);
@@ -2470,14 +2470,14 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
         show();
       }
     }
-  } else if (event->message_type == netwm.wmState()) {
+  } else if (event->message_type == ewmh.wmState()) {
     Atom action = event->data.l[0],
           first = event->data.l[1],
          second = event->data.l[2];
 
-    if (first == netwm.wmStateModal() || second == netwm.wmStateModal()) {
-      if ((action == netwm.wmStateAdd() ||
-           (action == netwm.wmStateToggle() && ! client.ewmh.modal)) &&
+    if (first == ewmh.wmStateModal() || second == ewmh.wmStateModal()) {
+      if ((action == ewmh.wmStateAdd() ||
+           (action == ewmh.wmStateToggle() && ! client.ewmh.modal)) &&
           isTransient())
         client.ewmh.modal = true;
       else
@@ -2487,18 +2487,18 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
     if (hasWindowFunction(WindowFunctionMaximize)) {
       int max_horz = 0, max_vert = 0;
 
-      if (first == netwm.wmStateMaximizedHorz() ||
-          second == netwm.wmStateMaximizedHorz()) {
-        max_horz = ((action == netwm.wmStateAdd()
-                     || (action == netwm.wmStateToggle()
+      if (first == ewmh.wmStateMaximizedHorz() ||
+          second == ewmh.wmStateMaximizedHorz()) {
+        max_horz = ((action == ewmh.wmStateAdd()
+                     || (action == ewmh.wmStateToggle()
                          && !client.ewmh.maxh))
                     ? 1 : -1);
       }
 
-      if (first == netwm.wmStateMaximizedVert() ||
-          second == netwm.wmStateMaximizedVert()) {
-        max_vert = ((action == netwm.wmStateAdd()
-                     || (action == netwm.wmStateToggle()
+      if (first == ewmh.wmStateMaximizedVert() ||
+          second == ewmh.wmStateMaximizedVert()) {
+        max_vert = ((action == ewmh.wmStateAdd()
+                     || (action == ewmh.wmStateToggle()
                          && !client.ewmh.maxv))
                     ? 1 : -1);
       }
@@ -2519,31 +2519,31 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
     }
 
     if (hasWindowFunction(WindowFunctionShade)) {
-      if (first == netwm.wmStateShaded() ||
-          second == netwm.wmStateShaded()) {
-        if (action == netwm.wmStateRemove())
+      if (first == ewmh.wmStateShaded() ||
+          second == ewmh.wmStateShaded()) {
+        if (action == ewmh.wmStateRemove())
           setShaded(false);
-        else if (action == netwm.wmStateAdd())
+        else if (action == ewmh.wmStateAdd())
           setShaded(true);
-        else if (action == netwm.wmStateToggle())
+        else if (action == ewmh.wmStateToggle())
           setShaded(!isShaded());
       }
     }
 
-    if (first == netwm.wmStateSkipTaskbar()
-        || second == netwm.wmStateSkipTaskbar()
-        || first == netwm.wmStateSkipPager()
-        || second == netwm.wmStateSkipPager()) {
-      if (first == netwm.wmStateSkipTaskbar()
-          || second == netwm.wmStateSkipTaskbar()) {
-        client.ewmh.skip_taskbar = (action == netwm.wmStateAdd()
-                                    || (action == netwm.wmStateToggle()
+    if (first == ewmh.wmStateSkipTaskbar()
+        || second == ewmh.wmStateSkipTaskbar()
+        || first == ewmh.wmStateSkipPager()
+        || second == ewmh.wmStateSkipPager()) {
+      if (first == ewmh.wmStateSkipTaskbar()
+          || second == ewmh.wmStateSkipTaskbar()) {
+        client.ewmh.skip_taskbar = (action == ewmh.wmStateAdd()
+                                    || (action == ewmh.wmStateToggle()
                                         && !client.ewmh.skip_taskbar));
       }
-      if (first == netwm.wmStateSkipPager()
-          || second == netwm.wmStateSkipPager()) {
-        client.ewmh.skip_pager = (action == netwm.wmStateAdd()
-                                  || (action == netwm.wmStateToggle()
+      if (first == ewmh.wmStateSkipPager()
+          || second == ewmh.wmStateSkipPager()) {
+        client.ewmh.skip_pager = (action == ewmh.wmStateAdd()
+                                  || (action == ewmh.wmStateToggle()
                                       && !client.ewmh.skip_pager));
       }
       // we do nothing with skip_*, but others might... we should at
@@ -2551,8 +2551,8 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
       setState(client.current_state);
     }
 
-    if (first == netwm.wmStateHidden() ||
-        second == netwm.wmStateHidden()) {
+    if (first == ewmh.wmStateHidden() ||
+        second == ewmh.wmStateHidden()) {
       /*
         ignore _NET_WM_STATE_HIDDEN, the wm sets this state, not the
         application
@@ -2560,40 +2560,40 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
     }
 
     if (hasWindowFunction(WindowFunctionFullScreen)) {
-      if (first == netwm.wmStateFullscreen() ||
-          second == netwm.wmStateFullscreen()) {
-        if (action == netwm.wmStateAdd() ||
-            (action == netwm.wmStateToggle() &&
+      if (first == ewmh.wmStateFullscreen() ||
+          second == ewmh.wmStateFullscreen()) {
+        if (action == ewmh.wmStateAdd() ||
+            (action == ewmh.wmStateToggle() &&
              ! client.ewmh.fullscreen)) {
           setFullScreen(true);
-        } else if (action == netwm.wmStateToggle() ||
-                   action == netwm.wmStateRemove()) {
+        } else if (action == ewmh.wmStateToggle() ||
+                   action == ewmh.wmStateRemove()) {
           setFullScreen(false);
         }
       }
     }
 
     if (hasWindowFunction(WindowFunctionChangeLayer)) {
-      if (first == netwm.wmStateAbove() ||
-          second == netwm.wmStateAbove()) {
-        if (action == netwm.wmStateAdd() ||
-            (action == netwm.wmStateToggle() &&
+      if (first == ewmh.wmStateAbove() ||
+          second == ewmh.wmStateAbove()) {
+        if (action == ewmh.wmStateAdd() ||
+            (action == ewmh.wmStateToggle() &&
              layer() != StackingList::LayerAbove)) {
           _screen->changeLayer(this, StackingList::LayerAbove);
-        } else if (action == netwm.wmStateToggle() ||
-                   action == netwm.wmStateRemove()) {
+        } else if (action == ewmh.wmStateToggle() ||
+                   action == ewmh.wmStateRemove()) {
           _screen->changeLayer(this, StackingList::LayerNormal);
         }
       }
 
-      if (first == netwm.wmStateBelow() ||
-          second == netwm.wmStateBelow()) {
-        if (action == netwm.wmStateAdd() ||
-            (action == netwm.wmStateToggle() &&
+      if (first == ewmh.wmStateBelow() ||
+          second == ewmh.wmStateBelow()) {
+        if (action == ewmh.wmStateAdd() ||
+            (action == ewmh.wmStateToggle() &&
              layer() != StackingList::LayerBelow)) {
           _screen->changeLayer(this, StackingList::LayerBelow);
-        } else if (action == netwm.wmStateToggle() ||
-                   action == netwm.wmStateRemove()) {
+        } else if (action == ewmh.wmStateToggle() ||
+                   action == ewmh.wmStateRemove()) {
           _screen->changeLayer(this, StackingList::LayerNormal);
         }
       }
@@ -2727,7 +2727,7 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
     client.visible_title =
       bt::ellideText(client.title, frame.label_w, bt::toUnicode("..."),
                      _screen->screenNumber(), frame.style->font);
-    blackbox->netwm().setWMVisibleName(client.window, client.visible_title);
+    blackbox->ewmh().setWMVisibleName(client.window, client.visible_title);
 
     if (client.decorations & WindowDecorationTitlebar)
       redrawLabel();
@@ -2800,13 +2800,13 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
                            client.wmprotocols);
 
       reconfigure();
-    } else if (event->atom == blackbox->netwm().wmStrut()) {
+    } else if (event->atom == blackbox->ewmh().wmStrut()) {
       if (! client.strut) {
-        client.strut = new bt::Netwm::Strut;
+        client.strut = new bt::EWMH::Strut;
         _screen->addStrut(client.strut);
       }
 
-      blackbox->netwm().readWMStrut(client.window, client.strut);
+      blackbox->ewmh().readWMStrut(client.window, client.strut);
       if (client.strut->left || client.strut->right ||
           client.strut->top || client.strut->bottom) {
         _screen->updateStrut();
