@@ -134,22 +134,31 @@ bt::Rect bt::textRect(const bt::Font &font, const std::string &text) {
 void bt::drawText(const bt::Font &font, const bt::Pen &pen, Window window,
                   const bt::Rect &rect, bt::Alignment alignment,
                   const std::string &text) {
-  const bt::Rect tr = bt::textRect(font, text);
+  bt::Rect tr = bt::textRect(font, text);
 
   // align horizontally
-  int x = rect.x();
   switch (alignment) {
-  case bt::AlignRight:  x += rect.width() - tr.width();       break;
-  case bt::AlignCenter: x += (rect.width() - tr.width()) / 2; break;
-  case bt::AlignLeft: default: break;
+  case bt::AlignRight:
+    tr.setX(rect.x() + rect.width() - tr.width());
+    break;
+
+  case bt::AlignCenter:
+    tr.setX(rect.x() + (rect.width() - tr.width()) / 2);
+    break;
+
+  default:
+  case bt::AlignLeft:
+    tr.setX(rect.x());
   }
+
+  // align vertically (center for now)
+  tr.setY(rect.y() + ((rect.height() - tr.height()) / 2));
 
   if (bt::i18n.multibyte()) {
 
   } else {
-    // align vertically (center for now)
-    int y = rect.y() + ((rect.height() + font.font()->ascent) / 2);
-    XDrawString(font.display()->XDisplay(), window, pen.gc(), x, y,
+    XDrawString(font.display()->XDisplay(), window, pen.gc(),
+                tr.x(), tr.y() + font.font()->ascent,
                 text.c_str(), text.length());
   }
 }
