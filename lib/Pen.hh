@@ -29,6 +29,7 @@
 namespace bt {
 
   class Color;
+  class Display;
   class Font;
   class GCCacheItem;
 
@@ -42,6 +43,7 @@ namespace bt {
 
     void setFont(const Font &font);
 
+    const Display &display(void) const;
     const GC &gc(void) const;
 
   private:

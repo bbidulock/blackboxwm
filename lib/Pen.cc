@@ -67,6 +67,7 @@ namespace bt {
 
   class GCCacheItem : public NoCopy {
   public:
+    inline const Display &display(void) const { return _ctx->_display;}
     inline const GC &gc(void) const { return _ctx->_gc; }
 
   private:
@@ -305,6 +306,13 @@ void bt::Pen::setFont(const Font &font) {
   if (_item) pencache->release(_item);
   _item = 0;
   _fontid = font.font() ? font.font()->fid : 0ul;
+}
+
+
+const bt::Display &bt::Pen::display(void) const {
+  if (! _item)
+    _item = pencache->find(_screen, _color, _fontid, _function, _subwindow);
+  return _item->display();
 }
 
 
