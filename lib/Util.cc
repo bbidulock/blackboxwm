@@ -33,9 +33,9 @@
 
 #include <X11/Xatom.h>
 #include <assert.h>
-#if defined(HAVE_PROCESS_H) && defined(__EMX__)
+#if defined(__EMX__)
 #  include <process.h>
-#endif //   HAVE_PROCESS_H             __EMX__
+#endif // __EMX__
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
