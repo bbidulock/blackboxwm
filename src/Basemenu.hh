@@ -83,7 +83,7 @@ protected:
 
 public:
   Basemenu(BScreen *scrn);
-  virtual ~Basemenu(void);
+  virtual ~Basemenu(void) = 0;
 
   inline bool isTorn(void) const { return torn; }
   inline bool isVisible(void) const { return visible; }
@@ -162,8 +162,6 @@ public:
   BasemenuItem(const std::string& lp, Basemenu *mp): sub(mp), l(lp),
                                                      f(0), enabled(1),
                                                      selected(0) {}
-
-  ~BasemenuItem(void);
 
   inline const char *exec(void) const { return e.c_str(); }
   inline const char *label(void) const { return l.c_str(); }
