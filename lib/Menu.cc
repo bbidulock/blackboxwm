@@ -159,7 +159,7 @@ unsigned int bt::MenuStyle::frameMargin(void) const {
 
 
 unsigned int bt::MenuStyle::itemMargin(void) const {
-  return active.texture.borderWidth() + 1;
+  return active.texture.borderWidth() + (frame_margin == 0 ? 0 : 1);
 }
 
 
