@@ -23,12 +23,7 @@
 #define _blackbox_workspace_hh
 
 #include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
-#include <X11/Xresource.h>
-#ifdef SHAPE
-#include <X11/extensions/shape.h>
-#endif
+
 
 class BlackboxSession;
 class BlackboxWindow;
@@ -40,7 +35,6 @@ class WorkspaceManagerMenu;
 #include "menu.hh"
 #include "llist.hh"
 #include "icon.hh"
-#include "debug.hh"
 
 
 class WorkspaceMenu : public BlackboxMenu {
@@ -154,7 +148,6 @@ private:
   WorkspaceManagerMenu *workspaces_menu;
   BlackboxSession *session;
   Workspace *current;
-  Debugger *debug;
   
   friend WorkspaceManagerMenu;
 

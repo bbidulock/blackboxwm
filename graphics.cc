@@ -23,6 +23,15 @@
 #include "graphics.hh"
 
 
+// *************************************************************************
+// Graphics engine class code
+// *************************************************************************
+//
+// allocations:
+// unsigned long *data
+//
+// *************************************************************************
+
 BImage::BImage(BlackboxSession *s, unsigned int w, unsigned int h, int d,
 	       unsigned char r, unsigned char g, unsigned char b)
 {

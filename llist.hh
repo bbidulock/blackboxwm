@@ -22,10 +22,6 @@
 #ifndef _blackbox_llist_hh
 #define _blackbox_llist_hh
 
-// forward declarations
-//class llist_node;
-//class llist;
-
 
 typedef struct __llist_node {
   __llist_node *next;

@@ -24,6 +24,7 @@
 #include "session.hh"
 
 #include <signal.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -31,9 +32,10 @@
 Blackbox *blackbox;
 
 
-//
+// *************************************************************************
 // signal handler to allow for proper and gentle shutdown
-//
+// *************************************************************************
+
 static void signalhandler(int i) {
   static int re_enter = 0;
   
@@ -52,14 +54,14 @@ static void signalhandler(int i) {
 // *************************************************************************
 // Blackbox class code
 // *************************************************************************
+//
+// allocations:
+// llist *session_list
+// BlackboxSession * - one for each managed display
+//
+// *************************************************************************
 
 Blackbox::Blackbox(int argc, char **argv) {
-  debug = new Debugger('!');
-#ifdef DEBUG
-  debug->enable();
-#endif
-  debug->msg("%s: Blackbox::Blackbox\n", __FILE__);
-
   // install signal handlers for fatal signals
   signal(SIGSEGV, (void (*)(int)) signalhandler);
   signal(SIGTERM, (void (*)(int)) signalhandler);
@@ -85,10 +87,7 @@ Blackbox::Blackbox(int argc, char **argv) {
 	exit(1);
       }
       
-      debug->msg("%s: beginning single display management '%s'\n",
-		 __FILE__, argv[i]);
       session_display = argv[i];
-
       // set the environment variable DISPLAY
       if (setenv("DISPLAY", session_display, 1)) {
 	fprintf(stderr, "couldn't set environment variable DISPLAY\n");
@@ -119,16 +118,11 @@ Blackbox::Blackbox(int argc, char **argv) {
 
 
 Blackbox::~Blackbox(void) {
-  debug->msg("%s: Blackbox::~Blackbox\n", __FILE__);
-
   delete session_list;
-  delete debug;
 }
 
 
 void Blackbox::EventLoop(void) {
-  debug->msg("%s: Blackbox::EventLoop\n", __FILE__);
-
   // When multiple X sessions are supported... this function will change to
   // create new threads of execution and start an session->EventLoop() in
   // each thread.
@@ -140,8 +134,6 @@ void Blackbox::EventLoop(void) {
 
 
 void Blackbox::Restart(char *prog) {
-  debug->msg("%s: Blackbox::Restart\n", __FILE__);
-
   // This function is just a quick "fix"
   // It is also subject to change when multithreads are incorporated.
   if (prog) {
@@ -159,8 +151,6 @@ void Blackbox::Restart(char *prog) {
 
 
 void Blackbox::Shutdown(void) {
-  debug->msg("%s: Blackbox::Shutdown\n", __FILE__);
-
   // end management for all sessions and quit
   for (int i = 0; i < session_list->count(); ++i) {
     BlackboxSession *tmp = session_list->at(i);

@@ -25,23 +25,63 @@
 #include "session.hh"
 
 
+// *************************************************************************
+// Workspace Menu class code
+// *************************************************************************
+//
+// allocations:
+// none - items are redraw from char**'s that point to the workspace names
+//
+// *************************************************************************
+
 WorkspaceMenu::WorkspaceMenu(Workspace *w, BlackboxSession *s) :
-  BlackboxMenu(s) { session = s; workspace = w; setMovable(False); }
-void WorkspaceMenu::showMenu(void)
-{ BlackboxMenu::showMenu(); }
-void WorkspaceMenu::hideMenu(void)
-{ BlackboxMenu::hideMenu(); }
-void WorkspaceMenu::moveMenu(int x, int y)
-{ BlackboxMenu::moveMenu(x, y); }
-void WorkspaceMenu::updateMenu(void)
-{ BlackboxMenu::updateMenu(); }
-int WorkspaceMenu::insert(char **u)
-{ return BlackboxMenu::insert(u); }
-int WorkspaceMenu::remove(int i)
-{ return BlackboxMenu::remove(i); }
+  BlackboxMenu(s)
+{
+  session = s;
+  workspace = w;
+  setMovable(False);
+}
+
+
+void WorkspaceMenu::showMenu(void) {
+  BlackboxMenu::showMenu();
+}
+
+
+void WorkspaceMenu::hideMenu(void) {
+  BlackboxMenu::hideMenu();
+}
+
+
+void WorkspaceMenu::moveMenu(int x, int y) {
+  BlackboxMenu::moveMenu(x, y);
+}
+
+
+void WorkspaceMenu::updateMenu(void) {
+  BlackboxMenu::updateMenu();
+}
+
+
+int WorkspaceMenu::insert(char **u) {
+  return BlackboxMenu::insert(u);
+}
+
+
+int WorkspaceMenu::remove(int i) {
+  return BlackboxMenu::remove(i);
+}
+
+
 void WorkspaceMenu::titlePressed(int) { }
+
+
 void WorkspaceMenu::titleReleased(int) { }
+
+
 void WorkspaceMenu::itemPressed(int, int) { }
+
+
 void WorkspaceMenu::itemReleased(int button, int item) {
   if (button == 1) {
     if (workspace->ws_manager->currentWorkspaceID() !=
@@ -61,25 +101,59 @@ void WorkspaceMenu::itemReleased(int button, int item) {
 }
 
 
+// *************************************************************************
+// Workspace Manager Menu class code
+// *************************************************************************
+//
+// allocations:
+// none - workspaces created are placed under the control of the workspace
+//    manager
+//
+// *************************************************************************
+
 WorkspaceManagerMenu::WorkspaceManagerMenu(WorkspaceManager *m,
 					   BlackboxSession *s) :
   BlackboxMenu(s)
-{ ws_manager = m; hideTitle(); setMovable(False); }
-void WorkspaceManagerMenu::showMenu(void)
-{ BlackboxMenu::showMenu(); }
-void WorkspaceManagerMenu::hideMenu(void)
-{ BlackboxMenu::hideMenu(); }
-void WorkspaceManagerMenu::moveMenu(int x, int y)
-{ BlackboxMenu::moveMenu(x, y); }
-void WorkspaceManagerMenu::updateMenu(void)
-{ BlackboxMenu::updateMenu(); }
-int WorkspaceManagerMenu::insert(char *l)
-{ return BlackboxMenu::insert(l); }
-int WorkspaceManagerMenu::insert(char *l, WorkspaceMenu *m)
-{ return BlackboxMenu::insert(l, m); }
+{
+  ws_manager = m;
+  hideTitle();
+  setMovable(False);
+}
+
+
+void WorkspaceManagerMenu::showMenu(void) {
+  BlackboxMenu::showMenu();
+}
+
+
+void WorkspaceManagerMenu::hideMenu(void) {
+  BlackboxMenu::hideMenu();
+}
+
+
+void WorkspaceManagerMenu::moveMenu(int x, int y) {
+  BlackboxMenu::moveMenu(x, y);
+}
+
+
+void WorkspaceManagerMenu::updateMenu(void) {
+  BlackboxMenu::updateMenu();
+}
+
+
+int WorkspaceManagerMenu::insert(char *l) {
+  return BlackboxMenu::insert(l);
+}
+
+
+int WorkspaceManagerMenu::insert(char *l, WorkspaceMenu *m) {
+  return BlackboxMenu::insert(l, m);
+}
 
 
 void WorkspaceManagerMenu::itemPressed(int, int) { }
+
+
 void WorkspaceManagerMenu::itemReleased(int button, int item) {
   if (button == 1)
     if (item == 0) {

@@ -23,12 +23,6 @@
 #define _blackbox_graphics_hh
 
 #include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
-#include <X11/Xresource.h>
-#ifdef SHAPE
-#include <X11/extensions/shape.h>
-#endif
 
 typedef struct BColor {
   unsigned char r, g, b;

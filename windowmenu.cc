@@ -28,6 +28,11 @@
 // *************************************************************************
 // Window Menu class code
 // *************************************************************************
+//
+// allocations:
+// SendToWorkspaceMenu *send_to_menu
+//
+// *************************************************************************
 
 BlackboxWindowMenu::BlackboxWindowMenu(BlackboxWindow *w, BlackboxSession *s) :
   BlackboxMenu(s)

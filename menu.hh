@@ -23,16 +23,9 @@
 #define _blackbox_menu_hh
 
 #include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
-#include <X11/Xresource.h>
-#include <X11/cursorfont.h>
-#ifdef SHAPE
-#include <X11/extensions/shape.h>
-#endif
 
-#include "debug.hh"
 #include "llist.hh"
+
 
 // forward declarations
 class BlackboxMenu;
@@ -45,7 +38,6 @@ class BlackboxMenu {
 private:
   llist<BlackboxMenuItem> *menuitems;
   BlackboxSession *session;
-  Debugger *debug;
 
   Bool moving, show_title, visible, sub, movable, user_moved;
   Display *display;

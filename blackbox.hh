@@ -21,9 +21,8 @@
 
 #ifndef _blackbox_hh
 #define _blackbox_hh
-#define _blackbox_version "zero point one five point one beta"
+#define _blackbox_version "zero point one five point three beta"
 
-#include "debug.hh"
 #include "llist.hh"
 
 
@@ -33,7 +32,6 @@ class BlackboxSession;
 
 class Blackbox {
 private:
-  Debugger *debug;
   llist<BlackboxSession> *session_list;
 
   char **b_argv;

@@ -24,14 +24,12 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <X11/Xatom.h>
 #include <X11/Xresource.h>
-#include <X11/cursorfont.h>
 #ifdef SHAPE
 #include <X11/extensions/shape.h>
 #endif
 
-#include "debug.hh"
+#include <stdio.h>
 #include "llist.hh"
 #include "menu.hh"
 #include "graphics.hh"
@@ -84,7 +82,6 @@ private:
     extra:4;       // keep data aligned... but does gcc have #pragma packed?
   
   SessionMenu *rootmenu;
-  Debugger *debug;
   WorkspaceManager *ws_manager;
 
   Atom _XA_WM_COLORMAP_WINDOWS, _XA_WM_PROTOCOLS, _XA_WM_STATE,
@@ -97,9 +94,31 @@ private:
   Window root;
   XColor *colors_8bpp;
 
-  struct context {
-    XContext workspace, window, icon, menu;
-  } context;
+
+  typedef struct __window_search__ {
+    BlackboxWindow *data;
+    Window window;
+  } WindowSearch;
+
+  typedef struct __icon_search__ {
+    BlackboxIcon *data;
+    Window window;
+  } IconSearch;
+
+  typedef struct __menu_search__ {
+    BlackboxMenu *data;
+    Window window;
+  } MenuSearch;
+
+  typedef struct __ws_manger_search__ {
+    WorkspaceManager *data;
+    Window window;
+  } WSManagerSearch;
+
+  llist<WindowSearch> *window_search_list;
+  llist<MenuSearch> *menu_search_list;
+  llist<IconSearch> *icon_search_list;
+  llist<WSManagerSearch> *wsmanager_search_list;
 
   struct cursor {
     Cursor session, move;
@@ -148,10 +167,10 @@ public:
   BlackboxSession(char *);
   ~BlackboxSession();
   
-  BlackboxWindow *getWindow(Window);
-  BlackboxIcon *getIcon(Window);
-  BlackboxMenu *getMenu(Window);
-  WorkspaceManager *getWSManager(Window);
+  BlackboxMenu *searchMenu(Window);
+  BlackboxWindow *searchWindow(Window);
+  BlackboxIcon *searchIcon(Window);
+  WorkspaceManager *searchWSManager(Window);
   unsigned long getColor(const char *);
   unsigned long getColor(const char *, unsigned char *, unsigned char *,
 			 unsigned char *);
@@ -167,6 +186,14 @@ public:
   void Shutdown(void);
   void LoadDefaults(void);
   void Dissociate(void);
+  void saveMenuSearch(Window, BlackboxMenu *);
+  void saveWindowSearch(Window, BlackboxWindow *);
+  void saveIconSearch(Window, BlackboxIcon *);
+  void saveWSManagerSearch(Window, WorkspaceManager *);
+  void removeMenuSearch(Window);
+  void removeWindowSearch(Window);
+  void removeIconSearch(Window);
+  void removeWSManagerSearch(Window);
 
   // various informative functions about the current X session
   Atom StateAtom(void) { return _XA_WM_STATE; }
@@ -186,10 +213,6 @@ public:
   Visual *visual(void) { return v; }
   Window Root(void) { return root; }
   XColor *Colors8bpp(void) { return colors_8bpp; }
-  XContext wsContext(void) { return context.workspace; }
-  XContext iconContext(void) { return context.icon; }
-  XContext winContext(void) { return context.window; }
-  XContext menuContext(void) { return context.menu; }
   XFontStruct *titleFont(void) { return resource.font.title; }
   XFontStruct *menuFont(void) { return resource.font.menu; }
   XFontStruct *iconFont(void) { return resource.font.icon; }

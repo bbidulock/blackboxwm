@@ -24,21 +24,20 @@
 #include "graphics.hh"
 #include "session.hh"
 
-#include <stdlib.h>
-
 
 // *************************************************************************
 // Menu creation and destruction methods
 // *************************************************************************
+//
+// allocations:
+// Window menu.frame, menu.title, item windows (contexts)
+// llist *menuitems
+// GC itemGC, pitemGC, titleGC
+// char *menu.label
+//
+// *************************************************************************
 
-BlackboxMenu::BlackboxMenu(BlackboxSession *ctrl)
-{
-  debug = new Debugger('*');
-#ifdef DEBUG
-  debug->enable();
-#endif
-  debug->msg("%s: BlackboxMenu::BlackboxMenu\n", __FILE__);
-
+BlackboxMenu::BlackboxMenu(BlackboxSession *ctrl) {
   session = ctrl;
   display = session->control();
   show_title = True;
@@ -76,7 +75,7 @@ BlackboxMenu::BlackboxMenu(BlackboxSession *ctrl)
     XCreateWindow(display, session->Root(), menu.x, menu.y, menu.title_w,
 		  menu.height, 1, session->Depth(), InputOutput,
 		  session->visual(), attrib_mask, &attrib);
-  XSaveContext(display, menu.frame, session->menuContext(), (XPointer) this);
+  session->saveMenuSearch(menu.frame, this);
   
   if (show_title) {
     attrib_mask = CWBackPixmap|CWBackPixel|CWBorderPixel|CWCursor|CWEventMask;
@@ -86,8 +85,7 @@ BlackboxMenu::BlackboxMenu(BlackboxSession *ctrl)
       XCreateWindow(display, menu.frame, 0, 0, menu.title_w, menu.height, 0,
 		    session->Depth(), InputOutput, session->visual(),
 		    attrib_mask, &attrib);
-    XSaveContext(display, menu.title, session->menuContext(),
-		 (XPointer) this);
+    session->saveMenuSearch(menu.title, this);
   } else
     menu.title = None;
 
@@ -105,24 +103,17 @@ BlackboxMenu::BlackboxMenu(BlackboxSession *ctrl)
   gcv.foreground = session->menuPressedTextColor().pixel;
   pitemGC = XCreateGC(display, menu.frame, GCForeground|GCFont, &gcv);
 
-  //
   // even though this is the end of the constructor the menu is still not
   // completely created.
-  //
 }
 
 
 BlackboxMenu::~BlackboxMenu(void) {
-  debug->msg("%s: BlackboxMenu::~BlackboxMenu\n", __FILE__);
   XUnmapWindow(display, menu.frame);
 
   int i;
-  for (i = 0; i < menuitems->count(); ++i) {
-    BlackboxMenuItem *itmp = menuitems->at(i);
-    XDeleteContext(display, itmp->window, session->menuContext());
-    XDestroyWindow(display, itmp->window);
-    delete itmp;
-  }
+  for (i = 0; i < menuitems->count(); ++i)
+    remove(0);
 
   delete menuitems;
 
@@ -130,15 +121,13 @@ BlackboxMenu::~BlackboxMenu(void) {
   XFreeGC(display, itemGC);
   XFreeGC(display, pitemGC);
   if (menu.title) {
-    XDeleteContext(display, menu.title, session->menuContext());
+    session->removeMenuSearch(menu.title);
     XDestroyWindow(display, menu.title);
   }
 
-  XDeleteContext(display, menu.frame, session->menuContext());
+  session->removeMenuSearch(menu.frame);
   XDestroyWindow(display, menu.frame);
   if (menu.label) delete menu.label;
-
-  delete debug;
 }
 
 
@@ -147,8 +136,6 @@ BlackboxMenu::~BlackboxMenu(void) {
 // *************************************************************************
 
 int BlackboxMenu::insert(char **label) {
-  debug->msg("%s: BlackboxMenu::insert(char **)\n", __FILE__);
-
   BlackboxMenuItem *item = new BlackboxMenuItem(createItemWindow(), label);
   menuitems->append(item);
 
@@ -157,8 +144,6 @@ int BlackboxMenu::insert(char **label) {
 
 
 int BlackboxMenu::insert(char *label) {
-  debug->msg(":%s: BlackboxMenu::insert(char *)\n", __FILE__);
-
   BlackboxMenuItem *item = new BlackboxMenuItem(createItemWindow(), label);
   menuitems->append(item);
   
@@ -167,11 +152,7 @@ int BlackboxMenu::insert(char *label) {
 
 
 int BlackboxMenu::insert(char *label, int function, char *exec) {
-  debug->msg("%s: BlackboxMenu::insert(char *, int, char *)\n", __FILE__,
-	     __LINE__);
-
   int ret = 0;
-
   switch (function) {
   case BlackboxSession::B_Execute: {
     BlackboxMenuItem *item = new BlackboxMenuItem(createItemWindow(), label,
@@ -224,9 +205,6 @@ int BlackboxMenu::insert(char *label, int function, char *exec) {
 
 
 int BlackboxMenu::insert(char *label, BlackboxMenu *submenu) {
-  debug->msg("%s: BlackboxMenu::insert(char *, BlackboxMenu *)\n", __FILE__,
-	     __LINE__);
-
   BlackboxMenuItem *item = new BlackboxMenuItem(createItemWindow(), label,
 						submenu);
   menuitems->append(item);
@@ -236,12 +214,10 @@ int BlackboxMenu::insert(char *label, BlackboxMenu *submenu) {
 
 
 int BlackboxMenu::remove(int index) {
-  debug->msg("%s: BlackboxMenu::remove\n", __FILE__);
-
   BlackboxMenuItem *item = menuitems->at(index);
   menuitems->remove(index);
 
-  XDeleteContext(display, item->window, session->menuContext());
+  session->removeMenuSearch(item->window);
   XDestroyWindow(display, item->window);
   delete item;
 
@@ -249,8 +225,6 @@ int BlackboxMenu::remove(int index) {
 }
 
 Window BlackboxMenu::createItemWindow(void) {
-  debug->msg("%s: BlackboxMenu::createItemWindow\n", __FILE__);
-
   unsigned long attrib_mask = CWBackPixmap|CWBackPixel|CWBorderPixel|CWCursor|
     CWEventMask;
   
@@ -269,7 +243,7 @@ Window BlackboxMenu::createItemWindow(void) {
 		  + menu.title_h + 1, 1, menu.item_h, 0, session->Depth(),
 		  InputOutput, session->visual(), attrib_mask, &attrib);
 
-  XSaveContext(display, c, session->menuContext(), (XPointer) this);
+  session->saveMenuSearch(c, this);
   return c;
 }
 
@@ -279,15 +253,16 @@ Window BlackboxMenu::createItemWindow(void) {
 // *************************************************************************
 
 void BlackboxMenu::updateMenu(void) {
-  debug->msg("%s: BlackboxMenu::updateMenu (%s)\n", __FILE__, menu.label);
-
   int i = 0, ii = 0;
   BlackboxMenuItem *itmp = NULL;
 
   XGrabServer(display);
   XSync(display, False);
-  menu.width = ((show_title) ? XTextWidth(session->titleFont(), menu.label,
-                           strlen(menu.label)) + 8 : 0);
+  menu.width = ((show_title) ?
+                XTextWidth(session->titleFont(),
+                           ((menu.label) ? menu.label : "Blackbox Menu"),
+                           strlen(((menu.label) ? menu.label :
+                                   "Blackbox Menu"))) + 8 : 0);
 
   for (i = 0; i < menuitems->count(); ++i) {
     itmp = menuitems->at(i);
@@ -376,14 +351,10 @@ void BlackboxMenu::updateMenu(void) {
   XFlush(display);
   XSync(display, False);
   XUngrabServer(display);
-
-  debug->msg("%s: leaving BlackboxMenu::updateMenu\n", __FILE__);
 }
 
 
 void BlackboxMenu::showMenu(void) {
-  debug->msg("%s: BlackboxMenu::showMenu\n", __FILE__);
-
   XGrabServer(display);
   XMapSubwindows(display, menu.frame);
   XMapWindow(display, menu.frame);
@@ -393,8 +364,6 @@ void BlackboxMenu::showMenu(void) {
 
 
 void BlackboxMenu::hideMenu(void) {
-  debug->msg("%s: BlackboxMenu::hideMenu\n", __FILE__);
-
   XGrabServer(display);
   XUnmapWindow(display, menu.frame);
   user_moved = False;
@@ -411,8 +380,6 @@ void BlackboxMenu::hideMenu(void) {
 
 
 void BlackboxMenu::moveMenu(int x, int y) {
-  debug->msg("%s: BlackboxMenu::moveMenu\n", __FILE__);
-
   XGrabServer(display);
   menu.x = x;
   menu.y = y;
@@ -424,8 +391,6 @@ void BlackboxMenu::moveMenu(int x, int y) {
 
 
 void BlackboxMenu::drawSubmenu(int index) {
-  debug->msg("%s: BlackboxMenu::drawSubmenu\n", __FILE__);
-
   if (which_sub != -1 && which_sub != index) {
     BlackboxMenuItem *tmp = menuitems->at(which_sub);
     tmp->sub_menu->hideMenu();
@@ -462,8 +427,6 @@ void BlackboxMenu::drawSubmenu(int index) {
     } else
       which_sub = -1;
   }
-
-  debug->msg("%s: leaving BlackboxMenu::drawSubmenu\n", __FILE__);
 }
 
 
@@ -483,8 +446,6 @@ Bool BlackboxMenu::hasSubmenu(int index) {
 // *************************************************************************
 
 void BlackboxMenu::buttonPressEvent(XButtonEvent *be) {
-  debug->msg("%s: BlackboxMenu::buttonPressEvent\n", __FILE__);
-
   if (show_title && be->window == menu.title) {
     if (be->x >= 0 && be->x <= (signed) menu.width &&
 	be->y >= 0 && be->y <= (signed) menu.title_h)
@@ -526,8 +487,6 @@ void BlackboxMenu::buttonPressEvent(XButtonEvent *be) {
 
 
 void BlackboxMenu::buttonReleaseEvent(XButtonEvent *re) {
-  debug->msg("%s: BlackboxMenu::buttonReleaseEvent\n", __FILE__);
-
   if (show_title && re->window == menu.title) {
     if (moving) {
       XUngrabPointer(display, CurrentTime);
@@ -615,8 +574,6 @@ void BlackboxMenu::motionNotifyEvent(XMotionEvent *me) {
 
 
 void BlackboxMenu::exposeEvent(XExposeEvent *ee) {
-  debug->msg("%s: BlackboxMenu::exposeEvent\n", __FILE__);
-
   if (ee->window == menu.title) {
     XDrawString(display, menu.title, titleGC, 3,
 		session->titleFont()->ascent + 3,
@@ -649,8 +606,6 @@ void BlackboxMenu::exposeEvent(XExposeEvent *ee) {
 // *************************************************************************
 
 void BlackboxMenu::Reconfigure(void) {
-  debug->msg("%s: BlackboxMenu::Reconfigure\n", __FILE__);
-
   XGCValues gcv;
   gcv.foreground = session->menuTextColor().pixel;
   gcv.font = session->titleFont()->fid;
@@ -664,6 +619,4 @@ void BlackboxMenu::Reconfigure(void) {
   XChangeGC(display, pitemGC, GCForeground|GCFont, &gcv);
 
   XSetWindowBorder(display, menu.frame, session->frameColor().pixel);
-
-  debug->msg("%s: leaving BlackboxMenu::Reconfigure\n", __FILE__);
 }

@@ -22,7 +22,6 @@
 #ifndef _blackbox_window_hh
 #define _blackbox_window_hh
 
-#include "debug.hh"
 #include "menu.hh"
 #include "workspace.hh"
 
@@ -90,7 +89,6 @@ private:
   BlackboxSession *session;
   BlackboxIcon *icon;
   BlackboxWindowMenu *window_menu;
-  Debugger *debug;
   Display *display;
 
   struct client {

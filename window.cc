@@ -25,6 +25,7 @@
 #include "icon.hh"
 #include "workspace.hh"
 
+#include <X11/Xatom.h>
 #include <X11/keysym.h>
 #include <string.h>
 
@@ -32,15 +33,18 @@
 // *************************************************************************
 // Window class code
 // *************************************************************************
-
+//
+// allocations:
+// Window frame.{window,title,handle,resize_handle} (contexts)
+// Window frame.{iconify_button,maximize_button,close_button} (contexts)
+// Context for client.window
+// WindowMenu *window_menu
+// GC ftext, utext
+// XPointer client.title
+// 
+// *************************************************************************
 
 BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window window) {
-  debug = new Debugger('%');
-#ifdef DEBUG
-  debug->enable();
-#endif
-  debug->msg("%s: BlackboxWindow::BlackboxWindow\n", __FILE__);
-
   moving = False;
   resizing = False;
   shaded = False;
@@ -81,7 +85,7 @@ BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window window) {
   Window win;
   if (XGetTransientForHint(display, client.window, &win)) {
     if (win && (win != client.window_group)) {
-      if ((client.transient_for = session->getWindow(win)) != NULL) {
+      if ((client.transient_for = session->searchWindow(win)) != NULL) {
 	client.transient_for->client.transient = this;
       
         transient = True;
@@ -130,11 +134,11 @@ BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window window) {
 
   frame.window = createToplevelWindow(frame.x, frame.y, frame.width,
 				      frame.height, 1);
-  XSaveContext(display, frame.window, session->winContext(), (XPointer) this);
+  session->saveWindowSearch(frame.window, this);
 
   frame.title = createChildWindow(frame.window, 0, 0, frame.title_w,
 				  frame.title_h, 0L);
-  XSaveContext(display, frame.title, session->winContext(), (XPointer) this);
+  session->saveWindowSearch(frame.title, this);
 
   if (do_handle) {
     if (session->Orientation() == BlackboxSession::B_LeftHandedUser)
@@ -145,8 +149,7 @@ BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window window) {
 				       frame.title_h + 1, frame.handle_w,
 				       frame.handle_h, 0l);
     
-    XSaveContext(display, frame.handle, session->winContext(),
-		 (XPointer) this);
+    session->saveWindowSearch(frame.handle, this);
     
     frame.resize_handle = createChildWindow(frame.handle, 0, frame.handle_h -
 					    frame.button_h,
@@ -154,8 +157,7 @@ BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window window) {
 					    frame.button_h, 0);
 					    
     frame.handle_h -= frame.button_h;
-    XSaveContext(display, frame.resize_handle, session->winContext(),
-    		 (XPointer) this);
+    session->saveWindowSearch(frame.resize_handle, this);
   }
 
   client.WMProtocols = session->ProtocolsAtom();
@@ -182,27 +184,10 @@ BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window window) {
 
   if (iconic && ! visible)
     iconifyWindow();
-
-  debug->msg("%s: leaving BlackboxWindow::BlackboxWindow\n", __FILE__);
 }
 
 
-/*
-  Resources deallocated for each window:
-  * Debugger - debug
-  * Window - frame window, title, handle, resize handle, close button,
-      iconify button, maximize button, input window,
-      client window (context only)
-  * Icon - icon
-  * Menu - window menu
-  * XPointer - client title
-  * Pixmaps - ftitle, utitle, fhandle, uhandle, button, pbutton
-  * GC - lGC, dGC, textGC
-*/
-
 BlackboxWindow::~BlackboxWindow(void) {
-  debug->msg("%s: BlackboxWindow::~BlackboxWindow\n", __FILE__);
-
   XGrabServer(display);
 
   delete window_menu;
@@ -214,30 +199,33 @@ BlackboxWindow::~BlackboxWindow(void) {
     client.transient_for->client.transient = 0;
   
   if (frame.close_button != None) {
-    XDeleteContext(display, frame.close_button, session->winContext());
+    session->removeWindowSearch(frame.close_button);
     XDestroyWindow(display, frame.close_button);
   }
+
   if (frame.iconify_button != None) {
-    XDeleteContext(display, frame.iconify_button, session->winContext());
+    session->removeWindowSearch(frame.iconify_button);
     XDestroyWindow(display, frame.iconify_button);
   }
+
   if (frame.maximize_button != None) {
-    XDeleteContext(display, frame.maximize_button, session->winContext());
+    session->removeWindowSearch(frame.maximize_button);
     XDestroyWindow(display, frame.maximize_button);
   }
 
   if (frame.title != None) {
     if (frame.ftitle) XFreePixmap(display, frame.ftitle);
     if (frame.utitle) XFreePixmap(display, frame.utitle);
-    XDeleteContext(display, frame.title, session->winContext());
+    session->removeWindowSearch(frame.title);
     XDestroyWindow(display, frame.title);
   }
+
   if (frame.handle != None) {
     if (frame.fhandle) XFreePixmap(display, frame.fhandle);
     if (frame.uhandle) XFreePixmap(display, frame.uhandle);
     if (frame.rhandle) XFreePixmap(display, frame.rhandle);
-    XDeleteContext(display, frame.handle, session->winContext());
-    XDeleteContext(display, frame.resize_handle, session->winContext());
+    session->removeWindowSearch(frame.handle);
+    session->removeWindowSearch(frame.resize_handle);
     XDestroyWindow(display, frame.resize_handle);
     XDestroyWindow(display, frame.handle);
   }
@@ -245,8 +233,8 @@ BlackboxWindow::~BlackboxWindow(void) {
   if (frame.button != None) XFreePixmap(display, frame.button);
   if (frame.pbutton != None) XFreePixmap(display, frame.pbutton);
 
-  XDeleteContext(display, client.window, session->winContext());
-  XDeleteContext(display, frame.window, session->winContext());
+  session->removeWindowSearch(client.window);
+  session->removeWindowSearch(frame.window);
   XDestroyWindow(display, frame.window);  
 
   if (client.app_name) XFree(client.app_name);
@@ -259,9 +247,6 @@ BlackboxWindow::~BlackboxWindow(void) {
   XFreeGC(display, frame.utextGC);
 
   XUngrabServer(display);
-
-  debug->msg("%s: leaving BlackboxWindow::~BlackboxWindow\n", __FILE__);
-  delete debug;
 }
 
 
@@ -273,8 +258,6 @@ Window BlackboxWindow::createToplevelWindow(int x, int y, unsigned int width,
 					    unsigned int height,
 					    unsigned int borderwidth)
 {
-  debug->msg("%s: BlackboxWindow::createTopLevelWindow\n", __FILE__);
-
   XSetWindowAttributes attrib_create;
   unsigned long create_mask = CWBackPixmap|CWBackPixel|CWBorderPixel|
     CWOverrideRedirect |CWCursor|CWEventMask; 
@@ -299,8 +282,6 @@ Window BlackboxWindow::createChildWindow(Window parent, int x, int y,
 					 unsigned int height,
 					 unsigned int borderwidth)
 {
-  debug->msg("%s: BlackboxWindow::createChildWindow\n", __FILE__);
-
   XSetWindowAttributes attrib_create;
   unsigned long create_mask = CWBackPixmap|CWBackPixel|CWBorderPixel|CWCursor|
     CWEventMask;
@@ -320,8 +301,6 @@ Window BlackboxWindow::createChildWindow(Window parent, int x, int y,
 
 
 void BlackboxWindow::associateClientWindow(void) {
-  debug->msg("%s: BlackboxWindow::associeateClientWindow\n", __FILE__);
-
   Protocols.WM_DELETE_WINDOW = False;
   Protocols.WM_TAKE_FOCUS = True;
 
@@ -395,7 +374,7 @@ void BlackboxWindow::associateClientWindow(void) {
   }
 #endif
 
-  XSaveContext(display, client.window, session->winContext(), (XPointer) this);
+  session->saveWindowSearch(client.window, this);
   createIconifyButton();
   createMaximizeButton();
 
@@ -405,14 +384,10 @@ void BlackboxWindow::associateClientWindow(void) {
     XSetWindowBackgroundPixmap(display, frame.maximize_button, frame.button);
   if (frame.button && frame.iconify_button)
     XSetWindowBackgroundPixmap(display, frame.iconify_button, frame.button);
-
-  debug->msg("%s: leaving BlackboxWindow::associateClientWindow\n", __FILE__);
 }
 
 
 void BlackboxWindow::createDecorations(void) {
-  debug->msg("%s: BlackboxWindow::createDecorations\n", __FILE__);
-  
   BImage image(session, frame.title_w, frame.title_h, session->Depth(),
 	       session->focusColor());
   frame.ftitle = image.renderImage(session->windowTexture(), 1,
@@ -467,8 +442,6 @@ void BlackboxWindow::createDecorations(void) {
   gcv.font = session->titleFont()->fid;
   frame.ftextGC = XCreateGC(display, frame.window, GCForeground|GCBackground|
 			    GCFont, &gcv);
-
-  debug->msg("%s: leaving BlackboxWindow::createDecorations\n", __FILE__);
 }
 
 
@@ -532,8 +505,7 @@ void BlackboxWindow::createCloseButton(void) {
     if (frame.button != None)
       XSetWindowBackgroundPixmap(display, frame.close_button, frame.button);
 
-    XSaveContext(display, frame.close_button, session->winContext(),
-		 (XPointer) this);
+    session->saveWindowSearch(frame.close_button, this);
   }
 }
 
@@ -543,8 +515,7 @@ void BlackboxWindow::createIconifyButton(void) {
     frame.iconify_button =
       createChildWindow(frame.title, 0, 0, frame.button_w,
 		    frame.button_h, 1);
-    XSaveContext(display, frame.iconify_button, session->winContext(),
-		 (XPointer) this);
+    session->saveWindowSearch(frame.iconify_button, this);
   }
 }
 
@@ -553,15 +524,12 @@ void BlackboxWindow::createMaximizeButton(void) {
   if (do_maximize && frame.title != None) {
     frame.maximize_button =
       createChildWindow(frame.title, 0, 0, frame.button_w, frame.button_h, 1);
-    XSaveContext(display, frame.maximize_button, session->winContext(),
-		 (XPointer) this);
+    session->saveWindowSearch(frame.maximize_button, this);
   }
 }
 
 
 void BlackboxWindow::Reconfigure(void) {
-  debug->msg("%s: BlackboxWindow::Reconfigure\n", __FILE__);
-
   XGrabServer(display);
 
   XGCValues gcv;
@@ -712,8 +680,6 @@ void BlackboxWindow::Reconfigure(void) {
   XSendEvent(display, client.window, False, StructureNotifyMask, &event);
 
   XUngrabServer(display);
-
-  debug->msg("%s: leaving BlackboxWindow::Reconfigure\n", __FILE__);
 }
 
 
@@ -722,12 +688,11 @@ void BlackboxWindow::Reconfigure(void) {
 // *************************************************************************
 
 Bool BlackboxWindow::getWMProtocols(void) {
-  debug->msg("%s: BlackboxWindow::getWMProtocols\n", __FILE__);
-
   Atom *protocols;
   int num_return = 0;
-  XGetWMProtocols(display, client.window, &protocols, &num_return);
-  
+  if (! XGetWMProtocols(display, client.window, &protocols, &num_return))
+    return False;
+
   do_close = False;
   for (int i = 0; i < num_return; ++i) {
     if (protocols[i] == session->DeleteAtom()) {
@@ -766,18 +731,15 @@ Bool BlackboxWindow::getWMProtocols(void) {
 	}
       }
     } else  if (protocols[i] ==  session->ColormapAtom()) {
-      debug->msg("\t[ wm colormap windows - unsupported ]\n");
     }
   }
-    
-  debug->msg("%s: BlackboxWindow::getWMProtocols\n", __FILE__);
+
+  XFree(protocols);
   return True;
 }
 
 
 Bool BlackboxWindow::getWMHints(void) {
-  debug->msg("%s: BlackboxWindow::getWMHints\n", __FILE__);
-
   XWMHints *wmhints;
   if ((wmhints = XGetWMHints(display, client.window)) == NULL) {
     visible = True;
@@ -849,15 +811,13 @@ Bool BlackboxWindow::getWMHints(void) {
   if (wmhints->flags & WindowGroupHint) {
     client.window_group = wmhints->window_group;
   }
-  
-  debug->msg("%s: leaving BlackboxWindow::getWMHints\n", __FILE__);
+
+  XFree(wmhints);
   return True;
 }
 
 
 Bool BlackboxWindow::getWMNormalHints(XSizeHints *hint) {
-  debug->msg("%s: BlackboxWindow::getWMNormalHints\n", __FILE__);
-
   long icccm_mask;
   if (! XGetWMNormalHints(display, client.window, hint, &icccm_mask))
     return False;
@@ -904,7 +864,6 @@ Bool BlackboxWindow::getWMNormalHints(XSizeHints *hint) {
     client.max_ay = hint->max_aspect.y;
   }
 
-  debug->msg("%s: leaving BlackboxWindow::getWMNormalHints\n");
   return True;
 }
 
@@ -915,8 +874,6 @@ Bool BlackboxWindow::getWMNormalHints(XSizeHints *hint) {
 
 void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
 				     unsigned int dh) {
-  debug->msg("%s: BlackboxWindow::configureWindow\n", __FILE__);
-
   //
   // configure our client and decoration windows according to the frame size
   // changes passed as the arguments
@@ -1045,14 +1002,10 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
 
     XSendEvent(display, client.window, False, StructureNotifyMask, &event);
   }
-
-  debug->msg("%s: leaving BlackboxWindow::configureWindow\n", __FILE__);
 }
 
 
 Bool BlackboxWindow::setInputFocus(void) {
-  debug->msg("%s: BlackboxWindow::setInputFocus\n", __FILE__);
-
   if (((signed) (frame.x + frame.width)) < 0) {
     if (((signed) (frame.y + frame.title_h)) < 0)
       configureWindow(0, 0, frame.width, frame.height);
@@ -1103,8 +1056,6 @@ Bool BlackboxWindow::setInputFocus(void) {
 
 
 void BlackboxWindow::iconifyWindow(void) {
-  debug->msg("%s: BlackboxWindow::iconifyWindow\n", __FILE__);
-
   window_menu->hideMenu();
   menu_visible = False;
 
@@ -1132,8 +1083,6 @@ void BlackboxWindow::iconifyWindow(void) {
 
 
 void BlackboxWindow::deiconifyWindow(void) {
-  debug->msg("%s: BlackboxWindow::deiconifyWindow\n", __FILE__);
-
   XMapWindow(display, frame.window);
   visible = True;
   iconic = False;
@@ -1156,8 +1105,6 @@ void BlackboxWindow::deiconifyWindow(void) {
 
 
 void BlackboxWindow::closeWindow(void) {
-  debug->msg("%s: BlackboxWindow::closeWindow\n", __FILE__);
-
   XEvent ce;
   ce.xclient.type = ClientMessage;
   ce.xclient.message_type = session->ProtocolsAtom();
@@ -1176,8 +1123,6 @@ void BlackboxWindow::closeWindow(void) {
 
 
 void BlackboxWindow::withdrawWindow(void) {
-  debug->msg("%s: BlackboxWindow::withdrawWindow\n", __FILE__);
-
   XGrabServer(display);
   XSync(display, False);
   
@@ -1214,8 +1159,6 @@ int BlackboxWindow::setWorkspace(int n) {
 
 
 void BlackboxWindow::maximizeWindow(void) {
-  debug->msg("%s: BlackboxWindow::maximizeWindow\n", __FILE__);
-
   XGrabServer(display);
 
   static int px, py;
@@ -1273,8 +1216,6 @@ void BlackboxWindow::shadeWindow(void) {
 
 
 void BlackboxWindow::setFocusFlag(Bool focus) {
-  debug->msg("%s: BlackboxWindow::setFocusFlag\n", __FILE__);
-
   focused = focus;
   XSetWindowBackgroundPixmap(display, frame.title,
 			     (focused) ? frame.ftitle : frame.utitle);
@@ -1409,8 +1350,6 @@ void BlackboxWindow::drawCloseButton(Bool pressed) {
 // *************************************************************************
 
 void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
-  debug->msg("%s: BlackboxWindow::mapRequestEvent\n", __FILE__);
-
   if (re->window == client.window) {
     if (visible && ! iconic) {
       XGrabServer(display);
@@ -1430,14 +1369,10 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
       XUngrabServer(display);
     }
   }
-
-  debug->msg("%s: leaving BlackboxWindow::mapRequestEvent\n", __FILE__);
 }
 
 
 void BlackboxWindow::mapNotifyEvent(XMapEvent *ne) {
-  debug->msg("%s: BlackboxWindow::mapNotifyEvent\n", __FILE__);
-
   if (ne->window == client.window && (! ne->override_redirect)) {
     if (visible && ! iconic) {
       XGrabServer(display);
@@ -1461,14 +1396,10 @@ void BlackboxWindow::mapNotifyEvent(XMapEvent *ne) {
       XUngrabServer(display);
     }
   }
-
-  debug->msg("%s: leaving BlackboxWindow::mapNotifyEvent\n", __FILE__);
 }
 
 
 void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
-  debug->msg("%s: BlackboxWindow::unmapNotifyEvent\n", __FILE__);
-
   if (ue->window == client.window) {
     XGrabServer(display);
     XSync(display, False);
@@ -1494,22 +1425,16 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
     XUngrabServer(display);
     delete this;
   }
-
-  debug->msg("%s: leaving BlackboxWindow::unmapNotifyEvent\n", __FILE__);
 }
 
 
 void BlackboxWindow::destroyNotifyEvent(XDestroyWindowEvent *de) {
-  debug->msg("%s: BlackboxWindow::destroyNotifyEvent\n", __FILE__);
-
   if (de->window == client.window)
     delete this;
 }
 
 
 void BlackboxWindow::propertyNotifyEvent(Atom atom) {
-  debug->msg("%s: BlackboxWindow::propertyNotifyEvent\n", __FILE__);
-
   switch(atom) {
   case XA_WM_CLASS:
     if (client.app_name) XFree(client.app_name);
@@ -1558,8 +1483,6 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
     if (atom == session->ProtocolsAtom())
       getWMProtocols();
   }
-
-  debug->msg("%s: leaving BlackboxWindow::propertyNotifyEvent\n", __FILE__);
 }
 
 
@@ -1576,8 +1499,6 @@ void BlackboxWindow::exposeEvent(XExposeEvent *ee) {
 
 
 void BlackboxWindow::configureRequestEvent(XConfigureRequestEvent *cr) {  
-  debug->msg("%s: BlackboxWindow::configureRequestEvent\n", __FILE__);
-
   if (cr->window == client.window) {
     int cx, cy;
     unsigned int cw, ch;
@@ -1594,14 +1515,10 @@ void BlackboxWindow::configureRequestEvent(XConfigureRequestEvent *cr) {
     
     configureWindow(cx, cy, cw, ch);
   }
-
-  debug->msg("%s: leaving BlackboxWindow::configureRequestEvent\n", __FILE__);
 }
 
 
 void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
-  debug->msg("%s: BlackboxWindow::buttonPressEvent\n", __FILE__);
-
   if (session->button1Pressed()) {
     if (frame.title == be->window || frame.handle == be->window)
       session->raiseWindow(this);
@@ -1628,14 +1545,10 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
 	window_menu->hideMenu();
     }
   }
-
-  debug->msg("%s: leaving BlackboxWindow::buttonPressEvent\n", __FILE__);
 }
 
 
 void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
-  debug->msg("%s: BlackboxWindow::buttonReleaseEvent\n", __FILE__);
-
   if (re->button == 1) {
     if (re->window == frame.title) {
       if (moving) {
@@ -1687,8 +1600,6 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
 	drawCloseButton(False);
     }
   }
-
-  debug->msg("%s: leaving BlackboxWindow::buttonReleaseEvent\n", __FILE__);
 }
 
 

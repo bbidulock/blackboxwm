@@ -21,13 +21,19 @@
 
 #include "blackbox.hh"
 #include "session.hh"
-#include "menu.hh"
 
 #include <stdlib.h>
 
 
 // *************************************************************************
-// root menu code
+// Session menu class code - root menu
+// *************************************************************************
+//
+// allocations:
+// dynamic number of items - each has a char *label, and either a
+//    char *exec  OR
+//    SessionMenu *sub_menu
+//
 // *************************************************************************
 
 SessionMenu::SessionMenu(BlackboxSession *s) : BlackboxMenu(s) {
@@ -54,12 +60,14 @@ int SessionMenu::remove(int index) {
   if (index >= 0 && index < count()) {
     BlackboxMenuItem *itmp = at(index);
 
-    if (itmp->Submenu())
-      delete itmp->Submenu();
+    if (itmp->Submenu()) {
+      SessionMenu *tmp = (SessionMenu *) itmp->Submenu();
+      delete tmp;
+    }
     if (itmp->Label())
-      delete itmp->Label();
+      delete [] itmp->Label();
     if (itmp->Exec())
-      delete itmp->Exec();
+      delete [] itmp->Exec();
     
     return BlackboxMenu::remove(index);
   }

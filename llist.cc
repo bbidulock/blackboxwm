@@ -25,12 +25,14 @@
 #include <stdio.h>
 
 
-/*
-
-  Resources allocated for each __llist
-  dynamic number of __llist_nodes
-
-*/
+// *************************************************************************
+// Linked list class code
+// *************************************************************************
+//
+// allocations:
+// dynamic number of __llist_nodes
+//
+// *************************************************************************
 
 __llist::__llist(void *d) {
   if (d == 0) {
@@ -46,15 +48,6 @@ __llist::__llist(void *d) {
   }
 }
 
-
-/*
-
-  Resources deallocated for each __llist
-  each __llist_node is deleted upon removal
-  node->data is left intact... to be deleted by the appropriate class
-    deconstructor
-
-*/
 
 __llist::~__llist(void) {
   int i, r = elements;

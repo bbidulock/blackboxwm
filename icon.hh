@@ -22,7 +22,6 @@
 #ifndef _blackbox_icon_hh
 #define _blackbox_icon_hh
 
-#include "debug.hh"
 #include "session.hh"
 
 
@@ -40,7 +39,6 @@ private:
   } icon;
 
   BlackboxSession *session;
-  Debugger *debug;
   WorkspaceManager *ws_manager;
 
 

@@ -32,6 +32,13 @@
 // *************************************************************************
 // Workspace class code
 // *************************************************************************
+//
+// allocations:
+// llist *workspace_list
+// WorkspaceMenu *workspace_menu
+// char *workspace_name
+//
+// *************************************************************************
 
 Workspace::Workspace(WorkspaceManager *m, int id) {
   ws_manager = m;
@@ -172,8 +179,9 @@ void Workspace::Dissociate(void) {
 }
 
 
-int Workspace::menuVisible(void)
-{ return workspace_menu->menuVisible(); }
+int Workspace::menuVisible(void) {
+  return workspace_menu->menuVisible();
+}
 
 
 void Workspace::raiseWindow(BlackboxWindow *w) {
@@ -260,21 +268,24 @@ BlackboxWindow *Workspace::window(int index) {
 }
 
 
-const int Workspace::count(void)
-{ return workspace_list->count(); }
+const int Workspace::count(void) {
+  return workspace_list->count();
+}
 
 
 // *************************************************************************
 // Workspace manager class code
 // *************************************************************************
+//
+// allocations:
+// Window frame.{base,window,icon,clock,workspace_button} (contexts)
+// llist *workspaces_list, *ilist
+// WorkspaceManagerMenu *workspaces_menu
+// char *frame.title
+// dynamic number of Workspace*'s
+// *************************************************************************
 
 WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
-  debug = new Debugger('^');
-#ifdef DEBUG
-  debug->enable();
-#endif
-  debug->msg("%s: WorkspaceManager::WorkspaceManager\n", __FILE__);
-
   Workspace *wkspc = 0;
   session = s;
   
@@ -342,7 +353,7 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
     XCreateWindow(display, frame.base, 0, 0, frame.frame_w,
 		  frame.frame_h, 0, session->Depth(), InputOutput,
 		  session->visual(), create_mask, &attrib_create);
-  XSaveContext(display, frame.window, session->wsContext(), (XPointer) this);
+  session->saveWSManagerSearch(frame.window, this);
 
   BImage image(session, frame.frame_w, frame.frame_h,
 	       session->Depth(), session->frameColor());
@@ -357,8 +368,7 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
     XCreateWindow(display, frame.window, 3, 3, frame.button_w, frame.button_h,
 		  0, session->Depth(), InputOutput, session->visual(),
 		  create_mask, &attrib_create);
-  XSaveContext(display, frame.workspace_button, session->wsContext(),
-	       (XPointer) this);
+  session->saveWSManagerSearch(frame.workspace_button, this);
 
  XGCValues gcv;
   gcv.font = session->titleFont()->fid;
@@ -382,7 +392,7 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
 		  frame.button_w, (frame.frame_h / 2) - 2, 0,
 		  session->Depth(), InputOutput, session->visual(),
 		  create_mask, &attrib_create);
-  XSaveContext(display, frame.icon, session->wsContext(), (XPointer) this);
+  session->saveWSManagerSearch(frame.icon, this);
   
   BImage iimage(session, frame.button_w, (frame.frame_h / 2) - 2,
 		session->Depth(), session->toolboxColor());
@@ -398,7 +408,7 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
 		  frame.frame_h / 2 - frame.button_h - 2, frame.button_w,
 		  frame.button_h, 0, session->Depth(), InputOutput,
 		  session->visual(), create_mask, &attrib_create);
-  XSaveContext(display, frame.clock, session->wsContext(), (XPointer) this);
+  session->saveWSManagerSearch(frame.clock, this);
 
   BImage cimage(session, frame.button_w, frame.button_h,
 		session->Depth(), session->toolboxColor());
@@ -424,9 +434,8 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
 
 
 WorkspaceManager::~WorkspaceManager(void) {
-  debug->msg("%s: WorkspaceManager::~WorkspaceManager\n", __FILE__);
-
   DissociateAll();
+
   delete ilist;
   delete workspaces_menu;
   if (frame.title) delete frame.title;
@@ -440,17 +449,19 @@ WorkspaceManager::~WorkspaceManager(void) {
   if (frame.button) XFreePixmap(display, frame.button);
   if (frame.pbutton) XFreePixmap(display, frame.pbutton);
 
-  XDeleteContext(display, frame.clock, session->wsContext());
+  session->removeWSManagerSearch(frame.clock);
   XDestroyWindow(display, frame.clock);
-  XDeleteContext(display, frame.icon, session->wsContext());
-  XDestroyWindow(display, frame.icon);
-  XDeleteContext(display, frame.workspace_button, session->wsContext());
-  XDestroyWindow(display, frame.workspace_button);
-  XDeleteContext(display, frame.workspace_button, session->wsContext());
-  XDestroyWindow(display, frame.window);
-  XDestroyWindow(display, frame.base);
 
-  delete debug;
+  session->removeWSManagerSearch(frame.icon);
+  XDestroyWindow(display, frame.icon);
+
+  session->removeWSManagerSearch(frame.workspace_button);
+  XDestroyWindow(display, frame.workspace_button);
+
+  session->removeWSManagerSearch(frame.window);
+  XDestroyWindow(display, frame.window);
+
+  XDestroyWindow(display, frame.base);
 }
 
 
@@ -580,8 +591,6 @@ void WorkspaceManager::stackWindows(Window *workspace_stack, int num) {
 
 
 void WorkspaceManager::Reconfigure(void) {
-  debug->msg("%s: WorkspaceManager::Reconfigure\n", __FILE__);
-
   frame.button_w = XTextWidth(session->titleFont(), "Workspace 00", 13) + 8;
   frame.button_h = session->titleFont()->ascent +
     session->titleFont()->descent + 8; 
@@ -657,15 +666,11 @@ void WorkspaceManager::Reconfigure(void) {
 	      strlen(frame.title));
   checkClock(True);
 
-  debug->msg("\t[ workspace menu update ]\n");
   workspaces_menu->Reconfigure();
   workspaces_menu->updateMenu();
 
-  debug->msg("\t[ workspace update ]\n");
   for (int i = 0; i < workspaces_list->count(); i++)
     workspace(i)->Reconfigure();
-
-  debug->msg("%s: leaving WorkspaceManager::Reconfigure\n", __FILE__);
 }
 
 
