@@ -207,7 +207,7 @@ std::string bt::textPropertyToString(Display *display,
 }
 
 
-::timeval normalizeTimeval(const ::timeval &tm) {
+::timeval bt::normalizeTimeval(const ::timeval &tm) {
   ::timeval ret = tm;
 
   while (ret.tv_usec < 0) {
