@@ -79,7 +79,11 @@ AC_CHECK_FUNCS([iconv_open],
                [AC_CHECK_LIB([iconv],
                              [iconv_open],
                              [ICONV="-liconv"],
-                             [AC_MSG_ERROR([Blackbox requires iconv(3) support.])])
+                             [AC_CHECK_LIB([iconv],
+					   [libiconv_open],
+					   [ICONV="-liconv"],
+					   [AC_MSG_ERROR([Blackbox requires iconv(3) support.])])
+			     ])
                ])
 AC_SUBST(ICONV)
 
