@@ -30,8 +30,8 @@ extern "C" {
 }
 
 #include "Slit.hh"
-#include "Image.hh"
 #include "Menu.hh"
+#include "PixmapCache.hh"
 #include "Screen.hh"
 #include "Toolbar.hh"
 #include "i18n.hh"
@@ -214,17 +214,16 @@ Slit::Slit(BScreen *scr) {
 
 
 Slit::~Slit(void) {
-  delete timer;
-
-  delete slitmenu;
-
   screen->removeStrut(&strut);
 
-  screen->getImageControl()->removeImage(frame.pixmap);
+  bt::PixmapCache::release(frame.pixmap);
 
   blackbox->removeEventHandler(frame.window);
 
   XDestroyWindow(display, frame.window);
+
+  delete timer;
+  delete slitmenu;
 }
 
 
@@ -399,14 +398,14 @@ void Slit::reconfigure(void) {
 
   XMapWindow(display, frame.window);
 
-  bt::Texture *texture = &(screen->getToolbarStyle()->toolbar);
+  bt::Texture texture = screen->getToolbarStyle()->toolbar;
   frame.pixmap =
-    texture->render(blackbox->display(), screen->screenNumber(),
-                    *screen->getImageControl(),
-                    frame.rect.width(), frame.rect.height(), frame.pixmap);
+    bt::PixmapCache::find(screen->screenNumber(), texture,
+                          frame.rect.width(), frame.rect.height(),
+                          frame.pixmap);
   if (! frame.pixmap)
     XSetWindowBackground(display, frame.window,
-                         texture->color().pixel(screen->screenNumber()));
+                         texture.color().pixel(screen->screenNumber()));
   else
     XSetWindowBackgroundPixmap(display, frame.window, frame.pixmap);
 

@@ -51,9 +51,9 @@ extern "C" {
 
 #include "i18n.hh"
 #include "blackbox.hh"
-#include "Image.hh"
 #include "Menu.hh"
 #include "Pen.hh"
+#include "PixmapCache.hh"
 #include "Screen.hh"
 #include "Toolbar.hh"
 #include "Window.hh"
@@ -272,12 +272,12 @@ Toolbar::~Toolbar(void) {
 
   XUnmapWindow(display, frame.window);
 
-  if (frame.base) screen->getImageControl()->removeImage(frame.base);
-  if (frame.label) screen->getImageControl()->removeImage(frame.label);
-  if (frame.wlabel) screen->getImageControl()->removeImage(frame.wlabel);
-  if (frame.clk) screen->getImageControl()->removeImage(frame.clk);
-  if (frame.button) screen->getImageControl()->removeImage(frame.button);
-  if (frame.pbutton) screen->getImageControl()->removeImage(frame.pbutton);
+  bt::PixmapCache::release(frame.base);
+  bt::PixmapCache::release(frame.label);
+  bt::PixmapCache::release(frame.wlabel);
+  bt::PixmapCache::release(frame.clk);
+  bt::PixmapCache::release(frame.button);
+  bt::PixmapCache::release(frame.pbutton);
 
   blackbox->removeEventHandler(frame.window);
   blackbox->removeEventHandler(frame.workspace_label);
@@ -436,9 +436,7 @@ void Toolbar::reconfigure(void) {
                     frame.rect.width() - frame.clock_w - (frame.bevel_w * 2),
                     frame.bevel_w, frame.clock_w, frame.label_h);
 
-  frame.base = style->toolbar.render(blackbox->display(),
-                                     screen->screenNumber(),
-                                     *screen->getImageControl(),
+  frame.base = bt::PixmapCache::find(screen->screenNumber(), style->toolbar,
                                      frame.rect.width(), frame.rect.height(),
                                      frame.base);
   if (! frame.base)
@@ -447,43 +445,35 @@ void Toolbar::reconfigure(void) {
   else
     XSetWindowBackgroundPixmap(display, frame.window, frame.base);
 
-  frame.label = style->window.render(blackbox->display(),
-                                     screen->screenNumber(),
-                                     *screen->getImageControl(),
-                                     frame.window_label_w, frame.label_h,
-                                     frame.label);
+  frame.label = bt::PixmapCache::find(screen->screenNumber(), style->window,
+                                      frame.window_label_w, frame.label_h,
+                                      frame.label);
   if (! frame.label)
     XSetWindowBackground(display, frame.window_label,
                          style->window.color().pixel(screen->screenNumber()));
   else
     XSetWindowBackgroundPixmap(display, frame.window_label, frame.label);
 
-  frame.wlabel = style->label.render(blackbox->display(),
-                                     screen->screenNumber(),
-                                     *screen->getImageControl(),
-                                     frame.workspace_label_w, frame.label_h,
-                                     frame.wlabel);
+  frame.wlabel = bt::PixmapCache::find(screen->screenNumber(), style->label,
+                                       frame.workspace_label_w, frame.label_h,
+                                       frame.wlabel);
   if (! frame.wlabel)
     XSetWindowBackground(display, frame.workspace_label,
                          style->label.color().pixel(screen->screenNumber()));
   else
     XSetWindowBackgroundPixmap(display, frame.workspace_label, frame.wlabel);
 
-  frame.clk = style->clock.render(blackbox->display(),
-                                  screen->screenNumber(),
-                                  *screen->getImageControl(),
-                                  frame.clock_w, frame.label_h, frame.clk);
+  frame.clk = bt::PixmapCache::find(screen->screenNumber(), style->clock,
+                                    frame.clock_w, frame.label_h, frame.clk);
   if (! frame.clk)
     XSetWindowBackground(display, frame.clock,
                          style->clock.color().pixel(screen->screenNumber()));
   else
     XSetWindowBackgroundPixmap(display, frame.clock, frame.clk);
 
-  frame.button = style->button.render(blackbox->display(),
-                                      screen->screenNumber(),
-                                      *screen->getImageControl(),
-                                      frame.button_w, frame.button_w,
-                                      frame.button);
+  frame.button = bt::PixmapCache::find(screen->screenNumber(), style->button,
+                                       frame.button_w, frame.button_w,
+                                       frame.button);
   if (! frame.button) {
     frame.button_pixel = style->button.color().pixel(screen->screenNumber());
     XSetWindowBackground(display, frame.psbutton, frame.button_pixel);
@@ -497,9 +487,7 @@ void Toolbar::reconfigure(void) {
     XSetWindowBackgroundPixmap(display, frame.nwbutton, frame.button);
   }
 
-  frame.pbutton = style->pressed.render(blackbox->display(),
-                                        screen->screenNumber(),
-                                        *screen->getImageControl(),
+  frame.pbutton = bt::PixmapCache::find(screen->screenNumber(), style->pressed,
                                         frame.button_w, frame.button_w,
                                         frame.pbutton);
   if (! frame.pbutton)
@@ -767,15 +755,13 @@ void Toolbar::edit(void) {
                  frame.workspace_label_w / 2, 0, 1,
                  frame.label_h - 1);
   // change the background of the window to that of an active window label
-  bt::Texture *texture = &(screen->getWindowStyle()->l_focus);
-  frame.wlabel = texture->render(blackbox->display(),
-                                 screen->screenNumber(),
-                                 *screen->getImageControl(),
-                                 frame.workspace_label_w, frame.label_h,
-                                 frame.wlabel);
+  bt::Texture texture = screen->getWindowStyle()->l_focus;
+  frame.wlabel = bt::PixmapCache::find(screen->screenNumber(), texture,
+                                       frame.workspace_label_w, frame.label_h,
+                                       frame.wlabel);
   if (! frame.wlabel)
     XSetWindowBackground(display, frame.workspace_label,
-                         texture->color().pixel(screen->screenNumber()));
+                         texture.color().pixel(screen->screenNumber()));
   else
     XSetWindowBackgroundPixmap(display, frame.workspace_label, frame.wlabel);
 }
@@ -927,15 +913,14 @@ void Toolbar::keyPressEvent(const XKeyEvent *ke) {
 
       // reset the background to that of the workspace label (its normal
       // setting)
-      bt::Texture *texture = &(style->label);
-      frame.wlabel = texture->render(blackbox->display(),
-                                     screen->screenNumber(),
-                                     *screen->getImageControl(),
-                                     frame.workspace_label_w, frame.label_h,
-                                     frame.wlabel);
+      bt::Texture texture = style->label;
+      frame.wlabel =
+        bt::PixmapCache::find(screen->screenNumber(), texture,
+                              frame.workspace_label_w, frame.label_h,
+                              frame.wlabel);
       if (! frame.wlabel)
         XSetWindowBackground(display, frame.workspace_label,
-                             texture->color().pixel(screen->screenNumber()));
+                             texture.color().pixel(screen->screenNumber()));
       else
         XSetWindowBackgroundPixmap(display, frame.workspace_label,
                                    frame.wlabel);

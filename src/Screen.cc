@@ -83,6 +83,7 @@ extern "C" {
 #include "Menu.hh"
 #include "Netwm.hh"
 #include "Pen.hh"
+#include "PixmapCache.hh"
 #include "Resource.hh"
 #include "Screen.hh"
 #include "Slit.hh"
@@ -143,12 +144,6 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   // start off full screen, top left.
   usableArea.setSize(screen_info.width(), screen_info.height());
 
-  image_control =
-    new bt::ImageControl(blackbox, screen_info.display(), &screen_info,
-                         blackbox->getCacheLife(), blackbox->getCacheMax());
-  image_control->installRootColormap();
-  root_colormap_installed = True;
-
   blackbox->load_rc(this);
 
   LoadStyle();
@@ -186,21 +181,17 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
                               screen_info.visual(), mask, &setattrib);
   geom_visible = False;
 
-  bt::Texture* texture = &(resource.wstyle.l_focus);
-  geom_pixmap =
-    texture->render(blackbox->display(), screen_info.screenNumber(),
-                    *image_control,
-                    geom_w, geom_h, geom_pixmap);
+  bt::Texture texture = resource.wstyle.l_focus;
+  geom_pixmap = bt::PixmapCache::find(screen_info.screenNumber(),
+                                      texture, geom_w, geom_h, geom_pixmap);
   if (geom_pixmap == ParentRelative) {
-    texture = &(resource.wstyle.t_focus);
-    geom_pixmap =
-      texture->render(blackbox->display(), screen_info.screenNumber(),
-                      *image_control,
-                      geom_w, geom_h, geom_pixmap);
+    texture = resource.wstyle.t_focus;
+    geom_pixmap = bt::PixmapCache::find(screen_info.screenNumber(),
+                                        texture, geom_w, geom_h, geom_pixmap);
   }
   if (! geom_pixmap)
     XSetWindowBackground(blackbox->XDisplay(), geom_window,
-                         texture->color().pixel(screen_info.screenNumber()));
+                         texture.color().pixel(screen_info.screenNumber()));
   else
     XSetWindowBackgroundPixmap(blackbox->XDisplay(),
                                geom_window, geom_pixmap);
@@ -368,8 +359,7 @@ BScreen::~BScreen(void) {
 
   blackbox->removeEventHandler(screen_info.rootWindow());
 
-  if (geom_pixmap != None)
-    image_control->removeImage(geom_pixmap);
+  bt::PixmapCache::release(geom_pixmap);
 
   if (geom_window != None)
     XDestroyWindow(blackbox->XDisplay(), geom_window);
@@ -385,7 +375,6 @@ BScreen::~BScreen(void) {
   delete configmenu;
   delete slit;
   delete toolbar;
-  delete image_control;
 
   blackbox->netwm().removeProperty(screen_info.rootWindow(),
                                    blackbox->netwm().supportingWMCheck());
@@ -428,21 +417,17 @@ void BScreen::reconfigure(void) {
   geom_w = geomr.width() + (resource.bevel_width * 2);
   geom_h = geomr.height() + (resource.bevel_width * 2);
 
-  bt::Texture* texture = &(resource.wstyle.l_focus);
-  geom_pixmap = texture->render(blackbox->display(),
-                                screen_info.screenNumber(),
-                                *image_control,
-                                geom_w, geom_h, geom_pixmap);
+  bt::Texture texture = resource.wstyle.l_focus;
+  geom_pixmap = bt::PixmapCache::find(screen_info.screenNumber(),
+                                      texture, geom_w, geom_h, geom_pixmap);
   if (geom_pixmap == ParentRelative) {
-    texture = &(resource.wstyle.t_focus);
-    geom_pixmap = texture->render(blackbox->display(),
-                                  screen_info.screenNumber(),
-                                  *image_control,
-                                  geom_w, geom_h, geom_pixmap);
+    texture = resource.wstyle.t_focus;
+    geom_pixmap = bt::PixmapCache::find(screen_info.screenNumber(),
+                                        texture, geom_w, geom_h, geom_pixmap);
   }
   if (! geom_pixmap)
     XSetWindowBackground(blackbox->XDisplay(), geom_window,
-                         texture->color().pixel(screen_info.screenNumber()));
+                         texture.color().pixel(screen_info.screenNumber()));
   else
     XSetWindowBackgroundPixmap(blackbox->XDisplay(),
                                geom_window, geom_pixmap);
@@ -474,8 +459,6 @@ void BScreen::reconfigure(void) {
     if (bw->validateClient())
       bw->reconfigure();
   }
-
-  image_control->timeout(0);
 }
 
 
@@ -505,7 +488,7 @@ void BScreen::LoadStyle(void) {
     static_cast<unsigned int>(strtoul(wstr.c_str(), 0, 0));
 
   // load menu style
-  bt::MenuStyle::get(*blackbox, screen, image_control)->load(res);
+  bt::MenuStyle::get(*blackbox, screen)->load(res);
 
   // load fonts
   resource.wstyle.font.setFontName(res.read("window.font", "Window.Font",
@@ -1579,8 +1562,7 @@ void BScreen::clientMessageEvent(const XClientMessageEvent * const event) {
 
 void BScreen::buttonPressEvent(const XButtonEvent * const event) {
   if (event->button == 1) {
-    if (! isRootColormapInstalled())
-      image_control->installRootColormap();
+#warning "TODO: install root colormap"
 
     /*
       if the current focus window is not on this screen, then we set
@@ -1589,8 +1571,9 @@ void BScreen::buttonPressEvent(const XButtonEvent * const event) {
       instead of the screen with the focus window).
     */
     BlackboxWindow *focus = blackbox->getFocusedWindow();
-    if (focus && focus->getScreen() != this)
+    if (focus && focus->getScreen() != this) {
       blackbox->setFocusedWindow(0);
+    }
   } else if (event->button == 2) {
     workspacemenu->popup(event->x_root, event->y_root);
   } else if (event->button == 3) {

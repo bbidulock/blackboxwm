@@ -39,9 +39,9 @@ extern "C" {
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "Font.hh"
-#include "Image.hh"
 #include "Netwm.hh"
 #include "Pen.hh"
+#include "PixmapCache.hh"
 #include "Screen.hh"
 #include "Toolbar.hh"
 #include "Util.hh"
@@ -461,151 +461,122 @@ void BlackboxWindow::associateClientWindow(void) {
 
 
 void BlackboxWindow::decorate(void) {
-  bt::Texture* texture;
+  bt::Texture texture;
 
   if (client.decorations & Decor_Titlebar) {
-    texture = &(screen->getWindowStyle()->b_focus);
-    frame.fbutton = texture->render(blackbox->display(),
-                                    screen->screenNumber(),
-                                    *screen->getImageControl(),
-                                    frame.button_w, frame.button_w,
-                                    frame.fbutton);
+    // render focused button texture
+    texture = screen->getWindowStyle()->b_focus;
+    frame.fbutton =
+      bt::PixmapCache::find(screen->screenNumber(), texture,
+                            frame.button_w, frame.button_w, frame.fbutton);
     if (! frame.fbutton)
-      frame.fbutton_pixel = texture->color().pixel(screen->screenInfo().
-                                                   screenNumber());
+      frame.fbutton_pixel = texture.color().pixel(screen->screenNumber());
 
-    texture = &(screen->getWindowStyle()->b_unfocus);
-    frame.ubutton = texture->render(blackbox->display(),
-                                    screen->screenNumber(),
-                                    *screen->getImageControl(),
-                                    frame.button_w, frame.button_w,
-                                    frame.ubutton);
+    // render unfocused button texture
+    texture = screen->getWindowStyle()->b_unfocus;
+    frame.ubutton =
+      bt::PixmapCache::find(screen->screenNumber(), texture,
+                            frame.button_w, frame.button_w,
+                            frame.ubutton);
     if (! frame.ubutton)
-      frame.ubutton_pixel = texture->color().pixel(screen->screenInfo().
-                                                   screenNumber());
+      frame.ubutton_pixel = texture.color().pixel(screen->screenNumber());
 
-    texture = &(screen->getWindowStyle()->b_pressed);
-    frame.pbutton = texture->render(blackbox->display(),
-                                    screen->screenNumber(),
-                                    *screen->getImageControl(),
-                                    frame.button_w, frame.button_w,
-                                    frame.pbutton);
+    // render pressed button texture
+    texture = screen->getWindowStyle()->b_pressed;
+    frame.pbutton =
+      bt::PixmapCache::find(screen->screenNumber(), texture,
+                            frame.button_w, frame.button_w, frame.pbutton);
     if (! frame.pbutton)
-      frame.pbutton_pixel = texture->color().pixel(screen->screenInfo().
-                                                   screenNumber());
+      frame.pbutton_pixel = texture.color().pixel(screen->screenNumber());
 
-    texture = &(screen->getWindowStyle()->t_focus);
-    frame.ftitle = texture->render(blackbox->display(),
-                                   screen->screenNumber(),
-                                   *screen->getImageControl(),
-                                   frame.inside_w, frame.title_h,
-                                   frame.ftitle);
+    // render focused titlebar texture
+    texture = screen->getWindowStyle()->t_focus;
+    frame.ftitle =
+      bt::PixmapCache::find(screen->screenNumber(), texture,
+                            frame.inside_w, frame.title_h, frame.ftitle);
     if (! frame.ftitle)
-      frame.ftitle_pixel = texture->color().pixel(screen->screenInfo().
-                                                  screenNumber());
+      frame.ftitle_pixel = texture.color().pixel(screen->screenNumber());
 
-    texture = &(screen->getWindowStyle()->t_unfocus);
-    frame.utitle = texture->render(blackbox->display(),
-                                   screen->screenNumber(),
-                                   *screen->getImageControl(),
-                                   frame.inside_w, frame.title_h,
-                                   frame.utitle);
+    // render unfocused titlebar texture
+    texture = screen->getWindowStyle()->t_unfocus;
+    frame.utitle =
+      bt::PixmapCache::find(screen->screenNumber(), texture,
+                            frame.inside_w, frame.title_h, frame.utitle);
     if (! frame.utitle)
-      frame.utitle_pixel = texture->color().pixel(screen->screenInfo().
-                                                  screenNumber());
+      frame.utitle_pixel = texture.color().pixel(screen->screenNumber());
 
     XSetWindowBorder(blackbox->XDisplay(), frame.title,
-                     screen->getBorderColor()->pixel(screen->screenInfo().
-                                                     screenNumber()));
+                     screen->getBorderColor()->pixel(screen->screenNumber()));
 
     decorateLabel();
   }
 
   if (client.decorations & Decor_Border) {
     frame.fborder_pixel =
-      screen->getWindowStyle()->f_focus.color().pixel(screen->screenInfo().
-                                                      screenNumber());
+      screen->getWindowStyle()->f_focus.color().pixel(screen->screenNumber());
     frame.uborder_pixel =
       screen->getWindowStyle()->
       f_unfocus.color().pixel(screen->screenNumber());
   }
 
   if (client.decorations & Decor_Handle) {
-    texture = &(screen->getWindowStyle()->h_focus);
-    frame.fhandle = texture->render(blackbox->display(),
-                                    screen->screenNumber(),
-                                    *screen->getImageControl(),
-                                    frame.inside_w, frame.handle_h,
-                                    frame.fhandle);
+    texture = screen->getWindowStyle()->h_focus;
+    frame.fhandle =
+      bt::PixmapCache::find(screen->screenNumber(), texture,
+                            frame.inside_w, frame.handle_h, frame.fhandle);
     if (! frame.fhandle)
-      frame.fhandle_pixel = texture->color().pixel(screen->screenInfo().
-                                                   screenNumber());
+      frame.fhandle_pixel = texture.color().pixel(screen->screenNumber());
 
-    texture = &(screen->getWindowStyle()->h_unfocus);
-    frame.uhandle = texture->render(blackbox->display(),
-                                    screen->screenNumber(),
-                                    *screen->getImageControl(),
-                                    frame.inside_w, frame.handle_h,
-                                    frame.uhandle);
+    texture = screen->getWindowStyle()->h_unfocus;
+    frame.uhandle =
+      bt::PixmapCache::find(screen->screenNumber(), texture,
+                            frame.inside_w, frame.handle_h, frame.uhandle);
     if (! frame.uhandle)
-      frame.uhandle_pixel = texture->color().pixel(screen->screenInfo().
-                                                   screenNumber());
+      frame.uhandle_pixel = texture.color().pixel(screen->screenNumber());
 
-    texture = &(screen->getWindowStyle()->g_focus);
-    frame.fgrip = texture->render(blackbox->display(),
-                                  screen->screenNumber(),
-                                  *screen->getImageControl(),
-                                  frame.grip_w, frame.handle_h, frame.fgrip);
+    texture = screen->getWindowStyle()->g_focus;
+    frame.fgrip =
+      bt::PixmapCache::find(screen->screenNumber(), texture,
+                            frame.grip_w, frame.handle_h, frame.fgrip);
     if (! frame.fgrip)
-      frame.fgrip_pixel = texture->color().pixel(screen->screenInfo().
-                                                 screenNumber());
+      frame.fgrip_pixel = texture.color().pixel(screen->screenNumber());
 
-    texture = &(screen->getWindowStyle()->g_unfocus);
-    frame.ugrip = texture->render(blackbox->display(),
-                                  screen->screenNumber(),
-                                  *screen->getImageControl(),
-                                  frame.grip_w, frame.handle_h, frame.ugrip);
+    texture = screen->getWindowStyle()->g_unfocus;
+    frame.ugrip =
+      bt::PixmapCache::find(screen->screenNumber(), texture,
+                            frame.grip_w, frame.handle_h, frame.ugrip);
     if (! frame.ugrip)
-      frame.ugrip_pixel = texture->color().pixel(screen->screenInfo().
-                                                 screenNumber());
+      frame.ugrip_pixel = texture.color().pixel(screen->screenNumber());
 
     XSetWindowBorder(blackbox->XDisplay(), frame.handle,
-                     screen->getBorderColor()->pixel(screen->screenInfo().
-                                                     screenNumber()));
+                     screen->getBorderColor()->pixel(screen->screenNumber()));
     XSetWindowBorder(blackbox->XDisplay(), frame.left_grip,
-                     screen->getBorderColor()->pixel(screen->screenInfo().
-                                                     screenNumber()));
+                     screen->getBorderColor()->pixel(screen->screenNumber()));
     XSetWindowBorder(blackbox->XDisplay(), frame.right_grip,
-                     screen->getBorderColor()->pixel(screen->screenInfo().
-                                                     screenNumber()));
+                     screen->getBorderColor()->pixel(screen->screenNumber()));
   }
 
   XSetWindowBorder(blackbox->XDisplay(), frame.window,
-                   screen->getBorderColor()->pixel(screen->screenInfo().
-                                                   screenNumber()));
+                   screen->getBorderColor()->pixel(screen->screenNumber()));
 }
 
 
 void BlackboxWindow::decorateLabel(void) {
-  bt::Texture *texture;
+  bt::Texture texture;
 
-  texture = &(screen->getWindowStyle()->l_focus);
-  frame.flabel = texture->render(blackbox->display(),
-                                 screen->screenNumber(),
-                                 *screen->getImageControl(),
-                                 frame.label_w, frame.label_h, frame.flabel);
+  texture = screen->getWindowStyle()->l_focus;
+  frame.flabel =
+    bt::PixmapCache::find(screen->screenNumber(), texture,
+                          frame.label_w, frame.label_h, frame.flabel);
   if (! frame.flabel)
-    frame.flabel_pixel = texture->color().pixel(screen->screenInfo().
-                                                screenNumber());
+    frame.flabel_pixel = texture.color().pixel(screen->screenNumber());
 
-  texture = &(screen->getWindowStyle()->l_unfocus);
-  frame.ulabel = texture->render(blackbox->display(),
-                                 screen->screenInfo(). screenNumber(),
-                                 *screen->getImageControl(),
-                                 frame.label_w, frame.label_h, frame.ulabel);
+  texture = screen->getWindowStyle()->l_unfocus;
+  frame.ulabel =
+    bt::PixmapCache::find(screen->screenNumber(), texture,
+                          frame.label_w, frame.label_h, frame.ulabel);
   if (! frame.ulabel)
-    frame.ulabel_pixel = texture->color().pixel(screen->screenInfo().
-                                                screenNumber());
+    frame.ulabel_pixel = texture.color().pixel(screen->screenNumber());
 }
 
 
@@ -632,17 +603,10 @@ void BlackboxWindow::createHandle(void) {
 
 
 void BlackboxWindow::destroyHandle(void) {
-  if (frame.fhandle)
-    screen->getImageControl()->removeImage(frame.fhandle);
-
-  if (frame.uhandle)
-    screen->getImageControl()->removeImage(frame.uhandle);
-
-  if (frame.fgrip)
-    screen->getImageControl()->removeImage(frame.fgrip);
-
-  if (frame.ugrip)
-    screen->getImageControl()->removeImage(frame.ugrip);
+  bt::PixmapCache::release(frame.fhandle);
+  bt::PixmapCache::release(frame.uhandle);
+  bt::PixmapCache::release(frame.fgrip);
+  bt::PixmapCache::release(frame.ugrip);
 
   blackbox->removeEventHandler(frame.left_grip);
   blackbox->removeEventHandler(frame.right_grip);
@@ -683,26 +647,13 @@ void BlackboxWindow::destroyTitlebar(void) {
   if (frame.maximize_button)
     destroyMaximizeButton();
 
-  if (frame.ftitle)
-    screen->getImageControl()->removeImage(frame.ftitle);
-
-  if (frame.utitle)
-    screen->getImageControl()->removeImage(frame.utitle);
-
-  if (frame.flabel)
-    screen->getImageControl()->removeImage(frame.flabel);
-
-  if( frame.ulabel)
-    screen->getImageControl()->removeImage(frame.ulabel);
-
-  if (frame.fbutton)
-    screen->getImageControl()->removeImage(frame.fbutton);
-
-  if (frame.ubutton)
-    screen->getImageControl()->removeImage(frame.ubutton);
-
-  if (frame.pbutton)
-    screen->getImageControl()->removeImage(frame.pbutton);
+  bt::PixmapCache::release(frame.ftitle);
+  bt::PixmapCache::release(frame.utitle);
+  bt::PixmapCache::release(frame.flabel);
+  bt::PixmapCache::release(frame.ulabel);
+  bt::PixmapCache::release(frame.fbutton);
+  bt::PixmapCache::release(frame.ubutton);
+  bt::PixmapCache::release(frame.pbutton);
 
   blackbox->removeEventHandler(frame.title);
   blackbox->removeEventHandler(frame.label);
