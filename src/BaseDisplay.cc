@@ -81,7 +81,6 @@
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "BaseDisplay.hh"
-#include "LinkedList.hh"
 #include "Timer.hh"
 
 // X error handler to handle any and all X errors while the application is
@@ -322,12 +321,6 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
 
   XSetErrorHandler((XErrorHandler) handleXErrors);
 
-  screenInfoList = new LinkedList<ScreenInfo>;
-  for (int i = 0; i < number_of_screens; i++) {
-    ScreenInfo *screeninfo = new ScreenInfo(this, i);
-    screenInfoList->insert(screeninfo);
-  }
-
   NumLockMask = ScrollLockMask = 0;
 
   const XModifierKeymap* const modmap = XGetModifierMapping(display);
@@ -369,15 +362,6 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
 
 
 BaseDisplay::~BaseDisplay(void) {
-  while (screenInfoList->count()) {
-    ScreenInfo *si = screenInfoList->first();
-
-    screenInfoList->remove(si);
-    delete si;
-  }
-
-  delete screenInfoList;
-
   // we don't create the BTimers, we don't delete them
 
   XCloseDisplay(display);

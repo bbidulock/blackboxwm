@@ -31,7 +31,6 @@
 class BaseDisplay;
 class ScreenInfo;
 
-#include "LinkedList.hh"
 #include "Timer.hh"
 
 #define AttribShaded      (1l << 0)
@@ -124,7 +123,6 @@ private:
 
   Bool _startup, _shutdown;
   Display *display;
-  LinkedList<ScreenInfo> *screenInfoList;
   TimerQueue timerList;
 
   char *display_name, *application_name;
@@ -266,9 +264,6 @@ public:
     { return net_wm_ping; }
 
 #endif // NEWWMSPEC
-
-  inline ScreenInfo *getScreenInfo(int s)
-    { return (ScreenInfo *) screenInfoList->find(s); }
 
   inline const Bool &hasShapeExtensions(void) const
     { return shape.extensions; }
