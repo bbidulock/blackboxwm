@@ -2302,9 +2302,9 @@ bool BScreen::smartPlacement(unsigned int workspace, bt::Rect& rect,
     if (window_area > screen_area / 8) {
       // center windows that don't fit (except for small windows)
       const int x =
-        static_cast<int>(avail.x() + avail.width() - rect.width()) / 2;
+        static_cast<int>(avail.x() + (avail.width() - rect.width()) / 2);
       const int y =
-        static_cast<int>(avail.y() + avail.height() - rect.height()) / 2;
+        static_cast<int>(avail.y() + (avail.height() - rect.height()) / 2);
       rect.setPos(x, y);
       return true;
     }
