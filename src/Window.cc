@@ -302,8 +302,11 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     break;
 
   case WindowTypeDock:
+  case WindowTypeSplash:
     setLayer(StackingList::LayerAbove);
     break;
+  default:
+    break; // nothing to do here
   } // switch
 
   ::update_decorations(client.decorations,
