@@ -73,15 +73,13 @@ public:
   // StackEntity interface
   Window windowID(void) const { return frame.window; }
 
-  unsigned int getWidth(void) const { return frame.rect.width(); }
-  unsigned int getExposedWidth(void) const {
+  unsigned int exposedWidth(void) const {
     if (screen->resource().slitDirection() == Vertical
         && screen->resource().doSlitAutoHide())
       return screen->resource().slitStyle()->margin;
     return frame.rect.width();
   }
-  unsigned int getHeight(void) const { return frame.rect.height(); }
-  unsigned int getExposedHeight(void) const {
+  unsigned int exposedHeight(void) const {
     if (screen->resource().slitDirection() == Horizontal
         && screen->resource().doSlitAutoHide())
       return screen->resource().slitStyle()->margin;

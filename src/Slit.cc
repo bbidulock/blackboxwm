@@ -320,20 +320,20 @@ void Slit::updateStrut(void) {
   case Vertical:
     switch (screen->resource().slitPlacement()) {
     case TopCenter:
-      strut.top = getExposedHeight();
+      strut.top = exposedHeight();
       break;
     case BottomCenter:
-      strut.bottom = getExposedHeight();
+      strut.bottom = exposedHeight();
       break;
     case TopLeft:
     case CenterLeft:
     case BottomLeft:
-      strut.left = getExposedWidth();
+      strut.left = exposedWidth();
       break;
     case TopRight:
     case CenterRight:
     case BottomRight:
-      strut.right = getExposedWidth();
+      strut.right = exposedWidth();
       break;
     }
     break;
@@ -342,7 +342,7 @@ void Slit::updateStrut(void) {
     case TopCenter:
     case TopLeft:
     case TopRight:
-      strut.top = frame.rect.top() + getExposedHeight();
+      strut.top = frame.rect.top() + exposedHeight();
       break;
     case BottomCenter:
     case BottomLeft:
@@ -353,10 +353,10 @@ void Slit::updateStrut(void) {
                        : frame.rect.y()));
       break;
     case CenterLeft:
-      strut.left = getExposedWidth();
+      strut.left = exposedWidth();
       break;
     case CenterRight:
-      strut.right = getExposedWidth();
+      strut.right = exposedWidth();
       break;
     }
     break;
