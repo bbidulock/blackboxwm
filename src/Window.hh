@@ -38,9 +38,6 @@ extern "C" {
 #include "Timer.hh"
 #include "Windowmenu.hh"
 
-// forward declaration
-class BlackboxWindow;
-
 #define MwmHintsFunctions     (1l << 0)
 #define MwmHintsDecorations   (1l << 1)
 
@@ -70,10 +67,8 @@ typedef struct MwmHints {
 
 class BlackboxWindow : public TimeoutHandler {
 private:
-  BImageControl *image_ctrl;
   Blackbox *blackbox;
   BScreen *screen;
-  Display *display;
   BTimer *timer;
   BlackboxAttributes blackbox_attrib;
 
@@ -98,10 +93,10 @@ private:
       modal,                 // is modal? (must be dismissed to continue)
       send_focus_message,    // should we send focus messages to our client?
       shaped;                // does the frame use the shape extension?
-                             // maximize is special, the number corresponds
+    unsigned int maximized;  // maximize is special, the number corresponds
                              // with a mouse button
                              // if 0, not maximized
-    unsigned int maximized;  // 1 = HorizVert, 2 = Vertical, 3 = Horizontal
+                             // 1 = HorizVert, 2 = Vertical, 3 = Horizontal
   } flags;
 
   struct _client {
@@ -111,7 +106,6 @@ private:
     BlackboxWindow *transient;      // which window is our transient?
 
     std::string title, icon_title;
-    std::string::size_type title_len; // strlen(title)
 
     int x, y,
       old_bw;                       // client's borderwidth
@@ -127,9 +121,6 @@ private:
       win_gravity;
 
     unsigned long initial_state, normal_hint_flags, wm_hint_flags;
-
-    MwmHints *mwm_hint;
-    BlackboxHints *blackbox_hint;
   } client;
 
   struct _functions {
@@ -211,7 +202,7 @@ private:
   void getWMProtocols(void);
   void getWMHints(void);
   void getMWMHints(void);
-  void getBlackboxHints(void);
+  Bool getBlackboxHints(void);
   void getTransientInfo(void);
   void setNetWMAttributes(void);
   void associateClientWindow(void);
