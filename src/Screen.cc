@@ -690,7 +690,7 @@ bool BScreen::focusFallback(const BlackboxWindow *win) {
       return true;
   }
 
-  return 0;
+  return false;
 }
 
 
