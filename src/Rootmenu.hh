@@ -24,14 +24,10 @@
 #ifndef   __Rootmenu_hh
 #define   __Rootmenu_hh
 
-// forward declarations
-class Rootmenu;
-
 class Blackbox;
 class BScreen;
 
 #include "Basemenu.hh"
-
 
 class Rootmenu : public Basemenu
 {
@@ -49,4 +45,3 @@ private:
 };
 
 #endif // __Rootmenu_hh
-

@@ -36,7 +36,6 @@ class ScreenInfo;
 class BTexture;
 class BImageControl;
 
-
 class BImage {
 public:
     BImage(BImageControl *, unsigned int, unsigned int);
@@ -147,7 +146,6 @@ public:
 
     virtual void timeout(void);
 };
-
 
 #endif // __Image_hh
 

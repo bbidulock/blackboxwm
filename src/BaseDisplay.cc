@@ -675,16 +675,14 @@ const Bool BaseDisplay::validateWindow(Window window)
 }
 
 
-void BaseDisplay::addTimer(BTimer *timer)
-{
-  if (! timer)
-    return;
+void BaseDisplay::addTimer(BTimer *timer) {
+  if (! timer) return;
+
   timerList.push(timer);
 }
 
 
-void BaseDisplay::removeTimer(BTimer *timer)
-{
+void BaseDisplay::removeTimer(BTimer *timer) {
   timerList.release(timer);
 }
 

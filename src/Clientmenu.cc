@@ -21,12 +21,6 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-// stupid macros needed to access some functions in version 2 of the GNU C
-// library
-#ifndef   _GNU_SOURCE
-#define   _GNU_SOURCE
-#endif // _GNU_SOURCE
-
 #ifdef    HAVE_CONFIG_H
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
@@ -45,7 +39,6 @@ Clientmenu::Clientmenu(Workspace *ws)
   wkspc = ws;
   screen = wkspc->getScreen();
 }
-
 
 void Clientmenu::itemClicked( const Point &, const Item &item, int button )
 {

@@ -1,5 +1,34 @@
 ChangeLog for 0.62.x
 
+Changes from 0.62.1:
+  - bsetroot now sets _XROOTPMAP_ID, so pseudo transparent apps will be happy
+  - beginnings of a strut implementation.  toolbar and slit are removed from
+    the available screen area
+  - bsetbg now tries to use tempfile, then mktemp and finally defaults to
+    creating a .$$ temporary file itself if none of the commands are found.
+    Also updated the command line argument parser to handler unknown single
+    letter arguments.
+  - handle the odd edge case where a reparent event occurs while the window
+    is unmapped.  XReparentWindow sends an UnmapNotify to the window manager
+    however the window is already unmapped so the window manager never gets
+    the event and the unmapNotify event is where reparentNotify was handled.
+    Added a reparentNotifyEvent handler in the BlackboxWindow class and a new
+    case in the Blackbox class's process_event function.
+  - applied a patch from the long lost in the tundra Brad.  This one's a doozy.
+    * no more blackbox->grab/ungrab calls everywhere
+    * compression of motion, expose, and configure events
+  - added a Util.cc file which contains expandTilde() and bstrdup().  Now we
+    have one function which turns ~/ into /home/user/.  This is now called
+    everywhere this expansion should be done.  Even added this to the
+    resource.menu_file so now the menu file may be specified as ~/blackbox_menu
+  - added a TimerQueue which is a priority_queue with the ability to release
+    items it contains before they reach the top of the queue.  Also added a
+    TimerQueueManager protocol class which BaseDisplay now inherits from.
+  - BTimer now defaults to NOT recurring.  Most of the timers in blackbox were
+    one shots so I saw little benefit in defaulting to repeating timers.
+  - added emacs local variables to each file that prevent the addition of tabs
+  - XGetInputFocus() is void yet we were using it in a if() test.
+
 Changes from 0.62.0 to 0.62.1:
   - the lock modifier code handles user redefined modifiers better
   - check if the locale actually needs multibyte support before using multibyte

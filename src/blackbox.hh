@@ -115,8 +115,7 @@ private:
   char *rc_file, **argv;
   int argc;
 
-    BGCCache *gccache;
-
+  BGCCache *gccache;
 
 protected:
   void load_rc(void);

@@ -63,7 +63,6 @@ Rootmenu::Rootmenu( BScreen *scrn )
   blackbox = Blackbox::instance();
 }
 
-
 void Rootmenu::itemClicked( const Point &, const Basemenu::Item &item, int button )
 {
   if (button != 1)

@@ -74,6 +74,7 @@ Toolbar::Toolbar(BScreen *scrn)
   timeval now;
   gettimeofday(&now, 0);
   clock_timer->setTimeout((60 - (now.tv_sec % 60)) * 1000);
+  clock_timer->recurring(True);
   clock_timer->start();
 
   hide_handler.toolbar = this;

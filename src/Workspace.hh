@@ -44,10 +44,8 @@ private:
   char *name;
   int id, cascade_x, cascade_y;
 
-
 protected:
   void placeWindow(BlackboxWindow *);
-
 
 public:
   Workspace(BScreen *, int = 0);
@@ -85,7 +83,6 @@ public:
   void setName(char *);
   void shutdown(void);
 };
-
 
 #endif // __Workspace_hh
 

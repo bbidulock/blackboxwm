@@ -30,7 +30,6 @@
 class BaseDisplay;
 class BScreen;
 
-
 class Netizen {
 private:
     BaseDisplay *display;
@@ -56,6 +55,5 @@ public:
 
     void sendConfigNotify(XEvent *);
 };
-
 
 #endif // __Netizen_hh

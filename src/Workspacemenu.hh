@@ -26,8 +26,6 @@
 
 #include "Basemenu.hh"
 
-class Toolbar;
-
 class Workspacemenu : public Basemenu
 {
 public:
@@ -38,8 +36,8 @@ protected:
 
 private:
   BScreen *screen;
-};
 
+};
 
 #endif // __Workspacemenu_hh
 

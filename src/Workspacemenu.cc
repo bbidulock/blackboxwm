@@ -35,6 +35,7 @@
 #include "blackbox.hh"
 #include "Screen.hh"
 #include "Toolbar.hh"
+
 #include "Workspacemenu.hh"
 #include "Workspace.hh"
 
@@ -54,7 +55,6 @@ Workspacemenu::Workspacemenu(BScreen *scrn)
                             WorkspacemenuRemoveLast, "Remove Last" ) );
   insertSeparator();
 }
-
 
 void Workspacemenu::itemClicked( const Point &, const Item &item, int button )
 {
