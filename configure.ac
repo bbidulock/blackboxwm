@@ -99,14 +99,13 @@ if test "x$x_includes" != "x"; then
   CXXFLAGS="$CXXFLAGS -I$x_includes"
 fi
 if test "x$x_libraries" != "x"; then
-  LDFLAGS="$LDFLAGS -L$x_libraries"
+  LIBS="$LIBS -L$x_libraries"
 fi
 
 dnl Check for required functions in -lX11
 XLIB=
 AC_CHECK_LIB([X11], [XOpenDisplay], [XLIB=yes], [XLIB=no])
 test "x$XLIB" = "xno" && AC_MSG_ERROR([standard X11 libraries not found])
-LIBS="-lX11 $LIBS"
 
 AC_CHECK_HEADERS([X11/Xlib.h], [XLIB=yes], [XLIB=no])
 test "x$XLIB" = "xno" && AC_MSG_ERROR([standard X11 headers not found])
@@ -133,7 +132,7 @@ if test "x$SHAPE" = "xyes"; then
     save_LIBS="$LIBS"
       
     if echo "$LIBS" | grep -q Xext 2>&1 >/dev/null; then
-      LIBS="-lXext $LIBS"
+      LIBS="$LIBS -lXext"
     fi
     AC_CHECK_HEADERS([X11/extensions/shape.h], [SHAPE=yes], [SHAPE=no],
 [
@@ -169,7 +168,7 @@ if test "x$MITSHM" = "xyes"; then
   if test "x$MITSHM" = "xyes"; then
     save_LIBS="$LIBS"
 
-    LIBS="-lXext $LIBS"
+    LIBS="$LIBS -lXext"
     AC_CHECK_HEADERS([X11/extensions/XShm.h], [MITSHM=yes], [MITSHM=no],
 [
 #include <X11/Xlib.h>
@@ -189,6 +188,8 @@ else
 fi
 AC_SUBST([MITSHM])
 
+LIBS="$LIBS -lX11"
+
 dnl Check for Xft libraries
 AC_MSG_CHECKING([whether to build support for Xft])
 AC_ARG_ENABLE([xft],
@@ -199,36 +200,20 @@ AC_ARG_ENABLE([xft],
 AC_MSG_RESULT([$XFT])
 
 if test "x$XFT" = "xyes"; then
-  # Check for freetype-config and get the CXXFLAGS and LIBS from it
-  AC_CHECK_PROGS(xftconfig, xft-config)
-  if test "x$xftconfig" != "x"; then
-    save_CXXFLAGS="$CXXFLAGS"
-    save_LIBS="$LIBS"
-
-    CXXFLAGS="$CXXFLAGS `xft-config --cflags`"
-    LIBS="`xft-config --libs` $LIBS"
-
-    AC_CHECK_LIB([Xft], [XftGlyphExtents], [XFT=yes], [XFT=no])
-    AC_CHECK_HEADERS([X11/Xft/Xft.h], [XFT=yes], [XFT=no],
-[
-#define _XFT_NO_COMPAT
-#include <X11/Xlib.h>
-])
-    
-    if test "x$XFT" = "xyes"; then
-      XFT="-DXFT -D_XFT_NO_COMPAT"
-    else
-      XFT=
-      CXXFLAGS="$save_CXXFLAGS"
-      LIBS="$save_LIBS"
-    fi
-  else
-    XFT=
-  fi
+  PKG_CHECK_MODULES([xft],
+                    [xft >= 2.0.0], 
+                    [XFT="-DXFT"
+                     XFT_PKGCONFIG="xft >= 2.0.0"
+                     CXXFLAGS="$CXXFLAGS $xft_CFLAGS"
+                     LIBS="$LIBS $xft_LIBS"],
+                    [XFT=
+                     XFT_PKGCONFIG=])
 else
   XFT=
+  XFT_PKGCONFIG=
 fi
 AC_SUBST([XFT])
+AC_SUBST([XFT_PKGCONFIG])
 
 dnl Check whether to include debugging code
 AC_MSG_CHECKING([whether to include verbose debugging code])
@@ -270,6 +255,7 @@ AM_CONFIG_HEADER(config.h)
 AC_CONFIG_FILES([
 Makefile
 lib/Makefile
+lib/libbt.pc
 src/Makefile
 util/Makefile
 data/Makefile
@@ -315,6 +301,5 @@ AC_MSG_RESULT([])
 AC_MSG_RESULT([Using '$prefix' for installation.])
 AC_MSG_RESULT([Using '$CXX' for C++ compiler.])
 AC_MSG_RESULT([Building with '$CXXFLAGS' for C++ compiler flags.])
-AC_MSG_RESULT([Building with '$LDFLAGS' for linker flags.])
 AC_MSG_RESULT([Building with '$LIBS' libraries.])
 AC_MSG_RESULT([])

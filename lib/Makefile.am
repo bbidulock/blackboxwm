@@ -60,6 +60,9 @@ libbt_HEADERS		= Application.hh				\
 			  Util.hh					\
 			  i18n.hh
 
+pkgconfigdir = $(libdir)/pkgconfig
+nodist_pkgconfig_DATA = libbt.pc
+
 MAINTAINERCLEANFILES	= Makefile.in
 
 distclean-local:
