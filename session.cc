@@ -1061,6 +1061,7 @@ void BlackboxSession::LoadDefaults(void) {
   XrmValue value;
   char *value_type;
 
+  // load our session configuration
   if (XrmGetResource(blackbox_database,
 		     "blackbox.session.toolboxTexture",
 		     "Blackbox.Session.ToolboxTexture", &value_type, &value)) {
@@ -1098,8 +1099,97 @@ void BlackboxSession::LoadDefaults(void) {
     resource.texture.toolbox = B_TextureRSolid;
 
   if (XrmGetResource(blackbox_database,
-		     "blackbox.session.windowTexture",
-		     "Blackbox.Session.WindowTexture", &value_type, &value)) {
+		     "blackbox.session.frameColor",
+		     "Blackbox.Session.FrameColor", &value_type, &value))
+    resource.color.frame.pixel =
+      getColor(value.addr, &resource.color.frame.r, &resource.color.frame.g,
+	       &resource.color.frame.b);
+  else
+    resource.color.frame.pixel =
+      getColor("black", &resource.color.frame.r, &resource.color.frame.g,
+	       &resource.color.frame.b);
+
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.session.toolboxColor",
+		     "Blackbox.Session.ToolboxColor", &value_type, &value))
+    resource.color.toolbox.pixel =
+      getColor(value.addr, &resource.color.toolbox.r,
+	       &resource.color.toolbox.g, &resource.color.toolbox.b);
+  else
+    resource.color.toolbox.pixel =
+      getColor("grey", &resource.color.toolbox.r, &resource.color.toolbox.g,
+	       &resource.color.toolbox.b);
+  
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.session.toolboxToColor",
+		     "Blackbox.Session.ToolboxToColor", &value_type, &value))
+    resource.color.toolbox_to.pixel =
+      getColor(value.addr, &resource.color.toolbox_to.r,
+	       &resource.color.toolbox_to.g, &resource.color.toolbox_to.b);
+  else
+    resource.color.toolbox_to.pixel =
+      getColor("black", &resource.color.toolbox_to.r,
+	       &resource.color.toolbox_to.g, &resource.color.toolbox_to.b);
+
+
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.session.iconTextColor",
+		     "Blackbox.Session.IconTextColor", &value_type,
+		     &value))
+    resource.color.itext.pixel =
+      getColor(value.addr, &resource.color.itext.r, &resource.color.itext.g,
+	       &resource.color.itext.b);
+  else
+    resource.color.itext.pixel =
+      getColor("black", &resource.color.itext.r, &resource.color.itext.g,
+	       &resource.color.itext.b);
+
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.session.toolboxTextColor",
+		     "Blackbox.Session.ToolboxTextColor", &value_type,
+		     &value))
+    resource.color.ttext.pixel =
+      getColor(value.addr, &resource.color.ttext.r, &resource.color.ttext.g,
+	       &resource.color.ttext.b);
+  else
+    resource.color.ttext.pixel =
+      getColor("black", &resource.color.ttext.r, &resource.color.ttext.g,
+	       &resource.color.ttext.b);
+
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.session.workspaces",
+		     "Blackbox.Session.Workspaces", &value_type, &value)) {
+    if (sscanf(value.addr, "%d", &resource.workspaces) != 1) {
+      resource.workspaces = 1;
+    }
+  } else
+    resource.workspaces = 1;
+  
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.session.orientation",
+		     "Blackbox.Session.Orientation", &value_type, &value)) {
+    if (! strcasecmp(value.addr, "lefthanded"))
+      resource.orientation = B_LeftHandedUser;
+    else if (! strcasecmp(value.addr, "righthanded"))
+      resource.orientation = B_RightHandedUser;
+  } else
+    resource.orientation = B_RightHandedUser;
+
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.session.reconfigurePrompt",
+		     "Blackbox.Session.ReconfigurePrompt",
+		     &value_type, &value)) {
+    if (! strcasecmp(value.addr, "no"))
+      resource.prompt_reconfigure = False;
+    else
+      resource.prompt_reconfigure = True;
+  } else
+    resource.prompt_reconfigure = True;
+  
+  // load client window configuration
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.window.windowTexture",
+		     "Blackbox.Window.WindowTexture", &value_type, &value)) {
     if ((! strcasecmp(value.addr, "solid")) ||
 	(! strcasecmp(value.addr, "solidraised")))
       resource.texture.window = B_TextureRSolid;
@@ -1169,6 +1259,109 @@ void BlackboxSession::LoadDefaults(void) {
   } else
     resource.texture.button = B_TextureRSolid;
 
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.window.focusColor",
+		     "Blackbox.Window.FocusColor", &value_type, &value))
+    resource.color.focus.pixel =
+      getColor(value.addr, &resource.color.focus.r, &resource.color.focus.g,
+	       &resource.color.focus.b);
+  else
+    resource.color.focus.pixel =
+      getColor("darkgrey", &resource.color.focus.r, &resource.color.focus.g,
+	       &resource.color.focus.b);
+
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.window.focusToColor",
+		     "Blackbox.Window.FocusToColor", &value_type, &value))
+    resource.color.focus_to.pixel =
+      getColor(value.addr, &resource.color.focus_to.r,
+	       &resource.color.focus_to.g, &resource.color.focus_to.b);
+  else
+    resource.color.focus_to.pixel =
+      getColor("black", &resource.color.focus_to.r,
+	       &resource.color.focus_to.g, &resource.color.focus_to.b);
+
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.window.unfocusColor",
+		     "Blackbox.Window.UnfocusColor", &value_type, &value))
+    resource.color.unfocus.pixel =
+      getColor(value.addr, &resource.color.unfocus.r,
+	       &resource.color.unfocus.g, &resource.color.unfocus.b);
+  else
+    resource.color.unfocus.pixel =
+      getColor("black", &resource.color.unfocus.r,
+	       &resource.color.unfocus.g, &resource.color.unfocus.b);
+  
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.window.unfocusToColor",
+		     "Blackbox.Window.UnfocusToColor", &value_type, &value))
+    resource.color.unfocus_to.pixel =
+      getColor(value.addr, &resource.color.unfocus_to.r,
+	       &resource.color.unfocus_to.g, &resource.color.unfocus_to.b);
+  else
+    resource.color.unfocus_to.pixel =
+      getColor("black", &resource.color.unfocus_to.r,
+	       &resource.color.unfocus_to.g, &resource.color.unfocus_to.b);
+  
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.window.buttonColor",
+		     "Blackbox.Window.ButtonColor", &value_type, &value))
+    resource.color.button.pixel =
+      getColor(value.addr, &resource.color.button.r,
+	       &resource.color.button.g, &resource.color.button.b);
+  else
+    resource.color.button.pixel =
+      getColor("grey" , &resource.color.button.r,
+	       &resource.color.button.g, &resource.color.button.b);
+  
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.window.buttonToColor",
+		     "Blackbox.Window.ButtonToColor", &value_type, &value))
+    resource.color.button_to.pixel =
+      getColor(value.addr, &resource.color.button_to.r,
+	       &resource.color.button_to.g, &resource.color.button_to.b);
+  else
+    resource.color.button_to.pixel =
+      getColor("black", &resource.color.button_to.r,
+	       &resource.color.button_to.g, &resource.color.button_to.b);
+
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.window.focusTextColor",
+		     "Blackbox.Window.FocusTextColor", &value_type, &value))
+    resource.color.ftext.pixel =
+      getColor(value.addr, &resource.color.ftext.r, &resource.color.ftext.g,
+	       &resource.color.ftext.b);
+  else
+    resource.color.ftext.pixel =
+      getColor("white", &resource.color.ftext.r, &resource.color.ftext.g,
+	       &resource.color.ftext.b);
+
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.window.unfocusTextColor",
+		     "Blackbox.Window.UnfocusTextColor", &value_type, &value))
+    resource.color.utext.pixel =
+      getColor(value.addr, &resource.color.utext.r, &resource.color.utext.g,
+	       &resource.color.utext.b);
+  else
+    resource.color.utext.pixel =
+      getColor("darkgrey", &resource.color.utext.r, &resource.color.utext.g,
+	       &resource.color.utext.b);
+  
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.window.titleJustify",
+		     "Blackbox.Window.TitleJustify", &value_type, &value)) {
+    if (! strncasecmp("leftjustify", value.addr, value.size))
+      resource.justification = B_LeftJustify;
+    else if (! strncasecmp("rightjustify", value.addr, value.size))
+      resource.justification = B_RightJustify;
+    else if (! strncasecmp("centerjustify", value.addr, value.size))
+      resource.justification = B_CenterJustify;
+    else
+      resource.justification = B_LeftJustify;
+  } else
+    resource.justification = B_LeftJustify;
+
+  // load menu configuration
   if (XrmGetResource(blackbox_database,
 		     "blackbox.menu.menuTexture",
 		     "Blackbox.Menu.MenuTexture", &value_type, &value)) {
@@ -1279,105 +1472,6 @@ void BlackboxSession::LoadDefaults(void) {
     resource.texture.imenu = B_TextureRSolid;
 
   if (XrmGetResource(blackbox_database,
-		     "blackbox.session.frameColor",
-		     "Blackbox.Session.FrameColor", &value_type, &value))
-    resource.color.frame.pixel =
-      getColor(value.addr, &resource.color.frame.r, &resource.color.frame.g,
-	       &resource.color.frame.b);
-  else
-    resource.color.frame.pixel =
-      getColor("black", &resource.color.frame.r, &resource.color.frame.g,
-	       &resource.color.frame.b);
-
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.session.toolboxColor",
-		     "Blackbox.Session.ToolboxColor", &value_type, &value))
-    resource.color.toolbox.pixel =
-      getColor(value.addr, &resource.color.toolbox.r,
-	       &resource.color.toolbox.g, &resource.color.toolbox.b);
-  else
-    resource.color.toolbox.pixel =
-      getColor("grey", &resource.color.toolbox.r, &resource.color.toolbox.g,
-	       &resource.color.toolbox.b);
-  
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.session.toolboxToColor",
-		     "Blackbox.Session.ToolboxToColor", &value_type, &value))
-    resource.color.toolbox_to.pixel =
-      getColor(value.addr, &resource.color.toolbox_to.r,
-	       &resource.color.toolbox_to.g, &resource.color.toolbox_to.b);
-  else
-    resource.color.toolbox_to.pixel =
-      getColor("black", &resource.color.toolbox_to.r,
-	       &resource.color.toolbox_to.g, &resource.color.toolbox_to.b);
-  
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.window.focusColor",
-		     "Blackbox.Window.FocusColor", &value_type, &value))
-    resource.color.focus.pixel =
-      getColor(value.addr, &resource.color.focus.r, &resource.color.focus.g,
-	       &resource.color.focus.b);
-  else
-    resource.color.focus.pixel =
-      getColor("darkgrey", &resource.color.focus.r, &resource.color.focus.g,
-	       &resource.color.focus.b);
-  
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.window.focusToColor",
-		     "Blackbox.Window.FocusToColor", &value_type, &value))
-    resource.color.focus_to.pixel =
-      getColor(value.addr, &resource.color.focus_to.r,
-	       &resource.color.focus_to.g, &resource.color.focus_to.b);
-  else
-    resource.color.focus_to.pixel =
-      getColor("black", &resource.color.focus_to.r,
-	       &resource.color.focus_to.g, &resource.color.focus_to.b);
-
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.window.unfocusColor",
-		     "Blackbox.Window.UnfocusColor", &value_type, &value))
-    resource.color.unfocus.pixel =
-      getColor(value.addr, &resource.color.unfocus.r,
-	       &resource.color.unfocus.g, &resource.color.unfocus.b);
-  else
-    resource.color.unfocus.pixel =
-      getColor("black", &resource.color.unfocus.r,
-	       &resource.color.unfocus.g, &resource.color.unfocus.b);
-  
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.window.unfocusToColor",
-		     "Blackbox.Window.UnfocusToColor", &value_type, &value))
-    resource.color.unfocus_to.pixel =
-      getColor(value.addr, &resource.color.unfocus_to.r,
-	       &resource.color.unfocus_to.g, &resource.color.unfocus_to.b);
-  else
-    resource.color.unfocus_to.pixel =
-      getColor("black", &resource.color.unfocus_to.r,
-	       &resource.color.unfocus_to.g, &resource.color.unfocus_to.b);
-  
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.window.buttonColor",
-		     "Blackbox.Window.ButtonColor", &value_type, &value))
-    resource.color.button.pixel =
-      getColor(value.addr, &resource.color.button.r,
-	       &resource.color.button.g, &resource.color.button.b);
-  else
-    resource.color.button.pixel =
-      getColor("grey" , &resource.color.button.r,
-	       &resource.color.button.g, &resource.color.button.b);
-  
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.window.buttonToColor",
-		     "Blackbox.Window.ButtonToColor", &value_type, &value))
-    resource.color.button_to.pixel =
-      getColor(value.addr, &resource.color.button_to.r,
-	       &resource.color.button_to.g, &resource.color.button_to.b);
-  else
-    resource.color.button_to.pixel =
-      getColor("black", &resource.color.button_to.r,
-	       &resource.color.button_to.g, &resource.color.button_to.b);
-  
-  if (XrmGetResource(blackbox_database,
 		     "blackbox.menu.menuColor",
 		     "Blackbox.Menu.MenuColor", &value_type, &value))
     resource.color.menu.pixel =
@@ -1422,30 +1516,8 @@ void BlackboxSession::LoadDefaults(void) {
 	       &resource.color.imenu_to.g, &resource.color.imenu_to.b);
   
   if (XrmGetResource(blackbox_database,
-		     "blackbox.session.focusTextColor",
-		     "Blackbox.Session.FocusTextColor", &value_type, &value))
-    resource.color.ftext.pixel =
-      getColor(value.addr, &resource.color.ftext.r, &resource.color.ftext.g,
-	       &resource.color.ftext.b);
-  else
-    resource.color.ftext.pixel =
-      getColor("white", &resource.color.ftext.r, &resource.color.ftext.g,
-	       &resource.color.ftext.b);
-
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.session.unfocusTextColor",
-		     "Blackbox.Session.UnfocusTextColor", &value_type, &value))
-    resource.color.utext.pixel =
-      getColor(value.addr, &resource.color.utext.r, &resource.color.utext.g,
-	       &resource.color.utext.b);
-  else
-    resource.color.utext.pixel =
-      getColor("darkgrey", &resource.color.utext.r, &resource.color.utext.g,
-	       &resource.color.utext.b);
-
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.session.menuTextColor",
-		     "Blackbox.Session.MenuTextColor", &value_type, &value))
+		     "blackbox.menu.menuTextColor",
+		     "Blackbox.Menu.MenuTextColor", &value_type, &value))
     resource.color.mtext.pixel =
       getColor(value.addr, &resource.color.mtext.r, &resource.color.mtext.g,
 	       &resource.color.mtext.b);
@@ -1455,8 +1527,8 @@ void BlackboxSession::LoadDefaults(void) {
 	       &resource.color.mtext.b);
 
   if (XrmGetResource(blackbox_database,
-		     "blackbox.session.menuItemTextColor",
-		     "Blackbox.Session.MenuItemTextColor", &value_type,
+		     "blackbox.menu.menuItemTextColor",
+		     "Blackbox.Menu.MenuItemTextColor", &value_type,
 		     &value))
     resource.color.mitext.pixel =
       getColor(value.addr, &resource.color.mitext.r, &resource.color.mitext.g,
@@ -1467,8 +1539,8 @@ void BlackboxSession::LoadDefaults(void) {
 	       &resource.color.mitext.b);
 
   if (XrmGetResource(blackbox_database,
-		     "blackbox.session.menuPressedTextColor",
-		     "Blackbox.Session.MenuPressedTextColor", &value_type,
+		     "blackbox.menu.menuPressedTextColor",
+		     "Blackbox.Menu.MenuPressedTextColor", &value_type,
 		     &value))
     resource.color.ptext.pixel =
       getColor(value.addr, &resource.color.ptext.r, &resource.color.ptext.g,
@@ -1477,34 +1549,10 @@ void BlackboxSession::LoadDefaults(void) {
     resource.color.ptext.pixel =
       getColor("darkgrey", &resource.color.ptext.r, &resource.color.ptext.g,
 	       &resource.color.ptext.b);
-
+  
   if (XrmGetResource(blackbox_database,
-		     "blackbox.session.iconTextColor",
-		     "Blackbox.Session.IconTextColor", &value_type,
-		     &value))
-    resource.color.itext.pixel =
-      getColor(value.addr, &resource.color.itext.r, &resource.color.itext.g,
-	       &resource.color.itext.b);
-  else
-    resource.color.itext.pixel =
-      getColor("black", &resource.color.itext.r, &resource.color.itext.g,
-	       &resource.color.itext.b);
-
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.session.toolboxTextColor",
-		     "Blackbox.Session.ToolboxTextColor", &value_type,
-		     &value))
-    resource.color.ttext.pixel =
-      getColor(value.addr, &resource.color.ttext.r, &resource.color.ttext.g,
-	       &resource.color.ttext.b);
-  else
-    resource.color.ttext.pixel =
-      getColor("black", &resource.color.ttext.r, &resource.color.ttext.g,
-	       &resource.color.ttext.b);
-
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.session.menuFile",
-		     "Blackbox.Session.MenuFile", &value_type, &value)) {
+		     "blackbox.menu.menuFile",
+		     "Blackbox.Menu.MenuFile", &value_type, &value)) {
     int len = strlen(value.addr);
     resource.menuFile = new char[len + 1];
     memset(resource.menuFile, 0, len + 1);
@@ -1516,36 +1564,7 @@ void BlackboxSession::LoadDefaults(void) {
     strncpy(resource.menuFile, BLACKBOXMENUAD, len);
   }
   
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.session.workspaces",
-		     "Blackbox.Session.Workspaces", &value_type, &value)) {
-    if (sscanf(value.addr, "%d", &resource.workspaces) != 1) {
-      resource.workspaces = 1;
-    }
-  } else
-    resource.workspaces = 1;
-  
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.session.orientation",
-		     "Blackbox.Session.Orientation", &value_type, &value)) {
-    if (! strcasecmp(value.addr, "lefthanded"))
-      resource.orientation = B_LeftHandedUser;
-    else if (! strcasecmp(value.addr, "righthanded"))
-      resource.orientation = B_RightHandedUser;
-  } else
-    resource.orientation = B_RightHandedUser;
-
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.session.reconfigurePrompt",
-		     "Blackbox.Session.ReconfigurePrompt",
-		     &value_type, &value)) {
-    if (! strcasecmp(value.addr, "no"))
-      resource.prompt_reconfigure = False;
-    else
-      resource.prompt_reconfigure = True;
-  } else
-    resource.prompt_reconfigure = True;
-
+  // load font resources
   const char *defaultFont = "-*-charter-medium-r-*-*-*-120-*-*-*-*-*-*";
   if (resource.font.title) XFreeFont(display, resource.font.title);
   if (XrmGetResource(blackbox_database,

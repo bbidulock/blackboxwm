@@ -307,7 +307,7 @@ file:
 Name:					Class:
 --------				---------
 blackbox.session.toolboxTexture		Blackbox.Session.ToolboxTexture
-blackbox.session.windowTexture		Blackbox.Session.WindowTexture
+blackbox.window.windowTexture		Blackbox.Window.WindowTexture
 blackbox.window.buttonTexture		Blackbox.Window.ButtonTexture
 blackbox.menu.menuTexture		Blackbox.Menu.MenuTexture
 blackbox.menu.menuItemPressedTexture	Blackbox.Menu.MenuItemPressedTexture
@@ -354,11 +354,11 @@ blackbox.menu.menuToColor		Blackbox.Menu.MenuToColor
 blackbox.menu.menuItemColor		Blackbox.Menu.MenuItemColor
 blackbox.menu.menuItemToColor		Blackbox.Menu.MenuItemToColor
 	--					--
-blackbox.session.focusTextColor		Blackbox.Session.FocusTextColor
-blackbox.session.unfocusTextColor	Blackbox.Session.UnfocusTextColor
-blackbox.session.menuTextColor		Blackbox.Session.MenuTextColor
-blackbox.session.menuItemTextColor	Blackbox.Session.MenuItemTextColor
-blackbox.session.menuPressedTextColor	Blackbox.Session.MenuPressedTextColor
+blackbox.window.focusTextColor		Blackbox.Window.FocusTextColor
+blackbox.window.unfocusTextColor	Blackbox.Window.UnfocusTextColor
+blackbox.menu.menuTextColor		Blackbox.Menu.MenuTextColor
+blackbox.menu.menuItemTextColor		Blackbox.Menu.MenuItemTextColor
+blackbox.menu.menuPressedTextColor	Blackbox.Menu.MenuPressedTextColor
 blackbox.session.iconTextColor		Blackbox.Session.IconTextColor;
 
 Accepted Values:
@@ -370,7 +370,7 @@ Accepted Values:
 
 Name:					Class:
 --------				---------
-blackbox.session.menuFile		Blackbox.Session.MenuFile
+blackbox.menu.menuFile		Blackbox.Menu.MenuFile
 
 Accepted Value:
 	a character string.  Be warned... if the file cannot be opened 

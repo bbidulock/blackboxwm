@@ -1,6 +1,6 @@
 blackbox*rootMenu.topLevelMenu:		rootMenu
 
-blackbox*rootMenu.label:		Blackbox 0.20.2
+blackbox*rootMenu.label:		Blackbox 0.20.3
 blackbox*rootMenu.item1.label:		xterm
 blackbox*rootMenu.item1.exec:		xterm -ls
 blackbox*rootMenu.item2.label:		XEmacs

@@ -153,7 +153,7 @@ private:
 
     Bool prompt_reconfigure;
     char *menuFile;
-    int workspaces, orientation;
+    int workspaces, orientation, justification;
   } resource;
 
   struct shape {
@@ -272,8 +272,9 @@ public:
   const BColor &iconTextColor(void) const { return resource.color.itext; }
   const BColor &toolboxTextColor(void) const { return resource.color.ttext; }
 
-  // controls arrangement of decorations for left and right handed users
+  // controls for arrangement of decorations
   const int Orientation(void) const { return resource.orientation; }
+  const int Justification(void) const { return resource.justification; }
   
   // constants for internal workings of blackbox
   enum { B_Restart = 1, B_RestartOther, B_Exit, B_Shutdown, B_Execute,
@@ -284,7 +285,8 @@ public:
 	 B_TextureRHGradient, B_TextureSHGradient, B_TextureFHGradient,
 	 B_TextureRVGradient, B_TextureSVGradient, B_TextureFVGradient,
 	 B_TextureRDGradient, B_TextureSDGradient, B_TextureFDGradient };
-  enum { B_LeftHandedUser = 1, B_RightHandedUser };
+  enum { B_LeftHandedUser = 1, B_RightHandedUser,
+	 B_LeftJustify, B_RightJustify, B_CenterJustify };
 };
 
 

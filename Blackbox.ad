@@ -26,6 +26,7 @@ blackbox*toolboxTextColor:	  grey
 
 blackbox*workspaces:              2
 blackbox*orientation:             righthanded
+blackbox*titleJustify:		  CenterJustify
 
 blackbox*titleFont:     -*-helvetica-bold-r-*-*-*-120-*-*-*-*-*-*
 blackbox*menuFont:      -*-helvetica-bold-r-*-*-*-120-*-*-*-*-*-*

@@ -689,7 +689,7 @@ void BlackboxWindow::Reconfigure(void) {
   XSetWindowBackground(display, frame.window, session->frameColor().pixel);
   XClearWindow(display, frame.window);
   setFocusFlag(focused);
-  drawTitleWin(0, 0, 0, 0);
+  drawTitleWin();
   drawAllButtons();
   if (icon) icon->Reconfigure();
   
@@ -995,7 +995,7 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
     }
     
     setFocusFlag(focused);
-    drawTitleWin(0, 0, 0, 0);
+    drawTitleWin();
     drawAllButtons();
     XUngrabServer(display);
   } else {
@@ -1060,7 +1060,7 @@ Bool BlackboxWindow::setInputFocus(void) {
   switch (focus_mode) {
   case F_NoInput:
   case F_GloballyActive:
-    drawTitleWin(0,0,0,0);
+    drawTitleWin();
     break;
     
   case F_LocallyActive:
@@ -1076,7 +1076,7 @@ Bool BlackboxWindow::setInputFocus(void) {
     XSetInputFocus(display, client.window, RevertToParent,
 		   CurrentTime);
 
-    drawTitleWin(0,0,0,0);
+    drawTitleWin();
     return True;
     break;
   }
@@ -1319,7 +1319,7 @@ void BlackboxWindow::setFocusFlag(Bool focus) {
     XClearWindow(display, frame.handle);
   }
   
-  drawTitleWin(0, 0, 0, 0);
+  drawTitleWin();
   drawAllButtons();
 }
 
@@ -1328,20 +1328,49 @@ void BlackboxWindow::setFocusFlag(Bool focus) {
 // Window drawing code
 // *************************************************************************
 
-void BlackboxWindow::drawTitleWin(int /* ax */, int /* ay */, int /* aw */,
-				  int /* ah */) {  
-  int dx = frame.button_w + 4;
-  
-  if (session->Orientation() == BlackboxSession::B_LeftHandedUser) {
-    if (do_close) dx += frame.button_w + 4;
-    if (do_maximize) dx += frame.button_w + 4;
-    if (do_iconify) dx += frame.button_w + 4;
+void BlackboxWindow::drawTitleWin(void) {  
+  switch (session->Justification()) {
+  case BlackboxSession::B_LeftJustify: {
+    int dx = frame.button_w + 4;
+    if (session->Orientation() == BlackboxSession::B_LeftHandedUser)
+      dx *= 4;
+    
+    XDrawString(display, frame.title,
+		((focused) ? frame.ftextGC : frame.utextGC), dx,
+		session->titleFont()->ascent + 4, client.title,
+		strlen(client.title));
+    break; }
+
+  case BlackboxSession::B_RightJustify: {
+    int dx = frame.button_w + 4;
+    if (session->Orientation() == BlackboxSession::B_RightHandedUser)
+      dx *= 4;
+
+    int off = XTextWidth(session->titleFont(), client.title,
+			 strlen(client.title)) + dx;
+    
+    XDrawString(display, frame.title,
+		((focused) ? frame.ftextGC : frame.utextGC),
+		frame.title_w - off, session->titleFont()->ascent + 4,
+		client.title, strlen(client.title));
+    break;  }
+
+  case BlackboxSession::B_CenterJustify: {
+    int dx = (frame.button_w + 4) * 4;
+
+    int ins = ((frame.width - dx) -
+	       (XTextWidth(session->titleFont(), client.title,
+			   strlen(client.title)))) / 2;
+
+    if (session->Orientation() == BlackboxSession::B_LeftHandedUser)
+      ins += dx;
+
+    XDrawString(display, frame.title,
+		((focused) ? frame.ftextGC : frame.utextGC),
+		ins, session->titleFont()->ascent + 4,
+		client.title, strlen(client.title));
+    break; }
   }
-  
-  XDrawString(display, frame.title,
-	      ((focused) ? frame.ftextGC : frame.utextGC), dx,
-	      session->titleFont()->ascent + 4, client.title,
-	      strlen(client.title));
 }
 
 
@@ -1563,7 +1592,7 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
     if (! XFetchName(display, client.window, &client.title))
       client.title = "Unnamed";
     XClearWindow(display, frame.title);
-    drawTitleWin(0, 0, frame.title_w, frame.title_h);
+    drawTitleWin();
     session->updateWorkspace(workspace_number);
     break;
     
@@ -1584,14 +1613,14 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
 
 
 void BlackboxWindow::exposeEvent(XExposeEvent *ee) {
-  if (do_close && frame.close_button == ee->window)
+  if (frame.title == ee->window)
+    drawTitleWin();
+  else if (do_close && frame.close_button == ee->window)
     drawCloseButton(False);
   else if (do_maximize && frame.maximize_button == ee->window)
     drawMaximizeButton(False);
   else if (do_iconify && frame.iconify_button == ee->window)
     drawIconifyButton(False);
-
-  drawTitleWin(0,0,0,0);  
 }
 
 

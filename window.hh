@@ -162,7 +162,7 @@ protected:
   void createCloseButton(void);
   void createIconifyButton(void);
   void createMaximizeButton(void);
-  void drawTitleWin(int, int, int ,int);
+  void drawTitleWin(void);
   void drawAllButtons(void);
   void drawCloseButton(Bool);
   void drawIconifyButton(Bool);

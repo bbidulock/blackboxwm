@@ -311,11 +311,39 @@ void BlackboxMenu::updateMenu(void) {
   XClearWindow(display, menu.frame);
   XClearWindow(display, menu.title);
 
-  if (show_title)
-    XDrawString(display, menu.title, titleGC, 3,
-		session->titleFont()->ascent + 3,
-		((menu.label) ? menu.label : "Blackbox Menu"),
-		strlen(((menu.label) ? menu.label : "Blackbox Menu")));
+  if (show_title) {
+    switch (session->Justification()) {
+    case BlackboxSession::B_LeftJustify: {
+      XDrawString(display, menu.title, titleGC, 3,
+		  session->titleFont()->ascent + 3,
+		  ((menu.label) ? menu.label : "Blackbox Menu"),
+		  strlen(((menu.label) ? menu.label : "Blackbox Menu")));
+      break; }
+    
+    case BlackboxSession::B_RightJustify: {
+      int off = XTextWidth(session->titleFont(),
+			   ((menu.label) ? menu.label : "Blackbox Menu"),
+			   strlen(((menu.label) ? menu.label :
+				   "Blackbox Menu"))) + 3;
+      XDrawString(display, menu.title, titleGC, menu.width - off,
+		  session->titleFont()->ascent + 3,
+		  ((menu.label) ? menu.label : "Blackbox Menu"),
+		  strlen(((menu.label) ? menu.label : "Blackbox Menu")));
+      break; }
+    
+    case BlackboxSession::B_CenterJustify: {
+      int ins = (menu.width -
+		 (XTextWidth(session->titleFont(),
+			     ((menu.label) ? menu.label : "Blackbox Menu"),
+			     strlen(((menu.label) ? menu.label :
+				     "Blackbox Menu"))))) / 2;
+      XDrawString(display, menu.title, titleGC, ins,
+		  session->titleFont()->ascent + 3,
+		  ((menu.label) ? menu.label : "Blackbox Menu"),
+		  strlen(((menu.label) ? menu.label : "Blackbox Menu")));
+      break; }
+    }
+  }
 
   it.reset();
   for (int i = 0; it.current(); it++, i++) {
@@ -591,10 +619,37 @@ void BlackboxMenu::motionNotifyEvent(XMotionEvent *me) {
 
 void BlackboxMenu::exposeEvent(XExposeEvent *ee) {
   if (ee->window == menu.title) {
-    XDrawString(display, menu.title, titleGC, 3,
-		session->titleFont()->ascent + 3,
-		((menu.label) ? menu.label : "Blackbox Menu"),
-		strlen(((menu.label) ? menu.label : "Blackbox Menu")));
+    switch (session->Justification()) {
+    case BlackboxSession::B_LeftJustify: {
+      XDrawString(display, menu.title, titleGC, 3,
+		  session->titleFont()->ascent + 3,
+		  ((menu.label) ? menu.label : "Blackbox Menu"),
+		  strlen(((menu.label) ? menu.label : "Blackbox Menu")));
+      break; }
+
+    case BlackboxSession::B_RightJustify: {
+      int off = XTextWidth(session->titleFont(),
+			   ((menu.label) ? menu.label : "Blackbox Menu"),
+			   strlen(((menu.label) ? menu.label :
+				   "Blackbox Menu"))) + 3;
+      XDrawString(display, menu.title, titleGC, menu.width - off,
+		  session->titleFont()->ascent + 3,
+		  ((menu.label) ? menu.label : "Blackbox Menu"),
+		  strlen(((menu.label) ? menu.label : "Blackbox Menu")));
+      break; }
+
+    case BlackboxSession::B_CenterJustify: {
+      int ins = (menu.width -
+		 (XTextWidth(session->titleFont(),
+			     ((menu.label) ? menu.label : "Blackbox Menu"),
+			     strlen(((menu.label) ? menu.label :
+				     "Blackbox Menu"))))) / 2;
+      XDrawString(display, menu.title, titleGC, ins,
+		  session->titleFont()->ascent + 3,
+		  ((menu.label) ? menu.label : "Blackbox Menu"),
+		  strlen(((menu.label) ? menu.label : "Blackbox Menu")));
+      break; }
+    }
   } else {
     llist_iterator<BlackboxMenuItem> it(menuitems);
     for (int i = 0; it.current(); it++, i++) {
