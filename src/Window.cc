@@ -1291,17 +1291,23 @@ bool BlackboxWindow::setInputFocus(void) {
   }
 
   bool ret = True;
-  if (focus_mode == F_LocallyActive || focus_mode == F_Passive) {
+  switch (focus_mode) {
+  case F_Passive:
+  case F_LocallyActive:
     XSetInputFocus(blackbox->getXDisplay(), client.window,
                    RevertToPointerRoot, CurrentTime);
-
     blackbox->setFocusedWindow(this);
-  } else {
-    /* we could set the focus to none, since the window doesn't accept focus,
+    break;
+
+  case F_GloballyActive:
+  case F_NoInput:
+    /*
+     * we could set the focus to none, since the window doesn't accept focus,
      * but we shouldn't set focus to nothing since this would surely make
      * someone angry
      */
     ret = False;
+    break;
   }
 
   if (flags.send_focus_message) {
@@ -2506,7 +2512,7 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
         // snap bottom?
         else if (dbottom < snap_distance)
           dy = srect.bottom() - frame.rect.height() + 1;
-        
+
         if (! screen->doFullMax()) {
           srect = screen->getRect(); // now get the full screen
 
