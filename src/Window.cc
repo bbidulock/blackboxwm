@@ -1331,11 +1331,44 @@ bool BlackboxWindow::setInputFocus(void) {
 
 
 void BlackboxWindow::iconify(void) {
+  // walk up to the topmost transient_for that is not iconified
+  if (isTransient() &&
+      client.transient_for != (BlackboxWindow *) ~0ul &&
+      ! client.transient_for->isIconic()) {
+
+    client.transient_for->iconify();
+    return;
+  }
+
   if (flags.iconic) return;
+
+  /*
+   * unmap the frame window first, so when all the transients are
+   * unmapped, we don't get an enter event in sloppy focus mode
+   */
+  XUnmapWindow(blackbox->getXDisplay(), frame.window);
+  flags.visible = False;
+  flags.iconic = True;
 
   if (windowmenu) windowmenu->hide();
 
   setState(IconicState);
+
+  // iconify all transients first
+  if (client.transientList.size() > 0) {
+    std::for_each(client.transientList.begin(), client.transientList.end(),
+                  std::mem_fun(&BlackboxWindow::iconify));
+  }
+
+  /*
+   * remove the window from the workspace and add it to the screen's
+   * icons *AFTER* we have process all transients.  since we always
+   * iconify transients, it's pointless to have focus reverted to one
+   * of them (since they are above their transient_for) for a split
+   * second
+   */
+  screen->getWorkspace(blackbox_attrib.workspace)->removeWindow(this);
+  screen->addIcon(this);
 
   /*
    * we don't want this XUnmapWindow call to generate an UnmapNotify event, so
@@ -1351,29 +1384,7 @@ void BlackboxWindow::iconify(void) {
                PropertyChangeMask | FocusChangeMask | StructureNotifyMask);
   XUngrabServer(blackbox->getXDisplay());
 
-  XUnmapWindow(blackbox->getXDisplay(), frame.window);
-  flags.visible = False;
-  flags.iconic = True;
 
-  screen->getWorkspace(blackbox_attrib.workspace)->removeWindow(this);
-
-  if (isTransient()) {
-    if (client.transient_for != (BlackboxWindow *) ~0ul &&
-        ! client.transient_for->flags.iconic) {
-      // iconify our transient_for
-      client.transient_for->iconify();
-    }
-  }
-
-  screen->addIcon(this);
-
-  if (client.transientList.size() > 0) {
-    // iconify all transients
-    BlackboxWindowList::iterator it, end = client.transientList.end();
-    for (it = client.transientList.begin(); it != end; ++it) {
-      if (! (*it)->flags.iconic) (*it)->iconify();
-    }
-  }
 }
 
 
