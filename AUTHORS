@@ -18,6 +18,9 @@ Current Contributors:
 	 - use of his irix machine for testing
 	Dale P. Smith <dsmith@altustech.com>
 	 - bsetroot now sets xrootpmap_id atom
+	Matt Wilson <mwilson@quicksilver.net.nz>
+	 - for noticing all of the little things
+
 
 nls contributors:
 	Mads Martin Joergensen <mmj@suse.de>
