@@ -349,7 +349,6 @@ public:
   void raiseFocus(void);
   void reconfigure(void);
   void toggleFocusModel(FocusModel model);
-  void updateFocusModel(void);
   void rereadMenu(void);
   void shutdown(void);
   void showPosition(int x, int y);

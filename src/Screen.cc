@@ -1744,6 +1744,9 @@ void BScreen::buttonPressEvent(const XButtonEvent *xbutton) {
 
 
 void BScreen::toggleFocusModel(FocusModel model) {
+  std::for_each(windowList.begin(), windowList.end(),
+                std::mem_fun(&BlackboxWindow::ungrabButtons));
+  
   if (model == SloppyFocus) {
     saveSloppyFocus(True);
   } else {
@@ -1752,14 +1755,8 @@ void BScreen::toggleFocusModel(FocusModel model) {
     saveClickRaise(False);
   }
 
-  updateFocusModel();
-}
-
-
-void BScreen::updateFocusModel()
-{
-  std::for_each(workspacesList.begin(), workspacesList.end(),
-                std::mem_fun(&Workspace::updateFocusModel));
+  std::for_each(windowList.begin(), windowList.end(),
+                std::mem_fun(&BlackboxWindow::grabButtons));
 }
 
 

@@ -217,22 +217,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   }
 #endif // SHAPE
 
-  if ((! screen->isSloppyFocus()) || screen->doClickRaise()) {
-    // grab button 1 for changing focus/raising
-    blackbox->grabButton(Button1, 0, frame.plate, True, ButtonPressMask,
-                         GrabModeSync, GrabModeSync, frame.plate, None);
-  }
-
-  blackbox->grabButton(Button1, Mod1Mask, frame.window, True,
-                       ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
-                       GrabModeAsync, frame.window, blackbox->getMoveCursor());
-  blackbox->grabButton(Button2, Mod1Mask, frame.window, True,
-                       ButtonReleaseMask, GrabModeAsync, GrabModeAsync,
-                       frame.window, None);
-  blackbox->grabButton(Button3, Mod1Mask, frame.window, True,
-                       ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
-                       GrabModeAsync, frame.window,
-                       blackbox->getLowerRightAngleCursor());
+  grabButtons();
 
   windowmenu = new Windowmenu(this);
 
@@ -749,14 +734,31 @@ void BlackboxWindow::reconfigure(void) {
 }
 
 
-void BlackboxWindow::updateFocusModel(void) {
-  if ((! screen->isSloppyFocus()) || screen->doClickRaise()) {
+void BlackboxWindow::grabButtons(void) {
+  if ((! screen->isSloppyFocus()) || screen->doClickRaise())
     // grab button 1 for changing focus/raising
     blackbox->grabButton(Button1, 0, frame.plate, True, ButtonPressMask,
-                         GrabModeSync, GrabModeSync, None, None);
-  } else {
+                         GrabModeSync, GrabModeSync, frame.plate, None);
+
+  if (functions & Func_Move)
+    blackbox->grabButton(Button1, Mod1Mask, frame.window, True,
+                         ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
+                         GrabModeAsync, frame.window,
+                         blackbox->getMoveCursor());
+  if (functions & Func_Resize)
+    blackbox->grabButton(Button3, Mod1Mask, frame.window, True,
+                         ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
+                         GrabModeAsync, frame.window,
+                         blackbox->getLowerRightAngleCursor());
+}
+
+
+void BlackboxWindow::ungrabButtons(void) {
+  if ((! screen->isSloppyFocus()) || screen->doClickRaise())
     blackbox->ungrabButton(Button1, 0, frame.plate);
-  }
+
+  blackbox->ungrabButton(Button1, Mod1Mask, frame.window);
+  blackbox->ungrabButton(Button3, Mod1Mask, frame.window);
 }
 
 
@@ -2334,6 +2336,9 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
 
     if ((client.normal_hint_flags & PMinSize) &&
         (client.normal_hint_flags & PMaxSize)) {
+      // the window now can/can't resize itself, so the buttons need to be
+      // regrabbed.
+      ungrabButtons();
       if (client.max_width <= client.min_width &&
           client.max_height <= client.min_height) {
         decorations &= ~(Decor_Maximize | Decor_Handle);
@@ -2342,6 +2347,7 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
         decorations |= Decor_Maximize | Decor_Handle;
         functions |= Func_Resize | Func_Maximize;
       }
+      grabButtons();
     }
 
     Rect old_rect = frame.rect;
@@ -2588,9 +2594,6 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent *re) {
               frame.changing.width(), frame.changing.height());
 
     XUngrabPointer(blackbox->getXDisplay(), CurrentTime);
-  } else if (re->window == frame.window) {
-    if (re->button == 2 && re->state == Mod1Mask)
-      XUngrabPointer(blackbox->getXDisplay(), CurrentTime);
   }
 }
 
@@ -2903,7 +2906,6 @@ void BlackboxWindow::changeBlackboxHints(BlackboxHints *net) {
     case DecorTool:
       decorations |= Decor_Titlebar;
       decorations &= ~(Decor_Iconify | Decor_Border | Decor_Handle);
-      functions |= Func_Move;
 
       break;
     }

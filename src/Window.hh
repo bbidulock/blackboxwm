@@ -332,7 +332,8 @@ public:
   void shade(void);
   void stick(void);
   void reconfigure(void);
-  void updateFocusModel(void);
+  void grabButtons(void);
+  void ungrabButtons(void);
   void installColormap(bool install);
   void restore(bool remap);
   void configure(int dx, int dy, unsigned int dw, unsigned int dh);
