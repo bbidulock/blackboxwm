@@ -2483,11 +2483,11 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
 
     if (! screen->doOpaqueMove()) {
       XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
-                     frame.move_x, frame.move_y, frame.resize_w,
-                     frame.resize_h);
+                     frame.changing_x, frame.changing_y, frame.changing_w,
+                     frame.changing_h);
       XUngrabServer( display );
 
-      configure(frame.move_x, frame.move_y, frame.width, frame.height);
+      configure(frame.changing_x, frame.changing_y, frame.width, frame.height);
     } else {
       configure(frame.x, frame.y, frame.width, frame.height);
     }
@@ -2495,8 +2495,8 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
     XUngrabPointer(display, CurrentTime);
   } else if (flags.resizing) {
     XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
-                   frame.resize_x, frame.resize_y,
-                   frame.resize_w, frame.resize_h);
+                   frame.changing_x, frame.changing_y,
+                   frame.changing_w, frame.changing_h);
     XUngrabServer( display );
 
     screen->hideGeometry();
@@ -2510,9 +2510,9 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
     if (flags.maximized == 1)
       maximize(0);
     flags.resizing = False;
-    configure(frame.resize_x, frame.resize_y,
-              frame.resize_w - (frame.border_w * 2),
-              frame.resize_h - (frame.border_w * 2));
+    configure(frame.changing_x, frame.changing_y,
+              frame.changing_w - (frame.border_w * 2),
+              frame.changing_h - (frame.border_w * 2));
 
     XUngrabPointer(display, CurrentTime);
   } else if (re->window == frame.window) {
@@ -2541,17 +2541,17 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
       if (! screen->doOpaqueMove()) {
         XGrabServer( display );
 
-        frame.move_x = frame.x;
-        frame.move_y = frame.y;
-        frame.resize_w = frame.width + (frame.border_w * 2);
-        frame.resize_h = ((flags.shaded) ? frame.title_h : frame.height) +
+        frame.changing_x = frame.x;
+        frame.changing_y = frame.y;
+        frame.changing_w = frame.width + (frame.border_w * 2);
+        frame.changing_h = ((flags.shaded) ? frame.title_h : frame.height) +
           (frame.border_w * 2);
 
         screen->showPosition(frame.x, frame.y);
 
         XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
-                       frame.move_x, frame.move_y,
-                       frame.resize_w, frame.resize_h);
+                       frame.changing_x, frame.changing_y,
+                       frame.changing_w, frame.changing_h);
       }
     } else {
       int dx = me->x_root - frame.grab_x, dy = me->y_root - frame.grab_y;
@@ -2595,15 +2595,15 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
         configure(dx, dy, frame.width, frame.height);
       } else {
         XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
-                       frame.move_x, frame.move_y, frame.resize_w,
-                       frame.resize_h);
+                       frame.changing_x, frame.changing_y, frame.changing_w,
+                       frame.changing_h);
 
-        frame.move_x = dx;
-        frame.move_y = dy;
+        frame.changing_x = dx;
+        frame.changing_y = dy;
 
         XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
-                       frame.move_x, frame.move_y, frame.resize_w,
-                       frame.resize_h);
+                       frame.changing_x, frame.changing_y, frame.changing_w,
+                       frame.changing_h);
       }
 
       screen->showPosition(dx, dy);
@@ -2629,10 +2629,10 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
       int gx, gy;
       frame.grab_x = me->x - frame.border_w;
       frame.grab_y = me->y - (frame.border_w * 2);
-      frame.resize_x = frame.x;
-      frame.resize_y = frame.y;
-      frame.resize_w = frame.width + (frame.border_w * 2);
-      frame.resize_h = frame.height + (frame.border_w * 2);
+      frame.changing_x = frame.x;
+      frame.changing_y = frame.y;
+      frame.changing_w = frame.width + (frame.border_w * 2);
+      frame.changing_h = frame.height + (frame.border_w * 2);
 
       if (left)
         left_fixsize(&gx, &gy);
@@ -2642,34 +2642,34 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
       screen->showGeometry(gx, gy);
 
       XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
-                     frame.resize_x, frame.resize_y,
-                     frame.resize_w, frame.resize_h);
+                     frame.changing_x, frame.changing_y,
+                     frame.changing_w, frame.changing_h);
     } else {
       XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
-                     frame.resize_x, frame.resize_y,
-                     frame.resize_w, frame.resize_h);
+                     frame.changing_x, frame.changing_y,
+                     frame.changing_w, frame.changing_h);
 
       int gx, gy;
 
-      frame.resize_h = frame.height + (me->y - frame.grab_y);
-      if (frame.resize_h < 1) frame.resize_h = 1;
+      frame.changing_h = frame.height + (me->y - frame.grab_y);
+      if (frame.changing_h < 1) frame.changing_h = 1;
 
       if (left) {
-        frame.resize_x = me->x_root - frame.grab_x;
-        if (frame.resize_x > (signed) (frame.x + frame.width))
-          frame.resize_x = frame.resize_x + frame.width - 1;
+        frame.changing_x = me->x_root - frame.grab_x;
+        if (frame.changing_x > (signed) (frame.x + frame.width))
+          frame.changing_x = frame.changing_x + frame.width - 1;
 
         left_fixsize(&gx, &gy);
       } else {
-        frame.resize_w = frame.width + (me->x - frame.grab_x);
-        if (frame.resize_w < 1) frame.resize_w = 1;
+        frame.changing_w = frame.width + (me->x - frame.grab_x);
+        if (frame.changing_w < 1) frame.changing_w = 1;
 
         right_fixsize(&gx, &gy);
       }
 
       XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
-                     frame.resize_x, frame.resize_y,
-                     frame.resize_w, frame.resize_h);
+                     frame.changing_x, frame.changing_y,
+                     frame.changing_w, frame.changing_h);
 
       screen->showGeometry(gx, gy);
     }
@@ -2892,9 +2892,9 @@ void BlackboxWindow::downsize(void) {
 void BlackboxWindow::right_fixsize(int *gx, int *gy) {
   // calculate the size of the client window and conform it to the
   // size specified by the size hints of the client window...
-  int dx = frame.resize_w - client.base_width - (frame.mwm_border_w * 2) -
+  int dx = frame.changing_w - client.base_width - (frame.mwm_border_w * 2) -
     (frame.border_w * 2) + (client.width_inc / 2);
-  int dy = frame.resize_h - frame.y_border - client.base_height -
+  int dy = frame.changing_h - frame.y_border - client.base_height -
     frame.handle_h - (frame.border_w * 3) - (frame.mwm_border_w * 2)
     + (client.height_inc / 2);
 
@@ -2912,8 +2912,8 @@ void BlackboxWindow::right_fixsize(int *gx, int *gy) {
   dx = (dx * client.width_inc) + client.base_width;
   dy = (dy * client.height_inc) + client.base_height;
 
-  frame.resize_w = dx + (frame.mwm_border_w * 2) + (frame.border_w * 2);
-  frame.resize_h = dy + frame.y_border + frame.handle_h +
+  frame.changing_w = dx + (frame.mwm_border_w * 2) + (frame.border_w * 2);
+  frame.changing_h = dy + frame.y_border + frame.handle_h +
                    (frame.mwm_border_w * 2) +  (frame.border_w * 3);
 }
 
@@ -2921,9 +2921,9 @@ void BlackboxWindow::right_fixsize(int *gx, int *gy) {
 void BlackboxWindow::left_fixsize(int *gx, int *gy) {
   // calculate the size of the client window and conform it to the
   // size specified by the size hints of the client window...
-  int dx = frame.x + frame.width - frame.resize_x - client.base_width -
+  int dx = frame.x + frame.width - frame.changing_x - client.base_width -
     (frame.mwm_border_w * 2) + (client.width_inc / 2);
-  int dy = frame.resize_h - frame.y_border - client.base_height -
+  int dy = frame.changing_h - frame.y_border - client.base_height -
     frame.handle_h - (frame.border_w * 3) - (frame.mwm_border_w * 2)
     + (client.height_inc / 2);
 
@@ -2941,9 +2941,9 @@ void BlackboxWindow::left_fixsize(int *gx, int *gy) {
   dx = (dx * client.width_inc) + client.base_width;
   dy = (dy * client.height_inc) + client.base_height;
 
-  frame.resize_w = dx + (frame.mwm_border_w * 2) + (frame.border_w * 2);
-  frame.resize_x = frame.x + frame.width - frame.resize_w +
+  frame.changing_w = dx + (frame.mwm_border_w * 2) + (frame.border_w * 2);
+  frame.changing_x = frame.x + frame.width - frame.changing_w +
                    (frame.border_w * 2);
-  frame.resize_h = dy + frame.y_border + frame.handle_h +
+  frame.changing_h = dy + frame.y_border + frame.handle_h +
                    (frame.mwm_border_w * 2) + (frame.border_w * 3);
 }

@@ -183,10 +183,12 @@ private:
       close_button, iconify_button, maximize_button,
       right_grip, left_grip;
 
-
-    unsigned int resize_w, resize_h;
-    int resize_x, resize_y,    // size and location of box drawn while resizing
-      move_x, move_y;          // location of box drawn while moving
+    /*
+     * size and location of the box drawn while the window dimensions or
+     * location is being changed, ie. resized or moved
+     */
+    int changing_x, changing_y;
+    unsigned int changing_w, changing_h;
 
     int x, y,
       grab_x, grab_y,          // where was the window when it was grabbed?
