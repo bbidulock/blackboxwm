@@ -84,7 +84,7 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
   rootmenu = 0;
   resource.stylerc = 0;
   resource.font.menu = resource.font.title = (XFontStruct *) 0;
-  
+ 
 #ifdef HAVE_STRFTIME
   resource.strftime_format = 0;
 #endif
@@ -171,12 +171,66 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
 
   workspaceNames = new LinkedList<char>;
   workspacesList = new LinkedList<Workspace>;
+
+#ifdef    KDE
+  kwm_module_list = new LinkedList<Window>;
+  kwm_window_list = new LinkedList<Window>;
+
+  {
+    unsigned long data = 1;
+    XChangeProperty(display, root_window, blackbox->getKWMRunningAtom(),
+                    blackbox->getKWMRunningAtom(), 32, PropModeAppend,
+                    (unsigned char *) &data, 1);
+
+    Atom a;
+    a = XInternAtom(display, "KWM_STRING_MAXIMIZE", False);
+    XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
+                    (unsigned char *) "&Maximize", 10);
+
+    a = XInternAtom(display, "KWM_STRING_UNMAXIMIZE", False);
+    XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
+                    (unsigned char *) "&Un Maximize", 12);
+
+    a = XInternAtom(display, "KWM_STRING_ICONIFY", False);
+    XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
+                    (unsigned char *) "&Iconify", 9);
+
+    a = XInternAtom(display, "KWM_STRING_UNICONIFY", False);
+    XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
+                    (unsigned char *) "&De Iconify", 9);
+
+    a = XInternAtom(display,"KWM_STRING_STICKY",False);
+    XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
+                    (unsigned char *) "&Stick", 7);
+
+    a = XInternAtom(display, "KWM_STRING_UNSTICKY", False);
+    XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
+                    (unsigned char *) "&Un Stick", 9);
+    
+    a = XInternAtom(display, "KWM_STRING_MOVE", False);
+    XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
+                    (unsigned char *) "&Move", 6);
+
+    a = XInternAtom(display, "KWM_STRING_RESIZE", False);
+    XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
+                    (unsigned char *) "&Resize", 8);
+
+    a = XInternAtom(display, "KWM_STRING_CLOSE", False);
+    XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
+                    (unsigned char *) "&Close", 7);
+
+    a = XInternAtom(display, "KWM_STRING_ONTOCURRENTDESKTOP", False);
+    XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
+                    (unsigned char *) "R&eassociate with current...", 7);
+  }
+#endif // KDE
   
   image_control = new BImageControl(blackbox, this);
   image_control->installRootColormap();
   root_colormap_installed = True;
 
   blackbox->load_rc(this);
+
   LoadStyle();
   
   XGCValues gcv;
@@ -218,9 +272,7 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
   workspacemenu = new Workspacemenu(blackbox, this);
   iconmenu = new Iconmenu(blackbox, this);
   
-  Workspace *wkspc = new Workspace(this, workspacesList->count());
-  workspacesList->insert(wkspc);
-    
+  Workspace *wkspc = (Workspace *) 0;
   if (resource.workspaces != 0) {
     for (int i = 0; i < resource.workspaces; ++i) {
       wkspc = new Workspace(this, workspacesList->count());
@@ -233,19 +285,34 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
     workspacemenu->insert(wkspc->getName(), wkspc->getMenu());
   }
   
+#ifdef    KDE
+  {
+    unsigned long data = (unsigned long) workspacesList->count();
+    
+    XChangeProperty(display, root_window,
+		    blackbox->getKWMNumberOfDesktopsAtom(),
+		    blackbox->getKWMNumberOfDesktopsAtom(), 32,
+		    PropModeReplace, (unsigned char *) &data, 1);
+
+    sendToKWMModules(blackbox->getKWMModuleDesktopNumberChangeAtom(),
+		     (XID) data);
+  }
+#endif // KDE
+  
   workspacemenu->insert("Icons", iconmenu);
   workspacemenu->update();
   
-  zero = workspacesList->first();
-  current_workspace = workspacesList->find(1);
+  current_workspace = workspacesList->first();
   workspacemenu->setHighlight(2);
 
   toolbar = new Toolbar(blackbox, this);
 
   InitMenu();
 
-  stackWindows(0, 0);
+  raiseWindows(0, 0);
   rootmenu->update();
+
+  changeWorkspaceID(0);
 
   unsigned int nchild;
   Window r, p, *children;
@@ -257,7 +324,10 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
       continue;
     
     XWindowAttributes attrib;
-    if (XGetWindowAttributes(display, children[i], &attrib))
+    if (XGetWindowAttributes(display, children[i], &attrib)) {
+#ifdef    KDE
+      addKWMModule(children[i]);
+#endif // KDE
       if (! attrib.override_redirect && attrib.map_state != IsUnmapped) {
 	BlackboxWindow *nWin = new BlackboxWindow(blackbox, this, children[i]);
 	
@@ -265,7 +335,10 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
 	mre.window = children[i];
 	nWin->mapRequestEvent(&mre);
       }
+    }
   }
+  
+  XSync(display, False);
 }
 
 
@@ -279,6 +352,14 @@ BScreen::~BScreen(void) {
   delete rootmenu;
   delete toolbar;
   delete image_control;
+
+  delete workspacesList;
+  delete workspaceNames;
+
+#ifdef    KDE
+  delete kwm_module_list;
+  delete kwm_window_list;
+#endif // KDE
 
   if (resource.font.title) {
     XFreeFont(display, resource.font.title);
@@ -300,7 +381,7 @@ BScreen::~BScreen(void) {
 }
 
 void BScreen::readDatabaseTexture(char *rname, char *rclass,
-				   BTexture *texture)
+				  BTexture *texture)
 {
   XrmValue value;
   char *value_type;
@@ -309,63 +390,59 @@ void BScreen::readDatabaseTexture(char *rname, char *rclass,
   
   if (XrmGetResource(resource.stylerc, rname, rclass, &value_type,
 		     &value)) {
-    if (strstr(value.addr, "Inverted")) {
-      texture->texture |= BImage_Invert;
-    } else {
-      if (strstr(value.addr, "Solid")) {
-	texture->texture |= BImage_Solid;
-      } else if (strstr(value.addr, "Gradient")) {
-	texture->texture |= BImage_Gradient;
-	
-	if (strstr(value.addr, "Diagonal")) {
-	  texture->texture |= BImage_Diagonal;
-	} else if (strstr(value.addr, "Horizontal")) {
-	  texture->texture |= BImage_Horizontal;
-	} else if (strstr(value.addr, "Vertical")) {
-	  texture->texture |= BImage_Vertical;
-	} else
-	  texture->texture |= BImage_Diagonal;
+    if (strstr(value.addr, "Solid")) {
+      texture->texture |= BImage_Solid;
+    } else if (strstr(value.addr, "Gradient")) {
+      texture->texture |= BImage_Gradient;
+      
+      if (strstr(value.addr, "Diagonal")) {
+	texture->texture |= BImage_Diagonal;
+      } else if (strstr(value.addr, "Horizontal")) {
+	texture->texture |= BImage_Horizontal;
+      } else if (strstr(value.addr, "Vertical")) {
+	texture->texture |= BImage_Vertical;
       } else
-	texture->texture |= BImage_Solid;
-      
-      if (strstr(value.addr, "Raised"))
-	texture->texture |= BImage_Raised;
-      else if (strstr(value.addr, "Sunken"))
-	texture->texture |= BImage_Sunken;
-      else if (strstr(value.addr, "Flat"))
-	texture->texture |= BImage_Flat;
-      else
-	texture->texture |= BImage_Raised;
-      
-      if (! (texture->texture & BImage_Flat))
-	if (strstr(value.addr, "Bevel"))
-	  if (strstr(value.addr, "Bevel1"))
-	    texture->texture |= BImage_Bevel1;
-	  else if (strstr(value.addr, "Bevel2"))
-	    texture->texture |= BImage_Bevel2;
-	  else
-	    texture->texture |= BImage_Bevel1;
-    }
+	texture->texture |= BImage_Diagonal;
+    } else
+      texture->texture |= BImage_Solid;
+    
+    if (strstr(value.addr, "Raised"))
+      texture->texture |= BImage_Raised;
+    else if (strstr(value.addr, "Sunken"))
+      texture->texture |= BImage_Sunken;
+    else if (strstr(value.addr, "Flat"))
+      texture->texture |= BImage_Flat;
+    else
+      texture->texture |= BImage_Raised;
+    
+    if (! (texture->texture & BImage_Flat))
+      if (strstr(value.addr, "Bevel"))
+	if (strstr(value.addr, "Bevel1"))
+	  texture->texture |= BImage_Bevel1;
+	else if (strstr(value.addr, "Bevel2"))
+	  texture->texture |= BImage_Bevel2;
+	else
+	  texture->texture |= BImage_Bevel1;
   }
-
+  
   if (texture->texture & BImage_Solid) {
     int clen = strlen(rclass) + 8, nlen = strlen(rname) + 8;
     char *colorclass = new char[clen], *colorname = new char[nlen];
-
+    
     sprintf(colorclass, "%s.Color", rclass);
     sprintf(colorname,  "%s.color", rname);
-
+    
     readDatabaseColor(colorname, colorclass, &(texture->color));
     
     delete [] colorclass;
     delete [] colorname;
-
+    
     if ((! texture->color.allocated) ||
 	(texture->texture & BImage_Flat))
       return;
-
+    
     XColor xcol;
-
+    
     xcol.red = (unsigned int) (texture->color.red +
 			       (texture->color.red >> 1));
     if (xcol.red >= 0xff) xcol.red = 0xffff;
@@ -378,31 +455,31 @@ void BScreen::readDatabaseTexture(char *rname, char *rclass,
 				(texture->color.blue >> 1));
     if (xcol.blue >= 0xff) xcol.blue = 0xffff;
     else xcol.blue *= 0xff;
-
+    
     if (! XAllocColor(display, image_control->getColormap(), &xcol))
       xcol.pixel = 0;
-
+    
     texture->hiColor.pixel = xcol.pixel;
-
+    
     xcol.red = (unsigned int) ((texture->color.red >> 2) +
 			       (texture->color.red >> 1)) * 0xff;
     xcol.green = (unsigned int) ((texture->color.green >> 2) +
 				 (texture->color.green >> 1)) * 0xff;
     xcol.blue = (unsigned int) ((texture->color.blue >> 2) +
 				(texture->color.blue >> 1)) * 0xff;
-
+    
     if (! XAllocColor(display, image_control->getColormap(), &xcol))
       xcol.pixel = 0;
-
+    
     texture->loColor.pixel = xcol.pixel;
   } else if (texture->texture & BImage_Gradient) {
     int clen = strlen(rclass) + 10, nlen = strlen(rname) + 10;
     char *colorclass = new char[clen], *colorname = new char[nlen],
       *colortoclass = new char[clen], *colortoname = new char[nlen];
-
+    
     sprintf(colorclass, "%s.Color", rclass);
     sprintf(colorname,  "%s.color", rname);
-  
+    
     sprintf(colortoclass, "%s.ColorTo", rclass);
     sprintf(colortoname,  "%s.colorTo", rname);
     
@@ -423,8 +500,8 @@ void BScreen::readDatabaseColor(char *rname, char *rclass, BColor *color) {
   
   if (color->allocated) {
     XFreeColors(display, image_control->getColormap(),
-		       &(color->pixel), 1, 0);
-    color->allocated = 0;
+		&(color->pixel), 1, 0);
+    color->allocated = False;
   }
   
   if (XrmGetResource(resource.stylerc, rname, rclass, &value_type,
@@ -432,8 +509,9 @@ void BScreen::readDatabaseColor(char *rname, char *rclass, BColor *color) {
     color->pixel = image_control->getColor(value.addr, &color->red,
 					   &color->green, &color->blue);
     color->allocated = 1;
-  } else
+  } else {
     color->pixel = color->red = color->green = color->blue = 0;
+  }
 }
 
 
@@ -487,8 +565,6 @@ void BScreen::reconfigure(void) {
 void BScreen::removeWorkspaceNames(void) {
   while (workspaceNames->count())
     workspaceNames->remove(0);
-
-  workspaceNames->insert("Sticky Windows");
 }
 
 
@@ -513,7 +589,6 @@ void BScreen::LoadStyle(void) {
 		      &(resource.wres.button.unfocusTexture));
   readDatabaseTexture("window.button.pressed", "Window.Button.Pressed",
 		      &(resource.wres.button.pressedTexture));
-  
   readDatabaseColor("window.focus.textColor", "Window.Focus.TextColor",
 		    &(resource.wres.decoration.focusTextColor));
   if (! resource.wres.decoration.focusTextColor.allocated)
@@ -522,7 +597,6 @@ void BScreen::LoadStyle(void) {
 			      &resource.wres.decoration.focusTextColor.red,
 			      &resource.wres.decoration.focusTextColor.green,
 			      &resource.wres.decoration.focusTextColor.blue);
-  
   readDatabaseColor("window.unfocus.textColor", "Window.Unfocus.TextColor",
 		    &(resource.wres.decoration.unfocusTextColor));
   if (! resource.wres.decoration.unfocusTextColor.allocated)
@@ -733,18 +807,24 @@ void BScreen::LoadStyle(void) {
                      "rootCommand",
                      "RootCommand", &value_type, &value)) {
 #ifndef __EMX__
-    char *command = new char[value.size + 8];
-
-    sprintf(command, "exec %s &", value.addr);
+    int dslen = strlen(DisplayString(display));
+    
+    char *displaystring = new char[dslen + 32];
+    char *command = new char[strlen(value.addr) + dslen + 64];
+    
+    strncpy(displaystring, DisplayString(display), dslen - 1);
+    // gotta love pointer math
+    sprintf(displaystring + dslen - 1, "%d", screen_number);
+    sprintf(command, "DISPLAY=%s exec %s &", displaystring, value.addr);
     system(command);
-
+    
+    delete [] displaystring;
     delete [] command;
 #else
-    spawnlp(P_NOWAIT, "cmd.exe", "cmd.exe", "/c", value.addr, NULL);
+    spawnlp(P_NOWAIT, "cmd.exe", "cmd.exe", "/c", item->exec(), NULL);
 #endif
-
   }
-
+  
   XrmDestroyDatabase(resource.stylerc);
 }
 
@@ -754,12 +834,24 @@ int BScreen::addWorkspace(void) {
   workspacesList->insert(wkspc);
 
   workspacemenu->insert(wkspc->getName(), wkspc->getMenu(),
-			wkspc->getWorkspaceID());
+			wkspc->getWorkspaceID() + 1);
   workspacemenu->update();
   if (workspacemenu->isVisible())
     workspacemenu->move(toolbar->getX(), toolbar->getY() - 
 			workspacemenu->getHeight() - 1);
+
+#ifdef    KDE
+  unsigned long data = (unsigned long) workspacesList->count();
   
+  XChangeProperty(display, root_window,
+                  blackbox->getKWMNumberOfDesktopsAtom(),
+                  blackbox->getKWMNumberOfDesktopsAtom(), 32,
+                  PropModeReplace, (unsigned char *) &data, 1);
+
+  sendToKWMModules(blackbox->getKWMModuleDesktopNumberChangeAtom(),
+		   (XID) data);
+#endif // KDE
+ 
   return workspacesList->count();
 }
 
@@ -773,7 +865,7 @@ int BScreen::removeLastWorkspace(void) {
     
     wkspc->removeAll();
     
-    workspacemenu->remove(wkspc->getWorkspaceID() + 1);
+    workspacemenu->remove(wkspc->getWorkspaceID() + 2);
     workspacemenu->update();
     if (workspacemenu->isVisible())
       workspacemenu->move(toolbar->getX(), toolbar->getY() -
@@ -781,6 +873,18 @@ int BScreen::removeLastWorkspace(void) {
 
     workspacesList->remove(wkspc);
     delete wkspc;
+    
+#ifdef    KDE
+    unsigned long data = (unsigned long) workspacesList->count();
+    
+    XChangeProperty(display, root_window,
+		    blackbox->getKWMNumberOfDesktopsAtom(),
+		    blackbox->getKWMNumberOfDesktopsAtom(), 32,
+		    PropModeReplace, (unsigned char *) &data, 1);
+    
+    sendToKWMModules(blackbox->getKWMModuleDesktopNumberChangeAtom(),
+		     (XID) data);
+#endif // KDE
     
     return workspacesList->count();
   }
@@ -815,9 +919,11 @@ int BScreen::getCurrentWorkspaceID(void) {
 
 
 void BScreen::changeWorkspaceID(int id) {
-  if (id != current_workspace->getWorkspaceID()) {
+  if (current_workspace && id != current_workspace->getWorkspaceID()) {
     current_workspace->hideAll();
-    current_workspace->setFocusWindow(-1);
+    if (blackbox->getFocusedWindow() &&
+	(! blackbox->getFocusedWindow()->isStuck()))
+      current_workspace->setFocusWindow(-1);
     current_workspace = getWorkspace(id);
    
     if (workspacemenu->isVisible()) {
@@ -826,59 +932,52 @@ void BScreen::changeWorkspaceID(int id) {
     }
 
     toolbar->redrawWorkspaceLabel(True);
-    workspacemenu->setHighlight(id + 1);
+    workspacemenu->setHighlight(id + 2);
     
     current_workspace->showAll();
   }
+
+#ifdef    KDE
+  unsigned long data = (unsigned long) current_workspace->getWorkspaceID() + 1;
+  
+  XChangeProperty(display, root_window, blackbox->getKWMCurrentDesktopAtom(),
+                  blackbox->getKWMCurrentDesktopAtom(), 32, PropModeReplace,
+                  (unsigned char *) &data, 1);
+  
+  sendToKWMModules(blackbox->getKWMModuleDesktopChangeAtom(), (XID) data);
+#endif // KDE
 }
 
 
-void BScreen::stackWindows(Window *workspace_stack, int num) {
-  // create window stack... the number of windows for the current workspace,
-  // 3 windows for the toolbar, root menu, and workspaces menu and then the
-  // number of total workspaces (to stack the workspace menus)
+void BScreen::raiseWindows(Window *workspace_stack, int num) {
+  Window *session_stack = new Window[(num + workspacesList->count() + 4)];
 
-  Window *session_stack =
-    new Window[(num + zero->getCount() + workspacesList->count() + 4)];
+  blackbox->grab();
   
-  int i = 0, k;
-  *(session_stack + i++) = rootmenu->getWindowID();
+  int i = 0, k = 0;
 
-  if (toolbar->isRaised()) {
+  XRaiseWindow(display, rootmenu->getWindowID());
+  *(session_stack + i++) = rootmenu->getWindowID();
+  
+  if (toolbar->isOnTop()) {
     *(session_stack + i++) = iconmenu->getWindowID();
     *(session_stack + i++) = workspacemenu->getWindowID();
-  
+    
     LinkedListIterator<Workspace> it(workspacesList);
     for (; it.current(); it++)
       *(session_stack + i++) = it.current()->getMenu()->getWindowID();
-
-    *(session_stack + i++) = toolbar->getWindowID();
-
-    k = zero->getCount();
-    while (k--)
-      *(session_stack + i++) = *(zero->getWindowStack() + k);
+    
+    *(session_stack + i++) = toolbar->getWindowID();  
   }
-
+  
   k = num;
   while (k--)
     *(session_stack + i++) = *(workspace_stack + k);
-
-  if (! toolbar->isRaised()) {
-    *(session_stack + i++) = iconmenu->getWindowID();
-    *(session_stack + i++) = workspacemenu->getWindowID();
-    
-    LinkedListIterator<Workspace> it(workspacesList);
-    for (; it.current(); it++)
-      *(session_stack + i++) = it.current()->getMenu()->getWindowID();
-    
-    *(session_stack + i++) = toolbar->getWindowID();
-    
-    k = zero->getCount();
-    while (k--)
-      *(session_stack + i++) = *(zero->getWindowStack() + k);
-  }
   
   XRestackWindows(display, session_stack, i);
+  
+  blackbox->ungrab();
+  
   delete [] session_stack;
 }
 
@@ -899,7 +998,7 @@ void BScreen::addWorkspaceName(char *name) {
 
 
 void BScreen::getNameOfWorkspace(int id, char **name) {
-  if (id > 0 && id < workspaceNames->count()) {
+  if (id >= 0 && id < workspaceNames->count()) {
     char *wkspc_name = workspaceNames->find(id);
     
     if (wkspc_name) {
@@ -1338,10 +1437,136 @@ void BScreen::shutdown(void) {
   blackbox->grab();
 
   XSelectInput(display, root_window, NoEventMask);
-  
+
+#ifdef    KDE
+  XDeleteProperty(display, root_window, blackbox->getKWMRunningAtom());
+#endif // KDE
+
   LinkedListIterator<Workspace> it(workspacesList);
   for (; it.current(); it ++)
     it.current()->shutdown();
   
   blackbox->ungrab();
 }
+
+
+#ifdef    KDE
+
+Bool BScreen::isKWMModule(Window win) {
+  Atom type_return;
+
+  int ijunk;
+  unsigned long uljunk, return_value = 0, *result;
+
+  if (XGetWindowProperty(display, win, blackbox->getKWMModuleAtom(), 0l, 1l,
+                         False, blackbox->getKWMModuleAtom(), &type_return,
+                         &ijunk, &uljunk, &uljunk,
+                         (unsigned char **) &result) == Success && result) {
+    return_value = *result;
+    XFree((char *) result);
+  }
+
+  return (return_value != 0);
+}
+
+
+void BScreen::sendToKWMModules(Atom atom, XID data) {
+  LinkedListIterator<Window> it(kwm_module_list);
+  for (; it.current(); it++)
+    sendClientMessage(*(it.current()), atom, data);
+}
+
+
+void BScreen::addKWMWindow(Window win) {
+  Window *new_win = new Window;
+  *new_win = win;
+
+  kwm_window_list->insert(new_win);
+  sendToKWMModules(blackbox->getKWMModuleWinAddAtom(), win);
+}
+
+
+void BScreen::removeKWMWindow(Window win) {
+  LinkedListIterator<Window> mod_it(kwm_module_list);
+  for (; mod_it.current(); mod_it++)
+    if (*(mod_it.current()) == win)
+      break;
+  
+  if (mod_it.current()) {
+    Window *w = mod_it.current();
+
+    kwm_module_list->remove(w);
+    delete w;
+  }
+  
+  LinkedListIterator<Window> win_it(kwm_window_list);
+  for (; win_it.current(); win_it++)
+    if (*(win_it.current()) == win)
+      break;
+  
+  if (win_it.current()) {
+    Window *w = win_it.current();
+
+    kwm_window_list->remove(w);
+    delete w;
+
+    sendToKWMModules(blackbox->getKWMModuleWinRemoveAtom(), win);
+  }
+}
+
+
+void BScreen::sendToKWMModules(XClientMessageEvent *e) {
+  LinkedListIterator<Window> it(kwm_module_list);
+  for (; it.current(); it++) {
+    e->window = *(it.current());
+    XSendEvent(display, *(it.current()), False,
+               0 | ((*(it.current()) == root_window) ?
+                    SubstructureRedirectMask : 0), (XEvent *) e);
+  }
+}
+
+
+void BScreen::sendClientMessage(Window window, Atom atom, XID data) {
+  XEvent e;
+  unsigned long mask;
+  
+  e.xclient.type = ClientMessage;
+  e.xclient.window = window;
+  e.xclient.message_type = atom;
+  e.xclient.format = 32;
+  e.xclient.data.l[0] = (unsigned long) data;
+  e.xclient.data.l[1] = CurrentTime;
+  
+  mask = 0 | ((window == root_window) ? SubstructureRedirectMask : 0);
+  XSendEvent(display, window, False, mask, &e);
+}
+
+
+void BScreen::addKWMModule(Window win) {
+  if (isKWMModule(win) && blackbox->validateWindow(win)) {
+    Window *new_win = new Window;
+    *new_win = win;
+    
+    kwm_module_list->insert(new_win);
+    sendClientMessage(win, blackbox->getKWMModuleInitAtom(), 0);
+
+    LinkedListIterator<Window> it(kwm_window_list);
+    for (; it.current(); it++)
+      sendClientMessage(win, blackbox->getKWMModuleWinAddAtom(),
+			(XID) *(it.current()));
+    
+    sendClientMessage(win, blackbox->getKWMModuleInitializedAtom(), 0);
+
+    XSelectInput(display, win, StructureNotifyMask);
+  } else
+    removeKWMWindow(win);
+}
+
+
+void BScreen::scanWorkspaceNames(void) {
+  LinkedListIterator<Workspace> it(workspacesList);
+  for (; it.current(); it++)
+    it.current()->rereadName();
+}
+
+#endif // KDE

@@ -20,13 +20,17 @@ dnl
 
 dnl Initialize autoconf and automake
 AC_INIT(src/blackbox.cc)
-AM_INIT_AUTOMAKE(Blackbox,0.50.1,no-define)
+AM_INIT_AUTOMAKE(Blackbox,0.50.2,no-define)
 
 dnl Determine default prefix
 test x$prefix = "xNONE" && prefix="$ac_default_prefix"
 
-dnl Locate required external software
+dnl Check for various flavors of UNIX(r)
 AC_PROG_CC
+AC_AIX
+AC_ISC_POSIX
+
+dnl Locate required external software
 AC_PROG_CXX
 AC_PROG_INSTALL
 
@@ -34,10 +38,6 @@ AC_CHECK_PROGS(regex_cmd, sed)
 if test x$regex_cmd = "x"; then
   AC_MSG_ERROR([error. sed is required to build the default menu file.])
 fi
-
-dnl Check for various flavors of UNIX(r)
-AC_AIX
-AC_ISC_POSIX
 
 dnl Check for system header files
 AC_HEADER_STDC
@@ -58,7 +58,8 @@ test x$x_libraries = "x" && x_libraries="/usr/lib"
 
 CFLAGS="$CFLAGS $X_CFLAGS"
 CXXFLAGS="$CXXFLAGS $X_CFLAGS"
-LDFLAGS="$LDFLAGS $X_LIBS $X_PRE_LIBS"
+LDFLAGS="$LDFLAGS $X_LIBS"
+dnl $X_LIBS $X_PRE_LIBS
 
 dnl Check for required functions in -lX11
 AC_CHECK_LIB(X11, XOpenDisplay,
@@ -90,6 +91,21 @@ AC_ARG_ENABLE(
   )
 )
 AC_SUBST(SHAPE)
+
+dnl Check for XShape extension support and proper library files.
+KDE=""
+AC_MSG_CHECKING([whether to build support for KDE])
+AC_ARG_ENABLE(
+  kde, [  --enable-kde            enable support of the KDE [default=no]],
+  if test x$enableval = "xyes"; then
+    AC_MSG_RESULT([yes])
+    KDE="-DKDE"
+  else
+    AC_MSG_RESULT([no])
+  fi,
+  AC_MSG_RESULT([no])
+)
+AC_SUBST(KDE)
 
 dnl Determine the return type of signal handlers
 AC_TYPE_SIGNAL

@@ -54,9 +54,6 @@ typedef struct MwmHints {
 
 #define PropMwmHintsElements  3
 
-// extended state information
-#define ShadeState            (1l << 0)
-
 // forward declaration
 class BlackboxWindow;
 
@@ -144,8 +141,8 @@ protected:
   void drawIconifyButton(Bool);
   void drawMaximizeButton(Bool);
   
-  Bool getState(unsigned long *, unsigned long * = 0, unsigned long * = 0);
-  void setState(unsigned long, unsigned long);
+  Bool getState(unsigned long *, unsigned long * = 0);
+  void setState(unsigned long);
   
   
 public:
@@ -211,12 +208,12 @@ public:
   void removeIcon(void) { icon = NULL; }
   void setFocusFlag(Bool);
   void iconify(void);
-  void deiconify(void);
+  void deiconify(Bool = True);
   void close(void);
   void withdraw(void);
   void maximize(unsigned int);
   void shade(void);
-  void stick(Bool s) { stuck = s; }
+  void stick(void);
   void unstick(void);
   void reconfigure(void);
   void installColormap(Bool);

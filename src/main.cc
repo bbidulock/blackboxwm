@@ -67,9 +67,19 @@ int main(int argc, char **argv) {
     // set by the environment variable DISPLAY
     if (! strcmp(argv[i], "-display")) {
       if ((++i) >= argc) {
-	fprintf(stderr, "error: '-display' requires and argument\n");
+	fprintf(stderr, "error: '-display' requires an argument\n");
 
 	::exit(1);
+      }
+      
+      session_display = argv[i];
+      char dtmp[MAXPATHLEN];
+      sprintf(dtmp, "DISPLAY=%s", session_display);
+      
+      if (putenv(dtmp)) {
+	fprintf(stderr,
+		"warning: couldn't set environment variable 'DISPLAY'\n");
+	perror("putenv()");
       }
     } else if (! strcmp(argv[i], "-version")) {
       // print current version string

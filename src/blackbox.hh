@@ -71,8 +71,8 @@ private:
   } cursor;
 
   struct resource {
-    Bool image_dither;
-    Time double_click_interval;
+    Bool image_dither, colormap_focus_follows_mouse;
+    Time double_click_interval, auto_raise_delay_sec, auto_raise_delay_usec;
 
     char *menu_file, *style_file;
     int colors_per_channel;
@@ -89,18 +89,24 @@ private:
   LinkedList<GroupSearch> *groupSearchList;
   LinkedList<BScreen> *screenList;
 
-  BlackboxWindow *focused_window;
+  BlackboxWindow *focused_window, *auto_raise_window;
 
   Atom xa_wm_colormap_windows, xa_wm_protocols, xa_wm_state,
     xa_wm_delete_window, xa_wm_take_focus, xa_wm_change_state,
     motif_wm_hints;
-  /* kwm_current_desktop, kwm_number_of_desktops, kwm_active_window,
-     kwm_win_iconified, kwm_win_sticky, kwm_win_maximized, kwm_win_decoration,
-     kwm_win_icon, kwm_win_desktop, kwm_win_frame_geometry, kwm_command,
-     kwm_do_not_manage, kwm_activate_window, kw_running;
-  */
 
-  Bool _startup, _shutdown, _reconfigure;
+#ifdef    KDE
+  Atom kwm_current_desktop, kwm_number_of_desktops, kwm_active_window,
+    kwm_win_iconified, kwm_win_sticky, kwm_win_maximized, kwm_win_decoration,
+    kwm_win_icon, kwm_win_desktop, kwm_win_frame_geometry, kwm_command,
+    kwm_do_not_manage, kwm_activate_window, kwm_running,
+    kwm_module, kwm_module_init, kwm_module_initialized,
+    kwm_module_desktop_change, kwm_module_win_change, kwm_window_region_1,
+    kwm_module_desktop_number_change, kwm_module_desktop_name_change,
+    kwm_module_win_add, kwm_module_win_remove;
+#endif // KDE
+
+  Bool _startup, _shutdown, _reconfigure, auto_raise_pending;
   Display *display;
   char *display_name;
   char **argv;
@@ -128,6 +134,33 @@ public:
   Atom getWMColormapAtom(void)    { return xa_wm_colormap_windows; }
 
   Atom getMotifWMHintsAtom(void) { return motif_wm_hints; }
+
+#ifdef    KDE
+
+  Atom getKWMRunningAtom(void)             { return kwm_running; }
+  Atom getKWMModuleAtom(void)              { return kwm_module; }
+  Atom getKWMModuleInitAtom(void)          { return kwm_module_init; }
+  Atom getKWMModuleInitializedAtom(void)   { return kwm_module_initialized; }
+  Atom getKWMCurrentDesktopAtom(void)      { return kwm_current_desktop; }
+  Atom getKWMNumberOfDesktopsAtom(void)    { return kwm_number_of_desktops; }
+
+  Atom getKWMWinStickyAtom(void)           { return kwm_win_sticky; }
+  Atom getKWMWinIconifiedAtom(void)        { return kwm_win_iconified; }
+  Atom getKWMWinMaximizedAtom(void)        { return kwm_win_maximized; }
+  Atom getKWMWinDesktopAtom(void)          { return kwm_win_desktop; }
+  Atom getKWMWindowRegion1Atom(void)       { return kwm_window_region_1; }
+
+  Atom getKWMModuleDesktopChangeAtom(void)
+    { return kwm_module_desktop_change; }
+  Atom getKWMModuleWinChangeAtom(void)     { return kwm_module_win_change; }
+  Atom getKWMModuleDesktopNameChangeAtom(void)
+    { return kwm_module_desktop_name_change; }
+  Atom getKWMModuleWinAddAtom(void)        { return kwm_module_win_add; }
+  Atom getKWMModuleWinRemoveAtom(void)     { return kwm_module_win_remove; }
+  Atom getKWMModuleDesktopNumberChangeAtom(void)
+    { return kwm_module_desktop_number_change; }
+
+#endif // KDE
 
   Basemenu *searchMenu(Window);
 

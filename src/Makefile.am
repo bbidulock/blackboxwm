@@ -20,6 +20,7 @@
 
 CPPFLAGS =		@CPPFLAGS@				\
 			@SHAPE@					\
+			@KDE@					\
 			-DDEFAULTRC=\"$(pkgdatadir)/rc\"	\
 			-DDEFAULTMENU=\"$(pkgdatadir)/menu\"	\
 			-DDEFAULTSTYLE=\"$(pkgdatadir)/styles/default\"

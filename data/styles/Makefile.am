@@ -41,5 +41,5 @@ distclean-local:
 all-local: stylesmenu
 
 stylesmenu: stylesmenu.in
-	@regex_cmd@ -e "s.:pkgdatadir:.$(pkgdatadir)." stylesmenu.in > stylesmenu
+	@regex_cmd@ -e "s,:pkgdatadir:,$(pkgdatadir)," stylesmenu.in > stylesmenu
 

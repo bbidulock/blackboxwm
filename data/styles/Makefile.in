@@ -79,6 +79,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 CC = @CC@
 CXX = @CXX@
+KDE = @KDE@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 PACKAGE = @PACKAGE@
@@ -217,7 +218,7 @@ distclean-local:
 all-local: stylesmenu
 
 stylesmenu: stylesmenu.in
-	@regex_cmd@ -e "s.:pkgdatadir:.$(pkgdatadir)." stylesmenu.in > stylesmenu
+	@regex_cmd@ -e "s,:pkgdatadir:,$(pkgdatadir)," stylesmenu.in > stylesmenu
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

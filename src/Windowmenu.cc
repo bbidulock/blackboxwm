@@ -100,32 +100,16 @@ void Windowmenu::itemSelected(int button, int index) {
   case Blackbox::B_WindowRaise:
     hide();
     screen->getWorkspace(window->getWorkspaceNumber())->raiseWindow(window);
-    if (window->isStuck())
-      screen->getCurrentWorkspace()->restackWindows();
     break;
     
   case Blackbox::B_WindowLower:
     hide();
     screen->getWorkspace(window->getWorkspaceNumber())->lowerWindow(window);
-    if (window->isStuck())
-      screen->getCurrentWorkspace()->restackWindows();
     break;
 
   case Blackbox::B_WindowStick:
     hide();
-    if (! window->isStuck()) {
-      int id = window->getWorkspaceNumber();
-      window->setWorkspace(0);
-      screen->getWorkspace(id)->removeWindow(window);
-      screen->getWorkspace(0)->addWindow(window);
-      window->stick(True);
-    } else {
-      screen->getWorkspace(0)->removeWindow(window);
-      screen->getCurrentWorkspace()->addWindow(window);
-      window->stick(False);
-    }
-
-    screen->getCurrentWorkspace()->restackWindows();
+    window->stick();
     break;
 
   case Blackbox::B_WindowKill:
@@ -178,12 +162,12 @@ SendtoWorkspaceMenu::SendtoWorkspaceMenu(BlackboxWindow *win, Blackbox *bb) :
 
 void SendtoWorkspaceMenu::itemSelected(int button, int index) {
   if (button == 1) {
-    if ((index + 1) <= screen->getCount())
-      if ((index + 1) != screen->getCurrentWorkspaceID()) {
+    if ((index) <= screen->getCount())
+      if ((index) != screen->getCurrentWorkspaceID()) {
 	screen->getWorkspace(window->getWorkspaceNumber())->
 	  removeWindow(window);
-	screen->getWorkspace(index + 1)->addWindow(window);
-	if (window->isStuck()) window->stick(False);
+	screen->getWorkspace(index)->addWindow(window);
+	if (window->isStuck()) window->stick();
 	window->withdraw();
       }
   } else
@@ -198,7 +182,7 @@ void SendtoWorkspaceMenu::update(void) {
     for (i = 0; i < r; ++i)
       remove(0);
   
-  for (i = 1; i < screen->getCount(); ++i)
+  for (i = 0; i < screen->getCount(); ++i)
     insert(screen->getWorkspace(i)->getName());
   
   Basemenu::update();

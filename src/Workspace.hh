@@ -34,7 +34,11 @@ class BlackboxWindow;
 
 class Workspace {
 private:
-  Window *stack;
+#ifdef    KDE
+  Atom desktop_name_atom;
+#endif // KDE
+
+  //  Window *stack;
 
   BScreen *screen;
   Clientmenu *clientmenu;
@@ -61,7 +65,7 @@ public:
 
   Clientmenu *getMenu(void) { return clientmenu; }
 
-  Window *getWindowStack(void) { return stack; }
+  //  Window *getWindowStack(void) { return stack; }
   
   char *getName(void) { return name; }
   char **getLabel(void) { return label; }
@@ -77,13 +81,18 @@ public:
   
   void raiseWindow(BlackboxWindow *);
   void lowerWindow(BlackboxWindow *);
-  void restackWindows(void);
+  //  void restackWindows(void);
   void setFocusWindow(int);
   void reconfigure();
   void update();
   void setCurrent(void);
   void setName(char *);
   void shutdown(void);
+
+#ifdef    KDE
+  void getKWMWindowRegion(int *, int *, int *, int *);
+  void rereadName(void);
+#endif // KDE
 };
 
 

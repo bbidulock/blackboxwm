@@ -116,8 +116,11 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, BScreen *scrn, Window window) {
 	      stuck = client.transient_for->stuck;
 	      transient = True;
 	    }
+	  } else if (win == screen->getRootWindow()) {
+	    client.transient_for = (BlackboxWindow *) 0;
+	    transient = True;
 	  }
-      
+
       // edit the window decorations for the transient window
       if (! transient) {
 	if ((client.normal_hint_flags & PMinSize) &&
@@ -136,14 +139,13 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, BScreen *scrn, Window window) {
       Atom atom_return;
       unsigned long num, len;
       
-      XGetWindowProperty(display, client.window,
+      if (XGetWindowProperty(display, client.window,
                          blackbox->getMotifWMHintsAtom(), 0,
                          PropMwmHintsElements, False,
                          blackbox->getMotifWMHintsAtom(), &atom_return,
                          &format, &num, &len,
-                         (unsigned char **) &client.mwm_hint);
-      
-      if (client.mwm_hint)
+                         (unsigned char **) &client.mwm_hint) == Success &&
+          client.mwm_hint)
 	if (num == PropMwmHintsElements) {
 	  if (client.mwm_hint->flags & MwmHintsDecorations)
 	    if (client.mwm_hint->decorations & MwmDecorAll)
@@ -339,10 +341,30 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, BScreen *scrn, Window window) {
 	windowmenu = new Windowmenu(this, blackbox);
       
       createDecorations();
-      if (stuck)
-	screen->getWorkspace(0)->addWindow(this, place_window);
-      else
-	screen->getCurrentWorkspace()->addWindow(this, place_window);
+
+#ifdef    KDE
+      {
+	Atom ajunk;
+	
+	int ijunk;
+	unsigned long uljunk, *ret = 0;
+	
+	if (XGetWindowProperty(display, client.window,
+			       blackbox->getKWMWinStickyAtom(), 0l, 1l, False,
+			       blackbox->getKWMWinStickyAtom(), &ajunk, &ijunk,
+			       &uljunk, &uljunk,
+			       (unsigned char **) &ret) == Success && ret) {
+	  stuck = *ret;
+	  XFree((char *) ret);
+	}
+      }
+#endif // KDE
+      
+      screen->getCurrentWorkspace()->addWindow(this, place_window);
+      
+#ifdef    KDE
+      screen->addKWMWindow(client.window);
+#endif // KDE
 
       setFocusFlag(False); 
     }
@@ -362,6 +384,9 @@ BlackboxWindow::~BlackboxWindow(void) {
   }
   
   screen->getWorkspace(workspace_number)->removeWindow(this);
+#ifdef    KDE
+  screen->removeKWMWindow(client.window);
+#endif // KDE
   
   if (windowmenu)
     delete windowmenu;
@@ -551,10 +576,10 @@ void BlackboxWindow::associateClientWindow(void) {
     StructureNotifyMask;
   attrib_set.do_not_propagate_mask = ButtonPressMask | ButtonReleaseMask |
     ButtonMotionMask;
-  attrib_set.save_under = False;
+  // attrib_set.save_under = False;
 
-  XChangeWindowAttributes(display, client.window, CWEventMask|CWDontPropagate|
-                          CWSaveUnder, &attrib_set);
+  XChangeWindowAttributes(display, client.window, CWEventMask|CWDontPropagate,
+                          &attrib_set);
 
 
 #ifdef SHAPE
@@ -684,6 +709,8 @@ void BlackboxWindow::positionButtons(void) {
       XMapWindow(display, frame.maximize_button);
       XClearWindow(display, frame.maximize_button);
     }
+
+    drawAllButtons();
   } else {
     if (frame.iconify_button) XUnmapWindow(display, frame.iconify_button);
     if (frame.maximize_button) XUnmapWindow(display, frame.maximize_button);
@@ -1291,9 +1318,8 @@ void BlackboxWindow::iconify(void) {
   if (! validateClient()) return;
 
   if (windowmenu) windowmenu->hide();
-  
 
-  setState(IconicState, NormalState);
+  setState(IconicState);
   XUnmapWindow(display, frame.window);
   visible = False;
   iconic = True;
@@ -1308,18 +1334,28 @@ void BlackboxWindow::iconify(void) {
   if (client.transient)
     if (! client.transient->iconic)
       client.transient->iconify();
-  
+
+#ifdef    KDE
+  unsigned long data = ((iconic) ? 1 : 0);
+
+  XChangeProperty(display, client.window, blackbox->getKWMWinIconifiedAtom(),
+                  blackbox->getKWMWinIconifiedAtom(), 32, PropModeReplace,
+                  (unsigned char *) &data, 1);
+  screen->sendToKWMModules(blackbox->getKWMModuleWinChangeAtom(),
+			   client.window);
+#endif // KDE
+
   blackbox->ungrab();
 }
 
 
-void BlackboxWindow::deiconify(void) {
+void BlackboxWindow::deiconify(Bool raise) {
   blackbox->grab();
   if (! validateClient()) return;
 
   screen->reassociateWindow(this);
   
-  setState(NormalState, NormalState);
+  setState(NormalState);
   XMapWindow(display, frame.window);
     
   XMapSubwindows(display, frame.window);
@@ -1332,6 +1368,19 @@ void BlackboxWindow::deiconify(void) {
     delete icon;
     removeIcon();
   }
+
+#ifdef    KDE
+  unsigned long data = ((iconic) ? 1 : 0);
+
+  XChangeProperty(display, client.window, blackbox->getKWMWinIconifiedAtom(),
+                  blackbox->getKWMWinIconifiedAtom(), 32, PropModeReplace,
+                  (unsigned char *) &data, 1);
+  screen->sendToKWMModules(blackbox->getKWMModuleWinChangeAtom(),
+			   client.window);
+#endif // KDE
+
+  if (raise)
+    screen->getWorkspace(workspace_number)->raiseWindow(this);
   
   blackbox->ungrab();
 }
@@ -1365,10 +1414,15 @@ void BlackboxWindow::withdraw(void) {
   focused = False;
   visible = False;
   
-  setState(WithdrawnState, NormalState);
+  setState(WithdrawnState);
   XUnmapWindow(display, frame.window);
 
   if (windowmenu) windowmenu->hide();
+
+#ifdef    KDE
+  screen->sendToKWMModules(blackbox->getKWMModuleWinChangeAtom(),
+			   client.window);
+#endif // KDE
 
   blackbox->ungrab();
 }
@@ -1382,6 +1436,16 @@ int BlackboxWindow::setWindowNumber(int n) {
 
 int BlackboxWindow::setWorkspace(int n) {
   workspace_number = n;
+
+#ifdef    KDE
+  unsigned long data = (unsigned long) workspace_number + 1;
+  XChangeProperty(display, client.window, blackbox->getKWMWinDesktopAtom(),
+                  blackbox->getKWMWinDesktopAtom(), 32, PropModeReplace,
+                  (unsigned char *) &data, 1);
+  screen->sendToKWMModules(blackbox->getKWMModuleWinChangeAtom(),
+                           client.window);
+#endif // KDE
+  
   return workspace_number;
 }
 
@@ -1395,12 +1459,31 @@ void BlackboxWindow::maximize(unsigned int button) {
     frame.y_maximize = frame.y;
     frame.w_maximize = frame.width;
     frame.h_maximize = frame.height;
-    
+
+#ifdef    KDE
+    int x1 = 0, x2 = screen->getXRes(), y1 = 0, y2 = screen->getYRes();
+
+    screen->getCurrentWorkspace()->getKWMWindowRegion(&x1, &y1, &x2, &y2);
+
+    dw = x2 - ((decorations.handle) ? frame.handle_w + 1: 0) -
+      client.base_width - ((decorations.border) ? (frame.bevel_w * 2) : 0);
+    dh = y2 - (screen->getToolbar()->getHeight() + 1) -
+      frame.y_border - client.base_height -
+      ((decorations.border) ? ((frame.bevel_w * 2) + 1) : 1);
+
+    unsigned long data = 1;
+    XChangeProperty(display, client.window, blackbox->getKWMWinMaximizedAtom(),
+                    blackbox->getKWMWinMaximizedAtom(), 32, PropModeReplace,
+                    (unsigned char *) &data, 1);
+    screen->sendToKWMModules(blackbox->getKWMModuleWinChangeAtom(),
+                             client.window);
+#else //  KDE
     dw = screen->getXRes() - ((decorations.handle) ? frame.handle_w + 1: 0) -
       client.base_width - ((decorations.border) ? (frame.bevel_w * 2) : 0);
     dh = screen->getYRes() - (screen->getToolbar()->getHeight() + 1) -
       frame.y_border - client.base_height -
       ((decorations.border) ? ((frame.bevel_w * 2) + 1) : 1);
+#endif // KDE
 
     if (dw < client.min_width) dw = client.min_width;
     if (dh < client.min_height) dh = client.min_height;
@@ -1416,9 +1499,14 @@ void BlackboxWindow::maximize(unsigned int button) {
     dw += ((decorations.handle) ? frame.handle_w + 1 : 0) +
       ((decorations.border) ? (frame.bevel_w * 2) : 0);
     dh += frame.y_border + ((decorations.border) ? (frame.bevel_w * 2) : 0);
-    
+
+#ifdef    KDE
+    dx = x1 + ((x2 - dw) / 2) - 1;
+    dy = y1 + ((y2 - screen->getToolbar()->getHeight() - dh) / 2);
+#else //  KDE    
     dx = ((screen->getXRes() - dw) / 2) - 1;
     dy = ((screen->getYRes() - screen->getToolbar()->getHeight()) - dh) / 2;
+#endif
 
     if (button == 2) {
       dw = frame.width;
@@ -1438,6 +1526,15 @@ void BlackboxWindow::maximize(unsigned int button) {
     configure(frame.x_maximize, frame.y_maximize, frame.w_maximize,
 	      frame.h_maximize);
     drawAllButtons();
+
+#ifdef    KDE
+    unsigned long data = 0;
+    XChangeProperty(display, client.window, blackbox->getKWMWinMaximizedAtom(),
+                    blackbox->getKWMWinMaximizedAtom(), 32, PropModeReplace,
+                    (unsigned char *) &data, 1);
+    screen->sendToKWMModules(blackbox->getKWMModuleWinChangeAtom(),
+                             client.window);
+#endif // KDE
   }
 }
 
@@ -1448,15 +1545,38 @@ void BlackboxWindow::shade(void) {
       XResizeWindow(display, frame.window, frame.width, frame.height);
       shaded = False;
 
-      unsigned long state;
-      getState(&state, 0, 0);
-      setState(state, NormalState);
+      setState(NormalState);
     } else {
       XResizeWindow(display, frame.window, frame.width, frame.title_h);
       shaded = True;
       
-      setState(IconicState, ShadeState);
+      setState(IconicState);
     }
+}
+
+
+void BlackboxWindow::stick(void) {
+  if (stuck) {
+    stuck = False;
+    
+    if (workspace_number != screen->getCurrentWorkspace()->getWorkspaceID()) {
+      screen->getWorkspace(workspace_number)->removeWindow(this);
+      screen->getCurrentWorkspace()->addWindow(this);
+    }
+  } else
+    stuck = True;
+  
+#ifdef    KDE
+  {
+    unsigned long data = stuck;
+    
+    XChangeProperty(display, client.window, blackbox->getKWMWinStickyAtom(),
+		    blackbox->getKWMWinStickyAtom(), 32, PropModeReplace,
+		    (unsigned char *) &data, 1);
+    screen->sendToKWMModules(blackbox->getKWMModuleWinChangeAtom(),
+			     client.window);
+  }
+#endif // KDE
 }
 
 
@@ -1518,22 +1638,19 @@ void BlackboxWindow::installColormap(Bool install) {
 }
 
 
-void BlackboxWindow::setState(unsigned long new_state,
-			      unsigned long extension) {
-  unsigned long state[4];
+void BlackboxWindow::setState(unsigned long new_state) {
+  unsigned long state[3];
   state[0] = (unsigned long) new_state;
   state[1] = (unsigned long) None;
   state[2] = (unsigned long) workspace_number;
-  state[3] = (unsigned long) extension;
   XChangeProperty(display, client.window, blackbox->getWMStateAtom(),
 		  blackbox->getWMStateAtom(), 32, PropModeReplace,
-		  (unsigned char *) state, 4);
+		  (unsigned char *) state, 3);
 }
 
 
 Bool BlackboxWindow::getState(unsigned long *state_return,
-			      unsigned long *workspace_return,
-			      unsigned long *extension_return) {
+			      unsigned long *workspace_return) {
   blackbox->grab();
   if (! validateClient()) return False;
   
@@ -1547,7 +1664,7 @@ Bool BlackboxWindow::getState(unsigned long *state_return,
   unsigned long *state, ulfoo, nitems;
 
   if ((XGetWindowProperty(display, client.window, blackbox->getWMStateAtom(),
-			  0l, 4l, False, blackbox->getWMStateAtom(),
+			  0l, 3l, False, blackbox->getWMStateAtom(),
 			  &atom_return, &foo, &nitems, &ulfoo,
 			  (unsigned char **) &state) != Success) ||
       (! state) || (! state_return)) {
@@ -1560,8 +1677,6 @@ Bool BlackboxWindow::getState(unsigned long *state_return,
 
     if (nitems > 2 && workspace_return)
       *workspace_return = (unsigned long) state[2];
-    if (nitems > 3 && extension_return)
-      *extension_return = (unsigned long) state[3];
     
     ret = True;
   }
@@ -1746,9 +1861,8 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
       blackbox->grab();
       if (! validateClient()) return;
 
-      unsigned long state, workspace_new = workspace_number,
-	extended_state = NormalState;
-      if (! (getState(&state, &workspace_new, &extended_state) &&
+      unsigned long state, workspace_new = workspace_number;
+      if (! (getState(&state, &workspace_new) &&
 	     blackbox->isStartup() &&
 	     (state == NormalState || state == IconicState)))
 	state = client.initial_state;
@@ -1764,30 +1878,10 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
       
       switch (state) {
       case IconicState:
-	if (extended_state & ShadeState) {
-	  positionButtons();
-
-	  shade();
-	  
-	  XMapWindow(display, client.window);
-	  XMapSubwindows(display, frame.window);
-	  XMapWindow(display, frame.window);	
-	  setFocusFlag(False);
-	  
-	  visible = True;
-	  iconic = False;
-	} else
-	  iconify();
-
+        iconify();
 	break;
 	
       case WithdrawnState:
-	if (extended_state & ShadeState) {
-	  positionButtons();
-	  
-	  shade();
-	}
-
 	withdraw();
 
 	break;
@@ -1798,7 +1892,7 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
       default:
 	positionButtons();
 	
-	setState(NormalState, NormalState);
+	setState(NormalState);
 
 	XMapWindow(display, client.window);
 	XMapSubwindows(display, frame.window);
@@ -1826,7 +1920,7 @@ void BlackboxWindow::mapNotifyEvent(XMapEvent *ne) {
     
     positionButtons();
     
-    setState(NormalState, NormalState);
+    setState(NormalState);
     
     XMapSubwindows(display, frame.window);
     XMapWindow(display, frame.window);
@@ -1840,7 +1934,7 @@ void BlackboxWindow::mapNotifyEvent(XMapEvent *ne) {
     
     visible = True;
     iconic = False;
-    
+
     blackbox->ungrab();
   }
 }
@@ -1853,7 +1947,7 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
     blackbox->grab();
     if (! validateClient()) return;
 
-    setState(WithdrawnState, NormalState);
+    setState(WithdrawnState);
     
     visible = False;
     iconic = False;
@@ -1902,6 +1996,12 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
     
   case XA_WM_ICON_NAME:
     if (icon) icon->rereadLabel();
+
+#ifdef    KDE
+    screen->sendToKWMModules(blackbox->getKWMModuleWinChangeAtom(),
+			     client.window);
+#endif // KDE
+
     break;
       
   case XA_WM_NAME:
@@ -1920,6 +2020,12 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
     XClearWindow(display, frame.title);
     if (decorations.titlebar) drawTitleWin();
     screen->getWorkspace(workspace_number)->update();
+
+#ifdef    KDE
+    screen->sendToKWMModules(blackbox->getKWMModuleWinChangeAtom(),
+			     client.window);
+#endif // KDE
+    
     break;
       
   case XA_WM_NORMAL_HINTS:
@@ -1929,6 +2035,54 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
   default:
     if (atom == blackbox->getWMProtocolsAtom())
       getWMProtocols();
+#ifdef    KDE
+    else {
+      Atom ajunk;
+
+      int ijunk;
+      unsigned long uljunk, *data = (unsigned long *) 0;
+
+      if (XGetWindowProperty(display, client.window, atom, 0l, 1l, False, atom,
+                             &ajunk, &ijunk, &uljunk, &uljunk,
+                             (unsigned char **) &data) == Success && data) {
+        if (atom == blackbox->getKWMWinDesktopAtom()) {
+          if ((((int) *data) - 1) != workspace_number) {
+            if (! stuck) {
+              if (workspace_number ==
+                  screen->getCurrentWorkspace()->getWorkspaceID())
+                withdraw();
+	      
+              screen->getWorkspace(workspace_number)->removeWindow(this);
+              screen->getWorkspace(((int) *data) - 1)->addWindow(this);
+	      
+              if (workspace_number ==
+                  screen->getCurrentWorkspace()->getWorkspaceID())
+                deiconify();
+            } else {
+              workspace_number = ((int) *data) - 1;
+            }
+          }
+        } else if (atom == blackbox->getKWMWinMaximizedAtom()) {
+          if (((int) *data) - maximized)
+            maximize(1);
+        } else if (atom == blackbox->getKWMWinStickyAtom()) {
+	  if (((! stuck) && ((int) *data)) ||
+	      ((! ((int) *data)) && stuck))
+	    stick();
+        } else if (atom == blackbox->getKWMWinIconifiedAtom()) {
+          if (((int) *data) && ! iconic)
+            iconify();
+          else if (! ((int) *data) && iconic)
+            deiconify();
+        }
+
+	screen->sendToKWMModules(blackbox->getKWMModuleWinChangeAtom(),
+				 client.window);
+	
+        XFree((char *) data);
+      }
+    }
+#endif // KDE
   }
   
   blackbox->ungrab();
@@ -1977,7 +2131,11 @@ void BlackboxWindow::configureRequestEvent(XConfigureRequestEvent *cr) {
       ch = frame.height;
     
     configure(cx, cy, cw, ch);
-
+#ifdef    KDE
+    screen->sendToKWMModules(blackbox->getKWMModuleWinChangeAtom(),
+			     client.window);
+#endif // KDE
+    
     if (cr->value_mask & CWStackMode) {
       switch (cr->detail) {
       case Above:
@@ -2017,6 +2175,11 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
 	} else
 	  lastButtonPressTime = be->time;
       }
+      
+      frame.x_grab = be->x;
+      frame.y_grab = be->y;
+
+      if (windowmenu->isVisible()) windowmenu->hide();
       
       screen->getWorkspace(workspace_number)->raiseWindow(this);
     } else if (frame.iconify_button == be->window) {
@@ -2066,6 +2229,8 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
       if (! windowmenu->isVisible()) {
 	windowmenu->move(mx, my);
 	windowmenu->show();
+        XRaiseWindow(display, windowmenu->getWindowID());
+        XRaiseWindow(display, windowmenu->getSendToMenu()->getWindowID());
       } else
 	windowmenu->hide();
   }
@@ -2105,6 +2270,11 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
 	  blackbox->ungrab();
 	} else
 	  configure(frame.x, frame.y, frame.width, frame.height);
+	
+#ifdef    KDE
+	screen->sendToKWMModules(blackbox->getKWMModuleWinChangeAtom(),
+				 client.window);
+#endif // KDE
 	
 	moving = False;
 	XUngrabPointer(display, CurrentTime);
@@ -2150,6 +2320,12 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
       XUngrabPointer(display, CurrentTime);
       
       configure(frame.x, frame.y, frame.x_resize, frame.y_resize);
+
+#ifdef    KDE
+      screen->sendToKWMModules(blackbox->getKWMModuleWinChangeAtom(),
+			       client.window);
+#endif // KDE
+      
       blackbox->ungrab();
     } else if (re->window == frame.iconify_button) {
       if ((re->x >= 0) && ((unsigned) re->x <= frame.button_w) &&
@@ -2182,8 +2358,6 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
 			 None, blackbox->getMoveCursor(), CurrentTime)
 	    == GrabSuccess) {
 	  moving = True;
-	  frame.x_grab = me->x;
-	  frame.y_grab = me->y;
 	  
 	  if (! screen->doOpaqueMove()) {
             blackbox->grab();
@@ -2395,6 +2569,11 @@ void BlackboxWindow::shapeEvent(XShapeEvent *) {
 	num++;
       }
       
+#ifdef    KDE
+      screen->sendToKWMModules(blackbox->getKWMModuleWinChangeAtom(),
+			       client.window);
+#endif // KDE
+      
       XShapeCombineRectangles(display, frame.window, ShapeBounding, 0, 0,
 			      xrect, num, ShapeUnion, Unsorted);
       blackbox->ungrab();
@@ -2457,6 +2636,10 @@ void BlackboxWindow::restore(void) {
     new_y = frame.y;
     break;
   }
+  
+#ifdef    KDE
+  screen->removeKWMWindow(client.window);
+#endif // KDE
   
   XReparentWindow(display, client.window, screen->getRootWindow(),
 		  new_x, new_y);

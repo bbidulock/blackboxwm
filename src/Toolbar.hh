@@ -40,7 +40,7 @@ class BScreen;
 
 class Toolbar {
 private:
-  Bool wait_button, raised, editing;
+  Bool wait_button, on_top, editing;
   Display *display;
   GC buttonGC;
 
@@ -70,7 +70,7 @@ public:
 
   //  Blackbox *getBlackbox(void) { return blackbox; }
   
-  Bool isRaised(void)      { return raised; }
+  Bool isOnTop(void)       { return on_top; }
   Window getWindowID(void) { return frame.window; }
   
   unsigned int getWidth(void)  { return frame.width; }

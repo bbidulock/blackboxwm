@@ -48,7 +48,7 @@ public:
   Windowmenu(BlackboxWindow *, Blackbox *);
   virtual ~Windowmenu(void);
 
-  SendtoWorkspaceMenu *SendToMenu(void) { return sendToMenu; }
+  SendtoWorkspaceMenu *getSendToMenu(void) { return sendToMenu; }
   
   void reconfigure(void);
   void setClosable(void);

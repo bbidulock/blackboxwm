@@ -25,6 +25,8 @@
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
 
+#include "LinkedList.hh"
+
 
 typedef struct windowResource {
   struct decoration {
@@ -88,7 +90,7 @@ private:
   Iconmenu *iconmenu;
   Rootmenu *rootmenu;
   Toolbar *toolbar;
-  Workspace *current_workspace, *zero;
+  Workspace *current_workspace;
   Workspacemenu *workspacemenu;
   
   int depth, screen_number;
@@ -97,6 +99,11 @@ private:
   
   LinkedList<char> *workspaceNames;
   LinkedList<Workspace> *workspacesList;
+
+#ifdef    KDE
+  LinkedList<Window> *kwm_module_list;
+  LinkedList<Window> *kwm_window_list;
+#endif // KDE
 
   struct resource {
     struct font {
@@ -107,7 +114,7 @@ private:
     toolbarResource tres;
     menuResource mres;
 
-    Bool opaque_move, toolbar_raised, sloppy_focus, auto_raise;
+    Bool opaque_move, toolbar_on_top, sloppy_focus, auto_raise;
     BColor border_color;
     XrmDatabase stylerc;
     
@@ -137,7 +144,7 @@ public:
   BScreen(Blackbox *, int);
   ~BScreen(void);
   
-  Bool isToolbarRaised(void)         { return resource.toolbar_raised; }
+  Bool isToolbarOnTop(void)          { return resource.toolbar_on_top; }
   Bool isSloppyFocus(void)           { return resource.sloppy_focus; }
   Bool doAutoRaise(void)             { return resource.auto_raise; }
   Bool doOpaqueMove(void)            { return resource.opaque_move; }
@@ -188,7 +195,7 @@ public:
   void addIcon(BlackboxIcon *i);
   void removeIcon(BlackboxIcon *i);
   void iconUpdate(void);
-  void stackWindows(Window *, int);
+  void raiseWindows(Window *, int);
   void reassociateWindow(BlackboxWindow *);
   void prevFocus(void);
   void nextFocus(void);
@@ -202,7 +209,7 @@ public:
   void saveWorkspaces(int w)          { resource.workspaces = w; }
   void removeWorkspaceNames(void);
   void addWorkspaceName(char *);
-  void saveToolbarRaised(Bool r)      { resource.toolbar_raised = r; }
+  void saveToolbarOnTop(Bool r)       { resource.toolbar_on_top = r; }
   void saveToolbarWidthPercent(int w) { resource.toolbar_width_percent = w; }
   void savePlacementPolicy(int p)     { resource.placement_policy = p; }
   
@@ -219,6 +226,19 @@ public:
   windowResource *getWResource(void)  { return &resource.wres; }
   menuResource *getMResource(void)    { return &resource.mres; }
   toolbarResource *getTResource(void) { return &resource.tres; }
+
+#ifdef    KDE
+  Bool isKWMModule(Window);
+  
+  void sendToKWMModules(Atom, XID);
+  void sendToKWMModules(XClientMessageEvent *);
+  void sendClientMessage(Window, Atom, XID);
+
+  void addKWMModule(Window w);
+  void addKWMWindow(Window w);
+  void removeKWMWindow(Window w);
+  void scanWorkspaceNames(void);
+#endif // KDE
   
   enum { SmartPlacement = 1, CascadePlacement };
 };

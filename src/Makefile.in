@@ -79,6 +79,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 CC = @CC@
 CXX = @CXX@
+KDE = @KDE@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 PACKAGE = @PACKAGE@
@@ -88,6 +89,7 @@ regex_cmd = @regex_cmd@
 
 CPPFLAGS =		@CPPFLAGS@				\
 			@SHAPE@					\
+			@KDE@					\
 			-DDEFAULTRC=\"$(pkgdatadir)/rc\"	\
 			-DDEFAULTMENU=\"$(pkgdatadir)/menu\"	\
 			-DDEFAULTSTYLE=\"$(pkgdatadir)/styles/default\"

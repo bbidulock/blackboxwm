@@ -57,7 +57,7 @@ const int __llist_iterator::set(const int index) {
     if (index < list->elements && index >= 0) {
       node = list->_first;
       
-      int i;
+      register int i;
       for (i = 0; i < index; i++)
 	node = node->next;
       
@@ -97,7 +97,7 @@ __llist::__llist(void *d) {
 
 
 __llist::~__llist(void) {
-  int i, r = elements;
+  register int i, r = elements;
   for (i = 0; i < r; i++)
     remove(0);
 }
@@ -125,7 +125,7 @@ const int __llist::insert(void *d, int index) {
       // otherwise... insert the item at the position specified by index
       if (index > elements) return -1;
 
-      int i;
+      register int i;
       for (i = 0; i < index; i++)
 	inode = inode->next;
       
@@ -157,7 +157,7 @@ const int __llist::remove(void *d) {
   
   __llist_node *rnode = _first;
   
-  int i;
+  register int i;
   for (i = 0; i < elements; i++) {
     if (rnode->data == d) {
       if (rnode->prev) {
@@ -200,7 +200,7 @@ void *__llist::remove(const int index) {
     __llist_node *rnode = _first;
     void *data_return = 0;
     
-    int i;
+    register int i;
     for (i = 0; i < index; i++)
       rnode = rnode->next;
     
@@ -236,7 +236,7 @@ void *__llist::find(const int index) {
   if (index < elements && index >= 0) {
     __llist_node *fnode = _first;
     
-    int i;
+    register int i;
     for (i = 0; i < index; i++)
       fnode = fnode->next;
     

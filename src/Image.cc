@@ -1144,14 +1144,14 @@ unsigned long BImageControl::getColor(const char *colorname,
 				      unsigned char *b)
 {
   XColor color;
-  XWindowAttributes attributes;
-  
-  XGetWindowAttributes(display, window, &attributes);
   color.pixel = 0;
-  if (!XParseColor(display, attributes.colormap, colorname, &color)) {
+  
+  if (! XParseColor(display, DefaultColormap(display, screen_number),
+		    colorname, &color)) {
     fprintf(stderr, "BImageControl::getColor: color parse error: \"%s\"\n",
 	    colorname);
-  } else if (!XAllocColor(display, attributes.colormap, &color)) {
+  } else if (! XAllocColor(display, DefaultColormap(display, screen_number),
+			   &color)) {
     fprintf(stderr, "BImageControl::getColor: color alloc error: \"%s\"\n",
 	    colorname);
   }
@@ -1162,25 +1162,25 @@ unsigned long BImageControl::getColor(const char *colorname,
   else *g = (unsigned char) (color.green / 0xff);
   if (color.blue == 65535) *b = 0xff;
   else *b = (unsigned char) (color.blue / 0xff);
- 
+  
   return color.pixel;
 }
 
 
 unsigned long BImageControl::getColor(const char *colorname) {
   XColor color;
-  XWindowAttributes attributes;
-  
-  XGetWindowAttributes(display, window, &attributes);
   color.pixel = 0;
-  if (!XParseColor(display, attributes.colormap, colorname, &color)) {
+
+  if (! XParseColor(display, DefaultColormap(display, screen_number),
+		    colorname, &color)) {
     fprintf(stderr, "BImageControl::getColor: color parse error: \"%s\"\n",
 	    colorname);
-  } else if (!XAllocColor(display, attributes.colormap, &color)) {
+  } else if (! XAllocColor(display, DefaultColormap(display, screen_number),
+			   &color)) {
     fprintf(stderr, "BImageControl::getColor: color alloc error: \"%s\"\n",
 	    colorname);
   }
-
+  
   return color.pixel;
 }
 

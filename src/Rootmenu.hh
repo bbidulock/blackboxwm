@@ -44,6 +44,8 @@ protected:
 
 public:
   Rootmenu(Blackbox *, BScreen *);
+
+  virtual void show(void);
 };
 
 #endif // __Basemenu_hh

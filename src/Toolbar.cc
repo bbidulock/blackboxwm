@@ -62,7 +62,7 @@ Toolbar::Toolbar(Blackbox *bb, BScreen *scrn) {
   image_ctrl = screen->getImageControl();
 
   editing = wait_button = False;
-  raised = screen->isToolbarRaised();
+  on_top = screen->isToolbarOnTop();
   new_workspace_name = new_name_pos = 0;
 
   display = blackbox->getDisplay();
@@ -222,12 +222,13 @@ void Toolbar::reconfigure(void) {
     w = XTextWidth(screen->getTitleFont(),
 		   screen->getWorkspace(i)->getName(),
 		   strlen(screen->getWorkspace(i)->getName())) +
-      (frame.bevel_w * 4);
+      (frame.bevel_w * 2);
     
     if (w > frame.wlabel_w) frame.wlabel_w = w;
   }
 
-  frame.wlabel_w *= 2;
+  frame.wlabel_w += (frame.wlabel_h * 2);
+  if (frame.wlabel_w < frame.clock_w) frame.wlabel_w = frame.clock_w;
 
   frame.label_w = (frame.width -
 		   (frame.clock_w + (frame.button_w * 5) + frame.wlabel_w +
@@ -567,12 +568,12 @@ void Toolbar::buttonPressEvent(XButtonEvent *be) {
       checkClock(True, True);
 #endif // HAVE_STRFTIME
     } else {
-      raised = True;
-      screen->getCurrentWorkspace()->restackWindows();
+      on_top = True;
+      screen->raiseWindows((Window *) 0, 0);
     }
   } else if (be->button == 2) {
-    raised = False;
-    screen->getCurrentWorkspace()->restackWindows();
+    on_top = False;
+    screen->raiseWindows((Window *) 0, 0);
   } else if (be->button == 3) {
     if (be->window == frame.workspaceLabel) {
       Window window;
@@ -610,7 +611,7 @@ void Toolbar::buttonReleaseEvent(XButtonEvent *re) {
  
       if (re->x >= 0 && re->x < (signed) frame.button_w &&
 	  re->y >= 0 && re->y < (signed) frame.button_h)
-	if (screen->getCurrentWorkspace()->getWorkspaceID() > 1)
+	if (screen->getCurrentWorkspace()->getWorkspaceID() > 0)
 	  screen->changeWorkspaceID(screen->getCurrentWorkspace()->
 				    getWorkspaceID() - 1);
 	else
@@ -621,11 +622,11 @@ void Toolbar::buttonReleaseEvent(XButtonEvent *re) {
       if (re->x >= 0 && re->x < (signed) frame.button_w &&
 	  re->y >= 0 && re->y < (signed) frame.button_h)
 	if (screen->getCurrentWorkspace()->getWorkspaceID() <
-	    (screen->getCount() - 1))
+	    screen->getCount() - 1)
 	  screen->changeWorkspaceID(screen->getCurrentWorkspace()->
 				    getWorkspaceID() + 1);
 	else
-	  screen->changeWorkspaceID(1);
+	  screen->changeWorkspaceID(0);
     } else if (re->window == frame.windowLabel) {
       screen->raiseFocus();
     } else if (re->window == frame.windowPrev) {
@@ -689,11 +690,11 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
  	screen->getCurrentWorkspace()->setName(new_workspace_name);
 	screen->getCurrentWorkspace()->getMenu()->hide();
 	screen->getWorkspacemenu()->
-	  remove(screen->getCurrentWorkspace()->getWorkspaceID() + 1);
+	  remove(screen->getCurrentWorkspace()->getWorkspaceID() + 2);
 	screen->getWorkspacemenu()->
 	  insert(screen->getCurrentWorkspace()->getName(),
 		 screen->getCurrentWorkspace()->getMenu(),
-		 screen->getCurrentWorkspace()->getWorkspaceID());
+		 screen->getCurrentWorkspace()->getWorkspaceID() + 1);
 	screen->getWorkspacemenu()->update();
       }
       

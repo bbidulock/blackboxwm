@@ -56,14 +56,16 @@ void Clientmenu::itemSelected(int button, int index) {
       BlackboxWindow *win = wkspc->getWindow(index);
       if (win) {
         if (win->isIconic())
-          win->deiconify();
-        wkspc->raiseWindow(win);
+          win->deiconify(True);
+
         win->setInputFocus();
 	
+        hide();
 	screen->getWorkspacemenu()->hide();
       }
     }
   } else if (button == 3) {
+    hide();
     screen->getWorkspacemenu()->hide();
   }
 }

@@ -1,6 +1,36 @@
 ChangeLog for Blackbox 0.50.xx
 Enjoy! :)
 
+Changes from 0.50.1 to 0.50.2:
+  - minimal KDE integration (configure/compile time option, turned off by
+    default).  This is unfinished and i can't really say if i ever will finish
+    it, but there is enough there to integrate the panel and other modules
+    with Blackbox.
+  - changed the regexp in building menus to use a comma (,) as the separator,
+    instead of a period
+  - various bug fixen (like the one where the window list would stay put after
+    the workspace menu went away)
+  - some hacks to improve speed in the LinkedList routines
+  - new stacking method (to better integrate with the KDE support)... windows
+    are no longer in different "levels", raising windows brings them ALL the
+    way to the front (so it's possible to obscure override redirect windows
+    like image splashes etc.) and lowering throws them ALL the way to the
+    back (even under kfm's icons)... however, the rootmenu and the toolbar
+    (if configured to be ontop) will be placed above raised windows
+  - sticky windows have changed due to the new stack implementation, they can
+    be anywhere in the stack (and not always ontop or onbottom)
+  - session.screenNUM.toolbarRaised resource has changed to
+    session.screenNum.toolbarOnTop
+  - the workspace label in the toolbar is sized a little more sanely now
+    (i found that it looks the best when the workspace label width == clock
+    label width)
+  - colormap focus now has it's own resource, session.colormapFocusModel, which
+    is set to "Click" by default, which means you have to click a window's
+    decorations or the root window to (un)install a colormap... setting this
+    resource to "FollowsMouse" will work just as it says... the window under
+    the pointer will have it's colormap installed
+
+
 Changes from 0.50.0 to 0.50.1:
   - eliminated the need for XConvertCase... workspace editing should now print
     any and all characters correctly

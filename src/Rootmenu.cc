@@ -126,3 +126,10 @@ void Rootmenu::itemSelected(int button, int index) {
   } else if (button == 3)
     screen->getRootmenu()->hide();
 }
+
+
+void Rootmenu::show(void) {
+  XRaiseWindow(screen->getDisplay(), getWindowID());
+
+  Basemenu::show();
+}
