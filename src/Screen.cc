@@ -523,7 +523,11 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
     }
 
     if (_resource.doFocusLast()
-        && (!focused_window || focused_window->workspace() != bt::BSENTINEL)) {
+        && (!focused_window
+            || focused_window->workspace() != bt::BSENTINEL
+            // these window types shouldn't keep focus
+            || focused_window->windowType() == WindowTypeDesktop
+            || focused_window->windowType() == WindowTypeDock)) {
       Workspace *workspace = findWorkspace(current_workspace);
       assert(workspace != 0);
 
