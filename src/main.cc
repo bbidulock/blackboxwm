@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
       string dtmp = "DISPLAY=";
       dtmp += session_display;
 
-      if (putenv(dtmp.c_str())) {
+      if (putenv(const_cast<char*>(dtmp.c_str()))) {
         fprintf(stderr, i18n(mainSet, mainWarnDisplaySet,
                 "warning: couldn't set environment variable 'DISPLAY'\n"));
         perror("putenv()");
