@@ -48,7 +48,42 @@
 // #define MITSHM_DEBUG
 
 
-unsigned int bt::Image::global_maximumColors = 126; // 6/7/3
+static uint right_align(uint v)
+{
+  while (!(v & 0x1))
+    v >>= 1;
+  return v;
+}
+
+static int lowest_bit(uint v)
+{
+  int i;
+  uint b = 1u;
+  for (i = 0; ((v & b) == 0u) && i < 32;  ++i)
+    b <<= 1u;
+  return i == 32 ? -1 : i;
+}
+
+static int cube_root(int v)
+{
+  if (v == 1)
+    return 1;
+  // brute force algorithm
+  int i = 1;
+  for (;;) {
+    const int b = i * i * i;
+    if (b <= v) {
+      ++i;
+    } else {
+      --i;
+      break;
+    }
+  }
+  return i;
+}
+
+
+unsigned int bt::Image::global_maximumColors = 0u; // automatic
 bt::DitherMode bt::Image::global_ditherMode = bt::OrderedDither;
 
 
@@ -57,11 +92,11 @@ namespace bt {
   class XColorTable {
   public:
     XColorTable(const Display &dpy, unsigned int screen,
-                unsigned int ncolors);
+                unsigned int maxColors);
     ~XColorTable(void);
 
     inline bt::DitherMode ditherMode(void) const
-    { return ((_nred < 256u || _ngreen < 256u || _nblue < 256u)
+    { return ((n_red < 256u || n_green < 256u || n_blue < 256u)
               ? bt::Image::ditherMode()
               : bt::NoDither); }
 
@@ -75,14 +110,11 @@ namespace bt {
   private:
     const Display &_dpy;
     unsigned int _screen;
-    int _vclass;
-    unsigned int _nred, _ngreen, _nblue;
-    int red_offset, green_offset, blue_offset;
+    int visual_class;
+    unsigned int n_red, n_green, n_blue;
+    int red_shift, green_shift, blue_shift;
 
-    unsigned short _red[256];
-    unsigned short _green[256];
-    unsigned short _blue[256];
-    std::vector<XColor> colors;
+    std::vector<unsigned long> colors;
   };
 
 
@@ -230,220 +262,286 @@ namespace bt {
 
 
 bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
-                             unsigned int ncolors)
+                             unsigned int maxColors)
   : _dpy(dpy), _screen(screen),
-    _nred(0u), _ngreen(0u), _nblue(0u),
-    red_offset(0u), green_offset(0u), blue_offset(0u)
+    n_red(0u), n_green(0u), n_blue(0u),
+    red_shift(0u), green_shift(0u), blue_shift(0u)
 {
   const ScreenInfo &screeninfo = _dpy.screenInfo(_screen);
-  Visual *visual = screeninfo.visual();
-  unsigned int depth = screeninfo.depth();
-  double red_bits = 0., green_bits = 0., blue_bits = 0.;
+  const Visual * const visual = screeninfo.visual();
+  const Colormap colormap = screeninfo.colormap();
 
-  _vclass = screeninfo.visual()->c_class;
+  visual_class = visual->c_class;
 
-  switch (_vclass) {
+  bool query_colormap = false;
+
+  switch (visual_class) {
   case StaticGray:
-    _nred = _ngreen = _nblue = DisplayCells(_dpy.XDisplay(), screen);
-    red_bits = green_bits = blue_bits = 255. / (_nred - 1);
-    break;
+  case GrayScale:
+    {
+      if (visual_class == GrayScale) {
+        if (maxColors == 0u) {
+          // inspired by libXmu...
+          if (visual->map_entries > 65000)
+            maxColors = 4096;
+          else if (visual->map_entries > 4000)
+            maxColors = 512;
+          else if (visual->map_entries > 250)
+            maxColors = 12;
+          else
+            maxColors = 4;
+        }
+
+        maxColors =
+          std::min(static_cast<unsigned int>(visual->map_entries), maxColors);
+        n_red = n_green = n_blue = maxColors;
+      } else {
+        n_red = n_green = n_blue = visual->map_entries;
+        query_colormap = true;
+      }
+
+      colors.resize(n_green);
+
+      const int g_max = n_green - 1;
+      const int g_round = g_max / 2;
+
+      for (int g = 0; g < n_green; ++g) {
+        colors[g] = ~0ul;
+
+        if (visual_class & 1) {
+          const int gray = (g * 0xffff + g_round) / g_max;
+
+          XColor xcolor;
+          xcolor.red   = gray;
+          xcolor.green = gray;
+          xcolor.blue  = gray;
+          xcolor.pixel = 0ul;
+
+          if (XAllocColor(_dpy.XDisplay(), colormap, &xcolor))
+            colors[g] = xcolor.pixel;
+          else
+            query_colormap = true;
+        }
+      }
+      break;
+    }
 
   case StaticColor:
-    // use all (and assume) 256 colors: 8 red, 8 green, 4 blue
-    _nred   = 8u;
-    _ngreen = 8u;
-    _nblue  = 4u;
-    colors.resize(256u);
-    red_bits   = 255. / (_nred   - 1u);
-    green_bits = 255. / (_ngreen - 1u);
-    blue_bits  = 255. / (_nblue  - 1u);
-    break;
+  case PseudoColor:
+    {
+      if (visual_class == PseudoColor) {
+        if (maxColors == 0u) {
+          // inspired by libXmu...
+          if (visual->map_entries > 65000)
+            maxColors = 32 * 32 * 16;
+          else if (visual->map_entries > 4000)
+            maxColors = 16 * 16 * 8;
+          else if (visual->map_entries > 250)
+            maxColors = visual->map_entries - 125;
+          else
+            maxColors = visual->map_entries;
+        }
 
-  case GrayScale:
-  case PseudoColor: {
-    switch (ncolors) {
-    case 216u:
-      _nred   = 6u;
-      _ngreen = 6u;
-      _nblue  = 6u;
-      break;
+        maxColors =
+          std::min(static_cast<unsigned int>(visual->map_entries), maxColors);
 
-    default:
-      // calculate 2:2:1 proportions
-      _nred   = 2u;
-      _ngreen = 2u;
-      _nblue  = 2u;
-      for (;;) {
-        if ((_nblue * 2u) < _nred
-            && (_nblue + 1u) * _nred * _ngreen <= ncolors)
-          ++_nblue;
-        else if (_nred < _ngreen
-                 && _nblue * (_nred + 1u) * _ngreen <= ncolors)
-          ++_nred;
-        else if (_nblue * _nred * (_ngreen + 1u) <= ncolors)
-          ++_ngreen;
-        else break;
+        // calculate 2:2:1 proportions
+        n_red   = 2u;
+        n_green = 2u;
+        n_blue  = 2u;
+        for (;;) {
+          if ((n_blue * 2u) < n_red
+              && (n_blue + 1u) * n_red * n_green <= maxColors)
+            ++n_blue;
+          else if (n_red < n_green
+                   && n_blue * (n_red + 1u) * n_green <= maxColors)
+            ++n_red;
+          else if (n_blue * n_red * (n_green + 1u) <= maxColors)
+            ++n_green;
+          else
+            break;
+        }
+      } else {
+        n_red   = right_align(visual->red_mask)   + 1;
+        n_green = right_align(visual->green_mask) + 1;
+        n_blue  = right_align(visual->blue_mask)  + 1;
+        query_colormap = true;
       }
-      ncolors = _nred * _ngreen * _nblue;
-      break;
-    } //switch
 
-    colors.resize(ncolors);
-    red_bits   = 255. / (_nred   - 1u);
-    green_bits = 255. / (_ngreen - 1u);
-    blue_bits  = 255. / (_nblue  - 1u);
-    break;
-  }
+      colors.resize(n_red * n_green * n_blue);
+
+      const int r_max = n_red - 1;
+      const int r_round = r_max / 2;
+      const int g_max = n_green - 1;
+      const int g_round = g_max / 2;
+      const int b_max = n_blue - 1;
+      const int b_round = b_max / 2;
+
+      // create color cube
+      for (int x = 0, r = 0; r < n_red; ++r) {
+        for (int g = 0; g < n_green; ++g) {
+          for (int b = 0; b < n_blue; ++b, ++x) {
+            colors[x] = ~0ul;
+
+            if (visual_class & 1) {
+              XColor xcolor;
+              xcolor.red   = (r * 0xffff + r_round) / r_max;
+              xcolor.green = (g * 0xffff + g_round) / g_max;
+              xcolor.blue  = (b * 0xffff + b_round) / b_max;
+              xcolor.pixel = 0ul;
+
+              if (XAllocColor(_dpy.XDisplay(), colormap, &xcolor))
+                colors[x] = xcolor.pixel;
+              else
+                query_colormap = true;
+            }
+          }
+        }
+      }
+      break;
+    }
 
   case TrueColor:
-  case DirectColor: {
-    // compute color tables
-    unsigned long red_mask = visual->red_mask,
-                green_mask = visual->green_mask,
-                 blue_mask = visual->blue_mask;
+    n_red   = right_align(visual->red_mask)   + 1;
+    n_green = right_align(visual->green_mask) + 1;
+    n_blue  = right_align(visual->blue_mask)  + 1;
 
-    while (! (  red_mask & 1ul)) {   red_offset++;   red_mask >>= 1ul; }
-    while (! (green_mask & 1ul)) { green_offset++; green_mask >>= 1ul; }
-    while (! ( blue_mask & 1ul)) {  blue_offset++;  blue_mask >>= 1ul; }
-
-    _nred   = static_cast<unsigned int>(  red_mask + 1ul);
-    _ngreen = static_cast<unsigned int>(green_mask + 1ul);
-    _nblue  = static_cast<unsigned int>( blue_mask + 1ul);
-    red_bits   = 255. /   red_mask;
-    green_bits = 255. / green_mask;
-    blue_bits  = 255. /  blue_mask;
-
+    red_shift = lowest_bit(visual->red_mask);
+    green_shift = lowest_bit(visual->green_mask);
+    blue_shift = lowest_bit(visual->blue_mask);
     break;
-  }
+
+  case DirectColor:
+    // from libXmu...
+    n_red = n_green = n_blue = (visual->map_entries / 2) - 1;
+    break;
   } // switch
 
-  // initialize color tables
-  unsigned int i;
-  for (i = 0; i < 256u; i++) {
-    _red[i]   = static_cast<unsigned short>(rint(i / red_bits));
-    _green[i] = static_cast<unsigned short>(rint(i / green_bits));
-    _blue[i]  = static_cast<unsigned short>(rint(i / blue_bits));
+#ifdef COLORTABLE_DEBUG
+  switch (visual_class) {
+  case StaticGray:
+  case GrayScale:
+    for (int x = 0; x < colors.size(); ++x) {
+      const int gray = (x * 0xffff + (n_green - 1) / 2) / (n_green - 1);
+      fprintf(stderr, "%s %3u: gray %04x\n",
+              colors[x] == ~0ul ? "req  " : "alloc", x, gray);
+    }
+    break;
+  case StaticColor:
+  case PseudoColor:
+    for (int x = 0; x < colors.size(); ++x) {
+      int r = (x / (n_green * n_blue)) % n_red;
+      int g = (x / n_blue) % n_green;
+      int b = x % n_blue;
+
+      r = (r * 0xffff + (n_red - 1) / 2) / (n_red - 1);
+      g = (g * 0xffff + (n_green - 1) / 2) / (n_green - 1);
+      b = (b * 0xffff + (n_blue - 1) / 2) / (n_blue - 1);
+
+      fprintf(stderr, "%s %3u: %04x/%04x/%04x\n",
+              colors[x] == ~0ul ? "req  " : "alloc", x, r, g, b);
+    }
+    break;
+  default:
+    break;
   }
+#endif // COLORTABLE_DEBUG
 
-  if (! colors.empty()) {
-    const Colormap colormap = screeninfo.colormap();
-    bool need_query = false;
+  if (colors.empty() || !query_colormap)
+    return;
 
-    // create color cube
-    unsigned int ii, p, r, g, b;
-    for (r = 0, i = 0; r < _nred; r++) {
-      for (g = 0; g < _ngreen; g++) {
-     	for (b = 0; b < _nblue; b++, i++) {
-     	  colors[i].red   = ((r * 0xff) / (_nred   - 1)) * 0x101;
-     	  colors[i].green = ((g * 0xff) / (_ngreen - 1)) * 0x101;
-     	  colors[i].blue  = ((b * 0xff) / (_nblue  - 1)) * 0x101;
-
-          if ((_vclass & 1)
-              && XAllocColor(_dpy.XDisplay(), colormap, &colors[i])) {
-            colors[i].flags = DoRed|DoGreen|DoBlue;
-          } else {
-            colors[i].flags = 0;
-            need_query = true;
-          }
+  // query existing colormap
+  const int depth = screeninfo.depth();
+  int q_colors = (((1u << depth) > 256u) ? 256u : (1u << depth));
+  XColor queried[256];
+  for (int x = 0; x < q_colors; ++x)
+    queried[x].pixel = x;
+  XQueryColors(_dpy.XDisplay(), colormap, queried, q_colors);
 
 #ifdef COLORTABLE_DEBUG
-          fprintf(stderr, "%s %3u: %02x/%02x/%02x %.2f/%.2f/%.2f (%lu)\n",
-                  colors[i].flags == 0 ? "req  " : "alloc",
-                  i,
-                  (colors[i].red   >> 8),
-                  (colors[i].green >> 8),
-                  (colors[i].blue  >> 8),
-                  (colors[i].red   >> 8) / red_bits,
-                  (colors[i].green >> 8) / green_bits,
-                  (colors[i].blue  >> 8) / blue_bits,
-                  colors[i].pixel);
-#endif // COLORTABLE_DEBUG
-     	}
-      }
+  for (int x = 0; x < q_colors; ++x) {
+    if (queried[x].red == 0
+        && queried[x].green == 0
+        && queried[x].blue == 0
+        && queried[x].pixel != BlackPixel(_dpy.XDisplay(), _screen)) {
+      q_colors = x;
+      break;
     }
 
-    if (!need_query)
-      return;
+    fprintf(stderr, "query %3u: %04x/%04x/%04x\n",
+            x, queried[x].red, queried[x].green, queried[x].blue);
+  }
+#endif // COLORTABLE_DEBUG
 
-    // query existing colormap
-    unsigned int incolors = (((1u << depth) > 256u) ? 256u : (1u << depth));
-    XColor icolors[256];
-    for (i = 0; i < incolors; i++) icolors[i].pixel = i;
-    XQueryColors(_dpy.XDisplay(), colormap, icolors, incolors);
+  // for missing colors, find the closest color in the existing colormap
+  for (int x = 0; x < colors.size(); ++x) {
+    if (colors[x] != ~0ul)
+      continue;
 
-#ifdef COLORTABLE_DEBUG
-    for (i = 0; i < incolors; ++i) {
-      fprintf(stderr, "query %3u: %02x/%02x/%02x %.2f/%.2f/%.2f flags %x\n", i,
-              (icolors[i].red   >> 8),
-              (icolors[i].green >> 8),
-              (icolors[i].blue  >> 8),
-              (icolors[i].red   >> 8) / red_bits,
-              (icolors[i].green >> 8) / green_bits,
-              (icolors[i].blue  >> 8) / blue_bits,
-              icolors[i].flags);
+    int red, green, blue, gray;
+
+    switch (visual_class) {
+    case StaticGray:
+    case GrayScale:
+      red = green = blue = gray =
+            (x * 0xffff - (n_green - 1) / 2) / (n_green - 1);
+      break;
+    case StaticColor:
+    case PseudoColor:
+      red = (x / (n_green * n_blue)) % n_red;
+      green = (x / n_blue) % n_green;
+      blue = x % n_blue;
+
+      red = (red * 0xffff + (n_red - 1) / 2) / (n_red - 1);
+      green = (green * 0xffff + (n_green - 1) / 2) / (n_green - 1);
+      blue = (blue * 0xffff + (n_blue - 1) / 2) / (n_blue - 1);
+
+      gray = ((red * 30 + green * 59 + blue * 11) / 100);
+      break;
+    default:
+      assert(false);
     }
-#endif // COLORTABLE_DEBUG
 
-    // for missing colors, find the closest color in the existing colormap
-    for (i = 0; i < colors.size(); i++) {
-      if (colors[i].flags != 0) continue;
+    int mindist = INT_MAX, best = -1;
+    for (int y = 0; y < q_colors; ++y) {
+      const int r = (red - queried[y].red) >> 8;
+      const int g = (green - queried[y].green) >> 8;
+      const int b = (blue - queried[y].blue) >> 8;
+      const int dist = (r * r) + (g * g) + (b * b);
 
-      unsigned long chk = 0xffffffff, pix, close = 0;
-
-      p = 2;
-      while (p--) {
-        for (ii = 0; ii < incolors; ii++) {
-          r = (colors[i].red   - icolors[ii].red)   >> 8;
-          g = (colors[i].green - icolors[ii].green) >> 8;
-          b = (colors[i].blue  - icolors[ii].blue)  >> 8;
-          pix = (r * r) + (g * g) + (b * b);
-
-          if (pix < chk) {
-            chk = pix;
-            close = ii;
-          }
-        }
-
-        colors[i].red   = icolors[close].red;
-        colors[i].green = icolors[close].green;
-        colors[i].blue  = icolors[close].blue;
-
-        if (XAllocColor(_dpy.XDisplay(), colormap,
-                        &colors[i])) {
+      if (dist < mindist) {
+        mindist = dist;
+        best = y;
+      }
+    }
+    assert(best >= 0 && best < q_colors);
 
 #ifdef COLORTABLE_DEBUG
-          fprintf(stderr, "close %3u: %02x/%02x/%02x %.2f/%.2f/%.2f (%lu)\n",
-                  i,
-                  (colors[i].red   >> 8),
-                  (colors[i].green >> 8),
-                  (colors[i].blue  >> 8),
-                  (colors[i].red   >> 8) / red_bits,
-                  (colors[i].green >> 8) / green_bits,
-                  (colors[i].blue  >> 8) / blue_bits,
-                  colors[i].pixel);
+    fprintf(stderr, "close %3u: %04x/%04x/%04x\n",
+            x, queried[best].red, queried[best].green, queried[best].blue);
 #endif // COLORTABLE_DEBUG
 
-          colors[i].flags = DoRed|DoGreen|DoBlue;
-          break;
-        }
+    if (visual_class & 1) {
+      XColor xcolor = queried[best];
+
+      if (XAllocColor(_dpy.XDisplay(), colormap, &xcolor)) {
+        colors[x] = xcolor.pixel;
+      } else {
+        colors[x] = gray < SHRT_MAX
+                    ? BlackPixel(_dpy.XDisplay(), _screen)
+                    : WhitePixel(_dpy.XDisplay(), _screen);
       }
+    } else {
+      colors[x] = best;
     }
   }
 }
 
 
 bt::XColorTable::~XColorTable(void) {
-  if (! colors.empty()) {
-    std::vector<unsigned long> pixvals(colors.size());
-    std::vector<unsigned long>::iterator pt = pixvals.begin();
-    std::vector<XColor>::const_iterator xt = colors.begin();
-    for (; xt != colors.end() && pt != pixvals.end(); ++xt, ++pt)
-      *pt = xt->pixel;
-
+  if (!colors.empty()) {
     XFreeColors(_dpy.XDisplay(), _dpy.screenInfo(_screen).colormap(),
-                &pixvals[0], pixvals.size(), 0);
-
-    pixvals.clear();
+                &colors[0], colors.size(), 0);
     colors.clear();
   }
 }
@@ -452,30 +550,29 @@ bt::XColorTable::~XColorTable(void) {
 void bt::XColorTable::map(unsigned int &red,
                           unsigned int &green,
                           unsigned int &blue) {
-  red   = _red  [  red];
-  green = _green[green];
-  blue  = _blue [ blue];
+  red   = (red   * n_red)   >> 8;
+  green = (green * n_green) >> 8;
+  blue  = (blue  * n_blue)  >> 8;
 }
 
 
 unsigned long bt::XColorTable::pixel(unsigned int red,
                                      unsigned int green,
                                      unsigned int blue) {
-  switch (_vclass) {
+  switch (visual_class) {
   case StaticGray:
-    return (red+green+blue)/3u;
-    // return std::max(red, std::max(green, blue));
-
   case GrayScale:
+    return colors[(red * 30 + green * 59 + blue * 11) / 100];
+
   case StaticColor:
   case PseudoColor:
-    return colors[(red * _ngreen * _nblue) + (green * _nblue) + blue].pixel;
+    return colors[(red * n_green * n_blue) + (green * n_blue) + blue];
 
   case TrueColor:
   case DirectColor:
-    return ((red   << red_offset) |
-            (green << green_offset) |
-            (blue  << blue_offset));
+    return ((red << red_shift)
+            | (green << green_shift)
+            | (blue << blue_shift));
   }
 
   // not reached
