@@ -246,7 +246,8 @@ void Toolbar::reconfigure(void) {
     else
       x = (screen->getWidth() - frame.rect.width()) / 2;
 
-    y = screen->getHeight() - frame.rect.height();
+    y = screen->getHeight() - frame.rect.height()
+      - (screen->getBorderWidth() * 2);
 
     frame.x_hidden = x;
     frame.y_hidden = screen->getHeight() - screen->getBevelWidth()
