@@ -2334,7 +2334,8 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
 
   case XA_WM_ICON_NAME:
     getWMIconName();
-    if (flags.iconic) screen->iconUpdate();
+    if (flags.iconic)
+      screen->iconUpdate();
     break;
 
   case XA_WM_NAME:
@@ -2344,7 +2345,7 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
       redrawLabel();
 
     if (! flags.iconic)
-      screen->getWorkspace(workspace_number)->update();
+      screen->getWorkspace(workspace_number)->changeName(this);
 
     break;
 

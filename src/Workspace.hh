@@ -55,23 +55,24 @@ public:
   inline BScreen *getScreen(void) { return screen; }
 
   inline BlackboxWindow *getLastFocusedWindow(void) { return lastfocus; }
-  
+
   inline Clientmenu *getMenu(void) { return clientmenu; }
 
   inline const char *getName(void) const { return name; }
 
   inline const int &getWorkspaceID(void) const { return id; }
-  
+
   inline void setLastFocusedWindow(BlackboxWindow *w) { lastfocus = w; }
 
   BlackboxWindow *getWindow(int);
 
   Bool isCurrent(void);
   Bool isLastWindow(BlackboxWindow *);
-  
-  const int addWindow(BlackboxWindow *, Bool = False);
-  const int removeWindow(BlackboxWindow *);
-  const int getCount(void);
+
+  int addWindow(BlackboxWindow *, Bool = False);
+  int removeWindow(BlackboxWindow *);
+  void changeName(BlackboxWindow *);
+  int getCount() { return windowList->count(); }
 
   void showAll(void);
   void hideAll(void);
@@ -79,7 +80,6 @@ public:
   void raiseWindow(BlackboxWindow *);
   void lowerWindow(BlackboxWindow *);
   void reconfigure();
-  void update();
   void setCurrent(void);
   void setName(char *);
   void shutdown(void);

@@ -80,10 +80,13 @@ Workspace::~Workspace(void) {
 }
 
 
-const int Workspace::addWindow(BlackboxWindow *w, Bool place) {
-  if (! w) return -1;
+int Workspace::addWindow(BlackboxWindow *w, Bool place)
+{
+  if (! w)
+    return -1;
 
-  if (place) placeWindow(w);
+  if (place)
+    placeWindow(w);
 
   w->setWorkspace(id);
   w->setWindowNumber(windowList->count());
@@ -92,7 +95,6 @@ const int Workspace::addWindow(BlackboxWindow *w, Bool place) {
   windowList->insert(w);
 
   clientmenu->insert(*w->getTitle());
-  // clientmenu->update();
 
   screen->updateNetizenWindowAdd(w->getClientWindow(), id);
 
@@ -101,9 +103,10 @@ const int Workspace::addWindow(BlackboxWindow *w, Bool place) {
   return w->getWindowNumber();
 }
 
-
-const int Workspace::removeWindow(BlackboxWindow *w) {
-  if (! w) return -1;
+int Workspace::removeWindow(BlackboxWindow *w)
+{
+  if (! w)
+    return -1;
 
   stackingList->remove(w);
 
@@ -112,7 +115,7 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
 	w->getTransientFor()->isVisible()) {
       w->getTransientFor()->setInputFocus();
     } else if (screen->isSloppyFocus()) {
-	Blackbox::instance()->setFocusedWindow((BlackboxWindow *) 0);
+      Blackbox::instance()->setFocusedWindow((BlackboxWindow *) 0);
     } else {
       BlackboxWindow *top = stackingList->first();
       if (! top || ! top->setInputFocus()) {
@@ -267,15 +270,10 @@ BlackboxWindow *Workspace::getWindow(int index) {
     return 0;
 }
 
-
-const int Workspace::getCount(void) {
-  return windowList->count();
-}
-
-void Workspace::update(void)
+void Workspace::changeName(BlackboxWindow *window)
 {
-    // clientmenu->update();
-    screen->getToolbar()->redrawWindowLabel(True);
+  clientmenu->change(window->getWindowNumber(), *window->getTitle());
+  screen->getToolbar()->redrawWindowLabel(True);
 }
 
 Bool Workspace::isCurrent(void) {
