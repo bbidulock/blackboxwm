@@ -348,8 +348,8 @@ void bsetroot::usage(int exit_code) {
     fprintf(stderr,
 	    i18n(bsetrootSet, bsetrootUsage,
 		 "%s 2.0\n\n"
-		 "Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
-		 "Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
+		 "Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>"
+		 "Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>"
 		 "  -display <string>        use display connection\n"
 		 "  -mod <x> <y>             modula pattern\n"
 		 "  -foreground, -fg <color> modula foreground color\n"
