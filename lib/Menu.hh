@@ -265,6 +265,7 @@ namespace bt {
     std::vector<bool> _id_bits;
 
     Menu *_parent_menu;
+    Menu *_current_submenu;
     Menu *_active_submenu;
     unsigned int _motion;
     unsigned int _itemw;

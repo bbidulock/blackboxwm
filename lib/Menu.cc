@@ -280,6 +280,7 @@ bt::Menu::Menu(Application &app, unsigned int screen)
     _irect(0, 0, 1, 1),
     _timer(&_app, &menudelay),
     _parent_menu(0),
+    _current_submenu(0),
     _active_submenu(0),
     _motion(0),
     _itemw(1),
@@ -604,7 +605,12 @@ void bt::Menu::move(int x, int y) {
 void bt::Menu::show(void) {
   if (isVisible()) return;
 
-  if (menudelay.hidemenu == this) menudelay.hidemenu = 0;
+  if (_parent_menu && _parent_menu->isVisible())
+    _parent_menu->_current_submenu = this;
+
+  // don't hide this menu later if it is shown now
+  if (menudelay.hidemenu == this)
+    menudelay.hidemenu = 0;
 
   updatePixmaps();
 
@@ -620,12 +626,18 @@ void bt::Menu::show(void) {
 void bt::Menu::hide(void) {
   if (! isVisible()) return;
 
-  if (_active_submenu && _active_submenu->isVisible())
-    _active_submenu->hide();
-  _active_submenu = 0;
-  _active_index = ~0u;
+  if (_current_submenu && _current_submenu->isVisible())
+    _current_submenu->hide();
 
-  if (menudelay.showmenu == this) menudelay.showmenu = 0;
+  if (_parent_menu && _parent_menu->isVisible())
+    _parent_menu->_current_submenu = 0;
+
+  // don't show this menu later if it is hidden now
+  if (menudelay.showmenu == this)
+    menudelay.showmenu = 0;
+
+  _active_index = ~0u;
+  _active_submenu = 0;
 
   const ItemList::iterator &end = _items.end();
   ItemList::iterator it;
@@ -858,7 +870,7 @@ void bt::Menu::motionNotifyEvent(const XMotionEvent * const event) {
     positionRect(r, row, col);
   }
 
-  if ((menudelay.showmenu || menudelay.hidemenu) && ! _timer.isTiming())
+  if (menudelay.showmenu || menudelay.hidemenu)
     _timer.start();
 }
 
@@ -871,7 +883,13 @@ void bt::Menu::leaveNotifyEvent(const XCrossingEvent * const /*unused*/) {
   for (it = _items.begin(); it != end; ++it) {
     r.setHeight(it->height);
 
-    if (it->active && (! _active_submenu || it->sub != _active_submenu))
+    /*
+      deactivate the item unless its menu is either visible or waiting
+      to be shown
+    */
+    if (it->active
+        && !((_current_submenu && _current_submenu == it->sub)
+             || (menudelay.showmenu && menudelay.showmenu == it->sub)))
       deactivateItem(r, *it);
 
     positionRect(r, row, col);
@@ -887,8 +905,7 @@ void bt::Menu::leaveNotifyEvent(const XCrossingEvent * const /*unused*/) {
       mouse into submenus easily (even if you happen to move the mouse
       over other items in the menu)
     */
-
-    _active_submenu = menudelay.hidemenu;
+    _current_submenu = menudelay.hidemenu;
     menudelay.showmenu = 0;
     menudelay.hidemenu = 0;
     _timer.stop();
@@ -898,10 +915,10 @@ void bt::Menu::leaveNotifyEvent(const XCrossingEvent * const /*unused*/) {
     for (it = _items.begin(); it != end; ++it) {
       r.setHeight(it->height);
 
-      if (it->active && (! _active_submenu || it->sub != _active_submenu ||
-                         !_active_submenu->isVisible()))
+      if (it->active && (!_current_submenu || it->sub != _current_submenu ||
+                         !_current_submenu->isVisible()))
         deactivateItem(r, *it);
-      else if (it->sub == _active_submenu)
+      else if (it->sub == _current_submenu)
         activateItem(r, *it);
 
       positionRect(r, row, col);
@@ -954,11 +971,11 @@ void bt::Menu::activateSubmenu(void) {
   showActiveSubmenu();
 
   // activate the first item in the menu when shown with the keyboard
-  const ItemList::const_iterator &end = _active_submenu->_items.end();
-  ItemList::const_iterator it = _active_submenu->_items.begin();
+  const ItemList::const_iterator &end = _current_submenu->_items.end();
+  ItemList::const_iterator it = _current_submenu->_items.begin();
   it = std::find_if(it, end, InteractMatch());
-  if (it != end && _active_submenu->count() > 0)
-    _active_submenu->activateIndex(it->indx);
+  if (it != end && _current_submenu->count() > 0)
+    _current_submenu->activateIndex(it->indx);
 }
 
 
@@ -1113,13 +1130,14 @@ unsigned int bt::Menu::verifyId(unsigned int id) {
 void bt::Menu::activateItem(const Rect &rect, MenuItem &item) {
   // mark new active item
   _active_index = item.indx;
+  _active_submenu = item.sub;
+
   item.active = item.enabled;
   XClearArea(_app.XDisplay(), _window,
              rect.x(), rect.y(), rect.width(), rect.height(), True);
 
   menudelay.showmenu = item.sub;
   if (menudelay.hidemenu == item.sub) menudelay.hidemenu = 0;
-  _active_submenu = item.sub;
   if (! item.sub || item.sub->isVisible()) return;
 
   item.sub->refresh();
@@ -1145,22 +1163,26 @@ void bt::Menu::activateItem(const Rect &rect, MenuItem &item) {
       px = 0;
   }
 
-  if (_active_submenu->_show_title)
-    py -=_active_submenu->_trect.height() -
+  if (item.sub->_show_title)
+    py -= item.sub->_trect.height() -
          style->titleTexture().borderWidth();
   if (py + item.sub->_rect.height() > screeninfo.height())
     py -= item.sub->_irect.height() - rect.height();
   if (py < 0)
     py = 0;
 
-  _active_submenu->move(px, py);
+  item.sub->move(px, py);
 }
 
 
 void bt::Menu::deactivateItem(const Rect &rect, MenuItem &item,
                               bool hide_submenu) {
   // clear old active item
-  if (_active_index == item.indx) _active_index = ~0u;
+  if (_active_index == item.indx) {
+    _active_index = ~0u;
+    _active_submenu = 0;
+  }
+
   item.active = false;
   XClearArea(_app.XDisplay(), _window,
              rect.x(), rect.y(), rect.width(), rect.height(), True);
