@@ -169,7 +169,9 @@ std::string bt::expandTilde(const std::string& s) {
 void bt::bexec(const std::string& command, const std::string& displaystring) {
 #ifndef    __EMX__
   if (! fork()) {
+#ifndef __QNXTO__ // apparently, setsid interferes with signals on QNX
     setsid();
+#endif
     int ret = putenv(const_cast<char *>(displaystring.c_str()));
     assert(ret != -1);
     std::string cmd = "exec ";
