@@ -83,10 +83,8 @@ AC_CHECK_FUNCS([iconv_open],
                ])
 AC_SUBST(ICONV)
 
-iconv_signature=
-AC_MSG_CHECKING([for GNU libiconv])
-
 dnl check if we are using GNU libiconv
+AC_MSG_CHECKING([for GNU libiconv])
 AC_COMPILE_IFELSE([
 #include <sys/types.h>
 #include <iconv.h>
