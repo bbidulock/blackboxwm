@@ -110,8 +110,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   blackbox = bb;
 
   event_mask = ColormapChangeMask | EnterWindowMask | PropertyChangeMask |
-    SubstructureRedirectMask | KeyPressMask | KeyReleaseMask |
-    ButtonPressMask | ButtonReleaseMask;
+    SubstructureRedirectMask | ButtonPressMask | ButtonReleaseMask;
 
   XErrorHandler old = XSetErrorHandler((XErrorHandler) anotherWMRunning);
   XSelectInput(getBaseDisplay()->getXDisplay(), getRootWindow(), event_mask);
@@ -314,6 +313,12 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   // call this again just in case a window we found updates the Strut list
   updateAvailableArea();
 
+  // watch for SubstructureNotify events, so that we can catch the odd cases where
+  // the window maps, unmaps and destroys itself before blackbox has a change to manage
+  // it... without SubstructureNotify, we never get the Unmap or Destroy events, which
+  // would leave us with a ghost window...
+  event_mask |= SubstructureNotifyMask;
+  XSelectInput(getBaseDisplay()->getXDisplay(), getRootWindow(), event_mask);
   XFlush(blackbox->getXDisplay());
 }
 
@@ -1556,8 +1561,6 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
 
 void BScreen::shutdown(void) {
-  XGrabServer(blackbox->getXDisplay());
-
   XSelectInput(blackbox->getXDisplay(), getRootWindow(), NoEventMask);
   XSync(blackbox->getXDisplay(), False);
 
@@ -1567,8 +1570,6 @@ void BScreen::shutdown(void) {
   }
 
   slit->shutdown();
-
-  XUngrabServer(blackbox->getXDisplay());
 }
 
 
@@ -1772,9 +1773,6 @@ void BScreen::toggleFocusModel(FocusModel model) {
     saveSloppyFocus(False);
     saveAutoRaise(False);
   }
-
-  std::for_each(workspacesList.begin(), workspacesList.end(),
-                std::mem_fun(&Workspace::updateFocusModel));
 }
 
 BTexture BScreen::readDatabaseTexture(const string &rname,

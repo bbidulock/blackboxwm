@@ -249,17 +249,6 @@ void Workspace::reconfigure(void) {
 }
 
 
-void Workspace::updateFocusModel(void) {
-  BlackboxWindowList::iterator it = windowList.begin();
-  const BlackboxWindowList::iterator end = windowList.end();
-  for (; it != end; ++it) {
-    BlackboxWindow *bw = *it;
-    if (bw->validateClient())
-      bw->updateFocusModel();
-  }
-}
-
-
 BlackboxWindow *Workspace::getWindow(unsigned int index) {
   if (index < windowList.size()) {
     BlackboxWindowList::iterator it = windowList.begin();

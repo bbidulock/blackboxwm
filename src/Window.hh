@@ -274,7 +274,7 @@ public:
   { return client.title.c_str(); }
   inline const char *getIconTitle(void) const
   { return client.icon_title.c_str(); }
-  
+
   inline int getXFrame(void) const { return frame.x; }
   inline int getYFrame(void) const { return frame.y; }
   inline int getXClient(void) const { return client.x; }
@@ -309,7 +309,6 @@ public:
   void stick(void);
   void unstick(void);
   void reconfigure(void);
-  void updateFocusModel(void);
   void installColormap(Bool install);
   void restore(Bool remap);
   void configure(int dx, int dy, unsigned int dw, unsigned int dh);
