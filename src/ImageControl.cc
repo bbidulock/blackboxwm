@@ -475,10 +475,7 @@ void BImageControl::removeImage(Pixmap pixmap) {
 #ifdef    TIMEDCACHE
   if (! timer)
 #endif // TIMEDCACHE
-  {
-    fprintf(stderr, "flushing cache in removeImage()\n");
     timeout();
-  }
 }
 
 
@@ -714,8 +711,6 @@ struct ZeroRefCheck {
 };
 
 void BImageControl::timeout(void) {
-  fprintf(stderr, "timeout handler, %d\n", cache.size());
   cache.erase(std::remove_if(cache.begin(), cache.end(), ZeroRefCheck()),
               cache.end());
-  fprintf(stderr, "timeout handler done, %d\n", cache.size());
 }
