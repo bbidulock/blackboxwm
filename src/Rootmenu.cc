@@ -98,8 +98,7 @@ void Rootmenu::itemClicked( const Point &, const Basemenu::Item &item, int butto
     // fall through intended
 
   case Reconfigure:
-    // ### TODO - reconfigure doesn't work
-    // blackbox->reconfigure();
+    blackbox->reconfigure();
     break;
   }
 }
