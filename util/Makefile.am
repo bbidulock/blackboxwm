@@ -24,11 +24,15 @@ CPPFLAGS		= @CPPFLAGS@ @DEBUG@ @NLS@ @ORDEREDPSEUDO@	\
 			  -I$(top_srcdir)/lib
 
 bin_SCRIPTS		= bsetbg
-bin_PROGRAMS		= bsetroot
+bin_PROGRAMS		= bsetroot bstyleconvert
 
 bsetroot_SOURCES	= bsetroot.cc
 bsetroot_DEPENDENCIES	= $(top_srcdir)/lib/libbt.a
 bsetroot_LDADD		= -L$(top_srcdir)/lib -lbt
+
+bstyleconvert_SOURCES		= bstyleconvert.cc
+bstyleconvert_DEPENDENCIES	= $(top_srcdir)/lib/libbt.a
+bstyleconvert_LDADD		= -L$(top_srcdir)/lib -lbt
 
 MAINTAINERCLEANFILES	= Makefile.in
 

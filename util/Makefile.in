@@ -104,23 +104,30 @@ CPPFLAGS = @CPPFLAGS@ @DEBUG@ @NLS@ @ORDEREDPSEUDO@	\
 
 
 bin_SCRIPTS = bsetbg
-bin_PROGRAMS = bsetroot
+bin_PROGRAMS = bsetroot bstyleconvert
 
 bsetroot_SOURCES = bsetroot.cc
 bsetroot_DEPENDENCIES = $(top_srcdir)/lib/libbt.a
 bsetroot_LDADD = -L$(top_srcdir)/lib -lbt
+
+bstyleconvert_SOURCES = bstyleconvert.cc
+bstyleconvert_DEPENDENCIES = $(top_srcdir)/lib/libbt.a
+bstyleconvert_LDADD = -L$(top_srcdir)/lib -lbt
 
 MAINTAINERCLEANFILES = Makefile.in
 subdir = util
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
-bin_PROGRAMS = bsetroot$(EXEEXT)
+bin_PROGRAMS = bsetroot$(EXEEXT) bstyleconvert$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS)
 
 am_bsetroot_OBJECTS = bsetroot.$(OBJEXT)
 bsetroot_OBJECTS = $(am_bsetroot_OBJECTS)
 bsetroot_LDFLAGS =
+am_bstyleconvert_OBJECTS = bstyleconvert.$(OBJEXT)
+bstyleconvert_OBJECTS = $(am_bstyleconvert_OBJECTS)
+bstyleconvert_LDFLAGS =
 SCRIPTS = $(bin_SCRIPTS)
 
 
@@ -129,16 +136,16 @@ DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
-@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/bsetroot.Po
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/bsetroot.Po $(DEPDIR)/bstyleconvert.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
 CXXFLAGS = @CXXFLAGS@
-DIST_SOURCES = $(bsetroot_SOURCES)
+DIST_SOURCES = $(bsetroot_SOURCES) $(bstyleconvert_SOURCES)
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = $(bsetroot_SOURCES)
+SOURCES = $(bsetroot_SOURCES) $(bstyleconvert_SOURCES)
 
 all: all-am
 
@@ -177,6 +184,9 @@ clean-binPROGRAMS:
 bsetroot$(EXEEXT): $(bsetroot_OBJECTS) $(bsetroot_DEPENDENCIES) 
 	@rm -f bsetroot$(EXEEXT)
 	$(CXXLINK) $(bsetroot_LDFLAGS) $(bsetroot_OBJECTS) $(bsetroot_LDADD) $(LIBS)
+bstyleconvert$(EXEEXT): $(bstyleconvert_OBJECTS) $(bstyleconvert_DEPENDENCIES) 
+	@rm -f bstyleconvert$(EXEEXT)
+	$(CXXLINK) $(bstyleconvert_LDFLAGS) $(bstyleconvert_OBJECTS) $(bstyleconvert_LDADD) $(LIBS)
 install-binSCRIPTS: $(bin_SCRIPTS)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
@@ -206,6 +216,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/bsetroot.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/bstyleconvert.Po@am__quote@
 
 distclean-depend:
 	-rm -rf $(DEPDIR)
