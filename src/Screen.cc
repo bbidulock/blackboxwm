@@ -982,8 +982,12 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
           break;
 
-        case 333: // nop
+        case 328: // sep
           menu->insertSeparator();
+          break;
+
+        case 333: // nop
+          menu->insert(label);
           break;
 
         case 421: // exec
