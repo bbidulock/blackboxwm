@@ -141,15 +141,6 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
 
   geom_pixmap = None;
 
-#ifdef    HAVE_GETPID
-  pid_t bpid = getpid();
-
-  XChangeProperty(blackbox->getXDisplay(), getRootWindow(),
-                  blackbox->getBlackboxPidAtom(), XA_CARDINAL,
-                  sizeof(pid_t) * 8, PropModeReplace,
-                  (unsigned char *) &bpid, 1);
-#endif // HAVE_GETPID
-
   XDefineCursor(blackbox->getXDisplay(), getRootWindow(),
                 blackbox->getSessionCursor());
 

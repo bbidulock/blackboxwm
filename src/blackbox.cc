@@ -355,12 +355,6 @@ void Blackbox::process_event(XEvent *e) {
           win->iconify();
         if (e->xclient.data.l[0] == NormalState)
           win->deiconify();
-      } else if (e->xclient.message_type == getBlackboxChangeWorkspaceAtom() ||
-                 e->xclient.message_type == netwm()->currentDesktop()) {
-        BScreen *screen = findScreen(e->xclient.window);
-        unsigned int workspace = e->xclient.data.l[0];
-        if (screen && workspace < screen->getWorkspaceCount())
-          screen->changeWorkspaceID(workspace);
       } else if (e->xclient.message_type == netwm()->numberOfDesktops()) {
         BScreen *screen = findScreen(e->xclient.window);
         if (screen) {
@@ -378,12 +372,12 @@ void Blackbox::process_event(XEvent *e) {
         BScreen *screen = findScreen(e->xclient.window);
         if (screen)
           screen->getDesktopNames();
-      } else if (e->xclient.message_type ==
-                 getBlackboxChangeWindowFocusAtom()) {
-        BlackboxWindow *win = findWindow(e->xclient.window);
-
-        if (win && win->setInputFocus())
-          win->installColormap(True);
+      } else if (e->xclient.message_type == netwm()->currentDesktop()) {
+        BScreen *screen = findScreen(e->xclient.window);
+        unsigned int workspace = e->xclient.data.l[0];
+        if (screen && workspace < screen->getWorkspaceCount() &&
+            workspace != screen->getCurrentWorkspaceID())
+          screen->changeWorkspaceID(workspace);
       } else if (e->xclient.message_type == netwm()->activeWindow()) {
         BlackboxWindow *win = findWindow(e->xclient.window);
         if (win) {
@@ -406,16 +400,6 @@ void Blackbox::process_event(XEvent *e) {
         BlackboxWindow *win = findWindow(e->xclient.window);
         if (win)
           win->netwmEvent(&(e->xclient));
-      } else if (e->xclient.message_type ==
-                 getBlackboxCycleWindowFocusAtom()) {
-        BScreen *screen = findScreen(e->xclient.window);
-
-        if (screen) {
-          if (! e->xclient.data.l[0])
-            screen->prevFocus();
-          else
-            screen->nextFocus();
-        }
       }
     }
 
@@ -494,40 +478,6 @@ void Blackbox::init_icccm(void) {
   xa_wm_delete_window = XInternAtom(getXDisplay(), "WM_DELETE_WINDOW", False);
   xa_wm_take_focus = XInternAtom(getXDisplay(), "WM_TAKE_FOCUS", False);
   motif_wm_hints = XInternAtom(getXDisplay(), "_MOTIF_WM_HINTS", False);
-
-  blackbox_hints = XInternAtom(getXDisplay(), "_BLACKBOX_HINTS", False);
-  blackbox_attributes =
-    XInternAtom(getXDisplay(), "_BLACKBOX_ATTRIBUTES", False);
-  blackbox_change_attributes =
-    XInternAtom(getXDisplay(), "_BLACKBOX_CHANGE_ATTRIBUTES", False);
-  blackbox_structure_messages =
-    XInternAtom(getXDisplay(), "_BLACKBOX_STRUCTURE_MESSAGES", False);
-  blackbox_notify_startup =
-    XInternAtom(getXDisplay(), "_BLACKBOX_NOTIFY_STARTUP", False);
-  blackbox_notify_window_add =
-    XInternAtom(getXDisplay(), "_BLACKBOX_NOTIFY_WINDOW_ADD", False);
-  blackbox_notify_window_del =
-    XInternAtom(getXDisplay(), "_BLACKBOX_NOTIFY_WINDOW_DEL", False);
-  blackbox_notify_current_workspace =
-    XInternAtom(getXDisplay(), "_BLACKBOX_NOTIFY_CURRENT_WORKSPACE", False);
-  blackbox_notify_workspace_count =
-    XInternAtom(getXDisplay(), "_BLACKBOX_NOTIFY_WORKSPACE_COUNT", False);
-  blackbox_notify_window_focus =
-    XInternAtom(getXDisplay(), "_BLACKBOX_NOTIFY_WINDOW_FOCUS", False);
-  blackbox_notify_window_raise =
-    XInternAtom(getXDisplay(), "_BLACKBOX_NOTIFY_WINDOW_RAISE", False);
-  blackbox_notify_window_lower =
-    XInternAtom(getXDisplay(), "_BLACKBOX_NOTIFY_WINDOW_LOWER", False);
-  blackbox_change_workspace =
-    XInternAtom(getXDisplay(), "_BLACKBOX_CHANGE_WORKSPACE", False);
-  blackbox_change_window_focus =
-    XInternAtom(getXDisplay(), "_BLACKBOX_CHANGE_WINDOW_FOCUS", False);
-  blackbox_cycle_window_focus =
-    XInternAtom(getXDisplay(), "_BLACKBOX_CYCLE_WINDOW_FOCUS", False);
-
-#ifdef    HAVE_GETPID
-  blackbox_pid = XInternAtom(getXDisplay(), "_BLACKBOX_PID", False);
-#endif // HAVE_GETPID
 
   _netwm = new Netwm(getXDisplay());
 }
