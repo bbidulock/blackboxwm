@@ -433,11 +433,22 @@ void Toolbar::redrawWindowLabel(void) {
   BlackboxWindow *foc = _screen->getBlackbox()->getFocusedWindow();
   if (! foc || foc->getScreen() != _screen) return;
 
+  // ellide the window title if it is larger than the available area
+  const std::string title = foc->getTitle(); // ### ick...a copy!
+  std::string ellided = title;
+  bt::Rect r = bt::textRect(_screen->screenNumber(), style->font, ellided);
+  int c = ellided.size();
+  while (--c > 9 && r.width() > frame.window_label_w) {
+    ellided = bt::ellideText(title, c, "...");
+    r = bt::textRect(_screen->screenNumber(), style->font, ellided);
+  }
+  if (c <= 9) ellided = "..."; // couldn't ellide enough
+
   bt::Pen pen(_screen->screenNumber(), style->w_text);
   u.setCoords(u.left()  + frame.bevel_w, u.top()    + frame.bevel_w,
               u.right() - frame.bevel_w, u.bottom() - frame.bevel_w);
   bt::drawText(style->font, pen, frame.window_label, u,
-               style->alignment, foc->getTitle());
+               style->alignment, ellided);
 }
 
 
