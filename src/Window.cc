@@ -485,8 +485,8 @@ Window BlackboxWindow::createToplevelWindow(void) {
   attrib_create.override_redirect = True;
   attrib_create.event_mask = EnterWindowMask | LeaveWindowMask;
 
-  return XCreateWindow(blackbox->XDisplay(), _screen->screenInfo().rootWindow(),
-                       0, 0, 1, 1, 0,
+  return XCreateWindow(blackbox->XDisplay(),
+                       _screen->screenInfo().rootWindow(), 0, 0, 1, 1, 0,
                        _screen->screenInfo().depth(), InputOutput,
                        _screen->screenInfo().visual(),
                        create_mask, &attrib_create);
@@ -1136,9 +1136,9 @@ WMProtocols BlackboxWindow::readWMProtocols(void) {
   if (XGetWMProtocols(blackbox->XDisplay(), client.window,
                       &proto, &num_return)) {
     for (int i = 0; i < num_return; ++i) {
-      if (proto[i] == blackbox->getWMDeleteAtom()) {
+      if (proto[i] == blackbox->wmDeleteWindowAtom()) {
         protocols.wm_delete_window = true;
-      } else if (proto[i] == blackbox->getWMTakeFocusAtom()) {
+      } else if (proto[i] == blackbox->wmTakeFocusAtom()) {
         protocols.wm_take_focus = true;
       }
     }
@@ -1295,9 +1295,9 @@ MotifHints BlackboxWindow::readMotifHints(void) {
   int format;
   unsigned long num, len;
   int ret = XGetWindowProperty(blackbox->XDisplay(), client.window,
-                               blackbox->getMotifWMHintsAtom(), 0,
+                               blackbox->motifWmHintsAtom(), 0,
                                PROP_MWM_HINTS_ELEMENTS, False,
-                               blackbox->getMotifWMHintsAtom(), &atom_return,
+                               blackbox->motifWmHintsAtom(), &atom_return,
                                &format, &num, &len,
                                (unsigned char **) &prop);
 
@@ -1572,11 +1572,11 @@ bool BlackboxWindow::setInputFocus(void) {
   if (client.wmprotocols.wm_take_focus) {
     XEvent ce;
     ce.xclient.type = ClientMessage;
-    ce.xclient.message_type = blackbox->getWMProtocolsAtom();
+    ce.xclient.message_type = blackbox->wmProtocolsAtom();
     ce.xclient.display = blackbox->XDisplay();
     ce.xclient.window = client.window;
     ce.xclient.format = 32;
-    ce.xclient.data.l[0] = blackbox->getWMTakeFocusAtom();
+    ce.xclient.data.l[0] = blackbox->wmTakeFocusAtom();
     ce.xclient.data.l[1] = blackbox->XTime();
     ce.xclient.data.l[2] = 0l;
     ce.xclient.data.l[3] = 0l;
@@ -1652,11 +1652,11 @@ void BlackboxWindow::close(void) {
 
   XEvent ce;
   ce.xclient.type = ClientMessage;
-  ce.xclient.message_type = blackbox->getWMProtocolsAtom();
+  ce.xclient.message_type = blackbox->wmProtocolsAtom();
   ce.xclient.display = blackbox->XDisplay();
   ce.xclient.window = client.window;
   ce.xclient.format = 32;
-  ce.xclient.data.l[0] = blackbox->getWMDeleteAtom();
+  ce.xclient.data.l[0] = blackbox->wmDeleteWindowAtom();
   ce.xclient.data.l[1] = blackbox->XTime();
   ce.xclient.data.l[2] = 0l;
   ce.xclient.data.l[3] = 0l;
@@ -1920,7 +1920,7 @@ void BlackboxWindow::setState(unsigned long new_state) {
   state[0] = client.current_state;
   state[1] = None;
   XChangeProperty(blackbox->XDisplay(), client.window,
-                  blackbox->getWMStateAtom(), blackbox->getWMStateAtom(), 32,
+                  blackbox->wmStateAtom(), blackbox->wmStateAtom(), 32,
                   PropModeReplace, (unsigned char *) state, 2);
 
   const bt::Netwm& netwm = blackbox->netwm();
@@ -2003,8 +2003,8 @@ bool BlackboxWindow::readState(void) {
   unsigned long *state, ulfoo, nitems;
 
   if ((XGetWindowProperty(blackbox->XDisplay(), client.window,
-                          blackbox->getWMStateAtom(),
-                          0l, 2l, False, blackbox->getWMStateAtom(),
+                          blackbox->wmStateAtom(),
+                          0l, 2l, False, blackbox->wmStateAtom(),
                           &atom_return, &foo, &nitems, &ulfoo,
                           (unsigned char **) &state) != Success) ||
       (! state)) {
@@ -2027,7 +2027,7 @@ bool BlackboxWindow::readState(void) {
  */
 void BlackboxWindow::clearState(void) {
   XDeleteProperty(blackbox->XDisplay(), client.window,
-                  blackbox->getWMStateAtom());
+                  blackbox->wmStateAtom());
 
   const bt::Netwm& netwm = blackbox->netwm();
   netwm.removeProperty(client.window, netwm.wmDesktop());
@@ -2360,7 +2360,7 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
 
   const bt::Netwm& netwm = blackbox->netwm();
 
-  if (event->message_type == blackbox->getWMChangeStateAtom()) {
+  if (event->message_type == blackbox->wmChangeStateAtom()) {
     if (event->data.l[0] == IconicState) {
       if (hasWindowFunction(WindowFunctionIconify))
         iconify();
@@ -2714,7 +2714,7 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
   }
 
   default: {
-    if (event->atom == blackbox->getWMProtocolsAtom()) {
+    if (event->atom == blackbox->wmProtocolsAtom()) {
       client.wmprotocols = readWMProtocols();
 
       if (client.wmprotocols.wm_delete_window
@@ -2727,7 +2727,7 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
           positionButtons(True);
         }
       }
-    } else if (event->atom == blackbox->getMotifWMHintsAtom()) {
+    } else if (event->atom == blackbox->motifWmHintsAtom()) {
       client.motif = readMotifHints();
 
       ::update_decorations(client.decorations,

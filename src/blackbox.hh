@@ -117,7 +117,7 @@ public:
   void setFocusedWindow(BlackboxWindow *win);
   inline void forgetFocusedWindow(void)
   { focused_window = 0; }
-  inline BlackboxWindow *getFocusedWindow(void)
+  inline BlackboxWindow *focusedWindow(void)
   { return focused_window; }
 
   void shutdown(void);
@@ -130,13 +130,20 @@ public:
 
   virtual void timeout(bt::Timer *);
 
-  Atom getWMChangeStateAtom(void) const { return xa_wm_change_state; }
-  Atom getWMStateAtom(void) const       { return xa_wm_state; }
-  Atom getWMDeleteAtom(void) const      { return xa_wm_delete_window; }
-  Atom getWMProtocolsAtom(void) const   { return xa_wm_protocols; }
-  Atom getWMTakeFocusAtom(void) const   { return xa_wm_take_focus; }
-  Atom getWMColormapAtom(void) const    { return xa_wm_colormap_windows; }
-  Atom getMotifWMHintsAtom(void) const  { return motif_wm_hints; }
+  inline Atom wmChangeStateAtom(void) const
+  { return xa_wm_change_state; }
+  inline Atom wmStateAtom(void) const
+  { return xa_wm_state; }
+  inline Atom wmDeleteWindowAtom(void) const
+  { return xa_wm_delete_window; }
+  inline Atom wmProtocolsAtom(void) const
+  { return xa_wm_protocols; }
+  inline Atom wmTakeFocusAtom(void) const
+  { return xa_wm_take_focus; }
+  inline Atom wmColormapAtom(void) const
+  { return xa_wm_colormap_windows; }
+  inline Atom motifWmHintsAtom(void) const
+  { return motif_wm_hints; }
 };
 
 #endif // __blackbox_hh

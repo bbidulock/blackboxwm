@@ -962,13 +962,13 @@ void BScreen::propagateWindowName(const BlackboxWindow * const win) {
   const std::string s = bt::ellideText(win->title(), 60, "...");
   workspace->menu()->changeItem(win->windowNumber(), s);
 
-  if (_toolbar && _blackbox->getFocusedWindow() == win)
+  if (_toolbar && _blackbox->focusedWindow() == win)
     _toolbar->redrawWindowLabel();
 }
 
 
 void BScreen::nextFocus(void) {
-  BlackboxWindow *focused = _blackbox->getFocusedWindow(),
+  BlackboxWindow *focused = _blackbox->focusedWindow(),
                     *next = 0;
   BlackboxWindowList::iterator it, end = windowList.end();
 
@@ -1004,7 +1004,7 @@ void BScreen::nextFocus(void) {
 
 
 void BScreen::prevFocus(void) {
-  BlackboxWindow *focused = _blackbox->getFocusedWindow(),
+  BlackboxWindow *focused = _blackbox->focusedWindow(),
                     *next = 0;
   BlackboxWindowList::reverse_iterator it, end = windowList.rend();
 
@@ -1040,7 +1040,7 @@ void BScreen::prevFocus(void) {
 
 
 void BScreen::raiseFocus(void) {
-  BlackboxWindow *focused = _blackbox->getFocusedWindow();
+  BlackboxWindow *focused = _blackbox->focusedWindow();
   if (! focused || focused->screen() != this)
     return;
 

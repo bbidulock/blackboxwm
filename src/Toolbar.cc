@@ -446,7 +446,7 @@ void Toolbar::redrawWindowLabel(void) {
                     frame.window_label, u, u, frame.wlabel);
   }
 
-  BlackboxWindow *foc = _screen->blackbox()->getFocusedWindow();
+  BlackboxWindow *foc = _screen->blackbox()->focusedWindow();
   if (! foc || foc->screen() != _screen)
     return;
 
@@ -587,7 +587,7 @@ void Toolbar::buttonPressEvent(const XButtonEvent * const event) {
   } else if (event->button == 2) {
     _screen->lowerWindow(this);
   } else if (event->button == 3) {
-    BlackboxWindow *focus = blackbox->getFocusedWindow();
+    BlackboxWindow *focus = blackbox->focusedWindow();
     if (event->window == frame.window_label &&
         focus && focus->screen() == _screen) {
       Windowmenu *windowmenu = _screen->windowmenu(focus);
