@@ -229,16 +229,33 @@ Configmenu::Placementmenu::Placementmenu(Configmenu *cm):
     break;
   }
 
+  reconfigure();
+}
+
+
+void Configmenu::Placementmenu::reconfigure(void) {
+  bool cascade =
+    getScreen()->getPlacementPolicy() == BScreen::CascadePlacement;
+
+  setItemEnabled(3, ! cascade);
+  setItemEnabled(4, ! cascade);
+  setItemEnabled(5, ! cascade);
+  setItemEnabled(6, ! cascade);
+
   bool rl = (getScreen()->getRowPlacementDirection() ==
              BScreen::LeftRight),
     tb = (getScreen()->getColPlacementDirection() ==
           BScreen::TopBottom);
 
-  setItemSelected(3, rl);
-  setItemSelected(4, ! rl);
+  // cascade is always LeftRight, TopBottom
 
-  setItemSelected(5, tb);
-  setItemSelected(6, ! tb);
+  setItemSelected(3, cascade || rl);
+  setItemSelected(4, ! cascade && ! rl);
+
+  setItemSelected(5, cascade || tb);
+  setItemSelected(6, ! cascade && ! tb);
+
+  Basemenu::reconfigure();
 }
 
 
@@ -282,33 +299,23 @@ void Configmenu::Placementmenu::itemSelected(int button, unsigned int index) {
   case BScreen::LeftRight:
     getScreen()->saveRowPlacementDirection(BScreen::LeftRight);
 
-    setItemSelected(3, True);
-    setItemSelected(4, False);
-
     break;
 
   case BScreen::RightLeft:
     getScreen()->saveRowPlacementDirection(BScreen::RightLeft);
-
-    setItemSelected(3, False);
-    setItemSelected(4, True);
 
     break;
 
   case BScreen::TopBottom:
     getScreen()->saveColPlacementDirection(BScreen::TopBottom);
 
-    setItemSelected(5, True);
-    setItemSelected(6, False);
-
     break;
 
   case BScreen::BottomTop:
     getScreen()->saveColPlacementDirection(BScreen::BottomTop);
 
-    setItemSelected(5, False);
-    setItemSelected(6, True);
-
     break;
   }
+
+  reconfigure();
 }

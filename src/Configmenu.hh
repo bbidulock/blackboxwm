@@ -55,6 +55,7 @@ private:
 
   public:
     Placementmenu(Configmenu *cm);
+    virtual void reconfigure(void);
   };
 
   Focusmenu *focusmenu;
