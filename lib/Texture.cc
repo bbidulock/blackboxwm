@@ -161,7 +161,7 @@ bt::Texture bt::textureResource(const Display &display,
 
     const std::string bstr =
       resource.read(name + ".borderWidth", class_name + ".BorderWidth", "1");
-    int bw = static_cast<unsigned int>(strtoul(bstr.c_str(), 0, 0));
+    unsigned int bw = static_cast<unsigned int>(strtoul(bstr.c_str(), 0, 0));
     texture.setBorderWidth(bw);
   }
 
