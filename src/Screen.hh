@@ -151,6 +151,8 @@ public:
 
   Workspace *getWorkspace(unsigned int index) const;
 
+  inline unsigned int workspaceCount(void) const
+  { return workspacesList.size(); }
   inline unsigned int currentWorkspace(void) const
   { return current_workspace; }
   void setCurrentWorkspace(unsigned int id);
@@ -165,8 +167,8 @@ public:
   void updateDesktopNamesHint(void) const;
   void getDesktopNames(void);
 
-  unsigned int addWorkspace(void);
-  unsigned int removeLastWorkspace(void);
+  void addWorkspace(void);
+  void removeLastWorkspace(void);
 
   void addWindow(Window w);
   void releaseWindow(BlackboxWindow *win);

@@ -75,10 +75,14 @@ void Workspacemenu::itemClicked(unsigned int id, unsigned int) {
   switch (id) {
   case NewWorkspace:
     _bscreen->addWorkspace();
+    _bscreen->resource().saveWorkspaces(_bscreen->workspaceCount());
+    _bscreen->saveResource();
     break;
 
   case RemoveLastWorkspace:
     _bscreen->removeLastWorkspace();
+    _bscreen->resource().saveWorkspaces(_bscreen->workspaceCount());
+    _bscreen->saveResource();
     break;
 
   case Icons:
@@ -86,7 +90,7 @@ void Workspacemenu::itemClicked(unsigned int id, unsigned int) {
 
   default:
     id -= WorkspaceIDDelta;
-    assert(id < _bscreen->resource().numberOfWorkspaces());
+    assert(id < _bscreen->workspaceCount());
     if (_bscreen->currentWorkspace() != id) {
       _bscreen->setCurrentWorkspace(id);
       hideAll();

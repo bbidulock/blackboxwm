@@ -252,7 +252,7 @@ void Toolbar::reconfigure(void) {
     }
   }
 
-  for (unsigned int i = 0; i < _screen->resource().numberOfWorkspaces(); i++) {
+  for (unsigned int i = 0; i < _screen->workspaceCount(); i++) {
     width =
       bt::textRect(_screen->screenNumber(), style->font,
                    _screen->resource().nameOfWorkspace(i)).width();
@@ -658,7 +658,7 @@ void Toolbar::buttonReleaseEvent(const XButtonEvent * const event) {
         if (_screen->currentWorkspace() > 0)
           new_workspace = _screen->currentWorkspace() - 1;
         else
-          new_workspace = _screen->resource().numberOfWorkspaces() - 1;
+          new_workspace = _screen->workspaceCount() - 1;
         _screen->setCurrentWorkspace(new_workspace);
       }
     } else if (event->window == frame.nsbutton) {
@@ -666,8 +666,7 @@ void Toolbar::buttonReleaseEvent(const XButtonEvent * const event) {
 
       if (bt::within(event->x, event->y,
                      style->button_width, style->button_width))
-        if (_screen->currentWorkspace() <
-            _screen->resource().numberOfWorkspaces() - 1)
+        if (_screen->currentWorkspace() < _screen->workspaceCount() - 1)
           _screen->setCurrentWorkspace(_screen->currentWorkspace() + 1);
         else
           _screen->setCurrentWorkspace(0);

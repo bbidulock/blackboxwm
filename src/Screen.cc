@@ -426,7 +426,7 @@ void BScreen::LoadStyle(void) {
 }
 
 
-unsigned int BScreen::addWorkspace(void) {
+void BScreen::addWorkspace(void) {
   Workspace *wkspc = new Workspace(this, workspacesList.size());
   workspacesList.push_back(wkspc);
 
@@ -437,14 +437,11 @@ unsigned int BScreen::addWorkspace(void) {
   blackbox->netwm().setNumberOfDesktops(screen_info.rootWindow(),
                                         workspacesList.size());
   updateDesktopNamesHint();
-
-  return workspacesList.size();
 }
 
 
-unsigned int BScreen::removeLastWorkspace(void) {
-  if (workspacesList.size() == 1)
-    return 1;
+void BScreen::removeLastWorkspace(void) {
+  if (workspacesList.size() == 1) return;
 
   Workspace *workspace = workspacesList.back();
   workspacesList.pop_back();
@@ -467,8 +464,6 @@ unsigned int BScreen::removeLastWorkspace(void) {
   blackbox->netwm().setNumberOfDesktops(screen_info.rootWindow(),
                                          workspacesList.size());
   updateDesktopNamesHint();
-
-  return workspacesList.size();
 }
 
 
@@ -561,7 +556,7 @@ void BScreen::manageWindow(Window w) {
   BlackboxWindow *win = blackbox->findWindow(w);
   if (! win) return;
 
-  if (win->workspace() >= _resource.numberOfWorkspaces() &&
+  if (win->workspace() >= workspaceCount() &&
       win->workspace() != bt::BSENTINEL)
     win->setWorkspace(current_workspace);
 
@@ -1440,20 +1435,18 @@ void BScreen::clientMessageEvent(const XClientMessageEvent * const event) {
 
   if (event->message_type == blackbox->netwm().numberOfDesktops()) {
     unsigned int number = event->data.l[0];
-    const unsigned int wkspc_count = _resource.numberOfWorkspaces();
-    if (number > wkspc_count) {
-      for (; number != wkspc_count; --number)
+    if (number > workspaceCount()) {
+      for (; number != workspaceCount(); --number)
         addWorkspace();
-    } else if (number < wkspc_count) {
-      for (; number != wkspc_count; ++number)
+    } else if (number < workspaceCount()) {
+      for (; number != workspaceCount(); ++number)
         removeLastWorkspace();
     }
   } else if (event->message_type == blackbox->netwm().desktopNames()) {
     getDesktopNames();
   } else if (event->message_type == blackbox->netwm().currentDesktop()) {
     const unsigned int workspace = event->data.l[0];
-    if (workspace < _resource.numberOfWorkspaces() &&
-        workspace != current_workspace)
+    if (workspace < workspaceCount() && workspace != current_workspace)
       setCurrentWorkspace(workspace);
   }
 }
@@ -1521,12 +1514,11 @@ void BScreen::toggleFocusModel(FocusModel model) {
 
 
 void BScreen::updateWorkareaHint(void) const {
-  unsigned int wkspc_count = workspacesList.size();
   unsigned long *workarea, *tmp;
 
-  tmp = workarea = new unsigned long[wkspc_count * 4];
+  tmp = workarea = new unsigned long[workspaceCount() * 4];
 
-  for (unsigned int i = 0; i < wkspc_count; ++i) {
+  for (unsigned int i = 0; i < workspaceCount(); ++i) {
     tmp[0] = usableArea.x();
     tmp[1] = usableArea.y();
     tmp[2] = usableArea.width();
@@ -1535,7 +1527,7 @@ void BScreen::updateWorkareaHint(void) const {
   }
 
   blackbox->netwm().setWorkarea(screen_info.rootWindow(),
-                                 workarea, wkspc_count);
+                                 workarea, workspaceCount());
 
   delete [] workarea;
 }

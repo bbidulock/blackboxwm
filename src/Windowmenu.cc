@@ -216,7 +216,7 @@ void SendToWorkspacemenu::refresh(void) {
   assert(_window != 0);
 
   clear();
-  const unsigned num = _window->getScreen()->resource().numberOfWorkspaces();
+  const unsigned num = _window->getScreen()->workspaceCount();
   for (unsigned int i = 0; i < num; ++i)
     insertItem(_window->getScreen()->resource().nameOfWorkspace(i), i);
 
