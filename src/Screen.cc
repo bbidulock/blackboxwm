@@ -470,6 +470,269 @@ void BScreen::rereadMenu(void) {
 }
 
 
+void ScreenResource::loadRCFile(unsigned int screen, const std::string& rc) {
+  XrmDatabase database = (XrmDatabase) 0;
+
+  database = XrmGetFileDatabase(rc.c_str());
+
+  XrmValue value;
+  char *value_type, name_lookup[1024], class_lookup[1024];
+  int int_value;
+
+  // window settings and behavior
+  sprintf(name_lookup,  "session.screen%d.placementIgnoresShaded", screen);
+  sprintf(class_lookup, "Session.Screen%d.placementIgnoresShaded", screen);
+  wconfig.ignore_shaded = True;
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type, &value)
+      && ! strncasecmp(value.addr, "false", value.size)) {
+    wconfig.ignore_shaded = False;
+  }
+
+  sprintf(name_lookup,  "session.screen%d.fullMaximization", screen);
+  sprintf(class_lookup, "Session.Screen%d.FullMaximization", screen);
+  wconfig.full_max = False;
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type, &value)
+      && ! strncasecmp(value.addr, "true", value.size)) {
+    wconfig.full_max = True;
+  }
+
+  sprintf(name_lookup,  "session.screen%d.focusNewWindows", screen);
+  sprintf(class_lookup, "Session.Screen%d.FocusNewWindows", screen);
+  wconfig.focus_new = False;
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type, &value)
+      && ! strncasecmp(value.addr, "true", value.size)) {
+    wconfig.focus_new = True;
+  }
+
+  sprintf(name_lookup,  "session.screen%d.focusLastWindow", screen);
+  sprintf(class_lookup, "Session.Screen%d.focusLastWindow", screen);
+  wconfig.focus_last = False;
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type, &value)
+      && ! strncasecmp(value.addr, "true", value.size)) {
+    wconfig.focus_last = True;
+  }
+
+  sprintf(name_lookup,  "session.screen%d.rowPlacementDirection", screen);
+  sprintf(class_lookup, "Session.Screen%d.RowPlacementDirection", screen);
+  wconfig.row_direction = LeftRight;
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type, &value)
+      && ! strncasecmp(value.addr, "righttoleft", value.size)) {
+    wconfig.row_direction = RightLeft;
+  }
+
+  sprintf(name_lookup,  "session.screen%d.colPlacementDirection", screen);
+  sprintf(class_lookup, "Session.Screen%d.ColPlacementDirection", screen);
+  wconfig.col_direction = TopBottom;
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type, &value)
+      && ! strncasecmp(value.addr, "bottomtotop", value.size)) {
+    wconfig.col_direction = BottomTop;
+  }
+
+  sprintf(name_lookup,  "session.screen%d.windowPlacement", screen);
+  sprintf(class_lookup, "Session.Screen%d.WindowPlacement", screen);
+  wconfig.placement_policy = RowSmartPlacement;
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
+                     &value)) {
+    if (! strncasecmp(value.addr, "ColSmartPlacement", value.size))
+      wconfig.placement_policy = ColSmartPlacement;
+    else if (! strncasecmp(value.addr, "CascadePlacement", value.size))
+      wconfig.placement_policy = CascadePlacement;
+  }
+
+  sprintf(name_lookup,  "session.screen%d.focusModel", screen);
+  sprintf(class_lookup, "Session.Screen%d.FocusModel", screen);
+  wconfig.sloppy_focus = True;
+  wconfig.auto_raise = False;
+  wconfig.click_raise = False;
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
+                     &value)) {
+    std::string fmodel = value.addr;
+
+    if (fmodel.find("ClickToFocus") != std::string::npos) {
+      wconfig.sloppy_focus = False;
+    } else {
+      // must be sloppy
+
+      if (fmodel.find("AutoRaise") != std::string::npos)
+        wconfig.auto_raise = True;
+      if (fmodel.find("ClickRaise") != std::string::npos)
+        wconfig.click_raise = True;
+    }
+  }
+
+  sprintf(name_lookup,  "session.screen%d.edgeSnapThreshold", screen);
+  sprintf(class_lookup, "Session.Screen%d.EdgeSnapThreshold", screen);
+  wconfig.edge_snap_threshold = 0;
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
+                     &value) &&
+      sscanf(value.addr, "%d", &int_value) == 1) {
+    wconfig.edge_snap_threshold = int_value;
+  }
+
+  wconfig.opaque_move = False;
+  if (XrmGetResource(database, "session.opaqueMove", "Session.OpaqueMove",
+                     &value_type, &value) &&
+      ! strncasecmp("true", value.addr, value.size)) {
+  wconfig.opaque_move = True;
+  }
+
+  // toolbar settings
+  sprintf(name_lookup,  "session.screen%d.toolbar.widthPercent", screen);
+  sprintf(class_lookup, "Session.Screen%d.Toolbar.WidthPercent", screen);
+  tconfig.width_percent = 66;
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
+                     &value) &&
+      sscanf(value.addr, "%d", &int_value) == 1 &&
+      int_value > 0 && int_value <= 100) {
+    tconfig.width_percent = int_value;
+  }
+
+  sprintf(name_lookup, "session.screen%d.toolbar.placement", screen);
+  sprintf(class_lookup, "Session.Screen%d.Toolbar.Placement", screen);
+  tconfig.placement = Toolbar::BottomCenter;
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
+                     &value)) {
+    if (! strncasecmp(value.addr, "TopLeft", value.size))
+      tconfig.placement = Toolbar::TopLeft;
+    else if (! strncasecmp(value.addr, "BottomLeft", value.size))
+      tconfig.placement = Toolbar::BottomLeft;
+    else if (! strncasecmp(value.addr, "TopCenter", value.size))
+      tconfig.placement = Toolbar::TopCenter;
+    else if (! strncasecmp(value.addr, "TopRight", value.size))
+      tconfig.placement = Toolbar::TopRight;
+    else if (! strncasecmp(value.addr, "BottomRight", value.size))
+      tconfig.placement = Toolbar::BottomRight;
+  }
+
+  sprintf(name_lookup,  "session.screen%d.toolbar.onTop", screen);
+  sprintf(class_lookup, "Session.Screen%d.Toolbar.OnTop", screen);
+  tconfig.on_top = False;
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
+                     &value) &&
+      ! strncasecmp(value.addr, "true", value.size)) {
+    tconfig.on_top = True;
+  }
+
+  sprintf(name_lookup,  "session.screen%d.toolbar.autoHide", screen);
+  sprintf(class_lookup, "Session.Screen%d.Toolbar.autoHide", screen);
+  tconfig.auto_hide = False;
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
+                     &value) &&
+      ! strncasecmp(value.addr, "true", value.size)) {
+    tconfig.auto_hide = True;
+  }
+
+  sprintf(name_lookup,  "session.screen%d.strftimeFormat", screen);
+  sprintf(class_lookup, "Session.Screen%d.StrftimeFormat", screen);
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
+                     &value)) {
+    tconfig.strftime_format = value.addr;
+  } else {
+    tconfig.strftime_format = "%I:%M %p";
+  }
+
+  // slit settings
+  sprintf(name_lookup, "session.screen%d.slit.placement", screen);
+  sprintf(class_lookup, "Session.Screen%d.Slit.Placement", screen);
+  sconfig.placement = Slit::CenterRight;
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
+                     &value)) {
+    if (! strncasecmp(value.addr, "TopLeft", value.size))
+      sconfig.placement = Slit::TopLeft;
+    else if (! strncasecmp(value.addr, "CenterLeft", value.size))
+      sconfig.placement = Slit::CenterLeft;
+    else if (! strncasecmp(value.addr, "BottomLeft", value.size))
+      sconfig.placement = Slit::BottomLeft;
+    else if (! strncasecmp(value.addr, "TopCenter", value.size))
+      sconfig.placement = Slit::TopCenter;
+    else if (! strncasecmp(value.addr, "BottomCenter", value.size))
+      sconfig.placement = Slit::BottomCenter;
+    else if (! strncasecmp(value.addr, "TopRight", value.size))
+      sconfig.placement = Slit::TopRight;
+    else if (! strncasecmp(value.addr, "BottomRight", value.size))
+      sconfig.placement = Slit::BottomRight;
+  }
+
+  sprintf(name_lookup, "session.screen%d.slit.direction", screen);
+  sprintf(class_lookup, "Session.Screen%d.Slit.Direction", screen);
+  sconfig.direction = Slit::Vertical;
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
+                     &value) &&
+      ! strncasecmp(value.addr, "Horizontal", value.size)) {
+    sconfig.direction = Slit::Horizontal;
+  }
+
+  sprintf(name_lookup, "session.screen%d.slit.onTop", screen);
+  sprintf(class_lookup, "Session.Screen%d.Slit.OnTop", screen);
+  sconfig.on_top = False;
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
+                     &value) &&
+      ! strncasecmp(value.addr, "True", value.size)) {
+    sconfig.on_top = True;
+  }
+
+  sprintf(name_lookup, "session.screen%d.slit.autoHide", screen);
+  sprintf(class_lookup, "Session.Screen%d.Slit.AutoHide", screen);
+  sconfig.auto_hide = False;
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
+                     &value) &&
+      ! strncasecmp(value.addr, "true", value.size)) {
+    sconfig.auto_hide = True;
+  }
+
+  // general screen settings
+  sprintf(name_lookup,  "session.screen%d.disableBindingsWithScrollLock",
+          screen);
+  sprintf(class_lookup, "Session.Screen%d.disableBindingsWithScrollLock",
+          screen);
+  allow_scroll_lock = False;
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
+                     &value) &&
+      ! strncasecmp(value.addr, "true", value.size)) {
+    allow_scroll_lock = True;
+  }
+
+  sprintf(name_lookup,  "session.screen%d.workspaces", screen);
+  sprintf(class_lookup, "Session.Screen%d.Workspaces", screen);
+  workspace_count = 1;
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type, &value)
+      && sscanf(value.addr, "%d", &int_value) == 1
+      && int_value > 0 && int_value < 128) {
+    workspace_count = int_value;
+  }
+
+  sprintf(name_lookup,  "session.screen%d.workspaceNames", screen);
+  sprintf(class_lookup, "Session.Screen%d.WorkspaceNames", screen);
+  workspaces.clear();
+  workspaces.reserve(workspace_count);
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
+                     &value)) {
+    std::string search = value.addr;
+    std::string::const_iterator it = search.begin(), end = search.end();
+    while (1) {
+      std::string::const_iterator tmp = it; // current string.begin()
+      it = std::find(tmp, end, ',');   // look for comma between tmp and end
+      workspaces.push_back(std::string(tmp, it)); // string = search[tmp:it]
+      if (it == end) break;
+      ++it;
+    }
+  }
+
+  dither_mode = bt::OrderedDither;
+  if (XrmGetResource(database, "session.imageDither", "Session.ImageDither",
+                     &value_type, &value)) {
+    if (! strncasecmp("ordereddither", value.addr, value.size))
+      dither_mode = bt::OrderedDither;
+    else if (! strncasecmp("floydsteinbergdither", value.addr, value.size))
+      dither_mode = bt::FloydSteinbergDither;
+    else if (! strncasecmp("nodither", value.addr, value.size))
+      dither_mode = bt::NoDither;
+  }
+
+  XrmDestroyDatabase(database);
+}
+
+
 void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
   const bt::Display &display = screen->getBlackbox()->display();
   unsigned int screen_num = screen->screenNumber();

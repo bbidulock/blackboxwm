@@ -46,6 +46,7 @@ extern "C" {
 typedef std::vector<Window> WindowStack;
 
 #include "Color.hh"
+#include "Image.hh"
 #include "Texture.hh"
 #include "Configmenu.hh"
 #include "Iconmenu.hh"
@@ -89,6 +90,7 @@ public:
   ~ScreenResource(void) {}
 
   void loadStyle(BScreen* screen, const std::string& style);
+  void loadRCFile(unsigned int screen, const std::string& rc);
 
   // access functions
   WindowStyle* windowStyle(void)   { return &wstyle; }
@@ -97,9 +99,12 @@ public:
 
   unsigned int bevelWidth(void) const         { return bevel_width;       }
   unsigned int borderWidth(void) const        { return border_width;      }
-  unsigned int numberOfWorkspaces(void) const { return workspaces;        }
+  unsigned int numberOfWorkspaces(void) const { return workspace_count;   }
   bool allowScrollLock(void) const            { return allow_scroll_lock; }
   const std::string& rootCommand(void) const  { return root_command;      }
+  bt::DitherMode ditherMode(void) const       { return dither_mode;       }
+  const std::string& workspaceName(unsigned int i) const
+                                              { return workspaces[i];     }
 
   bool isSloppyFocus(void) const        { return wconfig.sloppy_focus;  }
   bool doAutoRaise(void) const          { return wconfig.auto_raise;    }
@@ -128,11 +133,13 @@ public:
   int slitDirection(void) const   { return sconfig.direction; }
 
   // store functions
-  void saveWorkspaces(unsigned int w)      { workspaces = w;        }
+  void saveWorkspaces(unsigned int w)      { workspace_count = w;   }
   void saveAllowScrollLock(bool a)         { allow_scroll_lock = a; }
   void saveBorderColor(const bt::Color& c) { border_color = c;      }
   void saveBorderWidth(unsigned int i)     { border_width = i;      }
   void saveBevelWidth(unsigned int i)      { bevel_width = i;       }
+  void saveWorkspaceName(unsigned int w, const std::string& name)
+                                           { workspaces[w] = name;  }
 
   void saveSlitPlacement(int i) { sconfig.placement = i; }
   void saveSlitDirection(int i) { sconfig.direction = i; }
@@ -189,9 +196,11 @@ private:
   SlitConfig sconfig;
 
   bool allow_scroll_lock;
-  unsigned int workspaces, bevel_width, border_width;
+  unsigned int workspace_count, bevel_width, border_width;
   bt::Color border_color;
+  bt::DitherMode dither_mode;
   std::string root_command;
+  std::vector<std::string> workspaces;
 };
 
 class BScreen : public bt::NoCopy, public bt::EventHandler {
