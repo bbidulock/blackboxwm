@@ -77,13 +77,22 @@ static const unsigned int cache_size    = 32u;
 static const unsigned int cache_buckets =  8u;
 static const unsigned int context_count = cache_size * cache_buckets;
 
+static int key(unsigned int screen, const bt::Color &color)
+{
+  static unsigned int noise = 0u;
+  // PRNG to introduce entropy, since we don't have a perfect hash
+  noise = (noise * 0x0019660d + 0x3c6ef35f);
+  int k = color.red() ^ color.green() ^ color.blue() ^ noise;
+  return (screen * context_count) + ((k % cache_size) * cache_buckets);
+}
+
 
 namespace bt {
 
   class PenCacheContext : public NoCopy {
   public:
     inline PenCacheContext(void)
-      : _screen(~0u), _gc(0), _function(0), _linewidth(1), _subwindow(0),
+      : _screen(~0u), _gc(0), _function(0), _linewidth(0), _subwindow(0),
         _used(false)
     { }
     ~PenCacheContext(void);
@@ -328,8 +337,7 @@ bt::PenCacheItem *bt::PenCache::find(unsigned int screen,
                                      int function,
                                      int linewidth,
                                      int subwindow) {
-  int k = color.red() ^ color.green() ^ color.blue();
-  k = (screen * context_count) + ((k % cache_size) * cache_buckets);
+  int k = key(screen, color);
   unsigned int i = 0; // loop variable
   PenCacheItem *c = cache[ k ], *prev = 0;
 
@@ -361,10 +369,13 @@ bt::PenCacheItem *bt::PenCache::find(unsigned int screen,
     }
     // cache fault!
     fprintf(stderr,
-            "bt::PenCache: cache fault at %d\n"
-            "      count: %u, screen: %u, item screen: %u\n",
+            "bt::PenCache: GC : cache fault at %d, "
+            "count: %u, screen: %u, item screen: %u\n",
             k, c->_count, screen, c->_ctx->_screen);
-    abort();
+    // let's try again
+    k = key(screen, color);
+    i = 0;
+    c = cache[k];
   }
 
   if (c->_ctx) {
