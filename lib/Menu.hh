@@ -254,13 +254,11 @@ namespace bt {
     void activateIndex(unsigned int index);
     void showActiveSubmenu(void);
 
-    ItemList::iterator &find_item(unsigned int id) const;
+    ItemList::iterator findItem(unsigned int id, Rect& r);
 
-    // FIXME: the next four need better names
-    MenuItem& blef(unsigned int id, Rect& r);
-    void blarg(void);
-    void blah(void);
-    void bloob(Rect& r, int &row, int &col);
+    void activateSubmenu(void);
+    void positionRect(Rect& r, int &row, int &col);
+    void invalidateSize(void);
 
     void removeItemByIterator(ItemList::iterator& it);
 
