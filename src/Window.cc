@@ -2448,17 +2448,38 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
       const int snap_distance = screen->getEdgeSnapThreshold();
 
       if (snap_distance) {
-        const Rect &srect = screen->availableArea();
+        Rect srect = screen->availableArea();
         // window corners
         const int wleft = dx,
                  wright = dx + frame.rect.width() - 1,
                    wtop = dy,
                 wbottom = dy + frame.rect.height() - 1;
 
-        const int dleft = std::abs(wleft - srect.left()),
-                 dright = std::abs(wright - srect.right()),
-                   dtop = std::abs(wtop - srect.top()),
-                dbottom = std::abs(wbottom - srect.bottom());
+        int dleft = std::abs(wleft - srect.left()),
+           dright = std::abs(wright - srect.right()),
+             dtop = std::abs(wtop - srect.top()),
+          dbottom = std::abs(wbottom - srect.bottom());
+
+        // snap left?
+        if (dleft < snap_distance && dleft < dright)
+          dx = srect.left();
+        // snap right?
+        else if (dright < snap_distance && dright < dleft)
+          dx = srect.right() - frame.rect.width();
+
+        // snap top?
+        if (dtop < snap_distance && dtop < dbottom)
+          dy = srect.top();
+        // snap bottom?
+        else if (dbottom < snap_distance && dbottom < dtop)
+          dy = srect.bottom() - frame.rect.height();
+
+        srect = screen->getRect(); // now get the full screen
+
+        dleft = std::abs(wleft - srect.left()),
+        dright = std::abs(wright - srect.right()),
+        dtop = std::abs(wtop - srect.top()),
+        dbottom = std::abs(wbottom - srect.bottom());
 
         // snap left?
         if (dleft < snap_distance && dleft < dright)
