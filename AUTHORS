@@ -1,7 +1,11 @@
--- AUTHORS for Blackbox 0.62.x  - an X11 Window Manager
+-- AUTHORS for Blackbox - an X11 Window Manager
 
-Code Maintainer:
+Current Authors:
+        Brad Hughes <bhughes@trolltech.com>
 	Sean 'Shaleh' Perry <shaleh@debian.org>
+
+Interim author for the 0.61.x series:
+        Jeff Raven <jraven@psu.edu>
 
 Current Contributors:
 	Ben 'xOr' Jansens <xor@orodu.net>
@@ -12,20 +16,24 @@ Current Contributors:
 	- bbkeys, ideas, support
 	Chris Mecca <flip@linuxguide.org>
 	 - use of his irix machine for testing
+	Dale P. Smith <dsmith@altustech.com>
+	 - bsetroot now sets xrootpmap_id atom
+
+nls contributors:
+	Mads Martin Joergensen <mmj@suse.de>
+	 - Dutch nls support
  	Wilbert Berendsen <wbsoft@xs4all.nl>
-	 - man pages and Dutch nls file
+	 - man pages and Dutch nls support
 	Luca Marrazzo <marra.luca@libero.it>
-	 - Italian nls files
+	 - Italian nls support
 	Ales Kosir <ales.kosir@telemach.net>
-	 - Slovenian man pages and nls
+	 - Slovenian man pages and nls support
 	SATO Satoru <ssato@adachi.ne.jp>
-	 - Japanese nls and man pages
+	 - Japanese nls support and man pages
 	Jan Schaumann <jschauma@netmeister.org>
 	 - German nls support
 	Wang Tiejun <wtj@dept3.buaa.edu.cn>
 	 - Chinese nls support
-	Dale P. Smith <dsmith@altustech.com>
-	 - bsetroot now sets xrootpmap_id atom
 	Moto Chen <han_yi_chen@yahoo.com.tw>
 	 - Taiwan Chinese (zh_TW) support
 	Bodnar Istvan <piggy@dub.hu>
@@ -34,12 +42,6 @@ Current Contributors:
 	 - updated French (fr_FR) nls and added French man pages
 	Volodymyr M. Lisivka <lvm@mystery.lviv.net>
 	 - Ukrainian nls support
-
-Original Author:
-        Brad Hughes <bhughes@trolltech.com>
-
-Second Author:
-        Jeff Raven <jraven@psu.edu>
 
 Past Contributors:
         Jeffrey Sean Connell <ankh@canuck.gen.nz>
