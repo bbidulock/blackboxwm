@@ -336,7 +336,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
 
   inline bool isIconic(void) const
   { return client.state.iconic; }
-  void setIconic(bool iconic);
+  void iconify(void); // call show() to deiconify
 
   inline bool isMaximized(void) const
   { return client.state.maximized; }

@@ -1567,6 +1567,9 @@ bool BlackboxWindow::setInputFocus(void) {
 void BlackboxWindow::show(void) {
   if (client.state.visible) return;
 
+  if (client.state.iconic)
+    screen->removeIcon(this);
+
   client.state.iconic = false;
   client.state.visible = true;
   setState((client.state.shaded) ? IconicState : NormalState);
@@ -1574,6 +1577,13 @@ void BlackboxWindow::show(void) {
   XMapWindow(blackbox->XDisplay(), client.window);
   XMapSubwindows(blackbox->XDisplay(), frame.window);
   XMapWindow(blackbox->XDisplay(), frame.window);
+
+  if (!client.transientList.empty()) {
+    BlackboxWindowList::iterator it = client.transientList.begin(),
+                                end = client.transientList.end();
+    for (; it != end; ++it)
+      (*it)->show();
+  }
 
 #ifdef DEBUG
   int real_x, real_y;
@@ -1631,41 +1641,26 @@ void BlackboxWindow::close(void) {
 }
 
 
-void BlackboxWindow::setIconic(bool iconic) {
-  if (client.state.iconic == iconic) return;
+void BlackboxWindow::iconify(void) {
+  if (client.state.iconic) return;
 
-  if (iconic) {
-    // iconify
-    if (client.transient_for &&
-        client.transient_for != (BlackboxWindow *) ~0ul &&
-        !client.transient_for->isIconic()) {
-      client.transient_for->setIconic(true);
-    }
+  if (client.transient_for &&
+      client.transient_for != (BlackboxWindow *) ~0ul &&
+      !client.transient_for->isIconic()) {
+    client.transient_for->iconify();
+  }
 
-    screen->addIcon(this);
+  screen->addIcon(this);
 
-    client.state.iconic = true;
-    hide();
+  client.state.iconic = true;
+  hide();
 
-    // iconify all transients first
-    if (!client.transientList.empty()) {
-      BlackboxWindowList::iterator it = client.transientList.begin(),
-                                  end = client.transientList.end();
-      for (; it != end; ++it)
-        (*it)->setIconic(true);
-    }
-  } else {
-    screen->removeIcon(this);
-
-    // de-iconify
-    show();
-
-    if (!client.transientList.empty()) {
-      BlackboxWindowList::iterator it = client.transientList.begin(),
-                                  end = client.transientList.end();
-      for (; it != end; ++it)
-        (*it)->show();
-    }
+  // iconify all transients first
+  if (!client.transientList.empty()) {
+    BlackboxWindowList::iterator it = client.transientList.begin(),
+                                end = client.transientList.end();
+    for (; it != end; ++it)
+      (*it)->iconify();
   }
 }
 
@@ -2324,17 +2319,17 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
   const bt::Netwm& netwm = blackbox->netwm();
 
   if (event->message_type == blackbox->getWMChangeStateAtom()) {
-    if (event->data.l[0] == IconicState)
-      setIconic(true);
-    else if (event->data.l[0] == NormalState)
-      setIconic(false);
+    if (event->data.l[0] == IconicState) {
+      iconify();
+    } else if (event->data.l[0] == NormalState) {
+      show();
+    }
   } else if (event->message_type == netwm.activeWindow()) {
     if (client.workspace != screen->currentWorkspace())
       screen->setCurrentWorkspace(client.workspace);
 
     if (client.state.iconic)
-      setIconic(false);
-
+      show();
     if (setInputFocus())
       screen->raiseWindow(this);
   } else if (event->message_type == netwm.closeWindow()) {
@@ -2519,7 +2514,7 @@ void BlackboxWindow::mapRequestEvent(const XMapRequestEvent * const event) {
 
   switch (client.current_state) {
   case IconicState:
-    setIconic(true);
+    iconify();
     break;
 
   case WithdrawnState:
@@ -2827,7 +2822,7 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const event) {
     if (event->button == 1) {
       if (bt::within(event->x, event->y,
                      frame.style->button_width, frame.style->button_width))
-        setIconic(true);
+        iconify();
       else
         redrawIconifyButton(False);
     }

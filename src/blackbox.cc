@@ -126,7 +126,7 @@ void Blackbox::process_event(XEvent *e) {
     if (win) {
       bool focus = false;
       if (win->isIconic()) {
-        win->setIconic(false);
+        win->show();
         focus = true;
       }
       if (win->isShaded()) {

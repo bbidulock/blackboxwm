@@ -39,7 +39,7 @@ Iconmenu::Iconmenu(bt::Application &app, unsigned int screen,
 
 void Iconmenu::itemClicked(unsigned int id, unsigned int) {
   BlackboxWindow *win = _bscreen->icon(id);
-  win->setIconic(false);
+  win->show();
   _bscreen->raiseWindow(win);
   win->setInputFocus();
 }

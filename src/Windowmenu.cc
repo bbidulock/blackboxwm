@@ -141,7 +141,7 @@ void Windowmenu::itemClicked(unsigned int id, unsigned int) {
     break;
 
   case Iconify:
-    _window->setIconic(true);
+    _window->iconify();
     break;
 
   case Maximize:
