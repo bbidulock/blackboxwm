@@ -28,10 +28,10 @@ libbt_la_SOURCES = 	Application.cc					\
 			Bitmap.cc					\
 			Color.cc					\
 			Display.cc					\
+			EWMH.cc						\
 			Font.cc						\
 			Image.cc					\
 			Menu.cc						\
-			Netwm.cc					\
 			Pen.cc						\
 			PixmapCache.cc					\
 			Rect.cc						\
@@ -46,11 +46,11 @@ libbt_HEADERS = 	Application.hh					\
 			Bitmap.hh					\
 			Color.hh					\
 			Display.hh					\
+			EWMH.hh						\
 			EventHandler.hh					\
 			Font.hh						\
 			Image.hh					\
 			Menu.hh						\
-			Netwm.hh					\
 			Pen.hh						\
 			PixmapCache.hh					\
 			Rect.hh						\
