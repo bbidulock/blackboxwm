@@ -55,6 +55,8 @@ private:
   Workspace& operator=(const Workspace&);
 
   void placeWindow(BlackboxWindow *win);
+  Bool cascadePlacement(Rect& win, const Rect& availableArea);
+  Bool smartPlacement(Rect& win, const Rect& availableArea);
 
 public:
   Workspace(BScreen *scrn, unsigned int i = 0);

@@ -24,10 +24,14 @@
 #ifndef _BLACKBOX_UTIL_HH
 #define _BLACKBOX_UTIL_HH
 
+#include <X11/Xlib.h>
+
 class Rect {
 public:
   Rect(void) : _x1(0), _y1(0), _x2(0), _y2(0) { }
   Rect(int a, int b, int c, int d) { setRect(a, b, c, d); }
+  explicit Rect(const XRectangle& xrect)
+  { setRect(xrect.x, xrect.y, xrect.width, xrect.height); }
 
   int left(void) const { return _x1; }
   int top(void) const { return _y1; }
@@ -36,9 +40,11 @@ public:
 
   int x(void) const { return _x1; }
   void setX(int a) { _x1 = a; }
+  void newX(int a) { _x2 += a - _x1; _x1 = a; }
 
   int y(void) const { return _y1; }
   void setY(int b) { _y1 = b; }
+  void newY(int b) { _y2 += b - _y1; _y1 = b; }
 
   void setPos(int a, int b) { _x1 = a; _y1 = b; }
 
