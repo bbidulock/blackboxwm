@@ -309,7 +309,7 @@ bool bt::Netwm::readDesktopNames(Window target, UTF8StringList& names) const {
     for (unsigned int i = 0; i < nitems; ++i) {
       if (data[i] == '\0') {
         names.push_back(std::string(tmp, data + i));
-        tmp = data + i;
+        tmp = data + i + 1;
       }
     }
     XFree(data);
