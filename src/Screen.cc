@@ -68,9 +68,12 @@ extern "C" {
 #endif // HAVE_STDARG_H
 }
 
+#include <assert.h>
+
 #include <algorithm>
 #include <functional>
-#include <assert.h>
+#include <string>
+
 using std::string;
 
 #include "i18n.hh"
