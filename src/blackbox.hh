@@ -42,6 +42,7 @@
 #  endif // HAVE_SYS_TIME_H
 #endif // TIME_WITH_SYS_TIME
 
+#include <map>
 
 #include "i18n.hh"
 #include "LinkedList.hh"
@@ -59,26 +60,15 @@ class Slit;
 
 extern I18n i18n;
 
-template <class Z>
-class DataSearch {
-private:
-  Window window;
-  Z *data;
-
-public:
-  DataSearch(Window w, Z *d): window(w), data(d) {}
-
-  inline const Window getWindow(void) const { return window; }
-  inline Z *getData(void) { return data; }
-};
-
-
 class Blackbox : public BaseDisplay, public TimeoutHandler {
 private:
-  typedef struct MenuTimestamp {
+  struct MenuTimestamp {
     char *filename;
     time_t timestamp;
-  } MenuTimestamp;
+
+    MenuTimestamp(void): filename(0) {}
+    ~MenuTimestamp(void) { delete [] filename; }
+  };
 
   struct resource {
     Time double_click_interval;
@@ -89,17 +79,23 @@ private:
     unsigned long cache_life, cache_max;
   } resource;
 
-  typedef DataSearch<BlackboxWindow> WindowSearch;
-  LinkedList<WindowSearch> *windowSearchList, *groupSearchList;
-  typedef DataSearch<Basemenu> MenuSearch;
-  LinkedList<MenuSearch> *menuSearchList;
-  typedef DataSearch<Toolbar> ToolbarSearch;
-  LinkedList<ToolbarSearch> *toolbarSearchList;
-  typedef DataSearch<Slit> SlitSearch;
-  LinkedList<SlitSearch> *slitSearchList;
+  typedef std::map<Window, BlackboxWindow*> WindowLookup;
+  WindowLookup windowSearchList, groupSearchList;
 
-  LinkedList<MenuTimestamp> *menuTimestamps;
-  LinkedList<BScreen> *screenList;
+  typedef std::map<Window, Basemenu*> MenuLookup;
+  MenuLookup menuSearchList;
+
+  typedef std::map<Window, Toolbar*> ToolbarLookup;
+  ToolbarLookup toolbarSearchList;
+
+  typedef std::map<Window, Slit*> SlitLookup;
+  SlitLookup slitSearchList;
+
+  typedef std::list<MenuTimestamp*> MenuTimestampList;
+  MenuTimestampList menuTimestamps;
+
+  typedef std::list<BScreen*> ScreenList;
+  ScreenList screenList;
 
   BlackboxWindow *focused_window, *masked_window;
   BTimer *timer;

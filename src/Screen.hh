@@ -115,8 +115,9 @@ private:
   typedef std::list<Rootmenu*> RootmenuList;
   RootmenuList rootmenuList;
 
-  LinkedList<Netizen> *netizenList;
-  LinkedList<BlackboxWindow> *iconList;
+  typedef std::list<Netizen*> NetizenList;
+  NetizenList netizenList;
+  BlackboxWindowList iconList;
 
   Slit *slit;
   Toolbar *toolbar;
@@ -128,9 +129,12 @@ private:
 
   XRectangle usableArea;
 
-  LinkedList<NETStrut> *strutList;
-  LinkedList<char> *workspaceNames;
-  LinkedList<Workspace> *workspacesList;
+  typedef std::list<NETStrut*> StrutList;
+  StrutList strutList;
+  typedef std::list<char*> WorkspaceNamesList;
+  WorkspaceNamesList workspaceNames;
+  typedef std::list<Workspace*> WorkspaceList;
+  WorkspaceList workspacesList;
 
   struct resource {
     WindowStyle wstyle;
@@ -220,7 +224,8 @@ public:
 
   inline Toolbar *getToolbar(void) { return toolbar; }
 
-  inline Workspace *getWorkspace(int w) { return workspacesList->find(w); }
+  Workspace *getWorkspace(int w);
+
   inline Workspace *getCurrentWorkspace(void) { return current_workspace; }
 
   inline Workspacemenu *getWorkspacemenu(void) { return workspacemenu; }
@@ -236,8 +241,8 @@ public:
 
   inline const int getCurrentWorkspaceID()
   { return current_workspace->getWorkspaceID(); }
-  inline const int getCount(void) { return workspacesList->count(); }
-  inline const int getIconCount(void) { return iconList->count(); }
+  inline const int getCount(void) { return workspacesList.size(); }
+  inline const int getIconCount(void) { return iconList.size(); }
   inline const int getNumberOfWorkspaces(void) const
   { return resource.workspaces; }
   inline const int getToolbarPlacement(void) const

@@ -35,19 +35,6 @@
 #include <X11/extensions/shape.h>
 #endif // SHAPE
 
-#include "i18n.hh"
-#include "blackbox.hh"
-#include "Basemenu.hh"
-#include "Clientmenu.hh"
-#include "Rootmenu.hh"
-#include "Screen.hh"
-#include "Slit.hh"
-#include "Toolbar.hh"
-#include "Util.hh"
-#include "Window.hh"
-#include "Workspace.hh"
-#include "Workspacemenu.hh"
-
 #ifdef    HAVE_STDIO_H
 #  include <stdio.h>
 #endif // HAVE_STDIO_H
@@ -103,6 +90,19 @@
 #endif // HAVE_LIBGEN_H
 
 #include <algorithm>
+
+#include "i18n.hh"
+#include "blackbox.hh"
+#include "Basemenu.hh"
+#include "Clientmenu.hh"
+#include "Rootmenu.hh"
+#include "Screen.hh"
+#include "Slit.hh"
+#include "Toolbar.hh"
+#include "Util.hh"
+#include "Window.hh"
+#include "Workspace.hh"
+#include "Workspacemenu.hh"
 
 #ifndef   HAVE_BASENAME
 static inline char *basename (char *s) {
@@ -161,14 +161,6 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
   focused_window = masked_window = (BlackboxWindow *) 0;
   masked = None;
 
-  windowSearchList = new LinkedList<WindowSearch>;
-  groupSearchList = new LinkedList<WindowSearch>;
-  menuSearchList = new LinkedList<MenuSearch>;
-  slitSearchList = new LinkedList<SlitSearch>;
-  toolbarSearchList = new LinkedList<ToolbarSearch>;
-
-  menuTimestamps = new LinkedList<MenuTimestamp>;
-
   XrmInitialize();
   load_rc();
 
@@ -176,7 +168,6 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
   blackbox_pid = XInternAtom(getXDisplay(), "_BLACKBOX_PID", False);
 #endif // HAVE_GETPID
 
-  screenList = new LinkedList<BScreen>;
   for (int i = 0; i < getNumberOfScreens(); i++) {
     BScreen *screen = new BScreen(this, i);
 
@@ -185,10 +176,10 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
       continue;
     }
 
-    screenList->insert(screen);
+    screenList.push_back(screen);
   }
 
-  if (! screenList->count()) {
+  if (screenList.empty()) {
     fprintf(stderr,
             i18n(blackboxSet, blackboxNoManagableScreens,
               "Blackbox::Blackbox: no managable screens found, aborting.\n"));
@@ -206,17 +197,10 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
 
 
 Blackbox::~Blackbox(void) {
-  while (screenList->count())
-    delete screenList->remove(0);
+  std::for_each(screenList.begin(), screenList.end(), PointerAssassin());
 
-  while (menuTimestamps->count()) {
-    MenuTimestamp *ts = menuTimestamps->remove(0);
-
-    if (ts->filename)
-      delete [] ts->filename;
-
-    delete ts;
-  }
+  std::for_each(menuTimestamps.begin(), menuTimestamps.end(),
+                PointerAssassin());
 
   delete rc_file;
 
@@ -227,15 +211,6 @@ Blackbox::~Blackbox(void) {
     delete [] resource.style_file;
 
   delete timer;
-
-  delete screenList;
-  delete menuTimestamps;
-
-  delete windowSearchList;
-  delete groupSearchList;
-  delete menuSearchList;
-  delete toolbarSearchList;
-  delete slitSearchList;
 }
 
 
@@ -267,9 +242,9 @@ void Blackbox::process_event(XEvent *e) {
     } else if ((tbar = searchToolbar(e->xbutton.window))) {
       tbar->buttonPressEvent(&e->xbutton);
     } else {
-      LinkedListIterator<BScreen> it(screenList);
-      BScreen *screen = it.current();
-      for (; screen; it++, screen = it.current()) {
+      ScreenList::iterator it = screenList.begin();
+      for (; it != screenList.end(); ++it) {
+        BScreen *screen = *it;
         if (e->xbutton.window == screen->getRootWindow()) {
           if (e->xbutton.button == 1) {
             if (! screen->isRootColormapInstalled())
@@ -336,7 +311,6 @@ void Blackbox::process_event(XEvent *e) {
         }
       }
     }
-
     break;
   }
 
@@ -747,12 +721,12 @@ Bool Blackbox::handleSignal(int sig) {
 
 
 BScreen *Blackbox::searchScreen(Window window) {
-  LinkedListIterator<BScreen> it(screenList);
+  ScreenList::iterator it = screenList.begin();
 
-  for (BScreen *curr = it.current(); curr; it++, curr = it.current()) {
-    if (curr->getRootWindow() == window) {
-      return curr;
-    }
+  for (; it != screenList.end(); ++it) {
+    BScreen *s = *it;
+    if (s->getRootWindow() == window)
+      return s;
   }
 
   return (BScreen *) 0;
@@ -760,152 +734,98 @@ BScreen *Blackbox::searchScreen(Window window) {
 
 
 BlackboxWindow *Blackbox::searchWindow(Window window) {
-  LinkedListIterator<WindowSearch> it(windowSearchList);
+  WindowLookup::iterator it = windowSearchList.find(window);
+  if (it == windowSearchList.end())
+    return (BlackboxWindow*) 0;
 
-  for (WindowSearch *tmp = it.current(); tmp; it++, tmp = it.current()) {
-    if (tmp->getWindow() == window) {
-      return tmp->getData();
-    }
-  }
-
-  return (BlackboxWindow *) 0;
+  return it->second;
 }
 
 
 BlackboxWindow *Blackbox::searchGroup(Window window, BlackboxWindow *win) {
-  BlackboxWindow *w = (BlackboxWindow *) 0;
-  LinkedListIterator<WindowSearch> it(groupSearchList);
-
-  for (WindowSearch *tmp = it.current(); tmp; it++, tmp = it.current()) {
-    if (tmp->getWindow() == window) {
-      w = tmp->getData();
-      if (w->getClientWindow() != win->getClientWindow())
-        return win;
-    }
+  WindowLookup::iterator it = groupSearchList.find(window);
+  if (it != groupSearchList.end()) {
+    if (it->second->getClientWindow() != win->getClientWindow())
+      return win;
   }
-
-  return (BlackboxWindow *) 0;
+  return (BlackboxWindow*) 0;
 }
 
 
 Basemenu *Blackbox::searchMenu(Window window) {
-  LinkedListIterator<MenuSearch> it(menuSearchList);
+  MenuLookup::iterator it = menuSearchList.find(window);
+  if (it == menuSearchList.end())
+    return (Basemenu*) 0;
 
-  for (MenuSearch *tmp = it.current(); tmp; it++, tmp = it.current()) {
-    if (tmp->getWindow() == window)
-      return tmp->getData();
-  }
-
-  return (Basemenu *) 0;
+  return it->second;
 }
 
 
 Toolbar *Blackbox::searchToolbar(Window window) {
-  LinkedListIterator<ToolbarSearch> it(toolbarSearchList);
+  ToolbarLookup::iterator it = toolbarSearchList.find(window);
+  if (it == toolbarSearchList.end())
+    return (Toolbar*) 0;
 
-  for (ToolbarSearch *tmp = it.current(); tmp; it++, tmp = it.current()) {
-    if (tmp->getWindow() == window)
-      return tmp->getData();
-  }
-
-  return (Toolbar *) 0;
+  return it->second;
 }
 
 
 Slit *Blackbox::searchSlit(Window window) {
-  LinkedListIterator<SlitSearch> it(slitSearchList);
+  SlitLookup::iterator it = slitSearchList.find(window);
+  if (it == slitSearchList.end())
+    return (Slit*) 0;
 
-  for (SlitSearch *tmp = it.current(); tmp; it++, tmp = it.current()) {
-    if (tmp->getWindow() == window)
-      return tmp->getData();
-  }
-
-  return (Slit *) 0;
+  return it->second;
 }
 
 
 void Blackbox::saveWindowSearch(Window window, BlackboxWindow *data) {
-  windowSearchList->insert(new WindowSearch(window, data));
+  windowSearchList.insert(std::make_pair(window, data));
 }
 
 
 void Blackbox::saveGroupSearch(Window window, BlackboxWindow *data) {
-  groupSearchList->insert(new WindowSearch(window, data));
+  groupSearchList.insert(std::make_pair(window, data));
 }
 
 
 void Blackbox::saveMenuSearch(Window window, Basemenu *data) {
-  menuSearchList->insert(new MenuSearch(window, data));
+  menuSearchList.insert(std::make_pair(window, data));
 }
 
 
 void Blackbox::saveToolbarSearch(Window window, Toolbar *data) {
-  toolbarSearchList->insert(new ToolbarSearch(window, data));
+  toolbarSearchList.insert(std::make_pair(window, data));
 }
 
 
 void Blackbox::saveSlitSearch(Window window, Slit *data) {
-  slitSearchList->insert(new SlitSearch(window, data));
+  slitSearchList.insert(std::make_pair(window, data));
 }
 
 
 void Blackbox::removeWindowSearch(Window window) {
-  LinkedListIterator<WindowSearch> it(windowSearchList);
-  for (WindowSearch *tmp = it.current(); tmp; it++, tmp = it.current()) {
-    if (tmp->getWindow() == window) {
-      windowSearchList->remove(tmp);
-      delete tmp;
-      break;
-    }
-  }
+  windowSearchList.erase(window);
 }
 
 
 void Blackbox::removeGroupSearch(Window window) {
-  LinkedListIterator<WindowSearch> it(groupSearchList);
-  for (WindowSearch *tmp = it.current(); tmp; it++, tmp = it.current()) {
-    if (tmp->getWindow() == window) {
-      groupSearchList->remove(tmp);
-      delete tmp;
-      break;
-    }
-  }
+  groupSearchList.erase(window);
 }
 
 
 void Blackbox::removeMenuSearch(Window window) {
-  LinkedListIterator<MenuSearch> it(menuSearchList);
-  for (MenuSearch *tmp = it.current(); tmp; it++, tmp = it.current()) {
-    if (tmp->getWindow() == window) {
-      menuSearchList->remove(tmp);
-      delete tmp;
-      break;
-    }
-  }
+  menuSearchList.erase(window);
 }
 
 
 void Blackbox::removeToolbarSearch(Window window) {
-  LinkedListIterator<ToolbarSearch> it(toolbarSearchList);
-  for (ToolbarSearch *tmp = it.current(); tmp; it++, tmp = it.current()) {
-    if (tmp->getWindow() == window) {
-      toolbarSearchList->remove(tmp);
-      delete tmp;
-      break;
-    }
-  }
+  toolbarSearchList.erase(window);
 }
 
 
 void Blackbox::removeSlitSearch(Window window) {
-  LinkedListIterator<SlitSearch> it(slitSearchList);
-  for (SlitSearch *tmp = it.current(); tmp; it++, tmp = it.current()) {
-    if (tmp->getWindow() == window) {
-      slitSearchList->remove(tmp);
-      delete tmp;
-      break;
-    }
-  }
+  slitSearchList.erase(window);
 }
 
 
@@ -928,9 +848,8 @@ void Blackbox::shutdown(void) {
 
   XSetInputFocus(getXDisplay(), PointerRoot, None, CurrentTime);
 
-  LinkedListIterator<BScreen> it(screenList);
-  for (BScreen *s = it.current(); s; it++, s = it.current())
-    s->shutdown();
+  std::for_each(screenList.begin(), screenList.end(),
+                std::mem_fun(&BScreen::shutdown));
 
   XSync(getXDisplay(), False);
 
@@ -966,8 +885,9 @@ void Blackbox::save_rc(void) {
   sprintf(rc_string, "session.cacheMax: %lu", resource.cache_max);
   XrmPutLineResource(&new_blackboxrc, rc_string);
 
-  LinkedListIterator<BScreen> it(screenList);
-  for (BScreen *screen = it.current(); screen; it++, screen = it.current()) {
+  ScreenList::iterator it = screenList.begin();
+  for (; it != screenList.end(); ++it) {
+    BScreen *screen = *it;
     int screen_number = screen->getScreenNumber();
 
     char *slit_placement = (char *) 0;
@@ -1581,29 +1501,20 @@ void Blackbox::real_reconfigure(void) {
   XrmPutFileDatabase(old_blackboxrc, rc_file);
   if (old_blackboxrc) XrmDestroyDatabase(old_blackboxrc);
 
-  for (int i = 0, n = menuTimestamps->count(); i < n; i++) {
-    MenuTimestamp *ts = menuTimestamps->remove(0);
+  std::for_each(menuTimestamps.begin(), menuTimestamps.end(),
+                PointerAssassin());
+  menuTimestamps.clear();
 
-    if (ts) {
-      if (ts->filename)
-        delete [] ts->filename;
-
-      delete ts;
-    }
-  }
-
-  LinkedListIterator<BScreen> it(screenList);
-  for (BScreen *screen = it.current(); screen; it++, screen = it.current()) {
-    screen->reconfigure();
-  }
+  std::for_each(screenList.begin(), screenList.end(),
+                std::mem_fun(&BScreen::reconfigure));
 }
 
 
 void Blackbox::checkMenu(void) {
   Bool reread = False;
-  LinkedListIterator<MenuTimestamp> it(menuTimestamps);
-  for (MenuTimestamp *tmp = it.current(); tmp && (! reread);
-       it++, tmp = it.current()) {
+  MenuTimestampList::iterator it = menuTimestamps.begin();
+  for(; it != menuTimestamps.end(); ++it) {
+    MenuTimestamp *tmp = *it;
     struct stat buf;
 
     if (! stat(tmp->filename, &buf)) {
@@ -1626,20 +1537,12 @@ void Blackbox::rereadMenu(void) {
 
 
 void Blackbox::real_rereadMenu(void) {
-  for (int i = 0, n = menuTimestamps->count(); i < n; i++) {
-    MenuTimestamp *ts = menuTimestamps->remove(0);
+  std::for_each(menuTimestamps.begin(), menuTimestamps.end(),
+                PointerAssassin());
+  menuTimestamps.clear();
 
-    if (ts) {
-      if (ts->filename)
-        delete [] ts->filename;
-
-      delete ts;
-    }
-  }
-
-  LinkedListIterator<BScreen> it(screenList);
-  for (BScreen *screen = it.current(); screen; it++, screen = it.current())
-    screen->rereadMenu();
+  std::for_each(screenList.begin(), screenList.end(),
+                std::mem_fun(&BScreen::rereadMenu));
 }
 
 
@@ -1654,10 +1557,9 @@ void Blackbox::saveStyleFilename(const char *filename) {
 void Blackbox::saveMenuFilename(const char *filename) {
   Bool found = False;
 
-  LinkedListIterator<MenuTimestamp> it(menuTimestamps);
-  for (MenuTimestamp *tmp = it.current(); tmp && (! found);
-       it++, tmp = it.current()) {
-    if (! strcmp(tmp->filename, filename)) found = True;
+  MenuTimestampList::iterator it = menuTimestamps.begin();
+  for (; it != menuTimestamps.end() and !found; ++it) {
+    if (! strcmp((*it)->filename, filename)) found = True;
   }
   if (! found) {
     struct stat buf;
@@ -1668,7 +1570,7 @@ void Blackbox::saveMenuFilename(const char *filename) {
       ts->filename = bstrdup(filename);
       ts->timestamp = buf.st_ctime;
 
-      menuTimestamps->insert(ts);
+      menuTimestamps.push_back(ts);
     }
   }
 }

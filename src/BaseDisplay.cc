@@ -490,7 +490,7 @@ void BaseDisplay::ungrabButton(unsigned int button, unsigned int modifiers,
 ScreenInfo* BaseDisplay::getScreenInfo(unsigned int s) {
   if (s < screenInfoList.size()) {
     ScreenInfoList::iterator it = screenInfoList.begin();
-    for (; s > 0; ++it); // increment interator to index
+    for (; s > 0; ++it, --s); // increment interator to index
     return *it;
   } else {
     return 0;
