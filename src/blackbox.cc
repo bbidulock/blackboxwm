@@ -345,67 +345,6 @@ void Blackbox::process_event(XEvent *e) {
     break;
   }
 
-  case ClientMessage: {
-    if (e->xclient.format == 32) {
-      if (e->xclient.message_type == getWMChangeStateAtom()) {
-        BlackboxWindow *win = findWindow(e->xclient.window);
-        if (! win || ! win->validateClient()) return;
-
-        if (e->xclient.data.l[0] == IconicState)
-          win->iconify();
-        if (e->xclient.data.l[0] == NormalState)
-          win->deiconify();
-      } else if (e->xclient.message_type == netwm()->numberOfDesktops()) {
-        BScreen *screen = findScreen(e->xclient.window);
-        if (screen) {
-          unsigned int number = e->xclient.data.l[0];
-          unsigned int wkspc_count = screen->getWorkspaceCount();
-          if (number > wkspc_count) {
-            for (; number != wkspc_count; --number)
-              screen->addWorkspace();
-          } else if (number < wkspc_count) {
-            for (; number != wkspc_count; ++number)
-              screen->removeLastWorkspace();
-          }
-        }
-      } else if (e->xclient.message_type == netwm()->desktopNames()) {
-        BScreen *screen = findScreen(e->xclient.window);
-        if (screen)
-          screen->getDesktopNames();
-      } else if (e->xclient.message_type == netwm()->currentDesktop()) {
-        BScreen *screen = findScreen(e->xclient.window);
-        unsigned int workspace = e->xclient.data.l[0];
-        if (screen && workspace < screen->getWorkspaceCount() &&
-            workspace != screen->getCurrentWorkspaceID())
-          screen->changeWorkspaceID(workspace);
-      } else if (e->xclient.message_type == netwm()->activeWindow()) {
-        BlackboxWindow *win = findWindow(e->xclient.window);
-        if (win) {
-          if (win->isIconic())
-            win->deiconify(False, False);
-
-          BScreen *screen = win->getScreen();
-          if (win->getWorkspaceNumber() != screen->getCurrentWorkspaceID())
-            screen->changeWorkspaceID(win->getWorkspaceNumber());
-
-          if (win->setInputFocus()) {
-            Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
-            wkspc->raiseWindow(win);
-            win->installColormap(True);
-          }
-        }
-      } else if (e->xclient.message_type == netwm()->closeWindow() ||
-                 e->xclient.message_type == netwm()->moveresizeWindow() ||
-                 e->xclient.message_type == netwm()->wmDesktop()) {
-        BlackboxWindow *win = findWindow(e->xclient.window);
-        if (win)
-          win->netwmEvent(&(e->xclient));
-      }
-    }
-
-    break;
-  }
-
   default: {
     // Send the event through the default EventHandlers.
     BaseDisplay::process_event(e);

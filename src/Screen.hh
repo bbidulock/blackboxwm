@@ -356,6 +356,7 @@ public:
   void showGeometry(unsigned int gx, unsigned int gy);
   void hideGeometry(void);
 
+  void clientMessageEvent(const XClientMessageEvent * const event);
   void buttonPressEvent(const XButtonEvent * const event);
   void configureRequestEvent(const XConfigureRequestEvent * const event);
 };

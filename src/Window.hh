@@ -358,7 +358,7 @@ public:
   void configure(int dx, int dy, unsigned int dw, unsigned int dh);
   void setWorkspace(unsigned int n);
 
-  void netwmEvent(const XClientMessageEvent * const ce);
+  void clientMessageEvent(const XClientMessageEvent * const ce);
   void buttonPressEvent(const XButtonEvent * const be);
   void buttonReleaseEvent(const XButtonEvent * const re);
   void motionNotifyEvent(const XMotionEvent * const me);

@@ -1709,6 +1709,30 @@ Workspace* BScreen::getWorkspace(unsigned int index) const {
 }
 
 
+void BScreen::clientMessageEvent(const XClientMessageEvent * const event) {
+  if (event->format != 32) return;
+
+  if (event->message_type == blackbox->netwm()->numberOfDesktops()) {
+    unsigned int number = event->data.l[0];
+    unsigned int wkspc_count = getWorkspaceCount();
+    if (number > wkspc_count) {
+      for (; number != wkspc_count; --number)
+        addWorkspace();
+    } else if (number < wkspc_count) {
+      for (; number != wkspc_count; ++number)
+        removeLastWorkspace();
+    }
+  } else if (event->message_type == blackbox->netwm()->desktopNames()) {
+    getDesktopNames();
+  } else if (event->message_type == blackbox->netwm()->currentDesktop()) {
+    unsigned int workspace = event->data.l[0];
+    if (workspace < getWorkspaceCount() &&
+        workspace != getCurrentWorkspaceID())
+      changeWorkspaceID(workspace);
+  }
+}
+
+
 void BScreen::buttonPressEvent(const XButtonEvent * const event) {
   if (event->button == 1) {
     if (! isRootColormapInstalled())
@@ -2076,18 +2100,19 @@ void BScreen::updateDesktopNamesHint(void) const {
 
 void BScreen::updateClientListHint(void) const {
   if (windowList.empty()) {
-    blackbox->netwm()->setClientList(getRootWindow(), NULL, 0);
-    blackbox->netwm()->setClientListStacking(getRootWindow(), NULL, 0);
+    blackbox->netwm()->removeProperty(getRootWindow(),
+                                      blackbox->netwm()->clientList());
+    blackbox->netwm()->removeProperty(getRootWindow(),
+                                      blackbox->netwm()->clientListStacking());
     return;
   }
 
-  std::vector<Window> clientList(windowList.size());
+  Netwm::WindowList clientList(windowList.size());
 
   std::transform(windowList.begin(), windowList.end(), clientList.begin(),
                  std::mem_fun(&BlackboxWindow::getClientWindow));
 
-  blackbox->netwm()->setClientList(getRootWindow(), &clientList[0],
-                                   clientList.size());
+  blackbox->netwm()->setClientList(getRootWindow(), clientList);
 }
 
 
@@ -2099,9 +2124,14 @@ void BScreen::updateClientListStackingHint(void) const {
   for (; it != end; ++it)
     (*it)->updateClientListStacking(stack);
 
-  std::vector<Window> clientList(stack.begin(), stack.end());
-  blackbox->netwm()->setClientListStacking(getRootWindow(), &clientList[0],
-                                           clientList.size());
+  if (stack.empty()) {
+    blackbox->netwm()->removeProperty(getRootWindow(),
+                                      blackbox->netwm()->clientListStacking());
+    return;
+  }
+
+  Netwm::WindowList clientList(stack.begin(), stack.end());
+  blackbox->netwm()->setClientListStacking(getRootWindow(), clientList);
 }
 
 

@@ -2216,10 +2216,31 @@ void BlackboxWindow::redrawCloseButton(bool pressed) const {
 }
 
 
-void BlackboxWindow::netwmEvent(const XClientMessageEvent* const ce) {
-  if (ce->message_type == blackbox->netwm()->closeWindow()) {
+void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
+  if (ce->format != 32) return;
+
+  const Netwm* const netwm = blackbox->netwm();
+  
+  if (ce->message_type == blackbox->getWMChangeStateAtom()) {
+    if (ce->data.l[0] == IconicState)
+      iconify();
+    if (ce->data.l[0] == NormalState)
+      deiconify();
+  } else if (ce->message_type == netwm->activeWindow()) {
+    if (client.state.iconic)
+      deiconify(False, False);
+
+    if (client.workspace != screen->getCurrentWorkspaceID())
+      screen->changeWorkspaceID(client.workspace);
+
+    if (setInputFocus()) {
+      Workspace *wkspc = screen->getWorkspace(client.workspace);
+      wkspc->raiseWindow(this);
+      installColormap(True);
+    }
+  } else if (ce->message_type == netwm->closeWindow()) {
     close();
-  } else if (ce->message_type == blackbox->netwm()->moveresizeWindow()) {
+  } else if (ce->message_type == netwm->moveresizeWindow()) {
     XConfigureRequestEvent request;
     request.window = ce->window;
     request.x = ce->data.l[1];
@@ -2235,14 +2256,13 @@ void BlackboxWindow::netwmEvent(const XClientMessageEvent* const ce) {
     configureRequestEvent(&request);
 
     client.win_gravity = old_gravity;
-  } else if (ce->message_type == blackbox->netwm()->wmDesktop()) {
+  } else if (ce->message_type == netwm->wmDesktop()) {
     const unsigned int desktop = ce->data.l[0];
     if (desktop != 0xFFFFFFFF && desktop != client.workspace) {
       withdraw();
       screen->reassociateWindow(this, desktop);
     }
-  } else if (ce->message_type == blackbox->netwm()->wmState()) {
-    const Netwm* const netwm = blackbox->netwm();
+  } else if (ce->message_type == netwm->wmState()) {
     Atom action = ce->data.l[0],
       first = ce->data.l[1],
       second = ce->data.l[2];
@@ -2336,10 +2356,10 @@ void BlackboxWindow::netwmEvent(const XClientMessageEvent* const ce) {
     }
     
     setState(client.current_state);
-  } else if (ce->message_type == blackbox->netwm()->wmStrut()) {
+  } else if (ce->message_type == netwm->wmStrut()) {
     if (! client.strut)
       client.strut = new Netwm::Strut;
-    blackbox->netwm()->readWMStrut(client.window, client.strut);
+    netwm->readWMStrut(client.window, client.strut);
     if (client.strut->left || client.strut->right ||
         client.strut->top || client.strut->bottom) {
       screen->addStrut(client.strut);
