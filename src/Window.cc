@@ -47,6 +47,7 @@ extern "C" {
 #include "Util.hh"
 #include "Window.hh"
 #include "Windowmenu.hh"
+#include "Workspace.hh"
 
 
 #if 0
@@ -69,6 +70,67 @@ void watch_decorations(const char *msg,BlackboxWindow::DecorationFlags flags) {
           (flags & BlackboxWindow::Decor_Close) != 0);
 }
 #endif
+
+
+/*
+ * Returns the appropriate WindowType based on the _NET_WM_WINDOW_TYPE
+ */
+static BlackboxWindow::WindowType
+window_type_from_atom(const bt::Netwm &netwm, Atom atom) {
+  if (atom == netwm.wmWindowTypeDialog())
+    return BlackboxWindow::WindowTypeDialog;
+  if (atom == netwm.wmWindowTypeDesktop())
+    return BlackboxWindow::WindowTypeDesktop;
+  if (atom == netwm.wmWindowTypeDock())
+    return BlackboxWindow::WindowTypeDock;
+  if (atom == netwm.wmWindowTypeMenu())
+    return BlackboxWindow::WindowTypeMenu;
+  if (atom == netwm.wmWindowTypeSplash())
+    return BlackboxWindow::WindowTypeSplash;
+  if (atom == netwm.wmWindowTypeToolbar())
+    return BlackboxWindow::WindowTypeToolbar;
+  if (atom == netwm.wmWindowTypeUtility())
+    return BlackboxWindow::WindowTypeUtility;
+  return BlackboxWindow::WindowTypeNormal;
+}
+
+
+/*
+ * Determine the appropriate decorations and functions for the
+ * specified window type.
+ */
+static void get_decorations(BlackboxWindow::WindowType window_type,
+                            BlackboxWindow::WMDecorationFlags &decorations,
+                            BlackboxWindow::WMFunctionFlags &functions) {
+  decorations = BlackboxWindow::Decor_All;
+  functions = BlackboxWindow::Func_All;
+
+  // modify the window decorations/functions based on window type
+  switch (window_type) {
+  case BlackboxWindow::WindowTypeDialog:
+    decorations &= ~(BlackboxWindow::Decor_Iconify |
+                     BlackboxWindow::Decor_Maximize);
+    functions &= ~(BlackboxWindow::Func_Shade |
+                   BlackboxWindow::Func_Iconify |
+                   BlackboxWindow::Func_Maximize);
+    break;
+
+  case BlackboxWindow::WindowTypeDesktop:
+  case BlackboxWindow::WindowTypeDock:
+  case BlackboxWindow::WindowTypeSplash:
+    decorations = functions = 0l;
+    break;
+
+  case BlackboxWindow::WindowTypeUtility:
+    decorations &= ~(BlackboxWindow::Decor_Maximize |
+                     BlackboxWindow::Decor_Iconify);
+    functions   &= ~(BlackboxWindow::Func_Maximize |
+                     BlackboxWindow::Func_Iconify);
+    break;
+
+  default:break;
+  }
+}
 
 
 /*
@@ -133,12 +195,10 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   client.state.layer = LAYER_NORMAL;
   client.workspace = screen->getCurrentWorkspaceID();
   window_number = bt::BSENTINEL;
-  client.decorations = Decor_All;
-  client.functions = Func_All;
   client.normal_hint_flags = 0;
   client.window_group = None;
   client.transient_for = (BlackboxWindow*) 0;
-  client.window_type = None;
+  client.window_type = WindowTypeNormal;
   client.strut = (bt::Netwm::Strut*) 0;
   /*
     set the initial size and location of client window (relative to the
@@ -172,31 +232,10 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   getWMNormalHints();
   getTransientInfo();
 
-  if (client.window_type == None) {
-    if (isTransient())
-      client.window_type = blackbox->netwm().wmWindowTypeDialog();
-    else
-      client.window_type = blackbox->netwm().wmWindowTypeNormal();
-  }
+  if (client.window_type == WindowTypeNormal && isTransient())
+    client.window_type = WindowTypeDialog;
 
-  // adjust the window decorations based on transience, window type
-  // and window sizes
-  if (client.window_type == blackbox->netwm().wmWindowTypeDialog()) {
-    client.decorations &= ~(Decor_Iconify | Decor_Maximize);
-    client.functions &= ~(Func_Shade | Func_Iconify | Func_Maximize);
-  } else if (client.window_type == blackbox->netwm().wmWindowTypeSplash()) {
-    client.decorations = client.functions = 0l;
-  } else if (client.window_type == blackbox->netwm().wmWindowTypeUtility()) {
-    client.decorations &= ~(Decor_Maximize | Decor_Iconify);
-    client.functions   &= ~(Func_Maximize | Func_Iconify);
-  } else if (client.window_type == blackbox->netwm().wmWindowTypeDock()) {
-    client.decorations = client.functions = 0l;
-  } else if (client.window_type == blackbox->netwm().wmWindowTypeDesktop()) {
-    client.decorations = client.functions = 0l;
-  } else if (isTransient()) {
-    client.decorations &= ~(Decor_Iconify | Decor_Maximize);
-    client.functions &= ~(Func_Shade | Func_Iconify | Func_Maximize);
-  }
+  ::get_decorations(client.window_type, client.decorations, client.functions);
 
   if ((client.normal_hint_flags & PMinSize) &&
       (client.normal_hint_flags & PMaxSize) &&
@@ -219,7 +258,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     createHandle();
 
   // apply the size and gravity hint to the frame
-
   upsize();
 
   if (blackbox->startingUp() || isTransient() ||
@@ -255,8 +293,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     client.current_state = WithdrawnState;
   }
 
-  configure(frame.rect.x(), frame.rect.y(),
-            frame.rect.width(), frame.rect.height());
+  configure(frame.rect);
 
   positionWindows();
 
@@ -293,14 +330,18 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
       client.current_state = initial_state;
   }
 
-  if (client.state.maximized && (client.functions & Func_Maximize))
-    remaximize();
-  else
+  if (!(client.functions & Func_Maximize))
     client.state.maximized = 0;
 
+  if (client.state.fullscreen) {
+    client.state.fullscreen = false; // trick setFullScreen into working
+    setFullScreen(true);
+  } else if (client.state.maximized) {
+    remaximize();
+  }
+
   // create this last so it only needs to be configured once
-  windowmenu =
-    new Windowmenu(*blackbox, screen->screenNumber(), this);
+  windowmenu = new Windowmenu(*blackbox, screen->screenNumber(), this);
 }
 
 
@@ -503,7 +544,6 @@ void BlackboxWindow::decorate(void) {
     XSetWindowBorder(blackbox->XDisplay(), frame.title,
                      screen->resource().borderColor()->
                      pixel(screen->screenNumber()));
-
   }
 
   if (client.decorations & Decor_Border) {
@@ -565,6 +605,11 @@ void BlackboxWindow::destroyHandle(void) {
   if (frame.left_grip || frame.right_grip)
     destroyGrips();
 
+  if (frame.fhandle) bt::PixmapCache::release(frame.fhandle);
+  if (frame.uhandle) bt::PixmapCache::release(frame.uhandle);
+
+  frame.fhandle = frame.uhandle = None;
+
   blackbox->removeEventHandler(frame.handle);
   XDestroyWindow(blackbox->XDisplay(), frame.handle);
   frame.handle = None;
@@ -587,10 +632,10 @@ void BlackboxWindow::createGrips(void) {
 
 
 void BlackboxWindow::destroyGrips(void) {
-  bt::PixmapCache::release(frame.fhandle);
-  bt::PixmapCache::release(frame.uhandle);
-  bt::PixmapCache::release(frame.fgrip);
-  bt::PixmapCache::release(frame.ugrip);
+  if (frame.fgrip) bt::PixmapCache::release(frame.fgrip);
+  if (frame.ugrip) bt::PixmapCache::release(frame.ugrip);
+
+  frame.fgrip = frame.ugrip = None;
 
   blackbox->removeEventHandler(frame.left_grip);
   blackbox->removeEventHandler(frame.right_grip);
@@ -627,15 +672,17 @@ void BlackboxWindow::destroyTitlebar(void) {
   if (frame.maximize_button)
     destroyMaximizeButton();
 
-  bt::PixmapCache::release(frame.ftitle);
-  bt::PixmapCache::release(frame.utitle);
+  if (frame.fbutton) bt::PixmapCache::release(frame.fbutton);
+  if (frame.ubutton) bt::PixmapCache::release(frame.ubutton);
+  if (frame.pbutton) bt::PixmapCache::release(frame.pbutton);
+  if (frame.ftitle)  bt::PixmapCache::release(frame.ftitle);
+  if (frame.utitle)  bt::PixmapCache::release(frame.utitle);
+  if (frame.flabel)  bt::PixmapCache::release(frame.flabel);
+  if (frame.ulabel)  bt::PixmapCache::release(frame.ulabel);
 
-  bt::PixmapCache::release(frame.flabel);
-  bt::PixmapCache::release(frame.ulabel);
-
-  bt::PixmapCache::release(frame.fbutton);
-  bt::PixmapCache::release(frame.ubutton);
-  bt::PixmapCache::release(frame.pbutton);
+  frame.fbutton = frame.ubutton = frame.pbutton =
+   frame.ftitle = frame.utitle =
+   frame.flabel = frame.ulabel = None;
 
   blackbox->removeEventHandler(frame.title);
   blackbox->removeEventHandler(frame.label);
@@ -958,11 +1005,11 @@ void BlackboxWindow::getNetwmHints(void) {
     bt::Netwm::AtomList::iterator it = atoms.begin(), end = atoms.end();
     for (; it != end; ++it) {
       if (netwm.isSupportedWMWindowType(*it)) {
-        client.window_type = *it;
+        client.window_type = ::window_type_from_atom(netwm, *it);
         break;
       }
     }
-    if (client.window_type == netwm.wmWindowTypeDesktop()) {
+    if (client.window_type == WindowTypeDesktop) {
       // make me omnipresent
       client.state.layer = LAYER_DESKTOP;
     }
@@ -1617,51 +1664,56 @@ void BlackboxWindow::maximize(unsigned int button) {
   if (client.state.maximized) {
     client.state.maximized = 0;
 
-    /*
-      when a resize is begun, maximize(0) is called to clear any maximization
-      flags currently set.  Otherwise it still thinks it is maximized.
-      so we do not need to call configure() because resizing will handle it
-    */
-    if (! client.state.resizing)
-      configure(client.premax.x(), client.premax.y(),
-                client.premax.width(), client.premax.height());
+    if (!client.state.fullscreen) {
+      /*
+        when a resize is begun, maximize(0) is called to clear any maximization
+        flags currently set.  Otherwise it still thinks it is maximized.
+        so we do not need to call configure() because resizing will handle it
+      */
+      if (! client.state.resizing)
+        configure(client.premax);
 
-    redrawAllButtons(); // in case it is not called in configure()
+      redrawAllButtons(); // in case it is not called in configure()
+    }
+
     setState(client.current_state);
     return;
   }
 
-  frame.changing = screen->availableArea();
-  client.premax = frame.rect;
-
-  switch(button) {
-  case 1:
-    break;
-
-  case 2:
-    frame.changing.setX(client.premax.x());
-    frame.changing.setWidth(client.premax.width());
-    break;
-
-  case 3:
-    frame.changing.setY(client.premax.y());
-    frame.changing.setHeight(client.premax.height());
-    break;
-
-  default:
-    assert(0);
-  }
-
-  constrain(TopLeft);
-
-  if (client.state.shaded)
-    client.state.shaded = False;
-
   client.state.maximized = button;
 
-  configure(frame.changing.x(), frame.changing.y(),
-            frame.changing.width(), frame.changing.height());
-  redrawAllButtons(); // in case it is not called in configure()
+  if (!client.state.fullscreen) {
+    frame.changing = screen->availableArea();
+    client.premax = frame.rect;
+
+    switch(button) {
+    case 1:
+      break;
+
+    case 2:
+      frame.changing.setX(client.premax.x());
+      frame.changing.setWidth(client.premax.width());
+      break;
+
+    case 3:
+      frame.changing.setY(client.premax.y());
+      frame.changing.setHeight(client.premax.height());
+      break;
+
+    default:
+      assert(0);
+    }
+
+    constrain(TopLeft);
+
+    if (client.state.shaded)
+      client.state.shaded = False;
+
+
+    configure(frame.changing);
+    redrawAllButtons(); // in case it is not called in configure()
+  }
+
   setState(client.current_state);
 }
 
@@ -1712,6 +1764,70 @@ void BlackboxWindow::shade(void) {
     // set the frame rect to the shaded size
     frame.rect.setHeight(frame.style->title_height + (frame.border_w * 2));
   }
+}
+
+
+void BlackboxWindow::setLayer(WMLayer layer) {
+  if (window_number == bt::BSENTINEL) {
+    // not in a workspace, simply set the layer
+    client.state.layer = layer;
+    return;
+  }
+
+  Workspace *workspace = screen->getWorkspace(client.workspace);
+  assert(workspace != 0);
+
+  workspace->removeWindow(this);
+  client.state.layer = layer;
+  workspace->addWindow(this, false);
+}
+
+
+void BlackboxWindow::setFullScreen(bool b) {
+  if (!!client.state.fullscreen == !!b)
+    return;
+
+  bool refocus = isFocused();
+  client.state.fullscreen = b;
+  if (client.state.fullscreen) {
+    client.decorations = 0;
+    client.functions &= ~(Func_Resize | Func_Move | Func_Shade);
+
+    if (!client.state.maximized)
+      client.premax = frame.rect;
+    upsize();
+
+    frame.changing = screen->screenInfo().rect();
+    constrain(TopLeft);
+    configure(frame.changing);
+
+    setLayer(LAYER_FULLSCREEN);
+    setState(client.current_state);
+  } else {
+    ::get_decorations(client.window_type,
+                      client.decorations,
+                      client.functions);
+
+    if (client.decorations & Decor_Titlebar)
+      createTitlebar();
+
+    if (client.decorations & Decor_Handle)
+      createHandle();
+
+    upsize();
+
+    if (!client.state.maximized) {
+      configure(client.premax);
+
+      setLayer(LAYER_NORMAL);
+      setState(client.current_state);
+    } else {
+      setLayer(LAYER_NORMAL);
+      remaximize();
+    }
+  }
+
+  if (refocus) setInputFocus();
 }
 
 
@@ -2318,14 +2434,10 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
       if (action == netwm.wmStateAdd() ||
           (action == netwm.wmStateToggle() &&
            ! client.state.fullscreen)) {
-        client.state.fullscreen = True;
-        client.state.layer = LAYER_FULLSCREEN;
-        reconfigure();
+        setFullScreen(true);
       } else if (action == netwm.wmStateToggle() ||
                  action == netwm.wmStateRemove()) {
-        client.state.fullscreen = False;
-        client.state.layer = LAYER_NORMAL;
-        reconfigure();
+        setFullScreen(false);
       }
     }
     if (first == netwm.wmStateAbove() ||

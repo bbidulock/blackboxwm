@@ -131,6 +131,17 @@ public:
   };
   typedef unsigned char WMDecorationFlags;
 
+  enum WindowType {
+    WindowTypeNormal,
+    WindowTypeDialog,
+    WindowTypeDesktop,
+    WindowTypeDock,
+    WindowTypeMenu,
+    WindowTypeSplash,
+    WindowTypeToolbar,
+    WindowTypeUtility
+  };
+
   enum WMLayer {
     LAYER_NORMAL,
     LAYER_FULLSCREEN,
@@ -199,7 +210,7 @@ private:
     bt::Netwm::Strut *strut;
     FocusMode focus_mode;
     WMState state;
-    Atom window_type;
+    WindowType window_type;
     WMFunctionFlags functions;
     WMDecorationFlags decorations;
   } client;
@@ -364,6 +375,8 @@ public:
   { return frame.style->title_height; }
 
   inline WMLayer getLayer(void) const { return client.state.layer; }
+  void setLayer(WMLayer layer);
+
   unsigned long normalHintFlags(void) const
   { return client.normal_hint_flags; }
 
@@ -383,11 +396,18 @@ public:
   void maximize(unsigned int button);
   void remaximize(void);
   void shade(void);
+
+  inline bool isFullScreen(void) const
+  { return client.state.fullscreen; }
+  void setFullScreen(bool);
+
   void reconfigure(void);
   void grabButtons(void);
   void ungrabButtons(void);
   void restore(bool remap);
   void configure(int dx, int dy, unsigned int dw, unsigned int dh);
+  inline void configure(const bt::Rect &r)
+  { configure(r.x(), r.y(), r.width(), r.height()); }
   void setWorkspace(unsigned int n);
 
   void clientMessageEvent(const XClientMessageEvent * const ce);
