@@ -123,7 +123,7 @@ unsigned long bt::Resource::read(const char* name, const char* classname,
   XrmValue value;
   char *value_type;
   if (XrmGetResource(db, name, classname, &value_type, &value)) {
-    long output;
+    unsigned long output;
     sscanf(value.addr, "%lu", &output);
     return output;
   }
