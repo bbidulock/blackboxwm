@@ -142,7 +142,6 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
   // start off full screen, top left.
   usableArea.setSize(screen_info.getWidth(), screen_info.getHeight());
-  area_is_dirty = False;
 
   image_control =
     new bt::ImageControl(blackbox, screen_info.getDisplay(), &screen_info,
@@ -1484,26 +1483,24 @@ void BScreen::hideGeometry(void) {
 
 void BScreen::addStrut(bt::Netwm::Strut *strut) {
   strutList.push_back(strut);
-  area_is_dirty = True;
+  updateAvailableArea();
 }
 
 
 void BScreen::removeStrut(bt::Netwm::Strut *strut) {
   strutList.remove(strut);
-  area_is_dirty = True;
+  updateAvailableArea();
 }
 
 
 void BScreen::updateStrut(void) {
-  area_is_dirty = True;
+  updateAvailableArea();
 }
 
 
 const bt::Rect& BScreen::availableArea(void) {
   if (doFullMax())
     return screen_info.getRect(); // return the full screen
-  if (area_is_dirty)
-    updateAvailableArea();
   return usableArea;
 }
 
@@ -1535,7 +1532,6 @@ void BScreen::updateAvailableArea(void) {
   new_area.setPos(current.left, current.top);
   new_area.setSize(screen_info.getWidth() - (current.left + current.right),
                    screen_info.getHeight() - (current.top + current.bottom));
-  area_is_dirty = False;
 
   if (new_area != usableArea) {
     usableArea = new_area;

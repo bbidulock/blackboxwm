@@ -105,7 +105,6 @@ private:
   unsigned long event_mask;
 
   bt::Rect usableArea;
-  bool area_is_dirty;
 
   typedef std::list<bt::Netwm::Strut*> StrutList;
   StrutList strutList;
