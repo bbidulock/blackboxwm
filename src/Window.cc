@@ -1239,7 +1239,8 @@ BlackboxWindow *BlackboxWindow::getTransientFor(void) const {
  */
 void BlackboxWindow::configure(int dx, int dy,
                                unsigned int dw, unsigned int dh) {
-  bool send_event = (frame.rect.x() != dx || frame.rect.y() != dy);
+  bool send_event = ((frame.rect.x() != dx || frame.rect.y() != dy) &&
+                     ! flags.moving);
 
   if (dw != frame.rect.width() || dh != frame.rect.height()) {
     frame.rect.setRect(dx, dy, dw, dh);
@@ -1268,9 +1269,15 @@ void BlackboxWindow::configure(int dx, int dy,
 
     XMoveWindow(blackbox->getXDisplay(), frame.window,
                 frame.rect.x(), frame.rect.y());
+    /*
+      we may have been called just after an opaque window move, so even though
+      the old coords match the new ones no ConfigureNotify has been sent yet.
+      There are likely other times when this will be relevant as well.
+    */
+    if (! flags.moving) send_event = True;
   }
 
-  if (send_event && ! flags.moving) {
+  if (send_event) {
     // if moving, the update and event will occur when the move finishes
     client.rect.setPos(frame.rect.left() + frame.margin.left,
                        frame.rect.top() + frame.margin.top);
@@ -2590,7 +2597,7 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent *re) {
                      screen->getOpGC(), frame.changing.x(), frame.changing.y(),
                      frame.changing.width() - 1, frame.changing.height() - 1);
       XUngrabServer(blackbox->getXDisplay());
-
+      fprintf(stderr, "%s: done moving\n", getTitle());
       configure(frame.changing.x(), frame.changing.y(),
                 frame.changing.width(), frame.changing.height());
     } else {
