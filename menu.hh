@@ -101,8 +101,11 @@ public:
   Window windowID(void);
   unsigned int Width(void) { return menu.width; }
   unsigned int Height(void) { return menu.height; }
+  int X(void) { return menu.x; }
+  int Y(void) { return menu.y; }
   int menuVisible(void) { return visible; }
   void setMenuLabel(char *);
+  int count(void) { return menuitems->count(); }
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);

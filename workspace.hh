@@ -155,10 +155,11 @@ private:
   BlackboxSession *session;
   Workspace *current;
   
-
   friend WorkspaceManagerMenu;
 
+
 protected:
+
 
 public:
   WorkspaceManager(BlackboxSession *, int = 1);

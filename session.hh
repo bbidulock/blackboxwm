@@ -141,7 +141,8 @@ private:
     } texture;
 
     char *menuFile;
-    int workspaces;
+    int workspaces,
+      orientation;
   } resource;
 
   int depth, screen;
@@ -180,6 +181,13 @@ public:
   void reassociateWindow(BlackboxWindow *);
   void updateWorkspace(int);
   int iconCount(void);
+  void arrangeIcons(void);
+  void EventLoop(void);
+  void Restart(void);
+  void Exit(void);
+  void Shutdown(void);
+  Bool Startup(void) { return startup; }
+  void LoadDefaults(void);
 
   XContext wsContext(void) { return context.workspace; }
   XContext iconContext(void) { return context.icon; }
@@ -225,13 +233,7 @@ public:
   const BColor &unfocusTextColor(void) const { return resource.color.utext; }
   XColor *Colors8bpp(void) { return colors_8bpp; }
 
-  void arrangeIcons(void);
-  void EventLoop(void);
-  void Restart(void);
-  void Exit(void);
-  void Shutdown(void);
-  Bool Startup(void) { return startup; }
-  void LoadDefaults(void);
+  const int Orientation(void) const { return resource.orientation; }
 
   Bool button1Pressed() const { return b1Pressed; }
   Bool button2Pressed() const { return b2Pressed; }
@@ -245,12 +247,14 @@ public:
 
   GC GCOperations(void) { return opGC; }
   
-  enum { B_Restart = 1, B_Exit, B_Shutdown, B_Execute , B_WindowClose,
-	 B_WindowIconify, B_WindowRaise, B_WindowLower };
+  enum { B_Restart = 1, B_Exit, B_Shutdown, B_Execute,
+	 B_WindowClose, B_WindowMaximize, B_WindowIconify,
+	 B_WindowRaise, B_WindowLower, B_WindowSendToWorkspace };
   enum { B_TextureRSolid = 1, B_TextureSSolid, B_TextureFSolid,
 	 B_TextureRHGradient, B_TextureSHGradient, B_TextureFHGradient,
 	 B_TextureRVGradient, B_TextureSVGradient, B_TextureFVGradient,
 	 B_TextureRDGradient, B_TextureSDGradient, B_TextureFDGradient };
+  enum { B_LeftHandedUser = 1, B_RightHandedUser };
 };
 
 

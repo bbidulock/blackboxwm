@@ -163,6 +163,7 @@ void BlackboxIcon::buttonReleaseEvent(XButtonEvent *be) {
     XClearWindow(display, session->WSManager()->iconWindowID());
     XUngrabServer(display);
     win->deiconifyWindow();
+    win->setFocusFlag(False);
   }
 }
 

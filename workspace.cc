@@ -312,7 +312,7 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
 		       GCFont|GCForeground, &gcv);
 
   BImage bimage(session, frame.button_w, frame.button_h, session->Depth(),
-		session->frameColor());
+		session->buttonColor());
 
   frame.button = bimage.renderImage(session->frameTexture(), 0,
 				    session->focusColor(),

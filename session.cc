@@ -1171,6 +1171,16 @@ void BlackboxSession::LoadDefaults(void) {
     if (sscanf(value.addr, "%d", &resource.workspaces) != 1)
       resource.workspaces = 1;
   
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.session.orientation",
+		     "Blackbox.Session.Orientation", &value_type, &value)) {
+    if (! strcasecmp(value.addr, "lefthanded"))
+      resource.orientation = B_LeftHandedUser;
+    else if (! strcasecmp(value.addr, "righthanded"))
+      resource.orientation = B_RightHandedUser;
+  } else
+    resource.orientation = B_RightHandedUser;
+
   debug->msg("destroying database\n");
   XrmDestroyDatabase(blackbox_database);
 
@@ -1271,11 +1281,15 @@ unsigned long BlackboxSession::getColor(const char *colorname,
     fprintf(stderr, "blackbox: color alloc error: \"%s\"\n", colorname);
   }
   
-  debug->msg("color %s - rgb: %d %d %d -scaled %d %d %d\n", colorname,
-	     color.red, color.green, color.blue,
-	     *r = (unsigned char) (color.red / 0xff),
-	     *g = (unsigned char) (color.green / 0xff),
-	     *b = (unsigned char) (color.blue / 0xff));
+  if (color.red == 65535) *r = 0xff;
+  else *r = (unsigned char) (color.red / 0xff);
+  if (color.green == 65535) *g = 0xff;
+  else *g = (unsigned char) (color.green / 0xff);
+  if (color.blue == 65535) *b = 0xff;
+  else *b = (unsigned char) (color.blue / 0xff);
 
+  debug->msg("color %s - rgb: %d %d %d -scaled %d %d %d\n", colorname,
+	     color.red, color.green, color.blue, *r, *g, *b);
+  
   return color.pixel;
 }

@@ -24,16 +24,20 @@
 
 #include "debug.hh"
 #include "menu.hh"
+#include "workspace.hh"
 
 class BlackboxIcon;
 class BlackboxSession;
 class BlackboxWindow;
 class BlackboxWindowMenu;
+class SendToWorkspaceMenu;
 
 
 class BlackboxWindowMenu : public BlackboxMenu {
 private:
   BlackboxWindow *window;
+  BlackboxSession *session;
+  SendToWorkspaceMenu *send_to_menu;
 
   friend BlackboxWindow;
 
@@ -47,10 +51,35 @@ protected:
 
 public:
   BlackboxWindowMenu(BlackboxWindow *, BlackboxSession *);
-  //  ~BlackboxWindowMenu(void);
+  ~BlackboxWindowMenu(void);
 
-  void showMenu();
-  void hideMenu();
+  void showMenu(void);
+  void hideMenu(void);
+  void moveMenu(int, int);
+};
+
+
+class SendToWorkspaceMenu : public BlackboxMenu {
+private:
+  BlackboxWindow *window;
+  WorkspaceManager *ws_manager;
+  
+  friend BlackboxWindow;
+
+
+protected:
+  virtual void titlePressed(int);
+  virtual void titleReleased(int);
+  virtual void itemPressed(int, int);
+  virtual void itemReleased(int, int);
+
+
+public:
+  SendToWorkspaceMenu(BlackboxWindow *, BlackboxSession *);
+
+  void updateMenu(void);
+  void showMenu(void);
+  void hideMenu(void);
   void moveMenu(int, int);
 };
 

@@ -396,14 +396,8 @@ void BlackboxMenu::buttonPressEvent(XButtonEvent *be) {
 	    XSetWindowBackgroundPixmap(display, be->window,
 				       menu.pushed_pixmap);
 	    XClearWindow(display, be->window);
-	    item->sub_menu->moveMenu(menu.x + menu.width,
-				     menu.y +
-				     ((show_title) ? menu.title_h : 0) +
-				     ((i - 1) * menu.item_h) - 1);
-	    sub = true;
-	    which_sub = i;
-	    item->sub_menu->showMenu();
-	    item->sub_menu->visible = 3;
+	    drawSubMenu(i);
+	    sub = True;
 	  }
 	} else {
 	  XSetWindowBackgroundPixmap(display, be->window, menu.pushed_pixmap);
@@ -445,18 +439,22 @@ void BlackboxMenu::buttonReleaseEvent(XButtonEvent *re) {
 	    XDrawString(display, item->window, titleGC, 4,
 			session->titleFont()->ascent + 2,
 			((item->ulabel) ? *item->ulabel : item->label),
-			strlen(((item->ulabel) ? *item->ulabel : item->label)));
+			strlen(((item->ulabel) ? *item->ulabel :
+				item->label)));
 	    which_sub = -1;
 	  } else
 	    sub = False;
 	} else {
-	  XSetWindowBackgroundPixmap(display, re->window, menu.item_pixmap);
-	  XClearWindow(display, re->window);
-	  XDrawString(display, item->window, titleGC, 4,
-		      session->titleFont()->ascent + 2,
-		      ((item->ulabel) ? *item->ulabel : item->label),
-		      strlen(((item->ulabel) ? *item->ulabel : item->label)));
-	}
+          if (which_sub != i) {
+	    XSetWindowBackgroundPixmap(display, re->window, menu.item_pixmap);
+	    XClearWindow(display, re->window);
+	    XDrawString(display, item->window, titleGC, 4,
+		        session->titleFont()->ascent + 2,
+		        ((item->ulabel) ? *item->ulabel : item->label),
+		        strlen(((item->ulabel) ? *item->ulabel :
+				item->label)));
+	  }
+        }
 
 	if (re->x > 0 && re->x < (int) menu.width &&
 	    re->y > 0 && re->y < (int) menu.item_h) 
@@ -573,3 +571,19 @@ void BlackboxMenu::showTitle(void) { show_title = True; }
 void BlackboxMenu::hideTitle(void) { show_title = False; }
 BlackboxMenuItem *BlackboxMenu::at(int i) { return menuitems->at(i); }
 BlackboxSession *BlackboxMenu::Session(void) { return session; }
+
+
+void BlackboxMenu::drawSubMenu(int index) {
+  if (index >= 0 && index < menuitems->count()) {
+    BlackboxMenuItem *item = menuitems->at(index);
+    item->sub_menu->moveMenu(menu.x + menu.width,
+			     menu.y +
+			     ((show_title) ? menu.title_h : 0) +
+			     ((index - 1) * menu.item_h) - 1);
+    
+    item->sub_menu->showMenu();
+    item->sub_menu->visible = 3;
+    sub = False;
+    which_sub = index;
+  }
+}
