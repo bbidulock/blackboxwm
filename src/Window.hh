@@ -34,57 +34,55 @@
 #include <Timer.hh>
 #include <Util.hh>
 
-class Blackbox;
+
+enum WindowType {
+  WindowTypeNormal,
+  WindowTypeDialog,
+  WindowTypeDesktop,
+  WindowTypeDock,
+  WindowTypeMenu,
+  WindowTypeSplash,
+  WindowTypeToolbar,
+  WindowTypeUtility
+};
+
+enum WindowFunction {
+  WindowFunctionResize   = 1<<0,
+  WindowFunctionMove     = 1<<1,
+  WindowFunctionShade    = 1<<2,
+  WindowFunctionIconify  = 1<<3,
+  WindowFunctionMaximize = 1<<4,
+  WindowFunctionClose    = 1<<5,
+  AllWindowFunctions     = (WindowFunctionResize |
+                            WindowFunctionMove |
+                            WindowFunctionShade |
+                            WindowFunctionIconify |
+                            WindowFunctionMaximize |
+                            WindowFunctionClose)
+};
+typedef unsigned char WindowFunctionFlags;
+
+enum WindowDecoration {
+  WindowDecorationTitlebar = 1<<0,
+  WindowDecorationHandle   = 1<<1,
+  WindowDecorationGrip     = 1<<2,
+  WindowDecorationBorder   = 1<<3,
+  WindowDecorationIconify  = 1<<4,
+  WindowDecorationMaximize = 1<<5,
+  WindowDecorationClose    = 1<<6,
+  AllWindowDecorations     = (WindowDecorationTitlebar |
+                              WindowDecorationHandle |
+                              WindowDecorationGrip |
+                              WindowDecorationBorder |
+                              WindowDecorationIconify |
+                              WindowDecorationMaximize |
+                              WindowDecorationClose)
+};
+typedef unsigned char WindowDecorationFlags;
 
 class BlackboxWindow : public bt::TimeoutHandler, public bt::EventHandler,
-                       public bt::NoCopy {
-public:
-  enum WMFunction {
-    Func_Resize   = (1l << 0),
-    Func_Move     = (1l << 1),
-    Func_Shade    = (1l << 2),
-    Func_Iconify  = (1l << 3),
-    Func_Maximize = (1l << 4),
-    Func_Close    = (1l << 5),
-    Func_All      = (Func_Resize |
-                     Func_Move |
-                     Func_Shade |
-                     Func_Iconify |
-                     Func_Maximize |
-                     Func_Close)
-  };
-  typedef unsigned char WMFunctionFlags;
-
-  enum WMDecoration {
-    Decor_Titlebar = (1l << 0),
-    Decor_Handle   = (1l << 1),
-    Decor_Grip     = (1l << 2),
-    Decor_Border   = (1l << 3),
-    Decor_Iconify  = (1l << 4),
-    Decor_Maximize = (1l << 5),
-    Decor_Close    = (1l << 6),
-    Decor_All      = (Decor_Titlebar |
-                      Decor_Handle |
-                      Decor_Grip |
-                      Decor_Border |
-                      Decor_Iconify |
-                      Decor_Maximize |
-                      Decor_Close)
-  };
-  typedef unsigned char WMDecorationFlags;
-
-  enum WindowType {
-    WindowTypeNormal,
-    WindowTypeDialog,
-    WindowTypeDesktop,
-    WindowTypeDock,
-    WindowTypeMenu,
-    WindowTypeSplash,
-    WindowTypeToolbar,
-    WindowTypeUtility
-  };
-
-private:
+                       public bt::NoCopy
+{
   Blackbox *blackbox;
   BScreen *screen;
   bt::Timer *timer;
@@ -147,8 +145,8 @@ private:
     FocusMode focus_mode;
     WMState state;
     WindowType window_type;
-    WMFunctionFlags functions;
-    WMDecorationFlags decorations;
+    WindowFunctionFlags functions;
+    WindowDecorationFlags decorations;
   } client;
 
   /*
@@ -276,10 +274,15 @@ public:
   inline bool isMaximized(void) const { return client.state.maximized; }
   inline bool isModal(void) const { return client.state.modal; }
 
-  inline bool hasFunction(WMFunction func) const
-  { return client.functions & func; }
-  inline bool hasDecoration(WMDecoration decor) const
-  { return client.decorations & decor; }
+  inline WindowType windowType(void) const
+  { return client.window_type; }
+  inline bool isDesktop(void) const
+  { return client.window_type == WindowTypeDesktop; }
+
+  inline bool hasWindowFunction(WindowFunction function) const
+  { return client.functions & function; }
+  inline bool hasWindowDecoration(WindowDecoration decoration) const
+  { return client.decorations & decoration; }
 
   inline const BlackboxWindowList &getTransients(void) const
   { return client.transientList; }

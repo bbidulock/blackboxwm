@@ -99,18 +99,14 @@ void Windowmenu::hide(void) {
 void Windowmenu::refresh(void) {
   assert(_window != 0);
 
-  setItemEnabled(Shade,
-                 _window->hasFunction(BlackboxWindow::Func_Shade));
+  setItemEnabled(Shade, _window->hasWindowFunction(WindowFunctionShade));
   setItemChecked(Shade, _window->isShaded());
 
-  setItemEnabled(Maximize,
-                 _window->hasFunction(BlackboxWindow::Func_Maximize));
+  setItemEnabled(Maximize, _window->hasWindowFunction(WindowFunctionMaximize));
   setItemChecked(Maximize, _window->isMaximized());
 
-  setItemEnabled(Iconify,
-                 _window->hasFunction(BlackboxWindow::Func_Iconify));
-  setItemEnabled(Close,
-                 _window->hasFunction(BlackboxWindow::Func_Close));
+  setItemEnabled(Iconify, _window->hasWindowFunction(WindowFunctionIconify));
+  setItemEnabled(Close, _window->hasWindowFunction(WindowFunctionClose));
 }
 
 
