@@ -1462,17 +1462,21 @@ void BlackboxWindow::maximize(unsigned int button) {
   blackbox_attrib.premax_w = frame.width;
   blackbox_attrib.premax_h = frame.height;
 
+  fprintf(stderr, "initial; x: %d, y: %d, width: %d, height: %d\n", frame.x,
+          frame.y, frame.width, frame.height);
+
   const XRectangle &screen_area = screen->availableArea();
 
   int dx = screen_area.x, dy = screen_area.y;
   unsigned int dw = screen_area.width, dh = screen_area.height;
 
-  dw = screen->getWidth();
+  fprintf(stderr, "usable area; x: %d, y: %d, width: %d, height: %d\n", dx, dy,
+          dw, dh);
+
   dw -= frame.border_w * 2;
   dw -= frame.mwm_border_w * 2;
   dw -= client.base_width;
 
-  dh = screen->getHeight();
   dh -= frame.border_w * 2;
   dh -= frame.mwm_border_w * 2;
   dh -= ((frame.handle_h + frame.border_w) * decorations.handle);
@@ -1494,8 +1498,8 @@ void BlackboxWindow::maximize(unsigned int button) {
   dh += ((frame.handle_h + frame.border_w) * decorations.handle);
   dh += frame.mwm_border_w * 2;
 
-  dx += ((screen->getWidth() - dw) / 2) - frame.border_w;
-  dy += ((screen->getHeight() - dh) / 2) - frame.border_w;
+  //  dx += ((screen_area.width - dw) / 2) - frame.border_w;
+  //  dy += ((screen_area.height - dh) / 2) - frame.border_w;
 
   switch(button) {
   case 1:
@@ -1528,6 +1532,8 @@ void BlackboxWindow::maximize(unsigned int button) {
 
   flags.maximized = button;
 
+  fprintf(stderr, "final size; x: %d, y: %d, width: %d, height: %d\n", dx, dy,
+          dw, dh);
   configure(dx, dy, dw, dh);
   screen->getWorkspace(workspace_number)->raiseWindow(this);
   redrawAllButtons();

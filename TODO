@@ -2,7 +2,6 @@
 
 CVS Bugs:
 -----------------------------
-* maximize gets the dimensions very wrong
 * windows that set WM_DELETE_WINDOW protocol after creation do not get a close
   button
 
