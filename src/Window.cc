@@ -772,9 +772,10 @@ void BlackboxWindow::positionWindows(void) {
     XSetWindowBorderWidth(blackbox->getXDisplay(), frame.right_grip,
                           frame.border_w);
 
+    // use client.rect here so the value is correct even if shaded
     XMoveResizeWindow(blackbox->getXDisplay(), frame.handle,
                       -frame.border_w,
-                      frame.rect.height() - frame.margin.bottom +
+                      client.rect.height() + frame.margin.top +
                       frame.mwm_border_w - frame.border_w,
                       frame.inside_w, frame.handle_h);
     XMoveResizeWindow(blackbox->getXDisplay(), frame.left_grip,
@@ -783,6 +784,7 @@ void BlackboxWindow::positionWindows(void) {
     XMoveResizeWindow(blackbox->getXDisplay(), frame.right_grip,
                       frame.inside_w - frame.grip_w - frame.border_w,
                       -frame.border_w, frame.grip_w, frame.handle_h);
+
     XMapSubwindows(blackbox->getXDisplay(), frame.handle);
     XMapWindow(blackbox->getXDisplay(), frame.handle);
   } else if (frame.handle) {
@@ -1468,7 +1470,9 @@ void BlackboxWindow::maximize(unsigned int button) {
   blackbox_attrib.premax_x = frame.rect.x();
   blackbox_attrib.premax_y = frame.rect.y();
   blackbox_attrib.premax_w = frame.rect.width();
-  blackbox_attrib.premax_h = frame.rect.height();
+  // use client.rect so that clients can be restored even if shaded
+  blackbox_attrib.premax_h =
+    client.rect.height() + frame.margin.top + frame.margin.bottom;
 
   const Rect &screen_area = screen->availableArea();
   frame.changing = screen_area;
@@ -2819,13 +2823,23 @@ void BlackboxWindow::upsize(void) {
     frame.margin.bottom = frame.border_w + frame.mwm_border_w;
   }
 
-  // set the frame rect
-  frame.rect.setSize(client.rect.width() + frame.margin.left +
-                     frame.margin.right,
-                     client.rect.height() + frame.margin.top +
-                     frame.margin.bottom);
-  frame.inside_w = frame.rect.width() - (frame.border_w * 2);
-  frame.inside_h = frame.rect.height() - (frame.border_w * 2);
+  /*
+    We first get the normal dimensions and use this to define the inside_w/h
+    then we modify the height if shading is in effect.
+    If the shade state is not considered then frame.rect gets reset to the
+    normal window size on a reconfigure() call resulting in improper
+    dimensions appearing in move/resize and other events.
+  */
+  unsigned int
+    height = client.rect.height() + frame.margin.top + frame.margin.bottom,
+    width = client.rect.width() + frame.margin.left + frame.margin.right;
+
+  frame.inside_w = width - (frame.border_w * 2);
+  frame.inside_h = height - (frame.border_w * 2);
+
+  if (flags.shaded)
+    height = frame.title_h + (frame.border_w * 2);
+  frame.rect.setSize(width, height);
 }
 
 
@@ -2835,8 +2849,7 @@ void BlackboxWindow::upsize(void) {
  *
  * The logical width and height are placed into pw and ph, if they
  * are non-zero.  Logical size refers to the users perception of
- * the window size (for example an xterm has resizes in cells, not in
- * pixels).
+ * the window size (for example an xterm resizes in cells, not in pixels).
  *
  * The physical geometry is placed into frame.changing_{x,y,width,height}.
  * Physical geometry refers to the geometry of the window in pixels.
