@@ -131,8 +131,46 @@ void Netwm::setWMName(Window target, const std::string &name) const {
 }
 
 
+bool Netwm::readWMName(Window target, std::string& name) const {
+  return getUTF8StringProperty(target, net_wm_name, name);
+}
+
+
 // utility
 
 void Netwm::removeProperty(Window target, Atom atom) const {
   XDeleteProperty(display, target, atom);
+}
+
+
+bool Netwm::getUTF8StringProperty(Window target, Atom property,
+                                  std::string& value) const {
+  Atom atom_return;
+  int size;
+  unsigned long nitems, bytes_left;
+  unsigned char *data;
+
+  int ret = XGetWindowProperty(display, target, property,
+                               0l, 1l, False,
+                               utf8_string, &atom_return, &size,
+                               &nitems, &bytes_left, &data);
+  if (ret != Success || nitems < 1)
+    return False;
+
+  if (bytes_left != 0) {
+    XFree(data);
+    unsigned long remain = ((size / 8) * nitems) + bytes_left;
+    int ret = XGetWindowProperty(display, target,
+                                 property, 0l, remain, False,
+                                 utf8_string, &atom_return, &size,
+                                 &nitems, &bytes_left, &data);
+    if (ret != Success)
+      return False;
+  }
+
+  value = reinterpret_cast<char*>(data);
+
+  XFree(data);
+
+  return True;
 }

@@ -49,6 +49,7 @@ extern "C" {
 #include "GCCache.hh"
 #include "Iconmenu.hh"
 #include "Image.hh"
+#include "Netwm.hh"
 #include "Screen.hh"
 #include "Toolbar.hh"
 #include "Util.hh"
@@ -871,10 +872,13 @@ void BlackboxWindow::getWMName(void) {
 
   std::string name;
 
-  if (XGetWMName(blackbox->getXDisplay(), client.window, &text_prop)) {
-    name = textPropertyToString(blackbox->getXDisplay(), text_prop);
-    XFree((char *) text_prop.value);
+  if (! blackbox->netwm()->readWMName(client.window, name) || name.empty()) {
+    if (XGetWMName(blackbox->getXDisplay(), client.window, &text_prop)) {
+      name = textPropertyToString(blackbox->getXDisplay(), text_prop);
+      XFree((char *) text_prop.value);
+    }
   }
+
   if (! name.empty())
     client.title = name;
   else

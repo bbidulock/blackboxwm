@@ -63,6 +63,7 @@ public:
   inline Atom closeWindow(void) const { return net_close_window; }
 
   void setWMName(Window target, const std::string& name) const;
+  bool readWMName(Window target, std::string& name) const;
 
   // application properties
   inline Atom wmName(void) const { return net_wm_name; }
@@ -72,6 +73,9 @@ public:
 private:
   Netwm(const Netwm&);
   Netwm& operator=(const Netwm&);
+
+  bool getUTF8StringProperty(Window target, Atom property,
+                             std::string& value) const;
 
   Display *display;
   Atom utf8_string,
