@@ -67,7 +67,6 @@ private:
   Basemenu& operator=(const Basemenu&);
 
 protected:
-  BasemenuItem *find(int index);
   inline void setTitleVisibility(bool b) { title_vis = b; }
   inline void setMovable(bool b) { movable = b; }
   inline void setHideTree(bool h) { hide_tree = h; }
@@ -121,6 +120,7 @@ public:
   bool hasSubmenu(int index);
   bool isItemSelected(int index);
   bool isItemEnabled(int index);
+  BasemenuItem *find(int index);
 
   void buttonPressEvent(XButtonEvent *be);
   void buttonReleaseEvent(XButtonEvent *be);

@@ -774,7 +774,8 @@ void BlackboxWindow::positionWindows(void) {
   XMoveResizeWindow(blackbox->getXDisplay(), frame.window,
                     frame.rect.x(), frame.rect.y(), frame.inside_w,
                     (flags.shaded) ? frame.title_h : frame.inside_h);
-  XSetWindowBorderWidth(blackbox->getXDisplay(), frame.window, frame.border_w);
+  XSetWindowBorderWidth(blackbox->getXDisplay(), frame.window,
+                        frame.border_w);
   XSetWindowBorderWidth(blackbox->getXDisplay(), frame.plate,
                         frame.mwm_border_w);
   XMoveResizeWindow(blackbox->getXDisplay(), frame.plate,
@@ -1323,7 +1324,7 @@ bool BlackboxWindow::setInputFocus(void) {
     return True;
   }
 
-  if (! client.rect.intersects(screen->getRect())) {
+  if (! frame.rect.intersects(screen->getRect())) {
     // client is outside the screen, move it to the center
     configure((screen->getWidth() - frame.rect.width()) / 2,
               (screen->getHeight() - frame.rect.height()) / 2,
@@ -2933,7 +2934,8 @@ void BlackboxWindow::upsize(void) {
   }
 
   // set the left/right frame margin
-  frame.margin.left = frame.margin.right = frame.border_w + frame.mwm_border_w;
+  frame.margin.left = frame.margin.right =
+    frame.border_w + frame.mwm_border_w;
 
   if (decorations & Decor_Handle) {
     frame.grip_w = frame.button_w * 2;

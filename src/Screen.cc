@@ -414,6 +414,7 @@ void BScreen::reconfigure(void) {
   iconmenu->reconfigure();
 
   int remember_sub = rootmenu->getCurrentSubmenu();
+
   InitMenu();
   raiseWindows(0, 0);
   rootmenu->reconfigure();
@@ -789,7 +790,6 @@ void BScreen::changeWorkspaceID(unsigned int id) {
   if (! current_workspace) return;
 
   if (id != current_workspace->getID()) {
-    fprintf(stderr, "leaving %d for %d\n", current_workspace->getID(), id);
     BlackboxWindow *focused = blackbox->getFocusedWindow();
     if (focused && focused->getScreen() == this && ! focused->isStuck()) {
       if (focused->getWorkspaceNumber() != current_workspace->getID()) {
