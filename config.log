@@ -1,0 +1,138 @@
+This file contains any messages produced by compilers while
+running configure, to aid debugging if configure makes a mistake.
+
+configure:569: checking for a BSD compatible install
+configure:622: checking whether build environment is sane
+configure:679: checking whether make sets ${MAKE}
+configure:718: checking for working aclocal
+configure:731: checking for working autoconf
+configure:744: checking for working automake
+configure:757: checking for working autoheader
+configure:770: checking for working makeinfo
+configure:789: checking for gcc
+configure:902: checking whether the C compiler (gcc -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions ) works
+configure:918: gcc -o conftest -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions   conftest.c  1>&5
+configure:915: warning: return-type defaults to `int'
+configure:944: checking whether the C compiler (gcc -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions ) is a cross-compiler
+configure:949: checking whether we are using GNU C
+configure:958: gcc -E conftest.c
+configure:977: checking whether gcc accepts -g
+configure:1009: checking how to run the C preprocessor
+configure:1030: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1089: checking for AIX
+configure:1113: checking for POSIXized ISC
+configure:1139: checking for c++
+configure:1171: checking whether the C++ compiler (gcc -pipe -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions ) works
+configure:1187: gcc -pipe -o conftest -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions   conftest.C  1>&5
+configure:1213: checking whether the C++ compiler (gcc -pipe -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions ) is a cross-compiler
+configure:1218: checking whether we are using GNU C++
+configure:1227: gcc -pipe -E conftest.C
+configure:1246: checking whether gcc -pipe accepts -g
+configure:1289: checking for a BSD compatible install
+configure:1347: checking for sed
+configure:1381: checking for ANSI C header files
+configure:1394: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1461: gcc -o conftest -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions   conftest.c  1>&5
+configure:1488: checking for fcntl.h
+configure:1498: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1488: checking for libgen.h
+configure:1498: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1488: checking for locale.h
+configure:1498: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1488: checking for malloc.h
+configure:1498: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1488: checking for process.h
+configure:1498: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1494: process.h: No such file or directory
+configure: failed program was:
+#line 1493 "configure"
+#include "confdefs.h"
+#include <process.h>
+configure:1488: checking for signal.h
+configure:1498: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1488: checking for stdio.h
+configure:1498: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1488: checking for time.h
+configure:1498: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1488: checking for unistd.h
+configure:1498: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1488: checking for sys/param.h
+configure:1498: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1488: checking for sys/select.h
+configure:1498: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1488: checking for sys/stat.h
+configure:1498: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1488: checking for sys/time.h
+configure:1498: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1488: checking for sys/types.h
+configure:1498: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1488: checking for sys/wait.h
+configure:1498: gcc -E  conftest.c >/dev/null 2>conftest.out
+configure:1525: checking whether time.h and sys/time.h may both be included
+configure:1539: gcc -c -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions  conftest.c 1>&5
+configure: In function `main':
+configure:1535: warning: unused variable `tp'
+configure:1563: checking for basename
+configure:1591: gcc -o conftest -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions   conftest.c  1>&5
+configure:1658: checking for setlocale
+configure:1686: gcc -o conftest -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions   conftest.c  1>&5
+configure:1658: checking for strftime
+configure:1686: gcc -o conftest -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions   conftest.c  1>&5
+configure:1716: checking for X
+configure:2030: checking for dnet_ntoa in -ldnet
+configure:2049: gcc -o conftest -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions   conftest.c -ldnet   1>&5
+/usr/bin/ld: cannot open -ldnet: No such file or directory
+collect2: ld returned 1 exit status
+configure: failed program was:
+#line 2038 "configure"
+#include "confdefs.h"
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char dnet_ntoa();
+
+int main() {
+dnet_ntoa()
+; return 0; }
+configure:2071: checking for dnet_ntoa in -ldnet_stub
+configure:2090: gcc -o conftest -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions   conftest.c -ldnet_stub   1>&5
+/usr/bin/ld: cannot open -ldnet_stub: No such file or directory
+collect2: ld returned 1 exit status
+configure: failed program was:
+#line 2079 "configure"
+#include "confdefs.h"
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char dnet_ntoa();
+
+int main() {
+dnet_ntoa()
+; return 0; }
+configure:2119: checking for gethostbyname
+configure:2147: gcc -o conftest -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions   conftest.c  1>&5
+configure:2217: checking for connect
+configure:2245: gcc -o conftest -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions   conftest.c  1>&5
+configure:2309: checking for remove
+configure:2337: gcc -o conftest -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions   conftest.c  1>&5
+configure:2401: checking for shmat
+configure:2429: gcc -o conftest -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions   conftest.c  1>&5
+configure:2502: checking for IceConnectionNumber in -lICE
+configure:2521: gcc -o conftest -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions   -L/usr/X11R6/lib conftest.c -lICE   1>&5
+configure:2556: checking for XOpenDisplay in -lX11
+configure:2575: gcc -o conftest -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions  -I/usr/X11R6/include   conftest.c -lX11    -L/usr/X11R6/lib 1>&5
+configure:2604: checking whether to build support for the XShape extension
+configure:2616: checking for XShapeCombineShape in -lXext
+configure:2635: gcc -o conftest -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions  -I/usr/X11R6/include   conftest.c -lXext    -L/usr/X11R6/lib -lX11  1>&5
+configure:2651: checking for X11/extensions/shape.h
+configure:2663: gcc -o conftest -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions  -I/usr/X11R6/include   conftest.c   -L/usr/X11R6/lib -lX11  1>&5
+configure: In function `main':
+configure:2659: warning: unused variable `foo'
+configure:2689: checking whether to build support for KDE
+configure:2708: checking whether to include the Slit
+configure:2729: checking whether to include interlacing image code
+configure:2748: checking return type of signal handlers
+configure:2770: gcc -c -Wall -W -O6 -march=pentium -malign-functions=4 -malign-jumps=4 -malign-loops=4 -fomit-frame-pointer -fforce-addr -fforce-mem -fno-exceptions  -I/usr/X11R6/include  conftest.c 1>&5
+configure: In function `main':
+configure:2766: warning: unused variable `i'
+configure:2790: checking whether to enable maintainer-specific portions of Makefiles
