@@ -77,7 +77,8 @@ private:
 
 
 public:
-  BImage(BImageControl *c, unsigned int w, unsigned int h);
+  // take signed ints so we can catch improper sizes
+  BImage(BImageControl *c, int w, int h);
   ~BImage(void);
 
   Pixmap render(const BTexture &texture);
