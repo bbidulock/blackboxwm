@@ -1,6 +1,7 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 #include "Unicode.hh"
 
+#include <errno.h>
 #include <iconv.h>
 #include <locale.h>
 #include <stdio.h>
