@@ -48,7 +48,11 @@ LDFLAGS="$LDFLAGS $LIBS $X_PRE_LIBS"
 AC_MSG_CHECKING(for g++)
 if test x$GXX = "xyes"; then
   AC_MSG_RESULT([yes])
-  CXXFLAGS="${CXXFLAGS} -Wall -W -pedantic -Woverloaded-virtual -Wshadow"
+  CXXFLAGS="${CXXFLAGS} -Wall -W -pedantic"
+  gxx_ver=`$CXX -dumpversion|sed -e 's/\..*//'`
+  if test $gxx_ver -ge 3; then
+    CXXFLAGS="${CXXFLAGS} -Woverloaded-virtual -Wshadow"
+  fi
 else
   AC_MSG_RESULT([no, trying other compilers])
   AC_MSG_CHECKING(for MIPSpro)
