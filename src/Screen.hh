@@ -198,7 +198,7 @@ public:
   enum { RoundBullet = 1, TriangleBullet, SquareBullet, NoBullet };
   enum { Restart = 1, RestartOther, Exit, Shutdown, Execute, Reconfigure,
          WindowShade, WindowIconify, WindowMaximize, WindowClose, WindowRaise,
-         WindowLower, WindowStick, WindowKill, SetStyle };
+         WindowLower, WindowKill, SetStyle };
   enum FocusModel { SloppyFocus, ClickToFocus };
 
   BScreen(Blackbox *bb, unsigned int scrn);
@@ -344,8 +344,7 @@ public:
   void manageWindow(Window w);
   void unmanageWindow(BlackboxWindow *w, bool remap);
   void raiseWindows(Window *workspace_stack, unsigned int num);
-  void reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id,
-                         bool ignore_sticky);
+  void reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id);
   void propagateWindowName(const BlackboxWindow *bw);
   void nextFocus(void) const;
   void prevFocus(void) const;

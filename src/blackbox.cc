@@ -386,8 +386,7 @@ void Blackbox::process_event(XEvent *e) {
             win->deiconify(False, False);
 
           BScreen *screen = win->getScreen();
-          if (! win->isStuck() &&
-              win->getWorkspaceNumber() != screen->getCurrentWorkspaceID())
+          if (win->getWorkspaceNumber() != screen->getCurrentWorkspaceID())
             screen->changeWorkspaceID(win->getWorkspaceNumber());
 
           if (win->isVisible() && win->setInputFocus()) {

@@ -131,7 +131,6 @@ private:
       visible,               // is visible?
       iconic,                // is iconified?
       focused,               // has focus?
-      stuck,                 // is omnipresent
       modal,                 // is modal? (must be dismissed to continue)
       send_focus_message,    // should we send focus messages to our client?
       shaped;                // does the frame use the shape extension?
@@ -285,7 +284,6 @@ public:
   inline bool isShaded(void) const { return flags.shaded; }
   inline bool isMaximized(void) const { return flags.maximized; }
   inline bool isModal(void) const { return flags.modal; }
-  inline bool isStuck(void) const { return flags.stuck; }
   inline bool isIconifiable(void) const { return functions & Func_Iconify; }
   inline bool isMaximizable(void) const { return functions & Func_Maximize; }
   inline bool isResizable(void) const { return functions & Func_Resize; }
@@ -336,7 +334,6 @@ public:
   void maximize(unsigned int button);
   void remaximize(void);
   void shade(void);
-  void stick(void);
   void reconfigure(void);
   void grabButtons(void);
   void ungrabButtons(void);

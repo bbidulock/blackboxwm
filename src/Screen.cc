@@ -276,7 +276,6 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
                                          workspacesList.size());
   blackbox->netwm()->setDesktopGeometry(getRootWindow(),
                                         getWidth(), getHeight());
-  blackbox->netwm()->setDesktopViewport(getRootWindow(), 0, 0);
   blackbox->netwm()->setActiveWindow(getRootWindow(), None);
   blackbox->netwm()->setWorkarea(getRootWindow(), 0, 0,
                                  usableArea.width(), usableArea.height());
@@ -284,7 +283,6 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   Atom supported[] = {
     blackbox->netwm()->numberOfDesktops(),
     blackbox->netwm()->desktopGeometry(),
-    blackbox->netwm()->desktopViewport(),
     blackbox->netwm()->currentDesktop(),
     blackbox->netwm()->activeWindow(),
     blackbox->netwm()->workarea(),
@@ -293,7 +291,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
     blackbox->netwm()->wmIconName()
   };
 
-  blackbox->netwm()->setSupported(getRootWindow(), supported, 9);
+  blackbox->netwm()->setSupported(getRootWindow(), supported, 8);
 
   unsigned int i, j, nchild;
   Window r, p, *children;
@@ -378,8 +376,6 @@ BScreen::~BScreen(void) {
                                     blackbox->netwm()->numberOfDesktops());
   blackbox->netwm()->removeProperty(getRootWindow(),
                                     blackbox->netwm()->desktopGeometry());
-  blackbox->netwm()->removeProperty(getRootWindow(),
-                                    blackbox->netwm()->desktopViewport());
   blackbox->netwm()->removeProperty(getRootWindow(),
                                     blackbox->netwm()->currentDesktop());
   blackbox->netwm()->removeProperty(getRootWindow(),
@@ -1114,8 +1110,7 @@ const std::string BScreen::getNameOfWorkspace(unsigned int id) {
 }
 
 
-void BScreen::reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id,
-                                bool ignore_sticky) {
+void BScreen::reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id) {
   if (! w) return;
 
   if (wkspc_id == BSENTINEL)
@@ -1127,7 +1122,7 @@ void BScreen::reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id,
   if (w->isIconic()) {
     removeIcon(w);
     getWorkspace(wkspc_id)->addWindow(w);
-  } else if (ignore_sticky || ! w->isStuck()) {
+  } else {
     getWorkspace(w->getWorkspaceNumber())->removeWindow(w);
     getWorkspace(wkspc_id)->addWindow(w);
   }

@@ -59,8 +59,6 @@ Windowmenu::Windowmenu(BlackboxWindow *win) : Basemenu(win->getScreen()) {
          BScreen::WindowRaise);
   insert(i18n(WindowmenuSet, WindowmenuLower, "Lower"),
          BScreen::WindowLower);
-  insert(i18n(WindowmenuSet, WindowmenuStick, "Stick"),
-         BScreen::WindowStick);
   insert(i18n(WindowmenuSet, WindowmenuKillClient, "Kill Client"),
          BScreen::WindowKill);
   insert(i18n(WindowmenuSet, WindowmenuClose, "Close"),
@@ -71,7 +69,7 @@ Windowmenu::Windowmenu(BlackboxWindow *win) : Basemenu(win->getScreen()) {
   setItemEnabled(1, window->hasTitlebar());
   setItemEnabled(2, window->isIconifiable());
   setItemEnabled(3, window->isMaximizable());
-  setItemEnabled(8, window->isClosable());
+  setItemEnabled(7, window->isClosable());
 }
 
 
@@ -83,7 +81,6 @@ Windowmenu::~Windowmenu(void) {
 void Windowmenu::show(void) {
   if (isItemEnabled(1)) setItemSelected(1, window->isShaded());
   if (isItemEnabled(3)) setItemSelected(3, window->isMaximized());
-  if (isItemEnabled(6)) setItemSelected(6, window->isStuck());
 
   Basemenu::show();
 }
@@ -127,10 +124,6 @@ void Windowmenu::itemSelected(int button, unsigned int index) {
   }
     break;
 
-  case BScreen::WindowStick:
-    window->stick();
-    break;
-
   case BScreen::WindowKill:
     XKillClient(getScreen()->getBaseDisplay()->getXDisplay(),
                 window->getClientWindow());
@@ -143,7 +136,7 @@ void Windowmenu::reconfigure(void) {
   setItemEnabled(1, window->hasTitlebar());
   setItemEnabled(2, window->isIconifiable());
   setItemEnabled(3, window->isMaximizable());
-  setItemEnabled(8, window->isClosable());
+  setItemEnabled(7, window->isClosable());
 
   sendToMenu->reconfigure();
 
@@ -169,10 +162,9 @@ void Windowmenu::SendtoWorkspacemenu::itemSelected(int button,
 
   if (index <= getScreen()->getWorkspaceCount()) {
     if (index == getScreen()->getCurrentWorkspaceID()) return;
-    if (window->isStuck()) window->stick();
 
     if (button == 1) window->withdraw();
-    getScreen()->reassociateWindow(window, index, True);
+    getScreen()->reassociateWindow(window, index);
     if (button == 2) getScreen()->changeWorkspaceID(index);
   }
   hide();

@@ -109,7 +109,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
                           CWEventMask|CWDontPropagate, &attrib_set);
 
   flags.moving = flags.resizing = flags.shaded = flags.visible =
-    flags.iconic = flags.focused = flags.stuck = flags.modal =
+    flags.iconic = flags.focused = flags.modal =
     flags.send_focus_message = flags.shaped = False;
   flags.maximized = 0;
 
@@ -277,11 +277,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     */
     if (initial_state != IconicState)
       current_state = NormalState;
-  }
-
-  if (flags.stuck) {
-    flags.stuck = False;
-    stick();
   }
 
   if (flags.maximized && (functions & Func_Maximize))
@@ -1168,9 +1163,6 @@ bool BlackboxWindow::getBlackboxHints(void) {
   else if (blackbox_hint->flags & AttribMaxHoriz)
     flags.maximized = (blackbox_hint->attrib & AttribMaxHoriz) ? 3 : 0;
 
-  if (blackbox_hint->flags & AttribOmnipresent)
-    flags.stuck = (blackbox_hint->attrib & AttribOmnipresent);
-
   if (blackbox_hint->flags & AttribWorkspace)
     blackbox_attrib.workspace = blackbox_hint->workspace;
 
@@ -1276,7 +1268,6 @@ void BlackboxWindow::getTransientInfo(void) {
   if (client.transient_for) {
     // register ourselves with our new transient_for
     client.transient_for->client.transientList.push_back(this);
-    flags.stuck = client.transient_for->flags.stuck;
   }
 }
 
@@ -1402,8 +1393,8 @@ bool BlackboxWindow::setInputFocus(void) {
   if (! validateClient()) return False;
 
   assert(! flags.iconic &&
-         (flags.stuck ||  // window must be on the current workspace or sticky
-          blackbox_attrib.workspace == screen->getCurrentWorkspaceID()));
+         // window must be on the current workspace
+         blackbox_attrib.workspace == screen->getCurrentWorkspaceID());
 
   if (! frame.rect.intersects(screen->getRect())) {
     // client is outside the screen, move it to the center
@@ -1544,7 +1535,7 @@ void BlackboxWindow::show(void) {
 
 void BlackboxWindow::deiconify(bool reassoc, bool raise) {
   if (flags.iconic || reassoc)
-    screen->reassociateWindow(this, BSENTINEL, False);
+    screen->reassociateWindow(this, BSENTINEL);
   else if (blackbox_attrib.workspace != screen->getCurrentWorkspaceID())
     return;
 
@@ -1761,28 +1752,6 @@ void BlackboxWindow::shade(void) {
 }
 
 
-void BlackboxWindow::stick(void) {
-  if (flags.stuck) {
-    blackbox_attrib.flags ^= AttribOmnipresent;
-    blackbox_attrib.attrib ^= AttribOmnipresent;
-
-    flags.stuck = False;
-
-    if (! flags.iconic)
-      screen->reassociateWindow(this, BSENTINEL, True);
-
-    setState(current_state);
-  } else {
-    flags.stuck = True;
-
-    blackbox_attrib.flags |= AttribOmnipresent;
-    blackbox_attrib.attrib |= AttribOmnipresent;
-
-    setState(current_state);
-  }
-}
-
-
 void BlackboxWindow::redrawWindowFrame(void) const {
   if (decorations & Decor_Titlebar) {
     if (flags.focused) {
@@ -1986,7 +1955,7 @@ void BlackboxWindow::restoreAttributes(void) {
 
   if (net->workspace != screen->getCurrentWorkspaceID() &&
       net->workspace < screen->getWorkspaceCount()) {
-    screen->reassociateWindow(this, net->workspace, True);
+    screen->reassociateWindow(this, net->workspace);
 
     // set to WithdrawnState so it will be mapped on the new workspace
     if (current_state == NormalState) current_state = WithdrawnState;
@@ -1994,15 +1963,6 @@ void BlackboxWindow::restoreAttributes(void) {
     // the window is on this workspace and is Withdrawn, so it is waiting to
     // be mapped
     current_state = NormalState;
-  }
-
-  if (net->flags & AttribOmnipresent && net->attrib & AttribOmnipresent) {
-    flags.stuck = False;
-    stick();
-
-    // if the window was on another workspace, it was going to be hidden. this
-    // specifies that the window should be mapped since it is sticky.
-    if (current_state == WithdrawnState) current_state = NormalState;
   }
 
   if (net->flags & AttribMaxHoriz || net->flags & AttribMaxVert) {
@@ -3062,14 +3022,9 @@ void BlackboxWindow::changeBlackboxHints(const BlackboxHints *net) {
     }
   }
 
-  if ((net->flags & AttribOmnipresent) &&
-      ((blackbox_attrib.attrib & AttribOmnipresent) !=
-       (net->attrib & AttribOmnipresent)))
-    stick();
-
   if ((net->flags & AttribWorkspace) &&
       (blackbox_attrib.workspace != net->workspace)) {
-    screen->reassociateWindow(this, net->workspace, True);
+    screen->reassociateWindow(this, net->workspace);
 
     if (screen->getCurrentWorkspaceID() != net->workspace) {
       withdraw();

@@ -99,14 +99,6 @@ unsigned int Workspace::removeWindow(BlackboxWindow *w) {
   if ((w->isFocused() || w == lastfocus) &&
       ! screen->getBlackbox()->doShutdown()) {
     focusFallback(w);
-
-    // if the window is sticky, then it needs to be removed on all other
-    // workspaces too!
-    if (w->isStuck()) {
-      for (unsigned int i = 0; i < screen->getWorkspaceCount(); ++i)
-        if (i != id)
-          screen->getWorkspace(i)->focusFallback(w);
-    }
   }
 
   windowList.remove(w);
@@ -377,7 +369,7 @@ unsigned int Workspace::getCount(void) const {
 void Workspace::hide(void) {
   BlackboxWindow *focused = screen->getBlackbox()->getFocusedWindow();
   if (focused && focused->getScreen() == screen) {
-    assert(focused->isStuck() || focused->getWorkspaceNumber() == id);
+    assert(focused->getWorkspaceNumber() == id);
 
     lastfocus = focused;
   } else {
@@ -394,8 +386,7 @@ void Workspace::hide(void) {
   const BlackboxWindowList::reverse_iterator end = stackingList.rend();
   for (; it != end; ++it) {
     BlackboxWindow *bw = *it;
-    if (! bw->isStuck())
-      bw->withdraw();
+    bw->withdraw();
   }
 }
 

@@ -41,7 +41,6 @@ public:
   inline Atom supported(void) const { return net_supported; }
   inline Atom numberOfDesktops(void) const { return net_number_of_desktops; }
   inline Atom desktopGeometry(void) const { return net_desktop_geometry; }
-  inline Atom desktopViewport(void) const { return net_desktop_viewport; }
   inline Atom currentDesktop(void) const { return net_current_desktop; }
   inline Atom activeWindow(void) const { return net_active_window; }
   inline Atom workarea(void) const { return net_workarea; }
@@ -51,8 +50,6 @@ public:
   void setNumberOfDesktops(Window target, unsigned int count) const;
   void setDesktopGeometry(Window target,
                           unsigned int width, unsigned int height) const;
-  void setDesktopViewport(Window target,
-                          unsigned int x, unsigned int y) const;
   void setCurrentDesktop(Window target, unsigned int number) const;
   void setActiveWindow(Window target, Window data) const;
   void setWorkarea(Window target, unsigned int x, unsigned int y,
@@ -83,8 +80,8 @@ private:
   Display *display;
   Atom utf8_string,
     net_supported, net_number_of_desktops, net_desktop_geometry,
-    net_desktop_viewport, net_current_desktop, net_active_window,
-    net_workarea, net_supporting_wm_check, net_close_window, net_wm_name,
+    net_current_desktop, net_active_window, net_workarea,
+    net_supporting_wm_check, net_close_window, net_wm_name,
     net_wm_icon_name;
 };
 
