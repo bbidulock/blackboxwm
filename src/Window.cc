@@ -42,6 +42,8 @@ extern "C" {
 #ifdef HAVE_STDLIB_H
    #include <stdlib.h>
 #endif // HAVE_STDLIB_H
+
+  #include <assert.h>
 }
 
 #include "i18n.hh"
