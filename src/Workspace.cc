@@ -210,7 +210,7 @@ Workspace::Workspace(BScreen *scrn, unsigned int i) {
 
 
 void Workspace::addWindow(BlackboxWindow *w, bool place) {
-  assert(w != 0);
+  assert(! (w == 0 || w->isIconic()));
 
   if (place) placeWindow(w);
 
@@ -220,8 +220,7 @@ void Workspace::addWindow(BlackboxWindow *w, bool place) {
 
   stackingList.insert(w);
 
-  if (! w->isIconic())
-    raiseWindow(w);
+  raiseWindow(w);
 }
 
 
