@@ -105,7 +105,9 @@ unsigned int Workspace::removeWindow(BlackboxWindow *w) {
     } else if (screen->isSloppyFocus()) {
       screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
     } else {
-      BlackboxWindow *top = stackingList.front();
+      BlackboxWindow *top = 0;
+      if (stackingList.size() > 0)
+        top = stackingList.front();
       if (! top || ! top->setInputFocus()) {
         screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
         XSetInputFocus(screen->getBlackbox()->getXDisplay(),
