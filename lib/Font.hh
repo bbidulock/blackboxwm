@@ -50,75 +50,38 @@ namespace bt {
 
   class Font {
   public:
-    explicit Font(const std::string &name = std::string(),
-                  const Display * const dpy = 0);
+    static void clearCache(void);
+
+    explicit Font(const std::string &name = std::string());
     ~Font(void);
 
-    inline const Display *display(void) const { return _dpy; }
-    void setDisplay(const Display * const dpy);
+    const std::string& fontName(void) const { return _fontname; }
+    void setFontName(const std::string &new_fontname)
+    { unload(); _fontname = new_fontname; }
 
-    inline const std::string& fontname(void) const { return _fontname; }
+    XFontSet fontset(void) const;
+    XFontStruct *font(void) const;
 
-    inline XFontSet fontset(void) const { return _fontset; }
-    inline XFontStruct *font(void) const { return _font; }
-
-    Font& operator=(const Font &f);
-    inline bool operator==(const Font &f)
+    Font& operator=(const Font &f)
+    { setFontName(f.fontName()); return *this; }
+    bool operator==(const Font &f) const
     { return _fontname == f._fontname; }
-    inline bool operator!=(const Font &f)
+    bool operator!=(const Font &f) const
     { return (! operator==(f)); }
 
   private:
-    void load(void);
-    XFontSet load_fontset(const std::string &name);
     void unload(void);
 
     std::string _fontname;
-    const Display *_dpy;
-    XFontSet _fontset;
-    XFontStruct *_font;
-
-    // global font cache
-    struct FontRef {
-      XFontSet fontset;
-      XFontStruct *font;
-      unsigned int count;
-      inline FontRef(void)
-        : fontset(NULL), font(NULL), count(0u) { }
-      inline FontRef(XFontSet fs, XFontStruct *f)
-        : fontset(fs), font(f), count(1u) { }
-    };
-    typedef std::map<std::string,FontRef> FontCache;
-    typedef FontCache::value_type FontCacheItem;
-    static FontCache fontcache;
-
-    // xlfd parser
-    enum xlfd_parts {
-      xp_foundry,
-      xp_family,
-      xp_weight,
-      xp_slant,
-      xp_width,
-      xp_addstyle,
-      xp_pixels,
-      xp_points,
-      xp_resx,
-      xp_resy,
-      xp_space,
-      xp_avgwidth,
-      xp_regsitry,
-      xp_encoding,
-      xp_count
-    };
-    typedef std::vector<std::string> xlfd_vector;
-    static xlfd_vector parse_xlfd(const std::string &xlfd);
+    mutable XFontSet _fontset;
+    mutable XFontStruct *_font;
   };
 
   unsigned int textHeight(const Font &font);
 
   Rect textRect(const Font &font, const std::string &text);
 
-  void drawText(const Font &font, const Pen &pen, Window window,
+  void drawText(const Font &font, Pen &pen, Window window,
                 const Rect &rect, Alignment alignment,
                 const std::string &text);
 
