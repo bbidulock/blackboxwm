@@ -44,15 +44,25 @@ namespace bt {
   void createPenCache(const Display &display);
   void destroyPenCache(void);
 
+
   void createPixmapCache(const Display &display);
   void destroyPixmapCache(void);
+
+
+  void destroyColorTables(void);
+
+
+#ifdef    MITSHM
+  void startupShm(const Display &display);
+  void shutdownShm(const Display &display);
+#endif // MITSHM
 
 } // namespace bt
 
 
 bt::Display::Display(const char *dpy_name) {
   if (! (xdisplay = XOpenDisplay(dpy_name)))
-      ::exit(2);
+    ::exit(2);
 
   if (fcntl(ConnectionNumber(xdisplay), F_SETFD, 1) == -1)
     ::exit(2);
@@ -65,17 +75,26 @@ bt::Display::Display(const char *dpy_name) {
   createFontCache(*this);
   createPenCache(*this);
   createPixmapCache(*this);
+
+#ifdef    MITSHM
+  startupShm(*this);
+#endif // MITSHM
 }
 
 
 bt::Display::~Display() {
+#ifdef    MITSHM
+  shutdownShm(*this);
+#endif // MITSHM
+
+  destroyColorTables();
   destroyPixmapCache();
   destroyPenCache();
   destroyFontCache();
   destroyColorCache();
 
   std::for_each(screenInfoList.begin(), screenInfoList.end(),
-           bt::PointerAssassin());
+                bt::PointerAssassin());
 
   XCloseDisplay(xdisplay);
 }

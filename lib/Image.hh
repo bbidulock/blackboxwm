@@ -37,12 +37,19 @@ extern "C" {
 
 
 namespace bt {
+
   class Display;
   class ScreenInfo;
   class Texture;
   class XColorTable;
 
   enum DitherMode { NoDither, OrderedDither, FloydSteinbergDither };
+
+  struct RGB {
+    unsigned int red   : 8;
+    unsigned int green : 8;
+    unsigned int blue  : 8;
+  };
 
   class Image {
   public:
@@ -63,7 +70,7 @@ namespace bt {
                   const Texture &texture);
 
   private:
-    unsigned char *red, *green, *blue;
+    RGB *data;
     unsigned int width, height;
 
     void OrderedDither(XColorTable *colortable,
@@ -76,7 +83,6 @@ namespace bt {
                               unsigned char *pixel_data);
 
     Pixmap renderPixmap(const Display &display, unsigned int screen);
-    XImage *renderXImage(const Display &display, unsigned int screen);
 
     void invert(void);
     void bevel(unsigned int border_width = 0);
@@ -89,13 +95,8 @@ namespace bt {
     void cdgradient(const Color &from, const Color &to, bool interlaced);
     void pcgradient(const Color &from, const Color &to, bool interlaced);
 
-    typedef std::vector<unsigned char> Buffer;
-    static Buffer buffer;
     static unsigned int global_colorsPerChannel;
     static DitherMode global_ditherMode;
-
-    typedef std::vector<XColorTable*> XColorTableList;
-    static XColorTableList colorTableList;
   };
 
 } // namespace bt
