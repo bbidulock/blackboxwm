@@ -26,6 +26,8 @@ extern "C" {
 #include <fcntl.h>
 }
 
+#include <algorithm>
+
 #include "Display.hh"
 
 

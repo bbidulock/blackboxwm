@@ -29,6 +29,8 @@ extern "C" {
 #include <stdio.h>
 }
 
+#include <algorithm>
+
 #include "Pen.hh"
 #include "Display.hh"
 #include "Color.hh"

@@ -27,6 +27,7 @@
 
 extern "C" {
 #include <X11/keysym.h>
+#include <assert.h>
 
 #ifdef HAVE_STRING_H
 #  include <string.h>
