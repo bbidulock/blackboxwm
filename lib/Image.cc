@@ -484,7 +484,7 @@ unsigned long bt::XColorTable::pixel(unsigned int red,
 
 
 bt::Image::Image(unsigned int w, unsigned int h)
-  :  width(w), height(h), data(0) {
+  : data(0), width(w), height(h) {
   assert(width > 0);
   assert(height > 0);
 }
