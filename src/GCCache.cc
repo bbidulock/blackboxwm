@@ -183,7 +183,7 @@ BGCCacheItem *BGCCache::find(const BColor &_color,
 
 
 void BGCCache::release(BGCCacheItem *_item) {
-  --_item->count;
+  _item->count--;
 }
 
 
