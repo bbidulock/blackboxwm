@@ -204,7 +204,8 @@ BasemenuItem::~BasemenuItem(void) {}
 
 
 BasemenuItem *Basemenu::find(int index) {
-  if (index < 0 || index > (signed) menuitems.size()) return (BasemenuItem*) 0;
+  if (index < 0 || index > static_cast<signed>(menuitems.size()))
+    return (BasemenuItem*) 0;
 
   return *(menuitems.begin() + index);
 }
@@ -214,7 +215,7 @@ int Basemenu::insert(BasemenuItem *item, int pos) {
   if (pos < 0) {
     menuitems.push_back(item);
   } else {
-    assert(pos < (signed)menuitems.size());
+    assert(pos < static_cast<signed>(menuitems.size()));
     menuitems.insert((menuitems.begin() + pos), item);
   }
   return menuitems.size();
@@ -408,7 +409,8 @@ void Basemenu::update(void) {
 
   if (title_vis && visible) redrawTitle();
 
-  for (int i = 0; visible && i < (signed)menuitems.size(); i++) {
+  const int menu_size = menuitems.size();
+  for (int i = 0; visible && i < menu_size; i++) {
     if (i == which_sub) {
       drawItem(i, True, 0);
       drawSubmenu(i);
@@ -651,8 +653,8 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clear,
                False);
   } else if (! (x == y && y == -1 && w == h && h == 0)) {
     // calculate the which part of the hilite to redraw
-    if (! (max(item_x, x) <= (signed) min(item_x + menu.item_w, x + w) &&
-           max(item_y, y) <= (signed) min(item_y + menu.item_h, y + h))) {
+    if (! (max(item_x, x) <= min<signed>(item_x + menu.item_w, x + w) &&
+           max(item_y, y) <= min<signed>(item_y + menu.item_h, y + h))) {
       dohilite = False;
     } else {
       hilite_x = max(item_x, x);
@@ -665,13 +667,13 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clear,
 
     // check if we need to redraw the text
     int text_ry = item_y + (menu.bevel_w / 2);
-    if (! (max(text_x, x) <= (signed) min(text_x + text_w, x + w) &&
-           max(text_ry, y) <= (signed) min(text_ry + text_h, y + h)))
+    if (! (max(text_x, x) <= min<signed>(text_x + text_w, x + w) &&
+           max(text_ry, y) <= min<signed>(text_ry + text_h, y + h)))
       dotext = False;
 
     // check if we need to redraw the select pixmap/menu bullet
-    if (! (max(sel_x, x) <= (signed) min(sel_x + half_w, x + w) &&
-           max(sel_y, y) <= (signed) min(sel_y + half_w, y + h)))
+    if (! (max(sel_x, x) <= min<signed>(sel_x + half_w, x + w) &&
+           max(sel_y, y) <= min<signed>(sel_y + half_w, y + h)))
       dosel = False;
   }
 
@@ -820,13 +822,13 @@ void Basemenu::buttonReleaseEvent(XButtonEvent *re) {
         drawSubmenu(which_sub);
     }
 
-    if (re->x >= 0 && re->x <= (signed) menu.width &&
-        re->y >= 0 && re->y <= (signed) menu.title_h)
+    if (re->x >= 0 && re->x <= static_cast<signed>(menu.width) &&
+        re->y >= 0 && re->y <= static_cast<signed>(menu.title_h))
       if (re->button == 3)
         hide();
   } else if (re->window == menu.frame &&
-             re->x >= 0 && re->x < (signed) menu.width &&
-             re->y >= 0 && re->y < (signed) menu.frame_h) {
+             re->x >= 0 && re->x < static_cast<signed>(menu.width) &&
+             re->y >= 0 && re->y < static_cast<signed>(menu.frame_h)) {
     if (re->button == 3) {
       hide();
     } else {
@@ -835,12 +837,12 @@ void Basemenu::buttonReleaseEvent(XButtonEvent *re) {
         w = (sbl * menu.persub) + i,
         p = (which_sbl * menu.persub) + which_press;
 
-      if (w >= 0 && w < (signed)menuitems.size()) {
+      if (w >= 0 && w < static_cast<signed>(menuitems.size())) {
         drawItem(p, (p == which_sub), True);
 
         if  (p == w && isItemEnabled(w)) {
-          if (re->x > ix && re->x < (signed) (ix + menu.item_w) &&
-              re->y > iy && re->y < (signed) (iy + menu.item_h)) {
+          if (re->x > ix && re->x < static_cast<signed>(ix + menu.item_w) &&
+              re->y > iy && re->y < static_cast<signed>(iy + menu.item_h)) {
             itemSelected(re->button, w);
           }
         }
@@ -875,13 +877,13 @@ void Basemenu::motionNotifyEvent(XMotionEvent *me) {
       }
     }
   } else if ((! (me->state & Button1Mask)) && me->window == menu.frame &&
-             me->x >= 0 && me->x < (signed) menu.width &&
-             me->y >= 0 && me->y < (signed) menu.frame_h) {
+             me->x >= 0 && me->x < static_cast<signed>(menu.width) &&
+             me->y >= 0 && me->y < static_cast<signed>(menu.frame_h)) {
     int sbl = (me->x / menu.item_w), i = (me->y / menu.item_h),
       w = (sbl * menu.persub) + i;
 
     if ((i != which_press || sbl != which_sbl) &&
-        (w >= 0 && w < (signed)menuitems.size())) {
+        (w >= 0 && w < static_cast<signed>(menuitems.size()))) {
       if (which_press != -1 && which_sbl != -1) {
         int p = (which_sbl * menu.persub) + which_press;
         BasemenuItem *item = find(p);
@@ -959,7 +961,7 @@ void Basemenu::enterNotifyEvent(XCrossingEvent *ce) {
       menu.y_shift = screen->getHeight() - menu.height -
         screen->getBorderWidth();
       shifted = True;
-    } else if (menu.y + (signed) menu.title_h < 0) {
+    } else if (menu.y + static_cast<signed>(menu.title_h) < 0) {
       menu.y_shift = -screen->getBorderWidth();
       shifted = True;
     }
