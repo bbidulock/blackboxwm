@@ -60,7 +60,7 @@ libbt_HEADERS = 	Application.hh					\
 			Unicode.hh					\
 			Util.hh
 
-libbt_la_LIBADD =	@ICONV@
+libbt_la_LIBADD =	@ICONV@ @LOCALE@
 
 pkgconfigdir = 		$(libdir)/pkgconfig
 nodist_pkgconfig_DATA =	libbt.pc
