@@ -39,8 +39,10 @@ extern "C" {
 
 #include <assert.h>
 
+#include <algorithm>
 #include <functional>
 #include <string>
+#include <vector>
 
 #include "i18n.hh"
 #include "blackbox.hh"
@@ -141,14 +143,10 @@ void StackingList::append(BlackboxWindow* w) {
   }
 
   // find the end of the layer (the zero pointer)
-  StackingList::iterator tmp = it;
-  for (; tmp != stack.end(); ++tmp) {
-    if (! *tmp) {
-      stack.insert(tmp, w);
-      return;
-    }
-  }
-  assert(0);
+  const BlackboxWindow * const zero = 0;
+  StackingList::iterator tmp = std::find(it, stack.end(), zero);
+  assert(tmp != stack.end());
+  stack.insert(tmp, w);
 }
 
 
@@ -476,7 +474,7 @@ void Workspace::reconfigure(void) {
 BlackboxWindow *Workspace::window(unsigned int index) const {
   if (index < stackingList.size()) {
     StackingList::const_iterator it = stackingList.begin(),
-      end = stackingList.end();
+                                end = stackingList.end();
     for (; it != end; ++it) {
       if (*it && (*it)->getWindowNumber() == index)
         return *it;
@@ -594,177 +592,252 @@ void Workspace::setName(const std::string& new_name) {
 }
 
 
-/*
- * Calculate free space available for window placement.
- */
-typedef std::vector<bt::Rect> rectList;
-
-static rectList calcSpace(const bt::Rect &win, const rectList &spaces) {
-  bt::Rect isect, extra;
-  rectList result;
-  rectList::const_iterator siter, end = spaces.end();
-  for (siter = spaces.begin(); siter != end; ++siter) {
-    const bt::Rect &curr = *siter;
-
-    if(! win.intersects(curr)) {
-      result.push_back(curr);
-      continue;
-    }
-
-    /* Use an intersection of win and curr to determine the space around
-     * curr that we can use.
-     *
-     * NOTE: the spaces calculated can overlap.
-     */
-    isect = curr & win;
-
-    // left
-    extra.setCoords(curr.left(), curr.top(),
-                    isect.left() - 1, curr.bottom());
-    if (extra.valid()) result.push_back(extra);
-
-    // top
-    extra.setCoords(curr.left(), curr.top(),
-                    curr.right(), isect.top() - 1);
-    if (extra.valid()) result.push_back(extra);
-
-    // right
-    extra.setCoords(isect.right() + 1, curr.top(),
-                    curr.right(), curr.bottom());
-    if (extra.valid()) result.push_back(extra);
-
-    // bottom
-    extra.setCoords(curr.left(), isect.bottom() + 1,
-                    curr.right(), curr.bottom());
-    if (extra.valid()) result.push_back(extra);
-  }
-  return result;
-}
-
-
-static bool rowRLBT(const bt::Rect &first, const bt::Rect &second) {
-  if (first.bottom() == second.bottom())
-    return first.right() > second.right();
-  return first.bottom() > second.bottom();
-}
-
-static bool rowRLTB(const bt::Rect &first, const bt::Rect &second) {
-  if (first.y() == second.y())
-    return first.right() > second.right();
-  return first.y() < second.y();
-}
-
-static bool rowLRBT(const bt::Rect &first, const bt::Rect &second) {
-  if (first.bottom() == second.bottom())
-    return first.x() < second.x();
-  return first.bottom() > second.bottom();
-}
-
-static bool rowLRTB(const bt::Rect &first, const bt::Rect &second) {
-  if (first.y() == second.y())
-    return first.x() < second.x();
-  return first.y() < second.y();
-}
-
-static bool colLRTB(const bt::Rect &first, const bt::Rect &second) {
-  if (first.x() == second.x())
-    return first.y() < second.y();
-  return first.x() < second.x();
-}
-
-static bool colLRBT(const bt::Rect &first, const bt::Rect &second) {
-  if (first.x() == second.x())
-    return first.bottom() > second.bottom();
-  return first.x() < second.x();
-}
-
-static bool colRLTB(const bt::Rect &first, const bt::Rect &second) {
-  if (first.right() == second.right())
-    return first.y() < second.y();
-  return first.right() > second.right();
-}
-
-static bool colRLBT(const bt::Rect &first, const bt::Rect &second) {
-  if (first.right() == second.right())
-    return first.bottom() > second.bottom();
-  return first.right() > second.right();
-}
-
-
 bool Workspace::smartPlacement(bt::Rect& win, const bt::Rect& availableArea) {
-  rectList spaces;
-  spaces.push_back(availableArea); //initially the entire screen is free
+  // constants
+  const bool row_placement =
+    (_screen->resource().placementPolicy() == RowSmartPlacement);
+  const bool leftright =
+    (_screen->resource().rowPlacementDirection() == LeftRight);
+  const bool topbottom =
+    (_screen->resource().colPlacementDirection() == TopBottom);
+  const bool ignore_shaded = _screen->resource().placementIgnoresShaded();
 
-  //Find Free Spaces
-  StackingList::const_iterator wit = stackingList.begin(),
-    end = stackingList.end();
-  bt::Rect tmp;
-  for (; wit != end; ++wit) {
-    const BlackboxWindow* const curr = *wit;
-    if (! curr || (_screen->resource().placementIgnoresShaded() &&
-                   curr->isShaded()))
+  const int border_width = _screen->resource().borderWidth();
+  const int left_border   = leftright ? 0 : -border_width-1;
+  const int top_border    = topbottom ? 0 : -border_width-1;
+  const int right_border  = leftright ? border_width+1 : 0;
+  const int bottom_border = topbottom ? border_width+1 : 0;
+
+  StackingList::const_iterator w_it, w_end;
+
+  /*
+    build a sorted vector of x and y grid boundaries
+
+    note: we use one vector to reduce the number of allocations
+    std::vector must do... we allocate as much memory as we would need
+    in the worst case scenario and work with that
+  */
+  std::vector<int> coords(stackingList.size() * 4 + 4);
+  std::vector<int>::iterator
+    x_begin = coords.begin(),
+    x_end   = x_begin,
+    y_begin = coords.begin() + stackingList.size() * 2 + 2,
+    y_end   = y_begin;
+
+  {
+    std::vector<int>::iterator x_it = x_begin, y_it = y_begin;
+
+    *x_it++ = availableArea.left();
+    *x_it++ = availableArea.right();
+    x_end += 2;
+
+    *y_it++ = availableArea.top();
+    *y_it++ = availableArea.bottom();
+    y_end += 2;
+
+
+    for (w_it  = stackingList.begin(), w_end = stackingList.end();
+         w_it != w_end; ++w_it) {
+      const BlackboxWindow* const w = *w_it;
+      if (! w || (ignore_shaded && w->isShaded()))
         continue;
 
-    tmp.setRect(curr->frameRect().x(), curr->frameRect().y(),
-                curr->frameRect().width() + _screen->resource().borderWidth(),
-                curr->frameRect().height() + _screen->resource().borderWidth());
+      *x_it++ = std::max(w->frameRect().left() + left_border,
+                         availableArea.left());
+      *x_it++ = std::min(w->frameRect().right() + right_border,
+                         availableArea.right());
+      x_end += 2;
 
-    spaces = calcSpace(tmp, spaces);
-  }
-
-  if (_screen->resource().placementPolicy() == RowSmartPlacement) {
-    if(_screen->resource().rowPlacementDirection() == LeftRight) {
-      if(_screen->resource().colPlacementDirection() == TopBottom)
-        std::sort(spaces.begin(), spaces.end(), rowLRTB);
-      else
-        std::sort(spaces.begin(), spaces.end(), rowLRBT);
-    } else {
-      if(_screen->resource().colPlacementDirection() == TopBottom)
-        std::sort(spaces.begin(), spaces.end(), rowRLTB);
-      else
-        std::sort(spaces.begin(), spaces.end(), rowRLBT);
+      *y_it++ = std::max(w->frameRect().top() + top_border,
+                         availableArea.top());
+      *y_it++ = std::min(w->frameRect().bottom() + bottom_border,
+                         availableArea.bottom());
+      y_end += 2;
     }
-  } else {
-    if(_screen->resource().colPlacementDirection() == TopBottom) {
-      if(_screen->resource().rowPlacementDirection() == LeftRight)
-        std::sort(spaces.begin(), spaces.end(), colLRTB);
-      else
-        std::sort(spaces.begin(), spaces.end(), colRLTB);
-    } else {
-      if(_screen->resource().rowPlacementDirection() == LeftRight)
-        std::sort(spaces.begin(), spaces.end(), colLRBT);
-      else
-        std::sort(spaces.begin(), spaces.end(), colRLBT);
+
+    assert(x_end <= y_begin);
+  }
+
+  std::sort(x_begin, x_end);
+  x_end = std::unique(x_begin, x_end);
+
+  std::sort(y_begin, y_end);
+  y_end = std::unique(y_begin, y_end);
+
+  // build a distribution grid
+  unsigned int gw = x_end - x_begin - 1,
+               gh = y_end - y_begin - 1;
+  std::bit_vector used_grid(gw * gh);
+  std::fill_n(used_grid.begin(), used_grid.size(), false);
+
+  for (w_it = stackingList.begin(), w_end = stackingList.end();
+       w_it != w_end; ++w_it) {
+    const BlackboxWindow* const w = *w_it;
+    if (! w || (ignore_shaded && w->isShaded()))
+      continue;
+
+    const int w_left =
+      std::max(w->frameRect().left() + left_border,
+               availableArea.left());
+    const int w_top =
+      std::max(w->frameRect().top() + top_border,
+               availableArea.top());
+    const int w_right =
+      std::min(w->frameRect().right() + right_border,
+               availableArea.right());
+    const int w_bottom =
+      std::min(w->frameRect().bottom() + bottom_border,
+               availableArea.bottom());
+
+    // which areas of the grid are used by this window?
+    std::vector<int>::iterator l_it = std::find(x_begin, x_end, w_left),
+                               r_it = std::find(x_begin, x_end, w_right),
+                               t_it = std::find(y_begin, y_end, w_top),
+                               b_it = std::find(y_begin, y_end, w_bottom);
+    assert(l_it != x_end &&
+           r_it != x_end &&
+           t_it != y_end &&
+           b_it != y_end);
+
+    const unsigned int left   = l_it - x_begin,
+                       right  = r_it - x_begin,
+                       top    = t_it - y_begin,
+                       bottom = b_it - y_begin;
+
+    for (unsigned int gy = top; gy < bottom; ++gy)
+      for (unsigned int gx = left; gx < right; ++gx)
+        used_grid[(gy * gw) + gx] = true;
+  }
+
+  /*
+    Attempt to fit the window into any of the empty areas in the grid.
+    The exact order is dependent upon the users configuration (as
+    shown below).
+
+    row placement:
+    - outer -> vertical axis
+    - inner -> horizontal axis
+
+    col placement:
+    - outer -> horizontal axis
+    - inner -> vertical axis
+  */
+
+  int gx, gy;
+  int &outer = row_placement ? gy : gx;
+  int &inner = row_placement ? gx : gy;
+  const int outer_delta =
+    row_placement ? (topbottom ? 1 : -1) : (leftright ? 1 : -1);
+  const int inner_delta =
+    row_placement ? (leftright ? 1 : -1) : (topbottom ? 1 : -1);
+  const int outer_begin =
+    row_placement ? (topbottom ? 0 : gh) : (leftright ? 0 : gw);
+  const int outer_end = row_placement ?
+                        (topbottom ? static_cast<int>(gh) : -1) :
+                        (leftright ? static_cast<int>(gw) : -1);
+  const int inner_begin =
+    row_placement ? (leftright ? 0 : gw) : (topbottom ? 0 : gh);
+  const int inner_end = row_placement ?
+                        (leftright ? static_cast<int>(gw) : -1) :
+                        (topbottom ? static_cast<int>(gh) : -1);
+
+  bt::Rect where;
+  bool fit = false;
+  for (outer = outer_begin; ! fit && outer != outer_end;
+       outer += outer_delta) {
+    for (inner = inner_begin; ! fit && inner != inner_end;
+         inner += inner_delta) {
+      // see if the window fits in a single unused area
+      if (used_grid[(gy * gw) + gx]) continue;
+
+      where.setCoords(*(x_begin + gx), *(y_begin + gy),
+                      *(x_begin + gx + 1), *(y_begin + gy + 1));
+
+      if (where.width()  >= win.width() &&
+          where.height() >= win.height()) {
+        fit = true;
+        break;
+      }
+
+      /*
+        see if we neighboring spaces are unused
+
+        TODO: we should grid fit in the same direction as above,
+        instead of always right->left and top->bottom
+      */
+      int gx2 = gx, gy2 = gy;
+
+      if (win.width() > where.width()) {
+        for (gx2 = gx+1; gx2 < static_cast<int>(gw); ++gx2) {
+          if (used_grid[(gy * gw) + gx2]) {
+            --gx2;
+            break;
+          }
+
+          where.setCoords(*(x_begin + gx), *(y_begin + gy),
+                          *(x_begin + gx2 + 1), *(y_begin + gy2 + 1));
+
+          if (where.width() >= win.width()) break;
+        }
+
+        if (gx2 >= static_cast<int>(gw)) --gx2;
+      }
+
+      if (win.height() > where.height()) {
+        for (gy2 = gy; gy2 < static_cast<int>(gh); ++gy2) {
+          if (used_grid[(gy2 * gw) + gx]) {
+            --gy2;
+            break;
+          }
+
+          where.setCoords(*(x_begin + gx), *(y_begin + gy),
+                          *(x_begin + gx2 + 1), *(y_begin + gy2 + 1));
+
+          if (where.height() >= win.height()) break;
+        }
+
+        if (gy2 >= static_cast<int>(gh)) --gy2;
+      }
+
+      if (where.width()  >= win.width() &&
+          where.height() >= win.height()) {
+        fit = true;
+
+        // make sure all spaces are really available
+        for (int gy3 = gy; gy3 <= gy2; ++gy3) {
+          for (int gx3 = gx; gx3 <= gx2; ++gx3) {
+            if (used_grid[(gy3 * gw) + gx3]) {
+              fit = false;
+              break;
+            }
+          }
+        }
+      }
     }
   }
 
-  rectList::const_iterator sit = spaces.begin(), spaces_end = spaces.end();
-  for(; sit != spaces_end; ++sit) {
-    if (sit->width() >= win.width() && sit->height() >= win.height())
-      break;
+  if (! fit) {
+    const int screen_area = availableArea.width() * availableArea.height();
+    const int window_area = win.width() * win.height();
+    if (window_area > screen_area / 2) {
+      // center large windows instead of cascading
+      win.setPos((availableArea.x() + availableArea.width() -
+                  win.width()) / 2,
+                 (availableArea.y() + availableArea.height() -
+                  win.height()) / 2);
+      return true;
+    }
+    return false;
   }
 
-  if (sit == spaces_end)
-    return False;
+  // adjust the location() based on left/right and top/bottom placement
+  if (! leftright) where.setX(where.right() - win.width() + 1);
+  if (! topbottom) where.setY(where.bottom() - win.height() + 1);
 
-  //set new position based on the empty space found
-  const bt::Rect& where = *sit;
   win.setX(where.x());
   win.setY(where.y());
 
-  // adjust the location() based on left/right and top/bottom placement
-  if (_screen->resource().placementPolicy() == RowSmartPlacement) {
-    if (_screen->resource().rowPlacementDirection() == RightLeft)
-      win.setX(where.right() - win.width());
-    if (_screen->resource().colPlacementDirection() == BottomTop)
-      win.setY(where.bottom() - win.height());
-  } else {
-    if (_screen->resource().colPlacementDirection() == BottomTop)
-      win.setY(win.y() + where.height() - win.height());
-    if (_screen->resource().rowPlacementDirection() == RightLeft)
-      win.setX(win.x() + where.width() - win.width());
-  }
-  return True;
+  return true;
 }
 
 
@@ -781,14 +854,24 @@ bool Workspace::cascadePlacement(bt::Rect &win,
 
   win.setPos(cascade_x, cascade_y);
 
+  if (win.right()  > availableArea.right() ||
+      win.bottom() > availableArea.bottom()) {
+    cascade_x = cascade_y = 32;
+
+    cascade_x += availableArea.x();
+    cascade_y += availableArea.y();
+
+    win.setPos(cascade_x, cascade_y);
+  }
+
   return True;
 }
 
 
 void Workspace::placeWindow(BlackboxWindow *win) {
-  bt::Rect availableArea(_screen->availableArea()),
-    new_win(availableArea.x(), availableArea.y(),
-            win->frameRect().width(), win->frameRect().height());
+  const bt::Rect &availableArea = _screen->availableArea();
+  bt::Rect new_win(availableArea.x(), availableArea.y(),
+                   win->frameRect().width(), win->frameRect().height());
   bool placed = False;
 
   switch (_screen->resource().placementPolicy()) {
@@ -803,15 +886,16 @@ void Workspace::placeWindow(BlackboxWindow *win) {
   if (placed == False) {
     cascadePlacement(new_win, availableArea);
     cascade_x += win->getTitleHeight() +
-      (_screen->resource().borderWidth() * 2);
+                 (_screen->resource().borderWidth() * 2);
     cascade_y += win->getTitleHeight() +
-      (_screen->resource().borderWidth() * 2);
+                 (_screen->resource().borderWidth() * 2);
   }
 
   if (new_win.right() > availableArea.right())
     new_win.setX(availableArea.left());
   if (new_win.bottom() > availableArea.bottom())
     new_win.setY(availableArea.top());
+
   win->configure(new_win.x(), new_win.y(), new_win.width(), new_win.height());
 }
 
