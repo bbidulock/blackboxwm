@@ -16,6 +16,8 @@ $ #FocusNew
 # Fokus nyt vindue
 $ #FocusLast
 # Fokus vindue ved skrivebords ændring
+$ #DisableBindings
+# Deaktiver tastebindinger med Scroll Lock
 $ #ClickToFocus
 # Klik for fokus
 $ #SloppyFocus
@@ -23,7 +25,7 @@ $ #SloppyFocus
 $ #AutoRaise
 # Hæv automatisk
 $ #ClickRaise
-# Klik for at hve
+# Klik for at hæve
 $ #SmartRows
 # Intelligent placering (Rækker)
 $ #SmartCols
