@@ -32,7 +32,6 @@ extern "C" {
 #include <string>
 
 class BaseDisplay;
-class BGCCache;
 
 class BColor {
 public:
