@@ -62,19 +62,13 @@ int main(int argc, char **argv) {
 
   NLSInit("blackbox.cat");
 
-  int i;
-  for (i = 1; i < argc; ++i) {
+  for (int i = 1; i < argc; ++i) {
     if (! strcmp(argv[i], "-rc")) {
       // look for alternative rc file to use
 
       if ((++i) >= argc) {
         fprintf(stderr,
-		i18n->getMessage(
-#ifdef    NLS
-				 mainSet, mainRCRequiresArg,
-#else // !NLS
-				 0, 0,
-#endif // NLS
+		i18n->getMessage(mainSet, mainRCRequiresArg,
 				 "error: '-rc' requires and argument\n"));
 
         ::exit(1);
@@ -87,12 +81,7 @@ int main(int argc, char **argv) {
 
       if ((++i) >= argc) {
 	fprintf(stderr,
-		i18n->getMessage(
-#ifdef    NLS
-				 mainSet, mainDISPLAYRequiresArg,
-#else // !NLS
-				 0, 0,
-#endif // NLS
+		i18n->getMessage(mainSet, mainDISPLAYRequiresArg,
 				 "error: '-display' requires an argument\n"));
 
 	::exit(1);
@@ -105,13 +94,8 @@ int main(int argc, char **argv) {
       if (putenv(dtmp)) {
 	fprintf(stderr,
 		i18n->
-		getMessage(
-#ifdef    NLS
-			   mainSet, mainWarnDisplaySet,
-#else // !NLS
-			   0, 0,
-#endif // NLS
-			   "warning: couldn't set environment variable 'DISPLAY'\n"));
+		getMessage(mainSet, mainWarnDisplaySet,
+		   "warning: couldn't set environment variable 'DISPLAY'\n"));
 	perror("putenv()");
       }
     } else if (! strcmp(argv[i], "-version")) {
@@ -122,13 +106,7 @@ int main(int argc, char **argv) {
       ::exit(0);
     } else if (! strcmp(argv[i], "-help")) {
       // print program usage and command line options
-      printf(i18n->
-	     getMessage(
-#ifdef    NLS
-			mainSet, mainUsage,
-#else // !NLS
-			0, 0,
-#endif // NLS
+      printf(i18n->getMessage(mainSet, mainUsage,
 			"Blackbox %s : (c) 1997 - 2000 Brad Hughes\n\n"
 			"  -display <string>\t\tuse display connection.\n"
 			"  -rc <string>\t\t\tuse alternate resource file.\n"
@@ -136,111 +114,44 @@ int main(int argc, char **argv) {
 			"  -help\t\t\t\tdisplay this help text and exit.\n\n"),
 	     __blackbox_version);
 
-      // some people have requested that we print out command line options
+      // some people have requested that we print out compile options
       // as well
-      printf(i18n->
-	     getMessage(
-#ifdef    NLS
-			mainSet, mainCompileOptions,
-#else // !NLS
-			0, 0,
-#endif // NLS
-			"Compile time options:\n"
-			"  Debugging:\t\t\t%s\n"
-			"  Interlacing:\t\t\t%s\n"
-			"  Shape:\t\t\t%s\n"
-			"  Slit:\t\t\t\t%s\n"
-			"  8bpp Ordered Dithering:\t%s\n\n"),
+      fprintf(stdout,i18n->getMessage(mainSet, mainCompileOptions,
+				      "Compile time options:\n"
+				      "  Debugging:\t\t\t%s\n"
+				      "  Interlacing:\t\t\t%s\n"
+				      "  Shape:\t\t\t%s\n"
+				      "  Slit:\t\t\t\t%s\n"
+				      "  8bpp Ordered Dithering:\t%s\n\n"),
 #ifdef    DEBUG
-	     i18n->getMessage(
-#ifdef    NLS
-			      CommonSet, CommonYes,
-#else // !NLS
-			      0, 0,
-#endif // NLS
-			      "yes"),
+	     i18n->getMessage(CommonSet, CommonYes, "yes"),
 #else // !DEBUG
-	     i18n->getMessage(
-#ifdef    NLS
-			      CommonSet, CommonNo,
-#else // !NLS
-			      0, 0,
-#endif // NLS
-			      "no"),
+	     i18n->getMessage(CommonSet, CommonNo, "no"),
 #endif // DEBUG
 
 #ifdef    INTERLACE
-	     i18n->getMessage(
-#ifdef    NLS
-			      CommonSet, CommonYes,
-#else // !NLS
-			      0, 0,
-#endif // NLS
-			      "yes"),
+	     i18n->getMessage(CommonSet, CommonYes, "yes"),
 #else // !INTERLACE
-	     i18n->getMessage(
-#ifdef    NLS
-			      CommonSet, CommonNo,
-#else // !NLS
-			      0, 0,
-#endif // NLS
-			      "no"),
+	     i18n->getMessage(CommonSet, CommonNo, "no"),
 #endif // INTERLACE
 
 #ifdef    SHAPE
-	     i18n->getMessage(
-#ifdef    NLS
-			      CommonSet, CommonYes,
-#else // !NLS
-			      0, 0,
-#endif // NLS
-			      "yes"),
+	     i18n->getMessage(CommonSet, CommonYes, "yes"),
 #else // !SHAPE
-	     i18n->getMessage(
-#ifdef    NLS
-			      CommonSet, CommonNo,
-#else // !NLS
-			      0, 0,
-#endif // NLS
-			      "no"),
+	     i18n->getMessage(CommonSet, CommonNo, "no"),
 #endif // SHAPE
 
 #ifdef    SLIT
-	     i18n->getMessage(
-#ifdef    NLS
-			      CommonSet, CommonYes,
-#else // !NLS
-			      0, 0,
-#endif // NLS
-			      "yes"),
+	     i18n->getMessage(CommonSet, CommonYes, "yes"),
 #else // !SLIT
-	     i18n->getMessage(
-#ifdef    NLS
-			      CommonSet, CommonNo,
-#else // !NLS
-			      0, 0,
-#endif // NLS
-			      "no"),
+	     i18n->getMessage(CommonSet, CommonNo, "no"),
 #endif // SLIT
 
 #ifdef    ORDEREDPSEUDO
-	     i18n->getMessage(
-#ifdef    NLS
-			      CommonSet, CommonYes,
-#else // !NLS
-			      0, 0,
-#endif // NLS
-			      "yes")
+	     i18n->getMessage(CommonSet, CommonYes, "yes")
 #else // !ORDEREDPSEUDO
-	     i18n->getMessage(
-#ifdef    NLS
-			      CommonSet, CommonNo,
-#else // !NLS
-			      0, 0,
-#endif // NLS
-			      "no")
+	     i18n->getMessage(CommonSet, CommonNo, "no")
 #endif // ORDEREDPSEUDO
-
 	     );
 
       ::exit(0);

@@ -1,6 +1,33 @@
 ChangeLog for 0.61.x
 
-
+Changes from 0.61.1 to 0.61.2:
+  - the immorel release
+  - added the ja_JP nls directory
+  - general code touchups
+  - blackbox-nls.hh is always generated even if --disable-nls is used.
+    This allows us to not have all of those hideous #ifdef NLS chunks.
+    Nothing to worry about, if you do not want NLS this does not affect you
+  - Workspace::placeWindow() cleanups.  Also a speed bump from reducing the
+    use of iterator->current() and changing the delta from 1 to 8
+  - cleanups to compile with g++ 3.0
+  - make distclean actually removes Translation.m and blackbox-nls.hh.
+    Also fixed Makefile.am to pass --foreign instead of --gnu when calling
+    the autotools.
+  - fixed a desciptor leak in BScreen::parseMenuFile, seems opendir
+    lacked a matching closedir.
+  - fix transient window handling code in Workspace::removeWindow() so
+    transients give focus back to their parents properly.  The code originally
+    handled sloppy focus then transient windows, so we just flopped the
+    if/elsif.  This is immediately noticable with web browsers and their open
+    location windows.
+  - plugged a small leak in ~Toolbar
+  - fixed list::insert so you really can insert at item number 2.  While there
+    I cleaned up the code a bit.
+  - added decoration to the atom state stored in a window
+  - fixed a typo in bsetroot.cc: 'on of' -> 'one of'.
+  - fixed the window menu gets left open when another window button is pressed
+    issue with a call to windowmenu->hide() in window->maximize()
+    
 Changes from 0.61.0 to 0.61.1:
   - fixed some of the code to explicitly use colormaps so that when
     blackbox decides to use a non-default visual everything will

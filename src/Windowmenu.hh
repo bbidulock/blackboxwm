@@ -55,7 +55,7 @@ private:
 
   SendtoWorkspacemenu *sendToMenu;
 
-  friend SendtoWorkspacemenu;
+  friend class SendtoWorkspacemenu;
 
 
 protected:

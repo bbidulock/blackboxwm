@@ -40,29 +40,24 @@ Iconmenu::Iconmenu(BScreen *scrn) : Basemenu(scrn) {
 
   screen = scrn;
 
-  setLabel(i18n->getMessage(
-#ifdef    NLS
-			    IconSet, IconIcons,
-#else // !NLS
-			    0, 0,
-#endif // NLS
-			    "Icons"));
+  setLabel(i18n->getMessage(IconSet, IconIcons, "Icons"));
   update();
 }
 
 
 void Iconmenu::itemSelected(int button, int index) {
-  if (button == 1) {
-    if (index >= 0 && index < screen->getIconCount()) {
-      BlackboxWindow *win = screen->getIcon(index);
+  if (button != 1)
+    return;
 
-      if (win) {
-	win->deiconify();
-	win->setInputFocus();
-      }
+  if (index >= 0 && index < screen->getIconCount()) {
+    BlackboxWindow *win = screen->getIcon(index);
+
+    if (win) {
+      win->deiconify();
+      win->setInputFocus();
     }
-
-    if (! (screen->getWorkspacemenu()->isTorn() || isTorn()))
-      hide();
   }
+
+  if (! (screen->getWorkspacemenu()->isTorn() || isTorn()))
+    hide();
 }

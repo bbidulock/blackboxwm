@@ -113,15 +113,16 @@ __llist::__llist(void *d) {
 
 __llist::~__llist(void) {
   // remove all the items in the list...
-  for (register int i = 0, r = elements; i < r; i++)
+  for (register int i = 0; i < elements; i++)
     remove(0);
 
   if (iterators) {
     __llist_node *n = iterators->_first;
 
     while (n) {
-      ((__llist_iterator *) n->getData())->list = (__llist *) 0;
-      ((__llist_iterator *) n->getData())->node = (__llist_node *) 0;
+      __llist_iterator *p = (__llist_iterator *) n->getData();
+      p->list = (__llist *) 0;
+      p->node = (__llist_node *) 0;
 
       n = n->getNext();
     }
@@ -134,25 +135,26 @@ __llist::~__llist(void) {
 const int __llist::insert(void *d, int index) {
   // insert item into linked list at specified index...
   
+  __llist_node *nnode = new __llist_node;
+  if (! nnode) return -1;
+
   if ((! _first) || (! _last)) {
     // list is empty... insert the item as the first item, regardless of the
     // index given
-    _first = new __llist_node;
+    _first = nnode;
     _first->setData(d);
     _first->setNext((__llist_node *) 0);
     _last = _first;
   } else {
     if (index == 0) {
       // if index is 0... prepend the data on the list
-      __llist_node *nnode = new __llist_node;
-      
+
       nnode->setData(d);
       nnode->setNext(_first);
       
       _first = nnode;
     } else if ((index == -1) || (index == elements)) {
       // if index is -1... append the data on the list
-      __llist_node *nnode = new __llist_node;
       
       nnode->setData(d);
       nnode->setNext((__llist_node *) 0);
@@ -161,20 +163,18 @@ const int __llist::insert(void *d, int index) {
       _last = nnode;
     } else if (index < elements) {
       // otherwise... insert the item at the position specified by index
-      __llist_node *nnode = new __llist_node, *inode = _first->getNext();
+      __llist_node *inode = _first;
       
-      if (! nnode)
-	return -1;
-      
-      nnode->setData(d);
-      
-      for (register int i = 1; i < index; i++)
-	if (inode)
+      for (register int i = 1; i < index; i++) {
+	if (inode) {
 	  inode = inode->getNext();
-	else {
+	} else {
 	  delete nnode;
 	  return -1;
 	}
+      }
+      
+      nnode->setData(d);
       
       if ((! inode) || inode == _last) {
 	nnode->setNext((__llist_node *) 0);
@@ -198,7 +198,8 @@ const int __llist::remove(void *d) {
 
   if ((! _first) || (! _last))
     return -1;
-  else if (_first->getData() == d) {
+  
+  if (_first->getData() == d) {
     // remove the first item in the list...
     __llist_node *node = _first;
     _first = _first->getNext();
@@ -221,8 +222,8 @@ const int __llist::remove(void *d) {
     // for validity above...
     __llist_node *rnode = _first->getNext(), *prev = _first;
     
-    for (register int i = 1; i < elements; i++)
-      if (rnode)
+    for (register int i = 1; i < elements; i++) {
+      if (rnode) {
 	if (rnode->getData() == d) {
 	  // we found the item... update the previous node and delete the
 	  // now useless rnode...
@@ -246,6 +247,8 @@ const int __llist::remove(void *d) {
 	  prev = rnode;
 	  rnode = rnode->getNext();
 	}
+      }
+    }
     
     return -1;
   }
@@ -280,12 +283,14 @@ void *__llist::remove(const int index) {
     __llist_node *rnode = _first->getNext(), *prev = _first;
     void *data_return = (void *) 0;
     
-    for (register int i = 1; i < index; i++)
+    for (register int i = 1; i < index; i++) {
       if (rnode) {
 	prev = rnode;
 	rnode = rnode->getNext();
-      } else
+      } else {
 	return (void *) 0;
+      }
+    }
     
     if (! rnode) return (void *) 0;
     
@@ -317,25 +322,21 @@ void *__llist::find(const int index) {
   if (index >= elements || index < 0 || (! _first) || (! _last))
     return (void *) 0;
 
-  if (index == 0) {
-    // return the first item
+  if (index == 0)                 // return the first item
     return first();
-  } else if (index == (elements - 1)) {
-    // return the last item
+  if (index == (elements - 1))    // return the last item
     return last();
-  } else {
-    __llist_node *fnode = _first->getNext();
+
+  __llist_node *fnode = _first->getNext();
     
-    for (register int i = 1; i < index; i++)
-      if (fnode)
-	fnode = fnode->getNext();
-      else
-	return (void *) 0;
-    
-    return fnode->getData();
+  for (register int i = 1; i < index; i++) {
+    if (fnode)
+      fnode = fnode->getNext();
+    else
+      return (void *) 0;
   }
-  
-  return (void *) 0;
+    
+  return fnode->getData();
 }
 
 

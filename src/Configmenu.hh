@@ -29,7 +29,6 @@ class Configmenu;
 #include "Screen.hh"
 #include "blackbox.hh"
 
-
 class Configmenu : public Basemenu {
 private:
   class Focusmenu : public Basemenu {
@@ -59,13 +58,11 @@ private:
   Focusmenu *focusmenu;
   Placementmenu *placementmenu;
 
-  friend Focusmenu;
-  friend Placementmenu;
-
+  friend class Focusmenu;
+  friend class Placementmenu;
 
 protected:
   virtual void itemSelected(int, int);
-
 
 public:
   Configmenu(BScreen *);
@@ -76,6 +73,5 @@ public:
 
   void reconfigure(void);
 };
-
 
 #endif // __Configmenu_hh

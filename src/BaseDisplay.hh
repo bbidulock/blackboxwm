@@ -54,19 +54,20 @@ typedef struct _blackbox_hints {
 } BlackboxHints;
 
 typedef struct _blackbox_attributes {
-  unsigned long flags, attrib, workspace, stack;
+  unsigned long flags, attrib, workspace, stack, decoration;
   int premax_x, premax_y;
   unsigned int premax_w, premax_h;
 } BlackboxAttributes;
 
 #define PropBlackboxHintsElements      (5)
-#define PropBlackboxAttributesElements (8)
+#define PropBlackboxAttributesElements (9)
 
 #ifndef    __EMX__
 void bexec(const char *, char *);
 #endif // !__EMX__
 
 char *bstrdup(const char *);
+
 template <typename Z> inline Z min(Z a, Z b) { return ((a < b) ? a : b); }
 template <typename Z> inline Z max(Z a, Z b) { return ((a > b) ? a : b); }
 

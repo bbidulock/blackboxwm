@@ -140,7 +140,7 @@ private:
   const char **u, *l, *e;
   int f, enabled, selected;
 
-  friend Basemenu;
+  friend class Basemenu;
 
 
 protected:

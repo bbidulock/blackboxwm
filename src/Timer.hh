@@ -39,15 +39,13 @@ class TimeoutHandler;
 
 #include "BaseDisplay.hh"
 
-
 class TimeoutHandler {
 public:
   virtual void timeout(void) = 0;
 };
 
-
 class BTimer {
-  friend BaseDisplay;
+  friend class BaseDisplay;
 private:
   BaseDisplay *display;
   TimeoutHandler *handler;
@@ -55,10 +53,8 @@ private:
 
   timeval _start, _timeout;
 
-
 protected:
   void fireTimeout(void);
-
 
 public:
   BTimer(BaseDisplay *, TimeoutHandler *);
@@ -77,7 +73,6 @@ public:
   void start(void);
   void stop(void);
 };
-
 
 #endif // __Timer_hh
 

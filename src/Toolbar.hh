@@ -48,8 +48,8 @@ private:
   Toolbar *toolbar;
   Placementmenu *placementmenu;
 
-  friend Placementmenu;
-  friend Toolbar;
+  friend class Placementmenu;
+  friend class Toolbar;
 
 
 protected:
@@ -97,9 +97,9 @@ private:
 
   char *new_workspace_name, *new_name_pos;
 
-  friend HideHandler;
-  friend Toolbarmenu;
-  friend Toolbarmenu::Placementmenu;
+  friend class HideHandler;
+  friend class Toolbarmenu;
+  friend class Toolbarmenu::Placementmenu;
 
 
 public:

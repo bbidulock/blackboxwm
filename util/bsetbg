@@ -301,7 +301,6 @@ search_xv()
 rm_tmpfiles()
 {
     [ -f $TMPFILE ] && rm -f $TMPFILE
-    [ -f $TMPFILE2 ] && rm -f $TMPFILE2
 }
 
 
@@ -324,8 +323,6 @@ create_config()
 	*)
 	    echo "$NAME: $CONFIG not found, creating..."
     esac
-
-    rm_tmpfiles
 
     for app in $IMAGE_APPS; do
 	search_$app
@@ -354,10 +351,9 @@ create_config()
     echo "DEFAULT=\"$DEFAULT\"" >> $CONFIG
     echo >> $CONFIG
  
-    cat $TMPFILE | grep -v $APP > $TMPFILE2
-    cat "$TMPFILE2" >> $CONFIG
+    cat $TMPFILE | grep -v $APP >> $CONFIG
 
-    rm -f $TMPFILE $TMPFILE2
+    rm -f $TMPFILE
 
     if [ -f $CONFIG ]; then
 	echo "$NAME: default configuration was created in $CONFIG."
@@ -606,8 +602,7 @@ NAME=bsetbg
 VERSION=1.12
 MORE="(C) 2000 by lordzork industries (http://lordzork.com/)"
 PATH=$PATH:/usr/bin:/usr/local/bin:/usr/X11R6/bin:/usr/X11/bin
-TMPFILE=/tmp/bsetbg.1
-TMPFILE2=/tmp/bsetbg.2
+TMPFILE=`tempfile --prefix=bsetbg`
 ARGUMENT=$1
 
 

@@ -22,9 +22,9 @@
 #ifndef   __i18n_h
 #define   __i18n_h
 
-#ifdef    NLS
-#  include "../nls/blackbox-nls.hh"
-#endif // NLS
+// always include this just for the #defines
+// this keeps the calls to i18n->getMessage clean
+#include "../nls/blackbox-nls.hh"
 
 #ifdef    HAVE_LOCALE_H
 #  include <locale.h>

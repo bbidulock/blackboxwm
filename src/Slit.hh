@@ -62,9 +62,9 @@ private:
 
   Slit *slit;
 
-  friend Directionmenu;
-  friend Placementmenu;
-  friend Slit;
+  friend class Directionmenu;
+  friend class Placementmenu;
+  friend class Slit;
 
 
 protected:
@@ -111,9 +111,9 @@ private:
     unsigned int width, height;
   } frame;
 
-  friend Slitmenu;
-  friend Slitmenu::Directionmenu;
-  friend Slitmenu::Placementmenu;
+  friend class Slitmenu;
+  friend class Slitmenu::Directionmenu;
+  friend class Slitmenu::Placementmenu;
 
 
 public:

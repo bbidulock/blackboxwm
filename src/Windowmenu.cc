@@ -50,77 +50,23 @@ Windowmenu::Windowmenu(BlackboxWindow *win) : Basemenu(win->getScreen()) {
   setInternalMenu();
 
   sendToMenu = new SendtoWorkspacemenu(this);
-  insert(i18n->getMessage(
-#ifdef    NLS
-			  WindowmenuSet, WindowmenuSendTo,
-#else // !NLS
-			  0, 0,
-#endif // NLS
-			  "Send To ..."),
+  insert(i18n->getMessage(WindowmenuSet, WindowmenuSendTo, "Send To ..."),
 	 sendToMenu);
-  insert(i18n->getMessage(
-#ifdef    NLS
-			  WindowmenuSet, WindowmenuShade,
-#else // !NLS
-			  0, 0,
-#endif // NLS
-			  "Shade"),
+  insert(i18n->getMessage(WindowmenuSet, WindowmenuShade, "Shade"),
 	 BScreen::WindowShade);
-  insert(i18n->getMessage(
-#ifdef    NLS
-			  WindowmenuSet, WindowmenuIconify,
-#else // !NLS
-			  0, 0,
-#endif // NLS
-			  "Iconify"),
+  insert(i18n->getMessage(WindowmenuSet, WindowmenuIconify, "Iconify"),
 	 BScreen::WindowIconify);
-  insert(i18n->getMessage(
-#ifdef    NLS
-			  WindowmenuSet, WindowmenuMaximize,
-#else // !NLS
-			  0, 0,
-#endif // NLS
-			  "Maximize"),
+  insert(i18n->getMessage(WindowmenuSet, WindowmenuMaximize, "Maximize"),
 	 BScreen::WindowMaximize);
-  insert(i18n->getMessage(
-#ifdef    NLS
-			  WindowmenuSet, WindowmenuRaise,
-#else // !NLS
-			  0, 0,
-#endif // NLS
-			  "Raise"),
+  insert(i18n->getMessage(WindowmenuSet, WindowmenuRaise,"Raise"),
 	 BScreen::WindowRaise);
-  insert(i18n->getMessage(
-#ifdef    NLS
-			  WindowmenuSet, WindowmenuLower,
-#else // !NLS
-			  0, 0,
-#endif // NLS
-			  "Lower"),
+  insert(i18n->getMessage(WindowmenuSet, WindowmenuLower, "Lower"),
 	 BScreen::WindowLower);
-  insert(i18n->getMessage(
-#ifdef    NLS
-			  WindowmenuSet, WindowmenuStick,
-#else // !NLS
-			  0, 0,
-#endif // NLS
-			  "Stick"),
+  insert(i18n->getMessage(WindowmenuSet, WindowmenuStick, "Stick"),
 	 BScreen::WindowStick);
-  insert(i18n->getMessage(
-#ifdef    NLS
-			  WindowmenuSet, WindowmenuKillClient,
-#else // !NLS
-			  0, 0,
-#endif // NLS
-			  "Kill Client"),
+  insert(i18n->getMessage(WindowmenuSet, WindowmenuKillClient, "Kill Client"),
 	 BScreen::WindowKill);
-  insert(i18n->getMessage(
-#ifdef    NLS
-			  WindowmenuSet, WindowmenuClose,
-#else // !NLS
-			  0, 0,
-#endif // NLS
-			  "Close"),
+  insert(i18n->getMessage(WindowmenuSet, WindowmenuClose, "Close"),
 	 BScreen::WindowClose);
 
   update();
@@ -149,44 +95,37 @@ void Windowmenu::show(void) {
 void Windowmenu::itemSelected(int button, int index) {
   BasemenuItem *item = find(index);
 
+  hide();
   switch (item->function()) {
   case BScreen::WindowShade:
-    hide();
     window->shade();
     break;
 
   case BScreen::WindowIconify:
-    hide();
     window->iconify();
     break;
 
   case BScreen::WindowMaximize:
-    hide();
     window->maximize((unsigned int) button);
     break;
 
   case BScreen::WindowClose:
-    hide();
     window->close();
     break;
 
   case BScreen::WindowRaise:
-    hide();
     screen->getWorkspace(window->getWorkspaceNumber())->raiseWindow(window);
     break;
 
   case BScreen::WindowLower:
-    hide();
     screen->getWorkspace(window->getWorkspaceNumber())->lowerWindow(window);
     break;
 
   case BScreen::WindowStick:
-    hide();
     window->stick();
     break;
 
   case BScreen::WindowKill:
-    hide();
     XKillClient(screen->getBaseDisplay()->getXDisplay(),
                 window->getClientWindow());
     break;
@@ -207,8 +146,7 @@ void Windowmenu::reconfigure(void) {
 
 
 Windowmenu::SendtoWorkspacemenu::SendtoWorkspacemenu(Windowmenu *w)
-  : Basemenu(w->screen)
-{
+  : Basemenu(w->screen) {
   windowmenu = w;
 
   setTitleVisibility(False);
@@ -236,7 +174,7 @@ void Windowmenu::SendtoWorkspacemenu::itemSelected(int button, int index) {
 void Windowmenu::SendtoWorkspacemenu::update(void) {
   int i, r = getCount();
 
-  if (getCount() != 0)
+  if (r != 0)
     for (i = 0; i < r; ++i)
       remove(0);
 

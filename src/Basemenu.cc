@@ -84,13 +84,12 @@ Basemenu::Basemenu(BScreen *scrn) {
 
   if (i18n->multibyte())
     menu.width = menu.title_h = menu.item_w = menu.frame_h =
-		 screen->getMenuStyle()->t_fontset_extents->max_ink_extent.height +
-		 (menu.bevel_w  * 2);
+      screen->getMenuStyle()->t_fontset_extents->max_ink_extent.height +
+	(menu.bevel_w  * 2);
   else
     menu.width = menu.title_h = menu.item_w = menu.frame_h =
-		 screen->getMenuStyle()->t_font->ascent +
-		 screen->getMenuStyle()->t_font->descent +
-		 (menu.bevel_w * 2);
+      screen->getMenuStyle()->t_font->ascent +
+        screen->getMenuStyle()->t_font->descent + (menu.bevel_w * 2);
   
   menu.label = 0;
   
@@ -98,13 +97,15 @@ Basemenu::Basemenu(BScreen *scrn) {
     menu.persub =
     menu.minsub = 0;
   
-  if (i18n->multibyte())
-    menu.item_h = screen->getMenuStyle()->f_fontset_extents->max_ink_extent.height +
-		  (menu.bevel_w);
-  else
+  if (i18n->multibyte()) {
+    MenuStyle *style = screen->getMenuStyle();
+    menu.item_h = style->f_fontset_extents->max_ink_extent.height +
+      (menu.bevel_w);
+  } else {
     menu.item_h = screen->getMenuStyle()->f_font->ascent +
 		  screen->getMenuStyle()->f_font->descent +
 		  (menu.bevel_w);
+  }
   
   menu.height = menu.title_h + screen->getBorderWidth() + menu.frame_h;
   
@@ -234,8 +235,9 @@ int Basemenu::remove(int index) {
 
       if (! tmp->internal_menu) {
 	delete tmp;
-      } else
+      } else {
 	tmp->internal_hide();
+      }
     }
 
     if (item->label())
@@ -258,27 +260,23 @@ int Basemenu::remove(int index) {
 
 void Basemenu::update(void) {
   if (i18n->multibyte()) {
-    menu.item_h = screen->getMenuStyle()->f_fontset_extents->max_ink_extent.height +
+    MenuStyle *style = screen->getMenuStyle();
+    menu.item_h = style->f_fontset_extents->max_ink_extent.height +
 		  menu.bevel_w;
-    menu.title_h =  screen->getMenuStyle()->t_fontset_extents->max_ink_extent.height +
-		    (menu.bevel_w * 2);
+    menu.title_h = style->t_fontset_extents->max_ink_extent.height +
+                   (menu.bevel_w * 2);
   } else {
     menu.item_h = screen->getMenuStyle()->f_font->ascent +
 		  screen->getMenuStyle()->f_font->descent +
 		  menu.bevel_w;
-    menu.title_h =  screen->getMenuStyle()->t_font->ascent +
+    menu.title_h = screen->getMenuStyle()->t_font->ascent +
 		    screen->getMenuStyle()->t_font->descent +
 		    (menu.bevel_w * 2);
   }
     
   if (title_vis) {
     const char *s = (menu.label) ? menu.label :
-		    i18n->getMessage(
-#ifdef    NLS
-				     BasemenuSet, BasemenuBlackboxMenu,
-#else // !NLS
-				     0, 0,
-#endif // NLS
+		    i18n->getMessage(BasemenuSet, BasemenuBlackboxMenu,
 				     "Blackbox Menu");
     int l = strlen(s);
     
@@ -287,20 +285,20 @@ void Basemenu::update(void) {
       XRectangle ink, logical;
       XmbTextExtents(screen->getMenuStyle()->t_fontset, s, l, &ink, &logical);
       menu.item_w = logical.width;
-    } else
+    } else {
       menu.item_w = XTextWidth(screen->getMenuStyle()->t_font, s, l);
+    }
     
     menu.item_w += (menu.bevel_w * 2);
-  }  else
+  }  else {
     menu.item_w = 1;
+  }
 
   int ii = 0;
   LinkedListIterator<BasemenuItem> it(menuitems);
-  for (; it.current(); it++) {
-    BasemenuItem *itmp = it.current();
-
-    const char *s = ((itmp->u && *itmp->u) ? *itmp->u :
-		     ((itmp->l) ? itmp->l : (const char *) 0));
+  for (BasemenuItem *tmp = it.current(); tmp; it++, tmp = it.current()) {
+    const char *s = ((tmp->u && *tmp->u) ? *tmp->u :
+		     ((tmp->l) ? tmp->l : (const char *) 0));
     int l = strlen(s);
 
     if (i18n->multibyte()) {
@@ -374,17 +372,18 @@ void Basemenu::update(void) {
 
   tmp = menu.hilite_pixmap;
   texture = &(screen->getMenuStyle()->hilite);
-  if (texture->getTexture() == (BImage_Flat | BImage_Solid))
+  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
     menu.hilite_pixmap = None;
-  else
+  } else {
     menu.hilite_pixmap =
       image_ctrl->renderImage(menu.item_w, menu.item_h, texture);
+  }
   if (tmp) image_ctrl->removeImage(tmp);
 
   tmp = menu.sel_pixmap;
-  if (texture->getTexture() == (BImage_Flat | BImage_Solid))
+  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
     menu.sel_pixmap = None;
-  else {
+  } else {
     int hw = menu.item_h / 2;
     menu.sel_pixmap =
       image_ctrl->renderImage(hw, hw, texture);
@@ -407,13 +406,14 @@ void Basemenu::update(void) {
 
   if (title_vis && visible) redrawTitle();
 
-  int i = 0;
-  for (i = 0; visible && i < menuitems->count(); i++)
+  for (int i = 0; visible && i < menuitems->count(); i++) {
     if (i == which_sub) {
       drawItem(i, True, 0);
       drawSubmenu(i);
-    } else
+    } else {
       drawItem(i, False, 0);
+    }
+  }
 
   if (parent && visible)
     parent->drawSubmenu(parent->which_sub);
@@ -442,8 +442,9 @@ void Basemenu::hide(void) {
 
     while (p->isVisible() && (! p->torn) && p->parent) p = p->parent;
     p->internal_hide();
-  } else
+  } else {
     internal_hide();
+  }
 }
 
 
@@ -457,8 +458,9 @@ void Basemenu::internal_hide(void) {
     parent->drawItem(parent->which_sub, False, True);
 
     parent->which_sub = -1;
-  } else if (shown && shown->menu.window == menu.window)
+  } else if (shown && shown->menu.window == menu.window) {
     shown = (Basemenu *) 0;
+  }
 
   torn = visible = False;
   which_sub = which_press = which_sub = -1;
@@ -478,12 +480,7 @@ void Basemenu::move(int x, int y) {
 
 void Basemenu::redrawTitle(void) {
   char *text = (char *) ((menu.label) ? menu.label :
-			 i18n->getMessage(
-#ifdef    NLS
-					  BasemenuSet, BasemenuBlackboxMenu,
-#else // !NLS
-					  0, 0,
-#endif // NLS
+			 i18n->getMessage(BasemenuSet, BasemenuBlackboxMenu,
 					  "Blackbox Menu"));
   int dx = menu.bevel_w, len = strlen(text);
   unsigned int l;
@@ -492,8 +489,9 @@ void Basemenu::redrawTitle(void) {
     XRectangle ink, logical;
     XmbTextExtents(screen->getMenuStyle()->t_fontset, text, len, &ink, &logical);
     l = logical.width;
-  } else
+  } else {
     l = XTextWidth(screen->getMenuStyle()->t_font, text, len);
+  }
 
   l +=  (menu.bevel_w * 2);
 
@@ -507,15 +505,14 @@ void Basemenu::redrawTitle(void) {
     break;
   }
 
+  MenuStyle *style = screen->getMenuStyle();
   if (i18n->multibyte())
-    XmbDrawString(display, menu.title, screen->getMenuStyle()->t_fontset,
-		  screen->getMenuStyle()->t_text_gc, dx, menu.bevel_w -
-		  screen->getMenuStyle()->t_fontset_extents->max_ink_extent.y,
+    XmbDrawString(display, menu.title, style->t_fontset, style->t_text_gc, dx,
+		  (menu.bevel_w - style->t_fontset_extents->max_ink_extent.y),
 		  text, len);
   else
-    XDrawString(display, menu.title, screen->getMenuStyle()->t_text_gc, dx,
-		screen->getMenuStyle()->t_font->ascent + menu.bevel_w,
-		text, len);
+    XDrawString(display, menu.title, style->t_text_gc, dx,
+		(style->t_font->ascent + menu.bevel_w), text, len);
 }
 
 
@@ -573,8 +570,9 @@ void Basemenu::drawSubmenu(int index) {
 	item->submenu()->show();
       item->submenu()->moving = moving;
       which_sub = index;
-    } else
+    } else {
       which_sub = -1;
+    }
   }
 }
 
@@ -583,15 +581,13 @@ Bool Basemenu::hasSubmenu(int index) {
   if ((index >= 0) && (index < menuitems->count()))
     if (menuitems->find(index)->submenu())
       return True;
-    else
-      return False;
-  else
-    return False;
+
+  return False;
 }
 
 
 void Basemenu::drawItem(int index, Bool highlight, Bool clear,
-			 int x, int y, unsigned int w, unsigned int h)
+			int x, int y, unsigned int w, unsigned int h)
 {
   if (index < 0 || index > menuitems->count()) return;
 
@@ -604,13 +600,15 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clear,
   int item_x = (sbl * menu.item_w), item_y = (i * menu.item_h);
   int hilite_x = item_x, hilite_y = item_y, hoff_x = 0, hoff_y = 0;
   int text_x = 0, text_y = 0, len = strlen(text), sel_x = 0, sel_y = 0;
-  unsigned int hilite_w = menu.item_w, hilite_h = menu.item_h, text_w = 0, text_h = 0;
+  unsigned int hilite_w = menu.item_w, hilite_h = menu.item_h, text_w = 0,
+    text_h = 0;
   unsigned int half_w = menu.item_h / 2, quarter_w = menu.item_h / 4;
   
   if (text) {
     if (i18n->multibyte()) {
       XRectangle ink, logical;
-      XmbTextExtents(screen->getMenuStyle()->f_fontset, text, len, &ink, &logical);
+      XmbTextExtents(screen->getMenuStyle()->f_fontset,
+		     text, len, &ink, &logical);
       text_w = logical.width;
       text_y = item_y + (menu.bevel_w / 2) -
 	       screen->getMenuStyle()->f_fontset_extents->max_ink_extent.y;
@@ -935,8 +933,6 @@ void Basemenu::exposeEvent(XExposeEvent *ee) {
   if (ee->window == menu.title) {
     redrawTitle();
   } else if (ee->window == menu.frame) {
-    LinkedListIterator<BasemenuItem> it(menuitems);
-
     // this is a compilicated algorithm... lets do it step by step...
     // first... we see in which sub level the expose starts... and how many
     // items down in that sublevel
@@ -950,6 +946,7 @@ void Basemenu::exposeEvent(XExposeEvent *ee) {
     if (id_d > menu.persub) id_d = menu.persub;
 
     // draw the sublevels and the number of items the exposure spans
+    LinkedListIterator<BasemenuItem> it(menuitems);
     int i, ii;
     for (i = sbl; i <= sbl_d; i++) {
       // set the iterator to the first item in the sublevel needing redrawing

@@ -32,7 +32,6 @@
 #include "BaseDisplay.hh"
 #include "Timer.hh"
 
-
 BTimer::BTimer(BaseDisplay *d, TimeoutHandler *h) {
   display = d;
   handler = h;
@@ -40,11 +39,9 @@ BTimer::BTimer(BaseDisplay *d, TimeoutHandler *h) {
   once = timing = False;
 }
 
-
 BTimer::~BTimer(void) {
   if (timing) stop();
 }
-
 
 void BTimer::setTimeout(long t) {
   _timeout.tv_sec = t / 1000;
@@ -53,12 +50,10 @@ void BTimer::setTimeout(long t) {
   _timeout.tv_usec *= 1000;
 }
 
-
 void BTimer::setTimeout(timeval t) {
   _timeout.tv_sec = t.tv_sec;
   _timeout.tv_usec = t.tv_usec;
 }
-
 
 void BTimer::start(void) {
   gettimeofday(&_start, 0);
@@ -69,13 +64,11 @@ void BTimer::start(void) {
   }
 }
 
-
 void BTimer::stop(void) {
   timing = False;
 
   display->removeTimer(this);
 }
-
 
 void BTimer::fireTimeout(void) {
   if (handler) handler->timeout();

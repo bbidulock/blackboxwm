@@ -712,7 +712,7 @@ else
 fi
 
 
-PACKAGE=Blackbox
+PACKAGE=blackbox
 
 VERSION=0.61.1
 
@@ -3142,6 +3142,7 @@ nls/pt_BR/Makefile
 nls/ru_RU/Makefile
 nls/sv_SE/Makefile
 nls/tr_TR/Makefile
+nls/ja_JP/Makefile
 version.h config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
@@ -3262,6 +3263,7 @@ nls/pt_BR/Makefile
 nls/ru_RU/Makefile
 nls/sv_SE/Makefile
 nls/tr_TR/Makefile
+nls/ja_JP/Makefile
 version.h"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF

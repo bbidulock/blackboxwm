@@ -82,7 +82,7 @@ bsetroot::bsetroot(int argc, char **argv, char *dpy_name)
 #else // !NLS
                        0, 0,
 #endif // NLS
-		       "%s: error: must specify on of: -solid, -mod, -gradient\n"),
+		       "%s: error: must specify one of: -solid, -mod, -gradient\n"),
 	    getApplicationName());
     
     usage(2);

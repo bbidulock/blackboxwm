@@ -3,9 +3,10 @@
 NLSTEST = @NLS@
 CLEANFILES = blackbox.cat
 MAINTAINERCLEANFILES = Makefile.in Translation.m
+DISTCLEANFILES = Translation.m
 MFILES = BaseDisplay.m Basemenu.m Configmenu.m Icon.m Image.m Screen.m Slit.m Toolbar.m Window.m Windowmenu.m Workspace.m Workspacemenu.m blackbox.m common.m main.m bsetroot.m
 
-all-local: blackbox.cat
+all-local: Translation.m blackbox.cat
 install-data-local: blackbox.cat
 	@if test x$(NLSTEST) = "x-DNLS"; then \
 		echo "Installing catalog in $(DESTDIR)$(pkgdatadir)/nls/C"; \
@@ -35,10 +36,8 @@ uninstall-local:
 # only need to generate it once.
 
 Translation.m: $(MFILES)
-	@if test x$(NLSTEST) = "x-DNLS"; then \
-		awk -f ../convert.awk header=../blackbox-nls.hh \
-			output=Translation.m $(MFILES); \
-	fi
+	awk -f ../convert.awk header=../blackbox-nls.hh \
+		output=Translation.m $(MFILES)
 
 blackbox.cat: Translation.m
 	@if test x$(NLSTEST) = "x-DNLS"; then \

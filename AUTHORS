@@ -1,9 +1,12 @@
 -- AUTHORS for Blackbox 0.61.x  - an X11 Window manager
 
-Author:
+Code Maintainer:
+	Sean 'Shaleh' Perry <shaleh@debian.org>
+
+Original Author:
         Brad Hughes <bhughes@trolltech.com>
 
-Co-author:
+Original Co-author:
         Jeff Raven <jraven@psu.edu>
 
 Contributors:
@@ -40,8 +43,3 @@ I would also like to thank the creators of WindowMaker.  Reading the existing
 code has helped me immensely, and the BImage class follows the RImage data type
 very closely (the 8bpp code and dithering code was based off of WindowMaker's
 wrlib).
-
-I recently stumbled upon a library called ccmalloc (which is included in the
-source tarball with blackbox) that has helped me immensely.  Many thanks to
-Armin Biere <armin@ira.uka.de> for this debugging aid.
-

@@ -94,24 +94,15 @@ static Window last_bad_window = None;
 
 BaseDisplay *base_display;
 
-#ifdef    DEBUG
 static int handleXErrors(Display *d, XErrorEvent *e) {
+#ifdef    DEBUG
   char errtxt[128];
 
   XGetErrorText(d, e->error_code, errtxt, 128);
-  fprintf(stderr,
-	  i18n->
-	  getMessage(
-#ifdef    NLS
-		     BaseDisplaySet, BaseDisplayXError,
-#else // !NLS
-		     0, 0,
-#endif // NLS
+  fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplayXError,
 		     "%s:  X error: %s(%d) opcodes %d/%d\n  resource 0x%lx\n"),
           base_display->getApplicationName(), errtxt, e->error_code,
           e->request_code, e->minor_code, e->resourceid);
-#else // !DEBUG
-static int handleXErrors(Display *, XErrorEvent *e) {
 #endif // DEBUG
 
   if (e->error_code == BadWindow) last_bad_window = e->resourceid;
@@ -154,40 +145,22 @@ static void signalhandler(int sig) {
       return;
     }
 
-    fprintf(stderr,
-	    i18n->getMessage(
-#ifdef    NLS
-			     BaseDisplaySet, BaseDisplaySignalCaught,
-#else // !NLS
-			     0, 0,
-#endif // NLS
-			     "%s:  signal %d caught\n"),
+    fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplaySignalCaught,
+				     "%s:  signal %d caught\n"),
 	    base_display->getApplicationName(), sig);
 
     if (! base_display->isStartup() && ! re_enter) {
       internal_error = True;
 
       re_enter = 1;
-      fprintf(stderr,
-	      i18n->getMessage(
-#ifdef    NLS
-			       BaseDisplaySet, BaseDisplayShuttingDown,
-#else // !NLS
-			       0, 0,
-#endif // NLS
-			       "shutting down\n"));
+      fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplayShuttingDown,
+				       "shutting down\n"));
       base_display->shutdown();
     }
 
     if (sig != SIGTERM && sig != SIGINT) {
-      fprintf(stderr,
-	      i18n->getMessage(
-#ifdef    NLS
-			       BaseDisplaySet, BaseDisplayAborting,
-#else // !NLS
-			       0, 0,
-#endif // NLS
-			       "aborting... dumping core\n"));
+      fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplayAborting,
+				       "aborting... dumping core\n"));
       abort();
     }
 
@@ -210,14 +183,12 @@ void bexec(const char *command, char* displaystring) {
 }
 #endif // !__EMX__
 
-
 char *bstrdup(const char *s) {
   int l = strlen(s) + 1;
   char *n = new char[l];
   strncpy(n, s, l);
   return n;
 }
-
 
 BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
   application_name = app_name;
@@ -236,6 +207,7 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
   action.sa_mask = sigset_t();
   action.sa_flags = SA_NOCLDSTOP | SA_NODEFER;
 
+  sigaction(SIGPIPE, &action, NULL);
   sigaction(SIGSEGV, &action, NULL);
   sigaction(SIGFPE, &action, NULL);
   sigaction(SIGTERM, &action, NULL);
@@ -245,6 +217,7 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
   sigaction(SIGUSR1, &action, NULL);
   sigaction(SIGUSR2, &action, NULL);
 #else // !HAVE_SIGACTION
+  signal(SIGPIPE, (RETSIGTYPE (*)(int)) signalhandler);
   signal(SIGSEGV, (RETSIGTYPE (*)(int)) signalhandler);
   signal(SIGFPE, (RETSIGTYPE (*)(int)) signalhandler);
   signal(SIGTERM, (RETSIGTYPE (*)(int)) signalhandler);
@@ -256,27 +229,14 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
 #endif // HAVE_SIGACTION
 
   if (! (display = XOpenDisplay(dpy_name))) {
-    fprintf(stderr,
-            i18n->
-	    getMessage(
-#ifdef    NLS
-		       BaseDisplaySet, BaseDisplayXConnectFail,
-#else // !NLS
-		       0, 0,
-#endif // NLS
-		       "BaseDisplay::BaseDisplay: connection to X server failed.\n"));
+    fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplayXConnectFail,
+	       "BaseDisplay::BaseDisplay: connection to X server failed.\n"));
     ::exit(2);
   } else if (fcntl(ConnectionNumber(display), F_SETFD, 1) == -1) {
     fprintf(stderr,
-            i18n->
-	    getMessage(
-#ifdef    NLS
-		       BaseDisplaySet, BaseDisplayCloseOnExecFail,
-#else // !NLS
-		       0, 0,
-#endif // NLS
-		       "BaseDisplay::BaseDisplay: couldn't mark display connection "
-		       "as close-on-exec\n"));
+	    i18n->getMessage(BaseDisplaySet, BaseDisplayCloseOnExecFail,
+	       "BaseDisplay::BaseDisplay: couldn't mark display connection "
+	       "as close-on-exec\n"));
     ::exit(2);
   }
 
@@ -373,8 +333,7 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
   timerList = new LinkedList<BTimer>;
 
   screenInfoList = new LinkedList<ScreenInfo>;
-  int i;
-  for (i = 0; i < number_of_screens; i++) {
+  for (int i = 0; i < number_of_screens; i++) {
     ScreenInfo *screeninfo = new ScreenInfo(this, i);
     screenInfoList->insert(screeninfo);
   }
@@ -413,14 +372,8 @@ void BaseDisplay::eventLoop(void) {
 
       if (last_bad_window != None && e.xany.window == last_bad_window) {
 #ifdef    DEBUG
-      fprintf(stderr,
-	      i18n->
-	      getMessage(
-#ifdef    NLS
-			 BaseDisplaySet, BaseDisplayBadWindowRemove,
-#else // !NLS
-			 0, 0,
-#endif // NLS
+      fprintf(stderr, i18n->getMessage(BaseDisplaySet,
+				       BaseDisplayBadWindowRemove,
 			 "BaseDisplay::eventLoop(): removing bad window "
 			 "from event queue\n"));
 #endif // DEBUG
@@ -471,21 +424,21 @@ void BaseDisplay::eventLoop(void) {
       gettimeofday(&now, 0);
 
       LinkedListIterator<BTimer> it(timerList);
-      for(; it.current(); it++) {
-        tm.tv_sec = it.current()->getStartTime().tv_sec +
-          it.current()->getTimeout().tv_sec;
-        tm.tv_usec = it.current()->getStartTime().tv_usec +
-          it.current()->getTimeout().tv_usec;
+      for(BTimer *timer = it.current(); timer; it++, timer = it.current()) {
+        tm.tv_sec = timer->getStartTime().tv_sec +
+          timer->getTimeout().tv_sec;
+        tm.tv_usec = timer->getStartTime().tv_usec +
+          timer->getTimeout().tv_usec;
 
         if ((now.tv_sec < tm.tv_sec) ||
             (now.tv_sec == tm.tv_sec && now.tv_usec < tm.tv_usec))
           break;
 
-        it.current()->fireTimeout();
+        timer->fireTimeout();
 
         // restart the current timer so that the start time is updated
-        if (! it.current()->doOnce()) it.current()->start();
-        else it.current()->stop();
+        if (! timer->doOnce()) timer->start();
+        else timer->stop();
       }
     }
   }
@@ -523,10 +476,10 @@ void BaseDisplay::addTimer(BTimer *timer) {
 
   LinkedListIterator<BTimer> it(timerList);
   int index = 0;
-  for (; it.current(); it++, index++)
-    if ((it.current()->getTimeout().tv_sec > timer->getTimeout().tv_sec) ||
-        ((it.current()->getTimeout().tv_sec == timer->getTimeout().tv_sec) &&
-         (it.current()->getTimeout().tv_usec >= timer->getTimeout().tv_usec)))
+  for (BTimer *tmp = it.current(); tmp; it++, index++, tmp = it.current())
+    if ((tmp->getTimeout().tv_sec > timer->getTimeout().tv_sec) ||
+        ((tmp->getTimeout().tv_sec == timer->getTimeout().tv_sec) &&
+         (tmp->getTimeout().tv_usec >= timer->getTimeout().tv_usec)))
       break;
 
   timerList->insert(timer, index);
@@ -574,10 +527,10 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, int num) {
     XFree(vinfo_return);
   }
 
-  if (visual)
+  if (visual) {
     colormap = XCreateColormap(basedisplay->getXDisplay(), root_window,
 			       visual, AllocNone);
-  else {
+  } else {
     visual = DefaultVisual(basedisplay->getXDisplay(), screen_number);
     colormap = DefaultColormap(basedisplay->getXDisplay(), screen_number);
   }

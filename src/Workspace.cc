@@ -49,9 +49,6 @@
 #  include <string.h>
 #endif // STDC_HEADERS
 
-#define MIN(x,y) ((x < y) ? x : y)
-#define MAX(x,y) ((x > y) ? x : y)
-
 
 Workspace::Workspace(BScreen *scrn, int i) {
   screen = scrn;
@@ -114,12 +111,12 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
   stackingList->remove(w);
 
   if (w->isFocused()) {
-    if (screen->isSloppyFocus())
-      screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
-    else if (w->isTransient() && w->getTransientFor() &&
-	     w->getTransientFor()->isVisible())
+    if (w->isTransient() && w->getTransientFor() &&
+	w->getTransientFor()->isVisible()) {
       w->getTransientFor()->setInputFocus();
-    else {
+    } else if (screen->isSloppyFocus()) {
+      screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
+    } else {
       BlackboxWindow *top = stackingList->first();
       if (! top || ! top->setInputFocus()) {
 	screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
@@ -140,8 +137,9 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
   screen->updateNetizenWindowDel(w->getClientWindow());
 
   LinkedListIterator<BlackboxWindow> it(windowList);
-  for (int i = 0; it.current(); it++, i++)
-    it.current()->setWindowNumber(i);
+  BlackboxWindow *bw = it.current();
+  for (int i = 0; bw; it++, i++, bw = it.current())
+    bw->setWindowNumber(i);
 
   return windowList->count();
 }
@@ -149,8 +147,8 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
 
 void Workspace::showAll(void) {
   LinkedListIterator<BlackboxWindow> it(stackingList);
-  for (; it.current(); it++)
-    it.current()->deiconify(False, False);
+  for (BlackboxWindow *bw = it.current(); bw; it++, bw = it.current())
+    bw->deiconify(False, False);
 }
 
 
@@ -158,20 +156,20 @@ void Workspace::hideAll(void) {
   LinkedList<BlackboxWindow> lst;
 
   LinkedListIterator<BlackboxWindow> it(stackingList);
-  for (; it.current(); it++)
-    lst.insert(it.current(), 0);
+  for (BlackboxWindow *bw = it.current(); bw; it++, bw = it.current())
+    lst.insert(bw, 0);
 
   LinkedListIterator<BlackboxWindow> it2(&lst);
-  for (; it2.current(); it2++)
-    if (! it2.current()->isStuck())
-      it2.current()->withdraw();
+  for (BlackboxWindow *bw = it2.current(); bw; it2++, bw = it2.current())
+    if (! bw->isStuck())
+      bw->withdraw();
 }
 
 
 void Workspace::removeAll(void) {
   LinkedListIterator<BlackboxWindow> it(windowList);
-  for (; it.current(); it++)
-    it.current()->iconify();
+  for (BlackboxWindow *bw = it.current(); bw; it++, bw = it.current())
+    bw->iconify();
 }
 
 
@@ -263,9 +261,10 @@ void Workspace::reconfigure(void) {
   clientmenu->reconfigure();
 
   LinkedListIterator<BlackboxWindow> it(windowList);
-  for (; it.current(); it++)
-    if (it.current()->validateClient())
-      it.current()->reconfigure();
+  for (BlackboxWindow *bw = it.current(); bw; it++, bw = it.current()) {
+    if (bw->validateClient())
+      bw->reconfigure();
+  }
 }
 
 
@@ -310,14 +309,8 @@ void Workspace::setName(char *new_name) {
     name = bstrdup(new_name);
   } else {
     name = new char[128];
-    sprintf(name, i18n->
-	          getMessage(
-#ifdef    NLS
-		             WorkspaceSet, WorkspaceDefaultNameFormat,
-#else // !NLS
-			     0, 0,
-#endif // NLS
-			     "Workspace %d"), id + 1);
+    sprintf(name, i18n->getMessage(WorkspaceSet, WorkspaceDefaultNameFormat,
+				   "Workspace %d"), id + 1);
   }
   
   clientmenu->setLabel(name);
@@ -332,11 +325,10 @@ void Workspace::shutdown(void) {
   }
 }
 
-
 void Workspace::placeWindow(BlackboxWindow *win) {
   Bool placed = False;
-  LinkedListIterator<BlackboxWindow> it(windowList);
-  int win_w = win->getWidth() + (screen->getBorderWidth2x() * 2),
+
+  const int win_w = win->getWidth() + (screen->getBorderWidth2x() * 2),
     win_h = win->getHeight() + (screen->getBorderWidth2x() * 2),
 #ifdef    SLIT
     slit_x = screen->getSlit()->getX() - screen->getBorderWidth(),
@@ -350,52 +342,53 @@ void Workspace::placeWindow(BlackboxWindow *win) {
     toolbar_y = screen->getToolbar()->getY() - screen->getBorderWidth(),
     toolbar_w = screen->getToolbar()->getWidth() +
       (screen->getBorderWidth2x() * 2),
-    toolbar_h = screen->getToolbar()->getHeight() +
+    toolbar_h = screen->getToolbar()->getHeight() + 
       (screen->getBorderWidth2x() * 2),
-    place_x = 0, place_y = 0, change_x = 1, change_y = 1;
+    start_pos = screen->getBorderWidth() + screen->getEdgeSnapThreshold(),
+    change_y =
+      ((screen->getColPlacementDirection() == BScreen::TopBottom) ? 1 : -1),
+    change_x =
+      ((screen->getRowPlacementDirection() == BScreen::LeftRight) ? 1 : -1),
+    delta_x = 8, delta_y = 8;
 
-  if (screen->getColPlacementDirection() == BScreen::BottomTop)
-    change_y = -1;
-  if (screen->getRowPlacementDirection() == BScreen::RightLeft)
-    change_x = -1;
-
-  register int test_x, test_y, curr_w, curr_h;
+  int test_x, test_y, place_x = 0, place_y = 0;
+  LinkedListIterator<BlackboxWindow> it(windowList);
 
   switch (screen->getPlacementPolicy()) {
   case BScreen::RowSmartPlacement: {
-    test_y = screen->getBorderWidth() + screen->getEdgeSnapThreshold();
-    if (screen->getColPlacementDirection() == BScreen::BottomTop)
-      test_y = screen->getHeight() - win_h - test_y;
+    test_y = (screen->getColPlacementDirection() == BScreen::TopBottom) ?
+      start_pos : screen->getHeight() - win_h - start_pos;
 
-    while (((screen->getColPlacementDirection() == BScreen::BottomTop) ?
-	    test_y > 0 :    test_y + win_h < (signed) screen->getHeight()) &&
-	   ! placed) {
-      test_x = screen->getBorderWidth() + screen->getEdgeSnapThreshold();
-      if (screen->getRowPlacementDirection() == BScreen::RightLeft)
-	test_x = screen->getWidth() - win_w - test_x;
+    while (!placed &&
+	   ((screen->getColPlacementDirection() == BScreen::BottomTop) ?
+	    test_y > 0 : test_y + win_h < (signed) screen->getHeight())) {
+      test_x = (screen->getRowPlacementDirection() == BScreen::LeftRight) ?
+	start_pos : screen->getWidth() - win_w - start_pos;
 
-      while (((screen->getRowPlacementDirection() == BScreen::RightLeft) ?
-	      test_x > 0 : test_x + win_w < (signed) screen->getWidth()) &&
-	     ! placed) {
+      while (!placed &&
+	     ((screen->getRowPlacementDirection() == BScreen::RightLeft) ?
+	      test_x > 0 : test_x + win_w < (signed) screen->getWidth())) {
         placed = True;
 
         it.reset();
-        for (; it.current() && placed; it++) {
-          curr_w = it.current()->getWidth() + screen->getBorderWidth2x() +
+        for (BlackboxWindow *curr = it.current(); placed && curr;
+	     it++, curr = it.current()) {
+          int curr_w = curr->getWidth() + screen->getBorderWidth2x() +
             screen->getBorderWidth2x();
-          curr_h =
-            ((it.current()->isShaded()) ? it.current()->getTitleHeight() :
-                                          it.current()->getHeight()) +
+          int curr_h =
+	    ((curr->isShaded()) ? curr->getTitleHeight() : curr->getHeight()) +
             screen->getBorderWidth2x() + screen->getBorderWidth2x();
-
-          if (it.current()->getXFrame() < test_x + win_w &&
-              it.current()->getXFrame() + curr_w > test_x &&
-              it.current()->getYFrame() < test_y + win_h &&
-              it.current()->getYFrame() + curr_h > test_y)
+	  
+          if (curr->getXFrame() < test_x + win_w &&
+              curr->getXFrame() + curr_w > test_x &&
+              curr->getYFrame() < test_y + win_h &&
+              curr->getYFrame() + curr_h > test_y) {
             placed = False;
+	  }
         }
 
-        if ((toolbar_x < test_x + win_w &&
+        if (placed &&
+	    (toolbar_x < test_x + win_w &&
              toolbar_x + toolbar_w > test_x &&
              toolbar_y < test_y + win_h &&
              toolbar_y + toolbar_h > test_y)
@@ -406,7 +399,7 @@ void Workspace::placeWindow(BlackboxWindow *win) {
              slit_y < test_y + win_h &&
              slit_y + slit_h > test_y)
 #endif // SLIT
-          )
+	    )
           placed = False;
 
         if (placed) {
@@ -416,76 +409,78 @@ void Workspace::placeWindow(BlackboxWindow *win) {
           break;
         }
 
-        test_x += change_x;
+	test_x += (change_x * delta_x);
       }
 
-      test_y += change_y;
+      test_y += (change_y * delta_y);
     }
 
-    break; }
+    break;
+  }
 
   case BScreen::ColSmartPlacement: {
-    test_x = screen->getBorderWidth() + screen->getEdgeSnapThreshold();
-    if (screen->getRowPlacementDirection() == BScreen::RightLeft)
-      test_x = screen->getWidth() - win_w - test_x;
+    test_x = (screen->getRowPlacementDirection() == BScreen::LeftRight) ?
+      start_pos : screen->getWidth() - win_w - start_pos;
 
-    while (((screen->getRowPlacementDirection() == BScreen::RightLeft) ?
-	    test_x > 0 : test_x + win_w < (signed) screen->getWidth()) &&
-	   ! placed) {
-      test_y = screen->getBorderWidth() + screen->getEdgeSnapThreshold();
-      if (screen->getColPlacementDirection() == BScreen::BottomTop)
-	test_y = screen->getHeight() - win_h - test_y;
-
-      while (((screen->getColPlacementDirection() == BScreen::BottomTop) ?
-	      test_y > 0 : test_y + win_h < (signed) screen->getHeight()) &&
-	     ! placed) {
+    while (!placed &&
+	   ((screen->getRowPlacementDirection() == BScreen::RightLeft) ?
+	    test_x > 0 : test_x + win_w < (signed) screen->getWidth())) {
+      test_y = (screen->getColPlacementDirection() == BScreen::TopBottom) ?
+	start_pos : screen->getHeight() - win_h - start_pos;
+      
+      while (!placed &&
+	     ((screen->getColPlacementDirection() == BScreen::BottomTop) ?
+	      test_y > 0 : test_y + win_h < (signed) screen->getHeight())) {
         placed = True;
 
         it.reset();
-        for (; it.current() && placed; it++) {
-          curr_w = it.current()->getWidth() + screen->getBorderWidth2x() +
+        for (BlackboxWindow *curr = it.current(); placed && curr;
+	     it++, curr = it.current()) {
+          int curr_w = curr->getWidth() + screen->getBorderWidth2x() +
             screen->getBorderWidth2x();
-          curr_h =
-            ((it.current()->isShaded()) ? it.current()->getTitleHeight() :
-                                          it.current()->getHeight()) +
+          int curr_h =
+            ((curr->isShaded()) ? curr->getTitleHeight() : curr->getHeight()) +
             screen->getBorderWidth2x() + screen->getBorderWidth2x();
 
-          if (it.current()->getXFrame() < test_x + win_w &&
-              it.current()->getXFrame() + curr_w > test_x &&
-              it.current()->getYFrame() < test_y + win_h &&
-              it.current()->getYFrame() + curr_h > test_y)
+          if (curr->getXFrame() < test_x + win_w &&
+              curr->getXFrame() + curr_w > test_x &&
+              curr->getYFrame() < test_y + win_h &&
+              curr->getYFrame() + curr_h > test_y) {
             placed = False;
+	  }
         }
 
-        if ((toolbar_x < test_x + win_w &&
-             toolbar_x + toolbar_w > test_x &&
-             toolbar_y < test_y + win_h &&
-             toolbar_y + toolbar_h > test_y)
+        if (placed &&
+	    (toolbar_x < test_x + win_w &&
+	     toolbar_x + toolbar_w > test_x &&
+	     toolbar_y < test_y + win_h &&
+	     toolbar_y + toolbar_h > test_y)
 #ifdef    SLIT
-             ||
-            (slit_x < test_x + win_w &&
-             slit_x + slit_w > test_x &&
-             slit_y < test_y + win_h &&
-             slit_y + slit_h > test_y)
+	    ||
+	    (slit_x < test_x + win_w &&
+	     slit_x + slit_w > test_x &&
+	     slit_y < test_y + win_h &&
+	     slit_y + slit_h > test_y)
 #endif // SLIT
-         )
-         placed = False;
+	    )
+	  placed = False;
 
-       if (placed) {
-         place_x = test_x;
-         place_y = test_y;
+	if (placed) {
+	  place_x = test_x;
+	  place_y = test_y;
 
-         break;
-       }
+	  break;
+	}
 
-       test_y += change_y;
-     }
+	test_y += (change_y * delta_y);
+      }
 
-     test_x += change_x;
-   }
+      test_x += (change_x * delta_x);
+    }
 
-   break; }
+    break;
   }
+  } // switch
 
   if (! placed) {
     if (((unsigned) cascade_x > (screen->getWidth() / 2)) ||
@@ -498,7 +493,7 @@ void Workspace::placeWindow(BlackboxWindow *win) {
     cascade_x += win->getTitleHeight();
     cascade_y += win->getTitleHeight();
   }
-
+  
   if (place_x + win_w > (signed) screen->getWidth())
     place_x = (((signed) screen->getWidth()) - win_w) / 2;
   if (place_y + win_h > (signed) screen->getHeight())

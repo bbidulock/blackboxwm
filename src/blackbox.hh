@@ -60,7 +60,6 @@ private:
   Window window;
   Z *data;
 
-
 public:
   DataSearch(Window w, Z *d) { window = w; data = d; }
 
