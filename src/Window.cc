@@ -122,7 +122,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   client.functions = Func_Resize | Func_Move | Func_Iconify | Func_Maximize;
   client.normal_hint_flags = 0;
   client.window_group = None;
-  client.transient_for = 0;
+  client.transient_for = (BlackboxWindow*) 0;
   client.window_type = None;
   client.strut = (Netwm::Strut*) 0;
   /*
@@ -895,10 +895,12 @@ void BlackboxWindow::getWMName(void) {
     }
   }
 
-  if (! name.empty())
+  if (! name.empty()) {
     client.title = name;
-  else
+  } else {
     client.title = i18n(WindowSet, WindowUnnamed, "Unnamed");
+    blackbox->netwm()->setWMVisibleName(client.window, client.title);
+  }
 }
 
 
@@ -915,10 +917,12 @@ void BlackboxWindow::getWMIconName(void) {
     }
   }
 
-  if (! name.empty())
+  if (! name.empty()) {
     client.icon_title = name;
-  else
+  } else {
     client.icon_title = client.title;
+    blackbox->netwm()->setWMVisibleIconName(client.window, client.icon_title);
+  }
 }
 
 
@@ -1157,7 +1161,7 @@ void BlackboxWindow::getMWMHints(void) {
   int format;
   Atom atom_return;
   unsigned long num, len;
-  MwmHints *mwm_hint = 0;
+  MwmHints *mwm_hint = (MwmHints*) 0;
 
   int ret = XGetWindowProperty(blackbox->getXDisplay(), client.window,
                                blackbox->getMotifWMHintsAtom(), 0,
@@ -1174,7 +1178,7 @@ void BlackboxWindow::getMWMHints(void) {
       client.decorations = Decor_Titlebar | Decor_Handle | Decor_Border |
                     Decor_Iconify | Decor_Maximize | Decor_Close;
     } else {
-      client.decorations = 0;
+      client.decorations = 0l;
 
       if (mwm_hint->decorations & MwmDecorBorder)
         client.decorations |= Decor_Border;
@@ -1194,7 +1198,7 @@ void BlackboxWindow::getMWMHints(void) {
       client.functions = Func_Resize | Func_Move | Func_Iconify | Func_Maximize |
                   Func_Close;
     } else {
-      client.functions = 0;
+      client.functions = 0l;
 
       if (mwm_hint->functions & MwmFuncResize)
         client.functions |= Func_Resize;
@@ -1605,7 +1609,7 @@ void BlackboxWindow::maximize(unsigned int button) {
       flags currently set.  Otherwise it still thinks it is maximized.
       so we do not need to call configure() because resizing will handle it
     */
-    if (!client.state.resizing)
+    if (! client.state.resizing)
       configure(client.premax.x(), client.premax.y(),
                 client.premax.width(), client.premax.height());
 
@@ -1837,6 +1841,8 @@ void BlackboxWindow::setState(unsigned long new_state, bool closing) {
     netwm->removeProperty(client.window, netwm->wmDesktop());
     netwm->removeProperty(client.window, netwm->wmState());
     netwm->removeProperty(client.window, netwm->wmAllowedActions());
+    netwm->removeProperty(client.window, netwm->wmVisibleName());
+    netwm->removeProperty(client.window, netwm->wmVisibleIconName());
     return;
   }
 
@@ -1893,24 +1899,26 @@ void BlackboxWindow::setState(unsigned long new_state, bool closing) {
 
   atoms.clear();
 
-  atoms.push_back(netwm->wmActionMove());
-  atoms.push_back(netwm->wmActionChangeDesktop());
+  if (! client.state.iconic) {
+    atoms.push_back(netwm->wmActionMove());
+    atoms.push_back(netwm->wmActionChangeDesktop());
 
-  if (client.functions & Func_Iconify)
-    atoms.push_back(netwm->wmActionMinimize());
+    if (client.functions & Func_Iconify)
+      atoms.push_back(netwm->wmActionMinimize());
 
-  if (client.functions & Func_Resize) {
-    atoms.push_back(netwm->wmActionResize());
-    atoms.push_back(netwm->wmActionMaximizeHorz());
-    atoms.push_back(netwm->wmActionMaximizeVert());
-    atoms.push_back(netwm->wmActionFullscreen());
+    if (client.functions & Func_Resize) {
+      atoms.push_back(netwm->wmActionResize());
+      atoms.push_back(netwm->wmActionMaximizeHorz());
+      atoms.push_back(netwm->wmActionMaximizeVert());
+      atoms.push_back(netwm->wmActionFullscreen());
+    }
+
+    if (client.decorations & Decor_Titlebar)
+      atoms.push_back(netwm->wmActionShade());
   }
 
   if (client.functions & Func_Close)
     atoms.push_back(netwm->wmActionClose());
-
-  if (client.decorations & Decor_Titlebar)
-    atoms.push_back(netwm->wmActionShade());
 
   netwm->setWMAllowedActions(client.window, atoms);
 }

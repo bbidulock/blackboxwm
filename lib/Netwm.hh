@@ -90,7 +90,10 @@ public:
 
   // application properties
   inline Atom wmName(void) const { return net_wm_name; }
+  inline Atom wmVisibleName(void) const { return net_wm_visible_name; }
   inline Atom wmIconName(void) const { return net_wm_icon_name; }
+  inline Atom wmVisibleIconName(void) const
+  { return net_wm_visible_icon_name; }
   inline Atom wmDesktop(void) const { return net_wm_desktop; }
   inline Atom wmWindowType(void) const { return net_wm_window_type; }
   inline Atom wmWindowTypeDesktop(void) const
@@ -148,7 +151,9 @@ public:
 
   void setWMName(Window target, const std::string& name) const;
   bool readWMName(Window target, std::string& name) const;
+  void setWMVisibleName(Window target, const std::string& name) const;
   bool readWMIconName(Window target, std::string& name) const;
+  void setWMVisibleIconName(Window target, const std::string& name) const;
   void setWMDesktop(Window target, unsigned int desktop) const;
   bool readWMDesktop(Window target, unsigned int& desktop) const;
   bool readWMWindowType(Window target, AtomList& types) const;
@@ -176,7 +181,9 @@ private:
     net_number_of_desktops, net_desktop_geometry, net_current_desktop,
     net_desktop_names, net_active_window, net_workarea,
     net_supporting_wm_check, net_close_window, net_moveresize_window,
-    net_wm_name, net_wm_icon_name, net_wm_desktop, net_wm_window_type,
+    net_wm_name, net_wm_visible_name,
+    net_wm_icon_name, net_wm_visible_icon_name,
+    net_wm_desktop, net_wm_window_type,
     net_wm_window_type_desktop, net_wm_window_type_dock,
     net_wm_window_type_toolbar, net_wm_window_type_menu,
     net_wm_window_type_utility, net_wm_window_type_splash,

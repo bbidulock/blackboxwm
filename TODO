@@ -11,10 +11,6 @@ netwm:
 
 * always on top/bottom support, layers, omnipresence, etc
 
-* update ALLOWED_ACTIONS when required
-
-* if we find a window with no title, set VISIBLE_NAME
-
 refactoring:
 -----------------------------
 * look into public v. private members of all classes

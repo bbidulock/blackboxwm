@@ -26,7 +26,7 @@
 typedef unsigned char uchar;
 
 Netwm::Netwm(Display* _display): display(_display) {
-  char* atoms[49] = {
+  char* atoms[51] = {
     "UTF8_STRING",
     "_NET_SUPPORTED",
     "_NET_CLIENT_LIST",
@@ -41,7 +41,9 @@ Netwm::Netwm(Display* _display): display(_display) {
     "_NET_CLOSE_WINDOW",
     "_NET_MOVERESIZE_WINDOW",
     "_NET_WM_NAME",
+    "_NET_WM_VISIBLE_NAME",
     "_NET_WM_ICON_NAME",
+    "_NET_WM_VISIBLE_ICON_NAME",
     "_NET_WM_DESKTOP",
     "_NET_WM_WINDOW_TYPE",
     "_NET_WM_WINDOW_TYPE_DESKTOP",
@@ -77,8 +79,8 @@ Netwm::Netwm(Display* _display): display(_display) {
     "_NET_WM_ALLOWED_ACTION_CLOSE",
     "_NET_WM_STRUT"
   };
-  Atom atoms_return[49];
-  XInternAtoms(display, atoms, 49, False, atoms_return);
+  Atom atoms_return[51];
+  XInternAtoms(display, atoms, 51, False, atoms_return);
 
   utf8_string = atoms_return[0];
   net_supported = atoms_return[1];
@@ -94,41 +96,43 @@ Netwm::Netwm(Display* _display): display(_display) {
   net_close_window = atoms_return[11];
   net_moveresize_window = atoms_return[12];
   net_wm_name = atoms_return[13];
-  net_wm_icon_name = atoms_return[14];
-  net_wm_desktop = atoms_return[15];
-  net_wm_window_type = atoms_return[16];
-  net_wm_window_type_desktop = atoms_return[17];
-  net_wm_window_type_dock = atoms_return[18];
-  net_wm_window_type_toolbar = atoms_return[19];
-  net_wm_window_type_menu = atoms_return[20];
-  net_wm_window_type_utility = atoms_return[21];
-  net_wm_window_type_splash = atoms_return[22];
-  net_wm_window_type_dialog = atoms_return[23];
-  net_wm_window_type_normal = atoms_return[24];
-  net_wm_state = atoms_return[25];
-  net_wm_state_modal = atoms_return[26];
-  net_wm_state_sticky = atoms_return[27];
-  net_wm_state_maximized_vert = atoms_return[28];
-  net_wm_state_maximized_horz = atoms_return[29];
-  net_wm_state_shaded = atoms_return[30];
-  net_wm_state_skip_taskbar = atoms_return[31];
-  net_wm_state_skip_pager = atoms_return[32];
-  net_wm_state_hidden = atoms_return[33];
-  net_wm_state_fullscreen = atoms_return[34];
-  net_wm_state_above = atoms_return[35];
-  net_wm_state_below = atoms_return[36];
-  net_wm_allowed_actions = atoms_return[37];
-  net_wm_action_move = atoms_return[38];
-  net_wm_action_resize = atoms_return[39];
-  net_wm_action_minimize = atoms_return[40];
-  net_wm_action_shade = atoms_return[41];
-  net_wm_action_stick = atoms_return[42];
-  net_wm_action_maximize_horz = atoms_return[43];
-  net_wm_action_maximize_vert = atoms_return[44];
-  net_wm_action_fullscreen = atoms_return[45];
-  net_wm_action_change_desktop = atoms_return[46];
-  net_wm_action_close = atoms_return[47];
-  net_wm_strut = atoms_return[48];
+  net_wm_visible_name = atoms_return[14];
+  net_wm_icon_name = atoms_return[15];
+  net_wm_visible_icon_name = atoms_return[16];
+  net_wm_desktop = atoms_return[17];
+  net_wm_window_type = atoms_return[18];
+  net_wm_window_type_desktop = atoms_return[19];
+  net_wm_window_type_dock = atoms_return[20];
+  net_wm_window_type_toolbar = atoms_return[21];
+  net_wm_window_type_menu = atoms_return[22];
+  net_wm_window_type_utility = atoms_return[23];
+  net_wm_window_type_splash = atoms_return[24];
+  net_wm_window_type_dialog = atoms_return[25];
+  net_wm_window_type_normal = atoms_return[26];
+  net_wm_state = atoms_return[27];
+  net_wm_state_modal = atoms_return[28];
+  net_wm_state_sticky = atoms_return[29];
+  net_wm_state_maximized_vert = atoms_return[30];
+  net_wm_state_maximized_horz = atoms_return[31];
+  net_wm_state_shaded = atoms_return[32];
+  net_wm_state_skip_taskbar = atoms_return[33];
+  net_wm_state_skip_pager = atoms_return[34];
+  net_wm_state_hidden = atoms_return[35];
+  net_wm_state_fullscreen = atoms_return[36];
+  net_wm_state_above = atoms_return[37];
+  net_wm_state_below = atoms_return[38];
+  net_wm_allowed_actions = atoms_return[39];
+  net_wm_action_move = atoms_return[40];
+  net_wm_action_resize = atoms_return[41];
+  net_wm_action_minimize = atoms_return[42];
+  net_wm_action_shade = atoms_return[43];
+  net_wm_action_stick = atoms_return[44];
+  net_wm_action_maximize_horz = atoms_return[45];
+  net_wm_action_maximize_vert = atoms_return[46];
+  net_wm_action_fullscreen = atoms_return[47];
+  net_wm_action_change_desktop = atoms_return[48];
+  net_wm_action_close = atoms_return[49];
+  net_wm_strut = atoms_return[50];
 }
 
 
@@ -356,6 +360,14 @@ bool Netwm::readWMName(Window target, std::string& name) const {
 }
 
 
+void Netwm::setWMVisibleName(Window target, const std::string &name) const {
+  XChangeProperty(display, target, net_wm_visible_name, utf8_string,
+                  8, PropModeReplace,
+                  reinterpret_cast<uchar*>(const_cast<char*>(name.c_str())),
+                  name.length());
+}
+
+
 bool Netwm::readWMIconName(Window target, std::string& name) const {
   unsigned char* data = NULL;
   unsigned long nitems;
@@ -366,6 +378,15 @@ bool Netwm::readWMIconName(Window target, std::string& name) const {
   }
 
   return (! name.empty());
+}
+
+
+void
+Netwm::setWMVisibleIconName(Window target, const std::string &name) const {
+  XChangeProperty(display, target, net_wm_visible_icon_name, utf8_string,
+                  8, PropModeReplace,
+                  reinterpret_cast<uchar*>(const_cast<char*>(name.c_str())),
+                  name.length());
 }
 
 
