@@ -40,8 +40,10 @@ void Rootmenu::insertFunction(const std::string &label,
 }
 
 
-void Rootmenu::clear(void)
-{ _funcmap.clear(); }
+void Rootmenu::clear(void) {
+  bt::Menu::clear();
+  _funcmap.clear();
+}
 
 
 void Rootmenu::itemClicked(unsigned int id, unsigned int) {
