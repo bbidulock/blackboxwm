@@ -2837,8 +2837,7 @@ void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent *
   if (event->value_mask & (CWX | CWY | CWWidth | CWHeight)) {
     bt::Rect req = frame.rect;
 
-    if (hasWindowFunction(WindowFunctionMove)
-        && (event->value_mask & (CWX | CWY))) {
+    if (event->value_mask & (CWX | CWY)) {
       restoreGravity(client.rect);
       if (event->value_mask & CWX)
         client.rect.setX(event->x);
@@ -2847,8 +2846,7 @@ void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent *
       applyGravity(req);
     }
 
-    if (hasWindowFunction(WindowFunctionResize)
-        && (event->value_mask & (CWWidth | CWHeight))) {
+    if (event->value_mask & (CWWidth | CWHeight)) {
       if (event->value_mask & CWWidth)
         req.setWidth(event->width + frame.margin.left + frame.margin.right);
       if (event->value_mask & CWHeight)
