@@ -123,6 +123,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   XChangeWindowAttributes(blackbox->XDisplay(), client.window,
                           CWEventMask|CWDontPropagate, &attrib_set);
 
+  client.colormap = wattrib.colormap;
   client.state.moving = client.state.resizing = client.state.shaded =
     client.state.iconic = client.state.focused = client.state.modal =
     client.state.fullscreen = client.state.send_focus_message =
@@ -1742,40 +1743,11 @@ void BlackboxWindow::setFocusFlag(bool focus) {
 
   redrawWindowFrame();
 
-  if (client.state.focused)
+  if (client.state.focused) {
     blackbox->setFocusedWindow(this);
-}
-
-
-void BlackboxWindow::installColormap(bool install) {
-  int i = 0, ncmap = 0;
-  Colormap *cmaps = XListInstalledColormaps(blackbox->XDisplay(),
-                                            client.window, &ncmap);
-  if (cmaps) {
-    XWindowAttributes wattrib;
-    if (XGetWindowAttributes(blackbox->XDisplay(),
-                             client.window, &wattrib)) {
-      if (install) {
-        // install the window's colormap
-        for (i = 0; i < ncmap; i++) {
-          if (*(cmaps + i) == wattrib.colormap)
-            // this window is using an installed color map... do not install
-            install = False;
-        }
-        // otherwise, install the window's colormap
-        if (install)
-          XInstallColormap(blackbox->XDisplay(), wattrib.colormap);
-      } else {
-        // uninstall the window's colormap
-        for (i = 0; i < ncmap; i++) {
-          if (*(cmaps + i) == wattrib.colormap)
-            // we found the colormap to uninstall
-            XUninstallColormap(blackbox->XDisplay(), wattrib.colormap);
-        }
-      }
-    }
-
-    XFree(cmaps);
+    XInstallColormap(blackbox->XDisplay(), client.colormap);
+  } else {
+    XUninstallColormap(blackbox->XDisplay(), client.colormap);
   }
 }
 
@@ -2247,10 +2219,8 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
     if (client.workspace != screen->getCurrentWorkspaceID())
       screen->changeWorkspaceID(client.workspace);
 
-    if (setInputFocus()) {
+    if (setInputFocus())
       screen->raiseWindow(this);
-      installColormap(True);
-    }
   } else if (ce->message_type == netwm.closeWindow()) {
     close();
   } else if (ce->message_type == netwm.moveresizeWindow()) {
@@ -2337,7 +2307,7 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
         skip_pager = -1;
     }
     if (first == netwm.wmStateHidden() ||
-               second == netwm.wmStateHidden()) {
+        second == netwm.wmStateHidden()) {
       /* ignore this message */
     }
     if (first == netwm.wmStateFullscreen() ||
@@ -2683,6 +2653,9 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
     if (be->button == 1 || (be->button == 3 && be->state == Mod1Mask)) {
       if (! client.state.focused)
         setInputFocus();
+      else
+        XInstallColormap(blackbox->XDisplay(), client.colormap);
+
       if (windowmenu && windowmenu->isVisible()) windowmenu->hide();
 
       screen->raiseWindow(this);
@@ -2693,6 +2666,9 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
     if (be->button == 1 || (be->button == 3 && be->state == Mod1Mask)) {
       if (! client.state.focused)
         setInputFocus();
+      else
+        XInstallColormap(blackbox->XDisplay(), client.colormap);
+
       if (frame.title == be->window || frame.label == be->window &&
           (client.functions & Func_Shade)) {
         if ((be->time - lastButtonPressTime <=
@@ -2999,11 +2975,8 @@ void BlackboxWindow::enterNotifyEvent(const XCrossingEvent* ce) {
     }
   }
 
-  if ((! leave || inferior) && ! isFocused()) {
-    bool success = setInputFocus();
-    if (success)    // if focus succeeded install the colormap
-      installColormap(True); // XXX: shouldnt we honour no install?
-  }
+  if ((! leave || inferior) && ! isFocused())
+    (void) setInputFocus();
 
   if (screen->resource().doAutoRaise())
     timer->start();
@@ -3014,8 +2987,6 @@ void BlackboxWindow::leaveNotifyEvent(const XCrossingEvent*) {
   if (! (screen->resource().isSloppyFocus() &&
          screen->resource().doAutoRaise()))
     return;
-
-  installColormap(False);
 
   if (timer->isTiming())
     timer->stop();

@@ -174,6 +174,7 @@ private:
   struct _client {
     Window window,                  // the client's window
       window_group;
+    Colormap colormap;
     BlackboxWindow *transient_for;  // which window are we a transient for?
     BlackboxWindowList transientList; // which windows are our transients?
 
@@ -385,7 +386,6 @@ public:
   void reconfigure(void);
   void grabButtons(void);
   void ungrabButtons(void);
-  void installColormap(bool install);
   void restore(bool remap);
   void configure(int dx, int dy, unsigned int dw, unsigned int dh);
   void setWorkspace(unsigned int n);

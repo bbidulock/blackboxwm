@@ -62,7 +62,7 @@ typedef std::list<Window> WindowList;
 
 class BScreen : public bt::NoCopy, public bt::EventHandler {
 private:
-  bool root_colormap_installed, managed, geom_visible;
+  bool managed, geom_visible;
   GC opGC;
   Pixmap geom_pixmap;
   Window geom_window;
@@ -124,7 +124,6 @@ public:
   void saveResource(void) { blackbox->resource().save(*blackbox); }
 
   bool isScreenManaged(void) const { return managed; }
-  bool isRootColormapInstalled(void) const { return root_colormap_installed; }
 
   const GC &getOpGC(void) const { return opGC; }
   Blackbox *getBlackbox(void) { return blackbox; }
@@ -146,8 +145,6 @@ public:
   unsigned int getIconCount(void) const { return iconList.size(); }
 
   BlackboxWindow* getWindow(unsigned int workspace, unsigned int id);
-
-  void setRootColormapInstalled(bool r) { root_colormap_installed = r; }
 
   BlackboxWindow *getIcon(unsigned int index);
 

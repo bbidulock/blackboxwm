@@ -240,16 +240,6 @@ void Blackbox::process_event(XEvent *e) {
     break;
   }
 
-  case ColormapNotify: {
-    BScreen *screen = findScreen(e->xcolormap.window);
-
-    if (screen)
-      screen->setRootColormapInstalled((e->xcolormap.state ==
-                                        ColormapInstalled) ? True : False);
-
-    break;
-  }
-
   case FocusIn: {
     if (e->xfocus.detail != NotifyNonlinear) {
       /*

@@ -1323,7 +1323,7 @@ void BScreen::clientMessageEvent(const XClientMessageEvent * const event) {
 
 void BScreen::buttonPressEvent(const XButtonEvent * const event) {
   if (event->button == 1) {
-#warning "TODO: install root colormap"
+    XInstallColormap(blackbox->XDisplay(), screen_info.colormap());
 
     /*
       set this screen active.  keygrabs and input focus will stay on
