@@ -247,29 +247,13 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
   red_bits = green_bits = blue_bits = 0;
 
   switch (_vclass) {
-  case StaticGray:
-  case GrayScale: {
-    unsigned int ncolors;
-    if (_vclass == StaticGray)
-      ncolors = 1u << depth;
-    else
-      ncolors = _cpc * _cpc * _cpc;
-
-    if (ncolors > (1u << depth)) {
-      _cpc = (1u << depth) / 3u;
-      ncolors = _cpc * _cpc * _cpc;
-    }
-
-    if (_cpc < 2u || ncolors > (1u << depth)) {
-      // invalid colormap size, reduce
-      _cpc = (1u << depth) / 3u;
-    }
-
-    colors.resize(ncolors);
-    red_bits = green_bits = blue_bits = 255u / (_cpc - 1);
+  case StaticGray: {
+    red_bits = green_bits = blue_bits =
+               255u / (DisplayCells(_dpy.XDisplay(), screen) - 1);
     break;
   }
 
+  case GrayScale:
   case StaticColor:
   case PseudoColor: {
     unsigned int ncolors = _cpc * _cpc * _cpc;
@@ -437,9 +421,9 @@ unsigned long bt::XColorTable::pixel(unsigned int red,
                                      unsigned int blue) {
   switch (_vclass) {
   case StaticGray:
-  case GrayScale:
-    return ((red * 30) + (green * 59) + (blue * 11)) / 100;
+    return std::max(red, std::max(green, blue));
 
+  case GrayScale:
   case StaticColor:
   case PseudoColor:
     return colors[(red * _cpcsq) + (green * _cpc) + blue].pixel;
