@@ -32,6 +32,8 @@ Current Contributors:
 	 - Hungarian (hu_HU) support
 	Duret Bertrand <bertrand.duret@libertysurf.fr>
 	 - updated French (fr_FR) nls and added French man pages
+	 Volodymyr M. Lisivka <lvm@mystery.lviv.net>
+	 - Ukrainian nls support
 
 Original Author:
         Brad Hughes <bhughes@trolltech.com>
