@@ -111,7 +111,7 @@ static int anotherWMRunning(Display *display, XErrorEvent *) {
 
 
 BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
-  screen_info(bb->display().screenInfo(scrn)), blackbox(bb),
+  opGC(0), screen_info(bb->display().screenInfo(scrn)), blackbox(bb),
   _resource(bb->resource().screenResource(scrn)) {
 
   XErrorHandler old = XSetErrorHandler((XErrorHandler) anotherWMRunning);
@@ -139,8 +139,6 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
   rootmenu = (Rootmenu *) 0;
 
-  geom_pixmap = None;
-
   XDefineCursor(blackbox->XDisplay(), screen_info.rootWindow(),
                 blackbox->resource().sessionCursor());
 
@@ -149,53 +147,13 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
   LoadStyle();
 
-  XGCValues gcv;
-  unsigned long gc_value_mask = GCForeground;
-  if (! bt::i18n.multibyte()) gc_value_mask |= GCFont;
+  updateOpGC();
 
-  gcv.foreground = WhitePixel(blackbox->XDisplay(),
-                              screen_info.screenNumber())
-                   ^ BlackPixel(blackbox->XDisplay(),
-                                screen_info.screenNumber());
-  gcv.function = GXxor;
-  gcv.subwindow_mode = IncludeInferiors;
-  opGC = XCreateGC(blackbox->XDisplay(), screen_info.rootWindow(),
-                   GCForeground | GCFunction | GCSubwindowMode, &gcv);
-
-  const char *s =
-    bt::i18n(ScreenSet, ScreenPositionLength, "0: 0000 x 0: 0000");
-  bt::Rect geomr = bt::textRect(_resource.windowStyle()->font, s);
-  geom_w = geomr.width() + (_resource.bevelWidth() * 2);
-  geom_h = geomr.height() + (_resource.bevelWidth() * 2);
-
-  XSetWindowAttributes setattrib;
-  unsigned long mask = CWBorderPixel | CWColormap | CWSaveUnder;
-  setattrib.border_pixel =
-    _resource.borderColor()->pixel(screen_info.screenNumber());
-  setattrib.colormap = screen_info.colormap();
-  setattrib.save_under = True;
-
-  geom_window = XCreateWindow(blackbox->XDisplay(),
-                              screen_info.rootWindow(),
-                              0, 0, geom_w, geom_h, _resource.borderWidth(),
-                              screen_info.depth(), InputOutput,
-                              screen_info.visual(), mask, &setattrib);
+  geom_pixmap = None;
   geom_visible = False;
+  geom_window = None;
 
-  bt::Texture texture = _resource.windowStyle()->l_focus;
-  geom_pixmap = bt::PixmapCache::find(screen_info.screenNumber(),
-                                      texture, geom_w, geom_h, geom_pixmap);
-  if (geom_pixmap == ParentRelative) {
-    texture = _resource.windowStyle()->t_focus;
-    geom_pixmap = bt::PixmapCache::find(screen_info.screenNumber(),
-                                        texture, geom_w, geom_h, geom_pixmap);
-  }
-  if (! geom_pixmap)
-    XSetWindowBackground(blackbox->XDisplay(), geom_window,
-                         texture.color().pixel(screen_info.screenNumber()));
-  else
-    XSetWindowBackgroundPixmap(blackbox->XDisplay(),
-                               geom_window, geom_pixmap);
+  updateGeomWindow();
 
   workspacemenu =
     new Workspacemenu(*blackbox, screen_info.screenNumber(), this);
@@ -388,27 +346,32 @@ BScreen::~BScreen(void) {
 }
 
 
-void BScreen::reconfigure(void) {
-  LoadStyle();
-
-  XGCValues gcv;
-  unsigned long gc_value_mask = GCForeground;
-  if (! bt::i18n.multibyte()) gc_value_mask |= GCFont;
-
-  gcv.foreground = WhitePixel(blackbox->XDisplay(),
-                              screen_info.screenNumber())
-                   ^ BlackPixel(blackbox->XDisplay(),
-                                screen_info.screenNumber());
-  gcv.function = GXxor;
-  gcv.subwindow_mode = IncludeInferiors;
-  XChangeGC(blackbox->XDisplay(), opGC,
-            GCForeground | GCFunction | GCSubwindowMode, &gcv);
-
+void BScreen::updateGeomWindow(void) {
   const char *s =
     bt::i18n(ScreenSet, ScreenPositionLength, "0: 0000 x 0: 0000");
   bt::Rect geomr = bt::textRect(_resource.windowStyle()->font, s);
   geom_w = geomr.width() + (_resource.bevelWidth() * 2);
   geom_h = geomr.height() + (_resource.bevelWidth() * 2);
+
+  if (geom_window == None) {
+    XSetWindowAttributes setattrib;
+    unsigned long mask = CWBorderPixel | CWColormap | CWSaveUnder;
+    setattrib.border_pixel =
+      _resource.borderColor()->pixel(screen_info.screenNumber());
+    setattrib.colormap = screen_info.colormap();
+    setattrib.save_under = True;
+
+    geom_window = XCreateWindow(blackbox->XDisplay(),
+                                screen_info.rootWindow(),
+                                0, 0, geom_w, geom_h, _resource.borderWidth(),
+                                screen_info.depth(), InputOutput,
+                                screen_info.visual(), mask, &setattrib);
+  } else {
+    XSetWindowBorderWidth(blackbox->XDisplay(), geom_window,
+                          _resource.borderWidth());
+    XSetWindowBorder(blackbox->XDisplay(), geom_window,
+                     _resource.borderColor()->pixel(screen_info.screenNumber()));
+  }
 
   bt::Texture texture = _resource.windowStyle()->l_focus;
   geom_pixmap = bt::PixmapCache::find(screen_info.screenNumber(),
@@ -424,11 +387,35 @@ void BScreen::reconfigure(void) {
   else
     XSetWindowBackgroundPixmap(blackbox->XDisplay(),
                                geom_window, geom_pixmap);
+}
 
-  XSetWindowBorderWidth(blackbox->XDisplay(), geom_window,
-                        _resource.borderWidth());
-  XSetWindowBorder(blackbox->XDisplay(), geom_window,
-                   _resource.borderColor()->pixel(screen_info.screenNumber()));
+
+void BScreen::updateOpGC(void) {
+  XGCValues gcv;
+  unsigned long gc_value_mask = GCForeground;
+  if (! bt::i18n.multibyte()) gc_value_mask |= GCFont;
+
+  gcv.foreground = WhitePixel(blackbox->XDisplay(),
+                              screen_info.screenNumber())
+                   ^ BlackPixel(blackbox->XDisplay(),
+                                screen_info.screenNumber());
+  gcv.function = GXxor;
+  gcv.subwindow_mode = IncludeInferiors;
+  if (! opGC)
+    opGC = XCreateGC(blackbox->XDisplay(), screen_info.rootWindow(),
+                     GCForeground | GCFunction | GCSubwindowMode, &gcv);
+  else 
+    XChangeGC(blackbox->XDisplay(), opGC,
+              GCForeground | GCFunction | GCSubwindowMode, &gcv);
+}
+
+
+void BScreen::reconfigure(void) {
+  LoadStyle();
+
+  updateOpGC();
+
+  updateGeomWindow();
 
   workspacemenu->reconfigure();
   iconmenu->reconfigure();

@@ -92,6 +92,9 @@ private:
 
   ScreenResource& _resource;
 
+  void updateOpGC(void);
+  void updateGeomWindow(void);
+
   bool parseMenuFile(FILE *file, Rootmenu *menu);
 
   void InitMenu(void);
