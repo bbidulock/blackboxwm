@@ -318,7 +318,8 @@ void Blackbox::process_event(XEvent *e) {
       if (win->isIconic()) {
         win->deiconify();
         focus = True;
-      } else if (win->isShaded()) {
+      }
+      if (win->isShaded()) {
         win->shade();
         focus = True;
       }
