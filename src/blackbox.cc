@@ -268,16 +268,6 @@ void Blackbox::process_event(XEvent *e) {
   }
 
   case ConfigureRequest: {
-    // compress configure requests...
-    XEvent realevent;
-    unsigned int i = 0;
-    while(XCheckTypedWindowEvent(getXDisplay(), e->xconfigurerequest.window,
-                                 ConfigureRequest, &realevent)) {
-      i++;
-    }
-    if ( i > 0 )
-      e = &realevent;
-
     BlackboxWindow *win = (BlackboxWindow *) 0;
     Slit *slit = (Slit *) 0;
 
