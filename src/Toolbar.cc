@@ -40,6 +40,9 @@
 #include "Window.hh"
 #include "Workspace.hh"
 #include "Workspacemenu.hh"
+#ifdef SLIT
+#include "Slit.hh"
+#endif
 
 #include <X11/Xutil.h>
 #include <X11/keysym.h>

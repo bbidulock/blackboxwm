@@ -48,7 +48,7 @@
 #include "Workspacemenu.hh"
 #include "blackbox.hh"
 #ifdef    SLIT
-#  include "Slit.hh"
+class Slit; // forward reference
 #endif // SLIT
 #include "Image.hh"
 
