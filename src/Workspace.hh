@@ -57,7 +57,7 @@ public:
   void insert(BlackboxWindow* w);
   void append(BlackboxWindow* w);
   void remove(BlackboxWindow* w);
-
+  void dump(void) const;
   iterator& findLayer(const BlackboxWindow* const w);
 
   bool empty(void) const { return (stack.size() == 5); }

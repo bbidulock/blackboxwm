@@ -52,6 +52,48 @@ extern "C" {
 #include "Windowmenu.hh"
 
 
+void StackingList::dump(void) const {
+#if 0
+  StackingList::const_iterator it = stack.begin(), end = stack.end();
+  BlackboxWindow *w;
+  fprintf(stderr, "Stack:\n");
+  for (; it != end; ++it) {
+    w = *it;
+    if (w)
+      fprintf(stderr, "%s: 0x%lx\n", w->getTitle(), w->getClientWindow());
+    else
+      fprintf(stderr, "zero\n");
+  }
+  fprintf(stderr, "the layers:\n");
+  w = *fullscreen;
+  if (w)
+    fprintf(stderr, "%s: 0x%lx\n", w->getTitle(), w->getClientWindow());
+  else
+    fprintf(stderr, "zero\n");
+  w = *above;
+  if (w)
+    fprintf(stderr, "%s: 0x%lx\n", w->getTitle(), w->getClientWindow());
+  else
+    fprintf(stderr, "zero\n");
+  w = *normal;
+  if (w)
+    fprintf(stderr, "%s: 0x%lx\n", w->getTitle(), w->getClientWindow());
+  else
+    fprintf(stderr, "zero\n");
+  w = *below;
+  if (w)
+    fprintf(stderr, "%s: 0x%lx\n", w->getTitle(), w->getClientWindow());
+  else
+    fprintf(stderr, "zero\n");
+  w = *desktop;
+  if (w)
+    fprintf(stderr, "%s: 0x%lx\n", w->getTitle(), w->getClientWindow());
+  else
+    fprintf(stderr, "zero\n");
+#endif
+}
+
+
 StackingList::StackingList(void) {
   desktop = stack.insert(stack.begin(), (BlackboxWindow*) 0);
   below = stack.insert(desktop, (BlackboxWindow*) 0);
@@ -74,6 +116,7 @@ StackingList::findLayer(const BlackboxWindow* const w) {
   else if (w->getLayer() == BlackboxWindow::LAYER_DESKTOP)
     return desktop;
 
+  assert(0);
   return normal;
 }
 
@@ -99,7 +142,7 @@ void StackingList::append(BlackboxWindow* w) {
   StackingList::iterator tmp = it;
   for (; tmp != stack.end(); ++tmp) {
     if (! *tmp) {
-      it = stack.insert(tmp, w);
+      stack.insert(tmp, w);
       return;
     }
   }
@@ -131,7 +174,7 @@ BlackboxWindow* StackingList::front(void) const {
 
   // this point is never reached, but the compiler doesn't know that.
   // so, we shut it up
-  return 0;
+  return (BlackboxWindow*) 0;
 }
 
 
@@ -375,7 +418,6 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
   while (win->isTransient() && win->getTransientFor())
     win = win->getTransientFor();
 
-  // stack the window with all transients above
   WindowStack stack_vector;
   bool layer_above = False;
   StackingList::iterator it = stackingList.findLayer(win);
@@ -389,6 +431,7 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
     layer_above = True;
   }
 
+  // stack the window with all transients above
   lowerTransients(win, stack_vector);
 
   if (! win->isIconic() && win->getWorkspaceNumber() == id) {
