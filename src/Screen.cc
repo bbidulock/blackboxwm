@@ -174,10 +174,11 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   ewmh.setSupportingWMCheck(geom_window, geom_window);
   ewmh.setWMName(geom_window, bt::toUnicode("Blackbox"));
 
+  ewmh.setCurrentDesktop(0);
   ewmh.setNumberOfDesktops(screen_info.rootWindow(),
-                            workspacesList.size());
+                           workspacesList.size());
   ewmh.setDesktopGeometry(screen_info.rootWindow(),
-                           screen_info.width(), screen_info.height());
+                          screen_info.width(), screen_info.height());
   ewmh.setDesktopViewport(screen_info.rootWindow(), 0, 0);
   ewmh.setActiveWindow(screen_info.rootWindow(), None);
   updateWorkareaHint();
@@ -551,7 +552,7 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
   }
 
   _blackbox->ewmh().setCurrentDesktop(screen_info.rootWindow(),
-                                       current_workspace);
+                                      current_workspace);
 
   XUnmapWindow(_blackbox->XDisplay(), empty_window);
 
