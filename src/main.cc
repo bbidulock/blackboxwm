@@ -66,6 +66,7 @@ static void showHelp(int exitval) {
   // print program usage and command line options
   printf(bt::i18n(mainSet, mainUsage,
                   "  -display <string>\t\tuse display connection.\n"
+                  "  -single <string>\t\tmanage the default screen only\n"
                   "  -rc <string>\t\t\tuse alternate resource file.\n"
                   "  -version\t\t\tdisplay version and exit.\n"
                   "  -help\t\t\t\tdisplay this help text and exit.\n\n"));
@@ -95,7 +96,7 @@ static void showHelp(int exitval) {
 
 int main(int argc, char **argv) {
   const char *dpy_name = 0, *rc_file = 0;
-  bool multi_head = False;
+  bool multi_head = true;
 
   bt::i18n.openCatalog("blackbox.cat");
 
@@ -143,8 +144,8 @@ int main(int argc, char **argv) {
                 "warning: couldn't set environment variable 'DISPLAY'\n"));
         perror("putenv()");
       }
-    } else if (! strcmp(argv[i], "-multi")) {
-      multi_head = True;
+    } else if (! strcmp(argv[i], "-single")) {
+      multi_head = false;
     } else { // invalid command line option
       showHelp(-1);
     }
