@@ -112,7 +112,7 @@ void I18n::openCatalog(const char *catalog) {
 const char* I18n::operator()(int set, int msg, const char *msgString) const {
 #if   defined(NLS) && defined(HAVE_CATGETS)
   if (catalog_fd != (nl_catd) -1)
-    return (const char *) catgets(catalog_fd, set, msg, msgString);
+    return catgets(catalog_fd, set, msg, msgString);
   else
 #endif
     return msgString;

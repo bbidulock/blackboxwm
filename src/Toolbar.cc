@@ -888,8 +888,8 @@ void Toolbar::buttonReleaseEvent(XButtonEvent *re) {
     if (re->window == frame.psbutton) {
       redrawPrevWorkspaceButton(False, True);
 
-      if (re->x >= 0 && re->x < (signed) frame.button_w &&
-          re->y >= 0 && re->y < (signed) frame.button_w)
+      if (re->x >= 0 && re->x < static_cast<signed>(frame.button_w) &&
+          re->y >= 0 && re->y < static_cast<signed>(frame.button_w))
        if (screen->getCurrentWorkspace()->getID() > 0)
           screen->changeWorkspaceID(screen->getCurrentWorkspace()->
                                     getID() - 1);
@@ -898,8 +898,8 @@ void Toolbar::buttonReleaseEvent(XButtonEvent *re) {
     } else if (re->window == frame.nsbutton) {
       redrawNextWorkspaceButton(False, True);
 
-      if (re->x >= 0 && re->x < (signed) frame.button_w &&
-          re->y >= 0 && re->y < (signed) frame.button_w)
+      if (re->x >= 0 && re->x < static_cast<signed>(frame.button_w) &&
+          re->y >= 0 && re->y < static_cast<signed>(frame.button_w))
         if (screen->getCurrentWorkspace()->getID() <
             (screen->getWorkspaceCount() - 1))
           screen->changeWorkspaceID(screen->getCurrentWorkspace()->
@@ -909,14 +909,14 @@ void Toolbar::buttonReleaseEvent(XButtonEvent *re) {
     } else if (re->window == frame.pwbutton) {
       redrawPrevWindowButton(False, True);
 
-      if (re->x >= 0 && re->x < (signed) frame.button_w &&
-          re->y >= 0 && re->y < (signed) frame.button_w)
+      if (re->x >= 0 && re->x < static_cast<signed>(frame.button_w) &&
+          re->y >= 0 && re->y < static_cast<signed>(frame.button_w))
         screen->prevFocus();
     } else if (re->window == frame.nwbutton) {
       redrawNextWindowButton(False, True);
 
-      if (re->x >= 0 && re->x < (signed) frame.button_w &&
-          re->y >= 0 && re->y < (signed) frame.button_w)
+      if (re->x >= 0 && re->x < static_cast<signed>(frame.button_w) &&
+          re->y >= 0 && re->y < static_cast<signed>(frame.button_w))
         screen->nextFocus();
     } else if (re->window == frame.window_label)
       screen->raiseFocus();

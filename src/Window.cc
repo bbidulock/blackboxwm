@@ -1180,8 +1180,8 @@ void BlackboxWindow::configure(int dx, int dy,
   Bool send_event = (frame.rect.x() != dx || frame.rect.y() != dy);
 
   if ((dw != frame.rect.width()) || (dh != frame.rect.height())) {
-    if ((((signed) frame.rect.width()) + dx) < 0) dx = 0;
-    if ((((signed) frame.rect.height()) + dy) < 0) dy = 0;
+    if ((static_cast<signed>(frame.rect.width()) + dx) < 0) dx = 0;
+    if ((static_cast<signed>(frame.rect.height()) + dy) < 0) dy = 0;
 
     frame.rect.setRect(dx, dy, dw, dh);
     downsize();
@@ -2410,22 +2410,22 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
 
 void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
   if (re->window == frame.maximize_button) {
-    if ((re->x >= 0) && ((unsigned) re->x <= frame.button_w) &&
-        (re->y >= 0) && ((unsigned) re->y <= frame.button_h)) {
+    if ((re->x >= 0 && re->x <= static_cast<signed>(frame.button_w)) &&
+        (re->y >= 0 && re->y <= static_cast<signed>(frame.button_h))) {
       maximize(re->button);
     } else {
       redrawMaximizeButton(flags.maximized);
     }
   } else if (re->window == frame.iconify_button) {
-    if ((re->x >= 0) && ((unsigned) re->x <= frame.button_w) &&
-        (re->y >= 0) && ((unsigned) re->y <= frame.button_h)) {
+    if ((re->x >= 0 && re->x <= static_cast<signed>(frame.button_w)) &&
+        (re->y >= 0 && re->y <= static_cast<signed>(frame.button_h))) {
       iconify();
     } else {
       redrawIconifyButton(False);
     }
   } else if (re->window == frame.close_button) {
-    if ((re->x >= 0) && ((unsigned) re->x <= frame.button_w) &&
-        (re->y >= 0) && ((unsigned) re->y <= frame.button_h))
+    if ((re->x >= 0 && re->x <= static_cast<signed>(frame.button_w)) &&
+        (re->y >= 0 && re->y <= static_cast<signed>(frame.button_h)))
       close();
     redrawCloseButton(False);
   } else if (flags.moving) {
@@ -2869,10 +2869,10 @@ void BlackboxWindow::right_fixsize(int *gx, int *gy) {
            frame.handle_h - (frame.border_w * 3) - (frame.mwm_border_w * 2)
            + (client.height_inc / 2);
 
-  if (dx < (signed) client.min_width) dx = client.min_width;
-  if (dy < (signed) client.min_height) dy = client.min_height;
-  if ((unsigned) dx > client.max_width) dx = client.max_width;
-  if ((unsigned) dy > client.max_height) dy = client.max_height;
+  if (dx < static_cast<signed>(client.min_width)) dx = client.min_width;
+  if (dy < static_cast<signed>(client.min_height)) dy = client.min_height;
+  if (dx > static_cast<signed>(client.max_width)) dx = client.max_width;
+  if (dy > static_cast<signed>(client.max_height)) dy = client.max_height;
 
   dx /= client.width_inc;
   dy /= client.height_inc;
