@@ -164,8 +164,6 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
   else
     rc_file = expandTilde("~/.blackboxrc");
 
-  fprintf(stderr, "RC File: %s\n", rc_file);
-
   no_focus = False;
 
   resource.menu_file = resource.style_file = (char *) 0;
