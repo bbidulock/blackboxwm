@@ -55,10 +55,9 @@ void Widget::create()
 
     // create the window
     XSetWindowAttributes attrib;
-    unsigned long mask = CWBackPixmap | CWBackPixel | CWColormap |
+    unsigned long mask = CWBackPixmap | CWColormap |
 			 CWOverrideRedirect | CWEventMask;
     attrib.background_pixmap = None;
-    attrib.background_pixel = BlackPixel( display->x11Display(), screen() );
     attrib.colormap = screeninfo->colormap();
     attrib.override_redirect = False;
     attrib.event_mask = ButtonPressMask | ButtonReleaseMask |
