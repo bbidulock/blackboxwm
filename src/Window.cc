@@ -2539,6 +2539,7 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
       dy -= frame.border_w;
 
       const int snap_distance = screen->getEdgeSnapThreshold();
+
       if (snap_distance) {
         const XRectangle &srect = screen->availableArea();
         // screen corners

@@ -8,10 +8,8 @@ CVS Bugs:
 
 CVS warts:
 -----------------------------
-* Basemenu.cc has the string "Blackbox menu" embedded in it as the default
-  name.  This needs to be removed.
-
 * Send to menu should not list the current workspace
+  idea: we could store the workspace number in the BasemenuItem
 
 * strut does not handle hidden toolbar or slit properly, but how should it?
 
