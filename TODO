@@ -31,8 +31,6 @@ ADD: use a fullscreen window with no background color/pixmap to hide
 
 ADD: proper support for omnipresent windows
 
-DEL: blackbox's Netizen implementation
-
 CHANGE: sigaction is defined by POSIX.1, so we should drop the older
         signal mechanism for easier code maintenance.  anyone with
         objects to making blackbox require a POSIX.1 compliant host
@@ -76,9 +74,6 @@ CHANGE: deiconify() is overloaded, we need a "place window on Workspace N" and
 
 CHANGE: as a corrolary to the above, BlackboxWindow::mapRequest should actually
         be called for map requests
-
-CHECK: getBlackboxHints() and restoreAttributes() do a lot of the same work
-       should look into whether it can be combined or not
 
 CHANGE: look into centering the window when maximizing and the window can not
         grow to fill the area
