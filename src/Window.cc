@@ -1628,7 +1628,8 @@ bool BlackboxWindow::setInputFocus(void) {
 
 
 void BlackboxWindow::show(void) {
-  if (client.state.visible) return;
+  if (client.state.visible)
+    return;
 
   if (client.state.iconic)
     _screen->removeIcon(this);
@@ -1701,6 +1702,19 @@ void BlackboxWindow::close(void) {
   ce.xclient.data.l[3] = 0l;
   ce.xclient.data.l[4] = 0l;
   XSendEvent(blackbox->XDisplay(), client.window, False, NoEventMask, &ce);
+}
+
+
+void BlackboxWindow::activate(void) {
+  if (workspace() != bt::BSENTINEL
+      && workspace() != _screen->currentWorkspace())
+    _screen->setCurrentWorkspace(workspace());
+  if (client.state.iconic)
+    show();
+  if (client.ewmh.shaded)
+    setShaded(false);
+  if (setInputFocus())
+    _screen->raiseWindow(this);
 }
 
 
@@ -1916,7 +1930,8 @@ void BlackboxWindow::setFullScreen(bool b) {
   ungrabButtons();
   grabButtons();
 
-  if (refocus) setInputFocus();
+  if (refocus)
+    (void) setInputFocus();
 }
 
 
@@ -2398,7 +2413,8 @@ void BlackboxWindow::redrawGrips(void) const {
 
 void
 BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
-  if (event->format != 32) return;
+  if (event->format != 32)
+    return;
 
   const bt::Netwm& netwm = blackbox->netwm();
 
@@ -2407,17 +2423,10 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
       if (hasWindowFunction(WindowFunctionIconify))
         iconify();
     } else if (event->data.l[0] == NormalState) {
-      show();
+      activate();
     }
   } else if (event->message_type == netwm.activeWindow()) {
-    if (workspace() != bt::BSENTINEL
-        && workspace() != _screen->currentWorkspace())
-      _screen->setCurrentWorkspace(workspace());
-
-    if (client.state.iconic)
-      show();
-    if (setInputFocus())
-      _screen->raiseWindow(this);
+    activate();
   } else if (event->message_type == netwm.closeWindow()) {
     if (hasWindowFunction(WindowFunctionClose))
       close();
@@ -2897,7 +2906,7 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const event) {
       _screen->raiseWindow(this);
 
       if (! client.state.focused)
-        setInputFocus();
+        (void) setInputFocus();
       else
         XInstallColormap(blackbox->XDisplay(), client.colormap);
 

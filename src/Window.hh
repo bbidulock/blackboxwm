@@ -364,6 +364,7 @@ public:
   void show(void);
   void hide(void);
   void close(void);
+  void activate(void);
 
   inline bool isShaded(void) const
   { return client.ewmh.shaded; }
