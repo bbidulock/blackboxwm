@@ -32,6 +32,7 @@
 // forward declaration
 class BaseDisplay;
 class ScreenInfo;
+class BGCCache;
 
 #include "Timer.hh"
 
@@ -46,9 +47,10 @@ private:
 
   unsigned int MaskList[8];
   size_t MaskListLength;
-  
+
   Bool _startup, _shutdown;
   Display *display;
+  BGCCache *gccache;
 
   typedef std::vector<ScreenInfo> ScreenInfoList;
   ScreenInfoList screenInfoList;
@@ -73,7 +75,9 @@ public:
   BaseDisplay(const char *app_name, const char *dpy_name = 0);
   virtual ~BaseDisplay(void);
 
-  const ScreenInfo* getScreenInfo(unsigned int s) const;
+  const ScreenInfo* getScreenInfo(const unsigned int s) const;
+
+  BGCCache *gcCache() const;
 
   inline const Bool hasShapeExtensions(void) const
     { return shape.extensions; }
@@ -103,7 +107,7 @@ public:
                   int keyboard_mode, Window confine_to, Cursor cursor) const;
   void ungrabButton(unsigned int button, unsigned int modifiers,
                     Window grab_window) const;
-  
+
   void eventLoop(void);
 
   // from TimerQueueManager interface
@@ -139,7 +143,7 @@ public:
   inline const Colormap &getColormap(void) const { return colormap; }
   inline const int getDepth(void) const { return depth; }
   inline const unsigned int getScreenNumber(void) const
-  { return screen_number; }
+    { return screen_number; }
   inline const unsigned short getWidth(void) const { return rect.width; }
   inline const unsigned short getHeight(void) const { return rect.height; }
 };

@@ -74,8 +74,8 @@
 #endif // HAVE_SYS_WAIT_H
 
 #include "i18n.hh"
-#include "blackbox.hh"
 #include "BaseDisplay.hh"
+#include "GCCache.hh"
 #include "Timer.hh"
 #include "Util.hh"
 
@@ -270,13 +270,15 @@ BaseDisplay::BaseDisplay(const char *app_name, const char *dpy_name) {
   MaskList[6] = LockMask | ScrollLockMask;
   MaskList[7] = LockMask | NumLockMask | ScrollLockMask;
   MaskListLength = sizeof(MaskList) / sizeof(MaskList[0]);
-  
+
   if (modmap) XFreeModifiermap(const_cast<XModifierKeymap*>(modmap));
+
+  gccache = 0;
 }
 
 
 BaseDisplay::~BaseDisplay(void) {
-  // we don't create the BTimers, we don't delete them
+  delete gccache;
 
   XCloseDisplay(display);
 }
@@ -383,6 +385,16 @@ const ScreenInfo* BaseDisplay::getScreenInfo(unsigned int s) const {
   if (s < screenInfoList.size())
     return &screenInfoList[s];
   return (const ScreenInfo*) 0;
+}
+
+
+BGCCache *BaseDisplay::gcCache(void) const
+{
+    if (! gccache) {
+        BaseDisplay *that = (BaseDisplay *) this;
+        that->gccache = new BGCCache(that);
+    }
+    return gccache;
 }
 
 
