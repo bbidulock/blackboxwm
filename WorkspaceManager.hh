@@ -29,6 +29,7 @@ class WorkspaceManager;
 
 class Blackbox;
 class BlackboxIcon;
+class Iconmenu;
 class Workspace;
 class Workspacemenu;
 
@@ -38,22 +39,22 @@ class Workspacemenu;
 
 class WorkspaceManager {
 private:
-  Bool waitb1, waitb3;
+  Bool waitb1, waitb3, waiti;
   Display *display;
   GC buttonGC;
 
   struct frame {
-    Pixmap button, pbutton;
-    Window base, window, workspaceDock, fButton, bButton, clock;
+    Pixmap button, pbutton, ibutton, pibutton;
+    Window base, window, workspaceDock, fButton, bButton, iconButton, clock;
 
     int x, y;
-    unsigned int width, height, button_w, button_h, wsd_w, wsd_h, clock_w,
-      clock_h;
+    unsigned int width, height, button_w, button_h, wsd_w, wsd_h, ib_w, ib_h,
+      clock_w, clock_h, bevel_w;
   } frame;
   
   LinkedList<Workspace> *workspacesList;
-  LinkedList<BlackboxIcon> *iconList;
   Blackbox *blackbox;
+  Iconmenu *iconMenu;
   Workspace *current, *zero;
   Workspacemenu *wsMenu;
 
@@ -72,9 +73,9 @@ public:
   void changeWorkspaceID(int);
   Workspace *workspace(int);
   void DissociateAll(void);
-  void addIcon(BlackboxIcon *i) { iconList->insert(i); arrangeIcons(); }
-  void removeIcon(BlackboxIcon *i) { iconList->remove(i); arrangeIcons(); }
-  void arrangeIcons(void);
+  void addIcon(BlackboxIcon *i);
+  void removeIcon(BlackboxIcon *i);
+  void iconUpdate(void);
   void stackWindows(Window *, int);
   void Reconfigure(void);
   void checkClock(Bool = False);

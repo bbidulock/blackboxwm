@@ -23,29 +23,43 @@
 #define __blackbox_icon_hh
 
 // forward declaration
+class IconMenu;
 class BlackboxIcon;
 
 class Blackbox;
-class Workspace;
+class WorkspaceManager;
 class BlackboxWindow;
 
-#include "graphics.hh"
+#include "Basemenu.hh"
+#include "LinkedList.hh"
+
+
+class Iconmenu : public Basemenu {
+private:
+  LinkedList<BlackboxIcon> *iconList;
+
+
+protected:
+  virtual void itemSelected(int, int);
+
+
+public:
+  Iconmenu(Blackbox *);
+  ~Iconmenu(void);
+
+  int insert(BlackboxIcon *);
+  int remove(BlackboxIcon *);
+};
 
 
 class BlackboxIcon {
 private:
-  Bool focus;
   Display *display;
-  GC iconGC;
+  Window client;
 
-  struct icon {
-    Window client, window, subwindow;
-
-    char *name;
-    unsigned int width, height, label_w, label_h, pixmap_w, pixmap_h;
-  } icon;
-
-  Blackbox *blackbox;
+  char *name;
+  int icon_number;
+  
   BlackboxWindow *window;
   WorkspaceManager *wsManager;
 
@@ -57,14 +71,12 @@ public:
   BlackboxIcon(Blackbox *, BlackboxWindow *);
   ~BlackboxIcon(void);
 
-  void buttonPressEvent(XButtonEvent *);
-  void buttonReleaseEvent(XButtonEvent *);
-  void exposeEvent(XExposeEvent *);
-  void rereadLabel(void);
-  void Reconfigure(void);
+  char **ULabel(void) { return &name; }
+  void setIconNumber(int n) { icon_number = n; }
+  const int iconNumber(void) { return (const) icon_number; }
+  BlackboxWindow *bWindow(void) { return window; }
 
-  Window iconWindow(void) { return icon.window; }
-  unsigned int Height(void) { return icon.height; }
+  void rereadLabel(void);
 };
 
 

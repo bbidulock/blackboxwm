@@ -49,12 +49,14 @@ Basemenu::Basemenu(Blackbox *ctrl) {
 
   menu.iframe_pixmap = None;
 
+  menu.bevel_w = blackbox->bevelWidth();
   menu.width= menu.title_h = menu.item_w = menu.iframe_h =
-    blackbox->titleFont()->ascent + blackbox->titleFont()->descent + 8;
+    blackbox->titleFont()->ascent + blackbox->titleFont()->descent +
+    (menu.bevel_w * 2);
   menu.label = 0;
   menu.sublevels = menu.persub = 0;
   menu.item_h = blackbox->menuFont()->ascent +
-    blackbox->menuFont()->descent + 4;
+    blackbox->menuFont()->descent + (menu.bevel_w);
   menu.height = menu.title_h + 1 + menu.iframe_h;
   
   unsigned long attrib_mask = CWBackPixmap|CWBackPixel|CWBorderPixel|
@@ -232,14 +234,14 @@ int Basemenu::remove(int index) {
 // *************************************************************************
 
 void Basemenu::Update(void) {
-  menu.item_h = blackbox->menuFont()->ascent +
-    blackbox->menuFont()->descent + 4;
-
+  menu.item_h = blackbox->menuFont()->ascent + blackbox->menuFont()->descent +
+    menu.bevel_w;
+  
   if (title_vis)
-    menu.item_w =
+    menu.item_w = (menu.bevel_w * 2) +
       XTextWidth(blackbox->titleFont(),
 		 ((menu.label) ? menu.label : "Blackbox Menu"),
-		 strlen(((menu.label) ? menu.label : "Blackbox Menu"))) + 8;
+		 strlen(((menu.label) ? menu.label : "Blackbox Menu")));
   else
     menu.item_w = 1;
   
@@ -248,11 +250,11 @@ void Basemenu::Update(void) {
   for (; it.current(); it++) {
     BasemenuItem *itmp = it.current();
     if (itmp->ulabel)
-      ii = 8 + menu.item_h +
+      ii = (menu.bevel_w * 2) + menu.item_h +
 	XTextWidth(blackbox->menuFont(), *itmp->ulabel,
 		   strlen(*itmp->ulabel));
     else if (itmp->label)
-      ii = 8 + menu.item_h +
+      ii = (menu.bevel_w * 2) + menu.item_h +
 	XTextWidth(blackbox->menuFont(), itmp->label, strlen(itmp->label));
     else
       ii = 0;
@@ -276,8 +278,10 @@ void Basemenu::Update(void) {
   
   menu.width = (menu.sublevels * (menu.item_w));
   if (! menu.width) menu.width = menu.item_w;
+
   menu.title_h = blackbox->titleFont()->ascent +
-    blackbox->titleFont()->descent + 8;
+    blackbox->titleFont()->descent + (menu.bevel_w * 2);
+
   menu.iframe_h = ((menu.item_h + 1) * menu.persub);
   menu.height = ((title_vis) ? menu.title_h + 1 : 0) + menu.iframe_h;
   if (! menu.iframe_h) menu.iframe_h = 1;
@@ -322,19 +326,20 @@ void Basemenu::Update(void) {
   if (title_vis)
     switch (blackbox->Justification()) {
     case Blackbox::B_LeftJustify: {
-      XDrawString(display, menu.title, titleGC, 3,
-		  blackbox->titleFont()->ascent + 3,
+      XDrawString(display, menu.title, titleGC, menu.bevel_w,
+		  blackbox->titleFont()->ascent + menu.bevel_w,
 		  ((menu.label) ? menu.label : "Blackbox Menu"),
 		  strlen(((menu.label) ? menu.label : "Blackbox Menu")));
       break; }
     
     case Blackbox::B_RightJustify: {
-      int off = XTextWidth(blackbox->titleFont(),
-			   ((menu.label) ? menu.label : "Blackbox Menu"),
-			   strlen(((menu.label) ? menu.label :
-				   "Blackbox Menu"))) + 3;
+      int off = menu.bevel_w +
+	XTextWidth(blackbox->titleFont(),
+		   ((menu.label) ? menu.label : "Blackbox Menu"),
+		   strlen(((menu.label) ? menu.label :
+			   "Blackbox Menu")));
       XDrawString(display, menu.title, titleGC, menu.width - off,
-		  blackbox->titleFont()->ascent + 3,
+		  blackbox->titleFont()->ascent + menu.bevel_w,
 		  ((menu.label) ? menu.label : "Blackbox Menu"),
 		  strlen(((menu.label) ? menu.label : "Blackbox Menu")));
       break; }
@@ -346,7 +351,7 @@ void Basemenu::Update(void) {
 			     strlen(((menu.label) ? menu.label :
 				     "Blackbox Menu"))))) / 2;
       XDrawString(display, menu.title, titleGC, ins,
-		  blackbox->titleFont()->ascent + 3,
+		  blackbox->titleFont()->ascent + menu.bevel_w,
 		  ((menu.label) ? menu.label : "Blackbox Menu"),
 		  strlen(((menu.label) ? menu.label : "Blackbox Menu")));
       break; }
@@ -454,39 +459,39 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clearArea) {
   }
 
   if (highlight) {
-      XFillArc(display, menu.iframe, hbgGC, ix + 1, iy,
-	       menu.item_h,
-	       menu.item_h, 90 * 64, 180 * 64);
-      XFillRectangle(display, menu.iframe, hbgGC,
-		     ix + ((menu.item_h + 1) / 2), iy + 1,
-		     menu.item_w - (((menu.item_h) + 1) / 2) - 2,
-		     menu.item_h - 1);
-      
-      if (item->ulabel)
-	XDrawString(display, menu.iframe, hitemGC, ix + 4 + menu.item_h, iy +
-		    blackbox->menuFont()->ascent + 3,
-		    *item->ulabel, strlen(*item->ulabel));
-      else if (item->label)
-	XDrawString(display, menu.iframe, hitemGC, ix + 4 + menu.item_h, iy +
-		    blackbox->menuFont()->ascent + 3,
-		    item->label, strlen(item->label));
-      
-      if (item->sub_menu)
-	XDrawArc(display, menu.iframe, hitemGC, ix + 4, iy + 4,
-		 menu.item_h - 8, menu.item_h - 8, 0, 360 * 64);
-  } else {
+    XFillArc(display, menu.iframe, hbgGC, ix + 1, iy, menu.item_h,
+	     menu.item_h, 90 * 64, 180 * 64);
+    XFillRectangle(display, menu.iframe, hbgGC, ix + ((menu.item_h + 1) / 2),
+		   iy + 1, menu.item_w - (((menu.item_h) + 1) / 2) - 2,
+		   menu.item_h - 1);
+    
     if (item->ulabel)
-      XDrawString(display, menu.iframe, itemGC, ix + 4 + menu.item_h, iy +
-		  blackbox->menuFont()->ascent + 3,
-		  *item->ulabel, strlen(*item->ulabel));
+      XDrawString(display, menu.iframe, hitemGC, ix + menu.bevel_w +
+		  menu.item_h + 1, iy + blackbox->menuFont()->ascent +
+		  menu.bevel_w, *item->ulabel, strlen(*item->ulabel));
     else if (item->label)
-      XDrawString(display, menu.iframe, itemGC, ix + 4 + menu.item_h,
-		  iy + 3 + blackbox->menuFont()->ascent,
-		  item->label, strlen(item->label));
+      XDrawString(display, menu.iframe, hitemGC, ix + menu.bevel_w +
+		  menu.item_h + 1, iy + blackbox->menuFont()->ascent +
+		  menu.bevel_w, item->label, strlen(item->label));
     
     if (item->sub_menu)
-      XDrawArc(display, menu.iframe, itemGC, ix + 4, iy + 4,
-	       menu.item_h - 8, menu.item_h - 8, 0, 360 * 64);
+      XDrawArc(display, menu.iframe, hitemGC, ix + menu.bevel_w + 1, iy +
+	       menu.bevel_w, menu.item_h - (menu.bevel_w * 2),
+	       menu.item_h - (menu.bevel_w * 2), 0, 360 * 64);
+  } else {
+    if (item->ulabel)
+      XDrawString(display, menu.iframe, itemGC, ix + menu.bevel_w +
+		  menu.item_h + 1, iy + blackbox->menuFont()->ascent +
+		  menu.bevel_w, *item->ulabel, strlen(*item->ulabel));
+    else if (item->label)
+      XDrawString(display, menu.iframe, itemGC, ix + menu.bevel_w +
+		  menu.item_h + 1, iy + blackbox->menuFont()->ascent +
+		  menu.bevel_w, item->label, strlen(item->label));
+    
+    if (item->sub_menu)
+      XDrawArc(display, menu.iframe, itemGC, ix + menu.bevel_w + 1, iy + 
+	       menu.bevel_w, menu.item_h - (menu.bevel_w * 2),
+	       menu.item_h - (menu.bevel_w * 2), 0, 360 * 64);
   }
 }
 
@@ -542,13 +547,8 @@ void Basemenu::buttonReleaseEvent(XButtonEvent *re) {
       p = (which_sbl * menu.persub) + which_press;
 
     if (w < menuitems->count() && w >= 0) {
-      BasemenuItem *item = menuitems->find(p);
-      
-      drawItem(p, False, True);
-      if (item->sub_menu) {
-	item->sub_menu->Hide();
-	which_sub = -1;
-      }
+      if (p != which_sub)
+	drawItem(p, False, True);
       
       if  (p == w) {
 	if (re->x > ix && re->x < (signed) (ix + menu.item_w) &&
@@ -627,8 +627,8 @@ void Basemenu::exposeEvent(XExposeEvent *ee) {
   if (ee->window == menu.title) {
     switch (blackbox->Justification()) {
     case Blackbox::B_LeftJustify: {
-      XDrawString(display, menu.title, titleGC, 3,
-		  blackbox->titleFont()->ascent + 3,
+      XDrawString(display, menu.title, titleGC, menu.bevel_w,
+		  blackbox->titleFont()->ascent + menu.bevel_w,
 		  ((menu.label) ? menu.label : "Blackbox Menu"),
 		  strlen(((menu.label) ? menu.label : "Blackbox Menu")));
       break; }
@@ -637,9 +637,9 @@ void Basemenu::exposeEvent(XExposeEvent *ee) {
       int off = XTextWidth(blackbox->titleFont(),
 			   ((menu.label) ? menu.label : "Blackbox Menu"),
 			   strlen(((menu.label) ? menu.label :
-				   "Blackbox Menu"))) + 3;
+				   "Blackbox Menu"))) + menu.bevel_w;
       XDrawString(display, menu.title, titleGC, menu.width - off,
-		  blackbox->titleFont()->ascent + 3,
+		  blackbox->titleFont()->ascent + menu.bevel_w,
 		  ((menu.label) ? menu.label : "Blackbox Menu"),
 		  strlen(((menu.label) ? menu.label : "Blackbox Menu")));
       break; }
@@ -651,7 +651,7 @@ void Basemenu::exposeEvent(XExposeEvent *ee) {
 			     strlen(((menu.label) ? menu.label :
 				     "Blackbox Menu"))))) / 2;
       XDrawString(display, menu.title, titleGC, ins,
-		  blackbox->titleFont()->ascent + 3,
+		  blackbox->titleFont()->ascent + menu.bevel_w,
 		  ((menu.label) ? menu.label : "Blackbox Menu"),
 		  strlen(((menu.label) ? menu.label : "Blackbox Menu")));
       break; }
@@ -730,7 +730,7 @@ void Basemenu::enterNotifyEvent(XCrossingEvent *ce) {
 
 void Basemenu::leaveNotifyEvent(XCrossingEvent *ce) {
   if (ce->window == menu.iframe) {
-    if (which_press != -1 && which_sbl != -1) {
+    if (which_press != -1 && which_sbl != -1 && menuitems->count() > 0) {
       int p = (which_sbl * menu.persub) + which_press;      
       
       if (p != which_sub)
@@ -776,7 +776,6 @@ void Basemenu::Reconfigure(void) {
   XSetWindowBackground(display, menu.frame, blackbox->borderColor().pixel);
   XSetWindowBorder(display, menu.frame, blackbox->borderColor().pixel);
 
-  menu.item_h = blackbox->menuFont()->ascent +
-    blackbox->menuFont()->descent + 4;
+  menu.bevel_w = blackbox->bevelWidth();
   Update();
 }

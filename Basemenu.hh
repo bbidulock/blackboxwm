@@ -51,7 +51,8 @@ private:
 
     char *label;
     int x, y, x_move, y_move, x_shift, y_shift, sublevels, persub;
-    unsigned int width, height, title_h, iframe_h, item_w, item_h;
+    unsigned int width, height, title_h, iframe_h, item_w, item_h, bevel_w,
+      bevel_h;
   } menu;
 
   void drawSubmenu(int, Bool = False);

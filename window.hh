@@ -49,10 +49,9 @@ private:
   Display *display;
   
   struct client {
-    BlackboxWindow *transient_for,  /* which window are we a transient for? */
-      *transient;                   /* which window is our transient? */
-    Pixmap icon_pixmap, icon_mask;
-    Window window, icon_window, window_group;
+    BlackboxWindow *transient_for,  // which window are we a transient for?
+      *transient;                   // which window is our transient?
+    Window window, window_group;
     
     char *title, *app_name, *app_class;
     int x, y;
@@ -70,9 +69,9 @@ private:
     Pixmap utitle, ftitle, uhandle, fhandle, button, pbutton;
     Window window, title, border, handle, close_button,
       iconify_button, maximize_button, resize_handle;
-    int x, y, x_resize, y_resize, x_move, y_move;
+    int x, y, x_resize, y_resize, x_move, y_move, x_grab, y_grab;
     unsigned int width, height, title_h, title_w, handle_h, handle_w,
-      button_w, button_h, rh_w, rh_h, border_w, border_h;
+      button_w, button_h, rh_w, rh_h, border_w, border_h, bevel_w;
   } frame;
 
   struct protocols {
@@ -162,10 +161,6 @@ public:
   unsigned int clientWidth(void) { return client.width; }
   void removeIcon(void) { icon = NULL; }
   void stickWindow(Bool s) { stuck = s; }
-
-  Pixmap clientIconPixmap(void) { return client.icon_pixmap; }
-  Pixmap clientIconMask(void) { return client.icon_mask; }
-  Window clientIconWindow(void) { return client.icon_window; }
 };
 
 

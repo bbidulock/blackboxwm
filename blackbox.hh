@@ -21,7 +21,7 @@
 
 #ifndef __Blackbox_hh
 #define __Blackbox_hh
-#define __blackbox_version "beta zero point three three point four"
+#define __blackbox_version "beta zero point three three point five"
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
@@ -53,11 +53,6 @@ private:
     Window window;
   } WindowSearch;
 
-  typedef struct IconSearch {
-    BlackboxIcon *data;
-    Window window;
-  } IconSearch;
-
   typedef struct MenuSearch {
     Basemenu *data;
     Window window;
@@ -74,7 +69,7 @@ private:
 
   struct resource {
     struct font {
-      XFontStruct *title, *menu, *icon;
+      XFontStruct *title, *menu;
     } font;
 
     struct wsm {
@@ -87,6 +82,7 @@ private:
       BColor focusColor, focusColorTo, unfocusColor, unfocusColorTo,
 	buttonColor, buttonColorTo, frameColor, focusTextColor,
 	unfocusTextColor;
+
       unsigned long decorTexture, buttonTexture, handleTexture, frameTexture;
     } win;
 
@@ -101,11 +97,12 @@ private:
       unsigned long texture;
     } icon;
 
-    Bool opaqueMove, imageDither;
+    Bool opaqueMove, imageDither, clock24hour;
     BColor borderColor;
     XrmDatabase blackboxrc;
     char *menuFile;
     int workspaces, justification, cpc8bpp;
+    unsigned int handleWidth, bevelWidth;
   } resource;
 
   struct shape {
@@ -116,7 +113,6 @@ private:
   // context linked lists
   LinkedList<WindowSearch> *windowSearchList;
   LinkedList<MenuSearch> *menuSearchList;
-  LinkedList<IconSearch> *iconSearchList;
   LinkedList<WSManagerSearch> *wsManagerSearchList;
   LinkedList<GroupSearch> *groupSearchList;
 
@@ -125,7 +121,7 @@ private:
   WorkspaceManager *wsManager;
 
   Atom _XA_WM_COLORMAP_WINDOWS, _XA_WM_PROTOCOLS, _XA_WM_STATE,
-    _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS, BLACKBOX_CFG_MSG;
+    _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS;
   Bool startup, shutdown, reconfigure;
   Display *display;
   GC opGC;
@@ -143,6 +139,10 @@ protected:
   void InitMenu(void);
   void InitColor(void);
   void LoadDefaults(void);
+
+  // X resource database lookups
+  unsigned long readDatabaseTexture(char *, char *);
+  Bool readDatabaseColor(char *, char *, BColor *);
 
   // event processing and dispatching
   void ProcessEvent(XEvent *);
@@ -169,32 +169,21 @@ public:
   // context lookup routines
   Basemenu *searchMenu(Window);
   BlackboxWindow *searchWindow(Window);
-  BlackboxIcon *searchIcon(Window);
   WorkspaceManager *searchWSManager(Window);
   BlackboxWindow *searchGroup(Window, BlackboxWindow *);
 
-  // window context operations
-  void addWindow(BlackboxWindow *);
-  void removeWindow(BlackboxWindow *);
+  // reassociated a window with the current workspace
   void reassociateWindow(BlackboxWindow *);
-  void raiseWindow(BlackboxWindow *);
-  void lowerWindow(BlackboxWindow *);
 
   // context list save/remove methods
   void saveMenuSearch(Window, Basemenu *);
   void saveWindowSearch(Window, BlackboxWindow *);
-  void saveIconSearch(Window, BlackboxIcon *);
   void saveWSManagerSearch(Window, WorkspaceManager *);
   void saveGroupSearch(Window, BlackboxWindow *);
   void removeMenuSearch(Window);
   void removeWindowSearch(Window);
-  void removeIconSearch(Window);
   void removeWSManagerSearch(Window);
   void removeGroupSearch(Window);
-
-  // X resource database lookups
-  unsigned long readDatabaseTexture(char *, char *);
-  Bool readDatabaseColor(char *, char *, BColor *);
 
   // main event loop
   void EventLoop(void);
@@ -237,8 +226,9 @@ public:
   // session controls
   XFontStruct *titleFont(void) { return resource.font.title; }
   XFontStruct *menuFont(void) { return resource.font.menu; }
-  XFontStruct *iconFont(void) { return resource.font.icon; }
   const BColor &borderColor(void) { return resource.borderColor; }
+  const unsigned int handleWidth(void) { return resource.handleWidth; }
+  const unsigned int bevelWidth(void) { return resource.bevelWidth; }
 
   // window controls
   unsigned long wDecorTexture(void) { return resource.win.decorTexture; }
@@ -281,6 +271,7 @@ public:
   const BColor &sCColor(void) { return resource.wsm.clockColor; }
   const BColor &sCColorTo(void) { return resource.wsm.clockColorTo; }
   const BColor &sTextColor(void) { return resource.wsm.textColor; }  
+  Bool clock24Hour(void) { return resource.clock24hour; }
 
   // icon controls
   unsigned long iconTexture(void) { return resource.icon.texture; }

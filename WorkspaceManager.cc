@@ -42,8 +42,7 @@
 WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
   blackbox = bb;
   workspacesList = new LinkedList<Workspace>;
-  iconList = new LinkedList<BlackboxIcon>;
-  waitb1 = waitb3 = False;
+  waitb1 = waitb3 = waiti = False;
 
   display = blackbox->control();
   XSetWindowAttributes attrib_create;
@@ -57,16 +56,21 @@ WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
   attrib_create.cursor = blackbox->sessionCursor();
   attrib_create.event_mask = NoEventMask;
 
+  frame.bevel_w = blackbox->bevelWidth();
   frame.width = blackbox->XResolution() * 2 / 3;
-  frame.height = ((blackbox->titleFont()->ascent +
-		  blackbox->titleFont()->descent + 4) * 2) + 6;
+  frame.height =
+    ((blackbox->titleFont()->ascent + blackbox->titleFont()->descent +
+      (frame.bevel_w * 2)) * 2) + (frame.bevel_w * 2);
   frame.x = (blackbox->XResolution() - frame.width) / 2;
   frame.y = blackbox->YResolution() - frame.height;
-  frame.clock_h = frame.wsd_h = frame.button_h = frame.height - 6;
+  frame.clock_h = frame.ib_h = frame.wsd_h = frame.button_h =
+    frame.height - (frame.bevel_w * 2);
   frame.button_w = frame.button_h / 3;
   frame.wsd_w = frame.width / 4;
+  frame.ib_w = XTextWidth(blackbox->titleFont(), "Icons",
+			  strlen("Icons")) + (frame.bevel_w * 2);
   frame.clock_w = XTextWidth(blackbox->titleFont(), "00:00000",
-			     strlen("00:00000")) + 6;
+			     strlen("00:00000")) + (frame.bevel_w * 2);
 
   frame.base =
     XCreateWindow(display, blackbox->Root(), frame.x, frame.y, frame.width,
@@ -98,9 +102,9 @@ WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
 		       GCFont|GCForeground, &gcv);
 
   frame.workspaceDock =
-    XCreateWindow(display, frame.window, 3, 3, frame.wsd_w, frame.wsd_h, 0,
-		  blackbox->Depth(), InputOutput, blackbox->visual(),
-		  create_mask, &attrib_create);
+    XCreateWindow(display, frame.window, frame.bevel_w, frame.bevel_w,
+		  frame.wsd_w, frame.wsd_h, 0, blackbox->Depth(), InputOutput,
+		  blackbox->visual(), create_mask, &attrib_create);
   blackbox->saveWSManagerSearch(frame.workspaceDock, this);
 
   BImage *w_image = new BImage(blackbox, frame.wsd_w, frame.wsd_h,
@@ -112,14 +116,16 @@ WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
   if (p) XFreePixmap(display, p);
 
   frame.bButton =
-    XCreateWindow(display, frame.window, 3 + frame.wsd_w, 3,
+    XCreateWindow(display, frame.window, frame.bevel_w + frame.wsd_w,
+		  frame.bevel_w,
 		  frame.button_w, frame.button_h, 0, blackbox->Depth(),
 		  InputOutput, blackbox->visual(), create_mask,
 		  &attrib_create);
   blackbox->saveWSManagerSearch(frame.bButton, this);
   
   frame.fButton =
-    XCreateWindow(display, frame.window, frame.button_w + frame.wsd_w + 3, 3,
+    XCreateWindow(display, frame.window, frame.button_w + frame.wsd_w +
+		  frame.bevel_w, frame.bevel_w,
 		  frame.button_w, frame.button_h, 0, blackbox->Depth(),
 		  InputOutput, blackbox->visual(), create_mask,
 		  &attrib_create);
@@ -137,11 +143,29 @@ WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
   XSetWindowBackgroundPixmap(display, frame.fButton, frame.button);
   XSetWindowBackgroundPixmap(display, frame.bButton, frame.button);
 
+  frame.iconButton =
+    XCreateWindow(display, frame.window, (frame.button_w * 2) +
+		  frame.wsd_w + frame.bevel_w, frame.bevel_w, frame.ib_w,
+		  frame.ib_h, 0, blackbox->Depth(), InputOutput,
+		  blackbox->visual(), create_mask, &attrib_create);
+  blackbox->saveWSManagerSearch(frame.iconButton, this);
+
+  BImage *i_image = new BImage(blackbox, frame.ib_w, frame.ib_h,
+			       blackbox->Depth());
+  frame.ibutton =
+    i_image->renderImage(blackbox->sButtonTexture(),
+			 blackbox->sBColor(), blackbox->sBColorTo());
+  frame.pibutton =
+    i_image->renderInvertedImage(blackbox->sButtonTexture(),
+				 blackbox->sBColor(), blackbox->sBColorTo());
+  delete i_image;
+  XSetWindowBackgroundPixmap(display, frame.iconButton, frame.ibutton);
+
   frame.clock =
-    XCreateWindow(display, frame.window, frame.width - frame.clock_w - 3, 3,
-		  frame.clock_w, frame.clock_h, 0, blackbox->Depth(),
-		  InputOutput, blackbox->visual(), create_mask,
-		  &attrib_create);
+    XCreateWindow(display, frame.window, frame.width - frame.clock_w -
+		  frame.bevel_w, frame.bevel_w, frame.clock_w, frame.clock_h,
+		  0, blackbox->Depth(), InputOutput, blackbox->visual(),
+		  create_mask, &attrib_create);
   blackbox->saveWSManagerSearch(frame.clock, this);
 
   BImage *c_image = new BImage(blackbox, frame.clock_w, frame.clock_h,
@@ -163,6 +187,9 @@ WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
   XMapWindow(display, frame.base);
 
   wsMenu = new Workspacemenu(blackbox, this);
+  iconMenu = new Iconmenu(blackbox);
+  iconMenu->Move(frame.x + frame.wsd_w + (frame.button_w * 2) + frame.bevel_w,
+		 frame.y - iconMenu->Height() - 2);
 
   addWorkspace();
   wsMenu->remove(2);
@@ -194,14 +221,19 @@ WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
   
   XFillPolygon(display, frame.fButton, buttonGC, pts, 3, Convex,
 	       CoordModePrevious);
+
+  XDrawString(display, frame.iconButton, buttonGC, frame.bevel_w,
+	      (frame.ib_h + blackbox->titleFont()->ascent -
+	       blackbox->titleFont()->descent) / 2,
+	      "Icons", strlen("Icons"));
 }
 
 
 WorkspaceManager::~WorkspaceManager(void) {
   XUnmapWindow(display, frame.base);
 
-  delete iconList;
   delete wsMenu;
+  delete iconMenu;
 
   int n = workspacesList->count(), i;
   for (i = 0; i < n; i++) {
@@ -214,21 +246,17 @@ WorkspaceManager::~WorkspaceManager(void) {
   if (frame.button) XFreePixmap(display, frame.button);
   if (frame.pbutton) XFreePixmap(display, frame.pbutton);
 
-  blackbox->removeWSManagerSearch(frame.clock);
-  XDestroyWindow(display, frame.clock);
-
-  blackbox->removeWSManagerSearch(frame.bButton);
-  XDestroyWindow(display, frame.bButton);
-
+  /*  blackbox->removeWSManagerSearch(frame.clock);
   blackbox->removeWSManagerSearch(frame.workspaceDock);
-  XDestroyWindow(display, frame.workspaceDock);
-
   blackbox->removeWSManagerSearch(frame.fButton);
-  XDestroyWindow(display, frame.fButton);
-
+  blackbox->removeWSManagerSearch(frame.bButton);
   blackbox->removeWSManagerSearch(frame.window);
-  XDestroyWindow(display, frame.window);
+  */
 
+  XDestroyWindow(display, frame.bButton);
+  XDestroyWindow(display, frame.fButton);
+  XDestroyWindow(display, frame.workspaceDock);
+  XDestroyWindow(display, frame.clock);
   XDestroyWindow(display, frame.base);
 }
 
@@ -267,6 +295,28 @@ int WorkspaceManager::removeLastWorkspace(void) {
   return 0;
 }
 
+
+void WorkspaceManager::addIcon(BlackboxIcon *icon) {
+  iconMenu->insert(icon);
+  iconMenu->Move(frame.x + frame.wsd_w + (frame.button_w * 2) + frame.bevel_w,
+		 frame.y - iconMenu->Height() - 2);
+}
+
+
+void WorkspaceManager::removeIcon(BlackboxIcon *icon) {
+  iconMenu->remove(icon);
+  iconMenu->Move(frame.x + frame.wsd_w + (frame.button_w * 2) + frame.bevel_w,
+		 frame.y - iconMenu->Height() - 2);
+}
+
+
+void WorkspaceManager::iconUpdate(void) {
+  iconMenu->Update();
+  iconMenu->Move(frame.x + frame.wsd_w + (frame.button_w * 2) + frame.bevel_w,
+		 frame.y - iconMenu->Height() - 2);
+}
+
+
 void WorkspaceManager::DissociateAll(void) {
   LinkedListIterator<Workspace> it(workspacesList);
   for (; it.current(); it++)
@@ -295,32 +345,17 @@ void WorkspaceManager::changeWorkspaceID(int id) {
 }
 
 
-void WorkspaceManager::arrangeIcons(void) {
-  BlackboxIcon *icon = NULL;
-  
-  int iy = 0;
-  LinkedListIterator<BlackboxIcon> it(iconList);
-  for (int i = 0; it.current(); it++, i++) {
-    icon = it.current();
-    XMoveWindow(display, icon->iconWindow(), 0, iy);
-    iy += icon->Height() + 4;
-  }
-
-  current->restackWindows();
-}
-
-
 void WorkspaceManager::stackWindows(Window *workspace_stack, int num) {
   // create window stack... the number of windows for the current workspace,
   // 3 windows for the toolbar, root menu, and workspaces menu and then the
   // number of total workspaces (to stack the workspace menus)
 
   Window *session_stack =
-    new Window[(num + zero->Count() + workspacesList->count() +
-		iconList->count() + 3)];
+    new Window[(num + zero->Count() + workspacesList->count() + 4)];
   
   int i = 0;
   *(session_stack + i++) = blackbox->Menu()->WindowID();
+  *(session_stack + i++) = iconMenu->WindowID();
   *(session_stack + i++) = wsMenu->WindowID();
   
   int fx = frame.x + ((wsMenu->Visible()) ? wsMenu->Width() + 1 : 0) + 1;
@@ -339,13 +374,6 @@ void WorkspaceManager::stackWindows(Window *workspace_stack, int num) {
   k = num;
   while (k--)
     *(session_stack + i++) = *(workspace_stack + k);
-
-  k = iconList->count();
-  LinkedListIterator<BlackboxIcon> ot(iconList);
-  while (k--) {
-    *(session_stack + i++) = ot.current()->iconWindow();
-    ot++;
-  }
   
   *(session_stack + i++) = frame.base;
 
@@ -355,16 +383,21 @@ void WorkspaceManager::stackWindows(Window *workspace_stack, int num) {
 
 
 void WorkspaceManager::Reconfigure(void) {
+  frame.bevel_w = blackbox->bevelWidth();
   frame.width = blackbox->XResolution() * 2 / 3;
-  frame.height = ((blackbox->titleFont()->ascent +
-		  blackbox->titleFont()->descent + 4) * 2) + 6;
+  frame.height =
+    ((blackbox->titleFont()->ascent + blackbox->titleFont()->descent +
+      (frame.bevel_w * 2)) * 2) + (frame.bevel_w * 2);
   frame.x = (blackbox->XResolution() - frame.width) / 2;
   frame.y = blackbox->YResolution() - frame.height;
-  frame.clock_h = frame.wsd_h = frame.button_h = frame.height - 6;
+  frame.ib_h = frame.clock_h = frame.wsd_h = frame.button_h =
+    frame.height - (frame.bevel_w * 2);
   frame.button_w = frame.button_h / 3;
   frame.wsd_w = frame.width / 4;
+  frame.ib_w = XTextWidth(blackbox->titleFont(), "Icons",
+			  strlen("Icons")) + (frame.bevel_w * 2);
   frame.clock_w = XTextWidth(blackbox->titleFont(), "00:00000",
-			     strlen("00:00000")) + 6;
+			     strlen("00:00000")) + (frame.bevel_w * 2);
 
   XGCValues gcv;
   gcv.font = blackbox->titleFont()->fid;
@@ -374,14 +407,19 @@ void WorkspaceManager::Reconfigure(void) {
   XMoveResizeWindow(display, frame.base, frame.x, frame.y,
 		    frame.width, frame.height);
   XResizeWindow(display, frame.window, frame.width, frame.height);
-  XMoveResizeWindow(display, frame.workspaceDock, 3, 3, frame.wsd_w,
-		    frame.wsd_h);
-  XMoveResizeWindow(display, frame.bButton, 3 + frame.wsd_w, 3,
-		    frame.button_w, frame.button_h);
-  XMoveResizeWindow(display, frame.fButton, 3 + frame.wsd_w + frame.button_w,
-		    3, frame.button_w, frame.button_h);
-  XMoveResizeWindow(display, frame.clock, frame.width - frame.clock_w - 3,
-		    3, frame.clock_w, frame.clock_h);
+  XMoveResizeWindow(display, frame.workspaceDock, frame.bevel_w, frame.bevel_w,
+		    frame.wsd_w, frame.wsd_h);
+  XMoveResizeWindow(display, frame.bButton, frame.bevel_w + frame.wsd_w,
+		    frame.bevel_w, frame.button_w, frame.button_h);
+  XMoveResizeWindow(display, frame.fButton, frame.bevel_w + frame.wsd_w +
+		    frame.button_w, frame.bevel_w, frame.button_w,
+		    frame.button_h);
+  XMoveResizeWindow(display, frame.iconButton, frame.bevel_w + frame.wsd_w +
+		    (frame.button_w * 2), frame.bevel_w, frame.ib_w,
+		    frame.ib_h);
+  XMoveResizeWindow(display, frame.clock, frame.width - frame.clock_w -
+		    frame.bevel_w, frame.bevel_w, frame.clock_w,
+		    frame.clock_h);
   
   BImage *t_image = new BImage(blackbox, frame.width, frame.height,
 			       blackbox->Depth());
@@ -413,6 +451,19 @@ void WorkspaceManager::Reconfigure(void) {
   delete b_image;
   XSetWindowBackgroundPixmap(display, frame.fButton, frame.button);
   XSetWindowBackgroundPixmap(display, frame.bButton, frame.button);
+
+  BImage *i_image = new BImage(blackbox, frame.ib_w, frame.ib_h,
+			       blackbox->Depth());
+  frame.ibutton =
+    i_image->renderImage(blackbox->sButtonTexture(),
+			 blackbox->sBColor(), blackbox->sBColorTo());
+  frame.pibutton =
+    i_image->renderInvertedImage(blackbox->sButtonTexture(),
+				 blackbox->sBColor(), blackbox->sBColorTo());
+  delete i_image;
+  XSetWindowBackgroundPixmap(display, frame.iconButton,
+			     ((iconMenu->Visible()) ? frame.pibutton :
+			      frame.ibutton));
   
   BImage *c_image = new BImage(blackbox, frame.clock_w, frame.clock_h,
 			       blackbox->Depth());
@@ -429,6 +480,7 @@ void WorkspaceManager::Reconfigure(void) {
   XClearWindow(display, frame.workspaceDock);
   XClearWindow(display, frame.fButton);
   XClearWindow(display, frame.bButton);
+  XClearWindow(display, frame.iconButton);
   XClearWindow(display, frame.clock);
  
   redrawWSD(True);
@@ -453,6 +505,15 @@ void WorkspaceManager::Reconfigure(void) {
 
   wsMenu->Reconfigure();
   wsMenu->Move(frame.x + 1, frame.y - wsMenu->Height() - 2);
+
+  iconMenu->Reconfigure();
+  iconMenu->Move(frame.x + frame.wsd_w + (frame.button_w * 2) + frame.bevel_w,
+		 frame.y - iconMenu->Height() - 2);
+
+  XDrawString(display, frame.iconButton, buttonGC, frame.bevel_w,
+	      (frame.ib_h + blackbox->titleFont()->ascent -
+	       blackbox->titleFont()->descent) / 2,
+	      "Icons", strlen("Icons"));
 
   LinkedListIterator<Workspace> it(workspacesList);
   for (; it.current(); it++)
@@ -481,12 +542,15 @@ void WorkspaceManager::checkClock(Bool redraw) {
 
   if (redraw) {
     char t[9];
-    sprintf(t, "%02d:%02d %cm",
-            ((hour > 12) ? hour - 12 : ((hour == 0) ? 12 : hour)), minute,
-	    ((hour >= 12) ? 'p' : 'a'));
-	  
+    if (blackbox->clock24Hour())
+      sprintf(t, "[ %02d:%02d]", hour, minute);
+    else
+      sprintf(t, "%02d:%02d %cm",
+	      ((hour > 12) ? hour - 12 : ((hour == 0) ? 12 : hour)), minute,
+	      ((hour >= 12) ? 'p' : 'a'));
+    
     int len = strlen(t);
-    XDrawString(display, frame.clock, buttonGC, 4,
+    XDrawString(display, frame.clock, buttonGC, frame.bevel_w,
 		(frame.clock_h + blackbox->titleFont()->ascent -
 		 blackbox->titleFont()->descent) / 2,
 		t, len);
@@ -552,11 +616,24 @@ void WorkspaceManager::buttonPressEvent(XButtonEvent *be) {
 	
 	waitb1 = True;
       }
+    } else if (be->window == frame.iconButton) {
+      if (! iconMenu->Visible()) {
+	XSetWindowBackgroundPixmap(display, frame.iconButton, frame.pibutton);
+	XClearWindow(display, frame.iconButton);
+	XDrawString(display, frame.iconButton, buttonGC, frame.bevel_w,
+		    (frame.ib_h + blackbox->titleFont()->ascent -
+		     blackbox->titleFont()->descent) / 2,
+		    "Icons", strlen("Icons"));
+
+	iconMenu->Show();
+
+	waiti = True;
+      }
     }
   } else if (be->button == 3) {
     if (be->window == frame.workspaceDock) {
       if (! current->Menu()->Visible()) {
-	int fx = frame.x + ((wsMenu->Visible()) ? wsMenu->Width() + 2 : 2);
+	int fx = frame.x + ((wsMenu->Visible()) ? wsMenu->Width() + 2 : 1);
 	current->Menu()->Move(fx, frame.y - current->Menu()->Height() - 2);
 	current->Menu()->Show();
 	
@@ -615,6 +692,18 @@ void WorkspaceManager::buttonReleaseEvent(XButtonEvent *re) {
 	wsMenu->Hide();
       } else
 	waitb1 = False;
+    } else if (re->window == frame.iconButton) {
+      if (! waiti) {
+	XSetWindowBackgroundPixmap(display, frame.iconButton, frame.ibutton);
+	XClearWindow(display, frame.iconButton);
+	XDrawString(display, frame.iconButton, buttonGC, frame.bevel_w,
+		    (frame.ib_h + blackbox->titleFont()->ascent -
+		     blackbox->titleFont()->descent) / 2,
+		    "Icons", strlen("Icons"));
+
+	iconMenu->Hide();
+      } else
+	waiti = False;
     }
   } else if (re->button == 3) {
     if (re->window == frame.workspaceDock) {
@@ -632,6 +721,11 @@ void WorkspaceManager::exposeEvent(XExposeEvent *ee) {
     checkClock(True);
   else if (ee->window == frame.workspaceDock)
     redrawWSD();
+  else if (ee->window == frame.iconButton)
+    XDrawString(display, frame.iconButton, buttonGC, frame.bevel_w,
+		(frame.ib_h + blackbox->titleFont()->ascent -
+		 blackbox->titleFont()->descent) / 2,
+		"Icons", strlen("Icons"));
   else if (ee->window == frame.bButton) {
     int hh = frame.button_h / 2, hw = frame.button_w / 2;
     

@@ -17,7 +17,7 @@ XCOMM  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 XCOMM
 XCOMM (See the included file COPYING / GPL-2.0)
 
-XCOMM Uncomment this to get debugging symbols in the executable
+XCOMM Uncomment this line to get debugging symbols in the executable
 XCOMM CXXFLAGS :=	$(CXXFLAGS) -g
 
 XCOMM Define this to get XShapeExtention support
@@ -54,3 +54,4 @@ InstallNonExecFile(BlackboxMenu.ad, $(XAPPLOADDIR))
 
 blackbox.o: blackbox.cc
 	$(CXX) $(CXXFLAGS) $(DefaultsPath) -c -o $@ $<
+

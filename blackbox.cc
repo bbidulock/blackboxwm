@@ -34,7 +34,6 @@
 #endif
 
 #include "blackbox.hh"
-#include "icon.hh"
 #include "Rootmenu.hh"
 #include "window.hh"
 #include "Workspace.hh"
@@ -98,6 +97,7 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   signal(SIGSEGV, (void (*)(int)) signalhandler);
   signal(SIGTERM, (void (*)(int)) signalhandler);
   signal(SIGINT, (void (*)(int)) signalhandler);
+  signal(SIGFPE, (void (*)(int)) signalhandler);
 
   ::blackbox = this;
   b_argc = argc;
@@ -109,7 +109,7 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
 
   rootmenu = 0;
   resource.blackboxrc = 0;
-  resource.font.menu = resource.font.icon = resource.font.title = 0;
+  resource.font.menu = resource.font.title = 0;
 
   if ((display = XOpenDisplay(dpy_name)) == NULL) {
     fprintf(stderr, "%s: connection to X server failed\n", b_argv[0]);
@@ -144,7 +144,6 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   _XA_WM_STATE = XInternAtom(display, "WM_STATE", False);
   _XA_WM_DELETE_WINDOW = XInternAtom(display, "WM_DELETE_WINDOW", False);
   _XA_WM_TAKE_FOCUS = XInternAtom(display, "WM_TAKE_FOCUS", False);
-  BLACKBOX_CFG_MSG = XInternAtom(display, "BLACKBOX_CFG_MSG", False);
 
   XIconSize *iconSize = XAllocIconSize();
   if (iconSize != NULL) {
@@ -168,7 +167,6 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
 
   windowSearchList = new LinkedList<WindowSearch>;
   menuSearchList = new LinkedList<MenuSearch>;
-  iconSearchList = new LinkedList<IconSearch>;
   wsManagerSearchList = new LinkedList<WSManagerSearch>;
   groupSearchList = new LinkedList<GroupSearch>;
 
@@ -181,9 +179,8 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   gcv.function = GXxor;
   gcv.line_width = 2;
   gcv.subwindow_mode = IncludeInferiors;
-  gcv.font = resource.font.title->fid;
-  opGC = XCreateGC(display, root, GCForeground|GCFunction|GCSubwindowMode|
-		   GCFont, &gcv);
+  opGC = XCreateGC(display, root, GCForeground|GCFunction|GCSubwindowMode,
+                   &gcv);
 
   InitMenu();
   wsManager = new WorkspaceManager(this, resource.workspaces);
@@ -255,14 +252,12 @@ Blackbox::~Blackbox(void) {
   delete wsManager;
 
   delete windowSearchList;
-  delete iconSearchList;
   delete menuSearchList;
   delete wsManagerSearchList;
   delete groupSearchList;
   
   if (resource.font.title) XFreeFont(display, resource.font.title);
   if (resource.font.menu) XFreeFont(display, resource.font.menu);
-  if (resource.font.icon) XFreeFont(display, resource.font.icon);
   XFreeGC(display, opGC);
   
   XSync(display, False);
@@ -330,22 +325,24 @@ void Blackbox::ProcessEvent(XEvent *e) {
   switch (e->type) {
   case ButtonPress: {
     BlackboxWindow *bWin = NULL;
-    BlackboxIcon *bIcon = NULL;
     Basemenu *rMenu = NULL;
     WorkspaceManager *wsMan = NULL;
     
     if ((bWin = searchWindow(e->xbutton.window)) != NULL) {
       bWin->buttonPressEvent(&e->xbutton);
-    } else if ((bIcon = searchIcon(e->xbutton.window)) != NULL) {
-      bIcon->buttonPressEvent(&e->xbutton);
     } else if ((rMenu = searchMenu(e->xbutton.window)) != NULL) {
       rMenu->buttonPressEvent(&e->xbutton);
     } else if ((wsMan = searchWSManager(e->xbutton.window)) != NULL) {
       wsMan->buttonPressEvent(&e->xbutton);
     } else if (e->xbutton.window == root && e->xbutton.button == 3) {
-      int mx = e->xbutton.x_root - (rootmenu->Width() / 2);
-      rootmenu->Move(((mx > 0) ? mx : 0), e->xbutton.y_root -
-			 (rootmenu->titleHeight() / 2));
+      int mx = e->xbutton.x_root - (rootmenu->Width() / 2),
+	my = e->xbutton.y_root - (rootmenu->titleHeight() / 2);
+
+      if (mx < 0) mx = 0;
+      if (my < 0) my = 0;
+      if (mx + rootmenu->Width() > xres) mx = xres - rootmenu->Width() - 1;
+      if (my + rootmenu->Height() > yres) my = yres - rootmenu->Height() - 1;
+      rootmenu->Move(mx, my);
       
       if (! rootmenu->Visible())
 	rootmenu->Show();
@@ -356,14 +353,11 @@ void Blackbox::ProcessEvent(XEvent *e) {
   
   case ButtonRelease: {
     BlackboxWindow *bWin = NULL;
-    BlackboxIcon *bIcon = NULL;
     Basemenu *rMenu = NULL;
     WorkspaceManager *wsMan = NULL;
 
     if ((bWin = searchWindow(e->xbutton.window)) != NULL)
       bWin->buttonReleaseEvent(&e->xbutton);
-    else if ((bIcon = searchIcon(e->xbutton.window)) != NULL)
-      bIcon->buttonReleaseEvent(&e->xbutton);
     else if ((rMenu = searchMenu(e->xbutton.window)) != NULL)
       rMenu->buttonReleaseEvent(&e->xbutton);
     else if ((wsMan = searchWSManager(e->xbutton.window)) != NULL)
@@ -479,14 +473,11 @@ void Blackbox::ProcessEvent(XEvent *e) {
   
   case Expose: {
     BlackboxWindow *eWin = NULL;
-    BlackboxIcon *eIcon = NULL;
     Basemenu *eMenu = NULL;
     WorkspaceManager *wsMan = NULL;
 
     if ((eWin = searchWindow(e->xexpose.window)) != NULL)
       eWin->exposeEvent(&e->xexpose);
-    else if ((eIcon = searchIcon(e->xexpose.window)) != NULL)
-      eIcon->exposeEvent(&e->xexpose);
     else if ((eMenu = searchMenu(e->xexpose.window)) != NULL)
       eMenu->exposeEvent(&e->xexpose);
     else if ((wsMan = searchWSManager(e->xexpose.window)) != NULL)
@@ -497,10 +488,9 @@ void Blackbox::ProcessEvent(XEvent *e) {
   
   case FocusIn: {
     BlackboxWindow *iWin = searchWindow(e->xfocus.window);
-
+    
     if ((iWin != NULL) && (e->xfocus.mode != NotifyGrab) &&
-	(e->xfocus.mode != NotifyUngrab) &&
-	(e->xfocus.mode != NotifyWhileGrabbed)) {
+	(e->xfocus.mode != NotifyUngrab)) {
       iWin->setFocusFlag(True);
       focus_window_number = iWin->windowNumber();
     }
@@ -512,7 +502,6 @@ void Blackbox::ProcessEvent(XEvent *e) {
     BlackboxWindow *oWin = searchWindow(e->xfocus.window);
 
     if ((oWin != NULL) && (e->xfocus.mode != NotifyGrab) &&
-	(e->xfocus.mode != NotifyUngrab) &&
 	(e->xfocus.mode != NotifyWhileGrabbed))
       oWin->setFocusFlag(False);
    
@@ -576,12 +565,6 @@ void Blackbox::ProcessEvent(XEvent *e) {
   case KeyRelease: {
     break;
   }
-
-  case ClientMessage: {
-    if (e->xclient.message_type == BLACKBOX_CFG_MSG)
-      Reconfigure();
-
-    break; }
 
   default:
 #ifdef SHAPE
@@ -673,26 +656,6 @@ Basemenu *Blackbox::searchMenu(Window window) {
 }
 
 
-BlackboxIcon *Blackbox::searchIcon(Window window) {
-  if (validateWindow(window)) {
-    BlackboxIcon *icon = NULL;
-    LinkedListIterator<IconSearch> it(iconSearchList);
-    
-    for (; it.current(); it++) {
-      IconSearch *tmp = it.current();
-      
-      if (tmp)
-	if (tmp->window == window) {
-	  icon = tmp->data;
-	  return icon;
-	}
-    }
-  }
-  
-  return 0;
-}
-
-
 WorkspaceManager *Blackbox::searchWSManager(Window window) {
   if (validateWindow(window)) {
     WorkspaceManager *wsm = NULL;
@@ -734,14 +697,6 @@ void Blackbox::saveMenuSearch(Window window, Basemenu *data) {
   tmp->window = window;
   tmp->data = data;
   menuSearchList->insert(tmp);
-}
-
-
-void Blackbox::saveIconSearch(Window window, BlackboxIcon *data) {
-  IconSearch *tmp = new IconSearch;
-  tmp->window = window;
-  tmp->data = data;
-  iconSearchList->insert(tmp);
 }
 
 
@@ -792,21 +747,6 @@ void Blackbox::removeMenuSearch(Window window) {
     if (tmp)
       if (tmp->window == window) {
 	menuSearchList->remove(tmp);
-	delete tmp;
-	break;
-      }
-  }
-}
-
-
-void Blackbox::removeIconSearch(Window window) {
-  LinkedListIterator<IconSearch> it(iconSearchList);
-  for (; it.current(); it++) {
-    IconSearch *tmp = it.current();
-
-    if (tmp)
-      if (tmp->window == window) {
-	iconSearchList->remove(tmp);
 	delete tmp;
 	break;
       }
@@ -872,33 +812,11 @@ void Blackbox::Shutdown(Bool do_delete) {
 // Session utility and maintainence
 // *************************************************************************
 
-void Blackbox::addWindow(BlackboxWindow *w) {
-  wsManager->currentWorkspace()->addWindow(w);
-}
-
-
-void Blackbox::removeWindow(BlackboxWindow *w) {
-  wsManager->workspace(w->workspace())->removeWindow(w);
-}
-
-
 void Blackbox::reassociateWindow(BlackboxWindow *w) {
   if (! w->isStuck() && w->workspace() != wsManager->currentWorkspaceID()) {
     wsManager->workspace(w->workspace())->removeWindow(w);
     wsManager->currentWorkspace()->addWindow(w);
   }
-}
-
-
-void Blackbox::raiseWindow(BlackboxWindow *w) {
-  if (w->workspace() == wsManager->currentWorkspaceID())
-    wsManager->currentWorkspace()->raiseWindow(w);
-}
-
-
-void Blackbox::lowerWindow(BlackboxWindow *w) {
-  if (w->workspace() == wsManager->currentWorkspaceID())
-    wsManager->currentWorkspace()->lowerWindow(w);
 }
 
 
@@ -1123,8 +1041,9 @@ Bool Blackbox::parseMenuFile(FILE *file, Rootmenu *menu) {
 		if (label && command)
 		  menu->insert(label, B_Execute, command);
 		else
-		  printf("error: label(%s) == NULL || command(%s) == NULL\n",
-			 label, command);
+		  fprintf(stderr,
+                          "error: label(%s) == NULL || command(%s) == NULL\n",
+			  label, command);
 	      } else
 		printf("error: no command string for [exec] (%s)\n", label);
 	    } else
@@ -1473,6 +1392,31 @@ void Blackbox::LoadDefaults(void) {
   
   // load session configuration parameters
   if (XrmGetResource(resource.blackboxrc,
+		     "session.handleWidth",
+		     "session.HandleWidth", &value_type,
+		     &value)) {
+    if (sscanf(value.addr, "%u", &resource.handleWidth) != 1)
+      resource.handleWidth = 8;
+    else
+      if (resource.handleWidth > (xres / 2) ||
+          resource.handleWidth == 0)
+	resource.handleWidth = 8;
+  } else
+    resource.handleWidth = 8;
+
+  if (XrmGetResource(resource.blackboxrc,
+		     "session.bevelWidth",
+		     "session.BevelWidth", &value_type,
+		     &value)) {
+    if (sscanf(value.addr, "%u", &resource.bevelWidth) != 1)
+      resource.bevelWidth = 4;
+    else
+      if (resource.bevelWidth > (xres / 2) || resource.bevelWidth == 0)
+	resource.bevelWidth = 4;
+  } else
+    resource.bevelWidth = 4;
+  
+  if (XrmGetResource(resource.blackboxrc,
 		     "session.workspaces",
 		     "Session.Workspaces", &value_type, &value)) {
     if (sscanf(value.addr, "%d", &resource.workspaces) != 1) {
@@ -1547,6 +1491,17 @@ void Blackbox::LoadDefaults(void) {
     } else
       resource.cpc8bpp = 0;
 
+  if (XrmGetResource(resource.blackboxrc,
+		     "workspaceManager.24hourClock",
+		     "WorkspaceManager.24HourClock", &value_type,
+		     &value)) {
+    if (! strncasecmp(value.addr, "true", value.size))
+      resource.clock24hour = True;
+    else
+      resource.clock24hour = False;
+  } else
+    resource.clock24hour = False;
+
   const char *defaultFont = "-*-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*";
   if (resource.font.title) XFreeFont(display, resource.font.title);
   if (XrmGetResource(resource.blackboxrc,
@@ -1593,32 +1548,6 @@ void Blackbox::LoadDefaults(void) {
     }
   } else {
     if ((resource.font.menu = XLoadQueryFont(display, defaultFont)) == NULL) {
-      fprintf(stderr,
-	      "blackbox: couldn't load default font.  please check to\n"
-	      "make sure the necessary font is installed '%s'\n", defaultFont);
-      exit(2);
-    }
-  }
-
-  if (resource.font.icon) XFreeFont(display, resource.font.icon);
-  if (XrmGetResource(resource.blackboxrc,
-		     "session.iconFont",
-		     "Session.IconFont", &value_type, &value)) {
-    if ((resource.font.icon = XLoadQueryFont(display, value.addr)) == NULL) {
-      fprintf(stderr,
-	      " blackbox: couldn't load font '%s'\n"
-	      "  ...  reverting to default font.", value.addr);
-      if ((resource.font.icon = XLoadQueryFont(display, defaultFont))
-	  == NULL) {
-	fprintf(stderr,
-		"blackbox: couldn't load default font.  please check to\n"
-		"make sure the necessary font is installed '%s'\n",
-		defaultFont);
-	exit(2);
-      }  
-    }
-  } else {
-    if ((resource.font.icon = XLoadQueryFont(display, defaultFont)) == NULL) {
       fprintf(stderr,
 	      "blackbox: couldn't load default font.  please check to\n"
 	      "make sure the necessary font is installed '%s'\n", defaultFont);
@@ -1781,20 +1710,25 @@ void Blackbox::Reconfigure(void) {
 
 void Blackbox::do_reconfigure(void) {
   XGrabServer(display);
+
   LoadDefaults();
+  XSync(display, False);
   
   InitMenu();
+  XSync(display, False);
+
   rootmenu->Reconfigure();
   wsManager->Reconfigure();
-  
+  XSync(display, False);
+
   XGCValues gcv;
   gcv.foreground = getColor("white");
   gcv.function = GXxor;
   gcv.line_width = 2;
   gcv.subwindow_mode = IncludeInferiors;
-  gcv.font = resource.font.title->fid;
-  XChangeGC(display, opGC, GCForeground|GCFunction|GCSubwindowMode|GCFont,
+  XChangeGC(display, opGC, GCForeground|GCFunction|GCSubwindowMode,
 	    &gcv);
   
+  XSync(display, False);
   XUngrabServer(display);
 }
