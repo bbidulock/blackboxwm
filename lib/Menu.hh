@@ -247,9 +247,6 @@ namespace bt {
     { _auto_delete = ad; }
 
   protected:
-    virtual void updateSize(void);
-    virtual void updatePixmaps(void);
-
     virtual void buttonPressEvent(const XButtonEvent * const event);
     virtual void buttonReleaseEvent(const XButtonEvent * const event);
     virtual void motionNotifyEvent(const XMotionEvent * const event);
@@ -264,7 +261,12 @@ namespace bt {
 
     virtual void tearOff(void);
 
+    Rect geometry(void) const;
+
   private:
+    void updateSize(void);
+    void updatePixmaps(void);
+
     typedef std::list<MenuItem> ItemList;
 
     unsigned int verifyId(unsigned int id = ~0u);

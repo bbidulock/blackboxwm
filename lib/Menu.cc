@@ -1153,6 +1153,13 @@ void bt::Menu::tearOff(void) {
 }
 
 
+bt::Rect bt::Menu::geometry(void) const {
+  if (_size_dirty)
+    const_cast<Menu *>(this)->updateSize();
+  return _rect;
+}
+
+
 unsigned int bt::Menu::verifyId(unsigned int id) {
   if (id != ~0u) {
     // request a specific id
