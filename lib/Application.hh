@@ -72,8 +72,10 @@ namespace bt {
     unsigned int NumLockMask, ScrollLockMask;
 
   protected:
-    RunState runState(void) const { return run_state; }
-    void setRunState(RunState new_state) { run_state = new_state; }
+    inline RunState runState(void) const
+    { return run_state; }
+    inline void setRunState(RunState new_state)
+    { run_state = new_state; }
 
     virtual void startup(void);
     virtual void shutdown(void);
@@ -100,22 +102,24 @@ namespace bt {
                 bool multi_head);
     virtual ~Application(void);
 
-    bool hasShapeExtensions(void) const
+    inline bool hasShapeExtensions(void) const
     { return shape.extensions; }
 
-    bool startingUp(void) const
+    inline bool startingUp(void) const
     { return run_state == STARTUP; }
-    bool running(void) const
+    inline bool running(void) const
     { return run_state == RUNNING; }
-    bool shuttingDown(void) const
+    inline bool shuttingDown(void) const
     { return run_state == SHUTDOWN; }
 
     void quit(void) { setRunState( SHUTDOWN ); }
 
     ::Display *XDisplay(void) const;
-    inline const Display& display(void) const { return *_display; }
+    inline const Display& display(void) const
+    { return *_display; }
 
-    const std::string &applicationName(void) const { return _app_name; }
+    inline const std::string &applicationName(void) const
+    { return _app_name; }
 
     void grabButton(unsigned int button, unsigned int modifiers,
                     Window grab_window, bool owner_events,
@@ -127,8 +131,10 @@ namespace bt {
 
     void eventLoop(void);
 
-    unsigned int scrollLockMask(void) const { return ScrollLockMask; }
-    unsigned int numLockMask(void) const { return NumLockMask; }
+    inline unsigned int scrollLockMask(void) const
+    { return ScrollLockMask; }
+    inline unsigned int numLockMask(void) const
+    { return NumLockMask; }
 
     // from TimerQueueManager interface
     virtual void addTimer(Timer *timer);
