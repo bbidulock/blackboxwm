@@ -7,7 +7,7 @@ locale = ja_JP
 locale_mandir = $(DESTDIR)$(mandir)/$(locale)/man1
 
 # what to install
-manfiles = blackbox.1 bsetroot.1
+manfiles = blackbox.1 @srcdir@/bsetroot.1
 
 # which files need processing during 'make'
 all-local: blackbox.1
@@ -19,7 +19,7 @@ NLSTEST = @NLS@
 DEFAULT_MENU=$(pkgdatadir)/menu
 
 distclean-local:
-	rm -f *\~
+	rm -f *\~ .\#*
 
 blackbox.1: blackbox.1.in
 	@regex_cmd@ -e "s,@defaultmenu@,$(DEFAULT_MENU)," \
@@ -37,6 +37,6 @@ install-data-local: all-local
 uninstall-local:
 	@if test x$(NLSTEST) = "x-DNLS"; then \
 		for i in $(manfiles); do \
-		rm -f $(locale_mandir)/$$i; \
+		rm -f $(locale_mandir)/`basename $$i`; \
 		done; \
 	fi

@@ -313,7 +313,7 @@ maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
 distclean-local:
-	rm -f *\~
+	rm -f *\~ .\#*
 
 # local dependencies
 

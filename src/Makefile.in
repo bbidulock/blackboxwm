@@ -315,7 +315,7 @@ mostlyclean distclean maintainer-clean
 
 
 distclean-local:
-	rm -f *\~ *.orig *.rej
+	rm -f *\~ *.orig *.rej .\#*
 
 # local dependencies
 

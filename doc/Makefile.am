@@ -8,7 +8,7 @@ SUBDIRS = fr_FR ja_JP nl_NL sl_SI
 DEFAULT_MENU=$(pkgdatadir)/menu
 
 distclean-local:
-	rm -f *\~
+	rm -f *\~ .\#*
 
 blackbox.1: blackbox.1.in
 	@regex_cmd@ -e "s,@defaultmenu@,$(DEFAULT_MENU)," \
