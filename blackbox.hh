@@ -21,7 +21,7 @@
 
 #ifndef __Blackbox_hh
 #define __Blackbox_hh
-#define __blackbox_version "beta zero point three two point zero"
+#define __blackbox_version "beta zero point three three point zero"
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
@@ -36,6 +36,8 @@ class BlackboxWindow;
 
 #include "LinkedList.hh"
 #include "graphics.hh"
+
+#include <stdio.h>
 
 
 class Blackbox {
@@ -139,7 +141,7 @@ protected:
   void do_reconfigure(void);
 
   // value lookups and retrieval
-  void readMenuDatabase(Rootmenu *, XrmValue *, XrmDatabase *);
+  Bool parseMenuFile(FILE *, Rootmenu *);
 
 
 public:
@@ -281,7 +283,8 @@ public:
   // public constants
   enum { B_Restart = 1, B_RestartOther, B_Exit, B_Shutdown, B_Execute,
 	 B_Reconfigure, B_ExecReconfigure, B_WindowShade, B_WindowIconify,
-	 B_WindowMaximize, B_WindowClose, B_WindowRaise, B_WindowLower };
+	 B_WindowMaximize, B_WindowClose, B_WindowRaise, B_WindowLower,
+	 B_WindowStick };
   enum { B_LeftJustify, B_RightJustify, B_CenterJustify };
 };
 

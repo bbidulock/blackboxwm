@@ -52,8 +52,8 @@ void Workspacemenu::itemSelected(int button, int index) {
       wsManager->addWorkspace();
     } else if (index == 1) {
       wsManager->removeLastWorkspace();
-    } else if (wsManager->currentWorkspace()->workspaceID() != (index - 2)) {
-      wsManager->changeWorkspaceID(index - 2);
+    } else if (wsManager->currentWorkspace()->workspaceID() != (index - 1)) {
+      wsManager->changeWorkspaceID(index - 1);
       Hide();
     }
   }

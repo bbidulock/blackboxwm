@@ -65,7 +65,8 @@ public:
   void restackWindows(void);
   void Reconfigure();
   void Update();
-  
+
+  Window *windowStack(void) { return stack; }
   int workspaceID(void) { return id; }
   char *Name(void) { return name; }
   char *Label(void) { return label; }

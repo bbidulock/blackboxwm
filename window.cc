@@ -43,8 +43,9 @@
 BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window, Bool internal)
 {
   // set control members for operation
+  protocols.WM_DELETE_WINDOW = False;
   moving = resizing = shaded = maximized = visible = iconic = transient =
-    focused = False;
+    focused = stuck = False;
 
   window_number = -1;
   internal_window = internal;
@@ -53,10 +54,11 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window, Bool internal)
   display = ctrl->control();
   client.window = window;
 
-  frame.window = frame.title = frame.handle = frame.close_button =
-    frame.iconify_button = frame.maximize_button = client.icon_window = 
-    frame.button = frame.pbutton = frame.border = None;
-
+  frame.window = frame.title = frame.handle = frame.border =
+    frame.close_button = frame.iconify_button = frame.maximize_button =
+    client.icon_window =  frame.button = frame.pbutton =
+    frame.resize_handle = None;
+  
   client.transient_for = client.transient = 0;
   client.title = client.app_class = client.app_name = 0;
   icon = 0;
@@ -149,9 +151,9 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window, Bool internal)
 
   if (! transient) {
     frame.border = createChildWindow(frame.window, 0, frame.title_h + 1,
-				   frame.border_w, frame.border_h, 0l);
+				     frame.border_w, frame.border_h, 0l);
     blackbox->saveWindowSearch(frame.border, this);
-    
+
     if (resizable) {
       frame.handle = createChildWindow(frame.window, frame.border_w + 1,
 				       frame.title_h + 1, frame.handle_w,
@@ -418,8 +420,9 @@ void BlackboxWindow::createDecorations(void) {
   if (! transient) {
     BImage *b_image = new BImage(blackbox, frame.border_w, frame.border_h,
 				 blackbox->Depth());
-    Pixmap p = b_image->renderSolidImage(blackbox->wFrameTexture(),
-					 blackbox->wFrameColor());
+    Pixmap p =
+      b_image->renderSolidImage(blackbox->wFrameTexture()|BImageNoDitherSolid,
+				blackbox->wFrameColor());
     
     delete b_image;
     XSetWindowBackgroundPixmap(display, frame.border, p);
@@ -489,7 +492,7 @@ void BlackboxWindow::positionButtons(void) {
       XClearWindow(display, frame.maximize_button);
     }
     
-    if (do_close && frame.close_button != None) {
+    if (protocols.WM_DELETE_WINDOW && frame.close_button != None) {
       XMoveResizeWindow(display, frame.close_button,
 			frame.title_w - (frame.button_w + 5), 3,
 			frame.button_w, frame.button_h);
@@ -505,7 +508,8 @@ void BlackboxWindow::positionButtons(void) {
 
 
 void BlackboxWindow::createCloseButton(void) {
-  if (do_close && frame.title != None && frame.close_button == None) {
+  if (protocols.WM_DELETE_WINDOW && frame.title != None &&
+      frame.close_button == None) {
     frame.close_button =
       createChildWindow(frame.title, 0, 0, frame.button_w, frame.button_h, 0);
     if (frame.button != None)
@@ -664,8 +668,9 @@ void BlackboxWindow::Reconfigure(void) {
   if (! transient) {
     BImage *b_image = new BImage(blackbox, frame.border_w, frame.border_h,
 				 blackbox->Depth());
-    Pixmap p = b_image->renderSolidImage(blackbox->wFrameTexture(),
-					 blackbox->wFrameColor());
+    Pixmap p =
+      b_image->renderSolidImage(blackbox->wFrameTexture()|BImageNoDitherSolid,
+				blackbox->wFrameColor());
     
     delete b_image;
     XSetWindowBackgroundPixmap(display, frame.border, p);
@@ -736,10 +741,8 @@ Bool BlackboxWindow::getWMProtocols(void) {
   if (! XGetWMProtocols(display, client.window, &proto, &num_return))
     return False;
 
-  do_close = False;
   for (int i = 0; i < num_return; ++i) {
     if (proto[i] == blackbox->DeleteAtom()) {
-      do_close = True;
       protocols.WM_DELETE_WINDOW = True;
       protocols.WMDeleteWindow = blackbox->DeleteAtom();
       createCloseButton();
@@ -975,31 +978,10 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
     xwc.height = dh;
     XGrabServer(display);
     XConfigureWindow(display, frame.window, CWX|CWY|CWWidth|CWHeight, &xwc);
-    XResizeWindow(display, frame.title, frame.title_w, frame.title_h);
-
-    if (! transient) {
-      XResizeWindow(display, frame.border, frame.border_w, frame.border_h);
-      
-      if (resizable) {
-	XMoveResizeWindow(display, frame.handle, frame.border_w + 1,
-			  frame.title_h + 1,
-			  frame.handle_w, frame.handle_h);
-	
-	XMoveWindow(display, frame.resize_handle, frame.border_w + 1,
-		    frame.title_h + frame.handle_h + 2);
-      }
-      
-      XMoveResizeWindow(display, client.window, 4, 4, client.width,
-			client.height);
-    } else
-      XMoveResizeWindow(display, client.window, 0, frame.title_h + 1,
-			client.width, client.height);
-    
-    positionButtons();
 
     if (frame.ftitle) XFreePixmap(display, frame.ftitle);
     if (frame.utitle) XFreePixmap(display, frame.utitle);
-
+    
     BImage *t_image = new BImage(blackbox, frame.title_w, frame.title_h,
 				blackbox->Depth());
     frame.ftitle = t_image->renderImage(blackbox->wDecorTexture(),
@@ -1009,18 +991,8 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
 					blackbox->wUColor(),
 					blackbox->wUColorTo());
     delete t_image;
-    
-    if (! transient) {
-      BImage *b_image = new BImage(blackbox, frame.border_w, frame.border_h,
-				   blackbox->Depth());
-      Pixmap p = b_image->renderSolidImage(blackbox->wFrameTexture(),
-					   blackbox->wFrameColor());
 
-      delete b_image;
-      XSetWindowBackgroundPixmap(display, frame.border, p);
-      XClearWindow(display, frame.border);
-      if (p) XFreePixmap(display, p);
-      
+    if (! transient) {
       if (resizable) {
 	if (frame.fhandle) XFreePixmap(display, frame.fhandle);
 	if (frame.uhandle) XFreePixmap(display, frame.uhandle);
@@ -1036,8 +1008,41 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
 	delete h_image;
       }
     }
-    
+
     setFocusFlag(focused);
+    XResizeWindow(display, frame.title, frame.title_w, frame.title_h);
+    positionButtons();
+    
+    if (! transient) {
+      XResizeWindow(display, frame.border, frame.border_w, frame.border_h);
+      
+      if (resizable) {
+	XMoveResizeWindow(display, frame.handle, frame.border_w + 1,
+			  frame.title_h + 1,
+			  frame.handle_w, frame.handle_h);
+	
+	XMoveWindow(display, frame.resize_handle, frame.border_w + 1,
+		    frame.title_h + frame.handle_h + 2);
+      }
+      
+      XMoveResizeWindow(display, client.window, 4, 4, client.width,
+			client.height);
+
+      BImage *b_image = new BImage(blackbox, frame.border_w, frame.border_h,
+				   blackbox->Depth());
+      Pixmap p =
+	b_image->renderSolidImage(blackbox->wFrameTexture()|
+				  BImageNoDitherSolid,
+				  blackbox->wFrameColor());
+      
+      delete b_image;
+      XSetWindowBackgroundPixmap(display, frame.border, p);
+      XClearWindow(display, frame.border);
+      if (p) XFreePixmap(display, p);
+    } else
+      XMoveResizeWindow(display, client.window, 0, frame.title_h + 1,
+			client.width, client.height);
+    
     drawTitleWin();
     drawAllButtons();
     XUngrabServer(display);

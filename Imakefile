@@ -18,7 +18,7 @@ XCOMM
 XCOMM (See the included file COPYING / GPL-2.0)
 
 XCOMM Uncomment this to get debugging symbols in the executable
-CXXFLAGS :=	$(CXXFLAGS) -g
+XCOMM CXXFLAGS :=	$(CXXFLAGS) -g
 
 XCOMM Define this to get XShapeExtention support
 #define SupportShapeExtension
@@ -43,7 +43,7 @@ OtherLibs :=
 #ifdef SupportShapeExtension
 CXXFLAGS :=	$(CXXFLAGS) -DSHAPE
 #endif
-CXXFLAGS :=	-Wall -W $(CXXFLAGS)
+CXXFLAGS :=	-Wall -W $(CXXFLAGS) -fno-exceptions
 
 PROGRAMS := blackbox
 SRCS1 := $(Sources)

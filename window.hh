@@ -45,7 +45,7 @@ private:
   Windowmenu *windowmenu;
   
   Bool moving, resizing, shaded, maximized, visible, iconic, transient,
-    focused, icccm_compliant, internal_window, resizable, do_close;
+    focused, icccm_compliant, internal_window, resizable, stuck;
   Display *display;
   
   struct client {
@@ -68,11 +68,11 @@ private:
     Bool shaped;
     GC ftextGC, utextGC;
     Pixmap utitle, ftitle, uhandle, fhandle, button, pbutton;
-    Window window, title, border, handle, close_button, iconify_button,
-      maximize_button, resize_handle;
+    Window window, title, border, handle, close_button,
+      iconify_button, maximize_button, resize_handle;
     int x, y, x_resize, y_resize, x_move, y_move;
     unsigned int width, height, title_h, title_w, handle_h, handle_w,
-      border_w, border_h, button_w, button_h, rh_w, rh_h;
+      button_w, button_h, rh_w, rh_h, border_w, border_h;
   } frame;
 
   struct protocols {
@@ -136,6 +136,7 @@ public:
   void withdrawWindow(void);
   void maximizeWindow(void);
   void shadeWindow(void);
+  void unstickWindow(void);
   void Reconfigure(void);
 
   BlackboxWindow *Transient(void) { return client.transient; }
@@ -146,7 +147,8 @@ public:
   Bool isVisible(void) { return visible; }
   Bool isIconic(void) { return iconic; }
   Bool isResizable(void) { return resizable; }
-  Bool isClosable(void) { return do_close; }
+  Bool isClosable(void) { return protocols.WM_DELETE_WINDOW; }
+  Bool isStuck(void) { return stuck; }
   Window frameWindow(void) { return frame.window; }
   Window clientWindow(void) { return client.window; }
   char **Title(void) { return &client.title; }
@@ -159,6 +161,7 @@ public:
   unsigned int clientHeight(void) { return client.height; }
   unsigned int clientWidth(void) { return client.width; }
   void removeIcon(void) { icon = NULL; }
+  void stickWindow(Bool s) { stuck = s; }
 
   Pixmap clientIconPixmap(void) { return client.icon_pixmap; }
   Pixmap clientIconMask(void) { return client.icon_mask; }

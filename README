@@ -20,10 +20,14 @@
 
 
 *** %%% *** NOTE *** %%% ***
-Blackbox's configuration system has completely CHANGED as of 0.2x.x.  All
-previous configurations will NOT WORK with this release.  This is the reason
-for a 0.2x.x release.  Please read the following text so that you can adapt
-your current configuration to the new format.
+
+Yup.  You guessed.  Blackbox's configuration system has changed YET AGAIN!
+	(ARGH!)
+
+This should be the last time a major change is forced upon you the (l)users. 
+
+	-Brad
+
 *** %%% ***      *** %%% ***
 
 This file covers operation and configuration of Blackbox.  Since it is
@@ -181,7 +185,10 @@ Window Operations:
 	close, raise, and lower functions.  The "Send To ..." submenu
 	displays a list of available workspaces, which will send the
 	window to the desired workspace if one is selected from the
-	menu.  The window menu is retractable by pressing mouse button 3
+	menu.  The stick/unstick operation has been implemented as another
+	workspace, whose contents are always visible on every workspace, and
+	whose windows are always on top of the current workspace's windows.
+	The window menu is retractable by pressing mouse button 3
 	on the window titlebar a second time.
 
 	Window shading can be simply explained as hiding all of the
@@ -218,7 +225,7 @@ Menu Behaviour:
 	ALL windows on the last workspace, and removes the last workspace
 	from blackbox's memory.  The number of workspaces is dynamic, but at
 	least one must stay "alive". Because of this, the user cannot delete
-	Workspace 0.
+	Workspace 1.
 
 	Pressing one of the available workspaces in the menu with mouse
 	button 1 changes to that workspace (i.e. all windows on the
@@ -259,30 +266,6 @@ Icons:
 	the window on the current workspace (dissociating it from its original
 	workspace if necessary).
 
-Automatic Reconfiguration:
-	*** OBSOLETE ***
-	* Blackbox operates the same way any other window manager
-	* operates.  It monitors events sent by the X server and deals
-	* with them accordingly (like mapping a client window with or
-	* without decorations, for example).  One event it also monitors
-	* is a PropertyNotify event on the root window.  If the
-	* RESOURCE_MANAGER property should change, blackbox rereads its
-	* configuration and applies it to current and future windows,
-	* menus, icons, etc.  Blackbox can also be forced to reread its
-	* configuration via the menu (see the menu section below).
-  	***
-
-	NOTE:  Reading the RESOURCE_MANAGER property has proven to be
-	less than stable, as it appears to work properly at times, and
-	at times blackbox will core and exit.  Because of this a dialog
-	has been created for the user to select whether or not blackbox
-	should perform its reconfiguration, or wait until the user wants
-	to reconfigure.
-
-	UPDATE: This feature has been removed, haven been proven unstable and
-	unreliable.  A new method of automatic reconfiguration will be
-	implemented in later releases.
-
 
 Configuration:
 -----------------
@@ -297,328 +280,14 @@ first file is the main configuration file, ~/.blackboxrc.  Blackbox reads this
 file to determine colors, textures, fonts, and other relevant resources.  The
 menu is read from a file set by a resource in this configuration file.
 
-These are the X resources that Blackbox reads from its configuration
-file:
-
-
-Name:					Class:
---------				---------
-blackbox.session.toolboxTexture		Blackbox.Session.ToolboxTexture
-blackbox.window.windowTexture		Blackbox.Window.WindowTexture
-blackbox.window.buttonTexture		Blackbox.Window.ButtonTexture
-blackbox.menu.menuTexture		Blackbox.Menu.MenuTexture
-blackbox.menu.menuItemTexture		Blackbox.Menu.MenuItemTexture
-
-Values Accepted:
-	Any combination of:
-		Bevel type:    Raised, Sunken, Flat
-		Texture type:  Solid, Gradient
-		Gradient type: Diagonal, Vertical, Horizontal
-		Bevel option:  Bevel1, Bevel2
-
-	The various textures give a better appearance to blackbox.  The
-	toolbox texture controls the toolbox on the bottom of the
-	screen.
-
-
-Name:					Class:
---------				---------
-blackbox.session.frameColor		Blackbox.Session.FrameColor
-blackbox.session.toolboxColor		Blackbox.Session.ToolboxColor
-blackbox.session.toolboxToColor		Blackbox.Session.ToolboxToColor
-blackbox.window.focusColor		Blackbox.Window.FocusColor
-blackbox.window.focusToColor		Blackbox.Window.FocusToColor
-blackbox.window.unfocusColor		Blackbox.Window.UnfocusColor
-blackbox.window.unfocusToColor		Blackbox.Window.UnfocusToColor
-blackbox.window.buttonColor		Blackbox.Window.ButtonColor
-blackbox.window.buttonToColor		Blackbox.Window.ButtonToColor
-blackbox.menu.menuColor			Blackbox.Menu.MenuColor
-blackbox.menu.menuToColor		Blackbox.Menu.MenuToColor
-blackbox.menu.menuItemColor		Blackbox.Menu.MenuItemColor
-blackbox.menu.menuItemToColor		Blackbox.Menu.MenuItemToColor
-	--					--
-blackbox.window.focusTextColor		Blackbox.Window.FocusTextColor
-blackbox.window.unfocusTextColor	Blackbox.Window.UnfocusTextColor
-blackbox.menu.menuTextColor		Blackbox.Menu.MenuTextColor
-blackbox.menu.menuItemTextColor		Blackbox.Menu.MenuItemTextColor
-blackbox.menu.menuPressedTextColor	Blackbox.Menu.MenuPressedTextColor
-blackbox.session.iconTextColor		Blackbox.Session.IconTextColor;
-
-Accepted Values:
-	Blackbox has been updated so that it now takes any X color
-	name in defining it's colors.
-
-	These color specs control the appearance of blackbox.
-
-
-Name:					Class:
---------				---------
-blackbox.menu.menuFile		Blackbox.Menu.MenuFile
-
-Accepted Value:
-	a character string.  Be warned... if the file cannot be opened 
-	blackbox's root menu will revert to xterm, Restart and Exit.
-
-
-Name:					Class:
---------				---------
-blackbox.session.workspaces		Blackbox.Session.Workspaces
-
-Accepted Value:
-	an integer.  This resource controls how many workspaces are
-	created when blackbox starts a new session (read, assumes
-	control of an X display).
-
-
-Name:					Class:
---------				---------
-blackbox.window.moveStyle		Blackbox.Window.MoveStyle
-
-Accepted Value:
-	A character string of "opaque" will cause blackbox to show the window
-	contents during a window move.  Any other value will cause blackbox to
-	draw a wire frame during the move.
-
-
-Name:					Class:
---------				---------
-blackbox.imageRender.dither		Blackbox.ImageRender.Dither
-
-Accepted Value:
-	A boolean value of "true" will dither images on 8,
-	15 (currently broken) and 16bpp displays.
-
-
-Name:					Class:
--------					---------
-blackbox.imageRender.colorsPerChannel	Blackbox.ImageRender.ColorsPerChannel
-
-Accepted Value:
-	An integer between 1 and 6.  This number controls how many pre
-	allocated colors are used on 8bpp displays.  Higher number creates
-	better color "trueness" at the expense of using all colors.  Default is
-	5, but 4 or 5 yield decent (and less resource expensive) results.
-
-
-Name:					Class:
---------				---------
-blackbox.session.titleFont		Blackbox.Session.TitleFont
-blackbox.session.menuFont		Blackbox.Session.MenuFont
-blackbox.session.iconFont		Blackbox.Session.IconFont
-
-Accepted values:
-	any X font string.  if no resource is specified or if the font
-	specified does not exist, a default font is loaded.
-	The title font is the font used on window title bars, menu
-	titles, and the workspace button on the toolbar.  the menu font
-	is used on menu items, and the icon font is for icon labels
-
-
-As an idea of how to configure blackbox, here is a snippet of my
-resource file to configure Blackbox (~/.blackboxrc):
-
---
-
-! Blackbox window manager resource defaults
-! (c) 1997, 1998 Brad Hughes
-
-blackbox*toolboxTexture:          Raised Diagonal   Gradient Bevel1
-blackbox*windowTexture:           Raised Diagonal   Gradient Bevel1
-blackbox*buttonTexture:           Flat   Vertical   Gradient
-blackbox*menuTexture:             Flat   Vertical   Gradient
-blackbox*menuItemTexture:         Raised Horizontal Gradient Bevel1
-
-blackbox*frameColor:              rgb:20/30/40
-blackbox*toolboxColor:            rgb:50/78/a0
-blackbox*toolboxToColor:          rgb:40/60/80
-blackbox*focusColor:              rgb:60/90/c0
-blackbox*focusToColor:            rgb:40/60/80
-blackbox*unfocusColor:            rgb:50/78/a0
-blackbox*unfocusToColor:          rgb:30/48/60
-blackbox*buttonColor:             rgb:60/90/c0
-blackbox*buttonToColor:           rgb:40/60/80
-blackbox*menuColor:               lightgrey
-blackbox*menuToColor:             darkgrey
-blackbox*menuItemColor:           rgb:40/60/80
-blackbox*menuItemToColor:         rgb:50/78/a0
-blackbox*menuHighlightColor:      rgb:60/90/c0
-
-blackbox*toolboxTextColor:        lightgrey
-blackbox*focusTextColor:          white
-blackbox*unfocusTextColor:        darkgrey
-blackbox*menuTextColor:           black
-blackbox*menuItemTextColor:       lightgrey
-blackbox*menuHighlightTextColor:  white
-blackbox*iconTextColor:           grey
-
-blackbox*workspaces:              5
-blackbox*menuFile:                /home/users/bhughes/blackbox/blackbox.menu
-blackbox*titleJustify:            centerjustify
-blackbox*moveStyle:		  Opaque
-blackbox*dither:		  True
-blackbox*colorsPerChannel:	  4
-
-blackbox*titleFont:     -adobe-helvetica-medium-r-*-*-*-100-*-*-*-*-*-*
-blackbox*menuFont:      -adobe-helvetica-medium-r-*-*-*-100-*-*-*-*-*-*
-blackbox*iconFont:      -adobe-helvetica-medium-r-*-*-*-100-*-*-*-*-*-*
-
+This README is broken.
+Please see the Blackbox.ad file for an example of a Blackbox rc file.
 --
 
 The Menu File:
 -----------------
-The menu file format has CHANGED.  Old menu files that follow the old
-format will not get read AT ALL.  Blackbox now uses X resource to control
-the root menu.
-
-Blackbox looks for a resource in the menu file called:
-	blackbox.session.rootMenu.topLevelMenu
-
-This menu determines which menu is the root menu.  For example:
-	blackbox*rootMenu.topLevelMenu:		topmenu
-tells blackbox to read the menu named "topmenu" as the root menu.
-
-Menus are read according to their name, label, number of items and the
-actual menu items (in that order).  So, as an example, here is how the
-default menu file would look:
-
-	blackbox*rootMenu.topLevelMenu:		topmenu
-
-	blackbox*topmenu.label:			Rootmenu
-	blackbox*topmenu.item1.label:		xterm
-	blackbox*topmenu.item1.exec:		xterm
-	blackbox*topmenu.item2.label:		Restart
-	blackbox*topmenu.item2.restart:		restart
-	blackbox*topmenu.item3.label:		Exit
-	blackbox*topmenu.item3.exit:		anyvalue
-	blackbox*topmenu.totalItems:		3
-
-This is a decent looking file format.  But then (you ask) why does the
-number of items come AFTER the actual menu items?  The nice thing about
-X resources is that they are a database, Blackbox looks for the one it
-wants and READS the defaults in the order, so the file need not be in any
-specific order (other than to make sense of it the next morning after
-an allnight coding session).
-
-Here is a synopsis of the menu format:
-
-blackbox.session.rootMenu.topLevelMenu
-		: menu to read as the rootmenu
-
-blackbox.session.<menu_name>.label
-		: menu label for <menu_name>
-
-blackbox.session.<menu_name>.totalItems
-		: total number of items for <menu_name>
-
-blackbox.session.<menu_name>.itemX.label
-		: item label for item X.  Blackbox will only read upto
-		  50 items permenu (hardcoded default) so X should be
-		  between 1 and 50
-
-blackbox.session.<menu_name>.itemX.exec
-		: string to execute when item is selected
-
-blackbox.session.<menu_name>.itemX.submenu
-		: string that provides a name for a submenu
-
-blackbox.session.<menu_name>.itemX.restart
-		: string that tells blackbox how to restart.  a value of
-		  "restart" tells Blackbox to restart itself.  Any other
-		  value and Blackbox tries to restart a different window
-		  manager with the name of the specified value.
-
-blackbox.sesssion.<menu_name>.itemX.reconfig
-		: any value may be specified here.  Blackbox reconfigures
-		  itself when this menu item is selected.
-
-blackbox.session.<menu_name>.itemX.exit
-		: any value may be specified here.  Blackbox dissociates
-		  all windows and exits whtn this menu item is selected.
-
-
-Again for an idea of how to configure the menu, here is my
-blackbox.menu file (set by the resource in my .Xdefaults file):
-
---
-! Blackbox window manager resource defaults
-! (c) 1997, 1998 Brad Hughes
-
-blackbox*rootMenu.topLevelMenu:         taciturn
-
-blackbox*taciturn.label:                Taciturn
-blackbox*taciturn.item1.label:          xterm
-blackbox*taciturn.item1.exec:           xterm -ls
-blackbox*taciturn.item2.label:          ircII EPIC
-blackbox*taciturn.item2.exec:           xterm -name irc -e irc
-blackbox*taciturn.item3.label:          XEmacs
-blackbox*taciturn.item3.exec:           xemacs
-blackbox*taciturn.item4.label:          Ion CD Player
-blackbox*taciturn.item4.exec:           ~/ion/cd-0.6.4/ioncd
-blackbox*taciturn.item5.label:          Ion Manager
-blackbox*taciturn.item5.exec:           ~/ion/manager-0.7.4pl3/manager
-blackbox*taciturn.item6.label:          Graphics
-blackbox*taciturn.item6.submenu:        graphicsMenu
-blackbox*taciturn.item7.label:          Communicator 4.04
-blackbox*taciturn.item7.exec:           netscape
-blackbox*taciturn.item8.label:          Utilities
-blackbox*taciturn.item8.submenu:        utilMenu
-blackbox*taciturn.item9.label:          PPP Link
-blackbox*taciturn.item9.submenu:        pppMenu
-blackbox*taciturn.item10.label:         Restart
-blackbox*taciturn.item10.submenu:       restartMenu
-blackbox*taciturn.item11.label:         Exit
-blackbox*taciturn.item11.exit:          exit
-blackbox*taciturn.totalItems:           11
-
-blackbox*graphicsMenu.label:            Graphics Programs
-blackbox*graphicsMenu.item1.label:      xv 3.10a
-blackbox*graphicsMenu.item1.exec:       xv -bg rgb:c0/c0/c0 -fg black -hi rgb:e0/e0/e0 -lo rgb:a0/a0/a0
-blackbox*graphicsMenu.item2.label:      The Gimp
-blackbox*graphicsMenu.item2.exec:       gimp
-blackbox*graphicsMenu.totalItems:       2
-
-blackbox*utilMenu.label:                X Utilities
-blackbox*utilMenu.item1.label:          Window Info
-blackbox*utilMenu.item1.submenu:        windowMenu
-blackbox*utilMenu.item2.label:          Font Selection
-blackbox*utilMenu.item2.exec:           xfontsel
-blackbox*utilMenu.item3.label:          Calculator
-blackbox*utilMenu.item3.exec:           xcalc
-blackbox*utilMenu.item4.label:          Linux Manual
-blackbox*utilMenu.item4.exec:           xman
-blackbox*utilMenu.item5.label:          Kill Client
-blackbox*utilMenu.item5.exec:           xkill
-blackbox*utilMenu.totalItems:           5
-
-blackbox*windowMenu.label:              Window Information
-blackbox*windowMenu.item1.label:        Window Info
-blackbox*windowMenu.item1.exec:         xterm -e zsh -c 'xwininfo; echo Press Enter to close; read'
-blackbox*windowMenu.item2.label:        Display Info
-blackbox*windowMenu.item2.exec:         xterm -e zsh -c 'xdpyinfo | less'
-blackbox*windowMenu.totalItems:         2
-
-blackbox*pppMenu.label:                 PPP Link
-blackbox*pppMenu.item1.label:           Dial...
-blackbox*pppMenu.item1.exec:            /usr/sbin/pppd
-blackbox*pppMenu.item2.label:           Disconnect
-blackbox*pppMenu.item2.exec:            killall pppd
-blackbox*pppMenu.item3.label:           Statistics
-blackbox*pppMenu.item3.exec:            xterm -e /usr/sbin/pppstats -w 15
-blackbox*pppMenu.item4.label:           Log Monitor
-blackbox*pppMenu.item4.exec:            xterm -e tail -f /var/adm/messages
-blackbox*pppMenu.totalItems:            4
-
-blackbox*restartMenu.label:             Restart
-blackbox*restartMenu.item1.label:       Reconfigure
-blackbox*restartMenu.item1.reconfig:    reconfigure
-blackbox*restartMenu.item2.label:       Blackbox
-blackbox*restartMenu.item2.restart:     restart
-blackbox*restartMenu.item3.label:	WindowMaker
-blackbox*restartMenu.item3.restart:	wmaker
-blackbox*restartMenu.item4.label:       Twm
-blackbox*restartMenu.item4.restart:     twm
-blackbox*restartMenu.totalItems:        4
-
+This README is broken.
+Please see the BlackboxMenu.ad file for an example of a Blackbox menu file.
 --
 
 

@@ -312,6 +312,8 @@ void Blackbox::EventLoop(void) {
 	
 	select(xfd + 1, &rfds, 0, 0, &tv);
       } else {
+	// this will be done every 60 seconds
+
 	wsManager->checkClock();
 	lastTime = time(NULL);
       }
@@ -373,7 +375,7 @@ void Blackbox::ProcessEvent(XEvent *e) {
     if (cWin != NULL)
       cWin->configureRequestEvent(&e->xconfigurerequest);
     else {
-      /* configure a window we haven't mapped yet */
+      // configure a window we haven't mapped yet
       XWindowChanges xwc;
       
       xwc.x = e->xconfigurerequest.x;
@@ -500,9 +502,6 @@ void Blackbox::ProcessEvent(XEvent *e) {
   case FocusIn: {
     BlackboxWindow *iWin = searchWindow(e->xfocus.window);
 
-    // printf("id 0x%08lx focus in  %d %d\n", e->xfocus.window, e->xfocus.mode,
-    //        e->xfocus.detail);
-
     if ((iWin != NULL) && (e->xfocus.mode != NotifyGrab) &&
 	(e->xfocus.mode != NotifyUngrab)) {
       iWin->setFocusFlag(True);
@@ -514,9 +513,6 @@ void Blackbox::ProcessEvent(XEvent *e) {
   
   case FocusOut: {
     BlackboxWindow *oWin = searchWindow(e->xfocus.window);
-
-    // printf("id 0x%08lx focus out %d %d\n", e->xfocus.window, e->xfocus.mode,
-    //        e->xfocus.detail);
 
     if ((oWin != NULL) && (e->xfocus.mode != NotifyGrab) &&
 	(e->xfocus.mode != NotifyUngrab))
@@ -563,7 +559,7 @@ void Blackbox::ProcessEvent(XEvent *e) {
       }
     } else if (e->xkey.state & ControlMask) {
       if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Left){
-	if (wsManager->currentWorkspaceID() > 0)
+	if (wsManager->currentWorkspaceID() > 1)
 	  wsManager->
 	    changeWorkspaceID(wsManager->currentWorkspaceID() - 1);
 	else
@@ -573,7 +569,7 @@ void Blackbox::ProcessEvent(XEvent *e) {
 	  wsManager->
 	    changeWorkspaceID(wsManager->currentWorkspaceID() + 1);
 	else
-	  wsManager->changeWorkspaceID(0);
+	  wsManager->changeWorkspaceID(1);
       }
     }
 
@@ -812,10 +808,16 @@ void Blackbox::Restart(char *prog) {
   Dissociate();
   XSetInputFocus(display, PointerRoot, RevertToParent, CurrentTime);
 
-  if (prog)
+  if (prog) {
     execlp(prog, prog, NULL);
-  else
-    execvp(b_argv[0], b_argv);
+    perror(prog);
+  }
+
+  // fall back in case the above execlp doesn't work
+  execvp(b_argv[0], b_argv);
+
+  // fall back in case we can't re execvp() ourself
+  Exit();
 }
 
 
@@ -841,7 +843,7 @@ void Blackbox::removeWindow(BlackboxWindow *w) {
 
 
 void Blackbox::reassociateWindow(BlackboxWindow *w) {
-  if (w->workspace() != wsManager->currentWorkspaceID()) {
+  if (! w->isStuck() && w->workspace() != wsManager->currentWorkspaceID()) {
     wsManager->workspace(w->workspace())->removeWindow(w);
     wsManager->currentWorkspace()->addWindow(w);
   }
@@ -872,29 +874,58 @@ void Blackbox::InitMenu(void) {
   } else
     rootmenu = new Rootmenu(this);
   
-  Bool default_menu = True;
+  Bool defaultMenu = True;
 
   if (resource.menuFile) {
-    XrmDatabase menu_db = XrmGetFileDatabase(resource.menuFile);
-    
-    if (menu_db) {
-      XrmValue value;
-      char *value_type;
-      
-      if (XrmGetResource(menu_db, "blackbox.session.rootMenu.topLevelMenu",
-			 "Blackbox.Session.RootMenu.TopLevelMenu", &value_type,
-			 &value)) {
-	default_menu = False;
-	readMenuDatabase(rootmenu, &value, &menu_db);
-      } else
-	fprintf(stderr, "Error reading menu database file %s, please check "
-		"your configuration\n", resource.menuFile);
-      
-      XrmDestroyDatabase(menu_db);
-    }
-  }
+    FILE *menuFile = fopen(resource.menuFile, "r");
 
-  if (default_menu) {
+    if (menuFile) {
+      if (! feof(menuFile)) {
+	char line[256], tmp1[256];
+	memset(line, 0, 256);
+
+	while (fgets(line, 256, menuFile) && ! feof(menuFile)) {
+	  if (line[0] != '#') {
+	    int i, ri, len = strlen(line);
+	    
+	    for (i = 0; i < len; i++)
+	      if (line[i] == '[') { i++; break; }
+	    for (ri = len; ri > 0; ri--)
+	      if (line[ri] == ']') break;
+	    
+	    if (i < ri && ri > 0) {
+	      strncpy(tmp1, line + i, ri - i);
+	      *(tmp1 + (ri - i)) = '\0';
+	      
+	      if (strstr(tmp1, "begin")) {
+		for (i = 0; i < len; i++)
+		  if (line[i] == '(') { i++; break; }
+		for (ri = len; i < len; ri--)
+		  if (line[ri] == ')') { break; }
+		
+		char *label = 0;
+		if (i < ri && ri > 0) {
+		  label = new char[ri - i + 1];
+		  strncpy(label, line + i, ri - i);
+		  *(label + (ri - i)) = '\0';
+		}
+		
+		rootmenu->setMenuLabel(label);
+		defaultMenu = parseMenuFile(menuFile, rootmenu);
+		break;
+	      }
+	    }
+	  }
+	}
+      } else
+	fprintf(stderr, "%s: Empty menu file", resource.menuFile);
+
+      fclose(menuFile);
+    } else
+      perror(resource.menuFile);
+  }
+  
+  if (defaultMenu) {
     rootmenu->defaultMenu();
     rootmenu->insert("xterm", B_Execute, "xterm");
     rootmenu->insert("Restart", B_Restart);
@@ -903,145 +934,166 @@ void Blackbox::InitMenu(void) {
 }
 
 
-void Blackbox::readMenuDatabase(Rootmenu *menu,
-				XrmValue *menu_resource,
-				XrmDatabase *menu_database) {
-  char *rnstring = new char[menu_resource->size + 40],
-    *rcstring = new char[menu_resource->size + 40];
+Bool Blackbox::parseMenuFile(FILE *file, Rootmenu *menu) {
+  char line[256], tmp1[256];
 
-  XrmValue value;
-  char *value_type;
+  while (! feof(file)) {
+    memset(line, 0, 256);
+    memset(tmp1, 0, 256);
+    
+    if (fgets(line, 256, file)) {
+      if (line[0] != '#') {
+	int i, ri, len = strlen(line);
 
-  // check for menu label
-  sprintf(rnstring, "blackbox.session.%s.label", menu_resource->addr);
-  sprintf(rcstring, "Blackbox.Session.%s.Label", menu_resource->addr);
-  if (XrmGetResource(*menu_database, rnstring, rcstring, &value_type,
-		     &value)) {
-    char *menulabel = new char[value.size];
-    strncpy(menulabel, value.addr, value.size);
-    menu->setMenuLabel(menulabel);
-  }
+	for (i = 0; i < len; i++)
+	  if (line[i] == '[') { i++; break; }
+	for (ri = len; ri > 0; ri--)
+	  if (line[ri] == ']') break;
 
-  // now... check for menu items
-  int nitems = 0;
-  sprintf(rnstring, "blackbox.session.%s.totalItems", menu_resource->addr);
-  sprintf(rcstring, "Blackbox.Session.%s.TotalItems", menu_resource->addr);
-  if (XrmGetResource(*menu_database, rnstring, rcstring, &value_type,
-		     &value)) {
-    if (sscanf(value.addr, "%d", &nitems) != 1)
-      nitems = 0;
-  }
-
-  // read menu items... if they exist
-  if (nitems > 0) {
-    if (nitems > 100) nitems = 100; // limit number of items in the menu
-
-    for (int i = 0; i < nitems; i++) {
-      Rootmenu *submenu = 0;
-      char *label = 0, *exec = 0;
-
-      // look for label
-      sprintf(rnstring, "blackbox.session.%s.item%d.label",
-	      menu_resource->addr, i + 1);
-      sprintf(rcstring, "Blackbox.Session.%s.Item%d.Label",
-	      menu_resource->addr, i + 1);
-      if (XrmGetResource(*menu_database, rnstring, rcstring, &value_type,
-			 &value)) {
-	label = new char[value.size];
-	strncpy(label, value.addr, value.size);
-      }
-
-      sprintf(rnstring, "blackbox.session.%s.item%d.exec",
-	      menu_resource->addr, i + 1);
-      sprintf(rcstring, "Blackbox.Session.%s.Item%d.Exec",
-	      menu_resource->addr, i + 1);
-      if (XrmGetResource(*menu_database, rnstring, rcstring, &value_type,
-			 &value)) {
-	exec = new char[value.size];
-	strncpy(exec, value.addr, value.size);
-      }
-
-      if (label && exec) {
-	// have label and executable string... insert the menu item
-	menu->insert(label, B_Execute, exec);
-      } else if (label) {
-	// check the label for a builtin function... like restart, reconfig
-	// or exit
-	char *restart = 0;
-	
-	sprintf(rnstring, "blackbox.session.%s.item%d.restart",
-		menu_resource->addr, i + 1);
-	sprintf(rcstring, "Blackbox.Session.%s.Item%d.Restart",
-		menu_resource->addr, i + 1);
-	if (XrmGetResource(*menu_database, rnstring, rcstring, &value_type,
-			   &value)) {
-	  if (! strncasecmp(value.addr, "restart", value.size)) {
-	    // builtin restart function
-	    menu->insert(label, B_Restart);
-	  } else {
-	    // restart a different window manager
-	    restart = new char[value.size];
-	    strncpy(restart, value.addr, value.size);
-	    menu->insert(label, B_RestartOther, restart);
-	  }
-	} else {
-	  sprintf(rnstring, "blackbox.session.%s.item%d.reconfig",
-		  menu_resource->addr, i + 1);
-	  sprintf(rcstring, "Blackbox.Session.%s.Item%d.Reconfig",
-		  menu_resource->addr, i + 1);
-	  if (XrmGetResource(*menu_database, rnstring, rcstring, &value_type,
-			     &value)) {
-	    if (! strncasecmp("reconfig", value.addr, value.size)) {
-	      menu->insert(label, B_Reconfigure);
-	    } else {
-	      exec = new char[value.size];
-	      strncpy(exec, value.addr, value.size);
-	      menu->insert(label, B_ExecReconfigure, exec);
-	    }
-	  } else {
-	    sprintf(rnstring, "blackbox.session.%s.item%d.exit",
-		    menu_resource->addr, i + 1);
-	    sprintf(rcstring, "Blackbox.Session.%s.Item%d.Exit",
-		    menu_resource->addr, i + 1);
-	    if (XrmGetResource(*menu_database, rnstring, rcstring,
-			       &value_type, &value)) {
-	      menu->insert(label, B_Exit);
-	    } else {
-	      // all else fails... check for a submenu
-	      sprintf(rnstring, "blackbox.session.%s.item%d.submenu",
-		      menu_resource->addr, i + 1);
-	      sprintf(rcstring, "Blackbox.Session.%s.Item%d.submenu",
-		      menu_resource->addr, i + 1);
-	      if (XrmGetResource(*menu_database, rnstring, rcstring,
-				 &value_type, &value)) {
-		if (strncasecmp(value.addr, menu_resource->addr,
-				  value.size)) {
-		  submenu = new Rootmenu(this);
-		  menu->insert(label, submenu);
-		  readMenuDatabase(submenu, &value, menu_database);
-		  submenu->Update();
-		} else
-		  fprintf(stderr, "%s: %d recursive menu read\n"
-			  "  please check your configuration\n", value.addr,
-			  i + 1);
-		} else
-		  fprintf(stderr, "no item action found for item%d - please "
-			  "  please check your configuration\n", i + 1);
-	      }
+	if (i < ri && ri > 0) {
+	  strncpy(tmp1, line + i, ri - i);
+	  *(tmp1 + (ri - i)) = '\0';
+	  
+	  if (strstr(tmp1, "exit")) {
+	    for (i = 0; i < len; i++)
+	      if (line[i] == '(') { i++; break; }
+	    for (ri = len; ri > 0; ri--)
+	      if (line[ri] == ')') break;
 	    
+	    if (i < ri && ri > 0) {
+	      char *label = new char[ri - i + 1];
+	      strncpy(label, line + i, ri - i);
+	      *(label + (ri - i)) = '\0';
+	      
+	      menu->insert(label, B_Exit);
+	    }
+	  } else if (strstr(tmp1, "restart")) {
+	    for (i = 0; i < len; i++)
+	      if (line[i] == '(') { i++; break; }
+	    for (ri = len; ri > 0; ri--)
+	      if (line[ri] == ')') break;
+	    
+	    if (i < ri && ri > 0) {
+	      char *label = new char[ri - i + 1];
+	      strncpy(label, line + i, ri - i);
+	      *(label + (ri - i)) = '\0';
+	      
+	      for (i = 0; i < len; i++)
+		if (line[i] == '{') { i++; break; }
+	      for (ri = len; ri > 0; ri--)
+		if (line[ri] == '}') break;
+	      
+	      char *other = 0;
+	      if (i < ri && ri > 0) {
+		other = new char[ri - i + 1];
+		strncpy(other, line + i, ri - i);
+		*(other + (ri - i)) = '\0';
+	      }
+
+	      if (other)
+		menu->insert(label, B_RestartOther, other);
+	      else
+		menu->insert(label, B_Restart);
+	    }
+	  } else if (strstr(tmp1, "reconfig")) {
+	    for (i = 0; i < len; i++)
+	      if (line[i] == '(') { i++; break; }
+	    for (ri = len; ri > 0; ri--)
+	      if (line[ri] == ')') break;
+	    
+	    if (i < ri && ri > 0) {
+	      char *label = new char[ri - i + 1];
+	      strncpy(label, line + i, ri - i);
+	      *(label + (ri - i)) = '\0';
+	      
+	      for (i = 0; i < len; i++)
+		if (line[i] == '{') { i++; break; }
+	      for (ri = len; ri > 0; ri--)
+		if (line[ri] == '}') break;
+	      
+	      char *exec = 0;
+	      if (i < ri && ri > 0) {
+		exec = new char[ri - i + 1];
+		strncpy(exec, line + i, ri - i);
+		*(exec + (ri - i)) = '\0';
+	      }
+
+	      if (exec)
+		menu->insert(label, B_ExecReconfigure, exec);
+	      else
+		menu->insert(label, B_Reconfigure);
+	    }
+	  } else if (strstr(tmp1, "submenu")) {
+	    for (i = 0; i < len; i++)
+	      if (line[i] == '(') { i++; break; }
+	    for (ri = len; ri > 0; ri--)
+	      if (line[ri] == ')') break;
+
+	    char *label;
+	    if (i < ri && ri > 0) {
+	      label = new char[ri - i + 1];
+	      strncpy(label, line + i, ri - i);
+	      *(label + (ri - i)) = '\0';
+	    } else
+	      label = "(nil)";
+	    
+	    // this is an optional feature
+	    for (i = 0; i < len; i++)
+	      if (line[i] == '{') { i++; break; }
+	    for (ri = len; ri > 0; ri--)
+	      if (line[ri] == '}') break;
+	    
+	    char *optTitle = 0;
+	    if (i < ri && ri > 0) {
+	      optTitle = new char[ri - i + 1];
+	      strncpy(optTitle, line + i, ri - i);
+	      *(optTitle + (ri - i)) = '\0';
+	    }
+	    
+	    Rootmenu *submenu = new Rootmenu(this);
+	    submenu->setMenuLabel((optTitle) ? optTitle : label);
+	    parseMenuFile(file, submenu);
+	    submenu->Update();
+	    rootmenu->insert(label, submenu);
+	  } else if (strstr(tmp1, "end")) {
+	    break;
+	  } else if (strstr(tmp1, "exec")) {
+	    for (i = 0; i < len; i++)
+	      if (line[i] == '(') { i++; break; }
+	    for (ri = len; ri > 0; ri--)
+	      if (line[ri] == ')') break;
+
+	    if (i < ri && ri > 0) {
+	      char *label = new char[ri - i + 1];
+	      strncpy(label, line + i, ri - i);
+	      *(label + (ri - i)) = '\0';
+   
+	      for (i = 0; i < len; i++)
+		if (line[i] == '{') { i++; break; }
+	      for (ri = len; ri > 0; ri--)
+		if (line[ri] == '}') break;
+	      
+	      if (i < ri && ri > 0) {
+		char *command = new char[ri - i + 1];
+		strncpy(command, line + i, ri - i);
+		*(command + (ri - i)) = '\0';
+
+		if (label && command)
+		  menu->insert(label, B_Execute, command);
+		else
+		  printf("error: label(%s) == NULL || command(%s) == NULL\n",
+			 label, command);
+	      } else
+		printf("error: no command string for [exec] (%s)\n", label);
+	    } else
+	      printf("error: no label string for [exec]\n");
 	  }
 	}
-      } else
-	fprintf(stderr, "menu %s: no defined label for item%d - skipping\n"
-		"  please check your configuration\n", menu_resource->addr,
-		i + 1);
+      }
     }
-  } else
-    fprintf(stderr, "menu %s: number of menu items not defined\n"
-	    "please check your configuration\n", menu_resource->addr);
-  
-  delete [] rnstring;
-  delete [] rcstring;
+  }
+
+  return ((menu->Count() == 0) ? True : False);
 }
 
 
@@ -1361,19 +1413,6 @@ void Blackbox::LoadDefaults(void) {
     }
   } else
     resource.workspaces = 1;
-
-  /*
-  if (XrmGetResource(resource.blackboxrc,
-		     "blackbox.session.reconfigurePrompt",
-		     "Blackbox.Session.ReconfigurePrompt",
-		     &value_type, &value)) {
-    if (! strcasecmp(value.addr, "no"))
-      resource.prompt_reconfigure = False;
-    else
-      resource.prompt_reconfigure = True;
-  } else
-    resource.prompt_reconfigure = True;
-  */
 
   // load session menu file
   if (XrmGetResource(resource.blackboxrc,

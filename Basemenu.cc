@@ -153,6 +153,7 @@ int Basemenu::insert(char *label, int function, char *exec) {
   int ret = 0;
   if (function)
     switch (function) {
+    case Blackbox::B_WindowStick:
     case Blackbox::B_WindowShade:
     case Blackbox::B_WindowIconify:
     case Blackbox::B_WindowMaximize:
@@ -312,11 +313,14 @@ void Basemenu::Update(void) {
   XSetWindowBackgroundPixmap(display, menu.iframe, menu.iframe_pixmap);
   
   XResizeWindow(display, menu.frame, menu.width, menu.height);
+
   if (title_vis)
     XResizeWindow(display, menu.title, menu.width, menu.title_h);
+
   XMoveResizeWindow(display, menu.iframe, 0,
 		    ((title_vis) ? menu.title_h + 1 : 0), menu.width,
 		    menu.iframe_h);
+
   XClearWindow(display, menu.frame);
   XClearWindow(display, menu.title);
   XClearWindow(display, menu.iframe);

@@ -45,14 +45,14 @@ Windowmenu::Windowmenu(BlackboxWindow *win, Blackbox *bb) : Basemenu(bb) {
   insert("Send To ...", sendToMenu);
   insert("(Un)Shade", Blackbox::B_WindowShade);
   insert("Iconify", Blackbox::B_WindowIconify);
-  
+
   if (window->isResizable())
     insert("(Un)Maximize", Blackbox::B_WindowMaximize);  
-  if (window->isClosable())
-    insert("Close", Blackbox::B_WindowClose);
 
   insert("Raise", Blackbox::B_WindowRaise);
   insert("Lower", Blackbox::B_WindowLower);
+  insert("(Un)Stick", Blackbox::B_WindowStick);
+  insert("Close", Blackbox::B_WindowClose);
   
   Update();
 }
@@ -90,12 +90,33 @@ void Windowmenu::itemSelected(int button, int index) {
       
     case Blackbox::B_WindowRaise:
       Hide();
-      wsManager->currentWorkspace()->raiseWindow(window);
+      wsManager->workspace(window->workspace())->raiseWindow(window);
+      if (window->isStuck())
+	wsManager->currentWorkspace()->restackWindows();
       break;
       
     case Blackbox::B_WindowLower:
       Hide();
-      wsManager->currentWorkspace()->lowerWindow(window);
+      wsManager->workspace(window->workspace())->lowerWindow(window);
+      if (window->isStuck())
+	wsManager->currentWorkspace()->restackWindows();
+      break;
+
+    case Blackbox::B_WindowStick:
+      Hide();
+      if (! window->isStuck()) {
+	int id = window->workspace();
+	window->setWorkspace(0);
+	wsManager->workspace(id)->removeWindow(window);
+	wsManager->workspace(0)->addWindow(window);
+	window->stickWindow(True);
+      } else {
+	wsManager->workspace(0)->removeWindow(window);
+	wsManager->currentWorkspace()->addWindow(window);
+	window->stickWindow(False);
+      }
+
+      wsManager->currentWorkspace()->restackWindows();
       break;
     }
   }
@@ -129,10 +150,10 @@ SendtoWorkspaceMenu::~SendtoWorkspaceMenu(void) {
 
 void SendtoWorkspaceMenu::itemSelected(int button, int index) {
   if (button == 1) {
-    if (index < wsManager->count())
-      if (index != wsManager->currentWorkspaceID()) {
+    if ((index + 1) <= wsManager->count())
+      if ((index + 1) != wsManager->currentWorkspaceID()) {
 	wsManager->workspace(window->workspace())->removeWindow(window);
-	wsManager->workspace(index)->addWindow(window);
+	wsManager->workspace(index + 1)->addWindow(window);
 	window->withdrawWindow();
       }
   } else
@@ -147,7 +168,7 @@ void SendtoWorkspaceMenu::Update(void) {
     for (i = 0; i < r; ++i)
       remove(0);
   
-  for (i = 0; i < wsManager->count(); ++i)
+  for (i = 1; i < wsManager->count(); ++i)
     insert(wsManager->workspace(i)->Name());
   
   Basemenu::Update();

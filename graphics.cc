@@ -110,7 +110,7 @@ Pixmap BImage::renderSolidImage(unsigned long texture, const BColor &color) {
       invertImage();
   }
   
-  return convertToPixmap();
+  return convertToPixmap(! (texture & BImageNoDitherSolid));
 }
 
 
@@ -244,7 +244,7 @@ Bool BImage::putPixel(unsigned int x, unsigned int y, unsigned long pixel) {
 
 
 
-XImage *BImage::convertToXImage(void) {
+XImage *BImage::convertToXImage(Bool dither) {
   int count = 0, bpp = 0;
   XPixmapFormatValues *pmv = XListPixmapFormats(blackbox->control(), &count);
 
@@ -303,7 +303,7 @@ XImage *BImage::convertToXImage(void) {
   case 16: {
     unsigned short *im = (unsigned short *) image->data;
 
-    if (blackbox->imageDither()) {
+    if (blackbox->imageDither() && dither) {
       // lets dither the image while blitting to the XImage
       unsigned int i, x, y, ofs, w2 = width * 2,
 	aw = ((width + 2) * sizeof(unsigned short));
@@ -405,7 +405,7 @@ XImage *BImage::convertToXImage(void) {
   case 15: {
     unsigned short *im = (unsigned short *) image->data;
 
-    if (blackbox->imageDither()) {
+    if (blackbox->imageDither() && dither) {
       // lets dither the image while blitting to the XImage
       unsigned int i, x, y, ofs;
       unsigned short *tor, *tog, *tob, er, eg, eb, sr, sg, sb,
@@ -506,7 +506,7 @@ XImage *BImage::convertToXImage(void) {
     int rr, gg, bb, cpc = blackbox->cpc8bpp(), cpc2 = cpc * cpc;
     unsigned char *im = (unsigned char *) image->data;
 
-    if (blackbox->imageDither()) {
+    if (blackbox->imageDither() && dither) {
       int d = 0xff / blackbox->cpc8bpp();
       unsigned int i, x, y, ofs, w2 = width * 2,
 	aw = ((width + 2) * sizeof(unsigned short));
@@ -630,13 +630,13 @@ XImage *BImage::convertToXImage(void) {
 }
 
 
-Pixmap BImage::convertToPixmap(void) {
+Pixmap BImage::convertToPixmap(Bool dither) {
   Pixmap pixmap = XCreatePixmap(blackbox->control(), blackbox->Root(), width,
 				height,	(unsigned) depth);
   
   if (pixmap == None) return None;
   
-  XImage *img = convertToXImage();
+  XImage *img = convertToXImage(dither);
 
   if (! img) {
     XFreePixmap(blackbox->control(), pixmap);

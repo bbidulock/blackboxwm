@@ -28,8 +28,8 @@
 class WorkspaceManager;
 
 class Blackbox;
-class Workspace;
 class BlackboxIcon;
+class Workspace;
 class Workspacemenu;
 
 #include "LinkedList.hh"
@@ -54,7 +54,7 @@ private:
   LinkedList<Workspace> *workspacesList;
   LinkedList<BlackboxIcon> *iconList;
   Blackbox *blackbox;
-  Workspace *current;
+  Workspace *current, *zero;
   Workspacemenu *wsMenu;
 
 

@@ -164,13 +164,16 @@ WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
 
   wsMenu = new Workspacemenu(blackbox, this);
 
+  addWorkspace();
+  wsMenu->remove(2);
   if (c != 0)
     for (int i = 0; i < c; ++i)
       addWorkspace();
   else
     addWorkspace();
   
-  current = workspacesList->first();
+  zero = workspacesList->first();
+  current = workspacesList->find(1);
   
   redrawWSD(True);
   checkClock(True);
@@ -234,16 +237,16 @@ int WorkspaceManager::addWorkspace(void) {
   Workspace *wkspc = new Workspace(this, workspacesList->count());
   workspacesList->insert(wkspc);
 
-  wsMenu->insert(wkspc->Name(), 0);
+  wsMenu->insert(wkspc->Name());
   wsMenu->Update();
-  wsMenu->Move(frame.x + 1, frame.y - wsMenu->Height() - 1);
+  wsMenu->Move(frame.x + 1, frame.y - wsMenu->Height() - 2);
 
   return workspacesList->count();
 }
 
 
 int WorkspaceManager::removeLastWorkspace(void) {
-  if (workspacesList->count() > 1) {
+  if (workspacesList->count() > 2) {
     Workspace *wkspc = workspacesList->last();
     
     if (current->workspaceID() == wkspc->workspaceID())
@@ -251,9 +254,9 @@ int WorkspaceManager::removeLastWorkspace(void) {
 
     wkspc->removeAll();
     
-    wsMenu->remove(wkspc->workspaceID() + 2);
+    wsMenu->remove(wkspc->workspaceID() + 1);
     wsMenu->Update();
-    wsMenu->Move(frame.x + 1, frame.y - wsMenu->Height() - 1);
+    wsMenu->Move(frame.x + 1, frame.y - wsMenu->Height() - 2);
 
     workspacesList->remove(wkspc);
     delete wkspc;
@@ -312,8 +315,9 @@ void WorkspaceManager::stackWindows(Window *workspace_stack, int num) {
   // 3 windows for the toolbar, root menu, and workspaces menu and then the
   // number of total workspaces (to stack the workspace menus)
 
-  Window *session_stack = new Window[(num + workspacesList->count() +
-				      iconList->count() + 3)];
+  Window *session_stack =
+    new Window[(num + zero->Count() + workspacesList->count() +
+		iconList->count() + 3)];
   
   int i = 0;
   *(session_stack + i++) = blackbox->Menu()->WindowID();
@@ -324,11 +328,15 @@ void WorkspaceManager::stackWindows(Window *workspace_stack, int num) {
   for (; it.current(); it++) {
     if (it.current() == current)
       it.current()->Menu()->Move(fx, frame.y -
-				 it.current()->Menu()->Height() - 1);
+				 it.current()->Menu()->Height() - 2);
     *(session_stack + i++) = it.current()->Menu()->WindowID();
   }
 
-  int k = num;
+  int k = zero->Count();
+  while (k--)
+    *(session_stack + i++) = *(zero->windowStack() + k);
+
+  k = num;
   while (k--)
     *(session_stack + i++) = *(workspace_stack + k);
 
@@ -572,7 +580,7 @@ void WorkspaceManager::buttonReleaseEvent(XButtonEvent *re) {
 
       if (re->x >= 0 && re->x < (signed) frame.button_w &&
 	  re->y >= 0 && re->y < (signed) frame.button_h)
-	if (current->workspaceID() > 0)
+	if (current->workspaceID() > 1)
 	  changeWorkspaceID(current->workspaceID() - 1);
 	else
 	  changeWorkspaceID(workspacesList->count() - 1);
@@ -594,7 +602,7 @@ void WorkspaceManager::buttonReleaseEvent(XButtonEvent *re) {
 	if (current->workspaceID() < (workspacesList->count() - 1))
 	  changeWorkspaceID(current->workspaceID() + 1);
 	else
-	  changeWorkspaceID(0);
+	  changeWorkspaceID(1);
     } else if (re->window == frame.workspaceDock) {
       if (! waitb1) {
 	if (current->Menu()->Visible())

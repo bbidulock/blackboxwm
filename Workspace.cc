@@ -218,7 +218,7 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
       re_enter = 0;
     }
 
-    if (! re_enter)
+    if (! re_enter && id == wsManager->currentWorkspaceID())
       wsManager->stackWindows(stack, windowList->count());
   }
 }
@@ -250,7 +250,7 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
     lowerWindow(w->TransientFor());
   }
 
-  if (! re_enter)
+  if (! re_enter && id == wsManager->currentWorkspaceID())
     wsManager->stackWindows(stack, windowList->count());
   re_enter = 0;
 }

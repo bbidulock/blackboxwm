@@ -55,9 +55,11 @@ class Blackbox;
 #define BImageMotifBevel      (1<<11)  // Motif-like bevel (2 pixels wide)
 
 // for inverting images
-#define BImageInverted        (1<<12)  // for pressed buttons and the like..
+#define BImageInverted        (1<<12)  // for pressed buttons and the like...
                                        // currently only used internally
-
+// for turning off dithering on solid images
+#define BImageNoDitherSolid   (1<<13)  // to speed up certain window functions
+                                       // currently only used internally
 
 // image class that does basic rendering functions for blackbox
 class BImage {
@@ -80,8 +82,8 @@ protected:
   void setBackgroundColor(const BColor &);
   void setBackgroundColor(unsigned char, unsigned char, unsigned char);
   
-  XImage *convertToXImage(void);
-  Pixmap convertToPixmap(void);
+  XImage *convertToXImage(Bool = true);
+  Pixmap convertToPixmap(Bool = true);
 
   
 public:
