@@ -1264,9 +1264,11 @@ void bt::Image::hgradient(const Color &from, const Color &to,
     }
   }
 
-  // rest of the gradient
-  for (x = 0; x < total; ++x)
-    p[x] = data[x];
+  if (height > 2) {
+    // rest of the gradient
+    for (x = 0; x < total; ++x)
+      p[x] = data[x];
+  }
 }
 
 
