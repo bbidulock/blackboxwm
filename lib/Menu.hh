@@ -262,6 +262,8 @@ namespace bt {
 
     virtual void hideAll(void);
 
+    virtual void tearOff(void);
+
   private:
     typedef std::list<MenuItem> ItemList;
 
@@ -309,6 +311,7 @@ namespace bt {
     bool _size_dirty;
     bool _show_title;
     bool _visible;
+    bool _tornoff;
   };
 
 } // namespace bt

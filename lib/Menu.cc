@@ -297,7 +297,8 @@ bt::Menu::Menu(Application &app, unsigned int screen)
     _title_pressed(false),
     _size_dirty(true),
     _show_title(false),
-    _visible(false)
+    _visible(false),
+    _tornoff(false)
 {
   _id_bits.insert(_id_bits.begin(), 32, false);
 
@@ -1124,8 +1125,14 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
 
 
 void bt::Menu::titleClicked(unsigned int button) {
-  if (button == 3)
+  switch (button) {
+  case 1:
+    // tearOff();
+    break;
+  case 3:
     hideAll();
+    break;
+  }
 }
 
 
@@ -1138,6 +1145,11 @@ void bt::Menu::hideAll(void) {
     _parent_menu->hideAll();
   else
     hide();
+}
+
+
+void bt::Menu::tearOff(void) {
+  assert(!"Sorry, tear-off menus aren't implemented yet");
 }
 
 
