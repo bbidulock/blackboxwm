@@ -18,16 +18,6 @@
 -- (See the included file COPYING / GPL-2.0)
 -- 
 
-*** %%% *** ANOTHER NOTE *** %%% ***
-With this pre0.30.0 release, Blackbox no longer looks at the RESOURCE_MANAGER
-property on the root window for it's configuration parameters.  Create a file
-in ~/.blackboxrc, otherwise the default configuration will be used.  The format
-of ~/.blackboxrc is the same as described below (and on
-http://linux.wiw.org/blackbox/ - follow the configuration help link).  Any questions comments etc. -> bhughes@arn.net.   And yes I know, the icons are stupid)
-
-See the Blackbox.ad file for an update on texture configuration.
-*** %%% ***             *** %%% ***
-
 
 *** %%% *** NOTE *** %%% ***
 Blackbox's configuration system has completely CHANGED as of 0.2x.x.  All
@@ -108,14 +98,13 @@ behaviours are modifiable/configurable) is included below.
 
 Window Stacking (arrangement):
 	Windows are stacked in a specific order.
-	The toolbox set on the left hand side of the root window is
-	always on the bottom of the stack list.  Client windows are
+	The toolbox set on the bottom of the root window is always on the
+	bottom of the stack list.  Icons and client windows are
 	stacked above the toolbox, thus it is possible to totally
 	obscure the toolbox from site with large/numerous clients.  The
-	session (root) menu, workspace manager menu (the top left button
-	reveals this menu) and the workspace menus (window lists) are
-	stacked above the client windows, and thus will always be
-	visible when mapped (visible).
+	session (root) menu, workspace manager menu and the workspace menus
+	(window lists) are stacked above the client windows, and thus will
+	always be visible when mapped.
 
 	Client window stacking order is modifiable by clicking on the
 	window titlebar or the window handle bar. Mouse button 1 (by
@@ -197,10 +186,10 @@ Window Operations:
 Menu Behaviour:
 	About menus in blackbox.  Other graphical interfaces allow menus
 	to be traversed by holding mouse button 1 and moving the pointer.
-	With blackbox, this is not the case.  Each menu item must be
-	selected by the user.  Plans to change this have not been made,
-	nor considered, as this method could prove to eliminate clicking
-	or releasing the wrong menu item.
+	With blackbox, this is not the case.  Each menu item can be traversed
+	by just moving the pointer.  In fact, holding button 1 while dragging
+	the mouse doesn't do anything.  Submenus are automatically displayed,
+	and highlighted accordingly.
 
 	The session (root) menu is mapped by pressing mouse button 3 on
 	the root window.  The menu title is centered around the
@@ -211,35 +200,31 @@ Menu Behaviour:
 	of its submenus, the window will unmap itself UNLESS the user
 	has interactively moved the menu, in which case it will remain
 	on the root window until the user unmaps it by clicking mouse
-	button 3 on its title.  Submenus are shown when clicked with
-	either mouse button 1 or 3, but only hidden when mouse button 3
-	is pressed on the item.  If one submenu is visible when another
-	is selected, the first is hidden before the second is shown.
+	button 3 on its title.
 
 	The workspace manager menu operates differently from the root
 	menu in several respects.  It does not have a title, and thus is
-	not movable.  Pressing the Workspace button at the top of the
-	toolbox maps the workspace manager menu.  The "New Workspace"
-	menu item creates a new workspace, which is like a virtual X
-	desktop on which more windows may be placed.  The "Delete last"
-	menu item iconifies ALL windows on the last workspace, and
-	removes the last workspace from blackbox's memory.  The number
-	of workspaces is dynamic, but at least one must stay "alive".
-	Because of this, the user cannot delete Workspace 0.
+	not movable.  Pressing the workspace name with button 1 on the toolbox
+	maps the workspace manager menu.  The "New Workspace" menu item
+	creates a new workspace, which is like a virtual X desktop on which
+	more windows may be placed.  The "Delete last" menu item iconifies
+	ALL windows on the last workspace, and removes the last workspace
+	from blackbox's memory.  The number of workspaces is dynamic, but at
+	least one must stay "alive". Because of this, the user cannot delete
+	Workspace 0.
+
 	Pressing one of the available workspaces in the menu with mouse
 	button 1 changes to that workspace (i.e. all windows on the
 	current workspace are hidden, and the windows on the selected
 	workspace are shown) A workspace menu which contains a list of
 	windows on any given workspace is available by pressing mouse
-	button 3 on the appropriate workspace menu item.  If the user
-	selects a window from the window list, blackbox will change
-	workspaces to the appropriate workspace (if the window selected
-	is not in the current workspace) and the window is raised (and
-	moved to a visible location if it is not visible) and awarded
-	keyboard input focus.
+	button 3 on the workspace name.  If the user
+	selects a window from the window list, blackbox will raise the selected
+	window (move it to a visible location if it is not visible) and
+	award it keyboard input focus.
 
-Window Focusing:
-	Keyboard input focus is also awarded to those clients who accept
+Window Focusing / Key Bindings:
+	Keyboard input focus is awarded to those clients who accept
 	it (again, the client specifies if it can take focus through
 	ICCCM protocol requests).  Blackbox disobeys the terms dicated
 	by the ICCCM by allowing certain keyboard shortcuts (the ICCCM
@@ -252,36 +237,34 @@ Window Focusing:
 	available workspaces, by ascending the workspace list (ALT+Left
 	arrow) or descending it (ALT+Right arrow).  If the user tries to
 	acsend above the first workspace, Blackbox will change to the
-	last workspace (and vice vera for trying to descend past the
+	last workspace (and vice versa for trying to descend past the
 	last).
 
 Icons:
-	Icons are placed on the bottom half of the toolbox.  These icons
+	Icons are placed on the left side of the root window.  These icons
 	are present in all workspaces,  thus it is possible to move a
 	window to another workspace by iconifying it and then
 	deiconifying it on a new workspace (but the Send To ... window
 	menu function is much easier).  Blackbox reads the icon label
 	from the ICCCM hints the client window sets.  If there is no
 	icon label available, "Unnamed" is used (the same is true for
-	window titles).  If the icon label is longer than the icon, the
-	label is clipped.  If the user places the pointer over an icon,
-	the full icon label is displayed in the window title font,
-	drawing onto the root window (and possibly others) if necessary
-	to show the full label.  Pressing the icon with mouse button 1
-	will deiconify the window on the current workspace (dissociating
-	it from its original workspace if necessary).
+	window titles). Pressing the icon with mouse button 1 will deiconify
+	the window on the current workspace (dissociating it from its original
+	workspace if necessary).
 
 Automatic Reconfiguration:
-	Blackbox operates the same way any other window manager
-	operates.  It monitors events sent by the X server and deals
-	with them accordingly (like mapping a client window with or
-	without decorations, for example).  One event it also monitors
-	is a PropertyNotify event on the root window.  If the
-	RESOURCE_MANAGER property should change, blackbox rereads its
-	configuration and applies it to current and future windows,
-	menus, icons, etc.  Blackbox can also be forced to reread its
-	configuration via the menu (see the menu section below).
-  
+	*** OBSOLETE ***
+	* Blackbox operates the same way any other window manager
+	* operates.  It monitors events sent by the X server and deals
+	* with them accordingly (like mapping a client window with or
+	* without decorations, for example).  One event it also monitors
+	* is a PropertyNotify event on the root window.  If the
+	* RESOURCE_MANAGER property should change, blackbox rereads its
+	* configuration and applies it to current and future windows,
+	* menus, icons, etc.  Blackbox can also be forced to reread its
+	* configuration via the menu (see the menu section below).
+  	***
+
 	NOTE:  Reading the RESOURCE_MANAGER property has proven to be
 	less than stable, as it appears to work properly at times, and
 	at times blackbox will core and exit.  Because of this a dialog
@@ -289,30 +272,23 @@ Automatic Reconfiguration:
 	should perform its reconfiguration, or wait until the user wants
 	to reconfigure.
 
+	UPDATE: This feature has been removed, haven been proven unstable and
+	unreliable.  A new method of automatic reconfiguration will be
+	implemented in later releases.
+
 
 Configuration:
 -----------------
 Configuration of blackbox is not handled by a new rc file format, rather
-X resources are used to control the look of the window manager.  These
-resources can be set by the default configuration (which
-is installed with the program) or by a user (by using xrdb or some other
-resource loading mechanism which sets the RESOURCE_MANAGER property on
-the root window, from which blackbox gets its defaults).  The default
-resources are read when there are no user defaults set in the
-RESOURCE_MANAGER string property on the root window.  If the default
-resource files cannot be found, then blackbox uses a hard coded default
-(using flat textures).
+X resources are used in the rc file (placed in the users home directory).
+The default resources are read when there is no .blackboxrc file in the
+users home directory.  If the default resource files cannot be found, then
+blackbox uses a hard coded default (using flat textures).
 
 Blackbox reads two configuration files to determine its appearance.  The
-first file is the main configuration file.  A user must set the following
-resource in the RESOURCE_MANAGER property on the root window to tell
-Blackbox where the initial configuration file is located:
-
-	blackbox.session.configurationFile
-
-Blackbox reads this file to determine colors, textures, fonts, and other
-relevant resources.  The menu is read from a file set by a resource in
-this configuration file.
+first file is the main configuration file, ~/.blackboxrc.  Blackbox reads this
+file to determine colors, textures, fonts, and other relevant resources.  The
+menu is read from a file set by a resource in this configuration file.
 
 These are the X resources that Blackbox reads from its configuration
 file:
@@ -328,27 +304,14 @@ blackbox.menu.menuItemPressedTexture	Blackbox.Menu.MenuItemPressedTexture
 blackbox.menu.menuItemTexture		Blackbox.Menu.MenuItemTexture
 
 Values Accepted:
-    Solid / SolidRaised			(solid color w/ raised bevel)
-    SolidSunken				(solid color w/ sunken bevel)
-    SolidFlat				(solid color w/ no bevel)
-    DGradient / DGradientRaised		(diagonal gradient w/ raised
-					 bevel)
-    DGradientSunken			(diagonal gradient w/ sunken
-					 bevel)
-    DGradientFlat			(diagonal gradient w/ no bevel)
-    HGradient / HGradientRaised		(horizontal gradient w/ raised
-					 bevel)
-    HGradientSunken			(horizontal gradient w/ sunken
-					 bevel)
-    HGradientFlat			(horizontal gradient w/ no bevel)
-    VGradient / VGradientRaised		(vertical gradient w/ raised
-					 bevel)
-    VGradientSunken			(vertical gradient w/ sunken
-					 bevel)
-    VGradientFlat			(vertical gradient w/ no bevel)
+	Any combination of:
+		Bevel type:    Raised, Sunken, Flat
+		Texture type:  Solid, Gradient
+		Gradient type: Diagonal, Vertical, Horizontal
+		Bevel option:  Bevel1, Bevel2
 
 	The various textures give a better appearance to blackbox.  The
-	toolbox texture controls the toolbox on the left side of the
+	toolbox texture controls the toolbox on the bottom of the
 	screen.
 
 
@@ -403,17 +366,6 @@ Accepted Value:
 
 Name:					Class:
 --------				---------
-blackbox.session.orientation		Blackbox.Session.Orientation
-
-Accepted Values:
-	either "LeftHanded" or "RightHanded" (case insensitive).  This
-	resource changes the appearance and orientation of some window
-	decorations to allow for easier and more natural access for
-	left handed and/or right handed users.
-
-
-Name:					Class:
---------				---------
 blackbox.session.titleFont		Blackbox.Session.TitleFont
 blackbox.session.menuFont		Blackbox.Session.MenuFont
 blackbox.session.iconFont		Blackbox.Session.IconFont
@@ -426,71 +378,52 @@ Accepted values:
 	is used on menu items, and the icon font is for icon labels
 
 
-Name:					Class:
---------				---------
-blackbox.session.reconfigurePrompt	Blackbox.Session.ReconfigurePrompt
-
-Accepted Values:
-	Any string value other than "no" (case insensitive) will cause
-	blackbox to prompt the user before reconfiguring itself
-	automatically.  Since this has proven buggy in the past, it has
-	been made an option until a more suitable and reliable method
-	can be implemented.
-
-
 As an idea of how to configure blackbox, here is a snippet of my
-.Xdefaults file:
+resource file to configure Blackbox (~/.blackboxrc):
 
 --
-[...]
 
-blackbox*configurationFile:     /home/users/bhughes/blackbox.defaults
+! Blackbox window manager resource defaults
+! (c) 1997, 1998 Brad Hughes
 
-[...]
---
-
-And this is the X resource file to configure blackbox:
-
---
-! Blackbox window manager resource defaults! (c) 1997, 1998 Brad Hughes
-
-blackbox*toolboxTexture:          vgradient
-blackbox*windowTexture:           vgradient
-blackbox*buttonTexture:           dgradient
-blackbox*menuTexture:             hgradientsunken
-blackbox*menuItemTexture:         hgradient
-blackbox*menuItemPressedTexture:  dgradient
+blackbox*toolboxTexture:          Raised Diagonal   Gradient Bevel1
+blackbox*windowTexture:           Raised Diagonal   Gradient Bevel1
+blackbox*buttonTexture:           Flat   Vertical   Gradient
+blackbox*menuTexture:             Flat   Vertical   Gradient
+blackbox*menuItemTexture:         Raised Horizontal Gradient Bevel1
 
 blackbox*frameColor:              rgb:20/30/40
-blackbox*toolboxColor:            rgb:30/48/60
-blackbox*toolboxToColor:          black
+blackbox*toolboxColor:            rgb:50/78/a0
+blackbox*toolboxToColor:          rgb:40/60/80
 blackbox*focusColor:              rgb:60/90/c0
-blackbox*focusToColor:            black
-blackbox*unfocusColor:            rgb:a0/a0/a0
-blackbox*unfocusToColor:          black
-blackbox*buttonColor:             rgb:c0/c0/c0
-blackbox*buttonToColor:           black
-blackbox*menuColor:               rgb:c0/c0/c0
-blackbox*menuToColor:             black
-blackbox*menuItemColor:           black
-blackbox*menuItemToColor:         rgb:40/60/80
+blackbox*focusToColor:            rgb:40/60/80
+blackbox*unfocusColor:            rgb:50/78/a0
+blackbox*unfocusToColor:          rgb:30/48/60
+blackbox*buttonColor:             rgb:60/90/c0
+blackbox*buttonToColor:           rgb:40/60/80
+blackbox*menuColor:               lightgrey
+blackbox*menuToColor:             darkgrey
+blackbox*menuItemColor:           rgb:40/60/80
+blackbox*menuItemToColor:         rgb:50/78/a0
+blackbox*menuHighlightColor:      rgb:60/90/c0
 
-blackbox*toolboxTextColor:        white
+blackbox*toolboxTextColor:        lightgrey
 blackbox*focusTextColor:          white
 blackbox*unfocusTextColor:        darkgrey
-blackbox*menuTextColor:           white
-blackbox*menuItemTextColor:       grey
-blackbox*menuPressedTextColor:    rgb:60/c0/c0
+blackbox*menuTextColor:           black
+blackbox*menuItemTextColor:       lightgrey
+blackbox*menuHighlightTextColor:  white
 blackbox*iconTextColor:           grey
 
-blackbox*workspaces:              3
-blackbox*menuFile:                /home/users/bhughes/blackbox.menu
-blackbox*orientation:             lefthanded
+blackbox*workspaces:              5
+blackbox*menuFile:                /home/users/bhughes/blackbox/blackbox.menu
+blackbox*orientation:             righthanded
 blackbox*reconfigurePrompt:       yes
+blackbox*titleJustify:            centerjustify
 
-blackbox*titleFont:     -adobe-helvetica-bold-r-*-*-*-100-*-*-*-*-*-*
+blackbox*titleFont:     -adobe-helvetica-medium-r-*-*-*-100-*-*-*-*-*-*
 blackbox*menuFont:      -adobe-helvetica-medium-r-*-*-*-100-*-*-*-*-*-*
-blackbox*iconFont:      -adobe-helvetica-medium-r-*-*-*-80-*-*-*-*-*-*
+blackbox*iconFont:      -adobe-helvetica-medium-r-*-*-*-100-*-*-*-*-*-*
 
 --
 
@@ -643,9 +576,11 @@ blackbox*restartMenu.item1.label:       Reconfigure
 blackbox*restartMenu.item1.reconfig:    reconfigure
 blackbox*restartMenu.item2.label:       Blackbox
 blackbox*restartMenu.item2.restart:     restart
-blackbox*restartMenu.item3.label:       Twm
-blackbox*restartMenu.item3.restart:     twm
-blackbox*restartMenu.totalItems:        3
+blackbox*restartMenu.item3.label:	WindowMaker
+blackbox*restartMenu.item3.restart:	wmaker
+blackbox*restartMenu.item4.label:       Twm
+blackbox*restartMenu.item4.restart:     twm
+blackbox*restartMenu.totalItems:        4
 
 --
 

@@ -275,3 +275,8 @@ const int Workspace::Count(void) {
 void Workspace::Update(void) {
   cMenu->Update();
 }
+
+
+void Workspace::restackWindows(void) {
+  wsManager->stackWindows(stack, windowList->count());
+}

@@ -38,11 +38,11 @@ private:
   struct {
     char *name;
     Window client, window, subwindow;
-    int x, y;
-    unsigned int height;
+    unsigned int width, height, label_w, label_h, pixmap_w, pixmap_h;
   } icon;
 
   Blackbox *blackbox;
+  BlackboxWindow *window;
   WorkspaceManager *wsManager;
 
 
@@ -50,20 +50,17 @@ protected:
 
 
 public:
-  BlackboxIcon(Blackbox *, Window);
+  BlackboxIcon(Blackbox *, BlackboxWindow *);
   ~BlackboxIcon(void);
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);
-  void enterNotifyEvent(XCrossingEvent *);
-  void leaveNotifyEvent(XCrossingEvent *);
   void exposeEvent(XExposeEvent *);
   void rereadLabel(void);
   void Reconfigure(void);
 
   Window iconWindow(void) { return icon.window; }
   unsigned int Height(void) { return icon.height; }
-  void move(int x, int y) { icon.x = x; icon.y = y; }
 };
 
 

@@ -1,3 +1,63 @@
-Please read the README file.
+-- INSTALL for Blackbox - an X11 Window manager
+-- Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
+--
+--  This program is free software; you can redistribute it and/or modify
+--  it under the terms of the GNU General Public License as published by
+--  the Free Software Foundation; either version 2 of the License, or
+--  (at your option) any later version.
+--
+--  This program is distributed in the hope that it will be useful,
+--  but WITHOUT ANY WARRANTY; without even the implied warranty of
+--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+--  GNU General Public License for more details.
+--
+--  You should have received a copy of the GNU General Public License
+--  along with this program; if not, write to the Free Software
+--  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+--
+-- (See the included file COPYING / GPL-2.0)
+-- 
 
-Also, see the Blackbox.ad file for an UPDATE on the texture configuration.
+
+Credits:
+-----------
+Author:
+	Brad Hughes <bhughes@arn.net>
+
+Contributors:
+	Jeffrey Sean Connell <ankh@canuck.gen.nz>
+	  - debugger class code (ommited from sources)
+	Frank Belew <frb@umr.edu>
+	  - dgradient code
+	Scott Garner <mrfab@arn.net>
+	  - suggestions, bug reports and beta testing (*the* beta moron)
+        David Doan <ddoan@usa.net>
+	 - testing of 8bpp code
+	Mark Seward <illuzion@paradise.net.nz>
+	 - beta testing, bug reports and 32bpp testing
+	Keith Bolland <prime@strip.net.nz>
+	 - beta testing, bug reports and suggestions
+	James Spooner <spoons@xtra.co.nz>
+	 - beta testing, bug reports (beta moron)
+	Fred Knieper <derf@tamu.edu>
+	 - beta testing, bug reports
+
+
+Compilation and Installation:
+--------------------------------
+Blackbox uses an Imakefile to better configure and allow for various
+system types.  Compiler flags, libraries and paths are automatically set
+in the various imake rules and templates files.
+
+Edit the Imakefile and #define the options that you want compiled into (or
+out of) blackbox.
+
+To fully compile and install blackbox, issue the following commands:
+	xmkmf -a
+	make
+	make install (as root, for permissions)
+
+Each user should edit their appropriate .xinitrc or .xsession files to
+use the newly installed blackbox executable file.
+
+Please read the README file.

@@ -139,6 +139,19 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   _XA_WM_DELETE_WINDOW = XInternAtom(display, "WM_DELETE_WINDOW", False);
   _XA_WM_TAKE_FOCUS = XInternAtom(display, "WM_TAKE_FOCUS", False);
 
+  XIconSize *iconSize = XAllocIconSize();
+  if (iconSize != NULL) {
+    iconSize->min_width = 1;
+    iconSize->min_height = 1;
+    iconSize->max_width = 32;
+    iconSize->max_height = 32;
+    iconSize->width_inc = 1;
+    iconSize->height_inc = 1;
+
+    XSetIconSizes(display, root, iconSize, 1);
+    XFree(iconSize);
+  }
+  
   cursor.session = XCreateFontCursor(display, XC_left_ptr);
   cursor.move = XCreateFontCursor(display, XC_fleur);
   XDefineCursor(display, root, cursor.session);
@@ -423,9 +436,7 @@ void Blackbox::ProcessEvent(XEvent *e) {
   case EnterNotify: {
     BlackboxWindow *eWin = NULL;
     Basemenu *eMenu = NULL;
-    BlackboxIcon *eIcon = NULL;
-    
-    
+        
     if ((eWin = searchWindow(e->xcrossing.window)) != NULL) {
       XGrabServer(display);
       
@@ -442,20 +453,15 @@ void Blackbox::ProcessEvent(XEvent *e) {
       XUngrabServer(display);
     } else if ((eMenu = searchMenu(e->xcrossing.window)) != NULL)
       eMenu->enterNotifyEvent(&e->xcrossing);
-    else if ((eIcon = searchIcon(e->xcrossing.window)) != NULL)
-      eIcon->enterNotifyEvent(&e->xcrossing);
     
     break;
   }
   
   case LeaveNotify: {
     Basemenu *lMenu = NULL;
-    BlackboxIcon *lIcon = NULL;
 
     if ((lMenu = searchMenu(e->xcrossing.window)) != NULL)
       lMenu->leaveNotifyEvent(&e->xcrossing);
-    if ((lIcon = searchIcon(e->xcrossing.window)) != NULL)
-      lIcon->leaveNotifyEvent(&e->xcrossing);
     
     break;
   }

@@ -21,7 +21,7 @@
 
 #ifndef __blackbox_hh
 #define __blackbox_hh
-#define __blackbox_version "PRE zero point three zero point one beta"
+#define __blackbox_version "PRE zero point three zero point two beta"
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>

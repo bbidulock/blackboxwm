@@ -62,6 +62,7 @@ public:
   void Dissociate(void);
   void raiseWindow(BlackboxWindow *);
   void lowerWindow(BlackboxWindow *);
+  void restackWindows(void);
   void Reconfigure();
   void Update();
   

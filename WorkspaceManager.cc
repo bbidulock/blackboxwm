@@ -276,15 +276,15 @@ void WorkspaceManager::changeWorkspaceID(int id) {
 void WorkspaceManager::arrangeIcons(void) {
   BlackboxIcon *icon = NULL;
   
+  int iy = 0;
   LinkedListIterator<BlackboxIcon> it(iconList);
   for (int i = 0; it.current(); it++, i++) {
     icon = it.current();
-    icon->move(4, (icon->Height()) * (iconList->count() - (i + 1)) +
-	       (frame.height / 2) + 1);
-    XMoveWindow(display, icon->iconWindow(), 1,
-		(icon->Height()) * (iconList->count() - (i + 1)) + 1);
-    icon->exposeEvent(NULL);
+    XMoveWindow(display, icon->iconWindow(), 0, iy);
+    iy += icon->Height() + 4;
   }
+
+  current->restackWindows();
 }
 
 
@@ -293,8 +293,9 @@ void WorkspaceManager::stackWindows(Window *workspace_stack, int num) {
   // 3 windows for the toolbar, root menu, and workspaces menu and then the
   // number of total workspaces (to stack the workspace menus)
 
-  Window *session_stack = new Window[num + workspacesList->count() + 3];
-
+  Window *session_stack = new Window[(num + workspacesList->count() +
+				      iconList->count() + 3)];
+  
   int i = 0;
   *(session_stack + i++) = blackbox->Menu()->WindowID();
   *(session_stack + i++) = wsMenu->WindowID();
@@ -311,6 +312,13 @@ void WorkspaceManager::stackWindows(Window *workspace_stack, int num) {
   int k = num;
   while (k--)
     *(session_stack + i++) = *(workspace_stack + k);
+
+  k = iconList->count();
+  LinkedListIterator<BlackboxIcon> ot(iconList);
+  while (k--) {
+    *(session_stack + i++) = ot.current()->iconWindow();
+    ot++;
+  }
   
   *(session_stack + i++) = frame.base;
 

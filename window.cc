@@ -29,6 +29,7 @@
 
 #include <X11/Xatom.h>
 #include <X11/keysym.h>
+#include <stdio.h>
 #include <string.h>
 
 
@@ -829,26 +830,30 @@ Bool BlackboxWindow::getWMHints(void) {
     iconic = False;
   } 
   
-  if (wmhints->flags & IconPixmapHint) {
-    //    client.icon_pixmap = wmhints->icon_pixmap;
-  }
+  if (wmhints->flags & IconPixmapHint)
+    client.icon_pixmap = wmhints->icon_pixmap;
+  else
+    client.icon_pixmap = None;
   
-  if (wmhints->flags & IconWindowHint) {
-    //    client.icon_window = wmhints->icon_window;
-  }
+  if (wmhints->flags & IconWindowHint)
+    client.icon_window = wmhints->icon_window;
+  else
+    client.icon_window = None;
   
   /* icon position hint would be next, but as the ICCCM says, we can ignore
      this hint, as it is the window managers function to organize and place
      icons
   */
   
-  if (wmhints->flags & IconMaskHint) {
-    //    client.icon_mask = wmhints->icon_mask;
-  }
+  if (wmhints->flags & IconMaskHint)
+    client.icon_mask = wmhints->icon_mask;
+  else
+    client.icon_mask = None;
   
-  if (wmhints->flags & WindowGroupHint) {
+  if (wmhints->flags & WindowGroupHint)
     client.window_group = wmhints->window_group;
-  }
+  else
+    client.window_group = None;
 
   XFree(wmhints);
   return True;
@@ -1143,7 +1148,7 @@ void BlackboxWindow::iconifyWindow(void) {
     if (! client.transient_for->iconic)
       client.transient_for->iconifyWindow();
   } else
-    icon = new BlackboxIcon(blackbox, client.window);
+    icon = new BlackboxIcon(blackbox, this);
 
   if (client.transient)
     if (! client.transient->iconic)
