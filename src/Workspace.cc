@@ -242,7 +242,7 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
   StackVector stack_vector(i);
   StackVector::iterator stack = stack_vector.begin();
 
-  *stack++ = win->getFrameWindow();
+  *(stack++) = win->getFrameWindow();
   screen->updateNetizenWindowRaise(win->getClientWindow());
   if (! win->isIconic()) {
     Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
@@ -252,7 +252,7 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
 
   raiseTransients(win, stack);
 
-  screen->raiseWindows(stack_vector.begin(), stack_vector.size());
+  screen->raiseWindows(&stack_vector[0], stack_vector.size());
 }
 
 
@@ -274,7 +274,7 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
 
   lowerTransients(win, stack);
 
-  *stack++= win->getFrameWindow();
+  *(stack++) = win->getFrameWindow();
   screen->updateNetizenWindowLower(win->getClientWindow());
   if (! win->isIconic()) {
     Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
@@ -282,9 +282,9 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
     wkspc->stackingList.push_back(win);
   }
 
-  XLowerWindow(screen->getBaseDisplay()->getXDisplay(), *stack_vector.begin());
+  XLowerWindow(screen->getBaseDisplay()->getXDisplay(), stack_vector.front());
   XRestackWindows(screen->getBaseDisplay()->getXDisplay(),
-                  stack_vector.begin(), stack_vector.size());
+                  &stack_vector[0], stack_vector.size());
 }
 
 
