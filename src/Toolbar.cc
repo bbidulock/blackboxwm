@@ -281,14 +281,23 @@ void Toolbar::reconfigure(void) {
     if (tt) {
       char t[1024];
       int len = strftime(t, 1024, screen->getStrftimeFormat(), tt);
-      // XXX: check for len == 0 and handle it
+      if (len == 0) { // invalid time format found
+        screen->saveStrftimeFormat("%I:%M %p"); // so use the default
+        len = strftime(t, 1024, screen->getStrftimeFormat(), tt);
+      }
+      // find the length of the rendered string and add room for two extra
+      // characters to it.  This allows for variable width output of the fonts
       if (i18n.multibyte()) {
         XRectangle ink, logical;
         XmbTextExtents(screen->getToolbarStyle()->fontset, t, len,
                        &ink, &logical);
-        frame.clock_w = logical.width;
+        XFontSetExtents* extents = screen->getToolbarStyle()->fontset_extents;
+        frame.clock_w = logical.width +
+          (extents->max_logical_extent.width * 2);
       } else {
-        frame.clock_w = XTextWidth(screen->getToolbarStyle()->font, t, len);
+        XFontStruct* font = screen->getToolbarStyle()->font;
+        frame.clock_w = XTextWidth(font, t, len) +
+          ((font->max_bounds.rbearing - font->min_bounds.lbearing) * 2);
       }
     }
   }
