@@ -180,7 +180,7 @@ Toolbar2::Toolbar2(BScreen *scrn)
   updateLayout();
   updatePosition();
 
-  show();
+  // show();
 }
 
 Toolbar2::~Toolbar2()
