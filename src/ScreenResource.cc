@@ -502,9 +502,12 @@ const bt::ustring ScreenResource::workspaceName(unsigned int i) const {
 
 void ScreenResource::setWorkspaceName(unsigned int i,
                                       const bt::ustring &name) {
-  if (i >= workspace_names.size()) {
-    workspace_count = i;
-    workspace_names.resize(workspace_count);
-  }
-  workspace_names[i] = name;
+    if (i >= workspace_names.size()) {
+        workspace_count = i + 1;
+        workspace_names.reserve(workspace_count);
+        workspace_names.insert(workspace_names.begin() + i, name);
+        assert(workspace_names.size() == workspace_count);
+    } else {
+        workspace_names[i] = name;
+    }
 }
