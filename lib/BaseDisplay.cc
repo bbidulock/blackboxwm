@@ -81,11 +81,10 @@ extern "C" {
 #endif
 }
 
-#include <string>
-
 #include "BaseDisplay.hh"
 #include "EventHandler.hh"
 #include "GCCache.hh"
+#include "Menu.hh"
 #include "Timer.hh"
 #include "Util.hh"
 
@@ -165,7 +164,7 @@ bt::Display::Display(const char* dpy_name): gccache(0) {
 bt::Display::~Display() {
   delete gccache;
 
-  for_each(screenInfoList.begin(), screenInfoList.end(),
+  std::for_each(screenInfoList.begin(), screenInfoList.end(),
            bt::PointerAssassin());
 
   XCloseDisplay(xdisplay);
@@ -180,7 +179,8 @@ bt::GCCache* bt::Display::gcCache(void) const {
 
 
 bt::Application::Application(const char *app_name, const char *dpy_name)
-  : display(dpy_name), run_state(STARTUP), application_name(app_name)
+  : display(dpy_name), run_state(STARTUP), xserver_time(CurrentTime),
+    application_name(app_name), menu_grab(false)
 {
   ::base_app = this;
 
@@ -314,35 +314,115 @@ void bt::Application::process_event(XEvent *event) {
 
   // deliver the event
   switch (event->type) {
-  case ButtonPress: {
-    // last_time = event->xbutton.time
+  case ButtonPress:
+  case ButtonRelease:
+  case MotionNotify: {
+    if (menu_grab) {
+      // we have active menus.  we should send all user input events
+      // to the menus instead of the normal handler
+      if (! dynamic_cast<Menu*>(handler)) {
+        // current handler is not a menu.  send the event to the most
+        // recent menu instead.
+        handler = dynamic_cast<EventHandler*>(menus.front());
+      }
+      XAllowEvents(getXDisplay(), SyncPointer, xserver_time);
+    }
 
-    // strip the lock key modifiers
-    event->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
-    handler->buttonPressEvent(&event->xbutton);
+    switch (event->type) {
+    case ButtonPress: {
+      xserver_time = event->xbutton.time;
+      // strip the lock key modifiers
+      event->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
+      handler->buttonPressEvent(&event->xbutton);
+      break;
+    }
+
+    case ButtonRelease: {
+      xserver_time = event->xbutton.time;
+      // strip the lock key modifiers
+      event->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
+      handler->buttonReleaseEvent(&event->xbutton);
+      break;
+    }
+
+    case MotionNotify: {
+      xserver_time = event->xmotion.time;
+      // compress motion notify events
+      XEvent realevent;
+      unsigned int i = 0;
+      while (XCheckTypedWindowEvent(getXDisplay(), event->xmotion.window,
+                                    MotionNotify, &realevent)) {
+        ++i;
+      }
+
+      // if we have compressed some motion events, use the last one
+      if ( i > 0 )
+        event = &realevent;
+
+      // strip the lock key modifiers
+      event->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
+      handler->motionNotifyEvent(&event->xmotion);
+      break;
+    }
+    } // switch
+
     break;
   }
 
-  case ButtonRelease: {
-    // last_time = event->xbutton.time
+  case EnterNotify:
+  case LeaveNotify: {
+    if (menu_grab) {
+      // we have active menus.  we should only send enter/leave events
+      // to the menus themselves, not to normal windows
+      if (! dynamic_cast<Menu*>(handler)) {
+        break;
+      }
+    }
 
-    // strip the lock key modifiers
-    event->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
-    handler->buttonReleaseEvent(&event->xbutton);
+    switch (event->type) {
+    case EnterNotify: {
+      xserver_time = event->xcrossing.time;
+      handler->enterNotifyEvent(&event->xcrossing);
+      break;
+    }
+
+    case LeaveNotify: {
+      xserver_time = event->xcrossing.time;
+      handler->leaveNotifyEvent(&event->xcrossing);
+      break;
+    }
+    } // switch
+
     break;
   }
 
-  case KeyPress: {
-    // strip the lock key modifiers, except numlock, which can be useful
-    event->xkey.state &= ~(ScrollLockMask | LockMask);
-    handler->keyPressEvent(&event->xkey);
-    break;
-  }
-
+  case KeyPress:
   case KeyRelease: {
-    // strip the lock key modifiers, except numlock, which can be useful
-    event->xkey.state &= ~(ScrollLockMask | LockMask);
-    handler->keyReleaseEvent(&event->xkey);
+    if (menu_grab) {
+      // we have active menus.  we should send all key events to the most
+      // recent popup menu, regardless of where the pointer is
+      handler = dynamic_cast<EventHandler*>(menus.front());
+      XAllowEvents(getXDisplay(), SyncKeyboard, xserver_time);
+    }
+
+    switch (event->type) {
+    case KeyPress: {
+      xserver_time = event->xkey.time;
+      // strip the lock key modifiers, except numlock, which can be useful
+      event->xkey.state &= ~(ScrollLockMask | LockMask);
+      handler->keyPressEvent(&event->xkey);
+      break;
+    }
+
+    case KeyRelease: {
+      xserver_time = event->xkey.time;
+      // strip the lock key modifiers, except numlock, which can be useful
+      event->xkey.state &= ~(ScrollLockMask | LockMask);
+      handler->keyReleaseEvent(&event->xkey);
+      break;
+    }
+    } // switch
+
     break;
   }
 
@@ -366,50 +446,14 @@ void bt::Application::process_event(XEvent *event) {
     break;
   }
 
-  case EnterNotify: {
-    // last_time = event->xcrossing.time;
-
-    handler->enterNotifyEvent(&event->xcrossing);
-    break;
-  }
-
-  case LeaveNotify: {
-    // last_time = event->xcrossing.time;
-
-    handler->leaveNotifyEvent(&event->xcrossing);
-    break;
-  }
-
   case PropertyNotify: {
-    // last_time = event->xproperty.time;
-
+    xserver_time = event->xproperty.time;
     handler->propertyNotifyEvent(&event->xproperty);
     break;
   }
 
   case ConfigureRequest: {
     handler->configureRequestEvent(&event->xconfigurerequest);
-    break;
-  }
-
-  case MotionNotify: {
-    // last_time = event->xmotion.time;
-
-    // compress motion notify events
-    XEvent realevent;
-    unsigned int i = 0;
-    while (XCheckTypedWindowEvent(display.XDisplay(), event->xmotion.window,
-                                  MotionNotify, &realevent)) {
-      ++i;
-    }
-
-    // if we have compressed some motion events, use the last one
-    if ( i > 0 )
-      event = &realevent;
-
-    // strip the lock key modifiers
-    event->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
-    handler->motionNotifyEvent(&event->xmotion);
     break;
   }
 
@@ -553,9 +597,45 @@ void bt::Application::removeEventHandler(Window window) {
 }
 
 
-bt::ScreenInfo::ScreenInfo(bt::Display& d, unsigned int num):
-  display(d), screen_number(num) {
+void bt::Application::openMenu(Menu *menu) {
+  menus.push_front(menu);
+  if (! menu_grab &&
+      XGrabKeyboard(display.XDisplay(), menu->windowID(), True, GrabModeSync,
+                    GrabModeAsync, xserver_time) == GrabSuccess &&
+      XGrabPointer(display.XDisplay(), menu->windowID(), True,
+                   (ButtonPressMask | ButtonReleaseMask |
+                    ButtonMotionMask | PointerMotionMask |
+                    LeaveWindowMask | ExposureMask),
+                   GrabModeSync, GrabModeAsync, None, None,
+                   xserver_time) == GrabSuccess)
+    XAllowEvents(display.XDisplay(), SyncPointer, xserver_time);
+  menu_grab = true;
+}
 
+
+void bt::Application::closeMenu(Menu *menu) {
+  if (menus.empty() || menu != menus.front()) {
+    fprintf(stderr, "BaseDisplay::closeMenu: menu %p not valid.\n",
+            (void *) menu);
+    return;
+  }
+
+  menus.pop_front();
+  if (! menus.empty())
+    return;
+
+  // ### should use last_time
+  XUngrabKeyboard(display.XDisplay(), xserver_time);
+  XUngrabPointer(display.XDisplay(), xserver_time);
+  XAllowEvents(display.XDisplay(), ReplayPointer, xserver_time);
+  XSync(display.XDisplay(), False);
+  menu_grab = false;
+}
+
+
+bt::ScreenInfo::ScreenInfo(bt::Display& d, unsigned int num)
+  : display(d), screen_number(num)
+{
   root_window = RootWindow(display.XDisplay(), screen_number);
 
   rect.setSize(WidthOfScreen(ScreenOfDisplay(display.XDisplay(),

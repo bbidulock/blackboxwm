@@ -32,12 +32,14 @@ extern "C" {
 #endif // SHAPE
 }
 
+#include <deque>
 #include <map>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "Timer.hh"
 #include "Util.hh"
+
 
 namespace bt {
 
@@ -45,6 +47,7 @@ namespace bt {
   class Display;
   class EventHandler;
   class GCCache;
+  class Menu;
 
   class ScreenInfo: public NoCopy {
   private:
@@ -108,13 +111,18 @@ namespace bt {
 
     enum RunState { STARTUP, RUNNING, SHUTDOWN };
     RunState run_state;
+    Time xserver_time;
+
+    const char *application_name;
 
     typedef std::map<Window,EventHandler*> EventHandlerMap;
     EventHandlerMap eventhandlers;
 
     TimerQueue timerList;
 
-    const char *application_name;
+    typedef std::deque<Menu*> MenuStack;
+    MenuStack menus;
+    bool menu_grab;
 
     unsigned int MaskList[8];
     size_t MaskListLength;
@@ -187,6 +195,23 @@ namespace bt {
       Removes all EventHandlers for Window {window}.
     */
     void removeEventHandler(Window window);
+
+    /*
+      Opens the specified menu as a popup, grabbing the pointer and
+      keyboard if not already grabbed.
+
+      The Menu class calls this function automatically.  You should
+      never need to call this function.
+    */
+    void openMenu(Menu *menu);
+    /*
+      Closes the specified menu, ungrabbing the pointer and keyboard if
+      it is the last popup menu.
+
+      The Menu class calls this function automatically.  You should
+      never need to call this function.
+    */
+    void closeMenu(Menu *menu);
   };
 
 } // namespace bt

@@ -29,6 +29,7 @@ libbt_a_SOURCES		= BaseDisplay.cc				\
 			  GCCache.cc					\
 			  Image.cc					\
 			  ImageControl.cc				\
+			  Menu.cc					\
 			  Netwm.cc					\
 			  Resource.cc					\
 			  Texture.cc					\

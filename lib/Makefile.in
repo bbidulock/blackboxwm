@@ -109,6 +109,7 @@ libbt_a_SOURCES = BaseDisplay.cc				\
 			  GCCache.cc					\
 			  Image.cc					\
 			  ImageControl.cc				\
+			  Menu.cc					\
 			  Netwm.cc					\
 			  Resource.cc					\
 			  Texture.cc					\
@@ -128,8 +129,9 @@ libbt_a_AR = $(AR) cru
 libbt_a_LIBADD =
 am_libbt_a_OBJECTS = BaseDisplay.$(OBJEXT) Color.$(OBJEXT) \
 	Font.$(OBJEXT) GCCache.$(OBJEXT) Image.$(OBJEXT) \
-	ImageControl.$(OBJEXT) Netwm.$(OBJEXT) Resource.$(OBJEXT) \
-	Texture.$(OBJEXT) Timer.$(OBJEXT) Util.$(OBJEXT) i18n.$(OBJEXT)
+	ImageControl.$(OBJEXT) Menu.$(OBJEXT) Netwm.$(OBJEXT) \
+	Resource.$(OBJEXT) Texture.$(OBJEXT) Timer.$(OBJEXT) \
+	Util.$(OBJEXT) i18n.$(OBJEXT)
 libbt_a_OBJECTS = $(am_libbt_a_OBJECTS)
 
 DEFS = @DEFS@
@@ -140,9 +142,10 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 @AMDEP_TRUE@DEP_FILES = $(DEPDIR)/BaseDisplay.Po $(DEPDIR)/Color.Po \
 @AMDEP_TRUE@	$(DEPDIR)/Font.Po $(DEPDIR)/GCCache.Po \
 @AMDEP_TRUE@	$(DEPDIR)/Image.Po $(DEPDIR)/ImageControl.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Netwm.Po $(DEPDIR)/Resource.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Texture.Po $(DEPDIR)/Timer.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Util.Po $(DEPDIR)/i18n.Po
+@AMDEP_TRUE@	$(DEPDIR)/Menu.Po $(DEPDIR)/Netwm.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Resource.Po $(DEPDIR)/Texture.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Timer.Po $(DEPDIR)/Util.Po \
+@AMDEP_TRUE@	$(DEPDIR)/i18n.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
@@ -186,6 +189,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/GCCache.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Image.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/ImageControl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Netwm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Resource.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Texture.Po@am__quote@
