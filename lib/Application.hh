@@ -126,6 +126,8 @@ namespace bt {
     ::Display *XDisplay(void) const;
     inline const Display& display(void) const
     { return *_display; }
+    inline Time XTime() const
+    { return xserver_time; }
 
     inline const std::string &applicationName(void) const
     { return _app_name; }
