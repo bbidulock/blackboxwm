@@ -170,13 +170,22 @@ void Windowmenu::SendtoWorkspacemenu::itemSelected(int button, int index) {
 
 
 void Windowmenu::SendtoWorkspacemenu::update(void) {
-  unsigned int i, r = getCount();
+  unsigned int i, r = getCount(),
+    workspace_count = windowmenu->screen->getWorkspaceCount();
+  if (r > workspace_count) {
+    for (i = r; i < workspace_count; ++i)
+      remove(0);
+    r = getCount();
+  }
 
-  for (i = 0; i < r; ++i)
-    remove(0);
-
-  for (i = 0; i < windowmenu->screen->getWorkspaceCount(); ++i)
-    insert(windowmenu->screen->getWorkspace(i)->getName());
+  for (i = 0; i < workspace_count; ++i) {
+    if (r < workspace_count) {
+      insert(windowmenu->screen->getWorkspace(i)->getName());
+      ++r;
+    } else {
+      changeItemLabel(i, windowmenu->screen->getWorkspace(i)->getName());
+    }
+  }
 
   Basemenu::update();
 }
