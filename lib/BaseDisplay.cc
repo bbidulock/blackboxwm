@@ -599,16 +599,17 @@ void bt::Application::removeEventHandler(Window window) {
 
 void bt::Application::openMenu(Menu *menu) {
   menus.push_front(menu);
-  if (! menu_grab &&
+
+  if (! menu_grab && // grab mouse and keyboard for the menu
       XGrabKeyboard(display.XDisplay(), menu->windowID(), True, GrabModeSync,
                     GrabModeAsync, xserver_time) == GrabSuccess &&
       XGrabPointer(display.XDisplay(), menu->windowID(), True,
-                   (ButtonPressMask | ButtonReleaseMask |
-                    ButtonMotionMask | PointerMotionMask |
-                    LeaveWindowMask | ExposureMask),
+                   (ButtonPressMask | ButtonReleaseMask | ButtonMotionMask |
+                    PointerMotionMask | LeaveWindowMask),
                    GrabModeSync, GrabModeAsync, None, None,
-                   xserver_time) == GrabSuccess)
+                   xserver_time) == GrabSuccess) {
     XAllowEvents(display.XDisplay(), SyncPointer, xserver_time);
+  }
   menu_grab = true;
 }
 
@@ -624,10 +625,11 @@ void bt::Application::closeMenu(Menu *menu) {
   if (! menus.empty())
     return;
 
-  // ### should use last_time
+  XAllowEvents(display.XDisplay(), ReplayPointer, xserver_time);
+
   XUngrabKeyboard(display.XDisplay(), xserver_time);
   XUngrabPointer(display.XDisplay(), xserver_time);
-  XAllowEvents(display.XDisplay(), ReplayPointer, xserver_time);
+
   XSync(display.XDisplay(), False);
   menu_grab = false;
 }
