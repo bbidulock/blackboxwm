@@ -74,7 +74,7 @@ gencat_cmd = @gencat_cmd@
 regex_cmd = @regex_cmd@
 
 NLSTEST = @NLS@
-THE_LANG = ro_RO
+THE_LANG = pl_PL
 THE_NLS_PATH = $(DESTDIR)$(pkgdatadir)/nls/$(THE_LANG)
 CLEANFILES = blackbox.cat
 MAINTAINERCLEANFILES = Makefile.in Translation.m
@@ -93,7 +93,7 @@ GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps nls/ro_RO/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps nls/pl_PL/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
@@ -105,7 +105,7 @@ TAGS:
 
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 
-subdir = nls/ro_RO
+subdir = nls/pl_PL
 
 distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
