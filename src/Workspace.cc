@@ -209,7 +209,10 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
 
   unsigned int i = 1;
   win = bottom;
-  while ((win = win->getTransient())) ++i;
+  while (win->getTransient()) {
+    win = win->getTransient();
+    ++i;
+  }
 
   Window *nstack = new Window[i], *curr = nstack;
 
