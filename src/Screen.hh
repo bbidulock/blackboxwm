@@ -77,6 +77,8 @@ struct NETStrut
 class BScreen
 {
 public:
+  enum WindowPlacement { SmartRow, SmartColumn, Cascade };
+
   BScreen(Blackbox *, int);
   ~BScreen();
 
@@ -84,6 +86,9 @@ public:
   int screenNumber() const { return screeninfo->screenNumber(); }
 
   void initialize();
+
+  void setWindowPlacement(WindowPlacement wp) { windowplacement = wp; }
+  WindowPlacement windowPlacement() const { return windowplacement; }
 
   BImageControl *getImageControl() { return image_control; }
   Rootmenu *getRootmenu() { return rootmenu; }
@@ -105,9 +110,10 @@ public:
 
   BlackboxWindow *icon(int);
 
-  const XRectangle& availableArea() const;
-  void updateAvailableArea();
   void addStrut(NETStrut *strut);
+  void removeStrut(NETStrut *strut);
+  void updateAvailableArea();
+  const Rect& availableArea() const { return usableArea; }
 
   int addWorkspace();
   int removeLastWorkspace();
@@ -142,9 +148,6 @@ public:
   void updateNetizenWindowRaise(Window);
   void updateNetizenWindowLower(Window);
 
-  enum { RowSmartPlacement = 1, ColSmartPlacement, CascadePlacement, LeftRight,
-         RightLeft, TopBottom, BottomTop };
-  enum { RoundBullet = 1, TriangleBullet, SquareBullet, NoBullet };
 
 
 
@@ -181,7 +184,6 @@ public:
   int getNumberOfWorkspaces() const { return resource.workspaces; }
   int getToolbarPlacement() const { return resource.toolbar_placement; }
   int getToolbarWidthPercent() const { return resource.toolbar_width_percent; }
-  int getPlacementPolicy() const { return resource.placement_policy; }
   int getEdgeSnapThreshold() const { return resource.edge_snap_threshold; }
   int getRowPlacementDirection() const { return resource.row_direction; }
   int getColPlacementDirection() const { return resource.col_direction; }
@@ -193,9 +195,6 @@ public:
   void saveToolbarAutoHide(Bool r) { resource.toolbar_auto_hide = r; }
   void saveToolbarWidthPercent(int w) { resource.toolbar_width_percent = w; }
   void saveToolbarPlacement(int p) { resource.toolbar_placement = p; }
-  void savePlacementPolicy(int p) { resource.placement_policy = p; }
-  void saveRowPlacementDirection(int d) { resource.row_direction = d; }
-  void saveColPlacementDirection(int d) { resource.col_direction = d; }
   void saveEdgeSnapThreshold(int t) { resource.edge_snap_threshold = t; }
   void saveImageDither(Bool d) { resource.image_dither = d; }
   void saveOpaqueMove(Bool o) { resource.opaque_move = o; }
@@ -244,7 +243,7 @@ private:
   unsigned int geom_w, geom_h;
   unsigned long event_mask;
 
-  XRectangle usableArea;
+  Rect usableArea;
 
   LinkedList<NETStrut> *strutList;
   LinkedList<char> *workspaceNames;
@@ -273,6 +272,7 @@ private:
   } resource;
 
   BStyle _style;
+  WindowPlacement windowplacement;
 };
 
 

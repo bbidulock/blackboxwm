@@ -201,9 +201,7 @@ void BScreen::initialize()
   strutList = new LinkedList<NETStrut>;
 
   // start off full screen, top left.
-  usableArea.x = usableArea.y = 0;
-  usableArea.width = screenInfo()->width();
-  usableArea.height = screenInfo()->height();
+  usableArea.setRect(0, 0, screeninfo->width(), screeninfo->height());
 
   image_control =
     new BImageControl(blackbox, screenInfo(), True, blackbox->getColorsPerChannel(),
@@ -1363,46 +1361,34 @@ void BScreen::addStrut(NETStrut *strut)
   strutList->insert(strut);
 }
 
-const XRectangle& BScreen::availableArea(void) const
+void BScreen::removeStrut(NETStrut *strut)
 {
-  if (doFullMax())
-    return screenInfo()->rect(); // return the full screen
-  return usableArea;
+  strutList->remove(strut);
 }
 
 void BScreen::updateAvailableArea(void)
 {
-  int old_x = usableArea.x, old_y = usableArea.y,
-  old_width = usableArea.width, old_height = usableArea.height;
+  Rect newarea = screeninfo->rect();
 
   LinkedListIterator<NETStrut> it(strutList);
-
-  usableArea = screenInfo()->rect(); // reset to full screen
+  unsigned int l = 0, r = 0, t = 0, b = 0;
   for(NETStrut *strut = it.current(); strut; ++it, strut = it.current()) {
-    if (strut->left > usableArea.x)
-      usableArea.x = strut->left;
-
-    if (strut->top > usableArea.y)
-      usableArea.y = strut->top;
-
-    if (((usableArea.width + old_x) - strut->right) < usableArea.width)
-      usableArea.width = screenInfo()->width() - strut->right - usableArea.x;
-
-    if (((usableArea.height + old_y) - strut->bottom) < usableArea.height)
-      usableArea.height = screenInfo()->height() - strut->bottom - usableArea.y;
+    l += strut->left;
+    r += strut->right;
+    t += strut->top;
+    b += strut->bottom;
   }
 
-  // if area changed
-  if (old_x != usableArea.x || old_y != usableArea.y ||
-      old_width != usableArea.width || old_height != usableArea.height) {
-    usableArea.width += old_x - usableArea.x;
-    usableArea.height += old_y - usableArea.y;
+  newarea.setCoords(newarea.left() + l,  newarea.top() + t,
+                    newarea.right() - r, newarea.bottom() - b);
+
+  if (newarea != usableArea) {
     // TODO: update maximized windows to reflect new screen area
   }
+  usableArea = newarea;
 }
 
 int BScreen::getCurrentWorkspaceID() const
 {
   return current_workspace->getWorkspaceID();
 }
-

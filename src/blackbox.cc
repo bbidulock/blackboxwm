@@ -990,29 +990,17 @@ void Blackbox::save_rc(void) {
 	    ((screen->doFocusLast()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
-    sprintf(rc_string, "session.screen%d.rowPlacementDirection: %s",
-	    screen_number,
-	    ((screen->getRowPlacementDirection() == BScreen::LeftRight) ?
-	     "LeftToRight" : "RightToLeft"));
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    sprintf(rc_string, "session.screen%d.colPlacementDirection: %s",
-	    screen_number,
-	    ((screen->getColPlacementDirection() == BScreen::TopBottom) ?
-	     "TopToBottom" : "BottomToTop"));
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
     char *placement = (char *) 0;
-    switch (screen->getPlacementPolicy()) {
-    case BScreen::CascadePlacement:
+    switch (screen->windowPlacement()) {
+    case BScreen::Cascade:
       placement = "CascadePlacement";
       break;
 
-    case BScreen::ColSmartPlacement:
+    case BScreen::SmartColumn:
       placement = "ColSmartPlacement";
       break;
 
-    case BScreen::RowSmartPlacement:
+    case BScreen::SmartRow:
     default:
       placement = "RowSmartPlacement";
       break;
@@ -1247,32 +1235,6 @@ void Blackbox::load_rc(BScreen *screen) {
   } else {
     screen->saveFocusLast(False);
   }
-  sprintf(name_lookup,  "session.screen%d.rowPlacementDirection",
-	  screen_number);
-  sprintf(class_lookup, "Session.Screen%d.RowPlacementDirection",
-	  screen_number);
-  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-		     &value)) {
-    if (! strncasecmp(value.addr, "righttoleft", value.size))
-      screen->saveRowPlacementDirection(BScreen::RightLeft);
-    else
-      screen->saveRowPlacementDirection(BScreen::LeftRight);
-  } else {
-    screen->saveRowPlacementDirection(BScreen::LeftRight);
-  }
-  sprintf(name_lookup,  "session.screen%d.colPlacementDirection",
-	  screen_number);
-  sprintf(class_lookup, "Session.Screen%d.ColPlacementDirection",
-	  screen_number);
-  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-		     &value)) {
-    if (! strncasecmp(value.addr, "bottomtotop", value.size))
-      screen->saveColPlacementDirection(BScreen::BottomTop);
-    else
-      screen->saveColPlacementDirection(BScreen::TopBottom);
-  } else {
-    screen->saveColPlacementDirection(BScreen::TopBottom);
-  }
   sprintf(name_lookup,  "session.screen%d.workspaces", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Workspaces", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
@@ -1385,13 +1347,13 @@ void Blackbox::load_rc(BScreen *screen) {
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
 		     &value)) {
     if (! strncasecmp(value.addr, "RowSmartPlacement", value.size))
-      screen->savePlacementPolicy(BScreen::RowSmartPlacement);
+      screen->setWindowPlacement(BScreen::SmartRow);
     else if (! strncasecmp(value.addr, "ColSmartPlacement", value.size))
-      screen->savePlacementPolicy(BScreen::ColSmartPlacement);
+      screen->setWindowPlacement(BScreen::SmartColumn);
     else
-      screen->savePlacementPolicy(BScreen::CascadePlacement);
+      screen->setWindowPlacement(BScreen::Cascade);
   } else {
-    screen->savePlacementPolicy(BScreen::RowSmartPlacement);
+    screen->setWindowPlacement(BScreen::SmartRow);
   }
 #ifdef    SLIT
   sprintf(name_lookup, "session.screen%d.slit.placement", screen_number);
