@@ -113,6 +113,11 @@ public:
   Rect( const Point &a, const Size &b ) { setRect( a, b ); }
   Rect( const Rect &a ) { *this = a; }
 
+  int left() const { return _x1; }
+  int top() const { return _y1; }
+  int right() const { return _x2; }
+  int bottom() const { return _y2; }
+
   int x() const { return _x1; }
   void setX( int a ) { _x1 = a; }
 
@@ -139,6 +144,12 @@ public:
 
   void setRect( const Point &p, const Size &s )
   { setPos( p ); setSize( s ); }
+
+  void setCoords( int a, int b, int c, int d )
+  { _x1 = a; _y1 = b; _x2 = c; _y2 = d; }
+
+  void setCoords( const Point &a, const Point &b )
+  { _x1 = a.x(); _y1 = a.y(); _x2 = b.x(), _y2 = b.y(); }
 
   bool operator==( const Rect &a )
   { return _x1 == a._x1 && _y1 == a._y1 && _x2 == a._x2 && _y2 == a._y2; }
