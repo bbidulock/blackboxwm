@@ -1297,6 +1297,7 @@ void Basemenu::leaveEvent(XEvent *)
 
     if (item.active && (! current_submenu ||
                           current_submenu != item.submenu())) {
+      active_item = -1;
       item.active = false;
       XClearArea(*BaseDisplay::instance(), windowID(),
                   r.x(), r.y(), r.width(), r.height(), True);
