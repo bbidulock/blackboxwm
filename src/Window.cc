@@ -60,13 +60,10 @@ extern "C" {
  * Initializes the class with default values/the window's set initial values.
  */
 BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
-  printf("BlackboxWindow size: %d bytes\n", sizeof(BlackboxWindow));
 
 #ifdef    DEBUG
-  fprintf(stderr,
-          i18n(WindowSet, WindowCreating,
-               "BlackboxWindow::BlackboxWindow(): creating 0x%lx\n"),
-          w);
+  fprintf(stderr, "BlackboxWindow size: %d bytes\n", sizeof(BlackboxWindow));
+  fprintf(stderr, "BlackboxWindow::BlackboxWindow(): creating 0x%lx\n", w);
 #endif // DEBUG
 
   // set timer to zero... it is initialized properly later, so we check
@@ -88,9 +85,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
       (! wattrib.screen) || wattrib.override_redirect) {
 #ifdef    DEBUG
     fprintf(stderr,
-            i18n(WindowSet, WindowXGetWindowAttributesFail,
-                 "BlackboxWindow::BlackboxWindow(): XGetWindowAttributes "
-                 "failed\n"));
+            "BlackboxWindow::BlackboxWindow(): XGetWindowAttributes failed\n");
 #endif // DEBUG
 
     delete this;
@@ -103,10 +98,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     screen = blackbox->searchScreen(RootWindowOfScreen(wattrib.screen));
     if (! screen) {
 #ifdef    DEBUG
-      fprintf(stderr,
-              i18n(WindowSet, WindowCannotFindScreen,
-                   "BlackboxWindow::BlackboxWindow(): can't find screen\n"
-                   "\tfor root window 0x%lx\n"),
+      fprintf(stderr, "BlackboxWindow::BlackboxWindow(): can't find screen\n"
+              "\tfor root window 0x%lx\n",
               RootWindowOfScreen(wattrib.screen));
 #endif // DEBUG
 
@@ -1991,8 +1984,7 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
   if (re->window != client.window)
     return;
 #ifdef    DEBUG
-  fprintf(stderr, i18n(WindowSet, WindowMapRequest,
-                       "BlackboxWindow::mapRequestEvent() for 0x%lx\n"),
+  fprintf(stderr, "BlackboxWindow::mapRequestEvent() for 0x%lx\n",
           client.window);
 #endif // DEBUG
 
@@ -2036,8 +2028,7 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
     return;
 
 #ifdef    DEBUG
-  fprintf(stderr, i18n(WindowSet, WindowUnmapNotify,
-                       "BlackboxWindow::unmapNotifyEvent() for 0x%lx\n"),
+  fprintf(stderr, "BlackboxWindow::unmapNotifyEvent() for 0x%lx\n",
           client.window);
 #endif // DEBUG
 
@@ -2058,10 +2049,8 @@ void BlackboxWindow::reparentNotifyEvent(XReparentEvent *re) {
     return;
 
 #ifdef    DEBUG
-  fprintf(stderr,
-          i18n(WindowSet, WindowReparentNotify,
-                "BlackboxWindow::reparentNotifyEvent(): reparent 0x%lx to "
-                "0x%lx.\n"), client.window, re->parent);
+  fprintf(stderr, "BlackboxWindow::reparentNotifyEvent(): reparent 0x%lx to "
+          "0x%lx.\n"), client.window, re->parent);
 #endif // DEBUG
 
   XEvent ev;
