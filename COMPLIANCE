@@ -59,6 +59,7 @@ Section 3: Root Window Properties (and Related Messages)
 
 _NET_SUPPORTED:				supported
 _NET_CLIENT_LIST:			supported
+_NET_CLIENT_LIST_STACKING:		supported
 _NET_NUMBER_OF_DESKTOPS:		supported
 _NET_DESKTOP_GEOMETRY:			NOT supported
 _NET_DESKTOP_VIEWPORT:			NOT supported
@@ -68,7 +69,6 @@ _NET_ACTIVE_WINDOW:			supported
 _NET_WORKAREA:				supported
 _NET_SUPPORTING_WM_CHECK:		supported
 _NET_VIRTUAL_ROOTS:			NOT supported
-_NET_DESKTOP_LAYOUT:			NOT supported
 _NET_SHOWING_DESKTOP:			NOT supported
 
 
@@ -96,14 +96,14 @@ _NET_WM_WINDOW_TYPE:			supported
 	_NET_WM_WINDOW_TYPE_DIALOG:	supported
 	_NET_WM_WINDOW_TYPE_NORMAL:	supported
 _NET_WM_STATE:				supported
-	_NET_WM_STATE_MODAL:		NOT supported
+	_NET_WM_STATE_MODAL:		supported
 	_NET_WM_STATE_STICKY:		NOT supported
 	_NET_WM_STATE_MAXIMIZED_VERT:	supported
 	_NET_WM_STATE_MAXIMIZED_HORZ:	supported
 	_NET_WM_STATE_SHADED:		supported
 	_NET_WM_STATE_SKIP_TASKBAR:	NOT supported
 	_NET_WM_STATE_SKIP_PAGER:	NOT supported
-	_NET_WM_STATE_HIDDEN:		NOT supported
+	_NET_WM_STATE_HIDDEN:		supported
 	_NET_WM_STATE_FULLSCREEN:	supported
 	_NET_WM_STATE_ABOVE:		supported
 	_NET_WM_STATE_BELOW:		supported
