@@ -843,13 +843,9 @@ void BScreen::unmanageWindow(BlackboxWindow *w, bool remap) {
   if (blackbox->getFocusedWindow() == w)
     blackbox->setFocusedWindow((BlackboxWindow *) 0);
 
-  getToolbar()->redrawWindowLabel(True);
-
   removeNetizen(w->getClientWindow());
 
   delete w;
-
-  w = (BlackboxWindow*) 0;
 }
 
 
