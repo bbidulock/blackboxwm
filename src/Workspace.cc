@@ -129,12 +129,12 @@ unsigned int Workspace::removeWindow(BlackboxWindow *w) {
 
 void Workspace::showAll(void) {
   std::for_each(stackingList.begin(), stackingList.end(),
-                std::bind2nd(std::mem_fun(&BlackboxWindow::show), False));
+                std::mem_fun(&BlackboxWindow::show));
 }
 
 
 void Workspace::hideAll(void) {
-  /* why is the order they are withdrawn important? */
+  // XXX: why is the order they are withdrawn important?
 
   /* make a temporary list in reverse order */
   BlackboxWindowList lst(stackingList.rbegin(), stackingList.rend());
