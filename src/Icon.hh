@@ -1,6 +1,6 @@
 //
 // icon.hh for Blackbox - an X11 Window manager
-// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
+// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ public:
 
   char **ULabel(void) { return &name; }
   void setIconNumber(int n) { icon_number = n; }
-  const int iconNumber(void) { return (const) icon_number; }
+  const int iconNumber(void) { return (const int) icon_number; }
   BlackboxWindow *bWindow(void) { return window; }
 
   void rereadLabel(void);

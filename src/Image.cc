@@ -1,6 +1,6 @@
 //
 // Image.cc for Blackbox - an X11 Window manager
-// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
+// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@
 #include "Image.hh"
 
 #include <stdio.h>
-#include <alloca.h>
 #include <malloc.h>
 
 #ifdef GradientHack
@@ -230,14 +229,10 @@ XImage *BImage::renderXImage(Bool dither) {
 	  case MSBFirst:
 	    {
 	      switch (image->bits_per_pixel) {
-	      case 32:
-		*(idata++) = (pixel >> 24);
-	      case 24:
-		*(idata++) = (pixel >> 16);
-	      case 16:
-		*(idata++) = (pixel >> 8);
-	      default:
-		*(idata++) = (pixel);
+	      case 32: *(idata++) = (pixel >> 24);
+	      case 24: *(idata++) = (pixel >> 16);
+	      case 16: *(idata++) = (pixel >> 8);
+	      default: *(idata++) = (pixel);
 	      }
 
 	      break;
@@ -323,14 +318,10 @@ XImage *BImage::renderXImage(Bool dither) {
 	  case MSBFirst:
 	    {
 	      switch (image->bits_per_pixel) {
-	      case 32:
-		*(idata++) = (pixel >> 24);
-	      case 24:
-		*(idata++) = (pixel >> 16);
-	      case 16:
-		*(idata++) = (pixel >> 8);
-	      default:
-		*(idata++) = (pixel);
+	      case 32: *(idata++) = (pixel >> 24);
+	      case 24: *(idata++) = (pixel >> 16);
+	      case 16: *(idata++) = (pixel >> 8);
+	      default: *(idata++) = (pixel);
 	      }
 	      
 	      break;
@@ -746,80 +737,63 @@ void BImage::bevel2(Bool solid, Bool solidblack) {
 
 
 void BImage::invert(void) {
-  register unsigned int wh = width * height;
-  unsigned char *r, *g, *b, *rr, *gg, *bb,
-    *new_r = new unsigned char [wh],
-    *new_g = new unsigned char [wh],
-    *new_b = new unsigned char [wh];
-  
-  if ((! new_r) || (! new_g) || (! new_b)) {
-    if (new_r) delete [] new_r;
-    if (new_g) delete [] new_g;
-    if (new_b) delete [] new_b;
+  register unsigned int i, j;
+  unsigned char tmp;
+
+  for (i = 0, j = (width * height) - 1; j > i; j--, i++) {
+    tmp = *(red + j);
+    *(red + j) = *(red + i);
+    *(red + i) = tmp;
     
-    return;
+    tmp = *(green + j);
+    *(green + j) = *(green + i);
+    *(green + i) = tmp;
+    
+    tmp = *(blue + j);
+    *(blue + j) = *(blue + i);
+    *(blue + i) = tmp;
   }
-  
-  rr = new_r;
-  gg = new_g;
-  bb = new_b;
-  
-  r = red + wh - 1;
-  g = green + wh - 1;
-  b = blue +wh - 1;
-  
-  while (--wh) {
-    *(rr++) = *(r--);
-    *(gg++) = *(g--);
-    *(bb++) = *(b--);
-  }
-  
-  *rr = *r;
-  *gg = *g;
-  *bb = *b;
-  
-  delete [] red;
-  delete [] green;
-  delete [] blue;
-  
-  red = new_r;
-  green = new_g;
-  blue = new_b;
 }
 
 
 void BImage::dgradient(void) {
-  float fr, fg, fb, tr, tg, tb, drx, dgx, dbx, dry, dgy, dby,
-    w = (float) width, h = (float) height, yr, yg, yb, xr, xg, xb;
+  float fr = (float) from.red,
+    fg = (float) from.green,
+    fb = (float) from.blue,
+    tr = (float) to.red,
+    tg = (float) to.green,
+    tb = (float) to.blue,
+    w = (float) (width * 2),
+    h = (float) (height * 2),
+    yr = 0.0,
+    yg = 0.0,
+    yb = 0.0,
+    xr, xg, xb, drx, dgx, dbx, dry, dgy, dby;
   unsigned char *pr = red, *pg = green, *pb = blue;
   
   register unsigned int x, y;
   
-  yr = fr = (float) from.red;
-  yg = fg = (float) from.green;
-  yb = fb = (float) from.blue;
-  
-  tr = (float) to.red;
-  tg = (float) to.green;
-  tb = (float) to.blue;
-  
-  drx = (tr - fr) / w;
-  dgx = (tg - fg) / w;
-  dbx = (tb - fb) / w;
+  drx = dry = (tr - fr);
+  dgx = dgy = (tg - fg);
+  dbx = dby = (tb - fb);
 
-  dry = (tr - fr) / h;
-  dgy = (tg - fg) / h;
-  dby = (tb - fb) / h;
+  drx /= w;
+  dgx /= w;
+  dbx /= w;
+
+  dry /= h;
+  dgy /= h;
+  dby /= h;
 
   for (y = 0; y < height; y++) {
-    xr = fr;
-    xg = fg;
-    xb = fb;
+    xr = fr + yr;
+    xg = fg + yg;
+    xb = fb + yb;
     
     for (x = 0; x < width; x++) {   
-      *(pr++) = (unsigned char) ((xr + yr) / 2);
-      *(pg++) = (unsigned char) ((xg + yg) / 2);
-      *(pb++) = (unsigned char) ((xb + yb) / 2);
+      *(pr++) = (unsigned char) (xr);
+      *(pg++) = (unsigned char) (xg);
+      *(pb++) = (unsigned char) (xb);
       
       xr += drx;
       xg += dgx;
@@ -835,15 +809,10 @@ void BImage::dgradient(void) {
 
 void BImage::hgradient(void) {
   float fr, fg, fb, tr, tg, tb, drx, dgx, dbx, xr, xg, xb, w = (float) width;
-  unsigned char *r = (unsigned char *) alloca(width * sizeof(char)),
-    *g = (unsigned char *) alloca(width * sizeof(char)),
-    *b = (unsigned char *) alloca(width * sizeof(char));
-  unsigned char *pr = red, *pg = green, *pb = blue, *rr, *gg, *bb;
+  unsigned char *pr, *pg, *pb, *rr, *gg, *bb;
 
-  register unsigned int x, y, off;
+  register unsigned int x, y;
 
-  if ((! r) || (! g) || (! b)) return;
-  
   xr = fr = (float) from.red;
   xg = fg = (float) from.green;
   xb = fb = (float) from.blue;
@@ -856,28 +825,28 @@ void BImage::hgradient(void) {
   dgx = (tg - fg) / w;
   dbx = (tb - fb) / w;
 
-  rr = r;
-  gg = g;
-  bb = b;
+  pr = red;
+  pg = green;
+  pb = blue;
 
-  // this renders one line of the hgradient to a buffer...
+  // this renders one line of the hgradient
   for (x = 0; x < width; x++) {
-    *(rr++) = (unsigned char) (xr);
-    *(gg++) = (unsigned char) (xg);
-    *(bb++) = (unsigned char) (xb);
+    *(pr++) = (unsigned char) (xr);
+    *(pg++) = (unsigned char) (xg);
+    *(pb++) = (unsigned char) (xb);
     
     xr += drx;
     xg += dgx;
     xb += dbx;
   }
 
-  // and this copies the buffer to the image...
-  for (y = 0, off = 0; y < height; y++) {
-    rr = r;
-    gg = g;
-    bb = b;
+  // and this copies to the rest of the image
+  for (y = 1; y < height; y++) {
+    rr = red;
+    gg = green;
+    bb = blue;
     
-    for (x = 0; x < width; x++, off++) {
+    for (x = 0; x < width; x++) {
       *(pr++) = *(rr++);
       *(pg++) = *(gg++);
       *(pb++) = *(bb++);
@@ -887,35 +856,29 @@ void BImage::hgradient(void) {
 
 
 void BImage::vgradient(void) {
-  float fr, fg, fb, tr, tg, tb, dr, dg, db, dy, yr, yg, yb,
+  float fr, fg, fb, tr, tg, tb, dry, dgy, dby, yr, yg, yb,
     h = (float) height;
   unsigned char *pr = red, *pg = green, *pb = blue;
   
   register unsigned char r, g, b;
   register unsigned int x, y;
   
-  fr = (float) from.red;
-  fg = (float) from.green;
-  fb = (float) from.blue;
+  yr = fr = (float) from.red;
+  yg = fg = (float) from.green;
+  yb = fb = (float) from.blue;
 
   tr = (float) to.red;
   tg = (float) to.green;
   tb = (float) to.blue;
 
-  dr = tr - fr;
-  dg = tg - fg;
-  db = tb - fb;
+  dry = (tr - fr) / h;
+  dgy = (tg - fg) / h;
+  dby = (tb - fb) / h;
 
   for (y = 0; y < height; y++) {
-#ifdef GradientHack
-    dy = sin((y/ h) * M_PI_2);
-#else
-    dy = y / h;
-#endif
-    
-    yr = (dr * dy) + fr;
-    yg = (dg * dy) + fg;
-    yb = (db * dy) + fb;
+    yr += dry;
+    yg += dgy;
+    yb += dby;
       
     r = (unsigned char) (yr);
     g = (unsigned char) (yg);
@@ -1025,7 +988,7 @@ BImageControl::BImageControl(Blackbox *bb) {
 	    colors[i].flags = DoRed|DoGreen|DoBlue;
 	  }
       
-      XGrabServer(display);
+      blackbox->syncGrabServer();
       
       for (i = 0; i < ncolors; i++)
 	if (! XAllocColor(display, root_colormap, &colors[i])) {
@@ -1035,7 +998,7 @@ BImageControl::BImageControl(Blackbox *bb) {
 	} else
 	  colors[i].flags = DoRed|DoGreen|DoBlue;
       
-      XUngrabServer(display);
+      blackbox->ungrabServer();
       
       XColor icolors[256];
       int incolors = (((1 << screen_depth) > 256) ? 256 : (1 << screen_depth));
@@ -1120,9 +1083,9 @@ BImageControl::~BImageControl(void) {
 
   if (cache->count()) {
     int i, n = cache->count();
-    fprintf(stderr, "BImageContol::~BImageControl: pixmap cache - %d "
-                    "unreleased pixmaps\n", n);
-
+    fprintf(stderr, "BImageContol::~BImageControl: pixmap cache - "
+	    "releasing %d pixmaps\n", n);
+    
     for (i = 0; i < n; i++) {
       Cache *tmp = cache->first();
       XFreePixmap(display, tmp->pixmap);
@@ -1130,7 +1093,7 @@ BImageControl::~BImageControl(void) {
       delete tmp;
     }
   }
-
+  
   delete cache;
 }
 
@@ -1326,7 +1289,7 @@ void BImageControl::getDitherBuffers(unsigned int w, short **r, short **g,
 
 
 void BImageControl::installRootColormap(void) {
-  XGrabServer(display);
+  blackbox->syncGrabServer();
   
   Bool install = True;
   int i = 0, ncmap = 0;
@@ -1343,5 +1306,5 @@ void BImageControl::installRootColormap(void) {
     XFree(cmaps);
   }
   
-  XUngrabServer(display);
+  blackbox->ungrabServer();
 }

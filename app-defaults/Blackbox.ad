@@ -8,7 +8,7 @@ session.toolbarRaised:			False
 session.clockFormat:			12
 session.imageDither:			True
 session.workspaces:			3
-session.workspaceNames:			First Workspace,Second Workspace,Workspace 3
+session.workspaceNames:			First Workspace,Second Workspace,Last Workspace
 !session.menuFile:			written on exit/restart
 !session.styleFile:			written on exit/restart
 

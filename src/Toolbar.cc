@@ -1,6 +1,6 @@
 //
 // Toolbar.cc for Blackbox - an X11 Window manager
-// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
+// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -48,6 +48,7 @@ Toolbar::Toolbar(Blackbox *bb, int c) {
 
   wait_button = False;
   raised = blackbox->toolbarRaised();
+  new_workspace_name = new_name_pos = 0;
 
   display = blackbox->control();
   XSetWindowAttributes attrib;
@@ -185,6 +186,12 @@ Toolbar::Toolbar(Blackbox *bb, int c) {
 			  blackbox->tResource()->clock.color,
 			  blackbox->tResource()->clock.colorTo);
   XSetWindowBackgroundPixmap(display, frame.clock, frame.clk);
+
+  frame.reading =
+    image_ctrl->renderImage(frame.label_w, frame.label_w,
+			    blackbox->wResource()->decoration.ftexture,
+			    blackbox->wResource()->decoration.fcolor,
+			    blackbox->wResource()->decoration.fcolorTo);
   
   XClearWindow(display, frame.window);
   XClearWindow(display, frame.workspaceLabel);
@@ -244,6 +251,7 @@ Toolbar::~Toolbar(void) {
   if (frame.button) image_ctrl->removeImage(frame.button);
   if (frame.pbutton) image_ctrl->removeImage(frame.pbutton);
   if (frame.clk) image_ctrl->removeImage(frame.clk);
+  if (frame.reading) image_ctrl->removeImage(frame.reading);
 
   blackbox->removeToolbarSearch(frame.window);
 
@@ -475,6 +483,14 @@ void Toolbar::Reconfigure(void) {
 			    blackbox->tResource()->clock.color,
 			    blackbox->tResource()->clock.colorTo);
   if (tmp) image_ctrl->removeImage(tmp);
+
+  tmp = frame.reading;
+  frame.reading =
+    image_ctrl->renderImage(frame.label_w, frame.label_w,
+			    blackbox->wResource()->decoration.ftexture,
+			    blackbox->wResource()->decoration.fcolor,
+			    blackbox->wResource()->decoration.fcolorTo);
+  if (tmp) image_ctrl->removeImage(tmp);
   
   XGCValues gcv;
   gcv.font = blackbox->titleFont()->fid;
@@ -633,71 +649,6 @@ void Toolbar::redrawLabel(Bool redraw) {
 }
 
 
-void Toolbar::readWorkspaceName(Window window) {
-  if (window == frame.workspaceLabel) {
-    XGrabServer(display);
-    
-    Bool done = False;
-    XEvent event;
-    
-    char *new_name = new char[1024], *new_name_pos = new_name;
-    if (! new_name) return;
-    
-    while (! done) {
-      XWindowEvent(display, frame.workspaceLabel, KeyPressMask, &event);
-      
-      KeySym ks = XKeycodeToKeysym(display, event.xkey.keycode, 0), uks, lks;
-      if (ks == XK_Return) {
-	done = True;
-
-	current->setName(new_name);
-	wsMenu->remove(current->workspaceID() + 1);
-	wsMenu->insert(current->Name(), current->Menu(),
-		       current->workspaceID());
-	wsMenu->Update();
-      } else if (! (ks == XK_Shift_L || ks == XK_Shift_R ||
-		    ks == XK_Control_L || ks == XK_Control_R ||
-		    ks == XK_Alt_L || ks == XK_Alt_R ||
-		    ks == XK_Meta_L || ks == XK_Meta_R)) {
-	if (ks == XK_BackSpace) {
-	  if (new_name_pos != new_name)
-	    *(--new_name_pos) = '\0';
-	  else
-	    *new_name = '\0';
-	} else if (ks == XK_space) {
-	  *(new_name_pos++) = ' ';
-	  *(new_name_pos) = '\0';
-	} else {
-	  if (event.xkey.state & ShiftMask) {
-	    XConvertCase(ks, &lks, &uks);
-	    ks = uks;
-	  }
-	  
-	  char *n = XKeysymToString(ks);
-	  *(new_name_pos++) = *n;
-	  *(new_name_pos) = '\0';
-	}
-	
-	XClearWindow(display, frame.workspaceLabel);
-	int l = strlen(new_name),
-	  tx = (XTextWidth(blackbox->titleFont(), new_name, l) +
-		(frame.bevel_w * 2)),
-	  x = (frame.label_w - tx) / 2;
-	
-	if (tx > (signed) frame.label_w) x = frame.bevel_w;
-	
-	XDrawString(display, frame.workspaceLabel, buttonGC, x,
-		    blackbox->titleFont()->ascent +
-		    blackbox->titleFont()->descent, new_name, l);
-	XFlush(display);
-      }
-    }
-    
-    XUngrabServer(display);
-  }
-}
-
-
 // *************************************************************************
 // event handlers
 // *************************************************************************
@@ -783,14 +734,15 @@ void Toolbar::buttonPressEvent(XButtonEvent *be) {
       Window window;
       int foo;
 
-      if (XGetInputFocus(display, &window, &foo))
-	if (window == frame.workspaceLabel) {
-	  readWorkspaceName(frame.workspaceLabel);
-	  return;
-	}
+      if (XGetInputFocus(display, &window, &foo) && 
+	  window == frame.workspaceLabel)
+	return;
       
       XSetInputFocus(display, frame.workspaceLabel, RevertToParent,
 		     CurrentTime);
+      
+      XSetWindowBackgroundPixmap(display, frame.workspaceLabel, frame.reading);
+      XClearWindow(display, frame.workspaceLabel);
       XSync(display, False);
     }
   }
@@ -953,5 +905,84 @@ void Toolbar::exposeEvent(XExposeEvent *ee) {
 
     XFillPolygon(display, frame.menuButton, buttonGC, pts, 3, Convex,
 		 CoordModePrevious);
+  }
+}
+
+
+void Toolbar::keyPressEvent(XKeyEvent *ke) {
+  if (ke->window == frame.workspaceLabel) {
+    blackbox->syncGrabServer();
+
+    if (! new_workspace_name) {
+      new_workspace_name = new char[1024];
+      new_name_pos = new_workspace_name;
+
+      if (! new_workspace_name) return;
+    }
+    
+    KeySym ks = XKeycodeToKeysym(display, ke->keycode, 0), uks, lks;
+    if (ks == XK_Return) {
+      *(new_name_pos) = 0;
+
+      XSetInputFocus(display, PointerRoot, RevertToParent, CurrentTime);
+      
+      // check to make sure that new_name[0] != 0... otherwise we have a null
+      // workspace name which causes serious problems, especially for the
+      // Blackbox::LoadRC() method.
+      if (*new_workspace_name) {
+	current->setName(new_workspace_name);
+	wsMenu->remove(current->workspaceID() + 1);
+	wsMenu->insert(current->Name(), current->Menu(),
+		       current->workspaceID());
+	wsMenu->Update();
+      }
+
+      delete new_workspace_name;
+      new_workspace_name = new_name_pos = 0;
+
+      XSetWindowBackgroundPixmap(display, frame.workspaceLabel, frame.label);
+      XClearWindow(display, frame.workspaceLabel);
+
+      int l = strlen(current->Name()),
+	x = (frame.label_w - XTextWidth(blackbox->titleFont(),
+					current->Name(), l))/ 2;
+      if (x < (signed) frame.bevel_w) x = frame.bevel_w;
+      XDrawString(display, frame.workspaceLabel, buttonGC, x,
+		  blackbox->titleFont()->ascent +
+		  blackbox->titleFont()->descent, current->Name(), l);
+    } else if (! (ks == XK_Shift_L || ks == XK_Shift_R ||
+		  ks == XK_Control_L || ks == XK_Control_R ||
+		  ks == XK_Alt_L || ks == XK_Alt_R ||
+		  ks == XK_Meta_L || ks == XK_Meta_R)) {
+      if (ks == XK_BackSpace) {
+	if (new_name_pos != new_workspace_name)
+	  *(--new_name_pos) = 0;
+	else
+	  *new_workspace_name = 0;
+      } else if (ks == XK_space) {
+	*(new_name_pos++) = ' ';
+	  *(new_name_pos) = 0;
+      } else {
+	if (ke->state & ShiftMask) {
+	  XConvertCase(ks, &lks, &uks);
+	  ks = uks;
+	}
+	
+	char *n = XKeysymToString(ks);
+	*(new_name_pos++) = *n;
+	*(new_name_pos) = 0;
+      }
+      
+      XClearWindow(display, frame.workspaceLabel);
+      int l = strlen(new_workspace_name),
+	x = (frame.label_w - XTextWidth(blackbox->titleFont(),
+					 new_workspace_name, l)) / 2;
+      if (x < (signed) frame.bevel_w) x = frame.bevel_w;
+      XDrawString(display, frame.workspaceLabel, buttonGC, x,
+		  blackbox->titleFont()->ascent +
+		  blackbox->titleFont()->descent, new_workspace_name, l);
+    }
+    
+    blackbox->ungrabServer();
   }
 }

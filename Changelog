@@ -2,6 +2,35 @@ At the request of some people, here is a Change log starting with 0.33.0.
 Enjoy! :)
 
 
+Changes from 0.40.6 to 0.40.7:
+	- changed bhughes@arn.net to bhughes@tcac.net throughout the source
+	  tree
+	- menu sanity fixes... like unmapping a submenu when an item is removed
+	- image code fixes... no memory is allocated during the rendering...
+	  only when the BImage is created... thanks to lee.salzman@lvdi.net for
+	  the frame work for these changes
+	- fewer floating point division in gradient rendering routines... again
+	  thanks to lee.salzman@lvdi.net for the basis of these changes
+	- reading workspace names is now a little more robust, but probably not
+	  bullet proof... events are handled normally while reading the
+	  workspace name... instead of blocking them all... the label changes
+	  color... and reverts back to normal when enter is pressed (which
+	  applies the new workspace name)
+	- the window geometry label drawn during window resizing has moved to
+          inside the window frame, this allows us to see what size windows are
+	  being resized to when the right edge is close to the edge of root
+	- a lock system has been implemented for the blackbox objects... this
+	  fixes a nasty little problem of stale windows (decorations with no
+	  client window) because of on object grabbing the server and another
+	  unlocking it... the current system works similar to XLockDisplay
+	  (which is used in threaded X programs).
+	- icccm code enhancements for XWMHints and NormalHints
+	- window maximizing now properly returns the maximized client to its
+	  previous location (this is a bug fix... maximize netscape, then
+	  maximize an xterm... unmaximizing netscape will put it where the
+	  xterm was previously)
+
+
 Changes from 0.40.5 to 0.40.6:
 	- the workspace and client menus now keep the current workspace and
 	  focus window highlighted so that we know which window is in focus

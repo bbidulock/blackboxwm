@@ -1,6 +1,6 @@
 //
 // Basemenu.cc for Blackbox - an X11 Window manager
-// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
+// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -176,14 +176,14 @@ int Basemenu::remove(int index) {
     if (item->exec()) {
       delete [] item->exec();
     }
-  }
+  } else if (item->submenu())
+    item->submenu()->Hide();
   
   delete item;
 
-  if (which_sub != -1)
-    if ((--which_sub) == index)
-      which_sub = -1;
-
+  if (which_sub == index)
+    which_sub = -1;
+  
   if (always_highlight == index)
     always_highlight = -1;
 

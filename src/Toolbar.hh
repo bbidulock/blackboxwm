@@ -1,6 +1,6 @@
 //
 // Toolbar.hh for Blackbox - an X11 Window manager
-// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
+// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ private:
   GC buttonGC;
 
   struct frame {
-    Pixmap frame, label, button, pbutton, clk;
+    Pixmap frame, label, button, pbutton, clk, reading;
     Window window, menuButton, workspaceLabel, workspacePrev, workspaceNext,
       windowLabel, windowPrev, windowNext, clock;
 
@@ -55,11 +55,12 @@ private:
   
   LinkedList<Workspace> *workspacesList;
   Blackbox *blackbox;
+  BImageControl *image_ctrl;
   Iconmenu *iconMenu;
   Workspace *current, *zero;
   Workspacemenu *wsMenu;
-
-  BImageControl *image_ctrl;
+  
+  char *new_workspace_name, *new_name_pos;
 
 
 protected:
@@ -82,11 +83,11 @@ public:
   void Reconfigure(void);
   void checkClock(Bool = False);
   void redrawLabel(Bool = False);
-  void readWorkspaceName(Window);
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);
   void exposeEvent(XExposeEvent *);
+  void keyPressEvent(XKeyEvent *);
 
   Window windowID(void) { return frame.window; }
   Workspace *currentWorkspace(void) { return current; }

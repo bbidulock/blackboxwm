@@ -1,6 +1,6 @@
 //
 // blackbox.cc for Blackbox - an X11 Window manager
-// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
+// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -109,9 +109,8 @@ static int handleXErrors(Display *d, XErrorEvent *e) {
           "blackbox:  [ X Error event received. ]\n"
           "  X Error of failed request:  %d %s\n"
           "  Major/minor opcode of failed request:  %d / %d\n"
-          "  Resource id in failed request:  0x%lx\n"
-	  "  [ continuing ]\n", e->error_code, errtxt, e->request_code,
-	  e->minor_code, e->resourceid);
+          "  Resource id in failed request:  0x%lx\n", e->error_code, errtxt,
+          e->request_code, e->minor_code, e->resourceid);
 
   return(False);
 }
@@ -138,6 +137,7 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   shutdown = False;
   startup = True;
   focus_window_number = -1;
+  server_grabs = 0;
 
   root_menu = 0;
   resource.stylerc = 0;
@@ -162,12 +162,12 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   display_name = XDisplayName(dpy_name);
 
   event_mask = ColormapChangeMask | EnterWindowMask | PropertyChangeMask |
-    SubstructureRedirectMask | KeyPressMask | ButtonPressMask |
-    ButtonReleaseMask;
+    SubstructureRedirectMask | KeyPressMask |
+    ButtonPressMask | ButtonReleaseMask;
   
   // grab the display server... so that when we select the input events we
   // want, we don't loose any events
-  XGrabServer(display);
+  syncGrabServer();
 
   XSetErrorHandler((XErrorHandler) anotherWMRunning);
   XSelectInput(display, root, event_mask);
@@ -185,6 +185,7 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
 					False);
   _XA_WM_PROTOCOLS = XInternAtom(display, "WM_PROTOCOLS", False);
   _XA_WM_STATE = XInternAtom(display, "WM_STATE", False);
+  _XA_WM_CHANGE_STATE = XInternAtom(display, "WM_CHANGE_STATE", False);
   _XA_WM_DELETE_WINDOW = XInternAtom(display, "WM_DELETE_WINDOW", False);
   _XA_WM_TAKE_FOCUS = XInternAtom(display, "WM_TAKE_FOCUS", False);
   _MOTIF_WM_HINTS = XInternAtom(display, "_MOTIF_WM_HINTS", False);
@@ -222,29 +223,29 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   opGC = XCreateGC(display, root, GCForeground|GCFunction|GCSubwindowMode,
                    &gcv);
 
-  gcv.foreground = blackbox->wResource()->decoration.utextColor.pixel;
-  gcv.font = blackbox->titleFont()->fid;
+  gcv.foreground = wResource()->decoration.utextColor.pixel;
+  gcv.font = titleFont()->fid;
   wunfocusGC = XCreateGC(display, root, GCForeground|GCBackground|
 		       GCFont, &gcv);
   
-  gcv.foreground = blackbox->wResource()->decoration.ftextColor.pixel;
-  gcv.font = blackbox->titleFont()->fid;
+  gcv.foreground = wResource()->decoration.ftextColor.pixel;
+  gcv.font = titleFont()->fid;
   wfocusGC = XCreateGC(display, root, GCForeground|GCBackground|
 		       GCFont, &gcv);
 
-  gcv.foreground = blackbox->mResource()->title.textColor.pixel;
-  gcv.font = blackbox->titleFont()->fid;
+  gcv.foreground = mResource()->title.textColor.pixel;
+  gcv.font = titleFont()->fid;
   mtitleGC = XCreateGC(display, root, GCForeground|GCFont, &gcv);
 
-  gcv.foreground = blackbox->mResource()->frame.textColor.pixel;
-  gcv.font = blackbox->menuFont()->fid;
+  gcv.foreground = mResource()->frame.textColor.pixel;
+  gcv.font = menuFont()->fid;
   mframeGC = XCreateGC(display, root, GCForeground|GCFont, &gcv);
 
-  gcv.foreground = blackbox->mResource()->frame.htextColor.pixel;
+  gcv.foreground = mResource()->frame.htextColor.pixel;
   mhiGC = XCreateGC(display, root, GCForeground|GCBackground|GCFont,
                       &gcv);
 
-  gcv.foreground = blackbox->mResource()->frame.hcolor.pixel;
+  gcv.foreground = mResource()->frame.hcolor.pixel;
   gcv.arc_mode = ArcChord;
   gcv.fill_style = FillSolid;
   mhbgGC = XCreateGC(display, root, GCForeground|GCFillStyle|GCArcMode,
@@ -278,7 +279,7 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   
   XSynchronize(display, False);
   XSync(display, False);
-  XUngrabServer(display);
+  ungrabServer();
 }
 
 
@@ -520,14 +521,14 @@ void Blackbox::ProcessEvent(XEvent *e) {
       
       if (resource.sloppyFocus &&
 	  (eWin = searchWindow(e->xcrossing.window)) != NULL) {
-	XGrabServer(display);
+	syncGrabServer();
 	
 	if (validateWindow(eWin->clientWindow()))
 	  if ((! eWin->isFocused()) && eWin->isVisible())
 	    if (eWin->setInputFocus() && resource.autoRaise)    
 	      tool_bar->currentWorkspace()->raiseWindow(eWin);
 	
-	XUngrabServer(display);
+	ungrabServer();
       } else if ((eMenu = searchMenu(e->xcrossing.window)) != NULL)
 	eMenu->enterNotifyEvent(&e->xcrossing);
       
@@ -563,15 +564,13 @@ void Blackbox::ProcessEvent(XEvent *e) {
   case FocusIn:
     {
       BlackboxWindow *iWin = searchWindow(e->xfocus.window);
-      Toolbar *tbar = searchToolbar(e->xfocus.window);
       
       if ((iWin != NULL) && (e->xfocus.mode != NotifyGrab) &&
 	  (e->xfocus.mode != NotifyUngrab)) {
 	iWin->setFocusFlag(True);
 	focus_window_number = iWin->windowNumber();
 	tool_bar->currentWorkspace()->setFocusWindow(focus_window_number);
-      } else if (tbar != NULL)
-	tool_bar->readWorkspaceName(e->xfocus.window);
+      }
       
       break;
     }
@@ -583,7 +582,7 @@ void Blackbox::ProcessEvent(XEvent *e) {
       if ((oWin != NULL) && (e->xfocus.mode != NotifyGrab) &&
 	  (e->xfocus.mode != NotifyWhileGrabbed))
 	oWin->setFocusFlag(False);
-    
+      
       if ((e->xfocus.mode == NotifyNormal) &&
 	  (e->xfocus.detail == NotifyAncestor)) {
 	if (resource.sloppyFocus)
@@ -595,13 +594,17 @@ void Blackbox::ProcessEvent(XEvent *e) {
 	focus_window_number = -1;
 	tool_bar->currentWorkspace()->setFocusWindow(-1);
       }
-
+      
       break;
     }
     
   case KeyPress:
     {
-      if (e->xkey.state & Mod1Mask) {
+      Toolbar *tbar = 0;
+
+      if ((tbar = searchToolbar(e->xkey.window))) {
+	tbar->keyPressEvent(&e->xkey);
+      } else if (e->xkey.state & Mod1Mask) {
 	if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Tab) {
 	  nextFocus();
 	}
@@ -627,6 +630,20 @@ void Blackbox::ProcessEvent(XEvent *e) {
     {
       rootColormapInstalled =
 	((e->xcolormap.state == ColormapInstalled) ? True : False);
+      break;
+    }
+
+  case ClientMessage:
+    {
+      if ((e->xclient.format == 32) &&
+	  (e->xclient.message_type == _XA_WM_CHANGE_STATE) &&
+	  (e->xclient.data.l[0] == IconicState)) {
+	BlackboxWindow *win = searchWindow(e->xclient.window);
+	
+	if (win != NULL)
+	  win->iconifyWindow();
+      }
+      
       break;
     }
     
@@ -660,6 +677,22 @@ Bool Blackbox::validateWindow(Window window) {
   }
 
   return True;
+}
+
+
+void Blackbox::syncGrabServer(void) { 
+  if (! server_grabs++)
+    XGrabServer(display);
+  
+  XSync(display, False);
+}
+
+
+void Blackbox::ungrabServer(void) {
+  if (! --server_grabs)
+    XUngrabServer(display);
+  
+  if (server_grabs < 0) server_grabs = 0;
 }
 
 
@@ -909,26 +942,26 @@ void Blackbox::SaveRC(void) {
   // write out the users workspace names
   int i, len = 0;
   for (i = 1; i < tool_bar->count(); i++)
-    len += strlen(tool_bar->workspace(i)->Name()) + 1;
-
+    len += strlen((tool_bar->workspace(i)->Name()) ? : "Null") + 1;
+  
   char *resource_string = new char[len + 1024],
     *save_string = new char[len], *save_string_pos = save_string,
     *name_string_pos;
   if (save_string) {
     for (i = 1; i < tool_bar->count(); i++) {
-      len = strlen(tool_bar->workspace(i)->Name()) + 1;
-      name_string_pos = tool_bar->workspace(i)->Name();
+      len = strlen((tool_bar->workspace(i)->Name()) ? : "Null") + 1;
+      name_string_pos = (tool_bar->workspace(i)->Name()) ? : "Null";
       
       while (--len) *(save_string_pos++) = *(name_string_pos++);
       *(save_string_pos++) = ',';
     }
   }
-
+  
   *(--save_string_pos) = '\0';
-
+  
   sprintf(resource_string, "session.workspaceNames:  %s", save_string);
   XrmPutLineResource(&new_blackboxrc, resource_string);
-
+  
   XrmPutFileDatabase(new_blackboxrc, rcfile);
   XrmDestroyDatabase(new_blackboxrc);
   
@@ -1463,19 +1496,19 @@ void Blackbox::LoadStyle(void) {
 
   // load window config
   if (! (resource.wres.decoration.ftexture =
-	 blackbox->readDatabaseTexture("window.focus",
+	 readDatabaseTexture("window.focus",
 				       "Window.Focus")))
     resource.wres.decoration.ftexture = BImage_Raised | BImage_Solid |
       BImage_Bevel2;
   
   if (! (resource.wres.decoration.utexture =
-	 blackbox->readDatabaseTexture("window.unfocus",
+	 readDatabaseTexture("window.unfocus",
 				       "Window.Unfocus")))
     resource.wres.decoration.utexture = BImage_Raised | BImage_Solid |
       BImage_Bevel2;  
 
   if (! (resource.wres.frame.texture =
-	 blackbox->readDatabaseTexture("window.frame",
+	 readDatabaseTexture("window.frame",
 				       "Window.Frame")))
     resource.wres.frame.texture = BImage_Raised | BImage_Bevel2 | BImage_Solid;
   if (resource.wres.frame.texture & BImage_Gradient)
@@ -1485,19 +1518,19 @@ void Blackbox::LoadStyle(void) {
       (resource.wres.frame.texture & (BImage_Bevel1 | BImage_Bevel2));
 
   if (! (resource.wres.button.ftexture =
-	 blackbox->readDatabaseTexture("window.focus.button",
+	 readDatabaseTexture("window.focus.button",
 				       "Window.Focus.Button")))
     resource.wres.button.ftexture = BImage_Raised | BImage_Bevel2 |
       BImage_Solid;
   
   if (! (resource.wres.button.utexture =
-	 blackbox->readDatabaseTexture("window.unfocus.button",
+	 readDatabaseTexture("window.unfocus.button",
 				       "Window.Unfocus.Button")))
     resource.wres.button.utexture = BImage_Raised | BImage_Bevel2 |
       BImage_Solid;
 
   if (! (resource.wres.button.ptexture =
-	 blackbox->readDatabaseTexture("window.button.pressed",
+	 readDatabaseTexture("window.button.pressed",
 				       "Window.Button.Pressed")))
     resource.wres.button.ptexture = resource.wres.button.ftexture |
       BImage_Invert;
@@ -1507,7 +1540,7 @@ void Blackbox::LoadStyle(void) {
       BImage_Invert;
   
   // button, focused and unfocused colors
-  if (! blackbox->readDatabaseColor("window.focus.color",
+  if (! readDatabaseColor("window.focus.color",
 				    "Window.Focus.Color",
 				    &resource.wres.decoration.fcolor))
     resource.wres.decoration.fcolor.pixel =
@@ -1515,7 +1548,7 @@ void Blackbox::LoadStyle(void) {
 			      &resource.wres.decoration.fcolor.green,
 			      &resource.wres.decoration.fcolor.blue);
   
-  if (! blackbox->readDatabaseColor("window.unfocus.color",
+  if (! readDatabaseColor("window.unfocus.color",
 				    "Window.Unfocus.Color",
 				    &resource.wres.decoration.ucolor))
     resource.wres.decoration.ucolor.pixel =
@@ -1524,7 +1557,7 @@ void Blackbox::LoadStyle(void) {
 			 &resource.wres.decoration.ucolor.blue);
 
   if (resource.wres.decoration.ftexture & BImage_Gradient)
-    if (! blackbox->readDatabaseColor("window.focus.colorTo",
+    if (! readDatabaseColor("window.focus.colorTo",
 				      "Window.Focus.ColorTo",
 				      &resource.wres.decoration.fcolorTo))
       resource.wres.decoration.fcolorTo.pixel =
@@ -1534,7 +1567,7 @@ void Blackbox::LoadStyle(void) {
 				&resource.wres.decoration.fcolorTo.blue);
 
   if (resource.wres.decoration.utexture & BImage_Gradient)
-    if (! blackbox->readDatabaseColor("window.unfocus.colorTo",
+    if (! readDatabaseColor("window.unfocus.colorTo",
 				      "Window.Unfocus.ColorTo",
 				      &resource.wres.decoration.ucolorTo))
       resource.wres.decoration.ucolorTo.pixel =
@@ -1543,7 +1576,7 @@ void Blackbox::LoadStyle(void) {
 				&resource.wres.decoration.ucolorTo.green,
 				&resource.wres.decoration.ucolorTo.blue);
 
-  if (! blackbox->readDatabaseColor("window.focus.button.color",
+  if (! readDatabaseColor("window.focus.button.color",
 				    "Window.Focus.Button.Color",
 				    &resource.wres.button.fcolor))
     resource.wres.button.fcolor.pixel =
@@ -1551,7 +1584,7 @@ void Blackbox::LoadStyle(void) {
 			      &resource.wres.button.fcolor.green,
 			      &resource.wres.button.fcolor.blue);
 
-  if (! blackbox->readDatabaseColor("window.focus.button.colorTo",
+  if (! readDatabaseColor("window.focus.button.colorTo",
 				    "Window.Focus.Button.ColorTo",
 				    &resource.wres.button.fcolorTo))
     resource.wres.button.fcolorTo.pixel =
@@ -1559,7 +1592,7 @@ void Blackbox::LoadStyle(void) {
 			      &resource.wres.button.fcolorTo.green,
 			      &resource.wres.button.fcolorTo.blue);
   
-  if (! blackbox->readDatabaseColor("window.unfocus.button.color",
+  if (! readDatabaseColor("window.unfocus.button.color",
 				    "Window.Unfocus.Button.Color",
 				    &resource.wres.button.ucolor))
     resource.wres.button.ucolor.pixel =
@@ -1567,7 +1600,7 @@ void Blackbox::LoadStyle(void) {
 			      &resource.wres.button.ucolor.green,
 			      &resource.wres.button.ucolor.blue);
   
-  if (! blackbox->readDatabaseColor("window.unfocus.button.colorTo",
+  if (! readDatabaseColor("window.unfocus.button.colorTo",
 				    "Window.Unfocus.Button.ColorTo",
 				    &resource.wres.button.ucolorTo))
     resource.wres.button.ucolorTo.pixel =
@@ -1575,7 +1608,7 @@ void Blackbox::LoadStyle(void) {
 			      &resource.wres.button.ucolorTo.green,
 			      &resource.wres.button.ucolorTo.blue);
 
-  if (! blackbox->readDatabaseColor("window.button.pressed.color",
+  if (! readDatabaseColor("window.button.pressed.color",
 				    "Window.Button.Pressed.Color",
 				    &resource.wres.button.pressed))
     resource.wres.button.pressed.pixel =
@@ -1584,7 +1617,7 @@ void Blackbox::LoadStyle(void) {
 			      &resource.wres.button.pressed.blue);
   
   if (resource.wres.button.ptexture & BImage_Gradient)
-    if (! blackbox->readDatabaseColor("window.button.pressed.colorTo",
+    if (! readDatabaseColor("window.button.pressed.colorTo",
 				      "Window.Button.Pressed.ColorTo",
 				      &resource.wres.button.pressedTo))
       resource.wres.button.pressedTo.pixel =
@@ -1593,7 +1626,7 @@ void Blackbox::LoadStyle(void) {
 				&resource.wres.button.pressedTo.blue);
   
   // focused and unfocused text colors
-  if (! blackbox->readDatabaseColor("window.focus.textColor",
+  if (! readDatabaseColor("window.focus.textColor",
 				    "Window.Focus.TextColor",
 				    &resource.wres.decoration.ftextColor))
     resource.wres.decoration.ftextColor.pixel =
@@ -1602,7 +1635,7 @@ void Blackbox::LoadStyle(void) {
 			      &resource.wres.decoration.ftextColor.green,
 			      &resource.wres.decoration.ftextColor.blue);
   
-  if (! blackbox->readDatabaseColor("window.unfocus.textColor",
+  if (! readDatabaseColor("window.unfocus.textColor",
 				    "Window.Unfocus.TextColor",
 				    &resource.wres.decoration.utextColor))
     resource.wres.decoration.utextColor.pixel =
@@ -1611,7 +1644,7 @@ void Blackbox::LoadStyle(void) {
 			      &resource.wres.decoration.utextColor.green,
 			      &resource.wres.decoration.utextColor.blue);
   
-  if (! (blackbox->readDatabaseColor("window.frame.color",
+  if (! (readDatabaseColor("window.frame.color",
 				     "Window.Frame.Color",
 				     &resource.wres.frame.color)))
     resource.wres.frame.color.pixel =
@@ -1621,10 +1654,10 @@ void Blackbox::LoadStyle(void) {
   
   // load menu configuration
   if (! (resource.mres.title.texture =
-	 blackbox->readDatabaseTexture("menu.title", "Menu.Title")))
+	 readDatabaseTexture("menu.title", "Menu.Title")))
     resource.mres.title.texture = BImage_Solid|BImage_Raised|BImage_Bevel2;
   
-  if (! blackbox->readDatabaseColor("menu.title.color",
+  if (! readDatabaseColor("menu.title.color",
 				    "Menu.Title.Color",
 				    &resource.mres.title.color))
     resource.mres.title.color.pixel =
@@ -1633,7 +1666,7 @@ void Blackbox::LoadStyle(void) {
 			 &resource.mres.title.color.blue);
 
   if (resource.mres.title.texture & BImage_Gradient)
-    if (! blackbox->readDatabaseColor("menu.title.colorTo",
+    if (! readDatabaseColor("menu.title.colorTo",
 				      "Menu.Title.ColorTo",
 				      &resource.mres.title.colorTo))
       resource.mres.title.colorTo.pixel =
@@ -1641,7 +1674,7 @@ void Blackbox::LoadStyle(void) {
 			   &resource.mres.title.colorTo.green,
 			   &resource.mres.title.colorTo.blue);
   
-  if (! blackbox->readDatabaseColor("menu.title.textColor",
+  if (! readDatabaseColor("menu.title.textColor",
 				    "Menu.Title.TextColor",
 				    &resource.mres.title.textColor))
     resource.mres.title.textColor.pixel =
@@ -1650,10 +1683,10 @@ void Blackbox::LoadStyle(void) {
 			 &resource.mres.title.textColor.blue);
   
   if (! (resource.mres.frame.texture =
-	 blackbox->readDatabaseTexture("menu.frame", "Menu.Frame")))
+	readDatabaseTexture("menu.frame", "Menu.Frame")))
     resource.mres.frame.texture = BImage_Solid|BImage_Raised|BImage_Bevel2;
   
-  if (! blackbox->readDatabaseColor("menu.frame.color",
+  if (! readDatabaseColor("menu.frame.color",
 				    "Menu.Frame.Color",
 				    &resource.mres.frame.color))
     resource.mres.frame.color.pixel =
@@ -1662,7 +1695,7 @@ void Blackbox::LoadStyle(void) {
 			 &resource.mres.frame.color.blue);
 
   if (resource.mres.frame.texture & BImage_Gradient)
-    if (! blackbox->readDatabaseColor("menu.frame.colorTo",
+    if (! readDatabaseColor("menu.frame.colorTo",
 				      "Menu.Frame.ColorTo",
 				      &resource.mres.frame.colorTo))
       resource.mres.frame.colorTo.pixel =
@@ -1670,7 +1703,7 @@ void Blackbox::LoadStyle(void) {
 			   &resource.mres.frame.colorTo.green,
 			   &resource.mres.frame.colorTo.blue);
 
-  if (! blackbox->readDatabaseColor("menu.frame.highlightColor",
+  if (! readDatabaseColor("menu.frame.highlightColor",
 				    "Menu.Frame.HighLightColor",
 				    &resource.mres.frame.hcolor))
     resource.mres.frame.hcolor.pixel =
@@ -1678,7 +1711,7 @@ void Blackbox::LoadStyle(void) {
 			 &resource.mres.frame.hcolor.green,
 			 &resource.mres.frame.hcolor.blue);
 
-  if (! blackbox->readDatabaseColor("menu.frame.textColor",
+  if (! readDatabaseColor("menu.frame.textColor",
 				    "Menu.Frame.TextColor",
 				    &resource.mres.frame.textColor))
     resource.mres.frame.textColor.pixel =
@@ -1686,7 +1719,7 @@ void Blackbox::LoadStyle(void) {
 			 &resource.mres.frame.textColor.green,
 			 &resource.mres.frame.textColor.blue);
   
-  if (! blackbox->readDatabaseColor("menu.frame.hiTextColor",
+  if (! readDatabaseColor("menu.frame.hiTextColor",
 				    "Menu.Frame.HiTextColor",
 				    &resource.mres.frame.htextColor))
     resource.mres.frame.htextColor.pixel =
@@ -1696,10 +1729,10 @@ void Blackbox::LoadStyle(void) {
 
   // toolbar configuration
   if (! (resource.tres.toolbar.texture =
-	 blackbox->readDatabaseTexture("toolbar", "Toolbar")))
+	 readDatabaseTexture("toolbar", "Toolbar")))
     resource.tres.toolbar.texture = BImage_Solid|BImage_Raised|BImage_Bevel2;
 
-  if (! blackbox->readDatabaseColor("toolbar.color",
+  if (! readDatabaseColor("toolbar.color",
 				    "Toolbar.Color",
 				    &resource.tres.toolbar.color))
     resource.tres.toolbar.color.pixel =
@@ -1708,7 +1741,7 @@ void Blackbox::LoadStyle(void) {
 			 &resource.tres.toolbar.color.blue);
 
   if (resource.tres.toolbar.texture & BImage_Gradient)
-    if (! blackbox->readDatabaseColor("toolbar.colorTo",
+    if (! readDatabaseColor("toolbar.colorTo",
 				      "Toolbar.ColorTo",
 				      &resource.tres.toolbar.colorTo))
       resource.tres.toolbar.colorTo.pixel =
@@ -1717,11 +1750,11 @@ void Blackbox::LoadStyle(void) {
 			   &resource.tres.toolbar.colorTo.blue);
 
   if (! (resource.tres.label.texture =
-	 blackbox->readDatabaseTexture("toolbar.label",
+	 readDatabaseTexture("toolbar.label",
 				       "Toolbar.Label")))
     resource.tres.label.texture = BImage_Solid|BImage_Raised|BImage_Bevel2;
 
-  if (! blackbox->readDatabaseColor("toolbar.label.color",
+  if (! readDatabaseColor("toolbar.label.color",
 				    "Toolbar.Label.Color",
 				    &resource.tres.label.color))
     resource.tres.label.color.pixel =
@@ -1730,7 +1763,7 @@ void Blackbox::LoadStyle(void) {
 			 &resource.tres.label.color.blue);
 
   if (resource.tres.label.texture & BImage_Gradient)
-    if (! blackbox->readDatabaseColor("toolbar.label.colorTo",
+    if (! readDatabaseColor("toolbar.label.colorTo",
 				      "Toolbar.Label.ColorTo",
 				      &resource.tres.label.colorTo))
       resource.tres.label.colorTo.pixel =
@@ -1739,11 +1772,11 @@ void Blackbox::LoadStyle(void) {
 			   &resource.tres.label.colorTo.blue);
   
   if (! (resource.tres.clock.texture =
-	 blackbox->readDatabaseTexture("toolbar.clock",
+	readDatabaseTexture("toolbar.clock",
 				       "Toolbar.Clock")))
     resource.tres.clock.texture = BImage_Solid|BImage_Raised|BImage_Bevel2;
 
-  if (! blackbox->readDatabaseColor("toolbar.clock.color",
+  if (! readDatabaseColor("toolbar.clock.color",
 				    "Toolbar.Clock.Color",
 				    &resource.tres.clock.color))
     resource.tres.clock.color.pixel =
@@ -1752,7 +1785,7 @@ void Blackbox::LoadStyle(void) {
 			 &resource.tres.clock.color.blue);
 
   if (resource.tres.clock.texture & BImage_Gradient)
-    if (! blackbox->readDatabaseColor("toolbar.clock.colorTo",
+    if (! readDatabaseColor("toolbar.clock.colorTo",
 				      "Toolbar.Clock.ColorTo",
 				      &resource.tres.clock.colorTo))
       resource.tres.clock.colorTo.pixel =
@@ -1761,12 +1794,12 @@ void Blackbox::LoadStyle(void) {
 			   &resource.tres.clock.colorTo.blue);
 
   if (! (resource.tres.button.texture =
-	 blackbox->readDatabaseTexture("toolbar.button",
+       readDatabaseTexture("toolbar.button",
 				       "Toolbar.Button")))
     resource.tres.button.texture = BImage_Solid|BImage_Raised|BImage_Bevel2;
 
   if (! (resource.tres.button.ptexture =
-	 blackbox->readDatabaseTexture("toolbar.button.pressed",
+       readDatabaseTexture("toolbar.button.pressed",
 				       "Toolbar.Button.Pressed")))
     resource.tres.button.ptexture = resource.tres.button.texture |
       BImage_Invert;
@@ -1775,7 +1808,7 @@ void Blackbox::LoadStyle(void) {
     resource.tres.button.ptexture = resource.tres.button.texture |
       BImage_Invert;
  
-  if (! blackbox->readDatabaseColor("toolbar.button.color",
+  if (! readDatabaseColor("toolbar.button.color",
 				    "Toolbar.Button.Color",
 				    &resource.tres.button.color))
     resource.tres.button.color.pixel =
@@ -1783,7 +1816,7 @@ void Blackbox::LoadStyle(void) {
 			 &resource.tres.button.color.green,
 			 &resource.tres.button.color.blue);
 
-  if (! blackbox->readDatabaseColor("toolbar.button.pressed.color",
+  if (! readDatabaseColor("toolbar.button.pressed.color",
 				    "Toolbar.Button.Pressed.Color",
 				    &resource.tres.button.pressed))
     resource.tres.button.pressed.pixel =
@@ -1792,7 +1825,7 @@ void Blackbox::LoadStyle(void) {
 			 &resource.tres.button.pressed.blue);
   
   if (resource.tres.button.texture & BImage_Gradient)
-    if (! blackbox->readDatabaseColor("toolbar.button.colorTo",
+    if (! readDatabaseColor("toolbar.button.colorTo",
 				      "Toolbar.Button.ColorTo",
 				      &resource.tres.button.colorTo))
       resource.tres.button.colorTo.pixel =
@@ -1801,21 +1834,21 @@ void Blackbox::LoadStyle(void) {
 			   &resource.tres.button.colorTo.blue);
 
   if (resource.tres.button.ptexture & BImage_Gradient)
-    if (! blackbox->readDatabaseColor("toolbar.button.pressed.colorTo",
-				      "Toolbar.Button.Pressed.ColorTo",
-				      &resource.tres.button.pressedTo))
+    if (! readDatabaseColor("toolbar.button.pressed.colorTo",
+			    "Toolbar.Button.Pressed.ColorTo",
+			    &resource.tres.button.pressedTo))
       resource.tres.button.pressedTo.pixel =
 	image_control->getColor("grey", &resource.tres.button.pressedTo.red,
-			   &resource.tres.button.pressedTo.green,
-			   &resource.tres.button.pressedTo.blue);
-
-  if (! blackbox->readDatabaseColor("toolbar.textColor",
-				    "Toolbar.TextColor",
-				    &resource.tres.toolbar.textColor))
+				&resource.tres.button.pressedTo.green,
+				&resource.tres.button.pressedTo.blue);
+  
+  if (! readDatabaseColor("toolbar.textColor",
+			  "Toolbar.TextColor",
+			  &resource.tres.toolbar.textColor))
     resource.tres.toolbar.textColor.pixel =
       image_control->getColor("black", &resource.tres.toolbar.textColor.red,
-			 &resource.tres.toolbar.textColor.green,
-			 &resource.tres.toolbar.textColor.blue);
+			      &resource.tres.toolbar.textColor.green,
+			      &resource.tres.toolbar.textColor.blue);
 
   // load border color
   if (! (readDatabaseColor("borderColor", "BorderColor",
@@ -2028,7 +2061,7 @@ void Blackbox::Reconfigure(void) {
 
 
 void Blackbox::do_reconfigure(void) {
-  XGrabServer(display);
+  syncGrabServer();
 
   LoadStyle();
 
@@ -2039,29 +2072,29 @@ void Blackbox::do_reconfigure(void) {
   gcv.subwindow_mode = IncludeInferiors;
   XChangeGC(display, opGC, GCForeground|GCFunction|GCSubwindowMode, &gcv);
 
-  gcv.foreground = blackbox->wResource()->decoration.utextColor.pixel;
-  gcv.font = blackbox->titleFont()->fid;
+  gcv.foreground = wResource()->decoration.utextColor.pixel;
+  gcv.font = titleFont()->fid;
   XChangeGC(display, wunfocusGC, GCForeground|GCBackground|
             GCFont, &gcv);
 
-  gcv.foreground = blackbox->wResource()->decoration.ftextColor.pixel;
-  gcv.font = blackbox->titleFont()->fid;
+  gcv.foreground = wResource()->decoration.ftextColor.pixel;
+  gcv.font = titleFont()->fid;
   XChangeGC(display, wfocusGC, GCForeground|GCBackground|
             GCFont, &gcv);
 
-  gcv.foreground = blackbox->mResource()->title.textColor.pixel;
-  gcv.font = blackbox->titleFont()->fid;
+  gcv.foreground = mResource()->title.textColor.pixel;
+  gcv.font = titleFont()->fid;
   XChangeGC(display, mtitleGC, GCForeground|GCFont, &gcv);
 
-  gcv.foreground = blackbox->mResource()->frame.textColor.pixel;
-  gcv.font = blackbox->menuFont()->fid;
+  gcv.foreground = mResource()->frame.textColor.pixel;
+  gcv.font = menuFont()->fid;
   XChangeGC(display, mframeGC, GCForeground|GCFont, &gcv);
 
-  gcv.foreground = blackbox->mResource()->frame.htextColor.pixel;
+  gcv.foreground = mResource()->frame.htextColor.pixel;
   XChangeGC(display, mhiGC, GCForeground|GCBackground|GCFont,
                       &gcv);
 
-  gcv.foreground = blackbox->mResource()->frame.hcolor.pixel;
+  gcv.foreground = mResource()->frame.hcolor.pixel;
   gcv.arc_mode = ArcChord;
   gcv.fill_style = FillSolid;
   XChangeGC(display, mhbgGC, GCForeground|GCFillStyle|GCArcMode, &gcv);
@@ -2071,7 +2104,7 @@ void Blackbox::do_reconfigure(void) {
   root_menu->Reconfigure();
   tool_bar->Reconfigure();
 
-  XUngrabServer(display);
+  ungrabServer();
 }
 
 
@@ -2086,9 +2119,12 @@ void Blackbox::setStyle(char *filename) {
 void Blackbox::nameOfWorkspace(int id, char **name) {
   if (id > 0 && id < resource.workspaceNames->count()) {
     char *wkspc_name = resource.workspaceNames->find(id);
-    int len = strlen(wkspc_name) + 1;
-    *name = new char [len];
-    strncpy(*name, wkspc_name, len);
+    
+    if (wkspc_name) {
+      int len = strlen(wkspc_name) + 1;
+      *name = new char [len];
+      strncpy(*name, wkspc_name, len);
+    }
   } else
     *name = 0;
 }

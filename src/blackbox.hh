@@ -1,6 +1,6 @@
 //
 // blackbox.hh for Blackbox - an X11 Window manager
-// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
+// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 #ifndef __blackbox_hh
 #define __blackbox_hh
-#define __blackbox_version "beta zero . four zero . six"
+#define __blackbox_version "beta zero . four zero . seven"
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
@@ -158,7 +158,8 @@ private:
   BImageControl *image_control;
 
   Atom _XA_WM_COLORMAP_WINDOWS, _XA_WM_PROTOCOLS, _XA_WM_STATE,
-    _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS, _MOTIF_WM_HINTS;
+    _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS, _XA_WM_CHANGE_STATE,
+    _MOTIF_WM_HINTS;
   Bool startup, shutdown, reconfigure, rootColormapInstalled;
   Display *display;
   GC opGC, wfocusGC, wunfocusGC, mtitleGC, mframeGC, mhiGC, mhbgGC;
@@ -166,7 +167,7 @@ private:
   Window root;
   char *display_name;
   char **b_argv;
-  int depth, screen, event_mask, focus_window_number, b_argc,
+  int depth, screen, event_mask, focus_window_number, b_argc, server_grabs,
     red_offset, green_offset, blue_offset;
   unsigned int xres, yres;
 
@@ -204,6 +205,8 @@ public:
 
   // window validation
   Bool validateWindow(Window);
+  void syncGrabServer(void);
+  void ungrabServer(void);
 
   // context lookup routines
   Basemenu *searchMenu(Window);
@@ -237,6 +240,7 @@ public:
   void Shutdown(Bool = True);
 
   // various informative functions about the current X session
+  Atom ChangeStateAtom(void) { return _XA_WM_CHANGE_STATE; }
   Atom StateAtom(void) { return _XA_WM_STATE; }
   Atom DeleteAtom(void) { return _XA_WM_DELETE_WINDOW; }
   Atom ProtocolsAtom(void) { return _XA_WM_PROTOCOLS; }

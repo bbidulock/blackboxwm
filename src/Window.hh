@@ -1,6 +1,6 @@
 //
 // Window.hh for Blackbox - an X11 Window manager
-// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
+// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -106,9 +106,10 @@ private:
     Window window, title, border, handle, close_button, iconify_button,
       maximize_button, resize_handle;
     int x, y, x_resize, y_resize, x_move, y_move, x_grab, y_grab,
-      y_border, x_handle;
+      x_maximize, y_maximize, y_border, x_handle;
     unsigned int width, height, title_h, title_w, handle_h, handle_w,
-      button_w, button_h, rh_w, rh_h, border_w, border_h, bevel_w;
+      button_w, button_h, rh_w, rh_h, border_w, border_h, bevel_w, w_maximize,
+      h_maximize, resize_label_w;
   } frame;
   
   char *resizeLabel;
