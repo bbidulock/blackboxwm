@@ -97,6 +97,9 @@ private:
   BaseDisplay& operator=(const BaseDisplay&);
 
 protected:
+  // pure virtual function... you must override this
+  virtual void process_event(XEvent *e) = 0;
+
   // the masks of the modifiers which are ignored in button events.
   int NumLockMask, ScrollLockMask;
 
