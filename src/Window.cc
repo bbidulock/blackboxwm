@@ -57,7 +57,7 @@ extern "C" {
 #include "Windowmenu.hh"
 
 
-if 0
+#if 0
 static
 void watch_decorations(const char *msg,BlackboxWindow::DecorationFlags flags) {
   fprintf(stderr, "Decorations: %s\n", msg);
