@@ -2280,10 +2280,10 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 if test "x$GXX" = "xyes"; then
    CXXFLAGS="${CXXFLAGS} -Wall -W -pedantic"
    gxx_ver=`$CXX -dumpversion|sed -e 's/\..*//'`
-   echo "$as_me:$LINENO: checking for GNU C++ version" >&5
-echo $ECHO_N "checking for GNU C++ version... $ECHO_C" >&6
-   echo "$as_me:$LINENO: result: $gxx_ver." >&5
-echo "${ECHO_T}$gxx_ver." >&6
+   echo "$as_me:$LINENO: checking GNU C++ major version" >&5
+echo $ECHO_N "checking GNU C++ major version... $ECHO_C" >&6
+   echo "$as_me:$LINENO: result: $gxx_ver" >&5
+echo "${ECHO_T}$gxx_ver" >&6
    if test "$gxx_ver" -ge 3; then
      CXXFLAGS="${CXXFLAGS} -Woverloaded-virtual -Wshadow -Winline"
    fi
@@ -3181,62 +3181,6 @@ _ACEOF
 fi
 
 done
-
-echo "$as_me:$LINENO: checking whether time.h and sys/time.h may both be included" >&5
-echo $ECHO_N "checking whether time.h and sys/time.h may both be included... $ECHO_C" >&6
-if test "${ac_cv_header_time+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  cat >conftest.$ac_ext <<_ACEOF
-#line $LINENO "configure"
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <sys/types.h>
-#include <sys/time.h>
-#include <time.h>
-
-int
-main ()
-{
-if ((struct tm *) 0)
-return 0;
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_header_time=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-ac_cv_header_time=no
-fi
-rm -f conftest.$ac_objext conftest.$ac_ext
-fi
-echo "$as_me:$LINENO: result: $ac_cv_header_time" >&5
-echo "${ECHO_T}$ac_cv_header_time" >&6
-if test $ac_cv_header_time = yes; then
-
-cat >>confdefs.h <<\_ACEOF
-#define TIME_WITH_SYS_TIME 1
-_ACEOF
-
-fi
 
 
 

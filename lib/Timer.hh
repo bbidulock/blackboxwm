@@ -25,13 +25,13 @@
 #ifndef   __Timer_hh
 #define   __Timer_hh
 
+extern "C" {
+#include <sys/time.h>
+}
+
 #include <algorithm>
 #include <queue>
 #include <vector>
-
-extern "C" {
-  struct timeval; // forward declare to avoid the header
-}
 
 #include "Util.hh"
 

@@ -15,8 +15,8 @@ AC_LANG([C++])
 if test "x$GXX" = "xyes"; then
    CXXFLAGS="${CXXFLAGS} -Wall -W -pedantic"
    gxx_ver=`$CXX -dumpversion|sed -e 's/\..*//'`
-   AC_MSG_CHECKING([for GNU C++ version])
-   AC_MSG_RESULT([$gxx_ver.])
+   AC_MSG_CHECKING([GNU C++ major version])
+   AC_MSG_RESULT([$gxx_ver])
    if test "$gxx_ver" -ge 3; then
      CXXFLAGS="${CXXFLAGS} -Woverloaded-virtual -Wshadow -Winline"
    fi
@@ -51,7 +51,6 @@ fi
 
 dnl Check for system header files
 AC_CHECK_HEADERS(ctype.h dirent.h fcntl.h libgen.h locale.h nl_types.h process.h signal.h stdarg.h time.h sys/param.h sys/select.h sys/signal.h sys/time.h sys/wait.h)
-AC_HEADER_TIME
 
 dnl Check for existance of basename(), setlocale() and strftime()
 AC_CHECK_FUNCS([basename],
