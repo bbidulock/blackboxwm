@@ -389,6 +389,7 @@ unsigned int bt::Menu::insertItem(const bt::MenuItem &item,
     index = items.size();
     it = items.end();
   } else {
+    index = std::min(index, items.size());
     it = items.begin();
     std::advance(it, index);
   }
