@@ -146,15 +146,10 @@ void Windowmenu::itemClicked(unsigned int id, unsigned int) {
   case OccupyAllWorkspaces:
     {
       BScreen *screen = _window->screen();
-      Workspace *workspace = screen->findWorkspace(_window->workspace());
-      if (workspace) {
-        // stick window
-        workspace->removeWindow(_window);
-      } else {
-        // unstick window
-        workspace = screen->findWorkspace(screen->currentWorkspace());
-        workspace->addWindow(_window);
-      }
+      unsigned int workspace = (_window->workspace() == bt::BSENTINEL
+                                ? screen->currentWorkspace()
+                                : bt::BSENTINEL);
+      _window->changeWorkspace(workspace);
       break;
     }
 
@@ -234,17 +229,14 @@ void SendToWorkspacemenu::refresh(void) {
 
 
 void SendToWorkspacemenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button != 2) _window->hide();
+  assert(_window != 0);
+  _window->changeWorkspace(id,
+                           (button == 2
+                            ? BlackboxWindow::SwitchToNewWorkspace
+                            : BlackboxWindow::StayOnCurrentWorkspace));
 
-  BScreen *screen = _window->screen();
-  Workspace *workspace = screen->findWorkspace(_window->workspace());
-  assert(workspace != 0);
-
-  workspace->removeWindow(_window);
-  workspace = screen->findWorkspace(id);
-  assert(workspace != 0);
-  workspace->addWindow(_window);
-
-  if (button == 2)
-    screen->setCurrentWorkspace(id);
+  if (button == 2) {
+    BScreen *screen = _window->screen();
+    screen->setCurrentWorkspace(_window->workspace());
+  }
 }

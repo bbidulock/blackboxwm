@@ -1911,6 +1911,67 @@ void BlackboxWindow::setWorkspace(unsigned int new_workspace) {
 }
 
 
+void BlackboxWindow::changeWorkspace(unsigned int new_workspace,
+                                     ChangeWorkspaceOption how) {
+  if (client.ewmh.workspace == new_workspace)
+    return;
+
+  if (isTransient()) {
+    BlackboxWindow *win = findTransientFor();
+    if (win) {
+      if (win->workspace() != new_workspace) {
+        win->changeWorkspace(new_workspace, how);
+        return;
+      }
+    }
+  } else {
+    assert(hasWindowFunction(WindowFunctionChangeWorkspace));
+  }
+
+  Workspace *ws;
+  if (workspace() != bt::BSENTINEL) {
+    ws = _screen->findWorkspace(workspace());
+    assert(ws != 0);
+    ws->removeWindow(this);
+  }
+
+  if (new_workspace != bt::BSENTINEL) {
+    ws = _screen->findWorkspace(new_workspace);
+    assert(ws != 0);
+    ws->addWindow(this);
+  }
+
+  switch (how) {
+  case StayOnCurrentWorkspace:
+    if (isVisible() && workspace() != bt::BSENTINEL
+        && workspace() != _screen->currentWorkspace()) {
+      hide();
+    } else if (!isVisible()
+               && (workspace() == bt::BSENTINEL
+                   || workspace() == _screen->currentWorkspace())) {
+      show();
+    }
+    break;
+
+  case SwitchToNewWorkspace:
+    /*
+      we will change to the new workspace soon, so force this window
+      to be visible
+    */
+    show();
+    break;
+  }
+
+  // change workspace on all transients
+  if (!client.transientList.empty()) {
+    BlackboxWindowList::iterator it = client.transientList.begin(),
+                                end = client.transientList.end();
+    for (; it != end; ++it)
+      (*it)->changeWorkspace(new_workspace, how);
+  }
+}
+
+
 bool BlackboxWindow::setInputFocus(void) {
   if (!isVisible())
     return false;
@@ -2081,8 +2142,10 @@ void BlackboxWindow::iconify(void) {
   if (isTransient()) {
     BlackboxWindow *win = findTransientFor();
     if (win) {
-      if (!win->isIconic())
+      if (!win->isIconic()) {
         win->iconify();
+        return;
+      }
     }
   } else {
     assert(hasWindowFunction(WindowFunctionIconify));
@@ -2093,7 +2156,7 @@ void BlackboxWindow::iconify(void) {
   client.state.iconic = true;
   hide();
 
-  // iconify all transients first
+  // iconify all transients
   if (!client.transientList.empty()) {
     BlackboxWindowList::iterator it = client.transientList.begin(),
                                 end = client.transientList.end();
@@ -2679,17 +2742,8 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
     client.wmnormal.win_gravity = old_gravity;
   } else if (event->message_type == ewmh.wmDesktop()) {
     if (hasWindowFunction(WindowFunctionChangeWorkspace)) {
-      const unsigned int desktop = event->data.l[0];
-      setWorkspace(desktop);
-
-      if (isVisible() && workspace() != bt::BSENTINEL
-          && workspace() != _screen->currentWorkspace()) {
-        hide();
-      } else if (!isVisible()
-                 && (workspace() == bt::BSENTINEL
-                     || workspace() == _screen->currentWorkspace())) {
-        show();
-      }
+      const unsigned int new_workspace = event->data.l[0];
+      changeWorkspace(new_workspace);
     }
   } else if (event->message_type == ewmh.wmState()) {
     Atom action = event->data.l[0],

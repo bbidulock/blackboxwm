@@ -196,7 +196,6 @@ public:
   void restackWindows(void);
 
   void changeLayer(StackEntity *entity, StackingList::Layer new_layer);
-  void changeWorkspace(BlackboxWindow *win, unsigned int id);
 
   void addIcon(BlackboxWindow *win);
   void removeIcon(BlackboxWindow *win);

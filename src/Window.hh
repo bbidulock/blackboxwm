@@ -322,6 +322,13 @@ public:
   { return client.ewmh.workspace; }
   void setWorkspace(unsigned int new_workspace);
 
+  enum ChangeWorkspaceOption {
+    StayOnCurrentWorkspace,
+    SwitchToNewWorkspace
+  };
+  void changeWorkspace(unsigned int new_workspace,
+                       ChangeWorkspaceOption how = StayOnCurrentWorkspace);
+
   inline unsigned int windowNumber(void) const
   { return window_number; }
   inline void setWindowNumber(int n)
@@ -370,7 +377,7 @@ public:
 
   inline bool isFullScreen(void) const
   { return client.ewmh.fullscreen; }
-  void setFullScreen(bool);
+  void setFullScreen(bool b);
 
   void reconfigure(void);
   void grabButtons(void);

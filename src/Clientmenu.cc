@@ -43,7 +43,7 @@ void Clientmenu::itemClicked(unsigned int id, unsigned int button) {
   if (button == 2) {
     // move win to current workspace
     if (_workspace != _screen.currentWorkspace())
-      _screen.changeWorkspace(win, _screen.currentWorkspace());
+      win->changeWorkspace(_screen.currentWorkspace());
   } else {
     // change to the win's workspace
     if (_workspace != _screen.currentWorkspace())

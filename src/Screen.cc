@@ -983,22 +983,6 @@ void BScreen::changeLayer(StackEntity *entity, StackingList::Layer new_layer) {
 }
 
 
-void BScreen::changeWorkspace(BlackboxWindow *win, unsigned int id) {
-  Workspace *workspace = findWorkspace(win->workspace());
-  assert(workspace != 0);
-
-  workspace->removeWindow(win);
-  workspace = findWorkspace(id);
-  assert(workspace != 0);
-  workspace->addWindow(win);
-
-  if (current_workspace != win->workspace())
-    win->hide();
-  else if (!win->isVisible())
-    win->show();
-}
-
-
 void BScreen::propagateWindowName(const BlackboxWindow * const win) {
   if (win->isIconic()) {
     _iconmenu->changeItem(win->windowNumber(),
