@@ -425,13 +425,9 @@ void Blackbox::process_event(XEvent *e) {
   case PropertyNotify: {
     last_time = e->xproperty.time;
 
-    if (e->xproperty.state != PropertyDelete) {
-      BlackboxWindow *win = searchWindow(e->xproperty.window);
-
-      if (win)
-        win->propertyNotifyEvent(e->xproperty.atom);
-    }
-
+    BlackboxWindow *win = searchWindow(e->xproperty.window);
+    if (win)
+      win->propertyNotifyEvent(&e->xproperty);
     break;
   }
 

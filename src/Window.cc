@@ -130,13 +130,14 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     frame.fgrip_pixel = 0;
   frame.utitle = frame.ftitle = frame.uhandle = frame.fhandle = None;
   frame.ulabel = frame.flabel = frame.ubutton = frame.fbutton = None;
-  frame.pbutton = frame.ugrip = frame.fgrip = decorations;
+  frame.pbutton = frame.ugrip = frame.fgrip = None;
 
   decorations = Decor_Titlebar | Decor_Border | Decor_Handle |
                 Decor_Iconify | Decor_Maximize;
   functions = Func_Resize | Func_Move | Func_Iconify | Func_Maximize;
 
   client.wm_hint_flags = client.normal_hint_flags = 0;
+  client.window_group = None;
   client.transient_for = 0;
 
   /*
@@ -259,16 +260,15 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   if (flags.shaded) {
     flags.shaded = False;
+    unsigned long orig_state = current_state;
     shade();
 
     /*
-      Because the iconic'ness of shaded windows is lost, we need to set the
-      state to NormalState so that shaded windows on other workspaces will not
-      get shown on the first workspace.
       At this point in the life of a window, current_state should only be set
       to IconicState if the window was an *icon*, not if it was shaded.
     */
-    current_state = NormalState;
+    if (orig_state != IconicState)
+      current_state = NormalState;
   }
 
   if (flags.stuck) {
@@ -1313,8 +1313,10 @@ void BlackboxWindow::configureShape(void) {
 bool BlackboxWindow::setInputFocus(void) {
   if (flags.focused) return True;
 
-  assert(! flags.iconic);
-
+  assert(! flags.iconic &&
+         (flags.stuck ||  // window must be on the current workspace or sticky
+          blackbox_attrib.workspace == screen->getCurrentWorkspaceID()));
+#if 0
   // if the window is not visible, mark the window as wanting focus rather
   // than give it focus.
   if (! flags.visible) {
@@ -1322,7 +1324,7 @@ bool BlackboxWindow::setInputFocus(void) {
     wkspc->setLastFocusedWindow(this);
     return True;
   }
-
+#endif
   if (! frame.rect.intersects(screen->getRect())) {
     // client is outside the screen, move it to the center
     configure((screen->getWidth() - frame.rect.width()) / 2,
@@ -1461,7 +1463,7 @@ void BlackboxWindow::show(void) {
 void BlackboxWindow::deiconify(bool reassoc, bool raise) {
   if (flags.iconic || reassoc)
     screen->reassociateWindow(this, BSENTINEL, False);
-  else if (blackbox_attrib.workspace != screen->getCurrentWorkspace()->getID())
+  else if (blackbox_attrib.workspace != screen->getCurrentWorkspaceID())
     return;
 
   show();
@@ -1873,20 +1875,19 @@ void BlackboxWindow::restoreAttributes(void) {
 
   if (net->flags & AttribShaded && net->attrib & AttribShaded) {
     flags.shaded = False;
+    unsigned long orig_state = current_state;
     shade();
 
     /*
-      Because the iconic'ness of shaded windows is lost, we need to set the
-      state to NormalState so that shaded windows on other workspaces will not
-      get shown on the first workspace.
       At this point in the life of a window, current_state should only be set
       to IconicState if the window was an *icon*, not if it was shaded.
     */
-    current_state = NormalState;
+    if (orig_state != IconicState)
+      current_state = WithdrawnState;
   }
 
-  if ((net->workspace != screen->getCurrentWorkspaceID()) &&
-      (net->workspace < screen->getWorkspaceCount())) {
+  if (net->workspace != screen->getCurrentWorkspaceID() &&
+      net->workspace < screen->getWorkspaceCount()) {
     screen->reassociateWindow(this, net->workspace, True);
 
     // set to WithdrawnState so it will be mapped on the new workspace
@@ -2281,8 +2282,16 @@ void BlackboxWindow::reparentNotifyEvent(const XReparentEvent *re) {
 }
 
 
-void BlackboxWindow::propertyNotifyEvent(Atom atom) {
-  switch(atom) {
+void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
+  if (pe->state == PropertyDelete)
+    return;
+
+#ifdef    DEBUG
+  fprintf(stderr, "BlackboxWindow::propertyNotifyEvent(): for 0x%lx\n",
+          client.window);
+#endif
+
+  switch(pe->atom) {
   case XA_WM_CLASS:
   case XA_WM_CLIENT_MACHINE:
   case XA_WM_COMMAND:
@@ -2346,7 +2355,7 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
   }
 
   default:
-    if (atom == blackbox->getWMProtocolsAtom()) {
+    if (pe->atom == blackbox->getWMProtocolsAtom()) {
       getWMProtocols();
 
       if ((decorations & Decor_Close) && (! frame.close_button)) {
@@ -2365,6 +2374,10 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
 
 
 void BlackboxWindow::exposeEvent(const XExposeEvent *ee) {
+#ifdef DEBUG
+  fprintf(stderr, "BlackboxWindow::exposeEvent() for 0x%lx\n", client.window);
+#endif
+
   if (frame.label == ee->window && (decorations & Decor_Titlebar))
     redrawLabel();
   else if (frame.close_button == ee->window)
@@ -2422,6 +2435,11 @@ void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent *cr) {
 
 
 void BlackboxWindow::buttonPressEvent(const XButtonEvent *be) {
+#ifdef DEBUG
+  fprintf(stderr, "BlackboxWindow::buttonPressEvent() for 0x%lx\n",
+          client.window);
+#endif
+
   if (frame.maximize_button == be->window) {
     redrawMaximizeButton(True);
   } else if (be->button == 1 || (be->button == 3 && be->state == Mod1Mask)) {
@@ -2505,6 +2523,11 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent *be) {
 
 
 void BlackboxWindow::buttonReleaseEvent(const XButtonEvent *re) {
+#ifdef DEBUG
+  fprintf(stderr, "BlackboxWindow::buttonReleaseEvent() for 0x%lx\n",
+          client.window);
+#endif
+
   if (re->window == frame.maximize_button) {
     if ((re->x >= 0 && re->x <= static_cast<signed>(frame.button_w)) &&
         (re->y >= 0 && re->y <= static_cast<signed>(frame.button_w))) {
@@ -2573,6 +2596,11 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent *re) {
 
 
 void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
+#ifdef DEBUG
+  fprintf(stderr, "BlackboxWindow::motionNotifyEvent() for 0x%lx\n",
+          client.window);
+#endif
+
   if (!flags.resizing && (me->state & Button1Mask) &&
       (functions & Func_Move) &&
       (frame.title == me->window || frame.label == me->window ||
@@ -2774,6 +2802,9 @@ void BlackboxWindow::restore(bool remap) {
   XChangeSaveSet(blackbox->getXDisplay(), client.window, SetModeDelete);
   XSelectInput(blackbox->getXDisplay(), client.window, NoEventMask);
   XSelectInput(blackbox->getXDisplay(), frame.plate, NoEventMask);
+
+  // do not leave a shaded window as an icon unless it was an icon
+  if (flags.shaded && ! flags.iconic) setState(NormalState);
 
   restoreGravity(client.rect);
 

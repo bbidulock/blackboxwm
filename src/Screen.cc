@@ -138,6 +138,8 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   resource.mstyle.t_font = resource.mstyle.f_font = resource.tstyle.font =
     resource.wstyle.font = (XFontStruct *) 0;
 
+  geom_pixmap = None;
+
 #ifdef    HAVE_GETPID
   pid_t bpid = getpid();
 

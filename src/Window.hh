@@ -347,7 +347,7 @@ public:
   void mapRequestEvent(const XMapRequestEvent *mre);
   void unmapNotifyEvent(const XUnmapEvent */*unused*/);
   void reparentNotifyEvent(const XReparentEvent */*unused*/);
-  void propertyNotifyEvent(Atom atom);
+  void propertyNotifyEvent(const XPropertyEvent *pe);
   void exposeEvent(const XExposeEvent *ee);
   void configureRequestEvent(const XConfigureRequestEvent *cr);
 
