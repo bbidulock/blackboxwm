@@ -878,27 +878,6 @@ void Toolbar::buttonPressEvent(XButtonEvent *be) {
     }
   } else if (be->button == 2 && (! on_top)) {
     XLowerWindow(*blackbox, frame.window);
-  } else if (be->button == 3) {
-    if (! toolbarmenu->isVisible()) {
-      int x, y;
-
-      x = be->x_root - (toolbarmenu->width() / 2);
-      y = be->y_root - (toolbarmenu->height() / 2);
-
-      if (x < 0)
-        x = 0;
-      else if (x + toolbarmenu->width() > screen->width())
-        x = screen->width() - toolbarmenu->width();
-
-      if (y < 0)
-        y = 0;
-      else if (y + toolbarmenu->height() > screen->height())
-        y = screen->height() - toolbarmenu->height();
-
-      toolbarmenu->move(x, y);
-      toolbarmenu->show();
-    } else
-      toolbarmenu->hide();
   }
 }
 
@@ -911,7 +890,7 @@ void Toolbar::buttonReleaseEvent(XButtonEvent *re) {
 
       if (re->x >= 0 && re->x < (signed) frame.button_w &&
           re->y >= 0 && re->y < (signed) frame.button_w)
-       if (screen->getCurrentWorkspace()->getWorkspaceID() > 0)
+        if (screen->getCurrentWorkspace()->getWorkspaceID() > 0)
           screen->changeWorkspaceID(screen->getCurrentWorkspace()->
                                     getWorkspaceID() - 1);
         else
@@ -947,6 +926,8 @@ void Toolbar::buttonReleaseEvent(XButtonEvent *re) {
       checkClock(True);
     }
 #endif // HAVE_STRFTIME
+  } else if (re->button == 3) {
+    toolbarmenu->popup( re->x_root, re->y_root );
   }
 }
 
@@ -1112,9 +1093,6 @@ Toolbarmenu::Toolbarmenu(Toolbar *tb)
 {
   toolbar = tb;
 
-  setTitle(i18n->getMessage(ToolbarSet, ToolbarToolbarTitle, "Toolbar"));
-  showTitle();
-
   placementmenu = new Placementmenu(this);
 
   insert(i18n->getMessage(CommonSet, CommonPlacementTitle, "Placement"),
@@ -1196,9 +1174,6 @@ Toolbarmenu::Placementmenu::Placementmenu(Toolbarmenu *tm)
 {
     toolbarmenu = tm;
 
-    setTitle(i18n->getMessage(ToolbarSet, ToolbarToolbarPlacement,
-			      "Toolbar Placement"));
-    showTitle();
     // setMinimumSublevels(3);
 
     insert(i18n->getMessage(CommonSet, CommonPlacementTopLeft,

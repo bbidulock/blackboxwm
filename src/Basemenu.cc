@@ -823,7 +823,6 @@ void Basemenu::showSubmenu( const Rect &r, const Item &item )
       py = 0;
   }
 
-
   // show the submenu
   current_submenu = item.submenu();
   current_submenu->move( px, py );
