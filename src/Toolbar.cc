@@ -183,8 +183,10 @@ Toolbar::Toolbar(BScreen *scrn) {
   hide_timer = new bt::Timer(blackbox, this);
   hide_timer->setTimeout(blackbox->getAutoRaiseDelay());
 
-  on_top = screen->isToolbarOnTop();
-  hidden = do_auto_hide = screen->doToolbarAutoHide();
+  ScreenResource& resource = screen->resource();
+
+  on_top = resource.isToolbarOnTop();
+  hidden = do_auto_hide = resource.doToolbarAutoHide();
 
   editing = False;
   new_name_pos = 0;
@@ -293,13 +295,14 @@ Toolbar::~Toolbar(void) {
 
 
 void Toolbar::reconfigure(void) {
+  ScreenResource& resource = screen->resource();
   unsigned int height = 0,
                 width = (screen->screenInfo().width() *
-                         screen->getToolbarWidthPercent()) / 100;
+                         resource.toolbarWidthPercent()) / 100;
 
-  const ToolbarStyle * const style = screen->getToolbarStyle();
+  const ScreenResource::ToolbarStyle* const style = resource.toolbarStyle();
   height = bt::textHeight(style->font);
-  frame.bevel_w = screen->getBevelWidth();
+  frame.bevel_w = resource.bevelWidth();
   frame.button_w = height;
   height += 2;
   frame.label_h = height;
@@ -312,13 +315,13 @@ void Toolbar::reconfigure(void) {
   frame.rect.setSize(width, height);
 
   int x, y;
-  switch (screen->getToolbarPlacement()) {
+  switch (resource.toolbarPlacement()) {
   case TopLeft:
   case TopRight:
   case TopCenter:
-    if (screen->getToolbarPlacement() == TopLeft)
+    if (resource.toolbarPlacement() == TopLeft)
       x = 0;
-    else if (screen->getToolbarPlacement() == TopRight)
+    else if (resource.toolbarPlacement() == TopRight)
       x = screen->screenInfo().width() - frame.rect.width();
     else
       x = (screen->screenInfo().width() - frame.rect.width()) / 2;
@@ -326,16 +329,16 @@ void Toolbar::reconfigure(void) {
     y = 0;
 
     frame.x_hidden = x;
-    frame.y_hidden = screen->getBevelWidth() - frame.rect.height();
+    frame.y_hidden = resource.bevelWidth() - frame.rect.height();
     break;
 
   case BottomLeft:
   case BottomRight:
   case BottomCenter:
   default:
-    if (screen->getToolbarPlacement() == BottomLeft)
+    if (resource.toolbarPlacement() == BottomLeft)
       x = 0;
-    else if (screen->getToolbarPlacement() == BottomRight)
+    else if (resource.toolbarPlacement() == BottomRight)
       x = screen->screenInfo().width() - frame.rect.width();
     else
       x = (screen->screenInfo().width() - frame.rect.width()) / 2;
@@ -343,7 +346,7 @@ void Toolbar::reconfigure(void) {
     y = screen->screenInfo().height() - frame.rect.height();
 
     frame.x_hidden = x;
-    frame.y_hidden = screen->screenInfo().height() - screen->getBevelWidth();
+    frame.y_hidden = screen->screenInfo().height() - resource.bevelWidth();
     break;
   }
 
@@ -358,11 +361,11 @@ void Toolbar::reconfigure(void) {
     struct tm *tt = localtime(&ttmp);
     if (tt) {
       char t[1024];
-      int len = strftime(t, 1024, screen->getStrftimeFormat(), tt);
+      int len = strftime(t, 1024, resource.strftimeFormat(), tt);
       if (len == 0) { // invalid time format found
         // so use the default
-        screen->resource().saveStrftimeFormat("%I:%M %p");
-        len = strftime(t, 1024, screen->getStrftimeFormat(), tt);
+        resource.saveStrftimeFormat("%I:%M %p");
+        len = strftime(t, 1024, resource.strftimeFormat(), tt);
       }
       /* 
        * find the length of the rendered string and add room for two extra
@@ -467,7 +470,7 @@ void Toolbar::updateStrut(void) {
   // left and right are always 0
   strut.top = strut.bottom = 0;
 
-  switch(screen->getToolbarPlacement()) {
+  switch(screen->resource().toolbarPlacement()) {
   case TopLeft:
   case TopCenter:
   case TopRight:
@@ -490,7 +493,8 @@ void Toolbar::redrawClockLabel(void) {
   tt = localtime(&tmp);
   if (! tt) return; // should not happen either
 
-  const ToolbarStyle * const style = screen->getToolbarStyle();
+  const ScreenResource::ToolbarStyle* const style =
+    screen->resource().toolbarStyle();
 
   bt::Rect u(0, 0, frame.clock_w, frame.label_h);
   if (frame.clk == ParentRelative) {
@@ -507,7 +511,7 @@ void Toolbar::redrawClockLabel(void) {
   }
 
   char str[1024];
-  if (! strftime(str, 1024, screen->getStrftimeFormat(), tt)) return;
+  if (! strftime(str, 1024, screen->resource().strftimeFormat(), tt)) return;
 
   bt::Pen pen(screen->screenNumber(), style->c_text);
   u.setCoords(u.left()  + frame.bevel_w, u.top()    + frame.bevel_w,
@@ -517,7 +521,8 @@ void Toolbar::redrawClockLabel(void) {
 
 
 void Toolbar::redrawWindowLabel(void) {
-  const ToolbarStyle * const style = screen->getToolbarStyle();
+  const ScreenResource::ToolbarStyle* const style =
+    screen->resource().toolbarStyle();
 
   bt::Rect u(0, 0, frame.window_label_w, frame.label_h);
   if (frame.label == ParentRelative) {
@@ -547,7 +552,8 @@ void Toolbar::redrawWindowLabel(void) {
 void Toolbar::redrawWorkspaceLabel(void) {
   const std::string& name =
     screen->getWorkspaceName(screen->getCurrentWorkspaceID());
-  const ToolbarStyle * const style = screen->getToolbarStyle();
+  const ScreenResource::ToolbarStyle* const style =
+    screen->resource().toolbarStyle();
 
   bt::Rect u(0, 0, frame.workspace_label_w, frame.label_h);
   if (frame.wlabel == ParentRelative) {
@@ -570,7 +576,8 @@ void Toolbar::redrawWorkspaceLabel(void) {
 
 
 void Toolbar::redrawPrevWorkspaceButton(bool pressed) {
-  const ToolbarStyle * const style = screen->getToolbarStyle();
+  const ScreenResource::ToolbarStyle* const style =
+    screen->resource().toolbarStyle();
 
   Pixmap p = pressed ? frame.pbutton : frame.button;
   bt::Rect u(0, 0, frame.button_w, frame.button_w);
@@ -601,7 +608,8 @@ void Toolbar::redrawPrevWorkspaceButton(bool pressed) {
 
 
 void Toolbar::redrawNextWorkspaceButton(bool pressed) {
-  const ToolbarStyle * const style = screen->getToolbarStyle();
+  const ScreenResource::ToolbarStyle* const style =
+    screen->resource().toolbarStyle();
 
   Pixmap p = pressed ? frame.pbutton : frame.button;
   bt::Rect u(0, 0, frame.button_w, frame.button_w);
@@ -633,7 +641,8 @@ void Toolbar::redrawNextWorkspaceButton(bool pressed) {
 
 
 void Toolbar::redrawPrevWindowButton(bool pressed) {
-  const ToolbarStyle * const style = screen->getToolbarStyle();
+  const ScreenResource::ToolbarStyle* const style =
+    screen->resource().toolbarStyle();
 
   Pixmap p = pressed ? frame.pbutton : frame.button;
   bt::Rect u(0, 0, frame.button_w, frame.button_w);
@@ -665,7 +674,8 @@ void Toolbar::redrawPrevWindowButton(bool pressed) {
 
 
 void Toolbar::redrawNextWindowButton(bool pressed) {
-  const ToolbarStyle * const style = screen->getToolbarStyle();
+  const ScreenResource::ToolbarStyle* const style =
+    screen->resource().toolbarStyle();
 
   Pixmap p = pressed ? frame.pbutton : frame.button;
   bt::Rect u(0, 0, frame.button_w, frame.button_w);
@@ -713,13 +723,14 @@ void Toolbar::edit(void) {
   if (blackbox->getFocusedWindow())
     blackbox->getFocusedWindow()->setFocusFlag(False);
 
-  const ToolbarStyle * const style = screen->getToolbarStyle();
+  const ScreenResource::ToolbarStyle* const style =
+    screen->resource().toolbarStyle();
   bt::Pen pen(screen->screenNumber(), style->l_text);
   XDrawRectangle(display, frame.workspace_label, pen.gc(),
                  frame.workspace_label_w / 2, 0, 1,
                  frame.label_h - 1);
   // change the background of the window to that of an active window label
-  bt::Texture texture = screen->getWindowStyle()->l_focus;
+  bt::Texture texture = screen->resource().windowStyle()->l_focus;
   frame.wlabel = bt::PixmapCache::find(screen->screenNumber(), texture,
                                        frame.workspace_label_w, frame.label_h,
                                        frame.wlabel);
@@ -751,7 +762,7 @@ void Toolbar::buttonPressEvent(const XButtonEvent *be) {
   } else if (be->button == 3) {
     int x = be->x_root, y;
 
-    switch(screen->getToolbarPlacement()) {
+    switch(screen->resource().toolbarPlacement()) {
     case TopLeft:
     case TopCenter:
     case TopRight:
@@ -837,7 +848,8 @@ void Toolbar::exposeEvent(const XExposeEvent *ee) {
   else if (ee->window == frame.window) {
     bt::Rect t(0, 0, frame.rect.width(), frame.rect.height());
     bt::Rect r(ee->x, ee->y, ee->width, ee->height);
-    bt::drawTexture(screen->screenNumber(), screen->getToolbarStyle()->toolbar,
+    bt::drawTexture(screen->screenNumber(),
+                    screen->resource().toolbarStyle()->toolbar,
                     frame.window, t, r & t, frame.base);
   }
 }
@@ -848,7 +860,8 @@ void Toolbar::keyPressEvent(const XKeyEvent *ke) {
     if (new_workspace_name.empty())
       new_name_pos = 0;
 
-    const ToolbarStyle * const style = screen->getToolbarStyle();
+    const ScreenResource::ToolbarStyle* const style =
+      screen->resource().toolbarStyle();
 
     KeySym ks;
     char keychar[1];

@@ -554,8 +554,9 @@ void Workspace::show(void) {
 
   XSync(screen->getBlackbox()->XDisplay(), False);
 
-  if (screen->doFocusLast()) {
-    if (! screen->isSloppyFocus() && ! lastfocus && ! stackingList.empty())
+  if (screen->resource().doFocusLast()) {
+    if (! (screen->resource().isSloppyFocus() ||
+           lastfocus || stackingList.empty()))
       lastfocus = stackingList.front();
 
     if (lastfocus)
@@ -697,36 +698,37 @@ bool Workspace::smartPlacement(bt::Rect& win, const bt::Rect& availableArea) {
   bt::Rect tmp;
   for (; wit != end; ++wit) {
     const BlackboxWindow* const curr = *wit;
-    if (! curr || (screen->placementIgnoresShaded() && curr->isShaded()))
+    if (! curr || (screen->resource().placementIgnoresShaded() &&
+                   curr->isShaded()))
         continue;
 
     tmp.setRect(curr->frameRect().x(), curr->frameRect().y(),
-                curr->frameRect().width() + screen->getBorderWidth(),
-                curr->frameRect().height() + screen->getBorderWidth());
+                curr->frameRect().width() + screen->resource().borderWidth(),
+                curr->frameRect().height() + screen->resource().borderWidth());
 
     spaces = calcSpace(tmp, spaces);
   }
 
-  if (screen->getPlacementPolicy() == BScreen::RowSmartPlacement) {
-    if(screen->getRowPlacementDirection() == BScreen::LeftRight) {
-      if(screen->getColPlacementDirection() == BScreen::TopBottom)
+  if (screen->resource().placementPolicy() == RowSmartPlacement) {
+    if(screen->resource().rowPlacementDirection() == LeftRight) {
+      if(screen->resource().colPlacementDirection() == TopBottom)
         std::sort(spaces.begin(), spaces.end(), rowLRTB);
       else
         std::sort(spaces.begin(), spaces.end(), rowLRBT);
     } else {
-      if(screen->getColPlacementDirection() == BScreen::TopBottom)
+      if(screen->resource().colPlacementDirection() == TopBottom)
         std::sort(spaces.begin(), spaces.end(), rowRLTB);
       else
         std::sort(spaces.begin(), spaces.end(), rowRLBT);
     }
   } else {
-    if(screen->getColPlacementDirection() == BScreen::TopBottom) {
-      if(screen->getRowPlacementDirection() == BScreen::LeftRight)
+    if(screen->resource().colPlacementDirection() == TopBottom) {
+      if(screen->resource().rowPlacementDirection() == LeftRight)
         std::sort(spaces.begin(), spaces.end(), colLRTB);
       else
         std::sort(spaces.begin(), spaces.end(), colRLTB);
     } else {
-      if(screen->getRowPlacementDirection() == BScreen::LeftRight)
+      if(screen->resource().rowPlacementDirection() == LeftRight)
         std::sort(spaces.begin(), spaces.end(), colLRBT);
       else
         std::sort(spaces.begin(), spaces.end(), colRLBT);
@@ -748,15 +750,15 @@ bool Workspace::smartPlacement(bt::Rect& win, const bt::Rect& availableArea) {
   win.setY(where.y());
 
   // adjust the location() based on left/right and top/bottom placement
-  if (screen->getPlacementPolicy() == BScreen::RowSmartPlacement) {
-    if (screen->getRowPlacementDirection() == BScreen::RightLeft)
+  if (screen->resource().placementPolicy() == RowSmartPlacement) {
+    if (screen->resource().rowPlacementDirection() == RightLeft)
       win.setX(where.right() - win.width());
-    if (screen->getColPlacementDirection() == BScreen::BottomTop)
+    if (screen->resource().colPlacementDirection() == BottomTop)
       win.setY(where.bottom() - win.height());
   } else {
-    if (screen->getColPlacementDirection() == BScreen::BottomTop)
+    if (screen->resource().colPlacementDirection() == BottomTop)
       win.setY(win.y() + where.height() - win.height());
-    if (screen->getRowPlacementDirection() == BScreen::RightLeft)
+    if (screen->resource().rowPlacementDirection() == RightLeft)
       win.setX(win.x() + where.width() - win.width());
   }
   return True;
@@ -786,9 +788,9 @@ void Workspace::placeWindow(BlackboxWindow *win) {
             win->frameRect().width(), win->frameRect().height());
   bool placed = False;
 
-  switch (screen->getPlacementPolicy()) {
-  case BScreen::RowSmartPlacement:
-  case BScreen::ColSmartPlacement:
+  switch (screen->resource().placementPolicy()) {
+  case RowSmartPlacement:
+  case ColSmartPlacement:
     placed = smartPlacement(new_win, availableArea);
     break;
   default:
@@ -797,8 +799,10 @@ void Workspace::placeWindow(BlackboxWindow *win) {
 
   if (placed == False) {
     cascadePlacement(new_win, availableArea);
-    cascade_x += win->getTitleHeight() + (screen->getBorderWidth() * 2);
-    cascade_y += win->getTitleHeight() + (screen->getBorderWidth() * 2);
+    cascade_x += win->getTitleHeight() +
+      (screen->resource().borderWidth() * 2);
+    cascade_y += win->getTitleHeight() +
+      (screen->resource().borderWidth() * 2);
   }
 
   if (new_win.right() > availableArea.right())

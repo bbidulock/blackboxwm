@@ -203,7 +203,7 @@ private:
    */
 
   struct _frame {
-    WindowStyle* style;
+    ScreenResource::WindowStyle* style;
 
     // u -> unfocused, f -> has focus
     unsigned long uborder_pixel, fborder_pixel;

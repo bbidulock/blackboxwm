@@ -155,7 +155,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   frame.utitle = frame.ftitle = frame.uhandle = frame.fhandle = None;
   frame.ulabel = frame.flabel = frame.ubutton = frame.fbutton = None;
   frame.pbutton = frame.ugrip = frame.fgrip = None;
-  frame.style = screen->getWindowStyle();
+  frame.style = screen->resource().windowStyle();
 
   timer = new bt::Timer(blackbox, this);
   timer->setTimeout(blackbox->getAutoRaiseDelay());
@@ -486,7 +486,7 @@ void BlackboxWindow::decorate(void) {
                             frame.utitle);
 
     XSetWindowBorder(blackbox->XDisplay(), frame.title,
-                     screen->getBorderColor()->pixel(screen->screenNumber()));
+                     screen->resource().borderColor()->pixel(screen->screenNumber()));
 
     decorateLabel();
   }
@@ -520,15 +520,15 @@ void BlackboxWindow::decorate(void) {
                             frame.style->handle_height, frame.ugrip);
 
     XSetWindowBorder(blackbox->XDisplay(), frame.handle,
-                     screen->getBorderColor()->pixel(screen->screenNumber()));
+                     screen->resource().borderColor()->pixel(screen->screenNumber()));
     XSetWindowBorder(blackbox->XDisplay(), frame.left_grip,
-                     screen->getBorderColor()->pixel(screen->screenNumber()));
+                     screen->resource().borderColor()->pixel(screen->screenNumber()));
     XSetWindowBorder(blackbox->XDisplay(), frame.right_grip,
-                     screen->getBorderColor()->pixel(screen->screenNumber()));
+                     screen->resource().borderColor()->pixel(screen->screenNumber()));
   }
 
   XSetWindowBorder(blackbox->XDisplay(), frame.window,
-                   screen->getBorderColor()->pixel(screen->screenNumber()));
+                   screen->resource().borderColor()->pixel(screen->screenNumber()));
 }
 
 
@@ -759,28 +759,30 @@ void BlackboxWindow::reconfigure(void) {
 
 
 void BlackboxWindow::grabButtons(void) {
-  if (! screen->isSloppyFocus() || screen->doClickRaise())
+  if (! screen->resource().isSloppyFocus() ||
+      screen->resource().doClickRaise())
     // grab button 1 for changing focus/raising
     blackbox->grabButton(Button1, 0, frame.plate, True, ButtonPressMask,
                          GrabModeSync, GrabModeSync, frame.plate, None,
-                         screen->allowScrollLock());
+                         screen->resource().allowScrollLock());
 
   if (client.functions & Func_Move)
     blackbox->grabButton(Button1, Mod1Mask, frame.window, True,
                          ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
                          GrabModeAsync, frame.window,
                          blackbox->getMoveCursor(),
-                         screen->allowScrollLock());
+                         screen->resource().allowScrollLock());
   if (client.functions & Func_Resize)
     blackbox->grabButton(Button3, Mod1Mask, frame.window, True,
                          ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
                          GrabModeAsync, frame.window,
                          blackbox->getLowerRightAngleCursor(),
-                         screen->allowScrollLock());
+                         screen->resource().allowScrollLock());
   // alt+middle lowers the window
   blackbox->grabButton(Button2, Mod1Mask, frame.window, True,
                        ButtonReleaseMask, GrabModeAsync, GrabModeAsync,
-                       frame.window, None, screen->allowScrollLock());
+                       frame.window, None,
+                       screen->resource().allowScrollLock());
 }
 
 
@@ -2414,7 +2416,7 @@ void BlackboxWindow::mapRequestEvent(const XMapRequestEvent* const re) {
     show();
     screen->raiseWindow(this);
     if (! blackbox->startingUp() &&
-        (isTransient() || screen->doFocusNew())) {
+        (isTransient() || screen->resource().doFocusNew())) {
       XSync(blackbox->XDisplay(), False); // make sure the frame is mapped..
       setInputFocus();
     }
@@ -2726,7 +2728,7 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const re) {
   } else if (client.state.moving) {
     client.state.moving = False;
 
-    if (! screen->doOpaqueMove()) {
+    if (! screen->resource().doOpaqueMove()) {
       /* when drawing the rubber band, we need to make sure we only draw inside
        * the frame... frame.changing_* contain the new coords for the window,
        * so we need to subtract 1 from changing_w/changing_h every where we
@@ -2823,7 +2825,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
 
       client.state.moving = True;
 
-      if (! screen->doOpaqueMove()) {
+      if (! screen->resource().doOpaqueMove()) {
         XGrabServer(blackbox->XDisplay());
 
         frame.changing = frame.rect;
@@ -2843,17 +2845,17 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
       dx -= frame.border_w;
       dy -= frame.border_w;
 
-      const int snap_distance = screen->getEdgeSnapThreshold();
+      const int snap_distance = screen->resource().edgeSnapThreshold();
 
       if (snap_distance) {
         collisionAdjust(&dx, &dy, frame.rect.width(), frame.rect.height(),
                         screen->availableArea(), snap_distance);
-        if (! screen->doFullMax())
+        if (! screen->resource().doFullMax())
             collisionAdjust(&dx, &dy, frame.rect.width(), frame.rect.height(),
                             screen->screenInfo().rect(), snap_distance);
       }
 
-      if (screen->doOpaqueMove()) {
+      if (screen->resource().doOpaqueMove()) {
         configure(dx, dy, frame.rect.width(), frame.rect.height());
       } else {
         XDrawRectangle(blackbox->XDisplay(),
@@ -2951,7 +2953,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
 
 
 void BlackboxWindow::enterNotifyEvent(const XCrossingEvent* ce) {
-  if (! (screen->isSloppyFocus() && isVisible()))
+  if (! (screen->resource().isSloppyFocus() && isVisible()))
     return;
 
   XEvent e;
@@ -2971,13 +2973,14 @@ void BlackboxWindow::enterNotifyEvent(const XCrossingEvent* ce) {
       installColormap(True); // XXX: shouldnt we honour no install?
   }
 
-  if (screen->doAutoRaise())
+  if (screen->resource().doAutoRaise())
     timer->start();
 }
 
 
 void BlackboxWindow::leaveNotifyEvent(const XCrossingEvent*) {
-  if (! (screen->isSloppyFocus() && screen->doAutoRaise()))
+  if (! (screen->resource().isSloppyFocus() &&
+         screen->resource().doAutoRaise()))
     return;
 
   installColormap(False);
@@ -3072,7 +3075,7 @@ void BlackboxWindow::timeout(bt::Timer *) {
  */
 void BlackboxWindow::upsize(void) {
   if (client.decorations & Decor_Border) {
-    frame.border_w = screen->getBorderWidth();
+    frame.border_w = screen->resource().borderWidth();
     frame.mwm_border_w = (!isTransient()) ? frame.style->frame_width : 0;
   } else {
     frame.mwm_border_w = frame.border_w = 0;

@@ -221,7 +221,8 @@ void Blackbox::process_event(XEvent *e) {
         focus = True;
       }
 
-      if (focus && (win->isTransient() || win->getScreen()->doFocusNew()))
+      if (focus && (win->isTransient() ||
+                    win->getScreen()->resource().doFocusNew()))
         win->setInputFocus();
     } else {
       BScreen *screen = findScreen(e->xmaprequest.parent);
@@ -537,7 +538,7 @@ void Blackbox::save_rc(void) {
 
     char *placement = (char *) 0;
 
-    switch (screen->getSlitPlacement()) {
+    switch (screen->resource().slitPlacement()) {
     case Slit::TopLeft: placement = "TopLeft"; break;
     case Slit::CenterLeft: placement = "CenterLeft"; break;
     case Slit::BottomLeft: placement = "BottomLeft"; break;
@@ -553,8 +554,8 @@ void Blackbox::save_rc(void) {
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.slit.direction: %s", screen_number,
-            ((screen->getSlitDirection() == Slit::Horizontal) ? "Horizontal" :
-             "Vertical"));
+            ((screen->resource().slitDirection() == Slit::Horizontal) ?
+             "Horizontal" : "Vertical"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.slit.onTop: %s", screen_number,
@@ -566,7 +567,7 @@ void Blackbox::save_rc(void) {
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.opaqueMove: %s",
-            ((screen->doOpaqueMove()) ? "True" : "False"));
+            ((screen->resource().doOpaqueMove()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     const char *ditherMode;
@@ -580,46 +581,47 @@ void Blackbox::save_rc(void) {
 
     sprintf(rc_string, "session.screen%d.placementIgnoresShaded: %s",
             screen_number,
-            (screen->placementIgnoresShaded()) ? "True" : "False");
+            (screen->resource().placementIgnoresShaded()) ? "True" : "False");
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.fullMaximization: %s", screen_number,
-            ((screen->doFullMax()) ? "True" : "False"));
+            ((screen->resource().doFullMax()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.focusNewWindows: %s", screen_number,
-            ((screen->doFocusNew()) ? "True" : "False"));
+            ((screen->resource().doFocusNew()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.focusLastWindow: %s", screen_number,
-            ((screen->doFocusLast()) ? "True" : "False"));
+            ((screen->resource().doFocusLast()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.disableBindingsWithScrollLock: %s",
-            screen_number, ((screen->allowScrollLock()) ? "True" : "False"));
+            screen_number,
+            ((screen->resource().allowScrollLock()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.rowPlacementDirection: %s",
             screen_number,
-            ((screen->getRowPlacementDirection() == BScreen::LeftRight) ?
+            ((screen->resource().rowPlacementDirection() == LeftRight) ?
              "LeftToRight" : "RightToLeft"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.colPlacementDirection: %s",
             screen_number,
-            ((screen->getColPlacementDirection() == BScreen::TopBottom) ?
+            ((screen->resource().colPlacementDirection() == TopBottom) ?
              "TopToBottom" : "BottomToTop"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
-    switch (screen->getPlacementPolicy()) {
-    case BScreen::CascadePlacement:
+    switch (screen->resource().placementPolicy()) {
+    case CascadePlacement:
       placement = "CascadePlacement";
       break;
-    case BScreen::ColSmartPlacement:
+    case ColSmartPlacement:
       placement = "ColSmartPlacement";
       break;
 
-    case BScreen::RowSmartPlacement:
+    case RowSmartPlacement:
     default:
       placement = "RowSmartPlacement";
       break;
@@ -629,10 +631,10 @@ void Blackbox::save_rc(void) {
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     std::string fmodel;
-    if (screen->isSloppyFocus()) {
+    if (screen->resource().isSloppyFocus()) {
       fmodel = "SloppyFocus";
-      if (screen->doAutoRaise()) fmodel += " AutoRaise";
-      if (screen->doClickRaise()) fmodel += " ClickRaise";
+      if (screen->resource().doAutoRaise()) fmodel += " AutoRaise";
+      if (screen->resource().doClickRaise()) fmodel += " ClickRaise";
     } else {
       fmodel = "ClickToFocus";
     }
@@ -653,7 +655,7 @@ void Blackbox::save_rc(void) {
             ((screen->getToolbar()->doAutoHide()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
-    switch (screen->getToolbarPlacement()) {
+    switch (screen->resource().toolbarPlacement()) {
     case Toolbar::TopLeft: placement = "TopLeft"; break;
     case Toolbar::BottomLeft: placement = "BottomLeft"; break;
     case Toolbar::TopCenter: placement = "TopCenter"; break;
@@ -674,15 +676,15 @@ void Blackbox::save_rc(void) {
     // users changes...
 
     sprintf(rc_string, "session.screen%d.strftimeFormat: %s", screen_number,
-            screen->getStrftimeFormat());
+            screen->resource().strftimeFormat());
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.edgeSnapThreshold: %d",
-            screen_number, screen->getEdgeSnapThreshold());
+            screen_number, screen->resource().edgeSnapThreshold());
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.toolbar.widthPercent:  %d",
-            screen_number, screen->getToolbarWidthPercent());
+            screen_number, screen->resource().toolbarWidthPercent());
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     // write out the user's workspace names
@@ -836,22 +838,22 @@ void Blackbox::load_rc(BScreen *screen) {
           screen_number);
   sprintf(class_lookup, "Session.Screen%d.RowPlacementDirection",
           screen_number);
-  screen->resource().saveRowPlacementDirection(BScreen::LeftRight);
+  screen->resource().saveRowPlacementDirection(LeftRight);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value) &&
       ! strncasecmp(value.addr, "righttoleft", value.size)) {
-    screen->resource().saveRowPlacementDirection(BScreen::RightLeft);
+    screen->resource().saveRowPlacementDirection(RightLeft);
   }
 
   sprintf(name_lookup,  "session.screen%d.colPlacementDirection",
           screen_number);
   sprintf(class_lookup, "Session.Screen%d.ColPlacementDirection",
           screen_number);
-  screen->resource().saveColPlacementDirection(BScreen::TopBottom);
+  screen->resource().saveColPlacementDirection(TopBottom);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value) &&
       ! strncasecmp(value.addr, "bottomtotop", value.size)) {
-    screen->resource().saveColPlacementDirection(BScreen::BottomTop);
+    screen->resource().saveColPlacementDirection(BottomTop);
   }
 
   sprintf(name_lookup,  "session.screen%d.workspaces", screen_number);
@@ -950,15 +952,15 @@ void Blackbox::load_rc(BScreen *screen) {
 
   sprintf(name_lookup,  "session.screen%d.windowPlacement", screen_number);
   sprintf(class_lookup, "Session.Screen%d.WindowPlacement", screen_number);
-  screen->resource().savePlacementPolicy(BScreen::RowSmartPlacement);
+  screen->resource().savePlacementPolicy(RowSmartPlacement);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value)) {
     if (! strncasecmp(value.addr, "RowSmartPlacement", value.size))
       /* pass */;
     else if (! strncasecmp(value.addr, "ColSmartPlacement", value.size))
-      screen->resource().savePlacementPolicy(BScreen::ColSmartPlacement);
+      screen->resource().savePlacementPolicy(ColSmartPlacement);
     else if (! strncasecmp(value.addr, "CascadePlacement", value.size))
-      screen->resource().savePlacementPolicy(BScreen::CascadePlacement);
+      screen->resource().savePlacementPolicy(CascadePlacement);
   }
 
   sprintf(name_lookup, "session.screen%d.slit.placement", screen_number);

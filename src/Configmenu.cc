@@ -111,34 +111,36 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
 
 
 void Configmenu::refresh(void) {
-  setItemChecked(ConfigmenuOpaqueMove, _bscreen->doOpaqueMove());
-  setItemChecked(ConfigmenuFullMax, _bscreen->doFullMax());
-  setItemChecked(ConfigmenuFocusNew, _bscreen->doFocusNew());
-  setItemChecked(ConfigmenuFocusLast, _bscreen->doFocusLast());
-  setItemChecked(ConfigmenuDisableBindings, _bscreen->allowScrollLock());
+  ScreenResource& res = _bscreen->resource();
+  setItemChecked(ConfigmenuOpaqueMove, res.doOpaqueMove());
+  setItemChecked(ConfigmenuFullMax, res.doFullMax());
+  setItemChecked(ConfigmenuFocusNew, res.doFocusNew());
+  setItemChecked(ConfigmenuFocusLast, res.doFocusLast());
+  setItemChecked(ConfigmenuDisableBindings, res.allowScrollLock());
 }
 
 
 void Configmenu::itemClicked(unsigned int id, unsigned int) {
+  ScreenResource& res = _bscreen->resource();
   switch (id) {
   case ConfigmenuOpaqueMove: // opaque move
-    _bscreen->resource().saveOpaqueMove(! _bscreen->doOpaqueMove());
+    res.saveOpaqueMove(! res.doOpaqueMove());
     break;
 
   case ConfigmenuFullMax: // full maximization
-    _bscreen->resource().saveFullMax(! _bscreen->doFullMax());
+    res.saveFullMax(! res.doFullMax());
     break;
 
   case ConfigmenuFocusNew: // focus new windows
-    _bscreen->resource().saveFocusNew(! _bscreen->doFocusNew());
+    res.saveFocusNew(! res.doFocusNew());
     break;
 
   case ConfigmenuFocusLast: // focus last window on workspace
-    _bscreen->resource().saveFocusLast(! _bscreen->doFocusLast());
+    res.saveFocusLast(! res.doFocusLast());
     break;
 
   case ConfigmenuDisableBindings: // disable keybindings with Scroll Lock
-    _bscreen->resource().saveAllowScrollLock(! _bscreen->allowScrollLock());
+    res.saveAllowScrollLock(! res.allowScrollLock());
     _bscreen->reconfigure();
     break;
   } // switch
@@ -165,22 +167,18 @@ ConfigFocusmenu::ConfigFocusmenu(bt::Application &app, unsigned int screen,
 
 
 void ConfigFocusmenu::refresh(void) {
-  setItemChecked(BScreen::ClickToFocus,
-                 !_bscreen->isSloppyFocus());
-  setItemChecked(BScreen::SloppyFocus,
-                 _bscreen->isSloppyFocus());
-  setItemEnabled(AutoRaiseID,
-                 _bscreen->isSloppyFocus());
-  setItemChecked(AutoRaiseID,
-                 _bscreen->doAutoRaise());
-  setItemEnabled(ClickRaiseID,
-                 _bscreen->isSloppyFocus());
-  setItemChecked(ClickRaiseID,
-                 _bscreen->doClickRaise());
+  ScreenResource& res = _bscreen->resource();
+  setItemChecked(BScreen::ClickToFocus, !res.isSloppyFocus());
+  setItemChecked(BScreen::SloppyFocus, res.isSloppyFocus());
+  setItemEnabled(AutoRaiseID, res.isSloppyFocus());
+  setItemChecked(AutoRaiseID, res.doAutoRaise());
+  setItemEnabled(ClickRaiseID, res.isSloppyFocus());
+  setItemChecked(ClickRaiseID, res.doClickRaise());
 }
 
 
 void ConfigFocusmenu::itemClicked(unsigned int id, unsigned int) {
+  ScreenResource& res = _bscreen->resource();
   switch (id) {
   case BScreen::ClickToFocus:
   case BScreen::SloppyFocus:
@@ -188,11 +186,11 @@ void ConfigFocusmenu::itemClicked(unsigned int id, unsigned int) {
     break;
 
   case AutoRaiseID: // auto raise with sloppy focus
-    _bscreen->resource().saveAutoRaise(! _bscreen->doAutoRaise());
+    res.saveAutoRaise(! res.doAutoRaise());
     break;
 
   case ClickRaiseID: // click raise with sloppy focus
-    _bscreen->resource().saveClickRaise(! _bscreen->doClickRaise());
+    res.saveClickRaise(! res.doClickRaise());
     // make sure the appropriate mouse buttons are grabbed on the windows
     _bscreen->toggleFocusModel(BScreen::SloppyFocus);
     break;
@@ -210,25 +208,25 @@ ConfigPlacementmenu::ConfigPlacementmenu(bt::Application &app,
 
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuSmartRows,
                       "Smart Placement (Rows)"),
-             BScreen::RowSmartPlacement);
+             RowSmartPlacement);
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuSmartCols,
                       "Smart Placement (Columns)"),
-             BScreen::ColSmartPlacement);
+             ColSmartPlacement);
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuCascade,
                       "Cascade Placement"),
-             BScreen::CascadePlacement);
+             CascadePlacement);
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuLeftRight,
                       "Left to Right"),
-             BScreen::LeftRight);
+             LeftRight);
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuRightLeft,
                       "Right to Left"),
-             BScreen::RightLeft);
+             RightLeft);
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuTopBottom,
                       "Top to Bottom"),
-             BScreen::TopBottom);
+             TopBottom);
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuBottomTop,
                       "Bottom to Top"),
-             BScreen::BottomTop);
+             BottomTop);
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuIgnoreShaded,
                       "Ignore Shaded Windows"),
              ConfigmenuIgnoreShaded);
@@ -236,52 +234,60 @@ ConfigPlacementmenu::ConfigPlacementmenu(bt::Application &app,
 
 
 void ConfigPlacementmenu::refresh(void) {
-  bool rowsmart = _bscreen->getPlacementPolicy() == BScreen::RowSmartPlacement,
-       colsmart = _bscreen->getPlacementPolicy() == BScreen::ColSmartPlacement,
-        cascade = _bscreen->getPlacementPolicy() == BScreen::CascadePlacement,
-             rl = _bscreen->getRowPlacementDirection() == BScreen::LeftRight,
-             tb = _bscreen->getColPlacementDirection() == BScreen::TopBottom;
+  ScreenResource& res = _bscreen->resource();
+  bool rowsmart = res.placementPolicy() == RowSmartPlacement,
+       colsmart = res.placementPolicy() == ColSmartPlacement,
+        cascade = res.placementPolicy() == CascadePlacement,
+             rl = res.rowPlacementDirection() == LeftRight,
+             tb = res.colPlacementDirection() == TopBottom;
 
-  setItemChecked(BScreen::RowSmartPlacement, rowsmart);
-  setItemChecked(BScreen::ColSmartPlacement, colsmart);
-  setItemChecked(BScreen::CascadePlacement, cascade);
+  setItemChecked(RowSmartPlacement, rowsmart);
+  setItemChecked(ColSmartPlacement, colsmart);
+  setItemChecked(CascadePlacement, cascade);
 
-  setItemEnabled(BScreen::LeftRight, ! cascade);
-  setItemChecked(BScreen::LeftRight, cascade || rl);
+  setItemEnabled(LeftRight, ! cascade);
+  setItemChecked(LeftRight, cascade || rl);
 
-  setItemEnabled(BScreen::RightLeft, ! cascade);
-  setItemChecked(BScreen::RightLeft, ! cascade && ! rl);
+  setItemEnabled(RightLeft, ! cascade);
+  setItemChecked(RightLeft, ! cascade && ! rl);
 
-  setItemEnabled(BScreen::TopBottom, ! cascade);
-  setItemChecked(BScreen::TopBottom, cascade || tb);
+  setItemEnabled(TopBottom, ! cascade);
+  setItemChecked(TopBottom, cascade || tb);
 
-  setItemEnabled(BScreen::BottomTop, ! cascade);
-  setItemChecked(BScreen::BottomTop, ! cascade && ! tb);
+  setItemEnabled(BottomTop, ! cascade);
+  setItemChecked(BottomTop, ! cascade && ! tb);
 
-  setItemChecked(ConfigmenuIgnoreShaded, _bscreen->placementIgnoresShaded());
+  setItemChecked(ConfigmenuIgnoreShaded, res.placementIgnoresShaded());
 }
 
 
 void ConfigPlacementmenu::itemClicked(unsigned int id, unsigned int) {
+  ScreenResource& res = _bscreen->resource();
   switch (id) {
-  case BScreen::RowSmartPlacement:
-  case BScreen::ColSmartPlacement:
-  case BScreen::CascadePlacement:
-    _bscreen->resource().savePlacementPolicy(id);
+  case RowSmartPlacement:
+  case ColSmartPlacement:
+  case CascadePlacement: {
+    PlacementPolicy p = static_cast<PlacementPolicy>(id);
+    res.savePlacementPolicy(p);
+  }
     break;
 
-  case BScreen::LeftRight:
-  case BScreen::RightLeft:
-    _bscreen->resource().saveRowPlacementDirection(id);
+  case LeftRight:
+  case RightLeft: {
+    PlacementDirection d = static_cast<PlacementDirection>(id);
+    res.saveRowPlacementDirection(d);
+  }
     break;
 
-  case BScreen::TopBottom:
-  case BScreen::BottomTop:
-    _bscreen->resource().saveColPlacementDirection(id);
+  case TopBottom:
+  case BottomTop: {
+    PlacementDirection d = static_cast<PlacementDirection>(id);
+    res.saveColPlacementDirection(d);
+  }
     break;
 
   case ConfigmenuIgnoreShaded:
-    _bscreen->resource().savePlacementIgnoresShaded(! _bscreen->placementIgnoresShaded());
+    res.savePlacementIgnoresShaded(! res.placementIgnoresShaded());
   } // switch
 }
 

@@ -91,14 +91,14 @@ public:
 
   inline unsigned int getWidth(void) const { return frame.rect.width(); }
   inline unsigned int getExposedWidth(void) const {
-    if (screen->getSlitDirection() == Vertical && do_auto_hide)
-      return screen->getBevelWidth();
+    if (screen->resource().slitDirection() == Vertical && do_auto_hide)
+      return screen->resource().bevelWidth();
     return frame.rect.width();
   }
   inline unsigned int getHeight(void) const { return frame.rect.height(); }
   inline unsigned int getExposedHeight(void) const {
-    if (screen->getSlitDirection() == Horizontal && do_auto_hide)
-      return screen->getBevelWidth();
+    if (screen->resource().slitDirection() == Horizontal && do_auto_hide)
+      return screen->resource().bevelWidth();
     return frame.rect.height();
   }
 
