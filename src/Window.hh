@@ -343,7 +343,7 @@ public:
   void restore(bool remap);
   void configure(int dx, int dy, unsigned int dw, unsigned int dh);
   void setWorkspace(unsigned int n);
-  void changeBlackboxHints(BlackboxHints *net);
+  void changeBlackboxHints(const BlackboxHints *net);
   void restoreAttributes(void);
 
   void buttonPressEvent(const XButtonEvent *be);

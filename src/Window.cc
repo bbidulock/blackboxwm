@@ -1994,6 +1994,56 @@ void BlackboxWindow::restoreAttributes(void) {
     if (flags.maximized) remaximize();
   }
 
+  if (net->flags & AttribDecoration) {
+    switch (net->decoration) {
+    case DecorNone:
+      decorations = 0;
+
+      break;
+
+    default:
+    case DecorNormal:
+      decorations |= Decor_Titlebar | Decor_Handle | Decor_Border |
+        Decor_Iconify | Decor_Maximize;
+
+      break;
+
+    case DecorTiny:
+      decorations |= Decor_Titlebar | Decor_Iconify;
+      decorations &= ~(Decor_Border | Decor_Handle | Decor_Maximize);
+
+      break;
+
+    case DecorTool:
+      decorations |= Decor_Titlebar;
+      decorations &= ~(Decor_Iconify | Decor_Border | Decor_Handle);
+
+      break;
+    }
+
+    // sanity check the new decor
+    if (! (functions & Func_Resize))
+      decorations &= ~(Decor_Maximize | Decor_Handle);
+    if (! (functions & Func_Maximize))
+      decorations &= ~Decor_Maximize;
+
+    if (decorations & Decor_Titlebar) {
+      if (functions & Func_Close)   // close button is controlled by function
+        decorations |= Decor_Close; // not decor type
+    } else { 
+      if (flags.shaded) // we can not be shaded if we lack a titlebar
+        shade();
+    }
+
+    if (flags.visible && frame.window) {
+      XMapSubwindows(blackbox->getXDisplay(), frame.window);
+      XMapWindow(blackbox->getXDisplay(), frame.window);
+    }
+
+    reconfigure();
+    setState(current_state);
+  }
+
   // with the state set it will then be the map event's job to read the
   // window's state and behave accordingly
 
@@ -2939,7 +2989,7 @@ void BlackboxWindow::timeout(void) {
 }
 
 
-void BlackboxWindow::changeBlackboxHints(BlackboxHints *net) {
+void BlackboxWindow::changeBlackboxHints(const BlackboxHints *net) {
   if ((net->flags & AttribShaded) &&
       ((blackbox_attrib.attrib & AttribShaded) !=
        (net->attrib & AttribShaded)))
@@ -2993,7 +3043,7 @@ void BlackboxWindow::changeBlackboxHints(BlackboxHints *net) {
     default:
     case DecorNormal:
       decorations |= Decor_Titlebar | Decor_Handle | Decor_Border |
-                     Decor_Iconify | Decor_Maximize;
+        Decor_Iconify | Decor_Maximize;
 
       break;
 
