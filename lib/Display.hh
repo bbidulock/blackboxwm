@@ -25,26 +25,19 @@
 #ifndef   __Display_hh
 #define   __Display_hh
 
-extern "C" {
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
-#ifdef    SHAPE
-#  include <X11/extensions/shape.h>
-#endif // SHAPE
-}
-
 #include "Rect.hh"
 #include "Util.hh"
 
+#include <X11/Xlib.h>
 
 namespace bt {
-  class ScreenInfo;
 
+  // forward declarations
+  class ScreenInfo;
 
   class Display : public NoCopy {
   private:
     ::Display *xdisplay;
-
     ScreenInfo** screen_info_list;
     size_t screen_info_count;
 
@@ -58,14 +51,12 @@ namespace bt {
     const ScreenInfo &screenInfo(unsigned int i) const;
   };
 
-
   class ScreenInfo: public NoCopy {
   private:
     Display& _display;
     Visual *_visual;
     Window _rootwindow;
     Colormap _colormap;
-
     int _depth;
     unsigned int _screennumber;
     std::string _displaystring;

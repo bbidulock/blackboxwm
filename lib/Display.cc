@@ -22,15 +22,15 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-extern "C" {
+#include "Display.hh"
+
+#include <X11/Xutil.h>
+
 #include <assert.h>
 #include <fcntl.h>
 #include <stdio.h>
-}
 
 #include <algorithm>
-
-#include "Display.hh"
 
 
 namespace bt {
