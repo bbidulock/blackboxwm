@@ -1,4 +1,5 @@
 # src/Makefile.am for Blackbox - an X11 Window manager
+# Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
 # Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
