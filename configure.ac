@@ -62,26 +62,28 @@ else
    fi 
 fi
 
-dnl Check for existance of basename() and setlocale()
-AC_CHECK_FUNCS([nl_langinfo])
+dnl Check if some required functions live in the C library, or in an
+dnl external library
 
 ICONV=
 AC_CHECK_FUNCS([iconv_open],
                [],
                [AC_CHECK_LIB([iconv],
                              [iconv_open],
-                             [ICONV=-liconv],
+                             [ICONV="-liconv"],
                              [AC_MSG_ERROR([Blackbox requires iconv(3) support.])])
                ])
 AC_SUBST(ICONV)
 
+LOCALE=
 AC_CHECK_FUNCS([setlocale],
                [],
                [AC_CHECK_LIB([xpg4],
                              [setlocale],
-                             [AC_DEFINE([HAVE_SETLOCALE])
-                              LIBS="$LIBS -lxpg4"])
+                             [LOCALE="-lxpg4"],
+                             [AC_MSG_ERROR([Blackbox requires setlocale(3) support.])])
                ])
+AC_SUBST(LOCALE)
 
 dnl needed for some X11 libs
 AC_CHECK_LIB([nsl],
