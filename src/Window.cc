@@ -1668,9 +1668,8 @@ void BlackboxWindow::stick(void) {
 
 
 void BlackboxWindow::setFocusFlag(bool focus) {
-  // only focus a window if it is on the current workspace
-  if (focus &&
-      screen->getCurrentWorkspace()->getID() != blackbox_attrib.workspace)
+  // only focus a window if it is visible
+  if (focus && !flags.visible)
     return;
 
   flags.focused = focus;
