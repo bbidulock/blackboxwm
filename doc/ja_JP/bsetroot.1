@@ -2,12 +2,11 @@
 .\" Man page for Bsetroot
 .\"
 .\" Copyright (c) 2000 by Wilbert Berendsen <wbsoft@xs4all.nl>
-.\" Japanese Version Copyright (c) 2002 SATOH Satoru <ss@gnome.gr.jp>
 .\"
 .TH bsetroot 1 "June 16th, 2000" "0.60.3"
-.SH $BL>A0(B
-bsetroot \- blackbox $BMQ$NJI;f@_Dj%f!<%F%#%j%F%#(B
-.SH $B=q<0(B
+.SH Ì¾Á°
+bsetroot \- blackbox ¤ÎÊÉ»æÀßÄêÍÑ¤Î¥æ¡¼¥Æ¥£¥ê¥Æ¥£
+.SH ½ñ¼°
 .BR bsetroot " \-help"
 .br
 .B bsetroot
@@ -18,75 +17,76 @@ bsetroot \- blackbox $BMQ$NJI;f@_Dj%f!<%F%#%j%F%#(B
 .br
 .B bsetroot
 .RI "[ \-display " display " ] \-gradient " texture " \-from " color " \-to " color
-.SH $B@bL@(B
-Bsetroot $B$OJI;f@_Dj$N$?$a$N%f!<%F%#%j%F%#$G!"%k!<%H%&%#%s%I%&$N304Q$r<!$N(B
-$B;0$D$NJ}K!$G@_Dj$9$k$3$H$,$G$-$^$9(B: $BC1?'$KEI$jDY$7!"Fs?'$rAH9g$;$?%Q%?!<%s$G(B
-$BEI$jDY$7!"Fs$D$N0[$J$k?'$K4p$E$$$?%0%i%G!<%7%g%s%F%/%9%A%c$rIA2h!#(B
+.SH ÀâÌÀ
+bsetroot ¤Ï¡¢Ã±°ì¿§¤¢¤ë¤¤¤ÏÆó¤Ä¤Î¿§¤ÎÁÈ¤ß¹ç¤ï¤»¤ÇÅÉ¤êÄÙ¤·¡¢Æó¤Ä¤Î°Û¤Ê¤ë¿§¤ò
+¤Ù¡¼¥¹¤Ë¤·¤¿¥°¥é¥Ç¡¼¥·¥ç¥ó¥Æ¥­¥¹¥Á¥ã¤È¤¤¤¦¡¢»°¤Ä¤Î¤ä¤ê¤«¤¿¤ÇÊÉ»æ¤òÀßÄê¤Ç¤­¤ë
+¥æ¡¼¥Æ¥£¥ê¥Æ¥£¤Ç¤¹¡£
 .PP
-Bsetroot $B$O5!G=$N>e$G$O(B
+bsetroot ¤Ï
 .IR xsetroot (1)
-$B$K;w$F$$$^$9$,!"J#?t2hLL$*$h$S!"(BBlackbox $B$HF1$8:nK!$G$N%0%i%G!<%7%g%s(B
-$B%F%/%9%A%c$r%5%]!<%H$7$F$$$^$9!#(B
-$B%+!<%=%k=hM}$J$I$OL$%5%]!<%H$G$9!#(B
-Bsetroot $B$O(B Blackbox $B%Q%C%1!<%8$N0lIt$G$9!#(B
-.SH $B%*%W%7%g%s(B
-Bsetroot $B$rA`:n$9$k$K$O;0$D$NJ}K!$,$"$j!"$I$l$+$i0l$D$rA*Br$9$kI,MW$,$"$j$^$9(B:
+¤Ë»÷¤¿µ¡Ç½¤ò»ý¤Ã¤Æ¤¤¤Þ¤¹¤¬¡¢Ê£¿ô¥Ç¥£¥¹¥×¥ì¥¤¤Ø¤ÎÉÁ²è¤ä Blackbox ¤ÈÆ±¤¸
+ÊýË¡¤Ç¤Î¥°¥é¥Ç¡¼¥·¥ç¥ó¥Æ¥¯¥¹¥Á¥ã¤ò¥µ¥Ý¡¼¥È¤·¤Æ¤¤¤Þ¤¹¡£
+¥«¡¼¥½¥ë¤ÏÌ¤¥µ¥Ý¡¼¥È¤Ç¤¹¡£
+bsetroot ¤Ï blackbox ¥Ñ¥Ã¥±¡¼¥¸¤Î°ìÉô¤Ç¤¹¡£
+.SH ¥ª¥×¥·¥ç¥ó
+»°¼ïÎà¤Î¤ä¤ê¤«¤¿¤¬¤¢¤ë¤Î¤Ç¡¢¤Þ¤º¤½¤ÎÆâ¤Î¤É¤ì¤Ç¤¢¤ë¤«ÁªÂò¤·¤Ê¤±¤ì¤Ð¤Ê¤ê¤Þ¤»¤ó:
 .TP
-.BI \-solid " color"
-$B%k!<%H%&%#%s%I%&$r;XDj$7$??'$K@_Dj(B.
+.BI \-solid " ¿§"
+»ØÄê¤·¤¿¿§¤Ç¥ë¡¼¥È¥¦¥£¥ó¥É¥¦¤òÅÉ¤êÄÙ¤·¤Þ¤¹¡£
 .TP
 .BI \-mod " x y"
-$BJ#9g%Q%?!<%s$r:n@.(B. $BI,$:!"(B
-.BR \-bg " $B$H(B " \-fg
-$B$N?'$r;XDj$9$kI,MW$,$"$j$^$9(B.
+¿§¤ÎÁÈ¤ß¹ç¤ï¤»¥Ñ¥¿¡¼¥ó¤ò¤Ä¤¯¤ê¤Þ¤¹¡£É¬¤º
+.BR \-bg " ¤È " \-fg
+¤ò»ØÄê¤¹¤ëÉ¬Í×¤¬¤¢¤ê¤Þ¤¹¡£
 .TP
-.BI \-gradient " $B%F%/%9%A%cJ8;zNs(B"
-$B;XDj$7$?%F%/%9%A%c$r%k!<%H%&%#%s%I%&$KIA2h(B.
-$B2DG=$J%F%/%9%A%cJ8;zNs$K$D$$$F$O(B 
+.BI \-gradient " ¥Æ¥¯¥¹¥Á¥ãÊ¸»úÎó"
+»ØÄê¤·¤¿¥Æ¥¯¥¹¥Á¥ã¤ò¥ë¡¼¥È¥¦¥£¥ó¥É¥¦¤ËÉÁ²è¤·¤Þ¤¹¡£²ÄÇ½¤Ê¥Æ¥¯¥¹¥Á¥ãÊ¸»úÎó¤Ë
+¤Ä¤¤¤Æ¤Ï
 .IR blackbox (1)
-$B$r;2>H$5$l$?$7(B. $BI,$:!"(B
-.BR \-from " $B$H(B " \-to
-$B$NN>J}$N?'$r;XDj$9$kI,MW$,$"$j$^$9(B.
+¤ò»²¾È¤·¤Æ²¼¤µ¤¤¡£
+¤Þ¤¿
+.BR \-from " ¤È " \-to
+¤â»ØÄê¤·¤Ê¤±¤ì¤Ð¤Ê¤ê¤Þ¤»¤ó¡£
 .TP
-.BI \-display " display"
-$B@\B3$9$k%G%#%9%W%l%$$r;XDj(B.
+.BI \-display " ¥Ç¥£¥¹¥×¥ì¥¤"
+bsetroot ¤Ë»ØÄê¤·¤¿¥Ç¥£¥¹¥×¥ì¥¤¤ËÀÜÂ³¤¹¤ë¤è¤¦¤Ë»Ø¼¨¤·¤Þ¤¹¡£
 .TP
 .BI "\-bg, \-background " color
-$BGX7J?'(B.
+ÇØ·Ê¿§¡£
 .B \-mod
-$B%Q%?!<%s$N$?$a$KI,MW$H$J$j$^$9(B.
+¥Ñ¥¿¡¼¥ó¤ÇÉ¬Í×¤Ç¤¹¡£
 .TP
 .BI "\-fg, \-foreground " color
-$BA07J?'(B
+Á°·Ê¿§¡£
 .B \-mod
-$B%Q%?!<%s$N$?$a$KI,MW$H$J$j$^$9(B.
+¥Ñ¥¿¡¼¥ó¤ÇÉ¬Í×¤Ç¤¹¡£
 .TP
 .BI \-from " color"
-$B%F%/%9%A%cIA2h$N3+;O;~$N?'(B.
+¥Æ¥¯¥¹¥Á¥ã¤Î³«»Ï¿§¡£
 .B \-gradient
-$BA`:n%b!<%I$K$D$$$FI,MW$H$J$j$^$9(B.
+¥ª¥×¥·¥ç¥ó¤ÇÉ¬Í×¤Ç¤¹¡£
 .TP
 .BI \-to " color"
-$B%F%/%9%A%cIA2h$N=*N;;~$N?'(B.
+¥Æ¥¯¥¹¥Á¥ã¤Î½ªÎ»¿§¡£
 .B \-gradient
-$BA`:n%b!<%I$K$D$$$FI,MW$H$J$j$^$9(B.
+¥ª¥×¥·¥ç¥ó¤ÇÉ¬Í×¤Ç¤¹¡£
 .TP
 .B \-help
-$B%P!<%8%g%s>pJs$*$h$S4JN,%X%k%W$rI=<($7$F!"=*N;(B.
-.SH $BCx<T(B
-Bsetroot $B$O(B Brad Hughes
+¥Ð¡¼¥¸¥ç¥ó¾ðÊó¤È´ÊÃ±¤Ê¥Ø¥ë¥×¤òÉ½¼¨¤·¤Þ¤¹¡£
+.SH ºî¼Ô
+bsetroot ¤ÏºÇ½ê Brad Hughes
 .nh \" hyphenation off
 (blackbox@alug.org)
 .hy \" on again
-$B$H(B Jeff Raven
+¤È Jeff Raven
 .nh
-(jraven@psu.edu) $B$K$h$C$F=q$+$l!"J]<i$5$l$F$$$^$7$?$,!"(B
+(jraven@psu.edu)¤Ë¤è¤Ã¤Æ½ñ¤«¤ì¡¢ÊÝ¼é¤µ¤ì¤Æ¤¤¤Þ¤·¤¿¤¬¡¢
 .hy
-$B:#$O(B Sean 'Shaleh' Perry
+º£¤Ï Sean 'Shaleh' Perry
 .nh
-(shaleh@debian.org) $B$H(B
+(shaleh@debian.org) ¤È
 .hy
-$BB>$N@$3&Cf$+$i$N$?$/$5$s$N3+H/<T$+$i$N2~NI!"9W8%$K$h$C$F3+H/$,?J$a$i$l$F$$$^$9!#(B
+Â¾¤ÎÀ¤³¦Ãæ¤«¤é¤Î¤¿¤¯¤µ¤ó¤Î³«È¯¼Ô¤«¤é¤Î²þÎÉ¡¢¹×¸¥¤Ë¤è¤Ã¤ÆÀ®¤êÎ©¤Ã¤Æ¤¤¤Þ¤¹¡£
 .hy
-.SH $B4XO"9`L\(B
+.SH ´ØÏ¢¹àÌÜ
 .IR blackbox (1)
