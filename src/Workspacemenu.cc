@@ -41,26 +41,31 @@
 Workspacemenu::Workspacemenu(BScreen *scrn)
     : Basemenu( scrn->screen() )
 {
-    screen = scrn;
-    insert( i18n->getMessage( WorkspacemenuSet,
-			      WorkspacemenuNewWorkspace, "New Workspace" ) );
-    insert( i18n->getMessage( WorkspacemenuSet,
-			      WorkspacemenuRemoveLast, "Remove Last" ) );
+  screen = scrn;
+
+  setTitle(i18n->getMessage(WorkspacemenuSet, WorkspacemenuWorkspacesTitle,
+                            "Workspaces"));
+  showTitle();
+
+  insert( i18n->getMessage( WorkspacemenuSet,
+                            WorkspacemenuNewWorkspace, "New Workspace" ) );
+  insert( i18n->getMessage( WorkspacemenuSet,
+                            WorkspacemenuRemoveLast, "Remove Last" ) );
 }
 
 
 void Workspacemenu::itemClicked( const Point &, const Item &item, int button )
 {
-    if ( button != 1 )
-	return;
+  if ( button != 1 )
+    return;
 
-    if ( item.index() == 0 )
-	screen->addWorkspace();
-    else if ( item.index() == 1 )
-	screen->removeLastWorkspace();
-    else if ( ( screen->getCurrentWorkspace()->getWorkspaceID() !=
-		( item.index() - 2)) && ( ( item.index() - 2) < screen->getCount() ) ) {
-	screen->changeWorkspaceID( item.index() - 2 );
-	hideAll();
-    }
+  if ( item.index() == 0 )
+    screen->addWorkspace();
+  else if ( item.index() == 1 )
+    screen->removeLastWorkspace();
+  else if ( ( screen->getCurrentWorkspace()->getWorkspaceID() !=
+              ( item.index() - 2)) && ( ( item.index() - 2) < screen->getCount() ) ) {
+    screen->changeWorkspaceID( item.index() - 2 );
+    hideAll();
+  }
 }
