@@ -93,7 +93,6 @@ Toolbar::Toolbar(BScreen *scrn) {
 
   editing = False;
   new_name_pos = 0;
-  frame.grab_x = frame.grab_y = 0;
 
   toolbarmenu = new Toolbarmenu(this);
 
@@ -106,7 +105,8 @@ Toolbar::Toolbar(BScreen *scrn) {
     screen->getBorderColor()->pixel();
   attrib.colormap = screen->getColormap();
   attrib.override_redirect = True;
-  attrib.event_mask = ButtonPressMask | ButtonReleaseMask |
+  attrib.event_mask = SubstructureRedirectMask |
+                      ButtonPressMask | ButtonReleaseMask |
                       EnterWindowMask | LeaveWindowMask;
 
   frame.window =
