@@ -899,10 +899,10 @@ StackingList::iterator raiseWindow(StackingList &stackingList,
     if (group) {
       // raise all windows in the group before raising 'win'
       ::raiseGroup(stackingList, group);
-    } else {
+    } else if (win->isTransient()) {
       // raise non-transient parent before raising transient
       BlackboxWindow *tmp = win->findNonTransientParent();
-      if (tmp != win)
+      if (tmp)
         (void) ::raiseWindow(stackingList, tmp);
     }
   }
@@ -918,7 +918,7 @@ StackingList::iterator raiseWindow(StackingList &stackingList,
       raiseTransients(top, stackingList, transients);
 
     // ... and group transients on top
-    if (group && !win->isGroupTransient()) {
+    if (group && win->isTransient() && !win->isGroupTransient()) {
       const BlackboxWindow * const w = win->findNonTransientParent();
       if (!w || !w->isGroupTransient()) {
         BlackboxWindowList groupTransients = group->transients();
