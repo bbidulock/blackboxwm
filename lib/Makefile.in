@@ -93,13 +93,15 @@ PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 SHAPE = @SHAPE@
 VERSION = @VERSION@
+XFT = @XFT@
 am__include = @am__include@
 am__quote = @am__quote@
 gencat_cmd = @gencat_cmd@
 install_sh = @install_sh@
 regex_cmd = @regex_cmd@
+xftconfig = @xftconfig@
 
-CPPFLAGS = @CPPFLAGS@ @SHAPE@ @MITSHM@ @DEBUG@ @NLS@ \
+CPPFLAGS = @CPPFLAGS@ @SHAPE@ @MITSHM@ @XFT@ @DEBUG@ @NLS@ \
 			  -DLOCALEPATH=\"$(pkgdatadir)/nls\"
 
 noinst_LIBRARIES = libbt.a
