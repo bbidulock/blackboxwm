@@ -22,18 +22,17 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-extern "C" {
-#include <assert.h>
-#include <stdio.h>
-}
-
-#include <list>
-#include <algorithm>
 
 #include "PixmapCache.hh"
 #include "Display.hh"
 #include "Image.hh"
 #include "Texture.hh"
+
+#include <X11/Xlib.h>
+#include <assert.h>
+#include <stdio.h>
+
+#include <list>
 
 // #define PIXMAPCACHE_DEBUG
 
