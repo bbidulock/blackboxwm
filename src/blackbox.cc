@@ -20,12 +20,6 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-// stupid macros needed to access some functions in version 2 of the GNU C
-// library
-#ifndef   _GNU_SOURCE
-#define   _GNU_SOURCE
-#endif // _GNU_SOURCE
-
 #ifdef    HAVE_CONFIG_H
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
@@ -52,6 +46,7 @@
 #endif // SLIT
 
 #include "Toolbar.hh"
+#include "Util.hh"
 #include "Window.hh"
 #include "Workspace.hh"
 #include "Workspacemenu.hh"
@@ -158,7 +153,8 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
   ::blackbox = this;
   argc = m_argc;
   argv = m_argv;
-  rc_file = rc;
+  if (! rc) rc = "~/.blackboxrc";
+  rc_file = expandTilde(rc);
 
   no_focus = False;
 
@@ -229,6 +225,8 @@ Blackbox::~Blackbox(void) {
 
     delete ts;
   }
+
+  delete rc_file;
 
   if (resource.menu_file)
     delete [] resource.menu_file;
@@ -994,17 +992,6 @@ void Blackbox::save_rc(void) {
   XrmDatabase new_blackboxrc = (XrmDatabase) 0;
   char rc_string[1024];
 
-  char *dbfile = (char *) 0;
-
-  if (! rc_file) {
-    char *homedir = getenv("HOME");
-
-    dbfile = new char[strlen(homedir) + strlen("/.blackboxrc") + 1];
-    sprintf(dbfile, "%s/.blackboxrc", homedir);
-  } else {
-    dbfile = bstrdup(rc_file);
-  }
-
   load_rc();
 
   sprintf(rc_string, "session.menuFile:  %s", resource.menu_file);
@@ -1213,33 +1200,18 @@ void Blackbox::save_rc(void) {
     delete [] save_string;
   }
 
-  XrmDatabase old_blackboxrc = XrmGetFileDatabase(dbfile);
+  XrmDatabase old_blackboxrc = XrmGetFileDatabase(rc_file);
 
   XrmMergeDatabases(new_blackboxrc, &old_blackboxrc);
-  XrmPutFileDatabase(old_blackboxrc, dbfile);
+  XrmPutFileDatabase(old_blackboxrc, rc_file);
   XrmDestroyDatabase(old_blackboxrc);
-
-  delete [] dbfile;
 }
 
 
 void Blackbox::load_rc(void) {
   XrmDatabase database = (XrmDatabase) 0;
 
-  char *dbfile = (char *) 0;
-
-  if (! rc_file) {
-    char *homedir = getenv("HOME");
-
-    dbfile = new char[strlen(homedir) + strlen("/.blackboxrc") + 1];
-    sprintf(dbfile, "%s/.blackboxrc", homedir);
-  } else {
-    dbfile = bstrdup(rc_file);
-  }
-
-  database = XrmGetFileDatabase(dbfile);
-
-  delete [] dbfile;
+  database = XrmGetFileDatabase(rc_file);
 
   XrmValue value;
   char *value_type;
@@ -1249,7 +1221,7 @@ void Blackbox::load_rc(void) {
 
   if (XrmGetResource(database, "session.menuFile", "Session.MenuFile",
 		     &value_type, &value))
-    resource.menu_file = bstrdup(value.addr);
+    resource.menu_file = expandTilde(value.addr);
   else
     resource.menu_file = bstrdup(DEFAULTMENU);
 
@@ -1318,20 +1290,7 @@ void Blackbox::load_rc(void) {
 void Blackbox::load_rc(BScreen *screen) {
   XrmDatabase database = (XrmDatabase) 0;
 
-  char *dbfile = (char *) 0;
-
-  if (! rc_file) {
-    char *homedir = getenv("HOME");
-    
-    dbfile = new char[strlen(homedir) + strlen("/.blackboxrc") + 1];
-    sprintf(dbfile, "%s/.blackboxrc", homedir);
-  } else {
-    dbfile = bstrdup(rc_file);
-  }
-
-  database = XrmGetFileDatabase(dbfile);
-
-  delete [] dbfile;
+  database = XrmGetFileDatabase(rc_file);
 
   XrmValue value;
   char *value_type, name_lookup[1024], class_lookup[1024];
@@ -1663,26 +1622,14 @@ void Blackbox::real_reconfigure(void) {
   XrmDatabase new_blackboxrc = (XrmDatabase) 0;
   char style[MAXPATHLEN + 64];
 
-  char *dbfile = (char *) 0;
-
-  if (! rc_file) {
-    char *homedir = getenv("HOME");
-
-    dbfile = new char[strlen(homedir) + strlen("/.blackboxrc") + 1];
-    sprintf(dbfile, "%s/.blackboxrc", homedir);
-  } else {
-    dbfile = bstrdup(rc_file);
-  }
   sprintf(style, "session.styleFile: %s", resource.style_file);
   XrmPutLineResource(&new_blackboxrc, style);
 
-  XrmDatabase old_blackboxrc = XrmGetFileDatabase(dbfile);
+  XrmDatabase old_blackboxrc = XrmGetFileDatabase(rc_file);
 
   XrmMergeDatabases(new_blackboxrc, &old_blackboxrc);
-  XrmPutFileDatabase(old_blackboxrc, dbfile);
+  XrmPutFileDatabase(old_blackboxrc, rc_file);
   if (old_blackboxrc) XrmDestroyDatabase(old_blackboxrc);
-
-  delete [] dbfile;
 
   for (int i = 0, n = menuTimestamps->count(); i < n; i++) {
     MenuTimestamp *ts = menuTimestamps->remove(0);

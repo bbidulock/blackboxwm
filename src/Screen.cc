@@ -1903,28 +1903,11 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	      continue;
 	    }
 
-	    char style[MAXPATHLEN];
-
-	    // perform shell style ~ home directory expansion
-	    char *homedir = 0;
-	    int homedir_len = 0;
-	    if (*command == '~' && *(command + 1) == '/') {
-	      homedir = getenv("HOME");
-	      homedir_len = strlen(homedir);
-	    }
-
-	    if (homedir && homedir_len != 0) {
-	      strncpy(style, homedir, homedir_len);
-
-	      strncpy(style + homedir_len, command + 1,
-		      command_length - 1);
-	      *(style + command_length + homedir_len - 1) = '\0';
-	    } else {
-	      strncpy(style, command, command_length);
-	      *(style + command_length) = '\0';
-	    }
+	    char *style = expandTilde(command);
 
 	    menu->insert(label, BScreen::SetStyle, style);
+
+	    delete [] style;
 	  }
 
 	  break;
@@ -1942,59 +1925,40 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	  break;
 
 	case 740: // include
-	  {
-	    if (! *label) {
-	      fprintf(stderr, i18n->getMessage(ScreenSet, ScreenINCLUDEError,
-				 "BScreen::parseMenuFile: [include] error, "
-				 "no filename defined\n"));
-	      continue;
-	    }
-
-	    char newfile[MAXPATHLEN];
-
-	    // perform shell style ~ home directory expansion
-	    char *homedir = 0;
-	    int homedir_len = 0;
-	    if (*label == '~' && *(label + 1) == '/') {
-	      homedir = getenv("HOME");
-	      homedir_len = strlen(homedir);
-	    }
-
-	    if (homedir && homedir_len != 0) {
-	      strncpy(newfile, homedir, homedir_len);
-
-	      strncpy(newfile + homedir_len, label + 1,
-		      label_length - 1);
-	      *(newfile + label_length + homedir_len - 1) = '\0';
-	    } else {
-	      strncpy(newfile, label, label_length);
-	      *(newfile + label_length) = '\0';
-	    }
-
-	    if (newfile) {
-	      FILE *submenufile = fopen(newfile, "r");
-
-	      if (submenufile) {
-                struct stat buf;
-                if (fstat(fileno(submenufile), &buf) ||
-                    (! S_ISREG(buf.st_mode))) {
-                  fprintf(stderr,
-			  i18n->getMessage(ScreenSet, ScreenINCLUDEErrorReg,
-			     "BScreen::parseMenuFile: [include] error: "
-			     "'%s' is not a regular file\n"), newfile);
-                  break;
-                }
-
-		if (! feof(submenufile)) {
-		  if (! parseMenuFile(submenufile, menu))
-		    blackbox->saveMenuFilename(newfile);
-
-		  fclose(submenufile);
-		}
-	      } else
-		perror(newfile);
-	    }
+	{
+	  if (! *label) {
+	    fprintf(stderr, i18n->getMessage(ScreenSet, ScreenINCLUDEError,
+			     "BScreen::parseMenuFile: [include] error, "
+			     "no filename defined\n"));
+	    continue;
 	  }
+
+	  char *newfile = expandTilde(label);
+	  FILE *submenufile = fopen(newfile, "r");
+
+	  if (submenufile) {
+	    struct stat buf;
+	    if (fstat(fileno(submenufile), &buf) ||
+		(! S_ISREG(buf.st_mode))) {
+	      fprintf(stderr,
+		      i18n->getMessage(ScreenSet, ScreenINCLUDEErrorReg,
+			       "BScreen::parseMenuFile: [include] error: "
+			       "'%s' is not a regular file\n"), newfile);
+	      delete [] newfile;
+	      break;
+	    }
+
+	    if (! feof(submenufile)) {
+	      if (! parseMenuFile(submenufile, menu))
+		blackbox->saveMenuFilename(newfile);
+
+	      fclose(submenufile);
+	    }
+	  } else {
+	    perror(newfile);
+	  }
+	  delete [] newfile;
+	}
 
 	  break;
 
@@ -2066,30 +2030,10 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
               continue;
             }
 
-            char stylesdir[MAXPATHLEN];
-
             char *directory = ((newmenu) ? command : label);
             int directory_length = ((newmenu) ? command_length : label_length);
 
-            // perform shell style ~ home directory expansion
-            char *homedir = 0;
-            int homedir_len = 0;
-
-            if (*directory == '~' && *(directory + 1) == '/') {
-              homedir = getenv("HOME");
-              homedir_len = strlen(homedir);
-            }
-
-            if (homedir && homedir_len != 0) {
-              strncpy(stylesdir, homedir, homedir_len);
-
-              strncpy(stylesdir + homedir_len, directory + 1,
-                      directory_length - 1);
-              *(stylesdir + directory_length + homedir_len - 1) = '\0';
-            } else {
-              strncpy(stylesdir, directory, directory_length);
-              *(stylesdir + directory_length) = '\0';
-            }
+	    char *stylesdir = expandTilde(directory);
 
             struct stat statbuf;
 
@@ -2160,7 +2104,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 			 "BScreen::parseMenuFile: [stylesdir/stylesmenu]"
 			 " error, %s does not exist\n"), stylesdir);
             }
-
+	    delete [] stylesdir;
             break;
           }
 

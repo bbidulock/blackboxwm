@@ -67,7 +67,6 @@ typedef struct _blackbox_attributes {
 void bexec(const char *, char *);
 #endif // !__EMX__
 
-char *bstrdup(const char *);
 
 class BaseDisplay {
 private:
