@@ -72,11 +72,11 @@ void bexec(const char *, char *);
 
 class BaseDisplay: public TimerQueueManager {
 private:
-  struct cursor {
+  struct _cursor {
     Cursor session, move, ll_angle, lr_angle;
   } cursor;
 
-  struct shape {
+  struct _shape {
     Bool extensions;
     int event_basep, error_basep;
   } shape;
