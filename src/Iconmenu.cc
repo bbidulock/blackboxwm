@@ -39,8 +39,6 @@ Iconmenu::Iconmenu(bt::Application &app, unsigned int screen,
 
 void Iconmenu::itemClicked(unsigned int id, unsigned int) {
   BlackboxWindow *win = _bscreen->getIcon(id);
-  assert(win != 0);
-
   win->deiconify();
   win->setInputFocus();
 }
