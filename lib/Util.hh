@@ -72,6 +72,9 @@ namespace bt {
   std::string basename(const std::string& path);
   std::string dirname(const std::string& path);
 
+  // equivalent to the shell command 'mkdir -m mode -p path'
+  bool mkdirhier(const std::string &path, int mode = 0777);
+
   std::string expandTilde(const std::string& s);
 
   std::string itostring(unsigned long i);

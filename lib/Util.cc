@@ -32,8 +32,11 @@
 
 #include <X11/Xatom.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <assert.h>
 #include <ctype.h>
+#include <errno.h>
 #if defined(__EMX__)
 #  include <process.h>
 #endif // __EMX__
@@ -56,6 +59,75 @@ std::string bt::dirname(const std::string& path) {
     return path;
   std::string::const_iterator it = path.begin();
   return std::string(it, it + slash);
+}
+
+
+bool bt::mkdirhier(const std::string &path, int mode)
+{
+  /*
+    POSIX says this about mkdir(1) -p:
+
+    <quote>
+    Create any missing intermediate pathname components.  For each
+    dir operand that does not name an existing directory, effects
+    equivalent to those caused by the following command shall occur:
+
+    mkdir -p -m $(umask -S),u+wx $(dirname dir) && mkdir [-m mode] dir
+
+    where the -m mode option represents that option supplied to the
+    original invocation of mkdir, if any.
+
+    Each dir operand that names an existing directory shall be
+    ignored without error.
+    </quote>
+
+    We do this by changing the umask.  It is restored before creating
+    the final component of the path or, in the case of an error,
+    before returning.
+  */
+  // save umask
+  mode_t save_umask = umask(0);
+  mode_t tmp_umask = save_umask & ~(S_IWUSR | S_IXUSR);
+  bool umask_restored = false;
+  (void) umask(tmp_umask);
+
+  bool success = true;
+  const std::string::const_iterator begin = path.begin();
+  const std::string::const_iterator end = path.end();
+  std::string::const_iterator it = begin;
+  for (; it != end;) {
+    if ((it + 1) == end) {
+      break;
+    }
+    it = std::find(it + 1, end, '/');
+    if (it == end || (it + 1) == end) {
+      (void) umask(save_umask);
+      umask_restored = true;
+      // make sure we use the right mode to mkdir(2)
+      it = end;
+    }
+
+    std::string p(begin, it);
+    if (mkdir(p.c_str(), it == end ? mode : 0777) != 0) {
+      const int e = errno;
+      struct stat st;
+      if (stat(p.c_str(), &st) != 0) {
+        errno = e;
+        success = false;
+        break;
+      } else if (!S_ISDIR(st.st_mode)) {
+        errno = ENOTDIR;
+        success = false;
+        break;
+      }
+    }
+  }
+
+  // restore umask
+  if (!umask_restored)
+    (void) umask(save_umask);
+
+  return success;
 }
 
 
