@@ -4,7 +4,7 @@ $ #MustSpecify
 # %s: ошибка: необходимо задать один из следующих ключей: -solid, -mod, -gradient\n
 $ #Usage
 # %s 2.0: (c) 1997-2000 Brad Hughes\n\n\
-	  (c) 2001-2002 Sean 'Shaleh' Perry\n\n
+	  (c) 2001-2002 Sean 'Shaleh' Perry\n\n\
   -display <string>        использовать заданный дисплей\n\
   -mod <x> <y>             макет сетки\n\
   -foreground, -fg <color> цвет сетки\n\

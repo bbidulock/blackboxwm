@@ -4,7 +4,7 @@ $ #MustSpecify
 # %s: chyba: musíte ¹pecifikova» jeden z parametrov: -solid, -mod, -gradient\n
 $ #Usage
 # %s 2.0: (c) 1997-2000 Brad Hughes\n\n\
-	  (c) 2001-2002 Sean 'Shaleh' Perry\n\n
+	  (c) 2001-2002 Sean 'Shaleh' Perry\n\n\
   -display <string>        pripojenie k obrazovke\n\
   -mod <x> <y>             modul vzorky\n\
   -foreground, -fg <color> modul farby popredia\n\
