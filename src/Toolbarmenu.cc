@@ -151,5 +151,10 @@ void ToolbarPlacementmenu::refresh(void) {
 void ToolbarPlacementmenu::itemClicked(unsigned int id, unsigned int button) {
   if (button != 1) return;
 
-  _bscreen->toolbar()->setPlacement((Toolbar::Placement) id);
+  ScreenResource& res = _bscreen->resource();
+  Toolbar *toolbar = _bscreen->toolbar();
+
+  res.saveToolbarPlacement((Toolbar::Placement) id);
+  if (toolbar) toolbar->setPlacement((Toolbar::Placement) id);
+  _bscreen->saveResource();
 }
