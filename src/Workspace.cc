@@ -83,4 +83,7 @@ void Workspace::removeWindow(BlackboxWindow *win) {
   clientmenu->removeItem(win->windowNumber());
   win->setWindowNumber(bt::BSENTINEL);
   win->setWorkspace(bt::BSENTINEL);
+
+  if (win == focused_window)
+    focused_window = 0;
 }
