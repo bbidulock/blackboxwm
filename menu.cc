@@ -43,6 +43,7 @@ BlackboxMenu::BlackboxMenu(BlackboxSession *ctrl)
   session = ctrl;
   display = session->control();
   show_title = True;
+  movable = True;
   moving = False;
   menu.x = 10;
   menu.y = 10;
@@ -116,6 +117,7 @@ BlackboxMenu::BlackboxMenu(BlackboxSession *ctrl)
   pitemGC = XCreateGC(display, menu.frame, GCForeground|GCFont, &gcv);
 
   itemContext = XUniqueContext();
+
   //
   // even though this is the end of the constructor the menu is still not
   // completely created.
@@ -406,7 +408,7 @@ void BlackboxMenu::buttonPressEvent(XButtonEvent *be) {
 	    XSetWindowBackgroundPixmap(display, be->window,
 				       menu.pushed_pixmap);
 	    XClearWindow(display, be->window);
-	    drawSubMenu(i);
+	    drawSubmenu(i);
 	    sub = True;
 	  }
 	} else {
@@ -433,8 +435,13 @@ void BlackboxMenu::buttonReleaseEvent(XButtonEvent *re) {
     if (moving) {
       XUngrabPointer(display, CurrentTime);
       moving = False;
+      if (which_sub != -1)
+	drawSubmenu(which_sub);
     }
-    titleReleased(re->button);
+
+    if (re->x >= 0 && re->x <= (signed) menu.width &&
+	re->y >= 0 && re->y <= (signed) menu.title_h)
+      titleReleased(re->button);
   } else {
     int i;
 
@@ -480,22 +487,26 @@ void BlackboxMenu::buttonReleaseEvent(XButtonEvent *re) {
 void BlackboxMenu::motionNotifyEvent(XMotionEvent *me) {
   debug->msg("menu motion notify\n");
   if (me->window == menu.title && session->button1Pressed()) {
-    if (! moving) {
-      if (XGrabPointer(display, menu.title, False, PointerMotionMask|
-		       ButtonReleaseMask, GrabModeAsync, GrabModeAsync,
-		       None, session->moveCursor(), CurrentTime)
-	  == GrabSuccess) {
-	moving = 1;
-	menu.x_move = me->x;
-	menu.y_move = me->y;
-      } else
- 	moving = False;	
-    } else {
-      int dx = me->x_root - menu.x_move,
-	dy = me->y_root - menu.y_move;
-      menu.x = dx;
-      menu.y = dy;
-      XMoveWindow(display, menu.frame, dx, dy);
+    if (movable) {
+      if (! moving) {
+	if (XGrabPointer(display, menu.title, False, PointerMotionMask|
+			 ButtonReleaseMask, GrabModeAsync, GrabModeAsync,
+			 None, session->moveCursor(), CurrentTime)
+	    == GrabSuccess) {
+	  moving = 1;
+	  menu.x_move = me->x;
+	  menu.y_move = me->y;
+	  if (which_sub != -1)
+	  menuitems->at(which_sub)->sub_menu->hideMenu();
+	} else
+	  moving = False;	
+      } else {
+	int dx = me->x_root - menu.x_move,
+	  dy = me->y_root - menu.y_move;
+	menu.x = dx;
+	menu.y = dy;
+	XMoveWindow(display, menu.frame, dx, dy);
+      }
     }
   }
 }
@@ -579,23 +590,33 @@ Window BlackboxMenu::windowID(void) { return menu.frame; }
 void BlackboxMenu::setMenuLabel(char *n) { menu.label = n; }
 void BlackboxMenu::showTitle(void) { show_title = True; }
 void BlackboxMenu::hideTitle(void) { show_title = False; }
+void BlackboxMenu::setMovable(Bool b) { movable = b; }
 BlackboxMenuItem *BlackboxMenu::at(int i) { return menuitems->at(i); }
 BlackboxSession *BlackboxMenu::Session(void) { return session; }
 
 
-void BlackboxMenu::drawSubMenu(int index) {
+void BlackboxMenu::drawSubmenu(int index) {
   if (index >= 0 && index < menuitems->count()) {
     BlackboxMenuItem *item = menuitems->at(index);
     item->sub_menu->moveMenu(menu.x + menu.width + 1,
-			     menu.y -
-			     ((show_title) ? menu.title_h : 0) +
-			     ((index * menu.item_h) +
-			      ((item->sub_menu->show_title) ?
-			       item->sub_menu->menu.title_h : 0)));
-    
+			     menu.y + ((show_title) ? menu.title_h + 1 : 0) +
+			     (index * menu.item_h) -
+			     ((item->sub_menu->show_title) ?
+			      item->sub_menu->menu.title_h + 1 : 0));
     item->sub_menu->showMenu();
     item->sub_menu->visible = 3;
     sub = False;
     which_sub = index;
   }
+}
+
+
+Bool BlackboxMenu::hasSubmenu(int index) {
+  if ((index >= 0) && (index < menuitems->count()))
+    if (menuitems->at(index)->sub_menu)
+      return True;
+    else
+      return False;
+  else
+    return False;
 }

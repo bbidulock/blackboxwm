@@ -33,7 +33,7 @@
 
 
 SessionMenu::SessionMenu(BlackboxSession *s) : BlackboxMenu(s)
-{ }
+{ session = s; }
 int SessionMenu::insert(char *l, int f, char *e)
 { return BlackboxMenu::insert(l, f, e); }
 int SessionMenu::insert(char *l, SessionMenu *s)
@@ -48,9 +48,18 @@ void SessionMenu::updateMenu(void)
 { BlackboxMenu::updateMenu(); }
 Window SessionMenu::windowID(void)
 { return BlackboxMenu::windowID(); }
-void SessionMenu::itemPressed(int, int) { }
+void SessionMenu::itemPressed(int button, int item) {
+  if (button == 1 && hasSubmenu(item))
+    drawSubmenu(item);
+}
+
+
 void SessionMenu::titlePressed(int) { }
-void SessionMenu::titleReleased(int button) { if (button == 3) hideMenu(); }
+void SessionMenu::titleReleased(int button) {
+  if (button == 3)
+    if (windowID() == session->rootmenu->windowID())
+      hideMenu();
+}
 
 
 void SessionMenu::itemReleased(int button, int index) {
@@ -61,6 +70,7 @@ void SessionMenu::itemReleased(int button, int index) {
       sprintf(command, "exec %s &", item->Exec());
       system(command);
       delete [] command;
+      session->rootmenu->hideMenu();
     } else if (item->Function()) {
       switch (item->Function()) {
       case BlackboxSession::B_Restart:
@@ -71,9 +81,14 @@ void SessionMenu::itemReleased(int button, int index) {
 	Session()->Exit();
 	break;
       }
+      session->rootmenu->hideMenu();
     }
   }
 }
+
+
+void SessionMenu::drawSubmenu(int index)
+{ BlackboxMenu::drawSubmenu(index); }
 
 
 /*
@@ -420,12 +435,12 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
     BlackboxMenu *bMenu = NULL;
     WorkspaceManager *wsMan = NULL;
 
-    if (e->xbutton.state == ControlMask && e->xbutton.button == 1) {
+    if (e->xbutton.state == Mod1Mask && e->xbutton.button == 1) {
       if (ws_manager->currentWorkspaceID() > 0)
 	ws_manager->changeWorkspaceID(ws_manager->currentWorkspaceID() - 1);
       else
 	ws_manager->changeWorkspaceID(ws_manager->count() - 1);
-    } else if (e->xbutton.state == ControlMask && e->xbutton.button == 3) {
+    } else if (e->xbutton.state == Mod1Mask && e->xbutton.button == 3) {
       if (ws_manager->currentWorkspaceID() != ws_manager->count() - 1)
 	ws_manager->changeWorkspaceID(ws_manager->currentWorkspaceID() + 1);
       else
@@ -640,13 +655,13 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
   }
   
   case KeyPress: {
-    debug->msg("key press state %x keycode %x\n", e->xkey.state,
+    printf("key press state %x keycode %x\n", e->xkey.state,
 	       e->xkey.keycode);
     break;
   }
 
   case KeyRelease: {
-    debug->msg("key release state %x keycode %x\n", e->xkey.state,
+    printf("key release state %x keycode %x\n", e->xkey.state,
 	       e->xkey.keycode);
     break;
   }
@@ -1346,21 +1361,21 @@ void BlackboxSession::updateWorkspace(int w) {
 
 void BlackboxSession::InitColor(void) {
   if (depth == 8) {
-    colors_8bpp = new XColor[216];
+    colors_8bpp = new XColor[125];
     int i = 0;
-    for (int r = 0; r < 6; r++)
-      for (int g = 0; g < 6; g++)
-	for (int b = 0; b < 6; b++) {
-	  colors_8bpp[i].red = (r * 0xffff) / 5;
-	  colors_8bpp[i].green = (g * 0xffff) / 5;
-	  colors_8bpp[i].blue = (b * 0xffff) / 5;
+    for (int r = 0; r < 5; r++)
+      for (int g = 0; g < 5; g++)
+	for (int b = 0; b < 5; b++) {
+	  colors_8bpp[i].red = (r * 0xffff) / 4;
+	  colors_8bpp[i].green = (g * 0xffff) / 4;
+	  colors_8bpp[i].blue = (b * 0xffff) / 4;
 	  colors_8bpp[i++].flags = DoRed|DoGreen|DoBlue;
 	}
     
     XGrabServer(display);
     
     Colormap colormap = DefaultColormap(display, DefaultScreen(display));
-    for (i = 0; i < 216; i++)
+    for (i = 0; i < 125; i++)
       if (! XAllocColor(display, colormap, &colors_8bpp[i])) {
 	fprintf(stderr, "couldn't alloc color %i %i %i\n", colors_8bpp[i].red,
 		colors_8bpp[i].green, colors_8bpp[i].blue);		
@@ -1526,7 +1541,8 @@ void BlackboxSession::parseSubMenu(FILE *menu_file, SessionMenu *menu) {
 	    newmenu->setMenuLabel(l);
 	    parseSubMenu(menu_file, newmenu);
 	    debug->msg("%s-inserting submenu -%s-\n", menu->label(), l);
-	    menu->insert(l, newmenu);	
+	    menu->insert(l, newmenu);
+	    newmenu->setMovable(False);
 	  } else if (! strcasecmp(c, "end")) {
 	    delete [] c;
 	    debug->msg("%s-end of submenu\n", menu->label());

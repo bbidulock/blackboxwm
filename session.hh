@@ -44,11 +44,16 @@ class WorkspaceManager;
 
 
 class SessionMenu : public BlackboxMenu {
+private:
+  BlackboxSession *session;
+
+
 protected:  
   virtual void itemPressed(int, int);
   virtual void itemReleased(int, int);
   virtual void titlePressed(int);
   virtual void titleReleased(int);
+  void drawSubmenu(int);
 
 
 public:
@@ -155,6 +160,8 @@ private:
 
   int depth, screen;
   uint xres, yres;
+
+  friend SessionMenu;
 
 
 protected:

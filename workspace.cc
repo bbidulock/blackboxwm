@@ -29,7 +29,7 @@
 
 
 WorkspaceMenu::WorkspaceMenu(Workspace *w, BlackboxSession *s) :
-  BlackboxMenu(s) { workspace = w; }
+  BlackboxMenu(s) { workspace = w; setMovable(False); }
 void WorkspaceMenu::showMenu(void)
 { BlackboxMenu::showMenu(); }
 void WorkspaceMenu::hideMenu(void)
@@ -43,7 +43,7 @@ int WorkspaceMenu::insert(char **u)
 int WorkspaceMenu::remove(int i)
 { return BlackboxMenu::remove(i); }
 void WorkspaceMenu::titlePressed(int) { }
-void WorkspaceMenu::titleReleased(int button) { if (button == 3) hideMenu(); }
+void WorkspaceMenu::titleReleased(int) { }
 void WorkspaceMenu::itemPressed(int, int) { }
 void WorkspaceMenu::itemReleased(int button, int item) {
   if (button == 1) {
@@ -67,7 +67,7 @@ void WorkspaceMenu::itemReleased(int button, int item) {
 WorkspaceManagerMenu::WorkspaceManagerMenu(WorkspaceManager *m,
 					   BlackboxSession *s) :
   BlackboxMenu(s)
-{ ws_manager = m; hideTitle(); }
+{ ws_manager = m; hideTitle(); setMovable(False); }
 void WorkspaceManagerMenu::showMenu(void)
 { BlackboxMenu::showMenu(); }
 void WorkspaceManagerMenu::hideMenu(void)

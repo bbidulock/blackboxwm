@@ -46,6 +46,7 @@ BlackboxWindowMenu::BlackboxWindowMenu(BlackboxWindow *w, BlackboxSession *s) :
   window = w;
   session = s;
   hideTitle();
+  setMovable(False);
   
   insert("Send To ...",
          send_to_menu = new SendToWorkspaceMenu(window, session));
@@ -68,7 +69,7 @@ void BlackboxWindowMenu::titleReleased(int) { }
 void BlackboxWindowMenu::itemPressed(int button, int item) {
   if (button == 1 && item == 0) {
     send_to_menu->updateMenu();
-    BlackboxMenu::drawSubMenu(item);
+    BlackboxMenu::drawSubmenu(item);
   }
 }
 
@@ -348,11 +349,11 @@ BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window parent,
   createDecorations();
   associateClientWindow();
   positionButtons();
-  XGrabButton(display,  1, ControlMask, frame.window, True, ButtonPressMask,
+  XGrabButton(display,  1, Mod1Mask, frame.window, True, ButtonPressMask,
 	      GrabModeAsync, GrabModeSync, frame.window, None);
-  XGrabButton(display,  3, ControlMask, frame.window, True, ButtonPressMask,
+  XGrabButton(display,  3, Mod1Mask, frame.window, True, ButtonPressMask,
 	      GrabModeAsync, GrabModeSync, frame.window, None);
-  
+
   XLowerWindow(display, client.window);
   XMapSubwindows(display, frame.title);
   if (do_handle) XMapSubwindows(display, frame.handle);
@@ -661,6 +662,8 @@ void BlackboxWindow::positionButtons(void) {
       XClearWindow(display, frame.iconify_button);
     }
   }
+
+  XClearWindow(display, frame.title);
 }
 
 

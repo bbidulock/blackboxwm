@@ -30,6 +30,15 @@ guarantees or promises that you can run blackbox on an 8bpp X server.  I plan
 to work on the 8bpp code more, but at the moment it is unfinished and should be
 considered pre-alpha quality.
 
+UPDATE: The 8bpp code has been considerably reworked and is working.  As a
+note, blackbox does a fake match color allocation method (ala WindowMaker) when
+it is run on an 8bpp X server.  What this means is that (for example) a slate
+blue root window will most likely NOT be the same color as a slate blue title
+bar window.  Please, no bug reports about improper coloring, as this is the
+method I have decided to use because of the way I render and use internal 
+images.
+
+
 Author:
 	Brad Hughes <bhughes@arn.net>
 
@@ -40,6 +49,8 @@ Contributors:
 	  - dgradient code
 	Scott Garner <mrfab@arn.net>
 	  - suggestions and bug reports/beta testing
+        David Doan <ddoan@usa.net>
+	 - testing of 8bpp code
 
 
 Compilation and Installation:
@@ -72,7 +83,7 @@ Function:		Behaviour:
 			  menu title - raises menu
 			  menu items - executes menu item behaviour
 			  icon - deiconifies window
-			  w/ control key pressed - ascends workspace list
+			  w/ Mod1 key pressed - ascends workspace list
 				(i.e. changes from Workspace 2 to Workspace 1)
 
 			button 2 -
@@ -222,30 +233,40 @@ Accepted values:
 As an idea of how to configure blackbox, here is a snippet of my .Xdefaults 
 file:
 
+--
 ! Blackbox window manager resource defaults
-! (c) 1997 Brad Hughes
+! (c) 1997, 1998 Brad Hughes
 
-blackbox*frameColor:            rgb:30/0/60
-blackbox*frameToColor:          rgb:10/0/20
-blackbox*frameTexture:          dgradient
-blackbox*focusColor:            rgb:60/0/c0
-blackbox*focusToColor:          rgb:0/0/0
-blackbox*unfocusColor:          rgb:20/0/40
-blackbox*unfocusToColor:        rgb:0/0/0
+blackbox*frameTexture:            dgradient
+blackbox*buttonTexture:           dgradient
+blackbox*menuTexture:             dgradientsunken
+blackbox*menuItemTexture:         hgradientflat
+blackbox*menuItemPressedTexture:  vgradient
 
-blackbox*buttonTexture:         dgradient
-blackbox*buttonColor:           rgb:80/80/80
-blackbox*buttonToColor:         rgb:c0/c0/c0
+blackbox*frameColor:              rgb:30/60/60
+blackbox*frameToColor:            rgb:10/20/20
+blackbox*focusColor:              rgb:60/c0/c0
+blackbox*focusToColor:            black
+blackbox*unfocusColor:            rgb:30/60/60
+blackbox*unfocusToColor:          black
+blackbox*buttonColor:             rgb:60/c0/c0
+blackbox*buttonToColor:           rgb:10/20/20
+blackbox*iconColor:               rgb:20/40/40
+blackbox*menuColor:               rgb:60/c0/c0
+blackbox*menuToColor:             black
+blackbox*menuItemColor:           rgb:40/80/80
+blackbox*menuItemToColor:         rgb:20/40/40
+blackbox*focusTextColor:          white
+blackbox*unfocusTextColor:        rgb:40/80/80
 
-blackbox*iconColor:             rgb:20/0/40
-blackbox*menuTexture:           dgradientsunken
-blackbox*menuColor:             rgb:60/0/c0
-blackbox*menuToColor:           rgb:0/0/0
-blackbox*menuItemTexture:       dgradient
-blackbox*menuItemPressedTexture:        dgradientsunken
-blackbox*menuItemColor:         rgb:40/0/80
-blackbox*menuItemToColor:       rgb:30/0/60
-blackbox*menuFile:              /home/bhughes/.blackboxmenu
+blackbox*workspaces:              3
+blackbox*menuFile:                /home/bhughes/.blackboxmenu
+blackbox*orientation:             lefthanded
+
+blackbox*titleFont:               -adobe-utopia-regular-r-*-*-*-120-*-*-*-*-*-*
+blackbox*menuFont:                -adobe-utopia-regular-r-*-*-*-100-*-*-*-*-*-*
+blackbox*iconFont:                -adobe-utopia-bold-r-*-*-*-80-*-*-*-*-*-*
+--
 
 
 The Menu File:
@@ -253,28 +274,40 @@ The Menu File:
 The menu file is still in it's infancy, so only a single level of the root 
 menu is able to be created.  The format is shown below:
 
-begin (menu label)
+[begin] (menu label)       <- this must be the first line in the file
   "item label" (command -switches args)
   ...
+  [begin] (menu label)     <- submenu
+    "item label" (command -switches args)
+    ...
+  [end]                    <- end of submenu
   "item label" (Restart)   <- restarts blackbox
   "item label" (Exit)      <- exits blackbox
-end
+[end]
 
 
 Again for an idea of how to configure the menu, here is my .blackboxmenu file 
 (set by the resource in my .Xdefaults file):
 
-begin (Precursor)
+--
+[begin] (Precursor)
   "xterm" (xterm -ls)
   "ircII undernet" (xterm -name irc -e irc)
-  "ircII epic" (xterm -name irc -e irc nyz ion.xtn.net:6667)
+  "ircII epic" (xterm -name irc -e irc nyz irc.miranda.org:6667)
   "xemacs" (xemacs)
-  "xv 3.10a" (xv -bg rgb:c0/c0/c0 -fg black -hi rgb:e0/e0/e0 -lo rgb:a0/a0/a0)
-  "Image Magick" (display)
+  [begin] (Graphics)
+    "xv 3.10a" (xv -bg rgb:c0/c0/c0 -fg black -hi rgb:e0/e0/e0 -lo rgb:a0/a0/a0)
+    "Image Magick" (display)
+  [end]
   "Communicator 4.04" (netscape)
+  [begin] (PPP link)
+    "ppp up" (/usr/sbin/pppd)
+    "ppp down" (killall pppd)
+  [end]
   "Restart" (Restart)
   "Exit" (Exit)
-end
+[end]
+--
 
 
 Questions comments and flames welcome.  bhughes@arn.net

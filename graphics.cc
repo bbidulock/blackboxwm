@@ -164,6 +164,8 @@ XImage *BImage::convertToXImage(void) {
     break; }
 
   case 15:
+    break;
+
   case 8: {
     int rr, gg, bb;
     unsigned char *im = (unsigned char *) image->data;
@@ -173,34 +175,34 @@ XImage *BImage::convertToXImage(void) {
       g = (unsigned char) (((*p) & 0xff00)>>8);
       b = (unsigned char) (*(p++) & 0xff);
 
-      rr = (r * 6) / 0xff;
-      gg = (g * 6) / 0xff;
-      bb = (b * 6) / 0xff;
+      rr = (r * 5) / 0xff;
+      gg = (g * 5) / 0xff;
+      bb = (b * 5) / 0xff;
 
       if (rr < 0) rr = 0;
-      else if (rr > 5) rr = 5;
+      else if (rr > 4) rr = 4;
       if (gg < 0) gg = 0;
-      else if (gg > 5) gg = 5;
+      else if (gg > 4) gg = 4;
       if (bb < 0) bb = 0;
-      else if (bb > 5) bb = 5;
-      *(im++) = session->Colors8bpp()[(rr * 36) + (gg * 6) + bb].pixel;
+      else if (bb > 4) bb = 4;
+      *(im++) = session->Colors8bpp()[(rr * 25) + (gg * 5) + bb].pixel;
     }
 
     r = (unsigned char) (((*p) & 0xff0000)>>16);
     g = (unsigned char) (((*p) & 0xff00)>>8);
     b = (unsigned char) (*(p++) & 0xff);
     
-    rr = (r * 6) / 0xff;
-    gg = (g * 6) / 0xff;
-    bb = (b * 6) / 0xff;
+    rr = (r * 5) / 0xff;
+    gg = (g * 5) / 0xff;
+    bb = (b * 5) / 0xff;
     
     if (rr < 0) rr = 0;
-    else if (rr > 5) rr = 5;
+    else if (rr > 4) rr = 4;
     if (gg < 0) gg = 0;
-    else if (gg > 5) gg = 5;
+    else if (gg > 4) gg = 4;
     if (bb < 0) bb = 0;
-    else if (bb > 5) bb = 5;
-    *(im) = session->Colors8bpp()[(rr * 36) + (gg * 6) + bb].pixel;
+    else if (bb > 4) bb = 4;
+    *(im) = session->Colors8bpp()[(rr * 25) + (gg * 5) + bb].pixel;
     
     break; }
   }

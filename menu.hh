@@ -47,7 +47,7 @@ private:
   BlackboxSession *session;
   Debugger *debug;
 
-  Bool moving, show_title, visible, sub;
+  Bool moving, show_title, visible, sub, movable;
   Display *display;
   GC titleGC, itemGC, pitemGC;
   XContext itemContext;
@@ -89,7 +89,7 @@ protected:
   BlackboxMenuItem *at(int);
   BlackboxSession *Session(void);
 
-  void drawSubMenu(int);
+  void drawSubmenu(int);
   Window createItemWindow(void);
 
 
@@ -107,6 +107,8 @@ public:
   void setMenuLabel(char *);
   const char *label(void) const { return menu.label; }
   int count(void) { return menuitems->count(); }
+  Bool hasSubmenu(int);
+  void setMovable(Bool);
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);
