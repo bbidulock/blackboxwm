@@ -24,6 +24,8 @@
 #include "session.hh"
 #include "workspace.hh"
 
+#include <string.h>
+
 
 // *************************************************************************
 // Window Menu class code
@@ -75,7 +77,7 @@ void BlackboxWindowMenu::itemPressed(int button, int item) {
   if (button == 1 && item == 0) {
     send_to_menu->updateMenu();
     XRaiseWindow(session->control(), send_to_menu->windowID());
-    BlackboxMenu::drawSubmenu(item);
+    // BlackboxMenu::drawSubmenu(item);
   } else if (button == 3 && item == 0) {
     send_to_menu->updateMenu();
     XRaiseWindow(session->control(), send_to_menu->windowID());
@@ -172,7 +174,10 @@ SendToWorkspaceMenu::SendToWorkspaceMenu(BlackboxWindow *w,
   window = w;
   ws_manager = s->WSManager();
 
-  hideTitle();
+  char *l = new char[strlen("Send To ...") + 1];
+  strncpy(l, "Send To ...", strlen("Send To ...") + 1);
+  setMenuLabel(l);
+  showTitle();
   updateMenu();
 }
 

@@ -17,24 +17,52 @@ XCOMM  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 XCOMM
 XCOMM (See the included file COPYING / GPL-2.0)
 
+XCOMM Add compiler options here
+CompileOptimize :=	$(CXXFLAGS) -g
+CompileOptions :=	-Wall -W $(CompileOptimize)
+
+XCOMM Define this to get XShapeExtention support
+#define SupportShapeExtension
+
+XCOMM Define this to get animations and other superfluous goodies
+#define Animations
+
+XCOMM Define this to get wire frame moves (as opposed to opaque moves)
+XCOMM   Opaque moves == moves where window contents are always viewable
+XCOMM #define WireFrameWindowMove
+
+XCOMM
+XCOMM  END OF USER CONFIGURABLE ITEMS
+XCOMM
+XCOMM  %%% *** %%% *** Do not edit the lines below *** %%% *** %%%
+XCOMM
+XCOMM
+
 XCOMM Source files from which blackbox is built
 
-Includes =		blackbox.hh graphics.hh icon.hh llist.hh menu.hh session.hh window.hh workspace.hh
-Sources =		blackbox.cc graphics.cc icon.cc llist.cc main.cc menu.cc session.cc sessionmenu.cc window.cc windowmenu.cc workspace.cc workspacemenu.cc
-Objects =		blackbox.o graphics.o icon.o main.o menu.o llist.o session.o sessionmenu.o window.o windowmenu.o workspace.o workspacemenu.o
+Includes :=		blackbox.hh graphics.hh icon.hh llist.hh menu.hh session.hh window.hh workspace.hh
+Sources :=		blackbox.cc graphics.cc icon.cc llist.cc main.cc menu.cc session.cc sessionmenu.cc window.cc windowmenu.cc workspace.cc workspacemenu.cc
+Objects :=		blackbox.o graphics.o icon.o main.o menu.o llist.o session.o sessionmenu.o window.o windowmenu.o workspace.o workspacemenu.o
 
-XCOMM Add compiler options here
-CompileOptimize =	$(CXXFLAGS)
-CompileOptions =	-Wall -W -DSHAPE $(CompileOptimize)
+DefaultsPath :=		-DXAPPLOADDIR=\"$(XAPPLOADDIR)\" -DXLIBDIR=\"$(LIBDIR)\"
+Libraries :=		$(XLIB) $(EXTENSIONLIB)
+OtherLibs :=		
 
-DefaultsPath =		-DXAPPLOADDIR=\"$(XAPPLOADDIR)\" -DXLIBDIR=\"$(LIBDIR)\"
-Libraries =		$(XLIB) $(EXTENSIONLIB)
-OtherLibs =		
+#ifdef SupportShapeExtension
+CompileOptions :=	$(CompileOptions) -DSHAPE
+#endif
 
+#ifdef Animations
+CompileOptions :=	$(CompileOptions) -DANIMATIONS
+#endif
 
-PROGRAMS = blackbox
-SRCS1 = $(Sources)
-OBJS1 = $(Objects)
+#ifdef WireFrameWindowMove
+CompileOptions :=	$(CompileOptions) -DWIREMOVE
+#endif
+
+PROGRAMS := blackbox
+SRCS1 := $(Sources)
+OBJS1 := $(Objects)
 ComplexProgramTarget_1(blackbox, $(Libraries), $(OtherLibs))
 
 .cc.o: $(Sources)
@@ -42,8 +70,6 @@ ComplexProgramTarget_1(blackbox, $(Libraries), $(OtherLibs))
 
 session.o: session.cc
 	$(CXX) $(CompileOptions) $(DefaultsPath) -c -o $@ $<
-
-XCOMM  %%% *** %%% *** Do not edit the lines below *** %%% *** %%%
 
 depend::
 	rm -f Makefile.bak

@@ -19,10 +19,10 @@
 -- 
 
 *** %%% *** NOTE *** %%% ***
-Blackbox's configuration system has completely CHANGED.  All previous
-configurations will NOT WORK with this release.  This is the reason for a
-0.20.x release.  Please read the following text so that you can adapt your
-current configuration to the new format.
+Blackbox's configuration system has completely CHANGED as of 0.2x.x.  All
+previous configurations will NOT WORK with this release.  This is the reason
+for a 0.2x.x release.  Please read the following text so that you can adapt
+your current configuration to the new format.
 *** %%% ***      *** %%% ***
 
 This file covers operation and configuration of Blackbox.  Since it is
@@ -76,6 +76,9 @@ Compilation and Installation:
 Blackbox uses an Imakefile to better configure and allow for various
 system types.  Compiler flags, libraries and paths are automatically set
 in the various imake rules and templates files.
+
+Edit the Imakefile and #define the options that you want compiled into (or
+outof) blackbox.
 
 To fully compile and install blackbox, issue the following commands:
 	xmkmf -a

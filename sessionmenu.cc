@@ -75,8 +75,8 @@ int SessionMenu::remove(int index) {
 
 void SessionMenu::itemPressed(int button, int item) {
   if (button == 1 && hasSubmenu(item)) {
-    drawSubmenu(item);
-    XRaiseWindow(session->control(), find(item)->Submenu()->windowID());
+    if (find(item)->Submenu()->menuVisible())
+      XRaiseWindow(session->control(), find(item)->Submenu()->windowID());
   }
 }
 

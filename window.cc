@@ -1089,6 +1089,7 @@ void BlackboxWindow::iconifyWindow(void) {
   if (window_menu) window_menu->hideMenu();
   menu_visible = False;
   
+#ifdef ANIMATIONS
   if (! shaded) {
     int wx = frame.x + (frame.width / 2), sx = frame.width / 16,
       sy = frame.height / 16;
@@ -1103,6 +1104,7 @@ void BlackboxWindow::iconifyWindow(void) {
       XMoveResizeWindow(display, frame.window, wx - (fx / 2), frame.y, fx,
 			frame.title_h);
   }
+#endif
 
   XUnmapWindow(display, frame.window);
   visible = False;
@@ -1129,11 +1131,15 @@ void BlackboxWindow::iconifyWindow(void) {
 
 
 void BlackboxWindow::deiconifyWindow(void) {
+#ifdef ANIMATIONS
   int wx = frame.x + (frame.width / 2), sx = frame.width / 16,
     sy = frame.height / 16;
   XMoveResizeWindow(display, frame.window, wx, frame.y, sx, sy);
+#endif
+
   XMapWindow(display, frame.window);
 
+#ifdef ANIMATIONS
   if (! shaded) {
     int fx = sx, fy = sy;
     for (int i = 0; i < 16; i++, fx += sx, fy += sy)
@@ -1149,6 +1155,7 @@ void BlackboxWindow::deiconifyWindow(void) {
     XMoveResizeWindow(display, frame.window, frame.x, frame.y, frame.width,
 		      frame.title_h);
   }
+#endif
       
   XMapSubwindows(display, frame.window);
   visible = True;
@@ -1200,6 +1207,7 @@ void BlackboxWindow::withdrawWindow(void) {
   focused = False;
   visible = False;
 
+#ifdef ANIMATIONS
   int wx = frame.x + (frame.width / 2), sx = frame.width / 16,
     sy = frame.height / 16;
   
@@ -1213,6 +1221,7 @@ void BlackboxWindow::withdrawWindow(void) {
       XMoveResizeWindow(display, frame.window, wx - (fx / 2), frame.y, fx,
 			frame.title_h);
   }
+#endif
 
   XUnmapWindow(display, frame.window);
   if (window_menu) window_menu->hideMenu();
@@ -1290,16 +1299,20 @@ void BlackboxWindow::maximizeWindow(void) {
 
 void BlackboxWindow::shadeWindow(void) {
   if (shaded) {
+#ifdef ANIMATIONS
     int sy = frame.height / 16, fy = sy;
     for (int i = 0; i < 16; i++, fy += sy)
       XResizeWindow(display, frame.window, frame.width, fy);
+#endif
 
     XResizeWindow(display, frame.window, frame.width, frame.height);
     shaded = False;
   } else {
+#ifdef ANIMATIONS
     int sy = frame.height / 16, fy = frame.height;
     for (int i = 0; i < 16; i++, fy -= sy)
       XResizeWindow(display, frame.window, frame.width, fy);
+#endif
     
     XResizeWindow(display, frame.window, frame.width, frame.title_h);
     shaded = True;
@@ -1448,19 +1461,23 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
 		      session->StateAtom(), 32, PropModeReplace,
 		      (unsigned char *) state, 2);
 
+#ifdef ANIMATIONS
       int wx = frame.x + (frame.width / 2), sx = frame.width / 16,
 	sy = frame.height / 16;
       XMoveResizeWindow(display, frame.window, wx, frame.y, sx, sy);
+#endif
 
       XMapSubwindows(display, frame.window);
       XMapWindow(display, frame.window);
 
+#ifdef ANIMATIONS
       int fx = sx, fy = sy;
       for (unsigned int i = 0; i < 16; i++, fx += sx, fy += sy)
 	XMoveResizeWindow(display, frame.window, wx - (fx / 2), frame.y, fx,
 			  fy);
       XMoveResizeWindow(display, frame.window, frame.x, frame.y, frame.width,
 			frame.height);
+#endif
       
       setFocusFlag(False);
       XUngrabServer(display);
@@ -1503,6 +1520,7 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
 
     visible = False;
       
+#ifdef ANIMATIONS
     int wx = frame.x + (frame.width / 2), sx = frame.width / 16,
       sy = frame.height / 16;
 
@@ -1517,6 +1535,7 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
 	XMoveResizeWindow(display, frame.window, wx - (fx / 2), frame.y, fx,
 			  frame.title_h);
     }
+#endif
 
     XUnmapWindow(display, frame.window);
 
@@ -1539,6 +1558,7 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
 
 void BlackboxWindow::destroyNotifyEvent(XDestroyWindowEvent *de) {
   if (de->window == client.window) {
+#ifdef ANIMATIONS
     int wx = frame.x + (frame.width / 2), sx = frame.width / 16,
       sy = frame.height / 16;
 
@@ -1553,6 +1573,7 @@ void BlackboxWindow::destroyNotifyEvent(XDestroyWindowEvent *de) {
 	XMoveResizeWindow(display, frame.window, wx - (fx / 2), frame.y, fx,
 			  frame.title_h);
     }
+#endif
   
     XUnmapWindow(display, frame.window);
     delete this;
@@ -1679,30 +1700,33 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
   if (re->button == 1) {
     if (re->window == frame.title) {
       if (moving) {
+#ifdef WIREMOVE
+	XDrawRectangle(display, session->Root(), session->GCOperations(),
+		       frame.x, frame.y, frame.width, frame.height);
+	XDrawRectangle(display, session->Root(), session->GCOperations(),
+		       frame.x +
+		       ((session->Orientation() ==
+			 BlackboxSession::B_LeftHandedUser) ?
+			frame.handle_w : 1), frame.y + frame.title_h,
+		       frame.width - frame.handle_w - 1, frame.height -
+		       frame.title_h - 1);
+#endif
 	configureWindow(frame.x, frame.y, frame.width, frame.height);
 	moving = False;
 	XUngrabPointer(display, CurrentTime);
       } else if ((re->state&ControlMask))
 	shadeWindow();
-    } else if (resizing) {
-      XDrawLine(display, session->Root(), session->GCOperations(),
-		frame.x + 1, frame.y + frame.title_h, frame.x_resize + 1,
-		frame.y + frame.title_h);
-      XDrawLine(display, session->Root(), session->GCOperations(),
-		frame.x_resize - frame.handle_w, frame.y + frame.title_h + 1,
-		frame.x_resize - frame.handle_w, frame.y_resize + 1);
-      XDrawLine(display, session->Root(), session->GCOperations(),
-		frame.x + 1, frame.y + 1, frame.x_resize + 1, frame.y + 1);
-      XDrawLine(display, session->Root(), session->GCOperations(),
-		frame.x_resize + 1, frame.y + 1, frame.x_resize + 1,
-		frame.y_resize + 1);
-      XDrawLine(display, session->Root(), session->GCOperations(),
-		frame.x + 1, frame.y_resize + 1, frame.x_resize + 1,
-		frame.y_resize + 1);
-      XDrawLine(display, session->Root(), session->GCOperations(),
-		frame.x + 1, frame.y + 1, frame.x + 1, frame.y_resize + 1);
+    } else if (resizing) {  
+      XDrawRectangle(display, session->Root(), session->GCOperations(),
+		     frame.x, frame.y, frame.x_resize, frame.y_resize);
+      XDrawRectangle(display, session->Root(), session->GCOperations(),
+		     frame.x +
+		     ((session->Orientation() ==
+		       BlackboxSession::B_LeftHandedUser) ? frame.handle_w :
+		      1), frame.y + frame.title_h, frame.x_resize -
+		     frame.handle_w - 1, frame.y_resize - frame.title_h - 1);
       
-      int dw = frame.x_resize - frame.x , dh = frame.y_resize - frame.y;
+      int dw = frame.x_resize, dh = frame.y_resize;
       configureWindow(frame.x, frame.y, dw, dh);
       
       resizing = False;
@@ -1745,13 +1769,48 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
 	  moving = True;
 	  client.x_move = me->x;
 	  client.y_move = me->y;
+
+#ifdef WIREMOVE
+	  XDrawRectangle(display, session->Root(), session->GCOperations(),
+			 frame.x, frame.y, frame.width, frame.height);
+	  XDrawRectangle(display, session->Root(), session->GCOperations(),
+			 frame.x +
+			 ((session->Orientation() ==
+			   BlackboxSession::B_LeftHandedUser) ?
+			  frame.handle_w : 1), frame.y + frame.title_h,
+			 frame.width - frame.handle_w - 1, frame.height -
+			 frame.title_h - 1);
+#endif
 	} else
 	  moving = False;
       } else {
 	int dx = me->x_root - client.x_move,
 	  dy = me->y_root - client.y_move;
-
+	
+#ifdef WIREMOVE
+	XDrawRectangle(display, session->Root(), session->GCOperations(),
+		       frame.x, frame.y, frame.width, frame.height);
+	XDrawRectangle(display, session->Root(), session->GCOperations(),
+		       frame.x +
+		       ((session->Orientation() ==
+			 BlackboxSession::B_LeftHandedUser) ?
+			frame.handle_w : 1), frame.y + frame.title_h,
+		       frame.width - frame.handle_w - 1, frame.height -
+		       frame.title_h - 1);
+	frame.x = dx;
+	frame.y = dy;
+	XDrawRectangle(display, session->Root(), session->GCOperations(),
+		       frame.x, frame.y, frame.width, frame.height);
+	XDrawRectangle(display, session->Root(), session->GCOperations(),
+		       frame.x +
+		       ((session->Orientation() ==
+			 BlackboxSession::B_LeftHandedUser) ?
+			frame.handle_w : 1), frame.y + frame.title_h,
+		       frame.width - frame.handle_w - 1, frame.height -
+		       frame.title_h - 1);
+#else
 	configureWindow(dx, dy, frame.width, frame.height);
+#endif
       }
     }
   } else if (me->window == frame.resize_handle) {
@@ -1763,69 +1822,55 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
 	    == GrabSuccess) {
 	  resizing = True;
 
-	  frame.x_resize = frame.x + frame.width;
-	  frame.y_resize = frame.y + frame.height;
+	  client.x_move = frame.x;
+	  client.y_move = frame.y;
+	  frame.x_resize = frame.width;
+	  frame.y_resize = frame.height;
 
-	  XDrawLine(display, session->Root(), session->GCOperations(),
-		    frame.x + 1, frame.y + frame.title_h, frame.x_resize + 1,
-		    frame.y + frame.title_h);
-	  XDrawLine(display, session->Root(), session->GCOperations(),
-		    frame.x_resize - frame.handle_w,
-		    frame.y + frame.title_h + 1,
-		    frame.x_resize - frame.handle_w, frame.y_resize + 1);
-	  XDrawLine(display, session->Root(), session->GCOperations(),
-		    frame.x + 1, frame.y + 1, frame.x_resize + 1, frame.y + 1);
-	  XDrawLine(display, session->Root(), session->GCOperations(),
-		    frame.x_resize + 1, frame.y + 1, frame.x_resize + 1,
-		    frame.y_resize + 1);
-	  XDrawLine(display, session->Root(), session->GCOperations(),
-		  frame.x + 1, frame.y_resize + 1, frame.x_resize + 1,
-		    frame.y_resize + 1);
-	  XDrawLine(display, session->Root(), session->GCOperations(),
-		    frame.x + 1, frame.y + 1, frame.x + 1, frame.y_resize + 1);
+	  XDrawRectangle(display, session->Root(), session->GCOperations(),
+			 frame.x, frame.y, frame.width, frame.height);
+	  XDrawRectangle(display, session->Root(), session->GCOperations(),
+			 frame.x +
+			 ((session->Orientation() ==
+			   BlackboxSession::B_LeftHandedUser) ?
+			  frame.handle_w : 1), frame.y + frame.title_h,
+			 frame.width - frame.handle_w - 1, frame.height -
+			 frame.title_h - 1);
 	} else
 	  resizing = False;
       } else if (resizing) {
 	int dx, dy;
 
-	XDrawLine(display, session->Root(), session->GCOperations(),
-		  frame.x + 1, frame.y + frame.title_h, frame.x_resize + 1,
-		  frame.y + frame.title_h);
-	XDrawLine(display, session->Root(), session->GCOperations(),
-		  frame.x_resize - frame.handle_w, frame.y + frame.title_h + 1,
-		  frame.x_resize - frame.handle_w, frame.y_resize + 1);
-	XDrawLine(display, session->Root(), session->GCOperations(),
-		  frame.x + 1, frame.y + 1, frame.x_resize + 1, frame.y + 1);
-	XDrawLine(display, session->Root(), session->GCOperations(),
-		  frame.x_resize + 1, frame.y + 1, frame.x_resize + 1,
-		  frame.y_resize + 1);
-	XDrawLine(display, session->Root(), session->GCOperations(),
-		  frame.x + 1, frame.y_resize + 1, frame.x_resize + 1,
-		  frame.y_resize + 1);
-	XDrawLine(display, session->Root(), session->GCOperations(),
-		  frame.x + 1, frame.y + 1, frame.x + 1, frame.y_resize + 1);
-
-	
+	XDrawRectangle(display, session->Root(), session->GCOperations(),
+		       frame.x, frame.y, frame.x_resize, frame.y_resize);
+	XDrawRectangle(display, session->Root(), session->GCOperations(),
+		       frame.x +
+		       ((session->Orientation() ==
+			 BlackboxSession::B_LeftHandedUser) ? frame.handle_w :
+			1), frame.y + frame.title_h, frame.x_resize -
+		       frame.handle_w - 1, frame.y_resize - frame.title_h - 1);
 	if (! client.hint_flags & PResizeInc) {
 	  frame.x_resize = me->x_root;
 	  frame.y_resize = me->y_root;
 	} else {
 	  if (session->Orientation() == BlackboxSession::B_LeftHandedUser) {
-	    // calculate new xposition from pointer position
-	    int nx;
-	    nx = me->x_root - frame.x;
-
-	    dx = frame.x_resize - (frame.x + nx) - frame.handle_w - 1;
+	    // calculate width of the client window
+	    dx = (frame.width + client.x_move) - me->x_root;
 	    dy = me->y_root - frame.y + 1;
 	    dx -= ((dx % client.inc_h) - client.base_w);
 	    dy -= ((dy % client.inc_h) - client.base_h);
 
+	    // conform the client window width to the specs provided by size
+	    // hints
 	    if (dx < (signed) client.min_w)
-	      dx = client.min_w + frame.handle_w + 1;
-	    if (dy < (signed) client.min_h) dy = client.min_h;
+	      dx = client.min_w;
+	    if (dy < (signed) client.min_h)
+	      dy = client.min_h;
 
-	    frame.x = frame.x_resize - dx + 3;
-	    frame.y_resize = dy + frame.title_h + frame.y + 1;
+	    // calculate the new frame width and position
+	    frame.x_resize = dx + frame.handle_w + 1;
+	    frame.x = (client.x_move + frame.width) - frame.x_resize;
+	    frame.y_resize = dy + frame.title_h + 1;
 	  } else {
 	    // calculate the width of the client window...
 	    dx = me->x_root - frame.x + 1;
@@ -1843,27 +1888,17 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
 	    //   resizing lines...
 	    frame.x_resize = dx + frame.handle_w + 1;
 	    frame.y_resize = dy + frame.title_h + 1;
-	    frame.x_resize += frame.x;
-	    frame.y_resize += frame.y;
 	  }
 	}
 	
-	XDrawLine(display, session->Root(), session->GCOperations(),
-		  frame.x + 1, frame.y + frame.title_h, frame.x_resize + 1,
-		  frame.y + frame.title_h);
-	XDrawLine(display, session->Root(), session->GCOperations(),
-		  frame.x_resize - frame.handle_w, frame.y + frame.title_h + 1,
-		  frame.x_resize - frame.handle_w, frame.y_resize + 1);
-	XDrawLine(display, session->Root(), session->GCOperations(),
-		  frame.x + 1, frame.y + 1, frame.x_resize + 1, frame.y + 1);
-	XDrawLine(display, session->Root(), session->GCOperations(),
-		  frame.x_resize + 1, frame.y + 1, frame.x_resize + 1,
-		  frame.y_resize + 1);
-	XDrawLine(display, session->Root(), session->GCOperations(),
-		  frame.x + 1, frame.y_resize + 1, frame.x_resize + 1,
-		  frame.y_resize + 1);
-	XDrawLine(display, session->Root(), session->GCOperations(),
-		  frame.x + 1, frame.y + 1, frame.x + 1, frame.y_resize + 1);
+	XDrawRectangle(display, session->Root(), session->GCOperations(),
+		       frame.x, frame.y, frame.x_resize, frame.y_resize);
+	XDrawRectangle(display, session->Root(), session->GCOperations(),
+		       frame.x +
+		       ((session->Orientation() ==
+			 BlackboxSession::B_LeftHandedUser) ? frame.handle_w :
+			1), frame.y + frame.title_h, frame.x_resize -
+		       frame.handle_w - 1, frame.y_resize - frame.title_h - 1);
       }
     }
   }

@@ -493,6 +493,7 @@ void WorkspaceManager::changeWorkspaceID(int id) {
                 session->titleFont()->ascent, frame.title,
 		strlen(frame.title));
     current->showAll();
+    XSync(display, False);
   }
 }
 

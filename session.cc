@@ -506,8 +506,10 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
       if (focus_window_number != -1) {
 	BlackboxWindow *tmp =
 	  ws_manager->currentWorkspace()->window(focus_window_number);
-	if (tmp->isVisible())
-	  tmp->setInputFocus();
+        if (tmp)
+	  if ((tmp->workspace() == ws_manager->currentWorkspaceID()) &&
+	      tmp->isVisible())
+	    tmp->setInputFocus();
       }
     }
 
