@@ -587,6 +587,9 @@ void BScreen::addWindow(Window w) {
 }
 
 
+static StackingList::iterator raiseWindow(StackingList &stackingList,
+                                          StackEntity *entity);
+
 void BScreen::manageWindow(Window w) {
   XWMHints *wmhints = XGetWMHints(_blackbox->XDisplay(), w);
   bool slit_client = (wmhints && (wmhints->flags & StateHint) &&
@@ -627,7 +630,8 @@ void BScreen::manageWindow(Window w) {
   windowList.push_back(win);
 
   // insert window at the top of the stack
-  _stackingList.insert(win);
+  (void) _stackingList.insert(win);
+  (void) ::raiseWindow(_stackingList, win);
   if (!_blackbox->startingUp())
     restackWindows();
 
@@ -965,10 +969,12 @@ void BScreen::raiseWindow(StackEntity *entity) {
   StackingList::iterator layer = _stackingList.layer(entity->layer()),
                          begin = _stackingList.begin(),
                             it = layer;
-  for (--it; it != begin; --it) {
-    if (*it) {
-      above = *it;
-      break;
+  if (it != begin) {
+    for (--it; it != begin; --it) {
+      if (*it) {
+        above = *it;
+        break;
+      }
     }
   }
 
@@ -983,12 +989,13 @@ void BScreen::raiseWindow(StackEntity *entity) {
   }
 
   // go to the layer boundary above 'top'
-  it = top;
-  for (--it; *it && it != begin; --it)
+  for (it = top; *it && it != begin; --it)
     ;
 
   // put all windows from the layer boundary to 'top' into the stack
-  for (++it; *it && it != top; ++it) {
+  if (!(*it))
+    ++it; // move past layer boundary
+  for (; *it && it != top; ++it) {
     assert(it != end);
     stack.push_back((*it)->windowID());
   }
