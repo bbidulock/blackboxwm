@@ -23,9 +23,9 @@ $ #SloppyFocus
 $ #AutoRaise
 # 自动放前
 $ #SmartRows
-# 自动放置 (行)
+# 自动放置(行)
 $ #SmartCols
-# 自动放置 (列)
+# 自动放置(列)
 $ #Cascade
 # 层叠放置
 $ #LeftRight

@@ -46,7 +46,7 @@ $ #WORKSPACESError
 $ #PositionLength
 # 0: 0000 x 0: 0000
 $ #PositionFormat
-# X: %4d x Y: %4d
+# ×ó: %4d x ÉÏ: %4d
 $ #GeometryFormat
 # ¿í: %4d x ¸ß: %4d
 

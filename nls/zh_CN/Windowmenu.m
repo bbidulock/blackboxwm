@@ -1,7 +1,7 @@
 $set 10 #Windowmenu
 
 $ #SendTo
-# 发送到 ...
+# 发送到...
 $ #Shade
 # 卷帘
 $ #Iconify
