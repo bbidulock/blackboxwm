@@ -223,3 +223,24 @@ timeval normalizeTimeval(const timeval &tm) {
 
   return ret;
 }
+
+
+string itostring(unsigned long i) {
+  if (i == 0)
+    return string("0");
+
+  const char nums[] = "0123456789";
+
+  string tmp;
+  for (; i > 0; i /= 10)
+    tmp.insert(tmp.begin(), nums[i%10]);
+  return tmp;
+}
+
+
+string itostring(long i) {
+  std::string tmp = itostring(static_cast<unsigned long>(std::abs(i)));
+  if (i < 0)
+    tmp.insert(tmp.begin(), '-');
+  return tmp;
+}

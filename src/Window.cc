@@ -233,13 +233,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
                        GrabModeAsync, frame.window,
                        blackbox->getLowerRightAngleCursor());
 
-  positionWindows();
-  decorate();
-
-  if (decorations & Decor_Titlebar)
-    XMapSubwindows(blackbox->getXDisplay(), frame.title);
-  XMapSubwindows(blackbox->getXDisplay(), frame.window);
-
   windowmenu = new Windowmenu(this);
 
   if (blackbox_attrib.workspace >= screen->getWorkspaceCount())
@@ -251,10 +244,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   if (! place_window) {
     // don't need to call configure if we are letting the workspace
     // place the window
-    client.rect.setCoords(frame.rect.left() + frame.margin.left,
-                          frame.rect.top() + frame.margin.top,
-                          frame.rect.right() - frame.margin.right,
-                          frame.rect.bottom() - frame.margin.bottom);
+    configure(frame.rect.x(), frame.rect.y(),
+              frame.rect.width(), frame.rect.height());
   }
 
   // preserve the window's initial state on first map, and its current state
@@ -298,6 +289,11 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     fact never set to Iconic since there is no way for us to tell if a sticky
     window was iconified previously.
   */
+ 
+  positionWindows();
+  decorate();
+
+  XMapSubwindows(blackbox->getXDisplay(), frame.window);
 
   redrawWindowFrame();
 }
@@ -784,6 +780,12 @@ void BlackboxWindow::positionWindows(void) {
                     client.rect.width(), client.rect.height());
   XMoveResizeWindow(blackbox->getXDisplay(), client.window,
                     0, 0, client.rect.width(), client.rect.height());
+  // ensure client.rect contains the real location
+  client.rect.setCoords(frame.rect.left() + frame.margin.left,
+                        frame.rect.top() + frame.margin.top,
+                        frame.rect.right() - frame.margin.right,
+                        frame.rect.bottom() - frame.margin.bottom);
+
 
   if (decorations & Decor_Titlebar) {
     if (frame.title == None) createTitlebar();
@@ -1217,9 +1219,17 @@ BlackboxWindow *BlackboxWindow::getTransientFor(void) const {
 }
 
 
+/*
+ * This function is responsible for updating both the client and the frame
+ * rectangles.
+ * According to the ICCCM a client message is not sent for a resize, only a
+ * move.
+ * N.B. it is important that this function always update the client.rect, this
+ * is basically the only external interface to this rectangle.
+ */
 void BlackboxWindow::configure(int dx, int dy,
                                unsigned int dw, unsigned int dh) {
-  bool send_event = False;
+  bool send_event = (frame.rect.x() != dx || frame.rect.y() != dy);
 
   if (dw != frame.rect.width() || dh != frame.rect.height()) {
     frame.rect.setRect(dx, dy, dw, dh);
@@ -1243,9 +1253,7 @@ void BlackboxWindow::configure(int dx, int dy,
     positionWindows();
     decorate();
     redrawWindowFrame();
-  } else if (frame.rect.x() != dx || frame.rect.y() != dy) {
-    send_event = True;
-
+  } else {
     frame.rect.setPos(dx, dy);
 
     XMoveWindow(blackbox->getXDisplay(), frame.window,
@@ -1253,6 +1261,7 @@ void BlackboxWindow::configure(int dx, int dy,
   }
 
   if (send_event && ! flags.moving) {
+    // if moving, the update and event will occur when the move finishes
     client.rect.setPos(frame.rect.left() + frame.margin.left,
                        frame.rect.top() + frame.margin.top);
 
@@ -1272,7 +1281,6 @@ void BlackboxWindow::configure(int dx, int dy,
 
     XSendEvent(blackbox->getXDisplay(), client.window, False,
                StructureNotifyMask, &event);
-
     screen->updateNetizenConfigNotify(&event);
   }
 }
@@ -1453,7 +1461,6 @@ void BlackboxWindow::show(void) {
           client.rect.left(), client.rect.top(), real_x, real_y);
   assert(client.rect.left() == real_x && client.rect.top() == real_y);
 #endif
-#undef DEBUG
 
   flags.visible = True;
   flags.iconic = False;
