@@ -35,6 +35,10 @@
 #  include "../config.h"
 #endif
 
+#ifdef HAVE_NL_LANGINFO
+#  include <langinfo.h>
+#endif
+
 
 namespace bt {
 
@@ -70,9 +74,9 @@ namespace bt {
   }
 
   static ustring add_bom(const ustring &string) {
-     ustring ret;
-     ret.push_back(0x0000feff);
-     return ret + string;
+    ustring ret;
+    ret.push_back(0x0000feff);
+    return ret + string;
   }
 
   template <typename _Source, typename _Target>
@@ -161,14 +165,30 @@ bool bt::hasUnicode() {
 
   setlocale(LC_ALL, "");
 
+  std::string codeset;
+#ifdef HAVE_NL_LANGINFO
+  codeset = nl_langinfo(CODESET);
+#else
+  std::string locale = setlocale(LC_CTYPE, 0);
+  std::string::const_iterator it = locale.begin();
+  const std::string::const_iterator end = locale.end();
+  for (; it != end; ++it) {
+    if (*it == '.') {
+      // found codeset separator
+      ++it;
+      codeset = std::string(it, end);
+    }
+  }
+#endif // HAVE_NL_LANGINFO
+
   struct {
     const char *to;
     const char *from;
   } conversions[] = {
-    { "UTF-32", "" },
+    { "UTF-32", codeset.c_str() },
     { "UTF-32", "UTF-8" },
     { "UTF-8", "UTF-32" },
-    { "", "UTF-32" },
+    { codeset.c_str(), "UTF-32" },
   };
   static const int conversions_count = 4;
 
