@@ -313,10 +313,12 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   // call this again just in case a window we found updates the Strut list
   updateAvailableArea();
 
-  // watch for SubstructureNotify events, so that we can catch the odd cases where
-  // the window maps, unmaps and destroys itself before blackbox has a change to manage
-  // it... without SubstructureNotify, we never get the Unmap or Destroy events, which
-  // would leave us with a ghost window...
+  /*
+   * watch for SubstructureNotify events, so that we can catch the odd cases
+   * where the window maps, unmaps and destroys itself before blackbox has a
+   * change to manage it... without SubstructureNotify, we never get the Unmap
+   * or Destroy events, which would leave us with a ghost window...
+   */
   event_mask |= SubstructureNotifyMask;
   XSelectInput(getBaseDisplay()->getXDisplay(), getRootWindow(), event_mask);
   XFlush(blackbox->getXDisplay());
@@ -824,8 +826,7 @@ void BScreen::changeWorkspaceID(unsigned int id) {
   if (id != current_workspace->getID()) {
     current_workspace->hideAll();
 
-    workspacemenu->setItemSelected(current_workspace->getID() + 2,
-                                   False);
+    workspacemenu->setItemSelected(current_workspace->getID() + 2, False);
 
     if (blackbox->getFocusedWindow() &&
         blackbox->getFocusedWindow()->getScreen() == this &&
@@ -836,14 +837,14 @@ void BScreen::changeWorkspaceID(unsigned int id) {
 
     current_workspace = getWorkspace(id);
 
-    workspacemenu->setItemSelected(current_workspace->getID() + 2,
-                                   True);
+    workspacemenu->setItemSelected(current_workspace->getID() + 2, True);
     toolbar->redrawWorkspaceLabel(True);
 
     current_workspace->showAll();
 
     if (resource.focus_last && current_workspace->getLastFocusedWindow()) {
       XSync(blackbox->getXDisplay(), False);
+      fprintf(stderr, "giving focus: %s\n", current_workspace->getLastFocusedWindow()->getTitle());
       current_workspace->getLastFocusedWindow()->setInputFocus();
     }
   }
