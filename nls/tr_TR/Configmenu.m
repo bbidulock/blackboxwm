@@ -36,3 +36,9 @@ $ #TopBottom
 # Üstten aþaða
 $ #BottomTop
 # Alttan üste
+$ #NoDithering
+# No Dithering
+$ #OrderedDithering
+# Ordered Dithering
+$ #FloydSteinbergDithering
+# Floyd-Steinberg Dithering

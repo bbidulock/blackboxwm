@@ -40,3 +40,9 @@ $ #TopBottom
 # Topp til bunn
 $ #BottomTop
 # Bunn til topp
+$ #NoDithering
+# No Dithering
+$ #OrderedDithering
+# Ordered Dithering
+$ #FloydSteinbergDithering
+# Floyd-Steinberg Dithering

@@ -40,3 +40,9 @@ $ #TopBottom
 # De sus in jos
 $ #BottomTop
 # De jos in sus
+$ #NoDithering
+# No Dithering
+$ #OrderedDithering
+# Ordered Dithering
+$ #FloydSteinbergDithering
+# Floyd-Steinberg Dithering

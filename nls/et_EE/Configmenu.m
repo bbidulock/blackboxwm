@@ -36,3 +36,9 @@ $ #TopBottom
 # Ülevalt alla
 $ #BottomTop
 # Alt ülesse
+$ #NoDithering
+# No Dithering
+$ #OrderedDithering
+# Ordered Dithering
+$ #FloydSteinbergDithering
+# Floyd-Steinberg Dithering

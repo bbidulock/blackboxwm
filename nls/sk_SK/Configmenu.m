@@ -40,3 +40,9 @@ $ #TopBottom
 # Zhora nadol
 $ #BottomTop
 # Zdola nahor
+$ #NoDithering
+# No Dithering
+$ #OrderedDithering
+# Ordered Dithering
+$ #FloydSteinbergDithering
+# Floyd-Steinberg Dithering

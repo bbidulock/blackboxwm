@@ -36,3 +36,9 @@ $ #TopBottom
 # 由上至下 
 $ #BottomTop
 # 由下至上 
+$ #NoDithering
+# No Dithering
+$ #OrderedDithering
+# Ordered Dithering
+$ #FloydSteinbergDithering
+# Floyd-Steinberg Dithering

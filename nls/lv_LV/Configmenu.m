@@ -40,3 +40,9 @@ $ #TopBottom
 # No Augðas uz Leju
 $ #BottomTop
 # No Lejas uz Augðu
+$ #NoDithering
+# No Dithering
+$ #OrderedDithering
+# Ordered Dithering
+$ #FloydSteinbergDithering
+# Floyd-Steinberg Dithering

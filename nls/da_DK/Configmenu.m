@@ -40,3 +40,9 @@ $ #TopBottom
 # Oppefra
 $ #BottomTop
 # Nedefra
+$ #NoDithering
+# No Dithering
+$ #OrderedDithering
+# Ordered Dithering
+$ #FloydSteinbergDithering
+# Floyd-Steinberg Dithering

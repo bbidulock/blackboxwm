@@ -40,3 +40,9 @@ $ #TopBottom
 # Fentrõl lefele
 $ #BottomTop
 # Lentrõl felfele
+$ #NoDithering
+# No Dithering
+$ #OrderedDithering
+# Ordered Dithering
+$ #FloydSteinbergDithering
+# Floyd-Steinberg Dithering

@@ -38,3 +38,9 @@ $ #TopBottom
 # 위에서 아래로
 $ #BottomTop
 # 아래에서 위로
+$ #NoDithering
+# No Dithering
+$ #OrderedDithering
+# Ordered Dithering
+$ #FloydSteinbergDithering
+# Floyd-Steinberg Dithering
