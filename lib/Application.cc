@@ -278,117 +278,104 @@ void bt::Application::process_event(XEvent *event) {
 
   bt::EventHandler *handler = it->second;
 
-  // deliver the event
-  switch (event->type) {
-  case ButtonPress:
-  case ButtonRelease:
-  case MotionNotify: {
-    if (menu_grab) {
-      // we have active menus.  we should send all user input events
-      // to the menus instead of the normal handler
+  // if there is an active menu, pre-process the events
+  if (menu_grab) {
+    switch (event->type) {
+    case ButtonPress:
+    case ButtonRelease:
+    case MotionNotify: {
       if (! dynamic_cast<Menu*>(handler)) {
         // current handler is not a menu.  send the event to the most
         // recent menu instead.
         handler = dynamic_cast<EventHandler*>(menus.front());
       }
       XAllowEvents(_display.XDisplay(), SyncPointer, xserver_time);
-    }
-
-    switch (event->type) {
-    case ButtonPress: {
-      xserver_time = event->xbutton.time;
-      // strip the lock key modifiers
-      event->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
-      handler->buttonPressEvent(&event->xbutton);
       break;
     }
-
-    case ButtonRelease: {
-      xserver_time = event->xbutton.time;
-      // strip the lock key modifiers
-      event->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
-      handler->buttonReleaseEvent(&event->xbutton);
-      break;
-    }
-
-    case MotionNotify: {
-      xserver_time = event->xmotion.time;
-      // compress motion notify events
-      XEvent realevent;
-      unsigned int i = 0;
-      while (XCheckTypedWindowEvent(_display.XDisplay(), event->xmotion.window,
-                                    MotionNotify, &realevent)) {
-        ++i;
-      }
-
-      // if we have compressed some motion events, use the last one
-      if ( i > 0 )
-        event = &realevent;
-
-      // strip the lock key modifiers
-      event->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
-      handler->motionNotifyEvent(&event->xmotion);
-      break;
-    }
-    } // switch
-
-    break;
-  }
-
-  case EnterNotify:
-  case LeaveNotify: {
-    if (menu_grab) {
+    case EnterNotify:
+    case LeaveNotify: {
       // we have active menus.  we should only send enter/leave events
       // to the menus themselves, not to normal windows
-      if (! dynamic_cast<Menu*>(handler)) {
-        break;
-      }
-    }
-
-    switch (event->type) {
-    case EnterNotify: {
-      xserver_time = event->xcrossing.time;
-      handler->enterNotifyEvent(&event->xcrossing);
+      if (! dynamic_cast<Menu*>(handler))
+        return;
       break;
     }
-
-    case LeaveNotify: {
-      xserver_time = event->xcrossing.time;
-      handler->leaveNotifyEvent(&event->xcrossing);
-      break;
-    }
-    } // switch
-
-    break;
-  }
-
-  case KeyPress:
-  case KeyRelease: {
-    if (menu_grab) {
+    case KeyPress:
+    case KeyRelease: {
       // we have active menus.  we should send all key events to the most
       // recent popup menu, regardless of where the pointer is
       handler = dynamic_cast<EventHandler*>(menus.front());
       XAllowEvents(_display.XDisplay(), SyncKeyboard, xserver_time);
-    }
-
-    switch (event->type) {
-    case KeyPress: {
-      xserver_time = event->xkey.time;
-      // strip the lock key modifiers, except numlock, which can be useful
-      event->xkey.state &= ~(ScrollLockMask | LockMask);
-      handler->keyPressEvent(&event->xkey);
       break;
     }
-
-    case KeyRelease: {
-      xserver_time = event->xkey.time;
-      // strip the lock key modifiers, except numlock, which can be useful
-      event->xkey.state &= ~(ScrollLockMask | LockMask);
-      handler->keyReleaseEvent(&event->xkey);
+    default:
       break;
     }
-    } // switch
+  }
 
+  // deliver the event
+  switch (event->type) {
+  case ButtonPress: {
+    xserver_time = event->xbutton.time;
+    // strip the lock key modifiers
+    event->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
+    handler->buttonPressEvent(&event->xbutton);
+    break;
+  }
+
+  case ButtonRelease: {
+    xserver_time = event->xbutton.time;
+    // strip the lock key modifiers
+    event->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
+    handler->buttonReleaseEvent(&event->xbutton);
+    break;
+  }
+
+  case MotionNotify: {
+    xserver_time = event->xmotion.time;
+    // compress motion notify events
+    XEvent realevent;
+    unsigned int i = 0;
+    while (XCheckTypedWindowEvent(_display.XDisplay(), event->xmotion.window,
+                                  MotionNotify, &realevent)) {
+      ++i;
+    }
+
+    // if we have compressed some motion events, use the last one
+    if ( i > 0 )
+      event = &realevent;
+
+    // strip the lock key modifiers
+    event->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
+    handler->motionNotifyEvent(&event->xmotion);
+    break;
+  }
+
+  case EnterNotify: {
+    xserver_time = event->xcrossing.time;
+    handler->enterNotifyEvent(&event->xcrossing);
+    break;
+  }
+
+  case LeaveNotify: {
+    xserver_time = event->xcrossing.time;
+    handler->leaveNotifyEvent(&event->xcrossing);
+    break;
+  }
+
+  case KeyPress: {
+    xserver_time = event->xkey.time;
+    // strip the lock key modifiers, except numlock, which can be useful
+    event->xkey.state &= ~(ScrollLockMask | LockMask);
+    handler->keyPressEvent(&event->xkey);
+    break;
+  }
+
+  case KeyRelease: {
+    xserver_time = event->xkey.time;
+    // strip the lock key modifiers, except numlock, which can be useful
+    event->xkey.state &= ~(ScrollLockMask | LockMask);
+    handler->keyReleaseEvent(&event->xkey);
     break;
   }
 
