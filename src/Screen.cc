@@ -918,8 +918,10 @@ StackingList::iterator raiseWindow(StackingList &stackingList,
       raiseTransients(top, stackingList, transients);
 
     // ... and group transients on top
-    if (group && win->isTransient() && !win->isGroupTransient()) {
-      const BlackboxWindow * const w = win->findNonTransientParent();
+    if (group && !win->isGroupTransient()) {
+      const BlackboxWindow * const w = win->isTransient()
+                                       ? win->findNonTransientParent()
+                                       : win;
       if (!w || !w->isGroupTransient()) {
         BlackboxWindowList groupTransients = group->transients();
         BlackboxWindowList::const_iterator wit = groupTransients.begin(),
@@ -928,7 +930,7 @@ StackingList::iterator raiseWindow(StackingList &stackingList,
           BlackboxWindowList x = (*wit)->buildFullTransientList();
           groupTransients.splice(groupTransients.end(), x);
         }
-        if (!transients.empty())
+        if (!groupTransients.empty())
           raiseTransients(top, stackingList, groupTransients);
       }
     }
@@ -1101,27 +1103,30 @@ StackingList::iterator lowerWindow(StackingList &stackingList,
     }
 
     const StackingList::iterator layer = stackingList.layer(win->layer());
-    BlackboxWindow *tmp = win->findNonTransientParent();
-    if (tmp && tmp != win) {
-      // lower non-transient parent
-      (void) ::lowerWindow(stackingList, tmp, true);
+    if (win->isTransient()) {
+      BlackboxWindow *const tmp = win->findNonTransientParent();
+      if (tmp && !tmp->isGroupTransient()) {
+        // lower non-transient parent
+        (void) ::lowerWindow(stackingList, tmp, true);
+        if (it == end)
+          it = layer;
+      }
+      return it;
+    }
+
+    // lower transients oinf 'win' and 'win'
+    BlackboxWindowList transients = win->buildFullTransientList();
+    if (!transients.empty()) {
+      ::lowerTransients(layer, stackingList, transients);
+      (void) stackingList.lower(win);
       if (it == end)
         it = layer;
     } else {
-      // lower transients of 'win' and 'win'
-      BlackboxWindowList transients = win->buildFullTransientList();
-      if (!transients.empty()) {
-        ::lowerTransients(layer, stackingList, transients);
-        (void) stackingList.lower(win);
-        if (it == end)
-          it = layer;
+      if (it == end) {
+        it = stackingList.lower(entity);
+        assert(it != end);
       } else {
-        if (it == end) {
-          it = stackingList.lower(entity);
-          assert(it != end);
-        } else {
-          (void) stackingList.lower(entity);
-        }
+        (void) stackingList.lower(entity);
       }
     }
   } else {
