@@ -51,6 +51,10 @@ private:
 
   BlackboxResource _resource;
 
+  BScreen** screen_list;
+  size_t screen_list_count;
+  BScreen *active_screen;
+
   typedef std::map<Window, BlackboxWindow*> WindowLookup;
   typedef WindowLookup::value_type WindowLookupPair;
   WindowLookup windowSearchList;
@@ -59,22 +63,20 @@ private:
   typedef GroupLookup::value_type GroupLookupPair;
   GroupLookup groupSearchList;
 
+  bt::EWMH* _ewmh;
+
+  BlackboxWindow *focused_window;
+
+  bt::Timer *timer;
+
   typedef std::list<MenuTimestamp*> MenuTimestampList;
   MenuTimestampList menuTimestamps;
 
-  BScreen** screen_list;
-  size_t screen_list_count;
-  BScreen *active_screen;
-
-  BlackboxWindow *focused_window;
-  bt::Timer *timer;
   char **argv;
 
   Atom xa_wm_colormap_windows, xa_wm_protocols, xa_wm_state,
     xa_wm_delete_window, xa_wm_take_focus, xa_wm_change_state,
     motif_wm_hints;
-
-  bt::EWMH* _ewmh;
 
   void load_rc(void);
   void save_rc(void);
@@ -84,31 +86,45 @@ private:
 
   void updateActiveWindow() const;
 
-  virtual void process_event(XEvent *e);
-  virtual bool process_signal(int sig);
+  // reimplemented virtual functions
+  void shutdown(void);
+
+  void process_event(XEvent *e);
+  bool process_signal(int sig);
+
+  void timeout(bt::Timer *);
 
 public:
   Blackbox(char **m_argv, const char *dpy_name, const std::string& rc,
            bool multi_head);
-  virtual ~Blackbox(void);
+  ~Blackbox(void);
 
   void XGrabServer(void);
   void XUngrabServer(void);
 
-  BlackboxResource& resource(void) { return _resource; }
+  inline BlackboxResource &resource(void)
+  { return _resource; }
 
   // screen functions
-  BScreen *findScreen(Window window);
-  BScreen *activeScreen(void) const { return active_screen; }
+  BScreen *findScreen(Window window) const;
+
+  inline BScreen *activeScreen(void) const
+  { return active_screen; }
   void setActiveScreen(BScreen *screen);
-  unsigned int screenCount(void) const { return screen_list_count; }
+
+  inline unsigned int screenCount(void) const
+  { return screen_list_count; }
   BScreen* screenNumber(unsigned int n);
 
-  BlackboxWindow *findWindow(Window window);
+  // window functions
+  BlackboxWindow *findWindow(Window window) const;
+
   void insertWindow(Window window, BlackboxWindow *data);
   void removeWindow(Window window);
 
-  BWindowGroup *findWindowGroup(Window window);
+  // window group functions
+  BWindowGroup *findWindowGroup(Window window) const;
+
   void insertWindowGroup(Window window, BWindowGroup *data);
   void removeWindowGroup(Window window);
 
@@ -118,18 +134,15 @@ public:
   void setFocusedWindow(BlackboxWindow *win);
   inline void forgetFocusedWindow(void)
   { focused_window = 0; }
-  inline BlackboxWindow *focusedWindow(void)
+  inline BlackboxWindow *focusedWindow(void) const
   { return focused_window; }
 
-  void shutdown(void);
   void saveMenuFilename(const std::string& filename);
   void restart(const std::string &prog = std::string());
   void reconfigure(void);
 
   void checkMenu(void);
   void rereadMenu(void);
-
-  virtual void timeout(bt::Timer *);
 
   inline Atom wmChangeStateAtom(void) const
   { return xa_wm_change_state; }
