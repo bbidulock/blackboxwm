@@ -1,10 +1,6 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 #include "Unicode.hh"
 
-#ifdef HAVE_CONFIG_H
-#  include "../config.h"
-#endif
-
 #include <iconv.h>
 #include <locale.h>
 #include <stdio.h>
@@ -46,6 +42,8 @@ namespace bt {
   static void convert(const char *target, const char *source,
                       const _Source &in, _Target &out) {
     iconv_t cd = iconv_open(target, source);
+    if (cd == invalid)
+      return;
 
     const char *inp = reinterpret_cast<const char *>(in.c_str());
     const typename _Source::size_type in_size =
@@ -88,12 +86,15 @@ namespace bt {
           }
         default:
           perror("iconv");
+          out.clear();
+          iconv_close(cd);
           return;
         }
       }
     } while (in_bytes != 0);
 
     out.resize((out_size - out_bytes) / sizeof(typename _Target::value_type));
+    iconv_close(cd);
   }
 
 } // namespace bt
@@ -135,8 +136,12 @@ bool bt::hasUnicode() {
 
 bt::ustring bt::toUnicode(const std::string &string) {
   bt::ustring ret;
-  if (!hasUnicode())
+  if (!hasUnicode()) {
+    // cannot convert to Unicode, return something instead of nothing
+    ret.resize(string.size());
+    std::copy(string.begin(), string.end(), ret.begin());
     return ret;
+  }
   ret.reserve(string.size());
   convert("UTF-32", "", string, ret);
   return native_endian(ret);
@@ -144,8 +149,12 @@ bt::ustring bt::toUnicode(const std::string &string) {
 
 std::string bt::toLocale(const bt::ustring &string) {
   std::string ret;
-  if (!hasUnicode())
+  if (!hasUnicode()) {
+    // cannot convert from Unicode, return something instead of nothing
+    ret.resize(string.size());
+    std::copy(string.begin(), string.end(), ret.begin());
     return ret;
+  }
   ret.reserve(string.size());
   convert("", "UTF-32", string, ret);
   return ret;
