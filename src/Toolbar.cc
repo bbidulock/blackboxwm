@@ -192,7 +192,7 @@ Toolbar::Toolbar(BScreen *scrn) {
     new Toolbarmenu(*blackbox, screen->getScreenInfo().screenNumber(),
                     this);
 
-  display = blackbox->getXDisplay();
+  display = blackbox->XDisplay();
   XSetWindowAttributes attrib;
   unsigned long create_mask = CWBackPixmap | CWBackPixel | CWBorderPixel |
                               CWColormap | CWOverrideRedirect | CWEventMask;
@@ -430,7 +430,7 @@ void Toolbar::reconfigure(void) {
                     frame.rect.width() - frame.clock_w - (frame.bevel_w * 2),
                     frame.bevel_w, frame.clock_w, frame.label_h);
 
-  frame.base = style->toolbar.render(blackbox->getDisplay(),
+  frame.base = style->toolbar.render(blackbox->display(),
                                      screen->getScreenInfo().screenNumber(),
                                      *screen->getImageControl(),
                                      frame.rect.width(), frame.rect.height(),
@@ -442,7 +442,7 @@ void Toolbar::reconfigure(void) {
   else
     XSetWindowBackgroundPixmap(display, frame.window, frame.base);
 
-  frame.label = style->window.render(blackbox->getDisplay(),
+  frame.label = style->window.render(blackbox->display(),
                                      screen->getScreenInfo().screenNumber(),
                                      *screen->getImageControl(),
                                      frame.window_label_w, frame.label_h,
@@ -454,7 +454,7 @@ void Toolbar::reconfigure(void) {
   else
     XSetWindowBackgroundPixmap(display, frame.window_label, frame.label);
 
-  frame.wlabel = style->label.render(blackbox->getDisplay(),
+  frame.wlabel = style->label.render(blackbox->display(),
                                      screen->getScreenInfo().screenNumber(),
                                      *screen->getImageControl(),
                                      frame.workspace_label_w, frame.label_h,
@@ -466,7 +466,7 @@ void Toolbar::reconfigure(void) {
   else
     XSetWindowBackgroundPixmap(display, frame.workspace_label, frame.wlabel);
 
-  frame.clk = style->clock.render(blackbox->getDisplay(),
+  frame.clk = style->clock.render(blackbox->display(),
                                   screen->getScreenInfo().screenNumber(),
                                   *screen->getImageControl(),
                                   frame.clock_w, frame.label_h, frame.clk);
@@ -477,7 +477,7 @@ void Toolbar::reconfigure(void) {
   else
     XSetWindowBackgroundPixmap(display, frame.clock, frame.clk);
 
-  frame.button = style->button.render(blackbox->getDisplay(),
+  frame.button = style->button.render(blackbox->display(),
                                       screen->getScreenInfo().
                                       screenNumber(),
                                       *screen->getImageControl(),
@@ -497,7 +497,7 @@ void Toolbar::reconfigure(void) {
     XSetWindowBackgroundPixmap(display, frame.nwbutton, frame.button);
   }
 
-  frame.pbutton = style->pressed.render(blackbox->getDisplay(),
+  frame.pbutton = style->pressed.render(blackbox->display(),
                                         screen->getScreenInfo().
                                         screenNumber(),
                                         *screen->getImageControl(),
@@ -770,7 +770,7 @@ void Toolbar::edit(void) {
                  frame.label_h - 1);
   // change the background of the window to that of an active window label
   bt::Texture *texture = &(screen->getWindowStyle()->l_focus);
-  frame.wlabel = texture->render(blackbox->getDisplay(),
+  frame.wlabel = texture->render(blackbox->display(),
                                  screen->getScreenInfo().screenNumber(),
                                  *screen->getImageControl(),
                                  frame.workspace_label_w, frame.label_h,
@@ -931,7 +931,7 @@ void Toolbar::keyPressEvent(const XKeyEvent *ke) {
       // reset the background to that of the workspace label (its normal
       // setting)
       bt::Texture *texture = &(style->label);
-      frame.wlabel = texture->render(blackbox->getDisplay(),
+      frame.wlabel = texture->render(blackbox->display(),
                                      screen->getScreenInfo().screenNumber(),
                                      *screen->getImageControl(),
                                      frame.workspace_label_w, frame.label_h,

@@ -397,10 +397,10 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
 
   assert(! stack_vector.empty());
   if (! layer_above)
-    XRaiseWindow(screen->getBlackbox()->getXDisplay(),
+    XRaiseWindow(screen->getBlackbox()->XDisplay(),
                  stack_vector.front());
 
-  XRestackWindows(screen->getBlackbox()->getXDisplay(), &stack_vector[0],
+  XRestackWindows(screen->getBlackbox()->XDisplay(), &stack_vector[0],
                   stack_vector.size());
   screen->raiseWindows(0);
 }
@@ -449,16 +449,16 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
       XWindowChanges changes;
       changes.sibling = (*tmp)->getFrameWindow();
       changes.stack_mode = Above;
-      XConfigureWindow(screen->getBlackbox()->getXDisplay(),
+      XConfigureWindow(screen->getBlackbox()->XDisplay(),
                        stack_vector.front(), CWStackMode | CWSibling,
                        &changes);
     } else {
-      XLowerWindow(screen->getBlackbox()->getXDisplay(),
+      XLowerWindow(screen->getBlackbox()->XDisplay(),
                    stack_vector.front());
     }
   }
 
-  XRestackWindows(screen->getBlackbox()->getXDisplay(), &stack_vector[0],
+  XRestackWindows(screen->getBlackbox()->XDisplay(), &stack_vector[0],
                   stack_vector.size());
   screen->raiseWindows(0);
 }
@@ -551,7 +551,7 @@ void Workspace::show(void) {
   for (; it != end; ++it)
     if (*it) (*it)->show();
 
-  XSync(screen->getBlackbox()->getXDisplay(), False);
+  XSync(screen->getBlackbox()->XDisplay(), False);
 
   if (screen->doFocusLast()) {
     if (! screen->isSloppyFocus() && ! lastfocus && ! stackingList.empty())

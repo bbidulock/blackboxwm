@@ -56,8 +56,8 @@ bt::MenuStyle *bt::MenuStyle::get(Application &app,
                                   unsigned int screen,
                                   ImageControl *imagecontrol) {
   if (! styles) {
-    styles = new MenuStyle*[app.getNumberOfScreens()];
-    for (unsigned int i = 0; i < app.getNumberOfScreens(); ++i)
+    styles = new MenuStyle*[app.display().screenCount()];
+    for (unsigned int i = 0; i < app.display().screenCount(); ++i)
       styles[i] = 0;
   }
   if (! styles[screen])
@@ -73,72 +73,72 @@ bt::MenuStyle::MenuStyle(Application &app, unsigned int screen,
   frame.alignment = AlignLeft;
   margin_w = 1u;
 
-  const ScreenInfo &screeninfo = _app.getDisplay().screenInfo(_screen);
+  const ScreenInfo &screeninfo = _app.display().screenInfo(_screen);
 
   bitmap.arrow =
-    XCreateBitmapFromData(_app.getXDisplay(), screeninfo.rootWindow(),
+    XCreateBitmapFromData(_app.XDisplay(), screeninfo.rootWindow(),
                           arrow_bits, arrow_width, arrow_height);
   bitmap.check =
-    XCreateBitmapFromData(_app.getXDisplay(), screeninfo.rootWindow(),
+    XCreateBitmapFromData(_app.XDisplay(), screeninfo.rootWindow(),
                           check_bits, check_width, check_height);
   bitmap.close =
-    XCreateBitmapFromData(_app.getXDisplay(), screeninfo.rootWindow(),
+    XCreateBitmapFromData(_app.XDisplay(), screeninfo.rootWindow(),
                           close_bits, close_width, close_height);
 }
 
 
 bt::MenuStyle::~MenuStyle(void) {
-  if (bitmap.arrow) XFreePixmap(_app.getXDisplay(), bitmap.arrow);
-  if (bitmap.check) XFreePixmap(_app.getXDisplay(), bitmap.check);
-  if (bitmap.close) XFreePixmap(_app.getXDisplay(), bitmap.close);
+  if (bitmap.arrow) XFreePixmap(_app.XDisplay(), bitmap.arrow);
+  if (bitmap.check) XFreePixmap(_app.XDisplay(), bitmap.check);
+  if (bitmap.close) XFreePixmap(_app.XDisplay(), bitmap.close);
 }
 
 
 void bt::MenuStyle::load(const Resource &resource) {
   // menu textures
   title.texture =
-    textureResource(_app.getDisplay(), _screen, resource,
+    textureResource(_app.display(), _screen, resource,
                     "menu.title", "Menu.Title", "black");
   frame.texture =
-    textureResource(_app.getDisplay(), _screen, resource,
+    textureResource(_app.display(), _screen, resource,
                     "menu.frame", "Menu.Frame", "white");
   active.texture =
-    textureResource(_app.getDisplay(), _screen, resource,
+    textureResource(_app.display(), _screen, resource,
                     "menu.active", "Menu.Active", "black");
 
   // non-texture colors
   title.foreground =
-    Color::namedColor(_app.getDisplay(), _screen,
+    Color::namedColor(_app.display(), _screen,
                       resource.read("menu.title.foregroundColor",
                                     "Menu.Title.ForegroundColor",
                                     "white"));
   title.text =
-    Color::namedColor(_app.getDisplay(), _screen,
+    Color::namedColor(_app.display(), _screen,
                       resource.read("menu.title.textColor",
                                     "Menu.Title.TextColor",
                                     "white"));
   frame.foreground =
-    Color::namedColor(_app.getDisplay(), _screen,
+    Color::namedColor(_app.display(), _screen,
                       resource.read("menu.frame.foregroundColor",
                                     "Menu.Frame.ForegroundColor",
                                     "black"));
   frame.text =
-    Color::namedColor(_app.getDisplay(), _screen,
+    Color::namedColor(_app.display(), _screen,
                       resource.read("menu.frame.textColor",
                                     "Menu.Frame.TextColor",
                                     "black"));
   frame.disabled =
-    Color::namedColor(_app.getDisplay(), _screen,
+    Color::namedColor(_app.display(), _screen,
                       resource.read("menu.frame.disabledColor",
                                     "Menu.Frame.DisabledColor",
                                     "black"));
   active.foreground =
-    Color::namedColor(_app.getDisplay(), _screen,
+    Color::namedColor(_app.display(), _screen,
                       resource.read("menu.active.foregroundColor",
                                     "Menu.Active.ForegroundColor",
                                     "white"));
   active.text =
-    Color::namedColor(_app.getDisplay(), _screen,
+    Color::namedColor(_app.display(), _screen,
                       resource.read("menu.active.textColor",
                                     "Menu.Active.TextColor",
                                     "white"));
@@ -187,20 +187,20 @@ unsigned int bt::MenuStyle::itemMargin(void) const {
 
 Pixmap bt::MenuStyle::titlePixmap(unsigned int width, unsigned int height,
                                   Pixmap oldpixmap) {
-  return title.texture.render(_app.getDisplay(), _screen, *_imagecontrol,
+  return title.texture.render(_app.display(), _screen, *_imagecontrol,
                               width, height, oldpixmap);
 }
 
 
 Pixmap bt::MenuStyle::framePixmap(unsigned int width, unsigned int height,
                                   Pixmap oldpixmap) {
-  return frame.texture.render(_app.getDisplay(), _screen, *_imagecontrol,
+  return frame.texture.render(_app.display(), _screen, *_imagecontrol,
                               width, height, oldpixmap);
 }
 
 Pixmap bt::MenuStyle::activePixmap(unsigned int width, unsigned int height,
                                    Pixmap oldpixmap) {
-  return active.texture.render(_app.getDisplay(), _screen, *_imagecontrol,
+  return active.texture.render(_app.display(), _screen, *_imagecontrol,
                                width, height, oldpixmap);
 }
 
@@ -239,7 +239,7 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
 
   if (item.isSeparator()) {
     Pen pen(_screen, frame.foreground);
-    XFillRectangle(_app.getXDisplay(), window, pen.gc(),
+    XFillRectangle(_app.XDisplay(), window, pen.gc(),
                    r2.x(), r2.y() + margin_w, r2.width(),
                    (frame.texture.borderWidth() > 0 ?
                     frame.texture.borderWidth() : 1));
@@ -253,10 +253,10 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
   if (item.isActive() && item.isEnabled()) {
     Pen p2(_screen, active.texture.color());
     if (pixmap) {
-      XCopyArea(_app.getXDisplay(), pixmap, window, p2.gc(),
+      XCopyArea(_app.XDisplay(), pixmap, window, p2.gc(),
                 0, 0, rect.width(), rect.height(), rect.x(), rect.y());
     } else {
-      XFillRectangle(_app.getXDisplay(), window, p2.gc(),
+      XFillRectangle(_app.XDisplay(), window, p2.gc(),
                      rect.x(), rect.y(), rect.width(), rect.height());
     }
   }
@@ -267,9 +267,9 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
     int cx = rect.x() + (rect.height() - 7) / 2;
     int cy = rect.y() + (rect.height() - 7) / 2;
 
-    XSetClipMask(_app.getXDisplay(), fpen.gc(), bitmap.check);
-    XSetClipOrigin(_app.getXDisplay(), fpen.gc(), cx, cy);
-    XFillRectangle(_app.getXDisplay(), window, fpen.gc(), cx, cy, 7, 7);
+    XSetClipMask(_app.XDisplay(), fpen.gc(), bitmap.check);
+    XSetClipOrigin(_app.XDisplay(), fpen.gc(), cx, cy);
+    XFillRectangle(_app.XDisplay(), window, fpen.gc(), cx, cy, 7, 7);
   }
 
   if (item.submenu()) {
@@ -277,13 +277,13 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
     int ax = rect.x() + rect.width() - rect.height() + (rect.height() - 7) / 2;
     int ay = rect.y() + (rect.height() - 7) / 2;
 
-    XSetClipMask(_app.getXDisplay(), fpen.gc(), bitmap.arrow);
-    XSetClipOrigin(_app.getXDisplay(), fpen.gc(), ax, ay);
-    XFillRectangle(_app.getXDisplay(), window, fpen.gc(), ax, ay, 7, 7);
+    XSetClipMask(_app.XDisplay(), fpen.gc(), bitmap.arrow);
+    XSetClipOrigin(_app.XDisplay(), fpen.gc(), ax, ay);
+    XFillRectangle(_app.XDisplay(), window, fpen.gc(), ax, ay, 7, 7);
   }
 
-  XSetClipOrigin(_app.getXDisplay(), fpen.gc(), 0, 0);
-  XSetClipMask(_app.getXDisplay(), fpen.gc(), None);
+  XSetClipOrigin(_app.XDisplay(), fpen.gc(), 0, 0);
+  XSetClipMask(_app.XDisplay(), fpen.gc(), None);
 }
 
 
@@ -352,7 +352,7 @@ bt::Menu::Menu(Application &app, unsigned int screen)
 {
   idset.reset();
 
-  const ScreenInfo& screeninfo = _app.getDisplay().screenInfo(_screen);
+  const ScreenInfo& screeninfo = _app.display().screenInfo(_screen);
 
   // create the window
   XSetWindowAttributes attrib;
@@ -367,7 +367,7 @@ bt::Menu::Menu(Application &app, unsigned int screen)
   attrib.override_redirect = True;
 
   _window =
-    XCreateWindow(_app.getXDisplay(), screeninfo.rootWindow(),
+    XCreateWindow(_app.XDisplay(), screeninfo.rootWindow(),
                   _rect.x(), _rect.y(), _rect.width(), _rect.height(), 0,
                   screeninfo.depth(), InputOutput,
                   screeninfo.visual(), mask, &attrib);
@@ -383,7 +383,7 @@ bt::Menu::~Menu(void)
   clear();
 
   _app.removeEventHandler(_window);
-  XDestroyWindow(_app.getXDisplay(), _window);
+  XDestroyWindow(_app.XDisplay(), _window);
 }
 
 
@@ -409,7 +409,7 @@ unsigned int bt::Menu::insertItem(const MenuItem &item,
 
   if (isVisible()) {
     updateSize();
-    XClearArea(_app.getXDisplay(), _window, 0, 0,
+    XClearArea(_app.XDisplay(), _window, 0, 0,
                _rect.width(), _rect.height(), True);
   } else {
     _size_dirty = true;
@@ -454,7 +454,7 @@ void bt::Menu::changeItem(unsigned int id, const std::string &newlabel,
         it->ident = verifyId(newid);
       }
       if (isVisible())
-        XClearArea(_app.getXDisplay(), _window,
+        XClearArea(_app.XDisplay(), _window,
                    r.x(), r.y(), r.width(), r.height(), True);
       break;
     }
@@ -483,7 +483,7 @@ void bt::Menu::setItemEnabled(unsigned int id, bool enabled) {
       // found the item, change the status and redraw if visible
       it->enabled = enabled;
       if (isVisible())
-        XClearArea(_app.getXDisplay(), _window,
+        XClearArea(_app.XDisplay(), _window,
                    r.x(), r.y(), r.width(), r.height(), True);
       break;
     }
@@ -519,7 +519,7 @@ void bt::Menu::setItemChecked(unsigned int id, bool checked) {
       // found the item, change the status and redraw if visible
       it->checked = checked;
       if (isVisible())
-        XClearArea(_app.getXDisplay(), _window,
+        XClearArea(_app.XDisplay(), _window,
                    r.x(), r.y(), r.width(), r.height(), True);
       break;
     }
@@ -559,7 +559,7 @@ void bt::Menu::removeItem(unsigned int id) {
 
   if (isVisible()) {
     updateSize();
-    XClearArea(_app.getXDisplay(), _window,
+    XClearArea(_app.XDisplay(), _window,
                0, 0, _rect.width(), _rect.height(), True);
   } else {
     _size_dirty = true;
@@ -583,7 +583,7 @@ void bt::Menu::removeIndex(unsigned int index) {
 
   if (isVisible()) {
     updateSize();
-    XClearArea(_app.getXDisplay(), _window,
+    XClearArea(_app.XDisplay(), _window,
                0, 0, _rect.width(), _rect.height(), True);
   } else {
     _size_dirty = true;
@@ -597,7 +597,7 @@ void bt::Menu::clear(void) {
 
   if (isVisible()) {
     updateSize();
-    XClearArea(_app.getXDisplay(), _window,
+    XClearArea(_app.XDisplay(), _window,
                0, 0, _rect.width(), _rect.height(), True);
   } else {
     _size_dirty = true;
@@ -610,7 +610,7 @@ void bt::Menu::showTitle(void) {
 
     if (isVisible()) {
     updateSize();
-    XClearArea(_app.getXDisplay(), _window,
+    XClearArea(_app.XDisplay(), _window,
                0, 0, _rect.width(), _rect.height(), True);
   } else {
     _size_dirty = true;
@@ -623,7 +623,7 @@ void bt::Menu::hideTitle(void) {
 
   if (isVisible()) {
     updateSize();
-    XClearArea(_app.getXDisplay(), _window,
+    XClearArea(_app.XDisplay(), _window,
                0, 0, _rect.width(), _rect.height(), True);
   } else {
     _size_dirty = true;
@@ -639,7 +639,7 @@ void bt::Menu::popup(int x, int y, bool centered) {
   if (_size_dirty)
     updateSize();
 
-  const ScreenInfo& screeninfo = _app.getDisplay().screenInfo(_screen);
+  const ScreenInfo& screeninfo = _app.display().screenInfo(_screen);
 
   if (_show_title) {
     if (centered) {
@@ -683,7 +683,7 @@ void bt::Menu::popup(int x, int y, bool centered) {
 
 
 void bt::Menu::move(int x, int y) {
-  XMoveWindow(_app.getXDisplay(), _window, x, y);
+  XMoveWindow(_app.XDisplay(), _window, x, y);
   _rect.setPos(x, y);
 }
 
@@ -691,8 +691,8 @@ void bt::Menu::move(int x, int y) {
 void bt::Menu::show(void) {
   if (isVisible()) return;
 
-  XMapRaised(_app.getXDisplay(), _window);
-  XSync(_app.getXDisplay(), False);
+  XMapRaised(_app.XDisplay(), _window);
+  XSync(_app.XDisplay(), False);
   _app.openMenu(this);
   _visible = true;
   _pressed = _parent_menu ? _parent_menu->_pressed : false;
@@ -720,7 +720,7 @@ void bt::Menu::hide(void) {
   }
 
   _app.closeMenu(this);
-  XUnmapWindow(_app.getXDisplay(), _window);
+  XUnmapWindow(_app.XDisplay(), _window);
   _visible = false;
   _pressed = false;
 }
@@ -734,7 +734,7 @@ void bt::Menu::reconfigure(void) {
 
   if (isVisible()) {
     updateSize();
-    XClearArea(_app.getXDisplay(), _window,
+    XClearArea(_app.XDisplay(), _window,
                0, 0, _rect.width(), _rect.height(), True);
   } else {
     _size_dirty = true;
@@ -753,7 +753,7 @@ void bt::Menu::updateSize(void) {
     _frect.setPos(0, 0);
   }
 
-  const ScreenInfo& screeninfo = _app.getDisplay().screenInfo(_screen);
+  const ScreenInfo& screeninfo = _app.display().screenInfo(_screen);
   unsigned int max_item_w, col_h = 0u, max_col_h = 0u;
   unsigned int row = 0u, cols = 1u;
   max_item_w = std::max(20u, _trect.width());
@@ -799,7 +799,7 @@ void bt::Menu::updateSize(void) {
                     style->titleTexture().borderWidth());
   }
 
-  XResizeWindow(_app.getXDisplay(), _window, _rect.width(), _rect.height());
+  XResizeWindow(_app.XDisplay(), _window, _rect.width(), _rect.height());
 
   // update pixmaps
   if (_show_title)
@@ -991,10 +991,10 @@ void bt::Menu::exposeEvent(const XExposeEvent * const event) {
 
     Pen pen(_screen, style->titleTexture().color());
     if (_tpixmap) {
-      XCopyArea(_app.getXDisplay(), _tpixmap, _window, pen.gc(),
+      XCopyArea(_app.XDisplay(), _tpixmap, _window, pen.gc(),
                 u.x(), u.y(), u.width(), u.height(), u.x(), u.y());
     } else {
-      XFillRectangle(_app.getXDisplay(), _window, pen.gc(),
+      XFillRectangle(_app.XDisplay(), _window, pen.gc(),
                      u.x(), u.y(), u.width(), u.height());
     }
 
@@ -1006,11 +1006,11 @@ void bt::Menu::exposeEvent(const XExposeEvent * const event) {
 
     Pen pen(_screen, style->frameTexture().color());
     if (_fpixmap) {
-      XCopyArea(_app.getXDisplay(), _fpixmap, _window, pen.gc(),
+      XCopyArea(_app.XDisplay(), _fpixmap, _window, pen.gc(),
                 u.x() - _frect.x(), u.y() - _frect.y(),
                 u.width(), u.height(), u.x(), u.y());
     } else {
-      XFillRectangle(_app.getXDisplay(), _window, pen.gc(),
+      XFillRectangle(_app.XDisplay(), _window, pen.gc(),
                      u.x(), u.y(), u.width(), u.height());
     }
   }
@@ -1044,7 +1044,7 @@ void bt::Menu::exposeEvent(const XExposeEvent * const event) {
 
 
 void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
-  KeySym sym = XKeycodeToKeysym(_app.getXDisplay(), event->keycode, 0);
+  KeySym sym = XKeycodeToKeysym(_app.XDisplay(), event->keycode, 0);
   switch (sym) {
   case XK_Escape: {
     hideAll();
@@ -1191,7 +1191,7 @@ void bt::Menu::activateItem(const Rect &rect, MenuItem &item) {
   // mark new active item
   _active_index = item.indx;
   item.active = item.enabled;
-  XClearArea(_app.getXDisplay(), _window,
+  XClearArea(_app.XDisplay(), _window,
              rect.x(), rect.y(), rect.width(), rect.height(), True);
 
   showdelay.showmenu = item.sub;
@@ -1204,7 +1204,7 @@ void bt::Menu::activateItem(const Rect &rect, MenuItem &item) {
     item.sub->updateSize();
 
   MenuStyle *style = MenuStyle::get(_app, _screen, 0);
-  const ScreenInfo& screeninfo = _app.getDisplay().screenInfo(_screen);
+  const ScreenInfo& screeninfo = _app.display().screenInfo(_screen);
   int px = _rect.x() + rect.x() + rect.width();
   int py = _rect.y() + rect.y() - style->frameMargin();
   bool left = false;
@@ -1237,7 +1237,7 @@ void bt::Menu::deactivateItem(const Rect &rect, MenuItem &item) {
   // clear old active item
   if (_active_index == item.indx) _active_index = ~0u;
   item.active = false;
-  XClearArea(_app.getXDisplay(), _window,
+  XClearArea(_app.XDisplay(), _window,
              rect.x(), rect.y(), rect.width(), rect.height(), True);
 
   if (item.sub && item.sub->isVisible())

@@ -1,5 +1,5 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
-// BaseDisplay.hh for Blackbox - an X11 Window manager
+// Application.hh for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
 // Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
 //
@@ -25,6 +25,7 @@
 #define __Application_hh
 
 #include <map>
+#include <string>
 
 #include "Display.hh"
 #include "Timer.hh"
@@ -45,13 +46,13 @@ namespace bt {
     };
     BShape shape;
 
-    Display display;
+    Display _display;
+    std::string _app_name;
 
     enum RunState { STARTUP, RUNNING, SHUTDOWN };
     RunState run_state;
     Time xserver_time;
 
-    const char *application_name;
 
     typedef std::map<Window,EventHandler*> EventHandlerMap;
     EventHandlerMap eventhandlers;
@@ -79,7 +80,8 @@ namespace bt {
     virtual void process_event(XEvent *event);
 
   public:
-    Application(const char *app_name, const char *dpy_name = 0);
+    Application(const std::string &app_name,
+                const std::string &dpy_name = std::string());
     virtual ~Application(void);
 
     bool hasShapeExtensions(void) const
@@ -89,16 +91,10 @@ namespace bt {
     bool isStartup(void) const
     { return run_state == STARTUP; }
 
-    ::Display *getXDisplay(void) const { return display.XDisplay(); }
-    const Display& getDisplay(void) const { return display; }
+    ::Display *XDisplay(void) const { return _display.XDisplay(); }
+    const Display& display(void) const { return _display; }
 
-    const char *getApplicationName(void) const
-    { return application_name; }
-
-    unsigned int getNumberOfScreens(void) const
-    { return display.screenCount(); }
-    int getShapeEventBase(void) const
-    { return shape.event_basep; }
+    const std::string &applicationName(void) const { return _app_name; }
 
     void shutdown(void) { run_state = SHUTDOWN; }
     void run(void) { run_state = RUNNING; }

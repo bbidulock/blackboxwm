@@ -400,7 +400,7 @@ void Slit::reconfigure(void) {
 
   bt::Texture *texture = &(screen->getToolbarStyle()->toolbar);
   frame.pixmap =
-    texture->render(blackbox->getDisplay(),
+    texture->render(blackbox->display(),
                     screen->getScreenInfo().screenNumber(),
                     *screen->getImageControl(),
                     frame.rect.width(), frame.rect.height(), frame.pixmap);

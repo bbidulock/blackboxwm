@@ -132,12 +132,12 @@ Blackbox::Blackbox(char **m_argv, char *dpy_name, char *rc)
 
   init_icccm();
 
-  cursor.session = XCreateFontCursor(getXDisplay(), XC_left_ptr);
-  cursor.move = XCreateFontCursor(getXDisplay(), XC_fleur);
-  cursor.ll_angle = XCreateFontCursor(getXDisplay(), XC_ll_angle);
-  cursor.lr_angle = XCreateFontCursor(getXDisplay(), XC_lr_angle);
+  cursor.session = XCreateFontCursor(XDisplay(), XC_left_ptr);
+  cursor.move = XCreateFontCursor(XDisplay(), XC_fleur);
+  cursor.ll_angle = XCreateFontCursor(XDisplay(), XC_ll_angle);
+  cursor.lr_angle = XCreateFontCursor(XDisplay(), XC_lr_angle);
 
-  for (unsigned int i = 0; i < getNumberOfScreens(); i++) {
+  for (unsigned int i = 0; i < display().screenCount(); i++) {
     BScreen *screen = new BScreen(this, i);
 
     if (! screen->isScreenManaged()) {
@@ -158,8 +158,8 @@ Blackbox::Blackbox(char **m_argv, char *dpy_name, char *rc)
   // set focus to PointerRoot
   setFocusedWindow(0);
 
-  XSynchronize(getXDisplay(), False);
-  XSync(getXDisplay(), False);
+  XSynchronize(XDisplay(), False);
+  XSync(XDisplay(), False);
 
   reconfigure_wait = reread_menu_wait = False;
 
@@ -218,7 +218,7 @@ void Blackbox::process_event(XEvent *e) {
           the window is on
         */
         XWindowAttributes wattrib;
-        if (! XGetWindowAttributes(getXDisplay(), e->xmaprequest.window,
+        if (! XGetWindowAttributes(XDisplay(), e->xmaprequest.window,
                                    &wattrib)) {
           // failed to get the window attributes, perhaps the window has
           // now been destroyed?
@@ -298,7 +298,7 @@ void Blackbox::process_event(XEvent *e) {
         (the FocusIn event handler sets the window in the event
         structure to None to indicate this).
       */
-      if (XCheckTypedEvent(getXDisplay(), FocusIn, &event)) {
+      if (XCheckTypedEvent(XDisplay(), FocusIn, &event)) {
 
         process_event(&event);
         if (event.xfocus.window == None) {
@@ -315,7 +315,7 @@ void Blackbox::process_event(XEvent *e) {
         BlackboxWindow *focus;
         Window w;
         int revert;
-        XGetInputFocus(getXDisplay(), &w, &revert);
+        XGetInputFocus(XDisplay(), &w, &revert);
         focus = findWindow(w);
         if (focus) {
           /*
@@ -383,7 +383,7 @@ void Blackbox::init_icccm(void) {
     "_MOTIF_WM_HINTS"
   };
   Atom atoms_return[7];
-  XInternAtoms(getXDisplay(), atoms, 7, False, atoms_return);
+  XInternAtoms(XDisplay(), atoms, 7, False, atoms_return);
   xa_wm_colormap_windows = atoms_return[0];
   xa_wm_protocols = atoms_return[1];
   xa_wm_state = atoms_return[2];
@@ -392,14 +392,14 @@ void Blackbox::init_icccm(void) {
   xa_wm_take_focus = atoms_return[5];
   motif_wm_hints = atoms_return[6];
 
-  _netwm = new bt::Netwm(getXDisplay());
+  _netwm = new bt::Netwm(XDisplay());
 }
 
 
 bool Blackbox::validateWindow(Window window) {
   XEvent event;
-  if (XCheckTypedWindowEvent(getXDisplay(), window, DestroyNotify, &event)) {
-    XPutBackEvent(getXDisplay(), &event);
+  if (XCheckTypedWindowEvent(XDisplay(), window, DestroyNotify, &event)) {
+    XPutBackEvent(XDisplay(), &event);
 
     return False;
   }
@@ -471,12 +471,12 @@ void Blackbox::restart(const std::string &prog) {
 void Blackbox::shutdown(void) {
   bt::Application::shutdown();
 
-  XSetInputFocus(getXDisplay(), PointerRoot, RevertToNone, CurrentTime);
+  XSetInputFocus(XDisplay(), PointerRoot, RevertToNone, CurrentTime);
 
   std::for_each(screenList.begin(), screenList.end(),
                 std::mem_fun(&BScreen::shutdown));
 
-  XSync(getXDisplay(), False);
+  XSync(XDisplay(), False);
 
   save_rc();
 }
@@ -1164,7 +1164,7 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
   } else {
     focused_window = 0;
     // set input focus to PointerRoot
-    XSetInputFocus(getXDisplay(), PointerRoot, RevertToNone, CurrentTime);
+    XSetInputFocus(XDisplay(), PointerRoot, RevertToNone, CurrentTime);
   }
 
   Window active =

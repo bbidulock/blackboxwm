@@ -49,7 +49,7 @@ namespace bt {
     ScreenInfoList screenInfoList;
 
   public:
-    Display(const char* dpy_name);
+    Display(const std::string &dpy_name);
     ~Display(void);
 
     ::Display* XDisplay(void) const { return xdisplay; }

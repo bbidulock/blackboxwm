@@ -45,8 +45,8 @@ namespace bt {
 } // namespace bt
 
 
-bt::Display::Display(const char* dpy_name) {
-  if (! (xdisplay = XOpenDisplay(dpy_name)))
+bt::Display::Display(const std::string &dpy_name) {
+  if (! (xdisplay = XOpenDisplay(dpy_name.c_str())))
       ::exit(2);
 
   if (fcntl(ConnectionNumber(xdisplay), F_SETFD, 1) == -1)
