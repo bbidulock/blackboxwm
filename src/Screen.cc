@@ -1056,8 +1056,8 @@ void BScreen::saveStrftimeFormat(char *format) {
 #endif // HAVE_STRFTIME
 
 
-void BScreen::addWorkspaceName(const char *name) {
-  workspaceNames.push_back(string(name));
+void BScreen::addWorkspaceName(const string& name) {
+  workspaceNames.push_back(name);
 }
 
 

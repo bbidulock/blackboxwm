@@ -1291,14 +1291,17 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(class_lookup, "Session.Screen%d.WorkspaceNames", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value)) {
-    char *search = bstrdup(value.addr);
-
-    for (unsigned int i = 0; i < screen->getNumberOfWorkspaces(); i++) {
-      char *nn = strsep(&search, ",");
-      screen->addWorkspaceName(nn);
+    string search = value.addr;
+    string::const_iterator it = search.begin(),
+      end = search.end();
+    while(1) {
+      string::const_iterator tmp = it; // current string.begin()
+      it = std::find(tmp, end, ',');   // look for comma between tmp and end
+      string s(tmp, it);               // s = search[tmp:it]
+      screen->addWorkspaceName(s);
+      if (it == end) break;
+      ++it;
     }
-
-    delete [] search;
   }
 
   sprintf(name_lookup,  "session.screen%d.toolbar.onTop", screen_number);

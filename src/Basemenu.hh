@@ -94,7 +94,7 @@ public:
 
   int insert(BasemenuItem *item, int pos);
   int insert(const std::string& label, int function = 0,
-             const string& exec = "", int pos = -1);
+             const std::string& exec = "", int pos = -1);
   int insert(const std::string& ulabel, const std::string& label);
   int insert(const std::string &label, Basemenu *submenu, int pos = -1);
   int remove(int index);
@@ -157,8 +157,9 @@ public:
   BasemenuItem(const std::string& lp, int fp, const std::string& ep = ""):
     sub(0), l(lp), e(ep), f(fp), enabled(1), selected(0) {}
 
-  BasemenuItem(const string& lp, Basemenu *mp): sub(mp), l(lp),
-                                              f(0), enabled(1), selected(0) {}
+  BasemenuItem(const std::string& lp, Basemenu *mp): sub(mp), l(lp),
+                                                     f(0), enabled(1),
+                                                     selected(0) {}
 
   BasemenuItem(const std::string& up, const std::string& lp, int fp):
     sub(0), u(up), l(lp), f(fp), enabled(1), selected(0) {}
