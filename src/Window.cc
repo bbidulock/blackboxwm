@@ -1425,7 +1425,7 @@ BlackboxWindow *BlackboxWindow::readTransientInfo(void) {
 
   if (win) {
     // Transients must be on the same screen as their parent.
-    if (win && win->getScreen() != getScreen())
+    if (win->getScreen() != getScreen())
       return 0;
 
     /*
