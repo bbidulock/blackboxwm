@@ -318,7 +318,6 @@ void bt::Application::process_event(XEvent *event) {
   case ButtonRelease:
   case MotionNotify: {
     if (menu_grab) {
-#if 0
       // we have active menus.  we should send all user input events
       // to the menus instead of the normal handler
       if (! dynamic_cast<Menu*>(handler)) {
@@ -326,7 +325,6 @@ void bt::Application::process_event(XEvent *event) {
         // recent menu instead.
         handler = dynamic_cast<EventHandler*>(menus.front());
       }
-#endif
       XAllowEvents(getXDisplay(), SyncPointer, xserver_time);
     }
 
@@ -374,13 +372,11 @@ void bt::Application::process_event(XEvent *event) {
   case EnterNotify:
   case LeaveNotify: {
     if (menu_grab) {
-#if 0
       // we have active menus.  we should only send enter/leave events
       // to the menus themselves, not to normal windows
       if (! dynamic_cast<Menu*>(handler)) {
         break;
       }
-#endif
     }
 
     switch (event->type) {
