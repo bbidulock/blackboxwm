@@ -63,12 +63,6 @@ namespace bt {
     unsigned char *red, *green, *blue;
     unsigned int width, height;
 
-
-    Display *_dpy;
-    unsigned int _screen;
-    bool interlaced;
-    Color from, to;
-
     void TrueColorDither(XColorTable *colortable,
                          unsigned int bit_depth,
                          int bytes_per_line,
@@ -80,22 +74,22 @@ namespace bt {
                                   int bytes_per_line,
                                   unsigned char *pixel_data);
 
-    Pixmap renderPixmap(void);
     Pixmap render_solid(const Texture &texture);
     Pixmap render_gradient(const Texture &texture);
 
-    XImage *renderXImage(void);
+    Pixmap renderPixmap(const Display &display, unsigned int screen);
+    XImage *renderXImage(const Display &display, unsigned int screen);
 
     void invert(void);
     void bevel(unsigned int border_width = 0);
-    void dgradient(void);
-    void egradient(void);
-    void hgradient(void);
-    void pgradient(void);
-    void rgradient(void);
-    void vgradient(void);
-    void cdgradient(void);
-    void pcgradient(void);
+    void dgradient(const Color &from, const Color &to, bool interlaced);
+    void egradient(const Color &from, const Color &to, bool interlaced);
+    void hgradient(const Color &from, const Color &to, bool interlaced);
+    void pgradient(const Color &from, const Color &to, bool interlaced);
+    void rgradient(const Color &from, const Color &to, bool interlaced);
+    void vgradient(const Color &from, const Color &to, bool interlaced);
+    void cdgradient(const Color &from, const Color &to, bool interlaced);
+    void pcgradient(const Color &from, const Color &to, bool interlaced);
 
     typedef std::vector<unsigned char> Buffer;
     static Buffer buffer;

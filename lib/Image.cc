@@ -51,7 +51,7 @@ bt::Image::XColorTableList bt::Image::colorTableList;
 namespace bt {
   class XColorTable {
   public:
-    XColorTable(Display &dpy, unsigned int screen,
+    XColorTable(const Display &dpy, unsigned int screen,
                 unsigned int colors_per_channel);
     ~XColorTable(void);
 
@@ -69,7 +69,7 @@ namespace bt {
                         unsigned int blue);
 
   private:
-    Display &_dpy;
+    const Display &_dpy;
     unsigned int _screen;
     int _vclass;
     unsigned int _cpc, _cpcsq;
@@ -84,10 +84,11 @@ namespace bt {
 } // namespace bt
 
 
-bt::XColorTable::XColorTable(Display &dpy, unsigned int screen,
+bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
                              unsigned int colors_per_channel)
   : _dpy(dpy), _screen(screen),
     _cpc(colors_per_channel), _cpcsq(_cpc * _cpc) {
+
   const ScreenInfo * const screeninfo = _dpy.screenNumber(_screen);
   _vclass = screeninfo->getVisual()->c_class;
   unsigned int depth = screeninfo->getDepth();
@@ -134,11 +135,11 @@ bt::XColorTable::XColorTable(Display &dpy, unsigned int screen,
     }
 
     colors.resize(ncolors);
-#ifdef ORDEREDPSEUDO
-    red_bits = green_bits = blue_bits = 256u / _cpc;
-#else // !ORDEREDPSEUDO
+//#ifdef ORDEREDPSEUDO
+  //  red_bits = green_bits = blue_bits = 256u / _cpc;
+//#else // !ORDEREDPSEUDO
     red_bits = green_bits = blue_bits = 255u / (_cpc - 1);
-#endif // ORDEREDPSEUDO
+// #endif // ORDEREDPSEUDO
     break;
   }
 
@@ -230,7 +231,20 @@ bt::XColorTable::XColorTable(Display &dpy, unsigned int screen,
 
 
 bt::XColorTable::~XColorTable(void) {
+  if (! colors.empty()) {
+    const ScreenInfo * const screeninfo = _dpy.screenNumber(_screen);
+    const Colormap colormap = screeninfo->getColormap();
+    std::vector<unsigned long> pixvals(colors.size());
+    std::vector<unsigned long>::iterator pt = pixvals.begin();
+    std::vector<XColor>::const_iterator xt = colors.begin();
+    for (; xt != colors.end() && pt != pixvals.end(); ++xt, ++pt)
+      *pt = xt->pixel;
 
+    XFreeColors(_dpy.XDisplay(), colormap, &pixvals[0], pixvals.size(), 0);
+
+    pixvals.clear();
+    colors.clear();
+  }
 }
 
 
@@ -282,7 +296,7 @@ unsigned long bt::XColorTable::pixel(unsigned int red,
 
 
 bt::Image::Image(unsigned int w, unsigned int h)
-  :  width(w), height(h), _dpy(0), _screen(~0u) {
+  :  width(w), height(h) {
   assert(width > 0  && width  < maximumWidth);
   assert(height > 0 && height < maximumHeight);
 
@@ -300,9 +314,6 @@ bt::Image::~Image(void) {
 
 
 Pixmap bt::Image::render(const bt::Texture &texture) {
-  _dpy = const_cast<Display*>(texture.display());
-  _screen = texture.screen();
-
   if (texture.texture() & bt::Texture::Parent_Relative)
     return ParentRelative;
   else if (texture.texture() & bt::Texture::Solid)
@@ -314,13 +325,14 @@ Pixmap bt::Image::render(const bt::Texture &texture) {
 
 
 Pixmap bt::Image::render_solid(const bt::Texture &texture) {
-  const ScreenInfo * const screeninfo = _dpy->screenNumber(_screen);
-  Pixmap pixmap = XCreatePixmap(_dpy->XDisplay(), screeninfo->getRootWindow(),
+  ::Display *display = texture.display()->XDisplay();
+  const ScreenInfo * const screeninfo =
+    texture.display()->screenNumber(texture.screen());
+  Pixmap pixmap = XCreatePixmap(display, screeninfo->getRootWindow(),
                                 width, height, screeninfo->getDepth());
   if (pixmap == None)
     return None;
 
-  ::Display *display = _dpy->XDisplay();
 
   bt::Pen pen(texture.color());
   bt::Pen penlight(texture.lightColor());
@@ -372,37 +384,38 @@ Pixmap bt::Image::render_solid(const bt::Texture &texture) {
 
 
 Pixmap bt::Image::render_gradient(const bt::Texture &texture) {
-  bool inverted = False;
-
-  interlaced = texture.texture() & bt::Texture::Interlaced;
+  bool inverted = false;
+  bool interlaced = texture.texture() & bt::Texture::Interlaced;
 
   if (texture.texture() & bt::Texture::Sunken) {
-    from = texture.colorTo();
-    to = texture.color();
-
-    if (! (texture.texture() & bt::Texture::Invert)) inverted = True;
+    if (! (texture.texture() & bt::Texture::Invert)) inverted = true;
   } else {
-    from = texture.color();
-    to = texture.colorTo();
-
-    if (texture.texture() & bt::Texture::Invert) inverted = True;
+    if (texture.texture() & bt::Texture::Invert) inverted = true;
   }
 
-  if (texture.texture() & bt::Texture::Diagonal) dgradient();
-  else if (texture.texture() & bt::Texture::Elliptic) egradient();
-  else if (texture.texture() & bt::Texture::Horizontal) hgradient();
-  else if (texture.texture() & bt::Texture::Pyramid) pgradient();
-  else if (texture.texture() & bt::Texture::Rectangle) rgradient();
-  else if (texture.texture() & bt::Texture::Vertical) vgradient();
-  else if (texture.texture() & bt::Texture::CrossDiagonal) cdgradient();
-  else if (texture.texture() & bt::Texture::PipeCross) pcgradient();
+  if (texture.texture() & bt::Texture::Diagonal)
+    dgradient(texture.color(), texture.colorTo(), interlaced);
+  else if (texture.texture() & bt::Texture::Elliptic)
+    egradient(texture.color(), texture.colorTo(), interlaced);
+  else if (texture.texture() & bt::Texture::Horizontal)
+    hgradient(texture.color(), texture.colorTo(), interlaced);
+  else if (texture.texture() & bt::Texture::Pyramid)
+      pgradient(texture.color(), texture.colorTo(), interlaced);
+  else if (texture.texture() & bt::Texture::Rectangle)
+    rgradient(texture.color(), texture.colorTo(), interlaced);
+  else if (texture.texture() & bt::Texture::Vertical)
+    vgradient(texture.color(), texture.colorTo(), interlaced);
+  else if (texture.texture() & bt::Texture::CrossDiagonal)
+    cdgradient(texture.color(), texture.colorTo(), interlaced);
+  else if (texture.texture() & bt::Texture::PipeCross)
+    pcgradient(texture.color(), texture.colorTo(), interlaced);
 
   if (texture.texture() & (bt::Texture::Sunken | bt::Texture::Raised))
     bevel(texture.borderWidth());
 
   if (inverted) invert();
 
-  Pixmap pixmap = renderPixmap();
+  Pixmap pixmap = renderPixmap(*texture.display(), texture.screen());
 
   unsigned int bw = 0;
   if (texture.texture() & bt::Texture::Border) {
@@ -410,7 +423,7 @@ Pixmap bt::Image::render_gradient(const bt::Texture &texture) {
     bw = texture.borderWidth();
 
     for (unsigned int i = 0; i < bw; ++i)
-      XDrawRectangle(_dpy->XDisplay(), pixmap, penborder.gc(),
+      XDrawRectangle(texture.display()->XDisplay(), pixmap, penborder.gc(),
                      i, i, width - (i * 2) - 1, height - (i * 2) - 1);
   }
 
@@ -428,13 +441,13 @@ static const unsigned char dither4[4][4] = {
   { 7, 3, 6, 2 }
 };
 static const unsigned char dither8[8][8] = {
-  { 0,  32, 8,  40, 2,  34, 10, 42 },
+  {  0, 32,  8, 40,  2, 34, 10, 42 },
   { 48, 16, 56, 24, 50, 18, 58, 26 },
-  { 12, 44, 4,  36, 14, 46, 6,  38 },
+  { 12, 44,  4, 36, 14, 46,  6, 38 },
   { 60, 28, 52, 20, 62, 30, 54, 22 },
-  { 3,  35, 11, 43, 1,  33, 9,  41 },
+  {  3, 35, 11, 43,  1, 33,  9, 41 },
   { 51, 19, 59, 27, 49, 17, 57, 25 },
-  { 15, 47, 7,  39, 13, 45, 5,  37 },
+  { 15, 47,  7, 39, 13, 45,  5, 37 },
   { 63, 31, 55, 23, 61, 29, 53, 21 }
 };
 
@@ -663,21 +676,21 @@ void bt::Image::PseudoColorDither(XColorTable *colortable,
 }
 
 
-XImage *bt::Image::renderXImage(void) {
+XImage *bt::Image::renderXImage(const Display &display, unsigned int screen) {
   // get the colortable for the screen. if necessary, we will create one.
   if (colorTableList.empty())
-    colorTableList.resize(_dpy->screenCount(), 0);
+    colorTableList.resize(display.screenCount(), 0);
 
-  if (! colorTableList[_screen])
-    colorTableList[_screen] =
-      new XColorTable(*_dpy, _screen, colorsPerChannel());
+  if (! colorTableList[screen])
+    colorTableList[screen] =
+      new XColorTable(display, screen, colorsPerChannel());
 
-  XColorTable *colortable = colorTableList[_screen];
+  XColorTable *colortable = colorTableList[screen];
 
   // create XImage
-  const ScreenInfo * const screeninfo = _dpy->screenNumber(_screen);
+  const ScreenInfo * const screeninfo = display.screenNumber(screen);
   XImage *image =
-    XCreateImage(_dpy->XDisplay(), screeninfo->getVisual(),
+    XCreateImage(display.XDisplay(), screeninfo->getVisual(),
                  screeninfo->getDepth(), ZPixmap,
                  0, 0, width, height, 32, 0);
 
@@ -693,8 +706,8 @@ XImage *bt::Image::renderXImage(void) {
   unsigned int o = image->bits_per_pixel +
                    ((image->byte_order == MSBFirst) ? 1 : 0);
 
-
-  if ( isDitherEnabled() && width > 1 && height > 1) {
+  if ( isDitherEnabled() && screeninfo->getDepth() < 24 &&
+       width > 1 && height > 1) {
     switch (screeninfo->getVisual()->c_class) {
     case TrueColor:
     case DirectColor:
@@ -741,30 +754,30 @@ XImage *bt::Image::renderXImage(void) {
 }
 
 
-Pixmap bt::Image::renderPixmap(void) {
-  const ScreenInfo * const screeninfo = _dpy->screenNumber(_screen);
+Pixmap bt::Image::renderPixmap(const Display &display, unsigned int screen) {
+  const ScreenInfo * const screeninfo = display.screenNumber(screen);
   Pixmap pixmap =
-    XCreatePixmap(_dpy->XDisplay(), screeninfo->getRootWindow(),
+    XCreatePixmap(display.XDisplay(), screeninfo->getRootWindow(),
                   width, height, screeninfo->getDepth());
 
   if (pixmap == None)
     return None;
 
-  XImage *image = renderXImage();
+  XImage *image = renderXImage(display, screen);
 
   if (! image) {
-    XFreePixmap(_dpy->XDisplay(), pixmap);
+    XFreePixmap(display.XDisplay(), pixmap);
     return None;
   }
 
   if (! image->data) {
     XDestroyImage(image);
-    XFreePixmap(_dpy->XDisplay(), pixmap);
+    XFreePixmap(display.XDisplay(), pixmap);
     return None;
   }
 
-  Pen pen(Color(0, 0, 0, _dpy, _screen));
-  XPutImage(_dpy->XDisplay(), pixmap, pen.gc(), image,
+  Pen pen(Color(0, 0, 0, &display, screen));
+  XPutImage(display.XDisplay(), pixmap, pen.gc(), image,
             0, 0, 0, 0, width, height);
 
   image->data = NULL;
@@ -889,7 +902,7 @@ void bt::Image::invert(void) {
 }
 
 
-void bt::Image::dgradient(void) {
+void bt::Image::dgradient(const Color &from, const Color &to, bool interlaced) {
   // diagonal gradient code was written by Mike Cole <mike@mydot.com>
   // modified for interlacing by Brad Hughes
 
@@ -970,7 +983,7 @@ void bt::Image::dgradient(void) {
 }
 
 
-void bt::Image::hgradient(void) {
+void bt::Image::hgradient(const Color &from, const Color &to, bool interlaced) {
   double drx, dgx, dbx,
     xr = static_cast<double>(from.red()),
     xg = static_cast<double>(from.green()),
@@ -1053,7 +1066,7 @@ void bt::Image::hgradient(void) {
 }
 
 
-void bt::Image::vgradient(void) {
+void bt::Image::vgradient(const Color &from, const Color &to, bool interlaced) {
   double dry, dgy, dby,
     yr = static_cast<double>(from.red()),
     yg = static_cast<double>(from.green()),
@@ -1109,7 +1122,7 @@ void bt::Image::vgradient(void) {
 }
 
 
-void bt::Image::pgradient(void) {
+void bt::Image::pgradient(const Color &from, const Color &to, bool interlaced) {
   // pyramid gradient -  based on original dgradient, written by
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
@@ -1194,7 +1207,7 @@ void bt::Image::pgradient(void) {
 }
 
 
-void bt::Image::rgradient(void) {
+void bt::Image::rgradient(const Color &from, const Color &to, bool interlaced) {
   // rectangle gradient -  based on original dgradient, written by
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
@@ -1285,7 +1298,7 @@ void bt::Image::rgradient(void) {
 }
 
 
-void bt::Image::egradient(void) {
+void bt::Image::egradient(const Color &from, const Color &to, bool interlaced) {
   // elliptic gradient -  based on original dgradient, written by
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
@@ -1376,7 +1389,7 @@ void bt::Image::egradient(void) {
 }
 
 
-void bt::Image::pcgradient(void) {
+void bt::Image::pcgradient(const Color &from, const Color &to, bool interlaced) {
   // pipe cross gradient -  based on original dgradient, written by
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
@@ -1467,7 +1480,7 @@ void bt::Image::pcgradient(void) {
 }
 
 
-void bt::Image::cdgradient(void) {
+void bt::Image::cdgradient(const Color &from, const Color &to, bool interlaced) {
   // cross diagonal gradient -  based on original dgradient, written by
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
