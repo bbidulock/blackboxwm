@@ -257,11 +257,12 @@ private:
   void destroyIconifyButton(void);
   void createMaximizeButton(void);
   void destroyMaximizeButton(void);
-  void redrawLabel(void);
-  void redrawAllButtons(void);
-  void redrawCloseButton(bool pressed);
-  void redrawIconifyButton(bool pressed);
-  void redrawMaximizeButton(bool pressed);
+  void redrawWindowFrame(void) const;
+  void redrawLabel(void) const;
+  void redrawAllButtons(void) const;
+  void redrawCloseButton(bool pressed) const;
+  void redrawIconifyButton(bool pressed) const;
+  void redrawMaximizeButton(bool pressed) const;
   void applyGravity(Rect &r);
   void restoreGravity(Rect &r);
   void setState(unsigned long new_state);

@@ -745,9 +745,7 @@ void BlackboxWindow::reconfigure(void) {
 
   positionWindows();
   decorate();
-
-  XClearWindow(blackbox->getXDisplay(), frame.window);
-  setFocusFlag(flags.focused);
+  redrawWindowFrame();
 
   configure(frame.rect.x(), frame.rect.y(),
             frame.rect.width(), frame.rect.height());
@@ -1218,7 +1216,7 @@ BlackboxWindow *BlackboxWindow::getTransientFor(void) const {
 
 void BlackboxWindow::configure(int dx, int dy,
                                unsigned int dw, unsigned int dh) {
-  bool send_event = (frame.rect.x() != dx || frame.rect.y() != dy);
+  bool send_event = False;
 
   if (dw != frame.rect.width() || dh != frame.rect.height()) {
     frame.rect.setRect(dx, dy, dw, dh);
@@ -1241,15 +1239,14 @@ void BlackboxWindow::configure(int dx, int dy,
 
     positionWindows();
     decorate();
-    setFocusFlag(flags.focused);
-    redrawAllButtons();
-  } else {
+    redrawWindowFrame();
+  } else if (frame.rect.x() != dx || frame.rect.y() != dy) {
+    send_event = True;
+
     frame.rect.setPos(dx, dy);
 
     XMoveWindow(blackbox->getXDisplay(), frame.window,
                 frame.rect.x(), frame.rect.y());
-
-    if (! flags.moving) send_event = True;
   }
 
   if (send_event && ! flags.moving) {
@@ -1270,8 +1267,8 @@ void BlackboxWindow::configure(int dx, int dy,
     event.xconfigure.above = frame.window;
     event.xconfigure.override_redirect = False;
 
-    XSendEvent(blackbox->getXDisplay(), client.window, True,
-               NoEventMask, &event);
+    XSendEvent(blackbox->getXDisplay(), client.window, False,
+               StructureNotifyMask, &event);
 
     screen->updateNetizenConfigNotify(&event);
   }
@@ -1669,13 +1666,7 @@ void BlackboxWindow::stick(void) {
 }
 
 
-void BlackboxWindow::setFocusFlag(bool focus) {
-  // only focus a window if it is visible
-  if (focus && !flags.visible)
-    return;
-
-  flags.focused = focus;
-
+void BlackboxWindow::redrawWindowFrame(void) const {
   if (decorations & Decor_Titlebar) {
     if (flags.focused) {
       if (frame.ftitle)
@@ -1751,6 +1742,18 @@ void BlackboxWindow::setFocusFlag(bool focus) {
       XSetWindowBorder(blackbox->getXDisplay(),
                        frame.plate, frame.uborder_pixel);
   }
+
+}
+
+
+void BlackboxWindow::setFocusFlag(bool focus) {
+  // only focus a window if it is visible
+  if (focus && !flags.visible)
+    return;
+
+  flags.focused = focus;
+
+  redrawWindowFrame();
 
   if (screen->isSloppyFocus() && screen->doAutoRaise()) {
     if (flags.focused) timer->start();
@@ -2044,7 +2047,7 @@ void BlackboxWindow::restoreGravity(Rect &r)
 }
 
 
-void BlackboxWindow::redrawLabel(void) {
+void BlackboxWindow::redrawLabel(void) const {
   if (flags.focused) {
     if (frame.flabel)
       XSetWindowBackgroundPixmap(blackbox->getXDisplay(),
@@ -2081,14 +2084,14 @@ void BlackboxWindow::redrawLabel(void) {
 }
 
 
-void BlackboxWindow::redrawAllButtons(void) {
+void BlackboxWindow::redrawAllButtons(void) const {
   if (frame.iconify_button) redrawIconifyButton(False);
   if (frame.maximize_button) redrawMaximizeButton(flags.maximized);
   if (frame.close_button) redrawCloseButton(False);
 }
 
 
-void BlackboxWindow::redrawIconifyButton(bool pressed) {
+void BlackboxWindow::redrawIconifyButton(bool pressed) const {
   if (! pressed) {
     if (flags.focused) {
       if (frame.fbutton)
@@ -2122,7 +2125,7 @@ void BlackboxWindow::redrawIconifyButton(bool pressed) {
 }
 
 
-void BlackboxWindow::redrawMaximizeButton(bool pressed) {
+void BlackboxWindow::redrawMaximizeButton(bool pressed) const {
   if (! pressed) {
     if (flags.focused) {
       if (frame.fbutton)
@@ -2158,7 +2161,7 @@ void BlackboxWindow::redrawMaximizeButton(bool pressed) {
 }
 
 
-void BlackboxWindow::redrawCloseButton(bool pressed) {
+void BlackboxWindow::redrawCloseButton(bool pressed) const {
   if (! pressed) {
     if (flags.focused) {
       if (frame.fbutton)
