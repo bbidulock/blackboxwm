@@ -1185,17 +1185,15 @@ BlackboxWindow::~BlackboxWindow(void) {
   if (frame.handle)
     destroyHandle();
 
+  blackbox->removeEventHandler(client.window);
+  blackbox->removeWindow(client.window);
+
   blackbox->removeEventHandler(frame.plate);
   blackbox->removeWindow(frame.plate);
   XDestroyWindow(blackbox->XDisplay(), frame.plate);
 
-  if (frame.window) {
-    blackbox->removeEventHandler(frame.window);
-    XDestroyWindow(blackbox->XDisplay(), frame.window);
-  }
-
-  blackbox->removeEventHandler(client.window);
-  blackbox->removeWindow(client.window);
+  blackbox->removeEventHandler(frame.window);
+  XDestroyWindow(blackbox->XDisplay(), frame.window);
 }
 
 
@@ -2883,10 +2881,16 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
   switch(event->atom) {
   case XA_WM_TRANSIENT_FOR: {
     if (isTransient()) {
-      // remove ourselves from our transient_for
-      BlackboxWindow *win = findTransientFor();
-      if (win)
-        win->removeTransient(this);
+      if (isGroupTransient()) {
+        BWindowGroup *group = findWindowGroup();
+        if (group)
+          group->removeTransient(this);
+      } else {
+        // remove ourselves from our transient_for
+        BlackboxWindow *win = findTransientFor();
+        if (win)
+          win->removeTransient(this);
+      }
     }
 
     // determine if this is a transient window
@@ -2894,22 +2898,29 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
                                                client.window,
                                                _screen->screenInfo(),
                                                client.wmhints);
+
     if (isTransient()) {
-      BlackboxWindow *win = findTransientFor();
-      if (win) {
-        // add ourselves to our new transient_for
-        win->addTransient(this);
+      if (isGroupTransient()) {
+        BWindowGroup *group = findWindowGroup();
+        if (group)
+          group->addTransient(this);
+      } else {
+        BlackboxWindow *win = findTransientFor();
+        if (win) {
+          // add ourselves to our new transient_for
+          win->addTransient(this);
 
-        if (workspace() != win->workspace())
-          setWorkspace(win->workspace());
+          if (workspace() != win->workspace())
+            setWorkspace(win->workspace());
 
-        if (isVisible() && workspace() != bt::BSENTINEL
-            && workspace() != _screen->currentWorkspace()) {
-          hide();
-        } else if (!isVisible()
-                   && (workspace() == bt::BSENTINEL
-                       || workspace() == _screen->currentWorkspace())) {
-          show();
+          if (isVisible() && workspace() != bt::BSENTINEL
+              && workspace() != _screen->currentWorkspace()) {
+            hide();
+          } else if (!isVisible()
+                     && (workspace() == bt::BSENTINEL
+                         || workspace() == _screen->currentWorkspace())) {
+            show();
+          }
         }
       }
     }

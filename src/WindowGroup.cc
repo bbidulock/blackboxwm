@@ -42,16 +42,26 @@ BWindowGroup::~BWindowGroup(void)
 
 void BWindowGroup::addWindow(BlackboxWindow *win) {
   windowList.push_front(win);
+  addTransient(win);
+}
+
+
+void BWindowGroup::removeWindow(BlackboxWindow *win) {
+  removeTransient(win);
+  windowList.remove(win);
+
+  if (windowList.empty())
+    delete this;
+}
+
+
+void BWindowGroup::addTransient(BlackboxWindow *win) {
   if (win->isGroupTransient())
     transientList.push_front(win);
 }
 
 
-void BWindowGroup::removeWindow(BlackboxWindow *win) {
+void BWindowGroup::removeTransient(BlackboxWindow *win) {
   if (win->isGroupTransient())
     transientList.remove(win);
-  windowList.remove(win);
-
-  if (windowList.empty())
-    delete this;
 }
