@@ -25,23 +25,12 @@
 #ifndef   __blackbox_hh
 #define   __blackbox_hh
 
-extern "C" {
-#include <stdio.h>
-}
+#include <Application.hh>
+#include <Util.hh>
+
+#include "BlackboxResource.hh"
 
 #include <list>
-#include <map>
-#include <string>
-
-// always include this just for the #defines
-// this keeps the calls to i18n->getMessage clean, otherwise we have to
-// add ifdefs to every call to getMessage
-#include "../nls/blackbox-nls.hh"
-
-#include "Application.hh"
-#include "Image.hh"
-#include "BlackboxResource.hh"
-#include "Util.hh"
 
 // forward declarations
 class BlackboxWindow;
@@ -50,7 +39,6 @@ class BWindowGroup;
 namespace bt {
   class Netwm;
 }
-
 
 class Blackbox : public bt::Application, public bt::TimeoutHandler {
 private:

@@ -22,20 +22,14 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifdef    HAVE_CONFIG_H
-#  include "../config.h"
-#endif // HAVE_CONFIG_H
-
-extern "C" {
-#include <X11/keysym.h>
-}
-
 #include "Slit.hh"
-#include "Menu.hh"
-#include "PixmapCache.hh"
 #include "Screen.hh"
 #include "Toolbar.hh"
-#include "i18n.hh"
+#include "../nls/blackbox-nls.hh"
+
+#include <Menu.hh>
+#include <PixmapCache.hh>
+#include <i18n.hh>
 
 
 class Slitmenu : public bt::Menu {

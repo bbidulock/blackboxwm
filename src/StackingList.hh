@@ -30,9 +30,11 @@
 #include <list>
 #include <vector>
 
-typedef std::vector<Window> WindowStack;
-
 class BlackboxWindow;
+
+typedef std::vector<Window> WindowStack;
+typedef std::list<Window> WindowList;
+typedef std::list<BlackboxWindow*> BlackboxWindowList;
 
 class StackingList {
  public:

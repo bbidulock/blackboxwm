@@ -30,6 +30,7 @@
 #include "Toolbar.hh"
 
 #include <Image.hh>
+#include <Menu.hh>
 #include <Resource.hh>
 
 #include <X11/Xutil.h>

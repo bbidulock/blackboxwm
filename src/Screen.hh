@@ -25,43 +25,28 @@
 #ifndef   __Screen_hh
 #define   __Screen_hh
 
-extern "C" {
-#include <X11/Xlib.h>
-#include <X11/Xresource.h>
-
-#ifdef    TIME_WITH_SYS_TIME
-#  include <sys/time.h>
-#  include <time.h>
-#else // !TIME_WITH_SYS_TIME
-#  ifdef    HAVE_SYS_TIME_H
-#    include <sys/time.h>
-#  else // !HAVE_SYS_TIME_H
-#    include <time.h>
-#  endif // HAVE_SYS_TIME_H
-#endif // TIME_WITH_SYS_TIME
-}
-
-#include <list>
-#include <vector>
-typedef std::vector<Window> WindowStack;
-
-#include "Configmenu.hh"
-#include "Display.hh"
-#include "Iconmenu.hh"
-#include "Netwm.hh"
-#include "Workspacemenu.hh"
+#include "StackingList.hh"
 #include "blackbox.hh"
-#include "BlackboxResource.hh"
 
-// forward declaration
+#include <Display.hh>
+#include <EventHandler.hh>
+#include <Netwm.hh>
+
+#include <stdio.h>
+
+// forward declarations
 class BlackboxWindow;
+class Configmenu;
+class Iconmenu;
 class Rootmenu;
 class Slit;
 class Toolbar;
 class Workspace;
+class Workspacemenu;
 
-typedef std::list<BlackboxWindow*> BlackboxWindowList;
-typedef std::list<Window> WindowList;
+namespace bt {
+  class ScreenInfo;
+}
 
 class BScreen : public bt::NoCopy, public bt::EventHandler {
 private:
@@ -110,10 +95,8 @@ private:
   void updateWorkareaHint(void) const;
 
 public:
-  enum { RoundBullet = 1, TriangleBullet, SquareBullet, NoBullet };
   enum { Restart = 1, RestartOther, Exit, Shutdown, Execute, Reconfigure,
-         WindowShade, WindowIconify, WindowMaximize, WindowClose, WindowRaise,
-         WindowLower, WindowKill, SetStyle };
+         SetStyle };
   enum FocusModel { SloppyFocus, ClickToFocus };
 
   BScreen(Blackbox *bb, unsigned int scrn);

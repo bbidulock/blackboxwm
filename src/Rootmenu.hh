@@ -25,13 +25,12 @@
 #ifndef   __Rootmenu_hh
 #define   __Rootmenu_hh
 
-#include "Menu.hh"
+#include <Menu.hh>
 
 #include <map>
 
 // forward declaration
 class BScreen;
-
 
 class Rootmenu : public bt::Menu {
 public:
@@ -59,4 +58,3 @@ private:
 };
 
 #endif // __Rootmenu_hh
-

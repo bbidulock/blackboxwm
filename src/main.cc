@@ -22,39 +22,17 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#include "../version.h"
-
-#ifdef    HAVE_CONFIG_H
-#  include "../config.h"
-#endif // HAVE_CONFIG_H
-
-extern "C" {
-#include <stdio.h>
-
-#ifdef HAVE_STDLIB_H
-#  include <stdlib.h>
-#endif // HAVE_STDLIB_H
-
-#ifdef HAVE_STRING_H
-#  include <string.h>
-#endif // HAVE_STRING_H
-
-#ifdef    HAVE_UNISTD_H
-#include <sys/types.h>
-#endif // HAVE_UNISTD_H
-
-#ifdef    HAVE_SYS_PARAM_H
-#  include <sys/param.h>
-#endif // HAVE_SYS_PARAM_H
-}
-
-#include <string>
-
-#include "i18n.hh"
 #include "blackbox.hh"
+#include "../version.h"
+#include "../nls/blackbox-nls.hh"
+
+#include <i18n.hh>
+
+#include <stdio.h>
 
 
 bt::I18n bt::i18n; // initialized in main
+
 
 static void showHelp(int exitval) {
   // print version - this should not be localized!

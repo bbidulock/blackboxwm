@@ -25,12 +25,12 @@
 #ifndef   __Workspacemenu_hh
 #define   __Workspacemenu_hh
 
-#include "Menu.hh"
+#include <Menu.hh>
 
+// forward declarations
 class BScreen;
 class Iconmenu;
 class Workspace;
-
 
 class Workspacemenu : public bt::Menu {
 public:
@@ -51,4 +51,3 @@ private:
 };
 
 #endif // __Workspacemenu_hh
-

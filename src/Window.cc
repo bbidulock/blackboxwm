@@ -22,34 +22,53 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifdef    HAVE_CONFIG_H
-#  include "../config.h"
-#endif // HAVE_CONFIG_H
-
-extern "C" {
-#include <X11/Xatom.h>
+// make sure we get bt::textPropertyToString()
 #include <X11/Xutil.h>
-#include <X11/keysym.h>
-#include <string.h>
-#include <stdlib.h>
-#include <assert.h>
-#ifdef DEBUG
-#  include <stdio.h>
-#endif // DEBUG
-}
 
-#include "i18n.hh"
-#include "blackbox.hh"
-#include "Font.hh"
-#include "Netwm.hh"
-#include "Pen.hh"
-#include "PixmapCache.hh"
-#include "Screen.hh"
-#include "Util.hh"
 #include "Window.hh"
+#include "Screen.hh"
 #include "WindowGroup.hh"
 #include "Windowmenu.hh"
 #include "Workspace.hh"
+#include "blackbox.hh"
+#include "../nls/blackbox-nls.hh"
+
+#include <Pen.hh>
+#include <PixmapCache.hh>
+#include <i18n.hh>
+
+#include <X11/Xatom.h>
+#ifdef SHAPE
+#  include <X11/extensions/shape.h>
+#endif
+
+#include <assert.h>
+
+#define MwmHintsFunctions     (1l << 0)
+#define MwmHintsDecorations   (1l << 1)
+
+#define MwmFuncAll            (1l << 0)
+#define MwmFuncResize         (1l << 1)
+#define MwmFuncMove           (1l << 2)
+#define MwmFuncIconify        (1l << 3)
+#define MwmFuncMaximize       (1l << 4)
+#define MwmFuncClose          (1l << 5)
+
+#define MwmDecorAll           (1l << 0)
+#define MwmDecorBorder        (1l << 1)
+#define MwmDecorHandle        (1l << 2)
+#define MwmDecorTitle         (1l << 3)
+#define MwmDecorMenu          (1l << 4) // not used
+#define MwmDecorIconify       (1l << 5)
+#define MwmDecorMaximize      (1l << 6)
+
+// this structure only contains 3 elements... the Motif 2.0 structure contains
+// 5... we only need the first 3... so that is all we will define
+typedef struct _MwmHints {
+  unsigned long flags, functions, decorations;
+} MwmHints;
+
+#define PropMwmHintsElements  3
 
 
 #if 0

@@ -27,12 +27,9 @@
 
 #include "StackingList.hh"
 
-extern "C" {
-#include <X11/Xlib.h>
-}
+#include <Netwm.hh>
 
-#include <string>
-
+// forward declarations
 class BScreen;
 class Clientmenu;
 class Workspace;
@@ -41,7 +38,6 @@ class BlackboxWindow;
 namespace bt {
   class Rect;
 }
-
 
 class Workspace: public bt::NoCopy {
 public:
@@ -73,7 +69,7 @@ public:
 
   bool isCurrent(void) const;
 
-  void addWindow(BlackboxWindow *w, bool place = False);
+  void addWindow(BlackboxWindow *w, bool place = false);
   void removeWindow(BlackboxWindow *w);
   unsigned int windowCount(void) const;
   void updateClientListStacking(bt::Netwm::WindowList& clientList) const;
@@ -107,6 +103,4 @@ private:
   bool smartPlacement(bt::Rect& win, const bt::Rect& availableArea);
 };
 
-
 #endif // __Workspace_hh
-

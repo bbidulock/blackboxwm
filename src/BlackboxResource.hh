@@ -25,11 +25,11 @@
 #ifndef   __BlackboxResource_hh
 #define   __BlackboxResource_hh
 
-#include "Color.hh"
-#include "Font.hh"
-#include "Texture.hh"
-#include "Timer.hh"
-#include "Util.hh"
+#include <Color.hh>
+#include <Font.hh>
+#include <Texture.hh>
+#include <Timer.hh>
+#include <Util.hh>
 
 #include <vector>
 

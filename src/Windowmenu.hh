@@ -25,12 +25,11 @@
 #ifndef   __Windowmenu_hh
 #define   __Windowmenu_hh
 
-#include "Menu.hh"
+#include <Menu.hh>
 
-// forward declaration
+// forward declarations
 class SendToWorkspacemenu;
 class BlackboxWindow;
-
 
 class Windowmenu : public bt::Menu {
 public:

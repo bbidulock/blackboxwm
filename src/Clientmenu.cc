@@ -22,18 +22,11 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifdef    HAVE_CONFIG_H
-#  include "../config.h"
-#endif // HAVE_CONFIG_H
-
 #include "Clientmenu.hh"
-
-extern "C" {
-#include <assert.h>
-}
-
 #include "Window.hh"
 #include "Screen.hh"
+
+#include <assert.h>
 
 
 Clientmenu::Clientmenu(bt::Application &app, BScreen& screen,

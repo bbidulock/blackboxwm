@@ -22,91 +22,22 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifdef    HAVE_CONFIG_H
-#  include "../config.h"
-#endif // HAVE_CONFIG_H
-
-extern "C" {
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/Xresource.h>
-#include <X11/Xatom.h>
-#include <X11/keysym.h>
-
-#ifdef    SHAPE
-#include <X11/extensions/shape.h>
-#endif // SHAPE
-
-#include <stdio.h>
-
-#ifdef HAVE_STDLIB_H
-#  include <stdlib.h>
-#endif // HAVE_STDLIB_H
-
-#ifdef HAVE_STRING_H
-#  include <string.h>
-#endif // HAVE_STRING_H
-
-#ifdef    HAVE_UNISTD_H
-#  include <sys/types.h>
-#  include <unistd.h>
-#endif // HAVE_UNISTD_H
-
-#ifdef    HAVE_SYS_PARAM_H
-#  include <sys/param.h>
-#endif // HAVE_SYS_PARAM_H
-
-#ifdef    HAVE_SYS_SELECT_H
-#  include <sys/select.h>
-#endif // HAVE_SYS_SELECT_H
-
-#ifdef    HAVE_SIGNAL_H
-#  include <signal.h>
-#endif // HAVE_SIGNAL_H
-
-#ifdef    HAVE_SYS_SIGNAL_H
-#  include <sys/signal.h>
-#endif // HAVE_SYS_SIGNAL_H
-
-#ifdef    HAVE_SYS_STAT_H
-#  include <sys/types.h>
-#  include <sys/stat.h>
-#endif // HAVE_SYS_STAT_H
-
-#ifdef    TIME_WITH_SYS_TIME
-#  include <sys/time.h>
-#  include <time.h>
-#else // !TIME_WITH_SYS_TIME
-#  ifdef    HAVE_SYS_TIME_H
-#    include <sys/time.h>
-#  else // !HAVE_SYS_TIME_H
-#    include <time.h>
-#  endif // HAVE_SYS_TIME_H
-#endif // TIME_WITH_SYS_TIME
-
-#ifdef    HAVE_LIBGEN_H
-#  include <libgen.h>
-#endif // HAVE_LIBGEN_H
-}
-
-#include <assert.h>
-
-#include <algorithm>
-#include <string>
-
-#include "i18n.hh"
 #include "blackbox.hh"
-#include "Clientmenu.hh"
-#include "Image.hh"
-#include "Netwm.hh"
-#include "Pen.hh"
-#include "PixmapCache.hh"
-#include "Rootmenu.hh"
 #include "Screen.hh"
-#include "Slit.hh"
 #include "Toolbar.hh"
-#include "Util.hh"
 #include "Window.hh"
+#include "../nls/blackbox-nls.hh"
+
+#include <Pen.hh>
+#include <PixmapCache.hh>
+#include <Util.hh>
+#include <i18n.hh>
+
+#include <X11/Xresource.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <assert.h>
+#include <unistd.h>
 
 
 Blackbox::Blackbox(char **m_argv, const char *dpy_name,
@@ -461,7 +392,7 @@ void Blackbox::restart(const std::string &prog) {
 
   // fall back in case the above execlp doesn't work
   execvp(argv[0], argv);
-  std::string name = basename(argv[0]);
+  std::string name = bt::basename(argv[0]);
   execvp(name.c_str(), argv);
 }
 

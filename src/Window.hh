@@ -25,49 +25,17 @@
 #ifndef   __Window_hh
 #define   __Window_hh
 
-extern "C" {
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#ifdef    SHAPE
-#  include <X11/extensions/shape.h>
-#endif // SHAPE
-}
-
-#include <string>
-
-#include "Display.hh"
-#include "Screen.hh"
+#include "BlackboxResource.hh"
 #include "StackingList.hh"
-#include "Timer.hh"
-#include "Util.hh"
-#include "Windowmenu.hh"
 
-#define MwmHintsFunctions     (1l << 0)
-#define MwmHintsDecorations   (1l << 1)
+#include <EventHandler.hh>
+#include <Netwm.hh>
+#include <Rect.hh>
+#include <Timer.hh>
+#include <Util.hh>
 
-#define MwmFuncAll            (1l << 0)
-#define MwmFuncResize         (1l << 1)
-#define MwmFuncMove           (1l << 2)
-#define MwmFuncIconify        (1l << 3)
-#define MwmFuncMaximize       (1l << 4)
-#define MwmFuncClose          (1l << 5)
-
-#define MwmDecorAll           (1l << 0)
-#define MwmDecorBorder        (1l << 1)
-#define MwmDecorHandle        (1l << 2)
-#define MwmDecorTitle         (1l << 3)
-#define MwmDecorMenu          (1l << 4) // not used
-#define MwmDecorIconify       (1l << 5)
-#define MwmDecorMaximize      (1l << 6)
-
-// this structure only contains 3 elements... the Motif 2.0 structure contains
-// 5... we only need the first 3... so that is all we will define
-typedef struct MwmHints {
-  unsigned long flags, functions, decorations;
-} MwmHints;
-
-#define PropMwmHintsElements  3
-
+class Blackbox;
+class Windowmenu;
 
 class BlackboxWindow : public bt::TimeoutHandler, public bt::EventHandler,
                        public bt::NoCopy {
@@ -305,8 +273,7 @@ public:
   inline bool isTransient(void) const { return client.transient_for != 0; }
   inline bool isFocused(void) const { return client.state.focused; }
   inline bool isVisible(void) const
-  { return (! (client.current_state == WithdrawnState ||
-               client.state.iconic)); }
+  { return (! (client.current_state == 0 || client.state.iconic)); }
   inline bool isIconic(void) const { return client.state.iconic; }
   inline bool isShaded(void) const { return client.state.shaded; }
   inline bool isMaximized(void) const { return client.state.maximized; }

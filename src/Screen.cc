@@ -22,79 +22,26 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifdef    HAVE_CONFIG_H
-#  include "../config.h"
-#endif // HAVE_CONFIG_H
-
-extern "C" {
-#include <X11/Xatom.h>
-#include <X11/keysym.h>
-
-// for strcasestr()
-#ifndef _GNU_SOURCE
-#  define   _GNU_SOURCE
-#endif // _GNU_SOURCE
-
-#ifdef HAVE_STDLIB_H
-#  include <stdlib.h>
-#endif // HAVE_STDLIB_H
-
-#ifdef HAVE_STRING_H
-#  include <string.h>
-#endif // HAVE_STRING_H
-
-#ifdef    HAVE_CTYPE_H
-#  include <ctype.h>
-#endif // HAVE_CTYPE_H
-
-#ifdef    HAVE_UNISTD_H
-#  include <sys/types.h>
-#  include <unistd.h>
-#endif // HAVE_UNISTD_H
-
-#ifdef    HAVE_DIRENT_H
-#  include <dirent.h>
-#endif // HAVE_DIRENT_H
-
-#ifdef    HAVE_LOCALE_H
-#  include <locale.h>
-#endif // HAVE_LOCALE_H
-
-#ifdef    HAVE_SYS_STAT_H
-#  include <sys/stat.h>
-#endif // HAVE_SYS_STAT_H
-
-#ifdef    HAVE_STDARG_H
-#  include <stdarg.h>
-#endif // HAVE_STDARG_H
-}
-
-#include <assert.h>
-
-#include <algorithm>
-#include <functional>
-#include <string>
-
-#include "i18n.hh"
-#include "blackbox.hh"
-#include "Clientmenu.hh"
-#include "Font.hh"
-#include "Iconmenu.hh"
-#include "Image.hh"
-#include "Menu.hh"
-#include "Netwm.hh"
-#include "Pen.hh"
-#include "PixmapCache.hh"
-#include "Resource.hh"
 #include "Screen.hh"
+#include "Clientmenu.hh"
+#include "Configmenu.hh"
+#include "Iconmenu.hh"
 #include "Slit.hh"
 #include "Rootmenu.hh"
 #include "Toolbar.hh"
-#include "Util.hh"
 #include "Window.hh"
 #include "WindowGroup.hh"
 #include "Workspace.hh"
 #include "Workspacemenu.hh"
+#include "../nls/blackbox-nls.hh"
+
+#include <Pen.hh>
+#include <PixmapCache.hh>
+#include <i18n.hh>
+
+#include <sys/stat.h>
+#include <assert.h>
+#include <dirent.h>
 
 
 static bool running = True;

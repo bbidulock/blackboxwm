@@ -24,6 +24,7 @@
 
 #include "WindowGroup.hh"
 #include "Window.hh"
+#include "blackbox.hh"
 
 #include <X11/Xlib.h>
 

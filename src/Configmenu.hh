@@ -25,10 +25,9 @@
 #ifndef   __Configmenu_hh
 #define   __Configmenu_hh
 
-#include "Menu.hh"
+#include <Menu.hh>
 
 class BScreen;
-
 
 class Configmenu : public bt::Menu {
 public:

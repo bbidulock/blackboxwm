@@ -22,15 +22,12 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifdef    HAVE_CONFIG_H
-# include "../config.h"
-#endif // HAVE_CONFIG_H
-
 #include "Configmenu.hh"
-
-#include "Image.hh"
 #include "Screen.hh"
-#include "i18n.hh"
+#include "../nls/blackbox-nls.hh"
+
+#include <Image.hh>
+#include <i18n.hh>
 
 
 class ConfigFocusmenu : public bt::Menu {

@@ -25,7 +25,7 @@
 #ifndef   __Clientmenu_hh
 #define   __Clientmenu_hh
 
-#include "Menu.hh"
+#include <Menu.hh>
 
 class BScreen;
 

@@ -22,19 +22,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifdef    HAVE_CONFIG_H
-#  include "../config.h"
-#endif // HAVE_CONFIG_H
-
 #include "Rootmenu.hh"
-
-extern "C" {
-#include <assert.h>
-}
-
 #include "Screen.hh"
-#include "Util.hh"
-#include "blackbox.hh"
 
 
 Rootmenu::Rootmenu(bt::Application &app, unsigned int screen, BScreen *bscreen)

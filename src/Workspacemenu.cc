@@ -22,26 +22,24 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifdef    HAVE_CONFIG_H
-#  include "../config.h"
-#endif // HAVE_CONFIG_H
-
-extern "C" {
-#include <assert.h>
-}
-
 #include "Workspacemenu.hh"
 #include "Clientmenu.hh"
 #include "Iconmenu.hh"
 #include "Screen.hh"
 #include "Workspace.hh"
-#include "i18n.hh"
+#include "../nls/blackbox-nls.hh"
 
-static const unsigned int NewWorkspaceId = 0u;
-static const unsigned int RemoveLastId   = 1u;
-static const unsigned int IconmenuId     = 2u;
-static const unsigned int WorkspaceDelta = 3u;
+#include <i18n.hh>
 
+#include <assert.h>
+
+
+enum WorkspaceAction {
+  WorkspaceActionNew,
+  WorkspaceActionRemoveLast,
+  WorkspaceActionIcons,
+  WorkspaceActionDelta
+};
 
 Workspacemenu::Workspacemenu(bt::Application &app, unsigned int screen,
                              BScreen *bscreen)
@@ -52,50 +50,51 @@ Workspacemenu::Workspacemenu(bt::Application &app, unsigned int screen,
   showTitle();
 
   insertItem(bt::i18n(WorkspacemenuSet, WorkspacemenuNewWorkspace,
-                      "New Workspace"), NewWorkspaceId);
+                      "New Workspace"), WorkspaceActionNew);
   insertItem(bt::i18n(WorkspacemenuSet, WorkspacemenuRemoveLast,
-                      "Remove Last"), RemoveLastId);
+                      "Remove Last"), WorkspaceActionRemoveLast);
   insertSeparator();
 }
 
 
 void Workspacemenu::insertWorkspace(Workspace *workspace) {
   insertItem(workspace->name(), workspace->menu(),
-             workspace->id() + WorkspaceDelta, count() - 2);
+             workspace->id() + WorkspaceActionDelta, count() - 2);
 }
 
 
 void Workspacemenu::removeWorkspace(Workspace *workspace) {
-  removeItem(workspace->id() + WorkspaceDelta);
+  removeItem(workspace->id() + WorkspaceActionDelta);
 }
 
 
 void Workspacemenu::setWorkspaceChecked(Workspace *workspace, bool checked) {
-  setItemChecked(workspace->id() + WorkspaceDelta, checked);
+  setItemChecked(workspace->id() + WorkspaceActionDelta, checked);
 }
 
 
 void Workspacemenu::insertIconMenu(Iconmenu *iconmenu) {
   insertSeparator();
-  insertItem(bt::i18n(IconSet, IconIcons, "Icons"), iconmenu, IconmenuId);
+  insertItem(bt::i18n(IconSet, IconIcons, "Icons"), iconmenu,
+             WorkspaceActionIcons);
 }
 
 
 void Workspacemenu::itemClicked(unsigned int id, unsigned int) {
   switch (id) {
-  case NewWorkspaceId:
+  case WorkspaceActionNew:
     _bscreen->addWorkspace();
     break;
 
-  case RemoveLastId:
+  case WorkspaceActionRemoveLast:
     _bscreen->removeLastWorkspace();
     break;
 
-  case IconmenuId:
+  case WorkspaceActionIcons:
     break;
 
   default:
-    id -= WorkspaceDelta;
+    id -= WorkspaceActionDelta;
     assert(id < _bscreen->resource().numberOfWorkspaces());
     if (_bscreen->getCurrentWorkspaceID() != id) {
       _bscreen->changeWorkspaceID(id);

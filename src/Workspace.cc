@@ -22,38 +22,16 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifdef    HAVE_CONFIG_H
-#  include "../config.h"
-#endif // HAVE_CONFIG_H
+#include "Workspace.hh"
+#include "Clientmenu.hh"
+#include "Screen.hh"
+#include "Window.hh"
+#include "../nls/blackbox-nls.hh"
 
-extern "C" {
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
-
-#include <stdio.h>
-
-#ifdef HAVE_STRING_H
-#  include <string.h>
-#endif // HAVE_STRING_H
-}
+#include <Util.hh>
+#include <i18n.hh>
 
 #include <assert.h>
-
-#include <algorithm>
-#include <functional>
-#include <string>
-#include <vector>
-
-#include "i18n.hh"
-#include "blackbox.hh"
-#include "Clientmenu.hh"
-#include "Font.hh"
-#include "Screen.hh"
-#include "Toolbar.hh"
-#include "Util.hh"
-#include "Window.hh"
-#include "Workspace.hh"
-#include "Windowmenu.hh"
 
 
 Workspace::Workspace(BScreen *scrn, unsigned int i) {

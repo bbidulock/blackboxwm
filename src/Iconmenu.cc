@@ -22,19 +22,14 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifdef    HAVE_CONFIG_H
-#  include "../config.h"
-#endif // HAVE_CONFIG_H
-
 #include "Iconmenu.hh"
-
-extern "C" {
-#include <assert.h>
-}
-
 #include "Screen.hh"
 #include "Window.hh"
-#include "i18n.hh"
+#include "../nls/blackbox-nls.hh"
+
+#include <i18n.hh>
+
+#include <assert.h>
 
 
 Iconmenu::Iconmenu(bt::Application &app, unsigned int screen,

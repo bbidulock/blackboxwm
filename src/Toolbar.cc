@@ -22,44 +22,20 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifdef    HAVE_CONFIG_H
-#  include "../config.h"
-#endif // HAVE_CONFIG_H
+#include "Toolbar.hh"
+#include "Screen.hh"
+#include "Slit.hh"
+#include "Window.hh"
+#include "Workspacemenu.hh"
+#include "../nls/blackbox-nls.hh"
 
-extern "C" {
+#include <Menu.hh>
+#include <Pen.hh>
+#include <PixmapCache.hh>
+#include <i18n.hh>
+
 #include <X11/keysym.h>
 #include <assert.h>
-
-#ifdef HAVE_STRING_H
-#  include <string.h>
-#endif // HAVE_STRING_H
-
-#include <stdio.h>
-
-#ifdef    TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else // !TIME_WITH_SYS_TIME
-# ifdef    HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else // !HAVE_SYS_TIME_H
-#  include <time.h>
-# endif // HAVE_SYS_TIME_H
-#endif // TIME_WITH_SYS_TIME
-}
-
-#include <string>
-
-#include "i18n.hh"
-#include "blackbox.hh"
-#include "Menu.hh"
-#include "Pen.hh"
-#include "PixmapCache.hh"
-#include "Screen.hh"
-#include "Toolbar.hh"
-#include "Window.hh"
-#include "Clientmenu.hh"
-#include "Slit.hh"
 
 
 class Toolbarmenu : public bt::Menu {
