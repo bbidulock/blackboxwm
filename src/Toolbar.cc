@@ -296,7 +296,7 @@ void Toolbar::reconfigure(void) {
                          resource.toolbarWidthPercent()) / 100;
 
   const ScreenResource::ToolbarStyle* const style = resource.toolbarStyle();
-  height = bt::textHeight(style->font);
+  height = bt::textHeight(_screen->screenNumber(), style->font);
   frame.bevel_w = resource.bevelWidth();
   frame.button_w = height;
   height += 2;
@@ -362,13 +362,14 @@ void Toolbar::reconfigure(void) {
         resource.saveStrftimeFormat("%I:%M %p");
         len = strftime(t, 1024, resource.strftimeFormat(), tt);
       }
-      /* 
+      /*
        * find the length of the rendered string and add room for two extra
        * characters to it.  This allows for variable width output of the fonts.
        * two 'w' are used to get the widest possible width
        */
-      frame.clock_w = bt::textRect(style->font, t).width() +
-                      bt::textRect(style->font, "ww").width();
+      frame.clock_w =
+        bt::textRect(_screen->screenNumber(), style->font, t).width() +
+        bt::textRect(_screen->screenNumber(), style->font, "ww").width();
     }
   }
 
@@ -376,7 +377,8 @@ void Toolbar::reconfigure(void) {
 
   for (unsigned int i = 0; i < _screen->resource().numberOfWorkspaces(); i++) {
     width =
-      bt::textRect(style->font, _screen->resource().nameOfWorkspace(i)).width();
+      bt::textRect(_screen->screenNumber(), style->font,
+                   _screen->resource().nameOfWorkspace(i)).width();
     frame.workspace_label_w = std::max(frame.workspace_label_w, width);
   }
 
@@ -925,7 +927,8 @@ void Toolbar::keyPressEvent(const XKeyEvent *ke) {
       bt::Rect rect(frame.bevel_w, frame.bevel_w,
                     frame.workspace_label_w - (frame.bevel_w * 2),
                     frame.label_h - 2);
-      bt::Rect textr = bt::textRect(style->font, new_workspace_name);
+      bt::Rect textr =
+        bt::textRect(_screen->screenNumber(), style->font, new_workspace_name);
       bt::Alignment align = (textr.width() >= frame.workspace_label_w) ?
                             bt::AlignRight : style->alignment;
 

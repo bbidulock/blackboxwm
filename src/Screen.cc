@@ -348,7 +348,8 @@ BScreen::~BScreen(void) {
 void BScreen::updateGeomWindow(void) {
   const char *s =
     bt::i18n(ScreenSet, ScreenPositionLength, "0: 0000 x 0: 0000");
-  bt::Rect geomr = bt::textRect(_resource.windowStyle()->font, s);
+  bt::Rect geomr =
+    bt::textRect(screen_info.screenNumber(), _resource.windowStyle()->font, s);
   geom_w = geomr.width() + (_resource.bevelWidth() * 2);
   geom_h = geomr.height() + (_resource.bevelWidth() * 2);
 

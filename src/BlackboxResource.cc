@@ -492,7 +492,7 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
 
   // the height of the titlebar is based upon the height of the font being
   // used to display the window's title
-  wstyle.label_height = bt::textHeight(wstyle.font) + 2;
+  wstyle.label_height = bt::textHeight(screen_num, wstyle.font) + 2;
   wstyle.title_height = wstyle.label_height + wstyle.bevel_width * 2;
   wstyle.button_width = wstyle.label_height - 2;
   wstyle.grip_width = wstyle.button_width * 2;
