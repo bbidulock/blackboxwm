@@ -114,6 +114,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     XCreateSimpleWindow(blackbox->XDisplay(), screen_info.rootWindow(),
                         0, 0, screen_info.width(), screen_info.height(), 0,
                         0l, 0l);
+  XSetWindowBackgroundPixmap(blackbox->XDisplay(), empty_window, None);
 
   updateGeomWindow();
 
