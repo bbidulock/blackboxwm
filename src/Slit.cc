@@ -767,7 +767,7 @@ Slit::Direction Slit::direction(void) const {
 
 
 void Slit::setDirection(Slit::Direction new_direction) {
-  screen->saveSlitDirection(new_direction);
+  screen->resource().saveSlitDirection(new_direction);
   reconfigure();
 }
 
@@ -778,6 +778,6 @@ Slit::Placement Slit::placement(void) const {
 
 
 void Slit::setPlacement(Slit::Placement new_placement) {
-  screen->saveSlitPlacement(new_placement);
+  screen->resource().saveSlitPlacement(new_placement);
   reconfigure();
 }

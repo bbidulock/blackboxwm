@@ -963,50 +963,50 @@ void Blackbox::load_rc(BScreen *screen) {
 
   sprintf(name_lookup, "session.screen%d.slit.placement", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Slit.Placement", screen_number);
-  screen->saveSlitPlacement(Slit::CenterRight);
+  screen->resource().saveSlitPlacement(Slit::CenterRight);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value)) {
     if (! strncasecmp(value.addr, "TopLeft", value.size))
-      screen->saveSlitPlacement(Slit::TopLeft);
+      screen->resource().saveSlitPlacement(Slit::TopLeft);
     else if (! strncasecmp(value.addr, "CenterLeft", value.size))
-      screen->saveSlitPlacement(Slit::CenterLeft);
+      screen->resource().saveSlitPlacement(Slit::CenterLeft);
     else if (! strncasecmp(value.addr, "BottomLeft", value.size))
-      screen->saveSlitPlacement(Slit::BottomLeft);
+      screen->resource().saveSlitPlacement(Slit::BottomLeft);
     else if (! strncasecmp(value.addr, "TopCenter", value.size))
-      screen->saveSlitPlacement(Slit::TopCenter);
+      screen->resource().saveSlitPlacement(Slit::TopCenter);
     else if (! strncasecmp(value.addr, "BottomCenter", value.size))
-      screen->saveSlitPlacement(Slit::BottomCenter);
+      screen->resource().saveSlitPlacement(Slit::BottomCenter);
     else if (! strncasecmp(value.addr, "TopRight", value.size))
-      screen->saveSlitPlacement(Slit::TopRight);
+      screen->resource().saveSlitPlacement(Slit::TopRight);
     else if (! strncasecmp(value.addr, "BottomRight", value.size))
-      screen->saveSlitPlacement(Slit::BottomRight);
+      screen->resource().saveSlitPlacement(Slit::BottomRight);
   }
 
   sprintf(name_lookup, "session.screen%d.slit.direction", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Slit.Direction", screen_number);
-  screen->saveSlitDirection(Slit::Vertical);
+  screen->resource().saveSlitDirection(Slit::Vertical);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value) &&
       ! strncasecmp(value.addr, "Horizontal", value.size)) {
-    screen->saveSlitDirection(Slit::Horizontal);
+    screen->resource().saveSlitDirection(Slit::Horizontal);
   }
 
   sprintf(name_lookup, "session.screen%d.slit.onTop", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Slit.OnTop", screen_number);
-  screen->saveSlitOnTop(False);
+  screen->resource().saveSlitOnTop(False);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value) &&
       ! strncasecmp(value.addr, "True", value.size)) {
-    screen->saveSlitOnTop(True);
+    screen->resource().saveSlitOnTop(True);
   }
 
   sprintf(name_lookup, "session.screen%d.slit.autoHide", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Slit.AutoHide", screen_number);
-  screen->saveSlitAutoHide(False);
+  screen->resource().saveSlitAutoHide(False);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value) &&
       ! strncasecmp(value.addr, "true", value.size)) {
-    screen->saveSlitAutoHide(True);
+    screen->resource().saveSlitAutoHide(True);
   }
 
   sprintf(name_lookup,  "session.screen%d.strftimeFormat", screen_number);
