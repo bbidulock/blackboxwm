@@ -222,9 +222,16 @@ protected:
   void decorateLabel(void);
   void positionButtons(Bool redecorate_label = False);
   void positionWindows(void);
+  void createHandle(void);
+  void destroyHandle(void);
+  void createTitlebar(void);
+  void destroyTitlebar(void);
   void createCloseButton(void);
+  void destroyCloseButton(void);
   void createIconifyButton(void);
+  void destroyIconifyButton(void);
   void createMaximizeButton(void);
+  void destroyMaximizeButton(void);
   void redrawLabel(void);
   void redrawAllButtons(void);
   void redrawCloseButton(Bool pressed);
@@ -243,7 +250,7 @@ public:
   BlackboxWindow(Blackbox *b, Window w, BScreen *s = (BScreen *) 0);
   virtual ~BlackboxWindow(void);
 
-  inline Bool isTransient(void) const { return flags.transient; }
+  inline Bool isTransient(void) const { return client.transient_for != None; }
   inline Bool isFocused(void) const { return flags.focused; }
   inline Bool isVisible(void) const { return flags.visible; }
   inline Bool isIconic(void) const { return flags.iconic; }
