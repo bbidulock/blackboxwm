@@ -2113,19 +2113,17 @@ Pixmap BImageControl::searchCache(unsigned int width, unsigned int height,
   if (cache->count()) {
     LinkedListIterator<Cache> it(cache);
 
-    for (; it.current(); it++) {
-      if ((it.current()->width == width) &&
-          (it.current()->height == height) &&
-          (it.current()->texture == texture) &&
-          (it.current()->pixel1 == c1->getPixel()))
+    for (Cache *tmp = it.current(); tmp; it++, tmp = it.current()) {
+      if ((tmp->width == width) && (tmp->height == height) &&
+          (tmp->texture == texture) && (tmp->pixel1 == c1->getPixel()))
           if (texture & BImage_Gradient) {
-            if (it.current()->pixel2 == c2->getPixel()) {
-              it.current()->count++;
-              return it.current()->pixmap;
+            if (tmp->pixel2 == c2->getPixel()) {
+              tmp->count++;
+              return tmp->pixmap;
             }
           } else {
-            it.current()->count++;
-            return it.current()->pixmap;
+            tmp->count++;
+            return tmp->pixmap;
           }
         }
   }
@@ -2182,10 +2180,8 @@ Pixmap BImageControl::renderImage(unsigned int width, unsigned int height,
 void BImageControl::removeImage(Pixmap pixmap) {
   if (pixmap) {
     LinkedListIterator<Cache> it(cache);
-    for (; it.current(); it++) {
-      if (it.current()->pixmap == pixmap) {
-	Cache *tmp = it.current();
-
+    for (Cache *tmp = it.current(); tmp; it++, tmp = it.current()) {
+      if (tmp->pixmap == pixmap) {
         if (tmp->count) {
 	  tmp->count--;
 
@@ -2434,9 +2430,7 @@ void BImageControl::parseColor(BColor *color, char *c) {
 
 void BImageControl::timeout(void) {
   LinkedListIterator<Cache> it(cache);
-  for (; it.current(); it++) {
-    Cache *tmp = it.current();
-
+  for (Cache *tmp = it.current(); tmp; it++, tmp = it.current()) {
     if (tmp->count <= 0) {
       XFreePixmap(basedisplay->getXDisplay(), tmp->pixmap);
       cache->remove(tmp);

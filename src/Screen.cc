@@ -1710,51 +1710,52 @@ void BScreen::InitMenu(void) {
 
     if (!menu_file) {
       perror(blackbox->getMenuFilename());
-    } else if (feof(menu_file)) {
-      fprintf(stderr, i18n->getMessage(ScreenSet, ScreenEmptyMenuFile,
-				       "%s: Empty menu file"),
-	      blackbox->getMenuFilename());
     } else {
-      char line[1024], label[1024];
-      memset(line, 0, 1024);
-      memset(label, 0, 1024);
+      if (feof(menu_file)) {
+	fprintf(stderr, i18n->getMessage(ScreenSet, ScreenEmptyMenuFile,
+					 "%s: Empty menu file"),
+		blackbox->getMenuFilename());
+      } else {
+	char line[1024], label[1024];
+	memset(line, 0, 1024);
+	memset(label, 0, 1024);
 
-      while (fgets(line, 1024, menu_file) && ! feof(menu_file)) {
-	if (line[0] != '#') {
-	  int i, key = 0, index = -1, len = strlen(line);
+	while (fgets(line, 1024, menu_file) && ! feof(menu_file)) {
+	  if (line[0] != '#') {
+	    int i, key = 0, index = -1, len = strlen(line);
 
-	  key = 0;
-	  for (i = 0; i < len; i++) {
-	    if (line[i] == '[') index = 0;
-	    else if (line[i] == ']') break;
-	    else if (line[i] != ' ')
-	      if (index++ >= 0)
-		key += tolower(line[i]);
-	  }
-
-	  if (key == 517) {
-	    index = -1;
-	    for (i = index; i < len; i++) {
-	      if (line[i] == '(') index = 0;
-	      else if (line[i] == ')') break;
-	      else if (index++ >= 0) {
-		if (line[i] == '\\' && i < len - 1) i++;
-		label[index - 1] = line[i];
-	      }
+	    key = 0;
+	    for (i = 0; i < len; i++) {
+	      if (line[i] == '[') index = 0;
+	      else if (line[i] == ']') break;
+	      else if (line[i] != ' ')
+		if (index++ >= 0)
+		  key += tolower(line[i]);
 	    }
 
-	    if (index == -1) index = 0;
-	    label[index] = '\0';
+	    if (key == 517) {
+	      index = -1;
+	      for (i = index; i < len; i++) {
+		if (line[i] == '(') index = 0;
+		else if (line[i] == ')') break;
+		else if (index++ >= 0) {
+		  if (line[i] == '\\' && i < len - 1) i++;
+		  label[index - 1] = line[i];
+		}
+	      }
 
-	    rootmenu->setLabel(label);
-	    defaultMenu = parseMenuFile(menu_file, rootmenu);
-	    break;
+	      if (index == -1) index = 0;
+	      label[index] = '\0';
+
+	      rootmenu->setLabel(label);
+	      defaultMenu = parseMenuFile(menu_file, rootmenu);
+	      break;
+	    }
 	  }
 	}
       }
+      fclose(menu_file);
     }
-
-    fclose(menu_file);
   }
 
   if (defaultMenu) {

@@ -1258,14 +1258,12 @@ void BlackboxWindow::configure(int dx, int dy,
     }
 #endif // SHAPE
 
-    XMoveResizeWindow(display, frame.window, frame.x, frame.y, frame.width,
-                      frame.height);
+    XMoveWindow(display, frame.window, frame.x, frame.y);
 
     positionWindows();
     decorate();
     setFocusFlag(focused);
     redrawAllButtons();
-    shaded = False;
   } else {
     frame.x = dx;
     frame.y = dy;
@@ -2533,7 +2531,7 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
 	(re->y >= 0) && ((unsigned) re->y <= frame.button_h))
       close();
     redrawCloseButton(False);
-  } else if (moving) {
+  } else if (moving && re->button == Button1) {
     moving = False;
 
     blackbox->maskWindowEvents(0, (BlackboxWindow *) 0);
@@ -2550,7 +2548,7 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
     }
     screen->hideGeometry();
     XUngrabPointer(display, CurrentTime);
-  } else if (resizing) {
+  } else if (resizing && re->button == Button3) {
     XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
 		   frame.resize_x, frame.resize_y,
 		   frame.resize_w, frame.resize_h);
@@ -2665,7 +2663,7 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
   } else if (functions.resize &&
 	     (((me->state & Button1Mask) && (me->window == frame.right_grip ||
 					     me->window == frame.left_grip)) ||
-	      (me->state == (Mod1Mask | Button3Mask) &&
+	      (me->state & (Mod1Mask | Button3Mask) &&
 	                                     me->window == frame.window))) {
     Bool left = (me->window == frame.left_grip);
 
@@ -2847,8 +2845,6 @@ void BlackboxWindow::changeBlackboxHints(BlackboxHints *net) {
     case DecorNone:
       decorations.titlebar = decorations.border = decorations.handle =
        decorations.iconify = decorations.maximize = decorations.menu = False;
-      functions.resize = functions.move = functions.iconify =
-	functions.maximize = False;
 
       break;
 
@@ -2856,26 +2852,25 @@ void BlackboxWindow::changeBlackboxHints(BlackboxHints *net) {
     case DecorNormal:
       decorations.titlebar = decorations.border = decorations.handle =
        decorations.iconify = decorations.maximize = decorations.menu = True;
-      functions.resize = functions.move = functions.iconify =
-	functions.maximize = True;
 
       break;
 
     case DecorTiny:
-      decorations.titlebar = decorations.iconify = decorations.menu =
-	functions.move = functions.iconify = True;
-      decorations.border = decorations.handle = decorations.maximize =
-	functions.resize = functions.maximize = False;
-
+      decorations.titlebar = decorations.iconify = decorations.menu = True;
+      decorations.border = decorations.handle = decorations.maximize = False;
+ 
       break;
 
     case DecorTool:
       decorations.titlebar = decorations.menu = functions.move = True;
       decorations.iconify = decorations.border = decorations.handle =
-	decorations.maximize = functions.resize = functions.maximize =
-	functions.iconify = False;
+	decorations.maximize = False;
 
       break;
+    }
+    if (frame.window) {
+      XMapSubwindows(display, frame.window);
+      XMapWindow(display, frame.window);
     }
 
     reconfigure();
