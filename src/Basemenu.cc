@@ -929,6 +929,10 @@ void Basemenu::pointerMotionEvent( XEvent *e )
 {
   motion++;
 
+  Point gp( e->xmotion.x_root, e->xmotion.y_root );
+  if ( ! rect().contains( gp ) )
+    return;
+
   Point p( e->xmotion.x, e->xmotion.y );
   if ( ! items_rect.contains( p ) && ( show_title && ! title_rect.contains( p ) ) )
     return;
