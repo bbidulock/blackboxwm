@@ -406,6 +406,12 @@ void BlackboxMenu::updateMenu(void) {
     }
   }
 
+#ifdef SHAPE
+  // this will shape the menu so that we dont have empty, left over menu item
+  // spaces...
+
+#endif
+
   XMapSubwindows(display, menu.frame);
   XSync(display, False);
 }

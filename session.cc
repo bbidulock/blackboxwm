@@ -1824,12 +1824,22 @@ void BlackboxSession::createAutoConfigDialog(void) {
 				ReconfigureDialog.text_w);
   }
 
+  XSizeHints *rsizehint = XAllocSizeHints();
+  rsizehint->flags = PPosition|PSize|PMinSize|PMaxSize;
+  rsizehint->x = rsizehint->y = 200;
+  rsizehint->width = rsizehint->min_width = rsizehint->max_width =
+    ReconfigureDialog.text_w + 10;
+  rsizehint->height = rsizehint->min_height = rsizehint->max_height=
+    ReconfigureDialog.text_h + (ReconfigureDialog.line_h * 3);
+
   ReconfigureDialog.window =
     XCreateWindow(display, root, 200, 200, ReconfigureDialog.text_w + 10,
 		  ReconfigureDialog.text_h + (ReconfigureDialog.line_h * 3),
 		  0, depth, InputOutput, v, create_mask, &attrib_create);
   XStoreName(display, ReconfigureDialog.window,
 	     "Perform Auto-Reconfiguration?");
+  XSetWMNormalHints(display, ReconfigureDialog.window, rsizehint);
+  XFree(rsizehint);
 
   ReconfigureDialog.text_window =
     XCreateWindow(display, ReconfigureDialog.window, 5, 5,

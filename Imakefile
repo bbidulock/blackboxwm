@@ -37,9 +37,6 @@ SRCS1 = $(Sources)
 OBJS1 = $(Objects)
 ComplexProgramTarget_1(blackbox, $(Libraries), $(OtherLibs))
 
-.c.o: $(Sources)
-	$(CC) $(CompileOptions) -c -o $@ $<
-
 .cc.o: $(Sources)
 	$(CXX) $(CompileOptions) -c -o $@ $<
 
