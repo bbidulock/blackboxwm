@@ -106,7 +106,7 @@ unsigned int Workspace::removeWindow(BlackboxWindow *w) {
       screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
     } else {
       BlackboxWindow *top = 0;
-      if (stackingList.size() > 0)
+      if (! stackingList.empty())
         top = stackingList.front();
       if (! top || ! top->setInputFocus()) {
         screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
