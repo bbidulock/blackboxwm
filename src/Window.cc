@@ -2932,8 +2932,24 @@ int WindowStyle::doJustify(const char *text, int &start_pos,
 
 BWindowGroup::BWindowGroup(Blackbox *b, Window _group)
   : blackbox(b), group(_group) {
-  // watch for destroy notify on the group window
-  XSelectInput(blackbox->getXDisplay(), group, StructureNotifyMask);
+  XWindowAttributes wattrib;
+  if (! XGetWindowAttributes(blackbox->getXDisplay(), group, &wattrib)) {
+    // group window doesn't seem to exist anymore
+    delete this;
+    return;
+  }
+
+  /*
+    watch for destroy notify on the group window (in addition to
+    any other events we are looking for)
+
+    since some managed windows can also be window group controllers,
+    we need to make sure that we don't clobber the event mask for the
+    managed window
+  */
+  XSelectInput(blackbox->getXDisplay(), group,
+               wattrib.your_event_mask | StructureNotifyMask);
+
   blackbox->saveGroupSearch(group, this);
 }
 
