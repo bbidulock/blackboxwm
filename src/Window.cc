@@ -1838,9 +1838,7 @@ void BlackboxWindow::setShaded(bool shaded) {
 
 
 void BlackboxWindow::setFullScreen(bool b) {
-  assert(windowType() == WindowTypeNormal);
-
-  if (!!client.ewmh.fullscreen == !!b)
+  if (client.ewmh.fullscreen == b)
     return;
 
   bool refocus = isFocused();
@@ -2007,8 +2005,7 @@ void BlackboxWindow::setState(unsigned long new_state) {
       atoms.push_back(netwm.wmActionMaximizeVert());
     }
 
-    if (windowType() == WindowTypeNormal)
-      atoms.push_back(netwm.wmActionFullscreen());
+    atoms.push_back(netwm.wmActionFullscreen());
   }
 
   if (hasWindowFunction(WindowFunctionClose))
@@ -2517,17 +2514,15 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
       */
     }
 
-    if (windowType() == WindowTypeNormal) {
-      if (first == netwm.wmStateFullscreen() ||
-          second == netwm.wmStateFullscreen()) {
-        if (action == netwm.wmStateAdd() ||
-            (action == netwm.wmStateToggle() &&
-             ! client.ewmh.fullscreen)) {
-          setFullScreen(true);
-        } else if (action == netwm.wmStateToggle() ||
-                   action == netwm.wmStateRemove()) {
-          setFullScreen(false);
-        }
+    if (first == netwm.wmStateFullscreen() ||
+        second == netwm.wmStateFullscreen()) {
+      if (action == netwm.wmStateAdd() ||
+          (action == netwm.wmStateToggle() &&
+           ! client.ewmh.fullscreen)) {
+        setFullScreen(true);
+      } else if (action == netwm.wmStateToggle() ||
+                 action == netwm.wmStateRemove()) {
+        setFullScreen(false);
       }
     }
 
