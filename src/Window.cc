@@ -942,6 +942,10 @@ void BlackboxWindow::getNetwmHints(void) {
         break;
       }
     }
+    if (client.window_type == netwm->wmWindowTypeDesktop()) {
+      // make me omnipresent
+      client.state.layer = LAYER_DESKTOP;
+    }
   }
 
   atoms.clear();
@@ -979,6 +983,7 @@ void BlackboxWindow::getNetwmHints(void) {
         client.state.iconic = True;
       } else if (state == netwm->wmStateFullscreen()) {
         client.state.fullscreen = True;
+        client.state.layer = LAYER_FULLSCREEN;
       } else if (state == netwm->wmStateAbove()) {
         client.state.layer = LAYER_ABOVE;
       } else if (state == netwm->wmStateBelow()) {
@@ -992,9 +997,6 @@ void BlackboxWindow::getNetwmHints(void) {
   if (ret) {
     if (desktop != 0xFFFFFFFF)
       client.workspace = desktop;
-  } else if (client.window_type == netwm->wmWindowTypeDesktop()) {
-    // make me omnipresent
-    client.state.layer = LAYER_DESKTOP;
   }
 }
 
@@ -1900,8 +1902,10 @@ void BlackboxWindow::setState(unsigned long new_state, bool closing) {
   atoms.clear();
 
   if (! client.state.iconic) {
-    atoms.push_back(netwm->wmActionMove());
     atoms.push_back(netwm->wmActionChangeDesktop());
+
+    if (client.functions & Func_Move)
+      atoms.push_back(netwm->wmActionMove());
 
     if (client.functions & Func_Iconify)
       atoms.push_back(netwm->wmActionMinimize());
