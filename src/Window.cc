@@ -1852,7 +1852,9 @@ void BlackboxWindow::setFullScreen(bool b) {
 
     if (!isMaximized())
       client.premax = frame.rect;
+
     upsize();
+    frame.rect = bt::Rect(); // trick configure() into working
 
     frame.changing = screen->screenInfo().rect();
     constrain(TopLeft);
@@ -1875,6 +1877,7 @@ void BlackboxWindow::setFullScreen(bool b) {
       createHandle();
 
     upsize();
+    frame.rect = bt::Rect(); // trick configure() into working
 
     if (!isMaximized()) {
       configure(client.premax);
@@ -2794,27 +2797,28 @@ void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent *
   if (event->value_mask & CWBorderWidth)
     client.old_bw = event->border_width;
 
-  if (event->value_mask & (CWX | CWY | CWWidth | CWHeight)
-      && hasWindowFunction(WindowFunctionMove)
-      && hasWindowFunction(WindowFunctionResize)) {
+  if (event->value_mask & (CWX | CWY | CWWidth | CWHeight)) {
     bt::Rect req = frame.rect;
 
-    if (event->value_mask & (CWX | CWY)) {
+    if (hasWindowFunction(WindowFunctionMove)
+        && (event->value_mask & (CWX | CWY))) {
+      restoreGravity(client.rect);
       if (event->value_mask & CWX)
         client.rect.setX(event->x);
       if (event->value_mask & CWY)
         client.rect.setY(event->y);
-
       applyGravity(req);
     }
 
-    if (event->value_mask & CWWidth)
-      req.setWidth(event->width + frame.margin.left + frame.margin.right);
+    if (hasWindowFunction(WindowFunctionResize)
+        && (event->value_mask & (CWWidth | CWHeight))) {
+      if (event->value_mask & CWWidth)
+        req.setWidth(event->width + frame.margin.left + frame.margin.right);
+      if (event->value_mask & CWHeight)
+        req.setHeight(event->height + frame.margin.top + frame.margin.bottom);
+    }
 
-    if (event->value_mask & CWHeight)
-      req.setHeight(event->height + frame.margin.top + frame.margin.bottom);
-
-    configure(req.x(), req.y(), req.width(), req.height());
+    configure(req);
   }
 
   if (event->value_mask & CWStackMode) {
