@@ -25,9 +25,6 @@
 #include "Windowmenu.hh"
 #include "Screen.hh"
 #include "Window.hh"
-#include "../nls/blackbox-nls.hh"
-
-#include <i18n.hh>
 
 #include <assert.h>
 
@@ -61,26 +58,19 @@ enum {
 };
 
 Windowmenu::Windowmenu(bt::Application &app, unsigned int screen)
-  : bt::Menu(app, screen), _window(0) {
+  : bt::Menu(app, screen), _window(0)
+{
   _sendto = new SendToWorkspacemenu(app, screen);
-  insertItem(bt::i18n(WindowmenuSet, WindowmenuSendTo, "Send To ..."),
-             _sendto, SendTo);
+  insertItem("Send To ...", _sendto, SendTo);
   insertSeparator();
-  insertItem(bt::i18n(WindowmenuSet, WindowmenuShade, "Shade"),
-             Shade);
-  insertItem(bt::i18n(WindowmenuSet, WindowmenuIconify, "Iconify"),
-             Iconify);
-  insertItem(bt::i18n(WindowmenuSet, WindowmenuMaximize, "Maximize"),
-             Maximize);
-  insertItem(bt::i18n(WindowmenuSet, WindowmenuRaise, "Raise"),
-             Raise);
-  insertItem(bt::i18n(WindowmenuSet, WindowmenuLower, "Lower"),
-             Lower);
+  insertItem("Shade", Shade);
+  insertItem("Iconify", Iconify);
+  insertItem("Maximize", Maximize);
+  insertItem("Raise", Raise);
+  insertItem("Lower", Lower);
   insertSeparator();
-  insertItem(bt::i18n(WindowmenuSet, WindowmenuKillClient, "Kill Client"),
-             KillClient);
-  insertItem(bt::i18n(WindowmenuSet, WindowmenuClose, "Close"),
-             Close);
+  insertItem("Kill Client", KillClient);
+  insertItem("Close", Close);
 }
 
 
