@@ -43,7 +43,7 @@ extern "C" {
    #include <stdlib.h>
 #endif // HAVE_STDLIB_H
 
-  #include <assert.h>
+#include <assert.h>
 }
 
 #include "i18n.hh"
@@ -169,10 +169,16 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
       client.window_type = blackbox->netwm()->wmWindowTypeNormal();
   }
 
-  // adjust the window decorations based on transience and window sizes
-  if (isTransient()) {
+  // adjust the window decorations based on transience, window type
+  // and window sizes
+  if (client.window_type == blackbox->netwm()->wmWindowTypeDialog()) {
     client.decorations &= ~(Decor_Maximize | Decor_Handle);
     client.functions &= ~Func_Maximize;
+  } else if (client.window_type == blackbox->netwm()->wmWindowTypeSplash()) {
+    client.decorations = client.functions = 0l;
+  } else if (client.window_type == blackbox->netwm()->wmWindowTypeUtility()) {
+    client.decorations &= ~(Decor_Maximize | Decor_Iconify);
+    client.functions   &= ~(Func_Maximize | Func_Iconify);
   } else if (client.window_type == blackbox->netwm()->wmWindowTypeDesktop()) {
     client.decorations = client.functions = 0l;
   }
