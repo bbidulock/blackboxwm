@@ -494,8 +494,9 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
 
     // withdraw windows in reverse order to minimize the number of
     // Expose events
-    StackingList::reverse_iterator it, end = stackingList.rend();
-    for (it = stackingList.rbegin(); it != end; ++it) {
+    StackingList::const_reverse_iterator it = stackingList.rbegin();
+    const StackingList::const_reverse_iterator end = stackingList.rend();
+    for (; it != end; ++it) {
       BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(*it);
       if (win && win->workspace() == current_workspace)
         win->hide();
@@ -516,8 +517,9 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
   {
     _workspacemenu->setWorkspaceChecked(current_workspace, true);
 
-    StackingList::iterator it, end = stackingList.end();
-    for (it = stackingList.begin(); it != end; ++it) {
+    StackingList::const_iterator it = stackingList.begin();
+    const StackingList::const_iterator end = stackingList.end();
+    for (; it != end; ++it) {
       BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(*it);
       if (win && win->workspace() == current_workspace)
         win->show();
@@ -533,9 +535,7 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
         workspace->focusedWindow()->setInputFocus();
       } else {
         // focus the top-most window in the stack
-        StackingList::iterator it = stackingList.begin(),
-                              end = stackingList.end();
-        for (; it != end; ++it) {
+        for (it = stackingList.begin(); it != end; ++it) {
           BlackboxWindow * const tmp = dynamic_cast<BlackboxWindow *>(*it);
           if (!tmp
               || !tmp->isVisible()
