@@ -113,11 +113,7 @@ static int handleXErrors(Display *d, XErrorEvent *e) {
 
 // signal handler to allow for proper and gentle shutdown
 
-#ifndef   HAVE_SIGACTION
-static RETSIGTYPE signalhandler(int sig)
-#else //  HAVE_SIGACTION
 static void signalhandler(int sig)
-#endif // HAVE_SIGACTION
 {
   static int re_enter = 0;
 
@@ -125,24 +121,11 @@ static void signalhandler(int sig)
   case SIGCHLD:
     int status;
     waitpid(-1, &status, WNOHANG | WUNTRACED);
-
-#ifndef   HAVE_SIGACTION
-    // assume broken, braindead sysv signal semantics
-    signal(SIGCHLD, (RETSIGTYPE (*)(int)) signalhandler);
-#endif // HAVE_SIGACTION
-
     break;
 
   default:
-    if (base_display->handleSignal(sig)) {
-
-#ifndef   HAVE_SIGACTION
-      // assume broken, braindead sysv signal semantics
-      signal(sig, (RETSIGTYPE (*)(int)) signalhandler);
-#endif // HAVE_SIGACTION
-
+    if (base_display->handleSignal(sig))
       return;
-    }
 
     if (! base_display->isStartup() && ! re_enter) {
       internal_error = True;
@@ -166,7 +149,6 @@ bt::Display::Display(const char *app_name, const char *dpy_name)
 {
   ::base_display = this;
 
-#ifdef    HAVE_SIGACTION
   struct sigaction action;
 
   action.sa_handler = signalhandler;
@@ -182,17 +164,6 @@ bt::Display::Display(const char *app_name, const char *dpy_name)
   sigaction(SIGHUP, &action, NULL);
   sigaction(SIGUSR1, &action, NULL);
   sigaction(SIGUSR2, &action, NULL);
-#else // !HAVE_SIGACTION
-  signal(SIGPIPE, (RETSIGTYPE (*)(int)) signalhandler);
-  signal(SIGSEGV, (RETSIGTYPE (*)(int)) signalhandler);
-  signal(SIGFPE, (RETSIGTYPE (*)(int)) signalhandler);
-  signal(SIGTERM, (RETSIGTYPE (*)(int)) signalhandler);
-  signal(SIGINT, (RETSIGTYPE (*)(int)) signalhandler);
-  signal(SIGUSR1, (RETSIGTYPE (*)(int)) signalhandler);
-  signal(SIGUSR2, (RETSIGTYPE (*)(int)) signalhandler);
-  signal(SIGHUP, (RETSIGTYPE (*)(int)) signalhandler);
-  signal(SIGCHLD, (RETSIGTYPE (*)(int)) signalhandler);
-#endif // HAVE_SIGACTION
 
   if (! (xdisplay = XOpenDisplay(dpy_name)))
     ::exit(2);
