@@ -325,7 +325,7 @@ exec_img_command()
 	command=$*
 
 	if [ "$debug" ]; then
-    		$debug $command
+    		$debug $command >/dev/null 2>&1; rc=$?
 	else
     		$command >/dev/null 2>&1; rc=$?
 	fi
