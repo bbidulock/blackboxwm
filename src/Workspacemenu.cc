@@ -34,11 +34,11 @@
 #include <assert.h>
 
 
-enum WorkspaceAction {
-  WorkspaceActionNew,
-  WorkspaceActionRemoveLast,
-  WorkspaceActionIcons,
-  WorkspaceActionDelta
+enum {
+  NewWorkspace,
+  RemoveLastWorkspace,
+  Icons,
+  WorkspaceIDDelta
 };
 
 Workspacemenu::Workspacemenu(bt::Application &app, unsigned int screen,
@@ -50,51 +50,51 @@ Workspacemenu::Workspacemenu(bt::Application &app, unsigned int screen,
   showTitle();
 
   insertItem(bt::i18n(WorkspacemenuSet, WorkspacemenuNewWorkspace,
-                      "New Workspace"), WorkspaceActionNew);
+                      "New Workspace"), NewWorkspace);
   insertItem(bt::i18n(WorkspacemenuSet, WorkspacemenuRemoveLast,
-                      "Remove Last"), WorkspaceActionRemoveLast);
+                      "Remove Last"), RemoveLastWorkspace);
   insertSeparator();
 }
 
 
 void Workspacemenu::insertWorkspace(Workspace *workspace) {
   insertItem(workspace->name(), workspace->menu(),
-             workspace->id() + WorkspaceActionDelta, count() - 2);
+             workspace->id() + WorkspaceIDDelta, count() - 2);
 }
 
 
 void Workspacemenu::removeWorkspace(Workspace *workspace) {
-  removeItem(workspace->id() + WorkspaceActionDelta);
+  removeItem(workspace->id() + WorkspaceIDDelta);
 }
 
 
 void Workspacemenu::setWorkspaceChecked(Workspace *workspace, bool checked) {
-  setItemChecked(workspace->id() + WorkspaceActionDelta, checked);
+  setItemChecked(workspace->id() + WorkspaceIDDelta, checked);
 }
 
 
 void Workspacemenu::insertIconMenu(Iconmenu *iconmenu) {
   insertSeparator();
   insertItem(bt::i18n(IconSet, IconIcons, "Icons"), iconmenu,
-             WorkspaceActionIcons);
+             Icons);
 }
 
 
 void Workspacemenu::itemClicked(unsigned int id, unsigned int) {
   switch (id) {
-  case WorkspaceActionNew:
+  case NewWorkspace:
     _bscreen->addWorkspace();
     break;
 
-  case WorkspaceActionRemoveLast:
+  case RemoveLastWorkspace:
     _bscreen->removeLastWorkspace();
     break;
 
-  case WorkspaceActionIcons:
+  case Icons:
     break;
 
   default:
-    id -= WorkspaceActionDelta;
+    id -= WorkspaceIDDelta;
     assert(id < _bscreen->resource().numberOfWorkspaces());
     if (_bscreen->getCurrentWorkspaceID() != id) {
       _bscreen->changeWorkspaceID(id);

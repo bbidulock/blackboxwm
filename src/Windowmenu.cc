@@ -45,15 +45,15 @@ private:
 };
 
 
-enum WindowAction {
-  WindowActionSendTo,
-  WindowActionShade,
-  WindowActionIconify,
-  WindowActionMaximize,
-  WindowActionRaise,
-  WindowActionLower,
-  WindowActionKillClient,
-  WindowActionClose
+enum {
+  SendTo,
+  Shade,
+  Iconify,
+  Maximize,
+  Raise,
+  Lower,
+  KillClient,
+  Close
 };
 
 Windowmenu::Windowmenu(bt::Application &app, unsigned int screen,
@@ -61,71 +61,71 @@ Windowmenu::Windowmenu(bt::Application &app, unsigned int screen,
   : bt::Menu(app, screen), _window(window) {
   _sendto = new SendToWorkspacemenu(app, screen, _window);
   insertItem(bt::i18n(WindowmenuSet, WindowmenuSendTo, "Send To ..."),
-             _sendto, WindowActionSendTo);
+             _sendto, SendTo);
   insertSeparator();
   insertItem(bt::i18n(WindowmenuSet, WindowmenuShade, "Shade"),
-             WindowActionShade);
+             Shade);
   insertItem(bt::i18n(WindowmenuSet, WindowmenuIconify, "Iconify"),
-             WindowActionIconify);
+             Iconify);
   insertItem(bt::i18n(WindowmenuSet, WindowmenuMaximize, "Maximize"),
-             WindowActionMaximize);
+             Maximize);
   insertItem(bt::i18n(WindowmenuSet, WindowmenuRaise, "Raise"),
-             WindowActionRaise);
+             Raise);
   insertItem(bt::i18n(WindowmenuSet, WindowmenuLower, "Lower"),
-             WindowActionLower);
+             Lower);
   insertSeparator();
   insertItem(bt::i18n(WindowmenuSet, WindowmenuKillClient, "Kill Client"),
-             WindowActionKillClient);
+             KillClient);
   insertItem(bt::i18n(WindowmenuSet, WindowmenuClose, "Close"),
-             WindowActionClose);
+             Close);
 }
 
 
 void Windowmenu::refresh(void) {
-  setItemEnabled(WindowActionShade,
+  setItemEnabled(Shade,
                  _window->hasFunction(BlackboxWindow::Func_Shade));
-  setItemChecked(WindowActionShade, _window->isShaded());
+  setItemChecked(Shade, _window->isShaded());
 
-  setItemEnabled(WindowActionMaximize,
+  setItemEnabled(Maximize,
                  _window->hasFunction(BlackboxWindow::Func_Maximize));
-  setItemChecked(WindowActionMaximize, _window->isMaximized());
+  setItemChecked(Maximize, _window->isMaximized());
 
-  setItemEnabled(WindowActionIconify,
+  setItemEnabled(Iconify,
                  _window->hasFunction(BlackboxWindow::Func_Iconify));
-  setItemEnabled(WindowActionClose,
+  setItemEnabled(Close,
                  _window->hasFunction(BlackboxWindow::Func_Close));
 }
 
 
 void Windowmenu::itemClicked(unsigned int id, unsigned int) {
   switch (id) {
-  case WindowActionShade:
+  case Shade:
     _window->shade();
     break;
 
-  case WindowActionIconify:
+  case Iconify:
     _window->iconify();
     break;
 
-  case WindowActionMaximize:
+  case Maximize:
     _window->maximize(1);
     break;
 
-  case WindowActionClose:
+  case Close:
     _window->close();
     break;
 
-  case WindowActionRaise: {
+  case Raise: {
     _window->getScreen()->raiseWindow(_window);
     break;
   }
 
-  case WindowActionLower: {
+  case Lower: {
     _window->getScreen()->lowerWindow(_window);
     break;
   }
 
-  case WindowActionKillClient:
+  case KillClient:
     XKillClient(_window->getScreen()->screenInfo().display().XDisplay(),
                 _window->getClientWindow());
     break;
