@@ -784,11 +784,13 @@ void bt::Menu::buttonPressEvent(const XButtonEvent * const event) {
   for (it = _items.begin(); it != end; ++it, ++index) {
     r.setHeight(it->height);
 
-    if (it->enabled && r.contains(event->x, event->y)) {
-      if (! it->active)
-        activateItem(r, *it);
-      // ensure the submenu is visible
-      showActiveSubmenu();
+    if (!it->separator) {
+      if (it->enabled && r.contains(event->x, event->y)) {
+        if (! it->active)
+          activateItem(r, *it);
+        // ensure the submenu is visible
+        showActiveSubmenu();
+      }
     }
 
     positionRect(r, row, col);
@@ -828,7 +830,9 @@ void bt::Menu::buttonReleaseEvent(const XButtonEvent * const event) {
     MenuItem &item = *it++;
     r.setHeight(item.height);
 
-    if (item.enabled && r.contains(event->x, event->y)) {
+    if (item.separator) {
+      do_hide = false;
+    } else if (item.enabled && r.contains(event->x, event->y)) {
       if (item.sub) {
         // clicked an item w/ a submenu, make sure the submenu is shown,
         // and keep the menu open
@@ -867,11 +871,13 @@ void bt::Menu::motionNotifyEvent(const XMotionEvent * const event) {
   for (it = _items.begin(); it != end; ++it, ++index) {
     r.setHeight(it->height);
 
-    if (r.contains(event->x, event->y)) {
-      if (! it->active && it->enabled)
-        activateItem(r, *it);
-    } else if (it->active) {
-      deactivateItem(r, *it, false);
+    if (!it->separator) {
+      if (r.contains(event->x, event->y)) {
+        if (! it->active && it->enabled)
+          activateItem(r, *it);
+      } else if (it->active) {
+        deactivateItem(r, *it, false);
+      }
     }
 
     positionRect(r, row, col);
@@ -891,8 +897,10 @@ void bt::Menu::leaveNotifyEvent(const XCrossingEvent * const /*unused*/) {
     r.setHeight(it->height);
 
     // deactivate the item unless its menu is visible
-    if (it->active && !(_current_submenu && _current_submenu == it->sub))
-      deactivateItem(r, *it);
+    if (!it->separator) {
+      if (it->active && !(_current_submenu && _current_submenu == it->sub))
+        deactivateItem(r, *it);
+    }
 
     positionRect(r, row, col);
   }
@@ -917,11 +925,13 @@ void bt::Menu::leaveNotifyEvent(const XCrossingEvent * const /*unused*/) {
     for (it = _items.begin(); it != end; ++it) {
       r.setHeight(it->height);
 
-      if (it->active && (!_current_submenu || it->sub != _current_submenu ||
-                         !_current_submenu->isVisible()))
-        deactivateItem(r, *it);
-      else if (it->sub == _current_submenu)
-        activateItem(r, *it);
+      if (!it->separator) {
+        if (it->active && (!_current_submenu || it->sub != _current_submenu ||
+                           !_current_submenu->isVisible()))
+          deactivateItem(r, *it);
+        else if (it->sub == _current_submenu)
+          activateItem(r, *it);
+      }
 
       positionRect(r, row, col);
     }
@@ -1062,15 +1072,17 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
     it = std::find_if(it, end, IndexMatch(_active_index));
     if (it == end) break;
 
-    /*
-      the item could be removed in the itemClicked call, so don't use
-      the iterator after calling itemClicked
-    */
-    if (it->sub) {
-      activateSubmenu();
-    } else {
-      itemClicked(it->ident, 1);
-      hideAll();
+    if (!it->separator) {
+      /*
+        the item could be removed in the itemClicked call, so don't use
+        the iterator after calling itemClicked
+      */
+      if (it->sub) {
+        activateSubmenu();
+      } else {
+        itemClicked(it->ident, 1);
+        hideAll();
+      }
     }
     break;
   }
@@ -1210,11 +1222,13 @@ void bt::Menu::activateIndex(unsigned int index) {
   for (it = _items.begin(); it != end; ++it) {
     r.setHeight(it->height);
 
-    if (it->indx == index) {
-      if (! it->active && it->enabled)
-        activateItem(r, *it);
-    } else if (it->active) {
-      deactivateItem(r, *it);
+    if (!it->separator) {
+      if (it->indx == index) {
+        if (! it->active && it->enabled)
+          activateItem(r, *it);
+      } else if (it->active) {
+        deactivateItem(r, *it);
+      }
     }
 
     positionRect(r, row, col);
