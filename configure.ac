@@ -180,6 +180,47 @@ else
 fi
 AC_SUBST([MITSHM])
 
+dnl Check for Xft libraries
+AC_MSG_CHECKING([whether to build support for Xft])
+AC_ARG_ENABLE([xft],
+              AC_HELP_STRING([--enable-xft],
+                             [enable support for the Xft library @<:@default=yes@:>@]),
+	      [XFT="$enableval"],
+	      [XFT=yes])
+AC_MSG_RESULT([$XFT])
+
+if test "x$XFT" = "xyes"; then
+  # Check for freetype-config and get the CXXFLAGS and LIBS from it
+  AC_CHECK_PROGS(xftconfig, xft-config)
+  if test "x$xftconfig" != "x"; then
+    save_CXXFLAGS="$CXXFLAGS"
+    save_LIBS="$LIBS"
+
+    CXXFLAGS="$CXXFLAGS `xft-config --cflags`"
+    LIBS="`xft-config --libs` $LIBS"
+
+    AC_CHECK_LIB([Xft], [XftGlyphExtents], [XFT=yes], [XFT=no])
+    AC_CHECK_HEADERS([X11/Xft/Xft.h], [XFT=yes], [XFT=no],
+[
+#define _XFT_NO_COMPAT
+#include <X11/Xlib.h>
+])
+    
+    if test "x$XFT" = "xyes"; then
+      XFT="-DXFT -D_XFT_NO_COMPAT"
+    else
+      XFT=
+      CXXFLAGS="$save_CXXFLAGS"
+      LIBS="$save_LIBS"
+    fi
+  else
+    XFT=
+  fi
+else
+  XFT=
+fi
+AC_SUBST([XFT])
+
 dnl Check whether to include debugging code
 AC_MSG_CHECKING([whether to include verbose debugging code])
 AC_ARG_ENABLE([debug],
