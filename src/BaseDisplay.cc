@@ -663,19 +663,30 @@ void BaseDisplay::process_event( XEvent *e )
       Rect r( e->xexpose.x, e->xexpose.y, e->xexpose.width, e->xexpose.height );
       while ( XCheckTypedWindowEvent( *this, e->xexpose.window,
                                       Expose, &realevent ) ) {
-        i++;
-        // merge expose area
-        r |= Rect( realevent.xexpose.x, realevent.xexpose.y,
-                   realevent.xexpose.width, realevent.xexpose.height );
+        Rect r2( realevent.xexpose.x, realevent.xexpose.y,
+                 realevent.xexpose.width, realevent.xexpose.height );
+        if ( r.intersects( r2 ) ) {
+          // merge expose area
+          r |= r2;
+          i++;
+        } else {
+          // don't merge disjoint regions... instead deliver this event as normal since
+          // use XPutBackEvent causes it to disappear (very strange)
+          if ( widget->isVisible() )
+            widget->exposeEvent( &realevent );
+          break;
+        }
       }
-      if ( i > 0 )
+      if ( i > 0 ) {
         e = &realevent;
+      }
       // use the merged area
       e->xexpose.x = r.x();
       e->xexpose.y = r.y();
       e->xexpose.width = r.width();
       e->xexpose.height = r.height();
-      widget->exposeEvent( e );
+      if ( widget->isVisible() )
+        widget->exposeEvent( e );
       break;
     }
 
