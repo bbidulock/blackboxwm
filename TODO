@@ -1,8 +1,5 @@
 -- TODO for Blackbox - an X11 Window manager
 
-Stuff TODO or On The Way(tm):
------------------------------
-
 * i18n/l10n (translations) support, need something else that can
   translate into either UTF-8 (needed for NETWM and Xft) or locale
   (for Xmb).
@@ -16,10 +13,23 @@ Stuff TODO or On The Way(tm):
 * re-add support for tear-off menus to bt::Menu
 
 * see about supporting specifications at www.freedesktop.org (for
-  example, the xdg-file location spec)
+  example, the basedirs-spec)... if the various bbtools also follow
+  this spec (read: add something to libbt), then sharing data/config
+  files is much easier
 
-ADD: add _BLACKBOX_STYLE and _BLACKBOX_MENU atoms so that bbtools, bbconf,
-     etc. can get the current path to the style in use and menu.
+* the current style is stored only by name (not by path)... all styles
+  have to placed in some directory ($XDG_DATA_DIRS/blackbox/styles,
+  for example) in order for them to be found.  The menu could
+  automatically search all $XDG_DATA_DIRS directories and build up the
+  style menu, instead of the user having to edit his menu file to add
+  new style directories... this also gives us the possibility of
+  defining a style "package" format
+
+* similarly, all config files (the rc, the menu file, a style
+  "override" file) should be stored somewhere in $XDG_CONFIG_DIRS
+
+* as mentioned above, allow the user to override anything in the
+  style... either in the rc or in a separate "override" style
 
 ADD: support user controlled window decoration
 
@@ -31,9 +41,6 @@ ADD: a regression test suite
      items to test:
        *) toggle decor works
        *) multihead
-
-Code cleanup:
------------------------------
 
 CHANGE: look into centering the window when maximizing and the window can not
         grow to fill the area
