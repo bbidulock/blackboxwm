@@ -58,7 +58,7 @@ Configmenu.o: Configmenu.cc ../config.h i18n.hh ../nls/blackbox-nls.hh \
  Rootmenu.hh Workspace.hh Workspacemenu.hh blackbox.hh Window.hh \
  Windowmenu.hh
 GCCache.o: GCCache.cc ../config.h GCCache.hh BaseDisplay.hh Timer.hh \
- Color.hh
+ Color.hh Util.hh
 Iconmenu.o: Iconmenu.cc ../config.h i18n.hh ../nls/blackbox-nls.hh \
  Iconmenu.hh Basemenu.hh Screen.hh Color.hh Texture.hh Util.hh \
  Configmenu.hh Netizen.hh Rootmenu.hh Timer.hh Workspace.hh \
@@ -117,7 +117,7 @@ Workspacemenu.o: Workspacemenu.cc ../config.h i18n.hh \
  Netizen.hh Rootmenu.hh Workspace.hh Workspacemenu.hh Toolbar.hh
 blackbox.o: blackbox.cc ../config.h i18n.hh ../nls/blackbox-nls.hh \
  blackbox.hh BaseDisplay.hh Timer.hh Basemenu.hh Clientmenu.hh \
- Image.hh Color.hh Rootmenu.hh Screen.hh Texture.hh Util.hh \
+ GCCache.hh Color.hh Image.hh Rootmenu.hh Screen.hh Texture.hh Util.hh \
  Configmenu.hh Iconmenu.hh Netizen.hh Workspace.hh Workspacemenu.hh \
  Slit.hh Toolbar.hh Window.hh Windowmenu.hh
 i18n.o: i18n.cc ../config.h i18n.hh ../nls/blackbox-nls.hh
