@@ -55,7 +55,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window) {
 
   frame.window = frame.title = frame.handle = frame.border =
     frame.close_button = frame.iconify_button = frame.maximize_button =
-    frame.button = frame.pbutton = frame.resize_handle = None;
+    frame.fbutton = frame.ubutton = frame.pbutton = frame.resize_handle = None;
   
   client.transient_for = client.transient = 0;
   client.title = 0;
@@ -108,7 +108,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window) {
     blackbox->titleFont()->descent + (frame.bevel_w * 2);
 
   frame.button_h = frame.title_h - 6;
-  frame.button_w = frame.button_h * 2 / 3;
+  frame.button_w = frame.button_h;
 
   frame.rh_w = ((resizable) ? blackbox->handleWidth() : 0);
   frame.rh_h = ((resizable) ? frame.button_h : 0);
@@ -274,9 +274,14 @@ BlackboxWindow::~BlackboxWindow(void) {
     XDestroyWindow(display, frame.border);
   }
 
-  if (frame.button != None) {
-    XFreePixmap(display, frame.button);
-    frame.button = None;
+  if (frame.fbutton != None) {
+    XFreePixmap(display, frame.fbutton);
+    frame.fbutton = None;
+  }
+
+  if (frame.ubutton != None) {
+    XFreePixmap(display, frame.ubutton);
+    frame.ubutton = None;
   }
 
   if (frame.pbutton != None) {
@@ -422,12 +427,12 @@ void BlackboxWindow::associateClientWindow(void) {
   createIconifyButton();
   createMaximizeButton();
   
-  if (frame.button && frame.close_button)
-    XSetWindowBackgroundPixmap(display, frame.close_button, frame.button);
-  if (frame.button && frame.maximize_button)
-    XSetWindowBackgroundPixmap(display, frame.maximize_button, frame.button);
-  if (frame.button && frame.iconify_button)
-    XSetWindowBackgroundPixmap(display, frame.iconify_button, frame.button);
+  if (frame.ubutton && frame.close_button)
+    XSetWindowBackgroundPixmap(display, frame.close_button, frame.ubutton);
+  if (frame.ubutton && frame.maximize_button)
+    XSetWindowBackgroundPixmap(display, frame.maximize_button, frame.ubutton);
+  if (frame.ubutton && frame.iconify_button)
+    XSetWindowBackgroundPixmap(display, frame.iconify_button, frame.ubutton);
 }
 
 
@@ -471,8 +476,8 @@ void BlackboxWindow::createDecorations(void) {
       BImage *rh_image = new BImage(blackbox, frame.rh_w, frame.rh_h,
 				    blackbox->Depth());
       p = rh_image->renderImage(blackbox->wHandleTexture(),
-				blackbox->wBColor(),
-				blackbox->wBColorTo());
+				blackbox->wUColor(),
+				blackbox->wUColorTo());
       delete rh_image;
       XSetWindowBackgroundPixmap(display, frame.resize_handle, p);
       XClearWindow(display, frame.resize_handle);
@@ -485,12 +490,15 @@ void BlackboxWindow::createDecorations(void) {
     
   BImage *b_image = new BImage(blackbox, frame.button_w, frame.button_h,
 			       blackbox->Depth());
-  frame.button = b_image->renderImage(blackbox->wButtonTexture(),
-				      blackbox->wBColor(),
-				      blackbox->wBColorTo());
+  frame.fbutton = b_image->renderImage(blackbox->wButtonTexture(),
+				       blackbox->wFColor(),
+				       blackbox->wFColorTo());
+  frame.ubutton = b_image->renderImage(blackbox->wButtonTexture(),
+				      blackbox->wUColor(),
+				      blackbox->wUColorTo());
   frame.pbutton = b_image->renderInvertedImage(blackbox->wButtonTexture(),
-					       blackbox->wBColor(),
-					       blackbox->wBColorTo());
+					       blackbox->wFColor(),
+					       blackbox->wFColorTo());
   delete b_image;
 
   XGCValues gcv;
@@ -509,26 +517,27 @@ void BlackboxWindow::createDecorations(void) {
 void BlackboxWindow::positionButtons(void) {
   if (frame.title_w > ((frame.button_w + 4) * 6)) {
     if (frame.iconify_button != None) {
-      XMoveResizeWindow(display, frame.iconify_button, 3, 3, frame.button_w,
+      XMoveResizeWindow(display, frame.iconify_button, 2, 2, frame.button_w,
 			frame.button_h);
       XMapWindow(display, frame.iconify_button);
       XClearWindow(display, frame.iconify_button);
     }
     
-    if (resizable && frame.maximize_button != None) {
-      XMoveResizeWindow(display, frame.maximize_button,
-			frame.title_w - ((frame.button_w + 5) * 2), 3,
-			frame.button_w, frame.button_h);
-      XMapWindow(display, frame.maximize_button);
-      XClearWindow(display, frame.maximize_button);
-    }
-    
+    int bx = frame.title_w - (frame.button_w + 4);
+
     if (protocols.WM_DELETE_WINDOW && frame.close_button != None) {
-      XMoveResizeWindow(display, frame.close_button,
-			frame.title_w - (frame.button_w + 5), 3,
-			frame.button_w, frame.button_h);
+      XMoveResizeWindow(display, frame.close_button, bx, 2, frame.button_w,
+			frame.button_h);
+      bx -= (frame.button_w + 4);
       XMapWindow(display, frame.close_button);
       XClearWindow(display, frame.close_button);
+    }
+
+    if (resizable && frame.maximize_button != None) {
+      XMoveResizeWindow(display, frame.maximize_button, bx, 2, frame.button_w,
+			frame.button_h);
+      XMapWindow(display, frame.maximize_button);
+      XClearWindow(display, frame.maximize_button);
     }
   } else {
     if (frame.iconify_button) XUnmapWindow(display, frame.iconify_button);
@@ -542,10 +551,9 @@ void BlackboxWindow::createCloseButton(void) {
   if (protocols.WM_DELETE_WINDOW && frame.title != None &&
       frame.close_button == None) {
     frame.close_button =
-      createChildWindow(frame.title, 0, 0, frame.button_w, frame.button_h, 0);
-    if (frame.button != None)
-      XSetWindowBackgroundPixmap(display, frame.close_button, frame.button);
-
+      createChildWindow(frame.title, 0, 0, frame.button_w, frame.button_h, 1);
+    if (frame.ubutton != None)
+      XSetWindowBackgroundPixmap(display, frame.close_button, frame.ubutton);
     blackbox->saveWindowSearch(frame.close_button, this);
   }
 }
@@ -554,8 +562,7 @@ void BlackboxWindow::createCloseButton(void) {
 void BlackboxWindow::createIconifyButton(void) {
   if (frame.title != None) {
     frame.iconify_button =
-      createChildWindow(frame.title, 0, 0, frame.button_w,
-		    frame.button_h, 0);
+      createChildWindow(frame.title, 0, 0, frame.button_w, frame.button_h, 1);
     blackbox->saveWindowSearch(frame.iconify_button, this);
   }
 }
@@ -564,7 +571,7 @@ void BlackboxWindow::createIconifyButton(void) {
 void BlackboxWindow::createMaximizeButton(void) {
   if (resizable && frame.title != None) {
     frame.maximize_button =
-      createChildWindow(frame.title, 0, 0, frame.button_w, frame.button_h, 0);
+      createChildWindow(frame.title, 0, 0, frame.button_w, frame.button_h, 1);
     blackbox->saveWindowSearch(frame.maximize_button, this);
   }
 }
@@ -589,7 +596,7 @@ void BlackboxWindow::Reconfigure(void) {
     blackbox->titleFont()->descent + (frame.bevel_w * 2);
   
   frame.button_h = frame.title_h - 6;
-  frame.button_w = frame.button_h * 2 / 3;
+  frame.button_w = frame.button_h;
 
   frame.rh_w = ((resizable) ? blackbox->handleWidth() : 0);
   frame.rh_h = ((resizable) ? frame.button_h : 0);
@@ -611,7 +618,8 @@ void BlackboxWindow::Reconfigure(void) {
   client.y = frame.y + frame.title_h + ((transient) ? 1 : (frame.bevel_w + 1));
   
   XGrabServer(display);
-  XResizeWindow(display, frame.window, frame.width, frame.height);
+  XResizeWindow(display, frame.window, frame.width,
+                ((shaded) ? frame.title_h : frame.height));
   XResizeWindow(display, frame.title, frame.title_w, frame.title_h);
   
   if (! transient) {
@@ -663,9 +671,14 @@ void BlackboxWindow::Reconfigure(void) {
   }
 #endif
 
-  if (frame.button) {
-    XFreePixmap(display, frame.button);
-    frame.button = None;
+  if (frame.fbutton) {
+    XFreePixmap(display, frame.fbutton);
+    frame.fbutton = None;
+  }
+
+  if (frame.ubutton) {
+    XFreePixmap(display, frame.ubutton);
+    frame.ubutton = None;
   }
 
   if (frame.pbutton) {
@@ -675,12 +688,15 @@ void BlackboxWindow::Reconfigure(void) {
 
   BImage *b_image = new BImage(blackbox, frame.button_w, frame.button_h,
 			       blackbox->Depth());
-  frame.button = b_image->renderImage(blackbox->wButtonTexture(),
-				      blackbox->wBColor(),
-				      blackbox->wBColorTo());
+  frame.fbutton = b_image->renderImage(blackbox->wButtonTexture(),
+				      blackbox->wFColor(),
+				      blackbox->wFColorTo());
+  frame.ubutton = b_image->renderImage(blackbox->wButtonTexture(),
+				       blackbox->wUColor(),
+				       blackbox->wUColorTo());
   frame.pbutton = b_image->renderInvertedImage(blackbox->wButtonTexture(),
-					       blackbox->wBColor(),
-					       blackbox->wBColorTo());
+					       blackbox->wFColor(),
+					       blackbox->wFColorTo());
   delete b_image;
 
   if (frame.iconify_button) XSetWindowBorder(display, frame.iconify_button,
@@ -744,8 +760,8 @@ void BlackboxWindow::Reconfigure(void) {
       BImage *rh_image = new BImage(blackbox, frame.rh_w, frame.rh_h,
 				    blackbox->Depth());
       p = rh_image->renderImage(blackbox->wHandleTexture(),
-				blackbox->wBColor(),
-				blackbox->wBColorTo());
+				blackbox->wUColor(),
+				blackbox->wUColorTo());
       delete rh_image;
       XSetWindowBackgroundPixmap(display, frame.resize_handle, p);
       XClearWindow(display, frame.resize_handle);
@@ -1426,8 +1442,9 @@ void BlackboxWindow::drawAllButtons(void) {
 
 
 void BlackboxWindow::drawIconifyButton(Bool pressed) {
-  if (! pressed && frame.button) {
-    XSetWindowBackgroundPixmap(display, frame.iconify_button, frame.button);
+  if (! pressed) {
+    XSetWindowBackgroundPixmap(display, frame.iconify_button,
+			       ((focused) ? frame.fbutton : frame.ubutton));
     XClearWindow(display, frame.iconify_button);
   } else if (frame.pbutton) {
     XSetWindowBackgroundPixmap(display, frame.iconify_button, frame.pbutton);
@@ -1441,8 +1458,9 @@ void BlackboxWindow::drawIconifyButton(Bool pressed) {
 
 
 void BlackboxWindow::drawMaximizeButton(Bool pressed) {
-  if (! pressed && frame.button) {
-    XSetWindowBackgroundPixmap(display, frame.maximize_button, frame.button);
+  if (! pressed) {
+    XSetWindowBackgroundPixmap(display, frame.maximize_button,
+			       ((focused) ? frame.fbutton : frame.ubutton));
     XClearWindow(display, frame.maximize_button);
   } else if (frame.pbutton) {
     XSetWindowBackgroundPixmap(display, frame.maximize_button, frame.pbutton);
@@ -1459,8 +1477,9 @@ void BlackboxWindow::drawMaximizeButton(Bool pressed) {
 
 
 void BlackboxWindow::drawCloseButton(Bool pressed) {
-  if (! pressed && frame.button) {
-    XSetWindowBackgroundPixmap(display, frame.close_button, frame.button);
+  if (! pressed) {
+    XSetWindowBackgroundPixmap(display, frame.close_button,
+			       ((focused) ? frame.fbutton : frame.ubutton));
     XClearWindow(display, frame.close_button);
   } else if (frame.pbutton) {
     XSetWindowBackgroundPixmap(display, frame.close_button, frame.pbutton);
@@ -1581,14 +1600,13 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
     break;
       
   case XA_WM_NAME:
-    if (! blackbox->validateWindow(client.window)) return;
-
     if (client.title)
       if (strcmp(client.title, "Unnamed")) {
 	XFree(client.title);
 	client.title = 0;
       }
     
+    if (! blackbox->validateWindow(client.window)) return;
     if (! XFetchName(display, client.window, &client.title))
       client.title = "Unnamed";
     XClearWindow(display, frame.title);

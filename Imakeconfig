@@ -20,7 +20,7 @@ XCOMM (See the included file COPYING / GPL-2.0)
 XCOMM Define this if you want to build ccmalloc
 XCOMM This will statically link blackbox (which sucks disk space... a
 XCOMM statically linked blackbox executable runs in excess of 3mb)
-#define MallocDebug
+XCOMM #define MallocDebug
 
 XCOMM Define this to get XShapeExtention support
 #define SupportShapeExtension
@@ -31,9 +31,10 @@ XCOMM #define GradientHack
 XCOMM Uncomment this line to get debugging symbols in the executable
 XCOMM
 XCOMM You may also put any compiler specific flags here
-XCOMM CXXFLAGS :=	-Wall -W -fno-strength-reduce -pipe $(CXXFLAGS)
+CXXFLAGS :=	-Wall -W -g -pipe $(CXXFLAGS)
 XCOMM CXXFLAGS :=	$(CXXFLAGS) -g
 
 XCOMM Uncomment this line and edit it to your liking for building libBox
-XCOMM CFLAGS :=	-Wall -W $(CFLAGS)
-XCOMM CFLAGS :=	$(CFLAGS) -g
+CFLAGS :=	-Wall -W -g -pipe $(CFLAGS)
+XCOMM CFLAGS :=		$(CFLAGS) -g
+

@@ -67,6 +67,7 @@ private:
   int depth;
   unsigned long *data;
   unsigned int width, height;
+  unsigned short *or, *og, *ob, *nor, *nog, *nob;
 
   BColor bg_color;
   Blackbox *blackbox;

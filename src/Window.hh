@@ -66,9 +66,9 @@ private:
   struct frame {
     Bool shaped;
     GC ftextGC, utextGC;
-    Pixmap utitle, ftitle, uhandle, fhandle, button, pbutton;
-    Window window, title, border, handle, close_button,
-      iconify_button, maximize_button, resize_handle;
+    Pixmap utitle, ftitle, uhandle, fhandle, fbutton, ubutton, pbutton;
+    Window window, title, border, handle, close_button, iconify_button,
+      maximize_button, resize_handle;
     int x, y, x_resize, y_resize, x_move, y_move, x_grab, y_grab;
     unsigned int width, height, title_h, title_w, handle_h, handle_w,
       button_w, button_h, rh_w, rh_h, border_w, border_h, bevel_w;

@@ -46,11 +46,29 @@ BImage::BImage(Blackbox *bb, unsigned int w, unsigned int h, int d)
   depth = d;
 
   data = new unsigned long [width * height];
+
+  if (blackbox->imageDither()) {
+    or = new unsigned short[width + 2];
+    og = new unsigned short[width + 2];
+    ob = new unsigned short[width + 2];
+
+    nor = new unsigned short[width + 2];
+    nog = new unsigned short[width + 2];
+    nob = new unsigned short[width + 2];
+  } else
+    or = og = ob = nor = nog = nob = 0;
 }
 
 
 BImage::~BImage(void) {
   if (data) delete [] data;
+
+  if (or) delete [] or;
+  if (og) delete [] og;
+  if (ob) delete [] ob;
+  if (nor) delete [] nor;
+  if (nog) delete [] nog;
+  if (nob) delete [] nob;
 }
 
 
@@ -250,17 +268,7 @@ Bool BImage::putPixel(unsigned int x, unsigned int y, unsigned long pixel) {
 
 
 XImage *BImage::convertToXImage(Bool dither) {
-  int count = 0, bpp = 0;
-
-  XPixmapFormatValues *pmv = XListPixmapFormats(blackbox->control(), &count);
-
-  for (int i = 0; i < count; i++)
-    if (pmv[i].depth == depth) {
-      bpp = pmv[i].bits_per_pixel;
-      break;
-    }
-
-  if (bpp == 0) return 0;
+  int bpp = blackbox->BitsPerPixel();
 
   // since XDestroyImage frees the image data... we malloc() it so that we
   // don't possibly introduce problems with free()'ing space that was new'd
@@ -295,20 +303,20 @@ XImage *BImage::convertToXImage(Bool dither) {
       
       *(im++) = (unsigned char) (*p);
       *(im++) = (unsigned char) ((*p) >> 8);
-      *(im++) = (unsigned char) ((*(p++)) >> 16);
+      *(im++) = (unsigned char) ((*p) >> 16);
       *(im) = (unsigned char) 0;
     } else if (image->byte_order == MSBFirst) {
       while (--wh) {
+        *(im++) = (unsigned char) 0;
 	*(im++) = (unsigned char) ((*p) >> 16);
-	*(im++) = (unsigned char) ((*p) >> 8);
+	*(im++) = (unsigned char) ((*p) >> 8);; 
 	*(im++) = (unsigned char) (*(p++));
-	*(im++) = (unsigned char) 0;
       }
       
+      *(im++) = (unsigned char) 0;
       *(im++) = (unsigned char) ((*p) >> 16);
       *(im++) = (unsigned char) ((*p) >> 8);
-      *(im++) = (unsigned char) (*(p++));
-      *(im) = (unsigned char) 0;
+      *(im) = (unsigned char) (*p);
     }
     
     break; }
@@ -344,17 +352,14 @@ XImage *BImage::convertToXImage(Bool dither) {
 
     if (blackbox->imageDither() && dither) {
       // lets dither the image while blitting to the XImage
-      unsigned int i, x, y, ofs, w2 = width * 2, aw = (width + 2);
-      unsigned short *tor, *tog, *tob, er, eg, eb, sr, sg, sb,
-	*or = new unsigned short[aw], *og = new unsigned short[aw],
-	*ob = new unsigned short[aw], *nor = new unsigned short[aw],
-	*nog = new unsigned short[aw], *nob = new unsigned short[aw];
+      unsigned int i, x, y, ofs, w2 = width * 2;
+      unsigned short *tor, *tog, *tob, er, eg, eb, sr, sg, sb;
       
       if ((! or) || (! og) || (! ob) || (! nor) || (! nog) || (! nob)) {
 	XDestroyImage(image);
 	return 0;
       }
-
+      
       tor = or; tog = og; tob = ob;
       
       for (i = 0; i < width; i++) {
@@ -362,7 +367,7 @@ XImage *BImage::convertToXImage(Bool dither) {
 	*(tog++) = ((*(data + i)) & 0xff00) >> 8;
 	*(tob++) = ((*(data + i)) & 0xff);
       }
-
+      
       ofs = 0;
       for (y = 0; y < height; y++) {
 	if (y < (height - 1)) {
@@ -378,7 +383,7 @@ XImage *BImage::convertToXImage(Bool dither) {
 	  *tog = ((*(data + i - 1)) & 0xff00) >> 8;
 	  *tob = ((*(data + i - 1)) & 0xff);
 	}
-
+	
 	for (x = 0; x < width; x++) {
 	  if (*(or + x) > 255) *(or + x) = 255;
 	  if (*(og + x) > 255) *(og + x) = 255;
@@ -387,7 +392,7 @@ XImage *BImage::convertToXImage(Bool dither) {
 	  sr = *(or + x);
 	  sg = *(og + x);
 	  sb = *(ob + x);
-
+	  
 	  sr = ((sr << 8) & image->red_mask);
 	  sg = ((sg << 3) & image->green_mask);
 	  sb = ((sb >> 3) & image->blue_mask);
@@ -410,16 +415,13 @@ XImage *BImage::convertToXImage(Bool dither) {
 	  *(nog + x + 1) += (eg >> 2);
 	  *(nob + x + 1) += (eb >> 2);
 	}
-
+	
 	ofs += width;
 	
 	tor = or; tog = og; tob = ob;
 	or = nor; og = nog; ob = nob;
 	nor = tor; nog = tog; nob = tob;
       }
-
-      delete [] or; delete [] og; delete [] ob;
-      delete [] nor; delete [] nog; delete [] nob;
     } else {
       while (--wh) {
 	r = (unsigned char) (((*p) & 0xff0000) >> 16);
@@ -445,11 +447,8 @@ XImage *BImage::convertToXImage(Bool dither) {
 
     if (blackbox->imageDither() && dither) {
       // lets dither the image while blitting to the XImage
-      unsigned int i, x, y, ofs, w2 = (width * 2), aw = (width + 2);
-      unsigned short *tor, *tog, *tob, er, eg, eb, sr, sg, sb,
-	*or = new unsigned short[aw], *og =  new unsigned short[aw],
-	*ob =  new unsigned short[aw], *nor = new unsigned short[aw],
-	*nog = new unsigned short[aw], *nob = new unsigned short[aw];
+      unsigned int i, x, y, ofs, w2 = (width * 2);
+      unsigned short *tor, *tog, *tob, er, eg, eb, sr, sg, sb;
       
       if ((! or) || (! og) || (! ob) || (! nor) || (! nog) || (! nob)) {
 	XDestroyImage(image);
@@ -517,9 +516,6 @@ XImage *BImage::convertToXImage(Bool dither) {
 	or = nor; og = nog; ob = nob;
 	nor = tor; nog = tog; nob = tob;
       }
-      
-      delete [] or; delete [] og; delete [] ob;
-      delete [] nor; delete [] nog; delete [] nob;
     } else {
       while (--wh) {
 	r = (unsigned char) (((*p) & 0xff0000) >> 16);
@@ -546,11 +542,8 @@ XImage *BImage::convertToXImage(Bool dither) {
 
     if (blackbox->imageDither() && dither) {
       int d = 0xff / blackbox->cpc8bpp();
-      unsigned int i, x, y, ofs, w2 = width * 2, aw = (width + 2);
-      unsigned short *tor, *tog, *tob, er, eg, eb,
-	*or = new unsigned short[aw], *og = new unsigned short[aw],
-	*ob = new unsigned short[aw], *nor = new unsigned short[aw],
-	*nog = new unsigned short[aw], *nob = new unsigned short[aw];
+      unsigned int i, x, y, ofs, w2 = (width * 2);
+      unsigned short *tor, *tog, *tob, er, eg, eb;
 
       if ((! or) || (! og) || (! ob) || (! nor) || (! nog) || (! nob)) {
 	XDestroyImage(image);
@@ -621,9 +614,6 @@ XImage *BImage::convertToXImage(Bool dither) {
 	or = nor; og = nog; ob = nob;
 	nor = tor; nog = tog; nob = tob;
       }
-      
-      delete [] or; delete [] og; delete [] ob;
-      delete [] nor; delete [] nog; delete [] nob;
     } else {
       while (--wh) {
 	r = (unsigned char) (((*p) & 0xff0000) >> 16);
@@ -1002,7 +992,7 @@ void BImage::renderDGradient(const BColor &from, const BColor &to) {
 
   for (i = 0; i < height; ++i) {
 #ifdef GradientHack
-    dy = sin((i / h) * M_PI_4);
+    dy = sin((i / h) * M_PI_2);
 #else
     dy = i / h;
 #endif

@@ -21,7 +21,7 @@
 
 #ifndef __Blackbox_hh
 #define __Blackbox_hh
-#define __blackbox_version "beta zero point three four point one"
+#define __blackbox_version "beta zero point three four point two"
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
@@ -86,12 +86,10 @@ private:
 
     struct win {
       BColor focusColor, focusColorTo, unfocusColor, unfocusColorTo,
-	buttonColor, buttonColorTo, frameColor, focusTextColor,
-	unfocusTextColor;
-
-      unsigned long decorTexture, buttonTexture, handleTexture, frameTexture;
+	frameColor, focusTextColor, unfocusTextColor;
+      unsigned long decorTexture, handleTexture, frameTexture, buttonTexture;
     } win;
-
+    
     struct menu {
       BColor titleColor, titleColorTo, frameColor, frameColorTo,
 	highlightColor, titleTextColor, frameTextColor, hiTextColor;
@@ -138,7 +136,7 @@ private:
   XColor *colors_8bpp;
   char *display_name;
   char **b_argv;
-  int depth, screen, event_mask, focus_window_number, b_argc;
+  int bpp, depth, screen, event_mask, focus_window_number, b_argc;
   unsigned int xres, yres;
 
 
@@ -251,8 +249,6 @@ public:
   const BColor &wFColorTo(void) { return resource.win.focusColorTo; }
   const BColor &wUColor(void) { return resource.win.unfocusColor; }
   const BColor &wUColorTo(void) { return resource.win.unfocusColorTo; }
-  const BColor &wBColor(void) { return resource.win.buttonColor; }
-  const BColor &wBColorTo(void) { return resource.win.buttonColorTo; }
   const BColor &wFTextColor(void) { return resource.win.focusTextColor; }
   const BColor &wUTextColor(void) { return resource.win.unfocusTextColor; }
 
@@ -292,6 +288,7 @@ public:
 
   // session information
   int Depth(void) { return depth; }
+  int BitsPerPixel(void) { return bpp; }
 
   unsigned int XResolution(void) { return xres; }
   unsigned int YResolution(void) { return yres; }

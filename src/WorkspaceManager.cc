@@ -122,16 +122,15 @@ WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
   if (p) XFreePixmap(display, p);
 
   frame.bButton =
-    XCreateWindow(display, frame.window, frame.bevel_w + frame.wsd_w,
-		  frame.bevel_w,
-		  frame.button_w, frame.button_h, 0, blackbox->Depth(),
-		  InputOutput, blackbox->visual(), create_mask,
-		  &attrib_create);
+    XCreateWindow(display, frame.window, frame.bevel_w + frame.wsd_w + 1,
+		  frame.bevel_w, frame.button_w, frame.button_h, 0,
+                  blackbox->Depth(), InputOutput, blackbox->visual(),
+                  create_mask, &attrib_create);
   blackbox->saveWSManagerSearch(frame.bButton, this);
   
   frame.fButton =
     XCreateWindow(display, frame.window, frame.button_w + frame.wsd_w +
-		  frame.bevel_w, frame.bevel_w,
+		  frame.bevel_w + 2, frame.bevel_w,
 		  frame.button_w, frame.button_h, 0, blackbox->Depth(),
 		  InputOutput, blackbox->visual(), create_mask,
 		  &attrib_create);
@@ -151,7 +150,7 @@ WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
 
   frame.iconButton =
     XCreateWindow(display, frame.window, (frame.button_w * 2) +
-		  frame.wsd_w + frame.bevel_w, frame.bevel_w, frame.ib_w,
+		  frame.wsd_w + frame.bevel_w + 3, frame.bevel_w, frame.ib_w,
 		  frame.ib_h, 0, blackbox->Depth(), InputOutput,
 		  blackbox->visual(), create_mask, &attrib_create);
   blackbox->saveWSManagerSearch(frame.iconButton, this);
@@ -160,16 +159,16 @@ WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
 			       blackbox->Depth());
   frame.ibutton =
     i_image->renderImage(blackbox->sButtonTexture(),
-			 blackbox->sBColor(), blackbox->sBColorTo());
+			 blackbox->sLColor(), blackbox->sLColorTo());
   frame.pibutton =
     i_image->renderInvertedImage(blackbox->sButtonTexture(),
-				 blackbox->sBColor(), blackbox->sBColorTo());
+				 blackbox->sLColor(), blackbox->sLColorTo());
   delete i_image;
   XSetWindowBackgroundPixmap(display, frame.iconButton, frame.ibutton);
 
   frame.applicationDock =
     XCreateWindow(display, frame.window, frame.wsd_w + (frame.button_w * 2) +
-		  frame.ib_w + (frame.bevel_w * 2), frame.bevel_w,
+		  frame.ib_w + (frame.bevel_w * 2) + 4, frame.bevel_w,
 		  frame.app_w, frame.app_h, 0, blackbox->Depth(),
 		  InputOutput, blackbox->visual(), create_mask,
 		  &attrib_create);
@@ -263,8 +262,14 @@ WorkspaceManager::~WorkspaceManager(void) {
     workspacesList->remove(0);
     delete tmp;
   }
-
   delete workspacesList;
+
+  n = applicationList->count();
+  for (i = 0; i < n; i++) {
+    Application *tmp = applicationList->find(0);
+    applicationList->remove(0);
+    delete tmp;
+  }
   delete applicationList;
 
   if (frame.button) XFreePixmap(display, frame.button);
@@ -377,19 +382,18 @@ void WorkspaceManager::removeApplication(Application *app) {
 
 
 void WorkspaceManager::DissociateAll(void) {
-  LinkedListIterator<Workspace> it(workspacesList);
-  for (; it.current(); it++)
-    it.current()->Dissociate();
-
   LinkedListIterator<Application> at(applicationList);
   for (; at.current(); at++) {
     XUnmapWindow(display, at.current()->window());
     XReparentWindow(display, at.current()->window(), blackbox->Root(), 0, 0);
     XMoveResizeWindow(display, at.current()->window(), 0, 0, frame.apps_w,
-		      frame.apps_h);
+                      frame.apps_h);
     XMapWindow(display, at.current()->window());
-    delete at.current();
   }
+
+  LinkedListIterator<Workspace> it(workspacesList);
+  for (; it.current(); it++)
+    it.current()->Dissociate();
 }
 
 
@@ -482,16 +486,16 @@ void WorkspaceManager::Reconfigure(void) {
   XResizeWindow(display, frame.window, frame.width, frame.height);
   XMoveResizeWindow(display, frame.workspaceDock, frame.bevel_w, frame.bevel_w,
 		    frame.wsd_w, frame.wsd_h);
-  XMoveResizeWindow(display, frame.bButton, frame.bevel_w + frame.wsd_w,
+  XMoveResizeWindow(display, frame.bButton, frame.bevel_w + frame.wsd_w + 1,
 		    frame.bevel_w, frame.button_w, frame.button_h);
   XMoveResizeWindow(display, frame.fButton, frame.bevel_w + frame.wsd_w +
-		    frame.button_w, frame.bevel_w, frame.button_w,
+		    frame.button_w + 2, frame.bevel_w, frame.button_w,
 		    frame.button_h);
   XMoveResizeWindow(display, frame.iconButton, frame.bevel_w + frame.wsd_w +
-		    (frame.button_w * 2), frame.bevel_w, frame.ib_w,
+		    (frame.button_w * 2) + 3, frame.bevel_w, frame.ib_w,
 		    frame.ib_h);
   XMoveResizeWindow(display, frame.applicationDock, frame.wsd_w +
-		    (frame.button_w * 2) + frame.ib_w + (frame.bevel_w * 2),
+		    (frame.button_w * 2) + frame.ib_w + (frame.bevel_w * 2) + 4,
 		    frame.bevel_w, frame.app_w, frame.app_h);
   XMoveResizeWindow(display, frame.clock, frame.width - frame.clock_w -
 		    frame.bevel_w, frame.bevel_w, frame.clock_w,
@@ -532,10 +536,10 @@ void WorkspaceManager::Reconfigure(void) {
 			       blackbox->Depth());
   frame.ibutton =
     i_image->renderImage(blackbox->sButtonTexture(),
-			 blackbox->sBColor(), blackbox->sBColorTo());
+			 blackbox->sLColor(), blackbox->sLColorTo());
   frame.pibutton =
     i_image->renderInvertedImage(blackbox->sButtonTexture(),
-				 blackbox->sBColor(), blackbox->sBColorTo());
+				 blackbox->sLColor(), blackbox->sLColorTo());
   delete i_image;
   XSetWindowBackgroundPixmap(display, frame.iconButton,
 			     ((iconMenu->Visible()) ? frame.pibutton :

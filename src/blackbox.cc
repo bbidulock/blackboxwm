@@ -146,6 +146,16 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   depth = DefaultDepth(display, screen);
   display_name = XDisplayName(dpy_name);
 
+  int count; 
+  XPixmapFormatValues *pmv = XListPixmapFormats(display, &count);
+
+  for (int i = 0; i < count; i++)
+    if (pmv[i].depth == depth) {
+      bpp = pmv[i].bits_per_pixel;
+      break;
+  }
+  if (bpp == 0) bpp = depth;
+
   event_mask = LeaveWindowMask | EnterWindowMask | PropertyChangeMask |
     SubstructureNotifyMask | PointerMotionMask | SubstructureRedirectMask |
     ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask;
@@ -1207,11 +1217,6 @@ void Blackbox::LoadDefaults(void) {
 				       "AssociatedWindow.Decorations")))
     resource.win.decorTexture = BImageRaised|BImageSolid|BImageBevel2;
 
-  if (! (resource.win.buttonTexture =
-	 blackbox->readDatabaseTexture("associatedWindow.button",
-				       "AssociatedWindow.Button")))
-    resource.win.buttonTexture = BImageRaised|BImageSolid|BImageBevel1;
-
   if (! (resource.win.handleTexture =
 	 blackbox->readDatabaseTexture("associatedWindow.handle",
 				       "AssociatedWindow.Handle")))
@@ -1221,6 +1226,11 @@ void Blackbox::LoadDefaults(void) {
 	 blackbox->readDatabaseTexture("associatedWindow.frame",
 				       "AssociatedWindow.Frame")))
     resource.win.frameTexture = BImageRaised|BImageBevel2|BImageSolid;
+
+  if (! (resource.win.buttonTexture =
+	 blackbox->readDatabaseTexture("associatedWindow.button",
+				       "AssociatedWindow.Button")))
+    resource.win.buttonTexture = BImageRaised|BImageBevel2|BImageSolid;
   
   // button, focused and unfocused colors
   if (! blackbox->readDatabaseColor("associatedWindow.focusColor",
@@ -1239,14 +1249,6 @@ void Blackbox::LoadDefaults(void) {
 			 &resource.win.unfocusColor.g,
 			 &resource.win.unfocusColor.b);
 
-  if (! blackbox->readDatabaseColor("associatedWindow.button.color",
-				    "AssociatedWindow.Button.Color",
-				    &resource.win.buttonColor))
-    resource.win.buttonColor.pixel =
-      blackbox->getColor("grey", &resource.win.buttonColor.r,
-			 &resource.win.buttonColor.g,
-			 &resource.win.buttonColor.b);
-  
   if (resource.win.decorTexture & BImageGradient) {
     if (! blackbox->readDatabaseColor("associatedWindow.focusToColor",
 				      "AssociatedWindow.FocusToColor",
@@ -1264,16 +1266,6 @@ void Blackbox::LoadDefaults(void) {
 			   &resource.win.unfocusColorTo.g,
 			   &resource.win.unfocusColorTo.b);
   }
-
-  if ((resource.win.buttonTexture & BImageGradient) ||
-      (resource.win.handleTexture & BImageGradient))
-    if (! blackbox->readDatabaseColor("associatedWindow.button.colorTo",
-				      "AssociatedWindow.Button.ColorTo",
-				      &resource.win.buttonColorTo))
-      resource.win.buttonColorTo.pixel =
-	blackbox->getColor("darkgrey", &resource.win.buttonColorTo.r,
-			   &resource.win.buttonColorTo.g,
-			   &resource.win.buttonColorTo.b);
   
   // focused and unfocused text colors
   if (! blackbox->readDatabaseColor("associatedWindow.focusTextColor",

@@ -2,6 +2,17 @@ At the request of some people, here is a Change log starting with 0.33.0.
 Enjoy! :)
 
 
+Changes from 0.34.1 to 0.34.2:
+	- fixed MSBFirst byte order image rendering at 32bpp (24bpp pending)
+          (for machines better than this intel machine of mine)
+	- changed BImage to allocate dithering space when the image is created
+	  and to delete it when the image is destroyed... instead of allocating
+	  the space and deleting the space each time the image is rendered to 
+	  an XImage... hopefully this will provide a speed increase (albeit a
+	  small one)
+	- edit Window.cc to change the way buttons are decorated and sized
+
+
 Changes from 0.34.0 to 0.34.1:
 	- fixed the unmanaged rxvt/xconsole/whatever problem that didn't
 	  decorate windows at start up... just a little logic error that was
