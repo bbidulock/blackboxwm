@@ -1184,7 +1184,7 @@ void BlackboxWindow::getTransientInfo(void) {
   }
 
   // we have no transient_for until we find a new one
-  client.transient_for = 0;
+  client.transient_for = (BlackboxWindow *) 0;
 
   Window trans_for;
   if (!XGetTransientForHint(blackbox->getXDisplay(), client.window,
@@ -1227,7 +1227,8 @@ void BlackboxWindow::getTransientInfo(void) {
   // Check for a circular transient state: this can lock up Blackbox
   // when it tries to find the non-transient window for a transient.
   BlackboxWindow *w = this;
-  while(w->client.transient_for) {
+  while(w->client.transient_for &&
+        w->client.transient_for != (BlackboxWindow *) ~0ul) {
     if(w->client.transient_for == this) {
       client.transient_for = (BlackboxWindow*) 0;
       break;

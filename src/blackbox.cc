@@ -532,10 +532,9 @@ void Blackbox::process_event(XEvent *e) {
 
     BlackboxWindow *win = searchWindow(e->xfocus.window);
     if (win) {
-      if (! win->isFocused()) {
-        assert(focused_window == 0); 
+      if (! win->isFocused())
         win->setFocusFlag(True);
-      }
+
       /*
         set the event window to None.  when the FocusOut event handler calls
         this function recursively, it uses this as an indication that focus
