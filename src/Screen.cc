@@ -1582,6 +1582,16 @@ void BScreen::buttonPressEvent(const XButtonEvent * const event) {
   if (event->button == 1) {
     if (! isRootColormapInstalled())
       image_control->installRootColormap();
+
+    /*
+      if the current focus window is not on this screen, then we set
+      focus to pointer root, which effectively moves focus to this
+      screen (since keybindings and grabs will now work on this screen
+      instead of the screen with the focus window).
+    */
+    BlackboxWindow *focus = blackbox->getFocusedWindow();
+    if (focus && focus->getScreen() != this)
+      blackbox->setFocusedWindow(0);
   } else if (event->button == 2) {
     workspacemenu->popup(event->x_root, event->y_root);
   } else if (event->button == 3) {
