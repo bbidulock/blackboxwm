@@ -27,8 +27,8 @@ BImage::BImage(BlackboxSession *s, unsigned int w, unsigned int h, int d,
 	       unsigned char r, unsigned char g, unsigned char b)
 {
   session = s;
-  width = w;
-  height = h;
+  width = ((signed) w > 0) ? w : 1;
+  height = ((signed) h > 0) ? h : 1;
   depth = d;
   
   unsigned int wh = width * height;
@@ -41,8 +41,8 @@ BImage::BImage(BlackboxSession *s, unsigned int w, unsigned int h, int d,
 	       const BColor &c)
 {
   session = s;
-  width = w;
-  height = h;
+  width = ((signed) w > 0) ? w : 1;
+  height = ((signed) h > 0) ? h : 1;
   depth = d;
 
   unsigned int wh = width * height;
@@ -112,7 +112,18 @@ Bool BImage::putPixel(unsigned int x, unsigned int y, unsigned long pixel) {
 
 
 XImage *BImage::convertToXImage(void) {
-  char *d = new char[width * height * (depth / 8)];
+  int count = 0, bpp = 0;
+  XPixmapFormatValues *pmv = XListPixmapFormats(session->control(), &count);
+
+  for (int i = 0; i < count; i++)
+    if (pmv[i].depth == depth) {
+      bpp = pmv[i].bits_per_pixel;
+      break;
+    }
+
+  if (bpp == 0) return NULL;
+
+  char *d = new char[width * height * (bpp / 8)];
   if (! d) return 0;
 
   XImage *image = XCreateImage(session->control(), session->visual(), depth,
@@ -124,12 +135,21 @@ XImage *BImage::convertToXImage(void) {
   unsigned int wh = width * height;
   unsigned long *p = data;
     
-  switch (depth) {
+  switch (bpp) {
   case 32: {
+    unsigned char *im = (unsigned char *) image->data;
     
-    for (unsigned int y = 0; y < height; y++)
-      for (unsigned int x = 0; x < width; x++)
-	XPutPixel(image, x, y, *(p + (y + width) + x));
+    while (--wh) {
+      *(im++) = (unsigned char) ((*p));
+      *(im++) = (unsigned char) (((*p))>>8);
+      *(im++) = (unsigned char) (((*(p++)))>>16);
+      *(im++) = (unsigned char) 0;
+    }
+
+    *(im++) = (unsigned char) ((*p));
+    *(im++) = (unsigned char) (((*p))>>8);
+    *(im++) = (unsigned char) (((*(p++)))>>16);
+    *(im) = (unsigned char) 0;
 
     break; }
 
