@@ -138,7 +138,8 @@ void SlitDirectionmenu::itemClicked(unsigned int id, unsigned int button) {
 
 SlitPlacementmenu::SlitPlacementmenu(bt::Application &app, unsigned int screen,
                                      Slit *slit)
-  : bt::Menu(app, screen), _slit(slit) {
+  : bt::Menu(app, screen), _slit(slit)
+{
   insertItem("Top Left",      Slit::TopLeft);
   insertItem("Center Left",   Slit::CenterLeft);
   insertItem("Bottom Left",   Slit::BottomLeft);
