@@ -297,7 +297,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     window was iconified previously.
   */
 
-  setFocusFlag(False);
+  redrawWindowFrame();
 }
 
 
