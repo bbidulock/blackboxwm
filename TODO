@@ -7,6 +7,7 @@ Before 0.65.0 full release:
 CVS Bugs:
 -----------------------------
 * acroread transients <-- seems ok
+* shaded windows seem to end up on top of other windows on a restart
 
 CVS warts:
 -----------------------------
