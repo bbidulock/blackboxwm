@@ -321,6 +321,11 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
 
   XSetErrorHandler((XErrorHandler) handleXErrors);
 
+  for (int i = 0; i < number_of_screens; ++i) {
+    ScreenInfo *screeninfo = new ScreenInfo(this, i);
+    screenInfoList.push_back(screeninfo);
+  }
+
   NumLockMask = ScrollLockMask = 0;
 
   const XModifierKeymap* const modmap = XGetModifierMapping(display);
@@ -362,6 +367,10 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
 
 
 BaseDisplay::~BaseDisplay(void) {
+  ScreenInfoList::iterator it = screenInfoList.begin();
+  for(; it != screenInfoList.end(); ++it)
+    delete *it;
+
   // we don't create the BTimers, we don't delete them
 
   XCloseDisplay(display);
@@ -474,6 +483,17 @@ void BaseDisplay::ungrabButton(unsigned int button, unsigned int modifiers,
                                Window grab_window) const {
   for (size_t cnt = 0; cnt < MaskListLength; ++cnt) {
     XUngrabButton(display, button, modifiers | MaskList[cnt], grab_window);
+  }
+}
+
+
+ScreenInfo* BaseDisplay::getScreenInfo(unsigned int s) {
+  if (s < screenInfoList.size()) {
+    ScreenInfoList::iterator it = screenInfoList.begin();
+    for (; s > 0; ++it); // increment interator to index
+    return *it;
+  } else {
+    return 0;
   }
 }
 

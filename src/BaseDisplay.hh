@@ -27,6 +27,8 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
+#include <list>
+
 // forward declaration
 class BaseDisplay;
 class ScreenInfo;
@@ -123,6 +125,9 @@ private:
 
   Bool _startup, _shutdown;
   Display *display;
+
+  typedef std::list<ScreenInfo*> ScreenInfoList;
+  ScreenInfoList screenInfoList;
   TimerQueue timerList;
 
   char *display_name, *application_name;
@@ -264,6 +269,8 @@ public:
     { return net_wm_ping; }
 
 #endif // NEWWMSPEC
+
+  ScreenInfo* getScreenInfo(unsigned int s);
 
   inline const Bool &hasShapeExtensions(void) const
     { return shape.extensions; }
