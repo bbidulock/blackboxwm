@@ -34,9 +34,10 @@ extern "C" {
 class Netwm {
 public:
   explicit Netwm(Display *_display);
-  ~Netwm(void) {};
 
   inline Atom utf8String(void) const { return utf8_string; }
+
+  // root window properties
   inline Atom supported(void) const { return net_supported; }
   inline Atom numberOfDesktops(void) const { return net_number_of_desktops; }
   inline Atom desktopGeometry(void) const { return net_desktop_geometry; }
@@ -45,7 +46,6 @@ public:
   inline Atom activeWindow(void) const { return net_active_window; }
   inline Atom workarea(void) const { return net_workarea; }
   inline Atom supportingWMCheck(void) const { return net_supporting_wm_check; }
-  inline Atom wmName(void) const { return net_wm_name; }
 
   void setSupported(Window target, Atom supported[], unsigned int count) const;
   void setNumberOfDesktops(Window target, unsigned int count) const;
@@ -58,7 +58,14 @@ public:
   void setWorkarea(Window target, unsigned int x, unsigned int y,
                    unsigned int width, unsigned int height) const;
   void setSupportingWMCheck(Window target, Window data) const;
+
+  // other root messages
+  inline Atom closeWindow(void) const { return net_close_window; }
+
   void setWMName(Window target, const std::string& name) const;
+
+  // application properties
+  inline Atom wmName(void) const { return net_wm_name; }
 
   void removeProperty(Window target, Atom atom) const;
 
@@ -70,7 +77,7 @@ private:
   Atom utf8_string,
     net_supported, net_number_of_desktops, net_desktop_geometry,
     net_desktop_viewport, net_current_desktop, net_active_window,
-    net_workarea, net_supporting_wm_check, net_wm_name;
+    net_workarea, net_supporting_wm_check, net_close_window, net_wm_name;
 };
 
 #endif // _blackbox_netwm_hh

@@ -396,6 +396,10 @@ void Blackbox::process_event(XEvent *e) {
             win->installColormap(True);
           }
         }
+      } else if (e->xclient.message_type == netwm()->closeWindow) {
+        BlackboxWindow *win = findWindow(e->xclient.window);
+        if (win)
+          win->close();
       } else if (e->xclient.message_type ==
                  getBlackboxCycleWindowFocusAtom()) {
         BScreen *screen = findScreen(e->xclient.window);

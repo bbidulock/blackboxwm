@@ -36,10 +36,11 @@ Netwm::Netwm(Display* _display): display(_display) {
     "_NET_ACTIVE_WINDOW",
     "_NET_WORKAREA",
     "_NET_SUPPORTING_WM_CHECK",
+    "_NET_CLOSE_WINDOW",
     "_NET_WM_NAME"
   };
-  Atom atoms_return[10];
-  XInternAtoms(display, atoms, 10, False, atoms_return);
+  Atom atoms_return[11];
+  XInternAtoms(display, atoms, 11, False, atoms_return);
 
   utf8_string = atoms_return[0];
   net_supported = atoms_return[1];
@@ -50,7 +51,8 @@ Netwm::Netwm(Display* _display): display(_display) {
   net_active_window = atoms_return[6];
   net_workarea = atoms_return[7];
   net_supporting_wm_check = atoms_return[8];
-  net_wm_name = atoms_return[9];
+  net_close_window = atoms_return[9];
+  net_wm_name = atoms_return[10];
 }
 
 
@@ -128,6 +130,8 @@ void Netwm::setWMName(Window target, const std::string &name) const {
                   name.length());
 }
 
+
+// utility
 
 void Netwm::removeProperty(Window target, Atom atom) const {
   XDeleteProperty(display, target, atom);
