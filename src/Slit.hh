@@ -96,8 +96,7 @@ public:
   struct SlitClient {
     Window window, client_window, icon_window;
 
-    int x, y;
-    unsigned int width, height;
+    Rect rect;
   };
 
 private:
@@ -118,8 +117,8 @@ private:
     Pixmap pixmap;
     Window window;
 
-    int x, y, x_hidden, y_hidden;
-    unsigned int width, height;
+    int x_hidden, y_hidden;
+    Rect rect;
   } frame;
 
   friend class Slitmenu;
@@ -142,12 +141,12 @@ public:
   inline Window getWindowID(void) const { return frame.window; }
 
   inline int getX(void) const
-  { return ((hidden) ? frame.x_hidden : frame.x); }
+  { return ((hidden) ? frame.x_hidden : frame.rect.x()); }
   inline int getY(void) const
-  { return ((hidden) ? frame.y_hidden : frame.y); }
+  { return ((hidden) ? frame.y_hidden : frame.rect.y()); }
 
-  inline unsigned int getWidth(void) const { return frame.width; }
-  inline unsigned int getHeight(void) const { return frame.height; }
+  inline unsigned int getWidth(void) const { return frame.rect.width(); }
+  inline unsigned int getHeight(void) const { return frame.rect.height(); }
 
   void addClient(Window w);
   void removeClient(SlitClient *client, Bool remap = True);
