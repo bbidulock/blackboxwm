@@ -26,25 +26,22 @@
 
 #include "BaseDisplay.hh"
 #include "Image.hh"
+#include "Timer.hh"
+#include "Util.hh"
 
 #include <string>
 
 
-class bsetroot : public bt::Display {
+class bsetroot: public bt::NoCopy, public bt::TimerQueueManager {
 private:
+  bt::Display display;
   bt::ImageControl **img_ctrl;
 
   std::string fore, back, grad;
 
-  // no copying!!
-  bsetroot(const bsetroot &);
-  bsetroot& operator=(const bsetroot&);
-
 public:
   bsetroot(int argc, char **argv, char *dpy_name = 0);
-  ~bsetroot(void);
-
-  inline virtual bool handleSignal(int /*unused*/) { return False; }
+  virtual ~bsetroot(void);
 
   void setPixmapProperty(int screen, Pixmap pixmap);
   Pixmap duplicatePixmap(int screen, Pixmap pixmap, int width, int height);
@@ -53,6 +50,9 @@ public:
   void modula(int x, int y);
   void solid(void);
   void usage(int exit_code = 0);
+
+  void addTimer(bt::Timer*) {}
+  void removeTimer(bt::Timer*) {}
 };
 
 #endif // __bsetroot2_hh

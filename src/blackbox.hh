@@ -51,7 +51,6 @@ extern "C" {
 
 //forward declaration
 class BScreen;
-class Blackbox;
 class BlackboxWindow;
 class BWindowGroup;
 class Basemenu;
@@ -62,7 +61,7 @@ namespace bt {
   class Netwm;
 }
 
-class Blackbox : public bt::Display, public bt::TimeoutHandler {
+class Blackbox : public bt::Application, public bt::TimeoutHandler {
 private:
   struct BCursor {
     Cursor session, move, ll_angle, lr_angle;

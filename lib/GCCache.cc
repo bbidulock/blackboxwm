@@ -37,7 +37,7 @@ extern "C" {
 
 bt::GCCacheContext::~GCCacheContext(void) {
   if (gc)
-    XFreeGC(display->getXDisplay(), gc);
+    XFreeGC(display->XDisplay(), gc);
 }
 
 
@@ -57,7 +57,7 @@ void bt::GCCacheContext::set(const bt::Color &_color,
     fontid = 0;
   }
 
-  XChangeGC(display->getXDisplay(), gc, mask, &gcv);
+  XChangeGC(display->XDisplay(), gc, mask, &gcv);
 }
 
 
@@ -69,7 +69,7 @@ void bt::GCCacheContext::set(const XFontStruct * const _font) {
 
   XGCValues gcv;
   fontid = gcv.font = _font->fid;
-  XChangeGC(display->getXDisplay(), gc, GCFont, &gcv);
+  XChangeGC(display->XDisplay(), gc, GCFont, &gcv);
 }
 
 
@@ -101,7 +101,7 @@ bt::GCCache::~GCCache(void) {
 
 
 bt::GCCacheContext *bt::GCCache::nextContext(unsigned int scr) {
-  Window hd = display->getScreenInfo(scr)->getRootWindow();
+  Window hd = display->screenNumber(scr)->getRootWindow();
 
   bt::GCCacheContext *c;
 
@@ -109,7 +109,7 @@ bt::GCCacheContext *bt::GCCache::nextContext(unsigned int scr) {
     c = contexts[i];
 
     if (! c->gc) {
-      c->gc = XCreateGC(display->getXDisplay(), hd, 0, 0);
+      c->gc = XCreateGC(display->XDisplay(), hd, 0, 0);
       c->used = false;
       c->screen = scr;
     }

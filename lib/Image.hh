@@ -43,11 +43,11 @@ namespace bt {
 
   class Image {
   private:
-    bt::ImageControl *control;
+    ImageControl *control;
     bool interlaced;
     XColor *colors;
 
-    bt::Color from, to;
+    Color from, to;
     int red_offset, green_offset, blue_offset, red_bits, green_bits, blue_bits,
       ncolors, cpc, cpccpc;
     unsigned char *red, *green, *blue, *red_table, *green_table, *blue_table;
@@ -61,8 +61,8 @@ namespace bt {
 #endif
 
     Pixmap renderPixmap(void);
-    Pixmap render_solid(const bt::Texture &texture);
-    Pixmap render_gradient(const bt::Texture &texture);
+    Pixmap render_solid(const Texture &texture);
+    Pixmap render_gradient(const Texture &texture);
 
     XImage *renderXImage(void);
 
@@ -80,14 +80,14 @@ namespace bt {
 
   public:
     // take signed ints so we can catch improper sizes
-    Image(bt::ImageControl *c, int w, int h);
+    Image(ImageControl *c, int w, int h);
     ~Image(void);
 
-    Pixmap render(const bt::Texture &texture);
+    Pixmap render(const Texture &texture);
   };
 
 
-  class ImageControl : public bt::TimeoutHandler {
+  class ImageControl : public TimeoutHandler {
   public:
     struct CachedImage {
       Pixmap pixmap;
@@ -96,17 +96,18 @@ namespace bt {
       unsigned long pixel1, pixel2, texture;
     };
 
-    ImageControl(bt::Display *dpy, const bt::ScreenInfo *scrn,
+    ImageControl(TimerQueueManager *app, Display& _display,
+                 const ScreenInfo *scrn,
                  bool _dither= False, int _cpc = 4,
                  unsigned long cache_timeout = 300000l,
                  unsigned long cmax = 200l);
     virtual ~ImageControl(void);
 
-    inline bt::Display *getDisplay(void) const { return display; }
+    inline Display& getDisplay(void) const { return display; }
 
     inline bool doDither(void) { return dither; }
 
-    inline const bt::ScreenInfo *getScreenInfo(void) { return screeninfo; }
+    inline const ScreenInfo *getScreenInfo(void) { return screeninfo; }
 
     inline Window getDrawable(void) const { return window; }
 
@@ -120,7 +121,7 @@ namespace bt {
     unsigned long getSqrt(unsigned int x);
 
     Pixmap renderImage(unsigned int width, unsigned int height,
-                       const bt::Texture &texture);
+                       const Texture &texture);
 
     void installRootColormap(void);
     void removeImage(Pixmap pixmap);
@@ -138,9 +139,9 @@ namespace bt {
 
   private:
     bool dither;
-    bt::Display *display;
-    const bt::ScreenInfo *screeninfo;
-    bt::Timer *timer;
+    Display& display;
+    const ScreenInfo *screeninfo;
+    Timer *timer;
 
     Colormap colormap;
 
@@ -160,7 +161,7 @@ namespace bt {
 
     Pixmap searchCache(const unsigned int width, const unsigned int height,
                        const unsigned long texture,
-                       const bt::Color &c1, const bt::Color &c2);
+                       const Color &c1, const Color &c2);
   };
 
 } // namespace bt

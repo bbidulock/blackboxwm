@@ -30,6 +30,7 @@
 
 struct timeval; // forward declare to avoid the header
 
+#include "Util.hh"
 
 namespace bt {
 
@@ -41,17 +42,13 @@ namespace bt {
     virtual void timeout(void) = 0;
   };
 
-  class Timer {
+  class Timer: public NoCopy {
   private:
     TimerQueueManager *manager;
     TimeoutHandler *handler;
     bool timing, recur;
 
     ::timeval _start, _timeout;
-
-    // no copying
-    Timer(const Timer&);
-    Timer& operator=(const Timer&);
 
   public:
     Timer(TimerQueueManager *m, TimeoutHandler *h);

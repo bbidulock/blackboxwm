@@ -109,15 +109,15 @@ static int anotherWMRunning(Display *display, XErrorEvent *) {
 }
 
 
-BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
-  blackbox = bb;
+BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
+  ScreenInfo(bb->getDisplay(), scrn), blackbox(bb) {
 
   event_mask = ColormapChangeMask | EnterWindowMask | PropertyChangeMask |
                SubstructureRedirectMask | ButtonPressMask | ButtonReleaseMask;
 
   XErrorHandler old = XSetErrorHandler((XErrorHandler) anotherWMRunning);
-  XSelectInput(getDisplay()->getXDisplay(), getRootWindow(), event_mask);
-  XSync(getDisplay()->getXDisplay(), False);
+  XSelectInput(getDisplay().XDisplay(), getRootWindow(), event_mask);
+  XSync(getDisplay().XDisplay(), False);
   XSetErrorHandler((XErrorHandler) old);
 
   managed = running;
@@ -153,7 +153,8 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   area_is_dirty = False;
 
   image_control =
-    new bt::ImageControl(blackbox, this, True, blackbox->getColorsPerChannel(),
+    new bt::ImageControl(blackbox, getDisplay(), this, True,
+                         blackbox->getColorsPerChannel(),
                          blackbox->getCacheLife(), blackbox->getCacheMax());
   image_control->installRootColormap();
   root_colormap_installed = True;
@@ -626,14 +627,14 @@ void BScreen::LoadStyle(void) {
   // make the code cleaner and is not actually used for display
   bt::Color color = readDatabaseColor("window.frame.focusColor",
                                    "Window.Frame.FocusColor", "white");
-  resource.wstyle.f_focus = bt::Texture("solid flat", getDisplay(),
-                                     getScreenNumber(), image_control);
+  resource.wstyle.f_focus = bt::Texture("solid flat", &getDisplay(),
+                                        getScreenNumber(), image_control);
   resource.wstyle.f_focus.setColor(color);
 
   color = readDatabaseColor("window.frame.unfocusColor",
                             "Window.Frame.UnfocusColor", "white");
-  resource.wstyle.f_unfocus = bt::Texture("solid flat", getDisplay(),
-                                       getScreenNumber(), image_control);
+  resource.wstyle.f_unfocus = bt::Texture("solid flat", &getDisplay(),
+                                          getScreenNumber(), image_control);
   resource.wstyle.f_unfocus.setColor(color);
 
   resource.wstyle.l_text_focus =
@@ -706,10 +707,10 @@ void BScreen::LoadStyle(void) {
 
   // sanity checks
   if (resource.tstyle.toolbar.texture() == bt::Texture::Parent_Relative) {
-    resource.tstyle.toolbar = bt::Texture("solid flat", getDisplay(),
-                                       getScreenNumber(), image_control);
-    resource.tstyle.toolbar.setColor(bt::Color("black", getDisplay(),
-                                            getScreenNumber()));
+    resource.tstyle.toolbar = bt::Texture("solid flat", &getDisplay(),
+                                          getScreenNumber(), image_control);
+    resource.tstyle.toolbar.setColor(bt::Color("black", &getDisplay(),
+                                               getScreenNumber()));
   }
 
   // load menu config
@@ -770,10 +771,10 @@ void BScreen::LoadStyle(void) {
 
   // sanity checks
   if (resource.mstyle.frame.texture() == bt::Texture::Parent_Relative) {
-    resource.mstyle.frame = bt::Texture("solid flat", getDisplay(),
-                                     getScreenNumber(), image_control);
-    resource.mstyle.frame.setColor(bt::Color("black", getDisplay(),
-                                          getScreenNumber()));
+    resource.mstyle.frame = bt::Texture("solid flat", &getDisplay(),
+                                        getScreenNumber(), image_control);
+    resource.mstyle.frame.setColor(bt::Color("black", &getDisplay(),
+                                             getScreenNumber()));
   }
 
   resource.border_color =
@@ -1858,8 +1859,8 @@ void BScreen::toggleFocusModel(FocusModel model) {
 
 
 bt::Texture BScreen::readDatabaseTexture(const std::string &rname,
-                                      const std::string &rclass,
-                                      const std::string &default_color) {
+                                         const std::string &rclass,
+                                         const std::string &default_color) {
   bt::Texture texture;
   XrmValue value;
   char *value_type;
@@ -1871,7 +1872,7 @@ bt::Texture BScreen::readDatabaseTexture(const std::string &rname,
     texture.setTexture(bt::Texture::Solid | bt::Texture::Flat);
 
   // associate this texture with this screen
-  texture.setDisplay(getDisplay(), getScreenNumber());
+  texture.setDisplay(&getDisplay(), getScreenNumber());
   texture.setImageControl(image_control);
 
   texture.setColor(readDatabaseColor(rname + ".color", rclass + ".Color",
@@ -1884,16 +1885,16 @@ bt::Texture BScreen::readDatabaseTexture(const std::string &rname,
 
 
 bt::Color BScreen::readDatabaseColor(const std::string &rname,
-                                  const std::string &rclass,
-				  const std::string &default_color) {
+                                     const std::string &rclass,
+                                     const std::string &default_color) {
   bt::Color color;
   XrmValue value;
   char *value_type;
   if (XrmGetResource(resource.stylerc, rname.c_str(), rclass.c_str(),
                      &value_type, &value))
-    color = bt::Color(value.addr, getDisplay(), getScreenNumber());
+    color = bt::Color(value.addr, &getDisplay(), getScreenNumber());
   else
-    color = bt::Color(default_color, getDisplay(), getScreenNumber());
+    color = bt::Color(default_color, &getDisplay(), getScreenNumber());
   return color;
 }
 

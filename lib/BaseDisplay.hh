@@ -46,9 +46,9 @@ namespace bt {
   class EventHandler;
   class GCCache;
 
-  class ScreenInfo {
+  class ScreenInfo: public NoCopy {
   private:
-    bt::Display *display;
+    Display& display;
     Visual *visual;
     Window root_window;
     Colormap colormap;
@@ -56,19 +56,19 @@ namespace bt {
     int depth;
     unsigned int screen_number;
     std::string display_string;
-    bt::Rect rect;
+    Rect rect;
 
   public:
-    ScreenInfo(bt::Display *d, unsigned int num);
+    ScreenInfo(Display& d, unsigned int num);
 
-    inline bt::Display *getDisplay(void) const { return display; }
+    inline Display& getDisplay(void) const { return display; }
     inline Visual *getVisual(void) const { return visual; }
     inline Window getRootWindow(void) const { return root_window; }
     inline Colormap getColormap(void) const { return colormap; }
     inline int getDepth(void) const { return depth; }
     inline unsigned int getScreenNumber(void) const
     { return screen_number; }
-    inline const bt::Rect& getRect(void) const { return rect; }
+    inline const Rect& getRect(void) const { return rect; }
     inline unsigned int getWidth(void) const { return rect.width(); }
     inline unsigned int getHeight(void) const { return rect.height(); }
     inline const std::string& displayString(void) const
@@ -76,7 +76,27 @@ namespace bt {
   };
 
 
-  class Display: public bt::TimerQueueManager {
+  class Display: public NoCopy {
+  private:
+    ::Display *xdisplay;
+
+    typedef std::vector<ScreenInfo*> ScreenInfoList;
+    ScreenInfoList screenInfoList;
+
+    mutable GCCache *gccache;
+
+  public:
+    Display(const char* dpy_name);
+    ~Display(void);
+
+    ::Display* XDisplay(void) const { return xdisplay; }
+    unsigned int screenCount(void) const { return screenInfoList.size(); }
+    const ScreenInfo* screenNumber(unsigned int i) const;
+    GCCache *gcCache(void) const;
+  };
+
+
+  class Application: public TimerQueueManager, public NoCopy {
   private:
     struct BShape {
       bool extensions;
@@ -84,27 +104,23 @@ namespace bt {
     };
     BShape shape;
 
-    unsigned int MaskList[8];
-    size_t MaskListLength;
+    Display display;
 
     enum RunState { STARTUP, RUNNING, SHUTDOWN };
     RunState run_state;
 
-    ::Display *xdisplay;
-    mutable bt::GCCache *gccache;
-
-    typedef std::map<Window,bt::EventHandler*> EventHandlerMap;
+    typedef std::map<Window,EventHandler*> EventHandlerMap;
     EventHandlerMap eventhandlers;
 
-    typedef std::vector<ScreenInfo> ScreenInfoList;
-    ScreenInfoList screenInfoList;
-    bt::TimerQueue timerList;
+    TimerQueue timerList;
 
     const char *application_name;
 
-    // no copying!
-    Display(const Display &);
-    Display& operator=(const Display&);
+    unsigned int MaskList[8];
+    size_t MaskListLength;
+
+    // the masks of the modifiers which are ignored in button events.
+    int NumLockMask, ScrollLockMask;
 
   protected:
     /*
@@ -116,17 +132,12 @@ namespace bt {
     */
     virtual void process_event(XEvent *event);
 
-    // the masks of the modifiers which are ignored in button events.
-    int NumLockMask, ScrollLockMask;
-
-
   public:
-    Display(const char *app_name, const char *dpy_name = 0);
-    virtual ~Display(void);
+    Application(const char *app_name, const char *dpy_name = 0);
+    virtual ~Application(void);
 
-    const ScreenInfo* getScreenInfo(const unsigned int s) const;
-
-    bt::GCCache *gcCache(void) const;
+    const ScreenInfo* getScreenInfo(unsigned int s) const
+    { return display.screenNumber(s); }
 
     inline bool hasShapeExtensions(void) const
     { return shape.extensions; }
@@ -135,13 +146,14 @@ namespace bt {
     inline bool isStartup(void) const
     { return run_state == STARTUP; }
 
-    inline ::Display *getXDisplay(void) const { return xdisplay; }
+    inline ::Display *getXDisplay(void) const { return display.XDisplay(); }
+    inline Display& getDisplay(void) { return display; }
 
     inline const char *getApplicationName(void) const
     { return application_name; }
 
     inline unsigned int getNumberOfScreens(void) const
-    { return screenInfoList.size(); }
+    { return display.screenCount(); }
     inline int getShapeEventBase(void) const
     { return shape.event_basep; }
 
@@ -159,18 +171,18 @@ namespace bt {
     void eventLoop(void);
 
     // from TimerQueueManager interface
-    virtual void addTimer(bt::Timer *timer);
-    virtual void removeTimer(bt::Timer *timer);
+    virtual void addTimer(Timer *timer);
+    virtual void removeTimer(Timer *timer);
 
     // another pure virtual... this is used to handle signals that
-    // bt::Display doesn't understand itself
+    // Display doesn't understand itself
     virtual bool handleSignal(int sig) = 0;
 
     /*
       Inserts the EventHandler {handler} for Window {window}.  All
       events generated for {window} will be sent through {handler}.
     */
-    void insertEventHandler(Window window, bt::EventHandler *handler);
+    void insertEventHandler(Window window, EventHandler *handler);
     /*
       Removes all EventHandlers for Window {window}.
     */

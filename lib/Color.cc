@@ -106,8 +106,8 @@ void bt::Color::parseColorName(void) {
   }
 
   if (scrn == ~(0u))
-    scrn = DefaultScreen(display()->getXDisplay());
-  Colormap colormap = display()->getScreenInfo(scrn)->getColormap();
+    scrn = DefaultScreen(dpy->XDisplay());
+  Colormap colormap = dpy->screenNumber(scrn)->getColormap();
 
   // get rgb values from colorname
   XColor xcol;
@@ -116,7 +116,7 @@ void bt::Color::parseColorName(void) {
   xcol.blue = 0;
   xcol.pixel = 0;
 
-  if (! XParseColor(display()->getXDisplay(), colormap,
+  if (! XParseColor(dpy->XDisplay(), colormap,
                     colorname.c_str(), &xcol)) {
     fprintf(stderr, "Color::allocate: color parse error: \"%s\"\n",
             colorname.c_str());
@@ -131,8 +131,8 @@ void bt::Color::parseColorName(void) {
 void bt::Color::allocate(void) {
   assert(dpy != 0);
 
-  if (scrn == ~(0u)) scrn = DefaultScreen(display()->getXDisplay());
-  Colormap colormap = display()->getScreenInfo(scrn)->getColormap();
+  if (scrn == ~(0u)) scrn = DefaultScreen(dpy->XDisplay());
+  Colormap colormap = dpy->screenNumber(scrn)->getColormap();
 
   if (! isValid()) {
     if (colorname.empty()) {
@@ -144,7 +144,7 @@ void bt::Color::allocate(void) {
   }
 
   // see if we have allocated this color before
-  RGB rgb(display(), scrn, r, g, b);
+  RGB rgb(dpy, scrn, r, g, b);
   ColorCache::iterator it = colorcache.find(rgb);
   if (it != colorcache.end()) {
     // found
@@ -161,7 +161,7 @@ void bt::Color::allocate(void) {
   xcol.blue =  b | b << 8;
   xcol.pixel = 0;
 
-  if (! XAllocColor(display()->getXDisplay(), colormap, &xcol)) {
+  if (! XAllocColor(dpy->XDisplay(), colormap, &xcol)) {
     fprintf(stderr, "Color::allocate: color alloc error: rgb:%x/%x/%x\n",
             r, g, b);
     xcol.pixel = 0;
@@ -183,7 +183,7 @@ void bt::Color::deallocate(void) {
 
   assert(dpy != 0);
 
-  ColorCache::iterator it = colorcache.find(RGB(display(), scrn, r, g, b));
+  ColorCache::iterator it = colorcache.find(RGB(dpy, scrn, r, g, b));
   if (it != colorcache.end()) {
     if ((*it).second.count >= 1)
       (*it).second.count--;
@@ -224,7 +224,7 @@ void bt::Color::doCacheCleanup(void) {
   unsigned long *pixels = new unsigned long[ colorcache.size() ];
   unsigned int i, count;
 
-  for (i = 0; i < display->getNumberOfScreens(); i++) {
+  for (i = 0; i < display->screenCount(); i++) {
     count = 0;
     it = colorcache.begin();
 
@@ -241,8 +241,8 @@ void bt::Color::doCacheCleanup(void) {
     }
 
     if (count > 0)
-      XFreeColors(display->getXDisplay(),
-                  display->getScreenInfo(i)->getColormap(),
+      XFreeColors(display->XDisplay(),
+                  display->screenNumber(i)->getColormap(),
                   pixels, count, 0);
   }
 

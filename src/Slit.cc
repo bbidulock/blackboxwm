@@ -44,7 +44,7 @@ Slit::Slit(BScreen *scr) {
   on_top = screen->isSlitOnTop();
   hidden = do_auto_hide = screen->doSlitAutoHide();
 
-  display = screen->getDisplay()->getXDisplay();
+  display = screen->getDisplay().XDisplay();
   frame.window = frame.pixmap = None;
 
   timer = new bt::Timer(blackbox, this);

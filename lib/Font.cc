@@ -85,14 +85,14 @@ void bt::Font::load(void) {
   } else {
     if (! fontname().empty()) {
       fprintf(stderr, "loading font '%s'\n", fontname().c_str());
-      _font = XLoadQueryFont(display()->getXDisplay(), fontname().c_str());
+      _font = XLoadQueryFont(display()->XDisplay(), fontname().c_str());
       if (_font != NULL)
         load_default = false;
     }
 
     if (load_default) {
       fprintf(stderr, "loading default font '%s'\n", defaultFont);
-      _font = XLoadQueryFont(display()->getXDisplay(), defaultFont);
+      _font = XLoadQueryFont(display()->XDisplay(), defaultFont);
       assert(_font != NULL);
     }
   }
@@ -103,11 +103,11 @@ void bt::Font::unload(void) {
   if (! display()) return;
 
   if (_fontset != NULL)
-    XFreeFontSet(display()->getXDisplay(), _fontset);
+    XFreeFontSet(display()->XDisplay(), _fontset);
   _fontset = NULL;
 
   if (_font != NULL)
-    XFreeFont(display()->getXDisplay(), _font);
+    XFreeFont(display()->XDisplay(), _font);
   _font = NULL;
 }
 
@@ -160,7 +160,7 @@ void bt::drawText(const bt::Font &font, Window window, const bt::Rect &rect,
     bt::Pen pen(bt::Color(0, 0, 0, font.display()), font.font());
     // align vertically (center for now)
     int y = (rect.height() + font.font()->ascent) / 2;
-    XDrawString(font.display()->getXDisplay(), window, pen.gc(), x, y,
+    XDrawString(font.display()->XDisplay(), window, pen.gc(), x, y,
                 text.c_str(), text.length());
   }
 }

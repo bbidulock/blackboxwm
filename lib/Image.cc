@@ -80,13 +80,13 @@ Pixmap bt::Image::render(const bt::Texture &texture) {
 
 
 Pixmap bt::Image::render_solid(const bt::Texture &texture) {
-  Pixmap pixmap = XCreatePixmap(control->getDisplay()->getXDisplay(),
+  Pixmap pixmap = XCreatePixmap(control->getDisplay().XDisplay(),
 				control->getDrawable(), width,
 				height, control->getDepth());
   if (pixmap == None)
     return None;
 
-  ::Display *display = control->getDisplay()->getXDisplay();
+  ::Display *display = control->getDisplay().XDisplay();
 
   bt::Pen pen(texture.color());
   bt::Pen penlight(texture.lightColor());
@@ -178,7 +178,7 @@ Pixmap bt::Image::render_gradient(const bt::Texture &texture) {
     bw = texture.borderWidth();
 
     for (unsigned int i = 0; i < bw; ++i)
-      XDrawRectangle(control->getDisplay()->getXDisplay(),
+      XDrawRectangle(control->getDisplay().XDisplay(),
                      pixmap, penborder.gc(),
                      i, i, width - (i * 2) - 1, height - (i * 2) - 1);
   }
@@ -434,7 +434,7 @@ void bt::Image::PseudoColorDither(int bytes_per_line,
 
 XImage *bt::Image::renderXImage(void) {
   XImage *image =
-    XCreateImage(control->getDisplay()->getXDisplay(),
+    XCreateImage(control->getDisplay().XDisplay(),
                  control->getVisual(), control->getDepth(), ZPixmap, 0, 0,
                  width, height, 32, 0);
 
@@ -545,7 +545,7 @@ XImage *bt::Image::renderXImage(void) {
 
 Pixmap bt::Image::renderPixmap(void) {
   Pixmap pixmap =
-    XCreatePixmap(control->getDisplay()->getXDisplay(),
+    XCreatePixmap(control->getDisplay().XDisplay(),
                   control->getDrawable(), width, height, control->getDepth());
 
   if (pixmap == None)
@@ -554,18 +554,18 @@ Pixmap bt::Image::renderPixmap(void) {
   XImage *image = renderXImage();
 
   if (! image) {
-    XFreePixmap(control->getDisplay()->getXDisplay(), pixmap);
+    XFreePixmap(control->getDisplay().XDisplay(), pixmap);
     return None;
   }
 
   if (! image->data) {
     XDestroyImage(image);
-    XFreePixmap(control->getDisplay()->getXDisplay(), pixmap);
+    XFreePixmap(control->getDisplay().XDisplay(), pixmap);
     return None;
   }
 
-  XPutImage(control->getDisplay()->getXDisplay(), pixmap,
-	    DefaultGC(control->getDisplay()->getXDisplay(),
+  XPutImage(control->getDisplay().XDisplay(), pixmap,
+	    DefaultGC(control->getDisplay().XDisplay(),
 		      control->getScreenInfo()->getScreenNumber()),
             image, 0, 0, 0, 0, width, height);
 

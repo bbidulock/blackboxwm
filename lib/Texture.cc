@@ -198,7 +198,7 @@ Pixmap bt::Texture::render(const unsigned int width, const unsigned int height,
     return ParentRelative;
 
   if (screen() == ~(0u))
-    scrn = DefaultScreen(display()->getXDisplay());
+    scrn = DefaultScreen(display()->XDisplay());
 
   assert(ctrl != 0);
   Pixmap ret = ctrl->renderImage(width, height, *this);

@@ -560,4 +560,3 @@ bool bt::Netwm::isSupportedWMWindowType(Atom atom) const {
           atom == net_wm_window_type_dialog ||
           atom == net_wm_window_type_normal);
 }
-

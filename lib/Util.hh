@@ -40,6 +40,14 @@ struct timeval; // forward declare to avoid the header
 
 namespace bt {
 
+  class NoCopy {
+  protected:
+    NoCopy(void) {}
+  private:
+    NoCopy(const NoCopy&);
+    NoCopy& operator=(const NoCopy&);
+  };
+
   class Rect {
   public:
     inline Rect(void) : _x1(0), _y1(0), _x2(0), _y2(0) { }

@@ -111,18 +111,14 @@ extern "C" {
 #include "Workspacemenu.hh"
 
 
-Blackbox *blackbox;
-
-
 Blackbox::Blackbox(char **m_argv, char *dpy_name, char *rc)
-  : bt::Display(m_argv[0], dpy_name) {
+  : bt::Application(m_argv[0], dpy_name) {
   if (! XSupportsLocale())
     fprintf(stderr, "X server does not support locale\n");
 
   if (XSetLocaleModifiers("") == NULL)
     fprintf(stderr, "cannot set locale modifiers\n");
 
-  ::blackbox = this;
   argv = m_argv;
   if (! rc) rc = "~/.blackboxrc";
   rc_file = bt::expandTilde(rc);
@@ -345,7 +341,7 @@ void Blackbox::process_event(XEvent *e) {
 
   default: {
     // Send the event through the default EventHandlers.
-    bt::Display::process_event(e);
+    bt::Application::process_event(e);
 
     /*
       Event post processing... in some cases, we need to do a few
@@ -503,7 +499,7 @@ void Blackbox::restart(const char *prog) {
 
 
 void Blackbox::shutdown(void) {
-  bt::Display::shutdown();
+  bt::Application::shutdown();
 
   XSetInputFocus(getXDisplay(), PointerRoot, None, CurrentTime);
 
@@ -1102,7 +1098,7 @@ void Blackbox::real_reconfigure(void) {
                 bt::PointerAssassin());
   menuTimestamps.clear();
 
-  gcCache()->purge();
+  getDisplay().gcCache()->purge();
 
   std::for_each(screenList.begin(), screenList.end(),
                 std::mem_fun(&BScreen::reconfigure));
