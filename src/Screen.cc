@@ -1021,7 +1021,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
             menu->insert(label, Rootmenu::Item(Rootmenu::SetStyle, style));
 
-	    delete style;
+	    delete [] style;
           }
 
           break;
@@ -1057,7 +1057,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 			i18n->getMessage(ScreenSet, ScreenINCLUDEErrorReg,
 					 "BScreen::parseMenuFile: [include] error: "
 					 "'%s' is not a regular file\n"), newfile);
-		delete newfile;
+		delete [] newfile;
 		break;
 	      }
 
@@ -1070,7 +1070,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	    } else {
 	      perror(newfile);
 	    }
-	    delete newfile;
+	    delete [] newfile;
           }
 
           break;
@@ -1210,14 +1210,13 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
                                                  " [stylesdir/stylesmenu] error, %s is not a"
                                                  " directory\n"), stylesdir);
               }
-	      delete stylesdir;
             } else {
               fprintf(stderr,
                       i18n->getMessage(ScreenSet, ScreenSTYLESDIRErrorNoExist,
                                        "BScreen::parseMenuFile: [stylesdir/stylesmenu]"
                                        " error, %s does not exist\n"), stylesdir);
             }
-
+	    delete [] stylesdir;
             break;
           }
 
