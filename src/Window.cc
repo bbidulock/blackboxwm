@@ -142,7 +142,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   frame.pbutton = frame.ugrip = frame.fgrip = decorations;
 
   decorations = Decor_Titlebar | Decor_Border | Decor_Handle |
-                Decor_Iconify | Decor_Maximize | Decor_Menu;
+                Decor_Iconify | Decor_Maximize;
   functions = Func_Resize | Func_Move | Func_Iconify | Func_Maximize;
 
   client.wm_hint_flags = client.normal_hint_flags = 0;
@@ -256,8 +256,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     XMapSubwindows(blackbox->getXDisplay(), frame.title);
   XMapSubwindows(blackbox->getXDisplay(), frame.window);
 
-  if (decorations & Decor_Menu)
-    windowmenu = new Windowmenu(this);
+  windowmenu = new Windowmenu(this);
 
   if (blackbox_attrib.workspace >= screen->getWorkspaceCount())
     screen->getCurrentWorkspace()->addWindow(this, place_window);
@@ -385,7 +384,8 @@ void BlackboxWindow::associateClientWindow(void) {
 
 #ifdef    SHAPE
   if (blackbox->hasShapeExtensions()) {
-    XShapeSelectInput(blackbox->getXDisplay(), client.window, ShapeNotifyMask);
+    XShapeSelectInput(blackbox->getXDisplay(), client.window,
+                      ShapeNotifyMask);
 
     int foo;
     unsigned int ufoo;
@@ -1000,8 +1000,7 @@ void BlackboxWindow::getMWMHints(void) {
   if (mwm_hint->flags & MwmHintsDecorations) {
     if (mwm_hint->decorations & MwmDecorAll) {
       decorations = Decor_Titlebar | Decor_Handle | Decor_Border |
-                    Decor_Iconify | Decor_Maximize | Decor_Close |
-                    Decor_Menu;
+        Decor_Iconify | Decor_Maximize | Decor_Close;
     } else {
       decorations = 0;
 
@@ -1011,8 +1010,6 @@ void BlackboxWindow::getMWMHints(void) {
         decorations |= Decor_Handle;
       if (mwm_hint->decorations & MwmDecorTitle)
         decorations |= Decor_Titlebar;
-      if (mwm_hint->decorations & MwmDecorMenu)
-        decorations |= Decor_Menu;
       if (mwm_hint->decorations & MwmDecorIconify)
         decorations |= Decor_Iconify;
       if (mwm_hint->decorations & MwmDecorMaximize)
@@ -1098,7 +1095,7 @@ Bool BlackboxWindow::getBlackboxHints(void) {
       break;
 
     case DecorTiny:
-      decorations |= Decor_Titlebar | Decor_Iconify | Decor_Menu;
+      decorations |= Decor_Titlebar | Decor_Iconify;
       decorations &= ~(Decor_Border | Decor_Handle | Decor_Maximize);
       functions |= Func_Move | Func_Iconify;
       functions &= ~(Func_Resize | Func_Maximize);
@@ -1106,9 +1103,8 @@ Bool BlackboxWindow::getBlackboxHints(void) {
       break;
 
     case DecorTool:
-      decorations |= Decor_Titlebar | Decor_Menu;
-      decorations &= ~(Decor_Iconify | Decor_Border | Decor_Handle |
-                       Decor_Menu);
+      decorations |= Decor_Titlebar;
+      decorations &= ~(Decor_Iconify | Decor_Border | Decor_Handle);
       functions |= Func_Move;
       functions &= ~(Func_Resize | Func_Maximize | Func_Iconify);
 
@@ -1117,7 +1113,7 @@ Bool BlackboxWindow::getBlackboxHints(void) {
     case DecorNormal:
     default:
       decorations |= Decor_Titlebar | Decor_Border | Decor_Handle |
-                     Decor_Iconify | Decor_Maximize | Decor_Menu;
+                     Decor_Iconify | Decor_Maximize;
       functions |= Func_Resize | Func_Move | Func_Iconify | Func_Maximize;
 
       break;
@@ -2692,20 +2688,19 @@ void BlackboxWindow::changeBlackboxHints(BlackboxHints *net) {
     default:
     case DecorNormal:
       decorations |= Decor_Titlebar | Decor_Handle | Decor_Border |
-                     Decor_Iconify | Decor_Maximize | Decor_Menu;
+                     Decor_Iconify | Decor_Maximize;
 
       break;
 
     case DecorTiny:
-      decorations |= Decor_Titlebar | Decor_Iconify | Decor_Menu;
+      decorations |= Decor_Titlebar | Decor_Iconify;
       decorations &= ~(Decor_Border | Decor_Handle | Decor_Maximize);
 
       break;
 
     case DecorTool:
-      decorations |= Decor_Titlebar | Decor_Menu;
-      decorations &= ~(Decor_Iconify | Decor_Border | Decor_Handle |
-                       Decor_Menu);
+      decorations |= Decor_Titlebar;
+      decorations &= ~(Decor_Iconify | Decor_Border | Decor_Handle);
       functions |= Func_Move;
 
       break;

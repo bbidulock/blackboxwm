@@ -53,7 +53,7 @@ extern "C" {
 #define MwmDecorBorder        (1l << 1)
 #define MwmDecorHandle        (1l << 2)
 #define MwmDecorTitle         (1l << 3)
-#define MwmDecorMenu          (1l << 4)
+#define MwmDecorMenu          (1l << 4) // not used
 #define MwmDecorIconify       (1l << 5)
 #define MwmDecorMaximize      (1l << 6)
 
@@ -80,8 +80,7 @@ public:
                     Decor_Border   = (1l << 2),
                     Decor_Iconify  = (1l << 3),
                     Decor_Maximize = (1l << 4),
-                    Decor_Close    = (1l << 5),
-                    Decor_Menu     = (1l << 6) };
+                    Decor_Close    = (1l << 5) };
   typedef unsigned int DecorationFlags;
 
 private:
