@@ -2370,24 +2370,23 @@ void BlackboxWindow::configureRequestEvent(XConfigureRequestEvent *cr) {
   if (cr->value_mask & CWBorderWidth)
     client.old_bw = cr->border_width;
 
-  Rect req = client.rect;
-  if (cr->value_mask & CWX)
-    req.setX(cr->x);
-  if (cr->value_mask & CWY)
-    req.setY(cr->y);
-  if (cr->value_mask & CWWidth)
-    req.setWidth(cr->width);
-  if (cr->value_mask & CWHeight)
-    req.setHeight(cr->height);
+  if (cr->value_mask & (CWX | CWY | CWWidth | CWHeight)) {
+    Rect req = frame.rect;
 
-  if (req != client.rect) {
-    client.rect = req;
+    if (cr->value_mask & (CWX | CWY)) {
+      if (cr->value_mask & CWX)
+        client.rect.setX(cr->x);
+      if (cr->value_mask & CWY)
+        client.rect.setY(cr->y);
 
-    applyGravity(req);
+      applyGravity(req);
+    }
 
-    // apply frame margins
-    req.setWidth(req.width() + frame.margin.left + frame.margin.right);
-    req.setHeight(req.height() + frame.margin.top + frame.margin.bottom);
+    if (cr->value_mask & CWWidth)
+      req.setWidth(cr->width + frame.margin.left + frame.margin.right);
+
+    if (cr->value_mask & CWHeight)
+      req.setHeight(cr->height + frame.margin.top + frame.margin.bottom);
 
     configure(req.x(), req.y(), req.width(), req.height());
   }
