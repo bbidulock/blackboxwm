@@ -97,11 +97,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     return;
   }
 
-#ifdef DEBUG
-  fprintf(stderr, "0x%lx: initial (%d, %d) w: %d, h: %d\n", client.window,
-          wattrib.x, wattrib.y, wattrib.width, wattrib.height);
-#endif // DEBUG
-
   // set the eventmask early in the game so that we make sure we get
   // all the events we are interested in
   XSetWindowAttributes attrib_set;
@@ -162,33 +157,29 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   timer = new BTimer(blackbox, this);
   timer->setTimeout(blackbox->getAutoRaiseDelay());
 
-  if (! getBlackboxHints())
-    getMWMHints();
+  windowmenu = new Windowmenu(this);
 
   // get size, aspect, minimum/maximum size and other hints set by the
   // client
+
+  if (! getBlackboxHints())
+    getMWMHints();
+
   getWMProtocols();
   getWMHints();
   getWMNormalHints();
 
-#ifdef DEBUG
-  fprintf(stderr, "0x%lx: after hints (%d, %d) w: %d, h: %d\n", client.window,
-          client.rect.x(), client.rect.y(),
-          client.rect.width(), client.rect.height());
-#endif // DEBUG
-
   frame.window = createToplevelWindow();
-  frame.plate = createChildWindow(frame.window);
-  associateClientWindow();
-
   blackbox->saveWindowSearch(frame.window, this);
+
+  frame.plate = createChildWindow(frame.window);
   blackbox->saveWindowSearch(frame.plate, this);
-  blackbox->saveWindowSearch(client.window, this);
 
   // determine if this is a transient window
   getTransientInfo();
 
   // adjust the window decorations based on transience and window sizes
+
   if (isTransient()) {
     decorations &= ~(Decor_Maximize | Decor_Handle);
     functions &= ~Func_Maximize;
@@ -201,15 +192,18 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     decorations &= ~(Decor_Maximize | Decor_Handle);
     functions &= ~(Func_Resize | Func_Maximize);
   }
-  upsize();
 
-#ifdef DFEBUG
-  fprintf(stderr, "0x%lx: sizes reflect the frame from now on\n",
-          client.window);
-  fprintf(stderr, "0x%lx: after upsize (%d, %d) w: %d, h: %d\n", client.window,
-          frame.rect.x(), frame.rect.y(),
-          frame.rect.width(), frame.rect.height());
-#endif // DEBUG
+  // now that we know what decorations are required, create them
+
+  if (decorations & Decor_Titlebar)
+    createTitlebar();
+
+  if (decorations & Decor_Handle)
+    createHandle();
+
+  // apply the size and gravity hint to the frame
+
+  upsize();
 
   bool place_window = True;
   if (blackbox->isStartup() || isTransient() ||
@@ -220,26 +214,10 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
       place_window = False;
   }
 
-#ifdef DEBUG
-  fprintf(stderr, "0x%lx: after gravity (%d, %d) w: %d, h: %d\n",
-          client.window,
-          frame.rect.x(), frame.rect.y(),
-          frame.rect.width(), frame.rect.height());
-#endif // DEBUG
-
-  if (decorations & Decor_Titlebar)
-    createTitlebar();
-
-  if (decorations & Decor_Handle)
-    createHandle();
-
 #ifdef    SHAPE
-  if (blackbox->hasShapeExtensions() && flags.shaped) {
+  if (blackbox->hasShapeExtensions() && flags.shaped)
     configureShape();
-  }
 #endif // SHAPE
-
-  windowmenu = new Windowmenu(this);
 
   if (blackbox_attrib.workspace >= screen->getWorkspaceCount())
     screen->getCurrentWorkspace()->addWindow(this, place_window);
@@ -247,19 +225,39 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     screen->getWorkspace(blackbox_attrib.workspace)->
       addWindow(this, place_window);
 
+  /*
+    the server needs to be grabbed here to prevent client's from sending
+    events while we are in the process of configuring their window.
+    We hold the grab until after we are done moving the window around.
+  */
+
+  XGrabServer(blackbox->getXDisplay());
+
+  associateClientWindow();
+
+  blackbox->saveWindowSearch(client.window, this);
+
   if (! place_window) {
     // don't need to call configure if we are letting the workspace
     // place the window
     configure(frame.rect.x(), frame.rect.y(),
               frame.rect.width(), frame.rect.height());
-
-#ifdef DEBUG
-    fprintf(stderr, "0x%lx: after configure (%d, %d) w: %d, h: %d\n",
-            client.window,
-            frame.rect.x(), frame.rect.y(),
-            frame.rect.width(), frame.rect.height());
-#endif // DEBUG
   }
+
+  positionWindows();
+
+  XUngrabServer(blackbox->getXDisplay());
+
+  // now that we know where to put the window and what it should look like
+  // we apply the decorations
+  decorate();
+
+  grabButtons();
+
+  XMapSubwindows(blackbox->getXDisplay(), frame.window);
+
+  // this ensures the title, buttons, and other decor are properly displayed
+  redrawWindowFrame();
 
   // preserve the window's initial state on first map, and its current state
   // across a restart
@@ -267,6 +265,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   if (! getState())
     current_state = initial_state;
 
+  // the following flags are set by blackbox native apps only
   if (flags.shaded) {
     flags.shaded = False;
     initial_state = current_state;
@@ -287,31 +286,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   if (flags.maximized && (functions & Func_Maximize))
     remaximize();
-
-  /*
-    When the window is mapped (and also when its attributes are restored), the
-    current_state that was set here will be used.
-    It is set to Normal if the window is to be mapped or it is set to Iconic
-    if the window is to be iconified.
-    *Note* that for sticky windows, the same rules apply here, they are in
-    fact never set to Iconic since there is no way for us to tell if a sticky
-    window was iconified previously.
-  */
- 
-  positionWindows();
-  decorate();
-  grabButtons();
-
-  XMapSubwindows(blackbox->getXDisplay(), frame.window);
-
-  redrawWindowFrame();
-
-#ifdef DEBUG
-  fprintf(stderr, "0x%lx: end of constructor (%d, %d) w: %d, h: %d\n",
-          client.window,
-          frame.rect.x(), frame.rect.y(),
-          frame.rect.width(), frame.rect.height());
-#endif // DEBUG
 }
 
 
@@ -430,8 +404,10 @@ void BlackboxWindow::associateClientWindow(void) {
 
   XSelectInput(blackbox->getXDisplay(), frame.plate, SubstructureRedirectMask);
 
-  XGrabServer(blackbox->getXDisplay());
-
+  /*
+    note we used to grab around this call to XReparentWindow however the
+    server is now grabbed before this method is called
+  */
   unsigned long event_mask = PropertyChangeMask | FocusChangeMask |
                              StructureNotifyMask;
   XSelectInput(blackbox->getXDisplay(), client.window,
@@ -439,11 +415,8 @@ void BlackboxWindow::associateClientWindow(void) {
   XReparentWindow(blackbox->getXDisplay(), client.window, frame.plate, 0, 0);
   XSelectInput(blackbox->getXDisplay(), client.window, event_mask);
 
-  XUngrabServer(blackbox->getXDisplay());
-
   XRaiseWindow(blackbox->getXDisplay(), frame.plate);
   XMapSubwindows(blackbox->getXDisplay(), frame.plate);
-
 
 #ifdef    SHAPE
   if (blackbox->hasShapeExtensions()) {
@@ -2353,12 +2326,6 @@ void BlackboxWindow::mapRequestEvent(const XMapRequestEvent *re) {
   case InactiveState:
   case ZoomState:
   default:
-#ifdef DEBUG
-    fprintf(stderr, "0x%lx: just before show (%d, %d) w: %d, h: %d\n",
-            client.window,
-            frame.rect.x(), frame.rect.y(),
-            frame.rect.width(), frame.rect.height());
-#endif // DEBUG
     show();
     screen->getWorkspace(blackbox_attrib.workspace)->raiseWindow(this);
     if (! blackbox->isStartup() && (isTransient() || screen->doFocusNew())) {
@@ -2438,12 +2405,6 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
     }
 
     reconfigure();
-#ifdef DEBUG
-    fprintf(stderr, "0x%lx: transient hint (%d, %d) w: %d, h: %d\n",
-            client.window,
-            frame.rect.x(), frame.rect.y(),
-            frame.rect.width(), frame.rect.height());
-#endif
   }
     break;
 
@@ -2494,12 +2455,6 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
     if (old_rect != frame.rect)
       reconfigure();
 
-#ifdef DEBUG
-    fprintf(stderr, "0x%lx: normal hint (%d, %d) w: %d, h: %d\n",
-            client.window,
-            frame.rect.x(), frame.rect.y(),
-            frame.rect.width(), frame.rect.height());
-#endif // DEBUG
     break;
   }
 
@@ -2557,18 +2512,12 @@ void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent *cr) {
       applyGravity(req);
     }
 
-    if (cr->value_mask & CWWidth) {
-#ifdef DEBUG
-      fprintf(stderr, "0x%lx: new width - %d\n", client.window, cr->width);
-#endif // DEBUG
+    if (cr->value_mask & CWWidth)
       req.setWidth(cr->width + frame.margin.left + frame.margin.right);
-    }
-    if (cr->value_mask & CWHeight) {
-#ifdef DEBUG
-      fprintf(stderr, "0x%lx: new height - %d\n", client.window, cr->height);
-#endif // DEBUG
+
+    if (cr->value_mask & CWHeight)
       req.setHeight(cr->height + frame.margin.top + frame.margin.bottom);
-    }
+
     configure(req.x(), req.y(), req.width(), req.height());
   }
 
@@ -2586,13 +2535,6 @@ void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent *cr) {
       break;
     }
   }
-
-#ifdef DEBUG
-  fprintf(stderr, "0x%lx: change request (%d, %d) w: %d, h: %d\n",
-          client.window,
-          frame.rect.x(), frame.rect.y(),
-          frame.rect.width(), frame.rect.height());
-#endif // DEBUG
 }
 
 
@@ -2964,7 +2906,10 @@ void BlackboxWindow::restore(bool remap) {
   XSelectInput(blackbox->getXDisplay(), frame.plate, NoEventMask);
 
   // do not leave a shaded window as an icon unless it was an icon
-  if (flags.shaded && ! flags.iconic) setState(NormalState);
+  if (flags.shaded && ! flags.iconic)
+    current_state = NormalState;
+  
+  setState(current_state);
 
   restoreGravity(client.rect);
 
