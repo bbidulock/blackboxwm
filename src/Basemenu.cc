@@ -938,18 +938,20 @@ void Basemenu::buttonReleaseEvent( XEvent *e )
   }
 
   Rect r;
+  bool once = true;
   int row = 0, col = 0;
   int x = items_rect.x(), y = items_rect.y();
   while ( it != items.end() ) {
     Item &item = (*it++);
     r.setRect( x, y, itemw, item.height );
 
-    if ( r.contains( p ) ) {
+    if ( r.contains( p ) && once ) {
       setActiveItem( r, item );
       if ( item.isEnabled() )
         itemClicked( p - items_rect.pos(), item, e->xbutton.button );
       if (  item.submenu() )
         do_hide = false;
+      once = false;
     } else if ( item.active ) {
       item.active = false;
       XClearArea( *BaseDisplay::instance(), windowID(),
