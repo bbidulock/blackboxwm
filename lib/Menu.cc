@@ -830,21 +830,23 @@ void bt::Menu::buttonReleaseEvent(const XButtonEvent * const event) {
     MenuItem &item = *it++;
     r.setHeight(item.height);
 
-    if (item.separator) {
-      do_hide = false;
-    } else if (item.enabled && r.contains(event->x, event->y)) {
-      if (item.sub) {
-        // clicked an item w/ a submenu, make sure the submenu is shown,
-        // and keep the menu open
+    if (item.enabled && r.contains(event->x, event->y)) {
+      if (item.separator) {
         do_hide = false;
-        if (! item.active)
-          activateItem(r, item);
-        // ensure the submenu is visible
-        showActiveSubmenu();
-      }
+      } else {
+        if (item.sub) {
+          // clicked an item w/ a submenu, make sure the submenu is shown,
+          // and keep the menu open
+          do_hide = false;
+          if (! item.active)
+            activateItem(r, item);
+          // ensure the submenu is visible
+          showActiveSubmenu();
+        }
 
-      // clicked an enabled item
-      itemClicked(item.ident, event->button);
+        // clicked an enabled item
+        itemClicked(item.ident, event->button);
+      }
       break;
     }
 
