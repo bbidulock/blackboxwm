@@ -42,7 +42,6 @@ extern "C" {
 
 
 namespace bt {
-
   // forward declaration
   class Display;
   class EventHandler;
