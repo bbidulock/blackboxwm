@@ -1,15 +1,21 @@
--- AUTHORS for Blackbox 0.61.x  - an X11 Window manager
+-- AUTHORS for Blackbox 0.62.x  - an X11 Window Manager
 
 Code Maintainer:
 	Sean 'Shaleh' Perry <shaleh@debian.org>
 
+Current Contributors:
+	xOr
+        John Kennis <jkennis@chello.nl>
+        Jason 'vanRijn' Kasper <vR@movingparts.net>
+	Wilbert Berendsen <wbsoft@xs4all.nl>
+
 Original Author:
         Brad Hughes <bhughes@trolltech.com>
 
-Original Co-author:
+Second Author:
         Jeff Raven <jraven@psu.edu>
 
-Contributors:
+Past Contributors:
         Jeffrey Sean Connell <ankh@canuck.gen.nz>
           - debugger class code (ommited from sources)
         Frank Belew <frb@umr.edu>
@@ -39,6 +45,7 @@ Contributors:
 	Wilbert Berendsen <wbsoft@xs4all.nl>
 	- author of blackbox/bsetroot manpages
 
+(Brad's original message):
 I would also like to thank the creators of WindowMaker.  Reading the existing
 code has helped me immensely, and the BImage class follows the RImage data type
 very closely (the 8bpp code and dithering code was based off of WindowMaker's

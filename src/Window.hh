@@ -1,4 +1,5 @@
 // Window.hh for Blackbox - an X11 Window manager
+// Copyright (c) 2001 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -66,46 +67,103 @@ class BlackboxWindow : public TimeoutHandler {
 private:
   BImageControl *image_ctrl;
   Blackbox *blackbox;
-  Bool moving, resizing, shaded, maximized, visible, iconic, transient,
-    focused, stuck, modal, send_focus_message, managed;
   BScreen *screen;
   BTimer *timer;
   Display *display;
   BlackboxAttributes blackbox_attrib;
 
-  Time lastButtonPressTime;
+  Time lastButtonPressTime;  // used for double clicks, when were we clicked
   Windowmenu *windowmenu;
 
-  int focus_mode, window_number, workspace_number;
+  int window_number, workspace_number;
   unsigned long current_state;
+
+  enum FocusMode { F_NoInput = 0, F_Passive,
+		   F_LocallyActive, F_GloballyActive };
+  FocusMode focus_mode;
+
+  struct _flags {
+    Bool moving,             // is moving?
+      resizing,              // is resizing?
+      shaded,                // is shaded?
+      visible,               // is visible?
+      iconic,                // is iconified?
+      transient,             // is a transient window?
+      focused,               // has focus?
+      stuck,                 // is omnipresent
+      modal,                 // is modal? (must be dismissed to continue)
+      send_focus_message,    // should we send focus messages to our client?
+      shaped,                // does the frame use the shape extension?
+      managed;               // under blackbox's control?
+                             // maximize is special, the number corresponds
+                             // with a mouse button
+                             // if 0, not maximized
+    unsigned int maximized;  // 1 = HorizVert, 2 = Vertical, 3 = Horizontal
+  } flags;
 
   struct _client {
     BlackboxWindow *transient_for,  // which window are we a transient for?
       *transient;                   // which window is our transient?
-    Window window, window_group;
+
+    Window window,                  // the client's window
+      window_group;                 // the client's window group
 
     char *title, *icon_title;
-    int x, y, old_bw, title_len;
-    unsigned int width, height, title_text_w,
-      min_width, min_height, max_width, max_height, width_inc, height_inc,
-      min_aspect_x, min_aspect_y, max_aspect_x, max_aspect_y,
-      base_width, base_height, win_gravity;
+    size_t title_len;               // strlen(title)
+
+    int x, y,
+      old_bw;                       // client's borderwidth
+
+    unsigned int width, height,
+      title_text_w,                 // width as rendered in the current font
+      min_width, min_height,        // can not be resized smaller
+      max_width, max_height,        // can not be resized larger
+      width_inc, height_inc,        // increment step
+      min_aspect_x, min_aspect_y,   // minimum aspect ratio
+      max_aspect_x, max_aspect_y,   // maximum aspect ratio
+      base_width, base_height,
+      win_gravity;
+
     unsigned long initial_state, normal_hint_flags, wm_hint_flags;
 
     MwmHints *mwm_hint;
     BlackboxHints *blackbox_hint;
   } client;
 
-  struct _decorations {
-    Bool titlebar, handle, border, iconify, maximize, close, menu;
-  } decorations;
-
   struct _functions {
     Bool resize, move, iconify, maximize, close;
   } functions;
 
+  /*
+   * client window = the application's window
+   * frame window = the window drawn around the outside of the client window
+   *                by the window manager which contains items like the
+   *                titlebar and close button
+   * title = the titlebar drawn above the client window, it displays the
+   *         window's name and any buttons for interacting with the window,
+   *         such as iconify, maximize, and close
+   * label = the window in the titlebar where the title is drawn
+   * buttons = maximize, iconify, close
+   * handle = the bar drawn at the bottom of the window, which contains the
+   *          left and right grips used for resizing the window
+   * grips = the smaller reactangles in the handle, one of each side of it.
+   *         When clicked and dragged, these resize the window interactively
+   * border = the line drawn around the outside edge of the frame window,
+   *          between the title, the bordered client window, and the handle.
+   *          Also drawn between the grips and the handle
+   */
+
+  /*
+   * what decorations do we have?
+   * this is based on the type of the client window as well as user input
+   * the menu is not really decor, but it goes hand in hand with the decor
+   */
+  struct _decorations {
+    Bool titlebar, handle, border, iconify, maximize, close, menu;
+  } decorations;
+
   struct _frame {
-    Bool shaped;
+    // u -> unfocused, f -> has focus
     unsigned long ulabel_pixel, flabel_pixel, utitle_pixel,
       ftitle_pixel, uhandle_pixel, fhandle_pixel, ubutton_pixel,
       fbutton_pixel, pbutton_pixel, uborder_pixel, fborder_pixel,
@@ -113,24 +171,33 @@ private:
     Pixmap ulabel, flabel, utitle, ftitle, uhandle, fhandle,
       ubutton, fbutton, pbutton, ugrip, fgrip;
 
-    Window window, plate, title, label, handle, close_button,
-      iconify_button, maximize_button, right_grip, left_grip;
+    Window window,       // the frame
+      plate,             // holds the client
+      title,
+      label,
+      handle,
+      close_button, iconify_button, maximize_button,
+      right_grip, left_grip;
 
-    int x, y, resize_x, resize_y, move_x, move_y, grab_x, grab_y,
-      y_border, y_handle;
+
+    unsigned int resize_w, resize_h;
+    int resize_x, resize_y,    // size and location of box drawn while resizing
+      move_x, move_y;          // location of box drawn while moving
+
+    int x, y,
+      grab_x, grab_y,          // where was the window when it was grabbed?
+      y_border, y_handle;      // where within frame is the border and handle
+
     unsigned int width, height, title_h, label_w, label_h, handle_h,
       button_w, button_h, grip_w, grip_h, mwm_border_w, border_h,
-      bevel_w, resize_w, resize_h, snap_w, snap_h;
+      bevel_w, snap_w, snap_h;
   } frame;
-
-  enum { F_NoInput = 0, F_Passive, F_LocallyActive, F_GloballyActive };
-
 
 protected:
   Bool getState(void);
-  Window createToplevelWindow(int, int, unsigned int, unsigned int,
-			      unsigned int);
-  Window createChildWindow(Window, Cursor = None);
+  Window createToplevelWindow(int x, int y, unsigned int width,
+			      unsigned int height, unsigned int borderwidth);
+  Window createChildWindow(Window parent, Cursor = None);
 
   void getWMName(void);
   void getWMIconName(void);
@@ -158,34 +225,34 @@ protected:
   void setState(unsigned long);
   void upsize(void);
   void downsize(void);
-  void right_fixsize(int * = 0, int * = 0);
-  void left_fixsize(int * = 0, int * = 0);
+  void right_fixsize(int *gx = 0, int *gy = 0);
+  void left_fixsize(int *gx = 0, int *gy = 0);
 
 
 public:
-  BlackboxWindow(Blackbox *, Window, BScreen * = (BScreen *) 0);
+  BlackboxWindow(Blackbox *b, Window w, BScreen *s = (BScreen *) 0);
   virtual ~BlackboxWindow(void);
 
-  inline const Bool isTransient(void) const
-  { return ((transient) ? True : False); }
-  inline const Bool hasTransient(void) const
-  { return ((client.transient) ? True : False); }
-  inline const Bool &isFocused(void) const { return focused; }
-  inline const Bool &isVisible(void) const { return visible; }
-  inline const Bool &isIconic(void) const { return iconic; }
-  inline const Bool &isShaded(void) const { return shaded; }
-  inline const Bool &isMaximized(void) const { return maximized; }
-  inline const Bool &isIconifiable(void) const { return functions.iconify; }
-  inline const Bool &isMaximizable(void) const { return functions.maximize; }
-  inline const Bool &isResizable(void) const { return functions.resize; }
-  inline const Bool &isClosable(void) const { return functions.close; }
-  inline const Bool &isStuck(void) const { return stuck; }
-  inline const Bool &hasTitlebar(void) const { return decorations.titlebar; }
+  inline Bool isTransient(void) const { return flags.transient; }
+  inline Bool isFocused(void) const { return flags.focused; }
+  inline Bool isVisible(void) const { return flags.visible; }
+  inline Bool isIconic(void) const { return flags.iconic; }
+  inline Bool isShaded(void) const { return flags.shaded; }
+  inline Bool isMaximized(void) const { return flags.maximized; }
+  inline Bool isStuck(void) const { return flags.stuck; }
+  inline Bool isIconifiable(void) const { return functions.iconify; }
+  inline Bool isMaximizable(void) const { return functions.maximize; }
+  inline Bool isResizable(void) const { return functions.resize; }
+  inline Bool isClosable(void) const { return functions.close; }
 
-  inline BScreen *getScreen(void) { return screen; }
+  inline Bool hasTitlebar(void) const { return decorations.titlebar; }
+  inline Bool hasTransient(void) const
+  { return ((client.transient) ? True : False); }
 
   inline BlackboxWindow *getTransient(void) { return client.transient; }
   inline BlackboxWindow *getTransientFor(void) { return client.transient_for; }
+
+  inline BScreen *getScreen(void) { return screen; }
 
   inline const Window &getFrameWindow(void) const { return frame.window; }
   inline const Window &getClientWindow(void) const { return client.window; }
@@ -217,17 +284,17 @@ public:
 
   void setFocusFlag(Bool);
   void iconify(void);
-  void deiconify(Bool = True, Bool = True);
+  void deiconify(Bool reassoc = True, Bool raise = True);
   void close(void);
   void withdraw(void);
-  void maximize(unsigned int);
+  void maximize(unsigned int button);
   void shade(void);
   void stick(void);
   void unstick(void);
   void reconfigure(void);
   void installColormap(Bool);
   void restore(void);
-  void configure(int, int, unsigned int, unsigned int);
+  void configure(int dx, int dy, unsigned int dw, unsigned int dh);
   void setWorkspace(int n);
   void changeBlackboxHints(BlackboxHints *);
   void restoreAttributes(void);

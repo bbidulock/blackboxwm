@@ -1,6 +1,6 @@
--- README for Blackbox 0.61.x  - an X11 Window manager
+-- README for Blackbox 0.62.x  - an X11 Window manager
 
-This is the README for Blackbox 0.61.x release.
+This is the README for Blackbox 0.62.x release.
 
 The source tree for Blackbox is comprised of five subdirectories:
 
@@ -25,7 +25,7 @@ Quick Start:
 The quickest and easiest way to get Blackbox up and running is to run the
 following commands:
 
-# cd blackbox-0.61.x
+# cd blackbox-0.62.x
 # ./configure
 # make
 # su -c 'make install'
@@ -72,7 +72,7 @@ ix86-Linux 2.0.x (libc5 and glibc2)
 ix86-Linux 2.1.x (libc5 and glibc2)
 ix86-Linux 2.2.x (libc5 and glibc2)
 ix86-Linux 2.3.x (glibc2.1)
-ix86-FreeBSD 4.0-current (development platform)
+ix86-FreeBSD 4.0-current
 ix86-FreeBSD 3.3-{stable,release}
 ix86-FreeBSD 3.2-{stable,release}
 ix86-FreeBSD 3.1-{stable,release}
@@ -107,5 +107,7 @@ UPDATE: Blackbox now makes use of its own internal timer, which doesn't use
         getitimer(3).  I don't know if this is all that it takes to make
         Blackbox work on OS/2, but I would like to hear success/fail reports.
 
-Please email bhughes@tcac.net for other success reports.
+UPDATE: OS/2 code is going away unless the author hears complaints
+
+Please email shaleh@debian.org for other success reports.
 

@@ -1,4 +1,5 @@
 // Netizen.cc for Blackbox - An X11 Window Manager
+// Copyright (c) 2001 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a

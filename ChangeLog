@@ -1,6 +1,6 @@
 ChangeLog for 0.61.x
 
-Changes from 0.61.1 to 0.61.2:
+Changes from 0.61.1 to 0.62.0:
   - the immorel release
   - added the ja_JP nls directory
   - general code touchups
@@ -30,6 +30,8 @@ Changes from 0.61.1 to 0.61.2:
   - applied xOr's patch for decoration handling
   - applied xOr's patch for the maximize, shade, unmaximize bug
   - applied Kennis' patch for sending incorrect Slit configure notices
+  - BlackboxWindow's flags have been moved into a flags structure
+  - added my name to the code, updated the version output
     
 Changes from 0.61.0 to 0.61.1:
   - fixed some of the code to explicitly use colormaps so that when

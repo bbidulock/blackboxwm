@@ -1,4 +1,5 @@
 // main.cc for Blackbox - an X11 Window manager
+// Copyright (c) 2001 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -107,7 +108,8 @@ int main(int argc, char **argv) {
     } else if (! strcmp(argv[i], "-help")) {
       // print program usage and command line options
       printf(i18n->getMessage(mainSet, mainUsage,
-			"Blackbox %s : (c) 1997 - 2000 Brad Hughes\n\n"
+                        "Blackbox %s : (c) 2001 Sean 'Shaleh' Perry\n"
+			"\t\t 1997 - 2000 Brad Hughes\n\n"
 			"  -display <string>\t\tuse display connection.\n"
 			"  -rc <string>\t\t\tuse alternate resource file.\n"
 			"  -version\t\t\tdisplay version and exit.\n"
