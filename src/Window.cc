@@ -2805,15 +2805,13 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
           client.window);
 #endif
 
-  if (! (frame.title == me->window || frame.label == me->window ||
-         frame.handle == me->window || frame.window == me->window))
-    return;
-
   if (windowmenu && windowmenu->isVisible())
     windowmenu->hide();
 
   if ((client.functions & Func_Move) && ! client.state.resizing &&
-      me->state & Button1Mask) {
+      me->state & Button1Mask &&
+      (frame.title == me->window || frame.label == me->window ||
+       frame.handle == me->window || frame.window == me->window)) {
     if (! client.state.moving) {
       // begin a move
 
