@@ -25,6 +25,7 @@
 extern "C" {
 #include <assert.h>
 #include <fcntl.h>
+#include <stdio.h>
 }
 
 #include <algorithm>
@@ -61,11 +62,16 @@ namespace bt {
 
 
 bt::Display::Display(const char *dpy_name, bool multi_head) {
-  if (! (xdisplay = XOpenDisplay(dpy_name)))
+  if (! (xdisplay = XOpenDisplay(dpy_name))) {
+    fprintf(stderr, "bt::Display: failed to open display '%s'\n",
+            dpy_name ? dpy_name : "");
     ::exit(2);
+  }
 
-  if (fcntl(ConnectionNumber(xdisplay), F_SETFD, 1) == -1)
+  if (fcntl(ConnectionNumber(xdisplay), F_SETFD, 1) == -1) {
+    fprintf(stderr, "bt::Display: failed to mark connection close-on-exec\n");
     ::exit(2);
+  }
 
   if (! multi_head || ScreenCount(xdisplay) == 1) {
     screen_info_count = 1;
