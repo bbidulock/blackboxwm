@@ -1,9 +1,0 @@
-.cvsignore
-Makefile
-config.cache
-config.h
-config.log
-config.status
-stamp-h
-stamp-h1
-version.h
