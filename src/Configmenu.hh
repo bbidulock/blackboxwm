@@ -30,15 +30,27 @@ class Blackbox;
 class BScreen;
 class Configmenu;
 
-/*
-  class Configmenu : public Basemenu {
+class Configmenu : public Basemenu
+{
+public:
+  Configmenu(BScreen *);
+  virtual ~Configmenu(void);
+
+  inline Basemenu *getFocusmenu(void) { return focusmenu; }
+  inline Basemenu *getPlacementmenu(void) { return placementmenu; }
+
+  void reconfigure(void);
+
+protected:
+  virtual void itemClicked(const Point &, const Item &, int);
+
 private:
   class Focusmenu : public Basemenu {
   private:
     Configmenu *configmenu;
 
   protected:
-    virtual void itemSelected(int, int);
+    virtual void itemClicked(const Point &, const Item &, int);
 
   public:
     Focusmenu(Configmenu *);
@@ -49,7 +61,7 @@ private:
     Configmenu *configmenu;
 
   protected:
-    virtual void itemSelected(int, int);
+    virtual void itemClicked(const Point &, const Item &, int);
 
   public:
     Placementmenu(Configmenu *);
@@ -62,19 +74,6 @@ private:
 
   friend class Focusmenu;
   friend class Placementmenu;
-
-protected:
-  virtual void itemSelected(int, int);
-
-public:
-  Configmenu(BScreen *);
-  virtual ~Configmenu(void);
-
-  inline Basemenu *getFocusmenu(void) { return focusmenu; }
-  inline Basemenu *getPlacementmenu(void) { return placementmenu; }
-
-  void reconfigure(void);
 };
-*/
 
 #endif // __Configmenu_hh

@@ -159,7 +159,7 @@ BScreen::~BScreen(void)
   delete rootmenu;
   delete workspacemenu;
   delete iconmenu;
-  // delete configmenu;
+  delete configmenu;
 
 #ifdef    SLIT
   delete slit;
@@ -281,7 +281,7 @@ void BScreen::initialize()
 
   workspacemenu = new Workspacemenu(this);
   iconmenu = new Iconmenu(this);
-  // configmenu = new Configmenu(this);
+  configmenu = new Configmenu(this);
 
   Workspace *wkspc = (Workspace *) 0;
   if (resource.workspaces != 0) {
@@ -443,7 +443,7 @@ void BScreen::reconfigure(void)
     InitMenu();
     rootmenu->reconfigure();
 
-    // configmenu->reconfigure();
+    configmenu->reconfigure();
 
     toolbar->reconfigure();
 
@@ -1034,7 +1034,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
             continue;
           }
 
-          // menu->insert(label, configmenu);
+          menu->insert(label, configmenu);
           break;
 
         case 740: // include
