@@ -24,6 +24,9 @@
 #ifndef _BLACKBOX_UTIL_HH
 #define _BLACKBOX_UTIL_HH
 
+/* XXX: this needs autoconf help */
+const unsigned int BSENTINEL = 65535;
+
 char* expandTilde(const char *s);
 char* bstrdup(const char *s);
 

@@ -388,7 +388,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
 
   Workspace *wkspc = (Workspace *) 0;
   if (resource.workspaces != 0) {
-    for (int i = 0; i < resource.workspaces; ++i) {
+    for (unsigned int i = 0; i < resource.workspaces; ++i) {
       wkspc = new Workspace(this, workspacesList.size());
       workspacesList.push_back(wkspc);
       workspacemenu->insert(wkspc->getName(), wkspc->getMenu());
@@ -418,14 +418,13 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
 
   changeWorkspaceID(0);
 
-  int i;
   unsigned int nchild;
   Window r, p, *children;
   XQueryTree(blackbox->getXDisplay(), getRootWindow(), &r, &p,
              &children, &nchild);
 
   // preen the window list of all icon windows... for better dockapp support
-  for (i = 0; i < (int) nchild; i++) {
+  for (unsigned int i = 0; i < nchild; i++) {
     if (children[i] == None) continue;
 
     XWMHints *wmhints = XGetWMHints(blackbox->getXDisplay(),
@@ -434,7 +433,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
     if (wmhints) {
       if ((wmhints->flags & IconWindowHint) &&
           (wmhints->icon_window != children[i]))
-        for (int j = 0; j < (int) nchild; j++)
+        for (unsigned int j = 0; j < nchild; j++)
           if (children[j] == wmhints->icon_window) {
             children[j] = None;
 
@@ -446,13 +445,12 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   }
 
   // manage shown windows
-  for (i = 0; i < (int) nchild; ++i) {
+  for (unsigned int i = 0; i < nchild; ++i) {
     if (children[i] == None || (! blackbox->validateWindow(children[i])))
       continue;
 
     XWindowAttributes attrib;
-    if (XGetWindowAttributes(blackbox->getXDisplay(), children[i],
-                             &attrib)) {
+    if (XGetWindowAttributes(blackbox->getXDisplay(), children[i], &attrib)) {
       if (attrib.override_redirect) continue;
 
       if (attrib.map_state != IsUnmapped) {
@@ -573,8 +571,7 @@ void BScreen::readDatabaseTexture(char *rname, char *rclass,
   XrmValue value;
   char *value_type;
 
-  if (XrmGetResource(resource.stylerc, rname, rclass, &value_type,
-                     &value))
+  if (XrmGetResource(resource.stylerc, rname, rclass, &value_type, &value))
     image_control->parseTexture(texture, value.addr);
   else
     texture->setTexture(BImage_Solid | BImage_Flat);
@@ -1290,7 +1287,7 @@ void BScreen::LoadStyle(void) {
 void BScreen::addIcon(BlackboxWindow *w) {
   if (! w) return;
 
-  w->setWorkspace(-1);
+  w->setWorkspace(BSENTINEL);
   w->setWindowNumber(iconList.size());
 
   iconList.push_back(w);
@@ -1325,12 +1322,12 @@ BlackboxWindow *BScreen::getIcon(int index) {
 }
 
 
-int BScreen::addWorkspace(void) {
+unsigned int BScreen::addWorkspace(void) {
   Workspace *wkspc = new Workspace(this, workspacesList.size());
   workspacesList.push_back(wkspc);
 
   workspacemenu->insert(wkspc->getName(), wkspc->getMenu(),
-                        wkspc->getWorkspaceID() + 2);
+                        wkspc->getID() + 2);
   workspacemenu->update();
 
   toolbar->reconfigure();
@@ -1341,21 +1338,21 @@ int BScreen::addWorkspace(void) {
 }
 
 
-int BScreen::removeLastWorkspace(void) {
+unsigned int BScreen::removeLastWorkspace(void) {
   if (workspacesList.size() == 1)
     return 0;
 
   Workspace *wkspc = workspacesList.back();
 
-  if (current_workspace->getWorkspaceID() == wkspc->getWorkspaceID())
-    changeWorkspaceID(current_workspace->getWorkspaceID() - 1);
+  if (current_workspace->getID() == wkspc->getID())
+    changeWorkspaceID(current_workspace->getID() - 1);
 
   wkspc->removeAll();
 
-  workspacemenu->remove(wkspc->getWorkspaceID() + 2);
+  workspacemenu->remove(wkspc->getID() + 2);
   workspacemenu->update();
 
-  workspacesList.remove(wkspc);
+  workspacesList.pop_back();
   delete wkspc;
 
   toolbar->reconfigure();
@@ -1369,10 +1366,10 @@ int BScreen::removeLastWorkspace(void) {
 void BScreen::changeWorkspaceID(unsigned int id) {
   if (! current_workspace) return;
 
-  if (id != current_workspace->getWorkspaceID()) {
+  if (id != current_workspace->getID()) {
     current_workspace->hideAll();
 
-    workspacemenu->setItemSelected(current_workspace->getWorkspaceID() + 2,
+    workspacemenu->setItemSelected(current_workspace->getID() + 2,
                                    False);
 
     if (blackbox->getFocusedWindow() &&
@@ -1384,7 +1381,7 @@ void BScreen::changeWorkspaceID(unsigned int id) {
 
     current_workspace = getWorkspace(id);
 
-    workspacemenu->setItemSelected(current_workspace->getWorkspaceID() + 2,
+    workspacemenu->setItemSelected(current_workspace->getID() + 2,
                                    True);
     toolbar->redrawWorkspaceLabel(True);
 
@@ -1412,7 +1409,7 @@ void BScreen::addNetizen(Netizen *n) {
     Workspace *w = *it;
     for (unsigned int i = 0; i < w->getCount(); ++i) {
       n->sendWindowAdd(w->getWindow(i)->getClientWindow(),
-                       w->getWorkspaceID());
+                       w->getID());
     }
   }
 
@@ -1491,11 +1488,11 @@ void BScreen::updateNetizenConfigNotify(XEvent *e) {
 }
 
 
-void BScreen::raiseWindows(Window *workspace_stack, int num) {
+void BScreen::raiseWindows(Window *workspace_stack, unsigned int num) {
   // XXX: why 13??
   Window *session_stack = new
     Window[(num + workspacesList.size() + rootmenuList.size() + 13)];
-  int i = 0, k = num;
+  unsigned int i = 0, k = num;
 
   XRaiseWindow(blackbox->getXDisplay(), iconmenu->getWindowID());
   *(session_stack + i++) = iconmenu->getWindowID();
@@ -1549,28 +1546,33 @@ void BScreen::saveStrftimeFormat(char *format) {
 #endif // HAVE_STRFTIME
 
 
-void BScreen::addWorkspaceName(char *name) {
+void BScreen::addWorkspaceName(const char *name) {
   workspaceNames.push_back(std::string(name));
 }
 
 
-const char* BScreen::getNameOfWorkspace(int id) {
-  if (id >= 0 && id < (signed)workspaceNames.size()) {
-    WorkspaceNamesList::iterator it = workspaceNames.begin();
-    for (; id > 0; ++it, --id) ; /* increment iterator to index */
+/*
+ * I would love to kill this function and the accompanying workspaceNames
+ * list.  However, we have a chicken and egg situation.  The names are read
+ * in during load_rc() which happens before the workspaces are created.
+ * The current solution is to read the names into a list, then use the list
+ * later for constructing the workspaces.  It is only used during initial
+ * BScreen creation.
+ */
+const char* BScreen::getNameOfWorkspace(unsigned int id) {
+  if (id < workspaceNames.size())
+    return workspaceNames[id].c_str();
 
-    return (*it).c_str();
-  }
   return (char *) 0;
 }
 
 
-void BScreen::reassociateWindow(BlackboxWindow *w, int wkspc_id,
+void BScreen::reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id,
                                 Bool ignore_sticky) {
   if (! w) return;
 
-  if (wkspc_id == -1)
-    wkspc_id = current_workspace->getWorkspaceID();
+  if (wkspc_id == BSENTINEL)
+    wkspc_id = current_workspace->getID();
 
   if (w->getWorkspaceNumber() == wkspc_id)
     return;
@@ -1621,7 +1623,7 @@ void BScreen::nextFocus(void) {
 
 void BScreen::prevFocus(void) {
   Bool have_focused = False;
-  int focused_window_number = -1;
+  unsigned int focused_window_number = BSENTINEL;
   BlackboxWindow *prev;
 
   if (blackbox->getFocusedWindow()) {
@@ -1633,11 +1635,12 @@ void BScreen::prevFocus(void) {
   }
 
   if (have_focused && (getCurrentWorkspace()->getCount() > 1)) {
-    int prev_window_number = focused_window_number;
+    unsigned int prev_window_number = focused_window_number;
     do {
-      if ((--prev_window_number) < 0)
+      if (prev_window_number == 0)
         prev_window_number = getCurrentWorkspace()->getCount() - 1;
-
+      else
+        --prev_window_number;
       prev = getCurrentWorkspace()->getWindow(prev_window_number);
     } while ((! prev->setInputFocus()) && (prev_window_number !=
                                            focused_window_number));
@@ -1655,7 +1658,7 @@ void BScreen::prevFocus(void) {
 
 void BScreen::raiseFocus(void) {
   Bool have_focused = False;
-  int focused_window_number = -1;
+  unsigned int focused_window_number = BSENTINEL;
 
   if (blackbox->getFocusedWindow()) {
     if (blackbox->getFocusedWindow()->getScreen()->getScreenNumber() ==
@@ -2185,15 +2188,18 @@ void BScreen::hideGeometry(void) {
   }
 }
 
+
 void BScreen::addStrut(NETStrut *strut) {
   strutList.push_back(strut);
 }
+
 
 const XRectangle& BScreen::availableArea(void) const {
   if (doFullMax())
     return getRect(); // return the full screen
   return usableArea;
 }
+
 
 void BScreen::updateAvailableArea(void) {
   int old_x = usableArea.x, old_y = usableArea.y,
@@ -2226,11 +2232,22 @@ void BScreen::updateAvailableArea(void) {
   }
 }
 
-Workspace* BScreen::getWorkspace(int w) {
-  WorkspaceList::iterator it = workspacesList.begin();
-  for (; w > 0; ++it, --w) ; /* incrment to index */
-  return *it;
+
+struct WorkspaceMatch {
+  unsigned int number;
+  WorkspaceMatch(unsigned int n): number(n) {}
+
+  inline Bool operator()(const Workspace* workspace) const {
+    return (workspace->getID() == number);
+  }
+};
+
+
+Workspace* BScreen::getWorkspace(unsigned int index) {
+  assert(index < workspacesList.size());
+  return workspacesList[index];
 }
+
 
 void BScreen::buttonPressEvent(XButtonEvent *xbutton) {
   if (xbutton->button == 1) {

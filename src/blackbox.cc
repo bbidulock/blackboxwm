@@ -1303,7 +1303,7 @@ void Blackbox::load_rc(BScreen *screen) {
                      &value)) {
     char *search = bstrdup(value.addr);
 
-    for (int i = 0; i < screen->getNumberOfWorkspaces(); i++) {
+    for (unsigned int i = 0; i < screen->getNumberOfWorkspaces(); i++) {
       char *nn;
 
       if (! i) nn = strtok(search, ",");

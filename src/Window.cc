@@ -104,7 +104,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     flags.shaped = flags.managed = False;
   flags.maximized = 0;
 
-  blackbox_attrib.workspace = workspace_number = window_number = -1;
+  blackbox_attrib.workspace = workspace_number = window_number = BSENTINEL;
 
   blackbox_attrib.flags = blackbox_attrib.attrib = blackbox_attrib.stack
     = blackbox_attrib.decoration = 0l;
@@ -253,8 +253,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   decorate();
 
-  if (workspace_number < 0 ||
-      workspace_number >= (signed)screen->getWorkspaceCount())
+  if (workspace_number >= screen->getWorkspaceCount())
     screen->getCurrentWorkspace()->addWindow(this, place_window);
   else
     screen->getWorkspace(workspace_number)->addWindow(this, place_window);
@@ -280,7 +279,7 @@ BlackboxWindow::~BlackboxWindow(void) {
     XUngrabPointer(display, CurrentTime);
   }
 
-  if (workspace_number != -1 && window_number != -1)
+  if (workspace_number != BSENTINEL && window_number != BSENTINEL)
     screen->getWorkspace(workspace_number)->removeWindow(this);
   else if (flags.iconic)
     screen->removeIcon(this);
@@ -1423,9 +1422,8 @@ void BlackboxWindow::show(void) {
 
 void BlackboxWindow::deiconify(Bool reassoc, Bool raise) {
   if (flags.iconic || reassoc)
-    screen->reassociateWindow(this, -1, False);
-  else if (workspace_number !=
-           (signed) screen->getCurrentWorkspace()->getWorkspaceID())
+    screen->reassociateWindow(this, BSENTINEL, False);
+  else if (workspace_number != screen->getCurrentWorkspace()->getID())
     return;
 
   show();
@@ -1579,7 +1577,7 @@ void BlackboxWindow::remaximize(void) {
 }
 
 
-void BlackboxWindow::setWorkspace(int n) {
+void BlackboxWindow::setWorkspace(unsigned int n) {
   workspace_number = n;
 
   blackbox_attrib.flags |= AttribWorkspace;
@@ -1617,7 +1615,7 @@ void BlackboxWindow::stick(void) {
     flags.stuck = False;
 
     if (! flags.iconic)
-      screen->reassociateWindow(this, -1, True);
+      screen->reassociateWindow(this, BSENTINEL, True);
 
     setState(current_state);
   } else {
@@ -2806,7 +2804,7 @@ void BlackboxWindow::changeBlackboxHints(BlackboxHints *net) {
     stick();
 
   if ((net->flags & AttribWorkspace) &&
-      (workspace_number != (signed) net->workspace)) {
+      (workspace_number != net->workspace)) {
     screen->reassociateWindow(this, net->workspace, True);
 
     if (screen->getCurrentWorkspaceID() != net->workspace)

@@ -67,7 +67,7 @@ public:
 
   inline const char *getName(void) const { return name.c_str(); }
 
-  inline const unsigned int getWorkspaceID(void) const { return id; }
+  inline const unsigned int getID(void) const { return id; }
   
   inline void setLastFocusedWindow(BlackboxWindow *w) { lastfocus = w; }
 

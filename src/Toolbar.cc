@@ -904,9 +904,9 @@ void Toolbar::buttonReleaseEvent(XButtonEvent *re) {
 
       if (re->x >= 0 && re->x < (signed) frame.button_w &&
           re->y >= 0 && re->y < (signed) frame.button_w)
-       if (screen->getCurrentWorkspace()->getWorkspaceID() > 0)
+       if (screen->getCurrentWorkspace()->getID() > 0)
           screen->changeWorkspaceID(screen->getCurrentWorkspace()->
-                                    getWorkspaceID() - 1);
+                                    getID() - 1);
         else
           screen->changeWorkspaceID(screen->getWorkspaceCount() - 1);
     } else if (re->window == frame.nsbutton) {
@@ -914,10 +914,10 @@ void Toolbar::buttonReleaseEvent(XButtonEvent *re) {
 
       if (re->x >= 0 && re->x < (signed) frame.button_w &&
           re->y >= 0 && re->y < (signed) frame.button_w)
-        if (screen->getCurrentWorkspace()->getWorkspaceID() <
+        if (screen->getCurrentWorkspace()->getID() <
             (screen->getWorkspaceCount() - 1))
           screen->changeWorkspaceID(screen->getCurrentWorkspace()->
-                                    getWorkspaceID() + 1);
+                                    getID() + 1);
         else
           screen->changeWorkspaceID(0);
     } else if (re->window == frame.pwbutton) {
@@ -1013,10 +1013,10 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
         wkspc->setName(new_workspace_name);
         wkspc->getMenu()->hide();
 
-        screen->getWorkspacemenu()->remove(wkspc->getWorkspaceID() + 2);
+        screen->getWorkspacemenu()->remove(wkspc->getID() + 2);
         screen->getWorkspacemenu()->insert(wkspc->getName(),
                                            wkspc->getMenu(),
-                                           wkspc->getWorkspaceID() + 2);
+                                           wkspc->getID() + 2);
         screen->getWorkspacemenu()->update();
       }
 

@@ -76,7 +76,7 @@ private:
   Time lastButtonPressTime;  // used for double clicks, when were we clicked
   Windowmenu *windowmenu;
 
-  int window_number, workspace_number;
+  unsigned int window_number, workspace_number;
   unsigned long current_state;
 
   enum FocusMode { F_NoInput = 0, F_Passive,
@@ -271,7 +271,8 @@ public:
   inline const int getYFrame(void) const { return frame.y; }
   inline const int getXClient(void) const { return client.x; }
   inline const int getYClient(void) const { return client.y; }
-  inline const int getWorkspaceNumber(void) const { return workspace_number; }
+  inline const unsigned int getWorkspaceNumber(void) const
+  { return workspace_number; }
   inline const int getWindowNumber(void) const { return window_number; }
 
   inline const unsigned int getWidth(void) const { return frame.width; }
@@ -304,7 +305,7 @@ public:
   void installColormap(Bool install);
   void restore(void);
   void configure(int dx, int dy, unsigned int dw, unsigned int dh);
-  void setWorkspace(int n);
+  void setWorkspace(unsigned int n);
   void changeBlackboxHints(BlackboxHints *net);
   void restoreAttributes(void);
 

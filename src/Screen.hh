@@ -39,6 +39,7 @@
 #endif // TIME_WITH_SYS_TIME
 
 #include <list>
+#include <vector>
 
 #include "Configmenu.hh"
 #include "Iconmenu.hh"
@@ -130,9 +131,9 @@ private:
 
   typedef std::list<NETStrut*> StrutList;
   StrutList strutList;
-  typedef std::list<std::string> WorkspaceNamesList;
+  typedef std::vector<std::string> WorkspaceNamesList;
   WorkspaceNamesList workspaceNames;
-  typedef std::list<Workspace*> WorkspaceList;
+  typedef std::vector<Workspace*> WorkspaceList;
   WorkspaceList workspacesList;
 
   struct screen_resource {
@@ -146,7 +147,8 @@ private:
     BColor border_color;
     XrmDatabase stylerc;
 
-    int workspaces, toolbar_placement, toolbar_width_percent, placement_policy,
+    unsigned int workspaces;
+    int toolbar_placement, toolbar_width_percent, placement_policy,
       edge_snap_threshold, row_direction, col_direction;
 
     Bool slit_on_top, slit_auto_hide;
@@ -236,7 +238,7 @@ public:
 
   inline Toolbar *getToolbar(void) { return toolbar; }
 
-  Workspace *getWorkspace(int w);
+  Workspace *getWorkspace(unsigned int index);
 
   inline Workspace *getCurrentWorkspace(void) { return current_workspace; }
 
@@ -252,11 +254,11 @@ public:
   { return resource.border_width; }
 
   inline const unsigned int getCurrentWorkspaceID(void)
-  { return current_workspace->getWorkspaceID(); }
+  { return current_workspace->getID(); }
   inline const unsigned int getWorkspaceCount(void)
   { return workspacesList.size(); }
   inline const unsigned int getIconCount(void) { return iconList.size(); }
-  inline const int getNumberOfWorkspaces(void) const
+  inline const unsigned int getNumberOfWorkspaces(void) const
   { return resource.workspaces; }
   inline const int getToolbarPlacement(void) const
   { return resource.toolbar_placement; }
@@ -312,19 +314,20 @@ public:
   void updateAvailableArea(void);
   void addStrut(NETStrut *strut);
 
-  int addWorkspace(void);
-  int removeLastWorkspace(void);
+  unsigned int addWorkspace(void);
+  unsigned int removeLastWorkspace(void);
   void removeWorkspaceNames(void);
 
-  void addWorkspaceName(char *name);
+  void addWorkspaceName(const char *name);
   void addNetizen(Netizen *n);
   void removeNetizen(Window w);
   void addIcon(BlackboxWindow *w);
   void removeIcon(BlackboxWindow *w);
-  const char* getNameOfWorkspace(int id);
+  const char* getNameOfWorkspace(unsigned int id);
   void changeWorkspaceID(unsigned int id);
-  void raiseWindows(Window *workspace_stack, int num);
-  void reassociateWindow(BlackboxWindow *w, int wkspc_id, Bool ignore_sticky);
+  void raiseWindows(Window *workspace_stack, unsigned int num);
+  void reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id,
+                         Bool ignore_sticky);
   void prevFocus(void);
   void nextFocus(void);
   void raiseFocus(void);
