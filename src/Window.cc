@@ -801,9 +801,7 @@ void BlackboxWindow::grabButtons(void) {
 
 
 void BlackboxWindow::ungrabButtons(void) {
-  if (! screen->isSloppyFocus() || screen->doClickRaise())
-    blackbox->ungrabButton(Button1, 0, frame.plate);
-
+  blackbox->ungrabButton(Button1, 0, frame.plate);
   blackbox->ungrabButton(Button1, Mod1Mask, frame.window);
   blackbox->ungrabButton(Button2, Mod1Mask, frame.window);
   blackbox->ungrabButton(Button3, Mod1Mask, frame.window);
