@@ -126,7 +126,7 @@ private:
   unsigned int geom_w, geom_h;
   unsigned long event_mask;
 
-  Rect usableArea;
+  bt::Rect usableArea;
 
   typedef std::list<Netwm::Strut*> StrutList;
   StrutList strutList;
@@ -321,7 +321,7 @@ public:
 
   BlackboxWindow *getIcon(unsigned int index);
 
-  const Rect& availableArea(void) const;
+  const bt::Rect& availableArea(void) const;
   void addStrut(Netwm::Strut *strut);
   void removeStrut(Netwm::Strut *strut);
 

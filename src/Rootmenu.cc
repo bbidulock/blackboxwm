@@ -67,7 +67,7 @@ void Rootmenu::itemSelected(int button, unsigned int index) {
   switch (item->function()) {
   case BScreen::Execute:
     if (item->exec())
-      bexec(item->exec(), getScreen()->displayString());
+      bt::bexec(item->exec(), getScreen()->displayString());
     break;
 
   case BScreen::Restart:

@@ -87,7 +87,7 @@ private:
     unsigned int window_label_w, workspace_label_w, clock_w,
       button_w, bevel_w, label_h;
 
-    Rect rect;
+    bt::Rect rect;
   } frame;
 
   class HideHandler : public TimeoutHandler {
@@ -139,7 +139,7 @@ public:
 
   inline Window getWindowID(void) const { return frame.window; }
 
-  inline const Rect& getRect(void) const { return frame.rect; }
+  inline const bt::Rect& getRect(void) const { return frame.rect; }
   inline unsigned int getWidth(void) const { return frame.rect.width(); }
   inline unsigned int getHeight(void) const { return frame.rect.height(); }
   inline unsigned int getExposedHeight(void) const

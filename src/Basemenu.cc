@@ -172,7 +172,7 @@ Basemenu::~Basemenu(void) {
     }
   }
 
-  std::for_each(menuitems.begin(), menuitems.end(), PointerAssassin());
+  std::for_each(menuitems.begin(), menuitems.end(), bt::PointerAssassin());
 
   if (menu.title_pixmap)
     image_ctrl->removeImage(menu.title_pixmap);

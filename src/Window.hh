@@ -150,7 +150,7 @@ private:
 
     std::string title, icon_title;
 
-    Rect rect, premax;
+    bt::Rect rect, premax;
 
     int old_bw;                       // client's borderwidth
 
@@ -221,9 +221,9 @@ private:
      * size and location of the box drawn while the window dimensions or
      * location is being changed, ie. resized or moved
      */
-    Rect changing;
+    bt::Rect changing;
 
-    Rect rect;                  // frame geometry
+    bt::Rect rect;                  // frame geometry
     Netwm::Strut margin;        // margins between the frame and client,
                                 // this has nothing to do with netwm, it is
                                 // simply code reuse for similar functionality
@@ -274,8 +274,8 @@ private:
   void redrawCloseButton(bool pressed) const;
   void redrawIconifyButton(bool pressed) const;
   void redrawMaximizeButton(bool pressed) const;
-  void applyGravity(Rect &r);
-  void restoreGravity(Rect &r);
+  void applyGravity(bt::Rect &r);
+  void restoreGravity(bt::Rect &r);
   void setState(unsigned long new_state, bool closing = False);
   void upsize(void);
 
@@ -327,8 +327,8 @@ public:
   { return client.workspace; }
   inline unsigned int getWindowNumber(void) const { return window_number; }
 
-  inline const Rect &frameRect(void) const { return frame.rect; }
-  inline const Rect &clientRect(void) const { return client.rect; }
+  inline const bt::Rect &frameRect(void) const { return frame.rect; }
+  inline const bt::Rect &clientRect(void) const { return client.rect; }
 
   inline unsigned int getTitleHeight(void) const
   { return frame.title_h; }

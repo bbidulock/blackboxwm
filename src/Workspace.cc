@@ -364,7 +364,7 @@ BlackboxWindow *Workspace::getWindow(unsigned int index) {
   if (index < windowList.size()) {
     BlackboxWindowList::iterator it = windowList.begin();
     while (index-- > 0)
-      it = next_it(it);
+      it = bt::next_it(it);
     return *it;
   }
 
@@ -490,14 +490,14 @@ void Workspace::setName(const std::string& new_name) {
 /*
  * Calculate free space available for window placement.
  */
-typedef std::vector<Rect> rectList;
+typedef std::vector<bt::Rect> rectList;
 
-static rectList calcSpace(const Rect &win, const rectList &spaces) {
-  Rect isect, extra;
+static rectList calcSpace(const bt::Rect &win, const rectList &spaces) {
+  bt::Rect isect, extra;
   rectList result;
   rectList::const_iterator siter, end = spaces.end();
   for (siter = spaces.begin(); siter != end; ++siter) {
-    const Rect &curr = *siter;
+    const bt::Rect &curr = *siter;
 
     if(! win.intersects(curr)) {
       result.push_back(curr);
@@ -535,63 +535,63 @@ static rectList calcSpace(const Rect &win, const rectList &spaces) {
 }
 
 
-static bool rowRLBT(const Rect &first, const Rect &second) {
+static bool rowRLBT(const bt::Rect &first, const bt::Rect &second) {
   if (first.bottom() == second.bottom())
     return first.right() > second.right();
   return first.bottom() > second.bottom();
 }
 
-static bool rowRLTB(const Rect &first, const Rect &second) {
+static bool rowRLTB(const bt::Rect &first, const bt::Rect &second) {
   if (first.y() == second.y())
     return first.right() > second.right();
   return first.y() < second.y();
 }
 
-static bool rowLRBT(const Rect &first, const Rect &second) {
+static bool rowLRBT(const bt::Rect &first, const bt::Rect &second) {
   if (first.bottom() == second.bottom())
     return first.x() < second.x();
   return first.bottom() > second.bottom();
 }
 
-static bool rowLRTB(const Rect &first, const Rect &second) {
+static bool rowLRTB(const bt::Rect &first, const bt::Rect &second) {
   if (first.y() == second.y())
     return first.x() < second.x();
   return first.y() < second.y();
 }
 
-static bool colLRTB(const Rect &first, const Rect &second) {
+static bool colLRTB(const bt::Rect &first, const bt::Rect &second) {
   if (first.x() == second.x())
     return first.y() < second.y();
   return first.x() < second.x();
 }
 
-static bool colLRBT(const Rect &first, const Rect &second) {
+static bool colLRBT(const bt::Rect &first, const bt::Rect &second) {
   if (first.x() == second.x())
     return first.bottom() > second.bottom();
   return first.x() < second.x();
 }
 
-static bool colRLTB(const Rect &first, const Rect &second) {
+static bool colRLTB(const bt::Rect &first, const bt::Rect &second) {
   if (first.right() == second.right())
     return first.y() < second.y();
   return first.right() > second.right();
 }
 
-static bool colRLBT(const Rect &first, const Rect &second) {
+static bool colRLBT(const bt::Rect &first, const bt::Rect &second) {
   if (first.right() == second.right())
     return first.bottom() > second.bottom();
   return first.right() > second.right();
 }
 
 
-bool Workspace::smartPlacement(Rect& win, const Rect& availableArea) {
+bool Workspace::smartPlacement(bt::Rect& win, const bt::Rect& availableArea) {
   rectList spaces;
   spaces.push_back(availableArea); //initially the entire screen is free
 
   //Find Free Spaces
   BlackboxWindowList::const_iterator wit = windowList.begin(),
     end = windowList.end();
-  Rect tmp;
+  bt::Rect tmp;
   for (; wit != end; ++wit) {
     const BlackboxWindow* const curr = *wit;
     if (curr->isShaded()) continue;
@@ -639,7 +639,7 @@ bool Workspace::smartPlacement(Rect& win, const Rect& availableArea) {
     return False;
 
   //set new position based on the empty space found
-  const Rect& where = *sit;
+  const bt::Rect& where = *sit;
   win.setX(where.x());
   win.setY(where.y());
 
@@ -659,7 +659,8 @@ bool Workspace::smartPlacement(Rect& win, const Rect& availableArea) {
 }
 
 
-bool Workspace::cascadePlacement(Rect &win, const Rect &availableArea) {
+bool Workspace::cascadePlacement(bt::Rect &win,
+                                 const bt::Rect &availableArea) {
   if (cascade_x > (availableArea.width() / 2) ||
       cascade_y > (availableArea.height() / 2))
     cascade_x = cascade_y = 32;
@@ -676,7 +677,7 @@ bool Workspace::cascadePlacement(Rect &win, const Rect &availableArea) {
 
 
 void Workspace::placeWindow(BlackboxWindow *win) {
-  Rect availableArea(screen->availableArea()),
+  bt::Rect availableArea(screen->availableArea()),
     new_win(availableArea.x(), availableArea.y(),
             win->frameRect().width(), win->frameRect().height());
   bool placed = False;

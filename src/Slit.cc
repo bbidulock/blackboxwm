@@ -466,10 +466,10 @@ void Slit::reposition(void) {
   frame.rect.setPos(x, y);
 
   // we have to add the border to the rect as it is not accounted for
-  Rect tbar_rect = screen->getToolbar()->getRect();
+  bt::Rect tbar_rect = screen->getToolbar()->getRect();
   tbar_rect.setSize(tbar_rect.width() + (screen->getBorderWidth() * 2),
                     tbar_rect.height() + (screen->getBorderWidth() * 2));
-  Rect slit_rect = frame.rect;
+  bt::Rect slit_rect = frame.rect;
   slit_rect.setSize(slit_rect.width() + (screen->getBorderWidth() * 2),
                     slit_rect.height() + (screen->getBorderWidth() * 2));
 

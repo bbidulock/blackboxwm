@@ -54,7 +54,7 @@ private:
   int depth;
   unsigned int screen_number;
   std::string display_string;
-  Rect rect;
+  bt::Rect rect;
 
 public:
   ScreenInfo(BaseDisplay *d, unsigned int num);
@@ -66,7 +66,7 @@ public:
   inline int getDepth(void) const { return depth; }
   inline unsigned int getScreenNumber(void) const
   { return screen_number; }
-  inline const Rect& getRect(void) const { return rect; }
+  inline const bt::Rect& getRect(void) const { return rect; }
   inline unsigned int getWidth(void) const { return rect.width(); }
   inline unsigned int getHeight(void) const { return rect.height(); }
   inline const std::string& displayString(void) const

@@ -626,5 +626,5 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, unsigned int num) {
     default_string.resize(pos);
 
   display_string = std::string("DISPLAY=") + default_string + '.' +
-    itostring(static_cast<unsigned long>(screen_number));
+    bt::itostring(static_cast<unsigned long>(screen_number));
 }

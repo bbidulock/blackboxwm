@@ -59,58 +59,68 @@ extern "C" {
 #include "Util.hh"
 
 
-void Rect::setX(int __x) {
-  _x2 += __x - _x1;
-  _x1 = __x;
+#ifndef   HAVE_BASENAME
+std::string basename (const std::string& path) {
+  std::string::size_type slash = path.rfind('/');
+  if (slash == std::string::npos)
+    return path;
+  return path.substr(slash+1);
+}
+#endif // HAVE_BASENAME
+
+
+void bt::Rect::setX(int x) {
+  _x2 += x - _x1;
+  _x1 = x;
 }
 
 
-void Rect::setY(int __y)
+void bt::Rect::setY(int y)
 {
-  _y2 += __y - _y1;
-  _y1 = __y;
+  _y2 += y - _y1;
+  _y1 = y;
 }
 
 
-void Rect::setPos(int __x, int __y) {
-  _x2 += __x - _x1;
-  _x1 = __x;
-  _y2 += __y - _y1;
-  _y1 = __y;
+void bt::Rect::setPos(int x, int y) {
+  _x2 += x - _x1;
+  _x1 = x;
+  _y2 += y - _y1;
+  _y1 = y;
 }
 
 
-void Rect::setWidth(unsigned int __w) {
-  _x2 = __w + _x1 - 1;
+void bt::Rect::setWidth(unsigned int w) {
+  _x2 = w + _x1 - 1;
 }
 
 
-void Rect::setHeight(unsigned int __h) {
-  _y2 = __h + _y1 - 1;
+void bt::Rect::setHeight(unsigned int h) {
+  _y2 = h + _y1 - 1;
 }
 
 
-void Rect::setSize(unsigned int __w, unsigned int __h) {
-  _x2 = __w + _x1 - 1;
-  _y2 = __h + _y1 - 1;
+void bt::Rect::setSize(unsigned int w, unsigned int h) {
+  _x2 = w + _x1 - 1;
+  _y2 = h + _y1 - 1;
 }
 
 
-void Rect::setRect(int __x, int __y, unsigned int __w, unsigned int __h) {
-  *this = Rect(__x, __y, __w, __h);
+void bt::Rect::setRect(int x, int y, unsigned int w, unsigned int h) {
+  *this = bt::Rect(x, y, w, h);
 }
 
 
-void Rect::setCoords(int __l, int __t, int __r, int __b) {
-  _x1 = __l;
-  _y1 = __t;
-  _x2 = __r;
-  _y2 = __b;
+void bt::Rect::setCoords(int l, int t, int r, int b) {
+  _x1 = l;
+  _y1 = t;
+  _x2 = r;
+  _y2 = b;
 }
 
 
-Rect Rect::operator|(const Rect &a) const {
-  Rect b;
+bt::Rect bt::Rect::operator|(const bt::Rect &a) const {
+  bt::Rect b;
 
   b._x1 = std::min(_x1, a._x1);
   b._y1 = std::min(_y1, a._y1);
@@ -121,8 +131,8 @@ Rect Rect::operator|(const Rect &a) const {
 }
 
 
-Rect Rect::operator&(const Rect &a) const {
-  Rect b;
+bt::Rect bt::Rect::operator&(const bt::Rect &a) const {
+  bt::Rect b;
 
   b._x1 = std::max(_x1, a._x1);
   b._y1 = std::max(_y1, a._y1);
@@ -133,13 +143,13 @@ Rect Rect::operator&(const Rect &a) const {
 }
 
 
-bool Rect::intersects(const Rect &a) const {
+bool bt::Rect::intersects(const bt::Rect &a) const {
   return std::max(_x1, a._x1) <= std::min(_x2, a._x2) &&
          std::max(_y1, a._y1) <= std::min(_y2, a._y2);
 }
 
 
-std::string expandTilde(const std::string& s) {
+std::string bt::expandTilde(const std::string& s) {
   if (s[0] != '~') return s;
 
   const char* const home = getenv("HOME");
@@ -149,7 +159,7 @@ std::string expandTilde(const std::string& s) {
 }
 
 
-void bexec(const std::string& command, const std::string& displaystring) {
+void bt::bexec(const std::string& command, const std::string& displaystring) {
 #ifndef    __EMX__
   if (! fork()) {
     setsid();
@@ -166,17 +176,8 @@ void bexec(const std::string& command, const std::string& displaystring) {
 }
 
 
-#ifndef   HAVE_BASENAME
-std::string basename (const std::string& path) {
-  std::string::size_type slash = path.rfind('/');
-  if (slash == std::string::npos)
-    return path;
-  return path.substr(slash+1);
-}
-#endif // HAVE_BASENAME
-
-
-std::string textPropertyToString(Display *display, XTextProperty& text_prop) {
+std::string bt::textPropertyToString(Display *display,
+                                     XTextProperty& text_prop) {
   std::string ret;
 
   if (text_prop.value && text_prop.nitems > 0) {
@@ -200,7 +201,7 @@ std::string textPropertyToString(Display *display, XTextProperty& text_prop) {
 }
 
 
-timeval normalizeTimeval(const timeval &tm) {
+timeval bt::normalizeTimeval(const timeval &tm) {
   timeval ret = tm;
 
   while (ret.tv_usec < 0) {
@@ -223,7 +224,7 @@ timeval normalizeTimeval(const timeval &tm) {
 }
 
 
-std::string itostring(unsigned long i) {
+std::string bt::itostring(unsigned long i) {
   if (i == 0)
     return std::string("0");
 
@@ -236,8 +237,8 @@ std::string itostring(unsigned long i) {
 }
 
 
-std::string itostring(long i) {
-  std::string tmp = itostring(static_cast<unsigned long>(abs(i)));
+std::string bt::itostring(long i) {
+  std::string tmp = bt::itostring(static_cast<unsigned long>(abs(i)));
   if (i < 0)
     tmp.insert(tmp.begin(), '-');
   return tmp;

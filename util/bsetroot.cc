@@ -130,7 +130,8 @@ bsetroot::~bsetroot(void) {
 
   XKillClient(getXDisplay(), AllTemporary);
 
-  std::for_each(img_ctrl, img_ctrl + getNumberOfScreens(), PointerAssassin());
+  std::for_each(img_ctrl, img_ctrl + getNumberOfScreens(),
+                bt::PointerAssassin());
 
   delete [] img_ctrl;
 }

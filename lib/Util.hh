@@ -21,91 +21,97 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifndef _BLACKBOX_UTIL_HH
-#define _BLACKBOX_UTIL_HH
+#ifndef __Util_hh
+#define __Util_hh
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
 #include <string>
 
-class Rect {
-public:
-  inline Rect(void) : _x1(0), _y1(0), _x2(0), _y2(0) { }
-  inline Rect(int __x, int __y, unsigned int __w, unsigned int __h)
-    : _x1(__x), _y1(__y), _x2(__w + __x - 1), _y2(__h + __y - 1) { }
-  inline explicit Rect(const XRectangle& xrect)
-    : _x1(xrect.x), _y1(xrect.y), _x2(xrect.width + xrect.x - 1),
-      _y2(xrect.height + xrect.y - 1) { }
-
-  inline int left(void) const { return _x1; }
-  inline int top(void) const { return _y1; }
-  inline int right(void) const { return _x2; }
-  inline int bottom(void) const { return _y2; }
-
-  inline int x(void) const { return _x1; }
-  inline int y(void) const { return _y1; }
-  void setX(int __x);
-  void setY(int __y);
-  void setPos(int __x, int __y);
-
-  inline unsigned int width(void) const { return _x2 - _x1 + 1; }
-  inline unsigned int height(void) const { return _y2 - _y1 + 1; }
-  void setWidth(unsigned int __w);
-  void setHeight(unsigned int __h);
-  void setSize(unsigned int __w, unsigned int __h);
-
-  void setRect(int __x, int __y, unsigned int __w, unsigned int __h);
-
-  void setCoords(int __l, int __t, int __r, int __b);
-
-  inline bool operator==(const Rect &a)
-  { return _x1 == a._x1 && _y1 == a._y1 && _x2 == a._x2 && _y2 == a._y2; }
-  inline bool operator!=(const Rect &a) { return ! operator==(a); }
-
-  Rect operator|(const Rect &a) const;
-  Rect operator&(const Rect &a) const;
-  inline Rect &operator|=(const Rect &a) { *this = *this | a; return *this; }
-  inline Rect &operator&=(const Rect &a) { *this = *this & a; return *this; }
-
-  inline bool valid(void) const { return _x2 > _x1 && _y2 > _y1; }
-
-  bool intersects(const Rect &a) const;
-
-private:
-  int _x1, _y1, _x2, _y2;
-};
-
-/* XXX: this needs autoconf help */
-const unsigned int BSENTINEL = 65535;
-
-std::string expandTilde(const std::string& s);
-
-void bexec(const std::string& command, const std::string& displaystring);
-
 #ifndef   HAVE_BASENAME
 std::string basename(const std::string& path);
 #endif
 
-std::string textPropertyToString(Display *display, XTextProperty& text_prop);
-
 struct timeval; // forward declare to avoid the header
-timeval normalizeTimeval(const timeval &tm);
 
-struct PointerAssassin {
-  template<typename T>
-  inline void operator()(const T ptr) const {
-    delete ptr;
-  }
-};
 
-std::string itostring(unsigned long i);
-std::string itostring(long i);
+namespace bt {
 
-template <class T>
-T next_it(T x) { return ++x; }
+  class Rect {
+  public:
+    inline Rect(void) : _x1(0), _y1(0), _x2(0), _y2(0) { }
+    inline Rect(int x, int y, unsigned int w, unsigned int h)
+      : _x1(x), _y1(y), _x2(w + x - 1), _y2(h + y - 1) { }
+    inline explicit Rect(const XRectangle& xrect)
+      : _x1(xrect.x), _y1(xrect.y), _x2(xrect.width + xrect.x - 1),
+        _y2(xrect.height + xrect.y - 1) { }
 
-template <class T>
-T prior_it(T x) { return --x; }
+    inline int left(void) const { return _x1; }
+    inline int top(void) const { return _y1; }
+    inline int right(void) const { return _x2; }
+    inline int bottom(void) const { return _y2; }
 
-#endif
+    inline int x(void) const { return _x1; }
+    inline int y(void) const { return _y1; }
+    void setX(int x);
+    void setY(int y);
+    void setPos(int x, int y);
+
+    inline unsigned int width(void) const { return _x2 - _x1 + 1; }
+    inline unsigned int height(void) const { return _y2 - _y1 + 1; }
+    void setWidth(unsigned int w);
+    void setHeight(unsigned int h);
+    void setSize(unsigned int w, unsigned int h);
+
+    void setRect(int x, int y, unsigned int w, unsigned int h);
+
+    void setCoords(int l, int t, int r, int b);
+
+    inline bool operator==(const Rect &a)
+    { return _x1 == a._x1 && _y1 == a._y1 && _x2 == a._x2 && _y2 == a._y2; }
+    inline bool operator!=(const Rect &a) { return ! operator==(a); }
+
+    Rect operator|(const Rect &a) const;
+    Rect operator&(const Rect &a) const;
+    inline Rect &operator|=(const Rect &a) { *this = *this | a; return *this; }
+    inline Rect &operator&=(const Rect &a) { *this = *this & a; return *this; }
+
+    inline bool valid(void) const { return _x2 > _x1 && _y2 > _y1; }
+
+    bool intersects(const Rect &a) const;
+
+  private:
+    int _x1, _y1, _x2, _y2;
+  };
+
+  /* XXX: this needs autoconf help */
+  const unsigned int BSENTINEL = 65535;
+
+  std::string expandTilde(const std::string& s);
+
+  void bexec(const std::string& command, const std::string& displaystring);
+
+  std::string textPropertyToString(Display *display, XTextProperty& text_prop);
+
+  timeval normalizeTimeval(const ::timeval &tm);
+
+  struct PointerAssassin {
+    template<typename T>
+    inline void operator()(const T ptr) const {
+      delete ptr;
+    }
+  };
+
+  std::string itostring(unsigned long i);
+  std::string itostring(long i);
+
+  template <class T>
+  T next_it(T x) { return ++x; }
+
+  template <class T>
+  T prior_it(T x) { return --x; }
+
+} // namespace bt
+
+#endif // __Util_hh

@@ -93,8 +93,8 @@ private:
                        WindowStack::iterator &stack);
 
   void placeWindow(BlackboxWindow *win);
-  bool cascadePlacement(Rect& win, const Rect& availableArea);
-  bool smartPlacement(Rect& win, const Rect& availableArea);
+  bool cascadePlacement(bt::Rect& win, const bt::Rect& availableArea);
+  bool smartPlacement(bt::Rect& win, const bt::Rect& availableArea);
 
 public:
   Workspace(BScreen *scrn, unsigned int i = 0);

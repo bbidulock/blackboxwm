@@ -125,7 +125,7 @@ Blackbox::Blackbox(char **m_argv, char *dpy_name, char *rc)
   ::blackbox = this;
   argv = m_argv;
   if (! rc) rc = "~/.blackboxrc";
-  rc_file = expandTilde(rc);
+  rc_file = bt::expandTilde(rc);
 
   no_focus = False;
 
@@ -178,10 +178,10 @@ Blackbox::Blackbox(char **m_argv, char *dpy_name, char *rc)
 
 
 Blackbox::~Blackbox(void) {
-  std::for_each(screenList.begin(), screenList.end(), PointerAssassin());
+  std::for_each(screenList.begin(), screenList.end(), bt::PointerAssassin());
 
   std::for_each(menuTimestamps.begin(), menuTimestamps.end(),
-                PointerAssassin());
+                bt::PointerAssassin());
 
   delete timer;
   delete _netwm;
@@ -736,7 +736,7 @@ void Blackbox::load_rc(void) {
 
   if (XrmGetResource(database, "session.menuFile", "Session.MenuFile",
                      &value_type, &value)) {
-    resource.menu_file = expandTilde(value.addr);
+    resource.menu_file = bt::expandTilde(value.addr);
   } else {
     resource.menu_file = DEFAULTMENU;
   }
@@ -752,7 +752,7 @@ void Blackbox::load_rc(void) {
 
   if (XrmGetResource(database, "session.styleFile", "Session.StyleFile",
                      &value_type, &value))
-    resource.style_file = expandTilde(value.addr);
+    resource.style_file = bt::expandTilde(value.addr);
   else
     resource.style_file = DEFAULTSTYLE;
 
@@ -1099,7 +1099,7 @@ void Blackbox::real_reconfigure(void) {
   if (old_blackboxrc) XrmDestroyDatabase(old_blackboxrc);
 
   std::for_each(menuTimestamps.begin(), menuTimestamps.end(),
-                PointerAssassin());
+                bt::PointerAssassin());
   menuTimestamps.clear();
 
   gcCache()->purge();
@@ -1137,7 +1137,7 @@ void Blackbox::rereadMenu(void) {
 
 void Blackbox::real_rereadMenu(void) {
   std::for_each(menuTimestamps.begin(), menuTimestamps.end(),
-                PointerAssassin());
+                bt::PointerAssassin());
   menuTimestamps.clear();
 
   std::for_each(screenList.begin(), screenList.end(),

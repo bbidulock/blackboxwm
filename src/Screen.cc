@@ -386,9 +386,9 @@ BScreen::~BScreen(void) {
     XDestroyWindow(blackbox->getXDisplay(), geom_window);
 
   std::for_each(workspacesList.begin(), workspacesList.end(),
-                PointerAssassin());
+                bt::PointerAssassin());
 
-  std::for_each(iconList.begin(), iconList.end(), PointerAssassin());
+  std::for_each(iconList.begin(), iconList.end(), bt::PointerAssassin());
 
   delete rootmenu;
   delete workspacemenu;
@@ -814,7 +814,7 @@ void BScreen::LoadStyle(void) {
 
   if (XrmGetResource(resource.stylerc, "rootCommand", "RootCommand",
                      &value_type, &value)) {
-    bexec(value.addr, displayString());
+    bt::bexec(value.addr, displayString());
   }
 
   XrmDestroyDatabase(resource.stylerc);
@@ -824,7 +824,7 @@ void BScreen::LoadStyle(void) {
 void BScreen::addIcon(BlackboxWindow *w) {
   if (! w) return;
 
-  w->setWorkspace(BSENTINEL);
+  w->setWorkspace(bt::BSENTINEL);
   w->setWindowNumber(iconList.size());
 
   iconList.push_back(w);
@@ -863,7 +863,7 @@ BlackboxWindow *BScreen::getIcon(unsigned int index) {
   if (index < iconList.size()) {
     BlackboxWindowList::iterator it = iconList.begin();
     while (index-- > 0)
-      it = next_it(it);
+      it = bt::next_it(it);
     return *it;
   }
 
@@ -976,8 +976,8 @@ void BScreen::unmanageWindow(BlackboxWindow *w, bool remap) {
 
   if (w->isModal()) w->setModal(False);
 
-  if (w->getWorkspaceNumber() != BSENTINEL &&
-      w->getWindowNumber() != BSENTINEL)
+  if (w->getWorkspaceNumber() != bt::BSENTINEL &&
+      w->getWindowNumber() != bt::BSENTINEL)
     getWorkspace(w->getWorkspaceNumber())->removeWindow(w);
   else if (w->isIconic())
     removeIcon(w);
@@ -1080,7 +1080,7 @@ const std::string BScreen::getNameOfWorkspace(unsigned int id) {
 void BScreen::reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id) {
   if (! w) return;
 
-  if (wkspc_id == BSENTINEL)
+  if (wkspc_id == bt::BSENTINEL)
     wkspc_id = current_workspace->getID();
 
   if (w->getWorkspaceNumber() == wkspc_id)
@@ -1369,7 +1369,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
         continue;
       }
 
-      std::string style = expandTilde(command);
+      std::string style = bt::expandTilde(command);
 
       menu->insert(label, BScreen::SetStyle, style.c_str());
     }
@@ -1395,7 +1395,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
         continue;
       }
 
-      std::string newfile = expandTilde(label);
+      std::string newfile = bt::expandTilde(label);
       FILE *submenufile = fopen(newfile.c_str(), "r");
 
       if (! submenufile) {
@@ -1490,7 +1490,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
       char *directory = ((newmenu) ? command : label);
 
-      std::string stylesdir = expandTilde(directory);
+      std::string stylesdir = bt::expandTilde(directory);
 
       struct stat statbuf;
 
@@ -1674,7 +1674,7 @@ void BScreen::removeStrut(Netwm::Strut *strut) {
 }
 
 
-const Rect& BScreen::availableArea(void) const {
+const bt::Rect& BScreen::availableArea(void) const {
   if (doFullMax())
     return getRect(); // return the full screen
   return usableArea;
@@ -1682,7 +1682,7 @@ const Rect& BScreen::availableArea(void) const {
 
 
 void BScreen::updateAvailableArea(void) {
-  Rect old_area = usableArea;
+  bt::Rect old_area = usableArea;
   usableArea = getRect(); // reset to full screen
 
   /* these values represent offsets from the screen edge

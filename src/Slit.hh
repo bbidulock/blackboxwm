@@ -96,7 +96,7 @@ public:
   struct SlitClient {
     Window window, client_window, icon_window;
 
-    Rect rect;
+    bt::Rect rect;
   };
 
 private:
@@ -118,7 +118,7 @@ private:
     Window window;
 
     int x_hidden, y_hidden;
-    Rect rect;
+    bt::Rect rect;
   } frame;
 
   void updateStrut(void);

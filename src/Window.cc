@@ -116,7 +116,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   client.state.maximized = 0;
   client.state.skip = SKIP_NONE;
   client.state.layer = LAYER_NORMAL;
-  client.workspace = window_number = BSENTINEL;
+  client.workspace = window_number = bt::BSENTINEL;
   client.decorations = Decor_Titlebar | Decor_Border | Decor_Handle |
     Decor_Iconify | Decor_Maximize;
   client.functions = Func_Resize | Func_Move | Func_Iconify | Func_Maximize;
@@ -890,7 +890,7 @@ void BlackboxWindow::getWMName(void) {
 
   if (! blackbox->netwm()->readWMName(client.window, name) || name.empty()) {
     if (XGetWMName(blackbox->getXDisplay(), client.window, &text_prop)) {
-      name = textPropertyToString(blackbox->getXDisplay(), text_prop);
+      name = bt::textPropertyToString(blackbox->getXDisplay(), text_prop);
       XFree((char *) text_prop.value);
     }
   }
@@ -912,7 +912,7 @@ void BlackboxWindow::getWMIconName(void) {
   if (! blackbox->netwm()->readWMIconName(client.window, name) ||
       name.empty()) {
     if (XGetWMIconName(blackbox->getXDisplay(), client.window, &text_prop)) {
-      name = textPropertyToString(blackbox->getXDisplay(), text_prop);
+      name = bt::textPropertyToString(blackbox->getXDisplay(), text_prop);
       XFree((char *) text_prop.value);
     }
   }
@@ -1097,7 +1097,7 @@ void BlackboxWindow::getWMNormalHints(void) {
     availableArea changes max_width/height will be incorrect and lead to odd
     rendering bugs.
   */
-  const Rect& screen_area = screen->getRect();
+  const bt::Rect& screen_area = screen->getRect();
   client.max_width = screen_area.width();
   client.max_height = screen_area.height();
 
@@ -1494,7 +1494,7 @@ void BlackboxWindow::iconify(void) {
    * of them (since they are above their transient_for) for a split
    * second
    */
-  if (client.workspace != BSENTINEL)
+  if (client.workspace != bt::BSENTINEL)
     screen->getWorkspace(client.workspace)->removeWindow(this);
   screen->addIcon(this);
 
@@ -1540,7 +1540,7 @@ void BlackboxWindow::show(void) {
 
 void BlackboxWindow::deiconify(bool reassoc, bool raise) {
   if (client.state.iconic || reassoc)
-    screen->reassociateWindow(this, BSENTINEL);
+    screen->reassociateWindow(this, bt::BSENTINEL);
   else if (client.workspace != screen->getCurrentWorkspaceID())
     return;
 
@@ -1618,7 +1618,7 @@ void BlackboxWindow::maximize(unsigned int button) {
     return;
   }
 
-  const Rect &screen_area = screen->availableArea();
+  const bt::Rect &screen_area = screen->availableArea();
   frame.changing = screen_area;
   client.premax = frame.rect;
 
@@ -1656,7 +1656,7 @@ void BlackboxWindow::remaximize(void) {
   if (client.state.shaded)
     return;
 
-  Rect tmp = client.premax;
+  bt::Rect tmp = client.premax;
   unsigned int button = client.state.maximized;
   client.state.maximized = 0; // trick maximize() into working
   maximize(button);
@@ -1957,7 +1957,7 @@ bool BlackboxWindow::getState(void) {
  * Positions the Rect r according the the client window position and
  * window gravity.
  */
-void BlackboxWindow::applyGravity(Rect &r) {
+void BlackboxWindow::applyGravity(bt::Rect &r) {
   // apply horizontal window gravity
   switch (client.win_gravity) {
   default:
@@ -2020,7 +2020,7 @@ void BlackboxWindow::applyGravity(Rect &r) {
  * Positions the Rect r according to the frame window position and
  * window gravity.
  */
-void BlackboxWindow::restoreGravity(Rect &r) {
+void BlackboxWindow::restoreGravity(bt::Rect &r) {
   // restore horizontal window gravity
   switch (client.win_gravity) {
   default:
@@ -2560,7 +2560,7 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
       grabButtons();
     }
 
-    Rect old_rect = frame.rect;
+    bt::Rect old_rect = frame.rect;
 
     upsize();
 
@@ -2613,7 +2613,7 @@ void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent *cr) {
     client.old_bw = cr->border_width;
 
   if (cr->value_mask & (CWX | CWY | CWWidth | CWHeight)) {
-    Rect req = frame.rect;
+    bt::Rect req = frame.rect;
 
     if (cr->value_mask & (CWX | CWY)) {
       if (cr->value_mask & CWX)
@@ -2852,7 +2852,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
       const int snap_distance = screen->getEdgeSnapThreshold();
 
       if (snap_distance) {
-        Rect srect = screen->availableArea();
+        bt::Rect srect = screen->availableArea();
         // window corners
         const int wleft = dx,
                  wright = dx + frame.rect.width() - 1,

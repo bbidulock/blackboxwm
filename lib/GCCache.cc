@@ -93,8 +93,8 @@ BGCCache::BGCCache(const BaseDisplay * const _display,
 
 
 BGCCache::~BGCCache(void) {
-  std::for_each(contexts, contexts + context_count, PointerAssassin());
-  std::for_each(cache, cache + cache_total_size, PointerAssassin());
+  std::for_each(contexts, contexts + context_count, bt::PointerAssassin());
+  std::for_each(cache, cache + cache_total_size, bt::PointerAssassin());
   delete [] cache;
   delete [] contexts;
 }

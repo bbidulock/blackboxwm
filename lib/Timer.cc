@@ -89,7 +89,7 @@ timeval BTimer::timeRemaining(const timeval &tm) const {
   ret.tv_sec  -= tm.tv_sec;
   ret.tv_usec -= tm.tv_usec;
 
-  return normalizeTimeval(ret);
+  return bt::normalizeTimeval(ret);
 }
 
 
@@ -99,7 +99,7 @@ timeval BTimer::endpoint(void) const {
   ret.tv_sec = _start.tv_sec + _timeout.tv_sec;
   ret.tv_usec = _start.tv_usec + _timeout.tv_usec;
 
-  return normalizeTimeval(ret);
+  return bt::normalizeTimeval(ret);
 }
 
 
