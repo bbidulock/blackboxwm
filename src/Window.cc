@@ -184,13 +184,13 @@ static void update_decorations(WindowDecorationFlags &decorations,
 static void update_window_group(Window window_group,
                                 Blackbox *blackbox,
                                 BlackboxWindow *win) {
-  BWindowGroup *group = blackbox->findWindowGroup(window_group);
-  if (! group) { // no group found, create it!
+  BWindowGroup *group = win->getWindowGroup();
+  if (!group) {
     new BWindowGroup(blackbox, window_group);
-    group = blackbox->findWindowGroup(window_group);
+    group = win->getWindowGroup();
+    assert(group != 0);
   }
-  if (group)
-    group->addWindow(win);
+  group->addWindow(win);
 }
 
 
@@ -440,11 +440,9 @@ BlackboxWindow::~BlackboxWindow(void) {
     delete client.strut;
   }
 
-  if (client.wmhints.window_group) {
-    BWindowGroup *group =
-      blackbox->findWindowGroup(client.wmhints.window_group);
-    if (group) group->removeWindow(this);
-  }
+  BWindowGroup *group = getWindowGroup();
+  if (group)
+    group->removeWindow(this);
 
   // remove ourselves from our transient_for
   if (isTransient()) {
@@ -452,13 +450,6 @@ BlackboxWindow::~BlackboxWindow(void) {
     if (win)
       win->removeTransient(this);
     client.transient_for = 0;
-  }
-
-  if (! client.transientList.empty()) {
-    // reset transient_for for all transients
-    BlackboxWindowList::iterator it, end = client.transientList.end();
-    for (it = client.transientList.begin(); it != end; ++it)
-      (*it)->client.transient_for = 0;
   }
 
   if (frame.title)
@@ -1519,6 +1510,14 @@ BlackboxWindow *BlackboxWindow::getTransientFor(void) const {
 }
 
 
+BWindowGroup *BlackboxWindow::getWindowGroup(void) const {
+  BWindowGroup *group = 0;
+  if (client.wmhints.window_group)
+    group = blackbox->findWindowGroup(client.wmhints.window_group);
+  return group;
+}
+
+
 void BlackboxWindow::setWorkspace(unsigned int new_workspace) {
   client.ewmh.workspace = new_workspace;
   blackbox->netwm().setWMDesktop(client.window, client.ewmh.workspace);
@@ -1539,10 +1538,28 @@ bool BlackboxWindow::setInputFocus(void) {
               frame.rect.width(), frame.rect.height());
   }
 
+  /*
+    pass focus to any modal transients, giving modal group transients
+    higher priority
+  */
+  BWindowGroup *group = getWindowGroup();
+  if (group && !group->transients().empty()) {
+    BlackboxWindowList::const_iterator it = group->transients().begin(),
+                                      end = group->transients().end();
+    for (; it != end; ++it) {
+      BlackboxWindow * const tmp = *it;
+      if (!tmp->isVisible() || !tmp->isModal())
+        continue;
+      if (tmp == this)
+        break;
+      return tmp->setInputFocus();
+    }
+  }
+
   if (!client.transientList.empty()) {
-    // transfer focus to any modal transients
-    BlackboxWindowList::iterator it, end = client.transientList.end();
-    for (it = client.transientList.begin(); it != end; ++it) {
+    BlackboxWindowList::const_iterator it = client.transientList.begin(),
+                                      end = client.transientList.end();
+    for (; it != end; ++it) {
       BlackboxWindow * const tmp = *it;
       if (tmp->isVisible() && tmp->isModal())
         return tmp->setInputFocus();
@@ -2624,11 +2641,9 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
 
   case XA_WM_HINTS: {
     // remove from current window group
-    if (client.wmhints.window_group) {
-      BWindowGroup *group =
-        blackbox->findWindowGroup(client.wmhints.window_group);
-      if (group) group->removeWindow(this);
-    }
+    BWindowGroup *group = getWindowGroup();
+    if (group)
+      group->removeWindow(this);
 
     client.wmhints = readWMHints();
 

@@ -310,6 +310,8 @@ public:
 
   BlackboxWindow *getTransientFor(void) const;
 
+  BWindowGroup *getWindowGroup(void) const;
+
   inline BScreen *getScreen(void) const
   { return screen; }
 
