@@ -807,9 +807,9 @@ BlackboxWindow *Blackbox::searchWindow(Window window) {
   LinkedListIterator<WindowSearch> it(windowSearchList);
 
   for (WindowSearch *tmp = it.current(); tmp; it++, tmp = it.current()) {
-      if (tmp->getWindow() == window) {
-	return tmp->getData();
-      }
+    if (tmp->getWindow() == window) {
+      return tmp->getData();
+    }
   }
 
   return (BlackboxWindow *) 0;

@@ -104,9 +104,10 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
   stackingList->remove(w);
 
   if (w->isFocused()) {
-    if (w->isTransient() && w->getTransientFor() &&
-	w->getTransientFor()->isVisible()) {
-      w->getTransientFor()->setInputFocus();
+    if (w->isTransient()) {
+      BlackboxWindow *bw = w->getTransientFor();
+      if (bw && bw->isVisible())
+        bw->setInputFocus();
     } else if (screen->isSloppyFocus()) {
       screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
     } else {
@@ -169,14 +170,16 @@ void Workspace::removeAll(void) {
 void Workspace::raiseWindow(BlackboxWindow *w) {
   BlackboxWindow *win = (BlackboxWindow *) 0, *bottom = w;
 
-  while (bottom->isTransient() && bottom->getTransientFor())
-    bottom = bottom->getTransientFor();
+  while (bottom->isTransient()) {
+    BlackboxWindow *bw = bottom->getTransientFor();
+    if (! bw) break;
+    bottom = bw;
+  }
 
   int i = 1;
   win = bottom;
   while (win->hasTransient() && win->getTransient()) {
     win = win->getTransient();
-
     i++;
   }
 
@@ -196,7 +199,7 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
 
     if (! win->hasTransient() || ! win->getTransient())
       break;
-
+    fprintf(stderr, "yet another loop\n");
     win = win->getTransient();
   }
 
@@ -209,8 +212,11 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
 void Workspace::lowerWindow(BlackboxWindow *w) {
   BlackboxWindow *win = (BlackboxWindow *) 0, *bottom = w;
 
-  while (bottom->isTransient() && bottom->getTransientFor())
-    bottom = bottom->getTransientFor();
+  while (bottom->isTransient()) {
+    BlackboxWindow *bw = bottom->getTransientFor();
+    if (! bw) break;
+    bottom = bw;
+  }
 
   int i = 1;
   win = bottom;
@@ -233,10 +239,9 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
       wkspc->stackingList->insert(win);
     }
 
-    if (! win->getTransientFor())
-      break;
-
     win = win->getTransientFor();
+    if (! win)
+      break;
   }
 
   XLowerWindow(screen->getBaseDisplay()->getXDisplay(), *nstack);

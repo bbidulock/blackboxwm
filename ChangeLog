@@ -28,6 +28,7 @@ Changes from 0.62.1:
     one shots so I saw little benefit in defaulting to repeating timers.
   - added emacs local variables to each file that prevent the addition of tabs
   - XGetInputFocus() is void yet we were using it in a if() test.
+  - update transient handling, should solve issues with apps like acroread.
 
 Changes from 0.62.0 to 0.62.1:
   - the lock modifier code handles user redefined modifiers better

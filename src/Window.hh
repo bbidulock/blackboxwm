@@ -103,11 +103,11 @@ private:
   } flags;
 
   struct _client {
-    BlackboxWindow *transient_for,  // which window are we a transient for?
-      *transient;                   // which window is our transient?
-
     Window window,                  // the client's window
-      window_group;                 // the client's window group
+      window_group,                 // the client's window group
+      transient_for;                // which window are we a transient for?
+    BlackboxWindow *transient;      // which window is our transient?
+
 
     char *title, *icon_title;
     size_t title_len;               // strlen(title)
@@ -251,7 +251,8 @@ public:
   { return ((client.transient) ? True : False); }
 
   inline BlackboxWindow *getTransient(void) { return client.transient; }
-  inline BlackboxWindow *getTransientFor(void) { return client.transient_for; }
+  inline BlackboxWindow *getTransientFor(void)
+  { return blackbox->searchWindow(client.transient_for); }
 
   inline BScreen *getScreen(void) { return screen; }
 
