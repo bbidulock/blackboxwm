@@ -22,34 +22,33 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifdef    HAVE_CONFIG_H
-#  include "../config.h"
-#endif // HAVE_CONFIG_H
+#include "Application.hh"
+#include "EventHandler.hh"
+#include "Menu.hh"
 
-extern "C" {
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
-#ifdef    SHAPE
-#  include <X11/extensions/shape.h>
-#endif // SHAPE
 
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/wait.h>
-#include <unistd.h>
 #include <assert.h>
-#include <stdio.h>
 #include <fcntl.h>
+#include <signal.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <signal.h>
-}
+#include <unistd.h>
 
-#include "Application.hh"
-#include "EventHandler.hh"
-#include "Menu.hh"
+#ifdef    HAVE_CONFIG_H
+#  include "../config.h"
+#endif // HAVE_CONFIG_H
+
+#ifdef    SHAPE
+#  include <X11/extensions/shape.h>
+#endif // SHAPE
 
 
 static bt::Application *base_app = 0;
@@ -83,7 +82,7 @@ static void signalhandler(int sig) {
   case SIGBUS: case SIGFPE: case SIGILL: case SIGSEGV:
     if (pending_signals & mask) {
       fprintf(stderr, "%s: Recursive signal %d caught. dumping core...\n",
-              base_app ? base_app->applicationName().c_str() : "unknown", sig );
+              base_app ? base_app->applicationName().c_str() : "unknown", sig);
       abort();
     }
   default: break;
@@ -174,7 +173,8 @@ bt::Application::Application(const std::string &app_name, const char *dpy_name,
 }
 
 
-bt::Application::~Application(void) { }
+bt::Application::~Application(void)
+{ ::base_app = 0; }
 
 
 void bt::Application::startup(void) { }
@@ -191,7 +191,8 @@ void bt::Application::eventLoop(void) {
   while (run_state == RUNNING) {
     if (pending_signals) {
       // handle any pending signals
-      for (unsigned int sig = 0; sig < sizeof(pending_signals) * 8; ++sig) {
+      const unsigned int sigmax = sizeof(pending_signals) * 8;
+      for (unsigned int sig = 0; sig < sigmax; ++sig) {
         if (! (pending_signals & (1u << sig))) continue;
         pending_signals &= ~(1u << sig);
 
@@ -342,7 +343,7 @@ void bt::Application::process_event(XEvent *event) {
     }
 
     // if we have compressed some motion events, use the last one
-    if ( i > 0 )
+    if (i > 0)
       event = &realevent;
 
     // strip the lock key modifiers
@@ -429,7 +430,7 @@ void bt::Application::process_event(XEvent *event) {
       ex2 = std::max(realevent.xexpose.x + realevent.xexpose.width - 1, ex2);
       ey2 = std::max(realevent.xexpose.y + realevent.xexpose.height - 1, ey2);
     }
-    if ( i > 0 )
+    if (i > 0)
       event = &realevent;
 
     // use the merged area
@@ -453,7 +454,7 @@ void bt::Application::process_event(XEvent *event) {
     }
 
     // if we have compressed some configure notify events, use the last one
-    if ( i > 0 )
+    if (i > 0)
       event = &realevent;
 
     handler->configureNotifyEvent(&event->xconfigure);

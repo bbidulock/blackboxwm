@@ -25,13 +25,11 @@
 #ifndef __Application_hh
 #define __Application_hh
 
-#include <map>
-#include <string>
-
 #include "Display.hh"
 #include "Timer.hh"
 #include "Util.hh"
 
+#include <map>
 
 namespace bt {
   // forward declaration
@@ -63,6 +61,9 @@ namespace bt {
     typedef std::deque<Menu*> MenuStack;
     MenuStack menus;
     bool menu_grab;
+    void openMenu(Menu *menu);
+    void closeMenu(Menu *menu);
+    friend class Menu; // give Menu access to the above 2 functions
 
     unsigned int MaskList[8];
     size_t MaskListLength;
@@ -142,23 +143,6 @@ namespace bt {
       Removes all EventHandlers for Window {window}.
     */
     void removeEventHandler(Window window);
-
-    /*
-      Opens the specified menu as a popup, grabbing the pointer and
-      keyboard if not already grabbed.
-
-      The Menu class calls this function automatically.  You should
-      never need to call this function.
-    */
-    void openMenu(Menu *menu);
-    /*
-      Closes the specified menu, ungrabbing the pointer and keyboard if
-      it is the last popup menu.
-
-      The Menu class calls this function automatically.  You should
-      never need to call this function.
-    */
-    void closeMenu(Menu *menu);
   };
 
 } // namespace bt
