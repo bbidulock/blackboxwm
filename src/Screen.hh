@@ -306,7 +306,6 @@ public:
 
   unsigned int addWorkspace(void);
   unsigned int removeLastWorkspace(void);
-  void removeWorkspaceNames(void);
   void addWorkspaceName(const std::string& name);
   void setWorkspaceName(unsigned int workspace, const std::string& name);
   const std::string getNameOfWorkspace(unsigned int id);

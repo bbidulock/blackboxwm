@@ -138,7 +138,7 @@ public:
   void insertWindowGroup(Window window, BWindowGroup *data);
   void removeWindowGroup(Window window);
 
-  inline bt::Netwm* netwm(void) { return _netwm; }
+  inline const bt::Netwm& netwm(void) { return *_netwm; }
 
   inline BlackboxWindow *getFocusedWindow(void) { return focused_window; }
 

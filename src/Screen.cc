@@ -241,7 +241,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   current_workspace_id = current_workspace->getID();
   workspacemenu->setItemChecked(current_workspace->getID(), true);
 
-  removeWorkspaceNames(); // do not need them any longer
+  workspaceNames.clear();
 
   toolbar = new Toolbar(this);
 
@@ -251,78 +251,76 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
   raiseWindows((WindowStack*) 0);
 
-  changeWorkspaceID(0);
-
-  const bt::Netwm* const netwm = blackbox->netwm();
+  const bt::Netwm& netwm = blackbox->netwm();
   /*
     netwm requires the window manager to set a property on a window it creates
     which is the id of that window.  We must also set an equivalent property
     on the root window.  Then we must set _NET_WM_NAME on the child window
     to be the name of the wm.
   */
-  netwm->setSupportingWMCheck(screen_info.getRootWindow(), geom_window);
-  netwm->setSupportingWMCheck(geom_window, geom_window);
-  netwm->setWMName(geom_window, "Blackbox");
+  netwm.setSupportingWMCheck(screen_info.getRootWindow(), geom_window);
+  netwm.setSupportingWMCheck(geom_window, geom_window);
+  netwm.setWMName(geom_window, "Blackbox");
 
-  netwm->setNumberOfDesktops(screen_info.getRootWindow(),
+  netwm.setNumberOfDesktops(screen_info.getRootWindow(),
                              workspacesList.size());
-  netwm->setDesktopGeometry(screen_info.getRootWindow(),
+  netwm.setDesktopGeometry(screen_info.getRootWindow(),
                             screen_info.getWidth(), screen_info.getHeight());
-  netwm->setActiveWindow(screen_info.getRootWindow(), None);
+  netwm.setActiveWindow(screen_info.getRootWindow(), None);
   updateWorkareaHint();
   updateDesktopNamesHint();
 
   Atom supported[46] = {
-    netwm->clientList(),
-    netwm->clientListStacking(),
-    netwm->numberOfDesktops(),
-    netwm->desktopGeometry(),
-    netwm->currentDesktop(),
-    netwm->desktopNames(),
-    netwm->activeWindow(),
-    netwm->workarea(),
-    netwm->closeWindow(),
-    netwm->moveresizeWindow(),
-    netwm->wmName(),
-    netwm->wmVisibleName(),
-    netwm->wmIconName(),
-    netwm->wmVisibleIconName(),
-    netwm->wmDesktop(),
-    netwm->wmWindowType(),
-    netwm->wmWindowTypeDesktop(),
-    netwm->wmWindowTypeDock(),
-    netwm->wmWindowTypeToolbar(),
-    netwm->wmWindowTypeMenu(),
-    netwm->wmWindowTypeUtility(),
-    netwm->wmWindowTypeSplash(),
-    netwm->wmWindowTypeDialog(),
-    netwm->wmWindowTypeNormal(),
-    netwm->wmState(),
-    netwm->wmStateModal(),
+    netwm.clientList(),
+    netwm.clientListStacking(),
+    netwm.numberOfDesktops(),
+    netwm.desktopGeometry(),
+    netwm.currentDesktop(),
+    netwm.desktopNames(),
+    netwm.activeWindow(),
+    netwm.workarea(),
+    netwm.closeWindow(),
+    netwm.moveresizeWindow(),
+    netwm.wmName(),
+    netwm.wmVisibleName(),
+    netwm.wmIconName(),
+    netwm.wmVisibleIconName(),
+    netwm.wmDesktop(),
+    netwm.wmWindowType(),
+    netwm.wmWindowTypeDesktop(),
+    netwm.wmWindowTypeDock(),
+    netwm.wmWindowTypeToolbar(),
+    netwm.wmWindowTypeMenu(),
+    netwm.wmWindowTypeUtility(),
+    netwm.wmWindowTypeSplash(),
+    netwm.wmWindowTypeDialog(),
+    netwm.wmWindowTypeNormal(),
+    netwm.wmState(),
+    netwm.wmStateModal(),
     /* sticky would go here, but we do not need it */
-    netwm->wmStateMaximizedVert(),
-    netwm->wmStateMaximizedHorz(),
-    netwm->wmStateShaded(),
-    netwm->wmStateSkipTaskbar(),
-    netwm->wmStateSkipPager(),
-    netwm->wmStateHidden(),
-    netwm->wmStateFullscreen(),
-    netwm->wmStateAbove(),
-    netwm->wmStateBelow(),
-    netwm->wmAllowedActions(),
-    netwm->wmActionMove(),
-    netwm->wmActionResize(),
-    netwm->wmActionMinimize(),
-    netwm->wmActionShade(),
-    netwm->wmActionMaximizeHorz(),
-    netwm->wmActionMaximizeVert(),
-    netwm->wmActionFullscreen(),
-    netwm->wmActionChangeDesktop(),
-    netwm->wmActionClose(),
-    netwm->wmStrut()
+    netwm.wmStateMaximizedVert(),
+    netwm.wmStateMaximizedHorz(),
+    netwm.wmStateShaded(),
+    netwm.wmStateSkipTaskbar(),
+    netwm.wmStateSkipPager(),
+    netwm.wmStateHidden(),
+    netwm.wmStateFullscreen(),
+    netwm.wmStateAbove(),
+    netwm.wmStateBelow(),
+    netwm.wmAllowedActions(),
+    netwm.wmActionMove(),
+    netwm.wmActionResize(),
+    netwm.wmActionMinimize(),
+    netwm.wmActionShade(),
+    netwm.wmActionMaximizeHorz(),
+    netwm.wmActionMaximizeVert(),
+    netwm.wmActionFullscreen(),
+    netwm.wmActionChangeDesktop(),
+    netwm.wmActionClose(),
+    netwm.wmStrut()
   };
 
-  netwm->setSupported(screen_info.getRootWindow(), supported, 46);
+  netwm.setSupported(screen_info.getRootWindow(), supported, 46);
 
   unsigned int i, j, nchild;
   Window r, p, *children;
@@ -398,27 +396,22 @@ BScreen::~BScreen(void) {
   delete image_control;
   delete timer;
 
-  blackbox->netwm()->removeProperty(screen_info.getRootWindow(),
-                                    blackbox->netwm()->supportingWMCheck());
-  blackbox->netwm()->removeProperty(screen_info.getRootWindow(),
-                                    blackbox->netwm()->supported());
-  blackbox->netwm()->removeProperty(screen_info.getRootWindow(),
-                                    blackbox->netwm()->numberOfDesktops());
-  blackbox->netwm()->removeProperty(screen_info.getRootWindow(),
-                                    blackbox->netwm()->desktopGeometry());
-  blackbox->netwm()->removeProperty(screen_info.getRootWindow(),
-                                    blackbox->netwm()->currentDesktop());
-  blackbox->netwm()->removeProperty(screen_info.getRootWindow(),
-                                    blackbox->netwm()->activeWindow());
-  blackbox->netwm()->removeProperty(screen_info.getRootWindow(),
-                                    blackbox->netwm()->workarea());
+  blackbox->netwm().removeProperty(screen_info.getRootWindow(),
+                                   blackbox->netwm().supportingWMCheck());
+  blackbox->netwm().removeProperty(screen_info.getRootWindow(),
+                                    blackbox->netwm().supported());
+  blackbox->netwm().removeProperty(screen_info.getRootWindow(),
+                                    blackbox->netwm().numberOfDesktops());
+  blackbox->netwm().removeProperty(screen_info.getRootWindow(),
+                                    blackbox->netwm().desktopGeometry());
+  blackbox->netwm().removeProperty(screen_info.getRootWindow(),
+                                    blackbox->netwm().currentDesktop());
+  blackbox->netwm().removeProperty(screen_info.getRootWindow(),
+                                    blackbox->netwm().activeWindow());
+  blackbox->netwm().removeProperty(screen_info.getRootWindow(),
+                                    blackbox->netwm().workarea());
 
   XFreeGC(blackbox->getXDisplay(), opGC);
-}
-
-
-void BScreen::removeWorkspaceNames(void) {
-  workspaceNames.clear();
 }
 
 
@@ -822,7 +815,7 @@ unsigned int BScreen::addWorkspace(void) {
 
   toolbar->reconfigure();
 
-  blackbox->netwm()->setNumberOfDesktops(screen_info.getRootWindow(),
+  blackbox->netwm().setNumberOfDesktops(screen_info.getRootWindow(),
                                          workspacesList.size());
   updateDesktopNamesHint();
 
@@ -848,7 +841,7 @@ unsigned int BScreen::removeLastWorkspace(void) {
 
   toolbar->reconfigure();
 
-  blackbox->netwm()->setNumberOfDesktops(screen_info.getRootWindow(),
+  blackbox->netwm().setNumberOfDesktops(screen_info.getRootWindow(),
                                          workspacesList.size());
   updateDesktopNamesHint();
 
@@ -871,7 +864,7 @@ void BScreen::changeWorkspaceID(unsigned int id) {
   workspacemenu->setItemChecked(current_workspace->getID(), true);
   toolbar->redrawWorkspaceLabel(True);
 
-  blackbox->netwm()->setCurrentDesktop(screen_info.getRootWindow(),
+  blackbox->netwm().setCurrentDesktop(screen_info.getRootWindow(),
                                        current_workspace->getID());
 }
 
@@ -1653,7 +1646,7 @@ const std::string& BScreen::getWorkspaceName(unsigned int index) const {
 void BScreen::clientMessageEvent(const XClientMessageEvent * const event) {
   if (event->format != 32) return;
 
-  if (event->message_type == blackbox->netwm()->numberOfDesktops()) {
+  if (event->message_type == blackbox->netwm().numberOfDesktops()) {
     unsigned int number = event->data.l[0];
     unsigned int wkspc_count = getWorkspaceCount();
     if (number > wkspc_count) {
@@ -1663,9 +1656,9 @@ void BScreen::clientMessageEvent(const XClientMessageEvent * const event) {
       for (; number != wkspc_count; ++number)
         removeLastWorkspace();
     }
-  } else if (event->message_type == blackbox->netwm()->desktopNames()) {
+  } else if (event->message_type == blackbox->netwm().desktopNames()) {
     getDesktopNames();
-  } else if (event->message_type == blackbox->netwm()->currentDesktop()) {
+  } else if (event->message_type == blackbox->netwm().currentDesktop()) {
     unsigned int workspace = event->data.l[0];
     if (workspace < getWorkspaceCount() &&
         workspace != getCurrentWorkspaceID())
@@ -1940,7 +1933,7 @@ void BScreen::updateWorkareaHint(void) const {
     tmp += 4;
   }
 
-  blackbox->netwm()->setWorkarea(screen_info.getRootWindow(),
+  blackbox->netwm().setWorkarea(screen_info.getRootWindow(),
                                  workarea, wkspc_count);
 
   delete [] workarea;
@@ -1955,14 +1948,14 @@ void BScreen::updateDesktopNamesHint(void) const {
   for (; it != end; ++it)
     names += (*it)->getName() + '\0';
 
-  blackbox->netwm()->setDesktopNames(screen_info.getRootWindow(), names);
+  blackbox->netwm().setDesktopNames(screen_info.getRootWindow(), names);
 }
 
 
 void BScreen::updateClientListHint(void) const {
   if (windowList.empty()) {
-    blackbox->netwm()->removeProperty(screen_info.getRootWindow(),
-                                      blackbox->netwm()->clientList());
+    blackbox->netwm().removeProperty(screen_info.getRootWindow(),
+                                      blackbox->netwm().clientList());
     return;
   }
 
@@ -1971,7 +1964,7 @@ void BScreen::updateClientListHint(void) const {
   std::transform(windowList.begin(), windowList.end(), clientList.begin(),
                  std::mem_fun(&BlackboxWindow::getClientWindow));
 
-  blackbox->netwm()->setClientList(screen_info.getRootWindow(), clientList);
+  blackbox->netwm().setClientList(screen_info.getRootWindow(), clientList);
 }
 
 
@@ -1984,18 +1977,18 @@ void BScreen::updateClientListStackingHint(void) const {
     (*it)->updateClientListStacking(stack);
 
   if (stack.empty()) {
-    blackbox->netwm()->removeProperty(screen_info.getRootWindow(),
-                                      blackbox->netwm()->clientListStacking());
+    blackbox->netwm().removeProperty(screen_info.getRootWindow(),
+                                      blackbox->netwm().clientListStacking());
     return;
   }
 
-  blackbox->netwm()->setClientListStacking(screen_info.getRootWindow(), stack);
+  blackbox->netwm().setClientListStacking(screen_info.getRootWindow(), stack);
 }
 
 
 void BScreen::getDesktopNames(void) {
   bt::Netwm::UTF8StringList names;
-  if(! blackbox->netwm()->readDesktopNames(screen_info.getRootWindow(), names))
+  if(! blackbox->netwm().readDesktopNames(screen_info.getRootWindow(), names))
     return;
 
   bt::Netwm::UTF8StringList::const_iterator it = names.begin(),

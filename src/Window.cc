@@ -163,25 +163,25 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   if (client.window_type == None) {
     if (isTransient())
-      client.window_type = blackbox->netwm()->wmWindowTypeDialog();
+      client.window_type = blackbox->netwm().wmWindowTypeDialog();
     else
-      client.window_type = blackbox->netwm()->wmWindowTypeNormal();
+      client.window_type = blackbox->netwm().wmWindowTypeNormal();
   }
 
   // adjust the window decorations based on transience, window type
   // and window sizes
-  if (client.window_type == blackbox->netwm()->wmWindowTypeDialog()) {
+  if (client.window_type == blackbox->netwm().wmWindowTypeDialog()) {
     client.decorations &= ~(Decor_Maximize | Decor_Handle);
     client.functions &= ~Func_Maximize;
-  } else if (client.window_type == blackbox->netwm()->wmWindowTypeSplash()) {
+  } else if (client.window_type == blackbox->netwm().wmWindowTypeSplash()) {
     client.decorations = client.functions = 0l;
-  } else if (client.window_type == blackbox->netwm()->wmWindowTypeUtility()) {
+  } else if (client.window_type == blackbox->netwm().wmWindowTypeUtility()) {
     client.decorations &= ~(Decor_Maximize | Decor_Iconify);
     client.functions   &= ~(Func_Maximize | Func_Iconify);
-  } else if (client.window_type == blackbox->netwm()->wmWindowTypeDock()) {
+  } else if (client.window_type == blackbox->netwm().wmWindowTypeDock()) {
     client.decorations = 0l;
     client.functions = 0l;
-  } else if (client.window_type == blackbox->netwm()->wmWindowTypeDesktop()) {
+  } else if (client.window_type == blackbox->netwm().wmWindowTypeDesktop()) {
     client.decorations = client.functions = 0l;
   } else if (isTransient()) {
     client.decorations &= ~(Decor_Maximize | Decor_Handle);
@@ -213,7 +213,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   upsize();
 
   if (blackbox->isStartup() || isTransient() ||
-      client.window_type == blackbox->netwm()->wmWindowTypeDesktop() ||
+      client.window_type == blackbox->netwm().wmWindowTypeDesktop() ||
       client.normal_hint_flags & (PPosition|USPosition)) {
     applyGravity(frame.rect);
   }
@@ -873,7 +873,7 @@ void BlackboxWindow::getWMName(void) {
 
   std::string name;
 
-  if (! blackbox->netwm()->readWMName(client.window, name) || name.empty()) {
+  if (! blackbox->netwm().readWMName(client.window, name) || name.empty()) {
     if (XGetWMName(blackbox->getXDisplay(), client.window, &text_prop)) {
       name = bt::textPropertyToString(blackbox->getXDisplay(), text_prop);
       XFree((char *) text_prop.value);
@@ -886,11 +886,11 @@ void BlackboxWindow::getWMName(void) {
     // need to ellide titles that are longer than the titlebar
     client.title = bt::ellideText(name, 60, "...");
     if (client.title != name)
-      blackbox->netwm()->setWMVisibleName(client.window, client.title);
+      blackbox->netwm().setWMVisibleName(client.window, client.title);
 #endif
   } else {
     client.title = bt::i18n(WindowSet, WindowUnnamed, "Unnamed");
-    blackbox->netwm()->setWMVisibleName(client.window, client.title);
+    blackbox->netwm().setWMVisibleName(client.window, client.title);
   }
 }
 
@@ -900,7 +900,7 @@ void BlackboxWindow::getWMIconName(void) {
 
   std::string name;
 
-  if (! blackbox->netwm()->readWMIconName(client.window, name) ||
+  if (! blackbox->netwm().readWMIconName(client.window, name) ||
       name.empty()) {
     if (XGetWMIconName(blackbox->getXDisplay(), client.window, &text_prop)) {
       name = bt::textPropertyToString(blackbox->getXDisplay(), text_prop);
@@ -912,7 +912,7 @@ void BlackboxWindow::getWMIconName(void) {
     client.icon_title = name;
   } else {
     client.icon_title = client.title;
-    blackbox->netwm()->setWMVisibleIconName(client.window, client.icon_title);
+    blackbox->netwm().setWMVisibleIconName(client.window, client.icon_title);
   }
 }
 
@@ -921,70 +921,70 @@ void BlackboxWindow::getNetwmHints(void) {
   // wm_name and wm_icon_name are read separately
 
   bool ret;
-  const bt::Netwm* const netwm = blackbox->netwm();
+  const bt::Netwm& netwm = blackbox->netwm();
 
   bt::Netwm::AtomList atoms;
-  ret = netwm->readWMWindowType(client.window, atoms);
+  ret = netwm.readWMWindowType(client.window, atoms);
   if (ret) {
     bt::Netwm::AtomList::iterator it = atoms.begin(), end = atoms.end();
     for (; it != end; ++it) {
-      if (netwm->isSupportedWMWindowType(*it)) {
+      if (netwm.isSupportedWMWindowType(*it)) {
         client.window_type = *it;
         break;
       }
     }
-    if (client.window_type == netwm->wmWindowTypeDesktop()) {
+    if (client.window_type == netwm.wmWindowTypeDesktop()) {
       // make me omnipresent
       client.state.layer = LAYER_DESKTOP;
     }
   }
 
   atoms.clear();
-  ret = netwm->readWMState(client.window, atoms);
+  ret = netwm.readWMState(client.window, atoms);
   if (ret) {
     bt::Netwm::AtomList::iterator it = atoms.begin(), end = atoms.end();
     for (; it != end; ++it) {
       Atom state = *it;
-      if (state == netwm->wmStateModal()) {
+      if (state == netwm.wmStateModal()) {
         if (isTransient())
           client.state.modal = True;
-      } else if (state == netwm->wmStateMaximizedVert()) {
+      } else if (state == netwm.wmStateMaximizedVert()) {
         if (client.state.maximized == 0)
           client.state.maximized = 2;
         else if (client.state.maximized == 3)
           client.state.maximized = 1;
-      } else if (state == netwm->wmStateMaximizedHorz()) {
+      } else if (state == netwm.wmStateMaximizedHorz()) {
         if (client.state.maximized == 0)
           client.state.maximized = 3;
         else if (client.state.maximized == 2)
           client.state.maximized = 1;
-      } else if (state == netwm->wmStateShaded()) {
+      } else if (state == netwm.wmStateShaded()) {
         client.state.shaded = True;
-      } else if (state == netwm->wmStateSkipTaskbar()) {
+      } else if (state == netwm.wmStateSkipTaskbar()) {
         if (client.state.skip == SKIP_NONE)
           client.state.skip = SKIP_TASKBAR;
         else if (client.state.skip == SKIP_PAGER)
           client.state.skip = SKIP_BOTH;
-      } else if (state == netwm->wmStateSkipPager()) {
+      } else if (state == netwm.wmStateSkipPager()) {
         if (client.state.skip == SKIP_NONE)
           client.state.skip = SKIP_PAGER;
         else if (client.state.skip == SKIP_TASKBAR)
           client.state.skip = SKIP_BOTH;
-      } else if (state == netwm->wmStateHidden()) {
+      } else if (state == netwm.wmStateHidden()) {
         client.state.iconic = True;
-      } else if (state == netwm->wmStateFullscreen()) {
+      } else if (state == netwm.wmStateFullscreen()) {
         client.state.fullscreen = True;
         client.state.layer = LAYER_FULLSCREEN;
-      } else if (state == netwm->wmStateAbove()) {
+      } else if (state == netwm.wmStateAbove()) {
         client.state.layer = LAYER_ABOVE;
-      } else if (state == netwm->wmStateBelow()) {
+      } else if (state == netwm.wmStateBelow()) {
         client.state.layer = LAYER_BELOW;
       }
     }
   }
 
   unsigned int desktop;
-  ret = netwm->readWMDesktop(client.window, desktop);
+  ret = netwm.readWMDesktop(client.window, desktop);
   if (ret) {
     if (desktop != 0xFFFFFFFF)
       client.workspace = desktop;
@@ -1829,94 +1829,94 @@ void BlackboxWindow::setState(unsigned long new_state, bool closing) {
                   blackbox->getWMStateAtom(), blackbox->getWMStateAtom(), 32,
                   PropModeReplace, (unsigned char *) state, 2);
 
-  const bt::Netwm* const netwm = blackbox->netwm();
+  const bt::Netwm& netwm = blackbox->netwm();
 
   if (closing) {
-    netwm->removeProperty(client.window, netwm->wmDesktop());
-    netwm->removeProperty(client.window, netwm->wmState());
-    netwm->removeProperty(client.window, netwm->wmAllowedActions());
-    netwm->removeProperty(client.window, netwm->wmVisibleName());
-    netwm->removeProperty(client.window, netwm->wmVisibleIconName());
+    netwm.removeProperty(client.window, netwm.wmDesktop());
+    netwm.removeProperty(client.window, netwm.wmState());
+    netwm.removeProperty(client.window, netwm.wmAllowedActions());
+    netwm.removeProperty(client.window, netwm.wmVisibleName());
+    netwm.removeProperty(client.window, netwm.wmVisibleIconName());
     return;
   }
 
   if (client.state.iconic)
-    netwm->removeProperty(client.window, netwm->wmDesktop());
+    netwm.removeProperty(client.window, netwm.wmDesktop());
   else
-    blackbox->netwm()->setWMDesktop(client.window, client.workspace);
+    blackbox->netwm().setWMDesktop(client.window, client.workspace);
 
   bt::Netwm::AtomList atoms;
   if (client.state.modal)
-    atoms.push_back(netwm->wmStateModal());
+    atoms.push_back(netwm.wmStateModal());
 
   if (client.state.maximized == 0) {
     /* do nothing */
   } else if (client.state.maximized == 1) {
-    atoms.push_back(netwm->wmStateMaximizedVert());
-    atoms.push_back(netwm->wmStateMaximizedHorz());
+    atoms.push_back(netwm.wmStateMaximizedVert());
+    atoms.push_back(netwm.wmStateMaximizedHorz());
   } else if (client.state.maximized == 2) {
-    atoms.push_back(netwm->wmStateMaximizedVert());
+    atoms.push_back(netwm.wmStateMaximizedVert());
   }  else if (client.state.maximized == 3) {
-    atoms.push_back(netwm->wmStateMaximizedHorz());
+    atoms.push_back(netwm.wmStateMaximizedHorz());
   }
 
   if (client.state.shaded)
-    atoms.push_back(netwm->wmStateShaded());
+    atoms.push_back(netwm.wmStateShaded());
 
   if (client.state.skip == SKIP_NONE) {
     /* do nothing */
   } else if (client.state.skip == SKIP_BOTH) {
-    atoms.push_back(netwm->wmStateSkipTaskbar());
-    atoms.push_back(netwm->wmStateSkipPager());
+    atoms.push_back(netwm.wmStateSkipTaskbar());
+    atoms.push_back(netwm.wmStateSkipPager());
   } else if (client.state.skip == SKIP_TASKBAR) {
-    atoms.push_back(netwm->wmStateSkipTaskbar());
+    atoms.push_back(netwm.wmStateSkipTaskbar());
   }  else if (client.state.skip == SKIP_PAGER) {
-    atoms.push_back(netwm->wmStateSkipPager());
+    atoms.push_back(netwm.wmStateSkipPager());
   }
 
   if (client.state.iconic)
-    atoms.push_back(netwm->wmStateHidden());
+    atoms.push_back(netwm.wmStateHidden());
 
   if (client.state.layer == LAYER_NORMAL)
     /* do nothing */;
   else if (client.state.layer == LAYER_FULLSCREEN)
-    atoms.push_back(netwm->wmStateFullscreen());
+    atoms.push_back(netwm.wmStateFullscreen());
   else if (client.state.layer == LAYER_ABOVE)
-    atoms.push_back(netwm->wmStateAbove());
+    atoms.push_back(netwm.wmStateAbove());
   else if (client.state.layer == LAYER_BELOW)
-    atoms.push_back(netwm->wmStateBelow());
+    atoms.push_back(netwm.wmStateBelow());
 
   if (atoms.empty())
-    netwm->removeProperty(client.window, netwm->wmState());
+    netwm.removeProperty(client.window, netwm.wmState());
   else
-    netwm->setWMState(client.window, atoms);
+    netwm.setWMState(client.window, atoms);
 
   atoms.clear();
 
   if (! client.state.iconic) {
-    atoms.push_back(netwm->wmActionChangeDesktop());
+    atoms.push_back(netwm.wmActionChangeDesktop());
 
     if (client.functions & Func_Move)
-      atoms.push_back(netwm->wmActionMove());
+      atoms.push_back(netwm.wmActionMove());
 
     if (client.functions & Func_Iconify)
-      atoms.push_back(netwm->wmActionMinimize());
+      atoms.push_back(netwm.wmActionMinimize());
 
     if (client.functions & Func_Resize) {
-      atoms.push_back(netwm->wmActionResize());
-      atoms.push_back(netwm->wmActionMaximizeHorz());
-      atoms.push_back(netwm->wmActionMaximizeVert());
-      atoms.push_back(netwm->wmActionFullscreen());
+      atoms.push_back(netwm.wmActionResize());
+      atoms.push_back(netwm.wmActionMaximizeHorz());
+      atoms.push_back(netwm.wmActionMaximizeVert());
+      atoms.push_back(netwm.wmActionFullscreen());
     }
 
     if (client.decorations & Decor_Titlebar)
-      atoms.push_back(netwm->wmActionShade());
+      atoms.push_back(netwm.wmActionShade());
   }
 
   if (client.functions & Func_Close)
-    atoms.push_back(netwm->wmActionClose());
+    atoms.push_back(netwm.wmActionClose());
 
-  netwm->setWMAllowedActions(client.window, atoms);
+  netwm.setWMAllowedActions(client.window, atoms);
 }
 
 
@@ -2219,14 +2219,14 @@ void BlackboxWindow::redrawCloseButton(bool pressed) const {
 void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
   if (ce->format != 32) return;
 
-  const bt::Netwm* const netwm = blackbox->netwm();
+  const bt::Netwm& netwm = blackbox->netwm();
 
   if (ce->message_type == blackbox->getWMChangeStateAtom()) {
     if (ce->data.l[0] == IconicState)
       iconify();
     if (ce->data.l[0] == NormalState)
       deiconify();
-  } else if (ce->message_type == netwm->activeWindow()) {
+  } else if (ce->message_type == netwm.activeWindow()) {
     if (client.state.iconic)
       deiconify(False, False);
 
@@ -2237,9 +2237,9 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
       screen->raiseWindow(this);
       installColormap(True);
     }
-  } else if (ce->message_type == netwm->closeWindow()) {
+  } else if (ce->message_type == netwm.closeWindow()) {
     close();
-  } else if (ce->message_type == netwm->moveresizeWindow()) {
+  } else if (ce->message_type == netwm.moveresizeWindow()) {
     XConfigureRequestEvent request;
     request.window = ce->window;
     request.x = ce->data.l[1];
@@ -2255,13 +2255,13 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
     configureRequestEvent(&request);
 
     client.win_gravity = old_gravity;
-  } else if (ce->message_type == netwm->wmDesktop()) {
+  } else if (ce->message_type == netwm.wmDesktop()) {
     const unsigned int desktop = ce->data.l[0];
     if (desktop != 0xFFFFFFFF && desktop != client.workspace) {
       withdraw();
       screen->reassociateWindow(this, desktop);
     }
-  } else if (ce->message_type == netwm->wmState()) {
+  } else if (ce->message_type == netwm.wmState()) {
     Atom action = ce->data.l[0],
       first = ce->data.l[1],
       second = ce->data.l[2];
@@ -2269,97 +2269,97 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
     int max_horz = 0, max_vert = 0,
       skip_taskbar = 0, skip_pager = 0;
 
-    if (first == netwm->wmStateModal() || second == netwm->wmStateModal()) {
-      if ((action == netwm->wmStateAdd() ||
-           (action == netwm->wmStateToggle() && ! client.state.modal)) &&
+    if (first == netwm.wmStateModal() || second == netwm.wmStateModal()) {
+      if ((action == netwm.wmStateAdd() ||
+           (action == netwm.wmStateToggle() && ! client.state.modal)) &&
           isTransient())
         client.state.modal = True;
       else
         client.state.modal = False;
     }
-    if (first == netwm->wmStateMaximizedHorz() ||
-        second == netwm->wmStateMaximizedHorz()) {
-      if (action == netwm->wmStateAdd() ||
-          (action == netwm->wmStateToggle() &&
+    if (first == netwm.wmStateMaximizedHorz() ||
+        second == netwm.wmStateMaximizedHorz()) {
+      if (action == netwm.wmStateAdd() ||
+          (action == netwm.wmStateToggle() &&
            ! (client.state.maximized == 1 || client.state.maximized == 3)))
         max_horz = 1;
       else
         max_horz = -1;
     }
-    if (first == netwm->wmStateMaximizedVert() ||
-        second == netwm->wmStateMaximizedVert()) {
-      if (action == netwm->wmStateAdd() ||
-          (action == netwm->wmStateToggle() &&
+    if (first == netwm.wmStateMaximizedVert() ||
+        second == netwm.wmStateMaximizedVert()) {
+      if (action == netwm.wmStateAdd() ||
+          (action == netwm.wmStateToggle() &&
            ! (client.state.maximized == 1 || client.state.maximized == 2)))
         max_vert = 1;
       else
         max_vert = -1;
     }
-    if (first == netwm->wmStateShaded() ||
-        second == netwm->wmStateShaded()) {
-      if ((action == netwm->wmStateRemove() && client.state.shaded) ||
-          action == netwm->wmStateToggle() ||
-          (action == netwm->wmStateAdd() && ! client.state.shaded))
+    if (first == netwm.wmStateShaded() ||
+        second == netwm.wmStateShaded()) {
+      if ((action == netwm.wmStateRemove() && client.state.shaded) ||
+          action == netwm.wmStateToggle() ||
+          (action == netwm.wmStateAdd() && ! client.state.shaded))
         shade();
     }
-    if (first == netwm->wmStateSkipTaskbar() ||
-        second == netwm->wmStateSkipTaskbar()) {
-      if (action == netwm->wmStateAdd() ||
-          (action == netwm->wmStateToggle() &&
+    if (first == netwm.wmStateSkipTaskbar() ||
+        second == netwm.wmStateSkipTaskbar()) {
+      if (action == netwm.wmStateAdd() ||
+          (action == netwm.wmStateToggle() &&
            ! (client.state.skip == SKIP_TASKBAR ||
               client.state.skip == SKIP_BOTH)))
         skip_taskbar = 1;
       else
         skip_taskbar = -1;
     }
-    if (first == netwm->wmStateSkipPager() ||
-        second == netwm->wmStateSkipPager()) {
-      if (action == netwm->wmStateAdd() ||
-          (action == netwm->wmStateToggle() &&
+    if (first == netwm.wmStateSkipPager() ||
+        second == netwm.wmStateSkipPager()) {
+      if (action == netwm.wmStateAdd() ||
+          (action == netwm.wmStateToggle() &&
            ! (client.state.skip == SKIP_PAGER ||
               client.state.skip == SKIP_BOTH)))
         skip_pager = 1;
       else
         skip_pager = -1;
     }
-    if (first == netwm->wmStateHidden() ||
-               second == netwm->wmStateHidden()) {
+    if (first == netwm.wmStateHidden() ||
+               second == netwm.wmStateHidden()) {
       /* ignore this message */
     }
-    if (first == netwm->wmStateFullscreen() ||
-        second == netwm->wmStateFullscreen()) {
-      if (action == netwm->wmStateAdd() ||
-          (action == netwm->wmStateToggle() &&
+    if (first == netwm.wmStateFullscreen() ||
+        second == netwm.wmStateFullscreen()) {
+      if (action == netwm.wmStateAdd() ||
+          (action == netwm.wmStateToggle() &&
            ! client.state.fullscreen)) {
         client.state.fullscreen = True;
         client.state.layer = LAYER_FULLSCREEN;
         reconfigure();
-      } else if (action == netwm->wmStateToggle() ||
-                 action == netwm->wmStateRemove()) {
+      } else if (action == netwm.wmStateToggle() ||
+                 action == netwm.wmStateRemove()) {
         client.state.fullscreen = False;
         client.state.layer = LAYER_NORMAL;
         reconfigure();
       }
     }
-    if (first == netwm->wmStateAbove() ||
-        second == netwm->wmStateAbove()) {
-      if (action == netwm->wmStateAdd() ||
-          (action == netwm->wmStateToggle() &&
+    if (first == netwm.wmStateAbove() ||
+        second == netwm.wmStateAbove()) {
+      if (action == netwm.wmStateAdd() ||
+          (action == netwm.wmStateToggle() &&
            client.state.layer != LAYER_ABOVE)) {
         client.state.layer = LAYER_ABOVE;
-      } else if (action == netwm->wmStateToggle() ||
-                 action == netwm->wmStateRemove()) {
+      } else if (action == netwm.wmStateToggle() ||
+                 action == netwm.wmStateRemove()) {
         client.state.layer = LAYER_NORMAL;
       }
     }
-    if (first == netwm->wmStateBelow() ||
-        second == netwm->wmStateBelow()) {
-      if (action == netwm->wmStateAdd() ||
-          (action == netwm->wmStateToggle() &&
+    if (first == netwm.wmStateBelow() ||
+        second == netwm.wmStateBelow()) {
+      if (action == netwm.wmStateAdd() ||
+          (action == netwm.wmStateToggle() &&
            client.state.layer != LAYER_BELOW)) {
         client.state.layer = LAYER_BELOW;
-      } else if (action == netwm->wmStateToggle() ||
-                 action == netwm->wmStateRemove()) {
+      } else if (action == netwm.wmStateToggle() ||
+                 action == netwm.wmStateRemove()) {
         client.state.layer = LAYER_NORMAL;
       }
     }
@@ -2389,13 +2389,13 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
     }
 
     setState(client.current_state);
-  } else if (ce->message_type == netwm->wmStrut()) {
+  } else if (ce->message_type == netwm.wmStrut()) {
     if (! client.strut) {
       client.strut = new bt::Netwm::Strut;
       screen->addStrut(client.strut);
     }
 
-    netwm->readWMStrut(client.window, client.strut);
+    netwm.readWMStrut(client.window, client.strut);
     if (client.strut->left || client.strut->right ||
         client.strut->top || client.strut->bottom) {
       screen->updateStrut();
