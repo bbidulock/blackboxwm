@@ -25,70 +25,63 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
+#include "Rootmenu.hh"
+
 extern "C" {
-#include <stdio.h>
-
-#ifdef HAVE_STDLIB_H
-#  include <stdlib.h>
-#endif // HAVE_STDLIB_H
-
-#ifdef HAVE_STRING_H
-#  include <string.h>
-#endif // HAVE_STRING_H
-
-#ifdef    HAVE_SYS_PARAM_H
-#  include <sys/param.h>
-#endif // HAVE_SYS_PARAM_H
+#include <assert.h>
 }
 
-#include "blackbox.hh"
-#include "Rootmenu.hh"
 #include "Screen.hh"
 #include "Util.hh"
+#include "blackbox.hh"
 
 
-Rootmenu::Rootmenu(BScreen *scrn) : Basemenu(scrn) { }
+
+Rootmenu::Rootmenu(bt::Application &app, unsigned int screen, BScreen *bscreen)
+  : bt::Menu(app, screen), _bscreen(bscreen) { }
 
 
-void Rootmenu::itemSelected(int button, unsigned int index) {
-  if (button != 1)
-    return;
+void Rootmenu::insertFunction(const std::string &label,
+                              unsigned int function,
+                              const std::string &exec,
+                              unsigned int id,
+                              unsigned int index) {
+  unsigned int x = insertItem(label, id, index);
+  _funcmap.insert(FunctionMap::value_type(x, _function(function, exec)));
+}
 
-  BasemenuItem *item = find(index);
 
-  if (!item->function())
-    return;
+void Rootmenu::itemClicked(unsigned int id, unsigned int button) {
+  if (button != 1) return;
 
-  if (! (getScreen()->getRootmenu()->isTorn() || isTorn()) &&
-      item->function() != BScreen::Reconfigure &&
-      item->function() != BScreen::SetStyle)
-    hide();
+  FunctionMap::const_iterator it = _funcmap.find(id);
+  if (it == _funcmap.end()) return;
 
-  switch (item->function()) {
+  switch (it->second.func) {
   case BScreen::Execute:
-    if (item->exec())
-      bt::bexec(item->exec(), getScreen()->displayString());
+    if (! it->second.string.empty())
+      bt::bexec(it->second.string, _bscreen->displayString());
     break;
 
   case BScreen::Restart:
-    getScreen()->getBlackbox()->restart();
+    _bscreen->getBlackbox()->restart();
     break;
 
   case BScreen::RestartOther:
-    if (item->exec())
-      getScreen()->getBlackbox()->restart(item->exec());
+    if (! it->second.string.empty())
+      _bscreen->getBlackbox()->restart(it->second.string);
     break;
 
   case BScreen::Exit:
-    getScreen()->getBlackbox()->shutdown();
+    _bscreen->getBlackbox()->shutdown();
     break;
 
   case BScreen::SetStyle:
-    if (item->exec())
-      getScreen()->getBlackbox()->saveStyleFilename(item->exec());
+    if (! it->second.string.empty())
+      _bscreen->getBlackbox()->saveStyleFilename(it->second.string);
 
   case BScreen::Reconfigure:
-    getScreen()->getBlackbox()->reconfigure();
+    _bscreen->getBlackbox()->reconfigure();
     return;
-  }
+  } // switch
 }

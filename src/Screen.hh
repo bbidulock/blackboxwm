@@ -49,12 +49,14 @@ typedef std::vector<Window> WindowStack;
 #include "Configmenu.hh"
 #include "Iconmenu.hh"
 #include "Netwm.hh"
-#include "Rootmenu.hh"
 #include "Timer.hh"
 #include "Workspace.hh"
 #include "Workspacemenu.hh"
 #include "blackbox.hh"
-class Slit; // forward reference
+
+// forward declaration
+class Rootmenu;
+class Slit;
 
 enum TextJustify { LeftJustify = 1, RightJustify, CenterJustify };
 
@@ -114,9 +116,6 @@ private:
   Configmenu *configmenu;
   Iconmenu *iconmenu;
   Rootmenu *rootmenu;
-
-  typedef std::list<Rootmenu*> RootmenuList;
-  RootmenuList rootmenuList;
 
   BlackboxWindowList iconList, windowList;
 
