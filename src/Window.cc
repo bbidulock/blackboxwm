@@ -1938,8 +1938,7 @@ void BlackboxWindow::setState(unsigned long new_state) {
 
   const bt::Netwm& netwm = blackbox->netwm();
 
-  netwm.setWMDesktop(client.window, workspace());
-
+  // set _NET_WM_STATE
   bt::Netwm::AtomList atoms;
   if (isModal())
     atoms.push_back(netwm.wmStateModal());
@@ -1974,6 +1973,7 @@ void BlackboxWindow::setState(unsigned long new_state) {
   else
     netwm.setWMState(client.window, atoms);
 
+  // set _NET_WM_ALLOWED_ACTIONS
   atoms.clear();
 
   if (! client.state.iconic) {
