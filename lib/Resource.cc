@@ -45,21 +45,30 @@ bt::Resource::~Resource(void)
 { XrmDestroyDatabase(db); }
 
 
-void bt::Resource::load(const std::string &filename) {
+void bt::Resource::load(const std::string &filename)
+{
   XrmDestroyDatabase(db);
-  db = XrmGetFileDatabase(expandTilde(filename).c_str());
+  if (!filename.empty())
+    db = XrmGetFileDatabase(expandTilde(filename).c_str());
+  else
+    db = NULL;
 }
 
 
-void bt::Resource::save(const std::string &filename) {
-  if (!valid())
+void bt::Resource::save(const std::string &filename)
+{
+  if (!valid() || filename.empty())
     return;
   XrmPutFileDatabase(db, expandTilde(filename).c_str());
 }
 
 
 void bt::Resource::merge(const std::string &filename)
-{ XrmCombineFileDatabase(expandTilde(filename).c_str(), &db, true); }
+{
+  if (filename.empty())
+    return;
+  XrmCombineFileDatabase(expandTilde(filename).c_str(), &db, true);
+}
 
 
 std::string bt::Resource::read(const char* name, const char* classname,
