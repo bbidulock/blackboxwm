@@ -1061,7 +1061,8 @@ void BlackboxWindow::getWMHints(void) {
   if (wmhint->flags & StateHint)
     client.current_state = wmhint->initial_state;
 
-  if (wmhint->flags & WindowGroupHint) {
+  if (wmhint->flags & WindowGroupHint &&
+      wmhint->window_group != screen->getRootWindow()) {
     client.window_group = wmhint->window_group;
 
     // add window to the appropriate group
