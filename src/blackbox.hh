@@ -68,8 +68,6 @@ private:
 
   BlackboxWindow *focused_window;
   bt::Timer *timer;
-  bool no_focus, reconfigure_wait;
-  Time last_time;
   char **argv;
 
   Atom xa_wm_colormap_windows, xa_wm_protocols, xa_wm_state,
@@ -114,13 +112,10 @@ public:
 
   const bt::Netwm& netwm(void) { return *_netwm; }
 
-  BlackboxWindow *getFocusedWindow(void) { return focused_window; }
+  void setFocusedWindow(BlackboxWindow *win);
+  inline BlackboxWindow *getFocusedWindow(void)
+  { return focused_window; }
 
-  const Time &getLastTime(void) const { return last_time; }
-
-  void setNoFocus(bool f) { no_focus = f; }
-
-  void setFocusedWindow(BlackboxWindow *w);
   void shutdown(void);
   void saveMenuFilename(const std::string& filename);
   void restart(const std::string &prog = std::string());

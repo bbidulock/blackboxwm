@@ -53,8 +53,6 @@ Blackbox::Blackbox(char **m_argv, const char *dpy_name,
 
   argv = m_argv;
 
-  no_focus = False;
-
   active_screen = 0;
   focused_window = (BlackboxWindow *) 0;
   _netwm = (bt::Netwm*) 0;
@@ -95,8 +93,6 @@ Blackbox::Blackbox(char **m_argv, const char *dpy_name,
 
   XSynchronize(XDisplay(), False);
   XSync(XDisplay(), False);
-
-  reconfigure_wait = False;
 
   timer = new bt::Timer(this, this);
   timer->setTimeout(0l);
