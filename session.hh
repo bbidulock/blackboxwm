@@ -221,8 +221,8 @@ public:
   const BColor &menuItemColor(void) const { return resource.color.imenu; }
   const BColor &menuItemToColor(void) const
     { return resource.color.imenu_to; }
-  unsigned long framePixel(void) { return resource.color.frame.pixel; }
-  unsigned long iconPixel(void) { return resource.color.icon.pixel; }
+  const BColor &focusTextColor(void) const { return resource.color.ftext; }
+  const BColor &unfocusTextColor(void) const { return resource.color.utext; }
   XColor *Colors8bpp(void) { return colors_8bpp; }
 
   void arrangeIcons(void);

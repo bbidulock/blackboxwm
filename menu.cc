@@ -73,7 +73,7 @@ BlackboxMenu::BlackboxMenu(BlackboxSession *ctrl)
     CWOverrideRedirect|CWCursor|CWEventMask;
   XSetWindowAttributes attrib;
   attrib.background_pixmap = None;
-  attrib.background_pixel = attrib.border_pixel = session->framePixel();
+  attrib.background_pixel = attrib.border_pixel = session->frameColor().pixel;
   attrib.override_redirect = True;
   attrib.cursor = session->sessionCursor();
   attrib.event_mask = StructureNotifyMask|SubstructureNotifyMask|
@@ -89,7 +89,7 @@ BlackboxMenu::BlackboxMenu(BlackboxSession *ctrl)
   if (show_title) {
     debug->msg("creating menu title\n");
     attrib_mask = CWBackPixmap|CWBackPixel|CWBorderPixel|CWCursor|CWEventMask;
-    attrib.background_pixel = session->framePixel();
+    attrib.background_pixel = session->frameColor().pixel;
     attrib.event_mask |= EnterWindowMask|LeaveWindowMask;
     menu.title =
       XCreateWindow(display, menu.frame, 0, 0, menu.title_w, menu.height, 0,
@@ -523,7 +523,7 @@ Window BlackboxMenu::createItemWindow(void) {
   
   XSetWindowAttributes attrib;
   attrib.background_pixmap = None;
-  attrib.background_pixel = session->framePixel();
+  attrib.background_pixel = session->frameColor().pixel;
   attrib.border_pixel = None;
   attrib.override_redirect = True;
   attrib.cursor = session->sessionCursor();

@@ -82,7 +82,7 @@ private:
   } client;
 
   struct frame {
-    GC dGC, textGC;
+    GC ftextGC, utextGC;
     Pixmap utitle, ftitle, uhandle, fhandle, rhandle, button, pbutton;
     Window window, title, handle, close_button, iconify_button,
       maximize_button, resize_handle;

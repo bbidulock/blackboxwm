@@ -232,13 +232,10 @@ BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window parent,
   createDecorations();
   associateClientWindow();
   positionButtons();
-  //  XUngrabKey(display, AnyKey, AnyModifier, frame.window);
   XGrabButton(display,  1, ControlMask, frame.window, True, ButtonPressMask,
 	      GrabModeAsync, GrabModeSync, frame.window, None);
   XGrabButton(display,  3, ControlMask, frame.window, True, ButtonPressMask,
 	      GrabModeAsync, GrabModeSync, frame.window, None);
-  //  XGrabKey(display, XK_F1, ControlMask|Mod1Mask, frame.window, True, GrabModeAsync,
-  //	   GrabModeAsync);
   
   XLowerWindow(display, client.window);
   XMapSubwindows(display, frame.title);
@@ -338,8 +335,8 @@ BlackboxWindow::~BlackboxWindow(void) {
   if (wm_client_machine) XFree(wm_client_machine);
   if (wm_command) XFree(wm_command);
 
-  XFreeGC(display, frame.dGC);
-  XFreeGC(display, frame.textGC);
+  XFreeGC(display, frame.ftextGC);
+  XFreeGC(display, frame.utextGC);
 
   XUngrabServer(display);
 
@@ -1218,8 +1215,8 @@ Window BlackboxWindow::createToplevelWindow(int x, int y, unsigned int width,
     CWOverrideRedirect |CWCursor|CWEventMask; 
   
   attrib_create.background_pixmap = None;
-  attrib_create.background_pixel = session->framePixel();
-  attrib_create.border_pixel = session->framePixel();
+  attrib_create.background_pixel = session->frameColor().pixel;
+  attrib_create.border_pixel = session->frameColor().pixel;
   attrib_create.override_redirect = True;
   attrib_create.cursor = session->sessionCursor();
   attrib_create.event_mask = SubstructureRedirectMask|ButtonPressMask|ButtonReleaseMask|
@@ -1337,20 +1334,22 @@ void BlackboxWindow::createDecorations(void) {
 				     session->buttonToColor());
 
   XGCValues gcv;
-  gcv.foreground = session->framePixel();
-  frame.dGC = XCreateGC(display, frame.window, GCForeground|GCBackground,
-			&gcv);
-
-  gcv.foreground = session->getColor("white");
+  gcv.foreground = session->unfocusTextColor().pixel;
   gcv.font = session->titleFont()->fid;
-  frame.textGC = XCreateGC(display, frame.window, GCForeground|GCBackground|
-			   GCFont, &gcv);
+  frame.utextGC = XCreateGC(display, frame.window, GCForeground|GCBackground|
+			    GCFont, &gcv);
+
+  gcv.foreground = session->focusTextColor().pixel;
+  gcv.font = session->titleFont()->fid;
+  frame.ftextGC = XCreateGC(display, frame.window, GCForeground|GCBackground|
+			    GCFont, &gcv);
 }
 
 
 void BlackboxWindow::drawTitleWin(int /* ax */, int /* ay */, int /* aw */,
 				  int /* ah */) {  
-  XDrawString(display, frame.title, frame.textGC, frame.button_w + 4,
+  XDrawString(display, frame.title,
+	      ((focused) ? frame.ftextGC : frame.utextGC), frame.button_w + 4,
 	      session->titleFont()->ascent + 4, client.title,
 	      strlen(client.title));
 }
@@ -1380,7 +1379,8 @@ void BlackboxWindow::drawIconifyButton(Bool pressed) {
   pts[2].x = 0; pts[2].y = -1;
   pts[3].x = -5; pts[3].y = 0;
   
-  XDrawLines(display, frame.iconify_button, frame.dGC, pts, 4,
+  XDrawLines(display, frame.iconify_button,
+	     ((focused) ? frame.ftextGC : frame.utextGC), pts, 4,
 	     CoordModePrevious);
 }
 
@@ -1405,7 +1405,8 @@ void BlackboxWindow::drawMaximizeButton(Bool pressed) {
   pts[5].x = 5; pts[5].y = 0;
   pts[6].x = 0; pts[6].y = -4;
 
-  XDrawLines(display, frame.maximize_button, frame.dGC, pts, 7,
+  XDrawLines(display, frame.maximize_button,
+	     ((focused) ? frame.ftextGC : frame.utextGC), pts, 7,
 	     CoordModePrevious);
 }
 
@@ -1440,7 +1441,8 @@ void BlackboxWindow::drawCloseButton(Bool pressed) {
   pts[16].x = 3; pts[16].y = 0;
   pts[17].x = 1; pts[17].y = 0;
 
-  XDrawPoints(display, frame.close_button, frame.dGC, pts, 18,
+  XDrawPoints(display, frame.close_button,
+	      ((focused) ? frame.ftextGC : frame.utextGC), pts, 18,
 	      CoordModePrevious);
 }
 

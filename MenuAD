@@ -1,4 +1,4 @@
-begin (Blackbox 0.10.0)
+begin (Blackbox 0.10.1)
   "xterm" (xterm -ls)
   "XEmacs" (xemacs)
   "Restart" (Restart)

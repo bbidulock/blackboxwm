@@ -265,8 +265,8 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
     CWOverrideRedirect |CWCursor|CWEventMask; 
   
   attrib_create.background_pixmap = None;
-  attrib_create.background_pixel = session->framePixel();
-  attrib_create.border_pixel = session->framePixel();
+  attrib_create.background_pixel = session->frameColor().pixel;
+  attrib_create.border_pixel = session->frameColor().pixel;
   attrib_create.override_redirect = True;
   attrib_create.cursor = session->sessionCursor();
   attrib_create.event_mask = NoEventMask;
@@ -315,12 +315,12 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
 		session->frameColor());
 
   frame.button = bimage.renderImage(session->frameTexture(), 0,
-				    session->frameColor(),
-				    session->frameToColor());
+				    session->focusColor(),
+				    session->focusToColor());
 
   frame.pbutton = bimage.renderInvertedImage(session->frameTexture(), 0,
-					     session->frameColor(),
-					     session->frameToColor());
+					     session->focusColor(),
+					     session->focusToColor());
 
   XSetWindowBackgroundPixmap(display, frame.workspace_button, frame.button);
   
@@ -386,14 +386,16 @@ Workspace *WorkspaceManager::workspace(int w) {
 
 
 void WorkspaceManager::changeWorkspaceID(int id) {
-  current->hideMenu();
-  current->hideAll();
-  current = workspace(id);
-  sprintf(frame.title, "Workspace %d", id);
-  XClearWindow(display, frame.workspace_button);
-  XDrawString(display, frame.workspace_button, buttonGC, 4, 2 +
-	      session->titleFont()->ascent, frame.title, strlen(frame.title));
-  current->showAll();
+  if (id != current->workspaceID()) {
+    current->hideMenu();
+    current->hideAll();
+    current = workspace(id);
+    sprintf(frame.title, "Workspace %d", id);
+    XClearWindow(display, frame.workspace_button);
+    XDrawString(display, frame.workspace_button, buttonGC, 4, 2 +
+                session->titleFont()->ascent, frame.title, strlen(frame.title));
+    current->showAll();
+  }
 }
 
 

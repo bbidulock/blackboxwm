@@ -61,7 +61,7 @@ BlackboxIcon::BlackboxIcon(BlackboxSession *ctrl, Window c) {
     CWCursor|CWEventMask; 
   XSetWindowAttributes attrib;
   attrib.background_pixmap = None;
-  attrib.background_pixel = session->framePixel();
+  attrib.background_pixel = session->frameColor().pixel;
   attrib.border_pixel = 0l;
   attrib.cursor = session->sessionCursor();
   attrib.event_mask = StructureNotifyMask|SubstructureNotifyMask|
@@ -83,7 +83,7 @@ BlackboxIcon::BlackboxIcon(BlackboxSession *ctrl, Window c) {
   icon.subwindow = None;
 
   attrib.event_mask |= EnterWindowMask|LeaveWindowMask;
-  attrib.background_pixel = session->framePixel();
+  attrib.background_pixel = session->frameColor().pixel;
   icon.subwindow =
     XCreateWindow(display, icon.window, 0, 0, 92, icon.height, 0,
 		  session->Depth(), InputOutput, session->visual(),

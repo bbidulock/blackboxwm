@@ -156,6 +156,7 @@ BlackboxSession::~BlackboxSession() {
   // XFreeFont(display, resource.font.menu);
   XFreeGC(display, opGC);
   
+  delete [] resource.menuFile;
   delete rootmenu;
   delete ws_manager;
   debug->msg("closing X connection\n");
@@ -465,9 +466,13 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
     if (e->xbutton.state == ControlMask && e->xbutton.button == 1) {
       if (ws_manager->currentWorkspaceID() > 0)
 	ws_manager->changeWorkspaceID(ws_manager->currentWorkspaceID() - 1);
+      else
+	ws_manager->changeWorkspaceID(ws_manager->count() - 1);
     } else if (e->xbutton.state == ControlMask && e->xbutton.button == 3) {
       if (ws_manager->currentWorkspaceID() != ws_manager->count() - 1)
 	ws_manager->changeWorkspaceID(ws_manager->currentWorkspaceID() + 1);
+      else
+	ws_manager->changeWorkspaceID(0);
     } else {
       switch (e->xbutton.button) {
       case 1: b1Pressed = True; break;
@@ -833,14 +838,88 @@ void BlackboxSession::LoadDefaults(void) {
   // blackbox defaults...
   //  
 
+  getColor("black");
+
+  resource.color.frame.r =
+    resource.color.frame.g =
+    resource.color.frame.b =
+    resource.color.frame.pixel = 0;
+
+  resource.color.frame_to.r =
+    resource.color.frame_to.g =
+    resource.color.frame_to.b =
+    resource.color.frame_to.pixel = 0;
+  
+  resource.color.focus.r =
+    resource.color.focus.g =
+    resource.color.focus.b =
+    resource.color.focus.pixel = 0;
+
+  resource.color.focus_to.r =
+    resource.color.focus_to.g =
+    resource.color.focus_to.b =
+    resource.color.focus_to.pixel = 0;
+
+  resource.color.unfocus.r =
+    resource.color.unfocus.g =
+    resource.color.unfocus.b =
+    resource.color.unfocus.pixel = 0;
+
+  resource.color.unfocus_to.r =
+    resource.color.unfocus_to.g =
+    resource.color.unfocus_to.b =
+    resource.color.unfocus_to.pixel = 0;
+
+  resource.color.menu.r =
+    resource.color.menu.g =
+    resource.color.menu.b =
+    resource.color.menu.pixel = 0;
+
+  resource.color.menu_to.pixel = getColor("darkgrey",
+					  &resource.color.menu_to.r,
+					  &resource.color.menu_to.g,
+					  &resource.color.menu_to.b);
+  
+  resource.color.imenu.r =
+    resource.color.imenu.g =
+    resource.color.imenu.b =
+    resource.color.imenu.pixel = 0;
+  
+  resource.color.imenu_to.pixel = getColor("darkgrey", 
+					   &resource.color.imenu_to.r,
+					   &resource.color.imenu_to.g,
+					   &resource.color.imenu_to.b);
+    
+  resource.color.button.r =
+    resource.color.button.g =
+    resource.color.button.b =
+    resource.color.button.pixel = 0;
+
+  resource.color.button_to.r =
+    resource.color.button_to.g =
+    resource.color.button_to.b =
+    resource.color.button_to.pixel = 0;
+
+  resource.color.icon.r =
+    resource.color.icon.g =
+    resource.color.icon.b =
+    resource.color.icon.pixel = 0;
+
+  resource.color.ftext.pixel = getColor("white", &resource.color.ftext.r,
+					&resource.color.ftext.g,
+					&resource.color.ftext.b);
+
+  resource.color.utext.pixel = getColor("darkgrey", &resource.color.utext.r,
+					&resource.color.utext.g,
+					&resource.color.utext.b);
+
   debug->msg("initializing Xrm\n");
   XrmInitialize();
   
   debug->msg("retrieving databases\n");
 #define BLACKBOXAD XAPPLOADDIR##"/BlackboxAD"
   XrmDatabase default_database = XrmGetDatabase(display),
-    blackbox_database = XrmGetFileDatabase(BLACKBOXAD),
-    resource_database = NULL;
+    blackbox_database = NULL, resource_database = NULL;
   
   if (XResourceManagerString(display) != NULL) {
     debug->msg("loading resource manager database\n");
@@ -850,7 +929,8 @@ void BlackboxSession::LoadDefaults(void) {
   if (resource_database != NULL) {
     debug->msg("combining resource manager database\n");
     XrmCombineDatabase(resource_database, &default_database, True);
-  }
+  } else
+    blackbox_database = XrmGetFileDatabase(BLACKBOXAD);
 
   if (blackbox_database == NULL && default_database == NULL)
     return;
@@ -1061,12 +1141,29 @@ void BlackboxSession::LoadDefaults(void) {
 	       &resource.color.imenu_to.g, &resource.color.imenu_to.b);
   
   if (XrmGetResource(blackbox_database,
+		     "blackbox.session.focusTextColor",
+		     "Blackbox.Session.FocusTextColor", &value_type, &value))
+    resource.color.ftext.pixel =
+      getColor(value.addr, &resource.color.ftext.r, &resource.color.ftext.g,
+	       &resource.color.ftext.b);
+
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.session.unfocusTextColor",
+		     "Blackbox.Session.UnfocusTextColor", &value_type, &value))
+    resource.color.utext.pixel =
+      getColor(value.addr, &resource.color.utext.r, &resource.color.utext.g,
+	       &resource.color.utext.b);
+
+  if (XrmGetResource(blackbox_database,
 		     "blackbox.session.menuFile",
-		     "Blackbox.Session.MenuFile", &value_type, &value))
-    resource.menuFile = value.addr;
-  else
+		     "Blackbox.Session.MenuFile", &value_type, &value)) {
+    resource.menuFile = new char[strlen(value.addr) + 1];
+    strncpy(resource.menuFile, value.addr, strlen(value.addr));
+  } else {
 #define BLACKBOXMENUAD XLIBDIR##"/Blackbox/MenuAD"
-    resource.menuFile = BLACKBOXMENUAD;
+    resource.menuFile = new char[strlen(BLACKBOXMENUAD) + 1];
+    strncpy(resource.menuFile, BLACKBOXMENUAD, strlen(BLACKBOXMENUAD));
+  }
   
   if (XrmGetResource(blackbox_database,
 		     "blackbox.session.workspaces",
