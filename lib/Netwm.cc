@@ -292,15 +292,28 @@ bool bt::Netwm::readCurrentDesktop(Window target, unsigned int* number) const {
 
 
 void bt::Netwm::setDesktopNames(Window target,
-                                const std::string& names) const {
+                                const std::vector<bt::ustring> &names) const {
+  if (!hasUnicode())
+    return; // cannot convert UTF-32 to UTF-8
+
+  std::string s;
+  std::vector<bt::ustring>::const_iterator it = names.begin();
+  const std::vector<bt::ustring>::const_iterator end = names.end();
+  for (; it != end; ++it)
+    s += toUtf8(*it) + '\0';
+
   XChangeProperty(display, target, net_desktop_names, utf8_string,
                   8, PropModeReplace,
-                  reinterpret_cast<const unsigned char *>(names.c_str()),
-                  names.length());
+                  reinterpret_cast<const unsigned char *>(s.c_str()),
+                  s.length());
 }
 
 
-bool bt::Netwm::readDesktopNames(Window target, UTF8StringList& names) const {
+bool bt::Netwm::readDesktopNames(Window target,
+                                 std::vector<bt::ustring> &names) const {
+  if (!hasUnicode())
+    return false; // cannot convert UTF-8 to UTF-32
+
   unsigned char* data = 0;
   unsigned long nitems;
   if (getListProperty(target, utf8_string, net_desktop_names,
@@ -308,7 +321,7 @@ bool bt::Netwm::readDesktopNames(Window target, UTF8StringList& names) const {
     unsigned char* tmp = data;
     for (unsigned int i = 0; i < nitems; ++i) {
       if (data[i] == '\0') {
-        names.push_back(std::string(tmp, data + i));
+        names.push_back(toUtf32(std::string(tmp, data + i)));
         tmp = data + i + 1;
       }
     }
@@ -367,20 +380,27 @@ bool bt::Netwm::readVirtualRoots(Window target, WindowList &windows) const {
 
 // application properties
 
-void bt::Netwm::setWMName(Window target, const std::string &name) const {
+void bt::Netwm::setWMName(Window target, const bt::ustring &name) const {
+  if (!hasUnicode())
+    return; // cannot convert UTF-32 to UTF-8
+
+  const std::string utf8 = toUtf8(name);
   XChangeProperty(display, target, net_wm_name, utf8_string,
                   8, PropModeReplace,
-                  reinterpret_cast<const unsigned char *>(name.c_str()),
-                  name.length());
+                  reinterpret_cast<const unsigned char *>(utf8.c_str()),
+                  utf8.length());
 }
 
 
-bool bt::Netwm::readWMName(Window target, std::string& name) const {
+bool bt::Netwm::readWMName(Window target, bt::ustring &name) const {
+  if (!hasUnicode())
+    return false; // cannot convert UTF-8 to UTF-32
+
   unsigned char* data = 0;
   unsigned long nitems;
   if (getListProperty(target, utf8_string, net_wm_name,
                       &data, &nitems) && nitems > 0) {
-    name = reinterpret_cast<char*>(data);
+    name = toUtf32(reinterpret_cast<char*>(data));
     XFree(data);
   }
 
@@ -389,20 +409,27 @@ bool bt::Netwm::readWMName(Window target, std::string& name) const {
 
 
 void bt::Netwm::setWMVisibleName(Window target,
-                                 const std::string &name) const {
+                                 const bt::ustring &name) const {
+  if (!hasUnicode())
+    return; // cannot convert UTF-32 to UTF-8
+
+  const std::string utf8 = toUtf8(name);
   XChangeProperty(display, target, net_wm_visible_name, utf8_string,
                   8, PropModeReplace,
-                  reinterpret_cast<const unsigned char *>(name.c_str()),
-                  name.length());
+                  reinterpret_cast<const unsigned char *>(utf8.c_str()),
+                  utf8.length());
 }
 
 
-bool bt::Netwm::readWMIconName(Window target, std::string& name) const {
+bool bt::Netwm::readWMIconName(Window target, bt::ustring &name) const {
+  if (!hasUnicode())
+    return false; // cannot convert UTF-8 to UTF-32
+
   unsigned char* data = 0;
   unsigned long nitems;
   if (getListProperty(target, utf8_string, net_wm_icon_name,
                       &data, &nitems) && nitems > 0) {
-    name = reinterpret_cast<char*>(data);
+    name = toUtf32(reinterpret_cast<char*>(data));
     XFree(data);
   }
 
@@ -411,11 +438,15 @@ bool bt::Netwm::readWMIconName(Window target, std::string& name) const {
 
 
 void bt::Netwm::setWMVisibleIconName(Window target,
-                                     const std::string &name) const {
+                                     const bt::ustring &name) const {
+  if (!hasUnicode())
+    return; // cannot convert UTF-32 to UTF-8
+
+  const std::string utf8 = toUtf8(name);
   XChangeProperty(display, target, net_wm_visible_icon_name, utf8_string,
                   8, PropModeReplace,
-                  reinterpret_cast<const unsigned char *>(name.c_str()),
-                  name.length());
+                  reinterpret_cast<const unsigned char *>(utf8.c_str()),
+                  utf8.length());
 }
 
 

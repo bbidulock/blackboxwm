@@ -25,6 +25,7 @@
 #ifndef __Netwm_hh
 #define __Netwm_hh
 
+#include "Unicode.hh"
 #include "Util.hh"
 
 #include <string>
@@ -38,7 +39,6 @@ namespace bt {
 
     typedef std::vector<Atom> AtomList;
     typedef std::vector<Window> WindowList;
-    typedef std::vector<std::string> UTF8StringList;
 
     struct Strut {
       unsigned int left, right, top, bottom;
@@ -96,8 +96,10 @@ namespace bt {
     bool readDesktopViewport(Window target, int *x, int *y) const;
     void setCurrentDesktop(Window target, unsigned int number) const;
     bool readCurrentDesktop(Window target, unsigned int* number) const;
-    void setDesktopNames(Window target, const std::string& names) const;
-    bool readDesktopNames(Window target, UTF8StringList& names) const;
+    void setDesktopNames(Window target,
+                         const std::vector<bt::ustring> &names) const;
+    bool readDesktopNames(Window target,
+                          std::vector<bt::ustring> &names) const;
     void setActiveWindow(Window target, Window data) const;
     void setWorkarea(Window target, unsigned long workareas[],
                      unsigned int count) const;
@@ -180,11 +182,11 @@ namespace bt {
     // inline Atom wmHandledIcons(void) const { return net_wm_handled_icons; }
     inline Atom wmUserTime(void) const { return net_wm_user_time; }
 
-    void setWMName(Window target, const std::string& name) const;
-    bool readWMName(Window target, std::string& name) const;
-    void setWMVisibleName(Window target, const std::string& name) const;
-    bool readWMIconName(Window target, std::string& name) const;
-    void setWMVisibleIconName(Window target, const std::string& name) const;
+    void setWMName(Window target, const bt::ustring &name) const;
+    bool readWMName(Window target, bt::ustring &name) const;
+    void setWMVisibleName(Window target, const bt::ustring &name) const;
+    bool readWMIconName(Window target, bt::ustring &name) const;
+    void setWMVisibleIconName(Window target, const bt::ustring &name) const;
     void setWMDesktop(Window target, unsigned int desktop) const;
     bool readWMDesktop(Window target, unsigned int& desktop) const;
     bool readWMWindowType(Window target, AtomList& types) const;
