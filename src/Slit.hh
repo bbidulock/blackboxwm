@@ -83,14 +83,14 @@ public:
   unsigned int getExposedWidth(void) const {
     if (screen->resource().slitDirection() == Vertical
         && screen->resource().doSlitAutoHide())
-      return screen->resource().bevelWidth();
+      return screen->resource().slitStyle()->margin;
     return frame.rect.width();
   }
   unsigned int getHeight(void) const { return frame.rect.height(); }
   unsigned int getExposedHeight(void) const {
     if (screen->resource().slitDirection() == Horizontal
         && screen->resource().doSlitAutoHide())
-      return screen->resource().bevelWidth();
+      return screen->resource().slitStyle()->margin;
     return frame.rect.height();
   }
 
@@ -110,6 +110,7 @@ public:
   void configureRequestEvent(const XConfigureRequestEvent * const event);
   void unmapNotifyEvent(const XUnmapEvent * const event);
   void reparentNotifyEvent(const XReparentEvent * const event);
+  void exposeEvent(const XExposeEvent * const event);
 
   virtual void timeout(bt::Timer *);
 

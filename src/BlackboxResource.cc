@@ -176,6 +176,8 @@ ScreenResource::WindowStyle::WindowStyle(void) { }
 ScreenResource::WindowStyle::~WindowStyle(void) { }
 ScreenResource::ToolbarStyle::ToolbarStyle(void) { }
 ScreenResource::ToolbarStyle::~ToolbarStyle(void) { }
+ScreenResource::SlitStyle::SlitStyle(void) { }
+ScreenResource::SlitStyle::~SlitStyle(void) { }
 
 
 void ScreenResource::save(bt::Resource& res, BScreen* screen) {
@@ -650,13 +652,20 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
                                                 "BorderColor",
                                                 "black"));
 
+    // load slit style
+  slit_style.slit = bt::textureResource(display, screen_num, res,
+                                    "slit",
+                                    "Slit",
+                                    "white");
+  slit_style.margin = res.read("slit.marginWidth", "Slit.Margin", 2);
+
   root_command = res.read("rootCommand", "RootCommand");
 
+  // sanity checks
   bt::Texture flat_black;
   flat_black.setDescription("flat solid");
   flat_black.setColor(bt::Color(0, 0, 0));
 
-  // sanity checks
   if (wstyle.t_focus.texture() == bt::Texture::Parent_Relative)
     wstyle.t_focus = flat_black;
   if (wstyle.t_unfocus.texture() == bt::Texture::Parent_Relative)
@@ -668,6 +677,9 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
 
   if (tstyle.toolbar.texture() == bt::Texture::Parent_Relative)
     tstyle.toolbar = flat_black;
+
+  if (slit_style.slit.texture() == bt::Texture::Parent_Relative)
+    slit_style.slit = flat_black;
 }
 
 

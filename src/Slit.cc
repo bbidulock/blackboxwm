@@ -29,6 +29,8 @@
 
 #include <PixmapCache.hh>
 
+#include <algorithm>
+
 #include <X11/Xutil.h>
 
 
@@ -53,15 +55,10 @@ Slit::Slit(BScreen *scr) {
   slitmenu = new Slitmenu(*blackbox, screen->screenNumber(), screen);
 
   XSetWindowAttributes attrib;
-  unsigned long create_mask = CWBackPixmap | CWBackPixel | CWBorderPixel |
-                              CWColormap | CWOverrideRedirect | CWEventMask;
-  attrib.background_pixmap = None;
-  attrib.background_pixel = attrib.border_pixel =
-    res.borderColor()->pixel(screen->screenNumber());
+  unsigned long create_mask = CWColormap | CWEventMask;
   attrib.colormap = screen->screenInfo().colormap();
-  attrib.override_redirect = True;
   attrib.event_mask = SubstructureRedirectMask | ButtonPressMask |
-                      EnterWindowMask | LeaveWindowMask;
+                      EnterWindowMask | LeaveWindowMask | ExposureMask;
 
   frame.rect.setSize(1, 1);
 
@@ -135,13 +132,10 @@ void Slit::addClient(Window w) {
   XSetWindowBorderWidth(display, client->window, 0);
 
   blackbox->XGrabServer();
-  XSelectInput(display, frame.window, NoEventMask);
   XSelectInput(display, client->window, NoEventMask);
   XReparentWindow(display, client->window, frame.window, 0, 0);
-  XMapRaised(display, client->window);
+  XMapWindow(display, client->window);
   XChangeSaveSet(display, client->window, SetModeInsert);
-  XSelectInput(display, frame.window, SubstructureRedirectMask |
-               ButtonPressMask | EnterWindowMask | LeaveWindowMask);
   XSelectInput(display, client->window, StructureNotifyMask |
                SubstructureNotifyMask | EnterWindowMask);
   blackbox->XUngrabServer();
@@ -161,14 +155,11 @@ void Slit::removeClient(SlitClient *client, bool remap) {
 
   if (remap && blackbox->validateWindow(client->window)) {
     blackbox->XGrabServer();
-    XSelectInput(display, frame.window, NoEventMask);
     XSelectInput(display, client->window, NoEventMask);
     XReparentWindow(display, client->window, screen->screenInfo().rootWindow(),
                     frame.rect.x() + client->rect.x(),
                     frame.rect.y() + client->rect.y());
     XChangeSaveSet(display, client->window, SetModeDelete);
-    XSelectInput(display, frame.window, SubstructureRedirectMask |
-                 ButtonPressMask | EnterWindowMask | LeaveWindowMask);
     blackbox->XUngrabServer();
   }
 
@@ -219,43 +210,31 @@ void Slit::reconfigure(void) {
   case Vertical:
     for (; it != end; ++it) {
       client = *it;
-      height += client->rect.height() + screen->resource().bevelWidth();
-
-      if (width < client->rect.width())
-        width = client->rect.width();
+      height += client->rect.height();
+      width = std::max(width, client->rect.width());
     }
 
-    if (width < 1)
-      width = 1;
-    else
-      width += (screen->resource().bevelWidth() * 2);
-
-    if (height < 1)
-      height = 1;
-    else
-      height += screen->resource().bevelWidth();
-
+    width +=
+      (screen->resource().slitStyle()->slit.borderWidth()
+       + screen->resource().slitStyle()->margin) * 2;
+    height +=
+      (screen->resource().slitStyle()->margin * (clientList.size() + 1))
+      + (screen->resource().slitStyle()->slit.borderWidth() * 2);
     break;
 
   case Horizontal:
     for (; it != end; ++it) {
       client = *it;
-      width += client->rect.width() + screen->resource().bevelWidth();
-
-      if (height < client->rect.height())
-        height = client->rect.height();
+      width += client->rect.width();
+      height = std::max(height, client->rect.height());
     }
 
-    if (width < 1)
-      width = 1;
-    else
-      width += screen->resource().bevelWidth();
-
-    if (height < 1)
-      height = 1;
-    else
-      height += (screen->resource().bevelWidth() * 2);
-
+    width +=
+      (screen->resource().slitStyle()->margin * (clientList.size() + 1))
+      + (screen->resource().slitStyle()->slit.borderWidth() * 2);
+    height +=
+      (screen->resource().slitStyle()->slit.borderWidth()
+       + screen->resource().slitStyle()->margin) * 2;
     break;
   }
   frame.rect.setSize(width, height);
@@ -264,28 +243,22 @@ void Slit::reconfigure(void) {
 
   XMapWindow(display, frame.window);
 
-  bt::Texture texture = screen->resource().toolbarStyle()->toolbar;
+  const bt::Texture &texture = screen->resource().slitStyle()->slit;
   frame.pixmap =
     bt::PixmapCache::find(screen->screenNumber(), texture,
                           frame.rect.width(), frame.rect.height(),
                           frame.pixmap);
-  if (! frame.pixmap)
-    XSetWindowBackground(display, frame.window,
-                         texture.color().pixel(screen->screenNumber()));
-  else
-    XSetWindowBackgroundPixmap(display, frame.window, frame.pixmap);
-
-  XClearWindow(display, frame.window);
+  XClearArea(display, frame.window, 0, 0,
+             frame.rect.width(), frame.rect.height(), True);
 
   it = clientList.begin();
 
   int x, y;
+  x = y = screen->resource().slitStyle()->slit.borderWidth()
+      + screen->resource().slitStyle()->margin;
 
   switch (screen->resource().slitDirection()) {
   case Vertical:
-    x = 0;
-    y = screen->resource().bevelWidth();
-
     for (; it != end; ++it) {
       client = *it;
       x = (frame.rect.width() - client->rect.width()) / 2;
@@ -313,15 +286,12 @@ void Slit::reconfigure(void) {
 
       XSendEvent(display, client->window, False, StructureNotifyMask, &event);
 
-      y += client->rect.height() + screen->resource().bevelWidth();
+      y += client->rect.height() + screen->resource().slitStyle()->margin;
     }
 
     break;
 
   case Horizontal:
-    x = screen->resource().bevelWidth();
-    y = 0;
-
     for (; it != end; ++it) {
       client = *it;
       y = (frame.rect.height() - client->rect.height()) / 2;
@@ -349,7 +319,7 @@ void Slit::reconfigure(void) {
 
       XSendEvent(display, client->window, False, StructureNotifyMask, &event);
 
-      x += client->rect.width() + screen->resource().bevelWidth();
+      x += client->rect.width() + screen->resource().slitStyle()->margin;
     }
     break;
   }
@@ -420,7 +390,7 @@ void Slit::reposition(void) {
   case CenterLeft:
   case BottomLeft:
     x = 0;
-    frame.x_hidden = screen->resource().bevelWidth() - frame.rect.width();
+    frame.x_hidden = screen->resource().slitStyle()->margin - frame.rect.width();
 
     if (screen->resource().slitPlacement() == TopLeft)
       y = 0;
@@ -448,7 +418,7 @@ void Slit::reposition(void) {
   case BottomRight:
     x = screen->screenInfo().width() - frame.rect.width();
     frame.x_hidden =
-      screen->screenInfo().width() - screen->resource().bevelWidth();
+      screen->screenInfo().width() - screen->resource().slitStyle()->margin;
 
     if (screen->resource().slitPlacement() == TopRight)
       y = 0;
@@ -476,10 +446,10 @@ void Slit::reposition(void) {
   }
 
   if (screen->resource().slitPlacement() == TopCenter)
-    frame.y_hidden = 0 - frame.rect.height() + screen->resource().bevelWidth();
+    frame.y_hidden = 0 - frame.rect.height() + screen->resource().slitStyle()->margin;
   else if (screen->resource().slitPlacement() == BottomCenter)
     frame.y_hidden =
-      screen->screenInfo().height() - screen->resource().bevelWidth();
+      screen->screenInfo().height() - screen->resource().slitStyle()->margin;
   else
     frame.y_hidden = frame.rect.y();
 
@@ -604,6 +574,16 @@ void Slit::unmapNotifyEvent(const XUnmapEvent * const event) {
 void Slit::reparentNotifyEvent(const XReparentEvent * const event) {
   if (event->parent != frame.window)
     removeClient(event->window, False);
+}
+
+
+void Slit::exposeEvent(const XExposeEvent * const event) {
+  bt::drawTexture(screen->screenNumber(),
+                  screen->resource().slitStyle()->slit,
+                  frame.window,
+                  bt::Rect(0, 0, frame.rect.width(), frame.rect.height()),
+                  bt::Rect(event->x, event->y, event->width, event->height),
+                  frame.pixmap);
 }
 
 

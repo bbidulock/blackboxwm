@@ -73,6 +73,15 @@ public:
     bt::Alignment alignment;
   };
 
+  class SlitStyle {
+  public:
+    SlitStyle(void);
+    ~SlitStyle(void);
+
+    bt::Texture slit;
+    unsigned int margin;
+  };
+
   void loadStyle(BScreen* screen, const std::string& style);
   void load(bt::Resource& res, unsigned int screen);
   void save(bt::Resource& res, BScreen* screen);
@@ -80,6 +89,7 @@ public:
   // access functions
   WindowStyle* windowStyle(void)   { return &wstyle; }
   ToolbarStyle* toolbarStyle(void) { return &tstyle; }
+  SlitStyle *slitStyle(void) { return &slit_style; }
   bt::Color* borderColor(void)     { return &border_color; }
 
   unsigned int bevelWidth(void) const         { return bevel_width;       }
@@ -184,6 +194,7 @@ private:
   WindowConfig wconfig;
   ToolbarStyle tstyle;
   ToolbarConfig tconfig;
+  SlitStyle slit_style;
   SlitConfig sconfig;
 
   bool allow_scroll_lock;
