@@ -110,7 +110,7 @@ void BlackboxResource::load(Blackbox& blackbox) {
     XCreateFontCursor(blackbox.XDisplay(), XC_bottom_right_corner);
 
   // window options
-  str = res.read("session.focusModel", "Session.FocusModel", "SloppyFocus");
+  str = res.read("session.focusModel", "Session.FocusModel", "ClickToFocus");
   if (str.find("ClickToFocus") != std::string::npos) {
     focus_model = ClickToFocusModel;
     auto_raise = false;
@@ -151,11 +151,11 @@ void BlackboxResource::load(Blackbox& blackbox) {
   opaque_move =
     res.read("session.opaqueMove",
              "Session.OpaqueMove",
-             false);
+             true);
   opaque_resize =
     res.read("session.opaqueResize",
              "Session.OpaqueResize",
-             false);
+             true);
   full_max =
     res.read("session.fullMaximization",
              "Session.FullMaximization",
@@ -163,11 +163,11 @@ void BlackboxResource::load(Blackbox& blackbox) {
   focus_new_windows =
     res.read("session.focusNewWindows",
              "Session.FocusNewWindows",
-             false);
+             true);
   focus_last_window_on_workspace =
     res.read("session.focusLastWindow",
              "Session.focusLastWindow",
-             false);
+             true);
   allow_scroll_lock =
     res.read("session.disableBindingsWithScrollLock",
              "Session.disableBindingsWithScrollLock",

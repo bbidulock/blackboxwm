@@ -190,7 +190,8 @@ void ScreenResource::load(bt::Resource& res, unsigned int screen) {
 
   sprintf(name_lookup,  "session.screen%u.workspaces", screen);
   sprintf(class_lookup, "Session.screen%u.Workspaces", screen);
-  workspace_count = res.read(name_lookup, class_lookup, 1);
+  workspace_count = res.read(name_lookup, class_lookup, 4);
+  printf("workspace_count %d\n", workspace_count);
 
   if (! workspace_names.empty())
     workspace_names.clear();
@@ -503,10 +504,9 @@ const bt::ustring ScreenResource::workspaceName(unsigned int i) const {
 void ScreenResource::setWorkspaceName(unsigned int i,
                                       const bt::ustring &name) {
     if (i >= workspace_names.size()) {
-        workspace_count = i + 1;
-        workspace_names.reserve(workspace_count);
+        workspace_names.reserve(i + 1);
         workspace_names.insert(workspace_names.begin() + i, name);
-        assert(workspace_names.size() == workspace_count);
+        assert(workspace_names.size() <= workspace_count);
     } else {
         workspace_names[i] = name;
     }
