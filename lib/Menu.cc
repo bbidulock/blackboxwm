@@ -24,35 +24,16 @@
 
 #include "Menu.hh"
 #include "Application.hh"
+#include "Bitmap.hh"
 #include "Display.hh"
 #include "Pen.hh"
 #include "PixmapCache.hh"
 #include "Resource.hh"
 
-extern "C" {
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 #include <stdio.h>
 #include <assert.h>
-}
-
-static const unsigned int check_width  = 9;
-static const unsigned int check_height = 9;
-static const char check_bits[] =
-  { 0x00, 0x00, 0x80, 0x00, 0xc0, 0x00, 0xe2, 0x00, 0x76,
-    0x00, 0x3e, 0x00, 0x1c, 0x00, 0x08, 0x00, 0x00, 0x00 };
-
-static const unsigned int close_width  = 9;
-static const unsigned int close_height = 9;
-static const char close_bits[] =
-  { 0x83, 0x01, 0xc7, 0x01, 0xee, 0x00, 0x7c, 0x00, 0x38,
-    0x00, 0x7c, 0x00, 0xee, 0x00, 0xc7, 0x01, 0x83, 0x01 };
-
-static const unsigned int right_width  = 9;
-static const unsigned int right_height = 9;
-static const char right_bits[] =
-  { 0x00, 0x00, 0x04, 0x00, 0x0c, 0x00, 0x1c, 0x00, 0x3c,
-    0x00, 0x1c, 0x00, 0x0c, 0x00, 0x04, 0x00, 0x00, 0x00 };
 
 
 bt::MenuStyle **bt::MenuStyle::styles = 0;
@@ -79,25 +60,6 @@ bt::MenuStyle::MenuStyle(Application &app, unsigned int screen)
   title.alignment = AlignLeft;
   frame.alignment = AlignLeft;
   title_margin = frame_margin = item_indent = 1u;
-
-  const ScreenInfo &screeninfo = _app.display().screenInfo(_screen);
-
-  bitmap.arrow =
-    XCreateBitmapFromData(_app.XDisplay(), screeninfo.rootWindow(),
-                          right_bits, right_width, right_height);
-  bitmap.check =
-    XCreateBitmapFromData(_app.XDisplay(), screeninfo.rootWindow(),
-                          check_bits, check_width, check_height);
-  bitmap.close =
-    XCreateBitmapFromData(_app.XDisplay(), screeninfo.rootWindow(),
-                          close_bits, close_width, close_height);
-}
-
-
-bt::MenuStyle::~MenuStyle(void) {
-  if (bitmap.arrow) XFreePixmap(_app.XDisplay(), bitmap.arrow);
-  if (bitmap.check) XFreePixmap(_app.XDisplay(), bitmap.check);
-  if (bitmap.close) XFreePixmap(_app.XDisplay(), bitmap.close);
 }
 
 
@@ -154,9 +116,10 @@ void bt::MenuStyle::load(const Resource &resource) {
   title.font.setFontName(resource.read("menu.title.font", "Menu.Title.Font"));
   frame.font.setFontName(resource.read("menu.frame.font", "Menu.Frame.Font"));
 
-  item_indent = std::max(check_width, check_height);
-  item_indent = std::max(item_indent, std::max(close_width, close_height));
-  item_indent = std::max(item_indent, std::max(right_width, right_height));
+  const bt::Bitmap &arrow = bt::Bitmap::rightArrow(_screen);
+  const bt::Bitmap &check = bt::Bitmap::checkMark(_screen);
+  item_indent = std::max(check.width(), check.height());
+  item_indent = std::max(item_indent, std::max(arrow.width(), arrow.height()));
   item_indent = std::max(item_indent, textHeight(_screen, frame.font));
 
   title.alignment =
@@ -250,30 +213,15 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
   drawText(frame.font, tpen, window, r2, frame.alignment, item.label());
 
   if (item.isChecked()) {
-    // draw check mark
-    int cx = rect.x() + (rect.height() - check_width) / 2;
-    int cy = rect.y() + (rect.height() - check_height) / 2;
-
-    XSetClipMask(fpen.XDisplay(), fpen.gc(), bitmap.check);
-    XSetClipOrigin(fpen.XDisplay(), fpen.gc(), cx, cy);
-    XFillRectangle(fpen.XDisplay(), window, fpen.gc(),
-                   cx, cy, check_width, check_height);
+    drawBitmap(bt::Bitmap::checkMark(_screen), fpen, window,
+               bt::Rect(rect.x(), rect.y(), rect.height(), rect.height()));
   }
 
   if (item.submenu()) {
-    // draw submenu arrow
-    int ax = rect.x() + rect.width() - rect.height() +
-             (rect.height() - right_width) / 2;
-    int ay = rect.y() + (rect.height() - right_height) / 2;
-
-    XSetClipMask(fpen.XDisplay(), fpen.gc(), bitmap.arrow);
-    XSetClipOrigin(fpen.XDisplay(), fpen.gc(), ax, ay);
-    XFillRectangle(fpen.XDisplay(), window, fpen.gc(),
-                   ax, ay, right_width, right_height);
+    drawBitmap(bt::Bitmap::rightArrow(_screen), fpen, window,
+               bt::Rect(rect.x() + rect.width() - rect.height(),
+                        rect.y(), rect.height(), rect.height()));
   }
-
-  XSetClipOrigin(fpen.XDisplay(), fpen.gc(), 0, 0);
-  XSetClipMask(fpen.XDisplay(), fpen.gc(), None);
 }
 
 
@@ -603,43 +551,44 @@ void bt::Menu::popup(int x, int y, const Rect &constraint, bool centered) {
   if (_size_dirty)
     updateSize();
 
+  bt::Rect u(x, y, _rect.width(), _rect.height());
+
   if (_show_title) {
     if (centered) {
-      x -= _trect.width() / 2;
-      y -= _trect.height() / 2;
+      u.setPos(u.x() - _trect.width() / 2, u.y() - _trect.height() / 2);
 
-      if (y + _rect.height() > constraint.bottom())
-        y -= _rect.height() - (_trect.height() / 2);
+      if (u.bottom() > constraint.bottom())
+        u.setY(u.y() - _rect.height() + (_trect.height() / 2));
     } else {
-      y -= _trect.height();
+      u.setY(u.y() - _trect.height());
 
-      if (x + _rect.width() > constraint.right())
-        x -= _rect.width();
-      if (y + _rect.height() > constraint.bottom())
-        y -= _rect.height();
+      if (u.right() > constraint.right())
+        u.setX(u.x() - _rect.width());
+      if (u.bottom() > constraint.bottom())
+        u.setY(u.y() - _rect.height());
     }
   } else {
     if (centered) {
-      x -= _frect.width() / 2;
+      u.setX(u.x() - _frect.width() / 2);
     } else {
-      if (x + _rect.width() > constraint.right())
-        x -= _rect.width();
-      if (y + _rect.height() > constraint.bottom())
-        y -= _rect.height();
+      if (u.right() > constraint.right())
+        u.setX(u.x() - _rect.width());
+      if (u.bottom() > constraint.bottom())
+        u.setY(u.y() - _rect.height());
     }
   }
 
-  if (x + _rect.width() > constraint.right())
-    x = constraint.right() - _rect.width() + 1;
-  if (x < constraint.x())
-    x = constraint.x();
+  if (u.right() > constraint.right())
+    u.setX(constraint.right() - _rect.width() + 1);
+  if (u.x() < constraint.x())
+    u.setX(constraint.x());
 
-  if (y + _rect.height() > constraint.bottom())
-    y = constraint.bottom() - _rect.height() + 1;
-  if (y < constraint.y())
-    y = constraint.y();
+  if (u.bottom() > constraint.bottom())
+    u.setY(constraint.bottom() - _rect.height() + 1);
+  if (u.y() < constraint.y())
+    u.setY(constraint.y());
 
-  move(x, y);
+  move(u.x(), u.y());
   show();
 }
 
@@ -738,7 +687,7 @@ void bt::Menu::updateSize(void) {
 
     ++row;
 
-    if (col_h > (screeninfo.height() * 3 / 4)) {
+    if (col_h > (screeninfo.height() * 3u / 4u)) {
       ++cols;
       row = 0;
 
@@ -749,7 +698,7 @@ void bt::Menu::updateSize(void) {
 
   // if we just changed to a new column, but have no items, then
   // remove the empty column
-  if (cols > 1 && col_h == 0 && row == 0)
+  if (cols > 1u && col_h == 0u && row == 0u)
     --cols;
 
   max_col_h = std::max(std::max(max_col_h, col_h), style->frameMargin());
@@ -757,8 +706,8 @@ void bt::Menu::updateSize(void) {
   // update rects
   _irect.setRect(style->frameMargin(), _frect.top() + style->frameMargin(),
                  std::max(_trect.width(), cols * _itemw), max_col_h);
-  _frect.setSize(_irect.width()  + (style->frameMargin() * 2),
-                 _irect.height() + (style->frameMargin() * 2));
+  _frect.setSize(_irect.width()  + (style->frameMargin() * 2u),
+                 _irect.height() + (style->frameMargin() * 2u));
   _rect.setSize(_frect.width(), _frect.height());
   if (_show_title) {
     _trect.setWidth(std::max(_trect.width(), _frect.width()));

@@ -122,11 +122,6 @@ namespace bt {
     const Font &frameFont(void) const
     { return frame.font; }
 
-    // bitmaps
-    Pixmap arrowBitmap() const { return bitmap.arrow; }
-    Pixmap checkBitmap() const { return bitmap.check; }
-    Pixmap closeBitmap() const { return bitmap.close; }
-
     // size calculations
     Rect titleRect(const std::string &text) const;
     Rect itemRect(const MenuItem &item) const;
@@ -139,7 +134,6 @@ namespace bt {
 
   private:
     MenuStyle(Application &app, unsigned int screen);
-    ~MenuStyle(void);
 
     Application &_app;
     unsigned int _screen;
@@ -164,11 +158,6 @@ namespace bt {
       Color text;
       // font and alignment used from frame above
     } active;
-    struct _bitmap {
-      Pixmap arrow;
-      Pixmap check;
-      Pixmap close;
-    } bitmap;
     unsigned int title_margin, frame_margin, item_indent;
 
     static MenuStyle **styles;
