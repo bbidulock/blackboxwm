@@ -3,7 +3,7 @@
 CLEANFILES = blackbox.1
 MAINTAINERCLEANFILES = Makefile.in
 man_MANS = blackbox.1 bsetroot.1 bsetbg.1
-SUBDIRS = fr_FR ja_JP nl_NL sl_SI
+#SUBDIRS = fr_FR ja_JP nl_NL sl_SI
 
 DEFAULT_MENU=$(pkgdatadir)/menu
 
