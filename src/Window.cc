@@ -321,7 +321,7 @@ BlackboxWindow::~BlackboxWindow(void) {
     client.transient_for = (BlackboxWindow*) 0;
   }
 
-  if (client.transientList.size() > 0) {
+  if (! client.transientList.empty()) {
     // reset transient_for for all transients
     BlackboxWindowList::iterator it, end = client.transientList.end();
     for (it = client.transientList.begin(); it != end; ++it)
@@ -1402,7 +1402,7 @@ bool BlackboxWindow::setInputFocus(void) {
               frame.rect.width(), frame.rect.height());
   }
 
-  if (client.transientList.size() > 0) {
+  if (! client.transientList.empty()) {
     // transfer focus to any modal transients
     BlackboxWindowList::iterator it, end = client.transientList.end();
     for (it = client.transientList.begin(); it != end; ++it)
@@ -1475,7 +1475,7 @@ void BlackboxWindow::iconify(void) {
   setState(IconicState);
 
   // iconify all transients first
-  if (client.transientList.size() > 0) {
+  if (! client.transientList.empty()) {
     std::for_each(client.transientList.begin(), client.transientList.end(),
                   std::mem_fun(&BlackboxWindow::iconify));
   }
@@ -1541,7 +1541,7 @@ void BlackboxWindow::deiconify(bool reassoc, bool raise) {
   show();
 
   // reassociate and deiconify all transients
-  if (reassoc && client.transientList.size() > 0) {
+  if (reassoc && ! client.transientList.empty()) {
     BlackboxWindowList::iterator it, end = client.transientList.end();
     for (it = client.transientList.begin(); it != end; ++it)
       (*it)->deiconify(True, False);

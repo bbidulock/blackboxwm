@@ -1003,7 +1003,7 @@ void Basemenu::enterNotifyEvent(XCrossingEvent *ce) {
 
 void Basemenu::leaveNotifyEvent(XCrossingEvent *ce) {
   if (ce->window == menu.frame) {
-    if (which_press != -1 && which_sbl != -1 && menuitems.size() > 0) {
+    if (which_press != -1 && which_sbl != -1 && ! menuitems.empty()) {
       const int p = (which_sbl * menu.persub) + which_press;
 
       drawItem(p, (p == which_sub), True);
