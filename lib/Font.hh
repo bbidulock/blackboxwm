@@ -32,6 +32,7 @@ extern "C" {
 
 #include <map>
 #include <string>
+#include <vector>
 
 
 namespace bt {
@@ -69,6 +70,7 @@ namespace bt {
 
   private:
     void load(void);
+    XFontSet load_fontset(const std::string &name);
     void unload(void);
 
     std::string _fontname;
@@ -89,6 +91,27 @@ namespace bt {
     typedef std::map<std::string,FontRef> FontCache;
     typedef FontCache::value_type FontCacheItem;
     static FontCache fontcache;
+
+    // xlfd parser
+    enum xlfd_parts {
+      xp_foundry,
+      xp_family,
+      xp_weight,
+      xp_slant,
+      xp_width,
+      xp_addstyle,
+      xp_pixels,
+      xp_points,
+      xp_resx,
+      xp_resy,
+      xp_space,
+      xp_avgwidth,
+      xp_regsitry,
+      xp_encoding,
+      xp_count
+    };
+    typedef std::vector<std::string> xlfd_vector;
+    static xlfd_vector parse_xlfd(const std::string &xlfd);
   };
 
   unsigned int textHeight(const Font &font);

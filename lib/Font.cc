@@ -28,6 +28,7 @@
 extern "C" {
 #include <assert.h>
 #include <ctype.h>
+#include <locale.h>
 }
 
 #include "BaseDisplay.hh"
@@ -82,14 +83,16 @@ void bt::Font::load(void) {
   }
 
   if (bt::i18n.multibyte()) {
-    // _fontset = createFontSet(_fontname.c_str());
+    _fontset = load_fontset(_fontname);
 
     if (_fontset == NULL) {
       _fontname = defaultFont;
-      // _fontset = createFontSet(_fontname.c_str());
+      _fontset = load_fontset(_fontname);
     }
     assert(_fontset != NULL);
   } else {
+    (void) parse_xlfd(_fontname);
+
     _font = XLoadQueryFont(display()->XDisplay(), _fontname.c_str());
 
     if (_font == NULL) {
@@ -102,6 +105,56 @@ void bt::Font::load(void) {
   // insert new item into the cache
 
   fontcache.insert(FontCacheItem(_fontname, FontRef(_fontset, _font)));
+}
+
+
+XFontSet bt::Font::load_fontset(const std::string &name) {
+  XFontSet fs;
+  char **missing, *def = "-";
+  int nmissing;
+
+  // load the fontset
+  _fontname = name;
+  fs = XCreateFontSet(_dpy->XDisplay(), _fontname.c_str(),
+                      &missing, &nmissing, &def);
+  if (fs) {
+    if (nmissing) {
+      // missing characters, unload and try again below
+      XFreeFontSet(_dpy->XDisplay(), fs);
+      fs = NULL;
+    }
+
+    if (missing) XFreeStringList(missing);
+
+    if (fs) return fs; // created fontset
+  }
+
+  /*
+    fontset is missing some charsets, adjust the fontlist to allow
+    Xlib to automatically find the needed fonts.
+  */
+  xlfd_vector vec = parse_xlfd(name);
+  _fontname = name;
+  if (! vec.empty()) {
+    _fontname +=
+      ",-*-*-" + vec[xp_weight] + "-" + vec[xp_slant] + "-*-*-" +
+      vec[xp_pixels] + "-*-*-*-*-*-*-*,-*-*-*-*-*-*-" + vec[xp_pixels] +
+      "-" + vec[xp_points] + "-*-*-*-*-*-*,*";
+  } else {
+    _fontname += "-*-*-*-*-*-*-*-*-*-*-*-*-*-*,*";
+  }
+
+  fs = XCreateFontSet(_dpy->XDisplay(), _fontname.c_str(),
+                      &missing, &nmissing, &def);
+  if (nmissing) {
+    int x;
+    for (x = 0; x < nmissing; ++x)
+      fprintf(stderr, "Warning: missing charset '%s' in fontset\n",
+              missing[x]);
+  }
+  if (missing)
+    XFreeStringList(missing);
+  return fs;
 }
 
 
@@ -128,6 +181,26 @@ void bt::Font::unload(void) {
   _fontset = NULL;
   _font = NULL;
 }
+
+
+bt::Font::xlfd_vector bt::Font::parse_xlfd(const std::string &xlfd) {
+  std::string::const_iterator it = xlfd.begin(), end = xlfd.end(), save;
+  if (it == end || ! *it || *it != '-') return xlfd_vector();
+  xlfd_vector vec(xp_count);
+
+  int x;
+  for (x = 0; x < xp_count && it != end && *it; ++x) {
+    save = it;
+    ++save; // skip the '-'
+    while (++it != end && *it != '-');
+    vec[x].assign(save, it);
+  }
+
+  if (x != xp_count)
+    return xlfd_vector();
+  return vec;
+}
+
 
 
 unsigned int bt::textHeight(const bt::Font &font) {
@@ -173,7 +246,10 @@ void bt::drawText(const bt::Font &font, const bt::Pen &pen, Window window,
   tr.setY(rect.y() + ((rect.height() - tr.height()) / 2));
 
   if (bt::i18n.multibyte()) {
-
+    XmbDrawString(font.display()->XDisplay(), window, font.fontset(), pen.gc(),
+                  tr.x(),
+                  tr.y() - XExtentsOfFontSet(font.fontset())->max_ink_extent.y,
+                  text.c_str(), text.length());
   } else {
     XDrawString(font.display()->XDisplay(), window, pen.gc(),
                 tr.x(), tr.y() + font.font()->ascent,
