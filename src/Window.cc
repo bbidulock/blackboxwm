@@ -2335,7 +2335,7 @@ void BlackboxWindow::exposeEvent(XExposeEvent *ee) {
 
 
 void BlackboxWindow::configureRequestEvent(XConfigureRequestEvent *cr) {
-  if (cr->window != client.window)
+  if (cr->window != client.window || flags.iconic)
     return;
 
   int cx = frame.x, cy = frame.y;
@@ -2362,8 +2362,6 @@ void BlackboxWindow::configureRequestEvent(XConfigureRequestEvent *cr) {
     configure(cx, cy, cw, ch);
 
   if (cr->value_mask & CWStackMode) {
-    if (flags.iconic) deiconify();
-   
     switch (cr->detail) {
     case Below:
     case BottomIf:
