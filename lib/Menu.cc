@@ -36,21 +36,23 @@ extern "C" {
 #include <assert.h>
 }
 
-
-static const unsigned int arrow_width  = 7;
-static const unsigned int arrow_height = 7;
-static const char arrow_bits[] =
-  { 0x00, 0x10, 0x30, 0x70, 0x30, 0x10, 0x00 };
-
-static const unsigned int check_width  = 7;
-static const unsigned int check_height = 7;
+static const unsigned int check_width  = 9;
+static const unsigned int check_height = 9;
 static const char check_bits[] =
-  { 0x40, 0x60, 0x71, 0x3b, 0x1f, 0x0e, 0x04 };
+  { 0x00, 0x00, 0x80, 0x00, 0xc0, 0x00, 0xe2, 0x00, 0x76,
+    0x00, 0x3e, 0x00, 0x1c, 0x00, 0x08, 0x00, 0x00, 0x00 };
 
-static const unsigned int close_width  = 7;
-static const unsigned int close_height = 7;
+static const unsigned int close_width  = 9;
+static const unsigned int close_height = 9;
 static const char close_bits[] =
-  { 0x41, 0x22, 0x14, 0x08, 0x14, 0x22, 0x41 };
+  { 0x83, 0x01, 0xc7, 0x01, 0xee, 0x00, 0x7c, 0x00, 0x38,
+    0x00, 0x7c, 0x00, 0xee, 0x00, 0xc7, 0x01, 0x83, 0x01 };
+
+static const unsigned int right_width  = 9;
+static const unsigned int right_height = 9;
+static const char right_bits[] =
+  { 0x00, 0x00, 0x04, 0x00, 0x0c, 0x00, 0x1c, 0x00, 0x3c,
+    0x00, 0x1c, 0x00, 0x0c, 0x00, 0x04, 0x00, 0x00, 0x00 };
 
 
 bt::MenuStyle **bt::MenuStyle::styles = 0;
@@ -82,7 +84,7 @@ bt::MenuStyle::MenuStyle(Application &app, unsigned int screen)
 
   bitmap.arrow =
     XCreateBitmapFromData(_app.XDisplay(), screeninfo.rootWindow(),
-                          arrow_bits, arrow_width, arrow_height);
+                          right_bits, right_width, right_height);
   bitmap.check =
     XCreateBitmapFromData(_app.XDisplay(), screeninfo.rootWindow(),
                           check_bits, check_width, check_height);
@@ -152,7 +154,10 @@ void bt::MenuStyle::load(const Resource &resource) {
   title.font.setFontName(resource.read("menu.title.font", "Menu.Title.Font"));
   frame.font.setFontName(resource.read("menu.frame.font", "Menu.Frame.Font"));
 
-  item_indent = std::max(textHeight(_screen, frame.font), 7u);
+  item_indent = std::max(check_width, check_height);
+  item_indent = std::max(item_indent, std::max(close_width, close_height));
+  item_indent = std::max(item_indent, std::max(right_width, right_height));
+  item_indent = std::max(item_indent, textHeight(_screen, frame.font));
 
   title.alignment =
     alignResource(resource, "menu.title.alignment",
@@ -246,22 +251,25 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
 
   if (item.isChecked()) {
     // draw check mark
-    int cx = rect.x() + (rect.height() - 7) / 2;
-    int cy = rect.y() + (rect.height() - 7) / 2;
+    int cx = rect.x() + (rect.height() - check_width) / 2;
+    int cy = rect.y() + (rect.height() - check_height) / 2;
 
     XSetClipMask(fpen.XDisplay(), fpen.gc(), bitmap.check);
     XSetClipOrigin(fpen.XDisplay(), fpen.gc(), cx, cy);
-    XFillRectangle(fpen.XDisplay(), window, fpen.gc(), cx, cy, 7, 7);
+    XFillRectangle(fpen.XDisplay(), window, fpen.gc(),
+                   cx, cy, check_width, check_height);
   }
 
   if (item.submenu()) {
     // draw submenu arrow
-    int ax = rect.x() + rect.width() - rect.height() + (rect.height() - 7) / 2;
-    int ay = rect.y() + (rect.height() - 7) / 2;
+    int ax = rect.x() + rect.width() - rect.height() +
+             (rect.height() - right_width) / 2;
+    int ay = rect.y() + (rect.height() - right_height) / 2;
 
     XSetClipMask(fpen.XDisplay(), fpen.gc(), bitmap.arrow);
     XSetClipOrigin(fpen.XDisplay(), fpen.gc(), ax, ay);
-    XFillRectangle(fpen.XDisplay(), window, fpen.gc(), ax, ay, 7, 7);
+    XFillRectangle(fpen.XDisplay(), window, fpen.gc(),
+                   ax, ay, right_width, right_height);
   }
 
   XSetClipOrigin(fpen.XDisplay(), fpen.gc(), 0, 0);
