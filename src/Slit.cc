@@ -134,7 +134,7 @@ void Slit::addClient(Window w) {
 
   XSetWindowBorderWidth(display, client->window, 0);
 
-  XGrabServer(display);
+  blackbox->XGrabServer();
   XSelectInput(display, frame.window, NoEventMask);
   XSelectInput(display, client->window, NoEventMask);
   XReparentWindow(display, client->window, frame.window, 0, 0);
@@ -144,8 +144,7 @@ void Slit::addClient(Window w) {
                ButtonPressMask | EnterWindowMask | LeaveWindowMask);
   XSelectInput(display, client->window, StructureNotifyMask |
                SubstructureNotifyMask | EnterWindowMask);
-
-  XUngrabServer(display);
+  blackbox->XUngrabServer();
 
   clientList.push_back(client);
 
@@ -161,7 +160,7 @@ void Slit::removeClient(SlitClient *client, bool remap) {
   clientList.remove(client);
 
   if (remap && blackbox->validateWindow(client->window)) {
-    XGrabServer(display);
+    blackbox->XGrabServer();
     XSelectInput(display, frame.window, NoEventMask);
     XSelectInput(display, client->window, NoEventMask);
     XReparentWindow(display, client->window, screen->screenInfo().rootWindow(),
@@ -170,7 +169,7 @@ void Slit::removeClient(SlitClient *client, bool remap) {
     XChangeSaveSet(display, client->window, SetModeDelete);
     XSelectInput(display, frame.window, SubstructureRedirectMask |
                  ButtonPressMask | EnterWindowMask | LeaveWindowMask);
-    XUngrabServer(display);
+    blackbox->XUngrabServer();
   }
 
   delete client;

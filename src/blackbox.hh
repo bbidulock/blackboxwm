@@ -42,6 +42,8 @@ namespace bt {
 
 class Blackbox : public bt::Application, public bt::TimeoutHandler {
 private:
+  unsigned int grab_count;
+
   struct MenuTimestamp {
     std::string filename;
     long timestamp;
@@ -89,6 +91,9 @@ public:
   Blackbox(char **m_argv, const char *dpy_name, const std::string& rc,
            bool multi_head);
   virtual ~Blackbox(void);
+
+  void XGrabServer(void);
+  void XUngrabServer(void);
 
   BlackboxResource& resource(void) { return _resource; }
 

@@ -346,7 +346,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     We hold the grab until after we are done moving the window around.
   */
 
-  XGrabServer(blackbox->XDisplay());
+  blackbox->XGrabServer();
 
   associateClientWindow();
 
@@ -372,7 +372,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   positionWindows();
 
-  XUngrabServer(blackbox->XDisplay());
+  blackbox->XUngrabServer();
 
 #ifdef SHAPE
   if (blackbox->hasShapeExtensions() && client.state.shaped)
@@ -1664,12 +1664,12 @@ void BlackboxWindow::hide(void) {
    */
   unsigned long event_mask = PropertyChangeMask | FocusChangeMask |
                              StructureNotifyMask;
-  XGrabServer(blackbox->XDisplay());
+  blackbox->XGrabServer();
   XSelectInput(blackbox->XDisplay(), client.window,
                event_mask & ~StructureNotifyMask);
   XUnmapWindow(blackbox->XDisplay(), client.window);
   XSelectInput(blackbox->XDisplay(), client.window, event_mask);
-  XUngrabServer(blackbox->XDisplay());
+  blackbox->XUngrabServer();
 }
 
 
@@ -2944,7 +2944,7 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const event) {
                      frame.changing.y() + hw,
                      frame.changing.width() - frame.border_w,
                      frame.changing.height() - frame.border_w);
-      XUngrabServer(blackbox->XDisplay());
+      blackbox->XUngrabServer();
 
       configure(frame.changing.x(), frame.changing.y(),
                 frame.changing.width(), frame.changing.height());
@@ -2966,7 +2966,7 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const event) {
                    frame.changing.y() + hw,
                    frame.changing.width() - frame.border_w,
                    frame.changing.height() - frame.border_w);
-    XUngrabServer(blackbox->XDisplay());
+    blackbox->XUngrabServer();
 
     screen->hideGeometry();
 
@@ -3037,7 +3037,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
       client.state.moving = True;
 
       if (! screen->resource().doOpaqueMove()) {
-        XGrabServer(blackbox->XDisplay());
+        blackbox->XGrabServer();
 
         frame.changing = frame.rect;
         screen->showPosition(frame.changing.x(), frame.changing.y());
@@ -3107,7 +3107,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
 
     if (! client.state.resizing) {
       // begin a resize
-      XGrabServer(blackbox->XDisplay());
+      blackbox->XGrabServer();
       XGrabPointer(blackbox->XDisplay(), event->window, False,
                    ButtonMotionMask | ButtonReleaseMask,
                    GrabModeAsync, GrabModeAsync, None,
@@ -3277,7 +3277,7 @@ void BlackboxWindow::restore(void) {
 
   restoreGravity(client.rect);
 
-  XGrabServer(blackbox->XDisplay());
+  blackbox->XGrabServer();
 
   XUnmapWindow(blackbox->XDisplay(), frame.window);
   XUnmapWindow(blackbox->XDisplay(), client.window);
@@ -3298,7 +3298,7 @@ void BlackboxWindow::restore(void) {
                 client.rect.y() - frame.rect.y());
   }
 
-  XUngrabServer(blackbox->XDisplay());
+  blackbox->XUngrabServer();
 
   XEvent unused;
   if (!XCheckTypedWindowEvent(blackbox->XDisplay(), client.window,

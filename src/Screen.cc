@@ -241,6 +241,8 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   netwm.setSupported(screen_info.rootWindow(), supported,
                      sizeof(supported) / sizeof(Atom));
 
+  blackbox->XGrabServer();
+
   unsigned int i, j, nchild;
   Window r, p, *children;
   XQueryTree(blackbox->XDisplay(), screen_info.rootWindow(), &r, &p,
@@ -284,6 +286,8 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   }
 
   XFree(children);
+
+  blackbox->XUngrabServer();
 
   updateClientListHint();
   restackWindows();
@@ -473,6 +477,8 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
 
   assert(id < workspacesList.size());
 
+  blackbox->XGrabServer();
+
   // show the empty window... this will prevent unnecessary exposure
   // of the root window
   XMapWindow(blackbox->XDisplay(), empty_window);
@@ -507,6 +513,8 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
                                       current_workspace);
 
   XUnmapWindow(blackbox->XDisplay(), empty_window);
+
+  blackbox->XUngrabServer();
 }
 
 

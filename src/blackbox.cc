@@ -41,7 +41,9 @@
 
 Blackbox::Blackbox(char **m_argv, const char *dpy_name,
                    const std::string& rc, bool multi_head)
-  : bt::Application(m_argv[0], dpy_name, multi_head), _resource(rc) {
+  : bt::Application(m_argv[0], dpy_name, multi_head),
+    grab_count(0u), _resource(rc)
+{
   if (! XSupportsLocale())
     fprintf(stderr, "X server does not support locale\n");
 
@@ -325,6 +327,19 @@ bool Blackbox::validateWindow(Window window) {
 }
 
 
+void Blackbox::XGrabServer(void) {
+  if (grab_count == 0)
+    ::XGrabServer(XDisplay());
+  ++grab_count;
+}
+
+
+void Blackbox::XUngrabServer(void) {
+  if (--grab_count == 0)
+    ::XUngrabServer(XDisplay());
+}
+
+
 BScreen *Blackbox::findScreen(Window window) {
   for (unsigned int i = 0; i < screen_list_count; ++i)
     if (screen_list[i]->screenInfo().rootWindow() == window)
@@ -396,12 +411,16 @@ void Blackbox::restart(const std::string &prog) {
 void Blackbox::shutdown(void) {
   bt::Application::shutdown();
 
+  XGrabServer();
+
   XSetInputFocus(XDisplay(), PointerRoot, RevertToNone, CurrentTime);
 
   std::for_each(screen_list, screen_list + screen_list_count,
                 std::mem_fun(&BScreen::shutdown));
 
   XSync(XDisplay(), False);
+
+  XUngrabServer();
 }
 
 
