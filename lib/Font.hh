@@ -25,9 +25,7 @@
 #ifndef __Font_hh
 #define __Font_hh
 
-#include <X11/Xlib.h>
-
-typedef struct _XftFont XftFont;
+#include "Util.hh"
 
 #include <string>
 
@@ -35,15 +33,32 @@ namespace bt {
 
   // forward declarations
   class Display;
+  class Font;
   class Pen;
   class Rect;
   class Resource;
 
   enum Alignment {
-    AlignLeft = 0,
+    AlignLeft,
     AlignCenter,
     AlignRight
   };
+
+  unsigned int textHeight(unsigned int screen, const Font &font);
+
+  Rect textRect(unsigned int screen, const Font &font,
+                const std::string &text);
+
+  void drawText(const Font &font, const Pen &pen,
+                Drawable drawable, const Rect &rect,
+                Alignment alignment, const std::string &text);
+
+  std::string ellideText(const std::string& text, size_t count,
+                         const char* ellide);
+
+  Alignment alignResource(const Resource &resource,
+                          const char* name, const char* classname,
+                          Alignment default_align = AlignLeft);
 
   class Font {
   public:
@@ -57,7 +72,6 @@ namespace bt {
     { unload(); _fontname = new_fontname; }
 
     XFontSet fontSet(void) const;
-    XFontStruct *font(void) const;
     XftFont *xftFont(unsigned int screen) const;
 
     Font& operator=(const Font &f)
@@ -72,26 +86,9 @@ namespace bt {
 
     std::string _fontname;
     mutable XFontSet _fontset;
-    mutable XFontStruct *_font;
     mutable XftFont *_xftfont;
     mutable unsigned int _screen; // only used for Xft
   };
-
-  unsigned int textHeight(unsigned int screen, const Font &font);
-
-  Rect textRect(unsigned int screen, const Font &font,
-                const std::string &text);
-
-  void drawText(const Font &font, Pen &pen, Window window,
-                const Rect &rect, Alignment alignment,
-                const std::string &text);
-
-  std::string ellideText(const std::string& text, size_t count,
-                         const char* ellide);
-
-  Alignment alignResource(const Resource &resource,
-                          const char* name, const char* classname,
-                          Alignment default_align = AlignLeft);
 
 } // namespace bt
 

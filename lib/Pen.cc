@@ -495,14 +495,6 @@ bt::Pen::~Pen(void) {
 }
 
 
-void bt::Pen::setFont(const Font &font) {
-  if (_item) pencache->release(_item);
-  _item = 0;
-
-  _fontid = font.font() ? font.font()->fid : 0ul;
-}
-
-
 void bt::Pen::setGCFunction(int function) {
   if (_item) pencache->release(_item);
   _item = 0;

@@ -28,12 +28,13 @@
 #include <limits.h>
 #include <string>
 
+// forward declarations of X11 types
 typedef struct _XDisplay Display;
 typedef union _XEvent XEvent;
 typedef struct _XGC *GC;
-
+typedef struct _XOC *XFontSet;
+typedef struct _XftFont XftFont;
 typedef unsigned long Time;
-
 typedef unsigned long XID;
 typedef XID Atom;
 typedef XID Colormap;

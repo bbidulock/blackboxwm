@@ -48,7 +48,6 @@ namespace bt {
     inline unsigned int screen(void) const { return _screen; }
     inline const Color &color(void) const { return _color; }
 
-    void setFont(const Font &font);
     void setGCFunction(int function);
     void setSubWindowMode(int subwindow);
 
