@@ -40,16 +40,8 @@
 #include "Slit.hh"
 #include "Toolbar.hh"
 
-#ifdef    DEBUG
-#  include "mem.h"
-#endif // DEBUG
-
 
 Slit::Slit(BScreen *scr) {
-#ifdef    DEBUG
-  allocate(sizeof(Slit), "Slit.cc");
-#endif // DEBUG
-
   screen = scr;
   blackbox = screen->getBlackbox();
 
@@ -86,10 +78,6 @@ Slit::Slit(BScreen *scr) {
 
 
 Slit::~Slit() {
-#ifdef    DEBUG
-  deallocate(sizeof(Slit), "Slit.cc");
-#endif // DEBUG
-
   blackbox->grab();
 
   while (clientList->count()) {
@@ -279,14 +267,19 @@ void Slit::reconfigure(void) {
   else
     XMapWindow(display, frame.window);
 
-  BImageControl *image_ctrl = screen->getImageControl();
   Pixmap tmp = frame.pixmap;
-  frame.pixmap = image_ctrl->
-    renderImage(frame.width, frame.height,
-		&screen->getToolbarStyle()->toolbar);
+  BImageControl *image_ctrl = screen->getImageControl();
+  BTexture *texture = &(screen->getToolbarStyle()->toolbar);
+  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+    frame.pixmap = None;
+    XSetWindowBackground(display, frame.window,
+			 texture->getColor()->getPixel());
+  } else {
+    frame.pixmap = image_ctrl->renderImage(frame.width, frame.height,
+					   texture);
+    XSetWindowBackgroundPixmap(display, frame.window, frame.pixmap);
+  }
   if (tmp) image_ctrl->removeImage(tmp);
-
-  XSetWindowBackgroundPixmap(display, frame.window, frame.pixmap);
   XClearWindow(display, frame.window);
 
   int x, y;
@@ -401,18 +394,18 @@ void Slit::reposition(void) {
     break;
 
   case TopRight:
-    frame.x = screen->getWidth() - frame.width;
+    frame.x = screen->getWidth() - frame.width - screen->getBorderWidth2x();
     frame.y = 0;
     break;
 
   case BottomRight:
-    frame.x = screen->getWidth() - frame.width;
+    frame.x = screen->getWidth() - frame.width - screen->getBorderWidth2x();
     frame.y = screen->getHeight() - frame.height - screen->getBorderWidth2x();
     break;
 
   case CenterRight:
   default:
-    frame.x = screen->getWidth() - frame.width;
+    frame.x = screen->getWidth() - frame.width - screen->getBorderWidth2x();
     frame.y = (screen->getHeight() - frame.height) / 2;
     break;
   }
@@ -582,10 +575,6 @@ void Slitmenu::reconfigure(void) {
 
 
 Slitmenu::Directionmenu::Directionmenu(Slitmenu *sm) : Basemenu(sm->slit->screen) {
-#ifdef    DEBUG
-  allocate(sizeof(Directionmenu), "Slit.cc");
-#endif // DEBUG
-
   slitmenu = sm;
 
   setLabel(i18n->getMessage(
@@ -623,13 +612,6 @@ Slitmenu::Directionmenu::Directionmenu(Slitmenu *sm) : Basemenu(sm->slit->screen
 }
 
 
-#ifdef    DEBUG
-Slitmenu::Directionmenu::~Directionmenu(void) {
-  deallocate(sizeof(Directionmenu), "Slit.cc");
-}
-#endif // DEBUG
-
-
 void Slitmenu::Directionmenu::itemSelected(int button, int index) {
   if (button == 1) {
     BasemenuItem *item = find(index);
@@ -652,10 +634,6 @@ void Slitmenu::Directionmenu::itemSelected(int button, int index) {
 
 
 Slitmenu::Placementmenu::Placementmenu(Slitmenu *sm) : Basemenu(sm->slit->screen) {
-#ifdef   DEBUG
-  allocate(sizeof(Placementmenu), "Slit.cc");
-#endif // DEBUG
-
   slitmenu = sm;
 
   setLabel(i18n->getMessage(
@@ -738,13 +716,6 @@ Slitmenu::Placementmenu::Placementmenu(Slitmenu *sm) : Basemenu(sm->slit->screen
 }
 
 
-#ifdef    DEBUG
-Slitmenu::Placementmenu::~Placementmenu(void) {
-  deallocate(sizeof(Placementmenu), "Slit.cc");
-}
-#endif // DEBUG
-
-
 void Slitmenu::Placementmenu::itemSelected(int button, int index) {
   if (button == 1) {
     BasemenuItem *item = find(index);
@@ -758,16 +729,5 @@ void Slitmenu::Placementmenu::itemSelected(int button, int index) {
   }
 }
 
-
-#ifdef    DEBUG
-Slit::SlitClient::SlitClient(void) {
-  allocate(sizeof(SlitClient), "Slit.cc");
-}
-
-
-Slit::SlitClient::~SlitClient(void) {
-  deallocate(sizeof(SlitClient), "Slit.cc");
-}
-#endif // DEBUG
 
 #endif // SLIT

@@ -19,6 +19,6 @@ $ #PixmapRelease
 $ #PixmapCacheLarge
 # BImageControl::renderImage: переполнение кэша, производится быстрая очистка\n
 $ #ColorParseError
-# BImageControl::getColor: ошибка разбора строки, описывающей цвет: \"%s\"\n
+# BImageControl::getColor: ошибка разбора строки, описывающей цвет: '%s'\n
 $ #ColorAllocError
-# BImageControl::getColor: ошибка размещения цвета в памяти: \"%s\"\n
+# BImageControl::getColor: ошибка размещения цвета в памяти: '%s'\n

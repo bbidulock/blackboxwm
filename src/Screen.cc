@@ -306,6 +306,11 @@ BScreen::BScreen(Blackbox *bb, int scrn) : ScreenInfo(bb, scrn) {
     XCreateGC(getBaseDisplay()->getXDisplay(), getRootWindow(),
 	      gc_value_mask, &gcv);
 
+  gcv.foreground = resource.mstyle.hilite.getColor()->getPixel();
+  resource.mstyle.hilite_gc =
+    XCreateGC(getBaseDisplay()->getXDisplay(), getRootWindow(),
+	      gc_value_mask, &gcv);
+
   gcv.foreground = resource.tstyle.l_text.getPixel();
   if (resource.tstyle.font)
     gcv.font = resource.tstyle.font->fid;
@@ -354,13 +359,19 @@ BScreen::BScreen(Blackbox *bb, int scrn) : ScreenInfo(bb, scrn) {
   geom_w += (resource.bevel_width * 2);
   geom_h += (resource.bevel_width * 2);
 
-  if (resource.wstyle.l_focus.getTexture() &
-      BImage_ParentRelative)
-    geom_pixmap =
-      image_control->renderImage(geom_w, geom_h, &resource.wstyle.t_focus);
-  else
-    geom_pixmap =
-      image_control->renderImage(geom_w, geom_h, &resource.wstyle.l_focus);
+  if (resource.wstyle.l_focus.getTexture() & BImage_ParentRelative) {
+    if (resource.wstyle.t_focus.getTexture() == (BImage_Flat | BImage_Solid))
+      geom_pixmap = None;
+    else
+      geom_pixmap =
+        image_control->renderImage(geom_w, geom_h, &resource.wstyle.t_focus);
+  } else {
+    if (resource.wstyle.l_focus.getTexture() == (BImage_Flat | BImage_Solid))
+      geom_pixmap = None;
+    else
+      geom_pixmap =
+        image_control->renderImage(geom_w, geom_h, &resource.wstyle.l_focus);
+  }
   
   XSetWindowAttributes attrib;
   unsigned long mask = CWBackPixmap | CWBorderPixel | CWSaveUnder;
@@ -561,6 +572,8 @@ BScreen::~BScreen(void) {
 	  resource.mstyle.h_text_gc);
   XFreeGC(getBaseDisplay()->getXDisplay(),
 	  resource.mstyle.d_text_gc);
+  XFreeGC(getBaseDisplay()->getXDisplay(),
+	  resource.mstyle.hilite_gc);
 
   XFreeGC(getBaseDisplay()->getXDisplay(),
 	  resource.tstyle.l_text_gc);
@@ -889,6 +902,10 @@ void BScreen::reconfigure(void) {
   XChangeGC(getBaseDisplay()->getXDisplay(), resource.mstyle.d_text_gc,
 	    gc_value_mask, &gcv);
 
+  gcv.foreground = resource.mstyle.hilite.getColor()->getPixel();
+  XChangeGC(getBaseDisplay()->getXDisplay(), resource.mstyle.hilite_gc,
+	    gc_value_mask, &gcv);
+
   gcv.foreground = resource.tstyle.l_text.getPixel();
   if (resource.tstyle.font)
     gcv.font = resource.tstyle.font->fid;
@@ -935,17 +952,35 @@ void BScreen::reconfigure(void) {
   geom_h += (resource.bevel_width * 2);
 
   Pixmap tmp = geom_pixmap;
-  if (resource.wstyle.l_focus.getTexture() &
-      BImage_ParentRelative)
-    geom_pixmap =
-      image_control->renderImage(geom_w, geom_h, &resource.wstyle.t_focus);
-  else
-    geom_pixmap =
-      image_control->renderImage(geom_w, geom_h, &resource.wstyle.l_focus);
+  if (resource.wstyle.l_focus.getTexture() & BImage_ParentRelative) {
+    if (resource.wstyle.t_focus.getTexture() ==
+	                              (BImage_Flat | BImage_Solid)) {
+      geom_pixmap = None;
+      XSetWindowBackground(getBaseDisplay()->getXDisplay(), geom_window,
+			 resource.wstyle.t_focus.getColor()->getPixel());
+    } else {
+      geom_pixmap =
+        image_control->renderImage(geom_w, geom_h,
+				   &resource.wstyle.t_focus);
+      XSetWindowBackgroundPixmap(getBaseDisplay()->getXDisplay(),
+				 geom_window, geom_pixmap);
+    }
+  } else {
+    if (resource.wstyle.l_focus.getTexture() ==
+	                              (BImage_Flat | BImage_Solid)) {
+      geom_pixmap = None;
+      XSetWindowBackground(getBaseDisplay()->getXDisplay(), geom_window,
+			 resource.wstyle.l_focus.getColor()->getPixel());
+    } else {
+      geom_pixmap =
+        image_control->renderImage(geom_w, geom_h,
+				   &resource.wstyle.l_focus);
+      XSetWindowBackgroundPixmap(getBaseDisplay()->getXDisplay(),
+				 geom_window, geom_pixmap);
+    }
+  }
   if (tmp) image_control->removeImage(tmp);
 
-  XSetWindowBackgroundPixmap(getBaseDisplay()->getXDisplay(), geom_window,
-                             geom_pixmap);
   XSetWindowBorderWidth(getBaseDisplay()->getXDisplay(), geom_window,
                         resource.border_width);
   XSetWindowBorder(getBaseDisplay()->getXDisplay(), geom_window,

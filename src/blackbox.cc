@@ -1518,7 +1518,7 @@ void Blackbox::load_rc(BScreen *screen) {
 		     &value))
     screen->saveStrftimeFormat(value.addr);
   else
-    screen->saveStrftimeFormat("%%I:%%M %%p");
+    screen->saveStrftimeFormat("%I:%M %p");
 #else //  HAVE_STRFTIME
 
   sprintf(name_lookup,  "session.screen%d.dateFormat", screen_number);

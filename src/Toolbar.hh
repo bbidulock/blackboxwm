@@ -70,6 +70,7 @@ private:
   Display *display;
 
   struct frame {
+    unsigned long button_pixel, pbutton_pixel;
     Pixmap base, label, wlabel, clk, button, pbutton;
     Window window, workspace_label, window_label, clock, psbutton, nsbutton,
       pwbutton, nwbutton;

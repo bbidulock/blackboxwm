@@ -19,6 +19,6 @@ $ #PixmapRelease
 $ #PixmapCacheLarge
 # BImageControl::renderImage: cache is large, forcing cleanout\n
 $ #ColorParseError
-# BImageControl::getColor: color parse error: \"%s\"\n
+# BImageControl::getColor: color parse error: '%s'\n
 $ #ColorAllocError
-# BImageControl::getColor: color alloc error: \"%s\"\n
+# BImageControl::getColor: color alloc error: '%s'\n

@@ -82,7 +82,7 @@ typedef struct ToolbarStyle {
 typedef struct MenuStyle {
   BColor t_text, f_text, h_text, d_text;
   BTexture title, frame, hilite;
-  GC t_text_gc, f_text_gc, h_text_gc, d_text_gc;
+  GC t_text_gc, f_text_gc, h_text_gc, d_text_gc, hilite_gc;
 
   XFontSet t_fontset, f_fontset;
   XFontSetExtents *t_fontset_extents, *f_fontset_extents;

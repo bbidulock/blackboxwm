@@ -9,7 +9,7 @@ $ #ShuttingDown
 $ #Aborting
 # aborting... dumping core\n
 $ #XConnectFail
-# BaseDisplay::BaseDisplay: connection to X server failed.\n"
+# BaseDisplay::BaseDisplay: connection to X server failed.\n
 $ #CloseOnExecFail
 # BaseDisplay::BaseDisplay: couldn't mark display connection as close-on-exec\n
 $ #BadWindowRemove

@@ -19,6 +19,6 @@ $ #PixmapRelease
 $ #PixmapCacheLarge
 # BImageControl::renderImage: reserva cheia, forçando limpeza\n
 $ #ColorParseError
-# BImageControl::getColor: color parse error: \"%s\"\n
+# BImageControl::getColor: color parse error: '%s'\n
 $ #ColorAllocError
-# BImageControl::getColor: erro localizando cor: \"%s\"\n
+# BImageControl::getColor: erro localizando cor: '%s'\n

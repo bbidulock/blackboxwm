@@ -1838,9 +1838,12 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
 
   cache_max = cmax;
 #ifdef    TIMEDCACHE
-  timer = new BTimer(basedisplay, this);
-  timer->setTimeout(cache_timeout);
-  timer->fireOnce(True);
+  if (cache_timeout) {
+    timer = new BTimer(basedisplay, this);
+    timer->setTimeout(cache_timeout);
+    timer->start();
+  } else
+    timer = (BTimer *) 0;
 #endif // TIMEDCACHE
 
   colors = (XColor *) 0;
@@ -2219,8 +2222,10 @@ BImageControl::~BImageControl(void) {
     }
 
 #ifdef    TIMEDCACHE
-    if (timer->isTiming()) timer->stop();
-    delete timer;
+    if (timer) {
+      timer->stop();
+      delete timer;
+    }
 #endif // TIMEDCACHE
   }
 
@@ -2318,10 +2323,9 @@ void BImageControl::removeImage(Pixmap pixmap) {
 	  tmp->count--;
 
 #ifdef    TIMEDCACHE
-          if (timer->isTiming()) timer->stop();
-          timer->start();
+	   if (! timer) timeout();
 #else // !TIMEDCACHE
-          if (! tmp->count) timeout();
+	   if (! tmp->count) timeout();
 #endif // TIMEDCACHE
         }
 

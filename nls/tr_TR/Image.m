@@ -19,6 +19,6 @@ $ #PixmapRelease
 $ #PixmapCacheLarge
 # BImageControl::renderImage : arabellek büyük, temizlemeye baþlýyorum\n
 $ #ColorParseError
-# BImageControl::getColor : renk tarama hatasý : \"%s\"\n
+# BImageControl::getColor : renk tarama hatasý : '%s'\n
 $ #ColorAllocError
-# BImageControl::getColor : renk ayýrma hatasý : \"%s\"\n
+# BImageControl::getColor : renk ayýrma hatasý : '%s'\n

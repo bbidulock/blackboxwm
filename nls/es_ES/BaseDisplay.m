@@ -9,7 +9,7 @@ $ #ShuttingDown
 $ #Aborting
 # cancelando... generando 'core'\n
 $ #XConnectFail
-# BaseDisplay::BaseDisplay: la conexión al servidor de X falló.\n"
+# BaseDisplay::BaseDisplay: la conexión al servidor de X falló.\n
 $ #CloseOnExecFail
 # BaseDisplay::BaseDisplay: no se pude marcar la conexión de despliegue como close-on-exec\n
 $ #BadWindowRemove

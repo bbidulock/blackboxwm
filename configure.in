@@ -1,7 +1,7 @@
 dnl configure.in for Blackbox 0.60.x  - an X11 Window manager
 dnl Initialize autoconf and automake
 AC_INIT(src/blackbox.cc)
-AM_INIT_AUTOMAKE(Blackbox,0.60.2-beta,no-define)
+AM_INIT_AUTOMAKE(Blackbox,0.60.3-beta,no-define)
 
 dnl Determine default prefix
 test x$prefix = "xNONE" && prefix="$ac_default_prefix"
@@ -149,6 +149,23 @@ AC_ARG_ENABLE(ordered-pseudo,
 )
 AC_SUBST(ORDEREDPSEUDO)
 
+dnl Check whether to include support for fully-styled window frames
+STYLEDFRAMES=""
+AC_MSG_CHECKING([whether to include support for fully-styled window frames])
+AC_ARG_ENABLE(styled-frames,
+[  --enable-styled-frames  include support for fully-styled window frames
+                          [default=yes]],
+  if test x$enableval = "xyes"; then
+    AC_MSG_RESULT([yes])
+    STYLEDFRAMES="-DSTYLEDFRAMES"
+  else
+    AC_MSG_RESULT([no])
+  fi,
+  AC_MSG_RESULT([yes])
+  STYLEDFRAMES="-DSTYLEDFRAMES"
+)
+AC_SUBST(STYLEDFRAMES)
+
 dnl Check whether to include debugging code
 DEBUG=""
 AC_MSG_CHECKING([whether to include verbose debugging code])
@@ -182,28 +199,10 @@ AC_SUBST(NLS)
 
 AC_CHECK_LIB(xpg4, setlocale, LIBS="$LIBS -lxpg4")
 
-GENCAT_TYPE="X/Open"
 AC_CHECK_PROGS(gencat_cmd, gencat)
 if test x$gencat_cmd = "x"; then
   NLS=""
-else
-  AC_MSG_CHECKING([which type of gencat you have])
-  gencat_gnu=`gencat -V 2>&1 | grep GNU`
-  if test -z "$gencat_gnu"; then
-    if gencat -lang C++ -new test.cat nls/C/main.m; then
-      AC_MSG_RESULT([X/Open])
-      GENCAT_TYPE="X/Open"
-    else
-      AC_MSG_RESULT([Sun])
-      GENCAT_TYPE="Sun"
-    fi
-    rm -f test.cat
-  else
-    AC_MSG_RESULT([GNU])
-    GENCAT_TYPE="GNU"
-  fi 
 fi
-AC_SUBST(GENCAT_TYPE)
 
 
 dnl Check for new timed pixmap cache

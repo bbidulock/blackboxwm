@@ -1,6 +1,64 @@
 ChangeLog for 0.60.x
 
 
+Changes from 0.60.2 to 0.60.3:
+  - put in a (temporary?) fix for a bug with the new way icons are
+    handled. Previously an icon was created only for non-transient
+    windows, which means that 1) minimized transient windows were
+    not getting cleaned up at shutdown, and that 2) one could
+    conceivably lose access to a minimized transient if there were
+    a break in the transient chain.
+
+    For the time being, every iconified window gets an icon. In
+    order to make this a little nicer, if a window doesn't provide
+    an icon title, the window title is used in the icon menu, rather
+    than 'Unnamed'.
+  - fixed a bug in handling the destruction of intermediate
+    transient windows. The code was leaving the transient of a
+    destroyed window with a reference to the now non-existent
+    window. This can lead to all sorts of problems.
+  - fixed a slight positioning error when the slit is on the right
+    side of the screen
+  - included a new style, Minimal, which is designed for use on 8-bit
+    displays. It tries to use a bare minimum of colors, and with the
+    new code regarding Flat Solid, should consume very little memory.
+  - made yet another alteration to the way focus changes after a window
+    closes under ClickToFocus. Blackbox now tracks the stacking order of
+    all windows and uses this information to give the focus to the topmost
+    window.
+  - new configure option :
+	--enable-styled-frames   include support for fully-styled window
+	                         frames -- these are the decorations which
+				 are affected by the window.frame* theme
+				 entries. This option is turned on by
+				 default.
+
+				 Because of the way they are implemented,
+				 these are typically the most memory and
+				 render intensive of the various blackbox
+				 decorations, even if they are typically
+				 only a pixel or so wide. Disabling this
+				 feature can result in a substantial
+				 decrease in X memory usage, but it's
+				 enabled by default to remain compatible
+				 with previous versions.
+
+  - added a whole mess of logic so that blackbox will use
+    XSetWindowBackground for Flat Solid textures instead generating
+    a pixmap (which would be subsequently cached)... should help cut
+    down some on the X memory usage
+  - altered the behavior of the BImageControl timer... now it will
+    fire every cacheLife minutes, regardless of when anything has
+    been removed from the cache
+  - modified the NLS build code yet again... at this point we've
+    hopefully hit the least common denominator and it should work
+    for everyone
+  - dealt with a possible problem in the BlackboxWindow constructor
+    where we referred to a member after deletion
+  - removed a last lingering bit of the allocate()/deallocate() code
+  - fixed a pair of string formatting problems
+
+
 Changes from 0.60.1 to 0.60.2:
   - updated README.bbtools, since bbpager and bbkeys were updated to work with
     0.60.x (also removed the .diffs from the source tree)

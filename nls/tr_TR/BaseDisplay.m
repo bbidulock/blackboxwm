@@ -9,7 +9,7 @@ $ #ShuttingDown
 $ #Aborting
 # kapatýlýyorum ... çöküntüyü býrakýyorum\n
 $ #XConnectFail
-# BaseDisplay::BaseDisplay : X sunucusuna baðlanýlýnamadý .\n"
+# BaseDisplay::BaseDisplay : X sunucusuna baðlanýlýnamadý .\n
 $ #CloseOnExecFail
 # BaseDisplay::BaseDisplay : çalýþtýrýrken kapatmada ekrana baðlanýlýnamadý \n
 $ #BadWindowRemove

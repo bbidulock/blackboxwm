@@ -19,6 +19,6 @@ $ #PixmapRelease
 $ #PixmapCacheLarge
 # BImageControl::renderImage: stort cache, tvingar upprensning\n
 $ #ColorParseError
-# BImageControl::getColor: färgfel: \"%s\"\n
+# BImageControl::getColor: färgfel: '%s'\n
 $ #ColorAllocError
-# BImageControl::getColor: färgallokerings fel: \"%s\"\n
+# BImageControl::getColor: färgallokerings fel: '%s'\n

@@ -1,152 +1,151 @@
+#define BaseDisplaySet 0x1
+#define BaseDisplayXError 0x1
+#define BaseDisplaySignalCaught 0x2
+#define BaseDisplayShuttingDown 0x3
+#define BaseDisplayAborting 0x4
+#define BaseDisplayXConnectFail 0x5
+#define BaseDisplayCloseOnExecFail 0x6
+#define BaseDisplayBadWindowRemove 0x7
 
-const long BaseDisplaySet	= 1;
-const long BaseDisplayXError	= 1;
-const long BaseDisplaySignalCaught	= 2;
-const long BaseDisplayShuttingDown	= 3;
-const long BaseDisplayAborting	= 4;
-const long BaseDisplayXConnectFail	= 5;
-const long BaseDisplayCloseOnExecFail	= 6;
-const long BaseDisplayBadWindowRemove	= 7;
+#define BasemenuSet 0x2
+#define BasemenuBlackboxMenu 0x1
 
-const long BasemenuSet	= 2;
-const long BasemenuBlackboxMenu	= 1;
+#define ConfigmenuSet 0x3
+#define ConfigmenuConfigOptions 0x1
+#define ConfigmenuFocusModel 0x2
+#define ConfigmenuWindowPlacement 0x3
+#define ConfigmenuImageDithering 0x4
+#define ConfigmenuOpaqueMove 0x5
+#define ConfigmenuFullMax 0x6
+#define ConfigmenuFocusNew 0x7
+#define ConfigmenuFocusLast 0x8
+#define ConfigmenuClickToFocus 0x9
+#define ConfigmenuSloppyFocus 0xa
+#define ConfigmenuAutoRaise 0xb
+#define ConfigmenuSmartRows 0xc
+#define ConfigmenuSmartCols 0xd
+#define ConfigmenuCascade 0xe
+#define ConfigmenuLeftRight 0xf
+#define ConfigmenuRightLeft 0x10
+#define ConfigmenuTopBottom 0x11
+#define ConfigmenuBottomTop 0x12
 
-const long ConfigmenuSet	= 3;
-const long ConfigmenuConfigOptions	= 1;
-const long ConfigmenuFocusModel	= 2;
-const long ConfigmenuWindowPlacement	= 3;
-const long ConfigmenuImageDithering	= 4;
-const long ConfigmenuOpaqueMove	= 5;
-const long ConfigmenuFullMax	= 6;
-const long ConfigmenuFocusNew	= 7;
-const long ConfigmenuFocusLast	= 8;
-const long ConfigmenuClickToFocus	= 9;
-const long ConfigmenuSloppyFocus	= 10;
-const long ConfigmenuAutoRaise	= 11;
-const long ConfigmenuSmartRows	= 12;
-const long ConfigmenuSmartCols	= 13;
-const long ConfigmenuCascade	= 14;
-const long ConfigmenuLeftRight	= 15;
-const long ConfigmenuRightLeft	= 16;
-const long ConfigmenuTopBottom	= 17;
-const long ConfigmenuBottomTop	= 18;
+#define IconSet 0x4
+#define IconIcons 0x1
+#define IconUnnamed 0x2
 
-const long IconSet	= 4;
-const long IconIcons	= 1;
-const long IconUnnamed	= 2;
+#define ImageSet 0x5
+#define ImageErrorCreatingSolidPixmap 0x1
+#define ImageErrorCreatingXImage 0x2
+#define ImageUnsupVisual 0x3
+#define ImageErrorCreatingPixmap 0x4
+#define ImageInvalidColormapSize 0x5
+#define ImageErrorAllocatingColormap 0x6
+#define ImageColorAllocFail 0x7
+#define ImagePixmapRelease 0x8
+#define ImagePixmapCacheLarge 0x9
+#define ImageColorParseError 0xa
+#define ImageColorAllocError 0xb
 
-const long ImageSet	= 5;
-const long ImageErrorCreatingSolidPixmap	= 1;
-const long ImageErrorCreatingXImage	= 2;
-const long ImageUnsupVisual	= 3;
-const long ImageErrorCreatingPixmap	= 4;
-const long ImageInvalidColormapSize	= 5;
-const long ImageErrorAllocatingColormap	= 6;
-const long ImageColorAllocFail	= 7;
-const long ImagePixmapRelease	= 8;
-const long ImagePixmapCacheLarge	= 9;
-const long ImageColorParseError	= 10;
-const long ImageColorAllocError	= 11;
+#define ScreenSet 0x6
+#define ScreenAnotherWMRunning 0x1
+#define ScreenManagingScreen 0x2
+#define ScreenFontLoadFail 0x3
+#define ScreenDefaultFontLoadFail 0x4
+#define ScreenEmptyMenuFile 0x5
+#define Screenxterm 0x6
+#define ScreenRestart 0x7
+#define ScreenExit 0x8
+#define ScreenEXECError 0x9
+#define ScreenEXITError 0xa
+#define ScreenSTYLEError 0xb
+#define ScreenCONFIGError 0xc
+#define ScreenINCLUDEError 0xd
+#define ScreenINCLUDEErrorReg 0xe
+#define ScreenSUBMENUError 0xf
+#define ScreenRESTARTError 0x10
+#define ScreenRECONFIGError 0x11
+#define ScreenSTYLESDIRError 0x12
+#define ScreenSTYLESDIRErrorNotDir 0x13
+#define ScreenSTYLESDIRErrorNoExist 0x14
+#define ScreenWORKSPACESError 0x15
+#define ScreenPositionLength 0x16
+#define ScreenPositionFormat 0x17
+#define ScreenGeometryFormat 0x18
 
-const long ScreenSet	= 6;
-const long ScreenAnotherWMRunning	= 1;
-const long ScreenManagingScreen	= 2;
-const long ScreenFontLoadFail	= 3;
-const long ScreenDefaultFontLoadFail	= 4;
-const long ScreenEmptyMenuFile	= 5;
-const long Screenxterm	= 6;
-const long ScreenRestart	= 7;
-const long ScreenExit	= 8;
-const long ScreenEXECError	= 9;
-const long ScreenEXITError	= 10;
-const long ScreenSTYLEError	= 11;
-const long ScreenCONFIGError	= 12;
-const long ScreenINCLUDEError	= 13;
-const long ScreenINCLUDEErrorReg	= 14;
-const long ScreenSUBMENUError	= 15;
-const long ScreenRESTARTError	= 16;
-const long ScreenRECONFIGError	= 17;
-const long ScreenSTYLESDIRError	= 18;
-const long ScreenSTYLESDIRErrorNotDir	= 19;
-const long ScreenSTYLESDIRErrorNoExist	= 20;
-const long ScreenWORKSPACESError	= 21;
-const long ScreenPositionLength	= 22;
-const long ScreenPositionFormat	= 23;
-const long ScreenGeometryFormat	= 24;
+#define SlitSet 0x7
+#define SlitSlitTitle 0x1
+#define SlitSlitDirection 0x2
+#define SlitSlitPlacement 0x3
 
-const long SlitSet	= 7;
-const long SlitSlitTitle	= 1;
-const long SlitSlitDirection	= 2;
-const long SlitSlitPlacement	= 3;
+#define ToolbarSet 0x8
+#define ToolbarNoStrftimeLength 0x1
+#define ToolbarNoStrftimeDateFormat 0x2
+#define ToolbarNoStrftimeDateFormatEu 0x3
+#define ToolbarNoStrftimeTimeFormat24 0x4
+#define ToolbarNoStrftimeTimeFormat12 0x5
+#define ToolbarNoStrftimeTimeFormatP 0x6
+#define ToolbarNoStrftimeTimeFormatA 0x7
+#define ToolbarToolbarTitle 0x8
+#define ToolbarEditWkspcName 0x9
+#define ToolbarToolbarPlacement 0xa
 
-const long ToolbarSet	= 8;
-const long ToolbarNoStrftimeLength	= 1;
-const long ToolbarNoStrftimeDateFormat	= 2;
-const long ToolbarNoStrftimeDateFormatEu	= 3;
-const long ToolbarNoStrftimeTimeFormat24	= 4;
-const long ToolbarNoStrftimeTimeFormat12	= 5;
-const long ToolbarNoStrftimeTimeFormatP	= 6;
-const long ToolbarNoStrftimeTimeFormatA	= 7;
-const long ToolbarToolbarTitle	= 8;
-const long ToolbarEditWkspcName	= 9;
-const long ToolbarToolbarPlacement	= 10;
+#define WindowSet 0x9
+#define WindowCreating 0x1
+#define WindowXGetWindowAttributesFail 0x2
+#define WindowCannotFindScreen 0x3
+#define WindowUnnamed 0x4
+#define WindowMapRequest 0x5
+#define WindowUnmapNotify 0x6
+#define WindowUnmapNotifyReparent 0x7
 
-const long WindowSet	= 9;
-const long WindowCreating	= 1;
-const long WindowXGetWindowAttributesFail	= 2;
-const long WindowCannotFindScreen	= 3;
-const long WindowUnnamed	= 4;
-const long WindowMapRequest	= 5;
-const long WindowUnmapNotify	= 6;
-const long WindowUnmapNotifyReparent	= 7;
+#define WindowmenuSet 0xa
+#define WindowmenuSendTo 0x1
+#define WindowmenuShade 0x2
+#define WindowmenuIconify 0x3
+#define WindowmenuMaximize 0x4
+#define WindowmenuRaise 0x5
+#define WindowmenuLower 0x6
+#define WindowmenuStick 0x7
+#define WindowmenuKillClient 0x8
+#define WindowmenuClose 0x9
 
-const long WindowmenuSet	= 10;
-const long WindowmenuSendTo	= 1;
-const long WindowmenuShade	= 2;
-const long WindowmenuIconify	= 3;
-const long WindowmenuMaximize	= 4;
-const long WindowmenuRaise	= 5;
-const long WindowmenuLower	= 6;
-const long WindowmenuStick	= 7;
-const long WindowmenuKillClient	= 8;
-const long WindowmenuClose	= 9;
+#define WorkspaceSet 0xb
+#define WorkspaceDefaultNameFormat 0x1
 
-const long WorkspaceSet	= 11;
-const long WorkspaceDefaultNameFormat	= 1;
+#define WorkspacemenuSet 0xc
+#define WorkspacemenuWorkspacesTitle 0x1
+#define WorkspacemenuNewWorkspace 0x2
+#define WorkspacemenuRemoveLast 0x3
 
-const long WorkspacemenuSet	= 12;
-const long WorkspacemenuWorkspacesTitle	= 1;
-const long WorkspacemenuNewWorkspace	= 2;
-const long WorkspacemenuRemoveLast	= 3;
+#define blackboxSet 0xd
+#define blackboxNoManagableScreens 0x1
+#define blackboxMapRequest 0x2
 
-const long blackboxSet	= 13;
-const long blackboxNoManagableScreens	= 1;
-const long blackboxMapRequest	= 2;
+#define CommonSet 0xe
+#define CommonYes 0x1
+#define CommonNo 0x2
+#define CommonDirectionTitle 0x3
+#define CommonDirectionHoriz 0x4
+#define CommonDirectionVert 0x5
+#define CommonAlwaysOnTop 0x6
+#define CommonPlacementTitle 0x7
+#define CommonPlacementTopLeft 0x8
+#define CommonPlacementCenterLeft 0x9
+#define CommonPlacementBottomLeft 0xa
+#define CommonPlacementTopCenter 0xb
+#define CommonPlacementBottomCenter 0xc
+#define CommonPlacementTopRight 0xd
+#define CommonPlacementCenterRight 0xe
+#define CommonPlacementBottomRight 0xf
 
-const long mainSet	= 14;
-const long mainRCRequiresArg	= 1;
-const long mainDISPLAYRequiresArg	= 2;
-const long mainWarnDisplaySet	= 3;
-const long mainUsage	= 4;
-const long mainCompileOptions	= 5;
+#define mainSet 0xf
+#define mainRCRequiresArg 0x1
+#define mainDISPLAYRequiresArg 0x2
+#define mainWarnDisplaySet 0x3
+#define mainUsage 0x4
+#define mainCompileOptions 0x5
 
-const long CommonSet	= 15;
-const long CommonYes	= 1;
-const long CommonNo	= 2;
-const long CommonDirectionTitle	= 3;
-const long CommonDirectionHoriz	= 4;
-const long CommonDirectionVert	= 5;
-const long CommonAlwaysOnTop	= 6;
-const long CommonPlacementTitle	= 7;
-const long CommonPlacementTopLeft	= 8;
-const long CommonPlacementCenterLeft	= 9;
-const long CommonPlacementBottomLeft	= 10;
-const long CommonPlacementTopCenter	= 11;
-const long CommonPlacementBottomCenter	= 12;
-const long CommonPlacementTopRight	= 13;
-const long CommonPlacementCenterRight	= 14;
-const long CommonPlacementBottomRight	= 15;
-
-const long bsetrootSet	= 16;
-const long bsetrootMustSpecify	= 1;
-const long bsetrootUsage	= 2;
+#define bsetrootSet 0x10
+#define bsetrootMustSpecify 0x1
+#define bsetrootUsage 0x2

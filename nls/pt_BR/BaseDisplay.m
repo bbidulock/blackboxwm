@@ -9,7 +9,7 @@ $ #ShuttingDown
 $ #Aborting
 # abortando... gerando arquivo core\n
 $ #XConnectFail
-# BaseDisplay::BaseDisplay: conecção ao servidor X falhou.\n"
+# BaseDisplay::BaseDisplay: conecção ao servidor X falhou.\n
 $ #CloseOnExecFail
 # BaseDisplay::BaseDisplay: impossivel marcar a conexão ao display como close-on-exec\n
 $ #BadWindowRemove

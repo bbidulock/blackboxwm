@@ -301,42 +301,6 @@ void Toolbar::reconfigure(void) {
     (frame.width - (frame.clock_w + (frame.button_w * 4) +
                     frame.workspace_label_w + (frame.bevel_w * 8) + 6));
 
-  Pixmap tmp = frame.base;
-  frame.base =
-    image_ctrl->renderImage(frame.width, frame.height,
-			    &(screen->getToolbarStyle()->toolbar));
-  if (tmp) image_ctrl->removeImage(tmp);
-
-  tmp = frame.label;
-  frame.label =
-    image_ctrl->renderImage(frame.window_label_w, frame.label_h,
-			    &(screen->getToolbarStyle()->window));
-  if (tmp) image_ctrl->removeImage(tmp);
-
-  tmp = frame.wlabel;
-  frame.wlabel =
-    image_ctrl->renderImage(frame.workspace_label_w, frame.label_h,
-			    &(screen->getToolbarStyle()->label));
-  if (tmp) image_ctrl->removeImage(tmp);
-
-  tmp = frame.clk;
-  frame.clk =
-    image_ctrl->renderImage(frame.clock_w, frame.label_h,
-			    &(screen->getToolbarStyle()->clock));
-  if (tmp) image_ctrl->removeImage(tmp);
-
-  tmp = frame.button;
-  frame.button =
-    image_ctrl->renderImage(frame.button_w, frame.button_w,
-                            &(screen->getToolbarStyle()->button));
-  if (tmp) image_ctrl->removeImage(tmp);
-
-  tmp = frame.pbutton;
-  frame.pbutton =
-    image_ctrl->renderImage(frame.button_w, frame.button_w,
-                            &(screen->getToolbarStyle()->pressed));
-  if (tmp) image_ctrl->removeImage(tmp);
-
   XMoveResizeWindow(display, frame.window, frame.x, frame.y,
 		    frame.width, frame.height);
   XMoveResizeWindow(display, frame.workspace_label, frame.bevel_w,
@@ -363,14 +327,88 @@ void Toolbar::reconfigure(void) {
 		    frame.bevel_w, frame.bevel_w, frame.clock_w,
 		    frame.label_h);
 
-  XSetWindowBackgroundPixmap(display, frame.window, frame.base);
-  XSetWindowBackgroundPixmap(display, frame.workspace_label, frame.wlabel);
-  XSetWindowBackgroundPixmap(display, frame.window_label, frame.label);
-  XSetWindowBackgroundPixmap(display, frame.clock, frame.clk);
-  XSetWindowBackgroundPixmap(display, frame.psbutton, frame.button);
-  XSetWindowBackgroundPixmap(display, frame.nsbutton, frame.button);
-  XSetWindowBackgroundPixmap(display, frame.pwbutton, frame.button);
-  XSetWindowBackgroundPixmap(display, frame.nwbutton, frame.button);
+  Pixmap tmp = frame.base;
+  BTexture *texture = &(screen->getToolbarStyle()->toolbar);
+  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+    frame.base = None;
+    XSetWindowBackground(display, frame.window,
+			 texture->getColor()->getPixel());
+  } else {
+    frame.base =
+      image_ctrl->renderImage(frame.width, frame.height, texture);
+    XSetWindowBackgroundPixmap(display, frame.window, frame.base);
+  }
+  if (tmp) image_ctrl->removeImage(tmp);
+
+  tmp = frame.label;
+  texture = &(screen->getToolbarStyle()->window);
+  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+    frame.label = None;
+    XSetWindowBackground(display, frame.window_label,
+			 texture->getColor()->getPixel());
+  } else {
+    frame.label =
+      image_ctrl->renderImage(frame.window_label_w, frame.label_h, texture);
+    XSetWindowBackgroundPixmap(display, frame.window_label, frame.label);
+  }
+  if (tmp) image_ctrl->removeImage(tmp);
+
+  tmp = frame.wlabel;
+  texture = &(screen->getToolbarStyle()->label);
+  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+    frame.wlabel = None;
+    XSetWindowBackground(display, frame.workspace_label,
+			 texture->getColor()->getPixel());
+  } else {
+    frame.wlabel =
+      image_ctrl->renderImage(frame.workspace_label_w, frame.label_h, texture);
+    XSetWindowBackgroundPixmap(display, frame.workspace_label, frame.wlabel);
+  }
+  if (tmp) image_ctrl->removeImage(tmp);
+
+  tmp = frame.clk;
+  texture = &(screen->getToolbarStyle()->clock);
+  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+    frame.clk = None;
+    XSetWindowBackground(display, frame.clock,
+			 texture->getColor()->getPixel());
+  } else {
+    frame.clk =
+      image_ctrl->renderImage(frame.clock_w, frame.label_h, texture);
+    XSetWindowBackgroundPixmap(display, frame.clock, frame.clk);
+  }
+  if (tmp) image_ctrl->removeImage(tmp);
+
+  tmp = frame.button;
+  texture = &(screen->getToolbarStyle()->button);
+  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+    frame.button = None;
+
+    frame.button_pixel = texture->getColor()->getPixel();
+    XSetWindowBackground(display, frame.psbutton, frame.button_pixel);
+    XSetWindowBackground(display, frame.nsbutton, frame.button_pixel);
+    XSetWindowBackground(display, frame.pwbutton, frame.button_pixel);
+    XSetWindowBackground(display, frame.nwbutton, frame.button_pixel);
+  } else {
+    frame.button =
+      image_ctrl->renderImage(frame.button_w, frame.button_w, texture);
+
+    XSetWindowBackgroundPixmap(display, frame.psbutton, frame.button);
+    XSetWindowBackgroundPixmap(display, frame.nsbutton, frame.button);
+    XSetWindowBackgroundPixmap(display, frame.pwbutton, frame.button);
+    XSetWindowBackgroundPixmap(display, frame.nwbutton, frame.button);
+  }
+  if (tmp) image_ctrl->removeImage(tmp);
+
+  tmp = frame.pbutton;
+  texture = &(screen->getToolbarStyle()->pressed);
+  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+    frame.pbutton = None;
+    frame.pbutton_pixel = texture->getColor()->getPixel();
+  } else
+    frame.pbutton =
+      image_ctrl->renderImage(frame.button_w, frame.button_w, texture);
+  if (tmp) image_ctrl->removeImage(tmp);
 
   XSetWindowBorder(display, frame.window,
 		   screen->getBorderColor()->getPixel());
@@ -666,8 +704,17 @@ void Toolbar::redrawWorkspaceLabel(Bool redraw) {
 
 void Toolbar::redrawPrevWorkspaceButton(Bool pressed, Bool redraw) {
   if (redraw) {
-    XSetWindowBackgroundPixmap(display, frame.psbutton,
-                               ((pressed) ? frame.pbutton : frame.button));
+    if (pressed) {
+      if (frame.pbutton)
+	XSetWindowBackgroundPixmap(display, frame.psbutton, frame.pbutton);
+      else
+	XSetWindowBackground(display, frame.psbutton, frame.pbutton_pixel);
+    } else {
+      if (frame.button)
+        XSetWindowBackgroundPixmap(display, frame.psbutton, frame.button);
+      else
+	XSetWindowBackground(display, frame.psbutton, frame.button_pixel);
+    }
     XClearWindow(display, frame.psbutton);
   }
 
@@ -685,8 +732,17 @@ void Toolbar::redrawPrevWorkspaceButton(Bool pressed, Bool redraw) {
 
 void Toolbar::redrawNextWorkspaceButton(Bool pressed, Bool redraw) {
   if (redraw) {
-    XSetWindowBackgroundPixmap(display, frame.nsbutton,
-                               ((pressed) ? frame.pbutton : frame.button));
+    if (pressed) {
+      if (frame.pbutton)
+	XSetWindowBackgroundPixmap(display, frame.nsbutton, frame.pbutton);
+      else
+	XSetWindowBackground(display, frame.nsbutton, frame.pbutton_pixel);
+    } else {
+      if (frame.button)
+        XSetWindowBackgroundPixmap(display, frame.nsbutton, frame.button);
+      else
+	XSetWindowBackground(display, frame.nsbutton, frame.button_pixel);
+    }
     XClearWindow(display, frame.nsbutton);
   }
 
@@ -704,8 +760,17 @@ void Toolbar::redrawNextWorkspaceButton(Bool pressed, Bool redraw) {
 
 void Toolbar::redrawPrevWindowButton(Bool pressed, Bool redraw) {
   if (redraw) {
-    XSetWindowBackgroundPixmap(display, frame.pwbutton,
-                               ((pressed) ? frame.pbutton : frame.button));
+    if (pressed) {
+      if (frame.pbutton)
+	XSetWindowBackgroundPixmap(display, frame.pwbutton, frame.pbutton);
+      else
+	XSetWindowBackground(display, frame.pwbutton, frame.pbutton_pixel);
+    } else {
+      if (frame.button)
+        XSetWindowBackgroundPixmap(display, frame.pwbutton, frame.button);
+      else
+	XSetWindowBackground(display, frame.pwbutton, frame.button_pixel);
+    }
     XClearWindow(display, frame.pwbutton);
   }
 
@@ -723,8 +788,17 @@ void Toolbar::redrawPrevWindowButton(Bool pressed, Bool redraw) {
 
 void Toolbar::redrawNextWindowButton(Bool pressed, Bool redraw) {
   if (redraw) {
-    XSetWindowBackgroundPixmap(display, frame.nwbutton,
-                               ((pressed) ? frame.pbutton : frame.button));
+    if (pressed) {
+      if (frame.pbutton)
+	XSetWindowBackgroundPixmap(display, frame.nwbutton, frame.pbutton);
+      else
+	XSetWindowBackground(display, frame.nwbutton, frame.pbutton_pixel);
+    } else {
+      if (frame.button)
+        XSetWindowBackgroundPixmap(display, frame.nwbutton, frame.button);
+      else
+	XSetWindowBackground(display, frame.nwbutton, frame.button_pixel);
+    }
     XClearWindow(display, frame.nwbutton);
   }
 

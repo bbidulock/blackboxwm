@@ -44,10 +44,6 @@ private:
 
   public:
     Directionmenu(Slitmenu *);
-    
-#ifdef    DEBUG
-    virtual ~Directionmenu(void);
-#endif // DEBUG
   }; 
   
   class Placementmenu : public Basemenu {
@@ -59,10 +55,6 @@ private:
   
   public:
     Placementmenu(Slitmenu *);
-
-#ifdef    DEBUG
-    virtual ~Placementmenu(void);
-#endif // DEBUG
   };
   
   Directionmenu *directionmenu;
@@ -97,11 +89,6 @@ private:
 
     int x, y;
     unsigned int width, height;
-
-#ifdef    DEBUG
-    SlitClient(void);
-    ~SlitClient(void);
-#endif // DEBUG
   };
   
   Bool on_top;

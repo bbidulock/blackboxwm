@@ -19,6 +19,6 @@ $ #PixmapRelease
 $ #PixmapCacheLarge
 # BImageControl::renderImage: reserva de pixmaps grande, forzando limpieza\n
 $ #ColorParseError
-# BImageControl::getColor: error evaluando el color: \"%s\"\n
+# BImageControl::getColor: error evaluando el color: '%s'\n
 $ #ColorAllocError
-# BImageControl::getColor: error asignando el color: \"%s\"\n
+# BImageControl::getColor: error asignando el color: '%s'\n

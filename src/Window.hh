@@ -106,6 +106,10 @@ private:
 
   struct _frame {
     Bool shaped;
+    unsigned long ulabel_pixel, flabel_pixel, utitle_pixel,
+      ftitle_pixel, uhandle_pixel, fhandle_pixel, ubutton_pixel,
+      fbutton_pixel, pbutton_pixel, uborder_pixel, fborder_pixel,
+      ugrip_pixel, fgrip_pixel;
     Pixmap ulabel, flabel, utitle, ftitle, uhandle, fhandle,
       ubutton, fbutton, pbutton, uborder, fborder, ugrip, fgrip;
     Window window, plate, title, label, border, handle,

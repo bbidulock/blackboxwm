@@ -60,6 +60,7 @@ Workspace::Workspace(BScreen *scrn, int i) {
 
   id = i;
 
+  stackingList = new LinkedList<BlackboxWindow>;
   windowList = new LinkedList<BlackboxWindow>;
   clientmenu = new Clientmenu(this);
 
@@ -76,6 +77,7 @@ Workspace::Workspace(BScreen *scrn, int i) {
 
 
 Workspace::~Workspace(void) {
+  delete stackingList;
   delete windowList;
   delete clientmenu;
 
@@ -92,6 +94,7 @@ const int Workspace::addWindow(BlackboxWindow *w, Bool place) {
   w->setWorkspace(id);
   w->setWindowNumber(windowList->count());
 
+  stackingList->insert(w, 0);
   windowList->insert(w);
 
   clientmenu->insert((const char **) w->getTitle());
@@ -108,6 +111,8 @@ const int Workspace::addWindow(BlackboxWindow *w, Bool place) {
 const int Workspace::removeWindow(BlackboxWindow *w) {
   if (! w) return -1;
 
+  stackingList->remove(w);
+
   if (w->isFocused()) {
     if (screen->isSloppyFocus())
       screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
@@ -115,9 +120,8 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
 	     w->getTransientFor()->isVisible())
       w->getTransientFor()->setInputFocus();
     else {
-      screen->nextFocus();
-      
-      if (w->isFocused()) {
+      BlackboxWindow *top = stackingList->first();
+      if (! top || ! top->setInputFocus()) {
 	screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
 	XSetInputFocus(screen->getBlackbox()->getXDisplay(),
 		       screen->getToolbar()->getWindowID(),
@@ -128,7 +132,7 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
   
   if (lastfocus == w)
     lastfocus = (BlackboxWindow *) 0;
-  
+
   windowList->remove(w->getWindowNumber());
   clientmenu->remove(w->getWindowNumber());
   clientmenu->update();
@@ -180,6 +184,7 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
   }
 
   Window *nstack = new Window[i];
+  Workspace *wkspc;
 
   i = 0;
   win = bottom;
@@ -187,11 +192,23 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
     *(nstack + (i++)) = win->getFrameWindow();
     screen->updateNetizenWindowRaise(win->getClientWindow());
 
+    if (! win->isIconic()) {
+      wkspc = screen->getWorkspace(win->getWorkspaceNumber());
+      wkspc->stackingList->remove(win);
+      wkspc->stackingList->insert(win, 0);
+    }
+
     win = win->getTransient();
   }
 
   *(nstack + (i++)) = win->getFrameWindow();
   screen->updateNetizenWindowRaise(win->getClientWindow());
+
+  if (! win->isIconic()) {
+    wkspc = screen->getWorkspace(win->getWorkspaceNumber());
+    wkspc->stackingList->remove(win);
+    wkspc->stackingList->insert(win, 0);
+  }
 
   screen->raiseWindows(nstack, i);
 
@@ -214,17 +231,30 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
   }
 
   Window *nstack = new Window[i];
+  Workspace *wkspc;
 
   i = 0;
   while (win->getTransientFor()) {
     *(nstack + (i++)) = win->getFrameWindow();
     screen->updateNetizenWindowLower(win->getClientWindow());
 
+    if (! win->isIconic()) {
+      wkspc = screen->getWorkspace(win->getWorkspaceNumber());
+      wkspc->stackingList->remove(win);
+      wkspc->stackingList->insert(win);
+    }
+
     win = win->getTransientFor();
   }
 
   *(nstack + (i++)) = win->getFrameWindow();
   screen->updateNetizenWindowLower(win->getClientWindow());
+
+  if (! win->isIconic()) {
+    wkspc = screen->getWorkspace(win->getWorkspaceNumber());
+    wkspc->stackingList->remove(win);
+    wkspc->stackingList->insert(win);
+  }
 
   screen->getBlackbox()->grab();
 
@@ -287,14 +317,15 @@ void Workspace::setName(char *new_name) {
   if (new_name) {
     name = bstrdup(new_name);
   } else {
-    name = bstrdup(i18n->
-		   getMessage(
+    name = new char[128];
+    sprintf(name, i18n->
+	          getMessage(
 #ifdef    NLS
-			      WorkspaceSet, WorkspaceDefaultNameFormat,
+		             WorkspaceSet, WorkspaceDefaultNameFormat,
 #else // !NLS
-			      0, 0,
+			     0, 0,
 #endif // NLS
-			      "Workspace %d"));
+			     "Workspace %d"), id + 1);
   }
   
   clientmenu->setLabel(name);

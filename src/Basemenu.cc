@@ -341,33 +341,53 @@ void Basemenu::update(void) {
   if (menu.height < 1) menu.height = 1;
 
   Pixmap tmp;
+  BTexture *texture;
   if (title_vis) {
     tmp = menu.title_pixmap;
-    menu.title_pixmap =
-      image_ctrl->renderImage(menu.width, menu.title_h,
-			      &(screen->getMenuStyle()->title));
+    texture = &(screen->getMenuStyle()->title);
+    if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+      menu.title_pixmap = None;
+      XSetWindowBackground(display, menu.title,
+			   texture->getColor()->getPixel());
+    } else {
+      menu.title_pixmap =
+        image_ctrl->renderImage(menu.width, menu.title_h, texture);
+      XSetWindowBackgroundPixmap(display, menu.title, menu.title_pixmap);
+    }
     if (tmp) image_ctrl->removeImage(tmp);
-    XSetWindowBackgroundPixmap(display, menu.title, menu.title_pixmap);
     XClearWindow(display, menu.title);
   }
 
   tmp = menu.frame_pixmap;
-  menu.frame_pixmap =
-    image_ctrl->renderImage(menu.width, menu.frame_h,
-			    &(screen->getMenuStyle()->frame));
+  texture = &(screen->getMenuStyle()->frame);
+  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+    menu.frame_pixmap = None;
+    XSetWindowBackground(display, menu.frame,
+			 texture->getColor()->getPixel());
+  } else {
+    menu.frame_pixmap =
+      image_ctrl->renderImage(menu.width, menu.frame_h, texture);
+    XSetWindowBackgroundPixmap(display, menu.frame, menu.frame_pixmap);
+  }
   if (tmp) image_ctrl->removeImage(tmp);
-  XSetWindowBackgroundPixmap(display, menu.frame, menu.frame_pixmap);
 
   tmp = menu.hilite_pixmap;
-  menu.hilite_pixmap =
-    image_ctrl->renderImage(menu.item_w, menu.item_h,
-			    &screen->getMenuStyle()->hilite);
+  texture = &(screen->getMenuStyle()->hilite);
+  if (texture->getTexture() == (BImage_Flat | BImage_Solid))
+    menu.hilite_pixmap = None;
+  else
+    menu.hilite_pixmap =
+      image_ctrl->renderImage(menu.item_w, menu.item_h, texture);
   if (tmp) image_ctrl->removeImage(tmp);
 
-  int hw = menu.item_h / 2;
   tmp = menu.sel_pixmap;
-  menu.sel_pixmap =
-    image_ctrl->renderImage(hw, hw, &screen->getMenuStyle()->hilite);
+  if (texture->getTexture() == (BImage_Flat | BImage_Solid))
+    menu.sel_pixmap = None;
+  else {
+    int hw = menu.item_h / 2;
+    menu.sel_pixmap =
+      image_ctrl->renderImage(hw, hw, texture);
+  }
   if (tmp) image_ctrl->removeImage(tmp);
 
   XResizeWindow(display, menu.window, menu.width, menu.height);
@@ -660,14 +680,26 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clear,
       dosel = False;
   }
   
-  if (dohilite && highlight && (menu.hilite_pixmap != ParentRelative))
-    XCopyArea(display, menu.hilite_pixmap, menu.frame,
-              screen->getMenuStyle()->h_text_gc,
-              hoff_x, hoff_y, hilite_w, hilite_h, hilite_x, hilite_y);
-  else if (dosel && item->isSelected() && (menu.sel_pixmap != ParentRelative))
-    XCopyArea(display, menu.sel_pixmap, menu.frame,
-	      screen->getMenuStyle()->h_text_gc, 0, 0, half_w, half_w,
-	      sel_x, sel_y);
+  if (dohilite && highlight && (menu.hilite_pixmap != ParentRelative)) {
+    if (menu.hilite_pixmap)
+      XCopyArea(display, menu.hilite_pixmap, menu.frame,
+		screen->getMenuStyle()->hilite_gc, hoff_x, hoff_y,
+		hilite_w, hilite_h, hilite_x, hilite_y);
+    else
+      XFillRectangle(display, menu.frame,
+		     screen->getMenuStyle()->hilite_gc,
+		     hilite_x, hilite_y, hilite_w, hilite_h);
+  } else if (dosel && item->isSelected() &&
+	                 (menu.sel_pixmap != ParentRelative)) {
+    if (menu.sel_pixmap)
+      XCopyArea(display, menu.sel_pixmap, menu.frame,
+		screen->getMenuStyle()->hilite_gc, 0, 0,
+		half_w, half_w, sel_x, sel_y);
+    else
+      XFillRectangle(display, menu.frame,
+		     screen->getMenuStyle()->hilite_gc,
+		     sel_x, sel_y, half_w, half_w);
+  }
   
   if (dotext && text) {
     if (i18n->multibyte())

@@ -1,7 +1,10 @@
 -- AUTHORS for Blackbox 0.60.x  - an X11 Window manager
 
 Author:
-        Brad Hughes <bhughes@tcac.net>
+        Brad Hughes <bhughes@trolltech.com>
+
+Co-author:
+        Jeff Raven <jraven@psu.edu>
 
 Contributors:
         Jeffrey Sean Connell <ankh@canuck.gen.nz>
@@ -22,8 +25,6 @@ Contributors:
          - beta testing, bug reports
         Steve Udell <hettar@teleport.com>
          - beta testing, bug reports, questions (very good ones)
-        Jeff Raven <jraven@psu.edu>
-        - bug reports and fixes/patches/suggestions (excellent work)
         Gregory Barlow <barlowg@ncssm-server.ncssm.edu>
         - bug reports and patches/suggestions (original middle click advocate)
         Dyon Balding <dyon.balding@eng.monash.edu.au>

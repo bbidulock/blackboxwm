@@ -38,7 +38,7 @@ private:
   BlackboxWindow *lastfocus;
   Clientmenu *clientmenu;
 
-  LinkedList<BlackboxWindow> *windowList;
+  LinkedList<BlackboxWindow> *stackingList, *windowList;
 
   char *name;
   int id, cascade_x, cascade_y;

@@ -61,7 +61,6 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 CXX = @CXX@
 DEBUG = @DEBUG@
-GENCAT_TYPE = @GENCAT_TYPE@
 INTERLACE = @INTERLACE@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
@@ -71,6 +70,7 @@ ORDEREDPSEUDO = @ORDEREDPSEUDO@
 PACKAGE = @PACKAGE@
 SHAPE = @SHAPE@
 SLIT = @SLIT@
+STYLEDFRAMES = @STYLEDFRAMES@
 TIMEDCACHE = @TIMEDCACHE@
 VERSION = @VERSION@
 gencat_cmd = @gencat_cmd@
@@ -78,7 +78,7 @@ regex_cmd = @regex_cmd@
 
 styledir = $(pkgdatadir)/styles
 MAINTAINERCLEANFILES = Makefile.in
-style_DATA = Artwiz Flux Nyz Operation Outcomes Rampage Rancor Results Shade Spiff TDF Twice
+style_DATA = Artwiz Flux Minimal Nyz Operation Outcomes Rampage Rancor Results Shade Spiff TDF Twice
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../../config.h
 CONFIG_CLEAN_FILES = 
@@ -89,7 +89,7 @@ DIST_COMMON =  Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
