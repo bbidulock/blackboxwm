@@ -1525,7 +1525,7 @@ void BScreen::buttonPressEvent(const XButtonEvent * const event) {
 
 
 void BScreen::propertyNotifyEvent(const XPropertyEvent * const event) {
-  if (event->atom == blackbox->netwm().activeWindow() && toolbar)
+  if (event->atom == blackbox->netwm().activeWindow() && _toolbar)
     _toolbar->redrawWindowLabel();
 }
 
