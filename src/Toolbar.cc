@@ -33,6 +33,7 @@
 
 #include <Pen.hh>
 #include <PixmapCache.hh>
+#include <Unicode.hh>
 
 #include <X11/Xutil.h>
 #include <sys/time.h>
@@ -256,8 +257,10 @@ void Toolbar::reconfigure(void) {
        * two 'w' are used to get the widest possible width
        */
       clock_w =
-        bt::textRect(_screen->screenNumber(), style->font, t).width() +
-        bt::textRect(_screen->screenNumber(), style->font, "ww").width();
+        bt::textRect(_screen->screenNumber(), style->font,
+                     bt::toUnicode(t)).width() +
+        bt::textRect(_screen->screenNumber(), style->font,
+                     bt::toUnicode("ww")).width();
     }
   }
 
@@ -282,47 +285,47 @@ void Toolbar::reconfigure(void) {
 
   // workspace label
   frame.slabel_rect.setRect(border_width + style->frame_margin,
-                         border_width + style->frame_margin,
-                         label_w,
-                         style->label_height);
+                            border_width + style->frame_margin,
+                            label_w,
+                            style->label_height);
   // previous workspace button
   frame.ps_rect.setRect(border_width + (style->frame_margin * 2) + label_w
-                         - extra,
-                         border_width + style->frame_margin,
-                         style->button_width,
-                         style->button_width);
+                        - extra,
+                        border_width + style->frame_margin,
+                        style->button_width,
+                        style->button_width);
   // next workspace button
   frame.ns_rect.setRect(border_width + (style->frame_margin * 3)
-                         + label_w + style->button_width - (extra * 2),
-                         border_width + style->frame_margin,
-                         style->button_width,
-                         style->button_width);
+                        + label_w + style->button_width - (extra * 2),
+                        border_width + style->frame_margin,
+                        style->button_width,
+                        style->button_width);
   // window label
   frame.wlabel_rect.setRect(border_width + (style->frame_margin * 4)
-                         + (style->button_width * 2) + label_w - (extra * 3),
-                         border_width + style->frame_margin,
-                         window_label_w,
-                         style->label_height);
+                            + (style->button_width * 2) + label_w - (extra * 3),
+                            border_width + style->frame_margin,
+                            window_label_w,
+                            style->label_height);
   // previous window button
   frame.pw_rect.setRect(border_width + (style->frame_margin * 5)
-                         + (style->button_width * 2) + label_w
-                         + window_label_w - (extra * 4),
-                         border_width + style->frame_margin,
-                         style->button_width,
-                         style->button_width);
+                        + (style->button_width * 2) + label_w
+                        + window_label_w - (extra * 4),
+                        border_width + style->frame_margin,
+                        style->button_width,
+                        style->button_width);
   // next window button
   frame.nw_rect.setRect(border_width + (style->frame_margin * 6)
-                         + (style->button_width * 3) + label_w
-                         + window_label_w - (extra * 5),
-                         border_width + style->frame_margin,
-                         style->button_width,
-                         style->button_width);
+                        + (style->button_width * 3) + label_w
+                        + window_label_w - (extra * 5),
+                        border_width + style->frame_margin,
+                        style->button_width,
+                        style->button_width);
   // clock
   frame.clock_rect.setRect(frame.rect.width() - clock_w - style->frame_margin
-                         - border_width,
-                         border_width + style->frame_margin,
-                         clock_w,
-                         style->label_height);
+                           - border_width,
+                           border_width + style->frame_margin,
+                           clock_w,
+                           style->label_height);
 
   XMoveResizeWindow(display, frame.workspace_label,
                     frame.slabel_rect.x(), frame.slabel_rect.y(),
@@ -441,7 +444,8 @@ void Toolbar::redrawClockLabel(void) {
     return; // ditto
 
   bt::Pen pen(_screen->screenNumber(), style->clock_text);
-  bt::drawText(style->font, pen, frame.clock, u, style->alignment, str);
+  bt::drawText(style->font, pen, frame.clock, u, style->alignment,
+               bt::toUnicode(str));
 }
 
 
@@ -467,13 +471,13 @@ void Toolbar::redrawWindowLabel(void) {
   bt::Pen pen(_screen->screenNumber(), style->wlabel_text);
   bt::drawText(style->font, pen, frame.window_label, u,
                style->alignment,
-               bt::ellideText(foc->title(), u.width(), "...",
+               bt::ellideText(foc->title(), u.width(), bt::toUnicode("..."),
                               _screen->screenNumber(), style->font));
 }
 
 
 void Toolbar::redrawWorkspaceLabel(void) {
-  const std::string& name =
+  const bt::ustring &name =
     _screen->resource().nameOfWorkspace(_screen->currentWorkspace());
   const ScreenResource::ToolbarStyle* const style =
     _screen->resource().toolbarStyle();

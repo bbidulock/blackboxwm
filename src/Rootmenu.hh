@@ -36,7 +36,7 @@ class Rootmenu : public bt::Menu {
 public:
   Rootmenu(bt::Application &app, unsigned int screen, BScreen *bscreen);
 
-  void insertFunction(const std::string &label,
+  void insertFunction(const bt::ustring &label,
                       unsigned int function,
                       const std::string &exec = std::string(),
                       unsigned int id = ~0u,

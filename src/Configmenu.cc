@@ -28,6 +28,7 @@
 #include "Toolbarmenu.hh"
 
 #include <Image.hh>
+#include <Unicode.hh>
 
 
 class ConfigFocusmenu : public bt::Menu {
@@ -98,7 +99,7 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
   setAutoDelete(false);
-  setTitle("Configuration Options");
+  setTitle(bt::toUnicode("Configuration Options"));
   showTitle();
 
   ConfigFocusmenu *focusmenu =
@@ -108,18 +109,18 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
   ConfigDithermenu *dithermenu =
     new ConfigDithermenu(app, screen, bscreen);
 
-  insertItem("Focus Model", focusmenu, FocusModel);
-  insertItem("Window Placement", placementmenu, WindowPlacement);
-  insertItem("Image Dithering", dithermenu, ImageDithering);
+  insertItem(bt::toUnicode("Focus Model"), focusmenu, FocusModel);
+  insertItem(bt::toUnicode("Window Placement"), placementmenu, WindowPlacement);
+  insertItem(bt::toUnicode("Image Dithering"), dithermenu, ImageDithering);
   insertSeparator();
-  insertItem("Opaque Window Moving", OpaqueWindowMoving);
-  insertItem("Full Maximization", FullMaximization);
-  insertItem("Focus New Windows", FocusNewWindows);
-  insertItem("Focus Last Window on Workspace", FocusLastWindowOnWorkspace);
-  insertItem("Disable Bindings with Scroll Lock", DisableBindings);
+  insertItem(bt::toUnicode("Opaque Window Moving"), OpaqueWindowMoving);
+  insertItem(bt::toUnicode("Full Maximization"), FullMaximization);
+  insertItem(bt::toUnicode("Focus New Windows"), FocusNewWindows);
+  insertItem(bt::toUnicode("Focus Last Window on Workspace"), FocusLastWindowOnWorkspace);
+  insertItem(bt::toUnicode("Disable Bindings with Scroll Lock"), DisableBindings);
   insertSeparator();
-  insertItem("Toolbar Options", bscreen->toolbarmenu(), ToolbarOptions);
-  insertItem("Slit Options", bscreen->slitmenu(), SlitOptions);
+  insertItem(bt::toUnicode("Toolbar Options"), bscreen->toolbarmenu(), ToolbarOptions);
+  insertItem(bt::toUnicode("Slit Options"), bscreen->slitmenu(), SlitOptions);
 }
 
 
@@ -168,13 +169,13 @@ ConfigFocusmenu::ConfigFocusmenu(bt::Application &app, unsigned int screen,
                                  BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
-  setTitle("Focus Model");
+  setTitle(bt::toUnicode("Focus Model"));
   showTitle();
 
-  insertItem("Click to Focus", ClickToFocus);
-  insertItem("Sloppy Focus", SloppyFocus);
-  insertItem("Auto Raise", AutoRaise);
-  insertItem("Click Raise", ClickRaise);
+  insertItem(bt::toUnicode("Click to Focus"), ClickToFocus);
+  insertItem(bt::toUnicode("Sloppy Focus"), SloppyFocus);
+  insertItem(bt::toUnicode("Auto Raise"), AutoRaise);
+  insertItem(bt::toUnicode("Click Raise"), ClickRaise);
 }
 
 
@@ -224,23 +225,23 @@ ConfigPlacementmenu::ConfigPlacementmenu(bt::Application &app,
                                          BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
-  setTitle("Window Placement");
+  setTitle(bt::toUnicode("Window Placement"));
   showTitle();
 
-  insertItem("Smart Placement (Rows)", RowSmartPlacement);
-  insertItem("Smart Placement (Columns)", ColSmartPlacement);
-  insertItem("Cascade Placement", CascadePlacement);
+  insertItem(bt::toUnicode("Smart Placement (Rows)"), RowSmartPlacement);
+  insertItem(bt::toUnicode("Smart Placement (Columns)"), ColSmartPlacement);
+  insertItem(bt::toUnicode("Cascade Placement"), CascadePlacement);
 
   insertSeparator();
 
-  insertItem("Left to Right", LeftRight);
-  insertItem("Right to Left", RightLeft);
-  insertItem("Top to Bottom", TopBottom);
-  insertItem("Bottom to Top", BottomTop);
+  insertItem(bt::toUnicode("Left to Right"), LeftRight);
+  insertItem(bt::toUnicode("Right to Left"), RightLeft);
+  insertItem(bt::toUnicode("Top to Bottom"), TopBottom);
+  insertItem(bt::toUnicode("Bottom to Top"), BottomTop);
 
   insertSeparator();
 
-  insertItem("Ignore Shaded Windows", IgnoreShadedWindows);
+  insertItem(bt::toUnicode("Ignore Shaded Windows"), IgnoreShadedWindows);
 }
 
 
@@ -313,12 +314,12 @@ ConfigDithermenu::ConfigDithermenu(bt::Application &app, unsigned int screen,
                                    BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
-  setTitle("Image Dithering");
+  setTitle(bt::toUnicode("Image Dithering"));
   showTitle();
 
-  insertItem("Do not dither images", bt::NoDither);
-  insertItem("Use fast dither", bt::OrderedDither);
-  insertItem("Use high-quality dither", bt::FloydSteinbergDither);
+  insertItem(bt::toUnicode("Do not dither images"), bt::NoDither);
+  insertItem(bt::toUnicode("Use fast dither"), bt::OrderedDither);
+  insertItem(bt::toUnicode("Use high-quality dither"), bt::FloydSteinbergDither);
 }
 
 

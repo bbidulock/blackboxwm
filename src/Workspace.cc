@@ -27,6 +27,7 @@
 #include "Screen.hh"
 #include "Window.hh"
 
+#include <Unicode.hh>
 #include <Util.hh>
 
 #include <assert.h>
@@ -45,19 +46,19 @@ Workspace::Workspace(BScreen *scrn, unsigned int i) {
 }
 
 
-const std::string& Workspace::name(void) const
+const bt::ustring &Workspace::name(void) const
 { return _screen->resource().nameOfWorkspace(_id); }
 
 
-void Workspace::setName(const std::string& new_name) {
-  std::string the_name;
+void Workspace::setName(const bt::ustring &new_name) {
+  bt::ustring the_name;
 
   if (! new_name.empty()) {
     the_name = new_name;
   } else {
     char default_name[80];
     sprintf(default_name, "Workspace %u", _id + 1);
-    the_name = default_name;
+    the_name = bt::toUnicode(default_name);
   }
 
   _screen->resource().saveWorkspaceName(_id, the_name);
@@ -70,7 +71,8 @@ void Workspace::addWindow(BlackboxWindow *win) {
   assert(win->workspace() == _id || win->workspace() == bt::BSENTINEL);
 
   win->setWorkspace(_id);
-  const std::string s = bt::ellideText(win->title(), 60, "...");
+  const bt::ustring s =
+    bt::ellideText(win->title(), 60, bt::toUnicode("..."));
   int wid = clientmenu->insertItem(s);
   win->setWindowNumber(wid);
 }

@@ -27,6 +27,8 @@
 #include "Window.hh"
 #include "Workspace.hh"
 
+#include <Unicode.hh>
+
 #include <assert.h>
 
 // #define WITH_FULLSCREEN
@@ -68,20 +70,20 @@ Windowmenu::Windowmenu(bt::Application &app, unsigned int screen)
   : bt::Menu(app, screen), _window(0)
 {
   _sendto = new SendToWorkspacemenu(app, screen);
-  insertItem("Send to Workspace", _sendto, SendToWorkspace);
-  insertItem("Occupy all Workspaces", OccupyAllWorkspaces);
+  insertItem(bt::toUnicode("Send to Workspace"), _sendto, SendToWorkspace);
+  insertItem(bt::toUnicode("Occupy all Workspaces"), OccupyAllWorkspaces);
   insertSeparator();
-  insertItem("Shade", Shade);
-  insertItem("Iconify", Iconify);
-  insertItem("Maximize", Maximize);
+  insertItem(bt::toUnicode("Shade"), Shade);
+  insertItem(bt::toUnicode("Iconify"), Iconify);
+  insertItem(bt::toUnicode("Maximize"), Maximize);
 #if defined(WITH_FULLSCREEN)
-  insertItem("Full Screen", FullScreen);
+  insertItem(bt::toUnicode("Full Screen"), FullScreen);
 #endif
-  insertItem("Always on top", AlwaysOnTop);
-  insertItem("Always on bottom", AlwaysOnBottom);
+  insertItem(bt::toUnicode("Always on top"), AlwaysOnTop);
+  insertItem(bt::toUnicode("Always on bottom"), AlwaysOnBottom);
   insertSeparator();
-  insertItem("Kill Client", KillClient);
-  insertItem("Close", Close);
+  insertItem(bt::toUnicode("Kill Client"), KillClient);
+  insertItem(bt::toUnicode("Close"), Close);
 }
 
 

@@ -148,7 +148,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
     Window transient_for;             // which window are we a transient for?
     BlackboxWindowList transientList; // which windows are our transients?
 
-    std::string title, visible_title, icon_title;
+    bt::ustring title, visible_title, icon_title;
 
     bt::Rect rect, premax;
 
@@ -227,8 +227,8 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   Window createChildWindow(Window parent, unsigned long event_mask,
                            Cursor = None);
 
-  std::string readWMName(void);
-  std::string readWMIconName(void);
+  bt::ustring readWMName(void);
+  bt::ustring readWMIconName(void);
 
   EWMH readEWMH(void);
   MotifHints readMotifHints(void);
@@ -325,10 +325,10 @@ public:
   inline Window clientWindow(void) const
   { return client.window; }
 
-  inline const char *title(void) const
-  { return client.title.c_str(); }
-  inline const char *iconTitle(void) const
-  { return client.icon_title.c_str(); }
+  inline const bt::ustring &title(void) const
+  { return client.title; }
+  inline const bt::ustring &iconTitle(void) const
+  { return client.icon_title.empty() ? client.title : client.icon_title; }
 
   inline unsigned int workspace(void) const
   { return client.ewmh.workspace; }

@@ -25,6 +25,9 @@
 #include "Toolbarmenu.hh"
 #include "Toolbar.hh"
 
+#include <Unicode.hh>
+
+
 class ToolbarPlacementmenu : public bt::Menu {
 public:
   ToolbarPlacementmenu(bt::Application &app, unsigned int screen,
@@ -52,15 +55,15 @@ Toolbarmenu::Toolbarmenu(bt::Application &app, unsigned int screen,
                          BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
-  setTitle("Toolbar Options");
+  setTitle(bt::toUnicode("Toolbar Options"));
   showTitle();
 
   ToolbarPlacementmenu *menu = new ToolbarPlacementmenu(app, screen, bscreen);
-  insertItem("Enable Toolbar", EnableToolbar);
+  insertItem(bt::toUnicode("Enable Toolbar"), EnableToolbar);
   insertSeparator();
-  insertItem("Placement", menu, Placement);
-  insertItem("Always on top", AlwaysOnTop);
-  insertItem("Auto Hide", AutoHide);
+  insertItem(bt::toUnicode("Placement"), menu, Placement);
+  insertItem(bt::toUnicode("Always on top"), AlwaysOnTop);
+  insertItem(bt::toUnicode("Auto Hide"), AutoHide);
 }
 
 
@@ -116,16 +119,16 @@ ToolbarPlacementmenu::ToolbarPlacementmenu(bt::Application &app,
                                            BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
-  setTitle("Toolbar Placement");
+  setTitle(bt::toUnicode("Toolbar Placement"));
   showTitle();
 
-  insertItem("Top Left",      Toolbar::TopLeft);
-  insertItem("Top Center",    Toolbar::TopCenter);
-  insertItem("Top Right",     Toolbar::TopRight);
+  insertItem(bt::toUnicode("Top Left"),      Toolbar::TopLeft);
+  insertItem(bt::toUnicode("Top Center"),    Toolbar::TopCenter);
+  insertItem(bt::toUnicode("Top Right"),     Toolbar::TopRight);
   insertSeparator();
-  insertItem("Bottom Left",   Toolbar::BottomLeft);
-  insertItem("Bottom Center", Toolbar::BottomCenter);
-  insertItem("Bottom Right",  Toolbar::BottomRight);
+  insertItem(bt::toUnicode("Bottom Left"),   Toolbar::BottomLeft);
+  insertItem(bt::toUnicode("Bottom Center"), Toolbar::BottomCenter);
+  insertItem(bt::toUnicode("Bottom Right"),  Toolbar::BottomRight);
 }
 
 

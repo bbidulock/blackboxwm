@@ -26,13 +26,15 @@
 #include "Screen.hh"
 #include "Window.hh"
 
+#include <Unicode.hh>
+
 
 Iconmenu::Iconmenu(bt::Application &app, unsigned int screen,
                    BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
   setAutoDelete(false);
-  setTitle("Iconified Windows");
+  setTitle(bt::toUnicode("Iconified Windows"));
   showTitle();
 }
 

@@ -35,6 +35,7 @@
 
 #include <Pen.hh>
 #include <PixmapCache.hh>
+#include <Unicode.hh>
 
 #include <X11/Xatom.h>
 #ifdef SHAPE
@@ -879,8 +880,8 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
                               frame.ulabel);
     }
 
-    const std::string ellided =
-      bt::ellideText(client.title, frame.label_w, "...",
+    const bt::ustring ellided =
+      bt::ellideText(client.title, frame.label_w, bt::toUnicode("..."),
                      _screen->screenNumber(), frame.style->font);
 
     if (ellided != client.visible_title) {
@@ -1007,34 +1008,40 @@ void BlackboxWindow::positionWindows(void) {
 }
 
 
-std::string BlackboxWindow::readWMName(void) {
-  std::string name;
+bt::ustring BlackboxWindow::readWMName(void) {
+  bt::ustring name;
 
   if (!blackbox->netwm().readWMName(client.window, name) || name.empty()) {
     XTextProperty text_prop;
     if (XGetWMName(blackbox->XDisplay(), client.window, &text_prop)) {
-      name = bt::textPropertyToString(blackbox->XDisplay(), text_prop);
+      name =
+        bt::toUnicode(bt::textPropertyToString(blackbox->XDisplay(),
+                                               text_prop));
       XFree((char *) text_prop.value);
     }
   }
+  if (name.empty())
+    name = bt::toUnicode("Unnamed");
 
-  if (name.empty()) name ="Unnamed";
   return name;
 }
 
 
-std::string BlackboxWindow::readWMIconName(void) {
-  std::string name;
+bt::ustring BlackboxWindow::readWMIconName(void) {
+  bt::ustring name;
 
   if (!blackbox->netwm().readWMIconName(client.window, name) || name.empty()) {
     XTextProperty text_prop;
     if (XGetWMIconName(blackbox->XDisplay(), client.window, &text_prop)) {
-      name = bt::textPropertyToString(blackbox->XDisplay(), text_prop);
+      name =
+        bt::toUnicode(bt::textPropertyToString(blackbox->XDisplay(),
+                                               text_prop));
       XFree((char *) text_prop.value);
     }
   }
+  if (name.empty())
+    return bt::ustring();
 
-  if (name.empty()) name = client.title;
   return name;
 }
 
@@ -2699,7 +2706,7 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
     client.title = readWMName();
 
     client.visible_title =
-      bt::ellideText(client.title, frame.label_w, "...",
+      bt::ellideText(client.title, frame.label_w, bt::toUnicode("..."),
                      _screen->screenNumber(), frame.style->font);
     blackbox->netwm().setWMVisibleName(client.window, client.visible_title);
 

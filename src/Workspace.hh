@@ -25,8 +25,8 @@
 #ifndef   __Workspace_hh
 #define   __Workspace_hh
 
-#include "Netwm.hh"
-#include "Util.hh"
+#include <Unicode.hh>
+#include <Util.hh>
 
 // forward declarations
 class BlackboxWindow;
@@ -46,8 +46,8 @@ public:
   inline unsigned int id(void) const
   { return _id; }
 
-  const std::string& name(void) const;
-  void setName(const std::string& new_name);
+  const bt::ustring &name(void) const;
+  void setName(const bt::ustring &new_name);
 
   void addWindow(BlackboxWindow *win);
   void removeWindow(BlackboxWindow *win);

@@ -26,6 +26,8 @@
 #include "Screen.hh"
 #include "Slit.hh"
 
+#include <Unicode.hh>
+
 
 class SlitDirectionmenu : public bt::Menu {
 public:
@@ -67,16 +69,16 @@ enum {
 Slitmenu::Slitmenu(bt::Application &app, unsigned int screen, BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
-  setTitle("Slit Options");
+  setTitle(bt::toUnicode("Slit Options"));
   showTitle();
 
-  insertItem("Direction", new SlitDirectionmenu(app, screen, bscreen),
+  insertItem(bt::toUnicode("Direction"), new SlitDirectionmenu(app, screen, bscreen),
              Direction);
-  insertItem("Placement", new SlitPlacementmenu(app, screen, bscreen),
+  insertItem(bt::toUnicode("Placement"), new SlitPlacementmenu(app, screen, bscreen),
              Placement);
   insertSeparator();
-  insertItem("Always on top", AlwaysOnTop);
-  insertItem("Auto hide", AutoHide);
+  insertItem(bt::toUnicode("Always on top"), AlwaysOnTop);
+  insertItem(bt::toUnicode("Auto hide"), AutoHide);
 }
 
 
@@ -121,11 +123,11 @@ SlitDirectionmenu::SlitDirectionmenu(bt::Application &app, unsigned int screen,
                                      BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
-  setTitle("Slit Direction");
+  setTitle(bt::toUnicode("Slit Direction"));
   showTitle();
 
-  insertItem("Horizontal", Slit::Horizontal);
-  insertItem("Vertical", Slit::Vertical);
+  insertItem(bt::toUnicode("Horizontal"), Slit::Horizontal);
+  insertItem(bt::toUnicode("Vertical"), Slit::Vertical);
 }
 
 
@@ -152,19 +154,19 @@ SlitPlacementmenu::SlitPlacementmenu(bt::Application &app, unsigned int screen,
                                      BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
-  setTitle("Slit Placement");
+  setTitle(bt::toUnicode("Slit Placement"));
   showTitle();
 
-  insertItem("Top Left",      Slit::TopLeft);
-  insertItem("Center Left",   Slit::CenterLeft);
-  insertItem("Bottom Left",   Slit::BottomLeft);
+  insertItem(bt::toUnicode("Top Left"),      Slit::TopLeft);
+  insertItem(bt::toUnicode("Center Left"),   Slit::CenterLeft);
+  insertItem(bt::toUnicode("Bottom Left"),   Slit::BottomLeft);
   insertSeparator();
-  insertItem("Top Center",    Slit::TopCenter);
-  insertItem("Bottom Center", Slit::BottomCenter);
+  insertItem(bt::toUnicode("Top Center"),    Slit::TopCenter);
+  insertItem(bt::toUnicode("Bottom Center"), Slit::BottomCenter);
   insertSeparator();
-  insertItem("Top Right",     Slit::TopRight);
-  insertItem("Center Right",  Slit::CenterRight);
-  insertItem("Bottom Right",  Slit::BottomRight);
+  insertItem(bt::toUnicode("Top Right"),     Slit::TopRight);
+  insertItem(bt::toUnicode("Center Right"),  Slit::CenterRight);
+  insertItem(bt::toUnicode("Bottom Right"),  Slit::BottomRight);
 }
 
 

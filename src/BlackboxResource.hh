@@ -30,6 +30,7 @@
 #include <Font.hh>
 #include <Texture.hh>
 #include <Timer.hh>
+#include <Unicode.hh>
 #include <Util.hh>
 
 #include <vector>
@@ -92,7 +93,7 @@ public:
   unsigned int numberOfWorkspaces(void) const { return workspace_count;   }
   bool allowScrollLock(void) const            { return allow_scroll_lock; }
   const std::string& rootCommand(void) const  { return root_command;      }
-  const std::string& nameOfWorkspace(unsigned int i) const;
+  const bt::ustring &nameOfWorkspace(unsigned int i) const;
 
   bool isSloppyFocus(void) const        { return wconfig.sloppy_focus;  }
   bool doAutoRaise(void) const          { return wconfig.auto_raise;    }
@@ -125,7 +126,7 @@ public:
   // store functions
   void saveWorkspaces(unsigned int w)      { workspace_count = w;   }
   void saveAllowScrollLock(bool a)         { allow_scroll_lock = a; }
-  void saveWorkspaceName(unsigned int w, const std::string& name);
+  void saveWorkspaceName(unsigned int w, const bt::ustring &name);
 
   void saveSlitPlacement(int i) { sconfig.placement = i; }
   void saveSlitDirection(int i) { sconfig.direction = i; }
@@ -193,7 +194,7 @@ private:
   bool enable_toolbar;
   unsigned int workspace_count;
   std::string root_command;
-  std::vector<std::string> workspaces;
+  std::vector<bt::ustring> workspaces;
 };
 
 class BlackboxResource: public bt::NoCopy {

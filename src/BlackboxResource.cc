@@ -36,8 +36,6 @@
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
 
-static const std::string empty_string;
-
 
 static const int iconify_width  = 9;
 static const int iconify_height = 9;
@@ -279,9 +277,9 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
   sprintf(rc_string, "session.screen%u.toolbar.placement", number);
   res.write(rc_string, placement);
 
-  std::vector<std::string>::const_iterator it = workspaces.begin(),
+  std::vector<bt::ustring>::const_iterator it = workspaces.begin(),
     end = workspaces.end();
-  std::string save_string = *it++;
+  bt::ustring save_string = *it++;
   for (; it != end; ++it) {
     save_string += ',';
     save_string += *it;
@@ -464,13 +462,15 @@ void ScreenResource::load(bt::Resource& res, unsigned int screen) {
 
   sprintf(name_lookup,  "session.screen%u.workspaceNames", screen);
   sprintf(class_lookup, "Session.screen%u.WorkspaceNames", screen);
-  tmp = res.read(name_lookup, class_lookup);
-  if (! tmp.empty()) {
-    std::string::const_iterator it = tmp.begin(), end = tmp.end();
-    while (1) {
-      std::string::const_iterator i = std::find(it, end, ',');
-      std::string csv(it, i);
-      workspaces.push_back(csv);
+  bt::ustring workspace_names =
+    bt::toUnicode(res.read(name_lookup, class_lookup));
+  if (!workspace_names.empty()) {
+    bt::ustring::const_iterator it = workspace_names.begin();
+    const bt::ustring::const_iterator end = workspace_names.end();
+    for (;;) {
+      const bt::ustring::const_iterator i =
+        std::find(it, end, static_cast<bt::ustring::value_type>(','));
+      workspaces.push_back(bt::ustring(it, i));
       it = i;
       if (it == end) break;
       ++it;
@@ -756,18 +756,19 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
 }
 
 
-const std::string& ScreenResource::nameOfWorkspace(unsigned int i) const {
+const bt::ustring &ScreenResource::nameOfWorkspace(unsigned int i) const {
   // handle both requests for new workspaces beyond what we started with
   // and for those that lack a name
-  if (i > workspace_count || i >= workspaces.size())
+  if (i > workspace_count || i >= workspaces.size()) {
+    static const bt::ustring empty_string;
     return empty_string;
-
+  }
   return workspaces[i];
 }
 
 
 void ScreenResource::saveWorkspaceName(unsigned int w,
-                                       const std::string& name) {
+                                       const bt::ustring &name) {
   if (w < workspaces.size()) {
     workspaces[w] = name;
   } else {

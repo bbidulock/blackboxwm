@@ -28,6 +28,8 @@
 #include "Screen.hh"
 #include "Workspace.hh"
 
+#include <Unicode.hh>
+
 #include <assert.h>
 
 
@@ -42,11 +44,11 @@ Workspacemenu::Workspacemenu(bt::Application &app, unsigned int screen,
                              BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen) {
   setAutoDelete(false);
-  setTitle("Workspaces");
+  setTitle(bt::toUnicode("Workspaces"));
   showTitle();
 
-  insertItem("New Workspace", NewWorkspace);
-  insertItem("Remove Last Workspace", RemoveLastWorkspace);
+  insertItem(bt::toUnicode("New Workspace"), NewWorkspace);
+  insertItem(bt::toUnicode("Remove Last Workspace"), RemoveLastWorkspace);
   insertSeparator();
 }
 
@@ -67,7 +69,7 @@ void Workspacemenu::setWorkspaceChecked(unsigned int id, bool checked)
 
 void Workspacemenu::insertIconMenu(Iconmenu *iconmenu) {
   insertSeparator();
-  insertItem("Iconified Windows", iconmenu, Icons);
+  insertItem(bt::toUnicode("Iconified Windows"), iconmenu, Icons);
 }
 
 

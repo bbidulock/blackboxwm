@@ -39,6 +39,7 @@
 
 #include <Pen.hh>
 #include <PixmapCache.hh>
+#include <Unicode.hh>
 
 #include <X11/Xutil.h>
 #include <sys/types.h>
@@ -171,7 +172,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   */
   netwm.setSupportingWMCheck(screen_info.rootWindow(), geom_window);
   netwm.setSupportingWMCheck(geom_window, geom_window);
-  netwm.setWMName(geom_window, "_Blackbox");
+  netwm.setWMName(geom_window, bt::toUnicode("Blackbox"));
 
   netwm.setNumberOfDesktops(screen_info.rootWindow(),
                             workspacesList.size());
@@ -355,7 +356,8 @@ BScreen::~BScreen(void) {
 void BScreen::updateGeomWindow(void) {
   const ScreenResource::WindowStyle * const style = _resource.windowStyle();
   bt::Rect geomr =
-    bt::textRect(screen_info.screenNumber(), style->font, "m:mmmm    m:mmmm");
+    bt::textRect(screen_info.screenNumber(), style->font,
+                 bt::toUnicode("m:mmmm    m:mmmm"));
 
   geom_w = geomr.width() + (style->label_margin * 2);
   geom_h = geomr.height() + (style->label_margin * 2);
@@ -958,7 +960,8 @@ void BScreen::propagateWindowName(const BlackboxWindow * const win) {
   Workspace *workspace = findWorkspace(win->workspace());
   if (!workspace) return;
 
-  const std::string s = bt::ellideText(win->title(), 60, "...");
+  const bt::ustring s =
+    bt::ellideText(win->title(), 60, bt::toUnicode("..."));
   workspace->menu()->changeItem(win->windowNumber(), s);
 
   if (_toolbar && _blackbox->focusedWindow() == win)
@@ -1101,7 +1104,7 @@ void BScreen::InitMenu(void) {
             if (index == -1) index = 0;
             label[index] = '\0';
 
-            _rootmenu->setTitle(label);
+            _rootmenu->setTitle(bt::toUnicode(label));
             defaultMenu = parseMenuFile(menu_file, _rootmenu);
             break;
           }
@@ -1112,11 +1115,14 @@ void BScreen::InitMenu(void) {
   }
 
   if (defaultMenu) {
-    _rootmenu->setTitle("_Blackbox");
+    _rootmenu->setTitle(bt::toUnicode("_Blackbox"));
 
-    _rootmenu->insertFunction("xterm", BScreen::Execute, "xterm");
-    _rootmenu->insertFunction("Restart", BScreen::Restart);
-    _rootmenu->insertFunction("Exit", BScreen::Exit);
+    _rootmenu->insertFunction(bt::toUnicode("xterm"),
+                              BScreen::Execute, "xterm");
+    _rootmenu->insertFunction(bt::toUnicode("Restart"),
+                              BScreen::Restart);
+    _rootmenu->insertFunction(bt::toUnicode("Exit"),
+                              BScreen::Exit);
   } else {
     _blackbox->saveMenuFilename(_blackbox->resource().menuFilename());
   }
@@ -1200,7 +1206,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
     case 333: // nop
       if (! *label)
         label[0] = '\0';
-      menu->insertItem(label);
+      menu->insertItem(bt::toUnicode(label));
 
       break;
 
@@ -1212,7 +1218,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
         continue;
       }
 
-      menu->insertFunction(label, BScreen::Execute, command);
+      menu->insertFunction(bt::toUnicode(label), BScreen::Execute, command);
       break;
 
     case 442: // exit
@@ -1222,7 +1228,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
         continue;
       }
 
-      menu->insertFunction(label, BScreen::Exit);
+      menu->insertFunction(bt::toUnicode(label), BScreen::Exit);
       break;
 
     case 561: { // style
@@ -1234,7 +1240,8 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
       }
 
       std::string style = bt::expandTilde(command);
-      menu->insertFunction(label, BScreen::SetStyle, style.c_str());
+      menu->insertFunction(bt::toUnicode(label),
+                           BScreen::SetStyle, style.c_str());
       break;
     }
 
@@ -1245,7 +1252,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
         continue;
       }
 
-      menu->insertItem(label, configmenu);
+      menu->insertItem(bt::toUnicode(label), configmenu);
       break;
 
     case 740: { // include
@@ -1293,12 +1300,12 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
       submenu->showTitle();
 
       if (*command)
-        submenu->setTitle(command);
+        submenu->setTitle(bt::toUnicode(command));
       else
-        submenu->setTitle(label);
+        submenu->setTitle(bt::toUnicode(label));
 
       parseMenuFile(file, submenu);
-      menu->insertItem(label, submenu);
+      menu->insertItem(bt::toUnicode(label), submenu);
     }
 
       break;
@@ -1310,10 +1317,12 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
         continue;
       }
 
-      if (*command)
-        menu->insertFunction(label, BScreen::RestartOther, command);
-      else
-        menu->insertFunction(label, BScreen::Restart);
+      if (*command) {
+        menu->insertFunction(bt::toUnicode(label),
+                             BScreen::RestartOther, command);
+      } else {
+        menu->insertFunction(bt::toUnicode(label), BScreen::Restart);
+      }
       break;
     }
 
@@ -1324,7 +1333,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
         continue;
       }
 
-      menu->insertFunction(label, BScreen::Reconfigure);
+      menu->insertFunction(bt::toUnicode(label), BScreen::Reconfigure);
       break;
     }
 
@@ -1395,13 +1404,14 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
           // convert 'This_Long_Name' to 'This Long Name'
           std::replace(fname.begin(), fname.end(), '_', ' ');
 
-          stylesmenu->insertFunction(fname, BScreen::SetStyle, style);
+          stylesmenu->insertFunction(bt::toUnicode(fname),
+                                     BScreen::SetStyle, style);
         }
       }
 
       if (newmenu) {
-        stylesmenu->setTitle(label);
-        menu->insertItem(label, stylesmenu);
+        stylesmenu->setTitle(bt::toUnicode(label));
+        menu->insertItem(bt::toUnicode(label), stylesmenu);
       }
 
       _blackbox->saveMenuFilename(stylesdir);
@@ -1415,7 +1425,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
         continue;
       }
 
-      menu->insertItem(label, _workspacemenu);
+      menu->insertItem(bt::toUnicode(label), _workspacemenu);
       break;
     }
     } // switch
@@ -1474,7 +1484,8 @@ void BScreen::showGeometry(GeometryType type, const bt::Rect &rect) {
   const bt::Pen pen(screen_info.screenNumber(), style->focus.text);
   bt::drawTexture(screen_info.screenNumber(), texture, geom_window,
                   u, u, geom_pixmap);
-  bt::drawText(style->font, pen, geom_window, t, style->alignment, label);
+  bt::drawText(style->font, pen, geom_window, t, style->alignment,
+               bt::toUnicode(label));
 }
 
 
@@ -1641,13 +1652,11 @@ void BScreen::updateWorkareaHint(void) const {
 
 
 void BScreen::updateDesktopNamesHint(void) const {
-  std::string names;
-
-  WorkspaceList::const_iterator it = workspacesList.begin(),
-    end = workspacesList.end();
+  std::vector<bt::ustring> names(workspacesList.size());
+  WorkspaceList::const_iterator it = workspacesList.begin();
+  const WorkspaceList::const_iterator end = workspacesList.end();
   for (; it != end; ++it)
-    names += (*it)->name() + '\0';
-
+    names.push_back((*it)->name());
   _blackbox->netwm().setDesktopNames(screen_info.rootWindow(), names);
 }
 
@@ -1691,14 +1700,14 @@ void BScreen::updateClientListStackingHint(void) const {
 
 
 void BScreen::readDesktopNames(void) {
-  bt::Netwm::UTF8StringList names;
+  std::vector<bt::ustring> names;
   if(! _blackbox->netwm().readDesktopNames(screen_info.rootWindow(), names))
     return;
 
-  bt::Netwm::UTF8StringList::const_iterator it = names.begin(),
-    end = names.end();
-  WorkspaceList::iterator wit = workspacesList.begin(),
-    wend = workspacesList.end();
+  std::vector<bt::ustring>::const_iterator it = names.begin();
+  const std::vector<bt::ustring>::const_iterator end = names.end();
+  WorkspaceList::iterator wit = workspacesList.begin();
+  const WorkspaceList::iterator wend = workspacesList.end();
 
   for (; wit != wend && it != end; ++wit, ++it) {
     if ((*wit)->name() != *it)
@@ -2154,7 +2163,8 @@ void BScreen::addIcon(BlackboxWindow *win) {
     workspace->removeWindow(win);
   }
 
-  const std::string s = bt::ellideText(win->iconTitle(), 60, "...");
+  const bt::ustring s =
+    bt::ellideText(win->iconTitle(), 60, bt::toUnicode("..."));
   int id = _iconmenu->insertItem(s);
   _blackbox->netwm().setWMVisibleIconName(win->clientWindow(), s);
   win->setWindowNumber(id);

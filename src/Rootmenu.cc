@@ -25,12 +25,14 @@
 #include "Rootmenu.hh"
 #include "Screen.hh"
 
+#include <Unicode.hh>
+
 
 Rootmenu::Rootmenu(bt::Application &app, unsigned int screen, BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen) { }
 
 
-void Rootmenu::insertFunction(const std::string &label,
+void Rootmenu::insertFunction(const bt::ustring &label,
                               unsigned int function,
                               const std::string &exec,
                               unsigned int id,
