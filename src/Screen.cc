@@ -611,13 +611,6 @@ void BScreen::releaseWindow(BlackboxWindow *w) {
 void BScreen::unmanageWindow(BlackboxWindow *win) {
   win->restore();
 
-  // pass focus to the next appropriate window
-  if (win->isFocused() && blackbox->running())
-    focusFallback(win);
-
-  if (blackbox->getFocusedWindow() == win)
-    blackbox->setFocusedWindow((BlackboxWindow *) 0);
-
   if (win->isIconic()) {
     _iconmenu->removeItem(win->windowNumber());
   } else {
@@ -629,6 +622,12 @@ void BScreen::unmanageWindow(BlackboxWindow *win) {
   windowList.remove(win);
   stackingList.remove(win);
 
+  // pass focus to the next appropriate window
+  if (win->isFocused() && blackbox->running()) {
+    if (!focusFallback(win))
+      blackbox->setFocusedWindow(0);
+  }
+
   /*
     some managed windows can also be window group controllers.  when
     unmanaging such windows, we should also delete the window group.
@@ -637,6 +636,52 @@ void BScreen::unmanageWindow(BlackboxWindow *win) {
   delete group;
 
   delete win;
+}
+
+
+bool BScreen::focusFallback(const BlackboxWindow *win) {
+  Workspace *workspace = getWorkspace(win->workspace());
+  if (!workspace)
+    workspace = getWorkspace(current_workspace);
+
+  if (workspace->id() != current_workspace)
+    return 0;
+
+  if (win) {
+    if (win->isTransient()) {
+      BlackboxWindow * const tmp = win->getTransientFor();
+      if (tmp
+          && tmp->isVisible()
+          && tmp->workspace() == current_workspace
+          && tmp->setInputFocus())
+        return tmp;
+    }
+
+    // try to focus the top-most window in the same layer as win
+    const BlackboxWindow * const zero = 0;
+    StackingList::iterator it = stackingList.layer(win->layer()),
+                          end = std::find(it, stackingList.end(), zero);
+    assert(it != stackingList.end() && end != stackingList.end());
+    for (; it != end; ++it) {
+      BlackboxWindow * const tmp = dynamic_cast<BlackboxWindow *>(*it);
+      if (!tmp)
+        break;
+      if (!tmp->isVisible() || tmp->workspace() != current_workspace)
+        continue;
+      if (tmp->setInputFocus())
+        return tmp;
+    }
+  }
+
+  if (!stackingList.empty()) {
+    // focus the top-most window in the stack
+    BlackboxWindow * const tmp =
+      dynamic_cast<BlackboxWindow *>(stackingList.front());
+    if (tmp && tmp->setInputFocus())
+      return tmp;
+  }
+
+  return 0;
 }
 
 
@@ -1577,63 +1622,6 @@ BlackboxWindow *BScreen::getWindow(unsigned int workspace, unsigned int id) {
   }
   assert(false); // should not happen
   return 0;
-}
-
-
-void BScreen::focusFallback(const BlackboxWindow *old_window) {
-  BlackboxWindow *newfocus = 0;
-
-  Workspace *workspace = getWorkspace(old_window->workspace());
-  if (!workspace)
-    workspace = getWorkspace(current_workspace);
-
-  if (workspace->id() == current_workspace) {
-    // The window is on the visible workspace.
-
-    if (old_window && old_window->isTransient()) {
-      // 1. if it's a transient, then try to focus its parent
-      newfocus = old_window->getTransientFor();
-
-      if (! newfocus ||
-          newfocus->isIconic() || // do not focus icons
-          newfocus->workspace() != workspace->id() || // or other workspaces
-          ! newfocus->setInputFocus())
-        newfocus = 0;
-    }
-
-    if (! newfocus) {
-      // 2. try to focus the top window in the same layer as old_window
-      const BlackboxWindow * const zero = 0;
-      StackingList::iterator it = stackingList.layer(old_window->layer()),
-                            end = std::find(it, stackingList.end(), zero);
-      assert(it != stackingList.end() && end != stackingList.end());
-      for (; it != end; ++it) {
-        BlackboxWindow * const tmp = dynamic_cast<BlackboxWindow *>(*it);
-        if (tmp && tmp->setInputFocus()) {
-          // we found our new focus target
-          newfocus = tmp;
-          break;
-        }
-      }
-    }
-
-    if (!newfocus && !stackingList.empty()) {
-      // 3. focus the top-most window in the stack (regardless of layer)
-      newfocus = dynamic_cast<BlackboxWindow *>(stackingList.front());
-    }
-
-    blackbox->setFocusedWindow(newfocus);
-  } else {
-    // The window is not on the visible workspace.
-
-    if (old_window && workspace->lastFocusedWindow() == old_window) {
-      // The window was the last-focus target, so we need to replace it.
-      BlackboxWindow *win = (BlackboxWindow *) 0;
-      if (! stackingList.empty())
-        win = dynamic_cast<BlackboxWindow *>(stackingList.front());
-      workspace->setLastFocusedWindow(win);
-    }
-  }
 }
 
 

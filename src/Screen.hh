@@ -99,8 +99,7 @@ private:
 
   void manageWindow(Window w);
   void unmanageWindow(BlackboxWindow *win);
-
-  void focusFallback(const BlackboxWindow *old_window);
+  bool focusFallback(const BlackboxWindow *win);
 
   void placeWindow(BlackboxWindow *win);
   bool cascadePlacement(bt::Rect& win, const bt::Rect& avail);
