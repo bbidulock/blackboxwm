@@ -64,24 +64,6 @@ static int lowest_bit(uint v)
   return i == 32 ? -1 : i;
 }
 
-static int cube_root(int v)
-{
-  if (v == 1)
-    return 1;
-  // brute force algorithm
-  int i = 1;
-  for (;;) {
-    const int b = i * i * i;
-    if (b <= v) {
-      ++i;
-    } else {
-      --i;
-      break;
-    }
-  }
-  return i;
-}
-
 
 unsigned int bt::Image::global_maximumColors = 0u; // automatic
 bt::DitherMode bt::Image::global_ditherMode = bt::OrderedDither;
@@ -302,10 +284,10 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
 
       colors.resize(n_green);
 
-      const int g_max = n_green - 1;
-      const int g_round = g_max / 2;
+      const unsigned int g_max = n_green - 1;
+      const unsigned int g_round = g_max / 2;
 
-      for (int g = 0; g < n_green; ++g) {
+      for (unsigned int g = 0; g < n_green; ++g) {
         colors[g] = ~0ul;
 
         if (visual_class & 1) {
@@ -378,9 +360,9 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
       const int b_round = b_max / 2;
 
       // create color cube
-      for (int x = 0, r = 0; r < n_red; ++r) {
-        for (int g = 0; g < n_green; ++g) {
-          for (int b = 0; b < n_blue; ++b, ++x) {
+      for (unsigned int x = 0, r = 0; r < n_red; ++r) {
+        for (unsigned int g = 0; g < n_green; ++g) {
+          for (unsigned int b = 0; b < n_blue; ++b, ++x) {
             colors[x] = ~0ul;
 
             if (visual_class & 1) {
@@ -474,7 +456,7 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
 #endif // COLORTABLE_DEBUG
 
   // for missing colors, find the closest color in the existing colormap
-  for (int x = 0; x < colors.size(); ++x) {
+  for (unsigned int x = 0; x < colors.size(); ++x) {
     if (colors[x] != ~0ul)
       continue;
 
