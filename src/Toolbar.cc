@@ -20,7 +20,7 @@
 //
 
 #ifndef _GNU_SOURCE
-#define __GNU_SOURCE
+#define _GNU_SOURCE
 #endif
 
 #include "Toolbar.hh"
@@ -931,6 +931,7 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
       // Blackbox::LoadRC() method.
       if (*new_workspace_name) {
 	current->setName(new_workspace_name);
+	current->Menu()->Hide();
 	wsMenu->remove(current->workspaceID() + 1);
 	wsMenu->insert(current->Name(), current->Menu(),
 		       current->workspaceID());

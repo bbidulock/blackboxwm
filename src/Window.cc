@@ -98,11 +98,13 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window) {
 	  if ((client.transient_for = blackbox->searchWindow(win))
 	      != NULL) {
 	    client.transient_for->client.transient = this;	  
+	    stuck = client.transient_for->stuck;
 	    transient = True;
 	  } else if (win == client.window_group) {
 	    if ((client.transient_for = blackbox->searchGroup(win, this))
 		!= NULL) {
 	      client.transient_for->client.transient = this;
+	      stuck = client.transient_for->stuck;
 	      transient = True;
 	    }
 	  }
@@ -342,7 +344,10 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window) {
 	windowmenu = new Windowmenu(this, blackbox);
       
       createDecorations();
-      blackbox->toolbar()->currentWorkspace()->addWindow(this);
+      if (stuck)
+	blackbox->toolbar()->workspace(0)->addWindow(this);
+      else
+	blackbox->toolbar()->currentWorkspace()->addWindow(this);
       
       setFocusFlag(False);
       
@@ -374,6 +379,17 @@ BlackboxWindow::~BlackboxWindow(void) {
     delete windowmenu;
   if (icon)
     delete icon;
+
+  if (client.title)
+    if (strcmp(client.title, "Unnamed")) {
+      XFree(client.title);
+      client.title = 0;
+    }
+  
+  if (client.mwm_hint) {
+    XFree(client.mwm_hint);
+    client.mwm_hint = 0;
+  }
   
   if (client.window_group)
     blackbox->removeGroupSearch(client.window_group);
@@ -466,17 +482,8 @@ BlackboxWindow::~BlackboxWindow(void) {
   blackbox->removeWindowSearch(client.window);
   
   blackbox->removeWindowSearch(frame.window);  
-  XDestroyWindow(display, frame.window);  
-
-  if (client.title)
-    if (strcmp(client.title, "Unnamed"))
-      XFree(client.title);
-
-  if (client.mwm_hint) {
-    XFree(client.mwm_hint);
-    client.mwm_hint = 0;
-  }
-
+  XDestroyWindow(display, frame.window);
+  
   blackbox->ungrabServer();
 }
 
@@ -1333,7 +1340,7 @@ Bool BlackboxWindow::setInputFocus(void) {
       ret = client.transient->setInputFocus();
     else
       if (! focused) {
-	if (XSetInputFocus(display, client.window, RevertToParent,
+	if (XSetInputFocus(display, client.window, RevertToPointerRoot,
 			   CurrentTime))
 	  ret = True;
       } else
@@ -1767,7 +1774,7 @@ void BlackboxWindow::drawMaximizeButton(Bool pressed) {
     XSetWindowBackgroundPixmap(display, frame.maximize_button, frame.pbutton);
     XClearWindow(display, frame.maximize_button);
   }
-
+  
   XDrawRectangle(display, frame.maximize_button,
 		 ((focused) ? blackbox->WindowFocusGC() :
 		  blackbox->WindowUnfocusGC()),
@@ -1816,7 +1823,8 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
 	state = client.initial_state;
       
       if (((int) workspace_new != blackbox->toolbar()->currentWorkspaceID()) &&
-	  ((int) workspace_new < blackbox->toolbar()->count())) {
+	  ((int) workspace_new < blackbox->toolbar()->count()) &&
+	  ( ! (stuck && workspace_new == 0))) {
 	blackbox->toolbar()->workspace(workspace_number)->removeWindow(this);
 	blackbox->toolbar()->workspace(workspace_new)->addWindow(this);
 	
@@ -1835,6 +1843,7 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
       case NormalState:
       case InactiveState:
       case ZoomState:
+      default:
 	positionButtons();
 	
 	XMapWindow(display, client.window);
@@ -1857,7 +1866,7 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
       }
       
       blackbox->ungrabServer();
-    } else
+    } else      
       deiconifyWindow();
   }
 }
@@ -1911,7 +1920,7 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
     visible = False;
     iconic = False;
     XUnmapWindow(display, frame.window);
-
+    
     XChangeProperty(display, client.window, blackbox->StateAtom(),
 		    blackbox->StateAtom(), 32, PropModeReplace,
 		    (unsigned char *) state, 3);
@@ -1924,7 +1933,7 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
     
     XChangeSaveSet(display, client.window, SetModeDelete);
     XSelectInput(display, client.window, NoEventMask);
-
+    
     XSync(display, False);
     blackbox->ungrabServer();
     

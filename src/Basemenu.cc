@@ -176,8 +176,7 @@ int Basemenu::remove(int index) {
     if (item->exec()) {
       delete [] item->exec();
     }
-  } else if (item->submenu())
-    item->submenu()->Hide();
+  }
   
   delete item;
 
@@ -321,10 +320,10 @@ void Basemenu::Update(void) {
   int i = 0;
   for (i = 0; i < menuitems->count(); i++)
     if (i == which_sub || i == always_highlight) {
-      drawItem(i, True, 0);
+      drawItem(i, (i == always_highlight), True, 0);
       drawSubmenu(i);
     } else
-      drawItem(i, False, 0);
+      drawItem(i, False, False, 0);
 
   if (parent && visible)
     parent->drawSubmenu(parent->which_sub);
@@ -351,12 +350,13 @@ void Basemenu::Hide(void) {
   which_sub = which_press = which_sub = -1;
 
   if (parent) {
-    if (parent->always_highlight != parent->which_sub)
-      parent->drawItem(parent->which_sub, False, True);
+    parent->drawItem(parent->which_sub,
+		     (parent->always_highlight == parent->which_sub),
+		     False, True);
     
     parent->which_sub = -1;
   }
-
+  
   XUnmapWindow(display, menu.frame);
 }
 
@@ -377,7 +377,7 @@ void Basemenu::drawSubmenu(int index, Bool) {
   if (index >= 0 && index < menuitems->count()) {
     BasemenuItem *item = menuitems->find(index);
     if (item->submenu() && visible) {
-      drawItem(index, True);
+      drawItem(index, False, True);
 
       int sbl = index / menu.persub, i = index - (sbl * menu.persub),
 	x = (((shifted) ? menu.x_shift : menu.x) +
@@ -429,15 +429,15 @@ Bool Basemenu::hasSubmenu(int index) {
 }
 
 
-void Basemenu::drawItem(int index, Bool highlight, Bool clearArea) {
+void Basemenu::drawItem(int index, Bool frame, Bool highlight, Bool clear) {
   if (index < 0 || index > menuitems->count()) return;
-
+  
   int sbl = index / menu.persub, i = index - (sbl * menu.persub),
     ix = (sbl * menu.item_w), iy = (i * (menu.item_h + 1)), tx = 0;
   BasemenuItem *item = menuitems->find(index);
-
+  
   if (! item) return;
-
+  
   switch(blackbox->MenuJustification()) {
   case Blackbox::B_LeftJustify:
     tx = ix + menu.bevel_w + menu.item_h + 1;
@@ -461,20 +461,23 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clearArea) {
     break;
   }
   
-  if (clearArea) {
+  if (clear) {
     XClearArea(display, menu.iframe, ix, iy, menu.item_w, menu.item_h + 1,
 	       False);
   }
 
-  if (highlight) {
+  if (frame || highlight) {
     XFillArc(display, menu.iframe, blackbox->MenuHiBGGC(), ix + 1, iy + 1,
              menu.item_h - 1, menu.item_h - 2, 90 * 64, 180 * 64);
-    XFillRectangle(display, menu.iframe, blackbox->MenuHiBGGC(), ix +
-                   ((menu.item_h + 1) / 2), iy + 1, menu.item_w -
-                   menu.item_h - 2, menu.item_h - 1);
     XFillArc(display, menu.iframe, blackbox->MenuHiBGGC(), ix + menu.item_w -
              menu.item_h - 2, iy + 1, menu.item_h - 1, menu.item_h - 2,
              270 * 64, 180 * 64);
+  }
+  
+  if (highlight) {
+    XFillRectangle(display, menu.iframe, blackbox->MenuHiBGGC(), ix +
+                   ((menu.item_h + 1) / 2), iy + 1, menu.item_w -
+                   menu.item_h - 2, menu.item_h - 1);
     
     if (item->ulabel())
       XDrawString(display, menu.iframe, blackbox->MenuHiGC(), tx, iy +
@@ -520,7 +523,7 @@ void Basemenu::setMenuLabel(char *l) {
 
 void Basemenu::setHighlight(int index) {
   if (always_highlight != -1)
-    drawItem(always_highlight, False, True);
+    drawItem(always_highlight, False, False, True);
   
   if (index >= 0 && index < menuitems->count()) {
     always_highlight = index; 
@@ -552,7 +555,7 @@ void Basemenu::buttonPressEvent(XButtonEvent *be) {
       if (item->submenu())
 	drawSubmenu(w);
       else
-	drawItem(w, True);
+	drawItem(w, False, True);
     }
     
   }
@@ -584,9 +587,8 @@ void Basemenu::buttonReleaseEvent(XButtonEvent *re) {
         p = (which_sbl * menu.persub) + which_press;
 
       if (w < menuitems->count() && w >= 0) {
-        if (p != which_sub)
-	  drawItem(p, False, True);
-      
+	drawItem(p, (p == always_highlight), (p == which_sub), True);
+	
         if  (p == w) {
 	  if (re->x > ix && re->x < (signed) (ix + menu.item_w) &&
 	      re->y > iy && re->y < (signed) (iy + menu.item_h)) {
@@ -594,10 +596,10 @@ void Basemenu::buttonReleaseEvent(XButtonEvent *re) {
 	  }
         }
       } else
-        drawItem(p, True);
+        drawItem(p, False, True);
     }
   } else
-      XUngrabPointer(display, CurrentTime);
+    XUngrabPointer(display, CurrentTime);
 }
 
 
@@ -639,8 +641,7 @@ void Basemenu::motionNotifyEvent(XMotionEvent *me) {
 	int p = (which_sbl * menu.persub) + which_press;
 	BasemenuItem *item = menuitems->find(p);
 	
-	if (p != always_highlight)
-	  drawItem(p, False, True);
+	drawItem(p, (p == always_highlight), False, True);
 	if (item->submenu())
 	  if (item->submenu()->Visible()) {
 	    item->submenu()->Hide();
@@ -656,7 +657,7 @@ void Basemenu::motionNotifyEvent(XMotionEvent *me) {
       if (itmp->submenu())
 	drawSubmenu(w);
       else
-	drawItem(w, True);
+	drawItem(w, False, True);
     }
   }
 }
@@ -719,10 +720,7 @@ void Basemenu::exposeEvent(XExposeEvent *ee) {
       for (ii = id; ii <= id_d && it.current(); it++, ii++) {
 	int index = ii + (i * menu.persub);
 	// redraw the item
-	if (which_sub == index || always_highlight == index)
-	  drawItem(index, True);
-	else
-	  drawItem(index);
+	drawItem(index, (always_highlight == index), (which_sub == index));
       }
     }
   }
@@ -755,11 +753,11 @@ void Basemenu::enterNotifyEvent(XCrossingEvent *ce) {
       if (tmp->submenu()->Visible()) {
 	int sbl = (ce->x / menu.item_w), i = (ce->y / (menu.item_h + 1)),
 	  w = (sbl * menu.persub) + i;
-
+	
 	if (w != which_sub) {
 	  tmp->submenu()->Hide();
 	  
-	  drawItem(which_sub, False, True);
+	  drawItem(which_sub, (w == always_highlight), False, True);
 	  which_sub = -1;
 	}
       }
@@ -773,8 +771,8 @@ void Basemenu::leaveNotifyEvent(XCrossingEvent *ce) {
     if (which_press != -1 && which_sbl != -1 && menuitems->count() > 0) {
       int p = (which_sbl * menu.persub) + which_press;      
       
-      if ( ! ((p == which_sub) || (p == always_highlight)))
-	drawItem(p, False, True);
+      
+      drawItem(p, (p == always_highlight), (p == which_sub), True);
       
       which_sbl = which_press = -1;
     }

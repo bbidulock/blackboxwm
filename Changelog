@@ -2,6 +2,24 @@ At the request of some people, here is a Change log starting with 0.33.0.
 Enjoy! :)
 
 
+Changes from 0.40.7 to 0.40.8:
+	- more menu fixes... highlights are handled as normal... constant
+	  highlights are draw differently... the rounded edges minus the
+	  highlighted bar...
+	- hand strength reduction in the BImage::renderXImage() method...
+	  this doesn't offer much of a speed up... but every little bit
+	  counts
+	- stuck clients that open transients now have their transients stuck
+	  by default
+	- changed some input focus code to better handle the sloppy focus
+	  model... the little annoyances like two focused windows should now
+	  be fixed...
+	- removed gcc specific code... changed use of strsep to strtok (which
+	  is defined by ANSI C)
+	- this is strictly a maintainence release... no new features have
+	  been introduced
+
+
 Changes from 0.40.6 to 0.40.7:
 	- changed bhughes@arn.net to bhughes@tcac.net throughout the source
 	  tree

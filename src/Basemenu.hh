@@ -57,7 +57,7 @@ private:
   } menu;
 
   void drawSubmenu(int, Bool = False);
-  void drawItem(int, Bool = False, Bool = False);
+  void drawItem(int, Bool = False, Bool = False, Bool = False);
 
 
 protected:

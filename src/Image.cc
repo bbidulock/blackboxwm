@@ -141,7 +141,7 @@ XImage *BImage::renderXImage(Bool dither) {
   
   register unsigned int x, y, r = 0, g = 0, b = 0, i, off;
   
-  unsigned char *idata = d, *pr, *pg, *pb;
+  unsigned char *idata = d, *pd = d, *pr, *pg, *pb;
   unsigned long pixel;
 
   if ((! tr) || (! tg) || (! tb)) {
@@ -195,8 +195,6 @@ XImage *BImage::renderXImage(Bool dither) {
 	*(nog + x) = *(green + i);
 	*(nob + x) = *(blue + i);
       }
-      
-      idata = d + (image->bytes_per_line * y);
       
       for (x = 0; x < width; x++) {
 	if (*(or + x) > 255) *(or + x) = 255;
@@ -290,6 +288,7 @@ XImage *BImage::renderXImage(Bool dither) {
       }
       
       off += image->width;
+      idata = (pd += image->bytes_per_line);
       
       por = or; or = nor; nor = por;
       pog = og; og = nog; nog = pog;
@@ -297,8 +296,6 @@ XImage *BImage::renderXImage(Bool dither) {
     }
   } else {
     for (y = 0, off = 0; y < height; y++) {
-      idata = d + (image->bytes_per_line * y);
-      
       for (x = 0; x < width; x++, off++) {
 	r = *(tr + *(red + off));
 	g = *(tg + *(green + off));
@@ -361,6 +358,8 @@ XImage *BImage::renderXImage(Bool dither) {
 	  return 0; 
 	}
       }
+
+      idata = (pd += image->bytes_per_line);
     }
   }
   
@@ -737,10 +736,10 @@ void BImage::bevel2(Bool solid, Bool solidblack) {
 
 
 void BImage::invert(void) {
-  register unsigned int i, j;
+  register unsigned int i, j, wh = (width * height) - 1;
   unsigned char tmp;
 
-  for (i = 0, j = (width * height) - 1; j > i; j--, i++) {
+  for (i = 0, j = wh; j > i; j--, i++) {
     tmp = *(red + j);
     *(red + j) = *(red + i);
     *(red + i) = tmp;

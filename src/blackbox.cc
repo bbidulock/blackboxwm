@@ -275,7 +275,8 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   }
   
   if (! resource.sloppyFocus)
-    XSetInputFocus(display, tool_bar->windowID(), RevertToParent, CurrentTime);
+    XSetInputFocus(display, tool_bar->windowID(), RevertToPointerRoot,
+                   CurrentTime);
   
   XSynchronize(display, False);
   XSync(display, False);
@@ -567,9 +568,9 @@ void Blackbox::ProcessEvent(XEvent *e) {
       
       if ((iWin != NULL) && (e->xfocus.mode != NotifyGrab) &&
 	  (e->xfocus.mode != NotifyUngrab)) {
-	iWin->setFocusFlag(True);
-	focus_window_number = iWin->windowNumber();
-	tool_bar->currentWorkspace()->setFocusWindow(focus_window_number);
+        iWin->setFocusFlag(True);
+        focus_window_number = iWin->windowNumber();
+        tool_bar->currentWorkspace()->setFocusWindow(focus_window_number);
       }
       
       break;
@@ -579,22 +580,15 @@ void Blackbox::ProcessEvent(XEvent *e) {
     {
       BlackboxWindow *oWin = searchWindow(e->xfocus.window);
       
-      if ((oWin != NULL) && (e->xfocus.mode != NotifyGrab) &&
-	  (e->xfocus.mode != NotifyWhileGrabbed))
-	oWin->setFocusFlag(False);
-      
-      if ((e->xfocus.mode == NotifyNormal) &&
-	  (e->xfocus.detail == NotifyAncestor)) {
-	if (resource.sloppyFocus)
-	  XSetInputFocus(display, PointerRoot, RevertToParent, CurrentTime);
-	else
-	  XSetInputFocus(display, tool_bar->windowID(), RevertToParent,
-			 CurrentTime);
-	
-	focus_window_number = -1;
-	tool_bar->currentWorkspace()->setFocusWindow(-1);
+      if (oWin != NULL) {
+        if ((e->xfocus.mode != NotifyGrab) &&
+	    (e->xfocus.mode != NotifyWhileGrabbed))
+	  oWin->setFocusFlag(False);
+      } else {
+        focus_window_number = -1;
+        tool_bar->currentWorkspace()->setFocusWindow(-1);
       }
-      
+
       break;
     }
     
@@ -872,13 +866,13 @@ void Blackbox::removeToolbarSearch(Window window) {
 // *************************************************************************
 
 void Blackbox::Exit(void) {
-  XSetInputFocus(display, PointerRoot, RevertToParent, CurrentTime);
+  XSetInputFocus(display, PointerRoot, RevertToPointerRoot, CurrentTime);
   shutdown = True;
 }
 
 
 void Blackbox::Restart(char *prog) {
-  XSetInputFocus(display, PointerRoot, RevertToParent, CurrentTime);
+  XSetInputFocus(display, PointerRoot, RevertToPointerRoot, CurrentTime);
   SaveRC();
  
   if (prog) {
@@ -942,7 +936,8 @@ void Blackbox::SaveRC(void) {
   // write out the users workspace names
   int i, len = 0;
   for (i = 1; i < tool_bar->count(); i++)
-    len += strlen((tool_bar->workspace(i)->Name()) ? : "Null") + 1;
+    len += strlen((tool_bar->workspace(i)->Name()) ?
+                  tool_bar->workspace(i)->Name() : "Null") + 1;
   
   char *resource_string = new char[len + 1024],
     *save_string = new char[len], *save_string_pos = save_string,
@@ -950,7 +945,8 @@ void Blackbox::SaveRC(void) {
   if (save_string) {
     for (i = 1; i < tool_bar->count(); i++) {
       len = strlen((tool_bar->workspace(i)->Name()) ? : "Null") + 1;
-      name_string_pos = (tool_bar->workspace(i)->Name()) ? : "Null";
+      name_string_pos = ((tool_bar->workspace(i)->Name()) ?
+                         tool_bar->workspace(i)->Name() : "Null");
       
       while (--len) *(save_string_pos++) = *(name_string_pos++);
       *(save_string_pos++) = ',';
@@ -1384,8 +1380,17 @@ void Blackbox::LoadRC(void) {
     
     int i;
     for (i = 0; i < resource.workspaces; i++) {
-      char *nn = strsep(&search, ",");
-      resource.workspaceNames->insert(nn);
+      char *nn;
+
+      if (! i)
+        nn = strtok(search, ",");
+      else
+        nn = strtok(NULL, ",");
+
+      if (nn)
+        resource.workspaceNames->insert(nn);
+      else
+        break;
     }
   }
 
