@@ -76,6 +76,11 @@ enum WindowDecoration {
 };
 typedef unsigned char WindowDecorationFlags;
 
+struct WMHints {
+  bool accept_focus;
+  Window window_group;
+  unsigned long initial_state;
+};
 struct WMNormalHints {
   long flags;
   unsigned int min_width, min_height;
@@ -98,8 +103,6 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
 
   unsigned int window_number;
 
-  enum FocusMode { F_NoInput = 0, F_Passive,
-                   F_LocallyActive, F_GloballyActive };
   enum WMSkip { SKIP_NONE, SKIP_TASKBAR, SKIP_PAGER, SKIP_BOTH };
 
   struct WMState {
@@ -127,10 +130,9 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   };
 
   struct _client {
-    Window window,                  // the client's window
-      window_group;
+    Window window;                    // the client's window
     Colormap colormap;
-    BlackboxWindow *transient_for;  // which window are we a transient for?
+    BlackboxWindow *transient_for;    // which window are we a transient for?
     BlackboxWindowList transientList; // which windows are our transients?
 
     std::string title, visible_title, icon_title;
@@ -143,12 +145,12 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
     unsigned int workspace;
 
     bt::Netwm::Strut *strut;
-    FocusMode focus_mode;
     WMState state;
     WindowType window_type;
     WindowFunctionFlags functions;
     WindowDecorationFlags decorations;
 
+    WMHints wmhints;
     WMNormalHints wmnormal;
   } client;
 
@@ -214,11 +216,11 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   std::string readWMName(void);
   std::string readWMIconName(void);
 
+  WMHints readWMHints(void);
   WMNormalHints readWMNormalHints(void);
 
   void getNetwmHints(void);
   void getWMProtocols(void);
-  void getWMHints(void);
   void getMWMHints(void);
   void getTransientInfo(void);
 
@@ -296,7 +298,6 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
 
   inline Window getFrameWindow(void) const { return frame.window; }
   inline Window getClientWindow(void) const { return client.window; }
-  inline Window getGroupWindow(void) const { return client.window_group; }
 
   inline const char *getTitle(void) const
   { return client.title.c_str(); }
@@ -318,6 +319,8 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   inline unsigned int getTitleHeight(void) const
   { return frame.style->title_height; }
 
+  const WMHints &wmHints(void) const
+  { return client.wmhints; }
   const WMNormalHints &wmNormalHints(void) const
   { return client.wmnormal; }
 

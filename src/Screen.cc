@@ -529,8 +529,10 @@ void BScreen::manageWindow(Window w) {
   if (!blackbox->startingUp())
     restackWindows();
 
-  // 'show' window in it's current state
-  switch (win->currentState()) {
+  // 'show' window in the appropriate state
+  switch (blackbox->startingUp()
+          ? win->currentState()
+          : win->wmHints().initial_state) {
   case IconicState:
     win->iconify();
     break;
@@ -542,7 +544,7 @@ void BScreen::manageWindow(Window w) {
   default:
     win->show();
     break;
-  }
+  } // switch
 
   // focus the new window if appropriate
   if (!blackbox->startingUp() &&

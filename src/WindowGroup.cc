@@ -55,8 +55,8 @@ BWindowGroup::find(BScreen *screen, bool allow_transients) const {
 
   // does the focus window match (or any transient_fors)?
   for (; ret; ret = ret->getTransientFor()) {
-    if (ret->getScreen() == screen && ret->getGroupWindow() == group &&
-        (! ret->isTransient() || allow_transients))
+    if (ret->getScreen() == screen && ret->wmHints().window_group == group
+        && (! ret->isTransient() || allow_transients))
       break;
   }
 
@@ -66,8 +66,8 @@ BWindowGroup::find(BScreen *screen, bool allow_transients) const {
   BlackboxWindowList::const_iterator it, end = windowList.end();
   for (it = windowList.begin(); it != end; ++it) {
     ret = *it;
-    if (ret->getScreen() == screen && ret->getGroupWindow() == group &&
-        (! ret->isTransient() || allow_transients))
+    if (ret->getScreen() == screen && ret->wmHints().window_group == group
+        && (! ret->isTransient() || allow_transients))
       break;
   }
 

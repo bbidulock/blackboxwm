@@ -122,6 +122,23 @@ static void get_decorations(WindowType window_type,
 
 
 /*
+ * Add specified window to the appropriate window group, creating a
+ * new group if necessary.
+ */
+static void update_window_group(Window window_group,
+                                Blackbox *blackbox,
+                                BlackboxWindow *win) {
+  BWindowGroup *group = blackbox->findWindowGroup(window_group);
+  if (! group) { // no group found, create it!
+    new BWindowGroup(blackbox, window_group);
+    group = blackbox->findWindowGroup(window_group);
+  }
+  if (group)
+    group->addWindow(win);
+}
+
+
+/*
  * Initializes the class with default values/the window's set initial values.
  */
 BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
@@ -175,7 +192,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   client.colormap = wattrib.colormap;
   client.workspace = screen->currentWorkspace();
   window_number = bt::BSENTINEL;
-  client.window_group = None;
   client.transient_for = 0;
   client.window_type = WindowTypeNormal;
   client.strut = 0;
@@ -208,11 +224,14 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   // client
   getNetwmHints();
   getWMProtocols();
-  getWMHints();
+  client.wmhints = readWMHints();
   client.wmnormal = readWMNormalHints();
   getTransientInfo();
   if (client.window_type == WindowTypeNormal && isTransient())
     client.window_type = WindowTypeDialog;
+
+  if (client.wmhints.window_group != None)
+    ::update_window_group(client.wmhints.window_group, blackbox, this);
 
   ::get_decorations(client.window_type, client.decorations, client.functions);
   getMWMHints();
@@ -256,11 +275,10 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   blackbox->insertWindow(client.window, this);
   blackbox->insertWindow(frame.plate, this);
 
-  // preserve the window's initial state on first map, and its current state
-  // across a restart
-  unsigned long initial_state = client.current_state;
-  if (! getState())
-    client.current_state = initial_state;
+  // preserve the window's initial state on first map, and its current
+  // state across a restart
+  if (!getState())
+    client.current_state = client.wmhints.initial_state;
 
   if (client.state.iconic) {
     // prepare the window to be iconified
@@ -297,15 +315,15 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   if (client.state.shaded) {
     client.state.shaded = false;
-    initial_state = client.current_state;
+    unsigned long save_state = client.current_state;
     setShaded(true);
 
     /*
       At this point in the life of a window, current_state should only be set
       to IconicState if the window was an *icon*, not if it was shaded.
     */
-    if (initial_state != IconicState)
-      client.current_state = initial_state;
+    if (save_state != IconicState)
+      client.current_state = save_state;
   }
 
   if (!(client.functions & WindowFunctionMaximize))
@@ -341,8 +359,9 @@ BlackboxWindow::~BlackboxWindow(void) {
     delete client.strut;
   }
 
-  if (client.window_group) {
-    BWindowGroup *group = blackbox->findWindowGroup(client.window_group);
+  if (client.wmhints.window_group) {
+    BWindowGroup *group =
+      blackbox->findWindowGroup(client.wmhints.window_group);
     if (group) group->removeWindow(this);
   }
 
@@ -1066,53 +1085,29 @@ void BlackboxWindow::getWMProtocols(void) {
 
 
 /*
- * Gets the value of the WM_HINTS property.  If the property is not
- * set, then use a set of default values.
+ * Returns the value of the WM_HINTS property.  If the property is not
+ * set, a set of default values is returned instead.
  */
-void BlackboxWindow::getWMHints(void) {
-  client.focus_mode = F_Passive;
-
-  // remove from current window group
-  if (client.window_group) {
-    BWindowGroup *group = blackbox->findWindowGroup(client.window_group);
-    if (group) group->removeWindow(this);
-  }
-  client.window_group = None;
+WMHints BlackboxWindow::readWMHints(void) {
+  WMHints wmh;
+  wmh.accept_focus = false;
+  wmh.window_group = None;
+  wmh.initial_state = NormalState;
 
   XWMHints *wmhint = XGetWMHints(blackbox->XDisplay(), client.window);
-  if (! wmhint)
-    return;
+  if (!wmhint) return wmh;
 
-  if (wmhint->flags & InputHint) {
-    if (wmhint->input == True) {
-      if (client.state.send_focus_message)
-        client.focus_mode = F_LocallyActive;
-    } else {
-      if (client.state.send_focus_message)
-        client.focus_mode = F_GloballyActive;
-      else
-        client.focus_mode = F_NoInput;
-    }
-  }
-
+  if (wmhint->flags & InputHint)
+    wmh.accept_focus = (wmhint->input == True);
   if (wmhint->flags & StateHint)
-    client.current_state = wmhint->initial_state;
-
-  if (wmhint->flags & WindowGroupHint &&
-      wmhint->window_group != screen->screenInfo().rootWindow()) {
-    client.window_group = wmhint->window_group;
-
-    // add window to the appropriate group
-    BWindowGroup *group = blackbox->findWindowGroup(client.window_group);
-    if (! group) { // no group found, create it!
-      new BWindowGroup(blackbox, client.window_group);
-      group = blackbox->findWindowGroup(client.window_group);
-    }
-    if (group)
-      group->addWindow(this);
-  }
+    wmh.initial_state = wmhint->initial_state;
+  if (wmhint->flags & WindowGroupHint
+      && wmhint->window_group != screen->screenInfo().rootWindow())
+    wmh.window_group = wmhint->window_group;
 
   XFree(wmhint);
+
+  return wmh;
 }
 
 
@@ -1323,10 +1318,11 @@ void BlackboxWindow::getTransientInfo(void) {
   }
 
   client.transient_for = blackbox->findWindow(trans_for);
-  if (! client.transient_for &&
-      client.window_group && trans_for == client.window_group) {
+  if (! client.transient_for && client.wmhints.window_group
+      && trans_for == client.wmhints.window_group) {
     // no direct transient_for, perhaps this is a group transient?
-    BWindowGroup *group = blackbox->findWindowGroup(client.window_group);
+    BWindowGroup *group =
+      blackbox->findWindowGroup(client.wmhints.window_group);
     if (group) client.transient_for = group->find(screen);
   }
 
@@ -1507,15 +1503,10 @@ bool BlackboxWindow::setInputFocus(void) {
     }
   }
 
-  switch (client.focus_mode) {
-  case F_Passive:
-  case F_LocallyActive:
+  if (client.wmhints.accept_focus) {
     XSetInputFocus(blackbox->XDisplay(), client.window,
                    RevertToPointerRoot, CurrentTime);
-    break;
-
-  case F_GloballyActive:
-  case F_NoInput:
+  } else {
     /*
      * we could set the focus to none, since the window doesn't accept
      * focus, but we shouldn't set focus to nothing since this would
@@ -1523,7 +1514,6 @@ bool BlackboxWindow::setInputFocus(void) {
      */
     XSetInputFocus(blackbox->XDisplay(), frame.plate,
                    RevertToPointerRoot, CurrentTime);
-    break;
   }
 
   if (client.state.send_focus_message) {
@@ -2561,9 +2551,21 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
     reconfigure();
     break;
 
-  case XA_WM_HINTS:
-    getWMHints();
+  case XA_WM_HINTS: {
+    // remove from current window group
+    if (client.wmhints.window_group) {
+      BWindowGroup *group =
+        blackbox->findWindowGroup(client.wmhints.window_group);
+      if (group) group->removeWindow(this);
+    }
+
+    client.wmhints = readWMHints();
+
+    if (client.wmhints.window_group != None)
+      ::update_window_group(client.wmhints.window_group, blackbox, this);
+
     break;
+  }
 
   case XA_WM_ICON_NAME: {
     client.icon_title = readWMIconName();
