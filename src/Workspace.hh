@@ -1,5 +1,4 @@
-//
-// workspace.hh for Blackbox - an X11 Window manager
+// Workspace.hh for Blackbox - an X11 Window manager
 // Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -43,7 +42,7 @@ private:
 
   LinkedList<BlackboxWindow> *windowList;
 
-  char *name, **label;
+  char *name;
   int id, cascade_x, cascade_y;
 
 
@@ -64,7 +63,6 @@ public:
   Clientmenu *getMenu(void) { return clientmenu; }
   
   char *getName(void) { return name; }
-  char **getLabel(void) { return label; }
   
   const int addWindow(BlackboxWindow *, Bool = False);
   const int removeWindow(BlackboxWindow *);

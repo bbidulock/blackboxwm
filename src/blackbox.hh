@@ -1,4 +1,3 @@
-//
 // blackbox.hh for Blackbox - an X11 Window manager
 // Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 //
@@ -22,14 +21,13 @@
 #ifndef   __blackbox_hh
 #define   __blackbox_hh
 
-#include "../version.h"
-
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
 
 class Basemenu;
 class BlackboxWindow;
 class BlackboxIcon;
+class BScreen;
 class Iconmenu;
 class Rootmenu;
 
@@ -41,6 +39,7 @@ class Toolbar;
 class Workspace;
 class Workspacemenu;
 
+#include "BaseDisplay.hh"
 #include "Image.hh"
 #include "LinkedList.hh"
 
@@ -49,7 +48,7 @@ class Workspacemenu;
 #endif // HAVE_STDIO_H
 
 
-class Blackbox {
+class Blackbox : public BaseDisplay {
 private:
   typedef struct GroupSearch {
     BlackboxWindow *data;
@@ -82,13 +81,9 @@ private:
     Window window;
   } SlitSearch;
 #endif // SLIT
-  
-  struct cursor {
-    Cursor session, move;
-  } cursor;
 
   struct resource {
-    Bool image_dither, colormap_focus_follows_mouse;
+    Bool image_dither, colormap_focus_follows_mouse, opaque_move;
     Time double_click_interval, auto_raise_delay_sec, auto_raise_delay_usec;
     
     char *menu_file, *style_file;
@@ -96,11 +91,6 @@ private:
     unsigned long wkspc_change_mask, cycle_mask;
   } resource;
   
-  struct shape {
-    Bool extensions;
-    int event_basep, error_basep;
-  } shape;
-
   LinkedList<WindowSearch> *windowSearchList;
   LinkedList<MenuSearch> *menuSearchList;
 
@@ -110,14 +100,10 @@ private:
 
   LinkedList<ToolbarSearch> *toolbarSearchList;
   LinkedList<GroupSearch> *groupSearchList;
-  LinkedList<BScreen> *screenList;
   LinkedList<MenuTimestamp> *menuTimestamps;
+  LinkedList<BScreen> *screenList;
 
   BlackboxWindow *focused_window, *auto_raise_window;
-
-  Atom xa_wm_colormap_windows, xa_wm_protocols, xa_wm_state,
-    xa_wm_delete_window, xa_wm_take_focus, xa_wm_change_state,
-    motif_wm_hints;
 
 #ifdef    KDE
   Atom kwm_current_desktop, kwm_number_of_desktops, kwm_active_window,
@@ -127,40 +113,29 @@ private:
     kwm_module, kwm_module_init, kwm_module_initialized,
     kwm_module_desktop_change, kwm_module_win_change, kwm_window_region_1,
     kwm_module_desktop_number_change, kwm_module_desktop_name_change,
-    kwm_module_win_add, kwm_module_win_remove;
+    kwm_module_win_add, kwm_module_win_remove, kwm_module_win_raise, 
+    kwm_module_win_lower, kwm_module_win_activate;
 #endif // KDE
 
-  Bool _startup, _shutdown, _reconfigure, _reread_menu, auto_raise_pending;
-  Display *display;
-  char *display_name;
-  char **argv;
-  int argc, number_of_screens, server_grabs;
+  Bool _reconfigure, _reread_menu, auto_raise_pending, no_focus;
+  char *rc_file, **argv;
+  int argc;
 
 
 protected:
   void load_rc(void);
   void save_rc(void);
 
-  void process_event(XEvent *);
+  virtual void process_event(XEvent *);
 
   void do_reconfigure(void);
 
 
 public:
-  Blackbox(int, char **, char * = 0);
-  ~Blackbox(void);
-
-  Atom getWMChangeStateAtom(void) { return xa_wm_change_state; }
-  Atom getWMStateAtom(void)       { return xa_wm_state; }
-  Atom getWMDeleteAtom(void)      { return xa_wm_delete_window; }
-  Atom getWMProtocolsAtom(void)   { return xa_wm_protocols; }
-  Atom getWMFocusAtom(void)       { return xa_wm_take_focus; }
-  Atom getWMColormapAtom(void)    { return xa_wm_colormap_windows; }
-
-  Atom getMotifWMHintsAtom(void) { return motif_wm_hints; }
+  Blackbox(int, char **, char * = 0, char * = 0);
+  virtual ~Blackbox(void);
 
 #ifdef    KDE
-
   Atom getKWMRunningAtom(void)             { return kwm_running; }
   Atom getKWMModuleAtom(void)              { return kwm_module; }
   Atom getKWMModuleInitAtom(void)          { return kwm_module_init; }
@@ -173,6 +148,7 @@ public:
   Atom getKWMWinMaximizedAtom(void)        { return kwm_win_maximized; }
   Atom getKWMWinDesktopAtom(void)          { return kwm_win_desktop; }
   Atom getKWMWindowRegion1Atom(void)       { return kwm_window_region_1; }
+  Atom getKWMWinActiveAtom(void)           { return kwm_active_window; }
 
   Atom getKWMModuleDesktopChangeAtom(void)
     { return kwm_module_desktop_change; }
@@ -183,7 +159,9 @@ public:
   Atom getKWMModuleWinRemoveAtom(void)     { return kwm_module_win_remove; }
   Atom getKWMModuleDesktopNumberChangeAtom(void)
     { return kwm_module_desktop_number_change; }
-
+  Atom getKWMModuleWinRaiseAtom(void)      { return kwm_module_win_raise; }
+  Atom getKWMModuleWinLowerAtom(void)      { return kwm_module_win_lower; }
+  Atom getKWMModuleWinActivateAtom(void)   { return kwm_module_win_activate; }
 #endif // KDE
 
   Basemenu *searchMenu(Window);
@@ -192,39 +170,33 @@ public:
   BlackboxWindow *searchWindow(Window);
   BlackboxWindow *getFocusedWindow(void) { return focused_window; }
 
-  Bool hasShapeExtensions(void) { return shape.extensions; }
   Bool hasImageDither(void)     { return resource.image_dither; }
-  Bool isStartup(void)          { return _startup; }
-  Bool validateWindow(Window);
-
-  Cursor getSessionCursor(void) { return cursor.session; }
-  Cursor getMoveCursor(void)    { return cursor.move; }
-
-  Display *getDisplay(void) { return display; }
-  
-  Time getDoubleClickInterval(void) { return resource.double_click_interval; }
-
-  Toolbar *searchToolbar(Window);
+  Bool doOpaqueMove(void)       { return resource.opaque_move; }
 
   BScreen *getScreen(int);
   BScreen *searchScreen(Window);
+
+  Time getDoubleClickInterval(void) { return resource.double_click_interval; }
+
+  Toolbar *searchToolbar(Window);
 
   char *getStyleFilename(void) { return resource.style_file; }
   char *getMenuFilename(void)  { return resource.menu_file; }
 
   int getColorsPerChannel(void) { return resource.colors_per_channel; }
-  int getNumberOfScreens(void)  { return number_of_screens; }
 
   unsigned long getWorkspaceChangeMask(void)
     { return resource.wkspc_change_mask; }
   unsigned long getWindowCycleMask(void)
     { return resource.cycle_mask; }
 
+  void eventLoop(void);
+  void shutdown(void);
+  void setNoFocus(Bool f) { no_focus = f; }
+  void setFocusedWindow(BlackboxWindow *w) { focused_window = w; }
   void load_rc(BScreen *);
   void saveStyleFilename(char *);
   void saveMenuFilename(char *);
-  void grab(void);
-  void ungrab(void);
   void saveMenuSearch(Window, Basemenu *);
   void saveWindowSearch(Window, BlackboxWindow *);
   void saveToolbarSearch(Window, Toolbar *);
@@ -233,13 +205,10 @@ public:
   void removeWindowSearch(Window);
   void removeToolbarSearch(Window);
   void removeGroupSearch(Window);
-  void eventLoop(void);
-  void exit(void);
   void restart(char * = 0);
   void reconfigure(void);
   void rereadMenu(void);
   void checkMenu(void);
-  void shutdown(void);
 
 #ifdef    SLIT
   Slit *searchSlit(Window);
@@ -248,12 +217,6 @@ public:
   void removeSlitSearch(Window);
 #endif // SLIT
   
-  enum { B_Restart = 1, B_RestartOther, B_Exit, B_Shutdown, B_Execute,
-	 B_Reconfigure, B_WindowShade, B_WindowIconify, B_WindowMaximize,
-	 B_WindowClose, B_WindowRaise, B_WindowLower, B_WindowStick,
-	 B_WindowKill, B_SetStyle };
-  enum { B_LeftJustify = 1, B_RightJustify, B_CenterJustify };
-
 #ifndef   HAVE_STRFTIME
   enum { B_AmericanDate = 1, B_EuropeanDate };
 #endif // HAVE_STRFTIME

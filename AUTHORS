@@ -1,4 +1,4 @@
--- AUTHORS for Blackbox 0.50.x beta - an X11 Window manager
+-- AUTHORS for Blackbox 0.51.x  - an X11 Window manager
 -- Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 --
 --  This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@ Contributors:
         Frank Belew <frb@umr.edu>
           - dgradient code
         Scott Garner <mrfab@arn.net>
-          - suggestions, bug reports and beta testing (*the* beta moron)
+          - suggestions, bug reports and beta testing (*the*  beta moron)
         David Doan <ddoan@usa.net>
          - testing of 8bpp code
         Mark Seward <illuzion@paradise.net.nz>
@@ -35,7 +35,7 @@ Contributors:
         Keith Bolland <prime@strip.net.nz>
          - beta testing, bug reports and suggestions
         James Spooner <spoons@xtra.co.nz>
-         - beta testing, bug reports (beta moron)
+         - beta testing, bug reports ( moron)
         Fred Knieper <derf@tamu.edu>
          - beta testing, bug reports
         Steve Udell <hettar@teleport.com>
@@ -46,6 +46,8 @@ Contributors:
         - bug reports and patches/suggestions (original middle click advocate)
         Dyon Balding <dyon.balding@eng.monash.edu.au>
         - patch for Smart(er)Placement window placement
+        Mike Cole <mike@mydot.com>
+        - co-author/hacker of Image.cc (local LUG buddy)
 
 I would also like to thank the creators of WindowMaker.  Reading the existing
 code has helped me immensely, and the BImage class follows the RImage data type

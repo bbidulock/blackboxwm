@@ -1,6 +1,3 @@
-! Blackbox window manager resource defaults
-! (c) 1997 - 1999 Brad Hughes
-
 toolbar:				Raised Solid               Bevel1
 toolbar.label:				Flat   Solid 
 toolbar.clock:				Flat   Solid
@@ -36,14 +33,16 @@ menu.frame.highlightColor:		rgb:3/6/6
 menu.title.textColor:			lightgrey
 menu.frame.textColor:			lightgrey
 menu.frame.hiTextColor:			white
+menu.bulletStyle:			triangle
+menu.bulletPosition:			left
 
 borderColor:			rgb:2/4/4
-handleWidth:			8
-bevelWidth:			3
+handleWidth:			6
+bevelWidth:			2
+borderWidth:			1
 
 titleJustify:				CenterJustify
 menuJustify:				LeftJustify
-moveStyle:				Opaque
 
 titleFont:     -*-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*
 menuFont:      -*-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*

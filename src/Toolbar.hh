@@ -1,4 +1,3 @@
-//
 // Toolbar.hh for Blackbox - an X11 Window manager
 // Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 //
@@ -30,7 +29,6 @@ class Toolbar;
 class Blackbox;
 class BlackboxIcon;
 class Iconmenu;
-class Workspace;
 class Workspacemenu;
 class BImageControl;
 class BScreen;
@@ -45,7 +43,7 @@ private:
   GC buttonGC;
 
   struct frame {
-    Pixmap frame, label, wlabel, button, pbutton, clk, reading;
+    Pixmap base, label, wlabel, button, pbutton, clk, reading;
     Window window, workspaceLabel, workspacePrev, workspaceNext,
       windowLabel, windowPrev, windowNext, clock;
 

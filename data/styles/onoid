@@ -1,4 +1,4 @@
-! Noid Tech style for Blackbox 0.40.x
+! Title: Orange Noid 
 
 ! base toolbar window
 toolbar:				Raised Vertical Gradient Bevel1
@@ -37,6 +37,8 @@ menu.frame.colorTo:			orange4
 menu.frame.highlightColor:		grey20
 menu.frame.hiTextColor:			white
 menu.frame.textColor:			grey20
+menu.bulletStyle:			diamond
+menu.bulletPosition:			left
 
 ! focused window decorations
 window.focus:				Raised Diagonal Gradient Bevel1
@@ -69,9 +71,7 @@ borderColor:				grey30
 ! decoration size control
 bevelWidth:				2
 handleWidth:				4
-
-! window move style
-moveStyle:				Opaque
+borderWidth:				1
 
 ! text justification
 titleJustify:				CenterJustify

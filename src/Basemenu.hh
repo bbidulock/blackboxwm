@@ -1,4 +1,3 @@
-//
 // Basemenu.hh for Blackbox - an X11 Window manager
 // Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 //
@@ -46,7 +45,8 @@ private:
   Bool moving, visible, movable, user_moved, default_menu, title_vis, shifted,
     hidable;
   Display *display;
-  int which_sub, which_press, which_sbl, alignment, always_highlight;
+  int which_sub, which_press, which_sbl, alignment, always_highlight,
+    indicator, indicator_position;
 
   struct menu {
     Pixmap iframe_pixmap, title_pixmap;
@@ -58,8 +58,8 @@ private:
       bevel_h;
   } menu;
 
-  void drawSubmenu(int, Bool = False);
-  void drawItem(int, Bool = False, Bool = False, Bool = False);
+  virtual void drawSubmenu(int);
+  virtual void drawItem(int, Bool = False, Bool = False, Bool = False);
 
 
 protected:
@@ -69,6 +69,7 @@ protected:
   void setHidable(Bool h) { hidable = h; }
   void setAlignment(int a) { alignment = a; }
   void setMinimumSublevels(int m) { menu.minsub = m; }
+  void setItemIndicator(int = -1, int = 0);
 
   virtual void itemSelected(int, int) = 0;
 
@@ -95,6 +96,7 @@ public:
   int getY(void) { return menu.y; }
   int getCount(void) { return menuitems->count(); }
   int getHighlight(void) { return always_highlight; }
+  int getIndicatorPosition(void) { return indicator_position; }
 
   unsigned int getWidth(void) { return menu.width; }
   unsigned int getHeight(void) { return menu.height; }
@@ -112,11 +114,15 @@ public:
   void update(void);
   void defaultMenu(void) { default_menu = True; }
   void setHighlight(int = -1);
-
+  void setSubmenuIndicator(int = 1);
+  void setIndicatorPosition(int = 1);
+   
   virtual void show(void);
   virtual void hide(void);
 
-  enum { MenuAlignDontCare = 1, MenuAlignTop, MenuAlignBottom };
+  enum { AlignDontCare = 1, AlignTop, AlignBottom };
+  enum { Right = 1, Left };
+  enum { Empty = 0, Round, Square, Triangle, Diamond };
 };
 
 

@@ -1,5 +1,3 @@
-! Purple Noid Tech style for Blackbox 0.40.x
-
 ! base toolbar window
 toolbar:				Raised Vertical Gradient Bevel1
 toolbar.color:				rgb:78/a/a
@@ -37,6 +35,8 @@ menu.frame.colorTo:			rgb:b/b/f
 menu.frame.highlightColor:		grey85
 menu.frame.hiTextColor:			grey30
 menu.frame.textColor:			grey20
+menu.bulletStyle:			triangle
+menu.bulletPosition:			right
 
 ! focused window decorations
 window.focus:				Raised Diagonal Gradient Bevel1
@@ -69,9 +69,7 @@ borderColor:				gray30
 ! decoration size control
 bevelWidth:				2
 handleWidth:				4
-
-! window move style
-moveStyle:				Opaque
+borderWidth:				1
 
 ! text justification
 titleJustify:				CenterJustify

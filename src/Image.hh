@@ -1,4 +1,3 @@
-//
 // Image.hh for Blackbox - an X11 Window manager
 // Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 //
@@ -25,10 +24,8 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-// forward declarations
-class Blackbox;
-class BScreen;
-
+class BaseDisplay;
+class ScreenInfo;
 class BImage;
 class BImageControl;
 
@@ -83,30 +80,36 @@ public:
 #include "LinkedList.hh"
 
 // bevel options
-#define BImage_Flat		(1<<1)
-#define BImage_Sunken		(1<<2)
-#define BImage_Raised		(1<<3)
+#define BImage_Flat		(1l<<1)
+#define BImage_Sunken		(1l<<2)
+#define BImage_Raised		(1l<<3)
 
 // textures
-#define BImage_Solid		(1<<4)
-#define BImage_Gradient		(1<<5)
+#define BImage_Solid		(1l<<4)
+#define BImage_Gradient		(1l<<5)
 
 // gradients
-#define BImage_Horizontal	(1<<6)
-#define BImage_Vertical		(1<<7)
-#define BImage_Diagonal		(1<<8)
+#define BImage_Horizontal	(1l<<6)
+#define BImage_Vertical		(1l<<7)
+#define BImage_Diagonal		(1l<<8)
+#define BImage_CrossDiagonal	(1l<<9)
+#define BImage_Rectangle	(1l<<10)
+#define BImage_Pyramid		(1l<<11)
+#define BImage_PipeCross	(1l<<12)
+#define BImage_Elliptic		(1l<<13)
 
 // bevel types
-#define BImage_Bevel1		(1<<9)
-#define BImage_Bevel2		(1<<10)
+#define BImage_Bevel1		(1l<<14)
+#define BImage_Bevel2		(1l<<15)
 
 // inverted image
-#define BImage_Invert		(1<<11)
+#define BImage_Invert		(1l<<16)
 
 #ifdef    INTERLACE
 // fake interlaced image
-#  define BImage_Interlaced	(1<<12)
+#  define BImage_Interlaced	(1l<<17)
 #endif // INTERLACE
+
 
 class BImage {
 private:
@@ -121,7 +124,7 @@ private:
   BColor *from, *to;
   int red_offset, green_offset, blue_offset, ncolors, cpc, cpccpc;
   unsigned char *red, *green, *blue, *red_table, *green_table, *blue_table;
-  unsigned int width, height;
+  unsigned int width, height, *xtable, *ytable;
 
 
 protected:
@@ -133,8 +136,13 @@ protected:
   void bevel1(void);
   void bevel2(void);
   void dgradient(void);
+  void egradient(void);
   void hgradient(void);
+  void pgradient(void);
+  void rgradient(void);
   void vgradient(void);
+  void cdgradient(void);
+  void pcgradient(void);
 
 
 public:
@@ -148,11 +156,11 @@ public:
 
 class BImageControl {
 private:
-  Blackbox *blackbox;
-  BScreen *screen;
+  Bool dither;
+  BaseDisplay *display;
+  ScreenInfo *screeninfo;
 
   Colormap root_colormap;
-  Display *display;
   Window window;
   XColor *colors;
   int colors_per_channel, ncolors, screen_number, screen_depth,
@@ -161,6 +169,7 @@ private:
     blue_color_table[256], red_error_table[256], green_error_table[256],
     blue_error_table[256], red_error38_table[256], green_error38_table[256],
     blue_error38_table[256];
+  unsigned long *sqrt_table;
   
   short *red_buffer, *green_buffer, *blue_buffer, *next_red_buffer,
     *next_green_buffer, *next_blue_buffer;
@@ -182,16 +191,16 @@ protected:
 
 
 public:
-  BImageControl(Blackbox *, BScreen *);
+  BImageControl(BaseDisplay *, ScreenInfo *, Bool = False, int = 4);
   ~BImageControl(void);
   
-  Bool doDither(void);
+  Bool doDither(void) { return dither; }
   
-  BScreen *getScreen(void) { return screen; }
+  ScreenInfo *getScreenInfo(void) { return screeninfo; }
 
   Colormap getColormap(void) { return root_colormap; }
 
-  Display *getDisplay(void) { return display; }
+  BaseDisplay *getDisplay(void) { return display; }
 
   Pixmap renderImage(unsigned int, unsigned int, BTexture *);
 
@@ -206,19 +215,22 @@ public:
   unsigned long getColor(const char *);
   unsigned long getColor(const char *, unsigned char *, unsigned char *,
                          unsigned char *);
+  unsigned long getSqrt(unsigned int);
 
   void installRootColormap(void);
   void removeImage(Pixmap);
-
   void getDitherBuffers(unsigned int,
 			short **, short **, short **,
 			short **, short **, short **,
 			unsigned char **, unsigned char **, unsigned char **,
 			unsigned char **, unsigned char **, unsigned char **);
-  
   void getColorTables(unsigned char **, unsigned char **, unsigned char **,
 		      int *, int *, int *);
   void getXColorTable(XColor **, int *);
+  void setDither(Bool d) { dither = d; }
+  void setColorsPerChannel(int);
+  void parseTexture(BTexture *, char *);
+  void parseColor(BColor *, char * = 0);
 };
 
 

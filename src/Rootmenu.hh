@@ -1,4 +1,3 @@
-//
 // Rootmenu.hh for Blackbox - an X11 Window manager
 // Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 //
@@ -43,8 +42,6 @@ protected:
 
 public:
   Rootmenu(Blackbox *, BScreen *);
-
-  virtual void show(void);
 };
 
 

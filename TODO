@@ -1,4 +1,4 @@
--- TODO for Blackbox 0.50.x Beta - an X11 Window manager
+-- TODO for Blackbox 0.51.x  - an X11 Window manager
 -- Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 --
 --  This program is free software; you can redistribute it and/or modify
@@ -21,16 +21,8 @@
 Stuff TODO or On The Way(tm):
 -----------------------------
 
-Configurable menu "modes"... to select what type of indicators the menus use
-    (e.g. square/box, triangle, circle)
 Balancing SnapTo/EdgeResistance - this is a complicated idea to explain...
     don't ask :)
-abstraction of BImage and BImageControl (this let's people like John Kennis
-    update to the newer image code a little easier)... this would also involve
-    creating a generic class for X display "control"...
-rework/rewrite the focus handling code... i don't like the way i'm doing it
-    at the moment... and with blackbox approaching it's 2nd birthday... i'm
-    a little wiser when it comes to how focus events are generated
 (still here) better support for window groups... i don't know when i'm going to
     ever get to this
 

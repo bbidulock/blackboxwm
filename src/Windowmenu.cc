@@ -1,4 +1,3 @@
-//
 // Windowmenu.cc for Blackbox - an X11 Window manager
 // Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 //
@@ -51,18 +50,17 @@ Windowmenu::Windowmenu(BlackboxWindow *win, Blackbox *bb) :
   sendToMenu = new SendtoWorkspaceMenu(win, bb);
   insert("Send To ...", sendToMenu);
   if (window->hasTitlebar())
-    insert("(Un)Shade", Blackbox::B_WindowShade);
+    insert("(Un)Shade", BScreen::WindowShade);
   if (window->isIconifiable())
-    insert("Iconify", Blackbox::B_WindowIconify);
+    insert("Iconify", BScreen::WindowIconify);
   if (window->isMaximizable())
-    insert("(Un)Maximize", Blackbox::B_WindowMaximize);  
-  insert("Raise", Blackbox::B_WindowRaise);
-  insert("Lower", Blackbox::B_WindowLower);
-  insert("(Un)Stick", Blackbox::B_WindowStick);
+    insert("(Un)Maximize", BScreen::WindowMaximize);  
+  insert("Raise", BScreen::WindowRaise);
+  insert("Lower", BScreen::WindowLower);
+  insert("(Un)Stick", BScreen::WindowStick);
   if (window->isClosable())
-    insert("Close", Blackbox::B_WindowClose);
-  else
-    insert("Kill Client", Blackbox::B_WindowKill);
+    insert("Close", BScreen::WindowClose);
+  insert("Kill Client", BScreen::WindowKill);
   
   update();
 }
@@ -77,44 +75,44 @@ void Windowmenu::itemSelected(int button, int index) {
   BasemenuItem *item = find(index);
     
   switch (item->function()) {
-  case Blackbox::B_WindowShade:
+  case BScreen::WindowShade:
     hide();
     window->shade();
     break;
       
-  case Blackbox::B_WindowIconify:
+  case BScreen::WindowIconify:
     hide();
     window->iconify();
     break;
       
-  case Blackbox::B_WindowMaximize:
+  case BScreen::WindowMaximize:
     hide();
     window->maximize((unsigned int) button);
     break;
       
-  case Blackbox::B_WindowClose:
+  case BScreen::WindowClose:
     hide();
     window->close();
     break;
       
-  case Blackbox::B_WindowRaise:
+  case BScreen::WindowRaise:
     hide();
     screen->getWorkspace(window->getWorkspaceNumber())->raiseWindow(window);
     break;
     
-  case Blackbox::B_WindowLower:
+  case BScreen::WindowLower:
     hide();
     screen->getWorkspace(window->getWorkspaceNumber())->lowerWindow(window);
     break;
 
-  case Blackbox::B_WindowStick:
+  case BScreen::WindowStick:
     hide();
     window->stick();
     break;
 
-  case Blackbox::B_WindowKill:
+  case BScreen::WindowKill:
     hide();
-    XKillClient(screen->getDisplay(), window->getClientWindow());
+    XKillClient(screen->getDisplay()->getDisplay(), window->getClientWindow());
     break;
   }
 }
@@ -132,18 +130,30 @@ void Windowmenu::setClosable(void) {
 
   for (i = 0; i < n; i++) {
     BasemenuItem *item = find(i);
-    if ((item->function() == Blackbox::B_WindowKill) ||
-	(item->function() == Blackbox::B_WindowClose)) {
+
+    if (item && (item->function() == BScreen::WindowKill)) {
       remove(i);
-      
-      if (window->isClosable())
-	insert("Close", Blackbox::B_WindowClose);
-      else
-	insert("Kill Client", Blackbox::B_WindowKill);
-      
-      update();
+
+      break;
     }
   }
+
+  n = getCount();
+  for (i = 0; i < n; i++) {
+    BasemenuItem *item = find(i);
+
+    if (item && (item->function() == BScreen::WindowClose)) {
+      remove(i);
+
+      break;
+    }
+  }
+
+  if (window->isClosable())
+    insert("Close", BScreen::WindowClose);
+  insert("Kill Client", BScreen::WindowKill);
+      
+  update();
 }
 
 

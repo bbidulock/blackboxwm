@@ -1,6 +1,3 @@
-! Blackbox window manager resource defaults
-! (c) 1997 - 1999 Brad Hughes
-
 toolbar:			Raised Diagonal   Gradient Bevel1
 toolbar.label:			Flat   Diagonal   Gradient
 toolbar.clock:			Sunken Diagonal   Gradient Bevel1
@@ -39,14 +36,16 @@ menu.frame.highlightColor:	rgb:4/4/2
 menu.title.textColor:		white
 menu.frame.textColor:		lightgrey
 menu.frame.hiTextColor:		white
+menu.bulletStyle:		diamond
+menu.bulletPosition:		right
 
 borderColor:			rgb:2/2/4
-handleWidth:			8
-bevelWidth:			3
+handleWidth:			6
+bevelWidth:			2
+borderWidth:			1
 
 titleJustify:			CenterJustify
 menuJustify:			LeftJustify
-moveStyle:			Opaque
 
 titleFont:     -*-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*
 menuFont:      -*-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*

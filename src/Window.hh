@@ -1,4 +1,3 @@
-//
 // Window.hh for Blackbox - an X11 Window manager
 // Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 //
@@ -81,10 +80,11 @@ private:
   struct client {
     BlackboxWindow *transient_for,  // which window are we a transient for?
       *transient;                   // which window is our transient?
+    Bool pre_icccm;		    // hack for pre-icccm clients (xv)
     Window window, window_group;
     
     char *title;
-    int x, y, title_len;
+    int x, y, old_bw, title_len, gravx_offset, gravy_offset;
     unsigned int width, height, title_text_w,
       min_width, min_height, max_width, max_height, width_inc, height_inc,
       min_aspect_x, min_aspect_y, max_aspect_x, max_aspect_y,
@@ -105,8 +105,8 @@ private:
   struct frame {
     Bool shaped;
     Pixmap utitle, ftitle, uhandle, fhandle, ubutton, fbutton, pbutton,
-      frame, rfhandle, ruhandle;
-    Window window, title, border, handle, close_button, iconify_button,
+      uborder, fborder, ruhandle, rfhandle;
+    Window window, plate, title, border, handle, close_button, iconify_button,
       maximize_button, resize_handle;
 
     int x, y, x_resize, y_resize, x_move, y_move, x_grab, y_grab,
@@ -116,21 +116,21 @@ private:
       h_maximize, resize_label_w;
   } frame;
   
-  char *resizeLabel;
+  //char *resizeLabel;
   enum { F_NoInput = 0, F_Passive, F_LocallyActive, F_GloballyActive };
   int focus_mode, window_number, workspace_number;
   
   
 protected:
-  Bool getWMNormalHints(void);
-  Bool getWMProtocols(void);
-  Bool getWMHints(void);
   Bool getState(unsigned long *, unsigned long * = 0);
   Window createToplevelWindow(int, int, unsigned int, unsigned int,
 			      unsigned int);
   Window createChildWindow(Window, int ,int, unsigned int, unsigned int,
 			   unsigned int);
-  
+
+  void getWMNormalHints(void); 
+  void getWMProtocols(void);
+  void getWMHints(void);
   void associateClientWindow(void);
   void createDecorations(void);
   void positionButtons(void);

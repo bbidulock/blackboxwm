@@ -20,7 +20,7 @@ ac_help="$ac_help
 ac_help="$ac_help
   --enable-slit           include code for the Slit [default=yes]"
 ac_help="$ac_help
-  --enable-interlace      include code for image interlacing[default=yes]"
+  --enable-interlace      include code for image interlacing [default=yes]"
 ac_help="$ac_help
   --enable-maintainer-mode enable make rules and dependencies not useful
                           (and sometimes confusing) to the casual installer"
@@ -704,7 +704,7 @@ fi
 
 PACKAGE=Blackbox
 
-VERSION=0.50.5
+VERSION=0.51.0
 
 if test "`cd $srcdir && pwd`" != "`pwd`" && test -f $srcdir/config.status; then
   { echo "configure: error: source directory already configured; run "make distclean" there first" 1>&2; exit 1; }
@@ -1480,7 +1480,7 @@ EOF
 
 fi
 
-for ac_hdr in fcntl.h libgen.h locale.h malloc.h process.h signal.h stdio.h time.h unistd.h sys/param.h sys/select.h sys/stat.h sys/time.h sys/types.h sys/wait.h
+for ac_hdr in fcntl.h libgen.h locale.h process.h signal.h stdio.h time.h unistd.h sys/param.h sys/select.h sys/stat.h sys/time.h sys/types.h sys/wait.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
@@ -1651,7 +1651,7 @@ fi
 fi
 done
 
-for ac_func in setlocale strftime
+for ac_func in setlocale sigaction strftime
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:1658: checking for $ac_func" >&5
@@ -3202,5 +3202,6 @@ EOF
 chmod +x $CONFIG_STATUS
 rm -fr confdefs* $ac_clean_files
 test "$no_create" = yes || ${CONFIG_SHELL-/bin/sh} $CONFIG_STATUS || exit 1
+
 
 

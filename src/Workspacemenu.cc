@@ -1,4 +1,3 @@
-//
 // Workspacemenu.cc for Blackbox - an X11 Window manager
 // Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 //
@@ -42,7 +41,6 @@ Workspacemenu::Workspacemenu(Blackbox *bb, BScreen *scrn) :
   setTitleVisibility(True);
   setMovable(True);
   setHidable(True);
-  setAlignment(Basemenu::MenuAlignBottom);
   defaultMenu();
   
   setLabel("Workspaces");

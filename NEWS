@@ -1,4 +1,4 @@
--- NEWS for Blackbox 0.50.x beta - an X11 Window manager
+-- NEWS for Blackbox 0.51.x  - an X11 Window manager
 -- Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 --
 --  This program is free software; you can redistribute it and/or modify
@@ -18,11 +18,7 @@
 -- (See the included file COPYING / GPL-2.0)
 --
 
-NEWS!  Alright!
+NEWS!  Alright! 
 
-Blackbox 0.50.5 News:
-
-a new texture option has been added:  Interlaced
-automagic menu updates:  no more reconfig/restart when editing menu files
-code optimizations/rewrites:  you thought 0.50.4 was fast? heh... strap in pal
+This file is here only to satisfy GNU autoconf/automake.
 

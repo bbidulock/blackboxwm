@@ -1,4 +1,3 @@
-//
 // Screen.cc for Blackbox - an X11 Window manager
 // Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 //
@@ -28,6 +27,7 @@
 #endif // HAVE_CONFIG_H
 
 #include <X11/Xatom.h>
+#include <X11/keysym.h>
 
 #include "blackbox.hh"
 #include "Clientmenu.hh"
@@ -69,22 +69,16 @@ static int anotherWMRunning(Display *display, XErrorEvent *) {
 }
 
 
-BScreen::BScreen(Blackbox *bb, int scrn) {
+BScreen::BScreen(Blackbox *bb, int scrn) : ScreenInfo(bb, scrn) {
   blackbox = bb;
-  screen_number = scrn;
-  display = blackbox->getDisplay();
 
   event_mask = ColormapChangeMask | EnterWindowMask | PropertyChangeMask |
     SubstructureRedirectMask | KeyPressMask | KeyReleaseMask |
     ButtonPressMask | ButtonReleaseMask;
   
-  root_window = RootWindow(display, screen_number);
-  visual = DefaultVisual(display, screen_number);
-  depth = DefaultDepth(display, screen_number);
-  
   XErrorHandler old = XSetErrorHandler((XErrorHandler) anotherWMRunning);
-  XSelectInput(display, root_window, event_mask);
-  XSync(display, False);
+  XSelectInput(getDisplay()->getDisplay(), getRootWindow(), event_mask);
+  XSync(getDisplay()->getDisplay(), False);
   XSetErrorHandler((XErrorHandler) old);
 
   managed = running;
@@ -98,10 +92,8 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
   resource.strftime_format = 0;
 #endif // HAVE_STRFTIME
   
-  XDefineCursor(display, root_window, blackbox->getSessionCursor());
-
-  xres = WidthOfScreen(ScreenOfDisplay(display, screen_number));
-  yres = HeightOfScreen(ScreenOfDisplay(display, screen_number));
+  XDefineCursor(getDisplay()->getDisplay(), getRootWindow(),
+                blackbox->getSessionCursor());
 
   workspaceNames = new LinkedList<char>;
   workspacesList = new LinkedList<Workspace>;
@@ -113,53 +105,58 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
   kwm_window_list = new LinkedList<Window>;
   
   unsigned long data = 1;
-  XChangeProperty(display, root_window, blackbox->getKWMRunningAtom(),
+  XChangeProperty(getDisplay()->getDisplay(), getRootWindow(),
+                  blackbox->getKWMRunningAtom(),
 		  blackbox->getKWMRunningAtom(), 32, PropModeAppend,
 		  (unsigned char *) &data, 1);
   
   Atom a;
-  a = XInternAtom(display, "KWM_STRING_MAXIMIZE", False);
-  XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
-		  (unsigned char *) "&Maximize", 10);
+  a = XInternAtom(getDisplay()->getDisplay(), "KWM_STRING_MAXIMIZE", False);
+  XChangeProperty(getDisplay()->getDisplay(), getRootWindow(), a, XA_STRING,
+                  8, PropModeReplace, (unsigned char *) "&Maximize", 10);
   
-  a = XInternAtom(display, "KWM_STRING_UNMAXIMIZE", False);
-  XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
-		  (unsigned char *) "&Un Maximize", 12);
+  a = XInternAtom(getDisplay()->getDisplay(), "KWM_STRING_UNMAXIMIZE", False);
+  XChangeProperty(getDisplay()->getDisplay(), getRootWindow(), a, XA_STRING,
+                  8, PropModeReplace, (unsigned char *) "&Un Maximize", 12);
   
-  a = XInternAtom(display, "KWM_STRING_ICONIFY", False);
-  XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
-		  (unsigned char *) "&Iconify", 9);
+  a = XInternAtom(getDisplay()->getDisplay(), "KWM_STRING_ICONIFY", False);
+  XChangeProperty(getDisplay()->getDisplay(), getRootWindow(), a, XA_STRING,
+                  8, PropModeReplace, (unsigned char *) "&Iconify", 9);
   
-  a = XInternAtom(display, "KWM_STRING_UNICONIFY", False);
-  XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
-		  (unsigned char *) "&De Iconify", 9);
+  a = XInternAtom(getDisplay()->getDisplay(), "KWM_STRING_UNICONIFY", False);
+  XChangeProperty(getDisplay()->getDisplay(), getRootWindow(), a, XA_STRING,
+                  8, PropModeReplace, (unsigned char *) "&De Iconify", 9);
   
-  a = XInternAtom(display,"KWM_STRING_STICKY",False);
-  XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
-		  (unsigned char *) "&Stick", 7);
+  a = XInternAtom(getDisplay()->getDisplay(),"KWM_STRING_STICKY",False);
+  XChangeProperty(getDisplay()->getDisplay(), getRootWindow(), a, XA_STRING,
+                  8, PropModeReplace, (unsigned char *) "&Stick", 7);
   
-  a = XInternAtom(display, "KWM_STRING_UNSTICKY", False);
-  XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
-		  (unsigned char *) "&Un Stick", 9);
+  a = XInternAtom(getDisplay()->getDisplay(), "KWM_STRING_UNSTICKY", False);
+  XChangeProperty(getDisplay()->getDisplay(), getRootWindow(), a, XA_STRING,
+                  8, PropModeReplace, (unsigned char *) "&Un Stick", 9);
   
-  a = XInternAtom(display, "KWM_STRING_MOVE", False);
-  XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
-		  (unsigned char *) "&Move", 6);
+  a = XInternAtom(getDisplay()->getDisplay(), "KWM_STRING_MOVE", False);
+  XChangeProperty(getDisplay()->getDisplay(), getRootWindow(), a, XA_STRING,
+                  8, PropModeReplace, (unsigned char *) "&Move", 6);
   
-  a = XInternAtom(display, "KWM_STRING_RESIZE", False);
-  XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
-		  (unsigned char *) "&Resize", 8);
+  a = XInternAtom(getDisplay()->getDisplay(), "KWM_STRING_RESIZE", False);
+  XChangeProperty(getDisplay()->getDisplay(), getRootWindow(), a, XA_STRING,
+                  8, PropModeReplace, (unsigned char *) "&Resize", 8);
   
-  a = XInternAtom(display, "KWM_STRING_CLOSE", False);
-  XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
-		  (unsigned char *) "&Close", 7);
+  a = XInternAtom(getDisplay()->getDisplay(), "KWM_STRING_CLOSE", False);
+  XChangeProperty(getDisplay()->getDisplay(), getRootWindow(), a, XA_STRING,
+                  8, PropModeReplace, (unsigned char *) "&Close", 7);
   
-  a = XInternAtom(display, "KWM_STRING_ONTOCURRENTDESKTOP", False);
-  XChangeProperty(display, root_window, a, XA_STRING, 8, PropModeReplace,
-		  (unsigned char *) "R&eassociate with current...", 7);
+  a = XInternAtom(getDisplay()->getDisplay(), "KWM_STRING_ONTOCURRENTDESKTOP",
+                  False);
+  XChangeProperty(getDisplay()->getDisplay(), getRootWindow(), a, XA_STRING,
+                  8, PropModeReplace,
+                  (unsigned char *) "R&eassociate with current...", 7);
 #endif // KDE
   
-  image_control = new BImageControl(blackbox, this);
+  image_control =
+    new BImageControl(blackbox, this, blackbox->hasImageDither(),
+                      blackbox->getColorsPerChannel());
   image_control->installRootColormap();
   root_colormap_installed = True;
   
@@ -168,40 +165,80 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
   LoadStyle();
   
   XGCValues gcv;
-  gcv.foreground = image_control->getColor("white");
+  gcv.foreground = WhitePixel(getDisplay()->getDisplay(), getScreenNumber());
   gcv.function = GXxor;
-  gcv.line_width = 2;
   gcv.subwindow_mode = IncludeInferiors;
-  opGC = XCreateGC(display, root_window,
-		   GCForeground|GCFunction|GCSubwindowMode, &gcv);
+  opGC = XCreateGC(getDisplay()->getDisplay(), getRootWindow(),
+                   GCForeground | GCFunction | GCSubwindowMode, &gcv);
 
   gcv.foreground = getWResource()->decoration.unfocusTextColor.getPixel();
   gcv.font = getTitleFont()->fid;
-  wunfocusGC = XCreateGC(display, root_window, GCForeground|GCBackground|
-		       GCFont, &gcv);
+  wunfocusGC = XCreateGC(getDisplay()->getDisplay(), getRootWindow(),
+                         GCForeground | GCFont, &gcv);
   
   gcv.foreground = getWResource()->decoration.focusTextColor.getPixel();
   gcv.font = getTitleFont()->fid;
-  wfocusGC = XCreateGC(display, root_window, GCForeground|GCBackground|
-		       GCFont, &gcv);
+  wfocusGC = XCreateGC(getDisplay()->getDisplay(), getRootWindow(),
+                       GCForeground | GCFont, &gcv);
 
   gcv.foreground = getMResource()->title.textColor.getPixel();
   gcv.font = getTitleFont()->fid;
-  mtitleGC = XCreateGC(display, root_window, GCForeground|GCFont, &gcv);
+  mtitleGC = XCreateGC(getDisplay()->getDisplay(), getRootWindow(),
+                       GCForeground | GCFont, &gcv);
 
   gcv.foreground = getMResource()->frame.textColor.getPixel();
   gcv.font = getMenuFont()->fid;
-  mframeGC = XCreateGC(display, root_window, GCForeground|GCFont, &gcv);
+  mframeGC = XCreateGC(getDisplay()->getDisplay(), getRootWindow(),
+                       GCForeground | GCFont, &gcv);
 
   gcv.foreground = getMResource()->frame.hiTextColor.getPixel();
-  mhiGC = XCreateGC(display, root_window, GCForeground|GCBackground|GCFont,
-                      &gcv);
+  mhiGC = XCreateGC(getDisplay()->getDisplay(), getRootWindow(),
+                    GCForeground | GCFont, &gcv);
 
   gcv.foreground = getMResource()->frame.hiColor.getPixel();
   gcv.arc_mode = ArcChord;
   gcv.fill_style = FillSolid;
-  mhbgGC = XCreateGC(display, root_window, GCForeground|GCFillStyle|GCArcMode,
-                    &gcv);
+  mhbgGC = XCreateGC(getDisplay()->getDisplay(), getRootWindow(),
+                     GCForeground | GCFillStyle | GCArcMode, &gcv);
+
+  geom_h = getTitleFont()->ascent + getTitleFont()->descent +
+    (resource.bevel_width * 2);
+  geom_w = (resource.bevel_width * 2) +
+    XTextWidth(getTitleFont(), "0: 0000 x 0: 0000",
+                        strlen("0: 0000 x 0: 0000"));
+
+  geom_pixmap =
+    image_control->renderImage(geom_w, geom_h,
+                               &(getWResource()->decoration.focusTexture));
+
+  XGrabKey(getDisplay()->getDisplay(),
+           XKeysymToKeycode(getDisplay()->getDisplay(), XK_Tab),
+           blackbox->getWindowCycleMask(), getRootWindow(), True,
+           GrabModeAsync, GrabModeAsync);
+  XGrabKey(getDisplay()->getDisplay(),
+           XKeysymToKeycode(getDisplay()->getDisplay(), XK_Tab),
+           blackbox->getWindowCycleMask() | ShiftMask, getRootWindow(), True,
+           GrabModeAsync, GrabModeAsync);
+  XGrabKey(getDisplay()->getDisplay(),
+           XKeysymToKeycode(getDisplay()->getDisplay(), XK_Left),
+           blackbox->getWorkspaceChangeMask(), getRootWindow(), True,
+           GrabModeAsync, GrabModeAsync);
+  XGrabKey(getDisplay()->getDisplay(),
+           XKeysymToKeycode(getDisplay()->getDisplay(), XK_Right),
+           blackbox->getWorkspaceChangeMask(), getRootWindow(), True,
+           GrabModeAsync, GrabModeAsync);
+
+  XSetWindowAttributes attrib;
+  unsigned long mask = CWBackPixmap | CWBorderPixel | CWSaveUnder;
+  attrib.background_pixmap = geom_pixmap;
+  attrib.border_pixel = getBorderColor()->getPixel();
+  attrib.save_under = True;
+
+  geom_window =
+    XCreateWindow(getDisplay()->getDisplay(), getRootWindow(),
+                  0, 0, geom_w, geom_h, resource.border_width, getDepth(),
+                  InputOutput, getVisual(), mask, &attrib);
+  geom_visible = False;
   
   workspacemenu = new Workspacemenu(blackbox, this);
   iconmenu = new Iconmenu(blackbox, this);
@@ -222,7 +259,7 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
 #ifdef    KDE
   data = (unsigned long) workspacesList->count();
 
-  XChangeProperty(display, root_window,
+  XChangeProperty(getDisplay()->getDisplay(), getRootWindow(),
 		  blackbox->getKWMNumberOfDesktopsAtom(),
 		  blackbox->getKWMNumberOfDesktopsAtom(), 32,
 		  PropModeReplace, (unsigned char *) &data, 1);
@@ -253,13 +290,14 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
   int i;
   unsigned int nchild;
   Window r, p, *children;
-  XQueryTree(display, root_window, &r, &p, &children, &nchild);
+  XQueryTree(getDisplay()->getDisplay(), getRootWindow(), &r, &p, &children,
+             &nchild);
 
   // preen the window list of all icon windows... for better dockapp support
   for (i = 0; i < (int) nchild; i++) {
     if (children[i] == None) continue;
 
-    XWMHints *wmhints = XGetWMHints(display, children[i]);
+    XWMHints *wmhints = XGetWMHints(getDisplay()->getDisplay(), children[i]);
 
     if (wmhints) {
       if ((wmhints->flags & IconWindowHint) &&
@@ -283,56 +321,51 @@ BScreen::BScreen(Blackbox *bb, int scrn) {
       continue;
     
     XWindowAttributes attrib;
-    if (XGetWindowAttributes(display, children[i], &attrib)) {
+    if (XGetWindowAttributes(getDisplay()->getDisplay(), children[i],
+                             &attrib)) {
+      if (attrib.override_redirect) continue;
 
 #ifdef    KDE
       addKWMModule(children[i]);
 #endif // KDE
-      
-      if (! attrib.override_redirect && attrib.map_state != IsUnmapped) {
 
 #ifdef    SLIT
-	XWMHints *wmhints = XGetWMHints(display, children[i]);
+      XWMHints *wmhints = XGetWMHints(getDisplay()->getDisplay(), children[i]);
 	
-	if (wmhints) {
-	  if ((wmhints->flags & StateHint) &&
-	      (wmhints->initial_state == WithdrawnState)) {
-	    slit->addClient(children[i]);
-	  } else if (! blackbox->searchSlit(children[i])) {
+      if (wmhints &&
+          (wmhints->flags & StateHint) &&
+	  (wmhints->initial_state == WithdrawnState) &&
+          (! blackbox->searchSlit(children[i]))) {
+	slit->addClient(children[i]);
+
+        XFree(wmhints);
+      } else
 #endif // SLIT
+
+      if (attrib.map_state != IsUnmapped) {
+        BlackboxWindow *win = new BlackboxWindow(blackbox, this,
+						 children[i]);
 	    
-	    BlackboxWindow *win = new BlackboxWindow(blackbox, this,
-						     children[i]);
-	    
-	    XMapRequestEvent mre;
-	    mre.window = children[i];
-	    win->mapRequestEvent(&mre);
-	    
-#ifdef    SLIT
-	  }
-	  
-	  XFree(wmhints);
-	} else {
-	  BlackboxWindow *win = new BlackboxWindow(blackbox, this,
-						   children[i]);
-	  
-	  XMapRequestEvent mre;
-	  mre.window = children[i];
-	  win->mapRequestEvent(&mre);
-	}
-#endif // SLIT
-	
+        XMapRequestEvent mre;
+	mre.window = children[i];
+	win->mapRequestEvent(&mre);
       }
     }
   }
 
   XFree(children);
-  XSync(display, False);
+  XSync(getDisplay()->getDisplay(), False);
 }
 
 
 BScreen::~BScreen(void) {
   if (! managed) return;
+
+  if (geom_pixmap != None)
+    image_control->removeImage(geom_pixmap);    
+
+  if (geom_window != None)
+    XDestroyWindow(getDisplay()->getDisplay(), geom_window);
 
   removeWorkspaceNames();
 
@@ -368,22 +401,22 @@ BScreen::~BScreen(void) {
 #endif // KDE
 
   if (resource.font.title) {
-    XFreeFont(display, resource.font.title);
+    XFreeFont(getDisplay()->getDisplay(), resource.font.title);
     resource.font.title = 0;
   }
   
   if (resource.font.menu) {
-    XFreeFont(display, resource.font.menu);
+    XFreeFont(getDisplay()->getDisplay(), resource.font.menu);
     resource.font.menu = 0;
   }
-  
-  XFreeGC(display, opGC);
-  XFreeGC(display, wfocusGC);
-  XFreeGC(display, wunfocusGC);
-  XFreeGC(display, mtitleGC);
-  XFreeGC(display, mframeGC);
-  XFreeGC(display, mhiGC);
-  XFreeGC(display, mhbgGC);
+
+  XFreeGC(getDisplay()->getDisplay(), opGC);
+  XFreeGC(getDisplay()->getDisplay(), wfocusGC);
+  XFreeGC(getDisplay()->getDisplay(), wunfocusGC);
+  XFreeGC(getDisplay()->getDisplay(), mtitleGC);
+  XFreeGC(getDisplay()->getDisplay(), mframeGC);
+  XFreeGC(getDisplay()->getDisplay(), mhiGC);
+  XFreeGC(getDisplay()->getDisplay(), mhbgGC);
 }
 
 void BScreen::readDatabaseTexture(char *rname, char *rclass,
@@ -394,51 +427,8 @@ void BScreen::readDatabaseTexture(char *rname, char *rclass,
   texture->setTexture(0);
   
   if (XrmGetResource(resource.stylerc, rname, rclass, &value_type,
-		     &value)) {
-    if (strstr(value.addr, "Solid") || strstr(value.addr, "solid")) {
-      texture->addTexture(BImage_Solid);
-    } else if (strstr(value.addr, "Gradient") ||
-               strstr(value.addr, "gradient")) {
-      texture->addTexture(BImage_Gradient);
-
-#ifdef    INTERLACE
-      if (strstr(value.addr, "Interlaced") ||
-          strstr(value.addr, "interlaced"))
-        texture->addTexture(BImage_Interlaced);
-#endif // INTERLACE
-      
-      if (strstr(value.addr, "Diagonal") ||
-          strstr(value.addr, "diagonal")) {
-	texture->addTexture(BImage_Diagonal);
-      } else if (strstr(value.addr, "Horizontal") ||
-                 strstr(value.addr, "horizontal")) {
-	texture->addTexture(BImage_Horizontal);
-      } else if (strstr(value.addr, "Vertical") ||
-                 strstr(value.addr, "vertical")) {
-	texture->addTexture(BImage_Vertical);
-      } else
-	texture->addTexture(BImage_Diagonal);
-    } else
-      texture->addTexture(BImage_Solid);
-    
-    if (strstr(value.addr, "Raised") || strstr(value.addr, "raised"))
-      texture->addTexture(BImage_Raised);
-    else if (strstr(value.addr, "Sunken") || strstr(value.addr, "sunken"))
-      texture->addTexture(BImage_Sunken);
-    else if (strstr(value.addr, "Flat") || strstr(value.addr, "flat"))
-      texture->addTexture(BImage_Flat);
-    else
-      texture->addTexture(BImage_Raised);
-    
-    if (! (texture->getTexture() & BImage_Flat))
-      if (strstr(value.addr, "Bevel")) {
-	if (strstr(value.addr, "Bevel2") || strstr(value.addr, "bevel2"))
-	  texture->addTexture(BImage_Bevel2);
-	else
-	  texture->addTexture(BImage_Bevel1);
-      } else
-        texture->addTexture(BImage_Bevel1);
-  }
+		     &value))
+    image_control->parseTexture(texture, value.addr);
   
   if (texture->getTexture() & BImage_Solid) {
     int clen = strlen(rclass) + 8, nlen = strlen(rname) + 8;
@@ -471,7 +461,8 @@ void BScreen::readDatabaseTexture(char *rname, char *rclass,
     if (xcol.blue >= 0xff) xcol.blue = 0xffff;
     else xcol.blue *= 0xff;
     
-    if (! XAllocColor(display, image_control->getColormap(), &xcol))
+    if (! XAllocColor(getDisplay()->getDisplay(), image_control->getColormap(),
+                      &xcol))
       xcol.pixel = 0;
     
     texture->getHiColor()->setPixel(xcol.pixel);
@@ -486,7 +477,8 @@ void BScreen::readDatabaseTexture(char *rname, char *rclass,
       (unsigned int) ((texture->getColor()->getBlue() >> 2) +
 		      (texture->getColor()->getBlue() >> 1)) * 0xff;
     
-    if (! XAllocColor(display, image_control->getColormap(), &xcol))
+    if (! XAllocColor(getDisplay()->getDisplay(), image_control->getColormap(),
+                      &xcol))
       xcol.pixel = 0;
     
     texture->getLoColor()->setPixel(xcol.pixel);
@@ -516,25 +508,13 @@ void BScreen::readDatabaseColor(char *rname, char *rclass, BColor *color) {
   XrmValue value;
   char *value_type;
   
-  if (color->isAllocated()) {
-    unsigned long pixel = color->getPixel();
-
-    XFreeColors(display, image_control->getColormap(),
-		&pixel, 1, 0);
-    color->setAllocated(False);
-  }
-  
   if (XrmGetResource(resource.stylerc, rname, rclass, &value_type,
-		     &value)) {
-    unsigned char r, g, b;
-
-    color->setPixel(image_control->getColor(value.addr, &r, &g, &b));
-    color->setRGB(r, g, b);
-    color->setAllocated(True);
-  } else {
-    color->setPixel(0);
-    color->setRGB(0, 0, 0);
-  }
+		     &value))
+    image_control->parseColor(color, value.addr);
+  else
+    // parsing with no color string just deallocates the color, if it has
+    // been previously allocated
+    image_control->parseColor(color);
 }
 
 
@@ -543,34 +523,55 @@ void BScreen::reconfigure(void) {
 
   XGCValues gcv;
   gcv.foreground = image_control->getColor("white");
-  gcv.function = GXxor;
-  gcv.line_width = 2;
-  gcv.subwindow_mode = IncludeInferiors;
-  XChangeGC(display, opGC, GCForeground|GCFunction|GCSubwindowMode, &gcv);
+  gcv.font = getTitleFont()->fid;
+  XChangeGC(getDisplay()->getDisplay(), opGC, GCForeground | GCFont, &gcv);
 
   gcv.foreground = getWResource()->decoration.unfocusTextColor.getPixel();
   gcv.font = getTitleFont()->fid;
-  XChangeGC(display, wunfocusGC, GCForeground|GCBackground| GCFont, &gcv);
+  XChangeGC(getDisplay()->getDisplay(), wunfocusGC,
+            GCForeground | GCBackground | GCFont, &gcv);
 
   gcv.foreground = getWResource()->decoration.focusTextColor.getPixel();
   gcv.font = getTitleFont()->fid;
-  XChangeGC(display, wfocusGC, GCForeground|GCBackground| GCFont, &gcv);
+  XChangeGC(getDisplay()->getDisplay(), wfocusGC,
+            GCForeground | GCBackground | GCFont, &gcv);
 
   gcv.foreground = getMResource()->title.textColor.getPixel();
   gcv.font = getTitleFont()->fid;
-  XChangeGC(display, mtitleGC, GCForeground|GCFont, &gcv);
+  XChangeGC(getDisplay()->getDisplay(), mtitleGC, GCForeground | GCFont, &gcv);
   
   gcv.foreground = getMResource()->frame.textColor.getPixel();
   gcv.font = getMenuFont()->fid;
-  XChangeGC(display, mframeGC, GCForeground|GCFont, &gcv);
+  XChangeGC(getDisplay()->getDisplay(), mframeGC, GCForeground | GCFont, &gcv);
 
   gcv.foreground = getMResource()->frame.hiTextColor.getPixel();
-  XChangeGC(display, mhiGC, GCForeground|GCBackground|GCFont, &gcv);
+  XChangeGC(getDisplay()->getDisplay(), mhiGC,
+            GCForeground | GCBackground | GCFont, &gcv);
 
   gcv.foreground = getMResource()->frame.hiColor.getPixel();
   gcv.arc_mode = ArcChord;
   gcv.fill_style = FillSolid;
-  XChangeGC(display, mhbgGC, GCForeground|GCFillStyle|GCArcMode, &gcv);
+  XChangeGC(getDisplay()->getDisplay(), mhbgGC,
+            GCForeground | GCFillStyle | GCArcMode, &gcv);
+
+  geom_h = getTitleFont()->ascent + getTitleFont()->descent +
+    (resource.bevel_width * 2);
+  geom_w = (resource.bevel_width * 2) +
+    XTextWidth(getTitleFont(), "0: 0000 x 0: 0000",
+                        strlen("0: 0000 x 0: 0000"));
+
+  Pixmap tmp = geom_pixmap;
+  geom_pixmap =
+    image_control->renderImage(geom_w, geom_h,
+                               &(getWResource()->decoration.focusTexture));
+  if (tmp) image_control->removeImage(tmp);
+
+  XSetWindowBackgroundPixmap(getDisplay()->getDisplay(), geom_window,
+                             geom_pixmap);
+  XSetWindowBorderWidth(getDisplay()->getDisplay(), geom_window,
+                        resource.border_width);
+  XSetWindowBorder(getDisplay()->getDisplay(), geom_window,
+                   resource.border_color.getPixel());
 
   workspacemenu->reconfigure();
   iconmenu->reconfigure();
@@ -661,28 +662,31 @@ void BScreen::LoadStyle(void) {
   // load border color
   readDatabaseColor("borderColor", "BorderColor", &(resource.border_color));
   
-  // load border and handle widths
-  if (XrmGetResource(resource.stylerc,
-		     "handleWidth",
-		     "HandleWidth", &value_type,
-		     &value)) {
+  // load bevel, border and handle widths
+  if (XrmGetResource(resource.stylerc, "handleWidth", "HandleWidth",
+                     &value_type, &value)) {
     if (sscanf(value.addr, "%u", &resource.handle_width) != 1)
       resource.handle_width = 8;
     else
-      if (resource.handle_width > (xres / 2) ||
+      if (resource.handle_width > (getWidth() / 2) ||
           resource.handle_width == 0)
 	resource.handle_width = 8;
   } else
     resource.handle_width = 8;
 
-  if (XrmGetResource(resource.stylerc,
-		     "bevelWidth",
-		     "BevelWidth", &value_type,
-		     &value)) {
+  if (XrmGetResource(resource.stylerc, "borderWidth", "BorderWidth",
+                     &value_type, &value)) {
+    if (sscanf(value.addr, "%u", &resource.border_width) != 1)
+      resource.border_width = 1;
+  } else
+    resource.border_width = 1;
+
+  if (XrmGetResource(resource.stylerc, "bevelWidth", "BevelWidth",
+                     &value_type, &value)) {
     if (sscanf(value.addr, "%u", &resource.bevel_width) != 1)
       resource.bevel_width = 4;
     else
-      if (resource.bevel_width > (xres / 2) || resource.bevel_width == 0)
+      if (resource.bevel_width > (getWidth() / 2) || resource.bevel_width == 0)
 	resource.bevel_width = 4;
   } else
     resource.bevel_width = 4;
@@ -690,85 +694,99 @@ void BScreen::LoadStyle(void) {
   if (XrmGetResource(resource.stylerc,
 		     "titleJustify",
 		     "TitleJustify", &value_type, &value)) {
-    if (! strncasecmp("leftjustify", value.addr, value.size))
-      resource.justify = Blackbox::B_LeftJustify;
-    else if (! strncasecmp("rightjustify", value.addr, value.size))
-      resource.justify = Blackbox::B_RightJustify;
-    else if (! strncasecmp("centerjustify", value.addr, value.size))
-      resource.justify = Blackbox::B_CenterJustify;
+    if (strstr(value.addr, "right") || strstr(value.addr, "Right"))
+      resource.justify = BScreen::RightJustify;
+    else if (strstr(value.addr, "center") || strstr(value.addr, "Center"))
+      resource.justify = BScreen::CenterJustify;
     else
-      resource.justify = Blackbox::B_LeftJustify;
+      resource.justify = BScreen::LeftJustify;
   } else
-    resource.justify = Blackbox::B_LeftJustify;
+    resource.justify = BScreen::LeftJustify;
 
   if (XrmGetResource(resource.stylerc,
 		     "menuJustify",
 		     "MenuJustify", &value_type, &value)) {
-    if (! strncasecmp("leftjustify", value.addr, value.size))
-      resource.menu_justify = Blackbox::B_LeftJustify;
-    else if (! strncasecmp("rightjustify", value.addr, value.size))
-      resource.menu_justify = Blackbox::B_RightJustify;
-    else if (! strncasecmp("centerjustify", value.addr, value.size))
-      resource.menu_justify = Blackbox::B_CenterJustify;
+    if (strstr(value.addr, "right") || strstr(value.addr, "Right"))
+      resource.menu_justify = BScreen::RightJustify;
+    else if (strstr(value.addr, "center") || strstr(value.addr, "Center"))
+      resource.menu_justify = BScreen::CenterJustify;
     else
-      resource.menu_justify = Blackbox::B_LeftJustify;
+      resource.menu_justify = BScreen::LeftJustify;
   } else
-    resource.menu_justify = Blackbox::B_LeftJustify;
+    resource.menu_justify = BScreen::LeftJustify;
 
-  if (XrmGetResource(resource.stylerc,
-		     "moveStyle",
-		     "MoveStyle", &value_type, &value)) {
-    if (! strncasecmp("opaque", value.addr, value.size))
-      resource.opaque_move = True;
+  if (XrmGetResource(resource.stylerc, "menu.bulletStyle", "Menu.BulletStyle",
+                     &value_type, &value)) {
+    if (! strncasecmp(value.addr, "empty", value.size))
+      resource.menu_bullet_style = Basemenu::Empty;
+    else if (! strncasecmp(value.addr, "square", value.size))
+      resource.menu_bullet_style = Basemenu::Square;
+    else if (! strncasecmp(value.addr, "triangle", value.size))
+      resource.menu_bullet_style = Basemenu::Triangle;
+    else if (! strncasecmp(value.addr, "diamond", value.size))
+      resource.menu_bullet_style = Basemenu::Diamond;
     else
-      resource.opaque_move = False;
+      resource.menu_bullet_style = Basemenu::Round;
   } else
-    resource.opaque_move = False;
+    resource.menu_bullet_style = Basemenu::Round;
+
+  if (XrmGetResource(resource.stylerc, "menu.bulletPosition",
+                     "Menu.BulletPosition", &value_type, &value)) {
+    if (! strncasecmp(value.addr, "right", value.size))
+      resource.menu_bullet_pos = Basemenu::Right;
+    else
+      resource.menu_bullet_pos = Basemenu::Left;
+  } else
+    resource.menu_bullet_pos = Basemenu::Left;
 
   const char *defaultFont = "fixed";
   if (resource.font.title) {
-    XFreeFont(display, resource.font.title);
+    XFreeFont(getDisplay()->getDisplay(), resource.font.title);
     resource.font.title = 0;
   }
 
   if (XrmGetResource(resource.stylerc,
 		     "titleFont",
 		     "TitleFont", &value_type, &value)) {
-    if ((resource.font.title = XLoadQueryFont(display, value.addr)) == NULL) {
+    if ((resource.font.title = XLoadQueryFont(getDisplay()->getDisplay(),
+                                              value.addr)) == NULL) {
       fprintf(stderr,
 	      "BScreen::LoadStyle(): couldn't load font '%s'\n", value.addr);
-      if ((resource.font.title = XLoadQueryFont(display, defaultFont))
-	  == NULL) {
+      if ((resource.font.title = XLoadQueryFont(getDisplay()->getDisplay(),
+                                                defaultFont)) == NULL) {
 	fprintf(stderr, "BScreen::LoadStyle(): couldn't load default font.\n");
 	exit(2);
       }  
     }
   } else {
-    if ((resource.font.title = XLoadQueryFont(display, defaultFont)) == NULL) {
+    if ((resource.font.title = XLoadQueryFont(getDisplay()->getDisplay(),
+                                              defaultFont)) == NULL) {
       fprintf(stderr, "BScreen::LoadStyle(): couldn't load default font\n");
       exit(2);
     }
   }
 
   if (resource.font.menu) {
-    XFreeFont(display, resource.font.menu);
+    XFreeFont(getDisplay()->getDisplay(), resource.font.menu);
     resource.font.menu = 0;
   }
 
   if (XrmGetResource(resource.stylerc,
 		     "menuFont",
 		     "MenuFont", &value_type, &value)) {
-    if ((resource.font.menu = XLoadQueryFont(display, value.addr)) == NULL) {
+    if ((resource.font.menu = XLoadQueryFont(getDisplay()->getDisplay(),
+                                             value.addr)) == NULL) {
       fprintf(stderr,
 	      "BScreen::LoadStyle(): couldn't load font '%s'\n", value.addr);
-      if ((resource.font.menu = XLoadQueryFont(display, defaultFont))
-	  == NULL) {
+      if ((resource.font.menu = XLoadQueryFont(getDisplay()->getDisplay(),
+                                               defaultFont)) == NULL) {
 	fprintf(stderr, "BScreen::LoadStyle(): couldn't load default font.\n");
 	exit(2);
       }  
     }
   } else {
-    if ((resource.font.menu = XLoadQueryFont(display, defaultFont)) == NULL) {
+    if ((resource.font.menu = XLoadQueryFont(getDisplay()->getDisplay(),
+                                             defaultFont)) == NULL) {
       fprintf(stderr, "BScreen::LoadStyle: couldn't load default font.\n");
       exit(2);
     }
@@ -778,15 +796,15 @@ void BScreen::LoadStyle(void) {
                      "rootCommand",
                      "RootCommand", &value_type, &value)) {
 #ifndef   __EMX__
-    int dslen = strlen(DisplayString(display));
+    int dslen = strlen(DisplayString(getDisplay()->getDisplay()));
     
     char *displaystring = new char[dslen + 32];
     char *command = new char[strlen(value.addr) + dslen + 64];
     
-    sprintf(displaystring, "%s", DisplayString(display));
+    sprintf(displaystring, "%s", DisplayString(getDisplay()->getDisplay()));
     // gotta love pointer math
-    sprintf(displaystring + dslen - 1, "%d", screen_number);
-    sprintf(command, "DISPLAY=%s exec %s &", displaystring, value.addr);
+    sprintf(displaystring + dslen - 1, "%d", getScreenNumber());
+    sprintf(command, "DISPLAY=%s exec %s &",  displaystring, value.addr);
     system(command);
     
     delete [] displaystring;
@@ -811,7 +829,7 @@ int BScreen::addWorkspace(void) {
 #ifdef    KDE
   unsigned long data = (unsigned long) workspacesList->count();
   
-  XChangeProperty(display, root_window,
+  XChangeProperty(getDisplay()->getDisplay(), getRootWindow(),
                   blackbox->getKWMNumberOfDesktopsAtom(),
                   blackbox->getKWMNumberOfDesktopsAtom(), 32,
                   PropModeReplace, (unsigned char *) &data, 1);
@@ -842,7 +860,7 @@ int BScreen::removeLastWorkspace(void) {
 #ifdef    KDE
     unsigned long data = (unsigned long) workspacesList->count();
     
-    XChangeProperty(display, root_window,
+    XChangeProperty(getDisplay()->getDisplay(), getRootWindow(),
 		    blackbox->getKWMNumberOfDesktopsAtom(),
 		    blackbox->getKWMNumberOfDesktopsAtom(), 32,
 		    PropModeReplace, (unsigned char *) &data, 1);
@@ -887,7 +905,7 @@ void BScreen::changeWorkspaceID(int id) {
   if (current_workspace && id != current_workspace->getWorkspaceID()) {
     current_workspace->hideAll();
     if (blackbox->getFocusedWindow() &&
-	(! blackbox->getFocusedWindow()->isStuck()))
+        (! blackbox->getFocusedWindow()->isStuck()))
       current_workspace->setFocusWindow(-1);
     current_workspace = getWorkspace(id);
     
@@ -900,7 +918,8 @@ void BScreen::changeWorkspaceID(int id) {
 #ifdef    KDE
   unsigned long data = (unsigned long) current_workspace->getWorkspaceID() + 1;
   
-  XChangeProperty(display, root_window, blackbox->getKWMCurrentDesktopAtom(),
+  XChangeProperty(getDisplay()->getDisplay(), getRootWindow(),
+                  blackbox->getKWMCurrentDesktopAtom(),
                   blackbox->getKWMCurrentDesktopAtom(), 32, PropModeReplace,
                   (unsigned char *) &data, 1);
   
@@ -911,30 +930,35 @@ void BScreen::changeWorkspaceID(int id) {
 
 void BScreen::raiseWindows(Window *workspace_stack, int num) {
   Window *session_stack = new
-    Window[(num + workspacesList->count() + rootmenuList->count() + 4)];
+    Window[(num + workspacesList->count() + rootmenuList->count() + 6)];
   int i = 0, k = num;
   
   blackbox->grab();
   
-  *(session_stack + i++) = rootmenu->getWindowID();
-  LinkedListIterator<Rootmenu> rit(rootmenuList);
-  for (; rit.current(); rit++)
-    *(session_stack + i++) = rit.current()->getWindowID();
-  
-  *(session_stack + i++) = workspacemenu->getWindowID();
+  XRaiseWindow(getDisplay()->getDisplay(), iconmenu->getWindowID());
   *(session_stack + i++) = iconmenu->getWindowID();
   
   LinkedListIterator<Workspace> wit(workspacesList);
   for (; wit.current(); wit++)
     *(session_stack + i++) = wit.current()->getMenu()->getWindowID();
-  
-  if (toolbar->isOnTop())
+ 
+  *(session_stack + i++) = workspacemenu->getWindowID();
+  *(session_stack + i++) = slit->getMenu()->getWindowID();
+
+  LinkedListIterator<Rootmenu> rit(rootmenuList);
+  for (; rit.current(); rit++)
+    *(session_stack + i++) = rit.current()->getWindowID();
+  *(session_stack + i++) = rootmenu->getWindowID();
+
+  if (toolbar->isOnTop()) {
     *(session_stack + i++) = toolbar->getWindowID();
+    *(session_stack + i++) = slit->getWindowID();
+  }
   
   while (k--)
     *(session_stack + i++) = *(workspace_stack + k);
   
-  XRestackWindows(display, session_stack, i);
+  XRestackWindows(getDisplay()->getDisplay(), session_stack, i);
   
   blackbox->ungrab();
   
@@ -989,7 +1013,7 @@ void BScreen::nextFocus(void) {
 
   if (blackbox->getFocusedWindow())
     if (blackbox->getFocusedWindow()->getScreen()->getScreenNumber() ==
-	screen_number) {
+	getScreenNumber()) {
       have_focused = True;
       focused_window_number = blackbox->getFocusedWindow()->getWindowNumber();
     }
@@ -1000,25 +1024,17 @@ void BScreen::nextFocus(void) {
     int next_window_number = focused_window_number;
     do {
       do {
-	if ((++next_window_number) >= getCurrentWorkspace()->getCount()) {
+	if ((++next_window_number) >= getCurrentWorkspace()->getCount())
 	  next_window_number = 0;
-	}
 	
 	next = getCurrentWorkspace()->getWindow(next_window_number);
- 
       }	while (next->isIconic() && (next_window_number !=
 				    focused_window_number));
     } while ((! next->setInputFocus()) && (next_window_number !=
 					   focused_window_number));
     
-    if (next_window_number != focused_window_number) {
-      blackbox->getFocusedWindow()->getScreen()->
-	getWorkspace(blackbox->getFocusedWindow()->getWorkspaceNumber())->
-	setFocusWindow(-1);
-      blackbox->getFocusedWindow()->setFocusFlag(False);
-
+    if (next_window_number != focused_window_number)
       getCurrentWorkspace()->raiseWindow(next);
-    }
   } else if (getCurrentWorkspace()->getCount() >= 1) {
     getCurrentWorkspace()->getWindow(0)->setInputFocus();
   }
@@ -1031,7 +1047,7 @@ void BScreen::prevFocus(void) {
   
   if (blackbox->getFocusedWindow())
     if (blackbox->getFocusedWindow()->getScreen()->getScreenNumber() ==
-	screen_number) {
+	getScreenNumber()) {
       have_focused = True;
       focused_window_number = blackbox->getFocusedWindow()->getWindowNumber();
     }
@@ -1051,14 +1067,8 @@ void BScreen::prevFocus(void) {
     } while ((! prev->setInputFocus()) && (prev_window_number !=
 					   focused_window_number));
     
-    if (prev_window_number != focused_window_number) {
-      blackbox->getFocusedWindow()->getScreen()->
-	getWorkspace(blackbox->getFocusedWindow()->getWorkspaceNumber())->
-	setFocusWindow(-1);
-      blackbox->getFocusedWindow()->setFocusFlag(False);
-
+    if (prev_window_number != focused_window_number)
       getCurrentWorkspace()->raiseWindow(prev);
-    }
   } else if (getCurrentWorkspace()->getCount() >= 1)
     getCurrentWorkspace()->getWindow(0)->setInputFocus();
 }
@@ -1070,7 +1080,7 @@ void BScreen::raiseFocus(void) {
   
   if (blackbox->getFocusedWindow())
     if (blackbox->getFocusedWindow()->getScreen()->getScreenNumber() ==
-	screen_number) {
+	getScreenNumber()) {
       have_focused = True;
       focused_window_number = blackbox->getFocusedWindow()->getWindowNumber();
     }
@@ -1143,9 +1153,9 @@ void BScreen::InitMenu(void) {
   
   if (defaultMenu) {
     rootmenu->defaultMenu();
-    rootmenu->insert("xterm", Blackbox::B_Execute, "xterm");
-    rootmenu->insert("Restart", Blackbox::B_Restart);
-    rootmenu->insert("Exit", Blackbox::B_Exit);
+    rootmenu->insert("xterm", BScreen::Execute, "xterm");
+    rootmenu->insert("Restart", BScreen::Restart);
+    rootmenu->insert("Exit", BScreen::Exit);
   } else
     blackbox->saveMenuFilename(blackbox->getMenuFilename());
 }
@@ -1161,8 +1171,8 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
     
     if (fgets(line, 1024, file)) {
       if (line[0] != '#') {
-	int i, parse = 0, key = 0, index = -1, line_length = strlen(line),
-	  label_length = 0, command_length = 0;
+	register int i, key = 0, parse = 0, index = -1,
+          line_length = strlen(line), label_length = 0, command_length = 0;
 	
 	// determine the keyword
 	key = 0;
@@ -1232,7 +1242,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	    continue;
 	  }
 	  
-	  menu->insert(label, Blackbox::B_Execute, command);
+	  menu->insert(label, BScreen::Execute, command);
 	  
 	  break;
 	  
@@ -1243,7 +1253,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	      continue;
 	  }
 	  
-	  menu->insert(label, Blackbox::B_Exit);
+	  menu->insert(label, BScreen::Exit);
 	  
 	  break;
 
@@ -1276,7 +1286,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	      *(style + command_length) = '\0';
 	    }
 	    
-	    menu->insert(label, Blackbox::B_SetStyle, style);
+	    menu->insert(label, BScreen::SetStyle, style);
 	  }
 	  
 	  break;
@@ -1329,13 +1339,13 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	  
 	  case 767: // submenu
 	    {
-	      Rootmenu *submenu = new Rootmenu(blackbox, this);
-	      
 	      if (! *label) {
 		fprintf(stderr, "BScreen::parseMenuFile: [submenu] error, "
 			"no menu label defined\n");
 		continue;
 	      }
+
+              Rootmenu *submenu = new Rootmenu(blackbox, this);
 	      
 	      if (*command)
 		submenu->setLabel(command);
@@ -1359,9 +1369,9 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	    }
 	    
 	    if (*command)
-	      menu->insert(label, Blackbox::B_RestartOther, command);
+	      menu->insert(label, BScreen::RestartOther, command);
 	    else
-	      menu->insert(label, Blackbox::B_Restart);
+	      menu->insert(label, BScreen::Restart);
 	  }
 	  
 	  break;
@@ -1374,7 +1384,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 		continue;
 	      }
 	      
-	      menu->insert(label, Blackbox::B_Reconfigure);
+	      menu->insert(label, BScreen::Reconfigure);
 	    }
 	    
 	    break;
@@ -1403,11 +1413,12 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 void BScreen::shutdown(void) {
   blackbox->grab();
 
-  XSelectInput(display, root_window, NoEventMask);
-  XSync(display, False);
+  XSelectInput(getDisplay()->getDisplay(), getRootWindow(), NoEventMask);
+  XSync(getDisplay()->getDisplay(), False);
 
 #ifdef    KDE
-  XDeleteProperty(display, root_window, blackbox->getKWMRunningAtom());
+  XDeleteProperty(getDisplay()->getDisplay(), getRootWindow(),
+                  blackbox->getKWMRunningAtom());
 #endif // KDE
   
   LinkedListIterator<Workspace> it(workspacesList);
@@ -1418,6 +1429,58 @@ void BScreen::shutdown(void) {
 }
 
 
+void BScreen::showPosition(int x, int y) {
+  if (! geom_visible) {
+    XMoveResizeWindow(getDisplay()->getDisplay(), geom_window,
+                      (getWidth() - geom_w) / 2,
+                      (getHeight() - geom_h) / 2, geom_w, geom_h);
+    XMapWindow(getDisplay()->getDisplay(), geom_window);
+    XRaiseWindow(getDisplay()->getDisplay(), geom_window);
+
+    geom_visible = True;
+  }
+
+  char label[1024];
+
+  sprintf(label, "X: %4d x Y: %4d", x, y);
+
+  XClearWindow(getDisplay()->getDisplay(), geom_window);
+  XDrawString(getDisplay()->getDisplay(), geom_window, wfocusGC,
+              resource.bevel_width, getTitleFont()->ascent +
+              resource.bevel_width, label, strlen(label));
+}
+
+
+void BScreen::showGeometry(unsigned int gx, unsigned int gy) {
+  if (! geom_visible) {
+    XMoveResizeWindow(getDisplay()->getDisplay(), geom_window,
+                      (getWidth() - geom_w) / 2,
+                      (getHeight() - geom_h) / 2, geom_w, geom_h);
+    XMapWindow(getDisplay()->getDisplay(), geom_window);
+    XRaiseWindow(getDisplay()->getDisplay(), geom_window);
+
+    geom_visible = True;
+  }
+
+  char label[1024];
+
+  sprintf(label, "W: %4d x H: %4d", gx, gy);
+
+  XClearWindow(getDisplay()->getDisplay(), geom_window);
+  XDrawString(getDisplay()->getDisplay(), geom_window, wfocusGC,
+              resource.bevel_width, getTitleFont()->ascent +
+              resource.bevel_width, label, strlen(label));
+}
+
+
+void BScreen::hideGeometry(void) {
+  if (geom_visible) {
+    XUnmapWindow(getDisplay()->getDisplay(), geom_window);
+    geom_visible = False;
+  }
+}
+
+
 #ifdef    KDE
 Bool BScreen::isKWMModule(Window win) {
   Atom type_return;
@@ -1425,7 +1488,8 @@ Bool BScreen::isKWMModule(Window win) {
   int ijunk;
   unsigned long uljunk, return_value = 0, *result;
 
-  if (XGetWindowProperty(display, win, blackbox->getKWMModuleAtom(), 0l, 1l,
+  if (XGetWindowProperty(getDisplay()->getDisplay(), win,
+                         blackbox->getKWMModuleAtom(), 0l, 1l,
                          False, blackbox->getKWMModuleAtom(), &type_return,
                          &ijunk, &uljunk, &uljunk,
                          (unsigned char **) &result) == Success && result) {
@@ -1486,8 +1550,8 @@ void BScreen::sendToKWMModules(XClientMessageEvent *e) {
   LinkedListIterator<Window> it(kwm_module_list);
   for (; it.current(); it++) {
     e->window = *(it.current());
-    XSendEvent(display, *(it.current()), False,
-               0 | ((*(it.current()) == root_window) ?
+    XSendEvent(getDisplay()->getDisplay(), *(it.current()), False,
+               0 | ((*(it.current()) == getRootWindow()) ?
                     SubstructureRedirectMask : 0), (XEvent *) e);
   }
 }
@@ -1504,8 +1568,8 @@ void BScreen::sendClientMessage(Window window, Atom atom, XID data) {
   e.xclient.data.l[0] = (unsigned long) data;
   e.xclient.data.l[1] = CurrentTime;
   
-  mask = 0 | ((window == root_window) ? SubstructureRedirectMask : 0);
-  XSendEvent(display, window, False, mask, &e);
+  mask = 0 | ((window == getRootWindow()) ? SubstructureRedirectMask : 0);
+  XSendEvent(getDisplay()->getDisplay(), window, False, mask, &e);
 }
 
 
@@ -1524,7 +1588,7 @@ void BScreen::addKWMModule(Window win) {
     
     sendClientMessage(win, blackbox->getKWMModuleInitializedAtom(), 0);
 
-    XSelectInput(display, win, StructureNotifyMask);
+    XSelectInput(getDisplay()->getDisplay(), win, StructureNotifyMask);
   } else
     removeKWMWindow(win);
 }
@@ -1536,3 +1600,4 @@ void BScreen::scanWorkspaceNames(void) {
     it.current()->rereadName();
 }
 #endif // KDE
+

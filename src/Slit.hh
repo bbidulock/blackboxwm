@@ -1,4 +1,3 @@
-//
 // Slit.hh for Blackbox - an X11 Window manager
 // Copyright (c) 1997 - 1999, 1999 by Brad Hughes, bhughes@tcac.net
 //
@@ -40,7 +39,7 @@ public:
 };
 
 
-class SlitMenu : public Basemenu {
+class Slitmenu : public Basemenu {
 private:
   BScreen *screen;
   Slit *slit;
@@ -51,7 +50,7 @@ protected:
   
   
 public:
-  SlitMenu(Slit *, BScreen *);
+  Slitmenu(Slit *, BScreen *);
 };
 
 
@@ -62,7 +61,7 @@ private:
   Blackbox *blackbox;
   BScreen *screen;
   LinkedList<SlitClient> *clientList;
-  SlitMenu *slitmenu;
+  Slitmenu *slitmenu;
   
   struct frame {
     Pixmap pixmap;
@@ -79,6 +78,10 @@ protected:
 public:
   Slit(Blackbox *, BScreen *);
   ~Slit();
+
+  Slitmenu *getMenu() { return slitmenu; }
+
+  Window getWindowID() { return frame.window; }
   
   void addClient(Window);
   void removeClient(Window);

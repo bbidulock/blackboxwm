@@ -1,4 +1,3 @@
-//
 // main.cc for Blackbox - an X11 Window manager
 // Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 //
@@ -22,6 +21,8 @@
 #ifndef   _GNU_SOURCE
 #define   _GNU_SOURCE
 #endif // _GNU_SOURCE
+
+#include "../version.h"
 
 #ifdef    HAVE_CONFIG_H
 #  include "../config.h"
@@ -56,16 +57,28 @@
 
 int main(int argc, char **argv) {
   char *session_display = (char *) 0;
-  
+  char *rc_file = (char *) 0;
+ 
 #ifdef    HAVE_SETLOCALE
   setlocale(LC_ALL, "");
 #endif // HAVE_SETLOCALE
 
   int i;
   for (i = 1; i < argc; ++i) {
-    // check for -display option... to run on a display other than the one
-    // set by the environment variable DISPLAY
-    if (! strcmp(argv[i], "-display")) {
+    if (! strcmp(argv[i], "-rc")) {
+      // look for alternative rc file to use
+
+      if ((++i) >= argc) {
+        fprintf(stderr, "error: '-rc' requires and argument\n");
+
+        ::exit(1);
+      }
+
+      rc_file = argv[i];
+    } else if (! strcmp(argv[i], "-display")) {
+      // check for -display option... to run on a display other than the one
+      // set by the environment variable DISPLAY
+
       if ((++i) >= argc) {
 	fprintf(stderr, "error: '-display' requires an argument\n");
 
@@ -91,6 +104,7 @@ int main(int argc, char **argv) {
       // print program usage and command line options
       printf("Blackbox %s : (c) 1997 - 1999 Brad Hughes\n\n"
              "  -display <string>\tuse display connection.\n"
+             "  -rc <string>\t\tuse alternate resource file.\n"
 	     "  -version\t\tdisplay version and exit.\n"
              "  -help\t\t\tdisplay this help text and exit.\n\n",
 	     __blackbox_version);
@@ -103,7 +117,7 @@ int main(int argc, char **argv) {
   _chdir2(getenv("X11ROOT"));
 #endif // __EMX__
 
-  Blackbox blackbox(argc, argv, session_display);
+  Blackbox blackbox(argc, argv, session_display, rc_file);
   blackbox.eventLoop();
   
   return(0);

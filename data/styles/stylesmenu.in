@@ -1,16 +1,17 @@
 # styles submenu fragment
 
-[style] (Results)          {@pkgdatadir@/styles/results}
-[style] (Black Magic)      {@pkgdatadir@/styles/blackmagic}
-[style] (Cold Steel)       {@pkgdatadir@/styles/coldsteel}
-[style] (The Color Purple) {@pkgdatadir@/styles/colorpurple}
-[style] (Dark Green)       {@pkgdatadir@/styles/darkgreen}
-[style] (Default)          {@pkgdatadir@/styles/default}
-[style] (Green Noid)       {@pkgdatadir@/styles/gnoid}
-[style] (Green)            {@pkgdatadir@/styles/green}
-[style] (Orange Noid)      {@pkgdatadir@/styles/onoid}
-[style] (Purple Noid)      {@pkgdatadir@/styles/pnoid}
-[style] (The Slate Box)    {@pkgdatadir@/styles/slatebox}
-[style] (Steel Blue)       {@pkgdatadir@/styles/steelblue}
-[style] (The Steel Box)    {@pkgdatadir@/styles/steelbox}
+[style] (Results)           {@pkgdatadir@/styles/results}
+[style] (Black Magic)       {@pkgdatadir@/styles/blackmagic}
+[style] (Cold Steel)        {@pkgdatadir@/styles/coldsteel}
+[style] (The Color Purple)  {@pkgdatadir@/styles/colorpurple}
+[style] (Dark Green)        {@pkgdatadir@/styles/darkgreen}
+[style] (Sleet \(Default\)) {@pkgdatadir@/styles/default}
+[style] (Green Noid)        {@pkgdatadir@/styles/gnoid}
+[style] (Green)             {@pkgdatadir@/styles/green}
+[style] (Orange Noid)       {@pkgdatadir@/styles/onoid}
+[style] (Purple Noid)       {@pkgdatadir@/styles/pnoid}
+[style] (Previous Default)  {@pkgdatadir@/styles/previous}
+[style] (The Slate Box)     {@pkgdatadir@/styles/slatebox}
+[style] (Steel Blue)        {@pkgdatadir@/styles/steelblue}
+[style] (The Steel Box)     {@pkgdatadir@/styles/steelbox}
 

@@ -1,4 +1,4 @@
-dnl configure.in for Blackbox 0.50.x beta - an X11 Window manager
+dnl configure.in for Blackbox 0.51.x  - an X11 Window manager
 dnl Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 dnl
 dnl  This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@ dnl
 
 dnl Initialize autoconf and automake
 AC_INIT(src/blackbox.cc)
-AM_INIT_AUTOMAKE(Blackbox,0.50.5,no-define)
+AM_INIT_AUTOMAKE(Blackbox,0.51.0,no-define)
 
 dnl Determine default prefix
 test x$prefix = "xNONE" && prefix="$ac_default_prefix"
@@ -41,12 +41,12 @@ fi
 
 dnl Check for system header files
 AC_HEADER_STDC
-AC_CHECK_HEADERS(fcntl.h libgen.h locale.h malloc.h process.h signal.h stdio.h time.h unistd.h sys/param.h sys/select.h sys/stat.h sys/time.h sys/types.h sys/wait.h)
+AC_CHECK_HEADERS(fcntl.h libgen.h locale.h process.h signal.h stdio.h time.h unistd.h sys/param.h sys/select.h sys/stat.h sys/time.h sys/types.h sys/wait.h)
 AC_HEADER_TIME
 
 dnl Check for existance of basename(), setlocale() and strftime()
 AC_CHECK_FUNCS(basename, , AC_CHECK_LIB(gen, basename, LIBS="$LIBS -lgen"))
-AC_CHECK_FUNCS(setlocale strftime)
+AC_CHECK_FUNCS(setlocale sigaction strftime)
 
 dnl Check for X headers and libraries
 AC_PATH_X
@@ -135,7 +135,7 @@ dnl Check for Interlacing
 INTERLACE=""
 AC_MSG_CHECKING([whether to include interlacing image code])
 AC_ARG_ENABLE(
-  slit, [  --enable-interlace      include code for image interlacing[default=yes]],
+  slit, [  --enable-interlace      include code for image interlacing [default=yes]],
   if test x$enableval = "xyes"; then
     AC_MSG_RESULT([yes])
     INTERLACE="-DINTERLACE"
@@ -168,4 +168,5 @@ AC_MSG_RESULT([])
 dnl Output files
 AM_CONFIG_HEADER(config.h)
 AC_OUTPUT(Makefile src/Makefile util/Makefile data/Makefile data/styles/Makefile version.h)
+
 

@@ -1,4 +1,4 @@
-# data/styles/Makefile.am for Blackbox 0.40.x beta - an X11 Window manager
+# data/styles/Makefile.am for Blackbox 0.51.x  - an X11 Window manager
 # Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -19,21 +19,9 @@
 #
 
 styledir = $(pkgdatadir)/styles
-CLEANFILES =		stylesmenu
-MAINTAINERCLEANFILES =	Makefile.in
-style_DATA =		blackmagic	\
-			coldsteel	\
-			colorpurple	\
-			darkgreen	\
-			default		\
-			gnoid		\
-			green		\
-			onoid		\
-			pnoid		\
-			slatebox	\
-			steelblue	\
-			steelbox	\
-			stylesmenu
+CLEANFILES = stylesmenu
+MAINTAINERCLEANFILES = Makefile.in
+style_DATA = blackmagic	coldsteel colorpurple darkgreen default	gnoid green onoid pnoid previous results slatebox steelblue steelbox stylesmenu
 
 distclean-local:
 	rm -f *\~

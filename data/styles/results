@@ -1,8 +1,5 @@
-! Results - theme for Blackbox 0.50.x
-! by Brad Hughes bhughes@tcac.net
-
 ! define the toolbars textures... note that the interlaced option is new
-! in 0.50.5
+! in 0.51.x
 toolbar:			Raised Diagonal Gradient Bevel1
 toolbar.button:			Raised Diagonal Gradient Bevel1
 toolbar.button.pressed:		Sunken Diagonal Interlaced Gradient Bevel1
@@ -35,6 +32,8 @@ menu.frame.colorTo:		grey10
 menu.frame.textColor:		white
 menu.frame.highlightColor:	grey85
 menu.frame.hiTextColor:		grey20
+menu.bulletStyle:		round
+menu.bulletPosition:		right
 
 ! window textures
 window.focus:			Raised Diagonal Interlaced Gradient Bevel1
@@ -62,13 +61,12 @@ window.frame.color:		grey85
 ! misc...
 borderColor:			rgb:2/2/1c
 
-moveStyle:			Opaque
-
 menuJustify:			CenterJustify
 titleJustify:			CenterJustify
 
 bevelWidth:			2
 handleWidth:			4
+borderWidth:			1
 
 menuFont:			lucidasans-10
 titleFont:			lucidasans-bold-10

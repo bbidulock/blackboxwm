@@ -1,5 +1,4 @@
-//
-// Basemenu.cc for Blackbox - an X11 Window manager
+// Rootmenu.cc for Blackbox - an X11 Window manager
 // Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -57,15 +56,17 @@ void Rootmenu::itemSelected(int button, int index) {
 
     if (item->function()) {
       switch (item->function()) {
-      case Blackbox::B_Execute:
+      case BScreen::Execute:
 	if (item->exec()) {
 #ifndef   __EMX__
-          int dslen = strlen(DisplayString(screen->getDisplay()));
+          int dslen =
+            strlen(DisplayString(screen->getDisplay()->getDisplay()));
 	  
           char *displaystring = new char[dslen + 32];
           char *command = new char[strlen(item->exec()) + dslen + 64];
 	  
-          sprintf(displaystring, "%s", DisplayString(screen->getDisplay()));
+          sprintf(displaystring, "%s",
+            DisplayString(screen->getDisplay()->getDisplay()));
           // gotta love pointer math
           sprintf(displaystring + dslen - 1, "%d", screen->getScreenNumber());
 	  sprintf(command, "DISPLAY=%s exec %s &", displaystring,
@@ -81,25 +82,25 @@ void Rootmenu::itemSelected(int button, int index) {
 	
 	break;
       	
-      case Blackbox::B_Reconfigure:
+      case BScreen::Reconfigure:
 	blackbox->reconfigure();
 	break;
 	
-      case Blackbox::B_Restart:
+      case BScreen::Restart:
 	blackbox->restart();
 	break;
 	
-      case Blackbox::B_RestartOther:
+      case BScreen::RestartOther:
 	if (item->exec())
 	  blackbox->restart(item->exec());
 
 	break;
 	
-      case Blackbox::B_Exit:
-	blackbox->exit();
+      case BScreen::Exit:
+	blackbox->shutdown();
 	break;
 
-      case Blackbox::B_SetStyle:
+      case BScreen::SetStyle:
 	if (item->exec()) {
 	  blackbox->saveStyleFilename(item->exec());
 	  blackbox->reconfigure();
@@ -109,17 +110,11 @@ void Rootmenu::itemSelected(int button, int index) {
       }
       
       if (! (screen->getRootmenu()->hasUserMoved() || hasUserMoved()) &&
-	  item->function() != Blackbox::B_Reconfigure &&
-	  item->function() != Blackbox::B_SetStyle)
+	  item->function() != BScreen::Reconfigure &&
+	  item->function() != BScreen::SetStyle)
 	screen->getRootmenu()->hide();
     }
   } else if (button == 3)
     screen->getRootmenu()->hide();
 }
 
-
-void Rootmenu::show(void) {
-  XRaiseWindow(screen->getDisplay(), getWindowID());
-
-  Basemenu::show();
-}

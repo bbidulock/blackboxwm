@@ -1,4 +1,3 @@
-//
 // Toolbar.cc for Blackbox - an X11 Window manager
 // Copyright (c) 1997 - 1999 by Brad Hughes, bhughes@tcac.net
 //
@@ -33,6 +32,7 @@
 #include "Rootmenu.hh"
 #include "Screen.hh"
 #include "Toolbar.hh"
+#include "Window.hh"
 #include "Workspace.hh"
 #include "Workspacemenu.hh"
 
@@ -67,15 +67,14 @@ Toolbar::Toolbar(Blackbox *bb, BScreen *scrn) {
 
   display = blackbox->getDisplay();
   XSetWindowAttributes attrib;
-  unsigned long create_mask = CWBackPixmap|CWBackPixel|CWBorderPixel|
-    CWOverrideRedirect |CWCursor|CWEventMask; 
+  unsigned long create_mask = CWBackPixmap | CWBackPixel | CWBorderPixel |
+    CWOverrideRedirect | CWEventMask; 
   attrib.background_pixmap = None;
   attrib.background_pixel = attrib.border_pixel =
     screen->getBorderColor()->getPixel();
   attrib.override_redirect = True;
-  attrib.cursor = blackbox->getSessionCursor();
   attrib.event_mask = ButtonPressMask | ButtonReleaseMask | ExposureMask |
-    FocusChangeMask | KeyPressMask;
+    KeyPressMask;
 
   frame.window =
     XCreateWindow(display, screen->getRootWindow(), 0, 0, 1, 1, 0,
@@ -124,7 +123,7 @@ Toolbar::Toolbar(Blackbox *bb, BScreen *scrn) {
 		  InputOutput, screen->getVisual(), create_mask, &attrib);
   blackbox->saveToolbarSearch(frame.clock, this);
   
-  frame.frame = frame.label = frame.wlabel = frame.button = frame.pbutton =
+  frame.base = frame.label = frame.wlabel = frame.button = frame.pbutton =
     frame.clk = frame.reading = None;
   
   reconfigure();
@@ -137,7 +136,7 @@ Toolbar::Toolbar(Blackbox *bb, BScreen *scrn) {
 Toolbar::~Toolbar(void) {
   XUnmapWindow(display, frame.window);
 
-  if (frame.frame) image_ctrl->removeImage(frame.frame);
+  if (frame.base) image_ctrl->removeImage(frame.base);
   if (frame.label) image_ctrl->removeImage(frame.label);
   if (frame.wlabel) image_ctrl->removeImage(frame.wlabel);
   if (frame.button) image_ctrl->removeImage(frame.button);
@@ -173,11 +172,11 @@ void Toolbar::reconfigure(void) {
   wait_button = False;
   
   frame.bevel_w = screen->getBevelWidth();
-  frame.width = screen->getXRes() * screen->getToolbarWidthPercent() / 100;
+  frame.width = screen->getWidth() * screen->getToolbarWidthPercent() / 100;
   frame.height = screen->getTitleFont()->ascent +
     screen->getTitleFont()->descent + (frame.bevel_w * 4);
-  frame.x = (screen->getXRes() - frame.width) / 2;
-  frame.y = screen->getYRes() - frame.height;
+  frame.x = (screen->getWidth() - frame.width) / 2;
+  frame.y = screen->getHeight() - frame.height;
   frame.clock_h = frame.label_h = frame.wlabel_h = frame.button_h =
     frame.height - (frame.bevel_w * 2);
   frame.button_w = (frame.button_h * 3) / 4;;
@@ -232,8 +231,8 @@ void Toolbar::reconfigure(void) {
 		   (frame.clock_w + (frame.button_w * 4) + frame.wlabel_w +
 		    (frame.bevel_w * 6) + 6));
   
-  Pixmap tmp = frame.frame;
-  frame.frame =
+  Pixmap tmp = frame.base;
+  frame.base =
     image_ctrl->renderImage(frame.width, frame.height,
 			    &(screen->getTResource()->toolbar.texture));
   if (tmp) image_ctrl->removeImage(tmp);
@@ -303,7 +302,7 @@ void Toolbar::reconfigure(void) {
 		    frame.bevel_w, frame.bevel_w, frame.clock_w,
 		    frame.clock_h);
   
-  XSetWindowBackgroundPixmap(display, frame.window, frame.frame);
+  XSetWindowBackgroundPixmap(display, frame.window, frame.base);
   
   XSetWindowBackgroundPixmap(display, frame.workspaceLabel, frame.wlabel);
   XSetWindowBackgroundPixmap(display, frame.windowLabel, frame.label);
@@ -391,13 +390,14 @@ void Toolbar::checkClock(Bool redraw, Bool date) {
 
 
 void Toolbar::redrawWindowLabel(Bool redraw) {
-  if (screen->getCurrentWorkspace()->getLabel()) {
+  if (screen->getBlackbox()->getFocusedWindow()) {    
     if (redraw)
       XClearWindow(display, frame.windowLabel);
+
+    BlackboxWindow *foc = screen->getBlackbox()->getFocusedWindow();
     
-    int l = strlen(*(screen->getCurrentWorkspace()->getLabel())),
-      tx = (XTextWidth(screen->getTitleFont(),
-		       *(screen->getCurrentWorkspace()->getLabel()), l) +
+    int l = strlen(*(foc->getTitle())),
+      tx = (XTextWidth(screen->getTitleFont(), *(foc->getTitle()), l) +
 	    (frame.bevel_w * 2)),
       x = (frame.label_w - tx) / 2;
     
@@ -406,7 +406,7 @@ void Toolbar::redrawWindowLabel(Bool redraw) {
     XDrawString(display, frame.windowLabel, buttonGC, x,
 		(frame.label_h + screen->getTitleFont()->ascent -
                  screen->getTitleFont()->descent) / 2,
-                *(screen->getCurrentWorkspace()->getLabel()), l);
+                *(foc->getTitle()), l);
   } else
     XClearWindow(display, frame.windowLabel);
 }
@@ -549,6 +549,11 @@ void Toolbar::buttonPressEvent(XButtonEvent *be) {
       
       XSetWindowBackgroundPixmap(display, frame.workspaceLabel, frame.reading);
       XClearWindow(display, frame.workspaceLabel);
+
+      blackbox->setNoFocus(True);
+      if (blackbox->getFocusedWindow())
+        blackbox->getFocusedWindow()->setFocusFlag(False);
+
       XSync(display, False);
     }
   }
@@ -631,7 +636,13 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
       *(new_name_pos) = 0;
 
       editing = False;
-      XSetInputFocus(display, PointerRoot, None, CurrentTime);
+
+      blackbox->setNoFocus(False);
+      if (blackbox->getFocusedWindow()) {
+        blackbox->getFocusedWindow()->setInputFocus();
+        blackbox->getFocusedWindow()->setFocusFlag(True);
+      } else
+        XSetInputFocus(display, PointerRoot, None, CurrentTime);
       
       // check to make sure that new_name[0] != 0... otherwise we have a null
       // workspace name which causes serious problems, especially for the
@@ -675,7 +686,7 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
 	x = (frame.wlabel_w - XTextWidth(screen->getTitleFont(),
 					 new_workspace_name, l)) / 2;
       if (x < (signed) frame.bevel_w) x = frame.bevel_w;
-      XDrawString(display, frame.workspaceLabel, buttonGC, x,
+      XDrawString(display, frame.workspaceLabel, screen->getWindowFocusGC(), x,
 		  (frame.wlabel_h +screen->getTitleFont()->ascent -
 		   screen->getTitleFont()->descent) / 2,
 		  new_workspace_name, l);
