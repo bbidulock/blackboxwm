@@ -96,7 +96,7 @@ void BTexture::setColor(const BColor &cc)
 
 void BTexture::setDescription(const string &d)
 {
-  descr = "";
+  descr.erase();
   descr.reserve(d.length());
 
   string::const_iterator it = d.begin(), end = d.end();
