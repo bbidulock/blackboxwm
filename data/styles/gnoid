@@ -1,0 +1,86 @@
+! Green Noid style for Blackbox 0.40.x
+
+! base toolbar window
+toolbar:				Raised Vertical Gradient Bevel1
+toolbar.color:				darkolivegreen3
+toolbar.colorTo:			darkolivegreen4
+toolbar.textColor:			grey20
+
+! toolbar buttons
+toolbar.button:				Flat Vertical Gradient
+toolbar.button.color:			darkolivegreen3
+toolbar.button.colorTo:			darkolivegreen4
+toolbar.button.pressed:			Inverted
+toolbar.button.pressed.color:		darkolivegreen1
+toolbar.button.pressed.colorTo:		darkolivegreen
+
+! toolbar labels
+toolbar.label:				Raised Diagonal Gradient Bevel1
+toolbar.label.color:			darkolivegreen3
+toolbar.label.colorTo:			darkolivegreen4
+
+! toolbar clock
+toolbar.clock:				Flat Vertical Gradient
+toolbar.clock.color:			darkolivegreen3
+toolbar.clock.colorTo:			darkolivegreen4
+
+! menu title
+menu.title:				Flat Horizontal Gradient
+menu.title.color:			white
+menu.title.colorTo:			darkgrey
+menu.title.textColor:			grey20
+
+! menu frame
+menu.frame:				Raised Diagonal Gradient Bevel1
+menu.frame.color:			darkolivegreen4
+menu.frame.colorTo:			darkolivegreen3
+menu.frame.highlightColor:		grey20
+menu.frame.hiTextColor:			white
+menu.frame.textColor:			grey20
+
+! focused window decorations
+window.focus:				Raised Diagonal Gradient Bevel1
+window.focus.color:			darkolivegreen4
+window.focus.colorTo:			darkolivegreen3
+window.focus.textColor:			grey20
+window.focus.button:			Raised Diagonal Gradient Bevel1
+window.focus.button.color:		darkgrey
+window.focus.button.colorTo:		white
+
+! unfocus window decorations
+window.unfocus:				Raised Horizontal Gradient Bevel1
+window.unfocus.color:			white
+window.unfocus.colorTo:			darkgrey
+window.unfocus.textColor:		grey20
+window.unfocus.button:			Raised Diagonal Gradient Bevel1
+window.unfocus.button.color:		lightgrey
+window.unfocus.button.colorTo:		darkgrey
+
+! other window decorations
+window.button.pressed:			Sunken Diagonal Gradient Bevel1
+window.button.pressed.color:		black
+window.button.pressed.colorTo:		white
+window.frame:				Raised Solid Bevel1
+window.frame.color:			grey85
+
+! border color
+borderColor:				grey30
+
+! decoration size control
+bevelWidth:				2
+handleWidth:				4
+
+! window move style
+moveStyle:				Opaque
+
+! text justification
+titleJustify:				CenterJustify
+menuJustify:				CenterJustify
+
+! fonts
+titleFont:			-*-lucida-medium-r-*-*-*-120-*-*-*-*-*-*
+menuFont:			-*-lucida-medium-r-*-*-*-120-*-*-*-*-*-*
+
+! command to set root window image/background
+rootCommand:			bsetroot -mod 4 4 -bg darkgrey -fg grey
+

@@ -1,0 +1,77 @@
+ChangeLog for Blackbox 0.50.xx
+Enjoy! :)
+
+Changes from 0.40.14 to 0.50.0:
+  - added util/ subdirectory to place small, utility programs to use in
+    conjunction with blackbox.
+  - updated the README... it's still vague and useless, but gives a better
+    view of whats going on
+  - the configure script now checks for a few more headers, setlocale and
+    strftime in addition to basename functions to better include support for
+    multiple arch/langs/etc.
+  - updated default menu file... made it a little more general... and made
+    the default style menu [include]'d instead of explicitly included...
+    this break off of the style menu allows for custom menus to include the
+    default style menu for a create selection of styles
+  - changed all the default styles to use bsetroot instead of xsetroot
+  - menu handling has been improved... no more than one menu at a time may be
+    visible on the desktop (save for the root menu and it's tear off menus)
+    this means that you can't have multiple window menus and the workspace menu
+    open all at once... which saves screen space and reduces clutter
+  - much of the code has been reorganzied and reformatted for better
+    readability... this consists of function name changes and function
+    "ownership" (which basically means workspaces aren't managed by the toolbar
+    itself anymore, but by a general screen class on which the toolbar can
+    operate)
+  - the workspacemenu now autohides when selecting a window from one of the
+    window lists
+  - removed many empty destructors for Basemenu subclasses to improve code
+    readability
+  - two new files, Screen.cc and Screen.hh, have been added to the distribution
+    they add the new class BScreen which was needed for the biggest change of
+    the Blackbox code base, the addition of multiple screen (i.e. multihead)
+    support.  A separate BScreen is created for each screen, and all screens
+    work inconjunction with the other... windows can't be passed between
+    screens, because the X server doesn't allow this (more investigation on
+    this later)
+  - the toolbar's clock format is now controlled by the strftime() function...
+    if configure can't find this function on your system, the old date/time
+    format is used... with strftime, clicking on the clock doesn't display the
+    date... as the date may now be part of the clock display... read the man
+    page for the strftime function to write a format string for your clock,
+    and place it in .blackboxrc (i.e.
+      session.strftimeFormat: %I:%M %p on %a, %b %d is my strftime format
+    string)
+  - the toolbar has been stripped of it's workspace responsibilities, but this
+    change has no effect on the end user.
+  - common code interspersed through out the code has been consolodated into
+    small functions and called multiple times instead of having the same or
+    similar code repeated in the same class
+  - the window startup code has been improved upon again so that shaded windows
+    are restored between restarts
+  - some ICCCM code has been updated to properly reflect the state of windows
+    while shaded or on different workspaces... this state code change should
+    also fix the JX toolkit problem of deiconifying and nothing being redrawn
+  - the main Blackbox class has been changed to purely handle X events... it
+    doesn't manage resources (save for those necessary for proper event
+    handling, like the focus model for each screen)
+  - the format of .blackboxrc has changed slightly, the session.menuFile,
+    session.doubleClickInterval, session.imageDither, session.styleFile,
+    and session.colorsPerChannel resources are unchanged.  However, the
+    following resources are screen dependant:
+
+	session.screen<num>.strftimeFormat
+	session.screen<num>.workspaces
+	session.screen<num>.workspaceNames
+	session.screen<num>.toolbarRaised
+	session.screen<num>.focusModel
+
+    where <num> is the screen number (zero being default and all that would be
+    present on a single screen/monitor setup).
+  - a utility named bsetroot (mentioned above) has been included in the
+    blackbox distribution, to aid in setting root window patterns (ala
+    xsetroot).  the only different between xsetroot and bsetroot is that
+    bsetroot doesn't redefine cursors, and doesn't restore defaults if no
+    arguments are given.  bsetroot does support multiple screens, and is ideal
+    for those setups (instead of running xsetroot for each screen)
+

@@ -1,0 +1,86 @@
+! Purple Noid Tech style for Blackbox 0.40.x
+
+! base toolbar window
+toolbar:				Raised Vertical Gradient Bevel1
+toolbar.color:				rgb:78/a/a
+toolbar.colorTo:			rgb:6/8/8
+toolbar.textColor:			white
+
+! toolbar buttons
+toolbar.button:				Flat Vertical Gradient
+toolbar.button.color:			rgb:78/a/a
+toolbar.button.colorTo:			rgb:6/8/8
+toolbar.button.pressed:			Sunken Diagonal Gradient Bevel1
+toolbar.button.pressed.color:		rgb:3/4/4
+toolbar.button.pressed.colorTo:		rgb:b/f/f
+
+! toolbar labels
+toolbar.label:				Raised Diagonal Gradient Bevel1
+toolbar.label.color:			rgb:78/a/a
+toolbar.label.colorTo:			rgb:6/8/8
+
+! toolbar clock
+toolbar.clock:				Flat Vertical Gradient
+toolbar.clock.color:			rgb:78/a/a
+toolbar.clock.colorTo:			rgb:6/8/8
+
+! menu title
+menu.title:				Flat Horizontal Gradient
+menu.title.color:			white
+menu.title.colorTo:			darkgrey
+menu.title.textColor:			grey20
+
+! menu frame
+menu.frame:				Raised Diagonal Gradient Bevel1
+menu.frame.color:			rgb:6/6/8
+menu.frame.colorTo:			rgb:b/b/f
+menu.frame.highlightColor:		grey85
+menu.frame.hiTextColor:			grey30
+menu.frame.textColor:			grey20
+
+! focused window decorations
+window.focus:				Raised Diagonal Gradient Bevel1
+window.focus.color:			rgb:6/6/8
+window.focus.colorTo:			rgb:b/b/f
+window.focus.textColor:			grey20
+window.focus.button:			Raised Diagonal Gradient Bevel1
+window.focus.button.color:		darkgrey
+window.focus.button.colorTo:		white
+
+! unfocus window decorations
+window.unfocus:				Raised Horizontal Gradient Bevel1
+window.unfocus.color:			white
+window.unfocus.colorTo:			darkgrey
+window.unfocus.textColor:		grey30
+window.unfocus.button:			Raised Diagonal Gradient Bevel1
+window.unfocus.button.color:		lightgrey
+window.unfocus.button.colorTo:		grey
+
+! other window decorations
+window.button.pressed:			Sunken Diagonal Gradient Bevel1
+window.button.pressed.color:		black
+window.button.pressed.colorTo:		white
+window.frame:				Raised Solid Bevel1
+window.frame.color:			grey85
+
+! border color
+borderColor:				gray30
+
+! decoration size control
+bevelWidth:				2
+handleWidth:				4
+
+! window move style
+moveStyle:				Opaque
+
+! text justification
+titleJustify:				CenterJustify
+menuJustify:				CenterJustify
+
+! fonts
+titleFont:                      -*-lucida-medium-r-*-*-*-120-*-*-*-*-*-*
+menuFont:                       -*-lucida-medium-r-*-*-*-120-*-*-*-*-*-*
+
+! command to set root window image/background
+rootCommand:			bsetroot -mod 4 4 -bg rgb:6/8/8 -fg rgb:78/a/a
+

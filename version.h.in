@@ -1,0 +1,1 @@
+#define __blackbox_version "@VERSION@"

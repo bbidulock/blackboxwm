@@ -1,0 +1,53 @@
+! Blackbox window toolbar resource defaults
+! (c) 1997, 1998 Brad Hughes
+
+toolbar:				Raised Solid Bevel1
+toolbar.label:				Flat Solid 
+toolbar.clock:				Flat Solid
+toolbar.button:				Flat Solid
+toolbar.button.pressed:			Sunken Diagonal Gradient Bevel1
+
+toolbar*color:				rgb:4/6/8
+toolbar.button.pressed.color:   	rgb:2/3/4
+toolbar.button.pressed.colorTo:		rgb:6/9/c
+toolbar.textColor:			lightgrey
+toolbar.clock.24hour:			false
+toolbar.raised:				true
+
+window.focus:				Raised Solid               Bevel1
+window.unfocus:				Raised Solid               Bevel1
+window*button:				Flat   Solid
+window*button.pressed:			Sunken Diagonal   Gradient Bevel1
+window.handle:				Raised Solid               Bevel1
+window.frame:				Raised Solid               Bevel1
+
+window.focus*color:			rgb:5/78/a
+window.focus.textColor:			white
+window.unfocus*color:			rgb:4/6/8
+window.unfocus.textColor:		lightgrey
+window*button.pressed.color:		rgb:2/3/4
+window*button.pressed.colorTo:		rgb:6/9/c
+window.handle.color:			rgb:5/78/a
+window.frame.color:			rgb:4/6/8
+
+menu.title:				Flat   Solid
+menu.frame:				Raised Solid               Bevel1
+menu.title.color:			rgb:5/78/a
+menu.frame.color:			rgb:4/6/8
+menu.frame.highlightColor:		rgb:5/78/a
+menu.title.textColor:			white
+menu.frame.textColor:			lightgrey
+menu.frame.hiTextColor:			white
+
+borderColor:				rgb:4/6/8
+handleWidth:				9
+bevelWidth:				3
+
+titleJustify:				RightJustify
+moveStyle:				Opaque
+
+titleFont:     -*-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*
+menuFont:      -*-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*
+
+rootCommand:			bsetroot -solid rgb:4/6/8
+
