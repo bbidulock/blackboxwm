@@ -47,8 +47,10 @@ void BWindowGroup::addWindow(BlackboxWindow *win)
 void BWindowGroup::removeWindow(BlackboxWindow *win)
 {
   windowList.remove(win);
-  if (windowList.empty())
+  if (windowList.empty()) {
+    assert(transientList.empty());
     delete this;
+  }
 }
 
 
