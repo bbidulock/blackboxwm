@@ -22,187 +22,180 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-extern "C" {
-#include <stdio.h>
-}
-
 #include "Resource.hh"
 #include "Util.hh"
 
-namespace bt {
+extern "C" {
+#include <X11/Xresource.h>
+#include <stdio.h>
+}
 
-  Resource::Resource(void) : db(NULL) { }
+bt::Resource::Resource(void) : db(NULL) { }
 
 
-  Resource::Resource(const std::string &filename) : db(NULL) {
-    load(filename);
+bt::Resource::Resource(const std::string &filename) : db(NULL)
+{ load(filename); }
+
+
+bt::Resource::~Resource(void)
+{ XrmDestroyDatabase(db); }
+
+
+void bt::Resource::load(const std::string &filename) {
+  XrmDestroyDatabase(db);
+  db = XrmGetFileDatabase(expandTilde(filename).c_str());
+}
+
+
+void bt::Resource::save(const std::string &filename) {
+  if (! valid()) return;
+  XrmPutFileDatabase(db, expandTilde(filename).c_str());
+}
+
+
+void bt::Resource::merge(const std::string &filename)
+{ XrmCombineFileDatabase(expandTilde(filename).c_str(), &db, true); }
+
+
+std::string bt::Resource::read(const char* name, const char* classname,
+                               const char* default_value) const {
+  XrmValue value;
+  char *value_type;
+  if (XrmGetResource(db, name, classname, &value_type, &value))
+    return std::string(value.addr, value.size - 1);
+  return std::string(default_value);
+}
+
+
+std::string bt::Resource::read(const std::string& name,
+                               const std::string& classname,
+                               const std::string& default_value) const {
+  XrmValue value;
+  char *value_type;
+  if (XrmGetResource(db, name.c_str(), classname.c_str(),
+                     &value_type, &value))
+    return std::string(value.addr, value.size - 1);
+  return default_value;
+}
+
+
+int bt::Resource::read(const char* name, const char* classname,
+                       int default_value) const {
+  XrmValue value;
+  char *value_type;
+  if (XrmGetResource(db, name, classname, &value_type, &value)) {
+    int output;
+    sscanf(value.addr, "%d", &output);
+    return output;
   }
+  return default_value;
+}
 
 
-  Resource::~Resource(void) {
-    XrmDestroyDatabase(db);
+unsigned int bt::Resource::read(const char* name, const char* classname,
+                                unsigned int default_value) const {
+  XrmValue value;
+  char *value_type;
+  if (XrmGetResource(db, name, classname, &value_type, &value)) {
+    unsigned int output;
+    sscanf(value.addr, "%u", &output);
+    return output;
   }
+  return default_value;
+}
 
 
-  void Resource::load(const std::string &filename) {
-    XrmDestroyDatabase(db);
-    db = XrmGetFileDatabase(expandTilde(filename).c_str());
+long bt::Resource::read(const char* name, const char* classname,
+                        long default_value) const {
+  XrmValue value;
+  char *value_type;
+  if (XrmGetResource(db, name, classname, &value_type, &value)) {
+    long output;
+    sscanf(value.addr, "%ld", &output);
+    return output;
   }
+  return default_value;
+}
 
 
-  void Resource::save(const std::string &filename) {
-    if (! valid()) return;
-    XrmPutFileDatabase(db, expandTilde(filename).c_str());
+unsigned long bt::Resource::read(const char* name, const char* classname,
+                                 unsigned long default_value) const {
+  XrmValue value;
+  char *value_type;
+  if (XrmGetResource(db, name, classname, &value_type, &value)) {
+    long output;
+    sscanf(value.addr, "%lu", &output);
+    return output;
   }
+  return default_value;
+}
 
 
-  void Resource::merge(const std::string &filename) {
-    XrmCombineFileDatabase(expandTilde(filename).c_str(), &db, true);
+bool bt::Resource::read(const char* name, const char* classname,
+                        bool default_value) const {
+  XrmValue value;
+  char *value_type;
+  if (XrmGetResource(db, name, classname, &value_type, &value)) {
+    if (strncasecmp(value.addr, "true", value.size) == 0)
+      return true;
+    return false;
   }
+  return default_value;
+}
 
 
-  std::string Resource::read(const char* name, const char* classname,
-                             const char* default_value) const {
-    XrmValue value;
-    char *value_type;
-    if (XrmGetResource(db, name, classname, &value_type, &value))
-      return std::string(value.addr, value.size - 1);
-    return std::string(default_value);
+double bt::Resource::read(const char* name, const char* classname,
+                          double default_value) const {
+  XrmValue value;
+  char *value_type;
+  if (XrmGetResource(db, name, classname, &value_type, &value)) {
+    double output;
+    sscanf(value.addr, "%lf", &output);
+    return output;
   }
+  return default_value;
+}
 
 
-  std::string Resource::read(const std::string& name,
-                             const std::string& classname,
-                             const std::string& default_value) const {
-    XrmValue value;
-    char *value_type;
-    if (XrmGetResource(db, name.c_str(), classname.c_str(),
-                       &value_type, &value))
-      return std::string(value.addr, value.size - 1);
-    return default_value;
-  }
+void bt::Resource::write(const char* resource, const char* value)
+{ XrmPutStringResource(&db, resource, value); }
 
 
-  int Resource::read(const char* name, const char* classname,
-                     int default_value) const {
-    XrmValue value;
-    char *value_type;
-    if (XrmGetResource(db, name, classname, &value_type, &value)) {
-      int output;
-      sscanf(value.addr, "%d", &output);
-      return output;
-    }
-    return default_value;
-  }
+void bt::Resource::write(const char* resource, int value) {
+  char tmp[16];
+  sprintf(tmp, "%d", value);
+  write(resource, tmp);
+}
 
 
-  unsigned int Resource::read(const char* name, const char* classname,
-                              unsigned int default_value) const {
-    XrmValue value;
-    char *value_type;
-    if (XrmGetResource(db, name, classname, &value_type, &value)) {
-      unsigned int output;
-      sscanf(value.addr, "%u", &output);
-      return output;
-    }
-    return default_value;
-  }
+void bt::Resource::write(const char* resource, unsigned int value) {
+  char tmp[16];
+  sprintf(tmp, "%u", value);
+  write(resource, tmp);
+}
 
 
-  long Resource::read(const char* name, const char* classname,
-                      long default_value) const {
-    XrmValue value;
-    char *value_type;
-    if (XrmGetResource(db, name, classname, &value_type, &value)) {
-      long output;
-      sscanf(value.addr, "%ld", &output);
-      return output;
-    }
-    return default_value;
-  }
+void bt::Resource::write(const char* resource, long value) {
+  char tmp[64];
+  sprintf(tmp, "%ld", value);
+  write(resource, tmp);
+}
 
 
-  unsigned long Resource::read(const char* name, const char* classname,
-                               unsigned long default_value) const {
-    XrmValue value;
-    char *value_type;
-    if (XrmGetResource(db, name, classname, &value_type, &value)) {
-      long output;
-      sscanf(value.addr, "%lu", &output);
-      return output;
-    }
-    return default_value;
-  }
+void bt::Resource::write(const char* resource, unsigned long value) {
+  char tmp[64];
+  sprintf(tmp, "%lu", value);
+  write(resource, tmp);
+}
 
 
-  bool Resource::read(const char* name, const char* classname,
-                      bool default_value) const {
-    XrmValue value;
-    char *value_type;
-    if (XrmGetResource(db, name, classname, &value_type, &value)) {
-      if (strncasecmp(value.addr, "true", value.size) == 0)
-        return true;
-      return false;
-    }
-    return default_value;
-  }
+void bt::Resource::write(const char* resource, bool value) {
+  write(resource, boolAsString(value));
+}
 
 
-  double Resource::read(const char* name, const char* classname,
-                        double default_value) const {
-    XrmValue value;
-    char *value_type;
-    if (XrmGetResource(db, name, classname, &value_type, &value)) {
-      double output;
-      sscanf(value.addr, "%lf", &output);
-      return output;
-    }
-    return default_value;
-  }
-
-
-  void Resource::write(const char* resource, const char* value) {
-    XrmPutStringResource(&db, resource, value);
-  }
-
-
-  void Resource::write(const char* resource, int value) {
-    char tmp[16];
-    sprintf(tmp, "%d", value);
-    write(resource, tmp);
-  }
-
-
-  void Resource::write(const char* resource, unsigned int value) {
-    char tmp[16];
-    sprintf(tmp, "%u", value);
-    write(resource, tmp);
-  }
-
-
-  void Resource::write(const char* resource, long value) {
-    char tmp[64];
-    sprintf(tmp, "%ld", value);
-    write(resource, tmp);
-  }
-
-
-  void Resource::write(const char* resource, unsigned long value) {
-    char tmp[64];
-    sprintf(tmp, "%lu", value);
-    write(resource, tmp);
-  }
-
-
-  void Resource::write(const char* resource, bool value) {
-    write(resource, boolAsString(value));
-  }
-
-
-  void Resource::write(const char* resource, double value) {
-    char tmp[80];
-    sprintf(tmp, "%f", value);
-    write(resource, tmp);
-  }
-
+void bt::Resource::write(const char* resource, double value) {
+  char tmp[80];
+  sprintf(tmp, "%f", value);
+  write(resource, tmp);
 }

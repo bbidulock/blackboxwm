@@ -25,11 +25,10 @@
 #ifndef __Resource_hh
 #define __Resource_hh
 
-extern "C" {
-#include <X11/Xresource.h>
-}
-
 #include <string>
+
+// forward declaration
+typedef struct _XrmHashBucketRec *XrmDatabase;
 
 
 namespace bt {
