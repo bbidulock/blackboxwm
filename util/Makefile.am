@@ -28,14 +28,12 @@ bin_SCRIPTS		= bsetbg
 bin_PROGRAMS		= bsetroot bstyleconvert
 
 bsetroot_SOURCES	= bsetroot.cc
-bsetroot_DEPENDENCIES	= $(top_builddir)/lib/libbt.a
-bsetroot_LDFLAGS	= -L$(top_builddir)/lib
-bsetroot_LDADD		= -lbt
+bsetroot_DEPENDENCIES	= $(top_builddir)/lib/libbt.la
+bsetroot_LDADD		= $(top_builddir)/lib/libbt.la
 
 bstyleconvert_SOURCES		= bstyleconvert.cc
-bstyleconvert_DEPENDENCIES	= $(top_builddir)/lib/libbt.a
-bstyleconvert_LDFLAGS		= -L$(top_builddir)/lib
-bstyleconvert_LDADD		= -lbt
+bstyleconvert_DEPENDENCIES	= $(top_builddir)/lib/libbt.la
+bstyleconvert_LDADD		= $(top_builddir)/lib/libbt.la
 
 MAINTAINERCLEANFILES	= Makefile.in
 

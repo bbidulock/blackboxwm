@@ -23,8 +23,8 @@
 
 CPPFLAGS		= @CPPFLAGS@ @SHAPE@ @MITSHM@ @XFT@ @DEBUG@ @NLS@ \
 			  -DLOCALEPATH=\"$(pkgdatadir)/nls\"
-noinst_LIBRARIES	= libbt.a
-libbt_a_SOURCES		= Application.cc				\
+lib_LTLIBRARIES		= libbt.la
+libbt_la_SOURCES	= Application.cc				\
 			  Bitmap.cc					\
 			  Color.cc					\
 			  Display.cc					\
@@ -41,8 +41,26 @@ libbt_a_SOURCES		= Application.cc				\
 			  Util.cc					\
 			  i18n.cc
 
+libbtdir = $(includedir)/bt
+libbt_HEADERS		= Application.hh				\
+			  Bitmap.hh					\
+			  Color.hh					\
+			  Display.hh					\
+			  EventHandler.hh				\
+			  Font.hh					\
+			  Image.hh					\
+			  Menu.hh					\
+			  Netwm.hh					\
+			  Pen.hh					\
+			  PixmapCache.hh				\
+			  Rect.hh					\
+			  Resource.hh					\
+			  Texture.hh					\
+			  Timer.hh					\
+			  Util.hh					\
+			  i18n.hh
+
 MAINTAINERCLEANFILES	= Makefile.in
 
 distclean-local:
 	rm -f *\~ *.orig *.rej .\#*
-

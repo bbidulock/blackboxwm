@@ -45,9 +45,8 @@ blackbox_SOURCES	= BlackboxResource.cc                           \
 			  Workspacemenu.cc				\
 			  blackbox.cc					\
 			  main.cc
-blackbox_DEPENDENCIES	= $(top_builddir)/lib/libbt.a
-blackbox_LDFLAGS	= -L$(top_builddir)/lib
-blackbox_LDADD		= -lbt
+blackbox_DEPENDENCIES	= $(top_builddir)/lib/libbt.la
+blackbox_LDADD		= $(top_builddir)/lib/libbt.la
 
 MAINTAINERCLEANFILES	= Makefile.in
 

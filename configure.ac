@@ -9,9 +9,35 @@ dnl Determine default prefix
 test "x$prefix" = "xNONE" && prefix="$ac_default_prefix"
 
 dnl Locate required external software
+AC_PROG_CC
+
+dnl Blackbox requires ANSI C headers
+AC_HEADER_STDC
+if test "$ac_cv_header_stdc" = "no"; then
+  AC_MSG_ERROR([Blackbox requires ANSI C headers.])
+fi
+
 AC_PROG_CXX
+AC_PROG_INSTALL
+
+dnl libbt shouldn't be shared by default (yet)
+AC_DISABLE_SHARED
+AC_PROG_LIBTOOL
+
+AC_CHECK_PROGS([regex_cmd], [sed])
+if test "x$regex_cmd" = "x"; then
+  AC_MSG_ERROR([error. sed is required to build the default menu file.])
+fi
+
+AC_CHECK_PROGS([gencat_cmd], [gencat])
+if test "x$gencat_cmd" = "x"; then
+  NLS=
+fi
+
+dnl Blackbox uses C++
 AC_LANG([C++])
 
+dnl Compiler specific options
 if test "x$GXX" = "xyes"; then
    CXXFLAGS="${CXXFLAGS} -Wall -W -pedantic"
    gxx_ver=`$CXX -dumpversion|sed -e 's/\..*//'`
@@ -36,23 +62,7 @@ else
    fi 
 fi
 
-AC_PROG_RANLIB
-AC_PROG_INSTALL
-
-AC_CHECK_PROGS([regex_cmd], [sed])
-if test "x$regex_cmd" = "x"; then
-  AC_MSG_ERROR([error. sed is required to build the default menu file.])
-fi
-
-AC_CHECK_PROGS([gencat_cmd], [gencat])
-if test "x$gencat_cmd" = "x"; then
-  NLS=
-fi
-
-dnl Check for system header files
-AC_CHECK_HEADERS(ctype.h dirent.h fcntl.h libgen.h locale.h nl_types.h process.h signal.h stdarg.h time.h sys/param.h sys/select.h sys/signal.h sys/time.h sys/wait.h)
-
-dnl Check for existance of basename(), setlocale() and strftime()
+dnl Check for existance of basename() and setlocale()
 AC_CHECK_FUNCS([basename],
                [],
 	       [AC_CHECK_LIB([gen],
@@ -69,7 +79,7 @@ AC_CHECK_FUNCS([setlocale],
                               LIBS="$LIBS -lxpg4"])
                ])
 
-AC_CHECK_FUNCS(getpid sigaction strftime strcasestr snprintf vsnprintf catopen catgets catclose)
+dnl needed for some X11 libs
 AC_CHECK_LIB([nsl],
              [t_open],
 	     [LIBS="$LIBS -lnsl"])
