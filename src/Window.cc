@@ -160,13 +160,14 @@ static void update_decorations(WindowDecorationFlags &decorations,
  * Calculate the frame margin based on the given decorations and
  * style.
  */
-static void update_margin(bt::EWMH::Strut &margin,
-                          WindowDecorationFlags decorations,
-                          const ScreenResource::WindowStyle *style) {
+static
+bt::EWMH::Strut update_margin(WindowDecorationFlags decorations,
+                              const ScreenResource::WindowStyle *style) {
+  bt::EWMH::Strut margin;
+
   const unsigned int bw = ((decorations & WindowDecorationBorder)
                            ? style->frame_border_width
                            : 0u);
-
   margin.top = margin.bottom = margin.left = margin.right = bw;
 
   if (decorations & WindowDecorationTitlebar)
@@ -174,6 +175,8 @@ static void update_margin(bt::EWMH::Strut &margin,
 
   if (decorations & WindowDecorationHandle)
     margin.bottom += style->handle_height - bw;
+
+  return margin;
 }
 
 
@@ -195,7 +198,7 @@ static void update_window_group(Window window_group,
 
 
 /*
- * Calculate the size of the client window and constrain it to the
+ * Calculate the size of the frame window and constrain it to the
  * size specified by the size hints of the client window.
  *
  * 'rect' refers to the geometry of the frame in pixels.
@@ -326,13 +329,14 @@ static bt::Rect constrain(const bt::Rect &rect,
 
 
 /*
- * Positions the given 'rect' according to the window position and
- * window gravity.
+ * Positions 'rect' according to the client window geometry and window
+ * gravity.
  */
-static void applyGravity(bt::Rect &r,
-                         const bt::Rect &rect,
-                         const bt::EWMH::Strut &margin,
-                         int gravity) {
+static bt::Rect applyGravity(const bt::Rect &rect,
+                             const bt::EWMH::Strut &margin,
+                             int gravity) {
+  bt::Rect r;
+
   // apply horizontal window gravity
   switch (gravity) {
   default:
@@ -386,19 +390,24 @@ static void applyGravity(bt::Rect &r,
     r.setY(rect.y() - margin.top);
     break;
   }
+
+  r.setSize(rect.width() + margin.left + margin.right,
+            rect.height() + margin.top + margin.bottom);
+  return r;
 }
 
 
 /*
  * The reverse of the applyGravity function.
  *
- * Positions the bt::Rect r according to the frame window position and
- * window gravity.
+ * Positions 'rect' according to the frame window geometry and window
+ * gravity.
  */
-static void restoreGravity(bt::Rect &r,
-                           const bt::Rect &rect,
-                           const bt::EWMH::Strut &margin,
-                           int gravity) {
+static bt::Rect restoreGravity(const bt::Rect &rect,
+                               const bt::EWMH::Strut &margin,
+                               int gravity) {
+  bt::Rect r;
+
   // restore horizontal window gravity
   switch (gravity) {
   default:
@@ -452,30 +461,10 @@ static void restoreGravity(bt::Rect &r,
     r.setY(rect.y() + margin.top);
     break;
   }
-}
 
-
-/*
- * Set the sizes of all components of the window frame (the window
- * decorations).  These values are based upon the current style
- * settings and the client window's dimensions.
- */
-static bt::Rect upsize(const bt::Rect &rect,
-                       const ScreenResource::WindowStyle *style,
-                       const bt::EWMH::Strut &margin,
-                       bool shaded) {
-  /*
-    We first get the normal dimensions and use this to define the
-    width/height then we modify the height if shading is in effect.
-    If the shade state is not considered then frame.rect gets reset to
-    the normal window size on a reconfigure() call resulting in
-    improper dimensions appearing in move/resize and other events.
-  */
-  return bt::Rect(0, 0,
-                  rect.width() + margin.left + margin.right,
-                  (shaded
-                   ? style->title_height
-                   : rect.height() + margin.top + margin.bottom));
+  r.setSize(rect.width() - margin.left - margin.right,
+            rect.height() - margin.top - margin.bottom);
+  return r;
 }
 
 
@@ -1050,9 +1039,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
                        client.motif,
                        client.wmnormal,
                        client.wmprotocols);
-  ::update_margin(frame.margin,
-                  client.decorations,
-                  frame.style);
 
   // sanity checks
   if (client.wmhints.initial_state == IconicState
@@ -1083,12 +1069,12 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     createHandle();
 
   // apply the size and gravity to the frame
-  frame.rect = ::upsize(client.rect,
-                        frame.style,
-                        frame.margin,
-                        client.ewmh.shaded);
-  ::applyGravity(frame.rect, client.rect, frame.margin,
-                 client.wmnormal.win_gravity);
+  frame.margin = ::update_margin(client.decorations, frame.style);
+  frame.rect = ::applyGravity(client.rect,
+                              frame.margin,
+                              client.wmnormal.win_gravity);
+  if (client.ewmh.shaded)
+    frame.rect.setHeight(frame.style->title_height);
 
   associateClientWindow();
 
@@ -1634,23 +1620,29 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
 
 
 void BlackboxWindow::reconfigure(void) {
-  ::restoreGravity(client.rect, frame.rect, frame.margin,
-                   client.wmnormal.win_gravity);
+  // get the client window geometry as if it was unmanaged
+  bt::Rect r = frame.rect;
+  if (client.ewmh.shaded)
+    r.setHeight(client.rect.height() + frame.margin.top + frame.margin.bottom);
+  r = ::restoreGravity(r, frame.margin, client.wmnormal.win_gravity);
 
-  ::update_margin(frame.margin,
-                  client.decorations,
-                  frame.style);
-  frame.rect = ::upsize(client.rect,
-                        frame.style,
-                        frame.margin,
-                        client.ewmh.shaded);
+  // update the frame margin in case the style has changed
+  frame.margin = ::update_margin(client.decorations, frame.style);
 
-  ::applyGravity(frame.rect, client.rect, frame.margin,
-                 client.wmnormal.win_gravity);
-
-  positionWindows();
-  decorate();
-  redrawWindowFrame();
+  // get the frame window geometry from the client window geometry
+  // calculated above
+  r = ::applyGravity(r, frame.margin, client.wmnormal.win_gravity);
+  if (client.ewmh.shaded)
+    r.setHeight(frame.style->title_height);
+  if (isMaximized()) {
+    // make sure maximized windows have the correct size after a style
+    // change
+    remaximize();
+  } else {
+    // trick configure into working
+    frame.rect = bt::Rect();
+    configure(r);
+  }
 
   ungrabButtons();
   grabButtons();
@@ -2109,6 +2101,8 @@ void BlackboxWindow::maximize(unsigned int button) {
 
   // any maximize operation always unshades
   client.ewmh.shaded = false;
+  frame.rect.setHeight(client.rect.height() + frame.margin.top
+                       + frame.margin.bottom);
 
   if (isMaximized()) {
     client.ewmh.maxh = client.ewmh.maxv = false;
@@ -2153,13 +2147,7 @@ void BlackboxWindow::maximize(unsigned int button) {
 
   if (!isFullScreen()) {
     // store the current frame geometry, so that we can restore it later
-    frame.premax = ::upsize(client.rect,
-                            frame.style,
-                            frame.margin,
-                            false);
-    frame.premax.setPos(frame.rect.x(), frame.rect.y());
-
-    frame.rect = bt::Rect(); // trick configure into working
+    frame.premax = frame.rect;
 
     bt::Rect r = _screen->availableArea();
 
@@ -2173,6 +2161,9 @@ void BlackboxWindow::maximize(unsigned int button) {
     }
 
     r = ::constrain(r, frame.margin, client.wmnormal, TopLeft);
+
+    // trick configure into working
+    frame.rect = bt::Rect();
     configure(r);
 
     redrawAllButtons(); // in case it is not called in configure()
@@ -2205,7 +2196,7 @@ void BlackboxWindow::remaximize(void) {
 void BlackboxWindow::setShaded(bool shaded) {
   assert(hasWindowFunction(WindowFunctionShade));
 
-  if (!!client.ewmh.shaded == !!shaded)
+  if (client.ewmh.shaded == shaded)
     return;
 
   client.ewmh.shaded = shaded;
@@ -2249,14 +2240,13 @@ void BlackboxWindow::setFullScreen(bool b) {
                           WindowFunctionResize |
                           WindowFunctionShade |
                           WindowFunctionChangeLayer);
-    ::update_margin(frame.margin,
-                    client.decorations,
-                    frame.style);
+    frame.margin = ::update_margin(client.decorations, frame.style);
 
     if (!isMaximized())
       frame.premax = frame.rect;
 
-    frame.rect = bt::Rect(); // trick configure() into working
+    // trick configure() into working
+    frame.rect = bt::Rect();
 
     bt::Rect r = ::constrain(_screen->screenInfo().rect(), frame.margin,
                              client.wmnormal, TopLeft);
@@ -2272,14 +2262,15 @@ void BlackboxWindow::setFullScreen(bool b) {
                          client.motif,
                          client.wmnormal,
                          client.wmprotocols);
-    ::update_margin(frame.margin, client.decorations, frame.style);
+    frame.margin = ::update_margin(client.decorations, frame.style);
 
     if (client.decorations & WindowDecorationTitlebar)
       createTitlebar();
     if (client.decorations & WindowDecorationHandle)
       createHandle();
 
-    frame.rect = bt::Rect(); // trick configure() into working
+    // trick configure() into working
+    frame.rect = bt::Rect();
 
     if (!isMaximized()) {
       configure(frame.premax);
@@ -2884,12 +2875,8 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
                          client.motif,
                          client.wmnormal,
                          client.wmprotocols);
-    ::update_margin(frame.margin,
-                    client.decorations,
-                    frame.style);
 
     reconfigure();
-
     break;
   }
 
@@ -2903,7 +2890,6 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
 
     if (client.wmhints.window_group != None)
       ::update_window_group(client.wmhints.window_group, blackbox, this);
-
     break;
   }
 
@@ -2926,7 +2912,6 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
       redrawLabel();
 
     _screen->propagateWindowName(this);
-
     break;
   }
 
@@ -2934,43 +2919,15 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
     client.wmnormal = ::readWMNormalHints(blackbox, client.window,
                                           _screen->screenInfo());
 
-    if ((client.wmnormal.flags & (PMinSize|PMaxSize)) == (PMinSize|PMaxSize)) {
-      /*
-        The window now can/cannot resize itself, so the buttons need
-        to be regrabbed and the decorations updated.
-      */
-      ungrabButtons();
+    ::update_decorations(client.decorations,
+                         client.functions,
+                         isTransient(),
+                         client.ewmh,
+                         client.motif,
+                         client.wmnormal,
+                         client.wmprotocols);
 
-      ::update_decorations(client.decorations,
-                           client.functions,
-                           isTransient(),
-                           client.ewmh,
-                           client.motif,
-                           client.wmnormal,
-                           client.wmprotocols);
-      ::update_margin(frame.margin,
-                      client.decorations,
-                      frame.style);
-
-      // update frame.rect based on the new decorations
-      bt::Rect r = ::upsize(client.rect,
-                            frame.style,
-                            frame.margin,
-                            client.ewmh.shaded);
-      frame.rect.setSize(r.width(), r.height());
-
-      grabButtons();
-    }
-
-    /*
-      Update the current geometry by constraining it (the current
-      geometry) based on the information from the property.
-    */
-    bt::Rect r = ::constrain(frame.rect, frame.margin,
-                             client.wmnormal, TopLeft);
-    if (frame.rect != r)
-      configure(r);
-
+    reconfigure();
     break;
   }
 
@@ -2985,9 +2942,6 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
                            client.motif,
                            client.wmnormal,
                            client.wmprotocols);
-      ::update_margin(frame.margin,
-                      client.decorations,
-                      frame.style);
 
       reconfigure();
     } else if (event->atom == blackbox->motifWmHintsAtom()) {
@@ -3000,9 +2954,6 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
                            client.motif,
                            client.wmnormal,
                            client.wmprotocols);
-      ::update_margin(frame.margin,
-                      client.decorations,
-                      frame.style);
 
       reconfigure();
     } else if (event->atom == blackbox->ewmh().wmStrut()) {
@@ -3062,14 +3013,14 @@ void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent *
     bt::Rect req = frame.rect;
 
     if (event->value_mask & (CWX | CWY)) {
-      ::restoreGravity(client.rect, frame.rect, frame.margin,
-                       client.wmnormal.win_gravity);
+      req = ::restoreGravity(req, frame.margin, client.wmnormal.win_gravity);
+
       if (event->value_mask & CWX)
-        client.rect.setX(event->x);
+        req.setX(event->x);
       if (event->value_mask & CWY)
-        client.rect.setY(event->y);
-      ::applyGravity(req, client.rect, frame.margin,
-                     client.wmnormal.win_gravity);
+        req.setY(event->y);
+
+      req = ::applyGravity(req, frame.margin, client.wmnormal.win_gravity);
     }
 
     if (event->value_mask & (CWWidth | CWHeight)) {
@@ -3526,8 +3477,8 @@ void BlackboxWindow::restore(void) {
     setState(NormalState);
   }
 
-  ::restoreGravity(client.rect, frame.rect, frame.margin,
-                   client.wmnormal.win_gravity);
+  client.rect = ::restoreGravity(frame.rect, frame.margin,
+                                 client.wmnormal.win_gravity);
 
   blackbox->XGrabServer();
 
