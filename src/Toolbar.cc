@@ -1,5 +1,7 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
-// Toolbar.cc for Blackbox - an X11 Window manager
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
+//
+// Blackbox - an X11 Window manager
+//
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
 // Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
 //
@@ -52,6 +54,7 @@ extern "C" {
 #include "blackbox.hh"
 #include "GCCache.hh"
 #include "Image.hh"
+#include "Menu.hh"
 #include "Screen.hh"
 #include "Toolbar.hh"
 #include "Window.hh"
@@ -59,6 +62,106 @@ extern "C" {
 #include "Clientmenu.hh"
 #include "Workspacemenu.hh"
 #include "Slit.hh"
+
+
+class Toolbarmenu : public bt::Menu {
+public:
+  Toolbarmenu(bt::Application &app, unsigned int screen, Toolbar *toolbar);
+
+  void refresh(void);
+
+protected:
+  virtual void itemClicked(unsigned int id, unsigned int button);
+
+private:
+  Toolbar *_toolbar;
+
+  friend class Toolbar;
+};
+
+
+class ToolbarPlacementmenu : public bt::Menu {
+public:
+  ToolbarPlacementmenu(bt::Application &app, unsigned int screen,
+                       Toolbar *toolbar);
+
+protected:
+  virtual void itemClicked(unsigned int id, unsigned int button);
+
+private:
+  Toolbar *_toolbar;
+};
+
+
+Toolbarmenu::Toolbarmenu(bt::Application &app, unsigned int screen,
+                         Toolbar *toolbar)
+  : bt::Menu(app, screen), _toolbar(toolbar) {
+  ToolbarPlacementmenu *menu = new ToolbarPlacementmenu(app, screen, toolbar);
+  insertItem(bt::i18n(CommonSet, CommonPlacementTitle, "Placement"), menu, 1u);
+  insertSeparator();
+  insertItem(bt::i18n(CommonSet, CommonAlwaysOnTop, "Always on top"), 2u);
+  insertItem(bt::i18n(CommonSet, CommonAutoHide, "Auto Hide"), 3u);
+  insertSeparator();
+  insertItem(bt::i18n(ToolbarSet, ToolbarEditWkspcName,
+                      "Edit current workspace name"), 4u);
+}
+
+
+void Toolbarmenu::refresh(void) {
+  setItemChecked(2u, _toolbar->isOnTop());
+  setItemChecked(3u, _toolbar->doAutoHide());
+}
+
+
+void Toolbarmenu::itemClicked(unsigned int id, unsigned int button) {
+  if (button != 1) return;
+
+  switch (id) {
+  case 2u: // always on top
+    _toolbar->toggleOnTop();
+    break;
+
+  case 3u: // auto hide
+    _toolbar->toggleAutoHide();
+    break;
+
+  case 4u:
+    _toolbar->edit();
+    break;
+
+  default:
+    break;
+  } // switch
+}
+
+
+ToolbarPlacementmenu::ToolbarPlacementmenu(bt::Application &app,
+                                           unsigned int screen,
+                                           Toolbar *toolbar)
+  : bt::Menu(app, screen), _toolbar(toolbar) {
+  insertItem(bt::i18n(CommonSet, CommonPlacementTopLeft,
+                      "Top Left"), Toolbar::TopLeft);
+  insertItem(bt::i18n(CommonSet, CommonPlacementTopCenter,
+                      "Top Center"), Toolbar::TopCenter);
+  insertItem(bt::i18n(CommonSet, CommonPlacementTopRight,
+                      "Top Right"), Toolbar::TopRight);
+  insertSeparator();
+  insertItem(bt::i18n(CommonSet, CommonPlacementBottomLeft,
+                      "Bottom Left"), Toolbar::BottomLeft);
+  insertItem(bt::i18n(CommonSet, CommonPlacementBottomCenter,
+                      "Bottom Center"), Toolbar::BottomCenter);
+  insertItem(bt::i18n(CommonSet, CommonPlacementBottomRight,
+                      "Bottom Right"), Toolbar::BottomRight);
+}
+
+
+void ToolbarPlacementmenu::itemClicked(unsigned int id, unsigned int button) {
+  if (button != 1) return;
+
+  _toolbar->setPlacement((Toolbar::Placement) id);
+}
+
+
 
 
 static long aMinuteFromNow(void) {
@@ -89,7 +192,9 @@ Toolbar::Toolbar(BScreen *scrn) {
   editing = False;
   new_name_pos = 0;
 
-  toolbarmenu = new Toolbarmenu(this);
+  toolbarmenu =
+    new Toolbarmenu(*blackbox, screen->getScreenInfo().getScreenNumber(),
+                    this);
 
   display = blackbox->getXDisplay();
   XSetWindowAttributes attrib;
@@ -752,30 +857,24 @@ void Toolbar::buttonPressEvent(const XButtonEvent *be) {
   } else if (be->button == 2 && (! on_top)) {
     XLowerWindow(display, frame.window);
   } else if (be->button == 3) {
-    if (toolbarmenu->isVisible()) {
-      toolbarmenu->hide();
-    } else {
-      int x, y;
+    int x = be->x_root, y;
 
-      x = be->x_root - (toolbarmenu->getWidth() / 2);
-      y = be->y_root - (toolbarmenu->getHeight() / 2);
+    switch(screen->getToolbarPlacement()) {
+    case TopLeft:
+    case TopCenter:
+    case TopRight:
+      y = strut.top - screen->getBorderWidth();
+      break;
 
-      if (x < 0)
-        x = 0;
-      else if (x + toolbarmenu->getWidth() > screen->getWidth())
-        x = screen->getWidth() - toolbarmenu->getWidth();
+    default:
+      y = screen->getScreenInfo().getHeight() - strut.bottom +
+          screen->getBorderWidth();
+      break;
+    } // switch
 
-      if (y < 0)
-        y = 0;
-      else if (y + toolbarmenu->getHeight() > screen->getHeight())
-        y = screen->getHeight() - toolbarmenu->getHeight();
-
-      toolbarmenu->move(x, y);
-      toolbarmenu->show();
-    }
+    toolbarmenu->popup(x, y);
   }
 }
-
 
 
 void Toolbar::buttonReleaseEvent(const XButtonEvent *re) {
@@ -842,7 +941,7 @@ void Toolbar::leaveNotifyEvent(const XCrossingEvent *) {
 
   if (hidden) {
     if (hide_timer->isTiming()) hide_timer->stop();
-  } else if (! toolbarmenu->isVisible()) {
+  } else {
     if (! hide_timer->isTiming()) hide_timer->start();
   }
 }
@@ -882,12 +981,8 @@ void Toolbar::keyPressEvent(const XKeyEvent *ke) {
 
       Workspace *wkspc = screen->getCurrentWorkspace();
       wkspc->setName(new_workspace_name);
-      wkspc->getMenu()->hide();
 
-      screen->getWorkspacemenu()->changeItemLabel(wkspc->getID() + 2,
-                                                  wkspc->getName());
-      screen->getWorkspacemenu()->update();
-
+      screen->getWorkspacemenu()->changeItemLabel(wkspc->getID(), wkspc->getName());
       screen->updateDesktopNamesHint();
 
       new_workspace_name.erase();
@@ -990,116 +1085,20 @@ void Toolbar::toggleAutoHide(void) {
 }
 
 
-Toolbarmenu::Toolbarmenu(Toolbar *tb) : Basemenu(tb->screen) {
-  toolbar = tb;
-
-  setLabel(bt::i18n(ToolbarSet, ToolbarToolbarTitle, "Toolbar"));
-  setInternalMenu();
-
-  placementmenu = new Placementmenu(this);
-
-  insert(bt::i18n(CommonSet, CommonPlacementTitle, "Placement"),
-         placementmenu);
-  insert(bt::i18n(CommonSet, CommonAlwaysOnTop, "Always on top"), 1);
-  insert(bt::i18n(CommonSet, CommonAutoHide, "Auto hide"), 2);
-  insert(bt::i18n(ToolbarSet, ToolbarEditWkspcName,
-              "Edit current workspace name"), 3);
-
-  update();
-
-  if (toolbar->isOnTop()) setItemSelected(1, True);
-  if (toolbar->doAutoHide()) setItemSelected(2, True);
+void Toolbar::toggleOnTop(void) {
+  on_top = (! on_top);
+  if (on_top) screen->raiseWindows((WindowStack *) 0);
 }
 
 
-Toolbarmenu::~Toolbarmenu(void) {
-  delete placementmenu;
-}
-
-
-void Toolbarmenu::itemSelected(int button, unsigned int index) {
-  if (button != 1)
-    return;
-
-  BasemenuItem *item = find(index);
-  if (! item) return;
-
-  switch (item->function()) {
-  case 1: { // always on top
-    toolbar->on_top = ((toolbar->isOnTop()) ? False : True);;
-    setItemSelected(1, toolbar->on_top);
-
-    if (toolbar->isOnTop()) getScreen()->raiseWindows((WindowStack *) 0);
-    break;
-  }
-
-  case 2: { // auto hide
-    toolbar->toggleAutoHide();
-    setItemSelected(2, toolbar->do_auto_hide);
-
-    break;
-  }
-
-  case 3: { // edit current workspace name
-    toolbar->edit();
-    hide();
-
-    break;
-  }
-  } // switch
-}
-
-
-void Toolbarmenu::internal_hide(void) {
-  Basemenu::internal_hide();
-  if (toolbar->doAutoHide() && ! toolbar->isEditing())
-    toolbar->hide_handler.timeout();
-}
-
-
-void Toolbarmenu::reconfigure(void) {
-  placementmenu->reconfigure();
-
-  Basemenu::reconfigure();
-}
-
-
-Toolbarmenu::Placementmenu::Placementmenu(Toolbarmenu *tm)
-  : Basemenu(tm->toolbar->screen) {
-  setLabel(bt::i18n(ToolbarSet, ToolbarToolbarPlacement, "Toolbar Placement"));
-  setInternalMenu();
-  setMinimumSublevels(3);
-
-  insert(bt::i18n(CommonSet, CommonPlacementTopLeft, "Top Left"),
-         Toolbar::TopLeft);
-  insert(bt::i18n(CommonSet, CommonPlacementBottomLeft, "Bottom Left"),
-         Toolbar::BottomLeft);
-  insert(bt::i18n(CommonSet, CommonPlacementTopCenter, "Top Center"),
-         Toolbar::TopCenter);
-  insert(bt::i18n(CommonSet, CommonPlacementBottomCenter, "Bottom Center"),
-         Toolbar::BottomCenter);
-  insert(bt::i18n(CommonSet, CommonPlacementTopRight, "Top Right"),
-         Toolbar::TopRight);
-  insert(bt::i18n(CommonSet, CommonPlacementBottomRight, "Bottom Right"),
-         Toolbar::BottomRight);
-  update();
-}
-
-
-void Toolbarmenu::Placementmenu::itemSelected(int button, unsigned int index) {
-  if (button != 1)
-    return;
-
-  BasemenuItem *item = find(index);
-  if (! item) return;
-
-  getScreen()->saveToolbarPlacement(item->function());
-  hide();
-  getScreen()->getToolbar()->reconfigure();
+void Toolbar::setPlacement(Placement place)
+{
+  screen->saveToolbarPlacement(place);
+  reconfigure();
 
   // reposition the slit as well to make sure it doesn't intersect the
   // toolbar
-  getScreen()->getSlit()->reposition();
+  screen->getSlit()->reposition();
 }
 
 

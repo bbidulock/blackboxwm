@@ -81,7 +81,9 @@ extern "C" {
 #include "GCCache.hh"
 #include "Iconmenu.hh"
 #include "Image.hh"
+#include "Menu.hh"
 #include "Netwm.hh"
+#include "Resource.hh"
 #include "Screen.hh"
 #include "Slit.hh"
 #include "Rootmenu.hh"
@@ -541,6 +543,15 @@ void BScreen::rereadMenu(void) {
 
 
 void BScreen::LoadStyle(void) {
+  {
+    bt::Resource res(std::string(blackbox->getStyleFilename()));
+    if (! res.valid()) res.load(std::string(DEFAULTSTYLE));
+
+    bt::MenuStyle::get(*blackbox, getScreenInfo().getScreenNumber(),
+                       image_control)->load(res);
+  }
+
+
   resource.stylerc = XrmGetFileDatabase(blackbox->getStyleFilename());
   if (! resource.stylerc)
     resource.stylerc = XrmGetFileDatabase(DEFAULTSTYLE);
@@ -1010,12 +1021,12 @@ void BScreen::unmanageWindow(BlackboxWindow *w, bool remap) {
 
 void
 BScreen::raiseWindows(const bt::Netwm::WindowList* const workspace_stack) {
-  // the 13 represents the number of blackbox windows such as menus
+  // the 11 represents the number of blackbox windows such as menus
   const unsigned int workspace_stack_size =
     (workspace_stack) ? workspace_stack->size() : 0;
   std::vector<Window> session_stack(workspace_stack_size +
                                     workspacesList.size() +
-                                    rootmenuList.size() + 13);
+                                    rootmenuList.size() + 11);
   std::back_insert_iterator<std::vector<Window> > it(session_stack);
 
   XRaiseWindow(blackbox->getXDisplay(), iconmenu->getWindowID());
@@ -1035,10 +1046,6 @@ BScreen::raiseWindows(const bt::Netwm::WindowList* const workspace_stack) {
   *(it++) = slit->getMenu()->getDirectionmenu()->getWindowID();
   *(it++) = slit->getMenu()->getPlacementmenu()->getWindowID();
   *(it++) = slit->getMenu()->getWindowID();
-
-  *(it++) = toolbar->getMenu()->
-                          getPlacementmenu()->getWindowID();
-  *(it++) = toolbar->getMenu()->getWindowID();
 
   RootmenuList::iterator rit = rootmenuList.begin();
   for (; rit != rootmenuList.end(); ++rit)

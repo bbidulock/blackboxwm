@@ -1,5 +1,7 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
-// Toolbar.hh for Blackbox - an X11 Window manager
+//
+// Blackbox - an X11 Window manager
+//
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
 // Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
 //
@@ -29,47 +31,10 @@ extern "C" {
 }
 
 #include "Screen.hh"
-#include "Basemenu.hh"
 #include "Timer.hh"
 
 // forward declaration
-class Toolbar;
-
-class Toolbarmenu : public Basemenu {
-private:
-  class Placementmenu : public Basemenu {
-  private:
-    Placementmenu(const Placementmenu&);
-    Placementmenu& operator=(const Placementmenu&);
-
-  protected:
-    virtual void itemSelected(int button, unsigned int index);
-
-  public:
-    Placementmenu(Toolbarmenu *tm);
-  };
-
-  Toolbar *toolbar;
-  Placementmenu *placementmenu;
-
-  friend class Placementmenu;
-  friend class Toolbar;
-
-  Toolbarmenu(const Toolbarmenu&);
-  Toolbarmenu& operator=(const Toolbarmenu&);
-
-protected:
-  virtual void itemSelected(int button, unsigned int index);
-  virtual void internal_hide(void);
-
-public:
-  Toolbarmenu(Toolbar *tb);
-  ~Toolbarmenu(void);
-
-  inline Basemenu *getPlacementmenu(void) { return placementmenu; }
-
-  void reconfigure(void);
-};
+class Toolbarmenu;
 
 
 class Toolbar : public bt::TimeoutHandler, public bt::EventHandler {
@@ -107,8 +72,6 @@ private:
   size_t new_name_pos;
 
   friend class HideHandler;
-  friend class Toolbarmenu;
-  friend class Toolbarmenu::Placementmenu;
 
   void redrawPrevWorkspaceButton(bool pressed = False, bool redraw = False);
   void redrawNextWorkspaceButton(bool pressed = False, bool redraw = False);
@@ -159,14 +122,17 @@ public:
   void edit(void);
   void reconfigure(void);
   void toggleAutoHide(void);
+  void toggleOnTop(void);
 
   void redrawWindowLabel(bool redraw = False);
   void redrawWorkspaceLabel(bool redraw = False);
 
   virtual void timeout(void);
 
-  enum { TopLeft = 1, BottomLeft, TopCenter,
-         BottomCenter, TopRight, BottomRight };
+  enum Placement { TopLeft = 1, BottomLeft, TopCenter,
+                   BottomCenter, TopRight, BottomRight };
+
+  void setPlacement(Placement placement);
 };
 
 
