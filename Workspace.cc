@@ -213,9 +213,12 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
     delete [] tmp_stack;
 
     if (w->hasTransient()) {
-      re_enter = 1;
-      raiseWindow(w->Transient());
-      re_enter = 0;
+      if (! re_enter) {
+	re_enter = 1;
+	raiseWindow(w->Transient());
+	re_enter = 0;
+      } else
+	raiseWindow(w->Transient());
     }
 
     if (! re_enter && id == wsManager->currentWorkspaceID())
@@ -230,29 +233,31 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
   static int re_enter = 0;
   
   if (w->hasTransient() && ! re_enter) {
-    re_enter = 1;
     lowerWindow(w->Transient());
+  } else {
+    for (i = 0; i < windowList->count(); ++i)
+      if (*(stack + i) != w->frameWindow())
+	*(tmp_stack + (ii++)) = *(stack + i);
+    
+    *(tmp_stack) = w->frameWindow();
+    
+    for (i = 0; i < windowList->count(); ++i)
+      *(stack + i) = *(tmp_stack + i);
+    
+    delete [] tmp_stack;
+    
+    if (w->isTransient()) {
+      if (! re_enter) {
+	re_enter = 1;
+	lowerWindow(w->TransientFor());
+	re_enter = 0;
+      } else
+	lowerWindow(w->TransientFor());
+    }
+    
+    if (! re_enter && id == wsManager->currentWorkspaceID())
+      wsManager->stackWindows(stack, windowList->count());
   }
-
-  for (i = 0; i < windowList->count(); ++i)
-    if (*(stack + i) != w->frameWindow())
-      *(tmp_stack + (ii++)) = *(stack + i);
-  
-  *(tmp_stack) = w->frameWindow();
-  
-  for (i = 0; i < windowList->count(); ++i)
-    *(stack + i) = *(tmp_stack + i);
-
-  delete [] tmp_stack;
-
-  if (w->isTransient() && ! re_enter) {
-    re_enter = 1;
-    lowerWindow(w->TransientFor());
-  }
-
-  if (! re_enter && id == wsManager->currentWorkspaceID())
-    wsManager->stackWindows(stack, windowList->count());
-  re_enter = 0;
 }
 
 

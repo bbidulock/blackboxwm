@@ -21,7 +21,7 @@
 
 #ifndef __Blackbox_hh
 #define __Blackbox_hh
-#define __blackbox_version "beta zero point three three point three"
+#define __blackbox_version "beta zero point three three point four"
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
@@ -43,22 +43,27 @@ class BlackboxWindow;
 class Blackbox {
 private:
   // internal structures
-  typedef struct __window_search__ {
+  typedef struct GroupSearch {
+    BlackboxWindow *data;
+    Window window;
+  } GroupSearch;
+
+  typedef struct WindowSearch {
     BlackboxWindow *data;
     Window window;
   } WindowSearch;
 
-  typedef struct __icon_search__ {
+  typedef struct IconSearch {
     BlackboxIcon *data;
     Window window;
   } IconSearch;
 
-  typedef struct __menu_search__ {
+  typedef struct MenuSearch {
     Basemenu *data;
     Window window;
   } MenuSearch;
 
-  typedef struct __ws_manger_search__ {
+  typedef struct WSManagerSearch {
     WorkspaceManager *data;
     Window window;
   } WSManagerSearch;
@@ -113,6 +118,7 @@ private:
   LinkedList<MenuSearch> *menuSearchList;
   LinkedList<IconSearch> *iconSearchList;
   LinkedList<WSManagerSearch> *wsManagerSearchList;
+  LinkedList<GroupSearch> *groupSearchList;
 
   // internal variables for operation
   Rootmenu *rootmenu;
@@ -165,6 +171,7 @@ public:
   BlackboxWindow *searchWindow(Window);
   BlackboxIcon *searchIcon(Window);
   WorkspaceManager *searchWSManager(Window);
+  BlackboxWindow *searchGroup(Window, BlackboxWindow *);
 
   // window context operations
   void addWindow(BlackboxWindow *);
@@ -178,10 +185,12 @@ public:
   void saveWindowSearch(Window, BlackboxWindow *);
   void saveIconSearch(Window, BlackboxIcon *);
   void saveWSManagerSearch(Window, WorkspaceManager *);
+  void saveGroupSearch(Window, BlackboxWindow *);
   void removeMenuSearch(Window);
   void removeWindowSearch(Window);
   void removeIconSearch(Window);
   void removeWSManagerSearch(Window);
+  void removeGroupSearch(Window);
 
   // X resource database lookups
   unsigned long readDatabaseTexture(char *, char *);

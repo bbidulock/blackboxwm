@@ -1,6 +1,23 @@
 At the request of some people, here is a Change log starting with 0.33.0.
 Enjoy! :)
 
+
+Changes from 0.33.3 to 0.33.4:
+	- corrected a typo in the sample Blackbox.ad file to correctly show
+	  which resource to set for the menu file
+	- added moderate window group support for programs like netscape and 
+	  other motif applications... modified window stacking code and
+	  internal list code to support window groups (this makes transients
+	  behave properly... another step towards more complete ICCCM
+	  compliance)
+	- modified focus event handlers to stop applications from focusing out
+	  when pressing menubars... also window focus is returned to root if 
+	  the focus window is closed... if another window is under the focus
+	  window when it is closed... that window is awarded input focus
+	- fixed tiny little bug that didn't move the close button when resizing
+	  a window
+
+
 Changes from 0.33.2 to 0.33.3: 
 	- changed some of the menu code ("updated" in 0.33.1) back to the
 	  original 0.33.0, which seems to perform better.  Reason behind it? -

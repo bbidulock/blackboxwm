@@ -43,6 +43,7 @@
 BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window, Bool internal)
 {
   // set control members for operation
+  protocols.WM_TAKE_FOCUS = True;
   protocols.WM_DELETE_WINDOW = False;
   moving = resizing = shaded = maximized = visible = iconic = transient =
     focused = stuck = False;
@@ -83,18 +84,26 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window, Bool internal)
   getWMHints();
   XSizeHints sizehint;
   getWMNormalHints(&sizehint);
-
+  
   // determine if this is a transient or an internal window
   if (! internal_window) {
     Window win;
     if (XGetTransientForHint(display, client.window, &win))
-      if (win && (win != client.window_group) && (win != client.window))
-	if ((client.transient_for = blackbox->searchWindow(win)) != NULL) {
+      if (win && (win != client.window))
+	if ((client.transient_for = blackbox->searchWindow(win))
+	    != NULL) {
 	  client.transient_for->client.transient = this;	  
 	  transient = True;
+	} else if (win == client.window_group) {
+	  if ((client.transient_for = blackbox->searchGroup(win, this))
+	      != NULL) {
+	    client.transient_for->client.transient = this;
+	    transient = True;
+	  }
 	}
+    
   }
-
+  
   if ((! transient) && (! internal_window)) {
     resizable = True;
 
@@ -214,6 +223,9 @@ BlackboxWindow::~BlackboxWindow(void) {
     blackbox->removeWindow(this);
   }
 
+  if (client.window_group)
+    blackbox->removeGroupSearch(client.window_group);
+
   if (transient && client.transient_for)
     client.transient_for->client.transient = 0;
   
@@ -325,9 +337,6 @@ Window BlackboxWindow::createChildWindow(Window parent, int x, int y,
 
 
 void BlackboxWindow::associateClientWindow(void) {
-  protocols.WM_DELETE_WINDOW = False;
-  protocols.WM_TAKE_FOCUS = True;
-
   const unsigned long event_mask = StructureNotifyMask|PropertyChangeMask|
     EnterWindowMask|LeaveWindowMask|ColormapChangeMask|SubstructureNotifyMask|
     FocusChangeMask;
@@ -859,11 +868,14 @@ Bool BlackboxWindow::getWMHints(void) {
   else
     client.icon_mask = None;
   
-  if (wmhints->flags & WindowGroupHint)
-    client.window_group = wmhints->window_group;
-  else
+  if (wmhints->flags & WindowGroupHint) {
+    if (! client.window_group) {
+      client.window_group = wmhints->window_group;
+      blackbox->saveGroupSearch(client.window_group, this);
+    }
+  } else
     client.window_group = None;
-
+  
   XFree(wmhints);
   return True;
 }

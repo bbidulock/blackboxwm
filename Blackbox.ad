@@ -100,7 +100,7 @@ session.colorsPerChannel:                       5
 
 
 ! the menu file is not set in Blackbox.ad
-! blackbox*menuFile:              Not Set
+! session.menuFile:              Not Set
 
 ! the fonts to use
 session.titleFont:     -adobe-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*

@@ -170,6 +170,7 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   menuSearchList = new LinkedList<MenuSearch>;
   iconSearchList = new LinkedList<IconSearch>;
   wsManagerSearchList = new LinkedList<WSManagerSearch>;
+  groupSearchList = new LinkedList<GroupSearch>;
 
   XrmInitialize();
   LoadDefaults();
@@ -257,6 +258,7 @@ Blackbox::~Blackbox(void) {
   delete iconSearchList;
   delete menuSearchList;
   delete wsManagerSearchList;
+  delete groupSearchList;
   
   if (resource.font.title) XFreeFont(display, resource.font.title);
   if (resource.font.menu) XFreeFont(display, resource.font.menu);
@@ -455,15 +457,9 @@ void Blackbox::ProcessEvent(XEvent *e) {
     if ((eWin = searchWindow(e->xcrossing.window)) != NULL) {
       XGrabServer(display);
       
-      XSync(display, False);
-      XEvent event;
-      if (!XCheckTypedWindowEvent(display, eWin->clientWindow(),
-				 UnmapNotify, &event)) {
-	if ((! eWin->isFocused()) && eWin->isVisible()) {
+      if (validateWindow(eWin->clientWindow()))
+	if ((! eWin->isFocused()) && eWin->isVisible())
 	  eWin->setInputFocus();
-	}
-      } else
-	ProcessEvent(&event);
       
       XUngrabServer(display);
     } else if ((eMenu = searchMenu(e->xcrossing.window)) != NULL)
@@ -503,7 +499,8 @@ void Blackbox::ProcessEvent(XEvent *e) {
     BlackboxWindow *iWin = searchWindow(e->xfocus.window);
 
     if ((iWin != NULL) && (e->xfocus.mode != NotifyGrab) &&
-	(e->xfocus.mode != NotifyUngrab)) {
+	(e->xfocus.mode != NotifyUngrab) &&
+	(e->xfocus.mode != NotifyWhileGrabbed)) {
       iWin->setFocusFlag(True);
       focus_window_number = iWin->windowNumber();
     }
@@ -515,12 +512,12 @@ void Blackbox::ProcessEvent(XEvent *e) {
     BlackboxWindow *oWin = searchWindow(e->xfocus.window);
 
     if ((oWin != NULL) && (e->xfocus.mode != NotifyGrab) &&
-	(e->xfocus.mode != NotifyUngrab))
+	(e->xfocus.mode != NotifyUngrab) &&
+	(e->xfocus.mode != NotifyWhileGrabbed))
       oWin->setFocusFlag(False);
    
     if ((e->xfocus.mode == NotifyNormal) &&
-	(e->xfocus.detail == NotifyAncestor) &&
-	(! wsManager->currentWorkspace()->Count())) {
+	(e->xfocus.detail == NotifyAncestor)) {
       XSetInputFocus(display, PointerRoot, RevertToParent, CurrentTime);
       focus_window_number = -1;
     }
@@ -636,6 +633,26 @@ BlackboxWindow *Blackbox::searchWindow(Window window) {
 }
 
 
+BlackboxWindow *Blackbox::searchGroup(Window window, BlackboxWindow *win) {
+  if (validateWindow(window)) {
+    BlackboxWindow *w;
+    LinkedListIterator<GroupSearch> it(groupSearchList);
+    
+    for (; it.current(); it++) {
+      GroupSearch *tmp = it.current();
+      if (tmp)
+	if (tmp->window == window) {
+	  w = tmp->data;
+	  if (w->clientWindow() != win->clientWindow())
+	    return win;
+	}
+    }
+  }
+  
+  return 0;
+}
+
+
 Basemenu *Blackbox::searchMenu(Window window) {
   if (validateWindow(window)) {
     Basemenu *menu = NULL;
@@ -704,6 +721,14 @@ void Blackbox::saveWindowSearch(Window window, BlackboxWindow *data) {
 }
 
 
+void Blackbox::saveGroupSearch(Window window, BlackboxWindow *data) {
+  GroupSearch *tmp = new GroupSearch;
+  tmp->window = window;
+  tmp->data = data;
+  groupSearchList->insert(tmp);
+}
+
+
 void Blackbox::saveMenuSearch(Window window, Basemenu *data) {
   MenuSearch *tmp = new MenuSearch;
   tmp->window = window;
@@ -737,6 +762,21 @@ void Blackbox::removeWindowSearch(Window window) {
     if (tmp)
       if (tmp->window == window) {
 	windowSearchList->remove(tmp);
+	delete tmp;
+	break;
+      }
+  }
+}
+
+
+void Blackbox::removeGroupSearch(Window window) {
+  LinkedListIterator<GroupSearch> it(groupSearchList);
+  for (; it.current(); it++) {
+    GroupSearch *tmp = it.current();
+    
+    if (tmp)
+      if (tmp->window == window) {
+	groupSearchList->remove(tmp);
 	delete tmp;
 	break;
       }

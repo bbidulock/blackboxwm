@@ -246,6 +246,7 @@ Bool BImage::putPixel(unsigned int x, unsigned int y, unsigned long pixel) {
 
 XImage *BImage::convertToXImage(Bool dither) {
   int count = 0, bpp = 0;
+
   XPixmapFormatValues *pmv = XListPixmapFormats(blackbox->control(), &count);
 
   for (int i = 0; i < count; i++)
@@ -267,6 +268,12 @@ XImage *BImage::convertToXImage(Bool dither) {
   unsigned int wh = width * height;
   unsigned long *p = data;
     
+  // hmm... this is a quick fix (read: UGLY HACK) for 15bpp displays.  Since
+  // 15bpp servers still use 16 bits per pixels, the only different between
+  // the two is how the rgb elements are shifted.  Hopefully I will find a way
+  // to remedy this
+  if (depth == 15) bpp = 15;
+
   switch (bpp) {
   case 32: {
     unsigned char *im = (unsigned char *) image->data;
