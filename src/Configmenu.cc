@@ -61,6 +61,17 @@ private:
 };
 
 
+class ConfigDithermenu : public bt::Menu {
+public:
+  ConfigDithermenu(bt::Application &app, unsigned int screen);
+
+  void refresh(void);
+
+protected:
+  void itemClicked(unsigned int id, unsigned int button);
+};
+
+
 Configmenu::Configmenu(bt::Application &app, unsigned int screen,
                        BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen) {
@@ -78,6 +89,7 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
 
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuImageDithering,
                       "Image Dithering"),
+             new ConfigDithermenu(app, screen),
              ConfigmenuImageDithering);
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuOpaqueMove,
                       "Opaque Window Moving"),
@@ -98,8 +110,6 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
 
 
 void Configmenu::refresh(void) {
-  setItemChecked(ConfigmenuImageDithering,
-                 bt::Image::isDitherEnabled());
   setItemChecked(ConfigmenuOpaqueMove,
                  _bscreen->doOpaqueMove());
   setItemChecked(ConfigmenuFullMax,
@@ -117,10 +127,6 @@ void Configmenu::itemClicked(unsigned int id, unsigned int button) {
   if (button != 1) return;
 
   switch (id) {
-  case ConfigmenuImageDithering: // dither
-    bt::Image::setDitherEnabled(! bt::Image::isDitherEnabled());
-    break;
-
   case ConfigmenuOpaqueMove: // opaque move
     _bscreen->saveOpaqueMove(! _bscreen->doOpaqueMove());
     break;
@@ -279,4 +285,40 @@ void ConfigPlacementmenu::itemClicked(unsigned int id, unsigned int button) {
     _bscreen->saveColPlacementDirection(id);
     break;
   } // switch
+}
+
+
+ConfigDithermenu::ConfigDithermenu(bt::Application &app,
+                                   unsigned int screen)
+  : bt::Menu(app, screen) {
+  setTitle(bt::i18n(ConfigmenuSet, ConfigmenuImageDithering,
+                    "Image Dithering"));
+  showTitle();
+
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuNoDithering,
+                      "No Dithering"),
+             bt::NoDither);
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuOrderedDithering,
+                      "Ordered Dithering"),
+             bt::OrderedDither);
+  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuFloydSteinbergDithering,
+                      "Floyd-Steinberg Dithering"),
+             bt::FloydSteinbergDither);
+}
+
+
+void ConfigDithermenu::refresh(void) {
+  setItemChecked(bt::NoDither,
+                 bt::Image::ditherMode() == bt::NoDither);
+  setItemChecked(bt::OrderedDither,
+                 bt::Image::ditherMode() == bt::OrderedDither);
+  setItemChecked(bt::FloydSteinbergDither,
+                 bt::Image::ditherMode() == bt::FloydSteinbergDither);
+}
+
+
+void ConfigDithermenu::itemClicked(unsigned int id, unsigned int button) {
+  if (button != 1) return;
+
+  bt::Image::setDitherMode((bt::DitherMode) id);
 }

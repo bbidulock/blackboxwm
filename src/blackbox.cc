@@ -492,7 +492,7 @@ void Blackbox::save_rc(void) {
   XrmPutLineResource(&new_blackboxrc, rc_string);
 
   sprintf(rc_string, "session.colorsPerChannel:  %d",
-          resource.colors_per_channel);
+          bt::Image::colorsPerChannel());
   XrmPutLineResource(&new_blackboxrc, rc_string);
 
   sprintf(rc_string, "session.doubleClickInterval:  %lu",
@@ -549,8 +549,13 @@ void Blackbox::save_rc(void) {
             ((screen->doOpaqueMove()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
-    sprintf(rc_string, "session.imageDither: %s",
-            (bt::Image::isDitherEnabled() ? "True" : "False"));
+    const char *ditherMode;
+    switch (bt::Image::ditherMode()) {
+    case bt::NoDither:             ditherMode = "NoDither";             break;
+    case bt::OrderedDither:        ditherMode = "OrderedDither";        break;
+    case bt::FloydSteinbergDither: ditherMode = "FloydSteinbergDither"; break;
+    }
+    sprintf(rc_string, "session.imageDither: %s", ditherMode);
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.fullMaximization: %s", screen_number,
@@ -696,13 +701,10 @@ void Blackbox::load_rc(void) {
     resource.menu_file = DEFAULTMENU;
   }
 
-  resource.colors_per_channel = 4;
   if (XrmGetResource(database, "session.colorsPerChannel",
                      "Session.ColorsPerChannel", &value_type, &value) &&
       sscanf(value.addr, "%d", &int_value) == 1) {
-    resource.colors_per_channel = int_value;
-    if (resource.colors_per_channel < 2) resource.colors_per_channel = 2;
-    if (resource.colors_per_channel > 6) resource.colors_per_channel = 6;
+    bt::Image::setColorsPerChannel(int_value);
   }
 
   if (XrmGetResource(database, "session.styleFile", "Session.StyleFile",
@@ -862,7 +864,7 @@ void Blackbox::load_rc(BScreen *screen) {
                      &value)) {
     std::string search = value.addr;
     std::string::const_iterator it = search.begin(),
-      end = search.end();
+                               end = search.end();
     while (1) {
       std::string::const_iterator tmp = it; // current string.begin()
       it = std::find(tmp, end, ',');   // look for comma between tmp and end
@@ -990,12 +992,17 @@ void Blackbox::load_rc(BScreen *screen) {
     screen->saveEdgeSnapThreshold(int_value);
   }
 
-  screen->saveImageDither(True);
+  bt::DitherMode ditherMode = bt::OrderedDither;
   if (XrmGetResource(database, "session.imageDither", "Session.ImageDither",
-                     &value_type, &value) &&
-      ! strncasecmp("false", value.addr, value.size)) {
-    screen->saveImageDither(False);
+                     &value_type, &value)) {
+    if (! strncasecmp("ordereddither", value.addr, value.size))
+      ditherMode = bt::OrderedDither;
+    else if (! strncasecmp("floydsteinbergdither", value.addr, value.size))
+      ditherMode = bt::FloydSteinbergDither;
+    else if (! strncasecmp("nodither", value.addr, value.size))
+      ditherMode = bt::NoDither;
   }
+  bt::Image::setDitherMode(ditherMode);
 
   screen->saveOpaqueMove(False);
   if (XrmGetResource(database, "session.opaqueMove", "Session.OpaqueMove",

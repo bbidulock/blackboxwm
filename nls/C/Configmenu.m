@@ -40,3 +40,9 @@ $ #TopBottom
 # Top to Bottom
 $ #BottomTop
 # Bottom to Top
+$ #NoDithering
+# No Dithering
+$ #OrderedDithering
+# Ordered Dithering
+$ #FloydSteinbergDithering
+# Floyd-Steinberg Dithering

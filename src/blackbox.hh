@@ -77,7 +77,6 @@ private:
     Time double_click_interval;
 
     std::string menu_file, style_file;
-    int colors_per_channel;
     timeval auto_raise_delay;
     unsigned long cache_life, cache_max;
   } resource;
@@ -150,9 +149,6 @@ public:
     { return resource.style_file.c_str(); }
   inline const char *getMenuFilename(void) const
     { return resource.menu_file.c_str(); }
-
-  inline int getColorsPerChannel(void) const
-    { return resource.colors_per_channel; }
 
   inline const timeval &getAutoRaiseDelay(void) const
     { return resource.auto_raise_delay; }
