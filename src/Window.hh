@@ -50,6 +50,7 @@ enum WindowFunction {
   WindowFunctionMaximize        = 1<<4,
   WindowFunctionClose           = 1<<5,
   WindowFunctionChangeWorkspace = 1<<6,
+  WindowFunctionChangeLayer     = 1<<7,
   NoWindowFunctions             = 0,
   AllWindowFunctions            = (WindowFunctionResize |
                                    WindowFunctionMove |
@@ -57,7 +58,8 @@ enum WindowFunction {
                                    WindowFunctionIconify |
                                    WindowFunctionMaximize |
                                    WindowFunctionClose |
-                                   WindowFunctionChangeWorkspace)
+                                   WindowFunctionChangeWorkspace |
+                                   WindowFunctionChangeLayer)
 };
 typedef unsigned char WindowFunctionFlags;
 
@@ -369,7 +371,7 @@ public:
 
   inline bool isMaximized(void) const
   { return client.ewmh.maxh || client.ewmh.maxv; }
-  // ### change to setMaximized()
+  // ### change to setMaximized()?
   void maximize(unsigned int button);
   void remaximize(void);
 

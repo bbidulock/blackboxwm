@@ -113,7 +113,8 @@ static void update_decorations(WindowDecorationFlags &decorations,
                      WindowDecorationMaximize);
     functions   &= ~(WindowFunctionShade |
                      WindowFunctionIconify |
-                     WindowFunctionMaximize);
+                     WindowFunctionMaximize |
+                     WindowFunctionChangeLayer);
     break;
 
   case WindowTypeDesktop:
@@ -1673,6 +1674,8 @@ void BlackboxWindow::hide(void) {
 
 
 void BlackboxWindow::close(void) {
+  assert(hasWindowFunction(WindowFunctionClose));
+
   XEvent ce;
   ce.xclient.type = ClientMessage;
   ce.xclient.message_type = blackbox->getWMProtocolsAtom();
@@ -1690,6 +1693,8 @@ void BlackboxWindow::close(void) {
 
 
 void BlackboxWindow::iconify(void) {
+  assert(hasWindowFunction(WindowFunctionIconify));
+
   if (client.state.iconic) return;
 
   if (isTransient() && client.transient_for != (BlackboxWindow *) ~0ul
@@ -1713,6 +1718,8 @@ void BlackboxWindow::iconify(void) {
 
 
 void BlackboxWindow::maximize(unsigned int button) {
+  assert(hasWindowFunction(WindowFunctionMaximize));
+
   if (isMaximized()) {
     client.ewmh.maxh = client.ewmh.maxv = false;
 
@@ -1801,7 +1808,7 @@ void BlackboxWindow::remaximize(void) {
 
 
 void BlackboxWindow::setShaded(bool shaded) {
-  assert(client.decorations & WindowDecorationTitlebar);
+  assert(hasWindowFunction(WindowFunctionShade));
 
   if (!!client.ewmh.shaded == !!shaded)
     return;
@@ -1831,6 +1838,8 @@ void BlackboxWindow::setShaded(bool shaded) {
 
 
 void BlackboxWindow::setFullScreen(bool b) {
+  assert(windowType() == WindowTypeNormal);
+
   if (!!client.ewmh.fullscreen == !!b)
     return;
 
@@ -1840,7 +1849,8 @@ void BlackboxWindow::setFullScreen(bool b) {
     client.decorations = NoWindowDecorations;
     client.functions &= ~(WindowFunctionMove |
                           WindowFunctionResize |
-                          WindowFunctionShade);
+                          WindowFunctionShade |
+                          WindowFunctionChangeLayer);
 
     if (!isMaximized())
       client.premax = frame.rect;
@@ -1989,12 +1999,16 @@ void BlackboxWindow::setState(unsigned long new_state) {
     if (hasWindowFunction(WindowFunctionMove))
       atoms.push_back(netwm.wmActionMove());
 
-    if (hasWindowFunction(WindowFunctionResize)) {
+    if (hasWindowFunction(WindowFunctionResize))
       atoms.push_back(netwm.wmActionResize());
+
+    if (hasWindowFunction(WindowFunctionMaximize)) {
       atoms.push_back(netwm.wmActionMaximizeHorz());
       atoms.push_back(netwm.wmActionMaximizeVert());
-      atoms.push_back(netwm.wmActionFullscreen());
     }
+
+    if (windowType() == WindowTypeNormal)
+      atoms.push_back(netwm.wmActionFullscreen());
   }
 
   if (hasWindowFunction(WindowFunctionClose))
@@ -2400,23 +2414,23 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
 
     client.wmnormal.win_gravity = old_gravity;
   } else if (event->message_type == netwm.wmDesktop()) {
-    const unsigned int desktop = event->data.l[0];
-    setWorkspace(desktop);
+    if (hasWindowFunction(WindowFunctionChangeWorkspace)) {
+      const unsigned int desktop = event->data.l[0];
+      setWorkspace(desktop);
 
-    if (isVisible() && workspace() != bt::BSENTINEL
-        && workspace() != screen->currentWorkspace()) {
-      hide();
-    } else if (!isVisible()
-               && (workspace() == bt::BSENTINEL
-                   || workspace() == screen->currentWorkspace())) {
-      show();
+      if (isVisible() && workspace() != bt::BSENTINEL
+          && workspace() != screen->currentWorkspace()) {
+        hide();
+      } else if (!isVisible()
+                 && (workspace() == bt::BSENTINEL
+                     || workspace() == screen->currentWorkspace())) {
+        show();
+      }
     }
   } else if (event->message_type == netwm.wmState()) {
     Atom action = event->data.l[0],
           first = event->data.l[1],
          second = event->data.l[2];
-
-    int max_horz = 0, max_vert = 0;
 
     if (first == netwm.wmStateModal() || second == netwm.wmStateModal()) {
       if ((action == netwm.wmStateAdd() ||
@@ -2426,31 +2440,53 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
       else
         client.ewmh.modal = false;
     }
-    if (first == netwm.wmStateMaximizedHorz() ||
-        second == netwm.wmStateMaximizedHorz()) {
-      if (action == netwm.wmStateAdd()
-          || (action == netwm.wmStateToggle() && !client.ewmh.maxh))
-        max_horz = 1;
-      else
-        max_horz = -1;
+
+    if (hasWindowFunction(WindowFunctionMaximize)) {
+      int max_horz = 0, max_vert = 0;
+
+      if (first == netwm.wmStateMaximizedHorz() ||
+          second == netwm.wmStateMaximizedHorz()) {
+        max_horz = ((action == netwm.wmStateAdd()
+                     || (action == netwm.wmStateToggle()
+                         && !client.ewmh.maxh))
+                    ? 1 : -1);
+      }
+
+      if (first == netwm.wmStateMaximizedVert() ||
+          second == netwm.wmStateMaximizedVert()) {
+        max_vert = ((action == netwm.wmStateAdd()
+                     || (action == netwm.wmStateToggle()
+                         && !client.ewmh.maxv))
+                    ? 1 : -1);
+      }
+
+      if (max_horz != 0 || max_vert != 0) {
+        if (isMaximized())
+          maximize(0);
+        unsigned int button = 0u;
+        if (max_horz == 1 && max_vert != 1)
+          button = 3u;
+        else if (max_vert == 1 && max_horz != 1)
+          button = 2u;
+        else if (max_vert == 1 && max_horz == 1)
+          button = 1u;
+        if (button)
+          maximize(button);
+      }
     }
-    if (first == netwm.wmStateMaximizedVert() ||
-        second == netwm.wmStateMaximizedVert()) {
-      if (action == netwm.wmStateAdd()
-          || (action == netwm.wmStateToggle() && !client.ewmh.maxv))
-        max_vert = 1;
-      else
-        max_vert = -1;
+
+    if (hasWindowFunction(WindowFunctionShade)) {
+      if (first == netwm.wmStateShaded() ||
+          second == netwm.wmStateShaded()) {
+        if (action == netwm.wmStateRemove())
+          setShaded(false);
+        else if (action == netwm.wmStateAdd())
+          setShaded(true);
+        else if (action == netwm.wmStateToggle())
+          setShaded(!isShaded());
+      }
     }
-    if (first == netwm.wmStateShaded() ||
-        second == netwm.wmStateShaded()) {
-      if (action == netwm.wmStateRemove())
-        setShaded(false);
-      else if (action == netwm.wmStateAdd())
-        setShaded(true);
-      else if (action == netwm.wmStateToggle())
-        setShaded(!isShaded());
-    }
+
     if (first == netwm.wmStateSkipTaskbar()
         || second == netwm.wmStateSkipTaskbar()
         || first == netwm.wmStateSkipPager()
@@ -2471,6 +2507,7 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
       // least make sure these are present in _NET_WM_STATE
       setState(client.current_state);
     }
+
     if (first == netwm.wmStateHidden() ||
         second == netwm.wmStateHidden()) {
       /*
@@ -2478,52 +2515,45 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
         application
       */
     }
-    if (first == netwm.wmStateFullscreen() ||
-        second == netwm.wmStateFullscreen()) {
-      if (action == netwm.wmStateAdd() ||
-          (action == netwm.wmStateToggle() &&
-           ! client.ewmh.fullscreen)) {
-        setFullScreen(true);
-      } else if (action == netwm.wmStateToggle() ||
-                 action == netwm.wmStateRemove()) {
-        setFullScreen(false);
-      }
-    }
-    if (first == netwm.wmStateAbove() ||
-        second == netwm.wmStateAbove()) {
-      if (action == netwm.wmStateAdd() ||
-          (action == netwm.wmStateToggle() &&
-           layer() != StackingList::LayerAbove)) {
-        screen->changeLayer(this, StackingList::LayerAbove);
-      } else if (action == netwm.wmStateToggle() ||
-                 action == netwm.wmStateRemove()) {
-        screen->changeLayer(this, StackingList::LayerNormal);
-      }
-    }
-    if (first == netwm.wmStateBelow() ||
-        second == netwm.wmStateBelow()) {
-      if (action == netwm.wmStateAdd() ||
-          (action == netwm.wmStateToggle() &&
-           layer() != StackingList::LayerBelow)) {
-        screen->changeLayer(this, StackingList::LayerBelow);
-      } else if (action == netwm.wmStateToggle() ||
-                 action == netwm.wmStateRemove()) {
-        screen->changeLayer(this, StackingList::LayerNormal);
+
+    if (windowType() == WindowTypeNormal) {
+      if (first == netwm.wmStateFullscreen() ||
+          second == netwm.wmStateFullscreen()) {
+        if (action == netwm.wmStateAdd() ||
+            (action == netwm.wmStateToggle() &&
+             ! client.ewmh.fullscreen)) {
+          setFullScreen(true);
+        } else if (action == netwm.wmStateToggle() ||
+                   action == netwm.wmStateRemove()) {
+          setFullScreen(false);
+        }
       }
     }
 
-    if (max_horz != 0 || max_vert != 0) {
-      if (isMaximized())
-        maximize(0);
-      unsigned int button = 0u;
-      if (max_horz == 1 && max_vert != 1)
-        button = 3u;
-      else if (max_vert == 1 && max_horz != 1)
-        button = 2u;
-      else if (max_vert == 1 && max_horz == 1)
-        button = 1u;
-      if (button)
-        maximize(button);
+    if (hasWindowFunction(WindowFunctionChangeLayer)) {
+      if (first == netwm.wmStateAbove() ||
+          second == netwm.wmStateAbove()) {
+        if (action == netwm.wmStateAdd() ||
+            (action == netwm.wmStateToggle() &&
+             layer() != StackingList::LayerAbove)) {
+          screen->changeLayer(this, StackingList::LayerAbove);
+        } else if (action == netwm.wmStateToggle() ||
+                   action == netwm.wmStateRemove()) {
+          screen->changeLayer(this, StackingList::LayerNormal);
+        }
+      }
+
+      if (first == netwm.wmStateBelow() ||
+          second == netwm.wmStateBelow()) {
+        if (action == netwm.wmStateAdd() ||
+            (action == netwm.wmStateToggle() &&
+             layer() != StackingList::LayerBelow)) {
+          screen->changeLayer(this, StackingList::LayerBelow);
+        } else if (action == netwm.wmStateToggle() ||
+                   action == netwm.wmStateRemove()) {
+          screen->changeLayer(this, StackingList::LayerNormal);
+        }
+      }
     }
   }
 }
@@ -2768,7 +2798,9 @@ void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent *
   if (event->value_mask & CWBorderWidth)
     client.old_bw = event->border_width;
 
-  if (event->value_mask & (CWX | CWY | CWWidth | CWHeight)) {
+  if (event->value_mask & (CWX | CWY | CWWidth | CWHeight)
+      && hasWindowFunction(WindowFunctionMove)
+      && hasWindowFunction(WindowFunctionResize)) {
     bt::Rect req = frame.rect;
 
     if (event->value_mask & (CWX | CWY)) {
