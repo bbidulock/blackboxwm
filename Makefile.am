@@ -21,6 +21,10 @@ MAINTAINERCLEANFILES	= Makefile.in \
 			  missing \
 			  mkinstalldirs
 
+LIBTOOL_DEPS =		@LIBTOOLS_DEPS@
+libtool: $(LIBTOOL_DEPS)
+	$(SHELL) ./config.status --recheck
+
 uninstall-local:
 	-rmdir $(pkgdatadir)
 

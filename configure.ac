@@ -31,6 +31,7 @@ AC_PROG_INSTALL
 dnl libbt shouldn't be shared by default (yet)
 AC_DISABLE_SHARED
 AC_PROG_LIBTOOL
+AC_SUBST(LIBTOOL_DEPS)
 
 AC_CHECK_PROGS([regex_cmd], [sed])
 if test "x$regex_cmd" = "x"; then
