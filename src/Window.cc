@@ -902,9 +902,8 @@ void BlackboxWindow::getWMHints(void) {
   client.window_group = None;
 
   XWMHints *wmhint = XGetWMHints(blackbox->getXDisplay(), client.window);
-  if (! wmhint) {
+  if (! wmhint)
     return;
-  }
 
   if (wmhint->flags & InputHint) {
     if (wmhint->input == True) {
@@ -2324,19 +2323,21 @@ void BlackboxWindow::configureRequestEvent(XConfigureRequestEvent *cr) {
     client.old_bw = cr->border_width;
 
   if (cr->value_mask & CWX)
-    cx = cr->x - frame.margin.left;
+    cx = cr->x;
 
   if (cr->value_mask & CWY)
-    cy = cr->y - frame.margin.top;
+    cy = cr->y;
 
   if (cr->value_mask & CWWidth)
-    cw = cr->width + frame.margin.left + frame.margin.right;
+    cw = cr->width;
 
   if (cr->value_mask & CWHeight)
-    ch = cr->height + frame.margin.top + frame.margin.bottom;
+    ch = cr->height;
 
   if (frame.rect != Rect(cx, cy, cw, ch))
     configure(cx, cy, cw, ch);
+
+  fprintf(stderr, "after configure: x: %d, y: %d, w: %d, h: %d\n", frame.rect.x(), frame.rect.y(), frame.rect.width(), frame.rect.height());
 
   if (cr->value_mask & CWStackMode) {
     switch (cr->detail) {
