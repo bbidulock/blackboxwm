@@ -1180,8 +1180,8 @@ void BlackboxWindow::configure(int dx, int dy,
   Bool send_event = (frame.rect.x() != dx || frame.rect.y() != dy);
 
   if ((dw != frame.rect.width()) || (dh != frame.rect.height())) {
-    if ((((signed) frame.rect.width()) + dx) < 0) dx = 0;
-    if ((((signed) frame.rect.height()) + dy) < 0) dy = 0;
+    if ((static_cast<signed>(frame.rect.width()) + dx) < 0) dx = 0;
+    if ((static_cast<signed>(frame.rect.height()) + dy) < 0) dy = 0;
 
     frame.rect.setRect(dx, dy, dw, dh);
     downsize();
@@ -1265,21 +1265,21 @@ void BlackboxWindow::configureShape(void) {
 Bool BlackboxWindow::setInputFocus(void) {
   if (flags.focused) return True;
 
-  if (((signed) (frame.rect.x() + frame.rect.width())) < 0) {
-    if (((signed) (frame.rect.y() + frame.y_border)) < 0)
+  if ((frame.rect.right()) < 0) {
+    if ((frame.rect.y() + frame.y_border) < 0)
       configure(frame.border_w, frame.border_w,
                 frame.rect.width(), frame.rect.height());
-    else if (frame.rect.y() > (signed) screen->getHeight())
+    else if (frame.rect.y() > static_cast<signed>(screen->getHeight()))
       configure(frame.border_w, screen->getHeight() - frame.rect.height(),
                 frame.rect.width(), frame.rect.height());
     else
       configure(frame.border_w, frame.rect.y() + frame.border_w,
                 frame.rect.width(), frame.rect.height());
-  } else if (frame.rect.x() > (signed) screen->getWidth()) {
-    if (((signed) (frame.rect.y() + frame.y_border)) < 0)
+  } else if (frame.rect.x() > static_cast<signed>(screen->getWidth())) {
+    if ((frame.rect.y() + frame.y_border) < 0)
       configure(screen->getWidth() - frame.rect.width(), frame.border_w,
                 frame.rect.width(), frame.rect.height());
-    else if (frame.rect.y() > (signed) screen->getHeight())
+    else if (frame.rect.y() > static_cast<signed>(screen->getHeight()))
       configure(screen->getWidth() - frame.rect.width(),
                 screen->getHeight() - frame.rect.height(),
                 frame.rect.width(), frame.rect.height());
@@ -1728,8 +1728,8 @@ void BlackboxWindow::setState(unsigned long new_state) {
   current_state = new_state;
 
   unsigned long state[2];
-  state[0] = (unsigned long) current_state;
-  state[1] = (unsigned long) None;
+  state[0] = current_state;
+  state[1] = None;
   XChangeProperty(blackbox->getXDisplay(), client.window,
                   blackbox->getWMStateAtom(), blackbox->getWMStateAtom(), 32,
                   PropModeReplace, (unsigned char *) state, 2);
@@ -1760,7 +1760,7 @@ Bool BlackboxWindow::getState(void) {
   }
 
   if (nitems >= 1) {
-    current_state = (unsigned long) state[0];
+    current_state = state[0];
 
     ret = True;
   }
@@ -1852,16 +1852,12 @@ void BlackboxWindow::restoreAttributes(void) {
 void BlackboxWindow::setGravityOffsets(void) {
   // x coordinates for each gravity type
   const int x_west = client.rect.x();
-  const int x_east = client.rect.x() + client.rect.width() -
-                     frame.rect.width();
-  const int x_center = client.rect.x() + client.rect.width() -
-                       frame.rect.width()/2;
+  const int x_east = client.rect.right() - frame.rect.width();
+  const int x_center = client.rect.right() - frame.rect.width()/2;
   // y coordinates for each gravity type
   const int y_north = client.rect.y();
-  const int y_south = client.rect.y() + client.rect.height() -
-                      frame.rect.height();
-  const int y_center = client.rect.y() + client.rect.height() -
-                       frame.rect.height()/2;
+  const int y_south = client.rect.bottom() - frame.rect.height();
+  const int y_center = client.rect.bottom() - (frame.rect.height() / 2);
 
   switch (client.win_gravity) {
   default:
@@ -1892,14 +1888,12 @@ void BlackboxWindow::setGravityOffsets(void) {
 void BlackboxWindow::restoreGravity(void) {
   // x coordinates for each gravity type
   const int x_west = frame.rect.x();
-  const int x_east = frame.rect.x() + frame.rect.width() -
-                     client.rect.width();
+  const int x_east = frame.rect.right() - client.rect.width();
   const int x_center = frame.rect.x() + (frame.rect.width()/2) -
                        client.rect.width();
   // y coordinates for each gravity type
   const int y_north = frame.rect.y();
-  const int y_south = frame.rect.y() + frame.rect.height() -
-                      client.rect.height();
+  const int y_south = frame.rect.bottom() - client.rect.height();
   const int y_center = frame.rect.y() + (frame.rect.height()/2) -
                        client.rect.height();
 
@@ -2379,24 +2373,24 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
     } else {
       mx = be->x_root - (windowmenu->getWidth() / 2);
 
-      if (be->y <= (signed) frame.bevel_w)
+      if (be->y <= static_cast<signed>(frame.bevel_w))
         my = frame.rect.y() + frame.y_border;
       else
         my = be->y_root - (windowmenu->getHeight() / 2);
     }
 
-    if (mx > (signed) (frame.rect.x() + frame.rect.width() -
-                       windowmenu->getWidth()))
-      mx = frame.rect.x() + frame.rect.width() - windowmenu->getWidth();
+    if (mx >
+        (frame.rect.right() - static_cast<signed>(windowmenu->getWidth())))
+      mx = frame.rect.right() - windowmenu->getWidth();
     if (mx < frame.rect.x())
       mx = frame.rect.x();
 
-    if (my > (signed) (frame.rect.y() + frame.y_handle -
-                       windowmenu->getHeight()))
+    if (my > (frame.rect.y() + frame.y_handle -
+              static_cast<signed>(windowmenu->getHeight())))
       my = frame.rect.y() + frame.y_handle - windowmenu->getHeight();
-    if (my < (signed) (frame.rect.y() +
-                       ((decorations & Decor_Titlebar) ?
-                        frame.title_h : frame.y_border)))
+    if (my < (frame.rect.y() +
+              static_cast<signed>((decorations & Decor_Titlebar) ?
+                                  frame.title_h : frame.y_border)))
       my = frame.rect.y() +
            ((decorations & Decor_Titlebar) ? frame.title_h : frame.y_border);
 
@@ -2417,22 +2411,22 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
 
 void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
   if (re->window == frame.maximize_button) {
-    if ((re->x >= 0) && ((unsigned) re->x <= frame.button_w) &&
-        (re->y >= 0) && ((unsigned) re->y <= frame.button_h)) {
+    if ((re->x >= 0 && re->x <= static_cast<signed>(frame.button_w)) &&
+        (re->y >= 0 && re->y <= static_cast<signed>(frame.button_h))) {
       maximize(re->button);
     } else {
       redrawMaximizeButton(flags.maximized);
     }
   } else if (re->window == frame.iconify_button) {
-    if ((re->x >= 0) && ((unsigned) re->x <= frame.button_w) &&
-        (re->y >= 0) && ((unsigned) re->y <= frame.button_h)) {
+    if ((re->x >= 0 && re->x <= static_cast<signed>(frame.button_w)) &&
+        (re->y >= 0 && re->y <= static_cast<signed>(frame.button_h))) {
       iconify();
     } else {
       redrawIconifyButton(False);
     }
   } else if (re->window == frame.close_button) {
-    if ((re->x >= 0) && ((unsigned) re->x <= frame.button_w) &&
-        (re->y >= 0) && ((unsigned) re->y <= frame.button_h))
+    if ((re->x >= 0 && re->x <= static_cast<signed>(frame.button_w)) &&
+        (re->y >= 0 && re->y <= static_cast<signed>(frame.button_h)))
       close();
     redrawCloseButton(False);
   } else if (flags.moving) {
@@ -2628,7 +2622,7 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
 
       if (left) {
         frame.changing_x = me->x_root - frame.grab_x;
-        if (frame.changing_x > (signed) (frame.rect.x() + frame.rect.width()))
+        if (frame.changing_x > frame.rect.right())
           frame.changing_x = frame.changing_x + frame.rect.width() - 1;
 
         left_fixsize(&gx, &gy);
@@ -2876,10 +2870,10 @@ void BlackboxWindow::right_fixsize(int *gx, int *gy) {
            frame.handle_h - (frame.border_w * 3) - (frame.mwm_border_w * 2)
            + (client.height_inc / 2);
 
-  if (dx < (signed) client.min_width) dx = client.min_width;
-  if (dy < (signed) client.min_height) dy = client.min_height;
-  if ((unsigned) dx > client.max_width) dx = client.max_width;
-  if ((unsigned) dy > client.max_height) dy = client.max_height;
+  if (dx < static_cast<signed>(client.min_width)) dx = client.min_width;
+  if (dy < static_cast<signed>(client.min_height)) dy = client.min_height;
+  if (dx > static_cast<signed>(client.max_width)) dx = client.max_width;
+  if (dy > static_cast<signed>(client.max_height)) dy = client.max_height;
 
   dx /= client.width_inc;
   dy /= client.height_inc;
@@ -2899,17 +2893,17 @@ void BlackboxWindow::right_fixsize(int *gx, int *gy) {
 void BlackboxWindow::left_fixsize(int *gx, int *gy) {
   // calculate the size of the client window and conform it to the
   // size specified by the size hints of the client window...
-  int dx = frame.rect.x() + frame.rect.width() - frame.changing_x -
+  int dx = frame.rect.right() - frame.changing_x -
            client.base_width - (frame.mwm_border_w * 2) +
            (client.width_inc / 2);
   int dy = frame.changing_h - frame.y_border - client.base_height -
            frame.handle_h - (frame.border_w * 3) - (frame.mwm_border_w * 2) +
            (client.height_inc / 2);
 
-  if (dx < (signed) client.min_width) dx = client.min_width;
-  if (dy < (signed) client.min_height) dy = client.min_height;
-  if ((unsigned) dx > client.max_width) dx = client.max_width;
-  if ((unsigned) dy > client.max_height) dy = client.max_height;
+  if (dx < static_cast<signed>(client.min_width)) dx = client.min_width;
+  if (dy < static_cast<signed>(client.min_height)) dy = client.min_height;
+  if (dx > static_cast<signed>(client.max_width)) dx = client.max_width;
+  if (dy > static_cast<signed>(client.max_height)) dy = client.max_height;
 
   dx /= client.width_inc;
   dy /= client.height_inc;
@@ -2921,7 +2915,7 @@ void BlackboxWindow::left_fixsize(int *gx, int *gy) {
   dy = (dy * client.height_inc) + client.base_height;
 
   frame.changing_w = dx + (frame.mwm_border_w * 2) + (frame.border_w * 2);
-  frame.changing_x = frame.rect.x() + frame.rect.width() - frame.changing_w +
+  frame.changing_x = frame.rect.right() - frame.changing_w +
                      (frame.border_w * 2);
   frame.changing_h = dy + frame.y_border + frame.handle_h +
                      (frame.mwm_border_w * 2) + (frame.border_w * 3);

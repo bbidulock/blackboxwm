@@ -675,7 +675,7 @@ void BScreen::LoadStyle(void) {
   if (XrmGetResource(resource.stylerc, "handleWidth", "HandleWidth",
                      &value_type, &value)) {
     if (sscanf(value.addr, "%u", &resource.handle_width) != 1 ||
-        resource.handle_width > (unsigned int) getWidth() / 2 ||
+        resource.handle_width > (getWidth() / 2) ||
         resource.handle_width == 0)
       resource.handle_width = 6;
   } else {
@@ -692,7 +692,7 @@ void BScreen::LoadStyle(void) {
   if (XrmGetResource(resource.stylerc, "bevelWidth", "BevelWidth",
                      &value_type, &value)) {
     if (sscanf(value.addr, "%u", &resource.bevel_width) != 1 ||
-        resource.bevel_width > (unsigned int) getWidth() / 2 ||
+        resource.bevel_width > (getWidth() / 2) ||
         resource.bevel_width == 0)
       resource.bevel_width = 3;
   } else {
@@ -701,7 +701,7 @@ void BScreen::LoadStyle(void) {
   if (XrmGetResource(resource.stylerc, "frameWidth", "FrameWidth",
                      &value_type, &value)) {
     if (sscanf(value.addr, "%u", &resource.frame_width) != 1 ||
-        resource.frame_width > (unsigned int) getWidth() / 2)
+        resource.frame_width > (getWidth() / 2))
       resource.frame_width = resource.bevel_width;
   } else {
     resource.frame_width = resource.bevel_width;
@@ -746,7 +746,7 @@ void BScreen::removeIcon(BlackboxWindow *w) {
 
 
 BlackboxWindow *BScreen::getIcon(int index) {
-  if (index >= 0 && index < (signed)iconList.size()) {
+  if (index >= 0 && index < static_cast<signed>(iconList.size())) {
     BlackboxWindowList::iterator it = iconList.begin();
     for (; index > 0; --index, ++it) ; /* increment to index */
     return *it;

@@ -498,8 +498,8 @@ Bool Workspace::smartPlacement(Rect& win, const Rect& availableArea) {
 
 
 Bool Workspace::cascadePlacement(Rect &win, const Rect &availableArea) {
-  if ((cascade_x > (signed) (availableArea.width() / 2)) ||
-      (cascade_y > (signed) (availableArea.height() / 2)))
+  if ((cascade_x > static_cast<signed>(availableArea.width() / 2)) ||
+      (cascade_y > static_cast<signed>(availableArea.height() / 2)))
     cascade_x = cascade_y = 32;
 
   if (cascade_x == 32) {

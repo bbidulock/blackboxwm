@@ -574,7 +574,8 @@ void Blackbox::process_event(XEvent *e) {
         BScreen *screen = searchScreen(e->xclient.window);
 
         if (screen && e->xclient.data.l[0] >= 0 &&
-            e->xclient.data.l[0] < (signed)screen->getWorkspaceCount())
+            e->xclient.data.l[0] <
+            static_cast<signed>(screen->getWorkspaceCount()))
           screen->changeWorkspaceID(e->xclient.data.l[0]);
       } else if (e->xclient.message_type == getBlackboxChangeWindowFocusAtom()) {
         BlackboxWindow *win = searchWindow(e->xclient.window);
