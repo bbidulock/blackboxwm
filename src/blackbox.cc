@@ -543,7 +543,7 @@ void Blackbox::save_rc(void) {
   ScreenList::iterator it = screenList.begin();
   for (; it != screenList.end(); ++it) {
     BScreen *screen = *it;
-    int screen_number = screen->getScreenNumber();
+    int screen_number = screen->screenNumber();
 
     char *placement = (char *) 0;
 
@@ -795,7 +795,7 @@ void Blackbox::load_rc(BScreen *screen) {
 
   XrmValue value;
   char *value_type, name_lookup[1024], class_lookup[1024];
-  int screen_number = screen->getScreenNumber();
+  int screen_number = screen->screenNumber();
   int int_value;
 
   sprintf(name_lookup,  "session.screen%d.fullMaximization", screen_number);

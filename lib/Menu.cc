@@ -78,15 +78,15 @@ bt::MenuStyle::MenuStyle(Application &app, unsigned int screen,
 
   bitmap.arrow =
     XCreateBitmapFromData(_app.getXDisplay(),
-                          _app.getScreenInfo(_screen)->getRootWindow(),
+                          _app.getScreenInfo(_screen).getRootWindow(),
                           arrow_bits, arrow_width, arrow_height);
   bitmap.check =
     XCreateBitmapFromData(_app.getXDisplay(),
-                          _app.getScreenInfo(_screen)->getRootWindow(),
+                          _app.getScreenInfo(_screen).getRootWindow(),
                           check_bits, check_width, check_height);
   bitmap.close =
     XCreateBitmapFromData(_app.getXDisplay(),
-                          _app.getScreenInfo(_screen)->getRootWindow(),
+                          _app.getScreenInfo(_screen).getRootWindow(),
                           close_bits, close_width, close_height);
 }
 
@@ -343,14 +343,14 @@ bt::Menu::Menu(bt::Application &app, unsigned int screen)
 {
   idset.reset();
 
-  const ScreenInfo * const screeninfo = _app.getScreenInfo(_screen);
+  const ScreenInfo& screeninfo = _app.getScreenInfo(_screen);
 
   // create the window
   XSetWindowAttributes attrib;
   unsigned long mask = CWBackPixmap | CWColormap |
                        CWOverrideRedirect | CWEventMask;
   attrib.background_pixmap = None;
-  attrib.colormap = screeninfo->getColormap();
+  attrib.colormap = screeninfo.getColormap();
   attrib.override_redirect = False;
   attrib.event_mask = ButtonPressMask | ButtonReleaseMask |
                       ButtonMotionMask | PointerMotionMask |
@@ -358,10 +358,10 @@ bt::Menu::Menu(bt::Application &app, unsigned int screen)
   attrib.override_redirect = True;
 
   _window =
-    XCreateWindow(_app.getXDisplay(), screeninfo->getRootWindow(),
+    XCreateWindow(_app.getXDisplay(), screeninfo.getRootWindow(),
                   _rect.x(), _rect.y(), _rect.width(), _rect.height(), 0,
-                  screeninfo->getDepth(), InputOutput,
-                  screeninfo->getVisual(), mask, &attrib);
+                  screeninfo.getDepth(), InputOutput,
+                  screeninfo.getVisual(), mask, &attrib);
   _app.insertEventHandler(_window, this);
 
   _timer.setTimeout(200);
@@ -589,27 +589,27 @@ void bt::Menu::popup(int x, int y, bool centerOnTitle) {
   if (_size_dirty)
     updateSize();
 
-  const ScreenInfo * const screeninfo = _app.getScreenInfo(_screen);
+  const ScreenInfo& screeninfo = _app.getScreenInfo(_screen);
   if (_show_title) {
     if (centerOnTitle) {
       x -= _trect.width() / 2;
       y -= _trect.height() / 2;
-      if (y + _rect.height() > screeninfo->getHeight())
+      if (y + _rect.height() > screeninfo.getHeight())
         y -= _prect.height() + (_trect.height() / 2);
     } else {
       y -= _trect.height();
-      if (y + _rect.height() > screeninfo->getHeight())
+      if (y + _rect.height() > screeninfo.getHeight())
         y -= _prect.height();
     }
   } else {
-    if (y + _rect.height() > screeninfo->getHeight())
+    if (y + _rect.height() > screeninfo.getHeight())
       y -= _prect.height();
   }
 
   if (y < 0)
     y = 0;
-  if (x + _rect.width() > screeninfo->getWidth())
-    x = screeninfo->getWidth() - _rect.width();
+  if (x + _rect.width() > screeninfo.getWidth())
+    x = screeninfo.getWidth() - _rect.width();
   if (x < 0)
     x = 0;
 
@@ -685,7 +685,7 @@ void bt::Menu::updateSize(void) {
     _prect.setPos(0, 0);
   }
 
-  const ScreenInfo * const screeninfo = _app.getScreenInfo(_screen);
+  const ScreenInfo& screeninfo = _app.getScreenInfo(_screen);
   unsigned int max_item_w = 20u, col_h = 0u, max_col_h = 0u;
   unsigned int row = 0u, cols = 1u;
   ItemList::iterator it, end;
@@ -703,7 +703,7 @@ void bt::Menu::updateSize(void) {
 
     ++row;
 
-    if (col_h > (screeninfo->getHeight() * 3 / 4)) {
+    if (col_h > (screeninfo.getHeight() * 3 / 4)) {
       ++cols;
       row = 0;
 
@@ -1123,7 +1123,7 @@ void bt::Menu::activateItem(const Rect &rect, MenuItem &item) {
     item.sub->updateSize();
 
   MenuStyle *style = MenuStyle::get(_app, _screen, 0);
-  const ScreenInfo * const screeninfo = _app.getScreenInfo(_screen);
+  const ScreenInfo& screeninfo = _app.getScreenInfo(_screen);
   int px = _rect.x() + rect.x() + rect.width();
   int py = _rect.y() + rect.y() - style->panelMargin();
   bool left = false;
@@ -1131,7 +1131,7 @@ void bt::Menu::activateItem(const Rect &rect, MenuItem &item) {
   if (_parent_menu && _parent_menu->isVisible() &&
       _parent_menu->_rect.x() > _rect.x())
     left = true;
-  if (px + item.sub->_rect.width() > screeninfo->getWidth() || left)
+  if (px + item.sub->_rect.width() > screeninfo.getWidth() || left)
     px -= item.sub->_rect.width() + rect.width();
   if (px < 0) {
     if (left) // damn, lots of menus - move back to the right
@@ -1143,7 +1143,7 @@ void bt::Menu::activateItem(const Rect &rect, MenuItem &item) {
   if (_active_submenu->_show_title)
     py -=_active_submenu->_trect.height() -
          style->titleTexture().borderWidth();
-  if (py + item.sub->_rect.height() > screeninfo->getHeight())
+  if (py + item.sub->_rect.height() > screeninfo.getHeight())
     py -= item.sub->_irect.height() - rect.height();
   if (py < 0)
     py = 0;
