@@ -1358,13 +1358,6 @@ BlackboxWindow *BlackboxWindow::readTransientInfo(void) {
 }
 
 
-BlackboxWindow *BlackboxWindow::getTransientFor(void) const {
-  if (isTransient() && client.transient_for != (BlackboxWindow*) ~0ul)
-    return client.transient_for;
-  return 0;
-}
-
-
 /*
  * This function is responsible for updating both the client and the
  * frame rectangles.  According to the ICCCM a client message is not

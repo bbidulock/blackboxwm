@@ -295,7 +295,9 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
 
   inline const BlackboxWindowList &getTransients(void) const
   { return client.transientList; }
-  BlackboxWindow *getTransientFor(void) const;
+  inline BlackboxWindow *getTransientFor(void) const
+  { return ((client.transient_for == (BlackboxWindow*) ~0ul)
+            ? 0 : client.transient_for); }
 
   inline BScreen *getScreen(void) const { return screen; }
 
