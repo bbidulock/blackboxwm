@@ -1,95 +1,95 @@
 -- AUTHORS for Blackbox - an X11 Window Manager
 
 Current Authors:
-        Brad Hughes <bhughes@trolltech.com>
-	Sean 'Shaleh' Perry <shaleh@debian.org>
+        Brad Hughes <bhughes at trolltech.com>
+	Sean 'Shaleh' Perry <shaleh at debian.org>
 
 Interim author for the 0.61.x series:
-        Jeff Raven <jraven@psu.edu>
+        Jeff Raven <jraven at psu.edu>
 
 Current Contributors:
-	Ben 'xOr' Jansens <xor@orodu.net>
+	Ben 'xOr' Jansens <xor at orodu.net>
 	- metric tons of code patches
-        John Kennis <jkennis@chello.nl>
+        John Kennis <jkennis at chello.nl>
 	- bbpager, ideas, and support
-        Jason 'vanRijn' Kasper <vR@movingparts.net>
+        Jason 'vanRijn' Kasper <vR at movingparts.net>
 	- bbkeys, ideas, support
-	Chris Mecca <flip@linuxguide.org>
+	Chris Mecca <flip at linuxguide.org>
 	 - use of his irix machine for testing
-	Dale P. Smith <dsmith@altustech.com>
+	Dale P. Smith <dsmith at altustech.com>
 	 - bsetroot now sets xrootpmap_id atom
-	Matt Wilson <mwilson@quicksilver.net.nz>
+	Matt Wilson <mwilson at quicksilver.net.nz>
 	 - for noticing all of the little things
 
 nls contributors:
-	Mads Martin Joergensen <mmj@suse.de>
+	Mads Martin Joergensen <mmj at suse.de>
 	 - Danish (da_DK)
-	Jan Schaumann <jschauma@netmeister.org>
+	Jan Schaumann <jschauma at netmeister.org>
 	 - German (de_DE)
-	Adriano Varoli Piazza <adrianovaroli@redusers.com>
+	Adriano Varoli Piazza <adrianovaroli at redusers.com>
 	 - Spanish (submitted as es_AR, ES and MX)
-	Duret Bertrand <bertrand.duret@libertysurf.fr>
+	Duret Bertrand <bertrand.duret at libertysurf.fr>
 	 - updated French (fr_FR)
-	Bodnar Istvan <piggy@dub.hu>
+	Bodnar Istvan <piggy at dub.hu>
 	 - Hungarian (hu_HU)
-	Luca Marrazzo <marra.luca@libero.it>
+	Luca Marrazzo <marra.luca at libero.it>
 	 - Italian (it_IT)
-	SATO Satoru <ssato@adachi.ne.jp>
+	SATO Satoru <ssato at gnome.gr.jp>
 	 - Japanese (ja_JP)
-	Hyun Suk Noh <tzesti@users.sourceforge.net>
+	Hyun Suk Noh <tzesti at users.sourceforge.net>
 	 - Korean (ko_KR)
-	Artis Trops <hornet@navigator.lv>
+	Artis Trops <hornet at navigator.lv>
 	 - Latvian (lv_LV)
- 	Wilbert Berendsen <wbsoft@xs4all.nl>
+ 	Wilbert Berendsen <wbsoft at xs4all.nl>
 	 - Dutch (nl_NL)
-	Øyvind Stegard <oyvind.stegard@bluezone.no>
+	Øyvind Stegard <oyvind.stegard at bluezone.no>
 	 - Norwegian (no_NO)
-	Wojciech Krygier <wkrygie@kis.p.lodz.pl>
+	Wojciech Krygier <wkrygie at kis.p.lodz.pl>
 	 - Polish (pl_PL)
-	Ciprian Popovici <ciprian@zuavra.net>
+	Ciprian Popovici <ciprian at zuavra.net>
 	 - Romanian (ro_RO)
-	Michail A. Rusinov <one@da.ru>
-	Dmitriy N. Rusinov <rusinov@udm.net>
+	Michail A. Rusinov <one at da.ru>
+	Dmitriy N. Rusinov <rusinov at udm.net>
 	 - Russian (ru_RU)
-	Marian Andre <andre@intrak.sk>
+	Marian Andre <andre at intrak.sk>
 	 - Slovakian (sk_SK)
-	Ales Kosir <ales.kosir@telemach.net>
+	Ales Kosir <ales.kosir at telemach.net>
 	 - Slovenian (sl_SI)
-	Volodymyr M. Lisivka <lvm@mystery.lviv.net>
+	Volodymyr M. Lisivka <lvm at mystery.lviv.net>
 	 - Ukrainian (uk_UA)
-	Wang Tiejun <wtj@dept3.buaa.edu.cn>
+	Wang Tiejun <wtj at dept3.buaa.edu.cn>
 	 - Chinese (zh_CN)
-	Moto Chen <han_yi_chen@yahoo.com.tw>
+	Moto Chen <han_yi_chen at yahoo.com.tw>
 	 - Taiwan Chinese (zh_TW)
 
 Past Contributors:
-        Jeffrey Sean Connell <ankh@canuck.gen.nz>
+        Jeffrey Sean Connell <ankh at canuck.gen.nz>
           - debugger class code (ommited from sources)
-        Frank Belew <frb@umr.edu>
+        Frank Belew <frb at umr.edu>
           - dgradient code
-        Scott Garner <mrfab@arn.net>
+        Scott Garner <mrfab at arn.net>
           - suggestions, bug reports and beta testing (*the* beta moron)
-        David Doan <ddoan@usa.net>
+        David Doan <ddoan at usa.net>
          - testing of 8bpp code
-        Mark Seward <illuzion@paradise.net.nz>
+        Mark Seward <illuzion at paradise.net.nz>
          - beta testing, bug reports and 32bpp testing
-        Keith Bolland <prime@strip.net.nz>
+        Keith Bolland <prime at strip.net.nz>
          - beta testing, bug reports and suggestions
-        James Spooner <spoons@xtra.co.nz>
+        James Spooner <spoons at xtra.co.nz>
          - beta testing, bug reports
-        Fred Knieper <derf@tamu.edu>
+        Fred Knieper <derf at tamu.edu>
          - beta testing, bug reports
-        Steve Udell <hettar@teleport.com>
+        Steve Udell <hettar at teleport.com>
          - beta testing, bug reports, questions (very good ones)
-        Gregory Barlow <barlowg@ncssm-server.ncssm.edu>
+        Gregory Barlow <barlowg at ncssm-server.ncssm.edu>
         - bug reports and patches/suggestions (original middle click advocate)
-        Dyon Balding <dyon.balding@eng.monash.edu.au>
+        Dyon Balding <dyon.balding at eng.monash.edu.au>
         - patch for Smart(er)Placement window placement
-        Mike Cole <mike@mydot.com>
+        Mike Cole <mike at mydot.com>
         - co-author/hacker of Image.cc (local LUG buddy)
-        John Kennis <jkennis@chello.nl>
+        John Kennis <jkennis at chello.nl>
         - author of bbtools/beta testing/bug reports
-	Wilbert Berendsen <wbsoft@xs4all.nl>
+	Wilbert Berendsen <wbsoft at xs4all.nl>
 	- author of blackbox/bsetroot manpages
 
 (Brad's original message):
