@@ -41,10 +41,6 @@ ADD: support user controlled window decoration
 
 ADD: subdirs in stylesmenu/dir will create a new submenu
 
-CHANGE: when workspace name is greater than the width of its text area the
-	toolbar gets very ugly.  Elliding code was recently added for
-        the menus, perhaps we should abstract it.
-
 CHANGE: rework the .blackboxrc resources so that they give a more
         uniform behavior across screens. (Still not sure how I want
 	to do this, so it'll have to wait.)
@@ -61,12 +57,6 @@ Code cleanup:
 
 CHANGE: look into centering the window when maximizing and the window can not
         grow to fill the area
-
-ADD: way to have items in menu and store data other than their index number.
-     The reason the Send To menu lists every workspace is because if it did
-     not blackbox would have no way to know that the one labelled
-     "Workspace 2" actually was workspace #2 and was referenced by
-     workspace[1]. Something like menu.insert(item, data).
 
 CHANGE: move all of the fprintf() messages to a message function /
         class.  Something like message(WARN, "this is broken") and use
