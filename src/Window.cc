@@ -776,14 +776,18 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
   int lx = by, lw = frame.inside_w - by;
 
   if (client.decorations & Decor_Iconify) {
-    if (frame.iconify_button == None) createIconifyButton();
+    if (lw > bw) {
+      if (frame.iconify_button == None) createIconifyButton();
 
-    XMoveResizeWindow(blackbox->XDisplay(), frame.iconify_button, by, by,
-                      frame.style->button_width, frame.style->button_width);
-    XMapWindow(blackbox->XDisplay(), frame.iconify_button);
+      XMoveResizeWindow(blackbox->XDisplay(), frame.iconify_button, by, by,
+                        frame.style->button_width, frame.style->button_width);
+      XMapWindow(blackbox->XDisplay(), frame.iconify_button);
 
-    lx += bw;
-    lw -= bw;
+      lx += bw;
+      lw -= bw;
+    } else {
+      XUnmapWindow(blackbox->XDisplay(), frame.iconify_button);
+    }
   } else if (frame.iconify_button) {
     destroyIconifyButton();
   }
@@ -791,35 +795,46 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
   int bx = frame.inside_w - bw;
 
   if (client.decorations & Decor_Close) {
-    if (frame.close_button == None) createCloseButton();
+    if (lw > bw) {
+      if (frame.close_button == None) createCloseButton();
 
-    XMoveResizeWindow(blackbox->XDisplay(), frame.close_button, bx, by,
-                      frame.style->button_width, frame.style->button_width);
-    XMapWindow(blackbox->XDisplay(), frame.close_button);
+      XMoveResizeWindow(blackbox->XDisplay(), frame.close_button, bx, by,
+                        frame.style->button_width, frame.style->button_width);
+      XMapWindow(blackbox->XDisplay(), frame.close_button);
 
-    bx -= bw;
-    lw -= bw;
+      bx -= bw;
+      lw -= bw;
+    } else {
+      XUnmapWindow(blackbox->XDisplay(), frame.close_button);
+    }
   } else if (frame.close_button) {
     destroyCloseButton();
   }
 
   if (client.decorations & Decor_Maximize) {
-    if (frame.maximize_button == None) createMaximizeButton();
+    if (lw > bw) {
+      if (frame.maximize_button == None) createMaximizeButton();
 
-    XMoveResizeWindow(blackbox->XDisplay(), frame.maximize_button, bx, by,
-                      frame.style->button_width, frame.style->button_width);
-    XMapWindow(blackbox->XDisplay(), frame.maximize_button);
-    XClearWindow(blackbox->XDisplay(), frame.maximize_button);
+      XMoveResizeWindow(blackbox->XDisplay(), frame.maximize_button, bx, by,
+                        frame.style->button_width, frame.style->button_width);
+      XMapWindow(blackbox->XDisplay(), frame.maximize_button);
+      XClearWindow(blackbox->XDisplay(), frame.maximize_button);
 
-    lw -= bw;
+      lw -= bw;
+    } else {
+      XUnmapWindow(blackbox->XDisplay(), frame.maximize_button);
+    }
   } else if (frame.maximize_button) {
     destroyMaximizeButton();
   }
 
+  if (lw > by) {
   frame.label_w = lw - by;
   XMoveResizeWindow(blackbox->XDisplay(), frame.label, lx,
                     frame.style->bevel_width,
                     frame.label_w, frame.style->label_height);
+  XMapWindow(blackbox->XDisplay(), frame.label);
+
   if (redecorate_label) {
     frame.flabel =
       bt::PixmapCache::find(screen->screenNumber(),
@@ -831,6 +846,9 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
                             frame.style->l_unfocus,
                             frame.label_w, frame.style->label_height,
                             frame.ulabel);
+  }
+  } else {
+    XUnmapWindow(blackbox->XDisplay(), frame.label);
   }
 
   redrawLabel();
