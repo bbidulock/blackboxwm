@@ -2,11 +2,14 @@
 
 CVS Bugs:
 -----------------------------
-maximize gets the dimensions very wrong
-[nop] in menu segfaults
-solid styles do not change properly
-solid styles have improper menu highlights
-styles trying to load fonts that do not exist lead to segfaults
+* maximize gets the dimensions very wrong
+* [nop] in menu segfaults (shaleh)
+* solid styles do not change properly (nyz)
+* solid styles have improper menu highlights (nyz)
+* styles trying to load fonts that do not exist lead to segfaults
+* use bbkeys to open a window and then close it via bbkeys.  If it is the only
+  window left open, blackbox will spin in a screen->unmanageWindow loop and
+  then die.  Tons of X BadWindow messages will appear as well.
 
 Stuff TODO or On The Way(tm):
 -----------------------------
