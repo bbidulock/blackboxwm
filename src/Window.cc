@@ -2229,7 +2229,7 @@ void BlackboxWindow::redrawIconifyButton(bool pressed) const {
                frame.inside_w, frame.style->title_height);
     bt::drawTexture(screen->screenNumber(),
                     (client.state.focused ? frame.style->t_focus :
-                                            frame.style->t_unfocus),
+                     frame.style->t_unfocus),
                     frame.iconify_button, t, u,
                     (client.state.focused ? frame.ftitle : frame.utitle));
   } else {
@@ -2240,14 +2240,12 @@ void BlackboxWindow::redrawIconifyButton(bool pressed) const {
                     frame.iconify_button, u, u, p);
   }
 
-  bt::Pen pen(screen->screenNumber(),
-              (client.state.focused ?
-               frame.style->b_pic_focus : frame.style->b_pic_unfocus));
-  u.setCoords(u.left()  + 2, u.bottom() - 3,
-              u.right() - 3, u.bottom() - 2);
-
-  XFillRectangle(pen.XDisplay(), frame.iconify_button, pen.gc(),
-                 u.x(), u.y(), u.width(), u.height());
+  bt::drawBitmap(frame.style->iconify,
+                 bt::Pen(screen->screenNumber(),
+                         client.state.focused
+                         ? frame.style->b_pic_focus
+                         : frame.style->b_pic_unfocus),
+                 frame.iconify_button, u);
 }
 
 
@@ -2264,7 +2262,7 @@ void BlackboxWindow::redrawMaximizeButton(bool pressed) const {
                frame.inside_w, frame.style->title_height);
     bt::drawTexture(screen->screenNumber(),
                     (client.state.focused ? frame.style->t_focus :
-                                            frame.style->t_unfocus),
+                     frame.style->t_unfocus),
                     frame.maximize_button, t, u,
                     (client.state.focused ? frame.ftitle : frame.utitle));
   } else {
@@ -2275,16 +2273,12 @@ void BlackboxWindow::redrawMaximizeButton(bool pressed) const {
                     frame.maximize_button, u, u, p);
   }
 
-  bt::Pen pen(screen->screenNumber(),
-              (client.state.focused) ?
-              frame.style->b_pic_focus : frame.style->b_pic_unfocus);
-  u.setCoords(u.left()  + 2, u.top()    + 2,
-              u.right() - 3, u.bottom() - 3);
-
-  XDrawRectangle(pen.XDisplay(), frame.maximize_button, pen.gc(),
-                 u.x(), u.y(), u.width(), u.height());
-  XDrawLine(pen.XDisplay(), frame.maximize_button, pen.gc(),
-            u.left(), u.top() + 1, u.right(), u.top() + 1);
+  bt::drawBitmap(frame.style->maximize,
+                 bt::Pen(screen->screenNumber(),
+                         client.state.focused
+                         ? frame.style->b_pic_focus
+                         : frame.style->b_pic_unfocus),
+                 frame.maximize_button, u);
 }
 
 
@@ -2294,13 +2288,13 @@ void BlackboxWindow::redrawCloseButton(bool pressed) const {
               (client.state.focused ? frame.fbutton : frame.ubutton));
   if (p == ParentRelative) {
     const int button_w = frame.style->button_width +
-      frame.style->bevel_width + 1;
+                         frame.style->bevel_width + 1;
     bt::Rect t(-(frame.inside_w - button_w),
                -(frame.style->bevel_width + 1),
                frame.inside_w, frame.style->title_height);
     bt::drawTexture(screen->screenNumber(),
                     (client.state.focused ? frame.style->t_focus :
-                                            frame.style->t_unfocus),
+                     frame.style->t_unfocus),
                     frame.close_button, t, u,
                     (client.state.focused ? frame.ftitle : frame.utitle));
   } else {
@@ -2311,15 +2305,12 @@ void BlackboxWindow::redrawCloseButton(bool pressed) const {
                     frame.close_button, u, u, p);
   }
 
-  bt::Pen pen(screen->screenNumber(),
-              (client.state.focused ?
-               frame.style->b_pic_focus : frame.style->b_pic_unfocus));
-  u.setCoords(u.left()  + 2, u.top()    + 2,
-              u.right() - 2, u.bottom() - 2);
-  XDrawLine(pen.XDisplay(), frame.close_button, pen.gc(),
-            u.left(), u.top(), u.right(), u.bottom());
-  XDrawLine(pen.XDisplay(), frame.close_button, pen.gc(),
-            u.left(), u.bottom(), u.right(), u.top());
+  bt::drawBitmap(frame.style->close,
+                 bt::Pen(screen->screenNumber(),
+                         client.state.focused
+                         ? frame.style->b_pic_focus
+                         : frame.style->b_pic_unfocus),
+                 frame.close_button, u);
 }
 
 
