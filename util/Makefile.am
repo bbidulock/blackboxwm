@@ -1,7 +1,7 @@
 # util/Makefile.am for Blackbox - an X11 Window manager
 
 CPPFLAGS= @CPPFLAGS@ @DEBUG@ @NLS@ @TIMEDCACHE@ @INTERLACE@ \
-@ORDEREDPSEUDO@ -Wall -pedantic -W -fno-exceptions
+@ORDEREDPSEUDO@
 
 bin_SCRIPTS = 		bsetbg
 bin_PROGRAMS =		bsetroot

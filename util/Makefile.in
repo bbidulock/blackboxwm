@@ -74,7 +74,7 @@ VERSION = @VERSION@
 gencat_cmd = @gencat_cmd@
 regex_cmd = @regex_cmd@
 
-CPPFLAGS = @CPPFLAGS@ @DEBUG@ @NLS@ @TIMEDCACHE@ @INTERLACE@ @ORDEREDPSEUDO@ -Wall -pedantic -W -fno-exceptions
+CPPFLAGS = @CPPFLAGS@ @DEBUG@ @NLS@ @TIMEDCACHE@ @INTERLACE@ @ORDEREDPSEUDO@
 
 
 bin_SCRIPTS = bsetbg

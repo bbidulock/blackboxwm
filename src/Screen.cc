@@ -230,7 +230,6 @@ BScreen::BScreen(Blackbox *bb, int scrn) : ScreenInfo(bb, scrn) {
 
   workspaceNames = new LinkedList<char>;
   workspacesList = new LinkedList<Workspace>;
-  rootmenuList = new LinkedList<Rootmenu>;
   netizenList = new LinkedList<Netizen>;
   iconList = new LinkedList<BlackboxWindow>;
   strutList = new LinkedList<NETStrut>;
@@ -513,8 +512,7 @@ BScreen::~BScreen(void) {
   while (workspacesList->count())
     delete workspacesList->remove(0);
 
-  while (rootmenuList->count())
-    rootmenuList->remove(0);
+  std::for_each(rootmenuList.begin(), rootmenuList.end(), PointerAssassin);
 
   while (iconList->count())
     delete iconList->remove(0);
@@ -537,7 +535,6 @@ BScreen::~BScreen(void) {
 
   delete workspacesList;
   delete workspaceNames;
-  delete rootmenuList;
   delete iconList;
   delete netizenList;
   delete strutList;
@@ -1524,8 +1521,9 @@ void BScreen::updateNetizenConfigNotify(XEvent *e) {
 
 
 void BScreen::raiseWindows(Window *workspace_stack, int num) {
+  /* FIXME: why 13?? */
   Window *session_stack = new
-    Window[(num + workspacesList->count() + rootmenuList->count() + 13)];
+    Window[(num + workspacesList->count() + rootmenuList.size() + 13)];
   int i = 0, k = num;
 
   XRaiseWindow(getBaseDisplay()->getXDisplay(), iconmenu->getWindowID());
@@ -1549,9 +1547,9 @@ void BScreen::raiseWindows(Window *workspace_stack, int num) {
     toolbar->getMenu()->getPlacementmenu()->getWindowID();
   *(session_stack + i++) = toolbar->getMenu()->getWindowID();
 
-  LinkedListIterator<Rootmenu> rit(rootmenuList);
-  for (Rootmenu *tmp = rit.current(); tmp; rit++, tmp = rit.current())
-    *(session_stack + i++) = tmp->getWindowID();
+  RootmenuList::iterator rit = rootmenuList.begin();
+  for (; rit != rootmenuList.end(); ++rit)
+    *(session_stack + i++) = (*rit)->getWindowID();
   *(session_stack + i++) = rootmenu->getWindowID();
 
   if (toolbar->isOnTop())
@@ -1704,8 +1702,8 @@ void BScreen::raiseFocus(void) {
 
 void BScreen::InitMenu(void) {
   if (rootmenu) {
-    while (rootmenuList->count())
-      rootmenuList->remove(0);
+    for_each(rootmenuList.begin(), rootmenuList.end(), PointerAssassin);
+    rootmenuList.clear();
 
     while (rootmenu->getCount())
       rootmenu->remove(0);
@@ -1973,7 +1971,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
             parseMenuFile(file, submenu);
             submenu->update();
             menu->insert(label, submenu);
-            rootmenuList->insert(submenu);
+            rootmenuList.push_back(submenu);
           }
 
           break;
@@ -2079,7 +2077,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
                 if (newmenu) {
                   stylesmenu->setLabel(label);
                   menu->insert(label, stylesmenu);
-                  rootmenuList->insert(stylesmenu);
+                  rootmenuList.push_back(stylesmenu);
                 }
 
                 blackbox->saveMenuFilename(stylesdir);

@@ -26,7 +26,7 @@ Changes from 0.62.1:
     TimerQueueManager protocol class which BaseDisplay now inherits from.
   - BTimer now defaults to NOT recurring.  Most of the timers in blackbox were
     one shots so I saw little benefit in defaulting to repeating timers.
-  - added emacs local variables to each file that prevent the addition of tabs
+  - added emacs local variables that prevent the addition of tabs to each file
   - XGetInputFocus() is void yet we were using it in a if() test.
   - update transient handling, should solve issues with apps like acroread.
     added a getTransientInfo() method of the BlackboxWindow class which handles

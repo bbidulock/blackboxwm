@@ -38,10 +38,11 @@
 #  endif // HAVE_SYS_TIME_H
 #endif // TIME_WITH_SYS_TIME
 
+#include <list>
+
 #include "BaseDisplay.hh"
 #include "Configmenu.hh"
 #include "Iconmenu.hh"
-#include "LinkedList.hh"
 #include "Netizen.hh"
 #include "Rootmenu.hh"
 #include "Timer.hh"
@@ -111,7 +112,9 @@ private:
   Iconmenu *iconmenu;
   Rootmenu *rootmenu;
 
-  LinkedList<Rootmenu> *rootmenuList;
+  typedef std::list<Rootmenu*> RootmenuList;
+  RootmenuList rootmenuList;
+
   LinkedList<Netizen> *netizenList;
   LinkedList<BlackboxWindow> *iconList;
 
