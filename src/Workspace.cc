@@ -213,7 +213,7 @@ void Workspace::addWindow(BlackboxWindow *w, bool place) {
 }
 
 
-unsigned int Workspace::removeWindow(BlackboxWindow *w) {
+void Workspace::removeWindow(BlackboxWindow *w) {
   assert(w != 0);
 
   stackingList.remove(w);
@@ -236,10 +236,8 @@ unsigned int Workspace::removeWindow(BlackboxWindow *w) {
   for (; it != end; ++it, ++i)
     (*it)->setWindowNumber(i);
 
-  if (i == 0)
+  if (windowList.empty())
     cascade_x = cascade_y = 32;
-
-  return i;
 }
 
 

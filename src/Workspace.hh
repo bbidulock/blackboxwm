@@ -129,7 +129,7 @@ public:
   bool isLastWindow(const BlackboxWindow* w) const;
 
   void addWindow(BlackboxWindow *w, bool place = False);
-  unsigned int removeWindow(BlackboxWindow *w);
+  void removeWindow(BlackboxWindow *w);
   unsigned int getCount(void) const;
   void updateClientListStacking(bt::Netwm::WindowList& clientList) const;
 
