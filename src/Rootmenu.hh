@@ -37,7 +37,7 @@ public:
   Rootmenu(int);
 
 protected:
-  virtual void itemClicked( const Point &, const Item &, int );
+  virtual void itemClicked(const Item &, int);
 };
 
 #endif // __Rootmenu_hh

@@ -35,25 +35,149 @@
 #include "blackbox.hh"
 #include "i18n.hh"
 
+class ConfigPlacementmenu : public Basemenu
+{
+public:
+  ConfigPlacementmenu(int scr)
+    : Basemenu(scr)
+  {
+    insert(i18n(ConfigmenuSet, ConfigmenuSmartRows,
+                "Smart Placement (Rows)"),
+           BScreen::SmartRow);
+    insert(i18n(ConfigmenuSet, ConfigmenuSmartCols,
+                "Smart Placement (Columns)"),
+           BScreen::SmartColumn);
+    insert(i18n(ConfigmenuSet, ConfigmenuCascade,
+                "Cascade Placement"),
+           BScreen::Cascade);
+
+    BScreen *screen = Blackbox::instance()->screen(screenNumber());
+    switch (screen->windowPlacement()) {
+    case BScreen::SmartRow:
+      setItemChecked(0, True);
+      break;
+
+    case BScreen::SmartColumn:
+      setItemChecked(1, True);
+      break;
+
+    case BScreen::Cascade:
+      setItemChecked(2, True);
+      break;
+    }
+
+  }
+
+protected:
+  virtual void itemClicked(const Item & item, int button)
+  {
+    if (button != 1 || ! item.function())
+      return;
+
+    BScreen *screen = Blackbox::instance()->screen(screenNumber());
+    switch (item.function()) {
+    case BScreen::SmartRow:
+      screen->setWindowPlacement((BScreen::WindowPlacement) item.function());
+      setItemChecked(0, True);
+      setItemChecked(1, False);
+      setItemChecked(2, False);
+      break;
+
+    case BScreen::SmartColumn:
+      screen->setWindowPlacement((BScreen::WindowPlacement) item.function());
+      setItemChecked(0, False);
+      setItemChecked(1, True);
+      setItemChecked(2, False);
+      break;
+
+    case BScreen::Cascade:
+      screen->setWindowPlacement((BScreen::WindowPlacement) item.function());
+      setItemChecked(0, False);
+      setItemChecked(1, False);
+      setItemChecked(2, True);
+      break;
+    }
+  }
+};
+
+class ConfigFocusmenu : public Basemenu
+{
+public:
+  ConfigFocusmenu(int scrn)
+    : Basemenu(scrn)
+  {
+    insert(i18n(ConfigmenuSet, ConfigmenuClickToFocus,
+                "Click To Focus"), 1);
+    insert(i18n(ConfigmenuSet, ConfigmenuSloppyFocus,
+                "Sloppy Focus"), 2);
+    insert(i18n(ConfigmenuSet, ConfigmenuAutoRaise,
+                "Auto Raise"), 3);
+
+    BScreen *screen = Blackbox::instance()->screen(screenNumber());
+    setItemChecked(0, (! screen->isSloppyFocus()));
+    setItemChecked(1, screen->isSloppyFocus());
+    setItemEnabled(2, screen->isSloppyFocus());
+    setItemChecked(2, screen->doAutoRaise());
+  }
+
+protected:
+  virtual void itemClicked(const Item & item, int button)
+  {
+    if (button != 1 || ! item.function())
+      return;
+
+    BScreen *screen = Blackbox::instance()->screen(screenNumber());
+    switch (item.function()) {
+    case 1: // click to focus
+      screen->saveSloppyFocus(False);
+      screen->saveAutoRaise(False);
+
+      if (! Blackbox::instance()->getFocusedWindow())
+        XSetInputFocus( *BaseDisplay::instance(),
+                        screen->getToolbar()->getWindowID(),
+                        RevertToParent, CurrentTime);
+      else
+        XSetInputFocus( *BaseDisplay::instance(),
+                        Blackbox::instance()->getFocusedWindow()->getClientWindow(),
+                        RevertToParent, CurrentTime);
+      hideAll();
+      screen->reconfigure();
+
+      break;
+
+    case 2: // sloppy focus
+      screen->saveSloppyFocus(True);
+      screen->reconfigure();
+      break;
+
+    case 3: // auto raise with sloppy focus
+      Bool change = ((screen->doAutoRaise()) ? False : True);
+      screen->saveAutoRaise(change);
+      break;
+    }
+
+    setItemChecked(0, (! screen->isSloppyFocus()));
+    setItemChecked(1, screen->isSloppyFocus());
+    setItemEnabled(2, screen->isSloppyFocus());
+    setItemChecked(2, screen->doAutoRaise());
+  }
+};
 
 Configmenu::Configmenu(int scr)
     : Basemenu(scr)
 {
   setAutoDelete(false);
 
-  blackbox = Blackbox::instance();
-  screen = blackbox->screen(scr);
   setTitle(i18n(ConfigmenuSet, ConfigmenuConfigOptions,
                 "Config options"));
   showTitle();
 
-  focusmenu = new Focusmenu(this);
-  placementmenu = new Placementmenu(this);
-
   insert(i18n(ConfigmenuSet, ConfigmenuFocusModel,
-              "Focus Model"), focusmenu);
+              "Focus Model"),
+         new ConfigFocusmenu(scr));
   insert(i18n(ConfigmenuSet, ConfigmenuWindowPlacement,
-              "Window Placement"), placementmenu);
+              "Window Placement"),
+         new ConfigPlacementmenu(scr));
   insert(i18n(ConfigmenuSet, ConfigmenuImageDithering,
               "Image Dithering"), 1);
   insert(i18n(ConfigmenuSet, ConfigmenuOpaqueMove,
@@ -65,6 +189,7 @@ Configmenu::Configmenu(int scr)
   insert(i18n(ConfigmenuSet, ConfigmenuFocusLast,
               "Focus Last Window on Workspace"), 5);
 
+  BScreen *screen = Blackbox::instance()->screen(screenNumber());
   setItemChecked(2, screen->getImageControl()->doDither());
   setItemChecked(3, screen->doOpaqueMove());
   setItemChecked(4, screen->doFullMax());
@@ -72,14 +197,12 @@ Configmenu::Configmenu(int scr)
   setItemChecked(6, screen->doFocusLast());
 }
 
-void Configmenu::itemClicked(const Point &, const Item &item, int button)
+void Configmenu::itemClicked(const Item &item, int button)
 {
-  if (button != 1)
+  if (button != 1 || ! item.function())
     return;
 
-  if (! item.function())
-    return;
-
+  BScreen *screen = Blackbox::instance()->screen(screenNumber());
   switch(item.function()) {
   case 1: { // dither
     screen->getImageControl()->
@@ -118,182 +241,4 @@ void Configmenu::itemClicked(const Point &, const Item &item, int button)
     break;
   }
   } // switch
-}
-
-void Configmenu::reconfigure(void) {
-  focusmenu->reconfigure();
-  placementmenu->reconfigure();
-
-  Basemenu::reconfigure();
-}
-
-Configmenu::Focusmenu::Focusmenu(Configmenu *cm)
-  : Basemenu(cm->screen->screenNumber())
-{
-  configmenu = cm;
-
-  setTitle(i18n(ConfigmenuSet, ConfigmenuFocusModel,
-                "Focus Model"));
-
-  insert(i18n(ConfigmenuSet, ConfigmenuClickToFocus,
-              "Click To Focus"), 1);
-  insert(i18n(ConfigmenuSet, ConfigmenuSloppyFocus,
-              "Sloppy Focus"), 2);
-  insert(i18n(ConfigmenuSet, ConfigmenuAutoRaise,
-              "Auto Raise"), 3);
-
-  setItemChecked(0, (! configmenu->screen->isSloppyFocus()));
-  setItemChecked(1, configmenu->screen->isSloppyFocus());
-  setItemEnabled(2, configmenu->screen->isSloppyFocus());
-  setItemChecked(2, configmenu->screen->doAutoRaise());
-}
-
-void Configmenu::Focusmenu::itemClicked(const Point &, const Item &item, int button)
-{
-  if (button != 1)
-    return;
-
-  if (!item.function())
-    return;
-
-  switch (item.function()) {
-  case 1: // click to focus
-    configmenu->screen->saveSloppyFocus(False);
-    configmenu->screen->saveAutoRaise(False);
-
-    if (! Blackbox::instance()->getFocusedWindow())
-      XSetInputFocus( *BaseDisplay::instance(),
-                      configmenu->screen->getToolbar()->getWindowID(),
-                      RevertToParent, CurrentTime);
-    else
-      XSetInputFocus( *BaseDisplay::instance(),
-                      Blackbox::instance()->getFocusedWindow()->getClientWindow(),
-                      RevertToParent, CurrentTime);
-    hideAll();
-    configmenu->screen->reconfigure();
-
-    break;
-
-  case 2: // sloppy focus
-    configmenu->screen->saveSloppyFocus(True);
-    configmenu->screen->reconfigure();
-    break;
-
-  case 3: // auto raise with sloppy focus
-    Bool change = ((configmenu->screen->doAutoRaise()) ? False : True);
-    configmenu->screen->saveAutoRaise(change);
-    break;
-  }
-
-  setItemChecked(0, (! configmenu->screen->isSloppyFocus()));
-  setItemChecked(1, configmenu->screen->isSloppyFocus());
-  setItemEnabled(2, configmenu->screen->isSloppyFocus());
-  setItemChecked(2, configmenu->screen->doAutoRaise());
-}
-
-Configmenu::Placementmenu::Placementmenu(Configmenu *cm) :
- Basemenu(cm->screen->screenNumber())
-{
-  configmenu = cm;
-
-  setTitle(i18n(ConfigmenuSet, ConfigmenuWindowPlacement,
-                "Window Placement"));
-
-  insert(i18n(ConfigmenuSet, ConfigmenuSmartRows,
-              "Smart Placement (Rows)"),
-	 BScreen::RowSmartPlacement);
-  insert(i18n(ConfigmenuSet, ConfigmenuSmartCols,
-              "Smart Placement (Columns)"),
-	 BScreen::ColSmartPlacement);
-  insert(i18n(ConfigmenuSet, ConfigmenuCascade,
-              "Cascade Placement"), BScreen::CascadePlacement);
-  insert(i18n(ConfigmenuSet, ConfigmenuLeftRight,
-              "Left to Right"), BScreen::LeftRight);
-  insert(i18n(ConfigmenuSet, ConfigmenuRightLeft,
-              "Right to Left"), BScreen::RightLeft);
-  insert(i18n(ConfigmenuSet, ConfigmenuTopBottom,
-              "Top to Bottom"), BScreen::TopBottom);
-  insert(i18n(ConfigmenuSet, ConfigmenuBottomTop,
-              "Bottom to Top"), BScreen::BottomTop);
-
-  switch (configmenu->screen->getPlacementPolicy()) {
-  case BScreen::RowSmartPlacement:
-    setItemChecked(0, True);
-    break;
-
-  case BScreen::ColSmartPlacement:
-    setItemChecked(1, True);
-    break;
-
-  case BScreen::CascadePlacement:
-    setItemChecked(2, True);
-    break;
-  }
-
-  Bool rl = (configmenu->screen->getRowPlacementDirection() ==
-	     BScreen::LeftRight),
-       tb = (configmenu->screen->getColPlacementDirection() ==
-	     BScreen::TopBottom);
-
-  setItemChecked(3, rl);
-  setItemChecked(4, ! rl);
-
-  setItemChecked(5, tb);
-  setItemChecked(6, ! tb);
-}
-
-void Configmenu::Placementmenu::itemClicked(const Point &, const Item &item, int button)
-{
-  if (button != 1)
-    return;
-
-  if (!item.function())
-    return;
-
-  switch (item.function()) {
-  case BScreen::RowSmartPlacement:
-    configmenu->screen->savePlacementPolicy(item.function());
-    setItemChecked(0, True);
-    setItemChecked(1, False);
-    setItemChecked(2, False);
-    break;
-
-  case BScreen::ColSmartPlacement:
-    configmenu->screen->savePlacementPolicy(item.function());
-    setItemChecked(0, False);
-    setItemChecked(1, True);
-    setItemChecked(2, False);
-    break;
-
-  case BScreen::CascadePlacement:
-    configmenu->screen->savePlacementPolicy(item.function());
-    setItemChecked(0, False);
-    setItemChecked(1, False);
-    setItemChecked(2, True);
-    break;
-
-  case BScreen::LeftRight:
-    configmenu->screen->saveRowPlacementDirection(BScreen::LeftRight);
-    setItemChecked(3, True);
-    setItemChecked(4, False);
-    break;
-
-  case BScreen::RightLeft:
-    configmenu->screen->saveRowPlacementDirection(BScreen::RightLeft);
-    setItemChecked(3, False);
-    setItemChecked(4, True);
-    break;
-
-  case BScreen::TopBottom:
-    configmenu->screen->saveColPlacementDirection(BScreen::TopBottom);
-    setItemChecked(5, True);
-    setItemChecked(6, False);
-    break;
-
-  case BScreen::BottomTop:
-    configmenu->screen->saveColPlacementDirection(BScreen::BottomTop);
-    setItemChecked(5, False);
-    setItemChecked(6, True);
-    break;
-  }
 }

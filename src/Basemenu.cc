@@ -223,7 +223,7 @@ void Basemenu::clickActiveItem()
 
     if (item.index() == active_item && once) {
       if (item.isEnabled())
-        itemClicked(r.pos(), item, 1);
+        itemClicked(item, 1);
       if (item.submenu())
         do_hide = false;
       once = false;
@@ -1049,7 +1049,8 @@ void Basemenu::showSubmenu(const Rect &r, const Item &item)
 
   if (parent_menu && parent_menu->isVisible() && parent_menu->x() > x())
     on_left = true;
-  // move the submenu to the left side of the menu, where there is hopefully more space
+  // move the submenu to the left side of the menu,
+  // where there is hopefully more space
   if (px + item.submenu()->width() > scr->width() || on_left)
     px -= item.submenu()->width() + r.width();
   if (px < 0) {
@@ -1064,7 +1065,7 @@ void Basemenu::showSubmenu(const Rect &r, const Item &item)
     py -= item.submenu()->title_rect.y() + item.submenu()->title_rect.height();
   if (py + item.submenu()->height() > scr->height())
     py -= item.submenu()->items_rect.height() - r.height() -
-          (style->borderWidth() * 2) - style->bevelWidth();
+          style->borderWidth() - style->bevelWidth();
   if (py < 0)
     py = 0;
 
@@ -1147,7 +1148,7 @@ void Basemenu::buttonReleaseEvent(XEvent *e)
   Point p(e->xbutton.x, e->xbutton.y);
 
   if (title_rect.contains(p) && title_pressed) {
-    titleClicked(p - title_rect.pos(), e->xbutton.button);
+    titleClicked(e->xbutton.button);
     title_pressed = false;
     return;
   }
@@ -1180,7 +1181,7 @@ void Basemenu::buttonReleaseEvent(XEvent *e)
     if (r.contains(p) && once) {
       setActiveItem(r, item);
       if (item.isEnabled())
-        itemClicked(p - items_rect.pos(), item, e->xbutton.button);
+        itemClicked(item, e->xbutton.button);
       if ( item.submenu())
         do_hide = false;
       once = false;
@@ -1481,12 +1482,12 @@ void Basemenu::keyPressEvent(XEvent *e)
   }
 }
 
-void Basemenu::titleClicked(const Point &, int button)
+void Basemenu::titleClicked(int button)
 {
   if (button == 3)
     hideAll();
 }
 
-void Basemenu::itemClicked(const Point &, const Item &, int)
+void Basemenu::itemClicked(const Item &, int)
 {
 }

@@ -45,7 +45,7 @@ public:
   void refresh();
 
 protected:
-  void itemClicked(const Point &, const Item &, int);
+  void itemClicked(const Item &, int);
 
 private:
   BlackboxWindow *window;
@@ -65,7 +65,7 @@ void SendToMenu::refresh()
   setItemChecked(window->getWorkspaceNumber(), true);
 }
 
-void SendToMenu::itemClicked(const Point &, const Item &item , int button)
+void SendToMenu::itemClicked(const Item &item, int button)
 {
   if (button > 2)
     return;
@@ -134,7 +134,7 @@ void Windowmenu::refresh()
   setItemEnabled(10, window->isClosable());
 }
 
-void Windowmenu::itemClicked(const Point &, const Item &item, int button)
+void Windowmenu::itemClicked(const Item &item, int button)
 {
   if (button != 1 && item.function() != Maximize)
     return;

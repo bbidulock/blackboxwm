@@ -62,7 +62,7 @@ Rootmenu::Rootmenu(int scr)
 {
 }
 
-void Rootmenu::itemClicked(const Point &, const Basemenu::Item &item, int button)
+void Rootmenu::itemClicked(const Item &item, int button)
 {
   if (button != 1)
     return;

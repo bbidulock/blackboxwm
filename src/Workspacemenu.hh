@@ -29,14 +29,13 @@
 class Workspacemenu : public Basemenu
 {
 public:
-  Workspacemenu( BScreen * );
+  Workspacemenu(BScreen *);
 
 protected:
-    virtual void itemClicked( const Point &, const Item &, int );
+    virtual void itemClicked(const Item &, int);
 
 private:
   BScreen *screen;
-
 };
 
 #endif // __Workspacemenu_hh

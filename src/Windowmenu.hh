@@ -37,12 +37,12 @@ public:
   enum Function { Shade, Iconify, Maximize, Restore, Raise, Lower, Stick,
                   KillClient, Close };
 
-  Windowmenu( int, BlackboxWindow * );
+  Windowmenu(int, BlackboxWindow *);
 
   void refresh();
 
 protected:
-  void itemClicked( const Point &, const Item &, int );
+  void itemClicked(const Item &, int);
 
 private:
   BlackboxWindow *window;

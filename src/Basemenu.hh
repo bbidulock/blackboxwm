@@ -128,8 +128,8 @@ protected:
   virtual void exposeEvent(XEvent *);
   virtual void keyPressEvent(XEvent *);
 
-  virtual void titleClicked(const Point &, int);
-  virtual void itemClicked(const Point &, const Item &, int);
+  virtual void titleClicked(int);
+  virtual void itemClicked(const Item &, int);
 
   virtual void hideAll();
 

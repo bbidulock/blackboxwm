@@ -41,7 +41,7 @@ Iconmenu::Iconmenu(int scrn)
   showTitle();
 }
 
-void Iconmenu::itemClicked(const Point &, const Item &item, int button)
+void Iconmenu::itemClicked(const Item &item, int button)
 {
   if (button != 1)
     return;

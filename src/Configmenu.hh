@@ -26,51 +26,14 @@
 
 #include "Basemenu.hh"
 
-// forward declaration
-class Blackbox;
-class BScreen;
-class Configmenu;
 
 class Configmenu : public Basemenu
 {
 public:
   Configmenu(int);
 
-  void reconfigure(void);
-
 protected:
-  virtual void itemClicked(const Point &, const Item &, int);
-
-private:
-  class Focusmenu : public Basemenu {
-  private:
-    Configmenu *configmenu;
-
-  protected:
-    virtual void itemClicked(const Point &, const Item &, int);
-
-  public:
-    Focusmenu(Configmenu *);
-  };
-
-  class Placementmenu : public Basemenu {
-  private:
-    Configmenu *configmenu;
-
-  protected:
-    virtual void itemClicked(const Point &, const Item &, int);
-
-  public:
-    Placementmenu(Configmenu *);
-  };
-
-  Blackbox *blackbox;
-  BScreen *screen;
-  Focusmenu *focusmenu;
-  Placementmenu *placementmenu;
-
-  friend class Focusmenu;
-  friend class Placementmenu;
+  virtual void itemClicked(const Item &, int);
 };
 
 #endif // __Configmenu_hh

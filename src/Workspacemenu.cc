@@ -41,7 +41,7 @@
 
 
 Workspacemenu::Workspacemenu(BScreen *scrn)
-    : Basemenu( scrn->screenNumber() )
+    : Basemenu(scrn->screenNumber())
 {
   setAutoDelete(false);
 
@@ -51,22 +51,22 @@ Workspacemenu::Workspacemenu(BScreen *scrn)
   showTitle();
 
   insert(i18n(WorkspacemenuSet, WorkspacemenuNewWorkspace, "New Workspace"));
-  insert(i18n( WorkspacemenuSet, WorkspacemenuRemoveLast, "Remove Last"));
+  insert(i18n(WorkspacemenuSet, WorkspacemenuRemoveLast, "Remove Last"));
   insertSeparator();
 }
 
-void Workspacemenu::itemClicked( const Point &, const Item &item, int button )
+void Workspacemenu::itemClicked(const Item &item, int button)
 {
-  if ( button != 1 )
+  if (button != 1)
     return;
 
-  if ( item.index() == 0 )
+  if (item.index() == 0)
     screen->addWorkspace();
-  else if ( item.index() == 1 )
+  else if (item.index() == 1)
     screen->removeLastWorkspace();
-  else if ( ( screen->getCurrentWorkspace()->getWorkspaceID() !=
-              ( item.index() - 3)) && ( ( item.index() - 3) < screen->getCount() ) ) {
-    screen->changeWorkspaceID( item.index() - 3 );
+  else if ((screen->getCurrentWorkspace()->getWorkspaceID() !=
+              (item.index() - 3)) && ((item.index() - 3) < screen->getCount())) {
+    screen->changeWorkspaceID(item.index() - 3);
     hideAll();
   }
 }
