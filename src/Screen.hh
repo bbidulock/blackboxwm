@@ -108,7 +108,7 @@ private:
   Window geom_window;
 
   Blackbox *blackbox;
-  BImageControl *image_control;
+  bt::ImageControl *image_control;
   Configmenu *configmenu;
   Iconmenu *iconmenu;
   Rootmenu *rootmenu;
@@ -227,7 +227,7 @@ public:
 
   inline Blackbox *getBlackbox(void) { return blackbox; }
   inline bt::Color *getBorderColor(void) { return &resource.border_color; }
-  inline BImageControl *getImageControl(void) { return image_control; }
+  inline bt::ImageControl *getImageControl(void) { return image_control; }
   inline Rootmenu *getRootmenu(void) { return rootmenu; }
 
   inline bool isSlitOnTop(void) const { return resource.slit_on_top; }

@@ -31,7 +31,7 @@
 
 class bsetroot : public bt::Display {
 private:
-  BImageControl **img_ctrl;
+  bt::ImageControl **img_ctrl;
 
   std::string fore, back, grad;
 

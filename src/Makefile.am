@@ -24,7 +24,7 @@ DEFAULT_MENU=$(pkgdatadir)/menu
 DEFAULT_STYLE=$(pkgdatadir)/styles/Results
 
 CPPFLAGS= @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ \
-@DEBUG@ @NLS@ @TIMEDCACHE@ \
+@DEBUG@ @NLS@ \
 -DLOCALEPATH=\"$(pkgdatadir)/nls\" \
 -DDEFAULTMENU=\"$(DEFAULT_MENU)\" \
 -DDEFAULTSTYLE=\"$(DEFAULT_STYLE)\" \

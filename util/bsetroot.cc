@@ -111,9 +111,9 @@ bsetroot::bsetroot(int argc, char **argv, char *dpy_name)
     usage(2);
   }
 
-  img_ctrl = new BImageControl*[getNumberOfScreens()];
+  img_ctrl = new bt::ImageControl*[getNumberOfScreens()];
   for (unsigned int s = 0; s < getNumberOfScreens(); ++s)
-    img_ctrl[s] = new BImageControl(this, getScreenInfo(s), True);
+    img_ctrl[s] = new bt::ImageControl(this, getScreenInfo(s), True);
 
   if (sol && ! fore.empty())
     solid();

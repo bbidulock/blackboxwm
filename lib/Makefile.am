@@ -21,8 +21,7 @@
 # DEALINGS IN THE SOFTWARE.
 
 CPPFLAGS= @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ \
-@DEBUG@ @NLS@ @TIMEDCACHE@ \
--DLOCALEPATH=\"$(pkgdatadir)/nls\"
+@DEBUG@ @NLS@ -DLOCALEPATH=\"$(pkgdatadir)/nls\"
 
 noinst_LIBRARIES = libblackbox.a
 libblackbox_a_SOURCES= BaseDisplay.cc Color.cc GCCache.cc Image.cc ImageControl.cc Netwm.cc Resource.cc Texture.cc Timer.cc Util.cc i18n.cc

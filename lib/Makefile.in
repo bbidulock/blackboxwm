@@ -100,8 +100,7 @@ install_sh = @install_sh@
 regex_cmd = @regex_cmd@
 
 CPPFLAGS = @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ \
-@DEBUG@ @NLS@ @TIMEDCACHE@ \
--DLOCALEPATH=\"$(pkgdatadir)/nls\"
+@DEBUG@ @NLS@ -DLOCALEPATH=\"$(pkgdatadir)/nls\"
 
 
 noinst_LIBRARIES = libblackbox.a

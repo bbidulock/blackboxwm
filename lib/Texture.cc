@@ -41,14 +41,16 @@ extern "C" {
 
 
 bt::Texture::Texture(const bt::Display * const _display,
-                     unsigned int _screen, BImageControl* _ctrl)
+                     unsigned int _screen,
+                     bt::ImageControl* _ctrl)
   : c(_display, _screen), ct(_display, _screen),
     lc(_display, _screen), sc(_display, _screen), t(0),
     dpy(_display), ctrl(_ctrl), scrn(_screen) { }
 
 
 bt::Texture::Texture(const std::string &d, const bt::Display * const _display,
-                     unsigned int _screen, BImageControl* _ctrl)
+                     unsigned int _screen,
+                     bt::ImageControl* _ctrl)
   : c(_display, _screen), ct(_display, _screen),
     lc(_display, _screen), sc(_display, _screen), t(0),
     dpy(_display), ctrl(_ctrl), scrn(_screen) {

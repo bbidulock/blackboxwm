@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // ImageControl.cc for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
 // Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
@@ -56,12 +56,12 @@ static unsigned long bsqrt(unsigned long x) {
   }
 }
 
-BImageControl *ctrl = 0;
+bt::ImageControl *ctrl = 0;
 
-BImageControl::BImageControl(bt::Display *dpy, const bt::ScreenInfo *scrn,
-                             bool _dither, int _cpc,
-                             unsigned long cache_timeout,
-                             unsigned long cmax) {
+bt::ImageControl::ImageControl(bt::Display *dpy, const bt::ScreenInfo *scrn,
+                               bool _dither, int _cpc,
+                               unsigned long cache_timeout,
+                               unsigned long cmax) {
   if (! ctrl) ctrl = this;
 
   display = dpy;
@@ -70,7 +70,6 @@ BImageControl::BImageControl(bt::Display *dpy, const bt::ScreenInfo *scrn,
   setColorsPerChannel(_cpc);
 
   cache_max = cmax;
-#ifdef    TIMEDCACHE
   if (cache_timeout) {
     timer = new bt::Timer(display, this);
     timer->setTimeout(cache_timeout);
@@ -78,7 +77,6 @@ BImageControl::BImageControl(bt::Display *dpy, const bt::ScreenInfo *scrn,
   } else {
     timer = (bt::Timer *) 0;
   }
-#endif // TIMEDCACHE
 
   colors = (XColor *) 0;
   ncolors = 0;
@@ -320,11 +318,9 @@ BImageControl::BImageControl(bt::Display *dpy, const bt::ScreenInfo *scrn,
 }
 
 
-BImageControl::~BImageControl(void) {
+bt::ImageControl::~ImageControl(void) {
   delete [] sqrt_table;
-
   delete [] grad_xbuffer;
-
   delete [] grad_ybuffer;
 
   if (colors) {
@@ -344,19 +340,18 @@ BImageControl::~BImageControl(void) {
     for (; it != end; ++it)
       XFreePixmap(display->getXDisplay(), it->pixmap);
   }
-#ifdef    TIMEDCACHE
   if (timer) {
     timer->stop();
     delete timer;
   }
-#endif // TIMEDCACHE
 }
 
 
-Pixmap BImageControl::searchCache(const unsigned int width,
-                                  const unsigned int height,
-                                  const unsigned long texture,
-                                  const bt::Color &c1, const bt::Color &c2) {
+Pixmap bt::ImageControl::searchCache(const unsigned int width,
+                                     const unsigned int height,
+                                     const unsigned long texture,
+                                     const bt::Color &c1,
+                                     const bt::Color &c2) {
   if (cache.empty())
     return None;
 
@@ -380,15 +375,15 @@ Pixmap BImageControl::searchCache(const unsigned int width,
 }
 
 
-Pixmap BImageControl::renderImage(unsigned int width, unsigned int height,
-                                  const bt::Texture &texture) {
+Pixmap bt::ImageControl::renderImage(unsigned int width, unsigned int height,
+                                     const bt::Texture &texture) {
   if (texture.texture() & bt::Texture::Parent_Relative) return ParentRelative;
 
   Pixmap pixmap = searchCache(width, height, texture.texture(),
 			      texture.color(), texture.colorTo());
   if (pixmap) return pixmap;
 
-  BImage image(this, width, height);
+  bt::Image image(this, width, height);
   pixmap = image.render(texture);
 
   if (!pixmap)
@@ -417,7 +412,7 @@ Pixmap BImageControl::renderImage(unsigned int width, unsigned int height,
 }
 
 
-void BImageControl::removeImage(Pixmap pixmap) {
+void bt::ImageControl::removeImage(Pixmap pixmap) {
   if (!pixmap)
     return;
 
@@ -429,17 +424,16 @@ void BImageControl::removeImage(Pixmap pixmap) {
       tmp.count--;
   }
 
-#ifdef    TIMEDCACHE
   if (! timer)
-#endif // TIMEDCACHE
     timeout();
 }
 
 
-void BImageControl::getColorTables(unsigned char **rmt, unsigned char **gmt,
-				   unsigned char **bmt,
-				   int *roff, int *goff, int *boff,
-                                   int *rbit, int *gbit, int *bbit) {
+void bt::ImageControl::getColorTables(unsigned char **rmt,
+                                      unsigned char **gmt,
+                                      unsigned char **bmt,
+                                      int *roff, int *goff, int *boff,
+                                      int *rbit, int *gbit, int *bbit) {
   if (rmt) *rmt = red_color_table;
   if (gmt) *gmt = green_color_table;
   if (bmt) *bmt = blue_color_table;
@@ -454,17 +448,16 @@ void BImageControl::getColorTables(unsigned char **rmt, unsigned char **gmt,
 }
 
 
-void BImageControl::getXColorTable(XColor **c, int *n) {
+void bt::ImageControl::getXColorTable(XColor **c, int *n) {
   if (c) *c = colors;
   if (n) *n = ncolors;
 }
 
 
-void BImageControl::getGradientBuffers(unsigned int w,
+void bt::ImageControl::getGradientBuffers(unsigned int w,
 				       unsigned int h,
 				       unsigned int **xbuf,
-				       unsigned int **ybuf)
-{
+				       unsigned int **ybuf) {
   if (w > grad_buffer_width) {
     if (grad_xbuffer)
       delete [] grad_xbuffer;
@@ -488,7 +481,7 @@ void BImageControl::getGradientBuffers(unsigned int w,
 }
 
 
-void BImageControl::installRootColormap(void) {
+void bt::ImageControl::installRootColormap(void) {
   int ncmap = 0;
   Colormap *cmaps =
     XListInstalledColormaps(display->getXDisplay(), window, &ncmap);
@@ -507,7 +500,7 @@ void BImageControl::installRootColormap(void) {
 }
 
 
-void BImageControl::setColorsPerChannel(int cpc) {
+void bt::ImageControl::setColorsPerChannel(int cpc) {
   if (cpc < 2) cpc = 2;
   if (cpc > 6) cpc = 6;
 
@@ -515,7 +508,7 @@ void BImageControl::setColorsPerChannel(int cpc) {
 }
 
 
-unsigned long BImageControl::getSqrt(unsigned int x) {
+unsigned long bt::ImageControl::getSqrt(unsigned int x) {
   if (! sqrt_table) {
     // build sqrt table for use with elliptic gradient
 
@@ -530,7 +523,7 @@ unsigned long BImageControl::getSqrt(unsigned int x) {
 
 
 struct ZeroRefCheck {
-  inline bool operator()(const BImageControl::CachedImage &image) const {
+  inline bool operator()(const bt::ImageControl::CachedImage &image) const {
     return (image.count == 0);
   }
 };
@@ -539,14 +532,14 @@ struct CacheCleaner {
   Display *display;
   ZeroRefCheck ref_check;
   CacheCleaner(Display *d): display(d) {}
-  inline void operator()(const BImageControl::CachedImage& image) const {
+  inline void operator()(const bt::ImageControl::CachedImage& image) const {
     if (ref_check(image))
       XFreePixmap(display, image.pixmap);
   }
 };
 
 
-void BImageControl::timeout(void) {
+void bt::ImageControl::timeout(void) {
   CacheCleaner cleaner(display->getXDisplay());
   std::for_each(cache.begin(), cache.end(), cleaner);
   cache.remove_if(cleaner.ref_check);

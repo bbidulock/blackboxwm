@@ -30,9 +30,12 @@
 #include <vector>
 
 class Blackbox;
-class BImageControl;
 class BScreen;
 class BasemenuItem;
+
+namespace bt {
+    class ImageControl;
+}
 
 
 class Basemenu : public bt::EventHandler {
@@ -41,7 +44,7 @@ private:
   MenuItems menuitems;
   Blackbox *blackbox;
   Basemenu *parent;
-  BImageControl *image_ctrl;
+  bt::ImageControl *image_ctrl;
   BScreen *screen;
 
   bool moving, visible, movable, torn, internal_menu, title_vis, shifted,

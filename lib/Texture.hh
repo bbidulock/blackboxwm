@@ -28,11 +28,12 @@
 
 #include <string>
 
-class BImageControl;
 typedef unsigned long Pixmap;
 
 
 namespace bt {
+
+  class ImageControl;
 
   class Texture {
   public:
@@ -65,10 +66,12 @@ namespace bt {
     };
 
     Texture(const bt::Display * const _display = 0,
-            unsigned int _screen = ~(0u), BImageControl* _ctrl = 0);
+            unsigned int _screen = ~(0u),
+            bt::ImageControl* _ctrl = 0);
     Texture(const std::string &_description,
             const bt::Display * const _display = 0,
-            unsigned int _screen = ~(0u), BImageControl* _ctrl = 0);
+            unsigned int _screen = ~(0u),
+            bt::ImageControl* _ctrl = 0);
 
     void setColor(const bt::Color &_color);
     void setColorTo(const bt::Color &_colorTo) { ct = _colorTo; }
@@ -93,7 +96,7 @@ namespace bt {
     unsigned int screen(void) const { return scrn; }
     void setDisplay(const bt::Display * const _display,
                     const unsigned int _screen);
-    void setImageControl(BImageControl* _ctrl) { ctrl = _ctrl; }
+    void setImageControl(bt::ImageControl* _ctrl) { ctrl = _ctrl; }
     const std::string &description(void) const { return descr; }
     void setDescription(const std::string &d);
 
@@ -105,7 +108,7 @@ namespace bt {
     std::string descr;
     unsigned long t;
     const bt::Display *dpy;
-    BImageControl *ctrl;
+    bt::ImageControl *ctrl;
     unsigned int scrn;
   };
 

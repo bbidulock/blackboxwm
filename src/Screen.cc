@@ -113,7 +113,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   blackbox = bb;
 
   event_mask = ColormapChangeMask | EnterWindowMask | PropertyChangeMask |
-    SubstructureRedirectMask | ButtonPressMask | ButtonReleaseMask;
+               SubstructureRedirectMask | ButtonPressMask | ButtonReleaseMask;
 
   XErrorHandler old = XSetErrorHandler((XErrorHandler) anotherWMRunning);
   XSelectInput(getDisplay()->getXDisplay(), getRootWindow(), event_mask);
@@ -124,8 +124,8 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   if (! managed) return;
 
   fprintf(stderr, bt::i18n(ScreenSet, ScreenManagingScreen,
-                       "BScreen::BScreen: managing screen %d "
-                       "using visual 0x%lx, depth %d\n"),
+                           "BScreen::BScreen: managing screen %d "
+                           "using visual 0x%lx, depth %d\n"),
           getScreenNumber(), XVisualIDFromVisual(getVisual()),
           getDepth());
 
@@ -148,8 +148,8 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   usableArea.setSize(getWidth(), getHeight());
 
   image_control =
-    new BImageControl(blackbox, this, True, blackbox->getColorsPerChannel(),
-                      blackbox->getCacheLife(), blackbox->getCacheMax());
+    new bt::ImageControl(blackbox, this, True, blackbox->getColorsPerChannel(),
+                         blackbox->getCacheLife(), blackbox->getCacheMax());
   image_control->installRootColormap();
   root_colormap_installed = True;
 
@@ -164,14 +164,14 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   if (! bt::i18n.multibyte()) gc_value_mask |= GCFont;
 
   gcv.foreground = WhitePixel(blackbox->getXDisplay(), getScreenNumber())
-    ^ BlackPixel(blackbox->getXDisplay(), getScreenNumber());
+                   ^ BlackPixel(blackbox->getXDisplay(), getScreenNumber());
   gcv.function = GXxor;
   gcv.subwindow_mode = IncludeInferiors;
   opGC = XCreateGC(blackbox->getXDisplay(), getRootWindow(),
                    GCForeground | GCFunction | GCSubwindowMode, &gcv);
 
   const char *s =  bt::i18n(ScreenSet, ScreenPositionLength,
-                        "0: 0000 x 0: 0000");
+                            "0: 0000 x 0: 0000");
   int l = strlen(s);
 
   if (bt::i18n.multibyte()) {
@@ -182,7 +182,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
     geom_h = resource.wstyle.fontset_extents->max_ink_extent.height;
   } else {
     geom_h = resource.wstyle.font->ascent +
-      resource.wstyle.font->descent;
+             resource.wstyle.font->descent;
 
     geom_w = XTextWidth(resource.wstyle.font, s, l);
   }

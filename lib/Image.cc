@@ -37,7 +37,7 @@ extern "C" {
 #include "Texture.hh"
 
 
-BImage::BImage(BImageControl *c, int w, int h) {
+bt::Image::Image(bt::ImageControl *c, int w, int h) {
   control = c;
 
   width = (w > 0) ? w : 1;
@@ -61,14 +61,14 @@ BImage::BImage(BImageControl *c, int w, int h) {
 }
 
 
-BImage::~BImage(void) {
+bt::Image::~Image(void) {
   delete [] red;
   delete [] green;
   delete [] blue;
 }
 
 
-Pixmap BImage::render(const bt::Texture &texture) {
+Pixmap bt::Image::render(const bt::Texture &texture) {
   if (texture.texture() & bt::Texture::Parent_Relative)
     return ParentRelative;
   else if (texture.texture() & bt::Texture::Solid)
@@ -79,14 +79,14 @@ Pixmap BImage::render(const bt::Texture &texture) {
 }
 
 
-Pixmap BImage::render_solid(const bt::Texture &texture) {
+Pixmap bt::Image::render_solid(const bt::Texture &texture) {
   Pixmap pixmap = XCreatePixmap(control->getDisplay()->getXDisplay(),
 				control->getDrawable(), width,
 				height, control->getDepth());
   if (pixmap == None)
     return None;
 
-  Display *display = control->getDisplay()->getXDisplay();
+  ::Display *display = control->getDisplay()->getXDisplay();
 
   bt::Pen pen(texture.color());
   bt::Pen penlight(texture.lightColor());
@@ -150,7 +150,7 @@ Pixmap BImage::render_solid(const bt::Texture &texture) {
 }
 
 
-Pixmap BImage::render_gradient(const bt::Texture &texture) {
+Pixmap bt::Image::render_gradient(const bt::Texture &texture) {
   bool inverted = False;
 
   interlaced = texture.texture() & bt::Texture::Interlaced;
@@ -253,8 +253,8 @@ void assignPixelData(unsigned int bit_depth, unsigned char **data,
 // algorithm: ordered dithering... many many thanks to rasterman
 // (raster@rasterman.com) for telling me about this... portions of this
 // code is based off of his code in Imlib
-void BImage::TrueColorDither(unsigned int bit_depth, int bytes_per_line,
-			     unsigned char *pixel_data) {
+void bt::Image::TrueColorDither(unsigned int bit_depth, int bytes_per_line,
+                                unsigned char *pixel_data) {
   unsigned int x, y, dithx, dithy, r, g, b, er, eg, eb, offset;
   unsigned char *ppixel_data = pixel_data;
   unsigned long pixel;
@@ -300,8 +300,8 @@ const static unsigned char dither8[8][8] = {
   { 63, 31, 55, 23, 61, 29, 53, 21}
 };
 
-void BImage::OrderedPseudoColorDither(int bytes_per_line,
-				      unsigned char *pixel_data) {
+void bt::Image::OrderedPseudoColorDither(int bytes_per_line,
+                                         unsigned char *pixel_data) {
   unsigned int x, y, dithx, dithy, r, g, b, er, eg, eb, offset;
   unsigned long pixel;
   unsigned char *ppixel_data = pixel_data;
@@ -337,7 +337,8 @@ void BImage::OrderedPseudoColorDither(int bytes_per_line,
 }
 #endif
 
-void BImage::PseudoColorDither(int bytes_per_line, unsigned char *pixel_data) {
+void bt::Image::PseudoColorDither(int bytes_per_line,
+                                  unsigned char *pixel_data) {
   short *terr,
     *rerr = new short[width + 2],
     *gerr = new short[width + 2],
@@ -431,7 +432,7 @@ void BImage::PseudoColorDither(int bytes_per_line, unsigned char *pixel_data) {
 }
 
 
-XImage *BImage::renderXImage(void) {
+XImage *bt::Image::renderXImage(void) {
   XImage *image =
     XCreateImage(control->getDisplay()->getXDisplay(),
                  control->getVisual(), control->getDepth(), ZPixmap, 0, 0,
@@ -542,7 +543,7 @@ XImage *BImage::renderXImage(void) {
 }
 
 
-Pixmap BImage::renderPixmap(void) {
+Pixmap bt::Image::renderPixmap(void) {
   Pixmap pixmap =
     XCreatePixmap(control->getDisplay()->getXDisplay(),
                   control->getDrawable(), width, height, control->getDepth());
@@ -579,7 +580,7 @@ Pixmap BImage::renderPixmap(void) {
 }
 
 
-void BImage::bevel1(void) {
+void bt::Image::bevel1(void) {
   if (width > 2 && height > 2) {
     unsigned char *pr = red, *pg = green, *pb = blue;
 
@@ -717,7 +718,7 @@ void BImage::bevel1(void) {
 }
 
 
-void BImage::bevel2(void) {
+void bt::Image::bevel2(void) {
   if (width > 4 && height > 4) {
     unsigned char r, g, b, rr ,gg ,bb, *pr = red + width + 1,
       *pg = green + width + 1, *pb = blue + width + 1;
@@ -796,7 +797,7 @@ void BImage::bevel2(void) {
 }
 
 
-void BImage::invert(void) {
+void bt::Image::invert(void) {
   register unsigned int i, j, wh = (width * height) - 1;
   unsigned char tmp;
 
@@ -816,7 +817,7 @@ void BImage::invert(void) {
 }
 
 
-void BImage::dgradient(void) {
+void bt::Image::dgradient(void) {
   // diagonal gradient code was written by Mike Cole <mike@mydot.com>
   // modified for interlacing by Brad Hughes
 
@@ -917,7 +918,7 @@ void BImage::dgradient(void) {
 }
 
 
-void BImage::hgradient(void) {
+void bt::Image::hgradient(void) {
   float drx, dgx, dbx,
     xr = (float) from.red(),
     xg = (float) from.green(),
@@ -1009,7 +1010,7 @@ void BImage::hgradient(void) {
 }
 
 
-void BImage::vgradient(void) {
+void bt::Image::vgradient(void) {
   float dry, dgy, dby,
     yr = (float) from.red(),
     yg = (float) from.green(),
@@ -1082,7 +1083,7 @@ void BImage::vgradient(void) {
 }
 
 
-void BImage::pgradient(void) {
+void bt::Image::pgradient(void) {
   // pyramid gradient -  based on original dgradient, written by
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
@@ -1192,7 +1193,7 @@ void BImage::pgradient(void) {
 }
 
 
-void BImage::rgradient(void) {
+void bt::Image::rgradient(void) {
   // rectangle gradient -  based on original dgradient, written by
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
@@ -1307,7 +1308,7 @@ void BImage::rgradient(void) {
 }
 
 
-void BImage::egradient(void) {
+void bt::Image::egradient(void) {
   // elliptic gradient -  based on original dgradient, written by
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
@@ -1427,7 +1428,7 @@ void BImage::egradient(void) {
 }
 
 
-void BImage::pcgradient(void) {
+void bt::Image::pcgradient(void) {
   // pipe cross gradient -  based on original dgradient, written by
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
@@ -1544,7 +1545,7 @@ void BImage::pcgradient(void) {
 }
 
 
-void BImage::cdgradient(void) {
+void bt::Image::cdgradient(void) {
   // cross diagonal gradient -  based on original dgradient, written by
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
