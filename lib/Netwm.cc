@@ -43,9 +43,18 @@ Netwm::Netwm(Display* _display): display(_display) {
     "_NET_WM_NAME",
     "_NET_WM_ICON_NAME",
     "_NET_WM_DESKTOP"
+    "_NET_WM_WINDOW_TYPE",
+    "_NET_WM_WINDOW_TYPE_DESKTOP",
+    "_NET_WM_WINDOW_TYPE_DOCK",
+    "_NET_WM_WINDOW_TYPE_TOOLBAR",
+    "_NET_WM_WINDOW_TYPE_MENU",
+    "_NET_WM_WINDOW_TYPE_UTILITY",
+    "_NET_WM_WINDOW_TYPE_SPLASH",
+    "_NET_WM_WINDOW_TYPE_DIALOG",
+    "_NET_WM_WINDOW_TYPE_NORMAL",
   };
-  Atom atoms_return[16];
-  XInternAtoms(display, atoms, 16, False, atoms_return);
+  Atom atoms_return[25];
+  XInternAtoms(display, atoms, 25, False, atoms_return);
 
   utf8_string = atoms_return[0];
   net_supported = atoms_return[1];
@@ -63,6 +72,15 @@ Netwm::Netwm(Display* _display): display(_display) {
   net_wm_name = atoms_return[13];
   net_wm_icon_name = atoms_return[14];
   net_wm_desktop = atoms_return[15];
+  net_wm_window_type = atoms_return[16];
+  net_wm_window_type_desktop = atoms_return[17];
+  net_wm_window_type_dock = atoms_return[18];
+  net_wm_window_type_toolbar = atoms_return[19];
+  net_wm_window_type_menu = atoms_return[20];
+  net_wm_window_type_utility = atoms_return[21];
+  net_wm_window_type_splash = atoms_return[22];
+  net_wm_window_type_dialog = atoms_return[23];
+  net_wm_window_type_normal = atoms_return[24];
 }
 
 
@@ -196,6 +214,12 @@ bool Netwm::readWMDesktop(Window target, unsigned int& desktop) const {
 }
 
 
+bool Netwm::readWMWindowType(Window target, AtomList& types) const {
+  return (getAtomListProperty(target, net_wm_window_type, types) &&
+          ! types.empty());
+}
+
+
 // utility
 
 void Netwm::removeProperty(Window target, Atom atom) const {
@@ -254,3 +278,61 @@ bool Netwm::getCardinalProperty(Window target, Atom property,
 
   return True;
 }
+
+
+bool Netwm::getAtomListProperty(Window target, Atom property,
+                                AtomList& atoms) const {
+  Atom atom_return;
+  int size;
+  unsigned long nitems, bytes_left;
+  unsigned char *data;
+
+  int ret = XGetWindowProperty(display, target, property,
+                               0l, 1l, False,
+                               XA_ATOM, &atom_return, &size,
+                               &nitems, &bytes_left, &data);
+  if (ret != Success || nitems < 1)
+    return False;
+
+  if (bytes_left != 0) {
+    XFree(data);
+    unsigned long remain = ((size / 8) * nitems) + bytes_left;
+    ret = XGetWindowProperty(display, target,
+                             property, 0l, remain, False,
+                             XA_ATOM, &atom_return, &size,
+                             &nitems, &bytes_left, &data);
+    if (ret != Success)
+      return False;
+  }
+
+  Atom* values = reinterpret_cast<Atom*>(data);
+
+  std::copy(values, values + (nitems * (size/8)), std::back_inserter(atoms));
+
+  XFree(data);
+
+  return True;
+}
+
+
+bool Netwm::isSupportedWMWindowType(Atom atom) const {
+  /*
+    the implementation looks silly I know.  You are probably thinking
+    "why not just do:
+    return (atom > net_wm_window_type && atom <= net_wm_window_type_normal)?".
+    Well the problem is it assumes the atoms were created in a contiguous
+    range. This happens to be true if we created them but could be false if we
+    were started after some netwm app which allocated the windows in an odd
+    order.  So the following is guaranteed to work even if it looks silly and
+    requires more effort to maintain.
+  */
+  return (atom == net_wm_window_type_desktop ||
+          atom == net_wm_window_type_dock ||
+          atom == net_wm_window_type_toolbar ||
+          atom == net_wm_window_type_menu ||
+          atom == net_wm_window_type_utility ||
+          atom == net_wm_window_type_splash ||
+          atom == net_wm_window_type_dialog ||
+          atom == net_wm_window_type_normal);
+}
+

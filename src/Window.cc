@@ -163,12 +163,20 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   // get size, aspect, minimum/maximum size, ewmh and other hints set by the
   // client
 
-  if (! getNetwmHints() || ! getBlackboxHints())
+  if (! (getNetwmHints() || getBlackboxHints()))
     getMWMHints();
 
   getWMProtocols();
   getWMHints();
   getWMNormalHints();
+  getTransientInfo();
+
+  if (client.window_type == None) {
+    if (isTransient())
+      client.window_type = blackbox->netwm()->wmWindowTypeDialog();
+    else
+      client.window_type = blackbox->netwm()->wmWindowTypeNormal();
+  }
 
   frame.window = createToplevelWindow();
   blackbox->insertEventHandler(frame.window, this);
@@ -176,11 +184,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   frame.plate = createChildWindow(frame.window, ExposureMask);
   blackbox->insertEventHandler(frame.plate, this);
 
-  // determine if this is a transient window
-  getTransientInfo();
-
   // adjust the window decorations based on transience and window sizes
-
   if (isTransient()) {
     decorations &= ~(Decor_Maximize | Decor_Handle);
     functions &= ~Func_Maximize;
@@ -914,13 +918,33 @@ void BlackboxWindow::getWMIconName(void) {
 bool BlackboxWindow::getNetwmHints(void) {
   // wm_name and wm_icon_name are read separately
 
+  unsigned int count = 0;
+  bool ret;
+
+  Netwm::AtomList types;
+  ret = blackbox->netwm()->readWMWindowType(client.window, types);
+  if (ret) {
+    Netwm::AtomList::iterator it = types.begin(), end = types.end();
+    for (; it != end; ++it) {
+      if (blackbox->netwm()->isSupportedWMWindowType(*it)) {
+        client.window_type = *it;
+        break;
+      }
+    }
+    ++count;
+  }
+
   unsigned int desktop;
-  bool ret = blackbox->netwm()->readWMDesktop(client.window, desktop);
-  if (! ret)
-    return False;
-  if (desktop != 0xFFFFFFFF)
-    setWorkspace(desktop);
-  return True;
+  ret = blackbox->netwm()->readWMDesktop(client.window, desktop);
+  if (ret) {
+    if (desktop != 0xFFFFFFFF)
+      setWorkspace(desktop);
+    ++count;
+  } else if (client.window_type == blackbox->netwm()->wmWindowTypeDesktop()) {
+    // make me omnipresent
+  }
+
+  return (count > 0);
 }
 
 

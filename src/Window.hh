@@ -164,6 +164,7 @@ private:
       win_gravity;
 
     unsigned long initial_state, normal_hint_flags;
+    Atom window_type;
   } client;
 
   FunctionFlags functions;

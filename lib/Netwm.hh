@@ -36,6 +36,8 @@ class Netwm {
 public:
   explicit Netwm(Display *_display);
 
+  typedef std::vector<Atom> AtomList;
+
   inline Atom utf8String(void) const { return utf8_string; }
 
   // root window properties
@@ -75,15 +77,32 @@ public:
   inline Atom wmName(void) const { return net_wm_name; }
   inline Atom wmIconName(void) const { return net_wm_icon_name; }
   inline Atom wmDesktop(void) const { return net_wm_desktop; }
+  inline Atom wmWindowType(void) const { return net_wm_window_type; }
+  inline Atom wmWindowTypeDesktop(void) const
+  { return net_wm_window_type_desktop; }
+  inline Atom wmWindowTypeDock(void) const { return net_wm_window_type_dock; }
+  inline Atom wmWindowTypeToolbar(void) const
+  { return net_wm_window_type_toolbar; }
+  inline Atom wmWindowTypeMenu(void) const { return net_wm_window_type_menu; }
+  inline Atom wmWindowTypeUtility(void) const
+  { return net_wm_window_type_utility; }
+  inline Atom wmWindowTypeSplash(void) const
+  { return net_wm_window_type_splash; }
+  inline Atom wmWindowTypeDialog(void) const
+  { return net_wm_window_type_dialog; }
+  inline Atom wmWindowTypeNormal(void) const
+  { return net_wm_window_type_normal; }
 
   void setWMName(Window target, const std::string& name) const;
   bool readWMName(Window target, std::string& name) const;
   bool readWMIconName(Window target, std::string& name) const;
   void setWMDesktop(Window target, unsigned int desktop) const;
   bool readWMDesktop(Window target, unsigned int& desktop) const;
+  bool readWMWindowType(Window target, AtomList& types) const;
 
   // utility
   void removeProperty(Window target, Atom atom) const;
+  bool isSupportedWMWindowType(Atom atom) const;
 
 private:
   Netwm(const Netwm&);
@@ -93,6 +112,8 @@ private:
                              std::string& value) const;
   bool getCardinalProperty(Window target, Atom property,
                            unsigned int& value) const;
+  bool getAtomListProperty(Window target, Atom property,
+                           AtomList& atoms) const;
 
   Display *display;
   Atom utf8_string,
@@ -100,7 +121,11 @@ private:
     net_number_of_desktops, net_desktop_geometry, net_current_desktop,
     net_desktop_names, net_active_window, net_workarea,
     net_supporting_wm_check, net_close_window, net_moveresize_window,
-    net_wm_name, net_wm_icon_name, net_wm_desktop;
+    net_wm_name, net_wm_icon_name, net_wm_desktop, net_wm_window_type,
+    net_wm_window_type_desktop, net_wm_window_type_dock,
+    net_wm_window_type_toolbar, net_wm_window_type_menu,
+    net_wm_window_type_utility, net_wm_window_type_splash,
+    net_wm_window_type_dialog, net_wm_window_type_normal;
 };
 
 #endif // _blackbox_netwm_hh
