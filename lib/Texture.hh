@@ -56,14 +56,12 @@ namespace bt {
       Pyramid             = (1l<<10),
       PipeCross           = (1l<<11),
       Elliptic            = (1l<<12),
-      // inverted image
-      Invert              = (1l<<14),
       // parent relative image
-      Parent_Relative     = (1l<<15),
+      Parent_Relative     = (1l<<13),
       // fake interlaced image
-      Interlaced          = (1l<<16),
+      Interlaced          = (1l<<14),
       // border around image
-      Border              = (1l<<17)
+      Border              = (1l<<15)
     };
 
     Texture(void);

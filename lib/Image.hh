@@ -46,9 +46,10 @@ namespace bt {
   enum DitherMode { NoDither, OrderedDither, FloydSteinbergDither };
 
   struct RGB {
-    unsigned int red   : 8;
-    unsigned int green : 8;
-    unsigned int blue  : 8;
+    unsigned int red      : 8;
+    unsigned int green    : 8;
+    unsigned int blue     : 8;
+    unsigned int reserved : 8;
   };
 
   class Image {
@@ -84,7 +85,6 @@ namespace bt {
 
     Pixmap renderPixmap(const Display &display, unsigned int screen);
 
-    void invert(void);
     void bevel(unsigned int border_width = 0);
     void dgradient(const Color &from, const Color &to, bool interlaced);
     void egradient(const Color &from, const Color &to, bool interlaced);

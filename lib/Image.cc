@@ -465,21 +465,14 @@ Pixmap bt::Image::render(const Display &display, unsigned int screen,
     return None;
 
   Color from, to;
-  bool inverted = false;
   bool interlaced = texture.texture() & bt::Texture::Interlaced;
 
   if (texture.texture() & bt::Texture::Sunken) {
     from = texture.colorTo();
     to = texture.color();
-
-    if (! (texture.texture() & bt::Texture::Invert))
-      inverted = true;
   } else {
     from = texture.color();
     to = texture.colorTo();
-
-    if (texture.texture() & bt::Texture::Invert)
-      inverted = true;
   }
 
   if (texture.texture() & bt::Texture::Diagonal)
@@ -501,8 +494,6 @@ Pixmap bt::Image::render(const Display &display, unsigned int screen,
 
   if (texture.texture() & (bt::Texture::Sunken | bt::Texture::Raised))
     bevel(texture.borderWidth());
-
-  if (inverted) invert();
 
   Pixmap pixmap = renderPixmap(display, screen);
 
@@ -939,18 +930,6 @@ void bt::Image::bevel(unsigned int border_width) {
 
     ++p;
   } while (--w);
-}
-
-
-void bt::Image::invert(void) {
-  register unsigned int i = 0, j = (width * height) - 1;
-  RGB tmp;
-
-  for (; j > i; j--, i++) {
-    tmp = data[j];
-    data[j] = data[i];
-    data[i] = tmp;
-  }
 }
 
 
