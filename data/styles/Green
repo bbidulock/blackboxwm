@@ -1,10 +1,11 @@
 *button.pressed: sunken solid
-*button.pressed.color: darkgrey
+*button.pressed.backgroundColor: darkgrey
 *button: parentrelative
 *button.foregroundColor: black
 
-*color: rgb:dd/dd/d7
-*colorTo: rgb:ee/ee/e7
+*backgroundColor: rgb:dd/dd/d7
+*color1: rgb:dd/dd/d7
+*color2: rgb:ee/ee/e7
 
 *font: Bitstream Vera Sans-9
 
@@ -13,7 +14,7 @@
 *marginWidth: 2
 
 menu.title: flat solid border
-menu.title.color: grey
+menu.title.backgroundColor: grey
 menu.title.foregroundColor: black
 menu.title.textColor: black
 menu.title.alignment: center
@@ -26,14 +27,14 @@ menu.frame.disabledColor: darkgrey
 menu.frame.alignment: left
 
 menu.active: flat solid border
-menu.active.color: rgb:77/77/74
+menu.active.backgroundColor: rgb:77/77/74
 menu.active.foregroundColor: white
 menu.active.textColor: white
 
 rootCommand: bsetroot -solid rgb:77/aa/77
 
 slit: raised solid
-slit.color: rgb:77/aa/77
+slit.backgroundColor: rgb:77/aa/77
 slit.marginWidth: 3
 
 toolbar: raised gradient border
@@ -44,8 +45,8 @@ toolbar.clock: parentrelative
 toolbar.windowLabel: parentrelative
 
 window.title.focus: raised gradient border
-window.title.focus.color: rgb:66/66/63
-window.title.focus.colorTo: rgb:88/88/84
+window.title.focus.color1: rgb:66/66/63
+window.title.focus.color2: rgb:88/88/84
 window.title.unfocus: raised gradient border
 
 window.label.focus: parentrelative
@@ -64,7 +65,7 @@ window.handle.focus: raised solid border
 window.handle.unfocus: raised solid border
 
 window.grip.focus: raised solid border
-window.grip.focus.color: rgb:77/77/74
+window.grip.focus.backgroundColor: rgb:77/77/74
 window.grip.unfocus: raised solid border
 
 window*alignment: center

@@ -476,7 +476,7 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
   // sanity checks
   bt::Texture flat_black;
   flat_black.setDescription("flat solid");
-  flat_black.setColor(bt::Color(0, 0, 0));
+  flat_black.setColor1(bt::Color(0, 0, 0));
 
   if (_windowStyle.focus.title.texture() == bt::Texture::Parent_Relative)
     _windowStyle.focus.title = flat_black;

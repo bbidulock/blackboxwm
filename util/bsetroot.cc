@@ -309,8 +309,8 @@ void bsetroot::gradient(void) {
 
   bt::Texture texture;
   texture.setDescription(descr);
-  texture.setColor(f);
-  texture.setColorTo(b);
+  texture.setColor1(f);
+  texture.setColor2(b);
 
   for (unsigned int screen = 0; screen < display.screenCount(); screen++) {
     const bt::ScreenInfo &screen_info = display.screenInfo(screen);

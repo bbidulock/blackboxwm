@@ -33,13 +33,13 @@
 #include <ctype.h>
 
 
-void bt::Texture::setColor(const bt::Color &new_color) {
-  c = new_color;
+void bt::Texture::setColor1(const bt::Color &new_color) {
+  c1 = new_color;
 
   unsigned char r, g, b, rr, gg, bb;
-  r = c.red();
-  g = c.green();
-  b = c.blue();
+  r = c1.red();
+  g = c1.green();
+  b = c1.blue();
 
   // calculate the light color
   rr = r + (r >> 1);
@@ -121,8 +121,8 @@ void bt::Texture::setDescription(const std::string &d) {
 bt::Texture& bt::Texture::operator=(const bt::Texture &tt) {
   descr = tt.descr;
 
-  c  = tt.c;
-  ct = tt.ct;
+  c1 = tt.c1;
+  c2 = tt.c2;
   bc = tt.bc;
   lc = tt.lc;
   sc = tt.sc;
@@ -140,27 +140,49 @@ bt::Texture bt::textureResource(const Display &display,
                                 const std::string &class_name,
                                 const std::string &default_color) {
   Texture texture;
-  texture.setDescription(resource.read(name, class_name, "flat solid"));
 
-  Color c1, c2, c3;
-  c1 = Color::namedColor(display, screen,
-                         resource.read(name + ".color",
-                                       class_name + ".Color",
-                                       default_color));
-  c2 = Color::namedColor(display, screen,
-                         resource.read(name + ".colorTo",
-                                       class_name + ".ColorTo",
-                                       default_color));
+  std::string description = resource.read(name, class_name);
+  if (description.empty()) {
+    // no such texture, use the default color in a flat solid texture
+    texture.setDescription("flat solid");
+    texture.setColor1(Color::namedColor(display, screen, default_color));
+    return texture;
+  }
 
-  texture.setColor(c1);
-  texture.setColorTo(c2);
+  texture.setDescription(description);
+
+  if ((texture.texture() & bt::Texture::Gradient)
+      || (texture.texture() & bt::Texture::Interlaced)) {
+    std::string color1, color2;
+    color1 = resource.read(name + ".color1",
+                           class_name + ".Color1",
+                           resource.read(name + ".color",
+                                         class_name + ".Color",
+                                         default_color));
+    color2 = resource.read(name + ".color2",
+                           class_name + ".Color2",
+                           resource.read(name + ".colorTo",
+                                         class_name + ".ColorTo",
+                                         default_color));
+    texture.setColor1(Color::namedColor(display, screen, color1));
+    texture.setColor2(Color::namedColor(display, screen, color2));
+  } else {
+    std::string color1;
+    color1 = resource.read(name + ".backgroundColor",
+                           class_name + ".BackgroundColor",
+                           resource.read(name + ".color",
+                                         class_name + ".Color",
+                                         default_color));
+    texture.setColor1(Color::namedColor(display, screen, color1));
+  }
 
   if (texture.texture() & bt::Texture::Border) {
-    c3 = Color::namedColor(display, screen,
-                           resource.read(name + ".borderColor",
-                                         class_name + ".BorderColor",
-                                         default_color));
-    texture.setBorderColor(c3);
+    Color borderColor =
+      Color::namedColor(display, screen,
+                        resource.read(name + ".borderColor",
+                                      class_name + ".BorderColor",
+                                      "black"));
+    texture.setBorderColor(borderColor);
 
     const std::string bstr =
       resource.read(name + ".borderWidth", class_name + ".BorderWidth", "1");
@@ -178,7 +200,7 @@ void bt::drawTexture(unsigned int screen,
                      const Rect &trect,
                      const Rect &urect,
                      Pixmap pixmap) {
-  Pen pen(screen, texture.color());
+  Pen pen(screen, texture.color1());
 
   if ((texture.texture() & Texture::Gradient) && pixmap) {
     XCopyArea(pen.XDisplay(), pixmap, drawable, pen.gc(),
@@ -206,7 +228,7 @@ void bt::drawTexture(unsigned int screen,
   }
 
   if (texture.texture() & bt::Texture::Interlaced) {
-    Pen peninterlace(screen, texture.colorTo());
+    Pen peninterlace(screen, texture.color2());
     int begin = trect.top()    + bw;
     while (begin < urect.top()) begin += 2;
     int end   = std::min(trect.bottom() - bw, urect.bottom());

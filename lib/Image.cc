@@ -596,11 +596,11 @@ Pixmap bt::Image::render(const Display &display, unsigned int screen,
   bool interlaced = texture.texture() & bt::Texture::Interlaced;
 
   if (texture.texture() & bt::Texture::Sunken) {
-    from = texture.colorTo();
-    to = texture.color();
+    from = texture.color2();
+    to = texture.color1();
   } else {
-    from = texture.color();
-    to = texture.colorTo();
+    from = texture.color1();
+    to = texture.color2();
   }
 
   data = static_cast<RGB *>(malloc(width * height * sizeof(RGB)));

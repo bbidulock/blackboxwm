@@ -86,16 +86,16 @@ namespace bt {
     { return descr; }
     void setDescription(const std::string &d);
 
-    void setColor(const Color &new_color);
-    inline void setColorTo(const Color &new_colorTo)
-    { ct = new_colorTo; }
+    void setColor1(const Color &new_color);
+    inline void setColor2(const Color &new_color)
+    { c2 = new_color; }
     inline void setBorderColor(const Color &new_borderColor)
     { bc = new_borderColor; }
 
-    inline const Color &color(void) const
-    { return c; }
-    inline const Color &colorTo(void) const
-    { return ct; }
+    inline const Color &color1(void) const
+    { return c1; }
+    inline const Color &color2(void) const
+    { return c2; }
     inline const Color &borderColor(void) const
     { return bc; }
     inline const Color &lightColor(void) const
@@ -117,7 +117,7 @@ namespace bt {
 
     Texture &operator=(const Texture &tt);
     inline bool operator==(const Texture &tt) const {
-      return (c == tt.c && ct == tt.ct && bc == tt.bc &&
+      return (c1 == tt.c1 && c2 == tt.c2 && bc == tt.bc &&
               lc == tt.lc && sc == tt.sc && t == tt.t && bw == tt.bw);
     }
     inline bool operator!=(const Texture &tt) const
@@ -125,7 +125,7 @@ namespace bt {
 
   private:
     std::string descr;
-    Color c, ct, bc, lc, sc;
+    Color c1, c2, bc, lc, sc;
     unsigned long t;
     unsigned int bw;
   };

@@ -8,8 +8,9 @@ consists of a text description, colors and a border width.  Textures
 are specified as follows:
 
 <name>: 		description
-<name>.color: 		color of the texture
-<name>.colorTo: 	target color for gradients and interlaced solids
+<name>.backgroundColor:	background color for solids
+<name>.color1: 		initial color for gradients and interlaced solids
+<name>.color2:	 	target color for gradients and interlaced solids
 <name>.borderWidth: 	width of the texture border in pixels
 <name>.borderColor: 	color of the texture border
 
@@ -75,8 +76,9 @@ Menu Style
 
 menu.title			- title texture
 Menu.Title
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
@@ -97,8 +99,9 @@ Menu.Title.MarginWidth
 
 menu.frame			- frame texture
 Menu.Frame
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
@@ -122,8 +125,9 @@ Menu.Frame.MarginWidth
 
 menu.active			- texture for the active menu item
 Menu.Active
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
@@ -138,8 +142,9 @@ Slit Style
 ------------------------------------------------------------------------------
 slit				- the texture of the slit
 Slit
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
@@ -152,43 +157,49 @@ Toolbar Style
 
 toolbar				- the texture of the toolbar itself
 Toolbar
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
 toolbar.label			- workspace label texture
 Toolbar.Label
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
 toolbar.windowLabel		- window label texture
 Toolbar.Label
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
 toolbar.clock			- clock label texture
 Toolbar.Label
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
 toolbar.button			- button texture
 Toolbar.Button
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
 toolbar.button.pressed		- pressed button texture
 Toolbar.Button.Pressed
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
@@ -225,78 +236,89 @@ Window Style
 
 window.title.focus		- focused title texture
 Window.Title.Focus
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
 window.label.focus		- focused label texture
 Window.Label.focus
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
 window.button.focus		- focused button texture
 Window.Button.Focus
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
 window.handle.focus		- focus handle texture
 Window.Handle.Focus
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
 window.grip.focus		- focus grip texture
 Window.Grip.Focus
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
 window.title.unfocus		- unfocused title texture
 Window.Title.Unfocus
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
 window.label.unfocus		- unfocused label texture
 Window.Label.Unfocus
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
 window.button.unfocus		- unfocused button texture
 Window.Button.Unfocus
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
 window.handle.unfocus		- unfocused handle texture
 Window.Handle.Unfocus
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
 window.grip.unfocus		- unfocused grip texture
 Window.Grip.Unfocus
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
 window.button.pressed		- pressed button texture
 Window.Button.Pressed
-	.color
-	.colorTo
+ 	.backgroundColor
+	.color1
+	.color2
 	.borderWidth
 	.borderColor
 
