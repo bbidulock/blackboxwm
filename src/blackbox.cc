@@ -381,7 +381,7 @@ void Blackbox::process_event(XEvent *e) {
                  getBlackboxChangeWindowFocusAtom()) {
         BlackboxWindow *win = findWindow(e->xclient.window);
 
-        if (win && ! win->isHidden() && win->setInputFocus())
+        if (win && win->setInputFocus())
           win->installColormap(True);
       } else if (e->xclient.message_type == netwm()->activeWindow()) {
         BlackboxWindow *win = findWindow(e->xclient.window);
@@ -393,7 +393,7 @@ void Blackbox::process_event(XEvent *e) {
           if (win->getWorkspaceNumber() != screen->getCurrentWorkspaceID())
             screen->changeWorkspaceID(win->getWorkspaceNumber());
 
-          if (! win->isHidden() && win->setInputFocus()) {
+          if (win->setInputFocus()) {
             Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
             wkspc->raiseWindow(win);
             win->installColormap(True);

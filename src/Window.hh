@@ -127,7 +127,6 @@ private:
   struct WMState {
     bool modal,              // is modal? (must be dismissed to continue)
       shaded,                // is shaded?
-      hidden,                // is hidden?
       iconic,                // is iconified?
       fullscreen,            // is a full screen window
       moving,                // is moving?
@@ -287,7 +286,9 @@ public:
 
   inline bool isTransient(void) const { return client.transient_for != 0; }
   inline bool isFocused(void) const { return client.state.focused; }
-  inline bool isHidden(void) const { return client.state.hidden; }
+  inline bool isVisible(void) const
+  { return (! (client.current_state == WithdrawnState ||
+               client.state.iconic)); }
   inline bool isIconic(void) const { return client.state.iconic; }
   inline bool isShaded(void) const { return client.state.shaded; }
   inline bool isMaximized(void) const { return client.state.maximized; }

@@ -113,9 +113,9 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
                           CWEventMask|CWDontPropagate, &attrib_set);
 
   client.state.moving = client.state.resizing = client.state.shaded =
-    client.state.hidden = client.state.iconic = client.state.focused =
-    client.state.modal = client.state.fullscreen =
-    client.state.send_focus_message = client.state.shaped = False;
+    client.state.iconic = client.state.focused = client.state.modal =
+    client.state.fullscreen = client.state.send_focus_message =
+    client.state.shaped = False;
   client.state.maximized = 0;
   client.state.skip = SKIP_NONE;
   client.state.layer = LAYER_NORMAL;
@@ -228,12 +228,19 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   if (! getState())
     client.current_state = initial_state;
 
-  if (client.workspace >= screen->getWorkspaceCount()) {
-    screen->getCurrentWorkspace()->addWindow(this, place_window);
+  if (client.state.iconic) {
+    // prepare the window to be iconified
+    client.current_state = IconicState;
+    client.state.iconic = False;
   } else {
-    screen->getWorkspace(client.workspace)->addWindow(this, place_window);
-    if (client.workspace != screen->getCurrentWorkspace()->getID())
-      client.current_state = WithdrawnState;
+    // otherwise place it on the correct workspace
+    if (client.workspace >= screen->getWorkspaceCount()) {
+      screen->getCurrentWorkspace()->addWindow(this, place_window);
+    } else {
+      screen->getWorkspace(client.workspace)->addWindow(this, place_window);
+      if (client.workspace != screen->getCurrentWorkspace()->getID())
+        client.current_state = WithdrawnState;
+    }
   }
 
   if (! place_window) {
@@ -280,6 +287,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   if (client.state.maximized && (client.functions & Func_Maximize))
     remaximize();
+  else
+    client.state.maximized = 0;
 
   // create this last so it only needs to be configured once
   windowmenu = new Windowmenu(this);
@@ -902,14 +911,15 @@ bool BlackboxWindow::getNetwmHints(void) {
 
   unsigned int count = 0;
   bool ret;
+  const Netwm* const netwm = blackbox->netwm();
 
   Netwm::AtomList atoms;
-  ret = blackbox->netwm()->readWMWindowType(client.window, atoms);
+  ret = netwm->readWMWindowType(client.window, atoms);
   if (ret) {
     ++count;
     Netwm::AtomList::iterator it = atoms.begin(), end = atoms.end();
     for (; it != end; ++it) {
-      if (blackbox->netwm()->isSupportedWMWindowType(*it)) {
+      if (netwm->isSupportedWMWindowType(*it)) {
         client.window_type = *it;
         break;
       }
@@ -917,11 +927,10 @@ bool BlackboxWindow::getNetwmHints(void) {
   }
 
   atoms.clear();
-  ret = blackbox->netwm()->readWMState(client.window, atoms);
+  ret = netwm->readWMState(client.window, atoms);
   if (ret) {
     ++count;
     Netwm::AtomList::iterator it = atoms.begin(), end = atoms.end();
-    const Netwm* const netwm = blackbox->netwm();
     for (; it != end; ++it) {
       Atom state = *it;
       if (state == netwm->wmStateModal()) {
@@ -951,8 +960,6 @@ bool BlackboxWindow::getNetwmHints(void) {
           client.state.skip = SKIP_BOTH;
       } else if (state == netwm->wmStateHidden()) {
         client.state.iconic = True;
-        client.state.hidden = True;
-        client.current_state = IconicState;
       } else if (state == netwm->wmStateFullscreen()) {
         client.state.fullscreen = True;
       } else if (state == netwm->wmStateAbove()) {
@@ -964,12 +971,12 @@ bool BlackboxWindow::getNetwmHints(void) {
   }
 
   unsigned int desktop;
-  ret = blackbox->netwm()->readWMDesktop(client.window, desktop);
+  ret = netwm->readWMDesktop(client.window, desktop);
   if (ret) {
     ++count;
     if (desktop != 0xFFFFFFFF)
       client.workspace = desktop;
-  } else if (client.window_type == blackbox->netwm()->wmWindowTypeDesktop()) {
+  } else if (client.window_type == netwm->wmWindowTypeDesktop()) {
     // make me omnipresent
     client.state.layer = LAYER_DESKTOP;
   }
@@ -1377,14 +1384,11 @@ void BlackboxWindow::configureShape(void) {
 
 
 bool BlackboxWindow::setInputFocus(void) {
+  if (! isVisible()) return False;
   if (client.state.focused) return True;
 
   // do not give focus to a window that is about to close
   if (! validateClient()) return False;
-
-  assert(! client.state.iconic &&
-         // window must be on the current workspace
-         client.workspace == screen->getCurrentWorkspaceID());
 
   if (! frame.rect.intersects(screen->getRect())) {
     // client is outside the screen, move it to the center
@@ -1458,7 +1462,6 @@ void BlackboxWindow::iconify(void) {
    * unmapped, we don't get an enter event in sloppy focus mode
    */
   XUnmapWindow(blackbox->getXDisplay(), frame.window);
-  client.state.hidden = True;
   client.state.iconic = True;
 
   if (windowmenu) windowmenu->hide();
@@ -1478,7 +1481,8 @@ void BlackboxWindow::iconify(void) {
    * of them (since they are above their transient_for) for a split
    * second
    */
-  screen->getWorkspace(client.workspace)->removeWindow(this);
+  if (client.workspace != BSENTINEL)
+    screen->getWorkspace(client.workspace)->removeWindow(this);
   screen->addIcon(this);
 
   /*
@@ -1518,7 +1522,6 @@ void BlackboxWindow::show(void) {
   assert(client.rect.left() == real_x && client.rect.top() == real_y);
 #endif
 
-  client.state.hidden = False;
   client.state.iconic = False;
 }
 
@@ -1563,7 +1566,6 @@ void BlackboxWindow::close(void) {
 void BlackboxWindow::withdraw(void) {
   setState(client.current_state);
 
-  client.state.hidden = True;
   client.state.iconic = False;
 
   XUnmapWindow(blackbox->getXDisplay(), frame.window);
@@ -1766,8 +1768,7 @@ void BlackboxWindow::redrawWindowFrame(void) const {
 
 
 void BlackboxWindow::setFocusFlag(bool focus) {
-  // only focus a window if it is visible
-  if (focus && client.state.hidden)
+  if (focus && ! isVisible())
     return;
 
   client.state.focused = focus;
@@ -1822,10 +1823,14 @@ void BlackboxWindow::setState(unsigned long new_state) {
                   blackbox->getWMStateAtom(), blackbox->getWMStateAtom(), 32,
                   PropModeReplace, (unsigned char *) state, 2);
 
-  blackbox->netwm()->setWMDesktop(client.window, client.workspace);
-
   Netwm::AtomList atoms;
   const Netwm* const netwm = blackbox->netwm();
+
+  if (client.state.iconic)
+    netwm->removeProperty(client.window, netwm->wmDesktop());
+  else
+    blackbox->netwm()->setWMDesktop(client.window, client.workspace);
+
   if (client.state.modal)
     atoms.push_back(netwm->wmStateModal());
 
@@ -1854,7 +1859,7 @@ void BlackboxWindow::setState(unsigned long new_state) {
     atoms.push_back(netwm->wmStateSkipPager());
   }
 
-  if (client.state.hidden)
+  if (client.state.iconic)
     atoms.push_back(netwm->wmStateHidden());
 
   if (client.state.layer == LAYER_NORMAL)
@@ -2773,7 +2778,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
 
 
 void BlackboxWindow::enterNotifyEvent(const XCrossingEvent* ce) {
-  if (! (screen->isSloppyFocus() && ! client.state.hidden))
+  if (! (screen->isSloppyFocus() && isVisible()))
     return;
 
   XEvent e;
@@ -2889,7 +2894,7 @@ void BlackboxWindow::changeBlackboxHints(const BlackboxHints *net) {
        (net->attrib & AttribShaded)))
     shade();
 
-  if (! client.state.hidden && // watch out for requests when not visible
+  if (isVisible() && // watch out for requests when not visible
       (net->flags & (AttribMaxVert | AttribMaxHoriz)) &&
       ((blackbox_attrib.attrib & (AttribMaxVert | AttribMaxHoriz)) !=
        (net->attrib & (AttribMaxVert | AttribMaxHoriz)))) {
@@ -2964,7 +2969,7 @@ void BlackboxWindow::changeBlackboxHints(const BlackboxHints *net) {
         shade();
     }
 
-    if (! client.state.hidden && frame.window) {
+    if (isVisible() && frame.window) {
       XMapSubwindows(blackbox->getXDisplay(), frame.window);
       XMapWindow(blackbox->getXDisplay(), frame.window);
     }
