@@ -998,7 +998,7 @@ void BScreen::unmanageWindow(BlackboxWindow *w, bool remap) {
 }
 
 
-void BScreen::raiseWindows(const WindowStack* const workspace_stack) {
+void BScreen::raiseWindows(const Netwm::WindowList* const workspace_stack) {
   // the 13 represents the number of blackbox windows such as menus
   const unsigned int workspace_stack_size =
     (workspace_stack) ? workspace_stack->size() : 0;
@@ -2133,7 +2133,7 @@ void BScreen::updateClientListHint(void) const {
 
 
 void BScreen::updateClientListStackingHint(void) const {
-  WindowList stack;
+  Netwm::WindowList stack;
 
   WorkspaceList::const_iterator it = workspacesList.begin(),
     end = workspacesList.end();
@@ -2146,8 +2146,7 @@ void BScreen::updateClientListStackingHint(void) const {
     return;
   }
 
-  Netwm::WindowList clientList(stack.begin(), stack.end());
-  blackbox->netwm()->setClientListStacking(getRootWindow(), clientList);
+  blackbox->netwm()->setClientListStacking(getRootWindow(), stack);
 }
 
 

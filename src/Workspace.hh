@@ -39,40 +39,42 @@ class BlackboxWindow;
 class Netizen;
 
 typedef std::list<BlackboxWindow*> BlackboxWindowList;
-typedef std::vector<Window> WindowStack;
 typedef std::list<Window> WindowList;
+
+class StackingList {
+public:
+  typedef std::list<BlackboxWindow*> WindowStack;
+  typedef WindowStack::iterator iterator;
+  typedef WindowStack::reverse_iterator reverse_iterator;
+  typedef WindowStack::const_iterator const_iterator;
+  typedef WindowStack::const_reverse_iterator const_reverse_iterator;
+
+  StackingList(void);
+  void insert(BlackboxWindow* w);
+  void remove(BlackboxWindow* w);
+
+  bool empty(void) const { return (stack.size() == 5); }
+  WindowStack::size_type size(void) const { return stack.size() - 5; }
+  BlackboxWindow* front(void) const;
+  iterator begin(void) { return stack.begin(); }
+  iterator end(void) { return stack.end(); }
+  reverse_iterator rbegin(void) { return stack.rbegin(); }
+  reverse_iterator rend(void) { return stack.rend(); }
+  const_iterator begin(void) const { return stack.begin(); }
+  const_iterator end(void) const { return stack.end(); }
+  const_reverse_iterator rbegin(void) const { return stack.rbegin(); }
+  const_reverse_iterator rend(void) const { return stack.rend(); }
+
+private:
+  WindowStack stack;
+  iterator fullscreen, above, normal, below, desktop;
+
+  iterator& findLocation(const BlackboxWindow* const w);
+};
+
 
 class Workspace {
 private:
-  class StackingList {
-  public:
-    typedef std::list<BlackboxWindow*> WindowStack;
-    typedef WindowStack::iterator iterator;
-    typedef WindowStack::reverse_iterator reverse_iterator;
-    typedef WindowStack::const_iterator const_iterator;
-    typedef WindowStack::const_reverse_iterator const_reverse_iterator;
-
-    StackingList(void);
-    void insert(BlackboxWindow* w);
-    void remove(BlackboxWindow* w);
-    bool empty(void) const { return (stack.size() == 5); }
-    BlackboxWindow* front(void) const;
-    iterator begin(void) { return stack.begin(); }
-    iterator end(void) { return stack.end(); }
-    reverse_iterator rbegin(void) { return stack.rbegin(); }
-    reverse_iterator rend(void) { return stack.rend(); }
-    const_iterator begin(void) const { return stack.begin(); }
-    const_iterator end(void) const { return stack.end(); }
-    const_reverse_iterator rbegin(void) const { return stack.rbegin(); }
-    const_reverse_iterator rend(void) const { return stack.rend(); }
-
-  private:
-    WindowStack stack;
-    iterator fullscreen, above, normal, below, desktop;
-
-    iterator& findLocation(const BlackboxWindow* const w);
-  };
-
   BScreen *screen;
   BlackboxWindow *lastfocus;
   Clientmenu *clientmenu;
@@ -124,7 +126,7 @@ public:
   void addWindow(BlackboxWindow *w, bool place = False);
   unsigned int removeWindow(BlackboxWindow *w);
   unsigned int getCount(void) const;
-  void updateClientListStacking(WindowList& clientList) const;
+  void updateClientListStacking(Netwm::WindowList& clientList) const;
 
   void show(void);
   void hide(void);

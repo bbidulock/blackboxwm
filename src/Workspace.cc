@@ -52,25 +52,33 @@ extern "C" {
 #include "Windowmenu.hh"
 
 
-Workspace::StackingList::StackingList(void) {
-  desktop = stack.insert(stack.begin(), 0);
-  below = stack.insert(desktop, 0);
-  normal = stack.insert(below, 0);
-  above = stack.insert(normal, 0);
-  fullscreen = stack.insert(above, 0);
+StackingList::StackingList(void) {
+  desktop = stack.insert(stack.begin(), (BlackboxWindow*) 0);
+  below = stack.insert(desktop, (BlackboxWindow*) 0);
+  normal = stack.insert(below, (BlackboxWindow*) 0);
+  above = stack.insert(normal, (BlackboxWindow*) 0);
+  fullscreen = stack.insert(above, (BlackboxWindow*) 0);
 }
 
 
-Workspace::StackingList::iterator&
-Workspace::StackingList::findLocation(const BlackboxWindow* const w) {
+StackingList::iterator&
+StackingList::findLocation(const BlackboxWindow* const w) {
   if (w->getLayer() == BlackboxWindow::LAYER_NORMAL)
     return normal;
-  else
-    return normal;
+  else if (w->getLayer() == BlackboxWindow::LAYER_ABOVE)
+    return above;
+  else if (w->getLayer() == BlackboxWindow::LAYER_FULLSCREEN)
+    return fullscreen;
+  else if (w->getLayer() == BlackboxWindow::LAYER_BELOW)
+    return below;
+  else if (w->getLayer() == BlackboxWindow::LAYER_DESKTOP)
+    return desktop;
+
+  return normal;
 }
 
 
-void Workspace::StackingList::insert(BlackboxWindow* w) {
+void StackingList::insert(BlackboxWindow* w) {
   assert(w);
 
   StackingList::iterator& it = findLocation(w);
@@ -78,7 +86,7 @@ void Workspace::StackingList::insert(BlackboxWindow* w) {
 }
 
 
-void Workspace::StackingList::remove(BlackboxWindow* w) {
+void StackingList::remove(BlackboxWindow* w) {
   assert(w);
 
   iterator& pos = findLocation(w);
@@ -92,7 +100,7 @@ void Workspace::StackingList::remove(BlackboxWindow* w) {
 }
 
 
-BlackboxWindow* Workspace::StackingList::front(void) const {
+BlackboxWindow* StackingList::front(void) const {
   if (*fullscreen) return *fullscreen;
   if (*above) return *above;
   if (*normal) return *normal;
@@ -705,7 +713,7 @@ void Workspace::placeWindow(BlackboxWindow *win) {
 }
 
 
-void Workspace::updateClientListStacking(WindowList& clientList) const {
+void Workspace::updateClientListStacking(Netwm::WindowList& clientList) const {
   StackingList::const_iterator it = stackingList.begin(),
     end = stackingList.end();
   for (; it != end; ++it) {

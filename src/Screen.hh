@@ -343,7 +343,7 @@ public:
   void addWindow(Window w);
   void releaseWindow(BlackboxWindow *w, bool remap);
 
-  void raiseWindows(const WindowStack* const workspace_stack);
+  void raiseWindows(const Netwm::WindowList* const workspace_stack);
   void reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id);
   void propagateWindowName(const BlackboxWindow *bw);
   void nextFocus(void) const;
