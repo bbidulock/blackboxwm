@@ -433,7 +433,7 @@ void Basemenu::hide()
 void Basemenu::hideAll()
 {
   if ( parent_menu && parent_menu->isVisible() )
-    parent_menu->hide();
+    parent_menu->hideAll();
   else
     hide();
 }
