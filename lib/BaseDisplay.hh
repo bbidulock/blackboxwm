@@ -46,7 +46,6 @@ namespace bt {
   // forward declaration
   class Display;
   class EventHandler;
-  class GCCache;
   class Menu;
 
   class ScreenInfo: public NoCopy {
@@ -86,8 +85,6 @@ namespace bt {
     typedef std::vector<ScreenInfo*> ScreenInfoList;
     ScreenInfoList screenInfoList;
 
-    mutable GCCache *gccache;
-
   public:
     Display(const char* dpy_name);
     ~Display(void);
@@ -95,7 +92,6 @@ namespace bt {
     ::Display* XDisplay(void) const { return xdisplay; }
     unsigned int screenCount(void) const { return screenInfoList.size(); }
     const ScreenInfo* screenNumber(unsigned int i) const;
-    GCCache *gcCache(void) const;
   };
 
 

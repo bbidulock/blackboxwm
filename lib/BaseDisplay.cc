@@ -83,7 +83,6 @@ extern "C" {
 
 #include "BaseDisplay.hh"
 #include "EventHandler.hh"
-#include "GCCache.hh"
 #include "Menu.hh"
 #include "Timer.hh"
 #include "Util.hh"
@@ -148,7 +147,23 @@ static void signalhandler(int sig)
 }
 
 
-bt::Display::Display(const char* dpy_name): gccache(0) {
+namespace bt {
+
+  void createColorCache(const Display &display);
+  void destroyColorCache(void);
+
+
+  void createFontCache(const Display &display);
+  void destroyFontCache(void);
+
+
+  void createPenCache(const Display &display);
+  void destroyPenCache(void);
+
+} // namespace bt
+
+
+bt::Display::Display(const char* dpy_name) {
   if (! (xdisplay = XOpenDisplay(dpy_name)))
       ::exit(2);
 
@@ -158,23 +173,22 @@ bt::Display::Display(const char* dpy_name): gccache(0) {
   screenInfoList.reserve(ScreenCount(xdisplay));
   for (int i = 0; i < ScreenCount(xdisplay); ++i)
     screenInfoList.push_back(new bt::ScreenInfo(*this, i));
+
+  createColorCache(*this);
+  createFontCache(*this);
+  createPenCache(*this);
 }
 
 
 bt::Display::~Display() {
-  delete gccache;
+  destroyPenCache();
+  destroyFontCache();
+  destroyColorCache();
 
   std::for_each(screenInfoList.begin(), screenInfoList.end(),
            bt::PointerAssassin());
 
   XCloseDisplay(xdisplay);
-}
-
-
-bt::GCCache* bt::Display::gcCache(void) const {
-  if (! gccache)
-    gccache = new bt::GCCache(this, screenInfoList.size());
-  return gccache;
 }
 
 
@@ -185,18 +199,17 @@ bt::Application::Application(const char *app_name, const char *dpy_name)
   ::base_app = this;
 
   struct sigaction action;
-
   action.sa_handler = signalhandler;
   action.sa_mask = sigset_t();
   action.sa_flags = SA_NOCLDSTOP | SA_NODEFER;
 
   sigaction(SIGPIPE, &action, NULL);
   sigaction(SIGSEGV, &action, NULL);
-  sigaction(SIGFPE, &action, NULL);
+  sigaction(SIGFPE,  &action, NULL);
   sigaction(SIGTERM, &action, NULL);
-  sigaction(SIGINT, &action, NULL);
+  sigaction(SIGINT,  &action, NULL);
   sigaction(SIGCHLD, &action, NULL);
-  sigaction(SIGHUP, &action, NULL);
+  sigaction(SIGHUP,  &action, NULL);
   sigaction(SIGUSR1, &action, NULL);
   sigaction(SIGUSR2, &action, NULL);
 
@@ -587,7 +600,7 @@ const bt::ScreenInfo* bt::Display::screenNumber(unsigned int i) const {
 
 
 void bt::Application::insertEventHandler(Window window,
-                                     bt::EventHandler *handler) {
+                                         bt::EventHandler *handler) {
   eventhandlers.insert(std::pair<Window,bt::EventHandler*>(window, handler));
 }
 
@@ -671,12 +684,12 @@ bt::ScreenInfo::ScreenInfo(bt::Display& d, unsigned int num)
     if (vinfo_return) {
       int max_depth = 1;
       for (int i = 0; i < vinfo_nitems; ++i) {
-        if (vinfo_return[i].depth > max_depth) {
-          if (max_depth == 24 && vinfo_return[i].depth > 24)
-            break;          // prefer 24 bit over 32
-          max_depth = vinfo_return[i].depth;
-          best = i;
-        }
+        if (vinfo_return[i].depth < max_depth ||
+            // prefer 24 bit over 32
+            (max_depth == 24 && vinfo_return[i].depth > 24))
+          continue;
+        max_depth = vinfo_return[i].depth;
+        best = i;
       }
       if (max_depth < depth) best = -1;
     }
@@ -698,5 +711,5 @@ bt::ScreenInfo::ScreenInfo(bt::Display& d, unsigned int num)
     default_string.resize(pos);
 
   display_string = std::string("DISPLAY=") + default_string + '.' +
-    bt::itostring(static_cast<unsigned long>(screen_number));
+                   bt::itostring(screen_number);
 }
