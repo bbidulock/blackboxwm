@@ -2,10 +2,6 @@
 
 netwm:
 -----------------------------
-* _NET_NUMBER_OF_DESKTOPS requires that we move windows to the next
-  workspace when the one they are on is closed.  However we currently
-  iconify them instead
-
 * if we have N workspaces NET_DESKTOP_NAMES could supply us with N+M
   names.  When we create a new workspace we should consult this list.
 
@@ -14,6 +10,9 @@ netwm:
 refactoring:
 -----------------------------
 * look into public v. private members of all classes
+
+* cleanup the headers so there are less depends and we are sure that
+  only what is needed is used
 
 warts:
 -----------------------------
