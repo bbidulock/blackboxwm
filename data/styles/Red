@@ -1,6 +1,6 @@
-*button.pressed: sunken solid
+*button.pressed.appearance: sunken solid
 *button.pressed.backgroundColor: darkgrey
-*button: parentrelative
+*button.appearance: parentrelative
 *button.foregroundColor: black
 
 *backgroundColor: rgb:dd/dd/d7
@@ -13,60 +13,60 @@
 *borderWidth: 1
 *marginWidth: 2
 
-menu.title: flat solid border
+menu.title.appearance: flat solid border
 menu.title.backgroundColor: grey
 menu.title.foregroundColor: black
 menu.title.textColor: black
 menu.title.alignment: center
 menu.title.font: Bitstream Vera Sans-9:style=Bold
 
-menu.frame: raised gradient border
+menu.frame.appearance: raised gradient border
 menu.frame.textColor: black
 menu.frame.foregroundColor: grey40
 menu.frame.disabledColor: darkgrey
 menu.frame.alignment: left
 
-menu.active: flat solid border
+menu.active.appearance: flat solid border
 menu.active.backgroundColor: rgb:77/77/74
 menu.active.foregroundColor: white
 menu.active.textColor: white
 
 rootCommand: bsetroot -solid rgb:aa/55/55
 
-slit: raised solid
+slit.appearance: raised solid
 slit.backgroundColor: rgb:aa/55/55
 slit.marginWidth: 3
 
-toolbar: raised gradient border
+toolbar.appearance: raised gradient border
 toolbar.alignment: center
 toolbar*textColor: black
-toolbar.label: parentrelative
-toolbar.clock: parentrelative
-toolbar.windowLabel: parentrelative
+toolbar.label.appearance: parentrelative
+toolbar.clock.appearance: parentrelative
+toolbar.windowLabel.appearance: parentrelative
 
-window.title.focus: raised gradient border
+window.title.focus.appearance: raised gradient border
 window.title.focus.color1: rgb:66/66/63
 window.title.focus.color2: rgb:88/88/84
-window.title.unfocus: raised gradient border
+window.title.unfocus.appearance: raised gradient border
 
-window.label.focus: parentrelative
+window.label.focus.appearance: parentrelative
 window.label.focus.textColor: white
-window.label.unfocus: parentrelative
+window.label.unfocus.appearance: parentrelative
 window.label.unfocus.textColor: darkgrey
 window.label.marginWidth: 1
 
-window.button.focus: parentrelative
+window.button.focus.appearance: parentrelative
 window.button.focus.foregroundColor: white
 
-window.button.unfocus: parentrelative
+window.button.unfocus.appearance: parentrelative
 window.button.unfocus.foregroundColor: darkgrey
 
-window.handle.focus: raised solid border
-window.handle.unfocus: raised solid border
+window.handle.focus.appearance: raised solid border
+window.handle.unfocus.appearance: raised solid border
 
-window.grip.focus: raised solid border
+window.grip.focus.appearance: raised solid border
 window.grip.focus.backgroundColor: rgb:77/77/74
-window.grip.unfocus: raised solid border
+window.grip.unfocus.appearance: raised solid border
 
 window*alignment: center
 window.font: Bitstream Vera Sans-9:style=Bold

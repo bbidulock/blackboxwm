@@ -7,12 +7,21 @@ A texture is a description of a particular visual element.  It
 consists of a text description, colors and a border width.  Textures
 are specified as follows:
 
-<name>: 		description
+<name>.appearance:	description
 <name>.backgroundColor:	background color for solids
 <name>.color1: 		initial color for gradients and interlaced solids
 <name>.color2:	 	target color for gradients and interlaced solids
 <name>.borderWidth: 	width of the texture border in pixels
 <name>.borderColor: 	color of the texture border
+
+The BNF for the appearance is:
+
+    <appearance> 	:= parentrelative | 
+			   [<bevel-type>] [<fill-type>] [interlaced] [border]
+    <bevel-type> 	:= sunken | flat | raised
+    <fill-type> 	:= gradient <gradient-type> | solid
+    <gradient-type> 	:= crossdiagonal | rectangle | pyramid | pipecross |
+			   elliptic | horizontal | vertical | diagonal
 
 
 Color

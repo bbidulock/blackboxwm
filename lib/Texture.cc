@@ -141,7 +141,10 @@ bt::Texture bt::textureResource(const Display &display,
                                 const std::string &default_color) {
   Texture texture;
 
-  std::string description = resource.read(name, class_name);
+  std::string description = resource.read(name + ".appearance",
+                                          class_name + ".Appearance",
+                                          resource.read(name,
+                                                        class_name));
   if (description.empty()) {
     // no such texture, use the default color in a flat solid texture
     texture.setDescription("flat solid");
