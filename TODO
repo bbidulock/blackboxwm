@@ -6,6 +6,8 @@ netwm:
    workspace when the one they are on is closed.  However we currently
    iconify them instead
 
+* _NET_WORKAREA is supposed to be an array of desktop geometries
+
 warts:
 -----------------------------
 * vnc in full screen mode does not get focus
