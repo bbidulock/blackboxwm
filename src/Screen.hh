@@ -128,7 +128,7 @@ private:
 
   bt::Rect usableArea;
 
-  typedef std::list<Netwm::Strut*> StrutList;
+  typedef std::list<bt::Netwm::Strut*> StrutList;
   StrutList strutList;
   typedef std::vector<std::string> WorkspaceNamesList;
   WorkspaceNamesList workspaceNames;
@@ -322,8 +322,8 @@ public:
   BlackboxWindow *getIcon(unsigned int index);
 
   const bt::Rect& availableArea(void) const;
-  void addStrut(Netwm::Strut *strut);
-  void removeStrut(Netwm::Strut *strut);
+  void addStrut(bt::Netwm::Strut *strut);
+  void removeStrut(bt::Netwm::Strut *strut);
 
   void updateClientListHint(void) const;
   void updateClientListStackingHint(void) const;
@@ -343,7 +343,7 @@ public:
   void addWindow(Window w);
   void releaseWindow(BlackboxWindow *w, bool remap);
 
-  void raiseWindows(const Netwm::WindowList* const workspace_stack);
+  void raiseWindows(const bt::Netwm::WindowList* const workspace_stack);
   void reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id);
   void propagateWindowName(const BlackboxWindow *bw);
   void nextFocus(void) const;

@@ -124,7 +124,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   client.window_group = None;
   client.transient_for = (BlackboxWindow*) 0;
   client.window_type = None;
-  client.strut = (Netwm::Strut*) 0;
+  client.strut = (bt::Netwm::Strut*) 0;
   /*
     set the initial size and location of client window (relative to the
     _root window_). This position is the reference point used with the
@@ -930,12 +930,12 @@ void BlackboxWindow::getNetwmHints(void) {
   // wm_name and wm_icon_name are read separately
 
   bool ret;
-  const Netwm* const netwm = blackbox->netwm();
+  const bt::Netwm* const netwm = blackbox->netwm();
 
-  Netwm::AtomList atoms;
+  bt::Netwm::AtomList atoms;
   ret = netwm->readWMWindowType(client.window, atoms);
   if (ret) {
-    Netwm::AtomList::iterator it = atoms.begin(), end = atoms.end();
+    bt::Netwm::AtomList::iterator it = atoms.begin(), end = atoms.end();
     for (; it != end; ++it) {
       if (netwm->isSupportedWMWindowType(*it)) {
         client.window_type = *it;
@@ -947,7 +947,7 @@ void BlackboxWindow::getNetwmHints(void) {
   atoms.clear();
   ret = netwm->readWMState(client.window, atoms);
   if (ret) {
-    Netwm::AtomList::iterator it = atoms.begin(), end = atoms.end();
+    bt::Netwm::AtomList::iterator it = atoms.begin(), end = atoms.end();
     for (; it != end; ++it) {
       Atom state = *it;
       if (state == netwm->wmStateModal()) {
@@ -1835,7 +1835,7 @@ void BlackboxWindow::setState(unsigned long new_state, bool closing) {
                   blackbox->getWMStateAtom(), blackbox->getWMStateAtom(), 32,
                   PropModeReplace, (unsigned char *) state, 2);
 
-  const Netwm* const netwm = blackbox->netwm();
+  const bt::Netwm* const netwm = blackbox->netwm();
 
   if (closing) {
     netwm->removeProperty(client.window, netwm->wmDesktop());
@@ -1851,7 +1851,7 @@ void BlackboxWindow::setState(unsigned long new_state, bool closing) {
   else
     blackbox->netwm()->setWMDesktop(client.window, client.workspace);
 
-  Netwm::AtomList atoms;
+  bt::Netwm::AtomList atoms;
   if (client.state.modal)
     atoms.push_back(netwm->wmStateModal());
 
@@ -2230,7 +2230,7 @@ void BlackboxWindow::redrawCloseButton(bool pressed) const {
 void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
   if (ce->format != 32) return;
 
-  const Netwm* const netwm = blackbox->netwm();
+  const bt::Netwm* const netwm = blackbox->netwm();
 
   if (ce->message_type == blackbox->getWMChangeStateAtom()) {
     if (ce->data.l[0] == IconicState)
@@ -2403,7 +2403,7 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
     setState(client.current_state);
   } else if (ce->message_type == netwm->wmStrut()) {
     if (! client.strut)
-      client.strut = new Netwm::Strut;
+      client.strut = new bt::Netwm::Strut;
     netwm->readWMStrut(client.window, client.strut);
     if (client.strut->left || client.strut->right ||
         client.strut->top || client.strut->bottom) {

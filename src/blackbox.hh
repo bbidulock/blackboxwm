@@ -57,7 +57,10 @@ class BWindowGroup;
 class Basemenu;
 class Toolbar;
 class Slit;
-class Netwm;
+
+namespace bt {
+  class Netwm;
+}
 
 class Blackbox : public BaseDisplay, public bt::TimeoutHandler {
 private:
@@ -107,7 +110,7 @@ private:
     xa_wm_delete_window, xa_wm_take_focus, xa_wm_change_state,
     motif_wm_hints;
 
-  Netwm* _netwm;
+  bt::Netwm* _netwm;
 
   Blackbox(const Blackbox&);
   Blackbox& operator=(const Blackbox&);
@@ -137,7 +140,7 @@ public:
   void insertWindowGroup(Window window, BWindowGroup *data);
   void removeWindowGroup(Window window);
 
-  inline Netwm* netwm(void) { return _netwm; }
+  inline bt::Netwm* netwm(void) { return _netwm; }
 
   inline BlackboxWindow *getFocusedWindow(void) { return focused_window; }
 

@@ -155,7 +155,7 @@ private:
     int old_bw;                       // client's borderwidth
 
     unsigned int
-      min_width, min_height,        // can not be resized smaller
+    min_width, min_height,        // can not be resized smaller
       max_width, max_height,        // can not be resized larger
       width_inc, height_inc,        // increment step
 #if 0 // not supported at the moment
@@ -168,7 +168,7 @@ private:
     unsigned long current_state, normal_hint_flags;
     unsigned int workspace;
 
-    Netwm::Strut *strut;
+    bt::Netwm::Strut *strut;
     FocusMode focus_mode;
     WMState state;
     Atom window_type;
@@ -223,11 +223,14 @@ private:
      */
     bt::Rect changing;
 
-    bt::Rect rect;                  // frame geometry
-    Netwm::Strut margin;        // margins between the frame and client,
-                                // this has nothing to do with netwm, it is
-                                // simply code reuse for similar functionality
+    // frame geometry
+    bt::Rect rect;
 
+    /*
+     * margins between the frame and client, this has nothing to do
+     * with netwm, it is simply code reuse for similar functionality
+     */
+    bt::Netwm::Strut margin;
     int grab_x, grab_y;         // where was the window when it was grabbed?
 
     unsigned int inside_w, inside_h, // window w/h without border_w

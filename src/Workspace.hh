@@ -130,7 +130,7 @@ public:
   void addWindow(BlackboxWindow *w, bool place = False);
   unsigned int removeWindow(BlackboxWindow *w);
   unsigned int getCount(void) const;
-  void updateClientListStacking(Netwm::WindowList& clientList) const;
+  void updateClientListStacking(bt::Netwm::WindowList& clientList) const;
 
   void show(void);
   void hide(void);

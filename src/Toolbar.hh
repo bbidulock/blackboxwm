@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Toolbar.hh for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
 // Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
@@ -101,7 +101,7 @@ private:
   BScreen *screen;
   bt::Timer *clock_timer, *hide_timer;
   Toolbarmenu *toolbarmenu;
-  Netwm::Strut strut;
+  bt::Netwm::Strut strut;
 
   std::string new_workspace_name;
   size_t new_name_pos;

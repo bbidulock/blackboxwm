@@ -253,7 +253,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
 
   changeWorkspaceID(0);
 
-  const Netwm* const netwm = blackbox->netwm();
+  const bt::Netwm* const netwm = blackbox->netwm();
   /*
     netwm requires the window manager to set a property on a window it creates
     which is the id of that window.  We must also set an equivalent property
@@ -998,7 +998,8 @@ void BScreen::unmanageWindow(BlackboxWindow *w, bool remap) {
 }
 
 
-void BScreen::raiseWindows(const Netwm::WindowList* const workspace_stack) {
+void
+BScreen::raiseWindows(const bt::Netwm::WindowList* const workspace_stack) {
   // the 13 represents the number of blackbox windows such as menus
   const unsigned int workspace_stack_size =
     (workspace_stack) ? workspace_stack->size() : 0;
@@ -1662,13 +1663,13 @@ void BScreen::hideGeometry(void) {
 }
 
 
-void BScreen::addStrut(Netwm::Strut *strut) {
+void BScreen::addStrut(bt::Netwm::Strut *strut) {
   strutList.push_back(strut);
   updateAvailableArea();
 }
 
 
-void BScreen::removeStrut(Netwm::Strut *strut) {
+void BScreen::removeStrut(bt::Netwm::Strut *strut) {
   strutList.remove(strut);
   updateAvailableArea();
 }
@@ -1690,12 +1691,12 @@ void BScreen::updateAvailableArea(void) {
    * all at once
    * do not be confused by the similarity to the names of Rect's members
    */
-  Netwm::Strut current;
+  bt::Netwm::Strut current;
 
   StrutList::const_iterator sit = strutList.begin(), send = strutList.end();
 
   for(; sit != send; ++sit) {
-    const Netwm::Strut* const strut = *sit;
+    const bt::Netwm::Strut* const strut = *sit;
     if (strut->left > current.left)
       current.left = strut->left;
     if (strut->top > current.top)
@@ -2123,7 +2124,7 @@ void BScreen::updateClientListHint(void) const {
     return;
   }
 
-  Netwm::WindowList clientList(windowList.size());
+  bt::Netwm::WindowList clientList(windowList.size());
 
   std::transform(windowList.begin(), windowList.end(), clientList.begin(),
                  std::mem_fun(&BlackboxWindow::getClientWindow));
@@ -2133,7 +2134,7 @@ void BScreen::updateClientListHint(void) const {
 
 
 void BScreen::updateClientListStackingHint(void) const {
-  Netwm::WindowList stack;
+  bt::Netwm::WindowList stack;
 
   WorkspaceList::const_iterator it = workspacesList.begin(),
     end = workspacesList.end();
@@ -2151,11 +2152,11 @@ void BScreen::updateClientListStackingHint(void) const {
 
 
 void BScreen::getDesktopNames(void) {
-  Netwm::UTF8StringList names;
+  bt::Netwm::UTF8StringList names;
   if(! blackbox->netwm()->readDesktopNames(getRootWindow(), names))
     return;
 
-  Netwm::UTF8StringList::const_iterator it = names.begin(),
+  bt::Netwm::UTF8StringList::const_iterator it = names.begin(),
     end = names.end();
   WorkspaceList::iterator wit = workspacesList.begin(),
     wend = workspacesList.end();

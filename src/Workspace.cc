@@ -699,7 +699,8 @@ void Workspace::placeWindow(BlackboxWindow *win) {
 }
 
 
-void Workspace::updateClientListStacking(Netwm::WindowList& clientList) const {
+void
+Workspace::updateClientListStacking(bt::Netwm::WindowList& clientList) const {
   StackingList::const_iterator it = stackingList.begin(),
     end = stackingList.end();
   for (; it != end; ++it) {

@@ -133,7 +133,7 @@ Blackbox::Blackbox(char **m_argv, char *dpy_name, char *rc)
 
   active_screen = (BScreen*) 0;
   focused_window = (BlackboxWindow *) 0;
-  _netwm = (Netwm*) 0;
+  _netwm = (bt::Netwm*) 0;
 
   XrmInitialize();
   load_rc();
@@ -426,7 +426,7 @@ void Blackbox::init_icccm(void) {
   xa_wm_take_focus = atoms_return[5];
   motif_wm_hints = atoms_return[6];
 
-  _netwm = new Netwm(getXDisplay());
+  _netwm = new bt::Netwm(getXDisplay());
 }
 
 
