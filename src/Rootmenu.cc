@@ -28,6 +28,7 @@
 #include "blackbox.hh"
 #include "Rootmenu.hh"
 #include "Screen.hh"
+#include "Util.hh"
 
 #ifdef    HAVE_STDIO_H
 #  include <stdio.h>
@@ -65,7 +66,6 @@ void Rootmenu::itemSelected(int button, int index) {
   switch (item->function()) {
   case BScreen::Execute:
     if (item->exec()) {
-#ifndef    __EMX__
       char displaystring[MAXPATHLEN];
       sprintf(displaystring, "DISPLAY=%s",
               DisplayString(screen->getBaseDisplay()->getXDisplay()));
@@ -73,9 +73,6 @@ void Rootmenu::itemSelected(int button, int index) {
               screen->getScreenNumber());
 
       bexec(item->exec(), displaystring);
-#else //   __EMX__
-      spawnlp(P_NOWAIT, "cmd.exe", "cmd.exe", "/c", item->exec(), NULL);
-#endif // !__EMX__
     }
     break;
 

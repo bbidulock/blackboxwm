@@ -34,11 +34,14 @@ class Workspacemenu : public Basemenu {
 private:
   BScreen *screen;
 
+  Workspacemenu(const Workspacemenu&);
+  Workspacemenu& operator=(const Workspacemenu&);
+
 protected:
-  virtual void itemSelected(int, int);
+  virtual void itemSelected(int button, int index);
 
 public:
-  Workspacemenu(BScreen *);
+  Workspacemenu(BScreen *scrn);
 };
 
 

@@ -41,6 +41,12 @@
 #    include <time.h>
 #  endif // HAVE_SYS_TIME_H
 #endif // TIME_WITH_SYS_TIME
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif // HAVE_UNISTD_H
+#if defined(HAVE_PROCESS_H) && defined(__EMX__)
+#  include <process.h>
+#endif //   HAVE_PROCESS_H             __EMX__
 
 #include <string>
 using std::string;
@@ -63,6 +69,34 @@ char* bstrdup(const char *s) {
   strcpy(n, s);
   return n;
 }
+
+
+void bexec(const char *command, const char* displaystring) {
+#ifndef    __EMX__
+  if (! fork()) {
+    setsid();
+    putenv(const_cast<char*>(displaystring));
+    std::string cmd = "exec ";
+    cmd += command;
+    execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL);
+    exit(0);
+  }
+#else //   __EMX__
+  spawnlp(P_NOWAIT, "cmd.exe", "cmd.exe", "/c", command, NULL);
+#endif // !__EMX__
+}
+
+
+#ifndef   HAVE_BASENAME
+#include <string.h>
+
+char *basename (const char *path) {
+  char *slash = strrchr(path, '/');
+  if (slash == NULL)
+    return path;
+  return ++slash;
+}
+#endif // HAVE_BASENAME
 
 
 timeval normalizeTimeval(const timeval &tm) {

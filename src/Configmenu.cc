@@ -156,27 +156,11 @@ void Configmenu::Focusmenu::itemSelected(int button, int index) {
 
   switch (item->function()) {
   case 1: // click to focus
-    configmenu->screen->saveSloppyFocus(False);
-    configmenu->screen->saveAutoRaise(False);
-
-    if (! configmenu->screen->getBlackbox()->getFocusedWindow())
-      XSetInputFocus(configmenu->screen->getBlackbox()->getXDisplay(),
-                     configmenu->screen->getToolbar()->getWindowID(),
-                     RevertToParent, CurrentTime);
-    else
-      XSetInputFocus(configmenu->screen->getBlackbox()->getXDisplay(),
-                     configmenu->screen->getBlackbox()->
-                     getFocusedWindow()->getClientWindow(),
-                     RevertToParent, CurrentTime);
-
-    configmenu->screen->reconfigure();
-
+    configmenu->screen->toggleFocusModel(BScreen::ClickToFocus);
     break;
 
   case 2: // sloppy focus
-    configmenu->screen->saveSloppyFocus(True);
-
-    configmenu->screen->reconfigure();
+    configmenu->screen->toggleFocusModel(BScreen::SloppyFocus);
 
     break;
 

@@ -40,7 +40,6 @@
 
 #include <list>
 
-#include "BaseDisplay.hh"
 #include "Configmenu.hh"
 #include "Iconmenu.hh"
 #include "Netizen.hh"
@@ -131,12 +130,12 @@ private:
 
   typedef std::list<NETStrut*> StrutList;
   StrutList strutList;
-  typedef std::list<char*> WorkspaceNamesList;
+  typedef std::list<std::string> WorkspaceNamesList;
   WorkspaceNamesList workspaceNames;
   typedef std::list<Workspace*> WorkspaceList;
   WorkspaceList workspacesList;
 
-  struct resource {
+  struct screen_resource {
     WindowStyle wstyle;
     ToolbarStyle tstyle;
     MenuStyle mstyle;
@@ -164,23 +163,36 @@ private:
 
   } resource;
 
+  BScreen(const BScreen&);
+  BScreen& operator=(const BScreen&);
 
 protected:
-  Bool parseMenuFile(FILE *, Rootmenu *);
+  Bool parseMenuFile(FILE *file, Rootmenu *menu);
 
-  void readDatabaseTexture(char *, char *, BTexture *, unsigned long);
-  void readDatabaseColor(char *, char *, BColor *, unsigned long);
+  void readDatabaseTexture(char *rname, char *rclass, BTexture *texture,
+                           unsigned long default_pixel);
+  void readDatabaseColor(char *rname, char *rclass, BColor *color,
+                         unsigned long default_pixel);
 
-  void readDatabaseFontSet(char *, char *, XFontSet *);
-  XFontSet createFontSet(char *);
-  void readDatabaseFont(char *, char *, XFontStruct **);
+  void readDatabaseFontSet(char *rname, char *rclass, XFontSet *fontset);
+  XFontSet createFontSet(char *fontname);
+  void readDatabaseFont(char *rname, char *rclass, XFontStruct **font);
 
   void InitMenu(void);
   void LoadStyle(void);
 
 
 public:
-  BScreen(Blackbox *, int);
+  enum { RowSmartPlacement = 1, ColSmartPlacement, CascadePlacement, LeftRight,
+         RightLeft, TopBottom, BottomTop };
+  enum { LeftJustify = 1, RightJustify, CenterJustify };
+  enum { RoundBullet = 1, TriangleBullet, SquareBullet, NoBullet };
+  enum { Restart = 1, RestartOther, Exit, Shutdown, Execute, Reconfigure,
+         WindowShade, WindowIconify, WindowMaximize, WindowClose, WindowRaise,
+         WindowLower, WindowStick, WindowKill, SetStyle };
+  enum FocusModel { SloppyFocus, ClickToFocus };
+
+  BScreen(Blackbox *bb, int scrn);
   ~BScreen(void);
 
   inline const Bool isToolbarOnTop(void) const
@@ -202,7 +214,7 @@ public:
   inline const Bool doFocusNew(void) const { return resource.focus_new; }
   inline const Bool doFocusLast(void) const { return resource.focus_last; }
 
-  inline const GC &getOpGC() const { return opGC; }
+  inline const GC &getOpGC(void) const { return opGC; }
 
   inline Blackbox *getBlackbox(void) { return blackbox; }
   inline BColor *getBorderColor(void) { return &resource.border_color; }
@@ -239,10 +251,11 @@ public:
   inline const unsigned int getBorderWidth(void) const
   { return resource.border_width; }
 
-  inline const int getCurrentWorkspaceID()
+  inline const unsigned int getCurrentWorkspaceID(void)
   { return current_workspace->getWorkspaceID(); }
-  inline const int getCount(void) { return workspacesList.size(); }
-  inline const int getIconCount(void) { return iconList.size(); }
+  inline const unsigned int getWorkspaceCount(void)
+  { return workspacesList.size(); }
+  inline const unsigned int getIconCount(void) { return iconList.size(); }
   inline const int getNumberOfWorkspaces(void) const
   { return resource.workspaces; }
   inline const int getToolbarPlacement(void) const
@@ -281,7 +294,7 @@ public:
 
 #ifdef    HAVE_STRFTIME
   inline char *getStrftimeFormat(void) { return resource.strftime_format; }
-  void saveStrftimeFormat(char *);
+  void saveStrftimeFormat(char *format);
 #else // !HAVE_STRFTIME
   inline int getDateFormat(void) { return resource.date_format; }
   inline void saveDateFormat(int f) { resource.date_format = f; }
@@ -293,7 +306,7 @@ public:
   inline MenuStyle *getMenuStyle(void) { return &resource.mstyle; }
   inline ToolbarStyle *getToolbarStyle(void) { return &resource.tstyle; }
 
-  BlackboxWindow *getIcon(int);
+  BlackboxWindow *getIcon(int index);
 
   const XRectangle& availableArea(void) const;
   void updateAvailableArea(void);
@@ -301,43 +314,38 @@ public:
 
   int addWorkspace(void);
   int removeLastWorkspace(void);
-
   void removeWorkspaceNames(void);
-  void addWorkspaceName(char *);
-  void addNetizen(Netizen *);
-  void removeNetizen(Window);
-  void addIcon(BlackboxWindow *);
-  void removeIcon(BlackboxWindow *);
-  char* getNameOfWorkspace(int);
-  void changeWorkspaceID(int);
-  void raiseWindows(Window *, int);
-  void reassociateWindow(BlackboxWindow *, int, Bool);
+
+  void addWorkspaceName(char *name);
+  void addNetizen(Netizen *n);
+  void removeNetizen(Window w);
+  void addIcon(BlackboxWindow *w);
+  void removeIcon(BlackboxWindow *w);
+  const char* getNameOfWorkspace(int id);
+  void changeWorkspaceID(unsigned int id);
+  void raiseWindows(Window *workspace_stack, int num);
+  void reassociateWindow(BlackboxWindow *w, int wkspc_id, Bool ignore_sticky);
   void prevFocus(void);
   void nextFocus(void);
   void raiseFocus(void);
   void reconfigure(void);
+  void toggleFocusModel(FocusModel model);
   void rereadMenu(void);
   void shutdown(void);
-  void showPosition(int, int);
-  void showGeometry(unsigned int, unsigned int);
+  void showPosition(int x, int y);
+  void showGeometry(unsigned int gx, unsigned int gy);
   void hideGeometry(void);
+
+  void buttonPressEvent(XButtonEvent *xbutton);
 
   void updateNetizenCurrentWorkspace(void);
   void updateNetizenWorkspaceCount(void);
   void updateNetizenWindowFocus(void);
-  void updateNetizenWindowAdd(Window, unsigned long);
-  void updateNetizenWindowDel(Window);
-  void updateNetizenConfigNotify(XEvent *);
-  void updateNetizenWindowRaise(Window);
-  void updateNetizenWindowLower(Window);
-
-  enum { RowSmartPlacement = 1, ColSmartPlacement, CascadePlacement, LeftRight,
-         RightLeft, TopBottom, BottomTop };
-  enum { LeftJustify = 1, RightJustify, CenterJustify };
-  enum { RoundBullet = 1, TriangleBullet, SquareBullet, NoBullet };
-  enum { Restart = 1, RestartOther, Exit, Shutdown, Execute, Reconfigure,
-         WindowShade, WindowIconify, WindowMaximize, WindowClose, WindowRaise,
-         WindowLower, WindowStick, WindowKill, SetStyle };
+  void updateNetizenWindowAdd(Window w, unsigned long p);
+  void updateNetizenWindowDel(Window w);
+  void updateNetizenConfigNotify(XEvent *e);
+  void updateNetizenWindowRaise(Window w);
+  void updateNetizenWindowLower(Window w);
 };
 
 

@@ -27,13 +27,13 @@
 #include <X11/Xlib.h>
 
 // forward declaration
-class BaseDisplay;
+class Blackbox;
 class BScreen;
 class Netizen;
 
 class Netizen {
 private:
-  BaseDisplay *basedisplay;
+  Blackbox *blackbox;
   BScreen *screen;
   Window window;
   XEvent event;

@@ -101,6 +101,7 @@ bsetroot::~bsetroot(void) {
   delete [] img_ctrl;
 }
 
+
 // adapted from wmsetbg
 void bsetroot::setPixmapProperty(int screen, Pixmap pixmap) {
   static Atom rootpmap_id = None;

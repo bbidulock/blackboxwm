@@ -38,13 +38,15 @@ private:
   Blackbox *blackbox;
   BScreen *screen;
 
+  Rootmenu(const Rootmenu&);
+  Rootmenu& operator=(const Rootmenu&);
 
 protected:
-  virtual void itemSelected(int, int);
+  virtual void itemSelected(int button, int index);
 
 
 public:
-  Rootmenu(BScreen *);
+  Rootmenu(BScreen *scrn);
 };
 
 

@@ -194,8 +194,11 @@ private:
       bevel_w, snap_w, snap_h;
   } frame;
 
+  BlackboxWindow(const BlackboxWindow&);
+  BlackboxWindow& operator=(const BlackboxWindow&);
+
 protected:
-  Bool getState(void);
+  const Bool getState(void);
   Window createToplevelWindow(int x, int y, unsigned int width,
                               unsigned int height, unsigned int borderwidth);
   Window createChildWindow(Window parent, Cursor = None);
@@ -235,20 +238,20 @@ public:
   BlackboxWindow(Blackbox *b, Window w, BScreen *s = (BScreen *) 0);
   virtual ~BlackboxWindow(void);
 
-  inline Bool isTransient(void) const { return flags.transient; }
-  inline Bool isFocused(void) const { return flags.focused; }
-  inline Bool isVisible(void) const { return flags.visible; }
-  inline Bool isIconic(void) const { return flags.iconic; }
-  inline Bool isShaded(void) const { return flags.shaded; }
-  inline Bool isMaximized(void) const { return flags.maximized; }
-  inline Bool isStuck(void) const { return flags.stuck; }
-  inline Bool isIconifiable(void) const { return functions.iconify; }
-  inline Bool isMaximizable(void) const { return functions.maximize; }
-  inline Bool isResizable(void) const { return functions.resize; }
-  inline Bool isClosable(void) const { return functions.close; }
+  inline const Bool isTransient(void) const { return flags.transient; }
+  inline const Bool isFocused(void) const { return flags.focused; }
+  inline const Bool isVisible(void) const { return flags.visible; }
+  inline const Bool isIconic(void) const { return flags.iconic; }
+  inline const Bool isShaded(void) const { return flags.shaded; }
+  inline const Bool isMaximized(void) const { return flags.maximized; }
+  inline const Bool isStuck(void) const { return flags.stuck; }
+  inline const Bool isIconifiable(void) const { return functions.iconify; }
+  inline const Bool isMaximizable(void) const { return functions.maximize; }
+  inline const Bool isResizable(void) const { return functions.resize; }
+  inline const bool isClosable(void) const { return functions.close; }
 
-  inline Bool hasTitlebar(void) const { return decorations.titlebar; }
-  inline Bool hasTransient(void) const
+  inline const bool hasTitlebar(void) const { return decorations.titlebar; }
+  inline const bool hasTransient(void) const
   { return ((client.transient) ? True : False); }
 
   inline BlackboxWindow *getTransient(void) { return client.transient; }
@@ -297,27 +300,29 @@ public:
   void stick(void);
   void unstick(void);
   void reconfigure(void);
-  void installColormap(Bool);
+  void updateFocusModel(void);
+  void installColormap(Bool install);
   void restore(void);
   void configure(int dx, int dy, unsigned int dw, unsigned int dh);
   void setWorkspace(int n);
-  void changeBlackboxHints(BlackboxHints *);
+  void changeBlackboxHints(BlackboxHints *net);
   void restoreAttributes(void);
 
-  void buttonPressEvent(XButtonEvent *);
-  void buttonReleaseEvent(XButtonEvent *);
-  void motionNotifyEvent(XMotionEvent *);
-  void destroyNotifyEvent(XDestroyWindowEvent *);
-  void mapRequestEvent(XMapRequestEvent *);
-  void mapNotifyEvent(XMapEvent *);
-  void unmapNotifyEvent(XUnmapEvent *);
-  void reparentNotifyEvent(XReparentEvent *);
-  void propertyNotifyEvent(Atom);
-  void exposeEvent(XExposeEvent *);
-  void configureRequestEvent(XConfigureRequestEvent *);
+  void buttonPressEvent(XButtonEvent *be);
+  void buttonReleaseEvent(XButtonEvent *re);
+  void motionNotifyEvent(XMotionEvent *me);
+  void destroyNotifyEvent(XDestroyWindowEvent *de);
+  void mapRequestEvent(XMapRequestEvent *mre);
+  void mapNotifyEvent(XMapEvent *ne);
+  void unmapNotifyEvent(XUnmapEvent *ue);
+  void reparentNotifyEvent(XReparentEvent *re);
+  void propertyNotifyEvent(Atom atom);
+  void exposeEvent(XExposeEvent *ee);
+  void configureRequestEvent(XConfigureRequestEvent *cr);
 
 #ifdef    SHAPE
-  void shapeEvent(XShapeEvent *);
+  void configureShape(void);
+  void shapeEvent(XShapeEvent * /*unused*/);
 #endif // SHAPE
 
   virtual void timeout(void);

@@ -42,22 +42,28 @@ private:
   private:
     Slitmenu *slitmenu;
 
+    Directionmenu(const Directionmenu&);
+    Directionmenu& operator=(const Directionmenu&);
+
   protected:
-    virtual void itemSelected(int, int);
+    virtual void itemSelected(int button, int index);
 
   public:
-    Directionmenu(Slitmenu *);
+    Directionmenu(Slitmenu *sm);
   };
 
   class Placementmenu : public Basemenu {
   private:
     Slitmenu *slitmenu;
 
+    Placementmenu(const Placementmenu&);
+    Placementmenu& operator=(const Placementmenu&);
+
   protected: 
-    virtual void itemSelected(int, int);
+    virtual void itemSelected(int buton, int index);
 
   public:
-    Placementmenu(Slitmenu *);
+    Placementmenu(Slitmenu *sm);
   };
 
   Directionmenu *directionmenu;
@@ -69,14 +75,16 @@ private:
   friend class Placementmenu;
   friend class Slit;
 
+  Slitmenu(const Slitmenu&);
+  Slitmenu& operator=(const Slitmenu&);
 
 protected:
-  virtual void itemSelected(int, int);
+  virtual void itemSelected(int button, int index);
   virtual void internal_hide(void);
 
 
 public:
-  Slitmenu(Slit *);
+  Slitmenu(Slit *sl);
   virtual ~Slitmenu(void);
 
   inline Basemenu *getDirectionmenu(void) { return directionmenu; }
@@ -87,8 +95,7 @@ public:
 
 class Slit : public TimeoutHandler {
 private:
-  class SlitClient {
-  public:
+  struct SlitClient {
     Window window, client_window, icon_window;
 
     int x, y;
@@ -107,7 +114,7 @@ private:
   SlitClientList clientList;
   Slitmenu *slitmenu;
 
-  struct frame {
+  struct SlitFrame {
     Pixmap pixmap;
     Window window;
 
@@ -119,18 +126,20 @@ private:
   friend class Slitmenu::Directionmenu;
   friend class Slitmenu::Placementmenu;
 
+  Slit(const Slit&);
+  Slit& operator=(const Slit&);
 
 public:
-  Slit(BScreen *);
-  virtual ~Slit();
+  Slit(BScreen *scr);
+  virtual ~Slit(void);
 
   inline const Bool isOnTop(void) const { return on_top; }
   inline const Bool isHidden(void) const { return hidden; }
   inline const Bool doAutoHide(void) const { return do_auto_hide; }
 
-  inline Slitmenu *getMenu() { return slitmenu; }
+  inline Slitmenu *getMenu(void) { return slitmenu; }
 
-  inline const Window getWindowID() const { return frame.window; }
+  inline const Window getWindowID(void) const { return frame.window; }
 
   inline const int getX(void) const
   { return ((hidden) ? frame.x_hidden : frame.x); }
@@ -140,17 +149,17 @@ public:
   inline const unsigned int getWidth(void) const { return frame.width; }
   inline const unsigned int getHeight(void) const { return frame.height; }
 
-  void addClient(Window);
-  void removeClient(SlitClient *, Bool = True);
-  void removeClient(Window, Bool = True);
+  void addClient(Window w);
+  void removeClient(SlitClient *client, Bool remap = True);
+  void removeClient(Window w, Bool remap = True);
   void reconfigure(void);
   void reposition(void);
   void shutdown(void);
 
-  void buttonPressEvent(XButtonEvent *);
-  void enterNotifyEvent(XCrossingEvent *);
-  void leaveNotifyEvent(XCrossingEvent *);
-  void configureRequestEvent(XConfigureRequestEvent *);
+  void buttonPressEvent(XButtonEvent *e);
+  void enterNotifyEvent(XCrossingEvent * /*unused*/);
+  void leaveNotifyEvent(XCrossingEvent * /*unused*/);
+  void configureRequestEvent(XConfigureRequestEvent *e);
 
   virtual void timeout(void);
 

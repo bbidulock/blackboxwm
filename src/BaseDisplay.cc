@@ -28,7 +28,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
-#include <X11/cursorfont.h>
 #include <X11/keysym.h>
 
 #ifdef    SHAPE
@@ -74,14 +73,12 @@
 #  include <sys/wait.h>
 #endif // HAVE_SYS_WAIT_H
 
-#if defined(HAVE_PROCESS_H) && defined(__EMX__)
-#  include <process.h>
-#endif //   HAVE_PROCESS_H             __EMX__
-
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "BaseDisplay.hh"
 #include "Timer.hh"
+#include "Util.hh"
+
 
 // X error handler to handle any and all X errors while the application is
 // running
@@ -90,8 +87,8 @@ static Window last_bad_window = None;
 
 BaseDisplay *base_display;
 
-static int handleXErrors(Display *d, XErrorEvent *e) {
 #ifdef    DEBUG
+static int handleXErrors(Display *d, XErrorEvent *e) {
   char errtxt[128];
 
   XGetErrorText(d, e->error_code, errtxt, 128);
@@ -100,6 +97,8 @@ static int handleXErrors(Display *d, XErrorEvent *e) {
                "%s:  X error: %s(%d) opcodes %d/%d\n  resource 0x%lx\n"),
           base_display->getApplicationName(), errtxt, e->error_code,
           e->request_code, e->minor_code, e->resourceid);
+#else
+static int handleXErrors(Display *, XErrorEvent *e) {
 #endif // DEBUG
 
   if (e->error_code == BadWindow) last_bad_window = e->resourceid;
@@ -168,20 +167,7 @@ static void signalhandler(int sig) {
 }
 
 
-// convenience functions
-#ifndef    __EMX__
-void bexec(const char *command, char* displaystring) {
-  if (! fork()) {
-    setsid();
-    putenv(displaystring);
-    execl("/bin/sh", "/bin/sh", "-c", command, NULL);
-    exit(0);
-  }
-}
-#endif // !__EMX__
-
-
-BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
+BaseDisplay::BaseDisplay(const char *app_name, const char *dpy_name) {
   application_name = app_name;
 
   _startup = True;
@@ -241,84 +227,6 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
   shape.extensions = False;
 #endif // SHAPE
 
-  xa_wm_colormap_windows =
-    XInternAtom(display, "WM_COLORMAP_WINDOWS", False);
-  xa_wm_protocols = XInternAtom(display, "WM_PROTOCOLS", False);
-  xa_wm_state = XInternAtom(display, "WM_STATE", False);
-  xa_wm_change_state = XInternAtom(display, "WM_CHANGE_STATE", False);
-  xa_wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", False);
-  xa_wm_take_focus = XInternAtom(display, "WM_TAKE_FOCUS", False);
-  motif_wm_hints = XInternAtom(display, "_MOTIF_WM_HINTS", False);
-
-  blackbox_hints = XInternAtom(display, "_BLACKBOX_HINTS", False);
-  blackbox_attributes = XInternAtom(display, "_BLACKBOX_ATTRIBUTES", False);
-  blackbox_change_attributes =
-    XInternAtom(display, "_BLACKBOX_CHANGE_ATTRIBUTES", False);
-
-  blackbox_structure_messages =
-    XInternAtom(display, "_BLACKBOX_STRUCTURE_MESSAGES", False);
-  blackbox_notify_startup =
-    XInternAtom(display, "_BLACKBOX_NOTIFY_STARTUP", False);
-  blackbox_notify_window_add =
-    XInternAtom(display, "_BLACKBOX_NOTIFY_WINDOW_ADD", False);
-  blackbox_notify_window_del =
-    XInternAtom(display, "_BLACKBOX_NOTIFY_WINDOW_DEL", False);
-  blackbox_notify_current_workspace =
-    XInternAtom(display, "_BLACKBOX_NOTIFY_CURRENT_WORKSPACE", False);
-  blackbox_notify_workspace_count =
-    XInternAtom(display, "_BLACKBOX_NOTIFY_WORKSPACE_COUNT", False);
-  blackbox_notify_window_focus =
-    XInternAtom(display, "_BLACKBOX_NOTIFY_WINDOW_FOCUS", False);
-  blackbox_notify_window_raise =
-    XInternAtom(display, "_BLACKBOX_NOTIFY_WINDOW_RAISE", False);
-  blackbox_notify_window_lower =
-    XInternAtom(display, "_BLACKBOX_NOTIFY_WINDOW_LOWER", False);
-
-  blackbox_change_workspace =
-    XInternAtom(display, "_BLACKBOX_CHANGE_WORKSPACE", False);
-  blackbox_change_window_focus =
-    XInternAtom(display, "_BLACKBOX_CHANGE_WINDOW_FOCUS", False);
-  blackbox_cycle_window_focus =
-    XInternAtom(display, "_BLACKBOX_CYCLE_WINDOW_FOCUS", False);
-
-#ifdef    NEWWMSPEC
-
-  net_supported = XInternAtom(display, "_NET_SUPPORTED", False);
-  net_client_list = XInternAtom(display, "_NET_CLIENT_LIST", False);
-  net_client_list_stacking = XInternAtom(display, "_NET_CLIENT_LIST_STACKING", False);
-  net_number_of_desktops = XInternAtom(display, "_NET_NUMBER_OF_DESKTOPS", False);
-  net_desktop_geometry = XInternAtom(display, "_NET_DESKTOP_GEOMETRY", False);
-  net_desktop_viewport = XInternAtom(display, "_NET_DESKTOP_VIEWPORT", False);
-  net_current_desktop = XInternAtom(display, "_NET_CURRENT_DESKTOP", False);
-  net_desktop_names = XInternAtom(display, "_NET_DESKTOP_NAMES", False);
-  net_active_window = XInternAtom(display, "_NET_ACTIVE_WINDOW", False);
-  net_workarea = XInternAtom(display, "_NET_WORKAREA", False);
-  net_supporting_wm_check = XInternAtom(display, "_NET_SUPPORTING_WM_CHECK", False);
-  net_virtual_roots = XInternAtom(display, "_NET_VIRTUAL_ROOTS", False);
-
-  net_close_window = XInternAtom(display, "_NET_CLOSE_WINDOW", False);
-  net_wm_moveresize = XInternAtom(display, "_NET_WM_MOVERESIZE", False);
-
-  net_properties = XInternAtom(display, "_NET_PROPERTIES", False);
-  net_wm_name = XInternAtom(display, "_NET_WM_NAME", False);
-  net_wm_desktop = XInternAtom(display, "_NET_WM_DESKTOP", False);
-  net_wm_window_type = XInternAtom(display, "_NET_WM_WINDOW_TYPE", False);
-  net_wm_state = XInternAtom(display, "_NET_WM_STATE", False);
-  net_wm_strut = XInternAtom(display, "_NET_WM_STRUT", False);
-  net_wm_icon_geometry = XInternAtom(display, "_NET_WM_ICON_GEOMETRY", False);
-  net_wm_icon = XInternAtom(display, "_NET_WM_ICON", False);
-  net_wm_pid = XInternAtom(display, "_NET_WM_PID", False);
-  net_wm_handled_icons = XInternAtom(display, "_NET_WM_HANDLED_ICONS", False);
-
-  net_wm_ping = XInternAtom(display, "_NET_WM_PING", False);
-
-#endif // NEWWMSPEC
-
-  cursor.session = XCreateFontCursor(display, XC_left_ptr);
-  cursor.move = XCreateFontCursor(display, XC_fleur);
-  cursor.ll_angle = XCreateFontCursor(display, XC_ll_angle);
-  cursor.lr_angle = XCreateFontCursor(display, XC_lr_angle);
-
   XSetErrorHandler((XErrorHandler) handleXErrors);
 
   for (int i = 0; i < number_of_screens; ++i) {
@@ -367,9 +275,8 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
 
 
 BaseDisplay::~BaseDisplay(void) {
-  ScreenInfoList::iterator it = screenInfoList.begin();
-  for(; it != screenInfoList.end(); ++it)
-    delete *it;
+  std::for_each(screenInfoList.begin(), screenInfoList.end(),
+                PointerAssassin());
 
   // we don't create the BTimers, we don't delete them
 
@@ -387,16 +294,11 @@ void BaseDisplay::eventLoop(void) {
       XEvent e;
       XNextEvent(display, &e);
 
-      if (last_bad_window != None && e.xany.window == last_bad_window) {
-#ifdef    DEBUG
-        fprintf(stderr, i18n(BaseDisplaySet, BaseDisplayBadWindowRemove,
-                             "BaseDisplay::eventLoop(): removing bad window "
-                             "from event queue\n"));
-#endif // DEBUG
-      } else {
-        last_bad_window = None;
-        process_event(&e);
-      }
+      if (last_bad_window != None && e.xany.window == last_bad_window)
+        continue;
+
+      last_bad_window = None;
+      process_event(&e);
     } else {
       fd_set rfds;
       timeval now, tm, *timeout = (timeval *) 0;
@@ -418,6 +320,10 @@ void BaseDisplay::eventLoop(void) {
       // check for timer timeout
       gettimeofday(&now, 0);
 
+      // there is a small chance for deadlock here:
+      // *IF* the timer list keeps getting refreshed *AND* the time between
+      // timer->start() and timer->shouldFire() is within the timer's period
+      // then the timer will keep firing.  This should be VERY near impossible.
       while (! timerList.empty()) {
         BTimer *timer = timerList.top();
         if (! timer->shouldFire(now))
@@ -432,18 +338,6 @@ void BaseDisplay::eventLoop(void) {
       }
     }
   }
-}
-
-
-const Bool BaseDisplay::validateWindow(Window window) {
-  XEvent event;
-  if (XCheckTypedWindowEvent(display, window, DestroyNotify, &event)) {
-    XPutBackEvent(display, &event);
-
-    return False;
-  }
-
-  return True;
 }
 
 
@@ -466,11 +360,11 @@ void BaseDisplay::removeTimer(BTimer *timer) {
 void BaseDisplay::grabButton(unsigned int button, unsigned int modifiers,
                              Window grab_window, Bool owner_events,
                              unsigned int event_mask, int pointer_mode,
-                             int keybaord_mode, Window confine_to,
+                             int keyboard_mode, Window confine_to,
                              Cursor cursor) const {
   for (size_t cnt = 0; cnt < MaskListLength; ++cnt) {
     XGrabButton(display, button, modifiers | MaskList[cnt], grab_window,
-                owner_events, event_mask, pointer_mode, keybaord_mode,
+                owner_events, event_mask, pointer_mode, keyboard_mode,
                 confine_to, cursor);
   }
 }
@@ -492,9 +386,8 @@ ScreenInfo* BaseDisplay::getScreenInfo(unsigned int s) {
     ScreenInfoList::iterator it = screenInfoList.begin();
     for (; s > 0; ++it, --s); // increment interator to index
     return *it;
-  } else {
-    return 0;
   }
+  return (ScreenInfo*) 0;
 }
 
 

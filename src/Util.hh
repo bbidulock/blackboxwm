@@ -27,6 +27,12 @@
 char* expandTilde(const char *s);
 char* bstrdup(const char *s);
 
+void bexec(const char *command, const char *displaystring);
+
+#ifndef   HAVE_BASENAME
+char* basename(const char *path);
+#endif
+
 struct timeval; // forward declare to avoid the header
 timeval normalizeTimeval(const timeval &tm);
 

@@ -60,15 +60,20 @@
 #endif // TIME_WITH_SYS_TIME
 
 
+static const long aMinuteFromNow(void) {
+  timeval now;
+  gettimeofday(&now, 0);
+  return ((60 - (now.tv_sec % 60)) * 1000);
+}
+
+
 Toolbar::Toolbar(BScreen *scrn) {
   screen = scrn;
   blackbox = screen->getBlackbox();
 
   // get the clock updating every minute
   clock_timer = new BTimer(blackbox, this);
-  timeval now;
-  gettimeofday(&now, 0);
-  clock_timer->setTimeout((60 - (now.tv_sec % 60)) * 1000);
+  clock_timer->setTimeout(aMinuteFromNow());
   clock_timer->recurring(True);
   clock_timer->start();
 
@@ -280,26 +285,18 @@ void Toolbar::reconfigure(void) {
   if (ttmp != -1) {
     tt = localtime(&ttmp);
     if (tt) {
-      char t[1024], *time_string = (char *) 0;
+      char t[1024];
       int len = strftime(t, 1024, screen->getStrftimeFormat(), tt);
-
-      time_string = new char[len + 1];
-
-      memset(time_string, '0', len);
-      *(time_string + len) = '\0';
-
+      // XXX: check for len == 0 and handle it
       if (i18n.multibyte()) {
         XRectangle ink, logical;
-        XmbTextExtents(screen->getToolbarStyle()->fontset, time_string, len,
+        XmbTextExtents(screen->getToolbarStyle()->fontset, t, len,
                        &ink, &logical);
         frame.clock_w = logical.width;
       } else {
-        frame.clock_w = XTextWidth(screen->getToolbarStyle()->font,
-                                   time_string, len);
+        frame.clock_w = XTextWidth(screen->getToolbarStyle()->font, t, len);
       }
       frame.clock_w += (frame.bevel_w * 4);
-      
-      delete [] time_string;
     } else {
       frame.clock_w = 0;
     }
@@ -314,11 +311,10 @@ void Toolbar::reconfigure(void) {
                            "00:00000"))) + (frame.bevel_w * 4);
 #endif // HAVE_STRFTIME
 
-  int i;
   unsigned int w = 0;
   frame.workspace_label_w = 0;
 
-  for (i = 0; i < screen->getCount(); i++) {
+  for (unsigned int i = 0; i < screen->getWorkspaceCount(); i++) {
     if (i18n.multibyte()) {
       XRectangle ink, logical;
       XmbTextExtents(screen->getToolbarStyle()->fontset,
@@ -594,128 +590,125 @@ void Toolbar::checkClock(Bool redraw, Bool date) {
 
 
 void Toolbar::redrawWindowLabel(Bool redraw) {
-  if (screen->getBlackbox()->getFocusedWindow()) {
-    if (redraw)
-      XClearWindow(display, frame.window_label);
-
-    BlackboxWindow *foc = screen->getBlackbox()->getFocusedWindow();
-    if (foc->getScreen() != screen) return;
-
-    int dx = (frame.bevel_w * 2), dlen = strlen(*foc->getTitle());
-    unsigned int l;
-
-    if (i18n.multibyte()) {
-      XRectangle ink, logical;
-      XmbTextExtents(screen->getToolbarStyle()->fontset, *foc->getTitle(),
-                     dlen, &ink, &logical);
-      l = logical.width;
-    } else {
-      l = XTextWidth(screen->getToolbarStyle()->font, *foc->getTitle(), dlen);
-    }
-    l += (frame.bevel_w * 4);
-
-    if (l > frame.window_label_w) {
-      for (; dlen >= 0; dlen--) {
-        if (i18n.multibyte()) {
-          XRectangle ink, logical;
-          XmbTextExtents(screen->getToolbarStyle()->fontset,
-                         *foc->getTitle(), dlen, &ink, &logical);
-          l = logical.width;
-        } else {
-          l = XTextWidth(screen->getToolbarStyle()->font,
-                         *foc->getTitle(), dlen);
-        }
-        l += (frame.bevel_w * 4);
-        
-        if (l < frame.window_label_w)
-          break;
-      }
-    }
-    switch (screen->getToolbarStyle()->justify) {
-    case BScreen::RightJustify:
-      dx += frame.window_label_w - l;
-      break;
-
-    case BScreen::CenterJustify:
-      dx += (frame.window_label_w - l) / 2;
-      break;
-    }
-
-    ToolbarStyle *style = screen->getToolbarStyle();
-    if (i18n.multibyte())
-      XmbDrawString(display, frame.window_label, style->fontset,
-                    style->w_text_gc, dx,
-                    (1 - style->fontset_extents->max_ink_extent.y),
-                    *foc->getTitle(), dlen);
-    else
-      XDrawString(display, frame.window_label, style->w_text_gc, dx,
-                  (style->font->ascent + 1), *foc->getTitle(), dlen);
-  } else {
+  BlackboxWindow *foc = screen->getBlackbox()->getFocusedWindow();
+  if (! foc) {
     XClearWindow(display, frame.window_label);
+    return;
   }
+
+  if (redraw)
+    XClearWindow(display, frame.window_label);
+
+  if (foc->getScreen() != screen) return;
+
+  char *title = *(foc->getTitle());
+  int dx = (frame.bevel_w * 2), dlen = strlen(title);
+  unsigned int l;
+
+  if (i18n.multibyte()) {
+    XRectangle ink, logical;
+    XmbTextExtents(screen->getToolbarStyle()->fontset, title, dlen,
+                   &ink, &logical);
+    l = logical.width;
+  } else {
+    l = XTextWidth(screen->getToolbarStyle()->font, title, dlen);
+  }
+  l += (frame.bevel_w * 4);
+
+  if (l > frame.window_label_w) {
+    for (; dlen >= 0; dlen--) {
+      if (i18n.multibyte()) {
+        XRectangle ink, logical;
+        XmbTextExtents(screen->getToolbarStyle()->fontset, title, dlen,
+                       &ink, &logical);
+        l = logical.width;
+      } else {
+        l = XTextWidth(screen->getToolbarStyle()->font, title, dlen);
+      }
+      l += (frame.bevel_w * 4);
+        
+      if (l < frame.window_label_w)
+        break;
+    }
+  }
+  switch (screen->getToolbarStyle()->justify) {
+  case BScreen::RightJustify:
+    dx += frame.window_label_w - l;
+    break;
+
+  case BScreen::CenterJustify:
+    dx += (frame.window_label_w - l) / 2;
+    break;
+  }
+
+  ToolbarStyle *style = screen->getToolbarStyle();
+  if (i18n.multibyte())
+    XmbDrawString(display, frame.window_label, style->fontset,
+                  style->w_text_gc, dx,
+                  (1 - style->fontset_extents->max_ink_extent.y),
+                  title, dlen);
+  else
+    XDrawString(display, frame.window_label, style->w_text_gc, dx,
+                (style->font->ascent + 1), title, dlen);
 }
  
  
 void Toolbar::redrawWorkspaceLabel(Bool redraw) {
-  if (screen->getCurrentWorkspace()->getName()) {
-    if (redraw)
-      XClearWindow(display, frame.workspace_label);
+  const char *name = screen->getCurrentWorkspace()->getName();
+  if (! name)
+    return;
+  if (redraw)
+    XClearWindow(display, frame.workspace_label);
     
-    int dx = (frame.bevel_w * 2), dlen =
-             strlen(screen->getCurrentWorkspace()->getName());
-    unsigned int l;
+  int dx = (frame.bevel_w * 2), dlen = strlen(name);
+  unsigned int l;
     
-    if (i18n.multibyte()) {
-      XRectangle ink, logical;
-      XmbTextExtents(screen->getToolbarStyle()->fontset,
-                     screen->getCurrentWorkspace()->getName(), dlen,
-                     &ink, &logical);
-      l = logical.width;
-    } else {
-      l = XTextWidth(screen->getToolbarStyle()->font,
-                     screen->getCurrentWorkspace()->getName(), dlen);
-    }
-    l += (frame.bevel_w * 4);
-    
-    if (l > frame.workspace_label_w) {
-      for (; dlen >= 0; dlen--) {
-        if (i18n.multibyte()) {
-          XRectangle ink, logical;
-          XmbTextExtents(screen->getToolbarStyle()->fontset,
-                         screen->getCurrentWorkspace()->getName(), dlen,
-                         &ink, &logical);
-          l = logical.width;
-        } else {
-          l = XTextWidth(screen->getWindowStyle()->font,
-                         screen->getCurrentWorkspace()->getName(), dlen);
-        }
-        l += (frame.bevel_w * 4);
-        
-        if (l < frame.workspace_label_w)
-          break;
-      }
-    }
-    switch (screen->getToolbarStyle()->justify) {
-    case BScreen::RightJustify:
-      dx += frame.workspace_label_w - l;
-      break;
-
-    case BScreen::CenterJustify:
-      dx += (frame.workspace_label_w - l) / 2;
-      break;
-    }
-
-    ToolbarStyle *style = screen->getToolbarStyle();
-    if (i18n.multibyte())
-      XmbDrawString(display, frame.workspace_label, style->fontset,
-                    style->l_text_gc, dx,
-                    (1 - style->fontset_extents->max_ink_extent.y),
-                    (char *) screen->getCurrentWorkspace()->getName(), dlen);
-    else
-      XDrawString(display, frame.workspace_label, style->l_text_gc, dx,
-                  (style->font->ascent + 1),
-                  (char *) screen->getCurrentWorkspace()->getName(), dlen);
+  if (i18n.multibyte()) {
+    XRectangle ink, logical;
+    XmbTextExtents(screen->getToolbarStyle()->fontset, name, dlen,
+                   &ink, &logical);
+    l = logical.width;
+  } else {
+    l = XTextWidth(screen->getToolbarStyle()->font, name, dlen);
   }
+  l += (frame.bevel_w * 4);
+    
+  if (l > frame.workspace_label_w) {
+    for (; dlen >= 0; dlen--) {
+      if (i18n.multibyte()) {
+        XRectangle ink, logical;
+        XmbTextExtents(screen->getToolbarStyle()->fontset, name, dlen,
+                       &ink, &logical);
+        l = logical.width;
+      } else {
+        l = XTextWidth(screen->getWindowStyle()->font, name, dlen);
+      }
+      l += (frame.bevel_w * 4);
+        
+      if (l < frame.workspace_label_w)
+        break;
+    }
+  }
+  switch (screen->getToolbarStyle()->justify) {
+  case BScreen::RightJustify:
+    dx += frame.workspace_label_w - l;
+    break;
+
+  case BScreen::CenterJustify:
+    dx += (frame.workspace_label_w - l) / 2;
+    break;
+  }
+
+  ToolbarStyle *style = screen->getToolbarStyle();
+  if (i18n.multibyte())
+    XmbDrawString(display, frame.workspace_label, style->fontset,
+                  style->l_text_gc, dx,
+                  (1 - style->fontset_extents->max_ink_extent.y),
+                  name, dlen);
+  else
+    XDrawString(display, frame.workspace_label, style->l_text_gc, dx,
+                (style->font->ascent + 1),
+                name, dlen);
 }
 
 
@@ -842,8 +835,7 @@ void Toolbar::edit(void) {
 
   XSetInputFocus(display, frame.workspace_label,
                  ((screen->isSloppyFocus()) ? RevertToPointerRoot :
-                  RevertToParent),
-                 CurrentTime);
+                  RevertToParent), CurrentTime);
   XClearWindow(display, frame.workspace_label);
 
   blackbox->setNoFocus(True);
@@ -916,14 +908,14 @@ void Toolbar::buttonReleaseEvent(XButtonEvent *re) {
           screen->changeWorkspaceID(screen->getCurrentWorkspace()->
                                     getWorkspaceID() - 1);
         else
-          screen->changeWorkspaceID(screen->getCount() - 1);
+          screen->changeWorkspaceID(screen->getWorkspaceCount() - 1);
     } else if (re->window == frame.nsbutton) {
       redrawNextWorkspaceButton(False, True);
 
       if (re->x >= 0 && re->x < (signed) frame.button_w &&
           re->y >= 0 && re->y < (signed) frame.button_w)
         if (screen->getCurrentWorkspace()->getWorkspaceID() <
-            screen->getCount() - 1)
+            (screen->getWorkspaceCount() - 1))
           screen->changeWorkspaceID(screen->getCurrentWorkspace()->
                                     getWorkspaceID() + 1);
         else
@@ -1017,17 +1009,19 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
       // workspace name which causes serious problems, especially for the
       // Blackbox::LoadRC() method.
       if (*new_workspace_name) {
-         screen->getCurrentWorkspace()->setName(new_workspace_name);
-        screen->getCurrentWorkspace()->getMenu()->hide();
-        screen->getWorkspacemenu()->
-          remove(screen->getCurrentWorkspace()->getWorkspaceID() + 2);
-        screen->getWorkspacemenu()->
-          insert(screen->getCurrentWorkspace()->getName(),
-                 screen->getCurrentWorkspace()->getMenu(),
-                 screen->getCurrentWorkspace()->getWorkspaceID() + 2);
+        Workspace *wkspc = screen->getCurrentWorkspace();
+        wkspc->setName(new_workspace_name);
+        wkspc->getMenu()->hide();
+
+        screen->getWorkspacemenu()->remove(wkspc->getWorkspaceID() + 2);
+        screen->getWorkspacemenu()->insert(wkspc->getName(),
+                                           wkspc->getMenu(),
+                                           wkspc->getWorkspaceID() + 2);
         screen->getWorkspacemenu()->update();
       }
 
+      // this looks obsessive, but the string is part of the screen so if we
+      // do not clean up it will think it is still in edit mode
       delete [] new_workspace_name;
       new_workspace_name = (char *) 0;
       new_name_pos = 0;
@@ -1091,9 +1085,7 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
 void Toolbar::timeout(void) {
   checkClock(True);
 
-  timeval now;
-  gettimeofday(&now, 0);
-  clock_timer->setTimeout((60 - (now.tv_sec % 60)) * 1000);
+  clock_timer->setTimeout(aMinuteFromNow());
 }
 
 
@@ -1121,7 +1113,7 @@ Toolbarmenu::Toolbarmenu(Toolbar *tb) : Basemenu(tb->screen) {
   insert(i18n(CommonSet, CommonAlwaysOnTop, "Always on top"), 1);
   insert(i18n(CommonSet, CommonAutoHide, "Auto hide"), 2);
   insert(i18n(ToolbarSet, ToolbarEditWkspcName,
-                          "Edit current workspace name"), 3);
+              "Edit current workspace name"), 3);
 
   update();
 
@@ -1189,23 +1181,22 @@ Toolbarmenu::Placementmenu::Placementmenu(Toolbarmenu *tm)
   : Basemenu(tm->toolbar->screen) {
   toolbarmenu = tm;
 
-  setLabel(i18n(ToolbarSet, ToolbarToolbarPlacement,
-                            "Toolbar Placement"));
+  setLabel(i18n(ToolbarSet, ToolbarToolbarPlacement, "Toolbar Placement"));
   setInternalMenu();
   setMinimumSublevels(3);
 
-  insert(i18n(CommonSet, CommonPlacementTopLeft,
-                          "Top Left"), Toolbar::TopLeft);
-  insert(i18n(CommonSet, CommonPlacementBottomLeft,
-                          "Bottom Left"), Toolbar::BottomLeft);
-  insert(i18n(CommonSet, CommonPlacementTopCenter,
-                          "Top Center"), Toolbar::TopCenter);
-  insert(i18n(CommonSet, CommonPlacementBottomCenter,
-                          "Bottom Center"), Toolbar::BottomCenter);
-  insert(i18n(CommonSet, CommonPlacementTopRight,
-                          "Top Right"), Toolbar::TopRight);
-  insert(i18n(CommonSet, CommonPlacementBottomRight,
-                          "Bottom Right"), Toolbar::BottomRight);
+  insert(i18n(CommonSet, CommonPlacementTopLeft, "Top Left"),
+         Toolbar::TopLeft);
+  insert(i18n(CommonSet, CommonPlacementBottomLeft, "Bottom Left"),
+         Toolbar::BottomLeft);
+  insert(i18n(CommonSet, CommonPlacementTopCenter, "Top Center"),
+         Toolbar::TopCenter);
+  insert(i18n(CommonSet, CommonPlacementBottomCenter, "Bottom Center"),
+         Toolbar::BottomCenter);
+  insert(i18n(CommonSet, CommonPlacementTopRight, "Top Right"),
+         Toolbar::TopRight);
+  insert(i18n(CommonSet, CommonPlacementBottomRight, "Bottom Right"),
+         Toolbar::BottomRight);
   update();
 }
 

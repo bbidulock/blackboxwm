@@ -27,6 +27,7 @@
 #include <X11/Xlib.h>
 
 #include <list>
+#include <string>
 
 class BScreen;
 class Clientmenu;
@@ -43,13 +44,15 @@ private:
 
   BlackboxWindowList stackingList, windowList;
 
-  char *name;
+  std::string name;
   unsigned int id;
   int cascade_x, cascade_y;
 
+  Workspace(const Workspace&);
+  Workspace& operator=(const Workspace&);
 
 protected:
-  void placeWindow(BlackboxWindow *);
+  void placeWindow(BlackboxWindow *win);
 
 
 public:
@@ -62,18 +65,18 @@ public:
   
   inline Clientmenu *getMenu(void) { return clientmenu; }
 
-  inline const char *getName(void) const { return name; }
+  inline const char *getName(void) const { return name.c_str(); }
 
-  inline const int getWorkspaceID(void) const { return id; }
+  inline const unsigned int getWorkspaceID(void) const { return id; }
   
   inline void setLastFocusedWindow(BlackboxWindow *w) { lastfocus = w; }
 
   BlackboxWindow *getWindow(unsigned int index);
 
   Bool isCurrent(void) const;
-  Bool isLastWindow(const BlackboxWindow* const w) const;
+  Bool isLastWindow(const BlackboxWindow* w) const;
   
-  const int addWindow(BlackboxWindow *w, Bool = False);
+  const int addWindow(BlackboxWindow *w, Bool place = False);
   const int removeWindow(BlackboxWindow *w);
   const unsigned int getCount(void) const;
 
@@ -82,10 +85,11 @@ public:
   void removeAll(void);
   void raiseWindow(BlackboxWindow *w);
   void lowerWindow(BlackboxWindow *w);
-  void reconfigure();
-  void update();
+  void reconfigure(void);
+  void updateFocusModel(void);
+  void update(void);
   void setCurrent(void);
-  void setName(const char* const new_name);
+  void setName(const char* new_name);
   void shutdown(void);
 };
 

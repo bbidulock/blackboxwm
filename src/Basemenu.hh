@@ -59,6 +59,8 @@ private:
       bevel_h;
   } menu;
 
+  Basemenu(const Basemenu&);
+  Basemenu& operator=(const Basemenu&);
 
 protected:
   BasemenuItem *find(int index);
@@ -67,16 +69,16 @@ protected:
   inline void setHideTree(Bool h) { hide_tree = h; }
   inline void setMinimumSublevels(int m) { menu.minsub = m; }
 
-  virtual void itemSelected(int, int) = 0;
-  virtual void drawItem(int, Bool = False, Bool = False,
-                        int = -1, int = -1, unsigned int = 0,
-                        unsigned int = 0);
-  virtual void redrawTitle();
+  virtual void itemSelected(int button, int index) = 0;
+  virtual void drawItem(int index, Bool highlight = False, Bool clear = False,
+                        int x = -1, int y = -1,
+                        unsigned int w = 0, unsigned int h = 0);
+  virtual void redrawTitle(void);
   virtual void internal_hide(void);
 
 
 public:
-  Basemenu(BScreen *);
+  Basemenu(BScreen *scrn);
   virtual ~Basemenu(void);
 
   inline const Bool isTorn(void) const { return torn; }
@@ -88,15 +90,16 @@ public:
 
   inline const char *getLabel(void) const { return menu.label; }
 
-  int insert(BasemenuItem *, int);
-  int insert(const char *, int = 0, const char * = (const char *) 0, int = -1);
-  int insert(const char **, int = -1, int = 0);
-  int insert(const char *, Basemenu *, int = -1);
+  int insert(BasemenuItem *item, int pos);
+  int insert(const char *l, int function = 0, const char *e = (const char *)0,
+             int pos = -1);
+  int insert(const char **ulabel, int pos = -1, int function = 0);
+  int insert(const char *l, Basemenu *submenu, int pos = -1);
   int remove(int);
 
   inline const int getX(void) const { return menu.x; }
   inline const int getY(void) const { return menu.y; }
-  inline int getCount(void) { return menuitems.size(); }
+  inline unsigned int getCount(void) { return menuitems.size(); }
   inline const int getCurrentSubmenu(void) const { return which_sub; }
 
   inline const unsigned int getWidth(void) const { return menu.width; }
@@ -108,26 +111,26 @@ public:
   inline void setAlignment(int a) { alignment = a; }
   inline void setTorn(void) { torn = True; }
   inline void removeParent(void)
-    { if (internal_menu) parent = (Basemenu *) 0; }
+  { if (internal_menu) parent = (Basemenu *) 0; }
 
-  Bool hasSubmenu(int);
-  Bool isItemSelected(int);
-  Bool isItemEnabled(int);
+  Bool hasSubmenu(int index);
+  Bool isItemSelected(int index);
+  Bool isItemEnabled(int index);
 
-  void buttonPressEvent(XButtonEvent *);
-  void buttonReleaseEvent(XButtonEvent *);
-  void motionNotifyEvent(XMotionEvent *);
-  void enterNotifyEvent(XCrossingEvent *);
-  void leaveNotifyEvent(XCrossingEvent *);
-  void exposeEvent(XExposeEvent *);
+  void buttonPressEvent(XButtonEvent *be);
+  void buttonReleaseEvent(XButtonEvent *be);
+  void motionNotifyEvent(XMotionEvent *me);
+  void enterNotifyEvent(XCrossingEvent *ce);
+  void leaveNotifyEvent(XCrossingEvent *ce);
+  void exposeEvent(XExposeEvent *ee);
   void reconfigure(void);
   void setLabel(const char *n);
-  void move(int, int);
+  void move(int x, int y);
   void update(void);
-  void setItemSelected(int, Bool);
-  void setItemEnabled(int, Bool);
+  void setItemSelected(int index, Bool sel);
+  void setItemEnabled(int index, Bool enable);
 
-  virtual void drawSubmenu(int);
+  virtual void drawSubmenu(int index);
   virtual void show(void);
   virtual void hide(void);
 
@@ -139,7 +142,7 @@ public:
 
 class BasemenuItem {
 private:
-  Basemenu *s;
+  Basemenu *sub;
   const char **u, *l, *e;
   int f, enabled, selected;
 
@@ -149,19 +152,20 @@ protected:
 
 public:
   BasemenuItem(const char *lp, int fp, const char *ep = (const char *) 0):
-    s(0), u(0), l(lp), e(ep), f(fp), enabled(1), selected(0) {}
+    sub(0), u(0), l(lp), e(ep), f(fp), enabled(1), selected(0) {}
 
-  BasemenuItem(const char *lp, Basemenu *mp): s(mp), u(0), l(lp), e(0), f(0),
-                                              enabled(1), selected(0) {}
+  BasemenuItem(const char *lp, Basemenu *mp): sub(mp), u(0), l(lp), e(0),
+                                              f(0), enabled(1), selected(0) {}
 
-  BasemenuItem(const char **up, int fp): s(0), u(up), l(0), e(0), f(fp),
+  BasemenuItem(const char **up, int fp): sub(0), u(up), l(0), e(0), f(fp),
                                          enabled(1), selected(0) {}
+  ~BasemenuItem(void);
 
   inline const char *exec(void) const { return e; }
   inline const char *label(void) const { return l; }
   inline const char **ulabel(void) const { return u; }
   inline const int function(void) const { return f; }
-  inline Basemenu *submenu(void) { return s; }
+  inline Basemenu *submenu(void) { return sub; }
 
   inline const int isEnabled(void) const { return enabled; }
   inline void setEnabled(int e) { enabled = e; }

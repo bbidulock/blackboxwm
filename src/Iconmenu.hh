@@ -34,11 +34,14 @@ class Iconmenu : public Basemenu {
 private:
   BScreen *screen;
 
+  Iconmenu(const Iconmenu&);
+  Iconmenu& operator=(const Iconmenu&);
+
 protected:
-  virtual void itemSelected(int, int);
+  virtual void itemSelected(int button, int index);
 
 public:
-  Iconmenu(BScreen *);
+  Iconmenu(BScreen *scrn);
 };
 
 

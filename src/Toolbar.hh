@@ -39,11 +39,14 @@ private:
   private:
     Toolbarmenu *toolbarmenu;
 
+    Placementmenu(const Placementmenu&);
+    Placementmenu& operator=(const Placementmenu&);
+
   protected:
-    virtual void itemSelected(int, int);
+    virtual void itemSelected(int button, int index);
 
   public:
-    Placementmenu(Toolbarmenu *);
+    Placementmenu(Toolbarmenu *tm);
   };
 
   Toolbar *toolbar;
@@ -52,13 +55,15 @@ private:
   friend class Placementmenu;
   friend class Toolbar;
 
+  Toolbarmenu(const Toolbarmenu&);
+  Toolbarmenu& operator=(const Toolbarmenu&);
 
 protected:
-  virtual void itemSelected(int, int);
+  virtual void itemSelected(int button, int index);
   virtual void internal_hide(void);
 
 public:
-  Toolbarmenu(Toolbar *);
+  Toolbarmenu(Toolbar *tb);
   ~Toolbarmenu(void);
 
   inline Basemenu *getPlacementmenu(void) { return placementmenu; }
@@ -72,7 +77,7 @@ private:
   Bool on_top, editing, hidden, do_auto_hide;
   Display *display;
 
-  struct frame {
+  struct ToolbarFrame {
     unsigned long button_pixel, pbutton_pixel;
     Pixmap base, label, wlabel, clk, button, pbutton;
     Window window, workspace_label, window_label, clock, psbutton, nsbutton,
@@ -105,8 +110,11 @@ private:
   friend class Toolbarmenu::Placementmenu;
 
 
+  Toolbar(const Toolbar&);
+  Toolbar& operator=(const Toolbar&);
+
 public:
-  Toolbar(BScreen *);
+  Toolbar(BScreen *scrn);
   virtual ~Toolbar(void);
 
   inline Toolbarmenu *getMenu(void) { return toolbarmenu; }
@@ -127,26 +135,26 @@ public:
   inline const int getY(void) const
   { return ((hidden) ? frame.y_hidden : frame.y); }
 
-  void buttonPressEvent(XButtonEvent *);
-  void buttonReleaseEvent(XButtonEvent *);
-  void enterNotifyEvent(XCrossingEvent *);
-  void leaveNotifyEvent(XCrossingEvent *);
-  void exposeEvent(XExposeEvent *);
-  void keyPressEvent(XKeyEvent *);
+  void buttonPressEvent(XButtonEvent *be);
+  void buttonReleaseEvent(XButtonEvent *re);
+  void enterNotifyEvent(XCrossingEvent * /*unused*/);
+  void leaveNotifyEvent(XCrossingEvent * /*unused*/);
+  void exposeEvent(XExposeEvent *ee);
+  void keyPressEvent(XKeyEvent *ke);
 
-  void redrawWindowLabel(Bool = False);
-  void redrawWorkspaceLabel(Bool = False);
-  void redrawPrevWorkspaceButton(Bool = False, Bool = False);
-  void redrawNextWorkspaceButton(Bool = False, Bool = False);
-  void redrawPrevWindowButton(Bool = False, Bool = False);
-  void redrawNextWindowButton(Bool = False, Bool = False);
+  void redrawWindowLabel(Bool redraw = False);
+  void redrawWorkspaceLabel(Bool redraw = False);
+  void redrawPrevWorkspaceButton(Bool pressed = False, Bool redraw = False);
+  void redrawNextWorkspaceButton(Bool pressed = False, Bool redraw = False);
+  void redrawPrevWindowButton(Bool preseed = False, Bool redraw = False);
+  void redrawNextWindowButton(Bool preseed = False, Bool redraw = False);
   void edit(void);
   void reconfigure(void);
 
 #ifdef    HAVE_STRFTIME
-  void checkClock(Bool = False);
+  void checkClock(Bool redraw = False);
 #else //  HAVE_STRFTIME
-  void checkClock(Bool = False, Bool = False);
+  void checkClock(Bool redraw = False, Bool date = False);
 #endif // HAVE_STRFTIME
 
   virtual void timeout(void);

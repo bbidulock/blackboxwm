@@ -55,8 +55,9 @@ void Workspacemenu::itemSelected(int button, int index) {
     screen->addWorkspace();
   else if (index == 1)
     screen->removeLastWorkspace();
-  else if ((screen->getCurrentWorkspace()->getWorkspaceID() !=
-            (index - 2)) && ((index - 2) < screen->getCount()))
+  else if (((signed)screen->getCurrentWorkspace()->getWorkspaceID() !=
+                    (index - 2)) &&
+           ((index - 2) < (signed)screen->getWorkspaceCount()))
     screen->changeWorkspaceID(index - 2);
 
   if (! (screen->getWorkspacemenu()->isTorn() || isTorn()))

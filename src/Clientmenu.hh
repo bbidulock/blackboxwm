@@ -33,11 +33,14 @@ private:
   BScreen *screen;
   Workspace *wkspc;
 
+  Clientmenu(const Clientmenu&);
+  Clientmenu& operator=(const Clientmenu&);
+
 protected:
-  virtual void itemSelected(int, int);
+  virtual void itemSelected(int button, int index);
 
 public:
-  Clientmenu(Workspace *);
+  Clientmenu(Workspace *ws);
 };
 
 

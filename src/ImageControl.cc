@@ -393,8 +393,8 @@ BImageControl::~BImageControl(void) {
 
 
 Pixmap BImageControl::searchCache(unsigned int width, unsigned int height,
-      unsigned long texture,
-      BColor *c1, BColor *c2) {
+                                  unsigned long texture,
+                                  BColor *c1, BColor *c2) {
   if (cache.empty())
     return None;
 

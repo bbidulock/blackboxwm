@@ -21,6 +21,7 @@ Changes from 0.62.1:
     have one function which turns ~/ into /home/user/.  This is now called
     everywhere this expansion should be done.  Even added this to the
     resource.menu_file so now the menu file may be specified as ~/blackbox_menu
+    Also moved several functions into Util for use later in the class lib
   - added a TimerQueue which is a priority_queue with the ability to release
     items it contains before they reach the top of the queue.  Also added a
     TimerQueueManager protocol class which BaseDisplay now inherits from.
@@ -35,6 +36,8 @@ Changes from 0.62.1:
     that client.transient != this.
   - added zh_TW (Taiwan Chinese)
   - remove slit and netwm as compile time options
+  - strip much of BaseDisplay's original functionality and move it to the
+    blackbox class.
 
 Changes from 0.62.0 to 0.62.1:
   - the lock modifier code handles user redefined modifiers better

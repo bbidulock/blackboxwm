@@ -28,6 +28,14 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
+#ifdef    HAVE_STDIO_H
+#  include <stdio.h>
+#endif // HAVE_STDIO_H
+
+#ifdef    STDC_HEADERS
+#  include <string.h>
+#endif // STDC_HEADERS
+
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "Clientmenu.hh"
@@ -38,13 +46,7 @@
 #include "Workspace.hh"
 #include "Windowmenu.hh"
 
-#ifdef    HAVE_STDIO_H
-#  include <stdio.h>
-#endif // HAVE_STDIO_H
-
-#ifdef    STDC_HEADERS
-#  include <string.h>
-#endif // STDC_HEADERS
+using std::string;
 
 
 Workspace::Workspace(BScreen *scrn, unsigned int i) {
@@ -58,16 +60,12 @@ Workspace::Workspace(BScreen *scrn, unsigned int i) {
 
   lastfocus = (BlackboxWindow *) 0;
 
-  name = (char *) 0;
-  char *tmp = screen->getNameOfWorkspace(id);
+  const char *tmp = screen->getNameOfWorkspace(id);
   setName(tmp);
 }
 
 
-Workspace::~Workspace(void) {
-  if (name)
-    delete [] name;
-}
+Workspace::~Workspace(void) {}
 
 
 const int Workspace::addWindow(BlackboxWindow *w, Bool place) {
@@ -134,10 +132,8 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
 
 
 void Workspace::showAll(void) {
-  BlackboxWindowList::iterator it = stackingList.begin();
-  const BlackboxWindowList::iterator end = stackingList.end();
-  for (; it != end; ++it)
-    (*it)->show();
+  std::for_each(stackingList.begin(), stackingList.end(),
+                std::mem_fun(&BlackboxWindow::show));
 }
 
 
@@ -259,6 +255,17 @@ void Workspace::reconfigure(void) {
 }
 
 
+void Workspace::updateFocusModel(void) {
+  BlackboxWindowList::iterator it = windowList.begin();
+  const BlackboxWindowList::iterator end = windowList.end();
+  for (; it != end; ++it) {
+    BlackboxWindow *bw = *it;
+    if (bw->validateClient())
+      bw->updateFocusModel();
+  }
+}
+
+
 BlackboxWindow *Workspace::getWindow(unsigned int index) {
   if (index < windowList.size()) {
     BlackboxWindowList::iterator it = windowList.begin();
@@ -295,18 +302,15 @@ void Workspace::setCurrent(void) {
 
 
 void Workspace::setName(const char* const new_name) {
-  if (name)
-    delete [] name;
-
   if (new_name) {
-    name = bstrdup(new_name);
+    name = string(new_name);
   } else {
-    name = new char[128];
-    sprintf(name, i18n(WorkspaceSet, WorkspaceDefaultNameFormat,
-                       "Workspace %d"), id + 1);
+    char default_name[32];
+    snprintf(default_name, 32, "Workspace %d", id + 1);
+    name = i18n(WorkspaceSet, WorkspaceDefaultNameFormat, default_name);
   }
   
-  clientmenu->setLabel(name);
+  clientmenu->setLabel(name.c_str());
   clientmenu->update();
 }
 

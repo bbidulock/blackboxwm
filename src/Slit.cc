@@ -92,61 +92,62 @@ Slit::~Slit() {
 
 
 void Slit::addClient(Window w) {
-  if (blackbox->validateWindow(w)) {
-    SlitClient *client = new SlitClient;
-    client->client_window = w;
+  if (! blackbox->validateWindow(w))
+    return;
 
-    XWMHints *wmhints = XGetWMHints(display, w);
+  SlitClient *client = new SlitClient;
+  client->client_window = w;
 
-    if (wmhints) {
-      if ((wmhints->flags & IconWindowHint) &&
-          (wmhints->icon_window != None)) {
-        XMoveWindow(display, client->client_window, screen->getWidth() + 10,
-                    screen->getHeight() + 10);
-        XMapWindow(display, client->client_window);
+  XWMHints *wmhints = XGetWMHints(display, w);
 
-        client->icon_window = wmhints->icon_window;
-        client->window = client->icon_window;
-      } else {
-        client->icon_window = None;
-        client->window = client->client_window;
-      }
+  if (wmhints) {
+    if ((wmhints->flags & IconWindowHint) &&
+        (wmhints->icon_window != None)) {
+      XMoveWindow(display, client->client_window, screen->getWidth() + 10,
+                  screen->getHeight() + 10);
+      XMapWindow(display, client->client_window);
 
-      XFree(wmhints);
+      client->icon_window = wmhints->icon_window;
+      client->window = client->icon_window;
     } else {
       client->icon_window = None;
       client->window = client->client_window;
     }
 
-    XWindowAttributes attrib;
-    if (XGetWindowAttributes(display, client->window, &attrib)) {
-      client->width = attrib.width;
-      client->height = attrib.height;
-    } else {
-      client->width = client->height = 64;
-    }
-
-    XSetWindowBorderWidth(display, client->window, 0);
-
-    XSelectInput(display, frame.window, NoEventMask);
-    XSelectInput(display, client->window, NoEventMask);
-
-    XReparentWindow(display, client->window, frame.window, 0, 0);
-    XMapRaised(display, client->window);
-    XChangeSaveSet(display, client->window, SetModeInsert);
-
-    XSelectInput(display, frame.window, SubstructureRedirectMask |
-                 ButtonPressMask | EnterWindowMask | LeaveWindowMask);
-    XSelectInput(display, client->window, StructureNotifyMask |
-                 SubstructureNotifyMask | EnterWindowMask);
-    XFlush(display);
-
-    clientList.push_back(client);
-
-    blackbox->saveSlitSearch(client->client_window, this);
-    blackbox->saveSlitSearch(client->icon_window, this);
-    reconfigure();
+    XFree(wmhints);
+  } else {
+    client->icon_window = None;
+    client->window = client->client_window;
   }
+
+  XWindowAttributes attrib;
+  if (XGetWindowAttributes(display, client->window, &attrib)) {
+    client->width = attrib.width;
+    client->height = attrib.height;
+  } else {
+    client->width = client->height = 64;
+  }
+
+  XSetWindowBorderWidth(display, client->window, 0);
+
+  XSelectInput(display, frame.window, NoEventMask);
+  XSelectInput(display, client->window, NoEventMask);
+
+  XReparentWindow(display, client->window, frame.window, 0, 0);
+  XMapRaised(display, client->window);
+  XChangeSaveSet(display, client->window, SetModeInsert);
+
+  XSelectInput(display, frame.window, SubstructureRedirectMask |
+               ButtonPressMask | EnterWindowMask | LeaveWindowMask);
+  XSelectInput(display, client->window, StructureNotifyMask |
+               SubstructureNotifyMask | EnterWindowMask);
+  XFlush(display);
+
+  clientList.push_back(client);
+
+  blackbox->saveSlitSearch(client->client_window, this);
+  blackbox->saveSlitSearch(client->icon_window, this);
+  reconfigure();
 }
 
 

@@ -37,22 +37,28 @@ private:
   private:
     Configmenu *configmenu;
 
+    Focusmenu(const Focusmenu&);
+    Focusmenu& operator=(const Focusmenu&);
+
   protected:
-    virtual void itemSelected(int, int);
+    virtual void itemSelected(int button, int index);
 
   public:
-    Focusmenu(Configmenu *);
+    Focusmenu(Configmenu *cm);
   };
 
   class Placementmenu : public Basemenu {
   private:
     Configmenu *configmenu;
 
+    Placementmenu(const Placementmenu&);
+    Placementmenu& operator=(const Placementmenu&);
+
   protected:
-    virtual void itemSelected(int, int);
+    virtual void itemSelected(int button, int index);
 
   public:
-    Placementmenu(Configmenu *);
+    Placementmenu(Configmenu *cm);
   };
 
   Blackbox *blackbox;
@@ -63,11 +69,14 @@ private:
   friend class Focusmenu;
   friend class Placementmenu;
 
+  Configmenu(const Configmenu&);
+  Configmenu& operator=(const Configmenu&);
+
 protected:
-  virtual void itemSelected(int, int);
+  virtual void itemSelected(int button, int index);
 
 public:
-  Configmenu(BScreen *);
+  Configmenu(BScreen *scr);
   virtual ~Configmenu(void);
 
   inline Basemenu *getFocusmenu(void) { return focusmenu; }

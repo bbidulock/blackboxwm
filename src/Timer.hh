@@ -51,6 +51,9 @@ private:
 
   timeval _start, _timeout;
 
+  BTimer(const BTimer&);
+  BTimer& operator=(const BTimer&);
+
 public:
   BTimer(TimerQueueManager *m, TimeoutHandler *h);
   virtual ~BTimer(void);
@@ -118,8 +121,8 @@ typedef _timer_queue<BTimer*, std::deque<BTimer*>, TimerLessThan> TimerQueue;
 
 class TimerQueueManager {
 public:
-  virtual void addTimer(BTimer*) = 0;
-  virtual void removeTimer(BTimer*) = 0;
+  virtual void addTimer(BTimer* timer) = 0;
+  virtual void removeTimer(BTimer* timer) = 0;
 };
 
 #endif // _BLACKBOX_Timer_hh

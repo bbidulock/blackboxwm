@@ -156,12 +156,12 @@ protected:
 
 
 public:
-  BImage(BImageControl *, unsigned int, unsigned int);
+  BImage(BImageControl *c, unsigned int w, unsigned int h);
   ~BImage(void);
 
-  Pixmap render(BTexture *);
-  Pixmap render_solid(BTexture *);
-  Pixmap render_gradient(BTexture *);
+  Pixmap render(BTexture *texture);
+  Pixmap render_solid(BTexture *texture);
+  Pixmap render_gradient(BTexture *texture);
 };
 
 
@@ -174,8 +174,9 @@ public:
     unsigned long pixel1, pixel2, texture;
   };
 
-  BImageControl(BaseDisplay *, ScreenInfo *, Bool = False, int = 4,
-                unsigned long = 300000l, unsigned long = 200l);
+  BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither= False,
+                int _cpc = 4, unsigned long cache_timeout = 300000l,
+                unsigned long cmax = 200l);
   virtual ~BImageControl(void);
 
   inline BaseDisplay *getBaseDisplay(void) { return basedisplay; }
@@ -193,24 +194,27 @@ public:
   inline const int getColorsPerChannel(void) const
     { return colors_per_channel; }
 
-  unsigned long getColor(const char *);
-  unsigned long getColor(const char *, unsigned char *, unsigned char *,
-                         unsigned char *);
-  unsigned long getSqrt(unsigned int);
+  unsigned long getColor(const char *colorname);
+  unsigned long getColor(const char *colorname, unsigned char *r,
+                         unsigned char *g, unsigned char *b);
+  unsigned long getSqrt(unsigned int x);
 
-  Pixmap renderImage(unsigned int, unsigned int, BTexture *);
+  Pixmap renderImage(unsigned int width, unsigned int height,
+                     BTexture *texture);
 
   void installRootColormap(void);
-  void removeImage(Pixmap);
-  void getColorTables(unsigned char **, unsigned char **, unsigned char **,
-                      int *, int *, int *, int *, int *, int *);
-  void getXColorTable(XColor **, int *);
-  void getGradientBuffers(unsigned int, unsigned int,
-                          unsigned int **, unsigned int **);
+  void removeImage(Pixmap pixmap);
+  void getColorTables(unsigned char **rmt, unsigned char **gmt,
+                      unsigned char **bmt,
+                      int *roff, int *goff, int *boff,
+                      int *rbit, int *gbit, int *bbit);
+  void getXColorTable(XColor **c, int *n);
+  void getGradientBuffers(unsigned int w, unsigned int h,
+                          unsigned int **xbuf, unsigned int **ybuf);
   void setDither(Bool d) { dither = d; }
-  void setColorsPerChannel(int);
-  void parseTexture(BTexture *, char *);
-  void parseColor(BColor *, char * = 0);
+  void setColorsPerChannel(int cpc);
+  void parseTexture(BTexture *texture, char *t);
+  void parseColor(BColor *color, char *c = 0);
 
   virtual void timeout(void);
 
@@ -239,8 +243,8 @@ private:
   CacheContainer cache;
 
 protected:
-  Pixmap searchCache(unsigned int, unsigned int, unsigned long, BColor *,
-                     BColor *);
+  Pixmap searchCache(unsigned int width, unsigned int height,
+                     unsigned long texture, BColor *c1, BColor *c2);
 };
 
 

@@ -29,6 +29,7 @@
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
 #include <X11/Xatom.h>
+#include <X11/cursorfont.h>
 #include <X11/keysym.h>
 
 #ifdef    SHAPE
@@ -104,16 +105,6 @@
 #include "Workspace.hh"
 #include "Workspacemenu.hh"
 
-#ifndef   HAVE_BASENAME
-static inline char *basename (char *s) {
-  char *save = s;
-
-  while (*s) if (*s++ == '/') save = s;
-
-  return save;
-}
-#endif // HAVE_BASENAME
-
 
 // X event scanner for enter/leave notifies - adapted from twm
 typedef struct scanargs {
@@ -164,9 +155,12 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
   XrmInitialize();
   load_rc();
 
-#ifdef    HAVE_GETPID
-  blackbox_pid = XInternAtom(getXDisplay(), "_BLACKBOX_PID", False);
-#endif // HAVE_GETPID
+  init_icccm();
+
+  cursor.session = XCreateFontCursor(getXDisplay(), XC_left_ptr);
+  cursor.move = XCreateFontCursor(getXDisplay(), XC_fleur);
+  cursor.ll_angle = XCreateFontCursor(getXDisplay(), XC_ll_angle);
+  cursor.lr_angle = XCreateFontCursor(getXDisplay(), XC_lr_angle);
 
   for (int i = 0; i < getNumberOfScreens(); i++) {
     BScreen *screen = new BScreen(this, i);
@@ -204,11 +198,9 @@ Blackbox::~Blackbox(void) {
 
   delete rc_file;
 
-  if (resource.menu_file)
-    delete [] resource.menu_file;
+  delete [] resource.menu_file;
 
-  if (resource.style_file)
-    delete [] resource.style_file;
+  delete [] resource.style_file;
 
   delete timer;
 }
@@ -224,92 +216,32 @@ void Blackbox::process_event(XEvent *e) {
 
     BlackboxWindow *win = (BlackboxWindow *) 0;
     Basemenu *menu = (Basemenu *) 0;
-
     Slit *slit = (Slit *) 0;
-
     Toolbar *tbar = (Toolbar *) 0;
 
     if ((win = searchWindow(e->xbutton.window))) {
       win->buttonPressEvent(&e->xbutton);
 
+      /* XXX: is this sane on low colour desktops? */
       if (e->xbutton.button == 1)
         win->installColormap(True);
     } else if ((menu = searchMenu(e->xbutton.window))) {
       menu->buttonPressEvent(&e->xbutton);
     } else if ((slit = searchSlit(e->xbutton.window))) {
       slit->buttonPressEvent(&e->xbutton);
-
     } else if ((tbar = searchToolbar(e->xbutton.window))) {
       tbar->buttonPressEvent(&e->xbutton);
     } else {
       ScreenList::iterator it = screenList.begin();
+      BScreen *screen = (BScreen*) 0;
       for (; it != screenList.end(); ++it) {
-        BScreen *screen = *it;
-        if (e->xbutton.window == screen->getRootWindow()) {
-          if (e->xbutton.button == 1) {
-            if (! screen->isRootColormapInstalled())
-              screen->getImageControl()->installRootColormap();
-
-            if (screen->getWorkspacemenu()->isVisible())
-              screen->getWorkspacemenu()->hide();
-
-            if (screen->getRootmenu()->isVisible())
-              screen->getRootmenu()->hide();
-          } else if (e->xbutton.button == 2) {
-            int mx = e->xbutton.x_root -
-              (screen->getWorkspacemenu()->getWidth() / 2);
-            int my = e->xbutton.y_root -
-              (screen->getWorkspacemenu()->getTitleHeight() / 2);
-
-            if (mx < 0) mx = 0;
-            if (my < 0) my = 0;
-
-            if (mx + screen->getWorkspacemenu()->getWidth() >
-                screen->getWidth())
-              mx = screen->getWidth() -
-                screen->getWorkspacemenu()->getWidth() -
-                screen->getBorderWidth();
-
-            if (my + screen->getWorkspacemenu()->getHeight() >
-                screen->getHeight())
-              my = screen->getHeight() -
-                screen->getWorkspacemenu()->getHeight() -
-                screen->getBorderWidth();
-
-            screen->getWorkspacemenu()->move(mx, my);
-
-            if (! screen->getWorkspacemenu()->isVisible()) {
-              screen->getWorkspacemenu()->removeParent();
-              screen->getWorkspacemenu()->show();
-            }
-          } else if (e->xbutton.button == 3) {
-            int mx = e->xbutton.x_root -
-              (screen->getRootmenu()->getWidth() / 2);
-            int my = e->xbutton.y_root -
-              (screen->getRootmenu()->getTitleHeight() / 2);
-
-            if (mx < 0) mx = 0;
-            if (my < 0) my = 0;
-
-            if (mx + screen->getRootmenu()->getWidth() > screen->getWidth())
-              mx = screen->getWidth() -
-                screen->getRootmenu()->getWidth() -
-                screen->getBorderWidth();
-
-            if (my + screen->getRootmenu()->getHeight() > screen->getHeight())
-              my = screen->getHeight() -
-                screen->getRootmenu()->getHeight() -
-                screen->getBorderWidth();
-
-            screen->getRootmenu()->move(mx, my);
-
-            if (! screen->getRootmenu()->isVisible()) {
-              checkMenu();
-              screen->getRootmenu()->show();
-            }
-          }
+        if (e->xbutton.window == (*it)->getRootWindow()) {
+          screen = *it;
+          break;
         }
       }
+      if (screen)
+        screen->buttonPressEvent(&e->xbutton);
     }
     break;
   }
@@ -346,7 +278,6 @@ void Blackbox::process_event(XEvent *e) {
       e = &realevent;
 
     BlackboxWindow *win = (BlackboxWindow *) 0;
-
     Slit *slit = (Slit *) 0;
 
     if ((win = searchWindow(e->xconfigurerequest.window))) {
@@ -431,10 +362,10 @@ void Blackbox::process_event(XEvent *e) {
     break;
   }
 
-    // this event is quite rare and is usually handled in unmapNotify
-    // however, if the window is unmapped when the reparent event occurs
-    // the window manager never sees it because an unmap event is not sent
-    // to an already unmapped window  
+  // this event is quite rare and is usually handled in unmapNotify
+  // however, if the window is unmapped when the reparent event occurs
+  // the window manager never sees it because an unmap event is not sent
+  // to an already unmapped window  
   case ReparentNotify: {
     BlackboxWindow *win = searchWindow(e->xreparent.window);
     if (win) {
@@ -619,9 +550,6 @@ void Blackbox::process_event(XEvent *e) {
     break;
   }
 
-  case FocusOut:
-    break;
-
   case ClientMessage: {
     if (e->xclient.format == 32) {
       if (e->xclient.message_type == getWMChangeStateAtom()) {
@@ -636,7 +564,7 @@ void Blackbox::process_event(XEvent *e) {
         BScreen *screen = searchScreen(e->xclient.window);
 
         if (screen && e->xclient.data.l[0] >= 0 &&
-            e->xclient.data.l[0] < screen->getCount())
+            e->xclient.data.l[0] < (signed)screen->getWorkspaceCount())
           screen->changeWorkspaceID(e->xclient.data.l[0]);
       } else if (e->xclient.message_type == getBlackboxChangeWindowFocusAtom()) {
         BlackboxWindow *win = searchWindow(e->xclient.window);
@@ -671,6 +599,7 @@ void Blackbox::process_event(XEvent *e) {
     break;
   }
 
+  case FocusOut:
   case NoExpose:
   case ConfigureNotify:
     break; // not handled, just ignore
@@ -691,7 +620,7 @@ void Blackbox::process_event(XEvent *e) {
 }
 
 
-Bool Blackbox::handleSignal(int sig) {
+const Bool Blackbox::handleSignal(int sig) {
   switch (sig) {
   case SIGHUP:
     reconfigure();
@@ -713,6 +642,101 @@ Bool Blackbox::handleSignal(int sig) {
     shutdown();
 
   default:
+    return False;
+  }
+
+  return True;
+}
+
+
+void Blackbox::init_icccm(void) {
+  xa_wm_colormap_windows =
+    XInternAtom(getXDisplay(), "WM_COLORMAP_WINDOWS", False);
+  xa_wm_protocols = XInternAtom(getXDisplay(), "WM_PROTOCOLS", False);
+  xa_wm_state = XInternAtom(getXDisplay(), "WM_STATE", False);
+  xa_wm_change_state = XInternAtom(getXDisplay(), "WM_CHANGE_STATE", False);
+  xa_wm_delete_window = XInternAtom(getXDisplay(), "WM_DELETE_WINDOW", False);
+  xa_wm_take_focus = XInternAtom(getXDisplay(), "WM_TAKE_FOCUS", False);
+  motif_wm_hints = XInternAtom(getXDisplay(), "_MOTIF_WM_HINTS", False);
+
+  blackbox_hints = XInternAtom(getXDisplay(), "_BLACKBOX_HINTS", False);
+  blackbox_attributes =
+    XInternAtom(getXDisplay(), "_BLACKBOX_ATTRIBUTES", False);
+  blackbox_change_attributes =
+    XInternAtom(getXDisplay(), "_BLACKBOX_CHANGE_ATTRIBUTES", False);
+  blackbox_structure_messages =
+    XInternAtom(getXDisplay(), "_BLACKBOX_STRUCTURE_MESSAGES", False);
+  blackbox_notify_startup =
+    XInternAtom(getXDisplay(), "_BLACKBOX_NOTIFY_STARTUP", False);
+  blackbox_notify_window_add =
+    XInternAtom(getXDisplay(), "_BLACKBOX_NOTIFY_WINDOW_ADD", False);
+  blackbox_notify_window_del =
+    XInternAtom(getXDisplay(), "_BLACKBOX_NOTIFY_WINDOW_DEL", False);
+  blackbox_notify_current_workspace =
+    XInternAtom(getXDisplay(), "_BLACKBOX_NOTIFY_CURRENT_WORKSPACE", False);
+  blackbox_notify_workspace_count =
+    XInternAtom(getXDisplay(), "_BLACKBOX_NOTIFY_WORKSPACE_COUNT", False);
+  blackbox_notify_window_focus =
+    XInternAtom(getXDisplay(), "_BLACKBOX_NOTIFY_WINDOW_FOCUS", False);
+  blackbox_notify_window_raise =
+    XInternAtom(getXDisplay(), "_BLACKBOX_NOTIFY_WINDOW_RAISE", False);
+  blackbox_notify_window_lower =
+    XInternAtom(getXDisplay(), "_BLACKBOX_NOTIFY_WINDOW_LOWER", False);
+  blackbox_change_workspace =
+    XInternAtom(getXDisplay(), "_BLACKBOX_CHANGE_WORKSPACE", False);
+  blackbox_change_window_focus =
+    XInternAtom(getXDisplay(), "_BLACKBOX_CHANGE_WINDOW_FOCUS", False);
+  blackbox_cycle_window_focus =
+    XInternAtom(getXDisplay(), "_BLACKBOX_CYCLE_WINDOW_FOCUS", False);
+
+#ifdef    NEWWMSPEC
+  net_supported = XInternAtom(getXDisplay(), "_NET_SUPPORTED", False);
+  net_client_list = XInternAtom(getXDisplay(), "_NET_CLIENT_LIST", False);
+  net_client_list_stacking =
+    XInternAtom(getXDisplay(), "_NET_CLIENT_LIST_STACKING", False);
+  net_number_of_desktops =
+    XInternAtom(getXDisplay(), "_NET_NUMBER_OF_DESKTOPS", False);
+  net_desktop_geometry =
+    XInternAtom(getXDisplay(), "_NET_DESKTOP_GEOMETRY", False);
+  net_desktop_viewport =
+    XInternAtom(getXDisplay(), "_NET_DESKTOP_VIEWPORT", False);
+  net_current_desktop =
+    XInternAtom(getXDisplay(), "_NET_CURRENT_DESKTOP", False);
+  net_desktop_names = XInternAtom(getXDisplay(), "_NET_DESKTOP_NAMES", False);
+  net_active_window = XInternAtom(getXDisplay(), "_NET_ACTIVE_WINDOW", False);
+  net_workarea = XInternAtom(getXDisplay(), "_NET_WORKAREA", False);
+  net_supporting_wm_check =
+    XInternAtom(getXDisplay(), "_NET_SUPPORTING_WM_CHECK", False);
+  net_virtual_roots = XInternAtom(getXDisplay(), "_NET_VIRTUAL_ROOTS", False);
+  net_close_window = XInternAtom(getXDisplay(), "_NET_CLOSE_WINDOW", False);
+  net_wm_moveresize = XInternAtom(getXDisplay(), "_NET_WM_MOVERESIZE", False);
+  net_properties = XInternAtom(getXDisplay(), "_NET_PROPERTIES", False);
+  net_wm_name = XInternAtom(getXDisplay(), "_NET_WM_NAME", False);
+  net_wm_desktop = XInternAtom(getXDisplay(), "_NET_WM_DESKTOP", False);
+  net_wm_window_type =
+    XInternAtom(getXDisplay(), "_NET_WM_WINDOW_TYPE", False);
+  net_wm_state = XInternAtom(getXDisplay(), "_NET_WM_STATE", False);
+  net_wm_strut = XInternAtom(getXDisplay(), "_NET_WM_STRUT", False);
+  net_wm_icon_geometry =
+    XInternAtom(getXDisplay(), "_NET_WM_ICON_GEOMETRY", False);
+  net_wm_icon = XInternAtom(getXDisplay(), "_NET_WM_ICON", False);
+  net_wm_pid = XInternAtom(getXDisplay(), "_NET_WM_PID", False);
+  net_wm_handled_icons =
+    XInternAtom(getXDisplay(), "_NET_WM_HANDLED_ICONS", False);
+  net_wm_ping = XInternAtom(getXDisplay(), "_NET_WM_PING", False);
+#endif // NEWWMSPEC
+
+#ifdef    HAVE_GETPID
+  blackbox_pid = XInternAtom(getXDisplay(), "_BLACKBOX_PID", False);
+#endif // HAVE_GETPID
+}
+
+
+const Bool Blackbox::validateWindow(Window window) {
+  XEvent event;
+  if (XCheckTypedWindowEvent(getXDisplay(), window, DestroyNotify, &event)) {
+    XPutBackEvent(getXDisplay(), &event);
+
     return False;
   }
 
@@ -979,7 +1003,7 @@ void Blackbox::save_rc(void) {
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.workspaces:  %d", screen_number,
-            screen->getCount());
+            screen->getWorkspaceCount());
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.toolbar.onTop:  %s", screen_number,
@@ -1039,9 +1063,9 @@ void Blackbox::save_rc(void) {
             screen_number, screen->getToolbarWidthPercent());
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
-    // write out the users workspace names
-    int i, len = 0;
-    for (i = 0; i < screen->getCount(); i++)
+    // write out the user's workspace names
+    int len = 0;
+    for (unsigned int i = 0; i < screen->getWorkspaceCount(); i++)
       len += strlen((screen->getWorkspace(i)->getName()) ?
                     screen->getWorkspace(i)->getName() : "Null") + 1;
 
@@ -1049,7 +1073,7 @@ void Blackbox::save_rc(void) {
       *save_string = new char[len], *save_string_pos = save_string,
       *name_string_pos;
     if (save_string) {
-      for (i = 0; i < screen->getCount(); i++) {
+      for (unsigned i = 0; i < screen->getWorkspaceCount(); i++) {
         len = strlen((screen->getWorkspace(i)->getName()) ?
                      screen->getWorkspace(i)->getName() : "Null") + 1;
         name_string_pos =
@@ -1230,9 +1254,9 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(class_lookup, "Session.Screen%d.Workspaces", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value)) {
-    int i;
-    if (sscanf(value.addr, "%d", &i) != 1) i = 1;
-    screen->saveWorkspaces(i);
+    int workspace_count;
+    if (sscanf(value.addr, "%d", &workspace_count) != 1) workspace_count = 1;
+    screen->saveWorkspaces(workspace_count);
   } else {
     screen->saveWorkspaces(1);
   }
@@ -1490,10 +1514,12 @@ void Blackbox::reconfigure(void) {
 
 void Blackbox::real_reconfigure(void) {
   XrmDatabase new_blackboxrc = (XrmDatabase) 0;
-  char style[MAXPATHLEN + 64];
+  char *style = new char[strlen(resource.style_file) + 20];
 
   sprintf(style, "session.styleFile: %s", resource.style_file);
   XrmPutLineResource(&new_blackboxrc, style);
+
+  delete [] style;
 
   XrmDatabase old_blackboxrc = XrmGetFileDatabase(rc_file);
 
@@ -1517,7 +1543,7 @@ void Blackbox::checkMenu(void) {
     MenuTimestamp *tmp = *it;
     struct stat buf;
 
-    if (! stat(tmp->filename, &buf)) {
+    if (! stat(tmp->filename.c_str(), &buf)) {
       if (tmp->timestamp != buf.st_ctime)
         reread = True;
     } else {
@@ -1559,7 +1585,7 @@ void Blackbox::saveMenuFilename(const char *filename) {
 
   MenuTimestampList::iterator it = menuTimestamps.begin();
   for (; it != menuTimestamps.end() && !found; ++it) {
-    if (! strcmp((*it)->filename, filename)) found = True;
+    if (! strcmp((*it)->filename.c_str(), filename)) found = True;
   }
   if (! found) {
     struct stat buf;
