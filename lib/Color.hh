@@ -34,21 +34,29 @@ namespace bt {
 
   class Color {
   public:
+    static void cleanupColorCache(void);
+
     Color(const BaseDisplay * const _display = 0,
           unsigned int _screen = ~(0u));
     Color(int _r, int _g, int _b,
-           const BaseDisplay * const _display,
+          const BaseDisplay * const _display = 0,
           unsigned int _screen = ~(0u));
     Color(const std::string &_name,
-           const BaseDisplay * const _display,
+          const BaseDisplay * const _display = 0,
           unsigned int _screen = ~(0u));
     ~Color(void);
+
+    inline const BaseDisplay *display(void) const { return dpy; }
+    inline unsigned int screen(void) const { return scrn; }
+    void setDisplay(const BaseDisplay * const _display,
+                    unsigned int _screen = ~(0u));
 
     inline const std::string &name(void) const { return colorname; }
 
     inline int   red(void) const { return r; }
     inline int green(void) const { return g; }
     inline int  blue(void) const { return b; }
+    unsigned long pixel(void) const;
     inline void setRGB(int _r, int _g, int _b) {
       deallocate();
       r = _r;
@@ -56,16 +64,8 @@ namespace bt {
       b = _b;
     }
 
-    inline const BaseDisplay *display(void) const { return dpy; }
-    inline unsigned int screen(void) const { return scrn; }
-    void setDisplay(const BaseDisplay * const _display,
-                    unsigned int _screen = ~(0u));
-
     inline bool isAllocated(void) const { return allocated; }
-
     inline bool isValid(void) const { return r != -1 && g != -1 && b != -1; }
-
-    unsigned long pixel(void) const;
 
     // operators
     Color &operator=(const Color &c);
@@ -73,8 +73,6 @@ namespace bt {
     { return (r == c.r && b == c.b && b == c.b); }
     inline bool operator!=(const Color &c) const
     { return (! operator==(c)); }
-
-    static void cleanupColorCache(void);
 
   private:
     void parseColorName(void);
@@ -96,7 +94,7 @@ namespace bt {
 
       inline RGB(void) : display(0), screen(~(0u)), r(-1), g(-1), b(-1) { }
       inline RGB(const BaseDisplay * const d, const unsigned int s,
-          const int x, const int y, const int z)
+                 const int x, const int y, const int z)
         : display(d), screen(s), r(x), g(y), b(z) {}
       inline RGB(const RGB &x)
         : display(x.display), screen(x.screen), r(x.r), g(x.g), b(x.b) {}
