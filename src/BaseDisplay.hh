@@ -79,11 +79,11 @@ public:
 
   BGCCache *gcCache() const;
 
-  inline const Bool hasShapeExtensions(void) const
+  inline Bool hasShapeExtensions(void) const
     { return shape.extensions; }
-  inline const Bool doShutdown(void) const
+  inline Bool doShutdown(void) const
     { return _shutdown; }
-  inline const Bool isStartup(void) const
+  inline Bool isStartup(void) const
     { return _startup; }
 
   inline Display *getXDisplay(void) const { return display; }
@@ -93,9 +93,9 @@ public:
   inline const char *getApplicationName(void) const
     { return application_name; }
 
-  inline const unsigned int getNumberOfScreens(void) const
+  inline unsigned int getNumberOfScreens(void) const
     { return number_of_screens; }
-  inline const int getShapeEventBase(void) const
+  inline int getShapeEventBase(void) const
     { return shape.event_basep; }
 
   inline void shutdown(void) { _shutdown = True; }
@@ -139,13 +139,13 @@ public:
 
   inline BaseDisplay *getBaseDisplay(void) const { return basedisplay; }
   inline Visual *getVisual(void) const { return visual; }
-  inline const Window getRootWindow(void) const { return root_window; }
-  inline const Colormap &getColormap(void) const { return colormap; }
-  inline const int getDepth(void) const { return depth; }
-  inline const unsigned int getScreenNumber(void) const
+  inline Window getRootWindow(void) const { return root_window; }
+  inline Colormap getColormap(void) const { return colormap; }
+  inline int getDepth(void) const { return depth; }
+  inline unsigned int getScreenNumber(void) const
     { return screen_number; }
-  inline const unsigned short getWidth(void) const { return rect.width; }
-  inline const unsigned short getHeight(void) const { return rect.height; }
+  inline unsigned short getWidth(void) const { return rect.width; }
+  inline unsigned short getHeight(void) const { return rect.height; }
 };
 
 

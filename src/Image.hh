@@ -112,17 +112,17 @@ public:
 
   inline BaseDisplay *getBaseDisplay(void) const { return basedisplay; }
 
-  inline const Bool doDither(void) { return dither; }
+  inline Bool doDither(void) { return dither; }
 
   inline const ScreenInfo *getScreenInfo(void) { return screeninfo; }
 
-  inline const Window getDrawable(void) const { return window; }
+  inline Window getDrawable(void) const { return window; }
 
   inline Visual *getVisual(void) { return screeninfo->getVisual(); }
 
-  inline const int getBitsPerPixel(void) const { return bits_per_pixel; }
-  inline const int getDepth(void) const { return screen_depth; }
-  inline const int getColorsPerChannel(void) const
+  inline int getBitsPerPixel(void) const { return bits_per_pixel; }
+  inline int getDepth(void) const { return screen_depth; }
+  inline int getColorsPerChannel(void) const
     { return colors_per_channel; }
 
   unsigned long getSqrt(unsigned int x);

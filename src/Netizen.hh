@@ -43,7 +43,7 @@ protected:
 public:
   Netizen(BScreen *, Window);
 
-  inline const Window &getWindowID(void) const { return window; }
+  inline Window getWindowID(void) const { return window; }
 
   void sendWorkspaceCount(void);
   void sendCurrentWorkspace(void);

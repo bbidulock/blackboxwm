@@ -44,7 +44,7 @@ BColor::BColor(int _r, int _g, int _b,
 {
 }
 
-BColor::BColor(const string &_name,
+BColor::BColor(const std::string &_name,
                const BaseDisplay * const _display, unsigned int _screen)
   : allocated(false), r(-1), g(-1), b(-1), p(0), dpy(_display), scrn(_screen),
     colorname(_name)
@@ -74,7 +74,7 @@ void BColor::setDisplay(const BaseDisplay * const _display, unsigned int _screen
   }
 }
 
-const unsigned long BColor::pixel() const
+unsigned long BColor::pixel() const
 {
   if (! allocated) {
     // mutable

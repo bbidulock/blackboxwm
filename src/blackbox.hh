@@ -217,37 +217,37 @@ public:
 
   inline BlackboxWindow *getFocusedWindow(void) { return focused_window; }
 
-  inline const Time &getDoubleClickInterval(void) const
+  inline Time getDoubleClickInterval(void) const
   { return resource.double_click_interval; }
-  inline const Time &getLastTime(void) const { return last_time; }
+  inline Time getLastTime(void) const { return last_time; }
 
   inline const char *getStyleFilename(void) const
     { return resource.style_file; }
   inline const char *getMenuFilename(void) const
     { return resource.menu_file; }
 
-  inline const int getColorsPerChannel(void) const
+  inline int getColorsPerChannel(void) const
     { return resource.colors_per_channel; }
 
   inline const timeval &getAutoRaiseDelay(void) const
     { return resource.auto_raise_delay; }
 
-  inline const unsigned long getCacheLife(void) const
+  inline unsigned long getCacheLife(void) const
     { return resource.cache_life; }
-  inline const unsigned long getCacheMax(void) const
+  inline unsigned long getCacheMax(void) const
     { return resource.cache_max; }
 
   inline void maskWindowEvents(Window w, BlackboxWindow *bw)
     { masked = w; masked_window = bw; }
   inline void setNoFocus(Bool f) { no_focus = f; }
 
-  inline const Cursor &getSessionCursor(void) const
+  inline Cursor getSessionCursor(void) const
     { return cursor.session; }
-  inline const Cursor &getMoveCursor(void) const
+  inline Cursor getMoveCursor(void) const
     { return cursor.move; }
-  inline const Cursor &getLowerLeftAngleCursor(void) const
+  inline Cursor getLowerLeftAngleCursor(void) const
     { return cursor.ll_angle; }
-  inline const Cursor &getLowerRightAngleCursor(void) const
+  inline Cursor getLowerRightAngleCursor(void) const
     { return cursor.lr_angle; }
 
   void setFocusedWindow(BlackboxWindow *w);
@@ -271,128 +271,128 @@ public:
 #endif // HAVE_STRFTIME
 
 #ifdef    HAVE_GETPID
-  inline const Atom getBlackboxPidAtom(void) const { return blackbox_pid; }
+  inline Atom getBlackboxPidAtom(void) const { return blackbox_pid; }
 #endif // HAVE_GETPID
 
-  inline const Atom getWMChangeStateAtom(void) const
+  inline Atom getWMChangeStateAtom(void) const
     { return xa_wm_change_state; }
-  inline const Atom getWMStateAtom(void) const
+  inline Atom getWMStateAtom(void) const
     { return xa_wm_state; }
-  inline const Atom getWMDeleteAtom(void) const
+  inline Atom getWMDeleteAtom(void) const
     { return xa_wm_delete_window; }
-  inline const Atom getWMProtocolsAtom(void) const
+  inline Atom getWMProtocolsAtom(void) const
     { return xa_wm_protocols; }
-  inline const Atom getWMTakeFocusAtom(void) const
+  inline Atom getWMTakeFocusAtom(void) const
     { return xa_wm_take_focus; }
-  inline const Atom getWMColormapAtom(void) const
+  inline Atom getWMColormapAtom(void) const
     { return xa_wm_colormap_windows; }
-  inline const Atom getMotifWMHintsAtom(void) const
+  inline Atom getMotifWMHintsAtom(void) const
     { return motif_wm_hints; }
 
   // this atom is for normal app->WM hints about decorations, stacking,
   // starting workspace etc...
-  inline const Atom getBlackboxHintsAtom(void) const
+  inline Atom getBlackboxHintsAtom(void) const
     { return blackbox_hints;}
 
   // these atoms are for normal app->WM interaction beyond the scope of the
   // ICCCM...
-  inline const Atom getBlackboxAttributesAtom(void) const
+  inline Atom getBlackboxAttributesAtom(void) const
     { return blackbox_attributes; }
-  inline const Atom getBlackboxChangeAttributesAtom(void) const
+  inline Atom getBlackboxChangeAttributesAtom(void) const
     { return blackbox_change_attributes; }
 
   // these atoms are for window->WM interaction, with more control and
   // information on window "structure"... common examples are
   // notifying apps when windows are raised/lowered... when the user changes
   // workspaces... i.e. "pager talk"
-  inline const Atom getBlackboxStructureMessagesAtom(void) const
+  inline Atom getBlackboxStructureMessagesAtom(void) const
     { return blackbox_structure_messages; }
 
   // *Notify* portions of the NETStructureMessages protocol
-  inline const Atom getBlackboxNotifyStartupAtom(void) const
+  inline Atom getBlackboxNotifyStartupAtom(void) const
     { return blackbox_notify_startup; }
-  inline const Atom getBlackboxNotifyWindowAddAtom(void) const
+  inline Atom getBlackboxNotifyWindowAddAtom(void) const
     { return blackbox_notify_window_add; }
-  inline const Atom getBlackboxNotifyWindowDelAtom(void) const
+  inline Atom getBlackboxNotifyWindowDelAtom(void) const
     { return blackbox_notify_window_del; }
-  inline const Atom getBlackboxNotifyWindowFocusAtom(void) const
+  inline Atom getBlackboxNotifyWindowFocusAtom(void) const
     { return blackbox_notify_window_focus; }
-  inline const Atom getBlackboxNotifyCurrentWorkspaceAtom(void) const
+  inline Atom getBlackboxNotifyCurrentWorkspaceAtom(void) const
     { return blackbox_notify_current_workspace; }
-  inline const Atom getBlackboxNotifyWorkspaceCountAtom(void) const
+  inline Atom getBlackboxNotifyWorkspaceCountAtom(void) const
     { return blackbox_notify_workspace_count; }
-  inline const Atom getBlackboxNotifyWindowRaiseAtom(void) const
+  inline Atom getBlackboxNotifyWindowRaiseAtom(void) const
     { return blackbox_notify_window_raise; }
-  inline const Atom getBlackboxNotifyWindowLowerAtom(void) const
+  inline Atom getBlackboxNotifyWindowLowerAtom(void) const
     { return blackbox_notify_window_lower; }
 
   // atoms to change that request changes to the desktop environment during
   // runtime... these messages can be sent by any client... as the sending
   // client window id is not included in the ClientMessage event...
-  inline const Atom getBlackboxChangeWorkspaceAtom(void) const
+  inline Atom getBlackboxChangeWorkspaceAtom(void) const
     { return blackbox_change_workspace; }
-  inline const Atom getBlackboxChangeWindowFocusAtom(void) const
+  inline Atom getBlackboxChangeWindowFocusAtom(void) const
     { return blackbox_change_window_focus; }
-  inline const Atom getBlackboxCycleWindowFocusAtom(void) const
+  inline Atom getBlackboxCycleWindowFocusAtom(void) const
     { return blackbox_cycle_window_focus; }
 
 #ifdef    NEWWMSPEC
   // root window properties
-  inline const Atom getNETSupportedAtom(void) const
+  inline Atom getNETSupportedAtom(void) const
     { return net_supported; }
-  inline const Atom getNETClientListAtom(void) const
+  inline Atom getNETClientListAtom(void) const
     { return net_client_list; }
-  inline const Atom getNETClientListStackingAtom(void) const
+  inline Atom getNETClientListStackingAtom(void) const
     { return net_client_list_stacking; }
-  inline const Atom getNETNumberOfDesktopsAtom(void) const
+  inline Atom getNETNumberOfDesktopsAtom(void) const
     { return net_number_of_desktops; }
-  inline const Atom getNETDesktopGeometryAtom(void) const
+  inline Atom getNETDesktopGeometryAtom(void) const
     { return net_desktop_geometry; }
-  inline const Atom getNETDesktopViewportAtom(void) const
+  inline Atom getNETDesktopViewportAtom(void) const
     { return net_desktop_viewport; }
-  inline const Atom getNETCurrentDesktopAtom(void) const
+  inline Atom getNETCurrentDesktopAtom(void) const
     { return net_current_desktop; }
-  inline const Atom getNETDesktopNamesAtom(void) const
+  inline Atom getNETDesktopNamesAtom(void) const
     { return net_desktop_names; }
-  inline const Atom getNETActiveWindowAtom(void) const
+  inline Atom getNETActiveWindowAtom(void) const
     { return net_active_window; }
-  inline const Atom getNETWorkareaAtom(void) const
+  inline Atom getNETWorkareaAtom(void) const
     { return net_workarea; }
-  inline const Atom getNETSupportingWMCheckAtom(void) const
+  inline Atom getNETSupportingWMCheckAtom(void) const
     { return net_supporting_wm_check; }
-  inline const Atom getNETVirtualRootsAtom(void) const
+  inline Atom getNETVirtualRootsAtom(void) const
     { return net_virtual_roots; }
 
   // root window messages
-  inline const Atom getNETCloseWindowAtom(void) const
+  inline Atom getNETCloseWindowAtom(void) const
     { return net_close_window; }
-  inline const Atom getNETWMMoveResizeAtom(void) const
+  inline Atom getNETWMMoveResizeAtom(void) const
     { return net_wm_moveresize; }
 
   // application window properties
-  inline const Atom getNETPropertiesAtom(void) const
+  inline Atom getNETPropertiesAtom(void) const
     { return net_properties; }
-  inline const Atom getNETWMNameAtom(void) const
+  inline Atom getNETWMNameAtom(void) const
     { return net_wm_name; }
-  inline const Atom getNETWMDesktopAtom(void) const
+  inline Atom getNETWMDesktopAtom(void) const
     { return net_wm_desktop; }
-  inline const Atom getNETWMWindowTypeAtom(void) const
+  inline Atom getNETWMWindowTypeAtom(void) const
     { return net_wm_window_type; }
-  inline const Atom getNETWMStateAtom(void) const
+  inline Atom getNETWMStateAtom(void) const
     { return net_wm_state; }
-  inline const Atom getNETWMStrutAtom(void) const
+  inline Atom getNETWMStrutAtom(void) const
     { return net_wm_strut; }
-  inline const Atom getNETWMIconGeometryAtom(void) const
+  inline Atom getNETWMIconGeometryAtom(void) const
     { return net_wm_icon_geometry; }
-  inline const Atom getNETWMIconAtom(void) const
+  inline Atom getNETWMIconAtom(void) const
     { return net_wm_icon; }
-  inline const Atom getNETWMPidAtom(void) const
+  inline Atom getNETWMPidAtom(void) const
     { return net_wm_pid; }
-  inline const Atom getNETWMHandledIconsAtom(void) const
+  inline Atom getNETWMHandledIconsAtom(void) const
     { return net_wm_handled_icons; }
 
   // application protocols
-  inline const Atom getNETWMPingAtom(void) const
+  inline Atom getNETWMPingAtom(void) const
     { return net_wm_ping; }
 #endif // NEWWMSPEC
 };

@@ -7,27 +7,27 @@
 // copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the 
+// and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in 
-// all copies or substantial portions of the Software. 
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
-// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-  
+
 #ifndef   _BLACKBOX_Timer_hh
 #define   _BLACKBOX_Timer_hh
 
 #ifdef    TIME_WITH_SYS_TIME
 #  include <sys/time.h>
-#  include <time.h> 
-#else // !TIME_WITH_SYS_TIME 
+#  include <time.h>
+#else // !TIME_WITH_SYS_TIME
 #  ifdef    HAVE_SYS_TIME_H
 #    include <sys/time.h>
 #  else // !HAVE_SYS_TIME_H
@@ -60,8 +60,8 @@ public:
 
   void fireTimeout(void);
 
-  inline const Bool isTiming(void) const { return timing; } 
-  inline const Bool isRecurring(void) const { return recur; }
+  inline Bool isTiming(void) const { return timing; }
+  inline Bool isRecurring(void) const { return recur; }
 
   inline const timeval &getTimeout(void) const { return _timeout; }
   inline const timeval &getStartTime(void) const { return _start; }

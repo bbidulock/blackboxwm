@@ -63,13 +63,13 @@ public:
   inline BScreen *getScreen(void) { return screen; }
 
   inline BlackboxWindow *getLastFocusedWindow(void) { return lastfocus; }
-  
+
   inline Clientmenu *getMenu(void) { return clientmenu; }
 
   inline const std::string& getName(void) const { return name; }
 
-  inline const unsigned int getID(void) const { return id; }
-  
+  inline unsigned int getID(void) const { return id; }
+
   inline void setLastFocusedWindow(BlackboxWindow *w) { lastfocus = w; }
 
   BlackboxWindow* getWindow(unsigned int index);
@@ -80,7 +80,7 @@ public:
 
   Bool isCurrent(void) const;
   Bool isLastWindow(const BlackboxWindow* w) const;
-  
+
   void addWindow(BlackboxWindow *w, Bool place = False);
   const unsigned int removeWindow(BlackboxWindow *w);
   const unsigned int getCount(void) const;

@@ -43,9 +43,9 @@ public:
 
   inline const std::string &name() const { return colorname; }
 
-  inline const int   red(void) const { return r; }
-  inline const int green(void) const { return g; }
-  inline const int  blue(void) const { return b; }
+  inline int   red(void) const { return r; }
+  inline int green(void) const { return g; }
+  inline int  blue(void) const { return b; }
   void setRGB(int _r, int _g, int _b)
   {
     deallocate();
@@ -55,14 +55,14 @@ public:
   }
 
   inline const BaseDisplay * const display() const { return dpy; }
-  inline const unsigned int screen() const { return scrn; }
+  inline unsigned int screen() const { return scrn; }
   void setDisplay(const BaseDisplay * const _display, unsigned int _screen = ~(0u));
 
-  inline const Bool isAllocated(void) const { return allocated; }
+  inline Bool isAllocated(void) const { return allocated; }
 
-  inline const Bool isValid() const { return r != -1 && g != -1 && b != -1; }
+  inline Bool isValid() const { return r != -1 && g != -1 && b != -1; }
 
-  const unsigned long pixel(void) const;
+  unsigned long pixel(void) const;
 
   // operators
   BColor &operator=(const BColor &c);
@@ -101,13 +101,13 @@ private:
       : display(x.display), screen(x.screen), r(x.r), g(x.g), b(x.b)
     {
     }
-    inline const Bool operator==(const RGB &x) const
+    inline Bool operator==(const RGB &x) const
     {
       return display == x.display &&
               screen == x.screen &&
                    r == x.r && g == x.g && b == x.b;
     }
-    inline const Bool operator<(const RGB &x) const
+    inline Bool operator<(const RGB &x) const
     {
       unsigned long p1, p2;
       p1 = (screen << 24 | r << 16 | g << 8 | b) & 0x00ffffff;

@@ -78,22 +78,18 @@ public:
   void addTexture(const unsigned long _texture) { t |= _texture; }
 
   BTexture &operator=(const BTexture &tt);
-  bool operator==(const BTexture &tt)
-  {
-    return (c == tt.c  && ct == tt.ct && lc == tt.lc && sc == tt.sc && t == tt.t);
-  }
-  bool operator!=(const BTexture &tt)
-  {
-    return (! operator==(tt));
-  }
+  inline Bool operator==(const BTexture &tt)
+    { return (c == tt.c  && ct == tt.ct && lc == tt.lc && sc == tt.sc && t == tt.t); }
+  inline Bool operator!=(const BTexture &tt)
+    { return (! operator==(tt)); }
 
   const BaseDisplay * const display() const { return dpy; }
-  const unsigned int screen() const { return scrn; }
+  unsigned int screen() const { return scrn; }
   void setDisplay(const BaseDisplay * const _display,
                   const unsigned int _screen);
 
-  const string &description() const { return descr; }
-  void setDescription(const string &);
+  const std::string &description() const { return descr; }
+  void setDescription(const std::string &);
 
   // Pixmap render(const Size &, Pixmap old = 0);
   Pixmap render(const unsigned int width, const unsigned int height,
