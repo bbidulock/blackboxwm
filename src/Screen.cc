@@ -523,7 +523,8 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
         win->show();
     }
 
-    if (!focused_window || focused_window->workspace() != bt::BSENTINEL) {
+    if (_resource.doFocusLast()
+        && (!focused_window || focused_window->workspace() != bt::BSENTINEL)) {
       Workspace *workspace = findWorkspace(current_workspace);
       assert(workspace != 0);
 
