@@ -20,13 +20,24 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 # DEALINGS IN THE SOFTWARE.
 
-CPPFLAGS= @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ \
-@DEBUG@ @NLS@ -DLOCALEPATH=\"$(pkgdatadir)/nls\"
+CPPFLAGS		= @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ @DEBUG@ @NLS@ \
+			  -DLOCALEPATH=\"$(pkgdatadir)/nls\"
+noinst_LIBRARIES	= libbt.a
+libbt_a_SOURCES		= BaseDisplay.cc				\
+			  Color.cc					\
+			  Font.cc					\
+			  GCCache.cc					\
+			  Image.cc					\
+			  ImageControl.cc				\
+			  Menu.cc					\
+			  Netwm.cc					\
+			  Resource.cc					\
+			  Texture.cc					\
+			  Timer.cc					\
+			  Util.cc					\
+			  i18n.cc
 
-noinst_LIBRARIES = libblackbox.a
-libblackbox_a_SOURCES= BaseDisplay.cc Color.cc GCCache.cc Image.cc ImageControl.cc Netwm.cc Resource.cc Texture.cc Timer.cc Util.cc i18n.cc
-
-MAINTAINERCLEANFILES= Makefile.in
+MAINTAINERCLEANFILES	= Makefile.in
 
 distclean-local:
 	rm -f *\~ *.orig *.rej .\#*

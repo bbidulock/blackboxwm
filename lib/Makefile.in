@@ -99,12 +99,24 @@ gencat_cmd = @gencat_cmd@
 install_sh = @install_sh@
 regex_cmd = @regex_cmd@
 
-CPPFLAGS = @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ \
-@DEBUG@ @NLS@ -DLOCALEPATH=\"$(pkgdatadir)/nls\"
+CPPFLAGS = @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ @DEBUG@ @NLS@ \
+			  -DLOCALEPATH=\"$(pkgdatadir)/nls\"
 
+noinst_LIBRARIES = libbt.a
+libbt_a_SOURCES = BaseDisplay.cc				\
+			  Color.cc					\
+			  Font.cc					\
+			  GCCache.cc					\
+			  Image.cc					\
+			  ImageControl.cc				\
+			  Menu.cc					\
+			  Netwm.cc					\
+			  Resource.cc					\
+			  Texture.cc					\
+			  Timer.cc					\
+			  Util.cc					\
+			  i18n.cc
 
-noinst_LIBRARIES = libblackbox.a
-libblackbox_a_SOURCES = BaseDisplay.cc Color.cc GCCache.cc Image.cc ImageControl.cc Netwm.cc Resource.cc Texture.cc Timer.cc Util.cc i18n.cc
 
 MAINTAINERCLEANFILES = Makefile.in
 subdir = lib
@@ -113,13 +125,14 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 LIBRARIES = $(noinst_LIBRARIES)
 
-libblackbox_a_AR = $(AR) cru
-libblackbox_a_LIBADD =
-am_libblackbox_a_OBJECTS = BaseDisplay.$(OBJEXT) Color.$(OBJEXT) \
-	GCCache.$(OBJEXT) Image.$(OBJEXT) ImageControl.$(OBJEXT) \
-	Netwm.$(OBJEXT) Resource.$(OBJEXT) Texture.$(OBJEXT) \
-	Timer.$(OBJEXT) Util.$(OBJEXT) i18n.$(OBJEXT)
-libblackbox_a_OBJECTS = $(am_libblackbox_a_OBJECTS)
+libbt_a_AR = $(AR) cru
+libbt_a_LIBADD =
+am_libbt_a_OBJECTS = BaseDisplay.$(OBJEXT) Color.$(OBJEXT) \
+	Font.$(OBJEXT) GCCache.$(OBJEXT) Image.$(OBJEXT) \
+	ImageControl.$(OBJEXT) Menu.$(OBJEXT) Netwm.$(OBJEXT) \
+	Resource.$(OBJEXT) Texture.$(OBJEXT) Timer.$(OBJEXT) \
+	Util.$(OBJEXT) i18n.$(OBJEXT)
+libbt_a_OBJECTS = $(am_libbt_a_OBJECTS)
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
@@ -127,8 +140,9 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 @AMDEP_TRUE@DEP_FILES = $(DEPDIR)/BaseDisplay.Po $(DEPDIR)/Color.Po \
-@AMDEP_TRUE@	$(DEPDIR)/GCCache.Po $(DEPDIR)/Image.Po \
-@AMDEP_TRUE@	$(DEPDIR)/ImageControl.Po $(DEPDIR)/Netwm.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Font.Po $(DEPDIR)/GCCache.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Image.Po $(DEPDIR)/ImageControl.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Menu.Po $(DEPDIR)/Netwm.Po \
 @AMDEP_TRUE@	$(DEPDIR)/Resource.Po $(DEPDIR)/Texture.Po \
 @AMDEP_TRUE@	$(DEPDIR)/Timer.Po $(DEPDIR)/Util.Po \
 @AMDEP_TRUE@	$(DEPDIR)/i18n.Po
@@ -138,9 +152,9 @@ CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
 CXXFLAGS = @CXXFLAGS@
-DIST_SOURCES = $(libblackbox_a_SOURCES)
+DIST_SOURCES = $(libbt_a_SOURCES)
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = $(libblackbox_a_SOURCES)
+SOURCES = $(libbt_a_SOURCES)
 
 all: all-am
 
@@ -158,10 +172,10 @@ AR = ar
 
 clean-noinstLIBRARIES:
 	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
-libblackbox.a: $(libblackbox_a_OBJECTS) $(libblackbox_a_DEPENDENCIES) 
-	-rm -f libblackbox.a
-	$(libblackbox_a_AR) libblackbox.a $(libblackbox_a_OBJECTS) $(libblackbox_a_LIBADD)
-	$(RANLIB) libblackbox.a
+libbt.a: $(libbt_a_OBJECTS) $(libbt_a_DEPENDENCIES) 
+	-rm -f libbt.a
+	$(libbt_a_AR) libbt.a $(libbt_a_OBJECTS) $(libbt_a_LIBADD)
+	$(RANLIB) libbt.a
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
@@ -171,9 +185,11 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/BaseDisplay.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Color.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Font.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/GCCache.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Image.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/ImageControl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Netwm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Resource.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Texture.Po@am__quote@
