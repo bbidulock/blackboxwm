@@ -94,6 +94,7 @@ private:
 
   BScreen** screen_list;
   size_t screen_list_count;
+  BScreen *active_screen;
 
   BlackboxWindow *focused_window;
   bt::Timer *timer;
@@ -128,7 +129,10 @@ public:
            bool multi_head);
   virtual ~Blackbox(void);
 
+  // screen functions
   BScreen *findScreen(Window window);
+  BScreen *activeScreen(void) const { return active_screen; }
+  void setActiveScreen(BScreen *screen);
 
   BlackboxWindow *findWindow(Window window);
   void insertWindow(Window window, BlackboxWindow *data);

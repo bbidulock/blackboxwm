@@ -127,6 +127,7 @@ Blackbox::Blackbox(char **m_argv, const char *dpy_name, const char *rc,
 
   resource.auto_raise_delay.tv_sec = resource.auto_raise_delay.tv_usec = 0;
 
+  active_screen = 0;
   focused_window = (BlackboxWindow *) 0;
   _netwm = (bt::Netwm*) 0;
 
@@ -173,8 +174,8 @@ Blackbox::Blackbox(char **m_argv, const char *dpy_name, const char *rc,
     ::exit(3);
   }
 
-  // set focus to PointerRoot
-  setFocusedWindow(0);
+  // start with the first managed screen as the active screen
+  setActiveScreen(screen_list[0]);
 
   XSynchronize(XDisplay(), False);
   XSync(XDisplay(), False);
@@ -1165,11 +1166,21 @@ void Blackbox::timeout(bt::Timer *) {
 }
 
 
+void Blackbox::setActiveScreen(BScreen *screen) {
+  if (active_screen && active_screen == screen) // nothing to do
+    return;
+
+  active_screen = screen;
+
+  if (! focused_window || focused_window->getScreen() != active_screen)
+    setFocusedWindow(0);
+}
+
+
 void Blackbox::setFocusedWindow(BlackboxWindow *win) {
   if (focused_window && focused_window == win) // nothing to do
     return;
 
-  BScreen *active_screen = 0;
   BScreen *old_screen = 0;
 
   if (focused_window) {
@@ -1182,6 +1193,8 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
     active_screen = win->getScreen();
     focused_window = win;
   } else {
+    // no active screen since no window is focused...
+    active_screen = 0;
     focused_window = 0;
     // set input focus to PointerRoot
     XSetInputFocus(XDisplay(), PointerRoot, RevertToNone, CurrentTime);
