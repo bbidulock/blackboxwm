@@ -1651,6 +1651,7 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
       blackbox->ewmh().setWMVisibleName(client.window, client.visible_title);
     }
   } else {
+    frame.label_w = 1;
     XUnmapWindow(blackbox->XDisplay(), frame.label);
   }
 
