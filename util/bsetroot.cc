@@ -142,8 +142,8 @@ void bsetroot::setPixmapProperty(int screen, Pixmap pixmap) {
   const ScreenInfo *screen_info = getScreenInfo(screen);
 
   if (rootpmap_id == None) {
-    rootpmap_id = XInternAtom(getXDisplay(), "_XROOTPMAP_ID", True);
-    esetroot_id = XInternAtom(getXDisplay(), "ESETROOT_PMAP_ID", True);
+    rootpmap_id = XInternAtom(getXDisplay(), "_XROOTPMAP_ID", False);
+    esetroot_id = XInternAtom(getXDisplay(), "ESETROOT_PMAP_ID", False);
   }
 
   XGrabServer(getXDisplay());
@@ -157,11 +157,13 @@ void bsetroot::setPixmapProperty(int screen, Pixmap pixmap) {
     unsigned char* data_esetroot = 0;
     XGetWindowProperty(getXDisplay(), screen_info->getRootWindow(),
                        esetroot_id, 0L, 1L, False, AnyPropertyType,
-                       &type, &format, &length, &after, &data);
+                       &type, &format, &length, &after, &data_esetroot);
     if (data && data_esetroot && *((Pixmap *) data)) {
       XKillClient(getXDisplay(), *((Pixmap *) data));
       XSync(getXDisplay(), False);
+      XFree(data_esetroot);
     }
+    XFree(data);
   }
 
   if (pixmap) {
