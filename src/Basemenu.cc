@@ -296,7 +296,7 @@ void Basemenu::update(void) {
     menu.item_w = 1;
   }
 
-  int ii = 0;
+  unsigned int ii = 0;
   MenuItems::iterator it = menuitems.begin(), end = menuitems.end();
   for (; it != end; ++it) {
     BasemenuItem *tmp = *it;
@@ -312,7 +312,7 @@ void Basemenu::update(void) {
 
     ii += (menu.bevel_w * 2) + (menu.item_h * 2);
 
-    menu.item_w = ((menu.item_w < (unsigned int) ii) ? ii : menu.item_w);
+    menu.item_w = ((menu.item_w < ii) ? ii : menu.item_w);
   }
 
   if (! menuitems.empty()) {
