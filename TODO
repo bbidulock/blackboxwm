@@ -20,9 +20,6 @@ CHANGE: sigaction is defined by POSIX.1, so we should drop the older
         objects to making blackbox require a POSIX.1 compliant host
         should speak up
 
-ADD: blackbox and bsetroot need a dependency on libblackbox.a.  moving
-     to libtool or something similar might solve this automagically...
-
 CHANGE: use a single XInternAtoms call to initialize all atoms in the
         lib. reduces startup time and network activity
 
