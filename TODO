@@ -11,6 +11,13 @@ temporarily fixed, blackbox needs real focus handling fixes for this to really
   window left open, blackbox will spin in a screen->unmanageWindow loop and
   then die.  Tons of X BadWindow messages will appear as well. (nyz)
 
+CVS warts:
+-----------------------------
+* Basemenu.cc has the string "Blackbox menu embedded in it as the default name.
+  This needs to be removed.
+
+* Send to menu should not list the current workspace
+
 Stuff TODO or On The Way(tm):
 -----------------------------
 ADD: add _BLACKBOX_STYLE and _BLACKBOX_MENU atoms so that bbtools, bbconf, etc.

@@ -50,7 +50,9 @@ using namespace std;
 #include "Screen.hh"
 #include "Util.hh"
 
+
 static Basemenu *shown = (Basemenu *) 0;
+static BasemenuItem *empty_item = (BasemenuItem *) 0;
 
 Basemenu::Basemenu(BScreen *scrn) {
   screen = scrn;
@@ -148,6 +150,12 @@ Basemenu::Basemenu(BScreen *scrn) {
                              screen->getVisual(), attrib_mask, &attrib);
   blackbox->saveMenuSearch(menu.frame, this);
 
+  if (! empty_item) {
+    // empty_item lives as long as the application does
+    empty_item = new BasemenuItem("*empty*");
+    empty_item->setEnabled(False);
+  }
+
   // even though this is the end of the constructor the menu is still not
   // completely created.  items must be inserted and it must be update()'d
 }
@@ -210,6 +218,8 @@ BasemenuItem *Basemenu::find(int index) {
 
 
 int Basemenu::insert(BasemenuItem *item, int pos) {
+  if (menuitems.size() == 1 && menuitems.front() == empty_item)
+    menuitems.pop_front();
   if (pos < 0) {
     menuitems.push_back(item);
   } else {
@@ -295,12 +305,13 @@ void Basemenu::update(void) {
     menu.item_w = 1;
   }
 
+  if (menuitems.size() == 0)
+    menuitems.push_back(empty_item);
   int ii = 0;
   MenuItems::iterator it = menuitems.begin(), end = menuitems.end();
   for (; it != end; ++it) {
     BasemenuItem *tmp = *it;
     const char *s = tmp->l.c_str();
-
     int l = strlen(s);
 
     if (i18n.multibyte()) {
