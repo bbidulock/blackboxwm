@@ -530,7 +530,6 @@ void Workspace::hide(void) {
   }
 
   // withdraw windows in reverse order to minimize the number of Expose events
-
   StackingList::reverse_iterator it = stackingList.rbegin(),
     end = stackingList.rend();
   for (; it != end; ++it) {
