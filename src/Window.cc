@@ -2329,15 +2329,13 @@ void BlackboxWindow::configureRequestEvent(XConfigureRequestEvent *cr) {
     cy = cr->y;
 
   if (cr->value_mask & CWWidth)
-    cw = cr->width;
+    cw = cr->width + frame.margin.left + frame.margin.right;
 
   if (cr->value_mask & CWHeight)
-    ch = cr->height;
+    ch = cr->height + frame.margin.top + frame.margin.bottom;
 
   if (frame.rect != Rect(cx, cy, cw, ch))
     configure(cx, cy, cw, ch);
-
-  fprintf(stderr, "after configure: x: %d, y: %d, w: %d, h: %d\n", frame.rect.x(), frame.rect.y(), frame.rect.width(), frame.rect.height());
 
   if (cr->value_mask & CWStackMode) {
     switch (cr->detail) {
