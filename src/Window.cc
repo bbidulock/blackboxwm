@@ -2975,14 +2975,23 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
 
       if (left) {
         anchor = TopRight;
-        frame.changing.setCoords(me->x_root - frame.grab_x, frame.rect.top(),
+        int delta =
+          std::min<signed>(me->x_root - frame.grab_x,
+                           frame.rect.right() -
+                           (frame.margin.left + frame.margin.right + 1));
+        frame.changing.setCoords(delta, frame.rect.top(),
                                  frame.rect.right(), frame.rect.bottom());
-        frame.changing.setHeight(frame.rect.height() + (me->y - frame.grab_y));
       } else {
         anchor = TopLeft;
-        frame.changing.setSize(frame.rect.width() + (me->x - frame.grab_x),
-                               frame.rect.height() + (me->y - frame.grab_y));
+        int delta = std::max<signed>(me->x - frame.grab_x + frame.rect.width(),
+                                     frame.margin.left +
+                                     frame.margin.right + 1);
+        frame.changing.setWidth(delta);
       }
+      
+      int delta = std::max<signed>(me->y - frame.grab_y + frame.rect.height(),
+                                   frame.margin.top + frame.margin.bottom + 1);
+      frame.changing.setHeight(delta);
 
       constrain(anchor, &gw, &gh);
 
@@ -3211,10 +3220,12 @@ void BlackboxWindow::constrain(Corner anchor,
                                unsigned int *pw, unsigned int *ph) {
   // frame.changing represents the requested frame size, we need to
   // strip the frame margin off and constrain the client size
-  frame.changing.setCoords(frame.changing.left() + frame.margin.left,
-                           frame.changing.top() + frame.margin.top,
-                           frame.changing.right() - frame.margin.right,
-                           frame.changing.bottom() - frame.margin.bottom);
+  frame.changing.
+    setCoords(frame.changing.left() + static_cast<signed>(frame.margin.left),
+              frame.changing.top() + static_cast<signed>(frame.margin.top),
+              frame.changing.right() - static_cast<signed>(frame.margin.right),
+              frame.changing.bottom() -
+              static_cast<signed>(frame.margin.bottom));
 
   unsigned int dw = frame.changing.width(), dh = frame.changing.height(),
     base_width = (client.base_width) ? client.base_width : client.min_width,
