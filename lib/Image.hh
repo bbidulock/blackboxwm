@@ -103,46 +103,6 @@ namespace bt {
     static XColorTableList colorTableList;
   };
 
-
-  class ImageControl : public TimeoutHandler {
-  public:
-    struct CachedImage {
-      Pixmap pixmap;
-
-      unsigned int count, width, height;
-      unsigned long pixel1, pixel2, texture;
-    };
-
-    ImageControl(TimerQueueManager *app, Display& _display,
-                 const ScreenInfo *scrn,
-                 unsigned long cache_timeout = 300000l,
-                 unsigned long cmax = 200l);
-    virtual ~ImageControl(void);
-
-    Pixmap renderImage(unsigned int width, unsigned int height,
-                       const Texture &texture);
-
-    void installRootColormap(void);
-    void removeImage(Pixmap pixmap);
-
-    virtual void timeout(Timer *);
-
-  private:
-    Display &display;
-    unsigned int screen;
-    Window window;
-    Colormap colormap;
-    Timer *timer;
-    unsigned long cache_max;
-
-    typedef std::list<CachedImage> CacheContainer;
-    CacheContainer cache;
-
-    Pixmap searchCache(const unsigned int width, const unsigned int height,
-                       const unsigned long texture,
-                       const Color &c1, const Color &c2);
-  };
-
 } // namespace bt
 
 #endif // __Image_hh
