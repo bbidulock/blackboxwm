@@ -41,7 +41,6 @@ extern "C" {
 
 #include <algorithm>
 #include <assert.h>
-using namespace std;
 
 #include "i18n.hh"
 #include "blackbox.hh"
@@ -50,6 +49,10 @@ using namespace std;
 #include "Image.hh"
 #include "Screen.hh"
 #include "Util.hh"
+
+using std::string;
+using std::min;
+using std::max;
 
 
 static Basemenu *shown = (Basemenu *) 0;
