@@ -952,9 +952,11 @@ void BlackboxWindow::getWMNormalHints(void) {
   client.min_width = client.min_height =
     client.width_inc = client.height_inc = 1;
   client.base_width = client.base_height = 0;
+  client.win_gravity = NorthWestGravity;
+#if 0
   client.min_aspect_x = client.min_aspect_y =
     client.max_aspect_x = client.max_aspect_y = 1;
-  client.win_gravity = NorthWestGravity;
+#endif
 
   /*
     use the full screen, not the strut modified size. otherwise when the
@@ -972,21 +974,21 @@ void BlackboxWindow::getWMNormalHints(void) {
   client.normal_hint_flags = sizehint.flags;
 
   if (sizehint.flags & PMinSize) {
-    if (sizehint.min_width != 0)
+    if (sizehint.min_width >= 0)
       client.min_width = sizehint.min_width;
-    if (sizehint.min_height != 0)
+    if (sizehint.min_height >= 0)
       client.min_height = sizehint.min_height;
   }
 
   if (sizehint.flags & PMaxSize) {
-    if (sizehint.max_width != 0)
+    if (sizehint.max_width > static_cast<signed>(client.min_width))
       client.max_width = sizehint.max_width;
-    else if (client.min_width > 1)
+    else
       client.max_width = client.min_width;
 
-    if (sizehint.max_height != 0)
+    if (sizehint.max_height > static_cast<signed>(client.min_height))
       client.max_height = sizehint.max_height;
-    else if (client.min_height > 1)
+    else
       client.max_height = client.min_height;
   }
 
@@ -995,12 +997,14 @@ void BlackboxWindow::getWMNormalHints(void) {
     client.height_inc = sizehint.height_inc;
   }
 
+#if 0 // we do not support this at the moment
   if (sizehint.flags & PAspect) {
     client.min_aspect_x = sizehint.min_aspect.x;
     client.min_aspect_y = sizehint.min_aspect.y;
     client.max_aspect_x = sizehint.max_aspect.x;
     client.max_aspect_y = sizehint.max_aspect.y;
   }
+#endif
 
   if (sizehint.flags & PBaseSize) {
     client.base_width = sizehint.base_width;
