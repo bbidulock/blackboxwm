@@ -263,13 +263,14 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
 
     if (wmhints) {
       if ((wmhints->flags & IconWindowHint) &&
-          (wmhints->icon_window != children[i]))
-        for (j = 0; j < nchild; j++)
+          (wmhints->icon_window != children[i])) {
+        for (j = 0; j < nchild; j++) {
           if (children[j] == wmhints->icon_window) {
             children[j] = None;
-
             break;
           }
+        }
+      }
 
       XFree(wmhints);
     }
