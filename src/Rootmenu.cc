@@ -33,28 +33,10 @@
 
 #include "blackbox.hh"
 #include "Rootmenu.hh"
-#include "Screen.hh"
 #include "Util.hh"
 
 #include <string>
 using std::string;
-
-#ifdef    HAVE_STDIO_H
-#  include <stdio.h>
-#endif // HAVE_STDIO_H
-
-#ifdef    STDC_HEADERS
-#  include <stdlib.h>
-#  include <string.h>
-#endif // STDC_HEADERS
-
-#ifdef    HAVE_SYS_PARAM_H
-#  include <sys/param.h>
-#endif // HAVE_SYS_PARAM_H
-
-#ifndef   MAXPATHLEN
-#define   MAXPATHLEN 255
-#endif // MAXPATHLEN
 
 
 Rootmenu::Rootmenu(int scr)

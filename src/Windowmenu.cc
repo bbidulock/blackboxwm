@@ -101,9 +101,7 @@ void SendToMenu::itemClicked(const Item &item, int button)
 Windowmenu::Windowmenu(int scr, BlackboxWindow *w)
   : Basemenu(scr), window(w)
 {
-  sendto = new SendToMenu(scr, w);
-
-  insert("Send To ...", sendto);
+  insert("Send To ...", new SendToMenu(scr, w));
   insertSeparator();
   insert("Shade", Shade);
   insert("Iconify", Iconify);

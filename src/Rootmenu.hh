@@ -24,10 +24,8 @@
 #ifndef   __Rootmenu_hh
 #define   __Rootmenu_hh
 
-class Blackbox;
-class BScreen;
-
 #include "Basemenu.hh"
+
 
 class Rootmenu : public Basemenu
 {

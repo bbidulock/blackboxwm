@@ -46,7 +46,6 @@ protected:
 
 private:
   BlackboxWindow *window;
-  SendToMenu *sendto;
 };
 
 #endif // __Windowmenu_hh

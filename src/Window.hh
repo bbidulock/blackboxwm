@@ -209,6 +209,7 @@ protected:
   void getWMHints(void);
   void getMWMHints(void);
   void getBlackboxHints(void);
+  void getTransientInfo(void);
   void setNetWMAttributes(void);
   void associateClientWindow(void);
   void decorate(void);

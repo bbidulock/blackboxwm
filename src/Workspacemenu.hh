@@ -26,6 +26,7 @@
 
 #include "Basemenu.hh"
 
+
 class Workspacemenu : public Basemenu
 {
 public:

@@ -65,7 +65,7 @@ void Workspacemenu::itemClicked(const Item &item, int button)
   else if (item.index() == 1)
     screen->removeLastWorkspace();
   else if ((screen->getCurrentWorkspace()->getWorkspaceID() !=
-              (item.index() - 3)) && ((item.index() - 3) < screen->getCount())) {
+            (item.index() - 3)) && ((item.index() - 3) < screen->getCount())) {
     screen->changeWorkspaceID(item.index() - 3);
     hideAll();
   }

@@ -173,35 +173,11 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   blackbox->saveWindowSearch(client.window, this);
 
   // determine if this is a transient window
-  if (!XGetTransientForHint(*blackbox, client.window, &(client.transient_for))) {
-    client.transient_for = None;
-  } else {
-    if (client.transient_for == None ||
-        client.transient_for == client.window) {
-      client.transient_for = screen->screenInfo()->rootWindow();
-    } else {
-      BlackboxWindow *tr;
-      if ((tr = blackbox->searchWindow(client.transient_for))) {
-        tr->client.transient = this;
-        flags.stuck = tr->flags.stuck;
-      } else if (client.transient_for == client.window_group) {
-        if ((tr = blackbox->searchGroup(client.transient_for, this))) {
-          tr->client.transient = this;
-          flags.stuck = tr->flags.stuck;
-        }
-      }
-    }
-
-    if (client.transient_for == screen->screenInfo()->rootWindow()) {
-      flags.modal = True;
-    }
-
-    flags.transient = True;
-  }
+  getTransientInfo();
 
   // adjust the window decorations based on transience and window sizes
   if (flags.transient)
-    decorations.maximize = decorations.handle = functions.maximize = False;
+    decorations.maximize = functions.maximize = False;
 
   if ((client.normal_hint_flags & PMinSize) &&
       (client.normal_hint_flags & PMaxSize) &&
@@ -736,7 +712,6 @@ void BlackboxWindow::createMaximizeButton(void)
     }
 }
 
-
 void BlackboxWindow::positionButtons(Bool redecorate_label)
 {
     unsigned int bw = frame.button_w + screen->style()->bevelWidth() + 1,
@@ -788,75 +763,75 @@ void BlackboxWindow::positionButtons(Bool redecorate_label)
 
 void BlackboxWindow::reconfigure(void)
 {
-    upsize();
+  upsize();
 
-    client.x = frame.x + frame.mwm_border_w + frame.border_w;
-    client.y = frame.y + frame.y_border + frame.mwm_border_w +
-	       frame.border_w;
+  client.x = frame.x + frame.mwm_border_w + frame.border_w;
+  client.y = frame.y + frame.y_border + frame.mwm_border_w +
+             frame.border_w;
 
-    if (client.title) {
-	BStyle *style = screen->style();
-	if (i18n.multibyte()) {
-	    XRectangle ink, logical;
-	    XmbTextExtents(style->windowFontSet(),
-			   client.title, client.title_len, &ink, &logical);
-	    client.title_text_w = logical.width;
-	} else {
-	    client.title_text_w = XTextWidth(style->windowFont(),
-					     client.title, client.title_len);
-	}
-	client.title_text_w += (screen->style()->bevelWidth() * 4);
+  if (client.title) {
+    BStyle *style = screen->style();
+    if (i18n.multibyte()) {
+      XRectangle ink, logical;
+      XmbTextExtents(style->windowFontSet(),
+                     client.title, client.title_len, &ink, &logical);
+      client.title_text_w = logical.width;
+    } else {
+      client.title_text_w = XTextWidth(style->windowFont(),
+                                       client.title, client.title_len);
     }
+    client.title_text_w += (screen->style()->bevelWidth() * 4);
+  }
 
-    positionWindows();
-    decorate();
+  positionWindows();
+  decorate();
 
-    XClearWindow(*blackbox, frame.window);
-    setFocusFlag(flags.focused);
+  XClearWindow(*blackbox, frame.window);
+  setFocusFlag(flags.focused);
 
-    configure(frame.x, frame.y, frame.width, frame.height);
+  configure(frame.x, frame.y, frame.width, frame.height);
 
-    if (windowmenu)
-      windowmenu->reconfigure();
+  if (windowmenu)
+    windowmenu->reconfigure();
 }
 
 
 void BlackboxWindow::positionWindows(void)
 {
-    XResizeWindow(*blackbox, frame.window, frame.width,
-		  ((flags.shaded) ? frame.title_h : frame.height));
-    XSetWindowBorderWidth(*blackbox, frame.window, frame.border_w);
-    XSetWindowBorderWidth(*blackbox, frame.plate, frame.mwm_border_w);
-    XMoveResizeWindow(*blackbox, frame.plate, 0, frame.y_border,
-		      client.width, client.height);
-    XMoveResizeWindow(*blackbox, client.window, 0, 0, client.width, client.height);
+  XResizeWindow(*blackbox, frame.window, frame.width,
+                ((flags.shaded) ? frame.title_h : frame.height));
+  XSetWindowBorderWidth(*blackbox, frame.window, frame.border_w);
+  XSetWindowBorderWidth(*blackbox, frame.plate, frame.mwm_border_w);
+  XMoveResizeWindow(*blackbox, frame.plate, 0, frame.y_border,
+                    client.width, client.height);
+  XMoveResizeWindow(*blackbox, client.window, 0, 0, client.width, client.height);
 
-    if (decorations.titlebar) {
-	XSetWindowBorderWidth(*blackbox, frame.title, frame.border_w);
-	XMoveResizeWindow(*blackbox, frame.title, -frame.border_w,
-			  -frame.border_w, frame.width, frame.title_h);
+  if (decorations.titlebar) {
+    XSetWindowBorderWidth(*blackbox, frame.title, frame.border_w);
+    XMoveResizeWindow(*blackbox, frame.title, -frame.border_w,
+                      -frame.border_w, frame.width, frame.title_h);
 
-	positionButtons();
-    } else if (frame.title) {
-	XUnmapWindow(*blackbox, frame.title);
-    }
-    if (decorations.handle) {
-	XSetWindowBorderWidth(*blackbox, frame.handle, frame.border_w);
-	XSetWindowBorderWidth(*blackbox, frame.left_grip, frame.border_w);
-	XSetWindowBorderWidth(*blackbox, frame.right_grip, frame.border_w);
+    positionButtons();
+  } else if (frame.title) {
+    XUnmapWindow(*blackbox, frame.title);
+  }
+  if (decorations.handle) {
+    XSetWindowBorderWidth(*blackbox, frame.handle, frame.border_w);
+    XSetWindowBorderWidth(*blackbox, frame.left_grip, frame.border_w);
+    XSetWindowBorderWidth(*blackbox, frame.right_grip, frame.border_w);
 
-	XMoveResizeWindow(*blackbox, frame.handle, -frame.border_w,
-			  frame.y_handle - frame.border_w,
-			  frame.width, frame.handle_h);
-	XMoveResizeWindow(*blackbox, frame.left_grip, -frame.border_w,
-			  -frame.border_w, frame.grip_w, frame.grip_h);
-	XMoveResizeWindow(*blackbox, frame.right_grip,
-			  frame.width - frame.grip_w - frame.border_w,
-			  -frame.border_w, frame.grip_w, frame.grip_h);
-	XMapSubwindows(*blackbox, frame.handle);
-    } else if (frame.handle) {
-	XUnmapWindow(*blackbox, frame.handle);
-    }
+    XMoveResizeWindow(*blackbox, frame.handle, -frame.border_w,
+                      frame.y_handle - frame.border_w,
+                      frame.width, frame.handle_h);
+    XMoveResizeWindow(*blackbox, frame.left_grip, -frame.border_w,
+                      -frame.border_w, frame.grip_w, frame.grip_h);
+    XMoveResizeWindow(*blackbox, frame.right_grip,
+                      frame.width - frame.grip_w - frame.border_w,
+                      -frame.border_w, frame.grip_w, frame.grip_h);
+    XMapSubwindows(*blackbox, frame.handle);
+  } else if (frame.handle) {
+    XUnmapWindow(*blackbox, frame.handle);
+  }
 }
 
 
@@ -1232,6 +1207,36 @@ void BlackboxWindow::getBlackboxHints(void) {
   }
 }
 
+void BlackboxWindow::getTransientInfo(void) {
+  if (!XGetTransientForHint(*blackbox, client.window, &(client.transient_for))) {
+    client.transient_for = None;
+    flags.transient = False;
+    return;
+  }
+
+  if (client.transient_for == None ||
+      client.transient_for == client.window) {
+    client.transient_for = screen->screenInfo()->rootWindow();
+  } else {
+    BlackboxWindow *tr;
+    if ((tr = blackbox->searchWindow(client.transient_for))) {
+      tr->client.transient = this;
+      flags.stuck = tr->flags.stuck;
+    } else if (client.transient_for == client.window_group) {
+      if ((tr = blackbox->searchGroup(client.transient_for, this))) {
+        tr->client.transient = this;
+        flags.stuck = tr->flags.stuck;
+      }
+    }
+  }
+
+  if (client.transient == this) client.transient = 0;
+
+  if (client.transient_for == screen->screenInfo()->rootWindow())
+    flags.modal = True;
+
+  flags.transient = True;
+}
 
 void BlackboxWindow::configure(int dx, int dy,
                                unsigned int dw, unsigned int dh) {
@@ -2315,32 +2320,7 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
 
   case XA_WM_TRANSIENT_FOR: {
     // determine if this is a transient window
-    if (!XGetTransientForHint(*blackbox, client.window, &(client.transient_for))) {
-      client.transient_for = None;
-      flags.transient = False;
-    } else {
-      if (client.transient_for == None ||
-          client.transient_for == client.window) {
-        client.transient_for = screen->screenInfo()->rootWindow();
-      } else {
-        BlackboxWindow *tr;
-        if ((tr = blackbox->searchWindow(client.transient_for))) {
-          tr->client.transient = this;
-          flags.stuck = tr->flags.stuck;
-        } else if (client.transient_for == client.window_group) {
-          if ((tr = blackbox->searchGroup(client.transient_for, this))) {
-            tr->client.transient = this;
-            flags.stuck = tr->flags.stuck;
-          }
-        }
-      }
-
-      if (client.transient_for == screen->screenInfo()->rootWindow()) {
-        flags.modal = True;
-      }
-
-      flags.transient = True;
-    }
+    getTransientInfo();
 
     // adjust the window decorations based on transience
     if (flags.transient)

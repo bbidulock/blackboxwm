@@ -980,8 +980,6 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
         case 311: //end
           return ((menu->count() == 0) ? True : False);
 
-          break;
-
         case 328: // sep
           menu->insertSeparator();
           break;
