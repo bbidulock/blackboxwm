@@ -149,11 +149,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   timer = new BTimer(blackbox, this);
   timer->setTimeout(blackbox->getAutoRaiseDelay());
 
-  bool read_mwm = True;
-  if (blackbox->isStartup())
-    read_mwm = ! getBlackboxHints();
-
-  if (read_mwm)
+  if (! getBlackboxHints())
     getMWMHints();
 
   // get size, aspect, minimum/maximum size and other hints set by the
