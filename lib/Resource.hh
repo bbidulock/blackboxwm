@@ -34,6 +34,8 @@ extern "C" {
 
 namespace bt {
 
+  inline const char* boolAsString(bool b) { return (b) ? "True" : "False"; }
+
   class Resource {
   public:
     Resource(void);
@@ -46,15 +48,23 @@ namespace bt {
     void save(const std::string &filename);
     void merge(const std::string &filename);
 
+    std::string read(const std::string &name,
+                     const std::string &classname,
+                     const std::string &default_value = std::string()) const;
     std::string read(const char* name,
                      const char* classname,
                      const char* default_value = "") const;
-    std::string read(const std::string& name,
-                     const std::string& classname,
-                     const std::string& default_value = "") const;
+    int read(const char* name, const char* classname, int default_value) const;
+    unsigned int read(const char* name, const char* classname,
+                      unsigned int default_value) const;
+    long read(const char* name, const char* classname,
+              long default_value) const;
+    bool read(const char* name, const char* classname,
+              bool default_value) const;
 
-    void write(const std::string &resource,
-               const std::string &value);
+    void write(const char* resource, const char* value);
+    void write(const char* resource, unsigned int value);
+    void write(const char* resource, unsigned long value);
 
   private:
     XrmDatabase db;
