@@ -5,6 +5,9 @@ Stuff TODO or On The Way(tm):
 ADD: add _BLACKBOX_STYLE and _BLACKBOX_MENU atoms so that bbtools, bbconf, etc.
      can get the current path to the style in use and menu.
 
+CHANGE: when workspace name is greater than the width of its text area the
+	toolbar gets very ugly
+
 CHANGE: rework the .blackboxrc resources so that they give a more
         uniform behavior across screens. (Still not sure how I want
 	to do this, so it'll have to wait.)
