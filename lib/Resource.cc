@@ -162,6 +162,10 @@ double bt::Resource::read(const char* name, const char* classname,
 }
 
 
+void bt::Resource::write(const char *resource, const std::string &value)
+{ write(resource, value.c_str()); }
+
+
 void bt::Resource::write(const char* resource, const char* value)
 { XrmPutStringResource(&db, resource, value); }
 

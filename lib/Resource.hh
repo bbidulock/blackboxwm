@@ -72,6 +72,7 @@ namespace bt {
     double read(const char* name, const char* classname,
                 double default_value) const;
 
+    void write(const char *resource, const std::string &value);
     void write(const char* resource, const char* value);
     void write(const char* resource, int value);
     void write(const char* resource, unsigned int value);
