@@ -105,16 +105,12 @@ void Windowmenu::itemClicked(unsigned int id, unsigned int button) {
     break;
 
   case BScreen::WindowRaise: {
-    Workspace *wkspc =
-      _window->getScreen()->getWorkspace(_window->getWorkspaceNumber());
-    wkspc->raiseWindow(_window);
+    _window->getScreen()->raiseWindow(_window);
     break;
   }
 
   case BScreen::WindowLower: {
-    Workspace *wkspc =
-      _window->getScreen()->getWorkspace(_window->getWorkspaceNumber());
-    wkspc->lowerWindow(_window);
+    _window->getScreen()->lowerWindow(_window);
     break;
   }
 
@@ -134,11 +130,9 @@ SendToWorkspacemenu::SendToWorkspacemenu(bt::Application &app,
 
 void SendToWorkspacemenu::refresh(void) {
   clear();
-  unsigned int i, workspace_count = _window->getScreen()->getWorkspaceCount();
-  for (i = 0; i < workspace_count; ++i) {
-    const Workspace * const wkspc = _window->getScreen()->getWorkspace(i);
-    insertItem(wkspc->getName(), wkspc->getID());
-  }
+  unsigned workspace_count = _window->getScreen()->getWorkspaceCount();
+  for (unsigned int i = 0; i < workspace_count; ++i)
+    insertItem(_window->getScreen()->getWorkspaceName(i), i);
 
   /*
     give a little visual indication to the user about which workspace

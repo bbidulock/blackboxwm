@@ -58,9 +58,7 @@ extern "C" {
 #include "Screen.hh"
 #include "Toolbar.hh"
 #include "Window.hh"
-#include "Workspace.hh"
 #include "Clientmenu.hh"
-#include "Workspacemenu.hh"
 #include "Slit.hh"
 
 
@@ -386,7 +384,7 @@ void Toolbar::reconfigure(void) {
 
   for (unsigned int i = 0; i < screen->getWorkspaceCount(); i++) {
     width =
-      bt::textRect(style->font, screen->getWorkspace(i)->getName()).width();
+      bt::textRect(style->font, screen->getWorkspaceName(i)).width();
     if (width > frame.workspace_label_w) frame.workspace_label_w = width;
   }
 
@@ -584,7 +582,8 @@ void Toolbar::redrawWindowLabel(bool redraw) {
 
 
 void Toolbar::redrawWorkspaceLabel(bool redraw) {
-  const std::string& name = screen->getCurrentWorkspace()->getName();
+  const std::string& name =
+    screen->getWorkspaceName(screen->getCurrentWorkspaceID());
 
   if (redraw)
     XClearWindow(display, frame.workspace_label);
@@ -798,9 +797,8 @@ void Toolbar::buttonReleaseEvent(const XButtonEvent *re) {
 
       if (re->x >= 0 && re->x < static_cast<signed>(frame.button_w) &&
           re->y >= 0 && re->y < static_cast<signed>(frame.button_w))
-       if (screen->getCurrentWorkspace()->getID() > 0)
-          screen->changeWorkspaceID(screen->getCurrentWorkspace()->
-                                    getID() - 1);
+       if (screen->getCurrentWorkspaceID() > 0)
+          screen->changeWorkspaceID(screen->getCurrentWorkspaceID() - 1);
         else
           screen->changeWorkspaceID(screen->getWorkspaceCount() - 1);
     } else if (re->window == frame.nsbutton) {
@@ -808,10 +806,8 @@ void Toolbar::buttonReleaseEvent(const XButtonEvent *re) {
 
       if (re->x >= 0 && re->x < static_cast<signed>(frame.button_w) &&
           re->y >= 0 && re->y < static_cast<signed>(frame.button_w))
-        if (screen->getCurrentWorkspace()->getID() <
-            (screen->getWorkspaceCount() - 1))
-          screen->changeWorkspaceID(screen->getCurrentWorkspace()->
-                                    getID() + 1);
+        if (screen->getCurrentWorkspaceID() < screen->getWorkspaceCount() - 1)
+          screen->changeWorkspaceID(screen->getCurrentWorkspaceID() + 1);
         else
           screen->changeWorkspaceID(0);
     } else if (re->window == frame.pwbutton) {
@@ -889,10 +885,12 @@ void Toolbar::keyPressEvent(const XKeyEvent *ke) {
       else
         blackbox->setFocusedWindow(0);
 
-      Workspace *wkspc = screen->getCurrentWorkspace();
-      wkspc->setName(new_workspace_name);
+      screen->setWorkspaceName(screen->getCurrentWorkspaceID(),
+                               new_workspace_name);
 
-      screen->getWorkspacemenu()->changeItem(wkspc->getID(), wkspc->getName());
+      screen->getWorkspacemenu()->
+        changeItem(screen->getCurrentWorkspaceID(),
+                   screen->getWorkspaceName(screen->getCurrentWorkspaceID()));
       screen->updateDesktopNamesHint();
 
       new_workspace_name.erase();

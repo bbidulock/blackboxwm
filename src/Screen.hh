@@ -50,13 +50,13 @@ typedef std::vector<Window> WindowStack;
 #include "Iconmenu.hh"
 #include "Netwm.hh"
 #include "Timer.hh"
-#include "Workspace.hh"
 #include "Workspacemenu.hh"
 #include "blackbox.hh"
 
 // forward declaration
 class Rootmenu;
 class Slit;
+class Workspace;
 
 struct WindowStyle {
   bt::Color l_text_focus, l_text_unfocus, b_pic_focus,
@@ -73,6 +73,10 @@ struct ToolbarStyle {
   bt::Font font;
   bt::Alignment alignment;
 };
+
+
+typedef std::list<BlackboxWindow*> BlackboxWindowList;
+typedef std::list<Window> WindowList;
 
 
 class BScreen : public bt::NoCopy, public bt::EventHandler,
@@ -95,6 +99,7 @@ private:
   Slit *slit;
   Toolbar *toolbar;
   Workspace *current_workspace;
+  unsigned int current_workspace_id;
   Workspacemenu *workspacemenu;
 
   unsigned int geom_w, geom_h;
@@ -203,7 +208,8 @@ public:
   { return screen_info.getHeight(); }
   const std::string& displayString(void) const
   { return screen_info.displayString(); }
-  unsigned int screenNumber(void) const { return screen_info.getScreenNumber();}
+  unsigned int screenNumber(void) const
+  { return screen_info.getScreenNumber();}
 
   bool isSlitOnTop(void) const { return resource.slit_on_top; }
   bool doSlitAutoHide(void) const
@@ -221,6 +227,7 @@ public:
   Toolbar *getToolbar(void) { return toolbar; }
 
   Workspace *getWorkspace(unsigned int index) const;
+  const std::string& getWorkspaceName(unsigned int index) const;
 
   Workspace *getCurrentWorkspace(void) { return current_workspace; }
 
@@ -236,7 +243,7 @@ public:
   { return resource.border_width; }
 
   unsigned int getCurrentWorkspaceID(void) const
-  { return current_workspace->getID(); }
+  { return current_workspace_id; }
   unsigned int getWorkspaceCount(void) const
   { return workspacesList.size(); }
   unsigned int getIconCount(void) const { return iconList.size(); }
@@ -254,6 +261,8 @@ public:
   { return resource.row_direction; }
   int getColPlacementDirection(void) const
   { return resource.col_direction; }
+
+  BlackboxWindow* getWindow(unsigned int workspace, unsigned int id);
 
   void setRootColormapInstalled(bool r) { root_colormap_installed = r; }
   void saveSloppyFocus(bool s) { resource.sloppy_focus = s; }
@@ -299,19 +308,22 @@ public:
   unsigned int removeLastWorkspace(void);
   void removeWorkspaceNames(void);
   void addWorkspaceName(const std::string& name);
+  void setWorkspaceName(unsigned int workspace, const std::string& name);
   const std::string getNameOfWorkspace(unsigned int id);
   void changeWorkspaceID(unsigned int id);
   void getDesktopNames(void);
 
-  void addIcon(BlackboxWindow *w);
+  void iconifyWindow(BlackboxWindow *w);
   void removeIcon(BlackboxWindow *w);
-
   void addWindow(Window w);
   void releaseWindow(BlackboxWindow *w, bool remap);
+  void raiseWindow(BlackboxWindow *w);
+  void lowerWindow(BlackboxWindow *w);
+  void reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id);
+  void propagateWindowName(const BlackboxWindow *w);
 
   void raiseWindows(const bt::Netwm::WindowList* const workspace_stack);
-  void reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id);
-  void propagateWindowName(const BlackboxWindow *bw);
+
   void nextFocus(void) const;
   void prevFocus(void) const;
   void raiseFocus(void) const;

@@ -25,15 +25,13 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
-#include "Workspacemenu.hh"
-
 extern "C" {
 #include <assert.h>
 }
 
 #include "Screen.hh"
-#include "Workspace.hh"
 #include "i18n.hh"
+#include "Workspacemenu.hh"
 
 
 Workspacemenu::Workspacemenu(bt::Application &app, unsigned int screen,

@@ -106,8 +106,6 @@ extern "C" {
 #include "Toolbar.hh"
 #include "Util.hh"
 #include "Window.hh"
-#include "Workspace.hh"
-#include "Workspacemenu.hh"
 
 
 Blackbox::Blackbox(char **m_argv, char *dpy_name, char *rc)
@@ -659,10 +657,10 @@ void Blackbox::save_rc(void) {
 
     // write out the user's workspace names
 
-    std::string save_string = screen->getWorkspace(0)->getName();
+    std::string save_string = screen->getWorkspaceName(0);
     for (unsigned int i = 1; i < screen->getWorkspaceCount(); ++i) {
       save_string += ',';
-      save_string += screen->getWorkspace(i)->getName();
+      save_string += screen->getWorkspaceName(i);
     }
 
     char *resource_string = new char[save_string.length() + 48];

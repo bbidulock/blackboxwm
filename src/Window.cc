@@ -55,7 +55,6 @@ extern "C" {
 #include "Util.hh"
 #include "Window.hh"
 #include "Windowmenu.hh"
-#include "Workspace.hh"
 
 
 /*
@@ -117,7 +116,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   client.state.maximized = 0;
   client.state.skip = SKIP_NONE;
   client.state.layer = LAYER_NORMAL;
-  client.workspace = window_number = bt::BSENTINEL;
+  client.workspace = screen->getCurrentWorkspaceID();
+  window_number = bt::BSENTINEL;
   client.decorations = Decor_Titlebar | Decor_Border | Decor_Handle |
     Decor_Iconify | Decor_Maximize;
   client.functions = Func_Resize | Func_Move | Func_Iconify | Func_Maximize;
@@ -212,15 +212,10 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   upsize();
 
-  bool place_window = True;
   if (blackbox->isStartup() || isTransient() ||
       client.window_type == blackbox->netwm()->wmWindowTypeDesktop() ||
       client.normal_hint_flags & (PPosition|USPosition)) {
     applyGravity(frame.rect);
-
-    if (blackbox->isStartup() ||
-        client.rect.intersects(screen->getScreenInfo().getRect()))
-      place_window = False;
   }
 
   /*
@@ -246,23 +241,12 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     // prepare the window to be iconified
     client.current_state = IconicState;
     client.state.iconic = False;
-  } else {
-    // otherwise place it on the correct workspace
-    if (client.workspace >= screen->getWorkspaceCount()) {
-      screen->getCurrentWorkspace()->addWindow(this, place_window);
-    } else {
-      screen->getWorkspace(client.workspace)->addWindow(this, place_window);
-      if (client.workspace != screen->getCurrentWorkspace()->getID())
-        client.current_state = WithdrawnState;
-    }
+  } else if (client.workspace != screen->getCurrentWorkspaceID()) {
+    client.current_state = WithdrawnState;
   }
 
-  if (! place_window) {
-    // don't need to call configure if we are letting the workspace
-    // place the window
-    configure(frame.rect.x(), frame.rect.y(),
-              frame.rect.width(), frame.rect.height());
-  }
+  configure(frame.rect.x(), frame.rect.y(),
+            frame.rect.width(), frame.rect.height());
 
   positionWindows();
 
@@ -1503,9 +1487,7 @@ void BlackboxWindow::iconify(void) {
    * of them (since they are above their transient_for) for a split
    * second
    */
-  if (client.workspace != bt::BSENTINEL)
-    screen->getWorkspace(client.workspace)->removeWindow(this);
-  screen->addIcon(this);
+  screen->iconifyWindow(this);
 
   /*
    * we don't want this XUnmapWindow call to generate an UnmapNotify event, so
@@ -1563,7 +1545,7 @@ void BlackboxWindow::deiconify(bool reassoc, bool raise) {
   }
 
   if (raise)
-    screen->getWorkspace(client.workspace)->raiseWindow(this);
+    screen->raiseWindow(this);
 }
 
 
@@ -2252,8 +2234,7 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
       screen->changeWorkspaceID(client.workspace);
 
     if (setInputFocus()) {
-      Workspace *wkspc = screen->getWorkspace(client.workspace);
-      wkspc->raiseWindow(this);
+      screen->raiseWindow(this);
       installColormap(True);
     }
   } else if (ce->message_type == netwm->closeWindow()) {
@@ -2449,7 +2430,7 @@ void BlackboxWindow::mapRequestEvent(const XMapRequestEvent* const re) {
   case ZoomState:
   default:
     show();
-    screen->getWorkspace(client.workspace)->raiseWindow(this);
+    screen->raiseWindow(this);
     if (! blackbox->isStartup() && (isTransient() || screen->doFocusNew())) {
       XSync(blackbox->getXDisplay(), False); // make sure the frame is mapped..
       setInputFocus();
@@ -2647,13 +2628,13 @@ void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent *cr) {
     switch (cr->detail) {
     case Below:
     case BottomIf:
-      screen->getWorkspace(client.workspace)->lowerWindow(this);
+      screen->lowerWindow(this);
       break;
 
     case Above:
     case TopIf:
     default:
-      screen->getWorkspace(client.workspace)->raiseWindow(this);
+      screen->raiseWindow(this);
       break;
     }
   }
@@ -2679,7 +2660,7 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
     } else if (frame.plate == be->window) {
       if (windowmenu && windowmenu->isVisible()) windowmenu->hide();
 
-      screen->getWorkspace(client.workspace)->raiseWindow(this);
+      screen->raiseWindow(this);
 
       XAllowEvents(blackbox->getXDisplay(), ReplayPointer, be->time);
     } else {
@@ -2699,19 +2680,19 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
 
       if (windowmenu && windowmenu->isVisible()) windowmenu->hide();
 
-      screen->getWorkspace(client.workspace)->raiseWindow(this);
+      screen->raiseWindow(this);
     }
   } else if (be->button == 2 && (be->window != frame.iconify_button) &&
              (be->window != frame.close_button)) {
-    screen->getWorkspace(client.workspace)->lowerWindow(this);
+    screen->lowerWindow(this);
   } else if (windowmenu && be->button == 3) {
 
     int mx = be->x_root;
-    int my;
+    int my = be->y_root;
 
     if (frame.title == be->window || frame.label == be->window) {
       my = client.rect.top() - (frame.border_w + frame.mwm_border_w);
-    }  else if (frame.handle == be->window) {
+    } else if (frame.handle == be->window) {
       my = client.rect.bottom() + (frame.border_w * 2) + frame.mwm_border_w +
            frame.handle_h;
     }
@@ -2731,7 +2712,7 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const re) {
     if ((re->x >= 0 && re->x <= static_cast<signed>(frame.button_w)) &&
         (re->y >= 0 && re->y <= static_cast<signed>(frame.button_w))) {
       maximize(re->button);
-      screen->getWorkspace(client.workspace)->raiseWindow(this);
+      screen->raiseWindow(this);
     } else {
       redrawMaximizeButton(client.state.maximized);
     }
@@ -3089,7 +3070,7 @@ void BlackboxWindow::restore(bool remap) {
 
 // timer for autoraise
 void BlackboxWindow::timeout(void) {
-  screen->getWorkspace(client.workspace)->raiseWindow(this);
+  screen->raiseWindow(this);
 }
 
 

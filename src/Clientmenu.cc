@@ -32,12 +32,13 @@ extern "C" {
 }
 
 #include "Window.hh"
-#include "Workspace.hh"
+#include "Screen.hh"
 
 
-Clientmenu::Clientmenu(bt::Application &app, unsigned int screen,
-                       Workspace *workspace)
-  : bt::Menu(app, screen), _workspace(workspace) {
+Clientmenu::Clientmenu(bt::Application &app, BScreen& screen,
+                       unsigned int workspace)
+  : bt::Menu(app, screen.screenNumber()),
+    _workspace(workspace), _screen(screen) {
   setAutoDelete(false);
   showTitle();
 }
@@ -46,14 +47,14 @@ Clientmenu::Clientmenu(bt::Application &app, unsigned int screen,
 void Clientmenu::itemClicked(unsigned int id, unsigned int button) {
   if (button > 2) return;
 
-  BlackboxWindow *window = _workspace->getWindow(id);
+  BlackboxWindow *window = _screen.getWindow(_workspace, id);
   assert(window != 0);
 
-  if (! _workspace->isCurrent()) {
-    if (button == 1) _workspace->setCurrent();
+  if (_workspace != _screen.getCurrentWorkspaceID()) {
+    if (button == 1) _screen.changeWorkspaceID(_workspace);
     else if (button == 2) window->deiconify(true, false);
   }
 
-  _workspace->raiseWindow(window);
+  _screen.raiseWindow(window);
   window->setInputFocus();
 }

@@ -26,19 +26,19 @@
 
 #include "Menu.hh"
 
-class Workspace;
+class BScreen;
 
 
 class Clientmenu : public bt::Menu {
 public:
-  Clientmenu(bt::Application &app, unsigned int screen,
-             Workspace *workspace);
+  Clientmenu(bt::Application &app, BScreen& screen, unsigned int workspace);
 
 protected:
   virtual void itemClicked(unsigned int id, unsigned int button);
 
 private:
-  Workspace *_workspace;
+  unsigned int _workspace;
+  BScreen& _screen;
 };
 
 

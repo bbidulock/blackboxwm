@@ -339,6 +339,9 @@ public:
   { return frame.title_h; }
 
   inline WMLayer getLayer(void) const { return client.state.layer; }
+  unsigned long normalHintFlags(void) const
+  { return client.normal_hint_flags; }
+
   inline void setWindowNumber(int n) { window_number = n; }
 
   inline void setModal(bool flag) { client.state.modal = flag; }

@@ -779,13 +779,18 @@ void BScreen::LoadStyle(void) {
 }
 
 
-void BScreen::addIcon(BlackboxWindow *w) {
+void BScreen::iconifyWindow(BlackboxWindow *w) {
   assert(w != 0);
 
-  iconList.push_back(w);
+  if (w->getWorkspaceNumber() != bt::BSENTINEL) {
+    Workspace* wkspc = getWorkspace(w->getWorkspaceNumber());
+    wkspc->removeWindow(w);
+    w->setWorkspace(bt::BSENTINEL);
+  }
+
   int id = iconmenu->insertItem(bt::ellideText(w->getIconTitle(), 60, "..."));
-  w->setWorkspace(bt::BSENTINEL);
   w->setWindowNumber(id);
+  iconList.push_back(w);
 }
 
 
@@ -858,6 +863,7 @@ void BScreen::changeWorkspaceID(unsigned int id) {
   workspacemenu->setItemChecked(current_workspace->getID(), false);
 
   current_workspace = getWorkspace(id);
+  current_workspace_id = current_workspace->getID();
 
   current_workspace->show();
 
@@ -891,6 +897,16 @@ void BScreen::manageWindow(Window w) {
   if (! win)
     return;
 
+  Workspace* wkspc = (win->getWorkspaceNumber() > getWorkspaceCount()) ?
+    current_workspace : getWorkspace(win->getWorkspaceNumber());
+
+  bool place_window = True;
+  if (blackbox->isStartup() ||
+      ((win->isTransient() || win->normalHintFlags() & (PPosition|USPosition))
+       && win->clientRect().intersects(screen_info.getRect())))
+    place_window = False;
+
+  wkspc->addWindow(win, place_window);
   windowList.push_back(win);
 
   XMapRequestEvent mre;
@@ -929,6 +945,18 @@ void BScreen::unmanageWindow(BlackboxWindow *w, bool remap) {
   delete group;
 
   delete w;
+}
+
+
+void BScreen::raiseWindow(BlackboxWindow *w) {
+  Workspace *wkspc = getWorkspace(w->getWorkspaceNumber());
+  wkspc->raiseWindow(w);
+}
+
+
+void BScreen::lowerWindow(BlackboxWindow *w) {
+  Workspace *wkspc = getWorkspace(w->getWorkspaceNumber());
+  wkspc->lowerWindow(w);
 }
 
 
@@ -1003,16 +1031,16 @@ void BScreen::reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id) {
 }
 
 
-void BScreen::propagateWindowName(const BlackboxWindow *bw) {
-  if (! bw->isIconic()) {
-    Clientmenu *clientmenu = getWorkspace(bw->getWorkspaceNumber())->getMenu();
-    clientmenu->changeItem(bw->getWindowNumber(),
-                           bt::ellideText(bw->getTitle(), 60, "..."));
+void BScreen::propagateWindowName(const BlackboxWindow *w) {
+  if (! w->isIconic()) {
+    Clientmenu *clientmenu = getWorkspace(w->getWorkspaceNumber())->getMenu();
+    clientmenu->changeItem(w->getWindowNumber(),
+                           bt::ellideText(w->getTitle(), 60, "..."));
 
-    if (blackbox->getFocusedWindow() == bw)
+    if (blackbox->getFocusedWindow() == w)
       toolbar->redrawWindowLabel(True);
   } else {
-    iconmenu->changeItem(bw->getWindowNumber(), bw->getIconTitle());
+    iconmenu->changeItem(w->getWindowNumber(), w->getIconTitle());
   }
 }
 
@@ -1616,6 +1644,11 @@ Workspace* BScreen::getWorkspace(unsigned int index) const {
 }
 
 
+const std::string& BScreen::getWorkspaceName(unsigned int index) const {
+  return getWorkspace(index)->getName();
+}
+
+
 void BScreen::clientMessageEvent(const XClientMessageEvent * const event) {
   if (event->format != 32) return;
 
@@ -1982,4 +2015,15 @@ void BScreen::getDesktopNames(void) {
 void BScreen::timeout(void) {
   if (area_is_dirty)
     updateAvailableArea();
+}
+
+
+BlackboxWindow* BScreen::getWindow(unsigned int workspace, unsigned int id) {
+  return getWorkspace(workspace)->getWindow(id);
+}
+
+
+void BScreen::setWorkspaceName(unsigned int workspace,
+                               const std::string& name) {
+  getWorkspace(workspace)->setName(name);
 }

@@ -42,8 +42,6 @@ namespace bt {
   class Rect;
 }
 
-typedef std::list<BlackboxWindow*> BlackboxWindowList;
-typedef std::list<Window> WindowList;
 
 class StackingList {
 public:

@@ -186,9 +186,7 @@ Workspace::Workspace(BScreen *scrn, unsigned int i) {
 
   id = i;
 
-  clientmenu = new Clientmenu(*screen->getBlackbox(),
-                         screen->getScreenInfo().getScreenNumber(),
-                         this);
+  clientmenu = new Clientmenu(*screen->getBlackbox(), *screen, id);
 
   lastfocus = (BlackboxWindow *) 0;
 
