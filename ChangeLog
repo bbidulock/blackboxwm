@@ -60,6 +60,7 @@ Changes from 0.62.1 to 0.65.0:
     0.62.0 and that is mostly due to the STL.  However for the most part
     blackbox runs faster and is still one of the leanest window managers out
     there today.
+  - smart window placement ignores shaded windows now
   - first the resurrection of the code and now the return of Brad!  Blackbox
     is only getting better with age.
 
