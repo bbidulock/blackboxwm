@@ -89,11 +89,11 @@ public:
 private:
   // this is closely modelled after the Qt GC cache, but with some of the
   // complexity stripped out
+  const unsigned int context_count;
+  const unsigned int cache_size;
+  const unsigned int cache_buckets;
   BaseDisplay *display;
-  const int context_count;
-  Context *contexts;
-  const int cache_size;
-  const int cache_buckets;
+  Context **contexts;
   Item **cache;
 };
 

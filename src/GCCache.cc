@@ -65,12 +65,16 @@ void BGCCache::Context::set(const XFontStruct * const _font) {
 
 
 BGCCache::BGCCache(BaseDisplay *_display)
-  : display(_display), context_count(128), cache_size(16), cache_buckets(8)
+  : context_count(128u), cache_size(16u), cache_buckets(8u), display(_display)
 {
-  contexts = new Context[ context_count ](display);
+  contexts = new Context*[context_count];
+  unsigned int i;
+  for (i = 0; i < context_count; i++) {
+    contexts[i] = new Context(display);
+  }
 
   cache = new Item*[ cache_size * cache_buckets ];
-  int i, b, s;
+  unsigned int b, s;
   for (i = 0, s = 0; i < cache_size; i++) {
     for (b = 0; b < cache_buckets; b++)
       cache[ s++ ] = new Item;
@@ -79,20 +83,28 @@ BGCCache::BGCCache(BaseDisplay *_display)
 
 BGCCache::~BGCCache()
 {
-  int i, b, s;
-  for (i = 0, s = 0; i < cache_size; i++) {
-    for (b = 0; b < cache_buckets; b++)
-      delete cache[ s++ ];
+  unsigned int i, b, s;
+  for (i = 0; i < context_count; i++) {
+    delete contexts[i];
+    contexts[i] = 0;
+  }
+  for (i = 0, s = 0; i < cache_size; ++i) {
+    for (b = 0; b < cache_buckets; ++b, ++s) {
+      delete cache[s];
+      cache[s] = 0;
+    }
   }
   delete [] cache;
   delete [] contexts;
+  cache = 0;
+  contexts = 0;
 }
 
 BGCCache::Context *BGCCache::nextContext(unsigned int scr)
 {
   Window hd = display->getScreenInfo(scr)->getRootWindow();
 
-  register Context *c = contexts;
+  register Context *c = *contexts;
   register int i = context_count;
   while (i--) {
     if (! c->gc) {
@@ -205,7 +217,7 @@ void BGCCache::release(Item *_item)
 void BGCCache::purge()
 {
   // fprintf(stderr, "BGCCache::purge\n");
-  int i, b, s;
+  unsigned int i, b, s;
   for (i = 0, s = 0; i < cache_size; i++) {
     for (b = 0; b < cache_buckets; b++) {
       Item *d = cache[ s++ ];
