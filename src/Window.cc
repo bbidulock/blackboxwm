@@ -2210,7 +2210,7 @@ void BlackboxWindow::redrawIconifyButton(bool pressed) const {
   u.setCoords(u.left()  + 2, u.bottom() - 3,
               u.right() - 3, u.bottom() - 2);
 
-  XFillRectangle(blackbox->XDisplay(), frame.iconify_button, pen.gc(),
+  XFillRectangle(pen.XDisplay(), frame.iconify_button, pen.gc(),
                  u.x(), u.y(), u.width(), u.height());
 }
 
@@ -2245,9 +2245,9 @@ void BlackboxWindow::redrawMaximizeButton(bool pressed) const {
   u.setCoords(u.left()  + 2, u.top()    + 2,
               u.right() - 3, u.bottom() - 3);
 
-  XDrawRectangle(blackbox->XDisplay(), frame.maximize_button, pen.gc(),
+  XDrawRectangle(pen.XDisplay(), frame.maximize_button, pen.gc(),
                  u.x(), u.y(), u.width(), u.height());
-  XDrawLine(blackbox->XDisplay(), frame.maximize_button, pen.gc(),
+  XDrawLine(pen.XDisplay(), frame.maximize_button, pen.gc(),
             u.left(), u.top() + 1, u.right(), u.top() + 1);
 }
 
@@ -2280,9 +2280,9 @@ void BlackboxWindow::redrawCloseButton(bool pressed) const {
                frame.style->b_pic_focus : frame.style->b_pic_unfocus));
   u.setCoords(u.left()  + 2, u.top()    + 2,
               u.right() - 2, u.bottom() - 2);
-  XDrawLine(blackbox->XDisplay(), frame.close_button, pen.gc(),
+  XDrawLine(pen.XDisplay(), frame.close_button, pen.gc(),
             u.left(), u.top(), u.right(), u.bottom());
-  XDrawLine(blackbox->XDisplay(), frame.close_button, pen.gc(),
+  XDrawLine(pen.XDisplay(), frame.close_button, pen.gc(),
             u.left(), u.bottom(), u.right(), u.top());
 }
 

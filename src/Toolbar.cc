@@ -601,7 +601,7 @@ void Toolbar::redrawPrevWorkspaceButton(bool pressed) {
   pts[2].x = 0; pts[2].y = -4;
 
   bt::Pen pen(_screen->screenNumber(), style->b_pic);
-  XFillPolygon(display, frame.psbutton, pen.gc(),
+  XFillPolygon(pen.XDisplay(), frame.psbutton, pen.gc(),
                pts, 3, Convex, CoordModePrevious);
 }
 
@@ -634,7 +634,7 @@ void Toolbar::redrawNextWorkspaceButton(bool pressed) {
   pts[2].x = -4; pts[2].y = 2;
 
   bt::Pen pen(_screen->screenNumber(), style->b_pic);
-  XFillPolygon(display, frame.nsbutton, pen.gc(),
+  XFillPolygon(pen.XDisplay(), frame.nsbutton, pen.gc(),
                pts, 3, Convex, CoordModePrevious);
 }
 
@@ -667,7 +667,7 @@ void Toolbar::redrawPrevWindowButton(bool pressed) {
   pts[2].x = 0; pts[2].y = -4;
 
   bt::Pen pen(_screen->screenNumber(), style->b_pic);
-  XFillPolygon(display, frame.pwbutton, pen.gc(),
+  XFillPolygon(pen.XDisplay(), frame.pwbutton, pen.gc(),
                pts, 3, Convex, CoordModePrevious);
 }
 
@@ -700,7 +700,7 @@ void Toolbar::redrawNextWindowButton(bool pressed) {
   pts[2].x = -4; pts[2].y = 2;
 
   bt::Pen pen(_screen->screenNumber(), style->b_pic);
-  XFillPolygon(display, frame.nwbutton, pen.gc(),
+  XFillPolygon(pen.XDisplay(), frame.nwbutton, pen.gc(),
                pts, 3, Convex, CoordModePrevious);
 }
 
@@ -725,7 +725,7 @@ void Toolbar::edit(void) {
   const ScreenResource::ToolbarStyle* const style =
     _screen->resource().toolbarStyle();
   bt::Pen pen(_screen->screenNumber(), style->l_text);
-  XDrawRectangle(display, frame.workspace_label, pen.gc(),
+  XDrawRectangle(pen.XDisplay(), frame.workspace_label, pen.gc(),
                  frame.workspace_label_w / 2, 0, 1,
                  frame.label_h - 1);
   // change the background of the window to that of an active window label
@@ -936,8 +936,8 @@ void Toolbar::keyPressEvent(const XKeyEvent *ke) {
       bt::drawText(style->font, pen, frame.workspace_label, rect, align,
                    new_workspace_name);
 
-      // XDrawRectangle(display, frame.workspace_label, pen.gc(), x + tw, 0, 1,
-      // frame.label_h - 1);
+      // XDrawRectangle(pen.XDisplay(), frame.workspace_label, pen.gc(),
+      //                x + tw, 0, 1, frame.label_h - 1);
     }
   }
 }

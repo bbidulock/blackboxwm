@@ -493,7 +493,7 @@ Pixmap bt::Image::render(const Display &display, unsigned int screen,
     bw = texture.borderWidth();
 
     for (unsigned int i = 0; i < bw; ++i)
-      XDrawRectangle(display.XDisplay(), pixmap, penborder.gc(),
+      XDrawRectangle(penborder.XDisplay(), pixmap, penborder.gc(),
                      i, i, width - (i * 2) - 1, height - (i * 2) - 1);
   }
 
@@ -850,7 +850,7 @@ Pixmap bt::Image::renderPixmap(const Display &display, unsigned int screen) {
 #ifdef MITSHM
   if (shm_ok) {
     // use MIT-SHM extension
-    XShmPutImage(display.XDisplay(), pixmap, pen.gc(), image,
+    XShmPutImage(pen.XDisplay(), pixmap, pen.gc(), image,
                  0, 0, 0, 0, width, height, False);
 
     destroyShmImage(display, image);
@@ -858,7 +858,7 @@ Pixmap bt::Image::renderPixmap(const Display &display, unsigned int screen) {
 #endif // MITSHM
     {
       // normal XPutImage
-      XPutImage(display.XDisplay(), pixmap, pen.gc(), image,
+      XPutImage(pen.XDisplay(), pixmap, pen.gc(), image,
                 0, 0, 0, 0, width, height);
 
       image->data = 0;

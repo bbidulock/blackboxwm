@@ -520,9 +520,12 @@ void bt::Pen::setSubWindowMode(int subwindow) {
 }
 
 
-const bt::Display &bt::Pen::display(void) const {
-  return pencache->_display;
-}
+::Display *bt::Pen::XDisplay(void) const
+{ return pencache->_display.XDisplay(); }
+
+
+const bt::Display &bt::Pen::display(void) const
+{ return pencache->_display; }
 
 
 const GC &bt::Pen::gc(void) const {

@@ -224,7 +224,7 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
 
   if (item.isSeparator()) {
     Pen pen(_screen, frame.foreground);
-    XFillRectangle(_app.XDisplay(), window, pen.gc(),
+    XFillRectangle(pen.XDisplay(), window, pen.gc(),
                    r2.x(), r2.y() + margin_w, r2.width(),
                    (frame.texture.borderWidth() > 0 ?
                     frame.texture.borderWidth() : 1));
@@ -238,10 +238,10 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
   if (item.isActive() && item.isEnabled()) {
     Pen p2(_screen, active.texture.color());
     if (pixmap) {
-      XCopyArea(_app.XDisplay(), pixmap, window, p2.gc(),
+      XCopyArea(p2.XDisplay(), pixmap, window, p2.gc(),
                 0, 0, rect.width(), rect.height(), rect.x(), rect.y());
     } else {
-      XFillRectangle(_app.XDisplay(), window, p2.gc(),
+      XFillRectangle(p2.XDisplay(), window, p2.gc(),
                      rect.x(), rect.y(), rect.width(), rect.height());
     }
   }
@@ -252,9 +252,9 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
     int cx = rect.x() + (rect.height() - 7) / 2;
     int cy = rect.y() + (rect.height() - 7) / 2;
 
-    XSetClipMask(_app.XDisplay(), fpen.gc(), bitmap.check);
-    XSetClipOrigin(_app.XDisplay(), fpen.gc(), cx, cy);
-    XFillRectangle(_app.XDisplay(), window, fpen.gc(), cx, cy, 7, 7);
+    XSetClipMask(fpen.XDisplay(), fpen.gc(), bitmap.check);
+    XSetClipOrigin(fpen.XDisplay(), fpen.gc(), cx, cy);
+    XFillRectangle(fpen.XDisplay(), window, fpen.gc(), cx, cy, 7, 7);
   }
 
   if (item.submenu()) {
@@ -262,13 +262,13 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
     int ax = rect.x() + rect.width() - rect.height() + (rect.height() - 7) / 2;
     int ay = rect.y() + (rect.height() - 7) / 2;
 
-    XSetClipMask(_app.XDisplay(), fpen.gc(), bitmap.arrow);
-    XSetClipOrigin(_app.XDisplay(), fpen.gc(), ax, ay);
-    XFillRectangle(_app.XDisplay(), window, fpen.gc(), ax, ay, 7, 7);
+    XSetClipMask(fpen.XDisplay(), fpen.gc(), bitmap.arrow);
+    XSetClipOrigin(fpen.XDisplay(), fpen.gc(), ax, ay);
+    XFillRectangle(fpen.XDisplay(), window, fpen.gc(), ax, ay, 7, 7);
   }
 
-  XSetClipOrigin(_app.XDisplay(), fpen.gc(), 0, 0);
-  XSetClipMask(_app.XDisplay(), fpen.gc(), None);
+  XSetClipOrigin(fpen.XDisplay(), fpen.gc(), 0, 0);
+  XSetClipMask(fpen.XDisplay(), fpen.gc(), None);
 }
 
 

@@ -522,12 +522,12 @@ void bt::drawText(const Font &font, Pen &pen, Window window,
 
   ::Display *xdpy = pen.display().XDisplay();
   if (i18n.multibyte()) {
-    XmbDrawString(xdpy, window, font.fontset(), pen.gc(), tr.x(),
+    XmbDrawString(pen.XDisplay(), window, font.fontset(), pen.gc(), tr.x(),
                   tr.y() - XExtentsOfFontSet(font.fontset())->max_ink_extent.y,
                   text.c_str(), text.length());
   } else {
-    XDrawString(xdpy, window, pen.gc(), tr.x(), tr.y() + font.font()->ascent,
-                text.c_str(), text.length());
+    XDrawString(pen.XDisplay(), window, pen.gc(), tr.x(),
+                tr.y() + font.font()->ascent, text.c_str(), text.length());
   }
 }
 

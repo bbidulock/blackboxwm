@@ -179,17 +179,17 @@ void bt::drawTexture(unsigned int screen,
   Pen pen(screen, texture.color());
 
   if ((texture.texture() & Texture::Gradient) && pixmap) {
-    XCopyArea(pen.display().XDisplay(), pixmap, drawable, pen.gc(),
+    XCopyArea(pen.XDisplay(), pixmap, drawable, pen.gc(),
               urect.x() - trect.x(), urect.y() - trect.y(),
               urect.width(), urect.height(), urect.x(), urect.y());
     return;
   } else if (! (texture.texture() & Texture::Solid)) {
-    XClearArea(pen.display().XDisplay(), drawable,
+    XClearArea(pen.XDisplay(), drawable,
                urect.x(), urect.y(), urect.width(), urect.height(), False);
     return; // might be Parent_Relative or empty
   }
 
-  XFillRectangle(pen.display().XDisplay(), drawable, pen.gc(),
+  XFillRectangle(pen.XDisplay(), drawable, pen.gc(),
                  urect.x(), urect.y(), urect.width(), urect.height());
 
   int bw = static_cast<int>(texture.borderWidth());
@@ -198,7 +198,7 @@ void bt::drawTexture(unsigned int screen,
        trect.top() == urect.top() || trect.bottom() == urect.bottom())) {
     Pen penborder(screen, texture.borderColor());
     for (int i = 0, d = 0; i < bw; ++i, d += 2)
-      XDrawRectangle(pen.display().XDisplay(), drawable, penborder.gc(),
+      XDrawRectangle(pen.XDisplay(), drawable, penborder.gc(),
                      trect.left() + i,  trect.top() + i,
                      trect.width() - d - 1, trect.height() - d - 1);
   }
@@ -210,7 +210,7 @@ void bt::drawTexture(unsigned int screen,
     int end   = std::min(trect.bottom() - bw, urect.bottom());
 
     for (int i = begin; i <= end; i += 2)
-      XDrawLine(pen.display().XDisplay(), drawable, peninterlace.gc(),
+      XDrawLine(pen.XDisplay(), drawable, peninterlace.gc(),
                 std::max(trect.left()  + bw, urect.left()),  i,
                 std::min(trect.right() - bw, urect.right()), i);
   }
@@ -224,31 +224,31 @@ void bt::drawTexture(unsigned int screen,
     Pen penshadow(screen, texture.shadowColor());
 
     if (texture.texture() & bt::Texture::Raised) {
-      XDrawLine(pen.display().XDisplay(), drawable, penshadow.gc(),
+      XDrawLine(pen.XDisplay(), drawable, penshadow.gc(),
                 trect.left() + bw,  trect.bottom() - bw,
                 trect.right() - bw, trect.bottom() - bw);
-      XDrawLine(pen.display().XDisplay(), drawable, penshadow.gc(),
+      XDrawLine(pen.XDisplay(), drawable, penshadow.gc(),
                 trect.right() - bw, trect.bottom() - bw,
                 trect.right() - bw, trect.top() + bw);
 
-      XDrawLine(pen.display().XDisplay(), drawable, penlight.gc(),
+      XDrawLine(pen.XDisplay(), drawable, penlight.gc(),
                 trect.left() + bw, trect.top() + bw,
                 trect.right() - bw, trect.top() + bw);
-      XDrawLine(pen.display().XDisplay(), drawable, penlight.gc(),
+      XDrawLine(pen.XDisplay(), drawable, penlight.gc(),
                 trect.left() + bw, trect.bottom() - bw,
                 trect.left() + bw, trect.top() + bw);
     } else if (texture.texture() & bt::Texture::Sunken) {
-      XDrawLine(pen.display().XDisplay(), drawable, penlight.gc(),
+      XDrawLine(pen.XDisplay(), drawable, penlight.gc(),
                 trect.left() + bw,  trect.bottom() - bw,
                 trect.right() - bw, trect.bottom() - bw);
-      XDrawLine(pen.display().XDisplay(), drawable, penlight.gc(),
+      XDrawLine(pen.XDisplay(), drawable, penlight.gc(),
                 trect.right() - bw, trect.bottom() - bw,
                 trect.right() - bw, trect.top() + bw);
 
-      XDrawLine(pen.display().XDisplay(), drawable, penshadow.gc(),
+      XDrawLine(pen.XDisplay(), drawable, penshadow.gc(),
                 trect.left() + bw,  trect.top() + bw,
                 trect.right() - bw, trect.top() + bw);
-      XDrawLine(pen.display().XDisplay(), drawable, penshadow.gc(),
+      XDrawLine(pen.XDisplay(), drawable, penshadow.gc(),
                 trect.left() + bw, trect.bottom() - bw,
                 trect.left() + bw, trect.top() + bw);
     }

@@ -52,6 +52,7 @@ namespace bt {
     void setGCFunction(int function);
     void setSubWindowMode(int subwindow);
 
+    ::Display *XDisplay(void) const;
     const Display &display(void) const;
     const GC &gc(void) const;
 
