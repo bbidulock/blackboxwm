@@ -890,13 +890,8 @@ void bt::Menu::leaveNotifyEvent(const XCrossingEvent * const /*unused*/) {
   for (it = _items.begin(); it != end; ++it) {
     r.setHeight(it->height);
 
-    /*
-      deactivate the item unless its menu is either visible or waiting
-      to be shown
-    */
-    if (it->active
-        && !((_current_submenu && _current_submenu == it->sub)
-             || (menudelay.showmenu && menudelay.showmenu == it->sub)))
+    // deactivate the item unless its menu is visible
+    if (it->active && !(_current_submenu && _current_submenu == it->sub))
       deactivateItem(r, *it);
 
     positionRect(r, row, col);
@@ -930,8 +925,6 @@ void bt::Menu::leaveNotifyEvent(const XCrossingEvent * const /*unused*/) {
 
       positionRect(r, row, col);
     }
-  } else {
-    showActiveSubmenu();
   }
 }
 
