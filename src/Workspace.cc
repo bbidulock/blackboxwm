@@ -43,8 +43,6 @@ extern "C" {
 #include <functional>
 #include <string>
 
-using std::string;
-
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "Clientmenu.hh"
@@ -433,11 +431,12 @@ void Workspace::setCurrent(void) {
 }
 
 
-void Workspace::setName(const string& new_name) {
+void Workspace::setName(const std::string& new_name) {
   if (! new_name.empty()) {
     name = new_name;
   } else {
-    string tmp =i18n(WorkspaceSet, WorkspaceDefaultNameFormat, "Workspace %d");
+    std::string tmp =
+      i18n(WorkspaceSet, WorkspaceDefaultNameFormat, "Workspace %d");
     assert(tmp.length() < 32);
     char default_name[32];
     sprintf(default_name, tmp.c_str(), id + 1);

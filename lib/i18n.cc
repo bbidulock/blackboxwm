@@ -46,7 +46,6 @@ extern "C" {
 }
 
 #include <string>
-using std::string;
 
 #include "i18n.hh"
 
@@ -92,7 +91,7 @@ I18n::~I18n(void) {
 
 void I18n::openCatalog(const char *catalog) {
 #if defined(NLS) && defined(HAVE_CATOPEN)
-  string catalog_filename = LOCALEPATH;
+  std::string catalog_filename = LOCALEPATH;
   catalog_filename += '/';
   catalog_filename += locale;
   catalog_filename += '/';

@@ -95,7 +95,6 @@ extern "C" {
 
 #include <algorithm>
 #include <string>
-using std::string;
 
 #include "i18n.hh"
 #include "blackbox.hh"
@@ -919,7 +918,7 @@ void Blackbox::restart(const char *prog) {
 
   // fall back in case the above execlp doesn't work
   execvp(argv[0], argv);
-  string name = basename(argv[0]);
+  std::string name = basename(argv[0]);
   execvp(name.c_str(), argv);
 }
 
@@ -1054,7 +1053,7 @@ void Blackbox::save_rc(void) {
             placement);
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
-    string fmodel;
+    std::string fmodel;
     if (screen->isSloppyFocus()) {
       fmodel = "SloppyFocus";
       if (screen->doAutoRaise()) fmodel += " AutoRaise";
@@ -1124,7 +1123,7 @@ void Blackbox::save_rc(void) {
 
     // write out the user's workspace names
 
-    string save_string = screen->getWorkspace(0)->getName();
+    std::string save_string = screen->getWorkspace(0)->getName();
     for (unsigned int i = 1; i < screen->getWorkspaceCount(); ++i) {
       save_string += ',';
       save_string += screen->getWorkspace(i)->getName();
@@ -1327,13 +1326,13 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(class_lookup, "Session.Screen%d.WorkspaceNames", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value)) {
-    string search = value.addr;
-    string::const_iterator it = search.begin(),
+    std::string search = value.addr;
+    std::string::const_iterator it = search.begin(),
       end = search.end();
     while (1) {
-      string::const_iterator tmp = it; // current string.begin()
+      std::string::const_iterator tmp = it; // current string.begin()
       it = std::find(tmp, end, ',');   // look for comma between tmp and end
-      screen->addWorkspaceName(string(tmp, it)); // string = search[tmp:it]
+      screen->addWorkspaceName(std::string(tmp, it)); // string = search[tmp:it]
       if (it == end) break;
       ++it;
     }
@@ -1364,16 +1363,16 @@ void Blackbox::load_rc(BScreen *screen) {
   screen->saveClickRaise(False);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value)) {
-    string fmodel = value.addr;
+    std::string fmodel = value.addr;
 
-    if (fmodel.find("ClickToFocus") != string::npos) {
+    if (fmodel.find("ClickToFocus") != std::string::npos) {
       screen->saveSloppyFocus(False);
     } else {
       // must be sloppy
 
-      if (fmodel.find("AutoRaise") != string::npos)
+      if (fmodel.find("AutoRaise") != std::string::npos)
         screen->saveAutoRaise(True);
-      if (fmodel.find("ClickRaise") != string::npos)
+      if (fmodel.find("ClickRaise") != std::string::npos)
         screen->saveClickRaise(True);
     }
   }
@@ -1511,7 +1510,7 @@ void Blackbox::reconfigure(void) {
 void Blackbox::real_reconfigure(void) {
   XrmDatabase new_blackboxrc = (XrmDatabase) 0;
 
-  string style = "session.styleFile: " + resource.style_file;
+  std::string style = "session.styleFile: " + resource.style_file;
   XrmPutLineResource(&new_blackboxrc, style.c_str());
 
   XrmDatabase old_blackboxrc = XrmGetFileDatabase(rc_file.c_str());
@@ -1567,13 +1566,13 @@ void Blackbox::real_rereadMenu(void) {
 }
 
 
-void Blackbox::saveStyleFilename(const string& filename) {
+void Blackbox::saveStyleFilename(const std::string& filename) {
   assert(! filename.empty());
   resource.style_file = filename;
 }
 
 
-void Blackbox::saveMenuFilename(const string& filename) {
+void Blackbox::saveMenuFilename(const std::string& filename) {
   assert(! filename.empty());
   bool found = False;
 

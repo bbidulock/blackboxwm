@@ -50,10 +50,6 @@ extern "C" {
 #include "Screen.hh"
 #include "Util.hh"
 
-using std::string;
-using std::min;
-using std::max;
-
 
 static Basemenu *shown = (Basemenu *) 0;
 
@@ -222,14 +218,14 @@ int Basemenu::insert(BasemenuItem *item, int pos) {
 }
 
 
-int Basemenu::insert(const string& label, int function,
-                     const string& exec, int pos) {
+int Basemenu::insert(const std::string& label, int function,
+                     const std::string& exec, int pos) {
   BasemenuItem *item = new BasemenuItem(label, function, exec);
   return insert(item, pos);
 }
 
 
-int Basemenu::insert(const string& label, Basemenu *submenu, int pos) {
+int Basemenu::insert(const std::string& label, Basemenu *submenu, int pos) {
   BasemenuItem *item = new BasemenuItem(label, submenu);
   submenu->parent = this;
 
@@ -532,7 +528,7 @@ void Basemenu::drawSubmenu(int index) {
   item = find(index);
   if (! item)
     return;
-  
+
   Basemenu *submenu = item->submenu();
 
   if (submenu && visible && ! submenu->isTorn() && item->isEnabled()) {
@@ -657,27 +653,29 @@ void Basemenu::drawItem(int index, bool highlight, bool clear,
                False);
   } else if (! (x == y && y == -1 && w == h && h == 0)) {
     // calculate the which part of the hilite to redraw
-    if (! (max(item_x, x) <= min<signed>(item_x + menu.item_w, x + w) &&
-           max(item_y, y) <= min<signed>(item_y + menu.item_h, y + h))) {
+    if (! (std::max(item_x, x) <= std::min<signed>(item_x + menu.item_w,
+                                                   x + w) &&
+           std::max(item_y, y) <= std::min<signed>(item_y + menu.item_h,
+                                                   y + h))) {
       dohilite = False;
     } else {
-      hilite_x = max(item_x, x);
-      hilite_y = max(item_y, y);
-      hilite_w = min(item_x + menu.item_w, x + w) - hilite_x;
-      hilite_h = min(item_y + menu.item_h, y + h) - hilite_y;
+      hilite_x = std::max(item_x, x);
+      hilite_y = std::max(item_y, y);
+      hilite_w = std::min(item_x + menu.item_w, x + w) - hilite_x;
+      hilite_h = std::min(item_y + menu.item_h, y + h) - hilite_y;
       hoff_x = hilite_x % menu.item_w;
       hoff_y = hilite_y % menu.item_h;
     }
 
     // check if we need to redraw the text
     const int text_ry = item_y + (menu.bevel_w / 2);
-    if (! (max(text_x, x) <= min<signed>(text_x + text_w, x + w) &&
-           max(text_ry, y) <= min<signed>(text_ry + text_h, y + h)))
+    if (! (std::max(text_x, x) <= std::min<signed>(text_x + text_w, x + w) &&
+           std::max(text_ry, y) <= std::min<signed>(text_ry + text_h, y + h)))
       dotext = False;
 
     // check if we need to redraw the select pixmap/menu bullet
-    if (! (max(sel_x, x) <= min<signed>(sel_x + half_w, x + w) &&
-           max(sel_y, y) <= min<signed>(sel_y + half_w, y + h)))
+    if (! (std::max(sel_x, x) <= std::min<signed>(sel_x + half_w, x + w) &&
+           std::max(sel_y, y) <= std::min<signed>(sel_y + half_w, y + h)))
       dosel = False;
   }
 
@@ -758,7 +756,7 @@ void Basemenu::drawItem(int index, bool highlight, bool clear,
 }
 
 
-void Basemenu::setLabel(const string& label) {
+void Basemenu::setLabel(const std::string& label) {
   menu.label = label;
 }
 
@@ -1033,7 +1031,7 @@ void Basemenu::reconfigure(void) {
 }
 
 
-void Basemenu::changeItemLabel(unsigned int index, const string& label) {
+void Basemenu::changeItemLabel(unsigned int index, const std::string& label) {
   BasemenuItem *item = find(index);
   assert(item);
   item->newLabel(label);

@@ -79,7 +79,6 @@ extern "C" {
 }
 
 #include <string>
-using std::string;
 
 #include "BaseDisplay.hh"
 #include "GCCache.hh"
@@ -375,7 +374,7 @@ const ScreenInfo* BaseDisplay::getScreenInfo(unsigned int s) const {
 BGCCache* BaseDisplay::gcCache(void) const {
   if (! gccache)
     gccache = new BGCCache(this, screenInfoList.size());
-  
+
   return gccache;
 }
 
@@ -400,7 +399,7 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, unsigned int num) {
   depth = DefaultDepth(basedisplay->getXDisplay(), screen_number);
   visual = DefaultVisual(basedisplay->getXDisplay(), screen_number);
   colormap = DefaultColormap(basedisplay->getXDisplay(), screen_number);
-  
+
   if (depth < 8) {
     // search for a TrueColor Visual... if we can't find one...
     // we will use the default visual for the screen
@@ -438,11 +437,11 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, unsigned int num) {
   }
 
   // get the default display string and strip the screen number
-  string default_string = DisplayString(basedisplay->getXDisplay());
-  const string::size_type pos = default_string.rfind(".");
-  if (pos != string::npos)
+  std::string default_string = DisplayString(basedisplay->getXDisplay());
+  const std::string::size_type pos = default_string.rfind(".");
+  if (pos != std::string::npos)
     default_string.resize(pos);
 
-  display_string = string("DISPLAY=") + default_string + '.' +
+  display_string = std::string("DISPLAY=") + default_string + '.' +
     itostring(static_cast<unsigned long>(screen_number));
 }

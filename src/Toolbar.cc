@@ -49,7 +49,6 @@ extern "C" {
 }
 
 #include <string>
-using std::string;
 
 #include "i18n.hh"
 #include "blackbox.hh"
@@ -300,7 +299,7 @@ void Toolbar::reconfigure(void) {
   frame.workspace_label_w = 0;
 
   for (unsigned int i = 0; i < screen->getWorkspaceCount(); i++) {
-    const string& workspace_name = screen->getWorkspace(i)->getName();
+    const std::string& workspace_name = screen->getWorkspace(i)->getName();
     if (i18n.multibyte()) {
       XRectangle ink, logical;
       XmbTextExtents(screen->getToolbarStyle()->fontset,
@@ -556,7 +555,7 @@ void Toolbar::redrawWindowLabel(bool redraw) {
 
 
 void Toolbar::redrawWorkspaceLabel(bool redraw) {
-  const string& name = screen->getCurrentWorkspace()->getName();
+  const std::string& name = screen->getCurrentWorkspace()->getName();
 
   if (redraw)
     XClearWindow(display, frame.workspace_label);

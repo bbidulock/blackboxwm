@@ -50,7 +50,6 @@ extern "C" {
 }
 
 #include <string>
-using std::string;
 
 #include "i18n.hh"
 #include "blackbox.hh"
@@ -130,7 +129,7 @@ int main(int argc, char **argv) {
       }
 
       session_display = argv[i];
-      string dtmp = "DISPLAY=";
+      std::string dtmp = "DISPLAY=";
       dtmp += session_display;
 
       if (putenv(const_cast<char*>(dtmp.c_str()))) {

@@ -58,8 +58,6 @@ extern "C" {
 
 #include "Util.hh"
 
-using std::string;
-
 
 void Rect::setX(int __x) {
   _x2 += __x - _x1;
@@ -141,23 +139,23 @@ bool Rect::intersects(const Rect &a) const {
 }
 
 
-string expandTilde(const string& s) {
+std::string expandTilde(const std::string& s) {
   if (s[0] != '~') return s;
 
   const char* const home = getenv("HOME");
   if (home == NULL) return s;
 
-  return string(home + s.substr(s.find('/')));
+  return std::string(home + s.substr(s.find('/')));
 }
 
 
-void bexec(const string& command, const string& displaystring) {
+void bexec(const std::string& command, const std::string& displaystring) {
 #ifndef    __EMX__
   if (! fork()) {
     setsid();
     int ret = putenv(const_cast<char *>(displaystring.c_str()));
     assert(ret != -1);
-    string cmd = "exec ";
+    std::string cmd = "exec ";
     cmd += command;
     ret = execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL);
     exit(ret);
@@ -169,17 +167,17 @@ void bexec(const string& command, const string& displaystring) {
 
 
 #ifndef   HAVE_BASENAME
-string basename (const string& path) {
-  string::size_type slash = path.rfind('/');
-  if (slash == string::npos)
+std::string basename (const std::string& path) {
+  std::string::size_type slash = path.rfind('/');
+  if (slash == std::string::npos)
     return path;
   return path.substr(slash+1);
 }
 #endif // HAVE_BASENAME
 
 
-string textPropertyToString(Display *display, XTextProperty& text_prop) {
-  string ret;
+std::string textPropertyToString(Display *display, XTextProperty& text_prop) {
+  std::string ret;
 
   if (text_prop.value && text_prop.nitems > 0) {
     if (text_prop.encoding == XA_STRING) {
@@ -225,20 +223,20 @@ timeval normalizeTimeval(const timeval &tm) {
 }
 
 
-string itostring(unsigned long i) {
+std::string itostring(unsigned long i) {
   if (i == 0)
-    return string("0");
+    return std::string("0");
 
   const char nums[] = "0123456789";
 
-  string tmp;
+  std::string tmp;
   for (; i > 0; i /= 10)
     tmp.insert(tmp.begin(), nums[i%10]);
   return tmp;
 }
 
 
-string itostring(long i) {
+std::string itostring(long i) {
   std::string tmp = itostring(static_cast<unsigned long>(abs(i)));
   if (i < 0)
     tmp.insert(tmp.begin(), '-');

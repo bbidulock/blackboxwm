@@ -74,8 +74,6 @@ extern "C" {
 #include <functional>
 #include <string>
 
-using std::string;
-
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "Clientmenu.hh"
@@ -900,7 +898,7 @@ void BScreen::changeWorkspaceID(unsigned int id) {
 
   workspacemenu->setItemSelected(current_workspace->getID() + 2, True);
   toolbar->redrawWorkspaceLabel(True);
-    
+
   updateNetizenCurrentWorkspace();
   blackbox->netwm()->setCurrentDesktop(current_workspace->getID(),
                                        blackbox->getXDisplay(),
@@ -1095,13 +1093,13 @@ void BScreen::raiseWindows(Window *workspace_stack, unsigned int num) {
 
 
 #ifdef    HAVE_STRFTIME
-void BScreen::saveStrftimeFormat(const string& format) {
+void BScreen::saveStrftimeFormat(const std::string& format) {
   resource.strftime_format = format;
 }
 #endif // HAVE_STRFTIME
 
 
-void BScreen::addWorkspaceName(const string& name) {
+void BScreen::addWorkspaceName(const std::string& name) {
   workspaceNames.push_back(name);
 }
 
@@ -1114,10 +1112,10 @@ void BScreen::addWorkspaceName(const string& name) {
  * later for constructing the workspaces.  It is only used during initial
  * BScreen creation.
  */
-const string BScreen::getNameOfWorkspace(unsigned int id) {
+const std::string BScreen::getNameOfWorkspace(unsigned int id) {
   if (id < workspaceNames.size())
     return workspaceNames[id];
-  return string("");
+  return std::string("");
 }
 
 
@@ -1309,7 +1307,7 @@ size_t string_within(char begin, char end,
     } else if (parse) {
       if (input[i] == '\\' && i < length - 1) i++;
       output[index++] = input[i];
-    } 
+    }
   }
 
   if (parse)
@@ -1404,7 +1402,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
         continue;
       }
 
-      string style = expandTilde(command);
+      std::string style = expandTilde(command);
 
       menu->insert(label, BScreen::SetStyle, style.c_str());
     }
@@ -1430,7 +1428,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
         continue;
       }
 
-      string newfile = expandTilde(label);
+      std::string newfile = expandTilde(label);
       FILE *submenufile = fopen(newfile.c_str(), "r");
 
       if (! submenufile) {
@@ -1525,7 +1523,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
       char *directory = ((newmenu) ? command : label);
 
-      string stylesdir = expandTilde(directory);
+      std::string stylesdir = expandTilde(directory);
 
       struct stat statbuf;
 
@@ -1554,7 +1552,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
       DIR *d = opendir(stylesdir.c_str());
       struct dirent *p;
-      std::vector<string> ls;
+      std::vector<std::string> ls;
 
       while((p = readdir(d)))
         ls.push_back(p->d_name);
@@ -1563,15 +1561,15 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
       std::sort(ls.begin(), ls.end());
 
-      std::vector<string>::iterator it = ls.begin(),
+      std::vector<std::string>::iterator it = ls.begin(),
         end = ls.end();
       for (; it != end; ++it) {
-        const string& fname = *it;
+        const std::string& fname = *it;
 
         if (fname[fname.size()-1] == '~')
           continue;
 
-        string style = stylesdir;
+        std::string style = stylesdir;
         style += '/';
         style += fname;
 
@@ -1817,7 +1815,7 @@ void BScreen::buttonPressEvent(const XButtonEvent *xbutton) {
 void BScreen::toggleFocusModel(FocusModel model) {
   std::for_each(windowList.begin(), windowList.end(),
                 std::mem_fun(&BlackboxWindow::ungrabButtons));
-  
+
   if (model == SloppyFocus) {
     saveSloppyFocus(True);
   } else {
@@ -1831,9 +1829,9 @@ void BScreen::toggleFocusModel(FocusModel model) {
 }
 
 
-BTexture BScreen::readDatabaseTexture(const string &rname,
-                                      const string &rclass,
-                                      const string &default_color) {
+BTexture BScreen::readDatabaseTexture(const std::string &rname,
+                                      const std::string &rclass,
+                                      const std::string &default_color) {
   BTexture texture;
   XrmValue value;
   char *value_type;
@@ -1857,8 +1855,9 @@ BTexture BScreen::readDatabaseTexture(const string &rname,
 }
 
 
-BColor BScreen::readDatabaseColor(const string &rname, const string &rclass,
-				  const string &default_color) {
+BColor BScreen::readDatabaseColor(const std::string &rname,
+                                  const std::string &rclass,
+				  const std::string &default_color) {
   BColor color;
   XrmValue value;
   char *value_type;
@@ -1871,8 +1870,8 @@ BColor BScreen::readDatabaseColor(const string &rname, const string &rclass,
 }
 
 
-XFontSet BScreen::readDatabaseFontSet(const string &rname,
-                                      const string &rclass) {
+XFontSet BScreen::readDatabaseFontSet(const std::string &rname,
+                                      const std::string &rclass) {
   char *defaultFont = "fixed";
 
   bool load_default = True;
@@ -1900,8 +1899,8 @@ XFontSet BScreen::readDatabaseFontSet(const string &rname,
 }
 
 
-XFontStruct *BScreen::readDatabaseFont(const string &rname,
-                                       const string &rclass) {
+XFontStruct *BScreen::readDatabaseFont(const std::string &rname,
+                                       const std::string &rclass) {
   char *defaultFont = "fixed";
 
   bool load_default = False;
@@ -2003,7 +2002,7 @@ static const char *getFontSize(const char *pattern, int *size) {
 }
 
 
-XFontSet BScreen::createFontSet(const string &fontname) {
+XFontSet BScreen::createFontSet(const std::string &fontname) {
   XFontSet fs;
   char **missing, *def = "-";
   int nmissing, pixel_size = 0, buf_size = 0;

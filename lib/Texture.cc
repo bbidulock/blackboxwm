@@ -38,8 +38,6 @@ extern "C" {
 #include "BaseDisplay.hh"
 #include "Image.hh"
 
-using std::string;
-
 
 BTexture::BTexture(const BaseDisplay * const _display,
                    unsigned int _screen, BImageControl* _ctrl)
@@ -48,7 +46,7 @@ BTexture::BTexture(const BaseDisplay * const _display,
     dpy(_display), ctrl(_ctrl), scrn(_screen) { }
 
 
-BTexture::BTexture(const string &d, const BaseDisplay * const _display,
+BTexture::BTexture(const std::string &d, const BaseDisplay * const _display,
                    unsigned int _screen, BImageControl* _ctrl)
   : c(_display, _screen), ct(_display, _screen),
     lc(_display, _screen), sc(_display, _screen), t(0),
@@ -89,34 +87,34 @@ void BTexture::setColor(const BColor &cc) {
 }
 
 
-void BTexture::setDescription(const string &d) {
+void BTexture::setDescription(const std::string &d) {
   descr.erase();
   descr.reserve(d.length());
 
-  string::const_iterator it = d.begin(), end = d.end();
+  std::string::const_iterator it = d.begin(), end = d.end();
   for (; it != end; ++it)
     descr += tolower(*it);
 
-  if (descr.find("parentrelative") != string::npos) {
+  if (descr.find("parentrelative") != std::string::npos) {
     setTexture(BTexture::Parent_Relative);
   } else {
     setTexture(0);
 
-    if (descr.find("gradient") != string::npos) {
+    if (descr.find("gradient") != std::string::npos) {
       addTexture(BTexture::Gradient);
-      if (descr.find("crossdiagonal") != string::npos)
+      if (descr.find("crossdiagonal") != std::string::npos)
         addTexture(BTexture::CrossDiagonal);
-      else if (descr.find("rectangle") != string::npos)
+      else if (descr.find("rectangle") != std::string::npos)
         addTexture(BTexture::Rectangle);
-      else if (descr.find("pyramid") != string::npos)
+      else if (descr.find("pyramid") != std::string::npos)
         addTexture(BTexture::Pyramid);
-      else if (descr.find("pipecross") != string::npos)
+      else if (descr.find("pipecross") != std::string::npos)
         addTexture(BTexture::PipeCross);
-      else if (descr.find("elliptic") != string::npos)
+      else if (descr.find("elliptic") != std::string::npos)
         addTexture(BTexture::Elliptic);
-      else if (descr.find("horizontal") != string::npos)
+      else if (descr.find("horizontal") != std::string::npos)
         addTexture(BTexture::Horizontal);
-      else if (descr.find("vertical") != string::npos)
+      else if (descr.find("vertical") != std::string::npos)
         addTexture(BTexture::Vertical);
       else
         addTexture(BTexture::Diagonal);
@@ -124,21 +122,21 @@ void BTexture::setDescription(const string &d) {
       addTexture(BTexture::Solid);
     }
 
-    if (descr.find("sunken") != string::npos)
+    if (descr.find("sunken") != std::string::npos)
       addTexture(BTexture::Sunken);
-    else if (descr.find("flat") != string::npos)
+    else if (descr.find("flat") != std::string::npos)
       addTexture(BTexture::Flat);
     else
       addTexture(BTexture::Raised);
 
     if (! (texture() & BTexture::Flat)) {
-      if (descr.find("bevel2") != string::npos)
+      if (descr.find("bevel2") != std::string::npos)
         addTexture(BTexture::Bevel2);
       else
         addTexture(BTexture::Bevel1);
     }
 
-    if (descr.find("interlaced") != string::npos)
+    if (descr.find("interlaced") != std::string::npos)
       addTexture(BTexture::Interlaced);
   }
 }
