@@ -346,8 +346,11 @@ Window.Button.Pressed
 	.borderWidth
 	.borderColor
 
-window.frame.borderColor	- color of border around client window
-Window.Frame.BorderColor
+window.frame.focus.borderColor	- color of border around focused window
+Window.Frame.Focus.BorderColor
+
+window.frame.unfocus.borderColor - color of border around unfocused window
+Window.Frame.UnFocus.BorderColor
 
 window.button.focus.foregroundColor - bitmap color for focused buttons
 Window.Button.Focus.ForegroundColor

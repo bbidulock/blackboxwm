@@ -1413,9 +1413,6 @@ void BlackboxWindow::decorate(void) {
                             frame.ulabel);
   }
 
-  XSetWindowBorder(blackbox->XDisplay(), frame.plate,
-                   style.frame_border.pixel(_screen->screenNumber()));
-
   if (client.decorations & WindowDecorationHandle) {
     frame.fhandle =
       bt::PixmapCache::find(_screen->screenNumber(),
@@ -2557,6 +2554,15 @@ void BlackboxWindow::redrawWindowFrame(void) const {
     redrawTitle();
     redrawLabel();
     redrawAllButtons();
+  }
+
+  if (client.decorations & WindowDecorationBorder) {
+    const WindowStyle &style = _screen->resource().windowStyle();
+    const bt::Color &c = (isFocused()
+                          ? style.focus.frame_border
+                          : style.unfocus.frame_border);
+    XSetWindowBorder(blackbox->XDisplay(), frame.plate,
+                     c.pixel(_screen->screenNumber()));
   }
 
   if (client.decorations & WindowDecorationHandle) {

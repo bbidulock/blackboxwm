@@ -1,3 +1,27 @@
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
+// ScreenResource.ccfor Blackbox - an X11 Window manager
+// Copyright (c) 2001 - 2005 Sean 'Shaleh' Perry <shaleh@debian.org>
+// Copyright (c) 1997 - 2000, 2002 - 2005
+//         Bradley T Hughes <bhughes at trolltech.com>
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
+
 #include "ScreenResource.hh"
 
 #include "Screen.hh"
@@ -278,6 +302,11 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
                         "window.grip.focus",
                         "Window.Grip.Focus",
                         "white");
+  _windowStyle.focus.frame_border =
+    bt::Color::namedColor(display, screen_num,
+                          res.read("window.frame.focus.borderColor",
+                                   "Window.Frame.Focus.BorderColor",
+                                   "black"));
 
   // unfocused window style
   _windowStyle.unfocus.text =
@@ -317,12 +346,12 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
                         "window.grip.unfocus",
                         "Window.Grip.Unfocus",
                         "black");
-
-  _windowStyle.frame_border =
+  _windowStyle.unfocus.frame_border =
     bt::Color::namedColor(display, screen_num,
-                          res.read("window.frame.borderColor",
-                                   "Window.Frame.BorderColor",
+			  res.read("window.frame.unfocus.borderColor",
+                                   "Window.Frame.Unfocus.BorderColor",
                                    "black"));
+
   _windowStyle.pressed =
     bt::textureResource(display, screen_num, res,
                         "window.button.pressed",

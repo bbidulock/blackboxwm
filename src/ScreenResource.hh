@@ -51,12 +51,11 @@ struct SlitOptions {
 
 struct WindowStyle {
   struct {
-    bt::Color text, foreground;
+    bt::Color text, foreground, frame_border;
     bt::Texture title, label, button, handle, grip;
   } focus, unfocus;
   bt::Alignment alignment;
   bt::Bitmap iconify, maximize, restore, close;
-  bt::Color frame_border;
   bt::Font font;
   bt::Texture pressed;
   unsigned int title_margin, label_margin, button_margin,
