@@ -95,9 +95,8 @@ private:
 
   struct client {
     Atom WMDelete, WMProtocols;
-    BlackboxWindow *group, /* the window group we belong to */
-      *transient_for,      /* which window are we a transient for? */
-      *transient;          /* which window is our transient? */
+    BlackboxWindow *transient_for,  /* which window are we a transient for? */
+      *transient;                   /* which window is our transient? */
     Pixmap icon_pixmap, icon_mask;
     Window window, icon_window, window_group;
 
@@ -117,12 +116,13 @@ private:
     Window window, title, handle, close_button, iconify_button,
       maximize_button, resize_handle;
     int x, y;
-    unsigned int width, height, border,
+    unsigned int width, height,
       title_h, title_w,
       handle_h, handle_w,
       button_w, button_h,
       text_w, text_h,
-      x_resize, y_resize;
+      x_resize, y_resize,
+      shaped;
   } frame;
 
   struct {
@@ -131,8 +131,6 @@ private:
       WM_TAKE_FOCUS:1,
       WM_COLORMAP_WINDOWS:1;
   } Protocols;
-
-  char **wm_client_machine, **wm_command;
 
   enum { F_NoInput = 0, F_Passive, F_LocallyActive, F_GloballyActive };
   int focus_mode, window_number, workspace_number;
@@ -244,6 +242,9 @@ public:
   void propertyNotifyEvent(Atom);
   void exposeEvent(XExposeEvent *);
   void configureRequestEvent(XConfigureRequestEvent *);
+#ifdef SHAPE
+  void shapeEvent(XShapeEvent *);
+#endif
 
   //
   // various window functions

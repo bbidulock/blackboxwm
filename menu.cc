@@ -251,27 +251,28 @@ int BlackboxMenu::remove(int index) {
 
 void BlackboxMenu::updateMenu(void) {
   debug->msg("%s: BlackboxMenu::updateMenu (%s)\n", __FILE__, menu.label);
+
   int i = 0, ii = 0;
   BlackboxMenuItem *itmp = NULL;
 
+  XGrabServer(display);
+  XSync(display, False);
   menu.width = ((show_title) ? XTextWidth(session->titleFont(), menu.label,
                            strlen(menu.label)) + 8 : 0);
 
-  debug->msg("\t[ calculating menu width %d ]\n", menuitems->count());
   for (i = 0; i < menuitems->count(); ++i) {
     itmp = menuitems->at(i);
-    debug->msg("\t\t[ %p %s ]\n", itmp->ulabel, itmp->label);
-    ii = XTextWidth(session->menuFont(),
-                    ((itmp->ulabel) ? *itmp->ulabel : itmp->label),
-                    strlen((itmp->ulabel) ? *itmp->ulabel : itmp->label))
-      + 8 + menu.item_h;
+    if (itmp->ulabel || itmp->label)
+      ii = XTextWidth(session->menuFont(),
+		      ((itmp->ulabel) ? *itmp->ulabel : itmp->label),
+		      strlen((itmp->ulabel) ? *itmp->ulabel : itmp->label))
+	+ 8 + menu.item_h;
+    else
+      ii = 0;
     menu.width = ((menu.width < (unsigned int) ii) ? ii : menu.width);
   }
-  debug->msg("\t[ done. ]\n");
 
   if (show_title) {
-    debug->msg("\t[ rendering title image ]\n");
-
     BImage mt_image(session, menu.width, menu.title_h, session->Depth(),
 		    session->menuColor());
     Pixmap mt_pixmap =
@@ -283,7 +284,6 @@ void BlackboxMenu::updateMenu(void) {
     if (mt_pixmap) XFreePixmap(display, mt_pixmap);
   }
 
-  debug->msg("\t[ rendering item images ]\n");
   BImage mi_image(session, menu.width, menu.item_h, session->Depth(),
 		  session->menuItemColor());  
   if (menu.item_pixmap) XFreePixmap(display, menu.item_pixmap);
@@ -298,7 +298,6 @@ void BlackboxMenu::updateMenu(void) {
 			 session->menuItemToColor(),
 			 session->menuItemColor());
 
-  XGrabServer(display);
   menu.height = ((show_title) ? menu.title_h : 0) +
     (menu.item_h * menuitems->count());
   XResizeWindow(display, menu.frame, menu.width, menu.height);
@@ -307,7 +306,6 @@ void BlackboxMenu::updateMenu(void) {
   XClearWindow(display, menu.frame);
   XClearWindow(display, menu.title);
 
-  debug->msg("\t[ drawing updated menu ]\n");
   if (show_title)
     XDrawString(display, menu.title, titleGC, 3,
 		session->titleFont()->ascent + 3,

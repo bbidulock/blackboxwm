@@ -1,4 +1,4 @@
-[begin] (Blackbox 0.14.1)
+[begin] (Blackbox 0.14.2)
   "xterm" (xterm -ls)
   "XEmacs" (xemacs)
   "Netscape" (netscape)

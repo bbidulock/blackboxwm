@@ -167,7 +167,7 @@ BlackboxSession::BlackboxSession(char *display_name) {
   depth = DefaultDepth(display, screen);
 
 #ifdef SHAPE
-  shape.extensions = XShapeQueryExtension(display, &shape.event_basep, 
+  shape.extensions = XShapeQueryExtension(display, &shape.event_basep,
 					  &shape.error_basep);
 #else
   shape.extensions = False;
@@ -675,8 +675,19 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
   }
 
   default:
-    //    debug->msg("%s: BlackboxSession::ProcessEvent:\n\t"
-    //	       "[ event %d: %lx ]\n", __FILE__, e->type, e->xany.window);
+#ifdef SHAPE
+    if (e->type == shape.event_basep) {
+      XShapeEvent *shape_event = (XShapeEvent *) e;
+
+      BlackboxWindow *eWin = NULL;
+      if (((eWin = getWindow(e->xany.window)) != NULL) ||
+	  (shape_event->kind != ShapeBounding))
+	eWin->shapeEvent(shape_event);
+    } else
+#endif
+      debug->msg("%s: BlackboxSession::ProcessEvent:\n\t"
+		 "[ event %d: %lx ]\n", __FILE__, e->type, e->xany.window);
+
     break;
   }
 }

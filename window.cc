@@ -244,9 +244,8 @@ BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window window) {
     frame.iconify_button = frame.maximize_button = client.icon_window = 
     client.icon_pixmap = client.icon_mask = frame.button = frame.pbutton =
     None;
-  client.group = client.transient_for = client.transient = 0;
+  client.transient_for = client.transient = 0;
   client.title = client.app_class = client.app_name = 0;
-  wm_command = wm_client_machine = 0;
   icon = 0;
   
   XWindowAttributes wattrib;
@@ -313,10 +312,9 @@ BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window window) {
 
   frame.width = frame.title_w;
   frame.height = client.height + frame.title_h + 1;
-  frame.border = 1;
 
   frame.window = createToplevelWindow(frame.x, frame.y, frame.width,
-				      frame.height, frame.border);
+				      frame.height, 1);
   XSaveContext(display, frame.window, session->winContext(), (XPointer) this);
 
   frame.title = createChildWindow(frame.window, 0, 0, frame.title_w,
@@ -438,8 +436,6 @@ BlackboxWindow::~BlackboxWindow(void) {
   if (client.title)
     if (strcmp(client.title, "Unnamed"))
       XFree(client.title);
-  if (wm_client_machine) XFree(wm_client_machine);
-  if (wm_command) XFree(wm_command);
 
   XFreeGC(display, frame.ftextGC);
   XFreeGC(display, frame.utextGC);
@@ -535,8 +531,41 @@ void BlackboxWindow::associateClientWindow(void) {
   }
 
 #ifdef SHAPE
-  if (session->shapeExtensions())
+  if (session->shapeExtensions()) {
     XShapeSelectInput(display, client.window, ShapeNotifyMask);
+
+    int foo, bShaped;
+    unsigned int ufoo;
+    XShapeQueryExtents(display, client.window, &bShaped, &foo, &foo, &ufoo,
+		       &ufoo, &foo, &foo, &foo, &ufoo, &ufoo);
+    frame.shaped = bShaped;
+
+    if (frame.shaped) {
+      XShapeCombineShape(display, frame.window, ShapeBounding, 0,
+			 frame.title_h + 1, client.window, ShapeBounding,
+			 ShapeSet);
+
+      int num = 1;
+      XRectangle xrect[2];
+      xrect[0].x = xrect[0].y = 0;
+      xrect[0].width = frame.title_w;
+      xrect[0].height = frame.title_h;
+
+      if (do_handle) {
+	if (session->Orientation() == BlackboxSession::B_RightHandedUser)
+	  xrect[1].x = client.width + 1;
+	else
+	  xrect[1].x = 0;
+	xrect[1].y = frame.title_h;
+	xrect[1].width = frame.handle_w;
+	xrect[1].height = frame.handle_h + frame.button_h + 1;
+	num++;
+      }
+
+      XShapeCombineRectangles(display, frame.window, ShapeBounding, 0, 0,
+			      xrect, num, ShapeUnion, Unsorted);
+    }
+  }
 #endif
 
   XSaveContext(display, client.window, session->winContext(), (XPointer) this);
@@ -706,6 +735,9 @@ void BlackboxWindow::createMaximizeButton(void) {
 void BlackboxWindow::Reconfigure(void) {
   debug->msg("%s: BlackboxWindow::Reconfigure\n", __FILE__);
 
+  XGrabServer(display);
+  XSync(display, False);
+
   XGCValues gcv;
   gcv.foreground = session->unfocusTextColor().pixel;
   gcv.font = session->titleFont()->fid;
@@ -719,11 +751,11 @@ void BlackboxWindow::Reconfigure(void) {
   window_menu->updateMenu();
 
   if (session->Orientation() == BlackboxSession::B_RightHandedUser)
-    client.x = frame.x + frame.border;
+    client.x = frame.x + 1;
   else 
-    client.x = frame.x + ((do_handle) ? frame.handle_w + 1 : 0) + frame.border;
+    client.x = frame.x + ((do_handle) ? frame.handle_w + 1 : 0) + 1;
   
-  client.y = frame.y + frame.title_h + frame.border + 1;
+  client.y = frame.y + frame.title_h + 2;
   client.width = frame.width - ((do_handle) ? (frame.handle_w + 1) : 0);
   frame.handle_h = client.height = frame.height - frame.title_h - 1;
   
@@ -751,6 +783,36 @@ void BlackboxWindow::Reconfigure(void) {
     XMoveResizeWindow(display, client.window, 0, frame.title_h + 1,
 		      client.width, client.height);
   
+#ifdef SHAPE
+  if (session->shapeExtensions()) {
+    if (frame.shaped) {
+      XShapeCombineShape(display, frame.window, ShapeBounding, 0,
+			 frame.title_h + 1, client.window, ShapeBounding,
+			 ShapeSet);
+      
+      int num = 1;
+      XRectangle xrect[2];
+      xrect[0].x = xrect[0].y = 0;
+      xrect[0].width = frame.title_w;
+      xrect[0].height = frame.title_h;
+      
+      if (do_handle) {
+	if (session->Orientation() == BlackboxSession::B_RightHandedUser)
+	  xrect[1].x = client.width + 1;
+	else
+	  xrect[1].x = 0;
+	xrect[1].y = frame.title_h;
+	xrect[1].width = frame.handle_w;
+	xrect[1].height = frame.handle_h + frame.button_h + 1;
+	num++;
+      }
+      
+      XShapeCombineRectangles(display, frame.window, ShapeBounding, 0, 0,
+			      xrect, num, ShapeUnion, Unsorted);
+    }
+  }
+#endif
+
   if (frame.button) XFreePixmap(display, frame.button);
   if (frame.pbutton) XFreePixmap(display, frame.pbutton);
 
@@ -822,6 +884,9 @@ void BlackboxWindow::Reconfigure(void) {
   event.xconfigure.override_redirect = False;
   
   XSendEvent(display, client.window, False, StructureNotifyMask, &event);
+
+  XSync(display, False);
+  XUngrabServer(display);
 
   debug->msg("%s: leaving BlackboxWindow::Reconfigure\n", __FILE__);
 }
@@ -958,7 +1023,6 @@ Bool BlackboxWindow::getWMHints(void) {
   
   if (wmhints->flags & WindowGroupHint) {
     client.window_group = wmhints->window_group;
-    client.group = session->getWindow(wmhints->window_group);
   }
   
   debug->msg("%s: leaving BlackboxWindow::getWMHints\n", __FILE__);
@@ -1053,11 +1117,11 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
     frame.title_w = frame.width;
     frame.handle_h = dh - frame.title_h - 1;
     if (session->Orientation() == BlackboxSession::B_RightHandedUser)
-      client.x = dx + frame.border;
+      client.x = dx + 1;
     else 
-      client.x = dx + ((do_handle) ? frame.handle_w + 1 : 0) + frame.border;
+      client.x = dx + ((do_handle) ? frame.handle_w + 1 : 0) + 1;
 
-    client.y = dy + frame.title_h + frame.border + 1;
+    client.y = dy + frame.title_h + 2;
     client.width = dw - ((do_handle) ? (frame.handle_w + 1) : 0);
     client.height = dh - frame.title_h - 1;
 
@@ -1127,11 +1191,11 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
     frame.x = dx;
     frame.y = dy;
     if (session->Orientation() == BlackboxSession::B_RightHandedUser)
-      client.x = dx + frame.border;
+      client.x = dx + 1;
     else 
-      client.x = dx + ((do_handle) ? frame.handle_w + 1 : 0) + frame.border;
+      client.x = dx + ((do_handle) ? frame.handle_w + 1 : 0) + 1;
 
-    client.y = dy + frame.title_h + frame.border + 1;
+    client.y = dy + frame.title_h + 2;
    
     XWindowChanges xwc;
     xwc.x = dx;
@@ -1342,21 +1406,21 @@ void BlackboxWindow::maximizeWindow(void) {
     ph = frame.height;
 
     dw = session->XResolution() - session->WSManager()->Width() -
-      ((do_handle) ? frame.handle_w + 1 : 0) - frame.border;
+      ((do_handle) ? frame.handle_w + 1 : 0) - 1;
     dw -= client.base_w;
     dw -= (dw % client.inc_w);
     dw -= client.inc_w;
-    dw += ((do_handle) ? frame.handle_w + 1 : 0) + frame.border +
+    dw += ((do_handle) ? frame.handle_w + 1 : 0) + 1 +
       client.base_w;
     
     dx = (((session->XResolution() - session->WSManager()->Width()) - dw) / 2)
       + session->WSManager()->Width();
 
-    dh = session->YResolution() - frame.title_h - 1 - frame.border;
+    dh = session->YResolution() - frame.title_h - 2;
     dh -= client.base_h;
     dh -= (dh % client.inc_h);
     dh -= client.inc_h;
-    dh += frame.title_h + 1 + frame.border + client.base_h;
+    dh += frame.title_h + 2 + client.base_h;
     
     dy = ((session->YResolution()) - dh) / 2;
 
@@ -1606,10 +1670,8 @@ void BlackboxWindow::destroyNotifyEvent(XDestroyWindowEvent *de) {
 void BlackboxWindow::propertyNotifyEvent(Atom atom) {
   debug->msg("%s: BlackboxWindow::propertyNotifyEvent\n", __FILE__);
 
-  XTextProperty tprop;
   switch(atom) {
   case XA_WM_CLASS:
-    debug->msg("wm class\n");
     if (client.app_name) XFree(client.app_name);
     if (client.app_class) XFree(client.app_class);
     XClassHint classhint;
@@ -1621,43 +1683,24 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
     break;
   
   case XA_WM_CLIENT_MACHINE:
-    debug->msg("wm client machine\n");
-    if (XGetTextProperty(display, client.window, &tprop,
-			 XA_WM_CLIENT_MACHINE)) {
-      int n;
-      XTextPropertyToStringList(&tprop, &wm_client_machine, &n);
-    }
-
-    break;
-    
-  case XA_WM_COMMAND:
-    debug->msg("wm command\n");
-    if (XGetTextProperty(display, client.window, &tprop, XA_WM_COMMAND)) {
-      int n;
-      XTextPropertyToStringList(&tprop, &wm_client_machine, &n);
-    }
-    
+  case XA_WM_COMMAND:   
     break;
     
   case XA_WM_HINTS:
-    debug->msg("wm hints\n");
     getWMHints();
     break;
 	  
   case XA_WM_ICON_NAME:
-    debug->msg("wm icon name\n");
     if (icon) icon->rereadLabel();
     break;
     
   case XA_WM_NAME:
-    debug->msg ("wm name\n");
     if (client.title)
       if (strcmp(client.title, "Unnamed"))
 	XFree(client.title);
     if (! XFetchName(display, client.window, &client.title))
       client.title = "Unnamed";
     XClearWindow(display, frame.title);
-    debug->msg("new window title: (%s)\n", client.title);
     drawTitleWin(0, 0, frame.title_w, frame.title_h);
     session->updateWorkspace(workspace_number);
     break;
@@ -1665,21 +1708,15 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
   case XA_WM_NORMAL_HINTS: {
     XSizeHints sizehint;
     getWMNormalHints(&sizehint);
-    debug->msg("wm normal hints - %u %u %u %u\n", sizehint.width,
-               sizehint.height, sizehint.max_width, sizehint.max_height);
-
     break;
   }
     
   case XA_WM_TRANSIENT_FOR:
-    debug->msg("wm transient for\n");
     break;
     
   default:
-    if (atom == session->ProtocolsAtom()) {
-      debug->msg("checking protocols\n");
+    if (atom == session->ProtocolsAtom())
       getWMProtocols();
-    }
   }
 
   debug->msg("%s: leaving BlackboxWindow::propertyNotifyEvent\n", __FILE__);
@@ -1705,9 +1742,9 @@ void BlackboxWindow::configureRequestEvent(XConfigureRequestEvent *cr) {
     int cx, cy;
     unsigned int cw, ch;
     
-    if (cr->value_mask & CWX) cx = cr->x - frame.border;
+    if (cr->value_mask & CWX) cx = cr->x - 1;
     else cx = frame.x;
-    if (cr->value_mask & CWY) cy = cr->y - frame.border;
+    if (cr->value_mask & CWY) cy = cr->y - 1;
     else cy = frame.y;
     if (cr->value_mask & CWWidth)
       cw = cr->width + ((do_handle) ? frame.handle_w + 1 : 0);
@@ -1950,3 +1987,38 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
     }
   }
 }
+
+
+#ifdef SHAPE
+
+void BlackboxWindow::shapeEvent(XShapeEvent *) {
+  if (session->shapeExtensions()) {
+    if (frame.shaped) {
+      XShapeCombineShape(display, frame.window, ShapeBounding, 0,
+			 frame.title_h + 1, client.window, ShapeBounding,
+			 ShapeSet);
+      
+      int num = 1;
+      XRectangle xrect[2];
+      xrect[0].x = xrect[0].y = 0;
+      xrect[0].width = frame.title_w;
+      xrect[0].height = frame.title_h;
+      
+      if (do_handle) {
+	if (session->Orientation() == BlackboxSession::B_RightHandedUser)
+	  xrect[1].x = client.width + 1;
+	else
+	  xrect[1].x = 0;
+	xrect[1].y = frame.title_h;
+	xrect[1].width = frame.handle_w;
+	xrect[1].height = frame.handle_h + frame.button_h + 1;
+	num++;
+      }
+      
+      XShapeCombineRectangles(display, frame.window, ShapeBounding, 0, 0,
+			      xrect, num, ShapeUnion, Unsorted);
+    }
+  }
+}
+
+#endif
