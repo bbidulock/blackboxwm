@@ -379,6 +379,8 @@ BlackboxWindow::~BlackboxWindow(void) {
     blackbox->removeWindowSearch(frame.window);
     XDestroyWindow(display, frame.window);
   }
+
+  blackbox->removeWindowSearch(client.window);
 }
 
 
