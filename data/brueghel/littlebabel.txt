@@ -1,8 +1,0 @@
-
-The Little Tower of Babel - Blackbox 0.50.x theme
-
-	This rose based theme is the third in a series, which hopes to give
-users more options in terms of configuration.  This theme uses Pieter Brueghel's
-painting entitled "The Little Tower of Babel" as its background (see The Tower
-of Babel also).
-
