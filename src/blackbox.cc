@@ -1342,7 +1342,6 @@ void Blackbox::load_rc(BScreen *screen) {
     else if (! strncasecmp(value.addr, "BottomRight", value.size))
       screen->saveToolbarPlacement(Toolbar::BottomRight);
   }
-  screen->removeWorkspaceNames();
 
   sprintf(name_lookup,  "session.screen%d.workspaceNames", screen_number);
   sprintf(class_lookup, "Session.Screen%d.WorkspaceNames", screen_number);

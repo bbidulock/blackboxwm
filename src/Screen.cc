@@ -244,6 +244,8 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   current_workspace = workspacesList.front();
   workspacemenu->setItemSelected(2, True);
 
+  removeWorkspaceNames(); // do not need them any longer
+
   toolbar = new Toolbar(this);
 
   slit = new Slit(this);
@@ -954,7 +956,7 @@ void BScreen::updateNetizenConfigNotify(XEvent *e) {
 
 
 void BScreen::raiseWindows(Window *workspace_stack, unsigned int num) {
-  // XXX: why 13??
+  // the 13 represents the number of blackbox windows such as menus
   Window *session_stack = new
     Window[(num + workspacesList.size() + rootmenuList.size() + 13)];
   unsigned int i = 0, k = num;
