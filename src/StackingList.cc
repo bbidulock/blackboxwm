@@ -179,7 +179,8 @@ static void print_entity(StackEntity *entity)
   BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(entity);
   if (win) {
     fprintf(stderr, "  0x%lx: window 0x%lx '%s'\n",
-            win->windowID(), win->clientWindow(), win->title().c_str());
+            win->windowID(), win->clientWindow(),
+            bt::toLocale(win->title()).c_str());
   } else if (entity) {
     fprintf(stderr, "  0x%lx: unknown entity\n",
             entity->windowID());
