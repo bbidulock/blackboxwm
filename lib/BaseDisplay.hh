@@ -167,14 +167,14 @@ public:
   virtual bool handleSignal(int sig) = 0;
 
   /*
-    Inserts the EventHandler {_handler} for Window {_window}.  All
-    events generated for {_window} will be sent through {_handler}.
+    Inserts the EventHandler {handler} for Window {window}.  All
+    events generated for {window} will be sent through {handler}.
    */
-  void insertEventHandler(Window _window, EventHandler *_handler);
+  void insertEventHandler(Window window, EventHandler *handler);
   /*
-    Removes all EventHandlers for Window {_window}.
+    Removes all EventHandlers for Window {window}.
   */
-  void removeEventHandler(Window _window);
+  void removeEventHandler(Window window);
 };
 
 #endif // __BaseDisplay_hh

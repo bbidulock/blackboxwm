@@ -1,6 +1,7 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // netwm.cc for Blackbox - an X11 Window manager
-// Copyright (c) 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
+// Copyright (c) 2002 Brad Hughes (bhughes@tcac.net),
+//                    Sean 'Shaleh' Perry <shaleh@debian.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -24,9 +25,7 @@
 
 typedef unsigned char uchar;
 
-Netwm::Netwm(Display* _display)
-  : display(_display)
-{
+Netwm::Netwm(Display* _display): display(_display) {
   char* atoms[] = {
     "UTF8_STRING",
     "_NET_SUPPORTED",

@@ -1,7 +1,9 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // BaseDisplay.cc for Blackbox - an X11 Window manager
-// Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
+// Copyright (c) 2001        Sean 'Shaleh' Perry <shaleh@debian.org>
+// Copyright (c) 2002 Brad Hughes (bhughes@tcac.net),
+//                    Sean 'Shaleh' Perry <shaleh@debian.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -321,6 +323,7 @@ void BaseDisplay::eventLoop(void) {
 void BaseDisplay::process_event(XEvent *event) {
   EventHandlerMap::iterator it = eventhandlers.find(event->xany.window);
   if (it == eventhandlers.end()) return;
+
   EventHandler *handler = it->second;
 
   // deliver the event
@@ -553,15 +556,16 @@ BGCCache* BaseDisplay::gcCache(void) const {
   return gccache;
 }
 
-void BaseDisplay::insertEventHandler(Window _window, EventHandler *_handler)
-{
-  eventhandlers.insert(std::pair<Window,EventHandler*>(_window, _handler));
+
+void BaseDisplay::insertEventHandler(Window window, EventHandler *handler) {
+  eventhandlers.insert(std::pair<Window,EventHandler*>(window, handler));
 }
 
-void BaseDisplay::removeEventHandler(Window _window)
-{
-  eventhandlers.erase(_window);
+
+void BaseDisplay::removeEventHandler(Window window) {
+  eventhandlers.erase(window);
 }
+
 
 ScreenInfo::ScreenInfo(BaseDisplay *d, unsigned int num) {
   basedisplay = d;

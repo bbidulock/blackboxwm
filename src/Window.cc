@@ -2505,7 +2505,7 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
     if (pe->atom == blackbox->getWMProtocolsAtom()) {
       getWMProtocols();
 
-      if ((decorations & Decor_Close) && (! frame.close_button)) {
+      if (decorations & Decor_Close && ! frame.close_button) {
         createCloseButton();
         if (decorations & Decor_Titlebar) {
           positionButtons(True);
