@@ -111,19 +111,6 @@ struct dcmp {
   }
 };
 
-#ifndef    HAVE_STRCASESTR
-static const char * strcasestr(const char *str, const char *ptn) {
-  const char *s2, *p2;
-  for( ; *str; str++) {
-    for(s2=str,p2=ptn; ; s2++,p2++) {
-      if (!*p2) return str;
-      if (toupper(*s2) != toupper(*p2)) break;
-    }
-  }
-  return NULL;
-}
-#endif // HAVE_STRCASESTR
-
 
 BScreen::BScreen( Blackbox *bb, int scrn )
     : ScreenInfo( bb, scrn ), _style( scrn )
