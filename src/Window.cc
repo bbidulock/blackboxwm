@@ -1173,8 +1173,6 @@ BlackboxWindow::~BlackboxWindow(void) {
   }
 
   BWindowGroup *group = findWindowGroup();
-  if (group)
-    group->removeWindow(this);
 
   if (isTransient()) {
   // remove ourselves from our transient_for
@@ -1187,6 +1185,9 @@ BlackboxWindow::~BlackboxWindow(void) {
     }
     client.transient_for = 0;
   }
+
+  if (group)
+    group->removeWindow(this);
 
   if (frame.title)
     destroyTitlebar();
