@@ -1037,10 +1037,11 @@ void Blackbox::real_reconfigure(void) {
                 bt::PointerAssassin());
   menuTimestamps.clear();
 
-  getDisplay().gcCache()->purge();
-
   std::for_each(screenList.begin(), screenList.end(),
                 std::mem_fun(&BScreen::reconfigure));
+
+  getDisplay().gcCache()->purge();
+  bt::Color::clearColorCache();
 }
 
 

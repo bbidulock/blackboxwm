@@ -46,7 +46,6 @@ extern "C" {
 bt::ImageControl::ImageControl(TimerQueueManager *app,
                                Display &_display,
                                const ScreenInfo *scrn,
-                               bool, int,
                                unsigned long cache_timeout,
                                unsigned long cmax) : display(_display)
 {
@@ -60,6 +59,7 @@ bt::ImageControl::ImageControl(TimerQueueManager *app,
   }
   window = scrn->getRootWindow();
   colormap = scrn->getColormap();
+  screen = scrn->getScreenNumber();
 }
 
 
@@ -89,10 +89,14 @@ Pixmap bt::ImageControl::searchCache(const unsigned int width,
   const CacheContainer::iterator end = cache.end();
   for (; it != end; ++it) {
     CachedImage& tmp = *it;
+    const unsigned long pixel1 =
+      c1.red() << 24 | c1.green() << 16 | c1.blue();
+    const unsigned long pixel2 =
+      c2.red() << 24 | c2.green() << 16 | c2.blue();
     if (tmp.width == width && tmp.height == height &&
-        tmp.texture == texture && tmp.pixel1 == c1.pixel())
+        tmp.texture == texture && tmp.pixel1 == pixel1)
       if (texture & bt::Texture::Gradient) {
-        if (tmp.pixel2 == c2.pixel()) {
+        if (tmp.pixel2 == pixel2) {
           tmp.count++;
           return tmp.pixmap;
         }
@@ -114,7 +118,7 @@ Pixmap bt::ImageControl::renderImage(unsigned int width, unsigned int height,
   if (pixmap) return pixmap;
 
   bt::Image image(width, height);
-  pixmap = image.render(texture);
+  pixmap = image.render(display, screen, texture);
 
   if (!pixmap)
     return None;
@@ -126,10 +130,18 @@ Pixmap bt::ImageControl::renderImage(unsigned int width, unsigned int height,
   tmp.height = height;
   tmp.count = 1;
   tmp.texture = texture.texture();
-  tmp.pixel1 = texture.color().pixel();
+
+  const Color &c1 = texture.color();
+  const Color &c2 = texture.colorTo();
+  const unsigned long pixel1 =
+    c1.red() << 24 | c1.green() << 16 | c1.blue();
+  const unsigned long pixel2 =
+    c2.red() << 24 | c2.green() << 16 | c2.blue();
+
+  tmp.pixel1 = pixel1;
 
   if (texture.texture() & bt::Texture::Gradient)
-    tmp.pixel2 = texture.colorTo().pixel();
+    tmp.pixel2 = pixel2;
   else
     tmp.pixel2 = 0l;
 

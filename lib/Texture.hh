@@ -65,67 +65,54 @@ namespace bt {
       Border              = (1l<<17)
     };
 
-    Texture(const bt::Display * const _display = 0,
-            unsigned int _screen = ~(0u),
-            bt::ImageControl* _ctrl = 0);
-    Texture(const std::string &_description,
-            const bt::Display * const _display = 0,
-            unsigned int _screen = ~(0u),
-            bt::ImageControl* _ctrl = 0);
+    Texture(void);
+    Texture(const Texture &tt);
 
-    void setColor(const bt::Color &new_color);
-    void setColorTo(const bt::Color &new_colorTo);
-    void setBorderColor(const bt::Color &new_borderColor);
-
-    inline const bt::Color &color(void) const { return c; }
-    inline const bt::Color &colorTo(void) const { return ct; }
-    inline const bt::Color &borderColor(void) const { return bc; }
-    inline const bt::Color &lightColor(void) const { return lc; }
-    inline const bt::Color &shadowColor(void) const { return sc; }
-
-    inline unsigned long texture(void) const { return t; }
-    inline void setTexture(const unsigned long _texture) { t  = _texture; }
-    inline void addTexture(const unsigned long _texture) { t |= _texture; }
-
-    inline unsigned int borderWidth(void) const { return bw; }
-    inline void setBorderWidth(unsigned int new_bw) { bw = new_bw; }
-
-    Texture &operator=(const Texture &tt);
-    inline bool operator==(const Texture &tt)
-    { return (c == tt.c && ct == tt.ct && bc == tt.bc &&
-              lc == tt.lc && sc == tt.sc && t == tt.t && bw == tt.bw); }
-    inline bool operator!=(const Texture &tt)
-    { return (! operator==(tt)); }
-
-    const bt::Display *display(void) const { return dpy; }
-    unsigned int screen(void) const { return scrn; }
-    void setDisplay(const bt::Display * const _display,
-                    const unsigned int _screen);
-    inline void setImageControl(bt::ImageControl* _ctrl) { ctrl = _ctrl; }
-    inline const std::string &description(void) const { return descr; }
+    const std::string &description(void) const { return descr; }
     void setDescription(const std::string &d);
 
-    Pixmap render(const unsigned int width, const unsigned int height,
-                  const Pixmap old = 0);
+    void setColor(const Color &new_color);
+    void setColorTo(const Color &new_colorTo) { ct = new_colorTo; }
+    void setBorderColor(const Color &new_borderColor) { bc = new_borderColor; }
+
+    const Color &color(void) const { return c; }
+    const Color &colorTo(void) const { return ct; }
+    const Color &borderColor(void) const { return bc; }
+    const Color &lightColor(void) const { return lc; }
+    const Color &shadowColor(void) const { return sc; }
+
+    unsigned long texture(void) const { return t; }
+    void setTexture(unsigned long _texture) { t  = _texture; }
+    void addTexture(unsigned long _texture) { t |= _texture; }
+
+    unsigned int borderWidth(void) const { return bw; }
+    void setBorderWidth(unsigned int new_bw) { bw = new_bw; }
+
+    Texture &operator=(const Texture &tt);
+    bool operator==(const Texture &tt)
+    { return (c == tt.c && ct == tt.ct && bc == tt.bc &&
+              lc == tt.lc && sc == tt.sc && t == tt.t && bw == tt.bw); }
+    bool operator!=(const Texture &tt)
+    { return (! operator==(tt)); }
+
+    Pixmap render(const Display &display, unsigned int screen,
+                  ImageControl &image_control, // this needs to go away
+                  unsigned int width,  unsigned int height,
+                  Pixmap old = 0);
 
   private:
-    bt::Color c, ct, bc, lc, sc;
     std::string descr;
+    Color c, ct, bc, lc, sc;
     unsigned long t;
     unsigned int bw;
-    const bt::Display *dpy;
-    bt::ImageControl *ctrl;
-    unsigned int scrn;
   };
 
   Texture
-  textureResource(const Resource &resource,
+  textureResource(const Display &display, unsigned int screen,
+                  const Resource &resource,
                   const std::string &name,
                   const std::string &classname,
-                  const std::string &default_color = std::string("black"),
-                  const bt::Display * const _display = 0,
-                  unsigned int _screen = ~(0u),
-                  bt::ImageControl* _ctrl = 0);
+                  const std::string &default_color = std::string("black"));
 
 } // namespace bt
 

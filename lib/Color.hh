@@ -31,98 +31,51 @@
 namespace bt {
 
   class Display;
+  class ColorCache;
 
   class Color {
   public:
-    static void cleanupColorCache(void);
+    static void clearColorCache(void);
 
-    Color(const bt::Display * const _display = 0,
-          unsigned int _screen = ~(0u));
-    Color(int _r, int _g, int _b,
-          const bt::Display * const _display = 0,
-          unsigned int _screen = ~(0u));
-    Color(const std::string &_name,
-          const bt::Display * const _display = 0,
-          unsigned int _screen = ~(0u));
+    static Color namedColor(const Display &display, unsigned int screen,
+                            const std::string &colorname);
+
+    Color(int r = -1, int g = -1, int b = -1);
+    Color(const Color &c);
     ~Color(void);
 
-    inline const bt::Display *display(void) const { return dpy; }
-    inline unsigned int screen(void) const { return scrn; }
-    void setDisplay(const bt::Display * const _display,
-                    unsigned int _screen = ~(0u));
-
-    inline const std::string &name(void) const { return colorname; }
-
-    inline int   red(void) const { return r; }
-    inline int green(void) const { return g; }
-    inline int  blue(void) const { return b; }
-    unsigned long pixel(void) const;
-    inline void setRGB(int _r, int _g, int _b) {
+    int   red(void) const { return _red; }
+    int green(void) const { return _green; }
+    int  blue(void) const { return _blue; }
+    void setRGB(int r, int g, int b) {
       deallocate();
-      r = _r;
-      g = _g;
-      b = _b;
+      _red   = r;
+      _green = g;
+      _blue  = b;
     }
 
-    inline bool isAllocated(void) const { return allocated; }
-    inline bool isValid(void) const { return r != -1 && g != -1 && b != -1; }
+    unsigned long pixel(const Display &display, unsigned int screen) const;
+
+    bool allocated(void) const { return _screen != ~0u; }
+    bool valid(void) const
+    { return _red != -1 && _green != -1 && _blue != -1; }
 
     // operators
-    Color &operator=(const Color &c);
-    inline bool operator==(const Color &c) const
-    { return (r == c.r && b == c.b && b == c.b); }
-    inline bool operator!=(const Color &c) const
-    { return (! operator==(c)); }
+    Color &operator=(const Color &c)
+    { setRGB(c._red, c._green, c._blue); return *this; }
+    bool operator==(const Color &c) const
+    { return _red == c._red && _green == c._green && _blue == c._blue; }
+    bool operator!=(const Color &c) const
+    { return !operator==(c); }
 
   private:
-    void parseColorName(void);
-    void allocate(void);
     void deallocate(void);
 
-    bool allocated;
-    int r, g, b;
-    unsigned long p;
-    const bt::Display *dpy;
-    unsigned int scrn;
-    std::string colorname;
+    int _red, _green, _blue;
+    mutable unsigned int _screen;
+    mutable unsigned long _pixel;
 
-    // global color allocator/deallocator
-    struct RGB {
-      const bt::Display* const display;
-      const unsigned int screen;
-      const int r, g, b;
-
-      inline RGB(void) : display(0), screen(~(0u)), r(-1), g(-1), b(-1) { }
-      inline RGB(const bt::Display * const d, const unsigned int s,
-                 const int x, const int y, const int z)
-        : display(d), screen(s), r(x), g(y), b(z) {}
-      inline RGB(const RGB &x)
-        : display(x.display), screen(x.screen), r(x.r), g(x.g), b(x.b) {}
-
-      inline bool operator==(const RGB &x) const {
-        return display == x.display &&
-                screen == x.screen &&
-                     r == x.r && g == x.g && b == x.b;
-      }
-
-      inline bool operator<(const RGB &x) const {
-        unsigned long p1, p2;
-        p1 = (screen << 24 | r << 16 | g << 8 | b) & 0x00ffffff;
-        p2 = (x.screen << 24 | x.r << 16 | x.g << 8 | x.b) & 0x00ffffff;
-        return p1 < p2;
-      }
-    };
-    struct PixelRef {
-      const unsigned long p;
-      unsigned int count;
-      inline PixelRef(void) : p(0), count(0) { }
-      inline PixelRef(const unsigned long x) : p(x), count(1) { }
-    };
-    typedef std::map<RGB,PixelRef> ColorCache;
-    typedef ColorCache::value_type ColorCacheItem;
-    static ColorCache colorcache;
-    static bool cleancache;
-    static void doCacheCleanup(void);
+    static ColorCache *colorcache;
   };
 
 } // namespace bt

@@ -106,11 +106,6 @@ bsetroot::bsetroot(int argc, char **argv, char *dpy_name): display(dpy_name) {
     usage(2);
   }
 
-  img_ctrl = new bt::ImageControl*[display.screenCount()];
-  for (unsigned int s = 0; s < display.screenCount(); ++s)
-    img_ctrl[s] = new bt::ImageControl(this, display,
-                                       display.screenNumber(s), True);
-
   if (sol && ! fore.empty())
     solid();
   else if (mod && mod_x && mod_y && ! (fore.empty() || back.empty()))
@@ -123,13 +118,7 @@ bsetroot::bsetroot(int argc, char **argv, char *dpy_name): display(dpy_name) {
 
 bsetroot::~bsetroot(void) {
   XSetCloseDownMode(display.XDisplay(), RetainPermanent);
-
   XKillClient(display.XDisplay(), AllTemporary);
-
-  std::for_each(img_ctrl, img_ctrl + display.screenCount(),
-                bt::PointerAssassin());
-
-  delete [] img_ctrl;
 }
 
 
@@ -204,18 +193,19 @@ Pixmap bsetroot::duplicatePixmap(int screen, Pixmap pixmap,
 
 
 void bsetroot::solid(void) {
-  for (unsigned int screen = 0; screen < display.screenCount(); screen++) {
-    bt::Color c(fore, &display, screen);
-    const bt::ScreenInfo * const screen_info = display.screenNumber(screen);
+  bt::Color c = bt::Color::namedColor(display, 0, fore);
 
+  for (unsigned int screen = 0; screen < display.screenCount(); screen++) {
+    const bt::ScreenInfo * const screen_info = display.screenNumber(screen);
     XSetWindowBackground(display.XDisplay(), screen_info->getRootWindow(),
-                         c.pixel());
+                         c.pixel(display, screen));
     XClearWindow(display.XDisplay(), screen_info->getRootWindow());
 
-    Pixmap pixmap = XCreatePixmap(display.XDisplay(),
-				  screen_info->getRootWindow(),
-				  8, 8, DefaultDepth(display.XDisplay(), screen));
-    bt::Pen pen(c);
+    Pixmap pixmap =
+      XCreatePixmap(display.XDisplay(), screen_info->getRootWindow(),
+                    8, 8, DefaultDepth(display.XDisplay(), screen));
+
+    bt::Pen pen(display, screen, c);
     XFillRectangle(display.XDisplay(), pixmap, pen.gc(), 0, 0, 8, 8);
 
     setPixmapProperty(screen, duplicatePixmap(screen, pixmap, 8, 8));
@@ -230,6 +220,9 @@ void bsetroot::modula(int x, int y) {
   long pattern;
 
   unsigned int screen, i;
+
+  bt::Color f = bt::Color::namedColor(display, 0, fore),
+            b = bt::Color::namedColor(display, 0, back);
 
   for (pattern = 0, screen = 0; screen < display.screenCount(); screen++) {
     for (i = 0; i < 16; i++) {
@@ -248,19 +241,17 @@ void bsetroot::modula(int x, int y) {
       }
     }
 
-    bt::Color f(fore, &display, screen), b(back, &display, screen);
     GC gc;
     Pixmap bitmap;
     const bt::ScreenInfo * const screen_info = display.screenNumber(screen);
 
     bitmap =
-      XCreateBitmapFromData(display.XDisplay(),
-                            screen_info->getRootWindow(), data,
-                            16, 16);
+      XCreateBitmapFromData(display.XDisplay(), screen_info->getRootWindow(),
+                            data, 16, 16);
 
     XGCValues gcv;
-    gcv.foreground = f.pixel();
-    gcv.background = b.pixel();
+    gcv.foreground = f.pixel(display, screen);
+    gcv.background = b.pixel(display, screen);
 
     gc = XCreateGC(display.XDisplay(), screen_info->getRootWindow(),
                    GCForeground | GCBackground, &gcv);
@@ -312,17 +303,19 @@ void bsetroot::gradient(void) {
   // now add on 'flat' to prevent the bevels from being added
   descr += "flat";
 
+  bt::Color f = bt::Color::namedColor(display, 0, fore);
+  bt::Color b = bt::Color::namedColor(display, 0, back);
+
+  bt::Texture texture;
+  texture.setDescription(descr);
+  texture.setColor(f);
+  texture.setColorTo(b);
+
   for (unsigned int screen = 0; screen < display.screenCount(); screen++) {
-    bt::Texture texture(descr, &display, screen, img_ctrl[screen]);
     const bt::ScreenInfo * const screen_info = display.screenNumber(screen);
 
-    texture.setColor(bt::Color(fore, &display, screen));
-    texture.setColorTo(bt::Color(back, &display, screen));
-
-    Pixmap pixmap =
-      img_ctrl[screen]->renderImage(screen_info->getWidth(),
-                                    screen_info->getHeight(),
-                                    texture);
+    bt::Image image(screen_info->getWidth(), screen_info->getHeight());
+    Pixmap pixmap = image.render(display, screen, texture);
 
     XSetWindowBackgroundPixmap(display.XDisplay(),
                                screen_info->getRootWindow(),
@@ -334,9 +327,8 @@ void bsetroot::gradient(void) {
 				      screen_info->getWidth(),
 				      screen_info->getHeight()));
 
-    if (! (screen_info->getVisual()->c_class & 1)) {
-      img_ctrl[screen]->removeImage(pixmap);
-    }
+    if (! (screen_info->getVisual()->c_class & 1))
+      XFreePixmap(display.XDisplay(), pixmap);
   }
 }
 

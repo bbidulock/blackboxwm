@@ -86,7 +86,8 @@ namespace bt {
     // cleans up the cache
     void purge(void);
 
-    GCCacheItem *find(const bt::Color &_color,
+    GCCacheItem *find(unsigned int screen,
+                      const bt::Color &_color,
                       const XFontStruct * const _font = 0,
                       int _function = GXcopy,
                       int _subwindow = ClipByChildren);
@@ -110,27 +111,31 @@ namespace bt {
 
   class Pen {
   public:
-    inline Pen(const bt::Color &_color,
-               const XFontStruct * const _font = 0,
-               int _function = GXcopy,
-               int _subwindow = ClipByChildren)
-      : color(_color), font(_font), function(_function), subwindow(_subwindow),
-        cache(_color.display()->gcCache()), item(0) { }
-    inline ~Pen(void) { if (item) cache->release(item); }
+    inline Pen(const Display &display,
+               unsigned int screen,
+               const bt::Color &color,
+               const XFontStruct * const font = 0,
+               int function = GXcopy,
+               int subwindow = ClipByChildren)
+      : _cache(display.gcCache()), _item(0), _screen(screen), _color(color),
+        _font(font), _function(function), _subwindow(subwindow) { }
+    inline ~Pen(void) { if (_item) _cache->release(_item); }
 
     inline const GC &gc(void) const {
-      if (! item) item = cache->find(color, font, function, subwindow);
-      return item->gc();
+      if (! _item) _item = _cache->find(_screen, _color, _font,
+                                        _function, _subwindow);
+      return _item->gc();
     }
 
   private:
-    const bt::Color &color;
-    const XFontStruct *font;
-    int function;
-    int subwindow;
+    mutable GCCache *_cache;
+    mutable GCCacheItem *_item;
 
-    mutable GCCache *cache;
-    mutable GCCacheItem *item;
+    unsigned int _screen;
+    const bt::Color &_color;
+    const XFontStruct *_font;
+    int _function;
+    int _subwindow;
   };
 
 } // namespace bt

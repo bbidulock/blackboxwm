@@ -45,7 +45,7 @@ void bt::GCCacheContext::set(const bt::Color &_color,
                              const XFontStruct * const _font,
                              const int _function, const int _subwindow) {
   XGCValues gcv;
-  pixel = gcv.foreground = _color.pixel();
+  pixel = gcv.foreground = _color.pixel(*display, screen);
   function = gcv.function = _function;
   subwindow = gcv.subwindow_mode = _subwindow;
   unsigned long mask = GCForeground | GCFunction | GCSubwindowMode;
@@ -128,12 +128,12 @@ void bt::GCCache::release(bt::GCCacheContext *ctx) {
 }
 
 
-bt::GCCacheItem *bt::GCCache::find(const bt::Color &_color,
+bt::GCCacheItem *bt::GCCache::find(unsigned int screen,
+                                   const bt::Color &_color,
                                    const XFontStruct * const _font,
                                    int _function,
                                    int _subwindow) {
-  const unsigned long pixel = _color.pixel();
-  const unsigned int screen = _color.screen();
+  const unsigned long pixel = _color.pixel(*display, screen);
   const int key = _color.red() ^ _color.green() ^ _color.blue();
   int k = (key % cache_size) * cache_buckets;
   unsigned int i = 0; // loop variable

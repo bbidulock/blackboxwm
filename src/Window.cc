@@ -450,80 +450,141 @@ void BlackboxWindow::decorate(void) {
   bt::Texture* texture;
 
   texture = &(screen->getWindowStyle()->b_focus);
-  frame.fbutton = texture->render(frame.button_w, frame.button_w,
+  frame.fbutton = texture->render(blackbox->getDisplay(),
+                                  screen->getScreenInfo().getScreenNumber(),
+                                  *screen->getImageControl(),
+                                  frame.button_w, frame.button_w,
                                   frame.fbutton);
   if (! frame.fbutton)
-    frame.fbutton_pixel = texture->color().pixel();
+    frame.fbutton_pixel = texture->color().pixel(blackbox->getDisplay(),
+                                                 screen->getScreenInfo().
+                                                 getScreenNumber());
 
   texture = &(screen->getWindowStyle()->b_unfocus);
-  frame.ubutton = texture->render(frame.button_w, frame.button_w,
+  frame.ubutton = texture->render(blackbox->getDisplay(),
+                                  screen->getScreenInfo().getScreenNumber(),
+                                  *screen->getImageControl(),
+                                  frame.button_w, frame.button_w,
                                   frame.ubutton);
   if (! frame.ubutton)
-    frame.ubutton_pixel = texture->color().pixel();
+    frame.ubutton_pixel = texture->color().pixel(blackbox->getDisplay(),
+                                                 screen->getScreenInfo().
+                                                 getScreenNumber());
 
   texture = &(screen->getWindowStyle()->b_pressed);
-  frame.pbutton = texture->render(frame.button_w, frame.button_w,
+  frame.pbutton = texture->render(blackbox->getDisplay(),
+                                  screen->getScreenInfo().getScreenNumber(),
+                                  *screen->getImageControl(),
+                                  frame.button_w, frame.button_w,
                                   frame.pbutton);
   if (! frame.pbutton)
-    frame.pbutton_pixel = texture->color().pixel();
+    frame.pbutton_pixel = texture->color().pixel(blackbox->getDisplay(),
+                                                 screen->getScreenInfo().
+                                                 getScreenNumber());
 
   if (client.decorations & Decor_Titlebar) {
     texture = &(screen->getWindowStyle()->t_focus);
-    frame.ftitle = texture->render(frame.inside_w, frame.title_h,
+    frame.ftitle = texture->render(blackbox->getDisplay(),
+                                   screen->getScreenInfo().getScreenNumber(),
+                                   *screen->getImageControl(),
+                                   frame.inside_w, frame.title_h,
                                    frame.ftitle);
     if (! frame.ftitle)
-      frame.ftitle_pixel = texture->color().pixel();
+      frame.ftitle_pixel = texture->color().pixel(blackbox->getDisplay(),
+                                                  screen->getScreenInfo().
+                                                  getScreenNumber());
 
     texture = &(screen->getWindowStyle()->t_unfocus);
-    frame.utitle = texture->render(frame.inside_w, frame.title_h,
+    frame.utitle = texture->render(blackbox->getDisplay(),
+                                   screen->getScreenInfo().getScreenNumber(),
+                                   *screen->getImageControl(),
+                                   frame.inside_w, frame.title_h,
                                    frame.utitle);
     if (! frame.utitle)
-      frame.utitle_pixel = texture->color().pixel();
+      frame.utitle_pixel = texture->color().pixel(blackbox->getDisplay(),
+                                                  screen->getScreenInfo().
+                                                  getScreenNumber());
 
     XSetWindowBorder(blackbox->getXDisplay(), frame.title,
-                     screen->getBorderColor()->pixel());
+                     screen->getBorderColor()->pixel(blackbox->getDisplay(),
+                                                     screen->getScreenInfo().
+                                                     getScreenNumber()));
 
     decorateLabel();
   }
 
   if (client.decorations & Decor_Border) {
-    frame.fborder_pixel = screen->getWindowStyle()->f_focus.color().pixel();
-    frame.uborder_pixel = screen->getWindowStyle()->f_unfocus.color().pixel();
+    frame.fborder_pixel =
+      screen->getWindowStyle()->f_focus.color().pixel(blackbox->getDisplay(),
+                                                      screen->getScreenInfo().
+                                                      getScreenNumber());
+    frame.uborder_pixel =
+      screen->getWindowStyle()->f_unfocus.color().pixel(blackbox->getDisplay(),
+                                                        screen->getScreenInfo().
+                                                        getScreenNumber());
   }
 
   if (client.decorations & Decor_Handle) {
     texture = &(screen->getWindowStyle()->h_focus);
-    frame.fhandle = texture->render(frame.inside_w, frame.handle_h,
+    frame.fhandle = texture->render(blackbox->getDisplay(),
+                                    screen->getScreenInfo().getScreenNumber(),
+                                    *screen->getImageControl(),
+                                    frame.inside_w, frame.handle_h,
                                     frame.fhandle);
     if (! frame.fhandle)
-      frame.fhandle_pixel = texture->color().pixel();
+      frame.fhandle_pixel = texture->color().pixel(blackbox->getDisplay(),
+                                                   screen->getScreenInfo().
+                                                   getScreenNumber());
 
     texture = &(screen->getWindowStyle()->h_unfocus);
-    frame.uhandle = texture->render(frame.inside_w, frame.handle_h,
+    frame.uhandle = texture->render(blackbox->getDisplay(),
+                                    screen->getScreenInfo().getScreenNumber(),
+                                    *screen->getImageControl(),
+                                    frame.inside_w, frame.handle_h,
                                     frame.uhandle);
     if (! frame.uhandle)
-      frame.uhandle_pixel = texture->color().pixel();
+      frame.uhandle_pixel = texture->color().pixel(blackbox->getDisplay(),
+                                                   screen->getScreenInfo().
+                                                   getScreenNumber());
 
     texture = &(screen->getWindowStyle()->g_focus);
-    frame.fgrip = texture->render(frame.grip_w, frame.handle_h, frame.fgrip);
+    frame.fgrip = texture->render(blackbox->getDisplay(),
+                                  screen->getScreenInfo().getScreenNumber(),
+                                  *screen->getImageControl(),
+                                  frame.grip_w, frame.handle_h, frame.fgrip);
     if (! frame.fgrip)
-      frame.fgrip_pixel = texture->color().pixel();
+      frame.fgrip_pixel = texture->color().pixel(blackbox->getDisplay(),
+                                                 screen->getScreenInfo().
+                                                 getScreenNumber());
 
     texture = &(screen->getWindowStyle()->g_unfocus);
-    frame.ugrip = texture->render(frame.grip_w, frame.handle_h, frame.ugrip);
+    frame.ugrip = texture->render(blackbox->getDisplay(),
+                                  screen->getScreenInfo().getScreenNumber(),
+                                  *screen->getImageControl(),
+                                  frame.grip_w, frame.handle_h, frame.ugrip);
     if (! frame.ugrip)
-      frame.ugrip_pixel = texture->color().pixel();
+      frame.ugrip_pixel = texture->color().pixel(blackbox->getDisplay(),
+                                                 screen->getScreenInfo().
+                                                 getScreenNumber());
 
     XSetWindowBorder(blackbox->getXDisplay(), frame.handle,
-                     screen->getBorderColor()->pixel());
+                     screen->getBorderColor()->pixel(blackbox->getDisplay(),
+                                                     screen->getScreenInfo().
+                                                     getScreenNumber()));
     XSetWindowBorder(blackbox->getXDisplay(), frame.left_grip,
-                     screen->getBorderColor()->pixel());
+                     screen->getBorderColor()->pixel(blackbox->getDisplay(),
+                                                     screen->getScreenInfo().
+                                                     getScreenNumber()));
     XSetWindowBorder(blackbox->getXDisplay(), frame.right_grip,
-                     screen->getBorderColor()->pixel());
+                     screen->getBorderColor()->pixel(blackbox->getDisplay(),
+                                                     screen->getScreenInfo().
+                                                     getScreenNumber()));
   }
 
   XSetWindowBorder(blackbox->getXDisplay(), frame.window,
-                   screen->getBorderColor()->pixel());
+                   screen->getBorderColor()->pixel(blackbox->getDisplay(),
+                                                   screen->getScreenInfo().
+                                                   getScreenNumber()));
 }
 
 
@@ -531,14 +592,24 @@ void BlackboxWindow::decorateLabel(void) {
   bt::Texture *texture;
 
   texture = &(screen->getWindowStyle()->l_focus);
-  frame.flabel = texture->render(frame.label_w, frame.label_h, frame.flabel);
+  frame.flabel = texture->render(blackbox->getDisplay(),
+                                 screen->getScreenInfo().getScreenNumber(),
+                                 *screen->getImageControl(),
+                                 frame.label_w, frame.label_h, frame.flabel);
   if (! frame.flabel)
-    frame.flabel_pixel = texture->color().pixel();
+    frame.flabel_pixel = texture->color().pixel(blackbox->getDisplay(),
+                                                screen->getScreenInfo().
+                                                getScreenNumber());
 
   texture = &(screen->getWindowStyle()->l_unfocus);
-  frame.ulabel = texture->render(frame.label_w, frame.label_h, frame.ulabel);
+  frame.ulabel = texture->render(blackbox->getDisplay(),
+                                 screen->getScreenInfo(). getScreenNumber(),
+                                 *screen->getImageControl(),
+                                 frame.label_w, frame.label_h, frame.ulabel);
   if (! frame.ulabel)
-    frame.ulabel_pixel = texture->color().pixel();
+    frame.ulabel_pixel = texture->color().pixel(blackbox->getDisplay(),
+                                                screen->getScreenInfo().
+                                                getScreenNumber());
 }
 
 
@@ -2092,7 +2163,9 @@ void BlackboxWindow::redrawLabel(void) const {
   XClearWindow(blackbox->getXDisplay(), frame.label);
 
   WindowStyle *style = screen->getWindowStyle();
-  bt::Pen pen(((client.state.focused) ?
+  bt::Pen pen(blackbox->getDisplay(),
+              screen->getScreenInfo().getScreenNumber(),
+              ((client.state.focused) ?
                style->l_text_focus : style->l_text_unfocus),
               style->font.font());
   bt::Rect rect(frame.bevel_w, frame.bevel_w,
@@ -2137,8 +2210,10 @@ void BlackboxWindow::redrawIconifyButton(bool pressed) const {
   }
   XClearWindow(blackbox->getXDisplay(), frame.iconify_button);
 
-  bt::Pen pen((client.state.focused) ? screen->getWindowStyle()->b_pic_focus :
-           screen->getWindowStyle()->b_pic_unfocus);
+  bt::Pen pen(blackbox->getDisplay(),
+              screen->getScreenInfo().getScreenNumber(),
+              (client.state.focused) ? screen->getWindowStyle()->b_pic_focus :
+              screen->getWindowStyle()->b_pic_unfocus);
   XDrawRectangle(blackbox->getXDisplay(), frame.iconify_button, pen.gc(),
                  2, (frame.button_w - 5), (frame.button_w - 5), 2);
 }
@@ -2171,7 +2246,9 @@ void BlackboxWindow::redrawMaximizeButton(bool pressed) const {
   }
   XClearWindow(blackbox->getXDisplay(), frame.maximize_button);
 
-  bt::Pen pen((client.state.focused) ? screen->getWindowStyle()->b_pic_focus :
+  bt::Pen pen(blackbox->getDisplay(),
+              screen->getScreenInfo().getScreenNumber(),
+              (client.state.focused) ? screen->getWindowStyle()->b_pic_focus :
               screen->getWindowStyle()->b_pic_unfocus);
   XDrawRectangle(blackbox->getXDisplay(), frame.maximize_button, pen.gc(),
                  2, 2, (frame.button_w - 5), (frame.button_w - 5));
@@ -2207,8 +2284,10 @@ void BlackboxWindow::redrawCloseButton(bool pressed) const {
   }
   XClearWindow(blackbox->getXDisplay(), frame.close_button);
 
-  bt::Pen pen((client.state.focused) ? screen->getWindowStyle()->b_pic_focus :
-           screen->getWindowStyle()->b_pic_unfocus);
+  bt::Pen pen(blackbox->getDisplay(),
+              screen->getScreenInfo().getScreenNumber(),
+              (client.state.focused) ? screen->getWindowStyle()->b_pic_focus :
+              screen->getWindowStyle()->b_pic_unfocus);
   XDrawLine(blackbox->getXDisplay(), frame.close_button, pen.gc(),
             2, 2, (frame.button_w - 3), (frame.button_w - 3));
   XDrawLine(blackbox->getXDisplay(), frame.close_button, pen.gc(),

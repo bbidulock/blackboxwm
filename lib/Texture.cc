@@ -26,81 +26,45 @@
 #endif // HAVE_CONFIG_H
 
 extern "C" {
-#include <stdio.h>
-#ifdef HAVE_CTYPE_H
+#include <assert.h>
 #include <ctype.h>
-#endif
+#include <stdio.h>
 }
 
-#include <assert.h>
-
 #include "Texture.hh"
-
 #include "BaseDisplay.hh"
 #include "Image.hh"
 #include "Resource.hh"
 
 
-bt::Texture::Texture(const bt::Display * const _display,
-                     unsigned int _screen,
-                     bt::ImageControl* _ctrl)
-  : c(_display, _screen), ct(_display, _screen), bc(_display, _screen),
-    lc(_display, _screen), sc(_display, _screen), t(0), bw(0),
-    dpy(_display), ctrl(_ctrl), scrn(_screen) {}
-
-
-bt::Texture::Texture(const std::string &d,
-                     const bt::Display * const _display,
-                     unsigned int _screen,
-                     bt::ImageControl* _ctrl)
-  : c(_display, _screen), ct(_display, _screen), bc(_display, _screen),
-    lc(_display, _screen), sc(_display, _screen), t(0), bw(0),
-    dpy(_display), ctrl(_ctrl), scrn(_screen) {
-  setDescription(d);
-}
+bt::Texture::Texture(void) : t(0ul), bw(0u) { }
 
 
 void bt::Texture::setColor(const bt::Color &new_color) {
   c = new_color;
-  c.setDisplay(display(), screen());
 
   unsigned char r, g, b, rr, gg, bb;
-
-  // calculate the light color
   r = c.red();
   g = c.green();
   b = c.blue();
+
+  // calculate the light color
   rr = r + (r >> 1);
   gg = g + (g >> 1);
   bb = b + (b >> 1);
   if (rr < r) rr = ~0;
   if (gg < g) gg = ~0;
   if (bb < b) bb = ~0;
-  lc = bt::Color(rr, gg, bb, display(), screen());
+  lc.setRGB(rr, gg, bb);
 
   // calculate the shadow color
-  r = c.red();
-  g = c.green();
-  b = c.blue();
   rr = (r >> 2) + (r >> 1);
   gg = (g >> 2) + (g >> 1);
   bb = (b >> 2) + (b >> 1);
   if (rr > r) rr = 0;
   if (gg > g) gg = 0;
   if (bb > b) bb = 0;
-  sc = bt::Color(rr, gg, bb, display(), screen());
-}
-
-
-void bt::Texture::setColorTo(const bt::Color &new_colorTo) {
-  ct = new_colorTo;
-  ct.setDisplay(display(), screen());
-}
-
-
-void bt::Texture::setBorderColor(const bt::Color &new_borderColor) {
-  bc = new_borderColor;
-  bc.setDisplay(display(), screen());
+  sc.setRGB(rr, gg, bb);
 }
 
 
@@ -154,86 +118,68 @@ void bt::Texture::setDescription(const std::string &d) {
   }
 }
 
-void bt::Texture::setDisplay(const bt::Display * const _display,
-                             const unsigned int _screen) {
-  if (_display == display() && _screen == screen()) {
-    // nothing to do
-    return;
-  }
-
-  dpy = _display;
-  scrn = _screen;
-  c.setDisplay(_display, _screen);
-  ct.setDisplay(_display, _screen);
-  bc.setDisplay(_display, _screen);
-  lc.setDisplay(_display, _screen);
-  sc.setDisplay(_display, _screen);
-}
-
 
 bt::Texture& bt::Texture::operator=(const bt::Texture &tt) {
+  descr = tt.descr;
+
   c  = tt.c;
   ct = tt.ct;
   bc = tt.bc;
   lc = tt.lc;
   sc = tt.sc;
-  descr = tt.descr;
   t  = tt.t;
   bw = tt.bw;
-  dpy = tt.dpy;
-  scrn = tt.scrn;
-  ctrl = tt.ctrl;
-
   return *this;
 }
 
 
-Pixmap bt::Texture::render(const unsigned int width, const unsigned int height,
-                        const Pixmap old) {
-  assert(display() != 0);
+Pixmap bt::Texture::render(const Display &display, unsigned int screen,
+                           ImageControl &image_control, // go away!
+                           unsigned int width, unsigned int height,
+                           Pixmap old) {
+  Pixmap ret;
+  if (texture() == (bt::Texture::Flat | bt::Texture::Solid)) {
+    ret = None;
+  } else if (texture() == bt::Texture::Parent_Relative) {
+    ret = ParentRelative;
+  } else {
+    ret = image_control.renderImage(width, height, *this);
+    // ret = bt::Image(width, height).render(display, screen, *this);
+  }
 
-  if (texture() == (bt::Texture::Flat | bt::Texture::Solid))
-    return None;
-  if (texture() == bt::Texture::Parent_Relative)
-    return ParentRelative;
-
-  if (screen() == ~(0u))
-    scrn = DefaultScreen(display()->XDisplay());
-
-  assert(ctrl != 0);
-  Pixmap ret = ctrl->renderImage(width, height, *this);
-
-  if (old)
-    ctrl->removeImage(old);
+  if (old) image_control.removeImage(old);
 
   return ret;
 }
 
-bt::Texture bt::textureResource(const bt::Resource &resource,
+bt::Texture bt::textureResource(const Display &display,
+                                unsigned int screen,
+                                const bt::Resource &resource,
                                 const std::string &name,
                                 const std::string &class_name,
-                                const std::string &default_color,
-                                const bt::Display * const display,
-                                unsigned int screen,
-                                bt::ImageControl* ctrl) {
-  bt::Texture texture(resource.read(name, class_name, "flat solid"),
-                      display, screen, ctrl);
+                                const std::string &default_color) {
+  Texture texture;
+  texture.setDescription(resource.read(name, class_name, "flat solid"));
 
-  bt::Color c = bt::Color(resource.read(name + ".color",
-                                        class_name + ".Color",
-                                        default_color));
-  texture.setColor(c);
+  Color c1, c2, c3;
+  c1 = Color::namedColor(display, screen,
+                         resource.read(name + ".color",
+                                       class_name + ".Color",
+                                       default_color));
+  c2 = Color::namedColor(display, screen,
+                         resource.read(name + ".colorTo",
+                                       class_name + ".ColorTo",
+                                       default_color));
 
-  c = bt::Color(resource.read(name + ".colorTo",
-                              class_name + ".ColorTo",
-                              default_color));
-  texture.setColorTo(c);
+  texture.setColor(c1);
+  texture.setColorTo(c2);
 
   if (texture.texture() & bt::Texture::Border) {
-    c = bt::Color(resource.read(name + ".borderColor",
-                                class_name + ".BorderColor",
-                                "black"));
-    texture.setBorderColor(c);
+    c3 = Color::namedColor(display, screen,
+                           resource.read(name + ".borderColor",
+                                         class_name + ".BorderColor",
+                                         default_color));
+    texture.setBorderColor(c3);
 
     const std::string bstr =
       resource.read(name + ".borderWidth", class_name + ".BorderWidth", "1");

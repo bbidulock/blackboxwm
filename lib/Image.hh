@@ -57,7 +57,8 @@ namespace bt {
     Image(unsigned int w, unsigned int h);
     ~Image(void);
 
-    Pixmap render(const Texture &texture);
+    Pixmap render(const Display &display, unsigned int screen,
+                  const Texture &texture);
 
   private:
     unsigned char *red, *green, *blue;
@@ -74,8 +75,10 @@ namespace bt {
                                   int bytes_per_line,
                                   unsigned char *pixel_data);
 
-    Pixmap render_solid(const Texture &texture);
-    Pixmap render_gradient(const Texture &texture);
+    Pixmap render_solid(const Display &display, unsigned int screen,
+                        const Texture &texture);
+    Pixmap render_gradient(const Display &display, unsigned int screen,
+                           const Texture &texture);
 
     Pixmap renderPixmap(const Display &display, unsigned int screen);
     XImage *renderXImage(const Display &display, unsigned int screen);
@@ -112,7 +115,6 @@ namespace bt {
 
     ImageControl(TimerQueueManager *app, Display& _display,
                  const ScreenInfo *scrn,
-                 bool _dither= False, int _cpc = 4,
                  unsigned long cache_timeout = 300000l,
                  unsigned long cmax = 200l);
     virtual ~ImageControl(void);
@@ -127,6 +129,7 @@ namespace bt {
 
   private:
     Display &display;
+    unsigned int screen;
     Window window;
     Colormap colormap;
     Timer *timer;

@@ -33,12 +33,6 @@
 
 
 class bsetroot: public bt::NoCopy, public bt::TimerQueueManager {
-private:
-  bt::Display display;
-  bt::ImageControl **img_ctrl;
-
-  std::string fore, back, grad;
-
 public:
   bsetroot(int argc, char **argv, char *dpy_name = 0);
   virtual ~bsetroot(void);
@@ -53,6 +47,10 @@ public:
 
   void addTimer(bt::Timer*) {}
   void removeTimer(bt::Timer*) {}
+
+private:
+  bt::Display display;
+  std::string fore, back, grad;
 };
 
 #endif // __bsetroot2_hh

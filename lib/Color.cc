@@ -35,32 +35,165 @@ extern "C" {
 #include "BaseDisplay.hh"
 
 
-bt::Color::ColorCache bt::Color::colorcache;
-bool bt::Color::cleancache = false;
+// color cache
 
-bt::Color::Color(const bt::Display * const _display,
-                 unsigned int _screen)
-  : allocated(false), r(-1), g(-1), b(-1), p(0),
-    dpy(_display), scrn(_screen)
-{}
+namespace bt {
 
-bt::Color::Color(int _r, int _g, int _b,
-                 const bt::Display * const _display,
-                 unsigned int _screen)
-  : allocated(false), r(_r), g(_g), b(_b), p(0),
-    dpy(_display), scrn(_screen)
-{}
+  class ColorCache {
+  public:
+    ColorCache(const Display &display);
+    ~ColorCache(void);
+
+    unsigned long find(unsigned int screen, int r, int g, int b);
+    void release(unsigned int screen, int r, int g, int b);
+
+    void clear(void);
+
+  private:
+    const Display &_display;
+
+    struct RGB {
+      const unsigned int screen;
+      const int r, g, b;
+
+      inline RGB(void)
+        : screen(~0u), r(-1), g(-1), b(-1) { }
+      inline RGB(const unsigned int s, const int x, const int y, const int z)
+        : screen(s), r(x), g(y), b(z) { }
+      inline RGB(const RGB &x)
+        : screen(x.screen), r(x.r), g(x.g), b(x.b) { }
+
+      inline bool operator==(const RGB &x) const
+      { return screen == x.screen && r == x.r && g == x.g && b == x.b; }
+
+      inline bool operator<(const RGB &x) const {
+        const unsigned long p1 =
+          (screen << 24 | r << 16 | g << 8 | b) & 0xffffffff;
+        const unsigned long p2 =
+          (x.screen << 24 | x.r << 16 | x.g << 8 | x.b) & 0xffffffff;
+        return p1 < p2;
+      }
+    };
+    struct PixelRef {
+      const unsigned long pixel;
+      unsigned int count;
+      inline PixelRef(void) : pixel(0ul), count(0u) { }
+      inline PixelRef(const unsigned long x) : pixel(x), count(1u) { }
+    };
+
+    typedef std::map<RGB,PixelRef> Cache;
+    typedef Cache::value_type CacheItem;
+
+    Cache cache;
+  };
+
+} // namespace bt
 
 
-bt::Color::Color(const std::string &_name,
-                 const bt::Display * const _display,
-                 unsigned int _screen)
-  : allocated(false), r(-1), g(-1), b(-1), p(0),
-    dpy(_display), scrn(_screen),
-    colorname(_name) {
-  if (dpy)
-    parseColorName();
+bt::ColorCache::ColorCache(const Display &display) : _display(display) { }
+
+
+bt::ColorCache::~ColorCache(void) {
+  clear();
 }
+
+
+unsigned long bt::ColorCache::find(unsigned int screen, int r, int g, int b) {
+  if (r < 0 && r > 255) r = 0;
+  if (g < 0 && g > 255) g = 0;
+  if (b < 0 && b > 255) b = 0;
+
+  // see if we have allocated this color before
+  RGB rgb(screen, r, g, b);
+  Cache::iterator it = cache.find(rgb);
+  if (it != cache.end()) {
+    // found a cached color, use it
+    ++it->second.count;
+    return it->second.pixel;
+  }
+
+  XColor xcol;
+  xcol.red   = r | r << 8;
+  xcol.green = g | g << 8;
+  xcol.blue  = b | b << 8;
+  xcol.pixel = 0;
+  xcol.flags = DoRed | DoGreen | DoBlue;
+
+  Colormap colormap = _display.screenNumber(screen)->getColormap();
+  if (! XAllocColor(_display.XDisplay(), colormap, &xcol)) {
+    fprintf(stderr, "bt::Color::pixel: cannot allocate color 'rgb:%x/%x/%x'\n",
+            r, g, b);
+    xcol.pixel = BlackPixel(_display.XDisplay(), screen);
+  }
+
+  cache.insert(CacheItem(rgb, PixelRef(xcol.pixel)));
+
+  return xcol.pixel;
+}
+
+
+void bt::ColorCache::release(unsigned int screen, int r, int g, int b) {
+  if (r < 0 && r > 255) r = 0;
+  if (g < 0 && g > 255) g = 0;
+  if (b < 0 && b > 255) b = 0;
+
+  RGB rgb(screen, r, g, b);
+  Cache::iterator it = cache.find(rgb);
+
+  assert(it != cache.end());
+
+  if (it->second.count > 0)
+    --it->second.count;
+}
+
+
+void bt::ColorCache::clear(void) {
+  Cache::iterator it = cache.begin();
+  if (it == cache.end()) return; // nothing to do
+
+  unsigned long *pixels = new unsigned long[ cache.size() ];
+  unsigned int screen, count;
+
+  for (screen = 0; screen < _display.screenCount(); ++screen) {
+    count = 0;
+    it = cache.begin();
+
+    while (it != cache.end()) {
+      if (it->second.count != 0 || it->first.screen != screen) {
+        ++it;
+        continue;
+      }
+
+      fprintf(stderr, "bt::ColorCache::clear: freeing '%lx'\n",
+              it->second.pixel);
+
+      pixels[ count++ ] = it->second.pixel;
+      Cache::iterator it2 = it;
+      ++it;
+      cache.erase(it2);
+    }
+
+    if (count > 0)
+      XFreeColors(_display.XDisplay(),
+                  _display.screenNumber(screen)->getColormap(),
+                  pixels, count, 0);
+  }
+
+  delete [] pixels;
+}
+
+
+bt::ColorCache *bt::Color::colorcache = 0;
+
+
+bt::Color::Color(int r, int g, int b)
+  : _red(r), _green(g), _blue(b),
+    _screen(~0u), _pixel(0ul) { }
+
+
+bt::Color::Color(const Color &c)
+  : _red(c._red), _green(c._green), _blue(c._blue),
+    _screen(~0u), _pixel(0ul) { }
 
 
 bt::Color::~Color(void) {
@@ -68,184 +201,54 @@ bt::Color::~Color(void) {
 }
 
 
-void bt::Color::setDisplay(const bt::Display * const _display,
-                           unsigned int _screen) {
-  if (_display == display() && _screen == screen()) {
-    // nothing to do
-    return;
-  }
+unsigned long bt::Color::pixel(const Display &display,
+                               unsigned int screen) const {
+  if ( _screen == screen) return _pixel; // already allocated on this screen
 
-  deallocate();
+  if (! colorcache) colorcache = new ColorCache(display);
 
-  dpy = _display;
-  scrn = _screen;
+  // deallocate() isn't const, so we don't call it from here
+  if (_screen != ~0u) colorcache->release(_screen, _red, _green, _blue);
 
-  if (! colorname.empty()) {
-    parseColorName();
-  }
-}
-
-
-unsigned long bt::Color::pixel(void) const {
-  if (! allocated) {
-    // mutable
-    Color *that = (Color *) this;
-    that->allocate();
-  }
-
-  return p;
-}
-
-
-void bt::Color::parseColorName(void) {
-  assert(dpy != 0);
-
-  if (colorname.empty()) {
-    fprintf(stderr, "Color: empty colorname, cannot parse (using black)\n");
-    setRGB(0, 0, 0);
-  }
-
-  if (scrn == ~(0u))
-    scrn = DefaultScreen(dpy->XDisplay());
-  Colormap colormap = dpy->screenNumber(scrn)->getColormap();
-
-  // get rgb values from colorname
-  XColor xcol;
-  xcol.red = 0;
-  xcol.green = 0;
-  xcol.blue = 0;
-  xcol.pixel = 0;
-
-  if (! XParseColor(dpy->XDisplay(), colormap,
-                    colorname.c_str(), &xcol)) {
-    fprintf(stderr, "Color::allocate: color parse error: \"%s\"\n",
-            colorname.c_str());
-    setRGB(0, 0, 0);
-    return;
-  }
-
-  setRGB(xcol.red >> 8, xcol.green >> 8, xcol.blue >> 8);
-}
-
-
-void bt::Color::allocate(void) {
-  assert(dpy != 0);
-
-  if (scrn == ~(0u)) scrn = DefaultScreen(dpy->XDisplay());
-  Colormap colormap = dpy->screenNumber(scrn)->getColormap();
-
-  if (! isValid()) {
-    if (colorname.empty()) {
-      fprintf(stderr, "Color: cannot allocate invalid color (using black)\n");
-      setRGB(0, 0, 0);
-    } else {
-      parseColorName();
-    }
-  }
-
-  // see if we have allocated this color before
-  RGB rgb(dpy, scrn, r, g, b);
-  ColorCache::iterator it = colorcache.find(rgb);
-  if (it != colorcache.end()) {
-    // found
-    allocated = true;
-    p = (*it).second.p;
-    (*it).second.count++;
-    return;
-  }
-
-  // allocate color from rgb values
-  XColor xcol;
-  xcol.red =   r | r << 8;
-  xcol.green = g | g << 8;
-  xcol.blue =  b | b << 8;
-  xcol.pixel = 0;
-
-  if (! XAllocColor(dpy->XDisplay(), colormap, &xcol)) {
-    fprintf(stderr, "Color::allocate: color alloc error: rgb:%x/%x/%x\n",
-            r, g, b);
-    xcol.pixel = 0;
-  }
-
-  p = xcol.pixel;
-  allocated = true;
-
-  colorcache.insert(ColorCacheItem(rgb, PixelRef(p)));
-
-  if (cleancache)
-    doCacheCleanup();
+  _screen = screen;
+  _pixel = colorcache->find(_screen, _red, _green, _blue);
+  return _pixel;
 }
 
 
 void bt::Color::deallocate(void) {
-  if (! allocated)
-    return;
-
-  assert(dpy != 0);
-
-  ColorCache::iterator it = colorcache.find(RGB(dpy, scrn, r, g, b));
-  if (it != colorcache.end()) {
-    if ((*it).second.count >= 1)
-      (*it).second.count--;
-  }
-
-  if (cleancache)
-    doCacheCleanup();
-
-  allocated = false;
+  if (_screen == ~0u) return; // not allocated
+  if (colorcache) colorcache->release(_screen, _red, _green, _blue);
+  _screen = ~0u;
+  _pixel = 0ul;
 }
 
 
-bt::Color &bt::Color::operator=(const Color &c) {
-  deallocate();
-
-  setRGB(c.r, c.g, c.b);
-  colorname = c.colorname;
-  dpy = c.dpy;
-  scrn = c.scrn;
-  return *this;
+void bt::Color::clearColorCache(void) {
+  if (colorcache) colorcache->clear();
 }
 
 
-void bt::Color::cleanupColorCache(void) {
-  cleancache = true;
-}
-
-
-void bt::Color::doCacheCleanup(void) {
-  // ### TODO - support multiple displays!
-  ColorCache::iterator it = colorcache.begin();
-  if (it == colorcache.end()) {
-    // nothing to do
-    return;
+bt::Color bt::Color::namedColor(const Display &display, unsigned int screen,
+                                const std::string &colorname) {
+  if (colorname.empty()) {
+    fprintf(stderr, "bt::Color::namedColor: empty colorname\n");
+    return Color();
   }
 
-  const bt::Display* const display = (*it).first.display;
-  unsigned long *pixels = new unsigned long[ colorcache.size() ];
-  unsigned int i, count;
+  // get rgb values from colorname
+  XColor xcol;
+  xcol.red   = 0;
+  xcol.green = 0;
+  xcol.blue  = 0;
+  xcol.pixel = 0;
 
-  for (i = 0; i < display->screenCount(); i++) {
-    count = 0;
-    it = colorcache.begin();
-
-    while (it != colorcache.end()) {
-      if ((*it).second.count != 0 || (*it).first.screen != i) {
-        ++it;
-        continue;
-      }
-
-      pixels[ count++ ] = (*it).second.p;
-      ColorCache::iterator it2 = it;
-      ++it;
-      colorcache.erase(it2);
-    }
-
-    if (count > 0)
-      XFreeColors(display->XDisplay(),
-                  display->screenNumber(i)->getColormap(),
-                  pixels, count, 0);
+  Colormap colormap = display.screenNumber(screen)->getColormap();
+  if (! XParseColor(display.XDisplay(), colormap, colorname.c_str(), &xcol)) {
+    fprintf(stderr, "bt::Color::namedColor: invalid color '%s'\n",
+            colorname.c_str());
+    return Color();
   }
 
-  delete [] pixels;
-  cleancache = false;
+  return Color(xcol.red >> 8, xcol.green >> 8, xcol.blue >> 8);
 }

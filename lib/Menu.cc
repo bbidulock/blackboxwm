@@ -100,69 +100,68 @@ bt::MenuStyle::~MenuStyle(void) {
 void bt::MenuStyle::load(const Resource &resource) {
   // menu textures
   title.texture =
-    bt::textureResource(resource, "menu.title", "Menu.Title", "black",
-                        &_app.getDisplay(), _screen, _imagecontrol);
+    textureResource(_app.getDisplay(), _screen, resource,
+                    "menu.title", "Menu.Title", "black");
   frame.texture =
-    bt::textureResource(resource, "menu.frame", "Menu.Frame", "white",
-                        &_app.getDisplay(), _screen, _imagecontrol);
+    textureResource(_app.getDisplay(), _screen, resource,
+                    "menu.frame", "Menu.Frame", "white");
   active.texture =
-    bt::textureResource(resource, "menu.active", "Menu.Active", "black",
-                        &_app.getDisplay(), _screen, _imagecontrol);
+    textureResource(_app.getDisplay(), _screen, resource,
+                    "menu.active", "Menu.Active", "black");
 
   // non-texture colors
   title.foreground =
-    bt::Color(resource.read("menu.title.foregroundColor",
-                            "Menu.Title.ForegroundColor",
-                            "white"),
-              &_app.getDisplay(), _screen);
+    Color::namedColor(_app.getDisplay(), _screen,
+                      resource.read("menu.title.foregroundColor",
+                                    "Menu.Title.ForegroundColor",
+                                    "white"));
   title.text =
-    bt::Color(resource.read("menu.title.textColor",
-                            "Menu.Title.TextColor",
-                            "white"),
-              &_app.getDisplay(), _screen);
+    Color::namedColor(_app.getDisplay(), _screen,
+                      resource.read("menu.title.textColor",
+                                    "Menu.Title.TextColor",
+                                    "white"));
   frame.foreground =
-    bt::Color(resource.read("menu.frame.foregroundColor",
-                            "Menu.Frame.ForegroundColor",
-                            "black"),
-              &_app.getDisplay(), _screen);
+    Color::namedColor(_app.getDisplay(), _screen,
+                      resource.read("menu.frame.foregroundColor",
+                                    "Menu.Frame.ForegroundColor",
+                                    "black"));
   frame.text =
-    bt::Color(resource.read("menu.frame.textColor",
-                            "Menu.Frame.TextColor",
-                            "black"),
-              &_app.getDisplay(), _screen);
+    Color::namedColor(_app.getDisplay(), _screen,
+                      resource.read("menu.frame.textColor",
+                                    "Menu.Frame.TextColor",
+                                    "black"));
   frame.disabled =
-    bt::Color(resource.read("menu.frame.disabledColor",
-                            "Menu.Frame.DisabledColor",
-                            "black"),
-              &_app.getDisplay(), _screen);
-
+    Color::namedColor(_app.getDisplay(), _screen,
+                      resource.read("menu.frame.disabledColor",
+                                    "Menu.Frame.DisabledColor",
+                                    "black"));
   active.foreground =
-    bt::Color(resource.read("menu.active.foregroundColor",
-                            "Menu.Active.ForegroundColor",
-                            "white"),
-              &_app.getDisplay(), _screen);
+    Color::namedColor(_app.getDisplay(), _screen,
+                      resource.read("menu.active.foregroundColor",
+                                    "Menu.Active.ForegroundColor",
+                                    "white"));
   active.text =
-    bt::Color(resource.read("menu.active.textColor",
-                            "Menu.Active.TextColor",
-                            "white"),
-              &_app.getDisplay(), _screen);
+    Color::namedColor(_app.getDisplay(), _screen,
+                      resource.read("menu.active.textColor",
+                                    "Menu.Active.TextColor",
+                                    "white"));
 
   // fonts
-  title.font = bt::Font(resource.read("menu.title.font",
-                                      "Menu.Title.Font"),
-                        &_app.getDisplay());
-  frame.font = bt::Font(resource.read("menu.frame.font",
-                                      "Menu.Frame.Font"),
-                        &_app.getDisplay());
-  item_indent = std::max(bt::textHeight(frame.font), 7u);
+  title.font = Font(resource.read("menu.title.font",
+                                  "Menu.Title.Font"),
+                    &_app.getDisplay());
+  frame.font = Font(resource.read("menu.frame.font",
+                                  "Menu.Frame.Font"),
+                    &_app.getDisplay());
+  item_indent = std::max(textHeight(frame.font), 7u);
 
   title.alignment =
-    bt::alignResource(resource, "menu.title.alignment",
-                      "Menu.Title.Alignment");
+    alignResource(resource, "menu.title.alignment",
+                  "Menu.Title.Alignment");
 
   frame.alignment =
-    bt::alignResource(resource, "menu.frame.alignment",
-                      "Menu.Frame.Alignment");
+    alignResource(resource, "menu.frame.alignment",
+                  "Menu.Frame.Alignment");
 
   const std::string mstr =
     resource.read("menu.marginWidth", "Menu.MarginWidth", "1");
@@ -193,23 +192,26 @@ unsigned int bt::MenuStyle::itemMargin(void) const {
 
 Pixmap bt::MenuStyle::titlePixmap(unsigned int width, unsigned int height,
                                   Pixmap oldpixmap) {
-  return title.texture.render(width, height, oldpixmap);
+  return title.texture.render(_app.getDisplay(), _screen, *_imagecontrol,
+                              width, height, oldpixmap);
 }
 
 
 Pixmap bt::MenuStyle::framePixmap(unsigned int width, unsigned int height,
                                   Pixmap oldpixmap) {
-  return frame.texture.render(width, height, oldpixmap);
+  return frame.texture.render(_app.getDisplay(), _screen, *_imagecontrol,
+                              width, height, oldpixmap);
 }
 
 Pixmap bt::MenuStyle::activePixmap(unsigned int width, unsigned int height,
                                    Pixmap oldpixmap) {
-  return active.texture.render(width, height, oldpixmap);
+  return active.texture.render(_app.getDisplay(), _screen, *_imagecontrol,
+                               width, height, oldpixmap);
 }
 
 
 bt::Rect bt::MenuStyle::titleRect(const std::string &text) const {
-  const Rect &rect = bt::textRect(title.font, text);
+  const Rect &rect = textRect(title.font, text);
   return Rect(0, 0,
               rect.width()  + (titleMargin() * 2),
               rect.height() + (titleMargin() * 2));
@@ -217,7 +219,7 @@ bt::Rect bt::MenuStyle::titleRect(const std::string &text) const {
 
 
 bt::Rect bt::MenuStyle::itemRect(const MenuItem &item) const {
-  const Rect &rect = bt::textRect(frame.font, item.label());
+  const Rect &rect = textRect(frame.font, item.label());
   return Rect(0, 0,
               rect.width() + ((item_indent + itemMargin()) * 2),
               std::max(rect.height(), item_indent) + (itemMargin() * 2));
@@ -226,7 +228,7 @@ bt::Rect bt::MenuStyle::itemRect(const MenuItem &item) const {
 
 void bt::MenuStyle::drawTitle(Window window, const Rect &rect,
                               const std::string &text) const {
-  Pen pen(title.text, title.font.font());
+  Pen pen(_app.getDisplay(), _screen, title.text, title.font.font());
   Rect r;
   r.setCoords(rect.left() + titleMargin(), rect.top(),
               rect.right() - titleMargin(), rect.bottom());
@@ -241,7 +243,7 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
                rect.right() - item_indent, rect.bottom());
 
   if (item.isSeparator()) {
-    Pen pen(frame.foreground);
+    Pen pen(_app.getDisplay(), _screen, frame.foreground);
     XFillRectangle(_app.getXDisplay(), window, pen.gc(),
                    r2.x(), r2.y() + margin_w, r2.width(),
                    (frame.texture.borderWidth() > 0 ?
@@ -249,15 +251,17 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
     return;
   }
 
-  Pen fpen((item.isEnabled() ?
+  Pen fpen(_app.getDisplay(), _screen,
+           (item.isEnabled() ?
             (item.isActive() ? active.foreground : frame.foreground) :
             frame.disabled));
-  Pen tpen((item.isEnabled() ?
+  Pen tpen(_app.getDisplay(), _screen,
+           (item.isEnabled() ?
             (item.isActive() ? active.text : frame.text) :
             frame.disabled),
            frame.font.font());
   if (item.isActive() && item.isEnabled()) {
-    Pen p2(active.texture.color());
+    Pen p2(_app.getDisplay(), _screen, active.texture.color());
     if (pixmap) {
       XCopyArea(_app.getXDisplay(), pixmap, window, p2.gc(),
                 0, 0, rect.width(), rect.height(), rect.x(), rect.y());
@@ -393,7 +397,7 @@ bt::Menu::~Menu(void)
 }
 
 
-unsigned int bt::Menu::insertItem(const bt::MenuItem &item,
+unsigned int bt::Menu::insertItem(const MenuItem &item,
                                   unsigned int id, unsigned int index) {
   // hardcoded maximum of 500 items
   assert(items.size() < 500);
@@ -431,7 +435,7 @@ unsigned int bt::Menu::insertItem(const std::string &label,
 }
 
 
-unsigned int bt::Menu::insertItem(const std::string &label, bt::Menu *submenu,
+unsigned int bt::Menu::insertItem(const std::string &label, Menu *submenu,
                                   unsigned int id, unsigned int index) {
   submenu->_parent_menu = this;
   return insertItem(MenuItem(submenu, label), id, index);
@@ -748,7 +752,7 @@ void bt::Menu::reconfigure(void) {
 
 
 void bt::Menu::updateSize(void) {
-  bt::MenuStyle* style = bt::MenuStyle::get(_app, _screen, 0);
+  MenuStyle* style = MenuStyle::get(_app, _screen, 0);
 
   if (_show_title) {
     _trect = style->titleRect(_title);
@@ -812,7 +816,7 @@ void bt::Menu::updateSize(void) {
   _fpixmap = style->framePixmap(_frect.width(), _frect.height(), _fpixmap);
 
   _itemw = max_item_w;
-  _apixmap = style->activePixmap(_itemw, bt::textHeight(style->frameFont()) +
+  _apixmap = style->activePixmap(_itemw, textHeight(style->frameFont()) +
                                  (style->itemMargin() * 2), _apixmap);
 
   _size_dirty = false;
@@ -994,7 +998,7 @@ void bt::Menu::exposeEvent(const XExposeEvent * const event) {
   if (_show_title && r.intersects(_trect)) {
     u = r & _trect;
 
-    Pen pen(style->titleTexture().color());
+    Pen pen(_app.getDisplay(), _screen, style->titleTexture().color());
     if (_tpixmap) {
       XCopyArea(_app.getXDisplay(), _tpixmap, _window, pen.gc(),
                 u.x(), u.y(), u.width(), u.height(), u.x(), u.y());
@@ -1009,7 +1013,7 @@ void bt::Menu::exposeEvent(const XExposeEvent * const event) {
   if (r.intersects(_frect)) {
     u = r & _frect;
 
-    Pen pen(style->frameTexture().color());
+    Pen pen(_app.getDisplay(), _screen, style->frameTexture().color());
     if (_fpixmap) {
       XCopyArea(_app.getXDisplay(), _fpixmap, _window, pen.gc(),
                 u.x() - _frect.x(), u.y() - _frect.y(),
