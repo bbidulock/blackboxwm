@@ -1162,6 +1162,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 			    submenu->setTitle(command);
 			else
 			    submenu->setTitle(label);
+			submenu->showTitle();
 
 			parseMenuFile(file, submenu);
 			menu->insert(label, submenu);
@@ -1290,6 +1291,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
 				if (newmenu) {
 				    stylesmenu->setTitle(label);
+				    stylesmenu->showTitle();
 				    menu->insert(label, stylesmenu);
 				    rootmenuList->insert(stylesmenu);
 				}
