@@ -34,8 +34,8 @@ extern "C" {
 #endif
 #ifdef    TIME_WITH_SYS_TIME
 #  include <sys/time.h>
-#  include <time.h> 
-#else // !TIME_WITH_SYS_TIME 
+#  include <time.h>
+#else // !TIME_WITH_SYS_TIME
 #  ifdef    HAVE_SYS_TIME_H
 #    include <sys/time.h>
 #  else // !HAVE_SYS_TIME_H
@@ -52,14 +52,42 @@ extern "C" {
 
 #include "Util.hh"
 
+#include <algorithm>
+
 using std::string;
+
+
+Rect Rect::operator|(const Rect &a) const
+{
+    Rect b;
+    b._x1 = std::min(_x1, a._x1);
+    b._y1 = std::min(_y1, a._y1);
+    b._x2 = std::max(_x2, a._x2);
+    b._y2 = std::max(_y2, a._y2);
+    return b;
+}
+Rect Rect::operator&(const Rect &a) const
+{
+    Rect b;
+    b._x1 = std::max(_x1, a._x1);
+    b._y1 = std::max(_y1, a._y1);
+    b._x2 = std::min(_x2, a._x2);
+    b._y2 = std::min(_y2, a._y2);
+    return b;
+}
+
+bool Rect::intersects(const Rect &a) const
+{
+    return std::max(_x1, a._x1) <= std::min(_x2, a._x2) &&
+           std::max(_y1, a._y1) <= std::min(_y2, a._y2);
+}
 
 string expandTilde(const string& s) {
   if (s[0] != '~') return s;
 
   string ret = getenv("HOME");
   ret += s.substr(s.find('/'));
-  return ret; 
+  return ret;
 }
 
 

@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Util.cc for Blackbox - an X11 Window manager
 // Copyright (c) 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
@@ -24,6 +24,60 @@
 #ifndef _BLACKBOX_UTIL_HH
 #define _BLACKBOX_UTIL_HH
 
+class Rect
+{
+public:
+  Rect() : _x1(0), _y1(0), _x2(0), _y2(0) { }
+  Rect(int a, int b, int c, int d) { setRect(a, b, c, d); }
+
+  int left() const { return _x1; }
+  int top() const { return _y1; }
+  int right() const { return _x2; }
+  int bottom() const { return _y2; }
+
+  int x() const { return _x1; }
+  void setX(int a) { _x1 = a; }
+
+  int y() const { return _y1; }
+  void setY(int b) { _y1 = b; }
+
+  void setPos(int a, int b) { _x1 = a; _y1 = b; }
+
+  int width() const { return _x2 - _x1 + 1; }
+  void setWidth(int c) { _x2 = c + _x1 - 1; }
+
+  int height() const { return _y2 - _y1 + 1; }
+  void setHeight(int d) { _y2 = d + _y1 - 1; }
+
+  void setSize(int a, int b) { setWidth(a); setHeight(b) ; }
+
+  void setRect(int a, int b, int c, int d)
+  { setPos(a, b); setSize(c, d); }
+
+  void setCoords(int a, int b, int c, int d)
+  { _x1 = a; _y1 = b; _x2 = c; _y2 = d; }
+
+  bool operator==(const Rect &a)
+  { return _x1 == a._x1 && _y1 == a._y1 && _x2 == a._x2 && _y2 == a._y2; }
+
+  bool operator!=(const Rect &a)
+  { return ! operator==(a); }
+
+  Rect &operator=(const Rect &a)
+  { _x1 = a._x1; _y1 = a._y1; _x2 = a._x2; _y2 = a._y2; return *this; }
+  Rect operator|(const Rect &a) const;
+  Rect operator&(const Rect &a) const;
+  Rect &operator|=(const Rect &a)
+  { *this = *this | a; return *this; }
+  Rect &operator&=(const Rect &a)
+  { *this = *this & a; return *this; }
+
+  bool intersects(const Rect &a) const;
+
+private:
+  int _x1, _y1, _x2, _y2;
+};
+
 #include <string>
 
 /* XXX: this needs autoconf help */
@@ -42,7 +96,7 @@ timeval normalizeTimeval(const timeval &tm);
 
 struct PointerAssassin {
   template<typename T>
-  void operator()(const T ptr) const {
+  inline void operator()(const T ptr) const {
     delete ptr;
   }
 };
