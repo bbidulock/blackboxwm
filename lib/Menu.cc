@@ -134,11 +134,11 @@ void bt::MenuStyle::load(const Resource &resource) {
 
   str = resource.read("menu.title.marginWidth", "Menu.Title.MarginWidth", "1");
   title_margin =
-    std::max(static_cast<unsigned int>(strtoul(str.c_str(), 0, 0)), 1u);
+    static_cast<unsigned int>(std::max(strtol(str.c_str(), 0, 0), 0l));
 
   str = resource.read("menu.frame.marginWidth", "Menu.Frame.MarginWidth", "1");
   frame_margin =
-    std::max(static_cast<unsigned int>(strtoul(str.c_str(), 0, 0)), 1u);
+    static_cast<unsigned int>(std::max(strtol(str.c_str(), 0, 0), 0l));
 }
 
 
