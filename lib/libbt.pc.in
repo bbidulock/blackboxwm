@@ -7,5 +7,5 @@ Name: Blackbox Toolbox
 Description: Utility class library for writing small applications
 Requires: @XFT_PKGCONFIG@
 Version: @VERSION@
-Libs: -L${libdir} -lbt
+Libs: -L${libdir} -lbt @LDFLAGS@ @ICONV@ @LOCALE@
 Cflags: -I${includedir}/bt
