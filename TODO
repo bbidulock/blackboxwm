@@ -1,11 +1,5 @@
 -- TODO for Blackbox - an X11 Window manager
 
-Before 0.70.0 release:
------------------------------
-
-* Make sure bstyleconvert properly converts 0.65.0 styles to 0.70.0
-  format
-
 Stuff TODO or On The Way(tm):
 -----------------------------
 
@@ -13,7 +7,9 @@ Stuff TODO or On The Way(tm):
   translate into either UTF-8 (needed for NETWM and Xft) or locale
   (for Xmb).
 
-* make sure transients are correctly associated at startup
+* make sure transients are correctly associated at startup. this is
+  partially done by ensuring stacking order across restarts... we
+  might be able to do more, but it's not urgent
 
 * session support via the X session management protocol
 
