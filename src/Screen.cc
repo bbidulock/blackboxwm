@@ -2131,10 +2131,11 @@ void BScreen::updateClientListStackingHint(void) const {
 
 
 void BScreen::getDesktopNames(void) {
-  const std::vector<std::string> names =
-    blackbox->netwm()->readDesktopNames(getRootWindow());
+  Netwm::UTF8StringList names;
+  if(! blackbox->netwm()->readDesktopNames(getRootWindow(), names))
+    return;
 
-  std::vector<std::string>::const_iterator it = names.begin(),
+  Netwm::UTF8StringList::const_iterator it = names.begin(),
     end = names.end();
   WorkspaceList::iterator wit = workspacesList.begin(),
     wend = workspacesList.end();

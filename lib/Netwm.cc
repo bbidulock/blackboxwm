@@ -265,6 +265,18 @@ void Netwm::setCurrentDesktop(Window target, unsigned int number) const {
 }
 
 
+bool Netwm::readCurrentDesktop(Window target, unsigned int* number) const {
+  unsigned char* data = NULL;
+  if (getProperty(target, XA_CARDINAL, net_current_desktop, &data)) {
+    *number = * (reinterpret_cast<unsigned int*>(data));
+
+    XFree(data);
+    return True;
+  }
+  return False;
+}
+
+
 void Netwm::setDesktopNames(Window target, const std::string& names) const {
   XChangeProperty(display, target, net_desktop_names,
                   utf8_string, 8, PropModeReplace,
@@ -273,22 +285,22 @@ void Netwm::setDesktopNames(Window target, const std::string& names) const {
 }
 
 
-std::vector<std::string> Netwm::readDesktopNames(Window target) const {
-  std::string names;
-  std::vector<std::string> ret;
-
-  if (getUTF8StringProperty(target, net_desktop_names, names) &&
-      ! names.empty()) {
-    std::string::iterator it = names.begin(), end = names.end(), tmp = it;
-    for (; it != end; ++it) {
-      if (*it == '\0') {
-        ret.push_back(std::string(tmp, it));
-        tmp = it;
+bool Netwm::readDesktopNames(Window target, UTF8StringList& names) const {
+  unsigned char* data = NULL;
+  unsigned long nitems;
+  if (getListProperty(target, utf8_string, net_desktop_names,
+                      &data, &nitems) && nitems > 0) {
+    unsigned char* tmp = data;
+    for (unsigned int i = 0; i < nitems; ++i) {
+      if (data[i] == '\0') {
+        names.push_back(std::string(tmp, data + i));
+        tmp = data + i;
       }
     }
+    XFree(data);
   }
 
-  return ret;
+  return (! names.empty());
 }
 
 
@@ -329,12 +341,26 @@ void Netwm::setWMName(Window target, const std::string &name) const {
 
 
 bool Netwm::readWMName(Window target, std::string& name) const {
-  return getUTF8StringProperty(target, net_wm_name, name);
+  unsigned char* data = NULL;
+  unsigned long nitems;
+  if (getListProperty(target, utf8_string, net_wm_name,
+                      &data, &nitems) && nitems > 0) {
+    name = reinterpret_cast<char*>(data);
+  }
+
+  return (! name.empty());
 }
 
 
 bool Netwm::readWMIconName(Window target, std::string& name) const {
-  return getUTF8StringProperty(target, net_wm_icon_name, name);
+  unsigned char* data = NULL;
+  unsigned long nitems;
+  if (getListProperty(target, utf8_string, net_wm_icon_name,
+                      &data, &nitems) && nitems > 0) {
+    name = reinterpret_cast<char*>(data);
+  }
+
+  return (! name.empty());
 }
 
 
@@ -430,39 +456,6 @@ bool Netwm::readWMStrut(Window target, Strut* strut) const {
 
 void Netwm::removeProperty(Window target, Atom atom) const {
   XDeleteProperty(display, target, atom);
-}
-
-
-bool Netwm::getUTF8StringProperty(Window target, Atom property,
-                                  std::string& value) const {
-  Atom atom_return;
-  int size;
-  unsigned long nitems, bytes_left;
-  unsigned char *data;
-
-  int ret = XGetWindowProperty(display, target, property,
-                               0l, 1l, False,
-                               utf8_string, &atom_return, &size,
-                               &nitems, &bytes_left, &data);
-  if (ret != Success || nitems < 1)
-    return False;
-
-  if (bytes_left != 0) {
-    XFree(data);
-    unsigned long remain = ((size / 8) * nitems) + bytes_left;
-    ret = XGetWindowProperty(display, target,
-                             property, 0l, remain, False,
-                             utf8_string, &atom_return, &size,
-                             &nitems, &bytes_left, &data);
-    if (ret != Success)
-      return False;
-  }
-
-  value = reinterpret_cast<char*>(data);
-
-  XFree(data);
-
-  return True;
 }
 
 

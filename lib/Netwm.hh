@@ -38,6 +38,8 @@ public:
 
   typedef std::vector<Atom> AtomList;
   typedef std::vector<Window> WindowList;
+  typedef std::vector<std::string> UTF8StringList;
+
   struct Strut {
     unsigned int left, right, top, bottom;
 
@@ -73,8 +75,9 @@ public:
   bool readDesktopGeometry(Window target,
                            unsigned int* width, unsigned int* height) const;
   void setCurrentDesktop(Window target, unsigned int number) const;
+  bool readCurrentDesktop(Window target, unsigned int* number) const;
   void setDesktopNames(Window target, const std::string& names) const;
-  std::vector<std::string> readDesktopNames(Window target) const;
+  bool readDesktopNames(Window target, UTF8StringList& names) const;
   void setActiveWindow(Window target, Window data) const;
   void setWorkarea(Window target, unsigned long workareas[],
                    unsigned int count) const;
@@ -162,8 +165,6 @@ private:
   Netwm(const Netwm&);
   Netwm& operator=(const Netwm&);
 
-  bool getUTF8StringProperty(Window target, Atom property,
-                             std::string& value) const;
   bool getProperty(Window target, Atom type, Atom property,
                    unsigned char** data) const;
   bool getListProperty(Window target, Atom type, Atom property,
