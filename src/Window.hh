@@ -309,6 +309,7 @@ public:
   void removeTransient(BlackboxWindow *win);
 
   BlackboxWindow *findTransientFor(void) const;
+  BlackboxWindow *findNonTransientParent(void) const;
 
   BWindowGroup *findWindowGroup(void) const;
 

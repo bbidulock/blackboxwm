@@ -1510,6 +1510,30 @@ BlackboxWindow *BlackboxWindow::findTransientFor(void) const {
 }
 
 
+// walk up to either 1) a non-transient window 2) a group transient,
+// watching out for a circular chain
+BlackboxWindow *BlackboxWindow::findNonTransientParent(void) const {
+  BlackboxWindow *w = const_cast<BlackboxWindow *>(this);
+
+  BlackboxWindowList seen;
+  seen.push_back(w);
+
+  while (w->isTransient() && !w->isGroupTransient()) {
+    BlackboxWindow * const tmp = w->findTransientFor();
+    if (!tmp)
+      break;
+    w = tmp;
+
+    if (std::find(seen.begin(), seen.end(), w) != seen.end()) {
+      // circular transient chain
+      break;
+    }
+    seen.push_back(w);
+  }
+  return w;
+}
+
+
 BWindowGroup *BlackboxWindow::findWindowGroup(void) const {
   BWindowGroup *group = 0;
   if (client.wmhints.window_group)
@@ -1550,8 +1574,16 @@ bool BlackboxWindow::setInputFocus(void) {
       BlackboxWindow * const tmp = *it;
       if (!tmp->isVisible() || !tmp->isModal())
         continue;
-      if (tmp == this)
+      if (tmp == this) {
+        // we are the newest modal group transient
         break;
+      }
+      if (isTransient()) {
+        if (tmp == findNonTransientParent()) {
+          // we are a transient of the modal group transient
+          break;
+        }
+      }
       return tmp->setInputFocus();
     }
   }
