@@ -70,6 +70,7 @@ namespace bt {
   void bexec(const std::string& command, const std::string& displaystring);
 
   std::string basename(const std::string& path);
+  std::string dirname(const std::string& path);
 
   std::string expandTilde(const std::string& s);
 

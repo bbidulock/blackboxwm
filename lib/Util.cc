@@ -50,6 +50,15 @@ std::string bt::basename(const std::string& path) {
 }
 
 
+std::string bt::dirname(const std::string& path) {
+  std::string::size_type slash = path.rfind('/');
+  if (slash == std::string::npos)
+    return path;
+  std::string::const_iterator it = path.begin();
+  return std::string(it, it + slash);
+}
+
+
 std::string bt::expandTilde(const std::string& s) {
   if (s[0] != '~')
     return s;
