@@ -182,8 +182,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   // adjust the window decorations based on transience, window type
   // and window sizes
   if (client.window_type == blackbox->netwm().wmWindowTypeDialog()) {
-    client.decorations &= ~(Decor_Maximize | Decor_Handle);
-    client.functions &= ~Func_Maximize;
+    client.decorations &= ~(Decor_Iconify | Decor_Maximize);
+    client.functions &= ~(Func_Shade | Func_Iconify | Func_Maximize);
   } else if (client.window_type == blackbox->netwm().wmWindowTypeSplash()) {
     client.decorations = client.functions = 0l;
   } else if (client.window_type == blackbox->netwm().wmWindowTypeUtility()) {
@@ -194,15 +194,15 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   } else if (client.window_type == blackbox->netwm().wmWindowTypeDesktop()) {
     client.decorations = client.functions = 0l;
   } else if (isTransient()) {
-    client.decorations &= ~(Decor_Maximize | Decor_Handle);
-    client.functions &= ~Func_Maximize;
+    client.decorations &= ~(Decor_Iconify | Decor_Maximize);
+    client.functions &= ~(Func_Shade | Func_Iconify | Func_Maximize);
   }
 
   if ((client.normal_hint_flags & PMinSize) &&
       (client.normal_hint_flags & PMaxSize) &&
       client.max_width <= client.min_width &&
       client.max_height <= client.min_height) {
-    client.decorations &= ~(Decor_Maximize | Decor_Handle);
+    client.decorations &= ~(Decor_Maximize | Decor_Grip);
     client.functions &= ~(Func_Resize | Func_Maximize);
   }
 
@@ -524,6 +524,11 @@ void BlackboxWindow::decorate(void) {
                             frame.inside_w, frame.style->handle_height,
                             frame.uhandle);
 
+    XSetWindowBorder(blackbox->XDisplay(), frame.handle,
+                     screen->resource().borderColor()->pixel(screen->screenNumber()));
+  }
+
+  if (client.decorations & Decor_Grip) {
     frame.fgrip =
       bt::PixmapCache::find(screen->screenNumber(), frame.style->g_focus,
                             frame.style->grip_width,
@@ -534,8 +539,6 @@ void BlackboxWindow::decorate(void) {
                             frame.style->grip_width,
                             frame.style->handle_height, frame.ugrip);
 
-    XSetWindowBorder(blackbox->XDisplay(), frame.handle,
-                     screen->resource().borderColor()->pixel(screen->screenNumber()));
     XSetWindowBorder(blackbox->XDisplay(), frame.left_grip,
                      screen->resource().borderColor()->pixel(screen->screenNumber()));
     XSetWindowBorder(blackbox->XDisplay(), frame.right_grip,
@@ -1721,7 +1724,9 @@ void BlackboxWindow::redrawWindowFrame(void) const {
 
   if (client.decorations & Decor_Handle) {
     redrawHandle();
-    redrawGrips();
+
+    if (client.decorations & Decor_Grip)
+      redrawGrips();
   }
 
   if (client.decorations & Decor_Border) {
@@ -2487,8 +2492,8 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
 
     // adjust the window decorations based on transience
     if (isTransient()) {
-      client.decorations &= ~(Decor_Maximize | Decor_Handle);
-      client.functions &= ~Func_Maximize;
+      client.decorations &= ~(Decor_Iconify | Decor_Maximize);
+      client.functions &= ~(Func_Shade | Func_Iconify | Func_Maximize);
     }
 
     reconfigure();
@@ -2522,12 +2527,12 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
       ungrabButtons();
       if (client.max_width <= client.min_width &&
           client.max_height <= client.min_height) {
-        client.decorations &= ~(Decor_Maximize | Decor_Handle);
+        client.decorations &= ~(Decor_Maximize | Decor_Grip);
         client.functions &= ~(Func_Resize | Func_Maximize);
       } else {
         if (! isTransient()) {
-          client.decorations |= Decor_Maximize | Decor_Handle;
-          client.functions |= Func_Maximize;
+          client.decorations |= Decor_Iconify | Decor_Maximize;
+          client.functions |= Func_Shade | Func_Iconify | Func_Maximize;
         }
         client.functions |= Func_Resize;
       }
