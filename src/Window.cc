@@ -1654,7 +1654,7 @@ void BlackboxWindow::show(void) {
   XTranslateCoordinates(blackbox->XDisplay(), client.window,
                         _screen->screenInfo().rootWindow(),
                         0, 0, &real_x, &real_y, &child);
-  fprintf(stderr, "%s -- assumed: (%d, %d), real: (%d, %d)\n", getTitle(),
+  fprintf(stderr, "%s -- assumed: (%d, %d), real: (%d, %d)\n", title().c_str(),
           client.rect.left(), client.rect.top(), real_x, real_y);
   assert(client.rect.left() == real_x && client.rect.top() == real_y);
 #endif
