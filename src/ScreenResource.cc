@@ -494,10 +494,12 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
              + _toolbarStyle.frame_margin, 1u);
 
   // load slit style
-  _slitStyle.slit = bt::textureResource(display, screen_num, res,
+  _slitStyle.slit = bt::textureResource(display,
+                                        screen_num,
+                                        res,
                                         "slit",
                                         "Slit",
-                                        "white");
+                                        _toolbarStyle.toolbar);
   _slitStyle.margin = res.read("slit.marginWidth", "Slit.MarginWidth", 2);
 
   const std::string rc_file = screen->blackbox()->resource().rcFilename();
