@@ -14,4 +14,4 @@ $ #MapRequest
 $ #UnmapNotify
 # BlackboxWindow::unmapNotifyEvent() для 0x%lx\n
 $ #ReparentNotify
-# BlackboxWindow::reparentNotifyEvent: reparent 0x%lx to 0x%lx\n
+# BlackboxWindow::reparentNotifyEvent: смена родителя для 0x%lx на 0x%lx\n
