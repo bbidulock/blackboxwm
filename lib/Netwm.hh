@@ -32,10 +32,11 @@ extern "C" {
 #include <string>
 #include <vector>
 
+#include "Util.hh"
 
 namespace bt {
 
-  class Netwm {
+  class Netwm: public NoCopy {
   public:
     explicit Netwm(::Display *_display);
 
@@ -171,15 +172,12 @@ namespace bt {
     void removeProperty(Window target, Atom atom) const;
     bool isSupportedWMWindowType(Atom atom) const;
 
-  private:
-    Netwm(const Netwm&);
-    Netwm& operator=(const Netwm&);
-
     bool getProperty(Window target, Atom type, Atom property,
                      unsigned char** data) const;
     bool getListProperty(Window target, Atom type, Atom property,
                          unsigned char** data, unsigned long* count) const;
 
+  private:
     ::Display *display;
     Atom utf8_string,
       net_supported, net_client_list, net_client_list_stacking,
