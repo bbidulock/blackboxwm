@@ -235,10 +235,10 @@ bt::Texture bt::textureResource(const bt::Resource &resource,
                                 "black"));
     texture.setBorderColor(c);
 
-    // texture.setBorderWidth(getUInt(db, name + ".borderWidth",
-    // class_name + ".BorderWidth",
-    // 1));
-    texture.setBorderWidth(1);
+    const std::string bstr =
+      resource.read(name + ".borderWidth", class_name + ".BorderWidth", "1");
+    int bw = static_cast<unsigned int>(strtoul(bstr.c_str(), 0, 0));
+    texture.setBorderWidth(bw);
   }
 
   return texture;
