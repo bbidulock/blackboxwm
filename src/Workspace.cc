@@ -120,10 +120,14 @@ unsigned int Workspace::removeWindow(BlackboxWindow *w) {
 
   BlackboxWindowList::iterator it = windowList.begin();
   const BlackboxWindowList::iterator end = windowList.end();
-  for (int i = 0; it != end; ++it, ++i)
+  unsigned int i = 0;
+  for (; it != end; ++it, ++i)
     (*it)->setWindowNumber(i);
 
-  return windowList.size();
+  if (i == 0)
+    cascade_x = cascade_y = 32;
+
+  return i;
 }
 
 
@@ -337,49 +341,57 @@ void Workspace::setName(const string& new_name) {
 
 
 void Workspace::placeWindow(BlackboxWindow *win) {
-  Bool placed = False;
-
+  /* we need to compensate for being shifted by x,y,
+   * otherwise windows will not be allowed to reach the screen edge
+   * it is easier to deal here than adjust everywhere else
+   */
   XRectangle availableArea = screen->availableArea();
+  availableArea.width += availableArea.x;
+  availableArea.height += availableArea.y;
 
   const int win_w = win->getWidth() + (screen->getBorderWidth() * 4),
     win_h = win->getHeight() + (screen->getBorderWidth() * 4),
-    start_pos_x = availableArea.x, start_pos_y = availableArea.y,
     change_y =
       ((screen->getColPlacementDirection() == BScreen::TopBottom) ? 1 : -1),
     change_x =
       ((screen->getRowPlacementDirection() == BScreen::LeftRight) ? 1 : -1),
     delta_x = 8, delta_y = 8;
 
-  int place_x = start_pos_x, place_y = start_pos_y;
+  Bool placed = False;
+  int place_x = availableArea.x, place_y = availableArea.y;
 
   switch (screen->getPlacementPolicy()) {
   case BScreen::RowSmartPlacement: {
     place_y = (screen->getColPlacementDirection() == BScreen::TopBottom) ?
-      start_pos_y : availableArea.height - win_h - start_pos_y;
+      availableArea.y : availableArea.height - win_h;
 
     while (!placed &&
            ((screen->getColPlacementDirection() == BScreen::BottomTop) ?
             place_y > 0 : place_y + win_h < (signed) availableArea.height)) {
       place_x = (screen->getRowPlacementDirection() == BScreen::LeftRight) ?
-        start_pos_x : availableArea.width - win_w - start_pos_x;
+        availableArea.x : availableArea.width - win_w;
 
       while (!placed &&
              ((screen->getRowPlacementDirection() == BScreen::RightLeft) ?
               place_x > 0 : place_x + win_w < (signed) availableArea.width)) {
         placed = True;
 
+        const int win_right = place_x + win_w,
+          win_bottom = place_y + win_h;
+
         BlackboxWindowList::iterator it = windowList.begin();
         const BlackboxWindowList::iterator end = windowList.end();
         for (; placed && it != end; ++it) {
-          BlackboxWindow *curr = *it;
-          int curr_w = curr->getWidth() + (screen->getBorderWidth() * 4);
-          int curr_h = ((curr->isShaded()) ?
-                        curr->getTitleHeight() :
-                        curr->getHeight()) + (screen->getBorderWidth() * 4);
+          const BlackboxWindow* const curr = *it;
+          const int curr_w = curr->getWidth() + (screen->getBorderWidth() * 4);
+          const int curr_h =
+            ((curr->isShaded()) ?
+             curr->getTitleHeight() :
+             curr->getHeight()) + (screen->getBorderWidth() * 4);
 
-          if (curr->getXFrame() < place_x + win_w &&
+          if (curr->getXFrame() < win_right &&
               curr->getXFrame() + curr_w > place_x &&
-              curr->getYFrame() < place_y + win_h &&
+              curr->getYFrame() < win_bottom &&
               curr->getYFrame() + curr_h > place_y) {
             placed = False;
           }
@@ -398,31 +410,34 @@ void Workspace::placeWindow(BlackboxWindow *win) {
 
   case BScreen::ColSmartPlacement: {
     place_x = (screen->getRowPlacementDirection() == BScreen::LeftRight) ?
-      start_pos_x : availableArea.width - win_w - start_pos_x;
-
+      availableArea.x : availableArea.width - win_w;
     while (!placed &&
            ((screen->getRowPlacementDirection() == BScreen::RightLeft) ?
             place_x > 0 : place_x + win_w < (signed) availableArea.width)) {
       place_y = (screen->getColPlacementDirection() == BScreen::TopBottom) ?
-        start_pos_y : availableArea.height - win_h - start_pos_y;
+        availableArea.y : availableArea.height - win_h;
 
       while (!placed &&
              ((screen->getColPlacementDirection() == BScreen::BottomTop) ?
               place_y > 0 : place_y + win_h < (signed) availableArea.height)){
         placed = True;
 
+        const int win_right = place_x + win_w,
+          win_bottom = place_y + win_h;
+
         BlackboxWindowList::iterator it = windowList.begin();
         const BlackboxWindowList::iterator end = windowList.end();
         for (; placed && it != end; ++it) {
-          BlackboxWindow *curr = *it;
-          int curr_w = curr->getWidth() + (screen->getBorderWidth() * 4);
-          int curr_h = ((curr->isShaded()) ?
-                        curr->getTitleHeight() :
-                        curr->getHeight()) + (screen->getBorderWidth() * 4);
+          const BlackboxWindow* const curr = *it;
+          const int curr_w = curr->getWidth() + (screen->getBorderWidth() * 4);
+          const int curr_h =
+            ((curr->isShaded()) ?
+             curr->getTitleHeight() :
+             curr->getHeight()) + (screen->getBorderWidth() * 4);
 
-          if (curr->getXFrame() < place_x + win_w &&
+          if (curr->getXFrame() < win_right &&
               curr->getXFrame() + curr_w > place_x &&
-              curr->getYFrame() < place_y + win_h &&
+              curr->getYFrame() < win_bottom &&
               curr->getYFrame() + curr_h > place_y) {
             placed = False;
           }
@@ -445,6 +460,10 @@ void Workspace::placeWindow(BlackboxWindow *win) {
         ((unsigned) cascade_y > (availableArea.height / (unsigned) 2)))
       cascade_x = cascade_y = 32;
 
+    if (cascade_x == 32) {
+      cascade_x += availableArea.x;
+      cascade_y += availableArea.y;
+    }
     place_x = cascade_x;
     place_y = cascade_y;
 
