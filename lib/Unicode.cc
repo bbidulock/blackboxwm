@@ -43,6 +43,7 @@
 namespace bt {
 
   static const iconv_t invalid = reinterpret_cast<iconv_t>(-1);
+  static std::string codeset;
 
   static unsigned int byte_swap(unsigned int c) {
     wchar_t ret;
@@ -165,13 +166,13 @@ bool bt::hasUnicode() {
 
   setlocale(LC_ALL, "");
 
-  std::string codeset;
 #ifdef HAVE_NL_LANGINFO
   codeset = nl_langinfo(CODESET);
 #else
   std::string locale = setlocale(LC_CTYPE, 0);
   std::string::const_iterator it = locale.begin();
   const std::string::const_iterator end = locale.end();
+  codeset = ""; // empty by default, not null
   for (; it != end; ++it) {
     if (*it == '.') {
       // found codeset separator
@@ -216,7 +217,7 @@ bt::ustring bt::toUnicode(const std::string &string) {
     return ret;
   }
   ret.reserve(string.size());
-  convert("UTF-32", "", string, ret);
+  convert("UTF-32", codeset.c_str(), string, ret);
   return native_endian(ret);
 }
 
@@ -229,7 +230,7 @@ std::string bt::toLocale(const bt::ustring &string) {
     return ret;
   }
   ret.reserve(string.size());
-  convert("", "UTF-32", add_bom(string), ret);
+  convert(codeset.c_str(), "UTF-32", add_bom(string), ret);
   return ret;
 }
 
