@@ -119,10 +119,7 @@ public:
                    TopRight, CenterRight, BottomRight };
 
   Direction direction(void) const;
-  void setDirection(Direction new_direction);
-
   Placement placement(void) const;
-  void setPlacement(Placement new_placement);
 };
 
 #endif // __Slit_hh

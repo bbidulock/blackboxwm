@@ -143,7 +143,7 @@ void SlitDirectionmenu::itemClicked(unsigned int id, unsigned int button) {
   Slit *slit = _bscreen->slit();
 
   res.saveSlitDirection((Slit::Direction) id);
-  if (slit) slit->setDirection((Slit::Direction) id);
+  if (slit) slit->reconfigure();
   _bscreen->saveResource();
 }
 
@@ -188,6 +188,6 @@ void SlitPlacementmenu::itemClicked(unsigned int id, unsigned int button) {
   Slit *slit = _bscreen->slit();
 
   res.saveSlitPlacement((Slit::Placement) id);
-  if (slit) slit->setPlacement((Slit::Placement) id);
+  if (slit) slit->reconfigure();
   _bscreen->saveResource();
 }

@@ -612,20 +612,6 @@ Slit::Direction Slit::direction(void) const {
 }
 
 
-void Slit::setDirection(Slit::Direction new_direction) {
-  screen->resource().saveSlitDirection(new_direction);
-  reconfigure();
-  screen->saveResource();
-}
-
-
 Slit::Placement Slit::placement(void) const {
   return static_cast<Slit::Placement>(screen->resource().slitPlacement());
-}
-
-
-void Slit::setPlacement(Slit::Placement new_placement) {
-  screen->resource().saveSlitPlacement(new_placement);
-  reconfigure();
-  screen->saveResource();
 }
