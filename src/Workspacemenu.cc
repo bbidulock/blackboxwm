@@ -52,8 +52,8 @@ void Workspacemenu::itemSelected(int button, int index) {
     getScreen()->removeLastWorkspace();
   } else {
     const Workspace* const wkspc = getScreen()->getCurrentWorkspace();
-    if (static_cast<signed>(wkspc->getID()) != (index - 2) &&
-        (index - 2) < static_cast<signed>(getScreen()->getWorkspaceCount()))
+    if ((signed)wkspc->getID() != (index - 2) &&
+        (index - 2) < (signed)getScreen()->getWorkspaceCount())
       getScreen()->changeWorkspaceID(index - 2);
   }
   if (! (getScreen()->getWorkspacemenu()->isTorn() || isTorn()))

@@ -103,7 +103,7 @@ void Windowmenu::itemSelected(int button, int index) {
     break;
 
   case BScreen::WindowMaximize:
-    window->maximize(button);
+    window->maximize((unsigned int) button);
     break;
 
   case BScreen::WindowClose:
@@ -161,9 +161,8 @@ Windowmenu::SendtoWorkspacemenu::SendtoWorkspacemenu(Windowmenu *w)
 void Windowmenu::SendtoWorkspacemenu::itemSelected(int button, int index) {
   if (button > 2) return;
 
-  if (index <= static_cast<signed>(getScreen()->getWorkspaceCount())) {
-    if (index == static_cast<signed>(getScreen()->getCurrentWorkspaceID()))
-      return;
+  if (index <= (signed)getScreen()->getWorkspaceCount()) {
+    if (index == (signed)getScreen()->getCurrentWorkspaceID()) return;
     if (window->isStuck()) window->stick();
 
     if (button == 1) window->withdraw();
