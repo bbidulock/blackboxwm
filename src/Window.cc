@@ -2691,12 +2691,6 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
 }
 
 
-static inline
-bool within(int x, int y, int width, int height) {
-  return ((x >= 0 && x <= width) && (y >= 0 && y <= height));
-}
-
-
 void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const re) {
 #ifdef DEBUG
   fprintf(stderr, "BlackboxWindow::buttonReleaseEvent() for 0x%lx\n",
@@ -2705,8 +2699,8 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const re) {
 
   if (re->window == frame.maximize_button) {
     if (re->button < 4) {
-      if (within(re->x, re->y,
-                 frame.style->button_width, frame.style->button_width)) {
+      if (bt::within(re->x, re->y,
+                     frame.style->button_width, frame.style->button_width)) {
         maximize(re->button);
         screen->raiseWindow(this);
       } else {
@@ -2715,16 +2709,16 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const re) {
     }
   } else if (re->window == frame.iconify_button) {
     if (re->button == 1) {
-      if (within(re->x, re->y,
-                 frame.style->button_width, frame.style->button_width))
+      if (bt::within(re->x, re->y,
+                     frame.style->button_width, frame.style->button_width))
         iconify();
       else
         redrawIconifyButton(False);
     }
   } else if (re->window == frame.close_button) {
     if (re->button == 1) {
-      if (within(re->x, re->y,
-                 frame.style->button_width, frame.style->button_width))
+      if (bt::within(re->x, re->y,
+                     frame.style->button_width, frame.style->button_width))
         close();
       redrawCloseButton(False);
     }

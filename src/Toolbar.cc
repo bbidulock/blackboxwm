@@ -162,7 +162,8 @@ void ToolbarPlacementmenu::itemClicked(unsigned int id, unsigned int button) {
 
 
 
-static long aMinuteFromNow(void) {
+static
+long aMinuteFromNow(void) {
   timeval now;
   gettimeofday(&now, 0);
   return ((60 - (now.tv_sec % 60)) * 1000);
@@ -188,8 +189,7 @@ Toolbar::Toolbar(BScreen *scrn) {
   editing = False;
   new_name_pos = 0;
 
-  toolbarmenu =
-    new Toolbarmenu(*blackbox, screen->screenNumber(), this);
+  toolbarmenu = new Toolbarmenu(*blackbox, screen->screenNumber(), this);
 
   display = blackbox->XDisplay();
   XSetWindowAttributes attrib;
@@ -374,25 +374,22 @@ void Toolbar::reconfigure(void) {
 
   for (unsigned int i = 0; i < screen->getWorkspaceCount(); i++) {
     width = bt::textRect(style->font, screen->getWorkspaceName(i)).width();
-    if (width > frame.workspace_label_w) frame.workspace_label_w = width;
+    frame.workspace_label_w = std::max(frame.workspace_label_w, width);
   }
 
   frame.workspace_label_w = frame.clock_w =
-                            std::max(frame.workspace_label_w,
-                                     frame.clock_w) + (frame.bevel_w * 4);
+    std::max(frame.workspace_label_w, frame.clock_w) + (frame.bevel_w * 4);
 
-  frame.window_label_w =
-    (frame.rect.width() - (bw * 2) -
-     (frame.clock_w + (frame.button_w * 4) +
-      frame.workspace_label_w + (frame.bevel_w * 8) + 7));
+  frame.window_label_w =(frame.rect.width() - (bw * 2) -
+                         (frame.clock_w + (frame.button_w * 4) +
+                          frame.workspace_label_w + (frame.bevel_w * 8) + 7));
 
-  if (hidden) {
+  if (hidden)
     XMoveResizeWindow(display, frame.window, frame.x_hidden, frame.y_hidden,
                       frame.rect.width(), frame.rect.height());
-  } else {
+  else
     XMoveResizeWindow(display, frame.window, frame.rect.x(), frame.rect.y(),
                       frame.rect.width(), frame.rect.height());
-  }
 
   XMoveResizeWindow(display, frame.workspace_label,
                     bw + frame.bevel_w, bw + frame.bevel_w,
@@ -535,13 +532,11 @@ void Toolbar::redrawWindowLabel(void) {
   BlackboxWindow *foc = screen->getBlackbox()->getFocusedWindow();
   if (! foc || foc->getScreen() != screen) return;
 
-  const char *title = foc->getTitle();
   bt::Pen pen(screen->screenNumber(), style->w_text);
   u.setCoords(u.left()  + frame.bevel_w, u.top()    + frame.bevel_w,
               u.right() - frame.bevel_w, u.bottom() - frame.bevel_w);
   bt::drawText(style->font, pen, frame.window_label, u,
-               style->alignment, title);
-
+               style->alignment, foc->getTitle());
 }
 
 
@@ -774,8 +769,7 @@ void Toolbar::buttonReleaseEvent(const XButtonEvent *re) {
     if (re->window == frame.psbutton) {
       redrawPrevWorkspaceButton(False);
 
-      if (re->x >= 0 && re->x < static_cast<signed>(frame.button_w) &&
-          re->y >= 0 && re->y < static_cast<signed>(frame.button_w))
+      if (bt::within(re->x, re->y, frame.button_w, frame.button_w))
        if (screen->getCurrentWorkspaceID() > 0)
           screen->changeWorkspaceID(screen->getCurrentWorkspaceID() - 1);
         else
@@ -783,8 +777,7 @@ void Toolbar::buttonReleaseEvent(const XButtonEvent *re) {
     } else if (re->window == frame.nsbutton) {
       redrawNextWorkspaceButton(False);
 
-      if (re->x >= 0 && re->x < static_cast<signed>(frame.button_w) &&
-          re->y >= 0 && re->y < static_cast<signed>(frame.button_w))
+      if (bt::within(re->x, re->y, frame.button_w, frame.button_w))
         if (screen->getCurrentWorkspaceID() < screen->getWorkspaceCount() - 1)
           screen->changeWorkspaceID(screen->getCurrentWorkspaceID() + 1);
         else
@@ -792,14 +785,12 @@ void Toolbar::buttonReleaseEvent(const XButtonEvent *re) {
     } else if (re->window == frame.pwbutton) {
       redrawPrevWindowButton(False);
 
-      if (re->x >= 0 && re->x < static_cast<signed>(frame.button_w) &&
-          re->y >= 0 && re->y < static_cast<signed>(frame.button_w))
+      if (bt::within(re->x, re->y, frame.button_w, frame.button_w))
         screen->prevFocus();
     } else if (re->window == frame.nwbutton) {
       redrawNextWindowButton(False);
 
-      if (re->x >= 0 && re->x < static_cast<signed>(frame.button_w) &&
-          re->y >= 0 && re->y < static_cast<signed>(frame.button_w))
+      if (bt::within(re->x, re->y, frame.button_w, frame.button_w))
         screen->nextFocus();
     } else if (re->window == frame.window_label)
       screen->raiseFocus();
@@ -813,8 +804,8 @@ void Toolbar::enterNotifyEvent(const XCrossingEvent *) {
 
   if (hidden) {
     if (! hide_timer->isTiming()) hide_timer->start();
-  } else {
-    if (hide_timer->isTiming()) hide_timer->stop();
+  } else if (hide_timer->isTiming()) {
+    hide_timer->stop();
   }
 }
 
@@ -824,8 +815,8 @@ void Toolbar::leaveNotifyEvent(const XCrossingEvent *) {
 
   if (hidden) {
     if (hide_timer->isTiming()) hide_timer->stop();
-  } else {
-    if (! hide_timer->isTiming()) hide_timer->start();
+  } else if (! hide_timer->isTiming()) {
+    hide_timer->start();
   }
 }
 
@@ -850,9 +841,8 @@ void Toolbar::exposeEvent(const XExposeEvent *ee) {
 
 void Toolbar::keyPressEvent(const XKeyEvent *ke) {
   if (ke->window == frame.workspace_label && editing) {
-    if (new_workspace_name.empty()) {
+    if (new_workspace_name.empty())
       new_name_pos = 0;
-    }
 
     const ToolbarStyle * const style = screen->getToolbarStyle();
 
@@ -940,7 +930,7 @@ void Toolbar::timeout(bt::Timer *timer) {
 
     clock_timer->setTimeout(aMinuteFromNow());
   } else if (timer == hide_timer) {
-    hidden = !hidden;
+    hidden = ! hidden;
     if (hidden)
       XMoveWindow(display, frame.window,
                   frame.x_hidden, frame.y_hidden);
@@ -969,13 +959,12 @@ void Toolbar::toggleAutoHide(void) {
 
 
 void Toolbar::toggleOnTop(void) {
-  on_top = (! on_top);
+  on_top = ! on_top;
   if (on_top) screen->raiseWindows((WindowStack *) 0);
 }
 
 
-void Toolbar::setPlacement(Placement place)
-{
+void Toolbar::setPlacement(Placement place) {
   screen->saveToolbarPlacement(place);
   reconfigure();
 

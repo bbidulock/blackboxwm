@@ -532,13 +532,10 @@ void Slit::updateStrut(void) {
         break;
       case BottomCenter:
       case BottomLeft:
-      case BottomRight:
-        int pos;
-        if (do_auto_hide)
-          pos = frame.y_hidden;
-        else
-          pos = frame.rect.y();
+      case BottomRight: {
+        const int pos = (do_auto_hide) ? frame.y_hidden : frame.rect.y();
         strut.bottom = (screen->screenInfo().rect().bottom() - pos);
+      }
         break;
       case CenterLeft:
         strut.left = getExposedWidth() + border_width;
@@ -656,11 +653,11 @@ void Slit::shutdown(void) {
 void Slit::buttonPressEvent(const XButtonEvent * const e) {
   if (e->window != frame.window) return;
 
-  if (e->button == Button1 && (! on_top)) {
+  if (e->button == Button1 && ! on_top) {
     WindowStack w;
     w.push_back(frame.window);
     screen->raiseWindows(&w);
-  } else if (e->button == Button2 && (! on_top)) {
+  } else if (e->button == Button2 && ! on_top) {
     XLowerWindow(display, frame.window);
   } else if (e->button == Button3) {
     slitmenu->popup(e->x_root, e->y_root);
@@ -734,14 +731,14 @@ void Slit::timeout(bt::Timer *) {
 
 
 void Slit::toggleOnTop(void) {
-  on_top = (! on_top);
+  on_top = ! on_top;
   if (on_top) screen->raiseWindows((WindowStack *) 0);
 }
 
 
 
 void Slit::toggleAutoHide(void) {
-  do_auto_hide = (! do_auto_hide);
+  do_auto_hide = ! do_auto_hide;
 
   updateStrut();
 
@@ -758,14 +755,14 @@ void Slit::unmapNotifyEvent(const XUnmapEvent * const e) {
 }
 
 
-void Slit::reparentNotifyEvent( const XReparentEvent * const event) {
+void Slit::reparentNotifyEvent(const XReparentEvent * const event) {
   if (event->parent != frame.window)
     removeClient(event->window, False);
 }
 
 
 Slit::Direction Slit::direction(void) const {
-  return (Slit::Direction) screen->getSlitDirection();
+  return static_cast<Slit::Direction>(screen->getSlitDirection());
 }
 
 
@@ -776,7 +773,7 @@ void Slit::setDirection(Slit::Direction new_direction) {
 
 
 Slit::Placement Slit::placement(void) const {
-  return (Slit::Placement) screen->getSlitPlacement();
+  return static_cast<Slit::Placement>(screen->getSlitPlacement());
 }
 
 
