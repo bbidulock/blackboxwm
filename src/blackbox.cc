@@ -646,6 +646,23 @@ void Blackbox::process_event(XEvent *e) {
 
         if (win && win->isVisible() && win->setInputFocus())
           win->installColormap(True);
+      } else if (e->xclient.message_type == netwm()->activeWindow()) {
+        BlackboxWindow *win = searchWindow(e->xclient.window);
+        if (win) {
+          if (win->isIconic())
+            win->deiconify(False, False);
+
+          BScreen *screen = win->getScreen();
+          if (! win->isStuck() &&
+              win->getWorkspaceNumber() != screen->getCurrentWorkspaceID())
+            screen->changeWorkspaceID(win->getWorkspaceNumber());
+
+          if (win->isVisible() && win->setInputFocus()) {
+            Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
+            wkspc->raiseWindow(win);
+            win->installColormap(True);
+          }
+        }
       } else if (e->xclient.message_type == getBlackboxCycleWindowFocusAtom()) {
         BScreen *screen = searchScreen(e->xclient.window);
 
@@ -1632,10 +1649,18 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
   if (active_screen && active_screen->isScreenManaged()) {
     active_screen->getToolbar()->redrawWindowLabel(True);
     active_screen->updateNetizenWindowFocus();
+    Window active = (focused_window) ? focused_window->getClientWindow() :
+                                       None;
+    netwm()->setActiveWindow(active_screen->getRootWindow(), active,
+                             getXDisplay());
   }
 
   if (old_screen && old_screen != active_screen) {
     old_screen->getToolbar()->redrawWindowLabel(True);
     old_screen->updateNetizenWindowFocus();
+    Window active = (focused_window) ? focused_window->getClientWindow() :
+                                       None;
+    netwm()->setActiveWindow(old_screen->getRootWindow(), active,
+                             getXDisplay());
   }
 }

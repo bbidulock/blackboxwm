@@ -285,13 +285,15 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   blackbox->netwm()->setDesktopViewport(0, 0,
                                         blackbox->getXDisplay(),
                                         getRootWindow());
+  blackbox->netwm()->setActiveWindow(getRootWindow(), None,
+                                     blackbox->getXDisplay());
 
   Atom supported[] = {
     blackbox->netwm()->numberOfDesktops(),
     blackbox->netwm()->desktopGeometry(),
     blackbox->netwm()->desktopViewport(),
     blackbox->netwm()->currentDesktop(),
-    blackbox->netwm()->desktopNames()
+    blackbox->netwm()->activeWindow()
   };
 
   blackbox->netwm()->setSupported(supported, 5, blackbox->getXDisplay(),
@@ -381,6 +383,8 @@ BScreen::~BScreen(void) {
   blackbox->netwm()->removeProperty(blackbox->netwm()->desktopViewport(),
                                     blackbox->getXDisplay(), getRootWindow());
   blackbox->netwm()->removeProperty(blackbox->netwm()->currentDesktop(),
+                                    blackbox->getXDisplay(), getRootWindow());
+  blackbox->netwm()->removeProperty(blackbox->netwm()->activeWindow(),
                                     blackbox->getXDisplay(), getRootWindow());
 
   if (resource.wstyle.fontset)

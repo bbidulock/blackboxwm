@@ -41,6 +41,7 @@ public:
   Atom desktopGeometry(void) const { return net_desktop_geometry; }
   Atom desktopViewport(void) const { return net_desktop_viewport; }
   Atom currentDesktop(void) const { return net_current_desktop; }
+  Atom activeWindow(void) const { return net_active_window; }
   Atom supportingWMCheck(void) const { return net_supporting_wm_check; }
   Atom wmName(void) const { return net_wm_name; }
 
@@ -54,6 +55,7 @@ public:
                           Display* display, Window target) const;
   void setCurrentDesktop(unsigned int number, Display* display,
                          Window target) const;
+  void setActiveWindow(Window target, Window data, Display* display) const;
   void setSupportingWMCheck(Window target, Window data,
                             Display* display) const;
   void setWMName(const std::string& name, Window w, Display *display) const;
@@ -66,8 +68,8 @@ private:
 
   Atom utf8_string,
     net_supported, net_number_of_desktops, net_desktop_geometry,
-    net_desktop_viewport, net_current_desktop, net_supporting_wm_check,
-    net_wm_name;
+    net_desktop_viewport, net_current_desktop, net_active_window,
+    net_supporting_wm_check, net_wm_name;
 };
 
 #endif // _blackbox_netwm_hh
