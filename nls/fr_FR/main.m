@@ -14,6 +14,8 @@ $ #Usage
   -help\t\t\t\taffiche ce texte d'aide et quitte.\n\n
 $ #CompileOptions
 # Options de compilation:\n\
-  Debugging\t\t\t%s\n\
+  Debugage\t\t\t%s\n\
+  Entrelacement:\t\t\t%s\n\
   Shape:\t\t\t%s\n\
-  8bpp Ordered Dithering:\t%s\n\n
+  Fente:\t\t\t\t%s\n\
+  8bpp Lissage ordonné:\t%s\n\n

@@ -35,6 +35,7 @@ Changes from 0.62.1:
     on the window.  To further attack the infinite loops this function ensures
     that client.transient != this.
   - added zh_TW (Taiwan Chinese) and Hungarian (hu_HU)
+  - updated the French nls support and added French man pages
   - remove slit and netwm as compile time options
   - strip much of BaseDisplay's original functionality and move it to the
     blackbox class.

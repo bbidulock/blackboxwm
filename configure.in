@@ -179,6 +179,7 @@ util/Makefile
 data/Makefile
 data/styles/Makefile
 doc/Makefile
+doc/fr_FR/Makefile
 doc/ja_JP/Makefile
 doc/nl_NL/Makefile
 doc/sl_SI/Makefile

@@ -1,0 +1,83 @@
+.\"
+.\" Man page for Bsetroot
+.\"
+.\" Copyright (c) 2000 by Wilbert Berendsen <wbsoft@xs4all.nl>
+.\"
+.\" French translation by Bertrand Duret <bertrand.duret@libertysurf.fr>
+.\"
+.TH bsetroot 1 "7 Mars 2002" "0.62.?"
+.SH NOM
+bsetroot \- Utilitaire Blackbox pour modifier l'apparence de la fenêtre racine
+.SH SYNOPSIS
+.BR bsetroot " \-help"
+.br
+.B bsetroot
+.RI "[ \-display " affichage " ] \-solid " couleur
+.br
+.B bsetroot
+.RI "[ \-display " affichage " ] \-mod " "x y" " \-fg " couleur " \-bg " couleur
+.br
+.B bsetroot
+.RI "[ \-display " affichage " ] \-gradient " texture " \-from " couleur " \-to " couleur
+.SH DESCRIPTION
+Bsetroot est un utilitaire qui contrôle l'apparence de la fenêtre racine
+de trois façons\ : soit il lui donne une couleur uniforme, soit il compose
+un motif de remplissage à deux couleurs, soit il produit une texture dégradée
+à partir de deux couleurs.
+.PP
+Bsetroot ressemble à
+.IR xsetroot (1)
+dans sa fonction, excepté qu'il supporte les affichages disposant de plusieurs
+écrans et qu'il gère les textures dégradées de la même façon que Blackbox.
+Il ne prend pas en charge les curseurs, etc.
+Bsetroot fait partie du package Blackbox.
+.SH OPTIONS
+La façon dont Bsetroot opère est déterminée en spécifiant l'une des trois
+premières options\ :
+.TP
+.BI \-solid " couleur"
+Colorie la fenêtre racine avec la couleur spécifiée.
+.TP
+.BI \-mod " x y"
+Crée un motif de remplissage. Vous devez aussi spécifier les couleurs
+.BR \-bg " et " \-fg .
+.TP
+.BI \-gradient " chaînetexture"
+Produit la texture spécifiée par la chaîne sur la fenêtre racine.
+Pour les chaînes de texture possibles, cf.
+.IR blackbox (1).
+Vous devez également spécifier les couleurs
+.BR \-from " et " \-to .
+.TP
+.BI \-display " affichage"
+Indique à Bsetroot de se connecter à l'affichage spécifié.
+.TP
+.BI "\-bg, \-background " couleur
+Couleur d'arrière plan. Requise pour les motifs
+.BR \-mod .
+.TP
+.BI "\-fg, \-foreground " couleur
+Couleur d'avant plan. Requise pour les motifs
+.BR \-mod .
+.TP
+.BI \-from " couleur"
+Couleur de départ de la texture. Requise avec le mode
+.BR \-gradient .
+.TP
+.BI \-to " color"
+Couleur de fin de la texture. Requise avec le mode
+.BR \-gradient .
+.TP
+.B \-help
+Affiche les informations de version et un court message d'aide.
+.SH AUTEUR
+Bsetroot a été écrit et maintenu par Brad Hughes
+.nh \" hyphenation off
+(blackbox@alug.org)
+.hy \" on again
+et Jeff Raven
+.nh
+(jraven@psu.edu).
+.hy
+.SH VOIR AUSSI
+.IR blackbox (1)

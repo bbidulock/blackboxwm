@@ -6,7 +6,7 @@ $ #Creating
 $ #XGetWindowAttributesFail
 # BlackboxWindow::BlackboxWindow: Echec de XGetWindowAttributres\n
 $ #CannotFindScreen
-# BlackboxWindow::BlackboxWindow: Impossible de trouver l'écran de la fenêtre racine0x%lx\n
+# BlackboxWindow::BlackboxWindow: Impossible de trouver l'écran de la fenêtre racine 0x%lx\n
 $ #Unnamed
 # Inconnu
 $ #MapRequest

@@ -10,7 +10,9 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-# nls/de_DE/Makefile.am for Blackbox - an X11 Window Manager
+# doc/<locale>/Makefile.am for Blackbox - an X11 Window manager
+
+# what locale is this
 
 
 SHELL = @SHELL@
@@ -73,11 +75,19 @@ VERSION = @VERSION@
 gencat_cmd = @gencat_cmd@
 regex_cmd = @regex_cmd@
 
+locale = fr_FR
+
+# where to install
+locale_mandir = $(DESTDIR)$(mandir)/$(locale)/man1
+
+# what to install
+manfiles = blackbox.1 @srcdir@/bsetroot.1
+
+CLEANFILES = blackbox.1
+MAINTAINERCLEANFILES = Makefile.in
+
 NLSTEST = @NLS@
-CLEANFILES = blackbox.cat
-MAINTAINERCLEANFILES = Makefile.in Translation.m
-DISTCLEANFILES = Translation.m
-MFILES = @srcdir@/BaseDisplay.m @srcdir@/Basemenu.m @srcdir@/Configmenu.m @srcdir@/Icon.m @srcdir@/Image.m @srcdir@/Screen.m @srcdir@/Slit.m @srcdir@/Toolbar.m @srcdir@/Window.m @srcdir@/Windowmenu.m @srcdir@/Workspace.m @srcdir@/Workspacemenu.m @srcdir@/blackbox.m @srcdir@/common.m @srcdir@/main.m @srcdir@/bsetroot.m
+DEFAULT_MENU = $(pkgdatadir)/menu
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../../config.h
 CONFIG_CLEAN_FILES = 
@@ -91,7 +101,7 @@ GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps nls/de_DE/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps doc/fr_FR/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
@@ -103,7 +113,7 @@ TAGS:
 
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 
-subdir = nls/de_DE
+subdir = doc/fr_FR
 
 distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
@@ -150,7 +160,6 @@ clean-generic:
 distclean-generic:
 	-rm -f Makefile $(CONFIG_CLEAN_FILES)
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
-	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
 
 maintainer-clean-generic:
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
@@ -180,34 +189,31 @@ all installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
-all-local: blackbox.cat
-install-data-local: blackbox.cat
-	@if test x$(NLSTEST) = "x-DNLS"; then \
-		echo "Installing catalog in $(DESTDIR)$(pkgdatadir)/nls/de_DE"; \
-		$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)/nls/de_DE; \
-		$(INSTALL_DATA) blackbox.cat $(DESTDIR)$(pkgdatadir)/nls/de_DE; \
-		rm -f $(DESTDIR)$(pkgdatadir)/nls/de; \
-		ln -f -s de_DE $(DESTDIR)$(pkgdatadir)/nls/de; \
-	fi
-uninstall-local:
-	@if test x$(NLSTEST) = "x-DNLS"; then \
-		rm -f $(DESTDIR)$(pkgdatadir)/nls/de_DE/blackbox.cat; \
-		rm -f $(DESTDIR)$(pkgdatadir)/nls/de; \
-		rmdir $(DESTDIR)$(pkgdatadir)/nls/de_DE; \
-	fi
-
-Translation.m: $(MFILES)
-	@if test x$(NLSTEST) = "x-DNLS"; then \
-		awk -f @srcdir@/../convert.awk output=Translation.m $(MFILES); \
-	fi
-
-blackbox.cat: Translation.m
-	@if test x$(NLSTEST) = "x-DNLS"; then \
-		$(gencat_cmd) blackbox.cat Translation.m; \
-	fi
+# which files need processing during 'make'
+all-local: blackbox.1
 
 distclean-local:
 	rm -f *\~
+
+blackbox.1: blackbox.1.in
+	@regex_cmd@ -e "s,@defaultmenu@,$(DEFAULT_MENU)," \
+		-e "s,@pkgdatadir@,$(pkgdatadir)," \
+		-e "s,@version@,$(VERSION)," \
+		@srcdir@/blackbox.1.in > blackbox.1
+
+install-data-local: all-local
+	@if test x$(NLSTEST) = "x-DNLS"; then \
+		echo "Installing manual pages for $(locale)"; \
+		$(mkinstalldirs) $(locale_mandir); \
+		$(INSTALL_DATA) $(manfiles) $(locale_mandir); \
+	fi
+
+uninstall-local:
+	@if test x$(NLSTEST) = "x-DNLS"; then \
+		for i in $(manfiles); do \
+		rm -f $(locale_mandir)/`basename $$i`; \
+		done; \
+	fi
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -1,0 +1,873 @@
+.\"
+.\" Man page for Blackbox
+.\"
+.\" Copyright (c) 2000 by Wilbert Berendsen <wbsoft@xs4all.nl>
+.\"
+.\" This manual page may be freely distributed and modified.
+.\" Parts of the text are taken from website and several README's
+.\" by His Great Hughesness himself. Why reinvent wheels?
+.\"
+.\" Created with NEdit, tested with ``man'' and ``tkman.''
+.\" This manpage uses only standard groff and tmac.an macros.
+.\" To all translators who didn't do manpages earlier (like me ;-):
+.\" Read the Man-Page-Mini-HOWTO and the LDP manpage ``man 7 man''
+.\" There's all I needed to know about these macros.
+.\"
+.\" Updated for bb 0.61 at Sat Sep  9 06:56:04 CEST 2000
+.\" French translation by Bertrand Duret <bertrand.duret@libertysurf.fr>
+.\"
+.\" ..define sort of <blockquote><pre> macro
+.de EX
+.ne 5
+.if n .sp 1
+.if t .sp .5
+.nf
+.in +.5i
+..
+.de EE
+.fi
+.in -.5i
+.if n .sp 1
+.if t .sp .5
+..
+.TH blackbox 1 "Février 2002" "0.62.?"
+.SH NOM
+blackbox \- un gestionnaire de fenêtre pour X11
+.SH SYNOPSIS
+.BR blackbox " \-help | \-version"
+.br
+.B blackbox
+.RI "[ \-rc" " fichier_rc " "] [ \-display" " affichage " ]
+.SH DESCRIPTION
+.\"
+.\" Phirst Phew ParagraPhs taken from blackbox.alug.org
+.\"
+Blackbox est un ajout de plus à la liste des gestionnaires de fenêtres pour
+le Système de Fenêtres X de l'Open Group, Version 11 Release 6 et
+au delà.
+Blackbox est implémenté en C++, et ne reprend aucune ligne de code
+d'un autre gestionnaire de fenêtres (bien que l'implémentation des graphiques
+soit similaire à celle de Window Maker).
+.PP
+Dès l'heure où la première ligne de code fut écrite, Blackbox a évolué autour
+d'un principe\ : le minimalisme.
+Il n'est pas conçu pour être agréable au regard, ni pour être le plus riche
+en fonctionnalités, ni le plus décoré pour ressembler à
+l'interface NeXt, la plus largement connue.
+Il est simplement conçu pour être
+.BR rapide .
+.PP
+Blackbox fournit des décorations de fenêtres configurables, un menu racine
+pour lancer des applications et une barre-outil qui indique le nom de l'espace
+de travail courant, le nom de l'application disposant du clavier, et l'heure
+courante.
+Il dispose aussi d'un menu pour gérer les espaces de travail (ajout ou
+suppression). La `fente' (NDT. slit) est utilisable pour accrocher de petites
+applications, comme la plupart des outils-bb (NDT. bbtools), par exemple.
+.PP
+Blackbox fournit une gestion des icônes d'un type particulier\ : lorsqu'on
+réduit en icône une fenêtre, aucun icône n'apparaît\ ; en revanche, le nom de
+l'application est ajouté dans le sous-menu `Icones' du menu des espaces de
+travail.
+Ainsi, votre bureau ne sera jamais embarrassé par une multitude d'icones
+éparpillés. Comme alternative aux icônes, les fenêtres fantômes sont mises
+à disposition\ : un double-clic sur la barre de titre d'une fenêtre la
+rend fantôme (c'est-à-dire que la fenêtre disparaît et seule sa
+barre de titre demeure visible).
+.PP
+Blackbox utilise ses propres classes graphiques pour produire ses
+images à la volées.
+Par l'utilisation de fichiers de styles, vous pouvez très finement déterminer
+à quoi ressemble votre bureau.
+Blackbox utilise actuellement son propre protocole pour communiquer avec les
+clients tels que les pagineurs. Le travail est en cours pour supporter les
+nouvelles spécifications de gestionnaires de fenêtres que GNOME et KDE
+utilisent.
+.SH OPTIONS
+Blackbox comprend les options de ligne de commande suivantes\ :
+.TP
+.B \-help
+Affiche les options de ligne de commande, les fonctionnalités supportées,
+puis se termine.
+.TP
+.B \-version
+Affiche les informations de version et se termine.
+.TP
+.BI \-rc \ fichier_rc
+Utilise un autre fichier de contrôle d'exécution que celui par défaut
+.IR  "~/.blackboxrc" .
+.TP
+.BI \-display \ affichage
+Démarre Blackbox sur l'affichage spécifié.
+Les programmes lancés par Blackbox auront également la variable d'environnement
+.B DISPLAY
+positionnée à cette valeur.
+.SH EXÉCUTER BLACKBOX
+Le programme est habituellement exécuté par le script de démarrage de
+l'utilisateur, la plupart du temps nommé
+.IR ~/.xinitrc " ou " ~/.xsession .
+Pour exécuter blackbox, modifiez le script en ajoutant
+.EX 0
+exec blackbox
+.EE
+en tant que dernière commande exécutée par le script.
+Lorsque Blackbox se termine, la session X est également terminée.
+.PP
+Lorsqu'il démarre, Blackbox essaie de trouver un fichier de menu par défaut
+dans
+.IR @defaultmenu@ .
+Vous pouvez y configurer un menu global pour les utilisateurs.
+.PP
+Lors de l'arrêt ou du redémarrage, Blackbox enregistre les options par
+défaut de l'utilisateur dans le fichier
+.I ~/.blackboxrc
+dans le répertoire de l'utilisateur.
+Certaines ressources de ce fichier peuvent être éditées manuellement.
+.SH UTILISER BLACKBOX
+Depuis la version 0.60.x, Blackbox n'assume plus lui-même la gestion du
+clavier\ ; pour cela, il s'appuie sur un programme externe
+.IR bbkeys (1).
+Aussi, dans cette section, nous n'abordons que les commandes liées à la souris.
+.SS Fenêtre racine (arrière-plan)\ :
+Un clic droit (bouton 3) fait jaillir le menu racine.
+Par celui-ci, vous pouvez lancer vos applications.
+Vous pouvez aussi le personnaliser en fonction de vos besoins. Voir ci-dessus
+pour sa localisation.
+Un clic central (bouton 2) fait jaillir le menu des espaces de travail.
+Vous pouvez ajouter ou supprimer un espace de travail, voir les applications
+qui s'exécutent sur chacun d'entre eux, voir les fenêtres iconifiées,
+ou passer directement à n'importe quel espace de travail ou application.
+.PP
+Cliquer à l'aide du bouton de gauche (bouton 1) sur une application dans le
+menu des espaces de travail vous place sur cet espace de travail,
+amène l'application au devant et lui attribue le clavier.
+Cliquer à l'aide du bouton central (bouton 2) place l'application sur
+l'espace de travail courant.
+.SS Barre-Outil\ :
+La barre-outil consiste en trois zones\ : le nom de l'espace de travail, le nom
+de la fenêtre disposant actuellement du clavier et l'horloge.
+Un clic gauche sur la barre-outil l'amène au devant, un clic central la cache
+derrière les autres fenêtres (si `Toujours au dessus' n'est pas positionné)
+et un clic droit fait apparaître un petit
+menu.
+.PP
+En utilisant ce menu, vous pouvez saisir un nom pour l'espace de travail
+courant (lorsque la saisie est terminée, pressez Entrée).
+Vous pouvez aussi déterminer la position de la barre-outil, si elle doit toujours
+être visible (c'est-à-dire qu'aucune autre fenêtre ne la cache), et si
+elle doit glisser hors de l'écran lorsque la souris la quitte.
+.PP
+Note\ : Avec les versions de Blackbox antérieures à la version 0.60.0,
+un clic droit sur la barre-outil entraînait immédiatement la saisie du nom
+de l'espace de travail.
+.SS Barre de titre et Bordures des Fenêtres\ :
+Un clic gauche sur n'importe quelle partie de la bordure d'une fenêtre
+l'amène au devant.
+Faire glisser la souris (bouton maintenu enfoncé) déplace alors la fenêtre.
+Faire glisser les poignées de redimensionnement situées dans les coins
+au bas de la fenêtre permet de changer sa taille.
+Cliquer avec le bouton central pousse la fenêtre en arrière.
+Cliquer avec le bouton droit sur la bordure ou la barre de titre fait
+jaillir un menu de fenêtre, contenant les commandes suivantes\ :
+.TP
+.B Envoie vers\ ...
+Envoie la fenêtre sur un autre espace de travail.
+Lorsque vous sélectionnez l'espace de travail avec le bouton central,
+Blackbox vous place, avec l'application, sur l'espace de travail sélectionné.
+.TP
+.B Fantôme
+Rend la fenêtre fantôme (affiche seulement sa barre de titre).
+.TP
+.B Iconifie
+Iconifie la fenêtre.
+L'icône est présent dans le sous-menu 'Icônes' du menu des espaces de travail.
+Il n'apparaîtra d'*AUCUNE* autre façon sur l'écran.
+.TP
+.B Maximise
+Maximise la fenêtre ou la restaure à sa taille initiale.
+Lorsque vous cliquez avec le bouton central sur cet item, la fenêtre est
+seulement maximisée verticalement.
+.TP
+.B Élève
+Place la fenêtre au dessus des autres.
+.TP
+.B Abaisse
+Place la fenêtre sous les autres.
+.TP
+.B Épingle
+Épingle la fenêtre ou la libère.
+Une fenêtre épinglée sera toujours affichée sur l'espace de travail courant.
+.TP
+.B Massacre
+Massacre sauvagement (-SIGKILL) le propriétaire de la fenêtre.
+A n'utiliser qu'avec les clients récalcitrants qui refusent de se terminer.
+.TP
+.B Fermer
+Ferme l'application proprement.
+.PP
+Lorsque vous double-cliquez sur la barre de titre d'une fenêtre,
+elle devient `fantôme', de sorte que seule la barre de titre demeure visible.
+Un autre double-clic la rend à nouveau intégralement visible.
+.SS Boutons des Fenêtres\ :
+Le bouton dans le coin en haut à gauche de la fenêtre est le bouton
+pour iconifier.
+Cliquer dessus avec n'importe quel bouton de la souris iconifie la fenêtre.
+Le bouton le plus à droite (avec le X) ferme l'application.
+L'autre bouton à droite (lorsqu'il est présent) maximise la fenêtre de
+trois façons différentes\ :
+le bouton gauche de la souris produit une maximisation sur tout l'écran,
+le bouton central une maximisation verticale et le bouton droit une
+maximisation horizontale.
+.SS Pour tout menu\ :
+Un clic avec le bouton droit de la souris referme le menu.
+Cliquer avec le bouton gauche sur la barre de titre de n'importe quel
+(sous)menu et ensuite le faire glisser quelque part rend ce menu permanent,
+il ne disparaîtra pas lorsque vous cliquerez sur l'un de ses items.
+.SS Divers\ :
+Lorsque vous voulez faire glisser une fenêtre, mais que vous ne pouvez voir
+ni la barre de saisie, ni la barre de titre, vous pouvez presser Alt + bouton 1
+n'importe où dans la fenêtre et ensuite la faire glisser où vous voulez.
+Vous pouvez utiliser Alt + bouton 1 pour élever une fenêtre partiellement
+visible.
+Enfin, Alt + bouton 2 abaisse la fenêtre, et Alt + bouton 3 permet de
+modifier sa taille.
+.SH FICHIER DE MENU
+Un fichier de menu par défaut est installé dans
+.IR @defaultmenu@ .
+Bien sûr, ce menu global pour le système peut être configuré pour
+tous les utilisateurs simultanément.
+Mais il est également possible de créer un menu personnel.
+Il est habituel de créer un répertoire
+.IR "~/.blackbox/" " (ou " "~/blackbox/" ")"
+dans votre répertoire d'utilisateur, et d'y créer un fichier de menu,
+par exemple
+.IR menu ,
+ou d'y copier le fichier du menu global.
+Ensuite, il faut indiquer à Blackbox de charger votre menu de fichier
+plutôt que celui par défaut.
+Pour cela il faut ajouter une ressource (ou changer sa valeur) dans le fichier
+.IR ~/.blackboxrc \ :
+.EX
+session.menuFile:       ~/.blackbox/menu
+.EE
+Pour que cette modification prenne effet, Blackbox doit être redémarré.
+Assurez-vous que le menu est utilisable, puis sélectionnez `Redémarrer'
+dans le menu racine par défaut de Blackbox.
+.SS Syntaxe du menu
+La syntaxe du menu est très simple et très efficace.
+Il peut y avoir jusqu'à trois champs sur une ligne de menu.
+Ils sont de la forme\ :
+.EX
+[étiquette] (libellé ou fichier) {commande ou fichier}
+.EE
+Les étiquettes supportées sont les suivantes\ :
+.TP
+.B [begin] (libellé du menu racine)
+Indique à Blackbox de commencer l'analyse du fichier de menu.
+Cette étiquette est obligatoire pour que Blackbox analyse le fichier de menu.
+S'il ne peut la trouver, le menu par défaut du système est utilisé à la place.
+.TP
+.B [end]
+Indique à Blackbox la fin du menu.
+Ce peut être un sous-menu ou le menu racine principal.
+Il doit y avoir au moins une étiquette [end] correspondant à l'étiquette
+obligatoire [begin].
+.TP
+.B [exec] (libellé de la commande) {commande shell}
+Insère un item de commande dans le menu.
+Lorsque vous sélectionnez l'item dans le menu, Blackbox
+exécute `commande shell'.
+.TP
+.B [exit] (libellé pour quitter)
+Insère un item qui arrête Blackbox et termine.
+Tout programme en cours d'exécution n'est pas fermé.
+.TP
+.B [include] (fichier)
+Analyse le fichier spécifié par
+.I fichier
+et l'inclut dans le menu courant. Le nom de fichier peut être un chemin
+d'accès complet à un fichier, ou peut commencer par
+.IR ~/ ,
+ce qui sera remplacé par le chemin d'accès complet à votre répertoire
+d'utilisateur (par exemple
+.EX
+[include] (~/blackbox/menustyles)
+.EE
+inclut
+.I /home/bhughes/blackbox/menustyles
+dans mon menu).
+.TP
+.B [nop] (libellé - optionnel)
+Insère un item inopérant dans le menu courant.
+Il peut être utilisé pour formater un menu en blocs ou en sections.
+.B [nop]
+accepte un libellé, mais il n'est pas obligatoire, et un item vide sera
+utilisé si aucun n'est renseigné.
+.TP
+.B [style] (libellé) {fichier}
+Demande à Blackbox d'insérer un item qui, lorsqu'il est sélectionné, lit
+le fichier de style
+.I fichier
+et applique les nouvelles textures, couleurs et polices de caractères
+à la session en cours.
+.TP
+.B [stylesdir] (répertoire)
+Lit tous les noms de fichiers (les répertoires sont ignorés) du répertoire
+spécifié et crée des items de menu dans le menu courant correspondant aux
+noms des fichiers. Blackbox suppose que chaque fichier est un fichier de
+style valide. Lorsqu'un tel item est sélectionné par l'utilisateur,
+Blackbox applique le style à la session en cours.
+.TP
+.B [stylesmenu] (libellé) {répertoire}
+Crée une entrée de sous-menu nommée
+.I libellé
+(qui est aussi le titre du sous-menu), et insère dans ce sous-menu tous
+les noms de fichiers du répertoire spécifié, de la même façon que
+.BR [stylesdir] .
+.IP
+Les commandes
+.BR [stylesdir] \ et\  [stylesmenu]
+permettent d'installer de nouveaux fichiers de styles sans avoir à éditer
+le fichier de menu.
+.TP
+.B [submenu] (libellé) {titre du menu - optionnel}
+Demande à Blackbox de créer et analyser un nouveau menu.
+Ce menu est inséré en tant que sous-menu du menu parent.
+Comme les menus sont analysés récursivement, il n'y a pas de limite au
+nombre de niveaux des sous-menus.
+Le titre du nouveau menu est optionnel\ ; si aucun n'est renseigné,
+le titre sera identique au libellé de l'item.
+Une étiquette
+.B [end]
+est obligatoire pour terminer le sous-menu.
+.TP
+.B [reconfig] (libellé)
+Lorsqu'on sélectionne cet item, Blackbox relit les fichiers du style
+courant et du menu, puis applique toute modification.
+Ceci est particulièrement pratique pour créer de nouveaux thèmes ou styles,
+car ainsi il n'est pas nécessaire de redémarrer constamment Blackbox
+chaque fois que le fichier du style est enregistré.
+Par ailleurs, Blackbox relit automagiquement le menu chaque fois qu'il a été
+modifié.
+.TP
+.B [restart] (libellé) {commande shell - optionnel}
+Indique à Blackbox de redémarrer.
+Si `commande shell' est renseignée, Blackbox s'arrête et exécute la
+commande (qui lance habituellement un autre gestionnaire de fenêtre).
+Si la commande est omise, Blackbox se redémarre lui-même.
+.TP
+.B [config] (libellé)
+Insère un sous-menu généré par Blackbox, contenant de nombreuses options
+de configuration telles que la politique de positionnement des fenêtres,
+le mode d'attribution du clavier, le style de déplacement des fenêtres, etc.
+.TP
+.B [workspaces] (libellé)
+Insère dans le menu un lien direct vers le menu des espaces de travail.
+Ceci est très pratique pour les utilisateurs ne disposant pas d'une souris
+à trois boutons.
+.PP
+Toute ligne débutant par le caractère `#' est considérée comme un commentaire
+et n'est pas prise en compte par Blackbox.
+Dans les libellés, les commandes ou les noms de fichiers, n'importe quel
+caractère peut être protégé de la façon suivante\ :
+.EX
+[exec] (\\(mon super\\) \\{XTERM\\}) {xterm -T \\"super XTERM\\"}
+.EE
+L'utilisation de `\\\\' insère un back-slash littéral dans le libellé, la
+commande ou le nom de fichier.
+.SS Exemple de menu
+Mixons un peu tout ça. Voici un court exemple de fichier de menu\ :
+.PP
+.nf
+# Fichier de menu Blackbox
+[begin] (Blackbox @version@)
+  [exec] (rxvt) {rxvt -ls}
+  [exec] (Mozilla) {mozilla}
+  [exec] (The GIMP) {gimp}
+  [submenu] (Gestionnaire de fenêtres)
+    [exec] (Édition Menus) {nedit .blackbox/Menu}
+    [submenu] (Style) {Quel Style\ ?}
+      [stylesdir] (~/.blackbox/styles)
+      [stylesmenu] (Styles Blackbox) {@pkgdatadir@/styles}
+    [end]
+    [config] (Options de Config.)
+    [reconfig] (Reconfigurer)
+    [restart] (Redémarrer)
+  [end]
+  [exit] (Déconnexion)
+[end]
+# Fin du fichier de menu
+.fi
+.SH STYLES
+Pour déterminer l'apparence générale des bordures de fenêtres, des menus
+et de la barre-outil, Blackbox recourt à des fichiers spécifiques contenant des
+ressources
+.IR X (1).
+Ces dernières permettent de spécifier les couleurs, les textures et les
+polices de caractères.
+.PP
+L'installation par défaut de Blackbox fournit quelques fichiers de style.
+Ils sont habituellement copiés dans
+.IR @pkgdatadir@/styles .
+Vous pouvez étudier ou éditer ces fichiers pour comprendre comment
+fonctionnent les styles dans Blackbox.
+Les commandes
+.BR [style] ", " [stylesdir] " et " [stylesmenu]
+placées dans votre fichier de menu vous permettent de changer de style à la
+volée en le sélectionnant simplement dans votre menu.
+.PP
+Vous pouvez aussi créer un répertoire dans votre répertoire d'utilisateur
+(habituellement nommé
+.IR ~/.blackbox/styles )
+et y placer vos propres styles.
+Vous avez bien sûr le choix dans le nom du répertoire, mais de nombreux
+styles à télécharger s'appuient sur le nom
+.I styles
+(selon le modèle de nom de bb.themes.org).
+.PP
+Pour comprendre comment les styles fonctionnent, vous devez avoir une légère
+connaissance sur le fonctionnement des ressources X.
+.PP
+Les ressources X consistent en une clé et une valeur.
+La clé est constituée d'un certain nombre de clés plus petites (parfois
+référencées sous le nom d'enfants), délimitées par un point (`.').
+Les clés peuvent aussi contenir une astérisque (`*') qui sert de joker, ce
+qui signifie qu'une seule ligne de texte saisie peut correspondre à plusieurs
+clés.
+Ce cas est très utile lorsque le style est basé sur une ou deux couleurs.
+.PP
+Blackbox vous autorise à configurer ses quatre composants principaux\ :
+la barre-outil, la fente, les menus et la décoration des fenêtres.
+.PP
+La petite fenêtre qui affiche la position (x,y) pendant que vous déplacez une
+fenêtre emprunte son style aux barres de titre des fenêtres.
+.PP
+Voici quelques exemples rapides\ :
+.EX
+toolbar.clock.color:	green
+.EE
+Ici, la valeur `green' (vert) est affectée à la ressource couleur de
+l'horloge présente sur la barre-outil.
+.EX
+menu*color:	rgb:3/4/5
+.EE
+Dans cet exemple, la valeur `rgb:3/4/5' est affectée à la ressource couleur
+du menu
+.IR "et à tous ses `enfants'" .
+(Pour une description des noms de couleurs, voir
+.IR X "(1) )."
+Ainsi, elle s'applique aussi à
+.IR menu.title.color " et " menu.frame.color .
+.EX
+*font:	-b&h-lucida-medium-r-normal-*-*-140-*
+.EE
+Cet exemple positionne à la même valeur la ressource police de caractère de
+toutes les clés.
+(Pour des informations sur les fontes installées sur votre système,
+vous pouvez utiliser des programmes tels que
+.IR xfontsel "(1), " gtkfontsel ", ou " xlsfonts "(1) )."
+.PP
+Mais ce qui rend Blackbox si spectaculaire, c'est sa capacité à produire
+des textures à la volée.
+Les descriptions de textures sont spécifiées d'une façon semblable à celle
+des couleurs illustrée précédemment. Par exemple\ :
+.ta \w'toolbar.clock.colorTo:\ 'u
+.EX
+toolbar.clock:	Raised Gradient Diagonal Bevel1
+toolbar.clock.color:	rgb:8/6/4
+toolbar.clock.colorTo:	rgb:4/3/2
+.EE
+Pas de panique\~! Nous expliquons tout de suite.
+La description d'une texture est composée d'au plus cinq champs, qui
+peuvent prendre les valeurs suivantes\ :
+.TP
+.B Flat / Raised / Sunken
+donne au composant un aspect plat (Flat), bombé (Raised) ou enfoncé (Sunken).
+.TP
+.B Gradient / Solid
+indique à Blackbox d'utiliser une couleur uniforme (Solid)
+ou d'appliquer une texture dégradée (Gradient).
+.TP
+.B Horizontal / Vertical / Diagonal / Crossdiagonal / Pipecross / Elliptic / Rectangle / Pyramid
+sélectionne le type de texture\ : horizontal, vertical, diagonal (d'en haut
+à gauche à en bas à droite), diagonal croisé (Crossdiagonal \- d'en haut à
+droite à en bas à gauche), croisement de tuyaux (Pipecross), elliptique
+(Elliptic), rectangulaire (Rectangle) ou pyramidal (Pyramid).
+Cela n'est utile que lorsque
+.B Gradient
+est également spécifié\~!
+.TP
+.B Interlaced
+indique à Blackbox d'entrelacer la texture (une ligne sur deux est assombrie).
+Cette option est plus couramment utilisée avec les textures dégradées, mais
+depuis Blackbox version 0.60.3, elle est aussi disponible avec les textures
+uniformes.
+.TP
+.B Bevel1 / Bevel2
+indique à Blackbox quel type de relief utiliser.
+Bevel1 est le relief par défaut.
+L'ombre est placée au bord de l'image.
+Bevel2 est une alternative.
+Le trait d'ombre est placé à un pixel du bord de l'image.
+.PP
+A la place de la description d'une texture, l'option
+.B ParentRelative
+est aussi disponible, ce qui rend le composant semblable à son parent,
+autrement dit il est totalement transparent.
+.PP
+Toutes les textures dégradées sont composées de deux valeurs de couleur\ :
+les ressources
+.IR color " et " colorTo .
+color représente la couleur initiale et colorTo la couleur finale du dégradé.
+Lorsque
+.B Interlaced
+est utilisé conjointement au mode
+.BR Solid ,
+la ressource
+.I colorTo
+est utilisée pour spécifier la couleur d'entrelacement.
+.PP
+Bien, voici la liste complète des composants, avec le type de valeur qu'ils
+acceptent.
+Les commentaires sont précédés d'un point d'exclamation (!), qui est aussi
+utilisé pour les commentaires dans le fichier de style Blackbox, tout
+autant que dans les fichiers de ressources X.
+.PP
+.ta \w'window.button.unfocus.picColor:\ 'u 
+.nf
+.\"
+.\" Les commentaires sont aussi à traduire !
+.\"
+! La barre-outil elle-même.
+toolbar:	Texture
+toolbar.color:	Couleur
+toolbar.colorTo:	Couleur
+
+! Les boutons de la barre-outil.
+toolbar.button:	Texture ou \fIParentRelative\fR
+toolbar.button.color:	Couleur
+toolbar.button.colorTo:	Couleur
+
+! Couleur des flèches des boutons.
+toolbar.button.picColor:	Couleur
+
+! Boutons dans l'état enfoncé (cliqué).
+toolbar.button.pressed:	Texture \fI(p.ex. Sunken)\fR ou \fIParentRelative\fR
+toolbar.button.pressed.color:	Couleur
+toolbar.button.pressed.colorTo:	Couleur
+
+! Couleur des flèches des boutons dans l'état enfoncé (cliqué).
+toolbar.button.pressed.picColor:	Couleur
+
+! Le libellé de l'espace de travail sur la barre-outil.
+toolbar.label:	Texture ou \fIParentRelative\fR
+toolbar.label.color:	Couleur
+toolbar.label.colorTo:	Couleur
+toolbar.label.textColor:	Couleur
+
+! Le titre de la fenêtre active sur la barre-outil.
+toolbar.windowLabel:	Texture ou \fIParentRelative\fR
+toolbar.windowLabel.color:	Couleur
+toolbar.windowLabel.colorTo:	Couleur
+toolbar.windowLabel.textColor:	Couleur
+
+! L'horloge sur la barre-outil.
+toolbar.clock:	Texture ou \fIParentRelative\fR
+toolbar.clock.color:	Couleur
+toolbar.clock.colorTo:	Couleur
+toolbar.clock.textColor:	Couleur
+
+! Comment le texte de la barre-outil doit être aligné.
+! Centré (center), à gauche (left) ou à droite (right).
+toolbar.justify:	\fIcenter\fR, \fIleft\fR, or \fIright\fR
+
+! Police de caractères à utiliser avec tous les composants de la barre-outil.
+toolbar.font:	Fonte \fI(p.ex. -*-helvetica-medium-r-normal-*-*-100-*)\fR
+
+! Barre de titre du menu.
+menu.title:	Texture
+menu.title.color:	Couleur
+menu.title.colorTo:	Couleur
+menu.title.textColor:	Couleur
+menu.title.font:	Fonte
+menu.title.justify:	\fIcenter\fR, \fIleft\fR ou \fIright\fR
+
+! Le menu lui-même.
+menu.frame:	Texture
+menu.frame.color:	Couleur
+menu.frame.colorTo:	Couleur
+menu.frame.textColor:	Couleur
+menu.frame.disableColor:	Couleur
+menu.frame.font:	Fonte
+menu.frame.justify:	\fIcenter\fR, \fIleft\fR ou \fIright\fR
+
+! Les bulles pour les sous-menus.
+! Vide (empty), triangle (triangle), carré (square), losange (diamond).
+menu.bullet:	\fIempty\fR, \fItriangle\fR, \fIsquare\fR ou \fIdiamond\fR
+menu.bullet.position:	\fIright\fR or \fIleft\fR
+
+! Un item de menu sur-ligné.
+menu.hilite:	Texture (p.ex. \fIRaised\fR)
+menu.hilite.color:	Couleur
+menu.hilite.colorTo:	Couleur
+menu.hilite.textColor:	Couleur
+
+! Une fenêtre disposant du clavier (active).
+window.title.focus:	Texture
+window.title.focus.color:	Couleur
+window.title.focus.colorTo:	Couleur
+
+! Une fenêtre ne disposant pas du clavier (inactive).
+window.title.unfocus:	Texture
+window.title.unfocus.color:	Couleur
+window.title.unfocus.colorTo:	Couleur
+
+! Titre de la fenêtre.
+window.label.focus:	Texture ou \fIParentRelative\fR
+window.label.focus.color:	Couleur
+window.label.focus.colorTo:	Couleur
+window.label.focus.textColor:	Couleur
+
+window.label.unfocus:	Texture ou \fIParentRelative\fR
+window.label.unfocus.color:	Couleur
+window.label.unfocus.colorTo:	Couleur
+window.label.unfocus.textColor:	Couleur
+
+! Barre de saisie.
+window.handle.focus:	Texture
+window.handle.focus.color:	Couleur
+window.handle.focus.colorTo:	Couleur
+
+window.handle.unfocus:	Texture
+window.handle.unfocus.color:	Couleur
+window.handle.unfocus.colorTo:	Couleur
+
+! Poignées de redimensionnement.
+window.grip.focus:	Texture
+window.grip.focus.color:	Couleur
+window.grip.focus.colorTo:	Couleur
+
+window.grip.unfocus:	Texture
+window.grip.unfocus.color:	Couleur
+window.grip.unfocus.colorTo:	Couleur
+
+! Boutons de fenêtre.
+window.button.focus:	Texture ou \fIParentRelative\fR
+window.button.focus.color:	Couleur
+window.button.focus.colorTo:	Couleur
+window.button.focus.picColor:	Couleur
+
+window.button.unfocus:	Texture ou \fIParentRelative\fR
+window.button.unfocus.color:	Couleur
+window.button.unfocus.colorTo:	Couleur
+window.button.unfocus.picColor:	Couleur
+
+window.button.pressed:	Texture (p.ex. \fISunken\fR)
+window.button.pressed.color:	Couleur
+window.button.pressed.colorTo:	Couleur
+
+! Cadre autour de la fenêtre.
+window.frame.focusColor:	Couleur
+window.frame.unfocusColor:	Couleur
+
+! Police de caractères et alignement.
+window.font:	Fonte
+window.justify:	\fIcenter\fR, \fIleft\fR ou \fIright\fR
+
+! Diverses ressources.
+
+! Une bordure peut être dessinée autour de tous les composants.
+borderWidth:	un nombre de pixels, p.ex. \fI1\fR
+borderColor:	Couleur
+
+! Épaisseur des reliefs.
+bevelWidth:	un nombre de pixels > 0
+! Épaisseur de la barre de saisie.
+handleWidth:	un nombre de pixels > 0
+
+! Largeur du cadre des fenêtres (depuis la version 0.61).
+! Lorsqu'il n'est pas spécifié, la valeur de bevelWidth est prise par défaut.
+frameWidth:	un nombre de pixels >= 0
+
+
+! Cette commande est exécutée chaque fois que le style est sélectionné.
+! Typiquement, elle place une belle image sur la fenêtre racine.
+rootCommand:	Commande shell, p.ex. \fIbsetroot -mod 4 4 -fg rgb:	5/6/6 -bg grey20\fR
+
+! Certains bbtools lisent ces vieilles ressources de la version 0.51.
+menuFont:	Fonte
+titleFont:	Fonte
+.fi
+.PP
+Cette liste est certes longue, mais rappelez vous lorsque vous créez votre
+propre style que vous pouvez facilement positionner beaucoup de clés en une
+seule ligne, par exemple\ :
+.EX
+.ta \w'*unfocus.textColor:\ 'u
+*color:	slategrey
+*colorTo:	darkslategrey
+*unfocus.color:	darkslategrey
+*unfocus.colorTo:	black
+*textColor:	white
+*unfocus.textColor:	lightgrey
+*font:	lucidasans-10
+.EE
+Cela spécifie déjà des valeurs par défaut sympathiques pour pas mal de
+composants.
+.SH LA FENTE
+La fente est une fenêtre spéciale qui peut contenir des applications
+«\ accrochables\ » (NDT. dockable), par exemple les `outils-bb'
+(NDT. `bbtools') ou les `dockapps' de WindowMaker.
+Lorsque des applications s'exécutent dans la fente, elles n'ont pas de bordure
+propre\ ; en revanche, elles sont encastrées dans la fente et elles sont
+toujours visibles sur l'espace de travail courant.
+Vous pouvez cliquer avec le bouton 3 sur le bord de la fente afin de faire
+apparaître un menu permettant de configurer sa position, son orientation et
+si elle doit disparaître lorsque la souris n'est plus positionnée au dessus
+d'elle.
+.PP
+La plupart des applications accrochables utilise l'option
+.B -w
+pour s'exécuter dans la fente.
+Par exemple, vous pouvez placer dans votre fichier
+.IR ~/.xinitrc \ :
+.EX
+bbmail -w &
+bbpager -w &
+exec blackbox
+.EE
+Bien sûr, pour utiliser la fente, vous devez avoir compilé Blackbox en
+activant le support de la fente (c'est l'option par défaut).
+.SH FICHIER DE RESSOURCES
+Habituellement, le fichier de ressources
+.I ~/.blackboxrc
+est créé et maintenu par Blackbox lui-même.
+Toutes les options du menu
+.B [config]
+(depuis la version 0.60.x),
+le dernier fichier de style sélectionné, le nom des espaces de travail, etc.
+sont automatiquement enregistrés dans ce fichier.
+Cependant, il y a quelques ressources que vous pouvez vouloir éditer
+vous-même\ :
+.TP
+.B session.menuFile:
+Indique à Blackbox quel fichier de menu doit être chargé.
+.TP
+.B session.screen0.toolbar.widthPercent:
+Détermine la proportion (en %) de la largeur de l'écran
+qui sera occupée par la barre-outil.
+La valeur par défaut est\ :
+.IR 66 .
+.TP
+.B session.screen0.strftimeFormat:
+Spécifie le format d'affichage de l'heure courante sur la barre-outil.
+La syntaxe du format est celle de la fonction
+.IR strftime (3).
+La valeur par défaut est\ :
+.IR "%I:%M %p" .
+.TP
+.B session.autoRaiseDelay:
+Spécifie le délai (en ms) avant que la fenêtre disposant du clavier ne soit
+élevée au premier plan.
+La valeur par défaut est\ :
+.IR 250 .
+.TP
+.B session.doubleClickInterval:
+Spécifie le délai (en ms) en dessous duquel Blackbox considère deux clics
+consécutifs comme un double-clic.
+La valeur par défaut est\ :
+.IR 250 .
+.TP
+.B session.screen0.edgeSnapThreshold:
+Lorsque vous déplacez une fenêtre sur l'écran, Blackbox peut `l'aimanter' aux
+extrémités de l'écran afin de faciliter son positionnement.
+Ce paramètre indique à Blackbox la distance (en pixels) à partir de laquelle
+la fenêtre se collera automatiquement aux bords.
+La valeur par défaut est\ :
+.IR 0 .
+.TP
+.B session.cacheMax:
+Cette ressource indique à Blackbox quelle quantité de mémoire (en Ko) il peut
+utiliser pour conserver les pixmaps en cache sur le serveur X.
+Si votre machine tombe à court de mémoire, vous pouvez diminuer cette valeur.
+Elle est par défaut à\ :
+.IR 200 .
+.TP
+.B session.cacheLife:
+Indique à Blackbox combien de temps (en minutes) les pixmaps inutilisés
+demeurent dans la mémoire du serveur X.
+La valeur par défaut est\ :
+.IR 5 .
+.TP
+.B session.colorsPerChannel:
+Indique à Blackbox combien de couleurs doivent être réservées sur le serveur
+X pour les affichages en mode pseudocolor. Un `channel' (NDT. canal) peut
+être rouge, vert ou bleu.
+Blackbox alloue un nombre de couleurs correspondant à cette valeur puissance 3
+et les rend toujours disponibles. Cette valeur doit être comprise entre 2 et 6.
+Lorsque vous exécutez Blackbox sur un affichage 8 bits, vous devez positionner
+cette ressource à 4.
+La valeur par défaut est\ :
+.IR 4.
+.PP
+Lorsque vous exécutez Blackbox dans un environnement disposant de plusieurs
+écrans, la clé
+.B screen0
+peut aussi être
+.B screen1, 2
+etc. pour tout écran approprié.
+.SH ENVIRONNEMENT
+.TP
+.B HOME
+Blackbox utilise
+.RB $ HOME
+pour trouver le fichier
+.IR .blackboxrc ,
+et pour résoudre le nom du fichier de style ou les noms de répertoires.
+.TP
+.B DISPLAY
+Lorsqu'aucun autre affichage n'a été spécifié en ligne de commande, Blackbox
+s'exécute sur l'affichage désigné par cette variable.
+.SH AUTEURS et CRÉDITS
+Tout le code a été initialement écrit et maintenu par Brad Hughes
+.nh \" hyphenation off
+(blackbox@alug.org)
+.hy \" on again
+puis par Jeff Raven
+.nh
+(jraven@psu.edu),
+.hy
+il est dorénavant maintenu par Sean 'Shaleh' Perry
+.nh
+(shaleh@debian.org)
+.hy
+avec les contributions et la fusion de patches provenant de nombreux individus
+de par le monde.
+.PP
+L'adresse du site officiel de Blackbox est\ :
+.nh
+.B http://blackboxwm.sf.net
+.hy
+.br
+La page des défauts (NDT. bugs) et des demandes de fonctionnalités, ainsi que
+les versions courantes sont accessibles à\ :
+.nh
+.B http://sf.net/projects/blackboxwm
+.hy
+.br
+De nombreux thèmes et d'autres contributions sont disponibles à\ :
+.nh
+.B http://bb.themes.org/
+.hy
+.PP
+Cette page de manuel a été rédigée par Wilbert Berendsen
+.nh
+(wbsoft@xs4all.nl)
+.hy
+et traduite en français par Bertrand Duret
+.nh
+(bertrand.duret@libertysurf.fr).
+.hy
+De nombreuses autres traductions seront bientôt disponibles.
+.SH VOIR AUSSI
+.IR bsetroot (1), \ bbkeys (1)  \" not there, yet ;-(

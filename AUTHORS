@@ -30,6 +30,8 @@ Current Contributors:
 	 - Taiwan Chinese (zh_TW) support
 	Bodnar Istvan <piggy@dub.hu>
 	 - Hungarian (hu_HU) support
+	Duret Bertrand <bertrand.duret@libertysurf.fr>
+	 - updated French (fr_FR) nls and added French man pages
 
 Original Author:
         Brad Hughes <bhughes@trolltech.com>
