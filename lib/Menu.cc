@@ -389,10 +389,8 @@ unsigned int bt::Menu::insertItem(const bt::MenuItem &item,
     index = items.size();
     it = items.end();
   } else {
-    unsigned int i;
-    // go to the requested position in the list
-    for (it = items.begin(), i = 0; i < index && it != items.end(); ++it, ++i);
-    index = i;
+    it = items.begin();
+    std::advance(it, index);
   }
 
   it = items.insert(it, item);
@@ -522,10 +520,9 @@ void bt::Menu::removeItem(unsigned int id) {
 
 
 void bt::Menu::removeIndex(unsigned int index) {
-  ItemList::iterator it;
-  unsigned int x;
-  // go the the requested index
-  for (it = items.begin(), x = 0; x < index && it != items.end(); ++it, ++x);
+  ItemList::iterator it = items.begin();
+
+  std::advance(it, index);
   if (it == items.end())
     return; // item not found
 
