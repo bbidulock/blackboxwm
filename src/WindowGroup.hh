@@ -53,8 +53,10 @@ public:
   void addWindow(BlackboxWindow *win);
   void removeWindow(BlackboxWindow *win);
 
-  void addTransient(BlackboxWindow *win);
-  void removeTransient(BlackboxWindow *win);
+  inline const BlackboxWindowList &windows(void) const
+  { return windowList; }
+  inline const BlackboxWindowList &transients(void) const
+  { return transientList; }
 };
 
 #endif // __WindowGroup_hh

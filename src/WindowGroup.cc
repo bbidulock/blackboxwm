@@ -42,62 +42,16 @@ BWindowGroup::~BWindowGroup(void)
 
 void BWindowGroup::addWindow(BlackboxWindow *win) {
   windowList.push_front(win);
-  if (win->isGroupTransient()) {
-    addTransient(win);
-  } else {
-    // add all group transients to the new group member
-    BlackboxWindowList::const_reverse_iterator it = transientList.rbegin();
-    const BlackboxWindowList::const_reverse_iterator
-      end = transientList.rend();
-    for (; it != end; ++it)
-      win->addTransient(*it);
-  }
+  if (win->isGroupTransient())
+    transientList.push_front(win);
 }
 
 
 void BWindowGroup::removeWindow(BlackboxWindow *win) {
-  if (win->isGroupTransient()) {
-    removeTransient(win);
-  } else {
-    // remove all group transients from the new group member
-    BlackboxWindowList::const_reverse_iterator it = transientList.rbegin();
-    const BlackboxWindowList::const_reverse_iterator
-      end = transientList.rend();
-    for (; it != end; ++it)
-      win->removeTransient(*it);
-  }
+  if (win->isGroupTransient())
+    transientList.remove(win);
   windowList.remove(win);
 
   if (windowList.empty())
     delete this;
-}
-
-
-void BWindowGroup::addTransient(BlackboxWindow *win) {
-  assert(win->isGroupTransient());
-  transientList.push_front(win);
-
-  // add the group transient to all group members
-  BlackboxWindowList::iterator it = windowList.begin();
-  const BlackboxWindowList::iterator end = windowList.end();
-  for (; it != end; ++it) {
-    if (*it == win || (*it)->isGroupTransient())
-      continue;
-    (*it)->addTransient(win);
-  }
-}
-
-
-void BWindowGroup::removeTransient(BlackboxWindow *win) {
-  assert(win->isGroupTransient());
-  transientList.remove(win);
-
-  // remove the group transient from all group members
-  BlackboxWindowList::iterator it = windowList.begin();
-  const BlackboxWindowList::iterator end = windowList.end();
-  for (; it != end; ++it) {
-    if (*it == win || (*it)->isGroupTransient())
-      continue;
-    (*it)->removeTransient(win);
-  }
 }
