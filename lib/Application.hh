@@ -44,7 +44,7 @@ namespace bt {
   */
   class Application : public TimerQueueManager, public NoCopy {
   protected:
-    enum RunState { STARTUP, RUNNING, SHUTDOWN, FATAL_SIGNAL };
+    enum RunState { STARTUP, RUNNING, SHUTDOWN, SIGNALLED };
 
   private:
     struct {

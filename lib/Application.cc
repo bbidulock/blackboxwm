@@ -120,19 +120,13 @@ bt::Application::Application(const std::string &app_name, const char *dpy_name,
   action.sa_mask = sigset_t();
   action.sa_flags = SA_NOCLDSTOP;
 
-  // fatal signals
-  sigaction(SIGBUS,  &action, NULL);
-  sigaction(SIGFPE,  &action, NULL);
-  sigaction(SIGILL,  &action, NULL);
-  sigaction(SIGSEGV, &action, NULL);
-
   // non-fatal signals
-  sigaction(SIGCHLD, &action, NULL);
   sigaction(SIGHUP,  &action, NULL);
   sigaction(SIGINT,  &action, NULL);
-  sigaction(SIGPIPE, &action, NULL);
   sigaction(SIGQUIT, &action, NULL);
   sigaction(SIGTERM, &action, NULL);
+  sigaction(SIGPIPE, &action, NULL);
+  sigaction(SIGCHLD, &action, NULL);
   sigaction(SIGUSR1, &action, NULL);
   sigaction(SIGUSR2, &action, NULL);
 
@@ -218,23 +212,16 @@ void bt::Application::run(void) {
         if (! (pending_signals & (1u << sig))) continue;
         pending_signals &= ~(1u << sig);
 
-        switch (sig) {
-        case SIGBUS: case SIGFPE: case SIGILL: case SIGSEGV:
-          // dump core after handling these signals
-          setRunState(FATAL_SIGNAL);
-          break;
-
-        default:
-          break;
+        setRunState(SIGNALLED);
+        if (process_signal(sig)) {
+          // reset run_state if it has not been set to something else
+          if (run_state == SIGNALLED)
+            setRunState(RUNNING);
         }
 
-        if (! process_signal(sig)) {
+        if (run_state == SIGNALLED) {
           // dump core for unhandled signals
-          setRunState(FATAL_SIGNAL);
-        }
-
-        if (run_state == FATAL_SIGNAL) {
-          fprintf(stderr, "%s: caught fatal signal '%u', dumping core.\n",
+          fprintf(stderr, "%s: caught unknown signal '%u', dumping core.\n",
                   _app_name.c_str(), sig);
           abort();
         }
@@ -562,16 +549,20 @@ void bt::Application::ungrabButton(unsigned int button, unsigned int modifiers,
 
 bool bt::Application::process_signal(int signal) {
   switch (signal) {
+  case SIGHUP:
+  case SIGINT:
+  case SIGQUIT:
+  case SIGTERM:
+  case SIGPIPE:
+  case SIGUSR1:
+  case SIGUSR2:
+    setRunState(SHUTDOWN);
+    break;
+
   case SIGCHLD:
     int unused;
     while (waitpid(-1, &unused, WNOHANG | WUNTRACED) > 0)
       ;
-    break;
-
-  case SIGINT:
-  case SIGQUIT:
-  case SIGTERM:
-    setRunState(SHUTDOWN);
     break;
 
   default:
