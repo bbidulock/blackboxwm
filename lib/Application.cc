@@ -234,7 +234,7 @@ void bt::Application::run(void) {
         }
 
         if (run_state == FATAL_SIGNAL) {
-          fprintf(stderr, "%s: caught fatal signal '%d', dumping core.\n",
+          fprintf(stderr, "%s: caught fatal signal '%u', dumping core.\n",
                   _app_name.c_str(), sig);
           abort();
         }

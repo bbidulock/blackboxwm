@@ -171,8 +171,8 @@ Pixmap bt::RealPixmapCache::find(unsigned int screen,
 
       if (mem_usage > maxmem_usage) {
         fprintf(stderr,
-                "bt::PixmapCache: maximum size (%ld kb) exceeded\n"
-                "bt::PixmapCache: current size: %ld kb\n",
+                "bt::PixmapCache: maximum size (%lu kb) exceeded\n"
+                "bt::PixmapCache: current size: %lu kb\n",
                 maxmem_usage / 1024, mem_usage / 1024);
       }
     }

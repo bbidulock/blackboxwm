@@ -1092,7 +1092,7 @@ unsigned int bt::Menu::verifyId(unsigned int id) {
       return id;
     }
 
-    fprintf(stderr, "Error: bt::Menu::verifyId: id %d already used\n", id);
+    fprintf(stderr, "Error: bt::Menu::verifyId: id %u already used\n", id);
     abort();
   }
 

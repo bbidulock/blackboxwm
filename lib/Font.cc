@@ -295,7 +295,7 @@ XftFont *bt::FontCache::findXftFont(const std::string &fontname,
     ret = XftFontOpenName(_display.XDisplay(), screen, fontname.c_str());
     if (ret == NULL) {
       // Xft will never return NULL, but it doesn't hurt to be cautious
-      fprintf(stderr, "bt::Font: couldn't load Xft%d '%s'\n",
+      fprintf(stderr, "bt::Font: couldn't load Xft%u '%s'\n",
               screen, fontname.c_str());
       ret = XftFontOpenName(_display.XDisplay(), screen, defaultXftFont);
     }

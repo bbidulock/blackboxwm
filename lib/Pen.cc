@@ -338,7 +338,7 @@ bt::PenCacheItem *bt::PenCache::find(unsigned int screen,
     // cache fault!
     fprintf(stderr,
             "bt::PenCache: cache fault at %d\n"
-            "      count: %d, screen: %d, item screen: %d\n",
+            "      count: %u, screen: %u, item screen: %u\n",
             k, c->_count, screen, c->_ctx->_screen);
     abort();
   }
@@ -433,7 +433,7 @@ bt::XftCacheItem *bt::PenCache::findXft(unsigned int screen, Drawable drawable)
     // cache fault... try
     fprintf(stderr,
             "bt::PenCache: Xft cache fault at %d\n"
-            "      count: %d, screen: %d, item screen: %d\n",
+            "      count: %u, screen: %u, item screen: %u\n",
             k, c->_count, screen, c->_ctx->_screen);
     abort();
   }
