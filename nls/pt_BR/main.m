@@ -11,10 +11,10 @@ $ #Usage
   \t\t\t 1997 - 2000, 2002 Brad Hughes\n\n\
   -display <string>\t\tusar conexão com o display.\n\
   -rc <string>\t\t\tusar arquivo alternativo de recursos.\n\
-  -version\t\t\tmostrar versao e sair.\n\
-  -help\t\t\t\tmostrar esta ajuda e sair.\n\n
+  -version\t\t\texibe a versao e sair.\n\
+  -help\t\t\t\texibe este texto de ajuda e sair.\n\n
 $ #CompileOptions
 # Opções em tempo de compilação:\n\
-  Informações extras para problemas:\t\t\t%s\n\
+  Depuração:\t\t\t%s\n\
   Forma:\t\t\t%s\n\
-  8bpp Simulação ordenada de cores em imagens:\t%s\n\n
+  Simulação Ordenada de Cores em 8bpp:\t%s\n\n

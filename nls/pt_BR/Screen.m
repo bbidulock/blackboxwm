@@ -1,8 +1,8 @@
 $set 6 #Screen
 
 $ #AnotherWMRunning
-# BScreen::BScreen: an error occured while querying the X server.\n  \
-another window manager is already running on display %s.\n
+# BScreen::BScreen: um erro occorreu enquanto consultava o servidor X.\n  \
+existe outro window menager rodando no display. %s.\n
 $ #ManagingScreen
 # BScreen::BScreen: managing screen %d using visual 0x%lx, depth %d\n
 $ #FontLoadFail
@@ -16,35 +16,35 @@ $ #xterm
 $ #Restart
 # Reiniciar
 $ #Exit
-# sair
+# Sair
 $ #EXECError
-# BScreen::parseMenuFile: [exec] error, no menu label and/or command defined\n
+# BScreen::parseMenuFile: [exec] erro, sem rótulo de menu e/ou comando definido\n
 $ #EXITError
-# BScreen::parseMenuFile: [exit] error, no menu label defined\n
+# BScreen::parseMenuFile: [exit] erro, sem rótulo de menu definido\n
 $ #STYLEError
-# BScreen::parseMenuFile: [style] error, no menu label and/or filename \
-defined\n
+# BScreen::parseMenuFile: [style] erro, sem rótulo de menu e/ou nome do arquivo \
+definido\n
 $ #CONFIGError
-# BScreen::parseMenuFile: [config] error, no menu label defined\n
+# BScreen::parseMenuFile: [config] erro, sem rótulo de menu definido\n
 $ #INCLUDEError
-# BScreen::parseMenuFile: [include] error, no filename defined\n
+# BScreen::parseMenuFile: [include] erro, nome de arquivo não definido\n
 $ #INCLUDEErrorReg
-# BScreen::parseMenuFile: [include] error, '%s' is not a regular file\n
+# BScreen::parseMenuFile: [include] error, '%s' não é um arquivo regular\n
 $ #SUBMENUError
-# BScreen::parseMenuFile: [submenu] error, no menu label defined\n
+# BScreen::parseMenuFile: [submenu] erro, sem rótulo de menu definido\n
 $ #RESTARTError
-# BScreen::parseMenuFile: [restart] error, no menu label defined\n
+# BScreen::parseMenuFile: [restart] erro, sem rótulo de menu definido\n
 $ #RECONFIGError
-# BScreen::parseMenuFile: [reconfig] error, no menu label defined\n
+# BScreen::parseMenuFile: [reconfig] erro, sem rótulo de menu definido\n
 $ #STYLESDIRError
-# BScreen::parseMenuFile: [stylesdir/stylesmenu] error, no directory defined\n
+# BScreen::parseMenuFile: [stylesdir/stylesmenu] erro, sem diretorio difinido\n
 $ #STYLESDIRErrorNotDir
-# BScreen::parseMenuFile: [stylesdir/stylesmenu] error, '%s' is not a \
-directory\n
+# BScreen::parseMenuFile: [stylesdir/stylesmenu] erro, '%s' não é um \
+diretorio\n
 $ #STYLESDIRErrorNoExist
-# BScreen::parseMenuFile: [stylesdir/stylesmenu] error, '%s' does not exist\n
+# BScreen::parseMenuFile: [stylesdir/stylesmenu] erro, '%s' não existe\n
 $ #WORKSPACESError
-# BScreen::parseMenuFile: [workspaces] error, no menu label defined\n
+# BScreen::parseMenuFile: [workspaces] erro, sem rótulo de menu definido\n
 $ #PositionLength
 # 0: 0000 x 0: 0000
 $ #PositionFormat

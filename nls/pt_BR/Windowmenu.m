@@ -3,18 +3,18 @@ $set 10 #Windowmenu
 $ #SendTo
 # Enviar Para ...
 $ #Shade
-# Shade
+# Ocultar
 $ #Iconify
 # Minimizar
 $ #Maximize
 # Maximizar
 $ #Raise
-# Raise
+# Trazer pra Frente
 $ #Lower
-# Lower
+# Levar pra Traz
 $ #Stick
-# Stick
+# Fixar
 $ #KillClient
-# Kill Cliente
+# Matar Cliente
 $ #Close
 # Fechar
