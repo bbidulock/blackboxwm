@@ -314,7 +314,7 @@ void BaseDisplay::process_event(XEvent *event) {
   EventHandlerMap::iterator it = eventhandlers.find(event->xany.window);
   if (it == eventhandlers.end()) return;
 
-  EventHandler *handler = it->second;
+  bt::EventHandler *handler = it->second;
 
   // deliver the event
   switch (event->type) {
@@ -552,8 +552,9 @@ BGCCache* BaseDisplay::gcCache(void) const {
 }
 
 
-void BaseDisplay::insertEventHandler(Window window, EventHandler *handler) {
-  eventhandlers.insert(std::pair<Window,EventHandler*>(window, handler));
+void BaseDisplay::insertEventHandler(Window window,
+                                     bt::EventHandler *handler) {
+  eventhandlers.insert(std::pair<Window,bt::EventHandler*>(window, handler));
 }
 
 

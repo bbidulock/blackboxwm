@@ -36,13 +36,16 @@ extern "C" {
 #include <vector>
 #include <string>
 
+#include "Timer.hh"
+#include "Util.hh"
+
 // forward declaration
 class BaseDisplay;
 class BGCCache;
-class EventHandler;
+namespace bt {
+  class EventHandler;
+}
 
-#include "Timer.hh"
-#include "Util.hh"
 
 class ScreenInfo {
 private:
@@ -101,7 +104,7 @@ private:
   BaseDisplay(const BaseDisplay &);
   BaseDisplay& operator=(const BaseDisplay&);
 
-  typedef std::map<Window,EventHandler*> EventHandlerMap;
+  typedef std::map<Window,bt::EventHandler*> EventHandlerMap;
   EventHandlerMap eventhandlers;
 
 protected:
@@ -168,7 +171,7 @@ public:
     Inserts the EventHandler {handler} for Window {window}.  All
     events generated for {window} will be sent through {handler}.
   */
-  void insertEventHandler(Window window, EventHandler *handler);
+  void insertEventHandler(Window window, bt::EventHandler *handler);
   /*
     Removes all EventHandlers for Window {window}.
   */

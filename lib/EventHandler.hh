@@ -31,57 +31,62 @@ extern "C" {
 #endif // SHAPE
 }
 
-class EventHandler
-{
-public:
-  virtual ~EventHandler(void) { }
 
-  // Mouse button press.
-  virtual void buttonPressEvent(const XButtonEvent * const) { }
-  // Mouse button release.
-  virtual void buttonReleaseEvent(const XButtonEvent * const) { }
-  // Mouse movement.
-  virtual void motionNotifyEvent(const XMotionEvent * const) { }
-  // Key press.
-  virtual void keyPressEvent(const XKeyEvent * const) { }
-  // Key release.
-  virtual void keyReleaseEvent(const XKeyEvent * const) { }
+namespace bt {
 
-  // Window configure (size, position, stacking, etc.).
-  virtual void configureNotifyEvent(const XConfigureEvent * const) { }
-  // Window shown.
-  virtual void mapNotifyEvent(const XMapEvent * const) { }
-  // Window hidden.
-  virtual void unmapNotifyEvent(const XUnmapEvent * const) { }
-  // Window reparented.
-  virtual void reparentNotifyEvent(const XReparentEvent * const) { }
-  // Window destroyed.
-  virtual void destroyNotifyEvent(const XDestroyWindowEvent * const) { }
+  class EventHandler
+  {
+  public:
+    virtual ~EventHandler(void) {}
 
-  // Mouse entered window.
-  virtual void enterNotifyEvent(const XCrossingEvent * const) { }
-  // Mouse left window.
-  virtual void leaveNotifyEvent(const XCrossingEvent * const) { }
+    // Mouse button press.
+    virtual void buttonPressEvent(const XButtonEvent * const) {}
+    // Mouse button release.
+    virtual void buttonReleaseEvent(const XButtonEvent * const) {}
+    // Mouse movement.
+    virtual void motionNotifyEvent(const XMotionEvent * const) {}
+    // Key press.
+    virtual void keyPressEvent(const XKeyEvent * const) {}
+    // Key release.
+    virtual void keyReleaseEvent(const XKeyEvent * const) {}
 
-  // Window needs repainting.
-  virtual void exposeEvent(const XExposeEvent * const) { }
+    // Window configure (size, position, stacking, etc.).
+    virtual void configureNotifyEvent(const XConfigureEvent * const) {}
+    // Window shown.
+    virtual void mapNotifyEvent(const XMapEvent * const) {}
+    // Window hidden.
+    virtual void unmapNotifyEvent(const XUnmapEvent * const) {}
+    // Window reparented.
+    virtual void reparentNotifyEvent(const XReparentEvent * const) {}
+    // Window destroyed.
+    virtual void destroyNotifyEvent(const XDestroyWindowEvent * const) {}
 
-  // Window property changed/added/deleted.
-  virtual void propertyNotifyEvent(const XPropertyEvent * const) { }
+    // Mouse entered window.
+    virtual void enterNotifyEvent(const XCrossingEvent * const) {}
+    // Mouse left window.
+    virtual void leaveNotifyEvent(const XCrossingEvent * const) {}
 
-  // Window size/position/stacking/etc. change request.
-  virtual void configureRequestEvent(const XConfigureRequestEvent * const) { }
+    // Window needs repainting.
+    virtual void exposeEvent(const XExposeEvent * const) {}
 
-  // Message passing
-  virtual void clientMessageEvent(const XClientMessageEvent * const) {}
+    // Window property changed/added/deleted.
+    virtual void propertyNotifyEvent(const XPropertyEvent * const) {}
+
+    // Window size/position/stacking/etc. change request.
+    virtual void configureRequestEvent(const XConfigureRequestEvent * const) {}
+
+    // Message passing
+    virtual void clientMessageEvent(const XClientMessageEvent * const) {}
 
 #ifdef    SHAPE
-  // Window shape changed.
-  virtual void shapeEvent(const XShapeEvent * const) { }
+    // Window shape changed.
+    virtual void shapeEvent(const XShapeEvent * const) {}
 #endif // SHAPE
 
-protected:
-  inline EventHandler(void) { }
-};
+  protected:
+    inline EventHandler(void) {}
+  };
+
+} // namespace bt
 
 #endif // __EventHandler_hh

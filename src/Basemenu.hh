@@ -35,7 +35,7 @@ class BScreen;
 class BasemenuItem;
 
 
-class Basemenu : public EventHandler {
+class Basemenu : public bt::EventHandler {
 private:
   typedef std::vector<BasemenuItem*> MenuItems;
   MenuItems menuitems;

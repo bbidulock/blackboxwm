@@ -91,7 +91,7 @@ public:
 };
 
 
-class Slit : public bt::TimeoutHandler, public EventHandler {
+class Slit : public bt::TimeoutHandler, public bt::EventHandler {
 public:
   struct SlitClient {
     Window window, client_window, icon_window;

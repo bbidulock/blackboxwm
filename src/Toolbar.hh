@@ -72,7 +72,7 @@ public:
 };
 
 
-class Toolbar : public bt::TimeoutHandler, public EventHandler {
+class Toolbar : public bt::TimeoutHandler, public bt::EventHandler {
 private:
   bool on_top, editing, hidden, do_auto_hide;
   Display *display;

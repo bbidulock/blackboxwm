@@ -91,7 +91,7 @@ public:
 };
 
 
-class BlackboxWindow : public bt::TimeoutHandler, public EventHandler {
+class BlackboxWindow : public bt::TimeoutHandler, public bt::EventHandler {
 public:
   enum Function { Func_Resize   = (1l << 0),
                   Func_Move     = (1l << 1),
