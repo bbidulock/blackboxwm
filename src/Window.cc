@@ -1995,7 +1995,9 @@ void BlackboxWindow::changeLayer(StackingList::Layer new_layer) {
       }
     }
   } else {
-    assert(hasWindowFunction(WindowFunctionChangeLayer));
+    assert(hasWindowFunction(WindowFunctionChangeLayer)
+           || (hasWindowFunction(WindowFunctionFullScreen)
+               && new_layer == StackingList::LayerFullScreen));
     restack = true;
   }
 
