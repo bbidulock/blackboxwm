@@ -19,9 +19,9 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef __blackbox_hh
-#define __blackbox_hh
-#define __blackbox_version "beta zero point three one point zero"
+#ifndef __Blackbox_hh
+#define __Blackbox_hh
+#define __blackbox_version "beta zero point three two point zero"
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
@@ -66,21 +66,31 @@ private:
   } cursor;
 
   struct resource {
-    struct color {
-      BColor border, toolbox, toolbox_to, focus, focus_to, unfocus,
-	unfocus_to, menu, menu_to, imenu, imenu_to, hmenu, button, button_to,
-	ftext, utext, mtext, mitext, htext, itext, ttext;
-    } color;
-    
     struct font {
       XFontStruct *title, *menu, *icon;
     } font;
-    
-    struct texture {
-      unsigned long toolbox, window, button, menu, imenu;
-    } texture;
 
-    Bool prompt_reconfigure, opaqueMove, imageDither;
+    struct wsm {
+      BColor windowColor, windowColorTo, buttonColor, buttonColorTo,
+	labelColor, labelColorTo, clockColor, clockColorTo, textColor;
+      unsigned long windowTexture, buttonTexture, labelTexture, clockTexture;
+    } wsm;
+
+    struct win {
+      BColor focusColor, focusColorTo, unfocusColor, unfocusColorTo,
+	buttonColor, buttonColorTo, frameColor, focusTextColor,
+	unfocusTextColor;
+      unsigned long decorTexture, buttonTexture, handleTexture, frameTexture;
+    } win;
+
+    struct menu {
+      BColor titleColor, titleColorTo, frameColor, frameColorTo,
+	highlightColor, titleTextColor, frameTextColor, hiTextColor;
+      unsigned long titleTexture, frameTexture;
+    } menu;
+
+    Bool opaqueMove, imageDither;
+    BColor borderColor;
     XrmDatabase blackboxrc;
     char *menuFile;
     int workspaces, justification, cpc8bpp;
@@ -127,7 +137,6 @@ protected:
   // internal routines
   void Dissociate(void);
   void do_reconfigure(void);
-  Bool validateWindow(Window);
 
   // value lookups and retrieval
   void readMenuDatabase(Rootmenu *, XrmValue *, XrmDatabase *);
@@ -140,6 +149,9 @@ public:
   // member pointers
   Rootmenu *Menu(void) { return rootmenu; }
   WorkspaceManager *workspaceManager(void) { return wsManager; }
+
+  // window validation
+  Bool validateWindow(Window);
 
   // context lookup routines
   Basemenu *searchMenu(Window);
@@ -206,49 +218,59 @@ public:
   unsigned long getColor(const char *, unsigned char *, unsigned char *,
 			 unsigned char *);
 
+  // session controls
   XFontStruct *titleFont(void) { return resource.font.title; }
   XFontStruct *menuFont(void) { return resource.font.menu; }
   XFontStruct *iconFont(void) { return resource.font.icon; }
+  const BColor &borderColor(void) { return resource.borderColor; }
 
+  // window controls
+  unsigned long wDecorTexture(void) { return resource.win.decorTexture; }
+  unsigned long wButtonTexture(void) { return resource.win.buttonTexture; }
+  unsigned long wHandleTexture(void) { return resource.win.handleTexture; }
+  unsigned long wFrameTexture(void) { return resource.win.frameTexture; }
+  const BColor &wFrameColor(void) { return resource.win.frameColor; }
+  const BColor &wFColor(void) { return resource.win.focusColor; }
+  const BColor &wFColorTo(void) { return resource.win.focusColorTo; }
+  const BColor &wUColor(void) { return resource.win.unfocusColor; }
+  const BColor &wUColorTo(void) { return resource.win.unfocusColorTo; }
+  const BColor &wBColor(void) { return resource.win.buttonColor; }
+  const BColor &wBColorTo(void) { return resource.win.buttonColorTo; }
+  const BColor &wFTextColor(void) { return resource.win.focusTextColor; }
+  const BColor &wUTextColor(void) { return resource.win.unfocusTextColor; }
+
+  // menu controls
+  unsigned long mTitleTexture(void) { return resource.menu.titleTexture; }
+  unsigned long mFrameTexture(void) { return resource.menu.frameTexture; }
+  const BColor &mTColor(void) { return resource.menu.titleColor; }
+  const BColor &mTColorTo(void) { return resource.menu.titleColorTo; }
+  const BColor &mFColor(void) { return resource.menu.frameColor; }
+  const BColor &mFColorTo(void) { return resource.menu.frameColorTo; }
+  const BColor &mHColor(void) { return resource.menu.highlightColor; }
+  const BColor &mTTextColor(void) { return resource.menu.titleTextColor; }
+  const BColor &mFTextColor(void) { return resource.menu.frameTextColor; }
+  const BColor &mHTextColor(void) { return resource.menu.hiTextColor; }
+
+  // workspace manager controls
+  unsigned long sWindowTexture(void) { return resource.wsm.windowTexture; }
+  unsigned long sButtonTexture(void) { return resource.wsm.buttonTexture; }
+  unsigned long sLabelTexture(void) { return resource.wsm.labelTexture; }
+  unsigned long sClockTexture(void) { return resource.wsm.clockTexture; }
+  const BColor &sWColor(void) { return resource.wsm.windowColor; }
+  const BColor &sWColorTo(void) { return resource.wsm.windowColorTo; }
+  const BColor &sLColor(void) { return resource.wsm.labelColor; }
+  const BColor &sLColorTo(void) { return resource.wsm.labelColorTo; }
+  const BColor &sBColor(void) { return resource.wsm.buttonColor; }
+  const BColor &sBColorTo(void) { return resource.wsm.buttonColorTo; }
+  const BColor &sCColor(void) { return resource.wsm.clockColor; }
+  const BColor &sCColorTo(void) { return resource.wsm.clockColorTo; }
+  const BColor &sTextColor(void) { return resource.wsm.textColor; }  
+
+  // session information
   int Depth(void) { return depth; }
 
   unsigned int XResolution(void) { return xres; }
   unsigned int YResolution(void) { return yres; }
-
-  // textures and colors for configuration
-  int toolboxTexture(void) { return resource.texture.toolbox; }
-  int windowTexture(void) { return resource.texture.window; }
-  int buttonTexture(void) { return resource.texture.button; }
-  int menuTexture(void) { return resource.texture.menu; }
-  int menuItemTexture(void) { return resource.texture.imenu; }
-
-  const BColor &borderColor(void) const { return resource.color.border; }
-  const BColor &toolboxColor(void) const { return resource.color.toolbox; }
-  const BColor &toolboxToColor(void) const
-    { return resource.color.toolbox_to; }
-  const BColor &focusColor(void) const { return resource.color.focus; }
-  const BColor &focusToColor(void) const { return resource.color.focus_to; }
-  const BColor &unfocusColor(void) const { return resource.color.unfocus; }
-  const BColor &unfocusToColor(void) const
-    { return resource.color.unfocus_to; }
-  const BColor &buttonColor(void) const { return resource.color.button; }
-  const BColor &buttonToColor(void) const { return resource.color.button_to; }
-  const BColor &menuColor(void) const { return resource.color.menu; }
-  const BColor &menuToColor(void) const { return resource.color.menu_to; }
-  const BColor &menuItemColor(void) const { return resource.color.imenu; }
-  const BColor &menuItemToColor(void) const
-    { return resource.color.imenu_to; }
-  const BColor &menuHighlightColor(void) const
-    { return resource.color.hmenu; }
-  const BColor &focusTextColor(void) const { return resource.color.ftext; }
-  const BColor &unfocusTextColor(void) const { return resource.color.utext; }
-  const BColor &menuTextColor(void) const { return resource.color.mtext; }
-  const BColor &menuItemTextColor(void) const
-    { return resource.color.mitext; }
-  const BColor &menuHighlightTextColor(void) const
-    { return resource.color.htext; }
-  const BColor &iconTextColor(void) const { return resource.color.itext; }
-  const BColor &toolboxTextColor(void) const { return resource.color.ttext; }
 
   // controls for arrangement of decorations
   const int Justification(void) const { return resource.justification; }
@@ -258,10 +280,10 @@ public:
   
   // public constants
   enum { B_Restart = 1, B_RestartOther, B_Exit, B_Shutdown, B_Execute,
-	 B_Reconfigure, B_WindowShade, B_WindowIconify, B_WindowMaximize,
-	 B_WindowClose, B_WindowRaise, B_WindowLower };
+	 B_Reconfigure, B_ExecReconfigure, B_WindowShade, B_WindowIconify,
+	 B_WindowMaximize, B_WindowClose, B_WindowRaise, B_WindowLower };
   enum { B_LeftJustify, B_RightJustify, B_CenterJustify };
 };
 
 
-#endif
+#endif // __Blackbox_hh

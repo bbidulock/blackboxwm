@@ -29,6 +29,8 @@ class Blackbox;
 class Workspace;
 class BlackboxWindow;
 
+#include "graphics.hh"
+
 
 class BlackboxIcon {
 private:
@@ -36,10 +38,13 @@ private:
   Display *display;
   GC iconGC;
 
-  struct {
-    char *name;
+  struct {    
+    BColor text, cold, cold_t;
     Window client, window, subwindow;
+
+    char *name;
     unsigned int width, height, label_w, label_h, pixmap_w, pixmap_h;
+    unsigned long t_icon;
   } icon;
 
   Blackbox *blackbox;
@@ -48,6 +53,7 @@ private:
 
 
 protected:
+  void readConfiguration(void);
 
 
 public:

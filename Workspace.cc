@@ -19,7 +19,10 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
+
 #include "blackbox.hh"
 #include "window.hh"
 #include "Workspace.hh"
@@ -162,22 +165,25 @@ int Workspace::removeAll(void) {
 
 
 void Workspace::Dissociate(void) {
-  BlackboxWindow *win = 0;
   Display *display = wsManager->_blackbox()->control();
 
   XGrabServer(display);
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (; it.current(); it++) {
-    win = it.current();
-    XUnmapWindow(display, win->frameWindow());
-    XReparentWindow(display, win->clientWindow(),
-		    wsManager->_blackbox()->Root(), win->XClient(),
-		    win->YClient());
-    XMoveResizeWindow(display, win->clientWindow(), win->XClient(),
-		      win->YClient(), win->clientWidth(), win->clientHeight());
-    XMapWindow(display, win->clientWindow());
+    if (wsManager->_blackbox()->validateWindow(it.current()->clientWindow())) {
+      XUnmapWindow(display, it.current()->frameWindow());
+      XReparentWindow(display, it.current()->clientWindow(),
+		      wsManager->_blackbox()->Root(), it.current()->XClient(),
+		      it.current()->YClient());
+      XMoveResizeWindow(display, it.current()->clientWindow(),
+			it.current()->XClient(),
+			it.current()->YClient(),
+			it.current()->clientWidth(),
+			it.current()->clientHeight());
+      XMapWindow(display, it.current()->clientWindow());
+    }
   }
-
+  
   XSync(display, False);
   XUngrabServer(display);
 }
@@ -255,7 +261,8 @@ void Workspace::Reconfigure(void) {
 
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (; it.current(); it++)
-    it.current()->Reconfigure();
+    if (wsManager->_blackbox()->validateWindow(it.current()->clientWindow()))
+      it.current()->Reconfigure();
 }
 
 

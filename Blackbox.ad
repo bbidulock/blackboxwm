@@ -7,11 +7,21 @@
 !	Gradient type: Diagonal, Vertical, Horizontal
 !       Bevel option:  Bevel1, Bevel2
 !
-blackbox*toolboxTexture:          Raised Diagonal   Gradient Bevel2
-blackbox*windowTexture:           Raised Horizontal Gradient Bevel2
-blackbox*buttonTexture:           Raised Diagonal   Gradient Bevel1
-blackbox*menuTexture:             Flat   Vertical   Gradient
-blackbox*menuItemTexture:         Raised Diagonal   Gradient Bevel1
+
+! toolbox textures
+workspaceManager.toolbox:         Raised Diagonal   Gradient Bevel2
+workspaceManager.label:		  Sunken Diagonal   Gradient Bevel1
+workspaceManager.clock:           Sunken Diagonal   Gradient Bevel1
+workspaceManager.button:	  Flat   Vertical   Gradient
+
+! decorated client window textures
+associatedWindow.decorations:	  Raised Horizontal Gradient Bevel2
+associatedWindow.button:	  Raised Diagonal   Gradient Bevel1
+associatedWindow.handle:	  Raised Solid               Bevel2
+
+! textures for all menus
+baseMenu.title:			  Flat   Vertical   Gradient
+baseMenu.frame:			  Raised Diagonal   Gradient Bevel1
 
 ! This texture can be specified for any number of windows
 ! i.e. blackbox*Netscape.frameTexture:   Sunken Solid Bevel2
@@ -19,7 +29,7 @@ blackbox*menuItemTexture:         Raised Diagonal   Gradient Bevel1
 ! This is a solid texture... it is not a gradient.
 !
 
-blackbox*frameTexture:		  Raised Solid		     Bevel1
+associatedWindow.dyn*frame:	  Raised Solid               Bevel1
 
 ! Colors are any valid X color name or rgb formation
 !
@@ -54,14 +64,14 @@ blackbox*menuItemTextColor:       white
 blackbox*menuHighlightTextColor:  black
 blackbox*iconTextColor:           lightgrey
 
-blackbox*workspaces:              3
+workspaceManager.workspaces:              3
 
 ! the menu file is not set in Blackbox.ad
 ! blackbox*menuFile:              Not Set
  
-blackbox*titleJustify:		  centerjustify
+associatedWindow.titleJustify:	  centerjustify
 
-blackbox*titleFont:     -adobe-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*
-blackbox*menuFont:      -adobe-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*
-blackbox*iconFont:      -adobe-helvetica-medium-r-*-*-*-100-*-*-*-*-*-*
+blackbox.titleFont:     -adobe-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*
+blackbox.menuFont:      -adobe-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*
+blackbox.iconFont:      -adobe-helvetica-medium-r-*-*-*-100-*-*-*-*-*-*
 

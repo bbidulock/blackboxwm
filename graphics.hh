@@ -33,7 +33,7 @@ typedef struct BColor {
   unsigned long pixel;
 } BColor;
 
-#include "blackbox.hh"
+class Blackbox;
 
 // bevel options
 #define BImageFlat            (1<<1)   // no bevel

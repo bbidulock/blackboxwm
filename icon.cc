@@ -19,7 +19,10 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
+
 #include "Workspace.hh"
 #include "WorkspaceManager.hh"
 
@@ -53,7 +56,8 @@ BlackboxIcon::BlackboxIcon(Blackbox *bb, BlackboxWindow *win) {
     unsigned int ufoo;
     
     XGetGeometry(display, window->clientIconPixmap(), &rootReturn, &foo, &foo,
-		 &icon.pixmap_w, &icon.pixmap_h, &ufoo, &depth_of_client_pixmap);
+		 &icon.pixmap_w, &icon.pixmap_h, &ufoo,
+		 &depth_of_client_pixmap);
   }
   
   icon.label_w = XTextWidth(blackbox->iconFont(),
@@ -63,18 +67,22 @@ BlackboxIcon::BlackboxIcon(Blackbox *bb, BlackboxWindow *win) {
   
   icon.label_h = blackbox->iconFont()->ascent +
     blackbox->iconFont()->descent + 4;
-  icon.height = ((icon.pixmap_h < icon.label_h) ? icon.label_h : icon.pixmap_h);
+  icon.height =
+    ((icon.pixmap_h < icon.label_h) ? icon.label_h : icon.pixmap_h);
   
   unsigned long attrib_mask = CWBackPixmap|CWBackPixel|CWBorderPixel|
     CWCursor|CWEventMask; 
   XSetWindowAttributes attrib;
   attrib.background_pixmap = None;
-  attrib.background_pixel = blackbox->toolboxColor().pixel;
+  attrib.background_pixel = blackbox->borderColor().pixel;
   attrib.border_pixel = blackbox->borderColor().pixel;
   attrib.cursor = blackbox->sessionCursor();
   attrib.event_mask = StructureNotifyMask|SubstructureNotifyMask|
     ExposureMask|SubstructureRedirectMask|ButtonPressMask|
     ButtonReleaseMask|ButtonMotionMask|ExposureMask;
+
+  readConfiguration();
+
   icon.window =
     XCreateWindow(display, blackbox->Root(), 0, 0,
 		  icon.width + 4, icon.height + 4, 0,
@@ -84,16 +92,14 @@ BlackboxIcon::BlackboxIcon(Blackbox *bb, BlackboxWindow *win) {
 
   BImage *i_image = new BImage(blackbox, icon.width + 4, icon.height + 4,
 			       blackbox->Depth());
-  Pixmap p = i_image->renderImage(blackbox->toolboxTexture(),
-				  blackbox->toolboxColor(),
-				  blackbox->toolboxToColor());
+  Pixmap p = i_image->renderImage(icon.t_icon, icon.cold, icon.cold_t);
   delete i_image;
   XSetWindowBackgroundPixmap(display, icon.window, p);
   if (p) XFreePixmap(display, p);
   
   XGCValues gcv;
-  gcv.foreground = blackbox->iconTextColor().pixel;
-  gcv.background = blackbox->toolboxColor().pixel;
+  gcv.foreground = icon.text.pixel;
+  gcv.background = blackbox->borderColor().pixel;
   gcv.font = blackbox->iconFont()->fid;
   iconGC = XCreateGC(display, icon.window, GCForeground|GCBackground|GCFont,
     &gcv);
@@ -151,6 +157,28 @@ BlackboxIcon::~BlackboxIcon(void) {
 }
 
 
+void BlackboxIcon::readConfiguration(void) {
+  if (! (icon.t_icon = blackbox->readDatabaseTexture("clientIcon.texture",
+						     "ClientIcon.Texture")))
+    icon.t_icon = BImageRaised|BImageSolid|BImageBevel1;
+
+  if (! blackbox->readDatabaseColor("clientIcon.color", "ClientIcon.Color",
+				    &icon.cold))
+    icon.cold.pixel = blackbox->getColor("darkblue", &icon.cold.r,
+					 &icon.cold.g, &icon.cold.b);
+
+  if (icon.t_icon & BImageGradient)
+    if (! blackbox->readDatabaseColor("clientIcon.colorTo",
+				      "ClientIcon.ColorTo", &icon.cold_t))
+      icon.cold_t.pixel = blackbox->getColor("black", &icon.cold_t.r,
+					     &icon.cold_t.g, &icon.cold_t.b);
+
+  if (! blackbox->readDatabaseColor("clientIcon.textColor",
+				    "ClientIcon.TextColor", &icon.text))
+    icon.text.pixel = blackbox->getColor("grey", &icon.text.r, &icon.text.g,
+					 &icon.text.b);
+}
+
 void BlackboxIcon::buttonPressEvent(XButtonEvent *) { }
 
 
@@ -183,13 +211,12 @@ void BlackboxIcon::rereadLabel(void) {
                             ((icon.name) ? icon.name : "Unnamed"),
                             strlen(((icon.name) ? icon.name : "Unnamed")));
   icon.width = icon.pixmap_w + icon.label_w + 4;
-  icon.height = ((icon.pixmap_h < icon.label_h) ? icon.label_h : icon.pixmap_h);
+  icon.height =
+    ((icon.pixmap_h < icon.label_h) ? icon.label_h : icon.pixmap_h);
   
   BImage *i_image = new BImage(blackbox, icon.width + 4, icon.height + 4,
 			       blackbox->Depth());
-  Pixmap p = i_image->renderImage(blackbox->toolboxTexture(),
-				  blackbox->toolboxColor(),
-				  blackbox->toolboxToColor());
+  Pixmap p = i_image->renderImage(icon.t_icon, icon.cold, icon.cold_t);
   delete i_image;
   XSetWindowBackgroundPixmap(display, icon.window, p);
   if (p) XFreePixmap(display, p);
@@ -199,24 +226,26 @@ void BlackboxIcon::rereadLabel(void) {
 
 
 void BlackboxIcon::Reconfigure(void) {
+  readConfiguration();
+
   XGCValues gcv;
-  gcv.foreground = blackbox->iconTextColor().pixel;
+  gcv.foreground = icon.text.pixel;
   gcv.font = blackbox->iconFont()->fid;
   XChangeGC(display, iconGC, GCForeground|GCFont, &gcv);
-
+  
   icon.label_w = XTextWidth(blackbox->iconFont(),
                             ((icon.name) ? icon.name : "Unnamed"),
                             strlen(((icon.name) ? icon.name : "Unnamed")));
   icon.width = icon.pixmap_w + icon.label_w + 4;
   
-  icon.label_h = blackbox->iconFont()->ascent + blackbox->iconFont()->descent + 4;
-  icon.height = ((icon.pixmap_h < icon.label_h) ? icon.label_h : icon.pixmap_h);
+  icon.label_h =
+    blackbox->iconFont()->ascent + blackbox->iconFont()->descent + 4;
+  icon.height =
+    ((icon.pixmap_h < icon.label_h) ? icon.label_h : icon.pixmap_h);
   
   BImage *i_image = new BImage(blackbox, icon.width + 4, icon.height + 4,
 			       blackbox->Depth());
-  Pixmap p = i_image->renderImage(blackbox->toolboxTexture(),
-				  blackbox->toolboxColor(),
-				  blackbox->toolboxToColor());
+  Pixmap p = i_image->renderImage(icon.t_icon, icon.cold, icon.cold_t);
   delete i_image;
   XSetWindowBackgroundPixmap(display, icon.window, p);
   if (p) XFreePixmap(display, p);

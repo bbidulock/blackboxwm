@@ -19,7 +19,10 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
+
 #include "blackbox.hh"
 #include "graphics.hh"
 #include "Basemenu.hh"
@@ -93,19 +96,19 @@ Basemenu::Basemenu(Blackbox *ctrl) {
   menuitems = new LinkedList<BasemenuItem>;
   
   XGCValues gcv;
-  gcv.foreground = blackbox->menuTextColor().pixel;
+  gcv.foreground = blackbox->mTTextColor().pixel;
   gcv.font = blackbox->titleFont()->fid;
   titleGC = XCreateGC(display, menu.frame, GCForeground|GCFont, &gcv);
 
-  gcv.foreground = blackbox->menuItemTextColor().pixel;
+  gcv.foreground = blackbox->mFTextColor().pixel;
   gcv.font = blackbox->menuFont()->fid;
   itemGC = XCreateGC(display, menu.frame, GCForeground|GCFont, &gcv);
 
-  gcv.foreground = blackbox->menuHighlightTextColor().pixel;
+  gcv.foreground = blackbox->mHTextColor().pixel;
   hitemGC = XCreateGC(display, menu.frame, GCForeground|GCBackground|GCFont,
 		      &gcv);
-
-  gcv.foreground = blackbox->menuHighlightColor().pixel;
+  
+  gcv.foreground = blackbox->mHColor().pixel;
   gcv.arc_mode = ArcChord;
   gcv.fill_style = FillSolid;
   hbgGC = XCreateGC(display, menu.frame, GCForeground|GCFillStyle|GCArcMode,
@@ -166,6 +169,7 @@ int Basemenu::insert(char *label, int function, char *exec) {
       break; }
     
     case Blackbox::B_Execute:
+    case Blackbox::B_ExecReconfigure:
     case Blackbox::B_RestartOther: {
       BasemenuItem *item = new BasemenuItem(label, function, exec);
       ret = menuitems->insert(item);
@@ -288,8 +292,9 @@ void Basemenu::Update(void) {
     BImage *mt_image = new BImage(blackbox, menu.width, menu.title_h,
 				  blackbox->Depth());
     Pixmap mt_pixmap =
-      mt_image->renderImage(blackbox->menuTexture(), blackbox->menuColor(),
-			    blackbox->menuToColor());
+      mt_image->renderImage(blackbox->mTitleTexture(),
+			    blackbox->mTColor(),
+			    blackbox->mTColorTo());
     delete mt_image;
     XSetWindowBackgroundPixmap(display, menu.title, mt_pixmap);
     XClearWindow(display, menu.title);
@@ -299,9 +304,10 @@ void Basemenu::Update(void) {
   BImage *mi_image = new BImage(blackbox, menu.width, menu.iframe_h,
 				blackbox->Depth());
   if (menu.iframe_pixmap) XFreePixmap(display, menu.iframe_pixmap);
-  menu.iframe_pixmap = mi_image->renderImage(blackbox->menuItemTexture(),
-					   blackbox->menuItemColor(),
-					   blackbox->menuItemToColor());
+  menu.iframe_pixmap =
+    mi_image->renderImage(blackbox->mFrameTexture(),
+			  blackbox->mFColor(),
+			  blackbox->mFColorTo());
   delete mi_image;
   XSetWindowBackgroundPixmap(display, menu.iframe, menu.iframe_pixmap);
   
@@ -358,32 +364,9 @@ void Basemenu::Update(void) {
 
 
 void Basemenu::Show(void) {
-#ifdef ANIMATIONS
-  Bool do_scale = True;
-  int mx = menu.x + (menu.width / 2), sx = menu.width / 16,
-    sy = menu.height / 16;
-
-  if (menu.width < 16 || menu.height < 16) {
-    XMoveResizeWindow(display, menu.frame, menu.x, menu.y, menu.width,
-		      menu.height);
-    do_scale = False;
-  } else
-    XMoveResizeWindow(display, menu.frame, mx, menu.y, sx, sy);
-#endif
-  
   XMapSubwindows(display, menu.frame);
   XMapWindow(display, menu.frame);
   visible = True;
-  
-#ifdef ANIMATIONS
-  if (do_scale) {
-    int fx = ((sx) ? sx : 1), fy = ((sy) ? sy : 1);
-    for (unsigned int i = 0; i < 16; i++, fx += sx, fy += sy)
-      XMoveResizeWindow(display, menu.frame, mx - (fx / 2), menu.y, fx, fy);
-    XMoveResizeWindow(display, menu.frame, menu.x, menu.y, menu.width,
-		      menu.height);
-  }
-#endif
 }
 
 
@@ -393,17 +376,6 @@ void Basemenu::Hide(void) {
     tmp->sub_menu->Hide();
   }
 
-#ifdef ANIMATIONS
-  int mx = menu.x + (menu.width / 2), sx = menu.width / 16,
-    sy =menu.height / 16;
-  
-  if (menu.width > 16 || menu.height > 16) {
-    int fx = menu.width, fy = menu.height;
-    for (unsigned int i = 0; i < 16; i++, fx -= sx, fy -= sy)
-      XMoveResizeWindow(display, menu.frame, mx - (fx / 2), menu.y, fx, fy);
-  }
-#endif
-  
   user_moved = False;
   visible = False;
   which_sub = which_press = which_sub = -1;
@@ -430,7 +402,7 @@ void Basemenu::drawSubmenu(int index, Bool) {
   
   if (index >= 0 && index < menuitems->count()) {
     BasemenuItem *item = menuitems->find(index);
-    if (item->sub_menu) {
+    if (item->sub_menu && visible) {
       drawItem(index, True);
 
       int sbl = index / menu.persub, i = index - (sbl * menu.persub),
@@ -579,7 +551,6 @@ void Basemenu::buttonReleaseEvent(XButtonEvent *re) {
       if  (p == w) {
 	if (re->x > ix && re->x < (signed) (ix + menu.item_w) &&
 	    re->y > iy && re->y < (signed) (iy + menu.item_h)) {
-	  //	  XUngrabPointer(display, CurrentTime);
 	  itemSelected(re->button, w);
 	}
       }
@@ -764,18 +735,18 @@ void Basemenu::leaveNotifyEvent(XCrossingEvent *ce) {
 
 void Basemenu::Reconfigure(void) {
   XGCValues gcv;
-  gcv.foreground = blackbox->menuTextColor().pixel;
+  gcv.foreground = blackbox->mTTextColor().pixel;
   gcv.font = blackbox->titleFont()->fid;
   XChangeGC(display, titleGC, GCForeground|GCFont, &gcv);
 
-  gcv.foreground = blackbox->menuItemTextColor().pixel;
+  gcv.foreground = blackbox->mFTextColor().pixel;
   gcv.font = blackbox->menuFont()->fid;
   XChangeGC(display, itemGC, GCForeground|GCFont, &gcv);
 
-  gcv.foreground = blackbox->menuHighlightTextColor().pixel;
+  gcv.foreground = blackbox->mHTextColor().pixel;
   XChangeGC(display, hitemGC, GCForeground|GCBackground|GCFont, &gcv);
 
-  gcv.foreground = blackbox->menuHighlightColor().pixel;
+  gcv.foreground = blackbox->mHColor().pixel;
   gcv.arc_mode = ArcChord;
   gcv.fill_style = FillSolid;
   XChangeGC(display, hbgGC, GCForeground|GCFillStyle|GCArcMode,

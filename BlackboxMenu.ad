@@ -1,6 +1,6 @@
 blackbox*rootMenu.topLevelMenu:		rootMenu
 
-blackbox*rootMenu.label:		Blackbox 0.31.0
+blackbox*rootMenu.label:		Blackbox 0.32.0
 blackbox*rootMenu.item1.label:		xterm
 blackbox*rootMenu.item1.exec:		xterm -ls
 blackbox*rootMenu.item2.label:		XEmacs
@@ -26,7 +26,7 @@ blackbox*rootMenu.item5.exec:		xv
 blackbox*rootMenu.item6.label:		The GIMP
 blackbox*rootMenu.item6.exec:		gimp
 blackbox*rootMenu.item7.label:		Reconfigure
-blackbox*rootMenu.item7.reconfig:	True
+blackbox*rootMenu.item7.reconfig:	reconfig
 blackbox*rootMenu.item8.label:		Restart
 blackbox*rootMenu.item8.restart:	restart
 blackbox*rootMenu.item9.label:		Exit

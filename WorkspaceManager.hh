@@ -33,6 +33,7 @@ class BlackboxIcon;
 class Workspacemenu;
 
 #include "LinkedList.hh"
+#include "graphics.hh"
 
 
 class WorkspaceManager {
@@ -41,7 +42,7 @@ private:
   Display *display;
   GC buttonGC;
 
-  struct __frame__ {
+  struct frame {
     Pixmap button, pbutton;
     Window base, window, workspaceDock, fButton, bButton, clock;
 

@@ -18,7 +18,7 @@ XCOMM
 XCOMM (See the included file COPYING / GPL-2.0)
 
 XCOMM Uncomment this to get debugging symbols in the executable
-XCOMM CXXFLAGS :=	$(CXXFLAGS) -g
+CXXFLAGS :=	$(CXXFLAGS) -g
 
 XCOMM Define this to get XShapeExtention support
 #define SupportShapeExtension
@@ -36,14 +36,14 @@ Includes :=		Basemenu.hh Clientmenu.hh LinkedList.hh Rootmenu.hh Windowmenu.hh W
 Sources :=		Basemenu.cc Clientmenu.cc LinkedList.cc Rootmenu.cc Windowmenu.cc Workspace.cc WorkspaceManager.cc Workspacemenu.cc blackbox.cc graphics.cc icon.cc main.cc window.cc
 Objects :=		Basemenu.o  Clientmenu.o  LinkedList.o  Rootmenu.o  Windowmenu.o  Workspace.o  WorkspaceManager.o  Workspacemenu.o  blackbox.o graphics.o icon.o main.o window.o
 
-DefaultsPath :=		-DXAPPLOADDIR=\"$(XAPPLOADDIR)\" -DXLIBDIR=\"$(LIBDIR)\"
+DefaultsPath :=		-DXAPPLOADDIR=\"$(XAPPLOADDIR)\"
 Libraries :=		$(XLIB) $(EXTENSIONLIB)
 OtherLibs :=		
 
 #ifdef SupportShapeExtension
 CXXFLAGS :=	$(CXXFLAGS) -DSHAPE
 #endif
-CXXFLAGS :=	-Wall -W $(CXXFLAGS) -fomit-frame-pointer
+CXXFLAGS :=	-Wall -W $(CXXFLAGS)
 
 PROGRAMS := blackbox
 SRCS1 := $(Sources)

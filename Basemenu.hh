@@ -31,7 +31,7 @@ class BasemenuItem;
 class Blackbox;
 
 #include "LinkedList.hh"
-
+#include "graphics.hh"
 
 // base menu class... it is inherited for sessions, windows, and workspaces
 class Basemenu {
@@ -46,12 +46,12 @@ private:
   int which_sub, which_press, which_sbl;
 
   struct menu {
-   Pixmap iframe_pixmap;
+    Pixmap iframe_pixmap;
     Window frame, iframe, title;
 
     char *label;
     int x, y, x_move, y_move, sublevels, persub, use_sublevels;
-    unsigned width, height, title_h, iframe_h, item_w, item_h;
+    unsigned int width, height, title_h, iframe_h, item_w, item_h;
   } menu;
 
   void drawSubmenu(int, Bool = False);

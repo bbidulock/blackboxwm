@@ -19,7 +19,11 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
+
+#include "blackbox.hh"
 #include "graphics.hh"
 
 #include <alloca.h>
@@ -79,12 +83,12 @@ Pixmap BImage::renderSolidImage(unsigned long texture, const BColor &color) {
       if (color.r == color.g && color.g == color.b && color.b == 0)
 	renderBevel1(True, True);
       else
-	renderBevel1();
+	renderBevel1(True);
     } else if (texture & BImageBevel2) {
       if (color.r == color.g && color.g == color.b && color.b == 0)
 	renderBevel2(True, True);
       else
-	renderBevel2();
+	renderBevel2(True);
     }
 
     if (texture & BImageInverted)
@@ -94,12 +98,12 @@ Pixmap BImage::renderSolidImage(unsigned long texture, const BColor &color) {
       if (color.r == color.g && color.g == color.b && color.b == 0)
 	renderBevel1(True, True);
       else
-	renderBevel1();
+	renderBevel1(True);
     } else if (texture & BImageBevel2) {
       if (color.r == color.g && color.g == color.b && color.b == 0)
 	renderBevel2(True, True);
       else
-	renderBevel2();
+	renderBevel2(True);
     }
 
     if (! (texture & BImageInverted))
@@ -250,7 +254,7 @@ XImage *BImage::convertToXImage(void) {
       break;
     }
 
-  if (bpp == 0) return NULL;
+  if (bpp == 0) return 0;
 
   char *d = new char[width * height * (bpp / 8)];
   if (! d) return 0;
@@ -301,14 +305,15 @@ XImage *BImage::convertToXImage(void) {
 
     if (blackbox->imageDither()) {
       // lets dither the image while blitting to the XImage
-      unsigned int i, x, y, ofs, w2 = width * 2;
+      unsigned int i, x, y, ofs, w2 = width * 2,
+	aw = ((width + 2) * sizeof(unsigned short));
       unsigned short *tor, *tog, *tob, er, eg, eb, sr, sg, sb,
-	*or = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
-	*og = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
-	*ob = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
-	*nor = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
-	*nog = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
-	*nob = (unsigned short *) alloca((width + 2) * sizeof(unsigned short));
+	*or = (unsigned short *) alloca(aw),
+	*og = (unsigned short *) alloca(aw),
+	*ob = (unsigned short *) alloca(aw),
+	*nor = (unsigned short *) alloca(aw),
+	*nog = (unsigned short *) alloca(aw),
+	*nob = (unsigned short *) alloca(aw);
       
       if ((! or) || (! og) || (! ob) || (! nor) || (! nog) || (! nob)) {
 	XDestroyImage(image);
@@ -370,6 +375,7 @@ XImage *BImage::convertToXImage(void) {
 	  *(nog + x + 1) += (eg >> 2);
 	  *(nob + x + 1) += (eb >> 2);
 	}
+
 	ofs += width;
 	
 	tor = or; tog = og; tob = ob;
@@ -453,7 +459,6 @@ XImage *BImage::convertToXImage(void) {
 	  sb = ((sb >> 3) & image->blue_mask);
 	  
 	  *(im++) = sr|sg|sb;
-	  //	  XPutPixel(image, x, y, sr|sg|sb);
 
 	  er = *(or + x) - (sr >> 7);
 	  eg = *(og + x) - (sg >> 2);
@@ -503,15 +508,16 @@ XImage *BImage::convertToXImage(void) {
 
     if (blackbox->imageDither()) {
       int d = 0xff / blackbox->cpc8bpp();
-      unsigned int i, x, y, ofs, w2 = width * 2;
+      unsigned int i, x, y, ofs, w2 = width * 2,
+	aw = ((width + 2) * sizeof(unsigned short));
       unsigned short *tor, *tog, *tob, er, eg, eb,
-	*or = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
-	*og = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
-	*ob = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
-	*nor = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
-	*nog = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
-	*nob = (unsigned short *) alloca((width + 2) * sizeof(unsigned short));
-      
+	*or = (unsigned short *) alloca(aw),
+	*og = (unsigned short *) alloca(aw),
+	*ob = (unsigned short *) alloca(aw),
+	*nor = (unsigned short *) alloca(aw),
+	*nog = (unsigned short *) alloca(aw),
+	*nob = (unsigned short *) alloca(aw);
+
       if ((! or) || (! og) || (! ob) || (! nor) || (! nog) || (! nob)) {
 	XDestroyImage(image);
 	return 0;

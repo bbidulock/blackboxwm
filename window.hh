@@ -73,8 +73,6 @@ private:
     int x, y, x_resize, y_resize, x_move, y_move;
     unsigned int width, height, title_h, title_w, handle_h, handle_w,
       border_w, border_h, button_w, button_h, rh_w, rh_h;
-    unsigned long texture;
-    BColor color;
   } frame;
 
   struct protocols {

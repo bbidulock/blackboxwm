@@ -19,7 +19,10 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#define __GNU_SOURCE
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include "Rootmenu.hh"
 #include "blackbox.hh"
 
@@ -53,6 +56,14 @@ void Rootmenu::itemSelected(int button, int index) {
 	
 	break; }
       
+      case Blackbox::B_ExecReconfigure:
+	if (item->Exec()) {
+	  char *command = new char[strlen(item->Exec()) + 1];
+	  sprintf(command, "%s", item->Exec());
+	  system(command);
+	  delete [] command;
+	}
+	
       case Blackbox::B_Reconfigure:
 	blackbox->Reconfigure();
 	break;
@@ -62,7 +73,9 @@ void Rootmenu::itemSelected(int button, int index) {
 	break;
 	
       case Blackbox::B_RestartOther:
-	blackbox->Restart(item->Exec());
+	if (item->Exec())
+	  blackbox->Restart(item->Exec());
+
 	break;
 	
       case Blackbox::B_Exit:
@@ -71,7 +84,8 @@ void Rootmenu::itemSelected(int button, int index) {
       }
       
       if (! blackbox->Menu()->userMoved() &&
-	  item->Function() != Blackbox::B_Reconfigure)
+	  item->Function() != Blackbox::B_Reconfigure &&
+	  item->Function() != Blackbox::B_ExecReconfigure)
 	blackbox->Menu()->Hide();
     }
   }

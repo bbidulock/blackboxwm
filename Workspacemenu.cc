@@ -19,7 +19,10 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#define __GNU_SOURCE
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include "WorkspaceManager.hh"
 #include "Workspacemenu.hh"
 #include "Workspace.hh"
