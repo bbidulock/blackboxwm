@@ -113,10 +113,11 @@ void StackingList::changeLayer(StackEntity *entity, Layer new_layer) {
 StackingList::iterator StackingList::raise(StackEntity *entity) {
   assert(entity);
 
-  // find the top of the layer and given entity
+  // find the top of the layer and 'entity'
   iterator& pos = layer(entity->layer());
-  iterator it = std::find(pos, stack.end(), entity);
-  assert(it != stack.end());
+  const iterator send = stack.end();
+  iterator it = std::find(pos, send, entity);
+  assert(it != send);
 
   if (it == pos) {
     // entity is already at the top
@@ -132,21 +133,31 @@ StackingList::iterator StackingList::raise(StackEntity *entity) {
 StackingList::iterator StackingList::lower(StackEntity *entity) {
   assert(entity);
 
+  // find the top of the layer and 'entity'
   iterator& pos = layer(entity->layer());
-  iterator it = std::find(pos, stack.end(), entity);
-  assert(it != stack.end());
-  if (it == pos)
-    ++pos;
+  const iterator send = stack.end();
+  iterator it = std::find(pos, send, entity);
+  assert(it != send);
 
-  (void) stack.erase(it);
-
-  if (!*pos) {
-    // empty layer
-    return pos = stack.insert(pos, entity);
+  iterator next = it;
+  ++next;
+  assert(next != send);
+  if (!(*next)) {
+    // entity is already at the bottom
+    return it;
   }
 
-  it = std::find(pos, stack.end(), zero);
-  assert(it != stack.end());
+  if (it == pos) {
+    // entity is at the top of the layer, adjust the layer iterator to
+    // the next entity
+    ++pos;
+  }
+  assert((*pos));
+
+  // lower the entity
+  (void) stack.erase(it);
+  it = std::find(pos, send, zero);
+  assert(it != send);
   return stack.insert(it, entity);
 }
 
