@@ -57,13 +57,11 @@ Blackbox::Blackbox(int argc, char **argv) {
   //
 
   debug = new Debugger('!');
-  debug->enable();
-  debug->msg("Blackbox %s : (c) 1997, 1998 Brad Hughes\n",
-	     _blackbox_version);
 
-#ifndef DEBUG
-  debug->disable();
+#ifdef DEBUG
+  debug->enable();
 #endif
+
   debug->enter("Blackbox::Blackbox\n");
 
 
@@ -98,6 +96,18 @@ Blackbox::Blackbox(int argc, char **argv) {
 	fprintf(stderr, "couldn't set environment variable DISPLAY\n");
 	perror("setenv()");
       }
+    } else if (! strcmp(argv[i], "-version")) {
+      printf("Blackbox %s : (c) 1997, 1998 Brad Hughes\n\n",
+             _blackbox_version);
+      exit(0);
+    } else if (! strcmp(argv[i], "-help")) {
+      printf("Blackbox %s : (c) 1997, 1998 Brad Hughes\n",
+             _blackbox_version);
+      printf("\n"
+             "  -display <string>\tuse display connection.\n"
+	     "  -version\t\tdisplay version and exit.\n"
+             "  -help\t\t\tdisplay this help text and exit.\n\n");
+      exit(0);
     }
   }
 

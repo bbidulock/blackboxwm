@@ -240,6 +240,7 @@ public:
   void deiconifyWindow(void);
   void removeIcon(void) { icon = NULL; }
   Bool isIconic(void) { return iconic; }
+  Bool resizable(void) { return (do_maximize|do_handle); }
 
   //
   // Event handlers

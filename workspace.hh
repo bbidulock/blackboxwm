@@ -102,6 +102,8 @@ private:
   char *workspace_name;
   int workspace_id;
 
+  friend WorkspaceMenu;
+
 
 protected:
 
@@ -193,6 +195,8 @@ public:
     { return frame.frame_w; }
   unsigned int Height(void)
     { return frame.frame_h; }
+  void showMenu(void);
+  void hideMenu(void);
 };
 
 

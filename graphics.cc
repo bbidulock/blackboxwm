@@ -887,7 +887,7 @@ void BImage::renderHGradient(const BColor &from, const BColor &to) {
     if (ii == width) ii = 0;
   }
 
-  *p = *d;
+  *p = *(d + ii);
   delete [] d;
 }
 

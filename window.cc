@@ -50,7 +50,9 @@ BlackboxWindowMenu::BlackboxWindowMenu(BlackboxWindow *w, BlackboxSession *s) :
   insert("Send To ...",
          send_to_menu = new SendToWorkspaceMenu(window, session));
   insert("Iconify", BlackboxSession::B_WindowIconify);
-  insert("(Un)Maximize", BlackboxSession::B_WindowMaximize);
+  if (window->resizable())
+    insert("(Un)Maximize", BlackboxSession::B_WindowMaximize);
+
   insert("Close", BlackboxSession::B_WindowClose);
   insert("Raise", BlackboxSession::B_WindowRaise);
   insert("Lower", BlackboxSession::B_WindowLower);
@@ -73,32 +75,55 @@ void BlackboxWindowMenu::itemPressed(int button, int item) {
 
 void BlackboxWindowMenu::itemReleased(int button, int item) {
   if (button == 1) {
-    switch (item) {
-    case 1:
-      hideMenu();
-      window->iconifyWindow();
-      break;
-
-    case 2:
-      hideMenu();
-      window->maximizeWindow();
-      break;
-
-    case 3:
-      hideMenu();
-      window->closeWindow();
-      break;
-
-    case 4:
-      hideMenu();
-      window->raiseWindow();
-      break;
-      
-    case 5:
-      hideMenu();
-      window->lowerWindow();
-      break;
-    }
+    if (window->resizable())
+      switch (item) {
+      case 1:
+	hideMenu();
+	window->iconifyWindow();
+	break;
+	
+      case 2:
+	hideMenu();
+	window->maximizeWindow();
+	break;
+	
+      case 3:
+	hideMenu();
+	window->closeWindow();
+	break;
+	
+      case 4:
+	hideMenu();
+	window->raiseWindow();
+	break;
+	
+      case 5:
+	hideMenu();
+	window->lowerWindow();
+	break;
+      }
+    else
+      switch (item) {
+      case 1:
+	hideMenu();
+	window->iconifyWindow();
+	break;
+	
+      case 2:
+	hideMenu();
+	window->closeWindow();
+	break;
+	
+      case 3:
+	hideMenu();
+	window->raiseWindow();
+	break;
+	
+      case 4:
+	hideMenu();
+	window->lowerWindow();
+	break;
+      }
   }
 }
 
@@ -637,7 +662,7 @@ void BlackboxWindow::positionButtons(void) {
 
 
 void BlackboxWindow::createCloseButton(void) {
-  if (do_close && frame.title != None) {
+  if (do_close && frame.title != None && frame.close_button == None) {
     frame.close_button = createChildWindow(frame.title, 0, 0, frame.button_w,
 					   frame.button_h, 1);
     if (frame.button != None)

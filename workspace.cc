@@ -45,7 +45,23 @@ int WorkspaceMenu::remove(int i)
 void WorkspaceMenu::titlePressed(int) { }
 void WorkspaceMenu::titleReleased(int button) { if (button == 3) hideMenu(); }
 void WorkspaceMenu::itemPressed(int, int) { }
-void WorkspaceMenu::itemReleased(int, int) { }
+void WorkspaceMenu::itemReleased(int button, int item) {
+  if (button == 1) {
+    if (workspace->ws_manager->currentWorkspaceID() !=
+	workspace->workspace_id)
+      workspace->ws_manager->changeWorkspaceID(workspace->workspace_id);
+
+    if (item >= 0 && item < workspace->workspace_list->count()) {  
+      hideMenu();
+      BlackboxWindow *w = workspace->workspace_list->at(item);
+      if (w->isIconic()) w->deiconifyWindow();
+      w->raiseWindow();
+      w->setInputFocus();
+
+      workspace->ws_manager->hideMenu();
+    } 
+  }
+}
 
 
 WorkspaceManagerMenu::WorkspaceManagerMenu(WorkspaceManager *m,
@@ -393,7 +409,8 @@ void WorkspaceManager::changeWorkspaceID(int id) {
     sprintf(frame.title, "Workspace %d", id);
     XClearWindow(display, frame.workspace_button);
     XDrawString(display, frame.workspace_button, buttonGC, 4, 2 +
-                session->titleFont()->ascent, frame.title, strlen(frame.title));
+                session->titleFont()->ascent, frame.title,
+		strlen(frame.title));
     current->showAll();
   }
 }
@@ -419,43 +436,24 @@ void WorkspaceManager::arrangeIcons(void) {
 
 void WorkspaceManager::buttonPressEvent(XButtonEvent *be) {
   if (be->window == frame.window) {
-    if (be->button == 1) {
+    if (be->button == 1)
       XRaiseWindow(display, frame.window);
-    } else if (be->button == 2) {
+    else if (be->button == 2)
       XLowerWindow(display, frame.window);
-    }
-  } else if (be->window == frame.workspace_button) {
-    if (be->button == 1) {
-      if (! workspaces_menu->menuVisible()) {
-	XSetWindowBackgroundPixmap(display, frame.workspace_button,
-				   frame.pbutton);
-	XClearWindow(display, frame.workspace_button);
-	XDrawString(display, frame.workspace_button, buttonGC, 4, 2 +
-		    session->titleFont()->ascent, frame.title,
-		    strlen(frame.title));
-	workspaces_menu->moveMenu(3, 3 + frame.button_h);
-	workspaces_menu->showMenu();
-	sub = True;
-      }
-    }
-  }
+  } else if (be->window == frame.workspace_button)
+    if (be->button == 1)
+      if (! workspaces_menu->menuVisible())
+	showMenu();
 }
 
 
 void WorkspaceManager::buttonReleaseEvent(XButtonEvent *re) {
   if (re->window == frame.workspace_button) {
     if (re->button == 1) {
-      if (sub) {
+      if (sub)
 	sub = False;
-      } else {
-	XSetWindowBackgroundPixmap(display, frame.workspace_button,
-				   frame.button);
-	XClearWindow(display, frame.workspace_button);
-	XDrawString(display, frame.workspace_button, buttonGC, 4, 2 +
-		    session->titleFont()->ascent, frame.title,
-		    strlen(frame.title));
-	workspaces_menu->hideMenu();
-      }
+      else
+	hideMenu();
     }
   }
 }
@@ -466,4 +464,28 @@ void WorkspaceManager::exposeEvent(XExposeEvent *ee) {
     XDrawString(display, frame.workspace_button, buttonGC, 4, 2 +
 		session->titleFont()->ascent, frame.title,
 		strlen(frame.title));
+}
+
+
+void WorkspaceManager::showMenu(void) {
+  XSetWindowBackgroundPixmap(display, frame.workspace_button,
+			     frame.pbutton);
+  XClearWindow(display, frame.workspace_button);
+  XDrawString(display, frame.workspace_button, buttonGC, 4, 2 +
+	      session->titleFont()->ascent, frame.title,
+	      strlen(frame.title));
+  workspaces_menu->moveMenu(3, 3 + frame.button_h);
+  workspaces_menu->showMenu();
+  sub = True;
+}
+
+
+void WorkspaceManager::hideMenu(void) {
+  XSetWindowBackgroundPixmap(display, frame.workspace_button,
+			     frame.button);
+  XClearWindow(display, frame.workspace_button);
+  XDrawString(display, frame.workspace_button, buttonGC, 4, 2 +
+	      session->titleFont()->ascent, frame.title,
+	      strlen(frame.title));
+  workspaces_menu->hideMenu();
 }
