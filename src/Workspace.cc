@@ -149,13 +149,10 @@ void Workspace::focusFallback(const BlackboxWindow *old_window) {
 
   BlackboxWindowList::iterator it = stackingList.begin(),
                                end = stackingList.end();
-  for (; it != end; ++it) {
+  for (; ! newfocus && it != end; ++it) {
     BlackboxWindow *tmp = *it;
-    if (tmp && tmp->setInputFocus()) {
-      // we found our new focus target
+    if (tmp && tmp->setInputFocus())  // we found our new focus target
       newfocus = tmp;
-      break;
-    }
   }
   screen->getBlackbox()->setFocusedWindow(newfocus);
 }
