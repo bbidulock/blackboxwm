@@ -104,10 +104,6 @@ public:
   inline const SlitStyle *slitStyle(void) const
   { return &slit_style; }
 
-  bt::Color* borderColor(void)     { return &border_color; }
-
-  unsigned int bevelWidth(void) const         { return bevel_width;       }
-  unsigned int borderWidth(void) const        { return border_width;      }
   unsigned int numberOfWorkspaces(void) const { return workspace_count;   }
   bool allowScrollLock(void) const            { return allow_scroll_lock; }
   const std::string& rootCommand(void) const  { return root_command;      }
@@ -144,9 +140,6 @@ public:
   // store functions
   void saveWorkspaces(unsigned int w)      { workspace_count = w;   }
   void saveAllowScrollLock(bool a)         { allow_scroll_lock = a; }
-  void saveBorderColor(const bt::Color& c) { border_color = c;      }
-  void saveBorderWidth(unsigned int i)     { border_width = i;      }
-  void saveBevelWidth(unsigned int i)      { bevel_width = i;       }
   void saveWorkspaceName(unsigned int w, const std::string& name);
 
   void saveSlitPlacement(int i) { sconfig.placement = i; }
@@ -213,8 +206,7 @@ private:
 
   bool allow_scroll_lock;
   bool enable_toolbar;
-  unsigned int workspace_count, bevel_width, border_width;
-  bt::Color border_color;
+  unsigned int workspace_count;
   std::string root_command;
   std::vector<std::string> workspaces;
 };

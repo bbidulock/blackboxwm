@@ -498,15 +498,6 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
   if (! res.valid())
     res.load(DEFAULTSTYLE);
 
-  // load bevel and border widths
-  border_width = res.read("borderWidth", "BorderWidth", 1);
-  border_color = bt::Color::namedColor(display, screen_num,
-                                       res.read("borderColor",
-                                                "BorderColor",
-                                                "black"));
-
-  bevel_width = res.read("bevelWidth", "BevelWidth", 3);
-
   // load menu style
   bt::MenuStyle::get(*screen->getBlackbox(), screen_num)->load(res);
 

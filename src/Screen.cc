@@ -1705,10 +1705,8 @@ void BScreen::placeWindow(BlackboxWindow *win) {
 
   if (placed == False) {
     cascadePlacement(new_win, avail);
-    cascade_x += win->getTitleHeight() +
-                 (_resource.borderWidth() * 2);
-    cascade_y += win->getTitleHeight() +
-                 (_resource.borderWidth() * 2);
+    cascade_x += win->getTitleHeight();
+    cascade_y += win->getTitleHeight();
   }
 
   if (new_win.right() > avail.right())
@@ -1758,11 +1756,10 @@ bool BScreen::smartPlacement(unsigned int workspace, bt::Rect& rect,
     (_resource.colPlacementDirection() == TopBottom);
   const bool ignore_shaded = _resource.placementIgnoresShaded();
 
-  const int border_width = _resource.borderWidth();
-  const int left_border   = leftright ? 0 : -border_width-1;
-  const int top_border    = topbottom ? 0 : -border_width-1;
-  const int right_border  = leftright ? border_width+1 : 0;
-  const int bottom_border = topbottom ? border_width+1 : 0;
+  const int left_border   = leftright ? 0 : -2;
+  const int top_border    = topbottom ? 0 : -2;
+  const int right_border  = leftright ? 2 : 0;
+  const int bottom_border = topbottom ? 2 : 0;
 
   StackingList::const_iterator w_it, w_end;
 
