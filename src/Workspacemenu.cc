@@ -23,15 +23,15 @@
 #define _GNU_SOURCE
 #endif
 
-#include "WorkspaceManager.hh"
+#include "Toolbar.hh"
 #include "Workspacemenu.hh"
 #include "Workspace.hh"
 
 
-Workspacemenu::Workspacemenu(Blackbox *bb, WorkspaceManager *wsm) :
+Workspacemenu::Workspacemenu(Blackbox *bb, Toolbar *wsm) :
   Basemenu(bb)
 {
-  wsManager = wsm;
+  toolbar = wsm;
   setTitleVisibility(False);
   setMovable(False);
   defaultMenu();
@@ -49,11 +49,11 @@ Workspacemenu::~Workspacemenu(void) {
 void Workspacemenu::itemSelected(int button, int index) {
   if (button == 1) {
     if (index == 0) {
-      wsManager->addWorkspace();
+      toolbar->addWorkspace();
     } else if (index == 1) {
-      wsManager->removeLastWorkspace();
-    } else if (wsManager->currentWorkspace()->workspaceID() != (index - 1)) {
-      wsManager->changeWorkspaceID(index - 1);
+      toolbar->removeLastWorkspace();
+    } else if (toolbar->currentWorkspace()->workspaceID() != (index - 1)) {
+      toolbar->changeWorkspaceID(index - 1);
       Hide();
     }
   }

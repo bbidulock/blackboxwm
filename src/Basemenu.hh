@@ -42,11 +42,10 @@ private:
 
   Bool moving, visible, movable, user_moved, default_menu, title_vis, shifted;
   Display *display;
-  GC titleGC, itemGC, hitemGC, hbgGC;
   int which_sub, which_press, which_sbl;
 
   struct menu {
-    Pixmap iframe_pixmap;
+    Pixmap iframe_pixmap, title_pixmap;
     Window frame, iframe, title;
 
     char *label;
@@ -96,7 +95,7 @@ public:
   int Visible(void) { return visible; }
   const char *Label(void) const { return menu.label; }
   int Count(void) { return menuitems->count(); }
-  void setMenuLabel(char *n) { menu.label = n; }
+  void setMenuLabel(char *n);
   virtual void Show(void);
   void Hide(void);
   void Move(int, int);

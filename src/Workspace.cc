@@ -35,8 +35,8 @@
 // Workspace class code
 // *************************************************************************
 
-Workspace::Workspace(WorkspaceManager *m, int i) {
-  wsManager = m;
+Workspace::Workspace(Toolbar *m, int i) {
+  toolbar = m;
 
   id = i;
   stack = 0;
@@ -46,9 +46,8 @@ Workspace::Workspace(WorkspaceManager *m, int i) {
   cMenu->Update();
 
   name = new char[32];
-  label = new char[32];
   sprintf(name, "Workspace %d", id);
-  sprintf(label, "0 window(s)");
+  label = 0;
 }
 
 
@@ -59,7 +58,6 @@ Workspace::~Workspace(void) {
   if (stack) delete [] stack;
 
   delete [] name;
-  delete [] label;
 }
 
 
@@ -68,65 +66,67 @@ const int Workspace::addWindow(BlackboxWindow *w) {
   w->setWindowNumber(windowList->count());
   
   windowList->insert(w);
-  sprintf(label, "%d window(s)", windowList->count());
-  wsManager->redrawWSD(True);
   
   cMenu->insert(w->Title());
   cMenu->Update();
   
-  int i, k = windowList->count() * 3;
+  int i, k = windowList->count();
   Window *tmp_stack = new Window[k];
-  for (i = 0; i < k - 3; i++)
+  for (i = 0; i < k - 1; i++)
     *(tmp_stack + i) = *(stack + i);
   
-  *(tmp_stack + i++) = w->frameWindow();
-  *(tmp_stack + i++) = w->Menu()->WindowID();
-  *(tmp_stack + i) = w->Menu()->SendToMenu()->WindowID();
+  *(tmp_stack + i) = w->frameWindow();
   
   if (stack) delete [] stack;
   stack = tmp_stack;
-  if (wsManager->currentWorkspaceID() == id)
-    wsManager->stackWindows(stack, k);
+  if (toolbar->currentWorkspaceID() == id)
+    toolbar->stackWindows(stack, k);
   
   return w->windowNumber();
 }
 
 
 const int Workspace::removeWindow(BlackboxWindow *w) {
-  int i = 0, ii = 0, k = (windowList->count() - 1) * 3;
+  int i = 0, ii = 0, k = windowList->count() - 1;
   Window *tmp_stack = new Window[k];
   
-  for (i = 0; i < k + 3; i++)
-    if (*(stack + i) != w->frameWindow() &&
-	*(stack + i) != w->Menu()->WindowID() &&
-	*(stack + i) != w->Menu()->SendToMenu()->WindowID())
+  for (i = 0; i < k + 1; i++)
+    if (*(stack + i) != w->frameWindow())
       *(tmp_stack + (ii++)) = *(stack + i);
   
   if (stack) delete [] stack;
   stack = tmp_stack;
 
   windowList->remove((const int) w->windowNumber());
-  sprintf(label, "%d window(s)", windowList->count());
-  wsManager->redrawWSD(True);
-
+  
   cMenu->remove(w->windowNumber());
   cMenu->Update();
 
-  if (wsManager->currentWorkspaceID() == id)
-    wsManager->stackWindows(stack, k);
+  if (toolbar->currentWorkspaceID() == id)
+    toolbar->stackWindows(stack, k);
   
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (i = 0; it.current(); it++, i++)
     it.current()->setWindowNumber(i);
-
+  
   return windowList->count();
+}
+
+
+void Workspace::setFocusWindow(int w) {
+  if (w >= 0 && w < windowList->count())
+    label = window(w)->Title();
+  else
+    label = 0;
+
+  toolbar->redrawLabel(True);
 }
 
 
 int Workspace::showAll(void) {
   BlackboxWindow *win;
 
-  wsManager->stackWindows(stack, windowList->count() * 3);
+  toolbar->stackWindows(stack, windowList->count() * 3);
 
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (; it.current(); it++) {
@@ -162,7 +162,7 @@ int Workspace::removeAll(void) {
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (; it.current(); it++) {
     win = it.current();
-    wsManager->currentWorkspace()->addWindow(win);
+    toolbar->currentWorkspace()->addWindow(win);
     if (! win->isIconic())
       win->iconifyWindow();
   }
@@ -176,7 +176,7 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
   // manager... which adds this stack to it's own stack... and the workspace
   // manager then tells the X server to restack the windows
 
-  int i = 0, ii = 0, k = windowList->count() * 3;
+  int i = 0, ii = 0, k = windowList->count();
   Window *tmp_stack = new Window[k];
   static int re_enter = 0;
   
@@ -184,14 +184,10 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
     raiseWindow(w->TransientFor());
   } else {
     for (i = 0; i < k; i++)
-      if (*(stack + i) != w->frameWindow() &&
-	  *(stack + i) != w->Menu()->WindowID() &&
-	  *(stack + i) != w->Menu()->SendToMenu()->WindowID())
+      if (*(stack + i) != w->frameWindow())
         *(tmp_stack + (ii++)) = *(stack + i);
     
     *(tmp_stack + ii++) = w->frameWindow();
-    *(tmp_stack + ii++) = w->Menu()->WindowID();
-    *(tmp_stack + ii) = w->Menu()->SendToMenu()->WindowID();
     
     for (i = 0; i < k; ++i)
       *(stack + i) = *(tmp_stack + i);
@@ -207,14 +203,14 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
 	raiseWindow(w->Transient());
     }
 
-    if (! re_enter && id == wsManager->currentWorkspaceID())
-      wsManager->stackWindows(stack, k);
+    if (! re_enter && id == toolbar->currentWorkspaceID())
+      toolbar->stackWindows(stack, k);
   }
 }
 
 
 void Workspace::lowerWindow(BlackboxWindow *w) {
-  int i, ii = 3, k = windowList->count() * 3;
+  int i, ii = 1, k = windowList->count();
   Window *tmp_stack = new Window[k];
   static int re_enter = 0;
   
@@ -222,14 +218,10 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
     lowerWindow(w->Transient());
   } else {
     for (i = 0; i < k; ++i)
-      if (*(stack + i) != w->frameWindow() &&
-	  *(stack + i) != w->Menu()->WindowID() &&
-	  *(stack + i) != w->Menu()->SendToMenu()->WindowID())
+      if (*(stack + i) != w->frameWindow())
 	*(tmp_stack + (ii++)) = *(stack + i);
     
     *(tmp_stack) = w->frameWindow();
-    *(tmp_stack + 1) = w->Menu()->WindowID();
-    *(tmp_stack + 2) = w->Menu()->SendToMenu()->WindowID();
 
     for (i = 0; i < k; ++i)
       *(stack + i) = *(tmp_stack + i);
@@ -245,8 +237,8 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
 	lowerWindow(w->TransientFor());
     }
     
-    if (! re_enter && id == wsManager->currentWorkspaceID())
-      wsManager->stackWindows(stack, k);
+    if (! re_enter && id == toolbar->currentWorkspaceID())
+      toolbar->stackWindows(stack, k);
   }
 }
 
@@ -256,7 +248,7 @@ void Workspace::Reconfigure(void) {
 
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (; it.current(); it++)
-    if (wsManager->_blackbox()->validateWindow(it.current()->clientWindow()))
+    if (toolbar->_blackbox()->validateWindow(it.current()->clientWindow()))
       it.current()->Reconfigure();
 }
 
@@ -276,9 +268,10 @@ const int Workspace::Count(void) {
 
 void Workspace::Update(void) {
   cMenu->Update();
+  toolbar->redrawLabel(True);
 }
 
 
 void Workspace::restackWindows(void) {
-  wsManager->stackWindows(stack, windowList->count() * 3);
+  toolbar->stackWindows(stack, windowList->count());
 }

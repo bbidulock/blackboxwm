@@ -17,7 +17,6 @@
 #
 # (See the included file COPYING / GPL-2.0)
 
-
 # user configurable parts
 
 CXX:=			gcc
@@ -30,17 +29,14 @@ DefaultsPath:=		\"/usr/X11R6/lib/app-defaults\"
 #
 # sources, includes, objects and target variables... DO NOT EDIT
 
-SRCS :=		Application.cc Basemenu.cc Clientmenu.cc LinkedList.cc Rootmenu.cc Window.cc Windowmenu.cc Workspace.cc WorkspaceManager.cc Workspacemenu.cc blackbox.cc graphics.cc icon.cc main.cc
-OBJS :=		Application.o  Basemenu.o  Clientmenu.o  LinkedList.o  Rootmenu.o  Window.o  Windowmenu.o  Workspace.o  WorkspaceManager.o  Workspacemenu.o  blackbox.o graphics.o icon.o main.o
-
-PROGRAMS := blackbox
-
+SRCS :=		Basemenu.cc Clientmenu.cc Icon.cc LinkedList.cc Rootmenu.cc Toolbar.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc graphics.cc main.cc
+OBJS :=		Basemenu.o  Clientmenu.o  Icon.o  LinkedList.o  Rootmenu.o  Toolbar.o  Window.o  Windowmenu.o  Workspace.o  Workspacemenu.o  blackbox.o graphics.o   main.o
 
 # make rules
 
-all:: $(PROGRAMS)
-$(PROGRAMS):: $(Includes) $(SRCS) $(OBJS)
-	$(CXX) -o $(PROGRAMS) $(OBJS) $(LDFLAGS)
+all:: blackbox 
+blackbox:: $(SRCS) $(OBJS)
+	$(CXX) -o blackbox $(OBJS) $(LDFLAGS)
 
 .cc.o: $(SRCS)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
@@ -52,45 +48,41 @@ blackbox.o: blackbox.cc
 # utility rules
 
 clean::
-	rm -f $(Objects) $(PROGRAMS) core *~
+	rm -f $(OBJS) blackbox core *~
 
 install::
 	install -c -s blackbox /usr/X11R6/bin/blackbox
-	install -c -m 0444 Blackbox.ad $(DefaultsPath)/Blackbox.ad
-	install -c -m 0444 BlackboxMenu.ad $(DefaultsPath)/BlackboxMenu.ad
 
 
 # dependencies - gcc -MM -I/usr/X11R6/include output
 
-Application.o: Application.cc blackbox.hh LinkedList.hh graphics.hh \
- Application.hh WorkspaceManager.hh ../lib/libBoxdefs.h
 Basemenu.o: Basemenu.cc blackbox.hh LinkedList.hh graphics.hh \
  Basemenu.hh Rootmenu.hh
 Clientmenu.o: Clientmenu.cc Clientmenu.hh Basemenu.hh LinkedList.hh \
- graphics.hh blackbox.hh Workspace.hh WorkspaceManager.hh Window.hh
+ graphics.hh blackbox.hh Workspace.hh Toolbar.hh Window.hh
+Icon.o: Icon.cc Workspace.hh Clientmenu.hh Basemenu.hh LinkedList.hh \
+ graphics.hh Toolbar.hh Window.hh blackbox.hh Icon.hh
 LinkedList.o: LinkedList.cc LinkedList.hh
 Rootmenu.o: Rootmenu.cc Rootmenu.hh Basemenu.hh LinkedList.hh \
  graphics.hh blackbox.hh
+Toolbar.o: Toolbar.cc Toolbar.hh LinkedList.hh Workspacemenu.hh \
+ Basemenu.hh graphics.hh blackbox.hh Rootmenu.hh Workspace.hh \
+ Clientmenu.hh Window.hh Icon.hh
 Window.o: Window.cc Windowmenu.hh Basemenu.hh LinkedList.hh \
- graphics.hh Workspace.hh Clientmenu.hh WorkspaceManager.hh Window.hh \
- blackbox.hh icon.hh
+ graphics.hh Workspace.hh Clientmenu.hh Toolbar.hh Window.hh \
+ blackbox.hh Icon.hh
 Windowmenu.o: Windowmenu.cc Windowmenu.hh Basemenu.hh LinkedList.hh \
- graphics.hh Workspace.hh Clientmenu.hh WorkspaceManager.hh Window.hh \
+ graphics.hh Workspace.hh Clientmenu.hh Toolbar.hh Window.hh \
  blackbox.hh
 Workspace.o: Workspace.cc blackbox.hh LinkedList.hh graphics.hh \
- Window.hh Workspace.hh Clientmenu.hh Basemenu.hh WorkspaceManager.hh \
+ Window.hh Workspace.hh Clientmenu.hh Basemenu.hh Toolbar.hh \
  Windowmenu.hh
-WorkspaceManager.o: WorkspaceManager.cc WorkspaceManager.hh \
- LinkedList.hh graphics.hh Workspacemenu.hh Basemenu.hh blackbox.hh \
- Rootmenu.hh Workspace.hh Clientmenu.hh Window.hh icon.hh \
- Application.hh
-Workspacemenu.o: Workspacemenu.cc WorkspaceManager.hh LinkedList.hh \
- graphics.hh Workspacemenu.hh Basemenu.hh Workspace.hh Clientmenu.hh \
+Workspacemenu.o: Workspacemenu.cc Toolbar.hh LinkedList.hh \
+ Workspacemenu.hh Basemenu.hh graphics.hh Workspace.hh Clientmenu.hh \
  Window.hh
 blackbox.o: blackbox.cc blackbox.hh LinkedList.hh graphics.hh \
  Rootmenu.hh Basemenu.hh Window.hh Workspace.hh Clientmenu.hh \
- WorkspaceManager.hh Application.hh ../lib/libBoxdefs.h
+ Toolbar.hh
 graphics.o: graphics.cc blackbox.hh LinkedList.hh graphics.hh
-icon.o: icon.cc Workspace.hh Clientmenu.hh Basemenu.hh LinkedList.hh \
- graphics.hh WorkspaceManager.hh Window.hh blackbox.hh icon.hh
 main.o: main.cc blackbox.hh LinkedList.hh graphics.hh
+

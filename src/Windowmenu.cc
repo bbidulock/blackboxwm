@@ -25,7 +25,7 @@
 
 #include "Windowmenu.hh"
 #include "Workspace.hh"
-#include "WorkspaceManager.hh"
+#include "Toolbar.hh"
 
 #include "blackbox.hh"
 #include "Window.hh"
@@ -35,7 +35,7 @@
 
 Windowmenu::Windowmenu(BlackboxWindow *win, Blackbox *bb) : Basemenu(bb) {
   window = win;
-  wsManager = bb->workspaceManager();
+  toolbar = bb->toolbar();
 
   setTitleVisibility(False);
   setMovable(False);
@@ -91,16 +91,16 @@ void Windowmenu::itemSelected(int button, int index) {
       
     case Blackbox::B_WindowRaise:
       Hide();
-      wsManager->workspace(window->workspace())->raiseWindow(window);
+      toolbar->workspace(window->workspace())->raiseWindow(window);
       if (window->isStuck())
-	wsManager->currentWorkspace()->restackWindows();
+	toolbar->currentWorkspace()->restackWindows();
       break;
       
     case Blackbox::B_WindowLower:
       Hide();
-      wsManager->workspace(window->workspace())->lowerWindow(window);
+      toolbar->workspace(window->workspace())->lowerWindow(window);
       if (window->isStuck())
-	wsManager->currentWorkspace()->restackWindows();
+	toolbar->currentWorkspace()->restackWindows();
       break;
 
     case Blackbox::B_WindowStick:
@@ -108,21 +108,21 @@ void Windowmenu::itemSelected(int button, int index) {
       if (! window->isStuck()) {
 	int id = window->workspace();
 	window->setWorkspace(0);
-	wsManager->workspace(id)->removeWindow(window);
-	wsManager->workspace(0)->addWindow(window);
+	toolbar->workspace(id)->removeWindow(window);
+	toolbar->workspace(0)->addWindow(window);
 	window->stickWindow(True);
       } else {
-	wsManager->workspace(0)->removeWindow(window);
-	wsManager->currentWorkspace()->addWindow(window);
+	toolbar->workspace(0)->removeWindow(window);
+	toolbar->currentWorkspace()->addWindow(window);
 	window->stickWindow(False);
       }
 
-      wsManager->currentWorkspace()->restackWindows();
+      toolbar->currentWorkspace()->restackWindows();
       break;
 
     case Blackbox::B_WindowKill:
       Hide();
-      XKillClient(wsManager->_blackbox()->control(), window->clientWindow());
+      XKillClient(toolbar->_blackbox()->control(), window->clientWindow());
       break;
     }
   }
@@ -140,7 +140,7 @@ SendtoWorkspaceMenu::SendtoWorkspaceMenu(BlackboxWindow *win, Blackbox *bb) :
   Basemenu(bb)
 {
   window = win;
-  wsManager = bb->workspaceManager();
+  toolbar = bb->toolbar();
 
   setTitleVisibility(False);
   setMovable(False);
@@ -151,10 +151,10 @@ SendtoWorkspaceMenu::SendtoWorkspaceMenu(BlackboxWindow *win, Blackbox *bb) :
 
 void SendtoWorkspaceMenu::itemSelected(int button, int index) {
   if (button == 1) {
-    if ((index + 1) <= wsManager->count())
-      if ((index + 1) != wsManager->currentWorkspaceID()) {
-	wsManager->workspace(window->workspace())->removeWindow(window);
-	wsManager->workspace(index + 1)->addWindow(window);
+    if ((index + 1) <= toolbar->count())
+      if ((index + 1) != toolbar->currentWorkspaceID()) {
+	toolbar->workspace(window->workspace())->removeWindow(window);
+	toolbar->workspace(index + 1)->addWindow(window);
 	if (window->isStuck()) window->stickWindow(False);
 	window->withdrawWindow();
       }
@@ -170,8 +170,8 @@ void SendtoWorkspaceMenu::Update(void) {
     for (i = 0; i < r; ++i)
       remove(0);
   
-  for (i = 1; i < wsManager->count(); ++i)
-    insert(wsManager->workspace(i)->Name());
+  for (i = 1; i < toolbar->count(); ++i)
+    insert(toolbar->workspace(i)->Name());
   
   Basemenu::Update();
 }

@@ -49,7 +49,7 @@ void Rootmenu::itemSelected(int button, int index) {
 
     if (item->Function()) {
       switch (item->Function()) {
-      case Blackbox::B_Execute: {
+      case Blackbox::B_Execute:
 	if (item->Exec()) {
 	  char *command = new char[strlen(item->Exec()) + 8];
 #ifndef __EMX__
@@ -62,7 +62,7 @@ void Rootmenu::itemSelected(int button, int index) {
 	  delete [] command;
 	}
 	
-	break; }
+	break;
       
       case Blackbox::B_ExecReconfigure:
 	if (item->Exec()) {
@@ -89,11 +89,20 @@ void Rootmenu::itemSelected(int button, int index) {
       case Blackbox::B_Exit:
 	blackbox->Exit();
 	break;
+
+      case Blackbox::B_SetStyle:
+	if (item->Exec()) {
+	  blackbox->setStyle(item->Exec());
+	  blackbox->Reconfigure();
+	}
+	
+	break;
       }
       
       if (! blackbox->Menu()->userMoved() &&
 	  item->Function() != Blackbox::B_Reconfigure &&
-	  item->Function() != Blackbox::B_ExecReconfigure)
+	  item->Function() != Blackbox::B_ExecReconfigure &&
+	  item->Function() != Blackbox::B_SetStyle)
 	blackbox->Menu()->Hide();
     }
   }

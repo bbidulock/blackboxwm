@@ -73,4 +73,12 @@ To fully compile and install blackbox, issue the following commands:
 Each user should edit their appropriate .xinitrc or .xsession files to
 use the newly installed blackbox executable file.
 
-Please read the README file.
+New users should run Blackbox once after installing it, and then edit the
+generated ~/.blackboxrc to taste.
+
+Users upgrading to the new configuration system should keep backups of ALL
+their files, as Blackbox WILL overwrite the ~/.blackboxrc.  Color configs
+are now referred to as styles, which will be set by a dynamic (read: changable
+while blackbox is running) resource in ~/.blackboxrc.
+
+Please read the README file also.

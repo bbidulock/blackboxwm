@@ -21,24 +21,82 @@
 
 #ifndef __Blackbox_hh
 #define __Blackbox_hh
-#define __blackbox_version "beta zero . three five . zero"
+#define __blackbox_version "beta zero . four zero . one"
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
 
 // forward declarations
 class Blackbox;
-class WorkspaceManager;
+class Toolbar;
 class Basemenu;
 class Rootmenu;
 class BlackboxIcon;
 class BlackboxWindow;
-class Application;
 
 #include "LinkedList.hh"
 #include "graphics.hh"
 
 #include <stdio.h>
+
+
+typedef struct windowResource {
+  struct decoration {
+    BColor fcolor, fcolorTo, ucolor, ucolorTo, ftextColor, utextColor;
+    unsigned long ftexture, utexture;
+  } decoration;
+  
+  struct button {
+    BColor pressed, pressedTo;
+    unsigned long texture, ptexture;
+  } button;
+  
+  struct handle {
+    BColor color, colorTo;
+    unsigned long texture;
+  } handle;
+
+  struct frame {
+    BColor color;
+    unsigned long texture;
+  } frame;
+} windowResource;
+
+
+typedef struct toolbarResource {
+  struct toolbar {
+    BColor color, colorTo, textColor;
+    unsigned long texture;
+  } toolbar;
+  
+  struct label {
+    BColor color, colorTo;
+    unsigned long texture;
+  } label;
+  
+  struct button {
+    BColor color, colorTo, pressed, pressedTo;
+    unsigned long texture, ptexture;
+  } button;
+  
+  struct clock {
+    BColor color, colorTo;
+    unsigned long texture;
+  } clock;
+} toolbarResource;
+
+
+typedef struct menuResource {
+  struct title {
+    BColor color, colorTo, textColor;
+    unsigned long texture;
+  } title;
+
+  struct frame {
+    BColor color, colorTo, hcolor, textColor, htextColor;
+    unsigned long texture;
+  } frame;
+} menuResource;
 
 
 class Blackbox {
@@ -59,15 +117,10 @@ private:
     Window window;
   } MenuSearch;
 
-  typedef struct WSManagerSearch {
-    WorkspaceManager *data;
+  typedef struct ToolbarSearch {
+    Toolbar *data;
     Window window;
-  } WSManagerSearch;
-
-  typedef struct ApplicationSearch {
-    Application *data;
-    Window window;
-  } ApplicationSearch;
+  } ToolbarSearch;
 
   struct cursor {
     Cursor session, move;
@@ -78,34 +131,15 @@ private:
       XFontStruct *title, *menu;
     } font;
 
-    struct wsm {
-      BColor windowColor, windowColorTo, buttonColor, buttonColorTo,
-	labelColor, labelColorTo, clockColor, clockColorTo, textColor;
-      unsigned long windowTexture, buttonTexture, labelTexture, clockTexture;
-    } wsm;
+    windowResource wres;
+    toolbarResource tres;
+    menuResource mres;
 
-    struct win {
-      BColor focusColor, focusColorTo, unfocusColor, unfocusColorTo,
-	frameColor, focusTextColor, unfocusTextColor;
-      unsigned long decorTexture, handleTexture, frameTexture, buttonTexture;
-    } win;
-    
-    struct menu {
-      BColor titleColor, titleColorTo, frameColor, frameColorTo,
-	highlightColor, titleTextColor, frameTextColor, hiTextColor;
-      unsigned long titleTexture, frameTexture;
-    } menu;
-
-    struct icon {
-      BColor color, colorTo, textColor;
-      unsigned long texture;
-    } icon;
-
-    Bool opaqueMove, imageDither, clock24hour;
+    Bool opaqueMove, imageDither, clock24hour, toolbarRaised, sloppyFocus;
     BColor borderColor;
-    XrmDatabase blackboxrc;
-    char *menuFile;
-    int workspaces, justification, cpc8bpp;
+    XrmDatabase stylerc;
+    char *menuFile, *styleFile;
+    int workspaces, justify, menu_justify, cpc8bpp;
     unsigned int handleWidth, bevelWidth;
   } resource;
 
@@ -114,23 +148,31 @@ private:
     int event_basep, error_basep;
   } shape;
 
+  // pixmap cache
+
+  typedef struct PixmapCache {
+    Pixmap pixmap;
+    unsigned long pixel1, pixel2, texture;
+    unsigned int width, height, count;
+  } PixmapCache;
+
+  LinkedList<PixmapCache> *pixmapCacheList;
+
   // context linked lists
   LinkedList<WindowSearch> *windowSearchList;
   LinkedList<MenuSearch> *menuSearchList;
-  LinkedList<WSManagerSearch> *wsManagerSearchList;
+  LinkedList<ToolbarSearch> *toolbarSearchList;
   LinkedList<GroupSearch> *groupSearchList;
-  LinkedList<ApplicationSearch> *appSearchList;
-
+  
   // internal variables for operation
-  Rootmenu *rootmenu;
-  WorkspaceManager *wsManager;
+  Rootmenu *root_menu;
+  Toolbar *tool_bar;
 
   Atom _XA_WM_COLORMAP_WINDOWS, _XA_WM_PROTOCOLS, _XA_WM_STATE,
-    _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS, _BLACKBOX_MESSAGE,
-    _BLACKBOX_CONTROL;
+    _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS;
   Bool startup, shutdown, reconfigure;
   Display *display;
-  GC opGC;
+  GC opGC, wfocusGC, wunfocusGC, mtitleGC, mframeGC, mhiGC, mhbgGC;
   Visual *v;
   Window root;
   XColor *colors_8bpp;
@@ -144,7 +186,9 @@ protected:
   // internal initialization
   void InitMenu(void);
   void InitColor(void);
-  void LoadDefaults(void);
+  void LoadRC(void);
+  void LoadStyle(void);
+  void SaveRC(void);
 
   // X resource database lookups
   unsigned long readDatabaseTexture(char *, char *);
@@ -165,8 +209,8 @@ public:
   ~Blackbox(void);
 
   // member pointers
-  Rootmenu *Menu(void) { return rootmenu; }
-  WorkspaceManager *workspaceManager(void) { return wsManager; }
+  Rootmenu *Menu(void) { return root_menu; }
+  Toolbar *toolbar(void) { return tool_bar; }
 
   // window validation
   Bool validateWindow(Window);
@@ -174,9 +218,8 @@ public:
   // context lookup routines
   Basemenu *searchMenu(Window);
   BlackboxWindow *searchWindow(Window);
-  WorkspaceManager *searchWSManager(Window);
+  Toolbar *searchToolbar(Window);
   BlackboxWindow *searchGroup(Window, BlackboxWindow *);
-  Application *searchApp(Window);
 
   // reassociated a window with the current workspace
   void reassociateWindow(BlackboxWindow *);
@@ -184,19 +227,20 @@ public:
   // context list save/remove methods
   void saveMenuSearch(Window, Basemenu *);
   void saveWindowSearch(Window, BlackboxWindow *);
-  void saveWSManagerSearch(Window, WorkspaceManager *);
+  void saveToolbarSearch(Window, Toolbar *);
   void saveGroupSearch(Window, BlackboxWindow *);
-  void saveAppSearch(Window, Application *);
   void removeMenuSearch(Window);
   void removeWindowSearch(Window);
-  void removeWSManagerSearch(Window);
+  void removeToolbarSearch(Window);
   void removeGroupSearch(Window);
-  void removeAppSearch(Window);
 
   // main event loop
   void EventLoop(void);
 
   // window manager functions
+  void setStyle(char *);
+  void prevFocus(void);
+  void nextFocus(void);
   void Exit(void);
   void Restart(char * = 0);
   void Reconfigure(void);
@@ -217,7 +261,13 @@ public:
 
   Display *control(void) { return display; }
 
-  GC GCOperations(void) { return opGC; }
+  GC OpGC(void) { return opGC; }
+  GC WindowFocusGC(void) { return wfocusGC; }
+  GC WindowUnfocusGC(void) { return wunfocusGC; }
+  GC MenuTitleGC(void) { return mtitleGC; }
+  GC MenuFrameGC(void) { return mframeGC; }
+  GC MenuHiGC(void) { return mhiGC; }
+  GC MenuHiBGGC(void) { return mhbgGC; }
 
   Visual *visual(void) { return v; }
 
@@ -231,69 +281,41 @@ public:
   unsigned long getColor(const char *, unsigned char *, unsigned char *,
 			 unsigned char *);
 
+  // pixmap cache control
+  Pixmap renderImage(unsigned int, unsigned int, unsigned long,
+		     const BColor &, const BColor &);
+  Pixmap renderSolidImage(unsigned int, unsigned int, unsigned long,
+			  const BColor &);;
+  void removeImage(Pixmap);
+
   // session controls
   XFontStruct *titleFont(void) { return resource.font.title; }
   XFontStruct *menuFont(void) { return resource.font.menu; }
   const BColor &borderColor(void) { return resource.borderColor; }
   const unsigned int handleWidth(void) { return resource.handleWidth; }
   const unsigned int bevelWidth(void) { return resource.bevelWidth; }
+  Bool clock24Hour(void) { return resource.clock24hour; }
+  Bool toolbarRaised(void) { return resource.toolbarRaised; }
+  Bool sloppyFocus(void) { return resource.sloppyFocus; }
 
   // window controls
-  unsigned long wDecorTexture(void) { return resource.win.decorTexture; }
-  unsigned long wButtonTexture(void) { return resource.win.buttonTexture; }
-  unsigned long wHandleTexture(void) { return resource.win.handleTexture; }
-  unsigned long wFrameTexture(void) { return resource.win.frameTexture; }
-  const BColor &wFrameColor(void) { return resource.win.frameColor; }
-  const BColor &wFColor(void) { return resource.win.focusColor; }
-  const BColor &wFColorTo(void) { return resource.win.focusColorTo; }
-  const BColor &wUColor(void) { return resource.win.unfocusColor; }
-  const BColor &wUColorTo(void) { return resource.win.unfocusColorTo; }
-  const BColor &wFTextColor(void) { return resource.win.focusTextColor; }
-  const BColor &wUTextColor(void) { return resource.win.unfocusTextColor; }
+  windowResource *wResource(void) { return &resource.wres; }
 
   // menu controls
-  unsigned long mTitleTexture(void) { return resource.menu.titleTexture; }
-  unsigned long mFrameTexture(void) { return resource.menu.frameTexture; }
-  const BColor &mTColor(void) { return resource.menu.titleColor; }
-  const BColor &mTColorTo(void) { return resource.menu.titleColorTo; }
-  const BColor &mFColor(void) { return resource.menu.frameColor; }
-  const BColor &mFColorTo(void) { return resource.menu.frameColorTo; }
-  const BColor &mHColor(void) { return resource.menu.highlightColor; }
-  const BColor &mTTextColor(void) { return resource.menu.titleTextColor; }
-  const BColor &mFTextColor(void) { return resource.menu.frameTextColor; }
-  const BColor &mHTextColor(void) { return resource.menu.hiTextColor; }
+  menuResource *mResource(void) { return &resource.mres; }
 
   // workspace manager controls
-  unsigned long sWindowTexture(void) { return resource.wsm.windowTexture; }
-  unsigned long sButtonTexture(void) { return resource.wsm.buttonTexture; }
-  unsigned long sLabelTexture(void) { return resource.wsm.labelTexture; }
-  unsigned long sClockTexture(void) { return resource.wsm.clockTexture; }
-  const BColor &sWColor(void) { return resource.wsm.windowColor; }
-  const BColor &sWColorTo(void) { return resource.wsm.windowColorTo; }
-  const BColor &sLColor(void) { return resource.wsm.labelColor; }
-  const BColor &sLColorTo(void) { return resource.wsm.labelColorTo; }
-  const BColor &sBColor(void) { return resource.wsm.buttonColor; }
-  const BColor &sBColorTo(void) { return resource.wsm.buttonColorTo; }
-  const BColor &sCColor(void) { return resource.wsm.clockColor; }
-  const BColor &sCColorTo(void) { return resource.wsm.clockColorTo; }
-  const BColor &sTextColor(void) { return resource.wsm.textColor; }  
-  Bool clock24Hour(void) { return resource.clock24hour; }
-
-  // icon controls
-  unsigned long iconTexture(void) { return resource.icon.texture; }
-  const BColor &iconColor(void) { return resource.icon.color; }
-  const BColor &iconColorTo(void) { return resource.icon.colorTo; }
-  const BColor &iTextColor(void) { return resource.icon.textColor; }
+  toolbarResource *tResource(void) { return &resource.tres; }
 
   // session information
   int Depth(void) { return depth; }
   int BitsPerPixel(void) { return bpp; }
-
-  unsigned int XResolution(void) { return xres; }
-  unsigned int YResolution(void) { return yres; }
+  unsigned int xRes(void) { return xres; }
+  unsigned int yRes(void) { return yres; }
 
   // controls for arrangement of decorations
-  const int Justification(void) const { return resource.justification; }
+  const int Justification(void) const { return resource.justify; }
+  const int MenuJustification(void) const { return resource.menu_justify; }
   
   // window move style
   Bool opaqueMove(void) { return resource.opaqueMove; }
@@ -302,7 +324,7 @@ public:
   enum { B_Restart = 1, B_RestartOther, B_Exit, B_Shutdown, B_Execute,
 	 B_Reconfigure, B_ExecReconfigure, B_WindowShade, B_WindowIconify,
 	 B_WindowMaximize, B_WindowClose, B_WindowRaise, B_WindowLower,
-	 B_WindowStick, B_WindowKill };
+	 B_WindowStick, B_WindowKill, B_SetStyle };
   enum { B_LeftJustify, B_RightJustify, B_CenterJustify };
 };
 

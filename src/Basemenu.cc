@@ -24,7 +24,6 @@
 #endif
 
 #include "blackbox.hh"
-#include "graphics.hh"
 #include "Basemenu.hh"
 #include "Rootmenu.hh"
 
@@ -47,7 +46,7 @@ Basemenu::Basemenu(Blackbox *ctrl) {
     menu.y_move = 0;
   which_sub = which_press = which_sbl = -1;
 
-  menu.iframe_pixmap = None;
+  menu.iframe_pixmap = menu.title_pixmap = None;
 
   menu.bevel_w = blackbox->bevelWidth();
   menu.width= menu.title_h = menu.item_w = menu.iframe_h =
@@ -93,25 +92,6 @@ Basemenu::Basemenu(Blackbox *ctrl) {
 
   menuitems = new LinkedList<BasemenuItem>;
   
-  XGCValues gcv;
-  gcv.foreground = blackbox->mTTextColor().pixel;
-  gcv.font = blackbox->titleFont()->fid;
-  titleGC = XCreateGC(display, menu.frame, GCForeground|GCFont, &gcv);
-
-  gcv.foreground = blackbox->mFTextColor().pixel;
-  gcv.font = blackbox->menuFont()->fid;
-  itemGC = XCreateGC(display, menu.frame, GCForeground|GCFont, &gcv);
-
-  gcv.foreground = blackbox->mHTextColor().pixel;
-  hitemGC = XCreateGC(display, menu.frame, GCForeground|GCBackground|GCFont,
-		      &gcv);
-  
-  gcv.foreground = blackbox->mHColor().pixel;
-  gcv.arc_mode = ArcChord;
-  gcv.fill_style = FillSolid;
-  hbgGC = XCreateGC(display, menu.frame, GCForeground|GCFillStyle|GCArcMode,
-		    &gcv);
-
   // even though this is the end of the constructor the menu is still not
   // completely created.  items must be inserted and it must be Update()'d
 }
@@ -126,10 +106,15 @@ Basemenu::~Basemenu(void) {
   
   delete menuitems;
 
-  XFreeGC(display, titleGC);
-  XFreeGC(display, itemGC);
-  XFreeGC(display, hitemGC);
-  XFreeGC(display, hbgGC);
+  if (menu.title_pixmap) {
+    blackbox->removeImage(menu.title_pixmap);
+    menu.title_pixmap = None;
+  }
+
+  if (menu.iframe_pixmap) {
+    blackbox->removeImage(menu.iframe_pixmap);
+    menu.iframe_pixmap = None;
+  }
 
   blackbox->removeMenuSearch(menu.title);
   XDestroyWindow(display, menu.title);
@@ -169,6 +154,7 @@ int Basemenu::insert(char *label, int function, char *exec) {
       ret = menuitems->count();
       break; }
     
+    case Blackbox::B_SetStyle:
     case Blackbox::B_Execute:
     case Blackbox::B_ExecReconfigure:
     case Blackbox::B_RestartOther: {
@@ -266,7 +252,7 @@ void Basemenu::Update(void) {
     menu.sublevels = 1;
     while ((((menu.item_h + 1) * (menuitems->count() + 1) / menu.sublevels)
 	    + menu.title_h + 1) >
-	   blackbox->YResolution())
+	   blackbox->yRes())
       menu.sublevels++;
     
     menu.persub = menuitems->count() / menu.sublevels;
@@ -287,46 +273,45 @@ void Basemenu::Update(void) {
   if (! menu.iframe_h) menu.iframe_h = 1;
   if (menu.height < 1) menu.height = 1;
 
+  Pixmap tmp;
   if (title_vis) {
-    BImage *mt_image = new BImage(blackbox, menu.width, menu.title_h,
-				  blackbox->Depth());
-    Pixmap mt_pixmap =
-      mt_image->renderImage(blackbox->mTitleTexture(),
-			    blackbox->mTColor(),
-			    blackbox->mTColorTo());
-    delete mt_image;
-    XSetWindowBackgroundPixmap(display, menu.title, mt_pixmap);
+    tmp = menu.title_pixmap;
+    menu.title_pixmap =
+      blackbox->renderImage(menu.width, menu.title_h,
+			    blackbox->mResource()->title.texture,
+			    blackbox->mResource()->title.color,
+			    blackbox->mResource()->title.colorTo);
+    if (tmp) blackbox->removeImage(tmp);
+    XSetWindowBackgroundPixmap(display, menu.title, menu.title_pixmap);
     XClearWindow(display, menu.title);
-    if (mt_pixmap) XFreePixmap(display, mt_pixmap);
   }
-  
-  BImage *mi_image = new BImage(blackbox, menu.width, menu.iframe_h,
-				blackbox->Depth());
-  if (menu.iframe_pixmap) XFreePixmap(display, menu.iframe_pixmap);
+
+  tmp = menu.iframe_pixmap;
   menu.iframe_pixmap =
-    mi_image->renderImage(blackbox->mFrameTexture(),
-			  blackbox->mFColor(),
-			  blackbox->mFColorTo());
-  delete mi_image;
+    blackbox->renderImage(menu.width, menu.iframe_h,
+			  blackbox->mResource()->frame.texture,
+			  blackbox->mResource()->frame.color,
+			  blackbox->mResource()->frame.colorTo);
+  if (tmp) blackbox->removeImage(tmp);
   XSetWindowBackgroundPixmap(display, menu.iframe, menu.iframe_pixmap);
   
   XResizeWindow(display, menu.frame, menu.width, menu.height);
-
+  
   if (title_vis)
     XResizeWindow(display, menu.title, menu.width, menu.title_h);
-
+  
   XMoveResizeWindow(display, menu.iframe, 0,
 		    ((title_vis) ? menu.title_h + 1 : 0), menu.width,
 		    menu.iframe_h);
-
+  
   XClearWindow(display, menu.frame);
   XClearWindow(display, menu.title);
   XClearWindow(display, menu.iframe);
-
+  
   if (title_vis)
     switch (blackbox->Justification()) {
     case Blackbox::B_LeftJustify: {
-      XDrawString(display, menu.title, titleGC, menu.bevel_w,
+      XDrawString(display, menu.title, blackbox->MenuTitleGC(), menu.bevel_w,
 		  blackbox->titleFont()->ascent + menu.bevel_w,
 		  ((menu.label) ? menu.label : "Blackbox Menu"),
 		  strlen(((menu.label) ? menu.label : "Blackbox Menu")));
@@ -338,7 +323,8 @@ void Basemenu::Update(void) {
 		   ((menu.label) ? menu.label : "Blackbox Menu"),
 		   strlen(((menu.label) ? menu.label :
 			   "Blackbox Menu")));
-      XDrawString(display, menu.title, titleGC, menu.width - off,
+      XDrawString(display, menu.title, blackbox->MenuTitleGC(),
+		  menu.width - off,
 		  blackbox->titleFont()->ascent + menu.bevel_w,
 		  ((menu.label) ? menu.label : "Blackbox Menu"),
 		  strlen(((menu.label) ? menu.label : "Blackbox Menu")));
@@ -350,7 +336,7 @@ void Basemenu::Update(void) {
 			     ((menu.label) ? menu.label : "Blackbox Menu"),
 			     strlen(((menu.label) ? menu.label :
 				     "Blackbox Menu"))))) / 2;
-      XDrawString(display, menu.title, titleGC, ins,
+      XDrawString(display, menu.title, blackbox->MenuTitleGC(), ins,
 		  blackbox->titleFont()->ascent + menu.bevel_w,
 		  ((menu.label) ? menu.label : "Blackbox Menu"),
 		  strlen(((menu.label) ? menu.label : "Blackbox Menu")));
@@ -414,11 +400,11 @@ void Basemenu::drawSubmenu(int index, Bool) {
 	((menu.item_h + 1) * i) + ((title_vis) ? menu.title_h + 1 : 0) -
 	((item->sub_menu->title_vis) ? item->sub_menu->menu.title_h + 1 : 0);
       
-      if ((x + item->sub_menu->Width()) > blackbox->XResolution())
+      if ((x + item->sub_menu->Width()) > blackbox->xRes())
 	x = ((shifted) ? menu.x_shift : menu.x) - item->sub_menu->Width() - 1;
       
-      if ((y + item->sub_menu->Height()) > blackbox->YResolution())
-	y = blackbox->YResolution() - item->sub_menu->Height() - 1;
+      if ((y + item->sub_menu->Height()) > blackbox->yRes())
+	y = blackbox->yRes() - item->sub_menu->Height() - 1;
 
       item->sub_menu->Move(x, y);
 
@@ -452,23 +438,25 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clearArea) {
 
   if (! item) return;
 
-  switch(blackbox->Justification()) {
+  switch(blackbox->MenuJustification()) {
   case Blackbox::B_LeftJustify:
     tx = ix + menu.bevel_w + menu.item_h + 1;
     break;
 
   case Blackbox::B_RightJustify:
     tx = ix + menu.item_w -
-      XTextWidth(blackbox->menuFont(),
-		 ((item->ulabel) ? *item->ulabel : item->label),
-		 strlen((item->ulabel) ? *item->ulabel : item->label));
+      (menu.item_h + menu.bevel_w +
+       XTextWidth(blackbox->menuFont(),
+		  ((item->ulabel) ? *item->ulabel : item->label),
+		  strlen((item->ulabel) ? *item->ulabel : item->label)));
     break;
 
   case Blackbox::B_CenterJustify:
-    tx = ix + ((menu.item_w + 1 -
-        XTextWidth(blackbox->menuFont(),
-                   ((item->ulabel) ? *item->ulabel : item->label),
-                   strlen((item->ulabel) ? *item->ulabel : item->label))) / 2);
+    tx = ix +
+      ((menu.item_w + 1 -
+	XTextWidth(blackbox->menuFont(),
+		   ((item->ulabel) ? *item->ulabel : item->label),
+		   strlen((item->ulabel) ? *item->ulabel : item->label))) / 2);
     break;
   }
   
@@ -478,41 +466,54 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clearArea) {
   }
 
   if (highlight) {
-    XFillArc(display, menu.iframe, hbgGC, ix + 1, iy, menu.item_h,
-	     menu.item_h, 90 * 64, 180 * 64);
-    XFillRectangle(display, menu.iframe, hbgGC, ix + ((menu.item_h + 1) / 2),
-    		   iy + 1, menu.item_w - menu.item_h - 2, menu.item_h - 1);
-    XFillArc(display, menu.iframe, hbgGC, ix + menu.item_w - menu.item_h - 2,
-	     iy, menu.item_h, menu.item_h, 270 * 64, 180 * 64);
+    XFillArc(display, menu.iframe, blackbox->MenuHiBGGC(), ix + 1, iy + 1,
+             menu.item_h - 1, menu.item_h - 2, 90 * 64, 180 * 64);
+    XFillRectangle(display, menu.iframe, blackbox->MenuHiBGGC(), ix +
+                   ((menu.item_h + 1) / 2), iy + 1, menu.item_w -
+                   menu.item_h - 2, menu.item_h - 1);
+    XFillArc(display, menu.iframe, blackbox->MenuHiBGGC(), ix + menu.item_w -
+             menu.item_h - 2, iy + 1, menu.item_h - 1, menu.item_h - 2,
+             270 * 64, 180 * 64);
     
     if (item->ulabel)
-      XDrawString(display, menu.iframe, hitemGC, tx, iy +
-		  blackbox->menuFont()->ascent + menu.bevel_w, *item->ulabel,
-		  strlen(*item->ulabel));
+      XDrawString(display, menu.iframe, blackbox->MenuHiGC(), tx, iy +
+		  blackbox->menuFont()->ascent + (menu.bevel_w / 2) + 1,
+                  *item->ulabel, strlen(*item->ulabel));
     else if (item->label)
-      XDrawString(display, menu.iframe, hitemGC, tx, iy +
-		  blackbox->menuFont()->ascent + menu.bevel_w, item->label,
-		  strlen(item->label));
+      XDrawString(display, menu.iframe, blackbox->MenuHiGC(), tx, iy +
+		  blackbox->menuFont()->ascent + (menu.bevel_w / 2) + 1,
+                  item->label, strlen(item->label));
     
     if (item->sub_menu)
-      XDrawArc(display, menu.iframe, hitemGC, ix + menu.bevel_w + 1, iy +
-	       menu.bevel_w, menu.item_h - (menu.bevel_w * 2),
-	       menu.item_h - (menu.bevel_w * 2), 0, 360 * 64);
+      XDrawArc(display, menu.iframe, blackbox->MenuHiGC(), ix +
+               (menu.item_h / 4) + 1, iy + (menu.item_h / 4) + 1,
+               menu.item_h / 2, menu.item_h / 2, 0, 360 * 64);
   } else {
     if (item->ulabel)
-      XDrawString(display, menu.iframe, itemGC, tx, iy +
-		  blackbox->menuFont()->ascent + menu.bevel_w, *item->ulabel,
-		  strlen(*item->ulabel));
+      XDrawString(display, menu.iframe, blackbox->MenuFrameGC(), tx, iy +
+		  blackbox->menuFont()->ascent + (menu.bevel_w / 2) + 1,
+                  *item->ulabel, strlen(*item->ulabel));
     else if (item->label)
-      XDrawString(display, menu.iframe, itemGC, tx, iy +
-		  blackbox->menuFont()->ascent + menu.bevel_w, item->label,
-		  strlen(item->label));
+      XDrawString(display, menu.iframe, blackbox->MenuFrameGC(), tx, iy +
+		  blackbox->menuFont()->ascent + (menu.bevel_w / 2) + 1,
+                  item->label, strlen(item->label));
     
     if (item->sub_menu)
-      XDrawArc(display, menu.iframe, itemGC, ix + menu.bevel_w + 1, iy + 
-	       menu.bevel_w, menu.item_h - (menu.bevel_w * 2),
-	       menu.item_h - (menu.bevel_w * 2), 0, 360 * 64);
+      XDrawArc(display, menu.iframe, blackbox->MenuFrameGC(), ix +
+               (menu.item_h / 4) + 1, iy + (menu.item_h / 4) + 1,
+               menu.item_h / 2, menu.item_h / 2, 0, 360 * 64);
   }
+}
+
+
+void Basemenu::setMenuLabel(char *l) {
+  if (menu.label) delete [] menu.label;
+
+  if (l) {
+    menu.label = new char[strlen(l) + 1];
+    sprintf(menu.label, "%s", l);
+  } else
+    menu.label = 0;
 }
 
 
@@ -647,7 +648,7 @@ void Basemenu::exposeEvent(XExposeEvent *ee) {
   if (ee->window == menu.title) {
     switch (blackbox->Justification()) {
     case Blackbox::B_LeftJustify: {
-      XDrawString(display, menu.title, titleGC, menu.bevel_w,
+      XDrawString(display, menu.title, blackbox->MenuTitleGC(), menu.bevel_w,
 		  blackbox->titleFont()->ascent + menu.bevel_w,
 		  ((menu.label) ? menu.label : "Blackbox Menu"),
 		  strlen(((menu.label) ? menu.label : "Blackbox Menu")));
@@ -658,7 +659,8 @@ void Basemenu::exposeEvent(XExposeEvent *ee) {
 			   ((menu.label) ? menu.label : "Blackbox Menu"),
 			   strlen(((menu.label) ? menu.label :
 				   "Blackbox Menu"))) + menu.bevel_w;
-      XDrawString(display, menu.title, titleGC, menu.width - off,
+      XDrawString(display, menu.title, blackbox->MenuTitleGC(),
+                  menu.width - off,
 		  blackbox->titleFont()->ascent + menu.bevel_w,
 		  ((menu.label) ? menu.label : "Blackbox Menu"),
 		  strlen(((menu.label) ? menu.label : "Blackbox Menu")));
@@ -670,7 +672,7 @@ void Basemenu::exposeEvent(XExposeEvent *ee) {
 			     ((menu.label) ? menu.label : "Blackbox Menu"),
 			     strlen(((menu.label) ? menu.label :
 				     "Blackbox Menu"))))) / 2;
-      XDrawString(display, menu.title, titleGC, ins,
+      XDrawString(display, menu.title, blackbox->MenuTitleGC(), ins,
 		  blackbox->titleFont()->ascent + menu.bevel_w,
 		  ((menu.label) ? menu.label : "Blackbox Menu"),
 		  strlen(((menu.label) ? menu.label : "Blackbox Menu")));
@@ -717,13 +719,13 @@ void Basemenu::enterNotifyEvent(XCrossingEvent *ce) {
 		 blackbox->sessionCursor(), CurrentTime);
     
     menu.x_shift = menu.x, menu.y_shift = menu.y;
-    if (menu.x + menu.width > blackbox->XResolution()) {
-      menu.x_shift = blackbox->XResolution() - menu.width - 1;
+    if (menu.x + menu.width > blackbox->xRes()) {
+      menu.x_shift = blackbox->xRes() - menu.width - 1;
       shifted = True;
     }
 
-    if (menu.y + menu.height > blackbox->YResolution()) {
-      menu.y_shift = blackbox->YResolution() - menu.height - 1;
+    if (menu.y + menu.height > blackbox->yRes()) {
+      menu.y_shift = blackbox->yRes() - menu.height - 1;
       shifted = True;
     }
 
@@ -775,24 +777,6 @@ void Basemenu::leaveNotifyEvent(XCrossingEvent *ce) {
 // *************************************************************************
 
 void Basemenu::Reconfigure(void) {
-  XGCValues gcv;
-  gcv.foreground = blackbox->mTTextColor().pixel;
-  gcv.font = blackbox->titleFont()->fid;
-  XChangeGC(display, titleGC, GCForeground|GCFont, &gcv);
-
-  gcv.foreground = blackbox->mFTextColor().pixel;
-  gcv.font = blackbox->menuFont()->fid;
-  XChangeGC(display, itemGC, GCForeground|GCFont, &gcv);
-
-  gcv.foreground = blackbox->mHTextColor().pixel;
-  XChangeGC(display, hitemGC, GCForeground|GCBackground|GCFont, &gcv);
-
-  gcv.foreground = blackbox->mHColor().pixel;
-  gcv.arc_mode = ArcChord;
-  gcv.fill_style = FillSolid;
-  XChangeGC(display, hbgGC, GCForeground|GCFillStyle|GCArcMode,
-	    &gcv);
-
   XSetWindowBackground(display, menu.frame, blackbox->borderColor().pixel);
   XSetWindowBorder(display, menu.frame, blackbox->borderColor().pixel);
 

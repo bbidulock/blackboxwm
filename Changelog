@@ -2,6 +2,81 @@ At the request of some people, here is a Change log starting with 0.33.0.
 Enjoy! :)
 
 
+Changes from 0.35.0 to 0.40.1:
+	- cosmetic menu rendering fixes, changed the way the submenu dot is
+	  sized; changed an off by one error in drawing the rounded edges;
+	  fixed the text to be draw in the center of the item instead of at the
+	  bottom
+	- major changes to the toolbar (formerly the workspace manager) to
+	  change the way it looks and works.  The large blank space is gone,
+	  and the toolbar is now half the height it used to be (roughly). the
+	  workspace label displays the current workspace, with the workspace
+	  menu accessible by clicking button 1 on the label. the two buttons
+	  directly to the right of the workspace label change the workspace
+	  when pressed. the window label displays the current focused window,
+	  which makes it easier to identify which window has input focus (for
+	  some people like me that have very dark or very closely colored
+	  decorations).  the window menu is accessible by pressing button
+	  one on the window label, and selecting an item from the window menu
+	  will set input focus to that window (if it can receive focus). the
+	  two buttons to the right of the window label circulate focus (up and
+	  down, respectively) through the window list, skipping windows that
+	  cannot receive focus.  the icon button displays a menu of all
+	  iconified applications.  both the icon menu and the window menu will
+	  not become visible if they are empty.  the next button on the toolbar
+	  is a raise/lower button for the workspace manager. the toolbar is
+	  stacked on startup according to the resource set in ~/.blackboxrc,
+	  but this button will raise and lower the workspace to the users
+	  desire, saving the stack order when blackbox is exited or restarted.
+	  the clock is still the same, but editing the session.clockFormat
+	  will change it from normal time (session.clockFormat: 12) to 24hour
+	  format (session.clockFormat: 24)
+	- a pixmap cache has been implemented. a linked list stores all images
+	  rendered, removing them from the list and freeing them with the X
+	  server when all applications have removed references to them. for
+	  those who start man instances of the same applications will benefit
+	  greatly from this, as the same decorations are not redraw for each
+	  and every window.  this greatly reduces the load on the X server
+	  (my X server went from taking 20-28mb of memory to 8-11mb, a dramatic
+	  improvement, especially on this 32mb machine).  as a result of this,
+	  reconfiguring is faster, as is startup and restarting.
+	- click to focus has been implemented, with some restrictions. other
+	  window managers allow the user to click anywhere on the decorations
+	  OR the client itself to set focus.  i have not found an elegant way
+	  to do this yet, so focus can only be set by pressing button 1 on
+	  the decorations (like the titlebar, handle, buttons, border, etc.)
+	  just not on the client itself.  i am looking more into this, but
+	  don't expect anymore than what is in place now.  to use
+	  click-to-focus, put session.focusModel: ClickToFocus in ~/.blackboxrc
+	- 2 new commands have been added to the menu syntax, [include] and
+	  [style]... the [reconfig] command still has the option to reconfigure
+	  after a command has been run, but probably will be faded out...
+	  [include] (/path/to/file) includes the file inline with the current
+	  menu, meaning that a submenu isnot created for the separate file,
+	  if a submenu is desired, the file should include the [submenu] and
+	  [end] tags explicitly.
+	  [style] is a new addition for the style file support. syntax is:
+	  [style] (label here) {/path/to/style/file} which will read the new
+	  style file and reconfigure when selected.
+	- style files have been added to allow for easier switching between
+	  configurations.  the style file resources are dramtically different
+	  from those in 0.3x.x, see app-defaults/Blackbox-style.ad for an
+	  example...
+	- with the addition of style files, menus have been given their own
+	  justification resource, allowing (for example) menus to be left
+	  justified while titles are center or right justified.
+	- please read the sample configuration files in app-defaults/ for the
+	  new and improved configuration system.  NOTE: Blackbox.ad is a
+	  sample ~/.blackboxrc, but you shouldn't copy this file to
+	  ~/.blackboxrc, as Blackbox will store the resources it needs
+	  automatically
+	- an unofficial release numbered 0.40.0 was given out to some beta
+	  testers, and even this release needs the same treatment as 0.35.0
+          with respect to the new config system (0.40.0 only implemented the
+          pixmap cache, the new toolbar and *part* of the new config system,
+          but not the style files or automatic generation of ~/.blackboxrc)
+
+	  
 Changes from 0.34.5 to 0.35.0:
 	- changed the way menus are draw to round both end of the highlight...
 	- cosmetic enhancements for the various justifications...

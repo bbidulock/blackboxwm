@@ -25,6 +25,7 @@
 
 #include "blackbox.hh"
 #include "graphics.hh"
+#include "LinkedList.hh"
 
 #include <malloc.h>
 
@@ -75,19 +76,6 @@ BImage::~BImage(void) {
 Pixmap BImage::renderImage(unsigned long texture, const BColor &color1,
 			   const BColor &color2)
 {
-  if (texture & BImageSolid)
-    return renderSolidImage(texture, color1);
-  else if (texture & BImageGradient)
-    return renderGradientImage(texture, color1, color2);
-  
-  return None;
-}
-
-
-Pixmap BImage::renderInvertedImage(unsigned long texture,
-				   const BColor &color1, const BColor &color2)
-{
-  texture |= BImageInverted;
   if (texture & BImageSolid)
     return renderSolidImage(texture, color1);
   else if (texture & BImageGradient)

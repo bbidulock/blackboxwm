@@ -29,19 +29,19 @@ class Workspace;
 
 #include "Clientmenu.hh"
 #include "LinkedList.hh"
-#include "WorkspaceManager.hh"
+#include "Toolbar.hh"
 #include "Window.hh"
 
 
 class Workspace {
 private:
-  WorkspaceManager *wsManager;
+  Toolbar *toolbar;
 
   Clientmenu *cMenu;
   LinkedList<BlackboxWindow> *windowList;
 
   Window *stack;
-  char *name, *label;
+  char *name, **label;
   int id;
 
 
@@ -49,7 +49,7 @@ protected:
 
 
 public:
-  Workspace(WorkspaceManager *, int = 0);
+  Workspace(Toolbar *, int = 0);
   ~Workspace(void);
 
   const int addWindow(BlackboxWindow *);
@@ -62,13 +62,14 @@ public:
   void raiseWindow(BlackboxWindow *);
   void lowerWindow(BlackboxWindow *);
   void restackWindows(void);
+  void setFocusWindow(int);
   void Reconfigure();
   void Update();
 
   Window *windowStack(void) { return stack; }
   int workspaceID(void) { return id; }
   char *Name(void) { return name; }
-  char *Label(void) { return label; }
+  char **Label(void) { return label; }
   Clientmenu *Menu(void) { return cMenu; }
 };
 

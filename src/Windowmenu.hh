@@ -28,7 +28,7 @@ class SendtoWorkspaceMenu;
 
 class Blackbox;
 class BlackboxWindow;
-class WorkspaceManager;
+class Toolbar;
 
 #include "Basemenu.hh"
 
@@ -36,7 +36,7 @@ class WorkspaceManager;
 class Windowmenu : public Basemenu {
 private:
   BlackboxWindow *window;
-  WorkspaceManager *wsManager;
+  Toolbar *toolbar;
   SendtoWorkspaceMenu *sendToMenu;
   
   
@@ -57,7 +57,7 @@ public:
 class SendtoWorkspaceMenu : public Basemenu {
 private:
   BlackboxWindow *window;
-  WorkspaceManager *wsManager;
+  Toolbar *toolbar;
 
 
 protected:

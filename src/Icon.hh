@@ -27,7 +27,7 @@ class IconMenu;
 class BlackboxIcon;
 
 class Blackbox;
-class WorkspaceManager;
+class Toolbar;
 class BlackboxWindow;
 
 #include "Basemenu.hh"
@@ -62,7 +62,7 @@ private:
   int icon_number;
   
   BlackboxWindow *window;
-  WorkspaceManager *wsManager;
+  Toolbar *toolbar;
 
 
 protected:

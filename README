@@ -1,4 +1,4 @@
--- README for Blackbox 0.35.0 - an X11 Window manager
+-- README for Blackbox 0.40.1 Beta - an X11 Window manager
 -- Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
 --
 --  This program is free software; you can redistribute it and/or modify
@@ -18,236 +18,26 @@
 -- (See the included file COPYING / GPL-2.0)
 -- 
 
-This file covers operation and configuration of Blackbox.  Since it is
-still in development, many things may or may not work properly (or at
-all).  This code was written from scratch (save for a bit of the 8bpp
-code, which was reimplemented from WindowMaker 0.11.0 source code (and
-has since been improved upon and operates much faster than the way
-WindowMaker does, which is to alloc colors for each image), and the
-dgradient code.
+This is the README for Blackbox 0.40.1 Beta release. There are a number of
+changes between this release and the last stable release, 0.35.0.
 
-NOTE:  The 8bpp code is unfinished and mostly untested.  I do not make
-any guarantees or promises that you can run blackbox on an 8bpp X
-server.  I plan to work on the 8bpp code more, but at the moment it is
-unfinished and should be considered pre-alpha quality.
+Many things have changed for Blackbox 0.40.x, which will be covered in this 
+file.  First of all, the lib/ subdirectory has been removed, as the small
+applet library is now defunct and at this point unsupported.
 
-UPDATE: The 8bpp code has been considerably reworked and is working.  As
-a note, blackbox does a fake match color allocation method (ala
-WindowMaker) when it is run on an 8bpp X server.  What this means is
-that (for example) a slate blue root window will most likely NOT be the
-same color as a slate blue title bar window.  Please, no bug reports
-about improper coloring, as this is the method I have decided to use
-because of the way I render and use internal images.
+Second, the configuration system has changed radically.  Configuring Blackbox
+is now controlled by 3 different files; see the app-defaults/ directory for
+details.
 
+NOTE: As part of the new configuration system, blackbox now saves it's own
+configuration file (~/.blackboxrc) upon exiting or restarting.  This means that
+editing this file shouldn't be necessary, except to change the menu file or
+other file locations.  The number of workspaces, the stack order of the toolbar
+and the current style file. First time users need only run blackbox once and
+then exit, at which point blackbox will write a new ~/.blackboxrc, which can
+be edited by hand, or changed by operating blackbox (i.e. adding or removing
+workspaces will cause blackbox to write the changes, as well as the current
+style file and the stack order of the toolbar).
 
-Credits:
------------
-Author:
-	Brad Hughes <bhughes@arn.net>
-
-Contributors:
-	Jeffrey Sean Connell <ankh@canuck.gen.nz>
-	  - debugger class code (ommited from sources)
-	Frank Belew <frb@umr.edu>
-	  - dgradient code
-	Scott Garner <mrfab@arn.net>
-	  - suggestions, bug reports and beta testing (*the* beta moron)
-        David Doan <ddoan@usa.net>
-	 - testing of 8bpp code
-	Mark Seward <illuzion@paradise.net.nz>
-	 - beta testing, bug reports and 32bpp testing
-	Keith Bolland <prime@strip.net.nz>
-	 - beta testing, bug reports and suggestions
-	James Spooner <spoons@xtra.co.nz>
-	 - beta testing, bug reports (beta moron)
-	Fred Knieper <derf@tamu.edu>
-	 - beta testing, bug reports
-	Steve Udell <hettar@teleport.com>
-	 - beta testing, bug reports, questions (very good ones)
-
-I would also like to thank the creators of WindowMaker.  Reading the existing
-code has helped me immensely, and the BImage class follows the RImage data type
-very closely (the 8bpp code and dithering code was based off of WindowMaker's
-wrlib).
-
-
-Compilation and Installation:
---------------------------------
-See the INSTALL file.
-
-
-Operation:
--------------
-Operation of blackbox is similar to many other window managers.  An
-explanation of functions and their default behaviour (read, some
-behaviours are modifiable/configurable) is included below.
-
-		Window Stacking (arrangement):
-
-Windows are stacked in a specific order. The toolbox set on the bottom of the
-root window is always on the bottom of the stack list.  Client windows are
-stacked above the toolbox, thus it is possible to totally obscure the toolbox
-from sight with large/numerous clients.  The session (root) menu, workspace
-manager menu and the workspace menus (window lists) are stacked above the
-client windows, and thus will always be visible when mapped.
-
-New client windows are placed at the top of the stack.  You can raise any 
-window by clicking the titlebar or the handlebar. Mouse button 1 (by
-default, the left mouse button on a right handed mouse, which is
-modified in the X configuration files, not by blackbox) raises
-the window to the top of the stack (under any transient windows,
-such as help/about/question dialog boxes).  Mouse button 2 (by
-default the middle mouse button) lowers the window (and any
-transient windows) to the bottom of the window stack.
-
-Client windows are movable by holding mouse button 1 on the titlebar and
-dragging the window to the desired location.  Opaque moves (the window
-contents are visible during the move) are the default move style, but a wire
-frame move is configurable the rc file. Releasing the mouse button ends the
-window move.
-  
-		ICCCM Compliance:
-
-Since blackbox is an ICCCM compliant window manager, the window decorations
-are controlled by messages and defaults set by the client.  If a client does
-not accept a certain ICCCM protocol request, then a close button (the "X"
-button) will not be created.  Likewise, if a client sets its maximum and
-minimum size to the same settings, a maximize button (the box button) will not
-be created, nor will a window handle, since the window cannot be resized.  The
-ICCCM specifications allow for an Urgent window to be created, but at the
-moment blackbox ignores such windows (as the ICCCM allows).  If such windows
-are supported in future releases, the iconify button (the bar button) will not
-be created.  In this release, the iconify button is created for all windows.
-
-Clients that report a user or program specified location are accomodated, and
-placed in the appropriate location.  Otherwise, client windows are cascaded
-when mapped (which cycles back when necessary).  If a client wishes to resize
-itself or reposition itself, its request is honored.
-
-Support is also available for older (read: pre ICCCM) clients that behave
-differently than described in the ICCCM specification included with the
-X11R6.3 release of the X Window System.  Most notable of such clients is xv,
-which is the primary graphics viewer/editor for many people (read: Linux
-users).
-
-		Window Operations:
-
-Client windows that allow resizing will have a handle added to the
-decorations.  To interactively resize a window, the button at the bottom of
-the handle should be pressed with mouse button 1 and drug to the desired
-location.  If the client has reported a size stepping/increment, this
-increment is taken into account when the resizing begins.  Resizing is
-controlled by a wire frame, which is removed when the mouse button is released
-(at which point the client is resized).
-
-The maximize button maximizes the client window in the available space on the
-root window (i.e. minus the width of the toolbox). Again, clients with set
-size increments are incremented and then centered in the desktop (so that
-means a maximized xterm may not take up the full screen).
-
-Client windows have a window menu accessable by clicking mouse button 3 (by
-default, the right button on a right handed mouse) on the window titlebar.
-This window menu includes a submenu for sending the window to a different
-workspace, shade/unshade, iconify, maximize/unmaximize (if the client can be
-resized), raise, lower, stick/unstick, close and kill client functions.  The
-"Send To ..." submenu displays a list of available workspaces, which will send
-the window to the desired workspace if one is selected from the menu.  The
-stick/unstick operation has been implemented as another workspace, whose
-contents are always visible on every workspace, and whose windows are always
-on top of the current workspace's windows. The window menu is retractable by
-pressing mouse button 3 on the window titlebar a second time.
-
-Window shading can be simply explained as hiding all of the client window and
-decorations except for the title bar.  A window may be shaded or unshaded by
-either selecting the option from the window menu, or by clicking mouse button
-1 on the titlebar while holding either of the control keys down.
-
-		Menu Behaviour:
-
-About menus in blackbox.  Other graphical interfaces allow menus to be
-traversed by holding mouse button 1 and moving the pointer. With blackbox,
-this is not the case.  Each menu item can be traversed by just moving the
-pointer.  In fact, holding button 1 while dragging the mouse doesn't do
-anything.  Submenus are automatically displayed, and highlighted accordingly.
-
-The session (root) menu is mapped by pressing mouse button 3 on the root
-window.  The menu title is centered around the pointer's current position, but it is positioned within the root window boundaries.  It is possible to move
-the root menu, in the same manner as moving a client window.  If an item is
-selected from the root menu or any of its submenus, the window will unmap
-itself UNLESS the user has interactively moved the menu, in which case it will
-remain on the root window until the user unmaps it by clicking mouse button 3
-on its title.
-
-The workspace manager menu operates differently from the root menu in several
-respects.  It does not have a title, and thus is not movable.  Pressing the
-workspace name with button 1 on the toolbox maps the workspace manager menu.
-The "New Workspace" menu item creates a new workspace, which is like a virtual
-X desktop on which more windows may be placed.  The "Delete last" menu item
-iconifies ALL windows on the last workspace, and removes the last workspace
-from blackbox's memory.  The number of workspaces is dynamic, but at least one
-must stay "alive". Because of this, the user cannot delete Workspace 1.
-
-Pressing one of the available workspaces in the menu with mouse button 1
-changes to that workspace (i.e. all windows on the current workspace are
-hidden, and the windows on the selected workspace are shown). A workspace menu
-which contains a list of windows on any given workspace is available by
-pressing mouse button 3 on the workspace name.  If the user selects a window
-from the window list, blackbox will raise the selected window (move it to a
-visible location if it is not visible) and award it keyboard input focus.
-
-		Window Focusing / Key Bindings:
-
-Keyboard input focus is awarded to those clients who accept it (again, the
-client specifies if it can take focus through ICCCM protocol requests).
-Blackbox disobeys the terms dicated by the ICCCM by allowing certain keyboard
-shortcuts (the ICCCM instructs window manager clients to not trap any key or
-pointer events from clients, until certain window manager function keys/key
-combinations are implemented).  The shortcut keys are as follows.  Mod1+Tab
-cycles window focus (skipping windows that do not accept focus and windows
-that are iconified).  Control+Left/Right arrow key combinations will circulate
-through available workspaces, by ascending the workspace list (ALT+Left arrow)
-or descending it (ALT+Right arrow).  If the user tries to acsend above the
-first workspace, Blackbox will change to the last workspace (and vice versa
-for trying to descend past the last).
-
-		Icons:
-
-Icons are placed in a menu accessible from the Workspace Manager. This menu is
-present in all workspaces,  thus it is possible to move a window to another
-workspace by iconifying it and then deiconifying it on a new workspace (but
-the Send To ... window menu function is much easier).  Blackbox reads the icon
-label from the ICCCM hints the client window sets.  If there is no icon label
-available, "Unnamed" is used (the same is true for window titles). Pressing
-the menu label with mouse button 1 will deiconify the window on the current
-workspace (dissociating it from its original workspace if necessary) and raise
-it to the top of the window stack.
-
-
-Configuration:
------------------
-Configuration of blackbox is not handled by a new rc file format, rather
-X resources are used in the rc file (placed in the users home directory).
-The default resources are read when there is no .blackboxrc file in the
-users home directory.  If the default resource files cannot be found, then
-blackbox uses a hard coded default (using flat textures).
-
-Blackbox reads two configuration files to determine its appearance.  The
-first file is the main configuration file, ~/.blackboxrc.  Blackbox reads this
-file to determine colors, textures, fonts, and other relevant resources.  The
-menu is read from a file set by a resource in this configuration file.
-
-This README is broken.
-Please see the app-defaults/Blackbox.ad file for an example of a Blackbox rc
-file.
---
-
-The Menu File:
------------------
-This README is broken.
-Please see the app-defaults/BlackboxMenu.ad file for an example of a Blackbox
-menu file.
---
-
-
-Questions comments and flames welcome.  bhughes@arn.net
-Enjoy blackbox, I have enjoyed coding it.
+Third, almost 400 lines of code have been added, providing more
+configurability, and more options.

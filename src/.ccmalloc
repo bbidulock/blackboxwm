@@ -9,7 +9,7 @@
 
 ##############################################################################
 ## (C) 1997-1998 Armin Biere, 1998 Johannes Keukelaar
-## $Id: .ccmalloc,v 1.1.1.1 2001/11/30 07:54:36 shaleh Exp $
+## $Id: .ccmalloc,v 1.1.1.2 2001/11/30 08:18:14 shaleh Exp $
 ##############################################################################
 
 %%% `%' and `#' are comments !!!!!!!
@@ -59,7 +59,7 @@
 % specifying a logfile name with  a `.gz' (or a `.Z') suffix. This means
 % that gnuzip (resp. compress) is used to compress the output.
 
-log ccmalloc.log
+%log ccmalloc.log
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % `logpid' specify the logfile

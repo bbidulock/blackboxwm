@@ -24,10 +24,9 @@
 #endif
 
 #include "Workspace.hh"
-#include "WorkspaceManager.hh"
+#include "Toolbar.hh"
 
 #include "blackbox.hh"
-#include "graphics.hh"
 #include "Icon.hh"
 #include "Window.hh"
 
@@ -81,8 +80,7 @@ int Iconmenu::remove(BlackboxIcon *icon) {
 void Iconmenu::itemSelected(int button, int item) {
   if (button == 1) {
     BlackboxWindow *window = iconList->find(item)->bWindow();
-    blackbox->workspaceManager()->workspace(window->workspace())->
-      raiseWindow(window);
+    blackbox->toolbar()->workspace(window->workspace())->raiseWindow(window);
     window->deiconifyWindow();
   }
 }
@@ -95,19 +93,19 @@ void Iconmenu::itemSelected(int button, int item) {
 BlackboxIcon::BlackboxIcon(Blackbox *bb, BlackboxWindow *win) {
   display = bb->control();
   window = win;
-  wsManager = bb->workspaceManager();
+  toolbar = bb->toolbar();
   client = window->clientWindow();
   icon_number = -1;
 
   if (! XGetIconName(display, client, &name))
     name = "Unnamed";
 
-  wsManager->addIcon(this);
+  toolbar->addIcon(this);
 }
 
 
 BlackboxIcon::~BlackboxIcon(void) {
-  wsManager->removeIcon(this);
+  toolbar->removeIcon(this);
 
   if (name)
     if (strcmp(name, "Unnamed"))
@@ -122,5 +120,5 @@ void BlackboxIcon::rereadLabel(void) {
   if (! XGetIconName(display, client, &name))
     name = "Unnamed";
 
-  wsManager->iconUpdate();
+  toolbar->iconUpdate();
 }

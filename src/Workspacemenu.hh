@@ -25,7 +25,7 @@
 // forward declaration
 class Workspacemenu;
 
-class WorkspaceManager;
+class Toolbar;
 
 #include "Basemenu.hh"
 
@@ -34,7 +34,7 @@ class WorkspaceManager;
 
 class Workspacemenu : public Basemenu {
 private:
-  WorkspaceManager *wsManager;
+  Toolbar *toolbar;
 
   
 protected:
@@ -42,7 +42,7 @@ protected:
 
 
 public:
-  Workspacemenu(Blackbox *, WorkspaceManager *);
+  Workspacemenu(Blackbox *, Toolbar *);
   virtual ~Workspacemenu(void);
 };
 

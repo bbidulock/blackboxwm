@@ -97,7 +97,6 @@ public:
   Bool putPixel(unsigned int, unsigned int, const BColor &);
   
   Pixmap renderImage(unsigned long, const BColor &, const BColor &);
-  Pixmap renderInvertedImage(unsigned long, const BColor &, const BColor &);
   Pixmap renderSolidImage(unsigned long, const BColor &);
   Pixmap renderGradientImage(unsigned long, const BColor &, const BColor &);
 };
