@@ -1332,8 +1332,9 @@ Bool BlackboxWindow::setInputFocus(void) {
       XSendEvent(display, client.window, False, NoEventMask, &ce);
     }
 
-    if (screen->isSloppyFocus() && screen->doAutoRaise())
+    if (screen->isSloppyFocus() && screen->doAutoRaise()) {
       timer->start();
+    }
 
     ret = True;
   }
@@ -1668,8 +1669,10 @@ void BlackboxWindow::setFocusFlag(Bool focus) {
       XSetWindowBorder(display, frame.plate, frame.uborder_pixel);
   }
 
-  if (screen->isSloppyFocus() && screen->doAutoRaise() && timer->isTiming())
+  if (! focus && screen->isSloppyFocus() && screen->doAutoRaise() &&
+      timer->isTiming()) {
     timer->stop();
+  }
 
   if (isFocused())
     blackbox->setFocusedWindow(this);
