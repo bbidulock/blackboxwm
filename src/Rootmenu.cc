@@ -60,7 +60,6 @@ using std::string;
 Rootmenu::Rootmenu(int scr)
     : Basemenu(scr)
 {
-  blackbox = Blackbox::instance();
 }
 
 void Rootmenu::itemClicked(const Point &, const Basemenu::Item &item, int button)
@@ -70,27 +69,28 @@ void Rootmenu::itemClicked(const Point &, const Basemenu::Item &item, int button
 
   switch(item.function()) {
   case Execute:
-    bexec(item.command(), screen());
+    bexec(item.command(),
+          Blackbox::instance()->screen(screenNumber())->displayString());
     break;
 
   case Restart:
-    blackbox->restart();
+    Blackbox::instance()->restart();
     break;
 
   case RestartOther:
-    blackbox->restart(item.command().c_str());
+    Blackbox::instance()->restart(item.command().c_str());
     break;
 
   case Exit:
-    blackbox->shutdown();
+    Blackbox::instance()->shutdown();
     break;
 
   case SetStyle:
-    blackbox->saveStyleFilename(item.command().c_str());
+    Blackbox::instance()->saveStyleFilename(item.command().c_str());
     // fall through intended
 
   case Reconfigure:
-    blackbox->reconfigure();
+    Blackbox::instance()->reconfigure();
     break;
   }
 }

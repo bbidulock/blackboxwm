@@ -34,7 +34,7 @@
 
 
 Clientmenu::Clientmenu(Workspace *ws)
-  : Basemenu( ws->getScreen()->screen() )
+  : Basemenu( ws->getScreen()->screenNumber() )
 {
   setAutoDelete(false);
   wkspc = ws;

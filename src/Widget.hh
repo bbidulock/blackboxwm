@@ -54,7 +54,7 @@ public:
 
   Widget *parent() const { return _parent; }
 
-  int screen() const { return _screen; }
+  int screenNumber() const { return _screen; }
 
   Type type() const { return _type; }
 

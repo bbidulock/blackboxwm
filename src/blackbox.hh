@@ -131,7 +131,7 @@ public:
   Blackbox(int, char **, char * = 0, char * = 0);
   virtual ~Blackbox(void);
 
-    static Blackbox *instance();
+  static Blackbox *instance();
 
 #ifdef    HAVE_GETPID
   inline const Atom &getBlackboxPidAtom(void) const { return blackbox_pid; }
@@ -146,29 +146,29 @@ public:
   BScreen *searchScreen(Window);
 
   inline const Time &getDoubleClickInterval(void) const
-    { return resource.double_click_interval; }
+  { return resource.double_click_interval; }
   inline const Time &getLastTime(void) const { return last_time; }
 
   Toolbar *searchToolbar(Window);
 
   inline const char *getStyleFilename(void) const
-    { return resource.style_file; }
+  { return resource.style_file; }
   inline const char *getMenuFilename(void) const
-    { return resource.menu_file; }
+  { return resource.menu_file; }
 
   inline const int &getColorsPerChannel(void) const
-    { return resource.colors_per_channel; }
+  { return resource.colors_per_channel; }
 
   inline const timeval &getAutoRaiseDelay(void) const
-    { return resource.auto_raise_delay; }
+  { return resource.auto_raise_delay; }
 
   inline const unsigned long &getCacheLife(void) const
-    { return resource.cache_life; }
+  { return resource.cache_life; }
   inline const unsigned long &getCacheMax(void) const
-    { return resource.cache_max; }
+  { return resource.cache_max; }
 
   inline void maskWindowEvents(Window w, BlackboxWindow *bw)
-    { masked = w; masked_window = bw; }
+  { masked = w; masked_window = bw; }
   inline void setNoFocus(Bool f) { no_focus = f; }
 
   void setFocusedWindow(BlackboxWindow *w);

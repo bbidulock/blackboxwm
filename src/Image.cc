@@ -645,7 +645,8 @@ Pixmap BImage::renderPixmap(void)
   }
 
   XPutImage(*display, pixmap,
-	    DefaultGC(display->x11Display(), control->getScreenInfo()->screen()),
+	    DefaultGC(display->x11Display(),
+                      control->getScreenInfo()->screenNumber()),
             image, 0, 0, 0, 0, width, height);
 
   if (image->data) {
@@ -1795,7 +1796,7 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
 
   screen_depth = screeninfo->depth();
   window = screeninfo->rootWindow();
-  screen_number = screeninfo->screen();
+  screen_number = screeninfo->screenNumber();
 
   int count;
   XPixmapFormatValues *pmv = XListPixmapFormats(*display,

@@ -37,7 +37,7 @@
 
 
 Configmenu::Configmenu(BScreen *scr)
-    : Basemenu(scr->screen())
+    : Basemenu(scr->screenNumber())
 {
   setAutoDelete(false);
 
@@ -128,7 +128,7 @@ void Configmenu::reconfigure(void) {
 }
 
 Configmenu::Focusmenu::Focusmenu(Configmenu *cm)
-  : Basemenu(cm->screen->screen())
+  : Basemenu(cm->screen->screenNumber())
 {
   configmenu = cm;
 
@@ -192,7 +192,7 @@ void Configmenu::Focusmenu::itemClicked(const Point &, const Item &item, int but
 }
 
 Configmenu::Placementmenu::Placementmenu(Configmenu *cm) :
- Basemenu(cm->screen->screen())
+ Basemenu(cm->screen->screenNumber())
 {
   configmenu = cm;
 

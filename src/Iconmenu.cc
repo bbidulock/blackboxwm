@@ -33,7 +33,7 @@
 
 
 Iconmenu::Iconmenu( BScreen *scrn )
-  : Basemenu( scrn->screen() )
+  : Basemenu( scrn->screenNumber() )
 {
   setAutoDelete(false);
 

@@ -38,9 +38,6 @@ public:
 
 protected:
   virtual void itemClicked( const Point &, const Item &, int );
-
-private:
-  Blackbox *blackbox;
 };
 
 #endif // __Rootmenu_hh

@@ -936,7 +936,7 @@ void Blackbox::save_rc(void) {
 
   LinkedListIterator<BScreen> it(screenList);
   for (BScreen *screen = it.current(); screen; it++, screen = it.current()) {
-    int screen_number = screen->screen();
+    int screen_number = screen->screenNumber();
 
 #ifdef    SLIT
     char *slit_placement = (char *) 0;
@@ -1212,7 +1212,7 @@ void Blackbox::load_rc(BScreen *screen) {
 
   XrmValue value;
   char *value_type, name_lookup[1024], class_lookup[1024];
-  int screen_number = screen->screen();
+  int screen_number = screen->screenNumber();
 
   sprintf(name_lookup,  "session.screen%d.fullMaximization", screen_number);
   sprintf(class_lookup, "Session.Screen%d.FullMaximization", screen_number);

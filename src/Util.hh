@@ -186,7 +186,7 @@ private:
 // some string functions
 char* expandTilde(const char *s);
 char* bstrdup(const char *);
-void bexec(const string &, int = -1);
+void bexec(const string &, const string &);
 
 struct timeval; // forward declare to avoid the header
 timeval normalizeTimeval(const timeval &tm);

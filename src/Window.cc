@@ -273,7 +273,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   XMapSubwindows(*blackbox, frame.window);
 
   if ( decorations.menu )
-    windowmenu = new Windowmenu( screen->screen(), this );
+    windowmenu = new Windowmenu( screen->screenNumber(), this );
 
   decorate();
 

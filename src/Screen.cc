@@ -84,6 +84,7 @@
 #include <algorithm>
 #include <iostream>
 
+
 static Bool running = True;
 
 static int anotherWMRunning(Display *display, XErrorEvent *) {
@@ -752,8 +753,8 @@ void BScreen::nextFocus(void) {
   BlackboxWindow *next;
 
   if (blackbox->getFocusedWindow()) {
-    if (blackbox->getFocusedWindow()->getScreen()->screen() ==
-	screen()) {
+    if (blackbox->getFocusedWindow()->getScreen()->screenNumber() ==
+	screenNumber()) {
       have_focused = True;
       focused_window_number = blackbox->getFocusedWindow()->getWindowNumber();
     }
@@ -786,8 +787,8 @@ void BScreen::prevFocus(void) {
   BlackboxWindow *prev;
 
   if (blackbox->getFocusedWindow()) {
-    if (blackbox->getFocusedWindow()->getScreen()->screen() ==
-	screen()) {
+    if (blackbox->getFocusedWindow()->getScreen()->screenNumber() ==
+	screenNumber()) {
       have_focused = True;
       focused_window_number = blackbox->getFocusedWindow()->getWindowNumber();
     }
@@ -819,8 +820,8 @@ void BScreen::raiseFocus(void) {
   int focused_window_number = -1;
 
   if (blackbox->getFocusedWindow()) {
-    if (blackbox->getFocusedWindow()->getScreen()->screen() ==
-	screen()) {
+    if (blackbox->getFocusedWindow()->getScreen()->screenNumber() ==
+	screenNumber()) {
       have_focused = True;
       focused_window_number = blackbox->getFocusedWindow()->getWindowNumber();
     }
@@ -837,7 +838,7 @@ void BScreen::InitMenu(void)
   if (rootmenu)
     rootmenu->clear();
   else
-    rootmenu = new Rootmenu(screen());
+    rootmenu = new Rootmenu(screenNumber());
 
   Bool defaultMenu = True;
 
@@ -1086,7 +1087,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
               continue;
             }
 
-            Rootmenu *submenu = new Rootmenu(screen());
+            Rootmenu *submenu = new Rootmenu(screenNumber());
 
             if (*command)
               submenu->setTitle(command);
@@ -1155,7 +1156,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
                 Rootmenu *stylesmenu;
 
                 if (newmenu)
-                  stylesmenu = new Rootmenu(screen());
+                  stylesmenu = new Rootmenu(screenNumber());
                 else
                   stylesmenu = menu;
 

@@ -599,7 +599,7 @@ void Slit::timeout(void) {
 }
 
 Slitmenu::Slitmenu(Slit *sl)
-  : Basemenu( sl->screen->screen() )
+  : Basemenu( sl->screen->screenNumber() )
 {
   slit = sl;
 
@@ -652,7 +652,7 @@ void Slitmenu::reconfigure(void) {
 }
 
 Slitmenu::Directionmenu::Directionmenu(Slitmenu *sm)
-  : Basemenu( sm->slit->screen->screen() )
+  : Basemenu( sm->slit->screen->screenNumber() )
 {
   slitmenu = sm;
 
@@ -686,7 +686,7 @@ void Slitmenu::Directionmenu::itemClicked(const Point &, const Item &item, int b
 }
 
 Slitmenu::Placementmenu::Placementmenu(Slitmenu *sm)
-  : Basemenu( sm->slit->screen->screen() )
+  : Basemenu( sm->slit->screen->screenNumber() )
 {
   slitmenu = sm;
 

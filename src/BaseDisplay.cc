@@ -86,6 +86,10 @@
 #include "Widget.hh"
 
 #include <algorithm>
+#include <string>
+using std::string;
+#include <sstream>
+using std::ostringstream;
 
 
 // X error handler to handle any and all X errors while the application is
@@ -720,25 +724,26 @@ void BaseDisplay::ungrabButton(unsigned int button, unsigned int modifiers,
 }
 
 
-ScreenInfo::ScreenInfo(BaseDisplay *d, int num) {
+ScreenInfo::ScreenInfo(BaseDisplay *d, int num)
+{
   _display = d;
   _screen = num;
 
-  _rootwindow = RootWindow(display()->x11Display(), screen());
-  _depth = DefaultDepth(display()->x11Display(), screen());
+  _rootwindow = RootWindow(display()->x11Display(), screenNumber());
+  _depth = DefaultDepth(display()->x11Display(), screenNumber());
 
   _rect.x = _rect.y = 0;
   _rect.width =
-    WidthOfScreen(ScreenOfDisplay(display()->x11Display(), screen()));
+    WidthOfScreen(ScreenOfDisplay(display()->x11Display(), screenNumber()));
   _rect.height =
-    HeightOfScreen(ScreenOfDisplay(display()->x11Display(), screen()));
+    HeightOfScreen(ScreenOfDisplay(display()->x11Display(), screenNumber()));
 
   // search for a TrueColor Visual... if we can't find one... we will use the
   // default visual for the screen
   XVisualInfo vinfo_template, *vinfo_return;
   int vinfo_nitems;
 
-  vinfo_template.screen = screen();
+  vinfo_template.screen = screenNumber();
   vinfo_template.c_class = TrueColor;
 
   _visual = (Visual *) 0;
@@ -761,7 +766,15 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, int num) {
     _colormap = XCreateColormap(*display(), _rootwindow,
                                 _visual, AllocNone);
   } else {
-    _visual = DefaultVisual(display()->x11Display(), screen());
-    _colormap = DefaultColormap(display()->x11Display(), screen());
+    _visual = DefaultVisual(display()->x11Display(), screenNumber());
+    _colormap = DefaultColormap(display()->x11Display(), screenNumber());
   }
+
+    ostringstream out;
+  string displaystring = DisplayString(_display->x11Display());
+  unsigned int dot = displaystring.rfind('.');
+  if (dot != string::npos)
+    displaystring.resize(dot);
+  out << "DISPLAY=" << displaystring << '.' << screenNumber();
+  displaystring = out.str();
 }

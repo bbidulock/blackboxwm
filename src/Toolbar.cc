@@ -174,7 +174,7 @@ void ToolbarPlacementmenu::itemClicked(const Point &, const Item &item, int butt
 // new toolbar
 
 Toolbar2::Toolbar2(BScreen *scrn)
-  : Widget(scrn->screen(), OverrideRedirect), bscreen(scrn),
+  : Widget(scrn->screenNumber(), OverrideRedirect), bscreen(scrn),
     toolbar_pixmap(0)
 {
   updateLayout();
@@ -333,7 +333,7 @@ Toolbar::Toolbar(BScreen *scrn)
   new_name_pos = 0;
   frame.grab_x = frame.grab_y = 0;
 
-  toolbarmenu = new Toolbarmenu(this, screen->screen());
+  toolbarmenu = new Toolbarmenu(this, screen->screenNumber());
 
   XSetWindowAttributes attrib;
   unsigned long create_mask = CWBackPixmap | CWBackPixel | CWBorderPixel |

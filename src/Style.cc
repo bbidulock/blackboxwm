@@ -36,7 +36,6 @@
 
 #include "Style.hh"
 #include "BaseDisplay.hh"
-#include "blackbox.hh"
 #include "i18n.hh"
 
 #include <stdio.h>
@@ -419,7 +418,7 @@ void BStyle::setCurrentStyle(const string &newstyle)
   // load and exec root command
   if (XrmGetResource(stylerc, "rootCommand", "RootCommand",
                      &value_type, &value)) {
-    bexec(value.addr, screen);
+    bexec(value.addr, BaseDisplay::instance()->screenInfo(screen)->displayString());
   }
 
   XrmDestroyDatabase(stylerc);

@@ -59,7 +59,7 @@ Basemenu::~Basemenu()
 
 void Basemenu::drawTitle()
 {
-  BStyle *style = Blackbox::instance()->screen(screen())->style();
+  BStyle *style = Blackbox::instance()->screen(screenNumber())->style();
 
   int dx = 1;
   int l;
@@ -106,7 +106,7 @@ void Basemenu::drawItem(const Rect &r, const Item &item)
 {
   BaseDisplay *display = BaseDisplay::instance();
   BGCCache *cache = BGCCache::instance();
-  BStyle *style = Blackbox::instance()->screen(screen())->style();
+  BStyle *style = Blackbox::instance()->screen(screenNumber())->style();
 
   if (item.isSeparator()) {
     BGCCache::Item &gc = cache->find(style->menuTextColor());
@@ -210,7 +210,7 @@ void Basemenu::clickActiveItem()
     it++;
   }
 
-  BStyle *style = Blackbox::instance()->screen(screen())->style();
+  BStyle *style = Blackbox::instance()->screen(screenNumber())->style();
   Rect r;
   bool do_hide = true;
   bool once = true;
@@ -277,7 +277,7 @@ void Basemenu::updateSize()
   int w = 0, h = 0, iw;
   int index, titleh, itemh, colh = 0, maxcolh = 0;
 
-  BScreen *scr = Blackbox::instance()->screen(screen());
+  BScreen *scr = Blackbox::instance()->screen(screenNumber());
   BStyle *style = scr->style();
   if (i18n.multibyte()) {
     maxcolh = itemh = style->menuFontSetExtents()->max_ink_extent.height +
@@ -442,7 +442,7 @@ void Basemenu::popup(int x, int y, bool centerOnTitle)
   if (size_dirty)
     updateSize();
 
-  BScreen *scr = Blackbox::instance()->screen(screen());
+  BScreen *scr = Blackbox::instance()->screen(screenNumber());
   if (show_title) {
     if (centerOnTitle) {
       // if the title is visible, center it around the popup point
@@ -509,7 +509,7 @@ void Basemenu::hide()
 
   Rect r;
   int row = 0, col = 0;
-  BStyle *style = Blackbox::instance()->screen(screen())->style();
+  BStyle *style = Blackbox::instance()->screen(screenNumber())->style();
   int x = items_rect.x() + style->bevelWidth();
   int y = items_rect.y() + style->bevelWidth();
   while (it != items.end()) {
@@ -743,7 +743,7 @@ void Basemenu::setItemEnabled(int index, bool enabled)
   Rect r;
   int i = 0;
   int row = 0, col = 0;
-  BStyle *style = Blackbox::instance()->screen(screen())->style();
+  BStyle *style = Blackbox::instance()->screen(screenNumber())->style();
   int x = items_rect.x() + style->bevelWidth();
   int y = items_rect.y() + style->bevelWidth();
   while (i++ < index) {
@@ -835,7 +835,7 @@ void Basemenu::setItemChecked(int index, bool check)
   Rect r;
   int i = 0;
   int row = 0, col = 0;
-  BStyle *style = Blackbox::instance()->screen(screen())->style();
+  BStyle *style = Blackbox::instance()->screen(screenNumber())->style();
   int x = items_rect.x() + style->bevelWidth();
   int y = items_rect.y() + style->bevelWidth();
   while (i++ < index) {
@@ -917,7 +917,7 @@ void Basemenu::setActiveItem(int index)
     return;
 
   BaseDisplay *display = BaseDisplay::instance();
-  BStyle *style = Blackbox::instance()->screen(screen())->style();
+  BStyle *style = Blackbox::instance()->screen(screenNumber())->style();
 
   Items::iterator it = items.begin();
   if (show_title) {
@@ -995,7 +995,7 @@ void Basemenu::showActiveSubmenu()
     it++;
   }
 
-  BStyle *style = Blackbox::instance()->screen(screen())->style();
+  BStyle *style = Blackbox::instance()->screen(screenNumber())->style();
   Rect r;
   int row = 0, col = 0;
   int x = items_rect.x() + style->bevelWidth();
@@ -1039,7 +1039,7 @@ void Basemenu::showSubmenu(const Rect &r, const Item &item)
   if (item.submenu()->size_dirty)
     item.submenu()->updateSize();
 
-  BScreen *scr = Blackbox::instance()->screen(screen());
+  BScreen *scr = Blackbox::instance()->screen(screenNumber());
 
   int px = x() + r.x() + r.width();
   int py = y() + r.y() - scr->style()->borderWidth() - scr->style()->bevelWidth();
@@ -1107,7 +1107,7 @@ void Basemenu::buttonPressEvent(XEvent *e)
 
   Rect r;
   int row = 0, col = 0;
-  BStyle *style = Blackbox::instance()->screen(screen())->style();
+  BStyle *style = Blackbox::instance()->screen(screenNumber())->style();
   int x = items_rect.x() + style->bevelWidth();
   int y = items_rect.y() + style->bevelWidth();
   while (it != items.end()) {
@@ -1173,7 +1173,7 @@ void Basemenu::buttonReleaseEvent(XEvent *e)
   Rect r;
   bool once = true;
   int row = 0, col = 0;
-  BStyle *style = Blackbox::instance()->screen(screen())->style();
+  BStyle *style = Blackbox::instance()->screen(screenNumber())->style();
   int x = items_rect.x() + style->bevelWidth();
   int y = items_rect.y() + style->bevelWidth();
   while (it != items.end()) {
@@ -1234,7 +1234,7 @@ void Basemenu::pointerMotionEvent(XEvent *e)
 
   Rect r;
   int row = 0, col = 0;
-  BStyle *style = Blackbox::instance()->screen(screen())->style();
+  BStyle *style = Blackbox::instance()->screen(screenNumber())->style();
   int x = items_rect.x() + style->bevelWidth();
   int y = items_rect.y() + style->bevelWidth();
   while (it != items.end()) {
@@ -1288,7 +1288,7 @@ void Basemenu::leaveEvent(XEvent *)
 
   Rect r;
   int row = 0, col = 0;
-  BStyle *style = Blackbox::instance()->screen(screen())->style();
+  BStyle *style = Blackbox::instance()->screen(screenNumber())->style();
   int x = items_rect.x() + style->bevelWidth();
   int y = items_rect.y() + style->bevelWidth();
   while (it != items.end()) {
@@ -1319,7 +1319,7 @@ void Basemenu::leaveEvent(XEvent *)
 void Basemenu::exposeEvent(XEvent *e)
 {
   Rect todo(e->xexpose.x, e->xexpose.y, e->xexpose.width, e->xexpose.height);
-  BStyle *style = Blackbox::instance()->screen(screen())->style();
+  BStyle *style = Blackbox::instance()->screen(screenNumber())->style();
   BaseDisplay *display = BaseDisplay::instance();
   BGCCache *cache = BGCCache::instance();
 

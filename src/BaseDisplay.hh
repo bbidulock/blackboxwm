@@ -36,6 +36,7 @@ class ScreenInfo;
 #include "Widget.hh"
 
 #include <deque>
+#include <string>
 
 #define AttribShaded      (1l << 0)
 #define AttribMaxHoriz    (1l << 1)
@@ -333,31 +334,35 @@ private:
 
 class ScreenInfo {
 private:
-    BaseDisplay *_display;
-    Visual *_visual;
-    Window _rootwindow;
-    Colormap _colormap;
+  BaseDisplay *_display;
+  Visual *_visual;
+  Window _rootwindow;
+  Colormap _colormap;
 
-    int _depth, _screen;
-    XRectangle _rect;
+  int _depth, _screen;
+  XRectangle _rect;
+
+  std::string displaystring;
 
 protected:
-    const XRectangle &rect(void) const { return _rect; }
+  const XRectangle &rect(void) const { return _rect; }
 
 public:
-    ScreenInfo( BaseDisplay *, int );
+  ScreenInfo( BaseDisplay *, int );
 
-    BaseDisplay *display(void) const { return _display; }
+  const std::string &displayString() const { return displaystring; }
 
-    Visual *visual(void) const { return _visual; }
-    Window rootWindow(void) const { return _rootwindow; }
-    Colormap colormap(void) const { return _colormap; }
+  BaseDisplay *display(void) const { return _display; }
 
-    int depth(void) const { return _depth; }
-    int screen(void) const { return _screen; }
+  Visual *visual(void) const { return _visual; }
+  Window rootWindow(void) const { return _rootwindow; }
+  Colormap colormap(void) const { return _colormap; }
 
-    unsigned short width(void) const { return _rect.width; }
-    unsigned short height(void) const { return _rect.height; }
+  int depth(void) const { return _depth; }
+  int screenNumber(void) const { return _screen; }
+
+  int width(void) const { return _rect.width; }
+  int height(void) const { return _rect.height; }
 };
 
 

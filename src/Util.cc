@@ -75,32 +75,15 @@ char* bstrdup(const char *s) {
   return n;
 }
 
-void bexec(const string &command, int screen)
+void bexec(const string &command, const string &displaystring)
 {
   if (command.empty()) {
     fprintf(stderr, "bexec: command not specified.\n");
     return;
   }
 
-  // setup DISPLAY environment variable
-  string displaystring = getenv("DISPLAY");
-  if (displaystring.empty()) {
-    fprintf(stderr, "bexec: DISPLAY not set.\n");
-    return;
-  }
-  displaystring = "DISPLAY=" + displaystring;
-  if (screen != -1) {
-    unsigned int dot = displaystring.rfind('.');
-    if (dot != string::npos)
-      displaystring.resize(dot);
-    char screennumber[32];
-    sprintf(screennumber, ".%d", screen);
-    displaystring += screennumber;
-  }
-
   // setup command to execute
-  string cmd = "exec ";
-  cmd += command;
+  string cmd = "exec " + command;
 
   if (! fork()) {
     setsid();

@@ -44,6 +44,9 @@
 #include "Style.hh"
 #include "Timer.hh"
 
+#include <string>
+using std::string;
+
 // forward declarations
 class Blackbox;
 class BImageControl;
@@ -78,21 +81,21 @@ public:
 
   void initialize();
 
-  inline BImageControl *getImageControl() { return image_control; }
-  inline Rootmenu *getRootmenu() { return rootmenu; }
-  inline Toolbar *getToolbar() { return toolbar; }
+  BImageControl *getImageControl() { return image_control; }
+  Rootmenu *getRootmenu() { return rootmenu; }
+  Toolbar *getToolbar() { return toolbar; }
   Toolbar2 *toolbar2() const { return _toolbar2; }
 
-  inline Workspace *getWorkspace(int w) { return workspacesList->find(w); }
-  inline Workspace *getCurrentWorkspace() { return current_workspace; }
+  Workspace *getWorkspace(int w) { return workspacesList->find(w); }
+  Workspace *getCurrentWorkspace() { return current_workspace; }
 
-  inline Workspacemenu *getWorkspacemenu() { return workspacemenu; }
+  Workspacemenu *getWorkspacemenu() { return workspacemenu; }
 
   int getCurrentWorkspaceID() const;
-  inline const int getCount() { return workspacesList->count(); }
-  inline const int getIconCount() { return iconList->count(); }
+  const int getCount() { return workspacesList->count(); }
+  const int getIconCount() { return iconList->count(); }
 
-  inline void setRootColormapInstalled(Bool r) { root_colormap_installed = r; }
+  void setRootColormapInstalled(Bool r) { root_colormap_installed = r; }
 
   BStyle *style() { return &_style; }
 
