@@ -35,6 +35,9 @@
 
 namespace bt {
 
+  void createBitmapLoader(const Display &display);
+  void destroyBitmapLoader(void);
+
   void createColorCache(const Display &display);
   void destroyColorCache(void);
 
@@ -87,6 +90,7 @@ bt::Display::Display(const char *dpy_name, bool multi_head) {
     for (unsigned int i = 0; i < screen_info_count; ++i)
       screen_info_list[i] = new bt::ScreenInfo(*this, i);
   }
+  createBitmapLoader(*this);
   createColorCache(*this);
   createFontCache(*this);
   createPenCache(*this);
@@ -104,6 +108,7 @@ bt::Display::~Display() {
   destroyPenCache();
   destroyFontCache();
   destroyColorCache();
+  destroyBitmapLoader();
 
   std::for_each(screen_info_list, screen_info_list + screen_info_count,
                 bt::PointerAssassin());
