@@ -98,6 +98,13 @@ BlackboxSession::BlackboxSession(char *display_name) {
 BlackboxSession::~BlackboxSession() {
   XSelectInput(display, root, NoEventMask);
 
+  delete ReconfigureDialog.dialog;
+  XDestroyWindow(display, ReconfigureDialog.yes_button);
+  XDestroyWindow(display, ReconfigureDialog.no_button);
+  XDestroyWindow(display, ReconfigureDialog.text_window);
+  XDestroyWindow(display, ReconfigureDialog.window);
+  XFreeGC(display, ReconfigureDialog.dialogGC);
+
   delete [] resource.menuFile;
   delete rootmenu;
   delete ws_manager;
@@ -158,6 +165,9 @@ void BlackboxSession::InitScreen(void) {
   ws_manager->stackWindows(0, 0);
 
   createAutoConfigDialog();
+  ReconfigureDialog.dialog->withdrawWindow();
+  ws_manager->workspace(0)->removeWindow(ReconfigureDialog.dialog);
+  ReconfigureDialog.visible = False;
 
   unsigned int nchild;
   Window r, p, *children;
@@ -268,9 +278,15 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
     
     if (e->xbutton.window == ReconfigureDialog.yes_button) {
       ReconfigureDialog.dialog->withdrawWindow();
+      ws_manager->workspace(ReconfigureDialog.dialog->workspace())->
+	removeWindow(ReconfigureDialog.dialog);
+      ReconfigureDialog.visible = False;
       Reconfigure();
     } else if (e->xbutton.window == ReconfigureDialog.no_button) {
       ReconfigureDialog.dialog->withdrawWindow();
+      ws_manager->workspace(ReconfigureDialog.dialog->workspace())->
+	removeWindow(ReconfigureDialog.dialog);
+      ReconfigureDialog.visible = False;
     } else if ((bWin = searchWindow(e->xbutton.window)) != NULL) {
       bWin->buttonPressEvent(&e->xbutton);
     } else if ((bIcon = searchIcon(e->xbutton.window)) != NULL) {
@@ -281,7 +297,7 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
       wsMan->buttonPressEvent(&e->xbutton);
     } else if (e->xbutton.window == root && e->xbutton.button == 3) {
       rootmenu->moveMenu(e->xbutton.x_root - (rootmenu->Width() / 2),
-			   e->xbutton.y_root -
+			 e->xbutton.y_root -
 			 (rootmenu->titleHeight() / 2));
       
       if (! rootmenu->menuVisible())
@@ -387,8 +403,15 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
     if (e->xproperty.state != PropertyDelete) {
       if (e->xproperty.atom == XA_RESOURCE_MANAGER &&
 	  e->xproperty.window == root) {
-	ReconfigureDialog.dialog->deiconifyWindow();
-	raiseWindow(ReconfigureDialog.dialog);
+	if (! ReconfigureDialog.visible) {
+	  ws_manager->currentWorkspace()->addWindow(ReconfigureDialog.dialog);
+	  ReconfigureDialog.dialog->deiconifyWindow();
+	  raiseWindow(ReconfigureDialog.dialog);
+	  ReconfigureDialog.visible = True;
+	} else {
+	  ws_manager->changeWorkspaceID(ReconfigureDialog.dialog->workspace());
+	  raiseWindow(ReconfigureDialog.dialog);
+	}
       } else {
 	BlackboxWindow *pWin = searchWindow(e->xproperty.window);
 	if (pWin != NULL)
@@ -490,23 +513,23 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
     if (e->xkey.state & Mod1Mask) {
       if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Tab) {
 	if ((ws_manager->currentWorkspace()->count() > 1) &&
-            (focus_window_number >= 0)) {
+	    (focus_window_number >= 0)) {
 	  BlackboxWindow *next, *current =
 	    ws_manager->currentWorkspace()->window(focus_window_number);
 	  
 	  int next_window_number, level = 0;
 	  do {
-            do {
+	    do {
 	      next_window_number =
-	        ((focus_window_number + (++level)) <
-	         ws_manager->currentWorkspace()->count())
-	        ? focus_window_number + level : 0;
+		((focus_window_number + (++level)) <
+		 ws_manager->currentWorkspace()->count())
+		? focus_window_number + level : 0;
 	      next =
 		ws_manager->currentWorkspace()->window(next_window_number);
 	    } while (next->isIconic());
 	  } while ((! next->setInputFocus()) &&
 		   (next_window_number != focus_window_number));
-
+	  
 	  if (next_window_number != focus_window_number) {
 	    current->setFocusFlag(False);
 	    ws_manager->currentWorkspace()->raiseWindow(next);
@@ -518,12 +541,14 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
     } else if (e->xkey.state & ControlMask) {
       if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Left){
 	if (ws_manager->currentWorkspaceID() > 0)
-	  ws_manager->changeWorkspaceID(ws_manager->currentWorkspaceID() - 1);
+	  ws_manager->
+	    changeWorkspaceID(ws_manager->currentWorkspaceID() - 1);
 	else
 	  ws_manager->changeWorkspaceID(ws_manager->count() - 1);
       } else if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Right){
 	if (ws_manager->currentWorkspaceID() != ws_manager->count() - 1)
-	  ws_manager->changeWorkspaceID(ws_manager->currentWorkspaceID() + 1);
+	  ws_manager->
+	    changeWorkspaceID(ws_manager->currentWorkspaceID() + 1);
 	else
 	  ws_manager->changeWorkspaceID(0);
       }
@@ -1359,10 +1384,8 @@ void BlackboxSession::LoadDefaults(void) {
     }
   }
 
-  printf("destroying database\n");
   XrmDestroyDatabase(blackbox_database);
   XUngrabServer(display);
-  printf("resources loaded\n");
 }
 
 
@@ -1667,32 +1690,53 @@ void BlackboxSession::parseSubMenu(FILE *menu_file, SessionMenu *menu) {
 // *************************************************************************
 
 void BlackboxSession::Reconfigure(void) {
-  XGrabServer(display);
-  XSynchronize(display, True);
-  LoadDefaults();
-
-  XGCValues gcv;
-  gcv.foreground = getColor("white");
-  gcv.function = GXxor;
-  gcv.line_width = 2;
-  gcv.subwindow_mode = IncludeInferiors;
-  gcv.font = resource.font.title->fid;
-  XChangeGC(display, opGC, GCForeground|GCFunction|GCSubwindowMode|GCFont,
-	    &gcv);
-
-  ws_manager->Reconfigure();
-
-  Bool m = rootmenu->menuVisible();
-  int x = rootmenu->X(), y = rootmenu->Y();
-  rootmenu->hideMenu();
-  InitMenu();
-  if (m) {
-    rootmenu->moveMenu(x, y);
-    rootmenu->showMenu();
+  if (! ReconfigureDialog.visible) {
+    XGrabServer(display);
+    XSynchronize(display, True);
+    LoadDefaults();
+    
+    XGCValues gcv;
+    gcv.foreground = getColor("white");
+    gcv.function = GXxor;
+    gcv.line_width = 2;
+    gcv.subwindow_mode = IncludeInferiors;
+    gcv.font = resource.font.title->fid;
+    XChangeGC(display, opGC, GCForeground|GCFunction|GCSubwindowMode|GCFont,
+	      &gcv);
+    
+    ws_manager->Reconfigure();
+    
+    Bool m = rootmenu->menuVisible();
+    int x = rootmenu->X(), y = rootmenu->Y();
+    rootmenu->hideMenu();
+    InitMenu();
+    if (m) {
+      rootmenu->moveMenu(x, y);
+      rootmenu->showMenu();
+    }
+    
+    ReconfigureDialog.dialog->Reconfigure();
+    XSetWindowBackground(display, ReconfigureDialog.window,
+			 toolboxColor().pixel);
+    XSetWindowBackground(display, ReconfigureDialog.text_window,
+			 toolboxColor().pixel);
+    XSetWindowBackground(display, ReconfigureDialog.yes_button,
+			 toolboxColor().pixel);
+    XSetWindowBackground(display, ReconfigureDialog.no_button,
+			 toolboxColor().pixel);
+    XSetWindowBorder(display, ReconfigureDialog.yes_button,
+		     toolboxTextColor().pixel);
+    XSetWindowBorder(display, ReconfigureDialog.no_button,
+		     toolboxTextColor().pixel);
+    
+    XGCValues dgcv;
+    dgcv.font = titleFont()->fid;
+    dgcv.foreground = toolboxTextColor().pixel;
+    XChangeGC(display, ReconfigureDialog.dialogGC, GCFont|GCForeground, &dgcv);
+    
+    XSynchronize(display, False);
+    XUngrabServer(display);
   }
-
-  XSynchronize(display, False);
-  XUngrabServer(display);
 }
 
 

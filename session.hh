@@ -96,6 +96,7 @@ private:
 
   struct __reconfigure__dialog__ {
     BlackboxWindow *dialog;
+    Bool visible;
     GC dialogGC;
     Window window, text_window, yes_button, no_button;
     char *DialogText[6];

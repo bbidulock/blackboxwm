@@ -95,7 +95,6 @@ private:
     Atom WMDelete, WMProtocols;
     BlackboxWindow *transient_for,  /* which window are we a transient for? */
       *transient;                   /* which window is our transient? */
-    //    Pixmap icon_pixmap, icon_mask;
     Window window, icon_window, window_group;
 
     char *title, *app_name, *app_class;
