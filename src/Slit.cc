@@ -640,7 +640,7 @@ void Slit::buttonPressEvent(const XButtonEvent * const e) {
   } else if (e->button == Button2 && ! isOnTop()) {
     XLowerWindow(display, frame.window);
   } else if (e->button == Button3) {
-    slitmenu->popup(e->x_root, e->y_root);
+    slitmenu->popup(e->x_root, e->y_root, screen->availableArea());
   }
 }
 

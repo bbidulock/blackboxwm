@@ -2825,17 +2825,13 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
     } else if (be->button == 2) {
       screen->lowerWindow(this);
     } else if (windowmenu && be->button == 3) {
-      int mx = be->x_root;
-      int my = be->y_root;
+      const int extra = frame.border_w + frame.mwm_border_w;
+      bt::Rect rect(client.rect.x() - extra,
+                    client.rect.y() - extra,
+                    client.rect.width() + (extra * 2),
+                    client.rect.height() + (extra * 2));
 
-      if (frame.title == be->window || frame.label == be->window) {
-        my = client.rect.top() - (frame.border_w + frame.mwm_border_w);
-      } else if (frame.handle == be->window) {
-        my = client.rect.bottom() + (frame.border_w * 2) + frame.mwm_border_w +
-          frame.style->handle_height;
-      }
-
-      windowmenu->popup(mx, my);
+      windowmenu->popup(be->x_root, be->y_root, rect);
     }
   }
 }

@@ -735,21 +735,7 @@ void Toolbar::buttonPressEvent(const XButtonEvent *be) {
   } else if (be->button == 2 && (! isOnTop())) {
     XLowerWindow(display, frame.window);
   } else if (be->button == 3) {
-    int x = be->x_root, y;
-
-    switch(_screen->resource().toolbarPlacement()) {
-    case TopLeft:
-    case TopCenter:
-    case TopRight:
-      y = strut.top;
-      break;
-
-    default:
-      y = _screen->screenInfo().height() - strut.bottom;
-      break;
-    } // switch
-
-    toolbarmenu->popup(x, y);
+    toolbarmenu->popup(be->x_root, be->y_root, _screen->availableArea());
   }
 }
 
