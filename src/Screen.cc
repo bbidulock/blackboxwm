@@ -652,6 +652,26 @@ bool BScreen::focusFallback(const BlackboxWindow *win) {
   if (workspace->id() != current_workspace)
     return false;
 
+  BWindowGroup *group = win->getWindowGroup();
+  if (group) {
+    // focus the top-most window in the group
+    BlackboxWindowList::const_iterator git = group->windows().begin(),
+                                      gend = group->windows().end();
+    StackingList::iterator it = stackingList.begin(),
+                          end = stackingList.end();
+    for (; it != end; ++it) {
+      BlackboxWindow * const tmp = dynamic_cast<BlackboxWindow *>(*it);
+      if (!tmp
+          || tmp == win
+          || std::find(git, gend, tmp) == gend
+          || !tmp->isVisible()
+          || tmp->workspace() != current_workspace)
+        continue;
+      if (tmp->setInputFocus())
+        return true;
+    }
+  }
+
   const BlackboxWindow * const zero = 0;
 
   if (win) {
