@@ -389,12 +389,17 @@ void Slit::updateStrut(void) {
       case TopCenter:
       case TopLeft:
       case TopRight:
-        strut.top = getExposedHeight() + border_width;
+        strut.top = frame.rect.top() + getExposedHeight() + border_width;
         break;
       case BottomCenter:
       case BottomLeft:
       case BottomRight:
-        strut.bottom = getExposedHeight() + border_width;
+        int pos;
+        if (do_auto_hide)
+          pos = frame.y_hidden;
+        else
+          pos = frame.rect.y();
+        strut.bottom = (screen->getRect().bottom() - pos);
         break;
       case CenterLeft:
         strut.left = getExposedWidth() + border_width;
