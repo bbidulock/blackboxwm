@@ -447,9 +447,11 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, unsigned int num) {
     colormap = DefaultColormap(basedisplay->getXDisplay(), screen_number);
   }
 
+  // get the default display string and strip the screen number
+  std::string default_string = DisplayString(basedisplay->getXDisplay());
+  default_string.replace(default_string.rfind("."), std::string::npos, "");
+
   std::ostrstream formatter;
-  formatter << "DISPLAY="
-            << DisplayString(basedisplay->getXDisplay())
-            << screen_number;
+  formatter << "DISPLAY=" << default_string << '.' << screen_number;
   display_string = formatter.str();
 }
