@@ -166,6 +166,7 @@ private:
       win_gravity;
 
     unsigned long current_state, normal_hint_flags;
+    unsigned int workspace;
 
     Netwm::Strut *strut;
     FocusMode focus_mode;
