@@ -52,7 +52,7 @@ Section 5: Session Management
 
 ------------------------------------------------------------------------
 
-EWMH Compliance: Version 1.3
+EWMH Compliance: Version 1.3 (draft)
 See http://www.freedesktop.org/Standards/wm-spec
 
 Section 3: Root Window Properties (and Related Messages)
@@ -69,6 +69,7 @@ _NET_ACTIVE_WINDOW:			supported
 _NET_WORKAREA:				supported
 _NET_SUPPORTING_WM_CHECK:		supported
 _NET_VIRTUAL_ROOTS:			NOT supported
+_NET_DESKTOP_LAYOUT:			NOT supported
 _NET_SHOWING_DESKTOP:			NOT supported
 
 
@@ -77,6 +78,8 @@ Section 4: Other Root Window Messages
 _NET_CLOSE_WINDOW:			supported
 _NET_MOVERESIZE_WINDOW:			supported
 _NET_WM_MOVERESIZE:			NOT supported
+_NET_RESTACK_WINDOW:			NOT supported
+_NET_REQUEST_FRAME_EXTENTS:		NOT supported
 
 
 Section 5: Application Window Properties
@@ -125,10 +128,13 @@ _NET_WM_ICON:				NOT supported
 _NET_WM_PID:				NOT supported
 _NET_WM_HANDLED_ICONS:			NOT supported
 _NET_WM_USER_TIME:			NOT supported
+_NET_FRAME_EXTENTS:			NOT supported
 
 
 Section 6: Window Manager Protocols
 
 _NET_WM_PING:				NOT supported
+_NET_WM_SYNC_REQUEST:			NOT suppported
+
 
 ------------------------------------------------------------------------

@@ -50,11 +50,13 @@ bt::EWMH::EWMH(const Display &_display)
     { "_NET_WORKAREA", &net_workarea },
     { "_NET_SUPPORTING_WM_CHECK", &net_supporting_wm_check },
     { "_NET_VIRTUAL_ROOTS", &net_virtual_roots },
-    // { "_NET_DESKTOP_LAYOUT", &net_desktop_layout },
+    { "_NET_DESKTOP_LAYOUT", &net_desktop_layout },
     { "_NET_SHOWING_DESKTOP", &net_showing_desktop },
     { "_NET_CLOSE_WINDOW", &net_close_window },
     { "_NET_MOVERESIZE_WINDOW", &net_moveresize_window },
     { "_NET_WM_MOVERESIZE", &net_wm_moveresize },
+    { "_NET_RESTACK_WINDOW", &net_restack_window },
+    { "_NET_REQUEST_FRAME_EXTENTS", &net_request_frame_extents },
     { "_NET_WM_NAME", &net_wm_name },
     { "_NET_WM_VISIBLE_NAME", &net_wm_visible_name },
     { "_NET_WM_ICON_NAME", &net_wm_icon_name },
@@ -95,11 +97,13 @@ bt::EWMH::EWMH(const Display &_display)
     { "_NET_WM_STRUT", &net_wm_strut },
     { "_NET_WM_STRUT_PARTIAL", &net_wm_strut_partial },
     { "_NET_WM_ICON_GEOMETRY", &net_wm_icon_geometry },
-    // { "_NET_WM_ICON", &net_wm_icon },
+    { "_NET_WM_ICON", &net_wm_icon },
     { "_NET_WM_PID", &net_wm_pid },
-    // { "_NET_WM_HANDLED_ICONS", &net_wm_handled_icons },
+    { "_NET_WM_HANDLED_ICONS", &net_wm_handled_icons },
     { "_NET_WM_USER_TIME", &net_wm_user_time },
-    { "_NET_WM_PING", &net_wm_ping }
+    { "_NET_FRAME_EXTENTS", &net_frame_extents },
+    { "_NET_WM_PING", &net_wm_ping },
+    { "_NET_WM_SYNC_REQUEST", &net_wm_sync_request }
   };
 
   static const int AtomCount =

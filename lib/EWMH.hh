@@ -91,8 +91,8 @@ namespace bt {
     { return net_supporting_wm_check; }
     inline Atom virtualRoots(void) const
     { return net_virtual_roots; }
-    // inline Atom desktopLayout(void) const
-    // { return net_desktop_layout; }
+    inline Atom desktopLayout(void) const
+    { return net_desktop_layout; }
     inline Atom showingDesktop(void) const
     { return net_showing_desktop; }
 
@@ -123,6 +123,8 @@ namespace bt {
     bool readSupportingWMCheck(Window target, Window* window) const;
     void setVirtualRoots(Window target, WindowList &windows) const;
     bool readVirtualRoots(Window target, WindowList &windows) const;
+    // void setDesktopLayout(Window target, ...) const;
+    // void readDesktopLayout(Window target, ...) const;
 
     // other root messages
     inline Atom closeWindow(void) const
@@ -131,6 +133,10 @@ namespace bt {
     { return net_moveresize_window; }
     inline Atom wmMoveResize(void) const
     { return net_wm_moveresize; }
+    inline Atom restackWindow(void) const
+    { return net_restack_window; }
+    inline Atom requestFrameExtents(void) const
+    { return net_request_frame_extents; }
 
     // application properties
     inline Atom wmName(void) const
@@ -219,12 +225,12 @@ namespace bt {
     { return net_wm_strut_partial; }
     inline Atom wmIconGeometry(void) const
     { return net_wm_icon_geometry; }
-    // inline Atom wmIcon(void) const
-    // { return net_wm_icon; }
+    inline Atom wmIcon(void) const
+    { return net_wm_icon; }
     inline Atom wmPid(void) const
     { return net_wm_pid; }
-    // inline Atom wmHandledIcons(void) const
-    // { return net_wm_handled_icons; }
+    inline Atom wmHandledIcons(void) const
+    { return net_wm_handled_icons; }
     inline Atom wmUserTime(void) const
     { return net_wm_user_time; }
 
@@ -247,10 +253,13 @@ namespace bt {
     bool readWMPid(Window target, unsigned int &pid) const;
     // bool readWMHandledIcons(Window target, ...) const;
     bool readWMUserTime(Window target, Time &user_time) const;
+    // void readFrameExtents(Window target, ...) const;
 
     // Window Manager Protocols
     inline Atom wmPing(void) const
     { return net_wm_ping; }
+    inline Atom wmSyncRequest(void) const
+    { return net_wm_sync_request; }
 
     // utility
     void removeProperty(Window target, Atom atom) const;
@@ -279,11 +288,13 @@ namespace bt {
       net_workarea,
       net_supporting_wm_check,
       net_virtual_roots,
-    // net_desktop_layout,
+      net_desktop_layout,
       net_showing_desktop,
       net_close_window,
       net_moveresize_window,
       net_wm_moveresize,
+      net_restack_window,
+      net_request_frame_extents,
       net_wm_name,
       net_wm_visible_name,
       net_wm_icon_name,
@@ -327,11 +338,13 @@ namespace bt {
       net_wm_strut,
       net_wm_strut_partial,
       net_wm_icon_geometry,
-    // net_wm_icon,
+      net_wm_icon,
       net_wm_pid,
-    // net_wm_handled_icons,
+      net_wm_handled_icons,
       net_wm_user_time,
-      net_wm_ping;
+      net_frame_extents,
+      net_wm_ping,
+      net_wm_sync_request;
   };
 
 } // namespace bt
