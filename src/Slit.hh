@@ -46,7 +46,7 @@ private:
     Directionmenu& operator=(const Directionmenu&);
 
   protected:
-    virtual void itemSelected(int button, int index);
+    virtual void itemSelected(int button, unsigned int index);
 
   public:
     Directionmenu(Slitmenu *sm);
@@ -58,7 +58,7 @@ private:
     Placementmenu& operator=(const Placementmenu&);
 
   protected:
-    virtual void itemSelected(int buton, int index);
+    virtual void itemSelected(int buton, unsigned int index);
 
   public:
     Placementmenu(Slitmenu *sm);
@@ -77,7 +77,7 @@ private:
   Slitmenu& operator=(const Slitmenu&);
 
 protected:
-  virtual void itemSelected(int button, int index);
+  virtual void itemSelected(int button, unsigned int index);
   virtual void internal_hide(void);
 
 public:

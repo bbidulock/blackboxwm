@@ -89,7 +89,7 @@ void Windowmenu::show(void) {
 }
 
 
-void Windowmenu::itemSelected(int button, int index) {
+void Windowmenu::itemSelected(int button, unsigned int index) {
   BasemenuItem *item = find(index);
 
   hide();
@@ -103,7 +103,7 @@ void Windowmenu::itemSelected(int button, int index) {
     break;
 
   case BScreen::WindowMaximize:
-    window->maximize((unsigned int) button);
+    window->maximize(button);
     break;
 
   case BScreen::WindowClose:
@@ -158,11 +158,12 @@ Windowmenu::SendtoWorkspacemenu::SendtoWorkspacemenu(Windowmenu *w)
 }
 
 
-void Windowmenu::SendtoWorkspacemenu::itemSelected(int button, int index) {
+void Windowmenu::SendtoWorkspacemenu::itemSelected(int button,
+                                                   unsigned int index) {
   if (button > 2) return;
 
-  if (index <= (signed)getScreen()->getWorkspaceCount()) {
-    if (index == (signed)getScreen()->getCurrentWorkspaceID()) return;
+  if (index <= getScreen()->getWorkspaceCount()) {
+    if (index == getScreen()->getCurrentWorkspaceID()) return;
     if (window->isStuck()) window->stick();
 
     if (button == 1) window->withdraw();

@@ -39,11 +39,11 @@ Iconmenu::Iconmenu(BScreen *scrn) : Basemenu(scrn) {
 }
 
 
-void Iconmenu::itemSelected(int button, int index) {
+void Iconmenu::itemSelected(int button, unsigned int index) {
   if (button != 1)
     return;
 
-  if (index >= 0 && index < static_cast<signed>(getScreen()->getIconCount())) {
+  if (index < getScreen()->getIconCount()) {
     BlackboxWindow *win = getScreen()->getIcon(index);
 
     if (win) {

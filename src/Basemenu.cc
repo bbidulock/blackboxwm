@@ -846,8 +846,9 @@ void Basemenu::buttonReleaseEvent(XButtonEvent *re) {
             itemSelected(re->button, w);
           }
         }
-      } else
+      } else {
         drawItem(p, False, True);
+      }
     }
   }
 }

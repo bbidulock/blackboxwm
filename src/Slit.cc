@@ -603,10 +603,10 @@ void Slit::configureRequestEvent(XConfigureRequestEvent *e) {
   for (; it != end; ++it) {
     SlitClient *client = *it;
     if (client->window == e->window &&
-        (client->width != (unsigned) e->width ||
-         client->height != (unsigned) e->height)) {
-      client->width = (unsigned) e->width;
-      client->height = (unsigned) e->height;
+        (static_cast<signed>(client->width) != e->width ||
+         static_cast<signed>(client->height) != e->height)) {
+      client->width = e->width;
+      client->height = e->height;
 
       reconfigure();
       return;
@@ -653,7 +653,7 @@ Slitmenu::~Slitmenu(void) {
 }
 
 
-void Slitmenu::itemSelected(int button, int index) {
+void Slitmenu::itemSelected(int button, unsigned int index) {
   if (button != 1)
     return;
 
@@ -716,7 +716,7 @@ Slitmenu::Directionmenu::Directionmenu(Slitmenu *sm)
 }
 
 
-void Slitmenu::Directionmenu::itemSelected(int button, int index) {
+void Slitmenu::Directionmenu::itemSelected(int button, unsigned int index) {
   if (button != 1)
     return;
 
@@ -767,7 +767,7 @@ Slitmenu::Placementmenu::Placementmenu(Slitmenu *sm)
 }
 
 
-void Slitmenu::Placementmenu::itemSelected(int button, int index) {
+void Slitmenu::Placementmenu::itemSelected(int button, unsigned int index) {
   if (button != 1)
     return;
 

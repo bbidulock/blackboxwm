@@ -36,7 +36,7 @@ private:
   Iconmenu& operator=(const Iconmenu&);
 
 protected:
-  virtual void itemSelected(int button, int index);
+  virtual void itemSelected(int button, unsigned int index);
 
 public:
   Iconmenu(BScreen *scrn);

@@ -36,7 +36,7 @@ private:
   Clientmenu& operator=(const Clientmenu&);
 
 protected:
-  virtual void itemSelected(int button, int index);
+  virtual void itemSelected(int button, unsigned int index);
 
 public:
   Clientmenu(Workspace *ws);

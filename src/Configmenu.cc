@@ -67,7 +67,7 @@ Configmenu::~Configmenu(void) {
   delete placementmenu;
 }
 
-void Configmenu::itemSelected(int button, int index) {
+void Configmenu::itemSelected(int button, unsigned int index) {
   if (button != 1)
     return;
 
@@ -144,7 +144,7 @@ Configmenu::Focusmenu::Focusmenu(Configmenu *cm) : Basemenu(cm->getScreen()) {
 }
 
 
-void Configmenu::Focusmenu::itemSelected(int button, int index) {
+void Configmenu::Focusmenu::itemSelected(int button, unsigned int index) {
   if (button != 1)
     return;
 
@@ -229,7 +229,7 @@ Configmenu::Placementmenu::Placementmenu(Configmenu *cm):
 }
 
 
-void Configmenu::Placementmenu::itemSelected(int button, int index) {
+void Configmenu::Placementmenu::itemSelected(int button, unsigned int index) {
   if (button != 1)
     return;
 

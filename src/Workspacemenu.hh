@@ -36,7 +36,7 @@ private:
   Workspacemenu& operator=(const Workspacemenu&);
 
 protected:
-  virtual void itemSelected(int button, int index);
+  virtual void itemSelected(int button, unsigned int index);
 
 public:
   Workspacemenu(BScreen *scrn);

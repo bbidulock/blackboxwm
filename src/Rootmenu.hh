@@ -36,7 +36,7 @@ private:
   Rootmenu& operator=(const Rootmenu&);
 
 protected:
-  virtual void itemSelected(int button, int index);
+  virtual void itemSelected(int button, unsigned int index);
 
 public:
   Rootmenu(BScreen *scrn);

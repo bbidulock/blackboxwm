@@ -1265,21 +1265,21 @@ void BlackboxWindow::configureShape(void) {
 Bool BlackboxWindow::setInputFocus(void) {
   if (flags.focused) return True;
 
-  if (((signed) (frame.rect.right())) < 0) {
-    if (((signed) (frame.rect.y() + frame.y_border)) < 0)
+  if (((frame.rect.right())) < 0) {
+    if (((frame.rect.y() + frame.y_border)) < 0)
       configure(frame.border_w, frame.border_w,
                 frame.rect.width(), frame.rect.height());
-    else if (frame.rect.y() > (signed) screen->getHeight())
+    else if (frame.rect.y() > static_cast<signed>(screen->getHeight()))
       configure(frame.border_w, screen->getHeight() - frame.rect.height(),
                 frame.rect.width(), frame.rect.height());
     else
       configure(frame.border_w, frame.rect.y() + frame.border_w,
                 frame.rect.width(), frame.rect.height());
-  } else if (frame.rect.x() > (signed) screen->getWidth()) {
-    if (((signed) (frame.rect.y() + frame.y_border)) < 0)
+  } else if (frame.rect.x() > static_cast<signed>(screen->getWidth())) {
+    if (((frame.rect.y() + frame.y_border)) < 0)
       configure(screen->getWidth() - frame.rect.width(), frame.border_w,
                 frame.rect.width(), frame.rect.height());
-    else if (frame.rect.y() > (signed) screen->getHeight())
+    else if (frame.rect.y() > static_cast<signed>(screen->getHeight()))
       configure(screen->getWidth() - frame.rect.width(),
                 screen->getHeight() - frame.rect.height(),
                 frame.rect.width(), frame.rect.height());
@@ -1728,8 +1728,8 @@ void BlackboxWindow::setState(unsigned long new_state) {
   current_state = new_state;
 
   unsigned long state[2];
-  state[0] = (unsigned long) current_state;
-  state[1] = (unsigned long) None;
+  state[0] = current_state;
+  state[1] = None;
   XChangeProperty(blackbox->getXDisplay(), client.window,
                   blackbox->getWMStateAtom(), blackbox->getWMStateAtom(), 32,
                   PropModeReplace, (unsigned char *) state, 2);
@@ -1760,7 +1760,7 @@ Bool BlackboxWindow::getState(void) {
   }
 
   if (nitems >= 1) {
-    current_state = (unsigned long) state[0];
+    current_state = static_cast<unsigned long>(state[0]);
 
     ret = True;
   }
@@ -2377,23 +2377,23 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
     } else {
       mx = be->x_root - (windowmenu->getWidth() / 2);
 
-      if (be->y <= (signed) frame.bevel_w)
+      if (be->y <= static_cast<signed>(frame.bevel_w))
         my = frame.rect.y() + frame.y_border;
       else
         my = be->y_root - (windowmenu->getHeight() / 2);
     }
 
-    if (mx > (signed) (frame.rect.right() - windowmenu->getWidth()))
+    if (mx > (frame.rect.right() - static_cast<signed>(windowmenu->getWidth())))
       mx = frame.rect.x() + frame.rect.width() - windowmenu->getWidth();
     if (mx < frame.rect.x())
       mx = frame.rect.x();
 
-    if (my > (signed) (frame.rect.y() + frame.y_handle -
-                       windowmenu->getHeight()))
+    if (my > (frame.rect.y() + frame.y_handle -
+              static_cast<signed>(windowmenu->getHeight())))
       my = frame.rect.y() + frame.y_handle - windowmenu->getHeight();
-    if (my < (signed) (frame.rect.y() +
-                       ((decorations & Decor_Titlebar) ?
-                        frame.title_h : frame.y_border)))
+    if (my < static_cast<signed>((frame.rect.y() +
+                                  ((decorations & Decor_Titlebar) ?
+                                   frame.title_h : frame.y_border))))
       my = frame.rect.y() +
            ((decorations & Decor_Titlebar) ? frame.title_h : frame.y_border);
 
@@ -2903,10 +2903,10 @@ void BlackboxWindow::left_fixsize(int *gx, int *gy) {
            frame.handle_h - (frame.border_w * 3) - (frame.mwm_border_w * 2) +
            (client.height_inc / 2);
 
-  if (dx < (signed) client.min_width) dx = client.min_width;
-  if (dy < (signed) client.min_height) dy = client.min_height;
-  if ((unsigned) dx > client.max_width) dx = client.max_width;
-  if ((unsigned) dy > client.max_height) dy = client.max_height;
+  if (dx < static_cast<signed>(client.min_width)) dx = client.min_width;
+  if (dy < static_cast<signed>(client.min_height)) dy = client.min_height;
+  if (dx > static_cast<signed>(client.max_width)) dx = client.max_width;
+  if (dy > static_cast<signed>(client.max_height)) dy = client.max_height;
 
   dx /= client.width_inc;
   dy /= client.height_inc;

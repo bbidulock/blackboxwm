@@ -1107,7 +1107,7 @@ Toolbarmenu::~Toolbarmenu(void) {
 }
 
 
-void Toolbarmenu::itemSelected(int button, int index) {
+void Toolbarmenu::itemSelected(int button, unsigned int index) {
   if (button != 1)
     return;
 
@@ -1179,7 +1179,7 @@ Toolbarmenu::Placementmenu::Placementmenu(Toolbarmenu *tm)
 }
 
 
-void Toolbarmenu::Placementmenu::itemSelected(int button, int index) {
+void Toolbarmenu::Placementmenu::itemSelected(int button, unsigned int index) {
   if (button != 1)
     return;
 

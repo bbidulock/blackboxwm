@@ -42,7 +42,7 @@ Workspacemenu::Workspacemenu(BScreen *scrn) : Basemenu(scrn) {
 }
 
 
-void Workspacemenu::itemSelected(int button, int index) {
+void Workspacemenu::itemSelected(int button, unsigned int index) {
   if (button != 1)
     return;
 
@@ -51,10 +51,10 @@ void Workspacemenu::itemSelected(int button, int index) {
   } else if (index == 1) {
     getScreen()->removeLastWorkspace();
   } else {
+    index -= 2;
     const Workspace* const wkspc = getScreen()->getCurrentWorkspace();
-    if ((signed)wkspc->getID() != (index - 2) &&
-        (index - 2) < (signed)getScreen()->getWorkspaceCount())
-      getScreen()->changeWorkspaceID(index - 2);
+    if (wkspc->getID() != index && index < getScreen()->getWorkspaceCount())
+      getScreen()->changeWorkspaceID(index);
   }
   if (! (getScreen()->getWorkspacemenu()->isTorn() || isTorn()))
     hide();

@@ -39,7 +39,7 @@ private:
     Focusmenu& operator=(const Focusmenu&);
 
   protected:
-    virtual void itemSelected(int button, int index);
+    virtual void itemSelected(int button, unsigned int index);
 
   public:
     Focusmenu(Configmenu *cm);
@@ -51,7 +51,7 @@ private:
     Placementmenu& operator=(const Placementmenu&);
 
   protected:
-    virtual void itemSelected(int button, int index);
+    virtual void itemSelected(int button, unsigned int index);
 
   public:
     Placementmenu(Configmenu *cm);
@@ -67,7 +67,7 @@ private:
   Configmenu& operator=(const Configmenu&);
 
 protected:
-  virtual void itemSelected(int button, int index);
+  virtual void itemSelected(int button, unsigned int index);
 
 public:
   Configmenu(BScreen *scr);

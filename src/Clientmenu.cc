@@ -40,7 +40,7 @@ Clientmenu::Clientmenu(Workspace *ws) : Basemenu(ws->getScreen()) {
 }
 
 
-void Clientmenu::itemSelected(int button, int index) {
+void Clientmenu::itemSelected(int button, unsigned int index) {
   if (button > 2) return;
 
   BlackboxWindow *win = wkspc->getWindow(index);

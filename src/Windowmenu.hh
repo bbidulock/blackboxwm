@@ -42,7 +42,7 @@ private:
     SendtoWorkspacemenu& operator=(const SendtoWorkspacemenu&);
 
   protected:
-    virtual void itemSelected(int button, int index);
+    virtual void itemSelected(int button, unsigned int index);
 
   public:
     SendtoWorkspacemenu(Windowmenu *w);
@@ -60,7 +60,7 @@ private:
   Windowmenu& operator=(const Windowmenu&);
 
 protected:
-  virtual void itemSelected(int button, int index);
+  virtual void itemSelected(int button, unsigned int index);
 
 
 public:

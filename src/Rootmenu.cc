@@ -52,7 +52,7 @@ extern "C" {
 Rootmenu::Rootmenu(BScreen *scrn) : Basemenu(scrn) { }
 
 
-void Rootmenu::itemSelected(int button, int index) {
+void Rootmenu::itemSelected(int button, unsigned int index) {
   if (button != 1)
     return;
 

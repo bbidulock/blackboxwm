@@ -43,7 +43,7 @@ private:
     Placementmenu& operator=(const Placementmenu&);
 
   protected:
-    virtual void itemSelected(int button, int index);
+    virtual void itemSelected(int button, unsigned int index);
 
   public:
     Placementmenu(Toolbarmenu *tm);
@@ -59,7 +59,7 @@ private:
   Toolbarmenu& operator=(const Toolbarmenu&);
 
 protected:
-  virtual void itemSelected(int button, int index);
+  virtual void itemSelected(int button, unsigned int index);
   virtual void internal_hide(void);
 
 public:

@@ -73,7 +73,7 @@ protected:
   inline void setHideTree(Bool h) { hide_tree = h; }
   inline void setMinimumSublevels(int m) { menu.minsub = m; }
 
-  virtual void itemSelected(int button, int index) = 0;
+  virtual void itemSelected(int button, unsigned int index) = 0;
   virtual void drawItem(int index, Bool highlight = False, Bool clear = False,
                         int x = -1, int y = -1,
                         unsigned int w = 0, unsigned int h = 0);
