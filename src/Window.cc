@@ -555,13 +555,13 @@ void BlackboxWindow::createHandle(void) {
   frame.left_grip = createChildWindow(frame.handle,
                                       ButtonPressMask | ButtonReleaseMask |
                                       ButtonMotionMask | ExposureMask,
-                                      blackbox->getLowerLeftAngleCursor());
+                                      blackbox->getResizeBottomLeftCursor());
   blackbox->insertEventHandler(frame.left_grip, this);
 
   frame.right_grip = createChildWindow(frame.handle,
                                        ButtonPressMask | ButtonReleaseMask |
                                        ButtonMotionMask | ExposureMask,
-                                       blackbox->getLowerRightAngleCursor());
+                                       blackbox->getResizeBottomRightCursor());
   blackbox->insertEventHandler(frame.right_grip, this);
 }
 
@@ -776,7 +776,7 @@ void BlackboxWindow::grabButtons(void) {
     blackbox->grabButton(Button3, Mod1Mask, frame.window, True,
                          ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
                          GrabModeAsync, frame.window,
-                         blackbox->getLowerRightAngleCursor(),
+                         blackbox->getResizeBottomRightCursor(),
                          screen->resource().allowScrollLock());
   // alt+middle lowers the window
   blackbox->grabButton(Button2, Mod1Mask, frame.window, True,
@@ -2851,8 +2851,8 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
         collisionAdjust(&dx, &dy, frame.rect.width(), frame.rect.height(),
                         screen->availableArea(), snap_distance);
         if (! screen->resource().doFullMax())
-            collisionAdjust(&dx, &dy, frame.rect.width(), frame.rect.height(),
-                            screen->screenInfo().rect(), snap_distance);
+          collisionAdjust(&dx, &dy, frame.rect.width(), frame.rect.height(),
+                          screen->screenInfo().rect(), snap_distance);
       }
 
       if (screen->resource().doOpaqueMove()) {
@@ -2892,8 +2892,8 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
       XGrabPointer(blackbox->XDisplay(), me->window, False,
                    ButtonMotionMask | ButtonReleaseMask,
                    GrabModeAsync, GrabModeAsync, None,
-                   ((left) ? blackbox->getLowerLeftAngleCursor() :
-                    blackbox->getLowerRightAngleCursor()),
+                   ((left) ? blackbox->getResizeBottomLeftCursor() :
+                    blackbox->getResizeBottomRightCursor()),
                    CurrentTime);
 
       client.state.resizing = True;

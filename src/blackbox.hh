@@ -64,7 +64,7 @@ namespace bt {
 class Blackbox : public bt::Application, public bt::TimeoutHandler {
 private:
   struct BCursor {
-    Cursor session, move, ll_angle, lr_angle;
+    Cursor session, move, resize_bottom_left, resize_bottom_right;
   };
   BCursor cursor;
 
@@ -169,10 +169,10 @@ public:
     { return cursor.session; }
   inline Cursor getMoveCursor(void) const
     { return cursor.move; }
-  inline Cursor getLowerLeftAngleCursor(void) const
-    { return cursor.ll_angle; }
-  inline Cursor getLowerRightAngleCursor(void) const
-    { return cursor.lr_angle; }
+  inline Cursor getResizeBottomRightCursor(void) const
+    { return cursor.resize_bottom_right; }
+  inline Cursor getResizeBottomLeftCursor(void) const
+    { return cursor.resize_bottom_left; }
 
   void setFocusedWindow(BlackboxWindow *w);
   void shutdown(void);

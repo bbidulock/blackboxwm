@@ -136,10 +136,14 @@ Blackbox::Blackbox(char **m_argv, const char *dpy_name, const char *rc,
 
   init_icccm();
 
-  cursor.session = XCreateFontCursor(XDisplay(), XC_left_ptr);
-  cursor.move = XCreateFontCursor(XDisplay(), XC_fleur);
-  cursor.ll_angle = XCreateFontCursor(XDisplay(), XC_ll_angle);
-  cursor.lr_angle = XCreateFontCursor(XDisplay(), XC_lr_angle);
+  cursor.session =
+    XCreateFontCursor(XDisplay(), XC_left_ptr);
+  cursor.move =
+    XCreateFontCursor(XDisplay(), XC_fleur);
+  cursor.resize_bottom_left =
+    XCreateFontCursor(XDisplay(), XC_bottom_left_corner);
+  cursor.resize_bottom_right =
+    XCreateFontCursor(XDisplay(), XC_bottom_right_corner);
 
   screen_list_count = 0;
   if (! multi_head || display().screenCount() == 1) {
