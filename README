@@ -21,9 +21,11 @@
 This file covers operation and configuration of Blackbox.  Since it is still in
 development, many things may or may not work properly (or at all).  This code 
 was written from scratch (save for a bit of the 8bpp code, which was 
-implemented from WindowMaker 0.11.0 source code, and the dgradient code, 
-courtesy of Frank R. Belew <frb@umr.edu>).  I plan to make a list of testers 
-and code contributors in the future, which will appear here.
+implemented from WindowMaker 0.11.0 source code (and has since been improved
+upon and operates much faster than the way WindowMaker does, which is to alloc
+colors for each image), and the dgradient code, courtesy of Frank R. Belew
+<frb@umr.edu>).  I plan to make a list of testers and code contributors in
+the future, which will appear here.
 
 NOTE:  The 8bpp code is unfinished and mostly untested.  I do not make any 
 guarantees or promises that you can run blackbox on an 8bpp X server.  I plan
@@ -70,44 +72,133 @@ newly installed blackbox executable file.
 
 Operation:
 -------------
-Operation of blackbox is similar to many other window managers.  A list of 
-functions and their default behaviour (read, some behaviours are 
-modifiable/configurable) is included below.
+Operation of blackbox is similar to many other window managers.  An
+explanation of functions and their default behaviour (read, some behaviours
+are modifiable/configurable) is included below.
 
-Function:		Behaviour:
- - button press		button 1 -
-			  titlebar, side handle - raises window
-			  titlebar buttons - iconify, maximize (unimplemented),
-				close
-			  workspace button - shows/hides workspaces menu
-			  menu title - raises menu
-			  menu items - executes menu item behaviour
-			  icon - deiconifies window
-			  w/ Mod1 key pressed - ascends workspace list
-				(i.e. changes from Workspace 2 to Workspace 1)
+Windows are stacked in a specific order.
+The toolbar set on the left hand side of the root window is always on the
+bottom of the stack list.  Client windows are stacked above the toolbar, thus
+it is possible to totally obscure the toolbar from site with large/numerous
+clients.  The session (root) menu, workspace manager menu (the top left button
+reveals this menu) and the workspace menus (window lists) are stacked above
+the client windows, and thus will always be visible when mapped (visible).
 
-			button 2 -
-			  titlebar, side handle - lowers window
+Client window stacking order is modifiable by clicking on the window titlebar
+or the window handle bar. Mouse button 1 (by default, the left mouse button
+on a right handed mouse, which is modified in the X configuration files, not
+by blackbox) raises the window to the top of the stack (under any transient
+windows, such as help/about/question dialog boxes).  Mouse button 2 (by
+default the middle mouse button) lowers the window (and any transient
+windows) to the bottom of the window stack.
 
-			button 3 -
-			  titlebar - shows/hides window menu
-			  root - shows/hides main menu
-			  menu title - hides menu
-			  menu item - shows/hides submenu (if there is one)
-			  w/ control key pressed - descends workspace list
-				(i.e. changes from Workspace 1 to Workspace 2)
+Client windows are movable by holding mouse button 1 on the titlebar and
+dragging the window to the desired location.  This is an opaque move (the
+window contents are visible during the move) and as of yet, the only option
+for moving windows.  A wire frame move may be implemented, provided requests
+for it are made.  Releasing the mouse button ends the window move.
 
-- key press		all key presses are reported to the client with input 
-			focus
+Since blackbox is an ICCCM compliant window manager, the window decorations are
+controlled by messages and defaults set by the client.  If a client does not
+accept a certain ICCCM protocol request, then a close button (the "X" button)
+will not be created.  Likewise, if a client sets its maximum and minimum size
+to the same settings, a maximize button (the box button) will not be created,
+nor will a window handle, since the window cannot be resized.  The ICCCM
+specifications allow for an Urgent window to be created, but at the moment
+blackbox ignores such windows (as the ICCCM allows).  If such windows are
+supported in future releases, the iconify button (the bar button) will not be
+created.  In this release, the iconify button is created for all windows.
 
-- mouse motion		no default behaviour
-			w/ button 1 pressed -
-			  window titlebar - begins window move (ended on button
-				release)
-			  menu titlebar - begins menu move (ended on button 
-				release)
-			  resize handle button - resizes window interactively
-				(ended on button release)
+Clients that report a user or program specified location are accomodated, and
+placed in the appropriate location.  Otherwise, client windows are cascaded
+when mapped (which cycles back when necessary).  If a client wishes to resize
+itself or reposition itself, its request is honored.
+
+Support is also available for older (read: pre ICCCM) clients that behave
+differently than described in the ICCCM specification included with the
+X11R6.3 release of the X Window System.  Most notable of such clients is xv,
+which is the primary graphics viewer/editor for many people (read: Linux
+users).
+
+Client windows that allow resizing will have a handle added to the decorations.
+To interactively resize a window, the button at the bottom of the handle should
+be pressed with mouse button 1 and drug to the desired location.  If the client
+has reported a size stepping/increment, this increment is taken into account
+when the resizing begins.  Resizing is controlled by a wire frame, which is
+removed when the mouse button is released (at which point the client is
+resized).
+
+The maximize button maximizes the client window in the available space on the
+root window (i.e. minus the width of the toolbar).  Again, clients with set
+size increments are incremented and then centered in the desktop (so that means
+a maximized xterm may not take up the full screen).
+
+Client windows have a window menu accessable by clicking mouse button 3 (by
+default, the right button on a right handed mouse) on the window titlebar.
+This window menu includes a submenu for sending the window to a different
+workspace, iconify, maximize/unmaximize (if the client can be resized), close,
+raise, and lower functions.  The "Send To ..." submenu displays a list of
+available workspaces, which will send the window to the desired workspace
+if one is selected from the menu.  The window menu is retractable by pressing
+mouse button 3 on the window titlebar a second time.
+
+About menus in blackbox.  Other graphical interfaces allow menus to be
+traversed by holding mouse button 1 and moving the pointer.  With blackbox,
+this is not the case.  Each menu items must be selected by the user.  Plans to
+change this have not been made, nor considered, as this method could prove to
+eliminate clicking or releasing the wrong menu item.
+
+The session (root) menu is mapped by pressing mouse button 3 on the root
+window.  The menu title is centered around the pointer's current position, and
+thus it is possible to obscure part of the menu beyond the root window
+boundaries.  It is possible to move the root menu, in the same manner as moving
+a client window.  If an item is selected from the root menu or any of its
+submenus, the window will unmap itself UNLESS the user has moved the window,
+in which case it will remain on the root window until the user unmaps it by
+clicking mouse button 3 on its title.  Submenus are shown when clicked with
+either mouse button 1 or 3, but only hidden when mouse button 3 is pressed on
+the item.  If one submenu is visible when another is selected, the first is
+hidden before the second is shown.
+
+The workspace manager menu operates different from the root menu in several
+respects.  It does not have a title, and thus is not movable.  Pressing the
+Workspace button at the top of the toolbar maps the workspace manager menu.
+The "New Workspace" menu item creates a new workspace, which is like a
+virtual X desktop on which more windows may be placed.  The "Delete last" menu
+item iconifies ALL windows on the last workspace, and removes the last
+workspace from blackbox's memory.  The number of workspaces is dynamic, but at
+least one must stay "alive".  Because of this, the user cannot delete
+Workspace 0.  Pressing one of the available workspaces in the menu with mouse
+button 1 changes to that workspace (i.e. all windows on the current workspace
+are hidden, and the windows on the selected workspace are shown) A workspace
+menu which contains a list of windows on any given workspace is available by
+pressing mouse button 3 on the appropriate workspace menu item.  If the user
+selects a window from the window list, blackbox will change workspaces to the
+appropriate workspace (if the window selected is not on the current workspace)
+and the window is raised and awarded keyboard input focus.
+
+Keyboard input focus is also awarded to those clients who accept it (again,
+the client specifies if it can take focus through ICCCM protocol requests).
+Since X exists to "provide mechanism, not policy," blackbox does not honor any
+hotkey or shortcut key combinations to its functions.  However,  the user may
+circulate through available workspaces by holding a Mod1 key (see xmodmap(1))
+and pressing either mouse button 1 or 3 (button 1 ascends the workspace list,
+while button 3 ascends it, or button 1 would change from Workspace 2 to
+Workspace 1, and button 3 would change from Workspace 1 to Workspace 2 for
+example).
+
+Icons are placed on the bottom half of the toolbar.  These icons are present
+in all workspaces,  thus it is possible to move a window to another workspace
+by iconifying it and then deiconifying it on a new workspace (but the Send
+To ... window menu function is much easier).  Blackbox reads the icon label
+from the ICCCM hints the client window sets.  If there is no icon label
+available, "Unnamed" is used (same for window titles).  If the icon label is
+longer than the icon, the label is clipped.  If the user places the pointer
+over an icon, the full icon label is displayed in the window title font,
+drawing onto the root window (and possibly others) if necessary to show the
+full label.  Pressing the icon with mouse button 1 will deiconify the window
+on the current workspace (dissociating it from its original workspace if
+necessary).
 
 
 Configuration:

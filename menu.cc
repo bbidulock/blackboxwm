@@ -45,6 +45,7 @@ BlackboxMenu::BlackboxMenu(BlackboxSession *ctrl)
   show_title = True;
   movable = True;
   moving = False;
+  user_moved = False;
   menu.x = 10;
   menu.y = 10;
   sub = visible = False;
@@ -464,7 +465,8 @@ void BlackboxMenu::motionNotifyEvent(XMotionEvent *me) {
 			 ButtonReleaseMask, GrabModeAsync, GrabModeAsync,
 			 None, session->moveCursor(), CurrentTime)
 	    == GrabSuccess) {
-	  moving = 1;
+	  moving = True;
+	  user_moved = True;
 	  menu.x_move = me->x;
 	  menu.y_move = me->y;
 	  if (which_sub != -1)

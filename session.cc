@@ -70,7 +70,8 @@ void SessionMenu::itemReleased(int button, int index) {
       sprintf(command, "exec %s &", item->Exec());
       system(command);
       delete [] command;
-      session->rootmenu->hideMenu();
+      if (! userMoved())
+	session->rootmenu->hideMenu();
     } else if (item->Function()) {
       switch (item->Function()) {
       case BlackboxSession::B_Restart:
@@ -81,7 +82,9 @@ void SessionMenu::itemReleased(int button, int index) {
 	Session()->Exit();
 	break;
       }
-      session->rootmenu->hideMenu();
+
+      if (! userMoved())
+	session->rootmenu->hideMenu();
     }
   }
 }

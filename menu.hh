@@ -47,7 +47,7 @@ private:
   BlackboxSession *session;
   Debugger *debug;
 
-  Bool moving, show_title, visible, sub, movable;
+  Bool moving, show_title, visible, sub, movable, user_moved;
   Display *display;
   GC titleGC, itemGC, pitemGC;
   XContext itemContext;
@@ -108,6 +108,7 @@ public:
   int count(void) { return menuitems->count(); }
   Bool hasSubmenu(int);
   void setMovable(Bool);
+  Bool userMoved(void) { return user_moved; }
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);

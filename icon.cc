@@ -151,7 +151,9 @@ void BlackboxIcon::buttonPressEvent(XButtonEvent *) {
 
 void BlackboxIcon::buttonReleaseEvent(XButtonEvent *be) {
   debug->msg("icon released\n");
-  if (be->button == 1) {
+  if (be->button == 1 &&
+      be->x >= 0 && be->x <= (signed) icon.width &&
+      be->y >= 0 && be->y <= (signed) icon.height) {
     XGrabServer(display);
     debug->msg("deiconifying app\n");
     BlackboxWindow *win = session->getWindow(icon.client);
