@@ -20,7 +20,7 @@
 # user configurable parts
 
 CXX:=			gcc
-CXXFLAGS:=		-Wall -W -pipe -fno-strength-reduce -O2 -g -DSHAPE \
+CXXFLAGS:=		-Wall -W -pipe -fno-strength-reduce -g -DSHAPE \
 			-I/usr/X11R6/include
 LDFLAGS:=		-L/usr/X11R6/lib -lX11 -lXext
 DefaultsPath:=		\"/usr/X11R6/lib/app-defaults\"

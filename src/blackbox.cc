@@ -71,7 +71,7 @@ static void signalhandler(int sig) {
     if (! re_enter) {
       re_enter = 1;
       fprintf(stderr, "\t[ shutting down ]\n");
-      blackbox->Shutdown(False);
+      blackbox->Shutdown();
     }
 
     if (sig != SIGTERM && sig != SIGINT) {
@@ -275,9 +275,11 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   }
   
   if (! resource.sloppyFocus)
-    XSetInputFocus(display, tool_bar->windowID(), RevertToPointerRoot,
+    XSetInputFocus(display, tool_bar->windowID(), RevertToParent,
                    CurrentTime);
-  
+  else
+    XSetInputFocus(display, root, RevertToParent, CurrentTime);
+
   XSynchronize(display, False);
   XSync(display, False);
   ungrabServer();
@@ -285,8 +287,6 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
 
 
 Blackbox::~Blackbox(void) {
-  XSelectInput(display, root, NoEventMask);
-
   if (resource.menuFile) delete [] resource.menuFile;
   if (resource.styleFile) delete [] resource.styleFile;
   delete root_menu;
@@ -566,12 +566,13 @@ void Blackbox::ProcessEvent(XEvent *e) {
     {
       BlackboxWindow *iWin = searchWindow(e->xfocus.window);
       
-      if ((iWin != NULL) && (e->xfocus.mode != NotifyGrab) &&
-	  (e->xfocus.mode != NotifyUngrab)) {
-        iWin->setFocusFlag(True);
-        focus_window_number = iWin->windowNumber();
-        tool_bar->currentWorkspace()->setFocusWindow(focus_window_number);
-      }
+      if (iWin != NULL)
+        if ((e->xfocus.mode != NotifyGrab) &&
+            (e->xfocus.mode != NotifyUngrab)) {
+          iWin->setFocusFlag(True);
+          focus_window_number = iWin->windowNumber();
+          tool_bar->currentWorkspace()->setFocusWindow(focus_window_number);
+        }
       
       break;
     }
@@ -581,9 +582,24 @@ void Blackbox::ProcessEvent(XEvent *e) {
       BlackboxWindow *oWin = searchWindow(e->xfocus.window);
       
       if (oWin != NULL) {
-        if ((e->xfocus.mode != NotifyGrab) &&
-	    (e->xfocus.mode != NotifyWhileGrabbed))
-	  oWin->setFocusFlag(False);
+        if (e->xfocus.mode != NotifyGrab)
+	  switch (e->xfocus.mode) {
+          case NotifyWhileGrabbed:
+            if ((e->xfocus.detail == NotifyNonlinearVirtual) ||
+                (e->xfocus.detail == NotifyInferior))
+              break;
+
+          default:        
+            oWin->setFocusFlag(False);
+          }
+
+          if ((e->xfocus.mode == NotifyNormal) &&
+	      (e->xfocus.detail == NotifyAncestor)) {
+            focus_window_number = -1;
+            tool_bar->currentWorkspace()->setFocusWindow(-1);
+	    
+            XSetInputFocus(display, root, RevertToParent, CurrentTime);
+          }
       } else {
         focus_window_number = -1;
         tool_bar->currentWorkspace()->setFocusWindow(-1);
@@ -866,13 +882,15 @@ void Blackbox::removeToolbarSearch(Window window) {
 // *************************************************************************
 
 void Blackbox::Exit(void) {
-  XSetInputFocus(display, PointerRoot, RevertToPointerRoot, CurrentTime);
+  XSetInputFocus(display, PointerRoot, RevertToParent, CurrentTime);
+  XSelectInput(display, root, NoEventMask);
+
   shutdown = True;
 }
 
 
 void Blackbox::Restart(char *prog) {
-  XSetInputFocus(display, PointerRoot, RevertToPointerRoot, CurrentTime);
+  Exit();
   SaveRC();
  
   if (prog) {
@@ -888,9 +906,11 @@ void Blackbox::Restart(char *prog) {
 }
 
 
-void Blackbox::Shutdown(Bool do_delete) {
-  if (do_delete)
-    delete this;
+void Blackbox::Shutdown(void) {
+  Exit();
+  SaveRC();
+
+  delete this;
 }
 
 
@@ -1034,6 +1054,16 @@ void Blackbox::prevFocus(void) {
     }
   } else if (tool_bar->currentWorkspace()->Count() >= 1)
     tool_bar->currentWorkspace()->window(0)->setInputFocus();
+}
+
+
+void Blackbox::raiseFocus(void) {
+  if ((tool_bar->currentWorkspace()->Count() > 1) &&
+      (focus_window_number != -1)) {
+    BlackboxWindow *win =
+      tool_bar->currentWorkspace()->window(focus_window_number);
+    tool_bar->currentWorkspace()->raiseWindow(win); 
+  }
 }
  
 

@@ -2,6 +2,17 @@ At the request of some people, here is a Change log starting with 0.33.0.
 Enjoy! :)
 
 
+Changes from 0.40.8 to 0.40.9:
+	- fixed a menu bug to keep as much of the menu on screen as possible
+	- added a patch from Peter Kovacs <kovacsp@egr.uri.edu> to raise the
+	  current focused window when the user clicks on the window label on
+	  the toolbar
+	- changed some window gravity defaults... nothing major here
+	- focus handling code has been spruced up... and majorly tested...
+	  0.40.8's focus code was about as good as a full tank of gas but
+	  no corvette... let me know how the focus handles in 0.40.9
+
+
 Changes from 0.40.7 to 0.40.8:
 	- more menu fixes... highlights are handled as normal... constant
 	  highlights are draw differently... the rounded edges minus the

@@ -403,9 +403,11 @@ void Basemenu::drawSubmenu(int index, Bool) {
       if ((x + item->submenu()->Width()) > blackbox->xRes())
 	x = ((shifted) ? menu.x_shift : menu.x) -
 	  item->submenu()->Width() - 1;
-      
+      if (x < 0) x = 0;
+
       if ((y + item->submenu()->Height()) > blackbox->yRes())
 	y = blackbox->yRes() - item->submenu()->Height() - 1;
+      if (y < 0) y = 0;
       
       item->submenu()->Move(x, y);
       

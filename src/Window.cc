@@ -216,64 +216,71 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window) {
 	  cascade = False;
       } else if (transient ||
 		 client.normal_hint_flags & (PPosition|USPosition)) {
-	switch (client.win_gravity) {
-	case StaticGravity:
+	if (client.normal_hint_flags & PWinGravity)
+	  switch (client.win_gravity) {
+	  case NorthGravity:
+	    frame.x = client.x - ((decorations.border) ?
+				  (frame.bevel_w + 1) : 1);
+	    frame.y = client.y;
+	    break;
+	    
+	  case NorthEastGravity:
+	    frame.x = (client.x + client.width) - frame.width;
+	    frame.y = client.y;
+	    break;
+	    
+	  case WestGravity:
+	    frame.x = client.x;
+	    frame.y = client.y - frame.title_h -
+	      ((decorations.border) ? (frame.bevel_w + 2) : 1);
+	    break;
+	    
+	  case EastGravity:
+	    frame.x = client.x + client.width - frame.width;
+	    frame.y = client.y - frame.title_h -
+	      ((decorations.border) ? (frame.bevel_w + 2) : 1);
+	    break;
+	    
+	  case SouthWestGravity:
+	    frame.x = client.x;
+	    frame.y = client.y + client.height - frame.height;
+	    break;
+	    
+	  case SouthGravity:
+	    frame.x = client.x - ((decorations.border) ?
+				  (frame.bevel_w + 1) : 1);
+	    frame.y = client.y + client.height - frame.height;
+	    break;
+	    
+	  case SouthEastGravity:
+	    frame.x = client.x + client.width - frame.width;
+	    frame.y = client.y + client.height - frame.height;
+	    break;
+	    
+	  case CenterGravity:
+	    frame.x = client.x + (client.width / 2);
+	    frame.y = client.y + (client.height / 2);
+	    break;
+	    
+	  case NorthWestGravity:
+	    frame.x = client.x;
+	    frame.y = client.y;
+	    break;
+	    
+	  case ForgetGravity:
+	  case StaticGravity:
+	  default:
+	    frame.x = client.x - ((decorations.border) ?
+				  (frame.bevel_w + 1) : 1);
+	    frame.y = client.y - frame.title_h -
+	      ((decorations.border) ? (frame.bevel_w + 2) : 1);
+	    break;
+	  }
+	else { 
 	  frame.x = client.x - ((decorations.border) ?
 				(frame.bevel_w + 1) : 1);
 	  frame.y = client.y - frame.title_h -
 	    ((decorations.border) ? (frame.bevel_w + 2) : 1);
-	  break;
-	  
-	case NorthGravity:
-	  frame.x = client.x - ((decorations.border) ?
-				(frame.bevel_w + 1) : 1);
-	  frame.y = client.y;
-	  break;
-	  
-	case NorthEastGravity:
-	  frame.x = (client.x + client.width) - frame.width;
-	  frame.y = client.y;
-	  break;
-	  
-	case WestGravity:
-	  frame.x = client.x;
-	  frame.y = client.y - frame.title_h -
-	    ((decorations.border) ? (frame.bevel_w + 2) : 1);
-	  break;
-	  
-	case EastGravity:
-	  frame.x = client.x + client.width - frame.width;
-	  frame.y = client.y - frame.title_h -
-	    ((decorations.border) ? (frame.bevel_w + 2) : 1);
-	  break;
-	  
-	case SouthWestGravity:
-	  frame.x = client.x;
-	  frame.y = client.y + client.height - frame.height;
-	  break;
-	  
-	case SouthGravity:
-	  frame.x = client.x - ((decorations.border) ?
-				(frame.bevel_w + 1) : 1);
-	  frame.y = client.y + client.height - frame.height;
-	  break;
-	  
-	case SouthEastGravity:
-	  frame.x = client.x + client.width - frame.width;
-	  frame.y = client.y + client.height - frame.height;
-	  break;
-	  
-	case CenterGravity:
-	  frame.x = client.x + (client.width / 2);
-	  frame.y = client.y + (client.height / 2);
-	  break;
-	  
-	case NorthWestGravity:
-	case ForgetGravity:
-	default:
-	  frame.x = client.x;
-	  frame.y = client.y;
-	  break;
 	}
 	
 	if (frame.x >= 0 && frame.y >= 0)
@@ -1340,7 +1347,7 @@ Bool BlackboxWindow::setInputFocus(void) {
       ret = client.transient->setInputFocus();
     else
       if (! focused) {
-	if (XSetInputFocus(display, client.window, RevertToPointerRoot,
+	if (XSetInputFocus(display, client.window, RevertToParent,
 			   CurrentTime))
 	  ret = True;
       } else
@@ -2048,7 +2055,7 @@ void BlackboxWindow::configureRequestEvent(XConfigureRequestEvent *cr) {
 
 void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
   if (be->button == 1) {
-    if (! focused)
+    if ((! focused) && (! blackbox->sloppyFocus()))
       setInputFocus();
 
     if (frame.title == be->window || frame.handle == be->window ||

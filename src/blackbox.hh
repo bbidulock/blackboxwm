@@ -21,7 +21,7 @@
 
 #ifndef __blackbox_hh
 #define __blackbox_hh
-#define __blackbox_version "beta zero . four zero . eight (0.40.8)"
+#define __blackbox_version "beta zero . four zero . nine (0.40.9)"
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
@@ -234,10 +234,11 @@ public:
   void setStyle(char *);
   void prevFocus(void);
   void nextFocus(void);
+  void raiseFocus(void);
   void Exit(void);
   void Restart(char * = 0);
   void Reconfigure(void);
-  void Shutdown(Bool = True);
+  void Shutdown(void);
 
   // various informative functions about the current X session
   Atom ChangeStateAtom(void) { return _XA_WM_CHANGE_STATE; }

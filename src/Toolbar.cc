@@ -808,6 +808,8 @@ void Toolbar::buttonReleaseEvent(XButtonEvent *re) {
 	  changeWorkspaceID(current->workspaceID() + 1);
 	else
 	  changeWorkspaceID(1);
+    } else if (re->window == frame.windowLabel) {
+      blackbox->raiseFocus();
     } else if (re->window == frame.windowPrev) {
       XSetWindowBackgroundPixmap(display, frame.windowPrev, frame.button);
       XClearWindow(display, frame.windowPrev);
