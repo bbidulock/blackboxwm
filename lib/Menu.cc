@@ -76,7 +76,7 @@ bt::MenuStyle::MenuStyle(Application &app, unsigned int screen)
   : _app(app), _screen(screen) {
   title.alignment = AlignLeft;
   frame.alignment = AlignLeft;
-  margin_w = 1u;
+  title_margin = frame_margin = item_indent = 1u;
 
   const ScreenInfo &screeninfo = _app.display().screenInfo(_screen);
 
@@ -162,10 +162,15 @@ void bt::MenuStyle::load(const Resource &resource) {
     alignResource(resource, "menu.frame.alignment",
                   "Menu.Frame.Alignment");
 
-  const std::string mstr =
-    resource.read("menu.marginWidth", "Menu.MarginWidth", "1");
-  margin_w =
-    std::max(static_cast<unsigned int>(strtoul(mstr.c_str(), 0, 0)), 1u);
+  std::string str;
+
+  str = resource.read("menu.title.marginWidth", "Menu.Title.MarginWidth", "1");
+  title_margin =
+    std::max(static_cast<unsigned int>(strtoul(str.c_str(), 0, 0)), 1u);
+
+  str = resource.read("menu.frame.marginWidth", "Menu.Frame.MarginWidth", "1");
+  frame_margin =
+    std::max(static_cast<unsigned int>(strtoul(str.c_str(), 0, 0)), 1u);
 }
 
 
@@ -176,12 +181,12 @@ unsigned int bt::MenuStyle::separatorHeight(void) const {
 
 
 unsigned int bt::MenuStyle::titleMargin(void) const {
-  return title.texture.borderWidth() + margin_w;
+  return title.texture.borderWidth() + title_margin;
 }
 
 
 unsigned int bt::MenuStyle::frameMargin(void) const {
-  return frame.texture.borderWidth() + margin_w;
+  return frame.texture.borderWidth() + frame_margin;
 }
 
 
@@ -578,7 +583,11 @@ void bt::Menu::hideTitle(void) {
 }
 
 
-void bt::Menu::popup(int x, int y, bool centered) {
+void bt::Menu::popup(int x, int y, bool centered)
+{ popup(x, y, _app.display().screenInfo(_screen).rect(), centered); }
+
+
+void bt::Menu::popup(int x, int y, const Rect &constraint, bool centered) {
   _motion = 0;
 
   refresh();
@@ -586,43 +595,41 @@ void bt::Menu::popup(int x, int y, bool centered) {
   if (_size_dirty)
     updateSize();
 
-  const ScreenInfo& screeninfo = _app.display().screenInfo(_screen);
-
   if (_show_title) {
     if (centered) {
       x -= _trect.width() / 2;
-      if (x + _rect.width() > screeninfo.width())
-        x = screeninfo.width() - _rect.width();
-
       y -= _trect.height() / 2;
-      if (y + _rect.height() > screeninfo.height())
-        y -= _frect.height() + (_trect.height() / 2);
-    } else {
-      if (x + _rect.width() > screeninfo.width())
-        x -= _rect.width();
 
+      if (y + _rect.height() > constraint.bottom())
+        y -= _rect.height() - (_trect.height() / 2);
+    } else {
       y -= _trect.height();
-      if (y + _rect.height() > screeninfo.height())
-        y -= _frect.height();
+
+      if (x + _rect.width() > constraint.right())
+        x -= _rect.width();
+      if (y + _rect.height() > constraint.bottom())
+        y -= _rect.height();
     }
   } else {
     if (centered) {
       x -= _frect.width() / 2;
-      if (x + _rect.width() > screeninfo.width())
-        x = screeninfo.width() - _rect.width();
     } else {
-      if (x + _rect.width() > screeninfo.width())
+      if (x + _rect.width() > constraint.right())
         x -= _rect.width();
+      if (y + _rect.height() > constraint.bottom())
+        y -= _rect.height();
     }
-
-    if (y + _rect.height() > screeninfo.height())
-      y -= _frect.height();
   }
 
-  if (y < 0)
-    y = 0;
-  if (x < 0)
-    x = 0;
+  if (x + _rect.width() > constraint.right())
+    x = constraint.right() - _rect.width() + 1;
+  if (x < constraint.x())
+    x = constraint.x();
+
+  if (y + _rect.height() > constraint.bottom())
+    y = constraint.bottom() - _rect.height() + 1;
+  if (y < constraint.y())
+    y = constraint.y();
 
   move(x, y);
   show();

@@ -169,7 +169,7 @@ namespace bt {
       Pixmap check;
       Pixmap close;
     } bitmap;
-    unsigned int margin_w;
+    unsigned int title_margin, frame_margin;
     unsigned int item_indent;
 
     static MenuStyle **styles;
@@ -213,7 +213,9 @@ namespace bt {
     void hideTitle(void);
 
     bool isVisible(void) const { return _visible; }
-    virtual void popup(int x, int y, bool centered = true);
+    void popup(int x, int y, bool centered = true);
+    virtual void popup(int x, int y, const Rect &constraint,
+                       bool centered = true);
     void move(int x, int y);
     virtual void show(void);
     virtual void hide(void);
