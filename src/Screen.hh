@@ -323,7 +323,7 @@ public:
   void removeNetizen(Window w);
   void addIcon(BlackboxWindow *w);
   void removeIcon(BlackboxWindow *w);
-  const char* getNameOfWorkspace(unsigned int id);
+  const std::string& getNameOfWorkspace(unsigned int id);
   void changeWorkspaceID(unsigned int id);
   void raiseWindows(Window *workspace_stack, unsigned int num);
   void reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id,

@@ -61,11 +61,13 @@ Workspace::Workspace(BScreen *scrn, unsigned int i) {
 
   lastfocus = (BlackboxWindow *) 0;
 
-  const char *tmp = screen->getNameOfWorkspace(id);
-  setName(tmp);
+  setName(screen->getNameOfWorkspace(id));
 }
 
 
+/*
+ * nothing to do here, BScreen actually controls all of the resources
+ */
 Workspace::~Workspace(void) {}
 
 
@@ -342,7 +344,6 @@ void Workspace::setCurrent(void) {
 
 void Workspace::setName(const char* new_name) {
   if (new_name && *new_name) {
-    fprintf(stderr, "setName(a): %s\n", new_name);
     name = new_name;
   } else {
     char default_name[32];
@@ -350,7 +351,6 @@ void Workspace::setName(const char* new_name) {
              i18n(WorkspaceSet, WorkspaceDefaultNameFormat, "Workspace %d"),
              id + 1);
     name = default_name;
-    fprintf(stderr, "setName(b): %s\n", default_name);
   }
   
   clientmenu->setLabel(name);

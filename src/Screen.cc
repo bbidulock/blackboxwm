@@ -92,6 +92,8 @@
 
 #include <algorithm>
 #include <functional>
+using std::string;
+
 
 static Bool running = True;
 
@@ -1542,8 +1544,7 @@ void BScreen::saveStrftimeFormat(char *format) {
 
 
 void BScreen::addWorkspaceName(const char *name) {
-  fprintf(stderr, "addWorkspaceName: %s\n", name);
-  workspaceNames.push_back(std::string(name));
+  workspaceNames.push_back(string(name));
 }
 
 
@@ -1555,11 +1556,9 @@ void BScreen::addWorkspaceName(const char *name) {
  * later for constructing the workspaces.  It is only used during initial
  * BScreen creation.
  */
-const char* BScreen::getNameOfWorkspace(unsigned int id) {
-  if (id < workspaceNames.size())
-    return workspaceNames[id].c_str();
-
-  return (char *) 0;
+const string& BScreen::getNameOfWorkspace(unsigned int id) {
+  assert(id < workspaceNames.size());
+  return workspaceNames[id];
 }
 
 

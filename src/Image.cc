@@ -236,7 +236,7 @@ static const unsigned char dither4[4][4] = {
  * This handles the proper setting of the image data based on the image depth
  * and the machine's byte ordering
  */
-static
+static inline
 void assignPixelData(unsigned int bit_depth, unsigned char **data,
 		     unsigned long pixel) {
   unsigned char *pixel_data = *data;

@@ -76,7 +76,7 @@ void bexec(const char *command, const char* displaystring) {
   if (! fork()) {
     setsid();
     putenv(const_cast<char*>(displaystring));
-    std::string cmd = "exec ";
+    string cmd = "exec ";
     cmd += command;
     execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL);
     exit(0);
