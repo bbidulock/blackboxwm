@@ -56,9 +56,20 @@ void bt::Resource::merge(const std::string &filename) {
 }
 
 
-std::string bt::Resource::read(const std::string &name,
-                               const std::string &classname,
-                               const std::string &default_value) const {
+std::string bt::Resource::read(const char* name,
+                               const char* classname,
+                               const char* default_value) const {
+  XrmValue value;
+  char *value_type;
+  if (XrmGetResource(db, name, classname, &value_type, &value))
+    return std::string(value.addr, value.size - 1);
+  return std::string(default_value);
+}
+
+
+std::string bt::Resource::read(const std::string& name,
+                               const std::string& classname,
+                               const std::string& default_value) const {
   XrmValue value;
   char *value_type;
   if (XrmGetResource(db, name.c_str(), classname.c_str(), &value_type, &value))

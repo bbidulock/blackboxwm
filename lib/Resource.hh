@@ -46,9 +46,12 @@ namespace bt {
     void save(const std::string &filename);
     void merge(const std::string &filename);
 
-    std::string read(const std::string &name,
-                     const std::string &classname,
-                     const std::string &default_value = std::string()) const;
+    std::string read(const char* name,
+                     const char* classname,
+                     const char* default_value = "") const;
+    std::string read(const std::string& name,
+                     const std::string& classname,
+                     const std::string& default_value = "") const;
     void write(const std::string &resource,
                const std::string &value);
 
