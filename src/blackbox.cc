@@ -166,8 +166,8 @@ void Blackbox::process_event(XEvent *e) {
       }
 
       if (focus &&
-          (!activeScreen() || activeScreen() == win->getScreen()) &&
-          (win->isTransient() || win->getScreen()->resource().doFocusNew()))
+          (!activeScreen() || activeScreen() == win->screen()) &&
+          (win->isTransient() || win->screen()->resource().doFocusNew()))
         win->setInputFocus();
     } else {
       BScreen *screen = findScreen(e->xmaprequest.parent);
@@ -607,7 +607,7 @@ void Blackbox::setActiveScreen(BScreen *screen) {
   // install screen colormap
   XInstallColormap(XDisplay(), active_screen->screenInfo().colormap());
 
-  if (! focused_window || focused_window->getScreen() != active_screen)
+  if (! focused_window || focused_window->screen() != active_screen)
     setFocusedWindow(0);
 }
 
@@ -618,7 +618,7 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
 
   if (win && !win->isIconic()) {
     // the active screen is the one with the newly focused window...
-    active_screen = win->getScreen();
+    active_screen = win->screen();
     focused_window = win;
   } else {
     // nothing has focus

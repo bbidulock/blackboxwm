@@ -447,7 +447,8 @@ void Toolbar::redrawWindowLabel(void) {
   }
 
   BlackboxWindow *foc = _screen->getBlackbox()->getFocusedWindow();
-  if (! foc || foc->getScreen() != _screen) return;
+  if (! foc || foc->screen() != _screen)
+    return;
 
   bt::Pen pen(_screen->screenNumber(), style->wlabel_text);
   bt::drawText(style->font, pen, frame.window_label, u,
@@ -588,7 +589,7 @@ void Toolbar::buttonPressEvent(const XButtonEvent * const event) {
   } else if (event->button == 3) {
     BlackboxWindow *focus = blackbox->getFocusedWindow();
     if (event->window == frame.window_label &&
-        focus && focus->getScreen() == _screen) {
+        focus && focus->screen() == _screen) {
       Windowmenu *windowmenu = _screen->windowmenu(focus);
       windowmenu->popup(event->x_root, event->y_root,
                         _screen->availableArea());

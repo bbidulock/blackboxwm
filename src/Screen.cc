@@ -973,7 +973,7 @@ void BScreen::nextFocus(void) {
   BlackboxWindowList::iterator it, end = windowList.end();
 
   if (focused && focused->workspace() == current_workspace &&
-      focused->getScreen()->screen_info.screenNumber() ==
+      focused->screen()->screen_info.screenNumber() ==
       screen_info.screenNumber()) {
     it = std::find(windowList.begin(), end, focused);
     assert(it != end);
@@ -1009,7 +1009,7 @@ void BScreen::prevFocus(void) {
   BlackboxWindowList::reverse_iterator it, end = windowList.rend();
 
   if (focused && focused->workspace() == current_workspace &&
-      focused->getScreen()->screen_info.screenNumber() ==
+      focused->screen()->screen_info.screenNumber() ==
       screen_info.screenNumber()) {
     it = std::find(windowList.rbegin(), end, focused);
     assert(it != end);
@@ -1041,7 +1041,7 @@ void BScreen::prevFocus(void) {
 
 void BScreen::raiseFocus(void) {
   BlackboxWindow *focused = blackbox->getFocusedWindow();
-  if (! focused || focused->getScreen() != this)
+  if (! focused || focused->screen() != this)
     return;
 
   raiseWindow(focused);

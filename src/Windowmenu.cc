@@ -143,7 +143,7 @@ void Windowmenu::itemClicked(unsigned int id, unsigned int) {
   switch (id) {
   case OccupyAllWorkspaces:
     {
-      BScreen *screen = _window->getScreen();
+      BScreen *screen = _window->screen();
       Workspace *workspace = screen->getWorkspace(_window->workspace());
       if (workspace) {
         // stick window
@@ -176,7 +176,7 @@ void Windowmenu::itemClicked(unsigned int id, unsigned int) {
 
   case AlwaysOnTop:
     {
-      BScreen *screen = _window->getScreen();
+      BScreen *screen = _window->screen();
       StackingList::Layer new_layer =
         (_window->layer() == StackingList::LayerAbove ?
          StackingList::LayerNormal : StackingList::LayerAbove);
@@ -186,7 +186,7 @@ void Windowmenu::itemClicked(unsigned int id, unsigned int) {
 
   case AlwaysOnBottom:
     {
-      BScreen *screen = _window->getScreen();
+      BScreen *screen = _window->screen();
       StackingList::Layer new_layer =
         (_window->layer() == StackingList::LayerBelow ?
          StackingList::LayerNormal : StackingList::LayerBelow);
@@ -195,7 +195,7 @@ void Windowmenu::itemClicked(unsigned int id, unsigned int) {
     }
 
   case KillClient:
-    XKillClient(_window->getScreen()->screenInfo().display().XDisplay(),
+    XKillClient(_window->screen()->screenInfo().display().XDisplay(),
                 _window->getClientWindow());
     break;
 
@@ -216,9 +216,10 @@ void SendToWorkspacemenu::refresh(void) {
   assert(_window != 0);
 
   clear();
-  const unsigned num = _window->getScreen()->workspaceCount();
+  BScreen *screen = _window->screen();
+  const unsigned num = screen->workspaceCount();
   for (unsigned int i = 0; i < num; ++i)
-    insertItem(_window->getScreen()->resource().nameOfWorkspace(i), i);
+    insertItem(screen->resource().nameOfWorkspace(i), i);
 
   /*
     give a little visual indication to the user about which workspace
@@ -233,7 +234,7 @@ void SendToWorkspacemenu::refresh(void) {
 void SendToWorkspacemenu::itemClicked(unsigned int id, unsigned int button) {
   if (button != 2) _window->hide();
 
-  BScreen *screen = _window->getScreen();
+  BScreen *screen = _window->screen();
   Workspace *workspace = screen->getWorkspace(_window->workspace());
   assert(workspace != 0);
 
@@ -243,5 +244,5 @@ void SendToWorkspacemenu::itemClicked(unsigned int id, unsigned int button) {
   workspace->addWindow(_window);
 
   if (button == 2)
-    _window->getScreen()->setCurrentWorkspace(id);
+    screen->setCurrentWorkspace(id);
 }

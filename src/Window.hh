@@ -126,7 +126,7 @@ struct WMProtocols {
 class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
                        public bt::EventHandler, public bt::NoCopy {
   Blackbox *blackbox;
-  BScreen *screen;
+  BScreen *_screen;
   bt::Timer *timer;
 
   Time lastButtonPressTime;  // used for double clicks, when were we clicked
@@ -312,8 +312,8 @@ public:
 
   BWindowGroup *getWindowGroup(void) const;
 
-  inline BScreen *getScreen(void) const
-  { return screen; }
+  inline BScreen *screen(void) const
+  { return _screen; }
 
   // StackEntity interface
   inline Window windowID(void) const
