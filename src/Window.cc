@@ -2335,7 +2335,7 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
   case XA_WM_ICON_NAME:
     getWMIconName();
     if (flags.iconic)
-      screen->iconUpdate();
+      screen->changeIconName(this);
     break;
 
   case XA_WM_NAME:

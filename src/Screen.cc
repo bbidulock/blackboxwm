@@ -498,8 +498,6 @@ void BScreen::removeWorkspaceNames(void)
 	delete [] workspaceNames->remove(0);
 }
 
-
-
 void BScreen::addIcon(BlackboxWindow *w) {
   if (! w) return;
 
@@ -507,16 +505,14 @@ void BScreen::addIcon(BlackboxWindow *w) {
   w->setWindowNumber(iconList->count());
 
   iconList->insert(w);
-
-  // iconmenu->insert((const char **) w->getIconTitle());
+  iconmenu->insert(*w->getIconTitle());
 }
 
-
 void BScreen::removeIcon(BlackboxWindow *w) {
-  if (! w) return;
+  if (! w)
+    return;
 
   iconList->remove(w->getWindowNumber());
-
   iconmenu->remove(w->getWindowNumber());
 
   LinkedListIterator<BlackboxWindow> it(iconList);
@@ -525,14 +521,16 @@ void BScreen::removeIcon(BlackboxWindow *w) {
     bw->setWindowNumber(i++);
 }
 
+void BScreen::changeIconName(BlackboxWindow *w)
+{
+  iconmenu->change(w->getWindowNumber(), *w->getIconTitle());
+}
 
 BlackboxWindow *BScreen::icon(int index) {
   if (index >= 0 && index < iconList->count())
     return iconList->find(index);
-
   return (BlackboxWindow *) 0;
 }
-
 
 int BScreen::addWorkspace(void) {
   Workspace *wkspc = new Workspace(this, workspacesList->count());
@@ -1491,7 +1489,3 @@ int BScreen::getCurrentWorkspaceID() const
   return current_workspace->getWorkspaceID();
 }
 
-void BScreen::iconUpdate()
-{
-    // iconmenu->update();
-}

@@ -38,22 +38,24 @@
 
 
 Iconmenu::Iconmenu( BScreen *scrn )
-    : Basemenu( scrn->screen() )
+  : Basemenu( scrn->screen() )
 {
-    screen = scrn;
+  screen = scrn;
+  setTitle(i18n->getMessage(IconSet, IconIcons, "Icons"));
+  showTitle();
 }
 
+void Iconmenu::itemClicked(const Point &, const Item &item, int button)
+{
+  if (button != 1)
+    return;
 
-void Iconmenu::itemSelected(int button, int index) {
-    if (button != 1)
-	return;
+  if ( item.index() >= 0 && item.index() < screen->getIconCount()) {
+    BlackboxWindow *win = screen->icon(item.index());
 
-    if (index >= 0 && index < screen->getIconCount()) {
-	BlackboxWindow *win = screen->icon(index);
-
-	if (win) {
-	    win->deiconify();
-	    win->setInputFocus();
-	}
+    if (win) {
+      win->deiconify();
+      win->setInputFocus();
     }
+  }
 }

@@ -20,8 +20,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifndef   __Icon_hh
-#define   __Icon_hh
+#ifndef   __Iconmenu_hh
+#define   __Iconmenu_hh
 
 #include "Basemenu.hh"
 
@@ -30,14 +30,14 @@ class BScreen;
 class Iconmenu : public Basemenu
 {
 public:
-    Iconmenu( BScreen * );
+  Iconmenu( BScreen * );
 
 protected:
-    virtual void itemSelected(int, int);
+  virtual void itemClicked(const Point &, const Item &, int);
 
 private:
-    BScreen *screen;
+  BScreen *screen;
 };
 
 
-#endif // __Icon_hh
+#endif // __Iconmenu_hh

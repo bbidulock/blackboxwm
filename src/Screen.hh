@@ -71,196 +71,196 @@ struct NETStrut
 class BScreen : public ScreenInfo
 {
 public:
-    BScreen( Blackbox *, int );
-    ~BScreen();
+  BScreen( Blackbox *, int );
+  ~BScreen();
 
-    void initialize();
+  void initialize();
 
-    inline BImageControl *getImageControl() { return image_control; }
-    inline Rootmenu *getRootmenu() { return rootmenu; }
-    inline Toolbar *getToolbar() { return toolbar; }
+  inline BImageControl *getImageControl() { return image_control; }
+  inline Rootmenu *getRootmenu() { return rootmenu; }
+  inline Toolbar *getToolbar() { return toolbar; }
 
-    inline Workspace *getWorkspace(int w) { return workspacesList->find(w); }
-    inline Workspace *getCurrentWorkspace() { return current_workspace; }
+  inline Workspace *getWorkspace(int w) { return workspacesList->find(w); }
+  inline Workspace *getCurrentWorkspace() { return current_workspace; }
 
-    inline Workspacemenu *getWorkspacemenu() { return workspacemenu; }
+  inline Workspacemenu *getWorkspacemenu() { return workspacemenu; }
 
-    int getCurrentWorkspaceID() const;
-    inline const int getCount() { return workspacesList->count(); }
-    inline const int getIconCount() { return iconList->count(); }
+  int getCurrentWorkspaceID() const;
+  inline const int getCount() { return workspacesList->count(); }
+  inline const int getIconCount() { return iconList->count(); }
 
-    inline void setRootColormapInstalled(Bool r) { root_colormap_installed = r; }
-    void iconUpdate();
+  inline void setRootColormapInstalled(Bool r) { root_colormap_installed = r; }
 
-    BStyle *style() { return &_style; }
+  BStyle *style() { return &_style; }
 
-    BlackboxWindow *icon(int);
+  BlackboxWindow *icon(int);
 
-    const XRectangle& availableArea() const;
-    void updateAvailableArea();
-    void addStrut(NETStrut *strut);
+  const XRectangle& availableArea() const;
+  void updateAvailableArea();
+  void addStrut(NETStrut *strut);
 
-    int addWorkspace();
-    int removeLastWorkspace();
+  int addWorkspace();
+  int removeLastWorkspace();
 
-    void removeWorkspaceNames();
-    void addWorkspaceName(char *);
-    void addNetizen(Netizen *);
-    void removeNetizen(Window);
-    void addIcon(BlackboxWindow *);
-    void removeIcon(BlackboxWindow *);
-    char* getNameOfWorkspace(int);
-    void changeWorkspaceID(int);
-    void raiseWindows(Window *, int);
-    void reassociateWindow(BlackboxWindow *, int, Bool);
-    void prevFocus();
-    void nextFocus();
-    void raiseFocus();
-    void reconfigure();
-    void rereadMenu();
-    void shutdown();
-    void showPosition(int, int);
-    void showGeometry(unsigned int, unsigned int);
-    void hideGeometry();
+  void removeWorkspaceNames();
+  void addWorkspaceName(char *);
+  void addNetizen(Netizen *);
+  void removeNetizen(Window);
+  void addIcon(BlackboxWindow *);
+  void removeIcon(BlackboxWindow *);
+  void changeIconName(BlackboxWindow *);
+  char* getNameOfWorkspace(int);
+  void changeWorkspaceID(int);
+  void raiseWindows(Window *, int);
+  void reassociateWindow(BlackboxWindow *, int, Bool);
+  void prevFocus();
+  void nextFocus();
+  void raiseFocus();
+  void reconfigure();
+  void rereadMenu();
+  void shutdown();
+  void showPosition(int, int);
+  void showGeometry(unsigned int, unsigned int);
+  void hideGeometry();
 
-    void updateNetizenCurrentWorkspace();
-    void updateNetizenWorkspaceCount();
-    void updateNetizenWindowFocus();
-    void updateNetizenWindowAdd(Window, unsigned long);
-    void updateNetizenWindowDel(Window);
-    void updateNetizenConfigNotify(XEvent *);
-    void updateNetizenWindowRaise(Window);
-    void updateNetizenWindowLower(Window);
+  void updateNetizenCurrentWorkspace();
+  void updateNetizenWorkspaceCount();
+  void updateNetizenWindowFocus();
+  void updateNetizenWindowAdd(Window, unsigned long);
+  void updateNetizenWindowDel(Window);
+  void updateNetizenConfigNotify(XEvent *);
+  void updateNetizenWindowRaise(Window);
+  void updateNetizenWindowLower(Window);
 
-    enum { RowSmartPlacement = 1, ColSmartPlacement, CascadePlacement, LeftRight,
-	   RightLeft, TopBottom, BottomTop };
-    enum { RoundBullet = 1, TriangleBullet, SquareBullet, NoBullet };
-
-
+  enum { RowSmartPlacement = 1, ColSmartPlacement, CascadePlacement, LeftRight,
+         RightLeft, TopBottom, BottomTop };
+  enum { RoundBullet = 1, TriangleBullet, SquareBullet, NoBullet };
 
 
 
-    // this should all go away
 
 
-    Bool isToolbarOnTop() const { return resource.toolbar_on_top; }
-    Bool doToolbarAutoHide() const { return resource.toolbar_auto_hide; }
-    Bool isSloppyFocus() const { return resource.sloppy_focus; }
-    Bool isRootColormapInstalled() const { return root_colormap_installed; }
-    Bool doAutoRaise() const { return resource.auto_raise; }
-    Bool isScreenManaged() const { return managed; }
-    Bool doImageDither() const { return resource.image_dither; }
-    Bool doOrderedDither() const { return resource.ordered_dither; }
-    Bool doOpaqueMove() const { return resource.opaque_move; }
-    Bool doFullMax() const { return resource.full_max; }
-    Bool doFocusNew() const { return resource.focus_new; }
-    Bool doFocusLast() const { return resource.focus_last; }
+  // this should all go away
+
+
+  Bool isToolbarOnTop() const { return resource.toolbar_on_top; }
+  Bool doToolbarAutoHide() const { return resource.toolbar_auto_hide; }
+  Bool isSloppyFocus() const { return resource.sloppy_focus; }
+  Bool isRootColormapInstalled() const { return root_colormap_installed; }
+  Bool doAutoRaise() const { return resource.auto_raise; }
+  Bool isScreenManaged() const { return managed; }
+  Bool doImageDither() const { return resource.image_dither; }
+  Bool doOrderedDither() const { return resource.ordered_dither; }
+  Bool doOpaqueMove() const { return resource.opaque_move; }
+  Bool doFullMax() const { return resource.full_max; }
+  Bool doFocusNew() const { return resource.focus_new; }
+  Bool doFocusLast() const { return resource.focus_last; }
 
 #ifdef   SLIT
-    Bool isSlitOnTop() const { return resource.slit_on_top; }
-    Bool doSlitAutoHide() const { return resource.slit_auto_hide; }
-    Slit *getSlit() { return slit; }
-    const int &getSlitPlacement() const { return resource.slit_placement; }
-    const int &getSlitDirection() const { return resource.slit_direction; }
-    void saveSlitPlacement(int p) { resource.slit_placement = p; }
-    void saveSlitDirection(int d) { resource.slit_direction = d; }
-    void saveSlitOnTop(Bool t)    { resource.slit_on_top = t; }
-    void saveSlitAutoHide(Bool t) { resource.slit_auto_hide = t; }
+  Bool isSlitOnTop() const { return resource.slit_on_top; }
+  Bool doSlitAutoHide() const { return resource.slit_auto_hide; }
+  Slit *getSlit() { return slit; }
+  const int &getSlitPlacement() const { return resource.slit_placement; }
+  const int &getSlitDirection() const { return resource.slit_direction; }
+  void saveSlitPlacement(int p) { resource.slit_placement = p; }
+  void saveSlitDirection(int d) { resource.slit_direction = d; }
+  void saveSlitOnTop(Bool t)    { resource.slit_on_top = t; }
+  void saveSlitAutoHide(Bool t) { resource.slit_auto_hide = t; }
 #endif // SLIT
 
-    int getNumberOfWorkspaces() const { return resource.workspaces; }
-    int getToolbarPlacement() const { return resource.toolbar_placement; }
-    int getToolbarWidthPercent() const { return resource.toolbar_width_percent; }
-    int getPlacementPolicy() const { return resource.placement_policy; }
-    int getEdgeSnapThreshold() const { return resource.edge_snap_threshold; }
-    int getRowPlacementDirection() const { return resource.row_direction; }
-    int getColPlacementDirection() const { return resource.col_direction; }
+  int getNumberOfWorkspaces() const { return resource.workspaces; }
+  int getToolbarPlacement() const { return resource.toolbar_placement; }
+  int getToolbarWidthPercent() const { return resource.toolbar_width_percent; }
+  int getPlacementPolicy() const { return resource.placement_policy; }
+  int getEdgeSnapThreshold() const { return resource.edge_snap_threshold; }
+  int getRowPlacementDirection() const { return resource.row_direction; }
+  int getColPlacementDirection() const { return resource.col_direction; }
 
-    void saveSloppyFocus(Bool s) { resource.sloppy_focus = s; }
-    void saveAutoRaise(Bool a) { resource.auto_raise = a; }
-    void saveWorkspaces(int w) { resource.workspaces = w; }
-    void saveToolbarOnTop(Bool r) { resource.toolbar_on_top = r; }
-    void saveToolbarAutoHide(Bool r) { resource.toolbar_auto_hide = r; }
-    void saveToolbarWidthPercent(int w) { resource.toolbar_width_percent = w; }
-    void saveToolbarPlacement(int p) { resource.toolbar_placement = p; }
-    void savePlacementPolicy(int p) { resource.placement_policy = p; }
-    void saveRowPlacementDirection(int d) { resource.row_direction = d; }
-    void saveColPlacementDirection(int d) { resource.col_direction = d; }
-    void saveEdgeSnapThreshold(int t) { resource.edge_snap_threshold = t; }
-    void saveImageDither(Bool d) { resource.image_dither = d; }
-    void saveOpaqueMove(Bool o) { resource.opaque_move = o; }
-    void saveFullMax(Bool f) { resource.full_max = f; }
-    void saveFocusNew(Bool f) { resource.focus_new = f; }
-    void saveFocusLast(Bool f) { resource.focus_last = f; }
+  void saveSloppyFocus(Bool s) { resource.sloppy_focus = s; }
+  void saveAutoRaise(Bool a) { resource.auto_raise = a; }
+  void saveWorkspaces(int w) { resource.workspaces = w; }
+  void saveToolbarOnTop(Bool r) { resource.toolbar_on_top = r; }
+  void saveToolbarAutoHide(Bool r) { resource.toolbar_auto_hide = r; }
+  void saveToolbarWidthPercent(int w) { resource.toolbar_width_percent = w; }
+  void saveToolbarPlacement(int p) { resource.toolbar_placement = p; }
+  void savePlacementPolicy(int p) { resource.placement_policy = p; }
+  void saveRowPlacementDirection(int d) { resource.row_direction = d; }
+  void saveColPlacementDirection(int d) { resource.col_direction = d; }
+  void saveEdgeSnapThreshold(int t) { resource.edge_snap_threshold = t; }
+  void saveImageDither(Bool d) { resource.image_dither = d; }
+  void saveOpaqueMove(Bool o) { resource.opaque_move = o; }
+  void saveFullMax(Bool f) { resource.full_max = f; }
+  void saveFocusNew(Bool f) { resource.focus_new = f; }
+  void saveFocusLast(Bool f) { resource.focus_last = f; }
 
 #ifdef    HAVE_STRFTIME
-    char *getStrftimeFormat() { return resource.strftime_format; }
-    void saveStrftimeFormat(char *);
+  char *getStrftimeFormat() { return resource.strftime_format; }
+  void saveStrftimeFormat(char *);
 #else // !HAVE_STRFTIME
-    int getDateFormat() { return resource.date_format; }
-    void saveDateFormat(int f) { resource.date_format = f; }
-    Bool isClock24Hour() { return resource.clock24hour; }
-    void saveClock24Hour(Bool c) { resource.clock24hour = c; }
+  int getDateFormat() { return resource.date_format; }
+  void saveDateFormat(int f) { resource.date_format = f; }
+  Bool isClock24Hour() { return resource.clock24hour; }
+  void saveClock24Hour(Bool c) { resource.clock24hour = c; }
 #endif // HAVE_STRFTIME
 
 protected:
-    Bool parseMenuFile(FILE *, Rootmenu *);
-    void InitMenu();
+  Bool parseMenuFile(FILE *, Rootmenu *);
+  void InitMenu();
 
 private:
-    Blackbox *blackbox;
+  Blackbox *blackbox;
 
-    Bool root_colormap_installed, managed;
+  Bool root_colormap_installed, managed;
 
-    BImageControl *image_control;
-    Configmenu *configmenu;
-    Iconmenu *iconmenu;
-    Rootmenu *rootmenu;
+  BImageControl *image_control;
+  Configmenu *configmenu;
+  Iconmenu *iconmenu;
+  Rootmenu *rootmenu;
 
-    LinkedList<Rootmenu> *rootmenuList;
-    LinkedList<Netizen> *netizenList;
-    LinkedList<BlackboxWindow> *iconList;
+  LinkedList<Rootmenu> *rootmenuList;
+  LinkedList<Netizen> *netizenList;
+  LinkedList<BlackboxWindow> *iconList;
 
 #ifdef    SLIT
-    Slit *slit;
+  Slit *slit;
 #endif // SLIT
 
-    Toolbar *toolbar;
-    Workspace *current_workspace;
-    Workspacemenu *workspacemenu;
+  Toolbar *toolbar;
+  Workspace *current_workspace;
+  Workspacemenu *workspacemenu;
 
-    unsigned int geom_w, geom_h;
-    unsigned long event_mask;
+  unsigned int geom_w, geom_h;
+  unsigned long event_mask;
 
-    XRectangle usableArea;
+  XRectangle usableArea;
 
-    LinkedList<NETStrut> *strutList;
-    LinkedList<char> *workspaceNames;
-    LinkedList<Workspace> *workspacesList;
+  LinkedList<NETStrut> *strutList;
+  LinkedList<char> *workspaceNames;
+  LinkedList<Workspace> *workspacesList;
 
-    struct resource {
-	Bool toolbar_on_top, toolbar_auto_hide, sloppy_focus, auto_raise,
-	    auto_edge_balance, image_dither, ordered_dither, opaque_move, full_max,
-	    focus_new, focus_last;
+  struct resource {
+    Bool toolbar_on_top, toolbar_auto_hide, sloppy_focus, auto_raise,
+      auto_edge_balance, image_dither, ordered_dither, opaque_move, full_max,
+      focus_new, focus_last;
 
-	int workspaces, toolbar_placement, toolbar_width_percent, placement_policy,
-	    edge_snap_threshold, row_direction, col_direction;
+    int workspaces, toolbar_placement, toolbar_width_percent, placement_policy,
+      edge_snap_threshold, row_direction, col_direction;
 
 #ifdef    SLIT
-	Bool slit_on_top, slit_auto_hide;
-	int slit_placement, slit_direction;
+    Bool slit_on_top, slit_auto_hide;
+    int slit_placement, slit_direction;
 #endif // SLIT
 
 #ifdef    HAVE_STRFTIME
-	char *strftime_format;
+    char *strftime_format;
 #else // !HAVE_STRFTIME
-	Bool clock24hour;
-	int date_format;
+    Bool clock24hour;
+    int date_format;
 #endif // HAVE_STRFTIME
 
-    } resource;
+  } resource;
 
-    BStyle _style;
+  BStyle _style;
 };
 
 
