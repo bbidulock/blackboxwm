@@ -28,6 +28,7 @@
 #include "Resource.hh"
 
 #include <X11/Xlib.h>
+#include <ctype.h>
 
 #include <algorithm>
 
