@@ -524,12 +524,7 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
     }
 
     const BlackboxResource &res = _blackbox->resource();
-    if (res.focusLastWindowOnWorkspace()
-        && (!focused_window
-            || focused_window->workspace() != bt::BSENTINEL
-            // these window types shouldn't keep focus
-            || focused_window->windowType() == WindowTypeDesktop
-            || focused_window->windowType() == WindowTypeDock)) {
+    if (res.focusLastWindowOnWorkspace()) {
       Workspace *workspace = findWorkspace(current_workspace);
       assert(workspace != 0);
 
