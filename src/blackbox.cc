@@ -549,12 +549,14 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
     (focused_window) ? focused_window->getClientWindow() : None;
 
   if (active_screen) {
-    active_screen->getToolbar()->redrawWindowLabel();
+    if (active_screen->toolbar())
+      active_screen->toolbar()->redrawWindowLabel();
     _netwm->setActiveWindow(active_screen->screenInfo().rootWindow(), active);
   }
 
   if (old_screen && old_screen != active_screen) {
-    old_screen->getToolbar()->redrawWindowLabel();
+    if (old_screen->toolbar())
+      old_screen->toolbar()->redrawWindowLabel();
     _netwm->setActiveWindow(old_screen->screenInfo().rootWindow(), active);
   }
 }

@@ -127,7 +127,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   // the Slit will be created on demand
   _slit = 0;
 
-  toolbar = new Toolbar(this);
+  _toolbar = new Toolbar(this);
 
   InitMenu();
 
@@ -272,9 +272,9 @@ BScreen::~BScreen(void) {
   delete workspacemenu;
   delete iconmenu;
   delete configmenu;
-  delete toolbar;
 
   destroySlit();
+  destroyToolbar();
 
   blackbox->netwm().removeProperty(screen_info.rootWindow(),
                                    blackbox->netwm().supportingWMCheck());
@@ -376,8 +376,7 @@ void BScreen::reconfigure(void) {
 
   configmenu->reconfigure();
 
-  toolbar->reconfigure();
-
+  if (_toolbar) _toolbar->reconfigure();
   if (_slit) _slit->reconfigure();
 
   std::for_each(workspacesList.begin(), workspacesList.end(),
@@ -447,7 +446,7 @@ unsigned int BScreen::addWorkspace(void) {
 
   workspacemenu->insertWorkspace(wkspc);
 
-  toolbar->reconfigure();
+  if (_toolbar) _toolbar->reconfigure();
 
   blackbox->netwm().setNumberOfDesktops(screen_info.rootWindow(),
                                         workspacesList.size());
@@ -473,7 +472,7 @@ unsigned int BScreen::removeLastWorkspace(void) {
 
   delete wkspc;
 
-  toolbar->reconfigure();
+  if (_toolbar) _toolbar->reconfigure();
 
   blackbox->netwm().setNumberOfDesktops(screen_info.rootWindow(),
                                          workspacesList.size());
@@ -496,7 +495,7 @@ void BScreen::changeWorkspaceID(unsigned int id) {
   current_workspace->show();
 
   workspacemenu->setItemChecked(current_workspace->id() + 3, true);
-  toolbar->redrawWorkspaceLabel();
+  if (_toolbar) _toolbar->redrawWorkspaceLabel();
 
   blackbox->netwm().setCurrentDesktop(screen_info.rootWindow(),
                                        current_workspace->id());
@@ -597,8 +596,8 @@ BScreen::raiseWindows(const bt::Netwm::WindowList* const workspace_stack) {
   std::vector<Window> session_stack(workspace_stack_size + 2);
   std::back_insert_iterator<std::vector<Window> > it(session_stack);
 
-  if (toolbar->isOnTop())
-    *(it++) = toolbar->getWindowID();
+  if (_toolbar && _toolbar->isOnTop())
+    *(it++) = _toolbar->getWindowID();
 
   if (_slit && _slit->isOnTop())
     *(it++) = _slit->getWindowID();
@@ -641,8 +640,8 @@ void BScreen::propagateWindowName(const BlackboxWindow *w) {
     clientmenu->changeItem(w->getWindowNumber(),
                            bt::ellideText(w->getTitle(), 60, "..."));
 
-    if (blackbox->getFocusedWindow() == w)
-      toolbar->redrawWindowLabel();
+    if (_toolbar && blackbox->getFocusedWindow() == w)
+      _toolbar->redrawWindowLabel();
   } else {
     iconmenu->changeItem(w->getWindowNumber(), w->getIconTitle());
   }
@@ -1428,7 +1427,7 @@ BlackboxWindow* BScreen::getWindow(unsigned int workspace, unsigned int id) {
 
 
 void BScreen::createSlit(void) {
-  if (_slit) return;
+  assert(_slit == 0);
 
   _slit = new Slit(this);
   raiseWindows(0);
@@ -1436,8 +1435,20 @@ void BScreen::createSlit(void) {
 
 
 void BScreen::destroySlit(void) {
-  if (!_slit) return;
-
   delete _slit;
   _slit = 0;
+}
+
+
+void BScreen::createToolbar(void) {
+  assert(_toolbar == 0);
+
+  _toolbar = new Toolbar(this);
+  raiseWindows(0);
+}
+
+
+void BScreen::destroyToolbar(void) {
+  delete _toolbar;
+  _toolbar = 0;
 }

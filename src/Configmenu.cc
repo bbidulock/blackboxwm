@@ -79,6 +79,7 @@ enum {
   FocusNewWindows,
   FocusLastWindowOnWorkspace,
   DisableBindings,
+  DisableToolbar,
   ClickToFocus,
   SloppyFocus,
   AutoRaise,
@@ -120,6 +121,7 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuDisableBindings,
                       "Disable Bindings with Scroll Lock"),
              DisableBindings);
+  insertItem("Disable Toolbar", DisableToolbar);
 }
 
 
@@ -130,6 +132,7 @@ void Configmenu::refresh(void) {
   setItemChecked(FocusNewWindows, res.doFocusNew());
   setItemChecked(FocusLastWindowOnWorkspace, res.doFocusLast());
   setItemChecked(DisableBindings, res.allowScrollLock());
+  setItemChecked(DisableToolbar, _bscreen->toolbar() == 0);
 }
 
 
@@ -156,6 +159,14 @@ void Configmenu::itemClicked(unsigned int id, unsigned int) {
     res.saveAllowScrollLock(! res.allowScrollLock());
     _bscreen->reconfigure();
     break;
+
+  case DisableToolbar:
+    if (_bscreen->toolbar())
+      _bscreen->destroyToolbar();
+    else
+      _bscreen->createToolbar();
+    break;
+
   default:
     return;
   } // switch

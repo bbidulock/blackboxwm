@@ -64,7 +64,7 @@ private:
   BlackboxWindowList iconList, windowList;
 
   Slit *_slit;
-  Toolbar *toolbar;
+  Toolbar *_toolbar;
   Workspace *current_workspace;
   unsigned int current_workspace_id;
   Workspacemenu *workspacemenu;
@@ -116,12 +116,15 @@ public:
 
   Rootmenu *getRootmenu(void) { return rootmenu; }
 
-  inline Slit *slit(void)
+  inline Slit *slit(void) const
   { return _slit; }
   void createSlit(void);
   void destroySlit(void);
 
-  Toolbar *getToolbar(void) { return toolbar; }
+  inline Toolbar *toolbar(void) const
+  { return _toolbar; }
+  void createToolbar(void);
+  void destroyToolbar(void);
 
   Workspace *getWorkspace(unsigned int index) const;
 
