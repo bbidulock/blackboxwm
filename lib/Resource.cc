@@ -154,7 +154,7 @@ namespace bt {
     char *value_type;
     if (XrmGetResource(db, name, classname, &value_type, &value)) {
       double output;
-      sscanf(value.addr, "%f", &output);
+      sscanf(value.addr, "%lf", &output);
       return output;
     }
     return default_value;
