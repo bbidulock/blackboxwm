@@ -9,11 +9,11 @@ netwm:
 * if we have N workspaces NET_DESKTOP_NAMES could supply us with N+M
   names.  When we create a new workspace we should consult this list.
 
-* support for wm_window_type is in we just need to actually use it
+* always on top/bottom support, layers, omnipresence, etc
 
-* support all wm_state's
+* update ALLOWED_ACTIONS when required
 
-* always on top/bottom support, layers, etc
+* if we find a window with no title, set VISIBLE_NAME
 
 refactoring:
 -----------------------------
@@ -21,15 +21,14 @@ refactoring:
 
 warts:
 -----------------------------
-* vnc in full screen mode does not get focus
+* vnc in full screen mode does not get focus, but apparently works
+  with openbox
 
 Stuff TODO or On The Way(tm):
 -----------------------------
 ADD: use a fullscreen window with no background color/pixmap to hide
      flicker when switching to/from a workspaces with fullscreen and/or
      maximized windows.
-
-ADD: proper support for omnipresent windows
 
 CHANGE: sigaction is defined by POSIX.1, so we should drop the older
         signal mechanism for easier code maintenance.  anyone with
@@ -48,11 +47,15 @@ ADD: subdirs in stylesmenu/dir will create a new submenu
 ADD: UTF8 support
 
 CHANGE: when workspace name is greater than the width of its text area the
-	toolbar gets very ugly
+	toolbar gets very ugly.  Elliding code was recently added for
+        the menus, perhaps we should abstract it.
 
 CHANGE: rework the .blackboxrc resources so that they give a more
         uniform behavior across screens. (Still not sure how I want
 	to do this, so it'll have to wait.)
+
+CHANGE: allow blackboxrc to be editing while the wm is running without
+        losing changes
 
 ADD: get volunteers to translate blackbox into other languages
 
