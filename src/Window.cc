@@ -873,10 +873,11 @@ void BlackboxWindow::getWMProtocols(void) {
       if (proto[i] == blackbox->getWMDeleteAtom()) {
         decorations |= Decor_Close;
         functions |= Func_Close;
-      } else if (proto[i] == blackbox->getWMTakeFocusAtom())
+      } else if (proto[i] == blackbox->getWMTakeFocusAtom()) {
         flags.send_focus_message = True;
-      else if (proto[i] == blackbox->getBlackboxStructureMessagesAtom())
+      } else if (proto[i] == blackbox->getBlackboxStructureMessagesAtom()) {
         screen->addNetizen(new Netizen(screen, client.window));
+      }
     }
 
     XFree(proto);
@@ -1429,8 +1430,6 @@ void BlackboxWindow::iconify(void) {
   XSelectInput(blackbox->getXDisplay(), client.window,
                PropertyChangeMask | FocusChangeMask | StructureNotifyMask);
   XUngrabServer(blackbox->getXDisplay());
-
-
 }
 
 
@@ -1527,7 +1526,7 @@ void BlackboxWindow::maximize(unsigned int button) {
     blackbox_attrib.premax_x = blackbox_attrib.premax_y = 0;
     blackbox_attrib.premax_w = blackbox_attrib.premax_h = 0;
 
-    redrawAllButtons();
+    redrawAllButtons(); // in case it is not called in configure()
     setState(current_state);
     return;
   }
@@ -1541,7 +1540,6 @@ void BlackboxWindow::maximize(unsigned int button) {
 
   const Rect &screen_area = screen->availableArea();
   frame.changing = screen_area;
-  constrain(TopLeft);
 
   switch(button) {
   case 1:
@@ -1566,6 +1564,8 @@ void BlackboxWindow::maximize(unsigned int button) {
     break;
   }
 
+  constrain(TopLeft);
+
   if (flags.shaded) {
     blackbox_attrib.flags ^= AttribShaded;
     blackbox_attrib.attrib ^= AttribShaded;
@@ -1576,14 +1576,14 @@ void BlackboxWindow::maximize(unsigned int button) {
 
   configure(frame.changing.x(), frame.changing.y(),
             frame.changing.width(), frame.changing.height());
-  redrawAllButtons();
+  redrawAllButtons(); // in case it is not called in configure()
   setState(current_state);
 }
 
 
 // re-maximizes the window to take into account availableArea changes
 void BlackboxWindow::remaximize(void) {
-  if (flags.shaded) return;
+  if (flags.shaded) return; // otherwise we lose the shade bit
 
   // save the original dimensions because maximize will wipe them out
   int premax_x = blackbox_attrib.premax_x,
@@ -1628,7 +1628,7 @@ void BlackboxWindow::shade(void) {
     setState(NormalState);
   } else {
     if (! (decorations & Decor_Titlebar))
-      return;
+      return; // can't shade it without a titlebar!
 
     XResizeWindow(blackbox->getXDisplay(), frame.window,
                   frame.inside_w, frame.title_h);
@@ -1742,7 +1742,6 @@ void BlackboxWindow::redrawWindowFrame(void) const {
       XSetWindowBorder(blackbox->getXDisplay(),
                        frame.plate, frame.uborder_pixel);
   }
-
 }
 
 
@@ -1769,8 +1768,8 @@ void BlackboxWindow::installColormap(bool install) {
   int i = 0, ncmap = 0;
   Colormap *cmaps = XListInstalledColormaps(blackbox->getXDisplay(),
                                             client.window, &ncmap);
-  XWindowAttributes wattrib;
   if (cmaps) {
+    XWindowAttributes wattrib;
     if (XGetWindowAttributes(blackbox->getXDisplay(),
                              client.window, &wattrib)) {
       if (install) {
@@ -1914,7 +1913,7 @@ void BlackboxWindow::restoreAttributes(void) {
     if (flags.maximized) remaximize();
   }
 
-  // with the state set it will then be the map events job to read the
+  // with the state set it will then be the map event's job to read the
   // window's state and behave accordingly
 
   XFree((void *) net);
@@ -1925,8 +1924,7 @@ void BlackboxWindow::restoreAttributes(void) {
  * Positions the Rect r according the the client window position and
  * window gravity.
  */
-void BlackboxWindow::applyGravity(Rect &r)
-{
+void BlackboxWindow::applyGravity(Rect &r) {
   // apply horizontal window gravity
   switch (client.win_gravity) {
   default:
@@ -1989,8 +1987,7 @@ void BlackboxWindow::applyGravity(Rect &r)
  * Positions the Rect r according to the frame window position and
  * window gravity.
  */
-void BlackboxWindow::restoreGravity(Rect &r)
-{
+void BlackboxWindow::restoreGravity(Rect &r) {
   // restore horizontal window gravity
   switch (client.win_gravity) {
   default:
