@@ -39,7 +39,8 @@ libbt_la_SOURCES = 	Application.cc					\
 			Texture.cc					\
 			Timer.cc					\
 			Unicode.cc					\
-			Util.cc
+			Util.cc						\
+			XDG.cc
 
 libbtdir = $(includedir)/bt
 libbt_HEADERS = 	Application.hh					\
@@ -58,7 +59,8 @@ libbt_HEADERS = 	Application.hh					\
 			Texture.hh					\
 			Timer.hh					\
 			Unicode.hh					\
-			Util.hh
+			Util.hh						\
+			XDG.hh
 
 libbt_la_LIBADD =	@ICONV@ @LOCALE@
 
