@@ -301,7 +301,6 @@ search_xv()
 rm_tmpfiles()
 {
     [ -f $TMPFILE ] && rm -f $TMPFILE
-    [ -f $TMPFILE2 ] && rm -f $TMPFILE2
 }
 
 
@@ -324,8 +323,6 @@ create_config()
 	*)
 	    echo "$NAME: $CONFIG not found, creating..."
     esac
-
-    rm_tmpfiles
 
     for app in $IMAGE_APPS; do
 	search_$app
@@ -354,10 +351,9 @@ create_config()
     echo "DEFAULT=\"$DEFAULT\"" >> $CONFIG
     echo >> $CONFIG
  
-    cat $TMPFILE | grep -v $APP > $TMPFILE2
-    cat "$TMPFILE2" >> $CONFIG
+    cat $TMPFILE | grep -v $APP >> $CONFIG
 
-    rm -f $TMPFILE $TMPFILE2
+    rm -f $TMPFILE
 
     if [ -f $CONFIG ]; then
 	echo "$NAME: default configuration was created in $CONFIG."
@@ -512,7 +508,7 @@ check_image()
 	    esac
     esac
 
-    if [ ! -e "$IMAGE" ]; then
+    if [ ! -f "$IMAGE" ]; then
 	error_msg $NUM  
     else
 	IMAGE_EXISTS=yes
@@ -600,16 +596,29 @@ debug()
     echo
 }
 
+create_tempfile() {
+    if `type tempfile 2>&1 >/dev/null`; then
+        THETMP=`tempfile --prefix=bsetbg`
+    elif `type mktemp 2>&1 >/dev/null`; then
+        THETMP=`mktemp -t bsetbg`
+    else
+        THETMP=/tmp/.bsetbg.$$
+        if [ -f $THETMP ]; then
+            rm -f $THETMP
+            chmod 600 $THETMP
+        fi
+    fi
+    TMPFILE=$THETMP
+}
+
 IMAGE_APPS="display Esetroot wmsetbg xv xli qiv"
 CONFIG="$HOME/.bsetbgrc"
 NAME=bsetbg
 VERSION=1.12
 MORE="(C) 2000 by lordzork industries (http://lordzork.com/)"
 PATH=$PATH:/usr/bin:/usr/local/bin:/usr/X11R6/bin:/usr/X11/bin
-TMPFILE=/tmp/bsetbg.1
-TMPFILE2=/tmp/bsetbg.2
 ARGUMENT=$1
-
+create_tempfile
 
 case `which grep 2>&1` in */*grep) : ;;
     *)
