@@ -806,7 +806,7 @@ void Basemenu::showSubmenu( const Rect &r, const Item &item )
   int py = y() + r.y() - 1;
   bool on_left = false;
 
-  if ( parent_menu && parent_menu->x() > x() )
+  if ( parent_menu && parent_menu->isVisible() && parent_menu->x() > x() )
     on_left = true;
   // move the submenu to the left side of the menu, where there is hopefully more space
   if ( px + item.submenu()->width() > scr->width() || on_left )
