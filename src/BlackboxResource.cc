@@ -81,6 +81,7 @@ void BlackboxResource::load(Blackbox& blackbox) {
 
   cache_max = res.read("session.cacheMax", "Session.CacheMax", 200l);
 
+  bt::DitherMode dither_mode;
   std::string tmp = res.read("session.imageDither", "Session.ImageDither",
                              "OrderedDither");
   if (! strcasecmp("ordereddither", tmp.c_str()))
@@ -91,6 +92,7 @@ void BlackboxResource::load(Blackbox& blackbox) {
     dither_mode = bt::NoDither;
   else
     dither_mode = bt::OrderedDither;
+  bt::Image::setDitherMode(dither_mode);
 
   cursor.session = XCreateFontCursor(blackbox.XDisplay(), XC_left_ptr);
   cursor.move = XCreateFontCursor(blackbox.XDisplay(), XC_fleur);

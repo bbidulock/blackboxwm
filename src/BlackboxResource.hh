@@ -32,10 +32,10 @@ extern "C" {
 }
 
 #include <string>
+#include <vector>
 
 #include "Color.hh"
 #include "Font.hh"
-#include "Image.hh"
 #include "Texture.hh"
 #include "Util.hh"
 
@@ -197,7 +197,6 @@ private:
   Time double_click_interval;
   timeval auto_raise_delay;
   unsigned long cache_life, cache_max;
-  bt::DitherMode dither_mode;
 
 public:
   BlackboxResource(const std::string& rc);
@@ -226,7 +225,6 @@ public:
   const timeval& autoRaiseDelay(void) const   { return auto_raise_delay;      }
   unsigned long cacheLife(void) const         { return cache_life;            }
   unsigned long cacheMax(void) const          { return cache_max;             }
-  bt::DitherMode ditherMode(void) const       { return dither_mode;       }
 };
 
 #endif
