@@ -6,9 +6,11 @@
 
 namespace bt
 {
+  // returns true if the system supports Unicode conversions
   bool hasUnicode();
 
-  typedef std::basic_string<wchar_t> ustring;
+  // unicode string type
+  typedef std::basic_string<unsigned int> ustring;
 
   // converts multibyte locale-encoded string to wide-char Unicode
   // string (aka UTF-32)

@@ -6,15 +6,41 @@
 #endif
 
 #include <iconv.h>
-#ifdef HAVE_NL_LANGINFO
-#  include <langinfo.h>
-#endif
 #include <locale.h>
 #include <stdio.h>
 
 namespace bt {
 
   static const iconv_t invalid = reinterpret_cast<iconv_t>(-1);
+
+  static unsigned int byte_swap(unsigned int c) {
+    wchar_t ret;
+    int x = sizeof(wchar_t);
+    char *s = reinterpret_cast<char *>(&c);
+    char *d = reinterpret_cast<char *>(&ret) + x - 1;
+    while (x-- > 0)
+      *d-- = *s++;
+    return ret;
+  }
+
+  static ustring native_endian(const ustring &string) {
+    if (string.empty())
+      return string;
+    if (*string.begin() == 0x0000feff) {
+      // begins with BOM in native endian
+      return ustring(string.begin() + 1, string.end());
+    } else if (*string.begin() == 0xfffe0000) {
+      // BOM is byte swapped, convert to native endian
+      ustring ret = ustring(string.begin() + 1, string.end());
+      ustring::iterator it = ret.begin();
+      const ustring::iterator end = ret.end();
+      for (; it != end; ++it)
+        *it = byte_swap(*it);
+      return ret;
+    } else {
+      return string;
+    }
+  }
 
   template <typename _Source, typename _Target>
   static void convert(const char *target, const char *source,
@@ -23,15 +49,16 @@ namespace bt {
 
     const char *inp = reinterpret_cast<const char *>(in.c_str());
     const typename _Source::size_type in_size =
-      in.size() * sizeof(typename _Source::size_type);
+      in.size() * sizeof(typename _Source::value_type);
     typename _Source::size_type in_bytes = in_size;
 
     out.resize(in_size);
 
     char *outp =
-      reinterpret_cast<char *>(const_cast<typename _Target::value_type *>(out.c_str()));
+      reinterpret_cast<char *>
+      (const_cast<typename _Target::value_type *>(out.c_str()));
     typename _Target::size_type out_size =
-      out.size() * sizeof(typename _Target::size_type);
+      out.size() * sizeof(typename _Target::value_type);
     typename _Target::size_type out_bytes = out_size;
 
     do {
@@ -51,9 +78,11 @@ namespace bt {
           {
             const typename _Target::size_type off = out_size - out_bytes;
             out.resize(out.size() * 2);
-            out_size = out.size() * sizeof(typename _Target::size_type);
+            out_size = out.size() * sizeof(typename _Target::value_type);
 
-            outp = reinterpret_cast<char *>(const_cast<typename _Target::value_type *>(out.c_str())) + off;
+            outp =
+              reinterpret_cast<char *>
+              (const_cast<typename _Target::value_type *>(out.c_str())) + off;
             out_bytes = out_size - off;
             break;
           }
@@ -64,7 +93,7 @@ namespace bt {
       }
     } while (in_bytes != 0);
 
-    out.resize((out_size - out_bytes) / sizeof(typename _Target::size_type));
+    out.resize((out_size - out_bytes) / sizeof(typename _Target::value_type));
   }
 
 } // namespace bt
@@ -75,6 +104,8 @@ bool bt::hasUnicode() {
 
   if (done)
     return has_unicode;
+
+  setlocale(LC_ALL, "");
 
   struct {
     const char *to;
@@ -108,7 +139,7 @@ bt::ustring bt::toUnicode(const std::string &string) {
     return ret;
   ret.reserve(string.size());
   convert("UTF-32", "", string, ret);
-  return ret;
+  return native_endian(ret);
 }
 
 std::string bt::toLocale(const bt::ustring &string) {
@@ -125,7 +156,7 @@ std::string bt::toUtf8(const bt::ustring &utf32) {
   if (!hasUnicode())
     return ret;
   ret.reserve(utf32.size());
-  convert("UTF-32", "UTF-8", utf32, ret);
+  convert("UTF-8", "UTF-32", utf32, ret);
   return ret;
 }
 
@@ -134,6 +165,6 @@ bt::ustring bt::toUtf32(const std::string &utf8) {
   if (!hasUnicode())
     return ret;
   ret.reserve(utf8.size());
-  convert("UTF-8", "UTF-32", utf8, ret);
-  return ret;
+  convert("UTF-32", "UTF-8", utf8, ret);
+  return native_endian(ret);
 }
