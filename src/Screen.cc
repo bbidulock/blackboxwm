@@ -705,13 +705,14 @@ void BScreen::raiseWindow(StackEntity *entity) {
   BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(top);
   if (win) {
     // walk up the transient_for's to the window that is not a transient
-    BlackboxWindow *tmp = win;
-    while (tmp->isTransient()) {
-      tmp = tmp->getTransientFor();
+    BlackboxWindow *w = win;
+    while (w->isTransient()) {
+      BlackboxWindow *tmp = w->getTransientFor();
       if (!tmp || tmp == win)
         break;
+      w = tmp;
     }
-    win = tmp;
+    win = w;
 
     if (win->isFullScreen() && win->layer() != StackingList::LayerFullScreen) {
       // move full-screen windows over all other windows when raising
@@ -788,13 +789,14 @@ void BScreen::lowerWindow(StackEntity *entity) {
   BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(top);
   if (win) {
     // walk up the transient_for's to the window that is not a transient
-    BlackboxWindow *tmp = win;
-    while (tmp->isTransient()) {
-      tmp = tmp->getTransientFor();
+    BlackboxWindow *w = win;
+    while (w->isTransient()) {
+      BlackboxWindow *tmp = w->getTransientFor();
       if (!tmp || tmp == win)
         break;
+      w = tmp;
     }
-    win = tmp;
+    win = w;
     top = win;
   }
 
