@@ -24,8 +24,10 @@
 #ifndef __Util_hh
 #define __Util_hh
 
+extern "C" {
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+}
 
 #include <string>
 
@@ -41,8 +43,8 @@ namespace bt {
   class Rect {
   public:
     inline Rect(void) : _x1(0), _y1(0), _x2(0), _y2(0) { }
-    inline Rect(int x, int y, unsigned int w, unsigned int h)
-      : _x1(x), _y1(y), _x2(w + x - 1), _y2(h + y - 1) { }
+    inline Rect(int x_, int y_, unsigned int w, unsigned int h)
+      : _x1(x_), _y1(y_), _x2(w + x_ - 1), _y2(h + y_ - 1) { }
     inline explicit Rect(const XRectangle& xrect)
       : _x1(xrect.x), _y1(xrect.y), _x2(xrect.width + xrect.x - 1),
         _y2(xrect.height + xrect.y - 1) { }
@@ -54,9 +56,9 @@ namespace bt {
 
     inline int x(void) const { return _x1; }
     inline int y(void) const { return _y1; }
-    void setX(int x);
-    void setY(int y);
-    void setPos(int x, int y);
+    void setX(int x_);
+    void setY(int y_);
+    void setPos(int x_, int y_);
 
     inline unsigned int width(void) const { return _x2 - _x1 + 1; }
     inline unsigned int height(void) const { return _y2 - _y1 + 1; }
@@ -64,7 +66,7 @@ namespace bt {
     void setHeight(unsigned int h);
     void setSize(unsigned int w, unsigned int h);
 
-    void setRect(int x, int y, unsigned int w, unsigned int h);
+    void setRect(int x_, int y_, unsigned int w, unsigned int h);
 
     void setCoords(int l, int t, int r, int b);
 
@@ -80,6 +82,7 @@ namespace bt {
     inline bool valid(void) const { return _x2 > _x1 && _y2 > _y1; }
 
     bool intersects(const Rect &a) const;
+    bool contains(int x_, int y_) const;
 
   private:
     int _x1, _y1, _x2, _y2;
@@ -94,7 +97,7 @@ namespace bt {
 
   std::string textPropertyToString(Display *display, XTextProperty& text_prop);
 
-  timeval normalizeTimeval(const ::timeval &tm);
+  ::timeval normalizeTimeval(const ::timeval &tm);
 
   struct PointerAssassin {
     template<typename T>

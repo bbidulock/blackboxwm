@@ -69,24 +69,24 @@ std::string basename (const std::string& path) {
 #endif // HAVE_BASENAME
 
 
-void bt::Rect::setX(int x) {
-  _x2 += x - _x1;
-  _x1 = x;
+void bt::Rect::setX(int x_) {
+  _x2 += x_ - _x1;
+  _x1 = x_;
 }
 
 
-void bt::Rect::setY(int y)
+void bt::Rect::setY(int y_)
 {
-  _y2 += y - _y1;
-  _y1 = y;
+  _y2 += y_ - _y1;
+  _y1 = y_;
 }
 
 
-void bt::Rect::setPos(int x, int y) {
-  _x2 += x - _x1;
-  _x1 = x;
-  _y2 += y - _y1;
-  _y1 = y;
+void bt::Rect::setPos(int x_, int y_) {
+  _x2 += x_ - _x1;
+  _x1 = x_;
+  _y2 += y_ - _y1;
+  _y1 = y_;
 }
 
 
@@ -106,8 +106,8 @@ void bt::Rect::setSize(unsigned int w, unsigned int h) {
 }
 
 
-void bt::Rect::setRect(int x, int y, unsigned int w, unsigned int h) {
-  *this = bt::Rect(x, y, w, h);
+void bt::Rect::setRect(int x_, int y_, unsigned int w, unsigned int h) {
+  *this = bt::Rect(x_, y_, w, h);
 }
 
 
@@ -146,6 +146,12 @@ bt::Rect bt::Rect::operator&(const bt::Rect &a) const {
 bool bt::Rect::intersects(const bt::Rect &a) const {
   return std::max(_x1, a._x1) <= std::min(_x2, a._x2) &&
          std::max(_y1, a._y1) <= std::min(_y2, a._y2);
+}
+
+
+bool bt::Rect::contains(int x_, int y_) const {
+  return x_ >= _x1 && x_ <= _x2 &&
+         y_ >= _y1 && y_ <= _y2;
 }
 
 
@@ -201,8 +207,8 @@ std::string bt::textPropertyToString(Display *display,
 }
 
 
-timeval bt::normalizeTimeval(const timeval &tm) {
-  timeval ret = tm;
+::timeval normalizeTimeval(const ::timeval &tm) {
+  ::timeval ret = tm;
 
   while (ret.tv_usec < 0) {
     if (ret.tv_sec > 0) {
