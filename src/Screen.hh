@@ -340,6 +340,7 @@ public:
   void addWorkspaceName(const std::string& name);
   const std::string getNameOfWorkspace(unsigned int id);
   void changeWorkspaceID(unsigned int id);
+  void getDesktopNames(void);
 
   void addNetizen(Netizen *n);
   void removeNetizen(Window w);

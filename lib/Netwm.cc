@@ -117,6 +117,25 @@ void Netwm::setDesktopNames(Window target, const std::string& names) const {
 }
 
 
+std::vector<std::string> Netwm::readDesktopNames(Window target) const {
+  std::string names;
+  std::vector<std::string> ret;
+
+  if (getUTF8StringProperty(target, net_desktop_names, names) &&
+      ! names.empty()) {
+    std::string::iterator it = names.begin(), end = names.end(), tmp = it;
+    for (; it != end; ++it) {
+      if (*it == '\0') {
+        ret.push_back(std::string(tmp, it));
+        tmp = it;
+      }
+    }
+  }
+
+  return ret;
+}
+
+
 void Netwm::setActiveWindow(Window target, Window data) const {
   XChangeProperty(display, target, net_active_window, XA_WINDOW,
                   32, PropModeReplace,

@@ -373,6 +373,10 @@ void Blackbox::process_event(XEvent *e) {
               screen->removeLastWorkspace();
           }
         }
+      } else if (e->xclient.message_type == netwm()->desktopNames()) {
+        BScreen *screen = findScreen(e->xclient.window);
+        if (screen)
+          screen->getDesktopNames();
       } else if (e->xclient.message_type ==
                  getBlackboxChangeWindowFocusAtom()) {
         BlackboxWindow *win = findWindow(e->xclient.window);

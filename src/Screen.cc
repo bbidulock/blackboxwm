@@ -2150,3 +2150,22 @@ void BScreen::updateClientListHint(void) const {
   blackbox->netwm()->setClientList(getRootWindow(), &clientList[0],
                                    clientList.size());
 }
+
+
+void BScreen::getDesktopNames(void) {
+  const std::vector<std::string> names =
+    blackbox->netwm()->readDesktopNames(getRootWindow());
+
+  std::vector<std::string>::const_iterator it = names.begin(),
+    end = names.end();
+  WorkspaceList::iterator wit = workspacesList.begin(),
+    wend = workspacesList.end();
+
+  for (; wit != wend && it != end; ++wit, ++it) {
+    if ((*wit)->getName() != *it)
+      (*wit)->setName(*it);
+  }
+
+  if (names.size() < workspacesList.size())
+    updateDesktopNamesHint();
+}

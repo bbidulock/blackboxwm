@@ -30,6 +30,7 @@ extern "C" {
 }
 
 #include <string>
+#include <vector>
 
 class Netwm {
 public:
@@ -56,6 +57,7 @@ public:
                           unsigned int width, unsigned int height) const;
   void setCurrentDesktop(Window target, unsigned int number) const;
   void setDesktopNames(Window target, const std::string& names) const;
+  std::vector<std::string> readDesktopNames(Window target) const;
   void setActiveWindow(Window target, Window data) const;
   void setWorkarea(Window target, unsigned long workarea[],
                    unsigned int count) const;
