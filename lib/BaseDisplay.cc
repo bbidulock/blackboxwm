@@ -165,11 +165,9 @@ static void signalhandler(int sig)
 }
 
 
-BaseDisplay::BaseDisplay(const char *app_name, const char *dpy_name) {
-  application_name = app_name;
-
-  run_state = STARTUP;
-
+BaseDisplay::BaseDisplay(const char *app_name, const char *dpy_name)
+  : run_state(STARTUP), gccache(0), application_name(app_name)
+{
   ::base_display = this;
 
 #ifdef    HAVE_SIGACTION
@@ -204,8 +202,6 @@ BaseDisplay::BaseDisplay(const char *app_name, const char *dpy_name) {
     ::exit(2);
   if (fcntl(ConnectionNumber(display), F_SETFD, 1) == -1)
     ::exit(2);
-
-  display_name = XDisplayName(dpy_name);
 
 #ifdef    SHAPE
   shape.extensions = XShapeQueryExtension(display, &shape.event_basep,
@@ -257,8 +253,6 @@ BaseDisplay::BaseDisplay(const char *app_name, const char *dpy_name) {
   MaskListLength = sizeof(MaskList) / sizeof(MaskList[0]);
 
   if (modmap) XFreeModifiermap(const_cast<XModifierKeymap*>(modmap));
-
-  gccache = (BGCCache*) 0;
 }
 
 

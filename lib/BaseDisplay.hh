@@ -65,7 +65,7 @@ public:
   inline Colormap getColormap(void) const { return colormap; }
   inline int getDepth(void) const { return depth; }
   inline unsigned int getScreenNumber(void) const
-    { return screen_number; }
+  { return screen_number; }
   inline const Rect& getRect(void) const { return rect; }
   inline unsigned int getWidth(void) const { return rect.width(); }
   inline unsigned int getHeight(void) const { return rect.height(); }
@@ -95,7 +95,7 @@ private:
   ScreenInfoList screenInfoList;
   TimerQueue timerList;
 
-  const char *display_name, *application_name;
+  const char *application_name;
 
   // no copying!
   BaseDisplay(const BaseDisplay &);
@@ -127,23 +127,21 @@ public:
   BGCCache *gcCache(void) const;
 
   inline bool hasShapeExtensions(void) const
-    { return shape.extensions; }
+  { return shape.extensions; }
   inline bool doShutdown(void) const
-    { return run_state == SHUTDOWN; }
+  { return run_state == SHUTDOWN; }
   inline bool isStartup(void) const
-    { return run_state == STARTUP; }
+  { return run_state == STARTUP; }
 
   inline Display *getXDisplay(void) const { return display; }
 
-  inline const char *getXDisplayName(void) const
-    { return display_name; }
   inline const char *getApplicationName(void) const
-    { return application_name; }
+  { return application_name; }
 
   inline unsigned int getNumberOfScreens(void) const
-    { return screenInfoList.size(); }
+  { return screenInfoList.size(); }
   inline int getShapeEventBase(void) const
-    { return shape.event_basep; }
+  { return shape.event_basep; }
 
   inline void shutdown(void) { run_state = SHUTDOWN; }
   inline void run(void) { run_state = RUNNING; }
@@ -169,7 +167,7 @@ public:
   /*
     Inserts the EventHandler {handler} for Window {window}.  All
     events generated for {window} will be sent through {handler}.
-   */
+  */
   void insertEventHandler(Window window, EventHandler *handler);
   /*
     Removes all EventHandlers for Window {window}.
