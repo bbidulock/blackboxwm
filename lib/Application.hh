@@ -32,6 +32,7 @@
 #include <map>
 
 namespace bt {
+
   // forward declaration
   class EventHandler;
   class Menu;
@@ -41,11 +42,10 @@ namespace bt {
     enum RunState { STARTUP, RUNNING, SHUTDOWN, FATAL_SIGNAL };
 
   private:
-    struct BShape {
+    struct {
       bool extensions;
       int event_basep, error_basep;
-    };
-    BShape shape;
+    } shape;
 
     Display _display;
     std::string _app_name;
