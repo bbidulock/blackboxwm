@@ -29,9 +29,9 @@ class Basemenu;
 class BasemenuItem;
 
 class Blackbox;
+class BImageControl;
 
 #include "LinkedList.hh"
-#include "graphics.hh"
 
 // base menu class... it is inherited for sessions, windows, and workspaces
 class Basemenu {
@@ -39,6 +39,7 @@ private:
   LinkedList<BasemenuItem> *menuitems;
   Blackbox *blackbox;
   Basemenu *parent;
+  BImageControl *image_ctrl;
 
   Bool moving, visible, movable, user_moved, default_menu, title_vis, shifted;
   Display *display;

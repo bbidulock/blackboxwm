@@ -51,6 +51,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window) {
   
   blackbox = ctrl;
   display = ctrl->control();
+  image_ctrl = blackbox->imageControl();
   client.window = window;
 
   frame.window = frame.title = frame.handle = frame.border =
@@ -111,7 +112,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window) {
     
 #ifdef MWM_HINTS
     
-    // fixme
+    
     
 #endif // MWM_HINTS
     
@@ -260,12 +261,12 @@ BlackboxWindow::~BlackboxWindow(void) {
   
   if (frame.title != None) {
     if (frame.ftitle) {
-      blackbox->removeImage(frame.ftitle);
+      image_ctrl->removeImage(frame.ftitle);
       frame.ftitle = None;
     }
     
     if (frame.utitle) {
-      blackbox->removeImage(frame.utitle);
+      image_ctrl->removeImage(frame.utitle);
       frame.utitle = None;
     }
     
@@ -275,17 +276,17 @@ BlackboxWindow::~BlackboxWindow(void) {
   
   if (frame.handle != None) {
     if (frame.fhandle) {
-      blackbox->removeImage(frame.fhandle);
+      image_ctrl->removeImage(frame.fhandle);
       frame.fhandle = None;
     }
     
     if (frame.uhandle) {
-      blackbox->removeImage(frame.uhandle);
+      image_ctrl->removeImage(frame.uhandle);
       frame.uhandle = None;
     }
 
     if (frame.rhandle) {
-      blackbox->removeImage(frame.rhandle);
+      image_ctrl->removeImage(frame.rhandle);
       frame.rhandle = None;
     }
 
@@ -297,7 +298,7 @@ BlackboxWindow::~BlackboxWindow(void) {
   
   if (frame.border != None) {
     if (frame.frame) {
-      blackbox->removeImage(frame.frame);
+      image_ctrl->removeImage(frame.frame);
       frame.frame = None;
     }
     
@@ -306,17 +307,17 @@ BlackboxWindow::~BlackboxWindow(void) {
   }
   
   if (frame.fbutton != None) {
-    blackbox->removeImage(frame.fbutton);
+    image_ctrl->removeImage(frame.fbutton);
     frame.fbutton = None;
   }
 
   if (frame.ubutton != None) {
-    blackbox->removeImage(frame.ubutton);
+    image_ctrl->removeImage(frame.ubutton);
     frame.ubutton = None;
   }
 
   if (frame.pbutton != None) {
-    blackbox->removeImage(frame.pbutton);
+    image_ctrl->removeImage(frame.pbutton);
     frame.pbutton = None;
   }
 
@@ -479,39 +480,40 @@ void BlackboxWindow::associateClientWindow(void) {
 
 void BlackboxWindow::createDecorations(void) {
   frame.ftitle =
-    blackbox->renderImage(frame.title_w, frame.title_h,
+    image_ctrl->renderImage(frame.title_w, frame.title_h,
 			  blackbox->wResource()->decoration.ftexture,
 			  blackbox->wResource()->decoration.fcolor,
 			  blackbox->wResource()->decoration.fcolorTo);
   frame.utitle =
-    blackbox->renderImage(frame.title_w, frame.title_h,
+    image_ctrl->renderImage(frame.title_w, frame.title_h,
 			  blackbox->wResource()->decoration.utexture,
 			  blackbox->wResource()->decoration.ucolor,
 			  blackbox->wResource()->decoration.ucolorTo);
 
   if (! transient) {
     frame.frame =
-      blackbox->renderSolidImage(frame.border_w, frame.border_h,
-				 blackbox->wResource()->frame.texture|
-				 BImageNoDitherSolid,
-				 blackbox->wResource()->frame.color);
+      image_ctrl->renderImage(frame.border_w, frame.border_h,
+			      blackbox->wResource()->frame.texture|
+			      BImage_NoDitherSolid,
+			      blackbox->wResource()->frame.color,
+                              blackbox->wResource()->frame.color);
     XSetWindowBackgroundPixmap(display, frame.border, frame.frame);
     XClearWindow(display, frame.border);
     
     if (resizable) {
       frame.fhandle =
-	blackbox->renderImage(frame.handle_w, frame.handle_h,
+	image_ctrl->renderImage(frame.handle_w, frame.handle_h,
 			      blackbox->wResource()->decoration.ftexture,
 			      blackbox->wResource()->decoration.fcolor,
 			      blackbox->wResource()->decoration.fcolorTo);
       frame.uhandle =
-	blackbox->renderImage(frame.handle_w, frame.handle_h,
+	image_ctrl->renderImage(frame.handle_w, frame.handle_h,
 			      blackbox->wResource()->decoration.utexture,
 			      blackbox->wResource()->decoration.ucolor,
 			      blackbox->wResource()->decoration.ucolorTo);
       
       frame.rhandle =
-	blackbox->renderImage(frame.rh_w, frame.rh_h,
+	image_ctrl->renderImage(frame.rh_w, frame.rh_h,
 			      blackbox->wResource()->handle.texture,
 			      blackbox->wResource()->handle.color,
 			      blackbox->wResource()->handle.colorTo);
@@ -521,17 +523,17 @@ void BlackboxWindow::createDecorations(void) {
   }
   
   frame.fbutton =
-    blackbox->renderImage(frame.button_w, frame.button_h,
+    image_ctrl->renderImage(frame.button_w, frame.button_h,
 			  blackbox->wResource()->button.texture,
 			  blackbox->wResource()->decoration.fcolor,
 			  blackbox->wResource()->decoration.fcolorTo);
   frame.ubutton =
-    blackbox->renderImage(frame.button_w, frame.button_h,
+    image_ctrl->renderImage(frame.button_w, frame.button_h,
 			  blackbox->wResource()->button.texture,
 			  blackbox->wResource()->decoration.ucolor,
 			  blackbox->wResource()->decoration.ucolorTo);
   frame.pbutton =
-    blackbox->renderImage(frame.button_w, frame.button_h,
+    image_ctrl->renderImage(frame.button_w, frame.button_h,
 			  blackbox->wResource()->button.ptexture,
 			  blackbox->wResource()->button.pressed,
 			  blackbox->wResource()->button.pressedTo);
@@ -688,27 +690,27 @@ void BlackboxWindow::Reconfigure(void) {
   Pixmap tmp = frame.fbutton;
   
   frame.fbutton =
-    blackbox->renderImage(frame.button_w, frame.button_h,
+    image_ctrl->renderImage(frame.button_w, frame.button_h,
 			  blackbox->wResource()->button.texture,
 			  blackbox->wResource()->decoration.fcolor,
 			  blackbox->wResource()->decoration.fcolorTo);
-  if (tmp) blackbox->removeImage(tmp);
+  if (tmp) image_ctrl->removeImage(tmp);
   
   tmp = frame.ubutton;
   frame.ubutton =
-    blackbox->renderImage(frame.button_w, frame.button_h,
+    image_ctrl->renderImage(frame.button_w, frame.button_h,
 			  blackbox->wResource()->button.texture,
 			  blackbox->wResource()->decoration.ucolor,
 			  blackbox->wResource()->decoration.ucolorTo);
-  if (tmp) blackbox->removeImage(tmp);
+  if (tmp) image_ctrl->removeImage(tmp);
 
   tmp = frame.pbutton;
   frame.pbutton =
-    blackbox->renderImage(frame.button_w, frame.button_h,
+    image_ctrl->renderImage(frame.button_w, frame.button_h,
 			  blackbox->wResource()->button.ptexture,
 			  blackbox->wResource()->button.pressed,
 			  blackbox->wResource()->button.pressedTo);
-  if (tmp) blackbox->removeImage(tmp);
+  if (tmp) image_ctrl->removeImage(tmp);
   
   if (frame.iconify_button) XSetWindowBorder(display, frame.iconify_button,
 					     blackbox->borderColor().pixel);
@@ -721,55 +723,56 @@ void BlackboxWindow::Reconfigure(void) {
   
   tmp = frame.ftitle;
   frame.ftitle =
-    blackbox->renderImage(frame.title_w, frame.title_h,
+    image_ctrl->renderImage(frame.title_w, frame.title_h,
 			 blackbox->wResource()->decoration.ftexture,
 			 blackbox->wResource()->decoration.fcolor,
 			 blackbox->wResource()->decoration.fcolorTo);
-  if (tmp) blackbox->removeImage(tmp);
+  if (tmp) image_ctrl->removeImage(tmp);
 
   tmp = frame.utitle;
   frame.utitle =
-    blackbox->renderImage(frame.title_w, frame.title_h,
+    image_ctrl->renderImage(frame.title_w, frame.title_h,
 			  blackbox->wResource()->decoration.utexture,
 			  blackbox->wResource()->decoration.ucolor,
 			  blackbox->wResource()->decoration.ucolorTo);
-  if (tmp) blackbox->removeImage(tmp);
+  if (tmp) image_ctrl->removeImage(tmp);
   
   if (! transient) {
     tmp = frame.frame;
     frame.frame =
-      blackbox->renderSolidImage(frame.border_w, frame.border_h,
-				 blackbox->wResource()->frame.texture |
-				 BImageNoDitherSolid,
-				 blackbox->wResource()->frame.color);
-    if (tmp) blackbox->removeImage(tmp);
+      image_ctrl->renderImage(frame.border_w, frame.border_h,
+			      blackbox->wResource()->frame.texture |
+			      BImage_NoDitherSolid,
+			      blackbox->wResource()->frame.color,
+                              blackbox->wResource()->frame.color);
+    if (tmp) image_ctrl->removeImage(tmp);
     XSetWindowBackgroundPixmap(display, frame.border, frame.frame);
     XClearWindow(display, frame.border);
     
     if (resizable) {
       tmp = frame.fhandle;
       frame.fhandle =
-	blackbox->renderImage(frame.handle_w, frame.handle_h,
+	image_ctrl->renderImage(frame.handle_w, frame.handle_h,
 			      blackbox->wResource()->decoration.ftexture,
 			      blackbox->wResource()->decoration.fcolor,
 			      blackbox->wResource()->decoration.fcolorTo);
-      if (tmp) blackbox->removeImage(tmp);
+      if (tmp) image_ctrl->removeImage(tmp);
 
       tmp = frame.uhandle;
       frame.uhandle =
-	blackbox->renderImage(frame.handle_w, frame.handle_h,
+	image_ctrl->renderImage(frame.handle_w, frame.handle_h,
 			      blackbox->wResource()->decoration.utexture,
 			      blackbox->wResource()->decoration.ucolor,
 			      blackbox->wResource()->decoration.ucolorTo);
-      if (tmp) blackbox->removeImage(tmp);
+      if (tmp) image_ctrl->removeImage(tmp);
 
       tmp = frame.rhandle;
       frame.rhandle =
-	blackbox->renderImage(frame.rh_w, frame.rh_h,
+	image_ctrl->renderImage(frame.rh_w, frame.rh_h,
 			      blackbox->wResource()->handle.texture,
 			      blackbox->wResource()->handle.color,
 			      blackbox->wResource()->handle.colorTo);
-      if (tmp) blackbox->removeImage(tmp);
+      if (tmp) image_ctrl->removeImage(tmp);
 
       XSetWindowBackgroundPixmap(display, frame.resize_handle, frame.rhandle);
       XClearWindow(display, frame.resize_handle);
@@ -1023,37 +1026,37 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
     
     Pixmap tmp = frame.ftitle;
     frame.ftitle =
-      blackbox->renderImage(frame.title_w, frame.title_h,
+      image_ctrl->renderImage(frame.title_w, frame.title_h,
 			    blackbox->wResource()->decoration.ftexture,
 			    blackbox->wResource()->decoration.fcolor,
 			    blackbox->wResource()->decoration.fcolorTo);
-    if (tmp) blackbox->removeImage(tmp);
+    if (tmp) image_ctrl->removeImage(tmp);
 
     tmp = frame.utitle;
     frame.utitle =
-      blackbox->renderImage(frame.title_w, frame.title_h,
+      image_ctrl->renderImage(frame.title_w, frame.title_h,
 			    blackbox->wResource()->decoration.utexture,
 			    blackbox->wResource()->decoration.ucolor,
 			    blackbox->wResource()->decoration.ucolorTo);
-    if (tmp) blackbox->removeImage(tmp);
+    if (tmp) image_ctrl->removeImage(tmp);
 
     if (! transient) {
       if (resizable) {
 	tmp = frame.fhandle;
 	frame.fhandle =
-	  blackbox->renderImage(frame.handle_w, frame.handle_h,
+	  image_ctrl->renderImage(frame.handle_w, frame.handle_h,
 				blackbox->wResource()->decoration.ftexture,
 				blackbox->wResource()->decoration.fcolor,
 				blackbox->wResource()->decoration.fcolorTo);
-	if (tmp) blackbox->removeImage(tmp);
+	if (tmp) image_ctrl->removeImage(tmp);
 
 	tmp = frame.uhandle;
 	frame.uhandle =
-	  blackbox->renderImage(frame.handle_w, frame.handle_h,
+	  image_ctrl->renderImage(frame.handle_w, frame.handle_h,
 				blackbox->wResource()->decoration.utexture,
 				blackbox->wResource()->decoration.ucolor,
 				blackbox->wResource()->decoration.ucolorTo);
-	if (tmp) blackbox->removeImage(tmp);
+	if (tmp) image_ctrl->removeImage(tmp);
       }
     }
     
@@ -1078,11 +1081,12 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
       
       tmp = frame.frame;
       frame.frame =
-	blackbox->renderSolidImage(frame.border_w, frame.border_h,
-				   blackbox->wResource()->frame.texture|
-				   BImageNoDitherSolid,
-				   blackbox->wResource()->frame.color);
-      if (tmp) blackbox->removeImage(tmp);
+	image_ctrl->renderImage(frame.border_w, frame.border_h,
+			        blackbox->wResource()->frame.texture|
+			        BImage_NoDitherSolid,
+			        blackbox->wResource()->frame.color,
+			        blackbox->wResource()->frame.color);
+      if (tmp) image_ctrl->removeImage(tmp);
       XSetWindowBackgroundPixmap(display, frame.border, frame.frame);
       XClearWindow(display, frame.border);
     } else {

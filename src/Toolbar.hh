@@ -32,7 +32,7 @@ class BlackboxIcon;
 class Iconmenu;
 class Workspace;
 class Workspacemenu;
-class Application;
+class BImageControl;
 
 #include "LinkedList.hh"
 
@@ -58,6 +58,8 @@ private:
   Iconmenu *iconMenu;
   Workspace *current, *zero;
   Workspacemenu *wsMenu;
+
+  BImageControl *image_ctrl;
 
 
 protected:

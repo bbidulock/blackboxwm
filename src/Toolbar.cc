@@ -41,6 +41,7 @@
 
 Toolbar::Toolbar(Blackbox *bb, int c) {
   blackbox = bb;
+  image_ctrl = blackbox->imageControl();
   workspacesList = new LinkedList<Workspace>;
 
   wait_button = wait_ibutton = False;
@@ -92,7 +93,7 @@ Toolbar::Toolbar(Blackbox *bb, int c) {
   blackbox->saveToolbarSearch(frame.window, this);
   
   frame.frame =
-    blackbox->renderImage(frame.width, frame.height,
+    image_ctrl->renderImage(frame.width, frame.height,
 			  blackbox->tResource()->toolbar.texture,
 			  blackbox->tResource()->toolbar.color,
 			  blackbox->tResource()->toolbar.colorTo);
@@ -111,7 +112,7 @@ Toolbar::Toolbar(Blackbox *bb, int c) {
   blackbox->saveToolbarSearch(frame.workspaceLabel, this);
   
   frame.label =
-    blackbox->renderImage(frame.label_w, frame.label_h,
+    image_ctrl->renderImage(frame.label_w, frame.label_h,
 			  blackbox->tResource()->label.texture,
 			  blackbox->tResource()->label.color,
 			  blackbox->tResource()->label.colorTo);
@@ -133,12 +134,12 @@ Toolbar::Toolbar(Blackbox *bb, int c) {
   blackbox->saveToolbarSearch(frame.workspaceNext, this);
 
   frame.button =
-    blackbox->renderImage(frame.button_w, frame.button_h,
+    image_ctrl->renderImage(frame.button_w, frame.button_h,
 			  blackbox->tResource()->button.texture,
 			  blackbox->tResource()->button.color,
 			  blackbox->tResource()->button.colorTo);
   frame.pbutton =
-    blackbox->renderImage(frame.button_w, frame.button_h,
+    image_ctrl->renderImage(frame.button_w, frame.button_h,
 			  blackbox->tResource()->button.ptexture,
 			  blackbox->tResource()->button.pressed,
 			  blackbox->tResource()->button.pressedTo);
@@ -178,12 +179,12 @@ Toolbar::Toolbar(Blackbox *bb, int c) {
   blackbox->saveToolbarSearch(frame.iconButton, this);
 
   frame.ibutton =
-    blackbox->renderImage(frame.ib_w, frame.ib_h,
+    image_ctrl->renderImage(frame.ib_w, frame.ib_h,
 			  blackbox->tResource()->button.texture,
 			  blackbox->tResource()->button.color,
 			  blackbox->tResource()->button.colorTo);
   frame.pibutton =
-    blackbox->renderImage(frame.ib_w, frame.ib_h,
+    image_ctrl->renderImage(frame.ib_w, frame.ib_h,
 			  blackbox->tResource()->button.ptexture,
 			  blackbox->tResource()->button.pressed,
 			  blackbox->tResource()->button.pressedTo);
@@ -205,7 +206,7 @@ Toolbar::Toolbar(Blackbox *bb, int c) {
   blackbox->saveToolbarSearch(frame.clock, this);
 
   frame.clk =
-    blackbox->renderImage(frame.clock_w, frame.clock_h,
+    image_ctrl->renderImage(frame.clock_w, frame.clock_h,
 			  blackbox->tResource()->clock.texture,
 			  blackbox->tResource()->clock.color,
 			  blackbox->tResource()->clock.colorTo);
@@ -299,13 +300,13 @@ Toolbar::~Toolbar(void) {
   }
   delete workspacesList;
 
-  if (frame.frame) blackbox->removeImage(frame.frame);
-  if (frame.label) blackbox->removeImage(frame.label);
-  if (frame.button) blackbox->removeImage(frame.button);
-  if (frame.pbutton) blackbox->removeImage(frame.pbutton);
-  if (frame.ibutton) blackbox->removeImage(frame.ibutton);
-  if (frame.pibutton) blackbox->removeImage(frame.pibutton);
-  if (frame.clk) blackbox->removeImage(frame.clk);
+  if (frame.frame) image_ctrl->removeImage(frame.frame);
+  if (frame.label) image_ctrl->removeImage(frame.label);
+  if (frame.button) image_ctrl->removeImage(frame.button);
+  if (frame.pbutton) image_ctrl->removeImage(frame.pbutton);
+  if (frame.ibutton) image_ctrl->removeImage(frame.ibutton);
+  if (frame.pibutton) image_ctrl->removeImage(frame.pibutton);
+  if (frame.clk) image_ctrl->removeImage(frame.clk);
 
   blackbox->removeToolbarSearch(frame.clock);
   blackbox->removeToolbarSearch(frame.raiseButton);
@@ -441,7 +442,7 @@ void Toolbar::stackWindows(Window *workspace_stack, int num) {
   // number of total workspaces (to stack the workspace menus)
 
   Window *session_stack =
-    new Window[(num + (zero->Count() * 3) + workspacesList->count() + 4)];
+    new Window[(num + zero->Count() + workspacesList->count() + 4)];
   
   int i = 0;
   *(session_stack + i++) = blackbox->Menu()->WindowID();
@@ -463,7 +464,7 @@ void Toolbar::stackWindows(Window *workspace_stack, int num) {
     *(session_stack + i++) = frame.base;
   }
 
-  int k = zero->Count() * 3;
+  int k = zero->Count();
   while (k--)
     *(session_stack + i++) = *(zero->windowStack() + k);
 
@@ -555,38 +556,38 @@ void Toolbar::Reconfigure(void) {
   Pixmap tmp = frame.frame;
   
   frame.frame =
-    blackbox->renderImage(frame.width, frame.height,
+    image_ctrl->renderImage(frame.width, frame.height,
 			  blackbox->tResource()->toolbar.texture,
 			  blackbox->tResource()->toolbar.color,
 			  blackbox->tResource()->toolbar.colorTo);
-  if (tmp) blackbox->removeImage(tmp);
+  if (tmp) image_ctrl->removeImage(tmp);
   XSetWindowBackgroundPixmap(display, frame.window, frame.frame);
   
   tmp = frame.label;
   frame.label =
-    blackbox->renderImage(frame.label_w, frame.label_h,
+    image_ctrl->renderImage(frame.label_w, frame.label_h,
 			  blackbox->tResource()->label.texture,
 			  blackbox->tResource()->label.color,
 			  blackbox->tResource()->label.colorTo);
-  if (tmp) blackbox->removeImage(tmp);
+  if (tmp) image_ctrl->removeImage(tmp);
   XSetWindowBackgroundPixmap(display, frame.workspaceLabel, frame.label);
   XSetWindowBackgroundPixmap(display, frame.windowLabel, frame.label);
 
   tmp = frame.button;
   frame.button =
-    blackbox->renderImage(frame.button_w, frame.button_h,
+    image_ctrl->renderImage(frame.button_w, frame.button_h,
 			  blackbox->tResource()->button.texture,
 			  blackbox->tResource()->button.color,
 			  blackbox->tResource()->button.colorTo);
-  if (tmp) blackbox->removeImage(tmp);
+  if (tmp) image_ctrl->removeImage(tmp);
 
   tmp = frame.pbutton;
   frame.pbutton =
-    blackbox->renderImage(frame.button_w, frame.button_h,
+    image_ctrl->renderImage(frame.button_w, frame.button_h,
 			  blackbox->tResource()->button.ptexture,
 			  blackbox->tResource()->button.pressed,
 			  blackbox->tResource()->button.pressedTo);
-  if (tmp) blackbox->removeImage(tmp);
+  if (tmp) image_ctrl->removeImage(tmp);
   XSetWindowBackgroundPixmap(display, frame.workspaceNext, frame.button);
   XSetWindowBackgroundPixmap(display, frame.workspacePrev, frame.button);
   XSetWindowBackgroundPixmap(display, frame.windowPrev, frame.button);
@@ -595,30 +596,30 @@ void Toolbar::Reconfigure(void) {
   
   tmp = frame.ibutton;
   frame.ibutton =
-    blackbox->renderImage(frame.ib_w, frame.ib_h,
+    image_ctrl->renderImage(frame.ib_w, frame.ib_h,
 			  blackbox->tResource()->button.texture,
 			  blackbox->tResource()->button.color,
 			  blackbox->tResource()->button.colorTo);
-  if (tmp) blackbox->removeImage(tmp);
+  if (tmp) image_ctrl->removeImage(tmp);
 
   tmp = frame.pibutton;
   frame.pibutton =
-    blackbox->renderImage(frame.ib_w, frame.ib_h,
+    image_ctrl->renderImage(frame.ib_w, frame.ib_h,
 			  blackbox->tResource()->button.ptexture,
 			  blackbox->tResource()->button.pressed,
 			  blackbox->tResource()->button.pressedTo);
-  if (tmp) blackbox->removeImage(tmp);
+  if (tmp) image_ctrl->removeImage(tmp);
   XSetWindowBackgroundPixmap(display, frame.iconButton,
 			     ((iconMenu->Visible()) ? frame.pibutton :
 			      frame.ibutton));
 
   tmp = frame.clk;
   frame.clk =
-    blackbox->renderImage(frame.clock_w, frame.clock_h,
+    image_ctrl->renderImage(frame.clock_w, frame.clock_h,
 			  blackbox->tResource()->clock.texture,
 			  blackbox->tResource()->clock.color,
 			  blackbox->tResource()->clock.colorTo);
-  if (tmp) blackbox->removeImage(tmp);
+  if (tmp) image_ctrl->removeImage(tmp);
   XSetWindowBackgroundPixmap(display, frame.clock, frame.clk);
   
   XSetWindowBackground(display, frame.base, blackbox->borderColor().pixel);

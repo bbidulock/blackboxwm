@@ -2,6 +2,29 @@ At the request of some people, here is a Change log starting with 0.33.0.
 Enjoy! :)
 
 
+Changes from 0.40.2 to 0.40.3:
+	- fixed a bug in Blackbox::nextFocus that would put blackbox into an
+	  infinite loop when 2 windows where open, window 0 was iconified and
+	  window 1 had focus and pressing alt-tab or the next window button
+	  on the toolbar
+	- completely recoded all the graphics stuffs to support all visual
+	  classes and color depths, also the image code is more compact and
+          faster than previous releases
+	- removed graphics.cc and graphics.hh from the distribution and added
+	  Image.cc and Image.hh for the new graphics implementation.  a new
+	  class called BImageControl is now in charge of all pixmap caching
+	  and color allocation on displays that don't run/support TrueColor...
+	  this takes the job away from the Blackbox class... whose job is now
+	  to manage all it's children and disperse events read from the display
+	- fixed bug that didn't handle windows created before blackbox is
+	  running (again :/)
+
+
+Changes from 0.40.1 to 0.40.2:
+	- added a variable initialize line of code to keep blackbox from
+	  splattering from a sigsegv on startup
+
+
 Changes from 0.35.0 to 0.40.1:
 	- cosmetic menu rendering fixes, changed the way the submenu dot is
 	  sized; changed an off by one error in drawing the rounded edges;

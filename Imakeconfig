@@ -32,5 +32,5 @@ XCOMM Define this to get MwmHints window property support (non existant)
 XCOMM #define MWM_HINTS
 
 XCOMM Put any compiler specific flags here for building Blackbox
-CXXFLAGS :=	-Wall -W -pipe -fomit-frame-pointer $(CXXFLAGS)
+CXXFLAGS :=	-Wall -W -pipe $(CXXFLAGS)
 

@@ -37,6 +37,7 @@
 
 Basemenu::Basemenu(Blackbox *ctrl) {
   blackbox = ctrl;
+  image_ctrl = blackbox->imageControl();
   display = blackbox->control();
   parent = (Basemenu *) 0;
 
@@ -49,7 +50,7 @@ Basemenu::Basemenu(Blackbox *ctrl) {
   menu.iframe_pixmap = menu.title_pixmap = None;
 
   menu.bevel_w = blackbox->bevelWidth();
-  menu.width= menu.title_h = menu.item_w = menu.iframe_h =
+  menu.width = menu.title_h = menu.item_w = menu.iframe_h =
     blackbox->titleFont()->ascent + blackbox->titleFont()->descent +
     (menu.bevel_w * 2);
   menu.label = 0;
@@ -78,6 +79,7 @@ Basemenu::Basemenu(Blackbox *ctrl) {
   attrib_mask = CWBackPixmap|CWBackPixel|CWBorderPixel|CWCursor|CWEventMask;
   attrib.background_pixel = blackbox->borderColor().pixel;
   attrib.event_mask |= EnterWindowMask|LeaveWindowMask;
+
   menu.title =
     XCreateWindow(display, menu.frame, 0, 0, menu.width, menu.height, 0,
 		  blackbox->Depth(), InputOutput, blackbox->visual(),
@@ -106,13 +108,15 @@ Basemenu::~Basemenu(void) {
   
   delete menuitems;
 
+  if (menu.label) delete [] menu.label;
+
   if (menu.title_pixmap) {
-    blackbox->removeImage(menu.title_pixmap);
+    image_ctrl->removeImage(menu.title_pixmap);
     menu.title_pixmap = None;
   }
 
   if (menu.iframe_pixmap) {
-    blackbox->removeImage(menu.iframe_pixmap);
+    image_ctrl->removeImage(menu.iframe_pixmap);
     menu.iframe_pixmap = None;
   }
 
@@ -124,8 +128,6 @@ Basemenu::~Basemenu(void) {
 
   blackbox->removeMenuSearch(menu.frame);
   XDestroyWindow(display, menu.frame);
-
-  if (menu.label) delete [] menu.label;
 }
 
 
@@ -134,40 +136,10 @@ Basemenu::~Basemenu(void) {
 // *************************************************************************
 
 int Basemenu::insert(char *label, int function, char *exec) {
-  int ret = 0;
-  if (function)
-    switch (function) {
-    case Blackbox::B_WindowKill:
-    case Blackbox::B_WindowStick:
-    case Blackbox::B_WindowShade:
-    case Blackbox::B_WindowIconify:
-    case Blackbox::B_WindowMaximize:
-    case Blackbox::B_WindowClose:
-    case Blackbox::B_WindowRaise:
-    case Blackbox::B_WindowLower:
-    case Blackbox::B_Exit:
-    case Blackbox::B_Restart:
-    case Blackbox::B_Reconfigure: {
-      BasemenuItem *item = new BasemenuItem(label, function);
-      ret = menuitems->insert(item);
-      
-      ret = menuitems->count();
-      break; }
-    
-    case Blackbox::B_SetStyle:
-    case Blackbox::B_Execute:
-    case Blackbox::B_ExecReconfigure:
-    case Blackbox::B_RestartOther: {
-      BasemenuItem *item = new BasemenuItem(label, function, exec);
-      ret = menuitems->insert(item);
-      
-      ret = menuitems->count();
-      break; }
-    }
-  else
-    ret = menuitems->insert(new BasemenuItem(label, 0));
+  BasemenuItem *item = new BasemenuItem(label, function, exec);
+  menuitems->insert(item);
   
-  return ret;
+  return menuitems->count();
 }
 
 
@@ -277,22 +249,22 @@ void Basemenu::Update(void) {
   if (title_vis) {
     tmp = menu.title_pixmap;
     menu.title_pixmap =
-      blackbox->renderImage(menu.width, menu.title_h,
-			    blackbox->mResource()->title.texture,
-			    blackbox->mResource()->title.color,
-			    blackbox->mResource()->title.colorTo);
-    if (tmp) blackbox->removeImage(tmp);
+      image_ctrl->renderImage(menu.width, menu.title_h,
+			      blackbox->mResource()->title.texture,
+			      blackbox->mResource()->title.color,
+		  	      blackbox->mResource()->title.colorTo);
+    if (tmp) image_ctrl->removeImage(tmp);
     XSetWindowBackgroundPixmap(display, menu.title, menu.title_pixmap);
     XClearWindow(display, menu.title);
   }
 
   tmp = menu.iframe_pixmap;
   menu.iframe_pixmap =
-    blackbox->renderImage(menu.width, menu.iframe_h,
+    image_ctrl->renderImage(menu.width, menu.iframe_h,
 			  blackbox->mResource()->frame.texture,
 			  blackbox->mResource()->frame.color,
 			  blackbox->mResource()->frame.colorTo);
-  if (tmp) blackbox->removeImage(tmp);
+  if (tmp) image_ctrl->removeImage(tmp);
   XSetWindowBackgroundPixmap(display, menu.iframe, menu.iframe_pixmap);
   
   XResizeWindow(display, menu.frame, menu.width, menu.height);

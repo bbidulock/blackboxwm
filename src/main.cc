@@ -37,7 +37,6 @@ int main(int argc, char **argv) {
 
   int i;
   for (i = 1; i < argc; ++i) {
-
     // check for -display option... to run on a display other than the one
     // set by the environment variable DISPLAY
     if (! strcmp(argv[i], "-display")) {
@@ -53,7 +52,8 @@ int main(int argc, char **argv) {
       sprintf(tmp, "DISPLAY=%s", session_display);
 
       if (putenv(tmp)) {
-	fprintf(stderr, "couldn't set environment variable DISPLAY\n");
+	fprintf(stderr, "%s: couldn't set environment variable DISPLAY\n",
+		argv[0]);
 	perror("putenv()");
       }
     } else if (! strcmp(argv[i], "-version")) {
@@ -63,12 +63,11 @@ int main(int argc, char **argv) {
       exit(0);
     } else if (! strcmp(argv[i], "-help")) {
       // print program usage and command line options
-      printf("Blackbox %s : (c) 1997, 1998 Brad Hughes\n",
-             __blackbox_version);
-      printf("\n"
+      printf("Blackbox %s : (c) 1997, 1998 Brad Hughes\n\n"
              "  -display <string>\tuse display connection.\n"
 	     "  -version\t\tdisplay version and exit.\n"
-             "  -help\t\t\tdisplay this help text and exit.\n\n");
+             "  -help\t\t\tdisplay this help text and exit.\n\n",
+	     __blackbox_version);
       exit(0);
     }
   }

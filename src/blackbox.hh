@@ -21,7 +21,7 @@
 
 #ifndef __Blackbox_hh
 #define __Blackbox_hh
-#define __blackbox_version "beta zero . four zero . two"
+#define __blackbox_version "beta zero . four zero . three"
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
@@ -34,8 +34,8 @@ class Rootmenu;
 class BlackboxIcon;
 class BlackboxWindow;
 
+#include "Image.hh"
 #include "LinkedList.hh"
-#include "graphics.hh"
 
 #include <stdio.h>
 
@@ -148,16 +148,6 @@ private:
     int event_basep, error_basep;
   } shape;
 
-  // pixmap cache
-
-  typedef struct PixmapCache {
-    Pixmap pixmap;
-    unsigned long pixel1, pixel2, texture;
-    unsigned int width, height, count;
-  } PixmapCache;
-
-  LinkedList<PixmapCache> *pixmapCacheList;
-
   // context linked lists
   LinkedList<WindowSearch> *windowSearchList;
   LinkedList<MenuSearch> *menuSearchList;
@@ -167,6 +157,8 @@ private:
   // internal variables for operation
   Rootmenu *root_menu;
   Toolbar *tool_bar;
+
+  BImageControl *image_control;
 
   Atom _XA_WM_COLORMAP_WINDOWS, _XA_WM_PROTOCOLS, _XA_WM_STATE,
     _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS;
@@ -178,7 +170,8 @@ private:
   XColor *colors_8bpp;
   char *display_name;
   char **b_argv;
-  int bpp, depth, screen, event_mask, focus_window_number, b_argc;
+  int bpp, depth, screen, event_mask, focus_window_number, b_argc,
+    red_offset, green_offset, blue_offset;
   unsigned int xres, yres;
 
 
@@ -211,6 +204,7 @@ public:
   // member pointers
   Rootmenu *Menu(void) { return root_menu; }
   Toolbar *toolbar(void) { return tool_bar; }
+  BImageControl *imageControl(void) { return image_control; }
 
   // window validation
   Bool validateWindow(Window);
@@ -273,21 +267,6 @@ public:
 
   Window Root(void) { return root; }
 
-  // color alloc and lookup
-  Bool imageDither(void) { return resource.imageDither; }
-  XColor *Colors8bpp(void) { return colors_8bpp; }
-  int cpc8bpp(void) { return resource.cpc8bpp; }
-  unsigned long getColor(const char *);
-  unsigned long getColor(const char *, unsigned char *, unsigned char *,
-			 unsigned char *);
-
-  // pixmap cache control
-  Pixmap renderImage(unsigned int, unsigned int, unsigned long,
-		     const BColor &, const BColor &);
-  Pixmap renderSolidImage(unsigned int, unsigned int, unsigned long,
-			  const BColor &);;
-  void removeImage(Pixmap);
-
   // session controls
   XFontStruct *titleFont(void) { return resource.font.title; }
   XFontStruct *menuFont(void) { return resource.font.menu; }
@@ -297,6 +276,7 @@ public:
   Bool clock24Hour(void) { return resource.clock24hour; }
   Bool toolbarRaised(void) { return resource.toolbarRaised; }
   Bool sloppyFocus(void) { return resource.sloppyFocus; }
+  Bool imageDither(void) { return resource.imageDither; }
 
   // window controls
   windowResource *wResource(void) { return &resource.wres; }
@@ -310,6 +290,7 @@ public:
   // session information
   int Depth(void) { return depth; }
   int BitsPerPixel(void) { return bpp; }
+  int colorsPerChannel(void) { return resource.cpc8bpp; }
   unsigned int xRes(void) { return xres; }
   unsigned int yRes(void) { return yres; }
 

@@ -89,7 +89,7 @@ const int Workspace::addWindow(BlackboxWindow *w) {
 const int Workspace::removeWindow(BlackboxWindow *w) {
   int i = 0, ii = 0, k = windowList->count() - 1;
   Window *tmp_stack = new Window[k];
-  
+
   for (i = 0; i < k + 1; i++)
     if (*(stack + i) != w->frameWindow())
       *(tmp_stack + (ii++)) = *(stack + i);
@@ -101,6 +101,8 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
   
   cMenu->remove(w->windowNumber());
   cMenu->Update();
+
+  if (! cMenu->Count()) cMenu->Hide();
 
   if (toolbar->currentWorkspaceID() == id)
     toolbar->stackWindows(stack, k);
@@ -126,7 +128,7 @@ void Workspace::setFocusWindow(int w) {
 int Workspace::showAll(void) {
   BlackboxWindow *win;
 
-  toolbar->stackWindows(stack, windowList->count() * 3);
+  toolbar->stackWindows(stack, windowList->count());
 
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (; it.current(); it++) {

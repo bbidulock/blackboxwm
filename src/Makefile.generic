@@ -29,8 +29,8 @@ DefaultsPath:=		\"/usr/X11R6/lib/app-defaults\"
 #
 # sources, includes, objects and target variables... DO NOT EDIT
 
-SRCS :=		Basemenu.cc Clientmenu.cc Icon.cc LinkedList.cc Rootmenu.cc Toolbar.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc graphics.cc main.cc
-OBJS :=		Basemenu.o  Clientmenu.o  Icon.o  LinkedList.o  Rootmenu.o  Toolbar.o  Window.o  Windowmenu.o  Workspace.o  Workspacemenu.o  blackbox.o graphics.o   main.o
+SRCS :=		Basemenu.cc Clientmenu.cc Icon.cc Image.cc LinkedList.cc Rootmenu.cc Toolbar.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc main.cc
+OBJS :=		Basemenu.o  Clientmenu.o  Icon.o  Image.o  LinkedList.o  Rootmenu.o  Toolbar.o  Window.o  Windowmenu.o  Workspace.o  Workspacemenu.o  blackbox.o  main.o
 
 # make rules
 
@@ -54,35 +54,31 @@ install::
 	install -c -s blackbox /usr/X11R6/bin/blackbox
 
 
-# dependencies - gcc -MM -I/usr/X11R6/include output
+# dependencies - gcc -MM -I/usr/X11/include output
 
-Basemenu.o: Basemenu.cc blackbox.hh LinkedList.hh graphics.hh \
- Basemenu.hh Rootmenu.hh
+Basemenu.o: Basemenu.cc blackbox.hh Image.hh LinkedList.hh Basemenu.hh \
+ Rootmenu.hh
 Clientmenu.o: Clientmenu.cc Clientmenu.hh Basemenu.hh LinkedList.hh \
- graphics.hh blackbox.hh Workspace.hh Toolbar.hh Window.hh
+ blackbox.hh Image.hh Workspace.hh Toolbar.hh Window.hh
 Icon.o: Icon.cc Workspace.hh Clientmenu.hh Basemenu.hh LinkedList.hh \
- graphics.hh Toolbar.hh Window.hh blackbox.hh Icon.hh
+ Toolbar.hh Window.hh blackbox.hh Image.hh Icon.hh
+Image.o: Image.cc blackbox.hh Image.hh LinkedList.hh
 LinkedList.o: LinkedList.cc LinkedList.hh
 Rootmenu.o: Rootmenu.cc Rootmenu.hh Basemenu.hh LinkedList.hh \
- graphics.hh blackbox.hh
+ blackbox.hh Image.hh
 Toolbar.o: Toolbar.cc Toolbar.hh LinkedList.hh Workspacemenu.hh \
- Basemenu.hh graphics.hh blackbox.hh Rootmenu.hh Workspace.hh \
+ Basemenu.hh blackbox.hh Image.hh Rootmenu.hh Workspace.hh \
  Clientmenu.hh Window.hh Icon.hh
 Window.o: Window.cc Windowmenu.hh Basemenu.hh LinkedList.hh \
- graphics.hh Workspace.hh Clientmenu.hh Toolbar.hh Window.hh \
- blackbox.hh Icon.hh
+ Workspace.hh Clientmenu.hh Toolbar.hh Window.hh blackbox.hh Image.hh \
+ Icon.hh
 Windowmenu.o: Windowmenu.cc Windowmenu.hh Basemenu.hh LinkedList.hh \
- graphics.hh Workspace.hh Clientmenu.hh Toolbar.hh Window.hh \
- blackbox.hh
-Workspace.o: Workspace.cc blackbox.hh LinkedList.hh graphics.hh \
- Window.hh Workspace.hh Clientmenu.hh Basemenu.hh Toolbar.hh \
- Windowmenu.hh
+ Workspace.hh Clientmenu.hh Toolbar.hh Window.hh blackbox.hh Image.hh
+Workspace.o: Workspace.cc blackbox.hh Image.hh LinkedList.hh Window.hh \
+ Workspace.hh Clientmenu.hh Basemenu.hh Toolbar.hh Windowmenu.hh
 Workspacemenu.o: Workspacemenu.cc Toolbar.hh LinkedList.hh \
- Workspacemenu.hh Basemenu.hh graphics.hh Workspace.hh Clientmenu.hh \
- Window.hh
-blackbox.o: blackbox.cc blackbox.hh LinkedList.hh graphics.hh \
- Rootmenu.hh Basemenu.hh Window.hh Workspace.hh Clientmenu.hh \
- Toolbar.hh
-graphics.o: graphics.cc blackbox.hh LinkedList.hh graphics.hh
-main.o: main.cc blackbox.hh LinkedList.hh graphics.hh
+ Workspacemenu.hh Basemenu.hh Workspace.hh Clientmenu.hh Window.hh
+blackbox.o: blackbox.cc blackbox.hh Image.hh LinkedList.hh Rootmenu.hh \
+ Basemenu.hh Window.hh Workspace.hh Clientmenu.hh Toolbar.hh
+main.o: main.cc blackbox.hh Image.hh LinkedList.hh
 

@@ -1,5 +1,5 @@
 //
-// AssociatedWindow.hh for Blackbox - an X11 Window manager
+// Window.hh for Blackbox - an X11 Window manager
 // Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -19,8 +19,8 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef __AssociatedWindow_hh
-#define __AssociatedWindow_hh
+#ifndef __Window_hh
+#define __Window_hh
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -60,6 +60,7 @@ class BlackboxWindow;
 class Blackbox;
 class BlackboxIcon;
 class Windowmenu;
+class BImageControl;
 
 
 class BlackboxWindow {
@@ -67,6 +68,8 @@ private:
   Blackbox *blackbox;
   BlackboxIcon *icon;
   Windowmenu *windowmenu;
+
+  BImageControl *image_ctrl;
   
   Bool moving, resizing, shaded, maximized, visible, iconic, transient,
     focused, resizable, stuck;
@@ -197,4 +200,4 @@ public:
 };
 
 
-#endif // __AssociatedWindow_hh
+#endif // __Window_hh

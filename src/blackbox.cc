@@ -157,18 +157,6 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   depth = DefaultDepth(display, screen);
   display_name = XDisplayName(dpy_name);
 
-  int count; 
-  XPixmapFormatValues *pmv = XListPixmapFormats(display, &count);
-
-  for (int i = 0; i < count; i++)
-    if (pmv[i].depth == depth) {
-      bpp = pmv[i].bits_per_pixel;
-      break;
-  }
-
-  if (bpp == 0) bpp = depth;
-  XFree(pmv);
-
   event_mask = ColormapChangeMask | EnterWindowMask | PropertyChangeMask |
     SubstructureRedirectMask | KeyPressMask | ButtonPressMask |
     ButtonReleaseMask;
@@ -208,15 +196,17 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   toolbarSearchList = new LinkedList<ToolbarSearch>;
   groupSearchList = new LinkedList<GroupSearch>;
 
-  pixmapCacheList = new LinkedList<PixmapCache>;
-
   XrmInitialize();
   LoadRC();
-  LoadStyle();
-  InitColor();
 
+  if (resource.imageDither && v->c_class == TrueColor && depth >= 24)
+    resource.imageDither = False;
+  image_control = new BImageControl(this);
+ 
+  LoadStyle();
+  
   XGCValues gcv;
-  gcv.foreground = getColor("white");
+  gcv.foreground = image_control->getColor("white");
   gcv.function = GXxor;
   gcv.line_width = 2;
   gcv.subwindow_mode = IncludeInferiors;
@@ -266,21 +256,11 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
     XWindowAttributes attrib;
     if (XGetWindowAttributes(display, children[i], &attrib))
       if (! attrib.override_redirect && attrib.map_state != IsUnmapped) {
-	Atom atom;
-	int foo;
-	unsigned long ulfoo, nitems;
-	unsigned char *state;
-
-	if (XGetWindowProperty(display, children[i], _XA_WM_STATE, 0l, 2l,
-			       False, _XA_WM_STATE, &atom, &foo, &nitems,
-			       &ulfoo, &state) == Success)
-	  if (state) {
-	    BlackboxWindow *nWin = new BlackboxWindow(this, children[i]);
-	    
-	    XMapRequestEvent mre;
-	    mre.window = children[i];
-	    nWin->mapRequestEvent(&mre);
-	  }
+	BlackboxWindow *nWin = new BlackboxWindow(this, children[i]);
+	
+	XMapRequestEvent mre;
+	mre.window = children[i];
+	nWin->mapRequestEvent(&mre);
       }
   }
 
@@ -300,27 +280,14 @@ Blackbox::~Blackbox(void) {
   if (resource.styleFile) delete [] resource.styleFile;
   delete root_menu;
   delete tool_bar;
+  delete image_control;
+
 
   delete windowSearchList;
   delete menuSearchList;
   delete toolbarSearchList;
   delete groupSearchList;
 
-  if (pixmapCacheList->count()) {
-    printf("%s: pixmap cache: %u unreleased pixmaps.\n",
-	   b_argv[0], pixmapCacheList->count());
-    
-    int i, n = pixmapCacheList->count();
-    for (i = 0; i < n; i++) {
-      PixmapCache *tmp = pixmapCacheList->first();
-      XFreePixmap(display, tmp->pixmap);
-      pixmapCacheList->remove(tmp);
-      delete tmp;
-    }
-  }
-
-  delete pixmapCacheList;
-  
   if (resource.font.title) {
     XFreeFont(display, resource.font.title);
     resource.font.title = 0;
@@ -909,22 +876,24 @@ void Blackbox::reassociateWindow(BlackboxWindow *w) {
 }
 
 
-void Blackbox::nextFocus(void) { 
+void Blackbox::nextFocus(void) {
   if ((tool_bar->currentWorkspace()->Count() > 1) &&
       (focus_window_number >= 0)) {
     BlackboxWindow *next, *current =
       tool_bar->currentWorkspace()->window(focus_window_number);
-    
-    int next_window_number, level = 0;
+
+    int next_window_number = focus_window_number;
     do {
       do {
-	next_window_number =
-	  ((focus_window_number + (++level)) <
-	   tool_bar->currentWorkspace()->Count())
-	  ? focus_window_number + level : 0;
+	if ((++next_window_number) >=
+	    tool_bar->currentWorkspace()->Count()) {
+	  next_window_number = 0;
+	}
+	
 	next =
 	  tool_bar->currentWorkspace()->window(next_window_number);
-      } while (next->isIconic());
+ 
+      }	while (next->isIconic() && next_window_number != focus_window_number);
     } while ((! next->setInputFocus()) &&
 	     (next_window_number != focus_window_number));
     
@@ -944,16 +913,15 @@ void Blackbox::prevFocus(void) {
     BlackboxWindow *prev, *current =
       tool_bar->currentWorkspace()->window(focus_window_number);
     
-    int prev_window_number, level = 0;
+    int prev_window_number = focus_window_number;
     do {
       do {
-	prev_window_number =
-	  ((focus_window_number - (++level)) >= 0)
-	  ? focus_window_number - level :
-	  tool_bar->currentWorkspace()->Count() - 1;
+	if ((--prev_window_number) < 0)
+	  prev_window_number = tool_bar->currentWorkspace()->Count() - 1;
+	
 	prev =
 	  tool_bar->currentWorkspace()->window(prev_window_number);
-      } while (prev->isIconic());
+      } while (prev->isIconic() && prev_window_number != focus_window_number);
     } while ((! prev->setInputFocus()) &&
 	     (prev_window_number != focus_window_number));
     
@@ -1398,340 +1366,343 @@ void Blackbox::LoadStyle(void) {
   if (! (resource.wres.decoration.ftexture =
 	 blackbox->readDatabaseTexture("window.focus",
 				       "Window.Focus")))
-    resource.wres.decoration.ftexture = BImageRaised|BImageSolid|BImageBevel2;
+    resource.wres.decoration.ftexture = BImage_Raised|BImage_Solid|
+      BImage_Bevel2;
   
   if (! (resource.wres.decoration.utexture =
 	 blackbox->readDatabaseTexture("window.unfocus",
 				       "Window.Unfocus")))
-    resource.wres.decoration.utexture = BImageRaised|BImageSolid|BImageBevel2;
+    resource.wres.decoration.utexture = BImage_Raised|BImage_Solid|BImage_Bevel2;
   
 
   if (! (resource.wres.handle.texture =
 	 blackbox->readDatabaseTexture("window.handle",
 				       "Window.Handle")))
-    resource.wres.handle.texture = BImageRaised|BImageSolid|BImageBevel2;
+    resource.wres.handle.texture = BImage_Raised|BImage_Solid|BImage_Bevel2;
 
   if (! (resource.wres.frame.texture =
 	 blackbox->readDatabaseTexture("window.frame",
 				       "Window.Frame")))
-    resource.wres.frame.texture = BImageRaised|BImageBevel2|BImageSolid;
+    resource.wres.frame.texture = BImage_Raised|BImage_Bevel2|BImage_Solid;
 
   if (! (resource.wres.button.texture =
 	 blackbox->readDatabaseTexture("window.button",
 				       "Window.Button")))
-    resource.wres.button.texture = BImageRaised|BImageBevel2|BImageSolid;
+    resource.wres.button.texture = BImage_Raised|BImage_Bevel2|BImage_Solid;
   
   if (! (resource.wres.button.ptexture =
 	 blackbox->readDatabaseTexture("window.button.pressed",
 				       "Window.Button.Pressed")))
     resource.wres.button.ptexture = resource.wres.button.texture |
-      BImageInverted;
+      BImage_Invert;
 
-  if (resource.wres.button.ptexture == BImageInverted)
+  if (resource.wres.button.ptexture == BImage_Invert)
     resource.wres.button.ptexture = resource.wres.button.texture |
-      BImageInverted;
+      BImage_Invert;
   
   // button, focused and unfocused colors
   if (! blackbox->readDatabaseColor("window.focus.color",
 				    "Window.Focus.Color",
 				    &resource.wres.decoration.fcolor))
     resource.wres.decoration.fcolor.pixel =
-      blackbox->getColor("darkblue", &resource.wres.decoration.fcolor.r,
-			 &resource.wres.decoration.fcolor.g,
-			 &resource.wres.decoration.fcolor.b);
+      image_control->getColor("darkblue", &resource.wres.decoration.fcolor.red,
+			      &resource.wres.decoration.fcolor.green,
+			      &resource.wres.decoration.fcolor.blue);
   
   if (! blackbox->readDatabaseColor("window.unfocus.color",
 				    "Window.Unfocus.Color",
 				    &resource.wres.decoration.ucolor))
     resource.wres.decoration.ucolor.pixel =
-      blackbox->getColor("grey", &resource.wres.decoration.ucolor.r,
-			 &resource.wres.decoration.ucolor.g,
-			 &resource.wres.decoration.ucolor.b);
+      image_control->getColor("grey", &resource.wres.decoration.ucolor.red,
+			 &resource.wres.decoration.ucolor.green,
+			 &resource.wres.decoration.ucolor.blue);
 
-  if ((resource.wres.decoration.ftexture & BImageGradient) ||
-      (resource.wres.button.texture & BImageGradient))
+  if ((resource.wres.decoration.ftexture & BImage_Gradient) ||
+      (resource.wres.button.texture & BImage_Gradient))
     if (! blackbox->readDatabaseColor("window.focus.colorTo",
 				      "Window.Focus.ColorTo",
 				      &resource.wres.decoration.fcolorTo))
       resource.wres.decoration.fcolorTo.pixel =
-	blackbox->getColor("black", &resource.wres.decoration.fcolorTo.r,
-			   &resource.wres.decoration.fcolorTo.g,
-			   &resource.wres.decoration.fcolorTo.b);
+	image_control->getColor("black", &resource.wres.decoration.fcolorTo.red,
+			   &resource.wres.decoration.fcolorTo.green,
+			   &resource.wres.decoration.fcolorTo.blue);
 
-  if ((resource.wres.decoration.utexture & BImageGradient) ||
-      (resource.wres.button.texture & BImageGradient))
+  if ((resource.wres.decoration.utexture & BImage_Gradient) ||
+      (resource.wres.button.texture & BImage_Gradient))
     if (! blackbox->readDatabaseColor("window.unfocus.colorTo",
 				      "Window.Unfocus.ColorTo",
 				      &resource.wres.decoration.ucolorTo))
       resource.wres.decoration.ucolorTo.pixel =
-	blackbox->getColor("darkgrey", &resource.wres.decoration.ucolorTo.r,
-			   &resource.wres.decoration.ucolorTo.g,
-			   &resource.wres.decoration.ucolorTo.b);
+	image_control->getColor("darkgrey",
+				&resource.wres.decoration.ucolorTo.red,
+				&resource.wres.decoration.ucolorTo.green,
+				&resource.wres.decoration.ucolorTo.blue);
 
   if (! blackbox->readDatabaseColor("window.handle.color",
 				    "Window.Handle.Color",
 				    &resource.wres.handle.color))
     resource.wres.handle.color.pixel =
-      blackbox->getColor("grey", &resource.wres.handle.color.r,
-			 &resource.wres.handle.color.g,
-			 &resource.wres.handle.color.b);
+      image_control->getColor("grey", &resource.wres.handle.color.red,
+			      &resource.wres.handle.color.green,
+			      &resource.wres.handle.color.blue);
 
-  if (resource.wres.handle.texture & BImageGradient)
+  if (resource.wres.handle.texture & BImage_Gradient)
     if (! blackbox->readDatabaseColor("window.handle.colorTo",
 				      "Window.Handle.ColorTo",
 				      &resource.wres.handle.colorTo))
       resource.wres.handle.colorTo.pixel =
-	blackbox->getColor("grey", &resource.wres.handle.colorTo.r,
-			   &resource.wres.handle.colorTo.g,
-			   &resource.wres.handle.colorTo.b);
+	image_control->getColor("grey", &resource.wres.handle.colorTo.red,
+			   &resource.wres.handle.colorTo.green,
+			   &resource.wres.handle.colorTo.blue);
 
   if (! blackbox->readDatabaseColor("window.button.pressed.color",
 				    "Window.Button.Pressed.Color",
 				    &resource.wres.button.pressed))
     resource.wres.button.pressed.pixel =
-      blackbox->getColor("grey", &resource.wres.button.pressed.r,
-			 &resource.wres.button.pressed.g,
-			 &resource.wres.button.pressed.b);
+      image_control->getColor("grey", &resource.wres.button.pressed.red,
+			 &resource.wres.button.pressed.green,
+			 &resource.wres.button.pressed.blue);
 
-  if (resource.wres.button.ptexture & BImageGradient)
+  if (resource.wres.button.ptexture & BImage_Gradient)
     if (! blackbox->readDatabaseColor("window.button.pressed.colorTo",
 				      "Window.Button.Pressed.ColorTo",
 				      &resource.wres.button.pressedTo))
       resource.wres.button.pressedTo.pixel =
-	blackbox->getColor("grey", &resource.wres.button.pressedTo.r,
-			   &resource.wres.button.pressedTo.g,
-			   &resource.wres.button.pressedTo.b);
+	image_control->getColor("grey", &resource.wres.button.pressedTo.red,
+			   &resource.wres.button.pressedTo.green,
+			   &resource.wres.button.pressedTo.blue);
   
   // focused and unfocused text colors
   if (! blackbox->readDatabaseColor("window.focus.textColor",
 				    "Window.Focus.TextColor",
 				    &resource.wres.decoration.ftextColor))
     resource.wres.decoration.ftextColor.pixel =
-      blackbox->getColor("white", &resource.wres.decoration.ftextColor.r,
-			 &resource.wres.decoration.ftextColor.g,
-			 &resource.wres.decoration.ftextColor.b);
+      image_control->getColor("white", &resource.wres.decoration.ftextColor.red,
+			 &resource.wres.decoration.ftextColor.green,
+			 &resource.wres.decoration.ftextColor.blue);
   
   if (! blackbox->readDatabaseColor("window.unfocus.textColor",
 				    "Window.Unfocus.TextColor",
 				    &resource.wres.decoration.utextColor))
     resource.wres.decoration.utextColor.pixel =
-      blackbox->getColor("black", &resource.wres.decoration.utextColor.r,
-			 &resource.wres.decoration.utextColor.g,
-			 &resource.wres.decoration.utextColor.b);
+      image_control->getColor("black", &resource.wres.decoration.utextColor.red,
+			 &resource.wres.decoration.utextColor.green,
+			 &resource.wres.decoration.utextColor.blue);
   
   if (! (blackbox->readDatabaseColor("window.frame.color",
 				     "Window.Frame.Color",
 				     &resource.wres.frame.color)))
     resource.wres.frame.color.pixel =
-      blackbox->getColor("grey", &resource.wres.frame.color.r,
-			 &resource.wres.frame.color.g,
-			 &resource.wres.frame.color.b);
+      image_control->getColor("grey", &resource.wres.frame.color.red,
+			 &resource.wres.frame.color.green,
+			 &resource.wres.frame.color.blue);
 
   // load menu configuration
   if (! (resource.mres.title.texture =
 	 blackbox->readDatabaseTexture("menu.title", "Menu.Title")))
-    resource.mres.title.texture = BImageSolid|BImageRaised|BImageBevel2;
+    resource.mres.title.texture = BImage_Solid|BImage_Raised|BImage_Bevel2;
   
   if (! blackbox->readDatabaseColor("menu.title.color",
 				    "Menu.Title.Color",
 				    &resource.mres.title.color))
     resource.mres.title.color.pixel =
-      blackbox->getColor("darkblue", &resource.mres.title.color.r,
-			 &resource.mres.title.color.g,
-			 &resource.mres.title.color.b);
+      image_control->getColor("darkblue", &resource.mres.title.color.red,
+			 &resource.mres.title.color.green,
+			 &resource.mres.title.color.blue);
 
-  if (resource.mres.title.texture & BImageGradient)
+  if (resource.mres.title.texture & BImage_Gradient)
     if (! blackbox->readDatabaseColor("menu.title.colorTo",
 				      "Menu.Title.ColorTo",
 				      &resource.mres.title.colorTo))
       resource.mres.title.colorTo.pixel =
-	blackbox->getColor("black", &resource.mres.title.colorTo.r,
-			   &resource.mres.title.colorTo.g,
-			   &resource.mres.title.colorTo.b);
+	image_control->getColor("black", &resource.mres.title.colorTo.red,
+			   &resource.mres.title.colorTo.green,
+			   &resource.mres.title.colorTo.blue);
   
   if (! blackbox->readDatabaseColor("menu.title.textColor",
 				    "Menu.Title.TextColor",
 				    &resource.mres.title.textColor))
     resource.mres.title.textColor.pixel =
-      blackbox->getColor("white", &resource.mres.title.textColor.r,
-			 &resource.mres.title.textColor.g,
-			 &resource.mres.title.textColor.b);
+      image_control->getColor("white", &resource.mres.title.textColor.red,
+			 &resource.mres.title.textColor.green,
+			 &resource.mres.title.textColor.blue);
   
   if (! (resource.mres.frame.texture =
 	 blackbox->readDatabaseTexture("menu.frame", "Menu.Frame")))
-    resource.mres.frame.texture = BImageSolid|BImageRaised|BImageBevel2;
+    resource.mres.frame.texture = BImage_Solid|BImage_Raised|BImage_Bevel2;
   
   if (! blackbox->readDatabaseColor("menu.frame.color",
 				    "Menu.Frame.Color",
 				    &resource.mres.frame.color))
     resource.mres.frame.color.pixel =
-      blackbox->getColor("grey", &resource.mres.frame.color.r,
-			 &resource.mres.frame.color.g,
-			 &resource.mres.frame.color.b);
+      image_control->getColor("grey", &resource.mres.frame.color.red,
+			 &resource.mres.frame.color.green,
+			 &resource.mres.frame.color.blue);
 
-  if (resource.mres.frame.texture & BImageGradient)
+  if (resource.mres.frame.texture & BImage_Gradient)
     if (! blackbox->readDatabaseColor("menu.frame.colorTo",
 				      "Menu.Frame.ColorTo",
 				      &resource.mres.frame.colorTo))
       resource.mres.frame.colorTo.pixel =
-	blackbox->getColor("darkgrey", &resource.mres.frame.colorTo.r,
-			   &resource.mres.frame.colorTo.g,
-			   &resource.mres.frame.colorTo.b);
+	image_control->getColor("darkgrey", &resource.mres.frame.colorTo.red,
+			   &resource.mres.frame.colorTo.green,
+			   &resource.mres.frame.colorTo.blue);
 
   if (! blackbox->readDatabaseColor("menu.frame.highlightColor",
 				    "Menu.Frame.HighLightColor",
 				    &resource.mres.frame.hcolor))
     resource.mres.frame.hcolor.pixel =
-      blackbox->getColor("black", &resource.mres.frame.hcolor.r,
-			 &resource.mres.frame.hcolor.g,
-			 &resource.mres.frame.hcolor.b);
+      image_control->getColor("black", &resource.mres.frame.hcolor.red,
+			 &resource.mres.frame.hcolor.green,
+			 &resource.mres.frame.hcolor.blue);
 
   if (! blackbox->readDatabaseColor("menu.frame.textColor",
 				    "Menu.Frame.TextColor",
 				    &resource.mres.frame.textColor))
     resource.mres.frame.textColor.pixel =
-      blackbox->getColor("black", &resource.mres.frame.textColor.r,
-			 &resource.mres.frame.textColor.g,
-			 &resource.mres.frame.textColor.b);
+      image_control->getColor("black", &resource.mres.frame.textColor.red,
+			 &resource.mres.frame.textColor.green,
+			 &resource.mres.frame.textColor.blue);
   
   if (! blackbox->readDatabaseColor("menu.frame.hiTextColor",
 				    "Menu.Frame.HiTextColor",
 				    &resource.mres.frame.htextColor))
     resource.mres.frame.htextColor.pixel =
-      blackbox->getColor("white", &resource.mres.frame.htextColor.r,
-			 &resource.mres.frame.htextColor.g,
-			 &resource.mres.frame.htextColor.b);
+      image_control->getColor("white", &resource.mres.frame.htextColor.red,
+			 &resource.mres.frame.htextColor.green,
+			 &resource.mres.frame.htextColor.blue);
 
   // toolbar configuration
   if (! (resource.tres.toolbar.texture =
 	 blackbox->readDatabaseTexture("toolbar", "Toolbar")))
-    resource.tres.toolbar.texture = BImageSolid|BImageRaised|BImageBevel2;
+    resource.tres.toolbar.texture = BImage_Solid|BImage_Raised|BImage_Bevel2;
 
   if (! blackbox->readDatabaseColor("toolbar.color",
 				    "Toolbar.Color",
 				    &resource.tres.toolbar.color))
     resource.tres.toolbar.color.pixel =
-      blackbox->getColor("grey", &resource.tres.toolbar.color.r,
-			 &resource.tres.toolbar.color.g,
-			 &resource.tres.toolbar.color.b);
+      image_control->getColor("grey", &resource.tres.toolbar.color.red,
+			 &resource.tres.toolbar.color.green,
+			 &resource.tres.toolbar.color.blue);
 
-  if (resource.tres.toolbar.texture & BImageGradient)
+  if (resource.tres.toolbar.texture & BImage_Gradient)
     if (! blackbox->readDatabaseColor("toolbar.colorTo",
 				      "Toolbar.ColorTo",
 				      &resource.tres.toolbar.colorTo))
       resource.tres.toolbar.colorTo.pixel =
-	blackbox->getColor("darkgrey", &resource.tres.toolbar.colorTo.r,
-			   &resource.tres.toolbar.colorTo.g,
-			   &resource.tres.toolbar.colorTo.b);
+	image_control->getColor("darkgrey", &resource.tres.toolbar.colorTo.red,
+			   &resource.tres.toolbar.colorTo.green,
+			   &resource.tres.toolbar.colorTo.blue);
 
   if (! (resource.tres.label.texture =
 	 blackbox->readDatabaseTexture("toolbar.label",
 				       "Toolbar.Label")))
-    resource.tres.label.texture = BImageSolid|BImageRaised|BImageBevel2;
+    resource.tres.label.texture = BImage_Solid|BImage_Raised|BImage_Bevel2;
 
   if (! blackbox->readDatabaseColor("toolbar.label.color",
 				    "Toolbar.Label.Color",
 				    &resource.tres.label.color))
     resource.tres.label.color.pixel =
-      blackbox->getColor("grey", &resource.tres.label.color.r,
-			 &resource.tres.label.color.g,
-			 &resource.tres.label.color.b);
+      image_control->getColor("grey", &resource.tres.label.color.red,
+			 &resource.tres.label.color.green,
+			 &resource.tres.label.color.blue);
 
-  if (resource.tres.label.texture & BImageGradient)
+  if (resource.tres.label.texture & BImage_Gradient)
     if (! blackbox->readDatabaseColor("toolbar.label.colorTo",
 				      "Toolbar.Label.ColorTo",
 				      &resource.tres.label.colorTo))
       resource.tres.label.colorTo.pixel =
-	blackbox->getColor("darkgrey", &resource.tres.label.colorTo.r,
-			   &resource.tres.label.colorTo.g,
-			   &resource.tres.label.colorTo.b);
+	image_control->getColor("darkgrey", &resource.tres.label.colorTo.red,
+			   &resource.tres.label.colorTo.green,
+			   &resource.tres.label.colorTo.blue);
   
   if (! (resource.tres.clock.texture =
 	 blackbox->readDatabaseTexture("toolbar.clock",
 				       "Toolbar.Clock")))
-    resource.tres.clock.texture = BImageSolid|BImageRaised|BImageBevel2;
+    resource.tres.clock.texture = BImage_Solid|BImage_Raised|BImage_Bevel2;
 
   if (! blackbox->readDatabaseColor("toolbar.clock.color",
 				    "Toolbar.Clock.Color",
 				    &resource.tres.clock.color))
     resource.tres.clock.color.pixel =
-      blackbox->getColor("grey", &resource.tres.clock.color.r,
-			 &resource.tres.clock.color.g,
-			 &resource.tres.clock.color.b);
+      image_control->getColor("grey", &resource.tres.clock.color.red,
+			 &resource.tres.clock.color.green,
+			 &resource.tres.clock.color.blue);
 
-  if (resource.tres.clock.texture & BImageGradient)
+  if (resource.tres.clock.texture & BImage_Gradient)
     if (! blackbox->readDatabaseColor("toolbar.clock.colorTo",
 				      "Toolbar.Clock.ColorTo",
 				      &resource.tres.clock.colorTo))
       resource.tres.clock.colorTo.pixel =
-	blackbox->getColor("darkgrey", &resource.tres.clock.colorTo.r,
-			   &resource.tres.clock.colorTo.g,
-			   &resource.tres.clock.colorTo.b);
+	image_control->getColor("darkgrey", &resource.tres.clock.colorTo.red,
+			   &resource.tres.clock.colorTo.green,
+			   &resource.tres.clock.colorTo.blue);
 
   if (! (resource.tres.button.texture =
 	 blackbox->readDatabaseTexture("toolbar.button",
 				       "Toolbar.Button")))
-    resource.tres.button.texture = BImageSolid|BImageRaised|BImageBevel2;
+    resource.tres.button.texture = BImage_Solid|BImage_Raised|BImage_Bevel2;
 
   if (! (resource.tres.button.ptexture =
 	 blackbox->readDatabaseTexture("toolbar.button.pressed",
 				       "Toolbar.Button.Pressed")))
     resource.tres.button.ptexture = resource.tres.button.texture |
-      BImageInverted;
+      BImage_Invert;
 
-  if (resource.tres.button.ptexture == BImageInverted)
+  if (resource.tres.button.ptexture == BImage_Invert)
     resource.tres.button.ptexture = resource.tres.button.texture |
-      BImageInverted;
+      BImage_Invert;
  
   if (! blackbox->readDatabaseColor("toolbar.button.color",
 				    "Toolbar.Button.Color",
 				    &resource.tres.button.color))
     resource.tres.button.color.pixel =
-      blackbox->getColor("grey", &resource.tres.button.color.r,
-			 &resource.tres.button.color.g,
-			 &resource.tres.button.color.b);
+      image_control->getColor("grey", &resource.tres.button.color.red,
+			 &resource.tres.button.color.green,
+			 &resource.tres.button.color.blue);
 
   if (! blackbox->readDatabaseColor("toolbar.button.pressed.color",
 				    "Toolbar.Button.Pressed.Color",
 				    &resource.tres.button.pressed))
     resource.tres.button.pressed.pixel =
-      blackbox->getColor("darkgrey", &resource.tres.button.pressed.r,
-			 &resource.tres.button.pressed.g,
-			 &resource.tres.button.pressed.b);
+      image_control->getColor("darkgrey", &resource.tres.button.pressed.red,
+			 &resource.tres.button.pressed.green,
+			 &resource.tres.button.pressed.blue);
   
-  if (resource.tres.button.texture & BImageGradient)
+  if (resource.tres.button.texture & BImage_Gradient)
     if (! blackbox->readDatabaseColor("toolbar.button.colorTo",
 				      "Toolbar.Button.ColorTo",
 				      &resource.tres.button.colorTo))
       resource.tres.button.colorTo.pixel =
-	blackbox->getColor("darkgrey", &resource.tres.button.colorTo.r,
-			   &resource.tres.button.colorTo.g,
-			   &resource.tres.button.colorTo.b);
+	image_control->getColor("darkgrey", &resource.tres.button.colorTo.red,
+			   &resource.tres.button.colorTo.green,
+			   &resource.tres.button.colorTo.blue);
 
-  if (resource.tres.button.ptexture & BImageGradient)
+  if (resource.tres.button.ptexture & BImage_Gradient)
     if (! blackbox->readDatabaseColor("toolbar.button.pressed.colorTo",
 				      "Toolbar.Button.Pressed.ColorTo",
 				      &resource.tres.button.pressedTo))
       resource.tres.button.pressedTo.pixel =
-	blackbox->getColor("grey", &resource.tres.button.pressedTo.r,
-			   &resource.tres.button.pressedTo.g,
-			   &resource.tres.button.pressedTo.b);
+	image_control->getColor("grey", &resource.tres.button.pressedTo.red,
+			   &resource.tres.button.pressedTo.green,
+			   &resource.tres.button.pressedTo.blue);
 
   if (! blackbox->readDatabaseColor("toolbar.textColor",
 				    "Toolbar.TextColor",
 				    &resource.tres.toolbar.textColor))
     resource.tres.toolbar.textColor.pixel =
-      blackbox->getColor("black", &resource.tres.toolbar.textColor.r,
-			 &resource.tres.toolbar.textColor.g,
-			 &resource.tres.toolbar.textColor.b);
+      image_control->getColor("black", &resource.tres.toolbar.textColor.red,
+			 &resource.tres.toolbar.textColor.green,
+			 &resource.tres.toolbar.textColor.blue);
 
   // load border color
   if (! (readDatabaseColor("borderColor", "BorderColor",
 			   &resource.borderColor)))
     resource.borderColor.pixel =
-      getColor("black", &resource.borderColor.r, &resource.borderColor.g,
-	       &resource.borderColor.b);
-
+      image_control->getColor("black", &resource.borderColor.red,
+			      &resource.borderColor.green,
+			      &resource.borderColor.blue);
+  
   // load border and handle widths
   if (XrmGetResource(resource.stylerc,
 		     "handleWidth",
@@ -1868,43 +1839,41 @@ unsigned long Blackbox::readDatabaseTexture(char *rname, char *rclass) {
   if (XrmGetResource(resource.stylerc, rname, rclass, &value_type,
 		     &value)) {
     if (strstr(value.addr, "Inverted")) {
-      texture |= BImageInverted;
+      texture |= BImage_Invert;
     } else {
       if (strstr(value.addr, "Solid")) {
-	texture |= BImageSolid;
+	texture |= BImage_Solid;
       } else if (strstr(value.addr, "Gradient")) {
-	texture |= BImageGradient;
+	texture |= BImage_Gradient;
 	
 	if (strstr(value.addr, "Diagonal")) {
-	  texture |= BImageDiagonal;
+	  texture |= BImage_Diagonal;
 	} else if (strstr(value.addr, "Horizontal")) {
-	  texture |= BImageHorizontal;
+	  texture |= BImage_Horizontal;
 	} else if (strstr(value.addr, "Vertical")) {
-	  texture |= BImageVertical;
+	  texture |= BImage_Vertical;
 	} else
-	  texture |= BImageDiagonal;
+	  texture |= BImage_Diagonal;
       } else
-	texture |= BImageSolid;
+	texture |= BImage_Solid;
       
       if (strstr(value.addr, "Raised"))
-	texture |= BImageRaised;
+	texture |= BImage_Raised;
       else if (strstr(value.addr, "Sunken"))
-	texture |= BImageSunken;
+	texture |= BImage_Sunken;
       else if (strstr(value.addr, "Flat"))
-	texture |= BImageFlat;
+	texture |= BImage_Flat;
       else
-	texture |= BImageRaised;
+	texture |= BImage_Raised;
       
-      if (! (texture & BImageFlat))
+      if (! (texture & BImage_Flat))
 	if (strstr(value.addr, "Bevel"))
 	  if (strstr(value.addr, "Bevel1"))
-	    texture |= BImageBevel1;
+	    texture |= BImage_Bevel1;
 	  else if (strstr(value.addr, "Bevel2"))
-	    texture |= BImageBevel2;
-	  else if (strstr(value.addr, "MotifBevel"))
-	    texture |= BImageMotifBevel;
+	    texture |= BImage_Bevel2;
 	  else
-	    texture |= BImageBevel1;
+	    texture |= BImage_Bevel1;
     }
   }
   
@@ -1918,88 +1887,12 @@ Bool Blackbox::readDatabaseColor(char *rname, char *rclass, BColor *color) {
 
   if (XrmGetResource(resource.stylerc, rname, rclass, &value_type,
 		     &value)) {
-    color->pixel = getColor(value.addr, &color->r, &color->g, &color->b);
+    color->pixel = image_control->getColor(value.addr, &color->red,
+					   &color->green, &color->blue);
     return True;
   }
 
   return False;
-}
-
-
-// *************************************************************************
-// Color lookup and allocation methods
-// *************************************************************************
-
-void Blackbox::InitColor(void) {
-  if (depth == 8) {
-    int cpc3 = (resource.cpc8bpp * resource.cpc8bpp * resource.cpc8bpp);
-    colors_8bpp = new XColor[cpc3];
-    int i = 0;
-    for (int r = 0; r < resource.cpc8bpp; r++)
-      for (int g = 0; g < resource.cpc8bpp; g++)
-	for (int b = 0; b < resource.cpc8bpp; b++) {
-	  colors_8bpp[i].red = (r * 0xffff) / (resource.cpc8bpp - 1);
-	  colors_8bpp[i].green = (g * 0xffff) / (resource.cpc8bpp - 1);
-	  colors_8bpp[i].blue = (b * 0xffff) / (resource.cpc8bpp - 1);;
-	  colors_8bpp[i++].flags = DoRed|DoGreen|DoBlue;
-	}
-    
-    XGrabServer(display);
-    
-    Colormap colormap = DefaultColormap(display, DefaultScreen(display));
-    for (i = 0; i < cpc3; i++)
-      if (! XAllocColor(display, colormap, &colors_8bpp[i])) {
-	fprintf(stderr, "couldn't alloc color %i %i %i\n", colors_8bpp[i].red,
-		colors_8bpp[i].green, colors_8bpp[i].blue);		
-	colors_8bpp[i].flags = 0;
-      } else
-	colors_8bpp[i].flags = DoRed|DoGreen|DoBlue;
-
-    XUngrabServer(display);
-  } else
-    colors_8bpp = 0;
-}
-
-
-unsigned long Blackbox::getColor(const char *colorname,
-					unsigned char *r, unsigned char *g,
-					unsigned char *b)
-{
-  XColor color;
-  XWindowAttributes attributes;
-  
-  XGetWindowAttributes(display, root, &attributes);
-  color.pixel = 0;
-  if (!XParseColor(display, attributes.colormap, colorname, &color)) {
-    fprintf(stderr, "blackbox: color parse error: \"%s\"\n", colorname);
-  } else if (!XAllocColor(display, attributes.colormap, &color)) {
-    fprintf(stderr, "blackbox: color alloc error: \"%s\"\n", colorname);
-  }
-  
-  if (color.red == 65535) *r = 0xff;
-  else *r = (unsigned char) (color.red / 0xff);
-  if (color.green == 65535) *g = 0xff;
-  else *g = (unsigned char) (color.green / 0xff);
-  if (color.blue == 65535) *b = 0xff;
-  else *b = (unsigned char) (color.blue / 0xff);
- 
-  return color.pixel;
-}
-
-
-unsigned long Blackbox::getColor(const char *colorname) {
-  XColor color;
-  XWindowAttributes attributes;
-  
-  XGetWindowAttributes(display, root, &attributes);
-  color.pixel = 0;
-  if (!XParseColor(display, attributes.colormap, colorname, &color)) {
-    fprintf(stderr, "blackbox: color parse error: \"%s\"\n", colorname);
-  } else if (!XAllocColor(display, attributes.colormap, &color)) {
-    fprintf(stderr, "blackbox: color alloc error: \"%s\"\n", colorname);
-  }
-
-  return color.pixel;
 }
 
 
@@ -2018,7 +1911,7 @@ void Blackbox::do_reconfigure(void) {
   LoadStyle();
 
   XGCValues gcv;
-  gcv.foreground = getColor("white");
+  gcv.foreground = image_control->getColor("white");
   gcv.function = GXxor;
   gcv.line_width = 2;
   gcv.subwindow_mode = IncludeInferiors;
@@ -2066,118 +1959,3 @@ void Blackbox::setStyle(char *filename) {
   resource.styleFile = new char[strlen(filename) + 1];
   sprintf(resource.styleFile, "%s", filename);
 }
-
-
-// *************************************************************************
-// pixmap cache control
-// *************************************************************************
-
-Pixmap Blackbox::renderImage(unsigned int width, unsigned int height,
-			     unsigned long texture, const BColor &from,
-			     const BColor &to) {
-  if (pixmapCacheList->count() != 0) {
-    LinkedListIterator<PixmapCache> it(pixmapCacheList);
-
-    for (; it.current(); it++) {
-      if ((it.current()->width == width) &&
-	  (it.current()->height == height) &&
-	  (it.current()->texture == texture) &&
-	  (it.current()->pixel1 == from.pixel))
-	if (texture & BImageGradient) {
-	  if (it.current()->pixel2 == to.pixel) {
-	    it.current()->count++;
-	    return it.current()->pixmap;
-	  }
-	} else {
-	  it.current()->count++;
-	  return it.current()->pixmap;
-	}
-    }
-  }
-
-  BImage image(this, width, height, depth);
-  Pixmap pixmap = image.renderImage(texture, from, to);
-  
-  if (pixmap) {
-    PixmapCache *tmp = new PixmapCache;
-
-    tmp->pixmap = pixmap;
-    tmp->width = width;
-    tmp->height = height;
-    tmp->count = 1;
-    tmp->texture = texture;
-    tmp->pixel1 = from.pixel;
-
-    if (texture & BImageGradient)
-      tmp->pixel2 = to.pixel;
-    else
-      tmp->pixel2 = 0l;
-
-    pixmapCacheList->insert(tmp);
-    return pixmap;
-  }
-
-  return None;
-}
-
-
-
-Pixmap Blackbox::renderSolidImage(unsigned int width, unsigned int height,
-				  unsigned long texture, const BColor &color) {
-  if (pixmapCacheList->count() != 0) {
-    LinkedListIterator<PixmapCache> it(pixmapCacheList);
-    
-    for (; it.current(); it++) {
-      if ((it.current()->width == width) &&
-	  (it.current()->height == height) &&
-	  (it.current()->texture == texture) &&
-	  (it.current()->pixel1 == color.pixel)) {
-	it.current()->count++;
-	return it.current()->pixmap;
-      }
-    }
-  }
-
-  BImage image(this, width, height, depth);
-  Pixmap pixmap = image.renderSolidImage(texture, color);
-  
-  if (pixmap) {
-    PixmapCache *tmp = new PixmapCache;
-
-    tmp->pixmap = pixmap;
-    tmp->width = width;
-    tmp->height = height;
-    tmp->count = 1;
-    tmp->texture = texture;
-    tmp->pixel1 = color.pixel;
-    tmp->pixel2 = 0l;
-
-    pixmapCacheList->insert(tmp);
-    return pixmap;
-  }
-
-  return None;
-}
-
-
-void Blackbox::removeImage(Pixmap pixmap) {
-  if (pixmap) {
-    LinkedListIterator<PixmapCache> it(pixmapCacheList);
-
-    for (; it.current(); it++) {
-      if (it.current()->pixmap == pixmap) {
-	PixmapCache *tmp = it.current();
-	tmp->count--;
-	  
-	if (! tmp->count) {	  
-	  XFreePixmap(display, tmp->pixmap);
-	  pixmapCacheList->remove(tmp);
-	  delete tmp;
-	}
-	
-	return;
-      }
-    }
-  }
-}
-
