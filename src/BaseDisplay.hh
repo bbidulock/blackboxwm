@@ -30,6 +30,7 @@ extern "C" {
 }
 
 #include <vector>
+#include <string>
 
 // forward declaration
 class BaseDisplay;
@@ -131,6 +132,7 @@ private:
 
   int depth;
   unsigned int screen_number;
+  std::string display_string;
   XRectangle rect;
 
 protected:
@@ -148,6 +150,8 @@ public:
     { return screen_number; }
   inline unsigned short getWidth(void) const { return rect.width; }
   inline unsigned short getHeight(void) const { return rect.height; }
+  inline const char* displayString(void) const
+  { return display_string.c_str(); }
 };
 
 

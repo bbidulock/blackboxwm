@@ -730,11 +730,7 @@ void BScreen::LoadStyle(void) {
   if (XrmGetResource(resource.stylerc,
                      "rootCommand",
                      "RootCommand", &value_type, &value)) {
-    string displaystring = "DISPLAY=";
-    displaystring += DisplayString(blackbox->getXDisplay());
-    displaystring[displaystring.length() - 1] = getScreenNumber();
-
-    bexec(value.addr, displaystring);
+    bexec(value.addr, displayString());
   }
 
   XrmDestroyDatabase(resource.stylerc);

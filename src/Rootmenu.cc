@@ -66,13 +66,8 @@ void Rootmenu::itemSelected(int button, int index) {
 
   switch (item->function()) {
   case BScreen::Execute:
-    if (item->exec()) {
-      string displaystring = "DISPLAY=";
-      displaystring += DisplayString(screen->getBaseDisplay()->getXDisplay());
-      displaystring[displaystring.length() - 1] = screen->getScreenNumber();
-
-      bexec(item->exec(), displaystring.c_str());
-    }
+    if (item->exec())
+      bexec(item->exec(), screen->displayString());
     break;
 
   case BScreen::Restart:

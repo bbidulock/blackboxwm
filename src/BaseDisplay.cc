@@ -78,6 +78,8 @@ extern "C" {
 #endif // HAVE_SYS_WAIT_H
 }
 
+#include <strstream>
+
 #include "i18n.hh"
 #include "BaseDisplay.hh"
 #include "GCCache.hh"
@@ -444,4 +446,10 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, unsigned int num) {
     visual = DefaultVisual(basedisplay->getXDisplay(), screen_number);
     colormap = DefaultColormap(basedisplay->getXDisplay(), screen_number);
   }
+
+  std::ostrstream formatter;
+  formatter << "DISPLAY="
+            << DisplayString(basedisplay->getXDisplay())
+            << screen_number;
+  display_string = formatter.str();
 }
