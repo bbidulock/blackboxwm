@@ -21,7 +21,7 @@
 
 #ifndef __blackbox_hh
 #define __blackbox_hh
-#define __blackbox_version "PRE zero point three zero point two beta"
+#define __blackbox_version "beta zero point three zero point three"
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
@@ -87,10 +87,10 @@ private:
       unsigned long toolbox, window, button, menu, imenu;
     } texture;
 
-    Bool prompt_reconfigure;
+    Bool prompt_reconfigure, opaqueMove, imageDither;
     XrmDatabase blackboxrc;
     char *menuFile;
-    int workspaces, justification;
+    int workspaces, justification, cpc8bpp;
   } resource;
 
   struct shape {
@@ -129,10 +129,9 @@ protected:
   void InitMenu(void);
   void InitColor(void);
   void LoadDefaults(void);
+
   unsigned long readDatabaseTexture(char *, char *);
-  unsigned long readDatabaseColor(char *, char *, unsigned char *,
-				  unsigned char *, unsigned char *);
-  XFontStruct *readDatabaseFont(char *, char *);
+  Bool readDatabaseColor(char *, char *, BColor *);
 
   // event processing and dispatching
   void ProcessEvent(XEvent *);
@@ -212,7 +211,9 @@ public:
 
   Window Root(void) { return root; }
 
+  Bool imageDither(void) { return resource.imageDither; }
   XColor *Colors8bpp(void) { return colors_8bpp; }
+  int cpc8bpp(void) { return resource.cpc8bpp; }
 
   XFontStruct *titleFont(void) { return resource.font.title; }
   XFontStruct *menuFont(void) { return resource.font.menu; }
@@ -260,6 +261,9 @@ public:
 
   // controls for arrangement of decorations
   const int Justification(void) const { return resource.justification; }
+  
+  // window move style
+  Bool opaqueMove(void) { return resource.opaqueMove; }
   
   // public constants
   enum { B_Restart = 1, B_RestartOther, B_Exit, B_Shutdown, B_Execute,

@@ -171,8 +171,24 @@ WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
   current = workspacesList->first();
   
   redrawWSD(True);
-  redrawWSDButtons(True);
   checkClock(True);
+
+  int hh = frame.button_h / 2, hw = frame.button_w / 2;
+  
+  XPoint pts[3];
+  pts[0].x = hw - 2; pts[0].y = hh;
+  pts[1].x = 4; pts[1].y = 2;
+  pts[2].x = 0; pts[2].y = -4;
+  
+  XFillPolygon(display, frame.bButton, buttonGC, pts, 3, Convex,
+	       CoordModePrevious);
+  
+  pts[0].x = hw - 2; pts[0].y = hh - 2;
+  pts[1].x = 4; pts[1].y =  2;
+  pts[2].x = -4; pts[2].y = 2;
+  
+  XFillPolygon(display, frame.fButton, buttonGC, pts, 3, Convex,
+	       CoordModePrevious);
 }
 
 
@@ -266,7 +282,6 @@ void WorkspaceManager::changeWorkspaceID(int id) {
     current->hideAll();
     current = workspace(id);
     redrawWSD(True);
-    redrawWSDButtons(True);
     current->showAll();
     XSync(display, False);
   }
@@ -405,8 +420,24 @@ void WorkspaceManager::Reconfigure(void) {
   XClearWindow(display, frame.clock);
  
   redrawWSD(True);
-  redrawWSDButtons(True);
   checkClock(True);
+
+  int hh = frame.button_h / 2, hw = frame.button_w / 2;
+  
+  XPoint pts[3];
+  pts[0].x = hw - 2; pts[0].y = hh;
+  pts[1].x = 4; pts[1].y = 2;
+  pts[2].x = 0; pts[2].y = -4;
+  
+  XFillPolygon(display, frame.bButton, buttonGC, pts, 3, Convex,
+	       CoordModePrevious);
+  
+  pts[0].x = hw - 2; pts[0].y = hh - 2;
+  pts[1].x = 4; pts[1].y =  2;
+  pts[2].x = -4; pts[2].y = 2;
+  
+  XFillPolygon(display, frame.fButton, buttonGC, pts, 3, Convex,
+	       CoordModePrevious);
 
   wsMenu->Reconfigure();
   wsMenu->Move(frame.x + 1, frame.y - wsMenu->Height() - 1);
@@ -466,46 +497,6 @@ void WorkspaceManager::redrawWSD(Bool clear) {
 }
 
 
-void WorkspaceManager::redrawWSDButtons(Bool clear) {
-  if (clear) {
-    XClearWindow(display, frame.bButton);
-    XClearWindow(display, frame.fButton);
-  }
-
-  int hh = frame.button_h / 2, hw = frame.button_w / 2;
-
-  if (current->workspaceID() != 0) {
-    XPoint pts[3];
-    pts[0].x = hw - 2;
-    pts[0].y = hh;
-    
-    pts[1].x = 4;
-    pts[1].y = 2;
-    
-    pts[2].x = 0;
-    pts[2].y = -4;
-    
-    XFillPolygon(display, frame.bButton, buttonGC, pts, 3, Convex,
-		 CoordModePrevious);
-  }
-
-  if (current->workspaceID() != (workspacesList->count() - 1)) {
-    XPoint pts[3];
-    pts[0].x = hw - 2;
-    pts[0].y = hh - 2;
-    
-    pts[1].x = 4;
-    pts[1].y =  2;
-    
-    pts[2].x = -4;
-    pts[2].y = 2;
-    
-    XFillPolygon(display, frame.fButton, buttonGC, pts, 3, Convex,
-		 CoordModePrevious);
-  }
-}
-
-
 // *************************************************************************
 // event handlers
 // *************************************************************************
@@ -515,11 +506,27 @@ void WorkspaceManager::buttonPressEvent(XButtonEvent *be) {
     if (be->window == frame.bButton) {
       XSetWindowBackgroundPixmap(display, frame.bButton, frame.pbutton);
       XClearWindow(display, frame.bButton);
-      redrawWSDButtons();
+      int hh = frame.button_h / 2, hw = frame.button_w / 2;
+      
+      XPoint pts[3];
+      pts[0].x = hw - 2; pts[0].y = hh;
+      pts[1].x = 4; pts[1].y = 2;
+      pts[2].x = 0; pts[2].y = -4;
+    
+      XFillPolygon(display, frame.bButton, buttonGC, pts, 3, Convex,
+		   CoordModePrevious);      
     } else if (be->window == frame.fButton) {
       XSetWindowBackgroundPixmap(display, frame.fButton, frame.pbutton);
       XClearWindow(display, frame.fButton);
-      redrawWSDButtons();
+      int hh = frame.button_h / 2, hw = frame.button_w / 2;
+    
+      XPoint pts[3];
+      pts[0].x = hw - 2; pts[0].y = hh - 2;
+      pts[1].x = 4; pts[1].y =  2;
+      pts[2].x = -4; pts[2].y = 2;
+    
+      XFillPolygon(display, frame.fButton, buttonGC, pts, 3, Convex,
+		   CoordModePrevious);
     } else if (be->window == frame.workspaceDock) {
       if (! wsMenu->Visible()) {
 	if (current->Menu()->Visible())
@@ -549,23 +556,41 @@ void WorkspaceManager::buttonReleaseEvent(XButtonEvent *re) {
     if (re->window == frame.bButton) {
       XSetWindowBackgroundPixmap(display, frame.bButton, frame.button);
       XClearWindow(display, frame.bButton);
+      int hh = frame.button_h / 2, hw = frame.button_w / 2;
       
+      XPoint pts[3];
+      pts[0].x = hw - 2; pts[0].y = hh;
+      pts[1].x = 4; pts[1].y = 2;
+      pts[2].x = 0; pts[2].y = -4;
+    
+      XFillPolygon(display, frame.bButton, buttonGC, pts, 3, Convex,
+		   CoordModePrevious);
+
       if (re->x >= 0 && re->x < (signed) frame.button_w &&
-	  re->y >= 0 && re->y < (signed) frame.button_h) {
+	  re->y >= 0 && re->y < (signed) frame.button_h)
 	if (current->workspaceID() > 0)
 	  changeWorkspaceID(current->workspaceID() - 1);
-      } else
-	redrawWSDButtons();
+	else
+	  changeWorkspaceID(workspacesList->count() - 1);
     } else if (re->window == frame.fButton) {
       XSetWindowBackgroundPixmap(display, frame.fButton, frame.button);
       XClearWindow(display, frame.fButton);
+      int hh = frame.button_h / 2, hw = frame.button_w / 2;
+    
+      XPoint pts[3];
+      pts[0].x = hw - 2; pts[0].y = hh - 2;
+      pts[1].x = 4; pts[1].y =  2;
+      pts[2].x = -4; pts[2].y = 2;
+    
+      XFillPolygon(display, frame.fButton, buttonGC, pts, 3, Convex,
+		   CoordModePrevious);
       
       if (re->x >= 0 && re->x < (signed) frame.button_w &&
-	  re->y >= 0 && re->y < (signed) frame.button_h) {
+	  re->y >= 0 && re->y < (signed) frame.button_h)
 	if (current->workspaceID() < (workspacesList->count() - 1))
 	  changeWorkspaceID(current->workspaceID() + 1);
-      } else
-	redrawWSDButtons();
+	else
+	  changeWorkspaceID(0);
     } else if (re->window == frame.workspaceDock) {
       if (! waitb1) {
 	if (current->Menu()->Visible())
@@ -591,6 +616,25 @@ void WorkspaceManager::exposeEvent(XExposeEvent *ee) {
     checkClock(True);
   else if (ee->window == frame.workspaceDock)
     redrawWSD();
-  else if (ee->window == frame.bButton || ee->window == frame.fButton)
-    redrawWSDButtons();
+  else if (ee->window == frame.bButton) {
+    int hh = frame.button_h / 2, hw = frame.button_w / 2;
+    
+    XPoint pts[3];
+    pts[0].x = hw - 2; pts[0].y = hh;
+    pts[1].x = 4; pts[1].y = 2;
+    pts[2].x = 0; pts[2].y = -4;
+    
+    XFillPolygon(display, frame.bButton, buttonGC, pts, 3, Convex,
+		 CoordModePrevious);
+  } else if (ee->window == frame.fButton) {
+    int hh = frame.button_h / 2, hw = frame.button_w / 2;
+    
+    XPoint pts[3];
+    pts[0].x = hw - 2; pts[0].y = hh - 2;
+    pts[1].x = 4; pts[1].y =  2;
+    pts[2].x = -4; pts[2].y = 2;
+    
+    XFillPolygon(display, frame.fButton, buttonGC, pts, 3, Convex,
+		 CoordModePrevious);
+  }
 }

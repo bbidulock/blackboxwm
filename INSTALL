@@ -41,6 +41,13 @@ Contributors:
 	 - beta testing, bug reports (beta moron)
 	Fred Knieper <derf@tamu.edu>
 	 - beta testing, bug reports
+	Steve Udell <hettar@teleport.com>
+	 - beta testing, bug reports, questions (very good ones)
+
+I would also like to thank the creators of WindowMaker.  Reading the existing
+code has helped me immensely, and the BImage class follows the RImage data type
+very closely (the 8bpp code and dithering code was based off of WindowMaker's
+wrlib).
 
 
 Compilation and Installation:

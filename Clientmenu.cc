@@ -45,7 +45,11 @@ void Clientmenu::itemSelected(int button, int index) {
   if (button == 1)
     if (index >= 0 && index < wkspc->Count()) {
       BlackboxWindow *win = wkspc->window(index);
-      wkspc->raiseWindow(win);
-      win->setInputFocus();
+      if (win) {
+        if (win->isIconic())
+          win->deiconifyWindow();
+        wkspc->raiseWindow(win);
+        win->setInputFocus();
+      }
     }
 }

@@ -78,7 +78,6 @@ public:
   void Reconfigure(void);
   void checkClock(Bool = False);
   void redrawWSD(Bool = False);
-  void redrawWSDButtons(Bool = False);
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);

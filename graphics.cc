@@ -22,6 +22,8 @@
 #define _GNU_SOURCE
 #include "graphics.hh"
 
+#include <alloca.h>
+
 
 // *************************************************************************
 // Graphics engine class code
@@ -304,83 +306,324 @@ XImage *BImage::convertToXImage(void) {
   case 16: {
     unsigned short *im = (unsigned short *) image->data;
 
-    while (--wh) {
+    if (blackbox->imageDither()) {
+      // lets dither the image while blitting to the XImage
+      unsigned int i, x, y, ofs;
+      unsigned short *tor, *tog, *tob, er, eg, eb, sr, sg, sb,
+	*or = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
+	*og = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
+	*ob = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
+	*nor = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
+	*nog = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
+	*nob = (unsigned short *) alloca((width + 2) * sizeof(unsigned short));
+      
+      if ((! or) || (! og) || (! ob) || (! nor) || (! nog) || (! nob)) {
+	XDestroyImage(image);
+	return 0;
+      }
+
+      tor = or; tog = og; tob = ob;
+      
+      for (i = 0; i < width; i++) {
+	*(tor++) = ((*(data + i)) & 0xff0000) >> 16;
+	*(tog++) = ((*(data + i)) & 0xff00) >> 8;
+	*(tob++) = ((*(data + i)) & 0xff);
+      }
+
+      ofs = 0;
+      for (y = 0; y < height; y++) {
+	if (y < (height - 1)) {
+	  tor = nor; tog = nog; tob = nob;
+	  
+	  for (i = ofs + width; i < ofs + (width * 2); i++) {
+	    *(tor++) = ((*(data + i)) & 0xff0000) >> 16;
+	    *(tog++) = ((*(data + i)) & 0xff00) >> 8;
+	    *(tob++) = ((*(data + i)) & 0xff);
+	  }
+	  
+	  *tor = ((*(data + i - 1)) & 0xff0000) >> 16;
+	  *tog = ((*(data + i - 1)) & 0xff00) >> 8;
+	  *tob = ((*(data + i - 1)) & 0xff);
+	}
+
+	for (x = 0; x < width; x++) {
+	  if (*(or + x) > 255) *(or + x) = 255;
+	  if (*(og + x) > 255) *(og + x) = 255;
+	  if (*(ob + x) > 255) *(ob + x) = 255;
+	  
+	  sr = *(or + x);
+	  sg = *(og + x);
+	  sb = *(ob + x);
+
+	  sr = ((sr << 8) & image->red_mask);
+	  sg = ((sg << 3) & image->green_mask);
+	  sb = ((sb >> 3) & image->blue_mask);
+	  
+	  *(im++) = sr|sg|sb;
+	  
+	  er = *(or + x) - (sr >> 8);
+	  eg = *(og + x) - (sg >> 3);
+	  eb = *(ob + x) - (sb << 3);
+	  
+	  *(or + x + 1) += (er * 3) / 8;
+	  *(og + x + 1) += (eg * 3) / 8;
+	  *(ob + x + 1) += (eb * 3) / 8;
+	  
+	  *(nor + x) += (er * 3) / 8;
+	  *(nog + x) += (eg * 3) / 8;
+	  *(nob + x) += (eb * 3) / 8;
+	
+	  *(nor + x + 1) += (er * 2) / 8;
+	  *(nog + x + 1) += (eg * 2) / 8;
+	  *(nob + x + 1) += (eb * 2) / 8;
+	}
+	ofs += width;
+	
+	tor = or; tog = og; tob = ob;
+	or = nor; og = nog; ob = nob;
+	nor = tor; nog = tog; nob = tob;
+      }
+    } else {
+      while (--wh) {
+	r = (unsigned char) (((*p) & 0xff0000) >> 16);
+	g = (unsigned char) (((*p) & 0xff00) >> 8);
+	b = (unsigned char) (*(p++) & 0xff);
+	*(im++) = (((b >> 3) & image->blue_mask) |
+		   ((g << 3) & image->green_mask) |
+		   ((r << 8) & image->red_mask)); 
+      }
+      
       r = (unsigned char) (((*p) & 0xff0000) >> 16);
       g = (unsigned char) (((*p) & 0xff00) >> 8);
       b = (unsigned char) (*(p++) & 0xff);
-      *(im++) = (((b >> 3) & image->blue_mask) |
-		 ((g << 3) & image->green_mask) |
-		 ((r << 8) & image->red_mask));
+      *im = (((b >> 3) & image->blue_mask) |
+	     ((g << 3) & image->green_mask) |
+	     ((r << 8) & image->red_mask));
     }
-    
-    r = (unsigned char) (((*p) & 0xff0000) >> 16);
-    g = (unsigned char) (((*p) & 0xff00) >> 8);
-    b = (unsigned char) (*(p++) & 0xff);
-    *im = (((b >> 3) & image->blue_mask) |
-	   ((g << 3) & image->green_mask) |
-	   ((r << 8) & image->red_mask));
-    
+
     break; }
 
   case 15: {
     unsigned short *im = (unsigned short *) image->data;
 
-    while (--wh) {
+    if (blackbox->imageDither()) {
+      // lets dither the image while blitting to the XImage
+      unsigned int i, x, y, ofs;
+      unsigned short *tor, *tog, *tob, er, eg, eb, sr, sg, sb,
+	*or = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
+	*og = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
+	*ob = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
+	*nor = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
+	*nog = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
+	*nob = (unsigned short *) alloca((width + 2) * sizeof(unsigned short));
+      
+      if ((! or) || (! og) || (! ob) || (! nor) || (! nog) || (! nob)) {
+	XDestroyImage(image);
+	return 0;
+      }
+
+      tor = or; tog = og; tob = ob;
+      
+      for (i = 0; i < width; i++) {
+	*(tor++) = ((*(data + i)) & 0xff0000) >> 16;
+	*(tog++) = ((*(data + i)) & 0xff00) >> 8;
+	*(tob++) = ((*(data + i)) & 0xff);
+      }
+
+      ofs = 0;
+      for (y = 0; y < height; y++) {
+	if (y < (height - 1)) {
+	  tor = nor; tog = nog; tob = nob;
+	  
+	  for (i = ofs + width; i < ofs + (width * 2); i++) {
+	    *(tor++) = ((*(data + i)) & 0xff0000) >> 16;
+	    *(tog++) = ((*(data + i)) & 0xff00) >> 8;
+	    *(tob++) = ((*(data + i)) & 0xff);
+	  }
+	  
+	  *tor = ((*(data + i - 1)) & 0xff0000) >> 16;
+	  *tog = ((*(data + i - 1)) & 0xff00) >> 8;
+	  *tob = ((*(data + i - 1)) & 0xff);
+	}
+
+	for (x = 0; x < width; x++) {
+	  if (*(or + x) > 255) *(or + x) = 255;
+	  if (*(og + x) > 255) *(og + x) = 255;
+	  if (*(ob + x) > 255) *(ob + x) = 255;
+	  
+	  sr = *(or + x);
+	  sg = *(og + x);
+	  sb = *(ob + x);
+
+	  sr = ((sr << 7) & image->red_mask);
+	  sg = ((sg << 2) & image->green_mask);
+	  sb = ((sb >> 3) & image->blue_mask);
+	  
+	  //	  *(im++) = sr|sg|sb;
+	  XPutPixel(image, x, y, sr|sg|sb);
+
+	  er = *(or + x) - (sr >> 7);
+	  eg = *(og + x) - (sg >> 2);
+	  eb = *(ob + x) - (sb << 3);
+	  
+	  *(or + x + 1) += (er * 3) / 8;
+	  *(og + x + 1) += (eg * 3) / 8;
+	  *(ob + x + 1) += (eb * 3) / 8;
+	  
+	  *(nor + x) += (er * 3) / 8;
+	  *(nog + x) += (eg * 3) / 8;
+	  *(nob + x) += (eb * 3) / 8;
+	
+	  *(nor + x + 1) += (er * 2) / 8;
+	  *(nog + x + 1) += (eg * 2) / 8;
+	  *(nob + x + 1) += (eb * 2) / 8;
+	}
+	ofs += width;
+	
+	tor = or; tog = og; tob = ob;
+	or = nor; og = nog; ob = nob;
+	nor = tor; nog = tog; nob = tob;
+      }
+    } else {
+      while (--wh) {
+	r = (unsigned char) (((*p) & 0xff0000) >> 16);
+	g = (unsigned char) (((*p) & 0xff00) >> 8);
+	b = (unsigned char) (*(p++) & 0xff);
+	*(im++) = (((b >> 3) & image->blue_mask) |
+		   ((g << 2) & image->green_mask) |
+		   ((r << 7) & image->red_mask));
+      }
+      
       r = (unsigned char) (((*p) & 0xff0000) >> 16);
       g = (unsigned char) (((*p) & 0xff00) >> 8);
       b = (unsigned char) (*(p++) & 0xff);
-      *(im++) = (((b >> 3) & image->blue_mask) |
-		 ((g << 2) & image->green_mask) |
-		 ((r << 7) & image->red_mask));
+      *im = (((b >> 3) & image->blue_mask) |
+	     ((g << 2) & image->green_mask) |
+	     ((r << 7) & image->red_mask));
     }
-    
-    r = (unsigned char) (((*p) & 0xff0000) >> 16);
-    g = (unsigned char) (((*p) & 0xff00) >> 8);
-    b = (unsigned char) (*(p++) & 0xff);
-    *im = (((b >> 3) & image->blue_mask) |
-	   ((g << 2) & image->green_mask) |
-	   ((r << 7) & image->red_mask));
     
     break; }
 
   case 8: {
-    int rr, gg, bb;
+    int rr, gg, bb, cpc = blackbox->cpc8bpp(), cpc2 = cpc * cpc;
     unsigned char *im = (unsigned char *) image->data;
 
-    while (--wh) {
+    if (blackbox->imageDither()) {
+      int d = 0xff / blackbox->cpc8bpp();
+      unsigned int i, x, y, ofs;
+      unsigned short *tor, *tog, *tob, er, eg, eb,
+	*or = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
+	*og = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
+	*ob = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
+	*nor = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
+	*nog = (unsigned short *) alloca((width + 2) * sizeof(unsigned short)),
+	*nob = (unsigned short *) alloca((width + 2) * sizeof(unsigned short));
+      
+      if ((! or) || (! og) || (! ob) || (! nor) || (! nog) || (! nob)) {
+	XDestroyImage(image);
+	return 0;
+      }
+
+      tor = or; tog = og; tob = ob;
+      
+      for (i = 0; i < width; i++) {
+	*(tor++) = ((*(data + i)) & 0xff0000) >> 16;
+	*(tog++) = ((*(data + i)) & 0xff00) >> 8;
+	*(tob++) = ((*(data + i)) & 0xff);
+      }
+
+      *tor = *tog = *tob = 0;
+      ofs = 0;
+      for (y = 0; y < height; y++) {
+	if (y < (height - 1)) {
+	  tor = nor; tog = nog; tob = nob;
+	  
+	  for (i = ofs + width; i < ofs + (width * 2); i++) {
+	    *(tor++) = ((*(data + i)) & 0xff0000) >> 16;
+	    *(tog++) = ((*(data + i)) & 0xff00) >> 8;
+	    *(tob++) = ((*(data + i)) & 0xff);
+	  }
+	  
+	  *tor = *tog = *tob = 0;
+
+	  *tor = ((*(data + i - 1)) & 0xff0000) >> 16;
+	  *tog = ((*(data + i - 1)) & 0xff00) >> 8;
+	  *tob = ((*(data + i - 1)) & 0xff);
+	}
+
+	for (x = 0; x < width; x++) {
+	  rr = (*(or + x) * cpc) / 0xff;
+	  gg = (*(og + x) * cpc) / 0xff;
+	  bb = (*(ob + x) * cpc) / 0xff;
+
+	  if (rr < 0) rr = 0;
+	  else if (rr > (cpc - 1)) rr = (cpc - 1);
+	  if (gg < 0) gg = 0;
+	  else if (gg > (cpc - 1)) gg = (cpc - 1);
+	  if (bb < 0) bb = 0;
+	  else if (bb > (cpc - 1)) bb = (cpc - 1);
+	  
+	  *(im++) =
+	    blackbox->Colors8bpp()[(rr * cpc2) + (gg * cpc) + bb].pixel;
+	  
+	  er = *(or + x) - (rr * d);
+	  eg = *(og + x) - (gg * d);
+	  eb = *(ob + x) - (bb * d);
+	  
+	  *(or + x + 1) += (er * 3) / 8;
+	  *(og + x + 1) += (eg * 3) / 8;
+	  *(ob + x + 1) += (eb * 3) / 8;
+	  
+	  *(nor + x) += (er * 3) / 8;
+	  *(nog + x) += (eg * 3) / 8;
+	  *(nob + x) += (eb * 3) / 8;
+	
+	  *(nor + x + 1) += (er * 2) / 8;
+	  *(nog + x + 1) += (eg * 2) / 8;
+	  *(nob + x + 1) += (eb * 2) / 8;
+	}
+	ofs += width;
+	
+	tor = or; tog = og; tob = ob;
+	or = nor; og = nog; ob = nob;
+	nor = tor; nog = tog; nob = tob;
+      }
+    } else {
+      while (--wh) {
+	r = (unsigned char) (((*p) & 0xff0000) >> 16);
+	g = (unsigned char) (((*p) & 0xff00) >> 8);
+	b = (unsigned char) ((*(p++)) & 0xff);
+	
+	rr = (r * cpc) / 0xff;
+	gg = (g * cpc) / 0xff;
+	bb = (b * cpc) / 0xff;
+	
+	if (rr < 0) rr = 0;
+	else if (rr > (cpc - 1)) rr = (cpc - 1);
+	if (gg < 0) gg = 0;
+	else if (gg > (cpc - 1)) gg = (cpc - 1);
+	if (bb < 0) bb = 0;
+	else if (bb > (cpc - 1)) bb = (cpc - 1);
+	*(im++) = blackbox->Colors8bpp()[(rr * cpc2) + (gg * cpc) + bb].pixel;
+      }
+      
       r = (unsigned char) (((*p) & 0xff0000) >> 16);
       g = (unsigned char) (((*p) & 0xff00) >> 8);
       b = (unsigned char) ((*(p++)) & 0xff);
-
-      rr = (r * 5) / 0xff;
-      gg = (g * 5) / 0xff;
-      bb = (b * 5) / 0xff;
-
+      
+      rr = (r * cpc) / 0xff;
+      gg = (g * cpc) / 0xff;
+      bb = (b * cpc) / 0xff;
+      
       if (rr < 0) rr = 0;
-      else if (rr > 4) rr = 4;
+      else if (rr > (cpc - 1)) rr = (cpc - 1);
       if (gg < 0) gg = 0;
-      else if (gg > 4) gg = 4;
+      else if (gg > (cpc - 1)) gg = (cpc - 1);
       if (bb < 0) bb = 0;
-      else if (bb > 4) bb = 4;
-      *(im++) = blackbox->Colors8bpp()[(rr * 25) + (gg * 5) + bb].pixel;
+      else if (bb > (cpc - 1)) bb = (cpc - 1);
+      *(im) = blackbox->Colors8bpp()[(rr * cpc2) + (gg * cpc) + bb].pixel;
     }
 
-    r = (unsigned char) (((*p) & 0xff0000) >> 16);
-    g = (unsigned char) (((*p) & 0xff00) >> 8);
-    b = (unsigned char) ((*(p++)) & 0xff);
-    
-    rr = (r * 5) / 0xff;
-    gg = (g * 5) / 0xff;
-    bb = (b * 5) / 0xff;
-    
-    if (rr < 0) rr = 0;
-    else if (rr > 4) rr = 4;
-    if (gg < 0) gg = 0;
-    else if (gg > 4) gg = 4;
-    if (bb < 0) bb = 0;
-    else if (bb > 4) bb = 4;
-    *(im) = blackbox->Colors8bpp()[(rr * 25) + (gg * 5) + bb].pixel;
-    
     break; }
   }
 

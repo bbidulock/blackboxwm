@@ -46,22 +46,23 @@ BlackboxIcon::BlackboxIcon(Blackbox *bb, BlackboxWindow *win) {
   if (! XGetIconName(display, icon.client, &icon.name))
     icon.name = 0;
 
+  unsigned int depth_of_client_pixmap = 0;
   if (window->clientIconPixmap()) {
     Window rootReturn;
     int foo;
-    unsigned int w, h, ufoo;
+    unsigned int ufoo;
     
     XGetGeometry(display, window->clientIconPixmap(), &rootReturn, &foo, &foo,
-		 &w, &h, &ufoo, &ufoo);
-    
-    icon.pixmap_w = w;
-    icon.pixmap_h = h;
+		 &icon.pixmap_w, &icon.pixmap_h, &ufoo, &depth_of_client_pixmap);
   }
   
-  icon.label_w = XTextWidth(blackbox->iconFont(), icon.name, strlen(icon.name));
+  icon.label_w = XTextWidth(blackbox->iconFont(),
+                            ((icon.name) ? icon.name : "Unnamed"),
+                            strlen(((icon.name) ? icon.name : "Unnamed")));
   icon.width = icon.pixmap_w + icon.label_w + 4;
   
-  icon.label_h = blackbox->iconFont()->ascent + blackbox->iconFont()->descent + 4;
+  icon.label_h = blackbox->iconFont()->ascent +
+    blackbox->iconFont()->descent + 4;
   icon.height = ((icon.pixmap_h < icon.label_h) ? icon.label_h : icon.pixmap_h);
   
   unsigned long attrib_mask = CWBackPixmap|CWBackPixel|CWBorderPixel|
@@ -94,7 +95,8 @@ BlackboxIcon::BlackboxIcon(Blackbox *bb, BlackboxWindow *win) {
   gcv.foreground = blackbox->iconTextColor().pixel;
   gcv.background = blackbox->toolboxColor().pixel;
   gcv.font = blackbox->iconFont()->fid;
-  iconGC = XCreateGC(display, icon.window, GCForeground|GCBackground|GCFont, &gcv);
+  iconGC = XCreateGC(display, icon.window, GCForeground|GCBackground|GCFont,
+    &gcv);
   
   if (window->clientIconPixmap()) {
     attrib.event_mask |= EnterWindowMask|LeaveWindowMask;
@@ -106,8 +108,12 @@ BlackboxIcon::BlackboxIcon(Blackbox *bb, BlackboxWindow *win) {
     
     Pixmap p = XCreatePixmap(display, icon.window, icon.width, icon.height,
 			     blackbox->Depth());
-    XCopyPlane(display, window->clientIconPixmap(), p, iconGC, 0, 0,
-	       icon.width, icon.height, 0, 0, 1);
+    if ((signed) depth_of_client_pixmap == blackbox->Depth())
+      XCopyArea(display, window->clientIconPixmap(), p, iconGC, 0, 0,
+		icon.width, icon.height, 0, 0);
+    else
+      XCopyPlane(display, window->clientIconPixmap(), p, iconGC, 0, 0,
+		 icon.width, icon.height, 0, 0, 1);
     
     XSetWindowBackgroundPixmap(display, icon.subwindow, p);
     if (p) XFreePixmap(display, p);
@@ -120,8 +126,9 @@ BlackboxIcon::BlackboxIcon(Blackbox *bb, BlackboxWindow *win) {
   XMapWindow(display, icon.window);
   XDrawString(display, icon.window, iconGC, icon.pixmap_w + 5,
 	      (icon.height + blackbox->iconFont()->ascent -
-	       blackbox->iconFont()->descent) / 2, icon.name, strlen(icon.name));
-  
+	       blackbox->iconFont()->descent) / 2,
+              ((icon.name) ? icon.name : "Unnamed"),
+              strlen(((icon.name) ? icon.name : "Unnamed")));
 }
 
 
@@ -149,8 +156,8 @@ void BlackboxIcon::buttonPressEvent(XButtonEvent *) { }
 
 void BlackboxIcon::buttonReleaseEvent(XButtonEvent *be) {
   if (be->button == 1 &&
-      be->x >= 0 && be->x <= (signed) (128) &&
-      be->y >= 0 && be->y <= (signed) icon.height) {
+      be->x >= 0 && be->x <= (signed) icon.width + 4 &&
+      be->y >= 0 && be->y <= (signed) icon.height + 4) {
     XUnmapWindow(display, icon.window);
     window->deiconifyWindow();
     window->setFocusFlag(False);
@@ -162,7 +169,9 @@ void BlackboxIcon::exposeEvent(XExposeEvent *ee) {
   if (ee->window == icon.window)
     XDrawString(display, icon.window, iconGC, icon.pixmap_w + 5,
 	       	(icon.height + blackbox->iconFont()->ascent -
-		 blackbox->iconFont()->descent) / 2, icon.name, strlen(icon.name));
+		 blackbox->iconFont()->descent) / 2,
+                ((icon.name) ? icon.name : "Unnamed"),
+                strlen(((icon.name) ? icon.name : "Unnamed")));
 }
 
 
@@ -170,7 +179,9 @@ void BlackboxIcon::rereadLabel(void) {
   if (! XGetIconName(display, icon.client, &icon.name))
     icon.name = 0;
 
-  icon.label_w = XTextWidth(blackbox->iconFont(), icon.name, strlen(icon.name));
+  icon.label_w = XTextWidth(blackbox->iconFont(),
+                            ((icon.name) ? icon.name : "Unnamed"),
+                            strlen(((icon.name) ? icon.name : "Unnamed")));
   icon.width = icon.pixmap_w + icon.label_w + 4;
   icon.height = ((icon.pixmap_h < icon.label_h) ? icon.label_h : icon.pixmap_h);
   
@@ -193,7 +204,9 @@ void BlackboxIcon::Reconfigure(void) {
   gcv.font = blackbox->iconFont()->fid;
   XChangeGC(display, iconGC, GCForeground|GCFont, &gcv);
 
-  icon.label_w = XTextWidth(blackbox->iconFont(), icon.name, strlen(icon.name));
+  icon.label_w = XTextWidth(blackbox->iconFont(),
+                            ((icon.name) ? icon.name : "Unnamed"),
+                            strlen(((icon.name) ? icon.name : "Unnamed")));
   icon.width = icon.pixmap_w + icon.label_w + 4;
   
   icon.label_h = blackbox->iconFont()->ascent + blackbox->iconFont()->descent + 4;
@@ -211,5 +224,7 @@ void BlackboxIcon::Reconfigure(void) {
   XClearWindow(display, icon.window);
   XDrawString(display, icon.window, iconGC, icon.pixmap_w + 5,
 	      (icon.height + blackbox->iconFont()->ascent -
-	       blackbox->iconFont()->descent) / 2, icon.name, strlen(icon.name));
+	       blackbox->iconFont()->descent) / 2,
+              ((icon.name) ? icon.name : "Unnamed"),
+              strlen(((icon.name) ? icon.name : "Unnamed")));
 }

@@ -70,6 +70,13 @@ Contributors:
 	 - beta testing, bug reports (beta moron)
 	Fred Knieper <derf@tamu.edu>
 	 - beta testing, bug reports
+	Steve Udell <hettar@teleport.com>
+	 - beta testing, bug reports, questions (very good ones)
+
+I would also like to thank the creators of WindowMaker.  Reading the existing
+code has helped me immensely, and the BImage class follows the RImage data type
+very closely (the 8bpp code and dithering code was based off of WindowMaker's
+wrlib).
 
 
 Compilation and Installation:
@@ -300,7 +307,6 @@ blackbox.session.toolboxTexture		Blackbox.Session.ToolboxTexture
 blackbox.window.windowTexture		Blackbox.Window.WindowTexture
 blackbox.window.buttonTexture		Blackbox.Window.ButtonTexture
 blackbox.menu.menuTexture		Blackbox.Menu.MenuTexture
-blackbox.menu.menuItemPressedTexture	Blackbox.Menu.MenuItemPressedTexture
 blackbox.menu.menuItemTexture		Blackbox.Menu.MenuItemTexture
 
 Values Accepted:
@@ -366,6 +372,36 @@ Accepted Value:
 
 Name:					Class:
 --------				---------
+blackbox.window.moveStyle		Blackbox.Window.MoveStyle
+
+Accepted Value:
+	A character string of "opaque" will cause blackbox to show the window
+	contents during a window move.  Any other value will cause blackbox to
+	draw a wire frame during the move.
+
+
+Name:					Class:
+--------				---------
+blackbox.imageRender.dither		Blackbox.ImageRender.Dither
+
+Accepted Value:
+	A boolean value of "true" will dither images on 8,
+	15 (currently broken) and 16bpp displays.
+
+
+Name:					Class:
+-------					---------
+blackbox.imageRender.colorsPerChannel	Blackbox.ImageRender.ColorsPerChannel
+
+Accepted Value:
+	An integer between 1 and 6.  This number controls how many pre
+	allocated colors are used on 8bpp displays.  Higher number creates
+	better color "trueness" at the expense of using all colors.  Default is
+	5, but 4 or 5 yield decent (and less resource expensive) results.
+
+
+Name:					Class:
+--------				---------
 blackbox.session.titleFont		Blackbox.Session.TitleFont
 blackbox.session.menuFont		Blackbox.Session.MenuFont
 blackbox.session.iconFont		Blackbox.Session.IconFont
@@ -417,9 +453,10 @@ blackbox*iconTextColor:           grey
 
 blackbox*workspaces:              5
 blackbox*menuFile:                /home/users/bhughes/blackbox/blackbox.menu
-blackbox*orientation:             righthanded
-blackbox*reconfigurePrompt:       yes
 blackbox*titleJustify:            centerjustify
+blackbox*moveStyle:		  Opaque
+blackbox*dither:		  True
+blackbox*colorsPerChannel:	  4
 
 blackbox*titleFont:     -adobe-helvetica-medium-r-*-*-*-100-*-*-*-*-*-*
 blackbox*menuFont:      -adobe-helvetica-medium-r-*-*-*-100-*-*-*-*-*-*

@@ -35,6 +35,8 @@ class Blackbox;
 class BlackboxIcon;
 class Windowmenu;
 
+#include "graphics.hh"
+
 
 class BlackboxWindow {
 private:
@@ -43,19 +45,17 @@ private:
   Windowmenu *windowmenu;
   
   Bool moving, resizing, shaded, maximized, visible, iconic, transient,
-    focused, icccm_compliant, internal_window, resizable, do_close,
-    do_iconify;
+    focused, icccm_compliant, internal_window, resizable, do_close;
   Display *display;
   
   struct client {
-    Atom WMDelete, WMProtocols;
     BlackboxWindow *transient_for,  /* which window are we a transient for? */
       *transient;                   /* which window is our transient? */
     Pixmap icon_pixmap, icon_mask;
     Window window, icon_window, window_group;
     
     char *title, *app_name, *app_class;
-    int x, y, x_move, y_move;
+    int x, y;
     unsigned int width, height,
       base_w, base_h,
       inc_w, inc_h,
@@ -71,14 +71,15 @@ private:
       ubase;
     Window window, title, base, handle, close_button, iconify_button,
       maximize_button, resize_handle;
-    int x, y, x_resize, y_resize;
+    int x, y, x_resize, y_resize, x_move, y_move;
     unsigned int width, height, title_h, title_w, handle_h, handle_w,
       base_w, base_h, button_w, button_h, rh_w, rh_h;
   } frame;
 
-  struct {
+  struct protocols {
+    Atom WMDeleteWindow, WMProtocols;
     Bool WM_DELETE_WINDOW, WM_TAKE_FOCUS, WM_COLORMAP_WINDOWS;
-  } Protocols;
+  } protocols;
 
   char *resizeLabel;
   enum { F_NoInput = 0, F_Passive, F_LocallyActive, F_GloballyActive };

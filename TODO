@@ -42,7 +42,8 @@ DONE	- Code cleanup to reflect the above (session lists and awkward restart
 
 	- bug fixes (provided the little bo0glies show their faces)
 
-	- make wire moves, animations and animation stepping part of the
+DONE	- make wire moves, animations and animation stepping part of the
 	  resource configuration instead of compile time operations
+	  (animations still compile time option)
 
 More to come...
