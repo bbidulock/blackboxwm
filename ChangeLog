@@ -29,6 +29,8 @@ Changes from 0.62.1:
   - added emacs local variables to each file that prevent the addition of tabs
   - XGetInputFocus() is void yet we were using it in a if() test.
   - update transient handling, should solve issues with apps like acroread.
+    (well it didn't, but at least the code handles some situations better).
+  - added zh_TW (Taiwan Chinese)
 
 Changes from 0.62.0 to 0.62.1:
   - the lock modifier code handles user redefined modifiers better
