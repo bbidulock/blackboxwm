@@ -537,7 +537,8 @@ bool bt::Application::process_signal(int signal) {
   switch (signal) {
   case SIGCHLD:
     int unused;
-    (void) waitpid(-1, &unused, WNOHANG | WUNTRACED);
+    while (waitpid(-1, &unused, WNOHANG | WUNTRACED) > 0)
+      ;
     break;
 
   case SIGINT:
