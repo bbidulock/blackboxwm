@@ -3,10 +3,10 @@ ChangeLog for 0.62.x
 Changes from 0.62.1:
   - bsetroot now sets _XROOTPMAP_ID, so pseudo transparent apps will be happy
   - beginnings of a strut implementation.  toolbar and slit are removed from
-    the available screen area
+    the available screen area if 'full maximize' is not set
   - bsetbg now tries to use tempfile, then mktemp and finally defaults to
     creating a .$$ temporary file itself if none of the commands are found.
-    Also updated the command line argument parser to handler unknown single
+    Also updated the command line argument parser to handle unknown single
     letter arguments.
   - handle the odd edge case where a reparent event occurs while the window
     is unmapped.  XReparentWindow sends an UnmapNotify to the window manager
@@ -17,7 +17,7 @@ Changes from 0.62.1:
   - applied a patch from the long lost in the tundra Brad.  This one's a doozy.
     * no more blackbox->grab/ungrab calls everywhere
     * compression of motion, expose, and configure events
-  - added a Util.cc file which contains expandTilde() and bstrdup().  Now we
+  - added a Util.cc file which contains expandTilde() and bexec().  Now we
     have one function which turns ~/ into /home/user/.  This is now called
     everywhere this expansion should be done.  Even added this to the
     resource.menu_file so now the menu file may be specified as ~/blackbox_menu

@@ -42,7 +42,7 @@ extern "C" {
 
 class I18n {
 private:
-  char *locale, *catalog_filename;
+  char *locale;
   bool mb;
 #ifdef HAVE_NL_TYPES_H
   nl_catd catalog_fd;
@@ -54,7 +54,7 @@ public:
 
   inline bool multibyte(void) const { return mb; }
 
-  const char *operator()(int set, int msg, const char *msgString) const;
+  const char* operator()(int set, int msg, const char *msgString) const;
   void openCatalog(const char *catalog);
 };
 

@@ -95,9 +95,11 @@ public:
   int insert(BasemenuItem *item, int pos);
   int insert(const std::string& label, int function = 0,
              const std::string& exec = "", int pos = -1);
-  int insert(const std::string& ulabel, const std::string& label);
+  //  int insert(const std::string& ulabel, const std::string& label);
   int insert(const std::string &label, Basemenu *submenu, int pos = -1);
   int remove(int index);
+
+  void changeItemLabel(unsigned int index, const string& label);
 
   inline int getX(void) const { return menu.x; }
   inline int getY(void) const { return menu.y; }
@@ -145,7 +147,7 @@ public:
 class BasemenuItem {
 private:
   Basemenu *sub;
-  const std::string u, l, e;
+  std::string l, e;
   int f, enabled, selected;
 
   friend class Basemenu;
@@ -153,23 +155,25 @@ private:
 protected:
 
 public:
-  BasemenuItem(const std::string& lp, int fp, const std::string& ep = ""):
+  BasemenuItem(const std::string& lp, int fp = 0, const std::string& ep = ""):
     sub(0), l(lp), e(ep), f(fp), enabled(1), selected(0) {}
 
   BasemenuItem(const std::string& lp, Basemenu *mp): sub(mp), l(lp),
                                                      f(0), enabled(1),
                                                      selected(0) {}
 
-  BasemenuItem(const std::string& up, const std::string& lp, int fp):
-    sub(0), u(up), l(lp), f(fp), enabled(1), selected(0) {}
+  //  BasemenuItem(const std::string& up, const std::string& lp, int fp):
+  //    sub(0), u(up), l(lp), f(fp), enabled(1), selected(0) {}
 
   ~BasemenuItem(void);
 
   inline const char *exec(void) const { return e.c_str(); }
   inline const char *label(void) const { return l.c_str(); }
-  inline const char *ulabel(void) const { return u.c_str(); }
+  //  inline const char *ulabel(void) const { return u.c_str(); }
   inline int function(void) const { return f; }
   inline Basemenu *submenu(void) { return sub; }
+
+  inline void newLabel(const std::string& label) { l = label; }
 
   inline int isEnabled(void) const { return enabled; }
   inline void setEnabled(int e) { enabled = e; }

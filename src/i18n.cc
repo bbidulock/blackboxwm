@@ -45,6 +45,9 @@
 #  include <locale.h>
 #endif // HAVE_LOCALE_H
 
+#include <string>
+using std::string;
+
 // the rest of bb source uses True and False from X, so we continue that
 #define True true
 #define False false
@@ -73,14 +76,10 @@ I18n::I18n(void) {
   catalog_fd = (nl_catd) -1;
 #endif
 #endif // HAVE_SETLOCALE
-
-  catalog_filename = (char *) 0;
 }
 
 
 I18n::~I18n(void) {
-  delete [] catalog_filename;
-
 #if defined(NLS) && defined(HAVE_CATCLOSE)
   if (catalog_fd != (nl_catd) -1)
     catclose(catalog_fd);
@@ -90,27 +89,20 @@ I18n::~I18n(void) {
 
 void I18n::openCatalog(const char *catalog) {
 #if defined(NLS) && defined(HAVE_CATOPEN)
-  int lp = strlen(LOCALEPATH), lc = strlen(locale),
-      ct = strlen(catalog), len = lp + lc + ct + 3;
-  catalog_filename = new char[len];
-
-  strncpy(catalog_filename, LOCALEPATH, lp);
-  *(catalog_filename + lp) = '/';
-  strncpy(catalog_filename + lp + 1, locale, lc);
-  *(catalog_filename + lp + lc + 1) = '/';
-  strncpy(catalog_filename + lp + lc + 2, catalog, ct + 1);
+  string catalog_filename = LOCALEPATH;
+  catalog_filename += '/';
+  catalog_filename += locale;
+  catalog_filename += '/';
+  catalog_filename += catalog;
 
 #  ifdef    MCLoadBySet
-  catalog_fd = catopen(catalog_filename, MCLoadBySet);
+  catalog_fd = catopen(catalog_filename.c_str(), MCLoadBySet);
 #  else // !MCLoadBySet
-  catalog_fd = catopen(catalog_filename, NL_CAT_LOCALE);
+  catalog_fd = catopen(catalog_filename.c_str(), NL_CAT_LOCALE);
 #  endif // MCLoadBySet
 
   if (catalog_fd == (nl_catd) -1)
     fprintf(stderr, "failed to open catalog, using default messages\n");
-#else // !HAVE_CATOPEN
-
-  catalog_filename = (char *) 0;
 #endif // HAVE_CATOPEN
 }
 

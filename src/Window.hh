@@ -266,8 +266,11 @@ public:
 
   inline Windowmenu * getWindowmenu(void) { return windowmenu; }
 
-  inline const char *getTitle(void) { return client.title.c_str(); }
-  inline const char *getIconTitle(void) { return client.icon_title.c_str(); }
+  inline const char *getTitle(void) const
+  { return client.title.c_str(); }
+  inline const char *getIconTitle(void) const
+  { return client.icon_title.c_str(); }
+  
   inline int getXFrame(void) const { return frame.x; }
   inline int getYFrame(void) const { return frame.y; }
   inline int getXClient(void) const { return client.x; }

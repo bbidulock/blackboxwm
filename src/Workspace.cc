@@ -82,8 +82,7 @@ void Workspace::addWindow(BlackboxWindow *w, Bool place) {
   stackingList.push_front(w);
   windowList.push_back(w);
 
-  string title = w->getTitle();
-  clientmenu->insert(title, title);
+  clientmenu->insert(w->getTitle());
   clientmenu->update();
 
   screen->updateNetizenWindowAdd(w->getClientWindow(), id);
@@ -325,12 +324,6 @@ unsigned int Workspace::getCount(void) const {
 }
 
 
-void Workspace::update(void) {
-  clientmenu->update();
-  screen->getToolbar()->redrawWindowLabel(True);
-}
-
-
 Bool Workspace::isCurrent(void) const {
   return (id == screen->getCurrentWorkspaceID());
 }
@@ -349,10 +342,10 @@ void Workspace::setName(const string& new_name) {
   if (! new_name.empty()) {
     name = new_name;
   } else {
+    string tmp =i18n(WorkspaceSet, WorkspaceDefaultNameFormat, "Workspace %d");
+    assert(tmp.size() < 32);
     char default_name[32];
-    snprintf(default_name, 32,
-             i18n(WorkspaceSet, WorkspaceDefaultNameFormat, "Workspace %d"),
-             id + 1);
+    sprintf(default_name, tmp.c_str(), id + 1);
     name = default_name;
   }
 

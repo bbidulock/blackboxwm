@@ -847,7 +847,9 @@ void Toolbar::buttonPressEvent(XButtonEvent *be) {
   } else if (be->button == 2 && (! on_top)) {
     XLowerWindow(display, frame.window);
   } else if (be->button == 3) {
-    if (! toolbarmenu->isVisible()) {
+    if (toolbarmenu->isVisible()) {
+      toolbarmenu->hide();
+    } else {
       int x, y;
 
       x = be->x_root - (toolbarmenu->getWidth() / 2);
@@ -865,8 +867,7 @@ void Toolbar::buttonPressEvent(XButtonEvent *be) {
 
       toolbarmenu->move(x, y);
       toolbarmenu->show();
-    } else
-      toolbarmenu->hide();
+    }
   }
 }
 
@@ -981,10 +982,8 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
       wkspc->setName(new_workspace_name);
       wkspc->getMenu()->hide();
 
-      screen->getWorkspacemenu()->remove(wkspc->getID() + 2);
-      screen->getWorkspacemenu()->insert(wkspc->getName(),
-                                         wkspc->getMenu(),
-                                         wkspc->getID() + 2);
+      screen->getWorkspacemenu()->changeItemLabel(wkspc->getID() + 2,
+                                                  wkspc->getName());
       screen->getWorkspacemenu()->update();
 
       new_workspace_name.resize(0);

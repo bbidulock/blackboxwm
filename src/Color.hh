@@ -26,6 +26,7 @@
 
 #include <X11/Xlib.h>
 
+#include <algorithm>
 #include <map>
 #include <string>
 
@@ -123,6 +124,7 @@ private:
     inline PixelRef(const unsigned long x) : p(x), count(1) { }
   };
   typedef std::map<RGB,PixelRef> ColorCache;
+  typedef std::pair<RGB,PixelRef> ColorCacheItem;
   static ColorCache colorcache;
   static bool cleancache;
   static void doCacheCleanup();

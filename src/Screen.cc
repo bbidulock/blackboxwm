@@ -66,10 +66,6 @@
 #  include <stdarg.h>
 #endif // HAVE_STDARG_H
 
-#ifndef    HAVE_SNPRINTF
-#  include "bsd-snprintf.h"
-#endif // !HAVE_SNPRINTF
-
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "Clientmenu.hh"
@@ -758,7 +754,7 @@ void BScreen::addIcon(BlackboxWindow *w) {
   iconList.push_back(w);
 
   const char* title = w->getIconTitle();
-  iconmenu->insert(title, title);
+  iconmenu->insert(title);
   iconmenu->update();
 }
 
@@ -1081,6 +1077,22 @@ void BScreen::reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id,
   } else if (ignore_sticky || ! w->isStuck()) {
     getWorkspace(w->getWorkspaceNumber())->removeWindow(w);
     getWorkspace(wkspc_id)->addWindow(w);
+  }
+}
+
+
+void BScreen::propagateWindowName(const BlackboxWindow *bw) {
+  if (bw->isIconic()) {
+    iconmenu->changeItemLabel(bw->getWindowNumber(), bw->getIconTitle());
+    iconmenu->update();
+  }
+  else {
+    Clientmenu *clientmenu = getWorkspace(bw->getWorkspaceNumber())->getMenu();
+    clientmenu->changeItemLabel(bw->getWindowNumber(), bw->getTitle());
+    clientmenu->update();
+
+    if (blackbox->getFocusedWindow() == bw)
+      toolbar->redrawWindowLabel(True);
   }
 }
 
@@ -2006,7 +2018,7 @@ XFontSet BScreen::createFontSet(const string &fontname)
 
   buf_size = strlen(nfontname) + (FONT_ELEMENT_SIZE * 2) + 64;
   char *pattern2 = new char[buf_size];
-  snprintf(pattern2, buf_size - 1,
+  sprintf(pattern2,
            "%s,"
            "-*-*-%s-%s-*-*-%d-*-*-*-*-*-*-*,"
            "-*-*-*-*-*-*-%d-*-*-*-*-*-*-*,*",

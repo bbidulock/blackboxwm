@@ -111,20 +111,20 @@
 
 
 // X event scanner for enter/leave notifies - adapted from twm
-typedef struct scanargs {
+struct scanargs {
   Window w;
   Bool leave, inferior, enter;
-} scanargs;
+};
 
 static Bool queueScanner(Display *, XEvent *e, char *args) {
+  scanargs *scan = (scanargs *) args;
   if ((e->type == LeaveNotify) &&
-      (e->xcrossing.window == ((scanargs *) args)->w) &&
+      (e->xcrossing.window == scan->w) &&
       (e->xcrossing.mode == NotifyNormal)) {
-    ((scanargs *) args)->leave = True;
-    ((scanargs *) args)->inferior = (e->xcrossing.detail == NotifyInferior);
-  } else if ((e->type == EnterNotify) &&
-             (e->xcrossing.mode == NotifyUngrab)) {
-    ((scanargs *) args)->enter = True;
+    scan->leave = True;
+    scan->inferior = (e->xcrossing.detail == NotifyInferior);
+  } else if ((e->type == EnterNotify) && (e->xcrossing.mode == NotifyUngrab)) {
+    scan->enter = True;
   }
 
   return False;
@@ -230,15 +230,12 @@ void Blackbox::process_event(XEvent *e) {
       tbar->buttonPressEvent(&e->xbutton);
     } else {
       ScreenList::iterator it = screenList.begin();
-      BScreen *screen = (BScreen*) 0;
       for (; it != screenList.end(); ++it) {
         if (e->xbutton.window == (*it)->getRootWindow()) {
-          screen = *it;
+          (*it)->buttonPressEvent(&e->xbutton);
           break;
         }
       }
-      if (screen)
-        screen->buttonPressEvent(&e->xbutton);
     }
     break;
   }
@@ -334,7 +331,7 @@ void Blackbox::process_event(XEvent *e) {
     Slit *slit = (Slit *) 0;
 
     if ((win = searchWindow(e->xunmap.window))) {
-        win->unmapNotifyEvent(&e->xunmap);
+      win->unmapNotifyEvent(&e->xunmap);
     } else if ((slit = searchSlit(e->xunmap.window))) {
       slit->removeClient(e->xunmap.window);
     }
@@ -438,7 +435,7 @@ void Blackbox::process_event(XEvent *e) {
           (! win->isFocused()) && (! no_focus)) {
         if (((! sa.leave) || sa.inferior) && win->isVisible() &&
             win->setInputFocus())
-          win->installColormap(True);
+          win->installColormap(True); // XXX: shouldnt we honour no install?
       }
     } else if ((menu = searchMenu(e->xcrossing.window))) {
       menu->enterNotifyEvent(&e->xcrossing);
@@ -797,27 +794,27 @@ Slit *Blackbox::searchSlit(Window window) {
 
 
 void Blackbox::saveWindowSearch(Window window, BlackboxWindow *data) {
-  windowSearchList.insert(std::make_pair(window, data));
+  windowSearchList.insert(WindowLookupPair(window, data));
 }
 
 
 void Blackbox::saveGroupSearch(Window window, BlackboxWindow *data) {
-  groupSearchList.insert(std::make_pair(window, data));
+  groupSearchList.insert(WindowLookupPair(window, data));
 }
 
 
 void Blackbox::saveMenuSearch(Window window, Basemenu *data) {
-  menuSearchList.insert(std::make_pair(window, data));
+  menuSearchList.insert(MenuLookupPair(window, data));
 }
 
 
 void Blackbox::saveToolbarSearch(Window window, Toolbar *data) {
-  toolbarSearchList.insert(std::make_pair(window, data));
+  toolbarSearchList.insert(ToolbarLookupPair(window, data));
 }
 
 
 void Blackbox::saveSlitSearch(Window window, Slit *data) {
-  slitSearchList.insert(std::make_pair(window, data));
+  slitSearchList.insert(SlitLookupPair(window, data));
 }
 
 
@@ -907,21 +904,21 @@ void Blackbox::save_rc(void) {
     BScreen *screen = *it;
     int screen_number = screen->getScreenNumber();
 
-    char *slit_placement = (char *) 0;
+    char *placement = (char *) 0;
 
     switch (screen->getSlitPlacement()) {
-    case Slit::TopLeft: slit_placement = "TopLeft"; break;
-    case Slit::CenterLeft: slit_placement = "CenterLeft"; break;
-    case Slit::BottomLeft: slit_placement = "BottomLeft"; break;
-    case Slit::TopCenter: slit_placement = "TopCenter"; break;
-    case Slit::BottomCenter: slit_placement = "BottomCenter"; break;
-    case Slit::TopRight: slit_placement = "TopRight"; break;
-    case Slit::BottomRight: slit_placement = "BottomRight"; break;
-    case Slit::CenterRight: default: slit_placement = "CenterRight"; break;
+    case Slit::TopLeft: placement = "TopLeft"; break;
+    case Slit::CenterLeft: placement = "CenterLeft"; break;
+    case Slit::BottomLeft: placement = "BottomLeft"; break;
+    case Slit::TopCenter: placement = "TopCenter"; break;
+    case Slit::BottomCenter: placement = "BottomCenter"; break;
+    case Slit::TopRight: placement = "TopRight"; break;
+    case Slit::BottomRight: placement = "BottomRight"; break;
+    case Slit::CenterRight: default: placement = "CenterRight"; break;
     }
 
     sprintf(rc_string, "session.screen%d.slit.placement: %s", screen_number,
-            slit_placement);
+            placement);
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.slit.direction: %s", screen_number,
@@ -969,7 +966,6 @@ void Blackbox::save_rc(void) {
              "TopToBottom" : "BottomToTop"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
-    char *placement = (char *) 0;
     switch (screen->getPlacementPolicy()) {
     case BScreen::CascadePlacement:
       placement = "CascadePlacement";
@@ -1008,21 +1004,19 @@ void Blackbox::save_rc(void) {
             ((screen->getToolbar()->doAutoHide()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
-    char *toolbar_placement = (char *) 0;
-
     switch (screen->getToolbarPlacement()) {
-    case Toolbar::TopLeft: toolbar_placement = "TopLeft"; break;
-    case Toolbar::BottomLeft: toolbar_placement = "BottomLeft"; break;
-    case Toolbar::TopCenter: toolbar_placement = "TopCenter"; break;
-    case Toolbar::TopRight: toolbar_placement = "TopRight"; break;
-    case Toolbar::BottomRight: toolbar_placement = "BottomRight"; break;
+    case Toolbar::TopLeft: placement = "TopLeft"; break;
+    case Toolbar::BottomLeft: placement = "BottomLeft"; break;
+    case Toolbar::TopCenter: placement = "TopCenter"; break;
+    case Toolbar::TopRight: placement = "TopRight"; break;
+    case Toolbar::BottomRight: placement = "BottomRight"; break;
     case Toolbar::BottomCenter: default:
-      toolbar_placement = "BottomCenter"; break;
+      placement = "BottomCenter"; break;
     }
 
     sprintf(rc_string, "session.screen%d.toolbar.placement: %s",
             screen_number,
-            toolbar_placement);
+            placement);
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     load_rc(screen);
@@ -1048,8 +1042,7 @@ void Blackbox::save_rc(void) {
 #endif // HAVE_STRFTIME
 
     sprintf(rc_string, "session.screen%d.edgeSnapThreshold: %d",
-            screen_number,
-            screen->getEdgeSnapThreshold());
+            screen_number, screen->getEdgeSnapThreshold());
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.toolbar.widthPercent:  %d",
@@ -1057,34 +1050,19 @@ void Blackbox::save_rc(void) {
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     // write out the user's workspace names
-    int len = 0;
-    for (unsigned int i = 0; i < screen->getWorkspaceCount(); i++) {
-      const char* const name = screen->getWorkspace(i)->getName().c_str();
-      len += strlen(name) + 1;
+
+    string save_string = screen->getWorkspace(0)->getName();
+    for (unsigned int i = 1; i < screen->getWorkspaceCount(); ++i) {
+      save_string += ',';
+      save_string += screen->getWorkspace(i)->getName();
     }
 
-    char *resource_string = new char[len + 1024],
-      *save_string = new char[len], *save_string_pos = save_string,
-      *name_string_pos;
-    if (save_string) {
-      for (unsigned i = 0; i < screen->getWorkspaceCount(); i++) {
-        const char* const name = screen->getWorkspace(i)->getName().c_str();
-        len = strlen(name) + 1;
-        name_string_pos = (char *) name;
-
-        while (--len) *(save_string_pos++) = *(name_string_pos++);
-        *(save_string_pos++) = ',';
-      }
-    }
-
-    *(--save_string_pos) = '\0';
-
+    char *resource_string = new char[save_string.length() + 48];
     sprintf(resource_string, "session.screen%d.workspaceNames:  %s",
-            screen_number, save_string);
+            screen_number, save_string.c_str());
     XrmPutLineResource(&new_blackboxrc, resource_string);
 
     delete [] resource_string;
-    delete [] save_string;
   }
 
   XrmDatabase old_blackboxrc = XrmGetFileDatabase(rc_file.c_str());
@@ -1124,7 +1102,7 @@ void Blackbox::load_rc(void) {
 
   if (XrmGetResource(database, "session.styleFile", "Session.StyleFile",
                      &value_type, &value))
-    resource.style_file = value.addr;
+    resource.style_file = expandTilde(value.addr);
   else
     resource.style_file = DEFAULTSTYLE;
 
@@ -1242,7 +1220,10 @@ void Blackbox::load_rc(BScreen *screen) {
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value)) {
     int workspace_count;
-    if (sscanf(value.addr, "%d", &workspace_count) != 1) workspace_count = 1;
+    if (sscanf(value.addr, "%d", &workspace_count) != 1)
+      workspace_count = 1;
+    else if (workspace_count <= 0 || workspace_count > 128)
+      workspace_count = 1;
     screen->saveWorkspaces(workspace_count);
   } else {
     screen->saveWorkspaces(1);
@@ -1254,9 +1235,9 @@ void Blackbox::load_rc(BScreen *screen) {
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value)) {
     int i;
-    if (sscanf(value.addr, "%d", &i) != 1) i = 66;
-
-    if (i <= 0 || i > 100)
+    if (sscanf(value.addr, "%d", &i) != 1)
+      i = 66;
+    else if (i <= 0 || i > 100)
       i = 66;
 
     screen->saveToolbarWidthPercent(i);
@@ -1405,7 +1386,7 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(class_lookup, "Session.Screen%d.Slit.AutoHide", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value)) {
-    if (! strncasecmp(value.addr, "True", value.size))
+    if (! strncasecmp(value.addr, "true", value.size))
       screen->saveSlitAutoHide(True);
     else
       screen->saveSlitAutoHide(False);
@@ -1499,7 +1480,7 @@ void Blackbox::reconfigure(void) {
 
 void Blackbox::real_reconfigure(void) {
   XrmDatabase new_blackboxrc = (XrmDatabase) 0;
-  char *style = new char[strlen(getStyleFilename()) + 20];
+  char *style = new char[resource.style_file.length() + 20];
 
   sprintf(style, "session.styleFile: %s", getStyleFilename());
   XrmPutLineResource(&new_blackboxrc, style);
@@ -1599,15 +1580,14 @@ void Blackbox::timeout(void) {
 
 void Blackbox::setFocusedWindow(BlackboxWindow *win) {
   BScreen *old_screen = (BScreen *) 0, *screen = (BScreen *) 0;
-  BlackboxWindow *old_win = (BlackboxWindow *) 0;
   Toolbar *old_tbar = (Toolbar *) 0, *tbar = (Toolbar *) 0;
-  Workspace *old_wkspc = (Workspace *) 0, *wkspc = (Workspace *) 0;
 
   if (focused_window) {
-    old_win = focused_window;
+    BlackboxWindow *old_win = focused_window;
     old_screen = old_win->getScreen();
     old_tbar = old_screen->getToolbar();
-    old_wkspc = old_screen->getWorkspace(old_win->getWorkspaceNumber());
+    Workspace *old_wkspc =
+      old_screen->getWorkspace(old_win->getWorkspaceNumber());
 
     old_win->setFocusFlag(False);
     old_wkspc->getMenu()->setItemSelected(old_win->getWindowNumber(), False);
@@ -1616,7 +1596,7 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
   if (win && ! win->isIconic()) {
     screen = win->getScreen();
     tbar = screen->getToolbar();
-    wkspc = screen->getWorkspace(win->getWorkspaceNumber());
+    Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
 
     focused_window = win;
 

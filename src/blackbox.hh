@@ -42,6 +42,7 @@
 #  endif // HAVE_SYS_TIME_H
 #endif // TIME_WITH_SYS_TIME
 
+#include <algorithm>
 #include <list>
 #include <map>
 #include <string>
@@ -114,15 +115,19 @@ private:
   } resource;
 
   typedef std::map<Window, BlackboxWindow*> WindowLookup;
+  typedef std::pair<Window, BlackboxWindow*> WindowLookupPair;
   WindowLookup windowSearchList, groupSearchList;
 
   typedef std::map<Window, Basemenu*> MenuLookup;
+  typedef std::pair<Window, Basemenu*> MenuLookupPair;
   MenuLookup menuSearchList;
 
   typedef std::map<Window, Toolbar*> ToolbarLookup;
+  typedef std::pair<Window, Toolbar*> ToolbarLookupPair;
   ToolbarLookup toolbarSearchList;
 
   typedef std::map<Window, Slit*> SlitLookup;
+  typedef std::pair<Window, Slit*> SlitLookupPair;
   SlitLookup slitSearchList;
 
   typedef std::list<MenuTimestamp*> MenuTimestampList;

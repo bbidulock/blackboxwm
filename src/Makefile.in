@@ -100,7 +100,7 @@ CPPFLAGS = @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ @DEBUG@ @NLS@ @TIMEDCACHE@ -DLOCAL
 
 bin_PROGRAMS = blackbox
 
-blackbox_SOURCES = BaseDisplay.cc Basemenu.cc Clientmenu.cc Color.cc Configmenu.cc GCCache.cc Iconmenu.cc Image.cc ImageControl.cc Netizen.cc Rootmenu.cc Screen.cc Slit.cc Texture.cc Timer.cc Toolbar.cc Util.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc bsd-snprintf.c i18n.cc main.cc
+blackbox_SOURCES = BaseDisplay.cc Basemenu.cc Clientmenu.cc Color.cc Configmenu.cc GCCache.cc Iconmenu.cc Image.cc ImageControl.cc Netizen.cc Rootmenu.cc Screen.cc Slit.cc Texture.cc Timer.cc Toolbar.cc Util.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc i18n.cc main.cc
 
 MAINTAINERCLEANFILES = Makefile.in
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -119,8 +119,7 @@ X_PRE_LIBS = @X_PRE_LIBS@
 blackbox_OBJECTS =  BaseDisplay.o Basemenu.o Clientmenu.o Color.o \
 Configmenu.o GCCache.o Iconmenu.o Image.o ImageControl.o Netizen.o \
 Rootmenu.o Screen.o Slit.o Texture.o Timer.o Toolbar.o Util.o Window.o \
-Windowmenu.o Workspace.o Workspacemenu.o blackbox.o bsd-snprintf.o \
-i18n.o main.o
+Windowmenu.o Workspace.o Workspacemenu.o blackbox.o i18n.o main.o
 blackbox_LDADD = $(LDADD)
 blackbox_DEPENDENCIES = 
 blackbox_LDFLAGS = 
@@ -128,10 +127,6 @@ CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
-CFLAGS = @CFLAGS@
-COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-CCLD = $(CC)
-LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DIST_COMMON =  Makefile.am Makefile.in
 
 

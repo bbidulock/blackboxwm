@@ -271,7 +271,7 @@ public:
   inline void setRootColormapInstalled(Bool r) { root_colormap_installed = r; }
   inline void saveSloppyFocus(Bool s) { resource.sloppy_focus = s; }
   inline void saveAutoRaise(Bool a) { resource.auto_raise = a; }
-  inline void saveWorkspaces(int w) { resource.workspaces = w; }
+  inline void saveWorkspaces(unsigned int w) { resource.workspaces = w; }
   inline void saveToolbarOnTop(Bool r) { resource.toolbar_on_top = r; }
   inline void saveToolbarAutoHide(Bool r) { resource.toolbar_auto_hide = r; }
   inline void saveToolbarWidthPercent(int w)
@@ -328,6 +328,7 @@ public:
   void raiseWindows(Window *workspace_stack, unsigned int num);
   void reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id,
                          Bool ignore_sticky);
+  void propagateWindowName(const BlackboxWindow *bw);
   void prevFocus(void);
   void nextFocus(void);
   void raiseFocus(void);

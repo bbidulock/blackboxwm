@@ -233,12 +233,13 @@ int Basemenu::insert(const string& label, Basemenu *submenu, int pos) {
 }
 
 
+#if 0
 int Basemenu::insert(const string& ulabel, const string& label) {
   BasemenuItem *item = new BasemenuItem(ulabel, label, 0);
 
   return insert(item, -1);
 }
-
+#endif
 
 int Basemenu::remove(int index) {
   BasemenuItem *item = find(index);
@@ -304,8 +305,7 @@ void Basemenu::update(void) {
   MenuItems::iterator it = menuitems.begin(), end = menuitems.end();
   for (; it != end; ++it) {
     BasemenuItem *tmp = *it;
-    const char *s = ((! tmp->u.empty()) ? tmp->u.c_str() :
-                     ((! tmp->l.empty()) ? tmp->l.c_str() : ""));
+    const char *s = (! tmp->l.empty()) ? tmp->l.c_str() : "";
 
     int l = strlen(s);
 
@@ -598,8 +598,7 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clear,
   if (! item) return;
 
   Bool dotext = True, dohilite = True, dosel = True;
-  const char *text = item->ulabel();
-  if (! *text) text = item->label();
+  const char *text = item->label();
   int sbl = index / menu.persub, i = index - (sbl * menu.persub);
   int item_x = (sbl * menu.item_w), item_y = (i * menu.item_h);
   int hilite_x = item_x, hilite_y = item_y, hoff_x = 0, hoff_y = 0;
@@ -1021,4 +1020,11 @@ void Basemenu::reconfigure(void) {
 
   menu.bevel_w = screen->getBevelWidth();
   update();
+}
+
+
+void Basemenu::changeItemLabel(unsigned int index, const string& label) {
+  BasemenuItem *item = find(index);
+  assert(item);
+  item->newLabel(label);
 }

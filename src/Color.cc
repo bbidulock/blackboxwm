@@ -157,7 +157,7 @@ void BColor::allocate(void)
   p = xcol.pixel;
   allocated = true;
 
-  colorcache.insert(std::make_pair(rgb, PixelRef(p)));
+  colorcache.insert(ColorCacheItem(rgb, PixelRef(p)));
 
   if (cleancache)
     doCacheCleanup();
