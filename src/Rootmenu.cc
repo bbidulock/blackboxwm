@@ -57,7 +57,7 @@ void Rootmenu::itemClicked(unsigned int id, unsigned int) {
   switch (it->second.func) {
   case BScreen::Execute:
     if (! it->second.string.empty())
-      bt::bexec(it->second.string, _bscreen->displayString());
+      bt::bexec(it->second.string, _bscreen->screenInfo().displayString());
     break;
 
   case BScreen::Restart:

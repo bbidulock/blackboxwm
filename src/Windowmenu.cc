@@ -111,7 +111,7 @@ void Windowmenu::itemClicked(unsigned int id, unsigned int) {
   }
 
   case BScreen::WindowKill:
-    XKillClient(_window->getScreen()->getScreenInfo().display().XDisplay(),
+    XKillClient(_window->getScreen()->screenInfo().display().XDisplay(),
                 _window->getClientWindow());
     break;
   } // switch

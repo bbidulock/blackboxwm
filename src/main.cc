@@ -99,8 +99,7 @@ static void showHelp(int exitval) {
 }
 
 int main(int argc, char **argv) {
-  char *session_display = (char *) 0;
-  char *rc_file = (char *) 0;
+  const char *dpy_name = 0, *rc_file = 0;
 
   bt::i18n.openCatalog("blackbox.cat");
 
@@ -129,9 +128,9 @@ int main(int argc, char **argv) {
         ::exit(1);
       }
 
-      session_display = argv[i];
+      dpy_name = argv[i];
       std::string dtmp = "DISPLAY=";
-      dtmp += session_display;
+      dtmp += dpy_name;
 
       if (putenv(const_cast<char*>(dtmp.c_str()))) {
         fprintf(stderr, bt::i18n(mainSet, mainWarnDisplaySet,
@@ -157,7 +156,7 @@ int main(int argc, char **argv) {
   _chdir2(getenv("X11ROOT"));
 #endif // __EMX__
 
-  Blackbox blackbox(argv, session_display, rc_file);
+  Blackbox blackbox(argv, dpy_name, rc_file);
   blackbox.eventLoop();
 
   return(0);

@@ -176,22 +176,22 @@ Slit::Slit(BScreen *scr) {
   on_top = screen->isSlitOnTop();
   hidden = do_auto_hide = screen->doSlitAutoHide();
 
-  display = screen->getScreenInfo().display().XDisplay();
+  display = screen->screenInfo().display().XDisplay();
   frame.window = frame.pixmap = None;
 
   timer = new bt::Timer(blackbox, this);
   timer->setTimeout(blackbox->getAutoRaiseDelay());
 
   slitmenu =
-    new Slitmenu(*blackbox, screen->getScreenInfo().screenNumber(), this);
+    new Slitmenu(*blackbox, screen->screenNumber(), this);
 
   XSetWindowAttributes attrib;
   unsigned long create_mask = CWBackPixmap | CWBackPixel | CWBorderPixel |
                               CWColormap | CWOverrideRedirect | CWEventMask;
   attrib.background_pixmap = None;
   attrib.background_pixel = attrib.border_pixel =
-    screen->getBorderColor()->pixel(screen->getScreenInfo().screenNumber());
-  attrib.colormap = screen->colormap();
+    screen->getBorderColor()->pixel(screen->screenNumber());
+  attrib.colormap = screen->screenInfo().colormap();
   attrib.override_redirect = True;
   attrib.event_mask = SubstructureRedirectMask | ButtonPressMask |
                       EnterWindowMask | LeaveWindowMask;
@@ -199,11 +199,12 @@ Slit::Slit(BScreen *scr) {
   frame.rect.setSize(1, 1);
 
   frame.window =
-    XCreateWindow(display, screen->rootWindow(),
+    XCreateWindow(display, screen->screenInfo().rootWindow(),
                   frame.rect.x(), frame.rect.y(),
                   frame.rect.width(), frame.rect.height(),
-                  screen->getBorderWidth(), screen->depth(), InputOutput,
-                  screen->visual(), create_mask, &attrib);
+                  screen->getBorderWidth(), screen->screenInfo().depth(),
+                  InputOutput, screen->screenInfo().visual(),
+                  create_mask, &attrib);
   blackbox->insertEventHandler(frame.window, this);
 
   screen->addStrut(&strut);
@@ -240,8 +241,9 @@ void Slit::addClient(Window w) {
     if ((wmhints->flags & IconWindowHint) &&
         (wmhints->icon_window != None)) {
       // some dock apps use separate windows, we need to hide these
-      XMoveWindow(display, client->client_window, screen->width() + 10,
-                  screen->height() + 10);
+      XMoveWindow(display, client->client_window,
+                  screen->screenInfo().width() + 10,
+                  screen->screenInfo().height() + 10);
       XMapWindow(display, client->client_window);
 
       client->icon_window = wmhints->icon_window;
@@ -296,7 +298,7 @@ void Slit::removeClient(SlitClient *client, bool remap) {
     XGrabServer(display);
     XSelectInput(display, frame.window, NoEventMask);
     XSelectInput(display, client->window, NoEventMask);
-    XReparentWindow(display, client->window, screen->rootWindow(),
+    XReparentWindow(display, client->window, screen->screenInfo().rootWindow(),
                     client->rect.x(), client->rect.y());
     XChangeSaveSet(display, client->window, SetModeDelete);
     XSelectInput(display, frame.window, SubstructureRedirectMask |
@@ -393,21 +395,18 @@ void Slit::reconfigure(void) {
 
   XSetWindowBorderWidth(display ,frame.window, screen->getBorderWidth());
   XSetWindowBorder(display, frame.window,
-                   screen->getBorderColor()->pixel(screen->getScreenInfo().
-                                                   screenNumber()));
+                   screen->getBorderColor()->pixel(screen->screenNumber()));
 
   XMapWindow(display, frame.window);
 
   bt::Texture *texture = &(screen->getToolbarStyle()->toolbar);
   frame.pixmap =
-    texture->render(blackbox->display(),
-                    screen->getScreenInfo().screenNumber(),
+    texture->render(blackbox->display(), screen->screenNumber(),
                     *screen->getImageControl(),
                     frame.rect.width(), frame.rect.height(), frame.pixmap);
   if (! frame.pixmap)
     XSetWindowBackground(display, frame.window,
-                         texture->color().pixel(screen->getScreenInfo().
-                                                screenNumber()));
+                         texture->color().pixel(screen->screenNumber()));
   else
     XSetWindowBackgroundPixmap(display, frame.window, frame.pixmap);
 
@@ -539,7 +538,7 @@ void Slit::updateStrut(void) {
           pos = frame.y_hidden;
         else
           pos = frame.rect.y();
-        strut.bottom = (screen->getScreenInfo().rect().bottom() - pos);
+        strut.bottom = (screen->screenInfo().rect().bottom() - pos);
         break;
       case CenterLeft:
         strut.left = getExposedWidth() + border_width;
@@ -569,22 +568,22 @@ void Slit::reposition(void) {
     if (screen->getSlitPlacement() == TopLeft)
       y = 0;
     else if (screen->getSlitPlacement() == CenterLeft)
-      y = (screen->height() - frame.rect.height()) / 2;
+      y = (screen->screenInfo().height() - frame.rect.height()) / 2;
     else
-      y = screen->height() - frame.rect.height()
+      y = screen->screenInfo().height() - frame.rect.height()
 	- (screen->getBorderWidth() * 2);
 
     break;
 
   case TopCenter:
   case BottomCenter:
-    x = (screen->width() - frame.rect.width()) / 2;
+    x = (screen->screenInfo().width() - frame.rect.width()) / 2;
     frame.x_hidden = x;
 
     if (screen->getSlitPlacement() == TopCenter)
       y = 0;
     else
-      y = screen->height() - frame.rect.height()
+      y = screen->screenInfo().height() - frame.rect.height()
 	- (screen->getBorderWidth() * 2);
 
     break;
@@ -592,17 +591,17 @@ void Slit::reposition(void) {
   case TopRight:
   case CenterRight:
   case BottomRight:
-    x = screen->width() - frame.rect.width()
+    x = screen->screenInfo().width() - frame.rect.width()
       - (screen->getBorderWidth() * 2);
-    frame.x_hidden = screen->width() - screen->getBevelWidth()
+    frame.x_hidden = screen->screenInfo().width() - screen->getBevelWidth()
       - screen->getBorderWidth();
 
     if (screen->getSlitPlacement() == TopRight)
       y = 0;
     else if (screen->getSlitPlacement() == CenterRight)
-      y = (screen->height() - frame.rect.height()) / 2;
+      y = (screen->screenInfo().height() - frame.rect.height()) / 2;
     else
-      y = screen->height() - frame.rect.height()
+      y = screen->screenInfo().height() - frame.rect.height()
 	- (screen->getBorderWidth() * 2);
     break;
   }
@@ -630,7 +629,7 @@ void Slit::reposition(void) {
     frame.y_hidden = 0 - frame.rect.height() + screen->getBorderWidth()
       + screen->getBevelWidth();
   else if (screen->getSlitPlacement() == BottomCenter)
-    frame.y_hidden = screen->height() - screen->getBorderWidth()
+    frame.y_hidden = screen->screenInfo().height() - screen->getBorderWidth()
       - screen->getBevelWidth();
   else
     frame.y_hidden = frame.rect.y();

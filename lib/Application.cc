@@ -144,8 +144,7 @@ static void signalhandler(int sig)
 }
 
 
-bt::Application::Application(const std::string &app_name,
-                             const std::string &dpy_name)
+bt::Application::Application(const std::string &app_name, const char *dpy_name)
   : _display(dpy_name), _app_name(app_name),
     run_state(STARTUP), xserver_time(CurrentTime), menu_grab(false)
 {

@@ -49,10 +49,11 @@ namespace bt {
     ScreenInfoList screenInfoList;
 
   public:
-    Display(const std::string &dpy_name);
+    Display(const char *dpy_name);
     ~Display(void);
 
     ::Display* XDisplay(void) const { return xdisplay; }
+
     unsigned int screenCount(void) const { return screenInfoList.size(); }
     const ScreenInfo &screenInfo(unsigned int i) const;
   };
@@ -74,19 +75,21 @@ namespace bt {
     ScreenInfo(Display& d, unsigned int num);
 
     Display& display(void) const { return _display; }
+
     Visual *visual(void) const { return _visual; }
     Window rootWindow(void) const { return _rootwindow; }
     Colormap colormap(void) const { return _colormap; }
+
     int depth(void) const { return _depth; }
-    unsigned int screenNumber(void) const
-    { return _screennumber; }
+
+    unsigned int screenNumber(void) const { return _screennumber; }
+
     const Rect& rect(void) const { return _rect; }
     unsigned int width(void) const { return _rect.width(); }
     unsigned int height(void) const { return _rect.height(); }
+
     const std::string& displayString(void) const { return _displaystring; }
   };
-
-
 
 } // namespace bt
 

@@ -667,7 +667,7 @@ void BScreen::LoadStyle(void) {
 
   std::string root_command = res.read("rootCommand", "RootCommand");
   if (! root_command.empty())
-    bt::bexec(root_command, displayString());
+    bt::bexec(root_command, screen_info.displayString());
 
   // sanity checks
   if (resource.wstyle.t_focus.texture() == bt::Texture::Parent_Relative)

@@ -123,7 +123,7 @@ private:
 
 
 public:
-  Blackbox(char **m_argv, char *dpy_name = 0, char *rc = 0);
+  Blackbox(char **m_argv, const char *dpy_name, const char *rc);
   virtual ~Blackbox(void);
 
   BScreen *findScreen(Window window);

@@ -108,7 +108,7 @@ extern "C" {
 #include "Window.hh"
 
 
-Blackbox::Blackbox(char **m_argv, char *dpy_name, char *rc)
+Blackbox::Blackbox(char **m_argv, const char *dpy_name, const char *rc)
   : bt::Application(m_argv[0], dpy_name) {
   if (! XSupportsLocale())
     fprintf(stderr, "X server does not support locale\n");
@@ -410,7 +410,7 @@ bool Blackbox::validateWindow(Window window) {
 BScreen *Blackbox::findScreen(Window window) {
   ScreenList::iterator it = screenList.begin();
   for (; it != screenList.end(); ++it)
-    if ((*it)->rootWindow() == window)
+    if ((*it)->screenInfo().rootWindow() == window)
       return *it;
   return 0;
 }
@@ -456,7 +456,8 @@ void Blackbox::restart(const std::string &prog) {
   shutdown();
 
   if (! prog.empty()) {
-    putenv(const_cast<char *>(screenList.front()->displayString().c_str()));
+    putenv(const_cast<char *>
+           (display().screenInfo(0).displayString().c_str()));
     execlp(prog.c_str(), prog.c_str(), NULL);
     perror(prog.c_str());
   }
@@ -1172,11 +1173,11 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
 
   if (active_screen) {
     active_screen->getToolbar()->redrawWindowLabel(True);
-    _netwm->setActiveWindow(active_screen->rootWindow(), active);
+    _netwm->setActiveWindow(active_screen->screenInfo().rootWindow(), active);
   }
 
   if (old_screen && old_screen != active_screen) {
     old_screen->getToolbar()->redrawWindowLabel(True);
-    _netwm->setActiveWindow(old_screen->rootWindow(), active);
+    _netwm->setActiveWindow(old_screen->screenInfo().rootWindow(), active);
   }
 }

@@ -158,6 +158,10 @@ public:
   BScreen(Blackbox *bb, unsigned int scrn);
   ~BScreen(void);
 
+  // information about the screen
+  const bt::ScreenInfo &screenInfo(void) const { return screen_info; }
+  unsigned int screenNumber(void) const { return screen_info.screenNumber(); }
+
   bool isToolbarOnTop(void) const
   { return resource.toolbar_on_top; }
   bool doToolbarAutoHide(void) const
@@ -181,22 +185,10 @@ public:
   bool allowScrollLock(void) const { return resource.allow_scroll_lock;}
 
   const GC &getOpGC(void) const { return opGC; }
-  const bt::ScreenInfo& getScreenInfo(void) const { return screen_info; }
   Blackbox *getBlackbox(void) { return blackbox; }
   bt::Color *getBorderColor(void) { return &resource.border_color; }
   bt::ImageControl *getImageControl(void) { return image_control; }
   Rootmenu *getRootmenu(void) { return rootmenu; }
-
-  // pass throughs to ScreenInfo
-  Colormap colormap(void) const { return screen_info.colormap();}
-  Window rootWindow(void) const { return screen_info.rootWindow(); }
-  int depth(void) const { return screen_info.depth(); }
-  Visual* visual(void) const { return screen_info.visual(); }
-  unsigned int width(void) const { return screen_info.width(); }
-  unsigned int height(void) const { return screen_info.height(); }
-  const std::string& displayString(void) const
-  { return screen_info.displayString(); }
-  unsigned int screenNumber(void) const { return screen_info.screenNumber(); }
 
   bool isSlitOnTop(void) const { return resource.slit_on_top; }
   bool doSlitAutoHide(void) const

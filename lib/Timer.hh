@@ -28,7 +28,9 @@
 #include <queue>
 #include <vector>
 
-struct timeval; // forward declare to avoid the header
+extern "C" {
+  struct timeval; // forward declare to avoid the header
+}
 
 #include "Util.hh"
 
@@ -59,8 +61,8 @@ namespace bt {
     inline bool isTiming(void) const { return timing; }
     inline bool isRecurring(void) const { return recur; }
 
-    inline const ::timeval &getTimeout(void) const { return _timeout; }
-    inline const ::timeval &getStartTime(void) const { return _start; }
+    inline const ::timeval &timeout(void) const { return _timeout; }
+    inline const ::timeval &startTime(void) const { return _start; }
 
     ::timeval timeRemaining(const ::timeval &tm) const;
     bool shouldFire(const ::timeval &tm) const;
