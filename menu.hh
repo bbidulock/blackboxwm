@@ -109,6 +109,7 @@ public:
   Bool hasSubmenu(int);
   void setMovable(Bool);
   Bool userMoved(void) { return user_moved; }
+  void Reconfigure(void);
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);

@@ -204,7 +204,8 @@ int BlackboxMenu::insert(char *label, int function, char *exec) {
     break; }
 
   case BlackboxSession::B_Exit:
-  case BlackboxSession::B_Restart: {
+  case BlackboxSession::B_Restart:
+  case BlackboxSession::B_Reconfigure: {
     BlackboxMenuItem *item = new BlackboxMenuItem(createItemWindow(), label,
 						  function);
     XSaveContext(display, item->window, itemContext, (XPointer) item);
@@ -613,4 +614,21 @@ Bool BlackboxMenu::hasSubmenu(int index) {
       return False;
   else
     return False;
+}
+
+
+void BlackboxMenu::Reconfigure(void) {
+  XGCValues gcv;
+  gcv.foreground = session->menuTextColor().pixel;
+  gcv.font = session->titleFont()->fid;
+  XChangeGC(display, titleGC, GCForeground|GCFont, &gcv);
+
+  gcv.foreground = session->menuItemTextColor().pixel;
+  gcv.font = session->menuFont()->fid;
+  XChangeGC(display, itemGC, GCForeground|GCFont, &gcv);
+
+  gcv.foreground = session->menuPressedTextColor().pixel;
+  XChangeGC(display, pitemGC, GCForeground|GCFont, &gcv);
+
+  XSetWindowBorder(display, menu.frame, session->frameColor().pixel);
 }

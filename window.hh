@@ -56,6 +56,7 @@ public:
   void showMenu(void);
   void hideMenu(void);
   void moveMenu(int, int);
+  void Reconfigure(void);
 };
 
 
@@ -262,6 +263,7 @@ public:
   //
   // various window functions
   //
+  void Reconfigure(void);
   int setWindowNumber(int);
   int setWorkspace(int);
   int workspace(void)

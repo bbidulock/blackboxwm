@@ -56,6 +56,7 @@ public:
   unsigned int Height(void) { return icon.height; }
   void move(int x, int y) { icon.x = x; icon.y = y; }
   void rereadLabel(void);
+  void Reconfigure(void);
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);

@@ -227,3 +227,22 @@ void BlackboxIcon::rereadLabel(void) {
   XClearWindow(display, icon.subwindow);
   exposeEvent(NULL);
 }
+
+
+void BlackboxIcon::Reconfigure(void) {
+  XGCValues gcv;
+  gcv.foreground = session->iconTextColor().pixel;
+  gcv.font = session->iconFont()->fid;
+  XChangeGC(display, iconGC, GCForeground|GCFont, &gcv);
+
+  BImage image(session, 92, icon.height, session->Depth(),
+	       session->frameColor());
+  Pixmap p = image.renderImage(session->frameTexture(), 0,
+			       session->frameColor(),
+			       session->frameToColor());
+
+  XSetWindowBackgroundPixmap(display, icon.subwindow, p);
+  XClearWindow(display, icon.subwindow);
+  XFreePixmap(display, p);
+  exposeEvent(NULL);
+}

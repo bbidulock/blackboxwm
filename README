@@ -54,7 +54,7 @@ Contributors:
         David Doan <ddoan@usa.net>
 	 - testing of 8bpp code
 	Mark Seward <illuzion@paradise.net.nz>
-	 - beta testing and bug reports
+	 - beta testing, bug reports and 32bpp testing
 	Keith Bolland <prime@strip.net.nz>
 	 - beta testing, bug reports and suggestions
 
@@ -204,6 +204,14 @@ drawing onto the root window (and possibly others) if necessary to show the
 full label.  Pressing the icon with mouse button 1 will deiconify the window
 on the current workspace (dissociating it from its original workspace if
 necessary).
+
+Blackbox operates the same way any other window manager operates.  It monitors
+events sent by the X server and deals with them accordingly (like mapping a
+client window with or without decorations, for example).  One event it also
+monitors is a PropertyNotify event on the root window.  If the RESOURCE_MANAGER
+property should change, blackbox rereads its configuration and applies it to
+current and future windows, menus, icons, etc.  Blackbox can also be forced to
+reread its configuration via the menu (see the menu section below).
 
 
 Configuration:
@@ -370,16 +378,17 @@ The Menu File:
 The menu file is still in it's infancy, so only a single level of the root 
 menu is able to be created.  The format is shown below:
 
-[begin] (menu label)		<- this must be the first line in the file
+[begin] (menu label)			<- must be the first line in the file
   "item label" (command -switches args)
   ...
-  [begin] (menu label)		<- submenu
+  [begin] (menu label)			<- submenu
     "item label" (command -switches args)
     ...
-  [end]				<- end of submenu
-  "item label" (Restart)	<- restarts blackbox
-  [restart] (label) {command}	<- restarts a different window manager
-  "item label" (Exit)		<- exits blackbox
+  [end]					<- end of submenu
+  "item label" (Restart)		<- restarts blackbox
+  [restart] (item label) {command}	<- restarts a different window manager
+  "item label" (Reconfigure)		<- rereads configuration and applies it
+  "item label" (Exit)			<- exits blackbox
 [end]
 
 

@@ -64,6 +64,16 @@ BlackboxWindowMenu::BlackboxWindowMenu(BlackboxWindow *w, BlackboxSession *s) :
 
 BlackboxWindowMenu::~BlackboxWindowMenu(void)
 { delete send_to_menu; }
+
+
+void BlackboxWindowMenu::Reconfigure(void) {
+  send_to_menu->Reconfigure();
+  send_to_menu->updateMenu();
+  BlackboxMenu::Reconfigure();
+  BlackboxMenu::updateMenu();
+}
+
+
 void BlackboxWindowMenu::titlePressed(int) { }
 void BlackboxWindowMenu::titleReleased(int) { }
 void BlackboxWindowMenu::itemPressed(int button, int item) {
@@ -1564,6 +1574,7 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
       if (! menu_visible) {
 	window_menu->moveMenu(be->x_root - (window_menu->Width() / 2),
 			      frame.y + frame.title_h);
+	XRaiseWindow(display, window_menu->windowID());
 	window_menu->showMenu();
       } else
 	window_menu->hideMenu();
@@ -1758,4 +1769,131 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
       }
     }
   }
+}
+
+
+void BlackboxWindow::Reconfigure(void) {
+  XGCValues gcv;
+  gcv.foreground = session->unfocusTextColor().pixel;
+  gcv.font = session->titleFont()->fid;
+  XChangeGC(display, frame.utextGC, GCForeground|GCBackground|GCFont, &gcv);
+
+  gcv.foreground = session->focusTextColor().pixel;
+  gcv.font = session->titleFont()->fid;
+  XChangeGC(display, frame.ftextGC, GCForeground|GCBackground|GCFont, &gcv);
+
+  window_menu->Reconfigure();
+  window_menu->updateMenu();
+
+  if (session->Orientation() == BlackboxSession::B_RightHandedUser)
+    client.x = frame.x + frame.border;
+  else 
+    client.x = frame.x + ((do_handle) ? frame.handle_w + 1 : 0) + frame.border;
+  
+  client.y = frame.y + frame.title_h + frame.border + 1;
+  client.width = frame.width - ((do_handle) ? (frame.handle_w + 1) : 0);
+  frame.handle_h = client.height = frame.height - frame.title_h - 1;
+  
+  XGrabServer(display);
+  XResizeWindow(display, frame.title, frame.title_w, frame.title_h);
+  
+  if (do_handle) {
+    if (session->Orientation() == BlackboxSession::B_LeftHandedUser)
+      XMoveResizeWindow(display, frame.handle, 0, frame.title_h + 1,
+			frame.handle_w, frame.handle_h);
+    else
+      XMoveResizeWindow(display, frame.handle, client.width + 1,
+			frame.title_h + 1, frame.handle_w, frame.handle_h);
+    
+    frame.handle_h -= frame.button_h;
+    if (frame.handle_h <= 0) frame.handle_h = 1;
+    XMoveWindow(display, frame.resize_handle, 0, frame.handle_h);
+  }
+  
+  if (session->Orientation() == BlackboxSession::B_LeftHandedUser)
+    XMoveResizeWindow(display, client.window,
+		      ((do_handle) ? frame.handle_w + 1 : 0),
+		      frame.title_h + 1, client.width, client.height);
+  else
+    XMoveResizeWindow(display, client.window, 0, frame.title_h + 1,
+		      client.width, client.height);
+  
+  if (frame.button) XFreePixmap(display, frame.button);
+  if (frame.pbutton) XFreePixmap(display, frame.pbutton);
+
+  BImage button_image(session, frame.button_w, frame.button_h,
+		      session->Depth(), session->buttonColor());
+
+  frame.button = button_image.renderImage(session->buttonTexture(), 0,
+					  session->buttonColor(),
+					  session->buttonToColor());
+  frame.pbutton =
+    button_image.renderInvertedImage(session->buttonTexture(), 0,
+				     session->buttonColor(),
+				     session->buttonToColor());
+  positionButtons();
+  
+  if (frame.ftitle) XFreePixmap(display, frame.ftitle);
+  if (frame.utitle) XFreePixmap(display, frame.utitle);
+  
+  BImage image(session, frame.title_w, frame.title_h, session->Depth(),
+	       session->focusColor());
+  
+  frame.ftitle = image.renderImage(session->frameTexture(), 1,
+				   session->focusColor(),
+				   session->focusToColor());
+  
+  frame.utitle = image.renderImage(session->frameTexture(), 1,
+				   session->unfocusColor(),
+				   session->unfocusToColor());
+  
+  if (do_handle) {
+    if (frame.fhandle) XFreePixmap(display, frame.fhandle);
+    if (frame.uhandle) XFreePixmap(display, frame.uhandle);
+    
+    BImage h_image(session, frame.handle_w, frame.handle_h,
+		   session->Depth(), session->focusColor());
+    
+    frame.fhandle = h_image.renderImage(session->frameTexture(), 1,
+					session->focusColor(),
+					session->focusToColor());
+    
+    frame.uhandle = h_image.renderImage(session->frameTexture(), 1,
+					session->unfocusColor(),
+					session->unfocusToColor());
+
+    if (frame.rhandle) XFreePixmap(display, frame.rhandle);
+    BImage rh_image(session, frame.handle_w, frame.button_h, session->Depth(),
+		    session->buttonColor());
+
+    frame.rhandle = rh_image.renderImage(session->buttonTexture(), 0,
+					 session->buttonColor(),
+					 session->buttonToColor());
+     
+    XSetWindowBackgroundPixmap(display, frame.resize_handle, frame.rhandle);
+    XClearWindow(display, frame.resize_handle);
+  }
+    
+  XSetWindowBorder(display, frame.window, session->frameColor().pixel);
+  XSetWindowBackground(display, frame.window, session->frameColor().pixel);
+  XClearWindow(display, frame.window);
+  setFocusFlag(focused);
+  drawTitleWin(0, 0, 0, 0);
+  drawAllButtons();
+  if (icon) icon->Reconfigure();
+  
+  XEvent event;
+  event.type = ConfigureNotify;  
+  event.xconfigure.display = display;
+  event.xconfigure.event = client.window;
+  event.xconfigure.window = client.window;
+  event.xconfigure.x = client.x;
+  event.xconfigure.y = client.y;
+  event.xconfigure.width = client.width;
+  event.xconfigure.height = client.height;
+  event.xconfigure.border_width = 0;
+  event.xconfigure.above = frame.window;
+  event.xconfigure.override_redirect = False;
+  
+  XSendEvent(display, client.window, False, StructureNotifyMask, &event);
 }

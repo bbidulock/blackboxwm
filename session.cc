@@ -48,6 +48,8 @@ int SessionMenu::insert(char *l, SessionMenu *s)
 { return BlackboxMenu::insert(l, s); }
 void SessionMenu::showMenu(void)
 { BlackboxMenu::showMenu(); }
+void SessionMenu::hideMenu(void)
+{ BlackboxMenu::hideMenu(); }
 void SessionMenu::moveMenu(int x, int y)
 { BlackboxMenu::moveMenu(x, y); }
 void SessionMenu::updateMenu(void)
@@ -75,6 +77,10 @@ void SessionMenu::itemReleased(int button, int index) {
     BlackboxMenuItem *item = at(index);
     if (item->Function()) {
       switch (item->Function()) {
+      case BlackboxSession::B_Reconfigure:
+	Session()->Reconfigure();
+	break;
+
       case BlackboxSession::B_Restart:
 	Session()->Restart();
 	break;
@@ -124,6 +130,9 @@ BlackboxSession::BlackboxSession(char *display_name) {
   b2Pressed = False;
   b3Pressed = False;
   startup = True;
+
+  rootmenu = 0;
+  resource.font.menu = resource.font.icon = resource.font.title = 0;
 
   debug = new Debugger();
 #ifdef DEBUG
@@ -183,7 +192,8 @@ BlackboxSession::~BlackboxSession() {
   XSelectInput(display, root, NoEventMask);
 
   XFreeFont(display, resource.font.title);
-  // XFreeFont(display, resource.font.menu);
+  XFreeFont(display, resource.font.menu);
+  XFreeFont(display, resource.font.icon);
   XFreeGC(display, opGC);
   
   delete [] resource.menuFile;
@@ -247,8 +257,8 @@ void BlackboxSession::InitScreen(void) {
   XIconSize iconsize;
   iconsize.min_width = 1;
   iconsize.min_height = 1;
-  iconsize.max_width = 96;
-  iconsize.max_height = 96;
+  iconsize.max_width = 32;
+  iconsize.max_height = 32;
   iconsize.width_inc = 1;
   iconsize.height_inc = 1;
   XSetIconSizes(display, root, &iconsize, 1);
@@ -336,8 +346,9 @@ void BlackboxSession::InitScreen(void) {
 void BlackboxSession::EventLoop(void) {
   shutdown = False;
   startup = False;
+
 #ifdef DEBUG
-  //XSynchronize(display, True);
+  XSynchronize(display, True);
 #endif
 
   for (; (! shutdown);) {
@@ -352,6 +363,7 @@ void BlackboxSession::EventLoop(void) {
 
 
 void BlackboxSession::InitMenu(void) {
+  if (rootmenu) delete rootmenu;
   rootmenu = new SessionMenu(this);
 
   char *line = new char[121], *label = new char[41], *command = new char[81];
@@ -583,10 +595,9 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
     debug->msg("property notify %s\n", atomname);
     XFree(atomname);
 
-    if (e->xproperty.state != PropertyDelete) {
-      BlackboxWindow *pWin = getWindow(e->xproperty.window);
-      if (pWin != NULL)
-	pWin->propertyNotifyEvent(e->xproperty.atom);
+    if (e->xproperty.atom == XA_RESOURCE_MANAGER &&
+	e->xproperty.window == root) {
+      Reconfigure();
     }
 
     break;
@@ -796,32 +807,46 @@ void BlackboxSession::LoadDefaults(void) {
   // blackbox defaults...
   //
 
+  XGrabServer(display);
   debug->msg("initializing Xrm\n");
   XrmInitialize();
   
   debug->msg("retrieving databases\n");
 #define BLACKBOXAD XAPPLOADDIR##"/BlackboxAD"
-  XrmDatabase default_database = XrmGetDatabase(display),
-    blackbox_database = NULL, resource_database = NULL;
+  XrmDatabase blackbox_database = XrmGetDatabase(display),
+    default_database = NULL, resource_database = NULL;
   
-  if (XResourceManagerString(display) != NULL) {
-    debug->msg("loading resource manager database\n");
-    resource_database = XrmGetStringDatabase(XResourceManagerString(display));
+  char **rmstringlist;
+  XTextProperty xtext;
+  if (XGetTextProperty(display, root, &xtext, XA_RESOURCE_MANAGER)) {
+    int n;
+    XTextPropertyToStringList(&xtext, &rmstringlist, &n);
+  
+    if (rmstringlist[0] != NULL) {
+      debug->msg("loading resource manager database\n");
+      resource_database = XrmGetStringDatabase(rmstringlist[0]);
+      XFreeStringList(rmstringlist);
+    }
   }
     
   if (resource_database != NULL) {
     debug->msg("combining resource manager database\n");
-    XrmCombineDatabase(resource_database, &default_database, True);
+    XrmCombineDatabase(resource_database, &blackbox_database, True);
   } else
-    blackbox_database = XrmGetFileDatabase(BLACKBOXAD);
-
-  if (blackbox_database == NULL && default_database == NULL)
-    return;
-
-  debug->msg("combining databases %p %p\n", default_database,
-	     blackbox_database);
-  XrmCombineDatabase(default_database, &blackbox_database, True);
+    default_database = XrmGetFileDatabase(BLACKBOXAD);
   
+  if (blackbox_database == NULL && default_database == NULL) {
+    debug->msg("nil databases... skipping...\n");
+    return;
+  }
+
+  debug->msg("checking for combination of databases\n");
+  if (default_database != NULL && blackbox_database == NULL) {
+    debug->msg("combining databases %p %p\n", default_database,
+	       blackbox_database);
+    XrmCombineDatabase(default_database, &blackbox_database, False);
+  }
+
   //
   // default_database is destroyed by the above call...
   //
@@ -1260,6 +1285,7 @@ void BlackboxSession::LoadDefaults(void) {
     resource.orientation = B_RightHandedUser;
 
   const char *defaultFont = "-*-charter-medium-r-*-*-*-120-*-*-*-*-*-*";
+  if (resource.font.title) XFreeFont(display, resource.font.title);
   if (XrmGetResource(blackbox_database,
 		     "blackbox.session.titleFont",
 		     "Blackbox.Session.TitleFont", &value_type, &value)) {
@@ -1286,6 +1312,7 @@ void BlackboxSession::LoadDefaults(void) {
     }
   }
 
+  if (resource.font.menu) XFreeFont(display, resource.font.menu);
   if (XrmGetResource(blackbox_database,
 		     "blackbox.session.menuFont",
 		     "Blackbox.Session.MenuFont", &value_type, &value)) {
@@ -1312,6 +1339,7 @@ void BlackboxSession::LoadDefaults(void) {
     }
   }
 
+  if (resource.font.icon) XFreeFont(display, resource.font.icon);
   if (XrmGetResource(blackbox_database,
 		     "blackbox.session.iconFont",
 		     "Blackbox.Session.IconFont", &value_type, &value)) {
@@ -1338,8 +1366,9 @@ void BlackboxSession::LoadDefaults(void) {
     }
   }
 
-  debug->msg("destroying database\n");
+  debug->msg("destroying databases\n");
   XrmDestroyDatabase(blackbox_database);
+  XUngrabServer(display);
 }
 
 
@@ -1371,42 +1400,7 @@ void BlackboxSession::InitColor(void) {
 	colors_8bpp[i].flags = 0;
       } else
 	colors_8bpp[i].flags = DoRed|DoGreen|DoBlue;
-    
-    /*    int close_colorsi = ((1 << depth) > 256) ? 256 : 1 << depth;
-    XColor close_colorsa[close_colorsi];
-    
-    for (i = 0; i < close_colorsi; i++) close_colorsa[i].pixel = i;
-    XQueryColors(display, colormap, close_colorsa, close_colorsi);
-    
-    for (i = 0; i < 125; i++) {
-      if (colors_8bpp[i].flags == 0) {
-	int ii, r = 2, rr, gg, bb;
-	unsigned long c = 0xffffffff, d, l = 0l;
-	
-	while (r--) {
-	  for (ii = 0; ii < close_colorsi; ++ii) {
-	    rr = (colors_8bpp[i].red - close_colorsa[i].red) >> 8;
-	    gg = (colors_8bpp[i].green - close_colorsa[i].green) >> 8;
-	    bb = (colors_8bpp[i].blue - close_colorsa[i].blue) >> 8;
-	    d = rr*rr + gg*gg + bb*bb;
-	    if (d < c) {
-	      c = d;
-	      l = ii;
-	    }
-	  }
-	  
-	  colors_8bpp[i].red = close_colorsa[l].red;
-	  colors_8bpp[i].green = close_colorsa[l].green;
-	  colors_8bpp[i].blue = close_colorsa[l].blue;
-	  if (XAllocColor(display, colormap, &colors_8bpp[i])) {
-	    colors_8bpp[i].flags = DoRed|DoGreen|DoBlue;
-	    break;
-	  }
-	}
-      }
-    }
-    */
-      
+
     XUngrabServer(display);
   } else
     colors_8bpp = 0;
@@ -1483,7 +1477,10 @@ void BlackboxSession::parseSubMenu(FILE *menu_file, SessionMenu *menu) {
 	
 	if (c) {
 	  debug->msg("%s-inserting command -%s %s-\n", menu->label(), l, c);
-	  if (! strncasecmp(c, "Restart", 7)) {
+	  if (! strncasecmp(c, "Reconfigure", 11)) {
+	    menu->insert(l, B_Reconfigure);
+	    delete [] c;
+	  } else if (! strncasecmp(c, "Restart", 7)) {
 	    menu->insert(l, B_Restart);
 	    delete [] c;
 	  } else if (! strncasecmp(c, "Exit", 4)) {
@@ -1581,4 +1578,23 @@ void BlackboxSession::parseSubMenu(FILE *menu_file, SessionMenu *menu) {
   menu->updateMenu();
 
   debug->msg("%s-end of parse\n", menu->label());
+}
+
+
+void BlackboxSession::Reconfigure(void) {
+  rootmenu->hideMenu();
+  LoadDefaults();
+
+  XGCValues gcv;
+  gcv.foreground = getColor("white");
+  gcv.function = GXxor;
+  gcv.line_width = 2;
+  gcv.subwindow_mode = IncludeInferiors;
+  gcv.font = resource.font.title->fid;
+  XChangeGC(display, opGC, GCForeground|GCFunction|GCSubwindowMode|GCFont,
+	    &gcv);
+
+
+  InitMenu();
+  ws_manager->Reconfigure();
 }

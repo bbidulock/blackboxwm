@@ -60,6 +60,7 @@ public:
   SessionMenu(BlackboxSession *);
   
   void showMenu(void);
+  void hideMenu(void);
   void moveMenu(int, int);
   void updateMenu(void);
   Window windowID(void);
@@ -169,6 +170,7 @@ protected:
   void parseSubMenu(FILE *, SessionMenu *);
   void InitColor(void);
   void ProcessEvent(XEvent *);
+  void Reconfigure(void);
 
 
 public:
@@ -268,6 +270,7 @@ public:
   void Dissociate(void);
   
   enum { B_Restart = 1, B_RestartOther, B_Exit, B_Shutdown, B_Execute,
+	 B_Reconfigure,
 	 B_WindowClose, B_WindowMaximize, B_WindowIconify,
 	 B_WindowRaise, B_WindowLower, B_WindowSendToWorkspace };
   enum { B_TextureRSolid = 1, B_TextureSSolid, B_TextureFSolid,

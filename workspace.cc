@@ -97,11 +97,13 @@ void WorkspaceManagerMenu::itemReleased(int button, int item) {
 	Workspace *wkspc = ws_manager->workspaces_list->at(i - 1);
 	if (ws_manager->currentWorkspaceID() == (i - 1))
 	  ws_manager->changeWorkspaceID(i - 2);
-          XClearWindow(ws_manager->display, ws_manager->frame.workspace_button);
+          XClearWindow(ws_manager->display,
+		       ws_manager->frame.workspace_button);
           XDrawString(ws_manager->display, ws_manager->frame.workspace_button,
                       ws_manager->buttonGC, 4, 2 +
                       ws_manager->session->titleFont()->ascent,
-                      ws_manager->frame.title, strlen(ws_manager->frame.title));
+                      ws_manager->frame.title,
+		      strlen(ws_manager->frame.title));
 	wkspc->removeAll();
 	ws_manager->workspaces_list->remove(i - 1);
 	BlackboxMenu::remove(i + 1);
@@ -309,6 +311,15 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
 }
 
 
+void Workspace::Reconfigure(void) {
+  workspace_menu->Reconfigure();
+  workspace_menu->updateMenu();
+
+  for (int i = 0; i < workspace_list->count(); i++)
+    workspace_list->at(i)->Reconfigure();
+}
+
+
 WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
   Workspace *wkspc = 0;
   session = s;
@@ -392,7 +403,7 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
 	       (XPointer) this);
   XGCValues gcv;
   gcv.font = session->titleFont()->fid;
-  gcv.foreground = session->getColor("white");
+  gcv.foreground = session->menuTextColor().pixel;
   buttonGC = XCreateGC(display, frame.workspace_button,
 		       GCFont|GCForeground, &gcv);
 
@@ -430,7 +441,7 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
 
   XMapSubwindows(display, frame.window);
   XMapSubwindows(display, frame.base);
-  XMapRaised(display, frame.base);
+  XMapWindow(display, frame.base);
 
   XDrawString(display, frame.workspace_button, buttonGC, 4, 2 +
 	      session->titleFont()->ascent, frame.title, strlen(frame.title));
@@ -579,4 +590,61 @@ void WorkspaceManager::stackWindows(Window *workspace_stack, int num) {
 
   XRestackWindows(display, session_stack, i);
   delete [] session_stack;
+}
+
+
+void WorkspaceManager::Reconfigure(void) {
+  XGCValues gcv;
+  gcv.font = session->titleFont()->fid;
+  gcv.foreground = session->menuTextColor().pixel;
+  XChangeGC(display, buttonGC, GCFont|GCForeground, &gcv);
+
+  BImage image(session, frame.frame_w, frame.frame_h, session->Depth(),
+	       session->frameColor());
+  Pixmap p = image.renderImage(session->frameTexture(), 1,
+			       session->frameColor(),
+			       session->frameToColor());
+  
+  XSetWindowBackgroundPixmap(display, frame.window, p);
+  if (p) XFreePixmap(display, p);
+
+  if (frame.button) XFreePixmap(display, frame.button);
+  if (frame.pbutton) XFreePixmap(display, frame.pbutton);
+
+  BImage bimage(session, frame.button_w, frame.button_h, session->Depth(),
+		session->buttonColor());
+
+  frame.button = bimage.renderImage(session->frameTexture(), 0,
+				    session->focusColor(),
+				    session->focusToColor());
+
+  frame.pbutton = bimage.renderInvertedImage(session->frameTexture(), 0,
+					     session->focusColor(),
+					     session->focusToColor());
+
+  XSetWindowBackgroundPixmap(display, frame.workspace_button, frame.button);
+  
+  BImage iimage(session, frame.button_w, (frame.frame_h / 2) - 4,
+		session->Depth(), session->iconColor());
+
+  p = iimage.renderSolidImage(BlackboxSession::B_TextureSSolid, 0,
+				     session->iconColor());
+  
+  XSetWindowBackgroundPixmap(display, frame.icon, p);
+  if (p) XFreePixmap(display, p);
+
+  XSetWindowBorder(display, frame.base, session->frameColor().pixel);
+  XClearWindow(display, frame.window);
+  XClearWindow(display, frame.workspace_button);
+  XClearWindow(display, frame.icon);
+  
+  XDrawString(display, frame.workspace_button, buttonGC, 4, 2 +
+	      session->titleFont()->ascent, frame.title,
+	      strlen(frame.title));
+
+  workspaces_menu->Reconfigure();
+  workspaces_menu->updateMenu();
+
+  for (int i = 0; i < workspaces_list->count(); i++)
+    workspace(i)->Reconfigure();
 }

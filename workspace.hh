@@ -126,6 +126,7 @@ public:
   void hideMenu(void);
   void moveMenu(int, int);
   void updateMenu(void);
+  void Reconfigure();
   
   int workspaceID(void)
     { return workspace_id; }
@@ -180,6 +181,8 @@ public:
   void removeIcon(BlackboxIcon *i) { ilist->remove(i); arrangeIcons(); }
   void arrangeIcons(void);
   void stackWindows(Window *, int);
+  void Reconfigure(void);
+
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);
