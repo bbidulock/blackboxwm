@@ -33,7 +33,7 @@ extern "C" {
 
 #include "Texture.hh"
 #include "Display.hh"
-#include "Image.hh"
+#include "Pen.hh"
 #include "Resource.hh"
 
 
@@ -174,4 +174,90 @@ bt::Texture bt::textureResource(const Display &display,
   }
 
   return texture;
+}
+
+
+void bt::drawTexture(unsigned int screen,
+                     const Texture &texture,
+                     unsigned long drawable,
+                     const Rect &trect,
+                     const Rect &urect,
+                     unsigned long pixmap) {
+  Pen pen(screen, texture.color());
+
+  if (pixmap) {
+    XCopyArea(pen.display().XDisplay(), pixmap, drawable, pen.gc(),
+              urect.x() - trect.x(), urect.y() - trect.y(),
+              urect.width(), urect.height(), urect.x(), urect.y());
+    return;
+  } else if (! (texture.texture() & Texture::Solid)) {
+    XClearArea(pen.display().XDisplay(), drawable,
+               urect.x(), urect.y(), urect.width(), urect.height(), False);
+    return; // might be Parent_Relative or empty
+  }
+
+  XFillRectangle(pen.display().XDisplay(), drawable, pen.gc(),
+                 urect.x(), urect.y(), urect.width(), urect.height());
+
+  int bw = static_cast<int>(texture.borderWidth());
+  if (texture.texture() & bt::Texture::Border &&
+      (trect.left() == urect.left() || trect.right() == urect.right() ||
+       trect.top() == urect.top() || trect.bottom() == urect.bottom())) {
+    Pen penborder(screen, texture.borderColor());
+    for (int i = 0, d = 0; i < bw; ++i, d += 2)
+      XDrawRectangle(pen.display().XDisplay(), drawable, penborder.gc(),
+                     trect.left() + i,  trect.top() + i,
+                     trect.width() - d - 1, trect.height() - d - 1);
+  }
+
+  if (texture.texture() & bt::Texture::Interlaced) {
+    Pen peninterlace(screen, texture.colorTo());
+    int begin = trect.top()    + bw;
+    while (begin < urect.top()) begin += 2;
+    int end   = std::min(trect.bottom() - bw, urect.bottom());
+
+    for (int i = begin; i <= end; i += 2)
+      XDrawLine(pen.display().XDisplay(), drawable, peninterlace.gc(),
+                std::max(trect.left()  + bw, urect.left()),  i,
+                std::min(trect.right() - bw, urect.right()), i);
+  }
+
+  if ((trect.left()   + bw >= urect.left()  ||
+       trect.right()  - bw <= urect.right() ||
+       trect.top()    + bw >= urect.top()   ||
+       trect.bottom() - bw <= urect.bottom())) {
+    // draw bevel
+    Pen penlight(screen, texture.lightColor());
+    Pen penshadow(screen, texture.shadowColor());
+
+    if (texture.texture() & bt::Texture::Raised) {
+      XDrawLine(pen.display().XDisplay(), drawable, penshadow.gc(),
+                trect.left() + bw,  trect.bottom() - bw,
+                trect.right() - bw, trect.bottom() - bw);
+      XDrawLine(pen.display().XDisplay(), drawable, penshadow.gc(),
+                trect.right() - bw, trect.bottom() - bw,
+                trect.right() - bw, trect.top() + bw);
+
+      XDrawLine(pen.display().XDisplay(), drawable, penlight.gc(),
+                trect.left() + bw, trect.top() + bw,
+                trect.right() - bw, trect.top() + bw);
+      XDrawLine(pen.display().XDisplay(), drawable, penlight.gc(),
+                trect.left() + bw, trect.bottom() - bw,
+                trect.left() + bw, trect.top() + bw);
+    } else if (texture.texture() & bt::Texture::Sunken) {
+      XDrawLine(pen.display().XDisplay(), drawable, penlight.gc(),
+                trect.left() + bw,  trect.bottom() - bw,
+                trect.right() - bw, trect.bottom() - bw);
+      XDrawLine(pen.display().XDisplay(), drawable, penlight.gc(),
+                trect.right() - bw, trect.bottom() - bw,
+                trect.right() - bw, trect.top() + bw);
+
+      XDrawLine(pen.display().XDisplay(), drawable, penshadow.gc(),
+                trect.left() + bw,  trect.top() + bw,
+                trect.right() - bw, trect.top() + bw);
+      XDrawLine(pen.display().XDisplay(), drawable, penshadow.gc(),
+                trect.left() + bw, trect.bottom() - bw,
+                trect.left() + bw, trect.top() + bw);
+    }
+  }
 }

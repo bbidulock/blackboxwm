@@ -33,7 +33,7 @@ typedef unsigned long Pixmap;
 
 namespace bt {
 
-  class ImageControl;
+  class Rect;
   class Resource;
 
   class Texture {
@@ -102,12 +102,21 @@ namespace bt {
     unsigned int bw;
   };
 
+
   Texture
   textureResource(const Display &display, unsigned int screen,
                   const Resource &resource,
                   const std::string &name,
                   const std::string &classname,
                   const std::string &default_color = std::string("black"));
+
+
+  void drawTexture(unsigned int screen,
+                   const Texture &texture,
+                   unsigned long drawable,
+                   const Rect &trect,
+                   const Rect &urect,
+                   unsigned long pixmap = 0ul);
 
 } // namespace bt
 
