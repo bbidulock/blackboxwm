@@ -1,16 +1,36 @@
 # util/Makefile.am for Blackbox - an X11 Window manager
+# Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
+# Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the 
+# Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in 
+# all copies or substantial portions of the Software. 
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+# DEALINGS IN THE SOFTWARE.
 
-CPPFLAGS= @CPPFLAGS@ @DEBUG@ @NLS@ @ORDEREDPSEUDO@ -I$(top_srcdir)/lib
+CPPFLAGS		= @CPPFLAGS@ @DEBUG@ @NLS@ @ORDEREDPSEUDO@	\
+			  -I$(top_srcdir)/lib
 
-bin_SCRIPTS = 		bsetbg
-bin_PROGRAMS =		bsetroot
+bin_SCRIPTS		= bsetbg
+bin_PROGRAMS		= bsetroot
 
-bsetroot_SOURCES =	bsetroot.cc
-bsetroot_DEPENDENCIES=  $(top_builddir)/lib/libblackbox.a
-bsetroot_LDADD =	-L$(top_builddir)/lib -lblackbox
+bsetroot_SOURCES	= bsetroot.cc
+bsetroot_DEPENDENCIES	= $(top_srcdir)/lib/libbt.a
+bsetroot_LDADD		= -L$(top_srcdir)/lib -lbt
 
-MAINTAINERCLEANFILES =	Makefile.in
+MAINTAINERCLEANFILES	= Makefile.in
 
 distclean-local:
-	rm -f *\~ .\#*
-
+	rm -f *\~ *.orig *.rej .\#*

@@ -1,5 +1,5 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
-// Window.cc for Blackbox - an X11 Window manager
+// Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
 // Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
 //
@@ -29,6 +29,7 @@
 
 #include <string>
 
+
 class bsetroot : public bt::Display {
 private:
   bt::ImageControl **img_ctrl;
@@ -38,8 +39,6 @@ private:
   // no copying!!
   bsetroot(const bsetroot &);
   bsetroot& operator=(const bsetroot&);
-
-  inline virtual void process_event(XEvent * /*unused*/) { }
 
 public:
   bsetroot(int argc, char **argv, char *dpy_name = 0);
@@ -55,6 +54,5 @@ public:
   void solid(void);
   void usage(int exit_code = 0);
 };
-
 
 #endif // __bsetroot2_hh
