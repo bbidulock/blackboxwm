@@ -1,5 +1,5 @@
 //
-// icon.hh for Blackbox - an X11 Window manager
+// ReconfigureWidget.hh for Blackbox - an X11 Window manager
 // Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -19,52 +19,47 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef __blackbox_icon_hh
-#define __blackbox_icon_hh
+#ifndef __ReconfigureWidget_hh
+#define __ReconfigureWidget_hh
+
+#include <X11/Xlib.h>
 
 // forward declaration
-class BlackboxIcon;
+class ReconfigureWidget;
 
 class Blackbox;
-class Workspace;
+class BlackboxWindow;
 
 
-class BlackboxIcon {
+class ReconfigureWidget {
 private:
-  Bool focus;
-  Display *display;
-  GC iconGC;
-
-  struct {
-    char *name;
-    Window client, window, subwindow;
-    int x, y;
-    unsigned int height;
-  } icon;
-
   Blackbox *blackbox;
-  WorkspaceManager *wsManager;
+  BlackboxWindow *assocWidget;
 
+  Bool visible;
+  Display *display;
+  GC dialogGC;
+  Window window, text_window, yes_button, no_button;
+  char *DialogText[6];
+  int text_w, text_h, line_h;
+  
 
 protected:
 
 
 public:
-  BlackboxIcon(Blackbox *, Window);
-  ~BlackboxIcon(void);
+  ReconfigureWidget(Blackbox *);
+  ~ReconfigureWidget(void);
+
+  Bool Visible(void) { return visible; }
+
+  void Show(void);
+  void Hide(void);
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);
-  void enterNotifyEvent(XCrossingEvent *);
-  void leaveNotifyEvent(XCrossingEvent *);
   void exposeEvent(XExposeEvent *);
-  void rereadLabel(void);
-  void Reconfigure(void);
-
-  Window iconWindow(void) { return icon.window; }
-  unsigned int Height(void) { return icon.height; }
-  void move(int x, int y) { icon.x = x; icon.y = y; }
 };
 
 
-#endif
+#endif // __ReconfigureWidget_hh

@@ -34,11 +34,6 @@ DONE	- Since multiple threads share the same environment space, managing
 DONE	- Code cleanup to reflect the above (session lists and awkward restart
 	  and shutdown functions)
 
-	- integrate the BlackboxSession and WorkspaceManager to work around
-	  windows calling session functions which in turn call ws manager
-	  functions (if that sounds awkward... then you understand the reason
-	  for this todo item :)
-
 	- make the toolbox do more... possibly drag and drop for starting
 	  applications that set appropriate window hints (ala WindowMaker)
 			OR

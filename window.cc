@@ -20,10 +20,12 @@
 //
 
 #define _GNU_SOURCE
+#include "Windowmenu.hh"
+#include "Workspace.hh"
+
 #include "blackbox.hh"
 #include "icon.hh"
 #include "window.hh"
-#include "workspace.hh"
 
 #include <X11/Xatom.h>
 #include <X11/keysym.h>
@@ -34,8 +36,7 @@
 // Window class code
 // *************************************************************************
 
-BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window,
-			       Bool internal)
+BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window, Bool internal)
 {
   moving = False;
   resizing = False;
@@ -45,7 +46,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window,
   iconic = False;
   transient = False;
   focused = False;
-  menu_visible = False;
   window_number = -1;
   internal_window = internal;
   
@@ -178,9 +178,9 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window,
   XMapSubwindows(display, frame.window);
   
   if (! internal_window)
-    window_menu = new BlackboxWindowMenu(this, blackbox);
+    windowmenu = new Windowmenu(this, blackbox);
   else
-    window_menu = 0;
+    windowmenu = 0;
 
   blackbox->addWindow(this);
   configureWindow(frame.x, frame.y, frame.width, frame.height);
@@ -194,7 +194,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *ctrl, Window window,
 BlackboxWindow::~BlackboxWindow(void) {
   XGrabServer(display);
 
-  if (window_menu) delete window_menu;
+  if (windowmenu) delete windowmenu;
   if (icon) delete icon;
 
   if (! internal_window)
@@ -291,8 +291,8 @@ Window BlackboxWindow::createChildWindow(Window parent, int x, int y,
     CWEventMask;
   
   attrib_create.background_pixmap = None;
-  attrib_create.background_pixel = 0l;
-  attrib_create.border_pixel = 0l;
+  attrib_create.background_pixel = attrib_create.border_pixel = 
+    blackbox->frameColor().pixel;
   attrib_create.cursor = blackbox->sessionCursor();
   attrib_create.event_mask = KeyPressMask|KeyReleaseMask|ButtonPressMask|
     ButtonReleaseMask|ButtonMotionMask|ExposureMask|EnterWindowMask|
@@ -394,10 +394,10 @@ void BlackboxWindow::associateClientWindow(void) {
 void BlackboxWindow::createDecorations(void) {
   BImage image(blackbox, frame.title_w, frame.title_h, blackbox->Depth(),
 	       blackbox->focusColor());
-  frame.ftitle = image.renderImage(blackbox->windowTexture(), 1,
+  frame.ftitle = image.renderImage(blackbox->windowTexture(),
 				   blackbox->focusColor(),
 				   blackbox->focusToColor());
-  frame.utitle = image.renderImage(blackbox->windowTexture(), 1,
+  frame.utitle = image.renderImage(blackbox->windowTexture(),
 				   blackbox->unfocusColor(),
 				   blackbox->unfocusToColor());
   
@@ -407,10 +407,10 @@ void BlackboxWindow::createDecorations(void) {
   if (do_handle) {
     BImage h_image(blackbox, frame.handle_w, frame.handle_h,
 		   blackbox->Depth(), blackbox->focusColor());
-    frame.fhandle = h_image.renderImage(blackbox->windowTexture(), 1,
+    frame.fhandle = h_image.renderImage(blackbox->windowTexture(),
 					blackbox->focusColor(),
 					blackbox->focusToColor());
-    frame.uhandle = h_image.renderImage(blackbox->windowTexture(), 1,
+    frame.uhandle = h_image.renderImage(blackbox->windowTexture(),
 					blackbox->unfocusColor(),
 					blackbox->unfocusToColor());
     
@@ -419,7 +419,7 @@ void BlackboxWindow::createDecorations(void) {
     
     BImage rh_image(blackbox, frame.handle_w, frame.button_h,
 		    blackbox->Depth(), blackbox->buttonColor());
-    frame.rhandle = rh_image.renderImage(blackbox->buttonTexture(), 0,
+    frame.rhandle = rh_image.renderImage(blackbox->buttonTexture(),
 					 blackbox->buttonColor(),
 					 blackbox->buttonToColor());
      
@@ -429,10 +429,10 @@ void BlackboxWindow::createDecorations(void) {
   
   BImage button_image(blackbox, frame.button_w, frame.button_h,
 		      blackbox->Depth(), blackbox->buttonColor());
-  frame.button = button_image.renderImage(blackbox->buttonTexture(), 0,
+  frame.button = button_image.renderImage(blackbox->buttonTexture(),
 					  blackbox->buttonColor(),
 					  blackbox->buttonToColor());
-  frame.pbutton = button_image.renderInvertedImage(blackbox->buttonTexture(), 0,
+  frame.pbutton = button_image.renderInvertedImage(blackbox->buttonTexture(),
 						   blackbox->buttonColor(),
 						   blackbox->buttonToColor());
 
@@ -557,11 +557,9 @@ void BlackboxWindow::Reconfigure(void) {
   frame.width = frame.title_w;
   frame.height = client.height + frame.title_h + 1;
 
-  if (window_menu) {
-    if (window_menu->menuVisible())
-      window_menu->hideMenu();
-    window_menu->Reconfigure();
-  }
+  if (windowmenu) {
+    windowmenu->Reconfigure();
+  } 
   
   if (blackbox->Orientation() == Blackbox::B_RightHandedUser)
     client.x = frame.x + 1;
@@ -632,10 +630,10 @@ void BlackboxWindow::Reconfigure(void) {
 
   BImage button_image(blackbox, frame.button_w, frame.button_h,
 		      blackbox->Depth(), blackbox->buttonColor());
-  frame.button = button_image.renderImage(blackbox->buttonTexture(), 0,
+  frame.button = button_image.renderImage(blackbox->buttonTexture(),
 					  blackbox->buttonColor(),
 					  blackbox->buttonToColor());
-  frame.pbutton = button_image.renderInvertedImage(blackbox->buttonTexture(), 0,
+  frame.pbutton = button_image.renderInvertedImage(blackbox->buttonTexture(),
 						   blackbox->buttonColor(),
 						   blackbox->buttonToColor());
 
@@ -646,10 +644,10 @@ void BlackboxWindow::Reconfigure(void) {
   
   BImage image(blackbox, frame.title_w, frame.title_h, blackbox->Depth(),
 	       blackbox->focusColor());
-  frame.ftitle = image.renderImage(blackbox->windowTexture(), 1,
+  frame.ftitle = image.renderImage(blackbox->windowTexture(),
 				   blackbox->focusColor(),
 				   blackbox->focusToColor());
-  frame.utitle = image.renderImage(blackbox->windowTexture(), 1,
+  frame.utitle = image.renderImage(blackbox->windowTexture(),
 				   blackbox->unfocusColor(),
 				   blackbox->unfocusToColor());
   
@@ -659,17 +657,17 @@ void BlackboxWindow::Reconfigure(void) {
     
     BImage h_image(blackbox, frame.handle_w, frame.handle_h,
 		   blackbox->Depth(), blackbox->focusColor());
-    frame.fhandle = h_image.renderImage(blackbox->windowTexture(), 1,
+    frame.fhandle = h_image.renderImage(blackbox->windowTexture(),
 					blackbox->focusColor(),
 					blackbox->focusToColor());
-    frame.uhandle = h_image.renderImage(blackbox->windowTexture(), 1,
+    frame.uhandle = h_image.renderImage(blackbox->windowTexture(),
 					blackbox->unfocusColor(),
 					blackbox->unfocusToColor());
 
     if (frame.rhandle) XFreePixmap(display, frame.rhandle);
     BImage rh_image(blackbox, frame.handle_w, frame.button_h,
 		    blackbox->Depth(), blackbox->buttonColor());
-    frame.rhandle = rh_image.renderImage(blackbox->buttonTexture(), 0,
+    frame.rhandle = rh_image.renderImage(blackbox->buttonTexture(),
 					 blackbox->buttonColor(),
 					 blackbox->buttonToColor());
      
@@ -965,10 +963,10 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
 
     BImage image(blackbox, frame.title_w, frame.title_h,
 		 blackbox->Depth(), blackbox->focusColor());
-    frame.ftitle = image.renderImage(blackbox->windowTexture(), 1,
+    frame.ftitle = image.renderImage(blackbox->windowTexture(),
 				     blackbox->focusColor(),
 				     blackbox->focusToColor());
-    frame.utitle = image.renderImage(blackbox->windowTexture(), 1,
+    frame.utitle = image.renderImage(blackbox->windowTexture(),
 				     blackbox->unfocusColor(),
 				     blackbox->unfocusToColor());
     
@@ -978,10 +976,10 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
       
       BImage h_image(blackbox, frame.handle_w, frame.handle_h,
 		     blackbox->Depth(), blackbox->focusColor());
-      frame.fhandle = h_image.renderImage(blackbox->windowTexture(), 1,
+      frame.fhandle = h_image.renderImage(blackbox->windowTexture(),
 					  blackbox->focusColor(),
 					  blackbox->focusToColor());
-      frame.uhandle = h_image.renderImage(blackbox->windowTexture(), 1,
+      frame.uhandle = h_image.renderImage(blackbox->windowTexture(),
 					  blackbox->unfocusColor(),
 					  blackbox->unfocusToColor());
     }
@@ -1078,8 +1076,7 @@ Bool BlackboxWindow::setInputFocus(void) {
 
 
 void BlackboxWindow::iconifyWindow(void) {
-  if (window_menu) window_menu->hideMenu();
-  menu_visible = False;
+  if (windowmenu) windowmenu->Hide();
   
 #ifdef ANIMATIONS
   if (! shaded) {
@@ -1216,7 +1213,7 @@ void BlackboxWindow::withdrawWindow(void) {
 #endif
 
   XUnmapWindow(display, frame.window);
-  if (window_menu) window_menu->hideMenu();
+  if (windowmenu) windowmenu->Hide();
   
   XEvent foo;
   if (! XCheckTypedWindowEvent(display, client.window, DestroyNotify,
@@ -1257,24 +1254,24 @@ void BlackboxWindow::maximizeWindow(void) {
     pw = frame.width;
     ph = frame.height;
 
-    dw = blackbox->XResolution() - blackbox->WSManager()->Width() -
-      ((do_handle) ? frame.handle_w + 1 : 0) - 1;
+    dw = blackbox->XResolution() - ((do_handle) ? frame.handle_w + 1 : 0) - 1;
     dw -= client.base_w;
     dw -= (dw % client.inc_w);
     dw -= client.inc_w;
     dw += ((do_handle) ? frame.handle_w + 1 : 0) + 1 +
       client.base_w;
     
-    dx = (((blackbox->XResolution() - blackbox->WSManager()->Width()) - dw) / 2)
-      + blackbox->WSManager()->Width();
+    dx = ((blackbox->XResolution() - dw) / 2);
 
-    dh = blackbox->YResolution() - frame.title_h - 2;
+    dh = blackbox->YResolution() - frame.title_h - 2 -
+      blackbox->workspaceManager()->Height();
     dh -= client.base_h;
     dh -= (dh % client.inc_h);
     dh -= client.inc_h;
     dh += frame.title_h + 2 + client.base_h;
     
-    dy = ((blackbox->YResolution()) - dh) / 2;
+    dy = ((blackbox->YResolution() - blackbox->workspaceManager()->Height())
+	  - dh) / 2;
 
     maximized = True;
     shaded = False;
@@ -1606,7 +1603,7 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
       client.title = "Unnamed";
     XClearWindow(display, frame.title);
     drawTitleWin();
-    blackbox->updateWorkspace(workspace_number);
+    blackbox->workspaceManager()->workspace(workspace_number)->Update();
     break;
     
   case XA_WM_NORMAL_HINTS: {
@@ -1675,14 +1672,14 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
     }
   } else if (be->button == 3) {
     if (frame.title == be->window) {
-      if (window_menu)
-	if (! menu_visible) {
-	  window_menu->moveMenu(be->x_root - (window_menu->Width() / 2),
-				frame.y + frame.title_h);
-	  XRaiseWindow(display, window_menu->windowID());
-	  window_menu->showMenu();
+      if (windowmenu)
+	if (! windowmenu->Visible()) {
+	  windowmenu->Move(be->x_root - (windowmenu->Width() / 2),
+			   frame.y + frame.title_h);
+	  XRaiseWindow(display, windowmenu->WindowID());
+	  windowmenu->Show();
 	} else
-	  window_menu->hideMenu();
+	  windowmenu->Hide();
     }
   }
 }
@@ -1750,9 +1747,8 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
   if (frame.title == me->window) {
     if (me->state & Button1Mask) {
       if (! moving) {
-	if (menu_visible) {
-	  window_menu->hideMenu();
-	}
+	if (windowmenu->Visible())
+	  windowmenu->Hide();
 
 	if (XGrabPointer(display, frame.title, False, PointerMotionMask|
 			 ButtonReleaseMask, GrabModeAsync, GrabModeAsync,

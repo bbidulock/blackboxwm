@@ -32,6 +32,7 @@
 #endif
 
 #include "blackbox.hh"
+#include "Workspace.hh"
 
 #include <signal.h>
 #include <stdio.h>
@@ -101,6 +102,7 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   focus_window_number = -1;
 
   rootmenu = 0;
+  reconfWidget = 0;
   resource.font.menu = resource.font.icon = resource.font.title = 0;
 
   if ((display = XOpenDisplay(dpy_name)) == NULL) {
@@ -144,10 +146,11 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   xres = WidthOfScreen(ScreenOfDisplay(display, screen));
   yres = HeightOfScreen(ScreenOfDisplay(display, screen));
 
-  window_search_list = new llist<WindowSearch>;
-  menu_search_list = new llist<MenuSearch>;
-  icon_search_list = new llist<IconSearch>;
-  wsmanager_search_list = new llist<WSManagerSearch>;
+  windowSearchList = new LinkedList<WindowSearch>;
+  menuSearchList = new LinkedList<MenuSearch>;
+  iconSearchList = new LinkedList<IconSearch>;
+  wsManagerSearchList = new LinkedList<WSManagerSearch>;
+  rWidgetSearchList = new LinkedList<RWidgetSearch>;
 
   InitColor();
   XrmInitialize();
@@ -163,13 +166,8 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
 		   GCFont, &gcv);
 
   InitMenu();
-  ws_manager = new WorkspaceManager(this, resource.workspaces);
-  ws_manager->stackWindows(0, 0);
-
-  createAutoConfigDialog();
-  ReconfigureDialog.dialog->withdrawWindow();
-  ws_manager->workspace(0)->removeWindow(ReconfigureDialog.dialog);
-  ReconfigureDialog.visible = False;
+  wsManager = new WorkspaceManager(this, resource.workspaces);
+  wsManager->stackWindows(0, 0);
 
   unsigned int nchild;
   Window r, p, *children;
@@ -231,21 +229,16 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
 Blackbox::~Blackbox(void) {
   XSelectInput(display, root, NoEventMask);
 
-  XFreeGC(display, ReconfigureDialog.dialogGC);
-  XDestroyWindow(display, ReconfigureDialog.yes_button);
-  XDestroyWindow(display, ReconfigureDialog.no_button);
-  XDestroyWindow(display, ReconfigureDialog.text_window);
-  XDestroyWindow(display, ReconfigureDialog.window);
-
   delete [] resource.menuFile;
   delete rootmenu;
-  delete ws_manager;
+  delete wsManager;
 
-  delete window_search_list;
-  delete icon_search_list;
-  delete menu_search_list;
-  delete wsmanager_search_list;
-
+  delete windowSearchList;
+  delete iconSearchList;
+  delete menuSearchList;
+  delete wsManagerSearchList;
+  delete rWidgetSearchList;
+  
   if (resource.font.title) XFreeFont(display, resource.font.title);
   if (resource.font.menu) XFreeFont(display, resource.font.menu);
   if (resource.font.icon) XFreeFont(display, resource.font.icon);
@@ -284,10 +277,10 @@ void Blackbox::EventLoop(void) {
       
       struct timeval tv;
       tv.tv_sec = 0;
-      tv.tv_usec = 1000;
+      tv.tv_usec = 5000;
       
       select(xfd + 1, &rfds, 0, 0, &tv);
-      ws_manager->checkClock();
+      wsManager->checkClock();
     }
   }
     
@@ -300,35 +293,27 @@ void Blackbox::ProcessEvent(XEvent *e) {
   case ButtonPress: {
     BlackboxWindow *bWin = NULL;
     BlackboxIcon *bIcon = NULL;
-    BaseMenu *bMenu = NULL;
+    Basemenu *rMenu = NULL;
+    ReconfigureWidget *rWidget = NULL;
     WorkspaceManager *wsMan = NULL;
     
-    if (e->xbutton.window == ReconfigureDialog.yes_button) {
-      ReconfigureDialog.dialog->withdrawWindow();
-      ws_manager->workspace(ReconfigureDialog.dialog->workspace())->
-	removeWindow(ReconfigureDialog.dialog);
-      ReconfigureDialog.visible = False;
-      Reconfigure();
-    } else if (e->xbutton.window == ReconfigureDialog.no_button) {
-      ReconfigureDialog.dialog->withdrawWindow();
-      ws_manager->workspace(ReconfigureDialog.dialog->workspace())->
-	removeWindow(ReconfigureDialog.dialog);
-      ReconfigureDialog.visible = False;
-    } else if ((bWin = searchWindow(e->xbutton.window)) != NULL) {
+    if ((bWin = searchWindow(e->xbutton.window)) != NULL) {
       bWin->buttonPressEvent(&e->xbutton);
     } else if ((bIcon = searchIcon(e->xbutton.window)) != NULL) {
       bIcon->buttonPressEvent(&e->xbutton);
-    } else if ((bMenu = searchMenu(e->xbutton.window)) != NULL) {
-      bMenu->buttonPressEvent(&e->xbutton);
+    } else if ((rMenu = searchMenu(e->xbutton.window)) != NULL) {
+      rMenu->buttonPressEvent(&e->xbutton);
     } else if ((wsMan = searchWSManager(e->xbutton.window)) != NULL) {
       wsMan->buttonPressEvent(&e->xbutton);
+    } else if ((rWidget = searchRWidget(e->xbutton.window)) != NULL) {
+      rWidget->buttonPressEvent(&e->xbutton);
     } else if (e->xbutton.window == root && e->xbutton.button == 3) {
       int mx = e->xbutton.x_root - (rootmenu->Width() / 2);
-      rootmenu->moveMenu(((mx > 0) ? mx : 0), e->xbutton.y_root -
+      rootmenu->Move(((mx > 0) ? mx : 0), e->xbutton.y_root -
 			 (rootmenu->titleHeight() / 2));
       
-      if (! rootmenu->menuVisible())
-	rootmenu->showMenu();
+      if (! rootmenu->Visible())
+	rootmenu->Show();
     }
     
     break;
@@ -337,17 +322,20 @@ void Blackbox::ProcessEvent(XEvent *e) {
   case ButtonRelease: {
     BlackboxWindow *bWin = NULL;
     BlackboxIcon *bIcon = NULL;
-    BaseMenu *bMenu = NULL;
+    Basemenu *rMenu = NULL;
+    ReconfigureWidget *rWidget = NULL;
     WorkspaceManager *wsMan = NULL;
 
     if ((bWin = searchWindow(e->xbutton.window)) != NULL)
       bWin->buttonReleaseEvent(&e->xbutton);
     else if ((bIcon = searchIcon(e->xbutton.window)) != NULL)
       bIcon->buttonReleaseEvent(&e->xbutton);
-    else if ((bMenu = searchMenu(e->xbutton.window)) != NULL)
-      bMenu->buttonReleaseEvent(&e->xbutton);
+    else if ((rMenu = searchMenu(e->xbutton.window)) != NULL)
+      rMenu->buttonReleaseEvent(&e->xbutton);
     else if ((wsMan = searchWSManager(e->xbutton.window)) != NULL)
       wsMan->buttonReleaseEvent(&e->xbutton);
+    else if ((rWidget = searchRWidget(e->xbutton.window)) != NULL)
+      rWidget->buttonReleaseEvent(&e->xbutton);
     
     break;
   }
@@ -411,11 +399,12 @@ void Blackbox::ProcessEvent(XEvent *e) {
   
   case MotionNotify: {
     BlackboxWindow *mWin = NULL;
-    BaseMenu *mMenu = NULL;
+    Basemenu *rMenu = NULL;
+
     if ((mWin = searchWindow(e->xmotion.window)) != NULL)
       mWin->motionNotifyEvent(&e->xmotion);
-    else if ((mMenu = searchMenu(e->xmotion.window)) != NULL)
-      mMenu->motionNotifyEvent(&e->xmotion);
+    else if ((rMenu = searchMenu(e->xmotion.window)) != NULL)
+      rMenu->motionNotifyEvent(&e->xmotion);
     
     break;
   }
@@ -425,17 +414,8 @@ void Blackbox::ProcessEvent(XEvent *e) {
       if (e->xproperty.atom == XA_RESOURCE_MANAGER &&
 	  e->xproperty.window == root) {
 	if (resource.prompt_reconfigure) {
-	  if (! ReconfigureDialog.visible) {
-	    ws_manager->currentWorkspace()->
-	      addWindow(ReconfigureDialog.dialog);
-	    ReconfigureDialog.dialog->deiconifyWindow();
-	    raiseWindow(ReconfigureDialog.dialog);
-	    ReconfigureDialog.visible = True;
-	  } else {
-	    ws_manager->changeWorkspaceID(ReconfigureDialog.dialog->
-					  workspace());
-	    raiseWindow(ReconfigureDialog.dialog);
-	  }
+	  reconfWidget = new ReconfigureWidget(this);
+	  reconfWidget->Show();
 	} else
 	  Reconfigure();
       } else {
@@ -449,31 +429,39 @@ void Blackbox::ProcessEvent(XEvent *e) {
   }
   
   case EnterNotify: {
-    BlackboxWindow *fWin = NULL;
-    BlackboxIcon *fIcon = NULL;
+    BlackboxWindow *eWin = NULL;
+    Basemenu *eMenu = NULL;
+    BlackboxIcon *eIcon = NULL;
     
-    if ((fWin = searchWindow(e->xcrossing.window)) != NULL) {
+    
+    if ((eWin = searchWindow(e->xcrossing.window)) != NULL) {
       XGrabServer(display);
       
       XSync(display, False);
       XEvent event;
-      if (!XCheckTypedWindowEvent(display, fWin->clientWindow(),
+      if (!XCheckTypedWindowEvent(display, eWin->clientWindow(),
 				 UnmapNotify, &event)) {
-	if ((! fWin->isFocused()) && fWin->isVisible()) {
-	  fWin->setInputFocus();
+	if ((! eWin->isFocused()) && eWin->isVisible()) {
+	  eWin->setInputFocus();
 	}
       } else
 	ProcessEvent(&event);
       
       XUngrabServer(display);
-    } else if ((fIcon = searchIcon(e->xcrossing.window)) != NULL)
-      fIcon->enterNotifyEvent(&e->xcrossing);
+    } else if ((eMenu = searchMenu(e->xcrossing.window)) != NULL)
+      eMenu->enterNotifyEvent(&e->xcrossing);
+    else if ((eIcon = searchIcon(e->xcrossing.window)) != NULL)
+      eIcon->enterNotifyEvent(&e->xcrossing);
     
     break;
   }
   
   case LeaveNotify: {
+    Basemenu *lMenu = NULL;
     BlackboxIcon *lIcon = NULL;
+
+    if ((lMenu = searchMenu(e->xcrossing.window)) != NULL)
+      lMenu->leaveNotifyEvent(&e->xcrossing);
     if ((lIcon = searchIcon(e->xcrossing.window)) != NULL)
       lIcon->leaveNotifyEvent(&e->xcrossing);
     
@@ -483,8 +471,10 @@ void Blackbox::ProcessEvent(XEvent *e) {
   case Expose: {
     BlackboxWindow *eWin = NULL;
     BlackboxIcon *eIcon = NULL;
-    BaseMenu *eMenu = NULL;
+    Basemenu *eMenu = NULL;
+    ReconfigureWidget *rWidget = NULL;
     WorkspaceManager *wsMan = NULL;
+
     if ((eWin = searchWindow(e->xexpose.window)) != NULL)
       eWin->exposeEvent(&e->xexpose);
     else if ((eIcon = searchIcon(e->xexpose.window)) != NULL)
@@ -493,21 +483,8 @@ void Blackbox::ProcessEvent(XEvent *e) {
       eMenu->exposeEvent(&e->xexpose);
     else if ((wsMan = searchWSManager(e->xexpose.window)) != NULL)
       wsMan->exposeEvent(&e->xexpose);
-    else if (e->xexpose.window == ReconfigureDialog.text_window)
-      for (int i = 0; i < 6; i++)
-	XDrawString(display, ReconfigureDialog.text_window,
-		    ReconfigureDialog.dialogGC, 3,
-		    (ReconfigureDialog.line_h - 3) * (i + 1),
-		    ReconfigureDialog.DialogText[i],
-		    strlen(ReconfigureDialog.DialogText[i]));
-    else if (e->xexpose.window == ReconfigureDialog.yes_button)
-      XDrawString(display, ReconfigureDialog.yes_button,
-		  ReconfigureDialog.dialogGC, 3, ReconfigureDialog.line_h - 3,
-		  "Yes", 3);
-    else if (e->xexpose.window == ReconfigureDialog.no_button)
-      XDrawString(display, ReconfigureDialog.no_button,
-		  ReconfigureDialog.dialogGC, 3, ReconfigureDialog.line_h - 3,
-		  "No", 2);
+    else if ((rWidget = searchRWidget(e->xexpose.window)) != NULL)
+      rWidget->exposeEvent(&e->xexpose);
     
     break;
   } 
@@ -524,9 +501,9 @@ void Blackbox::ProcessEvent(XEvent *e) {
 	(e->xfocus.detail == NotifyPointer)) {
       if (focus_window_number != -1) {
 	BlackboxWindow *tmp =
-	  ws_manager->currentWorkspace()->window(focus_window_number);
+	  wsManager->currentWorkspace()->window(focus_window_number);
         if (tmp)
-	  if ((tmp->workspace() == ws_manager->currentWorkspaceID()) &&
+	  if ((tmp->workspace() == wsManager->currentWorkspaceID()) &&
 	      tmp->isVisible())
 	    tmp->setInputFocus();
       }
@@ -553,45 +530,45 @@ void Blackbox::ProcessEvent(XEvent *e) {
   case KeyPress: {
     if (e->xkey.state & Mod1Mask) {
       if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Tab) {
-	if ((ws_manager->currentWorkspace()->count() > 1) &&
+	if ((wsManager->currentWorkspace()->Count() > 1) &&
 	    (focus_window_number >= 0)) {
 	  BlackboxWindow *next, *current =
-	    ws_manager->currentWorkspace()->window(focus_window_number);
+	    wsManager->currentWorkspace()->window(focus_window_number);
 	  
 	  int next_window_number, level = 0;
 	  do {
 	    do {
 	      next_window_number =
 		((focus_window_number + (++level)) <
-		 ws_manager->currentWorkspace()->count())
+		 wsManager->currentWorkspace()->Count())
 		? focus_window_number + level : 0;
 	      next =
-		ws_manager->currentWorkspace()->window(next_window_number);
+		wsManager->currentWorkspace()->window(next_window_number);
 	    } while (next->isIconic());
 	  } while ((! next->setInputFocus()) &&
 		   (next_window_number != focus_window_number));
 	  
 	  if (next_window_number != focus_window_number) {
 	    current->setFocusFlag(False);
-	    ws_manager->currentWorkspace()->raiseWindow(next);
+	    wsManager->currentWorkspace()->raiseWindow(next);
 	  }
-	} else if (ws_manager->currentWorkspace()->count() >= 1) {
-	  ws_manager->currentWorkspace()->window(0)->setInputFocus();
+	} else if (wsManager->currentWorkspace()->Count() >= 1) {
+	  wsManager->currentWorkspace()->window(0)->setInputFocus();
 	}
       }
     } else if (e->xkey.state & ControlMask) {
       if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Left){
-	if (ws_manager->currentWorkspaceID() > 0)
-	  ws_manager->
-	    changeWorkspaceID(ws_manager->currentWorkspaceID() - 1);
+	if (wsManager->currentWorkspaceID() > 0)
+	  wsManager->
+	    changeWorkspaceID(wsManager->currentWorkspaceID() - 1);
 	else
-	  ws_manager->changeWorkspaceID(ws_manager->count() - 1);
+	  wsManager->changeWorkspaceID(wsManager->count() - 1);
       } else if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Right){
-	if (ws_manager->currentWorkspaceID() != ws_manager->count() - 1)
-	  ws_manager->
-	    changeWorkspaceID(ws_manager->currentWorkspaceID() + 1);
+	if (wsManager->currentWorkspaceID() != wsManager->count() - 1)
+	  wsManager->
+	    changeWorkspaceID(wsManager->currentWorkspaceID() + 1);
 	else
-	  ws_manager->changeWorkspaceID(0);
+	  wsManager->changeWorkspaceID(0);
       }
     }
 
@@ -626,7 +603,7 @@ BlackboxWindow *Blackbox::searchWindow(Window window) {
   XEvent event;
   if (! XCheckTypedWindowEvent(display, window, DestroyNotify, &event)) {
     BlackboxWindow *win = NULL;
-    llist_iterator<WindowSearch> it(window_search_list);
+    LinkedListIterator<WindowSearch> it(windowSearchList);
 
     for (; it.current(); it++) {
       WindowSearch *tmp = it.current();
@@ -645,12 +622,12 @@ BlackboxWindow *Blackbox::searchWindow(Window window) {
 }
 
 
-BaseMenu *Blackbox::searchMenu(Window window) {
+Basemenu *Blackbox::searchMenu(Window window) {
   XEvent event;
 
   if (! XCheckTypedWindowEvent(display, window, DestroyNotify, &event)) {
-    BaseMenu *menu = NULL;
-    llist_iterator<MenuSearch> it(menu_search_list);
+    Basemenu *menu = NULL;
+    LinkedListIterator<MenuSearch> it(menuSearchList);
 
     for (; it.current(); it++) {
       MenuSearch *tmp = it.current();
@@ -675,7 +652,7 @@ BlackboxIcon *Blackbox::searchIcon(Window window) {
 
   if (! XCheckTypedWindowEvent(display, window, DestroyNotify, &event)) {
     BlackboxIcon *icon = NULL;
-    llist_iterator<IconSearch> it(icon_search_list);
+    LinkedListIterator<IconSearch> it(iconSearchList);
 
     for (; it.current(); it++) {
       IconSearch *tmp = it.current();
@@ -700,7 +677,7 @@ WorkspaceManager *Blackbox::searchWSManager(Window window) {
 
   if (! XCheckTypedWindowEvent(display, window, DestroyNotify, &event)) {
     WorkspaceManager *wsm = NULL;
-    llist_iterator<WSManagerSearch> it(wsmanager_search_list);
+    LinkedListIterator<WSManagerSearch> it(wsManagerSearchList);
 
     for (; it.current(); it++) {
       WSManagerSearch *tmp = it.current();
@@ -720,19 +697,44 @@ WorkspaceManager *Blackbox::searchWSManager(Window window) {
 }
 
 
+ReconfigureWidget *Blackbox::searchRWidget(Window window) {
+  XEvent event;
+
+  if (! XCheckTypedWindowEvent(display, window, DestroyNotify, &event)) {
+    ReconfigureWidget *rWidget = NULL;
+    LinkedListIterator<RWidgetSearch> it(rWidgetSearchList);
+
+    for (; it.current(); it++) {
+      RWidgetSearch *tmp = it.current();
+      
+      if (tmp)
+	if (tmp->window == window) {
+	  rWidget = tmp->data;
+	  break;
+	}
+    }
+    
+    return rWidget;
+  } else
+    ProcessEvent(&event);
+  
+  return NULL;
+}
+
+
 void Blackbox::saveWindowSearch(Window window, BlackboxWindow *data) {
   WindowSearch *tmp = new WindowSearch;
   tmp->window = window;
   tmp->data = data;
-  window_search_list->insert(tmp);
+  windowSearchList->insert(tmp);
 }
 
 
-void Blackbox::saveMenuSearch(Window window, BaseMenu *data) {
+void Blackbox::saveMenuSearch(Window window, Basemenu *data) {
   MenuSearch *tmp = new MenuSearch;
   tmp->window = window;
   tmp->data = data;
-  menu_search_list->insert(tmp);
+  menuSearchList->insert(tmp);
 }
 
 
@@ -740,7 +742,7 @@ void Blackbox::saveIconSearch(Window window, BlackboxIcon *data) {
   IconSearch *tmp = new IconSearch;
   tmp->window = window;
   tmp->data = data;
-  icon_search_list->insert(tmp);
+  iconSearchList->insert(tmp);
 }
 
 
@@ -749,18 +751,26 @@ void Blackbox::saveWSManagerSearch(Window window,
   WSManagerSearch *tmp = new WSManagerSearch;
   tmp->window = window;
   tmp->data = data;
-  wsmanager_search_list->insert(tmp);
+  wsManagerSearchList->insert(tmp);
+}
+
+
+void Blackbox::saveRWidgetSearch(Window window, ReconfigureWidget *data) {
+  RWidgetSearch *tmp = new RWidgetSearch;
+  tmp->window = window;
+  tmp->data = data;
+  rWidgetSearchList->insert(tmp);
 }
 
 
 void Blackbox::removeWindowSearch(Window window) {
-  llist_iterator<WindowSearch> it(window_search_list);
+  LinkedListIterator<WindowSearch> it(windowSearchList);
   for (; it.current(); it++) {
     WindowSearch *tmp = it.current();
 
     if (tmp)
       if (tmp->window == window) {
-	window_search_list->remove(tmp);
+	windowSearchList->remove(tmp);
 	delete tmp;
 	break;
       }
@@ -769,13 +779,13 @@ void Blackbox::removeWindowSearch(Window window) {
 
 
 void Blackbox::removeMenuSearch(Window window) {
-  llist_iterator<MenuSearch> it(menu_search_list);
+  LinkedListIterator<MenuSearch> it(menuSearchList);
   for (; it.current(); it++) {
     MenuSearch *tmp = it.current();
 
     if (tmp)
       if (tmp->window == window) {
-	menu_search_list->remove(tmp);
+	menuSearchList->remove(tmp);
 	delete tmp;
 	break;
       }
@@ -784,13 +794,13 @@ void Blackbox::removeMenuSearch(Window window) {
 
 
 void Blackbox::removeIconSearch(Window window) {
-  llist_iterator<IconSearch> it(icon_search_list);
+  LinkedListIterator<IconSearch> it(iconSearchList);
   for (; it.current(); it++) {
     IconSearch *tmp = it.current();
 
     if (tmp)
       if (tmp->window == window) {
-	icon_search_list->remove(tmp);
+	iconSearchList->remove(tmp);
 	delete tmp;
 	break;
       }
@@ -799,13 +809,28 @@ void Blackbox::removeIconSearch(Window window) {
 
 
 void Blackbox::removeWSManagerSearch(Window window) {
-  llist_iterator<WSManagerSearch> it(wsmanager_search_list);
+  LinkedListIterator<WSManagerSearch> it(wsManagerSearchList);
   for (; it.current(); it++) {
     WSManagerSearch *tmp = it.current();
 
     if (tmp)
       if (tmp->window == window) {
-	wsmanager_search_list->remove(tmp);
+	wsManagerSearchList->remove(tmp);
+	delete tmp;
+	break;
+      }
+  }
+}
+
+
+void Blackbox::removeRWidgetSearch(Window window) {
+  LinkedListIterator<RWidgetSearch> it(rWidgetSearchList);
+  for (; it.current(); it++) {
+    RWidgetSearch *tmp = it.current();
+
+    if (tmp)
+      if (tmp->window == window) {
+	rWidgetSearchList->remove(tmp);
 	delete tmp;
 	break;
       }
@@ -818,7 +843,7 @@ void Blackbox::removeWSManagerSearch(Window window) {
 // *************************************************************************
 
 void Blackbox::Dissociate(void) {
-  ws_manager->DissociateAll();
+  wsManager->DissociateAll();
 }
 
 
@@ -850,31 +875,33 @@ void Blackbox::Shutdown(Bool do_delete) {
 // Session utility and maintainence
 // *************************************************************************
 
-void Blackbox::addWindow(BlackboxWindow *w)
-{ ws_manager->currentWorkspace()->addWindow(w); }
+void Blackbox::addWindow(BlackboxWindow *w) {
+  wsManager->currentWorkspace()->addWindow(w);
+}
 
 
-void Blackbox::removeWindow(BlackboxWindow *w)
-{ ws_manager->workspace(w->workspace())->removeWindow(w); }
+void Blackbox::removeWindow(BlackboxWindow *w) {
+  wsManager->workspace(w->workspace())->removeWindow(w);
+}
 
 
 void Blackbox::reassociateWindow(BlackboxWindow *w) {
-  if (w->workspace() != ws_manager->currentWorkspaceID()) {
-    ws_manager->workspace(w->workspace())->removeWindow(w);
-    ws_manager->currentWorkspace()->addWindow(w);
+  if (w->workspace() != wsManager->currentWorkspaceID()) {
+    wsManager->workspace(w->workspace())->removeWindow(w);
+    wsManager->currentWorkspace()->addWindow(w);
   }
 }
 
 
 void Blackbox::raiseWindow(BlackboxWindow *w) {
-  if (w->workspace() == ws_manager->currentWorkspaceID())
-    ws_manager->currentWorkspace()->raiseWindow(w);
+  if (w->workspace() == wsManager->currentWorkspaceID())
+    wsManager->currentWorkspace()->raiseWindow(w);
 }
 
 
 void Blackbox::lowerWindow(BlackboxWindow *w) {
-  if (w->workspace() == ws_manager->currentWorkspaceID())
-    ws_manager->currentWorkspace()->lowerWindow(w);
+  if (w->workspace() == wsManager->currentWorkspaceID())
+    wsManager->currentWorkspace()->lowerWindow(w);
 }
 
 
@@ -884,11 +911,11 @@ void Blackbox::lowerWindow(BlackboxWindow *w) {
 
 void Blackbox::InitMenu(void) {
   if (rootmenu) {
-    int n = rootmenu->count();
+    int n = rootmenu->Count();
     for (int i = 0; i < n; i++)
       rootmenu->remove(0);
   } else
-    rootmenu = new SessionMenu(this);
+    rootmenu = new Rootmenu(this);
   
   Bool default_menu = True;
 
@@ -900,7 +927,7 @@ void Blackbox::InitMenu(void) {
       char *value_type;
       
       if (XrmGetResource(menu_db, "blackbox.session.rootMenu.topLevelMenu",
-			 "Blackbox.Session.rootMenu.TopLevelMenu", &value_type,
+			 "Blackbox.Session.RootMenu.TopLevelMenu", &value_type,
 			 &value)) {
 	default_menu = False;
 	readMenuDatabase(rootmenu, &value, &menu_db);
@@ -922,15 +949,15 @@ void Blackbox::InitMenu(void) {
     //    rootmenu->insert("Shutdown", B_Shutdown);
   }
 
-  rootmenu->updateMenu();
+  rootmenu->Update();
 }
 
 
-void Blackbox::readMenuDatabase(SessionMenu *menu,
-				       XrmValue *menu_resource,
-				       XrmDatabase *menu_database) {
-  char *rnstring = new char[menu_resource->size + 35],
-    *rcstring = new char[menu_resource->size + 35];
+void Blackbox::readMenuDatabase(Rootmenu *menu,
+				XrmValue *menu_resource,
+				XrmDatabase *menu_database) {
+  char *rnstring = new char[menu_resource->size + 40],
+    *rcstring = new char[menu_resource->size + 40];
 
   XrmValue value;
   char *value_type;
@@ -957,10 +984,10 @@ void Blackbox::readMenuDatabase(SessionMenu *menu,
 
   // read menu items... if they exist
   if (nitems > 0) {
-    if (nitems > 50) nitems = 50; // limit number of items in the menu
+    if (nitems > 100) nitems = 100; // limit number of items in the menu
 
     for (int i = 0; i < nitems; i++) {
-      SessionMenu *submenu = 0;
+      Rootmenu *submenu = 0;
       char *label = 0, *exec = 0;
 
       // look for label
@@ -1020,8 +1047,8 @@ void Blackbox::readMenuDatabase(SessionMenu *menu,
 		    menu_resource->addr, i + 1);
 	    sprintf(rcstring, "Blackbox.Session.%s.Item%d.Exit",
 		    menu_resource->addr, i + 1);
-	    if (XrmGetResource(*menu_database, rnstring, rcstring, &value_type,
-			       &value)) {
+	    if (XrmGetResource(*menu_database, rnstring, rcstring,
+			       &value_type, &value)) {
 	      menu->insert(label, B_Exit);
 	    } else {
 	      // all else fails... check for a submenu
@@ -1031,25 +1058,34 @@ void Blackbox::readMenuDatabase(SessionMenu *menu,
 		      menu_resource->addr, i + 1);
 	      if (XrmGetResource(*menu_database, rnstring, rcstring,
 				 &value_type, &value)) {
-		submenu = new SessionMenu(this);
-		submenu->setMovable(False);
-		menu->insert(label, submenu);
-		readMenuDatabase(submenu, &value, menu_database);
-		submenu->updateMenu();
-	      } else
-		fprintf(stderr, "no item action found for item%d - please "
-			"check your configuration\n", i + 1);
-	    }
+		if (strncasecmp(value.addr, menu_resource->addr,
+				  value.size)) {
+		  submenu = new Rootmenu(this);
+		  menu->insert(label, submenu);
+		  readMenuDatabase(submenu, &value, menu_database);
+		  submenu->Update();
+		} else
+		  fprintf(stderr, "%s: %d recursive menu read\n"
+			  "  please check your configuration\n", value.addr,
+			  i + 1);
+		} else
+		  fprintf(stderr, "no item action found for item%d - please "
+			  "  please check your configuration\n", i + 1);
+	      }
+	    
 	  }
 	}
       } else
 	fprintf(stderr, "menu %s: no defined label for item%d - skipping\n"
-		"please check your configuration\n", menu_resource->addr,
+		"  please check your configuration\n", menu_resource->addr,
 		i + 1);
     }
   } else
     fprintf(stderr, "menu %s: number of menu items not defined\n"
 	    "please check your configuration\n", menu_resource->addr);
+  
+  delete [] rnstring;
+  delete [] rcstring;
 }
 
 
@@ -1063,133 +1099,93 @@ void Blackbox::LoadDefaults(void) {
 
   XGrabServer(display);
   
-  char *config_file = (char *) 0;
-  XrmDatabase blackbox_database = NULL, resource_database = NULL;
-  
-  XTextProperty resource_manager_string;
-  if (XGetTextProperty(display, root, &resource_manager_string,
-		       XA_RESOURCE_MANAGER)) {
-    resource_database =
-      XrmGetStringDatabase((const char *) resource_manager_string.value);
-    
-    XrmValue value;
-    char *value_type;
-    if (XrmGetResource(resource_database,
-		       "blackbox.session.configurationFile",
-		       "Blackbox.Sessoin.ConfigurationFile",
-		       &value_type, &value)) {
-      int clen = strlen(value.addr);
-      config_file = new char[clen + 1];
-      strncpy(config_file, value.addr, clen + 1);
-    }
+  resource.blackboxrc = NULL;
+  char *homedir = getenv("HOME"), *rcfile = new char[strlen(homedir) + 32];
+  sprintf(rcfile, "%s/.blackboxrc", homedir);
 
-    XrmDestroyDatabase(resource_database);
-  }
-  
-  if (config_file)
-    blackbox_database = XrmGetFileDatabase(config_file);
-  else
-    blackbox_database = XrmGetFileDatabase(BLACKBOXAD);
+  if ((resource.blackboxrc = XrmGetFileDatabase(rcfile)) == NULL)
+    resource.blackboxrc = XrmGetFileDatabase(BLACKBOXAD);
 
   XrmValue value;
   char *value_type;
 
-  // load our session configuration
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.session.toolboxTexture",
-		     "Blackbox.Session.ToolboxTexture", &value_type, &value)) {
-    if ((! strcasecmp(value.addr, "solid")) ||
-	(! strcasecmp(value.addr, "solidraised")))
-      resource.texture.toolbox = B_TextureRSolid;
-    else if (! strcasecmp(value.addr, "solidsunken"))
-      resource.texture.toolbox = B_TextureSSolid;
-    else if (! strcasecmp(value.addr, "solidflat"))
-      resource.texture.toolbox = B_TextureFSolid;
-    else if ((! strcasecmp(value.addr, "dgradient")) ||
-	     (! strcasecmp(value.addr, "dgradientraised")))
-      resource.texture.toolbox = B_TextureRDGradient;
-    else if (! strcasecmp(value.addr, "dgradientsunken"))
-      resource.texture.toolbox = B_TextureSDGradient;
-    else if (! strcasecmp(value.addr, "dgradientflat"))
-      resource.texture.toolbox = B_TextureFDGradient;
-    else if ((! strcasecmp(value.addr, "hgradient")) ||
-	     (! strcasecmp(value.addr, "hgradientraised")))
-      resource.texture.toolbox = B_TextureRHGradient;
-    else if (! strcasecmp(value.addr, "hgradientsunken"))
-      resource.texture.toolbox = B_TextureSHGradient;
-    else if (! strcasecmp(value.addr, "hgradientflat"))
-      resource.texture.toolbox = B_TextureFHGradient;
-    else if ((! strcasecmp(value.addr, "vgradient")) ||
-	     (! strcasecmp(value.addr, "vgradientraised")))
-      resource.texture.toolbox = B_TextureRVGradient;
-    else if (! strcasecmp(value.addr, "vgradientsunken"))
-      resource.texture.toolbox = B_TextureSVGradient;
-    else if (! strcasecmp(value.addr, "vgradientflat"))
-      resource.texture.toolbox = B_TextureFVGradient;
-    else
-      resource.texture.toolbox = B_TextureRSolid;
-  } else
-    resource.texture.toolbox = B_TextureRSolid;
+  // load textures
+  if (! (resource.texture.toolbox =
+	 readDatabaseTexture("blackbox.toolboxTexture",
+			     "Blackbox.ToolboxTexture")))
+    resource.texture.toolbox = BImageRaised|BImageBevel2|BImageSolid;
+  
+  if (! (resource.texture.window =
+	 readDatabaseTexture("blackbox.window.windowTexture",
+			     "Blackbox.Window.WindowTexture")))
+    resource.texture.window = BImageRaised|BImageBevel2|BImageSolid;
 
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.session.frameColor",
-		     "Blackbox.Session.FrameColor", &value_type, &value))
-    resource.color.frame.pixel =
-      getColor(value.addr, &resource.color.frame.r, &resource.color.frame.g,
-	       &resource.color.frame.b);
-  else
+  if (! (resource.texture.button =
+	 readDatabaseTexture("blackbox.window.buttonTexture",
+			     "Blackbox.Window.ButtonTexture")))
+    resource.texture.button = BImageRaised|BImageBevel1|BImageSolid;
+  
+  if (! (resource.texture.menu =
+	 readDatabaseTexture("blackbox.menu.menuTexture",
+			     "Blackbox.Menu.MenuTexture")))
+    resource.texture.button = BImageFlat|BImageSolid;
+
+  if (! (resource.texture.imenu =
+	 readDatabaseTexture("blackbox.menu.menuItemTexture",
+			     "Blackbox.Menu.MenuItemTexture")))
+    resource.texture.imenu = BImageRaised|BImageBevel1|BImageSolid;
+
+  // load colors
+  if (! (resource.color.frame.pixel =
+    readDatabaseColor("blackbox.session.frameColor",
+		      "Blackbox.Session.FrameColor",
+		      &resource.color.frame.r, &resource.color.frame.g,
+		      &resource.color.frame.b)))
     resource.color.frame.pixel =
       getColor("black", &resource.color.frame.r, &resource.color.frame.g,
 	       &resource.color.frame.b);
-
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.session.toolboxColor",
-		     "Blackbox.Session.ToolboxColor", &value_type, &value))
-    resource.color.toolbox.pixel =
-      getColor(value.addr, &resource.color.toolbox.r,
-	       &resource.color.toolbox.g, &resource.color.toolbox.b);
-  else
+  
+  if (! (resource.color.toolbox.pixel =
+	 readDatabaseColor("blackbox.session.toolboxColor",
+			   "Blackbox.Session.ToolboxColor",
+			   &resource.color.toolbox.r,
+			   &resource.color.toolbox.g,
+			   &resource.color.toolbox.b)))
     resource.color.toolbox.pixel =
       getColor("grey", &resource.color.toolbox.r, &resource.color.toolbox.g,
 	       &resource.color.toolbox.b);
   
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.session.toolboxToColor",
-		     "Blackbox.Session.ToolboxToColor", &value_type, &value))
-    resource.color.toolbox_to.pixel =
-      getColor(value.addr, &resource.color.toolbox_to.r,
-	       &resource.color.toolbox_to.g, &resource.color.toolbox_to.b);
-  else
+  if (! (resource.color.toolbox_to.pixel =
+	 readDatabaseColor("blackbox.session.toolboxToColor",
+			   "Blackbox.Session.ToolboxToColor",
+			   &resource.color.toolbox_to.r,
+			   &resource.color.toolbox_to.g,
+			   &resource.color.toolbox_to.b)))
     resource.color.toolbox_to.pixel =
       getColor("black", &resource.color.toolbox_to.r,
 	       &resource.color.toolbox_to.g, &resource.color.toolbox_to.b);
-
-
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.session.iconTextColor",
-		     "Blackbox.Session.IconTextColor", &value_type,
-		     &value))
-    resource.color.itext.pixel =
-      getColor(value.addr, &resource.color.itext.r, &resource.color.itext.g,
-	       &resource.color.itext.b);
-  else
+  
+  if (! (resource.color.itext.pixel =
+	 readDatabaseColor("blackbox.session.iconTextColor",
+			   "Blackbox.Session.IconTextColor",
+			   &resource.color.itext.r, &resource.color.itext.g,
+			   &resource.color.itext.b)))
     resource.color.itext.pixel =
       getColor("black", &resource.color.itext.r, &resource.color.itext.g,
 	       &resource.color.itext.b);
 
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.session.toolboxTextColor",
-		     "Blackbox.Session.ToolboxTextColor", &value_type,
-		     &value))
-    resource.color.ttext.pixel =
-      getColor(value.addr, &resource.color.ttext.r, &resource.color.ttext.g,
-	       &resource.color.ttext.b);
-  else
+  if (! (resource.color.ttext.pixel =
+	 readDatabaseColor("blackbox.session.toolboxTextColor",
+			   "Blackbox.Session.ToolboxTextColor",
+			   &resource.color.ttext.r, &resource.color.ttext.g,
+			   &resource.color.ttext.b)))
     resource.color.ttext.pixel =
       getColor("black", &resource.color.ttext.r, &resource.color.ttext.g,
 	       &resource.color.ttext.b);
 
-  if (XrmGetResource(blackbox_database,
+
+  // load session configuration parameters
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.session.workspaces",
 		     "Blackbox.Session.Workspaces", &value_type, &value)) {
     if (sscanf(value.addr, "%d", &resource.workspaces) != 1) {
@@ -1198,7 +1194,7 @@ void Blackbox::LoadDefaults(void) {
   } else
     resource.workspaces = 1;
   
-  if (XrmGetResource(blackbox_database,
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.session.orientation",
 		     "Blackbox.Session.Orientation", &value_type, &value)) {
     if (! strcasecmp(value.addr, "lefthanded"))
@@ -1208,7 +1204,7 @@ void Blackbox::LoadDefaults(void) {
   } else
     resource.orientation = B_RightHandedUser;
 
-  if (XrmGetResource(blackbox_database,
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.session.reconfigurePrompt",
 		     "Blackbox.Session.ReconfigurePrompt",
 		     &value_type, &value)) {
@@ -1218,81 +1214,23 @@ void Blackbox::LoadDefaults(void) {
       resource.prompt_reconfigure = True;
   } else
     resource.prompt_reconfigure = True;
+
+  if (XrmGetResource(resource.blackboxrc,
+		     "blackbox.menu.menuFile",
+		     "Blackbox.Menu.MenuFile", &value_type, &value)) {
+    int len = strlen(value.addr);
+    resource.menuFile = new char[len + 1];
+    memset(resource.menuFile, 0, len + 1);
+    strncpy(resource.menuFile, value.addr, len);
+  } else {
+    int len = strlen(BLACKBOXMENUAD);
+    resource.menuFile = new char[len + 1];
+    memset(resource.menuFile, 0, len + 1);
+    strncpy(resource.menuFile, BLACKBOXMENUAD, len);
+  }
   
   // load client window configuration
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.window.windowTexture",
-		     "Blackbox.Window.WindowTexture", &value_type, &value)) {
-    if ((! strcasecmp(value.addr, "solid")) ||
-	(! strcasecmp(value.addr, "solidraised")))
-      resource.texture.window = B_TextureRSolid;
-    else if (! strcasecmp(value.addr, "solidsunken"))
-      resource.texture.window = B_TextureSSolid;
-    else if (! strcasecmp(value.addr, "solidflat"))
-      resource.texture.window = B_TextureFSolid;
-    else if ((! strcasecmp(value.addr, "dgradient")) ||
-	     (! strcasecmp(value.addr, "dgradientraised")))
-      resource.texture.window = B_TextureRDGradient;
-    else if (! strcasecmp(value.addr, "dgradientsunken"))
-      resource.texture.window = B_TextureSDGradient;
-    else if (! strcasecmp(value.addr, "dgradientflat"))
-      resource.texture.window = B_TextureFDGradient;
-    else if ((! strcasecmp(value.addr, "hgradient")) ||
-	     (! strcasecmp(value.addr, "hgradientraised")))
-      resource.texture.window = B_TextureRHGradient;
-    else if (! strcasecmp(value.addr, "hgradientsunken"))
-      resource.texture.window = B_TextureSHGradient;
-    else if (! strcasecmp(value.addr, "hgradientflat"))
-      resource.texture.window = B_TextureFHGradient;
-    else if ((! strcasecmp(value.addr, "vgradient")) ||
-	     (! strcasecmp(value.addr, "vgradientraised")))
-      resource.texture.window = B_TextureRVGradient;
-    else if (! strcasecmp(value.addr, "vgradientsunken"))
-      resource.texture.window = B_TextureSVGradient;
-    else if (! strcasecmp(value.addr, "vgradientflat"))
-      resource.texture.window = B_TextureFVGradient;
-    else
-      resource.texture.window = B_TextureRSolid;
-  } else
-    resource.texture.window = B_TextureRSolid;
-
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.window.buttonTexture",
-		     "Blackbox.Window.ButtonTexture", &value_type, &value)) {
-    if ((! strcasecmp(value.addr, "solid")) ||
-	(! strcasecmp(value.addr, "solidraised")))
-      resource.texture.button = B_TextureRSolid;
-    else if (! strcasecmp(value.addr, "solidsunken"))
-      resource.texture.button = B_TextureSSolid;
-    else if (! strcasecmp(value.addr, "solidflat"))
-      resource.texture.button = B_TextureFSolid;
-    else if ((! strcasecmp(value.addr, "dgradient")) ||
-	     (! strcasecmp(value.addr, "dgradientraised")))
-      resource.texture.button = B_TextureRDGradient;
-    else if (! strcasecmp(value.addr, "dgradientsunken"))
-      resource.texture.button = B_TextureSDGradient;
-    else if (! strcasecmp(value.addr, "dgradientflat"))
-      resource.texture.button = B_TextureFDGradient;
-    else if ((! strcasecmp(value.addr, "hgradient")) ||
-	     (! strcasecmp(value.addr, "hgradientraised")))
-      resource.texture.button = B_TextureRHGradient;
-    else if (! strcasecmp(value.addr, "hgradientsunken"))
-      resource.texture.button = B_TextureSHGradient;
-    else if (! strcasecmp(value.addr, "hgradientflat"))
-      resource.texture.button = B_TextureFHGradient;
-    else if ((! strcasecmp(value.addr, "vgradient")) ||
-	     (! strcasecmp(value.addr, "vgradientraised")))
-      resource.texture.button = B_TextureRVGradient;
-    else if (! strcasecmp(value.addr, "vgradientsunken"))
-      resource.texture.button = B_TextureSVGradient;
-    else if (! strcasecmp(value.addr, "vgradientflat"))
-      resource.texture.button = B_TextureFVGradient;
-    else
-      resource.texture.button = B_TextureRSolid;
-  } else
-    resource.texture.button = B_TextureRSolid;
-
-  if (XrmGetResource(blackbox_database,
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.window.focusColor",
 		     "Blackbox.Window.FocusColor", &value_type, &value))
     resource.color.focus.pixel =
@@ -1303,7 +1241,7 @@ void Blackbox::LoadDefaults(void) {
       getColor("darkgrey", &resource.color.focus.r, &resource.color.focus.g,
 	       &resource.color.focus.b);
 
-  if (XrmGetResource(blackbox_database,
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.window.focusToColor",
 		     "Blackbox.Window.FocusToColor", &value_type, &value))
     resource.color.focus_to.pixel =
@@ -1314,7 +1252,7 @@ void Blackbox::LoadDefaults(void) {
       getColor("black", &resource.color.focus_to.r,
 	       &resource.color.focus_to.g, &resource.color.focus_to.b);
 
-  if (XrmGetResource(blackbox_database,
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.window.unfocusColor",
 		     "Blackbox.Window.UnfocusColor", &value_type, &value))
     resource.color.unfocus.pixel =
@@ -1325,7 +1263,7 @@ void Blackbox::LoadDefaults(void) {
       getColor("black", &resource.color.unfocus.r,
 	       &resource.color.unfocus.g, &resource.color.unfocus.b);
   
-  if (XrmGetResource(blackbox_database,
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.window.unfocusToColor",
 		     "Blackbox.Window.UnfocusToColor", &value_type, &value))
     resource.color.unfocus_to.pixel =
@@ -1336,7 +1274,7 @@ void Blackbox::LoadDefaults(void) {
       getColor("black", &resource.color.unfocus_to.r,
 	       &resource.color.unfocus_to.g, &resource.color.unfocus_to.b);
   
-  if (XrmGetResource(blackbox_database,
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.window.buttonColor",
 		     "Blackbox.Window.ButtonColor", &value_type, &value))
     resource.color.button.pixel =
@@ -1347,7 +1285,7 @@ void Blackbox::LoadDefaults(void) {
       getColor("grey" , &resource.color.button.r,
 	       &resource.color.button.g, &resource.color.button.b);
   
-  if (XrmGetResource(blackbox_database,
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.window.buttonToColor",
 		     "Blackbox.Window.ButtonToColor", &value_type, &value))
     resource.color.button_to.pixel =
@@ -1358,7 +1296,7 @@ void Blackbox::LoadDefaults(void) {
       getColor("black", &resource.color.button_to.r,
 	       &resource.color.button_to.g, &resource.color.button_to.b);
 
-  if (XrmGetResource(blackbox_database,
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.window.focusTextColor",
 		     "Blackbox.Window.FocusTextColor", &value_type, &value))
     resource.color.ftext.pixel =
@@ -1369,7 +1307,7 @@ void Blackbox::LoadDefaults(void) {
       getColor("white", &resource.color.ftext.r, &resource.color.ftext.g,
 	       &resource.color.ftext.b);
 
-  if (XrmGetResource(blackbox_database,
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.window.unfocusTextColor",
 		     "Blackbox.Window.UnfocusTextColor", &value_type, &value))
     resource.color.utext.pixel =
@@ -1380,7 +1318,7 @@ void Blackbox::LoadDefaults(void) {
       getColor("darkgrey", &resource.color.utext.r, &resource.color.utext.g,
 	       &resource.color.utext.b);
   
-  if (XrmGetResource(blackbox_database,
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.window.titleJustify",
 		     "Blackbox.Window.TitleJustify", &value_type, &value)) {
     if (! strncasecmp("leftjustify", value.addr, value.size))
@@ -1395,116 +1333,8 @@ void Blackbox::LoadDefaults(void) {
     resource.justification = B_LeftJustify;
 
   // load menu configuration
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.menu.menuTexture",
-		     "Blackbox.Menu.MenuTexture", &value_type, &value)) {
-    if ((! strcasecmp(value.addr, "solid")) ||
-	(! strcasecmp(value.addr, "solidraised")))
-      resource.texture.menu = B_TextureRSolid;
-    else if (! strcasecmp(value.addr, "solidsunken"))
-      resource.texture.menu = B_TextureSSolid;
-    else if (! strcasecmp(value.addr, "solidflat"))
-      resource.texture.menu = B_TextureFSolid;
-    else if ((! strcasecmp(value.addr, "dgradient")) ||
-	     (! strcasecmp(value.addr, "dgradientraised")))
-      resource.texture.menu = B_TextureRDGradient;
-    else if (! strcasecmp(value.addr, "dgradientsunken"))
-      resource.texture.menu = B_TextureSDGradient;
-    else if (! strcasecmp(value.addr, "dgradientflat"))
-      resource.texture.menu = B_TextureFDGradient;
-    else if ((! strcasecmp(value.addr, "hgradient")) ||
-	     (! strcasecmp(value.addr, "hgradientraised")))
-      resource.texture.menu = B_TextureRHGradient;
-    else if (! strcasecmp(value.addr, "hgradientsunken"))
-      resource.texture.menu = B_TextureSHGradient;
-    else if (! strcasecmp(value.addr, "hgradientflat"))
-      resource.texture.menu = B_TextureFHGradient;
-    else if ((! strcasecmp(value.addr, "vgradient")) ||
-	     (! strcasecmp(value.addr, "vgradientraised")))
-      resource.texture.menu = B_TextureRVGradient;
-    else if (! strcasecmp(value.addr, "vgradientsunken"))
-      resource.texture.menu = B_TextureSVGradient;
-    else if (! strcasecmp(value.addr, "vgradientflat"))
-      resource.texture.menu = B_TextureFVGradient;
-    else
-      resource.texture.menu = B_TextureRSolid;
-  } else
-    resource.texture.menu = B_TextureRSolid;
 
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.menu.menuItemPressedTexture",
-		     "Blackbox.Menu.MenuItemPressedTexture", &value_type,
-		     &value)) {
-    if ((! strcasecmp(value.addr, "solid")) ||
-	(! strcasecmp(value.addr, "solidraised")))
-      resource.texture.pimenu = B_TextureRSolid;
-    else if (! strcasecmp(value.addr, "solidsunken"))
-      resource.texture.pimenu = B_TextureSSolid;
-    else if (! strcasecmp(value.addr, "solidflat"))
-      resource.texture.pimenu = B_TextureFSolid;
-    else if ((! strcasecmp(value.addr, "dgradient")) ||
-	     (! strcasecmp(value.addr, "dgradientraised")))
-      resource.texture.pimenu = B_TextureRDGradient;
-    else if (! strcasecmp(value.addr, "dgradientsunken"))
-      resource.texture.pimenu = B_TextureSDGradient;
-    else if (! strcasecmp(value.addr, "dgradientflat"))
-      resource.texture.pimenu = B_TextureFDGradient;
-    else if ((! strcasecmp(value.addr, "hgradient")) ||
-	     (! strcasecmp(value.addr, "hgradientraised")))
-      resource.texture.pimenu = B_TextureRHGradient;
-    else if (! strcasecmp(value.addr, "hgradientsunken"))
-      resource.texture.pimenu = B_TextureSHGradient;
-    else if (! strcasecmp(value.addr, "hgradientflat"))
-      resource.texture.pimenu = B_TextureFHGradient;
-    else if ((! strcasecmp(value.addr, "vgradient")) ||
-	     (! strcasecmp(value.addr, "vgradientraised")))
-      resource.texture.pimenu = B_TextureRVGradient;
-    else if (! strcasecmp(value.addr, "vgradientsunken"))
-      resource.texture.pimenu = B_TextureSVGradient;
-    else if (! strcasecmp(value.addr, "vgradientflat"))
-      resource.texture.pimenu = B_TextureFVGradient;
-    else
-      resource.texture.pimenu = B_TextureFSolid;
-  } else
-    resource.texture.pimenu = B_TextureFSolid;
-
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.menu.menuItemTexture",
-		     "Blackbox.Menu.MenuItemTexture", &value_type, &value)) {
-    if ((! strcasecmp(value.addr, "solid")) ||
-	(! strcasecmp(value.addr, "solidraised")))
-      resource.texture.imenu = B_TextureRSolid;
-    else if (! strcasecmp(value.addr, "solidsunken"))
-      resource.texture.imenu = B_TextureSSolid;
-    else if (! strcasecmp(value.addr, "solidflat"))
-      resource.texture.imenu = B_TextureFSolid;
-    else if ((! strcasecmp(value.addr, "dgradient")) ||
-	     (! strcasecmp(value.addr, "dgradientraised")))
-      resource.texture.imenu = B_TextureRDGradient;
-    else if (! strcasecmp(value.addr, "dgradientsunken"))
-      resource.texture.imenu = B_TextureSDGradient;
-    else if (! strcasecmp(value.addr, "dgradientflat"))
-      resource.texture.imenu = B_TextureFDGradient;
-    else if ((! strcasecmp(value.addr, "hgradient")) ||
-	     (! strcasecmp(value.addr, "hgradientraised")))
-      resource.texture.imenu = B_TextureRHGradient;
-    else if (! strcasecmp(value.addr, "hgradientsunken"))
-      resource.texture.imenu = B_TextureSHGradient;
-    else if (! strcasecmp(value.addr, "hgradientflat"))
-      resource.texture.imenu = B_TextureFHGradient;
-    else if ((! strcasecmp(value.addr, "vgradient")) ||
-	     (! strcasecmp(value.addr, "vgradientraised")))
-      resource.texture.imenu = B_TextureRVGradient;
-    else if (! strcasecmp(value.addr, "vgradientsunken"))
-      resource.texture.imenu = B_TextureSVGradient;
-    else if (! strcasecmp(value.addr, "vgradientflat"))
-      resource.texture.imenu = B_TextureFVGradient;
-    else
-      resource.texture.imenu = B_TextureRSolid;
-  } else
-    resource.texture.imenu = B_TextureRSolid;
-
-  if (XrmGetResource(blackbox_database,
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.menu.menuColor",
 		     "Blackbox.Menu.MenuColor", &value_type, &value))
     resource.color.menu.pixel =
@@ -1515,7 +1345,7 @@ void Blackbox::LoadDefaults(void) {
       getColor("darkgrey", &resource.color.menu.r,
 	       &resource.color.menu.g, &resource.color.menu.b);
   
-  if (XrmGetResource(blackbox_database,
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.menu.menuToColor",
 		     "Blackbox.Menu.MenuToColor", &value_type, &value))
     resource.color.menu_to.pixel =
@@ -1526,7 +1356,7 @@ void Blackbox::LoadDefaults(void) {
       getColor("black", &resource.color.menu_to.r,
 	       &resource.color.menu_to.g, &resource.color.menu_to.b);
   
-  if (XrmGetResource(blackbox_database,
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.menu.menuItemColor",
 		     "Blackbox.Menu.MenuItemColor", &value_type, &value))
     resource.color.imenu.pixel =
@@ -1537,7 +1367,7 @@ void Blackbox::LoadDefaults(void) {
       getColor("black", &resource.color.imenu.r,
 	       &resource.color.imenu.g, &resource.color.imenu.b);
   
-  if (XrmGetResource(blackbox_database,
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.menu.menuItemToColor",
 		     "Blackbox.Menu.MenuItemToColor", &value_type, &value))
     resource.color.imenu_to.pixel =
@@ -1547,8 +1377,19 @@ void Blackbox::LoadDefaults(void) {
     resource.color.imenu_to.pixel =
       getColor("grey", &resource.color.imenu_to.r,
 	       &resource.color.imenu_to.g, &resource.color.imenu_to.b);
+
+  if (XrmGetResource(resource.blackboxrc,
+		     "blackbox.menu.menuHighlightColor",
+		     "Blackbox.Menu.MenuHighlightColor", &value_type, &value))
+    resource.color.hmenu.pixel =
+      getColor(value.addr, &resource.color.hmenu.r,
+	       &resource.color.hmenu.g, &resource.color.hmenu.b);
+  else
+    resource.color.hmenu.pixel =
+      getColor("black", &resource.color.hmenu.r,
+	       &resource.color.hmenu.g, &resource.color.hmenu.b);
   
-  if (XrmGetResource(blackbox_database,
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.menu.menuTextColor",
 		     "Blackbox.Menu.MenuTextColor", &value_type, &value))
     resource.color.mtext.pixel =
@@ -1559,7 +1400,7 @@ void Blackbox::LoadDefaults(void) {
       getColor("white", &resource.color.mtext.r, &resource.color.mtext.g,
 	       &resource.color.mtext.b);
 
-  if (XrmGetResource(blackbox_database,
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.menu.menuItemTextColor",
 		     "Blackbox.Menu.MenuItemTextColor", &value_type,
 		     &value))
@@ -1571,36 +1412,22 @@ void Blackbox::LoadDefaults(void) {
       getColor("grey", &resource.color.mitext.r, &resource.color.mitext.g,
 	       &resource.color.mitext.b);
 
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.menu.menuPressedTextColor",
-		     "Blackbox.Menu.MenuPressedTextColor", &value_type,
+  if (XrmGetResource(resource.blackboxrc,
+		     "blackbox.menu.menuHighlightTextColor",
+		     "Blackbox.Menu.MenuHighlightTextColor", &value_type,
 		     &value))
-    resource.color.ptext.pixel =
-      getColor(value.addr, &resource.color.ptext.r, &resource.color.ptext.g,
-	       &resource.color.ptext.b);
+    resource.color.htext.pixel =
+      getColor(value.addr, &resource.color.htext.r, &resource.color.htext.g,
+	       &resource.color.htext.b);
   else
-    resource.color.ptext.pixel =
-      getColor("darkgrey", &resource.color.ptext.r, &resource.color.ptext.g,
-	       &resource.color.ptext.b);
-  
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.menu.menuFile",
-		     "Blackbox.Menu.MenuFile", &value_type, &value)) {
-    int len = strlen(value.addr);
-    resource.menuFile = new char[len + 1];
-    memset(resource.menuFile, 0, len + 1);
-    strncpy(resource.menuFile, value.addr, len);
-  } else {
-    int len = strlen(BLACKBOXMENUAD);
-    resource.menuFile = new char[len + 1];
-    memset(resource.menuFile, 0, len + 1);
-    strncpy(resource.menuFile, BLACKBOXMENUAD, len);
-  }
+    resource.color.htext.pixel =
+      getColor("white", &resource.color.htext.r, &resource.color.htext.g,
+	       &resource.color.htext.b);
   
   // load font resources
   const char *defaultFont = "-*-charter-medium-r-*-*-*-120-*-*-*-*-*-*";
   if (resource.font.title) XFreeFont(display, resource.font.title);
-  if (XrmGetResource(blackbox_database,
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.session.titleFont",
 		     "Blackbox.Session.TitleFont", &value_type, &value)) {
     if ((resource.font.title = XLoadQueryFont(display, value.addr)) == NULL) {
@@ -1626,7 +1453,7 @@ void Blackbox::LoadDefaults(void) {
   }
 
   if (resource.font.menu) XFreeFont(display, resource.font.menu);
-  if (XrmGetResource(blackbox_database,
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.session.menuFont",
 		     "Blackbox.Session.MenuFont", &value_type, &value)) {
     if ((resource.font.menu = XLoadQueryFont(display, value.addr)) == NULL) {
@@ -1652,7 +1479,7 @@ void Blackbox::LoadDefaults(void) {
   }
 
   if (resource.font.icon) XFreeFont(display, resource.font.icon);
-  if (XrmGetResource(blackbox_database,
+  if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.session.iconFont",
 		     "Blackbox.Session.IconFont", &value_type, &value)) {
     if ((resource.font.icon = XLoadQueryFont(display, value.addr)) == NULL) {
@@ -1677,13 +1504,73 @@ void Blackbox::LoadDefaults(void) {
     }
   }
 
-  XrmDestroyDatabase(blackbox_database);
+  XrmDestroyDatabase(resource.blackboxrc);
   XUngrabServer(display);
 }
 
 
-void Blackbox::updateWorkspace(int w) {
-  ws_manager->workspace(w)->updateMenu();
+unsigned long Blackbox::readDatabaseTexture(char *rname, char *rclass) {
+  XrmValue value;
+  char *value_type;
+  unsigned long texture = 0;
+
+  if (XrmGetResource(resource.blackboxrc, rname, rclass, &value_type,
+		     &value)) {
+    if (strstr(value.addr, "Solid"))
+      texture |= BImageSolid;
+    else if (strstr(value.addr, "Gradient")) {
+      texture |= BImageGradient;
+
+      if (strstr(value.addr, "Diagonal"))
+	texture |= BImageDiagonal;
+      else if (strstr(value.addr, "Horizontal"))
+	texture |= BImageHorizontal;
+      else if (strstr(value.addr, "Vertical"))
+	texture |= BImageVertical;
+      else
+	texture |= BImageDiagonal;
+    } else
+      texture |= BImageSolid;
+
+    if (strstr(value.addr, "Raised"))
+      texture |= BImageRaised;
+    else if (strstr(value.addr, "Sunken"))
+      texture |= BImageSunken;
+    else if (strstr(value.addr, "Flat"))
+      texture |= BImageFlat;
+    else
+      texture |= BImageRaised;
+
+    if (! (texture & BImageFlat))
+      if (strstr(value.addr, "Bevel"))
+	if (strstr(value.addr, "Bevel1"))
+	  texture |= BImageBevel1;
+	else if (strstr(value.addr, "Bevel2"))
+	  texture |= BImageBevel2;
+	else if (strstr(value.addr, "MotifBevel"))
+	  texture |= BImageMotifBevel;
+	else
+	  texture |= BImageBevel1;
+  }
+  
+  return texture;
+}
+
+
+unsigned long Blackbox::readDatabaseColor(char *rname, char *rclass,
+					  unsigned char *r, unsigned char *g,
+					  unsigned char *b) {
+  XrmValue value;
+  char *value_type;
+  unsigned long pixel = 0;
+
+  if (XrmGetResource(resource.blackboxrc, rname, rclass, &value_type,
+		     &value)) {
+    pixel = getColor(value.addr, r, g, b);
+  } else
+    *r = *g = *b = (unsigned char) 0;
+  
+  return pixel;
 }
 
 
@@ -1773,138 +1660,24 @@ void Blackbox::Reconfigure(void) {
 
 
 void Blackbox::do_reconfigure(void) {
-  if (! ReconfigureDialog.visible) {
-    XGrabServer(display);
-    LoadDefaults();
-
-    ws_manager->currentWorkspace()->hideAll();
-    InitMenu();
-    rootmenu->Reconfigure();
-
-    XGCValues gcv;
-    gcv.foreground = getColor("white");
-    gcv.function = GXxor;
-    gcv.line_width = 2;
-    gcv.subwindow_mode = IncludeInferiors;
-    gcv.font = resource.font.title->fid;
-    XChangeGC(display, opGC, GCForeground|GCFunction|GCSubwindowMode|GCFont,
-	      &gcv);
-    
-    ws_manager->Reconfigure();
-
-    ReconfigureDialog.dialog->Reconfigure();
-    XSetWindowBackground(display, ReconfigureDialog.window,
-			 toolboxColor().pixel);
-    XSetWindowBackground(display, ReconfigureDialog.text_window,
-			 toolboxColor().pixel);
-    XSetWindowBackground(display, ReconfigureDialog.yes_button,
-			 toolboxColor().pixel);
-    XSetWindowBackground(display, ReconfigureDialog.no_button,
-			 toolboxColor().pixel);
-    XSetWindowBorder(display, ReconfigureDialog.yes_button,
-		     toolboxTextColor().pixel);
-    XSetWindowBorder(display, ReconfigureDialog.no_button,
-		     toolboxTextColor().pixel);
-    
-    XGCValues dgcv;
-    dgcv.font = titleFont()->fid;
-    dgcv.foreground = toolboxTextColor().pixel;
-    XChangeGC(display, ReconfigureDialog.dialogGC, GCFont|GCForeground,
-	      &dgcv);
-    
-    ws_manager->currentWorkspace()->showAll();
-
-    XUngrabServer(display);
-  }
-}
-
-
-void Blackbox::createAutoConfigDialog(void) {
-  XSetWindowAttributes attrib_create;
-  unsigned long create_mask = CWBackPixmap|CWBackPixel|CWBorderPixel|
-    CWOverrideRedirect |CWCursor|CWEventMask; 
+  XGrabServer(display);
+  LoadDefaults();
   
-  attrib_create.background_pixmap = None;
-  attrib_create.background_pixel = toolboxColor().pixel;
-  attrib_create.border_pixel = toolboxTextColor().pixel;
-  attrib_create.override_redirect = False;
-  attrib_create.cursor = sessionCursor();
-  attrib_create.event_mask = SubstructureRedirectMask|ButtonPressMask|
-    ButtonReleaseMask|ButtonMotionMask|ExposureMask|EnterWindowMask;
+  //  wsManager->currentWorkspace()->hideAll();
+  InitMenu();
+  rootmenu->Reconfigure();
+  wsManager->Reconfigure();
   
-  ReconfigureDialog.DialogText[0] =
-    "Blackbox has the ability to perform an automatic reconfiguration, but";
-  ReconfigureDialog.DialogText[1] =
-    "this capability has proven unreliable in the past.  Choose \"Yes\" to";
-  ReconfigureDialog.DialogText[2] =
-    "allow Blackbox to reconfigure itself.  WARNING:  This can cause Blackbox";
-  ReconfigureDialog.DialogText[3] =
-    "to dump core and abort.  NOTE:  Previous bugs have been attributed to ";
-  ReconfigureDialog.DialogText[4] =
-    "over-optimization at compile time.  Choose \"No\" and you can either";
-  ReconfigureDialog.DialogText[5] =
-    "restart or choose the Reconfigure option from your root menu.";
-
-  ReconfigureDialog.line_h = titleFont()->ascent + titleFont()->descent + 6;
-  ReconfigureDialog.text_w = 0;
-  ReconfigureDialog.text_h = ReconfigureDialog.line_h * 6;
- 
-  for (int i = 0; i < 6; i++) {
-    int tmp =
-      XTextWidth(titleFont(), ReconfigureDialog.DialogText[i],
-		 strlen(ReconfigureDialog.DialogText[i])) + 6;
-    ReconfigureDialog.text_w = ((ReconfigureDialog.text_w < tmp) ? tmp :
-				ReconfigureDialog.text_w);
-  }
-
-  XSizeHints *rsizehint = XAllocSizeHints();
-  rsizehint->flags = PPosition|PSize|PMinSize|PMaxSize;
-  rsizehint->x = rsizehint->y = 200;
-  rsizehint->width = rsizehint->min_width = rsizehint->max_width =
-    ReconfigureDialog.text_w + 10;
-  rsizehint->height = rsizehint->min_height = rsizehint->max_height=
-    ReconfigureDialog.text_h + (ReconfigureDialog.line_h * 3);
-
-  ReconfigureDialog.window =
-    XCreateWindow(display, root, 200, 200, ReconfigureDialog.text_w + 10,
-		  ReconfigureDialog.text_h + (ReconfigureDialog.line_h * 3),
-		  0, depth, InputOutput, v, create_mask, &attrib_create);
-  XStoreName(display, ReconfigureDialog.window,
-	     "Perform Auto-Reconfiguration?");
-  XSetWMNormalHints(display, ReconfigureDialog.window, rsizehint);
-  XFree(rsizehint);
-
-  ReconfigureDialog.text_window =
-    XCreateWindow(display, ReconfigureDialog.window, 5, 5,
-		  ReconfigureDialog.text_w, ReconfigureDialog.text_h, 0,
-		  depth, InputOutput, v, create_mask, &attrib_create);
-
-  ReconfigureDialog.yes_button = 
-    XCreateWindow(display, ReconfigureDialog.window, 5,
-		  ReconfigureDialog.text_h + ReconfigureDialog.line_h,
-		  (ReconfigureDialog.text_w / 2) - 10,
-		  ReconfigureDialog.line_h, 1, depth, InputOutput, v,
-		  create_mask, &attrib_create);
-
-  ReconfigureDialog.no_button = 
-    XCreateWindow(display, ReconfigureDialog.window,
-		  (ReconfigureDialog.text_w / 2) + 10,
-		  ReconfigureDialog.text_h + ReconfigureDialog.line_h,
-		  (ReconfigureDialog.text_w / 2) - 10,
-		  ReconfigureDialog.line_h, 1, depth, InputOutput, v,
-		  create_mask, &attrib_create);
-
   XGCValues gcv;
-  gcv.font = titleFont()->fid;
-  gcv.foreground = toolboxTextColor().pixel;
-  ReconfigureDialog.dialogGC = XCreateGC(display,
-					 ReconfigureDialog.text_window,
-					 GCFont|GCForeground, &gcv);
-
-  ReconfigureDialog.dialog = new BlackboxWindow(this,
-						ReconfigureDialog.window,
-						True);
-
-  XMapSubwindows(display, ReconfigureDialog.window);
-  XMapWindow(display, ReconfigureDialog.window);
+  gcv.foreground = getColor("white");
+  gcv.function = GXxor;
+  gcv.line_width = 2;
+  gcv.subwindow_mode = IncludeInferiors;
+  gcv.font = resource.font.title->fid;
+  XChangeGC(display, opGC, GCForeground|GCFunction|GCSubwindowMode|GCFont,
+	    &gcv);
+  
+  //  wsManager->currentWorkspace()->showAll();
+  
+  XUngrabServer(display);
 }

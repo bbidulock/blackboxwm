@@ -17,19 +17,11 @@ XCOMM  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 XCOMM
 XCOMM (See the included file COPYING / GPL-2.0)
 
-XCOMM Add compiler options here
-CompileOptimize :=	$(CXXFLAGS) -g
-CompileOptions :=	-Wall -W $(CompileOptimize)
+XCOMM Uncomment this to get debugging symbols in the executable
+CXXFLAGS :=	$(CXXFLAGS) -g
 
 XCOMM Define this to get XShapeExtention support
 #define SupportShapeExtension
-
-XCOMM Define this to get animations and other superfluous goodies
-#define Animations
-
-XCOMM Define this to get wire frame moves (as opposed to opaque moves)
-XCOMM   Opaque moves == moves where window contents are always viewable
-XCOMM #define WireFrameWindowMove
 
 XCOMM
 XCOMM  END OF USER CONFIGURABLE ITEMS
@@ -40,59 +32,25 @@ XCOMM
 
 XCOMM Source files from which blackbox is built
 
-Includes :=		blackbox.hh graphics.hh icon.hh llist.hh menu.hh window.hh workspace.hh
-Sources :=		blackbox.cc graphics.cc icon.cc llist.cc main.cc menu.cc sessionmenu.cc window.cc windowmenu.cc workspace.cc workspacemenu.cc
-Objects :=		blackbox.o graphics.o icon.o main.o menu.o llist.o sessionmenu.o window.o windowmenu.o workspace.o workspacemenu.o
+Includes :=		Basemenu.hh Clientmenu.hh LinkedList.hh ReconfigureWidget.hh Rootmenu.hh Windowmenu.hh Workspace.hh WorkspaceManager.hh Workspacemenu.hh blackbox.hh graphics.hh icon.hh window.hh
+Sources :=		Basemenu.cc Clientmenu.cc LinkedList.cc ReconfigureWidget.cc Rootmenu.cc Windowmenu.cc Workspace.cc WorkspaceManager.cc Workspacemenu.cc blackbox.cc graphics.cc icon.cc main.cc window.cc
+Objects :=		Basemenu.o  Clientmenu.o  LinkedList.o  ReconfigureWidget.o  Rootmenu.o  Windowmenu.o  Workspace.o  WorkspaceManager.o  Workspacemenu.o  blackbox.o graphics.o icon.o main.o window.o
 
 DefaultsPath :=		-DXAPPLOADDIR=\"$(XAPPLOADDIR)\" -DXLIBDIR=\"$(LIBDIR)\"
 Libraries :=		$(XLIB) $(EXTENSIONLIB)
 OtherLibs :=		
 
 #ifdef SupportShapeExtension
-CompileOptions :=	$(CompileOptions) -DSHAPE
+CXXFLAGS :=	$(CXXFLAGS) -DSHAPE
 #endif
-
-#ifdef Animations
-CompileOptions :=	$(CompileOptions) -DANIMATIONS
-#endif
-
-#ifdef WireFrameWindowMove
-CompileOptions :=	$(CompileOptions) -DWIREMOVE
-#endif
+CXXFLAGS :=	-Wall -W $(CXXFLAGS)
 
 PROGRAMS := blackbox
 SRCS1 := $(Sources)
 OBJS1 := $(Objects)
-ComplexProgramTarget_1(blackbox, $(Libraries), $(OtherLibs))
-
-.cc.o: $(Sources)
-	$(CXX) $(CompileOptions) -c -o $@ $<
+ComplexCplusplusProgramTarget_1(blackbox, $(Libraries), $(OtherLibs))
+InstallNonExecFile(Blackbox.ad, $(XAPPLOADDIR))
+InstallNonExecFile(BlackboxMenu.ad, $(XAPPLOADDIR))
 
 blackbox.o: blackbox.cc
-	$(CXX) $(CompileOptions) $(DefaultsPath) -c -o $@ $<
-
-depend::
-	rm -f Makefile.bak
-
-install:: install.app-defaults
-install.app-defaults::
-	@if [ ! -d $(XAPPLOADDIR) ]; then \
-		$(MKDIRHIER) $(XAPPLOADDIR); \
-	fi
-	$(INSTALL) $(INSTALLFLAGS) $(INSTMANFLAGS) Blackbox.ad $(XAPPLOADDIR)/Blackbox.ad
-	$(INSTALL) $(INSTALLFLAGS) $(INSTMANFLAGS) Menu.ad $(LIBDIR)/BlackboxMenu.ad
-
-XCOMM Make rules I enjoy
-
-distclean::
-	make clean
-	rm -f Makefile
-
-new::
-	make clean
-	make all
-
-dist::
-	make distclean
-	xmkmf -a
-	make all
+	$(CXX) $(CXXFLAGS) $(DefaultsPath) -c -o $@ $<

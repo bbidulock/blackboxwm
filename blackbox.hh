@@ -21,7 +21,7 @@
 
 #ifndef __blackbox_hh
 #define __blackbox_hh
-#define __blackbox_version "zero point two two point zero beta"
+#define __blackbox_version "PRE zero point three zero point zero beta"
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
@@ -29,53 +29,20 @@
 // forward declaration
 class Blackbox;
 
+#include "WorkspaceManager.hh"
+#include "Basemenu.hh"
+#include "ReconfigureWidget.hh"
+#include "Rootmenu.hh"
+
+#include "LinkedList.hh"
 #include "graphics.hh"
 #include "icon.hh"
-#include "llist.hh"
-#include "menu.hh"
 #include "window.hh"
-#include "workspace.hh"
-
-
-// *************************************************************************
-// SessionMenu - root window menu for starting applications and accessing
-//               various window manager functions
-// *************************************************************************
-
-class SessionMenu : public BaseMenu {
-private:
-  Blackbox *blackbox;
-  Bool default_menu;
-
-
-protected:  
-  virtual void itemPressed(int, int);
-  virtual void itemReleased(int, int);
-  virtual void titlePressed(int);
-  virtual void titleReleased(int);
-
-
-public:
-  SessionMenu(Blackbox *);
-  virtual ~SessionMenu(void);
-  
-  void defaultMenu(void) { default_menu = True; }
-  int remove(int);
-};
 
 
 class Blackbox {
 private:
   // internal structures
-  struct __reconfigure__dialog__ {
-    BlackboxWindow *dialog;
-    Bool visible;
-    GC dialogGC;
-    Window window, text_window, yes_button, no_button;
-    char *DialogText[6];
-    int text_w, text_h, line_h;
-  } ReconfigureDialog;
-
   typedef struct __window_search__ {
     BlackboxWindow *data;
     Window window;
@@ -87,7 +54,7 @@ private:
   } IconSearch;
 
   typedef struct __menu_search__ {
-    BaseMenu *data;
+    Basemenu *data;
     Window window;
   } MenuSearch;
 
@@ -96,6 +63,11 @@ private:
     Window window;
   } WSManagerSearch;
 
+  typedef struct __reconfigure_widget_search {
+    ReconfigureWidget *data;
+    Window window;
+  } RWidgetSearch;
+
   struct cursor {
     Cursor session, move;
   } cursor;
@@ -103,8 +75,8 @@ private:
   struct resource {
     struct color {
       BColor frame, toolbox, toolbox_to, focus, focus_to, unfocus, unfocus_to,
-	menu, menu_to, imenu, imenu_to, button, button_to, ftext, utext,
-	mtext, mitext, ptext, itext, ttext;
+	menu, menu_to, imenu, imenu_to, hmenu, button, button_to, ftext,
+	utext, mtext, mitext, htext, itext, ttext;
     } color;
     
     struct font {
@@ -112,10 +84,11 @@ private:
     } font;
     
     struct texture {
-      int toolbox, window, button, menu, imenu, pimenu;
+      unsigned long toolbox, window, button, menu, imenu;
     } texture;
 
     Bool prompt_reconfigure;
+    XrmDatabase blackboxrc;
     char *menuFile;
     int workspaces, orientation, justification;
   } resource;
@@ -126,14 +99,16 @@ private:
   } shape;
 
   // context linked lists
-  llist<WindowSearch> *window_search_list;
-  llist<MenuSearch> *menu_search_list;
-  llist<IconSearch> *icon_search_list;
-  llist<WSManagerSearch> *wsmanager_search_list;
+  LinkedList<WindowSearch> *windowSearchList;
+  LinkedList<MenuSearch> *menuSearchList;
+  LinkedList<IconSearch> *iconSearchList;
+  LinkedList<WSManagerSearch> *wsManagerSearchList;
+  LinkedList<RWidgetSearch> *rWidgetSearchList;
 
   // internal variables for operation
-  SessionMenu *rootmenu;
-  WorkspaceManager *ws_manager;
+  Rootmenu *rootmenu;
+  WorkspaceManager *wsManager;
+  ReconfigureWidget *reconfWidget;
 
   Atom _XA_WM_COLORMAP_WINDOWS, _XA_WM_PROTOCOLS, _XA_WM_STATE,
     _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS;
@@ -154,7 +129,10 @@ protected:
   void InitMenu(void);
   void InitColor(void);
   void LoadDefaults(void);
-  void createAutoConfigDialog(void);
+  unsigned long readDatabaseTexture(char *, char *);
+  unsigned long readDatabaseColor(char *, char *, unsigned char *,
+				  unsigned char *, unsigned char *);
+  XFontStruct *readDatabaseFont(char *, char *);
 
   // event processing and dispatching
   void ProcessEvent(XEvent *);
@@ -164,7 +142,7 @@ protected:
   void do_reconfigure(void);
 
   // value lookups and retrieval
-  void readMenuDatabase(SessionMenu *, XrmValue *, XrmDatabase *);
+  void readMenuDatabase(Rootmenu *, XrmValue *, XrmDatabase *);
   unsigned long getColor(const char *);
   unsigned long getColor(const char *, unsigned char *, unsigned char *,
 			 unsigned char *);
@@ -175,14 +153,15 @@ public:
   ~Blackbox(void);
 
   // member pointers
-  SessionMenu *Rootmenu(void) { return rootmenu; }
-  WorkspaceManager *WSManager(void) { return ws_manager; }
+  Rootmenu *Menu(void) { return rootmenu; }
+  WorkspaceManager *workspaceManager(void) { return wsManager; }
 
   // context lookup routines
-  BaseMenu *searchMenu(Window);
+  Basemenu *searchMenu(Window);
   BlackboxWindow *searchWindow(Window);
   BlackboxIcon *searchIcon(Window);
   WorkspaceManager *searchWSManager(Window);
+  ReconfigureWidget *searchRWidget(Window);
 
   // window context operations
   void addWindow(BlackboxWindow *);
@@ -192,17 +171,16 @@ public:
   void lowerWindow(BlackboxWindow *);
 
   // context list save/remove methods
-  void saveMenuSearch(Window, BaseMenu *);
+  void saveMenuSearch(Window, Basemenu *);
   void saveWindowSearch(Window, BlackboxWindow *);
   void saveIconSearch(Window, BlackboxIcon *);
   void saveWSManagerSearch(Window, WorkspaceManager *);
+  void saveRWidgetSearch(Window, ReconfigureWidget *);
   void removeMenuSearch(Window);
   void removeWindowSearch(Window);
   void removeIconSearch(Window);
   void removeWSManagerSearch(Window);
-
-  // update workspace to reflect changes in window names
-  void updateWorkspace(int);
+  void removeRWidgetSearch(Window);
 
   // main event loop
   void EventLoop(void);
@@ -251,7 +229,6 @@ public:
   int buttonTexture(void) { return resource.texture.button; }
   int menuTexture(void) { return resource.texture.menu; }
   int menuItemTexture(void) { return resource.texture.imenu; }
-  int menuItemPressedTexture(void) { return resource.texture.pimenu; }
 
   const BColor &frameColor(void) const { return resource.color.frame; }
   const BColor &toolboxColor(void) const { return resource.color.toolbox; }
@@ -269,13 +246,15 @@ public:
   const BColor &menuItemColor(void) const { return resource.color.imenu; }
   const BColor &menuItemToColor(void) const
     { return resource.color.imenu_to; }
+  const BColor &menuHighlightColor(void) const
+    { return resource.color.hmenu; }
   const BColor &focusTextColor(void) const { return resource.color.ftext; }
   const BColor &unfocusTextColor(void) const { return resource.color.utext; }
   const BColor &menuTextColor(void) const { return resource.color.mtext; }
   const BColor &menuItemTextColor(void) const
     { return resource.color.mitext; }
-  const BColor &menuPressedTextColor(void) const
-    { return resource.color.ptext; }
+  const BColor &menuHighlightTextColor(void) const
+    { return resource.color.htext; }
   const BColor &iconTextColor(void) const { return resource.color.itext; }
   const BColor &toolboxTextColor(void) const { return resource.color.ttext; }
 
@@ -285,13 +264,8 @@ public:
   
   // public constants
   enum { B_Restart = 1, B_RestartOther, B_Exit, B_Shutdown, B_Execute,
-	 B_Reconfigure,
-	 B_WindowShade, B_WindowClose, B_WindowMaximize, B_WindowIconify,
-	 B_WindowRaise, B_WindowLower, B_WindowSendToWorkspace };
-  enum { B_TextureRSolid = 1, B_TextureSSolid, B_TextureFSolid,
-	 B_TextureRHGradient, B_TextureSHGradient, B_TextureFHGradient,
-	 B_TextureRVGradient, B_TextureSVGradient, B_TextureFVGradient,
-	 B_TextureRDGradient, B_TextureSDGradient, B_TextureFDGradient };
+	 B_Reconfigure, B_WindowShade, B_WindowIconify, B_WindowMaximize,
+	 B_WindowClose, B_WindowRaise, B_WindowLower };
   enum { B_LeftHandedUser = 1, B_RightHandedUser,
 	 B_LeftJustify, B_RightJustify, B_CenterJustify };
 };

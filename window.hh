@@ -1,5 +1,5 @@
 //
-// window.hh for Blackbox - an X11 Window manager
+// AssociatedWindow.hh for Blackbox - an X11 Window manager
 // Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -19,87 +19,32 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef __blackbox_window_hh
-#define __blackbox_window_hh
+#ifndef __AssociatedWindow_hh
+#define __AssociatedWindow_hh
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #ifdef SHAPE
 #  include <X11/extensions/shape.h>
-#endif
+#endif // SHAPE
 
 // forward declaration
 class BlackboxWindow;
 
-#include "blackbox.hh"
-#include "menu.hh"
-#include "workspace.hh"
-
-
-class BlackboxWindowMenu;
-class SendToWorkspaceMenu;
-
-class BlackboxWindowMenu : public BaseMenu {
-private:
-  BlackboxWindow *window;
-  Blackbox *blackbox;
-  SendToWorkspaceMenu *send_to_menu;
-
-  friend BlackboxWindow;
-
-
-protected:
-  virtual void titlePressed(int);
-  virtual void titleReleased(int);
-  virtual void itemPressed(int, int);
-  virtual void itemReleased(int, int);
-
-
-public:
-  BlackboxWindowMenu(BlackboxWindow *, Blackbox *);
-  ~BlackboxWindowMenu(void);
-
-  void showMenu(void);
-  void hideMenu(void);
-  void moveMenu(int, int);
-  void Reconfigure(void);
-};
-
-
-class SendToWorkspaceMenu : public BaseMenu {
-private:
-  BlackboxWindow *window;
-  WorkspaceManager *ws_manager;
-  
-  friend BlackboxWindow;
-  
-  
-protected:
-  virtual void titlePressed(int);
-  virtual void titleReleased(int);
-  virtual void itemPressed(int, int);
-  virtual void itemReleased(int, int);
-
-
-public:
-  SendToWorkspaceMenu(BlackboxWindow *, Blackbox *);
-
-  void updateMenu(void);
-  void showMenu(void);
-  void hideMenu(void);
-  void moveMenu(int, int);
-};
+class Blackbox;
+class BlackboxIcon;
+class Windowmenu;
 
 
 class BlackboxWindow {
 private:
   Blackbox *blackbox;
   BlackboxIcon *icon;
-  BlackboxWindowMenu *window_menu;
-
+  Windowmenu *windowmenu;
+  
   Bool do_handle, do_close, do_iconify, do_maximize, moving, resizing, shaded,
     maximized, visible, iconic, transient, focused, icccm_compliant,
-    menu_visible, internal_window;
+    internal_window;
   Display *display;
   
   struct client {
@@ -130,18 +75,11 @@ private:
   } frame;
 
   struct {
-    unsigned int
-      WM_DELETE_WINDOW:1,
-      WM_TAKE_FOCUS:1,
-      WM_COLORMAP_WINDOWS:1;
+    Bool WM_DELETE_WINDOW, WM_TAKE_FOCUS, WM_COLORMAP_WINDOWS;
   } Protocols;
 
   enum { F_NoInput = 0, F_Passive, F_LocallyActive, F_GloballyActive };
   int focus_mode, window_number, workspace_number;
-
-  unsigned int
-
-    extra:2; /* keep data aligned better */
 
 
 protected:
@@ -183,7 +121,7 @@ public:
   void configureRequestEvent(XConfigureRequestEvent *);
 #ifdef SHAPE
   void shapeEvent(XShapeEvent *);
-#endif
+#endif // SHAPE
 
   Bool setInputFocus(void);
   int setWindowNumber(int);
@@ -212,11 +150,10 @@ public:
   int YFrame(void) { return frame.y; }
   int workspace(void) { return workspace_number; }
   int windowNumber(void) { return window_number; }
-  int setMenuVisible(Bool v) { return menu_visible = v; }
   unsigned int clientHeight(void) { return client.height; }
   unsigned int clientWidth(void) { return client.width; }
   void removeIcon(void) { icon = NULL; }
 };
 
 
-#endif
+#endif // __AssociatedWindow_hh

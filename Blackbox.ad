@@ -1,33 +1,51 @@
 ! Blackbox window manager resource defaults
-! (c) 1997 Brad Hughes
+! (c) 1997, 1998 Brad Hughes
 
-blackbox*toolboxTexture:          solidsunken
-blackbox*windowTexture:           solid
-blackbox*buttonTexture:           solid
-blackbox*menuTexture:             solid
-blackbox*menuItemTexture:         solid
-blackbox*menuItemPressedTexture:  solidflat
+! Textures may be any combination of:
+!	Bevel type:    Raised, Sunken, Flat
+!	Texture type:  Solid, Gradient
+!	Gradient type: Diagonal, Vertical, Horizontal
+!       Bevel option:  Bevel1, Bevel2
+!
+blackbox*toolboxTexture:          Raised Diagonal   Gradient Bevel2
+blackbox*windowTexture:           Raised Horizontal Gradient Bevel2
+blackbox*buttonTexture:           Raised Diagonal   Gradient Bevel1
+blackbox*menuTexture:             Flat   Vertical   Gradient
+blackbox*menuItemTexture:         Raised Diagonal   Gradient Bevel1
 
-blackbox*frameColor:              black
-blackbox*toolboxColor:            darkred
-blackbox*focusColor:              darkred
-blackbox*unfocusColor:            rgb:40/0/0
-blackbox*buttonColor:             rgb:60/0/0
-blackbox*menuColor:               darkred
-blackbox*menuItemColor:           rgb:40/0/0
-blackbox*menuItemToColor:         white
+! Colors are any valid X color name or rgb formation
+!
+blackbox*frameColor:              darkgrey
+blackbox*toolboxColor:            slategrey
+! *ToColor's are used for gradient textures
+blackbox*toolboxToColor:          darkslategrey
+blackbox*focusColor:              slategrey
+blackbox*focusToColor:            darkslategrey
+blackbox*unfocusColor:            darkslategrey
+blackbox*unfocusToColor:          black
+blackbox*buttonColor:             slategrey
+blackbox*buttonToColor:           darkslategrey
+blackbox*menuColor:               lightgrey
+blackbox*menuToColor:             darkgrey
+blackbox*menuItemColor:           slategrey
+blackbox*menuItemToColor:         darkslategrey
+blackbox*menuHighlightColor:	  lightgrey
+
+blackbox*toolboxTextColor:        white
 blackbox*focusTextColor:          white
 blackbox*unfocusTextColor:        darkgrey
-blackbox*menuTextColor:           grey
-blackbox*menuItemTextColor:       darkgrey
-blackbox*menuPressedTextColor:    black
-blackbox*iconTextColor:           grey
-blackbox*toolboxTextColor:	  grey
+blackbox*menuTextColor:           black
+blackbox*menuItemTextColor:       white
+blackbox*menuHighlightTextColor:  black
+blackbox*iconTextColor:           lightgrey
 
-blackbox*workspaces:              2
+blackbox*workspaces:              5
+blackbox*menuFile:                /home/users/bhughes/blackbox/blackbox.menu
 blackbox*orientation:             righthanded
-blackbox*titleJustify:		  CenterJustify
+blackbox*reconfigurePrompt:       yes
+blackbox*titleJustify:		  centerjustify
 
-blackbox*titleFont:     -*-helvetica-bold-r-*-*-*-120-*-*-*-*-*-*
-blackbox*menuFont:      -*-helvetica-bold-r-*-*-*-120-*-*-*-*-*-*
-blackbox*iconFont:      -*-helvetica-medium-r-*-*-*-80-*-*-*-*-*-*
+blackbox*titleFont:     -adobe-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*
+blackbox*menuFont:      -adobe-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*
+blackbox*iconFont:      -adobe-helvetica-medium-r-*-*-*-100-*-*-*-*-*-*
+

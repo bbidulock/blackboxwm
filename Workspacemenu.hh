@@ -1,5 +1,5 @@
 //
-// icon.hh for Blackbox - an X11 Window manager
+// WorkspaceMenu.hh for Blackbox - an X11 Window manager
 // Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -19,52 +19,34 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef __blackbox_icon_hh
-#define __blackbox_icon_hh
+#ifndef __Workspacemenu_hh
+#define __Workspacemenu_hh
 
 // forward declaration
-class BlackboxIcon;
+class Workspacemenu;
 
-class Blackbox;
-class Workspace;
+class WorkspaceManager;
+
+#include "Basemenu.hh"
 
 
-class BlackboxIcon {
+#ifdef __Basemenu_hh
+
+class Workspacemenu : public Basemenu {
 private:
-  Bool focus;
-  Display *display;
-  GC iconGC;
-
-  struct {
-    char *name;
-    Window client, window, subwindow;
-    int x, y;
-    unsigned int height;
-  } icon;
-
-  Blackbox *blackbox;
   WorkspaceManager *wsManager;
 
-
+  
 protected:
+  virtual void itemSelected(int, int);
 
 
 public:
-  BlackboxIcon(Blackbox *, Window);
-  ~BlackboxIcon(void);
-
-  void buttonPressEvent(XButtonEvent *);
-  void buttonReleaseEvent(XButtonEvent *);
-  void enterNotifyEvent(XCrossingEvent *);
-  void leaveNotifyEvent(XCrossingEvent *);
-  void exposeEvent(XExposeEvent *);
-  void rereadLabel(void);
-  void Reconfigure(void);
-
-  Window iconWindow(void) { return icon.window; }
-  unsigned int Height(void) { return icon.height; }
-  void move(int x, int y) { icon.x = x; icon.y = y; }
+  Workspacemenu(Blackbox *, WorkspaceManager *);
+  virtual ~Workspacemenu(void);
 };
 
+#endif // __Basemenu_hh
 
-#endif
+
+#endif // __Workspacemenu_hh

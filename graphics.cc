@@ -65,293 +65,142 @@ BImage::~BImage(void) {
 }
 
 
-Pixmap BImage::renderImage(int texture, int bevel, const BColor &color1,
+Pixmap BImage::renderImage(unsigned long texture, const BColor &color1,
 			   const BColor &color2)
 {
-  switch (texture) {
-  case Blackbox::B_TextureRSolid:
-  case Blackbox::B_TextureSSolid:
-  case Blackbox::B_TextureFSolid:
-    return renderSolidImage(texture, bevel, color1);
-    break;
-
-  case Blackbox::B_TextureRDGradient:
-  case Blackbox::B_TextureSDGradient:
-  case Blackbox::B_TextureFDGradient:
-  case Blackbox::B_TextureRHGradient:
-  case Blackbox::B_TextureSHGradient:
-  case Blackbox::B_TextureFHGradient:
-  case Blackbox::B_TextureRVGradient:
-  case Blackbox::B_TextureSVGradient:
-  case Blackbox::B_TextureFVGradient:
-    return renderGradientImage(texture, bevel, color1, color2);
-    break;
-  }
-
-  return None;
-}
-
-
-Pixmap BImage::renderInvertedImage(int texture, int bevel,
-				   const BColor &color1,
-				   const BColor &color2)
-{
-  switch (texture) {
-  case Blackbox::B_TextureRSolid:
-    setBackgroundColor(color1);
-    if (bevel)
-      if (color1.r == color1.g && color1.g == color1.b && color1.b == 0)
-	renderBevel(True);
-      else
-	renderBevel();
-    else
-      if (color1.r == color1.g && color1.g == color1.b && color1.b == 0)
-	renderButton(True);
-      else
-	renderButton();
-
-    invertImage();
-    return convertToPixmap();
-    break;
-    
-  case Blackbox::B_TextureSSolid:
-    setBackgroundColor(color1);
-    if (bevel)
-      if (color1.r == color1.g && color1.g == color1.b && color1.b == 0)
-	renderBevel(True);
-      else
-	renderBevel();
-    else
-      if (color1.r == color1.g && color1.g == color1.b && color1.b == 0)
-	renderButton(True);
-      else
-	renderButton();
-
-    return convertToPixmap();
-    break;
-    
-  case Blackbox::B_TextureFSolid:
-    setBackgroundColor(color1);
-    invertImage();
-    return convertToPixmap();
-    break;
-
-  case Blackbox::B_TextureRDGradient:
-    renderDGradient(color1, color2);
-    if (bevel)
-      renderBevel();
-    else
-      renderButton();
-    
-    invertImage();
-    return convertToPixmap();
-    break;
-
-  case Blackbox::B_TextureSDGradient:
-    renderDGradient(color2, color1);
-    if (bevel)
-      renderBevel();
-    else
-      renderButton();
-    
-    return convertToPixmap();
-    break;
-
-  case Blackbox::B_TextureFDGradient:
-    renderDGradient(color1, color2);
-    invertImage();
-    return convertToPixmap();
-    break;
-
-  case Blackbox::B_TextureRHGradient:
-    renderHGradient(color1, color2);
-    if (bevel)
-      renderBevel();
-    else
-      renderButton();
-    
-    invertImage();
-    return convertToPixmap();
-    break;
-
-  case Blackbox::B_TextureSHGradient:
-    renderHGradient(color2, color1);
-    if (bevel)
-      renderBevel();
-    else
-      renderButton();
-    
-    return convertToPixmap();
-    break;
-
-  case Blackbox::B_TextureFHGradient:
-    renderHGradient(color1, color2);
-    invertImage();
-    return convertToPixmap();
-    break;
-
-  case Blackbox::B_TextureRVGradient:
-    renderVGradient(color1, color2);
-    if (bevel)
-      renderBevel();
-    else
-      renderButton();
-    
-    invertImage();
-    return convertToPixmap();
-    break;
-
-  case Blackbox::B_TextureSVGradient:
-    renderVGradient(color2, color1);
-    if (bevel)
-      renderBevel();
-    else
-      renderButton();
-    
-    return convertToPixmap();
-    break;
-
-  case Blackbox::B_TextureFVGradient:
-    renderVGradient(color1, color2);
-    invertImage();
-    return convertToPixmap();
-    break;
-  }
+  if (texture & BImageSolid)
+    return renderSolidImage(texture, color1);
+  else if (texture & BImageGradient)
+    return renderGradientImage(texture, color1, color2);
   
   return None;
 }
 
 
-Pixmap BImage::renderSolidImage(int texture, int bevel, const BColor &color) {
-  switch(texture) {
-  case Blackbox::B_TextureRSolid:
-    setBackgroundColor(color);
-    if (bevel)
-      if (color.r == color.g && color.g == color.b && color.b == 0)
-	renderBevel(True);
-      else
-	renderBevel();
-    else
-      if (color.r == color.g && color.g == color.b && color.b == 0)
-	renderButton(True);
-      else
-	renderButton();
-
-    return convertToPixmap();
-    break;
-    
-  case Blackbox::B_TextureSSolid:
-    setBackgroundColor(color);
-    if (bevel)
-      if (color.r == color.g && color.g == color.b && color.b == 0)
-	renderBevel(True);
-      else
-	renderBevel();
-    else
-      if (color.r == color.g && color.g == color.b && color.b == 0)
-	renderButton(True);
-      else
-	renderButton();
-
-    invertImage();
-    return convertToPixmap();
-    break;
-    
-  case Blackbox::B_TextureFSolid:
-    setBackgroundColor(color);
-    return convertToPixmap();
-    break;
-  }
-
+Pixmap BImage::renderInvertedImage(unsigned long texture, const BColor &color1,
+				   const BColor &color2)
+{
+  texture |= BImageInverted;
+  if (texture & BImageSolid)
+    return renderSolidImage(texture, color1);
+  else if (texture & BImageGradient)
+    return renderGradientImage(texture, color1, color2);
+  
   return None;
 }
 
 
-Pixmap BImage::renderGradientImage(int texture, int bevel,
-				   const BColor &from,
+Pixmap BImage::renderSolidImage(unsigned long texture, const BColor &color) {
+  setBackgroundColor(color);
+
+  if (texture & BImageRaised) {
+    if (texture & BImageBevel1) {
+      if (color.r == color.g && color.g == color.b && color.b == 0)
+	renderBevel1(True);
+      else
+	renderBevel1();
+    } else if (texture & BImageBevel2) {
+      if (color.r == color.g && color.g == color.b && color.b == 0)
+	renderBevel2(True);
+      else
+	renderBevel2();
+    }
+
+    if (texture & BImageInverted)
+      invertImage();
+  } else if (texture & BImageSunken) {
+    if (texture & BImageBevel1) {
+      if (color.r == color.g && color.g == color.b && color.b == 0)
+	renderBevel1(True);
+      else
+	renderBevel1();
+    } else if (texture & BImageBevel2) {
+      if (color.r == color.g && color.g == color.b && color.b == 0)
+	renderBevel2(True);
+      else
+	renderBevel2();
+    }
+
+    if (! (texture & BImageInverted))
+      invertImage();
+  }
+  
+  return convertToPixmap();
+}
+
+
+Pixmap BImage::renderGradientImage(unsigned long texture, const BColor &from,
 				   const BColor &to)
 {
-  switch(texture) {
-  case Blackbox::B_TextureRDGradient:
-    renderDGradient(from, to);
-    if (bevel)
-      renderBevel();
-    else
-      renderButton();
-    
-    return convertToPixmap();
-    break;
+  if (texture & BImageDiagonal) {    
+    if (texture & BImageSunken) {
+      renderDGradient(to, from);
+      
+      if (texture & BImageBevel1)
+	renderBevel1();
+      else if (texture & BImageBevel2)
+	renderBevel2();
 
-  case Blackbox::B_TextureSDGradient:
-    renderDGradient(to, from);
-    if (bevel)
-      renderBevel();
-    else
-      renderButton();
-    
-    invertImage();
-    return convertToPixmap();
-    break;
+      if (! (texture & BImageInverted))
+	invertImage();
+    } else {
+      renderDGradient(from, to);
+      
+      if (texture & BImageBevel1)
+	renderBevel1();
+      else if (texture & BImageBevel2)
+	renderBevel2();
+      
+      if (texture & BImageInverted)
+	invertImage();
+    }
+  } else if (texture & BImageHorizontal) {
+    if (texture & BImageSunken) {
+      renderHGradient(to, from);
+      
+      if (texture & BImageBevel1)
+	renderBevel1();
+      else if (texture & BImageBevel2)
+	renderBevel2();
 
-  case Blackbox::B_TextureFDGradient:
-    renderDGradient(from, to);
-    return convertToPixmap();
-    break;
+      if (! (texture & BImageInverted))
+	invertImage();
+    } else {
+      renderHGradient(from, to);
+      
+      if (texture & BImageBevel1)
+	renderBevel1();
+      else if (texture & BImageBevel2)
+	renderBevel2();
+      
+      if (texture & BImageInverted)
+	invertImage();
+    }
+  } else if (texture & BImageVertical) {
+      if (texture & BImageSunken) {
+      renderVGradient(to, from);
+      
+      if (texture & BImageBevel1)
+	renderBevel1();
+      else if (texture & BImageBevel2)
+	renderBevel2();
 
-  case Blackbox::B_TextureRHGradient:
-    renderHGradient(from, to);
-    if (bevel)
-      renderBevel();
-    else
-      renderButton();
-    
-    return convertToPixmap();
-    break;
-
-  case Blackbox::B_TextureSHGradient:
-    renderHGradient(to, from);
-    if (bevel)
-      renderBevel();
-    else
-      renderButton();
-    
-    invertImage();
-    return convertToPixmap();
-    break;
-
-  case Blackbox::B_TextureFHGradient:
-    renderHGradient(from, to);
-    return convertToPixmap();
-    break;
-
-  case Blackbox::B_TextureRVGradient:
-    renderVGradient(from, to);
-    if (bevel)
-      renderBevel();
-    else
-      renderButton();
-    
-    return convertToPixmap();
-    break;
-
-  case Blackbox::B_TextureSVGradient:
-    renderVGradient(to, from);
-    if (bevel)
-      renderBevel();
-    else
-      renderButton();
-    
-    invertImage();
-    return convertToPixmap();
-    break;
-
-  case Blackbox::B_TextureFVGradient:
-    renderVGradient(from, to);
-    return convertToPixmap();
-    break;
+      if (! (texture & BImageInverted))
+	invertImage();
+    } else {
+      renderVGradient(from, to);
+      
+      if (texture & BImageBevel1)
+	renderBevel1();
+      else if (texture & BImageBevel2)
+	renderBevel2();
+      
+      if (texture & BImageInverted)
+	invertImage();
+    }
   }
 
-  return None;
+  return convertToPixmap();
 }
 
 
@@ -605,94 +454,8 @@ void BImage::setBackgroundColor(unsigned char r, unsigned char g,
 }
 
 
-void BImage::renderBevel(Bool solidblack) {
-  if (height > 4) {
-    unsigned long pix0 = 0, pix1 = 0;
-    unsigned char r, g, b, rr, gg, bb;
-
-    unsigned int w = width - 2, h = height - 1, wh = width * (height - 3);
-    unsigned long *p = data + width + 1;
-    
-    if (solidblack) {
-      pix0 = 0xc0c0c0;
-      pix1 = 0x606060;
-      
-      while (--w) {
-	*p = pix0;
-	*((p++) + wh) = pix1;
-      }
-      
-      p = data + width;
-      while (--h) {
-	*(++p) = pix0;
-	p += (width - 3);
-	*(p++) = pix1;
-	p++;
-      }
-    } else {
-      while (--w) {
-	r = (unsigned char) (((*p) & 0xff0000) >> 16);
-	rr = r * 3 / 2;
-	if (rr < r) rr = ~0;
-	g = (unsigned char) (((*p) & 0x00ff00) >> 8);
-	gg = g * 3 / 2;
-	if (gg < g) gg = ~0;
-	b = (unsigned char) ((*p) & 0x0000ff);
-	bb = b * 3 / 2;
-	if (bb < b) bb = ~0;
-	pix0 = ((rr << 16) | (gg << 8) | (bb));
-	
-	r = (unsigned char) (((*(p + wh)) & 0xff0000) >> 16);
-	rr = r * 3 / 4;
-	if (rr > (unsigned char) r) rr = 0;
-	g = (unsigned char) (((*(p + wh)) & 0x00ff00) >> 8);
-	gg = g * 3 / 4;
-	if (gg > (unsigned char) g) gg = 0;
-	b = (unsigned char) ((*(p + wh)) & 0x0000ff);
-	bb = b * 3 / 4;
-	if (bb > (unsigned char) b) bb = 0;
-	pix1 = ((rr << 16) | (gg << 8) | (bb));
-
-	*p = pix0;
-	*((p++) + wh) = pix1;
-      }
-      
-      p = data + width;
-      while (--h) {
-	r = (unsigned char) (((*p) & 0xff0000) >> 16);
-	rr = r * 3 / 2;
-	if (rr < r) rr = ~0;
-	g = (unsigned char) (((*p) & 0x00ff00) >> 8);
-	gg = g * 3 / 2;
-	if (gg < g) gg = ~0;
-	b = (unsigned char) ((*p) & 0x0000ff);
-	bb = b * 3 / 2;
-	if (bb < b) bb = ~0;
-	pix0 = ((rr << 16) | (gg << 8) | (bb));
-	
-	r = (unsigned char) (((*(p + (width - 3))) & 0xff0000) >> 16);
-	rr = r * 3 / 4;
-	if (rr > (unsigned char) r) rr = 0;
-	g = (unsigned char) (((*(p + (width - 3))) & 0x00ff00) >> 8);
-	gg = g * 3 / 4;
-	if (gg > (unsigned char) g) gg = 0;
-	b = (unsigned char) ((*(p + (width - 3))) & 0x0000ff);
-	bb = b * 3 / 4;
-	if (bb > (unsigned char) b) bb = 0;
-	pix1 = ((rr << 16) | (gg << 8) | (bb));
-
-	*(++p) = pix0;
-	p += (width - 3);
-	*(p++) = pix1;
-	p++;
-      }
-    }
-  }
-}
-
-
-void BImage::renderButton(Bool solidblack) {
-  if (height > 2) {
+void BImage::renderBevel1(Bool solidblack) {
+  if (width > 2 && height > 2) {
     unsigned long pix0 = 0, pix1 = 0;
     unsigned char r, g, b, rr ,gg ,bb;
     
@@ -828,6 +591,92 @@ void BImage::renderButton(Bool solidblack) {
       *p = pix0;
       p += (width - 1);
       *p = pix1;
+    }
+  }
+}
+
+
+void BImage::renderBevel2(Bool solidblack) {
+  if (width > 4 && height > 4) {
+    unsigned long pix0 = 0, pix1 = 0;
+    unsigned char r, g, b, rr, gg, bb;
+
+    unsigned int w = width - 2, h = height - 1, wh = width * (height - 3);
+    unsigned long *p = data + width + 1;
+    
+    if (solidblack) {
+      pix0 = 0xc0c0c0;
+      pix1 = 0x606060;
+      
+      while (--w) {
+	*p = pix0;
+	*((p++) + wh) = pix1;
+      }
+      
+      p = data + width;
+      while (--h) {
+	*(++p) = pix0;
+	p += (width - 3);
+	*(p++) = pix1;
+	p++;
+      }
+    } else {
+      while (--w) {
+	r = (unsigned char) (((*p) & 0xff0000) >> 16);
+	rr = r * 3 / 2;
+	if (rr < r) rr = ~0;
+	g = (unsigned char) (((*p) & 0x00ff00) >> 8);
+	gg = g * 3 / 2;
+	if (gg < g) gg = ~0;
+	b = (unsigned char) ((*p) & 0x0000ff);
+	bb = b * 3 / 2;
+	if (bb < b) bb = ~0;
+	pix0 = ((rr << 16) | (gg << 8) | (bb));
+	
+	r = (unsigned char) (((*(p + wh)) & 0xff0000) >> 16);
+	rr = r * 3 / 4;
+	if (rr > (unsigned char) r) rr = 0;
+	g = (unsigned char) (((*(p + wh)) & 0x00ff00) >> 8);
+	gg = g * 3 / 4;
+	if (gg > (unsigned char) g) gg = 0;
+	b = (unsigned char) ((*(p + wh)) & 0x0000ff);
+	bb = b * 3 / 4;
+	if (bb > (unsigned char) b) bb = 0;
+	pix1 = ((rr << 16) | (gg << 8) | (bb));
+
+	*p = pix0;
+	*((p++) + wh) = pix1;
+      }
+      
+      p = data + width;
+      while (--h) {
+	r = (unsigned char) (((*p) & 0xff0000) >> 16);
+	rr = r * 3 / 2;
+	if (rr < r) rr = ~0;
+	g = (unsigned char) (((*p) & 0x00ff00) >> 8);
+	gg = g * 3 / 2;
+	if (gg < g) gg = ~0;
+	b = (unsigned char) ((*p) & 0x0000ff);
+	bb = b * 3 / 2;
+	if (bb < b) bb = ~0;
+	pix0 = ((rr << 16) | (gg << 8) | (bb));
+	
+	r = (unsigned char) (((*(p + (width - 3))) & 0xff0000) >> 16);
+	rr = r * 3 / 4;
+	if (rr > (unsigned char) r) rr = 0;
+	g = (unsigned char) (((*(p + (width - 3))) & 0x00ff00) >> 8);
+	gg = g * 3 / 4;
+	if (gg > (unsigned char) g) gg = 0;
+	b = (unsigned char) ((*(p + (width - 3))) & 0x0000ff);
+	bb = b * 3 / 4;
+	if (bb > (unsigned char) b) bb = 0;
+	pix1 = ((rr << 16) | (gg << 8) | (bb));
+
+	*(++p) = pix0;
+	p += (width - 3);
+	*(p++) = pix1;
+	p++;
+      }
     }
   }
 }

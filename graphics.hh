@@ -24,12 +24,38 @@
 
 #include <X11/Xlib.h>
 
+// forward declarations
+class BImage;
+
 typedef struct BColor {
   unsigned char r, g, b;
   unsigned long pixel;
 } BColor;
 
 #include "blackbox.hh"
+
+// bevel options
+#define BImageFlat            (1<<1)   // no bevel
+#define BImageSunken          (1<<2)   // bevel resembles unpressed button
+#define BImageRaised          (1<<3)   // bevel resembels pressed button
+
+// texture types
+#define BImageSolid           (1<<4)   // solid color image
+#define BImageGradient        (1<<5)   // varied color image
+
+// gradient types
+#define BImageHorizontal      (1<<6)   // gradient varies on x axis
+#define BImageVertical        (1<<7)   // gradient varies on y axis
+#define BImageDiagonal        (1<<8)   // gradient varies on x-y axes
+
+// bevel types
+#define BImageBevel1          (1<<9)   // bevel on edge of image
+#define BImageBevel2          (1<<10)  // bevel inset one pixel from image edge
+#define BImageMotifBevel      (1<<11)  // Motif-like bevel (2 pixels wide)
+
+// for inverting images
+#define BImageInverted        (1<<12)  // for pressed buttons and the like..
+                                       // currently only used internally
 
 
 // image class that does basic rendering functions for blackbox
@@ -44,8 +70,8 @@ private:
 
 
 protected:
-  void renderBevel(Bool = False);
-  void renderButton(Bool = False);
+  void renderBevel1(Bool = False);
+  void renderBevel2(Bool = False);
   void invertImage(void);
   void renderDGradient(const BColor &, const BColor &);
   void renderHGradient(const BColor &, const BColor &);
@@ -68,10 +94,10 @@ public:
   Bool putPixel(unsigned int, unsigned int, unsigned long);
   Bool putPixel(unsigned int, unsigned int, const BColor &);
   
-  Pixmap renderImage(int, int, const BColor &, const BColor &);
-  Pixmap renderInvertedImage(int, int, const BColor &, const BColor &);
-  Pixmap renderSolidImage(int, int, const BColor &);
-  Pixmap renderGradientImage(int, int, const BColor &, const BColor &);
+  Pixmap renderImage(unsigned long, const BColor &, const BColor &);
+  Pixmap renderInvertedImage(unsigned long, const BColor &, const BColor &);
+  Pixmap renderSolidImage(unsigned long, const BColor &);
+  Pixmap renderGradientImage(unsigned long, const BColor &, const BColor &);
 };
 
 

@@ -1,5 +1,5 @@
 //
-// icon.hh for Blackbox - an X11 Window manager
+// Windowmenu.hh for Blackbox - an X11 Window manager
 // Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -19,52 +19,55 @@
 // (See the included file COPYING / GPL-2.0)
 //
 
-#ifndef __blackbox_icon_hh
-#define __blackbox_icon_hh
+#ifndef __Windowmenu_hh
+#define __Windowmenu_hh
 
 // forward declaration
-class BlackboxIcon;
+class Windowmenu;
+class SendtoWorkspaceMenu;
 
 class Blackbox;
-class Workspace;
+class BlackboxWindow;
+class WorkspaceManager;
+
+#include "Basemenu.hh"
 
 
-class BlackboxIcon {
+class Windowmenu : public Basemenu {
 private:
-  Bool focus;
-  Display *display;
-  GC iconGC;
+  BlackboxWindow *window;
+  WorkspaceManager *wsManager;
+  SendtoWorkspaceMenu *sendToMenu;
+  
+  
+protected:
+  virtual void itemSelected(int, int);
 
-  struct {
-    char *name;
-    Window client, window, subwindow;
-    int x, y;
-    unsigned int height;
-  } icon;
 
-  Blackbox *blackbox;
+public:
+  Windowmenu(BlackboxWindow *, Blackbox *);
+  virtual ~Windowmenu(void);
+
+  void Reconfigure(void);
+};
+
+
+class SendtoWorkspaceMenu : public Basemenu {
+private:
+  BlackboxWindow *window;
   WorkspaceManager *wsManager;
 
 
 protected:
+  virtual void itemSelected(int, int);
 
 
 public:
-  BlackboxIcon(Blackbox *, Window);
-  ~BlackboxIcon(void);
+  SendtoWorkspaceMenu(BlackboxWindow *, Blackbox *);
+  virtual ~SendtoWorkspaceMenu(void);
 
-  void buttonPressEvent(XButtonEvent *);
-  void buttonReleaseEvent(XButtonEvent *);
-  void enterNotifyEvent(XCrossingEvent *);
-  void leaveNotifyEvent(XCrossingEvent *);
-  void exposeEvent(XExposeEvent *);
-  void rereadLabel(void);
-  void Reconfigure(void);
-
-  Window iconWindow(void) { return icon.window; }
-  unsigned int Height(void) { return icon.height; }
-  void move(int x, int y) { icon.x = x; icon.y = y; }
+  void Update(void);
 };
 
 
-#endif
+#endif // __Windowmenu_hh
