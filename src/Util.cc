@@ -104,7 +104,9 @@ void bexec(const string &command, int screen)
 
   if (! fork()) {
     setsid();
-    putenv(displaystring.c_str());
+    // SUSv2 says that the string used in the environment should be persistent,
+    // so we have to make a copy of the data for the environment.
+    putenv(bstrdup(displaystring.c_str()));
     execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL);
     perror("execl");
     exit(0);
