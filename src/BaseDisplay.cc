@@ -640,13 +640,13 @@ void BaseDisplay::process_event(XEvent *e)
                                     Expose, &realevent)) {
         Rect r2(realevent.xexpose.x, realevent.xexpose.y,
                 realevent.xexpose.width, realevent.xexpose.height);
-        if (r.intersects(r2)) {
+        if (r.intersects(r2) || widget->type() != Widget::Popup) {
           // merge expose area
           r |= r2;
           i++;
         } else {
-          // don't merge disjoint regions... instead deliver this event as normal since
-          // use XPutBackEvent causes it to disappear (very strange)
+          // don't merge disjoint regions in popups/overrides, this
+          // causes unnecessary repaints when showing/hiding submenus
           if (widget->isVisible())
             widget->exposeEvent(&realevent);
           break;
@@ -732,11 +732,10 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, int num)
   _rootwindow = RootWindow(display()->x11Display(), screenNumber());
   _depth = DefaultDepth(display()->x11Display(), screenNumber());
 
-  _rect.x = _rect.y = 0;
-  _rect.width =
-    WidthOfScreen(ScreenOfDisplay(display()->x11Display(), screenNumber()));
-  _rect.height =
-    HeightOfScreen(ScreenOfDisplay(display()->x11Display(), screenNumber()));
+  _rect.setRect( 0, 0, WidthOfScreen(ScreenOfDisplay(display()->x11Display(),
+                                                     screenNumber())),
+                 HeightOfScreen(ScreenOfDisplay(display()->x11Display(),
+                                                screenNumber())));
 
   // search for a TrueColor Visual... if we can't find one... we will use the
   // default visual for the screen
@@ -770,7 +769,7 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, int num)
     _colormap = DefaultColormap(display()->x11Display(), screenNumber());
   }
 
-    ostringstream out;
+  ostringstream out;
   string displaystring = DisplayString(_display->x11Display());
   unsigned int dot = displaystring.rfind('.');
   if (dot != string::npos)

@@ -346,11 +346,10 @@ public:
   int depth(void) const { return _depth; }
   int screenNumber(void) const { return _screen; }
 
-  int width(void) const { return _rect.width; }
-  int height(void) const { return _rect.height; }
+  int width(void) const { return _rect.width(); }
+  int height(void) const { return _rect.height(); }
 
-  // ### TODO - make this use Rect instead
-  const XRectangle &rect(void) const { return _rect; }
+  const Rect &rect(void) const { return _rect; }
 
 private:
   BaseDisplay *_display;
@@ -359,7 +358,7 @@ private:
   Colormap _colormap;
 
   int _depth, _screen;
-  XRectangle _rect;
+  Rect _rect;
 
   std::string displaystring;
 };
