@@ -25,7 +25,7 @@
 
 typedef unsigned char uchar;
 
-bt::Netwm::Netwm(Display* _display): display(_display) {
+bt::Netwm::Netwm(::Display* _display): display(_display) {
   char* atoms[51] = {
     "UTF8_STRING",
     "_NET_SUPPORTED",

@@ -38,18 +38,18 @@ extern "C" {
 bt::Color::ColorCache bt::Color::colorcache;
 bool bt::Color::cleancache = false;
 
-bt::Color::Color(const BaseDisplay * const _display, unsigned int _screen)
+bt::Color::Color(const bt::Display * const _display, unsigned int _screen)
   : allocated(false), r(-1), g(-1), b(-1), p(0), dpy(_display), scrn(_screen)
 {}
 
 bt::Color::Color(int _r, int _g, int _b,
-               const BaseDisplay * const _display, unsigned int _screen)
+               const bt::Display * const _display, unsigned int _screen)
   : allocated(false), r(_r), g(_g), b(_b), p(0), dpy(_display), scrn(_screen)
 {}
 
 
 bt::Color::Color(const std::string &_name,
-               const BaseDisplay * const _display, unsigned int _screen)
+               const bt::Display * const _display, unsigned int _screen)
   : allocated(false), r(-1), g(-1), b(-1), p(0), dpy(_display), scrn(_screen),
     colorname(_name) {
   parseColorName();
@@ -61,7 +61,7 @@ bt::Color::~Color(void) {
 }
 
 
-void bt::Color::setDisplay(const BaseDisplay * const _display,
+void bt::Color::setDisplay(const bt::Display * const _display,
                         unsigned int _screen) {
   if (_display == display() && _screen == screen()) {
     // nothing to do
@@ -213,7 +213,7 @@ void bt::Color::doCacheCleanup(void) {
     return;
   }
 
-  const BaseDisplay* const display = (*it).first.display;
+  const bt::Display* const display = (*it).first.display;
   unsigned long *pixels = new unsigned long[ colorcache.size() ];
   unsigned int i, count;
 

@@ -115,7 +115,7 @@ Blackbox *blackbox;
 
 
 Blackbox::Blackbox(char **m_argv, char *dpy_name, char *rc)
-  : BaseDisplay(m_argv[0], dpy_name) {
+  : bt::Display(m_argv[0], dpy_name) {
   if (! XSupportsLocale())
     fprintf(stderr, "X server does not support locale\n");
 
@@ -345,7 +345,7 @@ void Blackbox::process_event(XEvent *e) {
 
   default: {
     // Send the event through the default EventHandlers.
-    BaseDisplay::process_event(e);
+    bt::Display::process_event(e);
 
     /*
       Event post processing... in some cases, we need to do a few
@@ -503,7 +503,7 @@ void Blackbox::restart(const char *prog) {
 
 
 void Blackbox::shutdown(void) {
-  BaseDisplay::shutdown();
+  bt::Display::shutdown();
 
   XSetInputFocus(getXDisplay(), PointerRoot, None, CurrentTime);
 

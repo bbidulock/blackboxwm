@@ -89,7 +89,7 @@ extern "C" {
 // running
 static bool internal_error = False;
 
-BaseDisplay *base_display;
+bt::Display *base_display;
 
 static int handleXErrors(Display *d, XErrorEvent *e) {
 #ifdef    DEBUG
@@ -161,7 +161,7 @@ static void signalhandler(int sig)
 }
 
 
-BaseDisplay::BaseDisplay(const char *app_name, const char *dpy_name)
+bt::Display::Display(const char *app_name, const char *dpy_name)
   : run_state(STARTUP), gccache(0), application_name(app_name)
 {
   ::base_display = this;
@@ -194,13 +194,13 @@ BaseDisplay::BaseDisplay(const char *app_name, const char *dpy_name)
   signal(SIGCHLD, (RETSIGTYPE (*)(int)) signalhandler);
 #endif // HAVE_SIGACTION
 
-  if (! (display = XOpenDisplay(dpy_name)))
+  if (! (xdisplay = XOpenDisplay(dpy_name)))
     ::exit(2);
-  if (fcntl(ConnectionNumber(display), F_SETFD, 1) == -1)
+  if (fcntl(ConnectionNumber(xdisplay), F_SETFD, 1) == -1)
     ::exit(2);
 
 #ifdef    SHAPE
-  shape.extensions = XShapeQueryExtension(display, &shape.event_basep,
+  shape.extensions = XShapeQueryExtension(xdisplay, &shape.event_basep,
                                           &shape.error_basep);
 #else // !SHAPE
   shape.extensions = False;
@@ -208,13 +208,13 @@ BaseDisplay::BaseDisplay(const char *app_name, const char *dpy_name)
 
   XSetErrorHandler((XErrorHandler) handleXErrors);
 
-  screenInfoList.reserve(ScreenCount(display));
-  for (int i = 0; i < ScreenCount(display); ++i)
-    screenInfoList.push_back(ScreenInfo(this, i));
+  screenInfoList.reserve(ScreenCount(xdisplay));
+  for (int i = 0; i < ScreenCount(xdisplay); ++i)
+    screenInfoList.push_back(bt::ScreenInfo(this, i));
 
   NumLockMask = ScrollLockMask = 0;
 
-  const XModifierKeymap* const modmap = XGetModifierMapping(display);
+  const XModifierKeymap* const modmap = XGetModifierMapping(xdisplay);
   if (modmap && modmap->max_keypermod > 0) {
     const int mask_table[] = {
       ShiftMask, LockMask, ControlMask, Mod1Mask,
@@ -225,8 +225,8 @@ BaseDisplay::BaseDisplay(const char *app_name, const char *dpy_name)
     // get the values of the keyboard lock modifiers
     // Note: Caps lock is not retrieved the same way as Scroll and Num lock
     // since it doesn't need to be.
-    const KeyCode num_lock = XKeysymToKeycode(display, XK_Num_Lock);
-    const KeyCode scroll_lock = XKeysymToKeycode(display, XK_Scroll_Lock);
+    const KeyCode num_lock = XKeysymToKeycode(xdisplay, XK_Num_Lock);
+    const KeyCode scroll_lock = XKeysymToKeycode(xdisplay, XK_Scroll_Lock);
 
     for (size_t cnt = 0; cnt < size; ++cnt) {
       if (! modmap->modifiermap[cnt]) continue;
@@ -252,22 +252,23 @@ BaseDisplay::BaseDisplay(const char *app_name, const char *dpy_name)
 }
 
 
-BaseDisplay::~BaseDisplay(void) {
+bt::Display::~Display(void) {
   delete gccache;
 
-  XCloseDisplay(display);
+  XCloseDisplay(xdisplay);
+  xdisplay = 0;
 }
 
 
-void BaseDisplay::eventLoop(void) {
+void bt::Display::eventLoop(void) {
   run();
 
-  const int xfd = ConnectionNumber(display);
+  const int xfd = ConnectionNumber(xdisplay);
 
   while (run_state == RUNNING && ! internal_error) {
-    if (XPending(display)) {
+    if (XPending(xdisplay)) {
       XEvent e;
-      XNextEvent(display, &e);
+      XNextEvent(xdisplay, &e);
       process_event(&e);
     } else {
       fd_set rfds;
@@ -310,7 +311,7 @@ void BaseDisplay::eventLoop(void) {
   }
 }
 
-void BaseDisplay::process_event(XEvent *event) {
+void bt::Display::process_event(XEvent *event) {
   EventHandlerMap::iterator it = eventhandlers.find(event->xany.window);
   if (it == eventhandlers.end()) return;
 
@@ -493,13 +494,13 @@ void BaseDisplay::process_event(XEvent *event) {
 }
 
 
-void BaseDisplay::addTimer(bt::Timer *timer) {
+void bt::Display::addTimer(bt::Timer *timer) {
   if (! timer) return;
   timerList.push(timer);
 }
 
 
-void BaseDisplay::removeTimer(bt::Timer *timer) {
+void bt::Display::removeTimer(bt::Timer *timer) {
   timerList.release(timer);
 }
 
@@ -511,7 +512,7 @@ void BaseDisplay::removeTimer(bt::Timer *timer) {
  * if allow_scroll_lock is true then only the top half of the lock mask
  * table is used and scroll lock is ignored.  This value defaults to false.
  */
-void BaseDisplay::grabButton(unsigned int button, unsigned int modifiers,
+void bt::Display::grabButton(unsigned int button, unsigned int modifiers,
                              Window grab_window, bool owner_events,
                              unsigned int event_mask, int pointer_mode,
                              int keyboard_mode, Window confine_to,
@@ -519,7 +520,7 @@ void BaseDisplay::grabButton(unsigned int button, unsigned int modifiers,
   unsigned int length = (allow_scroll_lock) ? MaskListLength / 2:
                                               MaskListLength;
   for (size_t cnt = 0; cnt < length; ++cnt) {
-    XGrabButton(display, button, modifiers | MaskList[cnt], grab_window,
+    XGrabButton(xdisplay, button, modifiers | MaskList[cnt], grab_window,
                 owner_events, event_mask, pointer_mode, keyboard_mode,
                 confine_to, cursor);
   }
@@ -530,48 +531,48 @@ void BaseDisplay::grabButton(unsigned int button, unsigned int modifiers,
  * Releases the grab on a button, and ungrabs all possible combinations of the
  * keyboard lock keys.
  */
-void BaseDisplay::ungrabButton(unsigned int button, unsigned int modifiers,
+void bt::Display::ungrabButton(unsigned int button, unsigned int modifiers,
                                Window grab_window) const {
   for (size_t cnt = 0; cnt < MaskListLength; ++cnt) {
-    XUngrabButton(display, button, modifiers | MaskList[cnt], grab_window);
+    XUngrabButton(xdisplay, button, modifiers | MaskList[cnt], grab_window);
   }
 }
 
 
-const ScreenInfo* BaseDisplay::getScreenInfo(unsigned int s) const {
+const bt::ScreenInfo* bt::Display::getScreenInfo(unsigned int s) const {
   if (s < screenInfoList.size())
     return &screenInfoList[s];
-  return (const ScreenInfo*) 0;
+  return (const bt::ScreenInfo*) 0;
 }
 
 
-bt::GCCache* BaseDisplay::gcCache(void) const {
+bt::GCCache* bt::Display::gcCache(void) const {
   if (! gccache)
     gccache = new bt::GCCache(this, screenInfoList.size());
   return gccache;
 }
 
 
-void BaseDisplay::insertEventHandler(Window window,
+void bt::Display::insertEventHandler(Window window,
                                      bt::EventHandler *handler) {
   eventhandlers.insert(std::pair<Window,bt::EventHandler*>(window, handler));
 }
 
 
-void BaseDisplay::removeEventHandler(Window window) {
+void bt::Display::removeEventHandler(Window window) {
   eventhandlers.erase(window);
 }
 
 
-ScreenInfo::ScreenInfo(BaseDisplay *d, unsigned int num) {
-  basedisplay = d;
+bt::ScreenInfo::ScreenInfo(bt::Display *d, unsigned int num) {
+  display = d;
   screen_number = num;
 
-  root_window = RootWindow(basedisplay->getXDisplay(), screen_number);
+  root_window = RootWindow(display->getXDisplay(), screen_number);
 
-  rect.setSize(WidthOfScreen(ScreenOfDisplay(basedisplay->getXDisplay(),
+  rect.setSize(WidthOfScreen(ScreenOfDisplay(display->getXDisplay(),
                                              screen_number)),
-               HeightOfScreen(ScreenOfDisplay(basedisplay->getXDisplay(),
+               HeightOfScreen(ScreenOfDisplay(display->getXDisplay(),
                                               screen_number)));
 
   /*
@@ -580,9 +581,9 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, unsigned int num) {
     Preference is given to 24 bit over larger depths if 24 bit is an option.
   */
 
-  depth = DefaultDepth(basedisplay->getXDisplay(), screen_number);
-  visual = DefaultVisual(basedisplay->getXDisplay(), screen_number);
-  colormap = DefaultColormap(basedisplay->getXDisplay(), screen_number);
+  depth = DefaultDepth(display->getXDisplay(), screen_number);
+  visual = DefaultVisual(display->getXDisplay(), screen_number);
+  colormap = DefaultColormap(display->getXDisplay(), screen_number);
 
   if (depth < 8) {
     // search for a TrueColor Visual... if we can't find one...
@@ -594,7 +595,7 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, unsigned int num) {
     vinfo_template.screen = screen_number;
     vinfo_template.c_class = TrueColor;
 
-    vinfo_return = XGetVisualInfo(basedisplay->getXDisplay(),
+    vinfo_return = XGetVisualInfo(display->getXDisplay(),
                                   VisualScreenMask | VisualClassMask,
                                   &vinfo_template, &vinfo_nitems);
     if (vinfo_return) {
@@ -613,7 +614,7 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, unsigned int num) {
     if (best != -1) {
       depth = vinfo_return[best].depth;
       visual = vinfo_return[best].visual;
-      colormap = XCreateColormap(basedisplay->getXDisplay(), root_window,
+      colormap = XCreateColormap(display->getXDisplay(), root_window,
                                  visual, AllocNone);
     }
 
@@ -621,7 +622,7 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, unsigned int num) {
   }
 
   // get the default display string and strip the screen number
-  std::string default_string = DisplayString(basedisplay->getXDisplay());
+  std::string default_string = DisplayString(display->getXDisplay());
   const std::string::size_type pos = default_string.rfind(".");
   if (pos != std::string::npos)
     default_string.resize(pos);

@@ -62,7 +62,7 @@ namespace bt {
   class Netwm;
 }
 
-class Blackbox : public BaseDisplay, public bt::TimeoutHandler {
+class Blackbox : public bt::Display, public bt::TimeoutHandler {
 private:
   struct BCursor {
     Cursor session, move, ll_angle, lr_angle;

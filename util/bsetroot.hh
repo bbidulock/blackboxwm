@@ -29,7 +29,7 @@
 
 #include <string>
 
-class bsetroot : public BaseDisplay {
+class bsetroot : public bt::Display {
 private:
   BImageControl **img_ctrl;
 

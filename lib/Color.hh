@@ -27,28 +27,28 @@
 #include <map>
 #include <string>
 
-class BaseDisplay;
-
 
 namespace bt {
+
+  class Display;
 
   class Color {
   public:
     static void cleanupColorCache(void);
 
-    Color(const BaseDisplay * const _display = 0,
+    Color(const bt::Display * const _display = 0,
           unsigned int _screen = ~(0u));
     Color(int _r, int _g, int _b,
-          const BaseDisplay * const _display = 0,
+          const bt::Display * const _display = 0,
           unsigned int _screen = ~(0u));
     Color(const std::string &_name,
-          const BaseDisplay * const _display = 0,
+          const bt::Display * const _display = 0,
           unsigned int _screen = ~(0u));
     ~Color(void);
 
-    inline const BaseDisplay *display(void) const { return dpy; }
+    inline const bt::Display *display(void) const { return dpy; }
     inline unsigned int screen(void) const { return scrn; }
-    void setDisplay(const BaseDisplay * const _display,
+    void setDisplay(const bt::Display * const _display,
                     unsigned int _screen = ~(0u));
 
     inline const std::string &name(void) const { return colorname; }
@@ -82,18 +82,18 @@ namespace bt {
     bool allocated;
     int r, g, b;
     unsigned long p;
-    const BaseDisplay *dpy;
+    const bt::Display *dpy;
     unsigned int scrn;
     std::string colorname;
 
     // global color allocator/deallocator
     struct RGB {
-      const BaseDisplay* const display;
+      const bt::Display* const display;
       const unsigned int screen;
       const int r, g, b;
 
       inline RGB(void) : display(0), screen(~(0u)), r(-1), g(-1), b(-1) { }
-      inline RGB(const BaseDisplay * const d, const unsigned int s,
+      inline RGB(const bt::Display * const d, const unsigned int s,
                  const int x, const int y, const int z)
         : display(d), screen(s), r(x), g(y), b(z) {}
       inline RGB(const RGB &x)

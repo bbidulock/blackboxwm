@@ -73,7 +73,7 @@ void bt::GCCacheContext::set(const XFontStruct * const _font) {
 }
 
 
-bt::GCCache::GCCache(const BaseDisplay * const _display,
+bt::GCCache::GCCache(const bt::Display * const _display,
                      unsigned int screen_count)
   : display(_display),  context_count(128u),
     cache_size(16u), cache_buckets(8u * screen_count),

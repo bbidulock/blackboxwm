@@ -40,14 +40,14 @@ extern "C" {
 #include "Image.hh"
 
 
-bt::Texture::Texture(const BaseDisplay * const _display,
+bt::Texture::Texture(const bt::Display * const _display,
                      unsigned int _screen, BImageControl* _ctrl)
   : c(_display, _screen), ct(_display, _screen),
     lc(_display, _screen), sc(_display, _screen), t(0),
     dpy(_display), ctrl(_ctrl), scrn(_screen) { }
 
 
-bt::Texture::Texture(const std::string &d, const BaseDisplay * const _display,
+bt::Texture::Texture(const std::string &d, const bt::Display * const _display,
                      unsigned int _screen, BImageControl* _ctrl)
   : c(_display, _screen), ct(_display, _screen),
     lc(_display, _screen), sc(_display, _screen), t(0),
@@ -142,7 +142,7 @@ void bt::Texture::setDescription(const std::string &d) {
   }
 }
 
-void bt::Texture::setDisplay(const BaseDisplay * const _display,
+void bt::Texture::setDisplay(const bt::Display * const _display,
                           const unsigned int _screen) {
   if (_display == display() && _screen == screen()) {
     // nothing to do

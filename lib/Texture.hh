@@ -64,10 +64,10 @@ namespace bt {
       Interlaced          = (1l<<17)
     };
 
-    Texture(const BaseDisplay * const _display = 0,
+    Texture(const bt::Display * const _display = 0,
             unsigned int _screen = ~(0u), BImageControl* _ctrl = 0);
     Texture(const std::string &_description,
-            const BaseDisplay * const _display = 0,
+            const bt::Display * const _display = 0,
             unsigned int _screen = ~(0u), BImageControl* _ctrl = 0);
 
     void setColor(const bt::Color &_color);
@@ -89,9 +89,9 @@ namespace bt {
     inline bool operator!=(const Texture &tt)
     { return (! operator==(tt)); }
 
-    const BaseDisplay *display(void) const { return dpy; }
+    const bt::Display *display(void) const { return dpy; }
     unsigned int screen(void) const { return scrn; }
-    void setDisplay(const BaseDisplay * const _display,
+    void setDisplay(const bt::Display * const _display,
                     const unsigned int _screen);
     void setImageControl(BImageControl* _ctrl) { ctrl = _ctrl; }
     const std::string &description(void) const { return descr; }
@@ -104,7 +104,7 @@ namespace bt {
     bt::Color c, ct, lc, sc;
     std::string descr;
     unsigned long t;
-    const BaseDisplay *dpy;
+    const bt::Display *dpy;
     BImageControl *ctrl;
     unsigned int scrn;
   };

@@ -116,8 +116,8 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
     SubstructureRedirectMask | ButtonPressMask | ButtonReleaseMask;
 
   XErrorHandler old = XSetErrorHandler((XErrorHandler) anotherWMRunning);
-  XSelectInput(getBaseDisplay()->getXDisplay(), getRootWindow(), event_mask);
-  XSync(getBaseDisplay()->getXDisplay(), False);
+  XSelectInput(getDisplay()->getXDisplay(), getRootWindow(), event_mask);
+  XSync(getDisplay()->getXDisplay(), False);
   XSetErrorHandler((XErrorHandler) old);
 
   managed = running;
@@ -625,13 +625,13 @@ void BScreen::LoadStyle(void) {
   // make the code cleaner and is not actually used for display
   bt::Color color = readDatabaseColor("window.frame.focusColor",
                                    "Window.Frame.FocusColor", "white");
-  resource.wstyle.f_focus = bt::Texture("solid flat", getBaseDisplay(),
+  resource.wstyle.f_focus = bt::Texture("solid flat", getDisplay(),
                                      getScreenNumber(), image_control);
   resource.wstyle.f_focus.setColor(color);
 
   color = readDatabaseColor("window.frame.unfocusColor",
                             "Window.Frame.UnfocusColor", "white");
-  resource.wstyle.f_unfocus = bt::Texture("solid flat", getBaseDisplay(),
+  resource.wstyle.f_unfocus = bt::Texture("solid flat", getDisplay(),
                                        getScreenNumber(), image_control);
   resource.wstyle.f_unfocus.setColor(color);
 
@@ -705,9 +705,9 @@ void BScreen::LoadStyle(void) {
 
   // sanity checks
   if (resource.tstyle.toolbar.texture() == bt::Texture::Parent_Relative) {
-    resource.tstyle.toolbar = bt::Texture("solid flat", getBaseDisplay(),
+    resource.tstyle.toolbar = bt::Texture("solid flat", getDisplay(),
                                        getScreenNumber(), image_control);
-    resource.tstyle.toolbar.setColor(bt::Color("black", getBaseDisplay(),
+    resource.tstyle.toolbar.setColor(bt::Color("black", getDisplay(),
                                             getScreenNumber()));
   }
 
@@ -769,9 +769,9 @@ void BScreen::LoadStyle(void) {
 
   // sanity checks
   if (resource.mstyle.frame.texture() == bt::Texture::Parent_Relative) {
-    resource.mstyle.frame = bt::Texture("solid flat", getBaseDisplay(),
+    resource.mstyle.frame = bt::Texture("solid flat", getDisplay(),
                                      getScreenNumber(), image_control);
-    resource.mstyle.frame.setColor(bt::Color("black", getBaseDisplay(),
+    resource.mstyle.frame.setColor(bt::Color("black", getDisplay(),
                                           getScreenNumber()));
   }
 
@@ -1858,7 +1858,7 @@ bt::Texture BScreen::readDatabaseTexture(const std::string &rname,
     texture.setTexture(bt::Texture::Solid | bt::Texture::Flat);
 
   // associate this texture with this screen
-  texture.setDisplay(getBaseDisplay(), getScreenNumber());
+  texture.setDisplay(getDisplay(), getScreenNumber());
   texture.setImageControl(image_control);
 
   texture.setColor(readDatabaseColor(rname + ".color", rclass + ".Color",
@@ -1878,9 +1878,9 @@ bt::Color BScreen::readDatabaseColor(const std::string &rname,
   char *value_type;
   if (XrmGetResource(resource.stylerc, rname.c_str(), rclass.c_str(),
                      &value_type, &value))
-    color = bt::Color(value.addr, getBaseDisplay(), getScreenNumber());
+    color = bt::Color(value.addr, getDisplay(), getScreenNumber());
   else
-    color = bt::Color(default_color, getBaseDisplay(), getScreenNumber());
+    color = bt::Color(default_color, getDisplay(), getScreenNumber());
   return color;
 }
 

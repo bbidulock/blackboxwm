@@ -345,8 +345,8 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
     stackingList.insert(win);
   }
 
-  XLowerWindow(screen->getBaseDisplay()->getXDisplay(), stack_vector.front());
-  XRestackWindows(screen->getBaseDisplay()->getXDisplay(),
+  XLowerWindow(screen->getDisplay()->getXDisplay(), stack_vector.front());
+  XRestackWindows(screen->getDisplay()->getXDisplay(),
                   &stack_vector[0], stack_vector.size());
 }
 

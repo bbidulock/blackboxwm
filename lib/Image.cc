@@ -80,13 +80,13 @@ Pixmap BImage::render(const bt::Texture &texture) {
 
 
 Pixmap BImage::render_solid(const bt::Texture &texture) {
-  Pixmap pixmap = XCreatePixmap(control->getBaseDisplay()->getXDisplay(),
+  Pixmap pixmap = XCreatePixmap(control->getDisplay()->getXDisplay(),
 				control->getDrawable(), width,
 				height, control->getDepth());
   if (pixmap == None)
     return None;
 
-  Display *display = control->getBaseDisplay()->getXDisplay();
+  Display *display = control->getDisplay()->getXDisplay();
 
   bt::Pen pen(texture.color());
   bt::Pen penlight(texture.lightColor());
@@ -433,7 +433,7 @@ void BImage::PseudoColorDither(int bytes_per_line, unsigned char *pixel_data) {
 
 XImage *BImage::renderXImage(void) {
   XImage *image =
-    XCreateImage(control->getBaseDisplay()->getXDisplay(),
+    XCreateImage(control->getDisplay()->getXDisplay(),
                  control->getVisual(), control->getDepth(), ZPixmap, 0, 0,
                  width, height, 32, 0);
 
@@ -544,7 +544,7 @@ XImage *BImage::renderXImage(void) {
 
 Pixmap BImage::renderPixmap(void) {
   Pixmap pixmap =
-    XCreatePixmap(control->getBaseDisplay()->getXDisplay(),
+    XCreatePixmap(control->getDisplay()->getXDisplay(),
                   control->getDrawable(), width, height, control->getDepth());
 
   if (pixmap == None)
@@ -553,18 +553,18 @@ Pixmap BImage::renderPixmap(void) {
   XImage *image = renderXImage();
 
   if (! image) {
-    XFreePixmap(control->getBaseDisplay()->getXDisplay(), pixmap);
+    XFreePixmap(control->getDisplay()->getXDisplay(), pixmap);
     return None;
   }
 
   if (! image->data) {
     XDestroyImage(image);
-    XFreePixmap(control->getBaseDisplay()->getXDisplay(), pixmap);
+    XFreePixmap(control->getDisplay()->getXDisplay(), pixmap);
     return None;
   }
 
-  XPutImage(control->getBaseDisplay()->getXDisplay(), pixmap,
-	    DefaultGC(control->getBaseDisplay()->getXDisplay(),
+  XPutImage(control->getDisplay()->getXDisplay(), pixmap,
+	    DefaultGC(control->getDisplay()->getXDisplay(),
 		      control->getScreenInfo()->getScreenNumber()),
             image, 0, 0, 0, 0, width, height);
 

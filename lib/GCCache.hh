@@ -40,11 +40,11 @@ namespace bt {
     ~GCCacheContext(void);
 
   private:
-    GCCacheContext(const BaseDisplay * const _display)
+    GCCacheContext(const bt::Display * const _display)
       : display(_display), gc(0), pixel(0ul), fontid(0ul),
         function(0), subwindow(0), used(false), screen(~(0u)) {}
 
-    const BaseDisplay *display;
+    const bt::Display *display;
     GC gc;
     unsigned long pixel;
     unsigned long fontid;
@@ -80,7 +80,7 @@ namespace bt {
 
   class GCCache {
   public:
-    GCCache(const BaseDisplay * const _display, unsigned int screen_count);
+    GCCache(const Display * const _display, unsigned int screen_count);
     ~GCCache(void);
 
     // cleans up the cache
@@ -98,7 +98,7 @@ namespace bt {
 
     // this is closely modelled after the Qt GC cache, but with some of the
     // complexity stripped out
-    const BaseDisplay *display;
+    const Display *display;
 
     const unsigned int context_count;
     const unsigned int cache_size;

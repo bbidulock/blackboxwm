@@ -39,143 +39,144 @@ extern "C" {
 #include "Timer.hh"
 #include "Util.hh"
 
-// forward declaration
-class BaseDisplay;
 namespace bt {
+
+  // forward declaration
+  class Display;
   class EventHandler;
   class GCCache;
-}
 
+  class ScreenInfo {
+  private:
+    bt::Display *display;
+    Visual *visual;
+    Window root_window;
+    Colormap colormap;
 
-class ScreenInfo {
-private:
-  BaseDisplay *basedisplay;
-  Visual *visual;
-  Window root_window;
-  Colormap colormap;
+    int depth;
+    unsigned int screen_number;
+    std::string display_string;
+    bt::Rect rect;
 
-  int depth;
-  unsigned int screen_number;
-  std::string display_string;
-  bt::Rect rect;
+  public:
+    ScreenInfo(bt::Display *d, unsigned int num);
 
-public:
-  ScreenInfo(BaseDisplay *d, unsigned int num);
-
-  inline BaseDisplay *getBaseDisplay(void) const { return basedisplay; }
-  inline Visual *getVisual(void) const { return visual; }
-  inline Window getRootWindow(void) const { return root_window; }
-  inline Colormap getColormap(void) const { return colormap; }
-  inline int getDepth(void) const { return depth; }
-  inline unsigned int getScreenNumber(void) const
-  { return screen_number; }
-  inline const bt::Rect& getRect(void) const { return rect; }
-  inline unsigned int getWidth(void) const { return rect.width(); }
-  inline unsigned int getHeight(void) const { return rect.height(); }
-  inline const std::string& displayString(void) const
-  { return display_string; }
-};
-
-
-class BaseDisplay: public bt::TimerQueueManager {
-private:
-  struct BShape {
-    bool extensions;
-    int event_basep, error_basep;
+    inline bt::Display *getDisplay(void) const { return display; }
+    inline Visual *getVisual(void) const { return visual; }
+    inline Window getRootWindow(void) const { return root_window; }
+    inline Colormap getColormap(void) const { return colormap; }
+    inline int getDepth(void) const { return depth; }
+    inline unsigned int getScreenNumber(void) const
+    { return screen_number; }
+    inline const bt::Rect& getRect(void) const { return rect; }
+    inline unsigned int getWidth(void) const { return rect.width(); }
+    inline unsigned int getHeight(void) const { return rect.height(); }
+    inline const std::string& displayString(void) const
+    { return display_string; }
   };
-  BShape shape;
-
-  unsigned int MaskList[8];
-  size_t MaskListLength;
-
-  enum RunState { STARTUP, RUNNING, SHUTDOWN };
-  RunState run_state;
-
-  Display *display;
-  mutable bt::GCCache *gccache;
-
-  typedef std::vector<ScreenInfo> ScreenInfoList;
-  ScreenInfoList screenInfoList;
-  bt::TimerQueue timerList;
-
-  const char *application_name;
-
-  // no copying!
-  BaseDisplay(const BaseDisplay &);
-  BaseDisplay& operator=(const BaseDisplay&);
-
-  typedef std::map<Window,bt::EventHandler*> EventHandlerMap;
-  EventHandlerMap eventhandlers;
-
-protected:
-  /*
-    Processes the X11 event {event} by delivering the event to the
-    appropriate EventHandler.
-
-    Reimplement this function if you need to filter/intercept events
-    before normal processing.
-  */
-  virtual void process_event(XEvent *event);
-
-  // the masks of the modifiers which are ignored in button events.
-  int NumLockMask, ScrollLockMask;
 
 
-public:
-  BaseDisplay(const char *app_name, const char *dpy_name = 0);
-  virtual ~BaseDisplay(void);
+  class Display: public bt::TimerQueueManager {
+  private:
+    struct BShape {
+      bool extensions;
+      int event_basep, error_basep;
+    };
+    BShape shape;
 
-  const ScreenInfo* getScreenInfo(const unsigned int s) const;
+    unsigned int MaskList[8];
+    size_t MaskListLength;
 
-  bt::GCCache *gcCache(void) const;
+    enum RunState { STARTUP, RUNNING, SHUTDOWN };
+    RunState run_state;
 
-  inline bool hasShapeExtensions(void) const
-  { return shape.extensions; }
-  inline bool doShutdown(void) const
-  { return run_state == SHUTDOWN; }
-  inline bool isStartup(void) const
-  { return run_state == STARTUP; }
+    ::Display *xdisplay;
+    mutable bt::GCCache *gccache;
 
-  inline Display *getXDisplay(void) const { return display; }
+    typedef std::map<Window,bt::EventHandler*> EventHandlerMap;
+    EventHandlerMap eventhandlers;
 
-  inline const char *getApplicationName(void) const
-  { return application_name; }
+    typedef std::vector<ScreenInfo> ScreenInfoList;
+    ScreenInfoList screenInfoList;
+    bt::TimerQueue timerList;
 
-  inline unsigned int getNumberOfScreens(void) const
-  { return screenInfoList.size(); }
-  inline int getShapeEventBase(void) const
-  { return shape.event_basep; }
+    const char *application_name;
 
-  inline void shutdown(void) { run_state = SHUTDOWN; }
-  inline void run(void) { run_state = RUNNING; }
+    // no copying!
+    Display(const Display &);
+    Display& operator=(const Display&);
 
-  void grabButton(unsigned int button, unsigned int modifiers,
-                  Window grab_window, bool owner_events,
-                  unsigned int event_mask, int pointer_mode,
-                  int keyboard_mode, Window confine_to, Cursor cursor,
-                  bool allow_scroll_lock) const;
-  void ungrabButton(unsigned int button, unsigned int modifiers,
-                    Window grab_window) const;
+  protected:
+    /*
+      Processes the X11 event {event} by delivering the event to the
+      appropriate EventHandler.
 
-  void eventLoop(void);
+      Reimplement this function if you need to filter/intercept events
+      before normal processing.
+    */
+    virtual void process_event(XEvent *event);
 
-  // from TimerQueueManager interface
-  virtual void addTimer(bt::Timer *timer);
-  virtual void removeTimer(bt::Timer *timer);
+    // the masks of the modifiers which are ignored in button events.
+    int NumLockMask, ScrollLockMask;
 
-  // another pure virtual... this is used to handle signals that BaseDisplay
-  // doesn't understand itself
-  virtual bool handleSignal(int sig) = 0;
 
-  /*
-    Inserts the EventHandler {handler} for Window {window}.  All
-    events generated for {window} will be sent through {handler}.
-  */
-  void insertEventHandler(Window window, bt::EventHandler *handler);
-  /*
-    Removes all EventHandlers for Window {window}.
-  */
-  void removeEventHandler(Window window);
-};
+  public:
+    Display(const char *app_name, const char *dpy_name = 0);
+    virtual ~Display(void);
+
+    const ScreenInfo* getScreenInfo(const unsigned int s) const;
+
+    bt::GCCache *gcCache(void) const;
+
+    inline bool hasShapeExtensions(void) const
+    { return shape.extensions; }
+    inline bool doShutdown(void) const
+    { return run_state == SHUTDOWN; }
+    inline bool isStartup(void) const
+    { return run_state == STARTUP; }
+
+    inline ::Display *getXDisplay(void) const { return xdisplay; }
+
+    inline const char *getApplicationName(void) const
+    { return application_name; }
+
+    inline unsigned int getNumberOfScreens(void) const
+    { return screenInfoList.size(); }
+    inline int getShapeEventBase(void) const
+    { return shape.event_basep; }
+
+    inline void shutdown(void) { run_state = SHUTDOWN; }
+    inline void run(void) { run_state = RUNNING; }
+
+    void grabButton(unsigned int button, unsigned int modifiers,
+                    Window grab_window, bool owner_events,
+                    unsigned int event_mask, int pointer_mode,
+                    int keyboard_mode, Window confine_to, Cursor cursor,
+                    bool allow_scroll_lock) const;
+    void ungrabButton(unsigned int button, unsigned int modifiers,
+                      Window grab_window) const;
+
+    void eventLoop(void);
+
+    // from TimerQueueManager interface
+    virtual void addTimer(bt::Timer *timer);
+    virtual void removeTimer(bt::Timer *timer);
+
+    // another pure virtual... this is used to handle signals that
+    // bt::Display doesn't understand itself
+    virtual bool handleSignal(int sig) = 0;
+
+    /*
+      Inserts the EventHandler {handler} for Window {window}.  All
+      events generated for {window} will be sent through {handler}.
+    */
+    void insertEventHandler(Window window, bt::EventHandler *handler);
+    /*
+      Removes all EventHandlers for Window {window}.
+    */
+    void removeEventHandler(Window window);
+  };
+
+} // namespace bt
 
 #endif // __BaseDisplay_hh

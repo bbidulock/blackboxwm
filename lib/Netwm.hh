@@ -37,7 +37,7 @@ namespace bt {
 
   class Netwm {
   public:
-    explicit Netwm(Display *_display);
+    explicit Netwm(::Display *_display);
 
     typedef std::vector<Atom> AtomList;
     typedef std::vector<Window> WindowList;
@@ -180,7 +180,7 @@ namespace bt {
     bool getListProperty(Window target, Atom type, Atom property,
                          unsigned char** data, unsigned long* count) const;
 
-    Display *display;
+    ::Display *display;
     Atom utf8_string,
       net_supported, net_client_list, net_client_list_stacking,
       net_number_of_desktops, net_desktop_geometry, net_current_desktop,

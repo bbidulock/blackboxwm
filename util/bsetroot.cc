@@ -51,7 +51,7 @@ extern "C" {
 bt::I18n bt::i18n;
 
 bsetroot::bsetroot(int argc, char **argv, char *dpy_name)
-  : BaseDisplay(argv[0], dpy_name) {
+  : bt::Display(argv[0], dpy_name) {
 
   bool mod = False, sol = False, grd = False;
   int mod_x = 0, mod_y = 0;
@@ -144,7 +144,7 @@ void bsetroot::setPixmapProperty(int screen, Pixmap pixmap) {
   int format;
   unsigned long length, after;
   unsigned char *data;
-  const ScreenInfo *screen_info = getScreenInfo(screen);
+  const bt::ScreenInfo *screen_info = getScreenInfo(screen);
 
   if (rootpmap_id == None) {
     rootpmap_id = XInternAtom(getXDisplay(), "_XROOTPMAP_ID", False);
@@ -210,7 +210,7 @@ Pixmap bsetroot::duplicatePixmap(int screen, Pixmap pixmap,
 void bsetroot::solid(void) {
   for (unsigned int screen = 0; screen < getNumberOfScreens(); screen++) {
     bt::Color c(fore, this, screen);
-    const ScreenInfo *screen_info = getScreenInfo(screen);
+    const bt::ScreenInfo *screen_info = getScreenInfo(screen);
 
     XSetWindowBackground(getXDisplay(), screen_info->getRootWindow(),
                          c.pixel());
@@ -255,7 +255,7 @@ void bsetroot::modula(int x, int y) {
     bt::Color f(fore, this, screen), b(back, this, screen);
     GC gc;
     Pixmap bitmap;
-    const ScreenInfo *screen_info = getScreenInfo(screen);
+    const bt::ScreenInfo *screen_info = getScreenInfo(screen);
 
     bitmap =
       XCreateBitmapFromData(getXDisplay(),
@@ -318,7 +318,7 @@ void bsetroot::gradient(void) {
 
   for (unsigned int screen = 0; screen < getNumberOfScreens(); screen++) {
     bt::Texture texture(descr, this, screen, img_ctrl[screen]);
-    const ScreenInfo *screen_info = getScreenInfo(screen);
+    const bt::ScreenInfo *screen_info = getScreenInfo(screen);
 
     texture.setColor(bt::Color(fore, this, screen));
     texture.setColorTo(bt::Color(back, this, screen));

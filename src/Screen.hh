@@ -100,7 +100,7 @@ struct MenuStyle {
   int bullet, bullet_pos;
 };
 
-class BScreen : public ScreenInfo, public bt::EventHandler {
+class BScreen : public bt::ScreenInfo, public bt::EventHandler {
 private:
   bool root_colormap_installed, managed, geom_visible;
   GC opGC;
