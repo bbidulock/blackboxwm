@@ -1,23 +1,31 @@
 ! Blackbox window manager resource defaults
 ! (c) 1997 Brad Hughes
 
-blackbox*frameColor:              rgb:24/40/40
-blackbox*frameTexture:            solid
-blackbox*focusColor:              darkslategrey
-blackbox*unfocusColor:            black
-
+blackbox*toolboxTexture:          solid
+blackbox*windowTexture:           solid
 blackbox*buttonTexture:           solid
-blackbox*buttonColor:             black
-
-blackbox*iconColor:               black
 blackbox*menuTexture:             solid
-blackbox*menuColor:               darkgrey
-blackbox*menuItemTexture:         solid
-blackbox*menuItemPressedTexture:  solid
-blackbox*menuItemColor:           black
-blackbox*menuTextColor:           black
-blackbox*menuItemTextColor:       grey
-blackbox*menuPressedTextColor:    white
-! this is also the pressed color
-blackbox*menuItemToColor:         darkslategrey
-blackbox*workspaces:	          3
+blackbox*menuItemTexture:         solidflat
+blackbox*menuItemPressedTexture:  solidsunken
+
+blackbox*frameColor:              grey25
+blackbox*toolboxColor:            grey40
+blackbox*focusColor:              darkslategrey
+blackbox*unfocusColor:            grey25
+blackbox*buttonColor:             black
+blackbox*menuColor:               black
+blackbox*menuItemColor:           grey40
+blackbox*menuItemToColor:         grey
+blackbox*focusTextColor:          white
+blackbox*unfocusTextColor:        darkgrey
+blackbox*menuTextColor:           grey
+blackbox*menuItemTextColor:       darkgrey
+blackbox*menuPressedTextColor:    black
+blackbox*iconTextColor:           grey
+
+blackbox*workspaces:              2
+blackbox*orientation:             righthanded
+
+blackbox*titleFont:     -*-helvetica-bold-r-*-*-*-120-*-*-*-*-*-*
+blackbox*menuFont:      -*-helvetica-bold-r-*-*-*-120-*-*-*-*-*-*
+blackbox*iconFont:      -*-helvetica-medium-r-*-*-*-80-*-*-*-*-*-*

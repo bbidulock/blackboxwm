@@ -838,11 +838,6 @@ void BlackboxSession::LoadDefaults(void) {
     XrmCombineDatabase(resource_database, &blackbox_database, True);
   } else
     default_database = XrmGetFileDatabase(BLACKBOXAD);
-  
-  if (blackbox_database == NULL && default_database == NULL) {
-    debug->msg("nil databases... skipping...\n");
-    return;
-  }
 
   debug->msg("checking for combination of databases\n");
   if (default_database != NULL && blackbox_database == NULL) {
@@ -850,12 +845,6 @@ void BlackboxSession::LoadDefaults(void) {
 	       blackbox_database);
     XrmCombineDatabase(default_database, &blackbox_database, False);
   }
-
-  //
-  // default_database is destroyed by the above call...
-  //
-  // let's continue parsing our default resources
-  //
 
   XrmValue value;
   char *value_type;
@@ -1085,7 +1074,7 @@ void BlackboxSession::LoadDefaults(void) {
 	       &resource.color.frame.b);
   else
     resource.color.frame.pixel =
-      getColor("grey", &resource.color.frame.r, &resource.color.frame.g,
+      getColor("black", &resource.color.frame.r, &resource.color.frame.g,
 	       &resource.color.frame.b);
 
   if (XrmGetResource(blackbox_database,
@@ -1274,7 +1263,7 @@ void BlackboxSession::LoadDefaults(void) {
 	       &resource.color.ptext.b);
   else
     resource.color.ptext.pixel =
-      getColor("grey", &resource.color.ptext.r, &resource.color.ptext.g,
+      getColor("darkgrey", &resource.color.ptext.r, &resource.color.ptext.g,
 	       &resource.color.ptext.b);
 
   if (XrmGetResource(blackbox_database,
@@ -1286,7 +1275,7 @@ void BlackboxSession::LoadDefaults(void) {
 	       &resource.color.itext.b);
   else
     resource.color.itext.pixel =
-      getColor("grey", &resource.color.itext.r, &resource.color.itext.g,
+      getColor("black", &resource.color.itext.r, &resource.color.itext.g,
 	       &resource.color.itext.b);
 
   if (XrmGetResource(blackbox_database,

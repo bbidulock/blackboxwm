@@ -872,6 +872,32 @@ Bool BlackboxWindow::getWMProtocols(void) {
       Protocols.WM_TAKE_FOCUS = True;
     } else if (protocols[i] ==  session->StateAtom()) {
       debug->msg("WM_STATE\n");
+      Atom atom;
+      int foo;
+      unsigned long ulfoo, nitems;
+      unsigned char *state;
+      XGetWindowProperty(display, client.window, session->StateAtom(),
+			 0, 3, False, session->StateAtom(), &atom, &foo,
+			 &nitems, &ulfoo, &state);
+
+      if (state != NULL) {
+	switch (*((unsigned long *) state)) {
+	case WithdrawnState:
+	  withdrawWindow();
+	  setFocusFlag(False);
+	  break;
+	  
+	case IconicState:
+	  iconifyWindow();
+	  break;
+	    
+	case NormalState:
+	default:
+	  deiconifyWindow();
+	  setFocusFlag(False);
+	  break;
+	}
+      }
     } else  if (protocols[i] ==  session->ColormapAtom()) {
       debug->msg("wm colormap windows\n");
     }

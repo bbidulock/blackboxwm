@@ -1,4 +1,4 @@
-[begin] (Blackbox 0.12.4)
+[begin] (Blackbox 0.13.0)
   "xterm" (xterm -ls)
   "XEmacs" (xemacs)
   "Netscape" (netscape)
@@ -11,9 +11,11 @@
   "The GIMP" (gimp)
   "Image Magick" (display)
   [begin] (Blackbox)
-    "Update Configuration" (Reconfigure)
-    [restart] (WindowMaker) {wmaker}
+    "Reconfigure" (Reconfigure)
+    [restart] (Start WindowMaker) {wmaker}
+    [restart] (Start Afterstep) {afterstep}
+    [restart] (Start FVWM) {fvwm}
     "Restart" (Restart)
-    "Shutdown" (Exit)
+    "Exit" (Exit)
   [end]
 [end]

@@ -23,7 +23,7 @@ development, many things may or may not work properly (or at all).  This code
 was written from scratch (save for a bit of the 8bpp code, which was 
 implemented from WindowMaker 0.11.0 source code (and has since been improved
 upon and operates much faster than the way WindowMaker does, which is to alloc
-colors for each image, and the dgradient code, courtesy of Frank R. Belew
+colors for each image), and the dgradient code, courtesy of Frank R. Belew
 <frb@umr.edu>).  I plan to make a list of testers and code contributors in
 the future, which will appear here.
 
@@ -41,6 +41,8 @@ method I have decided to use because of the way I render and use internal
 images.
 
 
+Credits:
+-----------
 Author:
 	Brad Hughes <bhughes@arn.net>
 
@@ -81,9 +83,9 @@ explanation of functions and their default behaviour (read, some behaviours
 are modifiable/configurable) is included below.
 
 Windows are stacked in a specific order.
-The toolbar set on the left hand side of the root window is always on the
-bottom of the stack list.  Client windows are stacked above the toolbar, thus
-it is possible to totally obscure the toolbar from site with large/numerous
+The toolbox set on the left hand side of the root window is always on the
+bottom of the stack list.  Client windows are stacked above the toolbox, thus
+it is possible to totally obscure the toolbox from site with large/numerous
 clients.  The session (root) menu, workspace manager menu (the top left button
 reveals this menu) and the workspace menus (window lists) are stacked above
 the client windows, and thus will always be visible when mapped (visible).
@@ -133,7 +135,7 @@ removed when the mouse button is released (at which point the client is
 resized).
 
 The maximize button maximizes the client window in the available space on the
-root window (i.e. minus the width of the toolbar).  Again, clients with set
+root window (i.e. minus the width of the toolbox).  Again, clients with set
 size increments are incremented and then centered in the desktop (so that means
 a maximized xterm may not take up the full screen).
 
@@ -166,7 +168,7 @@ hidden before the second is shown.
 
 The workspace manager menu operates differently from the root menu in several
 respects.  It does not have a title, and thus is not movable.  Pressing the
-Workspace button at the top of the toolbar maps the workspace manager menu.
+Workspace button at the top of the toolbox maps the workspace manager menu.
 The "New Workspace" menu item creates a new workspace, which is like a
 virtual X desktop on which more windows may be placed.  The "Delete last" menu
 item iconifies ALL windows on the last workspace, and removes the last
@@ -192,7 +194,7 @@ while button 3 ascends it, or button 1 would change from Workspace 2 to
 Workspace 1, and button 3 would change from Workspace 1 to Workspace 2 for
 example).
 
-Icons are placed on the bottom half of the toolbar.  These icons are present
+Icons are placed on the bottom half of the toolbox.  These icons are present
 in all workspaces,  thus it is possible to move a window to another workspace
 by iconifying it and then deiconifying it on a new workspace (but the Send
 To ... window menu function is much easier).  Blackbox reads the icon label
@@ -229,7 +231,8 @@ The X resources that blackbox recognizes:
 
 Name:					Class:
 --------				---------
-blackbox.session.frameTexture		Blackbox.Session.FrameTexture
+blackbox.session.toolboxTexture		Blackbox.Session.ToolboxTexture
+blackbox.session.windowTexture		Blackbox.Session.WindowTexture
 blackbox.window.buttonTexture		Blackbox.Window.ButtonTexture
 blackbox.menu.menuTexture		Blackbox.Menu.MenuTexture
 blackbox.menu.menuItemPressedTexture	Blackbox.Menu.MenuItemPressedTexture
@@ -249,21 +252,21 @@ Values Accepted:
     VGradientSunken			(vertical gradient w/ sunken bevel)
     VGradientFlat			(vertical gradient w/ no bevel)
 
-	The various textures give a better appearance to blackbox.  The frame 
-	texture controls the toolbar on the left side of the screen
+	The various textures give a better appearance to blackbox.  The toolbox
+	texture controls the toolbox on the left side of the screen
 
 
 Name:					Class:
 --------				---------
 blackbox.session.frameColor		Blackbox.Session.FrameColor
-blackbox.session.frameToColor		Blackbox.Session.FrameToColor
+blackbox.session.toolboxColor		Blackbox.Session.ToolboxColor
+blackbox.session.toolboxToColor		Blackbox.Session.ToolboxToColor
 blackbox.window.focusColor		Blackbox.Window.FocusColor
 blackbox.window.focusToColor		Blackbox.Window.FocusToColor
 blackbox.window.unfocusColor		Blackbox.Window.UnfocusColor
 blackbox.window.unfocusToColor		Blackbox.Window.UnfocusToColor
 blackbox.window.buttonColor		Blackbox.Window.ButtonColor
 blackbox.window.buttonToColor		Blackbox.Window.ButtonToColor
-blackbox.session.iconColor		Blackbox.Session.IconColor
 blackbox.menu.menuColor			Blackbox.Menu.MenuColor
 blackbox.menu.menuToColor		Blackbox.Menu.MenuToColor
 blackbox.menu.menuItemColor		Blackbox.Menu.MenuItemColor
@@ -276,17 +279,10 @@ blackbox.session.menuPressedTextColor	Blackbox.Session.MenuPressedTextColor
 blackbox.session.iconTextColor		Blackbox.Session.IconTextColor;
 
 Accepted Values:
-	color specification of the form:
+	Blackbox has been updated so that it now takes any X color
+	name in defining it's colors.
 
-		rgb:%x/%x/%x	where %x is a hexadecimal integer (OBSOLETE)
-
-		Blackbox has been updated so that it now takes any X color
-		name in defining it's colors.
-
-	These color specs control the appearance of blackbox.  A note about 
-	frame(To) and icon Color.  The frame and frameTo colors control the 
-	toolbar on the left side of the screen.  The icon color is the color 
-	of the icon tray in the toolbar.
+	These color specs control the appearance of blackbox.
 
 
 Name:					Class:
@@ -341,35 +337,40 @@ file:
 ! Blackbox window manager resource defaults
 ! (c) 1997, 1998 Brad Hughes
 
-blackbox*frameTexture:            dgradient
+blackbox*toolboxTexture:          dgradientsunken
+blackbox*windowTexture:           hgradient
 blackbox*buttonTexture:           dgradient
-blackbox*menuTexture:             dgradientsunken
-blackbox*menuItemTexture:         hgradientflat
-blackbox*menuItemPressedTexture:  vgradient
+blackbox*menuTexture:             hgradientflat
+blackbox*menuItemTexture:         hgradientsunken
+blackbox*menuItemPressedTexture:  vgradientflat
 
-blackbox*frameColor:              rgb:30/60/60
-blackbox*frameToColor:            rgb:10/20/20
-blackbox*focusColor:              rgb:60/c0/c0
-blackbox*focusToColor:            black
-blackbox*unfocusColor:            rgb:30/60/60
-blackbox*unfocusToColor:          black
-blackbox*buttonColor:             rgb:60/c0/c0
-blackbox*buttonToColor:           rgb:10/20/20
-blackbox*iconColor:               rgb:20/40/40
-blackbox*menuColor:               rgb:60/c0/c0
-blackbox*menuToColor:             black
-blackbox*menuItemColor:           rgb:40/80/80
-blackbox*menuItemToColor:         rgb:20/40/40
-blackbox*focusTextColor:          white
-blackbox*unfocusTextColor:        rgb:40/80/80
+blackbox*frameColor:              rgb:30/30/60
+blackbox*toolboxColor:            rgb:30/30/60
+blackbox*toolboxToColor:          rgb:18/18/30
+blackbox*focusColor:              rgb:60/60/c0
+blackbox*focusToColor:            rgb:20/20/40
+blackbox*unfocusColor:            rgb:20/20/40
+blackbox*unfocusToColor:          rgb:10/10/20
+blackbox*buttonColor:             rgb:60/60/c0
+blackbox*buttonToColor:           rgb:30/30/60
+blackbox*menuColor:               rgb:60/60/c0
+blackbox*menuToColor:             rgb:30/30/60
+blackbox*menuItemColor:           rgb:30/30/60
+blackbox*menuItemToColor:         rgb:50/50/a0
+blackbox*focusTextColor:          grey
+blackbox*unfocusTextColor:        rgb:30/30/60
+blackbox*menuTextColor:           grey
+blackbox*menuItemTextColor:       darkgrey
+blackbox*menuPressedTextColor:    slategrey
+blackbox*iconTextColor:           grey
 
-blackbox*workspaces:              3
+blackbox*workspaces:              4
 blackbox*menuFile:                /home/bhughes/.blackboxmenu
-blackbox*orientation:             lefthanded
+blackbox*orientation:             righthanded
 
-blackbox*titleFont:               -adobe-utopia-regular-r-*-*-*-120-*-*-*-*-*-*
-blackbox*menuFont:                -adobe-utopia-regular-r-*-*-*-100-*-*-*-*-*-*
-blackbox*iconFont:                -adobe-utopia-bold-r-*-*-*-80-*-*-*-*-*-*
+blackbox*titleFont:     -bitstream-charter-medium-i-*-*-*-120-*-*-*-*-*-*
+blackbox*menuFont:      -bitstream-charter-medium-r-*-*-*-120-*-*-*-*-*-*
+blackbox*iconFont:      -bitstream-charter-medium-r-*-*-*-100-*-*-*-*-*-*
 --
 
 
@@ -401,6 +402,7 @@ Again for an idea of how to configure the menu, here is my .blackboxmenu file
   "ircII undernet" (xterm -name irc -e irc)
   "ircII epic" (xterm -name irc -e irc nyz irc.miranda.org:6667)
   "xemacs" (xemacs)
+  "Ion CD" (ion/cd-0.6.4/ioncd)
   [begin] (Graphics)
     "xv 3.10a" (xv -bg rgb:c0/c0/c0 -fg black -hi rgb:e0/e0/e0 -lo rgb:a0/a0/a0)
     "Image Magick" (display)
@@ -410,7 +412,11 @@ Again for an idea of how to configure the menu, here is my .blackboxmenu file
     "ppp up" (/usr/sbin/pppd)
     "ppp down" (killall pppd)
   [end]
-  "Restart" (Restart)
+  [begin] (Restart)
+    "Reconfigure" (Reconfigure)
+    "Blackbox" (Restart)
+    [restart] (WindowMaker) {wmaker}
+  [end]
   "Exit" (Exit)
 [end]
 --
