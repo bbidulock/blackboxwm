@@ -520,8 +520,27 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
 
 void BScreen::addWindow(Window w) {
   manageWindow(w);
-  BlackboxWindow *win = blackbox->findWindow(w);
-  if (win) updateClientListHint();
+  BlackboxWindow * const win = blackbox->findWindow(w);
+  if (!win) return;
+
+  updateClientListHint();
+
+  // focus the new window if appropriate
+  switch (win->windowType()) {
+  case WindowTypeDesktop:
+  case WindowTypeDock:
+    // these types should not be focused when managed
+    break;
+
+  default:
+    if (!blackbox->startingUp() &&
+        (!blackbox->activeScreen() || blackbox->activeScreen() == this) &&
+        (win->isTransient() || resource().doFocusNew())) {
+      XSync(blackbox->XDisplay(), False); // make sure the frame is mapped..
+      win->setInputFocus();
+      break;
+    }
+  }
 }
 
 
@@ -585,23 +604,6 @@ void BScreen::manageWindow(Window w) {
     win->show();
     break;
   } // switch
-
-  // focus the new window if appropriate
-  switch (win->windowType()) {
-  case WindowTypeDesktop:
-  case WindowTypeDock:
-    // these types should not be focused when managed
-    break;
-
-  default:
-    if (!blackbox->startingUp() &&
-        (!blackbox->activeScreen() || blackbox->activeScreen() == this) &&
-        (win->isTransient() || resource().doFocusNew())) {
-      XSync(blackbox->XDisplay(), False); // make sure the frame is mapped..
-      win->setInputFocus();
-      break;
-    }
-  }
 }
 
 
