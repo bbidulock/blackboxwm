@@ -26,12 +26,10 @@
 #include "Screen.hh"
 #include "Toolbar.hh"
 #include "Window.hh"
-#include "../nls/blackbox-nls.hh"
 
 #include <Pen.hh>
 #include <PixmapCache.hh>
 #include <Util.hh>
-#include <i18n.hh>
 
 #include <X11/Xresource.h>
 #include <sys/types.h>
@@ -82,9 +80,8 @@ Blackbox::Blackbox(char **m_argv, const char *dpy_name,
   }
 
   if (managed == 0) {
-    fprintf(stderr,
-            bt::i18n(blackboxSet, blackboxNoManagableScreens,
-              "Blackbox::Blackbox: no managable screens found, aborting.\n"));
+    fprintf(stderr, "%s: no managable screens found, exiting...\n",
+            applicationName().c_str());
     ::exit(3);
   }
 
