@@ -141,10 +141,6 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   resource.mstyle.t_font = resource.mstyle.f_font = resource.tstyle.font =
     resource.wstyle.font = (XFontStruct *) 0;
 
-#ifdef    HAVE_STRFTIME
-  resource.strftime_format = 0;
-#endif // HAVE_STRFTIME
-
 #ifdef    HAVE_GETPID
   pid_t bpid = getpid();
 
@@ -347,11 +343,6 @@ BScreen::~BScreen(void) {
   std::for_each(iconList.begin(), iconList.end(), PointerAssassin());
 
   std::for_each(netizenList.begin(), netizenList.end(), PointerAssassin());
-
-#ifdef    HAVE_STRFTIME
-  if (resource.strftime_format)
-    delete [] resource.strftime_format;
-#endif // HAVE_STRFTIME
 
   delete rootmenu;
   delete workspacemenu;
@@ -1047,11 +1038,8 @@ void BScreen::raiseWindows(Window *workspace_stack, unsigned int num) {
 
 
 #ifdef    HAVE_STRFTIME
-void BScreen::saveStrftimeFormat(char *format) {
-  if (resource.strftime_format)
-    delete [] resource.strftime_format;
-
-  resource.strftime_format = bstrdup(format);
+void BScreen::saveStrftimeFormat(const string& format) {
+  resource.strftime_format = format;
 }
 #endif // HAVE_STRFTIME
 
@@ -1352,11 +1340,9 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
               continue;
             }
 
-            char *style = expandTilde(command);
+            string style = expandTilde(command);
 
-            menu->insert(label, BScreen::SetStyle, style);
-
-            delete [] style;
+            menu->insert(label, BScreen::SetStyle, style.c_str());
           }
 
           break;
@@ -1382,8 +1368,8 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
               continue;
             }
 
-            char *newfile = expandTilde(label);
-            FILE *submenufile = fopen(newfile, "r");
+            string newfile = expandTilde(label);
+            FILE *submenufile = fopen(newfile.c_str(), "r");
 
             if (submenufile) {
               struct stat buf;
@@ -1392,8 +1378,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
                 fprintf(stderr,
                         i18n(ScreenSet, ScreenINCLUDEErrorReg,
                              "BScreen::parseMenuFile: [include] error: "
-                             "'%s' is not a regular file\n"), newfile);
-                delete [] newfile;
+                             "'%s' is not a regular file\n"), newfile.c_str());
                 break;
               }
 
@@ -1404,9 +1389,8 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
                 fclose(submenufile);
               }
             } else {
-              perror(newfile);
+              perror(newfile.c_str());
             }
-            delete [] newfile;
           }
 
           break;
@@ -1482,11 +1466,11 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
             char *directory = ((newmenu) ? command : label);
 
-            char *stylesdir = expandTilde(directory);
+            string stylesdir = expandTilde(directory);
 
             struct stat statbuf;
 
-            if (! stat(stylesdir, &statbuf)) {
+            if (! stat(stylesdir.c_str(), &statbuf)) {
               if (S_ISDIR(statbuf.st_mode)) {
                 Rootmenu *stylesmenu;
 
@@ -1495,7 +1479,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
                 else
                   stylesmenu = menu;
 
-                DIR *d = opendir(stylesdir);
+                DIR *d = opendir(stylesdir.c_str());
                 struct dirent *p;
                 std::vector<string> ls;
 
@@ -1537,15 +1521,14 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
                         i18n(ScreenSet, ScreenSTYLESDIRErrorNotDir,
                              "BScreen::parseMenuFile:"
                              " [stylesdir/stylesmenu] error, %s is not a"
-                             " directory\n"), stylesdir);
+                             " directory\n"), stylesdir.c_str());
               }
             } else {
               fprintf(stderr,
                       i18n(ScreenSet, ScreenSTYLESDIRErrorNoExist,
                            "BScreen::parseMenuFile: [stylesdir/stylesmenu]"
-                           " error, %s does not exist\n"), stylesdir);
+                           " error, %s does not exist\n"), stylesdir.c_str());
             }
-            delete [] stylesdir;
             break;
           }
 

@@ -126,8 +126,7 @@ public:
   void leaveNotifyEvent(XCrossingEvent *ce);
   void exposeEvent(XExposeEvent *ee);
   void reconfigure(void);
-  void setLabel(const char *l);
-  void setLabel(const std::string& l);
+  void setLabel(const std::string& label);
   void move(int x, int y);
   void update(void);
   void setItemSelected(int index, Bool sel);

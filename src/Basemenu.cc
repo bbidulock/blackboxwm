@@ -761,11 +761,6 @@ void Basemenu::setLabel(const string& label) {
 }
 
 
-void Basemenu::setLabel(const char *label) {
-  menu.label = (label != NULL) ? label : "";
-}
-
-
 void Basemenu::setItemSelected(int index, Bool sel) {
   BasemenuItem *item = find(index);
   if (! item) return;

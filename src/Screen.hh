@@ -155,7 +155,7 @@ private:
     unsigned int handle_width, bevel_width, frame_width, border_width;
 
 #ifdef    HAVE_STRFTIME
-    char *strftime_format;
+    std::string strftime_format;
 #else // !HAVE_STRFTIME
     Bool clock24hour;
     int date_format;
@@ -290,8 +290,9 @@ public:
   inline void iconUpdate(void) { iconmenu->update(); }
 
 #ifdef    HAVE_STRFTIME
-  inline char *getStrftimeFormat(void) { return resource.strftime_format; }
-  void saveStrftimeFormat(char *format);
+  inline const char *getStrftimeFormat(void)
+  { return resource.strftime_format.c_str(); }
+  void saveStrftimeFormat(const std::string& format);
 #else // !HAVE_STRFTIME
   inline int getDateFormat(void) { return resource.date_format; }
   inline void saveDateFormat(int f) { resource.date_format = f; }

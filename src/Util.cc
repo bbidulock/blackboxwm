@@ -48,34 +48,24 @@
 #  include <process.h>
 #endif //   HAVE_PROCESS_H             __EMX__
 
-#include <string>
-using std::string;
-
 #include "Util.hh"
 
-char* expandTilde(const char* s) {
-  if (s[0] != '~') return bstrdup(s);
+using std::string;
+
+string expandTilde(const string& s) {
+  if (s[0] != '~') return s;
 
   string ret = getenv("HOME");
-  char* path = strchr(s, '/');
-  ret += path;
-  return bstrdup(ret.c_str()); 
+  ret += s.substr(s.find('/'));
+  return ret; 
 }
 
 
-char* bstrdup(const char *s) {
-  const int l = strlen(s) + 1;
-  char *n = new char[l];
-  strcpy(n, s);
-  return n;
-}
-
-
-void bexec(const char *command, const char* displaystring) {
+void bexec(const string& command, const string& displaystring) {
 #ifndef    __EMX__
   if (! fork()) {
     setsid();
-    putenv(const_cast<char*>(displaystring));
+    putenv(const_cast<char *>(displaystring.c_str()));
     string cmd = "exec ";
     cmd += command;
     execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL);
@@ -88,13 +78,11 @@ void bexec(const char *command, const char* displaystring) {
 
 
 #ifndef   HAVE_BASENAME
-#include <string.h>
-
-char *basename (const char *path) {
-  char *slash = strrchr(path, '/');
-  if (slash == NULL)
+string basename (const string& path) {
+  string::size_type slash = path.rfind('/');
+  if (slash == string::npos)
     return path;
-  return ++slash;
+  return path.substr(slash+1);
 }
 #endif // HAVE_BASENAME
 

@@ -24,16 +24,17 @@
 #ifndef _BLACKBOX_UTIL_HH
 #define _BLACKBOX_UTIL_HH
 
+#include <string>
+
 /* XXX: this needs autoconf help */
 const unsigned int BSENTINEL = 65535;
 
-char* expandTilde(const char *s);
-char* bstrdup(const char *s);
+std::string expandTilde(const std::string& s);
 
-void bexec(const char *command, const char *displaystring);
+void bexec(const std::string& command, const std::string& displaystring);
 
 #ifndef   HAVE_BASENAME
-char* basename(const char *path);
+std::string basename(const std::string& path);
 #endif
 
 struct timeval; // forward declare to avoid the header

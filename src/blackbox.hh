@@ -137,8 +137,9 @@ private:
   Bool no_focus, reconfigure_wait, reread_menu_wait;
   Time last_time;
   Window masked;
-  char *rc_file, **argv;
+  char **argv;
   int argc;
+  std::string rc_file;
 
   Atom xa_wm_colormap_windows, xa_wm_protocols, xa_wm_state,
     xa_wm_delete_window, xa_wm_take_focus, xa_wm_change_state,
@@ -255,8 +256,8 @@ public:
   void setFocusedWindow(BlackboxWindow *w);
   void shutdown(void);
   void load_rc(BScreen *screen);
-  void saveStyleFilename(const char *filename);
-  void saveMenuFilename(const char *filename);
+  void saveStyleFilename(const std::string& filename);
+  void saveMenuFilename(const std::string& filename);
   void restart(const char *prog = 0);
   void reconfigure(void);
   void rereadMenu(void);

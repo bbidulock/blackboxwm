@@ -199,8 +199,6 @@ Blackbox::~Blackbox(void) {
   std::for_each(menuTimestamps.begin(), menuTimestamps.end(),
                 PointerAssassin());
 
-  delete [] rc_file;
-
   delete timer;
 }
 
@@ -1089,10 +1087,10 @@ void Blackbox::save_rc(void) {
     delete [] save_string;
   }
 
-  XrmDatabase old_blackboxrc = XrmGetFileDatabase(rc_file);
+  XrmDatabase old_blackboxrc = XrmGetFileDatabase(rc_file.c_str());
 
   XrmMergeDatabases(new_blackboxrc, &old_blackboxrc);
-  XrmPutFileDatabase(old_blackboxrc, rc_file);
+  XrmPutFileDatabase(old_blackboxrc, rc_file.c_str());
   XrmDestroyDatabase(old_blackboxrc);
 }
 
@@ -1100,18 +1098,17 @@ void Blackbox::save_rc(void) {
 void Blackbox::load_rc(void) {
   XrmDatabase database = (XrmDatabase) 0;
 
-  database = XrmGetFileDatabase(rc_file);
+  database = XrmGetFileDatabase(rc_file.c_str());
 
   XrmValue value;
   char *value_type;
 
   if (XrmGetResource(database, "session.menuFile", "Session.MenuFile",
                      &value_type, &value)) {
-    const char* tmp = expandTilde(value.addr);
-    resource.menu_file = tmp;
-    delete [] tmp;
-  } else
+    resource.menu_file = expandTilde(value.addr);
+  } else {
     resource.menu_file = DEFAULTMENU;
+  }
 
   if (XrmGetResource(database, "session.colorsPerChannel",
                      "Session.ColorsPerChannel", &value_type, &value)) {
@@ -1175,7 +1172,7 @@ void Blackbox::load_rc(void) {
 void Blackbox::load_rc(BScreen *screen) {
   XrmDatabase database = (XrmDatabase) 0;
 
-  database = XrmGetFileDatabase(rc_file);
+  database = XrmGetFileDatabase(rc_file.c_str());
 
   XrmValue value;
   char *value_type, name_lookup[1024], class_lookup[1024];
@@ -1509,10 +1506,10 @@ void Blackbox::real_reconfigure(void) {
 
   delete [] style;
 
-  XrmDatabase old_blackboxrc = XrmGetFileDatabase(rc_file);
+  XrmDatabase old_blackboxrc = XrmGetFileDatabase(rc_file.c_str());
 
   XrmMergeDatabases(new_blackboxrc, &old_blackboxrc);
-  XrmPutFileDatabase(old_blackboxrc, rc_file);
+  XrmPutFileDatabase(old_blackboxrc, rc_file.c_str());
   if (old_blackboxrc) XrmDestroyDatabase(old_blackboxrc);
 
   std::for_each(menuTimestamps.begin(), menuTimestamps.end(),
@@ -1560,23 +1557,24 @@ void Blackbox::real_rereadMenu(void) {
 }
 
 
-void Blackbox::saveStyleFilename(const char *filename) {
-  assert(filename && *filename);
+void Blackbox::saveStyleFilename(const string& filename) {
+  assert(! filename.empty());
   resource.style_file = filename;
 }
 
 
-void Blackbox::saveMenuFilename(const char *filename) {
+void Blackbox::saveMenuFilename(const string& filename) {
+  assert(! filename.empty());
   Bool found = False;
 
   MenuTimestampList::iterator it = menuTimestamps.begin();
   for (; it != menuTimestamps.end() && !found; ++it) {
-    if (! strcmp((*it)->filename.c_str(), filename)) found = True;
+    if ((*it)->filename == filename) found = True;
   }
   if (! found) {
     struct stat buf;
 
-    if (! stat(filename, &buf)) {
+    if (! stat(filename.c_str(), &buf)) {
       MenuTimestamp *ts = new MenuTimestamp;
 
       ts->filename = filename;
