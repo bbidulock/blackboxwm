@@ -207,7 +207,6 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   BTexture* texture = &(resource.wstyle.l_focus);
   geom_pixmap = texture->render(geom_w, geom_h, geom_pixmap);
   if (geom_pixmap == ParentRelative) {
-    fprintf(stderr, "fallback\n");
     texture = &(resource.wstyle.t_focus);
     geom_pixmap = texture->render(geom_w, geom_h, geom_pixmap);
   }
@@ -390,7 +389,6 @@ void BScreen::reconfigure(void) {
   BTexture* texture = &(resource.wstyle.l_focus);
   geom_pixmap = texture->render(geom_w, geom_h, geom_pixmap);
   if (geom_pixmap == ParentRelative) {
-    fprintf(stderr, "fallback\n");
     texture = &(resource.wstyle.t_focus);
     geom_pixmap = texture->render(geom_w, geom_h, geom_pixmap);
   }
