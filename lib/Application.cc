@@ -84,24 +84,8 @@ static int handleXErrors(Display *d, XErrorEvent *e) {
 // generic signal handler - this sets a bit in pending_signals, which
 // will be handled later by the event loop (ie. if signal 2 is caught,
 // bit 2 is set)
-static void signalhandler(int sig) {
-  sig_atomic_t mask = 1 << sig;
-  switch (sig) {
-  case SIGBUS:
-  case SIGFPE:
-  case SIGILL:
-  case SIGSEGV:
-    if (pending_signals & mask) {
-      fprintf(stderr, "%s: Recursive signal %d caught. dumping core...\n",
-              base_app ? base_app->applicationName().c_str() : "unknown", sig);
-      abort();
-    }
-  default:
-    break;
-  }
-
-  pending_signals |= mask;
-}
+static void signalhandler(int sig)
+{ pending_signals |= (1 << sig); }
 
 
 bt::Application::Application(const std::string &app_name, const char *dpy_name,
