@@ -200,10 +200,10 @@ void Basemenu::updateSize()
   BScreen *scr = Blackbox::instance()->screen( screen() );
   BStyle *style = scr->style();
   if (i18n->multibyte()) {
-    itemh = style->menuFontSetExtents()->max_ink_extent.height + 2;
+    maxcolh = itemh = style->menuFontSetExtents()->max_ink_extent.height + 2;
     titleh = style->menuTitleFontSetExtents()->max_ink_extent.height + 2;
   } else {
-    itemh = style->menuFont()->ascent + style->menuFont()->descent + 2;
+    maxcolh = itemh = style->menuFont()->ascent + style->menuFont()->descent + 2;
     titleh = style->menuTitleFont()->ascent + style->menuTitleFont()->descent + 2;
   }
 
