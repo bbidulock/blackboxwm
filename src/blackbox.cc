@@ -410,7 +410,7 @@ bool Blackbox::validateWindow(Window window) {
 BScreen *Blackbox::findScreen(Window window) {
   ScreenList::iterator it = screenList.begin();
   for (; it != screenList.end(); ++it)
-    if ((*it)->getRootWindow() == window)
+    if ((*it)->rootWindow() == window)
       return *it;
   return 0;
 }
@@ -1172,11 +1172,11 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
 
   if (active_screen) {
     active_screen->getToolbar()->redrawWindowLabel(True);
-    _netwm->setActiveWindow(active_screen->getRootWindow(), active);
+    _netwm->setActiveWindow(active_screen->rootWindow(), active);
   }
 
   if (old_screen && old_screen != active_screen) {
     old_screen->getToolbar()->redrawWindowLabel(True);
-    _netwm->setActiveWindow(old_screen->getRootWindow(), active);
+    _netwm->setActiveWindow(old_screen->rootWindow(), active);
   }
 }

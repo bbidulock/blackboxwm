@@ -46,8 +46,7 @@ extern "C" {
 #include <map>
 #include <string>
 
-#include "BaseDisplay.hh"
-#include "Timer.hh"
+#include "Application.hh"
 
 //forward declaration
 class BScreen;

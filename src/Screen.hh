@@ -188,19 +188,15 @@ public:
   Rootmenu *getRootmenu(void) { return rootmenu; }
 
   // pass throughs to ScreenInfo
-  Colormap getColormap(void) const
-  { return screen_info.getColormap();}
-  Window getRootWindow(void) const
-  { return screen_info.getRootWindow(); }
-  int getDepth(void) const { return screen_info.getDepth(); }
-  Visual* getVisual(void) const { return screen_info.getVisual(); }
-  unsigned int getWidth(void) const { return screen_info.getWidth(); }
-  unsigned int getHeight(void) const
-  { return screen_info.getHeight(); }
+  Colormap colormap(void) const { return screen_info.colormap();}
+  Window rootWindow(void) const { return screen_info.rootWindow(); }
+  int depth(void) const { return screen_info.depth(); }
+  Visual* visual(void) const { return screen_info.visual(); }
+  unsigned int width(void) const { return screen_info.width(); }
+  unsigned int height(void) const { return screen_info.height(); }
   const std::string& displayString(void) const
   { return screen_info.displayString(); }
-  unsigned int screenNumber(void) const
-  { return screen_info.getScreenNumber();}
+  unsigned int screenNumber(void) const { return screen_info.screenNumber(); }
 
   bool isSlitOnTop(void) const { return resource.slit_on_top; }
   bool doSlitAutoHide(void) const

@@ -34,7 +34,7 @@ extern "C" {
 
 #include <string>
 
-#include "BaseDisplay.hh"
+#include "Display.hh"
 #include "Screen.hh"
 #include "Timer.hh"
 #include "Util.hh"
