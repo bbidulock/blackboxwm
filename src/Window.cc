@@ -46,6 +46,7 @@ extern "C" {
 #include "Screen.hh"
 #include "Util.hh"
 #include "Window.hh"
+#include "WindowGroup.hh"
 #include "Windowmenu.hh"
 #include "Workspace.hh"
 
@@ -3371,51 +3372,4 @@ void BlackboxWindow::constrain(Corner anchor) {
     frame.changing.setPos(frame.changing.x() + dx, frame.changing.y() + dy);
     break;
   }
-}
-
-
-BWindowGroup::BWindowGroup(Blackbox *b, Window _group)
-  : blackbox(b), group(_group) {
-  XWindowAttributes wattrib;
-  if (! XGetWindowAttributes(blackbox->XDisplay(), group, &wattrib)) {
-    // group window doesn't seem to exist anymore
-    delete this;
-    return;
-  }
-
-  XSelectInput(blackbox->XDisplay(), group,
-               PropertyChangeMask | FocusChangeMask | StructureNotifyMask);
-
-  blackbox->insertWindowGroup(group, this);
-}
-
-
-BWindowGroup::~BWindowGroup(void) {
-  blackbox->removeWindowGroup(group);
-}
-
-
-BlackboxWindow *
-BWindowGroup::find(BScreen *screen, bool allow_transients) const {
-  BlackboxWindow *ret = blackbox->getFocusedWindow();
-
-  // does the focus window match (or any transient_fors)?
-  for (; ret; ret = ret->getTransientFor()) {
-    if (ret->getScreen() == screen && ret->getGroupWindow() == group &&
-        (! ret->isTransient() || allow_transients))
-      break;
-  }
-
-  if (ret) return ret;
-
-  // the focus window didn't match, look in the group's window list
-  BlackboxWindowList::const_iterator it, end = windowList.end();
-  for (it = windowList.begin(); it != end; ++it) {
-    ret = *it;
-    if (ret->getScreen() == screen && ret->getGroupWindow() == group &&
-        (! ret->isTransient() || allow_transients))
-      break;
-  }
-
-  return ret;
 }

@@ -92,6 +92,7 @@ extern "C" {
 #include "Toolbar.hh"
 #include "Util.hh"
 #include "Window.hh"
+#include "WindowGroup.hh"
 #include "Workspace.hh"
 #include "Workspacemenu.hh"
 

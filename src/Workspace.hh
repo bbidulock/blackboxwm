@@ -25,56 +25,22 @@
 #ifndef   __Workspace_hh
 #define   __Workspace_hh
 
+#include "StackingList.hh"
+
 extern "C" {
 #include <X11/Xlib.h>
 }
 
-#include <list>
 #include <string>
 
 class BScreen;
 class Clientmenu;
 class Workspace;
 class BlackboxWindow;
-class Netizen;
 
 namespace bt {
   class Rect;
 }
-
-
-class StackingList {
-public:
-  typedef std::list<BlackboxWindow*> WindowStack;
-  typedef WindowStack::iterator iterator;
-  typedef WindowStack::reverse_iterator reverse_iterator;
-  typedef WindowStack::const_iterator const_iterator;
-  typedef WindowStack::const_reverse_iterator const_reverse_iterator;
-
-  StackingList(void);
-  void insert(BlackboxWindow* w);
-  void append(BlackboxWindow* w);
-  void remove(BlackboxWindow* w);
-  void dump(void) const;
-  iterator& findLayer(const BlackboxWindow* const w);
-
-  bool empty(void) const { return (stack.size() == 5); }
-  WindowStack::size_type size(void) const { return stack.size() - 5; }
-  BlackboxWindow* front(void) const;
-  BlackboxWindow* back(void) const;
-  iterator begin(void) { return stack.begin(); }
-  iterator end(void) { return stack.end(); }
-  reverse_iterator rbegin(void) { return stack.rbegin(); }
-  reverse_iterator rend(void) { return stack.rend(); }
-  const_iterator begin(void) const { return stack.begin(); }
-  const_iterator end(void) const { return stack.end(); }
-  const_reverse_iterator rbegin(void) const { return stack.rbegin(); }
-  const_reverse_iterator rend(void) const { return stack.rend(); }
-
-private:
-  WindowStack stack;
-  iterator fullscreen, above, normal, below, desktop;
-};
 
 
 class Workspace: public bt::NoCopy {

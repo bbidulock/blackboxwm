@@ -56,143 +56,6 @@ extern "C" {
 #include "Windowmenu.hh"
 
 
-void StackingList::dump(void) const {
-#if 0
-  StackingList::const_iterator it = stack.begin(), end = stack.end();
-  BlackboxWindow *w;
-  fprintf(stderr, "Stack:\n");
-  for (; it != end; ++it) {
-    w = *it;
-    if (w)
-      fprintf(stderr, "%s: 0x%lx\n", w->getTitle(), w->getClientWindow());
-    else
-      fprintf(stderr, "zero\n");
-  }
-  fprintf(stderr, "the layers:\n");
-  w = *fullscreen;
-  if (w)
-    fprintf(stderr, "%s: 0x%lx\n", w->getTitle(), w->getClientWindow());
-  else
-    fprintf(stderr, "zero\n");
-  w = *above;
-  if (w)
-    fprintf(stderr, "%s: 0x%lx\n", w->getTitle(), w->getClientWindow());
-  else
-    fprintf(stderr, "zero\n");
-  w = *normal;
-  if (w)
-    fprintf(stderr, "%s: 0x%lx\n", w->getTitle(), w->getClientWindow());
-  else
-    fprintf(stderr, "zero\n");
-  w = *below;
-  if (w)
-    fprintf(stderr, "%s: 0x%lx\n", w->getTitle(), w->getClientWindow());
-  else
-    fprintf(stderr, "zero\n");
-  w = *desktop;
-  if (w)
-    fprintf(stderr, "%s: 0x%lx\n", w->getTitle(), w->getClientWindow());
-  else
-    fprintf(stderr, "zero\n");
-#endif
-}
-
-
-StackingList::StackingList(void) {
-  desktop = stack.insert(stack.begin(), (BlackboxWindow*) 0);
-  below = stack.insert(desktop, (BlackboxWindow*) 0);
-  normal = stack.insert(below, (BlackboxWindow*) 0);
-  above = stack.insert(normal, (BlackboxWindow*) 0);
-  fullscreen = stack.insert(above, (BlackboxWindow*) 0);
-}
-
-
-StackingList::iterator&
-StackingList::findLayer(const BlackboxWindow* const w) {
-  if (w->getLayer() == BlackboxWindow::LAYER_NORMAL)
-    return normal;
-  else if (w->getLayer() == BlackboxWindow::LAYER_ABOVE)
-    return above;
-  else if (w->getLayer() == BlackboxWindow::LAYER_FULLSCREEN)
-    return fullscreen;
-  else if (w->getLayer() == BlackboxWindow::LAYER_BELOW)
-    return below;
-  else if (w->getLayer() == BlackboxWindow::LAYER_DESKTOP)
-    return desktop;
-
-  assert(0);
-  return normal;
-}
-
-
-void StackingList::insert(BlackboxWindow* w) {
-  assert(w);
-
-  StackingList::iterator& it = findLayer(w);
-  it = stack.insert(it, w);
-}
-
-
-void StackingList::append(BlackboxWindow* w) {
-  assert(w);
-
-  StackingList::iterator& it = findLayer(w);
-  if (! *it) { // empty layer
-    it = stack.insert(it, w);
-    return;
-  }
-
-  // find the end of the layer (the zero pointer)
-  const BlackboxWindow * const zero = 0;
-  StackingList::iterator tmp = std::find(it, stack.end(), zero);
-  assert(tmp != stack.end());
-  stack.insert(tmp, w);
-}
-
-
-void StackingList::remove(BlackboxWindow* w) {
-  assert(w);
-
-  iterator& pos = findLayer(w);
-  iterator it = std::find(pos, stack.end(), w);
-  assert(it != stack.end());
-  if (it == pos)
-    ++pos;
-
-  stack.erase(it);
-  assert(stack.size() >= 5);
-}
-
-
-BlackboxWindow* StackingList::front(void) const {
-  assert(stack.size() > 5);
-
-  if (*fullscreen) return *fullscreen;
-  if (*above) return *above;
-  if (*normal) return *normal;
-  if (*below) return *below;
-  // we do not return desktop windows
-  assert(0);
-
-  // this point is never reached, but the compiler doesn't know that.
-  return (BlackboxWindow*) 0;
-}
-
-
-BlackboxWindow* StackingList::back(void) const {
-  assert(stack.size() > 5);
-
-  WindowStack::const_iterator it = desktop, _end = stack.begin();
-  for (--it; it != _end; --it) {
-    if (*it)
-      return *it;
-  }
-  assert(0);
-
-  return (BlackboxWindow*) 0;
-}
-
-
 Workspace::Workspace(BScreen *scrn, unsigned int i) {
   _screen = scrn;
 
@@ -336,8 +199,7 @@ void Workspace::raiseTransients(const BlackboxWindow * const win,
     BlackboxWindow *w = *it;
     if (! w->isIconic() && w->getWorkspaceNumber() == _id) {
       stack.push_back(w->getFrameWindow());
-      stackingList.remove(w);
-      stackingList.insert(w);
+      stackingList.raise(w);
     }
   }
 }
@@ -358,8 +220,7 @@ void Workspace::lowerTransients(const BlackboxWindow * const win,
     BlackboxWindow *w = *it;
     if (! w->isIconic() && w->getWorkspaceNumber() == _id) {
       stack.push_back(w->getFrameWindow());
-      stackingList.remove(w);
-      stackingList.append(w);
+      stackingList.lower(w);
     }
   }
 }
@@ -390,8 +251,7 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
 
   if (win->getWorkspaceNumber() == _id) {
     stack_vector.push_back(win->getFrameWindow());
-    stackingList.remove(win);
-    stackingList.insert(win);
+    stackingList.raise(win);
   }
 
   assert(! stack_vector.empty());
@@ -430,8 +290,7 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
 
   if (! win->isIconic() && win->getWorkspaceNumber() == _id) {
     stack_vector.push_back(win->getFrameWindow());
-    stackingList.remove(win);
-    stackingList.append(win);
+    stackingList.lower(win);
   }
 
   assert(! stack_vector.empty());
@@ -466,8 +325,10 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
 void Workspace::reconfigure(void) {
   clientmenu->reconfigure();
   StackingList::iterator it = stackingList.begin(), end = stackingList.end();
-  for (; it != end; ++it)
-    if (*it) (*it)->reconfigure();
+  for (; it != end; ++it) {
+    BlackboxWindow *win = *it;
+    if (win) win->reconfigure();
+  }
 }
 
 
@@ -476,8 +337,9 @@ BlackboxWindow *Workspace::window(unsigned int index) const {
     StackingList::const_iterator it = stackingList.begin(),
                                 end = stackingList.end();
     for (; it != end; ++it) {
-      if (*it && (*it)->getWindowNumber() == index)
-        return *it;
+      BlackboxWindow *win = *it;
+      if (win && win->getWindowNumber() == index)
+        return win;
     }
   }
 
@@ -492,9 +354,10 @@ Workspace::getNextWindowInList(BlackboxWindow *w) {
                                         w);
   assert(it != stackingList.end());   // window must be in list
   ++it;                               // next window
-  if (it == stackingList.end())
-    return stackingList.front();      // if we walked off the end, wrap around
-
+  if (it == stackingList.end()) {
+    // if we walked off the end, wrap around
+    return stackingList.front();
+  }
   return *it;
 }
 
@@ -504,9 +367,10 @@ BlackboxWindow* Workspace::getPrevWindowInList(BlackboxWindow *w) {
                                         stackingList.end(),
                                         w);
   assert(it != stackingList.end()); // window must be in list
-  if (it == stackingList.begin())
-    return stackingList.back();     // if we walked of the front, wrap around
-
+  if (it == stackingList.begin()) {
+    // if we walked of the front, wrap around
+    return stackingList.back();
+  }
   return *(--it);
 }
 
@@ -537,9 +401,8 @@ void Workspace::hide(void) {
   StackingList::reverse_iterator it = stackingList.rbegin(),
     end = stackingList.rend();
   for (; it != end; ++it) {
-    BlackboxWindow *bw = *it;
-    if (bw)
-      bw->withdraw();
+    BlackboxWindow *win = *it;
+    if (win) win->withdraw();
   }
 }
 
@@ -547,8 +410,10 @@ void Workspace::hide(void) {
 void Workspace::show(void) {
   StackingList::iterator it = stackingList.begin(),
     end = stackingList.end();
-  for (; it != end; ++it)
-    if (*it) (*it)->show();
+  for (; it != end; ++it) {
+    BlackboxWindow *win = *it;
+    if (win) win->show();
+  }
 
   XSync(_screen->getBlackbox()->XDisplay(), False);
 
@@ -904,8 +769,10 @@ void
 Workspace::updateClientListStacking(bt::Netwm::WindowList& clientList) const {
   StackingList::const_iterator it = stackingList.begin(),
     end = stackingList.end();
-  for (; it != end; ++it)
-    if (*it) clientList.push_back((*it)->getClientWindow());
+  for (; it != end; ++it) {
+    BlackboxWindow *win = *it;
+    if (win) clientList.push_back(win->getClientWindow());
+  }
 }
 
 

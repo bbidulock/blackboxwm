@@ -36,8 +36,10 @@ blackbox_SOURCES	= BlackboxResource.cc                           \
 			  Rootmenu.cc					\
 			  Screen.cc					\
 			  Slit.cc					\
+			  StackingList.cc				\
 			  Toolbar.cc					\
 			  Window.cc					\
+			  WindowGroup.cc				\
 			  Windowmenu.cc					\
 			  Workspace.cc					\
 			  Workspacemenu.cc				\

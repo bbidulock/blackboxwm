@@ -37,6 +37,7 @@ extern "C" {
 
 #include "Display.hh"
 #include "Screen.hh"
+#include "StackingList.hh"
 #include "Timer.hh"
 #include "Util.hh"
 #include "Windowmenu.hh"
@@ -66,32 +67,6 @@ typedef struct MwmHints {
 } MwmHints;
 
 #define PropMwmHintsElements  3
-
-
-class BWindowGroup {
-private:
-  Blackbox *blackbox;
-  Window group;
-  BlackboxWindowList windowList;
-
-public:
-  BWindowGroup(Blackbox *b, Window _group);
-  ~BWindowGroup(void);
-
-  inline Window groupWindow(void) const { return group; }
-
-  inline bool empty(void) const { return windowList.empty(); }
-
-  void addWindow(BlackboxWindow *w) { windowList.push_back(w); }
-  void removeWindow(BlackboxWindow *w) { windowList.remove(w); }
-
-  /*
-    find a window on the specified screen. the focused window (if any) is
-    checked first, otherwise the first matching window found is returned.
-    transients are returned only if allow_transients is True.
-  */
-  BlackboxWindow *find(BScreen *screen, bool allow_transients = False) const;
-};
 
 
 class BlackboxWindow : public bt::TimeoutHandler, public bt::EventHandler,
@@ -140,14 +115,6 @@ public:
     WindowTypeSplash,
     WindowTypeToolbar,
     WindowTypeUtility
-  };
-
-  enum WMLayer {
-    LAYER_NORMAL,
-    LAYER_FULLSCREEN,
-    LAYER_ABOVE,
-    LAYER_BELOW,
-    LAYER_DESKTOP
   };
 
 private:
