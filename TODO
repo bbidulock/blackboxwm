@@ -13,10 +13,15 @@ temporarily fixed, blackbox needs real focus handling fixes for this to really
 
 CVS warts:
 -----------------------------
-* Basemenu.cc has the string "Blackbox menu embedded in it as the default name.
+* Basemenu.cc has the string "Blackbox menu" embedded in it as the default name.
   This needs to be removed.
 
 * Send to menu should not list the current workspace
+
+* strut does not handle hidden toolbar or slit properly
+
+* look into centering the window when maximizing and the window can not grow
+  to fill the area
 
 Stuff TODO or On The Way(tm):
 -----------------------------
