@@ -2,7 +2,6 @@
 
 Before 0.65.0 full release:
 -----------------------------
-* verify each rcfile variable is intialized to a default value before use
 * double check man pages
 
 CVS Bugs:
