@@ -63,6 +63,7 @@ void Application::clientMessageEvent(XClientMessageEvent *xclient) {
     e.xclient.data.l[1] = topLevelWindow;
     e.xclient.data.l[2] = __blackbox_accept;
 
+    XChangeSaveSet(display, topLevelWindow, SetModeDelete);
     XSendEvent(display, topLevelWindow, False, NoEventMask, &e);
     delete this;
   }

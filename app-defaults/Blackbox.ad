@@ -31,6 +31,9 @@ workspaceManager.clock.color:           darkslategrey
 workspaceManager.clock.colorTo:         slategrey
 workspaceManager.textColor:             lightgrey
 
+! 24 hour clock?
+workspaceManager.24hourClock:		False
+
 ! window textures
 associatedWindow.decorations:           Raised Vertical   Gradient Bevel1
 associatedWindow.button:                Raised Vertical   Gradient Bevel1
@@ -62,15 +65,7 @@ baseMenu.title.textColor:               white
 baseMenu.frame.textColor:               lightgrey
 baseMenu.frame.hiTextColor:             white
 
-! icon texture
-clientIcon.texture:                     Raised Diagonal   Gradient Bevel1
-
-! icon colors
-clientIcon.color:                       slategrey
-clientIcon.colorTo:                     darkslategrey
-clientIcon.textColor:                   lightgrey
-
-! window border colors
+! border color around client windows and menus
 session.borderColor:                    darkslategrey
 
 ! decoration size controls

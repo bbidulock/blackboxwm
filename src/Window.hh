@@ -80,8 +80,8 @@ private:
     Window window, window_group;
     
     char *title;
-    int x, y;
-    unsigned int width, height,
+    int x, y, title_len;
+    unsigned int width, height, title_text_w,
       base_w, base_h,
       inc_w, inc_h,
       min_w, min_h, max_w, max_h,

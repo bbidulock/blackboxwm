@@ -29,7 +29,7 @@
 #include "blackbox.hh"
 #include "Rootmenu.hh"
 #include "Workspace.hh"
-#include "icon.hh"
+#include "Icon.hh"
 #include "Application.hh"
 
 #include <stdio.h>
@@ -51,7 +51,6 @@ WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
   XSetWindowAttributes attrib_create;
   unsigned long create_mask = CWBackPixmap|CWBackPixel|CWBorderPixel|
     CWOverrideRedirect |CWCursor|CWEventMask; 
-  
   attrib_create.background_pixmap = None;
   attrib_create.background_pixel = attrib_create.border_pixel =
     blackbox->borderColor().pixel;
@@ -84,8 +83,8 @@ WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
 		  frame.height, 0, blackbox->Depth(), InputOutput,
 		  blackbox->visual(), create_mask, &attrib_create);
 
-  attrib_create.event_mask = StructureNotifyMask|SubstructureNotifyMask|
-    ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|ExposureMask;
+  attrib_create.event_mask = ButtonPressMask | ButtonReleaseMask |
+    ButtonMotionMask | ExposureMask;
 
   frame.window =
     XCreateWindow(display, frame.base, 0, 0, frame.width, frame.height, 0,

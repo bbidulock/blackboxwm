@@ -1221,7 +1221,8 @@ void Blackbox::LoadDefaults(void) {
 			 &resource.win.unfocusColor.g,
 			 &resource.win.unfocusColor.b);
 
-  if (resource.win.decorTexture & BImageGradient) {
+  if ((resource.win.decorTexture & BImageGradient) ||
+      (resource.win.buttonTexture & BImageGradient)) {
     if (! blackbox->readDatabaseColor("associatedWindow.focusToColor",
 				      "AssociatedWindow.FocusToColor",
 				      &resource.win.focusColorTo))
