@@ -591,9 +591,13 @@ void BScreen::unmanageWindow(BlackboxWindow *win) {
   if (blackbox->getFocusedWindow() == win)
     blackbox->setFocusedWindow((BlackboxWindow *) 0);
 
-  Workspace *workspace = getWorkspace(win->workspace());
-  if (workspace)
-    workspace->menu()->removeItem(win->windowNumber());
+  if (win->isIconic()) {
+    _iconmenu->removeItem(win->windowNumber());
+  } else {
+    Workspace *workspace = getWorkspace(win->workspace());
+    if (workspace)
+      workspace->menu()->removeItem(win->windowNumber());
+  }
 
   windowList.remove(win);
   stackingList.remove(win);
