@@ -6,21 +6,18 @@ AM_INIT_AUTOMAKE([blackbox], [0.70.0broken])
 AC_CONFIG_SRCDIR([src/blackbox.cc])
 
 dnl Determine default prefix
-test x$prefix = "xNONE" && prefix="$ac_default_prefix"
-
-dnl Check for various flavors of UNIX(r)
-dnl AC_AIX
-dnl AC_ISC_POSIX
+test "x$prefix" = "xNONE" && prefix="$ac_default_prefix"
 
 dnl Locate required external software
 AC_PROG_CXX
+AC_LANG([C++])
 
-if test x$GXX = "xyes"; then
+if test "x$GXX" = "xyes"; then
    CXXFLAGS="${CXXFLAGS} -Wall -W -pedantic"
    gxx_ver=`$CXX -dumpversion|sed -e 's/\..*//'`
    AC_MSG_CHECKING([for GNU C++ version])
    AC_MSG_RESULT([$gxx_ver.])
-   if test $gxx_ver -ge 3; then
+   if test "$gxx_ver" -ge 3; then
      CXXFLAGS="${CXXFLAGS} -Woverloaded-virtual -Wshadow -Winline"
    fi
 else
@@ -42,13 +39,13 @@ fi
 AC_PROG_RANLIB
 AC_PROG_INSTALL
 
-AC_CHECK_PROGS([regex_cmd],[sed])
-if test x$regex_cmd = "x"; then
+AC_CHECK_PROGS([regex_cmd], [sed])
+if test "x$regex_cmd" = "x"; then
   AC_MSG_ERROR([error. sed is required to build the default menu file.])
 fi
 
 AC_CHECK_PROGS([gencat_cmd], [gencat])
-if test x$gencat_cmd = "x"; then
+if test "x$gencat_cmd" = "x"; then
   NLS=
 fi
 
@@ -84,133 +81,124 @@ AC_CHECK_LIB([socket],
 dnl Check for X headers and libraries
 AC_PATH_X
 
-test x$no_x = "xyes" && AC_MSG_ERROR([Blackbox requires the X Window System libraries and headers.])
+if test "x$no_x" = "xyes"; then
+  AC_MSG_ERROR([Blackbox requires the X Window System libraries and headers.])
+fi
 
-test x$x_includes = "x" && x_includes="/usr/include"
-test x$x_libraries = "x" && x_libraries="/usr/lib"
-
-CFLAGS="$CFLAGS -I$x_includes"
-CXXFLAGS="$CXXFLAGS -I$x_includes"
-LIBS="$LIBS -L$x_libraries"
-LDFLAGS="$LDFLAGS $LIBS"
+if test "x$x_includes" != "x"; then
+  CPPFLAGS="$CPPFLAGS -I$x_includes"
+  CXXFLAGS="$CXXFLAGS -I$x_includes"
+fi
+if test "x$x_libraries" != "x"; then
+  LIBS="$LIBS -L$x_libraries"
+fi
 
 dnl Check for required functions in -lX11
-AC_CHECK_LIB([X11],
-             [XOpenDisplay],
-             [LIBS="$LIBS -lX11"],
-             [AC_MSG_ERROR([Could not find XOpenDisplay in -lX11])])
+XLIB=
+AC_CHECK_LIB([X11], [XOpenDisplay], [XLIB=yes], [XLIB=no])
+test "x$XLIB" = "xno" && AC_MSG_ERROR([standard X11 libraries not found])
 
-Xext_lib=
+AC_CHECK_HEADERS([X11/Xlib.h], [XLIB=yes], [XLIB=no])
+test "x$XLIB" = "xno" && AC_MSG_ERROR([standard X11 headers not found])
+
+AC_CHECK_HEADERS([X11/Xatom.h X11/Xlocale.h X11/Xresource.h X11/Xutil.h X11/keysym.h], [XLIB=yes], [XLIB=no],
+[
+#include <X11/Xlib.h>
+])
+test "x$XLIB" = "xno" && AC_MSG_ERROR([standard X11 headers not found])
 
 dnl Check for XShape extension support and proper library files.
-SHAPE=
 AC_MSG_CHECKING([whether to build support for the XShape extension])
 AC_ARG_ENABLE([shape],
               AC_HELP_STRING([--enable-shape],
-	                     [enable support of the XShape extension @<:@default=yes@:>@]))
+	                     [enable support of the XShape extension @<:@default=yes@:>@]),
+	      [SHAPE="$enableval"]
+	      [SHAPE=yes])
+AC_MSG_RESULT([$SHAPE])
 
-: ${enableval="yes"}
-if test x$enableval = "xyes"; then
-  AC_MSG_RESULT([yes])
-  AC_CHECK_LIB([Xext],
-               [XShapeCombineShape],
-               [AC_MSG_CHECKING([for X11/extensions/shape.h])
-                AC_TRY_LINK(
+if test "x$SHAPE" = "xyes"; then
+  AC_CHECK_LIB([Xext], [XShapeCombineShape], [SHAPE=yes], [SHAPE=no])
+  
+  if test "x$SHAPE" = "xyes"; then
+    save_LIBS="$LIBS"
+      
+    LIBS="$LIBS -lXext"
+    AC_CHECK_HEADERS([X11/extensions/shape.h], [SHAPE=yes], [SHAPE=no],
 [
 #include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/extensions/shape.h>
-],
-[
- long foo = ShapeSet
-],
-[
-                AC_MSG_RESULT([yes])
-                SHAPE="-DSHAPE"; Xext_lib="-lXext"
-],
-[AC_MSG_RESULT([no])]
-                           )
-               ])
-else
-  AC_MSG_RESULT([no])
+])
+      
+    if test "x$SHAPE" = "xyes"; then
+      SHAPE="-DSHAPE"
+    else
+      SHAPE=
+      LIBS="$save_LIBS"
+    fi
+  fi
 fi
 AC_SUBST([SHAPE])
 
-LIBS="$LIBS $Xext_lib"
-
 dnl Check for MIT-SHM extension support and proper library files.
-MITSHM=
 AC_MSG_CHECKING([whether to build support for the MIT-SHM extension])
 AC_ARG_ENABLE([mitshm],
               AC_HELP_STRING([--enable-mitshm],
-	                     [enable support of the MIT-SHM extension @<:@default=yes@:>@]))
+	                     [enable support of the MIT-SHM extension @<:@default=yes@:>@]),
+	      [MITSHM="$enableval"]
+	      [MITSHM=no])
+AC_MSG_RESULT([$MITSHM])
 
-: ${enableval="yes"}
-if test x$enableval = "xyes"; then
-  AC_MSG_RESULT([yes])
-  AC_CHECK_LIB([Xext],
-               [XShmPutImage],
-               [AC_MSG_CHECKING([for X11/extensions/XShm.h])
-                AC_TRY_LINK(
+if test "x$MITSHM" = "xyes"; then
+  AC_CHECK_LIB([Xext], [XShmPutImage], [MITSHM=yes], [MITSHM=no])
+
+  if test "x$MITSHM" = "xyes"; then
+    save_LIBS="$LIBS"
+
+    LIBS="$LIBS -lXext"
+    AC_CHECK_HEADERS([X11/extensions/XShm.h], [MITSHM=yes], [MITSHM=no],
 [
 #include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <X11/extensions/XShm.h>
-],
-[
- long foo = ShmCompletion
-],
-[
-                AC_MSG_RESULT([yes])
-                MITSHM="-DMITSHM"; Xext_lib="-lXext"
-],
-[AC_MSG_RESULT([no])]
-                           )
-               ])
-else
-  AC_MSG_RESULT([no])
+])
+
+    if test "x$MITSHM" = "xyes"; then
+      MITSHM="-DMITSHM"
+    else
+      MITSHM=
+      LIBS="$save_LIBS"
+    fi
+  fi
 fi
 AC_SUBST([MITSHM])
 
-LIBS=`echo "$LIBS $Xext_lib" | sed -e 's/-lXext -lXext/-lXext/'`
-
 dnl Check whether to include debugging code
-DEBUG=
 AC_MSG_CHECKING([whether to include verbose debugging code])
 AC_ARG_ENABLE([debug],
               AC_HELP_STRING([--enable-debug],
 	                     [include verbose debugging code @<:@default=no@:>@]),
-[
-  if test x$enableval = "xyes"; then
-    AC_MSG_RESULT([yes])
+	      [DEBUG="$enableval"],
+	      [DEBUG=no])
+AC_MSG_RESULT([$DEBUG])
+
+if test "x$DEBUG" = "xyes"; then
     DEBUG="-DDEBUG -fno-inline -g"
-  else
-    AC_MSG_RESULT([no])
-  fi
-],
-              [AC_MSG_RESULT([no])])
+else
+    DEBUG=
+fi
 AC_SUBST(DEBUG)
 
 dnl Check whether to include natural language support (i18n)
-NLS=
 AC_MSG_CHECKING([whether to include NLS support])
 AC_ARG_ENABLE([nls],
               AC_HELP_STRING([--enable-nls],
 	                     [include natural language support @<:@default=yes@:>@]),
-              [
-  if test x$enableval = "xyes"; then
-    AC_MSG_RESULT([yes])
-    NLS="-DNLS"
-  else
-    AC_MSG_RESULT([no])
-  fi          ],
-              [
-  AC_MSG_RESULT([yes])
+              [NLS="$enableval"],
+	      [NLS=yes])
+AC_MSG_RESULT([$NLS])
+
+if test "x$NLS" = "xyes"; then
   NLS="-DNLS"
-              ])
+else
+  NLS=
+fi
 AC_SUBST(NLS)
 
 dnl Determine if maintainer portions of the Makefiles should be included.
