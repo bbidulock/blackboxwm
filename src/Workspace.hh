@@ -135,7 +135,7 @@ public:
 
   void show(void);
   void hide(void);
-  void removeAll(void);
+  void transferWindows(Workspace& wkspc);
   void raiseWindow(BlackboxWindow *w);
   void lowerWindow(BlackboxWindow *w);
   void reconfigure(void);

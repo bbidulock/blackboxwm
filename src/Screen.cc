@@ -895,16 +895,16 @@ unsigned int BScreen::removeLastWorkspace(void) {
     return 1;
 
   Workspace *wkspc = workspacesList.back();
+  workspacesList.pop_back();
 
   if (current_workspace->getID() == wkspc->getID())
     changeWorkspaceID(current_workspace->getID() - 1);
 
-  wkspc->removeAll();
+  wkspc->transferWindows(*(workspacesList.back()));
 
   workspacemenu->remove(wkspc->getID() + 2);
   workspacemenu->update();
 
-  workspacesList.pop_back();
   delete wkspc;
 
   toolbar->reconfigure();

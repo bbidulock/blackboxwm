@@ -297,9 +297,11 @@ void Workspace::focusFallback(const BlackboxWindow *old_window) {
 }
 
 
-void Workspace::removeAll(void) {
-  while (! windowList.empty())
-    windowList.front()->iconify();
+void Workspace::transferWindows(Workspace& wkspc) {
+  while (! windowList.empty()) {
+    wkspc.addWindow(windowList.back());
+    windowList.pop_back();
+  }
 }
 
 
