@@ -231,8 +231,6 @@ private:
 
   typedef std::list<bt::Netwm::Strut*> StrutList;
   StrutList strutList;
-  typedef std::vector<std::string> WorkspaceNamesList;
-  WorkspaceNamesList workspaceNames;
   typedef std::vector<Workspace*> WorkspaceList;
   WorkspaceList workspacesList;
 
@@ -310,7 +308,6 @@ public:
 
   unsigned int addWorkspace(void);
   unsigned int removeLastWorkspace(void);
-  void addWorkspaceName(const std::string& name);
   void setWorkspaceName(unsigned int workspace, const std::string& name);
   const std::string getNameOfWorkspace(unsigned int id);
   void changeWorkspaceID(unsigned int id);

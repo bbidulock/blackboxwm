@@ -779,9 +779,6 @@ void Blackbox::load_rc(BScreen *screen) {
   ScreenResource& screen_resource = screen->resource();
   screen_resource.loadRCFile(screen->screenNumber(), rc_file);
 
-  for (unsigned int i = 0; i < screen_resource.numberOfWorkspaces(); ++i)
-    screen->addWorkspaceName(screen_resource.workspaceName(i));
-
   bt::Image::setDitherMode(screen_resource.ditherMode());
 }
 

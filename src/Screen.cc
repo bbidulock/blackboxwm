@@ -224,8 +224,6 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   current_workspace_id = current_workspace->getID();
   workspacemenu->setItemChecked(current_workspace->getID(), true);
 
-  workspaceNames.clear();
-
   toolbar = new Toolbar(this);
 
   slit = new Slit(this);
@@ -1147,11 +1145,6 @@ BScreen::raiseWindows(const bt::Netwm::WindowList* const workspace_stack) {
 }
 
 
-void BScreen::addWorkspaceName(const std::string& name) {
-  workspaceNames.push_back(name);
-}
-
-
 /*
  * I would love to kill this function and the accompanying workspaceNames
  * list.  However, we have a chicken and egg situation.  The names are read
@@ -1161,8 +1154,8 @@ void BScreen::addWorkspaceName(const std::string& name) {
  * BScreen creation.
  */
 const std::string BScreen::getNameOfWorkspace(unsigned int id) {
-  if (id < workspaceNames.size())
-    return workspaceNames[id];
+  if (id < _resource.numberOfWorkspaces())
+    return _resource.workspaceName(id);
   return std::string("");
 }
 
