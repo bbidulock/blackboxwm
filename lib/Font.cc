@@ -29,6 +29,7 @@ extern "C" {
 #include <assert.h>
 #include <ctype.h>
 #include <locale.h>
+#include <stdio.h>
 }
 
 #include "BaseDisplay.hh"

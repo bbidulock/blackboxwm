@@ -33,8 +33,6 @@
 
 #include "Resource.hh"
 
-using namespace bt;
-
 
 std::string normalize(const std::string& input) {
   std::string output;
@@ -85,11 +83,11 @@ struct Style {
   std::string border_color, border_width, handle_width, bevel_width,
     frame_width, rootCommand;
 
-  void read(const Resource& res);
+  void read(const bt::Resource& res);
 };
 
 
-void Style::read(const Resource& res) {
+void Style::read(const bt::Resource& res) {
   // load window config
   window.font =
     res.read("window.font", "Window.Font", "fixed");
@@ -583,7 +581,7 @@ void convert(const Style& style, const char* const filename) {
 
 int main(int argc, char* argv[]) {
   for (int i = 1; i < argc; ++i) {
-    Resource resource(argv[i]);
+    bt::Resource resource(argv[i]);
     if (resource.valid()) {
       std::cout << "Processing: " << argv[i] << '\n';
       Style style;
