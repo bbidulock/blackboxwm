@@ -198,7 +198,7 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
 
   if (! screenList->count()) {
     fprintf(stderr,
-	    i18n(blackboxSet, blackboxNoManagableScreens,
+            i18n(blackboxSet, blackboxNoManagableScreens,
               "Blackbox::Blackbox: no managable screens found, aborting.\n"));
     ::exit(3);
   }
@@ -271,7 +271,7 @@ void Blackbox::process_event(XEvent *e) {
       win->buttonPressEvent(&e->xbutton);
 
       if (e->xbutton.button == 1)
-	win->installColormap(True);
+        win->installColormap(True);
     } else if ((menu = searchMenu(e->xbutton.window))) {
       menu->buttonPressEvent(&e->xbutton);
 
@@ -286,70 +286,70 @@ void Blackbox::process_event(XEvent *e) {
       LinkedListIterator<BScreen> it(screenList);
       BScreen *screen = it.current();
       for (; screen; it++, screen = it.current()) {
-	if (e->xbutton.window == screen->getRootWindow()) {
-	  if (e->xbutton.button == 1) {
+        if (e->xbutton.window == screen->getRootWindow()) {
+          if (e->xbutton.button == 1) {
             if (! screen->isRootColormapInstalled())
-	      screen->getImageControl()->installRootColormap();
+              screen->getImageControl()->installRootColormap();
 
-	    if (screen->getWorkspacemenu()->isVisible())
-	      screen->getWorkspacemenu()->hide();
+            if (screen->getWorkspacemenu()->isVisible())
+              screen->getWorkspacemenu()->hide();
 
             if (screen->getRootmenu()->isVisible())
               screen->getRootmenu()->hide();
           } else if (e->xbutton.button == 2) {
-	    int mx = e->xbutton.x_root -
-	      (screen->getWorkspacemenu()->getWidth() / 2);
-	    int my = e->xbutton.y_root -
-	      (screen->getWorkspacemenu()->getTitleHeight() / 2);
+            int mx = e->xbutton.x_root -
+              (screen->getWorkspacemenu()->getWidth() / 2);
+            int my = e->xbutton.y_root -
+              (screen->getWorkspacemenu()->getTitleHeight() / 2);
 
-	    if (mx < 0) mx = 0;
-	    if (my < 0) my = 0;
+            if (mx < 0) mx = 0;
+            if (my < 0) my = 0;
 
-	    if (mx + screen->getWorkspacemenu()->getWidth() >
-		screen->getWidth())
-	      mx = screen->getWidth() -
-		screen->getWorkspacemenu()->getWidth() -
-		screen->getBorderWidth();
+            if (mx + screen->getWorkspacemenu()->getWidth() >
+                screen->getWidth())
+              mx = screen->getWidth() -
+                screen->getWorkspacemenu()->getWidth() -
+                screen->getBorderWidth();
 
-	    if (my + screen->getWorkspacemenu()->getHeight() >
-		screen->getHeight())
-	      my = screen->getHeight() -
-		screen->getWorkspacemenu()->getHeight() -
-		screen->getBorderWidth();
+            if (my + screen->getWorkspacemenu()->getHeight() >
+                screen->getHeight())
+              my = screen->getHeight() -
+                screen->getWorkspacemenu()->getHeight() -
+                screen->getBorderWidth();
 
-	    screen->getWorkspacemenu()->move(mx, my);
+            screen->getWorkspacemenu()->move(mx, my);
 
-	    if (! screen->getWorkspacemenu()->isVisible()) {
-	      screen->getWorkspacemenu()->removeParent();
-	      screen->getWorkspacemenu()->show();
-	    }
-	  } else if (e->xbutton.button == 3) {
-	    int mx = e->xbutton.x_root -
-	      (screen->getRootmenu()->getWidth() / 2);
-	    int my = e->xbutton.y_root -
-	      (screen->getRootmenu()->getTitleHeight() / 2);
+            if (! screen->getWorkspacemenu()->isVisible()) {
+              screen->getWorkspacemenu()->removeParent();
+              screen->getWorkspacemenu()->show();
+            }
+          } else if (e->xbutton.button == 3) {
+            int mx = e->xbutton.x_root -
+              (screen->getRootmenu()->getWidth() / 2);
+            int my = e->xbutton.y_root -
+              (screen->getRootmenu()->getTitleHeight() / 2);
 
-	    if (mx < 0) mx = 0;
-	    if (my < 0) my = 0;
+            if (mx < 0) mx = 0;
+            if (my < 0) my = 0;
 
-	    if (mx + screen->getRootmenu()->getWidth() > screen->getWidth())
-	      mx = screen->getWidth() -
-		screen->getRootmenu()->getWidth() -
-		screen->getBorderWidth();
+            if (mx + screen->getRootmenu()->getWidth() > screen->getWidth())
+              mx = screen->getWidth() -
+                screen->getRootmenu()->getWidth() -
+                screen->getBorderWidth();
 
-	    if (my + screen->getRootmenu()->getHeight() > screen->getHeight())
+            if (my + screen->getRootmenu()->getHeight() > screen->getHeight())
               my = screen->getHeight() -
                 screen->getRootmenu()->getHeight() -
                 screen->getBorderWidth();
 
-	    screen->getRootmenu()->move(mx, my);
+            screen->getRootmenu()->move(mx, my);
 
-	    if (! screen->getRootmenu()->isVisible()) {
-	      checkMenu();
-	      screen->getRootmenu()->show();
-	    }
-	  }
-	}
+            if (! screen->getRootmenu()->isVisible()) {
+              checkMenu();
+              screen->getRootmenu()->show();
+            }
+          }
+        }
       }
     }
 
@@ -381,7 +381,7 @@ void Blackbox::process_event(XEvent *e) {
     XEvent realevent;
     unsigned int i = 0;
     while(XCheckTypedWindowEvent(getXDisplay(), e->xconfigurerequest.window,
-				 ConfigureRequest, &realevent)) {
+                                 ConfigureRequest, &realevent)) {
       i++;
     }
     if ( i > 0 )
@@ -403,18 +403,18 @@ void Blackbox::process_event(XEvent *e) {
 
     } else {
       if (validateWindow(e->xconfigurerequest.window)) {
-	XWindowChanges xwc;
+        XWindowChanges xwc;
 
-	xwc.x = e->xconfigurerequest.x;
-	xwc.y = e->xconfigurerequest.y;
-	xwc.width = e->xconfigurerequest.width;
-	xwc.height = e->xconfigurerequest.height;
-	xwc.border_width = e->xconfigurerequest.border_width;
-	xwc.sibling = e->xconfigurerequest.above;
-	xwc.stack_mode = e->xconfigurerequest.detail;
+        xwc.x = e->xconfigurerequest.x;
+        xwc.y = e->xconfigurerequest.y;
+        xwc.width = e->xconfigurerequest.width;
+        xwc.height = e->xconfigurerequest.height;
+        xwc.border_width = e->xconfigurerequest.border_width;
+        xwc.sibling = e->xconfigurerequest.above;
+        xwc.stack_mode = e->xconfigurerequest.detail;
 
-	XConfigureWindow(getXDisplay(), e->xconfigurerequest.window,
-			 e->xconfigurerequest.value_mask, &xwc);
+        XConfigureWindow(getXDisplay(), e->xconfigurerequest.window,
+                         e->xconfigurerequest.value_mask, &xwc);
       }
     }
 
@@ -424,9 +424,9 @@ void Blackbox::process_event(XEvent *e) {
   case MapRequest: {
 #ifdef    DEBUG
     fprintf(stderr,
-	    i18n(blackboxSet, blackboxMapRequest,
-		 "Blackbox::process_event(): MapRequest for 0x%lx\n"),
-	    e->xmaprequest.window);
+            i18n(blackboxSet, blackboxMapRequest,
+                 "Blackbox::process_event(): MapRequest for 0x%lx\n"),
+            e->xmaprequest.window);
 #endif // DEBUG
 
     BlackboxWindow *win = searchWindow(e->xmaprequest.window);
@@ -459,7 +459,7 @@ void Blackbox::process_event(XEvent *e) {
     if ((win = searchWindow(e->xunmap.window))) {
       win->unmapNotifyEvent(&e->xunmap);
       if (focused_window == win)
-	focused_window = (BlackboxWindow *) 0;
+        focused_window = (BlackboxWindow *) 0;
 #ifdef    SLIT
     } else if ((slit = searchSlit(e->xunmap.window))) {
       slit->removeClient(e->xunmap.window);
@@ -480,7 +480,7 @@ void Blackbox::process_event(XEvent *e) {
     if ((win = searchWindow(e->xdestroywindow.window))) {
       win->destroyNotifyEvent(&e->xdestroywindow);
       if (focused_window == win)
-	focused_window = (BlackboxWindow *) 0;
+        focused_window = (BlackboxWindow *) 0;
 #ifdef    SLIT
     } else if ((slit = searchSlit(e->xdestroywindow.window))) {
       slit->removeClient(e->xdestroywindow.window, False);
@@ -501,7 +501,7 @@ void Blackbox::process_event(XEvent *e) {
     } else {
       Slit *slit = searchSlit(e->xreparent.window);
       if (slit)
-	slit->removeClient(e->xreparent.window, True);
+        slit->removeClient(e->xreparent.window, True);
     }
     break;
   }
@@ -511,7 +511,7 @@ void Blackbox::process_event(XEvent *e) {
     XEvent realevent;
     unsigned int i = 0;
     while (XCheckTypedWindowEvent(getXDisplay(), e->xmotion.window,
-				  MotionNotify, &realevent)) {
+                                  MotionNotify, &realevent)) {
       i++;
     }
 
@@ -542,7 +542,7 @@ void Blackbox::process_event(XEvent *e) {
       BlackboxWindow *win = searchWindow(e->xproperty.window);
 
       if (win)
-	win->propertyNotifyEvent(e->xproperty.atom);
+        win->propertyNotifyEvent(e->xproperty.atom);
     }
 
     break;
@@ -569,14 +569,14 @@ void Blackbox::process_event(XEvent *e) {
     XCheckIfEvent(getXDisplay(), &dummy, queueScanner, (char *) &sa);
 
     if ((e->xcrossing.window == e->xcrossing.root) &&
-	(screen = searchScreen(e->xcrossing.window))) {
+        (screen = searchScreen(e->xcrossing.window))) {
       screen->getImageControl()->installRootColormap();
     } else if ((win = searchWindow(e->xcrossing.window))) {
       if (win->getScreen()->isSloppyFocus() &&
-	  (! win->isFocused()) && (! no_focus)) {
+          (! win->isFocused()) && (! no_focus)) {
         if (((! sa.leave) || sa.inferior) && win->isVisible() &&
             win->setInputFocus())
-	  win->installColormap(True);
+          win->installColormap(True);
       }
     } else if ((menu = searchMenu(e->xcrossing.window))) {
       menu->enterNotifyEvent(&e->xcrossing);
@@ -625,16 +625,16 @@ void Blackbox::process_event(XEvent *e) {
     ex2 = ex1 + e->xexpose.width - 1;
     ey2 = ey1 + e->xexpose.height - 1;
     while (XCheckTypedWindowEvent(getXDisplay(), e->xexpose.window,
-				  Expose, &realevent)) {
+                                  Expose, &realevent)) {
       i++;
           
       // merge expose area
       ex1 = std::min(realevent.xexpose.x, ex1);
       ey1 = std::min(realevent.xexpose.y, ey1);
       ex2 = std::max(realevent.xexpose.x + realevent.xexpose.width - 1,
-		     ex2);
+                     ex2);
       ey2 = std::max(realevent.xexpose.y + realevent.xexpose.height - 1,
-		     ey2);
+                     ey2);
     }      
     if ( i > 0 )
       e = &realevent;
@@ -673,7 +673,7 @@ void Blackbox::process_event(XEvent *e) {
 
     if (screen)
       screen->setRootColormapInstalled((e->xcolormap.state ==
-					ColormapInstalled) ? True : False);
+                                        ColormapInstalled) ? True : False);
 
     break;
   }
@@ -699,19 +699,19 @@ void Blackbox::process_event(XEvent *e) {
         if (! win || ! win->validateClient()) return;
 
         if (e->xclient.data.l[0] == IconicState)
-	  win->iconify();
+          win->iconify();
         if (e->xclient.data.l[0] == NormalState)
           win->deiconify();
       } else if(e->xclient.message_type == getBlackboxChangeWorkspaceAtom()) {
-	BScreen *screen = searchScreen(e->xclient.window);
+        BScreen *screen = searchScreen(e->xclient.window);
 
-	if (screen && e->xclient.data.l[0] >= 0 &&
-	    e->xclient.data.l[0] < screen->getCount())
-	  screen->changeWorkspaceID(e->xclient.data.l[0]);
+        if (screen && e->xclient.data.l[0] >= 0 &&
+            e->xclient.data.l[0] < screen->getCount())
+          screen->changeWorkspaceID(e->xclient.data.l[0]);
       } else if (e->xclient.message_type == getBlackboxChangeWindowFocusAtom()) {
-	BlackboxWindow *win = searchWindow(e->xclient.window);
+        BlackboxWindow *win = searchWindow(e->xclient.window);
 
-	if (win && win->isVisible() && win->setInputFocus())
+        if (win && win->isVisible() && win->setInputFocus())
           win->installColormap(True);
       } else if (e->xclient.message_type == getBlackboxCycleWindowFocusAtom()) {
         BScreen *screen = searchScreen(e->xclient.window);
@@ -721,20 +721,20 @@ void Blackbox::process_event(XEvent *e) {
             screen->prevFocus();
           else
             screen->nextFocus();
-	}
+        }
       } else if (e->xclient.message_type == getBlackboxChangeAttributesAtom()) {
-	BlackboxWindow *win = searchWindow(e->xclient.window);
+        BlackboxWindow *win = searchWindow(e->xclient.window);
 
-	if (win && win->validateClient()) {
-	  BlackboxHints net;
-	  net.flags = e->xclient.data.l[0];
-	  net.attrib = e->xclient.data.l[1];
-	  net.workspace = e->xclient.data.l[2];
-	  net.stack = e->xclient.data.l[3];
-	  net.decoration = e->xclient.data.l[4];
+        if (win && win->validateClient()) {
+          BlackboxHints net;
+          net.flags = e->xclient.data.l[0];
+          net.attrib = e->xclient.data.l[1];
+          net.workspace = e->xclient.data.l[2];
+          net.stack = e->xclient.data.l[3];
+          net.decoration = e->xclient.data.l[4];
 
-	  win->changeBlackboxHints(&net);
-	}
+          win->changeBlackboxHints(&net);
+        }
       }
     }
 
@@ -752,8 +752,8 @@ void Blackbox::process_event(XEvent *e) {
       BlackboxWindow *win = (BlackboxWindow *) 0;
 
       if ((win = searchWindow(e->xany.window)) ||
-	  (shape_event->kind != ShapeBounding))
-	win->shapeEvent(shape_event);
+          (shape_event->kind != ShapeBounding))
+        win->shapeEvent(shape_event);
     }
 #endif // SHAPE
   }
@@ -1035,7 +1035,7 @@ void Blackbox::save_rc(void) {
     }
 
     sprintf(rc_string, "session.screen%d.slit.placement: %s", screen_number,
-	    slit_placement);
+            slit_placement);
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.slit.direction: %s", screen_number,
@@ -1053,15 +1053,15 @@ void Blackbox::save_rc(void) {
 #endif // SLIT
 
     sprintf(rc_string, "session.opaqueMove: %s",
-	    ((screen->doOpaqueMove()) ? "True" : "False"));
+            ((screen->doOpaqueMove()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.imageDither: %s",
-	    ((screen->getImageControl()->doDither()) ? "True" : "False"));
+            ((screen->getImageControl()->doDither()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.fullMaximization: %s", screen_number,
-	    ((screen->doFullMax()) ? "True" : "False"));
+            ((screen->doFullMax()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.focusNewWindows: %s", screen_number,
@@ -1069,19 +1069,19 @@ void Blackbox::save_rc(void) {
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.focusLastWindow: %s", screen_number,
-	    ((screen->doFocusLast()) ? "True" : "False"));
+            ((screen->doFocusLast()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.rowPlacementDirection: %s",
-	    screen_number,
-	    ((screen->getRowPlacementDirection() == BScreen::LeftRight) ?
-	     "LeftToRight" : "RightToLeft"));
+            screen_number,
+            ((screen->getRowPlacementDirection() == BScreen::LeftRight) ?
+             "LeftToRight" : "RightToLeft"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.colPlacementDirection: %s",
-	    screen_number,
-	    ((screen->getColPlacementDirection() == BScreen::TopBottom) ?
-	     "TopToBottom" : "BottomToTop"));
+            screen_number,
+            ((screen->getColPlacementDirection() == BScreen::TopBottom) ?
+             "TopToBottom" : "BottomToTop"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     char *placement = (char *) 0;
@@ -1100,27 +1100,27 @@ void Blackbox::save_rc(void) {
       break;
     }
     sprintf(rc_string, "session.screen%d.windowPlacement:  %s", screen_number,
-	    placement);
+            placement);
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.focusModel:  %s", screen_number,
-	    ((screen->isSloppyFocus()) ?
-	     ((screen->doAutoRaise()) ? "AutoRaiseSloppyFocus" :
-	      "SloppyFocus") :
-	     "ClickToFocus"));
+            ((screen->isSloppyFocus()) ?
+             ((screen->doAutoRaise()) ? "AutoRaiseSloppyFocus" :
+              "SloppyFocus") :
+             "ClickToFocus"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.workspaces:  %d", screen_number,
-	    screen->getCount());
+            screen->getCount());
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.toolbar.onTop:  %s", screen_number,
-	    ((screen->getToolbar()->isOnTop()) ? "True" : "False"));
+            ((screen->getToolbar()->isOnTop()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.toolbar.autoHide:  %s",
             screen_number,
-	    ((screen->getToolbar()->doAutoHide()) ? "True" : "False"));
+            ((screen->getToolbar()->doAutoHide()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     char *toolbar_placement = (char *) 0;
@@ -1149,22 +1149,22 @@ void Blackbox::save_rc(void) {
 
 #ifdef    HAVE_STRFTIME
     sprintf(rc_string, "session.screen%d.strftimeFormat: %s", screen_number,
-	    screen->getStrftimeFormat());
+            screen->getStrftimeFormat());
     XrmPutLineResource(&new_blackboxrc, rc_string);
 #else // !HAVE_STRFTIME
     sprintf(rc_string, "session.screen%d.dateFormat:  %s", screen_number,
-	    ((screen->getDateFormat() == B_EuropeanDate) ?
-	     "European" : "American"));
+            ((screen->getDateFormat() == B_EuropeanDate) ?
+             "European" : "American"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.clockFormat:  %d", screen_number,
-	    ((screen->isClock24Hour()) ? 24 : 12));
+            ((screen->isClock24Hour()) ? 24 : 12));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 #endif // HAVE_STRFTIME
 
     sprintf(rc_string, "session.screen%d.edgeSnapThreshold: %d",
             screen_number,
-	    screen->getEdgeSnapThreshold());
+            screen->getEdgeSnapThreshold());
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.toolbar.widthPercent:  %d",
@@ -1175,28 +1175,28 @@ void Blackbox::save_rc(void) {
     int i, len = 0;
     for (i = 0; i < screen->getCount(); i++)
       len += strlen((screen->getWorkspace(i)->getName()) ?
-		    screen->getWorkspace(i)->getName() : "Null") + 1;
+                    screen->getWorkspace(i)->getName() : "Null") + 1;
 
     char *resource_string = new char[len + 1024],
       *save_string = new char[len], *save_string_pos = save_string,
       *name_string_pos;
     if (save_string) {
       for (i = 0; i < screen->getCount(); i++) {
-	len = strlen((screen->getWorkspace(i)->getName()) ?
-		     screen->getWorkspace(i)->getName() : "Null") + 1;
-	name_string_pos =
-	  (char *) ((screen->getWorkspace(i)->getName()) ?
-		    screen->getWorkspace(i)->getName() : "Null");
+        len = strlen((screen->getWorkspace(i)->getName()) ?
+                     screen->getWorkspace(i)->getName() : "Null") + 1;
+        name_string_pos =
+          (char *) ((screen->getWorkspace(i)->getName()) ?
+                    screen->getWorkspace(i)->getName() : "Null");
 
-	while (--len) *(save_string_pos++) = *(name_string_pos++);
-	*(save_string_pos++) = ',';
+        while (--len) *(save_string_pos++) = *(name_string_pos++);
+        *(save_string_pos++) = ',';
       }
     }
 
     *(--save_string_pos) = '\0';
 
     sprintf(resource_string, "session.screen%d.workspaceNames:  %s",
-	    screen_number, save_string);
+            screen_number, save_string);
     XrmPutLineResource(&new_blackboxrc, resource_string);
 
     delete [] resource_string;
@@ -1223,13 +1223,13 @@ void Blackbox::load_rc(void) {
     delete [] resource.menu_file;
 
   if (XrmGetResource(database, "session.menuFile", "Session.MenuFile",
-		     &value_type, &value))
+                     &value_type, &value))
     resource.menu_file = expandTilde(value.addr);
   else
     resource.menu_file = bstrdup(DEFAULTMENU);
 
   if (XrmGetResource(database, "session.colorsPerChannel",
-		     "Session.ColorsPerChannel", &value_type, &value)) {
+                     "Session.ColorsPerChannel", &value_type, &value)) {
     if (sscanf(value.addr, "%d", &resource.colors_per_channel) != 1) {
       resource.colors_per_channel = 4;
     } else {
@@ -1244,13 +1244,13 @@ void Blackbox::load_rc(void) {
     delete [] resource.style_file;
 
   if (XrmGetResource(database, "session.styleFile", "Session.StyleFile",
-		     &value_type, &value))
+                     &value_type, &value))
     resource.style_file = bstrdup(value.addr);
   else
     resource.style_file = bstrdup(DEFAULTSTYLE);
 
   if (XrmGetResource(database, "session.doubleClickInterval",
-		     "Session.DoubleClickInterval", &value_type, &value)) {
+                     "Session.DoubleClickInterval", &value_type, &value)) {
     if (sscanf(value.addr, "%lu", &resource.double_click_interval) != 1)
       resource.double_click_interval = 250;
   } else {
@@ -1324,7 +1324,7 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(name_lookup,  "session.screen%d.focusLastWindow", screen_number);
   sprintf(class_lookup, "Session.Screen%d.focusLastWindow", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-		     &value)) {
+                     &value)) {
     if (! strncasecmp(value.addr, "true", value.size))
       screen->saveFocusLast(True);
     else
@@ -1333,11 +1333,11 @@ void Blackbox::load_rc(BScreen *screen) {
     screen->saveFocusLast(False);
   }
   sprintf(name_lookup,  "session.screen%d.rowPlacementDirection",
-	  screen_number);
+          screen_number);
   sprintf(class_lookup, "Session.Screen%d.RowPlacementDirection",
-	  screen_number);
+          screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-		     &value)) {
+                     &value)) {
     if (! strncasecmp(value.addr, "righttoleft", value.size))
       screen->saveRowPlacementDirection(BScreen::RightLeft);
     else
@@ -1346,11 +1346,11 @@ void Blackbox::load_rc(BScreen *screen) {
     screen->saveRowPlacementDirection(BScreen::LeftRight);
   }
   sprintf(name_lookup,  "session.screen%d.colPlacementDirection",
-	  screen_number);
+          screen_number);
   sprintf(class_lookup, "Session.Screen%d.ColPlacementDirection",
-	  screen_number);
+          screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-		     &value)) {
+                     &value)) {
     if (! strncasecmp(value.addr, "bottomtotop", value.size))
       screen->saveColPlacementDirection(BScreen::BottomTop);
     else
@@ -1361,7 +1361,7 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(name_lookup,  "session.screen%d.workspaces", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Workspaces", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-		     &value)) {
+                     &value)) {
     int i;
     if (sscanf(value.addr, "%d", &i) != 1) i = 1;
     screen->saveWorkspaces(i);
@@ -1373,7 +1373,7 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(class_lookup, "Session.Screen%d.Toolbar.WidthPercent",
           screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-		     &value)) {
+                     &value)) {
     int i;
     if (sscanf(value.addr, "%d", &i) != 1) i = 66;
 
@@ -1408,7 +1408,7 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(name_lookup,  "session.screen%d.workspaceNames", screen_number);
   sprintf(class_lookup, "Session.Screen%d.WorkspaceNames", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-		     &value)) {
+                     &value)) {
     char *search = bstrdup(value.addr);
 
     for (int i = 0; i < screen->getNumberOfWorkspaces(); i++) {
@@ -1427,7 +1427,7 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(name_lookup,  "session.screen%d.toolbar.onTop", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Toolbar.OnTop", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-		     &value)) {
+                     &value)) {
     if (! strncasecmp(value.addr, "true", value.size))
       screen->saveToolbarOnTop(True);
     else
@@ -1438,7 +1438,7 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(name_lookup,  "session.screen%d.toolbar.autoHide", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Toolbar.autoHide", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-		     &value)) {
+                     &value)) {
     if (! strncasecmp(value.addr, "true", value.size))
       screen->saveToolbarAutoHide(True);
     else
@@ -1449,7 +1449,7 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(name_lookup,  "session.screen%d.focusModel", screen_number);
   sprintf(class_lookup, "Session.Screen%d.FocusModel", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-		     &value)) {
+                     &value)) {
     if (! strncasecmp(value.addr, "clicktofocus", value.size)) {
       screen->saveAutoRaise(False);
       screen->saveSloppyFocus(False);
@@ -1468,7 +1468,7 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(name_lookup,  "session.screen%d.windowPlacement", screen_number);
   sprintf(class_lookup, "Session.Screen%d.WindowPlacement", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-		     &value)) {
+                     &value)) {
     if (! strncasecmp(value.addr, "RowSmartPlacement", value.size))
       screen->savePlacementPolicy(BScreen::RowSmartPlacement);
     else if (! strncasecmp(value.addr, "ColSmartPlacement", value.size))
@@ -1482,7 +1482,7 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(name_lookup, "session.screen%d.slit.placement", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Slit.Placement", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-		     &value)) {
+                     &value)) {
     if (! strncasecmp(value.addr, "TopLeft", value.size))
       screen->saveSlitPlacement(Slit::TopLeft);
     else if (! strncasecmp(value.addr, "CenterLeft", value.size))
@@ -1541,7 +1541,7 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(name_lookup,  "session.screen%d.strftimeFormat", screen_number);
   sprintf(class_lookup, "Session.Screen%d.StrftimeFormat", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-		     &value)) {
+                     &value)) {
     screen->saveStrftimeFormat(value.addr);
   } else {
     screen->saveStrftimeFormat("%I:%M %p");
@@ -1550,7 +1550,7 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(name_lookup,  "session.screen%d.dateFormat", screen_number);
   sprintf(class_lookup, "Session.Screen%d.DateFormat", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-		     &value)) {
+                     &value)) {
     if (strncasecmp(value.addr, "european", value.size))
       screen->saveDateFormat(B_AmericanDate);
     else
@@ -1561,7 +1561,7 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(name_lookup,  "session.screen%d.clockFormat", screen_number);
   sprintf(class_lookup, "Session.Screen%d.ClockFormat", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-		     &value)) {
+                     &value)) {
     int clock;
     if (sscanf(value.addr, "%d", &clock) != 1) screen->saveClock24Hour(False);
     else if (clock == 24) screen->saveClock24Hour(True);
@@ -1574,7 +1574,7 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(name_lookup,  "session.screen%d.edgeSnapThreshold", screen_number);
   sprintf(class_lookup, "Session.Screen%d.EdgeSnapThreshold", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-		     &value)) {
+                     &value)) {
     int threshold;
     if (sscanf(value.addr, "%d", &threshold) != 1)
       screen->saveEdgeSnapThreshold(0);
@@ -1586,7 +1586,7 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(name_lookup,  "session.screen%d.imageDither", screen_number);
   sprintf(class_lookup, "Session.Screen%d.ImageDither", screen_number);
   if (XrmGetResource(database, "session.imageDither", "Session.ImageDither",
-		     &value_type, &value)) {
+                     &value_type, &value)) {
     if (! strncasecmp("true", value.addr, value.size))
       screen->saveImageDither(True);
     else
@@ -1639,7 +1639,7 @@ void Blackbox::real_reconfigure(void) {
 
     if (ts) {
       if (ts->filename)
-	delete [] ts->filename;
+        delete [] ts->filename;
 
       delete ts;
     }
@@ -1684,7 +1684,7 @@ void Blackbox::real_rereadMenu(void) {
 
     if (ts) {
       if (ts->filename)
-	delete [] ts->filename;
+        delete [] ts->filename;
 
       delete ts;
     }

@@ -147,18 +147,18 @@ Pixmap BImage::render_solid(BTexture *texture) {
                   GCForeground, &gcv);
 
   XFillRectangle(control->getBaseDisplay()->getXDisplay(), pixmap, gc, 0, 0,
-		 width, height);
+                 width, height);
 
 #ifdef    INTERLACE
   if (texture->getTexture() & BImage_Interlaced) {
     gcv.foreground = texture->getColorTo()->getPixel();
     GC igc = XCreateGC(control->getBaseDisplay()->getXDisplay(), pixmap,
-		       GCForeground, &gcv);
+                       GCForeground, &gcv);
 
     register unsigned int i = 0;
     for (; i < height; i += 2)
       XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, igc,
-		0, i, width, i);
+                0, i, width, i);
 
     XFreeGC(control->getBaseDisplay()->getXDisplay(), igc);
   }
@@ -269,7 +269,7 @@ XImage *BImage::renderXImage(void) {
 
   if (! image) {
     fprintf(stderr, i18n(ImageSet, ImageErrorCreatingXImage,
-		       "BImage::renderXImage: error creating XImage\n"));
+                       "BImage::renderXImage: error creating XImage\n"));
     return (XImage *) 0;
   }
 
@@ -307,9 +307,9 @@ XImage *BImage::renderXImage(void) {
       // (raster@rasterman.com) for telling me about this... portions of this
       // code is based off of his code in Imlib
       for (y = 0, offset = 0; y < height; y++) {
-	dithy = y & 0x3;
+        dithy = y & 0x3;
 
-	for (x = 0; x < width; x++, offset++) {
+        for (x = 0; x < width; x++, offset++) {
           dithx = x & 0x3;
           r = red[offset];
           g = green[offset];
@@ -327,28 +327,28 @@ XImage *BImage::renderXImage(void) {
           if ((dither4[dithy][dithx] < eg) && (g < green_table[255])) g++;
           if ((dither4[dithy][dithx] < eb) && (b < blue_table[255])) b++;
 
-	  pixel = (r << red_offset) | (g << green_offset) | (b << blue_offset);
+          pixel = (r << red_offset) | (g << green_offset) | (b << blue_offset);
 
           switch (o) {
-	  case  8: //  8bpp
-	    *pixel_data++ = pixel;
-	    break;
+          case  8: //  8bpp
+            *pixel_data++ = pixel;
+            break;
 
           case 16: // 16bpp LSB
             *pixel_data++ = pixel;
-	    *pixel_data++ = pixel >> 8;
+            *pixel_data++ = pixel >> 8;
             break;
 
           case 17: // 16bpp MSB
-	    *pixel_data++ = pixel >> 8;
-	    *pixel_data++ = pixel;
+            *pixel_data++ = pixel >> 8;
+            *pixel_data++ = pixel;
             break;
 
-	  case 24: // 24bpp LSB
-	    *pixel_data++ = pixel;
-	    *pixel_data++ = pixel >> 8;
-	    *pixel_data++ = pixel >> 16;
-	    break;
+          case 24: // 24bpp LSB
+            *pixel_data++ = pixel;
+            *pixel_data++ = pixel >> 8;
+            *pixel_data++ = pixel >> 16;
+            break;
 
           case 25: // 24bpp MSB
             *pixel_data++ = pixel >> 16;
@@ -370,9 +370,9 @@ XImage *BImage::renderXImage(void) {
             *pixel_data++ = pixel;
             break;
           }
-	}
+        }
 
-	pixel_data = (ppixel_data += image->bytes_per_line);
+        pixel_data = (ppixel_data += image->bytes_per_line);
       }
 
       break;
@@ -381,19 +381,19 @@ XImage *BImage::renderXImage(void) {
     case PseudoColor: {
 #ifndef   ORDEREDPSEUDO
       short *terr,
-	*rerr = new short[width + 2],
-	*gerr = new short[width + 2],
-	*berr = new short[width + 2],
-	*nrerr = new short[width + 2],
-	*ngerr = new short[width + 2],
-	*nberr = new short[width + 2];
+        *rerr = new short[width + 2],
+        *gerr = new short[width + 2],
+        *berr = new short[width + 2],
+        *nrerr = new short[width + 2],
+        *ngerr = new short[width + 2],
+        *nberr = new short[width + 2];
       int rr, gg, bb, rer, ger, ber;
       int dd = 255 / control->getColorsPerChannel();
 
       for (x = 0; x < width; x++) {
-	*(rerr + x) = *(red + x);
-	*(gerr + x) = *(green + x);
-	*(berr + x) = *(blue + x);
+        *(rerr + x) = *(red + x);
+        *(gerr + x) = *(green + x);
+        *(berr + x) = *(blue + x);
       }
 
       *(rerr + x) = *(gerr + x) = *(berr + x) = 0;
@@ -430,47 +430,47 @@ XImage *BImage::renderXImage(void) {
       }
 #else // !ORDEREDPSEUDO
       if (y < (height - 1)) {
-	int i = offset + width;
-	for (x = 0; x < width; x++, i++) {
-	  *(nrerr + x) = *(red + i);
-	  *(ngerr + x) = *(green + i);
-	  *(nberr + x) = *(blue + i);
-	}
+        int i = offset + width;
+        for (x = 0; x < width; x++, i++) {
+          *(nrerr + x) = *(red + i);
+          *(ngerr + x) = *(green + i);
+          *(nberr + x) = *(blue + i);
+        }
 
-	*(nrerr + x) = *(red + (--i));
-	*(ngerr + x) = *(green + i);
-	*(nberr + x) = *(blue + i);
+        *(nrerr + x) = *(red + (--i));
+        *(ngerr + x) = *(green + i);
+        *(nberr + x) = *(blue + i);
       }
 
       for (x = 0; x < width; x++) {
-	rr = rerr[x];
-	gg = gerr[x];
-	bb = berr[x];
+        rr = rerr[x];
+        gg = gerr[x];
+        bb = berr[x];
 
-	if (rr > 255) rr = 255; else if (rr < 0) rr = 0;
-	if (gg > 255) gg = 255; else if (gg < 0) gg = 0;
-	if (bb > 255) bb = 255; else if (bb < 0) bb = 0;
+        if (rr > 255) rr = 255; else if (rr < 0) rr = 0;
+        if (gg > 255) gg = 255; else if (gg < 0) gg = 0;
+        if (bb > 255) bb = 255; else if (bb < 0) bb = 0;
 
-	r = red_table[rr];
-	g = green_table[gg];
-	b = blue_table[bb];
+        r = red_table[rr];
+        g = green_table[gg];
+        b = blue_table[bb];
 
-	rer = rerr[x] - r*dd;
-	ger = gerr[x] - g*dd;
-	ber = berr[x] - b*dd;
+        rer = rerr[x] - r*dd;
+        ger = gerr[x] - g*dd;
+        ber = berr[x] - b*dd;
 
-	pixel = (r * cpccpc) + (g * cpc) + b;
-	*pixel_data++ = colors[pixel].pixel;
+        pixel = (r * cpccpc) + (g * cpc) + b;
+        *pixel_data++ = colors[pixel].pixel;
 
-	r = rer >> 1;
-	g = ger >> 1;
-	b = ber >> 1;
-	rerr[x+1] += r;
-	gerr[x+1] += g;
-	berr[x+1] += b;
-	nrerr[x] += r;
-	ngerr[x] += g;
-	nberr[x] += b;
+        r = rer >> 1;
+        g = ger >> 1;
+        b = ber >> 1;
+        rerr[x+1] += r;
+        gerr[x+1] += g;
+        berr[x+1] += b;
+        nrerr[x] += r;
+        ngerr[x] += g;
+        nberr[x] += b;
       }
 
       offset += width;
@@ -502,7 +502,7 @@ XImage *BImage::renderXImage(void) {
 
     default:
       fprintf(stderr, i18n(ImageSet, ImageUnsupVisual,
-			 "BImage::renderXImage: unsupported visual\n"));
+                         "BImage::renderXImage: unsupported visual\n"));
       delete [] d;
       XDestroyImage(image);
       return (XImage *) 0;
@@ -513,12 +513,12 @@ XImage *BImage::renderXImage(void) {
     case PseudoColor:
       for (y = 0, offset = 0; y < height; y++) {
         for (x = 0; x < width; x++, offset++) {
-  	  r = red_table[red[offset]];
+            r = red_table[red[offset]];
           g = green_table[green[offset]];
-	  b = blue_table[blue[offset]];
+          b = blue_table[blue[offset]];
 
-	  pixel = (r * cpccpc) + (g * cpc) + b;
-	  *pixel_data++ = colors[pixel].pixel;
+          pixel = (r * cpccpc) + (g * cpc) + b;
+          *pixel_data++ = colors[pixel].pixel;
         }
 
         pixel_data = (ppixel_data += image->bytes_per_line);
@@ -529,16 +529,16 @@ XImage *BImage::renderXImage(void) {
   case TrueColor:
     for (y = 0, offset = 0; y < height; y++) {
       for (x = 0; x < width; x++, offset++) {
-	r = red_table[red[offset]];
-	g = green_table[green[offset]];
-	b = blue_table[blue[offset]];
+        r = red_table[red[offset]];
+        g = green_table[green[offset]];
+        b = blue_table[blue[offset]];
 
-	pixel = (r << red_offset) | (g << green_offset) | (b << blue_offset);
+        pixel = (r << red_offset) | (g << green_offset) | (b << blue_offset);
 
         switch (o) {
-	case  8: //  8bpp
-	  *pixel_data++ = pixel;
-	  break;
+        case  8: //  8bpp
+          *pixel_data++ = pixel;
+          break;
 
         case 16: // 16bpp LSB
           *pixel_data++ = pixel;
@@ -587,12 +587,12 @@ XImage *BImage::renderXImage(void) {
   case GrayScale:
     for (y = 0, offset = 0; y < height; y++) {
       for (x = 0; x < width; x++, offset++) {
-	r = *(red_table + *(red + offset));
-	g = *(green_table + *(green + offset));
-	b = *(blue_table + *(blue + offset));
+        r = *(red_table + *(red + offset));
+        g = *(green_table + *(green + offset));
+        b = *(blue_table + *(blue + offset));
 
-	g = ((r * 30) + (g * 59) + (b * 11)) / 100;
-	*pixel_data++ = colors[g].pixel;
+        g = ((r * 30) + (g * 59) + (b * 11)) / 100;
+        *pixel_data++ = colors[g].pixel;
       }
 
       pixel_data = (ppixel_data += image->bytes_per_line);
@@ -602,7 +602,7 @@ XImage *BImage::renderXImage(void) {
 
   default:
     fprintf(stderr, i18n(ImageSet, ImageUnsupVisual,
-		       "BImage::renderXImage: unsupported visual\n"));
+                       "BImage::renderXImage: unsupported visual\n"));
     delete [] d;
     XDestroyImage(image);
     return (XImage *) 0;
@@ -621,7 +621,7 @@ Pixmap BImage::renderPixmap(void) {
 
   if (pixmap == None) {
     fprintf(stderr, i18n(ImageSet, ImageErrorCreatingPixmap,
-	                     "BImage::renderPixmap: error creating pixmap\n"));
+                             "BImage::renderPixmap: error creating pixmap\n"));
     return None;
   }
 
@@ -637,8 +637,8 @@ Pixmap BImage::renderPixmap(void) {
   }
 
   XPutImage(control->getBaseDisplay()->getXDisplay(), pixmap,
-	    DefaultGC(control->getBaseDisplay()->getXDisplay(),
-		      control->getScreenInfo()->getScreenNumber()),
+            DefaultGC(control->getBaseDisplay()->getXDisplay(),
+                      control->getScreenInfo()->getScreenNumber()),
             image, 0, 0, 0, 0, width, height);
 
   if (image->data) {
@@ -1799,8 +1799,8 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
     bits_per_pixel = 0;
     for (int i = 0; i < count; i++)
       if (pmv[i].depth == screen_depth) {
-	bits_per_pixel = pmv[i].bits_per_pixel;
-	break;
+        bits_per_pixel = pmv[i].bits_per_pixel;
+        break;
       }
 
     XFree(pmv);
@@ -1830,7 +1830,7 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
       blue_bits = 255 / blue_mask;
 
       for (i = 0; i < 256; i++) {
-	red_color_table[i] = i / red_bits;
+        red_color_table[i] = i / red_bits;
         green_color_table[i] = i / green_bits;
         blue_color_table[i] = i / blue_bits;
       }
@@ -1844,14 +1844,14 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
       ncolors = colors_per_channel * colors_per_channel * colors_per_channel;
 
       if (ncolors > (1 << screen_depth)) {
-	colors_per_channel = (1 << screen_depth) / 3;
-	ncolors = colors_per_channel * colors_per_channel * colors_per_channel;
+        colors_per_channel = (1 << screen_depth) / 3;
+        ncolors = colors_per_channel * colors_per_channel * colors_per_channel;
       }
 
       if (colors_per_channel < 2 || ncolors > (1 << screen_depth)) {
-	fprintf(stderr, i18n(ImageSet, ImageInvalidColormapSize,
+        fprintf(stderr, i18n(ImageSet, ImageInvalidColormapSize,
                       "BImageControl::BImageControl: invalid colormap size %d "
-		           "(%d/%d/%d) - reducing"),
+                           "(%d/%d/%d) - reducing"),
                 ncolors, colors_per_channel, colors_per_channel,
                 colors_per_channel);
 
@@ -1860,11 +1860,11 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
 
       colors = new XColor[ncolors];
       if (! colors) {
-	fprintf(stderr, i18n(ImageSet,
-	                                 ImageErrorAllocatingColormap,
-	        	   "BImageControl::BImageControl: error allocating "
-		           "colormap\n"));
-	exit(1);
+        fprintf(stderr, i18n(ImageSet,
+                                         ImageErrorAllocatingColormap,
+                           "BImageControl::BImageControl: error allocating "
+                           "colormap\n"));
+        exit(1);
       }
 
       int i = 0, ii, p, r, g, b,
@@ -1878,63 +1878,63 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
       red_bits = green_bits = blue_bits = bits;
 
       for (i = 0; i < 256; i++)
-	red_color_table[i] = green_color_table[i] = blue_color_table[i] =
-	  i / bits;
+        red_color_table[i] = green_color_table[i] = blue_color_table[i] =
+          i / bits;
 
       for (r = 0, i = 0; r < colors_per_channel; r++)
-	for (g = 0; g < colors_per_channel; g++)
-	  for (b = 0; b < colors_per_channel; b++, i++) {
-	    colors[i].red = (r * 0xffff) / (colors_per_channel - 1);
-	    colors[i].green = (g * 0xffff) / (colors_per_channel - 1);
-	    colors[i].blue = (b * 0xffff) / (colors_per_channel - 1);;
-	    colors[i].flags = DoRed|DoGreen|DoBlue;
-	  }
+        for (g = 0; g < colors_per_channel; g++)
+          for (b = 0; b < colors_per_channel; b++, i++) {
+            colors[i].red = (r * 0xffff) / (colors_per_channel - 1);
+            colors[i].green = (g * 0xffff) / (colors_per_channel - 1);
+            colors[i].blue = (b * 0xffff) / (colors_per_channel - 1);;
+            colors[i].flags = DoRed|DoGreen|DoBlue;
+          }
 
       for (i = 0; i < ncolors; i++)
-	if (! XAllocColor(basedisplay->getXDisplay(), colormap, &colors[i])) {
-	  fprintf(stderr, i18n(ImageSet, ImageColorAllocFail,
-		                   "couldn't alloc color %i %i %i\n"),
-		  colors[i].red, colors[i].green, colors[i].blue);
-	  colors[i].flags = 0;
-	} else
-	  colors[i].flags = DoRed|DoGreen|DoBlue;
+        if (! XAllocColor(basedisplay->getXDisplay(), colormap, &colors[i])) {
+          fprintf(stderr, i18n(ImageSet, ImageColorAllocFail,
+                                   "couldn't alloc color %i %i %i\n"),
+                  colors[i].red, colors[i].green, colors[i].blue);
+          colors[i].flags = 0;
+        } else
+          colors[i].flags = DoRed|DoGreen|DoBlue;
 
       XColor icolors[256];
       int incolors = (((1 << screen_depth) > 256) ? 256 : (1 << screen_depth));
 
       for (i = 0; i < incolors; i++)
-	icolors[i].pixel = i;
+        icolors[i].pixel = i;
 
       XQueryColors(basedisplay->getXDisplay(), colormap, icolors, incolors);
       for (i = 0; i < ncolors; i++) {
-	if (! colors[i].flags) {
-	  unsigned long chk = 0xffffffff, pixel, close = 0;
+        if (! colors[i].flags) {
+          unsigned long chk = 0xffffffff, pixel, close = 0;
 
-	  p = 2;
-	  while (p--) {
-	    for (ii = 0; ii < incolors; ii++) {
-	      r = (colors[i].red - icolors[i].red) >> 8;
-	      g = (colors[i].green - icolors[i].green) >> 8;
-	      b = (colors[i].blue - icolors[i].blue) >> 8;
-	      pixel = (r * r) + (g * g) + (b * b);
+          p = 2;
+          while (p--) {
+            for (ii = 0; ii < incolors; ii++) {
+              r = (colors[i].red - icolors[i].red) >> 8;
+              g = (colors[i].green - icolors[i].green) >> 8;
+              b = (colors[i].blue - icolors[i].blue) >> 8;
+              pixel = (r * r) + (g * g) + (b * b);
 
-	      if (pixel < chk) {
-		chk = pixel;
-		close = ii;
-	      }
+              if (pixel < chk) {
+                chk = pixel;
+                close = ii;
+              }
 
-	      colors[i].red = icolors[close].red;
-	      colors[i].green = icolors[close].green;
-	      colors[i].blue = icolors[close].blue;
+              colors[i].red = icolors[close].red;
+              colors[i].green = icolors[close].green;
+              colors[i].blue = icolors[close].blue;
 
-	      if (XAllocColor(basedisplay->getXDisplay(), colormap,
-			      &colors[i])) {
-		colors[i].flags = DoRed|DoGreen|DoBlue;
-		break;
-	      }
-	    }
-	  }
-	}
+              if (XAllocColor(basedisplay->getXDisplay(), colormap,
+                              &colors[i])) {
+                colors[i].flags = DoRed|DoGreen|DoBlue;
+                break;
+              }
+            }
+          }
+        }
       }
 
       break;
@@ -1945,96 +1945,96 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
     {
 
       if (getVisual()->c_class == StaticGray) {
-	ncolors = 1 << screen_depth;
+        ncolors = 1 << screen_depth;
       } else {
-	ncolors = colors_per_channel * colors_per_channel * colors_per_channel;
+        ncolors = colors_per_channel * colors_per_channel * colors_per_channel;
 
-	if (ncolors > (1 << screen_depth)) {
-	  colors_per_channel = (1 << screen_depth) / 3;
-	  ncolors =
-	    colors_per_channel * colors_per_channel * colors_per_channel;
-	}
+        if (ncolors > (1 << screen_depth)) {
+          colors_per_channel = (1 << screen_depth) / 3;
+          ncolors =
+            colors_per_channel * colors_per_channel * colors_per_channel;
+        }
       }
 
       if (colors_per_channel < 2 || ncolors > (1 << screen_depth)) {
-	fprintf(stderr,	i18n(ImageSet, ImageInvalidColormapSize,
+        fprintf(stderr,        i18n(ImageSet, ImageInvalidColormapSize,
                       "BImageControl::BImageControl: invalid colormap size %d "
-		           "(%d/%d/%d) - reducing"),
-		ncolors, colors_per_channel, colors_per_channel,
-		colors_per_channel);
+                           "(%d/%d/%d) - reducing"),
+                ncolors, colors_per_channel, colors_per_channel,
+                colors_per_channel);
 
-	colors_per_channel = (1 << screen_depth) / 3;
+        colors_per_channel = (1 << screen_depth) / 3;
       }
 
       colors = new XColor[ncolors];
       if (! colors) {
-	fprintf(stderr, i18n(ImageSet,
-	                                 ImageErrorAllocatingColormap,
-			   "BImageControl::BImageControl: error allocating "
-       	                   "colormap\n"));
-	exit(1);
+        fprintf(stderr, i18n(ImageSet,
+                                         ImageErrorAllocatingColormap,
+                           "BImageControl::BImageControl: error allocating "
+                                  "colormap\n"));
+        exit(1);
       }
 
       int i = 0, ii, p, bits = 255 / (colors_per_channel - 1);
       red_bits = green_bits = blue_bits = bits;
 
       for (i = 0; i < 256; i++)
-	red_color_table[i] = green_color_table[i] = blue_color_table[i] =
-	  i / bits;
+        red_color_table[i] = green_color_table[i] = blue_color_table[i] =
+          i / bits;
 
       for (i = 0; i < ncolors; i++) {
-	colors[i].red = (i * 0xffff) / (colors_per_channel - 1);
-	colors[i].green = (i * 0xffff) / (colors_per_channel - 1);
-	colors[i].blue = (i * 0xffff) / (colors_per_channel - 1);;
-	colors[i].flags = DoRed|DoGreen|DoBlue;
+        colors[i].red = (i * 0xffff) / (colors_per_channel - 1);
+        colors[i].green = (i * 0xffff) / (colors_per_channel - 1);
+        colors[i].blue = (i * 0xffff) / (colors_per_channel - 1);;
+        colors[i].flags = DoRed|DoGreen|DoBlue;
 
-	if (! XAllocColor(basedisplay->getXDisplay(), colormap,
-			  &colors[i])) {
-	  fprintf(stderr, i18n(ImageSet, ImageColorAllocFail,
-		             "couldn't alloc color %i %i %i\n"),
-		  colors[i].red, colors[i].green, colors[i].blue);
-	  colors[i].flags = 0;
-	} else
-	  colors[i].flags = DoRed|DoGreen|DoBlue;
+        if (! XAllocColor(basedisplay->getXDisplay(), colormap,
+                          &colors[i])) {
+          fprintf(stderr, i18n(ImageSet, ImageColorAllocFail,
+                             "couldn't alloc color %i %i %i\n"),
+                  colors[i].red, colors[i].green, colors[i].blue);
+          colors[i].flags = 0;
+        } else
+          colors[i].flags = DoRed|DoGreen|DoBlue;
       }
 
       XColor icolors[256];
       int incolors = (((1 << screen_depth) > 256) ? 256 :
-		      (1 << screen_depth));
+                      (1 << screen_depth));
 
       for (i = 0; i < incolors; i++)
-	icolors[i].pixel = i;
+        icolors[i].pixel = i;
 
       XQueryColors(basedisplay->getXDisplay(), colormap, icolors, incolors);
       for (i = 0; i < ncolors; i++) {
-	if (! colors[i].flags) {
-	  unsigned long chk = 0xffffffff, pixel, close = 0;
+        if (! colors[i].flags) {
+          unsigned long chk = 0xffffffff, pixel, close = 0;
 
-	  p = 2;
-	  while (p--) {
-	    for (ii = 0; ii < incolors; ii++) {
-	      int r = (colors[i].red - icolors[i].red) >> 8;
-	      int g = (colors[i].green - icolors[i].green) >> 8;
-	      int b = (colors[i].blue - icolors[i].blue) >> 8;
-	      pixel = (r * r) + (g * g) + (b * b);
+          p = 2;
+          while (p--) {
+            for (ii = 0; ii < incolors; ii++) {
+              int r = (colors[i].red - icolors[i].red) >> 8;
+              int g = (colors[i].green - icolors[i].green) >> 8;
+              int b = (colors[i].blue - icolors[i].blue) >> 8;
+              pixel = (r * r) + (g * g) + (b * b);
 
-	      if (pixel < chk) {
-		chk = pixel;
-		close = ii;
-	      }
+              if (pixel < chk) {
+                chk = pixel;
+                close = ii;
+              }
 
-	      colors[i].red = icolors[close].red;
-	      colors[i].green = icolors[close].green;
-  	      colors[i].blue = icolors[close].blue;
+              colors[i].red = icolors[close].red;
+              colors[i].green = icolors[close].green;
+                colors[i].blue = icolors[close].blue;
 
-	      if (XAllocColor(basedisplay->getXDisplay(), colormap,
-			      &colors[i])) {
-		colors[i].flags = DoRed|DoGreen|DoBlue;
-		break;
-	      }
-	    }
-	  }
-	}
+              if (XAllocColor(basedisplay->getXDisplay(), colormap,
+                              &colors[i])) {
+                colors[i].flags = DoRed|DoGreen|DoBlue;
+                break;
+              }
+            }
+          }
+        }
       }
 
       break;
@@ -2043,7 +2043,7 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
   default:
     fprintf(stderr, i18n(ImageSet, ImageUnsupVisual,
                "BImageControl::BImageControl: unsupported visual %d\n"),
-	    getVisual()->c_class);
+            getVisual()->c_class);
     exit(1);
   }
 
@@ -2079,8 +2079,8 @@ BImageControl::~BImageControl(void) {
   if (cache->count()) {
     int i, n = cache->count();
     fprintf(stderr, i18n(ImageSet, ImagePixmapRelease,
-		       "BImageContol::~BImageControl: pixmap cache - "
-	               "releasing %d pixmaps\n"), n);
+                       "BImageContol::~BImageControl: pixmap cache - "
+                       "releasing %d pixmaps\n"), n);
 
     for (i = 0; i < n; i++) {
       Cache *tmp = cache->first();
@@ -2102,8 +2102,8 @@ BImageControl::~BImageControl(void) {
 
 
 Pixmap BImageControl::searchCache(unsigned int width, unsigned int height,
-		  unsigned long texture,
-		  BColor *c1, BColor *c2) {
+                  unsigned long texture,
+                  BColor *c1, BColor *c2) {
   if (cache->count()) {
     LinkedListIterator<Cache> it(cache);
 
@@ -2131,7 +2131,7 @@ Pixmap BImageControl::renderImage(unsigned int width, unsigned int height,
   if (texture->getTexture() & BImage_ParentRelative) return ParentRelative;
 
   Pixmap pixmap = searchCache(width, height, texture->getTexture(),
-			      texture->getColor(), texture->getColorTo());
+                              texture->getColor(), texture->getColorTo());
   if (pixmap) return pixmap;
 
   BImage image(this, width, height);
@@ -2177,16 +2177,16 @@ void BImageControl::removeImage(Pixmap pixmap) {
     for (Cache *tmp = it.current(); tmp; it++, tmp = it.current()) {
       if (tmp->pixmap == pixmap) {
         if (tmp->count) {
-	  tmp->count--;
+          tmp->count--;
 
 #ifdef    TIMEDCACHE
-	   if (! timer) timeout();
+           if (! timer) timeout();
 #else // !TIMEDCACHE
-	   if (! tmp->count) timeout();
+           if (! tmp->count) timeout();
 #endif // TIMEDCACHE
         }
 
-	return;
+        return;
       }
     }
   }
@@ -2194,18 +2194,18 @@ void BImageControl::removeImage(Pixmap pixmap) {
 
 
 unsigned long BImageControl::getColor(const char *colorname,
-				      unsigned char *r, unsigned char *g,
-				      unsigned char *b)
+                                      unsigned char *r, unsigned char *g,
+                                      unsigned char *b)
 {
   XColor color;
   color.pixel = 0;
 
   if (! XParseColor(basedisplay->getXDisplay(), colormap, colorname, &color))
     fprintf(stderr, "BImageControl::getColor: color parse error: \"%s\"\n",
-	    colorname);
+            colorname);
   else if (! XAllocColor(basedisplay->getXDisplay(), colormap, &color))
     fprintf(stderr, "BImageControl::getColor: color alloc error: \"%s\"\n",
-	    colorname);
+            colorname);
 
   if (color.red == 65535) *r = 0xff;
   else *r = (unsigned char) (color.red / 0xff);
@@ -2224,18 +2224,18 @@ unsigned long BImageControl::getColor(const char *colorname) {
 
   if (! XParseColor(basedisplay->getXDisplay(), colormap, colorname, &color))
     fprintf(stderr, "BImageControl::getColor: color parse error: \"%s\"\n",
-	    colorname);
+            colorname);
   else if (! XAllocColor(basedisplay->getXDisplay(), colormap, &color))
     fprintf(stderr, "BImageControl::getColor: color alloc error: \"%s\"\n",
-	    colorname);
+            colorname);
 
   return color.pixel;
 }
 
 
 void BImageControl::getColorTables(unsigned char **rmt, unsigned char **gmt,
-				   unsigned char **bmt,
-				   int *roff, int *goff, int *boff,
+                                   unsigned char **bmt,
+                                   int *roff, int *goff, int *boff,
                                    int *rbit, int *gbit, int *bbit) {
   if (rmt) *rmt = red_color_table;
   if (gmt) *gmt = green_color_table;
@@ -2258,9 +2258,9 @@ void BImageControl::getXColorTable(XColor **c, int *n) {
 
 
 void BImageControl::getGradientBuffers(unsigned int w,
-				       unsigned int h,
-				       unsigned int **xbuf,
-				       unsigned int **ybuf)
+                                       unsigned int h,
+                                       unsigned int **xbuf,
+                                       unsigned int **ybuf)
 {
   if (w > grad_buffer_width) {
     if (grad_xbuffer) {
@@ -2296,7 +2296,7 @@ void BImageControl::installRootColormap(void) {
   if (cmaps) {
     for (i = 0; i < ncmap; i++)
       if (*(cmaps + i) == colormap)
-	install = False;
+        install = False;
 
     if (install)
       XInstallColormap(basedisplay->getXDisplay(), colormap);
@@ -2350,23 +2350,23 @@ void BImageControl::parseTexture(BTexture *texture, char *t) {
     else if (strstr(ts, "gradient")) {
       texture->addTexture(BImage_Gradient);
       if (strstr(ts, "crossdiagonal"))
-	texture->addTexture(BImage_CrossDiagonal);
+        texture->addTexture(BImage_CrossDiagonal);
       else if (strstr(ts, "rectangle"))
-	texture->addTexture(BImage_Rectangle);
+        texture->addTexture(BImage_Rectangle);
       else if (strstr(ts, "pyramid"))
-	texture->addTexture(BImage_Pyramid);
+        texture->addTexture(BImage_Pyramid);
       else if (strstr(ts, "pipecross"))
-	texture->addTexture(BImage_PipeCross);
+        texture->addTexture(BImage_PipeCross);
       else if (strstr(ts, "elliptic"))
-	texture->addTexture(BImage_Elliptic);
+        texture->addTexture(BImage_Elliptic);
       else if (strstr(ts, "diagonal"))
-	texture->addTexture(BImage_Diagonal);
+        texture->addTexture(BImage_Diagonal);
       else if (strstr(ts, "horizontal"))
-	texture->addTexture(BImage_Horizontal);
+        texture->addTexture(BImage_Horizontal);
       else if (strstr(ts, "vertical"))
-	texture->addTexture(BImage_Vertical);
+        texture->addTexture(BImage_Vertical);
       else
-	texture->addTexture(BImage_Diagonal);
+        texture->addTexture(BImage_Diagonal);
     } else
       texture->addTexture(BImage_Solid);
 
@@ -2381,9 +2381,9 @@ void BImageControl::parseTexture(BTexture *texture, char *t) {
 
     if (! (texture->getTexture() & BImage_Flat))
       if (strstr(ts, "bevel2"))
-	texture->addTexture(BImage_Bevel2);
+        texture->addTexture(BImage_Bevel2);
       else
-	texture->addTexture(BImage_Bevel1);
+        texture->addTexture(BImage_Bevel1);
 
 #ifdef    INTERLACE
     if (strstr(ts, "interlaced"))

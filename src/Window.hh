@@ -80,7 +80,7 @@ private:
   unsigned long current_state;
 
   enum FocusMode { F_NoInput = 0, F_Passive,
-		   F_LocallyActive, F_GloballyActive };
+                   F_LocallyActive, F_GloballyActive };
   FocusMode focus_mode;
 
   struct _flags {
@@ -197,7 +197,7 @@ private:
 protected:
   Bool getState(void);
   Window createToplevelWindow(int x, int y, unsigned int width,
-			      unsigned int height, unsigned int borderwidth);
+                              unsigned int height, unsigned int borderwidth);
   Window createChildWindow(Window parent, Cursor = None);
 
   void getWMName(void);

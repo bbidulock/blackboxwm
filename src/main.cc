@@ -62,7 +62,7 @@ static void showHelp(int exitval) {
               "  -rc <string>\t\t\tuse alternate resource file.\n"
               "  -version\t\t\tdisplay version and exit.\n"
               "  -help\t\t\t\tdisplay this help text and exit.\n\n"),
-	 __blackbox_version);
+         __blackbox_version);
 
   // some people have requested that we print out compile options
   // as well
@@ -74,35 +74,35 @@ static void showHelp(int exitval) {
                       "  Slit:\t\t\t\t%s\n"
                       "  8bpp Ordered Dithering:\t%s\n\n"),
 #ifdef    DEBUG
-	  i18n(CommonSet, CommonYes, "yes"),
+          i18n(CommonSet, CommonYes, "yes"),
 #else // !DEBUG
-	  i18n(CommonSet, CommonNo, "no"),
+          i18n(CommonSet, CommonNo, "no"),
 #endif // DEBUG
 
 #ifdef    INTERLACE
-	  i18n(CommonSet, CommonYes, "yes"),
+          i18n(CommonSet, CommonYes, "yes"),
 #else // !INTERLACE
-	  i18n(CommonSet, CommonNo, "no"),
+          i18n(CommonSet, CommonNo, "no"),
 #endif // INTERLACE
 
 #ifdef    SHAPE
-	  i18n(CommonSet, CommonYes, "yes"),
+          i18n(CommonSet, CommonYes, "yes"),
 #else // !SHAPE
-	  i18n(CommonSet, CommonNo, "no"),
+          i18n(CommonSet, CommonNo, "no"),
 #endif // SHAPE
 
 #ifdef    SLIT
-	  i18n(CommonSet, CommonYes, "yes"),
+          i18n(CommonSet, CommonYes, "yes"),
 #else // !SLIT
-	  i18n(CommonSet, CommonNo, "no"),
+          i18n(CommonSet, CommonNo, "no"),
 #endif // SLIT
 
 #ifdef    ORDEREDPSEUDO
-	  i18n(CommonSet, CommonYes, "yes")
+          i18n(CommonSet, CommonYes, "yes")
 #else // !ORDEREDPSEUDO
-	  i18n(CommonSet, CommonNo, "no")
+          i18n(CommonSet, CommonNo, "no")
 #endif // ORDEREDPSEUDO
-	  );
+          );
 
   ::exit(exitval);
 }
@@ -119,8 +119,8 @@ int main(int argc, char **argv) {
 
       if ((++i) >= argc) {
         fprintf(stderr,
-		i18n(mainSet, mainRCRequiresArg,
-				 "error: '-rc' requires and argument\n"));
+                i18n(mainSet, mainRCRequiresArg,
+                                 "error: '-rc' requires and argument\n"));
 
         ::exit(1);
       }
@@ -131,11 +131,11 @@ int main(int argc, char **argv) {
       // set by the environment variable DISPLAY
 
       if ((++i) >= argc) {
-	fprintf(stderr,
-		i18n(mainSet, mainDISPLAYRequiresArg,
-				 "error: '-display' requires an argument\n"));
+        fprintf(stderr,
+                i18n(mainSet, mainDISPLAYRequiresArg,
+                                 "error: '-display' requires an argument\n"));
 
-	::exit(1);
+        ::exit(1);
       }
 
       session_display = argv[i];
@@ -143,14 +143,14 @@ int main(int argc, char **argv) {
       sprintf(dtmp, "DISPLAY=%s", session_display);
 
       if (putenv(dtmp)) {
-	fprintf(stderr, i18n(mainSet, mainWarnDisplaySet,
-		   "warning: couldn't set environment variable 'DISPLAY'\n"));
-	perror("putenv()");
+        fprintf(stderr, i18n(mainSet, mainWarnDisplaySet,
+                   "warning: couldn't set environment variable 'DISPLAY'\n"));
+        perror("putenv()");
       }
     } else if (! strcmp(argv[i], "-version")) {
       // print current version string
       printf("Blackbox %s : (c) 2001 - 2002 Sean 'Shaleh' Perry\n",
-	     "\t\t\t   1997 - 2000 Brad Hughes\n"
+             "\t\t\t   1997 - 2000 Brad Hughes\n"
              __blackbox_version);
 
       ::exit(0);

@@ -36,37 +36,37 @@ class BImageControl;
 
 
 // bevel options
-#define BImage_Flat		(1l<<1)
-#define BImage_Sunken		(1l<<2)
-#define BImage_Raised		(1l<<3)
+#define BImage_Flat                (1l<<1)
+#define BImage_Sunken                (1l<<2)
+#define BImage_Raised                (1l<<3)
 
 // textures
-#define BImage_Solid		(1l<<4)
-#define BImage_Gradient		(1l<<5)
+#define BImage_Solid                (1l<<4)
+#define BImage_Gradient                (1l<<5)
 
 // gradients
-#define BImage_Horizontal	(1l<<6)
-#define BImage_Vertical		(1l<<7)
-#define BImage_Diagonal		(1l<<8)
-#define BImage_CrossDiagonal	(1l<<9)
-#define BImage_Rectangle	(1l<<10)
-#define BImage_Pyramid		(1l<<11)
-#define BImage_PipeCross	(1l<<12)
-#define BImage_Elliptic		(1l<<13)
+#define BImage_Horizontal        (1l<<6)
+#define BImage_Vertical                (1l<<7)
+#define BImage_Diagonal                (1l<<8)
+#define BImage_CrossDiagonal        (1l<<9)
+#define BImage_Rectangle        (1l<<10)
+#define BImage_Pyramid                (1l<<11)
+#define BImage_PipeCross        (1l<<12)
+#define BImage_Elliptic                (1l<<13)
 
 // bevel types
-#define BImage_Bevel1		(1l<<14)
-#define BImage_Bevel2		(1l<<15)
+#define BImage_Bevel1                (1l<<14)
+#define BImage_Bevel2                (1l<<15)
 
 // inverted image
-#define BImage_Invert		(1l<<16)
+#define BImage_Invert                (1l<<16)
 
 // parent relative image
 #define BImage_ParentRelative   (1l<<17)
 
 #ifdef    INTERLACE
 // fake interlaced image
-#  define BImage_Interlaced	(1l<<18)
+#  define BImage_Interlaced        (1l<<18)
 #endif // INTERLACE
 
 class BColor {

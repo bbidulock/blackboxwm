@@ -161,13 +161,13 @@ void Configmenu::Focusmenu::itemSelected(int button, int index) {
 
     if (! configmenu->screen->getBlackbox()->getFocusedWindow())
       XSetInputFocus(configmenu->screen->getBlackbox()->getXDisplay(),
-		     configmenu->screen->getToolbar()->getWindowID(),
-		     RevertToParent, CurrentTime);
+                     configmenu->screen->getToolbar()->getWindowID(),
+                     RevertToParent, CurrentTime);
     else
       XSetInputFocus(configmenu->screen->getBlackbox()->getXDisplay(),
-		     configmenu->screen->getBlackbox()->
-		     getFocusedWindow()->getClientWindow(),
-		     RevertToParent, CurrentTime);
+                     configmenu->screen->getBlackbox()->
+                     getFocusedWindow()->getClientWindow(),
+                     RevertToParent, CurrentTime);
 
     configmenu->screen->reconfigure();
 
@@ -203,10 +203,10 @@ Configmenu::Placementmenu::Placementmenu(Configmenu *cm) :
 
   insert(i18n(ConfigmenuSet, ConfigmenuSmartRows,
               "Smart Placement (Rows)"),
-	 BScreen::RowSmartPlacement);
+         BScreen::RowSmartPlacement);
   insert(i18n(ConfigmenuSet, ConfigmenuSmartCols,
               "Smart Placement (Columns)"),
-	 BScreen::ColSmartPlacement);
+         BScreen::ColSmartPlacement);
   insert(i18n(ConfigmenuSet, ConfigmenuCascade,
               "Cascade Placement"), BScreen::CascadePlacement);
   insert(i18n(ConfigmenuSet, ConfigmenuLeftRight,
@@ -234,7 +234,7 @@ Configmenu::Placementmenu::Placementmenu(Configmenu *cm) :
   }
 
   Bool rl = (configmenu->screen->getRowPlacementDirection() ==
-	     BScreen::LeftRight),
+             BScreen::LeftRight),
     tb = (configmenu->screen->getColPlacementDirection() ==
           BScreen::TopBottom);
 

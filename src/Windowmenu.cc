@@ -47,23 +47,23 @@ Windowmenu::Windowmenu(BlackboxWindow *win) : Basemenu(win->getScreen()) {
 
   sendToMenu = new SendtoWorkspacemenu(this);
   insert(i18n(WindowmenuSet, WindowmenuSendTo, "Send To ..."),
-	 sendToMenu);
+         sendToMenu);
   insert(i18n(WindowmenuSet, WindowmenuShade, "Shade"),
-	 BScreen::WindowShade);
+         BScreen::WindowShade);
   insert(i18n(WindowmenuSet, WindowmenuIconify, "Iconify"),
-	 BScreen::WindowIconify);
+         BScreen::WindowIconify);
   insert(i18n(WindowmenuSet, WindowmenuMaximize, "Maximize"),
-	 BScreen::WindowMaximize);
+         BScreen::WindowMaximize);
   insert(i18n(WindowmenuSet, WindowmenuRaise,"Raise"),
-	 BScreen::WindowRaise);
+         BScreen::WindowRaise);
   insert(i18n(WindowmenuSet, WindowmenuLower, "Lower"),
-	 BScreen::WindowLower);
+         BScreen::WindowLower);
   insert(i18n(WindowmenuSet, WindowmenuStick, "Stick"),
-	 BScreen::WindowStick);
+         BScreen::WindowStick);
   insert(i18n(WindowmenuSet, WindowmenuKillClient, "Kill Client"),
-	 BScreen::WindowKill);
+         BScreen::WindowKill);
   insert(i18n(WindowmenuSet, WindowmenuClose, "Close"),
-	 BScreen::WindowClose);
+         BScreen::WindowClose);
 
   update();
 

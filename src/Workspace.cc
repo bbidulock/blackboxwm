@@ -113,10 +113,10 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
     } else {
       BlackboxWindow *top = stackingList->first();
       if (! top || ! top->setInputFocus()) {
-	screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
-	XSetInputFocus(screen->getBlackbox()->getXDisplay(),
-		       screen->getToolbar()->getWindowID(),
-		       RevertToParent, CurrentTime);
+        screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
+        XSetInputFocus(screen->getBlackbox()->getXDisplay(),
+                       screen->getToolbar()->getWindowID(),
+                       RevertToParent, CurrentTime);
       }
     }
   }
@@ -341,38 +341,38 @@ void Workspace::placeWindow(BlackboxWindow *win) {
       start_pos_y : availableArea.height - win_h - start_pos_y;
 
     while (!placed &&
-	   ((screen->getColPlacementDirection() == BScreen::BottomTop) ?
-	    place_y > 0 : place_y + win_h < (signed) availableArea.height)) {
+           ((screen->getColPlacementDirection() == BScreen::BottomTop) ?
+            place_y > 0 : place_y + win_h < (signed) availableArea.height)) {
       place_x = (screen->getRowPlacementDirection() == BScreen::LeftRight) ?
-	start_pos_x : availableArea.width - win_w - start_pos_x;
+        start_pos_x : availableArea.width - win_w - start_pos_x;
 
       while (!placed &&
-	     ((screen->getRowPlacementDirection() == BScreen::RightLeft) ?
-	      place_x > 0 : place_x + win_w < (signed) availableArea.width)) {
+             ((screen->getRowPlacementDirection() == BScreen::RightLeft) ?
+              place_x > 0 : place_x + win_w < (signed) availableArea.width)) {
         placed = True;
 
         it.reset();
         for (BlackboxWindow *curr = it.current(); placed && curr;
-	     it++, curr = it.current()) {
+             it++, curr = it.current()) {
           int curr_w = curr->getWidth() + (screen->getBorderWidth() * 4);
           int curr_h = ((curr->isShaded()) ?
                         curr->getTitleHeight() :
                         curr->getHeight()) + (screen->getBorderWidth() * 4);
-	  
+          
           if (curr->getXFrame() < place_x + win_w &&
               curr->getXFrame() + curr_w > place_x &&
               curr->getYFrame() < place_y + win_h &&
               curr->getYFrame() + curr_h > place_y) {
             placed = False;
-	  }
+          }
         }
 
         if (! placed)
-	  place_x += (change_x * delta_x);
+          place_x += (change_x * delta_x);
       }
 
       if (! placed)
-	place_y += (change_y * delta_y);
+        place_y += (change_y * delta_y);
     }
 
     break;
@@ -383,19 +383,19 @@ void Workspace::placeWindow(BlackboxWindow *win) {
       start_pos_x : availableArea.width - win_w - start_pos_x;
 
     while (!placed &&
-	   ((screen->getRowPlacementDirection() == BScreen::RightLeft) ?
-	    place_x > 0 : place_x + win_w < (signed) availableArea.width)) {
+           ((screen->getRowPlacementDirection() == BScreen::RightLeft) ?
+            place_x > 0 : place_x + win_w < (signed) availableArea.width)) {
       place_y = (screen->getColPlacementDirection() == BScreen::TopBottom) ?
-	start_pos_y : availableArea.height - win_h - start_pos_y;
+        start_pos_y : availableArea.height - win_h - start_pos_y;
       
       while (!placed &&
-	     ((screen->getColPlacementDirection() == BScreen::BottomTop) ?
-	      place_y > 0 : place_y + win_h < (signed) availableArea.height)){
+             ((screen->getColPlacementDirection() == BScreen::BottomTop) ?
+              place_y > 0 : place_y + win_h < (signed) availableArea.height)){
         placed = True;
 
         it.reset();
         for (BlackboxWindow *curr = it.current(); placed && curr;
-	     it++, curr = it.current()) {
+             it++, curr = it.current()) {
           int curr_w = curr->getWidth() + (screen->getBorderWidth() * 4);
           int curr_h = ((curr->isShaded()) ?
                         curr->getTitleHeight() :
@@ -406,15 +406,15 @@ void Workspace::placeWindow(BlackboxWindow *win) {
               curr->getYFrame() < place_y + win_h &&
               curr->getYFrame() + curr_h > place_y) {
             placed = False;
-	  }
+          }
         }
 
-	if (! placed)
-	  place_y += (change_y * delta_y);
+        if (! placed)
+          place_y += (change_y * delta_y);
       }
 
       if (! placed)
-	place_x += (change_x * delta_x);
+        place_x += (change_x * delta_x);
     }
 
     break;
@@ -423,7 +423,7 @@ void Workspace::placeWindow(BlackboxWindow *win) {
 
   if (! placed) {
     if (((unsigned) cascade_x > (availableArea.width / (unsigned) 2)) ||
-	((unsigned) cascade_y > (availableArea.height / (unsigned) 2)))
+        ((unsigned) cascade_y > (availableArea.height / (unsigned) 2)))
       cascade_x = cascade_y = 32;
 
     place_x = cascade_x;
