@@ -391,7 +391,6 @@ unsigned int bt::Menu::insertItem(const ustring &label,
 
 unsigned int bt::Menu::insertItem(const ustring &label, Menu *submenu,
                                   unsigned int id, unsigned int index) {
-  submenu->_parent_menu = this;
   return insertItem(MenuItem(submenu, label), id, index);
 }
 
@@ -507,7 +506,6 @@ bool bt::Menu::isItemChecked(unsigned int id) const {
 
 void bt::Menu::removeItemByIterator(ItemList::iterator& it) {
   if (it->sub) {
-    it->sub->_parent_menu = 0;
     if (it->sub->_auto_delete)
       delete it->sub;
   }
@@ -662,6 +660,7 @@ void bt::Menu::hide(void) {
 
   _active_index = ~0u;
   _active_submenu = 0;
+  _parent_menu = 0;
 
   const ItemList::iterator &end = _items.end();
   ItemList::iterator it;
@@ -1181,6 +1180,8 @@ void bt::Menu::activateItem(const Rect &rect, MenuItem &item) {
   // mark new active item
   _active_index = item.indx;
   _active_submenu = item.sub;
+  if (_active_submenu)
+    _active_submenu->_parent_menu = this;
 
   item.active = item.enabled;
   XClearArea(_app.XDisplay(), _window,
