@@ -11,15 +11,6 @@ ADD: support for KDE2 via the new WM Spec at
 
 ADD: get volunteers to translate blackbox into other languages
 
-DONE: focus handling needs revisiting for multiple screen displays... the
-      method i have now seems to work fine for single screen...
-
-DONE: get screen information from the XWindowAttributes.screen after calling
-      XGetWindowAttributes... instead of looking XMapRequest.root and trying to
-      search for the BScreen*
-
-DONE: when starting a resize... the vertical size will reduce slightly... fix it
-
 ADD: draw resize frames using the styles borderWidth... should be fairly
      simple to do...
 
@@ -29,4 +20,3 @@ CHECK: look at why memory usage is up... RSS won't go < 1mb now
 
 (still here) better support for window groups... i don't know when i'm going to
     ever get to this
-
