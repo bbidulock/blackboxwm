@@ -14,6 +14,12 @@ CVS warts:
 
 Stuff TODO or On The Way(tm):
 -----------------------------
+CHANGE: deiconify() is overloaded, we need a "place window on Workspace N" and
+        "bring this window back from icon land"
+
+CHANGE: as a corrolary to the above, BlackboxWindow::mapRequest should actually
+        be called for map requests
+
 CHECK: getBlackboxHints() and restoreAttributes() do a lot of the same work
        should look into whether it can be combined or not
 
