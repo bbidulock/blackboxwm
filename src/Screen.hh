@@ -46,6 +46,7 @@ extern "C" {
 typedef std::vector<Window> WindowStack;
 
 #include "Configmenu.hh"
+#include "Display.hh"
 #include "Iconmenu.hh"
 #include "Netwm.hh"
 #include "Workspacemenu.hh"

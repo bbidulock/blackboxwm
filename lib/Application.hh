@@ -25,7 +25,6 @@
 #ifndef __Application_hh
 #define __Application_hh
 
-#include "Display.hh"
 #include "Timer.hh"
 #include "Util.hh"
 
@@ -33,7 +32,8 @@
 
 namespace bt {
 
-  // forward declaration
+  // forward declarations
+  class Display;
   class EventHandler;
   class Menu;
 
@@ -47,7 +47,7 @@ namespace bt {
       int event_basep, error_basep;
     } shape;
 
-    Display _display;
+    Display *_display;
     std::string _app_name;
 
     RunState run_state;
@@ -112,8 +112,8 @@ namespace bt {
 
     void quit(void) { setRunState( SHUTDOWN ); }
 
-    ::Display *XDisplay(void) const { return _display.XDisplay(); }
-    const Display& display(void) const { return _display; }
+    ::Display *XDisplay(void) const;
+    inline const Display& display(void) const { return *_display; }
 
     const std::string &applicationName(void) const { return _app_name; }
 

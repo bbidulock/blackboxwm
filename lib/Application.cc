@@ -23,6 +23,7 @@
 // DEALINGS IN THE SOFTWARE.
 
 #include "Application.hh"
+#include "Display.hh"
 #include "EventHandler.hh"
 #include "Menu.hh"
 
@@ -94,11 +95,13 @@ static void signalhandler(int sig) {
 
 bt::Application::Application(const std::string &app_name, const char *dpy_name,
                              bool multi_head)
-  : _display(dpy_name, multi_head), _app_name(app_name),
-    run_state(STARTUP), xserver_time(CurrentTime), menu_grab(false)
+  : _app_name(app_name), run_state(STARTUP), xserver_time(CurrentTime),
+    menu_grab(false)
 {
   assert(base_app == 0);
   ::base_app = this;
+
+  _display = new Display(dpy_name, multi_head);
 
   struct sigaction action;
   action.sa_handler = signalhandler;
@@ -121,7 +124,7 @@ bt::Application::Application(const std::string &app_name, const char *dpy_name,
   sigaction(SIGUSR2, &action, NULL);
 
 #ifdef    SHAPE
-  shape.extensions = XShapeQueryExtension(_display.XDisplay(),
+  shape.extensions = XShapeQueryExtension(_display->XDisplay(),
                                           &shape.event_basep,
                                           &shape.error_basep);
 #else // !SHAPE
@@ -133,7 +136,7 @@ bt::Application::Application(const std::string &app_name, const char *dpy_name,
   NumLockMask = ScrollLockMask = 0;
 
   const XModifierKeymap* const modmap =
-    XGetModifierMapping(_display.XDisplay());
+    XGetModifierMapping(_display->XDisplay());
   if (modmap && modmap->max_keypermod > 0) {
     const int mask_table[] = {
       ShiftMask, LockMask, ControlMask, Mod1Mask,
@@ -145,9 +148,9 @@ bt::Application::Application(const std::string &app_name, const char *dpy_name,
     // Note: Caps lock is not retrieved the same way as Scroll and Num lock
     // since it doesn't need to be.
     const KeyCode num_lock =
-      XKeysymToKeycode(_display.XDisplay(), XK_Num_Lock);
+      XKeysymToKeycode(_display->XDisplay(), XK_Num_Lock);
     const KeyCode scroll_lock =
-      XKeysymToKeycode(_display.XDisplay(), XK_Scroll_Lock);
+      XKeysymToKeycode(_display->XDisplay(), XK_Scroll_Lock);
 
     for (size_t cnt = 0; cnt < size; ++cnt) {
       if (! modmap->modifiermap[cnt]) continue;
@@ -173,8 +176,14 @@ bt::Application::Application(const std::string &app_name, const char *dpy_name,
 }
 
 
-bt::Application::~Application(void)
-{ ::base_app = 0; }
+bt::Application::~Application(void) {
+  delete _display;
+  ::base_app = 0;
+}
+
+
+::Display *bt::Application::XDisplay(void) const
+{ return _display->XDisplay(); }
 
 
 void bt::Application::startup(void) { }
@@ -186,7 +195,7 @@ void bt::Application::eventLoop(void) {
 
   setRunState(RUNNING);
 
-  const int xfd = XConnectionNumber(_display.XDisplay());
+  const int xfd = XConnectionNumber(_display->XDisplay());
 
   while (run_state == RUNNING) {
     if (pending_signals) {
@@ -221,9 +230,9 @@ void bt::Application::eventLoop(void) {
 
     if (run_state != RUNNING) break;
 
-    if (XPending(_display.XDisplay())) {
+    if (XPending(_display->XDisplay())) {
       XEvent e;
-      XNextEvent(_display.XDisplay(), &e);
+      XNextEvent(_display->XDisplay(), &e);
       process_event(&e);
     } else {
       fd_set rfds;
@@ -290,7 +299,7 @@ void bt::Application::process_event(XEvent *event) {
         // recent menu instead.
         handler = dynamic_cast<EventHandler*>(menus.front());
       }
-      XAllowEvents(_display.XDisplay(), SyncPointer, xserver_time);
+      XAllowEvents(_display->XDisplay(), SyncPointer, xserver_time);
       break;
     }
     case EnterNotify:
@@ -306,7 +315,7 @@ void bt::Application::process_event(XEvent *event) {
       // we have active menus.  we should send all key events to the most
       // recent popup menu, regardless of where the pointer is
       handler = dynamic_cast<EventHandler*>(menus.front());
-      XAllowEvents(_display.XDisplay(), SyncKeyboard, xserver_time);
+      XAllowEvents(_display->XDisplay(), SyncKeyboard, xserver_time);
       break;
     }
     default:
@@ -337,7 +346,7 @@ void bt::Application::process_event(XEvent *event) {
     // compress motion notify events
     XEvent realevent;
     unsigned int i = 0;
-    while (XCheckTypedWindowEvent(_display.XDisplay(), event->xmotion.window,
+    while (XCheckTypedWindowEvent(_display->XDisplay(), event->xmotion.window,
                                   MotionNotify, &realevent)) {
       ++i;
     }
@@ -420,7 +429,7 @@ void bt::Application::process_event(XEvent *event) {
     ey1 = event->xexpose.y;
     ex2 = ex1 + event->xexpose.width - 1;
     ey2 = ey1 + event->xexpose.height - 1;
-    while (XCheckTypedWindowEvent(_display.XDisplay(), event->xexpose.window,
+    while (XCheckTypedWindowEvent(_display->XDisplay(), event->xexpose.window,
                                   Expose, &realevent)) {
       ++i;
 
@@ -447,7 +456,7 @@ void bt::Application::process_event(XEvent *event) {
     // compress configure notify events
     XEvent realevent;
     unsigned int i = 0;
-    while (XCheckTypedWindowEvent(_display.XDisplay(),
+    while (XCheckTypedWindowEvent(_display->XDisplay(),
                                   event->xconfigure.window,
                                   ConfigureNotify, &realevent)) {
       ++i;
@@ -514,7 +523,7 @@ void bt::Application::grabButton(unsigned int button, unsigned int modifiers,
   unsigned int length = (allow_scroll_lock) ? MaskListLength / 2:
                                               MaskListLength;
   for (size_t cnt = 0; cnt < length; ++cnt) {
-    XGrabButton(_display.XDisplay(), button, modifiers | MaskList[cnt],
+    XGrabButton(_display->XDisplay(), button, modifiers | MaskList[cnt],
                 grab_window, owner_events, event_mask, pointer_mode,
                 keyboard_mode, confine_to, cursor);
   }
@@ -528,7 +537,7 @@ void bt::Application::grabButton(unsigned int button, unsigned int modifiers,
 void bt::Application::ungrabButton(unsigned int button, unsigned int modifiers,
                                Window grab_window) const {
   for (size_t cnt = 0; cnt < MaskListLength; ++cnt) {
-    XUngrabButton(_display.XDisplay(), button, modifiers | MaskList[cnt],
+    XUngrabButton(_display->XDisplay(), button, modifiers | MaskList[cnt],
                   grab_window);
   }
 }
@@ -571,14 +580,14 @@ void bt::Application::openMenu(Menu *menu) {
   menus.push_front(menu);
 
   if (! menu_grab && // grab mouse and keyboard for the menu
-      XGrabKeyboard(_display.XDisplay(), menu->windowID(), True, GrabModeSync,
+      XGrabKeyboard(_display->XDisplay(), menu->windowID(), True, GrabModeSync,
                     GrabModeAsync, xserver_time) == GrabSuccess &&
-      XGrabPointer(_display.XDisplay(), menu->windowID(), True,
+      XGrabPointer(_display->XDisplay(), menu->windowID(), True,
                    (ButtonPressMask | ButtonReleaseMask | ButtonMotionMask |
                     PointerMotionMask | LeaveWindowMask),
                    GrabModeSync, GrabModeAsync, None, None,
                    xserver_time) == GrabSuccess) {
-    XAllowEvents(_display.XDisplay(), SyncPointer, xserver_time);
+    XAllowEvents(_display->XDisplay(), SyncPointer, xserver_time);
   }
   menu_grab = true;
 }
@@ -595,11 +604,11 @@ void bt::Application::closeMenu(Menu *menu) {
   if (! menus.empty())
     return;
 
-  XAllowEvents(_display.XDisplay(), ReplayPointer, xserver_time);
+  XAllowEvents(_display->XDisplay(), ReplayPointer, xserver_time);
 
-  XUngrabKeyboard(_display.XDisplay(), xserver_time);
-  XUngrabPointer(_display.XDisplay(), xserver_time);
+  XUngrabKeyboard(_display->XDisplay(), xserver_time);
+  XUngrabPointer(_display->XDisplay(), xserver_time);
 
-  XSync(_display.XDisplay(), False);
+  XSync(_display->XDisplay(), False);
   menu_grab = false;
 }
