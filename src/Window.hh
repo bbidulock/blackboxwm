@@ -298,7 +298,7 @@ public:
 
   inline unsigned int workspace(void) const
   { return client.workspace; }
-  void setWorkspace(unsigned int n);
+  void setWorkspace(unsigned int new_workspace);
 
   inline unsigned int windowNumber(void) const
   { return window_number; }

@@ -268,7 +268,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   frame.window = createToplevelWindow();
   blackbox->insertEventHandler(frame.window, this);
 
-  frame.plate = createChildWindow(frame.window, ExposureMask);
+  frame.plate = createChildWindow(frame.window, NoEventMask);
   blackbox->insertEventHandler(frame.plate, this);
 
   if (client.decorations & Decor_Titlebar)
@@ -298,6 +298,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   blackbox->insertEventHandler(client.window, this);
   blackbox->insertWindow(client.window, this);
+  blackbox->insertWindow(frame.plate, this);
 
   // preserve the window's initial state on first map, and its current state
   // across a restart
@@ -476,7 +477,8 @@ void BlackboxWindow::associateClientWindow(void) {
 
   XChangeSaveSet(blackbox->XDisplay(), client.window, SetModeInsert);
 
-  XSelectInput(blackbox->XDisplay(), frame.plate, SubstructureRedirectMask);
+  XSelectInput(blackbox->XDisplay(), frame.plate,
+               FocusChangeMask | SubstructureRedirectMask);
 
   /*
     note we used to grab around this call to XReparentWindow however the
@@ -1456,8 +1458,8 @@ void BlackboxWindow::configure(int dx, int dy,
 }
 
 
-#ifdef SHAPE
 void BlackboxWindow::configureShape(void) {
+#ifdef SHAPE
   XShapeCombineShape(blackbox->XDisplay(), frame.window, ShapeBounding,
                      frame.margin.left - frame.border_w,
                      frame.margin.top - frame.border_w,
@@ -1485,38 +1487,42 @@ void BlackboxWindow::configureShape(void) {
   XShapeCombineRectangles(blackbox->XDisplay(), frame.window,
                           ShapeBounding, 0, 0, xrect, num,
                           ShapeUnion, Unsorted);
-}
 #endif // SHAPE
+}
 
 
 bool BlackboxWindow::setInputFocus(void) {
-  if (! isVisible()) return False;
-  if (client.state.focused) return True;
+  if (!isVisible())
+    return false;
+  if (client.state.focused)
+    return true;
 
   // do not give focus to a window that is about to close
-  if (! validateClient()) return False;
+  if (!validateClient())
+    return false;
 
-  if (! frame.rect.intersects(screen->screenInfo().rect())) {
+  const bt::Rect &scr = screen->screenInfo().rect();
+  if (!frame.rect.intersects(scr)) {
     // client is outside the screen, move it to the center
-    configure((screen->screenInfo().width() - frame.rect.width()) / 2,
-              (screen->screenInfo().height() - frame.rect.height()) / 2,
+    configure(scr.x() + (scr.width() - frame.rect.width()) / 2,
+              scr.y() + (scr.height() - frame.rect.height()) / 2,
               frame.rect.width(), frame.rect.height());
   }
 
-  if (! client.transientList.empty()) {
+  if (!client.transientList.empty()) {
     // transfer focus to any modal transients
     BlackboxWindowList::iterator it, end = client.transientList.end();
-    for (it = client.transientList.begin(); it != end; ++it)
-      if ((*it)->client.state.modal) return (*it)->setInputFocus();
+    for (it = client.transientList.begin(); it != end; ++it) {
+      if ((*it)->client.state.modal)
+        return (*it)->setInputFocus();
+    }
   }
 
-  bool ret = True;
   switch (client.focus_mode) {
   case F_Passive:
   case F_LocallyActive:
     XSetInputFocus(blackbox->XDisplay(), client.window,
                    RevertToPointerRoot, CurrentTime);
-    blackbox->setFocusedWindow(this);
     break;
 
   case F_GloballyActive:
@@ -1524,9 +1530,10 @@ bool BlackboxWindow::setInputFocus(void) {
     /*
      * we could set the focus to none, since the window doesn't accept focus,
      * but we shouldn't set focus to nothing since this would surely make
-     * someone angry
+     * someone angry.  instead, set the focus to the plate
      */
-    ret = False;
+    XSetInputFocus(blackbox->XDisplay(), frame.plate,
+                   RevertToPointerRoot, CurrentTime);
     break;
   }
 
@@ -1542,12 +1549,13 @@ bool BlackboxWindow::setInputFocus(void) {
     ce.xclient.data.l[2] = 0l;
     ce.xclient.data.l[3] = 0l;
     ce.xclient.data.l[4] = 0l;
-    XSendEvent(blackbox->XDisplay(), client.window, False,
-               NoEventMask, &ce);
+    XSendEvent(blackbox->XDisplay(), client.window, False, NoEventMask, &ce);
     XFlush(blackbox->XDisplay());
   }
 
-  return ret;
+  blackbox->setFocusedWindow(this);
+
+  return true;
 }
 
 
@@ -1756,8 +1764,8 @@ void BlackboxWindow::remaximize(void) {
 }
 
 
-void BlackboxWindow::setWorkspace(unsigned int n) {
-  client.workspace = n;
+void BlackboxWindow::setWorkspace(unsigned int new_workspace) {
+  client.workspace = new_workspace;
 }
 
 
