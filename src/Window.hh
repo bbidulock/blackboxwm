@@ -197,7 +197,7 @@ private:
 
     unsigned int inside_w, inside_h, // window w/h without border_w
       title_h, label_w, label_h, handle_h,
-      button_w, button_h, grip_w, grip_h, mwm_border_w, border_w,
+      button_w, grip_w, mwm_border_w, border_w,
       bevel_w;
   } frame;
 

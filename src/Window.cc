@@ -405,19 +405,19 @@ void BlackboxWindow::decorate(void) {
   BTexture* texture;
 
   texture = &(screen->getWindowStyle()->b_focus);
-  frame.fbutton = texture->render(frame.button_w, frame.button_h,
+  frame.fbutton = texture->render(frame.button_w, frame.button_w,
                                   frame.fbutton);
   if (! frame.fbutton)
     frame.fbutton_pixel = texture->color().pixel();
 
   texture = &(screen->getWindowStyle()->b_unfocus);
-  frame.ubutton = texture->render(frame.button_w, frame.button_h,
+  frame.ubutton = texture->render(frame.button_w, frame.button_w,
                                   frame.ubutton);
   if (! frame.ubutton)
     frame.ubutton_pixel = texture->color().pixel();
 
   texture = &(screen->getWindowStyle()->b_pressed);
-  frame.pbutton = texture->render(frame.button_w, frame.button_h,
+  frame.pbutton = texture->render(frame.button_w, frame.button_w,
                                   frame.pbutton);
   if (! frame.pbutton)
     frame.pbutton_pixel = texture->color().pixel();
@@ -465,12 +465,12 @@ void BlackboxWindow::decorate(void) {
       frame.uhandle_pixel = texture->color().pixel();
 
     texture = &(screen->getWindowStyle()->g_focus);
-    frame.fgrip = texture->render(frame.grip_w, frame.grip_h, frame.fgrip);
+    frame.fgrip = texture->render(frame.grip_w, frame.handle_h, frame.fgrip);
     if (! frame.fgrip)
       frame.fgrip_pixel = texture->color().pixel();
 
     texture = &(screen->getWindowStyle()->g_unfocus);
-    frame.ugrip = texture->render(frame.grip_w, frame.grip_h, frame.ugrip);
+    frame.ugrip = texture->render(frame.grip_w, frame.handle_h, frame.ugrip);
     if (! frame.ugrip)
       frame.ugrip_pixel = texture->color().pixel();
 
@@ -647,7 +647,7 @@ void BlackboxWindow::positionButtons(Bool redecorate_label) {
     if (frame.iconify_button == None) createIconifyButton();
 
     XMoveResizeWindow(blackbox->getXDisplay(), frame.iconify_button, by, by,
-                      frame.button_w, frame.button_h);
+                      frame.button_w, frame.button_w);
     XMapWindow(blackbox->getXDisplay(), frame.iconify_button);
     XClearWindow(blackbox->getXDisplay(), frame.iconify_button);
 
@@ -662,7 +662,7 @@ void BlackboxWindow::positionButtons(Bool redecorate_label) {
     if (frame.close_button == None) createCloseButton();
 
     XMoveResizeWindow(blackbox->getXDisplay(), frame.close_button, bx, by,
-                      frame.button_w, frame.button_h);
+                      frame.button_w, frame.button_w);
     XMapWindow(blackbox->getXDisplay(), frame.close_button);
     XClearWindow(blackbox->getXDisplay(), frame.close_button);
 
@@ -675,7 +675,7 @@ void BlackboxWindow::positionButtons(Bool redecorate_label) {
     if (frame.maximize_button == None) createMaximizeButton();
 
     XMoveResizeWindow(blackbox->getXDisplay(), frame.maximize_button, bx, by,
-                      frame.button_w, frame.button_h);
+                      frame.button_w, frame.button_w);
     XMapWindow(blackbox->getXDisplay(), frame.maximize_button);
     XClearWindow(blackbox->getXDisplay(), frame.maximize_button);
 
@@ -769,10 +769,10 @@ void BlackboxWindow::positionWindows(void) {
                       frame.inside_w, frame.handle_h);
     XMoveResizeWindow(blackbox->getXDisplay(), frame.left_grip,
                       -frame.border_w, -frame.border_w,
-                      frame.grip_w, frame.grip_h);
+                      frame.grip_w, frame.handle_h);
     XMoveResizeWindow(blackbox->getXDisplay(), frame.right_grip,
                       frame.inside_w - frame.grip_w - frame.border_w,
-                      -frame.border_w, frame.grip_w, frame.grip_h);
+                      -frame.border_w, frame.grip_w, frame.handle_h);
     XMapSubwindows(blackbox->getXDisplay(), frame.handle);
     XMapWindow(blackbox->getXDisplay(), frame.handle);
   } else if (frame.handle) {
@@ -1911,7 +1911,7 @@ void BlackboxWindow::redrawIconifyButton(Bool pressed) {
   BPen pen((flags.focused) ? screen->getWindowStyle()->b_pic_focus :
            screen->getWindowStyle()->b_pic_unfocus);
   XDrawRectangle(blackbox->getXDisplay(), frame.iconify_button, pen.gc(),
-                 2, (frame.button_h - 5), (frame.button_w - 5), 2);
+                 2, (frame.button_w - 5), (frame.button_w - 5), 2);
 }
 
 
@@ -1945,7 +1945,7 @@ void BlackboxWindow::redrawMaximizeButton(Bool pressed) {
   BPen pen((flags.focused) ? screen->getWindowStyle()->b_pic_focus :
            screen->getWindowStyle()->b_pic_unfocus);
   XDrawRectangle(blackbox->getXDisplay(), frame.maximize_button, pen.gc(),
-                 2, 2, (frame.button_w - 5), (frame.button_h - 5));
+                 2, 2, (frame.button_w - 5), (frame.button_w - 5));
   XDrawLine(blackbox->getXDisplay(), frame.maximize_button, pen.gc(),
             2, 3, (frame.button_w - 3), 3);
 }
@@ -1981,9 +1981,9 @@ void BlackboxWindow::redrawCloseButton(Bool pressed) {
   BPen pen((flags.focused) ? screen->getWindowStyle()->b_pic_focus :
            screen->getWindowStyle()->b_pic_unfocus);
   XDrawLine(blackbox->getXDisplay(), frame.close_button, pen.gc(),
-            2, 2, (frame.button_w - 3), (frame.button_h - 3));
+            2, 2, (frame.button_w - 3), (frame.button_w - 3));
   XDrawLine(blackbox->getXDisplay(), frame.close_button, pen.gc(),
-            2, (frame.button_h - 3), (frame.button_w - 3), 2);
+            2, (frame.button_w - 3), (frame.button_w - 3), 2);
 }
 
 
@@ -2302,21 +2302,21 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
 void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
   if (re->window == frame.maximize_button) {
     if ((re->x >= 0 && re->x <= static_cast<signed>(frame.button_w)) &&
-        (re->y >= 0 && re->y <= static_cast<signed>(frame.button_h))) {
+        (re->y >= 0 && re->y <= static_cast<signed>(frame.button_w))) {
       maximize(re->button);
     } else {
       redrawMaximizeButton(flags.maximized);
     }
   } else if (re->window == frame.iconify_button) {
     if ((re->x >= 0 && re->x <= static_cast<signed>(frame.button_w)) &&
-        (re->y >= 0 && re->y <= static_cast<signed>(frame.button_h))) {
+        (re->y >= 0 && re->y <= static_cast<signed>(frame.button_w))) {
       iconify();
     } else {
       redrawIconifyButton(False);
     }
   } else if (re->window == frame.close_button) {
     if ((re->x >= 0 && re->x <= static_cast<signed>(frame.button_w)) &&
-        (re->y >= 0 && re->y <= static_cast<signed>(frame.button_h)))
+        (re->y >= 0 && re->y <= static_cast<signed>(frame.button_w)))
       close();
     redrawCloseButton(False);
   } else if (flags.moving) {
@@ -2706,7 +2706,7 @@ void BlackboxWindow::upsize(void) {
                        (frame.bevel_w * 2) + 2);
 
     frame.label_h = frame.title_h - (frame.bevel_w * 2);
-    frame.button_w = frame.button_h = (frame.label_h - 2);
+    frame.button_w = (frame.label_h - 2);
 
     // set the top frame margin
     frame.margin.top = frame.border_w + frame.title_h +
@@ -2714,7 +2714,7 @@ void BlackboxWindow::upsize(void) {
   } else {
     frame.title_h = 0;
     frame.label_h = 0;
-    frame.button_w = frame.button_h = 0;
+    frame.button_w = 0;
 
     // set the top frame margin
     frame.margin.top = frame.border_w + frame.mwm_border_w;
@@ -2725,14 +2725,14 @@ void BlackboxWindow::upsize(void) {
 
   if (decorations & Decor_Handle) {
     frame.grip_w = frame.button_w * 2;
-    frame.grip_h = frame.handle_h = screen->getHandleWidth();
+    frame.handle_h = screen->getHandleWidth();
 
     // set the bottom frame margin
     frame.margin.bottom = frame.border_w + frame.handle_h +
                           frame.border_w + frame.mwm_border_w;
   } else {
     frame.handle_h = 0;
-    frame.grip_w = frame.grip_h = 0;
+    frame.grip_w = 0;
 
     // set the bottom frame margin
     frame.margin.bottom = frame.border_w + frame.mwm_border_w;
@@ -2778,7 +2778,6 @@ void BlackboxWindow::constrain(Corner anchor, int *pw, int *ph) {
   if (dh < static_cast<signed>(client.min_height)) dh = client.min_height;
   if (dw > static_cast<signed>(client.max_width)) dw = client.max_width;
   if (dh > static_cast<signed>(client.max_height)) dh = client.max_height;
-
 
   dw = (dw - base_width) / client.width_inc;
   dh = (dh - base_height) / client.height_inc;
