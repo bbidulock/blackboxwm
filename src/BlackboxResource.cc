@@ -29,6 +29,7 @@
 #include <Image.hh>
 #include <Resource.hh>
 
+#include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
 
