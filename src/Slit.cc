@@ -174,16 +174,23 @@ void Slit::removeClient(SlitClient *client, Bool remap) {
 }
 
 
+struct SlitClientMatch {
+  Window window;
+  SlitClientMatch(Window w): window(w) {}
+  inline Bool operator()(const Slit::SlitClient* client) const {
+    return (client->window == window);
+  }
+};
+
+
 void Slit::removeClient(Window w, Bool remap) {
-  SlitClientList::iterator it = clientList.begin();
+  SlitClientList::iterator it;
   const SlitClientList::iterator end = clientList.end();
-  for (; it != end; ++it) {
-    SlitClient *tmp = *it;
-    if (tmp->window == w) {
-      removeClient(tmp, remap);
-      reconfigure();
-      return;
-    }
+
+  it = std::find_if(clientList.begin(), end, SlitClientMatch(w));
+  if (it != end) {
+    removeClient(*it, remap);
+    reconfigure();
   }
 }
 

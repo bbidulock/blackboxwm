@@ -93,14 +93,17 @@ public:
   void reconfigure(void);
 };
 
+
 class Slit : public TimeoutHandler {
-private:
+public:
   struct SlitClient {
     Window window, client_window, icon_window;
 
     int x, y;
     unsigned int width, height;
   };
+
+private:
   typedef std::list<SlitClient*> SlitClientList;
 
   Bool on_top, hidden, do_auto_hide;

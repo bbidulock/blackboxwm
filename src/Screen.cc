@@ -107,7 +107,7 @@ static int anotherWMRunning(Display *display, XErrorEvent *) {
 }
 
 struct dcmp {
-  bool operator()(const char *one, const char *two) const {
+  Bool operator()(const char *one, const char *two) const {
     return (strcmp(one, two) < 0) ? True : False;
   }
 };

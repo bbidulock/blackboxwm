@@ -222,12 +222,12 @@ protected:
   void createMaximizeButton(void);
   void redrawLabel(void);
   void redrawAllButtons(void);
-  void redrawCloseButton(Bool);
-  void redrawIconifyButton(Bool);
-  void redrawMaximizeButton(Bool);
+  void redrawCloseButton(Bool pressed);
+  void redrawIconifyButton(Bool pressed);
+  void redrawMaximizeButton(Bool pressed);
   void restoreGravity(void);
   void setGravityOffsets(void);
-  void setState(unsigned long);
+  void setState(unsigned long new_state);
   void upsize(void);
   void downsize(void);
   void right_fixsize(int *gx = 0, int *gy = 0);
@@ -248,10 +248,10 @@ public:
   inline const Bool isIconifiable(void) const { return functions.iconify; }
   inline const Bool isMaximizable(void) const { return functions.maximize; }
   inline const Bool isResizable(void) const { return functions.resize; }
-  inline const bool isClosable(void) const { return functions.close; }
+  inline const Bool isClosable(void) const { return functions.close; }
 
-  inline const bool hasTitlebar(void) const { return decorations.titlebar; }
-  inline const bool hasTransient(void) const
+  inline const Bool hasTitlebar(void) const { return decorations.titlebar; }
+  inline const Bool hasTransient(void) const
   { return ((client.transient) ? True : False); }
 
   inline BlackboxWindow *getTransient(void) { return client.transient; }
@@ -289,7 +289,7 @@ public:
   Bool validateClient(void);
   Bool setInputFocus(void);
 
-  void setFocusFlag(Bool);
+  void setFocusFlag(Bool focus);
   void iconify(void);
   void deiconify(Bool reassoc = True, Bool raise = True);
   void show(void);

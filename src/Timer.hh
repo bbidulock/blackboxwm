@@ -47,7 +47,7 @@ class BTimer {
 private:
   TimerQueueManager *manager;
   TimeoutHandler *handler;
-  bool timing, recur;
+  Bool timing, recur;
 
   timeval _start, _timeout;
 
@@ -60,17 +60,17 @@ public:
 
   void fireTimeout(void);
 
-  inline const bool isTiming(void) const { return timing; } 
-  inline const bool isRecurring(void) const { return recur; }
+  inline const Bool isTiming(void) const { return timing; } 
+  inline const Bool isRecurring(void) const { return recur; }
 
   inline const timeval &getTimeout(void) const { return _timeout; }
   inline const timeval &getStartTime(void) const { return _start; }
 
   timeval timeRemaining(const timeval &tm) const;
-  bool shouldFire(const timeval &tm) const;
+  Bool shouldFire(const timeval &tm) const;
   timeval endpoint(void) const;
 
-  inline void recurring(bool b) { recur = b; }
+  inline void recurring(Bool b) { recur = b; }
 
   void setTimeout(long t);
   void setTimeout(const timeval &t);
@@ -79,9 +79,10 @@ public:
   void stop(void);   // manager releases timer
   void halt(void);   // halts the timer
 
-  bool operator<(const BTimer& other) const
+  Bool operator<(const BTimer& other) const
   { return shouldFire(other.endpoint()); }
 };
+
 
 #include <queue>
 #include <algorithm>
@@ -99,7 +100,7 @@ public:
     // after removing the item we need to make the heap again
     std::make_heap(c.begin(), c.end(), comp);
   }
-  bool empty(void) const { return _Base::empty(); }
+  Bool empty(void) const { return _Base::empty(); }
   size_t size(void) const { return _Base::size(); }
   void push(const _Tp& value) { _Base::push(value); }
   void pop(void) { _Base::pop(); }
@@ -111,7 +112,7 @@ private:
 };
 
 struct TimerLessThan {
-  bool operator()(const BTimer* const l, const BTimer* const r) const {
+  Bool operator()(const BTimer* const l, const BTimer* const r) const {
     return *r < *l;
   }
 };

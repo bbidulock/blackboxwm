@@ -36,9 +36,11 @@ BTimer::BTimer(TimerQueueManager *m, TimeoutHandler *h) {
   recur = timing = False;
 }
 
+
 BTimer::~BTimer(void) {
   if (timing) stop();
 }
+
 
 void BTimer::setTimeout(long t) {
   _timeout.tv_sec = t / 1000;
@@ -46,10 +48,12 @@ void BTimer::setTimeout(long t) {
   _timeout.tv_usec *= 1000;
 }
 
+
 void BTimer::setTimeout(const timeval &t) {
   _timeout.tv_sec = t.tv_sec;
   _timeout.tv_usec = t.tv_usec;
 }
+
 
 void BTimer::start(void) {
   gettimeofday(&_start, 0);
@@ -60,20 +64,24 @@ void BTimer::start(void) {
   }
 }
 
+
 void BTimer::stop(void) {
   timing = False;
 
   manager->removeTimer(this);
 }
 
+
 void BTimer::halt(void) {
   timing = False;
 }
+
 
 void BTimer::fireTimeout(void) {
   if (handler)
     handler->timeout();
 }
+
 
 timeval BTimer::timeRemaining(const timeval &tm) const {
   timeval ret = endpoint();
@@ -84,6 +92,7 @@ timeval BTimer::timeRemaining(const timeval &tm) const {
   return normalizeTimeval(ret);
 }
 
+
 timeval BTimer::endpoint(void) const {
   timeval ret;
 
@@ -93,7 +102,8 @@ timeval BTimer::endpoint(void) const {
   return normalizeTimeval(ret);
 }
 
-bool BTimer::shouldFire(const timeval &tm) const {
+
+Bool BTimer::shouldFire(const timeval &tm) const {
   timeval end = endpoint();
 
   return !((tm.tv_sec < end.tv_sec) ||

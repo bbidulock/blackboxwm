@@ -707,30 +707,27 @@ void BImageControl::parseColor(BColor *color, char *c) {
   }
 }
 
+
 struct ZeroRefCheck {
-  bool operator()(const BImageControl::CachedImage &image) const {
+  inline Bool operator()(const BImageControl::CachedImage &image) const {
     return (image.count == 0);
   }
 };
 
 struct CacheCleaner {
   Display *display;
+  ZeroRefCheck ref_check;
   CacheCleaner(Display *d): display(d) {}
-  void operator()(const BImageControl::CachedImage& image) const {
-    if (image.count == 0)
+  inline void operator()(const BImageControl::CachedImage& image) const {
+    if (ref_check(image))
       XFreePixmap(display, image.pixmap);
   }
 };
 
-struct ZeroRefCount {
-  bool operator()(const BImageControl::CachedImage& image) const {
-    return (image.count == 0);
-  }
-};
 
 void BImageControl::timeout(void) {
-  std::for_each(cache.begin(), cache.end(),
-                CacheCleaner(basedisplay->getXDisplay()));
-  cache.remove_if(ZeroRefCount());
+  CacheCleaner cleaner(basedisplay->getXDisplay());
+  std::for_each(cache.begin(), cache.end(), cleaner);
+  cache.remove_if(cleaner.ref_check);
 }
 
