@@ -52,14 +52,8 @@ public:
   void addWindow(BlackboxWindow *win);
   void removeWindow(BlackboxWindow *win);
 
-  inline BlackboxWindow *lastFocusedWindow(void) const
-  { return lastfocus; }
-  inline void setLastFocusedWindow(BlackboxWindow *w)
-  { lastfocus = w; }
-
 private:
   BScreen *_screen;
-  BlackboxWindow *lastfocus;
   Clientmenu *clientmenu;
   unsigned int _id;
 };

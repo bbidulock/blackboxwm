@@ -35,12 +35,9 @@
 
 Workspace::Workspace(BScreen *scrn, unsigned int i) {
   _screen = scrn;
-
   _id = i;
 
   clientmenu = new Clientmenu(*_screen->blackbox(), *_screen, _id);
-
-  lastfocus = (BlackboxWindow *) 0;
 
   setName(_screen->resource().nameOfWorkspace(i));
 }
