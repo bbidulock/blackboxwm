@@ -47,7 +47,7 @@ public:
   virtual void hide();
 
 protected:
-  virtual void itemClicked(const Point &, const Item &item, int button);
+  virtual void itemClicked(const Item &item, int button);
 
 private:
   class Directionmenu : public Basemenu {
@@ -55,7 +55,7 @@ private:
     Slitmenu *slitmenu;
 
   protected:
-    virtual void itemClicked(const Point &, const Item &, int);
+    virtual void itemClicked(const Item &, int);
 
   public:
     Directionmenu(Slitmenu *);
@@ -66,7 +66,7 @@ private:
     Slitmenu *slitmenu;
 
   protected:
-    virtual void itemClicked(const Point &, const Item &, int);
+    virtual void itemClicked(const Item &, int);
 
   public:
     Placementmenu(Slitmenu *);

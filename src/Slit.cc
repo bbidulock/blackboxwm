@@ -619,7 +619,7 @@ Slitmenu::Slitmenu(Slit *sl)
   if (slit->doAutoHide()) setItemChecked(3, True);
 }
 
-void Slitmenu::itemClicked(const Point &, const Item &item, int button)
+void Slitmenu::itemClicked(const Item &item, int button)
 {
   if (button != 1)
     return;
@@ -669,7 +669,7 @@ Slitmenu::Directionmenu::Directionmenu(Slitmenu *sm)
     setItemChecked(1, True);
 }
 
-void Slitmenu::Directionmenu::itemClicked(const Point &, const Item &item, int button)
+void Slitmenu::Directionmenu::itemClicked(const Item &item, int button)
 {
   if (button != 1)
     return;
@@ -712,7 +712,7 @@ Slitmenu::Placementmenu::Placementmenu(Slitmenu *sm)
          Slit::BottomRight);
 }
 
-void Slitmenu::Placementmenu::itemClicked(const Point &, const Item &item, int button)
+void Slitmenu::Placementmenu::itemClicked(const Item &item, int button)
 {
   if (button != 1)
     return;
