@@ -1827,6 +1827,9 @@ void BlackboxWindow::setFullScreen(bool b) {
     }
   }
 
+  ungrabButtons();
+  grabButtons();
+
   if (refocus) setInputFocus();
 }
 
