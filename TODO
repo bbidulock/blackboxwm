@@ -12,6 +12,9 @@ CVS Bugs:
 
 * mozilla right click focus bug
 
+* dock apps started before blackbox are often not accepted.  Restarting can
+  also jettison dock apps
+
 CVS warts:
 -----------------------------
 * transient handling should be properly done for cases where a single toplevel
