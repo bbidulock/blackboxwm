@@ -133,7 +133,7 @@ void SlitDirectionmenu::refresh(void) {
 void SlitDirectionmenu::itemClicked(unsigned int id, unsigned int button) {
   if (button != 1) return;
 
-  _slit->setDirection(static_cast<Slit::Direction>(id));
+  _slit->setDirection((Slit::Direction) id);
 }
 
 
@@ -164,7 +164,7 @@ SlitPlacementmenu::SlitPlacementmenu(bt::Application &app, unsigned int screen,
 void SlitPlacementmenu::itemClicked(unsigned int id, unsigned int button) {
   if (button != 1) return;
 
-  _slit->setPlacement(static_cast<Slit::Placement>(id));
+  _slit->setPlacement((Slit::Placement) id);
 }
 
 
@@ -176,14 +176,13 @@ Slit::Slit(BScreen *scr) {
 
   ScreenResource& res = screen->resource();
 
-  on_top = res.isSlitOnTop();
-  hidden = do_auto_hide = res.doSlitAutoHide();
+  hidden = doAutoHide();
 
   display = screen->screenInfo().display().XDisplay();
   frame.window = frame.pixmap = None;
 
   timer = new bt::Timer(blackbox, this);
-  timer->setTimeout(blackbox->getAutoRaiseDelay());
+  timer->setTimeout(blackbox->resource().autoRaiseDelay());
 
   slitmenu =
     new Slitmenu(*blackbox, screen->screenNumber(), this);
@@ -309,7 +308,7 @@ void Slit::removeClient(SlitClient *client, bool remap) {
   }
 
   delete client;
-  client = 0;
+  client = (SlitClient *) 0;
 }
 
 
@@ -502,7 +501,7 @@ void Slit::updateStrut(void) {
   if (! clientList.empty()) {
     // when not hidden both borders are in use, when hidden only one is
     unsigned int border_width = screen->resource().borderWidth();
-    if (! do_auto_hide)
+    if (! doAutoHide())
       border_width *= 2;
 
     switch (screen->resource().slitDirection()) {
@@ -536,7 +535,7 @@ void Slit::updateStrut(void) {
       case BottomCenter:
       case BottomLeft:
       case BottomRight: {
-        const int pos = (do_auto_hide) ? frame.y_hidden : frame.rect.y();
+        const int pos = (doAutoHide()) ? frame.y_hidden : frame.rect.y();
         strut.bottom = (screen->screenInfo().rect().bottom() - pos);
       }
         break;
@@ -658,11 +657,11 @@ void Slit::shutdown(void) {
 void Slit::buttonPressEvent(const XButtonEvent * const e) {
   if (e->window != frame.window) return;
 
-  if (e->button == Button1 && ! on_top) {
+  if (e->button == Button1 && ! isOnTop()) {
     WindowStack w;
     w.push_back(frame.window);
     screen->raiseWindows(&w);
-  } else if (e->button == Button2 && ! on_top) {
+  } else if (e->button == Button2 && ! isOnTop()) {
     XLowerWindow(display, frame.window);
   } else if (e->button == Button3) {
     slitmenu->popup(e->x_root, e->y_root);
@@ -671,7 +670,7 @@ void Slit::buttonPressEvent(const XButtonEvent * const e) {
 
 
 void Slit::enterNotifyEvent(const XCrossingEvent * const) {
-  if (! do_auto_hide)
+  if (! doAutoHide())
     return;
 
   if (hidden) {
@@ -683,7 +682,7 @@ void Slit::enterNotifyEvent(const XCrossingEvent * const) {
 
 
 void Slit::leaveNotifyEvent(const XCrossingEvent * const) {
-  if (! do_auto_hide)
+  if (! doAutoHide())
     return;
 
   if (hidden) {
@@ -736,13 +735,16 @@ void Slit::timeout(bt::Timer *) {
 
 
 void Slit::toggleOnTop(void) {
+  bool on_top = isOnTop();
   on_top = ! on_top;
-  if (on_top) screen->raiseWindows(0);
+  if (on_top) screen->raiseWindows((WindowStack *) 0);
+  screen->resource().saveSlitOnTop(on_top);
 }
 
 
 
 void Slit::toggleAutoHide(void) {
+  bool do_auto_hide = doAutoHide();
   do_auto_hide = ! do_auto_hide;
 
   updateStrut();
@@ -752,6 +754,7 @@ void Slit::toggleAutoHide(void) {
     if (timer->isTiming()) timer->stop();
     timer->fireTimeout();
   }
+  screen->resource().saveSlitAutoHide(do_auto_hide);
 }
 
 

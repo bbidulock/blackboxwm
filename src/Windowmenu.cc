@@ -127,15 +127,14 @@ SendToWorkspacemenu::SendToWorkspacemenu(bt::Application &app,
 
 void SendToWorkspacemenu::refresh(void) {
   clear();
-  unsigned workspace_count = _window->getScreen()->getWorkspaceCount();
-  for (unsigned int i = 0; i < workspace_count; ++i)
-    insertItem(_window->getScreen()->getWorkspaceName(i), i);
+  const unsigned num = _window->getScreen()->resource().numberOfWorkspaces();
+  for (unsigned int i = 0; i < num; ++i)
+    insertItem(_window->getScreen()->resource().nameOfWorkspace(i), i);
 
   /*
     give a little visual indication to the user about which workspace
-    the window is on.  you obviously can't send a window to that
-    workspace the window is already on, which is why it is checked and
-    disabled
+    the window is on.  you obviously can't send a window to the workspace
+    the window is already on, which is why it is checked and disabled
   */
   setItemEnabled(_window->getWorkspaceNumber(), false);
   setItemChecked(_window->getWorkspaceNumber(), true);

@@ -156,7 +156,7 @@ ToolbarPlacementmenu::ToolbarPlacementmenu(bt::Application &app,
 void ToolbarPlacementmenu::itemClicked(unsigned int id, unsigned int button) {
   if (button != 1) return;
 
-  _toolbar->setPlacement(static_cast<Toolbar::Placement>(id));
+  _toolbar->setPlacement((Toolbar::Placement) id);
 }
 
 
@@ -181,12 +181,9 @@ Toolbar::Toolbar(BScreen *scrn) {
   clock_timer->start();
 
   hide_timer = new bt::Timer(blackbox, this);
-  hide_timer->setTimeout(blackbox->getAutoRaiseDelay());
+  hide_timer->setTimeout(blackbox->resource().autoRaiseDelay());
 
-  ScreenResource& resource = screen->resource();
-
-  on_top = resource.isToolbarOnTop();
-  hidden = do_auto_hide = resource.doToolbarAutoHide();
+  hidden = doAutoHide();
 
   editing = False;
   new_name_pos = 0;
@@ -367,7 +364,7 @@ void Toolbar::reconfigure(void) {
         resource.saveStrftimeFormat("%I:%M %p");
         len = strftime(t, 1024, resource.strftimeFormat(), tt);
       }
-      /*
+      /* 
        * find the length of the rendered string and add room for two extra
        * characters to it.  This allows for variable width output of the fonts.
        * two 'w' are used to get the widest possible width
@@ -379,8 +376,9 @@ void Toolbar::reconfigure(void) {
 
   frame.workspace_label_w = 0;
 
-  for (unsigned int i = 0; i < screen->getWorkspaceCount(); i++) {
-    width = bt::textRect(style->font, screen->getWorkspaceName(i)).width();
+  for (unsigned int i = 0; i < screen->resource().numberOfWorkspaces(); i++) {
+    width =
+      bt::textRect(style->font, screen->resource().nameOfWorkspace(i)).width();
     frame.workspace_label_w = std::max(frame.workspace_label_w, width);
   }
 
@@ -551,7 +549,7 @@ void Toolbar::redrawWindowLabel(void) {
 
 void Toolbar::redrawWorkspaceLabel(void) {
   const std::string& name =
-    screen->getWorkspaceName(screen->getCurrentWorkspaceID());
+    screen->resource().nameOfWorkspace(screen->getCurrentWorkspaceID());
   const ScreenResource::ToolbarStyle* const style =
     screen->resource().toolbarStyle();
 
@@ -752,12 +750,12 @@ void Toolbar::buttonPressEvent(const XButtonEvent *be) {
       redrawPrevWindowButton(True);
     else if (be->window == frame.nwbutton)
       redrawNextWindowButton(True);
-    else if (! on_top) {
+    else if (! isOnTop()) {
       WindowStack w;
       w.push_back(frame.window);
       screen->raiseWindows(&w);
     }
-  } else if (be->button == 2 && (! on_top)) {
+  } else if (be->button == 2 && (! isOnTop())) {
     XLowerWindow(display, frame.window);
   } else if (be->button == 3) {
     int x = be->x_root, y;
@@ -784,16 +782,18 @@ void Toolbar::buttonReleaseEvent(const XButtonEvent *re) {
     if (re->window == frame.psbutton) {
       redrawPrevWorkspaceButton(False);
 
-      if (bt::within(re->x, re->y, frame.button_w, frame.button_w))
-       if (screen->getCurrentWorkspaceID() > 0)
+      if (bt::within(re->x, re->y, frame.button_w, frame.button_w)) {
+        if (screen->getCurrentWorkspaceID() > 0)
           screen->changeWorkspaceID(screen->getCurrentWorkspaceID() - 1);
         else
-          screen->changeWorkspaceID(screen->getWorkspaceCount() - 1);
+          screen->changeWorkspaceID(screen->resource().numberOfWorkspaces() - 1);
+      }
     } else if (re->window == frame.nsbutton) {
       redrawNextWorkspaceButton(False);
 
       if (bt::within(re->x, re->y, frame.button_w, frame.button_w))
-        if (screen->getCurrentWorkspaceID() < screen->getWorkspaceCount() - 1)
+        if (screen->getCurrentWorkspaceID() <
+            screen->resource().numberOfWorkspaces() - 1)
           screen->changeWorkspaceID(screen->getCurrentWorkspaceID() + 1);
         else
           screen->changeWorkspaceID(0);
@@ -814,7 +814,7 @@ void Toolbar::buttonReleaseEvent(const XButtonEvent *re) {
 
 
 void Toolbar::enterNotifyEvent(const XCrossingEvent *) {
-  if (! do_auto_hide)
+  if (! doAutoHide())
     return;
 
   if (hidden) {
@@ -825,7 +825,7 @@ void Toolbar::enterNotifyEvent(const XCrossingEvent *) {
 }
 
 void Toolbar::leaveNotifyEvent(const XCrossingEvent *) {
-  if (! do_auto_hide)
+  if (! doAutoHide())
     return;
 
   if (hidden) {
@@ -877,12 +877,12 @@ void Toolbar::keyPressEvent(const XKeyEvent *ke) {
       else
         blackbox->setFocusedWindow(0);
 
-      screen->setWorkspaceName(screen->getCurrentWorkspaceID(),
-                               new_workspace_name);
+      screen->resource().saveWorkspaceName(screen->getCurrentWorkspaceID(),
+                                           new_workspace_name);
 
       screen->getWorkspacemenu()->
         changeItem(screen->getCurrentWorkspaceID(),
-                   screen->getWorkspaceName(screen->getCurrentWorkspaceID()));
+                   screen->resource().nameOfWorkspace(screen->getCurrentWorkspaceID()));
       screen->updateDesktopNamesHint();
 
       new_workspace_name.erase();
@@ -962,7 +962,8 @@ void Toolbar::timeout(bt::Timer *timer) {
 
 
 void Toolbar::toggleAutoHide(void) {
-  do_auto_hide = (do_auto_hide) ?  False : True;
+  bool do_auto_hide = doAutoHide();
+  do_auto_hide = ! do_auto_hide;
 
   updateStrut();
   screen->getSlit()->reposition();
@@ -972,12 +973,15 @@ void Toolbar::toggleAutoHide(void) {
     if (hide_timer->isTiming()) hide_timer->stop();
     hide_timer->fireTimeout();
   }
+  screen->resource().saveToolbarAutoHide(do_auto_hide);
 }
 
 
 void Toolbar::toggleOnTop(void) {
+  bool on_top = isOnTop();
   on_top = ! on_top;
-  if (on_top) screen->raiseWindows(0);
+  if (on_top) screen->raiseWindows((WindowStack *) 0);
+  screen->resource().saveSlitOnTop(on_top);
 }
 
 

@@ -79,40 +79,20 @@ private:
 
 
 class Workspace: public bt::NoCopy {
-private:
-  BScreen *screen;
-  BlackboxWindow *lastfocus;
-  Clientmenu *clientmenu;
-
-  StackingList stackingList;
-
-  std::string name;
-  unsigned int id;
-  unsigned int cascade_x, cascade_y;
-
-  void raiseTransients(const BlackboxWindow * const win,
-                       WindowStack& stack);
-  void lowerTransients(const BlackboxWindow * const win,
-                       WindowStack& stack);
-
-  void placeWindow(BlackboxWindow *win);
-  bool cascadePlacement(bt::Rect& win, const bt::Rect& availableArea);
-  bool smartPlacement(bt::Rect& win, const bt::Rect& availableArea);
-
 public:
-  Workspace(BScreen *scrn, unsigned int i = 0);
+  Workspace(BScreen *scrn, unsigned int i);
 
-  inline BScreen *getScreen(void) { return screen; }
+  BScreen *getScreen(void) { return screen; }
 
-  inline BlackboxWindow *getLastFocusedWindow(void) { return lastfocus; }
+  BlackboxWindow *getLastFocusedWindow(void) { return lastfocus; }
 
-  inline Clientmenu *getMenu(void) { return clientmenu; }
+  Clientmenu *getMenu(void) { return clientmenu; }
 
-  inline const std::string& getName(void) const { return name; }
+  const std::string& name(void) const;
 
-  inline unsigned int getID(void) const { return id; }
+  unsigned int getID(void) const { return id; }
 
-  inline void setLastFocusedWindow(BlackboxWindow *w) { lastfocus = w; }
+  void setLastFocusedWindow(BlackboxWindow *w) { lastfocus = w; }
 
   BlackboxWindow* getWindow(unsigned int index);
   BlackboxWindow* getNextWindowInList(BlackboxWindow *w);
@@ -136,6 +116,25 @@ public:
   void reconfigure(void);
   void setCurrent(void);
   void setName(const std::string& new_name);
+
+private:
+  BScreen *screen;
+  BlackboxWindow *lastfocus;
+  Clientmenu *clientmenu;
+
+  StackingList stackingList;
+
+  unsigned int id;
+  unsigned int cascade_x, cascade_y;
+
+  void raiseTransients(const BlackboxWindow * const win,
+                       WindowStack& stack);
+  void lowerTransients(const BlackboxWindow * const win,
+                       WindowStack& stack);
+
+  void placeWindow(BlackboxWindow *win);
+  bool cascadePlacement(bt::Rect& win, const bt::Rect& availableArea);
+  bool smartPlacement(bt::Rect& win, const bt::Rect& availableArea);
 };
 
 

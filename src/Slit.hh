@@ -33,6 +33,7 @@ extern "C" {
 #include <list>
 
 #include "Screen.hh"
+#include "BlackboxResource.hh"
 #include "Util.hh"
 
 // forward declaration
@@ -51,7 +52,7 @@ public:
 private:
   typedef std::list<SlitClient*> SlitClientList;
 
-  bool on_top, hidden, do_auto_hide;
+  bool hidden;
   Display *display;
 
   Blackbox *blackbox;
@@ -78,26 +79,21 @@ public:
   Slit(BScreen *scr);
   virtual ~Slit(void);
 
-  inline bool isOnTop(void) const { return on_top; }
-  inline bool isHidden(void) const { return hidden; }
-  inline bool doAutoHide(void) const { return do_auto_hide; }
+  bool isOnTop(void) const { return screen->resource().isSlitOnTop(); }
+  bool isHidden(void) const { return hidden; }
+  bool doAutoHide(void) const { return screen->resource().doSlitAutoHide(); }
 
-  inline Window getWindowID(void) const { return frame.window; }
+  Window getWindowID(void) const { return frame.window; }
 
-  inline int getX(void) const
-  { return ((hidden) ? frame.x_hidden : frame.rect.x()); }
-  inline int getY(void) const
-  { return ((hidden) ? frame.y_hidden : frame.rect.y()); }
-
-  inline unsigned int getWidth(void) const { return frame.rect.width(); }
-  inline unsigned int getExposedWidth(void) const {
-    if (screen->resource().slitDirection() == Vertical && do_auto_hide)
+  unsigned int getWidth(void) const { return frame.rect.width(); }
+  unsigned int getExposedWidth(void) const {
+    if (screen->resource().slitDirection() == Vertical && doAutoHide())
       return screen->resource().bevelWidth();
     return frame.rect.width();
   }
-  inline unsigned int getHeight(void) const { return frame.rect.height(); }
-  inline unsigned int getExposedHeight(void) const {
-    if (screen->resource().slitDirection() == Horizontal && do_auto_hide)
+  unsigned int getHeight(void) const { return frame.rect.height(); }
+  unsigned int getExposedHeight(void) const {
+    if (screen->resource().slitDirection() == Horizontal && doAutoHide())
       return screen->resource().bevelWidth();
     return frame.rect.height();
   }

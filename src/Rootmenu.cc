@@ -76,7 +76,7 @@ void Rootmenu::itemClicked(unsigned int id, unsigned int) {
 
   case BScreen::SetStyle:
     if (! it->second.string.empty())
-      _bscreen->getBlackbox()->saveStyleFilename(it->second.string);
+      _bscreen->getBlackbox()->resource().saveStyleFilename(it->second.string);
 
   case BScreen::Reconfigure:
     _bscreen->getBlackbox()->reconfigure();

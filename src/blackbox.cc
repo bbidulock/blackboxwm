@@ -31,7 +31,6 @@ extern "C" {
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
 #include <X11/Xatom.h>
-#include <X11/cursorfont.h>
 #include <X11/keysym.h>
 
 #ifdef    SHAPE
@@ -110,9 +109,9 @@ extern "C" {
 #include "Window.hh"
 
 
-Blackbox::Blackbox(char **m_argv, const char *dpy_name, const char *rc,
-                   bool multi_head)
-  : bt::Application(m_argv[0], dpy_name, multi_head) {
+Blackbox::Blackbox(char **m_argv, const char *dpy_name,
+                   const std::string& rc, bool multi_head)
+  : bt::Application(m_argv[0], dpy_name, multi_head), _resource(rc) {
   if (! XSupportsLocale())
     fprintf(stderr, "X server does not support locale\n");
 
@@ -120,63 +119,44 @@ Blackbox::Blackbox(char **m_argv, const char *dpy_name, const char *rc,
     fprintf(stderr, "cannot set locale modifiers\n");
 
   argv = m_argv;
-  if (! rc) rc = "~/.blackboxrc";
-  rc_file = bt::expandTilde(rc);
 
   no_focus = False;
 
-  resource.auto_raise_delay.tv_sec = resource.auto_raise_delay.tv_usec = 0;
-
   active_screen = 0;
-  focused_window = 0;
-  _netwm = 0;
-
-  XrmInitialize();
-  load_rc();
+  focused_window = (BlackboxWindow *) 0;
+  _netwm = (bt::Netwm*) 0;
 
   init_icccm();
 
-  cursor.session =
-    XCreateFontCursor(XDisplay(), XC_left_ptr);
-  cursor.move =
-    XCreateFontCursor(XDisplay(), XC_fleur);
-  cursor.resize_bottom_left =
-    XCreateFontCursor(XDisplay(), XC_bottom_left_corner);
-  cursor.resize_bottom_right =
-    XCreateFontCursor(XDisplay(), XC_bottom_right_corner);
+  if (! multi_head || display().screenCount() == 1)
+    screen_list_count = 1;
+  else
+    screen_list_count = display().screenCount();
 
-  screen_list_count = 0;
-  if (! multi_head || display().screenCount() == 1) {
-    BScreen* screen = new BScreen(this, DefaultScreen(XDisplay()));
+  _resource.load(*this);
+
+  screen_list = new BScreen*[screen_list_count];
+  unsigned int managed = 0;
+  for (unsigned int i = 0; i < screen_list_count; ++i) {
+    BScreen *screen = new BScreen(this, i);
 
     if (! screen->isScreenManaged()) {
       delete screen;
-    } else {
-      ++screen_list_count;
-      screen_list = new BScreen*[screen_list_count];
-      screen_list[0] = screen;
+      continue;
     }
-  } else {
-    screen_list = new BScreen*[display().screenCount()];
-    for (unsigned int i = 0; i < display().screenCount(); i++) {
-      BScreen *screen = new BScreen(this, i);
 
-      if (! screen->isScreenManaged()) {
-        delete screen;
-        continue;
-      }
-
-      screen_list[i] = screen;
-      ++screen_list_count;
-    }
+    screen_list[i] = screen;
+    ++managed;
   }
 
-  if (screen_list_count == 0) {
+  if (managed == 0) {
     fprintf(stderr,
             bt::i18n(blackboxSet, blackboxNoManagableScreens,
               "Blackbox::Blackbox: no managable screens found, aborting.\n"));
     ::exit(3);
   }
+
+  screen_list_count = managed;
 
   // start with the first managed screen as the active screen
   setActiveScreen(screen_list[0]);
@@ -433,12 +413,14 @@ bool Blackbox::validateWindow(Window window) {
   return True;
 }
 
+
 BScreen *Blackbox::findScreen(Window window) {
   for (unsigned int i = 0; i < screen_list_count; ++i)
     if (screen_list[i]->screenInfo().rootWindow() == window)
       return screen_list[i];
   return 0;
 }
+
 
 BlackboxWindow *Blackbox::findWindow(Window window) {
   WindowLookup::iterator it = windowSearchList.find(window);
@@ -463,7 +445,7 @@ BWindowGroup *Blackbox::findWindowGroup(Window window) {
   if (it != groupSearchList.end())
     return it->second;
 
-  return 0;
+  return (BWindowGroup *) 0;
 }
 
 
@@ -509,281 +491,12 @@ void Blackbox::shutdown(void) {
 
 
 void Blackbox::save_rc(void) {
-  XrmDatabase new_blackboxrc = 0;
-  char rc_string[1024];
-
-  load_rc();
-
-  sprintf(rc_string, "session.menuFile:  %s", getMenuFilename());
-  XrmPutLineResource(&new_blackboxrc, rc_string);
-
-  sprintf(rc_string, "session.colorsPerChannel:  %d",
-          bt::Image::colorsPerChannel());
-  XrmPutLineResource(&new_blackboxrc, rc_string);
-
-  sprintf(rc_string, "session.doubleClickInterval:  %lu",
-          resource.double_click_interval);
-  XrmPutLineResource(&new_blackboxrc, rc_string);
-
-  sprintf(rc_string, "session.autoRaiseDelay:  %lu",
-          ((resource.auto_raise_delay.tv_sec * 1000) +
-           (resource.auto_raise_delay.tv_usec / 1000)));
-  XrmPutLineResource(&new_blackboxrc, rc_string);
-
-  sprintf(rc_string, "session.cacheLife: %lu", resource.cache_life / 60000);
-  XrmPutLineResource(&new_blackboxrc, rc_string);
-
-  sprintf(rc_string, "session.cacheMax: %lu", resource.cache_max);
-  XrmPutLineResource(&new_blackboxrc, rc_string);
-
-  for (unsigned int i = 0; i < screen_list_count; ++i) {
-    BScreen *screen = screen_list[i];
-    int screen_number = screen->screenNumber();
-
-    char *placement = 0;
-
-    switch (screen->resource().slitPlacement()) {
-    case Slit::TopLeft: placement = "TopLeft"; break;
-    case Slit::CenterLeft: placement = "CenterLeft"; break;
-    case Slit::BottomLeft: placement = "BottomLeft"; break;
-    case Slit::TopCenter: placement = "TopCenter"; break;
-    case Slit::BottomCenter: placement = "BottomCenter"; break;
-    case Slit::TopRight: placement = "TopRight"; break;
-    case Slit::BottomRight: placement = "BottomRight"; break;
-    case Slit::CenterRight: default: placement = "CenterRight"; break;
-    }
-
-    sprintf(rc_string, "session.screen%d.slit.placement: %s", screen_number,
-            placement);
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    sprintf(rc_string, "session.screen%d.slit.direction: %s", screen_number,
-            ((screen->resource().slitDirection() == Slit::Horizontal) ?
-             "Horizontal" : "Vertical"));
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    sprintf(rc_string, "session.screen%d.slit.onTop: %s", screen_number,
-            ((screen->getSlit()->isOnTop()) ? "True" : "False"));
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    sprintf(rc_string, "session.screen%d.slit.autoHide: %s", screen_number,
-            ((screen->getSlit()->doAutoHide()) ? "True" : "False"));
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    sprintf(rc_string, "session.opaqueMove: %s",
-            ((screen->resource().doOpaqueMove()) ? "True" : "False"));
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    const char *ditherMode;
-    switch (bt::Image::ditherMode()) {
-    case bt::OrderedDither:        ditherMode = "OrderedDither";        break;
-    case bt::FloydSteinbergDither: ditherMode = "FloydSteinbergDither"; break;
-    default: ditherMode = "NoDither"; break;
-    }
-    sprintf(rc_string, "session.imageDither: %s", ditherMode);
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    sprintf(rc_string, "session.screen%d.placementIgnoresShaded: %s",
-            screen_number,
-            (screen->resource().placementIgnoresShaded()) ? "True" : "False");
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    sprintf(rc_string, "session.screen%d.fullMaximization: %s", screen_number,
-            ((screen->resource().doFullMax()) ? "True" : "False"));
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    sprintf(rc_string, "session.screen%d.focusNewWindows: %s", screen_number,
-            ((screen->resource().doFocusNew()) ? "True" : "False"));
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    sprintf(rc_string, "session.screen%d.focusLastWindow: %s", screen_number,
-            ((screen->resource().doFocusLast()) ? "True" : "False"));
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    sprintf(rc_string, "session.screen%d.disableBindingsWithScrollLock: %s",
-            screen_number,
-            ((screen->resource().allowScrollLock()) ? "True" : "False"));
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    sprintf(rc_string, "session.screen%d.rowPlacementDirection: %s",
-            screen_number,
-            ((screen->resource().rowPlacementDirection() == LeftRight) ?
-             "LeftToRight" : "RightToLeft"));
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    sprintf(rc_string, "session.screen%d.colPlacementDirection: %s",
-            screen_number,
-            ((screen->resource().colPlacementDirection() == TopBottom) ?
-             "TopToBottom" : "BottomToTop"));
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    switch (screen->resource().placementPolicy()) {
-    case CascadePlacement:
-      placement = "CascadePlacement";
-      break;
-    case ColSmartPlacement:
-      placement = "ColSmartPlacement";
-      break;
-
-    case RowSmartPlacement:
-    default:
-      placement = "RowSmartPlacement";
-      break;
-    }
-    sprintf(rc_string, "session.screen%d.windowPlacement:  %s", screen_number,
-            placement);
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    std::string fmodel;
-    if (screen->resource().isSloppyFocus()) {
-      fmodel = "SloppyFocus";
-      if (screen->resource().doAutoRaise()) fmodel += " AutoRaise";
-      if (screen->resource().doClickRaise()) fmodel += " ClickRaise";
-    } else {
-      fmodel = "ClickToFocus";
-    }
-    sprintf(rc_string, "session.screen%d.focusModel:  %s", screen_number,
-            fmodel.c_str());
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    sprintf(rc_string, "session.screen%d.workspaces:  %d", screen_number,
-            screen->getWorkspaceCount());
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    sprintf(rc_string, "session.screen%d.toolbar.onTop:  %s", screen_number,
-            ((screen->getToolbar()->isOnTop()) ? "True" : "False"));
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    sprintf(rc_string, "session.screen%d.toolbar.autoHide:  %s",
-            screen_number,
-            ((screen->getToolbar()->doAutoHide()) ? "True" : "False"));
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    switch (screen->resource().toolbarPlacement()) {
-    case Toolbar::TopLeft: placement = "TopLeft"; break;
-    case Toolbar::BottomLeft: placement = "BottomLeft"; break;
-    case Toolbar::TopCenter: placement = "TopCenter"; break;
-    case Toolbar::TopRight: placement = "TopRight"; break;
-    case Toolbar::BottomRight: placement = "BottomRight"; break;
-    case Toolbar::BottomCenter: default: placement = "BottomCenter"; break;
-    }
-
-    sprintf(rc_string, "session.screen%d.toolbar.placement: %s",
-            screen_number, placement);
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    load_rc(screen);
-
-    // these are static, but may not be saved in the user's .blackboxrc,
-    // writing these resources will allow the user to edit them at a later
-    // time... but loading the defaults before saving allows us to rewrite the
-    // users changes...
-
-    sprintf(rc_string, "session.screen%d.strftimeFormat: %s", screen_number,
-            screen->resource().strftimeFormat());
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    sprintf(rc_string, "session.screen%d.edgeSnapThreshold: %d",
-            screen_number, screen->resource().edgeSnapThreshold());
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    sprintf(rc_string, "session.screen%d.toolbar.widthPercent:  %d",
-            screen_number, screen->resource().toolbarWidthPercent());
-    XrmPutLineResource(&new_blackboxrc, rc_string);
-
-    // write out the user's workspace names
-    std::string save_string = screen->getWorkspaceName(0);
-    for (unsigned int j = 1; j < screen->getWorkspaceCount(); ++j) {
-      save_string += ',';
-      save_string += screen->getWorkspaceName(j);
-    }
-
-    char *resource_string = new char[save_string.length() + 48];
-    sprintf(resource_string, "session.screen%d.workspaceNames:  %s",
-            screen_number, save_string.c_str());
-    XrmPutLineResource(&new_blackboxrc, resource_string);
-
-    delete [] resource_string;
-  }
-
-  XrmDatabase old_blackboxrc = XrmGetFileDatabase(rc_file.c_str());
-
-  XrmMergeDatabases(new_blackboxrc, &old_blackboxrc);
-  XrmPutFileDatabase(old_blackboxrc, rc_file.c_str());
-  XrmDestroyDatabase(old_blackboxrc);
+  _resource.save(*this);
 }
 
 
 void Blackbox::load_rc(void) {
-  XrmDatabase database = 0;
-
-  database = XrmGetFileDatabase(rc_file.c_str());
-
-  XrmValue value;
-  char *value_type;
-  int int_value;
-  unsigned long long_value;
-
-  if (XrmGetResource(database, "session.menuFile", "Session.MenuFile",
-                     &value_type, &value)) {
-    resource.menu_file = bt::expandTilde(value.addr);
-  } else {
-    resource.menu_file = DEFAULTMENU;
-  }
-
-  if (XrmGetResource(database, "session.colorsPerChannel",
-                     "Session.ColorsPerChannel", &value_type, &value) &&
-      sscanf(value.addr, "%d", &int_value) == 1) {
-    bt::Image::setColorsPerChannel(int_value);
-  }
-
-  if (XrmGetResource(database, "session.styleFile", "Session.StyleFile",
-                     &value_type, &value))
-    resource.style_file = bt::expandTilde(value.addr);
-  else
-    resource.style_file = DEFAULTSTYLE;
-
-  resource.double_click_interval = 250;
-  if (XrmGetResource(database, "session.doubleClickInterval",
-                     "Session.DoubleClickInterval", &value_type, &value) &&
-      sscanf(value.addr, "%lu", &long_value) == 1) {
-    resource.double_click_interval = long_value;
-  }
-
-  resource.auto_raise_delay.tv_usec = 400;
-  if (XrmGetResource(database, "session.autoRaiseDelay",
-                     "Session.AutoRaiseDelay", &value_type, &value) &&
-      sscanf(value.addr, "%lu", &long_value) == 1) {
-    resource.auto_raise_delay.tv_usec = long_value;
-  }
-
-  resource.auto_raise_delay.tv_sec = resource.auto_raise_delay.tv_usec / 1000;
-  resource.auto_raise_delay.tv_usec -=
-    (resource.auto_raise_delay.tv_sec * 1000);
-  resource.auto_raise_delay.tv_usec *= 1000;
-
-  resource.cache_life = 5l;
-  if (XrmGetResource(database, "session.cacheLife", "Session.CacheLife",
-                     &value_type, &value) &&
-      sscanf(value.addr, "%lu", &long_value) == 1) {
-    resource.cache_life = long_value;
-  }
-  resource.cache_life *= 60000;
-
-  resource.cache_max = 200;
-  if (XrmGetResource(database, "session.cacheMax", "Session.CacheMax",
-                     &value_type, &value) &&
-      sscanf(value.addr, "%lu", &long_value) == 1) {
-    resource.cache_max = long_value;
-  }
-}
-
-
-void Blackbox::load_rc(BScreen *screen) {
-  ScreenResource& screen_resource = screen->resource();
-  screen_resource.loadRCFile(screen->screenNumber(), rc_file);
-
-  bt::Image::setDitherMode(screen_resource.ditherMode());
+  _resource.load(*this);
 }
 
 
@@ -801,15 +514,16 @@ void Blackbox::reconfigure(void) {
 
 
 void Blackbox::real_reconfigure(void) {
-  XrmDatabase new_blackboxrc = 0;
+  XrmDatabase new_blackboxrc = (XrmDatabase) 0;
 
-  std::string style = "session.styleFile: " + resource.style_file;
+  std::string style = "session.styleFile: ";
+  style += _resource.styleFilename();
   XrmPutLineResource(&new_blackboxrc, style.c_str());
 
-  XrmDatabase old_blackboxrc = XrmGetFileDatabase(rc_file.c_str());
+  XrmDatabase old_blackboxrc = XrmGetFileDatabase(_resource.rcFilename());
 
   XrmMergeDatabases(new_blackboxrc, &old_blackboxrc);
-  XrmPutFileDatabase(old_blackboxrc, rc_file.c_str());
+  XrmPutFileDatabase(old_blackboxrc, _resource.rcFilename());
   if (old_blackboxrc) XrmDestroyDatabase(old_blackboxrc);
 
   std::for_each(menuTimestamps.begin(), menuTimestamps.end(),
@@ -860,12 +574,6 @@ void Blackbox::real_rereadMenu(void) {
 
   std::for_each(screen_list, screen_list + screen_list_count,
                 std::mem_fun(&BScreen::rereadMenu));
-}
-
-
-void Blackbox::saveStyleFilename(const std::string& filename) {
-  assert(! filename.empty());
-  resource.style_file = filename;
 }
 
 

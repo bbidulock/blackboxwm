@@ -97,11 +97,11 @@ void StackingList::dump(void) const {
 
 
 StackingList::StackingList(void) {
-  desktop    = stack.insert(stack.begin(), 0);
-  below      = stack.insert(      desktop, 0);
-  normal     = stack.insert(        below, 0);
-  above      = stack.insert(       normal, 0);
-  fullscreen = stack.insert(        above, 0);
+  desktop = stack.insert(stack.begin(), (BlackboxWindow*) 0);
+  below = stack.insert(desktop, (BlackboxWindow*) 0);
+  normal = stack.insert(below, (BlackboxWindow*) 0);
+  above = stack.insert(normal, (BlackboxWindow*) 0);
+  fullscreen = stack.insert(above, (BlackboxWindow*) 0);
 }
 
 
@@ -177,7 +177,7 @@ BlackboxWindow* StackingList::front(void) const {
   assert(0);
 
   // this point is never reached, but the compiler doesn't know that.
-  return 0;
+  return (BlackboxWindow*) 0;
 }
 
 
@@ -191,8 +191,7 @@ BlackboxWindow* StackingList::back(void) const {
   }
   assert(0);
 
-  // this point is never reached, but the compiler doesn't know that.
-  return 0;
+  return (BlackboxWindow*) 0;
 }
 
 
@@ -205,9 +204,9 @@ Workspace::Workspace(BScreen *scrn, unsigned int i) {
 
   clientmenu = new Clientmenu(*screen->getBlackbox(), *screen, id);
 
-  lastfocus = 0;
+  lastfocus = (BlackboxWindow *) 0;
 
-  setName(screen->getNameOfWorkspace(id));
+  setName(screen->resource().nameOfWorkspace(i));
 }
 
 
@@ -282,7 +281,7 @@ void Workspace::focusFallback(const BlackboxWindow *old_window) {
 
     if (old_window && lastfocus == old_window) {
       // The window was the last-focus target, so we need to replace it.
-      BlackboxWindow *win = 0;
+      BlackboxWindow *win = (BlackboxWindow*) 0;
       if (! stackingList.empty())
         win = stackingList.front();
       setLastFocusedWindow(win);
@@ -441,8 +440,7 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
 
   if (! layer_above) {
     // ok, no layers above us, how about below?
-    tmp =
-      std::find(it, stackingList.end(), reinterpret_cast<BlackboxWindow *>(0));
+    tmp = std::find(it, stackingList.end(), (BlackboxWindow*) 0);
     assert(tmp != stackingList.end());
     for (; tmp != stackingList.end(); ++tmp) {
       if (*tmp && it != tmp)
@@ -534,7 +532,7 @@ void Workspace::hide(void) {
     lastfocus = focused;
   } else {
     // if no window had focus, no need to store a last focus
-    lastfocus = 0;
+    lastfocus = (BlackboxWindow *) 0;
   }
 
   // withdraw windows in reverse order to minimize the number of Expose events
@@ -578,18 +576,21 @@ void Workspace::setCurrent(void) {
 
 
 void Workspace::setName(const std::string& new_name) {
+  std::string the_name;
+
   if (! new_name.empty()) {
-    name = new_name;
+    the_name = new_name;
   } else {
-    std::string tmp =
+    const std::string tmp =
       bt::i18n(WorkspaceSet, WorkspaceDefaultNameFormat, "Workspace %d");
     assert(tmp.length() < 32);
     char default_name[32];
     sprintf(default_name, tmp.c_str(), id + 1);
-    name = default_name;
+    the_name = default_name;
   }
 
-  clientmenu->setTitle(name);
+  screen->resource().saveWorkspaceName(id, the_name);
+  clientmenu->setTitle(the_name);
 }
 
 
@@ -821,4 +822,9 @@ Workspace::updateClientListStacking(bt::Netwm::WindowList& clientList) const {
     end = stackingList.end();
   for (; it != end; ++it)
     if (*it) clientList.push_back((*it)->getClientWindow());
+}
+
+
+const std::string& Workspace::name(void) const {
+  return screen->resource().nameOfWorkspace(id);
 }

@@ -95,7 +95,8 @@ static void showHelp(int exitval) {
 }
 
 int main(int argc, char **argv) {
-  const char *dpy_name = 0, *rc_file = 0;
+  const char *dpy_name = 0;
+  std::string rc_file;
   bool multi_head = true;
 
   bt::i18n.openCatalog("blackbox.cat");
@@ -154,6 +155,9 @@ int main(int argc, char **argv) {
 #ifdef    __EMX__
   _chdir2(getenv("X11ROOT"));
 #endif // __EMX__
+
+  if (rc_file.empty()) rc_file = "~/.blackboxrc";
+  rc_file = bt::expandTilde(rc_file);
 
   Blackbox blackbox(argv, dpy_name, rc_file, multi_head);
   blackbox.eventLoop();

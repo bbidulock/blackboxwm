@@ -48,38 +48,33 @@ extern "C" {
 #include <string>
 
 #include "Application.hh"
+#include "Image.hh"
+#include "BlackboxResource.hh"
+#include "Util.hh"
 
 //forward declaration
-class BScreen;
-class BlackboxWindow;
-class BWindowGroup;
 class Basemenu;
-class Toolbar;
+class BlackboxWindow;
+class BlackboxResource;
+class BScreen;
+class BWindowGroup;
+class ScreenResource;
 class Slit;
+class Toolbar;
 
 namespace bt {
   class Netwm;
 }
 
+
 class Blackbox : public bt::Application, public bt::TimeoutHandler {
 private:
-  struct BCursor {
-    Cursor session, move, resize_bottom_left, resize_bottom_right;
-  };
-  BCursor cursor;
-
   struct MenuTimestamp {
     std::string filename;
     time_t timestamp;
   };
 
-  struct BResource {
-    Time double_click_interval;
-
-    std::string menu_file, style_file;
-    timeval auto_raise_delay;
-    unsigned long cache_life, cache_max;
-  } resource;
+  BlackboxResource _resource;
 
   typedef std::map<Window, BlackboxWindow*> WindowLookup;
   typedef WindowLookup::value_type WindowLookupPair;
@@ -102,16 +97,12 @@ private:
   bool no_focus, reconfigure_wait, reread_menu_wait;
   Time last_time;
   char **argv;
-  std::string rc_file;
 
   Atom xa_wm_colormap_windows, xa_wm_protocols, xa_wm_state,
     xa_wm_delete_window, xa_wm_take_focus, xa_wm_change_state,
     motif_wm_hints;
 
   bt::Netwm* _netwm;
-
-  Blackbox(const Blackbox&);
-  Blackbox& operator=(const Blackbox&);
 
   void load_rc(void);
   void save_rc(void);
@@ -125,14 +116,21 @@ private:
 
 
 public:
-  Blackbox(char **m_argv, const char *dpy_name, const char *rc,
+  Blackbox(char **m_argv, const char *dpy_name, const std::string& rc,
            bool multi_head);
   virtual ~Blackbox(void);
+
+  BlackboxResource& resource(void) { return _resource; }
 
   // screen functions
   BScreen *findScreen(Window window);
   BScreen *activeScreen(void) const { return active_screen; }
   void setActiveScreen(BScreen *screen);
+  unsigned int screenCount(void) const { return screen_list_count; }
+  BScreen* screenNumber(unsigned int n) {
+    assert(n < screen_list_count);
+    return screen_list[n];
+  }
 
   BlackboxWindow *findWindow(Window window);
   void insertWindow(Window window, BlackboxWindow *data);
@@ -142,42 +140,16 @@ public:
   void insertWindowGroup(Window window, BWindowGroup *data);
   void removeWindowGroup(Window window);
 
-  inline const bt::Netwm& netwm(void) { return *_netwm; }
+  const bt::Netwm& netwm(void) { return *_netwm; }
 
-  inline BlackboxWindow *getFocusedWindow(void) { return focused_window; }
+  BlackboxWindow *getFocusedWindow(void) { return focused_window; }
 
-  inline const Time &doubleClickInterval(void) const
-  { return resource.double_click_interval; }
-  inline const Time &getLastTime(void) const { return last_time; }
+  const Time &getLastTime(void) const { return last_time; }
 
-  const std::string& getStyleFilename(void) const
-  { return resource.style_file; }
-  inline const char *getMenuFilename(void) const
-    { return resource.menu_file.c_str(); }
-
-  inline const timeval &getAutoRaiseDelay(void) const
-    { return resource.auto_raise_delay; }
-
-  inline unsigned long getCacheLife(void) const
-    { return resource.cache_life; }
-  inline unsigned long getCacheMax(void) const
-    { return resource.cache_max; }
-
-  inline void setNoFocus(bool f) { no_focus = f; }
-
-  inline Cursor getSessionCursor(void) const
-    { return cursor.session; }
-  inline Cursor getMoveCursor(void) const
-    { return cursor.move; }
-  inline Cursor getResizeBottomRightCursor(void) const
-    { return cursor.resize_bottom_right; }
-  inline Cursor getResizeBottomLeftCursor(void) const
-    { return cursor.resize_bottom_left; }
+  void setNoFocus(bool f) { no_focus = f; }
 
   void setFocusedWindow(BlackboxWindow *w);
   void shutdown(void);
-  void load_rc(BScreen *screen);
-  void saveStyleFilename(const std::string& filename);
   void saveMenuFilename(const std::string& filename);
   void restart(const std::string &prog = std::string());
   void reconfigure(void);
@@ -190,20 +162,13 @@ public:
 
   virtual void timeout(bt::Timer *);
 
-  inline Atom getWMChangeStateAtom(void) const
-    { return xa_wm_change_state; }
-  inline Atom getWMStateAtom(void) const
-    { return xa_wm_state; }
-  inline Atom getWMDeleteAtom(void) const
-    { return xa_wm_delete_window; }
-  inline Atom getWMProtocolsAtom(void) const
-    { return xa_wm_protocols; }
-  inline Atom getWMTakeFocusAtom(void) const
-    { return xa_wm_take_focus; }
-  inline Atom getWMColormapAtom(void) const
-    { return xa_wm_colormap_windows; }
-  inline Atom getMotifWMHintsAtom(void) const
-    { return motif_wm_hints; }
+  Atom getWMChangeStateAtom(void) const { return xa_wm_change_state; }
+  Atom getWMStateAtom(void) const       { return xa_wm_state; }
+  Atom getWMDeleteAtom(void) const      { return xa_wm_delete_window; }
+  Atom getWMProtocolsAtom(void) const   { return xa_wm_protocols; }
+  Atom getWMTakeFocusAtom(void) const   { return xa_wm_take_focus; }
+  Atom getWMColormapAtom(void) const    { return xa_wm_colormap_windows; }
+  Atom getMotifWMHintsAtom(void) const  { return motif_wm_hints; }
 };
 
 
