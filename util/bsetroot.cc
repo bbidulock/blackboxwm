@@ -43,10 +43,10 @@ extern "C" {
 #endif // HAVE_CTYPE_H
 }
 
-#include "../src/i18n.hh"
-#include "../src/GCCache.hh"
-#include "../src/Texture.hh"
-#include "../src/Util.hh"
+#include "i18n.hh"
+#include "GCCache.hh"
+#include "Texture.hh"
+#include "Util.hh"
 #include "bsetroot.hh"
 
 

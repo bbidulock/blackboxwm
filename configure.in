@@ -11,8 +11,8 @@ dnl AC_AIX
 dnl AC_ISC_POSIX
 
 dnl Locate required external software
-AC_PROG_CC
 AC_PROG_CXX
+AC_PROG_RANLIB
 AC_PROG_INSTALL
 
 AC_CHECK_PROGS(regex_cmd, sed)
@@ -45,8 +45,8 @@ CXXFLAGS="$CXXFLAGS $X_CFLAGS"
 LIBS="$LIBS $X_LIBS"
 LDFLAGS="$LDFLAGS $LIBS $X_PRE_LIBS"
 
-AC_MSG_CHECKING(for GCC)
-if test x$GCC = "xyes"; then
+AC_MSG_CHECKING(for g++)
+if test x$GXX = "xyes"; then
   AC_MSG_RESULT([yes])
   CXXFLAGS="${CXXFLAGS} -Wall -W -pedantic"
 else

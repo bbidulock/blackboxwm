@@ -1,12 +1,12 @@
 # util/Makefile.am for Blackbox - an X11 Window manager
 
-CPPFLAGS= @CPPFLAGS@ @DEBUG@ @NLS@ @TIMEDCACHE@ @ORDEREDPSEUDO@
+CPPFLAGS= @CPPFLAGS@ @DEBUG@ @NLS@ @TIMEDCACHE@ @ORDEREDPSEUDO@ -I../lib
 
 bin_SCRIPTS = 		bsetbg
 bin_PROGRAMS =		bsetroot
 
 bsetroot_SOURCES =	bsetroot.cc
-bsetroot_LDADD =	../src/BaseDisplay.o ../src/Color.o ../src/GCCache.o ../src/Texture.o ../src/Timer.o ../src/Image.o ../src/ImageControl.o ../src/i18n.o ../src/Util.o
+bsetroot_LDADD =	-L../lib -lblackbox
 
 MAINTAINERCLEANFILES =	Makefile.in
 
@@ -15,7 +15,7 @@ distclean-local:
 
 # local dependencies
 
-bsetroot.o: bsetroot.cc ../config.h ../src/i18n.hh \
- ../src/../nls/blackbox-nls.hh ../src/GCCache.hh ../src/BaseDisplay.hh \
- ../src/Timer.hh ../src/Color.hh ../src/Texture.hh ../src/Util.hh \
- bsetroot.hh ../src/Image.hh
+bsetroot.o: bsetroot.cc ../config.h ../lib/i18n.hh \
+ ../lib/../nls/blackbox-nls.hh ../lib/GCCache.hh ../lib/BaseDisplay.hh \
+ ../lib/Timer.hh ../lib/Color.hh ../lib/Texture.hh ../lib/Util.hh \
+ bsetroot.hh ../lib/Image.hh
