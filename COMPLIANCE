@@ -118,7 +118,7 @@ _NET_WM_ALLOWED_ACTIONS:		supported
 	_NET_WM_ACTION_FULLSCREEN:	supported
 	_NET_WM_ACTION_CHANGE_DESKTOP:	supported
 	_NET_WM_ACTION_CLOSE:		supported
-_NET_WM_STRUT:				NOT supported
+_NET_WM_STRUT:				supported
 _NET_WM_STRUT_PARTIAL:			NOT supported
 _NET_WM_ICON_GEOMETRY:			NOT supported
 _NET_WM_ICON:				NOT supported

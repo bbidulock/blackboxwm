@@ -316,6 +316,13 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
                        client.wmnormal,
                        client.wmprotocols);
 
+  bt::Netwm::Strut strut;
+  if (blackbox->netwm().readWMStrut(client.window, &strut)) {
+    client.strut = new bt::Netwm::Strut;
+    *client.strut = strut;
+    screen->addStrut(client.strut);
+  }
+
   frame.window = createToplevelWindow();
   blackbox->insertEventHandler(frame.window, this);
 
@@ -2518,20 +2525,6 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
       if (button)
         maximize(button);
     }
-  } else if (event->message_type == netwm.wmStrut()) {
-    if (! client.strut) {
-      client.strut = new bt::Netwm::Strut;
-      screen->addStrut(client.strut);
-    }
-
-    netwm.readWMStrut(client.window, client.strut);
-    if (client.strut->left || client.strut->right ||
-        client.strut->top || client.strut->bottom) {
-      screen->updateStrut();
-    } else {
-      screen->removeStrut(client.strut);
-      delete client.strut;
-    }
   }
 }
 
@@ -2717,6 +2710,20 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
                            client.wmprotocols);
 
       reconfigure();
+    } else if (event->atom == blackbox->netwm().wmStrut()) {
+      if (! client.strut) {
+        client.strut = new bt::Netwm::Strut;
+        screen->addStrut(client.strut);
+      }
+
+      blackbox->netwm().readWMStrut(client.window, client.strut);
+      if (client.strut->left || client.strut->right ||
+          client.strut->top || client.strut->bottom) {
+        screen->updateStrut();
+      } else {
+        screen->removeStrut(client.strut);
+        delete client.strut;
+      }
     }
 
     break;
