@@ -619,14 +619,14 @@ void BScreen::unmanageWindow(BlackboxWindow *win) {
       workspace->menu()->removeItem(win->windowNumber());
   }
 
-  windowList.remove(win);
-  stackingList.remove(win);
-
   // pass focus to the next appropriate window
   if (win->isFocused() && blackbox->running()) {
     if (!focusFallback(win))
       blackbox->setFocusedWindow(0);
   }
+
+  windowList.remove(win);
+  stackingList.remove(win);
 
   /*
     some managed windows can also be window group controllers.  when
@@ -645,7 +645,9 @@ bool BScreen::focusFallback(const BlackboxWindow *win) {
     workspace = getWorkspace(current_workspace);
 
   if (workspace->id() != current_workspace)
-    return 0;
+    return false;
+
+  const BlackboxWindow * const zero = 0;
 
   if (win) {
     if (win->isTransient()) {
@@ -654,11 +656,10 @@ bool BScreen::focusFallback(const BlackboxWindow *win) {
           && tmp->isVisible()
           && tmp->workspace() == current_workspace
           && tmp->setInputFocus())
-        return tmp;
+        return true;
     }
 
     // try to focus the top-most window in the same layer as win
-    const BlackboxWindow * const zero = 0;
     StackingList::iterator it = stackingList.layer(win->layer()),
                           end = std::find(it, stackingList.end(), zero);
     assert(it != stackingList.end() && end != stackingList.end());
@@ -666,19 +667,27 @@ bool BScreen::focusFallback(const BlackboxWindow *win) {
       BlackboxWindow * const tmp = dynamic_cast<BlackboxWindow *>(*it);
       if (!tmp)
         break;
-      if (!tmp->isVisible() || tmp->workspace() != current_workspace)
+      if (tmp == win
+          || !tmp->isVisible()
+          || tmp->workspace() != current_workspace)
         continue;
       if (tmp->setInputFocus())
-        return tmp;
+        return true;
     }
   }
 
-  if (!stackingList.empty()) {
-    // focus the top-most window in the stack
-    BlackboxWindow * const tmp =
-      dynamic_cast<BlackboxWindow *>(stackingList.front());
-    if (tmp && tmp->setInputFocus())
-      return tmp;
+  // focus the top-most window in the stack
+  StackingList::iterator it = stackingList.begin(),
+                        end = stackingList.end();
+  for (; it != end; ++it) {
+    BlackboxWindow * const tmp = dynamic_cast<BlackboxWindow *>(*it);
+    if (!tmp
+        || tmp == win
+        || !tmp->isVisible()
+        || tmp->workspace() != current_workspace)
+      continue;
+    if (tmp->setInputFocus())
+      return true;
   }
 
   return 0;
