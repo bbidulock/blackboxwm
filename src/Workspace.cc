@@ -154,80 +154,137 @@ void Workspace::removeAll(void) {
 }
 
 
-void Workspace::raiseWindow(BlackboxWindow *w) {
-  BlackboxWindow *win = (BlackboxWindow *) 0, *bottom = w;
-
-  while (bottom->isTransient()) {
-    BlackboxWindow *bw = bottom->getTransientFor();
-    if (! bw) break;
-    bottom = bw;
-  }
-
-  unsigned int i = 1;
-  win = bottom;
-  while ((win = win->getTransient())) ++i;
-
-  Window *nstack = new Window[i], *curr = nstack;
-
-  win = bottom;
-  while (True) {
-    *(curr++) = win->getFrameWindow();
-    screen->updateNetizenWindowRaise(win->getClientWindow());
-
-    if (! win->isIconic()) {
-      Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
-      wkspc->stackingList.remove(win);
-      wkspc->stackingList.push_front(win);
+/*
+ * returns the number of transients for win, plus the number of transients
+ * associated with each transient of win
+ */
+static int countTransients(const BlackboxWindow * const win) {
+  int ret = win->getTransients().size();
+  if (ret > 0) {
+    BlackboxWindowList::const_iterator it, end = win->getTransients().end();
+    for (it = win->getTransients().begin(); it != end; ++it) {
+      ret += countTransients(*it);
     }
+  }
+  return ret;
+}
 
-    win = win->getTransient();
-    if (! win)
-      break;
+
+/*
+ * puts the transients of win into the stack. windows are stacked above
+ * the window before it in the stackvector being iterated, meaning
+ * stack[0] is on bottom, stack[1] is above stack[0], stack[2] is above
+ * stack[1], etc...
+ */
+void Workspace::raiseTransients(const BlackboxWindow * const win,
+                                StackVector::iterator &stack) {
+  if (win->getTransients().size() == 0) return; // nothing to do
+
+  // put win's transients in the stack
+  BlackboxWindowList::const_iterator it, end = win->getTransients().end();
+  for (it = win->getTransients().begin(); it != end; ++it) {
+    *stack++ = (*it)->getFrameWindow();
+    screen->updateNetizenWindowRaise((*it)->getClientWindow());
+
+    if (! (*it)->isIconic()) {
+      Workspace *wkspc = screen->getWorkspace((*it)->getWorkspaceNumber());
+      wkspc->stackingList.remove((*it));
+      wkspc->stackingList.push_front((*it));
+    }
   }
 
-  screen->raiseWindows(nstack, i);
+  // put transients of win's transients in the stack
+  for (it = win->getTransients().begin(); it != end; ++it) {
+    raiseTransients(*it, stack);
+  }
+}
 
-  delete [] nstack;
+
+void Workspace::lowerTransients(const BlackboxWindow * const win,
+                                StackVector::iterator &stack) {
+  if (win->getTransients().size() == 0) return; // nothing to do
+
+  // put transients of win's transients in the stack
+  BlackboxWindowList::const_reverse_iterator it,
+    end = win->getTransients().rend();
+  for (it = win->getTransients().rbegin(); it != end; ++it) {
+    lowerTransients(*it, stack);
+  }
+
+  // put win's transients in the stack
+  for (it = win->getTransients().rbegin(); it != end; ++it) {
+    *stack++ = (*it)->getFrameWindow();
+    screen->updateNetizenWindowLower((*it)->getClientWindow());
+
+    if (! (*it)->isIconic()) {
+      Workspace *wkspc = screen->getWorkspace((*it)->getWorkspaceNumber());
+      wkspc->stackingList.remove((*it));
+      wkspc->stackingList.push_back((*it));
+    }
+  }
+
+}
+
+
+void Workspace::raiseWindow(BlackboxWindow *w) {
+  BlackboxWindow *win = w;
+
+  // walk up the transient_for's to the window that is not a transient
+  while (win->isTransient()) {
+    if (! win->getTransientFor()) break;
+    win = win->getTransientFor();
+  }
+
+  // get the total window count (win and all transients)
+  unsigned int i = 1 + countTransients(win);
+
+  // stack the window with all transients above
+  StackVector stack_vector(i);
+  StackVector::iterator stack = stack_vector.begin();
+
+  *stack++ = win->getFrameWindow();
+  screen->updateNetizenWindowRaise(win->getClientWindow());
+  if (! win->isIconic()) {
+    Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
+    wkspc->stackingList.remove(win);
+    wkspc->stackingList.push_front(win);
+  }
+
+  raiseTransients(win, stack);
+
+  screen->raiseWindows(stack_vector.begin(), stack_vector.size());
 }
 
 
 void Workspace::lowerWindow(BlackboxWindow *w) {
-  BlackboxWindow *win = (BlackboxWindow *) 0, *bottom = w;
+  BlackboxWindow *win = w;
 
-  while (bottom->isTransient()) {
-    BlackboxWindow *bw = bottom->getTransientFor();
-    if (! bw) break;
-    bottom = bw;
-  }
-
-  unsigned int i = 1;
-  win = bottom;
-  while (win->getTransient()) {
-    win = win->getTransient();
-    ++i;
-  }
-
-  Window *nstack = new Window[i], *curr = nstack;
-
-  while (True) {
-    *(curr++) = win->getFrameWindow();
-    screen->updateNetizenWindowLower(win->getClientWindow());
-
-    if (! win->isIconic()) {
-      Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
-      wkspc->stackingList.remove(win);
-      wkspc->stackingList.push_back(win);
-    }
-
+  // walk up the transient_for's to the window that is not a transient
+  while (win->isTransient()) {
+    if (! win->getTransientFor()) break;
     win = win->getTransientFor();
-    if (! win)
-      break;
   }
 
-  XLowerWindow(screen->getBaseDisplay()->getXDisplay(), *nstack);
-  XRestackWindows(screen->getBaseDisplay()->getXDisplay(), nstack, i);
+  // get the total window count (win and all transients)
+  unsigned int i = 1 + countTransients(win);
 
-  delete [] nstack;
+  // stack the window with all transients above
+  StackVector stack_vector(i);
+  StackVector::iterator stack = stack_vector.begin();
+
+  lowerTransients(win, stack);
+
+  *stack++= win->getFrameWindow();
+  screen->updateNetizenWindowLower(win->getClientWindow());
+  if (! win->isIconic()) {
+    Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
+    wkspc->stackingList.remove(win);
+    wkspc->stackingList.push_back(win);
+  }
+
+  XLowerWindow(screen->getBaseDisplay()->getXDisplay(), *stack_vector.begin());
+  XRestackWindows(screen->getBaseDisplay()->getXDisplay(),
+                  stack_vector.begin(), stack_vector.size());
 }
 
 
@@ -506,9 +563,7 @@ Bool Workspace::cascadePlacement(Rect &win, const Rect &availableArea) {
     cascade_y += availableArea.y();
   }
 
-  win.setX(cascade_x);
-  win.setY(cascade_y);
-
+  win.setPos(cascade_x, cascade_y);
   return True;
 }
 
@@ -534,10 +589,7 @@ void Workspace::placeWindow(BlackboxWindow *win) {
     cascade_y += win->getTitleHeight() + (screen->getBorderWidth() * 2);
   }
 
-  if (new_win.right() > availableArea.right())
-    new_win.setX((availableArea.right() - new_win.width()) / 2);
-  if (new_win.bottom() > availableArea.bottom())
-    new_win.setY((availableArea.bottom() - new_win.height()) / 2);
-
+  if (new_win.right() > availableArea.right()) new_win.setX(0);
+  if (new_win.bottom() > availableArea.bottom()) new_win.setY(0);
   win->configure(new_win.x(), new_win.y(), new_win.width(), new_win.height());
 }

@@ -118,9 +118,9 @@ private:
 
   struct _client {
     Window window,                  // the client's window
-      window_group,                 // the client's window group
-      transient_for;                // which window are we a transient for?
-    BlackboxWindow *transient;      // which window is our transient?
+      window_group;
+    BlackboxWindow *transient_for;  // which window are we a transient for?
+    BlackboxWindowList transientList; // which windows are our transients?
 
     std::string title, icon_title;
 
@@ -249,7 +249,7 @@ public:
   BlackboxWindow(Blackbox *b, Window w, BScreen *s = (BScreen *) 0);
   virtual ~BlackboxWindow(void);
 
-  inline Bool isTransient(void) const { return client.transient_for != None; }
+  inline Bool isTransient(void) const { return client.transient_for != 0; }
   inline Bool isFocused(void) const { return flags.focused; }
   inline Bool isVisible(void) const { return flags.visible; }
   inline Bool isIconic(void) const { return flags.iconic; }
@@ -263,9 +263,10 @@ public:
 
   inline Bool hasTitlebar(void) const { return decorations & Decor_Titlebar; }
 
-  inline BlackboxWindow *getTransient(void) { return client.transient; }
-  inline BlackboxWindow *getTransientFor(void)
-  { return blackbox->searchWindow(client.transient_for); }
+  inline const BlackboxWindowList &getTransients(void) const
+  { return client.transientList; }
+  inline BlackboxWindow *getTransientFor(void) const
+  { return client.transient_for; }
 
   inline BScreen *getScreen(void) { return screen; }
 

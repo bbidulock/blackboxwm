@@ -139,8 +139,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   functions = Func_Resize | Func_Move | Func_Iconify | Func_Maximize;
 
   client.wm_hint_flags = client.normal_hint_flags = 0;
-  client.transient_for = None;
-  client.transient = 0;
+  client.transient_for = 0;
 
   // get the initial size and location of client window (relative to the
   // _root window_). This position is the reference point used with the
@@ -195,7 +194,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   if ((client.normal_hint_flags & PMinSize) &&
       (client.normal_hint_flags & PMaxSize) &&
-       client.max_width <= client.min_width &&
+      client.max_width <= client.min_width &&
       client.max_height <= client.min_height) {
     decorations &= ~(Decor_Maximize | Decor_Handle);
     functions &= ~(Func_Resize | Func_Maximize);
@@ -293,11 +292,15 @@ BlackboxWindow::~BlackboxWindow(void) {
   if (client.window_group)
     blackbox->removeGroupSearch(client.window_group);
 
-  if (isTransient()) {
-    BlackboxWindow *bw = blackbox->searchWindow(client.transient_for);
-    if (bw) {
-      assert(client.transient == 0 || client.transient != bw);
-      bw->client.transient = client.transient;
+  // remove ourselves from our transient_for
+  if (isTransient())
+    client.transient_for->client.transientList.remove(this);
+
+  if (client.transientList.size() > 0) {
+    // reset transient_for for all transients
+    BlackboxWindowList::iterator it, end = client.transientList.end();
+    for (it = client.transientList.begin(); it != end; ++it) {
+      (*it)->client.transient_for = 0;
     }
   }
 
@@ -1088,31 +1091,54 @@ Bool BlackboxWindow::getBlackboxHints(void) {
 
 
 void BlackboxWindow::getTransientInfo(void) {
+  if (client.transient_for) {
+    // the transient for hint was removed, so we need to tell our
+    // previous transient_for that we are going away
+    client.transient_for->client.transientList.remove(this);
+  }
+
+  // we have no transient_for until we find a new one
+  client.transient_for = 0;
+
+  Window trans_for;
   if (!XGetTransientForHint(blackbox->getXDisplay(), client.window,
-                            &(client.transient_for))) {
-    client.transient_for = None;
+                            &trans_for)) {
+    // transient_for hint not set
     return;
   }
 
-  if (client.transient_for == None || client.transient_for == client.window) {
-    client.transient_for = screen->getRootWindow();
-  } else {
-    BlackboxWindow *tr;
-    if ((tr = blackbox->searchWindow(client.transient_for))) {
-      tr->client.transient = this;
-      flags.stuck = tr->flags.stuck;
-    } else if (client.transient_for == client.window_group) {
-      if ((tr = blackbox->searchGroup(client.transient_for, this))) {
-        tr->client.transient = this;
-        flags.stuck = tr->flags.stuck;
-      }
-    }
+  if (trans_for == client.window) {
+    // wierd client... treat this window as a normal window
+    return;
   }
 
-  if (client.transient == this) client.transient = 0;
-
-  if (client.transient_for == screen->getRootWindow())
+  if (trans_for == None || trans_for == screen->getRootWindow()) {
+    // this is an undocumented interpretation of the ICCCM. a transient
+    // associated with None/Root/itself is assumed to be a modal root
+    // transient.  we don't support the concept of a global transient,
+    // so we just associate this transient with nothing, and perhaps
+    // we will add support later for global modality.
     flags.modal = True;
+    return;
+  }
+
+  client.transient_for = blackbox->searchWindow(trans_for);
+  if (! client.transient_for &&
+      trans_for == client.window_group) {
+    // no direct transient_for, perhaps this is a group transient?
+    client.transient_for = blackbox->searchGroup(trans_for, this);
+  }
+
+  if (! client.transient_for || client.transient_for == this) {
+    // no transient_for found, or we have a wierd client that wants to be
+    // a transient for itself, so we treat this window as a normal window
+    client.transient_for = 0;
+    return;
+  }
+
+  // register ourselves with our new transient_for
+  client.transient_for->client.transientList.push_back(this);
+  flags.stuck = client.transient_for->flags.stuck;
 }
 
 
@@ -1224,8 +1250,13 @@ Bool BlackboxWindow::setInputFocus(void) {
               frame.rect.width(), frame.rect.height());
   }
 
-  if (client.transient && flags.modal)
-    return client.transient->setInputFocus();
+  if (client.transientList.size() > 0) {
+    // transfer focus to any modal transients
+    BlackboxWindowList::iterator it, end = client.transientList.end();
+    for (it = client.transientList.begin(); it != end; ++it) {
+      if ((*it)->flags.modal) return (*it)->setInputFocus();
+    }
+  }
 
   if (focus_mode == F_LocallyActive || focus_mode == F_Passive) {
     XSetInputFocus(blackbox->getXDisplay(), client.window,
@@ -1291,16 +1322,19 @@ void BlackboxWindow::iconify(void) {
 
   screen->getWorkspace(blackbox_attrib.workspace)->removeWindow(this);
 
-  if (isTransient()) {
-    BlackboxWindow *transientOwner =
-      blackbox->searchWindow(client.transient_for);
-    if (transientOwner && !transientOwner->flags.iconic)
-      transientOwner->iconify();
+  if (client.transient_for && ! client.transient_for->flags.iconic) {
+    // iconify our transient_for
+    client.transient_for->iconify();
   }
+
   screen->addIcon(this);
 
-  if (client.transient && !client.transient->flags.iconic) {
-    client.transient->iconify();
+  if (client.transientList.size() > 0) {
+    // iconify all transients
+    BlackboxWindowList::iterator it, end = client.transientList.end();
+    for (it = client.transientList.begin(); it != end; ++it) {
+      if (! (*it)->flags.iconic) (*it)->iconify();
+    }
   }
 }
 
@@ -1325,7 +1359,13 @@ void BlackboxWindow::deiconify(Bool reassoc, Bool raise) {
 
   show();
 
-  if (reassoc && client.transient) client.transient->deiconify(True, False);
+  // reassociate and deiconify all transients
+  if (reassoc && client.transientList.size() > 0) {
+    BlackboxWindowList::iterator it, end = client.transientList.end();
+    for (it = client.transientList.begin(); it != end; ++it) {
+      (*it)->deiconify(True, False);
+    }
+  }
 
   if (raise)
     screen->getWorkspace(blackbox_attrib.workspace)->raiseWindow(this);
@@ -2054,7 +2094,7 @@ void BlackboxWindow::reparentNotifyEvent(XReparentEvent *re) {
 
 #ifdef    DEBUG
   fprintf(stderr, "BlackboxWindow::reparentNotifyEvent(): reparent 0x%lx to "
-          "0x%lx.\n"), client.window, re->parent);
+          "0x%lx.\n", client.window, re->parent);
 #endif // DEBUG
 
   XEvent ev;
@@ -2776,8 +2816,10 @@ void BlackboxWindow::constrain(Corner anchor, int *pw, int *ph) {
   if (dw > static_cast<signed>(client.max_width)) dw = client.max_width;
   if (dh > static_cast<signed>(client.max_height)) dh = client.max_height;
 
-  dw = (dw - base_width) / client.width_inc;
-  dh = (dh - base_height) / client.height_inc;
+  dw -= base_width;
+  dw /= client.width_inc;
+  dh -= base_height;
+  dh /= client.height_inc;
 
   if (pw) *pw = dw;
   if (ph) *ph = dh;
