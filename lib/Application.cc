@@ -33,6 +33,9 @@
 #include <X11/keysym.h>
 
 #include <sys/types.h>
+#if defined(__EMX__)
+#  include <sys/select.h>
+#endif
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <assert.h>
@@ -50,6 +53,13 @@
 #ifdef    SHAPE
 #  include <X11/extensions/shape.h>
 #endif // SHAPE
+
+
+#if defined(__GNUC__) && __GNUC__ == 3 && __GNUC_MINOR__ == 3
+// work around a gcc 3.3 compiler bug where base_app below would be
+// initialized to ~0 instead of 0.
+static void *workaround = 0;
+#endif
 
 
 static bt::Application *base_app = 0;
