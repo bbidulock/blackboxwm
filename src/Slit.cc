@@ -264,9 +264,9 @@ void Slit::reconfigure(void) {
 
   XClearWindow(display, frame.window);
 
-  strut.top = strut.bottom = strut.left = strut.right = 0;
   it = clientList.begin();
 
+  strut.top = strut.bottom = strut.left = strut.right = 0;
   int x, y;
 
   switch (screen->getSlitDirection()) {
@@ -303,12 +303,13 @@ void Slit::reconfigure(void) {
 
       y += client->rect.height() + screen->getBevelWidth();
     }
+
     switch (screen->getSlitPlacement()) {
     case TopCenter:
-      strut.top = getHeight() + 1;
+      strut.top = getY() + getHeight() + 1;
       break;
     case BottomCenter:
-      strut.bottom = (screen->getHeight() - getY()) - 1;
+      strut.bottom = screen->getHeight() - getY() - 1;
       break;
     case TopLeft:
     case CenterLeft:
@@ -318,7 +319,7 @@ void Slit::reconfigure(void) {
     case TopRight:
     case CenterRight:
     case BottomRight:
-      strut.right = (screen->getWidth() - getX()) - 1;
+      strut.right = screen->getWidth() - getX() - 1;
       break;
     }
     break;
@@ -360,18 +361,18 @@ void Slit::reconfigure(void) {
     case TopCenter:
     case TopLeft:
     case TopRight:
-      strut.top = getHeight() + 1;
+      strut.top = getY() + getHeight() + 1;
       break;
     case BottomCenter:
     case BottomLeft:
     case BottomRight:
-      strut.bottom = (screen->getHeight() - getY()) - 1;
+      strut.bottom = screen->getHeight() - getY() - 1;
       break;
     case CenterLeft:
       strut.left = getWidth() + 1;
       break;
     case CenterRight:
-      strut.right = (screen->getWidth() - getX()) - 1;
+      strut.right = screen->getWidth() - getX() - 1;
       break;
     }
     break;
@@ -496,7 +497,7 @@ void Slit::reposition(void) {
     Toolbar *tbar = screen->getToolbar();
     frame.y_hidden = frame.rect.y();
 
-    if (frame.rect.y() < tbar_rect.height()) {
+    if (frame.rect.bottom() > tbar_rect.bottom()) {
       frame.rect.setY(frame.rect.y() + tbar->getExposedHeight());
       if (screen->getSlitDirection() == Vertical)
         frame.y_hidden += tbar->getExposedHeight();

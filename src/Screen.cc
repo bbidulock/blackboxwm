@@ -1616,6 +1616,11 @@ void BScreen::addStrut(NETStrut *strut) {
 }
 
 
+void BScreen::removeStrut(NETStrut *strut) {
+  strutList.remove(strut);
+}
+
+
 const Rect& BScreen::availableArea(void) const {
   if (doFullMax())
     return getRect(); // return the full screen

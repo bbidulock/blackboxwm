@@ -323,6 +323,7 @@ public:
   const Rect& availableArea(void) const;
   void updateAvailableArea(void);
   void addStrut(NETStrut *strut);
+  void removeStrut(NETStrut *strut);
 
   unsigned int addWorkspace(void);
   unsigned int removeLastWorkspace(void);

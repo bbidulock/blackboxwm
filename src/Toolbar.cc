@@ -301,7 +301,6 @@ void Toolbar::reconfigure(void) {
                            "00:00000"))) + (frame.bevel_w * 4);
 #endif // HAVE_STRFTIME
 
-  unsigned int w = 0;
   frame.workspace_label_w = 0;
 
   for (unsigned int i = 0; i < screen->getWorkspaceCount(); i++) {
@@ -311,14 +310,14 @@ void Toolbar::reconfigure(void) {
       XmbTextExtents(screen->getToolbarStyle()->fontset,
                      workspace_name.c_str(), workspace_name.length(),
                      &ink, &logical);
-      w = logical.width;
+      width = logical.width;
     } else {
-      w = XTextWidth(screen->getToolbarStyle()->font,
+      width = XTextWidth(screen->getToolbarStyle()->font,
                      workspace_name.c_str(), workspace_name.length());
     }
-    w += (frame.bevel_w * 4);
+    width += (frame.bevel_w * 4);
 
-    if (w > frame.workspace_label_w) frame.workspace_label_w = w;
+    if (width > frame.workspace_label_w) frame.workspace_label_w = width;
   }
 
   if (frame.workspace_label_w < frame.clock_w)
@@ -999,18 +998,16 @@ void Toolbarmenu::itemSelected(int button, unsigned int index) {
 
   switch (item->function()) {
   case 1: { // always on top
-    Bool change = ((toolbar->isOnTop()) ? False : True);
-    toolbar->on_top = change;
-    setItemSelected(1, change);
+    toolbar->on_top = ((toolbar->isOnTop()) ? False : True);;
+    setItemSelected(1, toolbar->on_top);
 
     if (toolbar->isOnTop()) getScreen()->raiseWindows((Window *) 0, 0);
     break;
   }
 
   case 2: { // auto hide
-    Bool change = ((toolbar->doAutoHide()) ?  False : True);
-    toolbar->do_auto_hide = change;
-    setItemSelected(2, change);
+    toolbar->do_auto_hide = ((toolbar->doAutoHide()) ?  False : True);;
+    setItemSelected(2, toolbar->do_auto_hide);
 
     getScreen()->getSlit()->reposition();
     break;
