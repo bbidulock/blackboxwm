@@ -71,7 +71,7 @@ void Rootmenu::itemClicked(unsigned int id, unsigned int) {
     break;
 
   case BScreen::Exit:
-    _bscreen->getBlackbox()->shutdown();
+    _bscreen->getBlackbox()->quit();
     break;
 
   case BScreen::SetStyle:

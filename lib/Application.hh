@@ -39,7 +39,12 @@ namespace bt {
   class Menu;
 
 
+
+
   class Application: public TimerQueueManager, public NoCopy {
+  protected:
+    enum RunState { STARTUP, RUNNING, SHUTDOWN, FATAL_SIGNAL };
+
   private:
     struct BShape {
       bool extensions;
@@ -50,10 +55,8 @@ namespace bt {
     Display _display;
     std::string _app_name;
 
-    enum RunState { STARTUP, RUNNING, SHUTDOWN };
     RunState run_state;
     Time xserver_time;
-
 
     typedef std::map<Window,EventHandler*> EventHandlerMap;
     EventHandlerMap eventhandlers;
@@ -71,6 +74,12 @@ namespace bt {
     unsigned int NumLockMask, ScrollLockMask;
 
   protected:
+    RunState runState(void) const { return run_state; }
+    void setRunState(RunState new_state) { run_state = new_state; }
+
+    virtual void startup(void);
+    virtual void shutdown(void);
+
     /*
       Processes the X11 event {event} by delivering the event to the
       appropriate EventHandler.
@@ -80,6 +89,14 @@ namespace bt {
     */
     virtual void process_event(XEvent *event);
 
+    /*
+      Processes the specified signal.  Returns true if the signal was
+      handled; otherwise it returns false.
+
+      Reimplement this function if you need to handle signals.
+    */
+    virtual bool process_signal(int signal);
+
   public:
     Application(const std::string &app_name, const char *dpy_name,
                 bool multi_head);
@@ -87,18 +104,22 @@ namespace bt {
 
     bool hasShapeExtensions(void) const
     { return shape.extensions; }
-    bool doShutdown(void) const
-    { return run_state == SHUTDOWN; }
-    bool isStartup(void) const
+
+    bool startingUp(void) const
     { return run_state == STARTUP; }
+    bool running(void) const
+    { return run_state == RUNNING; }
+    bool shuttingDown(void) const
+    { return run_state == SHUTDOWN; }
+
+    void quit(void) { setRunState( SHUTDOWN ); }
 
     ::Display *XDisplay(void) const { return _display.XDisplay(); }
     const Display& display(void) const { return _display; }
 
     const std::string &applicationName(void) const { return _app_name; }
 
-    void shutdown(void) { run_state = SHUTDOWN; }
-    void run(void) { run_state = RUNNING; }
+
 
     void grabButton(unsigned int button, unsigned int modifiers,
                     Window grab_window, bool owner_events,
@@ -116,10 +137,6 @@ namespace bt {
     // from TimerQueueManager interface
     virtual void addTimer(Timer *timer);
     virtual void removeTimer(Timer *timer);
-
-    // another pure virtual... this is used to handle signals that
-    // Display doesn't understand itself
-    virtual bool handleSignal(int sig) = 0;
 
     /*
       Inserts the EventHandler {handler} for Window {window}.  All

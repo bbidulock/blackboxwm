@@ -532,7 +532,7 @@ void BScreen::LoadStyle(void) {
   // the height of the titlebar is based upon the height of the font being
   // used to display the window's title
   resource.wstyle.label_height = bt::textHeight(resource.wstyle.font) + 2;
-  resource.wstyle.title_height = resource.wstyle.label_height + 
+  resource.wstyle.title_height = resource.wstyle.label_height +
     resource.wstyle.bevel_width * 2;
   resource.wstyle.button_width = resource.wstyle.label_height - 2;
 
@@ -807,7 +807,7 @@ void BScreen::manageWindow(Window w) {
     current_workspace : getWorkspace(win->getWorkspaceNumber());
 
   bool place_window = True;
-  if (blackbox->isStartup() ||
+  if (blackbox->startingUp() ||
       ((win->isTransient() || win->normalHintFlags() & (PPosition|USPosition))
        && win->clientRect().intersects(screen_info.rect())))
     place_window = False;
@@ -1733,3 +1733,4 @@ void BScreen::setWorkspaceName(unsigned int workspace,
                                const std::string& name) {
   getWorkspace(workspace)->setName(name);
 }
+

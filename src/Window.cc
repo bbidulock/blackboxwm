@@ -221,7 +221,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   upsize();
 
-  if (blackbox->isStartup() || isTransient() ||
+  if (blackbox->startingUp() || isTransient() ||
       client.window_type == blackbox->netwm().wmWindowTypeDesktop() ||
       client.normal_hint_flags & (PPosition|USPosition)) {
     applyGravity(frame.rect);
@@ -836,7 +836,7 @@ void BlackboxWindow::positionWindows(void) {
     const int ny = client.rect.height() + frame.margin.top +
       frame.mwm_border_w - frame.border_w;
     XMoveResizeWindow(blackbox->XDisplay(), frame.handle,
-                      -frame.border_w, ny,               
+                      -frame.border_w, ny,
                       frame.inside_w, frame.style->handle_height);
     XMoveResizeWindow(blackbox->XDisplay(), frame.left_grip,
                       -frame.border_w, -frame.border_w,
@@ -874,7 +874,7 @@ void BlackboxWindow::getWMName(void) {
     // FIXME: need to ellide titles based on title bar length
     if (name.length() <= 100) {
       client.title = name;
-    } else { 
+    } else {
       client.title = bt::ellideText(name, 100, "...");
       blackbox->netwm().setWMVisibleName(client.window, client.title);
     }
@@ -2413,7 +2413,8 @@ void BlackboxWindow::mapRequestEvent(const XMapRequestEvent* const re) {
   default:
     show();
     screen->raiseWindow(this);
-    if (! blackbox->isStartup() && (isTransient() || screen->doFocusNew())) {
+    if (! blackbox->startingUp() &&
+        (isTransient() || screen->doFocusNew())) {
       XSync(blackbox->XDisplay(), False); // make sure the frame is mapped..
       setInputFocus();
     }
@@ -3187,7 +3188,7 @@ void BlackboxWindow::constrain(Corner anchor) {
    *
    * minAspectX * dheight > minAspectY * dwidth
    * maxAspectX * dheight < maxAspectY * dwidth
-   * 
+   *
    */
   if (client.normal_hint_flags & PAspect) {
     unsigned int delta;

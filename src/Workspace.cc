@@ -232,7 +232,7 @@ void Workspace::removeWindow(BlackboxWindow *w) {
 
   // pass focus to the next appropriate window
   if ((w->isFocused() || w == lastfocus) &&
-      ! screen->getBlackbox()->doShutdown()) {
+      screen->getBlackbox()->running() ) {
     focusFallback(w);
   }
 

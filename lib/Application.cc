@@ -35,50 +35,16 @@ extern "C" {
 #  include <X11/extensions/shape.h>
 #endif // SHAPE
 
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <assert.h>
 #include <stdio.h>
-
-#ifdef    HAVE_FCNTL_H
-#  include <fcntl.h>
-#endif // HAVE_FCNTL_H
-
-#ifdef HAVE_STDLIB_H
-#  include <stdlib.h>
-#endif // HAVE_STDLIB_H
-
-#ifdef HAVE_STRING_H
-#  include <string.h>
-#endif // HAVE_STRING_H
-
-#ifdef    HAVE_UNISTD_H
-#  include <sys/types.h>
-#  include <unistd.h>
-#endif // HAVE_UNISTD_H
-
-#ifdef    HAVE_SYS_SELECT_H
-#  include <sys/select.h>
-#endif // HAVE_SYS_SELECT_H
-
-#ifdef    HAVE_SIGNAL_H
-#  include <signal.h>
-#endif // HAVE_SIGNAL_H
-
-#ifndef   SA_NODEFER
-#  ifdef   SA_INTERRUPT
-#    define SA_NODEFER SA_INTERRUPT
-#  else // !SA_INTERRUPT
-#    define SA_NODEFER (0)
-#  endif // SA_INTERRUPT
-#endif // SA_NODEFER
-
-#ifdef    HAVE_SYS_WAIT_H
-#  include <sys/types.h>
-#  include <sys/wait.h>
-#endif // HAVE_SYS_WAIT_H
-
-#ifdef HAVE_SYS_TIME_H
-#  include <sys/time.h>
-#  include <time.h>
-#endif
+#include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
+#include <signal.h>
 }
 
 #include "Application.hh"
@@ -86,11 +52,9 @@ extern "C" {
 #include "Menu.hh"
 
 
-// X error handler to handle any and all X errors while the application is
-// running
-static bool internal_error = False;
+static bt::Application *base_app = 0;
+static sig_atomic_t pending_signals = 0;
 
-bt::Application *base_app;
 
 static int handleXErrors(Display *d, XErrorEvent *e) {
 #ifdef    DEBUG
@@ -106,42 +70,22 @@ static int handleXErrors(Display *d, XErrorEvent *e) {
   (void) e;
 #endif // DEBUG
 
-  if (internal_error) abort();
-
-  return(False);
+  return 0;
 }
 
 
-// signal handler to allow for proper and gentle shutdown
-
-static void signalhandler(int sig)
-{
-  static int re_enter = 0;
-
-  switch (sig) {
-  case SIGCHLD:
-    int status;
-    waitpid(-1, &status, WNOHANG | WUNTRACED);
-    break;
-
-  default:
-    if (base_app->handleSignal(sig))
-      return;
-
-    if (! base_app->isStartup() && ! re_enter) {
-      internal_error = True;
-
-      re_enter = 1;
-      base_app->shutdown();
-    }
-
-    if (sig != SIGTERM && sig != SIGINT)
-      abort();
-
-    exit(0);
-
-    break;
+// generic signal handler - this sets a bit in pending_signals, which
+// will be handled later by the event loop (ie. if signal 2 is caught,
+// bit 2 is set)
+static void signalhandler(int sig) {
+  sig_atomic_t mask = 1 << sig;
+  if (pending_signals & mask) {
+    fprintf(stderr, "%s: Recursive signal %d caught. dumping core...\n",
+            base_app ? base_app->applicationName() : "unknown", sig );
+    abort();
   }
+
+  pending_signals |= mask;
 }
 
 
@@ -150,16 +94,22 @@ bt::Application::Application(const std::string &app_name, const char *dpy_name,
   : _display(dpy_name, multi_head), _app_name(app_name),
     run_state(STARTUP), xserver_time(CurrentTime), menu_grab(false)
 {
+  assert(base_app == 0);
   ::base_app = this;
 
   struct sigaction action;
   action.sa_handler = signalhandler;
   action.sa_mask = sigset_t();
-  action.sa_flags = SA_NOCLDSTOP | SA_NODEFER;
+  action.sa_flags = SA_NOCLDSTOP;
 
-  sigaction(SIGPIPE, &action, NULL);
-  sigaction(SIGSEGV, &action, NULL);
+  // fatal signals
+  sigaction(SIGBUS,  &action, NULL);
   sigaction(SIGFPE,  &action, NULL);
+  sigaction(SIGILL,  &action, NULL);
+  sigaction(SIGSEGV, &action, NULL);
+
+  // non-fatal signals
+  sigaction(SIGPIPE, &action, NULL);
   sigaction(SIGTERM, &action, NULL);
   sigaction(SIGINT,  &action, NULL);
   sigaction(SIGCHLD, &action, NULL);
@@ -191,9 +141,10 @@ bt::Application::Application(const std::string &app_name, const char *dpy_name,
     // get the values of the keyboard lock modifiers
     // Note: Caps lock is not retrieved the same way as Scroll and Num lock
     // since it doesn't need to be.
-    const KeyCode num_lock = XKeysymToKeycode(_display.XDisplay(), XK_Num_Lock);
-    const KeyCode scroll_lock = XKeysymToKeycode(_display.XDisplay(),
-                                                 XK_Scroll_Lock);
+    const KeyCode num_lock =
+      XKeysymToKeycode(_display.XDisplay(), XK_Num_Lock);
+    const KeyCode scroll_lock =
+      XKeysymToKeycode(_display.XDisplay(), XK_Scroll_Lock);
 
     for (size_t cnt = 0; cnt < size; ++cnt) {
       if (! modmap->modifiermap[cnt]) continue;
@@ -219,15 +170,52 @@ bt::Application::Application(const std::string &app_name, const char *dpy_name,
 }
 
 
-bt::Application::~Application(void) {}
+bt::Application::~Application(void) { }
+
+
+void bt::Application::startup(void) { }
+void bt::Application::shutdown(void) { }
 
 
 void bt::Application::eventLoop(void) {
-  run();
+  startup();
+
+  setRunState(RUNNING);
 
   const int xfd = ConnectionNumber(_display.XDisplay());
 
-  while (run_state == RUNNING && ! internal_error) {
+  while (run_state == RUNNING) {
+    if (pending_signals) {
+      // handle any pending signals
+      for (unsigned int sig = 0; sig < sizeof(pending_signals) * 8; ++sig) {
+        if (! (pending_signals & (1u << sig))) continue;
+        pending_signals &= ~(1u << sig);
+
+        switch (sig) {
+        case SIGBUS: case SIGFPE: case SIGILL: case SIGSEGV:
+          // dump core after handling these signals
+          setRunState(FATAL_SIGNAL);
+          break;
+
+        default:
+          break;
+        }
+
+        if (! process_signal(sig)) {
+          // dump core for unhandled signals
+          setRunState(FATAL_SIGNAL);
+        }
+
+        if (run_state == FATAL_SIGNAL) {
+          fprintf(stderr, "%s: caught fatal signal '%d', dumping core.\n",
+                  _app_name.c_str(), sig);
+          abort();
+        }
+      }
+    }
+
+    if (run_state != RUNNING) break;
+
     if (XPending(_display.XDisplay())) {
       XEvent e;
       XNextEvent(_display.XDisplay(), &e);
@@ -248,7 +236,8 @@ void bt::Application::eventLoop(void) {
         timeout = &tm;
       }
 
-      select(xfd + 1, &rfds, 0, 0, timeout);
+      int ret = select(xfd + 1, &rfds, 0, 0, timeout);
+      if (ret < 0) continue; // perhaps a signal interrupted select(2)
 
       // check for timer timeout
       gettimeofday(&now, 0);
@@ -271,6 +260,8 @@ void bt::Application::eventLoop(void) {
       }
     }
   }
+
+  shutdown();
 }
 
 void bt::Application::process_event(XEvent *event) {
@@ -460,7 +451,8 @@ void bt::Application::process_event(XEvent *event) {
     // compress configure notify events
     XEvent realevent;
     unsigned int i = 0;
-    while (XCheckTypedWindowEvent(_display.XDisplay(), event->xconfigure.window,
+    while (XCheckTypedWindowEvent(_display.XDisplay(),
+                                  event->xconfigure.window,
                                   ConfigureNotify, &realevent)) {
       ++i;
     }
@@ -543,6 +535,27 @@ void bt::Application::ungrabButton(unsigned int button, unsigned int modifiers,
     XUngrabButton(_display.XDisplay(), button, modifiers | MaskList[cnt],
                   grab_window);
   }
+}
+
+
+bool bt::Application::process_signal(int signal) {
+  switch (signal) {
+  case SIGCHLD:
+    int unused;
+    (void) waitpid(-1, &unused, WNOHANG | WUNTRACED);
+    break;
+
+  case SIGINT:
+  case SIGTERM:
+    setRunState(SHUTDOWN);
+    break;
+
+  default:
+    // generate a core dump for unknown signals
+    return false;
+  }
+
+  return true;
 }
 
 
