@@ -275,11 +275,6 @@ void Widget::focusOutEvent( XEvent * )
 
 void Widget::exposeEvent( XEvent * )
 {
-    // BGCCache *cache = BGCCache::instance();
-    // BGCCache::Item &gc = cache->find( BColor( "yellow" ) );
-    // XFillRectangle( *BaseDisplay::instance(), win, gc.gc(),
-    // e->xexpose.x, e->xexpose.y, e->xexpose.width, e->xexpose.height );
-    // cache->release( gc );
 }
 
 void Widget::enterEvent( XEvent * )
