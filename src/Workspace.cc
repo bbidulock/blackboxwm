@@ -493,9 +493,7 @@ bool Workspace::smartPlacement(Rect& win, const Rect& availableArea) {
   Rect tmp;
   for (; wit != end; ++wit) {
     const BlackboxWindow* const curr = *wit;
-#ifdef PLACEWINDOW_IGNORES_SHADED
     if (curr->isShaded()) continue;
-#endif
 
     tmp.setRect(curr->frameRect().x(), curr->frameRect().y(),
                 curr->frameRect().width() + screen->getBorderWidth(),

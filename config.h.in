@@ -104,5 +104,3 @@
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
-
-#define PLACEWINDOW_IGNORES_SHADED 1
