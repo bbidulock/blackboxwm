@@ -67,7 +67,7 @@ void bt::Resource::merge(const std::string &filename)
 {
   if (filename.empty())
     return;
-  XrmCombineFileDatabase(expandTilde(filename).c_str(), &db, true);
+  XrmCombineFileDatabase(expandTilde(filename).c_str(), &db, false);
 }
 
 
