@@ -2069,6 +2069,13 @@ bool BlackboxWindow::setInputFocus(void) {
     }
   }
 
+  switch (windowType()) {
+  case WindowTypeDock:
+    return false;
+  default:
+    break;
+  }
+
   XSetInputFocus(blackbox->XDisplay(), client.window,
                  RevertToPointerRoot, blackbox->XTime());
 
