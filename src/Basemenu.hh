@@ -93,7 +93,7 @@ public:
   void remove( int index );
   void clear();
 
-  int count() const { return items.size(); }
+  int count() const { return items.size() - show_title ? 1 : 0; }
 
   void setItemEnabled( int, bool );
   bool isItemEnabled( int ) const;
