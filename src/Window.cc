@@ -213,6 +213,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   bool place_window = True;
   if (blackbox->isStartup() || isTransient() ||
+      client.window_type == blackbox->netwm()->wmWindowTypeDesktop() ||
       client.normal_hint_flags & (PPosition|USPosition)) {
     applyGravity(frame.rect);
 
