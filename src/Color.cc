@@ -38,30 +38,29 @@ bool BColor::cleancache = false;
 
 BColor::BColor(const BaseDisplay * const _display, unsigned int _screen)
   : allocated(false), r(-1), g(-1), b(-1), p(0), dpy(_display), scrn(_screen)
-{
-}
+{}
 
 BColor::BColor(int _r, int _g, int _b,
                const BaseDisplay * const _display, unsigned int _screen)
   : allocated(false), r(_r), g(_g), b(_b), p(0), dpy(_display), scrn(_screen)
-{
-}
+{}
+
 
 BColor::BColor(const std::string &_name,
                const BaseDisplay * const _display, unsigned int _screen)
   : allocated(false), r(-1), g(-1), b(-1), p(0), dpy(_display), scrn(_screen),
-    colorname(_name)
-{
+    colorname(_name) {
   parseColorName();
 }
 
-BColor::~BColor(void)
-{
+
+BColor::~BColor(void) {
   deallocate();
 }
 
-void BColor::setDisplay(const BaseDisplay * const _display, unsigned int _screen)
-{
+
+void BColor::setDisplay(const BaseDisplay * const _display,
+                        unsigned int _screen) {
   if (_display == display() && _screen == screen()) {
     // nothing to do
     return;
@@ -77,8 +76,8 @@ void BColor::setDisplay(const BaseDisplay * const _display, unsigned int _screen
   }
 }
 
-unsigned long BColor::pixel(void) const
-{
+
+unsigned long BColor::pixel(void) const {
   if (! allocated) {
     // mutable
     BColor *that = (BColor *) this;
@@ -88,8 +87,8 @@ unsigned long BColor::pixel(void) const
   return p;
 }
 
-void BColor::parseColorName(void)
-{
+
+void BColor::parseColorName(void) {
   assert(dpy != 0);
 
   if (colorname.empty()) {
@@ -108,7 +107,8 @@ void BColor::parseColorName(void)
   xcol.blue = 0;
   xcol.pixel = 0;
 
-  if (! XParseColor(display()->getXDisplay(), colormap, colorname.c_str(), &xcol)) {
+  if (! XParseColor(display()->getXDisplay(), colormap,
+                    colorname.c_str(), &xcol)) {
     fprintf(stderr, "BColor::allocate: color parse error: \"%s\"\n",
             colorname.c_str());
     setRGB(0, 0, 0);
@@ -118,9 +118,10 @@ void BColor::parseColorName(void)
   setRGB(xcol.red >> 8, xcol.green >> 8, xcol.blue >> 8);
 }
 
-void BColor::allocate(void)
-{
+
+void BColor::allocate(void) {
   assert(dpy != 0);
+
   if (scrn == ~(0u)) scrn = DefaultScreen(display()->getXDisplay());
   Colormap colormap = display()->getScreenInfo(scrn)->getColormap();
 
@@ -166,12 +167,13 @@ void BColor::allocate(void)
     doCacheCleanup();
 }
 
-void BColor::deallocate(void)
-{
+
+void BColor::deallocate(void) {
   if (! allocated)
     return;
 
   assert(dpy != 0);
+
   RGB rgb(display(), scrn, r, g, b);
   ColorCache::iterator it = colorcache.find(rgb);
   if (it != colorcache.end()) {
@@ -185,8 +187,8 @@ void BColor::deallocate(void)
   allocated = false;
 }
 
-BColor &BColor::operator=(const BColor &c)
-{
+
+BColor &BColor::operator=(const BColor &c) {
   deallocate();
 
   setRGB(c.r, c.g, c.b);
@@ -196,13 +198,13 @@ BColor &BColor::operator=(const BColor &c)
   return *this;
 }
 
-void BColor::cleanupColorCache(void)
-{
+
+void BColor::cleanupColorCache(void) {
   cleancache = true;
 }
 
-void BColor::doCacheCleanup(void)
-{
+
+void BColor::doCacheCleanup(void) {
   // ### TODO - support multiple displays!
   ColorCache::iterator it = colorcache.begin();
   if (it == colorcache.end()) {

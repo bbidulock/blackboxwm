@@ -48,8 +48,7 @@ public:
   inline int   red(void) const { return r; }
   inline int green(void) const { return g; }
   inline int  blue(void) const { return b; }
-  void setRGB(int _r, int _g, int _b)
-  {
+  void setRGB(int _r, int _g, int _b) {
     deallocate();
     r = _r;
     g = _g;
@@ -97,21 +96,17 @@ private:
     RGB() : display(0), screen(~(0u)), r(-1), g(-1), b(-1) { }
     RGB(const BaseDisplay * const a, const unsigned int b,
         const int x, const int y, const int z)
-      : display(a), screen(b), r(x), g(y), b(z)
-    {
-    }
+      : display(a), screen(b), r(x), g(y), b(z) {}
     RGB(const RGB &x)
-      : display(x.display), screen(x.screen), r(x.r), g(x.g), b(x.b)
-    {
-    }
-    inline Bool operator==(const RGB &x) const
-    {
+      : display(x.display), screen(x.screen), r(x.r), g(x.g), b(x.b) {}
+
+    inline Bool operator==(const RGB &x) const {
       return display == x.display &&
-              screen == x.screen &&
-                   r == x.r && g == x.g && b == x.b;
+        screen == x.screen &&
+        r == x.r && g == x.g && b == x.b;
     }
-    inline Bool operator<(const RGB &x) const
-    {
+
+    inline Bool operator<(const RGB &x) const {
       unsigned long p1, p2;
       p1 = (screen << 24 | r << 16 | g << 8 | b) & 0x00ffffff;
       p2 = (x.screen << 24 | x.r << 16 | x.g << 8 | x.b) & 0x00ffffff;

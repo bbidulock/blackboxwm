@@ -42,9 +42,7 @@ public:
 private:
   BGCCacheContext(const BaseDisplay * const _display)
     : display(_display), gc(0), pixel(0ul), fontid(0ul),
-      function(0), subwindow(0), used(false), screen(~(0u))
-  {
-  }
+      function(0), subwindow(0), used(false), screen(~(0u)) {}
 
   const BaseDisplay *display;
   GC gc;
@@ -98,10 +96,12 @@ private:
 
   // this is closely modelled after the Qt GC cache, but with some of the
   // complexity stripped out
+  const BaseDisplay *display;
+
   const unsigned int context_count;
   const unsigned int cache_size;
   const unsigned int cache_buckets;
-  const BaseDisplay *display;
+  const unsigned int cache_total_size;
   BGCCacheContext **contexts;
   BGCCacheItem **cache;
 };

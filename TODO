@@ -23,6 +23,8 @@ CVS warts:
 * look into centering the window when maximizing and the window can not grow
   to fill the area
 
+* kill that ugly ass macro in GCCache
+
 Stuff TODO or On The Way(tm):
 -----------------------------
 ADD: add _BLACKBOX_STYLE and _BLACKBOX_MENU atoms so that bbtools, bbconf, etc.

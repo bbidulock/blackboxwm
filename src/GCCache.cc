@@ -36,9 +36,9 @@ extern "C" {
 
 
 void BGCCacheContext::set(const BColor &_color,
-                            const XFontStruct * const _font,
-                            const int _function,
-                            const int _subwindow) {
+                          const XFontStruct * const _font,
+                          const int _function,
+                          const int _subwindow) {
   XGCValues gcv;
   pixel = gcv.foreground = _color.pixel();
   function = gcv.function = _function;
@@ -55,6 +55,7 @@ void BGCCacheContext::set(const BColor &_color,
   XChangeGC(display->getXDisplay(), gc, mask, &gcv);
 }
 
+
 void BGCCacheContext::set(const XFontStruct * const _font) {
   if (! _font) {
     fontid = 0;
@@ -68,35 +69,34 @@ void BGCCacheContext::set(const XFontStruct * const _font) {
 
 
 BGCCache::BGCCache(const BaseDisplay * const _display)
-  : context_count(128u), cache_size(16u), cache_buckets(8u), display(_display)
-{
+  : display(_display),  context_count(128u),
+    cache_size(16u), cache_buckets(8u),
+    cache_total_size(cache_size * cache_buckets) {
+
   contexts = new BGCCacheContext*[context_count];
   unsigned int i;
   for (i = 0; i < context_count; i++) {
     contexts[i] = new BGCCacheContext(display);
   }
 
-  cache = new BGCCacheItem*[ cache_size * cache_buckets ];
-  unsigned int b, s;
-  for (i = 0, s = 0; i < cache_size; i++) {
-    for (b = 0; b < cache_buckets; b++)
-      cache[ s++ ] = new BGCCacheItem;
+  cache = new BGCCacheItem*[ cache_total_size ];
+  for (i = 0; i < cache_total_size; ++i) {
+    cache[ i ] = new BGCCacheItem;
   }
 }
 
-BGCCache::~BGCCache()
-{
+
+BGCCache::~BGCCache(void) {
   std::for_each(contexts, contexts + context_count, PointerAssassin());
-  std::for_each(cache, cache + (cache_size * cache_buckets),
-                PointerAssassin());
+  std::for_each(cache, cache + cache_total_size, PointerAssassin());
   delete [] cache;
   delete [] contexts;
   cache = 0;
   contexts = 0;
 }
 
-BGCCacheContext *BGCCache::nextContext(unsigned int scr)
-{
+
+BGCCacheContext *BGCCache::nextContext(unsigned int scr) {
   Window hd = display->getScreenInfo(scr)->getRootWindow();
 
   BGCCacheContext *c;
@@ -116,74 +116,49 @@ BGCCacheContext *BGCCache::nextContext(unsigned int scr)
   }
 
   fprintf(stderr, "BGCCache: context fault!\n");
-  exit(1);
-  return 0; // shutup
+  abort();
 }
 
-void BGCCache::release(BGCCacheContext *ctx)
-{
+
+void BGCCache::release(BGCCacheContext *ctx) {
   ctx->used = false;
 }
 
+
 BGCCacheItem *BGCCache::find(const BColor &_color,
                              const XFontStruct * const _font,
-                             int _function, int _subwindow)
-{
-  unsigned long pixel = _color.pixel();
-  unsigned long fontid = _font ? _font->fid : 0;
-  unsigned int screen = _color.screen();
-  int key = _color.red() ^ _color.green() ^ _color.blue();
+                             int _function, int _subwindow) {
+  const unsigned long pixel = _color.pixel();
+  const unsigned int screen = _color.screen();
+  const int key = _color.red() ^ _color.green() ^ _color.blue();
   int k = (key % cache_size) * cache_buckets;
+  int i = 0; // loop variable
   BGCCacheItem *c = cache[ k ], *prev = 0;
 
-#define NOMATCH (c->ctx && (c->ctx->pixel != pixel || \
-                              c->ctx->function != _function || \
-                              c->ctx->subwindow != _subwindow || \
-                              c->ctx->screen != screen))
-
-  if (NOMATCH) {
-    prev = c;
-    c = cache[ ++k ];
-    if (NOMATCH) {
+  // this will either loop 8 times then return/abort or it will stop matching
+  while (c->ctx &&
+         (c->ctx->pixel != pixel || c->ctx->function != _function ||
+          c->ctx->subwindow != _subwindow || c->ctx->screen != screen)) {
+    if (i < 7) {
       prev = c;
       c = cache[ ++k ];
-      if (NOMATCH) {
-        prev = c;
-        c = cache[ ++k ];
-        if (NOMATCH) {
-          prev = c;
-          c = cache[ ++k ];
-          if (NOMATCH) {
-            prev = c;
-            c = cache[ ++k ];
-            if (NOMATCH) {
-              prev = c;
-              c = cache[ ++k ];
-              if (NOMATCH) {
-                prev = c;
-                c = cache[ ++k ];
-                if (NOMATCH) {
-                  if (c->count == 0 && c->ctx->screen == screen) {
-                    // use this cache item
-                    c->ctx->set(_color, _font, _function, _subwindow);
-                    c->ctx->used = true;
-                    c->count = 1;
-                    c->hits = 1;
-                    return c;
-                  } else {
-                    // cache fault!
-                    fprintf(stderr, "BGCCache: cache fault\n");
-                    abort();
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      ++i;
+      continue;
     }
+    if (c->count == 0 && c->ctx->screen == screen) {
+      // use this cache item
+      c->ctx->set(_color, _font, _function, _subwindow);
+      c->ctx->used = true;
+      c->count = 1;
+      c->hits = 1;
+      return c;
+    }
+    // cache fault!
+    fprintf(stderr, "BGCCache: cache fault\n");
+    abort();
   }
 
+  const unsigned long fontid = _font ? _font->fid : 0;
   if (c->ctx) {
     // reuse existing context
     if (fontid && fontid != c->ctx->fontid)
@@ -194,45 +169,30 @@ BGCCacheItem *BGCCache::find(const BColor &_color,
       cache[ k     ] = prev;
       cache[ k - 1 ] = c;
     }
-    return c;
+  } else {
+    c->ctx = nextContext(screen);
+    c->ctx->set(_color, _font, _function, _subwindow);
+    c->ctx->used = true;
+    c->count = 1;
+    c->hits = 1;
   }
 
-  c->ctx = nextContext(screen);
-  c->ctx->set(_color, _font, _function, _subwindow);
-  c->ctx->used = true;
-  c->count = 1;
-  c->hits = 1;
   return c;
 }
 
-void BGCCache::release(BGCCacheItem *_item)
-{
+
+void BGCCache::release(BGCCacheItem *_item) {
   _item->count--;
 }
 
-void BGCCache::purge()
-{
-  // fprintf(stderr, "BGCCache::purge\n");
-  unsigned int i, b, s;
-  for (i = 0, s = 0; i < cache_size; i++) {
-    for (b = 0; b < cache_buckets; b++) {
-      BGCCacheItem *d = cache[ s++ ];
 
-      if (d->ctx) {
-        // fprintf(stderr, "  cache %4d,%2d=%2d: count %4d",
-        // i, b, s - 1, d->count);
-        // fprintf(stderr, " pixel %6lx f %d sub %d screen %d",
-        // d->ctx->pixel, d->ctx->function,
-        // d->ctx->subwindow, d->ctx->screen);
+void BGCCache::purge(void) {
+  for (unsigned int i = 0; i < cache_total_size; ++i) {
+    BGCCacheItem *d = cache[ i ];
 
-        if (d->count == 0) {
-          release(d->ctx);
-          d->ctx = 0;
-          // fprintf(stderr, " released\n");
-          // } else {
-          // fprintf(stderr, "\n");
-        }
-      }
+    if (d->ctx && d->count == 0) {
+      release(d->ctx);
+      d->ctx = 0;
     }
   }
 }
