@@ -8,7 +8,7 @@ $ #WarnDisplaySet
 # warning: could not set environment variable 'DISPLAY'\n
 $ #Usage
 # Blackbox %s : (c) 2001 - 2002 Sean 'Shaleh' Perry\n\
-  \t\t\t 1997 - 2000, 2002 Brad Hughes\n\n\
+  \t\t\t    1997 - 2000, 2002 Brad Hughes\n\n\
   -display <string>\t\tuse display connection.\n\
   -rc <string>\t\t\tuse alternate resource file.\n\
   -version\t\t\tdisplay version and exit.\n\
