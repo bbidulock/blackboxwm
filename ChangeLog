@@ -3,6 +3,6 @@ Changelog for 0.70.x
 Changes from 0.65.x to 0.70.0
   - moved utility classes into a library
   - beginnings of netwm implementation
-  - blackboxrc is no longer written on exit or restart.  Instead it is written
-    whenever a change is made.  This means the rc can not be edited while
-    Blackbox is running (finally).
+  - blackboxrc is no longer written on exit or restart.  Instead it is
+    written whenever a change is made.  This means the rc can be
+    edited while Blackbox is running (finally).
