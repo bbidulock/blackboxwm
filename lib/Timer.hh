@@ -25,17 +25,35 @@
 #ifndef   __Timer_hh
 #define   __Timer_hh
 
-extern "C" {
-#include <sys/time.h>
-}
+#include "Util.hh"
 
 #include <algorithm>
 #include <queue>
 #include <vector>
 
-#include "Util.hh"
+// forward declare to avoid the header
+struct timeval;
 
 namespace bt {
+
+  class Timer;
+
+  // use a wrapper class to avoid the header as well
+  class timeval {
+  public:
+    long tv_sec;
+    long tv_usec;
+
+    timeval(const ::timeval &);
+    timeval &operator=(const ::timeval &);
+    operator ::timeval() const;
+
+  private:
+    inline timeval(void) { }
+    friend class Timer;
+  };
+
+  timeval normalizeTimeval(const timeval &tm);
 
   // forward declaration
   class TimerQueueManager;
@@ -52,7 +70,7 @@ namespace bt {
     TimeoutHandler *handler;
     bool timing, recur;
 
-    ::timeval _start, _timeout;
+    timeval _start, _timeout;
 
   public:
     Timer(TimerQueueManager *m, TimeoutHandler *h);
@@ -63,17 +81,17 @@ namespace bt {
     inline bool isTiming(void) const { return timing; }
     inline bool isRecurring(void) const { return recur; }
 
-    inline const ::timeval &timeout(void) const { return _timeout; }
-    inline const ::timeval &startTime(void) const { return _start; }
+    inline const timeval &timeout(void) const { return _timeout; }
+    inline const timeval &startTime(void) const { return _start; }
 
-    ::timeval timeRemaining(const ::timeval &tm) const;
-    bool shouldFire(const ::timeval &tm) const;
-    ::timeval endpoint(void) const;
+    timeval timeRemaining(const timeval &tm) const;
+    bool shouldFire(const timeval &tm) const;
+    timeval endpoint(void) const;
 
     inline void recurring(bool b) { recur = b; }
 
     void setTimeout(long t);
-    void setTimeout(const ::timeval &t);
+    void setTimeout(const timeval &t);
 
     void start(void);  // manager acquires timer
     void stop(void);   // manager releases timer
@@ -88,13 +106,14 @@ namespace bt {
   public:
     typedef std::priority_queue<_Tp, _Sequence, _Compare> _Base;
 
-    inline _timer_queue(void): _Base() {}
-    inline ~_timer_queue(void) {}
+    inline _timer_queue(void): _Base() { }
+    inline ~_timer_queue(void) { }
 
     inline void release(const _Tp& value) {
-      c.erase(std::remove(c.begin(), c.end(), value), c.end());
+      _Base::c.erase(std::remove(_Base::c.begin(), _Base::c.end(), value),
+                     _Base::c.end());
       // after removing the item we need to make the heap again
-      std::make_heap(c.begin(), c.end(), comp);
+      std::make_heap(_Base::c.begin(), _Base::c.end(), _Base::comp);
     }
     inline bool empty(void) const { return _Base::empty(); }
     inline size_t size(void) const { return _Base::size(); }
@@ -108,10 +127,8 @@ namespace bt {
   };
 
   struct TimerLessThan {
-    inline bool operator()(const Timer* const l,
-                           const Timer* const r) const {
-      return *r < *l;
-    }
+    inline bool operator()(const Timer* const l, const Timer* const r) const
+    { return *r < *l; }
   };
 
   typedef _timer_queue<Timer*, std::vector<Timer*>, TimerLessThan> TimerQueue;

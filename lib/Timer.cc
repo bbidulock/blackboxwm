@@ -22,32 +22,55 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifdef    HAVE_CONFIG_H
-#  include "../config.h"
-#endif // HAVE_CONFIG_H
+#include "Timer.hh"
 
 extern "C" {
-#ifdef    TIME_WITH_SYS_TIME
-#  include <sys/time.h>
-#  include <time.h>
-#else // !TIME_WITH_SYS_TIME
-#  ifdef    HAVE_SYS_TIME_H
-#    include <sys/time.h>
-#  else // !HAVE_SYS_TIME_H
-#    include <time.h>
-#  endif // HAVE_SYS_TIME_H
-#endif // TIME_WITH_SYS_TIME
+#include <sys/time.h>
 }
 
-#include "Timer.hh"
-#include "Util.hh"
+
+bt::timeval::timeval(const ::timeval &t)
+  : tv_sec(t.tv_sec), tv_usec(t.tv_usec) { }
+
+
+bt::timeval &bt::timeval::operator=(const ::timeval &t)
+{ return (*this = timeval(t)); }
+
+
+bt::timeval::operator ::timeval() const {
+  ::timeval ret = { tv_sec, tv_usec };
+  return ret;
+}
+
+
+bt::timeval bt::normalizeTimeval(const timeval &tm) {
+  timeval ret = tm;
+
+  while (ret.tv_usec < 0) {
+    if (ret.tv_sec > 0) {
+      --ret.tv_sec;
+      ret.tv_usec += 1000000;
+    } else {
+      ret.tv_usec = 0;
+    }
+  }
+
+  if (ret.tv_usec >= 1000000) {
+    ret.tv_sec += ret.tv_usec / 1000000;
+    ret.tv_usec %= 1000000;
+  }
+
+  if (ret.tv_sec < 0) ret.tv_sec = 0;
+
+  return ret;
+}
 
 
 bt::Timer::Timer(TimerQueueManager *m, TimeoutHandler *h) {
   manager = m;
   handler = h;
 
-  recur = timing = False;
+  recur = timing = false;
 }
 
 
@@ -63,42 +86,41 @@ void bt::Timer::setTimeout(long t) {
 }
 
 
-void bt::Timer::setTimeout(const ::timeval &t) {
+void bt::Timer::setTimeout(const timeval &t) {
   _timeout.tv_sec = t.tv_sec;
   _timeout.tv_usec = t.tv_usec;
 }
 
 
 void bt::Timer::start(void) {
-  gettimeofday(&_start, 0);
+  ::timeval s;
+  gettimeofday(&s, 0);
+  _start = s;
 
   if (! timing) {
-    timing = True;
+    timing = true;
     manager->addTimer(this);
   }
 }
 
 
 void bt::Timer::stop(void) {
-  timing = False;
+  timing = false;
 
   manager->removeTimer(this);
 }
 
 
-void bt::Timer::halt(void) {
-  timing = False;
-}
+void bt::Timer::halt(void)
+{ timing = false; }
 
 
-void bt::Timer::fireTimeout(void) {
-  if (handler)
-    handler->timeout(this);
-}
+void bt::Timer::fireTimeout(void)
+{ if (handler) handler->timeout(this); }
 
 
-::timeval bt::Timer::timeRemaining(const ::timeval &tm) const {
-  ::timeval ret = endpoint();
+bt::timeval bt::Timer::timeRemaining(const timeval &tm) const {
+  timeval ret = endpoint();
 
   ret.tv_sec  -= tm.tv_sec;
   ret.tv_usec -= tm.tv_usec;
@@ -107,8 +129,8 @@ void bt::Timer::fireTimeout(void) {
 }
 
 
-::timeval bt::Timer::endpoint(void) const {
-  ::timeval ret;
+bt::timeval bt::Timer::endpoint(void) const {
+  timeval ret;
 
   ret.tv_sec = _start.tv_sec + _timeout.tv_sec;
   ret.tv_usec = _start.tv_usec + _timeout.tv_usec;
@@ -117,8 +139,8 @@ void bt::Timer::fireTimeout(void) {
 }
 
 
-bool bt::Timer::shouldFire(const ::timeval &tm) const {
-  ::timeval end = endpoint();
+bool bt::Timer::shouldFire(const timeval &tm) const {
+  timeval end = endpoint();
 
   return !((tm.tv_sec < end.tv_sec) ||
            (tm.tv_sec == end.tv_sec && tm.tv_usec < end.tv_usec));

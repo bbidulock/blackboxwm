@@ -35,16 +35,6 @@ extern "C" {
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
-#ifdef    TIME_WITH_SYS_TIME
-#  include <sys/time.h>
-#  include <time.h>
-#else // !TIME_WITH_SYS_TIME
-#  ifdef    HAVE_SYS_TIME_H
-#    include <sys/time.h>
-#  else // !HAVE_SYS_TIME_H
-#    include <time.h>
-#  endif // HAVE_SYS_TIME_H
-#endif // TIME_WITH_SYS_TIME
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif // HAVE_UNISTD_H
@@ -119,29 +109,6 @@ std::string bt::textPropertyToString(Display *display,
       }
     }
   }
-
-  return ret;
-}
-
-
-::timeval bt::normalizeTimeval(const ::timeval &tm) {
-  ::timeval ret = tm;
-
-  while (ret.tv_usec < 0) {
-    if (ret.tv_sec > 0) {
-      --ret.tv_sec;
-      ret.tv_usec += 1000000;
-    } else {
-      ret.tv_usec = 0;
-    }
-  }
-
-  if (ret.tv_usec >= 1000000) {
-    ret.tv_sec += ret.tv_usec / 1000000;
-    ret.tv_usec %= 1000000;
-  }
-
-  if (ret.tv_sec < 0) ret.tv_sec = 0;
 
   return ret;
 }

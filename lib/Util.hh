@@ -36,8 +36,6 @@ extern "C" {
 std::string basename(const std::string& path);
 #endif
 
-struct timeval; // forward declare to avoid the header
-
 
 namespace bt {
 
@@ -61,8 +59,6 @@ namespace bt {
   void bexec(const std::string& command, const std::string& displaystring);
 
   std::string textPropertyToString(Display *display, XTextProperty& text_prop);
-
-  ::timeval normalizeTimeval(const ::timeval &tm);
 
   struct PointerAssassin {
     template<typename T>

@@ -226,7 +226,7 @@ void bt::Application::eventLoop(void) {
       process_event(&e);
     } else {
       fd_set rfds;
-      timeval now, tm, *timeout = 0;
+      ::timeval now, tm, *timeout = 0;
 
       FD_ZERO(&rfds);
       FD_SET(xfd, &rfds);
