@@ -210,7 +210,7 @@ Workspace::Workspace(BScreen *scrn, unsigned int i) {
 
 
 void Workspace::addWindow(BlackboxWindow *w, bool place) {
-  assert(! (w == 0 || w->isIconic()));
+  assert(! (w == 0));
 
   if (place) placeWindow(w);
 
@@ -389,7 +389,7 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
 
   raiseTransients(win, stack_vector);
 
-  if (! win->isIconic() && win->getWorkspaceNumber() == id) {
+  if (win->getWorkspaceNumber() == id) {
     stack_vector.push_back(win->getFrameWindow());
     stackingList.remove(win);
     stackingList.insert(win);
