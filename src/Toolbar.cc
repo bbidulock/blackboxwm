@@ -499,9 +499,9 @@ void Toolbar::redrawPrevWorkspaceButton(bool pressed) {
                     frame.psbutton, u, u, p);
   }
 
+  const bt::Pen pen(_screen->screenNumber(), style->foreground);
   bt::drawBitmap(bt::Bitmap::leftArrow(_screen->screenNumber()),
-                 bt::Pen(_screen->screenNumber(), style->foreground),
-                 frame.psbutton, u);
+                 pen, frame.psbutton, u);
 }
 
 
@@ -522,9 +522,9 @@ void Toolbar::redrawNextWorkspaceButton(bool pressed) {
                     frame.nsbutton, u, u, p);
   }
 
+  const bt::Pen pen(_screen->screenNumber(), style->foreground);
   bt::drawBitmap(bt::Bitmap::rightArrow(_screen->screenNumber()),
-                 bt::Pen(_screen->screenNumber(), style->foreground),
-                 frame.nsbutton, u);
+                 pen, frame.nsbutton, u);
 }
 
 
@@ -545,9 +545,9 @@ void Toolbar::redrawPrevWindowButton(bool pressed) {
                     frame.pwbutton, u, u, p);
   }
 
+  const bt::Pen pen(_screen->screenNumber(), style->foreground);
   bt::drawBitmap(bt::Bitmap::leftArrow(_screen->screenNumber()),
-                 bt::Pen(_screen->screenNumber(), style->foreground),
-                 frame.pwbutton, u);
+                 pen, frame.pwbutton, u);
 }
 
 
@@ -568,9 +568,9 @@ void Toolbar::redrawNextWindowButton(bool pressed) {
                     frame.nwbutton, u, u, p);
   }
 
+  const bt::Pen pen(_screen->screenNumber(), style->foreground);
   bt::drawBitmap(bt::Bitmap::rightArrow(_screen->screenNumber()),
-                 bt::Pen(_screen->screenNumber(), style->foreground),
-                 frame.nwbutton, u);
+                 pen, frame.nwbutton, u);
 }
 
 
