@@ -239,8 +239,8 @@ void bsetroot::modula(int x, int y) {
 
     for (i = 0; i < 16; i++) {
       if ((i %  y) == 0) {
-        data[(i * 2)] = (char) 0xff;
-        data[(i * 2) + 1] = (char) 0xff;
+        data[(i * 2)] = static_cast<char>(0xff);
+        data[(i * 2) + 1] = static_cast<char>(0xff);
       } else {
         data[(i * 2)] = pattern & 0xff;
         data[(i * 2) + 1] = (pattern >> 8) & 0xff;

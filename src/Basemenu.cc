@@ -757,6 +757,7 @@ void Basemenu::setLabel(const string& label) {
 
 
 void Basemenu::setItemSelected(int index, Bool sel) {
+  assert(index >= 0);
   BasemenuItem *item = find(index);
   if (! item) return;
 
@@ -766,6 +767,7 @@ void Basemenu::setItemSelected(int index, Bool sel) {
 
 
 Bool Basemenu::isItemSelected(int index) {
+  assert(index >= 0);
   BasemenuItem *item = find(index);
   if (! item) return False;
 
@@ -774,6 +776,7 @@ Bool Basemenu::isItemSelected(int index) {
 
 
 void Basemenu::setItemEnabled(int index, Bool enable) {
+  assert(index >= 0);
   BasemenuItem *item = find(index);
   if (! item) return;
 
@@ -783,6 +786,7 @@ void Basemenu::setItemEnabled(int index, Bool enable) {
 
 
 Bool Basemenu::isItemEnabled(int index) {
+  assert(index >= 0);
   BasemenuItem *item = find(index);
   if (! item) return False;
 

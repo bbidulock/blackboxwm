@@ -745,8 +745,8 @@ void BScreen::removeIcon(BlackboxWindow *w) {
 }
 
 
-BlackboxWindow *BScreen::getIcon(int index) {
-  if (index >= 0 && index < static_cast<signed>(iconList.size())) {
+BlackboxWindow *BScreen::getIcon(unsigned int index) {
+  if (index < iconList.size()) {
     BlackboxWindowList::iterator it = iconList.begin();
     for (; index > 0; --index, ++it) ; /* increment to index */
     return *it;

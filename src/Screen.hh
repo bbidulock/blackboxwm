@@ -311,7 +311,7 @@ public:
   inline MenuStyle *getMenuStyle(void) { return &resource.mstyle; }
   inline ToolbarStyle *getToolbarStyle(void) { return &resource.tstyle; }
 
-  BlackboxWindow *getIcon(int index);
+  BlackboxWindow *getIcon(unsigned int index);
 
   const XRectangle& availableArea(void) const;
   void updateAvailableArea(void);
