@@ -129,8 +129,12 @@ void BlackboxResource::load(Blackbox& blackbox) {
 
   cursor.session = XCreateFontCursor(blackbox.XDisplay(), XC_left_ptr);
   cursor.move = XCreateFontCursor(blackbox.XDisplay(), XC_fleur);
+  cursor.resize_top_left =
+    XCreateFontCursor(blackbox.XDisplay(), XC_top_left_corner);
   cursor.resize_bottom_left =
     XCreateFontCursor(blackbox.XDisplay(), XC_bottom_left_corner);
+  cursor.resize_top_right =
+    XCreateFontCursor(blackbox.XDisplay(), XC_top_right_corner);
   cursor.resize_bottom_right =
     XCreateFontCursor(blackbox.XDisplay(), XC_bottom_right_corner);
 

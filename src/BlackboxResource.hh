@@ -204,7 +204,8 @@ private:
   ScreenResource* screen_resources;
 
   struct BCursor {
-    Cursor session, move, resize_bottom_left, resize_bottom_right;
+    Cursor session, move, resize_top_left, resize_bottom_left,
+      resize_top_right, resize_bottom_right;
   };
   BCursor cursor;
 
@@ -226,8 +227,12 @@ public:
   { return cursor.session; }
   inline Cursor moveCursor(void) const
   { return cursor.move; }
+  inline Cursor resizeTopLeftCursor(void) const
+  { return cursor.resize_top_left; }
   inline Cursor resizeBottomLeftCursor(void) const
   { return cursor.resize_bottom_left; }
+  inline Cursor resizeTopRightCursor(void) const
+  { return cursor.resize_top_right; }
   inline Cursor resizeBottomRightCursor(void) const
   { return cursor.resize_bottom_right; }
 

@@ -205,7 +205,11 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
       right_grip, left_grip;
 
     // frame geometry
-    bt::Rect rect, changing;
+    bt::Rect rect;
+
+    // used during move/resize
+    bt::Rect changing;
+    int corner;
 
     /*
      * margins between the frame and client, this has nothing to do
@@ -254,6 +258,14 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   void setState(unsigned long new_state);
   void updateEWMHState();
   void updateEWMHAllowedActions();
+
+  void startMove();
+  void continueMove(int x_root, int y_root);
+  void finishMove();
+
+  void startResize(Window window);
+  void continueResize(int x_root, int y_root);
+  void finishResize();
 
   void showGeometry(const bt::Rect &r) const;
 
