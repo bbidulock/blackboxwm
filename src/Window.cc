@@ -849,7 +849,7 @@ void BlackboxWindow::positionWindows(void) {
 void BlackboxWindow::getWMName(void) {
   XTextProperty text_prop;
 
-  string name;
+  std::string name;
 
   if (XGetWMName(blackbox->getXDisplay(), client.window, &text_prop)) {
     name = textPropertyToString(blackbox->getXDisplay(), text_prop);
@@ -865,7 +865,7 @@ void BlackboxWindow::getWMName(void) {
 void BlackboxWindow::getWMIconName(void) {
   XTextProperty text_prop;
 
-  string name;
+  std::string name;
 
   if (XGetWMIconName(blackbox->getXDisplay(), client.window, &text_prop)) {
     name = textPropertyToString(blackbox->getXDisplay(), text_prop);
@@ -3302,13 +3302,10 @@ BWindowGroup::find(BScreen *screen, bool allow_transients) const {
   BlackboxWindow *ret = blackbox->getFocusedWindow();
 
   // does the focus window match (or any transient_fors)?
-  while (ret) {
-    if (ret->getScreen() == screen && ret->getGroupWindow() == group) {
-      if (ret->isTransient() && allow_transients) break;
-      else if (! ret->isTransient()) break;
-    }
-
-    ret = ret->getTransientFor();
+  for (; ret; ret = ret->getTransientFor()) {
+    if (ret->getScreen() == screen && ret->getGroupWindow() == group &&
+        (! ret->isTransient() || allow_transients))
+      break;
   }
 
   if (ret) return ret;
@@ -3317,10 +3314,9 @@ BWindowGroup::find(BScreen *screen, bool allow_transients) const {
   BlackboxWindowList::const_iterator it, end = windowList.end();
   for (it = windowList.begin(); it != end; ++it) {
     ret = *it;
-    if (ret->getScreen() == screen && ret->getGroupWindow() == group) {
-      if (ret->isTransient() && allow_transients) break;
-      else if (! ret->isTransient()) break;
-    }
+    if (ret->getScreen() == screen && ret->getGroupWindow() == group &&
+        (! ret->isTransient() || allow_transients))
+      break;
   }
 
   return ret;
