@@ -634,25 +634,36 @@ void bt::Menu::popup(int x, int y, bool centered) {
   if (_show_title) {
     if (centered) {
       x -= _trect.width() / 2;
+      if (x + _rect.width() > screeninfo.getWidth())
+        x = screeninfo.getWidth() - _rect.width();
+
       y -= _trect.height() / 2;
       if (y + _rect.height() > screeninfo.getHeight())
         y -= _frect.height() + (_trect.height() / 2);
     } else {
+      if (x + _rect.width() > screeninfo.getWidth())
+        x -= _rect.width();
+
       y -= _trect.height();
       if (y + _rect.height() > screeninfo.getHeight())
         y -= _frect.height();
     }
   } else {
-    if (centered)
+    if (centered) {
       x -= _frect.width() / 2;
+      if (x + _rect.width() > screeninfo.getWidth())
+        x = screeninfo.getWidth() - _rect.width();
+    } else {
+      if (x + _rect.width() > screeninfo.getWidth())
+        x -= _rect.width();
+    }
+
     if (y + _rect.height() > screeninfo.getHeight())
       y -= _frect.height();
   }
 
   if (y < 0)
     y = 0;
-  if (x + _rect.width() > screeninfo.getWidth())
-    x -= _rect.width();
   if (x < 0)
     x = 0;
 
