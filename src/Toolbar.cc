@@ -975,8 +975,8 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
       } else {
         XSetInputFocus(display, PointerRoot, None, CurrentTime);
       }
-      if (new_workspace_name.empty())
-        new_workspace_name = " "; // avoids empty names but looks empty
+      //      if (new_workspace_name.empty())
+      //        new_workspace_name = " "; // avoids empty names but looks empty
       Workspace *wkspc = screen->getCurrentWorkspace();
       wkspc->setName(new_workspace_name);
       wkspc->getMenu()->hide();

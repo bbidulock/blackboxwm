@@ -305,7 +305,7 @@ void Basemenu::update(void) {
   for (; it != end; ++it) {
     BasemenuItem *tmp = *it;
     const char *s = ((! tmp->u.empty()) ? tmp->u.c_str() :
-                     ((! tmp->l.empty()) ? tmp->l.c_str() : (const char *) 0));
+                     ((! tmp->l.empty()) ? tmp->l.c_str() : ""));
 
     int l = strlen(s);
 

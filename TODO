@@ -3,7 +3,6 @@
 CVS Bugs:
 -----------------------------
 * maximize gets the dimensions very wrong
-* [nop] in menu segfaults (shaleh)
 * windows that set WM_DELETE_WINDOW protocol after creation do not get a close button
 
 temporarily fixed, blackbox needs real focus handling fixes for this to really go away:
