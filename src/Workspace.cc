@@ -70,6 +70,15 @@ void Workspace::addWindow(BlackboxWindow *win) {
   assert(win->workspace() == _id || win->workspace() == bt::BSENTINEL);
 
   win->setWorkspace(_id);
+
+  if (win->isTransient()) {
+    BlackboxWindow * const tmp = win->findNonTransientParent();
+    if (tmp) {
+      win->setWindowNumber(bt::BSENTINEL);
+      return;
+    }
+  }
+
   const bt::ustring s =
     bt::ellideText(win->title(), 60, bt::toUnicode("..."));
   int wid = clientmenu->insertItem(s);
@@ -80,7 +89,8 @@ void Workspace::addWindow(BlackboxWindow *win) {
 void Workspace::removeWindow(BlackboxWindow *win) {
   assert(win != 0 && win->workspace() == _id);
 
-  clientmenu->removeItem(win->windowNumber());
+  if (win->windowNumber() != bt::BSENTINEL)
+    clientmenu->removeItem(win->windowNumber());
   win->setWindowNumber(bt::BSENTINEL);
   win->setWorkspace(bt::BSENTINEL);
 

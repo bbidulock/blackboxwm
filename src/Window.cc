@@ -2022,7 +2022,8 @@ void BlackboxWindow::show(void) {
 
 
 void BlackboxWindow::hide(void) {
-  if (!client.state.visible) return;
+  if (!client.state.visible)
+    return;
 
   client.state.visible = false;
   setState(client.state.iconic ? IconicState : client.current_state);
@@ -2077,9 +2078,8 @@ void BlackboxWindow::activate(void) {
 
 
 void BlackboxWindow::iconify(void) {
-  assert(hasWindowFunction(WindowFunctionIconify));
-
-  if (client.state.iconic) return;
+  if (client.state.iconic)
+    return;
 
   if (isTransient()) {
     BlackboxWindow *win = findTransientFor();
@@ -2087,6 +2087,8 @@ void BlackboxWindow::iconify(void) {
       if (!win->isIconic())
         win->iconify();
     }
+  } else {
+    assert(hasWindowFunction(WindowFunctionIconify));
   }
 
   _screen->addIcon(this);
@@ -2136,7 +2138,8 @@ void BlackboxWindow::maximize(unsigned int button) {
       redrawAllButtons(); // in case it is not called in configure()
     }
 
-    setState(client.current_state);
+    updateEWMHState();
+    updateEWMHAllowedActions();
     return;
   }
 
@@ -2185,7 +2188,8 @@ void BlackboxWindow::maximize(unsigned int button) {
     configure(r);
   }
 
-  setState(client.current_state);
+  updateEWMHState();
+  updateEWMHAllowedActions();
 }
 
 
@@ -2280,7 +2284,8 @@ void BlackboxWindow::setFullScreen(bool b) {
     if (isVisible())
       _screen->changeLayer(this, StackingList::LayerFullScreen);
 
-    setState(client.current_state);
+    updateEWMHState();
+    updateEWMHAllowedActions();
   } else {
     // restore from fullscreen
     ::update_decorations(client.decorations,
@@ -2306,7 +2311,9 @@ void BlackboxWindow::setFullScreen(bool b) {
       // trick configure into working
       frame.rect = bt::Rect();
       configure(r);
-      setState(client.current_state);
+
+      updateEWMHState();
+      updateEWMHAllowedActions();
     }
   }
 
@@ -2363,6 +2370,12 @@ void BlackboxWindow::setState(unsigned long new_state) {
                   blackbox->wmStateAtom(), blackbox->wmStateAtom(), 32,
                   PropModeReplace, (unsigned char *) state, 2);
 
+  updateEWMHState();
+  updateEWMHAllowedActions();
+}
+
+
+void BlackboxWindow::updateEWMHState() {
   const bt::EWMH& ewmh = blackbox->ewmh();
 
   // set _NET_WM_STATE
@@ -2399,10 +2412,14 @@ void BlackboxWindow::setState(unsigned long new_state) {
     ewmh.removeProperty(client.window, ewmh.wmState());
   else
     ewmh.setWMState(client.window, atoms);
+}
+
+
+void BlackboxWindow::updateEWMHAllowedActions() {
+  const bt::EWMH& ewmh = blackbox->ewmh();
 
   // set _NET_WM_ALLOWED_ACTIONS
-  atoms.clear();
-
+  bt::EWMH::AtomList atoms;
   if (! client.state.iconic) {
     if (hasWindowFunction(WindowFunctionChangeWorkspace))
       atoms.push_back(ewmh.wmActionChangeDesktop());
@@ -2430,7 +2447,10 @@ void BlackboxWindow::setState(unsigned long new_state) {
   if (hasWindowFunction(WindowFunctionClose))
     atoms.push_back(ewmh.wmActionClose());
 
-  ewmh.setWMAllowedActions(client.window, atoms);
+  if (atoms.empty())
+    ewmh.removeProperty(client.window, ewmh.wmAllowedActions());
+  else
+    ewmh.setWMAllowedActions(client.window, atoms);
 }
 
 
@@ -2752,7 +2772,7 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
       }
       // we do nothing with skip_*, but others might... we should at
       // least make sure these are present in _NET_WM_STATE
-      setState(client.current_state);
+      updateEWMHState();
     }
 
     if (first == ewmh.wmStateHidden() ||

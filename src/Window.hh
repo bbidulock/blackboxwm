@@ -252,6 +252,8 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   void redrawGrips(void) const;
 
   void setState(unsigned long new_state);
+  void updateEWMHState();
+  void updateEWMHAllowedActions();
 
   void showGeometry(const bt::Rect &r) const;
 

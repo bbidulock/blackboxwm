@@ -2219,6 +2219,14 @@ void BScreen::addIcon(BlackboxWindow *win) {
     workspace->removeWindow(win);
   }
 
+  if (win->isTransient()) {
+    BlackboxWindow * const tmp = win->findNonTransientParent();
+    if (tmp) {
+      win->setWindowNumber(bt::BSENTINEL);
+      return;
+    }
+  }
+
   const bt::ustring s =
     bt::ellideText(win->iconTitle(), 60, bt::toUnicode("..."));
   int id = _iconmenu->insertItem(s);
@@ -2228,9 +2236,11 @@ void BScreen::addIcon(BlackboxWindow *win) {
 
 
 void BScreen::removeIcon(BlackboxWindow *win) {
-  _iconmenu->removeItem(win->windowNumber());
-  _blackbox->ewmh().removeProperty(win->clientWindow(),
-                                   _blackbox->ewmh().wmVisibleIconName());
+  if (win->windowNumber() != bt::BSENTINEL) {
+    _iconmenu->removeItem(win->windowNumber());
+    _blackbox->ewmh().removeProperty(win->clientWindow(),
+                                     _blackbox->ewmh().wmVisibleIconName());
+  }
 
   Workspace *workspace = findWorkspace(current_workspace);
   assert(workspace != 0);
