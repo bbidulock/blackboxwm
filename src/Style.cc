@@ -16,6 +16,10 @@
 #  include <stdarg.h>
 #endif // HAVE_STDARG_H
 
+#ifdef    STDC_HEADERS
+#  include <string.h>
+#endif // STDC_HEADERS
+
 #ifndef   FONT_ELEMENT_SIZE
 #define   FONT_ELEMENT_SIZE 50
 #endif // FONT_ELEMENT_SIZE
