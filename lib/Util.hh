@@ -1,5 +1,5 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
-// Util.cc for Blackbox - an X11 Window manager
+// Util.hh for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2003 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000, 2002 - 2003
 //         Bradley T Hughes <bhughes at trolltech.com>
