@@ -71,10 +71,9 @@ bt::MenuStyle *bt::MenuStyle::get(Application &app,
 bt::MenuStyle::MenuStyle(Application &app, unsigned int screen,
                          ImageControl *imagecontrol)
   : _app(app), _screen(screen), _imagecontrol(imagecontrol) {
-  title.alignment = bt::AlignCenter;
-  frame.alignment = bt::AlignCenter;
+  title.alignment = AlignLeft;
+  frame.alignment = AlignLeft;
   margin_w = 1u;
-
 
   bitmap.arrow =
     XCreateBitmapFromData(_app.getXDisplay(),
@@ -155,6 +154,14 @@ void bt::MenuStyle::load(const Resource &resource) {
   frame.font = bt::Font(resource.read("menu.frame.font",
                                       "Menu.Frame.Font"),
                         &_app.getDisplay());
+
+  title.alignment =
+    bt::alignResource(resource, "menu.title.alignment",
+                      "Menu.Title.Alignment");
+
+  frame.alignment =
+    bt::alignResource(resource, "menu.frame.alignment",
+                      "Menu.Frame.Alignment");
 
   const std::string mstr =
     resource.read("menu.marginWidth", "Menu.MarginWidth", "1");
@@ -251,7 +258,10 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
                      rect.x(), rect.y(), rect.width(), rect.height());
     }
   }
-  drawText(frame.font, tpen, window, rect, frame.alignment, item.label());
+  Rect r2;
+  r2.setCoords(rect.left() + rect.height(), rect.top(),
+               rect.right() - rect.height(), rect.bottom());
+  drawText(frame.font, tpen, window, r2, frame.alignment, item.label());
 
   if (item.isChecked()) {
     // draw check mark

@@ -39,6 +39,7 @@ namespace bt {
   class Display;
   class Pen;
   class Rect;
+  class Resource;
 
   enum Alignment {
     AlignLeft = 0,
@@ -49,21 +50,21 @@ namespace bt {
   class Font {
   public:
     explicit Font(const std::string &name = std::string(),
-                  const bt::Display * const dpy = 0);
+                  const Display * const dpy = 0);
     ~Font(void);
 
-    inline const bt::Display *display(void) const { return _dpy; }
-    void setDisplay(const bt::Display * const dpy);
+    inline const Display *display(void) const { return _dpy; }
+    void setDisplay(const Display * const dpy);
 
     inline const std::string& fontname(void) const { return _fontname; }
 
     inline XFontSet fontset(void) const { return _fontset; }
     inline XFontStruct *font(void) const { return _font; }
 
-    bt::Font& operator=(const bt::Font &f);
-    inline bool operator==(const bt::Font &f)
+    Font& operator=(const Font &f);
+    inline bool operator==(const Font &f)
     { return _fontname == f._fontname; }
-    inline bool operator!=(const bt::Font &f)
+    inline bool operator!=(const Font &f)
     { return (! operator==(f)); }
 
   private:
@@ -71,7 +72,7 @@ namespace bt {
     void unload(void);
 
     std::string _fontname;
-    const bt::Display *_dpy;
+    const Display *_dpy;
     XFontSet _fontset;
     XFontStruct *_font;
 
@@ -90,16 +91,21 @@ namespace bt {
     static FontCache fontcache;
   };
 
-  unsigned int textHeight(const bt::Font &font);
+  unsigned int textHeight(const Font &font);
 
-  bt::Rect textRect(const bt::Font &font, const std::string &text);
+  Rect textRect(const Font &font, const std::string &text);
 
-  void drawText(const bt::Font &font, const bt::Pen &pen, Window window,
-                const bt::Rect &rect, bt::Alignment alignment,
+  void drawText(const Font &font, const Pen &pen, Window window,
+                const Rect &rect, Alignment alignment,
                 const std::string &text);
 
   std::string ellideText(const std::string& text, unsigned int count,
                          const char* ellide);
+
+  Alignment alignResource(const Resource &resource,
+                          const std::string &name,
+                          const std::string &classname,
+                          Alignment default_align = AlignLeft);
 
 } // namespace bt
 

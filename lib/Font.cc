@@ -27,11 +27,13 @@
 
 extern "C" {
 #include <assert.h>
+#include <ctype.h>
 }
 
 #include "BaseDisplay.hh"
 #include "Color.hh"
 #include "GCCache.hh"
+#include "Resource.hh"
 #include "i18n.hh"
 
 static const char * const defaultFont = "fixed";
@@ -200,4 +202,23 @@ std::string bt::ellideText(const std::string& text, unsigned int count,
   ret.replace(ret.begin() + (count/2) - 1, ret.end() - delta, ellide);
 
   return ret;
+}
+
+
+bt::Alignment bt::alignResource(const Resource &resource,
+                                const std::string &name,
+                                const std::string &classname,
+                                Alignment default_align) {
+  std::string res = resource.read(name, classname);
+
+  // convert to lowercase
+  std::string::iterator it, end;
+  for (it = res.begin(), end = res.end(); it != end; ++it)
+    *it = tolower(*it);
+
+  // we use find since res could have spaces and such things in the string
+  if (res.find("left")   != std::string::npos) return AlignLeft;
+  if (res.find("center") != std::string::npos) return AlignCenter;
+  if (res.find("right")  != std::string::npos) return AlignRight;
+  return default_align;
 }
