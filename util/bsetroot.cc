@@ -12,6 +12,8 @@
 #endif // HAVE_STDIO_H
 
 #include "../src/i18n.hh"
+#include "../src/GCCache.hh"
+#include "../src/Texture.hh"
 #include "../src/Util.hh"
 #include "bsetroot.hh"
 
@@ -76,10 +78,10 @@ bsetroot::bsetroot(int argc, char **argv, char *dpy_name)
 	    i18n(bsetrootSet, bsetrootMustSpecify,
 	         "%s: error: must specify one of: -solid, -mod, -gradient\n"),
 	    getApplicationName());
-    
+
     usage(2);
   }
-  
+
   img_ctrl = new BImageControl*[getNumberOfScreens()];
   for (unsigned int i = 0; i < getNumberOfScreens(); i++)
     img_ctrl[i] = new BImageControl(this, getScreenInfo(i), True);
@@ -116,12 +118,12 @@ void bsetroot::setPixmapProperty(int screen, Pixmap pixmap) {
     rootpmap_id = XInternAtom(getXDisplay(), "_XROOTPMAP_ID", False);
 
   XGrabServer(getXDisplay());
-  
+
   /* Clear out the old pixmap */
   XGetWindowProperty(getXDisplay(), screen_info->getRootWindow(),
 		     rootpmap_id, 0L, 1L, False, AnyPropertyType,
 		     &type, &format, &length, &after, &data);
-  
+
   if ((type == XA_PIXMAP) && (format == 32) && (length == 1)) {
     XKillClient(getXDisplay(), *((Pixmap *)data));
     XSync(getXDisplay(), False);
@@ -137,7 +139,7 @@ void bsetroot::setPixmapProperty(int screen, Pixmap pixmap) {
     XDeleteProperty(getXDisplay(), screen_info->getRootWindow(),
 		    rootpmap_id);
   }
-  
+
   XUngrabServer(getXDisplay());
   XFlush(getXDisplay());
 }
@@ -162,23 +164,18 @@ Pixmap bsetroot::duplicatePixmap(int screen, Pixmap pixmap,
 
 void bsetroot::solid(void) {
   for (unsigned int screen = 0; screen < getNumberOfScreens(); screen++) {
-    BColor c;
+    BColor c(fore, this, screen);
     const ScreenInfo *screen_info = getScreenInfo(screen);
 
-    img_ctrl[screen]->parseColor(&c, fore);
-    if (! c.isAllocated()) c.setPixel(BlackPixel(getXDisplay(), screen));
-
     XSetWindowBackground(getXDisplay(), screen_info->getRootWindow(),
-                         c.getPixel());
+                         c.pixel());
     XClearWindow(getXDisplay(), screen_info->getRootWindow());
 
     Pixmap pixmap = XCreatePixmap(getXDisplay(),
 				  screen_info->getRootWindow(),
 				  8, 8, DefaultDepth(getXDisplay(), screen));
-    XSetForeground(getXDisplay(), DefaultGC(getXDisplay(), screen),
-		   c.getPixel());
-    XFillRectangle(getXDisplay(), pixmap, DefaultGC(getXDisplay(), screen),
-		   0, 0, 8, 8);
+    BPen pen(c);
+    XFillRectangle(getXDisplay(), pixmap, pen.gc(), 0, 0, 8, 8);
 
     setPixmapProperty(screen, duplicatePixmap(screen, pixmap, 8, 8));
 
@@ -210,10 +207,9 @@ void bsetroot::modula(int x, int y) {
       }
     }
 
-    BColor f, b;
+    BColor f(fore, this, screen), b(back, this, screen);
     GC gc;
     Pixmap bitmap;
-    XGCValues gcv;
     const ScreenInfo *screen_info = getScreenInfo(screen);
 
     bitmap =
@@ -221,14 +217,9 @@ void bsetroot::modula(int x, int y) {
                             screen_info->getRootWindow(), data,
                             16, 16);
 
-    img_ctrl[screen]->parseColor(&f, fore);
-    img_ctrl[screen]->parseColor(&b, back);
-
-    if (! f.isAllocated()) f.setPixel(WhitePixel(getXDisplay(), screen));
-    if (! b.isAllocated()) b.setPixel(BlackPixel(getXDisplay(), screen));
-
-    gcv.foreground = f.getPixel();
-    gcv.background = b.getPixel();
+    XGCValues gcv;
+    gcv.foreground = f.pixel();
+    gcv.background = b.pixel();
 
     gc = XCreateGC(getXDisplay(), screen_info->getRootWindow(),
                    GCForeground | GCBackground, &gcv);
@@ -258,22 +249,16 @@ void bsetroot::modula(int x, int y) {
 
 void bsetroot::gradient(void) {
   for (unsigned int screen = 0; screen < getNumberOfScreens(); screen++) {
-    BTexture texture;
+    BTexture texture(grad, this, screen);
     const ScreenInfo *screen_info = getScreenInfo(screen);
 
-    img_ctrl[screen]->parseTexture(&texture, grad);
-    img_ctrl[screen]->parseColor(texture.getColor(), fore);
-    img_ctrl[screen]->parseColor(texture.getColorTo(), back);
-
-    if (! texture.getColor()->isAllocated())
-      texture.getColor()->setPixel(WhitePixel(getXDisplay(), screen));
-    if (! texture.getColorTo()->isAllocated())
-      texture.getColorTo()->setPixel(BlackPixel(getXDisplay(), screen));
+    texture.setColor(BColor(fore, this, screen));
+    texture.setColorTo(BColor(back, this, screen));
 
     Pixmap pixmap =
       img_ctrl[screen]->renderImage(screen_info->getWidth(),
                                     screen_info->getHeight(),
-                                    &texture);
+                                    texture);
 
     XSetWindowBackgroundPixmap(getXDisplay(),
                                screen_info->getRootWindow(),
@@ -282,9 +267,9 @@ void bsetroot::gradient(void) {
 
     setPixmapProperty(screen,
 		      duplicatePixmap(screen, pixmap,
-				      screen_info->getWidth(), 
+				      screen_info->getWidth(),
 				      screen_info->getHeight()));
-      
+
     if (! (screen_info->getVisual()->c_class & 1)) {
       img_ctrl[screen]->removeImage(pixmap);
     }
@@ -306,31 +291,31 @@ void bsetroot::usage(int exit_code) {
 	       "  -solid <color>           solid color\n\n"
 	       "  -help                    print this help text and exit\n"),
 	  getApplicationName());
-  
+
   exit(exit_code);
 }
 
 int main(int argc, char **argv) {
   char *display_name = (char *) 0;
-  
+
   i18n.openCatalog("blackbox.cat");
-  
+
   for (int i = 1; i < argc; i++) {
     if (! strcmp(argv[i], "-display")) {
       // check for -display option
-      
+
       if ((++i) >= argc) {
         fprintf(stderr, i18n(mainSet, mainDISPLAYRequiresArg,
 		             "error: '-display' requires an argument\n"));
-	
+
         ::exit(1);
       }
-      
+
       display_name = argv[i];
     }
   }
-  
+
   bsetroot app(argc, argv, display_name);
-  
+
   return 0;
 }

@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Screen.cc for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
@@ -71,6 +71,7 @@
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "Clientmenu.hh"
+#include "GCCache.hh"
 #include "Iconmenu.hh"
 #include "Image.hh"
 #include "Screen.hh"
@@ -113,71 +114,6 @@ struct dcmp {
     return (strcmp(one, two) < 0) ? True : False;
   }
 };
-
-#ifndef    HAVE_STRCASESTR
-static const char * strcasestr(const char *str, const char *ptn) {
-  const char *s2, *p2;
-  for( ; *str; str++) {
-    for(s2=str,p2=ptn; ; s2++,p2++) {
-      if (!*p2) return str;
-      if (toupper(*s2) != toupper(*p2)) break;
-    }
-  }
-  return NULL;
-}
-#endif // HAVE_STRCASESTR
-
-static const char *getFontElement(const char *pattern,
-                                  char *buf, int bufsiz, ...) {
-  const char *p, *v;
-  char *p2;
-  va_list va;
-
-  va_start(va, bufsiz);
-  buf[bufsiz-1] = 0;
-  buf[bufsiz-2] = '*';
-  while((v = va_arg(va, char *)) != NULL) {
-    p = strcasestr(pattern, v);
-    if (p) {
-      strncpy(buf, p+1, bufsiz-2);
-      p2 = strchr(buf, '-');
-      if (p2) *p2=0;
-      va_end(va);
-      return p;
-    }
-  }
-  va_end(va);
-  strncpy(buf, "*", bufsiz);
-  return NULL;
-}
-
-static const char *getFontSize(const char *pattern, int *size) {
-  const char *p;
-  const char *p2=NULL;
-  int n=0;
-
-  for (p=pattern; 1; p++) {
-    if (!*p) {
-      if (p2!=NULL && n>1 && n<72) {
-        *size = n; return p2+1;
-      } else {
-        *size = 16; return NULL;
-      }
-    } else if (*p=='-') {
-      if (n>1 && n<72 && p2!=NULL) {
-        *size = n;
-        return p2+1;
-      }
-      p2=p; n=0;
-    } else if (*p>='0' && *p<='9' && p2!=NULL) {
-      n *= 10;
-      n += *p-'0';
-    } else {
-      p2=NULL; n=0;
-    }
-  }
-}
-
 
 BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   blackbox = bb;
@@ -252,81 +188,6 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   opGC = XCreateGC(blackbox->getXDisplay(), getRootWindow(),
                    GCForeground | GCFunction | GCSubwindowMode, &gcv);
 
-  gcv.foreground = resource.wstyle.l_text_focus.getPixel();
-  if (resource.wstyle.font)
-    gcv.font = resource.wstyle.font->fid;
-  resource.wstyle.l_text_focus_gc =
-    XCreateGC(blackbox->getXDisplay(), getRootWindow(),
-              gc_value_mask, &gcv);
-
-  gcv.foreground = resource.wstyle.l_text_unfocus.getPixel();
-  if (resource.wstyle.font)
-    gcv.font = resource.wstyle.font->fid;
-  resource.wstyle.l_text_unfocus_gc =
-    XCreateGC(blackbox->getXDisplay(), getRootWindow(),
-              gc_value_mask, &gcv);
-
-  gcv.foreground = resource.wstyle.b_pic_focus.getPixel();
-  resource.wstyle.b_pic_focus_gc =
-    XCreateGC(blackbox->getXDisplay(), getRootWindow(),
-              GCForeground, &gcv);
-
-  gcv.foreground = resource.wstyle.b_pic_unfocus.getPixel();
-  resource.wstyle.b_pic_unfocus_gc =
-    XCreateGC(blackbox->getXDisplay(), getRootWindow(),
-              GCForeground, &gcv);
-
-  gcv.foreground = resource.mstyle.t_text.getPixel();
-  if (resource.mstyle.t_font)
-    gcv.font = resource.mstyle.t_font->fid;
-  resource.mstyle.t_text_gc =
-    XCreateGC(blackbox->getXDisplay(), getRootWindow(),
-              gc_value_mask, &gcv);
-
-  gcv.foreground = resource.mstyle.f_text.getPixel();
-  if (resource.mstyle.f_font)
-    gcv.font = resource.mstyle.f_font->fid;
-  resource.mstyle.f_text_gc =
-    XCreateGC(blackbox->getXDisplay(), getRootWindow(),
-              gc_value_mask, &gcv);
-
-  gcv.foreground = resource.mstyle.h_text.getPixel();
-  resource.mstyle.h_text_gc =
-    XCreateGC(blackbox->getXDisplay(), getRootWindow(),
-              gc_value_mask, &gcv);
-
-  gcv.foreground = resource.mstyle.d_text.getPixel();
-  resource.mstyle.d_text_gc =
-    XCreateGC(blackbox->getXDisplay(), getRootWindow(),
-              gc_value_mask, &gcv);
-
-  gcv.foreground = resource.mstyle.hilite.getColor()->getPixel();
-  resource.mstyle.hilite_gc =
-    XCreateGC(blackbox->getXDisplay(), getRootWindow(),
-              gc_value_mask, &gcv);
-
-  gcv.foreground = resource.tstyle.l_text.getPixel();
-  if (resource.tstyle.font)
-    gcv.font = resource.tstyle.font->fid;
-  resource.tstyle.l_text_gc =
-    XCreateGC(blackbox->getXDisplay(), getRootWindow(),
-              gc_value_mask, &gcv);
-
-  gcv.foreground = resource.tstyle.w_text.getPixel();
-  resource.tstyle.w_text_gc =
-    XCreateGC(blackbox->getXDisplay(), getRootWindow(),
-              gc_value_mask, &gcv);
-
-  gcv.foreground = resource.tstyle.c_text.getPixel();
-  resource.tstyle.c_text_gc =
-    XCreateGC(blackbox->getXDisplay(), getRootWindow(),
-              gc_value_mask, &gcv);
-
-  gcv.foreground = resource.tstyle.b_pic.getPixel();
-  resource.tstyle.b_pic_gc =
-    XCreateGC(blackbox->getXDisplay(), getRootWindow(),
-              gc_value_mask, &gcv);
-
   const char *s =  i18n(ScreenSet, ScreenPositionLength,
                         "0: 0000 x 0: 0000");
   int l = strlen(s);
@@ -349,7 +210,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
 
   XSetWindowAttributes attrib;
   unsigned long mask = CWBorderPixel | CWColormap | CWSaveUnder;
-  attrib.border_pixel = getBorderColor()->getPixel();
+  attrib.border_pixel = getBorderColor()->pixel();
   attrib.colormap = getColormap();
   attrib.save_under = True;
 
@@ -359,26 +220,26 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
                               mask, &attrib);
   geom_visible = False;
 
-  if (resource.wstyle.l_focus.getTexture() & BImage_ParentRelative) {
-    if (resource.wstyle.t_focus.getTexture() == (BImage_Flat | BImage_Solid)) {
+  if (resource.wstyle.l_focus.texture() & BTexture::Parent_Relative) {
+    if (resource.wstyle.t_focus.texture() == (BTexture::Flat | BTexture::Solid)) {
       geom_pixmap = None;
       XSetWindowBackground(blackbox->getXDisplay(), geom_window,
-                           resource.wstyle.t_focus.getColor()->getPixel());
+                           resource.wstyle.t_focus.color().pixel());
     } else {
       geom_pixmap = image_control->renderImage(geom_w, geom_h,
-                                               &resource.wstyle.t_focus);
+                                               resource.wstyle.t_focus);
       XSetWindowBackgroundPixmap(blackbox->getXDisplay(),
                                  geom_window, geom_pixmap);
     }
   } else {
-    if (resource.wstyle.l_focus.getTexture() ==
-        (BImage_Flat | BImage_Solid)) {
+    if (resource.wstyle.l_focus.texture() ==
+        (BTexture::Flat | BTexture::Solid)) {
       geom_pixmap = None;
       XSetWindowBackground(blackbox->getXDisplay(), geom_window,
-                           resource.wstyle.l_focus.getColor()->getPixel());
+                           resource.wstyle.l_focus.color().pixel());
     } else {
       geom_pixmap = image_control->renderImage(geom_w, geom_h,
-                                               &resource.wstyle.l_focus);
+                                               resource.wstyle.l_focus);
       XSetWindowBackgroundPixmap(blackbox->getXDisplay(),
                                  geom_window, geom_pixmap);
     }
@@ -530,283 +391,11 @@ BScreen::~BScreen(void) {
     XFreeFont(blackbox->getXDisplay(), resource.tstyle.font);
 
   XFreeGC(blackbox->getXDisplay(), opGC);
-
-  XFreeGC(blackbox->getXDisplay(),
-          resource.wstyle.l_text_focus_gc);
-  XFreeGC(blackbox->getXDisplay(),
-          resource.wstyle.l_text_unfocus_gc);
-  XFreeGC(blackbox->getXDisplay(),
-          resource.wstyle.b_pic_focus_gc);
-  XFreeGC(blackbox->getXDisplay(),
-          resource.wstyle.b_pic_unfocus_gc);
-
-  XFreeGC(blackbox->getXDisplay(),
-          resource.mstyle.t_text_gc);
-  XFreeGC(blackbox->getXDisplay(),
-          resource.mstyle.f_text_gc);
-  XFreeGC(blackbox->getXDisplay(),
-          resource.mstyle.h_text_gc);
-  XFreeGC(blackbox->getXDisplay(),
-          resource.mstyle.d_text_gc);
-  XFreeGC(blackbox->getXDisplay(),
-          resource.mstyle.hilite_gc);
-
-  XFreeGC(blackbox->getXDisplay(),
-          resource.tstyle.l_text_gc);
-  XFreeGC(blackbox->getXDisplay(),
-          resource.tstyle.w_text_gc);
-  XFreeGC(blackbox->getXDisplay(),
-          resource.tstyle.c_text_gc);
-  XFreeGC(blackbox->getXDisplay(),
-          resource.tstyle.b_pic_gc);
 }
 
 
 void BScreen::removeWorkspaceNames(void) {
   workspaceNames.clear();
-}
-
-
-void BScreen::readDatabaseTexture(char *rname, char *rclass,
-                                  BTexture *texture,
-                                  unsigned long default_pixel) {
-  XrmValue value;
-  char *value_type;
-
-  if (XrmGetResource(resource.stylerc, rname, rclass, &value_type, &value))
-    image_control->parseTexture(texture, value.addr);
-  else
-    texture->setTexture(BImage_Solid | BImage_Flat);
-
-  if (texture->getTexture() & BImage_Solid) {
-    int clen = strlen(rclass) + 32, nlen = strlen(rname) + 32;
-
-    char *colorclass = new char[clen], *colorname = new char[nlen];
-
-    sprintf(colorclass, "%s.Color", rclass);
-    sprintf(colorname,  "%s.color", rname);
-
-    readDatabaseColor(colorname, colorclass, texture->getColor(),
-                      default_pixel);
-
-#ifdef    INTERLACE
-    sprintf(colorclass, "%s.ColorTo", rclass);
-    sprintf(colorname,  "%s.colorTo", rname);
-
-    readDatabaseColor(colorname, colorclass, texture->getColorTo(),
-                      default_pixel);
-#endif // INTERLACE
-
-    delete [] colorclass;
-    delete [] colorname;
-
-    if ((! texture->getColor()->isAllocated()) ||
-        (texture->getTexture() & BImage_Flat))
-      return;
-
-    XColor xcol;
-
-    xcol.red = (unsigned int) (texture->getColor()->getRed() +
-                               (texture->getColor()->getRed() >> 1));
-    if (xcol.red >= 0xff) xcol.red = 0xffff;
-    else xcol.red *= 0xff;
-    xcol.green = (unsigned int) (texture->getColor()->getGreen() +
-                                 (texture->getColor()->getGreen() >> 1));
-    if (xcol.green >= 0xff) xcol.green = 0xffff;
-    else xcol.green *= 0xff;
-    xcol.blue = (unsigned int) (texture->getColor()->getBlue() +
-                                (texture->getColor()->getBlue() >> 1));
-    if (xcol.blue >= 0xff) xcol.blue = 0xffff;
-    else xcol.blue *= 0xff;
-
-    if (! XAllocColor(blackbox->getXDisplay(),
-                      getColormap(), &xcol))
-      xcol.pixel = 0;
-
-    texture->getHiColor()->setPixel(xcol.pixel);
-
-    xcol.red =
-      (unsigned int) ((texture->getColor()->getRed() >> 2) +
-                      (texture->getColor()->getRed() >> 1)) * 0xff;
-    xcol.green =
-      (unsigned int) ((texture->getColor()->getGreen() >> 2) +
-                      (texture->getColor()->getGreen() >> 1)) * 0xff;
-    xcol.blue =
-      (unsigned int) ((texture->getColor()->getBlue() >> 2) +
-                      (texture->getColor()->getBlue() >> 1)) * 0xff;
-
-    if (! XAllocColor(blackbox->getXDisplay(),
-                      getColormap(), &xcol))
-      xcol.pixel = 0;
-
-    texture->getLoColor()->setPixel(xcol.pixel);
-  } else if (texture->getTexture() & BImage_Gradient) {
-    int clen = strlen(rclass) + 10, nlen = strlen(rname) + 10;
-
-    char *colorclass = new char[clen], *colorname = new char[nlen],
-      *colortoclass = new char[clen], *colortoname = new char[nlen];
-
-    sprintf(colorclass, "%s.Color", rclass);
-    sprintf(colorname,  "%s.color", rname);
-
-    sprintf(colortoclass, "%s.ColorTo", rclass);
-    sprintf(colortoname,  "%s.colorTo", rname);
-
-    readDatabaseColor(colorname, colorclass, texture->getColor(),
-                      default_pixel);
-    readDatabaseColor(colortoname, colortoclass, texture->getColorTo(),
-                      default_pixel);
-
-    delete [] colorclass;
-    delete [] colorname;
-    delete [] colortoclass;
-    delete [] colortoname;
-  }
-}
-
-
-void BScreen::readDatabaseColor(char *rname, char *rclass, BColor *color,
-                                unsigned long default_pixel) {
-  XrmValue value;
-  char *value_type;
-
-  if (XrmGetResource(resource.stylerc, rname, rclass, &value_type,
-                     &value)) {
-    image_control->parseColor(color, value.addr);
-  } else {
-    // parsing with no color string just deallocates the color, if it has
-    // been previously allocated
-    image_control->parseColor(color);
-    color->setPixel(default_pixel);
-  }
-}
-
-
-void BScreen::readDatabaseFontSet(char *rname, char *rclass,
-                                  XFontSet *fontset) {
-  if (! fontset) return;
-
-  static char *defaultFont = "fixed";
-
-  Bool load_default = False;
-  XrmValue value;
-  char *value_type;
-
-  if (*fontset)
-    XFreeFontSet(blackbox->getXDisplay(), *fontset);
-
-  if (XrmGetResource(resource.stylerc, rname, rclass, &value_type, &value)) {
-    char *fontname = value.addr;
-    if (! (*fontset = createFontSet(fontname)))
-      load_default = True;
-  } else {
-    load_default = True;
-  }
-
-  if (load_default) {
-    *fontset = createFontSet(defaultFont);
-
-    if (! *fontset) {
-      fprintf(stderr, i18n(ScreenSet, ScreenDefaultFontLoadFail,
-                      "BScreen::LoadStyle(): couldn't load default font.\n"));
-      exit(2);
-    }
-  }
-}
-
-
-void BScreen::readDatabaseFont(char *rname, char *rclass, XFontStruct **font){
-  if (! font) return;
-
-  static const char* const defaultFont = "fixed";
-
-  Bool load_default = False;
-  XrmValue value;
-  char *value_type;
-
-  if (*font)
-    XFreeFont(blackbox->getXDisplay(), *font);
-
-  if (XrmGetResource(resource.stylerc, rname, rclass, &value_type, &value)) {
-    if ((*font = XLoadQueryFont(blackbox->getXDisplay(),
-                                value.addr)) == NULL) {
-      fprintf(stderr, i18n(ScreenSet, ScreenFontLoadFail,
-                           "BScreen::LoadStyle(): couldn't load font '%s'\n"),
-              value.addr);
-
-      load_default = True;
-    }
-  } else {
-    load_default = True;
-  }
-
-  if (load_default) {
-    if ((*font = XLoadQueryFont(blackbox->getXDisplay(),
-                                defaultFont)) == NULL) {
-      fprintf(stderr, i18n(ScreenSet, ScreenDefaultFontLoadFail,
-                      "BScreen::LoadStyle(): couldn't load default font.\n"));
-      exit(2);
-    }
-  }
-}
-
-
-XFontSet BScreen::createFontSet(char *fontname) {
-  XFontSet fs;
-  char **missing, *def = "-";
-  int nmissing, pixel_size = 0, buf_size = 0;
-  char weight[FONT_ELEMENT_SIZE], slant[FONT_ELEMENT_SIZE];
-
-  fs = XCreateFontSet(blackbox->getXDisplay(),
-                      fontname, &missing, &nmissing, &def);
-  if (fs && (! nmissing)) return fs;
-
-#ifdef    HAVE_SETLOCALE
-  if (! fs) {
-    if (nmissing) XFreeStringList(missing);
-
-    setlocale(LC_CTYPE, "C");
-    fs = XCreateFontSet(blackbox->getXDisplay(), fontname,
-                        &missing, &nmissing, &def);
-    setlocale(LC_CTYPE, "");
-  }
-#endif // HAVE_SETLOCALE
-
-  if (fs) {
-    XFontStruct **fontstructs;
-    char **fontnames;
-    XFontsOfFontSet(fs, &fontstructs, &fontnames);
-    fontname = fontnames[0];
-  }
-
-  getFontElement(fontname, weight, FONT_ELEMENT_SIZE,
-                 "-medium-", "-bold-", "-demibold-", "-regular-", NULL);
-  getFontElement(fontname, slant, FONT_ELEMENT_SIZE,
-                 "-r-", "-i-", "-o-", "-ri-", "-ro-", NULL);
-  getFontSize(fontname, &pixel_size);
-
-  if (! strcmp(weight, "*")) strncpy(weight, "medium", FONT_ELEMENT_SIZE);
-  if (! strcmp(slant, "*")) strncpy(slant, "r", FONT_ELEMENT_SIZE);
-  if (pixel_size < 3) pixel_size = 3;
-  else if (pixel_size > 97) pixel_size = 97;
-
-  buf_size = strlen(fontname) + (FONT_ELEMENT_SIZE * 2) + 64;
-  char *pattern2 = new char[buf_size];
-  snprintf(pattern2, buf_size - 1,
-           "%s,"
-           "-*-*-%s-%s-*-*-%d-*-*-*-*-*-*-*,"
-           "-*-*-*-*-*-*-%d-*-*-*-*-*-*-*,*",
-           fontname, weight, slant, pixel_size, pixel_size);
-  fontname = pattern2;
-
-  if (nmissing) XFreeStringList(missing);
-  if (fs) XFreeFontSet(blackbox->getXDisplay(), fs);
-
-  fs = XCreateFontSet(blackbox->getXDisplay(), fontname,
-                      &missing, &nmissing, &def);
-  delete [] pattern2;
-
-  return fs;
 }
 
 
@@ -823,67 +412,6 @@ void BScreen::reconfigure(void) {
   gcv.subwindow_mode = IncludeInferiors;
   XChangeGC(blackbox->getXDisplay(), opGC,
             GCForeground | GCFunction | GCSubwindowMode, &gcv);
-
-  gcv.foreground = resource.wstyle.l_text_focus.getPixel();
-  if (resource.wstyle.font)
-    gcv.font = resource.wstyle.font->fid;
-  XChangeGC(blackbox->getXDisplay(), resource.wstyle.l_text_focus_gc,
-            gc_value_mask, &gcv);
-
-  gcv.foreground = resource.wstyle.l_text_unfocus.getPixel();
-  XChangeGC(blackbox->getXDisplay(),
-            resource.wstyle.l_text_unfocus_gc,
-            gc_value_mask, &gcv);
-
-  gcv.foreground = resource.wstyle.b_pic_focus.getPixel();
-  XChangeGC(blackbox->getXDisplay(), resource.wstyle.b_pic_focus_gc,
-            GCForeground, &gcv);
-
-  gcv.foreground = resource.wstyle.b_pic_unfocus.getPixel();
-  XChangeGC(blackbox->getXDisplay(), resource.wstyle.b_pic_unfocus_gc,
-            GCForeground, &gcv);
-
-  gcv.foreground = resource.mstyle.t_text.getPixel();
-  if (resource.mstyle.t_font)
-    gcv.font = resource.mstyle.t_font->fid;
-  XChangeGC(blackbox->getXDisplay(), resource.mstyle.t_text_gc,
-            gc_value_mask, &gcv);
-
-  gcv.foreground = resource.mstyle.f_text.getPixel();
-  if (resource.mstyle.f_font)
-    gcv.font = resource.mstyle.f_font->fid;
-  XChangeGC(blackbox->getXDisplay(), resource.mstyle.f_text_gc,
-            gc_value_mask, &gcv);
-
-  gcv.foreground = resource.mstyle.h_text.getPixel();
-  XChangeGC(blackbox->getXDisplay(), resource.mstyle.h_text_gc,
-            gc_value_mask, &gcv);
-
-  gcv.foreground = resource.mstyle.d_text.getPixel();
-  XChangeGC(blackbox->getXDisplay(), resource.mstyle.d_text_gc,
-            gc_value_mask, &gcv);
-
-  gcv.foreground = resource.mstyle.hilite.getColor()->getPixel();
-  XChangeGC(blackbox->getXDisplay(), resource.mstyle.hilite_gc,
-            gc_value_mask, &gcv);
-
-  gcv.foreground = resource.tstyle.l_text.getPixel();
-  if (resource.tstyle.font)
-    gcv.font = resource.tstyle.font->fid;
-  XChangeGC(blackbox->getXDisplay(), resource.tstyle.l_text_gc,
-            gc_value_mask, &gcv);
-
-  gcv.foreground = resource.tstyle.w_text.getPixel();
-  XChangeGC(blackbox->getXDisplay(), resource.tstyle.w_text_gc,
-            gc_value_mask, &gcv);
-
-  gcv.foreground = resource.tstyle.c_text.getPixel();
-  XChangeGC(blackbox->getXDisplay(), resource.tstyle.c_text_gc,
-            gc_value_mask, &gcv);
-
-  gcv.foreground = resource.tstyle.b_pic.getPixel();
-  XChangeGC(blackbox->getXDisplay(), resource.tstyle.b_pic_gc,
-            gc_value_mask, &gcv);
 
   const char *s = i18n(ScreenSet, ScreenPositionLength,
                        "0: 0000 x 0: 0000");
@@ -906,27 +434,27 @@ void BScreen::reconfigure(void) {
   geom_h += (resource.bevel_width * 2);
 
   Pixmap tmp = geom_pixmap;
-  if (resource.wstyle.l_focus.getTexture() & BImage_ParentRelative) {
-    if (resource.wstyle.t_focus.getTexture() ==
-        (BImage_Flat | BImage_Solid)) {
+  if (resource.wstyle.l_focus.texture() & BTexture::Parent_Relative) {
+    if (resource.wstyle.t_focus.texture() ==
+        (BTexture::Flat | BTexture::Solid)) {
       geom_pixmap = None;
       XSetWindowBackground(blackbox->getXDisplay(), geom_window,
-                           resource.wstyle.t_focus.getColor()->getPixel());
+                           resource.wstyle.t_focus.color().pixel());
     } else {
       geom_pixmap = image_control->renderImage(geom_w, geom_h,
-                                               &resource.wstyle.t_focus);
+                                               resource.wstyle.t_focus);
       XSetWindowBackgroundPixmap(blackbox->getXDisplay(),
                                  geom_window, geom_pixmap);
     }
   } else {
-    if (resource.wstyle.l_focus.getTexture() ==
-        (BImage_Flat | BImage_Solid)) {
+    if (resource.wstyle.l_focus.texture() ==
+        (BTexture::Flat | BTexture::Solid)) {
       geom_pixmap = None;
       XSetWindowBackground(blackbox->getXDisplay(), geom_window,
-                           resource.wstyle.l_focus.getColor()->getPixel());
+                           resource.wstyle.l_focus.color().pixel());
     } else {
       geom_pixmap = image_control->renderImage(geom_w, geom_h,
-                                               &resource.wstyle.l_focus);
+                                               resource.wstyle.l_focus);
       XSetWindowBackgroundPixmap(blackbox->getXDisplay(),
                                  geom_window, geom_pixmap);
     }
@@ -936,7 +464,7 @@ void BScreen::reconfigure(void) {
   XSetWindowBorderWidth(blackbox->getXDisplay(), geom_window,
                         resource.border_width);
   XSetWindowBorder(blackbox->getXDisplay(), geom_window,
-                   resource.border_color.getPixel());
+                   resource.border_color.pixel());
 
   workspacemenu->reconfigure();
   iconmenu->reconfigure();
@@ -984,16 +512,40 @@ void BScreen::LoadStyle(void) {
   char *value_type;
 
   // load fonts/fontsets
+  if (resource.wstyle.fontset)
+    XFreeFontSet(blackbox->getXDisplay(), resource.wstyle.fontset);
+  if (resource.tstyle.fontset)
+    XFreeFontSet(blackbox->getXDisplay(), resource.tstyle.fontset);
+  if (resource.mstyle.f_fontset)
+    XFreeFontSet(blackbox->getXDisplay(), resource.mstyle.f_fontset);
+  if (resource.mstyle.t_fontset)
+    XFreeFontSet(blackbox->getXDisplay(), resource.mstyle.t_fontset);
+  resource.wstyle.fontset = 0;
+  resource.tstyle.fontset = 0;
+  resource.mstyle.f_fontset = 0;
+  resource.mstyle.t_fontset = 0;
+  if (resource.wstyle.font)
+    XFreeFont(blackbox->getXDisplay(), resource.wstyle.font);
+  if (resource.tstyle.font)
+    XFreeFont(blackbox->getXDisplay(), resource.tstyle.font);
+  if (resource.mstyle.f_font)
+    XFreeFont(blackbox->getXDisplay(), resource.mstyle.f_font);
+  if (resource.mstyle.t_font)
+    XFreeFont(blackbox->getXDisplay(), resource.mstyle.t_font);
+  resource.wstyle.font = 0;
+  resource.tstyle.font = 0;
+  resource.mstyle.f_font = 0;
+  resource.mstyle.t_font = 0;
 
   if (i18n.multibyte()) {
-    readDatabaseFontSet("window.font", "Window.Font",
-                        &resource.wstyle.fontset);
-    readDatabaseFontSet("toolbar.font", "Toolbar.Font",
-                        &resource.tstyle.fontset);
-    readDatabaseFontSet("menu.title.font", "Menu.Title.Font",
-                        &resource.mstyle.t_fontset);
-    readDatabaseFontSet("menu.frame.font", "Menu.Frame.Font",
-                        &resource.mstyle.f_fontset);
+    resource.wstyle.fontset =
+      readDatabaseFontSet("window.font", "Window.Font");
+    resource.tstyle.fontset =
+      readDatabaseFontSet("toolbar.font", "Toolbar.Font");
+    resource.mstyle.t_fontset =
+      readDatabaseFontSet("menu.title.font", "Menu.Title.Font");
+    resource.mstyle.f_fontset =
+      readDatabaseFontSet("menu.frame.font", "Menu.Frame.Font");
 
     resource.mstyle.t_fontset_extents =
       XExtentsOfFontSet(resource.mstyle.t_fontset);
@@ -1004,91 +556,57 @@ void BScreen::LoadStyle(void) {
     resource.wstyle.fontset_extents =
       XExtentsOfFontSet(resource.wstyle.fontset);
   } else {
-    readDatabaseFont("window.font", "Window.Font",
-                     &resource.wstyle.font);
-    readDatabaseFont("menu.title.font", "Menu.Title.Font",
-                     &resource.mstyle.t_font);
-    readDatabaseFont("menu.frame.font", "Menu.Frame.Font",
-                     &resource.mstyle.f_font);
-    readDatabaseFont("toolbar.font", "Toolbar.Font",
-                     &resource.tstyle.font);
+    resource.wstyle.font =
+      readDatabaseFont("window.font", "Window.Font");
+    resource.tstyle.font =
+      readDatabaseFont("toolbar.font", "Toolbar.Font");
+    resource.mstyle.t_font =
+      readDatabaseFont("menu.title.font", "Menu.Title.Font");
+    resource.mstyle.f_font =
+      readDatabaseFont("menu.frame.font", "Menu.Frame.Font");
   }
 
   // load window config
-  readDatabaseTexture("window.title.focus", "Window.Title.Focus",
-                      &resource.wstyle.t_focus,
-                      WhitePixel(blackbox->getXDisplay(),
-                                 getScreenNumber()));
-  readDatabaseTexture("window.title.unfocus", "Window.Title.Unfocus",
-                      &resource.wstyle.t_unfocus,
-                      BlackPixel(blackbox->getXDisplay(),
-                                 getScreenNumber()));
-  readDatabaseTexture("window.label.focus", "Window.Label.Focus",
-                      &resource.wstyle.l_focus,
-                      WhitePixel(blackbox->getXDisplay(),
-                                 getScreenNumber()));
-  readDatabaseTexture("window.label.unfocus", "Window.Label.Unfocus",
-                      &resource.wstyle.l_unfocus,
-                      BlackPixel(blackbox->getXDisplay(),
-                                 getScreenNumber()));
-  readDatabaseTexture("window.handle.focus", "Window.Handle.Focus",
-                      &resource.wstyle.h_focus,
-                      WhitePixel(blackbox->getXDisplay(),
-                                 getScreenNumber()));
-  readDatabaseTexture("window.handle.unfocus", "Window.Handle.Unfocus",
-                      &resource.wstyle.h_unfocus,
-                      BlackPixel(blackbox->getXDisplay(),
-                                 getScreenNumber()));
-  readDatabaseTexture("window.grip.focus", "Window.Grip.Focus",
-                      &resource.wstyle.g_focus,
-                      WhitePixel(blackbox->getXDisplay(),
-                                 getScreenNumber()));
-  readDatabaseTexture("window.grip.unfocus", "Window.Grip.Unfocus",
-                      &resource.wstyle.g_unfocus,
-                      BlackPixel(blackbox->getXDisplay(),
-                                 getScreenNumber()));
-  readDatabaseTexture("window.button.focus", "Window.Button.Focus",
-                      &resource.wstyle.b_focus,
-                      WhitePixel(blackbox->getXDisplay(),
-                                 getScreenNumber()));
-  readDatabaseTexture("window.button.unfocus", "Window.Button.Unfocus",
-                      &resource.wstyle.b_unfocus,
-                      BlackPixel(blackbox->getXDisplay(),
-                                 getScreenNumber()));
-  readDatabaseTexture("window.button.pressed", "Window.Button.Pressed",
-                      &resource.wstyle.b_pressed,
-                      BlackPixel(blackbox->getXDisplay(),
-                                 getScreenNumber()));
-  readDatabaseColor("window.frame.focusColor",
-                    "Window.Frame.FocusColor",
-                    &resource.wstyle.f_focus,
-                    WhitePixel(blackbox->getXDisplay(),
-                               getScreenNumber()));
-  readDatabaseColor("window.frame.unfocusColor",
-                    "Window.Frame.UnfocusColor",
-                    &resource.wstyle.f_unfocus,
-                    BlackPixel(blackbox->getXDisplay(),
-                               getScreenNumber()));
-  readDatabaseColor("window.label.focus.textColor",
-                    "Window.Label.Focus.TextColor",
-                    &resource.wstyle.l_text_focus,
-                    BlackPixel(blackbox->getXDisplay(),
-                               getScreenNumber()));
-  readDatabaseColor("window.label.unfocus.textColor",
-                    "Window.Label.Unfocus.TextColor",
-                    &resource.wstyle.l_text_unfocus,
-                    WhitePixel(blackbox->getXDisplay(),
-                               getScreenNumber()));
-  readDatabaseColor("window.button.focus.picColor",
-                    "Window.Button.Focus.PicColor",
-                    &resource.wstyle.b_pic_focus,
-                    BlackPixel(blackbox->getXDisplay(),
-                               getScreenNumber()));
-  readDatabaseColor("window.button.unfocus.picColor",
-                    "Window.Button.Unfocus.PicColor",
-                    &resource.wstyle.b_pic_unfocus,
-                    WhitePixel(blackbox->getXDisplay(),
-                               getScreenNumber()));
+  resource.wstyle.t_focus =
+    readDatabaseTexture("window.title.focus", "Window.Title.Focus", "white");
+  resource.wstyle.t_unfocus =
+    readDatabaseTexture("window.title.unfocus", "Window.Title.Unfocus", "black");
+  resource.wstyle.l_focus =
+    readDatabaseTexture("window.label.focus", "Window.Label.Focus", "white" );
+  resource.wstyle.l_unfocus =
+    readDatabaseTexture("window.label.unfocus", "Window.Label.Unfocus", "black");
+  resource.wstyle.h_focus =
+    readDatabaseTexture("window.handle.focus", "Window.Handle.Focus", "white");
+  resource.wstyle.h_unfocus =
+    readDatabaseTexture("window.handle.unfocus", "Window.Handle.Unfocus", "black");
+  resource.wstyle.g_focus =
+    readDatabaseTexture("window.grip.focus", "Window.Grip.Focus", "white");
+  resource.wstyle.g_unfocus =
+    readDatabaseTexture("window.grip.unfocus", "Window.Grip.Unfocus", "black");
+  resource.wstyle.b_focus =
+    readDatabaseTexture("window.button.focus", "Window.Button.Focus", "white");
+  resource.wstyle.b_unfocus =
+    readDatabaseTexture("window.button.unfocus", "Window.Button.Unfocus", "black");
+  resource.wstyle.b_pressed =
+    readDatabaseTexture("window.button.pressed", "Window.Button.Pressed", "black");
+  resource.wstyle.f_focus =
+    readDatabaseColor("window.frame.focusColor",
+                      "Window.Frame.FocusColor", "white");
+  resource.wstyle.f_unfocus =
+    readDatabaseColor("window.frame.unfocusColor",
+                      "Window.Frame.UnfocusColor", "black");
+  resource.wstyle.l_text_focus =
+    readDatabaseColor("window.label.focus.textColor",
+                      "Window.Label.Focus.TextColor", "black");
+  resource.wstyle.l_text_unfocus =
+    readDatabaseColor("window.label.unfocus.textColor",
+                      "Window.Label.Unfocus.TextColor", "white");
+  resource.wstyle.b_pic_focus =
+    readDatabaseColor("window.button.focus.picColor",
+                      "Window.Button.Focus.PicColor", "black");
+  resource.wstyle.b_pic_unfocus =
+    readDatabaseColor("window.button.unfocus.picColor",
+                      "Window.Button.Unfocus.PicColor", "white");
 
   if (XrmGetResource(resource.stylerc, "window.justify", "Window.Justify",
                      &value_type, &value)) {
@@ -1102,47 +620,27 @@ void BScreen::LoadStyle(void) {
     resource.wstyle.justify = BScreen::LeftJustify;
   }
   // load toolbar config
-  readDatabaseTexture("toolbar", "Toolbar",
-                      &resource.tstyle.toolbar,
-                      BlackPixel(blackbox->getXDisplay(),
-                                 getScreenNumber()));
-  readDatabaseTexture("toolbar.label", "Toolbar.Label",
-                      &resource.tstyle.label,
-                      BlackPixel(blackbox->getXDisplay(),
-                                 getScreenNumber()));
-  readDatabaseTexture("toolbar.windowLabel", "Toolbar.WindowLabel",
-                      &resource.tstyle.window,
-                      BlackPixel(blackbox->getXDisplay(),
-                                 getScreenNumber()));
-  readDatabaseTexture("toolbar.button", "Toolbar.Button",
-                      &resource.tstyle.button,
-                      WhitePixel(blackbox->getXDisplay(),
-                                 getScreenNumber()));
-  readDatabaseTexture("toolbar.button.pressed", "Toolbar.Button.Pressed",
-                      &resource.tstyle.pressed,
-                      BlackPixel(blackbox->getXDisplay(),
-                                 getScreenNumber()));
-  readDatabaseTexture("toolbar.clock", "Toolbar.Clock",
-                      &resource.tstyle.clock,
-                      BlackPixel(blackbox->getXDisplay(),
-                                 getScreenNumber()));
-  readDatabaseColor("toolbar.label.textColor", "Toolbar.Label.TextColor",
-                    &resource.tstyle.l_text,
-                    WhitePixel(blackbox->getXDisplay(),
-                               getScreenNumber()));
-  readDatabaseColor("toolbar.windowLabel.textColor",
-                    "Toolbar.WindowLabel.TextColor",
-                    &resource.tstyle.w_text,
-                    WhitePixel(blackbox->getXDisplay(),
-                               getScreenNumber()));
-  readDatabaseColor("toolbar.clock.textColor", "Toolbar.Clock.TextColor",
-                    &resource.tstyle.c_text,
-                    WhitePixel(blackbox->getXDisplay(),
-                               getScreenNumber()));
-  readDatabaseColor("toolbar.button.picColor", "Toolbar.Button.PicColor",
-                    &resource.tstyle.b_pic,
-                    BlackPixel(blackbox->getXDisplay(),
-                               getScreenNumber()));
+  resource.tstyle.toolbar =
+    readDatabaseTexture("toolbar", "Toolbar", "black");
+  resource.tstyle.label =
+    readDatabaseTexture("toolbar.label", "Toolbar.Label", "black");
+  resource.tstyle.window =
+    readDatabaseTexture("toolbar.windowLabel", "Toolbar.WindowLabel", "black");
+  resource.tstyle.button =
+    readDatabaseTexture("toolbar.button", "Toolbar.Button", "white");
+  resource.tstyle.pressed =
+    readDatabaseTexture("toolbar.button.pressed", "Toolbar.Button.Pressed", "black");
+  resource.tstyle.clock =
+    readDatabaseTexture("toolbar.clock", "Toolbar.Clock", "black");
+  resource.tstyle.l_text =
+    readDatabaseColor("toolbar.label.textColor", "Toolbar.Label.TextColor", "white");
+  resource.tstyle.w_text =
+    readDatabaseColor("toolbar.windowLabel.textColor",
+                      "Toolbar.WindowLabel.TextColor", "white");
+  resource.tstyle.c_text =
+    readDatabaseColor("toolbar.clock.textColor", "Toolbar.Clock.TextColor", "white");
+  resource.tstyle.b_pic =
+    readDatabaseColor("toolbar.button.picColor", "Toolbar.Button.PicColor", "black");
 
   if (XrmGetResource(resource.stylerc, "toolbar.justify",
                      "Toolbar.Justify", &value_type, &value)) {
@@ -1156,34 +654,20 @@ void BScreen::LoadStyle(void) {
     resource.tstyle.justify = BScreen::LeftJustify;
   }
   // load menu config
-  readDatabaseTexture("menu.title", "Menu.Title",
-                      &resource.mstyle.title,
-                      WhitePixel(blackbox->getXDisplay(),
-                                 getScreenNumber()));
-  readDatabaseTexture("menu.frame", "Menu.Frame",
-                      &resource.mstyle.frame,
-                      BlackPixel(blackbox->getXDisplay(),
-                                 getScreenNumber()));
-  readDatabaseTexture("menu.hilite", "Menu.Hilite",
-                      &resource.mstyle.hilite,
-                      WhitePixel(blackbox->getXDisplay(),
-                                 getScreenNumber()));
-  readDatabaseColor("menu.title.textColor", "Menu.Title.TextColor",
-                    &resource.mstyle.t_text,
-                    BlackPixel(blackbox->getXDisplay(),
-                               getScreenNumber()));
-  readDatabaseColor("menu.frame.textColor", "Menu.Frame.TextColor",
-                    &resource.mstyle.f_text,
-                    WhitePixel(blackbox->getXDisplay(),
-                               getScreenNumber()));
-  readDatabaseColor("menu.frame.disableColor", "Menu.Frame.DisableColor",
-                    &resource.mstyle.d_text,
-                    BlackPixel(blackbox->getXDisplay(),
-                               getScreenNumber()));
-  readDatabaseColor("menu.hilite.textColor", "Menu.Hilite.TextColor",
-                    &resource.mstyle.h_text,
-                    BlackPixel(blackbox->getXDisplay(),
-                               getScreenNumber()));
+  resource.mstyle.title =
+    readDatabaseTexture("menu.title", "Menu.Title", "white");
+  resource.mstyle.frame =
+    readDatabaseTexture("menu.frame", "Menu.Frame", "black");
+  resource.mstyle.hilite =
+    readDatabaseTexture("menu.hilite", "Menu.Hilite", "white");
+  resource.mstyle.t_text =
+    readDatabaseColor("menu.title.textColor", "Menu.Title.TextColor", "black");
+  resource.mstyle.f_text =
+    readDatabaseColor("menu.frame.textColor", "Menu.Frame.TextColor", "white");
+  resource.mstyle.d_text =
+    readDatabaseColor("menu.frame.disableColor", "Menu.Frame.DisableColor", "black");
+  resource.mstyle.h_text =
+    readDatabaseColor("menu.hilite.textColor", "Menu.Hilite.TextColor", "black");
 
   if (XrmGetResource(resource.stylerc, "menu.title.justify",
                      "Menu.Title.Justify",
@@ -1231,9 +715,8 @@ void BScreen::LoadStyle(void) {
   } else {
     resource.mstyle.bullet_pos = Basemenu::Left;
   }
-  readDatabaseColor("borderColor", "BorderColor", &resource.border_color,
-                    BlackPixel(blackbox->getXDisplay(),
-                               getScreenNumber()));
+  resource.border_color =
+    readDatabaseColor("borderColor", "BorderColor", "black");
 
   // load bevel, border and handle widths
   if (XrmGetResource(resource.stylerc, "handleWidth", "HandleWidth",
@@ -2110,16 +1593,16 @@ void BScreen::showPosition(int x, int y) {
 
   XClearWindow(blackbox->getXDisplay(), geom_window);
 
+  BPen pen(resource.wstyle.l_text_focus, resource.wstyle.font);
   if (i18n.multibyte()) {
     XmbDrawString(blackbox->getXDisplay(), geom_window,
-                  resource.wstyle.fontset, resource.wstyle.l_text_focus_gc,
+                  resource.wstyle.fontset, pen.gc(),
                   resource.bevel_width, resource.bevel_width -
                   resource.wstyle.fontset_extents->max_ink_extent.y,
                   label, strlen(label));
   } else {
     XDrawString(blackbox->getXDisplay(), geom_window,
-                resource.wstyle.l_text_focus_gc,
-                resource.bevel_width,
+                pen.gc(), resource.bevel_width,
                 resource.wstyle.font->ascent + resource.bevel_width,
                 label, strlen(label));
   }
@@ -2144,16 +1627,16 @@ void BScreen::showGeometry(unsigned int gx, unsigned int gy) {
 
   XClearWindow(blackbox->getXDisplay(), geom_window);
 
+  BPen pen(resource.wstyle.l_text_focus, resource.wstyle.font);
   if (i18n.multibyte()) {
     XmbDrawString(blackbox->getXDisplay(), geom_window,
-                  resource.wstyle.fontset, resource.wstyle.l_text_focus_gc,
+                  resource.wstyle.fontset, pen.gc(),
                   resource.bevel_width, resource.bevel_width -
                   resource.wstyle.fontset_extents->max_ink_extent.y,
                   label, strlen(label));
   } else {
     XDrawString(blackbox->getXDisplay(), geom_window,
-                resource.wstyle.l_text_focus_gc,
-                resource.bevel_width,
+                pen.gc(), resource.bevel_width,
                 resource.wstyle.font->ascent +
                 resource.bevel_width, label, strlen(label));
   }
@@ -2297,4 +1780,248 @@ void BScreen::toggleFocusModel(FocusModel model) {
 
   std::for_each(workspacesList.begin(), workspacesList.end(),
                 std::mem_fun(&Workspace::updateFocusModel));
+}
+
+BTexture BScreen::readDatabaseTexture(const string &rname, const string &rclass,
+                                      const string &default_color) {
+  BTexture texture;
+  XrmValue value;
+  char *value_type;
+
+  if (XrmGetResource(resource.stylerc, rname.c_str(), rclass.c_str(),
+                     &value_type, &value))
+    texture = BTexture(value.addr);
+  else
+    texture.setTexture(BTexture::Solid | BTexture::Flat);
+
+  // associate this texture with this screen
+  texture.setDisplay(getBaseDisplay(), getScreenNumber());
+
+  if (texture.texture() & BTexture::Solid) {
+    texture.setColor(readDatabaseColor(rname + ".color",
+                                       rclass + ".Color",
+                                       default_color));
+    texture.setColorTo(readDatabaseColor(rname + ".colorTo",
+                                         rclass + ".ColorTo",
+                                         default_color));
+  } else if (texture.texture() & BTexture::Gradient) {
+    texture.setColor(readDatabaseColor(rname + ".color",
+                                       rclass + ".Color",
+                                       default_color));
+    texture.setColorTo(readDatabaseColor(rname + ".colorTo",
+                                         rclass + ".ColorTo",
+                                         default_color));
+  }
+
+  return texture;
+}
+
+BColor BScreen::readDatabaseColor(const string &rname, const string &rclass,
+				  const string &default_color)
+{
+  BColor color;
+  XrmValue value;
+  char *value_type;
+  if (XrmGetResource(resource.stylerc, rname.c_str(), rclass.c_str(),
+                     &value_type, &value))
+    color = BColor(value.addr, getBaseDisplay(), getScreenNumber());
+  else
+    color = BColor(default_color, getBaseDisplay(), getScreenNumber());
+  return color;
+}
+
+XFontSet BScreen::readDatabaseFontSet(const string &rname, const string &rclass)
+{
+  static char *defaultFont = "fixed";
+
+  Bool load_default = False;
+  XrmValue value;
+  char *value_type;
+  XFontSet fontset = 0;
+  if (XrmGetResource(resource.stylerc, rname.c_str(), rclass.c_str(),
+                     &value_type, &value)) {
+    if (! (fontset = createFontSet(value.addr)))
+      load_default = True;
+  } else
+    load_default = True;
+
+  if (load_default) {
+    fontset = createFontSet(defaultFont);
+
+    if (! fontset) {
+      fprintf(stderr,
+              i18n(ScreenSet, ScreenDefaultFontLoadFail,
+                   "BScreen::setCurrentStyle(): couldn't load default font.\n"));
+      exit(2);
+    }
+  }
+
+  return fontset;
+}
+
+XFontStruct *BScreen::readDatabaseFont(const string &rname, const string &rclass)
+{
+  static char *defaultFont = "fixed";
+
+  Bool load_default = False;
+  XrmValue value;
+  char *value_type;
+  XFontStruct *font = 0;
+  if (XrmGetResource(resource.stylerc, rname.c_str(), rclass.c_str(),
+                     &value_type, &value)) {
+    if ((font = XLoadQueryFont(blackbox->getXDisplay(), value.addr)) == NULL) {
+      fprintf(stderr,
+              i18n(ScreenSet, ScreenFontLoadFail,
+                   "BScreen::setCurrentStyle(): couldn't load font '%s'\n"),
+              value.addr);
+
+      load_default = True;
+    }
+  } else
+    load_default = True;
+
+
+  if (load_default) {
+    if ((font = XLoadQueryFont(blackbox->getXDisplay(), defaultFont)) == NULL) {
+      fprintf(stderr,
+              i18n(ScreenSet, ScreenDefaultFontLoadFail,
+                   "BScreen::setCurrentStyle(): couldn't load default font.\n"));
+      exit(2);
+    }
+  }
+
+  return font;
+}
+
+#ifndef    HAVE_STRCASESTR
+static const char * strcasestr(const char *str, const char *ptn) {
+  const char *s2, *p2;
+  for(; *str; str++) {
+    for(s2=str,p2=ptn; ; s2++,p2++) {
+      if (!*p2) return str;
+      if (toupper(*s2) != toupper(*p2)) break;
+    }
+  }
+  return NULL;
+}
+#endif // HAVE_STRCASESTR
+
+static const char *getFontElement(const char *pattern, char *buf, int bufsiz, ...)
+{
+  const char *p, *v;
+  char *p2;
+  va_list va;
+
+  va_start(va, bufsiz);
+  buf[bufsiz-1] = 0;
+  buf[bufsiz-2] = '*';
+  while((v = va_arg(va, char *)) != NULL) {
+    p = strcasestr(pattern, v);
+    if (p) {
+      strncpy(buf, p+1, bufsiz-2);
+      p2 = strchr(buf, '-');
+      if (p2) *p2=0;
+      va_end(va);
+      return p;
+    }
+  }
+  va_end(va);
+  strncpy(buf, "*", bufsiz);
+  return NULL;
+}
+
+static const char *getFontSize(const char *pattern, int *size)
+{
+  const char *p;
+  const char *p2=NULL;
+  int n=0;
+
+  for (p=pattern; 1; p++) {
+    if (!*p) {
+      if (p2!=NULL && n>1 && n<72) {
+        *size = n; return p2+1;
+      } else {
+        *size = 16; return NULL;
+      }
+    } else if (*p=='-') {
+      if (n>1 && n<72 && p2!=NULL) {
+        *size = n;
+        return p2+1;
+      }
+      p2=p; n=0;
+    } else if (*p>='0' && *p<='9' && p2!=NULL) {
+      n *= 10;
+      n += *p-'0';
+    } else {
+      p2=NULL; n=0;
+    }
+  }
+}
+
+XFontSet BScreen::createFontSet(const string &fontname)
+{
+  XFontSet fs;
+  char **missing, *def = "-";
+  int nmissing, pixel_size = 0, buf_size = 0;
+  char weight[FONT_ELEMENT_SIZE], slant[FONT_ELEMENT_SIZE];
+
+  fs = XCreateFontSet(blackbox->getXDisplay(),
+                      fontname.c_str(), &missing, &nmissing, &def);
+  if (fs && (! nmissing))
+    return fs;
+
+  const char *nfontname = fontname.c_str();
+#ifdef    HAVE_SETLOCALE
+  if (! fs) {
+    if (nmissing) XFreeStringList(missing);
+
+    setlocale(LC_CTYPE, "C");
+    fs = XCreateFontSet(blackbox->getXDisplay(), fontname.c_str(),
+                        &missing, &nmissing, &def);
+    setlocale(LC_CTYPE, "");
+  }
+#endif // HAVE_SETLOCALE
+
+  if (fs) {
+    XFontStruct **fontstructs;
+    char **fontnames;
+    XFontsOfFontSet(fs, &fontstructs, &fontnames);
+    nfontname = fontnames[0];
+  }
+
+  getFontElement(nfontname, weight, FONT_ELEMENT_SIZE,
+                 "-medium-", "-bold-", "-demibold-", "-regular-", NULL);
+  getFontElement(nfontname, slant, FONT_ELEMENT_SIZE,
+                 "-r-", "-i-", "-o-", "-ri-", "-ro-", NULL);
+  getFontSize(nfontname, &pixel_size);
+
+  if (! strcmp(weight, "*"))
+    strncpy(weight, "medium", FONT_ELEMENT_SIZE);
+  if (! strcmp(slant, "*"))
+    strncpy(slant, "r", FONT_ELEMENT_SIZE);
+  if (pixel_size < 3)
+    pixel_size = 3;
+  else if (pixel_size > 97)
+    pixel_size = 97;
+
+  buf_size = strlen(nfontname) + (FONT_ELEMENT_SIZE * 2) + 64;
+  char *pattern2 = new char[buf_size];
+  snprintf(pattern2, buf_size - 1,
+           "%s,"
+           "-*-*-%s-%s-*-*-%d-*-*-*-*-*-*-*,"
+           "-*-*-*-*-*-*-%d-*-*-*-*-*-*-*,*",
+           nfontname, weight, slant, pixel_size, pixel_size);
+  nfontname = pattern2;
+
+  if (nmissing)
+    XFreeStringList(missing);
+  if (fs)
+    XFreeFontSet(blackbox->getXDisplay(), fs);
+
+  fs = XCreateFontSet(blackbox->getXDisplay(), nfontname, &missing,
+                      &nmissing, &def);
+
+  delete [] pattern2;
+
+  return fs;
 }

@@ -96,6 +96,7 @@
 #include "blackbox.hh"
 #include "Basemenu.hh"
 #include "Clientmenu.hh"
+#include "Image.hh"
 #include "Rootmenu.hh"
 #include "Screen.hh"
 #include "Slit.hh"
@@ -365,7 +366,7 @@ void Blackbox::process_event(XEvent *e) {
   // this event is quite rare and is usually handled in unmapNotify
   // however, if the window is unmapped when the reparent event occurs
   // the window manager never sees it because an unmap event is not sent
-  // to an already unmapped window  
+  // to an already unmapped window
   case ReparentNotify: {
     BlackboxWindow *win = searchWindow(e->xreparent.window);
     if (win) {
@@ -393,7 +394,7 @@ void Blackbox::process_event(XEvent *e) {
 
     // strip the lock key modifiers
     e->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
-    
+
     last_time = e->xmotion.time;
 
     BlackboxWindow *win = (BlackboxWindow *) 0;
@@ -488,7 +489,7 @@ void Blackbox::process_event(XEvent *e) {
     while (XCheckTypedWindowEvent(getXDisplay(), e->xexpose.window,
                                   Expose, &realevent)) {
       i++;
-          
+
       // merge expose area
       ex1 = std::min(realevent.xexpose.x, ex1);
       ey1 = std::min(realevent.xexpose.y, ey1);
@@ -496,7 +497,7 @@ void Blackbox::process_event(XEvent *e) {
                      ex2);
       ey2 = std::max(realevent.xexpose.y + realevent.xexpose.height - 1,
                      ey2);
-    }      
+    }
     if ( i > 0 )
       e = &realevent;
 

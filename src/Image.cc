@@ -36,7 +36,10 @@ using std::min;
 #include "blackbox.hh"
 #include "i18n.hh"
 #include "BaseDisplay.hh"
+#include "GCCache.hh"
 #include "Image.hh"
+#include "Texture.hh"
+
 
 BImage::BImage(BImageControl *c, unsigned int w, unsigned int h) {
   control = c;
@@ -69,19 +72,18 @@ BImage::~BImage(void) {
 }
 
 
-Pixmap BImage::render(BTexture *texture) {
-  if (texture->getTexture() & BImage_ParentRelative)
+Pixmap BImage::render(const BTexture &texture) {
+  if ((texture.texture() & BTexture::Parent_Relative))
     return ParentRelative;
-  else if (texture->getTexture() & BImage_Solid)
+  else if ((texture.texture() & BTexture::Solid))
     return render_solid(texture);
-  else if (texture->getTexture() & BImage_Gradient)
+  else if ((texture.texture() & BTexture::Gradient))
     return render_gradient(texture);
-
   return None;
 }
 
 
-Pixmap BImage::render_solid(BTexture *texture) {
+Pixmap BImage::render_solid(const BTexture &texture) {
   Pixmap pixmap = XCreatePixmap(control->getBaseDisplay()->getXDisplay(),
 				control->getDrawable(), width,
 				height, control->getDepth());
@@ -91,127 +93,101 @@ Pixmap BImage::render_solid(BTexture *texture) {
     return None;
   }
 
-  XGCValues gcv;
-  GC gc, hgc, lgc;
+  Display *display = control->getBaseDisplay()->getXDisplay();
 
-  gcv.foreground = texture->getColor()->getPixel();
-  gcv.fill_style = FillSolid;
-  gc = XCreateGC(control->getBaseDisplay()->getXDisplay(), pixmap,
-		 GCForeground | GCFillStyle, &gcv);
+  BPen pen(texture.color());
+  BPen penlight(texture.lightColor());
+  BPen penshadow(texture.shadowColor());
 
-  gcv.foreground = texture->getHiColor()->getPixel();
-  hgc = XCreateGC(control->getBaseDisplay()->getXDisplay(), pixmap,
-		  GCForeground, &gcv);
+  XFillRectangle(display, pixmap, pen.gc(), 0, 0, width, height);
 
-  gcv.foreground = texture->getLoColor()->getPixel();
-  lgc = XCreateGC(control->getBaseDisplay()->getXDisplay(), pixmap,
-		  GCForeground, &gcv);
-
-  XFillRectangle(control->getBaseDisplay()->getXDisplay(), pixmap, gc, 0, 0,
-		 width, height);
-
-#ifdef    INTERLACE
-  if (texture->getTexture() & BImage_Interlaced) {
-    gcv.foreground = texture->getColorTo()->getPixel();
-    GC igc = XCreateGC(control->getBaseDisplay()->getXDisplay(), pixmap,
-		       GCForeground, &gcv);
-
+  if (texture.texture() & BTexture::Interlaced) {
+    BPen peninterlace(texture.colorTo());
     register unsigned int i = 0;
     for (; i < height; i += 2)
-      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, igc,
-		0, i, width, i);
-
-    XFreeGC(control->getBaseDisplay()->getXDisplay(), igc);
+      XDrawLine(display, pixmap, peninterlace.gc(), 0, i, width, i);
   }
-#endif // INTERLACE
 
-
-  if (texture->getTexture() & BImage_Bevel1) {
-    if (texture->getTexture() & BImage_Raised) {
-      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, lgc,
+  if (texture.texture() & BTexture::Bevel1) {
+    if (texture.texture() & BTexture::Raised) {
+      XDrawLine(display, pixmap, penshadow.gc(),
                 0, height - 1, width - 1, height - 1);
-      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, lgc,
+      XDrawLine(display, pixmap, penshadow.gc(),
                 width - 1, height - 1, width - 1, 0);
 
-      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, hgc,
+      XDrawLine(display, pixmap, penlight.gc(),
                 0, 0, width - 1, 0);
-      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, hgc,
+      XDrawLine(display, pixmap, penlight.gc(),
                 0, height - 1, 0, 0);
-    } else if (texture->getTexture() & BImage_Sunken) {
-      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, hgc,
+    } else if (texture.texture() & BTexture::Sunken) {
+      XDrawLine(display, pixmap, penlight.gc(),
                 0, height - 1, width - 1, height - 1);
-      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, hgc,
+      XDrawLine(display, pixmap, penlight.gc(),
                 width - 1, height - 1, width - 1, 0);
 
-      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, lgc,
+      XDrawLine(display, pixmap, penshadow.gc(),
                 0, 0, width - 1, 0);
-      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, lgc,
+      XDrawLine(display, pixmap, penshadow.gc(),
                 0, height - 1, 0, 0);
     }
-  } else if (texture->getTexture() & BImage_Bevel2) {
-    if (texture->getTexture() & BImage_Raised) {
-      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, lgc,
+  } else if (texture.texture() & BTexture::Bevel2) {
+    if (texture.texture() & BTexture::Raised) {
+      XDrawLine(display, pixmap, penshadow.gc(),
                 1, height - 3, width - 3, height - 3);
-      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, lgc,
+      XDrawLine(display, pixmap, penshadow.gc(),
                 width - 3, height - 3, width - 3, 1);
 
-      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, hgc,
+      XDrawLine(display, pixmap, penlight.gc(),
                 1, 1, width - 3, 1);
-      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, hgc,
+      XDrawLine(display, pixmap, penlight.gc(),
                 1, height - 3, 1, 1);
-    } else if (texture->getTexture() & BImage_Sunken) {
-      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, hgc,
+    } else if (texture.texture() & BTexture::Sunken) {
+      XDrawLine(display, pixmap, penlight.gc(),
                 1, height - 3, width - 3, height - 3);
-      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, hgc,
+      XDrawLine(display, pixmap, penlight.gc(),
                 width - 3, height - 3, width - 3, 1);
 
-      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, lgc,
+      XDrawLine(display, pixmap, penshadow.gc(),
                 1, 1, width - 3, 1);
-      XDrawLine(control->getBaseDisplay()->getXDisplay(), pixmap, lgc,
+      XDrawLine(display, pixmap, penshadow.gc(),
                 1, height - 3, 1, 1);
     }
   }
-
-  XFreeGC(control->getBaseDisplay()->getXDisplay(), gc);
-  XFreeGC(control->getBaseDisplay()->getXDisplay(), hgc);
-  XFreeGC(control->getBaseDisplay()->getXDisplay(), lgc);
 
   return pixmap;
 }
 
 
-Pixmap BImage::render_gradient(BTexture *texture) {
+Pixmap BImage::render_gradient(const BTexture &texture) {
  int inverted = 0;
 
-#ifdef    INTERLACE
-  interlaced = texture->getTexture() & BImage_Interlaced;
-#endif // INTERLACE
+  interlaced = texture.texture() & BTexture::Interlaced;
 
-  if (texture->getTexture() & BImage_Sunken) {
-    from = texture->getColorTo();
-    to = texture->getColor();
+  if (texture.texture() & BTexture::Sunken) {
+    from = texture.colorTo();
+    to = texture.color();
 
-    if (! (texture->getTexture() & BImage_Invert)) inverted = 1;
+    if (! (texture.texture() & BTexture::Invert)) inverted = 1;
   } else {
-    from = texture->getColor();
-    to = texture->getColorTo();
+    from = texture.color();
+    to = texture.colorTo();
 
-    if (texture->getTexture() & BImage_Invert) inverted = 1;
+    if (texture.texture() & BTexture::Invert) inverted = 1;
   }
 
   control->getGradientBuffers(width, height, &xtable, &ytable);
 
-  if (texture->getTexture() & BImage_Diagonal) dgradient();
-  else if (texture->getTexture() & BImage_Elliptic) egradient();
-  else if (texture->getTexture() & BImage_Horizontal) hgradient();
-  else if (texture->getTexture() & BImage_Pyramid) pgradient();
-  else if (texture->getTexture() & BImage_Rectangle) rgradient();
-  else if (texture->getTexture() & BImage_Vertical) vgradient();
-  else if (texture->getTexture() & BImage_CrossDiagonal) cdgradient();
-  else if (texture->getTexture() & BImage_PipeCross) pcgradient();
+  if (texture.texture() & BTexture::Diagonal) dgradient();
+  else if (texture.texture() & BTexture::Elliptic) egradient();
+  else if (texture.texture() & BTexture::Horizontal) hgradient();
+  else if (texture.texture() & BTexture::Pyramid) pgradient();
+  else if (texture.texture() & BTexture::Rectangle) rgradient();
+  else if (texture.texture() & BTexture::Vertical) vgradient();
+  else if (texture.texture() & BTexture::CrossDiagonal) cdgradient();
+  else if (texture.texture() & BTexture::PipeCross) pcgradient();
 
-  if (texture->getTexture() & BImage_Bevel1) bevel1();
-  else if (texture->getTexture() & BImage_Bevel2) bevel2();
+  if (texture.texture() & BTexture::Bevel1) bevel1();
+  else if (texture.texture() & BTexture::Bevel2) bevel2();
 
   if (inverted) invert();
 
@@ -859,17 +835,17 @@ void BImage::dgradient(void) {
   // modified for interlacing by Brad Hughes
 
   float drx, dgx, dbx, dry, dgy, dby, yr = 0.0, yg = 0.0, yb = 0.0,
-    xr = (float) from->getRed(),
-    xg = (float) from->getGreen(),
-    xb = (float) from->getBlue();
+    xr = (float) from.red(),
+    xg = (float) from.green(),
+    xb = (float) from.blue();
   unsigned char *pr = red, *pg = green, *pb = blue;
   unsigned int w = width * 2, h = height * 2, *xt = xtable, *yt = ytable;
 
   register unsigned int x, y;
 
-  dry = drx = (float) (to->getRed() - from->getRed());
-  dgy = dgx = (float) (to->getGreen() - from->getGreen());
-  dby = dbx = (float) (to->getBlue() - from->getBlue());
+  dry = drx = (float) (to.red() - from.red());
+  dgy = dgx = (float) (to.green() - from.green());
+  dby = dbx = (float) (to.blue() - from.blue());
 
   // Create X table
   drx /= w;
@@ -903,10 +879,7 @@ void BImage::dgradient(void) {
 
   // Combine tables to create gradient
 
-#ifdef    INTERLACE
   if (! interlaced) {
-#endif // INTERLACE
-
     // normal dgradient
     for (yt = ytable, y = 0; y < height; y++, yt += 3) {
       for (xt = xtable, x = 0; x < width; x++) {
@@ -915,8 +888,6 @@ void BImage::dgradient(void) {
         *(pb++) = *(xt++) + *(yt + 2);
       }
     }
-
-#ifdef    INTERLACE
   } else {
     // faked interlacing effect
     unsigned char channel, channel2;
@@ -957,29 +928,26 @@ void BImage::dgradient(void) {
       }
     }
   }
-#endif // INTERLACE
-
 }
 
 
 void BImage::hgradient(void) {
   float drx, dgx, dbx,
-    xr = (float) from->getRed(),
-    xg = (float) from->getGreen(),
-    xb = (float) from->getBlue();
+    xr = (float) from.red(),
+    xg = (float) from.green(),
+    xb = (float) from.blue();
   unsigned char *pr = red, *pg = green, *pb = blue;
 
   register unsigned int x, y;
 
-  drx = (float) (to->getRed() - from->getRed());
-  dgx = (float) (to->getGreen() - from->getGreen());
-  dbx = (float) (to->getBlue() - from->getBlue());
+  drx = (float) (to.red() - from.red());
+  dgx = (float) (to.green() - from.green());
+  dbx = (float) (to.blue() - from.blue());
 
   drx /= width;
   dgx /= width;
   dbx /= width;
 
-#ifdef    INTERLACE
   if (interlaced && height > 2) {
     // faked interlacing effect
     unsigned char channel, channel2;
@@ -1035,8 +1003,6 @@ void BImage::hgradient(void) {
       memcpy(pb, (blue + offset), width);
     }
   } else {
-#endif // INTERLACE
-
     // normal hgradient
     for (x = 0; x < width; x++) {
       *(pr++) = (unsigned char) (xr);
@@ -1053,32 +1019,27 @@ void BImage::hgradient(void) {
       memcpy(pg, green, width);
       memcpy(pb, blue, width);
     }
-
-#ifdef    INTERLACE
   }
-#endif // INTERLACE
-
 }
 
 
 void BImage::vgradient(void) {
   float dry, dgy, dby,
-    yr = (float) from->getRed(),
-    yg = (float) from->getGreen(),
-    yb = (float) from->getBlue();
+    yr = (float) from.red(),
+    yg = (float) from.green(),
+    yb = (float) from.blue();
   unsigned char *pr = red, *pg = green, *pb = blue;
 
   register unsigned int y;
 
-  dry = (float) (to->getRed() - from->getRed());
-  dgy = (float) (to->getGreen() - from->getGreen());
-  dby = (float) (to->getBlue() - from->getBlue());
+  dry = (float) (to.red() - from.red());
+  dgy = (float) (to.green() - from.green());
+  dby = (float) (to.blue() - from.blue());
 
   dry /= height;
   dgy /= height;
   dby /= height;
 
-#ifdef    INTERLACE
   if (interlaced) {
     // faked interlacing effect
     unsigned char channel, channel2;
@@ -1121,8 +1082,6 @@ void BImage::vgradient(void) {
       yb += dby;
     }
   } else {
-#endif // INTERLACE
-
     // normal vgradient
     for (y = 0; y < height; y++, pr += width, pg += width, pb += width) {
       memset(pr, (unsigned char) yr, width);
@@ -1133,11 +1092,7 @@ void BImage::vgradient(void) {
       yg += dgy;
       yb += dby;
     }
-
-#ifdef    INTERLACE
   }
-#endif // INTERLACE
-
 }
 
 
@@ -1150,14 +1105,14 @@ void BImage::pgradient(void) {
     xr, xg, xb;
   int rsign, gsign, bsign;
   unsigned char *pr = red, *pg = green, *pb = blue;
-  unsigned int tr = to->getRed(), tg = to->getGreen(), tb = to->getBlue(),
+  unsigned int tr = to.red(), tg = to.green(), tb = to.blue(),
     *xt = xtable, *yt = ytable;
 
   register unsigned int x, y;
 
-  dry = drx = (float) (to->getRed() - from->getRed());
-  dgy = dgx = (float) (to->getGreen() - from->getGreen());
-  dby = dbx = (float) (to->getBlue() - from->getBlue());
+  dry = drx = (float) (to.red() - from.red());
+  dgy = dgx = (float) (to.green() - from.green());
+  dby = dbx = (float) (to.blue() - from.blue());
 
   rsign = (drx < 0) ? -1 : 1;
   gsign = (dgx < 0) ? -1 : 1;
@@ -1199,10 +1154,7 @@ void BImage::pgradient(void) {
 
   // Combine tables to create gradient
 
-#ifdef    INTERLACE
   if (! interlaced) {
-#endif // INTERLACE
-
     // normal pgradient
     for (yt = ytable, y = 0; y < height; y++, yt += 3) {
       for (xt = xtable, x = 0; x < width; x++) {
@@ -1211,8 +1163,6 @@ void BImage::pgradient(void) {
         *(pb++) = (unsigned char) (tb - (bsign * (*(xt++) + *(yt + 2))));
       }
     }
-
-#ifdef    INTERLACE
   } else {
     // faked interlacing effect
     unsigned char channel, channel2;
@@ -1253,7 +1203,6 @@ void BImage::pgradient(void) {
       }
     }
   }
-#endif // INTERLACE
 }
 
 
@@ -1265,14 +1214,14 @@ void BImage::rgradient(void) {
   float drx, dgx, dbx, dry, dgy, dby, xr, xg, xb, yr, yg, yb;
   int rsign, gsign, bsign;
   unsigned char *pr = red, *pg = green, *pb = blue;
-  unsigned int tr = to->getRed(), tg = to->getGreen(), tb = to->getBlue(),
+  unsigned int tr = to.red(), tg = to.green(), tb = to.blue(),
     *xt = xtable, *yt = ytable;
 
   register unsigned int x, y;
 
-  dry = drx = (float) (to->getRed() - from->getRed());
-  dgy = dgx = (float) (to->getGreen() - from->getGreen());
-  dby = dbx = (float) (to->getBlue() - from->getBlue());
+  dry = drx = (float) (to.red() - from.red());
+  dgy = dgx = (float) (to.green() - from.green());
+  dby = dbx = (float) (to.blue() - from.blue());
 
   rsign = (drx < 0) ? -2 : 2;
   gsign = (dgx < 0) ? -2 : 2;
@@ -1314,10 +1263,7 @@ void BImage::rgradient(void) {
 
   // Combine tables to create gradient
 
-#ifdef    INTERLACE
   if (! interlaced) {
-#endif // INTERLACE
-
     // normal rgradient
     for (yt = ytable, y = 0; y < height; y++, yt += 3) {
       for (xt = xtable, x = 0; x < width; x++) {
@@ -1326,8 +1272,6 @@ void BImage::rgradient(void) {
         *(pb++) = (unsigned char) (tb - (bsign * max(*(xt++), *(yt + 2))));
       }
     }
-
-#ifdef    INTERLACE
   } else {
     // faked interlacing effect
     unsigned char channel, channel2;
@@ -1368,7 +1312,6 @@ void BImage::rgradient(void) {
       }
     }
   }
-#endif // INTERLACE
 }
 
 
@@ -1381,15 +1324,15 @@ void BImage::egradient(void) {
   int rsign, gsign, bsign;
   unsigned char *pr = red, *pg = green, *pb = blue;
   unsigned int *xt = xtable, *yt = ytable,
-    tr = (unsigned long) to->getRed(),
-    tg = (unsigned long) to->getGreen(),
-    tb = (unsigned long) to->getBlue();
+    tr = (unsigned long) to.red(),
+    tg = (unsigned long) to.green(),
+    tb = (unsigned long) to.blue();
 
   register unsigned int x, y;
 
-  dry = drx = (float) (to->getRed() - from->getRed());
-  dgy = dgx = (float) (to->getGreen() - from->getGreen());
-  dby = dbx = (float) (to->getBlue() - from->getBlue());
+  dry = drx = (float) (to.red() - from.red());
+  dgy = dgx = (float) (to.green() - from.green());
+  dby = dbx = (float) (to.blue() - from.blue());
 
   rsign = (drx < 0) ? -1 : 1;
   gsign = (dgx < 0) ? -1 : 1;
@@ -1431,10 +1374,7 @@ void BImage::egradient(void) {
 
   // Combine tables to create gradient
 
-#ifdef    INTERLACE
   if (! interlaced) {
-#endif // INTERLACE
-
     // normal egradient
     for (yt = ytable, y = 0; y < height; y++, yt += 3) {
       for (xt = xtable, x = 0; x < width; x++) {
@@ -1446,8 +1386,6 @@ void BImage::egradient(void) {
           (tb - (bsign * control->getSqrt(*(xt++) + *(yt + 2))));
       }
     }
-
-#ifdef    INTERLACE
   } else {
     // faked interlacing effect
     unsigned char channel, channel2;
@@ -1494,7 +1432,6 @@ void BImage::egradient(void) {
       }
     }
   }
-#endif // INTERLACE
 }
 
 
@@ -1507,15 +1444,15 @@ void BImage::pcgradient(void) {
   int rsign, gsign, bsign;
   unsigned char *pr = red, *pg = green, *pb = blue;
   unsigned int *xt = xtable, *yt = ytable,
-    tr = to->getRed(),
-    tg = to->getGreen(),
-    tb = to->getBlue();
+    tr = to.red(),
+    tg = to.green(),
+    tb = to.blue();
 
   register unsigned int x, y;
 
-  dry = drx = (float) (to->getRed() - from->getRed());
-  dgy = dgx = (float) (to->getGreen() - from->getGreen());
-  dby = dbx = (float) (to->getBlue() - from->getBlue());
+  dry = drx = (float) (to.red() - from.red());
+  dgy = dgx = (float) (to.green() - from.green());
+  dby = dbx = (float) (to.blue() - from.blue());
 
   rsign = (drx < 0) ? -2 : 2;
   gsign = (dgx < 0) ? -2 : 2;
@@ -1557,10 +1494,7 @@ void BImage::pcgradient(void) {
 
   // Combine tables to create gradient
 
-#ifdef    INTERLACE
   if (! interlaced) {
-#endif // INTERLACE
-
     // normal pcgradient
     for (yt = ytable, y = 0; y < height; y++, yt += 3) {
       for (xt = xtable, x = 0; x < width; x++) {
@@ -1569,8 +1503,6 @@ void BImage::pcgradient(void) {
         *(pb++) = (unsigned char) (tb - (bsign * min(*(xt++), *(yt + 2))));
       }
     }
-
-#ifdef    INTERLACE
   } else {
     // faked interlacing effect
     unsigned char channel, channel2;
@@ -1611,7 +1543,6 @@ void BImage::pcgradient(void) {
       }
     }
   }
-#endif // INTERLACE
 }
 
 
@@ -1621,17 +1552,17 @@ void BImage::cdgradient(void) {
   // adapted from kde sources for Blackbox by Brad Hughes
 
   float drx, dgx, dbx, dry, dgy, dby, yr = 0.0, yg = 0.0, yb = 0.0,
-    xr = (float) from->getRed(),
-    xg = (float) from->getGreen(),
-    xb = (float) from->getBlue();
+    xr = (float) from.red(),
+    xg = (float) from.green(),
+    xb = (float) from.blue();
   unsigned char *pr = red, *pg = green, *pb = blue;
   unsigned int w = width * 2, h = height * 2, *xt, *yt;
 
   register unsigned int x, y;
 
-  dry = drx = (float) (to->getRed() - from->getRed());
-  dgy = dgx = (float) (to->getGreen() - from->getGreen());
-  dby = dbx = (float) (to->getBlue() - from->getBlue());
+  dry = drx = (float) (to.red() - from.red());
+  dgy = dgx = (float) (to.green() - from.green());
+  dby = dbx = (float) (to.blue() - from.blue());
 
   // Create X table
   drx /= w;
@@ -1665,10 +1596,7 @@ void BImage::cdgradient(void) {
 
   // Combine tables to create gradient
 
-#ifdef    INTERLACE
   if (! interlaced) {
-#endif // INTERLACE
-
     // normal cdgradient
     for (yt = ytable, y = 0; y < height; y++, yt += 3) {
       for (xt = xtable, x = 0; x < width; x++) {
@@ -1677,8 +1605,6 @@ void BImage::cdgradient(void) {
         *(pb++) = *(xt++) + *(yt + 2);
       }
     }
-
-#ifdef    INTERLACE
   } else {
     // faked interlacing effect
     unsigned char channel, channel2;
@@ -1719,5 +1645,4 @@ void BImage::cdgradient(void) {
       }
     }
   }
-#endif // INTERLACE
 }

@@ -55,7 +55,7 @@ Slit::Slit(BScreen *scr) {
                               CWColormap | CWOverrideRedirect | CWEventMask;
   attrib.background_pixmap = None;
   attrib.background_pixel = attrib.border_pixel =
-    screen->getBorderColor()->getPixel();
+    screen->getBorderColor()->pixel();
   attrib.colormap = screen->getColormap();
   attrib.override_redirect = True;
   attrib.event_mask = SubstructureRedirectMask | ButtonPressMask |
@@ -251,7 +251,7 @@ void Slit::reconfigure(void) {
 
   XSetWindowBorderWidth(display ,frame.window, screen->getBorderWidth());
   XSetWindowBorder(display, frame.window,
-                   screen->getBorderColor()->getPixel());
+                   screen->getBorderColor()->pixel());
 
   if (clientList.empty())
     XUnmapWindow(display, frame.window);
@@ -261,13 +261,13 @@ void Slit::reconfigure(void) {
   Pixmap tmp = frame.pixmap;
   BImageControl *image_ctrl = screen->getImageControl();
   BTexture *texture = &(screen->getToolbarStyle()->toolbar);
-  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+  if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
     frame.pixmap = None;
     XSetWindowBackground(display, frame.window,
-                         texture->getColor()->getPixel());
+                         texture->color().pixel());
   } else {
     frame.pixmap = image_ctrl->renderImage(frame.width, frame.height,
-                                           texture);
+                                           *texture);
     XSetWindowBackgroundPixmap(display, frame.window, frame.pixmap);
   }
   if (tmp) image_ctrl->removeImage(tmp);
@@ -764,7 +764,7 @@ Slitmenu::Placementmenu::Placementmenu(Slitmenu *sm)
   insert(i18n(CommonSet, CommonPlacementTopCenter, "Top Center"),
          Slit::TopCenter);
   insert("");
-  insert(i18n(CommonSet, CommonPlacementBottomCenter, 
+  insert(i18n(CommonSet, CommonPlacementBottomCenter,
                           "Bottom Center"),
          Slit::BottomCenter);
   insert(i18n(CommonSet, CommonPlacementTopRight, "Top Right"),

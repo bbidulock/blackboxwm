@@ -143,10 +143,8 @@ void BTexture::setDescription(const string &d)
       else
         addTexture(BTexture::Bevel1);
 
-#ifdef    INTERLACE
     if (descr.find("interlaced") != string::npos)
       addTexture(BTexture::Interlaced);
-#endif // INTERLACE
   }
 }
 

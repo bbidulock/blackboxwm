@@ -40,6 +40,8 @@ using namespace std;
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "Basemenu.hh"
+#include "GCCache.hh"
+#include "Image.hh"
 #include "Screen.hh"
 #include "Util.hh"
 
@@ -112,7 +114,7 @@ Basemenu::Basemenu(BScreen *scrn) {
   XSetWindowAttributes attrib;
   attrib.background_pixmap = None;
   attrib.background_pixel = attrib.border_pixel =
-    screen->getBorderColor()->getPixel();
+    screen->getBorderColor()->pixel();
   attrib.colormap = screen->getColormap();
   attrib.override_redirect = True;
   attrib.event_mask = ButtonPressMask | ButtonReleaseMask |
@@ -126,7 +128,7 @@ Basemenu::Basemenu(BScreen *scrn) {
   blackbox->saveMenuSearch(menu.window, this);
 
   attrib_mask = CWBackPixmap | CWBackPixel | CWBorderPixel | CWEventMask;
-  attrib.background_pixel = screen->getBorderColor()->getPixel();
+  attrib.background_pixel = screen->getBorderColor()->pixel();
   attrib.event_mask |= EnterWindowMask | LeaveWindowMask;
 
   menu.title =
@@ -374,13 +376,13 @@ void Basemenu::update(void) {
   if (title_vis) {
     tmp = menu.title_pixmap;
     texture = &(screen->getMenuStyle()->title);
-    if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+    if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
       menu.title_pixmap = None;
       XSetWindowBackground(display, menu.title,
-                           texture->getColor()->getPixel());
+                           texture->color().pixel());
     } else {
       menu.title_pixmap =
-        image_ctrl->renderImage(menu.width, menu.title_h, texture);
+        image_ctrl->renderImage(menu.width, menu.title_h, *texture);
       XSetWindowBackgroundPixmap(display, menu.title, menu.title_pixmap);
     }
     if (tmp) image_ctrl->removeImage(tmp);
@@ -389,34 +391,34 @@ void Basemenu::update(void) {
 
   tmp = menu.frame_pixmap;
   texture = &(screen->getMenuStyle()->frame);
-  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+  if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
     menu.frame_pixmap = None;
     XSetWindowBackground(display, menu.frame,
-                         texture->getColor()->getPixel());
+                         texture->color().pixel());
   } else {
     menu.frame_pixmap =
-      image_ctrl->renderImage(menu.width, menu.frame_h, texture);
+      image_ctrl->renderImage(menu.width, menu.frame_h, *texture);
     XSetWindowBackgroundPixmap(display, menu.frame, menu.frame_pixmap);
   }
   if (tmp) image_ctrl->removeImage(tmp);
 
   tmp = menu.hilite_pixmap;
   texture = &(screen->getMenuStyle()->hilite);
-  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+  if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
     menu.hilite_pixmap = None;
   } else {
     menu.hilite_pixmap =
-      image_ctrl->renderImage(menu.item_w, menu.item_h, texture);
+      image_ctrl->renderImage(menu.item_w, menu.item_h, *texture);
   }
   if (tmp) image_ctrl->removeImage(tmp);
 
   tmp = menu.sel_pixmap;
-  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+  if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
     menu.sel_pixmap = None;
   } else {
     int hw = menu.item_h / 2;
     menu.sel_pixmap =
-      image_ctrl->renderImage(hw, hw, texture);
+      image_ctrl->renderImage(hw, hw, *texture);
   }
   if (tmp) image_ctrl->removeImage(tmp);
 
@@ -536,12 +538,13 @@ void Basemenu::redrawTitle(void) {
   }
 
   MenuStyle *style = screen->getMenuStyle();
+  BPen pen(style->t_text, style->t_font);
   if (i18n.multibyte())
-    XmbDrawString(display, menu.title, style->t_fontset, style->t_text_gc, dx,
+    XmbDrawString(display, menu.title, style->t_fontset, pen.gc(), dx,
                   (menu.bevel_w - style->t_fontset_extents->max_ink_extent.y),
                   text, len);
   else
-    XDrawString(display, menu.title, style->t_text_gc, dx,
+    XDrawString(display, menu.title, pen.gc(), dx,
                 (style->t_font->ascent + menu.bevel_w), text, len);
 }
 
@@ -660,13 +663,10 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clear,
     text_h = menu.item_h - menu.bevel_w;
   }
 
-  GC gc =
-    ((highlight || item->isSelected()) ? screen->getMenuStyle()->h_text_gc :
-     screen->getMenuStyle()->f_text_gc),
-    tgc =
-    ((highlight) ? screen->getMenuStyle()->h_text_gc :
-     ((item->isEnabled()) ? screen->getMenuStyle()->f_text_gc :
-      screen->getMenuStyle()->d_text_gc));
+  MenuStyle *style = screen->getMenuStyle();
+  BPen pen = ((highlight || item->isSelected()) ? style->h_text : style->f_text),
+   textpen = ((highlight) ? style->h_text :
+              item->isEnabled() ? style->f_text : style->d_text);
 
   sel_x = item_x;
   if (screen->getMenuStyle()->bullet_pos == Right)
@@ -706,36 +706,32 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clear,
   if (dohilite && highlight && (menu.hilite_pixmap != ParentRelative)) {
     if (menu.hilite_pixmap)
       XCopyArea(display, menu.hilite_pixmap, menu.frame,
-                screen->getMenuStyle()->hilite_gc, hoff_x, hoff_y,
+                pen.gc(), hoff_x, hoff_y,
                 hilite_w, hilite_h, hilite_x, hilite_y);
     else
-      XFillRectangle(display, menu.frame,
-                     screen->getMenuStyle()->hilite_gc,
+      XFillRectangle(display, menu.frame, pen.gc(),
                      hilite_x, hilite_y, hilite_w, hilite_h);
   } else if (dosel && item->isSelected() &&
              (menu.sel_pixmap != ParentRelative)) {
     if (menu.sel_pixmap)
-      XCopyArea(display, menu.sel_pixmap, menu.frame,
-                screen->getMenuStyle()->hilite_gc, 0, 0,
+      XCopyArea(display, menu.sel_pixmap, menu.frame, pen.gc(), 0, 0,
                 half_w, half_w, sel_x, sel_y);
     else
-      XFillRectangle(display, menu.frame,
-                     screen->getMenuStyle()->hilite_gc,
-                     sel_x, sel_y, half_w, half_w);
+      XFillRectangle(display, menu.frame, pen.gc(), sel_x, sel_y, half_w, half_w);
   }
 
   if (dotext && text) {
     if (i18n.multibyte())
       XmbDrawString(display, menu.frame, screen->getMenuStyle()->f_fontset,
-                    tgc, text_x, text_y, text, len);
+                    textpen.gc(), text_x, text_y, text, len);
     else
-      XDrawString(display, menu.frame, tgc, text_x, text_y, text, len);
+      XDrawString(display, menu.frame, textpen.gc(), text_x, text_y, text, len);
   }
 
   if (dosel && item->submenu()) {
     switch (screen->getMenuStyle()->bullet) {
     case Square:
-      XDrawRectangle(display, menu.frame, gc, sel_x, sel_y, half_w, half_w);
+      XDrawRectangle(display, menu.frame, pen.gc(), sel_x, sel_y, half_w, half_w);
       break;
 
     case Triangle:
@@ -757,7 +753,7 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clear,
         tri[2].y = -4;
       }
 
-      XFillPolygon(display, menu.frame, gc, tri, 3, Convex,
+      XFillPolygon(display, menu.frame, pen.gc(), tri, 3, Convex,
                    CoordModePrevious);
       break;
 
@@ -773,7 +769,7 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clear,
       dia[3].x = -3;
       dia[3].y = 3;
 
-      XFillPolygon(display, menu.frame, gc, dia, 4, Convex,
+      XFillPolygon(display, menu.frame, pen.gc(), dia, 4, Convex,
                    CoordModePrevious);
       break;
     }
@@ -1048,9 +1044,9 @@ void Basemenu::leaveNotifyEvent(XCrossingEvent *ce) {
 
 void Basemenu::reconfigure(void) {
   XSetWindowBackground(display, menu.window,
-                       screen->getBorderColor()->getPixel());
+                       screen->getBorderColor()->pixel());
   XSetWindowBorder(display, menu.window,
-                   screen->getBorderColor()->getPixel());
+                   screen->getBorderColor()->pixel());
   XSetWindowBorderWidth(display, menu.window, screen->getBorderWidth());
 
   menu.bevel_w = screen->getBevelWidth();

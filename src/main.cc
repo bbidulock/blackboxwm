@@ -69,7 +69,6 @@ static void showHelp(int exitval) {
   fprintf(stdout,i18n(mainSet, mainCompileOptions,
                       "Compile time options:\n"
                       "  Debugging:\t\t\t%s\n"
-                      "  Interlacing:\t\t\t%s\n"
                       "  Shape:\t\t\t%s\n"
                       "  8bpp Ordered Dithering:\t%s\n\n"),
 #ifdef    DEBUG
@@ -77,12 +76,6 @@ static void showHelp(int exitval) {
 #else // !DEBUG
           i18n(CommonSet, CommonNo, "no"),
 #endif // DEBUG
-
-#ifdef    INTERLACE
-          i18n(CommonSet, CommonYes, "yes"),
-#else // !INTERLACE
-          i18n(CommonSet, CommonNo, "no"),
-#endif // INTERLACE
 
 #ifdef    SHAPE
           i18n(CommonSet, CommonYes, "yes"),

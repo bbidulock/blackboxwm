@@ -40,7 +40,9 @@
 
 #include "i18n.hh"
 #include "blackbox.hh"
+#include "GCCache.hh"
 #include "Iconmenu.hh"
+#include "Image.hh"
 #include "Screen.hh"
 #include "Toolbar.hh"
 #include "Util.hh"
@@ -505,69 +507,69 @@ void BlackboxWindow::associateClientWindow(void) {
 void BlackboxWindow::decorate(void) {
   Pixmap tmp = frame.fbutton;
   BTexture *texture = &(screen->getWindowStyle()->b_focus);
-  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+  if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
     frame.fbutton = None;
-    frame.fbutton_pixel = texture->getColor()->getPixel();
+    frame.fbutton_pixel = texture->color().pixel();
   } else {
     frame.fbutton =
-      image_ctrl->renderImage(frame.button_w, frame.button_h, texture);
+      image_ctrl->renderImage(frame.button_w, frame.button_h, *texture);
   }
   if (tmp) image_ctrl->removeImage(tmp);
 
   tmp = frame.ubutton;
   texture = &(screen->getWindowStyle()->b_unfocus);
-  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+  if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
     frame.ubutton = None;
-    frame.ubutton_pixel = texture->getColor()->getPixel();
+    frame.ubutton_pixel = texture->color().pixel();
   } else {
     frame.ubutton =
-      image_ctrl->renderImage(frame.button_w, frame.button_h, texture);
+      image_ctrl->renderImage(frame.button_w, frame.button_h, *texture);
   }
   if (tmp) image_ctrl->removeImage(tmp);
 
   tmp = frame.pbutton;
   texture = &(screen->getWindowStyle()->b_pressed);
-  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+  if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
     frame.pbutton = None;
-    frame.pbutton_pixel = texture->getColor()->getPixel();
+    frame.pbutton_pixel = texture->color().pixel();
   } else {
     frame.pbutton =
-      image_ctrl->renderImage(frame.button_w, frame.button_h, texture);
+      image_ctrl->renderImage(frame.button_w, frame.button_h, *texture);
   }
   if (tmp) image_ctrl->removeImage(tmp);
 
   if (decorations.titlebar) {
     tmp = frame.ftitle;
     texture = &(screen->getWindowStyle()->t_focus);
-    if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+    if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
       frame.ftitle = None;
-      frame.ftitle_pixel = texture->getColor()->getPixel();
+      frame.ftitle_pixel = texture->color().pixel();
     } else {
       frame.ftitle =
-        image_ctrl->renderImage(frame.width, frame.title_h, texture);
+        image_ctrl->renderImage(frame.width, frame.title_h, *texture);
     }
     if (tmp) image_ctrl->removeImage(tmp);
 
     tmp = frame.utitle;
     texture = &(screen->getWindowStyle()->t_unfocus);
-    if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+    if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
       frame.utitle = None;
-      frame.utitle_pixel = texture->getColor()->getPixel();
+      frame.utitle_pixel = texture->color().pixel();
     } else {
       frame.utitle =
-        image_ctrl->renderImage(frame.width, frame.title_h, texture);
+        image_ctrl->renderImage(frame.width, frame.title_h, *texture);
     }
     if (tmp) image_ctrl->removeImage(tmp);
 
     XSetWindowBorder(display, frame.title,
-                     screen->getBorderColor()->getPixel());
+                     screen->getBorderColor()->pixel());
 
     decorateLabel();
   }
 
   if (decorations.border) {
-    frame.fborder_pixel = screen->getWindowStyle()->f_focus.getPixel();
-    frame.uborder_pixel = screen->getWindowStyle()->f_unfocus.getPixel();
+    frame.fborder_pixel = screen->getWindowStyle()->f_focus.pixel();
+    frame.uborder_pixel = screen->getWindowStyle()->f_unfocus.pixel();
     blackbox_attrib.flags |= AttribDecoration;
     blackbox_attrib.decoration = DecorNormal;
   } else {
@@ -578,81 +580,81 @@ void BlackboxWindow::decorate(void) {
   if (decorations.handle) {
     tmp = frame.fhandle;
     texture = &(screen->getWindowStyle()->h_focus);
-    if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+    if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
       frame.fhandle = None;
-      frame.fhandle_pixel = texture->getColor()->getPixel();
+      frame.fhandle_pixel = texture->color().pixel();
     } else {
       frame.fhandle =
-        image_ctrl->renderImage(frame.width, frame.handle_h, texture);
+        image_ctrl->renderImage(frame.width, frame.handle_h, *texture);
     }
     if (tmp) image_ctrl->removeImage(tmp);
 
     tmp = frame.uhandle;
     texture = &(screen->getWindowStyle()->h_unfocus);
-    if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+    if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
       frame.uhandle = None;
-      frame.uhandle_pixel = texture->getColor()->getPixel();
+      frame.uhandle_pixel = texture->color().pixel();
     } else {
       frame.uhandle =
-        image_ctrl->renderImage(frame.width, frame.handle_h, texture);
+        image_ctrl->renderImage(frame.width, frame.handle_h, *texture);
     }
     if (tmp) image_ctrl->removeImage(tmp);
 
     tmp = frame.fgrip;
     texture = &(screen->getWindowStyle()->g_focus);
-    if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+    if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
       frame.fgrip = None;
-      frame.fgrip_pixel = texture->getColor()->getPixel();
+      frame.fgrip_pixel = texture->color().pixel();
     } else {
       frame.fgrip =
-        image_ctrl->renderImage(frame.grip_w, frame.grip_h, texture);
+        image_ctrl->renderImage(frame.grip_w, frame.grip_h, *texture);
     }
     if (tmp) image_ctrl->removeImage(tmp);
 
     tmp = frame.ugrip;
     texture = &(screen->getWindowStyle()->g_unfocus);
-    if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+    if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
       frame.ugrip = None;
-      frame.ugrip_pixel = texture->getColor()->getPixel();
+      frame.ugrip_pixel = texture->color().pixel();
     } else {
       frame.ugrip =
-        image_ctrl->renderImage(frame.grip_w, frame.grip_h, texture);
+        image_ctrl->renderImage(frame.grip_w, frame.grip_h, *texture);
     }
     if (tmp) image_ctrl->removeImage(tmp);
 
     XSetWindowBorder(display, frame.handle,
-                     screen->getBorderColor()->getPixel());
+                     screen->getBorderColor()->pixel());
     XSetWindowBorder(display, frame.left_grip,
-                     screen->getBorderColor()->getPixel());
+                     screen->getBorderColor()->pixel());
     XSetWindowBorder(display, frame.right_grip,
-                     screen->getBorderColor()->getPixel());
+                     screen->getBorderColor()->pixel());
   }
 
   XSetWindowBorder(display, frame.window,
-                   screen->getBorderColor()->getPixel());
+                   screen->getBorderColor()->pixel());
 }
 
 
 void BlackboxWindow::decorateLabel(void) {
   Pixmap tmp = frame.flabel;
   BTexture *texture = &(screen->getWindowStyle()->l_focus);
-  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+  if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
     frame.flabel = None;
-    frame.flabel_pixel = texture->getColor()->getPixel();
+    frame.flabel_pixel = texture->color().pixel();
   } else {
     frame.flabel =
-      image_ctrl->renderImage(frame.label_w, frame.label_h, texture);
+      image_ctrl->renderImage(frame.label_w, frame.label_h, *texture);
   }
   if (tmp) image_ctrl->removeImage(tmp);
 
   tmp = frame.ulabel;
   texture = &(screen->getWindowStyle()->l_unfocus);
-  if (texture->getTexture() == (BImage_Flat | BImage_Solid)) {
+  if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
     frame.ulabel = None;
-    frame.ulabel_pixel = texture->getColor()->getPixel();
+    frame.ulabel_pixel = texture->color().pixel();
   } else {
     frame.ulabel =
-      image_ctrl->renderImage(frame.label_w, frame.label_h, texture);
+      image_ctrl->renderImage(frame.label_w, frame.label_h, *texture);
   }
   if (tmp) image_ctrl->removeImage(tmp);
 }
@@ -1214,7 +1216,7 @@ void BlackboxWindow::getTransientInfo(void) {
 
   if (client.transient_for == screen->getRootWindow())
     flags.modal = True;
-    
+
   flags.transient = True;
 }
 
@@ -2022,14 +2024,13 @@ void BlackboxWindow::redrawLabel(void) {
   }
 
   WindowStyle *style = screen->getWindowStyle();
-  GC text_gc = (flags.focused) ? style->l_text_focus_gc :
-    style->l_text_unfocus_gc;
+  BPen pen((flags.focused) ? style->l_text_focus : style->l_text_unfocus);
   if (i18n.multibyte())
-    XmbDrawString(display, frame.label, style->fontset, text_gc, dx,
+    XmbDrawString(display, frame.label, style->fontset, pen.gc(), dx,
                   (1 - style->fontset_extents->max_ink_extent.y),
                   client.title, dlen);
   else
-    XDrawString(display, frame.label, text_gc, dx,
+    XDrawString(display, frame.label, pen.gc(), dx,
                 (style->font->ascent + 1), client.title, dlen);
 }
 
@@ -2066,9 +2067,9 @@ void BlackboxWindow::redrawIconifyButton(Bool pressed) {
   }
   XClearWindow(display, frame.iconify_button);
 
-  XDrawRectangle(display, frame.iconify_button,
-                 ((flags.focused) ? screen->getWindowStyle()->b_pic_focus_gc :
-                  screen->getWindowStyle()->b_pic_unfocus_gc),
+  BPen pen((flags.focused) ? screen->getWindowStyle()->b_pic_focus :
+           screen->getWindowStyle()->b_pic_unfocus);
+  XDrawRectangle(display, frame.iconify_button, pen.gc(),
                  2, (frame.button_h - 5), (frame.button_w - 5), 2);
 }
 
@@ -2100,13 +2101,11 @@ void BlackboxWindow::redrawMaximizeButton(Bool pressed) {
   }
   XClearWindow(display, frame.maximize_button);
 
-  XDrawRectangle(display, frame.maximize_button,
-                 ((flags.focused) ? screen->getWindowStyle()->b_pic_focus_gc :
-                  screen->getWindowStyle()->b_pic_unfocus_gc),
+  BPen pen((flags.focused) ? screen->getWindowStyle()->b_pic_focus :
+           screen->getWindowStyle()->b_pic_unfocus);
+  XDrawRectangle(display, frame.maximize_button, pen.gc(),
                  2, 2, (frame.button_w - 5), (frame.button_h - 5));
-  XDrawLine(display, frame.maximize_button,
-            ((flags.focused) ? screen->getWindowStyle()->b_pic_focus_gc :
-             screen->getWindowStyle()->b_pic_unfocus_gc),
+  XDrawLine(display, frame.maximize_button, pen.gc(),
             2, 3, (frame.button_w - 3), 3);
 }
 
@@ -2136,15 +2135,12 @@ void BlackboxWindow::redrawCloseButton(Bool pressed) {
   }
   XClearWindow(display, frame.close_button);
 
-  XDrawLine(display, frame.close_button,
-            ((flags.focused) ? screen->getWindowStyle()->b_pic_focus_gc :
-             screen->getWindowStyle()->b_pic_unfocus_gc), 2, 2,
-            (frame.button_w - 3), (frame.button_h - 3));
-  XDrawLine(display, frame.close_button,
-            ((flags.focused) ? screen->getWindowStyle()->b_pic_focus_gc :
-             screen->getWindowStyle()->b_pic_unfocus_gc), 2,
-            (frame.button_h - 3),
-            (frame.button_w - 3), 2);
+  BPen pen((flags.focused) ? screen->getWindowStyle()->b_pic_focus :
+           screen->getWindowStyle()->b_pic_unfocus);
+  XDrawLine(display, frame.close_button, pen.gc(),
+            2, 2, (frame.button_w - 3), (frame.button_h - 3));
+  XDrawLine(display, frame.close_button, pen.gc(),
+            2, (frame.button_h - 3), (frame.button_w - 3), 2);
 }
 
 
@@ -2830,7 +2826,7 @@ void BlackboxWindow::changeBlackboxHints(BlackboxHints *net) {
     case DecorTiny:
       decorations.titlebar = decorations.iconify = decorations.menu = True;
       decorations.border = decorations.handle = decorations.maximize = False;
- 
+
       break;
 
     case DecorTool:
@@ -2902,7 +2898,7 @@ void BlackboxWindow::upsize(void) {
     frame.handle_h = 0;
     frame.grip_w = frame.grip_h = 0;
   }
-  
+
   frame.width = client.width + (frame.mwm_border_w * 2);
   frame.height = frame.y_handle + frame.handle_h;
 

@@ -40,7 +40,9 @@
 #include "blackbox.hh"
 #include "i18n.hh"
 #include "BaseDisplay.hh"
+#include "Color.hh"
 #include "Image.hh"
+#include "Texture.hh"
 
 static unsigned long bsqrt(unsigned long x) {
   if (x <= 0) return 0;
@@ -56,12 +58,15 @@ static unsigned long bsqrt(unsigned long x) {
   }
 }
 
+BImageControl *ctrl = 0;
 
 BImageControl::BImageControl(BaseDisplay *dpy, const ScreenInfo *scrn,
                              Bool _dither, int _cpc,
                              unsigned long cache_timeout,
                              unsigned long cmax)
 {
+  if (! ctrl) ctrl = this;
+
   basedisplay = dpy;
   screeninfo = scrn;
   setDither(_dither);
@@ -393,9 +398,9 @@ BImageControl::~BImageControl(void) {
 }
 
 
-Pixmap BImageControl::searchCache(unsigned int width, unsigned int height,
-                                  unsigned long texture,
-                                  BColor *c1, BColor *c2) {
+Pixmap BImageControl::searchCache(const unsigned int width, const unsigned int height,
+                                  const unsigned long texture,
+                                  const BColor &c1, const BColor &c2) {
   if (cache.empty())
     return None;
 
@@ -404,9 +409,9 @@ Pixmap BImageControl::searchCache(unsigned int width, unsigned int height,
   for (; it != end; ++it) {
     CachedImage& tmp = *it;
     if ((tmp.width == width) && (tmp.height == height) &&
-        (tmp.texture == texture) && (tmp.pixel1 == c1->getPixel()))
-      if (texture & BImage_Gradient) {
-        if (tmp.pixel2 == c2->getPixel()) {
+        (tmp.texture == texture) && (tmp.pixel1 == c1.pixel()))
+      if (texture & BTexture::Gradient) {
+        if (tmp.pixel2 == c2.pixel()) {
           tmp.count++;
           return tmp.pixmap;
         }
@@ -420,11 +425,11 @@ Pixmap BImageControl::searchCache(unsigned int width, unsigned int height,
 
 
 Pixmap BImageControl::renderImage(unsigned int width, unsigned int height,
-      BTexture *texture) {
-  if (texture->getTexture() & BImage_ParentRelative) return ParentRelative;
+                                  const BTexture &texture) {
+  if (texture.texture() & BTexture::Parent_Relative) return ParentRelative;
 
-  Pixmap pixmap = searchCache(width, height, texture->getTexture(),
-			      texture->getColor(), texture->getColorTo());
+  Pixmap pixmap = searchCache(width, height, texture.texture(),
+			      texture.color(), texture.colorTo());
   if (pixmap) return pixmap;
 
   BImage image(this, width, height);
@@ -439,11 +444,11 @@ Pixmap BImageControl::renderImage(unsigned int width, unsigned int height,
   tmp.width = width;
   tmp.height = height;
   tmp.count = 1;
-  tmp.texture = texture->getTexture();
-  tmp.pixel1 = texture->getColor()->getPixel();
+  tmp.texture = texture.texture();
+  tmp.pixel1 = texture.color().pixel();
 
-  if (texture->getTexture() & BImage_Gradient)
-    tmp.pixel2 = texture->getColorTo()->getPixel();
+  if (texture.texture() & BTexture::Gradient)
+    tmp.pixel2 = texture.colorTo().pixel();
   else
     tmp.pixel2 = 0l;
 
@@ -479,46 +484,6 @@ void BImageControl::removeImage(Pixmap pixmap) {
   if (! timer)
 #endif // TIMEDCACHE
     timeout();
-}
-
-
-unsigned long BImageControl::getColor(const char *colorname,
-				      unsigned char *r, unsigned char *g,
-				      unsigned char *b)
-{
-  XColor color;
-  color.pixel = 0;
-
-  if (! XParseColor(basedisplay->getXDisplay(), colormap, colorname, &color))
-    fprintf(stderr, "BImageControl::getColor: color parse error: \"%s\"\n",
-	    colorname);
-  else if (! XAllocColor(basedisplay->getXDisplay(), colormap, &color))
-    fprintf(stderr, "BImageControl::getColor: color alloc error: \"%s\"\n",
-	    colorname);
-
-  if (color.red == 65535) *r = 0xff;
-  else *r = (unsigned char) (color.red / 0xff);
-  if (color.green == 65535) *g = 0xff;
-  else *g = (unsigned char) (color.green / 0xff);
-  if (color.blue == 65535) *b = 0xff;
-  else *b = (unsigned char) (color.blue / 0xff);
-
-  return color.pixel;
-}
-
-
-unsigned long BImageControl::getColor(const char *colorname) {
-  XColor color;
-  color.pixel = 0;
-
-  if (! XParseColor(basedisplay->getXDisplay(), colormap, colorname, &color))
-    fprintf(stderr, "BImageControl::getColor: color parse error: \"%s\"\n",
-	    colorname);
-  else if (! XAllocColor(basedisplay->getXDisplay(), colormap, &color))
-    fprintf(stderr, "BImageControl::getColor: color alloc error: \"%s\"\n",
-	    colorname);
-
-  return color.pixel;
 }
 
 
@@ -614,97 +579,6 @@ unsigned long BImageControl::getSqrt(unsigned int x) {
   }
 
   return (*(sqrt_table + x));
-}
-
-
-void BImageControl::parseTexture(BTexture *texture, char *t) {
-  if ((! texture) || (! t)) return;
-
-  int t_len = strlen(t) + 1, i;
-  char *ts = new char[t_len];
-  if (! ts) return;
-
-  // convert to lower case
-  for (i = 0; i < t_len; i++)
-    *(ts + i) = tolower(*(t + i));
-
-  if (strstr(ts, "parentrelative")) {
-    texture->setTexture(BImage_ParentRelative);
-  } else {
-    texture->setTexture(0);
-
-    if (strstr(ts, "solid"))
-      texture->addTexture(BImage_Solid);
-    else if (strstr(ts, "gradient")) {
-      texture->addTexture(BImage_Gradient);
-      if (strstr(ts, "crossdiagonal"))
-	texture->addTexture(BImage_CrossDiagonal);
-      else if (strstr(ts, "rectangle"))
-	texture->addTexture(BImage_Rectangle);
-      else if (strstr(ts, "pyramid"))
-	texture->addTexture(BImage_Pyramid);
-      else if (strstr(ts, "pipecross"))
-	texture->addTexture(BImage_PipeCross);
-      else if (strstr(ts, "elliptic"))
-	texture->addTexture(BImage_Elliptic);
-      else if (strstr(ts, "diagonal"))
-	texture->addTexture(BImage_Diagonal);
-      else if (strstr(ts, "horizontal"))
-	texture->addTexture(BImage_Horizontal);
-      else if (strstr(ts, "vertical"))
-	texture->addTexture(BImage_Vertical);
-      else
-	texture->addTexture(BImage_Diagonal);
-    } else {
-      texture->addTexture(BImage_Solid);
-    }
-
-    if (strstr(ts, "raised"))
-      texture->addTexture(BImage_Raised);
-    else if (strstr(ts, "sunken"))
-      texture->addTexture(BImage_Sunken);
-    else if (strstr(ts, "flat"))
-      texture->addTexture(BImage_Flat);
-    else
-      texture->addTexture(BImage_Raised);
-
-    if (! (texture->getTexture() & BImage_Flat)) {
-      if (strstr(ts, "bevel2"))
-	texture->addTexture(BImage_Bevel2);
-      else
-	texture->addTexture(BImage_Bevel1);
-    }
-
-#ifdef    INTERLACE
-    if (strstr(ts, "interlaced"))
-      texture->addTexture(BImage_Interlaced);
-#endif // INTERLACE
-  }
-
-  delete [] ts;
-}
-
-
-void BImageControl::parseColor(BColor *color, char *c) {
-  if (! color) return;
-
-  if (color->isAllocated()) {
-    unsigned long pixel = color->getPixel();
-
-    XFreeColors(basedisplay->getXDisplay(), colormap, &pixel, 1, 0);
-
-    color->setPixel(0l);
-    color->setRGB(0, 0, 0);
-    color->setAllocated(False);
-  }
-
-  if (c) {
-    unsigned char r, g, b;
-
-    color->setPixel(getColor(c, &r, &g, &b));
-    color->setRGB(r, g, b);
-    color->setAllocated(True);
-  }
 }
 
 

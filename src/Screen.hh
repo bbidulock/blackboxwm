@@ -41,6 +41,8 @@
 #include <list>
 #include <vector>
 
+#include "Color.hh"
+#include "Texture.hh"
 #include "Configmenu.hh"
 #include "Iconmenu.hh"
 #include "Netizen.hh"
@@ -50,7 +52,6 @@
 #include "Workspacemenu.hh"
 #include "blackbox.hh"
 class Slit; // forward reference
-#include "Image.hh"
 
 // forward declaration
 class BScreen;
@@ -60,31 +61,28 @@ struct WindowStyle {
     b_pic_unfocus;
   BTexture t_focus, t_unfocus, l_focus, l_unfocus, h_focus, h_unfocus,
     b_focus, b_unfocus, b_pressed, g_focus, g_unfocus;
-  GC l_text_focus_gc, l_text_unfocus_gc, b_pic_focus_gc, b_pic_unfocus_gc;
 
   XFontSet fontset;
   XFontSetExtents *fontset_extents;
   XFontStruct *font;
-  
+
   int justify;
 };
 
 struct ToolbarStyle {
   BColor l_text, w_text, c_text, b_pic;
   BTexture toolbar, label, window, button, pressed, clock;
-  GC l_text_gc, w_text_gc, c_text_gc, b_pic_gc;
 
   XFontSet fontset;
   XFontSetExtents *fontset_extents;
   XFontStruct *font;
-  
+
   int justify;
 };
 
 struct MenuStyle {
   BColor t_text, f_text, h_text, d_text;
   BTexture title, frame, hilite;
-  GC t_text_gc, f_text_gc, h_text_gc, d_text_gc, hilite_gc;
 
   XFontSet t_fontset, f_fontset;
   XFontSetExtents *t_fontset_extents, *f_fontset_extents;
@@ -171,14 +169,11 @@ private:
 protected:
   Bool parseMenuFile(FILE *file, Rootmenu *menu);
 
-  void readDatabaseTexture(char *rname, char *rclass, BTexture *texture,
-                           unsigned long default_pixel);
-  void readDatabaseColor(char *rname, char *rclass, BColor *color,
-                         unsigned long default_pixel);
-
-  void readDatabaseFontSet(char *rname, char *rclass, XFontSet *fontset);
-  XFontSet createFontSet(char *fontname);
-  void readDatabaseFont(char *rname, char *rclass, XFontStruct **font);
+  BTexture readDatabaseTexture(const string &, const string &, const string &);
+  BColor readDatabaseColor(const string &, const string &, const string &);
+  XFontSet readDatabaseFontSet(const string &, const string &);
+  XFontStruct *readDatabaseFont(const string &, const string &);
+  XFontSet createFontSet(const string &);
 
   void InitMenu(void);
   void LoadStyle(void);
