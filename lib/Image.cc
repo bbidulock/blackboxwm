@@ -27,6 +27,15 @@
 #endif // HAVE_CONFIG_H
 
 extern "C" {
+#ifdef    MITSHM
+#  include <sys/types.h>
+#  include <sys/ipc.h>
+#  include <sys/shm.h>
+#  include <unistd.h>
+#  include <X11/Xlib.h>
+#  include <X11/extensions/XShm.h>
+#endif // MITSHM
+
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
@@ -40,15 +49,9 @@ extern "C" {
 #include "Pen.hh"
 #include "Texture.hh"
 
-#ifdef    MITSHM
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <unistd.h>
-#include <X11/extensions/XShm.h>
-#endif // MITSHM
-
 // #define COLORTABLE_DEBUG
+// #define MITSHM_DEBUG
+
 
 static const unsigned int maximumWidth  = 8000;
 static const unsigned int maximumHeight = 6000;
@@ -111,7 +114,6 @@ namespace bt {
 #ifdef MITSHM
   static XShmSegmentInfo shm_info;
   static bool use_shm = false;
-  static int shm_event_base = -1;
   static bool shm_attached = false;
   static const unsigned int shm_limit = 400*300*4; // 400x300 @ 32-bit default
   static int shm_id = -1;
@@ -128,68 +130,34 @@ namespace bt {
     // query MIT-SHM extension
     if (! XShmQueryExtension(display.XDisplay())) return;
     use_shm = true;
-    shm_event_base = XShmGetEventBase(display.XDisplay());
   }
 
 
-  void ensureShm(const Display &display) {
-    if (! use_shm || (shm_id != -1 && shm_addr != (char *) -1)) return;
-
-    shm_id = shmget(IPC_PRIVATE, shm_limit, IPC_CREAT | 0644);
-    if (shm_id == -1) {
-      perror("shmget");
-
-      use_shm = false;
-      return;
-    }
-
-    shm_addr = (char *) shmat(shm_id, 0, 0);
-    if (shm_addr == (char *) -1) {
-      perror("shmat");
-
-      use_shm = false;
-
-      shmctl(shm_id, IPC_RMID, 0);
-      shm_id = -1;
-      return;
-    }
-
-    shm_info.shmid = shm_id;
-    shm_info.shmaddr = shm_addr;
-    shm_info.readOnly = True;
-
-    XErrorHandler old_handler = XSetErrorHandler( handleShmError );
-    XShmAttach(display.XDisplay(), &shm_info);
-    XSync(display.XDisplay(), False);
-    XSetErrorHandler( old_handler );
-
-    if (! use_shm) {
-      shmdt(shm_addr);
-      shm_addr = (char *) -1;
-
-      shmctl(shm_id, IPC_RMID, 0);
-      shm_id = -1;
-    }
-
-    shm_attached = true;
-  }
-
-
-  void shutdownShm(const Display &display) {
-    if (use_shm && shm_attached) {
+  void destroyShmImage(const Display &display, XImage *image) {
+    // tell the X server to detach
+    if (shm_attached) {
       XShmDetach(display.XDisplay(), &shm_info);
+
+      // wait for the server to render the image and detach the memory
+      // segment
+      XSync(display.XDisplay(), False);
+
       shm_attached = false;
     }
 
+    // detach shared memory segment
     if (shm_addr != (char *) -1)
       shmdt(shm_addr);
     shm_addr = (char *) -1;
 
+    // destroy shared memory id
     if (shm_id != -1)
       shmctl(shm_id, IPC_RMID, 0);
     shm_id = -1;
 
-    use_shm = false;
+    // destroy XImage
+    image->data = 0;
+    XDestroyImage(image);
   }
 
 
@@ -203,14 +171,62 @@ namespace bt {
                                     &shm_info, width, height);
     if (! image) return 0;
 
+    // get shared memory id
     unsigned int usage = image->bytes_per_line * image->height;
-    if (usage > shm_limit) {
+    shm_id = shmget(IPC_PRIVATE, usage, IPC_CREAT | 0644);
+    if (shm_id == -1) {
+#ifdef MITSHM_DEBUG
+      perror("bt::createShmImage: shmget");
+#endif // MITSHM_DEBUG
+
+      use_shm = false;
       XDestroyImage(image);
       return 0;
     }
 
-    ensureShm(display);
+    // attached shared memory segment
+    shm_addr = (char *) shmat(shm_id, 0, 0);
+    if (shm_addr == (char *) -1) {
+#ifdef MITSHM_DEBUG
+      perror("bt::createShmImage: shmat");
+#endif // MITSHM_DEBUG
 
+      use_shm = false;
+      destroyShmImage(display, image);
+      return 0;
+    }
+
+    // tell the X server to attach
+    shm_info.shmid = shm_id;
+    shm_info.shmaddr = shm_addr;
+    shm_info.readOnly = True;
+
+    static bool test_server_attach = true;
+    if (test_server_attach) {
+      // never checked if the X server can do shared memory...
+      XErrorHandler old_handler = XSetErrorHandler(handleShmError);
+      XShmAttach(display.XDisplay(), &shm_info);
+      XSync(display.XDisplay(), False);
+      XSetErrorHandler(old_handler);
+
+      if (! use_shm) {
+        // the X server failed to attach the shm segment
+
+#ifdef MITSHM_DEBUG
+        fprintf(stderr, "bt::createShmImage: X server failed to attach\n");
+#endif // MITSHM_DEBUG
+
+        destroyShmImage(display, image);
+        return 0;
+      }
+
+      test_server_attach = false;
+    } else {
+      // we know the X server can attach to the memory segment
+      XShmAttach(display.XDisplay(), &shm_info);
+    }
+
+    shm_attached = true;
     image->data = shm_addr;
     return image;
   }
@@ -842,39 +858,19 @@ Pixmap bt::Image::renderPixmap(const Display &display, unsigned int screen) {
   if (shm_ok) {
     // use MIT-SHM extension
     XShmPutImage(display.XDisplay(), pixmap, pen.gc(), image,
-                 0, 0, 0, 0, width, height, True);
-    XFlush(display.XDisplay());
+                 0, 0, 0, 0, width, height, False);
 
-    XEvent event;
-    int spin = 0;
-    while (! XCheckTypedEvent(display.XDisplay(),
-                              shm_event_base + ShmCompletion, &event)) {
-      if (spin++ > 50) {
-        fprintf(stderr, "timeout waiting for ShmCompletion event\n");
-        break;
-      }
-
-      struct timeval tv;
-      tv.tv_sec = 0;
-      tv.tv_usec = 5000;
-
-      int xfd = ConnectionNumber(display.XDisplay());
-      fd_set fds;
-      FD_ZERO(&fds);
-      FD_SET(xfd, &fds);
-
-      select(xfd + 1, &fds, 0, 0, &tv);
-    }
+    destroyShmImage(display, image);
   } else
 #endif // MITSHM
     {
       // normal XPutImage
       XPutImage(display.XDisplay(), pixmap, pen.gc(), image,
                 0, 0, 0, 0, width, height);
-    }
 
-  image->data = 0;
-  XDestroyImage(image);
+      image->data = 0;
+      XDestroyImage(image);
+    }
 
   return pixmap;
 }
