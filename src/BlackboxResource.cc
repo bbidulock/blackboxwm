@@ -569,9 +569,11 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
                                    "white"));
   wstyle.unfocus.foreground =
     bt::Color::namedColor(display, screen_num,
-                          res.read("window.button.unfocus.picColor",
-                                   "Window.Button.Unfocus.PicColor",
-                                   "white"));
+                          res.read("window.button.unfocus.foregroundColor",
+                                   "Window.Button.Unfocus.Foreground",
+                                   res.read("window.button.unfocus.picColor",
+                                            "Window.Button.Unfocus.PicColor",
+                                            "white")));
   wstyle.unfocus.title =
     bt::textureResource(display, screen_num, res,
                         "window.title.unfocus",
@@ -605,7 +607,8 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
                                    "black"));
   wstyle.pressed =
     bt::textureResource(display, screen_num, res,
-                        "window.button.pressed", "Window.Button.Pressed",
+                        "window.button.pressed",
+                        "Window.Button.Pressed",
                         "black");
 
   wstyle.alignment =
