@@ -74,6 +74,11 @@ extern "C" {
 #  include <sys/types.h>
 #  include <sys/wait.h>
 #endif // HAVE_SYS_WAIT_H
+
+#ifdef HAVE_SYS_TIME_H
+#  include <sys/time.h>
+#  include <time.h>
+#endif
 }
 
 #include <string>
