@@ -31,6 +31,12 @@
 * as mentioned above, allow the user to override anything in the
   style... either in the rc or in a separate "override" style
 
+* introduce the concept of actions.  actions are things that the end
+  user can do, e.g. close, move, iconify, switch workspaces,
+  etc... these can be configurable with one or more mouse/key
+  combinations... when doing this, talk with vanR about the future of
+  bbkeys...
+
 ADD: support user controlled window decoration
 
 ADD: subdirs in stylesmenu/dir will create a new submenu
