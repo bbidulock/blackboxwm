@@ -1,5 +1,7 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
-// Slit.cc for Blackbox - an X11 Window manager
+//
+// Blackbox - an X11 Window manager
+//
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
 // Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
 //
@@ -29,12 +31,144 @@ extern "C" {
 #include <X11/keysym.h>
 }
 
-#include "i18n.hh"
-#include "blackbox.hh"
-#include "Image.hh"
-#include "Screen.hh"
 #include "Slit.hh"
+#include "Image.hh"
+#include "Menu.hh"
+#include "Screen.hh"
 #include "Toolbar.hh"
+#include "i18n.hh"
+
+
+class Slitmenu : public bt::Menu {
+public:
+  Slitmenu(bt::Application &app, unsigned int screen, Slit *slit);
+
+  void refresh(void);
+
+protected:
+  void itemClicked(unsigned int id, unsigned int button);
+
+private:
+  Slit *_slit;
+};
+
+
+class SlitDirectionmenu : public bt::Menu {
+public:
+  SlitDirectionmenu(bt::Application &app, unsigned int screen, Slit *slit);
+
+  void refresh(void);
+
+protected:
+  void itemClicked(unsigned int id, unsigned int button);
+
+private:
+  Slit *_slit;
+};
+
+
+class SlitPlacementmenu : public bt::Menu {
+public:
+  SlitPlacementmenu(bt::Application &app, unsigned int screen, Slit *slit);
+
+protected:
+  void itemClicked(unsigned int id, unsigned int button);
+
+private:
+  Slit *_slit;
+};
+
+
+Slitmenu::Slitmenu(bt::Application &app, unsigned int screen, Slit *slit)
+  : bt::Menu(app, screen), _slit(slit) {
+  insertItem(bt::i18n(CommonSet, CommonDirectionTitle, "Direction"),
+             new SlitDirectionmenu(app, screen, slit), 0u);
+  insertItem(bt::i18n(CommonSet, CommonPlacementTitle, "Placement"),
+             new SlitPlacementmenu(app, screen, slit), 1u);
+  insertSeparator();
+  insertItem(bt::i18n(CommonSet, CommonAlwaysOnTop, "Always on top"), 2u);
+  insertItem(bt::i18n(CommonSet, CommonAutoHide, "Auto hide"), 3u);
+}
+
+
+void Slitmenu::refresh(void) {
+  setItemChecked(2u, _slit->isOnTop());
+  setItemChecked(3u, _slit->doAutoHide());
+}
+
+
+void Slitmenu::itemClicked(unsigned int id, unsigned int button) {
+  if (button != 1) return;
+
+  switch (id) {
+  case 2u: // always on top
+    _slit->toggleOnTop();
+    break;
+
+  case 3u: // auto hide
+    _slit->toggleAutoHide();
+    break;
+
+  default:
+    break;
+  } // switch
+}
+
+
+SlitDirectionmenu::SlitDirectionmenu(bt::Application &app, unsigned int screen,
+                                     Slit *slit)
+  : bt::Menu(app, screen), _slit(slit) {
+  insertItem(bt::i18n(CommonSet, CommonDirectionHoriz, "Horizontal"),
+             Slit::Horizontal);
+  insertItem(bt::i18n(CommonSet, CommonDirectionVert, "Vertical"),
+             Slit::Vertical);
+}
+
+
+void SlitDirectionmenu::refresh(void) {
+  setItemChecked(Slit::Horizontal, _slit->direction() == Slit::Horizontal);
+  setItemChecked(Slit::Vertical, _slit->direction() == Slit::Vertical);
+}
+
+
+void SlitDirectionmenu::itemClicked(unsigned int id, unsigned int button) {
+  if (button != 1) return;
+
+  _slit->setDirection((Slit::Direction) id);
+}
+
+
+SlitPlacementmenu::SlitPlacementmenu(bt::Application &app, unsigned int screen,
+                                     Slit *slit)
+  : bt::Menu(app, screen), _slit(slit) {
+  insertItem(bt::i18n(CommonSet, CommonPlacementTopLeft, "Top Left"),
+             Slit::TopLeft);
+  insertItem(bt::i18n(CommonSet, CommonPlacementCenterLeft, "Center Left"),
+             Slit::CenterLeft);
+  insertItem(bt::i18n(CommonSet, CommonPlacementBottomLeft, "Bottom Left"),
+             Slit::BottomLeft);
+  insertSeparator();
+  insertItem(bt::i18n(CommonSet, CommonPlacementTopCenter, "Top Center"),
+             Slit::TopCenter);
+  insertItem(bt::i18n(CommonSet, CommonPlacementBottomCenter, "Bottom Center"),
+             Slit::BottomCenter);
+  insertSeparator();
+  insertItem(bt::i18n(CommonSet, CommonPlacementTopRight, "Top Right"),
+             Slit::TopRight);
+  insertItem(bt::i18n(CommonSet, CommonPlacementCenterRight, "Center Right"),
+             Slit::CenterRight);
+  insertItem(bt::i18n(CommonSet, CommonPlacementBottomRight, "Bottom Right"),
+             Slit::BottomRight);
+}
+
+
+void SlitPlacementmenu::itemClicked(unsigned int id, unsigned int button) {
+  if (button != 1) return;
+
+  _slit->setPlacement((Slit::Placement) id);
+}
+
+
 
 
 Slit::Slit(BScreen *scr) {
@@ -50,7 +184,8 @@ Slit::Slit(BScreen *scr) {
   timer = new bt::Timer(blackbox, this);
   timer->setTimeout(blackbox->getAutoRaiseDelay());
 
-  slitmenu = new Slitmenu(this);
+  slitmenu =
+    new Slitmenu(*blackbox, screen->getScreenInfo().getScreenNumber(), this);
 
   XSetWindowAttributes attrib;
   unsigned long create_mask = CWBackPixmap | CWBackPixel | CWBorderPixel |
@@ -525,27 +660,7 @@ void Slit::buttonPressEvent(const XButtonEvent * const e) {
   } else if (e->button == Button2 && (! on_top)) {
     XLowerWindow(display, frame.window);
   } else if (e->button == Button3) {
-    if (! slitmenu->isVisible()) {
-      int x, y;
-
-      x = e->x_root - (slitmenu->getWidth() / 2);
-      y = e->y_root - (slitmenu->getHeight() / 2);
-
-      if (x < 0)
-        x = 0;
-      else if (x + slitmenu->getWidth() > screen->getWidth())
-        x = screen->getWidth() - slitmenu->getWidth();
-
-      if (y < 0)
-        y = 0;
-      else if (y + slitmenu->getHeight() > screen->getHeight())
-        y = screen->getHeight() - slitmenu->getHeight();
-
-      slitmenu->move(x, y);
-      slitmenu->show();
-    } else {
-      slitmenu->hide();
-    }
+    slitmenu->popup(e->x_root, e->y_root);
   }
 }
 
@@ -615,8 +730,15 @@ void Slit::timeout(void) {
 }
 
 
+void Slit::toggleOnTop(void) {
+  on_top = (! on_top);
+  if (on_top) screen->raiseWindows((WindowStack *) 0);
+}
+
+
+
 void Slit::toggleAutoHide(void) {
-  do_auto_hide = (do_auto_hide) ?  False : True;
+  do_auto_hide = (! do_auto_hide);
 
   updateStrut();
 
@@ -639,156 +761,23 @@ void Slit::reparentNotifyEvent( const XReparentEvent * const event) {
 }
 
 
-Slitmenu::Slitmenu(Slit *sl) : Basemenu(sl->screen) {
-  slit = sl;
-
-  setLabel(bt::i18n(SlitSet, SlitSlitTitle, "Slit"));
-  setInternalMenu();
-
-  directionmenu = new Directionmenu(this);
-  placementmenu = new Placementmenu(this);
-
-  insert(bt::i18n(CommonSet, CommonDirectionTitle, "Direction"),
-         directionmenu);
-  insert(bt::i18n(CommonSet, CommonPlacementTitle, "Placement"),
-         placementmenu);
-  insert(bt::i18n(CommonSet, CommonAlwaysOnTop, "Always on top"), 1);
-  insert(bt::i18n(CommonSet, CommonAutoHide, "Auto hide"), 2);
-
-  update();
-
-  if (slit->isOnTop()) setItemSelected(2, True);
-  if (slit->doAutoHide()) setItemSelected(3, True);
+Slit::Direction Slit::direction(void) const {
+  return (Slit::Direction) screen->getSlitDirection();
 }
 
 
-Slitmenu::~Slitmenu(void) {
-  delete directionmenu;
-  delete placementmenu;
+void Slit::setDirection(Slit::Direction new_direction) {
+  screen->saveSlitDirection(new_direction);
+  reconfigure();
 }
 
 
-void Slitmenu::itemSelected(int button, unsigned int index) {
-  if (button != 1)
-    return;
-
-  BasemenuItem *item = find(index);
-  if (! item) return;
-
-  switch (item->function()) {
-  case 1: { // always on top
-    slit->on_top = ((slit->isOnTop()) ?  False : True);
-    setItemSelected(2, slit->on_top);
-
-    if (slit->isOnTop()) slit->screen->raiseWindows((WindowStack *) 0);
-    break;
-  }
-
-  case 2: { // auto hide
-    slit->toggleAutoHide();
-    setItemSelected(3, slit->do_auto_hide);
-
-    break;
-  }
-  } // switch
+Slit::Placement Slit::placement(void) const {
+  return (Slit::Placement) screen->getSlitPlacement();
 }
 
 
-void Slitmenu::internal_hide(void) {
-  Basemenu::internal_hide();
-  if (slit->doAutoHide())
-    slit->timeout();
+void Slit::setPlacement(Slit::Placement new_placement) {
+  screen->saveSlitPlacement(new_placement);
+  reconfigure();
 }
-
-
-void Slitmenu::reconfigure(void) {
-  directionmenu->reconfigure();
-  placementmenu->reconfigure();
-
-  Basemenu::reconfigure();
-}
-
-
-Slitmenu::Directionmenu::Directionmenu(Slitmenu *sm)
-  : Basemenu(sm->slit->screen) {
-
-  setLabel(bt::i18n(SlitSet, SlitSlitDirection, "Slit Direction"));
-  setInternalMenu();
-
-  insert(bt::i18n(CommonSet, CommonDirectionHoriz, "Horizontal"),
-         Slit::Horizontal);
-  insert(bt::i18n(CommonSet, CommonDirectionVert, "Vertical"),
-         Slit::Vertical);
-
-  update();
-
-  if (getScreen()->getSlitDirection() == Slit::Horizontal)
-    setItemSelected(0, True);
-  else
-    setItemSelected(1, True);
-}
-
-
-void Slitmenu::Directionmenu::itemSelected(int button, unsigned int index) {
-  if (button != 1)
-    return;
-
-  BasemenuItem *item = find(index);
-  if (! item) return;
-
-  getScreen()->saveSlitDirection(item->function());
-
-  if (item->function() == Slit::Horizontal) {
-    setItemSelected(0, True);
-    setItemSelected(1, False);
-  } else {
-    setItemSelected(0, False);
-    setItemSelected(1, True);
-  }
-
-  hide();
-  getScreen()->getSlit()->reconfigure();
-}
-
-
-Slitmenu::Placementmenu::Placementmenu(Slitmenu *sm)
-  : Basemenu(sm->slit->screen) {
-
-  setLabel(bt::i18n(SlitSet, SlitSlitPlacement, "Slit Placement"));
-  setMinimumSublevels(3);
-  setInternalMenu();
-
-  insert(bt::i18n(CommonSet, CommonPlacementTopLeft, "Top Left"),
-         Slit::TopLeft);
-  insert(bt::i18n(CommonSet, CommonPlacementCenterLeft, "Center Left"),
-         Slit::CenterLeft);
-  insert(bt::i18n(CommonSet, CommonPlacementBottomLeft, "Bottom Left"),
-         Slit::BottomLeft);
-  insert(bt::i18n(CommonSet, CommonPlacementTopCenter, "Top Center"),
-         Slit::TopCenter);
-  insert("");
-  insert(bt::i18n(CommonSet, CommonPlacementBottomCenter, "Bottom Center"),
-         Slit::BottomCenter);
-  insert(bt::i18n(CommonSet, CommonPlacementTopRight, "Top Right"),
-         Slit::TopRight);
-  insert(bt::i18n(CommonSet, CommonPlacementCenterRight, "Center Right"),
-         Slit::CenterRight);
-  insert(bt::i18n(CommonSet, CommonPlacementBottomRight, "Bottom Right"),
-         Slit::BottomRight);
-
-  update();
-}
-
-
-void Slitmenu::Placementmenu::itemSelected(int button, unsigned int index) {
-  if (button != 1)
-    return;
-
-  BasemenuItem *item = find(index);
-  if (! (item && item->function())) return;
-
-  getScreen()->saveSlitPlacement(item->function());
-  hide();
-  getScreen()->getSlit()->reconfigure();
-}
-

@@ -1021,12 +1021,12 @@ void BScreen::unmanageWindow(BlackboxWindow *w, bool remap) {
 
 void
 BScreen::raiseWindows(const bt::Netwm::WindowList* const workspace_stack) {
-  // the 11 represents the number of blackbox windows such as menus
+  // the 8 represents the number of blackbox windows such as menus
   const unsigned int workspace_stack_size =
     (workspace_stack) ? workspace_stack->size() : 0;
   std::vector<Window> session_stack(workspace_stack_size +
                                     workspacesList.size() +
-                                    rootmenuList.size() + 11);
+                                    rootmenuList.size() + 8);
   std::back_insert_iterator<std::vector<Window> > it(session_stack);
 
   XRaiseWindow(blackbox->getXDisplay(), iconmenu->getWindowID());
@@ -1042,10 +1042,6 @@ BScreen::raiseWindows(const bt::Netwm::WindowList* const workspace_stack) {
   *(it++) = configmenu->getFocusmenu()->getWindowID();
   *(it++) = configmenu->getPlacementmenu()->getWindowID();
   *(it++) = configmenu->getWindowID();
-
-  *(it++) = slit->getMenu()->getDirectionmenu()->getWindowID();
-  *(it++) = slit->getMenu()->getPlacementmenu()->getWindowID();
-  *(it++) = slit->getMenu()->getWindowID();
 
   RootmenuList::iterator rit = rootmenuList.begin();
   for (; rit != rootmenuList.end(); ++rit)

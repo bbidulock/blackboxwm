@@ -93,8 +93,6 @@ public:
   Toolbar(BScreen *scrn);
   virtual ~Toolbar(void);
 
-  inline Toolbarmenu *getMenu(void) { return toolbarmenu; }
-
   inline bool isEditing(void) const { return editing; }
   inline bool isOnTop(void) const { return on_top; }
   inline bool isHidden(void) const { return hidden; }

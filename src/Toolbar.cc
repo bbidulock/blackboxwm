@@ -71,7 +71,7 @@ public:
   void refresh(void);
 
 protected:
-  virtual void itemClicked(unsigned int id, unsigned int button);
+  void itemClicked(unsigned int id, unsigned int button);
 
 private:
   Toolbar *_toolbar;
@@ -86,7 +86,7 @@ public:
                        Toolbar *toolbar);
 
 protected:
-  virtual void itemClicked(unsigned int id, unsigned int button);
+  void itemClicked(unsigned int id, unsigned int button);
 
 private:
   Toolbar *_toolbar;

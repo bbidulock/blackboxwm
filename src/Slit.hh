@@ -32,63 +32,9 @@ extern "C" {
 #include <list>
 
 #include "Screen.hh"
-#include "Basemenu.hh"
 
 // forward declaration
-class Slit;
 class Slitmenu;
-
-class Slitmenu : public Basemenu {
-private:
-  class Directionmenu : public Basemenu {
-  private:
-    Directionmenu(const Directionmenu&);
-    Directionmenu& operator=(const Directionmenu&);
-
-  protected:
-    virtual void itemSelected(int button, unsigned int index);
-
-  public:
-    Directionmenu(Slitmenu *sm);
-  };
-
-  class Placementmenu : public Basemenu {
-  private:
-    Placementmenu(const Placementmenu&);
-    Placementmenu& operator=(const Placementmenu&);
-
-  protected:
-    virtual void itemSelected(int buton, unsigned int index);
-
-  public:
-    Placementmenu(Slitmenu *sm);
-  };
-
-  Directionmenu *directionmenu;
-  Placementmenu *placementmenu;
-
-  Slit *slit;
-
-  friend class Directionmenu;
-  friend class Placementmenu;
-  friend class Slit;
-
-  Slitmenu(const Slitmenu&);
-  Slitmenu& operator=(const Slitmenu&);
-
-protected:
-  virtual void itemSelected(int button, unsigned int index);
-  virtual void internal_hide(void);
-
-public:
-  Slitmenu(Slit *sl);
-  virtual ~Slitmenu(void);
-
-  inline Basemenu *getDirectionmenu(void) { return directionmenu; }
-  inline Basemenu *getPlacementmenu(void) { return placementmenu; }
-
-  void reconfigure(void);
-};
 
 
 class Slit : public bt::TimeoutHandler, public bt::EventHandler {
@@ -124,8 +70,6 @@ private:
   void updateStrut(void);
 
   friend class Slitmenu;
-  friend class Slitmenu::Directionmenu;
-  friend class Slitmenu::Placementmenu;
 
   Slit(const Slit&);
   Slit& operator=(const Slit&);
@@ -137,8 +81,6 @@ public:
   inline bool isOnTop(void) const { return on_top; }
   inline bool isHidden(void) const { return hidden; }
   inline bool doAutoHide(void) const { return do_auto_hide; }
-
-  inline Slitmenu *getMenu(void) { return slitmenu; }
 
   inline Window getWindowID(void) const { return frame.window; }
 
@@ -167,6 +109,7 @@ public:
   void updateSlit(void);
   void reposition(void);
   void shutdown(void);
+  void toggleOnTop(void);
   void toggleAutoHide(void);
 
   // EventHandler interface
@@ -179,9 +122,16 @@ public:
 
   virtual void timeout(void);
 
-  enum { Vertical = 1, Horizontal };
-  enum { TopLeft = 1, CenterLeft, BottomLeft, TopCenter, BottomCenter,
-         TopRight, CenterRight, BottomRight };
+  enum Direction { Vertical = 1, Horizontal };
+  enum Placement { TopLeft = 1, CenterLeft, BottomLeft,
+                   TopCenter, BottomCenter,
+                   TopRight, CenterRight, BottomRight };
+
+  Direction direction(void) const;
+  void setDirection(Direction new_direction);
+
+  Placement placement(void) const;
+  void setPlacement(Placement new_placement);
 };
 
 
