@@ -25,12 +25,11 @@
 #ifndef   __bsetroot2_hh
 #define   __bsetroot2_hh
 
-#include "Display.hh"
-#include "Image.hh"
-#include "Util.hh"
+#include <Display.hh>
+#include <Image.hh>
+#include <Util.hh>
 
 #include <string>
-
 
 class bsetroot: public bt::NoCopy {
 public:

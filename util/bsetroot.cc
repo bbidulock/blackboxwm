@@ -22,34 +22,21 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifdef    HAVE_CONFIG_H
-#  include "../config.h"
-#endif // HAVE_CONFIG_H
-
 #include "bsetroot.hh"
-#include "Pen.hh"
-#include "Texture.hh"
-#include "i18n.hh"
 
-extern "C" {
-#include <X11/Xatom.h>
-#include <stdio.h>
-}
+#include <Pen.hh>
+#include <Texture.hh>
 
 #include <cctype>
 
-// always include this just for the #defines
-// this keeps the calls to i18n->getMessage clean, otherwise we have to
-// add ifdefs to every call to getMessage
-#include "../nls/blackbox-nls.hh"
+#include <X11/Xatom.h>
+#include <stdio.h>
 
 
 // ignore all X errors
 static int x11_error(::Display *, XErrorEvent *)
 { return 0; }
 
-
-bt::I18n bt::i18n;
 
 bsetroot::bsetroot(int argc, char **argv, char *dpy_name,
                    bool multi_head): display(dpy_name, multi_head) {
@@ -105,8 +92,8 @@ bsetroot::bsetroot(int argc, char **argv, char *dpy_name,
   }
 
   if ((mod + sol + grd) != True) {
-    fprintf(stderr, bt::i18n(bsetrootSet, bsetrootMustSpecify,
-           "bsetroot: error: must specify one of: -solid, -mod, -gradient\n"));
+    fprintf(stderr,
+            "bsetroot: error: must specify one of: -solid, -mod, -gradient\n");
 
     usage(2);
   }
@@ -347,16 +334,15 @@ void bsetroot::usage(int exit_code) {
           "Copyright (c) 2001 - 2003 Sean 'Shaleh' Perry\n"
           "Copyright (c) 1997 - 2000, 2002 - 2003 Bradley T Hughes\n");
   fprintf(stderr,
-          bt::i18n(bsetrootSet, bsetrootUsage,
-               "  -display <string>        use display connection\n"
-               "  -mod <x> <y>             modula pattern\n"
-               "  -foreground, -fg <color> modula foreground color\n"
-               "  -background, -bg <color> modula background color\n\n"
-               "  -gradient <texture>      gradient texture\n"
-               "  -from <color>            gradient start color\n"
-               "  -to <color>              gradient end color\n\n"
-               "  -solid <color>           solid color\n\n"
-               "  -help                    print this help text and exit\n"));
+          "  -display <string>        use display connection\n"
+          "  -mod <x> <y>             modula pattern\n"
+          "  -foreground, -fg <color> modula foreground color\n"
+          "  -background, -bg <color> modula background color\n\n"
+          "  -gradient <texture>      gradient texture\n"
+          "  -from <color>            gradient start color\n"
+          "  -to <color>              gradient end color\n\n"
+          "  -solid <color>           solid color\n\n"
+          "  -help                    print this help text and exit\n");
   exit(exit_code);
 }
 
@@ -364,15 +350,12 @@ int main(int argc, char **argv) {
   char *display_name = 0;
   bool multi_head = False;
 
-  bt::i18n.openCatalog("blackbox.cat");
-
   for (int i = 1; i < argc; i++) {
     if (! strcmp(argv[i], "-display")) {
       // check for -display option
 
       if ((++i) >= argc) {
-        fprintf(stderr, bt::i18n(mainSet, mainDISPLAYRequiresArg,
-		             "error: '-display' requires an argument\n"));
+        fprintf(stderr, "error: '-display' requires an argument\n");
 
         ::exit(1);
       }
