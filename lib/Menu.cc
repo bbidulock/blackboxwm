@@ -27,6 +27,7 @@ extern "C" {
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 #include <stdio.h>
+#include <assert.h>
 }
 
 #include "BaseDisplay.hh"
