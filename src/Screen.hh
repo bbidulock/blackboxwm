@@ -261,11 +261,11 @@ public:
   inline unsigned int getBorderWidth(void) const
   { return resource.border_width; }
 
-  inline unsigned int getCurrentWorkspaceID(void)
+  inline unsigned int getCurrentWorkspaceID(void) const
   { return current_workspace->getID(); }
-  inline unsigned int getWorkspaceCount(void)
+  inline unsigned int getWorkspaceCount(void) const
   { return workspacesList.size(); }
-  inline unsigned int getIconCount(void) { return iconList.size(); }
+  inline unsigned int getIconCount(void) const { return iconList.size(); }
   inline unsigned int getNumberOfWorkspaces(void) const
   { return resource.workspaces; }
   inline int getToolbarPlacement(void) const
