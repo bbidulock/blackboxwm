@@ -78,7 +78,7 @@ regex_cmd = @regex_cmd@
 
 styledir = $(pkgdatadir)/styles
 MAINTAINERCLEANFILES = Makefile.in
-style_DATA = Artwiz Flux Minimal Nyz Operation Outcomes Rampage Rancor Results Shade Spiff TDF Twice
+style_DATA = Artwiz Cthulhain Flux Minimal Nyz Operation Outcomes Rampage Rancor Results Shade Spiff TDF Twice
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../../config.h
 CONFIG_CLEAN_FILES = 
@@ -89,7 +89,7 @@ DIST_COMMON =  Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
@@ -155,7 +155,7 @@ install-data: install-data-am
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-am
-uninstall-am: uninstall-styleDATA
+uninstall-am: uninstall-styleDATA uninstall-local
 uninstall: uninstall-am
 all-am: Makefile $(DATA)
 all-redirect: all-am
@@ -196,11 +196,13 @@ maintainer-clean: maintainer-clean-am
 .PHONY: uninstall-styleDATA install-styleDATA tags distdir info-am info \
 dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
 install-exec install-data-am install-data install-am install \
-uninstall-am uninstall all-redirect all-am all installdirs \
-mostlyclean-generic distclean-generic clean-generic \
+uninstall-local uninstall-am uninstall all-redirect all-am all \
+installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
+uninstall-local:
+	rmdir $(styledir)
 distclean-local:
 	rm -f *\~
 

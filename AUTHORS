@@ -12,7 +12,7 @@ Contributors:
         Frank Belew <frb@umr.edu>
           - dgradient code
         Scott Garner <mrfab@arn.net>
-          - suggestions, bug reports and beta testing (*the*  beta moron)
+          - suggestions, bug reports and beta testing (*the* beta moron)
         David Doan <ddoan@usa.net>
          - testing of 8bpp code
         Mark Seward <illuzion@paradise.net.nz>
@@ -20,7 +20,7 @@ Contributors:
         Keith Bolland <prime@strip.net.nz>
          - beta testing, bug reports and suggestions
         James Spooner <spoons@xtra.co.nz>
-         - beta testing, bug reports ( moron)
+         - beta testing, bug reports
         Fred Knieper <derf@tamu.edu>
          - beta testing, bug reports
         Steve Udell <hettar@teleport.com>
@@ -33,6 +33,8 @@ Contributors:
         - co-author/hacker of Image.cc (local LUG buddy)
         John Kennis <jkennis@chello.nl>
         - author of bbtools/beta testing/bug reports
+	Wilbert Berendsen <wbsoft@xs4all.nl>
+	- author of blackbox/bsetroot manpages
 
 I would also like to thank the creators of WindowMaker.  Reading the existing
 code has helped me immensely, and the BImage class follows the RImage data type

@@ -9,7 +9,7 @@ $ #ShuttingDown
 $ #Aborting
 # Avbryder... dumper kernen\n
 $ #XConnectFail
-# BaseDisplay::BaseDisplay: tilslutning til X server mislykkedes.\n"
+# BaseDisplay::BaseDisplay: tilslutning til X server mislykkedes.\n
 $ #CloseOnExecFail
 # BaseDisplay::BaseDisplay: kunne ikke markere skærmtilslutning som luk-ved-afslut\n
 $ #BadWindowRemove

@@ -76,6 +76,7 @@ VERSION = @VERSION@
 gencat_cmd = @gencat_cmd@
 regex_cmd = @regex_cmd@
 
+NLSTEST = @NLS@
 SUBDIRS = C da_DK es_ES et_EE fr_FR pt_BR ru_RU sv_SE tr_TR
 MAINTAINERCLEANFILES = Makefile.in blackbox-nls.hh
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -86,7 +87,7 @@ DIST_COMMON =  Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
@@ -229,7 +230,7 @@ install-data: install-data-recursive
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-recursive
-uninstall-am:
+uninstall-am: uninstall-local
 uninstall: uninstall-recursive
 all-am: Makefile
 all-redirect: all-recursive
@@ -277,11 +278,16 @@ maintainer-clean-recursive tags tags-recursive mostlyclean-tags \
 distclean-tags clean-tags maintainer-clean-tags distdir info-am info \
 dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
 install-exec install-data-am install-data install-am install \
-uninstall-am uninstall all-redirect all-am all installdirs-am \
-installdirs mostlyclean-generic distclean-generic clean-generic \
-maintainer-clean-generic clean mostlyclean distclean maintainer-clean
+uninstall-local uninstall-am uninstall all-redirect all-am all \
+installdirs-am installdirs mostlyclean-generic distclean-generic \
+clean-generic maintainer-clean-generic clean mostlyclean distclean \
+maintainer-clean
 
 
+uninstall-local:
+	@if test x$(NLSTEST) = "x-DNLS"; then \
+		rmdir $(DESTDIR)$(pkgdatadir)/nls; \
+	fi
 distclean-local:
 	rm -f *\~
 

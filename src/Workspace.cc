@@ -148,17 +148,23 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
 
 
 void Workspace::showAll(void) {
-  LinkedListIterator<BlackboxWindow> it(windowList);
+  LinkedListIterator<BlackboxWindow> it(stackingList);
   for (; it.current(); it++)
     it.current()->deiconify(False, False);
 }
 
 
 void Workspace::hideAll(void) {
-  LinkedListIterator<BlackboxWindow> it(windowList);
+  LinkedList<BlackboxWindow> lst;
+
+  LinkedListIterator<BlackboxWindow> it(stackingList);
   for (; it.current(); it++)
-    if (! it.current()->isStuck())
-      it.current()->withdraw();
+    lst.insert(it.current(), 0);
+
+  LinkedListIterator<BlackboxWindow> it2(&lst);
+  for (; it2.current(); it2++)
+    if (! it2.current()->isStuck())
+      it2.current()->withdraw();
 }
 
 
@@ -183,13 +189,12 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
     i++;
   }
 
-  Window *nstack = new Window[i];
+  Window *nstack = new Window[i], *curr = nstack;
   Workspace *wkspc;
 
-  i = 0;
   win = bottom;
-  while (win->hasTransient() && win->getTransient()) {
-    *(nstack + (i++)) = win->getFrameWindow();
+  while (True) {
+    *(curr++) = win->getFrameWindow();
     screen->updateNetizenWindowRaise(win->getClientWindow());
 
     if (! win->isIconic()) {
@@ -198,16 +203,10 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
       wkspc->stackingList->insert(win, 0);
     }
 
+    if (! win->hasTransient() || ! win->getTransient())
+      break;
+
     win = win->getTransient();
-  }
-
-  *(nstack + (i++)) = win->getFrameWindow();
-  screen->updateNetizenWindowRaise(win->getClientWindow());
-
-  if (! win->isIconic()) {
-    wkspc = screen->getWorkspace(win->getWorkspaceNumber());
-    wkspc->stackingList->remove(win);
-    wkspc->stackingList->insert(win, 0);
   }
 
   screen->raiseWindows(nstack, i);
@@ -230,12 +229,11 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
     i++;
   }
 
-  Window *nstack = new Window[i];
+  Window *nstack = new Window[i], *curr = nstack;
   Workspace *wkspc;
 
-  i = 0;
-  while (win->getTransientFor()) {
-    *(nstack + (i++)) = win->getFrameWindow();
+  while (True) {
+    *(curr++) = win->getFrameWindow();
     screen->updateNetizenWindowLower(win->getClientWindow());
 
     if (! win->isIconic()) {
@@ -244,16 +242,10 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
       wkspc->stackingList->insert(win);
     }
 
+    if (! win->getTransientFor())
+      break;
+
     win = win->getTransientFor();
-  }
-
-  *(nstack + (i++)) = win->getFrameWindow();
-  screen->updateNetizenWindowLower(win->getClientWindow());
-
-  if (! win->isIconic()) {
-    wkspc = screen->getWorkspace(win->getWorkspaceNumber());
-    wkspc->stackingList->remove(win);
-    wkspc->stackingList->insert(win);
   }
 
   screen->getBlackbox()->grab();
@@ -508,9 +500,9 @@ void Workspace::placeWindow(BlackboxWindow *win) {
   }
 
   if (place_x + win_w > (signed) screen->getWidth())
-    place_x = (screen->getWidth() - win_w) / 2;
+    place_x = (((signed) screen->getWidth()) - win_w) / 2;
   if (place_y + win_h > (signed) screen->getHeight())
-    place_y = (screen->getHeight() - win_h) / 2;
+    place_y = (((signed) screen->getHeight()) - win_h) / 2;
 
   win->configure(place_x, place_y, win->getWidth(), win->getHeight());
 }

@@ -255,9 +255,9 @@ BScreen::BScreen(Blackbox *bb, int scrn) : ScreenInfo(bb, scrn) {
   unsigned long gc_value_mask = GCForeground;
   if (! i18n->multibyte()) gc_value_mask |= GCFont;
 
-  gcv.foreground = WhitePixel(getBaseDisplay()->getXDisplay(),
-			      getScreenNumber());
-  gcv.function = GXinvert;
+  gcv.foreground = WhitePixel(getBaseDisplay()->getXDisplay(), getScreenNumber())
+                 ^ BlackPixel(getBaseDisplay()->getXDisplay(), getScreenNumber());
+  gcv.function = GXxor;
   gcv.subwindow_mode = IncludeInferiors;
   opGC = XCreateGC(getBaseDisplay()->getXDisplay(), getRootWindow(),
                    GCForeground | GCFunction | GCSubwindowMode, &gcv);
@@ -363,8 +363,9 @@ BScreen::BScreen(Blackbox *bb, int scrn) : ScreenInfo(bb, scrn) {
   geom_h += (resource.bevel_width * 2);
 
   XSetWindowAttributes attrib;
-  unsigned long mask = CWBorderPixel | CWSaveUnder;
+  unsigned long mask = CWBorderPixel | CWColormap | CWSaveUnder;
   attrib.border_pixel = getBorderColor()->getPixel();
+  attrib.colormap = getColormap();
   attrib.save_under = True;
 
   geom_window =
@@ -654,7 +655,7 @@ void BScreen::readDatabaseTexture(char *rname, char *rclass,
     else xcol.blue *= 0xff;
 
     if (! XAllocColor(getBaseDisplay()->getXDisplay(),
-		      image_control->getColormap(), &xcol))
+		      getColormap(), &xcol))
       xcol.pixel = 0;
 
     texture->getHiColor()->setPixel(xcol.pixel);
@@ -670,7 +671,7 @@ void BScreen::readDatabaseTexture(char *rname, char *rclass,
 		      (texture->getColor()->getBlue() >> 1)) * 0xff;
 
     if (! XAllocColor(getBaseDisplay()->getXDisplay(),
-		      image_control->getColormap(), &xcol))
+		      getColormap(), &xcol))
       xcol.pixel = 0;
 
     texture->getLoColor()->setPixel(xcol.pixel);

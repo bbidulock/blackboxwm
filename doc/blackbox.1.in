@@ -13,6 +13,8 @@
 .\" Read the Man-Page-Mini-HOWTO and the LDP manpage ``man 7 man''
 .\" There's all I needed to know about these macros.
 .\"
+.\" Updated for bb 0.61 at Sat Sep  9 06:56:04 CEST 2000
+.\"
 .\" ..define sort of <blockquote><pre> macro
 .de EX
 .ne 5
@@ -27,7 +29,7 @@
 .if n .sp 1
 .if t .sp .5
 ..
-.TH blackbox 1 "June 16th, 2000" "0.60.3"
+.TH blackbox 1 "October 4th, 2000" "0.61.1"
 .SH NAME
 blackbox \- a window manager for X11
 .SH SYNOPSIS
@@ -121,17 +123,22 @@ A middle click (button 2) pops up the workspace menu.
 You can add or remove a workspace, view
 applications running on all workspace, inspect your icons, and jump directly to
 any workspace or application.
+.PP
+Left clicking (button 1) on an application in the Workspaces menu will bring
+you to that workspace and raise/focus that application;
+middle clicking (button 2) will warp the application to the current workspace.
 .SS Toolbar:
 The toolbar consists of three fields: a workspace name, window name of the
 window that has currently focus, and a clock.
-A left click (button 1) on the toolbar will bring it to the foreground, a
+A left click on the toolbar will bring it to the foreground, a
 middle click will hide it behind other windows (if AlwaysOnTop is not set), and
 the right button brings up a little menu.
 .PP
 Using this menu you can enter a name for the current workspace (when finished,
 press Enter).
-Also you can choose the toolbar's position, and whether or not it
-should be always on top (i.e. it cannot be obscured by other windows).
+Also you can choose the toolbar's position, whether or not it
+should be always on top (i.e. it cannot be obscured by other windows),
+and whether it should hide itself when the mouse moves away.
 .PP
 Note: In Blackbox versions below 0.60.0, a right click on the toolbar
 immediately enters workspace name edit mode.
@@ -145,7 +152,9 @@ Right clicking on border or titlebar pops up the window menu,
 containing these commands:
 .TP
 .B Send To...
-Send window to another workspace
+Send window to another workspace.
+When you select the workspace with the middle button, Blackbox will
+send you along with the application to the selected workspace
 .TP
 .B Shade
 Shade the window (display titlebar only)
@@ -195,6 +204,7 @@ When you want to drag a window, but cannot see either the bottom handle or its
 titlebar, you can press Alt + button 1 anywhere in the window and then
 drag it around.
 You can also use Alt + button 1 to raise a partially visible window.
+Finally, Alt + button 2 lowers a window, and Alt + button 3 resizes the window.
 .SH MENU FILE
 A default menu file is installed in
 .IR @pkgdatadir@/menu .
@@ -351,7 +361,7 @@ Here is a short example of a menu file:
   [submenu] (Window Manager)
     [exec] (Edit Menus) {nedit .blackbox/Menu}
     [submenu] (Style) {Which Style?}
-      [stylesdir] (~/.blackbox/Styles)
+      [stylesdir] (~/.blackbox/styles)
       [stylesmenu] (Blackbox Styles) {@pkgdatadir@/styles}
     [end]
     [config] (Config Options)
@@ -379,11 +389,11 @@ menu commands in your menu file to be able to select and change between styles
 on the fly.
 .PP
 But you can also create a directory named
-.I ~/.blackbox/Styles
+.I ~/.blackbox/styles
 in your homedirectory and put your own style files here.
 Of course you may choose any name for this directory, but many downloadable
 themes will rely on the name
-.I Styles
+.I styles
 (following the bb.themes.org naming scheme).
 .PP
 To understand how the style mechanism works, you should have a little knowledge
@@ -503,6 +513,9 @@ toolbar.button.picColor:	Color
 toolbar.button.pressed:	Texture \fI(e.g. Sunken)\fR or \fIParentRelative\fR
 toolbar.button.pressed.color:	Color
 toolbar.button.pressed.colorTo:	Color
+
+! Color of pressed button arrows
+toolbar.button.pressed.picColor:	Color
 
 ! The toolbar workspace label
 toolbar.label:	Texture or \fIParentRelative\fR
@@ -624,8 +637,12 @@ borderWidth:	a number of pixels, e.g. \fI1\fR
 borderColor:	Color
 
 bevelWidth:	a number of pixels > 0
-frameWidth:	a number of pixels > 0
 handleWidth:	a number of pixels > 0
+
+! Width of the window frame (from version 0.61 on)
+! When not specified, frameWidth defaults to the value of bevelWidth
+frameWidth:	a number of pixels >= 0
+
 
 ! This command is executed whenever this style is selected.
 ! Typically it sets the root window to a nice picture.
@@ -656,8 +673,9 @@ When applications are run in the slit they have no window borders of their own;
 instead they are framed in the slit, and they are always visible in the current
 workspace.
 You can click button 3 on the edge of the slit window to get a menu to
-determine its position and whether its contained applications should be grouped
-horizontally or vertically.
+determine its position, whether its contained applications should be grouped
+horizontally or vertically and whether the slit should hide itself when the
+mouse moves away.
 .PP
 Most dockable applications use the
 .B -w
@@ -707,6 +725,14 @@ Adjust the delay (in ms) between mouse clicks for Blackbox to consider a double 
 Default value is:
 .IR 250 .
 .TP
+.B session.screen0.edgeSnapThreshold:
+When moving a window across your screen, Blackbox is able to have it `snap' to
+the edges of the screen for easy placement.
+This variable tells Blackbox the distance (in pixels) at which the window will
+jump to the egde.
+Default value is:
+.IR 0 .
+.TP
 .B session.cacheMax:
 This tells Blackbox how much memory (in Kb) it may use to store cached pixmaps on
 the X server.
@@ -721,8 +747,9 @@ Default value is
 .IR 5 .
 .TP
 .B session.colorsPerChannel:
-.\" This can be some more worked out, e.g. why you should change it. (wbsoft)
-Tells Blackbox how many colors to use per channel.
+This tells Blackbox how many colors to take from the X server on pseudocolor
+displays.  A channel would be red, green, or blue.
+Blackbox will allocate this variable ^ 3 colors and make them always available.
 Value must be between 2 and 6.
 When you run Blackbox on an 8-bit display, you must set this resource to 4.
 Default value is

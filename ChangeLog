@@ -1,17 +1,44 @@
 ChangeLog for 0.61.x
 
 
+Changes from 0.61.0 to 0.61.1:
+  - fixed some of the code to explicitly use colormaps so that when
+    blackbox decides to use a non-default visual everything will
+    still work (although it may look darn ugly)
+  - optimizations to the deiconify/raising code to (hopefully) deal
+    with a rather nasty bug, plus make things a little more efficient
+  - changed the code so that the close button is always redrawn on
+    button release events, just in case the client decides not to
+    close in response to the message (see Acroread)
+  - tinkered with the Makefiles again to make sure Blackbox
+    completely cleans up after itself during an uninstall
+  - fixed a glitch in window placement that was making Blackbox
+    place some larger windows at coordinates near 2**31
+  - merged in a patch from nyz which fixed a bug with not sending
+    configure events when a window is both moved and resized (eg
+    when the left resize grip is used) as well as optimized some
+    of the show/hide code to use the stacking order
+  - fixed a bug in blackbox's support of the X shape extension...
+    it wasn't correctly resetting the bounding region after a window
+    was resized
+  - fixed a glitch with the geometry window where it would persist
+    if the client was unmapped while in motion
+  - tweaked the code for decorating transient windows so that it
+    is possible to use MOD1+Mouse3 to resize transients as long as
+    there is not some other reason to disable functions.resize
+
+
 Changes from 0.60.3 to 0.61.0:
-  - Added slightly updated copies of the blackbox/bsetroot manpages.
-  - Reworked the Windowmenu code so that using the second mouse
+  - added slightly updated copies of the blackbox/bsetroot manpages.
+  - reworked the Windowmenu code so that using the second mouse
     button on the Send To menu moves you along with the window
-  - Merged in bsd-snprintf.(h|c) from openssh so that Blackbox can
+  - merged in bsd-snprintf.(h|c) from openssh so that Blackbox can
     compile on older boxes without (v)snprintf in their standard lib.
   - fixed a pair of problems where blackbox was not returning icons
     and slit apps to a useable state at shutdown
   - fixed a problem with menus not getting layered correctly after
     a reconfigure or menu reload
-  - Changed the behavior of the various MOD1+ButtonPresses on windows...
+  - changed the behavior of the various MOD1+ButtonPresses on windows...
     they should now be more consistent with the button behavior on the
     decorations :
             . MOD1+Button1 raises and moves the window (unchanged)

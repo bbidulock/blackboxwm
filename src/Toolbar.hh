@@ -49,6 +49,7 @@ private:
   Placementmenu *placementmenu;
 
   friend Placementmenu;
+  friend Toolbar;
 
 
 protected:
@@ -99,9 +100,6 @@ private:
   friend HideHandler;
   friend Toolbarmenu;
   friend Toolbarmenu::Placementmenu;
-
-
-protected:
 
 
 public:

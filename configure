@@ -714,7 +714,7 @@ fi
 
 PACKAGE=Blackbox
 
-VERSION=0.61.0-beta
+VERSION=0.61.1
 
 if test "`cd $srcdir && pwd`" != "`pwd`" && test -f $srcdir/config.status; then
   { echo "configure: error: source directory already configured; run "make distclean" there first" 1>&2; exit 1; }

@@ -93,10 +93,11 @@ Toolbar::Toolbar(BScreen *scrn) {
   display = blackbox->getXDisplay();
   XSetWindowAttributes attrib;
   unsigned long create_mask = CWBackPixmap | CWBackPixel | CWBorderPixel |
-    CWOverrideRedirect | CWEventMask;
+                              CWColormap | CWOverrideRedirect | CWEventMask;
   attrib.background_pixmap = None;
   attrib.background_pixel = attrib.border_pixel =
     screen->getBorderColor()->getPixel();
+  attrib.colormap = screen->getColormap();
   attrib.override_redirect = True;
   attrib.event_mask = ButtonPressMask | ButtonReleaseMask |
                       EnterWindowMask | LeaveWindowMask;
@@ -969,7 +970,7 @@ void Toolbar::buttonReleaseEvent(XButtonEvent *re) {
 }
 
 
-void Toolbar::enterNotifyEvent(XCrossingEvent *ce) {
+void Toolbar::enterNotifyEvent(XCrossingEvent *) {
   if (! do_auto_hide)
     return;
 
@@ -980,7 +981,7 @@ void Toolbar::enterNotifyEvent(XCrossingEvent *ce) {
   }
 }
 
-void Toolbar::leaveNotifyEvent(XCrossingEvent *ce) {
+void Toolbar::leaveNotifyEvent(XCrossingEvent *) {
   if (! do_auto_hide)
     return;
 

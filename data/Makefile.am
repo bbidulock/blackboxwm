@@ -5,11 +5,9 @@ CLEANFILES = menu
 MAINTAINERCLEANFILES = Makefile.in
 pkgdata_DATA = menu
 
+all-local: menu
 distclean-local:
 	rm -f *\~
 
-all-local: menu
-
 menu: menu.in
 	@regex_cmd@ -e "s,@pkgdatadir@,$(pkgdatadir)," menu.in > menu
-

@@ -40,6 +40,7 @@
 
 #ifdef    STDC_HEADERS
 #  include <stdlib.h>
+#  include <string.h>
 #endif // STDC_HEADERS
 
 #ifdef    HAVE_UNISTD_H

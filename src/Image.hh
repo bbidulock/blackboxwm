@@ -166,8 +166,9 @@ private:
 #ifdef    TIMEDCACHE
   BTimer *timer;
 #endif // TIMEDCACHE
-  
-  Colormap root_colormap;
+
+  Colormap colormap;
+
   Window window;
   XColor *colors;
   int colors_per_channel, ncolors, screen_number, screen_depth,
@@ -202,8 +203,6 @@ public:
   inline BaseDisplay *getBaseDisplay(void) { return basedisplay; }
 
   inline const Bool &doDither(void) { return dither; }
-
-  inline const Colormap &getColormap(void) const { return root_colormap; }
 
   inline ScreenInfo *getScreenInfo(void) { return screeninfo; }
 

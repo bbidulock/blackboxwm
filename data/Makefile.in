@@ -90,7 +90,7 @@ DIST_COMMON =  README Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
@@ -307,10 +307,9 @@ installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
+all-local: menu
 distclean-local:
 	rm -f *\~
-
-all-local: menu
 
 menu: menu.in
 	@regex_cmd@ -e "s,@pkgdatadir@,$(pkgdatadir)," menu.in > menu

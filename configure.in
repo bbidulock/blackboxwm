@@ -1,7 +1,7 @@
-dnl configure.in for Blackbox 0.61.0  - an X11 Window manager
+dnl configure.in for Blackbox 0.61.1  - an X11 Window manager
 dnl Initialize autoconf and automake
 AC_INIT(src/blackbox.cc)
-AM_INIT_AUTOMAKE(Blackbox,0.61.0-beta,no-define)
+AM_INIT_AUTOMAKE(Blackbox,0.61.1,no-define)
 
 dnl Determine default prefix
 test x$prefix = "xNONE" && prefix="$ac_default_prefix"

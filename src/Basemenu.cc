@@ -109,14 +109,15 @@ Basemenu::Basemenu(BScreen *scrn) {
   menu.height = menu.title_h + screen->getBorderWidth() + menu.frame_h;
   
   unsigned long attrib_mask = CWBackPixmap | CWBackPixel | CWBorderPixel |
-			      CWOverrideRedirect | CWEventMask;
+			      CWColormap | CWOverrideRedirect | CWEventMask;
   XSetWindowAttributes attrib;
   attrib.background_pixmap = None;
   attrib.background_pixel = attrib.border_pixel =
 			    screen->getBorderColor()->getPixel();
+  attrib.colormap = screen->getColormap();
   attrib.override_redirect = True;
-  attrib.event_mask = ButtonPressMask | ButtonReleaseMask | ButtonMotionMask |
-		      ExposureMask;
+  attrib.event_mask = ButtonPressMask | ButtonReleaseMask |
+                      ButtonMotionMask | ExposureMask;
 
   menu.window =
     XCreateWindow(display, screen->getRootWindow(), menu.x, menu.y, menu.width,

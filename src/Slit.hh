@@ -38,32 +38,33 @@ private:
   class Directionmenu : public Basemenu {
   private:
     Slitmenu *slitmenu;
-  
+
   protected:
     virtual void itemSelected(int, int);
 
   public:
     Directionmenu(Slitmenu *);
-  }; 
-  
+  };
+
   class Placementmenu : public Basemenu {
   private:
     Slitmenu *slitmenu;
 
   protected: 
     virtual void itemSelected(int, int);
-  
+
   public:
     Placementmenu(Slitmenu *);
   };
-  
+
   Directionmenu *directionmenu;
   Placementmenu *placementmenu;
-  
+
   Slit *slit;
-  
+
   friend Directionmenu;
   friend Placementmenu;
+  friend Slit;
 
 
 protected:
@@ -94,14 +95,14 @@ private:
 
   Bool on_top, hidden, do_auto_hide;
   Display *display;
-  
+
   Blackbox *blackbox;
   BScreen *screen;
   BTimer *timer;
 
   LinkedList<SlitClient> *clientList;
   Slitmenu *slitmenu;
-  
+
   struct frame {
     Pixmap pixmap;
     Window window;
@@ -113,14 +114,11 @@ private:
   friend Slitmenu;
   friend Slitmenu::Directionmenu;
   friend Slitmenu::Placementmenu;
-  
-  
-protected:
-  
-  
+
+
 public:
   Slit(BScreen *);
-  ~Slit();
+  virtual ~Slit();
 
   inline const Bool &isOnTop(void) const { return on_top; }
   inline const Bool &isHidden(void) const { return hidden; }
@@ -137,7 +135,7 @@ public:
 
   inline const unsigned int &getWidth(void) const { return frame.width; }
   inline const unsigned int &getHeight(void) const { return frame.height; }
-  
+
   void addClient(Window);
   void removeClient(SlitClient *, Bool = True);
   void removeClient(Window, Bool = True);

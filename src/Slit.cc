@@ -61,10 +61,11 @@ Slit::Slit(BScreen *scr) {
 
   XSetWindowAttributes attrib;
   unsigned long create_mask = CWBackPixmap | CWBackPixel | CWBorderPixel |
-    CWOverrideRedirect | CWEventMask;
+                              CWColormap | CWOverrideRedirect | CWEventMask;
   attrib.background_pixmap = None;
   attrib.background_pixel = attrib.border_pixel =
     screen->getBorderColor()->getPixel();
+  attrib.colormap = screen->getColormap();
   attrib.override_redirect = True;
   attrib.event_mask = SubstructureRedirectMask | ButtonPressMask |
                       EnterWindowMask | LeaveWindowMask;
@@ -527,7 +528,7 @@ void Slit::buttonPressEvent(XButtonEvent *e) {
 }
 
 
-void Slit::enterNotifyEvent(XCrossingEvent *ce) {
+void Slit::enterNotifyEvent(XCrossingEvent *) {
   if (! do_auto_hide)
     return;
 
@@ -539,7 +540,7 @@ void Slit::enterNotifyEvent(XCrossingEvent *ce) {
 }
 
 
-void Slit::leaveNotifyEvent(XCrossingEvent *ce) {
+void Slit::leaveNotifyEvent(XCrossingEvent *) {
   if (! do_auto_hide)
     return;
 

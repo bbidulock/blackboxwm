@@ -315,20 +315,20 @@ private:
   BaseDisplay *basedisplay;
   Visual *visual;
   Window root_window;
+  Colormap colormap;
 
   int depth, screen_number;
   unsigned int width, height;
-
-
-protected:
 
 
 public:
   ScreenInfo(BaseDisplay *, int);
 
   inline BaseDisplay *getBaseDisplay(void) { return basedisplay; }
+
   inline Visual *getVisual(void) { return visual; }
   inline const Window &getRootWindow(void) const { return root_window; }
+  inline const Colormap &getColormap(void) const { return colormap; }
 
   inline const int &getDepth(void) const { return depth; }
   inline const int &getScreenNumber(void) const { return screen_number; }

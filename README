@@ -2,10 +2,13 @@
 
 This is the README for Blackbox 0.61.x release.
 
-The source tree for Blackbox is comprised of three subdirectories:
+The source tree for Blackbox is comprised of five subdirectories:
 
 	data/		- this holds the default data files that Blackbox
                           requires for proper operation
+
+	doc/		- this holds the documentation files that explain
+	                  the various aspects of Blackbox
 
 	nls/		- this holds the message files used to generate
 			  message catalogs for different languages

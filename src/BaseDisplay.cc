@@ -574,6 +574,11 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, int num) {
     XFree(vinfo_return);
   }
 
-  if (! visual)
+  if (visual)
+    colormap = XCreateColormap(basedisplay->getXDisplay(), root_window,
+			       visual, AllocNone);
+  else {
     visual = DefaultVisual(basedisplay->getXDisplay(), screen_number);
+    colormap = DefaultColormap(basedisplay->getXDisplay(), screen_number);
+  }
 }
