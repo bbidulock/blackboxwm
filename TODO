@@ -6,16 +6,8 @@ CVS Bugs:
 
 * acroread transients
 
-* xnc
-
-* mozilla right click focus bug
-
-* bbtools do not like to dock
-
 CVS warts:
 -----------------------------
-* sticky windows are not considered
-
 * transient handling should be properly done for cases where a single toplevel
   has multiple transients... this includes transient stacking
   (partially finished)
@@ -29,16 +21,18 @@ CVS warts:
   all situations... generate a visual reference for all these circumstances.
   use this to solve all focusing issues.
 
-* Send to menu should not list the current workspace
-  idea: we could store the workspace number in the BasemenuItem
-
-* look into centering the window when maximizing and the window can not grow
-  to fill the area
-
-* BlackboxWindow::deiconify needs a new name, also look into show()
-
 Stuff TODO or On The Way(tm):
 -----------------------------
+ADD: sticky windows are not considered
+
+CHANGE: Send to menu should not list the current workspace
+        idea -- we could store the workspace number in the BasemenuItem
+
+CHANGE: look into centering the window when maximizing and the window can not
+        grow to fill the area
+
+CHANGE: BlackboxWindow::deiconify needs a new name, also look into show()
+
 ADD: add _BLACKBOX_STYLE and _BLACKBOX_MENU atoms so that bbtools, bbconf, etc.
      can get the current path to the style in use and menu.
 
@@ -63,10 +57,6 @@ ADD: draw resize frames using the styles borderWidth... should be fairly
 
 ADD: always on top/bottom support
 
-CHECK: look at why memory usage is up... RSS won't go < 1mb now
-       i noticed a memory leak from improper handling of non-existant
-       windows... this fixes this some... this will be on going
-
 ADD: way to empty a menu with one method call something like menu.erase() or
      menu.removeAll()
 
@@ -75,8 +65,6 @@ ADD: way to have items in menu and store data other than their index number.
      not blackbox would have no way to know that the one labelled "Workspace 2"
      actually was workspace #2 and was referenced by workspace[1].
      something like menu.insert(item, data).
-
-CHECK: why do we have workspace_number and attrib.workspace in BlackboWindow?
 
 CHANGE: use a Workspace* instead of a number in BlackboxWindow
 
