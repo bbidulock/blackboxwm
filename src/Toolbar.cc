@@ -35,6 +35,7 @@
 #include <i18n.hh>
 
 #include <X11/keysym.h>
+#include <sys/time.h>
 #include <assert.h>
 
 
