@@ -176,12 +176,12 @@ unsigned int bt::MenuStyle::separatorHeight(void) const {
 
 
 unsigned int bt::MenuStyle::titleMargin(void) const {
-  return title.texture.borderWidth() + margin_w;
+  return title.texture.borderWidth() + std::max(margin_w, 2u);
 }
 
 
 unsigned int bt::MenuStyle::frameMargin(void) const {
-  return frame.texture.borderWidth() + (margin_w * 2);
+  return frame.texture.borderWidth() + std::max(margin_w, 2u);
 }
 
 
@@ -405,7 +405,7 @@ unsigned int bt::Menu::insertItem(const bt::MenuItem &item,
   }
 
   it = items.insert(it, item);
-  it->ident = verifyId(id);
+  if (! item.separator) it->ident = verifyId(id);
   it->indx = index;
 
   if (isVisible()) {
@@ -446,7 +446,7 @@ void bt::Menu::changeItem(unsigned int id, const std::string &newlabel,
   for (it = items.begin(), end = items.end(); it != end; ++it) {
     r.setHeight(it->height);
 
-    if (it->ident == id) {
+    if (! it->separator && it->ident == id) {
       // new label
       it->lbl = newlabel;
       if (newid != ~0u) {
@@ -555,7 +555,7 @@ void bt::Menu::removeItem(unsigned int id) {
     it->sub->_parent_menu = 0;
     if (it->sub->_auto_delete) delete it->sub;
   }
-  idset.reset(it->ident);
+  if (! it->separator) idset.reset(it->ident);
   items.erase(it);
 
   if (isVisible()) {
@@ -577,7 +577,7 @@ void bt::Menu::removeIndex(unsigned int index) {
     it->sub->_parent_menu = 0;
     if (it->sub->_auto_delete) delete it->sub;
   }
-  idset.reset(it->ident);
+  if (! it->separator) idset.reset(it->ident);
   items.erase(it);
 
   if (isVisible()) {
@@ -879,10 +879,10 @@ void bt::Menu::buttonReleaseEvent(const XButtonEvent * const event) {
           activateItem(r, *it);
         // ensure the submenu is visible
         showActiveSubmenu();
-      } else {
-        // clicked an enabled item
-        itemClicked(it->id(), event->button);
       }
+
+      // clicked an enabled item
+      itemClicked(it->id(), event->button);
     }
 
     r.setY(r.y() + r.height());
@@ -1112,10 +1112,8 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
     it = std::find_if(it, end, IndexMatch(_active_index));
     if (it == end) break;
 
-    if (! it->sub) {
-      itemClicked(it->ident, 1);
-      hideAll();
-    }
+    itemClicked(it->ident, 1);
+    if (! it->sub) hideAll();
     break;
   }
   } // switch
@@ -1150,7 +1148,9 @@ unsigned int bt::Menu::verifyId(unsigned int id) {
       return id;
     }
 
+
     fprintf(stderr, "Warning: bt::Menu::verifyId: id %d already used\n", id);
+    abort();
   }
 
   // find the first available id
