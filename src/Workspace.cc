@@ -160,6 +160,8 @@ void Workspace::removeAll(void) {
 
 
 void Workspace::raiseWindow(BlackboxWindow *w) {
+  if (stackingList.front() == w) return;
+
   BlackboxWindow *win = (BlackboxWindow *) 0, *bottom = w;
 
   while (bottom->isTransient()) {
@@ -168,15 +170,11 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
     bottom = bw;
   }
 
-  int i = 1;
+  unsigned int i = 1;
   win = bottom;
-  while (win->hasTransient() && win->getTransient()) {
-    win = win->getTransient();
-    i++;
-  }
+  while ((win = win->getTransient())) ++i;
 
   Window *nstack = new Window[i], *curr = nstack;
-  Workspace *wkspc;
 
   win = bottom;
   while (True) {
@@ -184,14 +182,14 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
     screen->updateNetizenWindowRaise(win->getClientWindow());
 
     if (! win->isIconic()) {
-      wkspc = screen->getWorkspace(win->getWorkspaceNumber());
+      Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
       wkspc->stackingList.remove(win);
       wkspc->stackingList.push_front(win);
     }
 
-    if (! win->hasTransient() || ! win->getTransient())
-      break;
     win = win->getTransient();
+    if (! win)
+      break;
   }
 
   screen->raiseWindows(nstack, i);
@@ -209,23 +207,18 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
     bottom = bw;
   }
 
-  int i = 1;
+  unsigned int i = 1;
   win = bottom;
-  while (win->hasTransient() && win->getTransient()) {
-    win = win->getTransient();
-
-    i++;
-  }
+  while ((win = win->getTransient())) ++i;
 
   Window *nstack = new Window[i], *curr = nstack;
-  Workspace *wkspc;
 
   while (True) {
     *(curr++) = win->getFrameWindow();
     screen->updateNetizenWindowLower(win->getClientWindow());
 
     if (! win->isIconic()) {
-      wkspc = screen->getWorkspace(win->getWorkspaceNumber());
+      Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
       wkspc->stackingList.remove(win);
       wkspc->stackingList.push_back(win);
     }

@@ -279,8 +279,7 @@ void Basemenu::update(void) {
   }
 
   if (title_vis) {
-    const char *s = (! menu.label.empty()) ? getLabel() :
-      i18n(BasemenuSet, BasemenuBlackboxMenu, "Blackbox Menu");
+    const char *s = getLabel();
     int l = strlen(s);
 
     if (i18n.multibyte()) {

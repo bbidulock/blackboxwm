@@ -1233,6 +1233,8 @@ void BScreen::InitMenu(void) {
                      BScreen::Restart);
     rootmenu->insert(i18n(ScreenSet, ScreenExit, "Exit"),
                      BScreen::Exit);
+    rootmenu->setLabel(i18n(BasemenuSet, BasemenuBlackboxMenu,
+                            "Blackbox Menu"));
   } else {
     blackbox->saveMenuFilename(blackbox->getMenuFilename());
   }

@@ -256,8 +256,6 @@ public:
   inline Bool isClosable(void) const { return functions.close; }
 
   inline Bool hasTitlebar(void) const { return decorations.titlebar; }
-  inline Bool hasTransient(void) const
-  { return ((client.transient) ? True : False); }
 
   inline BlackboxWindow *getTransient(void) { return client.transient; }
   inline BlackboxWindow *getTransientFor(void)

@@ -191,8 +191,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     return;
   }
 
-  frame.window = createToplevelWindow(frame.x, frame.y, frame.width,
-                                      frame.height,
+  frame.window = createToplevelWindow(frame.x, frame.y,
+                                      frame.width, frame.height,
                                       frame.border_w);
   frame.plate = createChildWindow(frame.window);
   associateClientWindow();
@@ -478,7 +478,7 @@ void BlackboxWindow::associateClientWindow(void) {
 
     XShapeQueryExtents(display, client.window, &flags.shaped, &foo, &foo,
                        &ufoo, &ufoo, &foo, &foo, &foo, &ufoo, &ufoo);
-}
+  }
 #endif // SHAPE
 
   XRaiseWindow(display, frame.plate);
@@ -712,6 +712,7 @@ void BlackboxWindow::positionButtons(Bool redecorate_label) {
   redrawLabel();
   redrawAllButtons();
 }
+
 
 void BlackboxWindow::reconfigure(void) {
   upsize();
@@ -1359,7 +1360,7 @@ void BlackboxWindow::iconify(void) {
   if (flags.transient) {
     BlackboxWindow *transientOwner =
       blackbox->searchWindow(client.transient_for);
-    if (!transientOwner->flags.iconic)
+    if (transientOwner && !transientOwner->flags.iconic)
       transientOwner->iconify();
   }
   screen->addIcon(this);
@@ -1370,7 +1371,7 @@ void BlackboxWindow::iconify(void) {
 }
 
 
-void BlackboxWindow::show() {
+void BlackboxWindow::show(void) {
   setState(NormalState);
 
   XMapWindow(display, client.window);
@@ -1998,7 +1999,8 @@ void BlackboxWindow::redrawLabel(void) {
   }
 
   WindowStyle *style = screen->getWindowStyle();
-  BPen pen((flags.focused) ? style->l_text_focus : style->l_text_unfocus, style->font);
+  BPen pen((flags.focused) ? style->l_text_focus : style->l_text_unfocus,
+           style->font);
   if (i18n.multibyte())
     XmbDrawString(display, frame.label, style->fontset, pen.gc(), dx,
                   (1 - style->fontset_extents->max_ink_extent.y),
@@ -2452,10 +2454,11 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
     blackbox->maskWindowEvents(0, (BlackboxWindow *) 0);
 
     if (! screen->doOpaqueMove()) {
-      // when drawing the rubber band, we need to make sure we only draw inside
-      // the frame... frame.changing_* contain the new coords for the window, so
-      // we need to subtract 1 from changing_w/changing_h every where we draw the
-      // rubber band (for both moving and resizing)
+      /* when drawing the rubber band, we need to make sure we only draw inside
+       * the frame... frame.changing_* contain the new coords for the window,
+       * so we need to subtract 1 from changing_w/changing_h every where we
+       * draw the rubber band (for both moving and resizing)
+       */
       XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
                      frame.changing_x, frame.changing_y, frame.changing_w - 1,
                      frame.changing_h - 1);
