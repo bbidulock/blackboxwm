@@ -186,14 +186,21 @@ namespace bt {
     unsigned int insertItem(const MenuItem &item,
                             unsigned int id = ~0u,
                             unsigned int index = ~0u);
-    unsigned int insertItem(const ustring &label,
-                            unsigned int id = ~0u,
-                            unsigned int index = ~0u);
-    unsigned int insertItem(const ustring &label,
-                            Menu *submenu,
-                            unsigned int id = ~0u,
-                            unsigned int index = ~0u);
-    void insertSeparator(unsigned int index = ~0u);
+
+    inline unsigned int insertItem(const ustring &label,
+                                   unsigned int id = ~0u,
+                                   unsigned int index = ~0u)
+    { return insertItem(MenuItem(MenuItem::Normal, label), id, index); }
+
+    inline unsigned int insertItem(const ustring &label,
+                                   Menu *submenu,
+                                   unsigned int id = ~0u,
+                                   unsigned int index = ~0u)
+    { return insertItem(MenuItem(submenu, label), id, index); }
+
+    inline void insertSeparator(unsigned int index = ~0u)
+    { (void) insertItem(MenuItem(MenuItem::Separator), ~0u, index); }
+
 
     void changeItem(unsigned int id,
                     const ustring &newlabel,

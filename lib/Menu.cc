@@ -383,23 +383,6 @@ unsigned int bt::Menu::insertItem(const MenuItem &item,
 }
 
 
-unsigned int bt::Menu::insertItem(const ustring &label,
-                                  unsigned int id, unsigned int index) {
-  return insertItem(MenuItem(MenuItem::Normal, label), id, index);
-}
-
-
-unsigned int bt::Menu::insertItem(const ustring &label, Menu *submenu,
-                                  unsigned int id, unsigned int index) {
-  return insertItem(MenuItem(submenu, label), id, index);
-}
-
-
-void bt::Menu::insertSeparator(unsigned int index) {
-  (void) insertItem(MenuItem(MenuItem::Separator), ~0u, index);
-}
-
-
 void bt::Menu::positionRect(Rect& r, int &row, int &col) {
   r.setY(r.y() + r.height());
   ++row;
