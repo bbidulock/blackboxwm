@@ -24,6 +24,8 @@
 
 #include "Unicode.hh"
 
+#include <algorithm>
+
 #include <errno.h>
 #include <iconv.h>
 #include <locale.h>
@@ -82,12 +84,12 @@ namespace bt {
 
 #ifdef HAVE_GNU_LIBICONV
     // GNU libiconv
-    const char *inp = reinterpret_cast<const char *>(in.c_str());
+    const char *inp = reinterpret_cast<const char *>(in.data());
 #else
     // POSIX compliant iconv(3)
     char *inp =
       reinterpret_cast<char *>
-      (const_cast<typename _Source::value_type *>(in.c_str()));
+      (const_cast<typename _Source::value_type *>(in.data()));
 #endif
     const typename _Source::size_type in_size =
       in.size() * sizeof(typename _Source::value_type);
@@ -97,7 +99,7 @@ namespace bt {
 
     char *outp =
       reinterpret_cast<char *>
-      (const_cast<typename _Target::value_type *>(out.c_str()));
+      (const_cast<typename _Target::value_type *>(out.data()));
     typename _Target::size_type out_size =
       out.size() * sizeof(typename _Target::value_type);
     typename _Target::size_type out_bytes = out_size;
@@ -113,12 +115,12 @@ namespace bt {
             const typename _Source::size_type off = in_size - in_bytes + 1;
 #ifdef HAVE_GNU_LIBICONV
             // GNU libiconv
-            inp = reinterpret_cast<const char *>(in.c_str()) + off;
+            inp = reinterpret_cast<const char *>(in.data()) + off;
 #else
             // POSIX compliant iconv(3)
             inp =
               reinterpret_cast<char *>
-              (const_cast<typename _Source::value_type *>(in.c_str()));
+              (const_cast<typename _Source::value_type *>(in.data()));
 #endif
             in_bytes = in_size - off;
             break;
@@ -131,13 +133,13 @@ namespace bt {
 
             outp =
               reinterpret_cast<char *>
-              (const_cast<typename _Target::value_type *>(out.c_str())) + off;
+              (const_cast<typename _Target::value_type *>(out.data())) + off;
             out_bytes = out_size - off;
             break;
           }
         default:
           perror("iconv");
-          out.clear();
+          out = _Target();
           iconv_close(cd);
           return;
         }

@@ -452,7 +452,7 @@ bt::Rect bt::textRect(unsigned int screen, const Font &font,
   if (f) {
     XGlyphInfo xgi;
     XftTextExtents32(fontcache->_display.XDisplay(), f,
-                     reinterpret_cast<const FcChar32 *>(text.c_str()),
+                     reinterpret_cast<const FcChar32 *>(text.data()),
                      text.length(), &xgi);
     return Rect(xgi.x, 0, xgi.width - xgi.x, f->ascent + f->descent);
   }
@@ -501,7 +501,7 @@ void bt::drawText(const Font &font, const Pen &pen,
 
     XftDrawString32(pen.xftDraw(drawable), &col, f,
                     tr.x(), tr.y() + f->ascent,
-                    reinterpret_cast<const FcChar32 *>(text.c_str()),
+                    reinterpret_cast<const FcChar32 *>(text.data()),
                     text.length());
     return;
   }
