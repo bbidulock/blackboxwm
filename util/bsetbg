@@ -22,7 +22,7 @@
 
 PATH=$PATH:/usr/bin:/usr/local/bin:/usr/X11R6/bin
 
-img_apps="display xsetbg qiv xli wmsetbg Esetroot xv"
+img_apps="display xli xsetbg Esetroot qiv wmsetbg xv"
 
 display_full_cmd="display -geometry 800x600 -window root"
 display_tile_cmd="display -window root"
