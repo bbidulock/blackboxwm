@@ -174,7 +174,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   ewmh.setSupportingWMCheck(geom_window, geom_window);
   ewmh.setWMName(geom_window, bt::toUnicode("Blackbox"));
 
-  ewmh.setCurrentDesktop(0);
+  ewmh.setCurrentDesktop(screen_info.rootWindow(), 0);
   ewmh.setNumberOfDesktops(screen_info.rootWindow(),
                            workspacesList.size());
   ewmh.setDesktopGeometry(screen_info.rootWindow(),
