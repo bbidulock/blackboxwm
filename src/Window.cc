@@ -1265,7 +1265,7 @@ void BlackboxWindow::configureShape(void) {
 Bool BlackboxWindow::setInputFocus(void) {
   if (flags.focused) return True;
 
-  if (((signed) (frame.rect.x() + frame.rect.width())) < 0) {
+  if (((signed) (frame.rect.right())) < 0) {
     if (((signed) (frame.rect.y() + frame.y_border)) < 0)
       configure(frame.border_w, frame.border_w,
                 frame.rect.width(), frame.rect.height());
@@ -1852,16 +1852,12 @@ void BlackboxWindow::restoreAttributes(void) {
 void BlackboxWindow::setGravityOffsets(void) {
   // x coordinates for each gravity type
   const int x_west = client.rect.x();
-  const int x_east = client.rect.x() + client.rect.width() -
-                     frame.rect.width();
-  const int x_center = client.rect.x() + client.rect.width() -
-                       frame.rect.width()/2;
+  const int x_east = client.rect.right() - frame.rect.width();
+  const int x_center = client.rect.right() - (frame.rect.width()/2);
   // y coordinates for each gravity type
   const int y_north = client.rect.y();
-  const int y_south = client.rect.y() + client.rect.height() -
-                      frame.rect.height();
-  const int y_center = client.rect.y() + client.rect.height() -
-                       frame.rect.height()/2;
+  const int y_south = client.rect.bottom() - frame.rect.height();
+  const int y_center = client.rect.bottom() - (frame.rect.height()/2);
 
   switch (client.win_gravity) {
   default:
@@ -1892,14 +1888,12 @@ void BlackboxWindow::setGravityOffsets(void) {
 void BlackboxWindow::restoreGravity(void) {
   // x coordinates for each gravity type
   const int x_west = frame.rect.x();
-  const int x_east = frame.rect.x() + frame.rect.width() -
-                     client.rect.width();
+  const int x_east = frame.rect.right() - client.rect.width();
   const int x_center = frame.rect.x() + (frame.rect.width()/2) -
                        client.rect.width();
   // y coordinates for each gravity type
   const int y_north = frame.rect.y();
-  const int y_south = frame.rect.y() + frame.rect.height() -
-                      client.rect.height();
+  const int y_south = frame.rect.bottom() - client.rect.height();
   const int y_center = frame.rect.y() + (frame.rect.height()/2) -
                        client.rect.height();
 
@@ -2385,9 +2379,8 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
         my = be->y_root - (windowmenu->getHeight() / 2);
     }
 
-    if (mx > (signed) (frame.rect.x() + frame.rect.width() -
-                       windowmenu->getWidth()))
-      mx = frame.rect.x() + frame.rect.width() - windowmenu->getWidth();
+    if (mx > (signed) (frame.rect.right() - windowmenu->getWidth()))
+      mx = frame.rect.right() - windowmenu->getWidth();
     if (mx < frame.rect.x())
       mx = frame.rect.x();
 
@@ -2628,7 +2621,7 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
 
       if (left) {
         frame.changing_x = me->x_root - frame.grab_x;
-        if (frame.changing_x > (signed) (frame.rect.x() + frame.rect.width()))
+        if (frame.changing_x > (frame.rect.right()))
           frame.changing_x = frame.changing_x + frame.rect.width() - 1;
 
         left_fixsize(&gx, &gy);
@@ -2899,7 +2892,7 @@ void BlackboxWindow::right_fixsize(int *gx, int *gy) {
 void BlackboxWindow::left_fixsize(int *gx, int *gy) {
   // calculate the size of the client window and conform it to the
   // size specified by the size hints of the client window...
-  int dx = frame.rect.x() + frame.rect.width() - frame.changing_x -
+  int dx = frame.rect.right() - frame.changing_x -
            client.base_width - (frame.mwm_border_w * 2) +
            (client.width_inc / 2);
   int dy = frame.changing_h - frame.y_border - client.base_height -
@@ -2921,7 +2914,7 @@ void BlackboxWindow::left_fixsize(int *gx, int *gy) {
   dy = (dy * client.height_inc) + client.base_height;
 
   frame.changing_w = dx + (frame.mwm_border_w * 2) + (frame.border_w * 2);
-  frame.changing_x = frame.rect.x() + frame.rect.width() - frame.changing_w +
+  frame.changing_x = frame.rect.right() - frame.changing_w +
                      (frame.border_w * 2);
   frame.changing_h = dy + frame.y_border + frame.handle_h +
                      (frame.mwm_border_w * 2) + (frame.border_w * 3);
