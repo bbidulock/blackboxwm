@@ -354,12 +354,12 @@ void Slit::reconfigure(void) {
 void Slit::updateStrut(void) {
   strut.top = strut.bottom = strut.left = strut.right = 0;
 
-  // when not hidden both borders are in use, when hidden only one is
-  unsigned int border_width = screen->getBorderWidth();
-  if (! do_auto_hide)
-    border_width *= 2;
-
   if (! clientList.empty()) {
+    // when not hidden both borders are in use, when hidden only one is
+    unsigned int border_width = screen->getBorderWidth();
+    if (! do_auto_hide)
+      border_width *= 2;
+
     switch (screen->getSlitDirection()) {
     case Vertical:
       switch (screen->getSlitPlacement()) {
