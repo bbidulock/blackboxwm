@@ -7,7 +7,8 @@ $ #DISPLAYRequiresArg
 $ #WarnDisplaySet
 # hoiatus: ei saanud määrata keskonna muutujat 'DISPLAY'\n
 $ #Usage
-# Blackbox %s: (c) 1997 - 2000 Brad Hughes\n\n\
+# Blackbox %s : (c) 2001 - 2002 Sean 'Shaleh' Perry\n\
+  \t\t\t 1997 - 2000, 2002 Brad Hughes\n\n\
   -display <string>\t\tkasuta displei ühendust.\n\
   -rc <string>\t\t\tkasuta alternatiivseid resursse.\n\
   -version\t\t\tnäita versiooninumber ja välju.\n\

@@ -7,7 +7,8 @@ $ #DISPLAYRequiresArg
 $ #WarnDisplaySet
 # предупреждение: невозможно установить переменную окружения 'DISPLAY'\n
 $ #Usage
-# Blackbox %s: (c) 1997 - 2000 Brad Hughes\n\n\
+# Blackbox %s : (c) 2001 - 2002 Sean 'Shaleh' Perry\n\
+  \t\t\t 1997 - 2000 Brad Hughes\n\n\
   -display <string>\t\tиспользовать заданный дисплей.\n\
   -rc <string>\t\t\tиспользовать альтернативный файл ресурсов.\n\
   -version\t\t\tвывести номер версии и выйти.\n\

@@ -7,7 +7,8 @@ $ #DISPLAYRequiresArg
 $ #WarnDisplaySet
 # advarsel: kunne ikke sætte variablen 'DISPLAY'\n
 $ #Usage
-# Blackbox %s: (c) 1997 - 2000 Brad Hughes\n\n\
+# Blackbox %s : (c) 2001 - 2002 Sean 'Shaleh' Perry\n\
+  \t\t\t 1997 - 2000, 2002 Brad Hughes\n\n\
   -display <string>\t\tbrug skærm tilslutning.\n\
   -rc <string>\t\t\tbrug alternativ resource fil.\n\
   -version\t\t\tvis versionsnummer og afslut.\n\

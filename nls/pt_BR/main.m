@@ -7,7 +7,8 @@ $ #DISPLAYRequiresArg
 $ #WarnDisplaySet
 # aviso: não foi possivel setar a variavel de ambiente 'DISPLAY'\n
 $ #Usage
-# Blackbox %s: (c) 1997 - 2000 Brad Hughes\n\n\
+# Blackbox %s : (c) 2001 - 2002 Sean 'Shaleh' Perry\n\
+  \t\t\t 1997 - 2000, 2002 Brad Hughes\n\n\
   -display <string>\t\tusar conexão com o display.\n\
   -rc <string>\t\t\tusar arquivo alternativo de recursos.\n\
   -version\t\t\tmostrar versao e sair.\n\

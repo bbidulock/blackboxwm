@@ -7,7 +7,8 @@ $ #DISPLAYRequiresArg
 $ #WarnDisplaySet
 # cuidado: no se puede establecer la variable de ambiente 'DISPLAY'
 $ #Usage
-# Blackbox %s: (c) 1997 - 2000 Brad Hughes\n\n\
+# Blackbox %s : (c) 2001 - 2002 Sean 'Shaleh' Perry\n\
+  \t\t\t 1997 - 2000, 2002 Brad Hughes\n\n\
   -display <string> conexión de despliegue.\n\
   -rc <string>      archivo alternativo de recuros.\n\
   -version          mostrar la versión y cerrar.\n\

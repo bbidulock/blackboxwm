@@ -7,7 +7,8 @@ $ #DISPLAYRequiresArg
 $ #WarnDisplaySet
 # 警告: 環境変数 'DISPLAY' を設定できませんでした\n
 $ #Usage
-# Blackbox %s: (c) 1997 - 2000 Brad Hughes\n\n\
+# Blackbox %s : (c) 2001 - 2002 Sean 'Shaleh' Perry\n\
+  \t\t\t 1997 - 2000, 2002 Brad Hughes\n\n\
   -display <string>\t\t指定ディスプレイに接続\n\
   -rc <string>\t\t\t代りのリソースファイルを使用\n\
   -version\t\t\tバージョン情報を表示し、終了\n\

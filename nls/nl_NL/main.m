@@ -7,7 +7,8 @@ $ #DISPLAYRequiresArg
 $ #WarnDisplaySet
 # waarschuwing: kan omgevingsvariabele 'DISPLAY' niet instellen\n
 $ #Usage
-# Blackbox %s: (c) 1997 - 2000 Brad Hughes\n\n\
+# Blackbox %s: (c) 2001 - 2002 Sean 'Shaleh' Perry\n\
+  \t\t\t 1997 - 2000, 2002 Brad Hughes\n\n\
   -display <displaynaam>   gebruik aangegeven display.\n\
   -rc <bestandsnaam>       gebruik alternatief resource bestand.\n\
   -version                 toon versie en stop.\n\

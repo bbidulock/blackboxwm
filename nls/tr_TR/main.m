@@ -7,7 +7,8 @@ $ #DISPLAYRequiresArg
 $ #WarnDisplaySet
 # ikaz : 'DISPLAY' verisini oturtamadým\n
 $ #Usage
-# Blackbox %s: (c) 1997 - 2000 Brad Hughes\n\n\
+# Blackbox %s : (c) 2001 - 2002 Sean 'Shaleh' Perry\n\
+  \t\t\t 1997 - 2000, 2002 Brad Hughes\n\n\
   -display <metin>\t\tekraný kullan.\n\
   -rc <metin>\t\t\tbaþka bir ayarlama dosyasýný kullan.\n\
   -version\t\t\tnesil bilgisini gösterir ve çýkar.\n\

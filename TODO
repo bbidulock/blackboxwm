@@ -5,7 +5,6 @@ CVS Bugs:
 * maximize gets the dimensions very wrong
 * windows that set WM_DELETE_WINDOW protocol after creation do not get a close
   button
-* clean up --help output
 
 temporarily fixed, blackbox needs real focus handling fixes for this to really
  go away:
@@ -20,13 +19,14 @@ ADD: add _BLACKBOX_STYLE and _BLACKBOX_MENU atoms so that bbtools, bbconf, etc.
 
 ADD: subdirs in stylesmenu/dir will create a new submenu
 
+ADD: UTF8 support
+
 CHANGE: when workspace name is greater than the width of its text area the
 	toolbar gets very ugly
 
 CHANGE: rework the .blackboxrc resources so that they give a more
         uniform behavior across screens. (Still not sure how I want
 	to do this, so it'll have to wait.)
-
 
 ADD: support for KDE and GNOME via the new WM Spec at
      http://www.freedesktop.org/standards/wm-spec/
