@@ -29,12 +29,15 @@
 #include <cstdio>
 
 
+static BlackboxWindow * const zero = 0;
+
+
 StackingList::StackingList(void) {
-  desktop = stack.insert(stack.begin(), (BlackboxWindow *) 0);
-  below = stack.insert(desktop, (BlackboxWindow *) 0);
-  normal = stack.insert(below, (BlackboxWindow *) 0);
-  above = stack.insert(normal, (BlackboxWindow *) 0);
-  fullscreen = stack.insert(above, (BlackboxWindow *) 0);
+  desktop = stack.insert(stack.begin(), zero);
+  below = stack.insert(desktop, zero);
+  normal = stack.insert(below, zero);
+  above = stack.insert(normal, zero);
+  fullscreen = stack.insert(above, zero);
 }
 
 
@@ -76,7 +79,6 @@ StackingList::iterator StackingList::append(BlackboxWindow *win) {
   }
 
   // find the end of the layer (the zero pointer)
-  const BlackboxWindow * const zero = 0;
   StackingList::iterator tmp = std::find(it, stack.end(), zero);
   assert(tmp != stack.end());
   tmp = stack.insert(tmp, win);
@@ -129,7 +131,6 @@ void StackingList::lower(BlackboxWindow *win) {
     return;
   }
 
-  const BlackboxWindow * const zero = 0;
   it = std::find(pos, stack.end(), zero);
   assert(it != stack.end());
   (void) stack.insert(it, win);
@@ -147,7 +148,7 @@ BlackboxWindow *StackingList::front(void) const {
   assert(0);
 
   // this point is never reached, but the compiler doesn't know that.
-  return (BlackboxWindow *) 0;
+  return zero;
 }
 
 
@@ -160,7 +161,7 @@ BlackboxWindow *StackingList::back(void) const {
   }
 
   assert(0);
-  return (BlackboxWindow *) 0;
+  return zero;
 }
 
 
