@@ -1501,8 +1501,6 @@ void BlackboxWindow::maximize(unsigned int button) {
 
   configure(frame.changing.x(), frame.changing.y(),
             frame.changing.width(), frame.changing.height());
-  if (flags.focused)
-    screen->getWorkspace(blackbox_attrib.workspace)->raiseWindow(this);
   redrawAllButtons();
   setState(current_state);
 }
@@ -2372,6 +2370,7 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
     if ((re->x >= 0 && re->x <= static_cast<signed>(frame.button_w)) &&
         (re->y >= 0 && re->y <= static_cast<signed>(frame.button_w))) {
       maximize(re->button);
+      screen->getWorkspace(blackbox_attrib.workspace)->raiseWindow(this);
     } else {
       redrawMaximizeButton(flags.maximized);
     }
