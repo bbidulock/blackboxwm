@@ -352,7 +352,7 @@ void bsetroot::usage(int exit_code) {
 		 "%s 2.0\n\n"
 		 "Copyright (c) 1997-2000, 2002 Bradley T Hughes\n"
 		 "Copyright (c) 2001-2002 Sean 'Shaleh' Perry\n\n"
-		 "  -display <string>        display connection\n"
+		 "  -display <string>        use display connection\n"
 		 "  -mod <x> <y>             modula pattern\n"
 		 "  -foreground, -fg <color> modula foreground color\n"
 		 "  -background, -bg <color> modula background color\n\n"
