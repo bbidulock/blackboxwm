@@ -440,10 +440,10 @@ void Toolbar::updateStrut(void) {
   case TopLeft:
   case TopCenter:
   case TopRight:
-    strut.top = getExposedHeight() + screen->getBevelWidth();
+    strut.top = getExposedHeight() + (screen->getBorderWidth() * 2);
     break;
   default:
-    strut.bottom = getExposedHeight() + screen->getBevelWidth();
+    strut.bottom = getExposedHeight() + (screen->getBorderWidth() * 2);
   }
 
   screen->updateAvailableArea();

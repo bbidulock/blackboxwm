@@ -357,20 +357,20 @@ void Slit::updateStrut(void) {
   case Vertical:
     switch (screen->getSlitPlacement()) {
     case TopCenter:
-      strut.top = getY() + getExposedHeight() + screen->getBevelWidth();
+      strut.top = getY() + getExposedHeight() + (screen->getBorderWidth() * 2);
       break;
     case BottomCenter:
-      strut.bottom = getExposedHeight() + screen->getBevelWidth();
+      strut.bottom = getExposedHeight() + (screen->getBorderWidth() * 2);
       break;
     case TopLeft:
     case CenterLeft:
     case BottomLeft:
-      strut.left = getExposedWidth() + screen->getBevelWidth();
+      strut.left = getExposedWidth() + (screen->getBorderWidth() * 2);
       break;
     case TopRight:
     case CenterRight:
     case BottomRight:
-      strut.right = getExposedWidth() + screen->getBevelWidth();
+      strut.right = getExposedWidth() + (screen->getBorderWidth() * 2);
       break;
     }
     break;
@@ -379,18 +379,19 @@ void Slit::updateStrut(void) {
     case TopCenter:
     case TopLeft:
     case TopRight:
-      strut.top = getY() + getExposedHeight() + screen->getBevelWidth();
+      strut.top = getY() + getExposedHeight() + (screen->getBorderWidth() * 2);
       break;
     case BottomCenter:
     case BottomLeft:
     case BottomRight:
-      strut.bottom = screen->getHeight() - getY() + screen->getBevelWidth();
+      strut.bottom = screen->getHeight() - getY() +
+        (screen->getBorderWidth() * 2);
       break;
     case CenterLeft:
-      strut.left = getExposedWidth() + screen->getBevelWidth();
+      strut.left = getExposedWidth() + (screen->getBorderWidth() * 2);
       break;
     case CenterRight:
-      strut.right = getExposedWidth() + screen->getBevelWidth();
+      strut.right = getExposedWidth() + (screen->getBorderWidth() * 2);
       break;
     }
     break;
@@ -513,7 +514,7 @@ void Slit::reposition(void) {
     Toolbar *tbar = screen->getToolbar();
     frame.y_hidden = frame.rect.y();
 
-    int delta = tbar->getExposedHeight() + 1;
+    int delta = tbar->getExposedHeight() + (screen->getBorderWidth() * 2);
     if (frame.rect.bottom() <= tbar_rect.bottom()) {
       delta = -delta;
     }
