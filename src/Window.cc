@@ -2675,11 +2675,11 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
 
       if (mx < left_edge)
         mx = left_edge;
-      if (mx > right_edge)
+      else if (mx > right_edge)
         mx = right_edge;
       if (my < top_edge)
         my = top_edge;
-      if (my > bottom_edge)
+      else if (my > bottom_edge)
         my = bottom_edge;
 
       windowmenu->move(mx, my);
