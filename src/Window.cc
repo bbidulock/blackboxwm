@@ -1505,7 +1505,6 @@ void BlackboxWindow::configure(int dx, int dy,
 
     XSendEvent(blackbox->XDisplay(), client.window, False,
                StructureNotifyMask, &event);
-    XFlush(blackbox->XDisplay());
   }
 }
 
@@ -1600,7 +1599,6 @@ bool BlackboxWindow::setInputFocus(void) {
     ce.xclient.data.l[3] = 0l;
     ce.xclient.data.l[4] = 0l;
     XSendEvent(blackbox->XDisplay(), client.window, False, NoEventMask, &ce);
-    XFlush(blackbox->XDisplay());
   }
 
   blackbox->setFocusedWindow(this);
@@ -1684,7 +1682,6 @@ void BlackboxWindow::close(void) {
   ce.xclient.data.l[3] = 0l;
   ce.xclient.data.l[4] = 0l;
   XSendEvent(blackbox->XDisplay(), client.window, False, NoEventMask, &ce);
-  XFlush(blackbox->XDisplay());
 }
 
 
