@@ -1072,20 +1072,19 @@ void bt::Image::dgradient(const Color &from, const Color &to,
         p->blue  = xt[2][x] + yt[2][y];
       }
     }
-    return;
-  }
+  } else {
+    // interlacing effect
+    for (y = 0; y < height; ++y) {
+      for (x = 0; x < width; ++x, ++p) {
+        p->red   = xt[0][x] + yt[0][y];
+        p->green = xt[1][x] + yt[1][y];
+        p->blue  = xt[2][x] + yt[2][y];
 
-  // interlacing effect
-  for (y = 0; y < height; ++y) {
-    for (x = 0; x < width; ++x, ++p) {
-      p->red   = xt[0][x] + yt[0][y];
-      p->green = xt[1][x] + yt[1][y];
-      p->blue  = xt[2][x] + yt[2][y];
-
-      if (y & 1) {
-        p->red   = (p->red   >> 1) + (p->red   >> 2);
-        p->green = (p->green >> 1) + (p->green >> 2);
-        p->blue  = (p->blue  >> 1) + (p->blue  >> 2);
+        if (y & 1) {
+          p->red   = (p->red   >> 1) + (p->red   >> 2);
+          p->green = (p->green >> 1) + (p->green >> 2);
+          p->blue  = (p->blue  >> 1) + (p->blue  >> 2);
+        }
       }
     }
   }
@@ -1300,23 +1299,22 @@ void bt::Image::pgradient(const Color &from, const Color &to,
           static_cast<unsigned char>(tb - (bsign * (xt[2][x] + yt[2][y])));
       }
     }
-    return;
-  }
+  } else {
+    // interlacing effect
+    for (y = 0; y < height; ++y) {
+      for (x = 0; x < width; ++x, ++p) {
+        p->red =
+          static_cast<unsigned char>(tr - (rsign * (xt[0][x] + yt[0][y])));
+        p->green =
+          static_cast<unsigned char>(tg - (gsign * (xt[1][x] + yt[1][y])));
+        p->blue =
+          static_cast<unsigned char>(tb - (bsign * (xt[2][x] + yt[2][y])));
 
-  // interlacing effect
-  for (y = 0; y < height; ++y) {
-    for (x = 0; x < width; ++x, ++p) {
-      p->red =
-        static_cast<unsigned char>(tr - (rsign * (xt[0][x] + yt[0][y])));
-      p->green =
-        static_cast<unsigned char>(tg - (gsign * (xt[1][x] + yt[1][y])));
-      p->blue =
-        static_cast<unsigned char>(tb - (bsign * (xt[2][x] + yt[2][y])));
-
-      if (y & 1) {
-        p->red   = (p->red   >> 1) + (p->red   >> 2);
-        p->green = (p->green >> 1) + (p->green >> 2);
-        p->blue  = (p->blue  >> 1) + (p->blue  >> 2);
+        if (y & 1) {
+          p->red   = (p->red   >> 1) + (p->red   >> 2);
+          p->green = (p->green >> 1) + (p->green >> 2);
+          p->blue  = (p->blue  >> 1) + (p->blue  >> 2);
+        }
       }
     }
   }
@@ -1406,26 +1404,25 @@ void bt::Image::rgradient(const Color &from, const Color &to,
                                            std::max(xt[2][x], yt[2][y])));
       }
     }
-    return;
-  }
+  } else {
+    // interlacing effect
+    for (y = 0; y < height; ++y) {
+      for (x = 0; x < width; ++x, ++p) {
+        p->red =
+          static_cast<unsigned char>(tr - (rsign *
+                                           std::max(xt[0][x], yt[0][y])));
+        p->green =
+          static_cast<unsigned char>(tg - (gsign *
+                                           std::max(xt[1][x], yt[1][y])));
+        p->blue =
+          static_cast<unsigned char>(tb - (bsign *
+                                           std::max(xt[2][x], yt[2][y])));
 
-  // interlacing effect
-  for (y = 0; y < height; ++y) {
-    for (x = 0; x < width; ++x, ++p) {
-      p->red =
-        static_cast<unsigned char>(tr - (rsign *
-                                         std::max(xt[0][x], yt[0][y])));
-      p->green =
-        static_cast<unsigned char>(tg - (gsign *
-                                         std::max(xt[1][x], yt[1][y])));
-      p->blue =
-        static_cast<unsigned char>(tb - (bsign *
-                                         std::max(xt[2][x], yt[2][y])));
-
-      if (y & 1) {
-        p->red   = (p->red   >> 1) + (p->red   >> 2);
-        p->green = (p->green >> 1) + (p->green >> 2);
-        p->blue  = (p->blue  >> 1) + (p->blue  >> 2);
+        if (y & 1) {
+          p->red   = (p->red   >> 1) + (p->red   >> 2);
+          p->green = (p->green >> 1) + (p->green >> 2);
+          p->blue  = (p->blue  >> 1) + (p->blue  >> 2);
+        }
       }
     }
   }
@@ -1515,23 +1512,25 @@ void bt::Image::egradient(const Color &from, const Color &to,
                                                         yt[2][y]))));
       }
     }
-    return;
-  }
+  } else {
+    // interlacing effect
+    for (y = 0; y < height; ++y) {
+      for (x = 0; x < width; ++x, ++p) {
+        p->red   = static_cast<unsigned char>
+                   (tr - (rsign * static_cast<int>(sqrt(xt[0][x]
+                                                        + yt[0][y]))));
+        p->green = static_cast<unsigned char>
+                   (tg - (gsign * static_cast<int>(sqrt(xt[1][x]
+                                                        + yt[1][y]))));
+        p->blue  = static_cast<unsigned char>
+                   (tb - (bsign * static_cast<int>(sqrt(xt[2][x]
+                                                        + yt[2][y]))));
 
-  // interlacing effect
-  for (y = 0; y < height; ++y) {
-    for (x = 0; x < width; ++x, ++p) {
-      p->red   = static_cast<unsigned char>
-                 (tr - (rsign * static_cast<int>(sqrt(xt[0][x] + yt[0][y]))));
-      p->green = static_cast<unsigned char>
-                 (tg - (gsign * static_cast<int>(sqrt(xt[1][x] + yt[1][y]))));
-      p->blue  = static_cast<unsigned char>
-                 (tb - (bsign * static_cast<int>(sqrt(xt[2][x] + yt[2][y]))));
-
-      if (y & 1) {
-        p->red   = (p->red   >> 1) + (p->red   >> 2);
-        p->green = (p->green >> 1) + (p->green >> 2);
-        p->blue  = (p->blue  >> 1) + (p->blue  >> 2);
+        if (y & 1) {
+          p->red   = (p->red   >> 1) + (p->red   >> 2);
+          p->green = (p->green >> 1) + (p->green >> 2);
+          p->blue  = (p->blue  >> 1) + (p->blue  >> 2);
+        }
       }
     }
   }
@@ -1621,26 +1620,25 @@ void bt::Image::pcgradient(const Color &from, const Color &to,
                                            std::min(xt[2][x], yt[2][y])));
       }
     }
-    return;
-  }
+  } else {
+    // interlacing effect
+    for (y = 0; y < height; ++y) {
+      for (x = 0; x < width; ++x, ++p) {
+        p->red =
+          static_cast<unsigned char>(tr - (rsign *
+                                           std::min(xt[0][x], yt[0][y])));
+        p->green =
+          static_cast<unsigned char>(tg - (gsign *
+                                           std::min(xt[1][x], yt[1][y])));
+        p->blue =
+          static_cast<unsigned char>(tb - (bsign *
+                                           std::min(xt[2][x], yt[2][y])));
 
-  // interlacing effect
-  for (y = 0; y < height; ++y) {
-    for (x = 0; x < width; ++x, ++p) {
-      p->red =
-        static_cast<unsigned char>(tr - (rsign *
-                                         std::min(xt[0][x], yt[0][y])));
-      p->green =
-        static_cast<unsigned char>(tg - (gsign *
-                                         std::min(xt[1][x], yt[1][y])));
-      p->blue =
-        static_cast<unsigned char>(tb - (bsign *
-                                         std::min(xt[2][x], yt[2][y])));
-
-      if (y & 1) {
-        p->red   = (p->red   >> 1) + (p->red   >> 2);
-        p->green = (p->green >> 1) + (p->green >> 2);
-        p->blue  = (p->blue  >> 1) + (p->blue  >> 2);
+        if (y & 1) {
+          p->red   = (p->red   >> 1) + (p->red   >> 2);
+          p->green = (p->green >> 1) + (p->green >> 2);
+          p->blue  = (p->blue  >> 1) + (p->blue  >> 2);
+        }
       }
     }
   }
@@ -1723,20 +1721,19 @@ void bt::Image::cdgradient(const Color &from, const Color &to,
         p->blue  = xt[2][x] + yt[2][y];
       }
     }
-    return;
-  }
+  } else {
+    // interlacing effect
+    for (y = 0; y < height; ++y) {
+      for (x = 0; x < width; ++x, ++p) {
+        p->red   = xt[0][x] + yt[0][y];
+        p->green = xt[1][x] + yt[1][y];
+        p->blue  = xt[2][x] + yt[2][y];
 
-  // interlacing effect
-  for (y = 0; y < height; ++y) {
-    for (x = 0; x < width; ++x, ++p) {
-      p->red   = xt[0][x] + yt[0][y];
-      p->green = xt[1][x] + yt[1][y];
-      p->blue  = xt[2][x] + yt[2][y];
-
-      if (y & 1) {
-        p->red   = (p->red   >> 1) + (p->red   >> 2);
-        p->green = (p->green >> 1) + (p->green >> 2);
-        p->blue  = (p->blue  >> 1) + (p->blue  >> 2);
+        if (y & 1) {
+          p->red   = (p->red   >> 1) + (p->red   >> 2);
+          p->green = (p->green >> 1) + (p->green >> 2);
+          p->blue  = (p->blue  >> 1) + (p->blue  >> 2);
+        }
       }
     }
   }
