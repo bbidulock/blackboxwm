@@ -315,18 +315,17 @@ BlackboxWindow::~BlackboxWindow(void) {
 
   // remove ourselves from our transient_for
   if (isTransient()) {
-    if (client.transient_for != (BlackboxWindow *) ~0ul) {
+    if (client.transient_for != (BlackboxWindow *) ~0ul)
       client.transient_for->client.transientList.remove(this);
-    }
+
     client.transient_for = (BlackboxWindow*) 0;
   }
 
   if (client.transientList.size() > 0) {
     // reset transient_for for all transients
     BlackboxWindowList::iterator it, end = client.transientList.end();
-    for (it = client.transientList.begin(); it != end; ++it) {
+    for (it = client.transientList.begin(); it != end; ++it)
       (*it)->client.transient_for = (BlackboxWindow*) 0;
-    }
   }
 
   if (frame.title)
