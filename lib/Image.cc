@@ -1199,7 +1199,7 @@ void bt::Image::vgradient(const Color &from, const Color &to,
         p->blue  = (p->blue  >> 1) + (p->blue  >> 2);
       }
 
-      for (x = 0; x < width; ++x) *p++ = *data;
+      for (x = 1; x < width; ++x, ++p) *(p+1) = *p;
 
       yr += dry;
       yg += dgy;
@@ -1212,7 +1212,7 @@ void bt::Image::vgradient(const Color &from, const Color &to,
       p->green = static_cast<unsigned char>(yg);
       p->blue  = static_cast<unsigned char>(yb);
 
-      for (x = 0; x < width; ++x) *p++ = *data;
+      for (x = 1; x < width; ++x, ++p) *(p+1) = *p;
 
       yr += dry;
       yg += dgy;
