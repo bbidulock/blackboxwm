@@ -49,8 +49,8 @@ private:
 
 
 protected:
-  void renderBevel(void);
-  void renderButton(void);
+  void renderBevel(Bool = False);
+  void renderButton(Bool = False);
   void invertImage(void);
   void renderDGradient(const BColor &, const BColor &);
   void renderHGradient(const BColor &, const BColor &);

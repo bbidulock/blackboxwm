@@ -390,8 +390,8 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
 		  create_mask, &attrib_create);
   XSaveContext(display, frame.window, session->wsContext(), (XPointer) this);
 
-  BImage image(session, frame.frame_w, frame.frame_h, session->Depth(),
-	       session->frameColor());
+  BImage image(session, frame.frame_w, frame.frame_h,
+	       session->Depth(), session->frameColor());
   Pixmap p = image.renderImage(session->toolboxTexture(), 1,
 			       session->toolboxColor(),
 			       session->toolboxToColor());
@@ -414,13 +414,11 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
   buttonGC = XCreateGC(display, frame.workspace_button,
 		       GCFont|GCForeground, &gcv);
 
-  BImage bimage(session, frame.button_w, frame.button_h, session->Depth(),
-		session->buttonColor());
-
+  BImage bimage(session, frame.button_w, frame.button_h,
+		session->Depth(), session->buttonColor());
   frame.button = bimage.renderImage(session->buttonTexture(), 0,
 				    session->buttonColor(),
 				    session->buttonToColor());
-
   frame.pbutton = bimage.renderInvertedImage(session->buttonTexture(), 0,
 					     session->buttonColor(),
 					     session->buttonToColor());
@@ -435,7 +433,6 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
   
   BImage iimage(session, frame.button_w, (frame.frame_h / 2) - 4,
 		session->Depth(), session->toolboxColor());
-
   p = iimage.renderInvertedImage(session->toolboxTexture(), 0,
 				 session->toolboxColor(),
 				 session->toolboxToColor());
@@ -452,7 +449,6 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
 
   BImage cimage(session, frame.button_w, frame.button_h,
 		session->Depth(), session->toolboxColor());
-
   p = cimage.renderInvertedImage(session->toolboxTexture(), 0,
 				 session->toolboxColor(),
 				 session->toolboxToColor());
@@ -634,8 +630,8 @@ void WorkspaceManager::Reconfigure(void) {
   gcv.foreground = session->toolboxTextColor().pixel;
   XChangeGC(display, buttonGC, GCFont|GCForeground, &gcv);
 
-  BImage image(session, frame.frame_w, frame.frame_h, session->Depth(),
-	       session->frameColor());
+  BImage image(session, frame.frame_w, frame.frame_h,
+	       session->Depth(), session->frameColor());
   Pixmap p = image.renderImage(session->toolboxTexture(), 1,
 			       session->toolboxColor(),
 			       session->toolboxToColor());
@@ -646,13 +642,11 @@ void WorkspaceManager::Reconfigure(void) {
   if (frame.button) XFreePixmap(display, frame.button);
   if (frame.pbutton) XFreePixmap(display, frame.pbutton);
 
-  BImage bimage(session, frame.button_w, frame.button_h, session->Depth(),
-		session->buttonColor());
-
+  BImage bimage(session, frame.button_w, frame.button_h,
+		session->Depth(), session->buttonColor());
   frame.button = bimage.renderImage(session->buttonTexture(), 0,
 				    session->buttonColor(),
 				    session->buttonToColor());
-
   frame.pbutton = bimage.renderInvertedImage(session->buttonTexture(), 0,
 					     session->buttonColor(),
 					     session->buttonToColor());
@@ -664,7 +658,6 @@ void WorkspaceManager::Reconfigure(void) {
   
   BImage iimage(session, frame.button_w, (frame.frame_h / 2) - 4,
 		session->Depth(), session->toolboxColor());
-
   p = iimage.renderInvertedImage(session->toolboxTexture(), 0,
 				 session->toolboxColor(),
 				 session->toolboxToColor());
@@ -673,8 +666,7 @@ void WorkspaceManager::Reconfigure(void) {
   if (p) XFreePixmap(display, p);
 
   BImage cimage(session, frame.button_w, frame.button_h,
-		session->Depth(), session->toolboxColor());
-
+	        session->Depth(), session->toolboxColor());
   p = cimage.renderInvertedImage(session->toolboxTexture(), 0,
 				 session->toolboxColor(),
 				 session->toolboxToColor());

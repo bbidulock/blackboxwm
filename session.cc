@@ -192,7 +192,7 @@ BlackboxSession::~BlackboxSession() {
   delete [] resource.menuFile;
   delete rootmenu;
   delete ws_manager;
-  XSync(display, 0);
+  XSync(display, False);
   XCloseDisplay(display);
 
   debug->msg("%s: leaving BlackboxSession::~BlackboxSession\n", __FILE__);
@@ -220,8 +220,9 @@ void BlackboxSession::InitScreen(void) {
   
   XSetErrorHandler((XErrorHandler) anotherWMRunning);
   XSelectInput(display, root, event_mask);
-  XSync(display, 0);
+  XSync(display, False);
   XSetErrorHandler((XErrorHandler) NULL);
+
 #ifdef DEBUG
   XSynchronize(display, True);
 #endif
@@ -256,6 +257,7 @@ void BlackboxSession::InitScreen(void) {
 
   InitMenu();
   ws_manager = new WorkspaceManager(this, resource.workspaces);
+  ws_manager->stackWindows(0, 0);
 
   int i;
   unsigned int nchild;
@@ -269,7 +271,7 @@ void BlackboxSession::InitScreen(void) {
     XWindowAttributes attrib;
     if (XGetWindowAttributes(display, children[i], &attrib)) {
       if ((! attrib.override_redirect) && (attrib.map_state != IsUnmapped)) {
-	XSync(display, 0);
+	XSync(display, False);
 	BlackboxWindow *nWin = new BlackboxWindow(this, children[i]);
 		
 	Atom atom;
@@ -323,7 +325,6 @@ void BlackboxSession::EventLoop(void) {
   startup = False;
 
   int xfd = ConnectionNumber(display);
-  //XSynchronize(display, True);
 
   for (; (! shutdown);) {
     if (XPending(display)) {
@@ -475,12 +476,12 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
       } else if ((wsMan = getWSManager(e->xbutton.window)) != NULL) {
 	wsMan->buttonPressEvent(&e->xbutton);
       } else if (e->xbutton.window == root && e->xbutton.button == 3) {
-	if (! rootmenu->menuVisible()) {
-	  rootmenu->moveMenu(e->xbutton.x_root - (rootmenu->Width() / 2),
-			     e->xbutton.y_root -
-			     (rootmenu->titleHeight() / 2));
+	rootmenu->moveMenu(e->xbutton.x_root - (rootmenu->Width() / 2),
+			   e->xbutton.y_root -
+			   (rootmenu->titleHeight() / 2));
+	
+	if (! rootmenu->menuVisible())
 	  rootmenu->showMenu();
-	}
       }
     }
 
@@ -583,6 +584,7 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
     if (e->xproperty.state != PropertyDelete) {
       if (e->xproperty.atom == XA_RESOURCE_MANAGER &&
 	  e->xproperty.window == root) {
+	XSync(display, False);
 	Reconfigure();
       } else {
 	BlackboxWindow *pWin = getWindow(e->xproperty.window);
@@ -601,7 +603,7 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
     if ((fWin = getWindow(e->xcrossing.window)) != NULL) {
       XGrabServer(display);
       
-      XSync(display, 0);
+      XSync(display, False);
       XEvent foo;
       if (XCheckTypedWindowEvent(display, fWin->clientWindow(),
 				 UnmapNotify, &foo)) {

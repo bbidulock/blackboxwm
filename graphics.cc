@@ -91,9 +91,15 @@ Pixmap BImage::renderInvertedImage(int texture, int bevel,
   case BlackboxSession::B_TextureRSolid:
     setBackgroundColor(color1);
     if (bevel)
-      renderBevel();
+      if (color1.r == color1.g && color1.g == color1.b && color1.b == 0)
+	renderBevel(True);
+      else
+	renderBevel();
     else
-      renderButton();
+      if (color1.r == color1.g && color1.g == color1.b && color1.b == 0)
+	renderButton(True);
+      else
+	renderButton();
 
     invertImage();
     return convertToPixmap();
@@ -102,9 +108,15 @@ Pixmap BImage::renderInvertedImage(int texture, int bevel,
   case BlackboxSession::B_TextureSSolid:
     setBackgroundColor(color1);
     if (bevel)
-      renderBevel();
+      if (color1.r == color1.g && color1.g == color1.b && color1.b == 0)
+	renderBevel(True);
+      else
+	renderBevel();
     else
-      renderButton();
+      if (color1.r == color1.g && color1.g == color1.b && color1.b == 0)
+	renderButton(True);
+      else
+	renderButton();
 
     return convertToPixmap();
     break;
@@ -206,9 +218,15 @@ Pixmap BImage::renderSolidImage(int texture, int bevel, const BColor &color) {
   case BlackboxSession::B_TextureRSolid:
     setBackgroundColor(color);
     if (bevel)
-      renderBevel();
+      if (color.r == color.g && color.g == color.b && color.b == 0)
+	renderBevel(True);
+      else
+	renderBevel();
     else
-      renderButton();
+      if (color.r == color.g && color.g == color.b && color.b == 0)
+	renderButton(True);
+      else
+	renderButton();
 
     return convertToPixmap();
     break;
@@ -216,9 +234,15 @@ Pixmap BImage::renderSolidImage(int texture, int bevel, const BColor &color) {
   case BlackboxSession::B_TextureSSolid:
     setBackgroundColor(color);
     if (bevel)
-      renderBevel();
+      if (color.r == color.g && color.g == color.b && color.b == 0)
+	renderBevel(True);
+      else
+	renderBevel();
     else
-      renderButton();
+      if (color.r == color.g && color.g == color.b && color.b == 0)
+	renderButton(True);
+      else
+	renderButton();
 
     invertImage();
     return convertToPixmap();
@@ -572,7 +596,7 @@ void BImage::setBackgroundColor(unsigned char r, unsigned char g,
 }
 
 
-void BImage::renderBevel(void) {
+void BImage::renderBevel(Bool solidblack) {
   if (height > 4) {
     unsigned long pix0 = 0, pix1 = 0;
     unsigned char r, g, b, rr, gg, bb;
@@ -581,8 +605,7 @@ void BImage::renderBevel(void) {
     unsigned int w = width - 2, h = height - 1, wh = width * (height - 3);
     unsigned long *p = data + width + 1;
     
-    if (bg_color.r == bg_color.g && bg_color.g == bg_color.b &&
-	bg_color.b == 0) {
+    if (solidblack) {
       pix0 = 0xc0c0c0;
       pix1 = 0x606060;
       
@@ -660,7 +683,7 @@ void BImage::renderBevel(void) {
 }
 
 
-void BImage::renderButton(void) {
+void BImage::renderButton(Bool solidblack) {
   if (height > 2) {
     unsigned long pix0 = 0, pix1 = 0;
     unsigned char r, g, b, rr ,gg ,bb;
@@ -669,8 +692,7 @@ void BImage::renderButton(void) {
     unsigned int w = width, h = height - 1, wh = w * h;
     unsigned long *p = data;
     
-    if (bg_color.r == bg_color.g && bg_color.g == bg_color.b &&
-	bg_color.b == 0) {
+    if (solidblack) {
       pix0 = 0xc0c0c0;
       pix1 = 0x606060;
       

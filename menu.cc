@@ -347,7 +347,7 @@ void BlackboxMenu::updateMenu(void) {
 
   XMapSubwindows(display, menu.frame);
   XFlush(display);
-  XSync(display, 0);
+  XSync(display, False);
   XUngrabServer(display);
 
   debug->msg("%s: leaving BlackboxMenu::updateMenu\n", __FILE__);

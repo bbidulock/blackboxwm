@@ -84,6 +84,9 @@ void BlackboxWindowMenu::itemPressed(int button, int item) {
     send_to_menu->updateMenu();
     XRaiseWindow(session->control(), send_to_menu->windowID());
     BlackboxMenu::drawSubmenu(item);
+  } else if (button == 3 && item == 0) {
+    send_to_menu->updateMenu();
+    XRaiseWindow(session->control(), send_to_menu->windowID());
   }
 }
 
@@ -556,11 +559,9 @@ void BlackboxWindow::createDecorations(void) {
   
   BImage image(session, frame.title_w, frame.title_h, session->Depth(),
 	       session->focusColor());
-
   frame.ftitle = image.renderImage(session->windowTexture(), 1,
 				   session->focusColor(),
 				   session->focusToColor());
-  
   frame.utitle = image.renderImage(session->windowTexture(), 1,
 				   session->unfocusColor(),
 				   session->unfocusToColor());
@@ -569,13 +570,11 @@ void BlackboxWindow::createDecorations(void) {
   XClearWindow(display, frame.title);
   
   if (do_handle) {
-    BImage h_image(session, frame.handle_w, frame.handle_h, session->Depth(),
-		   session->focusColor());
-    
+    BImage h_image(session, frame.handle_w, frame.handle_h,
+		   session->Depth(), session->focusColor());
     frame.fhandle = h_image.renderImage(session->windowTexture(), 1,
 					session->focusColor(),
 					session->focusToColor());
-    
     frame.uhandle = h_image.renderImage(session->windowTexture(), 1,
 					session->unfocusColor(),
 					session->unfocusToColor());
@@ -583,9 +582,8 @@ void BlackboxWindow::createDecorations(void) {
     XSetWindowBackground(display, frame.handle, frame.uhandle);
     XClearWindow(display, frame.handle);
     
-    BImage rh_image(session, frame.handle_w, frame.button_h, session->Depth(),
-		    session->buttonColor());
-
+    BImage rh_image(session, frame.handle_w, frame.button_h,
+		    session->Depth(), session->buttonColor());
     frame.rhandle = rh_image.renderImage(session->buttonTexture(), 0,
 					 session->buttonColor(),
 					 session->buttonToColor());
@@ -596,14 +594,12 @@ void BlackboxWindow::createDecorations(void) {
   
   BImage button_image(session, frame.button_w, frame.button_h,
 		      session->Depth(), session->buttonColor());
-
   frame.button = button_image.renderImage(session->buttonTexture(), 0,
 					  session->buttonColor(),
 					  session->buttonToColor());
-  frame.pbutton =
-    button_image.renderInvertedImage(session->buttonTexture(), 0,
-				     session->buttonColor(),
-				     session->buttonToColor());
+  frame.pbutton = button_image.renderInvertedImage(session->buttonTexture(), 0,
+						   session->buttonColor(),
+						   session->buttonToColor());
 
   XGCValues gcv;
   gcv.foreground = session->unfocusTextColor().pixel;
@@ -760,14 +756,12 @@ void BlackboxWindow::Reconfigure(void) {
 
   BImage button_image(session, frame.button_w, frame.button_h,
 		      session->Depth(), session->buttonColor());
-
   frame.button = button_image.renderImage(session->buttonTexture(), 0,
 					  session->buttonColor(),
 					  session->buttonToColor());
-  frame.pbutton =
-    button_image.renderInvertedImage(session->buttonTexture(), 0,
-				     session->buttonColor(),
-				     session->buttonToColor());
+  frame.pbutton = button_image.renderInvertedImage(session->buttonTexture(), 0,
+						   session->buttonColor(),
+						   session->buttonToColor());
   positionButtons();
   
   if (frame.ftitle) XFreePixmap(display, frame.ftitle);
@@ -775,11 +769,9 @@ void BlackboxWindow::Reconfigure(void) {
   
   BImage image(session, frame.title_w, frame.title_h, session->Depth(),
 	       session->focusColor());
-  
   frame.ftitle = image.renderImage(session->windowTexture(), 1,
 				   session->focusColor(),
 				   session->focusToColor());
-  
   frame.utitle = image.renderImage(session->windowTexture(), 1,
 				   session->unfocusColor(),
 				   session->unfocusToColor());
@@ -790,19 +782,16 @@ void BlackboxWindow::Reconfigure(void) {
     
     BImage h_image(session, frame.handle_w, frame.handle_h,
 		   session->Depth(), session->focusColor());
-    
     frame.fhandle = h_image.renderImage(session->windowTexture(), 1,
 					session->focusColor(),
 					session->focusToColor());
-    
     frame.uhandle = h_image.renderImage(session->windowTexture(), 1,
 					session->unfocusColor(),
 					session->unfocusToColor());
 
     if (frame.rhandle) XFreePixmap(display, frame.rhandle);
-    BImage rh_image(session, frame.handle_w, frame.button_h, session->Depth(),
-		    session->buttonColor());
-
+    BImage rh_image(session, frame.handle_w, frame.button_h,
+		    session->Depth(), session->buttonColor());
     frame.rhandle = rh_image.renderImage(session->buttonTexture(), 0,
 					 session->buttonColor(),
 					 session->buttonToColor());
@@ -1107,13 +1096,11 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
     if (frame.ftitle) XFreePixmap(display, frame.ftitle);
     if (frame.utitle) XFreePixmap(display, frame.utitle);
 
-    BImage image(session, frame.title_w, frame.title_h, session->Depth(),
-		 session->focusColor());
-
+    BImage image(session, frame.title_w, frame.title_h,
+		 session->Depth(), session->focusColor());
     frame.ftitle = image.renderImage(session->windowTexture(), 1,
 				     session->focusColor(),
 				     session->focusToColor());
-
     frame.utitle = image.renderImage(session->windowTexture(), 1,
 				     session->unfocusColor(),
 				     session->unfocusToColor());
@@ -1124,11 +1111,9 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
       
       BImage h_image(session, frame.handle_w, frame.handle_h,
 		     session->Depth(), session->focusColor());
-
       frame.fhandle = h_image.renderImage(session->windowTexture(), 1,
 					  session->focusColor(),
 					  session->focusToColor());
-
       frame.uhandle = h_image.renderImage(session->windowTexture(), 1,
 					  session->unfocusColor(),
 					  session->unfocusToColor());
@@ -1305,7 +1290,7 @@ void BlackboxWindow::withdrawWindow(void) {
   debug->msg("%s: BlackboxWindow::withdrawWindow\n", __FILE__);
 
   XGrabServer(display);
-  XSync(display, 0);
+  XSync(display, False);
   
   unsigned long state[2];
   state[0] = (unsigned long) WithdrawnState;
@@ -1582,7 +1567,7 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
 
   if (ue->window == client.window) {
     XGrabServer(display);
-    XSync(display, 0);
+    XSync(display, False);
 
     unsigned long state[2];
     state[0] = (unsigned long) ((iconic) ? IconicState : WithdrawnState);
