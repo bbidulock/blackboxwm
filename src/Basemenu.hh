@@ -111,20 +111,17 @@ protected:
     virtual void buttonPressEvent( XEvent * );
     virtual void buttonReleaseEvent( XEvent * );
     virtual void pointerMotionEvent( XEvent * );
-    virtual void enterEvent( XEvent * );
     virtual void leaveEvent( XEvent * );
     virtual void exposeEvent( XEvent *);
-    virtual void mapEvent( XEvent * );
-    virtual void unmapEvent( XEvent * );
-    virtual void configureEvent( XEvent * );
 
     virtual void titleClicked( const Point &, int );
     virtual void itemClicked( const Point &, const Item &, int );
 
+    virtual void hideAll();
+
 private:
     void drawTitle();
     void drawItem( const Rect &, const Item & );
-    void hideAll();
 
     Pixmap title_pixmap, items_pixmap, highlight_pixmap;
     Rect title_rect;

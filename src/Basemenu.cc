@@ -729,7 +729,9 @@ void Basemenu::showSubmenu( const Rect &r, const Item &item )
 	return;
 
     // show the submenu
-    Point p = pos() + Point( r.x() + r.width(), r.y() - 1 );
+    Point p = pos() + Point( r.x() + r.width(),
+			     r.y() - ( item.submenu()->show_title ?
+				       item.submenu()->title_rect.height() + 1  : 1 ) );
     current_submenu = item.submenu();
     current_submenu->popup( p, false );
 }
@@ -912,10 +914,6 @@ void Basemenu::pointerMotionEvent( XEvent *e )
     }
 }
 
-void Basemenu::enterEvent( XEvent * )
-{
-}
-
 void Basemenu::leaveEvent( XEvent * )
 {
     slist<Item>::iterator it = items.begin();
@@ -936,8 +934,9 @@ void Basemenu::leaveEvent( XEvent * )
 	Item &item = (*it++);
 	r.setRect( x, y, itemw, item.height );
 
-	if ( item.active && item.submenu() != current_submenu ) {
-	    item.active = false;
+	if ( item.active && ( ! current_submenu ||
+			      current_submenu != item.submenu() ) ) {
+		item.active = false;
 	    XClearArea( *BaseDisplay::instance(), windowID(),
 			r.x(), r.y(), r.width(), r.height(), True );
 	}
@@ -1021,21 +1020,6 @@ void Basemenu::exposeEvent( XEvent *e )
 
     cache->release( tgc );
     cache->release( igc );
-}
-
-void Basemenu::mapEvent( XEvent *e )
-{
-    Widget::mapEvent( e );
-}
-
-void Basemenu::unmapEvent( XEvent *e )
-{
-    Widget::unmapEvent( e );
-}
-
-void Basemenu::configureEvent( XEvent *e )
-{
-    Widget::configureEvent( e );
 }
 
 void Basemenu::titleClicked( const Point &, int button )
