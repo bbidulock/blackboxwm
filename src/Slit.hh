@@ -36,51 +36,51 @@ class Slitmenu;
 
 class Slitmenu : public Basemenu {
 private:
-  class Directionmenu : public Basemenu {
-  private:
-    Slitmenu *slitmenu;
+    class Directionmenu : public Basemenu {
+    private:
+	Slitmenu *slitmenu;
 
-  protected:
-    virtual void itemSelected(int, int);
+    protected:
+	virtual void itemSelected(int, int);
 
-  public:
-    Directionmenu(Slitmenu *);
-  };
+    public:
+	Directionmenu(Slitmenu *);
+    };
 
-  class Placementmenu : public Basemenu {
-  private:
-    Slitmenu *slitmenu;
+    class Placementmenu : public Basemenu {
+    private:
+	Slitmenu *slitmenu;
 
-  protected:
-    virtual void itemSelected(int, int);
+    protected:
+	virtual void itemSelected(int, int);
 
-  public:
-    Placementmenu(Slitmenu *);
-  };
+    public:
+	Placementmenu(Slitmenu *);
+    };
 
-  Directionmenu *directionmenu;
-  Placementmenu *placementmenu;
+    Directionmenu *directionmenu;
+    Placementmenu *placementmenu;
 
-  Slit *slit;
+    Slit *slit;
 
-  friend class Directionmenu;
-  friend class Placementmenu;
-  friend class Slit;
+    friend class Directionmenu;
+    friend class Placementmenu;
+    friend class Slit;
 
 
 protected:
-  virtual void itemSelected(int, int);
-  virtual void internal_hide(void);
+    virtual void itemSelected(int, int);
+    virtual void internal_hide();
 
 
 public:
-  Slitmenu(Slit *);
-  virtual ~Slitmenu(void);
+    Slitmenu(Slit *);
+    virtual ~Slitmenu();
 
-  inline Basemenu *getDirectionmenu(void) { return directionmenu; }
-  inline Basemenu *getPlacementmenu(void) { return placementmenu; }
+    Basemenu *getDirectionmenu() const { return directionmenu; }
+    Basemenu *getPlacementmenu() const { return placementmenu; }
 
-  void reconfigure(void);
+    void reconfigure();
 };
 
 
@@ -121,35 +121,35 @@ public:
   Slit(BScreen *);
   virtual ~Slit();
 
-  inline const Bool &isOnTop(void) const { return on_top; }
-  inline const Bool &isHidden(void) const { return hidden; }
-  inline const Bool &doAutoHide(void) const { return do_auto_hide; }
+  inline const Bool &isOnTop() const { return on_top; }
+  inline const Bool &isHidden() const { return hidden; }
+  inline const Bool &doAutoHide() const { return do_auto_hide; }
 
   inline Slitmenu *getMenu() { return slitmenu; }
 
   inline const Window &getWindowID() const { return frame.window; }
 
-  inline const int &getX(void) const
+  inline const int &getX() const
   { return ((hidden) ? frame.x_hidden : frame.x); }
-  inline const int &getY(void) const
+  inline const int &getY() const
   { return ((hidden) ? frame.y_hidden : frame.y); }
 
-    unsigned int width(void) const { return frame.width; }
-    unsigned int height(void) const { return frame.height; }
+    unsigned int width() const { return frame.width; }
+    unsigned int height() const { return frame.height; }
 
   void addClient(Window);
   void removeClient(SlitClient *, Bool = True);
   void removeClient(Window, Bool = True);
-  void reconfigure(void);
-  void reposition(void);
-  void shutdown(void);
+  void reconfigure();
+  void reposition();
+  void shutdown();
 
   void buttonPressEvent(XButtonEvent *);
   void enterNotifyEvent(XCrossingEvent *);
   void leaveNotifyEvent(XCrossingEvent *);
   void configureRequestEvent(XConfigureRequestEvent *);
 
-  virtual void timeout(void);
+  virtual void timeout();
 
   enum { Vertical = 1, Horizontal };
   enum { TopLeft = 1, CenterLeft, BottomLeft, TopCenter, BottomCenter,

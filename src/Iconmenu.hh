@@ -25,19 +25,18 @@
 
 #include "Basemenu.hh"
 
-// forward declaration
-class Iconmenu;
 class BScreen;
 
-class Iconmenu : public Basemenu {
-private:
-  BScreen *screen;
+class Iconmenu : public Basemenu
+{
+public:
+    Iconmenu( BScreen * );
 
 protected:
-  virtual void itemSelected(int, int);
+    virtual void itemSelected(int, int);
 
-public:
-  Iconmenu(BScreen *);
+private:
+    BScreen *screen;
 };
 
 

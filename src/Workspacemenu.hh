@@ -25,19 +25,18 @@
 
 #include "Basemenu.hh"
 
-// forward declaration
-class Workspacemenu;
 class Toolbar;
 
-class Workspacemenu : public Basemenu {
-private:
-  BScreen *screen;
-
-protected:
-  virtual void itemSelected( int, int );
-
+class Workspacemenu : public Basemenu
+{
 public:
   Workspacemenu( BScreen * );
+
+protected:
+    virtual void itemClicked( const Point &, const Item &, int );
+
+private:
+  BScreen *screen;
 };
 
 

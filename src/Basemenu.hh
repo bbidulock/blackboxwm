@@ -30,10 +30,10 @@
 
 // new basemenu popup
 
-class Basemenu2 : public Widget
+class Basemenu : public Widget
 {
 public:
-    enum Function { Submenu, Custom };
+    enum Function { Submenu = -2, Custom = -1 };
 
     class Item {
     public:
@@ -46,7 +46,7 @@ public:
 	    : def( false ), sep( false ),
 	      active( false ), title( false ), enable( true ), checked( false ),
 	      sub( 0 ), fun( f ), idx( -1 ), height( 0 ) { }
-	Item( Basemenu2 *s )
+	Item( Basemenu *s )
 	    : def( false ), sep( false ),
 	      active( false ), title( false ), enable( true ), checked( false ),
 	      sub( s ), fun( Submenu ), idx( -1 ), height( 0 ) { }
@@ -59,27 +59,27 @@ public:
 	bool isChecked() const { return checked; }
 	const string &label() const { return lbl; }
 	int function() const { return fun; }
-	Basemenu2 *submenu() const { return sub; }
+	Basemenu *submenu() const { return sub; }
 	int index() const { return idx; }
 
     private:
-	bool def;
-	bool sep;
-	bool active;
-	bool title;
-	bool enable;
-	bool checked;
-	Basemenu2 *sub;
+	unsigned int     def : 1;
+	unsigned int     sep : 1;
+	unsigned int  active : 1;
+	unsigned int   title : 1;
+	unsigned int  enable : 1;
+	unsigned int checked : 1;
+	Basemenu *sub;
 	int fun;
 	int idx;
 	int height;
 	string lbl;
 
-	friend class Basemenu2;
+	friend class Basemenu;
     };
 
-    Basemenu2( int scr );
-    virtual ~Basemenu2();
+    Basemenu( int scr );
+    virtual ~Basemenu();
 
     int insert( const string &label, const Item &item = Item::Default, int index = -1 );
     int insertSeparator() { return insert( string(), Item::Separator ); }
@@ -100,6 +100,8 @@ public:
     virtual void popup( int, int, bool = true );
     virtual void popup( const Point &, bool = true );
     virtual void hide();
+
+    virtual void reconfigure();
 
 protected:
     virtual void setActiveItem( const Rect &, Item & );
@@ -128,7 +130,7 @@ private:
     Rect title_rect;
     Rect items_rect;
     slist<Item> items;
-    Basemenu2 *parent_menu, *current_submenu;
+    Basemenu *parent_menu, *current_submenu;
     int motion;
     int rows, cols;
     int itemw;
@@ -138,151 +140,5 @@ private:
     bool pressed;
     bool title_pressed;
 };
-
-
-
-
-// old basemenu
-
-#include <X11/Xlib.h>
-
-class Blackbox;
-class BImageControl;
-class BScreen;
-class Basemenu;
-class BasemenuItem;
-#include "LinkedList.hh"
-
-
-class Basemenu {
-private:
-  LinkedList<BasemenuItem> *menuitems;
-  Blackbox *blackbox;
-  Basemenu *parent;
-  BImageControl *image_ctrl;
-  BScreen *screen;
-
-  Bool moving, visible, movable, torn, internal_menu, title_vis, shifted,
-    hide_tree;
-  int which_sub, which_press, which_sbl, alignment;
-
-  struct _menu {
-    Pixmap frame_pixmap, title_pixmap, hilite_pixmap, sel_pixmap;
-    Window window, frame, title;
-
-    char *label;
-    int x, y, x_move, y_move, x_shift, y_shift, sublevels, persub, minsub,
-      grab_x, grab_y;
-    unsigned int width, height, title_h, frame_h, item_w, item_h, bevel_w,
-      bevel_h;
-  } menu;
-
-
-protected:
-  inline BasemenuItem *find(int index) { return menuitems->find(index); }
-  inline void setTitleVisibility(Bool b) { title_vis = b; }
-  inline void setMovable(Bool b) { movable = b; }
-  inline void setHideTree(Bool h) { hide_tree = h; }
-  inline void setMinimumSublevels(int m) { menu.minsub = m; }
-
-  virtual void itemSelected(int, int) = 0;
-  virtual void drawItem(int, Bool = False, Bool = False,
-			int = -1, int = -1, unsigned int = 0,
-			unsigned int = 0);
-  virtual void redrawTitle();
-  virtual void internal_hide(void);
-
-
-public:
-  Basemenu(BScreen *);
-  virtual ~Basemenu(void);
-
-    Window getWindowID() const { return menu.window; }
-
-  inline const Bool &isTorn(void) const { return torn; }
-  inline const Bool &isVisible(void) const { return visible; }
-
-  inline const char *getLabel(void) const { return menu.label; }
-
-  int insert(const char *, int = 0, const char * = (const char *) 0, int = -1);
-  int insert(const char **, int = -1, int = 0);
-  int insert(const char *, Basemenu *, int = -1);
-  int remove(int);
-
-  inline const int &getX(void) const { return menu.x; }
-  inline const int &getY(void) const { return menu.y; }
-  inline int getCount(void) { return menuitems->count(); }
-  inline const int &getCurrentSubmenu(void) const { return which_sub; }
-
-  unsigned int width(void) const { return menu.width; }
-  unsigned int height(void) const { return menu.height; }
-  unsigned int getTitleHeight(void) const { return menu.title_h; }
-
-  inline void setInternalMenu(void) { internal_menu = True; }
-  inline void setAlignment(int a) { alignment = a; }
-  inline void setTorn(void) { torn = True; }
-  inline void removeParent(void)
-    { if (internal_menu) parent = (Basemenu *) 0; }
-
-  Bool hasSubmenu(int);
-  Bool isItemSelected(int);
-  Bool isItemEnabled(int);
-
-  void buttonPressEvent(XButtonEvent *);
-  void buttonReleaseEvent(XButtonEvent *);
-  void motionNotifyEvent(XMotionEvent *);
-  void enterNotifyEvent(XCrossingEvent *);
-  void leaveNotifyEvent(XCrossingEvent *);
-  void exposeEvent(XExposeEvent *);
-
-  void reconfigure(void);
-  void setLabel(const char *n);
-  void move(int, int);
-  void update(void);
-  void setItemSelected(int, Bool);
-  void setItemEnabled(int, Bool);
-
-  virtual void drawSubmenu(int);
-  virtual void show(void);
-  virtual void hide(void);
-
-  enum { AlignDontCare = 1, AlignTop, AlignBottom };
-  enum { Right = 1, Left };
-  enum { Empty = 0, Square, Triangle, Diamond };
-};
-
-
-class BasemenuItem {
-private:
-  Basemenu *s;
-  const char **u, *l, *e;
-  int f, enabled, selected;
-
-  friend class Basemenu;
-
-protected:
-
-public:
-  BasemenuItem(const char *lp, int fp, const char *ep = (const char *) 0):
-    s(0), u(0), l(lp), e(ep), f(fp), enabled(1), selected(0) {}
-
-  BasemenuItem(const char *lp, Basemenu *mp): s(mp), u(0), l(lp), e(0), f(0),
-					      enabled(1), selected(0) {}
-
-  BasemenuItem(const char **up, int fp): s(0), u(up), l(0), e(0), f(fp),
-					 enabled(1), selected(0) {}
-
-  inline const char *exec(void) const { return e; }
-  inline const char *label(void) const { return l; }
-  inline const char **ulabel(void) const { return u; }
-  inline const int &function(void) const { return f; }
-  inline Basemenu *submenu(void) { return s; }
-
-  inline const int &isEnabled(void) const { return enabled; }
-  inline void setEnabled(int e) { enabled = e; }
-  inline const int &isSelected(void) const { return selected; }
-  inline void setSelected(int s) { selected = s; }
-};
-
 
 #endif // __Basemenu_hh

@@ -89,7 +89,7 @@ void BColor::parseColorName()
 	scrn = DefaultScreen( BaseDisplay::instance()->x11Display() );
 
     BaseDisplay *display = BaseDisplay::instance();
-    Colormap colormap = display->getScreenInfo( scrn )->colormap();
+    Colormap colormap = display->screenInfo( scrn )->colormap();
 
     // get rgb values from colorname
     XColor xcol;
@@ -110,11 +110,13 @@ void BColor::parseColorName()
 
 void BColor::allocate()
 {
-    BaseDisplay *display = BaseDisplay::instance();
-    Colormap colormap = display->getScreenInfo( scrn )->colormap();
-
-    if ( scrn == -1 )
+    if ( scrn == -1 ) {
+	abort();
 	scrn = DefaultScreen( BaseDisplay::instance()->x11Display() );
+    }
+
+    BaseDisplay *display = BaseDisplay::instance();
+    Colormap colormap = display->screenInfo( scrn )->colormap();
 
     if ( ! isValid() ) {
 	if ( colorname.empty() ) {
@@ -213,7 +215,7 @@ void BColor::doCacheCleanup()
 	}
 
 	if ( count > 0 )
-	    XFreeColors( *display, display->getScreenInfo( i )->colormap(),
+	    XFreeColors( *display, display->screenInfo( i )->colormap(),
 			 pixels, count, 0 );
     }
 

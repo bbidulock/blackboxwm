@@ -34,35 +34,35 @@ class Toolbar;
 
 class Toolbarmenu : public Basemenu {
 private:
-  class Placementmenu : public Basemenu {
-  private:
-    Toolbarmenu *toolbarmenu;
+    class Placementmenu : public Basemenu {
+    private:
+	Toolbarmenu *toolbarmenu;
 
-  protected:
-    virtual void itemSelected(int, int);
+    protected:
+	virtual void itemSelected(int, int);
 
-  public:
-    Placementmenu(Toolbarmenu *);
-  };
+    public:
+	Placementmenu(Toolbarmenu *);
+    };
 
-  Toolbar *toolbar;
-  Placementmenu *placementmenu;
+    Toolbar *toolbar;
+    Placementmenu *placementmenu;
 
-  friend class Placementmenu;
-  friend class Toolbar;
+    friend class Placementmenu;
+    friend class Toolbar;
 
 
 protected:
-  virtual void itemSelected(int, int);
-  virtual void internal_hide(void);
+    virtual void itemSelected(int, int);
+    virtual void internal_hide();
 
 public:
-  Toolbarmenu(Toolbar *);
-  ~Toolbarmenu(void);
+    Toolbarmenu( Toolbar * );
+    ~Toolbarmenu();
 
-  inline Basemenu *getPlacementmenu(void) { return placementmenu; }
+    Basemenu *getPlacementmenu() const { return placementmenu; }
 
-  void reconfigure(void);
+    void reconfigure();
 };
 
 

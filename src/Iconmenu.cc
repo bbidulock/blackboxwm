@@ -34,31 +34,26 @@
 #include "Iconmenu.hh"
 #include "Screen.hh"
 #include "Window.hh"
+#include "Workspacemenu.hh"
 
 
-Iconmenu::Iconmenu(BScreen *scrn) : Basemenu(scrn) {
-  setInternalMenu();
-
-  screen = scrn;
-
-  setLabel(i18n->getMessage(IconSet, IconIcons, "Icons"));
-  update();
+Iconmenu::Iconmenu( BScreen *scrn )
+    : Basemenu( scrn->screen() )
+{
+    screen = scrn;
 }
 
 
 void Iconmenu::itemSelected(int button, int index) {
-  if (button != 1)
-    return;
+    if (button != 1)
+	return;
 
-  if (index >= 0 && index < screen->getIconCount()) {
-    BlackboxWindow *win = screen->icon(index);
+    if (index >= 0 && index < screen->getIconCount()) {
+	BlackboxWindow *win = screen->icon(index);
 
-    if (win) {
-      win->deiconify();
-      win->setInputFocus();
+	if (win) {
+	    win->deiconify();
+	    win->setInputFocus();
+	}
     }
-  }
-
-  if (! (screen->getWorkspacemenu()->isTorn() || isTorn()))
-    hide();
 }

@@ -102,7 +102,7 @@ BImage::BImage(BImageControl *c, unsigned int w, unsigned int h)
 			    &red_offset, &green_offset, &blue_offset,
 			    &red_bits, &green_bits, &blue_bits);
 
-    if (control->getVisual()->c_class != TrueColor)
+    if (control->getScreenInfo()->visual()->c_class != TrueColor)
 	control->getXColorTable(&colors, &ncolors);
 }
 
@@ -275,7 +275,7 @@ XImage *BImage::renderXImage(void)
     BaseDisplay *display = BaseDisplay::instance();
   XImage *image =
     XCreateImage(*display,
-                 control->getVisual(), control->getDepth(), ZPixmap, 0, 0,
+                 control->getScreenInfo()->visual(), control->getDepth(), ZPixmap, 0, 0,
                  width, height, 32, 0);
 
   if (! image) {
@@ -312,7 +312,7 @@ XImage *BImage::renderXImage(void)
                                     { 63, 31, 55, 23, 61, 29, 53, 21 } };
 #endif // ORDEREDPSEUDO
 
-    switch (control->getVisual()->c_class) {
+    switch (control->getScreenInfo()->visual()->c_class) {
     case TrueColor:
       // algorithm: ordered dithering... many many thanks to rasterman
       // (raster@rasterman.com) for telling me about this... portions of this
@@ -519,7 +519,7 @@ XImage *BImage::renderXImage(void)
       return (XImage *) 0;
     }
   } else {
-    switch (control->getVisual()->c_class) {
+    switch (control->getScreenInfo()->visual()->c_class) {
     case StaticColor:
     case PseudoColor:
       for (y = 0, offset = 0; y < height; y++) {
@@ -1822,15 +1822,15 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
 
     red_offset = green_offset = blue_offset = 0;
 
-    switch (getVisual()->c_class) {
+    switch (screeninfo->visual()->c_class) {
     case TrueColor:
 	{
 	    int i;
 
 	    // compute color tables
-	    unsigned long red_mask = getVisual()->red_mask,
-			green_mask = getVisual()->green_mask,
-			 blue_mask = getVisual()->blue_mask;
+	    unsigned long red_mask = screeninfo->visual()->red_mask,
+			green_mask = screeninfo->visual()->green_mask,
+			 blue_mask = screeninfo->visual()->blue_mask;
 
 	    while (! (red_mask & 1)) { red_offset++; red_mask >>= 1; }
 	    while (! (green_mask & 1)) { green_offset++; green_mask >>= 1; }
@@ -1955,7 +1955,7 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
     case StaticGray:
 	{
 
-	    if (getVisual()->c_class == StaticGray) {
+	    if (screeninfo->visual()->c_class == StaticGray) {
 		ncolors = 1 << screen_depth;
 	    } else {
 		ncolors = colors_per_channel * colors_per_channel * colors_per_channel;
@@ -2054,7 +2054,7 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
     default:
 	fprintf(stderr, i18n->getMessage(ImageSet, ImageUnsupVisual,
 					 "BImageControl::BImageControl: unsupported "
-					 "visual %d\n"), getVisual()->c_class);
+					 "visual %d\n"), screeninfo->visual()->c_class);
 	exit(1);
     }
 

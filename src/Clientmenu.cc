@@ -38,11 +38,11 @@
 #include "Workspacemenu.hh"
 
 
-Clientmenu::Clientmenu(Workspace *ws) : Basemenu(ws->getScreen()) {
-  wkspc = ws;
-  screen = wkspc->getScreen();
-
-  setInternalMenu();
+Clientmenu::Clientmenu(Workspace *ws)
+    : Basemenu( ws->getScreen()->screen() )
+{
+    wkspc = ws;
+    screen = wkspc->getScreen();
 }
 
 
@@ -59,6 +59,4 @@ void Clientmenu::itemSelected(int button, int index) {
     wkspc->raiseWindow(win);
     win->setInputFocus();
   }
-
-  if (! (screen->getWorkspacemenu()->isTorn() || isTorn())) hide();
 }

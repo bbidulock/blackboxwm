@@ -1,5 +1,7 @@
 .cvsignore
 Makefile
+blackbox
+.deps
 BaseDisplay.cc.flc
 Basemenu.cc.flc
 Clientmenu.cc.flc

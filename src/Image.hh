@@ -30,6 +30,8 @@
 #include "LinkedList.hh"
 #include "Timer.hh"
 
+class ScreenInfo;
+
 class BTexture;
 class BImageControl;
 
@@ -123,8 +125,6 @@ public:
     ScreenInfo *getScreenInfo(void) { return screeninfo; }
 
     const Window &getDrawable(void) const { return window; }
-
-    Visual *getVisual(void) { return screeninfo->visual(); }
 
     const int &getBitsPerPixel(void) const { return bits_per_pixel; }
     const int &getDepth(void) const { return screen_depth; }

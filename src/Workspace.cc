@@ -91,8 +91,8 @@ const int Workspace::addWindow(BlackboxWindow *w, Bool place) {
   stackingList->insert(w, 0);
   windowList->insert(w);
 
-  clientmenu->insert((const char **) w->getTitle());
-  clientmenu->update();
+  // clientmenu->insert((const char **) w->getTitle());
+  // clientmenu->update();
 
   screen->updateNetizenWindowAdd(w->getClientWindow(), id);
 
@@ -112,11 +112,11 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
 	w->getTransientFor()->isVisible()) {
       w->getTransientFor()->setInputFocus();
     } else if (screen->isSloppyFocus()) {
-      screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
+	Blackbox::instance()->setFocusedWindow((BlackboxWindow *) 0);
     } else {
       BlackboxWindow *top = stackingList->first();
       if (! top || ! top->setInputFocus()) {
-	screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
+	Blackbox::instance()->setFocusedWindow((BlackboxWindow *) 0);
 	XSetInputFocus(*BaseDisplay::instance(),
 		       screen->getToolbar()->getWindowID(),
 		       RevertToParent, CurrentTime);
@@ -129,7 +129,6 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
 
   windowList->remove(w->getWindowNumber());
   clientmenu->remove(w->getWindowNumber());
-  clientmenu->update();
 
   screen->updateNetizenWindowDel(w->getClientWindow());
 
@@ -273,12 +272,11 @@ const int Workspace::getCount(void) {
   return windowList->count();
 }
 
-
-void Workspace::update(void) {
-  clientmenu->update();
-  screen->getToolbar()->redrawWindowLabel(True);
+void Workspace::update(void)
+{
+    // clientmenu->update();
+    screen->getToolbar()->redrawWindowLabel(True);
 }
-
 
 Bool Workspace::isCurrent(void) {
   return (id == screen->getCurrentWorkspaceID());
@@ -306,8 +304,8 @@ void Workspace::setName(char *new_name) {
 				   "Workspace %d"), id + 1);
   }
 
-  clientmenu->setLabel(name);
-  clientmenu->update();
+  clientmenu->setTitle(name);
+  // clientmenu->update();
 }
 
 
@@ -323,8 +321,8 @@ void Workspace::placeWindow(BlackboxWindow *win) {
 
   XRectangle availableArea = screen->availableArea();
 
-  const int win_w = win->getWidth() + (screen->getBorderWidth() * 4),
-    win_h = win->getHeight() + (screen->getBorderWidth() * 4),
+  const int win_w = win->getWidth() + (screen->style()->borderWidth() * 4),
+    win_h = win->getHeight() + (screen->style()->borderWidth() * 4),
     start_pos_x = availableArea.x, start_pos_y = availableArea.y,
     change_y =
       ((screen->getColPlacementDirection() == BScreen::TopBottom) ? 1 : -1),
@@ -354,10 +352,10 @@ void Workspace::placeWindow(BlackboxWindow *win) {
         it.reset();
         for (BlackboxWindow *curr = it.current(); placed && curr;
 	     it++, curr = it.current()) {
-          int curr_w = curr->getWidth() + (screen->getBorderWidth() * 4);
+          int curr_w = curr->getWidth() + (screen->style()->borderWidth() * 4);
           int curr_h =
 	    ((curr->isShaded()) ? curr->getTitleHeight() : curr->getHeight()) +
-            (screen->getBorderWidth() * 4);
+            (screen->style()->borderWidth() * 4);
 
           if (curr->getXFrame() < place_x + win_w &&
               curr->getXFrame() + curr_w > place_x &&
@@ -396,10 +394,10 @@ void Workspace::placeWindow(BlackboxWindow *win) {
         it.reset();
         for (BlackboxWindow *curr = it.current(); placed && curr;
 	     it++, curr = it.current()) {
-          int curr_w = curr->getWidth() + (screen->getBorderWidth() * 4);
+          int curr_w = curr->getWidth() + (screen->style()->borderWidth() * 4);
           int curr_h =
             ((curr->isShaded()) ? curr->getTitleHeight() : curr->getHeight()) +
-            (screen->getBorderWidth() * 4);
+            (screen->style()->borderWidth() * 4);
 
           if (curr->getXFrame() < place_x + win_w &&
               curr->getXFrame() + curr_w > place_x &&

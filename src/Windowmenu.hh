@@ -30,7 +30,7 @@
 class BlackboxWindow;
 class SendToMenu;
 
-class Windowmenu : public Basemenu2
+class Windowmenu : public Basemenu
 {
 public:
     enum Function { Shade, Iconify, Maximize, Restore, Raise, Lower, Stick,

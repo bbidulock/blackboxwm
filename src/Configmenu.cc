@@ -30,11 +30,16 @@
 # include "../config.h"
 #endif // HAVE_CONFIG_H
 
-#include "i18n.hh"
 #include "Configmenu.hh"
+
+/*
+  #include "Image.hh"
 #include "Toolbar.hh"
 #include "Window.hh"
 #include "Screen.hh"
+#include "blackbox.hh"
+#include "i18n.hh"
+
 
 Configmenu::Configmenu(BScreen *scr)
     : Basemenu(scr)
@@ -322,3 +327,4 @@ void Configmenu::Placementmenu::itemSelected(int button, int index) {
     break;
   }
 }
+*/

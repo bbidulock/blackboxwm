@@ -84,7 +84,7 @@ BGCCache *BGCCache::instance()
 BGCCache::Context *BGCCache::nextContext( int scr )
 {
     BaseDisplay *display = BaseDisplay::instance();
-    Window hd = display->getScreenInfo( scr )->rootWindow();
+    Window hd = display->screenInfo( scr )->rootWindow();
 
     register Context *c = contexts;
     register int i = context_count;

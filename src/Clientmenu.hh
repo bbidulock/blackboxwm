@@ -24,21 +24,23 @@
 #define   __Clientmenu_hh
 
 #include "Basemenu.hh"
+
 class Workspace;
 class BScreen;
 
-class Clientmenu : public Basemenu {
-private:
-  BScreen *screen;
-  Workspace *wkspc;
-
-protected:
-  virtual void itemSelected(int, int);
+class Clientmenu : public Basemenu
+{
 
 public:
-  Clientmenu(Workspace *);
-};
+    Clientmenu(Workspace *);
 
+protected:
+    virtual void itemSelected(int, int);
+
+private:
+    BScreen *screen;
+    Workspace *wkspc;
+};
 
 #endif // __Clientmenu_hh
 

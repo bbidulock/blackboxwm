@@ -52,64 +52,67 @@
 #endif // MAXPATHLEN
 
 
-Rootmenu::Rootmenu(BScreen *scrn)
-    : Basemenu(scrn)
+Rootmenu::Rootmenu( BScreen *scrn )
+    : Basemenu( scrn->screen() )
 {
   screen = scrn;
   blackbox = Blackbox::instance();
 }
 
 
-void Rootmenu::itemSelected(int button, int index) {
-  if (button != 1)
-    return;
+void Rootmenu::itemSelected(int button, int index)
+{
+    /*
+      if (button != 1)
+      return;
 
-  BasemenuItem *item = find(index);
+      BasemenuItem *item = find(index);
 
-  if (!item->function())
-    return;
+      if (!item->function())
+      return;
 
-  switch (item->function()) {
-  case BScreen::Execute:
-    if (item->exec()) {
-#ifndef    __EMX__
+      switch (item->function()) {
+      case BScreen::Execute:
+      if (item->exec()) {
+      #ifndef    __EMX__
       char displaystring[MAXPATHLEN];
       sprintf(displaystring, "DISPLAY=%s",
-	      DisplayString(BaseDisplay::instance()->x11Display()));
+      DisplayString(BaseDisplay::instance()->x11Display()));
       sprintf(displaystring + strlen(displaystring) - 1, "%d",
-	      screen->screen() );
+      screen->screen() );
 
       bexec(item->exec(), displaystring);
-#else //   __EMX__
+      #else //   __EMX__
       spawnlp(P_NOWAIT, "cmd.exe", "cmd.exe", "/c", item->exec(), NULL);
-#endif // !__EMX__
-    }
-    break;
+      #endif // !__EMX__
+      }
+      break;
 
-  case BScreen::Restart:
-    blackbox->restart();
-    break;
+      case BScreen::Restart:
+      blackbox->restart();
+      break;
 
-  case BScreen::RestartOther:
-    if (item->exec())
+      case BScreen::RestartOther:
+      if (item->exec())
       blackbox->restart(item->exec());
-    break;
+      break;
 
-  case BScreen::Exit:
-    blackbox->shutdown();
-    break;
+      case BScreen::Exit:
+      blackbox->shutdown();
+      break;
 
-  case BScreen::SetStyle:
-    if (item->exec())
+      case BScreen::SetStyle:
+      if (item->exec())
       blackbox->saveStyleFilename(item->exec());
 
-  case BScreen::Reconfigure:
-    blackbox->reconfigure();
-    return;
-  }
+      case BScreen::Reconfigure:
+      blackbox->reconfigure();
+      return;
+      }
 
-  if (! (screen->getRootmenu()->isTorn() || isTorn()) &&
+      if (! (screen->getRootmenu()->isTorn() || isTorn()) &&
       item->function() != BScreen::Reconfigure &&
       item->function() != BScreen::SetStyle)
-    hide();
+      hide();
+    */
 }

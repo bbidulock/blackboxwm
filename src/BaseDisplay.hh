@@ -271,8 +271,7 @@ public:
 
 #endif // NEWWMSPEC
 
-    inline ScreenInfo *getScreenInfo(int s)
-    { return (ScreenInfo *) screenInfoList->find(s); }
+    ScreenInfo *screenInfo( int s ) { return (ScreenInfo *) screenInfoList->find( s ); }
 
     inline const Bool &hasShapeExtensions(void) const
     { return shape.extensions; }

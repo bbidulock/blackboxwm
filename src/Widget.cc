@@ -46,7 +46,7 @@ Widget::~Widget()
 void Widget::create()
 {
     BaseDisplay *display = BaseDisplay::instance();
-    ScreenInfo *screeninfo = display->getScreenInfo( screen() );
+    ScreenInfo *screeninfo = display->screenInfo( screen() );
     Window p = parent() ? parent()->win : screeninfo->rootWindow();
 
     // set the initial geometry

@@ -118,7 +118,7 @@ CPPFLAGS = @CPPFLAGS@ @SHAPE@ @SLIT@ @INTERLACE@ @ORDEREDPSEUDO@ \
 
 bin_PROGRAMS = blackbox
 
-blackbox_SOURCES = BaseDisplay.cc Basemenu.cc Clientmenu.cc Color.cc Configmenu.cc GCCache.cc Iconmenu.cc Image.cc LinkedList.cc Netizen.cc Rootmenu.cc Screen.cc Slit.cc Texture.cc Timer.cc Toolbar.cc Util.cc Widget.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc bsd-snprintf.c i18n.cc main.cc
+blackbox_SOURCES = BaseDisplay.cc Basemenu.cc Clientmenu.cc Color.cc Configmenu.cc GCCache.cc Iconmenu.cc Image.cc LinkedList.cc Netizen.cc Rootmenu.cc Screen.cc Slit.cc Style.cc Texture.cc Timer.cc Toolbar.cc Util.cc Widget.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc bsd-snprintf.c i18n.cc main.cc
 
 MAINTAINERCLEANFILES = Makefile.in
 subdir = src
@@ -132,10 +132,11 @@ am_blackbox_OBJECTS = BaseDisplay.$(OBJEXT) Basemenu.$(OBJEXT) \
 	Clientmenu.$(OBJEXT) Color.$(OBJEXT) Configmenu.$(OBJEXT) \
 	GCCache.$(OBJEXT) Iconmenu.$(OBJEXT) Image.$(OBJEXT) \
 	LinkedList.$(OBJEXT) Netizen.$(OBJEXT) Rootmenu.$(OBJEXT) \
-	Screen.$(OBJEXT) Slit.$(OBJEXT) Texture.$(OBJEXT) \
-	Timer.$(OBJEXT) Toolbar.$(OBJEXT) Util.$(OBJEXT) \
-	Widget.$(OBJEXT) Window.$(OBJEXT) Windowmenu.$(OBJEXT) \
-	Workspace.$(OBJEXT) Workspacemenu.$(OBJEXT) blackbox.$(OBJEXT) \
+	Screen.$(OBJEXT) Slit.$(OBJEXT) Style.$(OBJEXT) \
+	Texture.$(OBJEXT) Timer.$(OBJEXT) Toolbar.$(OBJEXT) \
+	Util.$(OBJEXT) Widget.$(OBJEXT) Window.$(OBJEXT) \
+	Windowmenu.$(OBJEXT) Workspace.$(OBJEXT) \
+	Workspacemenu.$(OBJEXT) blackbox.$(OBJEXT) \
 	bsd-snprintf.$(OBJEXT) i18n.$(OBJEXT) main.$(OBJEXT)
 blackbox_OBJECTS = $(am_blackbox_OBJECTS)
 blackbox_LDADD = $(LDADD)
@@ -153,13 +154,14 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 @AMDEP_TRUE@	$(DEPDIR)/Iconmenu.Po $(DEPDIR)/Image.Po \
 @AMDEP_TRUE@	$(DEPDIR)/LinkedList.Po $(DEPDIR)/Netizen.Po \
 @AMDEP_TRUE@	$(DEPDIR)/Rootmenu.Po $(DEPDIR)/Screen.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Slit.Po $(DEPDIR)/Texture.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Timer.Po $(DEPDIR)/Toolbar.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Util.Po $(DEPDIR)/Widget.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Window.Po $(DEPDIR)/Windowmenu.Po \
-@AMDEP_TRUE@	$(DEPDIR)/Workspace.Po $(DEPDIR)/Workspacemenu.Po \
-@AMDEP_TRUE@	$(DEPDIR)/blackbox.Po $(DEPDIR)/bsd-snprintf.Po \
-@AMDEP_TRUE@	$(DEPDIR)/i18n.Po $(DEPDIR)/main.Po
+@AMDEP_TRUE@	$(DEPDIR)/Slit.Po $(DEPDIR)/Style.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Texture.Po $(DEPDIR)/Timer.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Toolbar.Po $(DEPDIR)/Util.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Widget.Po $(DEPDIR)/Window.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Windowmenu.Po $(DEPDIR)/Workspace.Po \
+@AMDEP_TRUE@	$(DEPDIR)/Workspacemenu.Po $(DEPDIR)/blackbox.Po \
+@AMDEP_TRUE@	$(DEPDIR)/bsd-snprintf.Po $(DEPDIR)/i18n.Po \
+@AMDEP_TRUE@	$(DEPDIR)/main.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -232,6 +234,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Rootmenu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Screen.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Slit.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Style.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Texture.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Timer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Toolbar.Po@am__quote@

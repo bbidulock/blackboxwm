@@ -24,7 +24,6 @@
 #define   __Screen_hh
 
 #include <X11/Xlib.h>
-#include <X11/Xresource.h>
 
 #ifdef    TIME_WITH_SYS_TIME
 #  include <sys/time.h>
@@ -37,26 +36,33 @@
 #  endif // HAVE_SYS_TIME_H
 #endif // TIME_WITH_SYS_TIME
 
+#include <stdio.h>
+
 #include "BaseDisplay.hh"
-#include "Color.hh"
-#include "Configmenu.hh"
-#include "Iconmenu.hh"
 #include "LinkedList.hh"
-#include "Netizen.hh"
-#include "Rootmenu.hh"
-#include "Texture.hh"
+#include "Style.hh"
 #include "Timer.hh"
-#include "Workspace.hh"
-#include "Workspacemenu.hh"
-#include "blackbox.hh"
+
+// forward declarations
+class Blackbox;
+class BImageControl;
+class Configmenu;
+class Iconmenu;
+class Netizen;
+class Rootmenu;
+class Toolbar;
+class Workspace;
+class Workspacemenu;
+
 #ifdef    SLIT
-class Slit; // forward reference
+class Slit;
 #endif // SLIT
-#include "Image.hh"
 
-class BStyle;
+class BlackboxWindow;
 
-struct NETStrut {
+
+struct NETStrut
+{
   unsigned int top, bottom, left, right;
 
   NETStrut(): top(0), bottom(0), left(0), right(0) {}
@@ -64,83 +70,11 @@ struct NETStrut {
 
 class BScreen : public ScreenInfo
 {
-private:
-    Bool root_colormap_installed, managed, geom_visible;
-    Pixmap geom_pixmap;
-    Window geom_window;
-
-    Blackbox *blackbox;
-    BImageControl *image_control;
-    Configmenu *configmenu;
-    Iconmenu *iconmenu;
-    Rootmenu *rootmenu;
-
-    LinkedList<Rootmenu> *rootmenuList;
-    LinkedList<Netizen> *netizenList;
-    LinkedList<BlackboxWindow> *iconList;
-
-#ifdef    SLIT
-    Slit *slit;
-#endif // SLIT
-
-    Toolbar *toolbar;
-    Workspace *current_workspace;
-    Workspacemenu *workspacemenu;
-
-    unsigned int geom_w, geom_h;
-    unsigned long event_mask;
-
-    XRectangle usableArea;
-
-    LinkedList<NETStrut> *strutList;
-    LinkedList<char> *workspaceNames;
-    LinkedList<Workspace> *workspacesList;
-
-    struct resource {
-	Bool toolbar_on_top, toolbar_auto_hide, sloppy_focus, auto_raise,
-	    auto_edge_balance, image_dither, ordered_dither, opaque_move, full_max,
-	    focus_new, focus_last;
-	BColor border_color;
-	XrmDatabase stylerc;
-
-	int workspaces, toolbar_placement, toolbar_width_percent, placement_policy,
-	    edge_snap_threshold, row_direction, col_direction;
-
-#ifdef    SLIT
-	Bool slit_on_top, slit_auto_hide;
-	int slit_placement, slit_direction;
-#endif // SLIT
-
-	unsigned int handle_width, bevel_width, frame_width, border_width;
-
-#ifdef    HAVE_STRFTIME
-	char *strftime_format;
-#else // !HAVE_STRFTIME
-	Bool clock24hour;
-	int date_format;
-#endif // HAVE_STRFTIME
-
-    } resource;
-
-    BStyle *_style;
-
-protected:
-    Bool parseMenuFile(FILE *, Rootmenu *);
-
-    BTexture readDatabaseTexture( const char *, const char *, const char * );
-    BColor readDatabaseColor( const char *, const char *, const char * );
-
-    void readDatabaseFontSet( const char *, const char *, XFontSet *);
-    XFontSet createFontSet( const char *);
-    void readDatabaseFont( const char *, const char *, XFontStruct **);
-
-    void InitMenu();
-    void LoadStyle();
-
-
 public:
-    BScreen(Blackbox *, int);
+    BScreen( Blackbox *, int );
     ~BScreen();
+
+    void initialize();
 
     inline BImageControl *getImageControl() { return image_control; }
     inline Rootmenu *getRootmenu() { return rootmenu; }
@@ -151,15 +85,14 @@ public:
 
     inline Workspacemenu *getWorkspacemenu() { return workspacemenu; }
 
-    inline const int getCurrentWorkspaceID()
-    { return current_workspace->getWorkspaceID(); }
+    int getCurrentWorkspaceID() const;
     inline const int getCount() { return workspacesList->count(); }
     inline const int getIconCount() { return iconList->count(); }
 
     inline void setRootColormapInstalled(Bool r) { root_colormap_installed = r; }
-    inline void iconUpdate() { iconmenu->update(); }
+    void iconUpdate();
 
-    BStyle *style() const { return _style; }
+    BStyle *style() { return &_style; }
 
     BlackboxWindow *icon(int);
 
@@ -201,7 +134,6 @@ public:
 
     enum { RowSmartPlacement = 1, ColSmartPlacement, CascadePlacement, LeftRight,
 	   RightLeft, TopBottom, BottomTop };
-    enum { LeftJustify = 1, RightJustify, CenterJustify };
     enum { RoundBullet = 1, TriangleBullet, SquareBullet, NoBullet };
     enum { Restart = 1, RestartOther, Exit, Shutdown, Execute, Reconfigure,
 	   WindowShade, WindowIconify, WindowMaximize, WindowClose, WindowRaise,
@@ -228,8 +160,6 @@ public:
     Bool doFocusNew() const { return resource.focus_new; }
     Bool doFocusLast() const { return resource.focus_last; }
 
-    const BColor &borderColor() { return resource.border_color; }
-
 #ifdef   SLIT
     Bool isSlitOnTop() const { return resource.slit_on_top; }
     Bool doSlitAutoHide() const { return resource.slit_auto_hide; }
@@ -241,11 +171,6 @@ public:
     void saveSlitOnTop(Bool t)    { resource.slit_on_top = t; }
     void saveSlitAutoHide(Bool t) { resource.slit_auto_hide = t; }
 #endif // SLIT
-
-    unsigned int getHandleWidth() const { return resource.handle_width; }
-    unsigned int getBevelWidth() const { return resource.bevel_width; }
-    unsigned int getFrameWidth() const { return resource.frame_width; }
-    unsigned int getBorderWidth() const { return resource.border_width; }
 
     int getNumberOfWorkspaces() const { return resource.workspaces; }
     int getToolbarPlacement() const { return resource.toolbar_placement; }
@@ -282,6 +207,64 @@ public:
     void saveClock24Hour(Bool c) { resource.clock24hour = c; }
 #endif // HAVE_STRFTIME
 
+protected:
+    Bool parseMenuFile(FILE *, Rootmenu *);
+    void InitMenu();
+
+private:
+    Blackbox *blackbox;
+
+    Bool root_colormap_installed, managed;
+
+    BImageControl *image_control;
+    Configmenu *configmenu;
+    Iconmenu *iconmenu;
+    Rootmenu *rootmenu;
+
+    LinkedList<Rootmenu> *rootmenuList;
+    LinkedList<Netizen> *netizenList;
+    LinkedList<BlackboxWindow> *iconList;
+
+#ifdef    SLIT
+    Slit *slit;
+#endif // SLIT
+
+    Toolbar *toolbar;
+    Workspace *current_workspace;
+    Workspacemenu *workspacemenu;
+
+    unsigned int geom_w, geom_h;
+    unsigned long event_mask;
+
+    XRectangle usableArea;
+
+    LinkedList<NETStrut> *strutList;
+    LinkedList<char> *workspaceNames;
+    LinkedList<Workspace> *workspacesList;
+
+    struct resource {
+	Bool toolbar_on_top, toolbar_auto_hide, sloppy_focus, auto_raise,
+	    auto_edge_balance, image_dither, ordered_dither, opaque_move, full_max,
+	    focus_new, focus_last;
+
+	int workspaces, toolbar_placement, toolbar_width_percent, placement_policy,
+	    edge_snap_threshold, row_direction, col_direction;
+
+#ifdef    SLIT
+	Bool slit_on_top, slit_auto_hide;
+	int slit_placement, slit_direction;
+#endif // SLIT
+
+#ifdef    HAVE_STRFTIME
+	char *strftime_format;
+#else // !HAVE_STRFTIME
+	Bool clock24hour;
+	int date_format;
+#endif // HAVE_STRFTIME
+
+    } resource;
+
+    BStyle _style;
 };
 
 

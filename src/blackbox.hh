@@ -90,8 +90,6 @@ private:
 
   typedef DataSearch<BlackboxWindow> WindowSearch;
   LinkedList<WindowSearch> *windowSearchList, *groupSearchList;
-  typedef DataSearch<Basemenu> MenuSearch;
-  LinkedList<MenuSearch> *menuSearchList;
   typedef DataSearch<Toolbar> ToolbarSearch;
   LinkedList<ToolbarSearch> *toolbarSearchList;
 
@@ -139,13 +137,12 @@ public:
   inline const Atom &getBlackboxPidAtom(void) const { return blackbox_pid; }
 #endif // HAVE_GETPID
 
-  Basemenu *searchMenu(Window);
-
   BlackboxWindow *searchGroup(Window, BlackboxWindow *);
   BlackboxWindow *searchWindow(Window);
   inline BlackboxWindow *getFocusedWindow(void) { return focused_window; }
 
-  BScreen *screen(int) const;
+    BScreen *screen( int scr ) const { return screenList->find( scr ); }
+
   BScreen *searchScreen(Window);
 
   inline const Time &getDoubleClickInterval(void) const
@@ -179,11 +176,9 @@ public:
   void load_rc(BScreen *);
   void saveStyleFilename(const char *);
   void saveMenuFilename(const char *);
-  void saveMenuSearch(Window, Basemenu *);
   void saveWindowSearch(Window, BlackboxWindow *);
   void saveToolbarSearch(Window, Toolbar *);
   void saveGroupSearch(Window, BlackboxWindow *);
-  void removeMenuSearch(Window);
   void removeWindowSearch(Window);
   void removeToolbarSearch(Window);
   void removeGroupSearch(Window);

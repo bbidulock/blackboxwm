@@ -30,7 +30,8 @@ class Blackbox;
 class BScreen;
 class Configmenu;
 
-class Configmenu : public Basemenu {
+/*
+  class Configmenu : public Basemenu {
 private:
   class Focusmenu : public Basemenu {
   private:
@@ -74,5 +75,6 @@ public:
 
   void reconfigure(void);
 };
+*/
 
 #endif // __Configmenu_hh

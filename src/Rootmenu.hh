@@ -31,21 +31,18 @@ class BScreen;
 
 #include "Basemenu.hh"
 
-
-class Rootmenu : public Basemenu {
-private:
-  Blackbox *blackbox;
-  BScreen *screen;
-
+class Rootmenu : public Basemenu
+{
+public:
+    Rootmenu(BScreen *);
 
 protected:
-  virtual void itemSelected(int, int);
+    virtual void itemSelected(int, int);
 
-
-public:
-  Rootmenu(BScreen *);
+private:
+    Blackbox *blackbox;
+    BScreen *screen;
 };
-
 
 #endif // __Rootmenu_hh
 

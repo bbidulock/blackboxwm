@@ -33,9 +33,10 @@
 #include "Windowmenu.hh"
 #include "Screen.hh"
 #include "Window.hh"
+#include "Workspace.hh"
 
 
-class SendToMenu : public Basemenu2
+class SendToMenu : public Basemenu
 {
 public:
     SendToMenu( int src, BlackboxWindow *w );
@@ -51,20 +52,20 @@ private:
 };
 
 SendToMenu::SendToMenu( int scr, BlackboxWindow *w )
-    : Basemenu2( scr ), window( w )
+    : Basemenu( scr ), window( w )
 {
 }
 
 void SendToMenu::popup( int x, int y, bool centerOnTitle )
 {
     refresh();
-    Basemenu2::popup( x, y, centerOnTitle );
+    Basemenu::popup( x, y, centerOnTitle );
 }
 
 void SendToMenu::popup( const Point &p, bool centerOnTitle )
 {
     refresh();
-    Basemenu2::popup( p, centerOnTitle );
+    Basemenu::popup( p, centerOnTitle );
 }
 
 void SendToMenu::refresh()
@@ -109,7 +110,7 @@ void SendToMenu::itemClicked( const Point &, const Item &item , int button )
   10 - close
 */
 Windowmenu::Windowmenu( int scr, BlackboxWindow *w )
-    : Basemenu2( scr ), window( w )
+    : Basemenu( scr ), window( w )
 {
     sendto = new SendToMenu( scr, w );
 
@@ -149,5 +150,6 @@ void Windowmenu::itemClicked( const Point &, const Item &item, int button )
     case Stick:      window->stick();            break;
     case KillClient: window->killClient();       break;
     case Close:      window->close();            break;
+    default: break;
     }
 }
