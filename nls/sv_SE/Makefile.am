@@ -1,29 +1,35 @@
-# nls/sv_SE/Makefile.am for Blackbox-0.60.x - an X11 Window Manager
+# Makefile.am for Blackbox - an X11 Window Manager
 
 NLSTEST = @NLS@
-GENCAT_TYPE = @GENCAT_TYPE@
-CLEANFILES = Translation.m blackbox.cat
-MAINTAINERCLEANFILES = Makefile.in
-MFILES = BaseDisplay.m Basemenu.m Configmenu.m Icon.m Image.m Screen.m Slit.m Toolbar.m Window.m Windowmenu.m Workspace.m Workspacemenu.m blackbox.m common.m main.m bsetroot.m
+THE_LANG = sv_SE
+THE_NLS_PATH = $(DESTDIR)$(pkgdatadir)/nls/$(THE_LANG)
+CLEANFILES = blackbox.cat
+MAINTAINERCLEANFILES = Makefile.in Translation.m
+DISTCLEANFILES = Translation.m
+MFILES = @srcdir@/BaseDisplay.m @srcdir@/Basemenu.m @srcdir@/Configmenu.m @srcdir@/Icon.m @srcdir@/Image.m @srcdir@/Screen.m @srcdir@/Slit.m @srcdir@/Toolbar.m @srcdir@/Window.m @srcdir@/Windowmenu.m @srcdir@/Workspace.m @srcdir@/Workspacemenu.m @srcdir@/blackbox.m @srcdir@/common.m @srcdir@/main.m @srcdir@/bsetroot.m
 
 all-local: blackbox.cat
 install-data-local: blackbox.cat
 	@if test x$(NLSTEST) = "x-DNLS"; then \
-		echo "Installing catalog in $(pkgdatadir)/nls/sv_SE"; \
-		$(mkinstalldirs) $(pkgdatadir)/nls/sv_SE; \
-		$(INSTALL_DATA) blackbox.cat $(pkgdatadir)/nls/sv_SE; \
+		echo "Installing catalog in $(THE_NLS_PATH)"; \
+		$(mkinstalldirs) $(THE_NLS_PATH); \
+		$(INSTALL_DATA) blackbox.cat $(THE_NLS_PATH); \
+	fi
+uninstall-local:
+	@if test x$(NLSTEST) = "x-DNLS"; then \
+		rm -f $(THE_NLS_PATH)/blackbox.cat; \
+		rmdir $(THE_NLS_PATH); \
 	fi
 
-blackbox.cat: $(MFILES)
-				@if test x$(NLSTEST) = "x-DNLS"; then \
-	        echo "Generating catalog file using $(GENCAT_TYPE) gencat"; \
-	        if test "x$(GENCAT_TYPE)" = "xGNU"; then \
-	                sed -f ../gnucnv.sed $(MFILES) | \
-	                gencat --new blackbox.cat -; \
-	        elif test "x$(GENCAT_TYPE)" = "xSun"; then \
-	                awk -f ../suncnv.awk output=Translation.m $(MFILES); \
-	                gencat blackbox.cat Translation.m; \
-	        else \
-	                gencat -lang C++ -new blackbox.cat $(MFILES); \
-	        fi \
+Translation.m: $(MFILES)
+	@if test x$(NLSTEST) = "x-DNLS"; then \
+		awk -f @srcdir@/../convert.awk output=Translation.m $(MFILES); \
 	fi
+
+blackbox.cat: Translation.m
+	@if test x$(NLSTEST) = "x-DNLS"; then \
+		$(gencat_cmd) blackbox.cat Translation.m; \
+	fi
+
+distclean-local:
+	rm -f *\~

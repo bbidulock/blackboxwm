@@ -74,7 +74,7 @@ gencat_cmd = @gencat_cmd@
 regex_cmd = @regex_cmd@
 
 NLSTEST = @NLS@
-THE_LANG = es_ES
+THE_LANG = uk_UA
 THE_NLS_PATH = $(DESTDIR)$(pkgdatadir)/nls/$(THE_LANG)
 CLEANFILES = blackbox.cat
 MAINTAINERCLEANFILES = Makefile.in Translation.m
@@ -93,7 +93,7 @@ GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps nls/es_ES/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps nls/uk_UA/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
@@ -105,7 +105,7 @@ TAGS:
 
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 
-subdir = nls/es_ES
+subdir = nls/uk_UA
 
 distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
@@ -188,13 +188,10 @@ install-data-local: blackbox.cat
 		echo "Installing catalog in $(THE_NLS_PATH)"; \
 		$(mkinstalldirs) $(THE_NLS_PATH); \
 		$(INSTALL_DATA) blackbox.cat $(THE_NLS_PATH); \
-		rm -f $(DESTDIR)$(pkgdatadir)/nls/es; \
-		ln -f -s es_ES $(DESTDIR)$(pkgdatadir)/nls/es; \
 	fi
 uninstall-local:
 	@if test x$(NLSTEST) = "x-DNLS"; then \
 		rm -f $(THE_NLS_PATH)/blackbox.cat; \
-		rm -f $(DESTDIR)$(pkgdatadir)/nls/es; \
 		rmdir $(THE_NLS_PATH); \
 	fi
 
