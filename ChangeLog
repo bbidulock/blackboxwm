@@ -39,6 +39,7 @@ Changes from 0.62.1:
   - remove slit and netwm as compile time options
   - strip much of BaseDisplay's original functionality and move it to the
     blackbox class.
+  - empty menus now say so
 
 Changes from 0.62.0 to 0.62.1:
   - the lock modifier code handles user redefined modifiers better

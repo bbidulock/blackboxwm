@@ -46,6 +46,11 @@ extern "C" {
 #  include <ctype.h>
 #endif // HAVE_CTYPE_H
 
+#ifdef    HAVE_UNISTD_H
+#  include <sys/types.h>
+#  include <unistd.h>
+#endif // HAVE_UNISTD_H
+
 #ifdef    HAVE_DIRENT_H
 #  include <dirent.h>
 #endif // HAVE_DIRENT_H
@@ -53,11 +58,6 @@ extern "C" {
 #ifdef    HAVE_LOCALE_H
 #  include <locale.h>
 #endif // HAVE_LOCALE_H
-
-#ifdef    HAVE_UNISTD_H
-#  include <sys/types.h>
-#  include <unistd.h>
-#endif // HAVE_UNISTD_H
 
 #ifdef    HAVE_SYS_STAT_H
 #  include <sys/stat.h>

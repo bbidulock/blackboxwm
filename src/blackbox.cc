@@ -851,7 +851,8 @@ void Blackbox::restart(const char *prog) {
 
   // fall back in case the above execlp doesn't work
   execvp(argv[0], argv);
-  execvp(basename(argv[0]), argv);
+  string name = basename(argv[0]);
+  execvp(name.c_str(), argv);
 }
 
 
