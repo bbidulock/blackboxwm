@@ -26,7 +26,6 @@
 #include "Display.hh"
 
 #include <X11/Xlib.h>
-#include <stdio.h>
 #include <assert.h>
 #include <stdio.h>
 
