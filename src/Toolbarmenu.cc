@@ -71,6 +71,7 @@ void Toolbarmenu::refresh(void) {
   setItemChecked(EnableToolbar, res.isToolbarEnabled());
   setItemChecked(AlwaysOnTop, res.isToolbarOnTop());
   setItemChecked(AutoHide, res.doToolbarAutoHide());
+  setItemEnabled(EditWorkspaceName, res.isToolbarEnabled());
 }
 
 
@@ -101,11 +102,15 @@ void Toolbarmenu::itemClicked(unsigned int id, unsigned int button) {
     break;
 
   case AutoHide:
-    _bscreen->toolbar()->toggleAutoHide();
+    res.saveToolbarAutoHide(!res.doToolbarAutoHide());
+    _bscreen->saveResource();
+    if (toolbar)
+      toolbar->toggleAutoHide();
     break;
 
   case EditWorkspaceName:
-    _bscreen->toolbar()->edit();
+    if (toolbar)
+      toolbar->edit();
     break;
 
   default:

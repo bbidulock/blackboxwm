@@ -836,8 +836,6 @@ void Toolbar::toggleAutoHide(void) {
     if (hide_timer->isTiming()) hide_timer->stop();
     hide_timer->fireTimeout();
   }
-  _screen->resource().saveToolbarAutoHide(do_auto_hide);
-  _screen->saveResource();
 }
 
 
