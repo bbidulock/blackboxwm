@@ -1,7 +1,7 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Screen.cc for Blackbox - an X11 Window manager
-// Copyright (c) 2001 - 2003 Sean 'Shaleh' Perry <shaleh@debian.org>
-// Copyright (c) 1997 - 2000, 2002 - 2003
+// Copyright (c) 2001 - 2004 Sean 'Shaleh' Perry <shaleh@debian.org>
+// Copyright (c) 1997 - 2000, 2002 - 2004
 //         Bradley T Hughes <bhughes at trolltech.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -516,10 +516,11 @@ void BScreen::manageWindow(Window w) {
   }
 
   bool place_window = true;
-  if (blackbox->startingUp() ||
-      ((win->isTransient() || (win->normalHintFlags() & USPosition))
-       && win->clientRect().intersects(screen_info.rect())))
-    place_window = False;
+  if (blackbox->startingUp()
+      || ((win->isTransient()
+           || (win->normalHintFlags() & (PPosition|USPosition)))
+          && win->clientRect().intersects(screen_info.rect())))
+    place_window = false;
   if (place_window) placeWindow(win);
 
   windowList.push_back(win);

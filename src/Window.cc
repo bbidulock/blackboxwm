@@ -1,7 +1,7 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Window.cc for Blackbox - an X11 Window manager
-// Copyright (c) 2001 - 2003 Sean 'Shaleh' Perry <shaleh@debian.org>
-// Copyright (c) 1997 - 2000, 2002 - 2003
+// Copyright (c) 2001 - 2004 Sean 'Shaleh' Perry <shaleh@debian.org>
+// Copyright (c) 1997 - 2000, 2002 - 2004
 //         Bradley T Hughes <bhughes at trolltech.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -82,7 +82,7 @@ enum {
 
 #if 0
 static
-void watch_decorations(const char *msg,BlackboxWindow::DecorationFlags flags) {
+void watch_decorations(const char *msg, WindowDecorationFlags flags) {
   fprintf(stderr, "Decorations: %s\n", msg);
   fprintf(stderr, "title   : %d\n",
           (flags & WindowDecorationTitlebar) != 0);
@@ -242,17 +242,16 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   // get size, aspect, minimum/maximum size, ewmh and other hints set by the
   // client
   getNetwmHints();
-  if (client.window_type == WindowTypeNormal)
-    getMWMHints();
   getWMProtocols();
   getWMHints();
   getWMNormalHints();
   getTransientInfo();
-
   if (client.window_type == WindowTypeNormal && isTransient())
     client.window_type = WindowTypeDialog;
 
   ::get_decorations(client.window_type, client.decorations, client.functions);
+  getMWMHints();
+
 
   if ((client.normal_hint_flags & PMinSize) &&
       (client.normal_hint_flags & PMaxSize) &&
@@ -278,7 +277,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   upsize();
 
   if (blackbox->startingUp() || isTransient() || isDesktop() ||
-      (client.normal_hint_flags & USPosition))
+      (client.normal_hint_flags & (PPosition|USPosition)))
     applyGravity(frame.rect);
 
   /*
@@ -768,18 +767,14 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
   int lx = by, lw = frame.inside_w - by;
 
   if (client.decorations & WindowDecorationIconify) {
-    if (lw > bw) {
-      if (frame.iconify_button == None) createIconifyButton();
+    if (frame.iconify_button == None) createIconifyButton();
 
-      XMoveResizeWindow(blackbox->XDisplay(), frame.iconify_button, by, by,
-                        frame.style->button_width, frame.style->button_width);
-      XMapWindow(blackbox->XDisplay(), frame.iconify_button);
+    XMoveResizeWindow(blackbox->XDisplay(), frame.iconify_button, by, by,
+                      frame.style->button_width, frame.style->button_width);
+    XMapWindow(blackbox->XDisplay(), frame.iconify_button);
 
-      lx += bw;
-      lw -= bw;
-    } else {
-      XUnmapWindow(blackbox->XDisplay(), frame.iconify_button);
-    }
+    lx += bw;
+    lw -= bw;
   } else if (frame.iconify_button) {
     destroyIconifyButton();
   }
@@ -787,35 +782,27 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
   int bx = frame.inside_w - bw;
 
   if (client.decorations & WindowDecorationClose) {
-    if (lw > bw) {
-      if (frame.close_button == None) createCloseButton();
+    if (frame.close_button == None) createCloseButton();
 
-      XMoveResizeWindow(blackbox->XDisplay(), frame.close_button, bx, by,
-                        frame.style->button_width, frame.style->button_width);
-      XMapWindow(blackbox->XDisplay(), frame.close_button);
+    XMoveResizeWindow(blackbox->XDisplay(), frame.close_button, bx, by,
+                      frame.style->button_width, frame.style->button_width);
+    XMapWindow(blackbox->XDisplay(), frame.close_button);
 
-      bx -= bw;
-      lw -= bw;
-    } else {
-      XUnmapWindow(blackbox->XDisplay(), frame.close_button);
-    }
+    bx -= bw;
+    lw -= bw;
   } else if (frame.close_button) {
     destroyCloseButton();
   }
 
   if (client.decorations & WindowDecorationMaximize) {
-    if (lw > bw) {
-      if (frame.maximize_button == None) createMaximizeButton();
+    if (frame.maximize_button == None) createMaximizeButton();
 
-      XMoveResizeWindow(blackbox->XDisplay(), frame.maximize_button, bx, by,
-                        frame.style->button_width, frame.style->button_width);
-      XMapWindow(blackbox->XDisplay(), frame.maximize_button);
+    XMoveResizeWindow(blackbox->XDisplay(), frame.maximize_button, bx, by,
+                      frame.style->button_width, frame.style->button_width);
+    XMapWindow(blackbox->XDisplay(), frame.maximize_button);
 
-      bx -= bw;
-      lw -= bw;
-    } else {
-      XUnmapWindow(blackbox->XDisplay(), frame.maximize_button);
-    }
+    bx -= bw;
+    lw -= bw;
   } else if (frame.maximize_button) {
     destroyMaximizeButton();
   }
@@ -2664,6 +2651,8 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
           XMapSubwindows(blackbox->XDisplay(), frame.title);
         }
       }
+    } else if (event->atom == blackbox->getMotifWMHintsAtom()) {
+      getMWMHints();
     }
 
     break;
