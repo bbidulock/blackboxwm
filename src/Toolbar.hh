@@ -32,37 +32,37 @@
 // forward declaration
 class Toolbar;
 
-class Toolbarmenu : public Basemenu {
-private:
-    class Placementmenu : public Basemenu {
-    private:
-	Toolbarmenu *toolbarmenu;
+class Toolbarmenu : public Basemenu
+{
+public:
+  Toolbarmenu( Toolbar * );
+  ~Toolbarmenu();
 
-    protected:
-	virtual void itemSelected(int, int);
+  Basemenu *getPlacementmenu() const { return placementmenu; }
 
-    public:
-	Placementmenu(Toolbarmenu *);
-    };
-
-    Toolbar *toolbar;
-    Placementmenu *placementmenu;
-
-    friend class Placementmenu;
-    friend class Toolbar;
-
+  virtual void reconfigure();
+  virtual void hide();
 
 protected:
-    virtual void itemSelected(int, int);
-    virtual void internal_hide();
+  virtual void itemClicked(const Point &, const Item &, int);
 
-public:
-    Toolbarmenu( Toolbar * );
-    ~Toolbarmenu();
+private:
+  class Placementmenu : public Basemenu {
+  private:
+    Toolbarmenu *toolbarmenu;
 
-    Basemenu *getPlacementmenu() const { return placementmenu; }
+  protected:
+    virtual void itemClicked(const Point &, const Item &, int);
 
-    void reconfigure();
+  public:
+    Placementmenu(Toolbarmenu *);
+  };
+
+  Toolbar *toolbar;
+  Placementmenu *placementmenu;
+
+  friend class Placementmenu;
+  friend class Toolbar;
 };
 
 

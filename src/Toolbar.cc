@@ -1067,8 +1067,8 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
   }
 }
 
-
-void Toolbar::timeout(void) {
+void Toolbar::timeout(void)
+{
   checkClock(True);
 
   timeval now;
@@ -1076,8 +1076,8 @@ void Toolbar::timeout(void) {
   clock_timer->setTimeout((60 - (now.tv_sec % 60)) * 1000);
 }
 
-
-void Toolbar::HideHandler::timeout(void) {
+void Toolbar::HideHandler::timeout(void)
+{
   toolbar->hidden = ! toolbar->hidden;
   if (toolbar->hidden)
     XMoveWindow(*toolbar->blackbox, toolbar->frame.window,
@@ -1087,9 +1087,8 @@ void Toolbar::HideHandler::timeout(void) {
 		toolbar->frame.x, toolbar->frame.y);
 }
 
-
 Toolbarmenu::Toolbarmenu(Toolbar *tb)
-    : Basemenu( tb->screen->screen() )
+  : Basemenu( tb->screen->screen() )
 {
   toolbar = tb;
 
@@ -1106,68 +1105,51 @@ Toolbarmenu::Toolbarmenu(Toolbar *tb)
   if (toolbar->doAutoHide()) setItemChecked(2, True);
 }
 
-
-Toolbarmenu::~Toolbarmenu(void) {
+Toolbarmenu::~Toolbarmenu(void)
+{
   delete placementmenu;
 }
 
-
-void Toolbarmenu::itemSelected(int button, int index)
+void Toolbarmenu::itemClicked( const Point &, const Item &item, int button )
 {
-    /*
-      if (button != 1)
-      return;
+  if (button != 1)
+    return;
 
-      BasemenuItem *item = find(index);
-      if (! item) return;
 
-      switch (item->function()) {
-      case 1: { // always on top
-      Bool change = ((toolbar->isOnTop()) ? False : True);
-      toolbar->on_top = change;
-      setItemChecked(1, change);
+  switch (item.function()) {
+  case 1:  // always on top
+    toolbar->on_top = ((toolbar->isOnTop()) ? False : True);
+    setItemChecked(1, toolbar->on_top);
+    if (toolbar->isOnTop())
+      toolbar->screen->raiseWindows((Window *) 0, 0);
+    break;
 
-      if (toolbar->isOnTop()) toolbar->screen->raiseWindows((Window *) 0, 0);
-      break;
-      }
+  case 2: // auto hide
+    toolbar->do_auto_hide = ((toolbar->doAutoHide()) ?  False : True);
+    setItemChecked(2, toolbar->do_auto_hide);
+#ifdef    SLIT
+    toolbar->screen->getSlit()->reposition();
+#endif // SLIT
+    break;
 
-      case 2: { // auto hide
-      Bool change = ((toolbar->doAutoHide()) ?  False : True);
-      toolbar->do_auto_hide = change;
-      setItemChecked(2, change);
-
-      #ifdef    SLIT
-      toolbar->screen->getSlit()->reposition();
-      #endif // SLIT
-      break;
-      }
-
-      case 3: { // edit current workspace name
-      toolbar->edit();
-      hide();
-
-      break;
-      }
-      } // switch
-    */
+  case 3: // edit current workspace name
+    toolbar->edit();
+    break;
+  } // switch
 }
 
-
-void Toolbarmenu::internal_hide(void) {
-    /*
-      Basemenu::internal_hide();
-      if (toolbar->doAutoHide() && ! toolbar->isEditing())
-      toolbar->hide_handler.timeout();
-    */
+void Toolbarmenu::hide(void)
+{
+  Basemenu::hide();
+  if (toolbar->doAutoHide() && ! toolbar->isEditing())
+    toolbar->hide_handler.timeout();
 }
 
-
-void Toolbarmenu::reconfigure(void) {
+void Toolbarmenu::reconfigure(void)
+{
   placementmenu->reconfigure();
-
   Basemenu::reconfigure();
 }
-
 
 Toolbarmenu::Placementmenu::Placementmenu(Toolbarmenu *tm)
     : Basemenu( tm->toolbar->screen->screen() )
@@ -1190,24 +1172,17 @@ Toolbarmenu::Placementmenu::Placementmenu(Toolbarmenu *tm)
 			    "Bottom Right"), Toolbar::BottomRight);
 }
 
-
-void Toolbarmenu::Placementmenu::itemSelected(int button, int index)
+void Toolbarmenu::Placementmenu::itemClicked(const Point &, const Item &item, int button )
 {
-    /*
-      if (button != 1)
-      return;
+  if (button != 1)
+    return;
 
-      BasemenuItem *item = find(index);
-      if (! item) return;
+  toolbarmenu->toolbar->screen->saveToolbarPlacement(item.function());
+  toolbarmenu->toolbar->reconfigure();
 
-      toolbarmenu->toolbar->screen->saveToolbarPlacement(item->function());
-      hide();
-      toolbarmenu->toolbar->reconfigure();
-
-      #ifdef    SLIT
-      // reposition the slit as well to make sure it doesn't intersect the
-      // toolbar
-      toolbarmenu->toolbar->screen->getSlit()->reposition();
-      #endif // SLIT
-    */
+#ifdef    SLIT
+  // reposition the slit as well to make sure it doesn't intersect the
+  // toolbar
+  toolbarmenu->toolbar->screen->getSlit()->reposition();
+#endif // SLIT
 }
