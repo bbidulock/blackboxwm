@@ -296,6 +296,7 @@ public:
 
   BlackboxWindow *findTransientFor(void) const;
   BlackboxWindow *findNonTransientParent(void) const;
+  BlackboxWindowList buildFullTransientList(void) const;
 
   BWindowGroup *findWindowGroup(void) const;
 

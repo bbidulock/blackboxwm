@@ -769,24 +769,6 @@ bool BScreen::focusFallback(const BlackboxWindow *win) {
 
 
 /*
-  Returns a list of all transients.  This is recursive, so it returns
-  all transients of transients as well.
-*/
-static
-BlackboxWindowList buildTransientList(const BlackboxWindow * const win) {
-  const BlackboxWindowList &transients = win->transients();
-  BlackboxWindowList all = transients;
-  BlackboxWindowList::const_iterator it = transients.begin(),
-                                    end = transients.end();
-  for (; it != end; ++it) {
-    BlackboxWindowList x = buildTransientList(*it);
-    all.splice(all.end(), x);
-  }
-  return all;
-}
-
-
-/*
   Raises all windows, preserving the existing stacking order.  Each
   window is placed at the top of the layer it currently occupies (with
   transients above).
@@ -931,7 +913,7 @@ StackingList::iterator raiseWindow(StackingList &stackingList,
   assert(top != end);
   if (win) {
     // ... with all transients above it
-    BlackboxWindowList transients = buildTransientList(win);
+    BlackboxWindowList transients = win->buildFullTransientList();
     if (!transients.empty())
       raiseTransients(top, stackingList, transients);
 
@@ -943,7 +925,7 @@ StackingList::iterator raiseWindow(StackingList &stackingList,
         BlackboxWindowList::const_iterator wit = groupTransients.begin(),
                                           wend = groupTransients.end();
         for (; wit != wend; ++wit) {
-          BlackboxWindowList x = buildTransientList(*wit);
+          BlackboxWindowList x = (*wit)->buildFullTransientList();
           groupTransients.splice(groupTransients.end(), x);
         }
         if (!transients.empty())
@@ -1127,7 +1109,7 @@ StackingList::iterator lowerWindow(StackingList &stackingList,
         it = layer;
     } else {
       // lower transients of 'win' and 'win'
-      BlackboxWindowList transients = buildTransientList(win);
+      BlackboxWindowList transients = win->buildFullTransientList();
       if (!transients.empty()) {
         ::lowerTransients(layer, stackingList, transients);
         (void) stackingList.lower(win);
