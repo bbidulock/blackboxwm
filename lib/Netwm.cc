@@ -316,15 +316,16 @@ bool bt::Netwm::readDesktopNames(Window target,
   if (!hasUnicode())
     return false; // cannot convert UTF-8 to UTF-32
 
-  unsigned char* data = 0;
+  unsigned char *data = 0;
   unsigned long nitems;
   if (getListProperty(target, utf8_string, net_desktop_names,
                       &data, &nitems) && nitems > 0) {
-    unsigned char* tmp = data;
+    char *tmp = reinterpret_cast<char *>(data);
     for (unsigned int i = 0; i < nitems; ++i) {
       if (data[i] == '\0') {
-        names.push_back(toUtf32(std::string(tmp, data + i)));
-        tmp = data + i + 1;
+        const std::string str(tmp, reinterpret_cast<char *>(data) + i);
+        names.push_back(toUtf32(str));
+        tmp = reinterpret_cast<char *>(data) + i + 1;
       }
     }
     XFree(data);
