@@ -183,6 +183,7 @@ namespace bt {
       Pixmap close;
     } bitmap;
     unsigned int margin_w;
+    unsigned int item_indent;
 
     static MenuStyle **styles;
   };

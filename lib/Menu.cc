@@ -154,6 +154,7 @@ void bt::MenuStyle::load(const Resource &resource) {
   frame.font = bt::Font(resource.read("menu.frame.font",
                                       "Menu.Frame.Font"),
                         &_app.getDisplay());
+  item_indent = std::max(bt::textHeight(frame.font), 7u);
 
   title.alignment =
     bt::alignResource(resource, "menu.title.alignment",
@@ -218,8 +219,8 @@ bt::Rect bt::MenuStyle::titleRect(const std::string &text) const {
 bt::Rect bt::MenuStyle::itemRect(const MenuItem &item) const {
   const Rect &rect = bt::textRect(frame.font, item.label());
   return Rect(0, 0,
-              rect.width() + ((rect.height() + itemMargin()) * 2),
-              rect.height() + (itemMargin() * 2));
+              rect.width() + ((item_indent + itemMargin()) * 2),
+              std::max(rect.height(), item_indent) + (itemMargin() * 2));
 }
 
 
@@ -232,10 +233,14 @@ void bt::MenuStyle::drawTitle(Window window, const Rect &rect,
 
 void bt::MenuStyle::drawItem(Window window, const Rect &rect,
                              const MenuItem &item, Pixmap pixmap) const {
+  Rect r2;
+  r2.setCoords(rect.left() + item_indent, rect.top(),
+               rect.right() - item_indent, rect.bottom());
+
   if (item.isSeparator()) {
     Pen pen(frame.foreground);
     XFillRectangle(_app.getXDisplay(), window, pen.gc(),
-                   rect.x(), rect.y() + margin_w, rect.width(),
+                   r2.x(), r2.y() + margin_w, r2.width(),
                    (frame.texture.borderWidth() > 0 ?
                     frame.texture.borderWidth() : 1));
     return;
@@ -258,9 +263,6 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
                      rect.x(), rect.y(), rect.width(), rect.height());
     }
   }
-  Rect r2;
-  r2.setCoords(rect.left() + rect.height(), rect.top(),
-               rect.right() - rect.height(), rect.bottom());
   drawText(frame.font, tpen, window, r2, frame.alignment, item.label());
 
   if (item.isChecked()) {
