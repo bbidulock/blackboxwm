@@ -302,7 +302,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     break;
 
   case WindowTypeDock:
-  case WindowTypeSplash:
     setLayer(StackingList::LayerAbove);
     break;
   default:
