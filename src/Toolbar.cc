@@ -26,11 +26,11 @@
 #include "Iconmenu.hh"
 #include "Screen.hh"
 #include "Slit.hh"
+#include "Toolbarmenu.hh"
 #include "Window.hh"
 #include "Windowmenu.hh"
 #include "Workspacemenu.hh"
 
-#include <Menu.hh>
 #include <Pen.hh>
 #include <PixmapCache.hh>
 
@@ -38,106 +38,6 @@
 #include <X11/keysym.h>
 #include <sys/time.h>
 #include <assert.h>
-
-
-class Toolbarmenu : public bt::Menu {
-public:
-  Toolbarmenu(bt::Application &app, unsigned int screen, Toolbar *toolbar);
-
-  void refresh(void);
-
-protected:
-  void itemClicked(unsigned int id, unsigned int button);
-
-private:
-  Toolbar *_toolbar;
-
-  friend class Toolbar;
-};
-
-
-class ToolbarPlacementmenu : public bt::Menu {
-public:
-  ToolbarPlacementmenu(bt::Application &app, unsigned int screen,
-                       Toolbar *toolbar);
-
-protected:
-  void itemClicked(unsigned int id, unsigned int button);
-
-private:
-  Toolbar *_toolbar;
-};
-
-
-enum {
-  Placement,
-  AlwaysOnTop,
-  AutoHide,
-  EditWorkspaceName
-};
-
-Toolbarmenu::Toolbarmenu(bt::Application &app, unsigned int screen,
-                         Toolbar *toolbar)
-  : bt::Menu(app, screen), _toolbar(toolbar)
-{
-  ToolbarPlacementmenu *menu = new ToolbarPlacementmenu(app, screen, toolbar);
-  insertItem("Placement", menu, Placement);
-  insertSeparator();
-  insertItem("Always on top", AlwaysOnTop);
-  insertItem("Auto Hide", AutoHide);
-  insertSeparator();
-  insertItem("Edit current workspace name", EditWorkspaceName);
-}
-
-
-void Toolbarmenu::refresh(void) {
-  setItemChecked(AlwaysOnTop, _toolbar->isOnTop());
-  setItemChecked(AutoHide, _toolbar->doAutoHide());
-}
-
-
-void Toolbarmenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button != 1) return;
-
-  switch (id) {
-  case AlwaysOnTop:
-    _toolbar->toggleOnTop();
-    break;
-
-  case AutoHide:
-    _toolbar->toggleAutoHide();
-    break;
-
-  case EditWorkspaceName:
-    _toolbar->edit();
-    break;
-
-  default:
-    break;
-  } // switch
-}
-
-
-ToolbarPlacementmenu::ToolbarPlacementmenu(bt::Application &app,
-                                           unsigned int screen,
-                                           Toolbar *toolbar)
-  : bt::Menu(app, screen), _toolbar(toolbar)
-{
-  insertItem("Top Left",      Toolbar::TopLeft);
-  insertItem("Top Center",    Toolbar::TopCenter);
-  insertItem("Top Right",     Toolbar::TopRight);
-  insertSeparator();
-  insertItem("Bottom Left",   Toolbar::BottomLeft);
-  insertItem("Bottom Center", Toolbar::BottomCenter);
-  insertItem("Bottom Right",  Toolbar::BottomRight);
-}
-
-
-void ToolbarPlacementmenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button != 1) return;
-
-  _toolbar->setPlacement((Toolbar::Placement) id);
-}
 
 
 static
@@ -161,13 +61,17 @@ Toolbar::Toolbar(BScreen *scrn) {
   hide_timer = new bt::Timer(blackbox, this);
   hide_timer->setTimeout(blackbox->resource().autoRaiseDelay());
 
-  setLayer(isOnTop() ? StackingList::LayerAbove : StackingList::LayerNormal);
-  hidden = doAutoHide();
+  ScreenResource& res = _screen->resource();
+
+  setLayer(res.isToolbarOnTop()
+           ? StackingList::LayerAbove
+           : StackingList::LayerNormal);
+  hidden = res.doToolbarAutoHide();
 
   editing = False;
   new_name_pos = 0;
 
-  toolbarmenu = new Toolbarmenu(*blackbox, _screen->screenNumber(), this);
+  toolbarmenu = new Toolbarmenu(*blackbox, _screen->screenNumber(), _screen);
 
   display = blackbox->XDisplay();
   XSetWindowAttributes attrib;
@@ -769,22 +673,24 @@ void Toolbar::buttonReleaseEvent(const XButtonEvent * const event) {
 
 
 void Toolbar::enterNotifyEvent(const XCrossingEvent * const /*unused*/) {
-  if (! doAutoHide())
+  if (! _screen->resource().doToolbarAutoHide())
     return;
 
   if (hidden) {
-    if (! hide_timer->isTiming()) hide_timer->start();
+    if (! hide_timer->isTiming())
+      hide_timer->start();
   } else if (hide_timer->isTiming()) {
     hide_timer->stop();
   }
 }
 
 void Toolbar::leaveNotifyEvent(const XCrossingEvent * const /*unused*/) {
-  if (! doAutoHide())
+  if (! _screen->resource().doToolbarAutoHide())
     return;
 
   if (hidden) {
-    if (hide_timer->isTiming()) hide_timer->stop();
+    if (hide_timer->isTiming())
+      hide_timer->stop();
   } else if (! hide_timer->isTiming()) {
     hide_timer->start();
   }
@@ -919,7 +825,7 @@ void Toolbar::timeout(bt::Timer *timer) {
 
 
 void Toolbar::toggleAutoHide(void) {
-  bool do_auto_hide = !doAutoHide();
+  bool do_auto_hide = !_screen->resource().doToolbarAutoHide();
 
   updateStrut();
   if (_screen->slit())
@@ -932,15 +838,6 @@ void Toolbar::toggleAutoHide(void) {
   }
   _screen->resource().saveToolbarAutoHide(do_auto_hide);
   _screen->saveResource();
-}
-
-
-void Toolbar::toggleOnTop(void) {
-  _screen->resource().saveToolbarOnTop(!isOnTop());
-  _screen->saveResource();
-  _screen->changeLayer(this, (isOnTop()
-                              ? StackingList::LayerAbove
-                              : StackingList::LayerNormal));
 }
 
 

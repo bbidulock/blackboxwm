@@ -24,142 +24,12 @@
 
 #include "Slit.hh"
 #include "Screen.hh"
+#include "Slitmenu.hh"
 #include "Toolbar.hh"
 
-#include <Menu.hh>
 #include <PixmapCache.hh>
 
 #include <X11/Xutil.h>
-
-
-class Slitmenu : public bt::Menu {
-public:
-  Slitmenu(bt::Application &app, unsigned int screen, Slit *slit);
-
-  void refresh(void);
-
-protected:
-  void itemClicked(unsigned int id, unsigned int button);
-
-private:
-  Slit *_slit;
-};
-
-
-class SlitDirectionmenu : public bt::Menu {
-public:
-  SlitDirectionmenu(bt::Application &app, unsigned int screen, Slit *slit);
-
-  void refresh(void);
-
-protected:
-  void itemClicked(unsigned int id, unsigned int button);
-
-private:
-  Slit *_slit;
-};
-
-
-class SlitPlacementmenu : public bt::Menu {
-public:
-  SlitPlacementmenu(bt::Application &app, unsigned int screen, Slit *slit);
-
-protected:
-  void itemClicked(unsigned int id, unsigned int button);
-
-private:
-  Slit *_slit;
-};
-
-
-enum {
-  Direction,
-  Placement,
-  AlwaysOnTop,
-  AutoHide
-};
-
-Slitmenu::Slitmenu(bt::Application &app, unsigned int screen, Slit *slit)
-  : bt::Menu(app, screen), _slit(slit)
-{
-  insertItem("Direction", new SlitDirectionmenu(app, screen, slit), Direction);
-  insertItem("Placement", new SlitPlacementmenu(app, screen, slit), Placement);
-  insertSeparator();
-  insertItem("Always on top", AlwaysOnTop);
-  insertItem("Auto hide", AutoHide);
-}
-
-
-void Slitmenu::refresh(void) {
-  setItemChecked(AlwaysOnTop, _slit->isOnTop());
-  setItemChecked(AutoHide, _slit->doAutoHide());
-}
-
-
-void Slitmenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button != 1) return;
-
-  switch (id) {
-  case AlwaysOnTop:
-    _slit->toggleOnTop();
-    break;
-
-  case AutoHide:
-    _slit->toggleAutoHide();
-    break;
-
-  default:
-    return;
-  } // switch
-}
-
-
-SlitDirectionmenu::SlitDirectionmenu(bt::Application &app, unsigned int screen,
-                                     Slit *slit)
-  : bt::Menu(app, screen), _slit(slit)
-{
-  insertItem("Horizontal", Slit::Horizontal);
-  insertItem("Vertical", Slit::Vertical);
-}
-
-
-void SlitDirectionmenu::refresh(void) {
-  setItemChecked(Slit::Horizontal, _slit->direction() == Slit::Horizontal);
-  setItemChecked(Slit::Vertical, _slit->direction() == Slit::Vertical);
-}
-
-
-void SlitDirectionmenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button != 1) return;
-
-  _slit->setDirection((Slit::Direction) id);
-}
-
-
-SlitPlacementmenu::SlitPlacementmenu(bt::Application &app, unsigned int screen,
-                                     Slit *slit)
-  : bt::Menu(app, screen), _slit(slit)
-{
-  insertItem("Top Left",      Slit::TopLeft);
-  insertItem("Center Left",   Slit::CenterLeft);
-  insertItem("Bottom Left",   Slit::BottomLeft);
-  insertSeparator();
-  insertItem("Top Center",    Slit::TopCenter);
-  insertItem("Bottom Center", Slit::BottomCenter);
-  insertSeparator();
-  insertItem("Top Right",     Slit::TopRight);
-  insertItem("Center Right",  Slit::CenterRight);
-  insertItem("Bottom Right",  Slit::BottomRight);
-}
-
-
-void SlitPlacementmenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button != 1) return;
-
-  _slit->setPlacement((Slit::Placement) id);
-}
-
-
 
 
 Slit::Slit(BScreen *scr) {
@@ -168,8 +38,11 @@ Slit::Slit(BScreen *scr) {
 
   ScreenResource& res = screen->resource();
 
-  setLayer(isOnTop() ? StackingList::LayerAbove : StackingList::LayerNormal);
-  hidden = doAutoHide();
+  setLayer(res.isSlitOnTop()
+           ? StackingList::LayerAbove
+           : StackingList::LayerNormal);
+
+  hidden = res.doSlitAutoHide();
 
   display = screen->screenInfo().display().XDisplay();
   frame.window = frame.pixmap = None;
@@ -177,8 +50,7 @@ Slit::Slit(BScreen *scr) {
   timer = new bt::Timer(blackbox, this);
   timer->setTimeout(blackbox->resource().autoRaiseDelay());
 
-  slitmenu =
-    new Slitmenu(*blackbox, screen->screenNumber(), this);
+  slitmenu = new Slitmenu(*blackbox, screen->screenNumber(), screen);
 
   XSetWindowAttributes attrib;
   unsigned long create_mask = CWBackPixmap | CWBackPixel | CWBorderPixel |
@@ -523,7 +395,9 @@ void Slit::updateStrut(void) {
       case BottomLeft:
       case BottomRight:
         strut.bottom = (screen->screenInfo().rect().bottom() -
-                        ((doAutoHide()) ? frame.y_hidden : frame.rect.y()));
+                        ((screen->resource().doSlitAutoHide())
+                         ? frame.y_hidden
+                         : frame.rect.y()));
         break;
       case CenterLeft:
         strut.left = getExposedWidth();
@@ -647,7 +521,7 @@ void Slit::buttonPressEvent(const XButtonEvent * const event) {
 
 
 void Slit::enterNotifyEvent(const XCrossingEvent * const /*unused*/) {
-  if (! doAutoHide())
+  if (! screen->resource().doSlitAutoHide())
     return;
 
   if (hidden) {
@@ -659,7 +533,7 @@ void Slit::enterNotifyEvent(const XCrossingEvent * const /*unused*/) {
 
 
 void Slit::leaveNotifyEvent(const XCrossingEvent * const /*unused*/) {
-  if (! doAutoHide())
+  if (! screen->resource().doSlitAutoHide())
     return;
 
   if (hidden) {
@@ -703,7 +577,7 @@ void Slit::configureRequestEvent(const XConfigureRequestEvent * const event) {
 
 
 void Slit::timeout(bt::Timer *) {
-  hidden = ! hidden;
+  hidden = !hidden;
   if (hidden)
     XMoveWindow(display, frame.window, frame.x_hidden, frame.y_hidden);
   else
@@ -711,27 +585,15 @@ void Slit::timeout(bt::Timer *) {
 }
 
 
-void Slit::toggleOnTop(void) {
-  screen->resource().saveSlitOnTop(!isOnTop());
-  screen->saveResource();
-  screen->changeLayer(this, (isOnTop()
-                             ? StackingList::LayerAbove
-                             : StackingList::LayerNormal));
-}
-
-
 void Slit::toggleAutoHide(void) {
-  bool do_auto_hide = !doAutoHide();
-
   updateStrut();
 
-  if (!do_auto_hide && hidden) {
+  if (!screen->resource().doSlitAutoHide() && hidden) {
     // force the slit to be visible
-    if (timer->isTiming()) timer->stop();
+    if (timer->isTiming())
+      timer->stop();
     timer->fireTimeout();
   }
-  screen->resource().saveSlitAutoHide(do_auto_hide);
-  screen->saveResource();
 }
 
 

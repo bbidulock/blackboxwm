@@ -24,6 +24,8 @@
 
 #include "Configmenu.hh"
 #include "Screen.hh"
+#include "Slitmenu.hh"
+#include "Toolbarmenu.hh"
 
 #include <Image.hh>
 
@@ -82,7 +84,8 @@ enum {
   FocusNewWindows,
   FocusLastWindowOnWorkspace,
   DisableBindings,
-  DisableToolbar,
+  ToolbarOptions,
+  SlitOptions,
   ClickToFocus,
   SloppyFocus,
   AutoRaise,
@@ -94,7 +97,7 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
                        BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
-  setTitle("Configuration options");
+  setTitle("Configuration Options");
   showTitle();
 
   ConfigFocusmenu *focusmenu =
@@ -103,17 +106,23 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
     new ConfigPlacementmenu(app, screen, bscreen);
   ConfigDithermenu *dithermenu =
     new ConfigDithermenu(app, screen, bscreen);
+  Toolbarmenu *toolbarmenu =
+    new Toolbarmenu(app, screen, _bscreen);
+  Slitmenu *slitmenu =
+    new Slitmenu(app, screen, _bscreen);
 
   insertItem("Focus Model", focusmenu, FocusModel);
   insertItem("Window Placement", placementmenu, WindowPlacement);
   insertItem("Image Dithering", dithermenu, ImageDithering);
-
+  insertSeparator();
   insertItem("Opaque Window Moving", OpaqueWindowMoving);
   insertItem("Full Maximization", FullMaximization);
   insertItem("Focus New Windows", FocusNewWindows);
   insertItem("Focus Last Window on Workspace", FocusLastWindowOnWorkspace);
   insertItem("Disable Bindings with Scroll Lock", DisableBindings);
-  insertItem("Disable Toolbar", DisableToolbar);
+  insertSeparator();
+  insertItem("Toolbar Options", toolbarmenu, ToolbarOptions);
+  insertItem("Slit Options", slitmenu, SlitOptions);
 }
 
 
@@ -124,7 +133,6 @@ void Configmenu::refresh(void) {
   setItemChecked(FocusNewWindows, res.doFocusNew());
   setItemChecked(FocusLastWindowOnWorkspace, res.doFocusLast());
   setItemChecked(DisableBindings, res.allowScrollLock());
-  setItemChecked(DisableToolbar, _bscreen->toolbar() == 0);
 }
 
 
@@ -150,14 +158,6 @@ void Configmenu::itemClicked(unsigned int id, unsigned int) {
   case DisableBindings: // disable keybindings with Scroll Lock
     res.saveAllowScrollLock(! res.allowScrollLock());
     _bscreen->reconfigure();
-    break;
-
-  case DisableToolbar:
-    if (_bscreen->toolbar())
-      _bscreen->destroyToolbar();
-    else
-      _bscreen->createToolbar();
-    res.setToolbarEnabled(_bscreen->toolbar() != 0);
     break;
 
   default:

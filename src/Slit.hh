@@ -74,22 +74,22 @@ public:
   Slit(BScreen *scr);
   virtual ~Slit(void);
 
-  bool isOnTop(void) const { return screen->resource().isSlitOnTop(); }
   bool isHidden(void) const { return hidden; }
-  bool doAutoHide(void) const { return screen->resource().doSlitAutoHide(); }
 
   // StackEntity interface
   Window windowID(void) const { return frame.window; }
 
   unsigned int getWidth(void) const { return frame.rect.width(); }
   unsigned int getExposedWidth(void) const {
-    if (screen->resource().slitDirection() == Vertical && doAutoHide())
+    if (screen->resource().slitDirection() == Vertical
+        && screen->resource().doSlitAutoHide())
       return screen->resource().bevelWidth();
     return frame.rect.width();
   }
   unsigned int getHeight(void) const { return frame.rect.height(); }
   unsigned int getExposedHeight(void) const {
-    if (screen->resource().slitDirection() == Horizontal && doAutoHide())
+    if (screen->resource().slitDirection() == Horizontal
+        && screen->resource().doSlitAutoHide())
       return screen->resource().bevelWidth();
     return frame.rect.height();
   }
@@ -101,7 +101,6 @@ public:
   void updateSlit(void);
   void reposition(void);
   void shutdown(void);
-  void toggleOnTop(void);
   void toggleAutoHide(void);
 
   // EventHandler interface

@@ -75,10 +75,7 @@ public:
   virtual ~Toolbar(void);
 
   bool isEditing(void) const { return editing; }
-  bool isOnTop(void) const { return _screen->resource().isToolbarOnTop(); }
   bool isHidden(void) const { return hidden; }
-  bool doAutoHide(void) const
-  { return _screen->resource().doToolbarAutoHide(); }
 
   // StackEntity interface
   Window windowID(void) const { return frame.window; }
@@ -86,8 +83,11 @@ public:
   const bt::Rect& getRect(void) const { return frame.rect; }
   unsigned int getWidth(void) const { return frame.rect.width(); }
   unsigned int getHeight(void) const { return frame.rect.height(); }
-  unsigned int getExposedHeight(void) const
-  { return ((doAutoHide()) ? frame.bevel_w : frame.rect.height()); }
+  unsigned int getExposedHeight(void) const {
+    return (_screen->resource().doToolbarAutoHide()
+            ? frame.bevel_w
+            : frame.rect.height());
+  }
 
   void buttonPressEvent(const XButtonEvent * const event);
   void buttonReleaseEvent(const XButtonEvent * const event);
@@ -99,7 +99,6 @@ public:
   void edit(void);
   void reconfigure(void);
   void toggleAutoHide(void);
-  void toggleOnTop(void);
 
   void redrawWindowLabel(void);
   void redrawWorkspaceLabel(void);
