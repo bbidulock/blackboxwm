@@ -827,7 +827,16 @@ void BScreen::addIcon(BlackboxWindow *w) {
 
   iconList.push_back(w);
 
-  const char* title = w->getIconTitle();
+  std::string title = w->getIconTitle();
+  unsigned int len = title.length();
+  if (len > 60) {
+    std::string::iterator lside = title.begin() + 29;
+    unsigned int delta = len - 60;
+    delta = (delta > 28) ? 28 : delta;
+    std::string::iterator rside = title.end() - delta;
+    title.replace(lside, rside, "...");
+  }
+
   iconmenu->insert(title);
   iconmenu->update();
 }
@@ -1091,7 +1100,17 @@ void BScreen::propagateWindowName(const BlackboxWindow *bw) {
     iconmenu->update();
   } else {
     Clientmenu *clientmenu = getWorkspace(bw->getWorkspaceNumber())->getMenu();
-    clientmenu->changeItemLabel(bw->getWindowNumber(), bw->getTitle());
+    std::string title = bw->getTitle();
+    unsigned int len = title.length();
+    if (len > 60) {
+      std::string::iterator lside = title.begin() + 29;
+      unsigned int delta = len - 60;
+      delta = (delta > 28) ? 28 : delta;
+      std::string::iterator rside = title.end() - delta;
+      title.replace(lside, rside, "...");
+    }
+
+    clientmenu->changeItemLabel(bw->getWindowNumber(), title);
     clientmenu->update();
 
     if (blackbox->getFocusedWindow() == bw)

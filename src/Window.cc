@@ -47,7 +47,6 @@ extern "C" {
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "GCCache.hh"
-#include "Iconmenu.hh"
 #include "Image.hh"
 #include "Netwm.hh"
 #include "Screen.hh"
@@ -180,6 +179,9 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     client.functions   &= ~(Func_Maximize | Func_Iconify);
   } else if (client.window_type == blackbox->netwm()->wmWindowTypeDesktop()) {
     client.decorations = client.functions = 0l;
+  } else if (isTransient()) {
+    client.decorations &= ~(Decor_Maximize | Decor_Handle);
+    client.functions &= ~Func_Maximize;
   }
 
   if ((client.normal_hint_flags & PMinSize) &&

@@ -78,7 +78,17 @@ void Workspace::addWindow(BlackboxWindow *w, bool place) {
   stackingList.push_front(w);
   windowList.push_back(w);
 
-  clientmenu->insert(w->getTitle());
+  std::string title = w->getTitle();
+  unsigned int len = title.length();
+  if (len > 60) {
+    std::string::iterator lside = title.begin() + 29;
+    unsigned int delta = len - 60;
+    delta = (delta > 28) ? 28 : delta;
+    std::string::iterator rside = title.end() - delta;
+    title.replace(lside, rside, "...");
+  }
+
+  clientmenu->insert(title);
   clientmenu->update();
 
   raiseWindow(w);
