@@ -578,7 +578,7 @@ bt::Image::Image(unsigned int w, unsigned int h)
 
 
 bt::Image::~Image(void) {
-  free(data);
+  delete [] data;
   data = 0;
 }
 
@@ -603,7 +603,7 @@ Pixmap bt::Image::render(const Display &display, unsigned int screen,
     to = texture.color2();
   }
 
-  data = static_cast<RGB *>(malloc(width * height * sizeof(RGB)));
+  data = new RGB[width * height];
 
   if (texture.texture() & bt::Texture::Diagonal)
     dgradient(from, to, interlaced);
