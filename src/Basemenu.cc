@@ -74,10 +74,11 @@ void Basemenu::drawTitle()
 
   switch ( style->menuTitleJustify() ) {
   case BStyle::Left:
+    dx += indent;
     break;
 
   case BStyle::Right:
-    dx += title_rect.width() - l;
+    dx += title_rect.width() - l - indent;
     break;
 
   case BStyle::Center:
@@ -132,7 +133,7 @@ void Basemenu::drawItem( const Rect &r, const Item &item )
     break;
 
   case BStyle::Right:
-    dx += r.width() - l;
+    dx += r.width() - l - indent;
     break;
 
   case BStyle::Center:
@@ -207,6 +208,8 @@ void Basemenu::updateSize()
     titleh = style->menuTitleFont()->ascent + style->menuTitleFont()->descent + 2;
   }
 
+  indent = itemh;
+
   Items::iterator it = items.begin();
   if ( show_title ) {
     if ( it == items.end() ) {
@@ -227,6 +230,7 @@ void Basemenu::updateSize()
       iw = XTextWidth( style->menuTitleFont(), item.label().c_str(),
                        item.label().length() ) + 2;
 
+    iw += indent + indent;
     item.height = titleh;
     item.idx = -1;
 
@@ -258,7 +262,7 @@ void Basemenu::updateSize()
         iw = XTextWidth( style->menuFont(), item.label().c_str(),
                          item.label().length() ) + 2;
 
-      iw += itemh + itemh;
+      iw += indent + indent;
       item.height = itemh;
     }
 
@@ -307,8 +311,6 @@ void Basemenu::updateSize()
                                                         highlight_pixmap );
     }
   }
-
-  indent = itemh;
 
   Size sz( w, h );
   if ( sz != size() )
