@@ -148,7 +148,8 @@ bool Netwm::readSupported(Window target, AtomList& atoms) const {
   if (getListProperty(target, XA_ATOM, net_supported, &data, &nitems)) {
     Atom* values = reinterpret_cast<Atom*>(data);
 
-    std::copy(values, values + nitems, std::back_inserter(atoms));
+    atoms.reserve(nitems);
+    atoms.assign(values, values + nitems);
 
     XFree(data);
   }
@@ -170,7 +171,8 @@ bool Netwm::readClientList(Window target, WindowList& windows) const {
   if (getListProperty(target, XA_WINDOW, net_client_list, &data, &nitems)) {
     Window* values = reinterpret_cast<Window*>(data);
 
-    std::copy(values, values + nitems, std::back_inserter(windows));
+    windows.reserve(nitems);
+    windows.assign(values, values + nitems);
 
     XFree(data);
   }
@@ -190,10 +192,11 @@ bool Netwm::readClientListStacking(Window target, WindowList& windows) const {
   unsigned char* data = NULL;
   unsigned long nitems;
   if (getListProperty(target, XA_WINDOW, net_client_list_stacking,
-                  &data, &nitems)) {
+                      &data, &nitems)) {
     Window* values = reinterpret_cast<Window*>(data);
 
-    std::copy(values, values + nitems, std::back_inserter(windows));
+    windows.reserve(nitems);
+    windows.assign(values, values + nitems);
 
     XFree(data);
   }
@@ -346,6 +349,7 @@ bool Netwm::readWMName(Window target, std::string& name) const {
   if (getListProperty(target, utf8_string, net_wm_name,
                       &data, &nitems) && nitems > 0) {
     name = reinterpret_cast<char*>(data);
+    XFree(data);
   }
 
   return (! name.empty());
@@ -358,6 +362,7 @@ bool Netwm::readWMIconName(Window target, std::string& name) const {
   if (getListProperty(target, utf8_string, net_wm_icon_name,
                       &data, &nitems) && nitems > 0) {
     name = reinterpret_cast<char*>(data);
+    XFree(data);
   }
 
   return (! name.empty());
@@ -389,7 +394,8 @@ bool Netwm::readWMWindowType(Window target, AtomList& types) const {
   if (getListProperty(target, XA_ATOM, net_wm_window_type, &data, &nitems)) {
     Atom* values = reinterpret_cast<Atom*>(data);
 
-    std::copy(values, values + nitems, std::back_inserter(types));
+    types.reserve(nitems);
+    types.assign(values, values + nitems);
 
     XFree(data);
   }
@@ -411,7 +417,8 @@ bool Netwm::readWMState(Window target, AtomList& states) const {
   if (getListProperty(target, XA_ATOM, net_wm_state, &data, &nitems)) {
     Atom* values = reinterpret_cast<Atom*>(data);
 
-    std::copy(values, values + nitems, std::back_inserter(states));
+    states.reserve(nitems);
+    states.assign(values, values + nitems);
 
     XFree(data);
   }
