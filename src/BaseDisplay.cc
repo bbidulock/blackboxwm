@@ -340,10 +340,11 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
   }
 
   // get the values of the keyboard lock modifiers
+  // Note: Caps lock is not retrieved the same way as Scroll and Num lock
+  // since it doesn't need to be.
   KeyCode num_lock_code = XKeysymToKeycode(display, XK_Num_Lock);
-  KeyCode caps_lock_code = XKeysymToKeycode(display, XK_Caps_Lock);
   KeyCode scroll_lock_code = XKeysymToKeycode(display, XK_Scroll_Lock);
-  if (num_lock_code && caps_lock_code && scroll_lock_code) {
+  if (num_lock_code && scroll_lock_code) {
     XModifierKeymap *modmap;
     if ((modmap = XGetModifierMapping(display))) {
       int mask_table[] = {
@@ -357,21 +358,19 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
           NumLockMask = mask_table[cnt / modmap->max_keypermod];
         if (scroll_lock_code == modmap->modifiermap[cnt])
           ScrollLockMask = mask_table[cnt / modmap->max_keypermod];
-        if (caps_lock_code == modmap->modifiermap[cnt])
-          CapsLockMask = mask_table[cnt / modmap->max_keypermod];
       }
       MaskList[0] = 0;
-      MaskList[1] = CapsLockMask;
+      MaskList[1] = LockMask;
       MaskList[2] = NumLockMask;
       MaskList[3] = ScrollLockMask;
-      MaskList[4] = CapsLockMask | NumLockMask;
+      MaskList[4] = LockMask | NumLockMask;
       MaskList[5] = NumLockMask  | ScrollLockMask;
-      MaskList[6] = CapsLockMask | ScrollLockMask;
-      MaskList[7] = CapsLockMask | NumLockMask | ScrollLockMask;
+      MaskList[6] = LockMask | ScrollLockMask;
+      MaskList[7] = LockMask | NumLockMask | ScrollLockMask;
       MaskListLength = sizeof(MaskList) / sizeof(MaskList[0]);
       XFreeModifiermap(modmap);
     } else {
-      NumLockMask = ScrollLockMask = CapsLockMask = 0;
+      NumLockMask = ScrollLockMask = 0;
       MaskList[0] = 0;
       MaskListLength = 1;
     }

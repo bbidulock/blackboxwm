@@ -156,7 +156,7 @@ int main(int argc, char **argv) {
     } else if (! strcmp(argv[i], "-version")) {
       // print current version string
       printf("Blackbox %s : (c) 1997 - 2000 Brad Hughes\n"
-	     "\t\t\t  2002 - 2001 Sean 'Shaleh' Perry\n",
+	     "\t\t\t  2001 - 2002 Sean 'Shaleh' Perry\n",
              __blackbox_version);
 
       ::exit(0);

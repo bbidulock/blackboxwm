@@ -93,6 +93,7 @@
 #define   FONT_ELEMENT_SIZE 50
 #endif // FONT_ELEMENT_SIZE
 
+#include <algorithm>
 
 static Bool running = True;
 
@@ -107,9 +108,11 @@ static int anotherWMRunning(Display *display, XErrorEvent *) {
   return(-1);
 }
 
-static int dcmp(const void *one, const void *two) {
-  return (strcmp((*(char **) one), (*(char **) two)));
-}
+struct dcmp {
+  bool operator()(const char *one, const char *two) const {
+    return (strcmp(one, two) < 0) ? True : False;
+  }
+};
 
 #ifndef    HAVE_STRCASESTR
 static const char * strcasestr(const char *str, const char *ptn) {
@@ -2100,19 +2103,21 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
 		closedir(d);
 
-                qsort(ls, entries, sizeof(char *), dcmp);
+		std::sort(ls, ls + entries, dcmp());
 
                 int n, slen = strlen(stylesdir);
                 for (n = 0; n < entries; n++) {
-                  int nlen = strlen(ls[n]);
-                  char style[MAXPATHLEN + 1];
+                  if (ls[n][strlen(ls[n])-1] != '~') {
+                    int nlen = strlen(ls[n]);
+                    char style[MAXPATHLEN + 1];
 
-                  strncpy(style, stylesdir, slen);
-                  *(style + slen) = '/';
-                  strncpy(style + slen + 1, ls[n], nlen + 1);
+                    strncpy(style, stylesdir, slen);
+                    *(style + slen) = '/';
+                    strncpy(style + slen + 1, ls[n], nlen + 1);
 
-                  if ((! stat(style, &statbuf)) && S_ISREG(statbuf.st_mode))
-                    stylesmenu->insert(ls[n], BScreen::SetStyle, style);
+                    if ((! stat(style, &statbuf)) && S_ISREG(statbuf.st_mode))
+                      stylesmenu->insert(ls[n], BScreen::SetStyle, style);
+                  }
 
                   delete [] ls[n];
                 }

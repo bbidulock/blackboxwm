@@ -874,7 +874,7 @@ void BlackboxWindow::positionWindows(void) {
 void BlackboxWindow::getWMName(void) {
   if (client.title) {
     delete [] client.title;
-    client.title = 0;
+    client.title = (char *) 0;
   }
 
   XTextProperty text_prop;
@@ -1380,7 +1380,8 @@ Bool BlackboxWindow::setInputFocus(void) {
       XSendEvent(display, client.window, False, NoEventMask, &ce);
     }
 
-    if (screen->isSloppyFocus() && screen->doAutoRaise()) timer->start();
+    if (screen->isSloppyFocus() && screen->doAutoRaise())
+      timer->start();
 
     ret = True;
   }

@@ -76,7 +76,9 @@ I18n::I18n(void) {
     if (l) *l = '\0';
   }
 
+#ifdef HAVE_CATOPEN
   catalog_fd = (nl_catd) -1;
+#endif
 #endif // HAVE_SETLOCALE
 
   catalog_filename = (char *) 0;

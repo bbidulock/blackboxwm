@@ -186,6 +186,7 @@ void Slit::removeClient(SlitClient *client, Bool remap) {
   }
 
   delete client;
+  client = (SlitClient *) 0;
 }
 
 

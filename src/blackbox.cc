@@ -265,7 +265,7 @@ void Blackbox::process_event(XEvent *e) {
   switch (e->type) {
   case ButtonPress: {
     // strip the lock key modifiers
-    e->xbutton.state &= ~(NumLockMask | CapsLockMask | ScrollLockMask);
+    e->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
 
     last_time = e->xbutton.time;
 
@@ -369,7 +369,7 @@ void Blackbox::process_event(XEvent *e) {
 
   case ButtonRelease: {
     // strip the lock key modifiers
-    e->xbutton.state &= ~(NumLockMask | CapsLockMask | ScrollLockMask);
+    e->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
 
     last_time = e->xbutton.time;
 
@@ -463,7 +463,8 @@ void Blackbox::process_event(XEvent *e) {
 
     if ((win = searchWindow(e->xunmap.window))) {
       win->unmapNotifyEvent(&e->xunmap);
-
+      if (focused_window == win)
+	focused_window = (BlackboxWindow *) 0;
 #ifdef    SLIT
     } else if ((slit = searchSlit(e->xunmap.window))) {
       slit->removeClient(e->xunmap.window);
@@ -483,7 +484,8 @@ void Blackbox::process_event(XEvent *e) {
 
     if ((win = searchWindow(e->xdestroywindow.window))) {
       win->destroyNotifyEvent(&e->xdestroywindow);
-
+      if (focused_window == win)
+	focused_window = (BlackboxWindow *) 0;
 #ifdef    SLIT
     } else if ((slit = searchSlit(e->xdestroywindow.window))) {
       slit->removeClient(e->xdestroywindow.window, False);
@@ -495,7 +497,7 @@ void Blackbox::process_event(XEvent *e) {
 
   case MotionNotify: {
     // strip the lock key modifiers
-    e->xbutton.state &= ~(NumLockMask | CapsLockMask | ScrollLockMask);
+    e->xbutton.state &= ~(NumLockMask | ScrollLockMask | LockMask);
     
     last_time = e->xmotion.time;
 
@@ -1231,9 +1233,9 @@ void Blackbox::load_rc(void) {
   if (XrmGetResource(database, "session.autoRaiseDelay",
                      "Session.AutoRaiseDelay", &value_type, &value)) {
     if (sscanf(value.addr, "%ld", &resource.auto_raise_delay.tv_usec) != 1)
-      resource.auto_raise_delay.tv_usec = 250;
+      resource.auto_raise_delay.tv_usec = 400;
   } else {
-    resource.auto_raise_delay.tv_usec = 250;
+    resource.auto_raise_delay.tv_usec = 400;
   }
 
   resource.auto_raise_delay.tv_sec = resource.auto_raise_delay.tv_usec / 1000;

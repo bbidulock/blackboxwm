@@ -135,7 +135,7 @@ protected:
   virtual void process_event(XEvent *) = 0;
 
   // the masks of the modifiers which are ignored in button events.
-  int CapsLockMask, NumLockMask, ScrollLockMask;
+  int NumLockMask, ScrollLockMask;
 
 
 public:
