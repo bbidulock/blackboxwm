@@ -138,9 +138,8 @@ void Workspace::showAll(void) {
 
 
 void Workspace::hideAll(void) {
-  // XXX: why is the order they are withdrawn important?
+  // withdraw in reverse order to minimize the number of Expose events
 
-  /* make a temporary list in reverse order */
   BlackboxWindowList lst(stackingList.rbegin(), stackingList.rend());
 
   BlackboxWindowList::iterator it = lst.begin();
@@ -160,9 +159,6 @@ void Workspace::removeAll(void) {
 
 
 void Workspace::raiseWindow(BlackboxWindow *w) {
-  // XXX: if the next line is used, blackbox parts stop raising over windows
-  //  if (stackingList.front() == w) return;
-
   BlackboxWindow *win = (BlackboxWindow *) 0, *bottom = w;
 
   while (bottom->isTransient()) {
