@@ -103,7 +103,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   flags.moving = flags.resizing = flags.shaded = flags.visible =
     flags.iconic = flags.transient = flags.focused =
     flags.stuck = flags.modal =  flags.send_focus_message =
-    flags.shaped = flags.managed = False;
+    flags.shaped = False;
   flags.maximized = 0;
 
   blackbox_attrib.workspace = workspace_number = window_number = BSENTINEL;
@@ -174,7 +174,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     return;
   }
 
-  flags.managed = True;
   blackbox->saveWindowSearch(client.window, this);
 
   // determine if this is a transient window
@@ -379,10 +378,6 @@ BlackboxWindow::~BlackboxWindow(void) {
   if (frame.window) {
     blackbox->removeWindowSearch(frame.window);
     XDestroyWindow(display, frame.window);
-  }
-
-  if (flags.managed) {
-    blackbox->removeWindowSearch(client.window);
   }
 }
 

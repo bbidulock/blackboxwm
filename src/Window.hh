@@ -96,8 +96,7 @@ private:
       stuck,                 // is omnipresent
       modal,                 // is modal? (must be dismissed to continue)
       send_focus_message,    // should we send focus messages to our client?
-      shaped,                // does the frame use the shape extension?
-      managed;               // under blackbox's control?
+      shaped;                // does the frame use the shape extension?
                              // maximize is special, the number corresponds
                              // with a mouse button
                              // if 0, not maximized
