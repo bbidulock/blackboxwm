@@ -1944,20 +1944,24 @@ bool BScreen::smartPlacement(unsigned int workspace, bt::Rect& rect,
   int gx, gy;
   int &outer = row_placement ? gy : gx;
   int &inner = row_placement ? gx : gy;
-  const int outer_delta =
-    row_placement ? (topbottom ? 1 : -1) : (leftright ? 1 : -1);
-  const int inner_delta =
-    row_placement ? (leftright ? 1 : -1) : (topbottom ? 1 : -1);
-  const int outer_begin =
-    row_placement ? (topbottom ? 0 : gh) : (leftright ? 0 : gw);
-  const int outer_end = row_placement ?
-                        (topbottom ? static_cast<int>(gh) : -1) :
-                        (leftright ? static_cast<int>(gw) : -1);
-  const int inner_begin =
-    row_placement ? (leftright ? 0 : gw) : (topbottom ? 0 : gh);
-  const int inner_end = row_placement ?
-                        (leftright ? static_cast<int>(gw) : -1) :
-                        (topbottom ? static_cast<int>(gh) : -1);
+  const int outer_delta = row_placement
+                          ? (topbottom ? 1 : -1)
+                          : (leftright ? 1 : -1);
+  const int inner_delta = row_placement
+                          ? (leftright ? 1 : -1)
+                          : (topbottom ? 1 : -1);
+  const int outer_begin = row_placement
+                          ? (topbottom ? 0 : static_cast<int>(gh) - 1)
+                          : (leftright ? 0 : static_cast<int>(gw) - 1);
+  const int outer_end   = row_placement
+                          ? (topbottom ? static_cast<int>(gh) : -1)
+                          : (leftright ? static_cast<int>(gw) : -1);
+  const int inner_begin = row_placement
+                          ? (leftright ? 0 : static_cast<int>(gw) - 1)
+                          : (topbottom ? 0 : static_cast<int>(gh) - 1);
+  const int inner_end   = row_placement
+                          ? (leftright ? static_cast<int>(gw) : -1)
+                          : (topbottom ? static_cast<int>(gh) : -1);
 
   bt::Rect where;
   bool fit = false;
@@ -2037,12 +2041,10 @@ bool BScreen::smartPlacement(unsigned int workspace, bt::Rect& rect,
   if (! fit) {
     const int screen_area = avail.width() * avail.height();
     const int window_area = rect.width() * rect.height();
-    if (window_area > screen_area / 6) {
+    if (window_area > screen_area / 8) {
       // center windows that don't fix (except for small windows)
-      rect.setPos((avail.x() + avail.width() -
-                   rect.width()) / 2,
-                  (avail.y() + avail.height() -
-                   rect.height()) / 2);
+      rect.setPos((avail.x() + avail.width() - rect.width()) / 2,
+                  (avail.y() + avail.height() - rect.height()) / 2);
       return true;
     }
     return false;
