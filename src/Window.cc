@@ -2530,7 +2530,7 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
       blackbox->maskWindowEvents(client.window, this);
 
       if (! screen->doOpaqueMove()) {
-        XGrabServer( display );
+        XGrabServer(display);
 
         frame.changing_x = frame.x;
         frame.changing_y = frame.y;
@@ -2612,7 +2612,7 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
     Bool left = (me->window == frame.left_grip);
 
     if (! flags.resizing) {
-      XGrabServer( display );
+      XGrabServer(display);
       XGrabPointer(display, me->window, False, ButtonMotionMask |
                    ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None,
                    ((left) ? blackbox->getLowerLeftAngleCursor() :
