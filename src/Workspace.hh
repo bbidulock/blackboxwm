@@ -52,6 +52,8 @@ public:
   Workspace(Toolbar *, int = 0);
   ~Workspace(void);
 
+  Bool isCurrent(void);
+  void setCurrent(void);
   const int addWindow(BlackboxWindow *);
   const int removeWindow(BlackboxWindow *);
   BlackboxWindow *window(int);

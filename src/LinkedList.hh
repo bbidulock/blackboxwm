@@ -104,7 +104,7 @@ public:
   const int empty(void) const { return __llist::empty(); }
   
   Z *find(const int i) { return (Z *) __llist::find(i); }
-  const int insert(Z *d) { return __llist::insert((void *) d); }
+  const int insert(Z *d, int i = -1) { return __llist::insert((void *) d, i); }
   const int remove(Z *d) { return __llist::remove((void *) d); }
   Z *remove(const int i) { return (Z *) __llist::remove(i); }
 

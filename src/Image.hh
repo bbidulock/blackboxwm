@@ -59,8 +59,9 @@ typedef struct BColor {
 // inverted image
 #define BImage_Invert		(1<<11)
 
-// do not dither solids
+// don't dither large solids
 #define BImage_NoDitherSolid	(1<<12)
+
 
 class BImage {
 private:

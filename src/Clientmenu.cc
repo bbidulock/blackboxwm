@@ -47,13 +47,15 @@ Clientmenu::~Clientmenu(void) {
 void Clientmenu::itemSelected(int button, int index) {
   if (button == 1)
     if (index >= 0 && index < wkspc->Count()) {
+      if (! wkspc->isCurrent()) wkspc->setCurrent();
+
       BlackboxWindow *win = wkspc->window(index);
       if (win) {
         if (win->isIconic())
           win->deiconifyWindow();
         wkspc->raiseWindow(win);
         win->setInputFocus();
-
+	
         Hide();
       }
     }

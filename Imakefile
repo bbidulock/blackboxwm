@@ -28,15 +28,8 @@ XCOMM Rules to build blackbox
 
 MakefileSubdirs(app-defaults src)
 DependSubdirs(src)
-
-#ifdef MallocDebug
-CleanSubdirs(app-defaults ccmalloc-0.2.3 src)
-MakeSubdirs(ccmalloc-0.2.3 src)
-#else
 CleanSubdirs(app-defaults src)
 MakeSubdirs(src)
-#endif
-
 InstallSubdirs(app-defaults src)
 
 distclean:: clean

@@ -38,23 +38,21 @@ toolbar.textColor:			lightgrey
 ! window textures
 window.focus:				Raised Horizontal Gradient Bevel1
 window.unfocus:				Raised Horizontal Gradient Bevel1
-window.button:				Flat   Vertical   Gradient
+window.focus.button:			Flat   Vertical   Gradient
+window.unfocus.button:			Flat   Vertical   Gradient
 ! this may be set to "Inverted" or to and valid texture string
 window.button.pressed:			Sunken Vertical   Gradient Bevel1
-window.handle:				Raised Diagonal   Gradient Bevel1
 window.frame:				Raised Solid               Bevel1
 
 ! window colors
-window.focus.color:			rgb:c/9/6
-window.focus.colorTo:			rgb:8/6/4
+window.focus*color:			rgb:c/9/6
+window.focus*colorTo:			rgb:8/6/4
 window.focus.textColor:			white
-window.unfocus.color:			slategrey
-window.unfocus.colorTo:			darkslategrey
+window.unfocus*color:			slategrey
+window.unfocus*colorTo:			darkslategrey
 window.unfocus.textColor:		darkgrey
 window.button.pressed.color:		lightslategrey
 window.button.pressed.colorTo:		darkslategrey
-window.handle.color:			lightslategrey
-window.handle.colorTo:			darkslategrey
 window.frame.color:			slategrey
 
 ! menu textures

@@ -125,13 +125,33 @@ const int __llist::insert(void *d, int index) {
       nnode->data = d;
       nnode->next = (__llist_node *) 0;
 
-      nnode->prev = _last;      
+      nnode->prev = _last;
       _last->next = nnode;
       _last = nnode;
     } else {
+      __llist_node *nnode = new __llist_node, *inode = _first;
       // otherwise... insert the item at the position specified by index
       if (index > elements) return -1;
 
+      int i;
+      for (i = 0; i < index; i++)
+	inode = inode->next;
+      
+      if ((! inode) || inode == _last) {
+	nnode->data = d;
+	nnode->next = (__llist_node *) 0;
+	
+	nnode->prev = _last;
+	_last->next = nnode;
+	_last = nnode;
+      } else {
+	nnode->data = d;
+	nnode->next = inode->next;
+	nnode->prev = inode;
+	
+	inode->next->prev = nnode;
+	inode->next = nnode;
+      }
     }
   }
 
@@ -142,9 +162,9 @@ const int __llist::insert(void *d, int index) {
 const int __llist::remove(void *d) {
   // remove list item whose data pointer address matches the pointer address
   // given
-
+  
   __llist_node *rnode = _first;
-
+  
   int i;
   for (i = 0; i < elements; i++) {
     if (rnode->data == d) {
@@ -153,30 +173,30 @@ const int __llist::remove(void *d) {
 	if (rnode->next)
 	  rnode->next->prev = rnode->prev;
       } else {
-	// we removed the _first item in the list... reflect that removal in the
-	// list internals
+	// we removed the _first item in the list... reflect that removal in
+	// the list internals
 	_first = rnode->next;
 	if (_first)
 	  _first->prev = (__llist_node *) 0;
       }
-
+      
       if (rnode == _last) {
 	_last = rnode->prev;
 	if (_last)
 	  _last->next = (__llist_node *) 0;
       }
-
+      
       --elements;
       delete rnode;
       break;
     }
-
+    
     if (rnode)
       rnode = rnode->next;
     else
       return -1;
   }
-
+  
   return i;
 }
 
@@ -191,7 +211,7 @@ void *__llist::remove(const int index) {
     int i;
     for (i = 0; i < index; i++)
       rnode = rnode->next;
-
+    
     if (rnode->prev) {
       rnode->prev->next = rnode->next;
       if (rnode->next)
@@ -203,7 +223,7 @@ void *__llist::remove(const int index) {
       if (_first)
 	_first->prev = (__llist_node *) 0;
     }
-
+    
     if (rnode == _last) {
       _last = rnode->prev;
       if (_last)
@@ -215,7 +235,7 @@ void *__llist::remove(const int index) {
     delete rnode;
     return data_return;
   }
-
+  
   return (void *) 0;
 }
 
@@ -223,11 +243,11 @@ void *__llist::remove(const int index) {
 void *__llist::find(const int index) {
   if (index < elements && index >= 0) {
     __llist_node *fnode = _first;
-
+    
     int i;
     for (i = 0; i < index; i++)
       fnode = fnode->next;
-
+    
     return fnode->data;
   }
   

@@ -41,9 +41,10 @@ private:
   Basemenu *parent;
   BImageControl *image_ctrl;
 
-  Bool moving, visible, movable, user_moved, default_menu, title_vis, shifted;
+  Bool moving, visible, movable, user_moved, default_menu, title_vis, shifted,
+    hidable;
   Display *display;
-  int which_sub, which_press, which_sbl;
+  int which_sub, which_press, which_sbl, alignment;
 
   struct menu {
     Pixmap iframe_pixmap, title_pixmap;
@@ -63,6 +64,8 @@ protected:
   BasemenuItem *find(int index) { return menuitems->find(index); }
   void setTitleVisibility(Bool b) { title_vis = b; }
   void setMovable(Bool b) { movable = b; }
+  void setHidable(Bool b) { hidable = b; }
+  void setAlignment(int a) { alignment = a; }
 
   virtual void itemSelected(int, int) = 0;
 
@@ -81,9 +84,9 @@ public:
   void Reconfigure(void);
   Bool hasSubmenu(int);
 
-  int insert(char *, int = 0, char * = 0);
-  int insert(char **);
-  int insert(char *, Basemenu *);
+  int insert(char *, int = 0, char * = 0, int = -1);
+  int insert(char **, int = -1);
+  int insert(char *, Basemenu *, int = -1);
   int remove(int);
 
   Bool userMoved(void) { return user_moved; }
@@ -102,6 +105,8 @@ public:
   void Move(int, int);
   void Update(void);
   void defaultMenu(void) { default_menu = True; }
+
+  enum { MenuAlignDontCare = 1, MenuAlignTop, MenuAlignBottom };
 };
 
 

@@ -265,7 +265,7 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
 	nWin->mapRequestEvent(&mre);
       }
   }
-
+  
   if (! resource.sloppyFocus)
     XSetInputFocus(display, tool_bar->windowID(), RevertToParent, CurrentTime);
   

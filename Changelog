@@ -2,6 +2,44 @@ At the request of some people, here is a Change log starting with 0.33.0.
 Enjoy! :)
 
 
+Changes from 0.40.4 to 0.40.5:
+	- updated the default style to reflect the button resource change in
+	  0.40.4
+	- added internal menu alignment
+	- added internal linked list insertion at a certain point, used in
+	  menus
+	- submenus now update their parent menu to reflect that the submenu
+	  is no longer open
+	- right clicking anywhere on the rootmenu or window menus will now
+	  unmap them... NOTE: this doesn't work on submenus or the rootmenu
+          or on the SendToWorkspaceMenu
+	- cleaned up some of the image rendering code to use less comparisons
+	  while rendering an image... also removed alot of
+          multiplication/division use in beveling loops to increase speed
+	- changed dithering error distribution to make images smoother at
+	  15 and 8bpp (8bpp got the most benefit from this change)
+	- changed the toolbar appearance... removed the raise/lower button,
+          changing the level of the toolbar isn't possible as of yet... a new
+	  button has been added on the left of the toolbar, pressing it will
+	  map the workspace menu, which has a few changes
+	- the workspace menu now conatins submenus of all the window lists of
+	  all workspaces... it is now possible to see which window is on which
+	  workspace... also... the icon button has been removed from the
+	  toolbar and the iconmenu is now a submenu of the workspace menu
+	- window placement has been slightly modified... if clients request a
+	  certain position, the request is honored, otherwise the client is
+	  cascaded... if either the cascade or requested position obscures part
+	  of the window when the window is created, the window is centered in 
+	  the root window...
+	- window state updated... when blackbox is restarted, all client
+	  windows are placed on the workspace they were previously occupying...
+	  this is only between restarts... not when X is restarted...
+	  however... applications may be coded specifically for blackbox to
+	  start on a certain workspace... for more information on this, email
+	  me
+	- window menu placement has been made a little more sane
+
+
 Changes from 0.40.3 to 0.40.4:
 	- removed the window.handle{.color,.colorTo} resources... the handle
 	  is now treated as a button, and uses the button resources

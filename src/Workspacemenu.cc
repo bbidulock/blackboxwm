@@ -34,6 +34,8 @@ Workspacemenu::Workspacemenu(Blackbox *bb, Toolbar *tb) :
   toolbar = tb;
   setTitleVisibility(False);
   setMovable(False);
+  setHidable(False);
+  setAlignment(Basemenu::MenuAlignBottom);
   defaultMenu();
 
   insert("New Workspace");

@@ -140,7 +140,7 @@ protected:
   void configureWindow(int, int, unsigned int, unsigned int);
   
   Bool validateClient(void);
-  Bool fetchWMState(unsigned long *);
+  Bool fetchWMState(unsigned long *, unsigned long * = 0);
   
   
 public:

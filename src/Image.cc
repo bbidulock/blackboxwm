@@ -71,129 +71,50 @@ Pixmap BImage::render(unsigned long texture, const BColor &c1,
 
 
 Pixmap BImage::render_solid(unsigned long texture, const BColor &color) {
+  int inverted = 0;
+  
+  if ((texture & BImage_Sunken) && (! (texture & BImage_Invert))) inverted = 1;
+  else if (texture & BImage_Invert) inverted = 1;
+  
   background(color);
-
-  if (texture & BImage_Raised) {
-    if (texture & BImage_Bevel1) {
-      if (color.red == color.green && color.green == color.blue &&
-          color.blue == 0)
-        bevel1(True, True);
-      else
-        bevel1(True);
-    } else if (texture & BImage_Bevel2) {
-      if (color.red == color.green && color.green == color.blue &&
-          color.blue == 0)
-        bevel2(True, True);
-      else
-        bevel2(True);
-    }
-
-    if (texture & BImage_Invert)
-      invert();
-  } else if (texture & BImage_Sunken) {
-    if (texture & BImage_Bevel1) {
-      if (color.red == color.green && color.green == color.blue &&
-          color.blue == 0)
-        bevel1(True, True);
-      else
-        bevel1(True);
-    } else if (texture & BImage_Bevel2) {
-      if (color.red == color.green && color.green == color.blue &&
-          color.blue == 0)
-        bevel2(True, True);
-      else
-        bevel2(True);
-    }
-
-    if (! (texture & BImage_Invert))
-      invert();
-  }
-
+  
+  if (texture & BImage_Bevel1) bevel1(True, (color.red == color.green &&
+                                             color.green == color.blue &&
+                                             color.blue == 0));
+  else if (texture & BImage_Bevel2) bevel2(True, (color.red == color.green &&
+                                                  color.green == color.blue &&
+                                                  color.blue == 0));
+  
+  if (inverted) invert();
+  
   return renderPixmap(! (texture & BImage_NoDitherSolid));
 }
 
 
 Pixmap BImage::render_gradient(unsigned long texture, const BColor &color1,
                                const BColor &color2) {
-  if (texture & BImage_Diagonal) {
-    if (texture & BImage_Sunken) {
-      from = color2;
-      to = color1;
-      dgradient();
+  int inverted = 0;
+  
+  if (texture & BImage_Sunken) {
+    from = color2;
+    to = color1;
 
-      if (texture & BImage_Bevel1)
-        bevel1(False);
-      else if (texture & BImage_Bevel2)
-        bevel2(False);
+    if (! (texture & BImage_Invert)) inverted = 1;
+  } else {
+    from = color1;
+    to = color2;
 
-      if (! (texture & BImage_Invert))
-        invert();
-    } else {
-      from = color1;
-      to = color2;
-      dgradient();
-
-      if (texture & BImage_Bevel1)
-        bevel1(False);
-      else if (texture & BImage_Bevel2)
-        bevel2(False);
-
-      if (texture & BImage_Invert)
-        invert();
-    }
-  } else if (texture & BImage_Horizontal) {
-    if (texture & BImage_Sunken) {
-      from = color2;
-      to = color1;
-      hgradient();
-
-      if (texture & BImage_Bevel1)
-        bevel1(False);
-      else if (texture & BImage_Bevel2)
-        bevel2(False);
-
-      if (! (texture & BImage_Invert))
-        invert();
-    } else {
-      from = color1;
-      to = color2;
-      hgradient();
-
-      if (texture & BImage_Bevel1)
-        bevel1(False);
-      else if (texture & BImage_Bevel2)
-        bevel2(False);
-
-      if (texture & BImage_Invert)
-        invert();
-    }
-  } else if (texture & BImage_Vertical) {
-    if (texture & BImage_Sunken) {
-      from = color2;
-      to = color1;
-      vgradient();
-
-      if (texture & BImage_Bevel1)
-        bevel1(False);
-      else if (texture & BImage_Bevel2)
-        bevel2(False);
-
-      if (! (texture & BImage_Invert))
-        invert();
-    } else {
-      from = color1;
-      to = color2;
-      vgradient();
-
-      if (texture & BImage_Bevel1)
-        bevel1(False);
-      else if (texture & BImage_Bevel2)
-        bevel2(False);
-
-      if (texture & BImage_Invert)
-        invert();
-    }
+    if (texture & BImage_Invert) inverted = 1;
   }
+
+  if (texture & BImage_Diagonal) dgradient();
+  else if (texture & BImage_Horizontal) hgradient();
+  else if (texture & BImage_Vertical) vgradient();
+
+  if (texture & BImage_Bevel1) bevel1(False);
+  else if (texture & BImage_Bevel2) bevel2(False);
+  
+  if (inverted) invert();
 
   return renderPixmap();
 }
@@ -205,10 +126,13 @@ XImage *BImage::renderXImage(Bool dither) {
   if (! image) return 0;
 
   unsigned char *d = (unsigned char *) malloc(image->bytes_per_line * height);
-  if (! d) return 0;
-
+  if (! d) {
+    XDestroyImage(image);
+    return 0;
+  }
+  
   register unsigned int x, y, r = 0, g = 0, b = 0;
-
+  
   unsigned char *idata = d;
   unsigned int i, ofs;
   unsigned long pixel;
@@ -339,10 +263,10 @@ XImage *BImage::renderXImage(Bool dither) {
 	    }
 	  }
 
-          er = *(or + x) - ((r << 8) / (image->red_mask >> roff));
-          eg = *(og + x) - ((g << 8) / (image->green_mask >> goff));
-          eb = *(ob + x) - ((b << 8) / (image->blue_mask >> boff));
-
+	  er = *(or + x) - ((r << 8) / (image->red_mask >> roff));
+	  eg = *(og + x) - ((g << 8) / (image->green_mask >> goff));
+	  eb = *(ob + x) - ((b << 8) / (image->blue_mask >> boff));
+	  
           break;
 
 	default:
@@ -352,21 +276,17 @@ XImage *BImage::renderXImage(Bool dither) {
 	  return 0;
 	}
 
-        r = (er >> 3) + (er >> 2);
-        g = (eg >> 3) + (eg >> 2);
-        b = (eb >> 3) + (eb >> 2);
-
-	*(or + x + 1) += r;
-	*(og + x + 1) += g;
-	*(ob + x + 1) += b;
+	*(or + x + 1) += er;
+	*(og + x + 1) += eg;
+	*(ob + x + 1) += eb;
 	
-	*(nor + x) += r;
-	*(nog + x) += g;
-	*(nob + x) += b;
+	*(nor + x) += er;
+	*(nog + x) += eg;
+	*(nob + x) += eb;
 	
-	*(nor + x + 1) += er - (r << 1);
-	*(nog + x + 1) += eg - (g << 1);
-	*(nob + x + 1) += eb - (b << 1);
+	*(nor + x + 1) -= (er >> 1) + (er >> 2);
+	*(nog + x + 1) -= (eg >> 1) + (eg >> 2);
+	*(nob + x + 1) -= (eb >> 1) + (eb >> 2);
       }
       
       ofs += image->width;
@@ -457,7 +377,7 @@ Pixmap BImage::renderPixmap(Bool dither) {
   if (pixmap == None) return None;
 
   XImage *image = renderXImage(dither);
-  if ((! image) || (! image->data)) {
+  if (! image) {
     XFreePixmap(control->d(), pixmap);
     return None;
   }
@@ -494,18 +414,18 @@ void BImage::bevel1(Bool solid, Bool solidblack) {
 	r = g = b = 0xc0;
 	rr = gg = bb = 0x60;
       } else {
-	r = bg.red * 3 / 2;
+	r = bg.red + (bg.red >> 1);
 	if (r < bg.red) r = ~0;
-	g = bg.green * 3 / 2;
+	g = bg.green + (bg.green >> 1);
 	if (g < bg.green) g = ~0;
-	b = bg.blue * 3 / 2;
+	b = bg.blue + (bg.blue >> 1);
 	if (b < bg.blue) b = ~0;
 	
-	rr = bg.red * 3 / 4;
+	rr = (bg.red >> 2) + (bg.red >> 1);
 	if (rr > bg.red) rr = 0;
-	gg = bg.green * 3 / 4;
+	gg = (bg.green >> 2) + (bg.green >> 1);
 	if (gg > bg.green) gg = 0;
-	bb = bg.blue * 3 / 4;
+	bb = (bg.blue >> 2) + (bg.blue >> 1);
 	if (bb > bg.blue) bb = 0;
       }      
 
@@ -557,13 +477,13 @@ void BImage::bevel1(Bool solid, Bool solidblack) {
     } else {
       while (--w) {
 	r = *pr;
-	rr = r * 3 / 2;
+	rr = r + (r >> 1);
 	if (rr < r) rr = ~0;
 	g = *pg;
-	gg = g * 3 / 2;
+	gg = g + (g >> 1);
 	if (gg < g) gg = ~0;
 	b = *pb;
-	bb = b * 3 / 2;
+	bb = b + (b >> 1);
 	if (bb < b) bb = ~0;
 
 	*pr = rr;
@@ -571,13 +491,13 @@ void BImage::bevel1(Bool solid, Bool solidblack) {
 	*pb = bb;
 
 	r = *(pr + wh);
-	rr = r * 3 / 4;
+	rr = (r >> 2) + (r >> 1) ;
 	if (rr > r) rr = 0;
 	g = *(pg + wh);
-	gg = g * 3 / 4;
+	gg = (g >> 2) + (g >> 1);
 	if (gg > g) gg = 0;
 	b = *(pb + wh);
-	bb = b * 3 / 4;
+	bb = (b >> 2) + (b >> 1);
 	if (bb > b) bb = 0;
 
 	*((pr++) + wh) = rr;
@@ -586,27 +506,27 @@ void BImage::bevel1(Bool solid, Bool solidblack) {
       }
 
       r = *pr;
-      rr = r * 3 / 2;
-      if (rr < r) r = ~0;
+      rr = r + (r >> 1);
+      if (rr < r) rr = ~0;
       g = *pg;
-      gg = g * 3 / 2;
-      if (gg < g) g = ~0;
+      gg = g + (g >> 1); 
+      if (gg < g) gg = ~0;
       b = *pb;
-      bb = b * 3 / 2;
-      if (bb < b) b = ~0;
+      bb = b + (b >> 1);
+      if (bb < b) bb = ~0;
 
       *pr = rr;
       *pg = gg;
       *pb = bb;
 
       r = *(pr + wh);
-      rr = r * 3 / 4;
+      rr = (r >> 2) + (r >> 1);
       if (rr > r) rr = 0;
       g = *(pg + wh);
-      gg = g * 3 / 4;
+      gg = (g >> 2) + (g >> 1);
       if (gg > g) gg = 0;
       b = *(pb + wh);
-      bb = b * 3 / 4;
+      bb = (b >> 2) + (b >> 1);
       if (bb > b) bb = 0;
       
       *(pr + wh) = rr;
@@ -619,13 +539,13 @@ void BImage::bevel1(Bool solid, Bool solidblack) {
       
       while (--h) {
 	r = *pr;
-	rr = r * 3 / 2;
+	rr = r + (r >> 1);
 	if (rr < r) rr = ~0;
 	g = *pg;
-	gg = g * 3 / 2;
+	gg = g + (g >> 1);
 	if (gg < g) gg = ~0;
 	b = *pb;
-	bb = b * 3 / 2;
+	bb = b + (b >> 1);
 	if (bb < b) bb = ~0;
 	
 	*pr = rr;
@@ -637,13 +557,13 @@ void BImage::bevel1(Bool solid, Bool solidblack) {
 	pb += width - 1;
 	
 	r = *pr;
-	rr = r * 3 / 4;
+	rr = (r >> 2) + (r >> 1);
 	if (rr > r) rr = 0;
 	g = *pg;
-	gg = g * 3 / 4;
+	gg = (g >> 2) + (g >> 1);
 	if (gg > g) gg = 0;
 	b = *pb;
-	bb = b * 3 / 4;
+	bb = (b >> 2) + (b >> 1);
 	if (bb > b) bb = 0;
 
 	*(pr++) = rr;
@@ -652,13 +572,13 @@ void BImage::bevel1(Bool solid, Bool solidblack) {
       }
       
       r = *pr;
-      rr = r * 3 / 2;
+      rr = r + (r >> 1);
       if (rr < r) rr = ~0;
       g = *pg;
-      gg = g * 3 / 2;
+      gg = g + (g >> 1);
       if (gg < g) gg = ~0;
       b = *pb;
-      bb = b * 3 / 2;
+      bb = b + (b >> 1);
       if (bb < b) bb = ~0;
 
       *pr = rr;
@@ -670,13 +590,13 @@ void BImage::bevel1(Bool solid, Bool solidblack) {
       pb += width - 1;
       
       r = *pr;
-      rr = r * 3 / 4;
+      rr = (r >> 2) + (r >> 1);
       if (rr > r) rr = 0;
       g = *pg;
-      gg = g * 3 / 4;
+      gg = (g >> 2) + (g >> 1);
       if (gg > g) gg = 0;
       b = *pb;
-      bb = b * 3 / 4;
+      bb = (b >> 2) + (b >> 1);
       if (bb > b) bb = 0;
       
       *pr = rr;
@@ -698,18 +618,18 @@ void BImage::bevel2(Bool solid, Bool solidblack) {
 	r = g = b = 0xc0;
 	rr = gg = bb = 0x60;
       } else {
-	r = bg.red * 3 / 2;
+	r = bg.red + (bg.red >> 1);
 	if (r < bg.red) r = ~0;
-	g = bg.green * 3 / 2;
+	g = bg.green + (bg.green >> 1);
 	if (g < bg.green) g = ~0;
-	b = bg.blue * 3 / 2;
+	b = bg.blue + (bg.blue >> 1);
 	if (b < bg.blue) b = ~0;
 	
-	rr = bg.red * 3 / 4;
+	rr = (bg.red >> 2) + (bg.red >> 1);
 	if (rr > bg.red) rr = 0;
-	gg = bg.green * 3 / 4;
+	gg = (bg.green >> 2) + (bg.green >> 1);
 	if (gg > bg.green) gg = 0;
-	bb = bg.blue * 3 / 4;
+	bb = (bg.blue >> 2) + (bg.blue >> 1);
 	if (bb > bg.blue) bb = 0;
       }      
 
@@ -744,13 +664,13 @@ void BImage::bevel2(Bool solid, Bool solidblack) {
     } else {
       while (--w) {
 	r = *pr;
-	rr = r * 3 / 2;
+	rr = r + (r >> 1);
 	if (rr < r) rr = ~0;
 	g = *pg;
-	gg = g * 3 / 2;
+	gg = g + (g >> 1);
 	if (gg < g) gg = ~0;
 	b = *pb;
-	bb = b * 3 / 2;
+	bb = b + (b >> 1);
 	if (bb < b) bb = ~0;
 
 	*pr = rr;
@@ -758,13 +678,13 @@ void BImage::bevel2(Bool solid, Bool solidblack) {
 	*pb = bb;
 
 	r = *(pr + wh);
-	rr = r * 3 / 4;
+	rr = (r >> 2) + (r >> 1);
 	if (rr > r) rr = 0;
 	g = *(pg + wh);
-	gg = g * 3 / 4;
+	gg = (g >> 2) + (g >> 1);
 	if (gg > g) gg = 0;
 	b = *(pb + wh);
-	bb = b * 3 / 4;
+	bb = (b >> 2) + (b >> 1);
 	if (bb > b) bb = 0;
 
 	*((pr++) + wh) = rr;
@@ -778,13 +698,13 @@ void BImage::bevel2(Bool solid, Bool solidblack) {
       
       while (--h) {
 	r = *pr;
-	rr = r * 3 / 2;
+	rr = r + (r >> 1);
 	if (rr < r) rr = ~0;
 	g = *pg;
-	gg = g * 3 / 2;
+	gg = g + (g >> 1);
 	if (gg < g) gg = ~0;
 	b = *pb;
-	bb = b * 3 / 2;
+	bb = b + (b >> 1);
 	if (bb < b) bb = ~0;
 	
 	*(++pr) = rr;
@@ -796,13 +716,13 @@ void BImage::bevel2(Bool solid, Bool solidblack) {
 	pb += width - 3;
 	
 	r = *pr;
-	rr = r * 3 / 4;
+	rr = (r >> 2) + (r >> 1);
 	if (rr > r) rr = 0;
 	g = *pg;
-	gg = g * 3 / 4;
+	gg = (g >> 2) + (g >> 1);
 	if (gg > g) gg = 0;
 	b = *pb;
-	bb = b * 3 / 4;
+	bb = (b >> 2) + (b >> 1);
 	if (bb > b) bb = 0;
 
 	*(pr++) = rr;
@@ -960,8 +880,8 @@ void BImage::hgradient(void) {
 void BImage::vgradient(void) {
   float fr, fg, fb, tr, tg, tb, dr, dg, db, dy, yr, yg, yb,
     h = (float) height;
-  unsigned char r, g, b;
-  unsigned int x, y, off;
+  unsigned char r, g, b, *pr = red, *pg = green, *pb = blue;
+  unsigned int x, y;
   
   fr = (float) from.red;
   fg = (float) from.green;
@@ -975,7 +895,7 @@ void BImage::vgradient(void) {
   dg = tg - fg;
   db = tb - fb;
 
-  for (y = 0, off = 0; y < height; y++) {
+  for (y = 0; y < height; y++) {
 #ifdef GradientHack
     dy = sin((y/ h) * M_PI_2);
 #else
@@ -990,10 +910,10 @@ void BImage::vgradient(void) {
     g = (unsigned char) (yg);
     b = (unsigned char) (yb);
     
-    for (x = 0; x < width; x++, off++) {
-      *(red + off) = r;
-      *(green + off) = g;
-      *(blue + off) = b;
+    for (x = 0; x < width; x++) {
+      *(pr++) = r;
+      *(pg++) = g;
+      *(pb++) = b;
     }
   }
 }

@@ -138,6 +138,26 @@ void Windowmenu::Reconfigure(void) {
 }
 
 
+void Windowmenu::setClosable(void) {
+  int i, n = Count();
+
+  for (i = 0; i < n; i++) {
+    BasemenuItem *item = find(i);
+    if ((item->function() == Blackbox::B_WindowKill) ||
+	(item->function() == Blackbox::B_WindowClose)) {
+      remove(i);
+      
+      if (window->isClosable())
+	insert("Close", Blackbox::B_WindowClose);
+      else
+	insert("Kill Client", Blackbox::B_WindowKill);
+      
+      Update();
+    }
+  }
+}
+
+
 SendtoWorkspaceMenu::SendtoWorkspaceMenu(BlackboxWindow *win, Blackbox *bb) :
   Basemenu(bb)
 {

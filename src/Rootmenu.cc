@@ -105,5 +105,6 @@ void Rootmenu::itemSelected(int button, int index) {
 	  item->function() != Blackbox::B_SetStyle)
 	blackbox->Menu()->Hide();
     }
-  }
+  } else if (button == 3)
+    blackbox->Menu()->Hide();
 }

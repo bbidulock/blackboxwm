@@ -25,7 +25,6 @@
 
 #include "blackbox.hh"
 #include "Basemenu.hh"
-#include "Rootmenu.hh"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,8 +39,9 @@ Basemenu::Basemenu(Blackbox *ctrl) {
   image_ctrl = blackbox->imageControl();
   display = blackbox->control();
   parent = (Basemenu *) 0;
+  alignment = MenuAlignDontCare;
 
-  title_vis = movable = True;
+  title_vis = movable = hidable = True;
   shifted = default_menu = moving = user_moved = visible = False;
   menu.x = menu.y = menu.x_shift = menu.y_shift = menu.x_move =
     menu.y_move = 0;
@@ -135,27 +135,28 @@ Basemenu::~Basemenu(void) {
 // insertion and removal methods
 // *************************************************************************
 
-int Basemenu::insert(char *label, int function, char *exec) {
+int Basemenu::insert(char *label, int function, char *exec, int pos) {
   BasemenuItem *item = new BasemenuItem(label, function, exec);
-  menuitems->insert(item);
+  menuitems->insert(item, pos);
   
   return menuitems->count();
 }
 
 
-int Basemenu::insert(char *label, Basemenu *submenu) {
+int Basemenu::insert(char *label, Basemenu *submenu, int pos) {
   BasemenuItem *item = new BasemenuItem(label, submenu);
-  menuitems->insert(item);
+  menuitems->insert(item, pos);
   submenu->parent = this;
   submenu->setMovable(False);
+  submenu->setHidable(False);
 
   return menuitems->count();
 }
 
 
-int Basemenu::insert(char **ulabel) {
+int Basemenu::insert(char **ulabel, int pos) {
   BasemenuItem *item = new BasemenuItem(ulabel);
-  menuitems->insert(item);
+  menuitems->insert(item, pos);
 
   return menuitems->count();
 }
@@ -322,6 +323,9 @@ void Basemenu::Update(void) {
     } else
       drawItem(i, False, 0);
 
+  if (parent && visible)
+    parent->drawSubmenu(parent->which_sub);
+
   XMapSubwindows(display, menu.frame);
 }
 
@@ -342,6 +346,12 @@ void Basemenu::Hide(void) {
   user_moved = False;
   visible = False;
   which_sub = which_press = which_sub = -1;
+
+  if (parent) {
+    parent->drawItem(parent->which_sub, False, True);
+    parent->which_sub = -1;
+  }
+
   XUnmapWindow(display, menu.frame);
 }
 
@@ -356,12 +366,8 @@ void Basemenu::Move(int x, int y) {
 
 
 void Basemenu::drawSubmenu(int index, Bool) {
-  if (which_sub != -1 && which_sub != index) {
-    BasemenuItem *tmp = menuitems->find(which_sub);
-    tmp->submenu()->Hide();
-
-    drawItem(which_sub, False, True);
-  }
+  if (which_sub != -1 && which_sub != index)
+    menuitems->find(which_sub)->submenu()->Hide();
   
   if (index >= 0 && index < menuitems->count()) {
     BasemenuItem *item = menuitems->find(index);
@@ -370,11 +376,24 @@ void Basemenu::drawSubmenu(int index, Bool) {
 
       int sbl = index / menu.persub, i = index - (sbl * menu.persub),
 	x = (((shifted) ? menu.x_shift : menu.x) +
-	     (menu.item_w * (sbl + 1)) + 1),
+	     (menu.item_w * (sbl + 1)) + 1), y;
+      
+      if (alignment == MenuAlignTop)
+	y = (((shifted) ? menu.y_shift : menu.y) +
+	     ((title_vis) ? menu.title_h + 1 : 0) -
+	     ((item->submenu()->title_vis) ?
+	      item->submenu()->menu.title_h + 1 : 0));
+      else
 	y = (((shifted) ? menu.y_shift : menu.y) +
 	     ((menu.item_h + 1) * i) + ((title_vis) ? menu.title_h + 1 : 0) -
 	     ((item->submenu()->title_vis) ?
 	      item->submenu()->menu.title_h + 1 : 0));
+
+      if (alignment == MenuAlignBottom &&
+	  (y + item->submenu()->menu.height) > ((shifted) ? menu.y_shift :
+						menu.y) + menu.height)
+	y = (((shifted) ? menu.y_shift : menu.y) +
+	     menu.height - item->submenu()->menu.height);
       
       if ((x + item->submenu()->Width()) > blackbox->xRes())
 	x = ((shifted) ? menu.x_shift : menu.x) -
@@ -382,9 +401,9 @@ void Basemenu::drawSubmenu(int index, Bool) {
       
       if ((y + item->submenu()->Height()) > blackbox->yRes())
 	y = blackbox->yRes() - item->submenu()->Height() - 1;
-
+      
       item->submenu()->Move(x, y);
-
+      
       if (! item->submenu()->visible)
 	item->submenu()->Show();
       which_sub = index;
@@ -534,30 +553,34 @@ void Basemenu::buttonReleaseEvent(XButtonEvent *re) {
 
     if (re->x >= 0 && re->x <= (signed) menu.width &&
 	re->y >= 0 && re->y <= (signed) menu.title_h)
-      if (re->button == 3 && menu.frame == blackbox->Menu()->WindowID())
+      if (re->button == 3 && hidable)
 	Hide();
   } else if (re->window == menu.iframe &&
 	     re->x >= 0 && re->x < (signed) menu.width &&
 	     re->y >= 0 && re->y < (signed) menu.iframe_h) {
-    int sbl = (re->x / menu.item_w), i = (re->y / (menu.item_h + 1)),
-      ix = sbl * menu.item_w, iy = i * (menu.item_h + 1),
-      w = (sbl * menu.persub) + i,
-      p = (which_sbl * menu.persub) + which_press;
+    if (re->button == 3 && hidable) {
+      Hide();
+    } else {
+      int sbl = (re->x / menu.item_w), i = (re->y / (menu.item_h + 1)),
+        ix = sbl * menu.item_w, iy = i * (menu.item_h + 1),
+        w = (sbl * menu.persub) + i,
+        p = (which_sbl * menu.persub) + which_press;
 
-    if (w < menuitems->count() && w >= 0) {
-      if (p != which_sub)
-	drawItem(p, False, True);
+      if (w < menuitems->count() && w >= 0) {
+        if (p != which_sub)
+	  drawItem(p, False, True);
       
-      if  (p == w) {
-	if (re->x > ix && re->x < (signed) (ix + menu.item_w) &&
-	    re->y > iy && re->y < (signed) (iy + menu.item_h)) {
-	  itemSelected(re->button, w);
-	}
-      }
-    } else
-      drawItem(p, True);
+        if  (p == w) {
+	  if (re->x > ix && re->x < (signed) (ix + menu.item_w) &&
+	      re->y > iy && re->y < (signed) (iy + menu.item_h)) {
+	    itemSelected(re->button, w);
+	  }
+        }
+      } else
+        drawItem(p, True);
+    }
   } else
-    XUngrabPointer(display, CurrentTime);
+      XUngrabPointer(display, CurrentTime);
 }
 
 

@@ -49,6 +49,7 @@ public:
   virtual ~Windowmenu(void);
 
   void Reconfigure(void);
+  void setClosable(void);
 
   SendtoWorkspaceMenu *SendToMenu(void) { return sendToMenu; }
 };

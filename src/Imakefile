@@ -37,16 +37,8 @@ CXXFLAGS :=	$(CXXFLAGS) -DGradientHack
 LDLIBS :=	$(LDLIBS) -lm
 #endif
 
-#ifdef MallocDebug
-LDLIBS :=       -N $(LDLIBS) ../ccmalloc-0.2.3/src/ccmalloc.o -ldl
-#endif
-
-#ifdef MWM_HINTS
-CXXFLAGS :=	$(CXXFLAGS) -DMWM_HINTS
-#endif
-
 XCOMM
-XCOMM Homebrew target for imake - form used from $(CONFIGDUR)/Imake.rules
+XCOMM Homebrew target for imake - form used from $(CONFIGDIR)/Imake.rules
 XCOMM
 XCOMM DO NOT EDIT THIS UNLESS YOU KNOW WHAT YOU ARE DOING
 XCOMM

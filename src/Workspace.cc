@@ -35,16 +35,16 @@
 // Workspace class code
 // *************************************************************************
 
-Workspace::Workspace(Toolbar *m, int i) {
-  toolbar = m;
+Workspace::Workspace(Toolbar *t, int i) {
+  toolbar = t;
 
   id = i;
   stack = 0;
 
   windowList = new LinkedList<BlackboxWindow>;
-  cMenu = new Clientmenu(m->_blackbox(), this);
+  cMenu = new Clientmenu(toolbar->_blackbox(), this);
   cMenu->Update();
-
+  
   name = new char[32];
   sprintf(name, "Workspace %d", id);
   label = 0;
@@ -276,4 +276,14 @@ void Workspace::Update(void) {
 
 void Workspace::restackWindows(void) {
   toolbar->stackWindows(stack, windowList->count());
+}
+
+
+Bool Workspace::isCurrent(void) {
+  return (id == toolbar->currentWorkspaceID());
+}
+
+
+void Workspace::setCurrent(void) {
+  toolbar->changeWorkspaceID(id);
 }

@@ -39,18 +39,18 @@ class BImageControl;
 
 class Toolbar {
 private:
-  Bool wait_button, wait_ibutton, raised;
+  Bool wait_button, raised;
   Display *display;
   GC buttonGC;
 
   struct frame {
-    Pixmap frame, label, button, pbutton, ibutton, pibutton, clk;
-    Window base, window, workspaceLabel, workspacePrev, workspaceNext,
-      windowLabel, windowPrev, windowNext, iconButton, raiseButton, clock;
+    Pixmap frame, label, button, pbutton, clk;
+    Window window, menuButton, workspaceLabel, workspacePrev, workspaceNext,
+      windowLabel, windowPrev, windowNext, clock;
 
     int x, y;
     unsigned int width, height, button_w, button_h, label_w, label_h,
-      ib_w, ib_h, clock_w, clock_h, bevel_w;
+      clock_w, clock_h, bevel_w;
   } frame;
   
   LinkedList<Workspace> *workspacesList;
