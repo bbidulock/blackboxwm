@@ -45,11 +45,11 @@ namespace bt {
     RealPixmapCache(const Display &display);
     ~RealPixmapCache(void);
 
-    unsigned long find(unsigned int screen,
-                       const Texture &texture,
-                       unsigned int width, unsigned int height,
-                       unsigned long old_pixmap = 0ul);
-    void release(unsigned long pixmap);
+    Pixmap find(unsigned int screen,
+                const Texture &texture,
+                unsigned int width, unsigned int height,
+                Pixmap old_pixmap = 0ul);
+    void release(Pixmap pixmap);
 
     void clear(bool force);
 
@@ -59,7 +59,7 @@ namespace bt {
       const unsigned int screen;
       const unsigned int width;
       const unsigned int height;
-      unsigned long pixmap;
+      Pixmap pixmap;
       unsigned int count;
 
       inline CacheItem(void)
@@ -119,11 +119,10 @@ bt::RealPixmapCache::RealPixmapCache(const Display &display)
 bt::RealPixmapCache::~RealPixmapCache(void) { clear(true); }
 
 
-unsigned long bt::RealPixmapCache::find(unsigned int screen,
-					const Texture &texture,
-					unsigned int width,
-					unsigned int height,
-					unsigned long old_pixmap) {
+Pixmap bt::RealPixmapCache::find(unsigned int screen,
+                                 const Texture &texture,
+                                 unsigned int width, unsigned int height,
+                                 Pixmap old_pixmap) {
   release(old_pixmap);
 
   if (texture.texture() == (Texture::Flat | Texture::Solid))
@@ -183,7 +182,7 @@ unsigned long bt::RealPixmapCache::find(unsigned int screen,
 }
 
 
-void bt::RealPixmapCache::release(unsigned long pixmap) {
+void bt::RealPixmapCache::release(Pixmap pixmap) {
   if (! pixmap || pixmap == ParentRelative) return;
 
   Cache::iterator it = std::find_if(cache.begin(), cache.end(),
@@ -263,15 +262,15 @@ unsigned long bt::PixmapCache::memoryUsage(void) {
 }
 
 
-unsigned long bt::PixmapCache::find(unsigned int screen,
-				    const Texture &texture,
-				    unsigned int width, unsigned int height,
-				    unsigned long old_pixmap) {
+Pixmap bt::PixmapCache::find(unsigned int screen,
+                             const Texture &texture,
+                             unsigned int width, unsigned int height,
+                             Pixmap old_pixmap) {
   return realpixmapcache->find(screen, texture, width, height, old_pixmap);
 }
 
 
-void bt::PixmapCache::release(unsigned long pixmap) {
+void bt::PixmapCache::release(Pixmap pixmap) {
     realpixmapcache->release(pixmap);
 }
 
