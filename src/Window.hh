@@ -145,7 +145,10 @@ private:
                              // with a mouse button
                              // if 0, not maximized
                              // 1 = HorizVert, 2 = Vertical, 3 = Horizontal
-    WMLayer layer;           // full screen, above, normal, below, desktop
+
+    // full screen, above, normal, below, desktop
+    StackingList::Layer layer;
+
     WMSkip skip;             // none, taskbar, pager, both
   };
 
@@ -341,8 +344,9 @@ public:
   inline unsigned int getTitleHeight(void) const
   { return frame.style->title_height; }
 
-  inline WMLayer getLayer(void) const { return client.state.layer; }
-  void setLayer(WMLayer layer);
+  inline StackingList::Layer layer(void) const
+  { return client.state.layer; }
+  void setLayer(StackingList::Layer layer);
 
   unsigned long normalHintFlags(void) const
   { return client.normal_hint_flags; }

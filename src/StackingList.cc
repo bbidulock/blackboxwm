@@ -41,29 +41,10 @@ StackingList::StackingList(void) {
 }
 
 
-StackingList::iterator&
-StackingList::findLayer(const BlackboxWindow *const win) {
-  switch (win->getLayer()) {
-  case LAYER_DESKTOP:
-    return desktop;
-  case LAYER_BELOW:
-    return below;
-  case LAYER_NORMAL:
-    return normal;
-  case LAYER_ABOVE:
-    return above;
-  case LAYER_FULLSCREEN:
-    return fullscreen;
-  }
-
-  assert(0);
-  return normal;
-}
-
 StackingList::iterator StackingList::insert(BlackboxWindow *win) {
   assert(win);
 
-  iterator& it = findLayer(win);
+  iterator& it = layer(win->layer());
   it = stack.insert(it, win);
   return it;
 }
@@ -72,7 +53,7 @@ StackingList::iterator StackingList::insert(BlackboxWindow *win) {
 StackingList::iterator StackingList::append(BlackboxWindow *win) {
   assert(win);
 
-  iterator& it = findLayer(win);
+  iterator& it = layer(win->layer());
   if (!*it) { // empty layer
     it = stack.insert(it, win);
     return it;
@@ -89,7 +70,7 @@ StackingList::iterator StackingList::append(BlackboxWindow *win) {
 StackingList::iterator StackingList::remove(BlackboxWindow *win) {
   assert(win);
 
-  iterator& pos = findLayer(win);
+  iterator& pos = layer(win->layer());
   iterator it = std::find(pos, stack.end(), win);
   assert(it != stack.end());
   if (it == pos)
@@ -101,10 +82,36 @@ StackingList::iterator StackingList::remove(BlackboxWindow *win) {
 }
 
 
+StackingList::iterator& StackingList::layer(Layer layer) {
+  switch (layer) {
+  case LayerNormal:
+    return normal;
+  case LayerFullScreen:
+    return fullscreen;
+  case LayerAbove:
+    return above;
+  case LayerBelow:
+    return below;
+  case LayerDesktop:
+    return desktop;
+  }
+
+  assert(0);
+  return normal;
+}
+
+
+void StackingList::changeLayer(BlackboxWindow *win, Layer new_layer) {
+  (void) remove(win);
+  win->setLayer(new_layer);
+  (void) insert(win);
+}
+
+
 void StackingList::raise(BlackboxWindow *win) {
   assert(win);
 
-  iterator& pos = findLayer(win);
+  iterator& pos = layer(win->layer());
   iterator it = std::find(pos, stack.end(), win);
   assert(it != stack.end());
   if (it == pos)
@@ -118,7 +125,7 @@ void StackingList::raise(BlackboxWindow *win) {
 void StackingList::lower(BlackboxWindow *win) {
   assert(win);
 
-  iterator& pos = findLayer(win);
+  iterator& pos = layer(win->layer());
   iterator it = std::find(pos, stack.end(), win);
   assert(it != stack.end());
   if (it == pos)

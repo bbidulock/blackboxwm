@@ -236,7 +236,7 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
   // stack the window with all transients above
   WindowStack stack_vector;
   bool layer_above = False;
-  StackingList::iterator it = stackingList.findLayer(win);
+  StackingList::iterator it = stackingList.layer(win->layer());
   StackingList::iterator tmp = it;
   for (; tmp != stackingList.begin(); --tmp) {
     if (*tmp && it != tmp)
@@ -274,7 +274,7 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
 
   WindowStack stack_vector;
   bool layer_above = False;
-  StackingList::iterator it = stackingList.findLayer(win);
+  StackingList::iterator it = stackingList.layer(win->layer());
   StackingList::iterator tmp = it;
   for (; tmp != stackingList.begin(); --tmp) {
     if (*tmp && it != tmp)

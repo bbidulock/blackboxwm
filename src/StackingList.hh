@@ -30,21 +30,20 @@
 #include <list>
 #include <vector>
 
-class BlackboxWindow;
-
 typedef std::vector<Window> WindowStack;
 
-enum WMLayer {
-  LAYER_NORMAL,
-  LAYER_FULLSCREEN,
-  LAYER_ABOVE,
-  LAYER_BELOW,
-  LAYER_DESKTOP
-};
-
+class BlackboxWindow;
 
 class StackingList {
-public:
+ public:
+  enum Layer {
+    LayerNormal,
+    LayerFullScreen,
+    LayerAbove,
+    LayerBelow,
+    LayerDesktop
+  };
+
   typedef std::list<BlackboxWindow *> _List;
   typedef _List::iterator iterator;
   typedef _List::reverse_iterator reverse_iterator;
@@ -52,11 +51,14 @@ public:
   typedef _List::const_reverse_iterator const_reverse_iterator;
 
   StackingList(void);
+
   iterator insert(BlackboxWindow *win);
   iterator append(BlackboxWindow *win);
   iterator remove(BlackboxWindow *win);
-  void dump(void) const;
-  iterator& findLayer(const BlackboxWindow *win);
+
+  iterator& layer(Layer layer);
+  void changeLayer(BlackboxWindow *win, Layer new_layer);
+
   void raise(BlackboxWindow *win);
   void lower(BlackboxWindow *win);
 
@@ -73,7 +75,9 @@ public:
   const_reverse_iterator rbegin(void) const { return stack.rbegin(); }
   const_reverse_iterator rend(void) const { return stack.rend(); }
 
-private:
+  void dump(void) const;
+
+ private:
   _List stack;
   iterator fullscreen, above, normal, below, desktop;
 };

@@ -193,7 +193,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     client.state.shaped = False;
   client.state.maximized = 0;
   client.state.skip = SKIP_NONE;
-  client.state.layer = LAYER_NORMAL;
+  client.state.layer = StackingList::LayerNormal;
   client.workspace = screen->getCurrentWorkspaceID();
   window_number = bt::BSENTINEL;
   client.normal_hint_flags = 0;
@@ -1012,7 +1012,7 @@ void BlackboxWindow::getNetwmHints(void) {
     }
     if (client.window_type == WindowTypeDesktop) {
       // make me omnipresent
-      client.state.layer = LAYER_DESKTOP;
+      client.state.layer = StackingList::LayerDesktop;
     }
   }
 
@@ -1051,11 +1051,11 @@ void BlackboxWindow::getNetwmHints(void) {
         client.state.iconic = True;
       } else if (state == netwm.wmStateFullscreen()) {
         client.state.fullscreen = True;
-        client.state.layer = LAYER_FULLSCREEN;
+        client.state.layer = StackingList::LayerFullScreen;
       } else if (state == netwm.wmStateAbove()) {
-        client.state.layer = LAYER_ABOVE;
+        client.state.layer = StackingList::LayerAbove;
       } else if (state == netwm.wmStateBelow()) {
-        client.state.layer = LAYER_BELOW;
+        client.state.layer = StackingList::LayerBelow;
       }
     }
   }
@@ -1768,7 +1768,7 @@ void BlackboxWindow::shade(void) {
 }
 
 
-void BlackboxWindow::setLayer(WMLayer layer) {
+void BlackboxWindow::setLayer(StackingList::Layer layer) {
   if (window_number == bt::BSENTINEL) {
     // not in a workspace, simply set the layer
     client.state.layer = layer;
@@ -1802,7 +1802,7 @@ void BlackboxWindow::setFullScreen(bool b) {
     constrain(TopLeft);
     configure(frame.changing);
 
-    setLayer(LAYER_FULLSCREEN);
+    setLayer(StackingList::LayerFullScreen);
     setState(client.current_state);
   } else {
     ::get_decorations(client.window_type,
@@ -1820,10 +1820,10 @@ void BlackboxWindow::setFullScreen(bool b) {
     if (!client.state.maximized) {
       configure(client.premax);
 
-      setLayer(LAYER_NORMAL);
+      setLayer(StackingList::LayerNormal);
       setState(client.current_state);
     } else {
-      setLayer(LAYER_NORMAL);
+      setLayer(StackingList::LayerNormal);
       remaximize();
     }
   }
@@ -1933,13 +1933,13 @@ void BlackboxWindow::setState(unsigned long new_state, bool closing) {
   if (client.state.iconic)
     atoms.push_back(netwm.wmStateHidden());
 
-  if (client.state.layer == LAYER_NORMAL)
+  if (client.state.layer == StackingList::LayerNormal)
     /* do nothing */;
-  else if (client.state.layer == LAYER_FULLSCREEN)
+  else if (client.state.layer == StackingList::LayerFullScreen)
     atoms.push_back(netwm.wmStateFullscreen());
-  else if (client.state.layer == LAYER_ABOVE)
+  else if (client.state.layer == StackingList::LayerAbove)
     atoms.push_back(netwm.wmStateAbove());
-  else if (client.state.layer == LAYER_BELOW)
+  else if (client.state.layer == StackingList::LayerBelow)
     atoms.push_back(netwm.wmStateBelow());
 
   if (atoms.empty())
@@ -2448,22 +2448,22 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
         second == netwm.wmStateAbove()) {
       if (action == netwm.wmStateAdd() ||
           (action == netwm.wmStateToggle() &&
-           client.state.layer != LAYER_ABOVE)) {
-        client.state.layer = LAYER_ABOVE;
+           client.state.layer != StackingList::LayerAbove)) {
+        client.state.layer = StackingList::LayerAbove;
       } else if (action == netwm.wmStateToggle() ||
                  action == netwm.wmStateRemove()) {
-        client.state.layer = LAYER_NORMAL;
+        client.state.layer = StackingList::LayerNormal;
       }
     }
     if (first == netwm.wmStateBelow() ||
         second == netwm.wmStateBelow()) {
       if (action == netwm.wmStateAdd() ||
           (action == netwm.wmStateToggle() &&
-           client.state.layer != LAYER_BELOW)) {
-        client.state.layer = LAYER_BELOW;
+           client.state.layer != StackingList::LayerBelow)) {
+        client.state.layer = StackingList::LayerBelow;
       } else if (action == netwm.wmStateToggle() ||
                  action == netwm.wmStateRemove()) {
-        client.state.layer = LAYER_NORMAL;
+        client.state.layer = StackingList::LayerNormal;
       }
     }
 
