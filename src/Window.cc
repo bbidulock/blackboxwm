@@ -84,16 +84,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     return;
   }
 
-  // set the eventmask early in the game so that we make sure we get
-  // all the events we are interested in
-  XSetWindowAttributes attrib_set;
-  attrib_set.event_mask = PropertyChangeMask | FocusChangeMask |
-                          StructureNotifyMask;
-  attrib_set.do_not_propagate_mask = ButtonPressMask | ButtonReleaseMask |
-                                     ButtonMotionMask;
-  XChangeWindowAttributes(blackbox->getXDisplay(), client.window,
-                          CWEventMask|CWDontPropagate, &attrib_set);
-
   // fetch client size and placement
   XWindowAttributes wattrib;
   if ((! XGetWindowAttributes(blackbox->getXDisplay(),
@@ -107,6 +97,21 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     delete this;
     return;
   }
+
+#ifdef DEBUG
+  fprintf(stderr, "0x%lx: initial (%d, %d) w: %d, h: %d\n", client.window,
+          wattrib.x, wattrib.y, wattrib.width, wattrib.height);
+#endif // DEBUG
+
+  // set the eventmask early in the game so that we make sure we get
+  // all the events we are interested in
+  XSetWindowAttributes attrib_set;
+  attrib_set.event_mask = PropertyChangeMask | FocusChangeMask |
+                          StructureNotifyMask;
+  attrib_set.do_not_propagate_mask = ButtonPressMask | ButtonReleaseMask |
+                                     ButtonMotionMask;
+  XChangeWindowAttributes(blackbox->getXDisplay(), client.window,
+                          CWEventMask|CWDontPropagate, &attrib_set);
 
   flags.moving = flags.resizing = flags.shaded = flags.visible =
     flags.iconic = flags.focused = flags.stuck = flags.modal =
@@ -165,6 +170,12 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   getWMHints();
   getWMNormalHints();
 
+#ifdef DEBUG
+  fprintf(stderr, "0x%lx: after hints (%d, %d) w: %d, h: %d\n", client.window,
+          client.rect.x(), client.rect.y(),
+          client.rect.width(), client.rect.height());
+#endif // DEBUG
+
   if (client.initial_state == WithdrawnState) {
     screen->getSlit()->addClient(client.window);
     delete this;
@@ -197,6 +208,14 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   }
   upsize();
 
+#ifdef DFEBUG
+  fprintf(stderr, "0x%lx: sizes reflect the frame from now on\n",
+          client.window);
+  fprintf(stderr, "0x%lx: after upsize (%d, %d) w: %d, h: %d\n", client.window,
+          frame.rect.x(), frame.rect.y(),
+          frame.rect.width(), frame.rect.height());
+#endif // DEBUG
+
   bool place_window = True;
   if (blackbox->isStartup() || isTransient() ||
       client.normal_hint_flags & (PPosition|USPosition)) {
@@ -205,6 +224,13 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     if (blackbox->isStartup() || client.rect.intersects(screen->getRect()))
       place_window = False;
   }
+
+#ifdef DEBUG
+  fprintf(stderr, "0x%lx: after gravity (%d, %d) w: %d, h: %d\n",
+          client.window,
+          frame.rect.x(), frame.rect.y(),
+          frame.rect.width(), frame.rect.height());
+#endif // DEBUG
 
   if (decorations & Decor_Titlebar)
     createTitlebar();
@@ -231,6 +257,13 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     // place the window
     configure(frame.rect.x(), frame.rect.y(),
               frame.rect.width(), frame.rect.height());
+
+#ifdef DEBUG
+    fprintf(stderr, "0x%lx: after configure (%d, %d) w: %d, h: %d\n",
+            client.window,
+            frame.rect.x(), frame.rect.y(),
+            frame.rect.width(), frame.rect.height());
+#endif // DEBUG
   }
 
   // preserve the window's initial state on first map, and its current state
@@ -281,6 +314,13 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   XMapSubwindows(blackbox->getXDisplay(), frame.window);
 
   redrawWindowFrame();
+
+#ifdef DEBUG
+  fprintf(stderr, "0x%lx: end of constructor (%d, %d) w: %d, h: %d\n",
+          client.window,
+          frame.rect.x(), frame.rect.y(),
+          frame.rect.width(), frame.rect.height());
+#endif // DEBUG
 }
 
 
@@ -2273,6 +2313,12 @@ void BlackboxWindow::mapRequestEvent(const XMapRequestEvent *re) {
   case InactiveState:
   case ZoomState:
   default:
+#ifdef DEBUG
+    fprintf(stderr, "0x%lx: just before show (%d, %d) w: %d, h: %d\n",
+            client.window,
+            frame.rect.x(), frame.rect.y(),
+            frame.rect.width(), frame.rect.height());
+#endif // DEBUG
     show();
     screen->getWorkspace(blackbox_attrib.workspace)->raiseWindow(this);
     if (! blackbox->isStartup() && (isTransient() || screen->doFocusNew())) {
@@ -2352,6 +2398,12 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
     }
 
     reconfigure();
+#ifdef DEBUG
+    fprintf(stderr, "0x%lx: transient hint (%d, %d) w: %d, h: %d\n",
+            client.window,
+            frame.rect.x(), frame.rect.y(),
+            frame.rect.width(), frame.rect.height());
+#endif
   }
     break;
 
@@ -2402,6 +2454,12 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent *pe) {
     if (old_rect != frame.rect)
       reconfigure();
 
+#ifdef DEBUG
+    fprintf(stderr, "0x%lx: normal hint (%d, %d) w: %d, h: %d\n",
+            client.window,
+            frame.rect.x(), frame.rect.y(),
+            frame.rect.width(), frame.rect.height());
+#endif // DEBUG
     break;
   }
 
@@ -2459,12 +2517,18 @@ void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent *cr) {
       applyGravity(req);
     }
 
-    if (cr->value_mask & CWWidth)
+    if (cr->value_mask & CWWidth) {
+#ifdef DEBUG
+      fprintf(stderr, "0x%lx: new width - %d\n", client.window, cr->width);
+#endif // DEBUG
       req.setWidth(cr->width + frame.margin.left + frame.margin.right);
-
-    if (cr->value_mask & CWHeight)
+    }
+    if (cr->value_mask & CWHeight) {
+#ifdef DEBUG
+      fprintf(stderr, "0x%lx: new height - %d\n", client.window, cr->height);
+#endif // DEBUG
       req.setHeight(cr->height + frame.margin.top + frame.margin.bottom);
-
+    }
     configure(req.x(), req.y(), req.width(), req.height());
   }
 
@@ -2482,6 +2546,13 @@ void BlackboxWindow::configureRequestEvent(const XConfigureRequestEvent *cr) {
       break;
     }
   }
+
+#ifdef DEBUG
+  fprintf(stderr, "0x%lx: change request (%d, %d) w: %d, h: %d\n",
+          client.window,
+          frame.rect.x(), frame.rect.y(),
+          frame.rect.width(), frame.rect.height());
+#endif // DEBUG
 }
 
 
