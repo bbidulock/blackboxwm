@@ -119,13 +119,23 @@ void Windowmenu::refresh(void) {
   setItemChecked(Maximize, _window->isMaximized());
 
 #if defined(WITH_FULLSCREEN)
+  setItemEnabled(FullScreen, _window->windowType() != WindowTypeDialog);
   setItemChecked(FullScreen, _window->isFullScreen());
 #endif
 
-  setItemEnabled(AlwaysOnTop, !_window->isFullScreen());
-  setItemEnabled(AlwaysOnBottom, !_window->isFullScreen());
-  setItemChecked(AlwaysOnTop, _window->layer() == StackingList::LayerAbove);
-  setItemChecked(AlwaysOnBottom, _window->layer() == StackingList::LayerBelow);
+  setItemEnabled(AlwaysOnTop,
+                 _window->windowType() != WindowTypeDialog
+                 && !_window->isFullScreen());
+  setItemChecked(AlwaysOnTop,
+                 _window->layer() == StackingList::LayerAbove);
+
+  setItemEnabled(AlwaysOnBottom,
+                 _window->windowType() != WindowTypeDialog
+                 && !_window->isFullScreen());
+  setItemChecked(AlwaysOnBottom,
+                 _window->layer() == StackingList::LayerBelow);
+
+  setItemEnabled(KillClient, !_window->isTransient());
 
   setItemEnabled(Close, _window->hasWindowFunction(WindowFunctionClose));
 }
