@@ -272,11 +272,11 @@ public:
 
   ScreenInfo* getScreenInfo(unsigned int s);
 
-  inline const Bool &hasShapeExtensions(void) const
+  inline const Bool hasShapeExtensions(void) const
     { return shape.extensions; }
-  inline const Bool &doShutdown(void) const
+  inline const Bool doShutdown(void) const
     { return _shutdown; }
-  inline const Bool &isStartup(void) const
+  inline const Bool isStartup(void) const
     { return _startup; }
 
   inline const Cursor &getSessionCursor(void) const
@@ -295,9 +295,9 @@ public:
   inline const char *getApplicationName(void) const
     { return (const char *) application_name; }
 
-  inline const int &getNumberOfScreens(void) const
+  inline const int getNumberOfScreens(void) const
     { return number_of_screens; }
-  inline const int &getShapeEventBase(void) const
+  inline const int getShapeEventBase(void) const
     { return shape.event_basep; }
 
   inline void shutdown(void) { _shutdown = True; }
