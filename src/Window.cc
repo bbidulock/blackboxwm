@@ -2691,9 +2691,12 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
     client.wmnormal = readWMNormalHints();
 
     if ((client.wmnormal.flags & (PMinSize|PMaxSize)) == (PMinSize|PMaxSize)) {
-      // the window now can/can't resize itself, so the buttons need to be
-      // regrabbed.
+      /*
+        The window now can/cannot resize itself, so the buttons need
+        to be regrabbed and the decorations updated.
+      */
       ungrabButtons();
+
       ::update_decorations(client.decorations,
                            client.functions,
                            isTransient(),
@@ -2701,13 +2704,22 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
                            client.motif,
                            client.wmnormal,
                            client.wmprotocols);
+
+      // update frame.rect based on the new decorations
+      upsize();
+
       grabButtons();
     }
 
-    bt::Rect old_rect = frame.rect;
-    upsize();
-    if (old_rect != frame.rect)
-      reconfigure();
+    /*
+      Update the current geometry by constraining it (the current
+      geometry) based on the information from the property.
+    */
+    frame.changing = frame.rect;
+    constrain(TopLeft);
+
+    if (frame.rect != frame.changing)
+      configure(frame.changing);
 
     break;
   }
