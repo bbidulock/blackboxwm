@@ -1,0 +1,90 @@
+------------------------------------------------------------------------------
+README:
+------------------------------------------------------------------------------
+
+***************************************************
+* the C and C++ files in this directory have bugs *
+***************************************************
+
+After executing `testall' you can find logs in test_C*.log*.
+To compile and execute one test type `testone <source-file>'
+(f.e. testone test_C_01.c).
+
+Here is a list of the different purposes of the tests:
+
+  different settings of flags in .ccmalloc:
+
+    test_C_01.c      only count
+    test_C_02.c      normal
+    test_C_03.c      very verbose + statistics
+
+  free called twice
+
+    test_C_04.c
+
+  overwrite of allocated data
+  
+    test_C_05.c
+
+  underwrite of allocated data
+
+    test_C_06.c
+
+  corruption of free space (write access to deallocated data)
+
+    test_C_07.c
+    test_C_08.c	   but continue (-> no cruel world message)
+
+  double free and leaks
+
+    test_C_09.c
+  
+  test external check for integrity function
+
+    test_C_10.c
+  
+  test combination with external libraries
+    
+    test_C_11.c lib_test_C_11.c
+
+  test external call chains flag
+    
+    test_C_12.c
+
+  compile with no debugging info
+
+    test_C_13.c
+
+  compile with no frame pointers and no debugging info
+
+    test_C_14.c
+
+  test strdup
+    
+    test_C_15.c
+  
+  test 8 byte alignment of doubles
+     
+    test_C_16.c
+  
+  test logpid (starts severaly copies of itselft)
+    
+    test_C_17.c
+  
+  test dont-log-chain and only-log-chain
+    
+    test_C_18.c
+  
+  test new read-dynlib-with-gdb
+    
+    test_C_19.c lib_test_C_19.c
+
+  test static initializers and deinitializers of C++
+
+    test_C++_01.cc
+    test_C++_02.cc
+
+------------------------------------------------------------------------------
+(C) 1997-1998 Armin Biere
+$Id: README,v 1.1 2001/11/30 07:54:36 shaleh Exp $
+------------------------------------------------------------------------------

@@ -1,0 +1,4 @@
+file test_C_05.exe
+log test_C_05.log
+set check-overwrites
+set continue

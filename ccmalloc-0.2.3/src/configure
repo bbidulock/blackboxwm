@@ -1,0 +1,152 @@
+#!/bin/sh
+
+#-----------------------------------------------------------------------------
+# (C) 1997 - 1998 Armin Biere
+#     $Id: configure,v 1.1 2001/11/30 07:54:36 shaleh Exp $
+#-----------------------------------------------------------------------------
+
+#DEBUG=true
+
+echo "#ifndef _config_h_INCLUDED" > config.h
+echo "#define _config_h_INCLUDED" >> config.h
+echo >> config.h
+
+##############################################################################
+# find a working echo -n
+
+if test "x`echo -n`" = x-n
+then
+  if `printf test 2>&1 > /dev/null`
+  then
+    PRINTF=printf
+  else
+    PRINTF=echo
+  fi
+else
+  PRINTF="echo -n"
+fi 
+
+##############################################################################
+$PRINTF "operating system ..."
+os=`uname -s`
+system=UNDEFINED
+if test x"$os" = x"SunOS"
+then
+  revision=`uname -r | sed 's,[\.].*$,,'`
+  if test x"$revision" = x"4"
+  then
+    system=SUNOS
+  elif test x"$revision" = x"5"
+  then
+    system=SOLARIS
+  fi
+elif test x"$os" = x"Linux"
+then
+  system=LINUX
+elif test x"$os" = x"OSF1"
+then
+  system=OSF1
+fi
+
+if test x"$system" = x"UNDEFINED"
+then
+  echo
+  echo "*** $0: your system is not supported" 2>&1
+  rm -f config.h
+  exit 1
+fi
+
+echo " ${system}."
+echo "#define OS_IS_$system" >> config.h
+
+##############################################################################
+if test x"$system" = x"LINUX"
+then
+  echo "#define NM_DEMANGLES_WELL" >> config.h
+  echo "#define CAN_GET_ARGV0" >> config.h
+  $PRINTF "processor ..."
+  processor=`uname -m`
+  stripped=`echo $processor | sed 's,86$,,'`
+  if test x"$processor" = x"${stripped}86"
+  then
+    echo " x86."
+    echo "#define X86_BACKTRACE" >> config.h
+  else
+    echo " not recognized."
+  fi
+elif test x"$system" = x"SOLARIS"
+then
+  echo "#define CAN_GET_ARGV0" >> config.h
+fi
+
+##############################################################################
+
+if test  x"$system" = xSUNOS
+then
+  echo "#define LIBCNAME \"libc.so\"" >> config.h
+else
+  $PRINTF "name of C-library is ..."
+
+  if [ x"$DEBUG" = xtrue ]
+  then
+    echo
+    tmp=/tmp/find-libc.so-$$
+  else
+    tmp=/tmp/find-libc.so
+  fi
+
+  found=false
+  if [ ! -d $tmp ]; then mkdir $tmp; fi
+  test=$tmp/test.c
+
+  for dir in /usr/lib /lib 
+  do
+    for lib in $dir/libc.so*
+    do
+      base=`basename $lib`
+      if [ x"$DEBUG" = xtrue ]; then echo "  checking $lib ($base)"; fi
+      echo "#include <dlfcn.h>" > $test
+      echo "#ifndef RTLD_NOW" >> $test
+      echo "#define RTLD_NOW 0" >> $test
+      echo "#endif" >> $test
+      echo "main(){" >> $test
+      echo "  char * s;" >> $test
+      echo "  dlopen(\"$base\", RTLD_NOW);" >> $test
+      echo "  puts((s = dlerror()) ? s : \"ok\"); " >> $test
+      echo "}" >> $test
+      gcc -o $tmp/a.out $test -ldl > /dev/null 2>&1 || continue
+      output=`$tmp/a.out`
+      if [ x"$output" = xok ]
+      then
+        found=true
+	break
+      elif [ x"$DEBUG" = xtrue ]
+      then
+        echo "    ($output)"
+      fi
+    done
+    if [ $found = true ]; then break; fi
+  done
+  rm -rf $tmp
+
+  if [ $found = false ]
+  then
+    if [ ! x"$DEBUG" = xtrue ]; then echo; fi
+    echo "  *** could not find valid libc.so"
+    echo "  using \"libc.so\" as default"
+    echo "#define LIBCNAME \"libc.so\"" >> config.h
+  else
+    if [ x"$DEBUG" = xtrue ]
+    then
+      echo "  using \"$base\""
+    else
+      echo " \"$base\""
+    fi
+    echo "#define LIBCNAME \"$base\"" >> config.h
+  fi
+fi
+
+##############################################################################
+echo >> config.h
+echo "#endif" >> config.h
+exit 0

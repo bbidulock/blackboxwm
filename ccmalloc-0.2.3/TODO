@@ -1,0 +1,23 @@
+------------------------------------------------------------------------------
+TODO:
+------------------------------------------------------------------------------
+
+(1) what should ccmalloc do with malloc(0)?
+(2) investigate strange printf bug (bug (3) in BUGS)
+(3) port to alpha (64bit systems in general)
+(4) own allocator with protected (mprotect) internal data
+(5) if 4 is done provide some functionality of electric-fence
+(6) calculate finger prints (e.g. time stamps) to be able to stop
+    at specific malloc calls
+(7) option to remove not used call chains (after some time)
+(8) faster hashing of call chains
+(9) try to find symbols of dynamically loaded libraries with dlopen
+(10) try to find symbols of dynamically linked libraries without
+     relying on gdb
+(11) test `load-dynlibs' on SunOS
+(12) write a script that evaluates the test runs
+
+------------------------------------------------------------------------------
+(C) 1997-1998 Armin Biere
+$Id: TODO,v 1.1 2001/11/30 07:54:36 shaleh Exp $
+------------------------------------------------------------------------------

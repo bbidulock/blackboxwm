@@ -1,0 +1,4 @@
+file test_C_04.exe
+log test_C_04.log
+set keep-deallocated-data
+set continue

@@ -1,0 +1,115 @@
+At the request of some people, here is a Change log starting with 0.33.0.
+Enjoy! :)
+
+
+Changes from 0.33.5 to 0.33.6:
+	- added Makefile.generic for those of you with foobared imake configs.
+	  the use of xmkmf -a (i.e. imake) is still prefered... but this should
+	  work on any system... with a little editing
+	- added static int handleXErrors(Display *, XErrorEvent *) in
+          blackbox.cc to handle any and all X lib errors while blackbox is
+	  running... this should produce a coredump and thus the beta-moron
+	  community should be able to flood my inbox with stack trace upon
+	  stack trace :)
+	- added some sub directories and moved the sources around, this allows
+	  for easier inclusion of the library for blackbox specific programs
+	  (which will run in the dock)
+	- hopefully fixed the "disappearing-rxvt-trick"... since i can't
+	  reproduce it i don't know for sure
+	- removed the use of alloca in graphics.cc... i was noticing very odd
+	  behaviour from malloc() and free()... where blackbox would sig11 
+	  when exiting because of XCloseDisplay doing something naughty...
+	  and this seems to have done the trick... no more sig11's from malloc
+	  or new... everything i've thrown at blackbox is gently but firmly
+	  beaten into submission...
+	- added docboy's curved gradient hack as a compile time option... see
+	  src/Imakefile and src/graphics.cc
+
+
+Changes from 0.33.4 to 0.33.5:
+	- added a small test to cascade windows that start out partially hidden
+	  (like netscape, Xnest, xv, etc.)
+	- changed icon handling to include a menu of icons accessible from the
+	  workspace manager toolbar
+	- deiconifying a window now takes it to the top of the stack
+	- clicking on a menuitem that has a submenu no longer hides the submenu
+	- added resource "workspaceManager.24hourClock",  a value of True turns
+	  on the 24hour clock on the toolbar
+	- removed icon pixmap/window/mask support/handling from window.cc and
+	  window.hh... since icons are now handled in a menu, this is no
+	  longer needed
+	- added session.handleWidth and session.bevelWidth
+	  to control window sizes (instead of hardcoded defaults)
+	- changed parts of Basemenu.cc and WorkspaceManager.cc to follow the
+	  sizes set by session.bevelWidth
+	- fixed Alt-Tab window switching... also fixed some focus handling bugs
+	  which let two windows become focused at the same time (which is bad
+	  mojo)
+
+
+Changes from 0.33.3 to 0.33.4:
+	- corrected a typo in the sample Blackbox.ad file to correctly show
+	  which resource to set for the menu file
+	- added moderate window group support for programs like netscape and 
+	  other motif applications... modified window stacking code and
+	  internal list code to support window groups (this makes transients
+	  behave properly... another step towards more complete ICCCM
+	  compliance)
+	- modified focus event handlers to stop applications from focusing out
+	  when pressing menubars... also window focus is returned to root if 
+	  the focus window is closed... if another window is under the focus
+	  window when it is closed... that window is awarded input focus
+	- fixed tiny little bug that didn't move the close button when resizing
+	  a window
+
+
+Changes from 0.33.2 to 0.33.3: 
+	- changed some of the menu code ("updated" in 0.33.1) back to the
+	  original 0.33.0, which seems to perform better.  Reason behind it? -
+	  blackbox died too often with 0.33.1/2
+	- added "Kill Client" option to window menus... for those applications
+	  that don't accept the WM_DELETE_WINDOW atom
+	- menus that are not partially moved off the root window are shifted to
+	  a visible position when the pointer enters the frame... it is also
+	  shifted back to it's original position when left (this is new... let
+	  me know how it works)
+
+
+Changes from 0.33.1 to 0.33.2: (unreleased)
+	- changed BlackboxIcon to not try and read its config when it was
+	  created.  This was forgotten from the 0.31.0 -> 0.33.0 move :/
+
+
+Changes from 0.33.0 to 0.33.1: (unreleased)
+	- improved menu handling, less possibilty for SIGSEGV
+	- menus now make copies of all label, exec strings and titles, to
+	  make less loose pointers
+	- fixed typo to allow submenus of submenus of submenus (...)
+	- fixed workspace menu and window list menu placements
+
+
+Changes from 0.31.0 to 0.33.0:
+	- added #ifdef statements so the C preprocessor doesn't complain about
+	  _GNU_SOURCE being redefined.
+	- changed internal resource data structures
+	- added Sticky windows functionality
+	- remove old animation code bound with #ifdef ANIMATIONS
+	- fixed a silly little bug that sometimes mapped a submenu when its
+	  parent was unmapping itself
+	- added ExecReconfigure option to execute a shell statement before
+	  performing reconfiguration
+	- rearranged window config code to reduce wait time while resizing
+	- added internal macro BImageNoDitherSolid to make window frame
+	  rendering faster (dithering a solid image is silly anyway)
+	- added new menu file format
+	- added Blackbox::validateWindow to provide a stabler environment for
+	  Blackbox.  This gives blackbox more error checking and greater
+	  stability.  For me, random crashes have (nearly) disappeared.
+	- removed window name/class dependant frame texture/color
+	- with 0.31.0, each entity read it's configuration from the rc database
+	  loaded at start.  this has changed back to the old behaviour of
+	  reading all configuration parameters at start, no database reads are
+	  performed after the initial setup (save for reconfiguring).
+	- configuration has changed to be a little cleaner, and a little more
+          thorough.  See the Blackbox.ad and BlackboxMenu.ad for exmaples.
+

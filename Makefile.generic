@@ -1,0 +1,16 @@
+#
+
+all:
+	make -f Makefile.generic -C lib all
+	make -f Makefile.generic -C src all
+
+
+install:
+	make -f Makefile.generic -C app-defaults install
+	make -f Makefile.generic -C lib install
+	make -f Makefile.generic -C src install
+
+clean:
+	make -f Makefile.generic -C lib clean
+	make -f Makefile.generic -C src clean
+	
