@@ -1122,8 +1122,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   frame.rect = ::applyGravity(client.rect,
                               frame.margin,
                               client.wmnormal.win_gravity);
-  if (client.ewmh.shaded)
-    frame.rect.setHeight(style.title_height);
 
   associateClientWindow();
 
@@ -1145,47 +1143,37 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     client.current_state = WithdrawnState;
   }
 
-  bt::Rect r = frame.rect;
-  // trick configure into working
-  frame.rect = bt::Rect();
-  configure(r);
-
   blackbox->XUngrabServer();
-
-#ifdef SHAPE
-  if (blackbox->hasShapeExtensions() && client.state.shaped)
-    configureShape();
-#endif // SHAPE
-
-  // now that we know where to put the window and what it should look like
-  // we apply the decorations
-  decorate();
 
   grabButtons();
 
   XMapSubwindows(blackbox->XDisplay(), frame.window);
 
-  if (isShaded()) {
-    client.ewmh.shaded = false;
-    unsigned long save_state = client.current_state;
-    setShaded(true);
-
-    /*
-      At this point in the life of a window, current_state should only be set
-      to IconicState if the window was an *icon*, not if it was shaded.
-    */
-    if (save_state != IconicState)
-      client.current_state = save_state;
-  }
-
-  if (!hasWindowFunction(WindowFunctionMaximize))
-    client.ewmh.maxh = client.ewmh.maxv = false;
-
   if (isFullScreen()) {
     client.ewmh.fullscreen = false; // trick setFullScreen into working
     setFullScreen(true);
-  } else if (isMaximized()) {
-    remaximize();
+  } else {
+    if (isMaximized()) {
+      remaximize();
+    } else {
+      bt::Rect r = frame.rect;
+      // trick configure into working
+      frame.rect = bt::Rect();
+      configure(r);
+    }
+
+    if (isShaded()) {
+      client.ewmh.shaded = false;
+      unsigned long save_state = client.current_state;
+      setShaded(true);
+
+      /*
+        At this point in the life of a window, current_state should only be set
+        to IconicState if the window was an *icon*, not if it was shaded.
+      */
+      if (save_state != IconicState)
+        client.current_state = save_state;
+    }
   }
 }
 
