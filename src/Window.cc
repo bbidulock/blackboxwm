@@ -305,7 +305,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     client.state.maximized = 0;
 
   // create this last so it only needs to be configured once
-  windowmenu = new Windowmenu(this);
+  windowmenu =
+    new Windowmenu(*blackbox, screen->getScreenInfo().getScreenNumber(), this);
 }
 
 
@@ -780,10 +781,7 @@ void BlackboxWindow::reconfigure(void) {
   ungrabButtons();
   grabButtons();
 
-  if (windowmenu) {
-    windowmenu->move(windowmenu->getX(), frame.rect.y() + frame.title_h);
-    windowmenu->reconfigure();
-  }
+  if (windowmenu) windowmenu->reconfigure();
 }
 
 
@@ -2714,46 +2712,19 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
   } else if (be->button == 2 && (be->window != frame.iconify_button) &&
              (be->window != frame.close_button)) {
     screen->getWorkspace(client.workspace)->lowerWindow(this);
-  } else if (windowmenu && be->button == 3 &&
-             (frame.title == be->window || frame.label == be->window ||
-              frame.handle == be->window || frame.window == be->window)) {
-    if (windowmenu->isVisible()) {
-      windowmenu->hide();
-    } else {
-      int mx = be->x_root - windowmenu->getWidth() / 2,
-          my = be->y_root - windowmenu->getHeight() / 2;
+  } else if (windowmenu && be->button == 3) {
 
-      // snap the window menu into a corner/side if necessary
-      int left_edge, right_edge, top_edge, bottom_edge;
+    int mx = be->x_root;
+    int my;
 
-      /*
-         the " + (frame.border_w * 2) - 1" bits are to get the proper width
-         and height of the menu, as the sizes returned by it do not include
-         the borders.
-       */
-      left_edge = frame.rect.x();
-      right_edge = frame.rect.right() -
-        (windowmenu->getWidth() + (frame.border_w * 2) - 1);
-      top_edge = client.rect.top() - (frame.border_w + frame.mwm_border_w);
-      bottom_edge = client.rect.bottom() -
-        (windowmenu->getHeight() + (frame.border_w * 2) - 1) +
-        (frame.border_w + frame.mwm_border_w);
-
-      if (mx < left_edge)
-        mx = left_edge;
-      else if (mx > right_edge)
-        mx = right_edge;
-      if (my < top_edge)
-        my = top_edge;
-      else if (my > bottom_edge)
-        my = bottom_edge;
-
-      windowmenu->move(mx, my);
-      windowmenu->show();
-      XRaiseWindow(blackbox->getXDisplay(), windowmenu->getWindowID());
-      XRaiseWindow(blackbox->getXDisplay(),
-                   windowmenu->getSendToMenu()->getWindowID());
+    if (frame.title == be->window || frame.label == be->window) {
+      my = client.rect.top() - (frame.border_w + frame.mwm_border_w);
+    }  else if (frame.handle == be->window) {
+      my = client.rect.bottom() + (frame.border_w * 2) + frame.mwm_border_w +
+           frame.handle_h;
     }
+
+    windowmenu->popup(mx, my);
   }
 }
 
@@ -2998,7 +2969,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
                                      frame.margin.right + 1);
         frame.changing.setWidth(delta);
       }
-      
+
       int delta = std::max<signed>(me->y - frame.grab_y + frame.rect.height(),
                                    frame.margin.top + frame.margin.bottom + 1);
       frame.changing.setHeight(delta);

@@ -35,6 +35,7 @@ extern "C" {
 #include <string>
 
 #include "BaseDisplay.hh"
+#include "Screen.hh"
 #include "Timer.hh"
 #include "Util.hh"
 #include "Windowmenu.hh"
@@ -64,6 +65,7 @@ typedef struct MwmHints {
 } MwmHints;
 
 #define PropMwmHintsElements  3
+
 
 class BWindowGroup {
 private:

@@ -1,4 +1,7 @@
-// Windowmenu.hh for Blackbox - an X11 Window manager
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
+//
+// Blackbox - an X11 window manager
+//
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
 // Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
 //
@@ -23,57 +26,28 @@
 #ifndef   __Windowmenu_hh
 #define   __Windowmenu_hh
 
-#include "Basemenu.hh"
+#include "Menu.hh"
 
 // forward declaration
-class Windowmenu;
-class SendtoWorkspaceMenu;
-
+class SendToWorkspacemenu;
 class BlackboxWindow;
 
-class Windowmenu : public Basemenu {
-private:
-  BlackboxWindow *window;
 
-  class SendtoWorkspacemenu : public Basemenu {
-  private:
-    BlackboxWindow *window;
-    SendtoWorkspacemenu(const SendtoWorkspacemenu&);
-    SendtoWorkspacemenu& operator=(const SendtoWorkspacemenu&);
+class Windowmenu : public bt::Menu {
+public:
+  Windowmenu(bt::Application &app, unsigned int screen,
+             BlackboxWindow *window);
 
-  protected:
-    virtual void itemSelected(int button, unsigned int index);
-
-  public:
-    SendtoWorkspacemenu(Windowmenu *w);
-
-    void update(void);
-
-    virtual void show(void);
-  };
-
-  SendtoWorkspacemenu *sendToMenu;
-
-  friend class SendtoWorkspacemenu;
-
-  Windowmenu(const Windowmenu&);
-  Windowmenu& operator=(const Windowmenu&);
+  void refresh(void);
 
 protected:
-  virtual void itemSelected(int button, unsigned int index);
+  virtual void itemClicked(unsigned int id, unsigned int button);
 
+private:
+  BlackboxWindow *_window;
+  SendToWorkspacemenu *_sendto;
 
-public:
-  Windowmenu(BlackboxWindow *win);
-  virtual ~Windowmenu(void);
-
-  inline Basemenu *getSendToMenu(void) { return (Basemenu *) sendToMenu; }
-
-  void reconfigure(void);
-  void setClosable(void);
-
-  virtual void show(void);
+  friend class SendtoWorkspacemenu;
 };
-
 
 #endif // __Windowmenu_hh
