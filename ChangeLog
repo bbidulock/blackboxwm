@@ -1,6 +1,6 @@
-ChangeLog for 0.62.x
+ChangeLog for 0.65.x
 
-Changes from 0.62.1:
+Changes from 0.62.1 to 0.65.0:
   - bsetroot now sets _XROOTPMAP_ID, so pseudo transparent apps will be happy
   - beginnings of a strut implementation.  toolbar and slit are removed from
     the available screen area if 'full maximize' is not set
@@ -40,6 +40,7 @@ Changes from 0.62.1:
   - strip much of BaseDisplay's original functionality and move it to the
     blackbox class.
   - empty menus now say so
+  - move code over to the STL
 
 Changes from 0.62.0 to 0.62.1:
   - the lock modifier code handles user redefined modifiers better
