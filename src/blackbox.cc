@@ -164,7 +164,7 @@ Blackbox::Blackbox(char **m_argv, const char *dpy_name,
   XSynchronize(XDisplay(), False);
   XSync(XDisplay(), False);
 
-  reconfigure_wait = reread_menu_wait = False;
+  reconfigure_wait = False;
 
   timer = new bt::Timer(this, this);
   timer->setTimeout(0l);
@@ -495,37 +495,8 @@ void Blackbox::reload_rc(void) {
 
 
 void Blackbox::reconfigure(void) {
-  reconfigure_wait = True;
-
-  if (! timer->isTiming()) timer->start();
-}
-
-
-void Blackbox::real_reconfigure(void) {
-  XrmDatabase new_blackboxrc = (XrmDatabase) 0;
-
-  std::string style = "session.styleFile: ";
-  style += _resource.styleFilename();
-  XrmPutLineResource(&new_blackboxrc, style.c_str());
-
-  XrmDatabase old_blackboxrc = XrmGetFileDatabase(_resource.rcFilename());
-
-  XrmMergeDatabases(new_blackboxrc, &old_blackboxrc);
-  XrmPutFileDatabase(old_blackboxrc, _resource.rcFilename());
-  if (old_blackboxrc) XrmDestroyDatabase(old_blackboxrc);
-
-  std::for_each(menuTimestamps.begin(), menuTimestamps.end(),
-                bt::PointerAssassin());
-  menuTimestamps.clear();
-
-  bt::Color::clearCache();
-  bt::Font::clearCache();
-  bt::Pen::clearCache();
-
-  std::for_each(screen_list, screen_list + screen_list_count,
-                std::mem_fun(&BScreen::reconfigure));
-
-  bt::PixmapCache::clearCache();
+  if (! timer->isTiming())
+    timer->start();
 }
 
 
@@ -549,13 +520,6 @@ void Blackbox::checkMenu(void) {
 
 
 void Blackbox::rereadMenu(void) {
-  reread_menu_wait = True;
-
-  if (! timer->isTiming()) timer->start();
-}
-
-
-void Blackbox::real_rereadMenu(void) {
   std::for_each(menuTimestamps.begin(), menuTimestamps.end(),
                 bt::PointerAssassin());
   menuTimestamps.clear();
@@ -589,13 +553,30 @@ void Blackbox::saveMenuFilename(const std::string& filename) {
 
 
 void Blackbox::timeout(bt::Timer *) {
-  if (reconfigure_wait)
-    real_reconfigure();
+  XrmDatabase new_blackboxrc = (XrmDatabase) 0;
 
-  if (reread_menu_wait)
-    real_rereadMenu();
+  std::string style = "session.styleFile: ";
+  style += _resource.styleFilename();
+  XrmPutLineResource(&new_blackboxrc, style.c_str());
 
-  reconfigure_wait = reread_menu_wait = False;
+  XrmDatabase old_blackboxrc = XrmGetFileDatabase(_resource.rcFilename());
+
+  XrmMergeDatabases(new_blackboxrc, &old_blackboxrc);
+  XrmPutFileDatabase(old_blackboxrc, _resource.rcFilename());
+  if (old_blackboxrc) XrmDestroyDatabase(old_blackboxrc);
+
+  std::for_each(menuTimestamps.begin(), menuTimestamps.end(),
+                bt::PointerAssassin());
+  menuTimestamps.clear();
+
+  bt::Color::clearCache();
+  bt::Font::clearCache();
+  bt::Pen::clearCache();
+
+  std::for_each(screen_list, screen_list + screen_list_count,
+                std::mem_fun(&BScreen::reconfigure));
+
+  bt::PixmapCache::clearCache();
 }
 
 

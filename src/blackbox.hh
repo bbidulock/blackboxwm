@@ -26,21 +26,7 @@
 #define   __blackbox_hh
 
 extern "C" {
-#include <X11/Xlib.h>
-#include <X11/Xresource.h>
-
 #include <stdio.h>
-
-#ifdef    TIME_WITH_SYS_TIME
-#  include <sys/time.h>
-#  include <time.h>
-#else // !TIME_WITH_SYS_TIME
-#  ifdef    HAVE_SYS_TIME_H
-#    include <sys/time.h>
-#  else // !HAVE_SYS_TIME_H
-#    include <time.h>
-#  endif // HAVE_SYS_TIME_H
-#endif // TIME_WITH_SYS_TIME
 }
 
 #include <list>
@@ -57,15 +43,9 @@ extern "C" {
 #include "BlackboxResource.hh"
 #include "Util.hh"
 
-//forward declaration
-class Basemenu;
+// forward declarations
 class BlackboxWindow;
-class BlackboxResource;
-class BScreen;
 class BWindowGroup;
-class ScreenResource;
-class Slit;
-class Toolbar;
 
 namespace bt {
   class Netwm;
@@ -98,8 +78,7 @@ private:
 
   BlackboxWindow *focused_window;
   bt::Timer *timer;
-
-  bool no_focus, reconfigure_wait, reread_menu_wait;
+  bool no_focus, reconfigure_wait;
   Time last_time;
   char **argv;
 
@@ -112,8 +91,6 @@ private:
   void load_rc(void);
   void save_rc(void);
   void reload_rc(void);
-  void real_rereadMenu(void);
-  void real_reconfigure(void);
 
   void init_icccm(void);
 
@@ -155,8 +132,9 @@ public:
   void saveMenuFilename(const std::string& filename);
   void restart(const std::string &prog = std::string());
   void reconfigure(void);
-  void rereadMenu(void);
+
   void checkMenu(void);
+  void rereadMenu(void);
 
   bool validateWindow(Window window);
 
@@ -172,6 +150,5 @@ public:
   Atom getWMColormapAtom(void) const    { return xa_wm_colormap_windows; }
   Atom getMotifWMHintsAtom(void) const  { return motif_wm_hints; }
 };
-
 
 #endif // __blackbox_hh

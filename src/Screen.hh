@@ -53,8 +53,10 @@ typedef std::vector<Window> WindowStack;
 #include "BlackboxResource.hh"
 
 // forward declaration
+class BlackboxWindow;
 class Rootmenu;
 class Slit;
+class Toolbar;
 class Workspace;
 
 typedef std::list<BlackboxWindow*> BlackboxWindowList;
