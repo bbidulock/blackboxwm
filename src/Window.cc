@@ -123,9 +123,9 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   frame.ulabel_pixel = frame.flabel_pixel = frame.utitle_pixel =
   frame.ftitle_pixel = frame.uhandle_pixel = frame.fhandle_pixel =
- frame.ubutton_pixel = frame.fbutton_pixel = frame.pbutton_pixel =
- frame.uborder_pixel = frame.fborder_pixel = frame.ugrip_pixel =
-   frame.fgrip_pixel = 0;
+    frame.ubutton_pixel = frame.fbutton_pixel = frame.pbutton_pixel =
+    frame.uborder_pixel = frame.fborder_pixel = frame.ugrip_pixel =
+    frame.fgrip_pixel = 0;
   frame.utitle = frame.ftitle = frame.uhandle = frame.fhandle = None;
   frame.ulabel = frame.flabel = frame.ubutton = frame.fbutton = None;
   frame.pbutton = frame.ugrip = frame.fgrip = None;
