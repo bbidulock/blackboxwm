@@ -206,30 +206,19 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
                               mask, &attrib);
   geom_visible = False;
 
-  if (resource.wstyle.l_focus.texture() & BTexture::Parent_Relative) {
-    if (resource.wstyle.t_focus.texture() == (BTexture::Flat | BTexture::Solid)) {
-      geom_pixmap = None;
-      XSetWindowBackground(blackbox->getXDisplay(), geom_window,
-                           resource.wstyle.t_focus.color().pixel());
-    } else {
-      geom_pixmap = image_control->renderImage(geom_w, geom_h,
-                                               resource.wstyle.t_focus);
-      XSetWindowBackgroundPixmap(blackbox->getXDisplay(),
-                                 geom_window, geom_pixmap);
-    }
-  } else {
-    if (resource.wstyle.l_focus.texture() ==
-        (BTexture::Flat | BTexture::Solid)) {
-      geom_pixmap = None;
-      XSetWindowBackground(blackbox->getXDisplay(), geom_window,
-                           resource.wstyle.l_focus.color().pixel());
-    } else {
-      geom_pixmap = image_control->renderImage(geom_w, geom_h,
-                                               resource.wstyle.l_focus);
-      XSetWindowBackgroundPixmap(blackbox->getXDisplay(),
-                                 geom_window, geom_pixmap);
-    }
-  }
+  BTexture* texture;
+  if (resource.wstyle.l_focus.texture() & BTexture::Parent_Relative)
+    texture = &(resource.wstyle.t_focus);
+  else
+    texture = &(resource.wstyle.l_focus);
+
+  geom_pixmap = texture->render(geom_w, geom_h, geom_pixmap);
+  if (! geom_pixmap)
+    XSetWindowBackground(blackbox->getXDisplay(), geom_window,
+                         texture->color().pixel());
+  else
+    XSetWindowBackgroundPixmap(blackbox->getXDisplay(),
+                               geom_window, geom_pixmap);
 
   workspacemenu = new Workspacemenu(this);
   iconmenu = new Iconmenu(this);
@@ -410,33 +399,19 @@ void BScreen::reconfigure(void) {
   geom_w += (resource.bevel_width * 2);
   geom_h += (resource.bevel_width * 2);
 
-  Pixmap tmp = geom_pixmap;
-  if (resource.wstyle.l_focus.texture() & BTexture::Parent_Relative) {
-    if (resource.wstyle.t_focus.texture() ==
-        (BTexture::Flat | BTexture::Solid)) {
-      geom_pixmap = None;
-      XSetWindowBackground(blackbox->getXDisplay(), geom_window,
-                           resource.wstyle.t_focus.color().pixel());
-    } else {
-      geom_pixmap = image_control->renderImage(geom_w, geom_h,
-                                               resource.wstyle.t_focus);
-      XSetWindowBackgroundPixmap(blackbox->getXDisplay(),
-                                 geom_window, geom_pixmap);
-    }
-  } else {
-    if (resource.wstyle.l_focus.texture() ==
-        (BTexture::Flat | BTexture::Solid)) {
-      geom_pixmap = None;
-      XSetWindowBackground(blackbox->getXDisplay(), geom_window,
-                           resource.wstyle.l_focus.color().pixel());
-    } else {
-      geom_pixmap = image_control->renderImage(geom_w, geom_h,
-                                               resource.wstyle.l_focus);
-      XSetWindowBackgroundPixmap(blackbox->getXDisplay(),
-                                 geom_window, geom_pixmap);
-    }
-  }
-  if (tmp) image_control->removeImage(tmp);
+  BTexture* texture;
+  if (resource.wstyle.l_focus.texture() & BTexture::Parent_Relative)
+    texture = &(resource.wstyle.t_focus);
+  else
+    texture = &(resource.wstyle.l_focus);
+
+  geom_pixmap = texture->render(geom_w, geom_h, geom_pixmap);
+  if (! geom_pixmap)
+    XSetWindowBackground(blackbox->getXDisplay(), geom_window,
+                         texture->color().pixel());
+  else
+    XSetWindowBackgroundPixmap(blackbox->getXDisplay(),
+                               geom_window, geom_pixmap);
 
   XSetWindowBorderWidth(blackbox->getXDisplay(), geom_window,
                         resource.border_width);

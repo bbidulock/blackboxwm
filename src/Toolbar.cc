@@ -88,8 +88,6 @@ Toolbar::Toolbar(BScreen *scrn) {
   hide_timer = new BTimer(blackbox, &hide_handler);
   hide_timer->setTimeout(blackbox->getAutoRaiseDelay());
 
-  image_ctrl = screen->getImageControl();
-
   on_top = screen->isToolbarOnTop();
   hidden = do_auto_hide = screen->doToolbarAutoHide();
 
@@ -170,12 +168,12 @@ Toolbar::Toolbar(BScreen *scrn) {
 Toolbar::~Toolbar(void) {
   XUnmapWindow(display, frame.window);
 
-  if (frame.base) image_ctrl->removeImage(frame.base);
-  if (frame.label) image_ctrl->removeImage(frame.label);
-  if (frame.wlabel) image_ctrl->removeImage(frame.wlabel);
-  if (frame.clk) image_ctrl->removeImage(frame.clk);
-  if (frame.button) image_ctrl->removeImage(frame.button);
-  if (frame.pbutton) image_ctrl->removeImage(frame.pbutton);
+  if (frame.base) screen->getImageControl()->removeImage(frame.base);
+  if (frame.label) screen->getImageControl()->removeImage(frame.label);
+  if (frame.wlabel) screen->getImageControl()->removeImage(frame.wlabel);
+  if (frame.clk) screen->getImageControl()->removeImage(frame.clk);
+  if (frame.button) screen->getImageControl()->removeImage(frame.button);
+  if (frame.pbutton) screen->getImageControl()->removeImage(frame.pbutton);
 
   blackbox->removeToolbarSearch(frame.window);
   blackbox->removeToolbarSearch(frame.workspace_label);
@@ -825,19 +823,14 @@ void Toolbar::edit(void) {
                  frame.workspace_label_w / 2, 0, 1,
                  frame.label_h - 1);
   // change the background of the window to that of an active window label
-  Pixmap tmp = frame.wlabel;
   BTexture *texture = &(screen->getWindowStyle()->l_focus);
-  if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
-    frame.wlabel = None;
+  frame.wlabel = texture->render(frame.workspace_label_w, frame.label_h,
+                                 frame.wlabel);
+  if (! frame.wlabel)
     XSetWindowBackground(display, frame.workspace_label,
                          texture->color().pixel());
-  } else {
-    frame.wlabel =
-      image_ctrl->renderImage(frame.workspace_label_w, frame.label_h,
-                              *texture);
+  else
     XSetWindowBackgroundPixmap(display, frame.workspace_label, frame.wlabel);
-  }
-  if (tmp) image_ctrl->removeImage(tmp);
 }
 
 
@@ -1006,21 +999,15 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
 
       // reset the background to that of the workspace label (its normal
       // setting)
-      Pixmap tmp = frame.wlabel;
       BTexture *texture = &(screen->getToolbarStyle()->label);
-      if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
-        frame.wlabel = None;
+      frame.wlabel = texture->render(frame.workspace_label_w, frame.label_h,
+                                     frame.wlabel);
+      if (! frame.wlabel)
         XSetWindowBackground(display, frame.workspace_label,
                              texture->color().pixel());
-      } else {
-        frame.wlabel =
-          image_ctrl->renderImage(frame.workspace_label_w, frame.label_h,
-                                  *texture);
+      else
         XSetWindowBackgroundPixmap(display, frame.workspace_label,
                                    frame.wlabel);
-      }
-      if (tmp) image_ctrl->removeImage(tmp);
-
       reconfigure();
     } else if (! (ks == XK_Shift_L || ks == XK_Shift_R ||
                   ks == XK_Control_L || ks == XK_Control_R ||

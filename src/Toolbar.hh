@@ -96,7 +96,6 @@ private:
   } hide_handler;
 
   Blackbox *blackbox;
-  BImageControl *image_ctrl;
   BScreen *screen;
   BTimer *clock_timer, *hide_timer;
   Toolbarmenu *toolbarmenu;

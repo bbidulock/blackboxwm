@@ -256,19 +256,13 @@ void Slit::reconfigure(void) {
   else
     XMapWindow(display, frame.window);
 
-  Pixmap tmp = frame.pixmap;
-  BImageControl *image_ctrl = screen->getImageControl();
   BTexture *texture = &(screen->getToolbarStyle()->toolbar);
-  if (texture->texture() == (BTexture::Flat | BTexture::Solid)) {
-    frame.pixmap = None;
-    XSetWindowBackground(display, frame.window,
-                         texture->color().pixel());
-  } else {
-    frame.pixmap = image_ctrl->renderImage(frame.width, frame.height,
-                                           *texture);
+  frame.pixmap = texture->render(frame.width, frame.height, frame.pixmap);
+  if (! frame.pixmap)
+    XSetWindowBackground(display, frame.window, texture->color().pixel());
+  else
     XSetWindowBackgroundPixmap(display, frame.window, frame.pixmap);
-  }
-  if (tmp) image_ctrl->removeImage(tmp);
+
   XClearWindow(display, frame.window);
 
   strut.top = strut.bottom = strut.left = strut.right = 0;

@@ -86,7 +86,6 @@ struct BlackboxAttributes {
 //forward declaration
 class BScreen;
 class Blackbox;
-class BImageControl;
 class BlackboxWindow;
 class Basemenu;
 class Toolbar;
