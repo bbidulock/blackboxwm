@@ -34,21 +34,21 @@ distclean-local:
 
 # local dependencies
 
-BaseDisplay.o: BaseDisplay.cc ../config.h i18n.hh \
- ../nls/blackbox-nls.hh BaseDisplay.hh Timer.hh GCCache.hh Color.hh \
+BaseDisplay.o: BaseDisplay.cc $(top_srcdir)/config.h i18n.hh \
+ $(top_srcdir)/nls/blackbox-nls.hh BaseDisplay.hh Timer.hh GCCache.hh Color.hh \
  Util.hh
-Color.o: Color.cc ../config.h Color.hh BaseDisplay.hh Timer.hh
-GCCache.o: GCCache.cc ../config.h GCCache.hh BaseDisplay.hh Timer.hh \
+Color.o: Color.cc $(top_srcdir)/config.h Color.hh BaseDisplay.hh Timer.hh
+GCCache.o: GCCache.cc $(top_srcdir)/config.h GCCache.hh BaseDisplay.hh Timer.hh \
  Color.hh Util.hh
-Image.o: Image.cc ../config.h i18n.hh \
- ../nls/blackbox-nls.hh BaseDisplay.hh Timer.hh GCCache.hh Color.hh \
+Image.o: Image.cc $(top_srcdir)/config.h i18n.hh \
+ $(top_srcdir)/nls/blackbox-nls.hh BaseDisplay.hh Timer.hh GCCache.hh Color.hh \
  Image.hh Texture.hh Util.hh
-ImageControl.o: ImageControl.cc ../config.h i18n.hh \
- ../nls/blackbox-nls.hh BaseDisplay.hh Timer.hh Color.hh Image.hh \
+ImageControl.o: ImageControl.cc $(top_srcdir)/config.h i18n.hh \
+ $(top_srcdir)/nls/blackbox-nls.hh BaseDisplay.hh Timer.hh Color.hh Image.hh \
  Texture.hh Util.hh
 Netwm.o: Netwm.hh Netwm.cc
-Texture.o: Texture.cc ../config.h Texture.hh Color.hh Util.hh \
- BaseDisplay.hh Timer.hh Image.hh i18n.hh ../nls/blackbox-nls.hh
-Timer.o: Timer.cc ../config.h BaseDisplay.hh Timer.hh Util.hh
-Util.o: Util.cc ../config.h Util.hh
-i18n.o: i18n.cc ../config.h i18n.hh ../nls/blackbox-nls.hh
+Texture.o: Texture.cc $(top_srcdir)/config.h Texture.hh Color.hh Util.hh \
+ BaseDisplay.hh Timer.hh Image.hh i18n.hh $(top_srcdir)/nls/blackbox-nls.hh
+Timer.o: Timer.cc $(top_srcdir)/config.h BaseDisplay.hh Timer.hh Util.hh
+Util.o: Util.cc $(top_srcdir)/config.h Util.hh
+i18n.o: i18n.cc $(top_srcdir)/config.h i18n.hh $(top_srcdir)/nls/blackbox-nls.hh
