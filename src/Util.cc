@@ -155,7 +155,7 @@ void bexec(const string& command, const string& displaystring) {
 #ifndef    __EMX__
   if (! fork()) {
     setsid();
-    int ret = putenv(const_cast<char *>(displaystring.c_str()));
+    putenv(const_cast<char *>(displaystring.c_str()));
     assert(ret != -1);
     string cmd = "exec ";
     cmd += command;
