@@ -1021,7 +1021,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   // get size, aspect, minimum/maximum size, ewmh and other hints set
   // by the client
   client.ewmh = ::readEWMH(blackbox->ewmh(), client.window,
-                         _screen->currentWorkspace());
+                           _screen->currentWorkspace());
   client.motif = ::readMotifWMHints(blackbox, client.window);
   client.wmhints = ::readWMHints(blackbox, client.window);
   client.wmnormal = ::readWMNormalHints(blackbox, client.window,
@@ -1064,9 +1064,14 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   case WindowTypeDock:
     setLayer(StackingList::LayerAbove);
-    break;
+    // fallthrough intended
+
   default:
-    break; // nothing to do here
+    if (client.ewmh.above)
+      setLayer(StackingList::LayerAbove);
+    else if (client.ewmh.below)
+      setLayer(StackingList::LayerBelow);
+    break;
   } // switch
 
   ::update_decorations(client.decorations,
