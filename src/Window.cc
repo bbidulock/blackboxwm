@@ -136,7 +136,7 @@ static void get_decorations(WindowType window_type,
   case WindowTypeDesktop:
   case WindowTypeDock:
   case WindowTypeSplash:
-    decorations = functions = 0l;
+    decorations = functions = 0;
     break;
 
   case WindowTypeUtility:
@@ -240,7 +240,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   // get size, aspect, minimum/maximum size, ewmh and other hints set by the
   // client
   getNetwmHints();
-  if (client.window_type == None)
+  if (client.window_type == WindowTypeNormal)
     getMWMHints();
   getWMProtocols();
   getWMHints();
@@ -275,8 +275,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   // apply the size and gravity hint to the frame
   upsize();
 
-  if (blackbox->startingUp() || isTransient() ||
-      client.window_type == blackbox->netwm().wmWindowTypeDesktop() ||
+  if (blackbox->startingUp() || isTransient() || isDesktop() ||
       client.normal_hint_flags & (PPosition|USPosition)) {
     applyGravity(frame.rect);
   }
