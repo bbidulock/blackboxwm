@@ -51,7 +51,12 @@ void BlackboxResource::load(Blackbox& blackbox) {
   bt::Resource res(rc_file);
 
   menu_file = bt::expandTilde(res.read("session.menuFile",
-                                       "Session.MenuFile", DEFAULTMENU));
+                                       "Session.MenuFile",
+                                       DEFAULTMENU));
+
+  style_file = bt::expandTilde(res.read("session.styleFile",
+                                        "Session.StyleFile",
+                                        DEFAULTSTYLE));
 
   unsigned int maxcolors = res.read("session.maximumColors",
                                     "Session.MaximumColors",
@@ -59,21 +64,21 @@ void BlackboxResource::load(Blackbox& blackbox) {
   if (maxcolors != ~0u)
     bt::Image::setMaximumColors(maxcolors);
 
-  style_file = bt::expandTilde(res.read("session.styleFile",
-                                        "Session.StyleFile", DEFAULTSTYLE));
-
   double_click_interval = res.read("session.doubleClickInterval",
-                                   "Session.DoubleClickInterval", 250l);
+                                   "Session.DoubleClickInterval",
+                                   250l);
 
   auto_raise_delay.tv_usec = res.read("session.autoRaiseDelay",
-                                      "Session.AutoRaiseDelay", 400l);
+                                      "Session.AutoRaiseDelay",
+                                      400l);
 
   auto_raise_delay.tv_sec = auto_raise_delay.tv_usec / 1000;
   auto_raise_delay.tv_usec -= (auto_raise_delay.tv_sec * 1000);
   auto_raise_delay.tv_usec *= 1000;
 
   bt::DitherMode dither_mode;
-  std::string str = res.read("session.imageDither", "Session.ImageDither",
+  std::string str = res.read("session.imageDither",
+                             "Session.ImageDither",
                              "OrderedDither");
   if (!strcasecmp("ordered", str.c_str()) ||
       !strcasecmp("fast", str.c_str()) ||
@@ -110,7 +115,11 @@ void BlackboxResource::load(Blackbox& blackbox) {
     XCreateFontCursor(blackbox.XDisplay(), XC_bottom_right_corner);
 
   // window options
-  str = res.read("session.focusModel", "Session.FocusModel", "ClickToFocus");
+  str = res.read("session.focusModel",
+                 "Session.FocusModel",
+                 res.read("session.screen0.focusModel",
+                          "Session.Screen0.FocusModel",
+                          "ClickToFocus"));
   if (str.find("ClickToFocus") != std::string::npos) {
     focus_model = ClickToFocusModel;
     auto_raise = false;
@@ -123,7 +132,9 @@ void BlackboxResource::load(Blackbox& blackbox) {
 
   str = res.read("session.windowPlacement",
                  "Session.WindowPlacement",
-                 "RowSmartPlacement");
+                 res.read("session.screen0.windowPlacement",
+                          "Session.Screen0.WindowPlacement",
+                          "RowSmartPlacement"));
   if (strcasecmp(str.c_str(), "ColSmartPlacement") == 0)
     window_placement_policy = ColSmartPlacement;
   else if (strcasecmp(str.c_str(), "CascadePlacement") == 0)
@@ -133,13 +144,17 @@ void BlackboxResource::load(Blackbox& blackbox) {
 
   str = res.read("session.rowPlacementDirection",
                  "Session.RowPlacementDirection",
-                 "lefttoright");
+                 res.read("session.screen0.rowPlacementDirection",
+                          "Session.Screen0.RowPlacementDirection",
+                          "lefttoright"));
   row_direction =
     (strcasecmp(str.c_str(), "righttoleft") == 0) ? RightLeft : LeftRight;
 
   str = res.read("session.colPlacementDirection",
                  "Session.ColPlacementDirection",
-                 "toptobottom");
+                 res.read("session.screen0.colPlacementDirection",
+                          "Session.Screen0.ColPlacementDirection",
+                          "toptobottom"));
   col_direction =
     (strcasecmp(str.c_str(), "bottomtotop") == 0) ? BottomTop : TopBottom;
 
@@ -159,23 +174,33 @@ void BlackboxResource::load(Blackbox& blackbox) {
   full_max =
     res.read("session.fullMaximization",
              "Session.FullMaximization",
-             false);
+             res.read("session.screen0.fullMaximization",
+                      "Session.Screen0.FullMaximization",
+                      false));
   focus_new_windows =
     res.read("session.focusNewWindows",
              "Session.FocusNewWindows",
-             true);
+             res.read("session.screen0.focusNewWindows",
+                      "Session.Screen0.FocusNewWindows",
+                      true));
   focus_last_window_on_workspace =
     res.read("session.focusLastWindow",
              "Session.focusLastWindow",
-             true);
+             res.read("session.screen0.focusLastWindow",
+                      "Session.Screen0.focusLastWindow",
+                      true));
   allow_scroll_lock =
     res.read("session.disableBindingsWithScrollLock",
              "Session.disableBindingsWithScrollLock",
-             false);
+             res.read("session.screen0.disableBindingsWithScrollLock",
+                      "Session.Screen0.disableBindingsWithScrollLock",
+                      false));
   edge_snap_threshold =
     res.read("session.edgeSnapThreshold",
              "Session.EdgeSnapThreshold",
-             0);
+             res.read("session.screen0.edgeSnapThreshold",
+                      "Session.Screen0.EdgeSnapThreshold",
+                      0));
 
   for (unsigned int i = 0; i < blackbox.screenCount(); ++i)
     screen_resources[i].load(res, i);
@@ -183,7 +208,19 @@ void BlackboxResource::load(Blackbox& blackbox) {
 
 
 void BlackboxResource::save(Blackbox& blackbox) {
-  bt::Resource res(rc_file);
+  bt::Resource res;
+
+  {
+    if (bt::Resource(rc_file).read("session.cacheLife",
+                                   "Session.CacheLife",
+                                   -1) == -1) {
+      res.merge(rc_file);
+    } else {
+      // we are converting from 0.65.0 to 0.70.0, let's take the liberty
+      // of generating a brand new rc file to make sure we throw out
+      // undeeded entries
+    }
+  }
 
   res.write("session.menuFile", menuFilename());
 

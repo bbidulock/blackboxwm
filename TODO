@@ -10,9 +10,6 @@ Before 0.70.0 release:
 * Make sure bstyleconvert properly converts 0.65.0 styles to 0.70.0
   format
 
-* Add code to automatically convert 0.65.0 ~/.blackboxrc to 0.70.0
-  format
-
 Stuff TODO or On The Way(tm):
 -----------------------------
 
