@@ -21,49 +21,45 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 # DEALINGS IN THE SOFTWARE.
 
-CPPFLAGS		= @CPPFLAGS@ @SHAPE@ @MITSHM@ @XFT@ @DEBUG@ @NLS@ \
-			  -DLOCALEPATH=\"$(pkgdatadir)/nls\"
-lib_LTLIBRARIES		= libbt.la
-libbt_la_SOURCES	= Application.cc				\
-			  Bitmap.cc					\
-			  Color.cc					\
-			  Display.cc					\
-			  Font.cc					\
-			  Image.cc					\
-			  Menu.cc					\
-			  Netwm.cc					\
-			  Pen.cc					\
-			  PixmapCache.cc				\
-			  Rect.cc					\
-			  Resource.cc					\
-			  Texture.cc					\
-			  Timer.cc					\
-			  Util.cc					\
-			  i18n.cc
+CPPFLAGS = 		@CPPFLAGS@ @SHAPE@ @MITSHM@ @XFT@ @DEBUG@ @NLS@ \
+			-DLOCALEPATH=\"$(pkgdatadir)/nls\"
+lib_LTLIBRARIES = 	libbt.la
+libbt_la_SOURCES = 	Application.cc					\
+			Bitmap.cc					\
+			Color.cc					\
+			Display.cc					\
+			Font.cc						\
+			Image.cc					\
+			Menu.cc						\
+			Netwm.cc					\
+			Pen.cc						\
+			PixmapCache.cc					\
+			Rect.cc						\
+			Resource.cc					\
+			Texture.cc					\
+			Timer.cc					\
+			Util.cc
 
 libbtdir = $(includedir)/bt
-libbt_HEADERS		= Application.hh				\
-			  Bitmap.hh					\
-			  Color.hh					\
-			  Display.hh					\
-			  EventHandler.hh				\
-			  Font.hh					\
-			  Image.hh					\
-			  Menu.hh					\
-			  Netwm.hh					\
-			  Pen.hh					\
-			  PixmapCache.hh				\
-			  Rect.hh					\
-			  Resource.hh					\
-			  Texture.hh					\
-			  Timer.hh					\
-			  Util.hh					\
-			  i18n.hh
+libbt_HEADERS = 	Application.hh					\
+			Bitmap.hh					\
+			Color.hh					\
+			Display.hh					\
+			EventHandler.hh					\
+			Font.hh						\
+			Image.hh					\
+			Menu.hh						\
+			Netwm.hh					\
+			Pen.hh						\
+			PixmapCache.hh					\
+			Rect.hh						\
+			Resource.hh					\
+			Texture.hh					\
+			Timer.hh					\
+			Util.hh
 
-pkgconfigdir = $(libdir)/pkgconfig
-nodist_pkgconfig_DATA = libbt.pc
+pkgconfigdir = 		$(libdir)/pkgconfig
+nodist_pkgconfig_DATA =	libbt.pc
 
-MAINTAINERCLEANFILES	= Makefile.in
-
-distclean-local:
-	rm -f *\~ *.orig *.rej .\#*
+DISTCLEANFILES = 	*\~ *.orig *.rej .\#* *.il *.pchi
+MAINTAINERCLEANFILES = 	Makefile.in
