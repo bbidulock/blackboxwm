@@ -1,9 +1,32 @@
-Changelog for 0.70.x
+-- ChangeLog for Blackbox 0.70.x
 
-Changes from 0.65.x to 0.70.0
-  - moved utility classes into a library
-  - beginnings of netwm implementation
-  - blackboxrc is no longer written on exit or restart.  Instead it is
-    written whenever a change is made.  This means the rc can be
+Changes from 0.65.x to 0.70.0:
+------------------------------------------------------------------------------
+
+This is a major update resulting from a long development cycle... the
+list below is a general list and does not cover all changes in detail.
+
+  - introduced a utility library (libbt) for aiding in writing
+    small blackbox oriented applications
+  - all menus are now proper popup menus, with keyboard navigation
+  - complete EWMH support
+  - Xft support has been added to support anti-aliased fonts
+  - support for texture borders has been added... any texture can now
+    have a border of arbitrary width and color
+  - ~/.blackboxrc is no longer written on exit or restart.  Instead it
+    is written whenever a change is made.  This means the rc can be
     edited while Blackbox is running (finally).
-  - Xft support has been added to support anti-aliased fonts.
+  - support for always-on-top and always-on-bottom has been added
+  - support for fullscreen windows has been added
+  - support for all EWMH window types has been added (e.g. desktop
+    windows, dock windows, dialogs, etc.)
+  - support for window groups has been added
+  - support for transient windows has been improved
+  - it is now possible to completely disable the toolbar
+  - when the toolbar and slit are no longer in use, they are
+    destroyed... they will be recreated when needed
+  - the style file format has changed.  a new utility, bstyleconvert,
+    can be used to convert older 0.65.0 styles to the 0.70.0 format
+  - the format of ~/.blackboxrc has changed.  Blackbox will
+    automatically convert to the new format.
+  - both the look and feel have been updated, feedback is encouraged

@@ -1,0 +1,38 @@
+-- RELNOTES for Blackbox 0.70.0
+
+Release Canditate
+------------------------------------------------------------------------------
+
+This is the Blackbox release candidate.  Things are working very well,
+and it's time for a release.  However, before making the release, we
+want to make sure that it really is ready for release, hence the name
+"release candidate".
+
+Contact
+------------------------------------------------------------------------------
+
+The mailing list and the SourceForge trackers are the primary contact
+points.  See http://blackboxwm.sourceforge.net/ for more information
+on how to contact us, report bugs, help out, etc.
+
+Known Issues
+------------------------------------------------------------------------------
+
+Tear-Off Menus
+
+    Support for torn-off menus has not yet been added.  Originally,
+    the release was going to be delayed while waiting for this
+    feature, but due to lack of time, 0.70.0 will be released without
+    them.  We expect to re-add this feature at a later date.
+
+Man Pages
+
+    The manual pages included in the package are out of date.  They
+    are for 0.65.0 or earlier releases.
+
+Internationalization
+
+    Blackbox 0.70.0 will not be internationalized, and as such cannot
+    be translated or localized.  This is very unfortunate, but lack of
+    time and resources prevents us from finishing it.  Re-adding
+    support for translations will be done in a later release.
