@@ -357,20 +357,20 @@ void Slit::updateStrut(void) {
   case Vertical:
     switch (screen->getSlitPlacement()) {
     case TopCenter:
-      strut.top = getY() + getExposedHeight() + 1;
+      strut.top = getY() + getExposedHeight() + screen->getBevelWidth();
       break;
     case BottomCenter:
-      strut.bottom = getExposedHeight() + 1;
+      strut.bottom = getExposedHeight() + screen->getBevelWidth();
       break;
     case TopLeft:
     case CenterLeft:
     case BottomLeft:
-      strut.left = getExposedWidth() + 1;
+      strut.left = getExposedWidth() + screen->getBevelWidth();
       break;
     case TopRight:
     case CenterRight:
     case BottomRight:
-      strut.right = getExposedWidth() + 1;
+      strut.right = getExposedWidth() + screen->getBevelWidth();
       break;
     }
     break;
@@ -379,18 +379,18 @@ void Slit::updateStrut(void) {
     case TopCenter:
     case TopLeft:
     case TopRight:
-      strut.top = getY() + getExposedHeight() + 1;
+      strut.top = getY() + getExposedHeight() + screen->getBevelWidth();
       break;
     case BottomCenter:
     case BottomLeft:
     case BottomRight:
-      strut.bottom = screen->getHeight() - getY();
+      strut.bottom = screen->getHeight() - getY() + screen->getBevelWidth();
       break;
     case CenterLeft:
-      strut.left = getExposedWidth() + 1;
+      strut.left = getExposedWidth() + screen->getBevelWidth();
       break;
     case CenterRight:
-      strut.right = getExposedWidth() + 1;
+      strut.right = getExposedWidth() + screen->getBevelWidth();
       break;
     }
     break;

@@ -564,6 +564,7 @@ bool Workspace::cascadePlacement(Rect &win, const Rect &availableArea) {
   }
 
   win.setPos(cascade_x, cascade_y);
+
   return True;
 }
 
@@ -589,7 +590,9 @@ void Workspace::placeWindow(BlackboxWindow *win) {
     cascade_y += win->getTitleHeight() + (screen->getBorderWidth() * 2);
   }
 
-  if (new_win.right() > availableArea.right()) new_win.setX(0);
-  if (new_win.bottom() > availableArea.bottom()) new_win.setY(0);
+  if (new_win.right() > availableArea.right())
+    new_win.setX(availableArea.left());
+  if (new_win.bottom() > availableArea.bottom())
+    new_win.setY(availableArea.top());
   win->configure(new_win.x(), new_win.y(), new_win.width(), new_win.height());
 }
