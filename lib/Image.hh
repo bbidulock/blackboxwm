@@ -79,8 +79,7 @@ namespace bt {
 
 
   public:
-    // take signed ints so we can catch improper sizes
-    Image(ImageControl *c, int w, int h);
+    Image(ImageControl *c, unsigned int w, unsigned int h);
     ~Image(void);
 
     Pixmap render(const Texture &texture);

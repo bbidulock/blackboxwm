@@ -26,6 +26,7 @@
 #endif // HAVE_CONFIG_H
 
 extern "C" {
+#include <assert.h>
 #include <stdio.h>
 #include <math.h>
 }
@@ -38,11 +39,14 @@ extern "C" {
 #include "Texture.hh"
 
 
-bt::Image::Image(bt::ImageControl *c, int w, int h) {
-  control = c;
+static const unsigned int maximumWidth  = 4000;
+static const unsigned int maximumHeight = 3000;
 
-  width = (w > 0) ? w : 1;
-  height = (h > 0) ? h : 1;
+
+bt::Image::Image(bt::ImageControl *c, unsigned int w, unsigned int h)
+  : control(c), width(w), height(h) {
+  assert(width > 0  && width  < maximumWidth);
+  assert(height > 0 && height < maximumHeight);
 
   red = new unsigned char[width * height];
   green = new unsigned char[width * height];
@@ -184,11 +188,24 @@ Pixmap bt::Image::render_gradient(const bt::Texture &texture) {
 }
 
 
+/*
+ * Ordered dither tables
+ */
 static const unsigned char dither4[4][4] = {
-  {0, 4, 1, 5},
-  {6, 2, 7, 3},
-  {1, 5, 0, 4},
-  {7, 3, 6, 2}
+  { 0, 4, 1, 5 },
+  { 6, 2, 7, 3 },
+  { 1, 5, 0, 4 },
+  { 7, 3, 6, 2 }
+};
+static const unsigned char dither8[8][8] = {
+  { 0,  32, 8,  40, 2,  34, 10, 42 },
+  { 48, 16, 56, 24, 50, 18, 58, 26 },
+  { 12, 44, 4,  36, 14, 46, 6,  38 },
+  { 60, 28, 52, 20, 62, 30, 54, 22 },
+  { 3,  35, 11, 43, 1,  33, 9,  41 },
+  { 51, 19, 59, 27, 49, 17, 57, 25 },
+  { 15, 47, 7,  39, 13, 45, 5,  37 },
+  { 63, 31, 55, 23, 61, 29, 53, 21 }
 };
 
 
@@ -204,43 +221,50 @@ void assignPixelData(unsigned int bit_depth, unsigned char **data,
   unsigned char *pixel_data = *data;
   switch (bit_depth) {
   case  8: //  8bpp
-    *pixel_data++ = pixel;
+    pixel_data[0] = pixel;
+    ++pixel_data;
     break;
 
   case 16: // 16bpp LSB
-    *pixel_data++ = pixel;
-    *pixel_data++ = pixel >> 8;
+    pixel_data[0] = pixel;
+    pixel_data[1] = pixel >> 8;
+    pixel_data += 2;
     break;
 
   case 17: // 16bpp MSB
-    *pixel_data++ = pixel >> 8;
-    *pixel_data++ = pixel;
+    pixel_data[0] = pixel >> 8;
+    pixel_data[1] = pixel;
+    pixel_data += 2;
     break;
 
   case 24: // 24bpp LSB
-    *pixel_data++ = pixel;
-    *pixel_data++ = pixel >> 8;
-    *pixel_data++ = pixel >> 16;
+    pixel_data[0] = pixel;
+    pixel_data[1] = pixel >> 8;
+    pixel_data[2] = pixel >> 16;
+    pixel_data += 3;
     break;
 
   case 25: // 24bpp MSB
-    *pixel_data++ = pixel >> 16;
-    *pixel_data++ = pixel >> 8;
-    *pixel_data++ = pixel;
+    pixel_data[0] = pixel >> 16;
+    pixel_data[1] = pixel >> 8;
+    pixel_data[2] = pixel;
+    pixel_data += 3;
     break;
 
   case 32: // 32bpp LSB
-    *pixel_data++ = pixel;
-    *pixel_data++ = pixel >> 8;
-    *pixel_data++ = pixel >> 16;
-    *pixel_data++ = pixel >> 24;
+    pixel_data[0] = pixel;
+    pixel_data[1] = pixel >> 8;
+    pixel_data[2] = pixel >> 16;
+    pixel_data[3] = pixel >> 24;
+    pixel_data += 4;
     break;
 
   case 33: // 32bpp MSB
-    *pixel_data++ = pixel >> 24;
-    *pixel_data++ = pixel >> 16;
-    *pixel_data++ = pixel >> 8;
-    *pixel_data++ = pixel;
+    pixel_data[0] = pixel >> 24;
+    pixel_data[1] = pixel >> 16;
+    pixel_data[2] = pixel >> 8;
+    pixel_data[3] = pixel;
+    pixel_data += 4;
     break;
   }
   *data = pixel_data; // assign back so we don't lose our place
@@ -256,10 +280,10 @@ void bt::Image::TrueColorDither(unsigned int bit_depth, int bytes_per_line,
   unsigned char *ppixel_data = pixel_data;
   unsigned long pixel;
 
-  for (y = 0, offset = 0; y < height; y++) {
+  for (y = 0, offset = 0; y < height; ++y) {
     dithy = y & 0x3;
 
-    for (x = 0; x < width; x++, offset++) {
+    for (x = 0; x < width; ++x, ++offset) {
       dithx = x & 0x3;
       r = red[offset];
       g = green[offset];
@@ -286,16 +310,6 @@ void bt::Image::TrueColorDither(unsigned int bit_depth, int bytes_per_line,
 }
 
 #ifdef ORDEREDPSEUDO
-static const unsigned char dither8[8][8] = {
-  { 0,  32, 8,  40, 2,  34, 10, 42},
-  { 48, 16, 56, 24, 50, 18, 58, 26},
-  { 12, 44, 4,  36, 14, 46, 6,  38},
-  { 60, 28, 52, 20, 62, 30, 54, 22},
-  { 3,  35, 11, 43, 1,  33, 9,  41},
-  { 51, 19, 59, 27, 49, 17, 57, 25},
-  { 15, 47, 7,  39, 13, 45, 5,  37},
-  { 63, 31, 55, 23, 61, 29, 53, 21}
-};
 
 void bt::Image::OrderedPseudoColorDither(int bytes_per_line,
                                          unsigned char *pixel_data) {
@@ -673,7 +687,7 @@ void bt::Image::bevel(unsigned int border_width) {
 
 
 void bt::Image::invert(void) {
-  register unsigned int i, j, wh = (width * height) - 1;
+  unsigned int i, j, wh = (width * height) - 1;
   unsigned char tmp;
 
   for (i = 0, j = wh; j > i; j--, i++) {
@@ -696,29 +710,31 @@ void bt::Image::dgradient(void) {
   // diagonal gradient code was written by Mike Cole <mike@mydot.com>
   // modified for interlacing by Brad Hughes
 
-  float drx, dgx, dbx, dry, dgy, dby, yr = 0.0, yg = 0.0, yb = 0.0,
-    xr = (float) from.red(),
-    xg = (float) from.green(),
-    xb = (float) from.blue();
+  double drx, dgx, dbx, dry, dgy, dby;
+  double yr = 0.0, yg = 0.0, yb = 0.0,
+         xr = static_cast<double>(from.red()),
+         xg = static_cast<double>(from.green()),
+         xb = static_cast<double>(from.blue());
+
   unsigned char *pr = red, *pg = green, *pb = blue;
-  unsigned int xtable[6000], ytable[6000];
-  unsigned int w = width * 2, h = height * 2, *xt = xtable, *yt = ytable;
+  unsigned int w = width * 2, h = height * 2;
+  unsigned int xt[maximumWidth][3], yt[maximumHeight][3];
 
-  register unsigned int x, y;
+  unsigned int x, y;
 
-  dry = drx = (float) (to.red() - from.red());
-  dgy = dgx = (float) (to.green() - from.green());
-  dby = dbx = (float) (to.blue() - from.blue());
+  dry = drx = static_cast<double>(to.red()   - from.red());
+  dgy = dgx = static_cast<double>(to.green() - from.green());
+  dby = dbx = static_cast<double>(to.blue()  - from.blue());
 
   // Create X table
   drx /= w;
   dgx /= w;
   dbx /= w;
 
-  for (x = 0; x < width; x++) {
-    *(xt++) = (unsigned char) (xr);
-    *(xt++) = (unsigned char) (xg);
-    *(xt++) = (unsigned char) (xb);
+  for (x = 0; x < width; ++x) {
+    xt[x][0] = static_cast<unsigned char>(xr);
+    xt[x][1] = static_cast<unsigned char>(xg);
+    xt[x][2] = static_cast<unsigned char>(xb);
 
     xr += drx;
     xg += dgx;
@@ -730,10 +746,10 @@ void bt::Image::dgradient(void) {
   dgy /= h;
   dby /= h;
 
-  for (y = 0; y < height; y++) {
-    *(yt++) = ((unsigned char) yr);
-    *(yt++) = ((unsigned char) yg);
-    *(yt++) = ((unsigned char) yb);
+  for (y = 0; y < height; ++y) {
+    yt[y][0] = static_cast<unsigned char>(yr);
+    yt[y][1] = static_cast<unsigned char>(yg);
+    yt[y][2] = static_cast<unsigned char>(yb);
 
     yr += dry;
     yg += dgy;
@@ -744,50 +760,27 @@ void bt::Image::dgradient(void) {
 
   if (! interlaced) {
     // normal dgradient
-    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
-      for (xt = xtable, x = 0; x < width; x++) {
-        *(pr++) = *(xt++) + *(yt);
-        *(pg++) = *(xt++) + *(yt + 1);
-        *(pb++) = *(xt++) + *(yt + 2);
+    for (y = 0; y < height; ++y) {
+      for (x = 0; x < width; ++x, ++pr, ++pg, ++pb) {
+        *pr = xt[x][0] + yt[y][0];
+        *pg = xt[x][1] + yt[y][1];
+        *pb = xt[x][2] + yt[y][2];
       }
     }
-  } else {
-    // faked interlacing effect
-    unsigned char channel, channel2;
+    return;
+  }
 
-    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
-      for (xt = xtable, x = 0; x < width; x++) {
-        if (y & 1) {
-          channel = *(xt++) + *(yt);
-          channel2 = (channel >> 1) + (channel >> 2);
-          if (channel2 > channel) channel2 = 0;
-          *(pr++) = channel2;
+  // interlacing effect
+  for (y = 0; y < height; ++y) {
+    for (x = 0; x < width; ++x, ++pr, ++pg, ++pb) {
+      *pr = xt[x][0] + yt[y][0];
+      *pg = xt[x][1] + yt[y][1];
+      *pb = xt[x][2] + yt[y][2];
 
-          channel = *(xt++) + *(yt + 1);
-          channel2 = (channel >> 1) + (channel >> 2);
-          if (channel2 > channel) channel2 = 0;
-          *(pg++) = channel2;
-
-          channel = *(xt++) + *(yt + 2);
-          channel2 = (channel >> 1) + (channel >> 2);
-          if (channel2 > channel) channel2 = 0;
-          *(pb++) = channel2;
-        } else {
-          channel = *(xt++) + *(yt);
-          channel2 = channel + (channel >> 3);
-          if (channel2 < channel) channel2 = ~0;
-          *(pr++) = channel2;
-
-          channel = *(xt++) + *(yt + 1);
-          channel2 = channel + (channel >> 3);
-          if (channel2 < channel) channel2 = ~0;
-          *(pg++) = channel2;
-
-          channel = *(xt++) + *(yt + 2);
-          channel2 = channel + (channel >> 3);
-          if (channel2 < channel) channel2 = ~0;
-          *(pb++) = channel2;
-        }
+      if (y & 1) {
+        *pr = (*pr >> 1) + (*pr >> 2);
+        *pg = (*pg >> 1) + (*pg >> 2);
+        *pb = (*pb >> 1) + (*pb >> 2);
       }
     }
   }
@@ -795,109 +788,99 @@ void bt::Image::dgradient(void) {
 
 
 void bt::Image::hgradient(void) {
-  float drx, dgx, dbx,
-    xr = (float) from.red(),
-    xg = (float) from.green(),
-    xb = (float) from.blue();
+  double drx, dgx, dbx,
+    xr = static_cast<double>(from.red()),
+    xg = static_cast<double>(from.green()),
+    xb = static_cast<double>(from.blue());
   unsigned char *pr = red, *pg = green, *pb = blue;
+  unsigned int total = width * (height - 2);
+  unsigned int x;
 
-  register unsigned int x, y;
-
-  drx = (float) (to.red() - from.red());
-  dgx = (float) (to.green() - from.green());
-  dbx = (float) (to.blue() - from.blue());
+  drx = static_cast<double>(to.red()   - from.red());
+  dgx = static_cast<double>(to.green() - from.green());
+  dbx = static_cast<double>(to.blue()  - from.blue());
 
   drx /= width;
   dgx /= width;
   dbx /= width;
 
-  if (interlaced && height > 2) {
-    // faked interlacing effect
-    unsigned char channel, channel2;
+  // second line
+  if (interlaced && height > 1) {
+    // interlacing effect
 
-    for (x = 0; x < width; x++, pr++, pg++, pb++) {
-      channel = (unsigned char) xr;
-      channel2 = (channel >> 1) + (channel >> 2);
-      if (channel2 > channel) channel2 = 0;
-      *pr = channel2;
-
-      channel = (unsigned char) xg;
-      channel2 = (channel >> 1) + (channel >> 2);
-      if (channel2 > channel) channel2 = 0;
-      *pg = channel2;
-
-      channel = (unsigned char) xb;
-      channel2 = (channel >> 1) + (channel >> 2);
-      if (channel2 > channel) channel2 = 0;
-      *pb = channel2;
-
-
-      channel = (unsigned char) xr;
-      channel2 = channel + (channel >> 3);
-      if (channel2 < channel) channel2 = ~0;
-      *(pr + width) = channel2;
-
-      channel = (unsigned char) xg;
-      channel2 = channel + (channel >> 3);
-      if (channel2 < channel) channel2 = ~0;
-      *(pg + width) = channel2;
-
-      channel = (unsigned char) xb;
-      channel2 = channel + (channel >> 3);
-      if (channel2 < channel) channel2 = ~0;
-      *(pb + width) = channel2;
+    // first line
+    for (x = 0; x < width; ++x, ++pr, ++pg, ++pb) {
+      *pr = static_cast<unsigned char>(xr);
+      *pg = static_cast<unsigned char>(xg);
+      *pb = static_cast<unsigned char>(xb);
 
       xr += drx;
       xg += dgx;
       xb += dbx;
     }
 
-    pr += width;
-    pg += width;
-    pb += width;
+    // second line
+    xr = static_cast<double>(from.red()),
+    xg = static_cast<double>(from.green()),
+    xb = static_cast<double>(from.blue());
 
-    int offset;
+    for (x = 0; x < width; ++x, ++pr, ++pg, ++pb) {
+      *pr = static_cast<unsigned char>(xr);
+      *pg = static_cast<unsigned char>(xg);
+      *pb = static_cast<unsigned char>(xb);
 
-    for (y = 2; y < height; y++, pr += width, pg += width, pb += width) {
-      if (y & 1) offset = width; else offset = 0;
+      *pr = (*pr >> 1) + (*pr >> 2);
+      *pg = (*pg >> 1) + (*pg >> 2);
+      *pb = (*pb >> 1) + (*pb >> 2);
 
-      memcpy(pr, (red + offset), width);
-      memcpy(pg, (green + offset), width);
-      memcpy(pb, (blue + offset), width);
+      xr += drx;
+      xg += dgx;
+      xb += dbx;
     }
   } else {
-    // normal hgradient
-    for (x = 0; x < width; x++) {
-      *(pr++) = (unsigned char) (xr);
-      *(pg++) = (unsigned char) (xg);
-      *(pb++) = (unsigned char) (xb);
+    // first line
+    for (x = 0; x < width; ++x, ++pr, ++pg, ++pb) {
+      *pr = static_cast<unsigned char>(xr);
+      *pg = static_cast<unsigned char>(xg);
+      *pb = static_cast<unsigned char>(xb);
 
       xr += drx;
       xg += dgx;
       xb += dbx;
     }
 
-    for (y = 1; y < height; y++, pr += width, pg += width, pb += width) {
+    if (height > 1) {
+      // second line
       memcpy(pr, red, width);
       memcpy(pg, green, width);
       memcpy(pb, blue, width);
+
+      pr += width;
+      pg += width;
+      pb += width;
     }
+  }
+
+  // rest of the gradient
+  for (x = 0; x < total; ++x) {
+    pr[x] = red[x];
+    pg[x] = green[x];
+    pb[x] = blue[x];
   }
 }
 
 
 void bt::Image::vgradient(void) {
-  float dry, dgy, dby,
-    yr = (float) from.red(),
-    yg = (float) from.green(),
-    yb = (float) from.blue();
+  double dry, dgy, dby,
+    yr = static_cast<double>(from.red()),
+    yg = static_cast<double>(from.green()),
+    yb = static_cast<double>(from.blue());
   unsigned char *pr = red, *pg = green, *pb = blue;
+  unsigned int y;
 
-  register unsigned int y;
-
-  dry = (float) (to.red() - from.red());
-  dgy = (float) (to.green() - from.green());
-  dby = (float) (to.blue() - from.blue());
+  dry = (double) (to.red() - from.red());
+  dgy = (double) (to.green() - from.green());
+  dby = (double) (to.blue() - from.blue());
 
   dry /= height;
   dgy /= height;
@@ -905,40 +888,20 @@ void bt::Image::vgradient(void) {
 
   if (interlaced) {
     // faked interlacing effect
-    unsigned char channel, channel2;
-
     for (y = 0; y < height; y++, pr += width, pg += width, pb += width) {
+      *pr = static_cast<unsigned char>(yr);
+      *pg = static_cast<unsigned char>(yg);
+      *pb = static_cast<unsigned char>(yb);
+
       if (y & 1) {
-        channel = (unsigned char) yr;
-        channel2 = (channel >> 1) + (channel >> 2);
-        if (channel2 > channel) channel2 = 0;
-        memset(pr, channel2, width);
-
-        channel = (unsigned char) yg;
-        channel2 = (channel >> 1) + (channel >> 2);
-        if (channel2 > channel) channel2 = 0;
-        memset(pg, channel2, width);
-
-        channel = (unsigned char) yb;
-        channel2 = (channel >> 1) + (channel >> 2);
-        if (channel2 > channel) channel2 = 0;
-        memset(pb, channel2, width);
-      } else {
-        channel = (unsigned char) yr;
-        channel2 = channel + (channel >> 3);
-        if (channel2 < channel) channel2 = ~0;
-        memset(pr, channel2, width);
-
-        channel = (unsigned char) yg;
-        channel2 = channel + (channel >> 3);
-        if (channel2 < channel) channel2 = ~0;
-        memset(pg, channel2, width);
-
-        channel = (unsigned char) yb;
-        channel2 = channel + (channel >> 3);
-        if (channel2 < channel) channel2 = ~0;
-        memset(pb, channel2, width);
+        *pr = (*pr >> 1) + (*pr >> 2);
+        *pg = (*pg >> 1) + (*pg >> 2);
+        *pb = (*pb >> 1) + (*pb >> 2);
       }
+
+      memset(pr, *pr, width);
+      memset(pg, *pg, width);
+      memset(pb, *pb, width);
 
       yr += dry;
       yg += dgy;
@@ -947,9 +910,13 @@ void bt::Image::vgradient(void) {
   } else {
     // normal vgradient
     for (y = 0; y < height; y++, pr += width, pg += width, pb += width) {
-      memset(pr, (unsigned char) yr, width);
-      memset(pg, (unsigned char) yg, width);
-      memset(pb, (unsigned char) yb, width);
+      *pr = static_cast<unsigned char>(yr);
+      *pg = static_cast<unsigned char>(yg);
+      *pb = static_cast<unsigned char>(yb);
+
+      memset(pr, *pr, width);
+      memset(pg, *pg, width);
+      memset(pb, *pb, width);
 
       yr += dry;
       yg += dgy;
@@ -964,19 +931,16 @@ void bt::Image::pgradient(void) {
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
 
-  float yr, yg, yb, drx, dgx, dbx, dry, dgy, dby,
-    xr, xg, xb;
+  double yr, yg, yb, drx, dgx, dbx, dry, dgy, dby, xr, xg, xb;
   int rsign, gsign, bsign;
   unsigned char *pr = red, *pg = green, *pb = blue;
-  unsigned int xtable[2048], ytable[2048];
-  unsigned int tr = to.red(), tg = to.green(), tb = to.blue(),
-    *xt = xtable, *yt = ytable;
+  unsigned int tr = to.red(), tg = to.green(), tb = to.blue();
+  unsigned int xt[maximumWidth][3], yt[maximumHeight][3];
+  unsigned int x, y;
 
-  register unsigned int x, y;
-
-  dry = drx = (float) (to.red() - from.red());
-  dgy = dgx = (float) (to.green() - from.green());
-  dby = dbx = (float) (to.blue() - from.blue());
+  dry = drx = static_cast<double>(to.red()   - from.red());
+  dgy = dgx = static_cast<double>(to.green() - from.green());
+  dby = dbx = static_cast<double>(to.blue()  - from.blue());
 
   rsign = (drx < 0) ? -1 : 1;
   gsign = (dgx < 0) ? -1 : 1;
@@ -991,10 +955,10 @@ void bt::Image::pgradient(void) {
   dgx /= width;
   dbx /= width;
 
-  for (x = 0; x < width; x++) {
-    *(xt++) = (unsigned char) ((xr < 0) ? -xr : xr);
-    *(xt++) = (unsigned char) ((xg < 0) ? -xg : xg);
-    *(xt++) = (unsigned char) ((xb < 0) ? -xb : xb);
+  for (x = 0; x < width; ++x) {
+    xt[x][0] = static_cast<unsigned char>(fabs(xr));
+    xt[x][1] = static_cast<unsigned char>(fabs(xg));
+    xt[x][2] = static_cast<unsigned char>(fabs(xb));
 
     xr -= drx;
     xg -= dgx;
@@ -1006,10 +970,10 @@ void bt::Image::pgradient(void) {
   dgy /= height;
   dby /= height;
 
-  for (y = 0; y < height; y++) {
-    *(yt++) = ((unsigned char) ((yr < 0) ? -yr : yr));
-    *(yt++) = ((unsigned char) ((yg < 0) ? -yg : yg));
-    *(yt++) = ((unsigned char) ((yb < 0) ? -yb : yb));
+  for (y = 0; y < height; ++y) {
+    yt[y][0] = static_cast<unsigned char>(fabs(yr));
+    yt[y][1] = static_cast<unsigned char>(fabs(yg));
+    yt[y][2] = static_cast<unsigned char>(fabs(yb));
 
     yr -= dry;
     yg -= dgy;
@@ -1020,50 +984,27 @@ void bt::Image::pgradient(void) {
 
   if (! interlaced) {
     // normal pgradient
-    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
-      for (xt = xtable, x = 0; x < width; x++) {
-        *(pr++) = (unsigned char) (tr - (rsign * (*(xt++) + *(yt))));
-        *(pg++) = (unsigned char) (tg - (gsign * (*(xt++) + *(yt + 1))));
-        *(pb++) = (unsigned char) (tb - (bsign * (*(xt++) + *(yt + 2))));
+    for (y = 0; y < height; ++y) {
+      for (x = 0; x < width; ++x, ++pr, ++pg, ++pb) {
+        *pr = static_cast<unsigned char>(tr - (rsign * (xt[x][0] + yt[y][0])));
+        *pg = static_cast<unsigned char>(tg - (gsign * (xt[x][1] + yt[y][1])));
+        *pb = static_cast<unsigned char>(tb - (bsign * (xt[x][2] + yt[y][2])));
       }
     }
-  } else {
-    // faked interlacing effect
-    unsigned char channel, channel2;
+    return;
+  }
 
-    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
-      for (xt = xtable, x = 0; x < width; x++) {
-        if (y & 1) {
-          channel = (unsigned char) (tr - (rsign * (*(xt++) + *(yt))));
-          channel2 = (channel >> 1) + (channel >> 2);
-          if (channel2 > channel) channel2 = 0;
-          *(pr++) = channel2;
+  // interlacing effect
+  for (y = 0; y < height; ++y) {
+    for (x = 0; x < width; ++x, ++pr, ++pg, ++pb) {
+      *pr = static_cast<unsigned char>(tr - (rsign * (xt[x][0] + yt[y][0])));
+      *pg = static_cast<unsigned char>(tg - (gsign * (xt[x][1] + yt[y][1])));
+      *pb = static_cast<unsigned char>(tb - (bsign * (xt[x][2] + yt[y][2])));
 
-          channel = (unsigned char) (tg - (gsign * (*(xt++) + *(yt + 1))));
-          channel2 = (channel >> 1) + (channel >> 2);
-          if (channel2 > channel) channel2 = 0;
-          *(pg++) = channel2;
-
-          channel = (unsigned char) (tb - (bsign * (*(xt++) + *(yt + 2))));
-          channel2 = (channel >> 1) + (channel >> 2);
-          if (channel2 > channel) channel2 = 0;
-          *(pb++) = channel2;
-        } else {
-          channel = (unsigned char) (tr - (rsign * (*(xt++) + *(yt))));
-          channel2 = channel + (channel >> 3);
-          if (channel2 < channel) channel2 = ~0;
-          *(pr++) = channel2;
-
-          channel = (unsigned char) (tg - (gsign * (*(xt++) + *(yt + 1))));
-          channel2 = channel + (channel >> 3);
-          if (channel2 < channel) channel2 = ~0;
-          *(pg++) = channel2;
-
-          channel = (unsigned char) (tb - (bsign * (*(xt++) + *(yt + 2))));
-          channel2 = channel + (channel >> 3);
-          if (channel2 < channel) channel2 = ~0;
-          *(pb++) = channel2;
-        }
+      if (y & 1) {
+        *pr = (*pr >> 1) + (*pr >> 2);
+        *pg = (*pg >> 1) + (*pg >> 2);
+        *pb = (*pb >> 1) + (*pb >> 2);
       }
     }
   }
@@ -1075,18 +1016,16 @@ void bt::Image::rgradient(void) {
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
 
-  float drx, dgx, dbx, dry, dgy, dby, xr, xg, xb, yr, yg, yb;
+  double drx, dgx, dbx, dry, dgy, dby, xr, xg, xb, yr, yg, yb;
   int rsign, gsign, bsign;
   unsigned char *pr = red, *pg = green, *pb = blue;
-  unsigned int xtable[2048], ytable[2048];
-  unsigned int tr = to.red(), tg = to.green(), tb = to.blue(),
-    *xt = xtable, *yt = ytable;
+  unsigned int tr = to.red(), tg = to.green(), tb = to.blue();
+  unsigned int xt[maximumWidth][3], yt[maximumHeight][3];
+  unsigned int x, y;
 
-  register unsigned int x, y;
-
-  dry = drx = (float) (to.red() - from.red());
-  dgy = dgx = (float) (to.green() - from.green());
-  dby = dbx = (float) (to.blue() - from.blue());
+  dry = drx = static_cast<double>(to.red()   - from.red());
+  dgy = dgx = static_cast<double>(to.green() - from.green());
+  dby = dbx = static_cast<double>(to.blue()  - from.blue());
 
   rsign = (drx < 0) ? -2 : 2;
   gsign = (dgx < 0) ? -2 : 2;
@@ -1101,10 +1040,10 @@ void bt::Image::rgradient(void) {
   dgx /= width;
   dbx /= width;
 
-  for (x = 0; x < width; x++) {
-    *(xt++) = (unsigned char) ((xr < 0) ? -xr : xr);
-    *(xt++) = (unsigned char) ((xg < 0) ? -xg : xg);
-    *(xt++) = (unsigned char) ((xb < 0) ? -xb : xb);
+  for (x = 0; x < width; ++x) {
+    xt[x][0] = static_cast<unsigned char>(fabs(xr));
+    xt[x][1] = static_cast<unsigned char>(fabs(xg));
+    xt[x][2] = static_cast<unsigned char>(fabs(xb));
 
     xr -= drx;
     xg -= dgx;
@@ -1116,10 +1055,10 @@ void bt::Image::rgradient(void) {
   dgy /= height;
   dby /= height;
 
-  for (y = 0; y < height; y++) {
-    *(yt++) = ((unsigned char) ((yr < 0) ? -yr : yr));
-    *(yt++) = ((unsigned char) ((yg < 0) ? -yg : yg));
-    *(yt++) = ((unsigned char) ((yb < 0) ? -yb : yb));
+  for (y = 0; y < height; ++y) {
+    yt[y][0] = static_cast<unsigned char>(fabs(yr));
+    yt[y][1] = static_cast<unsigned char>(fabs(yg));
+    yt[y][2] = static_cast<unsigned char>(fabs(yb));
 
     yr -= dry;
     yg -= dgy;
@@ -1130,56 +1069,33 @@ void bt::Image::rgradient(void) {
 
   if (! interlaced) {
     // normal rgradient
-    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
-      for (xt = xtable, x = 0; x < width; x++) {
-        *(pr++) = (unsigned char) (tr - (rsign * std::max(*(xt++), *(yt))));
-        *(pg++) = (unsigned char) (tg - (gsign * std::max(*(xt++),
-                                                          *(yt + 1))));
-        *(pb++) = (unsigned char) (tb - (bsign * std::max(*(xt++),
-                                                          *(yt + 2))));
+    for (y = 0; y < height; ++y) {
+      for (x = 0; x < width; ++x, ++pr, ++pg, ++pb) {
+        *pr = static_cast<unsigned char>(tr - (rsign *
+                                               std::max(xt[x][0], yt[y][0])));
+        *pg = static_cast<unsigned char>(tg - (gsign *
+                                               std::max(xt[x][1], yt[y][1])));
+        *pb = static_cast<unsigned char>(tb - (bsign *
+                                               std::max(xt[x][2], yt[y][2])));
       }
     }
-  } else {
-    // faked interlacing effect
-    unsigned char channel, channel2;
+    return;
+  }
 
-    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
-      for (xt = xtable, x = 0; x < width; x++) {
-        if (y & 1) {
-          channel = (unsigned char) (tr - (rsign * std::max(*(xt++), *(yt))));
-          channel2 = (channel >> 1) + (channel >> 2);
-          if (channel2 > channel) channel2 = 0;
-          *(pr++) = channel2;
+  // interlacing effect
+  for (y = 0; y < height; ++y) {
+    for (x = 0; x < width; ++x, ++pr, ++pg, ++pb) {
+      *pr = static_cast<unsigned char>(tr - (rsign *
+                                             std::max(xt[x][0], yt[y][0])));
+      *pg = static_cast<unsigned char>(tg - (gsign *
+                                             std::max(xt[x][1], yt[y][1])));
+      *pb = static_cast<unsigned char>(tb - (bsign *
+                                             std::max(xt[x][2], yt[y][2])));
 
-          channel = (unsigned char) (tg - (gsign * std::max(*(xt++),
-                                                            *(yt + 1))));
-          channel2 = (channel >> 1) + (channel >> 2);
-          if (channel2 > channel) channel2 = 0;
-          *(pg++) = channel2;
-
-          channel = (unsigned char) (tb - (bsign * std::max(*(xt++),
-                                                            *(yt + 2))));
-          channel2 = (channel >> 1) + (channel >> 2);
-          if (channel2 > channel) channel2 = 0;
-          *(pb++) = channel2;
-        } else {
-          channel = (unsigned char) (tr - (rsign * std::max(*(xt++), *(yt))));
-          channel2 = channel + (channel >> 3);
-          if (channel2 < channel) channel2 = ~0;
-          *(pr++) = channel2;
-
-          channel = (unsigned char) (tg - (gsign * std::max(*(xt++),
-                                                            *(yt + 1))));
-          channel2 = channel + (channel >> 3);
-          if (channel2 < channel) channel2 = ~0;
-          *(pg++) = channel2;
-
-          channel = (unsigned char) (tb - (bsign * std::max(*(xt++),
-                                                            *(yt + 2))));
-          channel2 = channel + (channel >> 3);
-          if (channel2 < channel) channel2 = ~0;
-          *(pb++) = channel2;
-        }
+      if (y & 1) {
+        *pr = (*pr >> 1) + (*pr >> 2);
+        *pg = (*pg >> 1) + (*pg >> 2);
+        *pb = (*pb >> 1) + (*pb >> 2);
       }
     }
   }
@@ -1191,20 +1107,16 @@ void bt::Image::egradient(void) {
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
 
-  float drx, dgx, dbx, dry, dgy, dby, yr, yg, yb, xr, xg, xb;
+  double drx, dgx, dbx, dry, dgy, dby, yr, yg, yb, xr, xg, xb;
   int rsign, gsign, bsign;
   unsigned char *pr = red, *pg = green, *pb = blue;
-  unsigned int xtable[2048], ytable[2048];
-  unsigned int *xt = xtable, *yt = ytable,
-    tr = (unsigned long) to.red(),
-    tg = (unsigned long) to.green(),
-    tb = (unsigned long) to.blue();
+  unsigned int tr = to.red(), tg = to.green(), tb = to.blue();
+  unsigned int xt[maximumWidth][3], yt[maximumHeight][3];
+  unsigned int x, y;
 
-  register unsigned int x, y;
-
-  dry = drx = (float) (to.red() - from.red());
-  dgy = dgx = (float) (to.green() - from.green());
-  dby = dbx = (float) (to.blue() - from.blue());
+  dry = drx = (double) (to.red() - from.red());
+  dgy = dgx = (double) (to.green() - from.green());
+  dby = dbx = (double) (to.blue() - from.blue());
 
   rsign = (drx < 0) ? -1 : 1;
   gsign = (dgx < 0) ? -1 : 1;
@@ -1220,9 +1132,9 @@ void bt::Image::egradient(void) {
   dbx /= width;
 
   for (x = 0; x < width; x++) {
-    *(xt++) = (unsigned long) (xr * xr);
-    *(xt++) = (unsigned long) (xg * xg);
-    *(xt++) = (unsigned long) (xb * xb);
+    xt[x][0] = static_cast<unsigned int>(xr * xr);
+    xt[x][1] = static_cast<unsigned int>(xg * xg);
+    xt[x][2] = static_cast<unsigned int>(xb * xb);
 
     xr -= drx;
     xg -= dgx;
@@ -1235,9 +1147,9 @@ void bt::Image::egradient(void) {
   dby /= height;
 
   for (y = 0; y < height; y++) {
-    *(yt++) = (unsigned long) (yr * yr);
-    *(yt++) = (unsigned long) (yg * yg);
-    *(yt++) = (unsigned long) (yb * yb);
+    yt[y][0] = static_cast<unsigned int>(yr * yr);
+    yt[y][1] = static_cast<unsigned int>(yg * yg);
+    yt[y][2] = static_cast<unsigned int>(yb * yb);
 
     yr -= dry;
     yg -= dgy;
@@ -1248,59 +1160,33 @@ void bt::Image::egradient(void) {
 
   if (! interlaced) {
     // normal egradient
-    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
-      for (xt = xtable, x = 0; x < width; x++) {
-        *(pr++) = (unsigned char)
-          (tr - (rsign * static_cast<int>(sqrt((*(xt++) + *(yt))))));
-        *(pg++) = (unsigned char)
-          (tg - (gsign * static_cast<int>(sqrt((*(xt++) + *(yt + 1))))));
-        *(pb++) = (unsigned char)
-          (tb - (bsign * static_cast<int>(sqrt((*(xt++) + *(yt + 2))))));
+    for (y = 0; y < height; ++y) {
+      for (x = 0; x < width; ++x, ++pr, ++pg, ++pb) {
+        *pr = static_cast<unsigned char>
+              (tr - (rsign * static_cast<int>(sqrt(xt[x][0] + yt[y][0]))));
+        *pg = static_cast<unsigned char>
+              (tg - (gsign * static_cast<int>(sqrt(xt[x][1] + yt[y][1]))));
+        *pb = static_cast<unsigned char>
+              (tb - (bsign * static_cast<int>(sqrt(xt[x][2] + yt[y][2]))));
       }
     }
-  } else {
-    // faked interlacing effect
-    unsigned char channel, channel2;
+    return;
+  }
 
-    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
-      for (xt = xtable, x = 0; x < width; x++) {
-        if (y & 1) {
-          channel = (unsigned char)
-            (tr - (rsign * static_cast<int>(sqrt((*(xt++) + *(yt))))));
-          channel2 = (channel >> 1) + (channel >> 2);
-          if (channel2 > channel) channel2 = 0;
-          *(pr++) = channel2;
+  // interlacing effect
+  for (y = 0; y < height; ++y) {
+    for (x = 0; x < width; ++x, ++pr, ++pg, ++pb) {
+      *pr = static_cast<unsigned char>
+            (tr - (rsign * static_cast<int>(sqrt(xt[x][0] + yt[y][0]))));
+      *pg = static_cast<unsigned char>
+            (tg - (gsign * static_cast<int>(sqrt(xt[x][1] + yt[y][1]))));
+      *pb = static_cast<unsigned char>
+            (tb - (bsign * static_cast<int>(sqrt(xt[x][2] + yt[y][2]))));
 
-          channel = (unsigned char)
-            (tg - (gsign * static_cast<int>(sqrt((*(xt++) + *(yt + 1))))));
-          channel2 = (channel >> 1) + (channel >> 2);
-          if (channel2 > channel) channel2 = 0;
-          *(pg++) = channel2;
-
-          channel = (unsigned char)
-            (tb - (bsign * static_cast<int>(sqrt((*(xt++) + *(yt + 2))))));
-          channel2 = (channel >> 1) + (channel >> 2);
-          if (channel2 > channel) channel2 = 0;
-          *(pb++) = channel2;
-        } else {
-          channel = (unsigned char)
-            (tr - (rsign * static_cast<int>(sqrt((*(xt++) + *(yt))))));
-          channel2 = channel + (channel >> 3);
-          if (channel2 < channel) channel2 = ~0;
-          *(pr++) = channel2;
-
-          channel = (unsigned char)
-          (tg - (gsign * static_cast<int>(sqrt((*(xt++) + *(yt + 1))))));
-          channel2 = channel + (channel >> 3);
-          if (channel2 < channel) channel2 = ~0;
-          *(pg++) = channel2;
-
-          channel = (unsigned char)
-            (tb - (bsign * static_cast<int>(sqrt((*(xt++) + *(yt + 2))))));
-          channel2 = channel + (channel >> 3);
-          if (channel2 < channel) channel2 = ~0;
-          *(pb++) = channel2;
-        }
+      if (y & 1) {
+        *pr = (*pr >> 1) + (*pr >> 2);
+        *pg = (*pg >> 1) + (*pg >> 2);
+        *pb = (*pb >> 1) + (*pb >> 2);
       }
     }
   }
@@ -1312,20 +1198,16 @@ void bt::Image::pcgradient(void) {
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
 
-  float drx, dgx, dbx, dry, dgy, dby, xr, xg, xb, yr, yg, yb;
+  double drx, dgx, dbx, dry, dgy, dby, xr, xg, xb, yr, yg, yb;
   int rsign, gsign, bsign;
   unsigned char *pr = red, *pg = green, *pb = blue;
-  unsigned int xtable[2048], ytable[2048];
-  unsigned int *xt = xtable, *yt = ytable,
-    tr = to.red(),
-    tg = to.green(),
-    tb = to.blue();
+  unsigned int tr = to.red(), tg = to.green(), tb = to.blue();
+  unsigned int xt[maximumWidth][3], yt[maximumHeight][3];
+  unsigned int x, y;
 
-  register unsigned int x, y;
-
-  dry = drx = (float) (to.red() - from.red());
-  dgy = dgx = (float) (to.green() - from.green());
-  dby = dbx = (float) (to.blue() - from.blue());
+  dry = drx = static_cast<double>(to.red()   - from.red());
+  dgy = dgx = static_cast<double>(to.green() - from.green());
+  dby = dbx = static_cast<double>(to.blue()  - from.blue());
 
   rsign = (drx < 0) ? -2 : 2;
   gsign = (dgx < 0) ? -2 : 2;
@@ -1340,10 +1222,10 @@ void bt::Image::pcgradient(void) {
   dgx /= width;
   dbx /= width;
 
-  for (x = 0; x < width; x++) {
-    *(xt++) = (unsigned char) ((xr < 0) ? -xr : xr);
-    *(xt++) = (unsigned char) ((xg < 0) ? -xg : xg);
-    *(xt++) = (unsigned char) ((xb < 0) ? -xb : xb);
+  for (x = 0; x < width; ++x) {
+    xt[x][0] = static_cast<unsigned char>(fabs(xr));
+    xt[x][1] = static_cast<unsigned char>(fabs(xg));
+    xt[x][2] = static_cast<unsigned char>(fabs(xb));
 
     xr -= drx;
     xg -= dgx;
@@ -1355,10 +1237,10 @@ void bt::Image::pcgradient(void) {
   dgy /= height;
   dby /= height;
 
-  for (y = 0; y < height; y++) {
-    *(yt++) = ((unsigned char) ((yr < 0) ? -yr : yr));
-    *(yt++) = ((unsigned char) ((yg < 0) ? -yg : yg));
-    *(yt++) = ((unsigned char) ((yb < 0) ? -yb : yb));
+  for (y = 0; y < height; ++y) {
+    yt[y][0] = static_cast<unsigned char>(fabs(yr));
+    yt[y][1] = static_cast<unsigned char>(fabs(yg));
+    yt[y][2] = static_cast<unsigned char>(fabs(yb));
 
     yr -= dry;
     yg -= dgy;
@@ -1368,57 +1250,34 @@ void bt::Image::pcgradient(void) {
   // Combine tables to create gradient
 
   if (! interlaced) {
-    // normal pcgradient
-    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
-      for (xt = xtable, x = 0; x < width; x++) {
-        *(pr++) = (unsigned char) (tr - (rsign * std::min(*(xt++), *(yt))));
-        *(pg++) = (unsigned char) (tg - (gsign * std::min(*(xt++),
-                                                          *(yt + 1))));
-        *(pb++) = (unsigned char) (tb - (bsign * std::min(*(xt++),
-                                                          *(yt + 2))));
+    // normal rgradient
+    for (y = 0; y < height; ++y) {
+      for (x = 0; x < width; ++x, ++pr, ++pg, ++pb) {
+        *pr = static_cast<unsigned char>(tr - (rsign *
+                                               std::min(xt[x][0], yt[y][0])));
+        *pg = static_cast<unsigned char>(tg - (gsign *
+                                               std::min(xt[x][1], yt[y][1])));
+        *pb = static_cast<unsigned char>(tb - (bsign *
+                                               std::min(xt[x][2], yt[y][2])));
       }
     }
-  } else {
-    // faked interlacing effect
-    unsigned char channel, channel2;
+    return;
+  }
 
-    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
-      for (xt = xtable, x = 0; x < width; x++) {
-        if (y & 1) {
-          channel = (unsigned char) (tr - (rsign * std::min(*(xt++), *(yt))));
-          channel2 = (channel >> 1) + (channel >> 2);
-          if (channel2 > channel) channel2 = 0;
-          *(pr++) = channel2;
+  // interlacing effect
+  for (y = 0; y < height; ++y) {
+    for (x = 0; x < width; ++x, ++pr, ++pg, ++pb) {
+      *pr = static_cast<unsigned char>(tr - (rsign *
+                                             std::min(xt[x][0], yt[y][0])));
+      *pg = static_cast<unsigned char>(tg - (gsign *
+                                             std::min(xt[x][1], yt[y][1])));
+      *pb = static_cast<unsigned char>(tb - (bsign *
+                                             std::min(xt[x][2], yt[y][2])));
 
-          channel = (unsigned char) (tg - (bsign * std::min(*(xt++),
-                                                            *(yt + 1))));
-          channel2 = (channel >> 1) + (channel >> 2);
-          if (channel2 > channel) channel2 = 0;
-          *(pg++) = channel2;
-
-          channel = (unsigned char) (tb - (gsign * std::min(*(xt++),
-                                                            *(yt + 2))));
-          channel2 = (channel >> 1) + (channel >> 2);
-          if (channel2 > channel) channel2 = 0;
-          *(pb++) = channel2;
-        } else {
-          channel = (unsigned char) (tr - (rsign * std::min(*(xt++), *(yt))));
-          channel2 = channel + (channel >> 3);
-          if (channel2 < channel) channel2 = ~0;
-          *(pr++) = channel2;
-
-          channel = (unsigned char) (tg - (gsign * std::min(*(xt++),
-                                                            *(yt + 1))));
-          channel2 = channel + (channel >> 3);
-          if (channel2 < channel) channel2 = ~0;
-          *(pg++) = channel2;
-
-          channel = (unsigned char) (tb - (bsign * std::min(*(xt++),
-                                                            *(yt + 2))));
-          channel2 = channel + (channel >> 3);
-          if (channel2 < channel) channel2 = ~0;
-          *(pb++) = channel2;
-        }
+      if (y & 1) {
+        *pr = (*pr >> 1) + (*pr >> 2);
+        *pg = (*pg >> 1) + (*pg >> 2);
+        *pb = (*pb >> 1) + (*pb >> 2);
       }
     }
   }
@@ -1430,29 +1289,29 @@ void bt::Image::cdgradient(void) {
   // Mosfet (mosfet@kde.org)
   // adapted from kde sources for Blackbox by Brad Hughes
 
-  float drx, dgx, dbx, dry, dgy, dby, yr = 0.0, yg = 0.0, yb = 0.0,
-    xr = (float) from.red(),
-    xg = (float) from.green(),
-    xb = (float) from.blue();
+  double drx, dgx, dbx, dry, dgy, dby;
+  double yr = 0.0, yg = 0.0, yb = 0.0,
+         xr = (double) from.red(),
+         xg = (double) from.green(),
+         xb = (double) from.blue();
   unsigned char *pr = red, *pg = green, *pb = blue;
-  unsigned int xtable[2048], ytable[2048];
-  unsigned int w = width * 2, h = height * 2, *xt, *yt;
+  unsigned int w = width * 2, h = height * 2;
+  unsigned int xt[maximumWidth][3], yt[maximumHeight][3];
+  unsigned int x, y;
 
-  register unsigned int x, y;
-
-  dry = drx = (float) (to.red() - from.red());
-  dgy = dgx = (float) (to.green() - from.green());
-  dby = dbx = (float) (to.blue() - from.blue());
+  dry = drx = (double) (to.red() - from.red());
+  dgy = dgx = (double) (to.green() - from.green());
+  dby = dbx = (double) (to.blue() - from.blue());
 
   // Create X table
   drx /= w;
   dgx /= w;
   dbx /= w;
 
-  for (xt = (xtable + (width * 3) - 1), x = 0; x < width; x++) {
-    *(xt--) = (unsigned char) xb;
-    *(xt--) = (unsigned char) xg;
-    *(xt--) = (unsigned char) xr;
+  for (x = width - 1; x != 0; --x) {
+    xt[x][0] = static_cast<unsigned char>(xr);
+    xt[x][1] = static_cast<unsigned char>(xg);
+    xt[x][2] = static_cast<unsigned char>(xb);
 
     xr += drx;
     xg += dgx;
@@ -1464,10 +1323,10 @@ void bt::Image::cdgradient(void) {
   dgy /= h;
   dby /= h;
 
-  for (yt = ytable, y = 0; y < height; y++) {
-    *(yt++) = (unsigned char) yr;
-    *(yt++) = (unsigned char) yg;
-    *(yt++) = (unsigned char) yb;
+  for (y = 0; y < height; ++y) {
+    yt[y][0] = static_cast<unsigned char>(yr);
+    yt[y][1] = static_cast<unsigned char>(yg);
+    yt[y][2] = static_cast<unsigned char>(yb);
 
     yr += dry;
     yg += dgy;
@@ -1477,51 +1336,28 @@ void bt::Image::cdgradient(void) {
   // Combine tables to create gradient
 
   if (! interlaced) {
-    // normal cdgradient
-    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
-      for (xt = xtable, x = 0; x < width; x++) {
-        *(pr++) = *(xt++) + *(yt);
-        *(pg++) = *(xt++) + *(yt + 1);
-        *(pb++) = *(xt++) + *(yt + 2);
+    // normal dgradient
+    for (y = 0; y < height; ++y) {
+      for (x = 0; x < width; ++x, ++pr, ++pg, ++pb) {
+        *pr = xt[x][0] + yt[y][0];
+        *pg = xt[x][1] + yt[y][1];
+        *pb = xt[x][2] + yt[y][2];
       }
     }
-  } else {
-    // faked interlacing effect
-    unsigned char channel, channel2;
+    return;
+  }
 
-    for (yt = ytable, y = 0; y < height; y++, yt += 3) {
-      for (xt = xtable, x = 0; x < width; x++) {
-        if (y & 1) {
-          channel = *(xt++) + *(yt);
-          channel2 = (channel >> 1) + (channel >> 2);
-          if (channel2 > channel) channel2 = 0;
-          *(pr++) = channel2;
+  // interlacing effect
+  for (y = 0; y < height; ++y) {
+    for (x = 0; x < width; ++x, ++pr, ++pg, ++pb) {
+      *pr = xt[x][0] + yt[y][0];
+      *pg = xt[x][1] + yt[y][1];
+      *pb = xt[x][2] + yt[y][2];
 
-          channel = *(xt++) + *(yt + 1);
-          channel2 = (channel >> 1) + (channel >> 2);
-          if (channel2 > channel) channel2 = 0;
-          *(pg++) = channel2;
-
-          channel = *(xt++) + *(yt + 2);
-          channel2 = (channel >> 1) + (channel >> 2);
-          if (channel2 > channel) channel2 = 0;
-          *(pb++) = channel2;
-        } else {
-          channel = *(xt++) + *(yt);
-          channel2 = channel + (channel >> 3);
-          if (channel2 < channel) channel2 = ~0;
-          *(pr++) = channel2;
-
-          channel = *(xt++) + *(yt + 1);
-          channel2 = channel + (channel >> 3);
-          if (channel2 < channel) channel2 = ~0;
-          *(pg++) = channel2;
-
-          channel = *(xt++) + *(yt + 2);
-          channel2 = channel + (channel >> 3);
-          if (channel2 < channel) channel2 = ~0;
-          *(pb++) = channel2;
-        }
+      if (y & 1) {
+        *pr = (*pr >> 1) + (*pr >> 2);
+        *pg = (*pg >> 1) + (*pg >> 2);
+        *pb = (*pb >> 1) + (*pb >> 2);
       }
     }
   }
