@@ -27,117 +27,79 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 
+static const int AtomCount = 51;
+
 typedef unsigned char uchar;
 
 
 bt::Netwm::Netwm(::Display* _display): display(_display) {
-  char* atoms[51] = {
-    "UTF8_STRING",
-    "_NET_SUPPORTED",
-    "_NET_CLIENT_LIST",
-    "_NET_CLIENT_LIST_STACKING",
-    "_NET_NUMBER_OF_DESKTOPS",
-    "_NET_DESKTOP_GEOMETRY",
-    "_NET_CURRENT_DESKTOP",
-    "_NET_DESKTOP_NAMES",
-    "_NET_ACTIVE_WINDOW",
-    "_NET_WORKAREA",
-    "_NET_SUPPORTING_WM_CHECK",
-    "_NET_CLOSE_WINDOW",
-    "_NET_MOVERESIZE_WINDOW",
-    "_NET_WM_NAME",
-    "_NET_WM_VISIBLE_NAME",
-    "_NET_WM_ICON_NAME",
-    "_NET_WM_VISIBLE_ICON_NAME",
-    "_NET_WM_DESKTOP",
-    "_NET_WM_WINDOW_TYPE",
-    "_NET_WM_WINDOW_TYPE_DESKTOP",
-    "_NET_WM_WINDOW_TYPE_DOCK",
-    "_NET_WM_WINDOW_TYPE_TOOLBAR",
-    "_NET_WM_WINDOW_TYPE_MENU",
-    "_NET_WM_WINDOW_TYPE_UTILITY",
-    "_NET_WM_WINDOW_TYPE_SPLASH",
-    "_NET_WM_WINDOW_TYPE_DIALOG",
-    "_NET_WM_WINDOW_TYPE_NORMAL",
-    "_NET_WM_STATE",
-    "_NET_WM_STATE_MODAL",
-    "_NET_WM_STATE_STICKY",
-    "_NET_WM_STATE_MAXIMIZED_VERT",
-    "_NET_WM_STATE_MAXIMIZED_HORZ",
-    "_NET_WM_STATE_SHADED",
-    "_NET_WM_STATE_SKIP_TASKBAR",
-    "_NET_WM_STATE_SKIP_PAGER",
-    "_NET_WM_STATE_HIDDEN",
-    "_NET_WM_STATE_FULLSCREEN",
-    "_NET_WM_STATE_ABOVE",
-    "_NET_WM_STATE_BELOW",
-    "_NET_WM_ALLOWED_ACTIONS",
-    "_NET_WM_ALLOWED_ACTION_MOVE",
-    "_NET_WM_ALLOWED_ACTION_RESIZE",
-    "_NET_WM_ALLOWED_ACTION_MINIMIZE",
-    "_NET_WM_ALLOWED_ACTION_SHADE",
-    "_NET_WM_ALLOWED_ACTION_STICK",
-    "_NET_WM_ALLOWED_ACTION_MAXIMIZE_HORZ",
-    "_NET_WM_ALLOWED_ACTION_MAXIMIZE_VERT",
-    "_NET_WM_ALLOWED_ACTION_FULLSCREEN",
-    "_NET_WM_ALLOWED_ACTION_CHANGE_DESKTOP",
-    "_NET_WM_ALLOWED_ACTION_CLOSE",
-    "_NET_WM_STRUT"
+  const struct AtomRef {
+    const char *name;
+    Atom *atom;
+  } refs[AtomCount] = {
+    { "UTF8_STRING", &utf8_string },
+    { "_NET_SUPPORTED", &net_supported },
+    { "_NET_CLIENT_LIST", &net_client_list },
+    { "_NET_CLIENT_LIST_STACKING", &net_client_list_stacking },
+    { "_NET_NUMBER_OF_DESKTOPS", &net_number_of_desktops },
+    { "_NET_DESKTOP_GEOMETRY", &net_desktop_geometry },
+    { "_NET_CURRENT_DESKTOP", &net_current_desktop },
+    { "_NET_DESKTOP_NAMES", &net_desktop_names },
+    { "_NET_ACTIVE_WINDOW", &net_active_window },
+    { "_NET_WORKAREA", &net_workarea },
+    { "_NET_SUPPORTING_WM_CHECK", &net_supporting_wm_check },
+    { "_NET_CLOSE_WINDOW", &net_close_window },
+    { "_NET_MOVERESIZE_WINDOW", &net_moveresize_window },
+    { "_NET_WM_NAME", &net_wm_name },
+    { "_NET_WM_VISIBLE_NAME", &net_wm_visible_name },
+    { "_NET_WM_ICON_NAME", &net_wm_icon_name },
+    { "_NET_WM_VISIBLE_ICON_NAME", &net_wm_visible_icon_name },
+    { "_NET_WM_DESKTOP", &net_wm_desktop },
+    { "_NET_WM_WINDOW_TYPE", &net_wm_window_type },
+    { "_NET_WM_WINDOW_TYPE_DESKTOP", &net_wm_window_type_desktop },
+    { "_NET_WM_WINDOW_TYPE_DOCK", &net_wm_window_type_dock },
+    { "_NET_WM_WINDOW_TYPE_TOOLBAR", &net_wm_window_type_toolbar },
+    { "_NET_WM_WINDOW_TYPE_MENU", &net_wm_window_type_menu },
+    { "_NET_WM_WINDOW_TYPE_UTILITY", &net_wm_window_type_utility },
+    { "_NET_WM_WINDOW_TYPE_SPLASH", &net_wm_window_type_splash },
+    { "_NET_WM_WINDOW_TYPE_DIALOG", &net_wm_window_type_dialog },
+    { "_NET_WM_WINDOW_TYPE_NORMAL", &net_wm_window_type_normal },
+    { "_NET_WM_STATE", &net_wm_state },
+    { "_NET_WM_STATE_MODAL", &net_wm_state_modal },
+    { "_NET_WM_STATE_STICKY", &net_wm_state_sticky },
+    { "_NET_WM_STATE_MAXIMIZED_VERT", &net_wm_state_maximized_vert },
+    { "_NET_WM_STATE_MAXIMIZED_HORZ", &net_wm_state_maximized_horz },
+    { "_NET_WM_STATE_SHADED", &net_wm_state_shaded },
+    { "_NET_WM_STATE_SKIP_TASKBAR", &net_wm_state_skip_taskbar },
+    { "_NET_WM_STATE_SKIP_PAGER", &net_wm_state_skip_pager },
+    { "_NET_WM_STATE_HIDDEN", &net_wm_state_hidden },
+    { "_NET_WM_STATE_FULLSCREEN", &net_wm_state_fullscreen },
+    { "_NET_WM_STATE_ABOVE", &net_wm_state_above },
+    { "_NET_WM_STATE_BELOW", &net_wm_state_below },
+    { "_NET_WM_ALLOWED_ACTIONS", &net_wm_allowed_actions },
+    { "_NET_WM_ACTION_MOVE", &net_wm_action_move },
+    { "_NET_WM_ACTION_RESIZE", &net_wm_action_resize },
+    { "_NET_WM_ACTION_MINIMIZE", &net_wm_action_minimize },
+    { "_NET_WM_ACTION_SHADE", &net_wm_action_shade },
+    { "_NET_WM_ACTION_STICK", &net_wm_action_stick },
+    { "_NET_WM_ACTION_MAXIMIZE_HORZ", &net_wm_action_maximize_horz },
+    { "_NET_WM_ACTION_MAXIMIZE_VERT", &net_wm_action_maximize_vert },
+    { "_NET_WM_ACTION_FULLSCREEN", &net_wm_action_fullscreen },
+    { "_NET_WM_ACTION_CHANGE_DESKTOP", &net_wm_action_change_desktop },
+    { "_NET_WM_ACTION_CLOSE", &net_wm_action_close },
+    { "_NET_WM_STRUT", &net_wm_strut }
   };
-  Atom atoms_return[51];
-  XInternAtoms(display, atoms, 51, False, atoms_return);
 
-  utf8_string = atoms_return[0];
-  net_supported = atoms_return[1];
-  net_client_list = atoms_return[2];
-  net_client_list_stacking = atoms_return[3];
-  net_number_of_desktops = atoms_return[4];
-  net_desktop_geometry = atoms_return[5];
-  net_current_desktop = atoms_return[6];
-  net_desktop_names = atoms_return[7];
-  net_active_window = atoms_return[8];
-  net_workarea = atoms_return[9];
-  net_supporting_wm_check = atoms_return[10];
-  net_close_window = atoms_return[11];
-  net_moveresize_window = atoms_return[12];
-  net_wm_name = atoms_return[13];
-  net_wm_visible_name = atoms_return[14];
-  net_wm_icon_name = atoms_return[15];
-  net_wm_visible_icon_name = atoms_return[16];
-  net_wm_desktop = atoms_return[17];
-  net_wm_window_type = atoms_return[18];
-  net_wm_window_type_desktop = atoms_return[19];
-  net_wm_window_type_dock = atoms_return[20];
-  net_wm_window_type_toolbar = atoms_return[21];
-  net_wm_window_type_menu = atoms_return[22];
-  net_wm_window_type_utility = atoms_return[23];
-  net_wm_window_type_splash = atoms_return[24];
-  net_wm_window_type_dialog = atoms_return[25];
-  net_wm_window_type_normal = atoms_return[26];
-  net_wm_state = atoms_return[27];
-  net_wm_state_modal = atoms_return[28];
-  net_wm_state_sticky = atoms_return[29];
-  net_wm_state_maximized_vert = atoms_return[30];
-  net_wm_state_maximized_horz = atoms_return[31];
-  net_wm_state_shaded = atoms_return[32];
-  net_wm_state_skip_taskbar = atoms_return[33];
-  net_wm_state_skip_pager = atoms_return[34];
-  net_wm_state_hidden = atoms_return[35];
-  net_wm_state_fullscreen = atoms_return[36];
-  net_wm_state_above = atoms_return[37];
-  net_wm_state_below = atoms_return[38];
-  net_wm_allowed_actions = atoms_return[39];
-  net_wm_action_move = atoms_return[40];
-  net_wm_action_resize = atoms_return[41];
-  net_wm_action_minimize = atoms_return[42];
-  net_wm_action_shade = atoms_return[43];
-  net_wm_action_stick = atoms_return[44];
-  net_wm_action_maximize_horz = atoms_return[45];
-  net_wm_action_maximize_vert = atoms_return[46];
-  net_wm_action_fullscreen = atoms_return[47];
-  net_wm_action_change_desktop = atoms_return[48];
-  net_wm_action_close = atoms_return[49];
-  net_wm_strut = atoms_return[50];
+  char *names[AtomCount];
+  Atom atoms[AtomCount];
+
+  for (int i = 0; i < AtomCount; ++i)
+    names[i] = const_cast<char *>(refs[i].name);
+
+  XInternAtoms(display, names, AtomCount, False, atoms);
+
+  for (int i = 0; i < AtomCount; ++i)
+    *refs[i].atom = atoms[i];
 }
 
 
