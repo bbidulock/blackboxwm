@@ -83,7 +83,7 @@ private:
   void init_icccm(void);
 
   virtual void process_event(XEvent *e);
-
+  virtual bool process_signal(int sig);
 
 public:
   Blackbox(char **m_argv, const char *dpy_name, const std::string& rc,
@@ -125,8 +125,6 @@ public:
   void rereadMenu(void);
 
   bool validateWindow(Window window);
-
-  virtual bool handleSignal(int sig);
 
   virtual void timeout(bt::Timer *);
 

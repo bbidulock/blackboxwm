@@ -267,7 +267,7 @@ void Blackbox::process_event(XEvent *e) {
 }
 
 
-bool Blackbox::handleSignal(int sig) {
+bool Blackbox::process_signal(int sig) {
   switch (sig) {
   case SIGHUP:
     reconfigure();
@@ -281,18 +281,11 @@ bool Blackbox::handleSignal(int sig) {
     rereadMenu();
     break;
 
-  case SIGPIPE:
-  case SIGSEGV:
-  case SIGFPE:
-  case SIGINT:
-  case SIGTERM:
-    shutdown();
-
   default:
-    return False;
-  }
+    return bt::Application::process_signal(sig);
+  } // switch
 
-  return True;
+  return true;
 }
 
 
