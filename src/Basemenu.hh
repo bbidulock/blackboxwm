@@ -25,117 +25,118 @@
 
 #include "Widget.hh"
 
-#include <slist>
+#include <list>
+#include <string>
+using std::string;
 
-
-// new basemenu popup
 
 class Basemenu : public Widget
 {
 public:
-    enum Function { Submenu = -2, Custom = -1 };
+  enum Function { Submenu = -2, Custom = -1 };
 
-    class Item {
-    public:
-	enum Type { Default, Separator };
-	Item( Type t = Default )
-	    : def( t == Default ), sep( t == Separator ),
-	      active( false ), title( false ), enable( true ), checked( false ),
-	      sub( 0 ), fun( Custom ), idx( -1 ), height( 0 ) { }
-	Item( int f )
-	    : def( false ), sep( false ),
-	      active( false ), title( false ), enable( true ), checked( false ),
-	      sub( 0 ), fun( f ), idx( -1 ), height( 0 ) { }
-	Item( Basemenu *s )
-	    : def( false ), sep( false ),
-	      active( false ), title( false ), enable( true ), checked( false ),
-	      sub( s ), fun( Submenu ), idx( -1 ), height( 0 ) { }
+  class Item {
+  public:
+    enum Type { Default, Separator };
+    Item( Type t = Default )
+      : def( t == Default ), sep( t == Separator ),
+        active( false ), title( false ), enable( true ), checked( false ),
+        sub( 0 ), fun( Custom ), idx( -1 ), height( 0 ) { }
+    Item( int f )
+      : def( false ), sep( false ),
+        active( false ), title( false ), enable( true ), checked( false ),
+        sub( 0 ), fun( f ), idx( -1 ), height( 0 ) { }
+    Item( Basemenu *s )
+      : def( false ), sep( false ),
+        active( false ), title( false ), enable( true ), checked( false ),
+        sub( s ), fun( Submenu ), idx( -1 ), height( 0 ) { }
 
-	bool isDefault() const { return def; }
-	bool isSeparator() const { return sep; }
-	bool isTitle() const { return title; }
-	bool isActive() const { return active; }
-      	bool isEnabled() const { return enable; }
-	bool isChecked() const { return checked; }
-	const string &label() const { return lbl; }
-	int function() const { return fun; }
-	Basemenu *submenu() const { return sub; }
-	int index() const { return idx; }
+    bool isDefault() const { return def; }
+    bool isSeparator() const { return sep; }
+    bool isTitle() const { return title; }
+    bool isActive() const { return active; }
+    bool isEnabled() const { return enable; }
+    bool isChecked() const { return checked; }
+    const string &label() const { return lbl; }
+    int function() const { return fun; }
+    Basemenu *submenu() const { return sub; }
+    int index() const { return idx; }
 
-    private:
-	unsigned int     def : 1;
-	unsigned int     sep : 1;
-	unsigned int  active : 1;
-	unsigned int   title : 1;
-	unsigned int  enable : 1;
-	unsigned int checked : 1;
-	Basemenu *sub;
-	int fun;
-	int idx;
-	int height;
-	string lbl;
+  private:
+    unsigned int     def : 1;
+    unsigned int     sep : 1;
+    unsigned int  active : 1;
+    unsigned int   title : 1;
+    unsigned int  enable : 1;
+    unsigned int checked : 1;
+    Basemenu *sub;
+    int fun;
+    int idx;
+    int height;
+    string lbl;
 
-	friend class Basemenu;
-    };
+    friend class Basemenu;
+  };
 
-    Basemenu( int scr );
-    virtual ~Basemenu();
+  Basemenu( int scr );
+  virtual ~Basemenu();
 
-    int insert( const string &label, const Item &item = Item::Default, int index = -1 );
-    int insertSeparator() { return insert( string(), Item::Separator ); }
-    void change( int index, const string &label, const Item &item = Item::Default );
-    void remove( int index );
+  int insert( const string &label, const Item &item = Item::Default, int index = -1 );
+  int insertSeparator() { return insert( string(), Item::Separator ); }
+  void change( int index, const string &label, const Item &item = Item::Default );
+  void remove( int index );
 
-    int count() const { return items.size(); }
+  int count() const { return items.size(); }
 
-    void setItemEnabled( int, bool );
-    bool isItemEnabled( int ) const;
+  void setItemEnabled( int, bool );
+  bool isItemEnabled( int ) const;
 
-    void setItemChecked( int, bool );
-    bool isItemChecked( int ) const;
+  void setItemChecked( int, bool );
+  bool isItemChecked( int ) const;
 
-    void showTitle();
-    void hideTitle();
+  void showTitle();
+  void hideTitle();
 
-    virtual void popup( int, int, bool = true );
-    virtual void popup( const Point &, bool = true );
-    virtual void hide();
+  virtual void popup( int, int, bool = true );
+  virtual void popup( const Point &, bool = true );
+  virtual void hide();
 
-    virtual void reconfigure();
+  virtual void reconfigure();
 
 protected:
-    virtual void setActiveItem( const Rect &, Item & );
-    virtual void showSubmenu( const Rect &, const Item & );
-    virtual void updateSize();
+  virtual void setActiveItem( const Rect &, Item & );
+  virtual void showSubmenu( const Rect &, const Item & );
+  virtual void updateSize();
 
-    virtual void buttonPressEvent( XEvent * );
-    virtual void buttonReleaseEvent( XEvent * );
-    virtual void pointerMotionEvent( XEvent * );
-    virtual void leaveEvent( XEvent * );
-    virtual void exposeEvent( XEvent *);
+  virtual void buttonPressEvent( XEvent * );
+  virtual void buttonReleaseEvent( XEvent * );
+  virtual void pointerMotionEvent( XEvent * );
+  virtual void leaveEvent( XEvent * );
+  virtual void exposeEvent( XEvent *);
 
-    virtual void titleClicked( const Point &, int );
-    virtual void itemClicked( const Point &, const Item &, int );
+  virtual void titleClicked( const Point &, int );
+  virtual void itemClicked( const Point &, const Item &, int );
 
-    virtual void hideAll();
+  virtual void hideAll();
 
 private:
-    void drawTitle();
-    void drawItem( const Rect &, const Item & );
+  void drawTitle();
+  void drawItem( const Rect &, const Item & );
 
-    Pixmap title_pixmap, items_pixmap, highlight_pixmap;
-    Rect title_rect;
-    Rect items_rect;
-    slist<Item> items;
-    Basemenu *parent_menu, *current_submenu;
-    int motion;
-    int rows, cols;
-    int itemw;
-    int indent;
-    bool show_title;
-    bool size_dirty;
-    bool pressed;
-    bool title_pressed;
+  Pixmap title_pixmap, items_pixmap, highlight_pixmap;
+  Rect title_rect;
+  Rect items_rect;
+  typedef std::list<Item> Items;
+  Items items;
+  Basemenu *parent_menu, *current_submenu;
+  int motion;
+  int rows, cols;
+  int itemw;
+  int indent;
+  bool show_title;
+  bool size_dirty;
+  bool pressed;
+  bool title_pressed;
 };
 
 #endif // __Basemenu_hh

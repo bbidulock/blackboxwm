@@ -29,7 +29,7 @@
 
 #include <stdio.h>
 
-hash_map<BColor::rgb,BColor::pixelref> BColor::colorcache;
+BColor::ColorCache BColor::colorcache;
 bool BColor::cleancache = false;
 
 
@@ -127,7 +127,7 @@ void BColor::allocate()
     }
 
     // see if we have allocated this color before
-    hash_map<rgb,pixelref>::iterator it = colorcache.find( rgb( r, g, b, scrn ) );
+    ColorCache::iterator it = colorcache.find( rgb( r, g, b, scrn ) );
     if ( it != colorcache.end() ) {
 	// found
 	allocated = true;
@@ -152,7 +152,7 @@ void BColor::allocate()
     p = xcol.pixel;
     allocated = true;
 
-    pair<rgb,pixelref> pr( rgb( r, g, b, scrn ), pixelref( p ) );
+    std::pair<rgb,pixelref> pr( rgb( r, g, b, scrn ), pixelref( p ) );
     colorcache.insert( pr );
 
     if ( cleancache )
@@ -164,7 +164,7 @@ void BColor::deallocate()
     if ( ! allocated )
 	return;
 
-    hash_map<rgb,pixelref>::iterator it = colorcache.find( rgb( r, g, b, scrn ) );
+    ColorCache::iterator it = colorcache.find( rgb( r, g, b, scrn ) );
     if ( it != colorcache.end() )
 	if ( (*it).second.count < 1 )
 	    (*it).second.count = 0;
@@ -201,7 +201,7 @@ void BColor::doCacheCleanup()
 
     for ( i = 0; i < display->getNumberOfScreens(); i++ ) {
 	count = 0;
-	hash_map<rgb,pixelref>::iterator it = colorcache.begin();
+	ColorCache::iterator it = colorcache.begin();
 	while ( it != colorcache.end() ) {
 	    if ( (*it).second.count != 0 || (*it).first.screen != i ) {
 		it++;
@@ -209,7 +209,7 @@ void BColor::doCacheCleanup()
 	    }
 
 	    pixels[ count++ ] = (*it).second.p;
-	    hash_map<rgb,pixelref>::iterator it2 = it;
+	    ColorCache::iterator it2 = it;
 	    it++;
 	    colorcache.erase( it2 );
 	}

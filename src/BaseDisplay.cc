@@ -130,54 +130,54 @@ RETSIGTYPE
 void
 #endif // HAVE_SIGACTION
 signalhandler(int sig) {
-    static int re_enter = 0;
+  static int re_enter = 0;
 
-    switch (sig) {
-    case SIGCHLD:
-	int status;
-	waitpid(-1, &status, WNOHANG | WUNTRACED);
-
-#ifndef   HAVE_SIGACTION
-	// assume broken, braindead sysv signal semantics
-	signal(SIGCHLD, (RETSIGTYPE (*)(int)) signalhandler);
-#endif // HAVE_SIGACTION
-
-	break;
-
-    default:
-	if (base_display->handleSignal(sig)) {
+  switch (sig) {
+  case SIGCHLD:
+    int status;
+    waitpid(-1, &status, WNOHANG | WUNTRACED);
 
 #ifndef   HAVE_SIGACTION
-	    // assume broken, braindead sysv signal semantics
-	    signal(sig, (RETSIGTYPE (*)(int)) signalhandler);
+    // assume broken, braindead sysv signal semantics
+    signal(SIGCHLD, (RETSIGTYPE (*)(int)) signalhandler);
 #endif // HAVE_SIGACTION
 
-	    return;
-	}
+    break;
 
-	fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplaySignalCaught,
-					 "%s:  signal %d caught\n"),
-		base_display->getApplicationName(), sig);
+  default:
+    if (base_display->handleSignal(sig)) {
 
-	if (! base_display->isStartup() && ! re_enter) {
-	    internal_error = True;
+#ifndef   HAVE_SIGACTION
+      // assume broken, braindead sysv signal semantics
+      signal(sig, (RETSIGTYPE (*)(int)) signalhandler);
+#endif // HAVE_SIGACTION
 
-	    re_enter = 1;
-	    fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplayShuttingDown,
-					     "shutting down\n"));
-	    base_display->shutdown();
-	}
-
-	if (sig != SIGTERM && sig != SIGINT) {
-	    fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplayAborting,
-					     "aborting... dumping core\n"));
-	    abort();
-	}
-
-	exit(0);
-
-	break;
+      return;
     }
+
+    fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplaySignalCaught,
+                                     "%s:  signal %d caught\n"),
+            base_display->getApplicationName(), sig);
+
+    if (! base_display->isStartup() && ! re_enter) {
+      internal_error = True;
+
+      re_enter = 1;
+      fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplayShuttingDown,
+                                       "shutting down\n"));
+      base_display->shutdown();
+    }
+
+    if (sig != SIGTERM && sig != SIGINT) {
+      fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplayAborting,
+                                       "aborting... dumping core\n"));
+      abort();
+    }
+
+    exit(0);
+
+    break;
+  }
 }
 
 
@@ -241,13 +241,13 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name)
 
   if (! (_display = XOpenDisplay(dpy_name))) {
     fprintf(stderr, i18n->getMessage(BaseDisplaySet, BaseDisplayXConnectFail,
-	       "BaseDisplay::BaseDisplay: connection to X server failed.\n"));
+                                     "BaseDisplay::BaseDisplay: connection to X server failed.\n"));
     ::exit(2);
   } else if (fcntl(ConnectionNumber(_display), F_SETFD, 1) == -1) {
     fprintf(stderr,
 	    i18n->getMessage(BaseDisplaySet, BaseDisplayCloseOnExecFail,
-	       "BaseDisplay::BaseDisplay: couldn't mark display connection "
-	       "as close-on-exec\n"));
+                             "BaseDisplay::BaseDisplay: couldn't mark display connection "
+                             "as close-on-exec\n"));
     ::exit(2);
   }
 
@@ -358,7 +358,7 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name)
       Mod2Mask, Mod3Mask, Mod4Mask, Mod5Mask
     };
     const size_t size = (sizeof(mask_table) / sizeof(mask_table[0])) *
-      modmap->max_keypermod;
+                        modmap->max_keypermod;
     // get the values of the keyboard lock modifiers
     // Note: Caps lock is not retrieved the same way as Scroll and Num lock
     // since it doesn't need to be.
@@ -410,10 +410,11 @@ BaseDisplay::~BaseDisplay(void) {
 
 BaseDisplay *BaseDisplay::instance()
 {
-    return ::base_display;
+  return ::base_display;
 }
 
-void BaseDisplay::eventLoop(void) {
+void BaseDisplay::eventLoop(void)
+{
   run();
 
   int xfd = ConnectionNumber(_display);
@@ -425,10 +426,10 @@ void BaseDisplay::eventLoop(void) {
 
       if (last_bad_window != None && e.xany.window == last_bad_window) {
 #ifdef    DEBUG
-      fprintf(stderr, i18n->getMessage(BaseDisplaySet,
-				       BaseDisplayBadWindowRemove,
-			 "BaseDisplay::eventLoop(): removing bad window "
-			 "from event queue\n"));
+        fprintf(stderr, i18n->getMessage(BaseDisplaySet,
+                                         BaseDisplayBadWindowRemove,
+                                         "BaseDisplay::eventLoop(): removing bad window "
+                                         "from event queue\n"));
 #endif // DEBUG
       } else {
 	last_bad_window = None;
@@ -449,9 +450,9 @@ void BaseDisplay::eventLoop(void) {
         BTimer *timer = timerList->first();
 
         tm.tv_sec = timer->getStartTime().tv_sec +
-          timer->getTimeout().tv_sec - now.tv_sec;
+                    timer->getTimeout().tv_sec - now.tv_sec;
         tm.tv_usec = timer->getStartTime().tv_usec +
-          timer->getTimeout().tv_usec - now.tv_usec;
+                     timer->getTimeout().tv_usec - now.tv_usec;
 
         while (tm.tv_usec >= 1000000) {
           tm.tv_sec++;
@@ -479,9 +480,9 @@ void BaseDisplay::eventLoop(void) {
       LinkedListIterator<BTimer> it(timerList);
       for(BTimer *timer = it.current(); timer; it++, timer = it.current()) {
         tm.tv_sec = timer->getStartTime().tv_sec +
-          timer->getTimeout().tv_sec;
+                    timer->getTimeout().tv_sec;
         tm.tv_usec = timer->getStartTime().tv_usec +
-          timer->getTimeout().tv_usec;
+                     timer->getTimeout().tv_usec;
 
         if ((now.tv_sec < tm.tv_sec) ||
             (now.tv_sec == tm.tv_sec && now.tv_usec < tm.tv_usec))
@@ -501,201 +502,202 @@ void BaseDisplay::eventLoop(void) {
 
 void BaseDisplay::popup( Widget *widget )
 {
-    popwidgets.push_front( widget );
-    popwidget = widget;
-    // grab the mouse and keyboard for popup handling
-    if ( ! popup_grab && popwidget->grabKeyboard() &&  popwidget->grabMouse() )
-	XAllowEvents( *this, SyncPointer, CurrentTime );
-    popup_grab = true;
+  popwidgets.push_front( widget );
+  popwidget = widget;
+  // grab the mouse and keyboard for popup handling
+  if ( ! popup_grab && popwidget->grabKeyboard() &&  popwidget->grabMouse() )
+    XAllowEvents( *this, SyncPointer, CurrentTime );
+  popup_grab = true;
 }
 
 void BaseDisplay::popdown( Widget *widget )
 {
-    if ( ! popwidget )
-	return;
+  if ( ! popwidget )
+    return;
 
-    if ( widget != popwidget ) {
-	fprintf( stderr, "BaseDisplay: widget %p not popwidget\n", widget );
-	abort();
-    }
+  if ( widget != popwidget ) {
+    fprintf( stderr, "BaseDisplay: widget %p not popwidget\n", widget );
+    abort();
+  }
 
-    popwidgets.pop_front();
+  popwidgets.pop_front();
 
-    if ( popwidgets.size() == 0 ) {
-	// no more popups
-	popwidget->ungrabKeyboard();
-	popwidget->ungrabMouse();
-	popwidget = 0;
-	popup_grab = false;
-	XAllowEvents( *this, ReplayPointer, CurrentTime );
-	XSync( *this, False );
-	return;
-    }
+  if ( popwidgets.size() == 0 ) {
+    // no more popups
+    popwidget->ungrabKeyboard();
+    popwidget->ungrabMouse();
+    popwidget = 0;
+    popup_grab = false;
+    XAllowEvents( *this, ReplayPointer, CurrentTime );
+    XSync( *this, False );
+    return;
+  }
 
-    // more popups!
-    popwidget = *popwidgets.begin();
+  // more popups!
+  popwidget = *popwidgets.begin();
 }
 
 void BaseDisplay::process_event( XEvent *e )
 {
-    Widget *widget = 0;
+  Widget *widget = 0;
 
-    hash_map<Window,Widget*>::iterator it = Widget::mapper.find( e->xany.window );
-    if ( it != Widget::mapper.end() )
-	widget = (*it).second;
+  Mapper::iterator it = Widget::mapper.find( e->xany.window );
+  if ( it != Widget::mapper.end() )
+    widget = (*it).second;
 
-    if ( ! widget ) {
-	// unknown window
-	if ( popwidget ) {
-	    // close all popups
-	    switch( e->type ) {
-	    case ButtonPress:
-	    case ButtonRelease:
-	    case KeyPress:
-	    case KeyRelease:
-		do {
-		    popwidget->hide();
-		} while ( popwidget );
-		return;
+  if ( ! widget ) {
+    // unknown window
+    if ( popwidget ) {
+      // close all popups
+      switch( e->type ) {
+      case ButtonPress:
+      case ButtonRelease:
+      case KeyPress:
+      case KeyRelease:
+        do {
+          popwidget->hide();
+        } while ( popwidget );
+        return;
 
-	    default:
-		break;
-	    }
-	}
-	return;
+      default:
+        break;
+      }
     }
+    return;
+  }
 
 #define CHECKMOUSEPOPUP() \
     { \
-	if ( popup_grab ) { \
-            if ( popwidget != widget ) { \
-                if ( widget->type() != Widget::Popup || \
-		     ! widget->rect().contains( Point( e->xbutton.x_root, \
-						       e->xbutton.y_root ) ) ) \
-                    widget = popwidget; \
-	    } \
-	    XAllowEvents( *this, SyncPointer, CurrentTime ); \
+      if ( popup_grab ) { \
+        if ( popwidget != widget ) { \
+          if ( widget->type() != Widget::Popup || \
+               ! widget->rect().contains( Point( e->xbutton.x_root, \
+						 e->xbutton.y_root ) ) ) \
+            widget = popwidget; \
 	} \
+	XAllowEvents( *this, SyncPointer, CurrentTime ); \
+      } \
     }
 
-    switch ( e->type ) {
-    case ButtonPress:
-	CHECKMOUSEPOPUP();
-	widget->buttonPressEvent( e );
-	break;
+  switch ( e->type ) {
+  case ButtonPress:
+    CHECKMOUSEPOPUP();
+    widget->buttonPressEvent( e );
+    break;
 
-    case ButtonRelease:
-	CHECKMOUSEPOPUP();
-	widget->buttonReleaseEvent( e );
-	break;
+  case ButtonRelease:
+    CHECKMOUSEPOPUP();
+    widget->buttonReleaseEvent( e );
+    break;
 
-    case MotionNotify:
-	{
-	    XEvent realevent;
-	    unsigned int i = 0;
-	    while( XCheckTypedWindowEvent( *this, e->xmotion.window, MotionNotify,
-					   &realevent ) )
-		i++;
-	    if ( i > 0 )
-		e = &realevent;
-	    CHECKMOUSEPOPUP();
-	    widget->pointerMotionEvent( e );
-	    break;
-	}
-
-    case EnterNotify:
-	if ( e->xcrossing.mode != NotifyNormal ||
-	     e->xcrossing.detail == NotifyVirtual  ||
-	     e->xcrossing.detail == NotifyNonlinearVirtual )
-	    break;
-	widget->enterEvent( e );
-	break;
-
-    case LeaveNotify:
-	if ( e->xcrossing.mode != NotifyNormal )
-	    break;
-	widget->leaveEvent( e );
-	break;
-
-    case KeyPress:
-	if ( popup_grab )
-	    XAllowEvents( *this, SyncKeyboard, CurrentTime );
-	widget->keyPressEvent( e );
-	break;
-
-    case KeyRelease:
-	if ( popup_grab )
-	    XAllowEvents( *this, SyncKeyboard, CurrentTime );
-	widget->keyReleaseEvent( e );
-	break;
-
-    case ConfigureNotify:
-	{
-	    XEvent realevent;
-	    unsigned int i = 0;
-	    while( XCheckTypedWindowEvent(*this, e->xconfigure.window, ConfigureNotify,
-					  &realevent ) )
-		i++;
-	    if ( i > 0 )
-		e = &realevent;
-	    widget->configureEvent( e );
-	    break;
-	}
-
-    case MapNotify:
-	widget->mapEvent( e );
-	break;
-
-    case UnmapNotify:
-	widget->unmapEvent( e );
-	break;
-
-    case FocusIn:
-	if ( e->xfocus.detail != NotifyAncestor &&
-	     e->xfocus.detail != NotifyInferior &&
-	     e->xfocus.detail != NotifyNonlinear )
-	    break;
-	widget->focusInEvent( e );
-	break;
-
-    case FocusOut:
-	if ( e->xfocus.detail != NotifyAncestor &&
-	     e->xfocus.detail != NotifyInferior &&
-	     e->xfocus.detail != NotifyNonlinear )
-	    break;
-	widget->focusOutEvent( e );
-	break;
-
-    case Expose:
-	{
-	    // compress expose events
-	    XEvent realevent;
-	    unsigned int i = 0;
-	    Rect r( e->xexpose.x, e->xexpose.y, e->xexpose.width, e->xexpose.height );
-	    while ( XCheckTypedWindowEvent( *this, e->xexpose.window,
-					    Expose, &realevent ) ) {
-		i++;
-		// merge expose area
-		r |= Rect( realevent.xexpose.x, realevent.xexpose.y,
-			   realevent.xexpose.width, realevent.xexpose.height );
-	    }
-	    if ( i > 0 )
-		e = &realevent;
-	    // use the merged area
-	    e->xexpose.x = r.x();
-	    e->xexpose.y = r.y();
-	    e->xexpose.width = r.width();
-	    e->xexpose.height = r.height();
-	    widget->exposeEvent( e );
-	    break;
-	}
-
-    default:
-	break;
+  case MotionNotify:
+    {
+      XEvent realevent;
+      unsigned int i = 0;
+      while( XCheckTypedWindowEvent( *this, e->xmotion.window, MotionNotify,
+                                     &realevent ) )
+        i++;
+      if ( i > 0 )
+        e = &realevent;
+      CHECKMOUSEPOPUP();
+      widget->pointerMotionEvent( e );
+      break;
     }
+
+  case EnterNotify:
+    if ( e->xcrossing.mode != NotifyNormal ||
+         e->xcrossing.detail == NotifyVirtual  ||
+         e->xcrossing.detail == NotifyNonlinearVirtual )
+      break;
+    widget->enterEvent( e );
+    break;
+
+  case LeaveNotify:
+    if ( e->xcrossing.mode != NotifyNormal )
+      break;
+    widget->leaveEvent( e );
+    break;
+
+  case KeyPress:
+    if ( popup_grab )
+      XAllowEvents( *this, SyncKeyboard, CurrentTime );
+    widget->keyPressEvent( e );
+    break;
+
+  case KeyRelease:
+    if ( popup_grab )
+      XAllowEvents( *this, SyncKeyboard, CurrentTime );
+    widget->keyReleaseEvent( e );
+    break;
+
+  case ConfigureNotify:
+    {
+      XEvent realevent;
+      unsigned int i = 0;
+      while( XCheckTypedWindowEvent(*this, e->xconfigure.window, ConfigureNotify,
+                                    &realevent ) )
+        i++;
+      if ( i > 0 )
+        e = &realevent;
+      widget->configureEvent( e );
+      break;
+    }
+
+  case MapNotify:
+    widget->mapEvent( e );
+    break;
+
+  case UnmapNotify:
+    widget->unmapEvent( e );
+    break;
+
+  case FocusIn:
+    if ( e->xfocus.detail != NotifyAncestor &&
+         e->xfocus.detail != NotifyInferior &&
+         e->xfocus.detail != NotifyNonlinear )
+      break;
+    widget->focusInEvent( e );
+    break;
+
+  case FocusOut:
+    if ( e->xfocus.detail != NotifyAncestor &&
+         e->xfocus.detail != NotifyInferior &&
+         e->xfocus.detail != NotifyNonlinear )
+      break;
+    widget->focusOutEvent( e );
+    break;
+
+  case Expose:
+    {
+      // compress expose events
+      XEvent realevent;
+      unsigned int i = 0;
+      Rect r( e->xexpose.x, e->xexpose.y, e->xexpose.width, e->xexpose.height );
+      while ( XCheckTypedWindowEvent( *this, e->xexpose.window,
+                                      Expose, &realevent ) ) {
+        i++;
+        // merge expose area
+        r |= Rect( realevent.xexpose.x, realevent.xexpose.y,
+                   realevent.xexpose.width, realevent.xexpose.height );
+      }
+      if ( i > 0 )
+        e = &realevent;
+      // use the merged area
+      e->xexpose.x = r.x();
+      e->xexpose.y = r.y();
+      e->xexpose.width = r.width();
+      e->xexpose.height = r.height();
+      widget->exposeEvent( e );
+      break;
+    }
+
+  default:
+    break;
+  }
 }
 
-const Bool BaseDisplay::validateWindow(Window window) {
+const Bool BaseDisplay::validateWindow(Window window)
+{
   XEvent event;
   if (XCheckTypedWindowEvent(_display, window, DestroyNotify, &event)) {
     XPutBackEvent(_display, &event);
@@ -707,7 +709,8 @@ const Bool BaseDisplay::validateWindow(Window window) {
 }
 
 
-void BaseDisplay::addTimer(BTimer *timer) {
+void BaseDisplay::addTimer(BTimer *timer)
+{
   if (! timer) return;
 
   LinkedListIterator<BTimer> it(timerList);

@@ -8,39 +8,39 @@
 
 #include <stdio.h>
 
-hash_map<Window,Widget*> Widget::mapper;
+Mapper Widget::mapper;
 
 
 Widget::Widget( int s, Type t )
-    : _parent( 0 ), _type( t ),
-      visible( false ), focused( false ),
-      grabbedMouse( false ) , grabbedKeyboard( false ),
-      _screen( s )
+  : _parent( 0 ), _type( t ),
+    visible( false ), focused( false ),
+    grabbedMouse( false ) , grabbedKeyboard( false ),
+    _screen( s )
 {
-    create();
+  create();
 }
 
 Widget::Widget( Widget *p )
-    : _parent( p ), _type( Normal ),
-      visible( false ), focused( false ),
-      grabbedMouse( false ) , grabbedKeyboard( false ),
-     _screen( p->screen() )
+  : _parent( p ), _type( Normal ),
+    visible( false ), focused( false ),
+    grabbedMouse( false ) , grabbedKeyboard( false ),
+    _screen( p->screen() )
 {
-    create();
-    parent()->insertChild( this );
+  create();
+  parent()->insertChild( this );
 }
 
 Widget::~Widget()
 {
-    if ( isVisible() )
-	hide();
-    // delete children
-    while ( _children.first() )
-	delete _children.first();
-    if ( parent() )
-	parent()->removeChild( this );
-    mapper.erase( win );
-    XDestroyWindow( *BaseDisplay::instance(), win );
+  if ( isVisible() )
+    hide();
+  // delete children
+  while ( _children.first() )
+    delete _children.first();
+  if ( parent() )
+    parent()->removeChild( this );
+  mapper.erase( win );
+  XDestroyWindow( *BaseDisplay::instance(), win );
 }
 
 void Widget::create()
@@ -91,7 +91,7 @@ void Widget::create()
 
     setTitle( "Untitled" );
 
-    mapper.insert( pair<Window,Widget*>( win, this ) );
+    mapper.insert( std::pair<Window,Widget*>( win, this ) );
 }
 
 void Widget::insertChild( Widget *child )

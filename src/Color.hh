@@ -24,95 +24,98 @@
 #define COLOR_HH
 
 #include <X11/Xlib.h>
+
+#include <map>
 #include <string>
-#include <hash_map>
+using std::string;
 
 
 class BColor {
 public:
-    BColor( int scr = -1 );
-    BColor( int rr, int gg, int bb, int scr = -1 );
-    BColor( const string &name, int scr = -1 );
-    ~BColor();
+  BColor( int scr = -1 );
+  BColor( int rr, int gg, int bb, int scr = -1 );
+  BColor( const string &name, int scr = -1 );
+  ~BColor();
 
-    const string &name() const { return colorname; }
+  const string &name() const { return colorname; }
 
-    int   red(void) const { return r; }
-    int green(void) const { return g; }
-    int  blue(void) const { return b; }
-    void setRGB( int rr, int gg, int bb )
-    {
-	deallocate();
-	r = rr;
-	g = gg;
-	b = bb;
-    }
+  int   red(void) const { return r; }
+  int green(void) const { return g; }
+  int  blue(void) const { return b; }
+  void setRGB( int rr, int gg, int bb )
+  {
+    deallocate();
+    r = rr;
+    g = gg;
+    b = bb;
+  }
 
-    int screen() const { return scrn; }
-    void setScreen( int scr );
+  int screen() const { return scrn; }
+  void setScreen( int scr );
 
-    bool isAllocated(void) const { return allocated; }
+  bool isAllocated(void) const { return allocated; }
 
-    bool isValid() const
-    {
-	return r != -1 && g != -1 && b != -1;
-    }
+  bool isValid() const
+  {
+    return r != -1 && g != -1 && b != -1;
+  }
 
-    unsigned long pixel(void) const;
+  unsigned long pixel(void) const;
 
-    const GC &gc() const;
+  const GC &gc() const;
 
-    // operators
-    BColor &operator=( const BColor &c );
-    bool operator==( const BColor &c ) const
-    {
-	return ( r == c.r && b == c.b && b == c.b );
-    }
-    bool operator!=( const BColor &c ) const
-    {
-	return ( ! operator==( c ) );
-    }
+  // operators
+  BColor &operator=( const BColor &c );
+  bool operator==( const BColor &c ) const
+  {
+    return ( r == c.r && b == c.b && b == c.b );
+  }
+  bool operator!=( const BColor &c ) const
+  {
+    return ( ! operator==( c ) );
+  }
 
-    static void cleanupColorCache();
+  static void cleanupColorCache();
 
 private:
-    void parseColorName();
-    void allocate();
-    void deallocate();
+  void parseColorName();
+  void allocate();
+  void deallocate();
 
-    bool allocated;
-    int r, g, b;
-    unsigned long p;
-    int scrn;
-    string colorname;
+  bool allocated;
+  int r, g, b;
+  unsigned long p;
+  int scrn;
+  string colorname;
 
-    // global color allocator/deallocator
-    struct rgb {
-	int r, g, b, screen;
-	rgb() : r( -1 ), g( -1 ), b( -1 ), screen( -1 ) { }
-	rgb( int x, int y, int z, int q ) : r( x ), g( y ), b( z ), screen( q ) { }
-	rgb( const rgb &x ) : r( x.r ), g( x.g ), b( x.b ), screen( x.screen ) { }
-	bool operator==( const rgb &x ) const
-	{
-	    return r == x.r && g == x.g && b == x.b && screen == x.screen;
-	}
-    };
-    struct hash<rgb>
+  // global color allocator/deallocator
+  struct rgb {
+    int r, g, b, screen;
+    rgb() : r( -1 ), g( -1 ), b( -1 ), screen( -1 ) { }
+    rgb( int x, int y, int z, int q ) : r( x ), g( y ), b( z ), screen( q ) { }
+    rgb( const rgb &x ) : r( x.r ), g( x.g ), b( x.b ), screen( x.screen ) { }
+    bool operator==( const rgb &x ) const
     {
-	size_t operator()( const rgb &x ) const
-	{
-	    return  x.screen << 24 | x.r << 16 | x.g << 8 | x.b;
-	}
-    };
-    struct pixelref {
-	unsigned long p;
-	int count;
-	pixelref() : p( 0 ), count( 0 ) { }
-	pixelref( unsigned long x ) : p( x ), count( 1 ) { }
-    };
-    static hash_map<rgb,pixelref> colorcache;
-    static bool cleancache;
-    static void doCacheCleanup();
+      return r == x.r && g == x.g && b == x.b && screen == x.screen;
+    }
+    bool operator<( const rgb &x ) const
+    {
+      unsigned long p1, p2;
+      p1 = ( r << 16 | g << 8 | b ) & 0x00ffffff;
+      p2 = ( x.r << 16 | x.g << 8 | x.b) & 0x00ffffff;
+      return p1 < p2;
+    }
+  };
+  struct pixelref {
+    unsigned long p;
+    int count;
+    pixelref() : p( 0 ), count( 0 ) { }
+    pixelref( unsigned long x ) : p( x ), count( 1 ) { }
+  };
+  typedef std::map<rgb,pixelref> ColorCache;
+  static ColorCache colorcache;
+  static bool cleancache;
+  static void doCacheCleanup();
 };
 
 #endif // COLOR_HH
