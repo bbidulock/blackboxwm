@@ -35,7 +35,6 @@
 #include <PixmapCache.hh>
 
 #include <X11/Xutil.h>
-#include <X11/keysym.h>
 #include <sys/time.h>
 #include <assert.h>
 
@@ -68,7 +67,6 @@ Toolbar::Toolbar(BScreen *scrn) {
            : StackingList::LayerNormal);
   hidden = res.doToolbarAutoHide();
 
-  editing = False;
   new_name_pos = 0;
 
   display = blackbox->XDisplay();
@@ -86,8 +84,8 @@ Toolbar::Toolbar(BScreen *scrn) {
                   create_mask, &attrib);
   blackbox->insertEventHandler(frame.window, this);
 
-  attrib.event_mask = ButtonPressMask | ButtonReleaseMask | ExposureMask |
-                      KeyPressMask | EnterWindowMask;
+  attrib.event_mask =
+    ButtonPressMask | ButtonReleaseMask | ExposureMask | EnterWindowMask;
 
   frame.workspace_label =
     XCreateWindow(display, frame.window, 0, 0, 1, 1, 0,
@@ -574,43 +572,6 @@ void Toolbar::redrawNextWindowButton(bool pressed) {
 }
 
 
-void Toolbar::edit(void) {
-  Window window;
-  int foo;
-
-  editing = True;
-  XGetInputFocus(display, &window, &foo);
-  if (window == frame.workspace_label)
-    return;
-
-  XSetInputFocus(display, frame.workspace_label,
-                 RevertToPointerRoot, CurrentTime);
-  XClearWindow(display, frame.workspace_label);
-
-  blackbox->setNoFocus(True);
-  if (blackbox->getFocusedWindow())
-    blackbox->getFocusedWindow()->setFocused(false);
-
-  const ScreenResource::ToolbarStyle* const style =
-    _screen->resource().toolbarStyle();
-  bt::Pen pen(_screen->screenNumber(), style->slabel_text);
-  XDrawRectangle(pen.XDisplay(), frame.workspace_label, pen.gc(),
-                 frame.slabel_rect.width() / 2, 0, 1,
-                 style->label_height - 1);
-  // change the background of the window to that of an active window label
-  bt::Texture texture = _screen->resource().windowStyle()->focus.label;
-  frame.slabel = bt::PixmapCache::find(_screen->screenNumber(), texture,
-                                       frame.slabel_rect.width(),
-                                       frame.slabel_rect.height(),
-                                       frame.slabel);
-  if (! frame.slabel)
-    XSetWindowBackground(display, frame.workspace_label,
-                         texture.color().pixel(_screen->screenNumber()));
-  else
-    XSetWindowBackgroundPixmap(display, frame.workspace_label, frame.slabel);
-}
-
-
 void Toolbar::buttonPressEvent(const XButtonEvent * const event) {
   if (event->button == 1) {
     _screen->raiseWindow(this);
@@ -710,8 +671,7 @@ void Toolbar::leaveNotifyEvent(const XCrossingEvent * const /*unused*/) {
 
 void Toolbar::exposeEvent(const XExposeEvent * const event) {
   if (event->window == frame.clock) redrawClockLabel();
-  else if (event->window == frame.workspace_label && (! editing))
-    redrawWorkspaceLabel();
+  else if (event->window == frame.workspace_label) redrawWorkspaceLabel();
   else if (event->window == frame.window_label) redrawWindowLabel();
   else if (event->window == frame.psbutton) redrawPrevWorkspaceButton();
   else if (event->window == frame.nsbutton) redrawNextWorkspaceButton();
@@ -723,91 +683,6 @@ void Toolbar::exposeEvent(const XExposeEvent * const event) {
     bt::drawTexture(_screen->screenNumber(),
                     _screen->resource().toolbarStyle()->toolbar,
                     frame.window, t, r & t, frame.base);
-  }
-}
-
-
-void Toolbar::keyPressEvent(const XKeyEvent * const event) {
-  if (event->window == frame.workspace_label && editing) {
-    if (new_workspace_name.empty())
-      new_name_pos = 0;
-
-    const ScreenResource::ToolbarStyle* const style =
-      _screen->resource().toolbarStyle();
-
-    KeySym ks;
-    char keychar[1];
-    XLookupString(const_cast<XKeyEvent*>(event), keychar, 1, &ks, 0);
-
-    // either we are told to end with a return or we hit 127 chars
-    if (ks == XK_Return || new_name_pos == 127) {
-      editing = False;
-
-      blackbox->setNoFocus(False);
-      if (blackbox->getFocusedWindow())
-        blackbox->getFocusedWindow()->setInputFocus();
-      else
-        blackbox->setFocusedWindow(0);
-
-      _screen->resource().saveWorkspaceName(_screen->currentWorkspace(),
-                                           new_workspace_name);
-
-      _screen->getWorkspacemenu()->
-        changeItem(_screen->currentWorkspace(),
-                   _screen->resource().
-                   nameOfWorkspace(_screen->currentWorkspace()));
-      _screen->updateDesktopNamesHint();
-
-      new_workspace_name.erase();
-      new_name_pos = 0;
-
-      // reset the background to that of the workspace label (its normal
-      // setting)
-      bt::Texture texture = style->slabel;
-      frame.slabel =
-        bt::PixmapCache::find(_screen->screenNumber(), texture,
-                              frame.slabel_rect.width(),
-                              frame.slabel_rect.height(),
-                              frame.slabel);
-      if (! frame.slabel)
-        XSetWindowBackground(display, frame.workspace_label,
-                             texture.color().pixel(_screen->screenNumber()));
-      else
-        XSetWindowBackgroundPixmap(display, frame.workspace_label,
-                                   frame.slabel);
-      reconfigure();
-    } else if (! (ks == XK_Shift_L || ks == XK_Shift_R ||
-                  ks == XK_Control_L || ks == XK_Control_R ||
-                  ks == XK_Caps_Lock || ks == XK_Shift_Lock ||
-                  ks == XK_Meta_L || ks == XK_Meta_R ||
-                  ks == XK_Alt_L || ks == XK_Alt_R ||
-                  ks == XK_Super_L || ks == XK_Super_R ||
-                  ks == XK_Hyper_L || ks == XK_Hyper_R)) {
-      if (ks == XK_BackSpace) {
-        if (new_name_pos > 0) {
-          --new_name_pos;
-          new_workspace_name.erase(new_name_pos);
-        } else {
-          new_workspace_name.resize(0);
-        }
-      } else {
-        new_workspace_name += (*keychar);
-        ++new_name_pos;
-      }
-
-      XClearWindow(display, frame.workspace_label);
-
-      bt::Rect rect(0, 0,
-                    frame.slabel_rect.width(), frame.slabel_rect.height());
-      bt::Rect textr =
-        bt::textRect(_screen->screenNumber(), style->font, new_workspace_name);
-      bt::Alignment align = (textr.width() >= rect.width()) ?
-                            bt::AlignRight : style->alignment;
-
-      bt::Pen pen(_screen->screenNumber(), style->slabel_text);
-      bt::drawText(style->font, pen, frame.workspace_label, rect, align,
-                   new_workspace_name);
-    }
   }
 }
 

@@ -34,7 +34,7 @@ class Toolbar : public StackEntity, public bt::TimeoutHandler,
                 public bt::EventHandler, public bt::NoCopy
 {
 private:
-  bool editing, hidden;
+  bool hidden;
   Display *display;
 
   struct ToolbarFrame {
@@ -68,7 +68,6 @@ public:
   Toolbar(BScreen *scrn);
   virtual ~Toolbar(void);
 
-  bool isEditing(void) const { return editing; }
   bool isHidden(void) const { return hidden; }
 
   // StackEntity interface
@@ -88,9 +87,7 @@ public:
   void enterNotifyEvent(const XCrossingEvent * const /*unused*/);
   void leaveNotifyEvent(const XCrossingEvent * const /*unused*/);
   void exposeEvent(const XExposeEvent * const event);
-  void keyPressEvent(const XKeyEvent * const event);
 
-  void edit(void);
   void reconfigure(void);
   void toggleAutoHide(void);
 

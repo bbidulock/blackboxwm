@@ -44,8 +44,7 @@ enum {
   EnableToolbar,
   Placement,
   AlwaysOnTop,
-  AutoHide,
-  EditWorkspaceName
+  AutoHide
 };
 
 
@@ -62,7 +61,6 @@ Toolbarmenu::Toolbarmenu(bt::Application &app, unsigned int screen,
   insertItem("Placement", menu, Placement);
   insertItem("Always on top", AlwaysOnTop);
   insertItem("Auto Hide", AutoHide);
-  insertItem("Edit current workspace name", EditWorkspaceName);
 }
 
 
@@ -71,7 +69,6 @@ void Toolbarmenu::refresh(void) {
   setItemChecked(EnableToolbar, res.isToolbarEnabled());
   setItemChecked(AlwaysOnTop, res.isToolbarOnTop());
   setItemChecked(AutoHide, res.doToolbarAutoHide());
-  setItemEnabled(EditWorkspaceName, res.isToolbarEnabled());
 }
 
 
@@ -106,11 +103,6 @@ void Toolbarmenu::itemClicked(unsigned int id, unsigned int button) {
     _bscreen->saveResource();
     if (toolbar)
       toolbar->toggleAutoHide();
-    break;
-
-  case EditWorkspaceName:
-    if (toolbar)
-      toolbar->edit();
     break;
 
   default:
