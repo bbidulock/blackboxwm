@@ -256,7 +256,6 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
 
 void Workspace::Reconfigure(void) {
   workspace_menu->Reconfigure();
-  workspace_menu->updateMenu();
 
   llist_iterator<BlackboxWindow> it(workspace_list);
   for (; it.current(); it++)
@@ -485,7 +484,7 @@ Workspace *WorkspaceManager::workspace(int w) {
 
 void WorkspaceManager::changeWorkspaceID(int id) {
   if (id != current->workspaceID()) {
-    XGrabServer(display);
+    //    XGrabServer(display);
     hideMenu();
     current->hideAll();
     current = workspace(id);
@@ -495,7 +494,7 @@ void WorkspaceManager::changeWorkspaceID(int id) {
                 session->titleFont()->ascent, frame.title,
 		strlen(frame.title));
     current->showAll();
-    XUngrabServer(display);
+    //    XUngrabServer(display);
   }
 }
 
@@ -503,7 +502,7 @@ void WorkspaceManager::changeWorkspaceID(int id) {
 void WorkspaceManager::arrangeIcons(void) {
   BlackboxIcon *icon = NULL;
   
-  XGrabServer(display);
+  //  XGrabServer(display);
   llist_iterator<BlackboxIcon> it(ilist);
   for (int i = 0; it.current(); it++, i++) {
     icon = it.current();
@@ -514,7 +513,7 @@ void WorkspaceManager::arrangeIcons(void) {
     icon->exposeEvent(NULL);
   }
   
-  XUngrabServer(display);
+  //  XUngrabServer(display);
 }
 
 
@@ -636,9 +635,10 @@ void WorkspaceManager::Reconfigure(void) {
 
   XResizeWindow(display, frame.workspace_button, frame.button_w,
 		frame.button_h);
-  if (workspaces_menu->menuVisible())
-    XSetWindowBackgroundPixmap(display, frame.workspace_button, frame.pbutton);
-  else
+  if (workspaces_menu->menuVisible()) {
+    showMenu();
+    sub = False;
+  } else
     XSetWindowBackgroundPixmap(display, frame.workspace_button, frame.button);
   
   BImage iimage(session, frame.button_w, (frame.frame_h / 2) - 2,
@@ -675,7 +675,6 @@ void WorkspaceManager::Reconfigure(void) {
   checkClock(True);
 
   workspaces_menu->Reconfigure();
-  workspaces_menu->updateMenu();
 
   for (int i = 0; i < workspaces_list->count(); i++)
     workspace(i)->Reconfigure();

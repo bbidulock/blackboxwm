@@ -42,7 +42,8 @@ SessionMenu::SessionMenu(BlackboxSession *s) : BlackboxMenu(s) {
 
 
 SessionMenu::~SessionMenu(void) {
-  for (int i = 0; i < count(); i++)
+  int n = count();
+  for (int i = 0; i < n; i++)
     remove(0);
 }
 
@@ -64,10 +65,12 @@ int SessionMenu::remove(int index) {
       SessionMenu *tmp = (SessionMenu *) itmp->Submenu();
       delete tmp;
     }
-    if (itmp->Label())
+    if (itmp->Label()) {
       delete [] itmp->Label();
-    if (itmp->Exec())
+    }
+    if (itmp->Exec()) {
       delete [] itmp->Exec();
+    }
     
     return BlackboxMenu::remove(index);
   }

@@ -87,7 +87,7 @@ private:
   Atom _XA_WM_COLORMAP_WINDOWS, _XA_WM_PROTOCOLS, _XA_WM_STATE,
     _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS;
 
-  Bool shutdown, reconfigure;
+  Bool shutdown;
   Display *display;
   GC opGC;
   Visual *v;
@@ -147,6 +147,7 @@ private:
       int toolbox, window, button, menu, imenu, pimenu;
     } texture;
 
+    Bool prompt_reconfigure;
     char *menuFile;
     int workspaces, orientation;
   } resource;
@@ -271,8 +272,8 @@ public:
   
   // constants for internal workings of blackbox
   enum { B_Restart = 1, B_RestartOther, B_Exit, B_Shutdown, B_Execute,
-	 B_Reconfigure, B_WindowShade,
-	 B_WindowClose, B_WindowMaximize, B_WindowIconify,
+	 B_Reconfigure,
+	 B_WindowShade, B_WindowClose, B_WindowMaximize, B_WindowIconify,
 	 B_WindowRaise, B_WindowLower, B_WindowSendToWorkspace };
   enum { B_TextureRSolid = 1, B_TextureSSolid, B_TextureFSolid,
 	 B_TextureRHGradient, B_TextureSHGradient, B_TextureFHGradient,

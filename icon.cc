@@ -118,7 +118,6 @@ void BlackboxIcon::buttonReleaseEvent(XButtonEvent *be) {
   if (be->button == 1 &&
       be->x >= 0 && be->x <= (signed) (ws_manager->iconWidth() - 2) &&
       be->y >= 0 && be->y <= (signed) icon.height) {
-    XGrabServer(display);
     BlackboxWindow *win = session->searchWindow(icon.client);
     XUnmapWindow(display, icon.window);
     XDrawString(display, session->Root(), session->GCOperations(), icon.x + 2, 
@@ -126,7 +125,6 @@ void BlackboxIcon::buttonReleaseEvent(XButtonEvent *be) {
                 ((icon.name != NULL) ? icon.name : "Unnamed"),
                 ((icon.name != NULL) ? strlen(icon.name) : strlen("Unnamed")));
     XClearWindow(display, session->WSManager()->iconWindowID());
-    XUngrabServer(display);
     win->deiconifyWindow();
     win->setFocusFlag(False);
   }

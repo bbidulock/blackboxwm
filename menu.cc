@@ -111,8 +111,8 @@ BlackboxMenu::BlackboxMenu(BlackboxSession *ctrl) {
 BlackboxMenu::~BlackboxMenu(void) {
   XUnmapWindow(display, menu.frame);
 
-  int i;
-  for (i = 0; i < menuitems->count(); ++i)
+  int n = menuitems->count();
+  for (int i = 0; i < n; ++i)
     remove(0);
 
   delete menuitems;
@@ -219,6 +219,10 @@ int BlackboxMenu::remove(int index) {
   XDestroyWindow(display, item->window);
   delete item;
 
+  if (which_sub != -1)
+    if ((--which_sub) == index)
+      which_sub = -1;
+
   return menuitems->count();
 }
 
@@ -251,8 +255,9 @@ Window BlackboxMenu::createItemWindow(void) {
 // *************************************************************************
 
 void BlackboxMenu::updateMenu(void) {
-  XGrabServer(display);
-  XSync(display, False);
+  //  XGrabServer(display);
+
+  menu.item_h = session->menuFont()->ascent + session->menuFont()->descent + 4;
   menu.width = ((show_title) ?
                 XTextWidth(session->titleFont(),
                            ((menu.label) ? menu.label : "Blackbox Menu"),
@@ -316,6 +321,9 @@ void BlackboxMenu::updateMenu(void) {
   it.reset();
   for (int i = 0; it.current(); it++, i++) {
     BlackboxMenuItem *itmp = it.current();
+    if (itmp->sub_menu)
+      itmp->sub_menu->updateMenu();
+
     if (which_sub == i) {
       XSetWindowBackgroundPixmap(display, itmp->window, menu.pushed_pixmap);
       XMoveResizeWindow(display, itmp->window, 0, (i * (menu.item_h - 1)) +
@@ -346,23 +354,23 @@ void BlackboxMenu::updateMenu(void) {
   }
 
   XMapSubwindows(display, menu.frame);
-  XFlush(display);
-  XSync(display, False);
-  XUngrabServer(display);
+  //  XFlush(display);
+    XSync(display, False);
+  //  XUngrabServer(display);
 }
 
 
 void BlackboxMenu::showMenu(void) {
-  XGrabServer(display);
+  //  XGrabServer(display);
   XMapSubwindows(display, menu.frame);
   XMapWindow(display, menu.frame);
   visible = True;
-  XUngrabServer(display);
+  //  XUngrabServer(display);
 }
 
 
 void BlackboxMenu::hideMenu(void) {
-  XGrabServer(display);
+  //  XGrabServer(display);
   XUnmapWindow(display, menu.frame);
   user_moved = False;
   visible = False;
@@ -373,18 +381,18 @@ void BlackboxMenu::hideMenu(void) {
     XClearWindow(display, tmp->window);
   }
   which_sub = -1;
-  XUngrabServer(display);
+  //  XUngrabServer(display);
 }
 
 
 void BlackboxMenu::moveMenu(int x, int y) {
-  XGrabServer(display);
+  //  XGrabServer(display);
   menu.x = x;
   menu.y = y;
   XMoveWindow(display, menu.frame, x, y);
   if (which_sub != -1)
     drawSubmenu(which_sub);
-  XUngrabServer(display);
+  //  XUngrabServer(display);
 }
 
 
@@ -554,7 +562,8 @@ void BlackboxMenu::motionNotifyEvent(XMotionEvent *me) {
 	  menu.x_move = me->x;
 	  menu.y_move = me->y;
 	  if (which_sub != -1)
-	    menuitems->find(which_sub)->sub_menu->hideMenu();
+	    drawSubmenu(which_sub);
+	  //	    menuitems->find(which_sub)->sub_menu->hideMenu();
 	} else
 	  moving = False;	
       } else {
@@ -563,6 +572,8 @@ void BlackboxMenu::motionNotifyEvent(XMotionEvent *me) {
 	menu.x = dx;
 	menu.y = dy;
 	XMoveWindow(display, menu.frame, dx, dy);
+	  if (which_sub != -1)
+	    drawSubmenu(which_sub);
       }
     }
   }
@@ -577,10 +588,11 @@ void BlackboxMenu::exposeEvent(XExposeEvent *ee) {
 		strlen(((menu.label) ? menu.label : "Blackbox Menu")));
   } else {
     llist_iterator<BlackboxMenuItem> it(menuitems);
-    for (; it.current(); it++) {
+    for (int i = 0; it.current(); it++, i++) {
       BlackboxMenuItem *item = it.current();
       if (item->window == ee->window) {
-	XDrawString(display, item->window, itemGC, 4,
+	XDrawString(display, item->window,
+		    ((i == which_sub) ? pitemGC : itemGC), 4,
 		    session->menuFont()->ascent + 2,
 		    ((item->ulabel) ? *item->ulabel : item->label),
 		    strlen(((item->ulabel) ? *item->ulabel : item->label)));
@@ -614,4 +626,103 @@ void BlackboxMenu::Reconfigure(void) {
   XChangeGC(display, pitemGC, GCForeground|GCFont, &gcv);
 
   XSetWindowBorder(display, menu.frame, session->frameColor().pixel);
+
+  menu.item_h = session->menuFont()->ascent + session->menuFont()->descent + 4;
+  menu.width = ((show_title) ?
+                XTextWidth(session->titleFont(),
+                           ((menu.label) ? menu.label : "Blackbox Menu"),
+                           strlen(((menu.label) ? menu.label :
+                                   "Blackbox Menu"))) + 8 : 0);
+
+  int ii = 0;
+  llist_iterator<BlackboxMenuItem> it(menuitems);
+  for (; it.current(); it++) {
+    BlackboxMenuItem *itmp = it.current();
+    if (itmp->ulabel || itmp->label)
+      ii = XTextWidth(session->menuFont(),
+                      ((itmp->ulabel) ? *itmp->ulabel : itmp->label),
+                      strlen((itmp->ulabel) ? *itmp->ulabel : itmp->label))
+        + 8 + menu.item_h;
+    else
+      ii = 0;
+    menu.width = ((menu.width < (unsigned int) ii) ? ii : menu.width);
+  }
+
+  if (show_title) {
+    BImage mt_image(session, menu.width, menu.title_h, session->Depth(),
+                    session->menuColor());
+    Pixmap mt_pixmap =
+      mt_image.renderImage(session->menuTexture(), 1, session->menuColor(),
+                           session->menuToColor());
+
+    XSetWindowBackgroundPixmap(display, menu.title, mt_pixmap);
+    XClearWindow(display, menu.title);
+    if (mt_pixmap) XFreePixmap(display, mt_pixmap);
+  }
+
+  BImage mi_image(session, menu.width, menu.item_h, session->Depth(),
+                  session->menuItemColor());
+  if (menu.item_pixmap) XFreePixmap(display, menu.item_pixmap);
+
+  menu.item_pixmap = mi_image.renderImage(session->menuItemTexture(), 0,
+                                          session->menuItemColor(),
+                                          session->menuItemToColor());
+
+  if (menu.pushed_pixmap) XFreePixmap(display, menu.pushed_pixmap);
+  menu.pushed_pixmap =
+    mi_image.renderImage(session->menuItemPressedTexture(), 0,
+                         session->menuItemToColor(),
+                         session->menuItemColor());
+
+  menu.height = ((show_title) ? menu.title_h : 0) +
+    (menu.item_h * menuitems->count());
+  XResizeWindow(display, menu.frame, menu.width, menu.height);
+  if (show_title) XResizeWindow(display, menu.title, menu.width,
+                                menu.title_h);
+  XClearWindow(display, menu.frame);
+  XClearWindow(display, menu.title);
+
+  if (show_title)
+    XDrawString(display, menu.title, titleGC, 3,
+                session->titleFont()->ascent + 3,
+                ((menu.label) ? menu.label : "Blackbox Menu"),
+                strlen(((menu.label) ? menu.label : "Blackbox Menu")));
+
+  it.reset();
+  for (int i = 0; it.current(); it++, i++) {
+    BlackboxMenuItem *itmp = it.current();
+    if (which_sub == i) {
+      drawSubmenu(which_sub);
+      XSetWindowBackgroundPixmap(display, itmp->window, menu.pushed_pixmap);
+      XMoveResizeWindow(display, itmp->window, 0, (i * (menu.item_h - 1)) +
+                        ((show_title) ? menu.title_h : 0) + i,
+                        menu.width + 8, menu.item_h);
+      XClearWindow(display, itmp->window);
+      XDrawString(display, itmp->window, pitemGC, 4,
+                  session->menuFont()->ascent + 2,
+                  ((itmp->ulabel) ? *itmp->ulabel : itmp->label),
+                  strlen(((itmp->ulabel) ? *itmp->ulabel : itmp->label)));
+      if (itmp->sub_menu)
+        XDrawRectangle(display, itmp->window, pitemGC,
+                       menu.width - (menu.item_h - 6), 3, 3, 3);
+    } else {
+      XSetWindowBackgroundPixmap(display, itmp->window, menu.item_pixmap);
+      XMoveResizeWindow(display, itmp->window, 0, (i * (menu.item_h - 1)) +
+                        ((show_title) ? menu.title_h : 0) + i,
+                        menu.width + 8, menu.item_h);
+      XClearWindow(display, itmp->window);
+      XDrawString(display, itmp->window, itemGC, 4,
+                  session->menuFont()->ascent + 2,
+                  ((itmp->ulabel) ? *itmp->ulabel : itmp->label),
+                  strlen(((itmp->ulabel) ? *itmp->ulabel : itmp->label)));
+      if (itmp->sub_menu)
+        XDrawRectangle(display, itmp->window, itemGC,
+                       menu.width - (menu.item_h - 6), 3, 3, 3);
+    }
+
+    if (itmp->sub_menu)
+      itmp->sub_menu->Reconfigure();
+  }
+
+  XMapSubwindows(display, menu.frame);
 }

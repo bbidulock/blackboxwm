@@ -1,4 +1,4 @@
-[begin] (Blackbox 0.15.6)
+[begin] (Blackbox 0.16.1)
   "xterm" (xterm -ls)
   "XEmacs" (xemacs)
   "Netscape" (netscape)
@@ -6,15 +6,18 @@
     "Xfontsel" (xfontsel)
     "Xman" (xman)
     "Xcalc" (xcalc)
+    "Xload" (xload)
   [end]
   "XV" (xv)
   "The GIMP" (gimp)
   "Image Magick" (display)
-  [begin] (Blackbox)
-    "Reconfigure" (Reconfigure)
+  [begin] (Window Managers)
     [restart] (Start WindowMaker) {wmaker}
     [restart] (Start Afterstep) {afterstep}
     [restart] (Start FVWM) {fvwm}
+  [end]
+  [begin] (Blackbox)
+    [reconfigure] (Reconfigure)
     "Restart" (Restart)
     "Exit" (Exit)
   [end]

@@ -63,10 +63,7 @@ BlackboxWindowMenu::~BlackboxWindowMenu(void)
 
 
 void BlackboxWindowMenu::Reconfigure(void) {
-  send_to_menu->Reconfigure();
-  send_to_menu->updateMenu();
   BlackboxMenu::Reconfigure();
-  BlackboxMenu::updateMenu();
 }
 
 

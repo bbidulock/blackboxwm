@@ -26,18 +26,20 @@ Objects =		blackbox.o graphics.o icon.o main.o menu.o llist.o session.o sessionm
 XCOMM Add the name of a directory to search for includes (/include is appended)
 XPROJECTROOT =		/usr/local
 
-XCOMM Uncomment this line for debugging
-XCOMM CXXFLAGS =		-g -O2 -I$(INCDIR)
 XCOMM Add compiler options here
-CompileOptions =	-Wall -W -DSHAPE -pipe $(CXXFLAGS)
+CompileOptions =	-Wall -W -DSHAPE -pipe -g $(CXXFLAGS)
 
 DefaultsPath =		-DXAPPLOADDIR=\"$(XAPPLOADDIR)\" -DXLIBDIR=\"$(LIBDIR)\"
 Libraries =		$(XLIB) $(EXTENSIONLIB)
+OtherLibs =		
 
 PROGRAMS = blackbox
 SRCS1 = $(Sources)
 OBJS1 = $(Objects)
 ComplexProgramTarget_1(blackbox, $(Libraries), $(OtherLibs))
+
+.c.o: $(Sources)
+	$(CC) $(CompileOptions) -c -o $@ $<
 
 .cc.o: $(Sources)
 	$(CXX) $(CompileOptions) -c -o $@ $<
@@ -47,7 +49,7 @@ session.o: session.cc
 
 XCOMM  %%% *** %%% *** Do not edit the lines below *** %%% *** %%%
 
-depend:: 
+depend::
 	rm -f Makefile.bak
 
 install:: install.app-defaults
@@ -67,7 +69,7 @@ distclean::
 	make clean
 	rm -f Makefile
 
-new:: 
+new::
 	make clean
 	make all
 

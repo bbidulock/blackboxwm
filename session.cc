@@ -61,7 +61,6 @@ BlackboxSession::BlackboxSession(char *display_name) {
   b1Pressed = False;
   b2Pressed = False;
   b3Pressed = False;
-  reconfigure = False;
   shutdown = False;
   startup = True;
   focus_window_number = -1;
@@ -235,13 +234,11 @@ void BlackboxSession::EventLoop(void) {
 
   int xfd = ConnectionNumber(display);
 
-  for (; (! shutdown);) {
+  while (! shutdown) {
     if (XPending(display)) {
-      if (! reconfigure) {
-	XEvent e;
-	XNextEvent(display, &e);
-	ProcessEvent(&e);
-      }
+      XEvent e;
+      XNextEvent(display, &e);
+      ProcessEvent(&e);
     } else {
       // put a wait on the network file descriptor for the X connection...
       // this saves blackbox from eating all available cpu
@@ -251,7 +248,7 @@ void BlackboxSession::EventLoop(void) {
       
       struct timeval tv;
       tv.tv_sec = 0;
-      tv.tv_usec = 500;
+      tv.tv_usec = 1000;
       
       select(xfd + 1, &rfds, 0, 0, &tv);
       ws_manager->checkClock();
@@ -260,7 +257,6 @@ void BlackboxSession::EventLoop(void) {
     
   Dissociate();
 }
-
 
 void BlackboxSession::ProcessEvent(XEvent *e) {
   switch (e->type) {
@@ -403,15 +399,20 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
     if (e->xproperty.state != PropertyDelete) {
       if (e->xproperty.atom == XA_RESOURCE_MANAGER &&
 	  e->xproperty.window == root) {
-	if (! ReconfigureDialog.visible) {
-	  ws_manager->currentWorkspace()->addWindow(ReconfigureDialog.dialog);
-	  ReconfigureDialog.dialog->deiconifyWindow();
-	  raiseWindow(ReconfigureDialog.dialog);
-	  ReconfigureDialog.visible = True;
-	} else {
-	  ws_manager->changeWorkspaceID(ReconfigureDialog.dialog->workspace());
-	  raiseWindow(ReconfigureDialog.dialog);
-	}
+	if (resource.prompt_reconfigure) {
+	  if (! ReconfigureDialog.visible) {
+	    ws_manager->currentWorkspace()->
+	      addWindow(ReconfigureDialog.dialog);
+	    ReconfigureDialog.dialog->deiconifyWindow();
+	    raiseWindow(ReconfigureDialog.dialog);
+	    ReconfigureDialog.visible = True;
+	  } else {
+	    ws_manager->changeWorkspaceID(ReconfigureDialog.dialog->
+					  workspace());
+	    raiseWindow(ReconfigureDialog.dialog);
+	  }
+	} else
+	  Reconfigure();
       } else {
 	BlackboxWindow *pWin = searchWindow(e->xproperty.window);
 	if (pWin != NULL)
@@ -824,6 +825,7 @@ void BlackboxSession::LoadDefaults(void) {
   XGrabServer(display);
   
 #define BLACKBOXAD XAPPLOADDIR##"/Blackbox.ad"
+  Bool destroy = True;
   XrmDatabase blackbox_database = NULL, resource_database = NULL;
   
   XTextProperty resource_manager_string;
@@ -835,6 +837,7 @@ void BlackboxSession::LoadDefaults(void) {
   
   if (resource_database != NULL) {
     XrmCombineDatabase(resource_database, &blackbox_database, True);
+    destroy = False;
   } else {
     blackbox_database = XrmGetFileDatabase(BLACKBOXAD);
   }
@@ -1317,6 +1320,17 @@ void BlackboxSession::LoadDefaults(void) {
   } else
     resource.orientation = B_RightHandedUser;
 
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.session.reconfigurePrompt",
+		     "Blackbox.Session.ReconfigurePrompt",
+		     &value_type, &value)) {
+    if (! strcasecmp(value.addr, "no"))
+      resource.prompt_reconfigure = False;
+    else
+      resource.prompt_reconfigure = True;
+  } else
+    resource.prompt_reconfigure = True;
+
   const char *defaultFont = "-*-charter-medium-r-*-*-*-120-*-*-*-*-*-*";
   if (resource.font.title) XFreeFont(display, resource.font.title);
   if (XrmGetResource(blackbox_database,
@@ -1396,7 +1410,8 @@ void BlackboxSession::LoadDefaults(void) {
     }
   }
 
-  XrmDestroyDatabase(blackbox_database);
+  if (destroy)
+    XrmDestroyDatabase(blackbox_database);
   XUngrabServer(display);
 }
 
@@ -1487,8 +1502,12 @@ unsigned long BlackboxSession::getColor(const char *colorname) {
 // *************************************************************************
 
 void BlackboxSession::InitMenu(void) {
-  if (rootmenu) delete rootmenu;
-  rootmenu = new SessionMenu(this);
+  if (rootmenu) {
+    int n = rootmenu->count();
+    for (int i = 0; i < n; i++)
+      rootmenu->remove(0);
+  } else
+    rootmenu = new SessionMenu(this);
 
   char *line = new char[121], *label = new char[41], *command = new char[81];
   FILE *menu_file = fopen(resource.menuFile, "r");
@@ -1593,10 +1612,7 @@ void BlackboxSession::parseSubMenu(FILE *menu_file, SessionMenu *menu) {
 	}
 
 	if (c) {
-	  if (! strncasecmp(c, "Reconfigure", 11)) {
-	    menu->insert(l, B_Reconfigure);
-	    delete [] c;
-	  } else if (! strncasecmp(c, "Restart", 7)) {
+	  if (! strncasecmp(c, "Restart", 7)) {
 	    menu->insert(l, B_Restart);
 	    delete [] c;
 	  } else if (! strncasecmp(c, "Exit", 4)) {
@@ -1684,6 +1700,25 @@ void BlackboxSession::parseSubMenu(FILE *menu_file, SessionMenu *menu) {
 	    delete [] c;
 	    if (e)
 	      menu->insert(l, B_RestartOther, e);
+	  } else if (! strcasecmp(c, "reconfigure")) {
+	    for (i = 0; i < len; ++i)
+	      if (line[i] == '(') { ++i; break; }
+	    for (ri = len; ri > 0; --ri)
+	      if (line[ri] == ')') break;
+	
+	    char *l;
+	    if (i < ri && ri > 0) {
+	      l = new char[ri - i + 1];
+	      strncpy(l, line + i, ri - i);
+	      *(l + (ri - i)) = '\0';
+	    } else {
+	      l = new char[6];
+	      strncpy(l, "(nil)", 5);
+	      *(l + 5) = '\0';
+	    }
+
+	    delete [] c;
+	    menu->insert(l, B_Reconfigure);
 	  }
 	}
       }
@@ -1704,7 +1739,6 @@ void BlackboxSession::parseSubMenu(FILE *menu_file, SessionMenu *menu) {
 void BlackboxSession::Reconfigure(void) {
   if (! ReconfigureDialog.visible) {
     XGrabServer(display);
-    XSynchronize(display, True);
     LoadDefaults();
     
     XGCValues gcv;
@@ -1717,16 +1751,7 @@ void BlackboxSession::Reconfigure(void) {
 	      &gcv);
     
     ws_manager->Reconfigure();
-    
-    Bool m = rootmenu->menuVisible();
-    int x = rootmenu->X(), y = rootmenu->Y();
-    rootmenu->hideMenu();
-    InitMenu();
-    if (m) {
-      rootmenu->moveMenu(x, y);
-      rootmenu->showMenu();
-    }
-    
+
     ReconfigureDialog.dialog->Reconfigure();
     XSetWindowBackground(display, ReconfigureDialog.window,
 			 toolboxColor().pixel);
@@ -1746,7 +1771,18 @@ void BlackboxSession::Reconfigure(void) {
     dgcv.foreground = toolboxTextColor().pixel;
     XChangeGC(display, ReconfigureDialog.dialogGC, GCFont|GCForeground, &dgcv);
     
-    XSynchronize(display, False);
+    rootmenu->Reconfigure();
+    /*
+    Bool m = rootmenu->menuVisible();
+    int x = rootmenu->X(), y = rootmenu->Y();
+    InitMenu();
+
+    if (m) {
+      rootmenu->moveMenu(x, y);
+      rootmenu->showMenu();
+    }
+    */
+
     XUngrabServer(display);
   }
 }
@@ -1766,15 +1802,15 @@ void BlackboxSession::createAutoConfigDialog(void) {
     ButtonReleaseMask|ButtonMotionMask|ExposureMask|EnterWindowMask;
   
   ReconfigureDialog.DialogText[0] =
-    "Blackbox has capabilities to perform an automatic";
+    "Blackbox has the ability to perform an automatic reconfiguration, but";
   ReconfigureDialog.DialogText[1] =
-    "reconfiguration, but this capability can best be described as";
+    "this capability has proven unreliable in the past.  Choose \"Yes\" to";
   ReconfigureDialog.DialogText[2] =
-    "buggy and unreliable.  If you want to allow Blackbox to";
+    "allow Blackbox to reconfigure itself.  A full Restart is necessary to";
   ReconfigureDialog.DialogText[3] =
-    "reconfigure itself, choose \"Yes\" and be aware that Blackbox";
+    "reload the menu set by your X resources.  WARNING: this may cause";
   ReconfigureDialog.DialogText[4] =
-    "may dump core.  Choose \"No\" and you can either restart or";
+    "Balckbox to dump core.  Choose \"No\" and you can either restart or";
   ReconfigureDialog.DialogText[5] =
     "choose the Reconfigure option from your root menu.";
 

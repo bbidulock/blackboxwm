@@ -349,6 +349,18 @@ Accepted values:
 	menu items, and the icon font is for icon labels
 
 
+Name:					Class:
+--------				---------
+blackbox.session.reconfigurePrompt	Blackbox.Session.ReconfigurePrompt
+
+Accepted Values:
+	Any string value other than "no" (case insensitive) will cause
+	blackbox to prompt the user before reconfiguring itself
+	automatically.  Since this has proven buggy in the past, it has
+	been made an option until a more suitable and reliable method
+	can be implemented.
+
+
 As an idea of how to configure blackbox, here is a snippet of my .Xdefaults 
 file:
 
@@ -407,7 +419,7 @@ menu is able to be created.  The format is shown below:
   [end]					<- end of submenu
   "item label" (Restart)		<- restarts blackbox
   [restart] (item label) {command}	<- restarts a different window manager
-  "item label" (Reconfigure)		<- rereads configuration and applies it
+  [reconfigure]	(item label)		<- rereads configuration and applies it
   "item label" (Exit)			<- exits blackbox
 [end]
 
