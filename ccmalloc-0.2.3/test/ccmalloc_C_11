@@ -1,4 +1,0 @@
-file test_C_11.exe
-log test_C_11.log
-set keep-deallocated-data
-set statistics
