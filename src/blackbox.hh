@@ -90,8 +90,6 @@ class Basemenu;
 class Toolbar;
 class Slit;
 
-extern I18n i18n;
-
 class Blackbox : public BaseDisplay, public TimeoutHandler {
 private:
   struct BCursor {

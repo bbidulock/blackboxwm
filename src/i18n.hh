@@ -58,4 +58,6 @@ public:
   void openCatalog(const char *catalog);
 };
 
+extern I18n i18n;
+
 #endif // __i18n_h
