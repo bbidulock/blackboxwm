@@ -1487,6 +1487,7 @@ void Blackbox::load_rc(BScreen *screen) {
 
   sprintf(name_lookup,  "session.screen%d.edgeSnapThreshold", screen_number);
   sprintf(class_lookup, "Session.Screen%d.EdgeSnapThreshold", screen_number);
+  screen->saveEdgeSnapThreshold(0);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value) &&
       sscanf(value.addr, "%d", &int_value) == 1) {
