@@ -323,7 +323,7 @@ public:
   void removeIcon(BlackboxWindow *w);
 
   void manageWindow(Window w);
-  void unmanageWindow(BlackboxWindow *w);
+  void unmanageWindow(BlackboxWindow *w, Bool remap);
   void raiseWindows(Window *workspace_stack, unsigned int num);
   void reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id,
                          Bool ignore_sticky);

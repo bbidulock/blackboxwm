@@ -2182,7 +2182,7 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
           client.window);
 #endif // DEBUG
 
-  screen->unmanageWindow(this);
+  screen->unmanageWindow(this, False);
 }
 
 
@@ -2190,7 +2190,7 @@ void BlackboxWindow::destroyNotifyEvent(XDestroyWindowEvent *de) {
   if (de->window != client.window)
     return;
 
-  screen->unmanageWindow(this);
+  screen->unmanageWindow(this, False);
 }
 
 
@@ -2208,7 +2208,7 @@ void BlackboxWindow::reparentNotifyEvent(XReparentEvent *re) {
   XEvent ev;
   ev.xreparent = *re;
   XPutBackEvent(display, &ev);
-  screen->unmanageWindow(this);
+  screen->unmanageWindow(this, True);
 }
 
 
@@ -2690,7 +2690,7 @@ Bool BlackboxWindow::validateClient(void) {
 }
 
 
-void BlackboxWindow::restore(void) {
+void BlackboxWindow::restore(Bool remap) {
   XChangeSaveSet(display, client.window, SetModeDelete);
   XSelectInput(display, client.window, NoEventMask);
 
@@ -2709,7 +2709,7 @@ void BlackboxWindow::restore(void) {
                     client.x, client.y );
   }
 
-  XMapWindow(display, client.window);
+  if (remap) XMapWindow(display, client.window);
 
   XFlush(display);
 }

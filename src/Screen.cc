@@ -888,8 +888,8 @@ void BScreen::manageWindow(Window w) {
 }
 
 
-void BScreen::unmanageWindow(BlackboxWindow *w) {
-  w->restore();
+void BScreen::unmanageWindow(BlackboxWindow *w, Bool remap) {
+  w->restore(remap);
 
   if (w->getWorkspaceNumber() != BSENTINEL &&
       w->getWindowNumber() != BSENTINEL)
@@ -1580,7 +1580,7 @@ void BScreen::shutdown(void) {
 
   while(! windowList.empty()) {
     BlackboxWindow *bw = windowList.front();
-    unmanageWindow(bw);
+    unmanageWindow(bw, True);
   }
 
   slit->shutdown();

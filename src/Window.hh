@@ -305,7 +305,7 @@ public:
   void reconfigure(void);
   void updateFocusModel(void);
   void installColormap(Bool install);
-  void restore(void);
+  void restore(Bool remap);
   void configure(int dx, int dy, unsigned int dw, unsigned int dh);
   void setWorkspace(unsigned int n);
   void changeBlackboxHints(BlackboxHints *net);
