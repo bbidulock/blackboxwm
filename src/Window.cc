@@ -2863,7 +2863,6 @@ void BlackboxWindow::restore(bool remap) {
   XEvent ev;
   if (XCheckTypedWindowEvent(blackbox->getXDisplay(), client.window,
                              ReparentNotify, &ev)) {
-    fprintf(stderr, "0x%lx: heard a reparent\n", client.window);
     remap = True;
   } else {
     // according to the ICCCM - if the client doesn't reparent to
