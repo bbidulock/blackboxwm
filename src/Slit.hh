@@ -26,13 +26,12 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-// forward declaration
-class Slit;
-class Slitmenu;
-
 #include "Basemenu.hh"
 #include "LinkedList.hh"
 
+// forward declaration
+class Slit;
+class Slitmenu;
 
 class Slitmenu : public Basemenu {
 private: 

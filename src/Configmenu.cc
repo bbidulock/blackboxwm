@@ -34,6 +34,7 @@
 #include "Configmenu.hh"
 #include "Toolbar.hh"
 #include "Window.hh"
+#include "Screen.hh"
 
 Configmenu::Configmenu(BScreen *scr) : Basemenu(scr) {
   screen = scr;

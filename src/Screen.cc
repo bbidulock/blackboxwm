@@ -36,7 +36,7 @@
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "Clientmenu.hh"
-#include "Icon.hh"
+#include "Iconmenu.hh"
 #include "Image.hh"
 #include "Screen.hh"
 

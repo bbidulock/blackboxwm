@@ -30,11 +30,6 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
-#include "i18n.hh"
-#include "blackbox.hh"
-#include "Basemenu.hh"
-#include "Screen.hh"
-
 #ifdef    HAVE_STDIO_H
 #  include <stdio.h>
 #endif // HAVE_STDIO_H
@@ -44,6 +39,13 @@
 #  include <string.h>
 #endif // STDC_HEADERS
 
+#include <algorithm>
+using namespace std;
+
+#include "i18n.hh"
+#include "blackbox.hh"
+#include "Basemenu.hh"
+#include "Screen.hh"
 
 static Basemenu *shown = (Basemenu *) 0;
 

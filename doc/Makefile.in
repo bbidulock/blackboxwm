@@ -79,6 +79,8 @@ regex_cmd = @regex_cmd@
 CLEANFILES = blackbox.1
 MAINTAINERCLEANFILES = Makefile.in
 man_MANS = blackbox.1 bsetroot.1
+
+DEFAULT_MENU = $(pkgdatadir)/menu
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -228,7 +230,7 @@ distclean-local:
 	rm -f *\~
 
 blackbox.1: blackbox.1.in
-	@regex_cmd@ -e "s,@pkgdatadir@,$(pkgdatadir)," blackbox.1.in > blackbox.1
+	@regex_cmd@ -e "s,@defaultmenu@,$(DEFAULT_MENU)," blackbox.1.in > blackbox.1
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

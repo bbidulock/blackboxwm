@@ -25,13 +25,11 @@
 
 #include <X11/Xlib.h>
 
-// forward declaration
-class Toolbar;
-
 #include "Basemenu.hh"
-#include "LinkedList.hh"
 #include "Timer.hh"
 
+// forward declaration
+class Toolbar;
 
 class Toolbarmenu : public Basemenu {
 private:

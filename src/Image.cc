@@ -63,6 +63,9 @@ typedef unsigned int u_int32_t;
 #  include <ctype.h>
 #endif // HAVE_CTYPE_H
 
+#include <algorithm>
+using namespace std;
+
 static unsigned long bsqrt(unsigned long x) {
   if (x <= 0) return 0;
   if (x == 1) return 1;

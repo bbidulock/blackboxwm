@@ -41,19 +41,21 @@
 #  endif // HAVE_SYS_TIME_H
 #endif // TIME_WITH_SYS_TIME
 
-//forward declaration
-class Blackbox;
 
-#include "BaseDisplay.hh"
-#include "Image.hh"
 #include "LinkedList.hh"
+#include "BaseDisplay.hh"
 #include "Timer.hh"
-#include "Window.hh"
 
+//forward declaration
+class BScreen;
+class Blackbox;
+class BImageControl;
+class BlackboxWindow;
+class Basemenu;
+class Toolbar;
 #ifdef    SLIT
-#  include "Slit.hh"
+class Slit;
 #endif // SLIT
-
 
 template <class Z>
 class DataSearch {
@@ -62,7 +64,7 @@ private:
   Z *data;
 
 public:
-  DataSearch(Window w, Z *d) { window = w; data = d; }
+  DataSearch(Window w, Z *d): window(w), data(d) {}
 
   inline const Window &getWindow(void) const { return window; }
   inline Z *getData(void) { return data; }

@@ -29,12 +29,12 @@
 #  include <X11/extensions/shape.h>
 #endif // SHAPE
 
-// forward declaration
-class BlackboxWindow;
-
 #include "BaseDisplay.hh"
 #include "Timer.hh"
 #include "Windowmenu.hh"
+
+// forward declaration
+class BlackboxWindow;
 
 #define MwmHintsFunctions     (1l << 0)
 #define MwmHintsDecorations   (1l << 1)
@@ -68,8 +68,8 @@ private:
   BImageControl *image_ctrl;
   Blackbox *blackbox;
   BScreen *screen;
-  BTimer *timer;
   Display *display;
+  BTimer *timer;
   BlackboxAttributes blackbox_attrib;
 
   Time lastButtonPressTime;  // used for double clicks, when were we clicked
@@ -189,7 +189,7 @@ private:
       y_border, y_handle;      // where within frame is the border and handle
 
     unsigned int width, height, title_h, label_w, label_h, handle_h,
-      button_w, button_h, grip_w, grip_h, mwm_border_w, border_h,
+      button_w, button_h, grip_w, grip_h, mwm_border_w, border_h, border_w,
       bevel_w, snap_w, snap_h;
   } frame;
 
@@ -257,7 +257,7 @@ public:
   inline const Window &getFrameWindow(void) const { return frame.window; }
   inline const Window &getClientWindow(void) const { return client.window; }
 
-  inline Windowmenu *getWindowmenu(void) { return windowmenu; }
+  inline Windowmenu * getWindowmenu(void) { return windowmenu; }
 
   inline char **getTitle(void) { return &client.title; }
   inline char **getIconTitle(void) { return &client.icon_title; }

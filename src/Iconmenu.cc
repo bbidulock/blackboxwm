@@ -1,4 +1,4 @@
-// Windowmenu.hh for Blackbox - an X11 Window manager
+// Icon.cc for Blackbox - an X11 Window manager
 // Copyright (c) 2001 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
@@ -20,59 +20,45 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifndef   __Windowmenu_hh
-#define   __Windowmenu_hh
+// stupid macros needed to access some functions in version 2 of the GNU C
+// library
+#ifndef   _GNU_SOURCE
+#define   _GNU_SOURCE
+#endif // _GNU_SOURCE
 
-#include "Basemenu.hh"
+#ifdef    HAVE_CONFIG_H
+#  include "../config.h"
+#endif // HAVE_CONFIG_H
 
-// forward declaration
-class Windowmenu;
-class SendtoWorkspaceMenu;
-
-class Blackbox;
-class BlackboxWindow;
-class Toolbar;
-
-class Windowmenu : public Basemenu {
-private:
-  BlackboxWindow *window;
-  BScreen *screen;
-
-  class SendtoWorkspacemenu : public Basemenu {
-  private:
-    Windowmenu *windowmenu;
-
-  protected:
-    virtual void itemSelected(int, int);
-
-  public:
-    SendtoWorkspacemenu(Windowmenu *);
-
-    void update(void);
-
-    virtual void show(void);
-  };
-
-  SendtoWorkspacemenu *sendToMenu;
-
-  friend class SendtoWorkspacemenu;
+#include "i18n.hh"
+#include "Iconmenu.hh"
+#include "Screen.hh"
+#include "Window.hh"
 
 
-protected:
-  virtual void itemSelected(int, int);
+Iconmenu::Iconmenu(BScreen *scrn) : Basemenu(scrn) {
+  setInternalMenu();
+
+  screen = scrn;
+
+  setLabel(i18n->getMessage(IconSet, IconIcons, "Icons"));
+  update();
+}
 
 
-public:
-  Windowmenu(BlackboxWindow *);
-  virtual ~Windowmenu(void);
+void Iconmenu::itemSelected(int button, int index) {
+  if (button != 1)
+    return;
 
-  inline Basemenu *getSendToMenu(void) { return (Basemenu *) sendToMenu; }
+  if (index >= 0 && index < screen->getIconCount()) {
+    BlackboxWindow *win = screen->getIcon(index);
 
-  void reconfigure(void);
-  void setClosable(void);
+    if (win) {
+      win->deiconify();
+      win->setInputFocus();
+    }
+  }
 
-  virtual void show(void);
-};
-
-
-#endif // __Windowmenu_hh
+  if (! (screen->getWorkspacemenu()->isTorn() || isTorn()))
+    hide();
+}

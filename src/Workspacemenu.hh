@@ -23,22 +23,18 @@
 #ifndef   __Workspacemenu_hh
 #define   __Workspacemenu_hh
 
-// forward declaration
-class Workspacemenu;
-
-class Toolbar;
-
 #include "Basemenu.hh"
 
+// forward declaration
+class Workspacemenu;
+class Toolbar;
 
 class Workspacemenu : public Basemenu {
 private:
   BScreen *screen;
 
-
 protected:
   virtual void itemSelected(int, int);
-
 
 public:
   Workspacemenu(BScreen *);

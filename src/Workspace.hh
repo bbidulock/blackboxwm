@@ -25,13 +25,12 @@
 
 #include <X11/Xlib.h>
 
+#include "LinkedList.hh"
+
 class BScreen;
 class Clientmenu;
 class Workspace;
 class BlackboxWindow;
-
-#include "LinkedList.hh"
-
 
 class Workspace {
 private:

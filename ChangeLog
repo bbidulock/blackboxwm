@@ -31,6 +31,9 @@ Changes from 0.61.1 to 0.62.0:
   - applied xOr's patch for the maximize, shade, unmaximize bug
   - applied Kennis' patch for sending incorrect Slit configure notices
   - BlackboxWindow's flags have been moved into a flags structure
+  - applied xOr's patch for border handling
+  - updated the manpages (thanks Wilbert)
+  - the menu file mentioned in the manpage is now based on DEFAULT_MENU
   - added my name to the code, updated the version output
     
 Changes from 0.61.0 to 0.61.1:

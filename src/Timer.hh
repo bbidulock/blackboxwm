@@ -37,8 +37,7 @@
 // forward declaration
 class BTimer;
 class TimeoutHandler;
-
-#include "BaseDisplay.hh"
+class BaseDisplay;
 
 class TimeoutHandler {
 public:

@@ -23,12 +23,12 @@
 #ifndef   __Configmenu_hh
 #define   __Configmenu_hh
 
-// forward declaration
-class Configmenu;
-
 #include "Basemenu.hh"
-#include "Screen.hh"
-#include "blackbox.hh"
+
+// forward declaration
+class Blackbox;
+class BScreen;
+class Configmenu;
 
 class Configmenu : public Basemenu {
 private:

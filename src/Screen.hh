@@ -37,12 +37,9 @@
 #  endif // HAVE_SYS_TIME_H
 #endif // TIME_WITH_SYS_TIME
 
-// forward declaration
-class BScreen;
-
 #include "BaseDisplay.hh"
 #include "Configmenu.hh"
-#include "Icon.hh"
+#include "Iconmenu.hh"
 #include "LinkedList.hh"
 #include "Netizen.hh"
 #include "Rootmenu.hh"
@@ -50,12 +47,15 @@ class BScreen;
 #include "Workspace.hh"
 #include "Workspacemenu.hh"
 #include "blackbox.hh"
-
 #ifdef    SLIT
 #  include "Slit.hh"
 #endif // SLIT
+#include "Image.hh"
 
-typedef struct WindowStyle {
+// forward declaration
+class BScreen;
+
+struct WindowStyle {
   BColor f_focus, f_unfocus, l_text_focus, l_text_unfocus, b_pic_focus,
     b_pic_unfocus;
   BTexture t_focus, t_unfocus, l_focus, l_unfocus, h_focus, h_unfocus,
@@ -67,9 +67,9 @@ typedef struct WindowStyle {
   XFontStruct *font;
   
   int justify;
-} WindowStyle;
+};
 
-typedef struct ToolbarStyle {
+struct ToolbarStyle {
   BColor l_text, w_text, c_text, b_pic;
   BTexture toolbar, label, window, button, pressed, clock;
   GC l_text_gc, w_text_gc, c_text_gc, b_pic_gc;
@@ -79,9 +79,9 @@ typedef struct ToolbarStyle {
   XFontStruct *font;
   
   int justify;
-} ToolbarStyle;
+};
 
-typedef struct MenuStyle {
+struct MenuStyle {
   BColor t_text, f_text, h_text, d_text;
   BTexture title, frame, hilite;
   GC t_text_gc, f_text_gc, h_text_gc, d_text_gc, hilite_gc;
@@ -91,7 +91,7 @@ typedef struct MenuStyle {
   XFontStruct *t_font, *f_font;
 
   int t_justify, f_justify, bullet, bullet_pos;
-} MenuStyle;
+};
 
 
 class BScreen : public ScreenInfo {

@@ -23,14 +23,12 @@
 #ifndef   __Netizen_hh
 #define   __Netizen_hh
 
-// forward declaration
-class Netizen;
-
 #include <X11/Xlib.h>
 
-#include "BaseDisplay.hh"
-#include "Screen.hh"
-
+// forward declaration
+class BaseDisplay;
+class BScreen;
+class Netizen;
 
 class Netizen {
 private:
@@ -39,9 +37,7 @@ private:
   Window window;
   XEvent event;
 
-
 protected:
-
 
 public:
   Netizen(BScreen *, Window);
@@ -62,4 +58,3 @@ public:
 
 
 #endif // __Netizen_hh
-

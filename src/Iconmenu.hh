@@ -1,4 +1,4 @@
-// Windowmenu.hh for Blackbox - an X11 Window manager
+// Icon.hh for Blackbox - an X11 Window manager
 // Copyright (c) 2001 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
@@ -20,59 +20,25 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifndef   __Windowmenu_hh
-#define   __Windowmenu_hh
+#ifndef   __Icon_hh
+#define   __Icon_hh
 
 #include "Basemenu.hh"
 
 // forward declaration
-class Windowmenu;
-class SendtoWorkspaceMenu;
+class Iconmenu;
+class BScreen;
 
-class Blackbox;
-class BlackboxWindow;
-class Toolbar;
-
-class Windowmenu : public Basemenu {
+class Iconmenu : public Basemenu {
 private:
-  BlackboxWindow *window;
   BScreen *screen;
-
-  class SendtoWorkspacemenu : public Basemenu {
-  private:
-    Windowmenu *windowmenu;
-
-  protected:
-    virtual void itemSelected(int, int);
-
-  public:
-    SendtoWorkspacemenu(Windowmenu *);
-
-    void update(void);
-
-    virtual void show(void);
-  };
-
-  SendtoWorkspacemenu *sendToMenu;
-
-  friend class SendtoWorkspacemenu;
-
 
 protected:
   virtual void itemSelected(int, int);
 
-
 public:
-  Windowmenu(BlackboxWindow *);
-  virtual ~Windowmenu(void);
-
-  inline Basemenu *getSendToMenu(void) { return (Basemenu *) sendToMenu; }
-
-  void reconfigure(void);
-  void setClosable(void);
-
-  virtual void show(void);
+  Iconmenu(BScreen *);
 };
 
 
-#endif // __Windowmenu_hh
+#endif // __Icon_hh

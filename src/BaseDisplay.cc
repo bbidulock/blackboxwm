@@ -39,11 +39,6 @@
 #  include <X11/extensions/shape.h>
 #endif // SHAPE
 
-#include "i18n.hh"
-#include "BaseDisplay.hh"
-#include "LinkedList.hh"
-#include "Timer.hh"
-
 #ifdef    HAVE_FCNTL_H
 #  include <fcntl.h>
 #endif // HAVE_FCNTL_H
@@ -87,6 +82,10 @@
 #  include <process.h>
 #endif //   HAVE_PROCESS_H             __EMX__
 
+#include "i18n.hh"
+#include "BaseDisplay.hh"
+#include "LinkedList.hh"
+#include "Timer.hh"
 
 // X error handler to handle any and all X errors while the application is
 // running
@@ -185,7 +184,7 @@ void bexec(const char *command, char* displaystring) {
 #endif // !__EMX__
 
 char *bstrdup(const char *s) {
-  int l = strlen(s) + 1;
+  const int l = strlen(s) + 1;
   char *n = new char[l];
   strncpy(n, s, l);
   return n;

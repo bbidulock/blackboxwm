@@ -31,7 +31,7 @@
 #endif // HAVE_CONFIG_H
 
 #include "Netizen.hh"
-
+#include "Screen.hh"
 
 Netizen::Netizen(BScreen *scr, Window win) {
   screen = scr;

@@ -69,9 +69,6 @@ void bexec(const char *, char *);
 
 char *bstrdup(const char *);
 
-template <typename Z> inline Z min(Z a, Z b) { return ((a < b) ? a : b); }
-template <typename Z> inline Z max(Z a, Z b) { return ((a > b) ? a : b); }
-
 class BaseDisplay {
 private:
   struct cursor {

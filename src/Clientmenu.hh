@@ -23,23 +23,17 @@
 #ifndef   __Clientmenu_hh
 #define   __Clientmenu_hh
 
-// forward declarations
-class Clientmenu;
-
 #include "Basemenu.hh"
-#include "Workspace.hh"
-#include "blackbox.hh"
-
+class Workspace;
+class BScreen;
 
 class Clientmenu : public Basemenu {
 private:
   BScreen *screen;
   Workspace *wkspc;
 
-
 protected:
   virtual void itemSelected(int, int);
-
 
 public:
   Clientmenu(Workspace *);

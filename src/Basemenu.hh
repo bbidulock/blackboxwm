@@ -25,14 +25,11 @@
 
 #include <X11/Xlib.h>
 
-// forward declarations
-class Basemenu;
-class BasemenuItem;
-
 class Blackbox;
 class BImageControl;
 class BScreen;
-
+class Basemenu;
+class BasemenuItem;
 #include "LinkedList.hh"
 
 
@@ -70,7 +67,8 @@ protected:
 
   virtual void itemSelected(int, int) = 0;
   virtual void drawItem(int, Bool = False, Bool = False,
-			int = -1, int = -1, unsigned int = 0, unsigned int = 0);
+			int = -1, int = -1, unsigned int = 0,
+			unsigned int = 0);
   virtual void redrawTitle();
   virtual void internal_hide(void);
 
@@ -100,7 +98,8 @@ public:
 
   inline const unsigned int &getWidth(void) const { return menu.width; }
   inline const unsigned int &getHeight(void) const { return menu.height; }
-  inline const unsigned int &getTitleHeight(void) const { return menu.title_h; }
+  inline const unsigned int &getTitleHeight(void) const
+  { return menu.title_h; }
 
   inline void setInternalMenu(void) { internal_menu = True; }
   inline void setAlignment(int a) { alignment = a; }
@@ -143,39 +142,17 @@ private:
 
   friend class Basemenu;
 
-
 protected:
 
-
 public:
-  BasemenuItem(const char *lp, int fp, const char *ep = (const char *) 0) {
-    l = lp;
-    e = ep;
-    s = 0;
-    f = fp;
-    u = 0;
-    enabled = 1;
-    selected = 0;
-  }
+  BasemenuItem(const char *lp, int fp, const char *ep = (const char *) 0):
+    s(0), u(0), l(lp), e(ep), f(fp), enabled(1), selected(0) {}
 
-  BasemenuItem(const char *lp, Basemenu *mp) {
-    l = lp;
-    s = mp;
-    e = 0;
-    f = 0;
-    u = 0;
-    enabled = 1;
-    selected = 0;
-  }
+  BasemenuItem(const char *lp, Basemenu *mp): s(mp), u(0), l(lp), e(0), f(0),
+					      enabled(1), selected(0) {}
 
-  BasemenuItem(const char **up, int fp) {
-    u = up;
-    l = e = 0;
-    f = fp;
-    s = 0;
-    enabled = 1;
-    selected = 0;
-  }
+  BasemenuItem(const char **up, int fp): s(0), u(up), l(0), e(0), f(fp),
+					 enabled(1), selected(0) {}
 
   inline const char *exec(void) const { return e; }
   inline const char *label(void) const { return l; }
