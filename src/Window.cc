@@ -899,10 +899,14 @@ void BlackboxWindow::getWMIconName(void) {
 
   std::string name;
 
-  if (XGetWMIconName(blackbox->getXDisplay(), client.window, &text_prop)) {
-    name = textPropertyToString(blackbox->getXDisplay(), text_prop);
-    XFree((char *) text_prop.value);
+  if (! blackbox->netwm()->readWMIconName(client.window, name) ||
+      name.empty()) {
+    if (XGetWMIconName(blackbox->getXDisplay(), client.window, &text_prop)) {
+      name = textPropertyToString(blackbox->getXDisplay(), text_prop);
+      XFree((char *) text_prop.value);
+    }
   }
+
   if (! name.empty())
     client.icon_title = name;
   else

@@ -37,10 +37,11 @@ Netwm::Netwm(Display* _display): display(_display) {
     "_NET_WORKAREA",
     "_NET_SUPPORTING_WM_CHECK",
     "_NET_CLOSE_WINDOW",
-    "_NET_WM_NAME"
+    "_NET_WM_NAME",
+    "_NET_WM_ICON_NAME"
   };
-  Atom atoms_return[11];
-  XInternAtoms(display, atoms, 11, False, atoms_return);
+  Atom atoms_return[12];
+  XInternAtoms(display, atoms, 12, False, atoms_return);
 
   utf8_string = atoms_return[0];
   net_supported = atoms_return[1];
@@ -53,6 +54,7 @@ Netwm::Netwm(Display* _display): display(_display) {
   net_supporting_wm_check = atoms_return[8];
   net_close_window = atoms_return[9];
   net_wm_name = atoms_return[10];
+  net_wm_icon_name = atoms_return[11];
 }
 
 
@@ -133,6 +135,11 @@ void Netwm::setWMName(Window target, const std::string &name) const {
 
 bool Netwm::readWMName(Window target, std::string& name) const {
   return getUTF8StringProperty(target, net_wm_name, name);
+}
+
+
+bool Netwm::readWMIconName(Window target, std::string& name) const {
+  return getUTF8StringProperty(target, net_wm_icon_name, name);
 }
 
 

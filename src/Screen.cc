@@ -289,10 +289,11 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
     blackbox->netwm()->activeWindow(),
     blackbox->netwm()->workarea(),
     blackbox->netwm()->closeWindow(),
-    blackbox->netwm()->wmName()
+    blackbox->netwm()->wmName(),
+    blackbox->netwm()->wmIconName()
   };
 
-  blackbox->netwm()->setSupported(getRootWindow(), supported, 8);
+  blackbox->netwm()->setSupported(getRootWindow(), supported, 9);
 
   unsigned int i, j, nchild;
   Window r, p, *children;

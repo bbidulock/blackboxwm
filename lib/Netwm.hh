@@ -62,12 +62,15 @@ public:
   // other root messages
   inline Atom closeWindow(void) const { return net_close_window; }
 
-  void setWMName(Window target, const std::string& name) const;
-  bool readWMName(Window target, std::string& name) const;
-
   // application properties
   inline Atom wmName(void) const { return net_wm_name; }
+  inline Atom wmIconName(void) const { return net_wm_icon_name; }
 
+  void setWMName(Window target, const std::string& name) const;
+  bool readWMName(Window target, std::string& name) const;
+  bool readWMIconName(Window target, std::string& name) const;
+
+  // utility
   void removeProperty(Window target, Atom atom) const;
 
 private:
@@ -81,7 +84,8 @@ private:
   Atom utf8_string,
     net_supported, net_number_of_desktops, net_desktop_geometry,
     net_desktop_viewport, net_current_desktop, net_active_window,
-    net_workarea, net_supporting_wm_check, net_close_window, net_wm_name;
+    net_workarea, net_supporting_wm_check, net_close_window, net_wm_name,
+    net_wm_icon_name;
 };
 
 #endif // _blackbox_netwm_hh
