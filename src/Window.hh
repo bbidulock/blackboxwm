@@ -63,7 +63,7 @@ enum WindowFunction {
                                    WindowFunctionChangeLayer |
                                    WindowFunctionFullScreen)
 };
-typedef unsigned char WindowFunctionFlags;
+typedef unsigned short WindowFunctionFlags;
 
 enum WindowDecoration {
   WindowDecorationTitlebar = 1<<0,
