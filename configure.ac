@@ -14,6 +14,31 @@ dnl AC_ISC_POSIX
 
 dnl Locate required external software
 AC_PROG_CXX
+
+if test x$GXX = "xyes"; then
+   CXXFLAGS="${CXXFLAGS} -Wall -W -pedantic"
+   gxx_ver=`$CXX -dumpversion|sed -e 's/\..*//'`
+   AC_MSG_CHECKING([for GNU C++ version])
+   AC_MSG_RESULT([$gxx_ver.])
+   if test $gxx_ver -ge 3; then
+     CXXFLAGS="${CXXFLAGS} -Woverloaded-virtual -Wshadow -Winline"
+   fi
+else
+   mips_pro_ver=`$CC -version 2>&1 | grep -i mipspro | cut -f4 -d ' '`
+   if test "x$mips_pro_ver" != "x"; then
+      AC_MSG_CHECKING([for MIPSpro version])
+      AC_MSG_RESULT([$mips_pro_ver.])
+      AC_MSG_CHECKING(for -LANG:std in CXXFLAGS)
+      lang_std_not_set=`echo $CXXFLAGS | grep "\-LANG:std"`
+      if test "x$lang_std_not_set" = "x"; then
+         AC_MSG_RESULT([not set, setting.])
+         CXXFLAGS="${CXXFLAGS} -LANG:std"
+      else
+         AC_MSG_RESULT([already set.])
+      fi
+   fi 
+fi
+
 AC_PROG_RANLIB
 AC_PROG_INSTALL
 
@@ -45,52 +70,22 @@ AC_CHECK_LIB([socket],
 
 dnl Check for X headers and libraries
 AC_PATH_X
-AC_PATH_XTRA
 
 test x$no_x = "xyes" && AC_MSG_ERROR([Blackbox requires the X Window System libraries and headers.])
 
 test x$x_includes = "x" && x_includes="/usr/include"
 test x$x_libraries = "x" && x_libraries="/usr/lib"
 
-CFLAGS="$CFLAGS $X_CFLAGS"
-CXXFLAGS="$CXXFLAGS $X_CFLAGS"
-LIBS="$LIBS $X_LIBS"
-LDFLAGS="$LDFLAGS $LIBS $X_PRE_LIBS"
-
-AC_MSG_CHECKING([for GNU C++ Compiler])
-if test x$GCC = "xyes"; then
-   AC_MSG_RESULT([yes])
-   CXXFLAGS="${CXXFLAGS} -Wall -W -pedantic"
-   gxx_ver=`$CXX -dumpversion|sed -e 's/\..*//'`
-   if test $gxx_ver -ge 3; then
-     CXXFLAGS="${CXXFLAGS} -Woverloaded-virtual -Wshadow -Winline"
-   fi
-else
-   AC_MSG_RESULT([no, trying other compilers])
-   AC_MSG_CHECKING([for MIPSpro])
-   mips_pro_ver=`$CC -version 2>&1 | grep -i mipspro | cut -f4 -d ' '`
-   if test "x$mips_pro_ver" = "x"; then
-      AC_MSG_RESULT([no])
-   else
-      AC_MSG_RESULT([yes, version $mips_pro_ver.])
-      AC_MSG_CHECKING(for -LANG:std in CXXFLAGS)
-      lang_std_not_set=`echo $CXXFLAGS | grep "\-LANG:std"`
-      if test "x$lang_std_not_set" = "x"; then
-         AC_MSG_RESULT([not set, setting.])
-         CXXFLAGS="${CXXFLAGS} -LANG:std"
-      else
-         AC_MSG_RESULT([already set.])
-      fi
-   fi 
-fi
+CFLAGS="$CFLAGS -I$x_includes"
+CXXFLAGS="$CXXFLAGS -I$x_includes"
+LIBS="$LIBS -L$x_libraries"
+LDFLAGS="$LDFLAGS $LIBS"
 
 dnl Check for required functions in -lX11
 AC_CHECK_LIB([X11],
              [XOpenDisplay],
              [LIBS="$LIBS -lX11"],
              [AC_MSG_ERROR([Could not find XOpenDisplay in -lX11])])
-
-LIBS="$LIBS $X_EXTRA_LIBS"
 
 Xext_lib=""
 
