@@ -36,9 +36,8 @@ extern "C" {
 #include "Timer.hh"
 #include "Util.hh"
 
-#include <bitset>
 #include <list>
-
+#include <vector>
 
 
 namespace bt {
@@ -209,7 +208,7 @@ namespace bt {
     void removeIndex(unsigned int index);
     void clear(void);
 
-    unsigned int count(void) const { return items.size(); }
+    unsigned int count(void) const { return _items.size(); }
 
     const std::string& title(void) const { return _title; }
     void setTitle(const std::string& newtitle) { _title = newtitle; }
@@ -246,7 +245,7 @@ namespace bt {
 
   private:
     typedef std::list<MenuItem> ItemList;
-    typedef std::bitset<500> IdSet;
+    typedef std::bit_vector IdBits;
 
     unsigned int verifyId(unsigned int id = ~0u);
     void activateItem(const Rect &rect, MenuItem &item);
@@ -276,8 +275,8 @@ namespace bt {
     Timer _timer;
     std::string _title;
 
-    ItemList items;
-    IdSet idset;
+    ItemList _items;
+    IdBits _id_bits;
 
     Menu *_parent_menu;
     Menu *_active_submenu;

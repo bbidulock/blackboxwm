@@ -333,7 +333,7 @@ bt::Menu::Menu(Application &app, unsigned int screen)
     _show_title(false),
     _visible(false)
 {
-  idset.reset();
+  _id_bits.insert(_id_bits.begin(), 32, false);
 
   const ScreenInfo& screeninfo = _app.display().screenInfo(_screen);
 
@@ -388,21 +388,18 @@ void bt::Menu::invalidateSize(void) {
 
 unsigned int bt::Menu::insertItem(const MenuItem &item,
                                   unsigned int id, unsigned int index) {
-  // hardcoded maximum of 500 items
-  assert(items.size() < 500);
-
   ItemList::iterator it;
   if (index == ~0u) {
     // append the new item
-    index = items.size();
-    it = items.end();
+    index = _items.size();
+    it = _items.end();
   } else {
-    index = std::min(index, items.size());
-    it = items.begin();
+    index = std::min(index, _items.size());
+    it = _items.begin();
     std::advance<ItemList::iterator, signed>(it, index);
   }
 
-  it = items.insert(it, item);
+  it = _items.insert(it, item);
   if (! item.separator) it->ident = verifyId(id);
   it->indx = index;
 
@@ -447,7 +444,7 @@ void bt::Menu::positionRect(Rect& r, int &row, int &col) {
 bt::Menu::ItemList::iterator bt::Menu::findItem(unsigned int id, Rect& r) {
   int row = 0, col = 0;
   ItemList::iterator it, end;
-  for (it = items.begin(), end = items.end(); it != end; ++it) {
+  for (it = _items.begin(), end = _items.end(); it != end; ++it) {
     r.setHeight(it->height);
 
     if (it->id() == id)
@@ -465,7 +462,7 @@ void bt::Menu::changeItem(unsigned int id, const std::string &newlabel,
                           unsigned int newid) {
   Rect r(_irect.x(), _irect.y(), _itemw, 0);
   ItemList::iterator it = findItem(id, r);
-  if (it == items.end()) return;
+  if (it == _items.end()) return;
 
   bt::MenuItem& item = *it;
   if (! item.isSeparator()) {
@@ -473,7 +470,7 @@ void bt::Menu::changeItem(unsigned int id, const std::string &newlabel,
     item.lbl = newlabel;
     if (newid != ~0u) {
       // change the id if necessary
-      idset.reset(item.ident);
+      _id_bits[item.ident] = false;
       item.ident = verifyId(newid);
     }
     if (isVisible())
@@ -486,7 +483,7 @@ void bt::Menu::changeItem(unsigned int id, const std::string &newlabel,
 void bt::Menu::setItemEnabled(unsigned int id, bool enabled) {
   Rect r(_irect.x(), _irect.y(), _itemw, 0);
   ItemList::iterator it = findItem(id, r);
-  if (it == items.end()) return;
+  if (it == _items.end()) return;
 
   bt::MenuItem& item = *it;
   // found the item, change the status and redraw if visible
@@ -499,15 +496,15 @@ void bt::Menu::setItemEnabled(unsigned int id, bool enabled) {
 
 bool bt::Menu::isItemEnabled(unsigned int id) const {
   ItemList::const_iterator it =
-    std::find_if(items.begin(), items.end(), IdentMatch(id));
-  return (it != items.end() && it->enabled);
+    std::find_if(_items.begin(), _items.end(), IdentMatch(id));
+  return (it != _items.end() && it->enabled);
 }
 
 
 void bt::Menu::setItemChecked(unsigned int id, bool checked) {
   Rect r(_irect.x(), _irect.y(), _itemw, 0);
   ItemList::iterator it = findItem(id, r);
-  if (it == items.end()) return;
+  if (it == _items.end()) return;
 
   bt::MenuItem& item = *it;
   // found the item, change the status and redraw if visible
@@ -520,8 +517,8 @@ void bt::Menu::setItemChecked(unsigned int id, bool checked) {
 
 bool bt::Menu::isItemChecked(unsigned int id) const {
   ItemList::const_iterator it =
-    std::find_if(items.begin(), items.end(), IdentMatch(id));
-  return (it != items.end() && it->checked);
+    std::find_if(_items.begin(), _items.end(), IdentMatch(id));
+  return (it != _items.end() && it->checked);
 }
 
 
@@ -531,8 +528,8 @@ void bt::Menu::removeItemByIterator(ItemList::iterator& it) {
     if (it->sub->_auto_delete) delete it->sub;
   }
 
-  if (! it->separator) idset.reset(it->ident);
-  items.erase(it);
+  if (! it->separator) _id_bits[it->ident] = false;
+  _items.erase(it);
 
   invalidateSize();
 }
@@ -540,25 +537,25 @@ void bt::Menu::removeItemByIterator(ItemList::iterator& it) {
 
 void bt::Menu::removeItem(unsigned int id) {
   ItemList::iterator it =
-    std::find_if(items.begin(), items.end(), IdentMatch(id));
-  if (it == items.end())
+    std::find_if(_items.begin(), _items.end(), IdentMatch(id));
+  if (it == _items.end())
     return; // item not found
   removeItemByIterator(it);
 }
 
 
 void bt::Menu::removeIndex(unsigned int index) {
-  ItemList::iterator it = items.begin();
+  ItemList::iterator it = _items.begin();
 
   std::advance<ItemList::iterator, signed>(it, index);
-  if (it == items.end())
+  if (it == _items.end())
     return; // item not found
   removeItemByIterator(it);
 }
 
 
 void bt::Menu::clear(void) {
-  while (! items.empty())
+  while (! _items.empty())
     removeIndex(0);
   invalidateSize();
 }
@@ -659,7 +656,7 @@ void bt::Menu::hide(void) {
   _timer.stop();
 
   ItemList::iterator it, end;
-  for (it = items.begin(), end = items.end(); it != end; ++it) {
+  for (it = _items.begin(), end = _items.end(); it != end; ++it) {
     if (it->active) {
       it->active = false;
       break;
@@ -682,7 +679,7 @@ void bt::Menu::hide(void) {
 
 void bt::Menu::reconfigure(void) {
   ItemList::iterator it, end;
-  for (it = items.begin(), end = items.end(); it != end; ++it) {
+  for (it = _items.begin(), end = _items.end(); it != end; ++it) {
     if (it->sub) it->sub->reconfigure();
   }
 
@@ -706,7 +703,7 @@ void bt::Menu::updateSize(void) {
   unsigned int row = 0u, cols = 1u;
   _itemw = std::max(20u, _trect.width());
   ItemList::iterator it, end;
-  for (it= items.begin(), end = items.end(); it != end; ++it) {
+  for (it= _items.begin(), end = _items.end(); it != end; ++it) {
     if (it->isSeparator()) {
       _itemw = std::max(_itemw, 20u);
       it->height = style->separatorHeight();
@@ -789,7 +786,7 @@ void bt::Menu::buttonPressEvent(const XButtonEvent * const event) {
   int row = 0, col = 0;
   unsigned int index = 0;
   ItemList::iterator it, end;
-  for (it = items.begin(), end = items.end(); it != end; ++it, ++index) {
+  for (it = _items.begin(), end = _items.end(); it != end; ++it, ++index) {
     r.setHeight(it->height);
 
     if (it->enabled && r.contains(event->x, event->y)) {
@@ -827,7 +824,7 @@ void bt::Menu::buttonReleaseEvent(const XButtonEvent * const event) {
   int row = 0, col = 0;
   unsigned int index = 0;
   ItemList::iterator it, end;
-  for (it = items.begin(), end = items.end(); it != end; ++index) {
+  for (it = _items.begin(), end = _items.end(); it != end; ++index) {
     /*
       increment the iterator here, since the item could be removed
       below (which invalidates the iterator, and we will get a crash
@@ -871,7 +868,7 @@ void bt::Menu::motionNotifyEvent(const XMotionEvent * const event) {
   int row = 0, col = 0;
   unsigned int index = 0;
   ItemList::iterator it, end;
-  for (it = items.begin(), end = items.end(); it != end; ++it, ++index) {
+  for (it = _items.begin(), end = _items.end(); it != end; ++it, ++index) {
     r.setHeight(it->height);
 
     if (r.contains(event->x, event->y)) {
@@ -893,7 +890,7 @@ void bt::Menu::leaveNotifyEvent(const XCrossingEvent * const /*event*/) {
   Rect r(_irect.x(), _irect.y(), _itemw, 0);
   int row = 0, col = 0;
   ItemList::iterator it, end;
-  for (it = items.begin(), end = items.end(); it != end; ++it) {
+  for (it = _items.begin(), end = _items.end(); it != end; ++it) {
     r.setHeight(it->height);
 
     if (it->active && (! _active_submenu || it->sub != _active_submenu))
@@ -929,7 +926,7 @@ void bt::Menu::exposeEvent(const XExposeEvent * const event) {
   r.setRect(_irect.x(), _irect.y(), _itemw, 0);
   int row = 0, col = 0;
   ItemList::const_iterator it, end;
-  for (it = items.begin(), end = items.end(); it != end; ++it) {
+  for (it = _items.begin(), end = _items.end(); it != end; ++it) {
     // note: we are reusing r from above, which is no longer needed now
     r.setHeight(it->height);
 
@@ -947,8 +944,8 @@ void bt::Menu::activateSubmenu(void) {
   showActiveSubmenu();
 
   // activate the first item in the menu when shown with the keyboard
-  ItemList::const_iterator it = _active_submenu->items.begin(),
-                          end = _active_submenu->items.end();
+  ItemList::const_iterator it = _active_submenu->_items.begin(),
+                          end = _active_submenu->_items.end();
   it = std::find_if(it, end, InteractMatch());
   if (it != end && _active_submenu->count() > 0)
     _active_submenu->activateIndex(it->indx);
@@ -970,11 +967,11 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
   }
   } // switch
 
-  if (items.empty()) return;
+  if (_items.empty()) return;
 
   switch (sym) {
   case XK_Down: {
-    ItemList::const_iterator anchor = items.begin(), end = items.end();
+    ItemList::const_iterator anchor = _items.begin(), end = _items.end();
     if (_active_index != ~0u) {
       std::advance<ItemList::const_iterator, signed>(anchor, _active_index);
 
@@ -982,7 +979,7 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
       if (anchor != end && ! anchor->separator) ++anchor;
     }
 
-    if (anchor == end) anchor = items.begin();
+    if (anchor == end) anchor = _items.begin();
 
     ItemList::const_iterator it = std::find_if(anchor, end, InteractMatch());
     if (it != end) activateIndex(it->indx);
@@ -990,16 +987,16 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
   }
 
   case XK_Up: {
-    ItemList::const_reverse_iterator anchor = items.rbegin(),
-                                        end = items.rend();
+    ItemList::const_reverse_iterator anchor = _items.rbegin(),
+                                        end = _items.rend();
     if (_active_index != ~0u) {
-      std::advance<ItemList::const_reverse_iterator, signed>(anchor, items.size() - _active_index - 1);
+      std::advance<ItemList::const_reverse_iterator, signed>(anchor, _items.size() - _active_index - 1);
 
       // go one item past the current active index
       if (anchor != end && ! anchor->separator) ++anchor;
     }
 
-    if (anchor == end) anchor = items.rbegin();
+    if (anchor == end) anchor = _items.rbegin();
 
     ItemList::const_reverse_iterator it =
       std::find_if(anchor, end, InteractMatch());
@@ -1008,15 +1005,15 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
   }
 
   case XK_Home: {
-    ItemList::const_iterator anchor = items.begin(), end = items.end();
+    ItemList::const_iterator anchor = _items.begin(), end = _items.end();
     ItemList::const_iterator it = std::find_if(anchor, end, InteractMatch());
     if (it != end) activateIndex(it->indx);
     break;
   }
 
   case XK_End: {
-    ItemList::const_reverse_iterator anchor = items.rbegin(),
-                                        end = items.rend();
+    ItemList::const_reverse_iterator anchor = _items.rbegin(),
+                                        end = _items.rend();
     ItemList::const_reverse_iterator it =
       std::find_if(anchor, end, InteractMatch());
     if (it != end) activateIndex(it->indx);
@@ -1032,7 +1029,7 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
   case XK_space: {
     if (_active_index == ~0u) break;
 
-    ItemList::const_iterator it = items.begin(), end = items.end();
+    ItemList::const_iterator it = _items.begin(), end = _items.end();
     it = std::find_if(it, end, IndexMatch(_active_index));
     if (it == end) break;
 
@@ -1073,23 +1070,33 @@ void bt::Menu::hideAll(void) {
 unsigned int bt::Menu::verifyId(unsigned int id) {
   if (id != ~0u) {
     // request a specific id
-    assert(id < 500);
 
-    if (! idset.test(id)) {
-      idset.set(id);
+    // expand if necessary
+    while (id >= _id_bits.size())
+      _id_bits.insert(_id_bits.end(), _id_bits.size(), false);
+
+    if (! _id_bits[id]) {
+      _id_bits[id] = true;
       return id;
     }
 
-
-    fprintf(stderr, "Warning: bt::Menu::verifyId: id %d already used\n", id);
+    fprintf(stderr, "Error: bt::Menu::verifyId: id %d already used\n", id);
     abort();
   }
 
-  // find the first available id
-  id = 0;
-  while (idset.test(id)) id++;
-  idset.set(id);
-  return id;
+  IdBits::iterator begin = _id_bits.begin(),
+                     end = _id_bits.end(),
+                      it = std::find(begin, end, false);
+  if (it == end) {
+    // no free bits... expand
+    _id_bits.insert(end, _id_bits.size(), false);
+    end = _id_bits.end();
+    it = std::find(begin, end, false);
+    assert(it != end);
+  }
+
+  *it = true;
+  return static_cast<int>(it - begin);
 }
 
 
@@ -1152,12 +1159,12 @@ void bt::Menu::deactivateItem(const Rect &rect, MenuItem &item) {
 
 
 void bt::Menu::activateIndex(unsigned int index) {
-  assert(index < items.size());
+  assert(index < _items.size());
 
   Rect r(_irect.x(), _irect.y(), _itemw, 0);
   int row = 0, col = 0;
   ItemList::iterator it, end;
-  for (it = items.begin(), end = items.end(); it != end; ++it) {
+  for (it = _items.begin(), end = _items.end(); it != end; ++it) {
     r.setHeight(it->height);
 
     if (it->indx == index) {
