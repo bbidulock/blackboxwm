@@ -2,6 +2,14 @@ At the request of some people, here is a Change log starting with 0.33.0.
 Enjoy! :)
 
 
+Changes from 0.33.0 to 0.33.1:
+	- improved menu handling, less possibilty for SIGSEGV
+	- menus now make copies of all label, exec strings and titles, to
+	  make less loose pointers
+	- fixed typo to allow submenus of submenus of submenus (...)
+	- fixed workspace menu and window list menu placements
+
+
 Changes from 0.31.0 to 0.33.0:
 	- added #ifdef statements so the C preprocessor doesn't complain about
 	  _GNU_SOURCE being redefined.

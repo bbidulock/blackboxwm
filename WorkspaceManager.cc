@@ -452,11 +452,15 @@ void WorkspaceManager::Reconfigure(void) {
 	       CoordModePrevious);
 
   wsMenu->Reconfigure();
-  wsMenu->Move(frame.x + 1, frame.y - wsMenu->Height() - 1);
+  wsMenu->Move(frame.x + 1, frame.y - wsMenu->Height() - 2);
 
   LinkedListIterator<Workspace> it(workspacesList);
   for (; it.current(); it++)
     it.current()->Reconfigure();
+
+  current->Menu()->Move(frame.x + ((wsMenu->Visible()) ?
+                                   wsMenu->Width() + 2 : 2),
+                        frame.y - current->Menu()->Height() - 2);
 }
 
 
@@ -543,7 +547,7 @@ void WorkspaceManager::buttonPressEvent(XButtonEvent *be) {
       if (! wsMenu->Visible()) {
 	if (current->Menu()->Visible())
 	  current->Menu()->Move(frame.x + wsMenu->Width() + 2, frame.y -
-				current->Menu()->Height() - 1);
+				current->Menu()->Height() - 2);
 	wsMenu->Show();
 	
 	waitb1 = True;
@@ -553,7 +557,7 @@ void WorkspaceManager::buttonPressEvent(XButtonEvent *be) {
     if (be->window == frame.workspaceDock) {
       if (! current->Menu()->Visible()) {
 	int fx = frame.x + ((wsMenu->Visible()) ? wsMenu->Width() + 2 : 2);
-	current->Menu()->Move(fx, frame.y - current->Menu()->Height() - 1);
+	current->Menu()->Move(fx, frame.y - current->Menu()->Height() - 2);
 	current->Menu()->Show();
 	
 	waitb3 = True;
@@ -607,7 +611,7 @@ void WorkspaceManager::buttonReleaseEvent(XButtonEvent *re) {
       if (! waitb1) {
 	if (current->Menu()->Visible())
 	  current->Menu()->Move(frame.x + 1, frame.y -
-				current->Menu()->Height() - 1);
+				current->Menu()->Height() - 2);
 	wsMenu->Hide();
       } else
 	waitb1 = False;

@@ -883,6 +883,7 @@ void Blackbox::InitMenu(void) {
       if (! feof(menuFile)) {
 	char line[256], tmp1[256];
 	memset(line, 0, 256);
+	memset(tmp1, 0, 256);
 
 	while (fgets(line, 256, menuFile) && ! feof(menuFile)) {
 	  if (line[0] != '#') {
@@ -903,14 +904,12 @@ void Blackbox::InitMenu(void) {
 		for (ri = len; i < len; ri--)
 		  if (line[ri] == ')') { break; }
 		
-		char *label = 0;
 		if (i < ri && ri > 0) {
-		  label = new char[ri - i + 1];
-		  strncpy(label, line + i, ri - i);
-		  *(label + (ri - i)) = '\0';
+		  strncpy(tmp1, line + i, ri - i);
+		  *(tmp1 + (ri - i)) = '\0';
 		}
 		
-		rootmenu->setMenuLabel(label);
+		rootmenu->setMenuLabel(tmp1);
 		defaultMenu = parseMenuFile(menuFile, rootmenu);
 		break;
 	      }
@@ -926,7 +925,6 @@ void Blackbox::InitMenu(void) {
   }
   
   if (defaultMenu) {
-    rootmenu->defaultMenu();
     rootmenu->insert("xterm", B_Execute, "xterm");
     rootmenu->insert("Restart", B_Restart);
     rootmenu->insert("Exit", B_Exit);
@@ -935,11 +933,12 @@ void Blackbox::InitMenu(void) {
 
 
 Bool Blackbox::parseMenuFile(FILE *file, Rootmenu *menu) {
-  char line[256], tmp1[256];
+  char line[256], tmp1[256], tmp2[256];
 
   while (! feof(file)) {
     memset(line, 0, 256);
     memset(tmp1, 0, 256);
+    memset(tmp2, 0, 256);
     
     if (fgets(line, 256, file)) {
       if (line[0] != '#') {
@@ -961,11 +960,10 @@ Bool Blackbox::parseMenuFile(FILE *file, Rootmenu *menu) {
 	      if (line[ri] == ')') break;
 	    
 	    if (i < ri && ri > 0) {
-	      char *label = new char[ri - i + 1];
-	      strncpy(label, line + i, ri - i);
-	      *(label + (ri - i)) = '\0';
+	      strncpy(tmp1, line + i, ri - i);
+	      *(tmp1 + (ri - i)) = '\0';
 	      
-	      menu->insert(label, B_Exit);
+	      menu->insert(tmp1, B_Exit);
 	    }
 	  } else if (strstr(tmp1, "restart")) {
 	    for (i = 0; i < len; i++)
@@ -974,26 +972,20 @@ Bool Blackbox::parseMenuFile(FILE *file, Rootmenu *menu) {
 	      if (line[ri] == ')') break;
 	    
 	    if (i < ri && ri > 0) {
-	      char *label = new char[ri - i + 1];
-	      strncpy(label, line + i, ri - i);
-	      *(label + (ri - i)) = '\0';
+	      strncpy(tmp1, line + i, ri - i);
+	      *(tmp1 + (ri - i)) = '\0';
 	      
 	      for (i = 0; i < len; i++)
 		if (line[i] == '{') { i++; break; }
 	      for (ri = len; ri > 0; ri--)
 		if (line[ri] == '}') break;
 	      
-	      char *other = 0;
 	      if (i < ri && ri > 0) {
-		other = new char[ri - i + 1];
-		strncpy(other, line + i, ri - i);
-		*(other + (ri - i)) = '\0';
-	      }
-
-	      if (other)
-		menu->insert(label, B_RestartOther, other);
-	      else
-		menu->insert(label, B_Restart);
+		strncpy(tmp2, line + i, ri - i);
+		*(tmp2 + (ri - i)) = '\0';
+		menu->insert(tmp1, B_RestartOther, tmp2);
+	      } else
+		menu->insert(tmp1, B_Restart);
 	    }
 	  } else if (strstr(tmp1, "reconfig")) {
 	    for (i = 0; i < len; i++)
@@ -1002,26 +994,20 @@ Bool Blackbox::parseMenuFile(FILE *file, Rootmenu *menu) {
 	      if (line[ri] == ')') break;
 	    
 	    if (i < ri && ri > 0) {
-	      char *label = new char[ri - i + 1];
-	      strncpy(label, line + i, ri - i);
-	      *(label + (ri - i)) = '\0';
+	      strncpy(tmp1, line + i, ri - i);
+	      *(tmp1 + (ri - i)) = '\0';
 	      
 	      for (i = 0; i < len; i++)
 		if (line[i] == '{') { i++; break; }
 	      for (ri = len; ri > 0; ri--)
 		if (line[ri] == '}') break;
 	      
-	      char *exec = 0;
 	      if (i < ri && ri > 0) {
-		exec = new char[ri - i + 1];
-		strncpy(exec, line + i, ri - i);
-		*(exec + (ri - i)) = '\0';
-	      }
-
-	      if (exec)
-		menu->insert(label, B_ExecReconfigure, exec);
-	      else
-		menu->insert(label, B_Reconfigure);
+		strncpy(tmp2, line + i, ri - i);
+		*(tmp2 + (ri - i)) = '\0';
+		menu->insert(tmp1, B_ExecReconfigure, tmp2);
+	      } else
+		menu->insert(tmp1, B_Reconfigure);
 	    }
 	  } else if (strstr(tmp1, "submenu")) {
 	    for (i = 0; i < len; i++)
@@ -1029,13 +1015,11 @@ Bool Blackbox::parseMenuFile(FILE *file, Rootmenu *menu) {
 	    for (ri = len; ri > 0; ri--)
 	      if (line[ri] == ')') break;
 
-	    char *label;
 	    if (i < ri && ri > 0) {
-	      label = new char[ri - i + 1];
-	      strncpy(label, line + i, ri - i);
-	      *(label + (ri - i)) = '\0';
+	      strncpy(tmp1, line + i, ri - i);
+	      *(tmp1 + (ri - i)) = '\0';
 	    } else
-	      label = "(nil)";
+	      strcpy(tmp1, "(nil)");
 	    
 	    // this is an optional feature
 	    for (i = 0; i < len; i++)
@@ -1043,18 +1027,17 @@ Bool Blackbox::parseMenuFile(FILE *file, Rootmenu *menu) {
 	    for (ri = len; ri > 0; ri--)
 	      if (line[ri] == '}') break;
 	    
-	    char *optTitle = 0;
 	    if (i < ri && ri > 0) {
-	      optTitle = new char[ri - i + 1];
-	      strncpy(optTitle, line + i, ri - i);
-	      *(optTitle + (ri - i)) = '\0';
-	    }
+	      strncpy(tmp2, line + i, ri - i);
+	      *(tmp2 + (ri - i)) = '\0';
+	    } else
+	      strcpy(tmp2, tmp1);
 	    
 	    Rootmenu *submenu = new Rootmenu(this);
-	    submenu->setMenuLabel((optTitle) ? optTitle : label);
+	    submenu->setMenuLabel(tmp2);
 	    parseMenuFile(file, submenu);
 	    submenu->Update();
-	    rootmenu->insert(label, submenu);
+	    menu->insert(tmp1, submenu);
 	  } else if (strstr(tmp1, "end")) {
 	    break;
 	  } else if (strstr(tmp1, "exec")) {
@@ -1064,9 +1047,8 @@ Bool Blackbox::parseMenuFile(FILE *file, Rootmenu *menu) {
 	      if (line[ri] == ')') break;
 
 	    if (i < ri && ri > 0) {
-	      char *label = new char[ri - i + 1];
-	      strncpy(label, line + i, ri - i);
-	      *(label + (ri - i)) = '\0';
+	      strncpy(tmp1, line + i, ri - i);
+	      *(tmp1 + (ri - i)) = '\0';
    
 	      for (i = 0; i < len; i++)
 		if (line[i] == '{') { i++; break; }
@@ -1074,17 +1056,11 @@ Bool Blackbox::parseMenuFile(FILE *file, Rootmenu *menu) {
 		if (line[ri] == '}') break;
 	      
 	      if (i < ri && ri > 0) {
-		char *command = new char[ri - i + 1];
-		strncpy(command, line + i, ri - i);
-		*(command + (ri - i)) = '\0';
-
-		if (label && command)
-		  menu->insert(label, B_Execute, command);
-		else
-		  printf("error: label(%s) == NULL || command(%s) == NULL\n",
-			 label, command);
+		strncpy(tmp2, line + i, ri - i);
+		*(tmp2 + (ri - i)) = '\0';
+		menu->insert(tmp1, B_Execute, tmp2);
 	      } else
-		printf("error: no command string for [exec] (%s)\n", label);
+		printf("error: no command string for [exec] (%s)\n", tmp1);
 	    } else
 	      printf("error: no label string for [exec]\n");
 	  }
@@ -1107,10 +1083,7 @@ void Blackbox::LoadDefaults(void) {
 
   XGrabServer(display);
   
-  if (resource.blackboxrc)
-    XrmDestroyDatabase(resource.blackboxrc);
   resource.blackboxrc = 0;
-
   char *homedir = getenv("HOME"), *rcfile = new char[strlen(homedir) + 32];
   sprintf(rcfile, "%s/.blackboxrc", homedir);
 
@@ -1559,6 +1532,7 @@ void Blackbox::LoadDefaults(void) {
     }
   }
 
+  XrmDestroyDatabase(resource.blackboxrc);
   XUngrabServer(display);
 }
 

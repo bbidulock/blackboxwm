@@ -39,7 +39,6 @@ Windowmenu::Windowmenu(BlackboxWindow *win, Blackbox *bb) : Basemenu(bb) {
 
   setTitleVisibility(False);
   setMovable(False);
-  defaultMenu();
 
   sendToMenu = new SendtoWorkspaceMenu(win, bb);
   insert("Send To ...", sendToMenu);
@@ -144,7 +143,9 @@ SendtoWorkspaceMenu::SendtoWorkspaceMenu(BlackboxWindow *win, Blackbox *bb) :
 
 
 SendtoWorkspaceMenu::~SendtoWorkspaceMenu(void) {
-
+  int i, r = Count();
+  for (i = 0; i < r; i++)
+    remove(0);
 }
 
 

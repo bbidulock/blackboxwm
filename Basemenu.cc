@@ -41,7 +41,6 @@ Basemenu::Basemenu(Blackbox *ctrl) {
   display = blackbox->control();
   parent = (Basemenu *) 0;
 
-  default_menu = False;
   title_vis = movable = True;
   moving = False;
   user_moved = False;
@@ -149,7 +148,7 @@ Basemenu::~Basemenu(void) {
 // insertion and removal methods
 // *************************************************************************
 
-int Basemenu::insert(char *label, int function, char *exec) {
+int Basemenu::insert(char *l, int function, char *e) {
   int ret = 0;
   if (function)
     switch (function) {
@@ -163,6 +162,8 @@ int Basemenu::insert(char *label, int function, char *exec) {
     case Blackbox::B_Exit:
     case Blackbox::B_Restart:
     case Blackbox::B_Reconfigure: {
+      char *label = new char[strlen(l) + 1];
+      strcpy(label, l);
       BasemenuItem *item = new BasemenuItem(label, function);
       ret = menuitems->insert(item);
       
@@ -172,20 +173,29 @@ int Basemenu::insert(char *label, int function, char *exec) {
     case Blackbox::B_Execute:
     case Blackbox::B_ExecReconfigure:
     case Blackbox::B_RestartOther: {
+      char *label = new char[strlen(l) + 1], *exec = new char[strlen(e) + 1];
+      strcpy(label, l);
+      strcpy(exec, e);
+
       BasemenuItem *item = new BasemenuItem(label, function, exec);
       ret = menuitems->insert(item);
       
       ret = menuitems->count();
       break; }
     }
-  else
+  else {
+    char *label = new char[strlen(l) + 1];
+    strcpy(label, l);
     ret = menuitems->insert(new BasemenuItem(label, 0));
+  }
   
   return ret;
 }
 
 
-int Basemenu::insert(char *label, Basemenu *submenu) {
+int Basemenu::insert(char *l, Basemenu *submenu) {
+  char *label = new char[strlen(l) + 1];
+  strcpy(label, l);
   BasemenuItem *item = new BasemenuItem(label, submenu);
   menuitems->insert(item);
   submenu->parent = this;
@@ -220,12 +230,20 @@ int Basemenu::remove(int index) {
   }
   
   delete item;
-
+  
   if (which_sub != -1)
     if ((--which_sub) == index)
       which_sub = -1;
-
+  
   return menuitems->count();
+}
+
+
+void Basemenu::setMenuLabel(char *n) {
+  if (menu.label) delete [] menu.label;
+
+  menu.label = new char[strlen(n) + 1];
+  strcpy(menu.label, n);
 }
 
 

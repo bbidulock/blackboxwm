@@ -40,7 +40,7 @@ private:
   Blackbox *blackbox;
   Basemenu *parent;
 
-  Bool moving, visible, movable, user_moved, default_menu, title_vis;
+  Bool moving, visible, movable, user_moved, title_vis, default_menu;
   Display *display;
   GC titleGC, itemGC, hitemGC, hbgGC;
   int which_sub, which_press, which_sbl;
@@ -96,7 +96,7 @@ public:
   int Visible(void) { return visible; }
   const char *Label(void) const { return menu.label; }
   int Count(void) { return menuitems->count(); }
-  void setMenuLabel(char *n) { menu.label = n; }
+  void setMenuLabel(char *);
   void Show(void);
   void Hide(void);
   void Move(int, int);
