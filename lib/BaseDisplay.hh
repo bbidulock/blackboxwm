@@ -63,17 +63,17 @@ namespace bt {
   public:
     ScreenInfo(Display& d, unsigned int num);
 
-    inline Display& getDisplay(void) const { return display; }
-    inline Visual *getVisual(void) const { return visual; }
-    inline Window getRootWindow(void) const { return root_window; }
-    inline Colormap getColormap(void) const { return colormap; }
-    inline int getDepth(void) const { return depth; }
-    inline unsigned int getScreenNumber(void) const
+    Display& getDisplay(void) const { return display; }
+    Visual *getVisual(void) const { return visual; }
+    Window getRootWindow(void) const { return root_window; }
+    Colormap getColormap(void) const { return colormap; }
+    int getDepth(void) const { return depth; }
+    unsigned int getScreenNumber(void) const
     { return screen_number; }
-    inline const Rect& getRect(void) const { return rect; }
-    inline unsigned int getWidth(void) const { return rect.width(); }
-    inline unsigned int getHeight(void) const { return rect.height(); }
-    inline const std::string& displayString(void) const
+    const Rect& getRect(void) const { return rect; }
+    unsigned int getWidth(void) const { return rect.width(); }
+    unsigned int getHeight(void) const { return rect.height(); }
+    const std::string& displayString(void) const
     { return display_string; }
   };
 
@@ -124,7 +124,7 @@ namespace bt {
     size_t MaskListLength;
 
     // the masks of the modifiers which are ignored in button events.
-    int NumLockMask, ScrollLockMask;
+    unsigned int NumLockMask, ScrollLockMask;
 
   protected:
     /*
@@ -143,26 +143,26 @@ namespace bt {
     const ScreenInfo& getScreenInfo(unsigned int s) const
     { return *(display.screenNumber(s)); }
 
-    inline bool hasShapeExtensions(void) const
+    bool hasShapeExtensions(void) const
     { return shape.extensions; }
-    inline bool doShutdown(void) const
+    bool doShutdown(void) const
     { return run_state == SHUTDOWN; }
-    inline bool isStartup(void) const
+    bool isStartup(void) const
     { return run_state == STARTUP; }
 
-    inline ::Display *getXDisplay(void) const { return display.XDisplay(); }
-    inline const Display& getDisplay(void) const { return display; }
+    ::Display *getXDisplay(void) const { return display.XDisplay(); }
+    const Display& getDisplay(void) const { return display; }
 
-    inline const char *getApplicationName(void) const
+    const char *getApplicationName(void) const
     { return application_name; }
 
-    inline unsigned int getNumberOfScreens(void) const
+    unsigned int getNumberOfScreens(void) const
     { return display.screenCount(); }
-    inline int getShapeEventBase(void) const
+    int getShapeEventBase(void) const
     { return shape.event_basep; }
 
-    inline void shutdown(void) { run_state = SHUTDOWN; }
-    inline void run(void) { run_state = RUNNING; }
+    void shutdown(void) { run_state = SHUTDOWN; }
+    void run(void) { run_state = RUNNING; }
 
     void grabButton(unsigned int button, unsigned int modifiers,
                     Window grab_window, bool owner_events,
@@ -173,6 +173,9 @@ namespace bt {
                       Window grab_window) const;
 
     void eventLoop(void);
+
+    unsigned int scrollLockMask(void) const { return ScrollLockMask; }
+    unsigned int numLockMask(void) const { return NumLockMask; }
 
     // from TimerQueueManager interface
     virtual void addTimer(Timer *timer);
