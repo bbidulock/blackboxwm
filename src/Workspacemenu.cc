@@ -47,15 +47,15 @@ Workspacemenu::Workspacemenu(bt::Application &app, unsigned int screen,
   setTitle(bt::toUnicode("Workspaces"));
   showTitle();
 
+  insertSeparator();
   insertItem(bt::toUnicode("New Workspace"), NewWorkspace);
   insertItem(bt::toUnicode("Remove Last Workspace"), RemoveLastWorkspace);
-  insertSeparator();
 }
 
 
 void Workspacemenu::insertWorkspace(Workspace *workspace) {
   insertItem(workspace->name(), workspace->menu(),
-             workspace->id() + WorkspaceIDDelta, count() - 2);
+             workspace->id() + WorkspaceIDDelta, count() - 3);
 }
 
 
@@ -68,8 +68,8 @@ void Workspacemenu::setWorkspaceChecked(unsigned int id, bool checked)
 
 
 void Workspacemenu::insertIconMenu(Iconmenu *iconmenu) {
-  insertSeparator();
-  insertItem(bt::toUnicode("Iconified Windows"), iconmenu, Icons);
+  insertItem(bt::toUnicode("Iconified Windows"), iconmenu, Icons, 0);
+  insertSeparator(1);
 }
 
 
