@@ -179,7 +179,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
   toolbar = new Toolbar(this);
 
-  slit = new Slit(this);
+  _slit = new Slit(this);
 
   InitMenu();
 
@@ -324,8 +324,9 @@ BScreen::~BScreen(void) {
   delete workspacemenu;
   delete iconmenu;
   delete configmenu;
-  delete slit;
   delete toolbar;
+
+  destroySlit();
 
   blackbox->netwm().removeProperty(screen_info.rootWindow(),
                                    blackbox->netwm().supportingWMCheck());
@@ -429,7 +430,7 @@ void BScreen::reconfigure(void) {
 
   toolbar->reconfigure();
 
-  slit->reconfigure();
+  if (_slit) _slit->reconfigure();
 
   std::for_each(workspacesList.begin(), workspacesList.end(),
                 std::mem_fun(&Workspace::reconfigure));
@@ -566,7 +567,8 @@ void BScreen::manageWindow(Window w) {
   XWMHints *wmhint = XGetWMHints(blackbox->XDisplay(), w);
   if (wmhint && (wmhint->flags & StateHint) &&
       wmhint->initial_state == WithdrawnState) {
-    slit->addClient(w);
+    if (!_slit) createSlit();
+    _slit->addClient(w);
     return;
   }
 
@@ -650,8 +652,8 @@ BScreen::raiseWindows(const bt::Netwm::WindowList* const workspace_stack) {
   if (toolbar->isOnTop())
     *(it++) = toolbar->getWindowID();
 
-  if (slit->isOnTop())
-    *(it++) = slit->getWindowID();
+  if (_slit && _slit->isOnTop())
+    *(it++) = _slit->getWindowID();
 
   if (workspace_stack_size)
     std::copy(workspace_stack->rbegin(), workspace_stack->rend(), it);
@@ -1164,7 +1166,7 @@ void BScreen::shutdown(void) {
   while(! windowList.empty())
     unmanageWindow(windowList.back(), True);
 
-  slit->shutdown();
+  if (_slit) _slit->shutdown();
 }
 
 
@@ -1474,4 +1476,20 @@ void BScreen::getDesktopNames(void) {
 
 BlackboxWindow* BScreen::getWindow(unsigned int workspace, unsigned int id) {
   return getWorkspace(workspace)->window(id);
+}
+
+
+void BScreen::createSlit(void) {
+  if (_slit) return;
+
+  _slit = new Slit(this);
+  raiseWindows(0);
+}
+
+
+void BScreen::destroySlit(void) {
+  if (!_slit) return;
+
+  delete _slit;
+  _slit = 0;
 }

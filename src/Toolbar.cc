@@ -968,10 +968,11 @@ void Toolbar::toggleAutoHide(void) {
   do_auto_hide = ! do_auto_hide;
 
   updateStrut();
-  _screen->getSlit()->reposition();
+  if (_screen->slit())
+    _screen->slit()->reposition();
 
   if (do_auto_hide == False && hidden) {
-    // force the slit to be visible
+    // force the toolbar to be visible
     if (hide_timer->isTiming()) hide_timer->stop();
     hide_timer->fireTimeout();
   }
@@ -995,7 +996,8 @@ void Toolbar::setPlacement(Placement place) {
 
   // reposition the slit as well to make sure it doesn't intersect the
   // toolbar
-  _screen->getSlit()->reposition();
+  if (_screen->slit())
+    _screen->slit()->reposition();
 
   _screen->saveResource();
 }
