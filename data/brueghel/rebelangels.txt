@@ -1,0 +1,7 @@
+
+The Rebel Angels - Blackbox 0.50.x theme
+
+	This tan based theme is the second in a series, which hopes to give
+users more options in terms of configuration.  This theme uses Pieter Brueghel's
+painting entitled "The Rebel Angels" as its background.
+

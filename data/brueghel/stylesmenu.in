@@ -1,0 +1,9 @@
+# Brueghel Styles menu
+
+[submenu] (Brueghel)              {Pieter Brueghel inspired styles...}
+  [style] (Flight of Icarus)      {:pkgdatadir:/icarus}
+  [style] (Rebel Angels)          {:pkgdatadir:/rebelangels}
+  [style] (Little Tower of Babel) {:pkgdatadir:/littlebabel}
+  [style] (Tower of Babel)        {:pkgdatadir:/babel}
+[end]
+

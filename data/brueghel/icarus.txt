@@ -1,0 +1,7 @@
+
+The Flight of Icarus - Blackbox 0.50.x theme
+
+	This green based theme is the first in a series, which hopes to give
+users more options in terms of configuration.  This theme uses Pieter Brughel's
+painting entitled "The Flight of Icarus" as its background.
+
