@@ -358,14 +358,14 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name)
   MaskList[7] = LockMask | NumLockMask | ScrollLockMask;
   MaskListLength = sizeof(MaskList) / sizeof(MaskList[0]);
 
-  if (modmap) XFreeModifiermap(const_cast<XModifierKeymap*>(modmap));
+  if (modmap)
+    XFreeModifiermap(const_cast<XModifierKeymap*>(modmap));
 }
 
 
 BaseDisplay::~BaseDisplay(void) {
   while (screenInfoList->count()) {
     ScreenInfo *si = screenInfoList->first();
-
     screenInfoList->remove(si);
     delete si;
   }
@@ -496,23 +496,24 @@ void BaseDisplay::process_event(XEvent *e)
     }
 
     if (popwidget) {
-      if (root) {
-        widget = popwidget;
-      } else {
-        // close all popups
-        switch(e->type) {
-        case ButtonPress:
-        case ButtonRelease:
-        case KeyPress:
-        case KeyRelease:
+      switch(e->type) {
+      case ButtonPress:
+      case ButtonRelease:
+      case KeyPress:
+      case KeyRelease:
+        if (! root) {
+          // close all popups
           do {
             popwidget->hide();
           } while (popwidget);
-          return;
-
-        default:
-          break;
+        } else {
+          // send button and key events to popwidget
+          widget = popwidget;
         }
+        break;
+
+      default:
+        break;
       }
     }
 
