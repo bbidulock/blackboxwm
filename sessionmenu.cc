@@ -23,7 +23,7 @@
 #include "session.hh"
 
 #include <stdlib.h>
-
+#include <string.h>
 
 // *************************************************************************
 // Session menu class code - root menu
@@ -38,9 +38,10 @@
 
 SessionMenu::SessionMenu(BlackboxSession *s) : BlackboxMenu(s) {
   session = s;
+  default_menu = False;
 }
-
-
+  
+  
 SessionMenu::~SessionMenu(void) {
   int n = count();
   for (int i = 0; i < n; i++)
@@ -61,15 +62,17 @@ int SessionMenu::remove(int index) {
   if (index >= 0 && index < count()) {
     BlackboxMenuItem *itmp = find(index);
 
-    if (itmp->Submenu()) {
-      SessionMenu *tmp = (SessionMenu *) itmp->Submenu();
-      delete tmp;
-    }
-    if (itmp->Label()) {
-      delete [] itmp->Label();
-    }
-    if (itmp->Exec()) {
-      delete [] itmp->Exec();
+    if (! default_menu) {
+      if (itmp->Submenu()) {
+	SessionMenu *tmp = (SessionMenu *) itmp->Submenu();
+	delete tmp;
+      }
+      if (itmp->Label()) {
+	delete [] itmp->Label();
+      }
+      if (itmp->Exec()) {
+	delete [] itmp->Exec();
+      }
     }
     
     return BlackboxMenu::remove(index);
@@ -184,4 +187,9 @@ void SessionMenu::itemReleased(int button, int index) {
 
 void SessionMenu::drawSubmenu(int index) {
   BlackboxMenu::drawSubmenu(index);
+}
+
+
+void SessionMenu::Reconfigure(void) {
+  BlackboxMenu::Reconfigure();
 }

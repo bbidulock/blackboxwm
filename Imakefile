@@ -24,12 +24,13 @@ Sources =		blackbox.cc graphics.cc icon.cc llist.cc main.cc menu.cc session.cc s
 Objects =		blackbox.o graphics.o icon.o main.o menu.o llist.o session.o sessionmenu.o window.o windowmenu.o workspace.o workspacemenu.o
 
 XCOMM Add compiler options here
-CompileOptimize =	-O2 -ffast-math -finline-functions
-CompileOptions =	-Wall -W -DSHAPE -pipe $(CompileOptimize) -I$(INCDIR)
+CompileOptimize =	$(CXXFLAGS)
+CompileOptions =	-Wall -W -DSHAPE $(CompileOptimize)
 
 DefaultsPath =		-DXAPPLOADDIR=\"$(XAPPLOADDIR)\" -DXLIBDIR=\"$(LIBDIR)\"
 Libraries =		$(XLIB) $(EXTENSIONLIB)
 OtherLibs =		
+
 
 PROGRAMS = blackbox
 SRCS1 = $(Sources)
@@ -56,10 +57,7 @@ install.app-defaults::
 		$(MKDIRHIER) $(XAPPLOADDIR); \
 	fi
 	$(INSTALL) $(INSTALLFLAGS) $(INSTMANFLAGS) Blackbox.ad $(XAPPLOADDIR)/Blackbox.ad
-	@if [ ! -d $(LIBDIR)/Blackbox ]; then \
-		$(MKDIRHIER) $(LIBDIR)/Blackbox; \
-	fi
-	$(INSTALL) $(INSTALLFLAGS) $(INSTMANFLAGS) Menu.ad $(LIBDIR)/Blackbox/Menu.ad
+	$(INSTALL) $(INSTALLFLAGS) $(INSTMANFLAGS) Menu.ad $(LIBDIR)/BlackboxMenu.ad
 
 XCOMM Make rules I enjoy
 

@@ -426,7 +426,6 @@ XImage *BImage::convertToXImage(void) {
 
   XImage *image = XCreateImage(session->control(), session->visual(), depth,
 			       ZPixmap, 0, d, width, height, 8, 0);
-  
   if (image == NULL) return 0;
   
   unsigned char r = 0, g = 0, b = 0;

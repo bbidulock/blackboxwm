@@ -288,22 +288,21 @@ void BlackboxMenu::updateMenu(void) {
     if (mt_pixmap) XFreePixmap(display, mt_pixmap);
   }
 
-  {
-    BImage mi_image(session, menu.width, menu.item_h, session->Depth(),
-		    session->menuItemColor());  
-    if (menu.item_pixmap) XFreePixmap(display, menu.item_pixmap);
-    
-    menu.item_pixmap = mi_image.renderImage(session->menuItemTexture(), 0,
-					    session->menuItemColor(),
-					    session->menuItemToColor());
-    
-    if (menu.pushed_pixmap) XFreePixmap(display, menu.pushed_pixmap);
-    menu.pushed_pixmap =
-      mi_image.renderImage(session->menuItemPressedTexture(), 0,
-			   session->menuItemToColor(),
-			   session->menuItemColor());
-  }
-
+  BImage *mi_image = new BImage(session, menu.width, menu.item_h,
+				session->Depth(), session->menuItemColor());
+  if (menu.item_pixmap) XFreePixmap(display, menu.item_pixmap);
+  
+  menu.item_pixmap = mi_image->renderImage(session->menuItemTexture(), 0,
+					   session->menuItemColor(),
+					   session->menuItemToColor());
+  
+  if (menu.pushed_pixmap) XFreePixmap(display, menu.pushed_pixmap);
+  menu.pushed_pixmap =
+    mi_image->renderImage(session->menuItemPressedTexture(), 0,
+			  session->menuItemToColor(),
+			  session->menuItemColor());
+  delete mi_image;
+  
   menu.height = ((show_title) ? menu.title_h : 0) +
     (menu.item_h * menuitems->count());
   XResizeWindow(display, menu.frame, menu.width, menu.height);

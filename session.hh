@@ -45,6 +45,7 @@ class WorkspaceManager;
 class SessionMenu : public BlackboxMenu {
 private:
   BlackboxSession *session;
+  Bool default_menu;
 
 
 protected:  
@@ -60,14 +61,17 @@ public:
   virtual ~SessionMenu(void);
   
   Window windowID(void);
-  int insert(char *, void (*)());
-  int insert(char *, int, char * = 0);
-  int insert(char *, SessionMenu *);
-  int remove(int);
   void showMenu(void);
   void hideMenu(void);
   void moveMenu(int, int);
   void updateMenu(void);
+  void Reconfigure(void);
+  void defaultMenu(void) { default_menu = True; }
+
+  int insert(char *, void (*)());
+  int insert(char *, int, char * = 0);
+  int insert(char *, SessionMenu *);
+  int remove(int);
 };
 
 
@@ -166,11 +170,11 @@ private:
 protected:
   void InitScreen(void);
   void InitMenu(void);
-  void parseSubMenu(FILE *, SessionMenu *);
   void InitColor(void);
   void ProcessEvent(XEvent *);
   void createAutoConfigDialog(void);
   void do_reconfigure(void);
+  void readMenuDatabase(SessionMenu *, XrmValue *, XrmDatabase *);
 
 
 public:
@@ -232,7 +236,7 @@ public:
   unsigned int YResolution(void) { return yres; }
 
   // pointers to the sessions controlling members
-  SessionMenu *menu(void) { return rootmenu; }
+  SessionMenu *Rootmenu(void) { return rootmenu; }
   WorkspaceManager *WSManager(void) { return ws_manager; }
 
   // textures and colors for configuration

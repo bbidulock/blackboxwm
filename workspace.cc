@@ -177,7 +177,7 @@ void Workspace::Dissociate(void) {
     XMapWindow(display, win->clientWindow());
   }
 
-  XSync(display, 0);
+  XSync(display, False);
   XUngrabServer(display);
 }
 
@@ -358,12 +358,12 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
 		  session->visual(), create_mask, &attrib_create);
   session->saveWSManagerSearch(frame.window, this);
 
-  BImage image(session, frame.frame_w, frame.frame_h,
-	       session->Depth(), session->frameColor());
-  Pixmap p = image.renderImage(session->toolboxTexture(), 1,
-			       session->toolboxColor(),
-			       session->toolboxToColor());
-
+  BImage *image = new BImage(session, frame.frame_w, frame.frame_h,
+			     session->Depth(), session->frameColor());
+  Pixmap p = image->renderImage(session->toolboxTexture(), 1,
+				session->toolboxColor(),
+				session->toolboxToColor());
+  delete image;
   XSetWindowBackgroundPixmap(display, frame.window, p);
   if (p) XFreePixmap(display, p);
 
@@ -373,21 +373,21 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
 		  create_mask, &attrib_create);
   session->saveWSManagerSearch(frame.workspace_button, this);
 
- XGCValues gcv;
+  XGCValues gcv;
   gcv.font = session->titleFont()->fid;
   gcv.foreground = session->toolboxTextColor().pixel;
   buttonGC = XCreateGC(display, frame.workspace_button,
 		       GCFont|GCForeground, &gcv);
 
-  BImage bimage(session, frame.button_w, frame.button_h,
-		session->Depth(), session->buttonColor());
-  frame.button = bimage.renderImage(session->buttonTexture(), 0,
+  BImage *bimage = new BImage(session, frame.button_w, frame.button_h,
+			      session->Depth(), session->buttonColor());
+  frame.button = bimage->renderImage(session->buttonTexture(), 0,
 				    session->buttonColor(),
 				    session->buttonToColor());
-  frame.pbutton = bimage.renderInvertedImage(session->buttonTexture(), 0,
+  frame.pbutton = bimage->renderInvertedImage(session->buttonTexture(), 0,
 					     session->buttonColor(),
 					     session->buttonToColor());
-
+  delete bimage;
   XSetWindowBackgroundPixmap(display, frame.workspace_button, frame.button);
   
   frame.icon =
@@ -397,12 +397,12 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
 		  create_mask, &attrib_create);
   session->saveWSManagerSearch(frame.icon, this);
   
-  BImage iimage(session, frame.button_w, (frame.frame_h / 2) - 2,
-		session->Depth(), session->toolboxColor());
-  p = iimage.renderInvertedImage(session->toolboxTexture(), 0,
-				 session->toolboxColor(),
-				 session->toolboxToColor());
-  
+  BImage *iimage = new BImage(session, frame.button_w, (frame.frame_h / 2) - 2,
+			      session->Depth(), session->toolboxColor());
+  p = iimage->renderInvertedImage(session->toolboxTexture(), 0,
+				  session->toolboxColor(),
+ 				  session->toolboxToColor());
+  delete iimage;
   XSetWindowBackgroundPixmap(display, frame.icon, p);
   if (p) XFreePixmap(display, p);
 
@@ -413,12 +413,12 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
 		  session->visual(), create_mask, &attrib_create);
   session->saveWSManagerSearch(frame.clock, this);
 
-  BImage cimage(session, frame.button_w, frame.button_h,
-		session->Depth(), session->toolboxColor());
-  p = cimage.renderInvertedImage(session->toolboxTexture(), 0,
-				 session->toolboxColor(),
-				 session->toolboxToColor());
-  
+  BImage *cimage = new BImage(session, frame.button_w, frame.button_h,
+			      session->Depth(), session->toolboxColor());
+  p = cimage->renderInvertedImage(session->toolboxTexture(), 0,
+				  session->toolboxColor(),
+				  session->toolboxToColor());
+  delete cimage;
   XSetWindowBackgroundPixmap(display, frame.clock, p);
   if (p) XFreePixmap(display, p);
   
@@ -574,7 +574,7 @@ void WorkspaceManager::stackWindows(Window *workspace_stack, int num) {
   Window *session_stack = new Window[num + 3 + workspaces_list->count()];
 
   int i = 0;
-  *(session_stack + i++) = session->menu()->windowID();
+  *(session_stack + i++) = session->Rootmenu()->windowID();
   *(session_stack + i++) = workspaces_menu->windowID();
 
   llist_iterator<Workspace> it(workspaces_list);

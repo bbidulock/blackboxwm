@@ -90,6 +90,29 @@ BlackboxSession::BlackboxSession(char *display_name) {
   icon_search_list = new llist<IconSearch>;
   wsmanager_search_list = new llist<WSManagerSearch>;
 
+  _XA_WM_COLORMAP_WINDOWS = XInternAtom(display, "WM_COLORMAP_WINDOWS", False);
+  _XA_WM_PROTOCOLS = XInternAtom(display, "WM_PROTOCOLS", False);
+  _XA_WM_STATE = XInternAtom(display, "WM_STATE", False);
+  _XA_WM_DELETE_WINDOW = XInternAtom(display, "WM_DELETE_WINDOW", False);
+  _XA_WM_TAKE_FOCUS = XInternAtom(display, "WM_TAKE_FOCUS", False);
+
+  event_mask = LeaveWindowMask | EnterWindowMask | PropertyChangeMask |
+    SubstructureNotifyMask | PointerMotionMask | SubstructureRedirectMask |
+    ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask;
+  
+  XSetErrorHandler((XErrorHandler) anotherWMRunning);
+  XSelectInput(display, root, event_mask);
+  XSync(display, False);
+  XSetErrorHandler((XErrorHandler) NULL);
+
+  //  XSynchronize(display, True);
+  cursor.session = XCreateFontCursor(display, XC_left_ptr);
+  cursor.move = XCreateFontCursor(display, XC_fleur);
+  XDefineCursor(display, root, cursor.session);
+
+  xres = WidthOfScreen(ScreenOfDisplay(display, screen));
+  yres = HeightOfScreen(ScreenOfDisplay(display, screen));
+
   InitScreen();
 }
 
@@ -124,35 +147,12 @@ BlackboxSession::~BlackboxSession() {
 
 
 void BlackboxSession::InitScreen(void) {
-  _XA_WM_COLORMAP_WINDOWS = XInternAtom(display, "WM_COLORMAP_WINDOWS", False);
-  _XA_WM_PROTOCOLS = XInternAtom(display, "WM_PROTOCOLS", False);
-  _XA_WM_STATE = XInternAtom(display, "WM_STATE", False);
-  _XA_WM_DELETE_WINDOW = XInternAtom(display, "WM_DELETE_WINDOW", False);
-  _XA_WM_TAKE_FOCUS = XInternAtom(display, "WM_TAKE_FOCUS", False);
-
-  event_mask = LeaveWindowMask | EnterWindowMask | PropertyChangeMask |
-    SubstructureNotifyMask | PointerMotionMask | SubstructureRedirectMask |
-    ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask;
-  
-  XSetErrorHandler((XErrorHandler) anotherWMRunning);
-  XSelectInput(display, root, event_mask);
-  XSync(display, False);
-  XSetErrorHandler((XErrorHandler) NULL);
-
-  XSynchronize(display, True);
-  cursor.session = XCreateFontCursor(display, XC_left_ptr);
-  cursor.move = XCreateFontCursor(display, XC_fleur);
-  XDefineCursor(display, root, cursor.session);
-
-  xres = WidthOfScreen(ScreenOfDisplay(display, screen));
-  yres = HeightOfScreen(ScreenOfDisplay(display, screen));
-
   InitColor();
   XrmInitialize();
   LoadDefaults();
 
   XGCValues gcv;
-  gcv.foreground = getColor("grey");
+  gcv.foreground = getColor("white");
   gcv.function = GXxor;
   gcv.line_width = 2;
   gcv.subwindow_mode = IncludeInferiors;
@@ -221,6 +221,7 @@ void BlackboxSession::InitScreen(void) {
     XNextEvent(display, &foo);
   }
 
+  XSynchronize(display, False);
   XUngrabServer(display);
 }
 
@@ -436,13 +437,14 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
       XGrabServer(display);
       
       XSync(display, False);
-      XEvent foo;
-      if (XCheckTypedWindowEvent(display, fWin->clientWindow(),
-				 UnmapNotify, &foo)) {
-	ProcessEvent(&foo);
-      } else if ((! fWin->isFocused()) && fWin->isVisible()) {
-	fWin->setInputFocus();
-      }
+      XEvent event;
+      if (!XCheckTypedWindowEvent(display, fWin->clientWindow(),
+				 UnmapNotify, &event)) {
+	if ((! fWin->isFocused()) && fWin->isVisible()) {
+	  fWin->setInputFocus();
+	}
+      } else
+	ProcessEvent(&event);
       
       XUngrabServer(display);
     } else if ((fIcon = searchIcon(e->xcrossing.window)) != NULL)
@@ -833,14 +835,190 @@ void BlackboxSession::lowerWindow(BlackboxWindow *w) {
 
 
 // *************************************************************************
+// Menu loading
+// *************************************************************************
+
+void BlackboxSession::InitMenu(void) {
+  if (rootmenu) {
+    int n = rootmenu->count();
+    for (int i = 0; i < n; i++)
+      rootmenu->remove(0);
+  } else
+    rootmenu = new SessionMenu(this);
+  
+  Bool default_menu = True;
+
+  if (resource.menuFile) {
+    XrmDatabase menu_db = XrmGetFileDatabase(resource.menuFile);
+    
+    if (menu_db) {
+      XrmValue value;
+      char *value_type;
+      
+      if (XrmGetResource(menu_db, "blackbox.session.rootMenu.topLevelMenu",
+			 "Blackbox.Session.rootMenu.TopLevelMenu", &value_type,
+			 &value)) {
+	default_menu = False;
+	readMenuDatabase(rootmenu, &value, &menu_db);
+      } else
+	fprintf(stderr, "Error reading menu database file %s, please check "
+		"your configuration\n", resource.menuFile);
+      
+      XrmDestroyDatabase(menu_db);
+    }
+  }
+
+  if (default_menu) {
+    rootmenu->defaultMenu();
+    rootmenu->insert("xterm", B_Execute, "xterm");
+    rootmenu->insert("Restart", B_Restart);
+    rootmenu->insert("Exit", B_Exit);
+    
+    // currently unimplemented
+    //    rootmenu->insert("Shutdown", B_Shutdown);
+  }
+
+  rootmenu->updateMenu();
+}
+
+
+void BlackboxSession::readMenuDatabase(SessionMenu *menu,
+				       XrmValue *menu_resource,
+				       XrmDatabase *menu_database) {
+  char *rnstring = new char[menu_resource->size + 35],
+    *rcstring = new char[menu_resource->size + 35];
+
+  XrmValue value;
+  char *value_type;
+
+  // check for menu label
+  sprintf(rnstring, "blackbox.session.%s.label", menu_resource->addr);
+  sprintf(rcstring, "Blackbox.Session.%s.Label", menu_resource->addr);
+  if (XrmGetResource(*menu_database, rnstring, rcstring, &value_type,
+		     &value)) {
+    char *menulabel = new char[value.size];
+    strncpy(menulabel, value.addr, value.size);
+    menu->setMenuLabel(menulabel);
+  }
+
+  // now... check for menu items
+  int nitems = 0;
+  sprintf(rnstring, "blackbox.session.%s.totalItems", menu_resource->addr);
+  sprintf(rcstring, "Blackbox.Session.%s.TotalItems", menu_resource->addr);
+  if (XrmGetResource(*menu_database, rnstring, rcstring, &value_type,
+		     &value)) {
+    if (sscanf(value.addr, "%d", &nitems) != 1)
+      nitems = 0;
+  }
+
+  // read menu items... if they exist
+  if (nitems > 0) {
+    if (nitems > 50) nitems = 50; // limit number of items in the menu
+
+    for (int i = 0; i < nitems; i++) {
+      SessionMenu *submenu = 0;
+      char *label = 0, *exec = 0;
+
+      // look for label
+      sprintf(rnstring, "blackbox.session.%s.item%d.label",
+	      menu_resource->addr, i + 1);
+      sprintf(rcstring, "Blackbox.Session.%s.Item%d.Label",
+	      menu_resource->addr, i + 1);
+      if (XrmGetResource(*menu_database, rnstring, rcstring, &value_type,
+			 &value)) {
+	label = new char[value.size];
+	strncpy(label, value.addr, value.size);
+      }
+
+      sprintf(rnstring, "blackbox.session.%s.item%d.exec",
+	      menu_resource->addr, i + 1);
+      sprintf(rcstring, "Blackbox.Session.%s.Item%d.Exec",
+	      menu_resource->addr, i + 1);
+      if (XrmGetResource(*menu_database, rnstring, rcstring, &value_type,
+			 &value)) {
+	exec = new char[value.size];
+	strncpy(exec, value.addr, value.size);
+      }
+
+      if (label && exec) {
+	// have label and executable string... insert the menu item
+	menu->insert(label, B_Execute, exec);
+      } else if (label) {
+	// check the label for a builtin function... like restart, reconfig
+	// or exit
+	char *restart = 0;
+	
+	sprintf(rnstring, "blackbox.session.%s.item%d.restart",
+		menu_resource->addr, i + 1);
+	sprintf(rcstring, "Blackbox.Session.%s.Item%d.Restart",
+		menu_resource->addr, i + 1);
+	if (XrmGetResource(*menu_database, rnstring, rcstring, &value_type,
+			   &value)) {
+	  if (! strncasecmp(value.addr, "restart", value.size)) {
+	    // builtin restart function
+	    menu->insert(label, B_Restart);
+	  } else {
+	    // restart a different window manager
+	    restart = new char[value.size];
+	    strncpy(restart, value.addr, value.size);
+	    menu->insert(label, B_RestartOther, restart);
+	  }
+	} else {
+	  sprintf(rnstring, "blackbox.session.%s.item%d.reconfig",
+		  menu_resource->addr, i + 1);
+	  sprintf(rcstring, "Blackbox.Session.%s.Item%d.Reconfig",
+		  menu_resource->addr, i + 1);
+	  if (XrmGetResource(*menu_database, rnstring, rcstring, &value_type,
+			     &value)) {
+	    menu->insert(label, B_Reconfigure);
+	  } else {
+	    sprintf(rnstring, "blackbox.session.%s.item%d.exit",
+		    menu_resource->addr, i + 1);
+	    sprintf(rcstring, "Blackbox.Session.%s.Item%d.Exit",
+		    menu_resource->addr, i + 1);
+	    if (XrmGetResource(*menu_database, rnstring, rcstring, &value_type,
+			       &value)) {
+	      menu->insert(label, B_Exit);
+	    } else {
+	      // all else fails... check for a submenu
+	      sprintf(rnstring, "blackbox.session.%s.item%d.submenu",
+		      menu_resource->addr, i + 1);
+	      sprintf(rcstring, "Blackbox.Session.%s.Item%d.submenu",
+		      menu_resource->addr, i + 1);
+	      if (XrmGetResource(*menu_database, rnstring, rcstring,
+				 &value_type, &value)) {
+		submenu = new SessionMenu(this);
+		menu->insert(label, submenu);
+		readMenuDatabase(submenu, &value, menu_database);
+		submenu->updateMenu();
+	      } else
+		fprintf(stderr, "no item action found for item%d - please "
+			"check your configuration\n", i + 1);
+	    }
+	  }
+	}
+      } else
+	fprintf(stderr, "menu %s: no defined label for item%d - skipping\n"
+		"please check your configuration\n", menu_resource->addr,
+		i + 1);
+    }
+  } else
+    fprintf(stderr, "menu %s: number of menu items not defined\n"
+	    "please check your configuration\n", menu_resource->addr);
+}
+
+
+// *************************************************************************
 // Resource loading
 // *************************************************************************
 
 void BlackboxSession::LoadDefaults(void) {
+#define BLACKBOXAD XAPPLOADDIR##"/Blackbox.ad"
+#define BLACKBOXMENUAD XLIBDIR##"/BlackboxMenu.ad"
+
   XGrabServer(display);
   
-#define BLACKBOXAD XAPPLOADDIR##"/Blackbox.ad"
-  Bool destroy = True;
+  char *config_file = (char *) 0;
   XrmDatabase blackbox_database = NULL, resource_database = NULL;
   
   XTextProperty resource_manager_string;
@@ -848,14 +1026,25 @@ void BlackboxSession::LoadDefaults(void) {
 		       XA_RESOURCE_MANAGER)) {
     resource_database =
       XrmGetStringDatabase((const char *) resource_manager_string.value);
+    
+    XrmValue value;
+    char *value_type;
+    if (XrmGetResource(resource_database,
+		       "blackbox.session.configurationFile",
+		       "Blackbox.Sessoin.ConfigurationFile",
+		       &value_type, &value)) {
+      int clen = strlen(value.addr);
+      config_file = new char[clen + 1];
+      strncpy(config_file, value.addr, clen + 1);
+    }
+
+    XrmDestroyDatabase(resource_database);
   }
   
-  if (resource_database != NULL) {
-    XrmCombineDatabase(resource_database, &blackbox_database, True);
-    destroy = False;
-  } else {
+  if (config_file)
+    blackbox_database = XrmGetFileDatabase(config_file);
+  else
     blackbox_database = XrmGetFileDatabase(BLACKBOXAD);
-  }
 
   XrmValue value;
   char *value_type;
@@ -1309,7 +1498,6 @@ void BlackboxSession::LoadDefaults(void) {
     memset(resource.menuFile, 0, len + 1);
     strncpy(resource.menuFile, value.addr, len);
   } else {
-#define BLACKBOXMENUAD XLIBDIR##"/Blackbox/Menu.ad"
     int len = strlen(BLACKBOXMENUAD);
     resource.menuFile = new char[len + 1];
     memset(resource.menuFile, 0, len + 1);
@@ -1425,8 +1613,7 @@ void BlackboxSession::LoadDefaults(void) {
     }
   }
 
-  if (destroy)
-    XrmDestroyDatabase(blackbox_database);
+  XrmDestroyDatabase(blackbox_database);
   XUngrabServer(display);
 }
 
@@ -1513,242 +1700,6 @@ unsigned long BlackboxSession::getColor(const char *colorname) {
 
 
 // *************************************************************************
-// Menu loading
-// *************************************************************************
-
-void BlackboxSession::InitMenu(void) {
-  if (rootmenu) {
-    int n = rootmenu->count();
-    for (int i = n - 1; i >= 0; i--)
-      rootmenu->remove(i);
-    rootmenu->Reconfigure();
-  } else
-    rootmenu = new SessionMenu(this);
-
-  char *line = new char[121], *label = new char[41], *command = new char[81];
-  FILE *menu_file = fopen(resource.menuFile, "r");
-  if (menu_file != NULL) {
-    memset(line, 0, 121);
-    memset(label, 0, 41);
-    memset(command, 0, 80);
-    fgets(line, 120, menu_file);
-    int i, ri, len = strlen(line);
-
-    for (i = 0; i < len; ++i)
-      if (line[i] == '[') { ++i; break; }
-    for (ri = len; ri > 0; --ri)
-      if (line[ri] == ']') break;
-      
-    char *c;
-    if (i < ri && ri > 0) {
-      c = new char[ri - i + 1];
-      strncpy(c, line + i, ri - i);
-      *(c + (ri - i)) = '\0';
-      
-      if (! strcasecmp(c, "begin")) {
-	for (i = 0; i < len; ++i)
-	  if (line[i] == '(') { ++i; break; }
-	for (ri = len; ri > 0; --ri)
-	  if (line[ri] == ')') break;
-	
-	char *l;
-	if (i < ri && ri > 0) {
-	  l = new char[ri - i + 1];
-	  strncpy(l, line + i, ri - i);
-	  *(l + (ri - i)) = '\0';
-	} else
-	  l = (char *) 0;
-	
-	rootmenu->setMenuLabel(l);
-	parseSubMenu(menu_file, rootmenu);
-
-	if (rootmenu->count() == 0) {
-	  rootmenu->insert("Restart", B_Restart);
-	  rootmenu->insert("Exit", B_Exit);
-	}
-      } else {
-	rootmenu->insert("Restart", B_Restart);
-	rootmenu->insert("Exit", B_Exit);
-      }
-    } else {
-      rootmenu->insert("Restart", B_Restart);
-      rootmenu->insert("Exit", B_Exit);
-    }
-  } else {
-    // no menu file... fall back on default
-    perror(resource.menuFile);
-    rootmenu->insert("Restart", B_Restart);
-    rootmenu->insert("Exit", B_Exit);
-  }
-
-  delete [] command;
-  delete [] line;
-  delete [] label;
-  rootmenu->updateMenu();
-}
-
-
-void BlackboxSession::parseSubMenu(FILE *menu_file, SessionMenu *menu) {
-  char *line = new char[121], *label = new char[41], *command = new char[81];
-
-  if (! feof(menu_file)) {
-    while (! feof(menu_file)) {
-      memset(line, 0, 121);
-      memset(label, 0, 41);
-      memset(command, 0, 80);
-      fgets(line, 120, menu_file);
-      int len = strlen(line);
-
-      int i, ri;
-      for (i = 0; i < len; ++i)
-	if (line[i] == '\"') { ++i; break; }
-      for (ri = len; ri > 0; --ri)
-	if (line[ri] == '\"') break;
-      
-      char *l;
-      if (i < ri && ri > 0) {
-	l = new char[ri - i + 1];
-	strncpy(l, line + i, ri - i);
-	*(l + (ri - i)) = '\0';
-	
-	for (i = 0; i < len; ++i)
-	  if (line[i] == '(') { ++i; break; }
-	for (ri = len; ri > 0; --ri)
-	  if (line[ri] == ')') break;
-	
-	char *c;
-	if (i < ri && ri > 0) {
-	  c = new char[ri - i + 1];
-	  strncpy(c, line + i, ri - i);
-	  *(c + (ri - i)) = '\0';
-	} else {
-	  c = new char[6];
-	  strncpy(c, "(nil)", 5);
-	  *(c + 5) = '\0';
-	}
-
-	if (c) {
-	  if (! strncasecmp(c, "Restart", 7)) {
-	    menu->insert(l, B_Restart);
-	    delete [] c;
-	  } else if (! strncasecmp(c, "Exit", 4)) {
-	    menu->insert(l, B_Exit);
-	    delete [] c;
-	  } else if (! strncasecmp(c, "Shutdown", 8)) {
-	    menu->insert(l, B_Shutdown);
-	    delete [] c;
-	  } else
-	    menu->insert(l, B_Execute, c);
-	} else
-	  fprintf(stderr, "error in menu file... label must have command\n"
-		  "  ex:  \"label\" (command)\n");
-      } else {
-	for (i = 0; i < len; ++i)
-	  if (line[i] == '[') { ++i; break; }
-	for (ri = len; ri > 0; --ri)
-	  if (line[ri] == ']') break;
-      
-	char *c;
-	if (i < ri && ri > 0) {
-	  c = new char[ri - i + 1];
-	  strncpy(c, line + i, ri - i);
-	  *(c + (ri - i)) = '\0';
-	  
-	  if (! strcasecmp(c, "begin")) {
-	    SessionMenu *newmenu = new SessionMenu(this);
-
-	    for (i = 0; i < len; ++i)
-	      if (line[i] == '(') { ++i; break; }
-	    for (ri = len; ri > 0; --ri)
-	      if (line[ri] == ')') break;
-	
-	    char *l;
-	    if (i < ri && ri > 0) {
-	      l = new char[ri - i + 1];
-	      strncpy(l, line + i, ri - i);
-	      *(l + (ri - i)) = '\0';
-	    } else {
-     	      l = new char[6];
-	      strncpy(l, "(nil)", 5);
-	      *(l + 5) = '\0';
-	    }
-	    
-	    delete [] c;
-	    newmenu->setMenuLabel(l);
-	    newmenu->setMovable(False);
-	    parseSubMenu(menu_file, newmenu);
-	    menu->insert(l, newmenu);
-	    XRaiseWindow(display, newmenu->windowID());
-	  } else if (! strcasecmp(c, "end")) {
-	    delete [] c;
-	    break;
-	  } else if (! strcasecmp(c, "restart")) {
-	    
-	    for (i = 0; i < len; ++i)
-	      if (line[i] == '(') { ++i; break; }
-	    for (ri = len; ri > 0; --ri)
-	      if (line[ri] == ')') break;
-	
-	    char *l;
-	    if (i < ri && ri > 0) {
-	      l = new char[ri - i + 1];
-	      strncpy(l, line + i, ri - i);
-	      *(l + (ri - i)) = '\0';
-	    } else {
-	      l = new char[6];
-	      strncpy(l, "(nil)", 5);
-	      *(l + 5) = '\0';
-	    }
-
-	    for (i = 0; i < len; ++i)
-	      if (line[i] == '{') { ++i; break; }
-	    for (ri = len; ri > 0; --ri)
-	      if (line[ri] == '}') break;
-	
-	    char *e;
-	    if (i < ri && ri > 0) {
-	      e = new char[ri - i + 1];
-	      strncpy(e, line + i, ri - i);
-	      *(e + (ri - i)) = '\0';
-	    } else
-	      e = 0;
-
-	    delete [] c;
-	    if (e)
-	      menu->insert(l, B_RestartOther, e);
-	  } else if (! strcasecmp(c, "reconfigure")) {
-	    for (i = 0; i < len; ++i)
-	      if (line[i] == '(') { ++i; break; }
-	    for (ri = len; ri > 0; --ri)
-	      if (line[ri] == ')') break;
-	
-	    char *l;
-	    if (i < ri && ri > 0) {
-	      l = new char[ri - i + 1];
-	      strncpy(l, line + i, ri - i);
-	      *(l + (ri - i)) = '\0';
-	    } else {
-	      l = new char[6];
-	      strncpy(l, "(nil)", 5);
-	      *(l + 5) = '\0';
-	    }
-
-	    delete [] c;
-	    menu->insert(l, B_Reconfigure);
-	  }
-	}
-      }
-    }
-  }
-
-  delete [] command;
-  delete [] line;
-  delete [] label;
-  menu->updateMenu();
-}
-
-
-// *************************************************************************
 // Resource reconfiguration
 // *************************************************************************
 
@@ -1761,12 +1712,10 @@ void BlackboxSession::do_reconfigure(void) {
   if (! ReconfigureDialog.visible) {
     XGrabServer(display);
     LoadDefaults();
-    
-    Bool m = rootmenu->menuVisible();
-    rootmenu->hideMenu();
-    ws_manager->currentWorkspace()->hideAll();
 
+    ws_manager->currentWorkspace()->hideAll();
     InitMenu();
+    rootmenu->Reconfigure();
 
     XGCValues gcv;
     gcv.foreground = getColor("white");
@@ -1798,8 +1747,6 @@ void BlackboxSession::do_reconfigure(void) {
     dgcv.foreground = toolboxTextColor().pixel;
     XChangeGC(display, ReconfigureDialog.dialogGC, GCFont|GCForeground, &dgcv);
     
-    if (m)
-      rootmenu->showMenu();
     ws_manager->currentWorkspace()->showAll();
 
     XUngrabServer(display);
