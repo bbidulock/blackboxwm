@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Workspace.hh for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
@@ -92,6 +92,7 @@ public:
   void raiseWindow(BlackboxWindow *w);
   void lowerWindow(BlackboxWindow *w);
   void reconfigure(void);
+  void updateFocusModel(void);
   void setCurrent(void);
   void setName(const std::string& new_name);
 };

@@ -152,8 +152,7 @@ Blackbox::Blackbox(char **m_argv, char *dpy_name, char *rc)
   resource.auto_raise_delay.tv_sec = resource.auto_raise_delay.tv_usec = 0;
 
   active_screen = 0;
-  focused_window = masked_window = (BlackboxWindow *) 0;
-  masked = None;
+  focused_window = (BlackboxWindow *) 0;
 
   XrmInitialize();
   load_rc();
@@ -792,7 +791,7 @@ Basemenu *Blackbox::searchMenu(Window window) {
   MenuLookup::iterator it = menuSearchList.find(window);
   if (it != menuSearchList.end())
     return it->second;
-  
+
   return (Basemenu*) 0;
 }
 
@@ -810,7 +809,7 @@ Slit *Blackbox::searchSlit(Window window) {
   SlitLookup::iterator it = slitSearchList.find(window);
   if (it != slitSearchList.end())
     return it->second;
-  
+
   return (Slit*) 0;
 }
 
@@ -997,7 +996,6 @@ void Blackbox::save_rc(void) {
     case BScreen::CascadePlacement:
       placement = "CascadePlacement";
       break;
-
     case BScreen::ColSmartPlacement:
       placement = "ColSmartPlacement";
       break;
@@ -1011,11 +1009,16 @@ void Blackbox::save_rc(void) {
             placement);
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
+    string fmodel;
+    if (screen->isSloppyFocus()) {
+      fmodel = "SloppyFocus";
+      if (screen->doAutoRaise()) fmodel += " AutoRaise";
+      if (screen->doClickRaise()) fmodel += " ClickRaise";
+    } else {
+      fmodel = "ClickToFocus";
+    }
     sprintf(rc_string, "session.screen%d.focusModel:  %s", screen_number,
-            ((screen->isSloppyFocus()) ?
-             ((screen->doAutoRaise()) ? "AutoRaiseSloppyFocus" :
-              "SloppyFocus") :
-             "ClickToFocus"));
+            fmodel.c_str());
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     sprintf(rc_string, "session.screen%d.workspaces:  %d", screen_number,
@@ -1333,19 +1336,27 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(class_lookup, "Session.Screen%d.FocusModel", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
                      &value)) {
-    if (! strncasecmp(value.addr, "clicktofocus", value.size)) {
+    string fmodel = value.addr;
+
+    if (fmodel.find("ClickToFocus") != string::npos) {
+      screen->saveClickRaise(False);
       screen->saveAutoRaise(False);
       screen->saveSloppyFocus(False);
-    } else if(! strncasecmp(value.addr, "autoraisesloppyfocus", value.size)) {
-      screen->saveSloppyFocus(True);
-      screen->saveAutoRaise(True);
     } else {
+      // must be sloppy
       screen->saveSloppyFocus(True);
       screen->saveAutoRaise(False);
+      screen->saveClickRaise(False);
+
+      if (fmodel.find("AutoRaise") != string::npos)
+        screen->saveAutoRaise(True);
+      if (fmodel.find("ClickRaise") != string::npos)
+        screen->saveClickRaise(True);
     }
   } else {
     screen->saveSloppyFocus(True);
     screen->saveAutoRaise(False);
+    screen->saveClickRaise(False);
   }
 
   sprintf(name_lookup,  "session.screen%d.windowPlacement", screen_number);

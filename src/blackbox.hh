@@ -137,12 +137,11 @@ private:
   ScreenList screenList;
 
   BScreen *active_screen;
-  BlackboxWindow *focused_window, *masked_window;
+  BlackboxWindow *focused_window;
   BTimer *timer;
 
   Bool no_focus, reconfigure_wait, reread_menu_wait;
   Time last_time;
-  Window masked;
   char **argv;
   std::string rc_file;
 
@@ -244,8 +243,6 @@ public:
   inline unsigned long getCacheMax(void) const
     { return resource.cache_max; }
 
-  inline void maskWindowEvents(Window w, BlackboxWindow *bw)
-    { masked = w; masked_window = bw; }
   inline void setNoFocus(Bool f) { no_focus = f; }
 
   inline Cursor getSessionCursor(void) const

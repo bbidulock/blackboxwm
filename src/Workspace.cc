@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Workspace.cc for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
@@ -232,14 +232,14 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
 
 void Workspace::reconfigure(void) {
   clientmenu->reconfigure();
+  std::for_each(windowList.begin(), windowList.end(),
+                std::mem_fun(&BlackboxWindow::reconfigure));
+}
 
-  BlackboxWindowList::iterator it = windowList.begin();
-  const BlackboxWindowList::iterator end = windowList.end();
-  for (; it != end; ++it) {
-    BlackboxWindow *bw = *it;
-    if (bw->validateClient())
-      bw->reconfigure();
-  }
+
+void Workspace::updateFocusModel(void) {
+  std::for_each(windowList.begin(), windowList.end(),
+                std::mem_fun(&BlackboxWindow::updateFocusModel));
 }
 
 
@@ -327,35 +327,48 @@ void Workspace::setName(const string& new_name) {
 }
 
 
+/*
+ * Calculate free space available for window placement.
+ */
 typedef std::vector<Rect> rectList;
 
 static rectList calcSpace(const Rect &win, const rectList &spaces) {
   rectList result;
   rectList::const_iterator siter, end = spaces.end();
-  for(siter = spaces.begin(); siter != end; ++siter) {
-    const Rect& curr = *siter;
+  for (siter = spaces.begin(); siter != end; ++siter) {
+    const Rect &curr = *siter;
+
     if(! win.intersects(curr)) {
       result.push_back(curr);
       continue;
     }
-    //Check for space to the left of the window
-    if(win.x() > curr.x())
-      result.push_back(Rect(curr.x(), curr.y(),
-                            win.x() - curr.x() - 1,
-                            curr.height()));
-    //Check for space above the window
-    if(win.y() > curr.y())
-      result.push_back(Rect(curr.x(), curr.y(),
-                            curr.width(),
-                            win.y() - curr.y() - 1));
-    //Check for space to the right of the window
-    if(win.right() < curr.right())
-      result.push_back(Rect(win.right() + 1, curr.y(),
-                            curr.right() - win.right() - 1, curr.height()));
-    //Check for space below the window
-    if(win.bottom() < curr.bottom())
-      result.push_back(Rect(curr.x(), win.bottom() + 1,
-                            curr.width(), curr.bottom() - win.bottom() - 1));
+
+    /* Use an intersection of win and curr to determine the space around
+     * curr that we can use.
+     *
+     * NOTE: the spaces calculated can overlap.
+     */
+    Rect isect = curr & win, extra;
+
+    // left
+    extra.setCoords(curr.left(), curr.top(),
+                    isect.left() - 1, curr.bottom());
+    if (extra.valid()) result.push_back(extra);
+
+    // top
+    extra.setCoords(curr.left(), curr.top(),
+                    curr.right(), isect.top() - 1);
+    if (extra.valid()) result.push_back(extra);
+
+    // right
+    extra.setCoords(isect.right() + 1, curr.top(),
+                    curr.right(), curr.bottom());
+    if (extra.valid()) result.push_back(extra);
+
+    // bottom
+    extra.setCoords(curr.left(), isect.bottom() + 1,
+                    curr.right(), curr.bottom());
+    if (extra.valid()) result.push_back(extra);
   }
   return result;
 }
@@ -388,13 +401,13 @@ static Bool rowLRTB(const Rect &first, const Rect &second) {
 static Bool colLRTB(const Rect &first, const Rect &second) {
   if (first.x() == second.x())
     return first.y() < second.y();
-  return first.x() < second.y();
+  return first.x() < second.x();
 }
 
 static Bool colLRBT(const Rect &first, const Rect &second) {
   if (first.x() == second.x())
     return first.bottom() > second.bottom();
-  return first.x() < second.y();
+  return first.x() < second.x();
 }
 
 static Bool colRLTB(const Rect &first, const Rect &second) {
@@ -416,14 +429,14 @@ Bool Workspace::smartPlacement(Rect& win, const Rect& availableArea) {
 
   //Find Free Spaces
   BlackboxWindowList::iterator wit = windowList.begin(),
-    end = windowList.end();
+                               end = windowList.end();
   for (; wit != end; ++wit) {
     const BlackboxWindow* const curr = *wit;
-    Rect tmp(curr->getXFrame(), curr->getYFrame(),
-             curr->getWidth() + (screen->getBorderWidth() * 4),
-             ((curr->isShaded()) ?
-              curr->getTitleHeight() :
-              curr->getHeight()) + (screen->getBorderWidth() * 4));
+    Rect tmp(curr->frameRect().x(), curr->frameRect().y(),
+             curr->frameRect().width() + (screen->getBorderWidth() * 4),
+             (curr->isShaded() ?
+              curr->getTitleHeight() : curr->frameRect().height()) +
+             (screen->getBorderWidth() * 4));
 
     spaces = calcSpace(tmp, spaces);
   }
@@ -504,8 +517,8 @@ Bool Workspace::cascadePlacement(Rect &win, const Rect &availableArea) {
 void Workspace::placeWindow(BlackboxWindow *win) {
   Rect availableArea(screen->availableArea()),
     new_win(availableArea.x(), availableArea.y(),
-            win->getWidth() + (screen->getBorderWidth() * 2),
-            win->getHeight() + (screen->getBorderWidth() * 2));
+            win->frameRect().width() + (screen->getBorderWidth() * 2),
+            win->frameRect().height() + (screen->getBorderWidth() * 2));
   Bool placed = False;
 
   switch (screen->getPlacementPolicy()) {
@@ -528,5 +541,6 @@ void Workspace::placeWindow(BlackboxWindow *win) {
   if (new_win.bottom() > availableArea.bottom())
     new_win.setY((availableArea.bottom() - new_win.height()) / 2);
 
-  win->configure(new_win.x(), new_win.y(), win->getWidth(), win->getHeight());
+  win->configure(new_win.x(), new_win.y(),
+                 win->frameRect().width(), win->frameRect().height());
 }

@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Window.hh for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
@@ -36,6 +36,7 @@ extern "C" {
 
 #include "BaseDisplay.hh"
 #include "Timer.hh"
+#include "Util.hh"
 #include "Windowmenu.hh"
 
 #define MwmHintsFunctions     (1l << 0)
@@ -66,6 +67,23 @@ typedef struct MwmHints {
 
 
 class BlackboxWindow : public TimeoutHandler {
+public:
+  enum Function { Func_Resize   = (1l << 0),
+                  Func_Move     = (1l << 1),
+                  Func_Iconify  = (1l << 2),
+                  Func_Maximize = (1l << 3),
+                  Func_Close    = (1l << 4) };
+  typedef unsigned int FunctionFlags;
+
+  enum Decoration { Decor_Titlebar = (1l << 0),
+                    Decor_Handle   = (1l << 1),
+                    Decor_Border   = (1l << 2),
+                    Decor_Iconify  = (1l << 3),
+                    Decor_Maximize = (1l << 4),
+                    Decor_Close    = (1l << 5),
+                    Decor_Menu     = (1l << 6) };
+  typedef unsigned int DecorationFlags;
+
 private:
   Blackbox *blackbox;
   BScreen *screen;
@@ -75,7 +93,7 @@ private:
   Time lastButtonPressTime;  // used for double clicks, when were we clicked
   Windowmenu *windowmenu;
 
-  unsigned int window_number, workspace_number;
+  unsigned int window_number;
   unsigned long current_state;
 
   enum FocusMode { F_NoInput = 0, F_Passive,
@@ -107,10 +125,11 @@ private:
 
     std::string title, icon_title;
 
-    int x, y,
-      old_bw;                       // client's borderwidth
+    Rect rect;
 
-    unsigned int width, height,
+    int old_bw;                       // client's borderwidth
+
+    unsigned int
       title_text_w,                 // width as rendered in the current font
       min_width, min_height,        // can not be resized smaller
       max_width, max_height,        // can not be resized larger
@@ -123,9 +142,13 @@ private:
     unsigned long initial_state, normal_hint_flags, wm_hint_flags;
   } client;
 
-  struct _functions {
-    Bool resize, move, iconify, maximize, close;
-  } functions;
+  FunctionFlags functions;
+  /*
+   * what decorations do we have?
+   * this is based on the type of the client window as well as user input
+   * the menu is not really decor, but it goes hand in hand with the decor
+   */
+  DecorationFlags decorations;
 
   /*
    * client window = the application's window
@@ -145,15 +168,6 @@ private:
    *          between the title, the bordered client window, and the handle.
    *          Also drawn between the grips and the handle
    */
-
-  /*
-   * what decorations do we have?
-   * this is based on the type of the client window as well as user input
-   * the menu is not really decor, but it goes hand in hand with the decor
-   */
-  struct _decorations {
-    Bool titlebar, handle, border, iconify, maximize, close, menu;
-  } decorations;
 
   struct _frame {
     // u -> unfocused, f -> has focus
@@ -179,11 +193,12 @@ private:
     int changing_x, changing_y;
     unsigned int changing_w, changing_h;
 
-    int x, y,
-      grab_x, grab_y,          // where was the window when it was grabbed?
+    Rect rect;                 // frame geometry
+
+    int grab_x, grab_y,         // where was the window when it was grabbed?
       y_border, y_handle;      // where within frame is the border and handle
 
-    unsigned int width, height, title_h, label_w, label_h, handle_h,
+    unsigned int title_h, label_w, label_h, handle_h,
       button_w, button_h, grip_w, grip_h, mwm_border_w, border_h, border_w,
       bevel_w;
   } frame;
@@ -192,8 +207,7 @@ private:
   BlackboxWindow& operator=(const BlackboxWindow&);
 
   Bool getState(void);
-  Window createToplevelWindow(int x, int y, unsigned int width,
-                              unsigned int height, unsigned int borderwidth);
+  Window createToplevelWindow();
   Window createChildWindow(Window parent, Cursor = None);
 
   void getWMName(void);
@@ -244,12 +258,12 @@ public:
   inline Bool isShaded(void) const { return flags.shaded; }
   inline Bool isMaximized(void) const { return flags.maximized; }
   inline Bool isStuck(void) const { return flags.stuck; }
-  inline Bool isIconifiable(void) const { return functions.iconify; }
-  inline Bool isMaximizable(void) const { return functions.maximize; }
-  inline Bool isResizable(void) const { return functions.resize; }
-  inline Bool isClosable(void) const { return functions.close; }
+  inline Bool isIconifiable(void) const { return functions & Func_Iconify; }
+  inline Bool isMaximizable(void) const { return functions & Func_Maximize; }
+  inline Bool isResizable(void) const { return functions & Func_Resize; }
+  inline Bool isClosable(void) const { return functions & Func_Close; }
 
-  inline Bool hasTitlebar(void) const { return decorations.titlebar; }
+  inline Bool hasTitlebar(void) const { return decorations & Decor_Titlebar; }
 
   inline BlackboxWindow *getTransient(void) { return client.transient; }
   inline BlackboxWindow *getTransientFor(void)
@@ -267,20 +281,13 @@ public:
   inline const char *getIconTitle(void) const
   { return client.icon_title.c_str(); }
 
-  inline int getXFrame(void) const { return frame.x; }
-  inline int getYFrame(void) const { return frame.y; }
-  inline int getXClient(void) const { return client.x; }
-  inline int getYClient(void) const { return client.y; }
   inline unsigned int getWorkspaceNumber(void) const
-  { return workspace_number; }
+  { return blackbox_attrib.workspace; }
   inline unsigned int getWindowNumber(void) const { return window_number; }
 
-  inline unsigned int getWidth(void) const { return frame.width; }
-  inline unsigned int getHeight(void) const { return frame.height; }
-  inline unsigned int getClientHeight(void) const
-  { return client.height; }
-  inline unsigned int getClientWidth(void) const
-  { return client.width; }
+  inline const Rect &frameRect(void) const { return frame.rect; }
+  inline const Rect &clientRect(void) const { return client.rect; }
+
   inline unsigned int getTitleHeight(void) const
   { return frame.title_h; }
 
@@ -301,6 +308,7 @@ public:
   void stick(void);
   void unstick(void);
   void reconfigure(void);
+  void updateFocusModel(void);
   void installColormap(Bool install);
   void restore(Bool remap);
   void configure(int dx, int dy, unsigned int dw, unsigned int dh);

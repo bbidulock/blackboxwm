@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Configmenu.cc for Blackbox - An X11 Window Manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
@@ -132,12 +132,15 @@ Configmenu::Focusmenu::Focusmenu(Configmenu *cm) : Basemenu(cm->getScreen()) {
   insert(i18n(ConfigmenuSet, ConfigmenuClickToFocus, "Click To Focus"), 1);
   insert(i18n(ConfigmenuSet, ConfigmenuSloppyFocus, "Sloppy Focus"), 2);
   insert(i18n(ConfigmenuSet, ConfigmenuAutoRaise, "Auto Raise"), 3);
+  insert(i18n(ConfigmenuSet, ConfigmenuClickRaise, "Click Raise"), 4);
   update();
 
   setItemSelected(0, (! getScreen()->isSloppyFocus()));
   setItemSelected(1, getScreen()->isSloppyFocus());
   setItemEnabled(2, getScreen()->isSloppyFocus());
   setItemSelected(2, getScreen()->doAutoRaise());
+  setItemEnabled(3, getScreen()->isSloppyFocus());
+  setItemSelected(3, getScreen()->doClickRaise());
 }
 
 
@@ -157,13 +160,15 @@ void Configmenu::Focusmenu::itemSelected(int button, int index) {
 
   case 2: // sloppy focus
     getScreen()->toggleFocusModel(BScreen::SloppyFocus);
-
     break;
 
   case 3: // auto raise with sloppy focus
-    Bool change = ((getScreen()->doAutoRaise()) ? False : True);
-    getScreen()->saveAutoRaise(change);
+    getScreen()->saveAutoRaise(! getScreen()->doAutoRaise());
+    break;
 
+  case 4: // click raise with sloppy focus
+    getScreen()->saveClickRaise(! getScreen()->doClickRaise());
+    getScreen()->updateFocusModel();
     break;
   }
 
@@ -171,6 +176,8 @@ void Configmenu::Focusmenu::itemSelected(int button, int index) {
   setItemSelected(1, getScreen()->isSloppyFocus());
   setItemEnabled(2, getScreen()->isSloppyFocus());
   setItemSelected(2, getScreen()->doAutoRaise());
+  setItemEnabled(3, getScreen()->isSloppyFocus());
+  setItemSelected(3, getScreen()->doClickRaise());
 }
 
 

@@ -76,14 +76,14 @@ Rect Rect::operator&(const Rect &a) const {
   b._y1 = std::max(_y1, a._y1);
   b._x2 = std::min(_x2, a._x2);
   b._y2 = std::min(_y2, a._y2);
-  
+
   return b;
 }
 
 
 bool Rect::intersects(const Rect &a) const {
   return std::max(_x1, a._x1) <= std::min(_x2, a._x2) &&
-    std::max(_y1, a._y1) <= std::min(_y2, a._y2);
+         std::max(_y1, a._y1) <= std::min(_y2, a._y2);
 }
 
 

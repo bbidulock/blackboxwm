@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Screen.hh for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
@@ -141,7 +141,7 @@ private:
 
     Bool toolbar_on_top, toolbar_auto_hide, sloppy_focus, auto_raise,
       auto_edge_balance, image_dither, ordered_dither, opaque_move, full_max,
-      focus_new, focus_last;
+      focus_new, focus_last, click_raise;
     BColor border_color;
     XrmDatabase stylerc;
 
@@ -206,6 +206,7 @@ public:
   inline Bool isRootColormapInstalled(void) const
   { return root_colormap_installed; }
   inline Bool doAutoRaise(void) const { return resource.auto_raise; }
+  inline Bool doClickRaise(void) const { return resource.click_raise; }
   inline Bool isScreenManaged(void) const { return managed; }
   inline Bool doImageDither(void) const
   { return resource.image_dither; }
@@ -276,6 +277,7 @@ public:
   inline void setRootColormapInstalled(Bool r) { root_colormap_installed = r; }
   inline void saveSloppyFocus(Bool s) { resource.sloppy_focus = s; }
   inline void saveAutoRaise(Bool a) { resource.auto_raise = a; }
+  inline void saveClickRaise(Bool c) { resource.click_raise = c; }
   inline void saveWorkspaces(unsigned int w) { resource.workspaces = w; }
   inline void saveToolbarOnTop(Bool r) { resource.toolbar_on_top = r; }
   inline void saveToolbarAutoHide(Bool r) { resource.toolbar_auto_hide = r; }
@@ -339,6 +341,7 @@ public:
   void raiseFocus(void);
   void reconfigure(void);
   void toggleFocusModel(FocusModel model);
+  void updateFocusModel();
   void rereadMenu(void);
   void shutdown(void);
   void showPosition(int x, int y);

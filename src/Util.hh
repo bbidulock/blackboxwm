@@ -34,6 +34,8 @@ public:
   explicit Rect(const XRectangle& xrect)
   { setRect(xrect.x, xrect.y, xrect.width, xrect.height); }
 
+  bool valid() const { return _x2 > _x1 && _y2 > _y1; }
+
   int left(void) const { return _x1; }
   int top(void) const { return _y1; }
   int right(void) const { return _x2; }
@@ -66,15 +68,12 @@ public:
   bool operator==(const Rect &a)
   { return _x1 == a._x1 && _y1 == a._y1 && _x2 == a._x2 && _y2 == a._y2; }
 
-  bool operator!=(const Rect &a)
-  { return ! operator==(a); }
+  bool operator!=(const Rect &a) { return ! operator==(a); }
 
   Rect operator|(const Rect &a) const;
   Rect operator&(const Rect &a) const;
-  Rect &operator|=(const Rect &a)
-  { *this = *this | a; return *this; }
-  Rect &operator&=(const Rect &a)
-  { *this = *this & a; return *this; }
+  Rect &operator|=(const Rect &a) { *this = *this | a; return *this; }
+  Rect &operator&=(const Rect &a) { *this = *this & a; return *this; }
 
   bool intersects(const Rect &a) const;
 

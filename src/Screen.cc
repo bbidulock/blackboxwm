@@ -1741,7 +1741,17 @@ void BScreen::toggleFocusModel(FocusModel model) {
   } else {
     saveSloppyFocus(False);
     saveAutoRaise(False);
+    saveClickRaise(False);
   }
+
+  updateFocusModel();
+}
+
+
+void BScreen::updateFocusModel()
+{
+  std::for_each(workspacesList.begin(), workspacesList.end(),
+                std::mem_fun(&Workspace::updateFocusModel));
 }
 
 

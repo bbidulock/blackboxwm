@@ -15,13 +15,15 @@ $ #FullMax
 $ #FocusNew
 # Focus New Windows
 $ #FocusLast
-# Focus Last Window on Workspace
+# Focus Window on Workspace Change
 $ #ClickToFocus
 # Click to Focus
 $ #SloppyFocus
 # Sloppy Focus
 $ #AutoRaise
 # Auto Raise
+$ #ClickRaise
+# Click Raise
 $ #SmartRows
 # Smart Placement (Rows)
 $ #SmartCols
