@@ -108,7 +108,6 @@ private:
                       const bt::Rect& avail);
   unsigned int cascade_x, cascade_y;
 
-  void raiseTransients(const BlackboxWindowList &transients);
   void lowerTransients(const BlackboxWindowList &transients);
   void stackTransients(const BlackboxWindowList &transients,
                        WindowStack &stack);

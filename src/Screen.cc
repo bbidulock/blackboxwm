@@ -768,71 +768,230 @@ bool BScreen::focusFallback(const BlackboxWindow *win) {
 }
 
 
-void BScreen::raiseWindow(StackEntity *entity) {
-  StackEntity *top = entity;
+/*
+  Returns a list of all transients.  This is recursive, so it returns
+  all transients of transients as well.
+*/
+static
+BlackboxWindowList buildTransientList(unsigned int current_workspace,
+                                      const BlackboxWindow * const win) {
+  const BlackboxWindowList &transients = win->transients();
+  BlackboxWindowList all = transients;
+  BlackboxWindowList::const_iterator it = transients.begin(),
+                                    end = transients.end();
+  for (; it != end; ++it) {
+    const BlackboxWindow * const tmp = *it;
+    if (tmp->workspace() == current_workspace
+        || tmp->workspace() == bt::BSENTINEL) {
+      BlackboxWindowList x = buildTransientList(current_workspace, tmp);
+      all.splice(all.end(), x);
+    }
+  }
+  return all;
+}
 
-  BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(top);
+
+/*
+  Raises all windows, preserving the existing stacking order.  Each
+  window is placed at the top of the layer it currently occupies (with
+  transients above).
+*/
+static
+void raiseGroup(unsigned int current_workspace,
+                StackingList &stackingList,
+                BWindowGroup *group) {
+  BlackboxWindowList windows = group->windows();
+  int layer = StackingList::LayerNormal;
+  for (; layer < StackingList::LayerDesktop; ++layer) {
+    StackingList::iterator
+      it, top = stackingList.layer(StackingList::Layer(layer));
+    const StackingList::iterator begin = stackingList.begin(),
+                                   end = stackingList.end();
+
+    // 'top' points to the top of the layer, we need to start from the
+    // bottom of the layer
+    it = std::find(top, end, (StackEntity *) 0);
+    assert(it != end);
+
+    if (!(*top)) {
+      // nothing in layer
+      break;
+    }
+
+    // walk up the layer, raising all windows in the group
+    for (--it; it != begin; --it) {
+      if (!(*it)) {
+        // top of layer
+        break;
+      }
+
+      BlackboxWindow *tmp = dynamic_cast<BlackboxWindow *>(*it);
+      if (!tmp
+          || (tmp->workspace() != current_workspace
+              && tmp->workspace() != bt::BSENTINEL)) {
+        // entity is not a window, or window is not visible on the
+        // current_workspace
+        continue;
+      }
+
+      const BlackboxWindowList::iterator wend = windows.end();
+      BlackboxWindowList::iterator wit;
+      if ((wit = std::find(windows.begin(), wend, tmp)) == wend)
+          continue;
+
+      // found a window in this layer, raise it
+      ++it;
+      stackingList.raise(tmp);
+      // don't bother looking at this window again
+      windows.erase(wit);
+    }
+  }
+}
+
+
+/*
+  Raise all transients, preserving the existing stacking order.
+*/
+static
+void raiseTransients(StackingList::iterator top,
+                     StackingList &stackingList,
+                     BlackboxWindowList &transients) {
+  if (transients.empty())
+    return;
+  // 'top' points to the top of the layer, we need to start from the bottom
+  StackingList::iterator begin = stackingList.begin(),
+                           end = stackingList.end(),
+                            it = std::find(top, end, (StackEntity *) 0);
+  assert(it != end);
+  for (--it; it != begin; --it) {
+    if (it == top) {
+      // top of layer
+      break;
+    }
+    BlackboxWindow *tmp = dynamic_cast<BlackboxWindow *>(*it);
+    if (!tmp)
+      continue;
+    BlackboxWindowList::iterator wit = transients.begin(),
+                                wend = transients.end();
+    wit = std::find(wit, wend, tmp);
+    if (wit != wend) {
+      // found a transient in this layer, raise it
+      ++it;
+      stackingList.raise(tmp);
+      // don't bother looking at this window again
+      transients.erase(wit);
+    }
+  }
+}
+
+
+/*
+  Raises the specified stacking entity.  If the entity is a window,
+  all transients are also raised (preserving their stacking order).
+  If the window is part of a group, the entire group is raised (also
+  preserving the stacking order) befor raising the specified window.
+*/
+static
+StackingList::iterator raiseWindow(unsigned int current_workspace,
+                                   StackingList &stackingList,
+                                   StackEntity *entity) {
+  BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(entity);
   BWindowGroup *group = 0;
   if (win) {
-    win = win->findNonTransientParent();
-    group = win->findWindowGroup();
-
     if (win->isFullScreen() && win->layer() != StackingList::LayerFullScreen) {
       // move full-screen windows over all other windows when raising
       win->changeLayer(StackingList::LayerFullScreen);
-      restackWindows();
-      return;
+      return stackingList.end();
     }
-
-    top = win;
   }
 
-  // find the first window above us (if any)
-  StackEntity *above = 0;
-  {
-    StackingList::const_iterator begin = _stackingList.begin(),
-                                 layer = _stackingList.layer(top->layer()),
-                                    it = layer;
-    if (*it == top) {
-      // entity already on top of layer
-      return;
-    }
-
-    for (--it; it != begin; --it) {
-      if (*it) {
-        above = *it;
-        break;
-      }
-    }
+  StackingList::iterator layer = stackingList.layer(entity->layer());
+  if (*layer == entity) {
+    // already on top of the layer
+    return stackingList.end();
   }
 
   if (win) {
-    if (group && win->isGroupTransient()) {
-      BlackboxWindowList::const_iterator it = group->windows().begin(),
-                                        end = group->windows().end();
-      // restack each window in the group with transients above
-      for (; it != end; ++it) {
-        BlackboxWindow * const tmp = *it;
-        if (tmp->isTransient())
-          continue;
-        _stackingList.raise(tmp);
-        raiseTransients(tmp->transients());
-      }
-      // ... and group transients on top
-      raiseTransients(group->transients());
+    group = win->findWindowGroup();
+    if (group) {
+      // raise all windows in the group before raising 'win'
+      ::raiseGroup(current_workspace, stackingList, group);
     } else {
-      // restack the window
-      _stackingList.raise(win);
-      // ... with all transients above
-      raiseTransients(win->transients());
-      // ... and group transients on top
-      if (group)
-        raiseTransients(group->transients());
+      // raise non-transient parent before raising transient
+      BlackboxWindow *tmp = win->findNonTransientParent();
+      if (tmp != win)
+        (void) ::raiseWindow(current_workspace, stackingList, tmp);
     }
-  } else {
-    _stackingList.raise(top);
   }
 
+  // raise the entity
+  StackingList::iterator top = stackingList.raise(entity),
+                         end = stackingList.end();
+  assert(top != end);
+  if (win) {
+    // ... with all transients above it
+    BlackboxWindowList transients = buildTransientList(current_workspace, win);
+    raiseTransients(top, stackingList, transients);
+
+    // ... and group transients on top
+    if (group && !win->isGroupTransient()) {
+      const BlackboxWindow * const w = win->findNonTransientParent();
+      if (!w || !w->isGroupTransient()) {
+        BlackboxWindowList groupTransients = group->transients();
+        BlackboxWindowList::const_iterator wit = groupTransients.begin(),
+                                          wend = groupTransients.end();
+        for (; wit != wend; ++wit) {
+          const BlackboxWindow * const tmp = *wit;
+          if (tmp->workspace() == current_workspace
+              || tmp->workspace() == bt::BSENTINEL) {
+            BlackboxWindowList x = buildTransientList(current_workspace, tmp);
+            groupTransients.splice(groupTransients.end(), x);
+          }
+        }
+        raiseTransients(top, stackingList, groupTransients);
+      }
+    }
+  }
+  if (!group)
+    return top;
+
+  StackingList::iterator it = std::find(top, end, (StackEntity *) 0);
+  assert(it != end);
+  return it;
+}
+
+
+/*
+  Raises the stack entity as above and then updates the stacking on
+  the X server.  The EWMH stacking hint is also updated.
+ */
+void BScreen::raiseWindow(StackEntity *entity) {
+  StackingList::iterator top = ::raiseWindow(current_workspace,
+                                             _stackingList,
+                                             entity),
+                       begin = _stackingList.begin(),
+                         end = _stackingList.end();
+  if (top == end) {
+    // no need to raise entity
+    return;
+  } else if (!(*top)) {
+    // need to restack all windows
+    restackWindows();
+    return;
+  }
+
+  // find the first entity above us (if any)
+  StackEntity *above = 0;
+  StackingList::iterator layer = _stackingList.layer(entity->layer()),
+                            it = layer;
+  for (--it; it != begin; --it) {
+    if (*it) {
+      above = *it;
+      break;
+    }
+  }
+
+  // build the stack
   WindowStack stack;
   if (above) {
     // found another entity above the one we are raising
@@ -842,61 +1001,45 @@ void BScreen::raiseWindow(StackEntity *entity) {
     stack.push_back(empty_window);
   }
 
-  if (win) {
-    if (group && win->isGroupTransient()) {
-      stackTransients(group->transients(), stack);
-      BlackboxWindowList::const_iterator it = group->windows().begin(),
-                                        end = group->windows().end();
-      for (; it != end; ++it) {
-        BlackboxWindow * const tmp = *it;
-        if (tmp->isTransient())
-          continue;
-        stackTransients(tmp->transients(), stack);
-        stack.push_back(tmp->windowID());
-      }
-    } else {
-      if (group)
-        stackTransients(group->transients(), stack);
-      stackTransients(win->transients(), stack);
-      stack.push_back(win->windowID());
-    }
-  } else {
-    stack.push_back(top->windowID());
+  // go to the layer boundary above 'top'
+  it = top;
+  for (--it; *it && it != begin; --it)
+    ;
+
+  // put all windows from the layer boundary to 'top' into the stack
+  for (++it; *it && it != top; ++it) {
+    assert(it != end);
+    stack.push_back((*it)->windowID());
   }
+  stack.push_back((*top)->windowID());
 
   XRestackWindows(_blackbox->XDisplay(), &stack[0], stack.size());
-
   updateClientListStackingHint();
 }
 
 
 void BScreen::lowerWindow(StackEntity *entity) {
-  StackEntity *top = entity;
-
-  BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(top);
+  BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(entity);
   BWindowGroup *group = 0;
   if (win) {
-    // walk up the transient_for's to the window that is not a transient
-    win = win->findNonTransientParent();
     group = win->findWindowGroup();
-    top = win;
   }
 
   // find window at the bottom of the layer (if any)
   StackEntity *above = 0;
   {
-    StackingList::const_iterator it, layer = _stackingList.layer(top->layer()),
+    StackingList::const_iterator it, layer = _stackingList.layer(entity->layer()),
                                        end = _stackingList.end();
     it = std::find(layer, end, (StackEntity *) 0);
     assert(it != end);
 
-    if (*--it == top) {
+    if (*--it == entity) {
       // entity already on bottom of layer
       return;
     }
 
     for (; it != layer; --it) {
-      if (*it && *it != top) {
+      if (*it && *it != entity) {
         above = *it;
         break;
       }
@@ -922,7 +1065,7 @@ void BScreen::lowerWindow(StackEntity *entity) {
       _stackingList.lower(win);
     }
   } else {
-    _stackingList.lower(top);
+    _stackingList.lower(entity);
   }
 
   WindowStack stack;
@@ -953,7 +1096,7 @@ void BScreen::lowerWindow(StackEntity *entity) {
       stack.push_back(win->windowID());
     }
   } else {
-    stack.push_back(top->windowID());
+    stack.push_back(entity->windowID());
   }
 
   if (lower)
@@ -961,6 +1104,40 @@ void BScreen::lowerWindow(StackEntity *entity) {
   XRestackWindows(_blackbox->XDisplay(), &stack[0], stack.size());
 
   updateClientListStackingHint();
+}
+
+
+void BScreen::lowerTransients(const BlackboxWindowList &transients) {
+  if (transients.empty())
+    return;
+  BlackboxWindowList::const_iterator it = transients.begin(),
+                                    end = transients.end();
+  for (; it != end; ++it) {
+    BlackboxWindow * const tmp = *it;
+    if (tmp->workspace() == current_workspace
+        || tmp->workspace() == bt::BSENTINEL) {
+      lowerTransients(tmp->transients());
+      _stackingList.lower(tmp);
+    }
+  }
+}
+
+
+// recursively stack transients in top-to-bottom order
+void BScreen::stackTransients(const BlackboxWindowList &transients,
+                              WindowStack &stack) {
+  if (transients.empty())
+    return;
+  BlackboxWindowList::const_iterator it = transients.begin(),
+                                    end = transients.end();
+  for (; it != end; ++it) {
+    BlackboxWindow * const tmp = *it;
+    if (tmp->workspace() == current_workspace
+        || tmp->workspace() == bt::BSENTINEL) {
+      stackTransients(tmp->transients(), stack);
+      stack.push_back(tmp->windowID());
+    }
+  }
 }
 
 
@@ -1767,56 +1944,6 @@ BlackboxWindow *BScreen::window(unsigned int workspace, unsigned int id) {
   }
   assert(false); // should not happen
   return 0;
-}
-
-
-void BScreen::raiseTransients(const BlackboxWindowList &transients) {
-  if (transients.empty())
-    return;
-  BlackboxWindowList::const_reverse_iterator it = transients.rbegin(),
-                                            end = transients.rend();
-  for (; it != end; ++it) {
-    BlackboxWindow * const tmp = *it;
-    if (tmp->workspace() == current_workspace
-        || tmp->workspace() == bt::BSENTINEL) {
-      _stackingList.raise(tmp);
-      raiseTransients(tmp->transients());
-    }
-  }
-}
-
-
-void BScreen::lowerTransients(const BlackboxWindowList &transients) {
-  if (transients.empty())
-    return;
-  BlackboxWindowList::const_iterator it = transients.begin(),
-                                    end = transients.end();
-  for (; it != end; ++it) {
-    BlackboxWindow * const tmp = *it;
-    if (tmp->workspace() == current_workspace
-        || tmp->workspace() == bt::BSENTINEL) {
-      lowerTransients(tmp->transients());
-      _stackingList.lower(tmp);
-    }
-  }
-}
-
-
-// recursively stack transients in top-to-bottom order
-void BScreen::stackTransients(const BlackboxWindowList &transients,
-                              WindowStack &stack) {
-  if (transients.empty())
-    return;
-  BlackboxWindowList::const_iterator it = transients.begin(),
-                                    end = transients.end();
-  for (; it != end; ++it) {
-    BlackboxWindow * const tmp = *it;
-    if (tmp->workspace() == current_workspace
-        || tmp->workspace() == bt::BSENTINEL) {
-      stackTransients(tmp->transients(), stack);
-      stack.push_back(tmp->windowID());
-    }
-  }
 }
 
 
