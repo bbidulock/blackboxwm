@@ -391,6 +391,7 @@ void Workspace::setName(const string& new_name) {
 typedef std::vector<Rect> rectList;
 
 static rectList calcSpace(const Rect &win, const rectList &spaces) {
+  Rect isect, extra;
   rectList result;
   rectList::const_iterator siter, end = spaces.end();
   for (siter = spaces.begin(); siter != end; ++siter) {
@@ -406,7 +407,7 @@ static rectList calcSpace(const Rect &win, const rectList &spaces) {
      *
      * NOTE: the spaces calculated can overlap.
      */
-    Rect isect = curr & win, extra;
+    isect = curr & win;
 
     // left
     extra.setCoords(curr.left(), curr.top(),
@@ -488,11 +489,12 @@ bool Workspace::smartPlacement(Rect& win, const Rect& availableArea) {
   //Find Free Spaces
   BlackboxWindowList::iterator wit = windowList.begin(),
                                end = windowList.end();
+  Rect tmp;
   for (; wit != end; ++wit) {
     const BlackboxWindow* const curr = *wit;
-    Rect tmp(curr->frameRect().x(), curr->frameRect().y(),
-             curr->frameRect().width() + screen->getBorderWidth(),
-             curr->frameRect().height() + screen->getBorderWidth());
+    tmp.setRect(curr->frameRect().x(), curr->frameRect().y(),
+                curr->frameRect().width() + screen->getBorderWidth(),
+                curr->frameRect().height() + screen->getBorderWidth());
 
     spaces = calcSpace(tmp, spaces);
   }

@@ -131,18 +131,18 @@ void Slit::addClient(Window w) {
 
   XSetWindowBorderWidth(display, client->window, 0);
 
+  XGrabServer(display);
   XSelectInput(display, frame.window, NoEventMask);
   XSelectInput(display, client->window, NoEventMask);
-
   XReparentWindow(display, client->window, frame.window, 0, 0);
   XMapRaised(display, client->window);
   XChangeSaveSet(display, client->window, SetModeInsert);
-
   XSelectInput(display, frame.window, SubstructureRedirectMask |
                ButtonPressMask | EnterWindowMask | LeaveWindowMask);
   XSelectInput(display, client->window, StructureNotifyMask |
                SubstructureNotifyMask | EnterWindowMask);
-  XFlush(display);
+
+  XUngrabServer(display);
 
   clientList.push_back(client);
 
@@ -160,6 +160,7 @@ void Slit::removeClient(SlitClient *client, bool remap) {
   screen->removeNetizen(client->window);
 
   if (remap && blackbox->validateWindow(client->window)) {
+    XGrabServer(display);
     XSelectInput(display, frame.window, NoEventMask);
     XSelectInput(display, client->window, NoEventMask);
     XReparentWindow(display, client->window, screen->getRootWindow(),
@@ -167,7 +168,7 @@ void Slit::removeClient(SlitClient *client, bool remap) {
     XChangeSaveSet(display, client->window, SetModeDelete);
     XSelectInput(display, frame.window, SubstructureRedirectMask |
                  ButtonPressMask | EnterWindowMask | LeaveWindowMask);
-    XFlush(display);
+    XUngrabServer(display);
   }
 
   delete client;
@@ -656,11 +657,6 @@ void Slit::toggleAutoHide(void) {
 
 
 void Slit::unmapNotifyEvent(XUnmapEvent *e) {
-  XEvent event;
-  if (XCheckTypedEvent(display, ReparentNotify, &event)) {
-    // ignore the unmap and let the Reparent handler deal with it
-    return;
-  }
   removeClient(e->window);
 }
 

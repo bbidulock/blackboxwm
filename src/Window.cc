@@ -71,13 +71,24 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   // if timer is zero in the destructor, and assume that the window is not
   // fully constructed if timer is zero...
   timer = 0;
-  client.window = w;
   blackbox = b;
+  client.window = w;
+  screen = s;
 
   if (! validateClient()) {
     delete this;
     return;
   }
+
+  // set the eventmask early in the game so that we make sure we get
+  // all the events we are interested in
+  XSetWindowAttributes attrib_set;
+  attrib_set.event_mask = PropertyChangeMask | FocusChangeMask |
+                          StructureNotifyMask;
+  attrib_set.do_not_propagate_mask = ButtonPressMask | ButtonReleaseMask |
+                                     ButtonMotionMask;
+  XChangeWindowAttributes(blackbox->getXDisplay(), client.window,
+                          CWEventMask|CWDontPropagate, &attrib_set);
 
   // fetch client size and placement
   XWindowAttributes wattrib;
@@ -91,22 +102,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
     delete this;
     return;
-  }
-
-  if (s) {
-    screen = s;
-  } else {
-    screen = blackbox->searchScreen(RootWindowOfScreen(wattrib.screen));
-    if (! screen) {
-#ifdef    DEBUG
-      fprintf(stderr, "BlackboxWindow::BlackboxWindow(): can't find screen\n"
-              "\tfor root window 0x%lx\n",
-              RootWindowOfScreen(wattrib.screen));
-#endif // DEBUG
-
-      delete this;
-      return;
-    }
   }
 
   flags.moving = flags.resizing = flags.shaded = flags.visible =
@@ -153,13 +148,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   timer = new BTimer(blackbox, this);
   timer->setTimeout(blackbox->getAutoRaiseDelay());
-
-  XSetWindowAttributes attrib_set;
-  attrib_set.event_mask = PropertyChangeMask | FocusChangeMask;
-  attrib_set.do_not_propagate_mask = ButtonPressMask | ButtonReleaseMask |
-                                     ButtonMotionMask;
-  XChangeWindowAttributes(blackbox->getXDisplay(), client.window,
-                          CWEventMask|CWDontPropagate, &attrib_set);
 
   if (! getBlackboxHints())
     getMWMHints();
@@ -296,18 +284,24 @@ BlackboxWindow::~BlackboxWindow(void) {
 
   delete windowmenu;
 
-  if (client.window_group)
-    blackbox->removeGroupSearch(client.window_group);
+  if (client.window_group) {
+    BWindowGroup *group = blackbox->searchGroup(client.window_group);
+    if (group) group->removeWindow(this);
+  }
 
   // remove ourselves from our transient_for
-  if (isTransient())
-    client.transient_for->client.transientList.remove(this);
+  if (isTransient()) {
+    if (client.transient_for != (BlackboxWindow *) ~0ul) {
+      client.transient_for->client.transientList.remove(this);
+    }
+    client.transient_for = (BlackboxWindow*) 0;
+  }
 
   if (client.transientList.size() > 0) {
     // reset transient_for for all transients
     BlackboxWindowList::iterator it, end = client.transientList.end();
     for (it = client.transientList.begin(); it != end; ++it) {
-      (*it)->client.transient_for = 0;
+      (*it)->client.transient_for = (BlackboxWindow*) 0;
     }
   }
 
@@ -385,9 +379,18 @@ void BlackboxWindow::associateClientWindow(void) {
 
   XChangeSaveSet(blackbox->getXDisplay(), client.window, SetModeInsert);
 
-  XSelectInput(blackbox->getXDisplay(), frame.plate,
-               SubstructureRedirectMask | SubstructureNotifyMask);
+  XSelectInput(blackbox->getXDisplay(), frame.plate, SubstructureRedirectMask);
+
+  XGrabServer(blackbox->getXDisplay());
+  XSelectInput(blackbox->getXDisplay(), client.window, NoEventMask);
   XReparentWindow(blackbox->getXDisplay(), client.window, frame.plate, 0, 0);
+  XSelectInput(blackbox->getXDisplay(), client.window,
+               PropertyChangeMask | FocusChangeMask | StructureNotifyMask);
+  XUngrabServer(blackbox->getXDisplay());
+
+  XRaiseWindow(blackbox->getXDisplay(), frame.plate);
+  XMapSubwindows(blackbox->getXDisplay(), frame.plate);
+
 
 #ifdef    SHAPE
   if (blackbox->hasShapeExtensions()) {
@@ -404,9 +407,6 @@ void BlackboxWindow::associateClientWindow(void) {
     flags.shaped = shaped;
   }
 #endif // SHAPE
-
-  XRaiseWindow(blackbox->getXDisplay(), frame.plate);
-  XMapSubwindows(blackbox->getXDisplay(), frame.plate);
 }
 
 
@@ -856,9 +856,15 @@ void BlackboxWindow::getWMHints(void) {
   focus_mode = F_Passive;
   client.initial_state = NormalState;
 
+  // remove from current window group
+  if (client.window_group) {
+    BWindowGroup *group = blackbox->searchGroup(client.window_group);
+    if (group) group->removeWindow(this);
+  }
+  client.window_group = None;
+
   XWMHints *wmhint = XGetWMHints(blackbox->getXDisplay(), client.window);
   if (! wmhint) {
-    client.window_group = None;
     return;
   }
 
@@ -878,12 +884,13 @@ void BlackboxWindow::getWMHints(void) {
     client.initial_state = wmhint->initial_state;
 
   if (wmhint->flags & WindowGroupHint) {
-    if (! client.window_group) {
-      client.window_group = wmhint->window_group;
-      blackbox->saveGroupSearch(client.window_group, this);
-    }
-  } else {
-    client.window_group = None;
+    client.window_group = wmhint->window_group;
+
+    // add window to the appropriate group
+    BWindowGroup *group = blackbox->searchGroup(client.window_group);
+    if (! group) // no group found, create it!
+      group = new BWindowGroup(blackbox, client.window_group);
+    group->addWindow(this);
   }
 
   client.wm_hint_flags = wmhint->flags;
@@ -1101,7 +1108,8 @@ bool BlackboxWindow::getBlackboxHints(void) {
 
 
 void BlackboxWindow::getTransientInfo(void) {
-  if (client.transient_for) {
+  if (client.transient_for &&
+      client.transient_for != (BlackboxWindow *) ~0ul) {
     // the transient for hint was removed, so we need to tell our
     // previous transient_for that we are going away
     client.transient_for->client.transientList.remove(this);
@@ -1128,27 +1136,37 @@ void BlackboxWindow::getTransientInfo(void) {
     // transient.  we don't support the concept of a global transient,
     // so we just associate this transient with nothing, and perhaps
     // we will add support later for global modality.
+    client.transient_for = (BlackboxWindow *) ~0ul;
     flags.modal = True;
     return;
   }
 
   client.transient_for = blackbox->searchWindow(trans_for);
   if (! client.transient_for &&
-      trans_for == client.window_group) {
+      client.window_group && trans_for == client.window_group) {
     // no direct transient_for, perhaps this is a group transient?
-    client.transient_for = blackbox->searchGroup(trans_for, this);
+    BWindowGroup *group = blackbox->searchGroup(client.window_group);
+    if (group) client.transient_for = group->find(screen);
   }
 
   if (! client.transient_for || client.transient_for == this) {
     // no transient_for found, or we have a wierd client that wants to be
     // a transient for itself, so we treat this window as a normal window
-    client.transient_for = 0;
+    client.transient_for = (BlackboxWindow*) 0;
     return;
   }
 
   // register ourselves with our new transient_for
   client.transient_for->client.transientList.push_back(this);
   flags.stuck = client.transient_for->flags.stuck;
+}
+
+
+BlackboxWindow *BlackboxWindow::getTransientFor(void) const {
+  if (client.transient_for &&
+      client.transient_for != (BlackboxWindow*) ~0ul)
+    return client.transient_for;
+  return 0;
 }
 
 
@@ -1265,18 +1283,19 @@ bool BlackboxWindow::setInputFocus(void) {
     }
   }
 
+  bool ret = True;
   if (focus_mode == F_LocallyActive || focus_mode == F_Passive) {
     XSetInputFocus(blackbox->getXDisplay(), client.window,
                    RevertToPointerRoot, CurrentTime);
+
+    blackbox->setFocusedWindow(this);
   } else {
     /* we could set the focus to none, since the window doesn't accept focus,
      * but we shouldn't set focus to nothing since this would surely make
      * someone angry
      */
-    return False;
+    ret = False;
   }
-
-  blackbox->setFocusedWindow(this);
 
   if (flags.send_focus_message) {
     XEvent ce;
@@ -1294,11 +1313,7 @@ bool BlackboxWindow::setInputFocus(void) {
                NoEventMask, &ce);
   }
 
-  if (screen->isSloppyFocus() && screen->doAutoRaise()) {
-    timer->start();
-  }
-
-  return True;
+  return ret;
 }
 
 
@@ -1311,16 +1326,16 @@ void BlackboxWindow::iconify(void) {
 
   /*
    * we don't want this XUnmapWindow call to generate an UnmapNotify event, so
-   * we need to clear the event mask on frame.plate for a split second.
+   * we need to clear the event mask on client.window for a split second.
    * HOWEVER, since X11 is asynchronous, the window could be destroyed in that
    * split second, leaving us with a ghost window... so, we need to do this
    * while the X server is grabbed
    */
   XGrabServer(blackbox->getXDisplay());
-  XSelectInput(blackbox->getXDisplay(), frame.plate, NoEventMask);
+  XSelectInput(blackbox->getXDisplay(), client.window, NoEventMask);
   XUnmapWindow(blackbox->getXDisplay(), client.window);
-  XSelectInput(blackbox->getXDisplay(), frame.plate,
-               SubstructureRedirectMask | SubstructureNotifyMask);
+  XSelectInput(blackbox->getXDisplay(), client.window,
+               PropertyChangeMask | FocusChangeMask | StructureNotifyMask);
   XUngrabServer(blackbox->getXDisplay());
 
   XUnmapWindow(blackbox->getXDisplay(), frame.window);
@@ -1329,9 +1344,12 @@ void BlackboxWindow::iconify(void) {
 
   screen->getWorkspace(blackbox_attrib.workspace)->removeWindow(this);
 
-  if (client.transient_for && ! client.transient_for->flags.iconic) {
-    // iconify our transient_for
-    client.transient_for->iconify();
+  if (isTransient()) {
+    if (client.transient_for != (BlackboxWindow *) ~0ul &&
+        ! client.transient_for->flags.iconic) {
+      // iconify our transient_for
+      client.transient_for->iconify();
+    }
   }
 
   screen->addIcon(this);
@@ -1404,11 +1422,11 @@ void BlackboxWindow::withdraw(void) {
   XUnmapWindow(blackbox->getXDisplay(), frame.window);
 
   XGrabServer(blackbox->getXDisplay());
-  XSelectInput(blackbox->getXDisplay(), frame.plate, NoEventMask);
+  XSelectInput(blackbox->getXDisplay(), client.window, NoEventMask);
   XUnmapWindow(blackbox->getXDisplay(), client.window);
-  XSelectInput(blackbox->getXDisplay(), frame.plate,
-               SubstructureRedirectMask | SubstructureNotifyMask);
-  XUngrabServer(blackbox->getXDisplay());
+  XSelectInput(blackbox->getXDisplay(), client.window,
+               PropertyChangeMask | FocusChangeMask | StructureNotifyMask);
+    XUngrabServer(blackbox->getXDisplay());
 
   if (windowmenu) windowmenu->hide();
 }
@@ -1645,9 +1663,9 @@ void BlackboxWindow::setFocusFlag(bool focus) {
                        frame.plate, frame.uborder_pixel);
   }
 
-  if (! focus && screen->isSloppyFocus() && screen->doAutoRaise() &&
-      timer->isTiming()) {
-    timer->stop();
+  if (screen->isSloppyFocus() && screen->doAutoRaise()) {
+    if (isFocused()) timer->start();
+    else timer->stop();
   }
 
   if (isFocused())
@@ -2034,6 +2052,7 @@ void BlackboxWindow::redrawCloseButton(bool pressed) {
 void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
   if (re->window != client.window)
     return;
+
 #ifdef    DEBUG
   fprintf(stderr, "BlackboxWindow::mapRequestEvent() for 0x%lx\n",
           client.window);
@@ -2631,8 +2650,6 @@ void BlackboxWindow::restore(bool remap) {
   }
 
   if (remap) XMapWindow(blackbox->getXDisplay(), client.window);
-
-  XFlush(blackbox->getXDisplay());
 }
 
 
@@ -2895,4 +2912,47 @@ int WindowStyle::doJustify(const char *text, int &start_pos,
   }
 
   return text_len;
+}
+
+
+BWindowGroup::BWindowGroup(Blackbox *b, Window _group)
+  : blackbox(b), group(_group) {
+  // watch for destroy notify on the group window
+  XSelectInput(blackbox->getXDisplay(), group, StructureNotifyMask);
+  blackbox->saveGroupSearch(group, this);
+}
+
+
+BWindowGroup::~BWindowGroup(void) {
+  blackbox->removeGroupSearch(group);
+}
+
+
+BlackboxWindow *
+BWindowGroup::find(BScreen *screen, bool allow_transients) const {
+  BlackboxWindow *ret = blackbox->getFocusedWindow();
+
+  // does the focus window match (or any transient_fors)?
+  while (ret) {
+    if (ret->getScreen() == screen && ret->getGroupWindow() == group) {
+      if (ret->isTransient() && allow_transients) break;
+      else if (! ret->isTransient()) break;
+    }
+
+    ret = ret->getTransientFor();
+  }
+
+  if (ret) return ret;
+
+  // the focus window didn't match, look in the group's window list
+  BlackboxWindowList::const_iterator it, end = windowList.end();
+  for (it = windowList.begin(); it != end; ++it) {
+    ret = *it;
+    if (ret->getScreen() == screen && ret->getGroupWindow() == group) {
+      if (ret->isTransient() && allow_transients) break;
+      else if (! ret->isTransient()) break;
+    }
+  }
+
+  return ret;
 }

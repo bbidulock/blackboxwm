@@ -87,6 +87,7 @@ struct BlackboxAttributes {
 class BScreen;
 class Blackbox;
 class BlackboxWindow;
+class BWindowGroup;
 class Basemenu;
 class Toolbar;
 class Slit;
@@ -116,7 +117,11 @@ private:
 
   typedef std::map<Window, BlackboxWindow*> WindowLookup;
   typedef WindowLookup::value_type WindowLookupPair;
-  WindowLookup windowSearchList, groupSearchList;
+  WindowLookup windowSearchList;
+
+  typedef std::map<Window, BWindowGroup*> GroupLookup;
+  typedef GroupLookup::value_type GroupLookupPair;
+  GroupLookup groupSearchList;
 
   typedef std::map<Window, Basemenu*> MenuLookup;
   typedef MenuLookup::value_type MenuLookupPair;
@@ -204,7 +209,7 @@ public:
   virtual ~Blackbox(void);
 
   Basemenu *searchMenu(Window window);
-  BlackboxWindow *searchGroup(Window window, BlackboxWindow *win);
+  BWindowGroup *searchGroup(Window window);
   BlackboxWindow *searchWindow(Window window);
   BScreen *searchScreen(Window window);
   Toolbar *searchToolbar(Window);
@@ -212,7 +217,7 @@ public:
 
   void saveMenuSearch(Window window, Basemenu *data);
   void saveWindowSearch(Window window, BlackboxWindow *data);
-  void saveGroupSearch(Window window, BlackboxWindow *data);
+  void saveGroupSearch(Window window, BWindowGroup *data);
   void saveToolbarSearch(Window window, Toolbar *data);
   void saveSlitSearch(Window window, Slit *data);
   void removeMenuSearch(Window window);

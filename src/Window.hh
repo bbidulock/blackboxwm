@@ -65,6 +65,31 @@ typedef struct MwmHints {
 
 #define PropMwmHintsElements  3
 
+class BWindowGroup {
+private:
+  Blackbox *blackbox;
+  Window group;
+  BlackboxWindowList windowList;
+
+public:
+  BWindowGroup(Blackbox *b, Window _group);
+  ~BWindowGroup(void);
+
+  inline Window groupWindow(void) const { return group; }
+
+  inline bool empty(void) const { return windowList.empty(); }
+
+  void addWindow(BlackboxWindow *w) { windowList.push_back(w); }
+  void removeWindow(BlackboxWindow *w) { windowList.remove(w); }
+
+  /*
+    find a window on the specified screen. the focused window (if any) is
+    checked first, otherwise the first matching window found is returned.
+    transients are returned only if allow_transients is True.
+  */
+  BlackboxWindow *find(BScreen *screen, bool allow_transients = False) const;
+};
+
 
 class BlackboxWindow : public TimeoutHandler {
 public:
@@ -246,7 +271,7 @@ private:
   void constrain(Corner anchor, int *pw = 0, int *ph = 0);
 
 public:
-  BlackboxWindow(Blackbox *b, Window w, BScreen *s = (BScreen *) 0);
+  BlackboxWindow(Blackbox *b, Window w, BScreen *s);
   virtual ~BlackboxWindow(void);
 
   inline bool isTransient(void) const { return client.transient_for != 0; }
@@ -265,13 +290,13 @@ public:
 
   inline const BlackboxWindowList &getTransients(void) const
   { return client.transientList; }
-  inline BlackboxWindow *getTransientFor(void) const
-  { return (client.transient_for && client.transient_for != reinterpret_cast<BlackboxWindow*>(~0)) ? client.transient_for : 0; }
+  BlackboxWindow *getTransientFor(void) const;
 
   inline BScreen *getScreen(void) { return screen; }
 
   inline Window getFrameWindow(void) const { return frame.window; }
   inline Window getClientWindow(void) const { return client.window; }
+  inline Window getGroupWindow(void) const { return client.window_group; }
 
   inline Windowmenu * getWindowmenu(void) { return windowmenu; }
 

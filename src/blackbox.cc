@@ -164,8 +164,6 @@ Blackbox::Blackbox(char **m_argv, char *dpy_name, char *rc)
   cursor.ll_angle = XCreateFontCursor(getXDisplay(), XC_ll_angle);
   cursor.lr_angle = XCreateFontCursor(getXDisplay(), XC_lr_angle);
 
-  XGrabServer(getXDisplay());
-
   for (unsigned int i = 0; i < getNumberOfScreens(); i++) {
     BScreen *screen = new BScreen(this, i);
 
@@ -195,8 +193,6 @@ Blackbox::Blackbox(char **m_argv, char *dpy_name, char *rc)
 
   timer = new BTimer(this, this);
   timer->setTimeout(0l);
-
-  XUngrabServer(getXDisplay());
 }
 
 
@@ -309,9 +305,7 @@ void Blackbox::process_event(XEvent *e) {
 
   case MapRequest: {
 #ifdef    DEBUG
-    fprintf(stderr,
-            i18n(blackboxSet, blackboxMapRequest,
-                 "Blackbox::process_event(): MapRequest for 0x%lx\n"),
+    fprintf(stderr, "Blackbox::process_event(): MapRequest for 0x%lx\n",
             e->xmaprequest.window);
 #endif // DEBUG
 
@@ -319,8 +313,32 @@ void Blackbox::process_event(XEvent *e) {
 
     if (! win) {
       BScreen *screen = searchScreen(e->xmaprequest.parent);
-      if (screen)
-        screen->manageWindow(e->xmaprequest.window);
+
+      if (! screen) {
+        /*
+          we got a map request for a window who's parent isn't root. this
+          can happen in only one circumstance:
+
+            a client window unmapped a managed window, and then remapped it
+            somewhere between unmapping the client window and reparenting it
+            to root.
+
+          regardless of how it happens, we need to find the screen that
+          the window is on
+        */
+        XWindowAttributes wattrib;
+        if (! XGetWindowAttributes(getXDisplay(), e->xmaprequest.window,
+                                   &wattrib)) {
+          // failed to get the window attributes, perhaps the window has
+          // now been destroyed?
+          break;
+        }
+
+        screen = searchScreen(wattrib.root);
+        assert(screen != 0); // this should never happen
+      }
+
+      screen->manageWindow(e->xmaprequest.window);
     }
 
     break;
@@ -342,11 +360,14 @@ void Blackbox::process_event(XEvent *e) {
   case DestroyNotify: {
     BlackboxWindow *win = (BlackboxWindow *) 0;
     Slit *slit = (Slit *) 0;
+    BWindowGroup *group = (BWindowGroup *) 0;
 
     if ((win = searchWindow(e->xdestroywindow.window))) {
       win->destroyNotifyEvent(&e->xdestroywindow);
     } else if ((slit = searchSlit(e->xdestroywindow.window))) {
       slit->removeClient(e->xdestroywindow.window, False);
+    } else if ((group = searchGroup(e->xdestroywindow.window))) {
+      delete group;
     }
 
     break;
@@ -829,21 +850,19 @@ BScreen *Blackbox::searchScreen(Window window) {
 
 BlackboxWindow *Blackbox::searchWindow(Window window) {
   WindowLookup::iterator it = windowSearchList.find(window);
+  if (it != windowSearchList.end())
+    return it->second;
 
-  if (it == windowSearchList.end())
-    return (BlackboxWindow*) 0;
-
-  return it->second;
+  return (BlackboxWindow*) 0;
 }
 
 
-BlackboxWindow *Blackbox::searchGroup(Window window, BlackboxWindow *win) {
-  WindowLookup::iterator it = groupSearchList.find(window);
-  if (it != groupSearchList.end()) {
-    if (it->second->getClientWindow() != win->getClientWindow())
-      return win;
-  }
-  return (BlackboxWindow*) 0;
+BWindowGroup *Blackbox::searchGroup(Window window) {
+  GroupLookup::iterator it = groupSearchList.find(window);
+  if (it != groupSearchList.end())
+    return it->second;
+
+  return (BWindowGroup *) 0;
 }
 
 
@@ -879,8 +898,8 @@ void Blackbox::saveWindowSearch(Window window, BlackboxWindow *data) {
 }
 
 
-void Blackbox::saveGroupSearch(Window window, BlackboxWindow *data) {
-  groupSearchList.insert(WindowLookupPair(window, data));
+void Blackbox::saveGroupSearch(Window window, BWindowGroup *data) {
+  groupSearchList.insert(GroupLookupPair(window, data));
 }
 
 
@@ -940,8 +959,6 @@ void Blackbox::restart(const char *prog) {
 
 
 void Blackbox::shutdown(void) {
-  XGrabServer(blackbox->getXDisplay());
-
   BaseDisplay::shutdown();
 
   XSetInputFocus(getXDisplay(), PointerRoot, None, CurrentTime);
@@ -950,8 +967,6 @@ void Blackbox::shutdown(void) {
                 std::mem_fun(&BScreen::shutdown));
 
   XSync(getXDisplay(), False);
-
-  XUngrabServer(blackbox->getXDisplay());
 
   save_rc();
 }

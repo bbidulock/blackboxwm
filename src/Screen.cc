@@ -295,16 +295,6 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
 
   // call this again just in case a window we found updates the Strut list
   updateAvailableArea();
-
-  /*
-   * watch for SubstructureNotify events, so that we can catch the odd cases
-   * where the window maps, unmaps and destroys itself before blackbox has a
-   * change to manage it... without SubstructureNotify, we never get the Unmap
-   * or Destroy events, which would leave us with a ghost window...
-   */
-  event_mask |= SubstructureNotifyMask;
-  XSelectInput(getBaseDisplay()->getXDisplay(), getRootWindow(), event_mask);
-  XFlush(blackbox->getXDisplay());
 }
 
 
