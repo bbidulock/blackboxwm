@@ -50,7 +50,7 @@
   my member copy/assignment), but what we don't get is a default
   comparison operator... how fucked up is that?
 
-  the language is designed to hand this:
+  the language is designed to handle this:
 
   struct foo { int a; int b };
   foo a = { 0 , 0 }, b = a;
