@@ -45,11 +45,11 @@ namespace bt {
   {
   public:
     enum Type { Normal, Separator };
-    inline MenuItem(Type t, const std::string& l = std::string())
+    inline MenuItem(Type t, const ustring &l = ustring())
       : sub(0), lbl(l), ident(~0u), indx(~0u), height(0),
         separator(t == Separator),
         active(0), title(0), enabled(1), checked(0) { }
-    inline MenuItem(Menu *s, const std::string& l)
+    inline MenuItem(Menu *s, const ustring &l)
       : sub(s), lbl(l), ident(~0u), indx(~0u), height(0), separator(0),
         active(0), title(0), enabled(1), checked(0) { }
 
@@ -64,11 +64,11 @@ namespace bt {
 
     Menu *submenu(void) const { return sub; }
 
-    const std::string& label(void) const { return lbl; }
+    const ustring &label(void) const { return lbl; }
 
   private:
     Menu *sub;
-    std::string lbl;
+    ustring lbl;
     unsigned int ident;
     unsigned int indx;
     unsigned int height;
@@ -122,12 +122,12 @@ namespace bt {
     { return frame.font; }
 
     // size calculations
-    Rect titleRect(const std::string &text) const;
+    Rect titleRect(const ustring &text) const;
     Rect itemRect(const MenuItem &item) const;
 
     // drawing
     void drawTitle(Window window, const Rect &rect,
-                   const std::string &text) const;
+                   const ustring &text) const;
     void drawItem(Window window, const Rect &rect,
                   const MenuItem &item, Pixmap activePixmap) const;
 
@@ -173,13 +173,13 @@ namespace bt {
 
     unsigned int insertItem(const MenuItem &item, unsigned int id = ~0u,
                             unsigned int index = ~0u);
-    unsigned int insertItem(const std::string& label,
+    unsigned int insertItem(const ustring &label,
                             unsigned int id = ~0u, unsigned int index = ~0u);
-    unsigned int insertItem(const std::string& label, Menu *submenu,
+    unsigned int insertItem(const ustring &label, Menu *submenu,
                             unsigned int id = ~0u, unsigned int index = ~0u);
     void insertSeparator(unsigned int index = ~0u);
 
-    void changeItem(unsigned int id, const std::string &newlabel,
+    void changeItem(unsigned int id, const ustring &newlabel,
                     unsigned int newid = ~0u);
 
     void setItemEnabled(unsigned int id, bool enabled);
@@ -194,8 +194,8 @@ namespace bt {
 
     unsigned int count(void) const { return _items.size(); }
 
-    const std::string& title(void) const { return _title; }
-    void setTitle(const std::string& newtitle) { _title = newtitle; }
+    const ustring &title(void) const { return _title; }
+    void setTitle(const ustring &newtitle) { _title = newtitle; }
     void showTitle(void);
     void hideTitle(void);
 
@@ -259,7 +259,7 @@ namespace bt {
     Rect _irect; // items inside the frame
 
     Timer _timer;
-    std::string _title;
+    ustring _title;
 
     ItemList _items;
     std::vector<bool> _id_bits;

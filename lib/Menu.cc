@@ -163,7 +163,7 @@ unsigned int bt::MenuStyle::itemMargin(void) const {
 }
 
 
-bt::Rect bt::MenuStyle::titleRect(const std::string &text) const {
+bt::Rect bt::MenuStyle::titleRect(const ustring &text) const {
   const Rect &rect = textRect(_screen, title.font, text);
   return Rect(0, 0,
               rect.width()  + (titleMargin() * 2),
@@ -180,7 +180,7 @@ bt::Rect bt::MenuStyle::itemRect(const MenuItem &item) const {
 
 
 void bt::MenuStyle::drawTitle(Window window, const Rect &rect,
-                              const std::string &text) const {
+                              const ustring &text) const {
   Pen pen(_screen, title.text);
   Rect r;
   r.setCoords(rect.left() + titleMargin(), rect.top(),
@@ -376,13 +376,13 @@ unsigned int bt::Menu::insertItem(const MenuItem &item,
 }
 
 
-unsigned int bt::Menu::insertItem(const std::string &label,
+unsigned int bt::Menu::insertItem(const ustring &label,
                                   unsigned int id, unsigned int index) {
   return insertItem(MenuItem(MenuItem::Normal, label), id, index);
 }
 
 
-unsigned int bt::Menu::insertItem(const std::string &label, Menu *submenu,
+unsigned int bt::Menu::insertItem(const ustring &label, Menu *submenu,
                                   unsigned int id, unsigned int index) {
   submenu->_parent_menu = this;
   return insertItem(MenuItem(submenu, label), id, index);
@@ -425,7 +425,7 @@ bt::Menu::ItemList::iterator bt::Menu::findItem(unsigned int id, Rect& r) {
 }
 
 
-void bt::Menu::changeItem(unsigned int id, const std::string &newlabel,
+void bt::Menu::changeItem(unsigned int id, const ustring &newlabel,
                           unsigned int newid) {
   Rect r(_irect.x(), _irect.y(), _itemw, 0);
   ItemList::iterator it = findItem(id, r);

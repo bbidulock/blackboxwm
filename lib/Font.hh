@@ -25,9 +25,8 @@
 #ifndef __Font_hh
 #define __Font_hh
 
+#include "Unicode.hh"
 #include "Util.hh"
-
-#include <string>
 
 namespace bt {
 
@@ -47,19 +46,18 @@ namespace bt {
   unsigned int textHeight(unsigned int screen, const Font &font);
 
   Rect textRect(unsigned int screen, const Font &font,
-                const std::string &text);
+                const bt::ustring &text);
 
   void drawText(const Font &font, const Pen &pen,
                 Drawable drawable, const Rect &rect,
-                Alignment alignment, const std::string &text);
+                Alignment alignment, const ustring &text);
 
   /*
    * Take a string and make it 'count' chars long by removing the
    * middle and replacing it with the string in 'ellide'.
    */
-  std::string ellideText(const std::string& text,
-                         size_t count,
-                         const char* ellide);
+  ustring ellideText(const ustring &text, size_t count,
+                     const ustring &ellide);
 
   /*
    * Take a string and make no more than 'max_width' pixels wide by
@@ -67,11 +65,11 @@ namespace bt {
    * The on-screen size of the string font is determined using the
    * specified font on the specified screen.
    */
-  std::string ellideText(const std::string &text,
-                         unsigned int max_width,
-                         const char *ellide,
-                         unsigned int screen,
-                         const bt::Font &font);
+  ustring ellideText(const ustring &text,
+                     unsigned int max_width,
+                     const ustring &ellide,
+                     unsigned int screen,
+                     const bt::Font &font);
 
   Alignment alignResource(const Resource &resource,
                           const char* name, const char* classname,
@@ -87,7 +85,8 @@ namespace bt {
     inline ~Font(void)
     { unload(); }
 
-    const std::string& fontName(void) const { return _fontname; }
+    const std::string& fontName(void) const
+    { return _fontname; }
     void setFontName(const std::string &new_fontname)
     { unload(); _fontname = new_fontname; }
 

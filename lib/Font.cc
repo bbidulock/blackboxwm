@@ -430,20 +430,21 @@ unsigned int bt::textHeight(unsigned int screen, const Font &font) {
 
 
 bt::Rect bt::textRect(unsigned int screen, const Font &font,
-                      const std::string &text) {
+                      const bt::ustring &text) {
 #ifdef XFT
   XftFont * const f = font.xftFont(screen);
   if (f) {
     XGlyphInfo xgi;
-    XftTextExtentsUtf8(fontcache->_display.XDisplay(), f,
-                       reinterpret_cast<const FcChar8 *>(text.c_str()),
-                       text.length(), &xgi);
+    XftTextExtents32(fontcache->_display.XDisplay(), f,
+                     reinterpret_cast<const FcChar32 *>(text.c_str()),
+                     text.length(), &xgi);
     return Rect(xgi.x, 0, xgi.width - xgi.x, f->ascent + f->descent);
   }
 #endif
 
+  const std::string str = toLocale(text);
   XRectangle ink, unused;
-  XmbTextExtents(font.fontSet(), text.c_str(), text.length(), &ink, &unused);
+  XmbTextExtents(font.fontSet(), str.c_str(), str.length(), &ink, &unused);
   return Rect(0, 0, ink.width,
               XExtentsOfFontSet(font.fontSet())->max_ink_extent.height);
 }
@@ -451,7 +452,7 @@ bt::Rect bt::textRect(unsigned int screen, const Font &font,
 
 void bt::drawText(const Font &font, const Pen &pen,
                   Drawable drawable, const Rect &rect,
-                  Alignment alignment, const std::string &text) {
+                  Alignment alignment, const bt::ustring &text) {
   Rect tr = textRect(pen.screen(), font, text);
 
   // align vertically (center for now)
@@ -482,53 +483,53 @@ void bt::drawText(const Font &font, const Pen &pen,
     col.color.alpha = 0xffff;
     col.pixel = pen.color().pixel(pen.screen());
 
-    XftDrawStringUtf8(pen.xftDraw(drawable), &col, f,
-                      tr.x(), tr.y() + f->ascent,
-                      reinterpret_cast<const FcChar8 *>(text.c_str()),
-                      text.length());
+    XftDrawString32(pen.xftDraw(drawable), &col, f,
+                    tr.x(), tr.y() + f->ascent,
+                    reinterpret_cast<const FcChar32 *>(text.c_str()),
+                    text.length());
     return;
   }
 #endif
 
+  const std::string str = toLocale(text);
   XmbDrawString(pen.XDisplay(), drawable, font.fontSet(), pen.gc(), tr.x(),
                 tr.y() - XExtentsOfFontSet(font.fontSet())->max_ink_extent.y,
-                text.c_str(), text.length());
+                str.c_str(), str.length());
 }
 
 
-std::string bt::ellideText(const std::string& text, size_t count,
-                           const char* ellide) {
-  const std::string::size_type len = text.length();
+bt::ustring bt::ellideText(const bt::ustring &text, size_t count,
+                           const bt::ustring &ellide) {
+  const bt::ustring::size_type len = text.length();
   if (len <= count)
     return text;
 
-  const size_t ellide_len = strlen(ellide);
-  assert(ellide_len < (count / 2));
+  assert(ellide.length() < (count / 2));
 
-  std::string ret = text;
-
-  return ret.replace(ret.begin() + (count / 2) - (ellide_len / 2),
-                     ret.end() - (count / 2) + ((ellide_len / 2) + 1), ellide);
+  bt::ustring ret = text;
+  return ret.replace(ret.begin() + (count / 2) - (ellide.length() / 2),
+                     ret.end() - (count / 2) + ((ellide.length() / 2) + 1),
+                     ellide);
 }
 
 
-std::string bt::ellideText(const std::string &text,
+bt::ustring bt::ellideText(const bt::ustring &text,
                            unsigned int max_width,
-                           const char *ellide,
+                           const bt::ustring &ellide,
                            unsigned int screen,
                            const bt::Font &font) {
-  std::string visible = text;
+  bt::ustring visible = text;
   bt::Rect r = bt::textRect(screen, font, visible);
 
   if (r.width() > max_width) {
-    const size_t ellide_len = strlen(ellide);
-    const int min_c = (ellide_len * 3) - 1;
-    int c = visible.size();
+    const int min_c = (ellide.length() * 3) - 1;
+    int c = visible.length();
     while (--c > min_c && r.width() > max_width) {
-      visible = bt::ellideText(text, c, "...");
+      visible = bt::ellideText(text, c, ellide);
       r = bt::textRect(screen, font, visible);
     }
-    if (c <= min_c) visible = "..."; // couldn't ellide enough
+    if (c <= min_c)
+      visible = ellide; // couldn't ellide enough
   }
 
   return visible;
