@@ -37,16 +37,12 @@ public:
   virtual ~bsetroot(void);
 
   void setPixmapProperty(int screen, Pixmap pixmap);
-  Pixmap duplicatePixmap(int screen, Pixmap pixmap, int width, int height);
   unsigned long duplicateColor(unsigned int screen, const bt::Color &color);
 
   void gradient(void);
   void modula(int x, int y);
   void solid(void);
   void usage(int exit_code = 0);
-
-  void addTimer(bt::Timer*) {}
-  void removeTimer(bt::Timer*) {}
 
 private:
   bt::Display display;

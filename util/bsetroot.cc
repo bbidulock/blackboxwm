@@ -37,9 +37,17 @@ extern "C" {
 #include "i18n.hh"
 
 
+static int x11_error(::Display *, XErrorEvent *) {
+  // ignore all X errors
+  return 0;
+}
+
+
 bt::I18n bt::i18n;
 
 bsetroot::bsetroot(int argc, char **argv, char *dpy_name): display(dpy_name) {
+  XSetErrorHandler(x11_error); // silently handle all errors
+
   bool mod = False, sol = False, grd = False;
   int mod_x = 0, mod_y = 0;
 
@@ -82,7 +90,7 @@ bsetroot::bsetroot(int argc, char **argv, char *dpy_name): display(dpy_name) {
       grad = argv[i];
       grd = True;
     } else if (! strcmp("-display", argv[i])) {
-      // -display passed through tests ealier... we just skip it now
+      // -display passed through tests ealier... we
       i++;
     } else {
       usage();
@@ -96,13 +104,21 @@ bsetroot::bsetroot(int argc, char **argv, char *dpy_name): display(dpy_name) {
     usage(2);
   }
 
+  // keep the server grabbed while rendering all screens
+  XGrabServer(display.XDisplay());
+
   if (sol && ! fore.empty())
     solid();
   else if (mod && mod_x && mod_y && ! (fore.empty() || back.empty()))
     modula(mod_x, mod_y);
   else if (grd && ! (grad.empty() || fore.empty() || back.empty()))
     gradient();
-  else usage();
+  else
+    usage();
+
+  // ungrab the server and discard any events
+  XUngrabServer(display.XDisplay());
+  XSync(display.XDisplay(), True);
 }
 
 
@@ -115,36 +131,46 @@ bsetroot::~bsetroot(void) {
 // adapted from wmsetbg
 void bsetroot::setPixmapProperty(int screen, Pixmap pixmap) {
   static Atom rootpmap_id = None, esetroot_id = None;
-  Atom type;
-  int format;
-  unsigned long length, after;
-  unsigned char *data;
-  const bt::ScreenInfo &screen_info = display.screenInfo(screen);
-
   if (rootpmap_id == None) {
     rootpmap_id = XInternAtom(display.XDisplay(), "_XROOTPMAP_ID", False);
     esetroot_id = XInternAtom(display.XDisplay(), "ESETROOT_PMAP_ID", False);
   }
 
-  XGrabServer(display.XDisplay());
+  const bt::ScreenInfo &screen_info = display.screenInfo(screen);
 
-  /* Clear out the old pixmap */
+  Atom type;
+  int format;
+  unsigned long length, after;
+  unsigned char *data = 0;
+  unsigned char* data_esetroot = 0;
+  Pixmap xrootpmap = None;
+  Pixmap esetrootpmap = None;
+
+  // Clear out the old _XROOTPMAP_ID property
   XGetWindowProperty(display.XDisplay(), screen_info.rootWindow(),
-		     rootpmap_id, 0L, 1L, False, AnyPropertyType,
-		     &type, &format, &length, &after, &data);
+		     rootpmap_id, 0L, 1L, True, AnyPropertyType,
+                     &type, &format, &length, &after, &data);
 
-  if ((type == XA_PIXMAP) && (format == 32) && (length == 1)) {
-    unsigned char* data_esetroot = 0;
-    XGetWindowProperty(display.XDisplay(), screen_info.rootWindow(),
-                       esetroot_id, 0L, 1L, False, AnyPropertyType,
-                       &type, &format, &length, &after, &data_esetroot);
-    if (data && data_esetroot && *((Pixmap *) data)) {
-      XKillClient(display.XDisplay(), *((Pixmap *) data));
-      XSync(display.XDisplay(), False);
-      XFree(data_esetroot);
-    }
-    XFree(data);
-  }
+  if (data && type == XA_PIXMAP && format == 32 && length == 1)
+    xrootpmap = *((Pixmap *) data);
+
+  if (data) XFree(data);
+
+  // Clear out the old ESETROOT_PMAP_ID property
+  XGetWindowProperty(display.XDisplay(), screen_info.rootWindow(),
+                     esetroot_id, 0L, 1L, True, AnyPropertyType,
+                     &type, &format, &length, &after, &data_esetroot);
+
+  if (data_esetroot && type == XA_PIXMAP && format == 32 && length == 1)
+    esetrootpmap = *((Pixmap *) data_esetroot);
+
+  if (data_esetroot) XFree(data_esetroot);
+
+  // Destroy the old pixmaps
+  if (xrootpmap)
+    XKillClient(display.XDisplay(), xrootpmap);
+  if (esetrootpmap && esetrootpmap != xrootpmap)
+    XKillClient(display.XDisplay(), esetrootpmap);
 
   if (pixmap) {
     XChangeProperty(display.XDisplay(), screen_info.rootWindow(),
@@ -153,33 +179,7 @@ void bsetroot::setPixmapProperty(int screen, Pixmap pixmap) {
     XChangeProperty(display.XDisplay(), screen_info.rootWindow(),
 		    esetroot_id, XA_PIXMAP, 32, PropModeReplace,
 		    (unsigned char *) &pixmap, 1);
-  } else {
-    XDeleteProperty(display.XDisplay(), screen_info.rootWindow(),
-		    rootpmap_id);
-    XDeleteProperty(display.XDisplay(), screen_info.rootWindow(),
-		    esetroot_id);
   }
-
-  XUngrabServer(display.XDisplay());
-  XFlush(display.XDisplay());
-}
-
-
-// adapted from wmsetbg
-Pixmap bsetroot::duplicatePixmap(int screen, Pixmap pixmap,
-				 int width, int height) {
-  XSync(display.XDisplay(), False);
-
-  Pixmap copyP = XCreatePixmap(display.XDisplay(),
-			       display.screenInfo(screen).rootWindow(),
-			       width, height,
-			       DefaultDepth(display.XDisplay(), screen));
-  XCopyArea(display.XDisplay(), pixmap, copyP,
-            DefaultGC(display.XDisplay(), screen),
-	    0, 0, width, height, 0, 0);
-  XSync(display.XDisplay(), False);
-
-  return copyP;
 }
 
 
@@ -228,9 +228,7 @@ void bsetroot::solid(void) {
     bt::Pen pen(screen, c);
     XFillRectangle(display.XDisplay(), pixmap, pen.gc(), 0, 0, 8, 8);
 
-    setPixmapProperty(screen, duplicatePixmap(screen, pixmap, 8, 8));
-
-    XFreePixmap(display.XDisplay(), pixmap);
+    setPixmapProperty(screen, pixmap);
   }
 }
 
@@ -261,40 +259,33 @@ void bsetroot::modula(int x, int y) {
       }
     }
 
-    GC gc;
-    Pixmap bitmap;
     const bt::ScreenInfo &screen_info = display.screenInfo(screen);
-
-    bitmap =
-      XCreateBitmapFromData(display.XDisplay(), screen_info.rootWindow(),
-                            data, 16, 16);
 
     XGCValues gcv;
     gcv.foreground = duplicateColor(screen, f);
     gcv.background = duplicateColor(screen, b);
 
-    gc = XCreateGC(display.XDisplay(), screen_info.rootWindow(),
-                   GCForeground | GCBackground, &gcv);
+    GC gc = XCreateGC(display.XDisplay(), screen_info.rootWindow(),
+                      GCForeground | GCBackground, &gcv);
 
     Pixmap pixmap = XCreatePixmap(display.XDisplay(),
 				  screen_info.rootWindow(),
 				  16, 16, screen_info.depth());
 
+    Pixmap bitmap =
+      XCreateBitmapFromData(display.XDisplay(), screen_info.rootWindow(),
+                            data, 16, 16);
     XCopyPlane(display.XDisplay(), bitmap, pixmap, gc,
                0, 0, 16, 16, 0, 0, 1l);
+    XFreeGC(display.XDisplay(), gc);
+    XFreePixmap(display.XDisplay(), bitmap);
+
     XSetWindowBackgroundPixmap(display.XDisplay(),
                                screen_info.rootWindow(),
                                pixmap);
     XClearWindow(display.XDisplay(), screen_info.rootWindow());
 
-    setPixmapProperty(screen,
-		      duplicatePixmap(screen, pixmap, 16, 16));
-
-    XFreeGC(display.XDisplay(), gc);
-    XFreePixmap(display.XDisplay(), bitmap);
-
-    if (! (screen_info.visual()->c_class & 1))
-      XFreePixmap(display.XDisplay(), pixmap);
+    setPixmapProperty(screen, pixmap);
   }
 }
 
@@ -342,20 +333,14 @@ void bsetroot::gradient(void) {
                                pixmap);
     XClearWindow(display.XDisplay(), screen_info.rootWindow());
 
-    setPixmapProperty(screen,
-		      duplicatePixmap(screen, pixmap,
-				      screen_info.width(),
-				      screen_info.height()));
-
-    if (! (screen_info.visual()->c_class & 1))
-      XFreePixmap(display.XDisplay(), pixmap);
+    setPixmapProperty(screen, pixmap);
   }
 }
 
 
 void bsetroot::usage(int exit_code) {
   fprintf(stderr,
-          "bsetroot 3.0\n\n"
+          "bsetroot 3.1\n\n"
           "Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry\n"
           "Copyright (c) 1997 - 2000, 2002 Bradley T Hughes\n");
   fprintf(stderr,
@@ -393,6 +378,5 @@ int main(int argc, char **argv) {
   }
 
   bsetroot app(argc, argv, display_name);
-
   return 0;
 }
