@@ -51,9 +51,6 @@ private:
   std::string display_string;
   Rect rect;
 
-protected:
-  const Rect& getRect(void) const { return rect; }
-
 public:
   ScreenInfo(BaseDisplay *d, unsigned int num);
 
@@ -64,6 +61,7 @@ public:
   inline int getDepth(void) const { return depth; }
   inline unsigned int getScreenNumber(void) const
     { return screen_number; }
+  inline const Rect& getRect(void) const { return rect; }
   inline unsigned int getWidth(void) const { return rect.width(); }
   inline unsigned int getHeight(void) const { return rect.height(); }
   inline const std::string& displayString(void) const
