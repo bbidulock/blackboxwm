@@ -9,6 +9,8 @@
 #ifdef HAVE_NL_LANGINFO
 #  include <langinfo.h>
 #endif
+#include <locale.h>
+#include <stdio.h>
 
 namespace bt {
 
