@@ -34,7 +34,7 @@ class Toolbar;
 
 class Workspacemenu : public Basemenu {
 private:
-  Toolbar *toolbar;
+  BScreen *screen;
 
   
 protected:
@@ -42,8 +42,9 @@ protected:
 
 
 public:
-  Workspacemenu(Blackbox *, Toolbar *);
-  virtual ~Workspacemenu(void);
+  Workspacemenu(Blackbox *, BScreen *);
+
+  virtual void hide(void);
 };
 
 #endif // __Basemenu_hh

@@ -1,0 +1,52 @@
+-- AUTHORS for Blackbox 0.40.x beta - an X11 Window manager
+-- Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
+--
+--  This program is free software; you can redistribute it and/or modify
+--  it under the terms of the GNU General Public License as published by
+--  the Free Software Foundation; either version 2 of the License, or
+--  (at your option) any later version.
+--
+--  This program is distributed in the hope that it will be useful,
+--  but WITHOUT ANY WARRANTY; without even the implied warranty of
+--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+--  GNU General Public License for more details.
+--
+--  You should have received a copy of the GNU General Public License
+--  along with this program; if not, write to the Free Software
+--  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+--
+-- (See the included file COPYING / GPL-2.0)
+--
+
+Author:
+        Brad Hughes <bhughes@tcac.net>
+
+Contributors:
+        Jeffrey Sean Connell <ankh@canuck.gen.nz>
+          - debugger class code (ommited from sources)
+        Frank Belew <frb@umr.edu>
+          - dgradient code
+        Scott Garner <mrfab@arn.net>
+          - suggestions, bug reports and beta testing (*the* beta moron)
+        David Doan <ddoan@usa.net>
+         - testing of 8bpp code
+        Mark Seward <illuzion@paradise.net.nz>
+         - beta testing, bug reports and 32bpp testing
+        Keith Bolland <prime@strip.net.nz>
+         - beta testing, bug reports and suggestions
+        James Spooner <spoons@xtra.co.nz>
+         - beta testing, bug reports (beta moron)
+        Fred Knieper <derf@tamu.edu>
+         - beta testing, bug reports
+        Steve Udell <hettar@teleport.com>
+         - beta testing, bug reports, questions (very good ones)
+
+I would also like to thank the creators of WindowMaker.  Reading the existing
+code has helped me immensely, and the BImage class follows the RImage data type
+very closely (the 8bpp code and dithering code was based off of WindowMaker's
+wrlib).
+
+I recently stumbled upon a library called ccmalloc (which is included in the
+source tarball with blackbox) that has helped me immensely.  Many thanks to
+Armin Biere <armin@ira.uka.de> for this debugging aid.
+

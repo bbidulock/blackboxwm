@@ -18,67 +18,75 @@
 -- (See the included file COPYING / GPL-2.0)
 -- 
 
-
-Credits:
------------
-Author:
-	Brad Hughes <bhughes@tcac.net>
-
-Contributors:
-	Jeffrey Sean Connell <ankh@canuck.gen.nz>
-	  - debugger class code (ommited from sources)
-	Frank Belew <frb@umr.edu>
-	  - dgradient code
-	Scott Garner <mrfab@arn.net>
-	  - suggestions, bug reports and beta testing (*the* beta moron)
-        David Doan <ddoan@usa.net>
-	 - testing of 8bpp code
-	Mark Seward <illuzion@paradise.net.nz>
-	 - beta testing, bug reports and 32bpp testing
-	Keith Bolland <prime@strip.net.nz>
-	 - beta testing, bug reports and suggestions
-	James Spooner <spoons@xtra.co.nz>
-	 - beta testing, bug reports (beta moron)
-	Fred Knieper <derf@tamu.edu>
-	 - beta testing, bug reports
-	Steve Udell <hettar@teleport.com>
-	 - beta testing, bug reports, questions (very good ones)
-
-I would also like to thank the creators of WindowMaker.  Reading the existing
-code has helped me immensely, and the BImage class follows the RImage data type
-very closely (the 8bpp code and dithering code was based off of WindowMaker's
-wrlib).
-
-I recently stumbled upon a library called ccmalloc (which is included in the
-source tarball with blackbox) that has helped me immensely.  Many thanks to
-Armin Biere <armin@ira.uka.de> for this debugging aid.
-
-
 Compilation and Installation:
 --------------------------------
-Blackbox uses an Imakefile to better configure and allow for various
-system types.  Compiler flags, libraries and paths are automatically set
-in the various imake rules and templates files.
+   The `configure' shell script attempts to guess correct values for
+various system-dependent variables used during compilation.  It uses
+those values to create a `Makefile' in each directory in the
+Blackbox source tree.
 
-Edit the Imakeconfig file and #define the options that you want compiled into
-(or out of) blackbox. Do not edit the Imakefiles unless you know what you are
-doing.
+Finally, it creates a shell script `config.status' that you can run
+in the future to recreate the current configuration, a file
+`config.cache' that saves the results of its tests to speed up
+reconfiguring, and a file `config.log' containing compiler output
+(useful mainly for debugging `configure').
 
-To fully compile and install blackbox, issue the following commands:
-	vi Imakeconfig
-	xmkmf -a
-	make
-	make install (as root, for permissions)
+   If you need to do unusual things to compile Blackbox, please try
+to figure out how `configure' could check whether to do them, and mail
+diffs or instructions to bhughes@tcac.net so they can be considered
+for the next release.  If at some point `config.cache' contains
+results you don't want to keep, you may remove or edit it.
 
-Each user should edit their appropriate .xinitrc or .xsession files to
-use the newly installed blackbox executable file.
+   The file `configure.in' is used to create `configure' by a program
+called `autoconf'.  You only need `configure.in' if you want to change
+it or regenerate `configure' using a newer version of `autoconf'.
 
-New users should run Blackbox once after installing it, and then edit the
-generated ~/.blackboxrc to taste.
+The simplest way to compile this package is:
 
-Users upgrading to the new configuration system should keep backups of ALL
-their files, as Blackbox WILL overwrite the ~/.blackboxrc.  Color configs
-are now referred to as styles, which will be set by a dynamic (read: changable
-while blackbox is running) resource in ~/.blackboxrc.
+  1. `cd' to the directory containing the package's source code and type
+     `./configure' to configure the package for your system.  If you're
+     using `csh' on an old version of System V, you might need to type
+     `sh ./configure' instead to prevent `csh' from trying to execute
+     `configure' itself.
+
+     Running `configure' takes awhile.  While running, it prints some
+     messages telling which features it is checking for.
+
+  2. Type `make' to compile the package.
+
+  3. Type `make install' to install the programs and any data files and
+     documentation.
+
+  4. You can remove the program binaries and object files from the
+     source code directory by typing `make clean'.  To also remove the
+     files that `configure' created (so you can compile the package for
+     a different kind of computer), type `make distclean'. 
+
+
+Compilers and Options:
+----------------------
+   Some systems require unusual options for compilation or linking that
+the `configure' script does not know about.  You can give `configure'
+initial values for variables by setting them in the environment.  Using
+a Bourne-compatible shell, you can do that on the command line like
+this:
+     CC=c89 CFLAGS=-O2 LIBS=-lposix ./configure
+
+Or on systems that have the `env' program, you can do it like this:
+     env CPPFLAGS=-I/usr/local/include LDFLAGS=-s ./configure
+
+
+Optional Features:
+------------------
+   Blackbox supports the XShape extension of X11R6.  This support
+is enabled by default, but may be overridden by specifying
+`--enable-shape' on the configure script's command line.
+
+Also, `configure' can usually find the X include and library files
+automatically, but if it doesn't, you can use the `configure'
+options `--x-includes=DIR' and `--x-libraries=DIR' to specify
+their locations.
+
 
 Please read the README file also.
+

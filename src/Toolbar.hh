@@ -33,13 +33,14 @@ class Iconmenu;
 class Workspace;
 class Workspacemenu;
 class BImageControl;
+class BScreen;
 
 #include "LinkedList.hh"
 
 
 class Toolbar {
 private:
-  Bool wait_button, raised;
+  Bool wait_button, raised, editing;
   Display *display;
   GC buttonGC;
 
@@ -53,12 +54,9 @@ private:
       clock_w, clock_h, bevel_w;
   } frame;
   
-  LinkedList<Workspace> *workspacesList;
   Blackbox *blackbox;
   BImageControl *image_ctrl;
-  Iconmenu *iconMenu;
-  Workspace *current, *zero;
-  Workspacemenu *wsMenu;
+  BScreen *screen;
   
   char *new_workspace_name, *new_name_pos;
 
@@ -67,35 +65,38 @@ protected:
 
 
 public:
-  Toolbar(Blackbox *, int = 1);
+  Toolbar(Blackbox *, BScreen *);
   ~Toolbar(void);
 
-  Blackbox *_blackbox(void) { return blackbox; }
-
-  int addWorkspace(void);
-  int removeLastWorkspace(void);
-  void changeWorkspaceID(int);
-  Workspace *workspace(int);
-  void addIcon(BlackboxIcon *i);
-  void removeIcon(BlackboxIcon *i);
-  void iconUpdate(void);
-  void stackWindows(Window *, int);
-  void Reconfigure(void);
-  void checkClock(Bool = False);
-  void redrawLabel(Bool = False);
+  //  Blackbox *getBlackbox(void) { return blackbox; }
+  
+  Bool isRaised(void)      { return raised; }
+  Window getWindowID(void) { return frame.window; }
+  
+  unsigned int getWidth(void)  { return frame.width; }
+  unsigned int getHeight(void) { return frame.height; }
+  unsigned int getX(void)   { return frame.x; }
+  unsigned int getY(void)   { return frame.y; }
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);
   void exposeEvent(XExposeEvent *);
   void keyPressEvent(XKeyEvent *);
 
-  Window windowID(void) { return frame.window; }
-  Workspace *currentWorkspace(void) { return current; }
-  int count(void) { return workspacesList->count(); }
-  int currentWorkspaceID(void);
-  Bool Raised(void) { return raised; }
-  unsigned int Width(void) { return frame.width; }
-  unsigned int Height(void) { return frame.height; }
+  void redrawWindowLabel(Bool = False);
+  void redrawWorkspaceLabel(Bool = False);
+  void redrawMenuButton(Bool = False, Bool = False);
+  void redrawPrevWorkspaceButton(Bool = False, Bool = False);
+  void redrawNextWorkspaceButton(Bool = False, Bool = False);
+  void redrawPrevWindowButton(Bool = False, Bool = False);
+  void redrawNextWindowButton(Bool = False, Bool = False);
+  void reconfigure(void);
+
+#ifdef    HAVE_STRFTIME
+  void checkClock(Bool = False);
+#else //  HAVE_STRFTIME
+  void checkClock(Bool = False, Bool = False);
+#endif // HAVE_STRFTIME
 };
 
 

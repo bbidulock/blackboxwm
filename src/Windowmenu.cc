@@ -23,19 +23,26 @@
 #define _GNU_SOURCE
 #endif
 
-#include "Windowmenu.hh"
-#include "Workspace.hh"
-#include "Toolbar.hh"
+#ifdef HAVE_CONFIG_H
+#  include "../config.h"
+#endif
 
 #include "blackbox.hh"
+#include "Screen.hh"
 #include "Window.hh"
+#include "Windowmenu.hh"
+#include "Workspace.hh"
 
-#include <string.h>
+#if STDC_HEADERS
+#  include <string.h>
+#endif
 
 
-Windowmenu::Windowmenu(BlackboxWindow *win, Blackbox *bb) : Basemenu(bb) {
+Windowmenu::Windowmenu(BlackboxWindow *win, Blackbox *bb) :
+  Basemenu(bb, win->getScreen())
+{
   window = win;
-  toolbar = bb->toolbar();
+  screen = window->getScreen();
 
   setTitleVisibility(False);
   setMovable(False);
@@ -57,7 +64,7 @@ Windowmenu::Windowmenu(BlackboxWindow *win, Blackbox *bb) : Basemenu(bb) {
   else
     insert("Kill Client", Blackbox::B_WindowKill);
   
-  Update();
+  update();
 }
 
 
@@ -67,79 +74,77 @@ Windowmenu::~Windowmenu(void) {
 
 
 void Windowmenu::itemSelected(int button, int index) {
-  if (button == 1) {
-    BasemenuItem *item = find(index);
+  BasemenuItem *item = find(index);
     
-    switch (item->function()) {
-    case Blackbox::B_WindowShade:
-      Hide();
-      window->shadeWindow();
-      break;
+  switch (item->function()) {
+  case Blackbox::B_WindowShade:
+    hide();
+    window->shade();
+    break;
       
-    case Blackbox::B_WindowIconify:
-      Hide();
-      window->iconifyWindow();
-      break;
+  case Blackbox::B_WindowIconify:
+    hide();
+    window->iconify();
+    break;
       
-    case Blackbox::B_WindowMaximize:
-      Hide();
-      window->maximizeWindow();
-      break;
+  case Blackbox::B_WindowMaximize:
+    hide();
+    window->maximize((unsigned int) button);
+    break;
       
-    case Blackbox::B_WindowClose:
-      Hide();
-      window->closeWindow();
-      break;
+  case Blackbox::B_WindowClose:
+    hide();
+    window->close();
+    break;
       
-    case Blackbox::B_WindowRaise:
-      Hide();
-      toolbar->workspace(window->workspace())->raiseWindow(window);
-      if (window->isStuck())
-	toolbar->currentWorkspace()->restackWindows();
-      break;
-      
-    case Blackbox::B_WindowLower:
-      Hide();
-      toolbar->workspace(window->workspace())->lowerWindow(window);
-      if (window->isStuck())
-	toolbar->currentWorkspace()->restackWindows();
-      break;
+  case Blackbox::B_WindowRaise:
+    hide();
+    screen->getWorkspace(window->getWorkspaceNumber())->raiseWindow(window);
+    if (window->isStuck())
+      screen->getCurrentWorkspace()->restackWindows();
+    break;
+    
+  case Blackbox::B_WindowLower:
+    hide();
+    screen->getWorkspace(window->getWorkspaceNumber())->lowerWindow(window);
+    if (window->isStuck())
+      screen->getCurrentWorkspace()->restackWindows();
+    break;
 
-    case Blackbox::B_WindowStick:
-      Hide();
-      if (! window->isStuck()) {
-	int id = window->workspace();
-	window->setWorkspace(0);
-	toolbar->workspace(id)->removeWindow(window);
-	toolbar->workspace(0)->addWindow(window);
-	window->stickWindow(True);
-      } else {
-	toolbar->workspace(0)->removeWindow(window);
-	toolbar->currentWorkspace()->addWindow(window);
-	window->stickWindow(False);
-      }
-
-      toolbar->currentWorkspace()->restackWindows();
-      break;
-
-    case Blackbox::B_WindowKill:
-      Hide();
-      XKillClient(toolbar->_blackbox()->control(), window->clientWindow());
-      break;
+  case Blackbox::B_WindowStick:
+    hide();
+    if (! window->isStuck()) {
+      int id = window->getWorkspaceNumber();
+      window->setWorkspace(0);
+      screen->getWorkspace(id)->removeWindow(window);
+      screen->getWorkspace(0)->addWindow(window);
+      window->stick(True);
+    } else {
+      screen->getWorkspace(0)->removeWindow(window);
+      screen->getCurrentWorkspace()->addWindow(window);
+      window->stick(False);
     }
+
+    screen->getCurrentWorkspace()->restackWindows();
+    break;
+
+  case Blackbox::B_WindowKill:
+    hide();
+    XKillClient(screen->getDisplay(), window->getClientWindow());
+    break;
   }
 }
 
 
-void Windowmenu::Reconfigure(void) {
-  sendToMenu->Reconfigure();
+void Windowmenu::reconfigure(void) {
+  sendToMenu->reconfigure();
   
-  Basemenu::Reconfigure();
+  Basemenu::reconfigure();
 }
 
 
 void Windowmenu::setClosable(void) {
-  int i, n = Count();
+  int i, n = getCount();
 
   for (i = 0; i < n; i++) {
     BasemenuItem *item = find(i);
@@ -152,55 +157,56 @@ void Windowmenu::setClosable(void) {
       else
 	insert("Kill Client", Blackbox::B_WindowKill);
       
-      Update();
+      update();
     }
   }
 }
 
 
 SendtoWorkspaceMenu::SendtoWorkspaceMenu(BlackboxWindow *win, Blackbox *bb) :
-  Basemenu(bb)
+  Basemenu(bb, win->getScreen())
 {
   window = win;
-  toolbar = bb->toolbar();
+  screen = window->getScreen();
 
   setTitleVisibility(False);
   setMovable(False);
   defaultMenu();
-  Update();
+  update();
 }
 
 
 void SendtoWorkspaceMenu::itemSelected(int button, int index) {
   if (button == 1) {
-    if ((index + 1) <= toolbar->count())
-      if ((index + 1) != toolbar->currentWorkspaceID()) {
-	toolbar->workspace(window->workspace())->removeWindow(window);
-	toolbar->workspace(index + 1)->addWindow(window);
-	if (window->isStuck()) window->stickWindow(False);
-	window->withdrawWindow();
+    if ((index + 1) <= screen->getCount())
+      if ((index + 1) != screen->getCurrentWorkspaceID()) {
+	screen->getWorkspace(window->getWorkspaceNumber())->
+	  removeWindow(window);
+	screen->getWorkspace(index + 1)->addWindow(window);
+	if (window->isStuck()) window->stick(False);
+	window->withdraw();
       }
   } else
-    Update();
+    update();
 }
 
 
-void SendtoWorkspaceMenu::Update(void) {
-  int i, r = Count();
+void SendtoWorkspaceMenu::update(void) {
+  int i, r = getCount();
   
-  if (Count() != 0)
+  if (getCount() != 0)
     for (i = 0; i < r; ++i)
       remove(0);
   
-  for (i = 1; i < toolbar->count(); ++i)
-    insert(toolbar->workspace(i)->Name());
+  for (i = 1; i < screen->getCount(); ++i)
+    insert(screen->getWorkspace(i)->getName());
   
-  Basemenu::Update();
+  Basemenu::update();
 }
 
 
-void SendtoWorkspaceMenu::Show(void) {
-  Update();
+void SendtoWorkspaceMenu::show(void) {
+  update();
 
-  Basemenu::Show();
+  Basemenu::show();
 }

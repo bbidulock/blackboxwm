@@ -21,82 +21,31 @@
 
 #ifndef __blackbox_hh
 #define __blackbox_hh
-#define __blackbox_version "beta zero . four zero . nine (0.40.9)"
+
+#include "../version.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
 
-// forward declarations
-class Blackbox;
-
 class Basemenu;
+class BlackboxWindow;
+class BlackboxIcon;
+class Iconmenu;
 class Rootmenu;
 class Toolbar;
-class BlackboxWindow;
+class Workspace;
+class Workspacemenu;
 
 #include "Image.hh"
 #include "LinkedList.hh"
 
-#include <stdio.h>
-
-
-typedef struct windowResource {
-  struct decoration {
-    BColor fcolor, fcolorTo, ucolor, ucolorTo, ftextColor, utextColor;
-    unsigned long ftexture, utexture;
-  } decoration;
-  
-  struct button {
-    BColor fcolor, fcolorTo, ucolor, ucolorTo, pressed, pressedTo;
-    unsigned long ftexture, utexture, ptexture;
-  } button;
-
-  struct frame {
-    BColor color;
-    unsigned long texture;
-  } frame;
-} windowResource;
-
-
-typedef struct toolbarResource {
-  struct toolbar {
-    BColor color, colorTo, textColor;
-    unsigned long texture;
-  } toolbar;
-  
-  struct label {
-    BColor color, colorTo;
-    unsigned long texture;
-  } label;
-  
-  struct button {
-    BColor color, colorTo, pressed, pressedTo;
-    unsigned long texture, ptexture;
-  } button;
-  
-  struct clock {
-    BColor color, colorTo;
-    unsigned long texture;
-  } clock;
-} toolbarResource;
-
-
-typedef struct menuResource {
-  struct title {
-    BColor color, colorTo, textColor;
-    unsigned long texture;
-  } title;
-
-  struct frame {
-    BColor color, colorTo, hcolor, textColor, htextColor;
-    unsigned long texture;
-  } frame;
-} menuResource;
+#ifdef HAVE_STDIO_H
+# include <stdio.h>
+#endif
 
 
 class Blackbox {
 private:
-  // internal structures
   typedef struct GroupSearch {
     BlackboxWindow *data;
     Window window;
@@ -122,24 +71,11 @@ private:
   } cursor;
 
   struct resource {
-    struct font {
-      XFontStruct *title, *menu;
-    } font;
+    Bool image_dither;
+    Time double_click_interval;
 
-    windowResource wres;
-    toolbarResource tres;
-    menuResource mres;
-
-    Bool opaqueMove, imageDither, clock24hour, toolbarRaised, sloppyFocus,
-      autoRaise;
-    BColor borderColor;
-    XrmDatabase stylerc;
-
-    LinkedList<char> *workspaceNames;
-
-    char *menuFile, *styleFile;
-    int workspaces, justify, menu_justify, colors_per_channel;
-    unsigned int handleWidth, bevelWidth;
+    char *menu_file, *style_file;
+    int colors_per_channel;
   } resource;
 
   struct shape {
@@ -147,77 +83,78 @@ private:
     int event_basep, error_basep;
   } shape;
 
-  // context linked lists
   LinkedList<WindowSearch> *windowSearchList;
   LinkedList<MenuSearch> *menuSearchList;
   LinkedList<ToolbarSearch> *toolbarSearchList;
   LinkedList<GroupSearch> *groupSearchList;
-  
-  Rootmenu *root_menu;
-  Toolbar *tool_bar;
-  BImageControl *image_control;
+  LinkedList<BScreen> *screenList;
+
+  BlackboxWindow *focused_window;
 
   Atom _XA_WM_COLORMAP_WINDOWS, _XA_WM_PROTOCOLS, _XA_WM_STATE,
     _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS, _XA_WM_CHANGE_STATE,
     _MOTIF_WM_HINTS;
-  Bool startup, shutdown, reconfigure, rootColormapInstalled;
+  Bool startup, shutdown, reconfigure;
   Display *display;
-  GC opGC, wfocusGC, wunfocusGC, mtitleGC, mframeGC, mhiGC, mhbgGC;
-  Visual *v;
-  Window root;
   char *display_name;
-  char **b_argv;
-  int depth, screen, event_mask, focus_window_number, b_argc, server_grabs,
-    red_offset, green_offset, blue_offset;
-  unsigned int xres, yres;
+  char **argv;
+  int argc, number_of_screens, server_grabs;
 
 
 protected:
-  // internal initialization
-  void InitMenu(void);
-  void InitColor(void);
   void LoadRC(void);
-  void LoadStyle(void);
   void SaveRC(void);
 
-  // X resource database lookups
-  unsigned long readDatabaseTexture(char *, char *);
-  Bool readDatabaseColor(char *, char *, BColor *);
-
-  // event processing and dispatching
   void ProcessEvent(XEvent *);
 
-  // internal routines
   void do_reconfigure(void);
-
-  // value lookups and retrieval
-  Bool parseMenuFile(FILE *, Rootmenu *);
 
 
 public:
   Blackbox(int, char **, char * = 0);
   ~Blackbox(void);
 
-  // member pointers
-  Rootmenu *Menu(void) { return root_menu; }
-  Toolbar *toolbar(void) { return tool_bar; }
-  BImageControl *imageControl(void) { return image_control; }
+  Atom getChangeStateAtom(void) { return _XA_WM_CHANGE_STATE; }
+  Atom getStateAtom(void)       { return _XA_WM_STATE; }
+  Atom getDeleteAtom(void)      { return _XA_WM_DELETE_WINDOW; }
+  Atom getProtocolsAtom(void)   { return _XA_WM_PROTOCOLS; }
+  Atom getFocusAtom(void)       { return _XA_WM_TAKE_FOCUS; }
+  Atom getColormapAtom(void)    { return _XA_WM_COLORMAP_WINDOWS; }
+  Atom getMwmHintsAtom(void)    { return _MOTIF_WM_HINTS; }
 
-  // window validation
-  Bool validateWindow(Window);
-  void syncGrabServer(void);
-  void ungrabServer(void);
-
-  // context lookup routines
   Basemenu *searchMenu(Window);
-  BlackboxWindow *searchWindow(Window);
-  Toolbar *searchToolbar(Window);
+
   BlackboxWindow *searchGroup(Window, BlackboxWindow *);
+  BlackboxWindow *searchWindow(Window);
+  BlackboxWindow *getFocusedWindow(void) { return focused_window; }
 
-  // reassociated a window with the current workspace
-  void reassociateWindow(BlackboxWindow *);
+  Bool hasShapeExtensions(void) { return shape.extensions; }
+  Bool hasImageDither(void)     { return resource.image_dither; }
+  Bool isStartup(void)          { return startup; }
+  Bool validateWindow(Window);
 
-  // context list save/remove methods
+  Cursor getSessionCursor(void) { return cursor.session; }
+  Cursor getMoveCursor(void)    { return cursor.move; }
+
+  Display *getDisplay(void) { return display; }
+
+  Time getDoubleClickInterval(void) { return resource.double_click_interval; }
+
+  Toolbar *searchToolbar(Window);
+
+  BScreen *getScreen(int);
+  BScreen *searchScreen(Window);
+
+  char *getStyleFilename(void) { return resource.style_file; }
+  char *getMenuFilename(void)  { return resource.menu_file; }
+
+  int getColorsPerChannel(void) { return resource.colors_per_channel; }
+  int getNumberOfScreens(void)  { return number_of_screens; }
+
+  void LoadRC(BScreen *);
+  void saveStyleFilename(char *);
+  void grab(void);
+  void ungrab(void);
   void saveMenuSearch(Window, Basemenu *);
   void saveWindowSearch(Window, BlackboxWindow *);
   void saveToolbarSearch(Window, Toolbar *);
@@ -226,86 +163,21 @@ public:
   void removeWindowSearch(Window);
   void removeToolbarSearch(Window);
   void removeGroupSearch(Window);
-
-  // main event loop
   void EventLoop(void);
-
-  // window manager functions
-  void setStyle(char *);
-  void prevFocus(void);
-  void nextFocus(void);
-  void raiseFocus(void);
   void Exit(void);
   void Restart(char * = 0);
   void Reconfigure(void);
   void Shutdown(void);
 
-  // various informative functions about the current X session
-  Atom ChangeStateAtom(void) { return _XA_WM_CHANGE_STATE; }
-  Atom StateAtom(void) { return _XA_WM_STATE; }
-  Atom DeleteAtom(void) { return _XA_WM_DELETE_WINDOW; }
-  Atom ProtocolsAtom(void) { return _XA_WM_PROTOCOLS; }
-  Atom FocusAtom(void) { return _XA_WM_TAKE_FOCUS; }
-  Atom ColormapAtom(void) { return _XA_WM_COLORMAP_WINDOWS; }
-  Atom MwmHintsAtom(void) { return _MOTIF_WM_HINTS; }
-
-  Bool shapeExtensions(void) { return shape.extensions; }
-  Bool Startup(void) { return startup; }
-
-  Cursor sessionCursor(void) { return cursor.session; }
-  Cursor moveCursor(void) { return cursor.move; }
-
-  Display *control(void) { return display; }
-
-  GC OpGC(void) { return opGC; }
-  GC WindowFocusGC(void) { return wfocusGC; }
-  GC WindowUnfocusGC(void) { return wunfocusGC; }
-  GC MenuTitleGC(void) { return mtitleGC; }
-  GC MenuFrameGC(void) { return mframeGC; }
-  GC MenuHiGC(void) { return mhiGC; }
-  GC MenuHiBGGC(void) { return mhbgGC; }
-
-  Visual *visual(void) { return v; }
-
-  Window Root(void) { return root; }
-
-  // session controls
-  XFontStruct *titleFont(void) { return resource.font.title; }
-  XFontStruct *menuFont(void) { return resource.font.menu; }
-  const BColor &borderColor(void) { return resource.borderColor; }
-  const unsigned int handleWidth(void) { return resource.handleWidth; }
-  const unsigned int bevelWidth(void) { return resource.bevelWidth; }
-  Bool clock24Hour(void) { return resource.clock24hour; }
-  Bool toolbarRaised(void) { return resource.toolbarRaised; }
-  Bool sloppyFocus(void) { return resource.sloppyFocus; }
-  Bool imageDither(void) { return resource.imageDither; }
-  Bool autoRaise(void) { return resource.autoRaise; }
-  Bool opaqueMove(void) { return resource.opaqueMove; }
-
-  // controls for arrangement of decorations
-  const int Justification(void) const { return resource.justify; }
-  const int MenuJustification(void) const { return resource.menu_justify; }
-  
-  // resources
-  windowResource *wResource(void) { return &resource.wres; }
-  menuResource *mResource(void) { return &resource.mres; }
-  toolbarResource *tResource(void) { return &resource.tres; }
-
-  // session information
-  int Depth(void) { return depth; }
-  int Screen(void) { return screen; }
-  int colorsPerChannel(void) { return resource.colors_per_channel; }
-  unsigned int xRes(void) { return xres; }
-  unsigned int yRes(void) { return yres; }
-
-  void nameOfWorkspace(int, char **);
-
-  // public constants
   enum { B_Restart = 1, B_RestartOther, B_Exit, B_Shutdown, B_Execute,
 	 B_Reconfigure, B_ExecReconfigure, B_WindowShade, B_WindowIconify,
 	 B_WindowMaximize, B_WindowClose, B_WindowRaise, B_WindowLower,
 	 B_WindowStick, B_WindowKill, B_SetStyle };
   enum { B_LeftJustify = 1, B_RightJustify, B_CenterJustify };
+
+#ifndef HAVE_STRFTIME
+  enum { B_AmericanDate = 1, B_EuropeanDate };
+#endif
 };
 
 

@@ -22,11 +22,11 @@
 #ifndef __blackbox_icon_hh
 #define __blackbox_icon_hh
 
-// forward declaration
 class IconMenu;
 class BlackboxIcon;
 
 class Blackbox;
+class BScreen;
 class Toolbar;
 class BlackboxWindow;
 
@@ -37,6 +37,7 @@ class BlackboxWindow;
 class Iconmenu : public Basemenu {
 private:
   Blackbox *blackbox;
+  BScreen *screen;
   LinkedList<BlackboxIcon> *iconList;
 
 
@@ -45,7 +46,7 @@ protected:
 
 
 public:
-  Iconmenu(Blackbox *);
+  Iconmenu(Blackbox *, BScreen *);
   ~Iconmenu(void);
 
   int insert(BlackboxIcon *);
@@ -62,7 +63,7 @@ private:
   int icon_number;
   
   BlackboxWindow *window;
-  Toolbar *toolbar;
+  BScreen *screen;
 
 
 protected:
@@ -72,11 +73,13 @@ public:
   BlackboxIcon(Blackbox *, BlackboxWindow *);
   ~BlackboxIcon(void);
 
-  char **ULabel(void) { return &name; }
-  void setIconNumber(int n) { icon_number = n; }
-  const int iconNumber(void) { return (const int) icon_number; }
-  BlackboxWindow *bWindow(void) { return window; }
+  BlackboxWindow *getWindow(void) { return window; }
 
+  char **getULabel(void) { return &name; }
+
+  const int getIconNumber(void) { return (const int) icon_number; }
+
+  void setIconNumber(int n) { icon_number = n; }
   void rereadLabel(void);
 };
 

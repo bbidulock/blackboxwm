@@ -23,17 +23,44 @@
 #define _GNU_SOURCE
 #endif
 
+#ifdef HAVE_CONFIG_H
+#  include "../config.h"
+#endif
+
 #include "blackbox.hh"
 
-#include <stdio.h>
-#include <stdlib.h>
+#ifdef HAVE_STDIO_H
+#  include <stdio.h>
+#endif
+
+#ifdef STDC_HEADERS
+#  include <stdlib.h>
+#endif
+
+#ifdef HAVE_LOCALE_H
+#  include <locale.h>
+#endif
+
+#ifdef HAVE_UNISTD_H
 #include <sys/types.h>
-#include <sys/param.h>
+#endif
+
+#ifdef HAVE_SYS_PARAM_H
+#  include <sys/param.h>
+#endif
+
+#ifndef MAXPATHLEN
+#define MAXPATHLEN 255
+#endif
 
 
 int main(int argc, char **argv) {
   // scan the command line for a list of servers to manage.
   char *session_display = NULL;
+
+#ifdef HAVE_SETLOCALE
+  setlocale(LC_ALL, "");
+#endif
 
   int i;
   for (i = 1; i < argc; ++i) {
@@ -48,7 +75,7 @@ int main(int argc, char **argv) {
       // since we're using a different display... set the DISPLAY environment
       // variable appropriately
       session_display = argv[i];
-      char tmp[PATH_MAX];
+      char tmp[MAXPATHLEN];
       sprintf(tmp, "DISPLAY=%s", session_display);
 
       if (putenv(tmp)) {
@@ -76,7 +103,8 @@ int main(int argc, char **argv) {
   _chdir2(getenv("X11ROOT"));
 #endif
 
-  Blackbox box(argc, argv, session_display);
-  box.EventLoop();
+  Blackbox blackbox(argc, argv, session_display);
+  blackbox.EventLoop();
+
   return(0);
 }

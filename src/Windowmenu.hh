@@ -36,7 +36,7 @@ class Toolbar;
 class Windowmenu : public Basemenu {
 private:
   BlackboxWindow *window;
-  Toolbar *toolbar;
+  BScreen *screen;
   SendtoWorkspaceMenu *sendToMenu;
   
   
@@ -48,17 +48,17 @@ public:
   Windowmenu(BlackboxWindow *, Blackbox *);
   virtual ~Windowmenu(void);
 
-  void Reconfigure(void);
-  void setClosable(void);
-
   SendtoWorkspaceMenu *SendToMenu(void) { return sendToMenu; }
+  
+  void reconfigure(void);
+  void setClosable(void);
 };
 
 
 class SendtoWorkspaceMenu : public Basemenu {
 private:
   BlackboxWindow *window;
-  Toolbar *toolbar;
+  BScreen *screen;
 
 
 protected:
@@ -68,8 +68,9 @@ protected:
 public:
   SendtoWorkspaceMenu(BlackboxWindow *, Blackbox *);
 
-  void Show(void);
-  void Update(void);
+  void update(void);
+
+  virtual void show(void);
 };
 
 

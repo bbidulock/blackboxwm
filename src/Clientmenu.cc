@@ -23,15 +23,23 @@
 #define _GNU_SOURCE
 #endif
 
-#include "Clientmenu.hh"
+#ifdef HAVE_CONFIG_H
+#  include "../config.h"
+#endif
+
 #include "blackbox.hh"
+#include "Clientmenu.hh"
+#include "Screen.hh"
+#include "Window.hh"
 #include "Workspace.hh"
+#include "Workspacemenu.hh"
 
 
 Clientmenu::Clientmenu(Blackbox *bb, Workspace *ws) :
-  Basemenu(bb)
+  Basemenu(bb, ws->getScreen())
 {
   wkspc = ws;
+  screen = wkspc->getScreen();
 
   setMovable(False);
   setTitleVisibility(False);
@@ -39,24 +47,21 @@ Clientmenu::Clientmenu(Blackbox *bb, Workspace *ws) :
 }
 
 
-Clientmenu::~Clientmenu(void) {
-
-}
-
-
 void Clientmenu::itemSelected(int button, int index) {
   if (button == 1)
-    if (index >= 0 && index < wkspc->Count()) {
+    if (index >= 0 && index < wkspc->getCount()) {
       if (! wkspc->isCurrent()) wkspc->setCurrent();
 
-      BlackboxWindow *win = wkspc->window(index);
+      BlackboxWindow *win = wkspc->getWindow(index);
       if (win) {
         if (win->isIconic())
-          win->deiconifyWindow();
+          win->deiconify();
         wkspc->raiseWindow(win);
         win->setInputFocus();
 	
-        Hide();
+        hide();
+	screen->getWorkspacemenu()->hide();
       }
     }
 }
+

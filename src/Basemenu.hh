@@ -30,6 +30,7 @@ class BasemenuItem;
 
 class Blackbox;
 class BImageControl;
+class BScreen;
 
 #include "LinkedList.hh"
 
@@ -40,6 +41,7 @@ private:
   Blackbox *blackbox;
   Basemenu *parent;
   BImageControl *image_ctrl;
+  BScreen *screen;
 
   Bool moving, visible, movable, user_moved, default_menu, title_vis, shifted,
     hidable;
@@ -71,8 +73,30 @@ protected:
 
 
 public:
-  Basemenu(Blackbox *);
+  Basemenu(Blackbox *, BScreen *);
   virtual ~Basemenu(void);
+
+  Bool hasSubmenu(int);
+  Bool hasUserMoved(void) { return user_moved; }
+  Bool isVisible(void) { return visible; }
+
+  BScreen *getScreen(void) { return screen; }
+
+  Window getWindowID(void) { return menu.frame; }
+
+  const char *getLabel(void) const { return menu.label; }
+
+  int insert(char *, int = 0, char * = 0, int = -1);
+  int insert(char **, int = -1);
+  int insert(char *, Basemenu *, int = -1);
+  int remove(int);
+  int getX(void) { return menu.x; }
+  int getY(void) { return menu.y; }
+  int getCount(void) { return menuitems->count(); }
+
+  unsigned int getWidth(void) { return menu.width; }
+  unsigned int getHeight(void) { return menu.height; }
+  unsigned int getTitleHeight(void) { return menu.title_h; }
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);
@@ -80,32 +104,15 @@ public:
   void enterNotifyEvent(XCrossingEvent *);
   void leaveNotifyEvent(XCrossingEvent *);
   void exposeEvent(XExposeEvent *);
-
-  void Reconfigure(void);
-  Bool hasSubmenu(int);
-
-  int insert(char *, int = 0, char * = 0, int = -1);
-  int insert(char **, int = -1);
-  int insert(char *, Basemenu *, int = -1);
-  int remove(int);
-
-  Bool userMoved(void) { return user_moved; }
-  Window WindowID(void) { return menu.frame; }
-  unsigned int Width(void) { return menu.width; }
-  unsigned int Height(void) { return menu.height; }
-  unsigned int titleHeight(void) { return menu.title_h; }
-  int X(void) { return menu.x; }
-  int Y(void) { return menu.y; }
-  int Visible(void) { return visible; }
-  const char *Label(void) const { return menu.label; }
-  int Count(void) { return menuitems->count(); }
+  void reconfigure(void);
   void setMenuLabel(char *n);
-  virtual void Show(void);
-  void Hide(void);
-  void Move(int, int);
-  void Update(void);
+  void move(int, int);
+  void update(void);
   void defaultMenu(void) { default_menu = True; }
   void setHighlight(int = -1);
+
+  virtual void show(void);
+  virtual void hide(void);
 
   enum { MenuAlignDontCare = 1, MenuAlignTop, MenuAlignBottom };
 };

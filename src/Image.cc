@@ -23,15 +23,24 @@
 #define _GNU_SOURCE
 #endif
 
+#ifdef HAVE_CONFIG_H
+#  include "../config.h"
+#endif
+
 #include "blackbox.hh"
 #include "Image.hh"
+#include "Screen.hh"
 
-#include <stdio.h>
-#include <malloc.h>
+#ifdef HAVE_STDIO_H
+#  include <stdio.h>
+#endif
 
-#ifdef GradientHack
-#  include <math.h>
-#  include <float.h>
+#ifdef HAVE_MALLOC_H
+#  include <malloc.h>
+#else
+#  ifdef STDC_HEADERS
+#    include <stdlib.h>
+#  endif
 #endif
 
 
@@ -49,12 +58,12 @@ BImage::BImage(BImageControl *c, unsigned int w, unsigned int h) {
   green = new unsigned char[width * height];
   blue = new unsigned char[width * height];
 
-  cpc = control->colorsPerChannel();
+  cpc = control->getColorsPerChannel();
   cpccpc = cpc * cpc;
   
   control->getMaskTables(&tr, &tg, &tb, &roff, &goff, &boff);
   
-  if (control->v()->c_class != TrueColor)
+  if (control->getVisual()->c_class != TrueColor)
     control->getColorTable(&colors, &ncolors);
 }
 
@@ -66,75 +75,132 @@ BImage::~BImage(void) {
 }
 
 
-Pixmap BImage::render(unsigned long texture, const BColor &c1,
-                      const BColor &c2)
+Pixmap BImage::render(const BTexture *texture)
 {
-  if (texture & BImage_Solid)
-    return render_solid(texture, c1);
-  else if (texture & BImage_Gradient)
-    return render_gradient(texture, c1, c2);
-
+  if (texture->texture & BImage_Solid) {
+    return render_solid(texture);
+  } else if (texture->texture & BImage_Gradient)
+    return render_gradient(texture);
+  
   return None;
 }
 
 
-Pixmap BImage::render_solid(unsigned long texture, const BColor &color) {
-  int inverted = 0;
+Pixmap BImage::render_solid(const BTexture *texture) {
+  Pixmap pixmap = XCreatePixmap(control->getDisplay(),
+				control->getDrawable(), width,
+				height, control->getDepth());
+  if (pixmap == None) {
+    fprintf(stderr, "BImage::render_solid: error creating pixmap\n");
+    return None;
+  }
   
-  if ((texture & BImage_Sunken) && (! (texture & BImage_Invert))) inverted = 1;
-  else if (texture & BImage_Invert) inverted = 1;
+  XGCValues gcv;
+  GC gc, hgc, lgc;
   
-  background(color);
+  gcv.foreground = texture->color.pixel;
+  gcv.fill_style = FillSolid;
+  gc = XCreateGC(control->getDisplay(), pixmap, GCForeground | GCFillStyle, &gcv);
   
-  if (texture & BImage_Bevel1) bevel1(True, (color.red == color.green &&
-                                             color.green == color.blue &&
-                                             color.blue == 0));
-  else if (texture & BImage_Bevel2) bevel2(True, (color.red == color.green &&
-                                                  color.green == color.blue &&
-                                                  color.blue == 0));
+  gcv.foreground = texture->hiColor.pixel;
+  hgc = XCreateGC(control->getDisplay(), pixmap, GCForeground, &gcv);
   
-  if (inverted) invert();
+  gcv.foreground = texture->loColor.pixel;
+  lgc = XCreateGC(control->getDisplay(), pixmap, GCForeground, &gcv);
   
-  return renderPixmap(! (texture & BImage_NoDitherSolid));
+  XFillRectangle(control->getDisplay(), pixmap, gc, 0, 0, width, height);
+  
+  if (texture->texture & BImage_Bevel1) {
+    if (texture->texture & BImage_Raised) {
+      XDrawLine(control->getDisplay(), pixmap, lgc, 0, height - 1,
+		width - 1, height - 1);
+      XDrawLine(control->getDisplay(), pixmap, lgc, width - 1, height - 1,
+		width - 1, 0);
+      
+      XDrawLine(control->getDisplay(), pixmap, hgc, 0, 0,
+		width - 1, 0);
+      XDrawLine(control->getDisplay(), pixmap, hgc, 0, height - 1,
+		0, 0);
+    } else if (texture->texture & BImage_Sunken) {
+      XDrawLine(control->getDisplay(), pixmap, hgc, 0, height - 1,
+		width - 1, height - 1);
+      XDrawLine(control->getDisplay(), pixmap, hgc, width - 1, height - 1,
+		width - 1, 0);
+      
+      XDrawLine(control->getDisplay(), pixmap, lgc, 0, 0, width - 1, 0);
+      XDrawLine(control->getDisplay(), pixmap, lgc, 0, height - 1, 0, 0);
+    }
+  } else if (texture->texture & BImage_Bevel2) {
+    if (texture->texture & BImage_Raised) {
+      XDrawLine(control->getDisplay(), pixmap, lgc, 1, height - 3,
+		width - 3, height - 3);
+      XDrawLine(control->getDisplay(), pixmap, lgc, width - 3, height - 3,
+		width - 3, 1);
+      
+      XDrawLine(control->getDisplay(), pixmap, hgc, 1, 1,
+		width - 3, 1);
+      XDrawLine(control->getDisplay(), pixmap, hgc, 1, height - 3,
+		1, 1);
+    } else if (texture->texture & BImage_Sunken) {
+      XDrawLine(control->getDisplay(), pixmap, hgc, 1, height - 3,
+		width - 3, height - 3);
+      XDrawLine(control->getDisplay(), pixmap, hgc, width - 3, height - 3,
+		width - 3, 1);
+      
+      XDrawLine(control->getDisplay(), pixmap, lgc, 1, 1, width - 3, 1);
+      XDrawLine(control->getDisplay(), pixmap, lgc, 1, height - 3, 1, 1);
+    }
+  }
+  
+  XFreeGC(control->getDisplay(), gc);
+  XFreeGC(control->getDisplay(), hgc);
+  XFreeGC(control->getDisplay(), lgc);
+  
+  return pixmap;
 }
 
 
-Pixmap BImage::render_gradient(unsigned long texture, const BColor &color1,
-                               const BColor &color2) {
+Pixmap BImage::render_gradient(const BTexture *texture) {
   int inverted = 0;
   
-  if (texture & BImage_Sunken) {
-    from = color2;
-    to = color1;
+  if (texture->texture & BImage_Sunken) {
+    from = texture->colorTo;
+    to = texture->color;
 
-    if (! (texture & BImage_Invert)) inverted = 1;
+    if (! (texture->texture & BImage_Invert)) inverted = 1;
   } else {
-    from = color1;
-    to = color2;
-
-    if (texture & BImage_Invert) inverted = 1;
+    from = texture->color;
+    to = texture->colorTo;
+    
+    if (texture>texture & BImage_Invert) inverted = 1;
   }
+  
+  if (texture->texture & BImage_Diagonal) dgradient();
+  else if (texture->texture & BImage_Horizontal) hgradient();
+  else if (texture->texture & BImage_Vertical) vgradient();
 
-  if (texture & BImage_Diagonal) dgradient();
-  else if (texture & BImage_Horizontal) hgradient();
-  else if (texture & BImage_Vertical) vgradient();
-
-  if (texture & BImage_Bevel1) bevel1(False);
-  else if (texture & BImage_Bevel2) bevel2(False);
+  if (texture->texture & BImage_Bevel1) bevel1();
+  else if (texture->texture & BImage_Bevel2) bevel2();
   
   if (inverted) invert();
-
+  
   return renderPixmap();
 }
 
 
-XImage *BImage::renderXImage(Bool dither) {
-  XImage *image = XCreateImage(control->d(), control->v(), control->depth(),
-                               ZPixmap, 0, 0, width, height, 32, 0);
-  if (! image) return 0;
+XImage *BImage::renderXImage(void) {
+  XImage *image = XCreateImage(control->getDisplay(), control->getVisual(),
+			       control->getDepth(), ZPixmap,
+			       0, 0, width, height, 32, 0);
+  if (! image) {
+    fprintf(stderr, "BImage::renderXImage: error creating XImage\n");
+    return 0;
+  }
 
   unsigned char *d = (unsigned char *) malloc(image->bytes_per_line * height);
   if (! d) {
+    fprintf(stderr,
+	    "BImage::renderXImage: error allocating memory for image\n");
     XDestroyImage(image);
     return 0;
   }
@@ -145,21 +211,29 @@ XImage *BImage::renderXImage(Bool dither) {
   unsigned long pixel;
 
   if ((! tr) || (! tg) || (! tb)) {
+    fprintf(stderr, "BImage::renderXImage: error getting color mask tables\n");
     XDestroyImage(image);
     return 0;
   }
   
-  if (control->v()->c_class != TrueColor)
+  if (control->getVisual()->c_class != TrueColor)
     if ((! colors) || (! ncolors)) {
+      fprintf(stderr,
+	      "BImage::renderXImage: error getting pseudo color tables\n");
       XDestroyImage(image);
       return 0;
     }
 
-  if (control->dither() && dither) {
+  if (control->doDither()) {
     short er, eg, eb, *or, *og, *ob, *nor, *nog, *nob, *por, *pog, *pob;
+    unsigned short *ort, *ogt, *obt;
     
-    control->getDitherBuffers(width + 2, &or, &og, &ob, &nor, &nog, &nob);
-    if ((! or) || (! og) || (! ob) || (! nor) || (! nog) || (! nob)) {
+    control->getDitherBuffers(width + 2, &or, &og, &ob, &nor, &nog, &nob,
+			      &ort, &ogt, &obt);
+    if ((! or) || (! og) || (! ob) || (! nor) || (! nog) || (! nob) ||
+	(! ort) || (! ogt) || (! obt)) {
+      fprintf(stderr,
+	      "BImage::renderXImage: error getting dither information\n");
       XDestroyImage(image);
       return 0;
     }
@@ -208,15 +282,11 @@ XImage *BImage::renderXImage(Bool dither) {
 	g = *(tg + *(og + x));
 	b = *(tb + *(ob + x));
 	
-	switch (control->v()->c_class) {
+	switch (control->getVisual()->c_class) {
 	case StaticColor:
 	case PseudoColor:
 	  pixel = (r * cpccpc) + (g * cpc) + b;
 	  *idata++ = colors[pixel].pixel;
-	  
-          er = *(or + x) - ((r << 8) / (cpc - 1));
-          eg = *(og + x) - ((g << 8) / (cpc - 1));
-          eb = *(ob + x) - ((b << 8) / (cpc - 1));
 	  
 	  break;
 	  
@@ -261,10 +331,6 @@ XImage *BImage::renderXImage(Bool dither) {
 	    }
 	  }
 	  
-	  er = *(or + x) - ((r << 8) / (image->red_mask >> roff));
-	  eg = *(og + x) - ((g << 8) / (image->green_mask >> goff));
-	  eb = *(ob + x) - ((b << 8) / (image->blue_mask >> boff));
-	  
           break;
 	  
 	default:
@@ -273,6 +339,10 @@ XImage *BImage::renderXImage(Bool dither) {
 	  XDestroyImage(image);
 	  return 0;
 	}
+
+	er = *(or + x) - *(ort + *(or + x));
+	eg = *(og + x) - *(ogt + *(og + x));
+	eb = *(ob + x) - *(obt + *(ob + x));
 	
 	*(or + x + 1) += er;
 	*(og + x + 1) += eg;
@@ -301,7 +371,7 @@ XImage *BImage::renderXImage(Bool dither) {
 	g = *(tg + *(green + off));
 	b = *(tb + *(blue + off));
 	
-	switch (control->v()->c_class) {
+	switch (control->getVisual()->c_class) {
 	case StaticColor:
 	case PseudoColor:
 	  pixel = (r * cpccpc) + (g * cpc) + b;
@@ -368,156 +438,52 @@ XImage *BImage::renderXImage(Bool dither) {
 }
 
 
-Pixmap BImage::renderPixmap(Bool dither) {
-  Pixmap pixmap = XCreatePixmap(control->d(), control->drawable(), width,
-                                height, control->depth());
-  if (pixmap == None) return None;
-
-  XImage *image = renderXImage(dither);
-  if (! image) {
-    XFreePixmap(control->d(), pixmap);
+Pixmap BImage::renderPixmap(void) {
+  Pixmap pixmap = XCreatePixmap(control->getDisplay(),
+				control->getDrawable(), width,
+                                height, control->getDepth());
+  if (pixmap == None) {
+    fprintf(stderr, "BImage::renderPixmap: error creating pixmap\n");
     return None;
   }
 
-  XPutImage(control->d(), pixmap,
-	    DefaultGC(control->d(), control->screen()),
+  XImage *image = renderXImage();
+  if (! image) {
+    XFreePixmap(control->getDisplay(), pixmap);
+    return None;
+  }
+  
+  XPutImage(control->getDisplay(), pixmap,
+	    DefaultGC(control->getDisplay(),
+		      control->getScreen()->getScreenNumber()),
             image, 0, 0, 0, 0, width, height);
-
   XDestroyImage(image);
   return pixmap;
 }
 
 
-void BImage::background(const BColor &c) {
-  unsigned int i, wh = width * height;
-
-  bg = c;
-  
-  for (i = 0; i < wh; i++) {
-    *(red + i) = c.red;
-    *(green + i) = c.green;
-    *(blue + i) = c.blue;
-  }
-}
-
-
-void BImage::bevel1(Bool solid, Bool solidblack) {
+void BImage::bevel1(void) {
   if (width > 2 && height > 2) {
     unsigned char *pr = red, *pg = green, *pb = blue;
     
     register unsigned char r, g, b, rr ,gg ,bb;
     register unsigned int w = width, h = height - 1, wh = w * h;
     
-    if (solid) {
-      if (solidblack) {
-	r = g = b = 0xc0;
-	rr = gg = bb = 0x60;
-      } else {
-	r = bg.red + (bg.red >> 1);
-	if (r < bg.red) r = ~0;
-	g = bg.green + (bg.green >> 1);
-	if (g < bg.green) g = ~0;
-	b = bg.blue + (bg.blue >> 1);
-	if (b < bg.blue) b = ~0;
-	
-	rr = (bg.red >> 2) + (bg.red >> 1);
-	if (rr > bg.red) rr = 0;
-	gg = (bg.green >> 2) + (bg.green >> 1);
-	if (gg > bg.green) gg = 0;
-	bb = (bg.blue >> 2) + (bg.blue >> 1);
-	if (bb > bg.blue) bb = 0;
-      }      
-
-      while (--w) {
-	*pr = r;
-	*pg = g;
-	*pb = b;
-	*((pr++) + wh) = rr;
-	*((pg++) + wh) = gg;
-	*((pb++) + wh) = bb;
-      }
-
-      *pr = r;
-      *pg = g;
-      *pb = b;
-      *(pr + wh) = rr;
-      *(pg + wh) = gg;
-      *(pb + wh) = bb;
-      
-      pr = red + width;
-      pg = green + width;
-      pb = blue + width;
-      
-      while (--h) {
-	*pr = r;
-	*pg = g;
-	*pb = b;
-	
-	pr += width - 1;
-	pg += width - 1;
-	pb += width - 1;
-	
-	*(pr++) = rr;
-	*(pg++) = gg;
-	*(pb++) = bb;
-      }
-      
-      *pr = r;
-      *pg = g;
-      *pb = b;
-      
-      pr += width - 1;
-      pg += width - 1;
-      pb += width - 1;
-      
-      *pr = rr;
-      *pg = gg;
-      *pb = bb;
-    } else {
-      while (--w) {
-	r = *pr;
-	rr = r + (r >> 1);
-	if (rr < r) rr = ~0;
-	g = *pg;
-	gg = g + (g >> 1);
-	if (gg < g) gg = ~0;
-	b = *pb;
-	bb = b + (b >> 1);
-	if (bb < b) bb = ~0;
-
-	*pr = rr;
-	*pg = gg;
-	*pb = bb;
-
-	r = *(pr + wh);
-	rr = (r >> 2) + (r >> 1) ;
-	if (rr > r) rr = 0;
-	g = *(pg + wh);
-	gg = (g >> 2) + (g >> 1);
-	if (gg > g) gg = 0;
-	b = *(pb + wh);
-	bb = (b >> 2) + (b >> 1);
-	if (bb > b) bb = 0;
-
-	*((pr++) + wh) = rr;
-	*((pg++) + wh) = gg;
-	*((pb++) + wh) = bb;
-      }
-
+    while (--w) {
       r = *pr;
       rr = r + (r >> 1);
       if (rr < r) rr = ~0;
       g = *pg;
-      gg = g + (g >> 1); 
+      gg = g + (g >> 1);
       if (gg < g) gg = ~0;
       b = *pb;
       bb = b + (b >> 1);
       if (bb < b) bb = ~0;
-
+      
       *pr = rr;
       *pg = gg;
       *pb = bb;
-
+      
       r = *(pr + wh);
       rr = (r >> 2) + (r >> 1);
       if (rr > r) rr = 0;
@@ -528,48 +494,44 @@ void BImage::bevel1(Bool solid, Bool solidblack) {
       bb = (b >> 2) + (b >> 1);
       if (bb > b) bb = 0;
       
-      *(pr + wh) = rr;
-      *(pg + wh) = gg;
-      *(pb + wh) = bb;
-      
-      pr = red + width;
-      pg = green + width;
-      pb = blue + width;
-      
-      while (--h) {
-	r = *pr;
-	rr = r + (r >> 1);
-	if (rr < r) rr = ~0;
-	g = *pg;
-	gg = g + (g >> 1);
-	if (gg < g) gg = ~0;
-	b = *pb;
-	bb = b + (b >> 1);
-	if (bb < b) bb = ~0;
-	
-	*pr = rr;
-	*pg = gg;
-	*pb = bb;
-	
-	pr += width - 1;
-	pg += width - 1;
-	pb += width - 1;
-	
-	r = *pr;
-	rr = (r >> 2) + (r >> 1);
-	if (rr > r) rr = 0;
-	g = *pg;
-	gg = (g >> 2) + (g >> 1);
-	if (gg > g) gg = 0;
-	b = *pb;
-	bb = (b >> 2) + (b >> 1);
-	if (bb > b) bb = 0;
-
-	*(pr++) = rr;
-	*(pg++) = gg;
-	*(pb++) = bb;
-      }
-      
+      *((pr++) + wh) = rr;
+      *((pg++) + wh) = gg;
+      *((pb++) + wh) = bb;
+    }
+    
+    r = *pr;
+    rr = r + (r >> 1);
+    if (rr < r) rr = ~0;
+    g = *pg;
+    gg = g + (g >> 1); 
+    if (gg < g) gg = ~0;
+    b = *pb;
+    bb = b + (b >> 1);
+    if (bb < b) bb = ~0;
+    
+    *pr = rr;
+    *pg = gg;
+    *pb = bb;
+    
+    r = *(pr + wh);
+    rr = (r >> 2) + (r >> 1);
+    if (rr > r) rr = 0;
+    g = *(pg + wh);
+    gg = (g >> 2) + (g >> 1);
+    if (gg > g) gg = 0;
+    b = *(pb + wh);
+    bb = (b >> 2) + (b >> 1);
+    if (bb > b) bb = 0;
+    
+    *(pr + wh) = rr;
+    *(pg + wh) = gg;
+    *(pb + wh) = bb;
+    
+    pr = red + width;
+    pg = green + width;
+    pb = blue + width;
+    
+    while (--h) {
       r = *pr;
       rr = r + (r >> 1);
       if (rr < r) rr = ~0;
@@ -579,7 +541,7 @@ void BImage::bevel1(Bool solid, Bool solidblack) {
       b = *pb;
       bb = b + (b >> 1);
       if (bb < b) bb = ~0;
-
+      
       *pr = rr;
       *pg = gg;
       *pb = bb;
@@ -598,138 +560,120 @@ void BImage::bevel1(Bool solid, Bool solidblack) {
       bb = (b >> 2) + (b >> 1);
       if (bb > b) bb = 0;
       
-      *pr = rr;
-      *pg = gg;
-      *pb = bb;
+      *(pr++) = rr;
+      *(pg++) = gg;
+      *(pb++) = bb;
     }
+    
+    r = *pr;
+    rr = r + (r >> 1);
+    if (rr < r) rr = ~0;
+    g = *pg;
+    gg = g + (g >> 1);
+    if (gg < g) gg = ~0;
+    b = *pb;
+    bb = b + (b >> 1);
+    if (bb < b) bb = ~0;
+    
+    *pr = rr;
+    *pg = gg;
+    *pb = bb;
+    
+    pr += width - 1;
+    pg += width - 1;
+    pb += width - 1;
+    
+    r = *pr;
+    rr = (r >> 2) + (r >> 1);
+    if (rr > r) rr = 0;
+    g = *pg;
+    gg = (g >> 2) + (g >> 1);
+    if (gg > g) gg = 0;
+    b = *pb;
+    bb = (b >> 2) + (b >> 1);
+    if (bb > b) bb = 0;
+    
+    *pr = rr;
+    *pg = gg;
+    *pb = bb;
   }
 }
 
 
-void BImage::bevel2(Bool solid, Bool solidblack) {
+void BImage::bevel2(void) {
   if (width > 4 && height > 4) {
     unsigned char r, g, b, rr ,gg ,bb, *pr = red + width + 1,
       *pg = green + width + 1, *pb = blue + width + 1;
     unsigned int w = width - 2, h = height - 1, wh = width * (height - 3);
     
-    if (solid) {
-      if (solidblack) {
-	r = g = b = 0xc0;
-	rr = gg = bb = 0x60;
-      } else {
-	r = bg.red + (bg.red >> 1);
-	if (r < bg.red) r = ~0;
-	g = bg.green + (bg.green >> 1);
-	if (g < bg.green) g = ~0;
-	b = bg.blue + (bg.blue >> 1);
-	if (b < bg.blue) b = ~0;
-	
-	rr = (bg.red >> 2) + (bg.red >> 1);
-	if (rr > bg.red) rr = 0;
-	gg = (bg.green >> 2) + (bg.green >> 1);
-	if (gg > bg.green) gg = 0;
-	bb = (bg.blue >> 2) + (bg.blue >> 1);
-	if (bb > bg.blue) bb = 0;
-      }      
-
-      while (--w) {
-	*pr = r;
-	*pg = g;
-	*pb = b;
-	*((pr++) + wh) = rr;
-	*((pg++) + wh) = gg;
-	*((pb++) + wh) = bb;
-      }
+    while (--w) {
+      r = *pr;
+      rr = r + (r >> 1);
+      if (rr < r) rr = ~0;
+      g = *pg;
+      gg = g + (g >> 1);
+      if (gg < g) gg = ~0;
+      b = *pb;
+      bb = b + (b >> 1);
+      if (bb < b) bb = ~0;
       
-      pr = red + width;
-      pg = green + width;
-      pb = blue + width;
+      *pr = rr;
+      *pg = gg;
+      *pb = bb;
       
-      while (--h) {
-	*(++pr) = r;
-	*(++pg) = g;
-	*(++pb) = b;
-	
-	pr += width - 3;
-	pg += width - 3;
-	pb += width - 3;
-	
-	*(pr++) = rr;
-	*(pg++) = gg;
-	*(pb++) = bb;
-
-        pr++; pg++; pb++;
-      }
-    } else {
-      while (--w) {
-	r = *pr;
-	rr = r + (r >> 1);
-	if (rr < r) rr = ~0;
-	g = *pg;
-	gg = g + (g >> 1);
-	if (gg < g) gg = ~0;
-	b = *pb;
-	bb = b + (b >> 1);
-	if (bb < b) bb = ~0;
-
-	*pr = rr;
-	*pg = gg;
-	*pb = bb;
-
-	r = *(pr + wh);
-	rr = (r >> 2) + (r >> 1);
-	if (rr > r) rr = 0;
-	g = *(pg + wh);
-	gg = (g >> 2) + (g >> 1);
-	if (gg > g) gg = 0;
-	b = *(pb + wh);
-	bb = (b >> 2) + (b >> 1);
-	if (bb > b) bb = 0;
-
-	*((pr++) + wh) = rr;
-	*((pg++) + wh) = gg;
-	*((pb++) + wh) = bb;
-      }
+      r = *(pr + wh);
+      rr = (r >> 2) + (r >> 1);
+      if (rr > r) rr = 0;
+      g = *(pg + wh);
+      gg = (g >> 2) + (g >> 1);
+      if (gg > g) gg = 0;
+      b = *(pb + wh);
+      bb = (b >> 2) + (b >> 1);
+      if (bb > b) bb = 0;
       
-      pr = red + width;
-      pg = green + width;
-      pb = blue + width;
+      *((pr++) + wh) = rr;
+      *((pg++) + wh) = gg;
+      *((pb++) + wh) = bb;
+    }
+    
+    pr = red + width;
+    pg = green + width;
+    pb = blue + width;
+    
+    while (--h) {
+      r = *pr;
+      rr = r + (r >> 1);
+      if (rr < r) rr = ~0;
+      g = *pg;
+      gg = g + (g >> 1);
+      if (gg < g) gg = ~0;
+      b = *pb;
+      bb = b + (b >> 1);
+      if (bb < b) bb = ~0;
       
-      while (--h) {
-	r = *pr;
-	rr = r + (r >> 1);
-	if (rr < r) rr = ~0;
-	g = *pg;
-	gg = g + (g >> 1);
-	if (gg < g) gg = ~0;
-	b = *pb;
-	bb = b + (b >> 1);
-	if (bb < b) bb = ~0;
-	
-	*(++pr) = rr;
-	*(++pg) = gg;
-	*(++pb) = bb;
-	
-	pr += width - 3;
-	pg += width - 3;
-	pb += width - 3;
-	
-	r = *pr;
-	rr = (r >> 2) + (r >> 1);
-	if (rr > r) rr = 0;
-	g = *pg;
-	gg = (g >> 2) + (g >> 1);
-	if (gg > g) gg = 0;
-	b = *pb;
-	bb = (b >> 2) + (b >> 1);
-	if (bb > b) bb = 0;
-
-	*(pr++) = rr;
-	*(pg++) = gg;
-	*(pb++) = bb;
-
-        pr++; pg++; pb++;
-      }
+      *(++pr) = rr;
+      *(++pg) = gg;
+      *(++pb) = bb;
+      
+      pr += width - 3;
+      pg += width - 3;
+      pb += width - 3;
+      
+      r = *pr;
+      rr = (r >> 2) + (r >> 1);
+      if (rr > r) rr = 0;
+      g = *pg;
+      gg = (g >> 2) + (g >> 1);
+      if (gg > g) gg = 0;
+      b = *pb;
+      bb = (b >> 2) + (b >> 1);
+      if (bb > b) bb = 0;
+      
+      *(pr++) = rr;
+      *(pg++) = gg;
+      *(pb++) = bb;
+      
+      pr++; pg++; pb++;
     }
   }
 }
@@ -896,12 +840,13 @@ void BImage::vgradient(void) {
 // Image control class code
 // *************************************************************************
 
-BImageControl::BImageControl(Blackbox *bb) {
+BImageControl::BImageControl(Blackbox *bb, BScreen *scrn) {
   blackbox = bb;
-  display = blackbox->control();
-  screen_depth = blackbox->Depth();
-  window = blackbox->Root();
-  screen_number = blackbox->Screen();
+  screen = scrn;
+  display = screen->getDisplay();
+  screen_depth = screen->getDepth();
+  window = screen->getRootWindow();
+  screen_number = screen->getScreenNumber();
 
   colors = 0;
   colors_per_channel = ncolors = 0;
@@ -910,37 +855,48 @@ BImageControl::BImageControl(Blackbox *bb) {
   XPixmapFormatValues *pmv = XListPixmapFormats(display, &count);
   root_colormap = DefaultColormap(display, screen_number);
   
-  bits_per_pixel = 0;
-  for (int i = 0; i < count; i++)
-    if (pmv[i].depth == screen_depth) {
-      bits_per_pixel = pmv[i].bits_per_pixel;
-      break;
-    }
+  if (pmv) {
+    bits_per_pixel = 0;
+    for (int i = 0; i < count; i++)
+      if (pmv[i].depth == screen_depth) {
+	bits_per_pixel = pmv[i].bits_per_pixel;
+	break;
+      }
+  }
   
   if (bits_per_pixel == 0) bits_per_pixel = screen_depth;
-  XFree(pmv);
+  if (pmv) XFree(pmv);
 
-  // calculate the rgb offsets for rendering images in TrueColor
   red_offset = green_offset = blue_offset = 0;
 
-  switch (blackbox->visual()->c_class) {
+  switch (screen->getVisual()->c_class) {
   case TrueColor:
     {
       int i;
-      unsigned long mask = blackbox->visual()->red_mask;
+
+      // compute tables for red channel
+      unsigned long mask = screen->getVisual()->red_mask, emask = mask;
       while (! (mask & 1)) { red_offset++; mask >>= 1; }
-      for (i = 0; i < 256; i++)
+      for (i = 0; i < 256; i++) {
 	rmask_table[i] = (i * mask + 0x7f) / 0xff;
+	rerr_table[i] = ((rmask_table[i] << 8) / (emask >> red_offset));
+      }
       
-      mask = blackbox->visual()->green_mask;
+      // compute tables for green channel
+      emask = mask = screen->getVisual()->green_mask;
       while (! (mask & 1)) { green_offset++; mask >>= 1; }
-      for (i = 0; i < 256; i++)
+      for (i = 0; i < 256; i++) {
 	gmask_table[i] = (i * mask + 0x7f) / 0xff;
+	gerr_table[i] = ((gmask_table[i] << 8) / (emask >> green_offset));
+      }
       
-      mask = blackbox->visual()->blue_mask;
+      // compute tables for blue channel
+      emask = mask = screen->getVisual()->blue_mask;
       while (! (mask & 1)) { blue_offset++; mask >>= 1; }
-      for (i = 0; i < 256; i++)
+      for (i = 0; i < 256; i++) {
 	bmask_table[i] = (i * mask + 0x7f) / 0xff;
+	berr_table[i] = ((bmask_table[i] << 8) / (emask >> blue_offset));
+      }
     }
     
     break;
@@ -948,7 +904,7 @@ BImageControl::BImageControl(Blackbox *bb) {
   case PseudoColor:
   case StaticColor:
     {
-      colors_per_channel = blackbox->colorsPerChannel();
+      colors_per_channel = blackbox->getColorsPerChannel();
       ncolors = colors_per_channel * colors_per_channel * colors_per_channel;
       
       if (ncolors > (1 << screen_depth)) {
@@ -975,19 +931,21 @@ BImageControl::BImageControl(Blackbox *bb) {
       unsigned long mask = colors_per_channel - 1;
       for (i = 0; i < 256; i++) {
 	rmask_table[i] = gmask_table[i] = bmask_table[i] =
-	  (i * mask + 0x7f) / 0xff;	
+	  (i * mask + 0x7f) / 0xff;
+	rerr_table[i] = gerr_table[i] = berr_table[i] =
+	  ((rmask_table[i] << 8) / (mask));
       }
       
-      for (int r = 0, i = 0; r < colors_per_channel; r++)
-	for (int g = 0; g < colors_per_channel; g++)
-	  for (int b = 0; b < colors_per_channel; b++, i++) {
+      for (r = 0, i = 0; r < colors_per_channel; r++)
+	for (g = 0; g < colors_per_channel; g++)
+	  for (b = 0; b < colors_per_channel; b++, i++) {
 	    colors[i].red = (r * 0xffff) / (colors_per_channel - 1);
 	    colors[i].green = (g * 0xffff) / (colors_per_channel - 1);
 	    colors[i].blue = (b * 0xffff) / (colors_per_channel - 1);;
 	    colors[i].flags = DoRed|DoGreen|DoBlue;
 	  }
       
-      blackbox->syncGrabServer();
+      blackbox->grab();
       
       for (i = 0; i < ncolors; i++)
 	if (! XAllocColor(display, root_colormap, &colors[i])) {
@@ -997,7 +955,7 @@ BImageControl::BImageControl(Blackbox *bb) {
 	} else
 	  colors[i].flags = DoRed|DoGreen|DoBlue;
       
-      blackbox->ungrabServer();
+      blackbox->ungrab();
       
       XColor icolors[256];
       int incolors = (((1 << screen_depth) > 256) ? 256 : (1 << screen_depth));
@@ -1047,7 +1005,7 @@ BImageControl::BImageControl(Blackbox *bb) {
     
   default:
     fprintf(stderr, "BImageControl::BImageControl: unsupported visual %d\n",
-	    blackbox->visual()->c_class);
+	    screen->getVisual()->c_class);
     exit(1);
   }
   
@@ -1097,13 +1055,13 @@ BImageControl::~BImageControl(void) {
 }
 
 
-Bool BImageControl::dither(void) {
-  return blackbox->imageDither();
+Bool BImageControl::doDither(void) {
+  return blackbox->hasImageDither();
 }
 
 
-Visual *BImageControl::v(void) {
-  return blackbox->visual();
+Visual *BImageControl::getVisual(void) {
+  return screen->getVisual();
 }
 
 
@@ -1138,13 +1096,14 @@ Pixmap BImageControl::searchCache(unsigned int width, unsigned int height,
 }
 
 Pixmap BImageControl::renderImage(unsigned int width, unsigned int height,
-			     unsigned long texture, const BColor &c1,
-			     const BColor &c2) {
-  Pixmap pixmap = searchCache(width, height, texture, c1, c2);
+				  const BTexture *texture)
+{
+  Pixmap pixmap = searchCache(width, height, texture->texture,
+			      texture->color, texture->colorTo);
   if (pixmap) return pixmap;
-
+  
   BImage image(this, width, height);
-  pixmap = image.render(texture, c1, c2);
+  pixmap = image.render(texture);
   
   if (pixmap) {
     Cache *tmp = new Cache;
@@ -1153,16 +1112,16 @@ Pixmap BImageControl::renderImage(unsigned int width, unsigned int height,
     tmp->width = width;
     tmp->height = height;
     tmp->count = 1;
-    tmp->texture = texture;
-    tmp->pixel1 = c1.pixel;
+    tmp->texture = texture->texture;
+    tmp->pixel1 = texture->color.pixel;
 
-    if (texture & BImage_Gradient)
-      tmp->pixel2 = c2.pixel;
+    if (texture->texture & BImage_Gradient)
+      tmp->pixel2 = texture->colorTo.pixel;
     else
       tmp->pixel2 = 0l;
-
+    
     cache->insert(tmp);
-
+    
     return pixmap;
   }
   
@@ -1257,9 +1216,12 @@ void BImageControl::getColorTable(XColor **c, int *n) {
 }
 
 
-void BImageControl::getDitherBuffers(unsigned int w, short **r, short **g,
-				     short **b, short **nr, short **ng,
-				     short **nb) {
+void BImageControl::getDitherBuffers(unsigned int w,
+				     short **r, short **g, short **b,
+				     short **nr, short **ng, short **nb,
+				     unsigned short **ret,
+				     unsigned short **get,
+				     unsigned short **bet) {
   if (w > dither_buf_width) {
     if (red_err) delete [] red_err;
     if (green_err) delete [] green_err;
@@ -1267,7 +1229,7 @@ void BImageControl::getDitherBuffers(unsigned int w, short **r, short **g,
     if (next_red_err) delete [] next_red_err;
     if (next_green_err) delete [] next_green_err;
     if (next_blue_err) delete [] next_blue_err;
-
+    
     dither_buf_width = w;
     
     red_err = new short[dither_buf_width];
@@ -1284,11 +1246,14 @@ void BImageControl::getDitherBuffers(unsigned int w, short **r, short **g,
   *nr = next_red_err;
   *ng = next_green_err;
   *nb = next_blue_err;
+  *ret = rerr_table;
+  *get = gerr_table;
+  *bet = berr_table;
 }
 
 
 void BImageControl::installRootColormap(void) {
-  blackbox->syncGrabServer();
+  blackbox->grab();
   
   Bool install = True;
   int i = 0, ncmap = 0;
@@ -1305,5 +1270,5 @@ void BImageControl::installRootColormap(void) {
     XFree(cmaps);
   }
   
-  blackbox->ungrabServer();
+  blackbox->ungrab();
 }

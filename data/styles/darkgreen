@@ -1,0 +1,52 @@
+! Blackbox window manager resource defaults
+! (c) 1997, 1998 Brad Hughes
+
+toolbar:				Raised Solid               Bevel1
+toolbar.label:				Flat   Solid 
+toolbar.clock:				Flat   Solid
+toolbar.button:				Raised Diagonal   Gradient Bevel1
+toolbar.button.pressed:			Flat   Solid
+toolbar*color:				rgb:2/4/4
+toolbar.button.color:			rgb:4/8/8
+toolbar.button.colorTo:			rgb:2/4/4
+toolbar.button.pressed.color:   	rgb:2/4/4
+toolbar.textColor:			lightgrey
+toolbar.raised:				true
+
+window.focus:				Raised Solid               Bevel1
+window.unfocus:				Raised Solid               Bevel1
+window*button:				Flat   Solid
+window*button.pressed:			Sunken Solid               Bevel1
+window.handle:				Raised Solid               Bevel1
+window.frame:				Raised Solid               Bevel1
+
+window.frame.color:			rgb:2/4/4
+window.focus*color:			rgb:3/6/6
+window.unfocus*color:			rgb:2/4/4
+window.focus.textColor:			white
+window.unfocus.textColor:		lightgrey
+window.button.pressed.color:		rgb:4/8/8
+window.handle.color:			rgb:2/4/4
+
+menu.title:				Flat   Solid
+menu.frame:				Raised Solid               Bevel1
+menu.title.color:			rgb:3/6/6
+menu.frame.color:			rgb:2/4/4
+menu.frame.highlightColor:		rgb:3/6/6
+menu.title.textColor:			lightgrey
+menu.frame.textColor:			lightgrey
+menu.frame.hiTextColor:			white
+
+borderColor:			rgb:2/4/4
+handleWidth:			8
+bevelWidth:			3
+
+titleJustify:				CenterJustify
+menuJustify:				LeftJustify
+moveStyle:				Opaque
+
+titleFont:     -*-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*
+menuFont:      -*-helvetica-medium-r-*-*-*-120-*-*-*-*-*-*
+
+rootCommand:			bsetroot -solid rgb:2/4/4
+

@@ -23,41 +23,50 @@
 #define _GNU_SOURCE
 #endif
 
-#include "Toolbar.hh"
+#ifdef HAVE_CONFIG_H
+#  include "../config.h"
+#endif
+
+#include "blackbox.hh"
+#include "Screen.hh"
 #include "Workspacemenu.hh"
 #include "Workspace.hh"
 
 
-Workspacemenu::Workspacemenu(Blackbox *bb, Toolbar *tb) :
-  Basemenu(bb)
+Workspacemenu::Workspacemenu(Blackbox *bb, BScreen *scrn) :
+  Basemenu(bb, scrn)
 {
-  toolbar = tb;
+  screen = scrn;
+  
   setTitleVisibility(False);
   setMovable(False);
   setHidable(False);
   setAlignment(Basemenu::MenuAlignBottom);
   defaultMenu();
-
+  
   insert("New Workspace");
   insert("Remove Last");
-}
-
-
-Workspacemenu::~Workspacemenu(void) {
-  
 }
 
 
 void Workspacemenu::itemSelected(int button, int index) {
   if (button == 1) {
     if (index == 0) {
-      toolbar->addWorkspace();
+      screen->addWorkspace();
     } else if (index == 1) {
-      toolbar->removeLastWorkspace();
-    } else if ((toolbar->currentWorkspace()->workspaceID() != (index - 1)) &&
-               ((index - 1) < toolbar->count())) {
-      toolbar->changeWorkspaceID(index - 1);
-      Hide();
+      screen->removeLastWorkspace();
+    } else if ((screen->getCurrentWorkspace()->getWorkspaceID() !=
+		(index - 1)) &&
+               ((index - 1) < screen->getCount())) {
+      screen->changeWorkspaceID(index - 1);
+      hide();
     }
   }
+}
+
+
+void Workspacemenu::hide(void) {
+  screen->getToolbar()->redrawMenuButton(False, True);
+
+  Basemenu::hide();
 }

@@ -23,30 +23,41 @@
 #define _GNU_SOURCE
 #endif
 
+#ifdef HAVE_CONFIG_H
+#  include "../config.h"
+#endif
+
 #include "blackbox.hh"
+#include "Screen.hh"
+#include "Toolbar.hh"
 #include "Window.hh"
 #include "Workspace.hh"
 #include "Windowmenu.hh"
 
-#include <stdio.h>
-#include <string.h>
+#if HAVE_STDIO_H
+#  include <stdio.h>
+#endif
 
+#if STDC_HEADERS
+#  include <string.h>
+#endif
 
 // *************************************************************************
 // Workspace class code
 // *************************************************************************
 
-Workspace::Workspace(Toolbar *t, int i) {
-  toolbar = t;
+Workspace::Workspace(Toolbar *tbar, BScreen *scrn, int i) {
+  toolbar = tbar;
+  screen = scrn;
 
   id = i;
   stack = 0;
 
   windowList = new LinkedList<BlackboxWindow>;
-  cMenu = new Clientmenu(toolbar->_blackbox(), this);
-  cMenu->Update();
+  cMenu = new Clientmenu(screen->getBlackbox(), this);
+  cMenu->update();
   
-  toolbar->_blackbox()->nameOfWorkspace(id, &name);
+  screen->getNameOfWorkspace(id, &name);
   
   if (! name) {
     name = new char[32];
@@ -73,22 +84,22 @@ const int Workspace::addWindow(BlackboxWindow *w) {
   
   windowList->insert(w);
   
-  cMenu->insert(w->Title());
-  cMenu->Update();
+  cMenu->insert(w->getTitle());
+  cMenu->update();
   
   int i, k = windowList->count();
   Window *tmp_stack = new Window[k];
   for (i = 0; i < k - 1; i++)
     *(tmp_stack + i) = *(stack + i);
   
-  *(tmp_stack + i) = w->frameWindow();
+  *(tmp_stack + i) = w->getFrameWindow();
   
   if (stack) delete [] stack;
   stack = tmp_stack;
-  if (toolbar->currentWorkspaceID() == id)
-    toolbar->stackWindows(stack, k);
+  if (screen->getCurrentWorkspaceID() == id)
+    screen->stackWindows(stack, k);
   
-  return w->windowNumber();
+  return w->getWindowNumber();
 }
 
 
@@ -97,21 +108,21 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
   Window *tmp_stack = new Window[k];
 
   for (i = 0; i < k + 1; i++)
-    if (*(stack + i) != w->frameWindow())
+    if (*(stack + i) != w->getFrameWindow())
       *(tmp_stack + (ii++)) = *(stack + i);
   
   if (stack) delete [] stack;
   stack = tmp_stack;
 
-  windowList->remove((const int) w->windowNumber());
+  windowList->remove((const int) w->getWindowNumber());
   
-  cMenu->remove(w->windowNumber());
-  cMenu->Update();
+  cMenu->remove(w->getWindowNumber());
+  cMenu->update();
 
-  if (! cMenu->Count()) cMenu->Hide();
+  if (! cMenu->getCount()) cMenu->hide();
 
-  if (toolbar->currentWorkspaceID() == id)
-    toolbar->stackWindows(stack, k);
+  if (screen->getCurrentWorkspaceID() == id)
+    screen->stackWindows(stack, k);
   
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (i = 0; it.current(); it++, i++)
@@ -123,25 +134,25 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
 
 void Workspace::setFocusWindow(int w) {
   if (w >= 0 && w < windowList->count())
-    label = window(w)->Title();
+    label = getWindow(w)->getTitle();
   else
     label = 0;
 
   cMenu->setHighlight(w);  
-  toolbar->redrawLabel(True);
+  toolbar->redrawWindowLabel(True);
 }
 
 
 int Workspace::showAll(void) {
   BlackboxWindow *win;
 
-  toolbar->stackWindows(stack, windowList->count());
+  screen->stackWindows(stack, windowList->count());
 
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (; it.current(); it++) {
     win = it.current();
     if (! win->isIconic())
-      win->deiconifyWindow();
+      win->deiconify();
   }
   
   return windowList->count();
@@ -155,11 +166,11 @@ int Workspace::hideAll(void) {
   for (; it.current(); it++) {
     win = it.current();
     if (! win->isIconic())
-      win->withdrawWindow();
+      win->withdraw();
   }
 
-  if (cMenu->Visible())
-    cMenu->Hide();
+  if (cMenu->isVisible())
+    cMenu->hide();
 
   return windowList->count();
 } 
@@ -171,9 +182,9 @@ int Workspace::removeAll(void) {
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (; it.current(); it++) {
     win = it.current();
-    toolbar->currentWorkspace()->addWindow(win);
+    screen->getCurrentWorkspace()->addWindow(win);
     if (! win->isIconic())
-      win->iconifyWindow();
+      win->iconify();
   }
 
   return windowList->count();
@@ -190,13 +201,13 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
   static int re_enter = 0;
   
   if (w->isTransient() && ! re_enter) {
-    raiseWindow(w->TransientFor());
+    raiseWindow(w->getTransientFor());
   } else {
     for (i = 0; i < k; i++)
-      if (*(stack + i) != w->frameWindow())
+      if (*(stack + i) != w->getFrameWindow())
         *(tmp_stack + (ii++)) = *(stack + i);
     
-    *(tmp_stack + ii++) = w->frameWindow();
+    *(tmp_stack + ii++) = w->getFrameWindow();
     
     for (i = 0; i < k; ++i)
       *(stack + i) = *(tmp_stack + i);
@@ -206,14 +217,14 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
     if (w->hasTransient()) {
       if (! re_enter) {
 	re_enter = 1;
-	raiseWindow(w->Transient());
+	raiseWindow(w->getTransient());
 	re_enter = 0;
       } else
-	raiseWindow(w->Transient());
+	raiseWindow(w->getTransient());
     }
 
-    if (! re_enter && id == toolbar->currentWorkspaceID())
-      toolbar->stackWindows(stack, k);
+    if (! re_enter && id == screen->getCurrentWorkspaceID())
+      screen->stackWindows(stack, k);
   }
 }
 
@@ -224,13 +235,13 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
   static int re_enter = 0;
   
   if (w->hasTransient() && ! re_enter) {
-    lowerWindow(w->Transient());
+    lowerWindow(w->getTransient());
   } else {
     for (i = 0; i < k; ++i)
-      if (*(stack + i) != w->frameWindow())
+      if (*(stack + i) != w->getFrameWindow())
 	*(tmp_stack + (ii++)) = *(stack + i);
     
-    *(tmp_stack) = w->frameWindow();
+    *(tmp_stack) = w->getFrameWindow();
 
     for (i = 0; i < k; ++i)
       *(stack + i) = *(tmp_stack + i);
@@ -240,29 +251,29 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
     if (w->isTransient()) {
       if (! re_enter) {
 	re_enter = 1;
-	lowerWindow(w->TransientFor());
+	lowerWindow(w->getTransientFor());
 	re_enter = 0;
       } else
-	lowerWindow(w->TransientFor());
+	lowerWindow(w->getTransientFor());
     }
     
-    if (! re_enter && id == toolbar->currentWorkspaceID())
-      toolbar->stackWindows(stack, k);
+    if (! re_enter && id == screen->getCurrentWorkspaceID())
+      screen->stackWindows(stack, k);
   }
 }
 
 
-void Workspace::Reconfigure(void) {
-  cMenu->Reconfigure();
+void Workspace::reconfigure(void) {
+  cMenu->reconfigure();
 
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (; it.current(); it++)
-    if (toolbar->_blackbox()->validateWindow(it.current()->clientWindow()))
-      it.current()->Reconfigure();
+    if (it.current()->validateClient())
+      it.current()->reconfigure();
 }
 
 
-BlackboxWindow *Workspace::window(int index) {
+BlackboxWindow *Workspace::getWindow(int index) {
   if ((index >= 0) && (index < windowList->count()))
     return windowList->find(index);
   else
@@ -270,29 +281,29 @@ BlackboxWindow *Workspace::window(int index) {
 }
 
 
-const int Workspace::Count(void) {
+const int Workspace::getCount(void) {
   return windowList->count();
 }
 
 
-void Workspace::Update(void) {
-  cMenu->Update();
-  toolbar->redrawLabel(True);
+void Workspace::update(void) {
+  cMenu->update();
+  toolbar->redrawWindowLabel(True);
 }
 
 
 void Workspace::restackWindows(void) {
-  toolbar->stackWindows(stack, windowList->count());
+  screen->stackWindows(stack, windowList->count());
 }
 
 
 Bool Workspace::isCurrent(void) {
-  return (id == toolbar->currentWorkspaceID());
+  return (id == screen->getCurrentWorkspaceID());
 }
 
 
 void Workspace::setCurrent(void) {
-  toolbar->changeWorkspaceID(id);
+  screen->changeWorkspaceID(id);
 }
 
 

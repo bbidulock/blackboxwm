@@ -54,6 +54,9 @@ typedef struct MwmHints {
 
 #define PropMwmHintsElements  3
 
+// extended state information
+#define ShadeState    1
+
 // forward declaration
 class BlackboxWindow;
 
@@ -61,12 +64,14 @@ class Blackbox;
 class BlackboxIcon;
 class Windowmenu;
 class BImageControl;
+class BScreen;
 
 
 class BlackboxWindow {
 private:
   Blackbox *blackbox;
   BlackboxIcon *icon;
+  BScreen *screen;
   Windowmenu *windowmenu;
   
   BImageControl *image_ctrl;
@@ -74,6 +79,7 @@ private:
   Bool moving, resizing, shaded, maximized, visible, iconic, transient,
     focused, stuck, focusable;
   Display *display;
+  Time lastButtonPressTime;
   
   struct client {
     BlackboxWindow *transient_for,  // which window are we a transient for?
@@ -137,14 +143,14 @@ protected:
   void drawCloseButton(Bool);
   void drawIconifyButton(Bool);
   void drawMaximizeButton(Bool);
-  void configureWindow(int, int, unsigned int, unsigned int);
+  void configure(int, int, unsigned int, unsigned int);
   
-  Bool validateClient(void);
-  Bool fetchWMState(unsigned long *, unsigned long * = 0);
+  Bool getState(unsigned long *, unsigned long * = 0, unsigned long * = 0);
+  void setState(unsigned long, unsigned long);
   
   
 public:
-  BlackboxWindow(Blackbox *, Window);
+  BlackboxWindow(Blackbox *, BScreen *, Window);
   ~BlackboxWindow(void);
   
   void buttonPressEvent(XButtonEvent *);
@@ -161,23 +167,6 @@ public:
   void shapeEvent(XShapeEvent *);
 #endif // SHAPE
   
-  Bool setInputFocus(void);
-  int setWindowNumber(int);
-  int setWorkspace(int);
-  void setFocusFlag(Bool);
-  void iconifyWindow(void);
-  void deiconifyWindow(void);
-  void closeWindow(void);
-  void withdrawWindow(void);
-  void maximizeWindow(void);
-  void shadeWindow(void);
-  void unstickWindow(void);
-  void Reconfigure(void);
-  void installColormap(Bool);
-  
-  BlackboxWindow *Transient(void) { return client.transient; }
-  BlackboxWindow *TransientFor(void) { return client.transient_for; }
-  
   Bool isTransient(void) { return ((transient) ? True : False); }
   Bool hasTransient(void) { return ((client.transient) ? True : False); }
   Bool isFocused(void) { return focused; }
@@ -189,24 +178,46 @@ public:
   Bool isClosable(void) { return functions.close; }
   Bool isStuck(void) { return stuck; }
   Bool hasTitlebar(void) { return decorations.titlebar; }
+  Bool validateClient(void);
+  Bool setInputFocus(void);
+
+  BScreen *getScreen(void) { return screen; }
   
-  Window frameWindow(void) { return frame.window; }
-  Window clientWindow(void) { return client.window; }
+  BlackboxWindow *getTransient(void) { return client.transient; }
+  BlackboxWindow *getTransientFor(void) { return client.transient_for; }
 
-  char **Title(void) { return &client.title; }
-  int XFrame(void) { return frame.x; }
-  int YFrame(void) { return frame.y; }
-  int XClient(void) { return client.x; }
-  int YClient(void) { return client.y; }
-  int workspace(void) { return workspace_number; }
-  int windowNumber(void) { return window_number; }
-  unsigned int clientHeight(void) { return client.height; }
-  unsigned int clientWidth(void) { return client.width; }
 
+  Window getFrameWindow(void) { return frame.window; }
+  Window getClientWindow(void) { return client.window; }
+
+  Windowmenu *getWindowmenu(void) { return windowmenu; }
+  
+  char **getTitle(void) { return &client.title; }
+  int getXFrame(void) { return frame.x; }
+  int getYFrame(void) { return frame.y; }
+  int getXClient(void) { return client.x; }
+  int getYClient(void) { return client.y; }
+  int getWorkspaceNumber(void) { return workspace_number; }
+  int getWindowNumber(void) { return window_number; }
+  
+  int setWindowNumber(int);
+  int setWorkspace(int);
+
+  unsigned int getClientHeight(void) { return client.height; }
+  unsigned int getClientWidth(void) { return client.width; }
+  
   void removeIcon(void) { icon = NULL; }
-  void stickWindow(Bool s) { stuck = s; }
-
-  Windowmenu *Menu(void) { return windowmenu; }
+  void setFocusFlag(Bool);
+  void iconify(void);
+  void deiconify(void);
+  void close(void);
+  void withdraw(void);
+  void maximize(unsigned int);
+  void shade(void);
+  void stick(Bool s) { stuck = s; }
+  void unstick(void);
+  void reconfigure(void);
+  void installColormap(Bool);
 };
 
 

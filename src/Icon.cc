@@ -23,25 +23,29 @@
 #define _GNU_SOURCE
 #endif
 
-#include "Workspace.hh"
-#include "Toolbar.hh"
+#ifdef HAVE_CONFIG_H
+#  include "../config.h"
+#endif
 
 #include "blackbox.hh"
 #include "Icon.hh"
+#include "Screen.hh"
 #include "Window.hh"
+#include "Workspace.hh"
 
 
 // *************************************************************************
 // Icon class code
 // *************************************************************************
 
-Iconmenu::Iconmenu(Blackbox *bb) : Basemenu(bb) {
+Iconmenu::Iconmenu(Blackbox *bb, BScreen *scrn) : Basemenu(bb, scrn) {
   defaultMenu();
   setMovable(False);
   setTitleVisibility(False);
-  Update();
-
+  update();
+  
   blackbox = bb;
+  screen = scrn;
   iconList = new LinkedList<BlackboxIcon>;
 }
 
@@ -54,26 +58,26 @@ Iconmenu::~Iconmenu(void) {
 int Iconmenu::insert(BlackboxIcon *icon) {
   icon->setIconNumber(iconList->count());
   int ret = iconList->insert(icon);
-  Basemenu::insert(icon->ULabel());
+  Basemenu::insert(icon->getULabel());
 
-  Basemenu::Update();
+  Basemenu::update();
 
   return ret;
 }
 
 
 int Iconmenu::remove(BlackboxIcon *icon) {
-  iconList->remove(icon->iconNumber());
-  int ret = Basemenu::remove(icon->iconNumber());
+  iconList->remove(icon->getIconNumber());
+  int ret = Basemenu::remove(icon->getIconNumber());
 
   int i;
   LinkedListIterator<BlackboxIcon> it(iconList);
   for (i = 0; it.current(); it++)
     it.current()->setIconNumber(i++);
 
-  Update();
+  update();
 
-  if (! Count()) Hide();
+  if (! getCount()) hide();
 
   return ret;
 }
@@ -81,9 +85,9 @@ int Iconmenu::remove(BlackboxIcon *icon) {
 
 void Iconmenu::itemSelected(int button, int item) {
   if (button == 1) {
-    BlackboxWindow *window = iconList->find(item)->bWindow();
-    blackbox->toolbar()->workspace(window->workspace())->raiseWindow(window);
-    window->deiconifyWindow();
+    BlackboxWindow *window = iconList->find(item)->getWindow();
+    screen->getWorkspace(window->getWorkspaceNumber())->raiseWindow(window);
+    window->deiconify();
   }
 }
 
@@ -93,21 +97,21 @@ void Iconmenu::itemSelected(int button, int item) {
 // *************************************************************************
 
 BlackboxIcon::BlackboxIcon(Blackbox *bb, BlackboxWindow *win) {
-  display = bb->control();
+  display = bb->getDisplay();
   window = win;
-  toolbar = bb->toolbar();
-  client = window->clientWindow();
+  screen = window->getScreen();
+  client = window->getClientWindow();
   icon_number = -1;
 
   if (! XGetIconName(display, client, &name))
     name = "Unnamed";
 
-  toolbar->addIcon(this);
+  screen->addIcon(this);
 }
 
 
 BlackboxIcon::~BlackboxIcon(void) {
-  toolbar->removeIcon(this);
+  screen->removeIcon(this);
 
   if (name)
     if (strcmp(name, "Unnamed"))
@@ -122,5 +126,5 @@ void BlackboxIcon::rereadLabel(void) {
   if (! XGetIconName(display, client, &name))
     name = "Unnamed";
 
-  toolbar->iconUpdate();
+  screen->iconUpdate();
 }

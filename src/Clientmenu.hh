@@ -35,6 +35,7 @@ class Workspace;
 
 class Clientmenu : public Basemenu {
 private:
+  BScreen *screen;
   Workspace *wkspc;
 
 
@@ -44,7 +45,6 @@ protected:
 
 public:
   Clientmenu(Blackbox *, Workspace *);
-  virtual ~Clientmenu(void);
 };
 
 #endif // __Basemenu_hh

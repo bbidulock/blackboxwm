@@ -18,23 +18,22 @@
 -- (See the included file COPYING / GPL-2.0)
 -- 
 
-This is the README for Blackbox 0.40.x Beta release. There are a number of
-changes between this release and the last stable release, 0.35.0.
+This is the README for Blackbox 0.40.x Beta release.
 
-Many things have changed for Blackbox 0.40.x, which will be covered in this 
-file.  First of all, the lib/ subdirectory has been removed, as the small
-applet library is now defunct and at this point unsupported.
+The source tree for Blackbox is comprised of three subdirectories:
 
-Second, the configuration system has changed radically.  Configuring Blackbox
-is now controlled by 3 different files; see the app-defaults/ directory for
-details.
+	data/		- this holds the default data files that Blackbox
+			  requires for proper operation
+	src/		- this holds the actual C++ source code for the window
+			  manager.
+	util/		- this holds source code for small utility programs
+			  that help Blackbox doing what it does best.
 
-NOTE: As part of the new configuration system, blackbox now saves it's own
-configuration file (~/.blackboxrc) upon exiting or restarting.  This means that
-editing this file shouldn't be necessary, except to change the menu file or
-other file locations.  First time users need only run blackbox once and
-then exit, at which point blackbox will write a new ~/.blackboxrc, which can
-be edited by hand, or changed by operating blackbox (i.e. adding or removing
-workspaces will cause blackbox to write the changes, as well as the current
-style file and the stack order of the toolbar).
+Included utilities:
+-------------------
+Currently, the only included utility is a program named bsetroot, which is a
+replacement for xsetroot.  Operation of bsetroot is almost the same as
+xsetroot, minus a few options.  The difference between xsetroot and bsetroot
+is that bsetroot has been coded for multiple screens (e.g. multi-headed
+displays), where as the stock xsetroot is not.
 

@@ -23,23 +23,30 @@
 #define _GNU_SOURCE
 #endif
 
-#include "Rootmenu.hh"
-#include "blackbox.hh"
+#ifdef HAVE_CONFIG_H
+#  include "../config.h"
+#endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#ifdef __EMX__
-#include <process.h>
+#include "blackbox.hh"
+#include "Rootmenu.hh"
+#include "Screen.hh"
+
+#if HAVE_STDIO_H
+#  include <stdio.h>
+#endif
+
+#if STDC_HEADERS
+#  include <stdlib.h>
+#endif
+
+#if HAVE_PROCESS_H && __EMX__
+#  include <process.h>
 #endif
 
 
-Rootmenu::Rootmenu(Blackbox *bb) : Basemenu(bb) {
+Rootmenu::Rootmenu(Blackbox *bb, BScreen *scrn) : Basemenu(bb, scrn) {
   blackbox = bb;
-}
-
-
-Rootmenu::~Rootmenu(void) {
-
+  screen = scrn;
 }
 
 
@@ -51,15 +58,16 @@ void Rootmenu::itemSelected(int button, int index) {
       switch (item->function()) {
       case Blackbox::B_Execute:
 	if (item->exec()) {
-	  char *command = new char[strlen(item->exec()) + 8];
 #ifndef __EMX__
+          char *command = new char[strlen(item->exec()) + 8];
+
 	  sprintf(command, "exec %s &", item->exec());
 	  system(command);
+
+          delete [] command;
 #else
-	  sprintf(command, "%s", item->exec());
-	  spawnlp(P_NOWAIT, "cmd.exe", "cmd.exe", "/c", command, NULL);
+	  spawnlp(P_NOWAIT, "cmd.exe", "cmd.exe", "/c", item->exec(), NULL);
 #endif
-	  delete [] command;
 	}
 	
 	break;
@@ -92,19 +100,19 @@ void Rootmenu::itemSelected(int button, int index) {
 
       case Blackbox::B_SetStyle:
 	if (item->exec()) {
-	  blackbox->setStyle(item->exec());
+	  blackbox->saveStyleFilename(item->exec());
 	  blackbox->Reconfigure();
 	}
 	
 	break;
       }
       
-      if (! blackbox->Menu()->userMoved() &&
+      if (! (screen->getRootmenu()->hasUserMoved() || hasUserMoved()) &&
 	  item->function() != Blackbox::B_Reconfigure &&
 	  item->function() != Blackbox::B_ExecReconfigure &&
 	  item->function() != Blackbox::B_SetStyle)
-	blackbox->Menu()->Hide();
+	screen->getRootmenu()->hide();
     }
   } else if (button == 3)
-    blackbox->Menu()->Hide();
+    screen->getRootmenu()->hide();
 }

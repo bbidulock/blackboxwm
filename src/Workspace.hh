@@ -24,7 +24,7 @@
 
 #include <X11/Xlib.h>
 
-// forward declaration
+class BScreen;
 class Workspace;
 
 #include "Clientmenu.hh"
@@ -35,12 +35,14 @@ class Workspace;
 
 class Workspace {
 private:
+  Window *stack;
+
+  BScreen *screen;
+  Clientmenu *cMenu;
   Toolbar *toolbar;
 
-  Clientmenu *cMenu;
   LinkedList<BlackboxWindow> *windowList;
 
-  Window *stack;
   char *name, **label;
   int id;
 
@@ -49,31 +51,39 @@ protected:
 
 
 public:
-  Workspace(Toolbar *, int = 0);
+  Workspace(Toolbar *, BScreen *, int = 0);
   ~Workspace(void);
 
+  BlackboxWindow *getWindow(int);
+
   Bool isCurrent(void);
-  void setCurrent(void);
-  void setName(char *);
+
+  BScreen *getScreen(void) { return screen; }
+
+  Clientmenu *getMenu(void) { return cMenu; }
+
+  Window *getWindowStack(void) { return stack; }
+  
+  char *getName(void) { return name; }
+  char **getLabel(void) { return label; }
+  
   const int addWindow(BlackboxWindow *);
   const int removeWindow(BlackboxWindow *);
-  BlackboxWindow *window(int);
-  const int Count(void);
+  const int getCount(void);
+  
+  int getWorkspaceID(void) { return id; }
   int showAll(void);
   int hideAll(void);
   int removeAll(void);
+  
   void raiseWindow(BlackboxWindow *);
   void lowerWindow(BlackboxWindow *);
   void restackWindows(void);
   void setFocusWindow(int);
-  void Reconfigure();
-  void Update();
-
-  Window *windowStack(void) { return stack; }
-  int workspaceID(void) { return id; }
-  char *Name(void) { return name; }
-  char **Label(void) { return label; }
-  Clientmenu *Menu(void) { return cMenu; }
+  void reconfigure();
+  void update();
+  void setCurrent(void);
+  void setName(char *);
 };
 
 

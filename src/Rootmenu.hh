@@ -26,6 +26,7 @@
 class Rootmenu;
 
 class Blackbox;
+class BScreen;
 
 #include "Basemenu.hh"
 
@@ -34,6 +35,7 @@ class Blackbox;
 class Rootmenu : public Basemenu {
 private:
   Blackbox *blackbox;
+  BScreen *screen;
 
 
 protected:
@@ -41,8 +43,7 @@ protected:
 
 
 public:
-  Rootmenu(Blackbox *);
-  virtual ~Rootmenu(void);
+  Rootmenu(Blackbox *, BScreen *);
 };
 
 #endif // __Basemenu_hh

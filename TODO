@@ -1,5 +1,5 @@
--- TODO for Blackbox - an X11 Window manager
--- Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
+-- TODO for Blackbox 0.40.x Beta - an X11 Window manager
+-- Copyright (c) 1997, 1998 by Brad Hughes, bhughes@tcac.net
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -16,34 +16,24 @@
 --  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 --
 -- (See the included file COPYING / GPL-2.0)
--- 
+--
 
-Blackbox has quickly become a very functional window manager, providing a fast
-user interface, but at the loss of very patchy and unsightly code.  This file
-is provided as an idea of what I plan to include and repair in Blackbox.
-Ideas that people suggest are also included, provided they are feasible and
-follow the plan I have set for Blackbox.  (First item on the todo... fix the
-TODO file wording... ick)
+Features I would like to see implemented:
+-----------------------------------------
+Better support for window groups - like group iconification/closing, etc...
+Multiple screens support (I have the ideas in place, implementation is next)
+Function access via the menu (this would more than likely entail adding new
+  menu tags to access the functions)
+Use strftime() instead of the current method for displaying the time/date.
 
-Here is a listing of things I would like improved (and plan on improving):
-DONE	- Since multiple threads share the same environment space, managing
-	  multiple X displays from the same running executable isn't feasible
-	  anymore, because Xlib reads the environment space to determine which
-	  X server to connect to (hint:  echo $DISPLAY).
 
-DONE	- Code cleanup to reflect the above (session lists and awkward restart
-	  and shutdown functions)
+Features requested (reasonable):
+--------------------------------
+Resizing via the handles and/or border.  Sounds like an idea, will have to see
+  how feasible it really is.
 
-	- make the toolbox do more... possibly drag and drop for starting
-	  applications that set appropriate window hints (ala WindowMaker)
-			OR
-	- let toolbox applications be set via the resource configuration files
-	  (favor the first idea)
+Features requested (unreasonable):
+----------------------------------
+Any form of image loading.  This is what ails and bloats too many window
+  managers, Blackbox won't ever do this.
 
-	- bug fixes (provided the little bo0glies show their faces)
-
-DONE	- make wire moves, animations and animation stepping part of the
-	  resource configuration instead of compile time operations
-	  (animations still compile time option)
-
-More to come...

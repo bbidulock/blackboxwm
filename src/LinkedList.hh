@@ -43,10 +43,11 @@ protected:
   __llist_iterator(__llist *);
   ~__llist_iterator(void);
 
+  const int set(const int);
+
   void *current(void);
   void reset(void);
   void resetLast(void);
-  const int set(const int);
 
   void operator++(int);
   void operator--(int);
@@ -67,12 +68,11 @@ protected:
 
   const int count(void) const { return elements; }
   const int empty(void) const { return (elements == 0); }
-
-  void *find(const int);
   const int insert(void *, int = -1);
   const int remove(void *);
-  void *remove(const int);
 
+  void *find(const int);
+  void *remove(const int);
   void *first(void) { return _first->data; }
   void *last(void) { return _last->data; }
 };
@@ -85,9 +85,11 @@ public:
   ~LinkedListIterator(void) { }
 
   Z *current(void) { return (Z *) __llist_iterator::current(); }
+
+  const int set(const int i) { return __llist_iterator::set(i); }
+
   void reset(void) { __llist_iterator::reset(); }
   void resetLast(void) { __llist_iterator::resetLast(); }
-  const int set(const int i) { return __llist_iterator::set(i); }
 
   void operator++(int a) { __llist_iterator::operator++(a); }
   void operator--(int a) { __llist_iterator::operator--(a); }
@@ -100,16 +102,15 @@ public:
   LinkedList(Z *d = 0) : __llist(d) { }
   ~LinkedList(void) { }
   
-  const int count(void) const { return __llist::count(); }
-  const int empty(void) const { return __llist::empty(); }
-  
   Z *find(const int i) { return (Z *) __llist::find(i); }
-  const int insert(Z *d, int i = -1) { return __llist::insert((void *) d, i); }
-  const int remove(Z *d) { return __llist::remove((void *) d); }
   Z *remove(const int i) { return (Z *) __llist::remove(i); }
-
   Z *first(void) { return (Z *) __llist::first(); }
   Z *last(void) { return (Z *) __llist::last(); }
+  
+  const int count(void) const { return __llist::count(); }
+  const int empty(void) const { return __llist::empty(); }
+  const int insert(Z *d, int i = -1) { return __llist::insert((void *) d, i); }
+  const int remove(Z *d) { return __llist::remove((void *) d); }
 };
 
 
