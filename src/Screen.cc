@@ -199,16 +199,16 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   geom_w += (resource.bevel_width * 2);
   geom_h += (resource.bevel_width * 2);
 
-  XSetWindowAttributes attrib;
+  XSetWindowAttributes setattrib;
   unsigned long mask = CWBorderPixel | CWColormap | CWSaveUnder;
-  attrib.border_pixel = getBorderColor()->pixel();
-  attrib.colormap = getColormap();
-  attrib.save_under = True;
+  setattrib.border_pixel = getBorderColor()->pixel();
+  setattrib.colormap = getColormap();
+  setattrib.save_under = True;
 
   geom_window = XCreateWindow(blackbox->getXDisplay(), getRootWindow(),
                               0, 0, geom_w, geom_h, resource.border_width,
                               getDepth(), InputOutput, getVisual(),
-                              mask, &attrib);
+                              mask, &setattrib);
   geom_visible = False;
 
   BTexture* texture = &(resource.wstyle.l_focus);
@@ -1737,10 +1737,10 @@ void BScreen::updateAvailableArea(void) {
   unsigned int current_left = 0, current_right = 0, current_top = 0,
     current_bottom = 0;
 
-  StrutList::const_iterator it = strutList.begin(), end = strutList.end();
+  StrutList::const_iterator sit = strutList.begin(), send = strutList.end();
 
-  for(; it != end; ++it) {
-    Strut *strut = *it;
+  for(; sit != send; ++sit) {
+    Strut *strut = *sit;
     if (strut->left > current_left)
       current_left = strut->left;
     if (strut->top > current_top)
@@ -1756,10 +1756,10 @@ void BScreen::updateAvailableArea(void) {
                      usableArea.height() - (current_top + current_bottom));
 
   if (old_area != usableArea) {
-    BlackboxWindowList::iterator it = windowList.begin(),
-      end = windowList.end();
-    for (; it != end; ++it)
-      if ((*it)->isMaximized()) (*it)->remaximize();
+    BlackboxWindowList::iterator wit = windowList.begin(),
+                                wend = windowList.end();
+    for (; wit != wend; ++wit)
+      if ((*wit)->isMaximized()) (*wit)->remaximize();
   }
 
   updateWorkareaHint();
@@ -2108,7 +2108,7 @@ XFontSet BScreen::createFontSet(const std::string &fontname) {
 void BScreen::updateWorkareaHint(void) const {
   unsigned int wkspc_count = workspacesList.size();
   unsigned long *workarea, *tmp;
-  
+
   tmp = workarea = new unsigned long[wkspc_count * 4];
 
   for (unsigned int i = 0; i < wkspc_count; ++i) {
@@ -2147,7 +2147,7 @@ void BScreen::updateClientListHint(void) const {
 
   std::transform(windowList.begin(), windowList.end(), clientList.begin(),
                  std::mem_fun(&BlackboxWindow::getClientWindow));
-  
+
   blackbox->netwm()->setClientList(getRootWindow(), &clientList[0],
                                    clientList.size());
 }

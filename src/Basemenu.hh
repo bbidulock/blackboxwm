@@ -163,10 +163,10 @@ public:
   inline int function(void) const { return f; }
   inline Basemenu *submenu(void) { return sub; }
 
-  inline void newLabel(const std::string& label) { l = label; }
+  inline void newLabel(const std::string& newlabel) { l = newlabel; }
 
   inline int isEnabled(void) const { return enabled; }
-  inline void setEnabled(int e) { enabled = e; }
+  inline void setEnabled(int en) { enabled = en; }
   inline int isSelected(void) const { return selected; }
   inline void setSelected(int s) { selected = s; }
 };
