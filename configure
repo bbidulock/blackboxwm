@@ -2984,6 +2984,7 @@ nls/ko_KR/Makefile
 nls/nl_NL/Makefile
 nls/no_NO/Makefile
 nls/pt_BR/Makefile
+nls/ro_RO/Makefile
 nls/ru_RU/Makefile
 nls/sl_SI/Makefile
 nls/sv_SE/Makefile
@@ -3116,6 +3117,7 @@ nls/ko_KR/Makefile
 nls/nl_NL/Makefile
 nls/no_NO/Makefile
 nls/pt_BR/Makefile
+nls/ro_RO/Makefile
 nls/ru_RU/Makefile
 nls/sl_SI/Makefile
 nls/sv_SE/Makefile
