@@ -1312,9 +1312,11 @@ void BlackboxWindow::configureShape(void) {
 bool BlackboxWindow::setInputFocus(void) {
   if (flags.focused) return True;
 
-  // if the window is not on the current workspace, mark the window as wanting
-  // focus rather than give it focus.
-  if (screen->getCurrentWorkspace()->getID() != blackbox_attrib.workspace) {
+  assert(! flags.iconic);
+
+  // if the window is not visible, mark the window as wanting focus rather
+  // than give it focus.
+  if (! flags.visible) {
     Workspace *wkspc = screen->getWorkspace(blackbox_attrib.workspace);
     wkspc->setLastFocusedWindow(this);
     return True;
