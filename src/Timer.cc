@@ -1,6 +1,7 @@
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Timer.cc for Blackbox - An X11 Window Manager
-// Copyright (c) 2001 Sean 'Shaleh' Perry <shaleh@debian.org>
-// Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
+// Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
+// Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -20,24 +21,19 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-// stupid macros needed to access some functions in version 2 of the GNU C
-// library
-#ifndef   _GNU_SOURCE
-#  define _GNU_SOURCE
-#endif // _GNU_SOURCE
-
 #ifdef    HAVE_CONFIG_H
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
-#include "BaseDisplay.hh"
-#include "Timer.hh"
 
-BTimer::BTimer(BaseDisplay *d, TimeoutHandler *h) {
-  display = d;
+#include "Timer.hh"
+#include "Util.hh"
+
+BTimer::BTimer(TimerQueueManager *m, TimeoutHandler *h) {
+  manager = m;
   handler = h;
 
-  once = timing = False;
+  recur = timing = false;
 }
 
 BTimer::~BTimer(void) {
@@ -46,12 +42,11 @@ BTimer::~BTimer(void) {
 
 void BTimer::setTimeout(long t) {
   _timeout.tv_sec = t / 1000;
-  _timeout.tv_usec = t;
-  _timeout.tv_usec -= (_timeout.tv_sec * 1000);
+  _timeout.tv_usec = t % 1000;
   _timeout.tv_usec *= 1000;
 }
 
-void BTimer::setTimeout(timeval t) {
+void BTimer::setTimeout(const timeval &t) {
   _timeout.tv_sec = t.tv_sec;
   _timeout.tv_usec = t.tv_usec;
 }
@@ -60,17 +55,47 @@ void BTimer::start(void) {
   gettimeofday(&_start, 0);
 
   if (! timing) {
-    timing = True;
-    display->addTimer(this);
+    timing = true;
+    manager->addTimer(this);
   }
 }
 
 void BTimer::stop(void) {
-  timing = False;
+  timing = false;
 
-  display->removeTimer(this);
+  manager->removeTimer(this);
+}
+
+void BTimer::halt(void) {
+  timing = false;
 }
 
 void BTimer::fireTimeout(void) {
-  if (handler) handler->timeout();
+  if (handler)
+    handler->timeout();
+}
+
+timeval BTimer::timeRemaining(const timeval &tm) const {
+  timeval ret = endpoint();
+
+  ret.tv_sec  -= tm.tv_sec;
+  ret.tv_usec -= tm.tv_usec;
+
+  return normalizeTimeval(ret);
+}
+
+timeval BTimer::endpoint(void) const {
+  timeval ret;
+
+  ret.tv_sec = _start.tv_sec + _timeout.tv_sec;
+  ret.tv_usec = _start.tv_usec + _timeout.tv_usec;
+
+  return normalizeTimeval(ret);
+}
+
+bool BTimer::shouldFire(const timeval &tm) const {
+  timeval end = endpoint();
+
+  return !((tm.tv_sec < end.tv_sec) ||
+	   (tm.tv_sec == end.tv_sec && tm.tv_usec < end.tv_usec));
 }

@@ -1,6 +1,7 @@
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // BaseDisplay.cc for Blackbox - an X11 Window manager
-// Copyright (c) 2001 Sean 'Shaleh' Perry <shaleh@debian.org>
-// Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
+// Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
+// Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -329,8 +330,6 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name)
 
   XSetErrorHandler((XErrorHandler) handleXErrors);
 
-  timerList = new LinkedList<BTimer>;
-
   screenInfoList = new LinkedList<ScreenInfo>;
   for (int i = 0; i < number_of_screens; i++) {
     ScreenInfo *screeninfo = new ScreenInfo(this, i);
@@ -387,12 +386,6 @@ BaseDisplay::~BaseDisplay(void) {
 
   delete screenInfoList;
 
-  // we don't create the BTimers, we don't delete them
-  while (timerList->count())
-    timerList->remove(0);
-
-  delete timerList;
-
   XCloseDisplay(_display);
 }
 
@@ -430,32 +423,11 @@ void BaseDisplay::eventLoop(void)
       FD_ZERO(&rfds);
       FD_SET(xfd, &rfds);
 
-      if (timerList->count()) {
+      if (! timerList.empty()) {
+        BTimer *timer = timerList.top();
+
         gettimeofday(&now, 0);
-
-        tm.tv_sec = tm.tv_usec = 0l;
-
-        BTimer *timer = timerList->first();
-
-        tm.tv_sec = timer->getStartTime().tv_sec +
-                    timer->getTimeout().tv_sec - now.tv_sec;
-        tm.tv_usec = timer->getStartTime().tv_usec +
-                     timer->getTimeout().tv_usec - now.tv_usec;
-
-        while (tm.tv_usec >= 1000000) {
-          tm.tv_sec++;
-          tm.tv_usec -= 1000000;
-        }
-
-        while (tm.tv_usec < 0) {
-          if (tm.tv_sec > 0) {
-            tm.tv_sec--;
-            tm.tv_usec += 1000000;
-          } else {
-            tm.tv_usec = 0;
-            break;
-          }
-        }
+        tm = timer->timeRemaining(now);
 
         timeout = &tm;
       }
@@ -465,22 +437,17 @@ void BaseDisplay::eventLoop(void)
       // check for timer timeout
       gettimeofday(&now, 0);
 
-      LinkedListIterator<BTimer> it(timerList);
-      for(BTimer *timer = it.current(); timer; it++, timer = it.current()) {
-        tm.tv_sec = timer->getStartTime().tv_sec +
-                    timer->getTimeout().tv_sec;
-        tm.tv_usec = timer->getStartTime().tv_usec +
-                     timer->getTimeout().tv_usec;
-
-        if ((now.tv_sec < tm.tv_sec) ||
-            (now.tv_sec == tm.tv_sec && now.tv_usec < tm.tv_usec))
+      while (! timerList.empty()) {
+        BTimer *timer = timerList.top();
+        if (! timer->shouldFire(now))
           break;
 
-        timer->fireTimeout();
+        timerList.pop();
 
-        // restart the current timer so that the start time is updated
-        if (! timer->doOnce()) timer->start();
-        else timer->stop();
+        timer->fireTimeout();
+        timer->halt();
+        if (timer->isRecurring())
+          timer->start();
       }
     }
 
@@ -710,22 +677,15 @@ const Bool BaseDisplay::validateWindow(Window window)
 
 void BaseDisplay::addTimer(BTimer *timer)
 {
-  if (! timer) return;
-
-  LinkedListIterator<BTimer> it(timerList);
-  int index = 0;
-  for (BTimer *tmp = it.current(); tmp; it++, index++, tmp = it.current())
-    if ((tmp->getTimeout().tv_sec > timer->getTimeout().tv_sec) ||
-        ((tmp->getTimeout().tv_sec == timer->getTimeout().tv_sec) &&
-         (tmp->getTimeout().tv_usec >= timer->getTimeout().tv_usec)))
-      break;
-
-  timerList->insert(timer, index);
+  if (! timer)
+    return;
+  timerList.push(timer);
 }
 
 
-void BaseDisplay::removeTimer(BTimer *timer) {
-  timerList->remove(timer);
+void BaseDisplay::removeTimer(BTimer *timer)
+{
+  timerList.release(timer);
 }
 
 

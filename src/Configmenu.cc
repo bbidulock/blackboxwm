@@ -1,6 +1,7 @@
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Configmenu.cc for Blackbox - An X11 Window Manager
-// Copyright (c) 2001 Sean 'Shaleh' Perry <shaleh@debian.org>
-// Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
+// Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
+// Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
