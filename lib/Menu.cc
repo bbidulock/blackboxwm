@@ -150,7 +150,7 @@ void bt::MenuStyle::load(const Resource &resource) {
   title.font.setFontName(resource.read("menu.title.font", "Menu.Title.Font"));
   frame.font.setFontName(resource.read("menu.frame.font", "Menu.Frame.Font"));
 
-  item_indent = std::max(textHeight(frame.font), 7u);
+  item_indent = std::max(textHeight(_screen, frame.font), 7u);
 
   title.alignment =
     alignResource(resource, "menu.title.alignment",
@@ -189,7 +189,7 @@ unsigned int bt::MenuStyle::itemMargin(void) const {
 
 
 bt::Rect bt::MenuStyle::titleRect(const std::string &text) const {
-  const Rect &rect = textRect(title.font, text);
+  const Rect &rect = textRect(_screen, title.font, text);
   return Rect(0, 0,
               rect.width()  + (titleMargin() * 2),
               rect.height() + (titleMargin() * 2));
@@ -197,7 +197,7 @@ bt::Rect bt::MenuStyle::titleRect(const std::string &text) const {
 
 
 bt::Rect bt::MenuStyle::itemRect(const MenuItem &item) const {
-  const Rect &rect = textRect(frame.font, item.label());
+  const Rect &rect = textRect(_screen, frame.font, item.label());
   return Rect(0, 0,
               rect.width() + ((item_indent + itemMargin()) * 2),
               std::max(rect.height(), item_indent) + (itemMargin() * 2));
@@ -767,7 +767,7 @@ void bt::Menu::updatePixmaps(void) {
 
   _apixmap =
     PixmapCache::find(_screen, style->activeTexture(), _itemw,
-                      textHeight(style->frameFont()) +
+                      textHeight(_screen, style->frameFont()) +
                       (style->itemMargin() * 2), _apixmap);
 }
 

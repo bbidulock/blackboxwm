@@ -27,25 +27,41 @@
 
 #include "Util.hh"
 
+#ifdef XFT
+extern "C" {
+#include <X11/Xft/Xft.h>
+}
+#endif
+
 namespace bt {
 
   class Color;
   class Display;
   class Font;
-  class GCCacheItem;
+  class PenCacheItem;
+#ifdef XFT
+  class XftCacheItem;
+#endif
 
   class Pen : public NoCopy {
   public:
     static void clearCache(void);
 
-    Pen(unsigned int screen, const Color &color,
+    Pen(unsigned int screen_, const Color &color_,
         int function = GXcopy, int subwindow = ClipByChildren);
     ~Pen(void);
+
+    inline unsigned int screen(void) const { return _screen; }
+    inline const Color &color(void) const { return _color; }
 
     void setFont(const Font &font);
 
     const Display &display(void) const;
     const GC &gc(void) const;
+
+#ifdef XFT
+    XftDraw *xftDraw(Drawable drawable) const;
+#endif
 
   private:
     unsigned int _screen;
@@ -55,7 +71,13 @@ namespace bt {
     int _function;
     int _subwindow;
 
-    mutable GCCacheItem *_item;
+    mutable PenCacheItem *_item;
+
+#ifdef XFT
+    mutable XftCacheItem *_xftitem;
+#else
+    void *_xftitem; // avoid breaking binary compatibility...
+#endif
   };
 
 } // namespace bt

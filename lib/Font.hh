@@ -27,6 +27,9 @@
 
 extern "C" {
 #include <X11/Xlib.h>
+#ifdef XFT
+#  include <X11/Xft/Xft.h>
+#endif
 }
 
 #include <string>
@@ -58,6 +61,9 @@ namespace bt {
 
     XFontSet fontset(void) const;
     XFontStruct *font(void) const;
+#ifdef XFT
+    XftFont *xftFont(unsigned int screen) const;
+#endif
 
     Font& operator=(const Font &f)
     { setFontName(f.fontName()); return *this; }
@@ -72,11 +78,18 @@ namespace bt {
     std::string _fontname;
     mutable XFontSet _fontset;
     mutable XFontStruct *_font;
+#ifdef XFT
+    mutable XftFont *_xftfont;
+#else
+    void *_xftfont; // avoid breaking binary compatibility...
+#endif
+    mutable unsigned int _screen; // only used for Xft
   };
 
-  unsigned int textHeight(const Font &font);
+  unsigned int textHeight(unsigned int screen, const Font &font);
 
-  Rect textRect(const Font &font, const std::string &text);
+  Rect textRect(unsigned int screen, const Font &font,
+                const std::string &text);
 
   void drawText(const Font &font, Pen &pen, Window window,
                 const Rect &rect, Alignment alignment,

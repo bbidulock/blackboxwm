@@ -42,7 +42,9 @@ extern "C" {
 // #define FONTCACHE_DEBUG
 
 static const char * const defaultFont = "fixed";
-
+#ifdef XFT
+static const char * const defaultXftFont = "sans-serif";
+#endif
 
 namespace bt {
 
@@ -53,27 +55,52 @@ namespace bt {
 
     XFontStruct *findFont(const std::string &fontname);
     XFontSet findFontSet(const std::string &fontsetname);
+#ifdef XFT
+    XftFont *findXftFont(const std::string &fontname, unsigned int screen);
+#endif
 
-    void release(const std::string &fontname);
+    void release(const std::string &fontname, unsigned int screen);
 
     void clear(bool force);
 
-  private:
     const Display &_display;
+#ifdef XFT
+    bool xft_initialized;
+#endif
+
+    struct FontName {
+      const std::string name;
+      unsigned int screen;
+      inline FontName(const std::string &n, unsigned int s)
+        : name(n), screen(s) { }
+      inline bool operator<(const FontName &other) const {
+        if (screen != other.screen) return screen < other.screen;
+        return name < other.name;
+      }
+    };
 
     struct FontRef {
       XFontSet const fontset;
       XFontStruct * const font;
+#ifdef XFT
+      XftFont * const xftfont;
+#else
+      void * const xftfont; // avoid #ifdef spaghetti below...
+#endif
       unsigned int count;
       inline FontRef(void)
-        : fontset(0), font(0), count(0u) { }
+        : fontset(0), font(0), xftfont(0), count(0u) { }
       inline FontRef(XFontStruct * const f)
-        : fontset(0), font(f), count(1u) { }
+        : fontset(0), font(f), xftfont(0), count(1u) { }
       inline FontRef(XFontSet const fs)
-        : fontset(fs), font(0), count(1u) { }
+        : fontset(fs), font(0), xftfont(0), count(1u) { }
+#ifdef XFT
+      inline FontRef(XftFont * const ft)
+        : fontset(0), font(0), xftfont(ft), count(1u) { }
+#endif
     };
 
-    typedef std::map<std::string,FontRef> Cache;
+    typedef std::map<FontName,FontRef> Cache;
     typedef Cache::value_type CacheItem;
     Cache cache;
   };
@@ -82,9 +109,9 @@ namespace bt {
   static FontCache *fontcache = 0;
 
 
-  void createFontCache(const Display &dpy) {
+  void createFontCache(const Display &display) {
     assert(fontcache == 0);
-    fontcache = new FontCache(dpy);
+    fontcache = new FontCache(display);
   }
 
 
@@ -137,7 +164,11 @@ namespace bt {
 
 
 
-bt::FontCache::FontCache(const Display &dpy) : _display(dpy) { }
+bt::FontCache::FontCache(const Display &dpy) : _display(dpy) {
+#ifdef XFT
+  xft_initialized = XftInit(NULL) && XftInitFtLibrary();
+#endif
+}
 
 
 bt::FontCache::~FontCache(void) { clear(true); }
@@ -147,7 +178,8 @@ XFontStruct *bt::FontCache::findFont(const std::string &fontname) {
   if (fontname.empty()) return findFont(defaultFont);
 
   // see if the font is in the cache
-  Cache::iterator it = cache.find(fontname);
+  FontName fn(fontname, ~0u);
+  Cache::iterator it = cache.find(fn);
   if (it != cache.end()) {
     // found it
 
@@ -170,7 +202,7 @@ XFontStruct *bt::FontCache::findFont(const std::string &fontname) {
   fprintf(stderr, "bt::FontCache: add font '%s'\n", fontname.c_str());
 #endif // FONTCACHE_DEBUG
 
-  cache.insert(CacheItem(fontname, FontRef(ret)));
+  cache.insert(CacheItem(fn, FontRef(ret)));
   return ret;
 }
 
@@ -179,7 +211,8 @@ XFontSet bt::FontCache::findFontSet(const std::string &fontsetname) {
   if (fontsetname.empty()) return findFontSet(defaultFont);
 
   // see if the font is in the cache
-  Cache::iterator it = cache.find(fontsetname);
+  FontName fn(fontsetname, ~0u);
+  Cache::iterator it = cache.find(fn);
   if (it != cache.end()) {
     // found it
 
@@ -212,7 +245,7 @@ XFontSet bt::FontCache::findFontSet(const std::string &fontsetname) {
       fprintf(stderr, "bt::FontCache: add set  '%s'\n", fontsetname.c_str());
 #endif // FONTCACHE_DEBUG
 
-      cache.insert(CacheItem(fontsetname, FontRef(fs)));
+      cache.insert(CacheItem(fn, FontRef(fs)));
       return fs; // created fontset
     }
   }
@@ -247,17 +280,60 @@ XFontSet bt::FontCache::findFontSet(const std::string &fontsetname) {
   fprintf(stderr, "bt::FontCache: add set  '%s'\n", fontsetname.c_str());
 #endif // FONTCACHE_DEBUG
 
-  cache.insert(CacheItem(fontsetname, FontRef(fs)));
+  cache.insert(CacheItem(fn, FontRef(fs)));
   return fs;
 }
 
 
-void bt::FontCache::release(const std::string &fontname) {
+#ifdef XFT
+XftFont *bt::FontCache::findXftFont(const std::string &fontname,
+                                    unsigned int screen) {
+  if (fontname.empty()) return findXftFont(defaultXftFont, screen);
+
+  // see if the font is in the cache
+  FontName fn(fontname, screen);
+  Cache::iterator it = cache.find(fn);
+  if (it != cache.end()) {
+    // found it
+    assert(it->first.screen == screen);
+
+#ifdef FONTCACHE_DEBUG
+    fprintf(stderr, "bt::FontCache: ref Xft%d '%s'\n",
+            screen, fontname.c_str());
+#endif // FONTCACHE_DEBUG
+
+    ++it->second.count;
+    return it->second.xftfont;
+  }
+
+  XftFont *ret =
+    XftFontOpenName(_display.XDisplay(), screen, fontname.c_str());
+  if (ret == NULL) {
+    // Xft will never return NULL, but it doesn't hurt to be cautious
+    fprintf(stderr, "bt::Font: couldn't load Xft%d '%s'\n",
+            screen, fontname.c_str());
+    ret = XftFontOpenName(_display.XDisplay(), screen, defaultXftFont);
+  }
+  assert(ret != NULL);
+
+#ifdef FONTCACHE_DEBUG
+  fprintf(stderr, "bt::FontCache: add Xft%d '%s'\n",
+          screen, fontname.c_str());
+#endif // FONTCACHE_DEBUG
+
+  cache.insert(CacheItem(fn, FontRef(ret)));
+  return ret;
+}
+#endif
+
+
+void bt::FontCache::release(const std::string &fontname, unsigned int screen) {
 #ifdef FONTCACHE_DEBUG
   fprintf(stderr, "bt::FontCache: rel      '%s'\n", fontname.c_str());
 #endif // FONTCACHE_DEBUG
 
-  Cache::iterator it = cache.find(fontname);
+  FontName fn(fontname, screen);
+  Cache::iterator it = cache.find(fn);
 
   assert(it != cache.end() && it->second.count > 0);
   --it->second.count;
@@ -279,13 +355,17 @@ void bt::FontCache::clear(bool force) {
     }
 
 #ifdef FONTCACHE_DEBUG
-    fprintf(stderr, "bt::FontCache: fre      '%s'\n", it->first.c_str());
+    fprintf(stderr, "bt::FontCache: fre      '%s'\n", it->first.name.c_str());
 #endif // FONTCACHE_DEBUG
 
     if (it->second.font)
       XFreeFont(_display.XDisplay(), it->second.font);
     if (it->second.fontset)
       XFreeFontSet(_display.XDisplay(), it->second.fontset);
+#ifdef XFT
+    if (it->second.xftfont)
+      XftFontClose(_display.XDisplay(), it->second.xftfont);
+#endif
 
     Cache::iterator r = it++;
     cache.erase(r);
@@ -298,7 +378,7 @@ void bt::FontCache::clear(bool force) {
 
 
 bt::Font::Font(const std::string &name)
-  : _fontname(name), _fontset(0), _font(0) { }
+  : _fontname(name), _fontset(0), _font(0), _xftfont(0), _screen(~0u) { }
 
 
 bt::Font::~Font(void) {
@@ -322,17 +402,36 @@ XFontStruct *bt::Font::font(void) const {
 }
 
 
+#ifdef XFT
+XftFont *bt::Font::xftFont(unsigned int screen) const {
+  if (_xftfont && _screen == screen) return _xftfont;
+
+  _screen = screen;
+  _xftfont = fontcache->findXftFont(_fontname, _screen);
+  return _xftfont;
+}
+#endif
+
+
 void bt::Font::unload(void) {
   /*
-    yes, we really want to check _fontset and _font separately.
+    yes, we really want to check _fontset, _font and _xftfont separately.
 
-    if the user has called both font() and fontset(), then the _fontname
-    in the cache will be counted twice, so we will need to release twice
+    if the user has called fontset(), font() and xftFont(), then the
+    _fontname in the cache will be counted multiple times, so we will
+    need to release multiple times
   */
-  if (_fontset) fontcache->release(_fontname);
-  if (_font) fontcache->release(_fontname);
+  if (_fontset) fontcache->release(_fontname, _screen);
   _fontset = 0;
+
+  if (_font) fontcache->release(_fontname, _screen);
   _font = 0;
+
+#ifdef XFT
+  if (_xftfont) fontcache->release(_fontname, _screen);
+  _xftfont = 0;
+  _screen = ~0u;
+#endif
 }
 
 
@@ -341,29 +440,46 @@ void bt::Font::clearCache(void) {
 }
 
 
-unsigned int bt::textHeight(const Font &font) {
+unsigned int bt::textHeight(unsigned int screen, const Font &font) {
+#ifdef XFT
+  if (fontcache->xft_initialized) {
+    const XftFont * const f = font.xftFont(screen);
+    return f->ascent + f->descent;
+  }
+#endif
   if (i18n.multibyte())
     return XExtentsOfFontSet(font.fontset())->max_ink_extent.height;
   return font.font()->ascent + font.font()->descent;
 }
 
 
-bt::Rect bt::textRect(const Font &font, const std::string &text) {
+bt::Rect bt::textRect(unsigned int screen, const Font &font,
+                      const std::string &text) {
+#ifdef XFT
+  if (fontcache->xft_initialized) {
+    XGlyphInfo xgi;
+    XftFont * const f = font.xftFont(screen);
+    XftTextExtentsUtf8(fontcache->_display.XDisplay(), f,
+                       reinterpret_cast<const FcChar8 *>(text.c_str()),
+                       text.length(), &xgi);
+    return Rect(xgi.x, 0, xgi.width - xgi.x, f->ascent + f->descent);
+  }
+#endif
   if (i18n.multibyte()) {
     XRectangle ink, unused;
     XmbTextExtents(font.fontset(), text.c_str(), text.length(), &ink, &unused);
     return Rect(0, 0, ink.width,
-                    XExtentsOfFontSet(font.fontset())->max_ink_extent.height);
+                XExtentsOfFontSet(font.fontset())->max_ink_extent.height);
   }
   return Rect(0, 0, XTextWidth(font.font(), text.c_str(), text.length()),
-                  font.font()->ascent + font.font()->descent);
+              font.font()->ascent + font.font()->descent);
 }
 
 
 void bt::drawText(const Font &font, Pen &pen, Window window,
                   const Rect &rect, Alignment alignment,
                   const std::string &text) {
-  Rect tr = textRect(font, text);
+  Rect tr = textRect(pen.screen(), font, text);
 
   // align vertically (center for now)
   tr.setY(rect.y() + ((rect.height() - tr.height()) / 2));
@@ -382,6 +498,23 @@ void bt::drawText(const Font &font, Pen &pen, Window window,
   case AlignLeft:
     tr.setX(rect.x());
   }
+
+#ifdef XFT
+  if (fontcache->xft_initialized) {
+    XftColor col;
+    col.color.red   = pen.color().red()   | pen.color().red()   << 8;
+    col.color.green = pen.color().green() | pen.color().green() << 8;
+    col.color.blue  = pen.color().blue()  | pen.color().blue()  << 8;
+    col.color.alpha = 0xffff;
+    col.pixel = pen.color().pixel(pen.screen());
+
+    XftDrawStringUtf8(pen.xftDraw(window), &col, font.xftFont(pen.screen()),
+                      tr.x(), tr.y() + font.xftFont(pen.screen())->ascent,
+                      reinterpret_cast<const FcChar8 *>(text.c_str()),
+                      text.length());
+    return;
+  }
+#endif
 
   // set the font on the pen
   pen.setFont(font);
