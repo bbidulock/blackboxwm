@@ -100,7 +100,8 @@ struct MenuStyle {
   int bullet, bullet_pos;
 };
 
-class BScreen : public bt::ScreenInfo, public bt::EventHandler {
+class BScreen : public bt::ScreenInfo, public bt::EventHandler,
+                public bt::TimeoutHandler {
 private:
   bool root_colormap_installed, managed, geom_visible;
   GC opGC;
@@ -127,6 +128,7 @@ private:
   unsigned long event_mask;
 
   bt::Rect usableArea;
+  bool area_is_dirty;
 
   typedef std::list<bt::Netwm::Strut*> StrutList;
   StrutList strutList;
@@ -163,6 +165,8 @@ private:
 #endif // HAVE_STRFTIME
 
   } resource;
+
+  bt::Timer *timer;
 
   BScreen(const BScreen&);
   BScreen& operator=(const BScreen&);
@@ -321,9 +325,10 @@ public:
 
   BlackboxWindow *getIcon(unsigned int index);
 
-  const bt::Rect& availableArea(void) const;
+  const bt::Rect& availableArea(void);
   void addStrut(bt::Netwm::Strut *strut);
   void removeStrut(bt::Netwm::Strut *strut);
+  void updateStrut(void);
 
   void updateClientListHint(void) const;
   void updateClientListStackingHint(void) const;
@@ -360,6 +365,8 @@ public:
   void clientMessageEvent(const XClientMessageEvent * const event);
   void buttonPressEvent(const XButtonEvent * const event);
   void configureRequestEvent(const XConfigureRequestEvent * const event);
+
+  virtual void timeout(void);
 };
 
 

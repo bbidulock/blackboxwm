@@ -140,12 +140,17 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
     resource.wstyle.font = (XFontStruct *) 0;
 
   geom_pixmap = None;
+  
+  timer = new bt::Timer(blackbox, this);
+  timer->setTimeout(750l); // once every 1.5 seconds
+  timer->start();
 
   XDefineCursor(blackbox->getXDisplay(), getRootWindow(),
                 blackbox->getSessionCursor());
 
   // start off full screen, top left.
   usableArea.setSize(getWidth(), getHeight());
+  area_is_dirty = False;
 
   image_control =
     new bt::ImageControl(blackbox, this, True, blackbox->getColorsPerChannel(),
@@ -248,8 +253,6 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
 
   raiseWindows((WindowStack*) 0);
   rootmenu->update();
-
-  updateAvailableArea();
 
   changeWorkspaceID(0);
 
@@ -368,9 +371,6 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
 
   updateClientListHint();
   updateClientListStackingHint();
-
-  // call this again just in case a window we found updates the Strut list
-  updateAvailableArea();
 }
 
 
@@ -397,6 +397,7 @@ BScreen::~BScreen(void) {
   delete slit;
   delete toolbar;
   delete image_control;
+  delete timer;
 
   blackbox->netwm()->removeProperty(getRootWindow(),
                                     blackbox->netwm()->supportingWMCheck());
@@ -1665,26 +1666,35 @@ void BScreen::hideGeometry(void) {
 
 void BScreen::addStrut(bt::Netwm::Strut *strut) {
   strutList.push_back(strut);
-  updateAvailableArea();
+  area_is_dirty = True;
+  if (! timer->isTiming()) timer->start();
 }
 
 
 void BScreen::removeStrut(bt::Netwm::Strut *strut) {
   strutList.remove(strut);
-  updateAvailableArea();
+  area_is_dirty = True;
+  if (! timer->isTiming()) timer->start();
 }
 
 
-const bt::Rect& BScreen::availableArea(void) const {
+void BScreen::updateStrut(void) {
+  area_is_dirty = True;
+  if (! timer->isTiming()) timer->start();
+}
+
+
+const bt::Rect& BScreen::availableArea(void) {
   if (doFullMax())
     return getRect(); // return the full screen
+  if (area_is_dirty)
+    updateAvailableArea();
   return usableArea;
 }
 
 
 void BScreen::updateAvailableArea(void) {
-  bt::Rect old_area = usableArea;
-  usableArea = getRect(); // reset to full screen
+  bt::Rect new_area;
 
   /* these values represent offsets from the screen edge
    * we look for the biggest offset on each edge and then apply them
@@ -1707,18 +1717,21 @@ void BScreen::updateAvailableArea(void) {
       current.bottom = strut->bottom;
   }
 
-  usableArea.setPos(current.left, current.top);
-  usableArea.setSize(usableArea.width() - (current.left + current.right),
-                     usableArea.height() - (current.top + current.bottom));
+  new_area.setPos(current.left, current.top);
+  new_area.setSize(getWidth() - (current.left + current.right),
+                   getHeight() - (current.top + current.bottom));
+  area_is_dirty = False;
+  if (timer->isTiming()) timer->stop();
 
-  if (old_area != usableArea) {
+  if (new_area != usableArea) {
+    usableArea = new_area;
     BlackboxWindowList::iterator wit = windowList.begin(),
                                 wend = windowList.end();
     for (; wit != wend; ++wit)
       if ((*wit)->isMaximized()) (*wit)->remaximize();
-  }
 
-  updateWorkareaHint();
+    updateWorkareaHint();
+  }
 }
 
 
@@ -2168,4 +2181,10 @@ void BScreen::getDesktopNames(void) {
 
   if (names.size() < workspacesList.size())
     updateDesktopNamesHint();
+}
+
+
+void BScreen::timeout(void) {
+  if (area_is_dirty)
+    updateAvailableArea();
 }

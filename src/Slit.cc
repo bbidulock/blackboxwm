@@ -198,6 +198,13 @@ void Slit::removeClient(Window w, bool remap) {
 
 
 void Slit::reconfigure(void) {
+  if (clientList.empty()) {
+    XUnmapWindow(display, frame.window);
+    strut.left = strut.right = strut.top = strut.bottom = 0;
+    updateStrut();
+    return;
+  }
+
   SlitClientList::iterator it = clientList.begin();
   const SlitClientList::iterator end = clientList.end();
   SlitClient *client;
@@ -255,10 +262,7 @@ void Slit::reconfigure(void) {
   XSetWindowBorder(display, frame.window,
                    screen->getBorderColor()->pixel());
 
-  if (clientList.empty())
-    XUnmapWindow(display, frame.window);
-  else
-    XMapWindow(display, frame.window);
+  XMapWindow(display, frame.window);
 
   bt::Texture *texture = &(screen->getToolbarStyle()->toolbar);
   frame.pixmap = texture->render(frame.rect.width(), frame.rect.height(),
@@ -408,6 +412,7 @@ void Slit::updateStrut(void) {
       break;
     }
   }
+  screen->updateStrut();
 }
 
 

@@ -2408,12 +2408,15 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
 
     setState(client.current_state);
   } else if (ce->message_type == netwm->wmStrut()) {
-    if (! client.strut)
+    if (! client.strut) {
       client.strut = new bt::Netwm::Strut;
+      screen->addStrut(client.strut);
+    }
+
     netwm->readWMStrut(client.window, client.strut);
     if (client.strut->left || client.strut->right ||
         client.strut->top || client.strut->bottom) {
-      screen->addStrut(client.strut);
+      screen->updateStrut();
     } else {
       screen->removeStrut(client.strut);
       delete client.strut;

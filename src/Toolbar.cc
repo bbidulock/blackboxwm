@@ -447,6 +447,8 @@ void Toolbar::updateStrut(void) {
   default:
     strut.bottom = getExposedHeight() + border_width;
   }
+
+  screen->updateStrut();
 }
 
 
