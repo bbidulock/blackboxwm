@@ -3273,6 +3273,8 @@ void BlackboxWindow::restore(void) {
   XSelectInput(blackbox->XDisplay(), client.window, NoEventMask);
   XSelectInput(blackbox->XDisplay(), frame.plate, NoEventMask);
 
+  client.state.visible = false;
+
   /*
     remove WM_STATE unless the we are shutting down (in which case we
     want to make sure we preserve the state across restarts).
