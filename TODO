@@ -45,9 +45,6 @@ CHANGE: rework the .blackboxrc resources so that they give a more
 
 ADD: get volunteers to translate blackbox into other languages
 
-ADD: draw resize frames using the styles borderWidth... should be fairly
-     simple to do...
-
 ADD: a regression test suite
      items to test:
        *) toggle decor works

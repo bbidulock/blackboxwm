@@ -34,7 +34,6 @@ namespace bt {
   // forward declarations
   class Color;
   class Display;
-  class Font;
   class PenCacheItem;
   class XftCacheItem;
 
@@ -49,6 +48,7 @@ namespace bt {
     inline const Color &color(void) const { return _color; }
 
     void setGCFunction(int function);
+    void setLineWidth(int linewidth);
     void setSubWindowMode(int subwindow);
 
     ::Display *XDisplay(void) const;
@@ -61,8 +61,8 @@ namespace bt {
     unsigned int _screen;
 
     const Color &_color;
-    unsigned long _fontid;
     int _function;
+    int _linewidth;
     int _subwindow;
 
     mutable PenCacheItem *_item;

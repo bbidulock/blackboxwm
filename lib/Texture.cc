@@ -200,10 +200,10 @@ void bt::drawTexture(unsigned int screen,
       (trect.left() == urect.left() || trect.right() == urect.right() ||
        trect.top() == urect.top() || trect.bottom() == urect.bottom())) {
     Pen penborder(screen, texture.borderColor());
-    for (int i = 0, d = 0; i < bw; ++i, d += 2)
-      XDrawRectangle(pen.XDisplay(), drawable, penborder.gc(),
-                     trect.left() + i,  trect.top() + i,
-                     trect.width() - d - 1, trect.height() - d - 1);
+    penborder.setLineWidth(bw);
+    XDrawRectangle(pen.XDisplay(), drawable, penborder.gc(),
+                   trect.x() + bw / 2,  trect.y() + bw / 2,
+                   trect.width() - bw, trect.height() - bw);
   }
 
   if (texture.texture() & bt::Texture::Interlaced) {

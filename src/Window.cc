@@ -2844,11 +2844,16 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const event) {
        * (for both moving and resizing)
        */
       bt::Pen pen(screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
+      const int hw = frame.border_w / 2;
       pen.setGCFunction(GXxor);
+      pen.setLineWidth(frame.border_w);
       pen.setSubWindowMode(IncludeInferiors);
       XDrawRectangle(blackbox->XDisplay(), screen->screenInfo().rootWindow(),
-                     pen.gc(), frame.changing.x(), frame.changing.y(),
-                     frame.changing.width() - 1, frame.changing.height() - 1);
+                     pen.gc(),
+                     frame.changing.x() + hw,
+                     frame.changing.y() + hw,
+                     frame.changing.width() - frame.border_w,
+                     frame.changing.height() - frame.border_w);
       XUngrabServer(blackbox->XDisplay());
 
       configure(frame.changing.x(), frame.changing.y(),
@@ -2861,11 +2866,16 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const event) {
     XUngrabPointer(blackbox->XDisplay(), CurrentTime);
   } else if (client.state.resizing) {
     bt::Pen pen(screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
+    const int hw = frame.border_w / 2;
     pen.setGCFunction(GXxor);
+    pen.setLineWidth(frame.border_w);;
     pen.setSubWindowMode(IncludeInferiors);
     XDrawRectangle(blackbox->XDisplay(), screen->screenInfo().rootWindow(),
-                   pen.gc(), frame.changing.x(), frame.changing.y(),
-                   frame.changing.width() - 1, frame.changing.height() - 1);
+                   pen.gc(),
+                   frame.changing.x() + hw,
+                   frame.changing.y() + hw,
+                   frame.changing.width() - frame.border_w,
+                   frame.changing.height() - frame.border_w);
     XUngrabServer(blackbox->XDisplay());
 
     screen->hideGeometry();
@@ -2943,12 +2953,16 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
         screen->showPosition(frame.changing.x(), frame.changing.y());
 
         bt::Pen pen(screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
+        const int hw = frame.border_w / 2;
         pen.setGCFunction(GXxor);
+        pen.setLineWidth(frame.border_w);;
         pen.setSubWindowMode(IncludeInferiors);
         XDrawRectangle(blackbox->XDisplay(), screen->screenInfo().rootWindow(),
-                       pen.gc(), frame.changing.x(), frame.changing.y(),
-                       frame.changing.width() - 1,
-                       frame.changing.height() - 1);
+                       pen.gc(),
+                       frame.changing.x() + hw,
+                       frame.changing.y() + hw,
+                       frame.changing.width() - frame.border_w,
+                       frame.changing.height() - frame.border_w);
       }
     } else {
       // continue a move
@@ -2970,19 +2984,25 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
         configure(dx, dy, frame.rect.width(), frame.rect.height());
       } else {
         bt::Pen pen(screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
+        const int hw = frame.border_w / 2;
         pen.setGCFunction(GXxor);
+        pen.setLineWidth(frame.border_w);;
         pen.setSubWindowMode(IncludeInferiors);
         XDrawRectangle(blackbox->XDisplay(), screen->screenInfo().rootWindow(),
-                       pen.gc(), frame.changing.x(), frame.changing.y(),
-                       frame.changing.width() - 1,
-                       frame.changing.height() - 1);
+                       pen.gc(),
+                       frame.changing.x() + hw,
+                       frame.changing.y() + hw,
+                       frame.changing.width() - frame.border_w,
+                       frame.changing.height() - frame.border_w);
 
         frame.changing.setPos(dx, dy);
 
         XDrawRectangle(blackbox->XDisplay(), screen->screenInfo().rootWindow(),
-                       pen.gc(), frame.changing.x(), frame.changing.y(),
-                       frame.changing.width() - 1,
-                       frame.changing.height() - 1);
+                       pen.gc(),
+                       frame.changing.x() + hw,
+                       frame.changing.y() + hw,
+                       frame.changing.width() - frame.border_w,
+                       frame.changing.height() - frame.border_w);
       }
 
       screen->showPosition(dx, dy);
@@ -3014,12 +3034,16 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
       constrain(left ? TopRight : TopLeft);
 
       bt::Pen pen(screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
+      const int hw = frame.border_w / 2;
       pen.setGCFunction(GXxor);
+      pen.setLineWidth(frame.border_w);;
       pen.setSubWindowMode(IncludeInferiors);
       XDrawRectangle(blackbox->XDisplay(), screen->screenInfo().rootWindow(),
-                     pen.gc(), frame.changing.x(), frame.changing.y(),
-                     frame.changing.width() - 1,
-                     frame.changing.height() - 1);
+                     pen.gc(),
+                     frame.changing.x() + hw,
+                     frame.changing.y() + hw,
+                     frame.changing.width() - frame.border_w,
+                     frame.changing.height() - frame.border_w);
 
       showGeometry(frame.changing);
     } else {
@@ -3047,16 +3071,23 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
 
       if (curr != frame.changing) {
         bt::Pen pen(screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
+        const int hw = frame.border_w / 2;
         pen.setGCFunction(GXxor);
+        pen.setLineWidth(frame.border_w);;
         pen.setSubWindowMode(IncludeInferiors);
         XDrawRectangle(blackbox->XDisplay(), screen->screenInfo().rootWindow(),
-                       pen.gc(), curr.x(), curr.y(),
-                       curr.width() - 1, curr.height() - 1);
+                       pen.gc(),
+                       curr.x() + hw,
+                       curr.y() + hw,
+                       curr.width() - frame.border_w,
+                       curr.height() - frame.border_w);
 
         XDrawRectangle(blackbox->XDisplay(), screen->screenInfo().rootWindow(),
-                       pen.gc(), frame.changing.x(), frame.changing.y(),
-                       frame.changing.width() - 1,
-                       frame.changing.height() - 1);
+                       pen.gc(),
+                       frame.changing.x() + hw,
+                       frame.changing.y() + hw,
+                       frame.changing.width() - frame.border_w,
+                       frame.changing.height() - frame.border_w);
 
         showGeometry(frame.changing);
       }

@@ -25,7 +25,6 @@
 #include "Pen.hh"
 #include "Display.hh"
 #include "Color.hh"
-#include "Font.hh"
 #include "Util.hh"
 
 #include <X11/Xlib.h>
@@ -83,19 +82,18 @@ namespace bt {
   class PenCacheContext : public NoCopy {
   public:
     inline PenCacheContext(void)
-      : _screen(~0u), _gc(0), _fontid(0ul), _function(0),
-        _subwindow(0), _used(false) { }
+      : _screen(~0u), _gc(0), _function(0), _linewidth(1), _subwindow(0),
+        _used(false) { }
     ~PenCacheContext(void);
 
-    void set(const Color &color, const unsigned long fontid,
-             const int function, const int subwindow);
-    void set(const unsigned long fontid);
+    void set(const Color &color, const int function, const int linewidth,
+             const int subwindow);
 
     unsigned int _screen;
     GC _gc;
     Color _color;
-    unsigned long _fontid;
     int _function;
+    int _linewidth;
     int _subwindow;
     bool _used;
   };
@@ -153,8 +151,8 @@ namespace bt {
 
     PenCacheItem *find(unsigned int screen,
                        const Color &color,
-                       const unsigned long fontid,
                        int function,
+                       int linewidth,
                        int subwindow);
     void release(PenCacheItem *item);
 
@@ -197,27 +195,20 @@ bt::PenCacheContext::~PenCacheContext(void) {
 
 
 void bt::PenCacheContext::set(const Color &color,
-                             const unsigned long fontid,
-                             const int function,
-                             const int subwindow) {
+                              const int function,
+                              const int linewidth,
+                              const int subwindow) {
   XGCValues gcv;
-  _fontid = gcv.font = fontid;
   _color = color;
   gcv.foreground = _color.pixel(_screen);
   _function = gcv.function = function;
+  _linewidth = gcv.line_width = linewidth;
   _subwindow = gcv.subwindow_mode = subwindow;
-  unsigned long mask = GCForeground | GCFunction | GCSubwindowMode;
 
-  if (fontid) mask |= GCFont;
+  unsigned long mask =
+    (GCForeground | GCFunction | GCLineWidth | GCSubwindowMode);
 
   XChangeGC(pencache->_display.XDisplay(), _gc, mask, &gcv);
-}
-
-
-void bt::PenCacheContext::set(const unsigned long fontid) {
-  XGCValues gcv;
-  _fontid = gcv.font = fontid;
-  if (fontid) XChangeGC(pencache->_display.XDisplay(), _gc, GCFont, &gcv);
 }
 
 
@@ -311,10 +302,10 @@ void bt::PenCache::release(PenCacheContext *ctx) {
 
 
 bt::PenCacheItem *bt::PenCache::find(unsigned int screen,
-                                   const Color &color,
-                                   const unsigned long fontid,
-                                   int function,
-                                   int subwindow) {
+                                     const Color &color,
+                                     int function,
+                                     int linewidth,
+                                     int subwindow) {
   int k = color.red() ^ color.green() ^ color.blue();
   k = (screen * context_count) + ((k % cache_size) * cache_buckets);
   unsigned int i = 0; // loop variable
@@ -324,9 +315,11 @@ bt::PenCacheItem *bt::PenCache::find(unsigned int screen,
     this will either loop cache_buckets times then return/abort or
     it will stop matching
   */
-  while (c->_ctx &&
-         (c->_ctx->_color != color || c->_ctx->_function != function ||
-          c->_ctx->_subwindow != subwindow || c->_ctx->_screen != screen)) {
+  while (c->_ctx
+         && (c->_ctx->_color != color
+             || c->_ctx->_function != function
+             || c->_ctx->_linewidth != linewidth
+             || c->_ctx->_subwindow != subwindow)) {
     if (i < (cache_buckets - 1)) {
       prev = c;
       c = cache[ ++k ];
@@ -336,7 +329,7 @@ bt::PenCacheItem *bt::PenCache::find(unsigned int screen,
     if (c->_count == 0 && c->_ctx->_screen == screen) {
       // printf("GC : k %03d hijack\n", k);
       // use this cache item
-      c->_ctx->set(color, fontid, function, subwindow);
+      c->_ctx->set(color, function, linewidth, subwindow);
       c->_ctx->_used = true;
       c->_count = 1;
       c->_hits = 1;
@@ -353,8 +346,6 @@ bt::PenCacheItem *bt::PenCache::find(unsigned int screen,
   if (c->_ctx) {
     // printf("GC : k %03d cache hit\n", k);
     // reuse existing context
-    if (fontid && fontid != c->_ctx->_fontid)
-      c->_ctx->set(fontid);
     c->_count++;
     c->_hits++;
     if (prev && c->_hits > prev->_hits) {
@@ -364,7 +355,7 @@ bt::PenCacheItem *bt::PenCache::find(unsigned int screen,
   } else {
     // printf("GC : k %03d new context\n", k);
     c->_ctx = nextContext(screen);
-    c->_ctx->set(color, fontid, function, subwindow);
+    c->_ctx->set(color, function, linewidth, subwindow);
     c->_ctx->_used = true;
     c->_count = 1;
     c->_hits = 1;
@@ -478,9 +469,8 @@ void bt::PenCache::release(XftCacheItem *xftitem) {
 
 
 bt::Pen::Pen(unsigned int screen_, const Color &color_)
-  : _screen(screen_), _color(color_), _fontid(0ul),
-    _function(GXcopy), _subwindow(ClipByChildren),
-    _item(0), _xftitem(0)
+  : _screen(screen_), _color(color_), _function(GXcopy), _linewidth(0),
+    _subwindow(ClipByChildren), _item(0), _xftitem(0)
 { }
 
 
@@ -503,6 +493,14 @@ void bt::Pen::setGCFunction(int function) {
 }
 
 
+void bt::Pen::setLineWidth(int linewidth) {
+  if (_item) pencache->release(_item);
+  _item = 0;
+
+  _linewidth = linewidth;
+}
+
+
 void bt::Pen::setSubWindowMode(int subwindow) {
   if (_item) pencache->release(_item);
   _item = 0;
@@ -521,7 +519,8 @@ const bt::Display &bt::Pen::display(void) const
 
 const GC &bt::Pen::gc(void) const {
   if (! _item)
-    _item = pencache->find(_screen, _color, _fontid, _function, _subwindow);
+    _item = pencache->find(_screen, _color,
+                           _function, _linewidth, _subwindow);
   assert(_item != 0);
   return _item->gc();
 }
