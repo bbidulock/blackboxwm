@@ -2182,29 +2182,6 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
           client.window);
 #endif // DEBUG
 
-  XChangeSaveSet(display, client.window, SetModeDelete);
-  XSelectInput(display, client.window, NoEventMask);
-
-  XDeleteProperty(display, client.window, blackbox->getWMStateAtom());
-  XDeleteProperty(display, client.window,
-                  blackbox->getBlackboxAttributesAtom());
-
-  XUnmapWindow(display, frame.window);
-  XUnmapWindow(display, client.window);
-
-  XSync(display, False);
-
-  XEvent ev;
-  if (! XCheckTypedWindowEvent(display, client.window,ReparentNotify,&ev)) {
-    // according to the ICCCM - if the client doesn't reparent to
-    // root, then we have to do it for them
-    restoreGravity();
-    XReparentWindow(display, client.window, screen->getRootWindow(),
-                    client.x, client.y);
-  }
-
-  XFlush(display);
-
   screen->unmanageWindow(this);
 }
 
@@ -2212,8 +2189,6 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
 void BlackboxWindow::destroyNotifyEvent(XDestroyWindowEvent *de) {
   if (de->window != client.window)
     return;
-
-  XUnmapWindow(display, frame.window);
 
   screen->unmanageWindow(this);
 }
@@ -2229,8 +2204,6 @@ void BlackboxWindow::reparentNotifyEvent(XReparentEvent *re) {
                 "BlackboxWindow::reparentNotifyEvent(): reparent 0x%lx to "
                 "0x%lx.\n"), client.window, re->parent);
 #endif // DEBUG
-
-  restoreGravity();
 
   screen->unmanageWindow(this);
 }

@@ -95,7 +95,6 @@ public:
   void update(void);
   void setCurrent(void);
   void setName(const std::string& new_name);
-  void shutdown(void);
 };
 
 

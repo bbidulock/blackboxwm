@@ -889,6 +889,8 @@ void BScreen::manageWindow(Window w) {
 
 
 void BScreen::unmanageWindow(BlackboxWindow *w) {
+  w->restore();
+
   if (w->getWorkspaceNumber() != BSENTINEL &&
       w->getWindowNumber() != BSENTINEL)
     getWorkspace(w->getWorkspaceNumber())->removeWindow(w);
@@ -1571,18 +1573,14 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
 
 void BScreen::shutdown(void) {
-  XGrabServer( blackbox->getXDisplay() );
+  XGrabServer(blackbox->getXDisplay());
 
   XSelectInput(blackbox->getXDisplay(), getRootWindow(), NoEventMask);
   XSync(blackbox->getXDisplay(), False);
 
-  std::for_each(workspacesList.begin(), workspacesList.end(),
-                std::mem_fun(&Workspace::shutdown));
-
-  while (iconList.size()) {
-    BlackboxWindow *bw = iconList.front();
-    bw->restore();
-    delete bw;
+  while(! windowList.empty()) {
+    BlackboxWindow *bw = windowList.front();
+    unmanageWindow(bw);
   }
 
   slit->shutdown();

@@ -359,15 +359,6 @@ void Workspace::setName(const string& new_name) {
 }
 
 
-void Workspace::shutdown(void) {
-  while (! windowList.empty()) {
-    BlackboxWindow *bw = windowList.front();
-    bw->restore();
-    delete bw;
-    bw = 0;
-  }
-}
-
 void Workspace::placeWindow(BlackboxWindow *win) {
   Bool placed = False;
 
