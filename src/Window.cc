@@ -1746,8 +1746,6 @@ void BlackboxWindow::setFocusFlag(bool focus) {
   if (client.state.focused) {
     blackbox->setFocusedWindow(this);
     XInstallColormap(blackbox->XDisplay(), client.colormap);
-  } else {
-    XUninstallColormap(blackbox->XDisplay(), client.colormap);
   }
 }
 
