@@ -33,6 +33,7 @@ class BScreen;
 class Clientmenu;
 class Workspace;
 class BlackboxWindow;
+class Netizen;
 
 typedef std::list<BlackboxWindow*> BlackboxWindowList;
 
@@ -71,13 +72,17 @@ public:
   
   inline void setLastFocusedWindow(BlackboxWindow *w) { lastfocus = w; }
 
-  BlackboxWindow *getWindow(unsigned int index);
+  BlackboxWindow* getWindow(unsigned int index);
+  BlackboxWindow* getNextWindowOnStack(BlackboxWindow *w);
+  BlackboxWindow* getPrevWindowOnStack(BlackboxWindow *w);
+  BlackboxWindow* getTopWindowOnStack(void) const;
+  void sendWindowList(Netizen &n);
 
   Bool isCurrent(void) const;
   Bool isLastWindow(const BlackboxWindow* w) const;
   
-  const int addWindow(BlackboxWindow *w, Bool place = False);
-  const int removeWindow(BlackboxWindow *w);
+  void addWindow(BlackboxWindow *w, Bool place = False);
+  const unsigned int removeWindow(BlackboxWindow *w);
   const unsigned int getCount(void) const;
 
   void showAll(void);

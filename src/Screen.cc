@@ -1405,13 +1405,8 @@ void BScreen::addNetizen(Netizen *n) {
 
   WorkspaceList::iterator it = workspacesList.begin();
   const WorkspaceList::iterator end = workspacesList.end();
-  for (; it != end; ++it) {
-    Workspace *w = *it;
-    for (unsigned int i = 0; i < w->getCount(); ++i) {
-      n->sendWindowAdd(w->getWindow(i)->getClientWindow(),
-                       w->getID());
-    }
-  }
+  for (; it != end; ++it)
+    (*it)->sendWindowList(*n);
 
   Window f = ((blackbox->getFocusedWindow()) ?
               blackbox->getFocusedWindow()->getClientWindow() : None);
@@ -1588,32 +1583,27 @@ void BScreen::reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id,
 
 
 void BScreen::nextFocus(void) {
-  Bool have_focused = False;
-  unsigned int focused_window_number = 0;
-  BlackboxWindow *next;
+  BlackboxWindow *focused = blackbox->getFocusedWindow(),
+    *next = focused;
 
-  if (blackbox->getFocusedWindow()) {
-    if (blackbox->getFocusedWindow()->getScreen()->getScreenNumber() ==
-        getScreenNumber()) {
-      have_focused = True;
-      focused_window_number = blackbox->getFocusedWindow()->getWindowNumber();
-    }
+  if (focused) {
+    // if window is not on this screen, ignore it
+    if (focused->getScreen()->getScreenNumber() != getScreenNumber())
+      focused = (BlackboxWindow*) 0;
   }
 
-  if (have_focused && (getCurrentWorkspace()->getCount() > 1)) {
-    unsigned int next_window_number = focused_window_number;
+  if (focused && current_workspace->getCount() > 1) {
+    // next is the next window to recieve focus, current is a place holder
+    BlackboxWindow *current;
     do {
-      if ((next_window_number++) >= getCurrentWorkspace()->getCount())
-        next_window_number = 0;
+      current = next;
+      next = current_workspace->getNextWindowOnStack(current);
+    } while(!next->setInputFocus() && next != focused);
 
-      next = getCurrentWorkspace()->getWindow(next_window_number);
-    } while ((! next->setInputFocus()) && (next_window_number !=
-                                           focused_window_number));
-
-    if (next_window_number != focused_window_number)
-      getCurrentWorkspace()->raiseWindow(next);
-  } else if (getCurrentWorkspace()->getCount() >= 1) {
-    next = current_workspace->getWindow(0);
+    if (next != focused)
+      current_workspace->raiseWindow(next);
+  } else if (current_workspace->getCount() >= 1) {
+    next = current_workspace->getTopWindowOnStack();
 
     current_workspace->raiseWindow(next);
     next->setInputFocus();
@@ -1622,55 +1612,44 @@ void BScreen::nextFocus(void) {
 
 
 void BScreen::prevFocus(void) {
-  Bool have_focused = False;
-  unsigned int focused_window_number = BSENTINEL;
-  BlackboxWindow *prev;
+  BlackboxWindow *focused = blackbox->getFocusedWindow(),
+    *next = focused;
 
-  if (blackbox->getFocusedWindow()) {
-    if (blackbox->getFocusedWindow()->getScreen()->getScreenNumber() ==
-        getScreenNumber()) {
-      have_focused = True;
-      focused_window_number = blackbox->getFocusedWindow()->getWindowNumber();
-    }
+  if (focused) {
+    // if window is not on this screen, ignore it
+    if (focused->getScreen()->getScreenNumber() != getScreenNumber())
+      focused = (BlackboxWindow*) 0;
   }
 
-  if (have_focused && (getCurrentWorkspace()->getCount() > 1)) {
-    unsigned int prev_window_number = focused_window_number;
+  if (focused && current_workspace->getCount() > 1) {
+    // next is the next window to recieve focus, current is a place holder
+    BlackboxWindow *current;
     do {
-      if (prev_window_number == 0)
-        prev_window_number = getCurrentWorkspace()->getCount() - 1;
-      else
-        --prev_window_number;
-      prev = getCurrentWorkspace()->getWindow(prev_window_number);
-    } while ((! prev->setInputFocus()) && (prev_window_number !=
-                                           focused_window_number));
+      current = next;
+      next = current_workspace->getPrevWindowOnStack(current);
+    } while(!next->setInputFocus() && next != focused);
 
-    if (prev_window_number != focused_window_number)
-      getCurrentWorkspace()->raiseWindow(prev);
-  } else if (getCurrentWorkspace()->getCount() >= 1) {
-    prev = current_workspace->getWindow(0);
+    if (next != focused)
+      current_workspace->raiseWindow(next);
+  } else if (current_workspace->getCount() >= 1) {
+    next = current_workspace->getTopWindowOnStack();
 
-    current_workspace->raiseWindow(prev);
-    prev->setInputFocus();
+    current_workspace->raiseWindow(next);
+    next->setInputFocus();
   }
 }
 
 
 void BScreen::raiseFocus(void) {
-  Bool have_focused = False;
-  unsigned int focused_window_number = BSENTINEL;
+  BlackboxWindow *focused = blackbox->getFocusedWindow();
+  if (! focused)
+    return;
 
-  if (blackbox->getFocusedWindow()) {
-    if (blackbox->getFocusedWindow()->getScreen()->getScreenNumber() ==
-        getScreenNumber()) {
-      have_focused = True;
-      focused_window_number = blackbox->getFocusedWindow()->getWindowNumber();
-    }
+  // if on this Screen, raise it
+  if (focused->getScreen()->getScreenNumber() == getScreenNumber()) {
+    Workspace *workspace = getWorkspace(focused->getWorkspaceNumber());
+    workspace->raiseWindow(focused);
   }
-
-  if (have_focused && (getCurrentWorkspace()->getCount() > 1))
-    getWorkspace(blackbox->getFocusedWindow()->getWorkspaceNumber())->
-      raiseWindow(blackbox->getFocusedWindow());
 }
 
 

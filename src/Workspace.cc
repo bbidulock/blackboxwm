@@ -39,6 +39,7 @@
 #include "i18n.hh"
 #include "blackbox.hh"
 #include "Clientmenu.hh"
+#include "Netizen.hh"
 #include "Screen.hh"
 #include "Toolbar.hh"
 #include "Util.hh"
@@ -68,8 +69,8 @@ Workspace::Workspace(BScreen *scrn, unsigned int i) {
 Workspace::~Workspace(void) {}
 
 
-const int Workspace::addWindow(BlackboxWindow *w, Bool place) {
-  if (! w) return -1;
+void Workspace::addWindow(BlackboxWindow *w, Bool place) {
+  assert(w != 0);
 
   if (place) placeWindow(w);
 
@@ -85,13 +86,11 @@ const int Workspace::addWindow(BlackboxWindow *w, Bool place) {
   screen->updateNetizenWindowAdd(w->getClientWindow(), id);
 
   raiseWindow(w);
-
-  return w->getWindowNumber();
 }
 
 
-const int Workspace::removeWindow(BlackboxWindow *w) {
-  if (! w) return -1;
+const unsigned int Workspace::removeWindow(BlackboxWindow *w) {
+  assert(w != 0);
 
   stackingList.remove(w);
 
@@ -273,6 +272,46 @@ BlackboxWindow *Workspace::getWindow(unsigned int index) {
     return *it;
   }
   return 0;
+}
+
+
+BlackboxWindow*
+Workspace::getNextWindowOnStack(BlackboxWindow *w) {
+  BlackboxWindowList::iterator it = std::find(stackingList.begin(),
+                                              stackingList.end(),
+                                              w);
+  assert(it != stackingList.end()); // window must be in list
+  ++it;                             // next window
+  if (it == stackingList.end())
+    return stackingList.front();    // if we walked off the end, wrap around
+
+  return *it;
+}
+
+
+BlackboxWindow*
+Workspace::getPrevWindowOnStack(BlackboxWindow *w) {
+  BlackboxWindowList::iterator it = std::find(stackingList.begin(),
+                                              stackingList.end(),
+                                              w);
+  assert(it != stackingList.end()); // window must be in list
+  if (it == stackingList.begin())
+    return stackingList.back();     // if we walked of the front, wrap around
+
+  return *(--it);
+}
+
+
+BlackboxWindow* Workspace::getTopWindowOnStack(void) const {
+  return stackingList.front();
+}
+
+
+void Workspace::sendWindowList(Netizen &n) {
+  BlackboxWindowList::iterator it = windowList.begin(),
+    end = windowList.end();
+  for(; it != end; ++it)
+    n.sendWindowAdd((*it)->getClientWindow(), getID());
 }
 
 
