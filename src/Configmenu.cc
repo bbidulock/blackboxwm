@@ -26,7 +26,6 @@
 #include "Screen.hh"
 
 #include <Image.hh>
-#include <i18n.hh>
 
 
 class ConfigFocusmenu : public bt::Menu {
