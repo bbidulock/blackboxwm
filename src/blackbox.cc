@@ -1158,10 +1158,7 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
   }
 
   if (win && ! win->isIconic()) {
-    // the active screen is the one with the last focused window...
-    // this will keep focus on this screen no matter where the mouse goes,
-    // so multihead keybindings will continue to work on that screen until the
-    // user focuses a window on a different screen.
+    // the active screen is the one with the newly focused window...
     active_screen = win->getScreen();
     focused_window = win;
   } else {
@@ -1170,17 +1167,16 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
     XSetInputFocus(getXDisplay(), PointerRoot, RevertToNone, CurrentTime);
   }
 
-  if (active_screen && active_screen->isScreenManaged()) {
+  Window active =
+    (focused_window) ? focused_window->getClientWindow() : None;
+
+  if (active_screen) {
     active_screen->getToolbar()->redrawWindowLabel(True);
-    Window active = (focused_window) ? focused_window->getClientWindow() :
-                                       None;
     _netwm->setActiveWindow(active_screen->getRootWindow(), active);
   }
 
   if (old_screen && old_screen != active_screen) {
     old_screen->getToolbar()->redrawWindowLabel(True);
-    Window active = (focused_window) ? focused_window->getClientWindow() :
-                                       None;
     _netwm->setActiveWindow(old_screen->getRootWindow(), active);
   }
 }
