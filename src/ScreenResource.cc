@@ -507,7 +507,6 @@ void ScreenResource::setWorkspaceName(unsigned int i,
     if (i >= workspace_names.size()) {
         workspace_names.reserve(i + 1);
         workspace_names.insert(workspace_names.begin() + i, name);
-        assert(workspace_names.size() <= workspace_count);
     } else {
         workspace_names[i] = name;
     }
