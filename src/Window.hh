@@ -188,7 +188,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
    */
 
   struct _frame {
-    ScreenResource::WindowStyle* style;
+    const ScreenResource::WindowStyle *style;
 
     // u -> unfocused, f -> has focus
     Pixmap ulabel, flabel, utitle, ftitle, uhandle, fhandle,

@@ -42,15 +42,13 @@ private:
 
   struct ToolbarFrame {
     unsigned long button_pixel, pbutton_pixel;
-    Pixmap base, label, wlabel, clk, button, pbutton;
+    Pixmap base, slabel, wlabel, clk, button, pbutton;
     Window window, workspace_label, window_label, clock, psbutton, nsbutton,
       pwbutton, nwbutton;
 
-    int x_hidden, y_hidden;
-    unsigned int window_label_w, workspace_label_w, clock_w,
-      button_w, bevel_w, label_h;
-
-    bt::Rect rect;
+    int y_hidden;
+    bt::Rect rect, slabel_rect, wlabel_rect, clock_rect, ps_rect, ns_rect,
+      pw_rect, nw_rect;
   } frame;
 
   Blackbox *blackbox;
@@ -85,8 +83,8 @@ public:
   unsigned int getHeight(void) const { return frame.rect.height(); }
   unsigned int getExposedHeight(void) const {
     return (_screen->resource().doToolbarAutoHide()
-            ? frame.bevel_w
-            : frame.rect.height());
+            ? _screen->resource().toolbarStyle()->hidden_height
+            : _screen->resource().toolbarStyle()->toolbar_height);
   }
 
   void buttonPressEvent(const XButtonEvent * const event);

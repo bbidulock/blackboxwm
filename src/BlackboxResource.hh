@@ -67,10 +67,15 @@ public:
     ToolbarStyle(void);
     ~ToolbarStyle(void);
 
-    bt::Color l_text, w_text, c_text, b_pic;
-    bt::Texture toolbar, label, window, button, pressed, clock;
+    bt::Bitmap left, right;
+    bt::Color slabel_text, wlabel_text, clock_text, foreground;
+    bt::Texture toolbar, slabel, wlabel, clock, button, pressed;
     bt::Font font;
     bt::Alignment alignment;
+    unsigned int frame_margin, label_margin, button_margin;
+
+    // calculated extents
+    unsigned int toolbar_height, label_height, button_width, hidden_height;
   };
 
   class SlitStyle {
@@ -87,9 +92,13 @@ public:
   void save(bt::Resource& res, BScreen* screen);
 
   // access functions
-  WindowStyle* windowStyle(void)   { return &wstyle; }
-  ToolbarStyle* toolbarStyle(void) { return &tstyle; }
-  SlitStyle *slitStyle(void) { return &slit_style; }
+  inline const WindowStyle *windowStyle(void) const
+  { return &wstyle; }
+  inline const ToolbarStyle *toolbarStyle(void) const
+  { return &toolbar_style; }
+  inline const SlitStyle *slitStyle(void) const
+  { return &slit_style; }
+
   bt::Color* borderColor(void)     { return &border_color; }
 
   unsigned int bevelWidth(void) const         { return bevel_width;       }
@@ -192,7 +201,7 @@ private:
 
   WindowStyle wstyle;
   WindowConfig wconfig;
-  ToolbarStyle tstyle;
+  ToolbarStyle toolbar_style;
   ToolbarConfig tconfig;
   SlitStyle slit_style;
   SlitConfig sconfig;

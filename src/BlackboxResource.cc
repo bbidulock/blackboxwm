@@ -500,16 +500,19 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
 
   // load bevel and border widths
   border_width = res.read("borderWidth", "BorderWidth", 1);
+  border_color = bt::Color::namedColor(display, screen_num,
+                                       res.read("borderColor",
+                                                "BorderColor",
+                                                "black"));
+
   bevel_width = res.read("bevelWidth", "BevelWidth", 3);
 
   // load menu style
   bt::MenuStyle::get(*screen->getBlackbox(), screen_num)->load(res);
 
-  // load fonts
-  wstyle.font.setFontName(res.read("window.font", "Window.Font", "fixed"));
-  tstyle.font.setFontName(res.read("toolbar.font", "Toolbar.Font", "fixed"));
+  // load window style
+  wstyle.font.setFontName(res.read("window.font", "Window.Font"));
 
-  // load window config
   wstyle.iconify.load(screen_num, iconify_bits,
                       iconify_width, iconify_height);
   wstyle.maximize.load(screen_num, maximize_bits,
@@ -601,62 +604,100 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
   wstyle.alignment =
     bt::alignResource(res, "window.alignment", "Window.Alignment");
 
-  // load toolbar config
-  tstyle.toolbar = bt::textureResource(display, screen_num, res,
-                                       "toolbar", "Toolbar",
-                                       "black");
-  tstyle.label = bt::textureResource(display, screen_num, res,
-                                     "toolbar.label", "Toolbar.Label",
-                                     "black");
-  tstyle.window =
-    bt::textureResource(display, screen_num, res,
-                        "toolbar.windowLabel", "Toolbar.WindowLabel",
-                        "black");
-  tstyle.button =
-    bt::textureResource(display, screen_num, res,
-                        "toolbar.button", "Toolbar.Button",
-                        "white");
-  tstyle.pressed =
-    bt::textureResource(display, screen_num, res,
-                        "toolbar.button.pressed", "Toolbar.Button.Pressed",
-                        "black");
-  tstyle.clock =
-    bt::textureResource(display, screen_num, res,
-                        "toolbar.clock", "Toolbar.Clock", "black");
+  // load toolbar style
+  toolbar_style.font.setFontName(res.read("toolbar.font", "Toolbar.Font"));
 
-  tstyle.l_text =
+  toolbar_style.toolbar =
+    bt::textureResource(display, screen_num, res,
+                        "toolbar",
+                        "Toolbar",
+                        "white");
+  toolbar_style.slabel =
+    bt::textureResource(display, screen_num, res,
+                        "toolbar.label",
+                        "Toolbar.Label",
+                        "white");
+  toolbar_style.wlabel =
+    bt::textureResource(display, screen_num, res,
+                        "toolbar.windowLabel",
+                        "Toolbar.Label",
+                        "white");
+  toolbar_style.button =
+    bt::textureResource(display, screen_num, res,
+                        "toolbar.button",
+                        "Toolbar.Button",
+                        "white");
+  toolbar_style.pressed =
+    bt::textureResource(display, screen_num, res,
+                        "toolbar.button.pressed",
+                        "Toolbar.Button.Pressed",
+                        "black");
+
+  toolbar_style.clock =
+    bt::textureResource(display, screen_num, res,
+                        "toolbar.clock",
+                        "Toolbar.Label",
+                        "white");
+
+  toolbar_style.slabel_text =
     bt::Color::namedColor(display, screen_num,
                           res.read("toolbar.label.textColor",
                                    "Toolbar.Label.TextColor",
-                                   "white"));
-  tstyle.w_text =
+                                   "black"));
+  toolbar_style.wlabel_text =
     bt::Color::namedColor(display, screen_num,
                           res.read("toolbar.windowLabel.textColor",
-                                   "Toolbar.WindowLabel.TextColor",
-                                   "white"));
-  tstyle.c_text =
+                                   "Toolbar.Label.TextColor",
+                                   "black"));
+  toolbar_style.clock_text =
     bt::Color::namedColor(display, screen_num,
                           res.read("toolbar.clock.textColor",
-                                   "Toolbar.Clock.TextColor",
+                                   "Toolbar.Label.TextColor",
                                    "white"));
-  tstyle.b_pic =
+  toolbar_style.foreground =
     bt::Color::namedColor(display, screen_num,
-                          res.read("toolbar.button.picColor",
-                                   "Toolbar.Button.PicColor",
-                                   "black"));
-  tstyle.alignment =
+                          res.read("toolbar.button.foregroundColor",
+                                   "Toolbar.Button.Foreground",
+                                   res.read("toolbar.button.picColor",
+                                            "Toolbar.Button.PicColor",
+                                            "black")));
+  toolbar_style.alignment =
     bt::alignResource(res, "toolbar.alignment", "Toolbar.Alignment");
 
-  border_color = bt::Color::namedColor(display, screen_num,
-                                       res.read("borderColor",
-                                                "BorderColor",
-                                                "black"));
+  toolbar_style.frame_margin =
+    res.read("toolbar.marginWidth", "Frame.Margin", 2);
+  toolbar_style.label_margin =
+    res.read("toolbar.label.marginWidth", "Toolbar.Label.Margin", 2);
+  toolbar_style.button_margin =
+    res.read("toolbar.button.marginWidth", "Toolbar.Button.Margin", 2);
 
-    // load slit style
+  const bt::Bitmap &left = bt::Bitmap::leftArrow(screen_num),
+                  &right = bt::Bitmap::rightArrow(screen_num);
+  toolbar_style.button_width =
+    std::max(std::max(left.width(), left.height()),
+             std::max(right.width(), right.height()))
+    + ((toolbar_style.button.borderWidth() + toolbar_style.button_margin) * 2);
+  toolbar_style.label_height =
+    std::max(bt::textHeight(screen_num, toolbar_style.font)
+             + ((std::max(std::max(toolbar_style.slabel.borderWidth(),
+                                   toolbar_style.wlabel.borderWidth()),
+                          toolbar_style.clock.borderWidth())
+                 + toolbar_style.label_margin) * 2),
+             toolbar_style.button_width);
+  toolbar_style.button_width = std::max(toolbar_style.button_width,
+                                        toolbar_style.label_height);
+  toolbar_style.toolbar_height = toolbar_style.label_height
+                                 + ((toolbar_style.toolbar.borderWidth()
+                                     + toolbar_style.frame_margin) * 2);
+  toolbar_style.hidden_height =
+    std::max(toolbar_style.toolbar.borderWidth()
+             + toolbar_style.frame_margin, 1u);
+
+  // load slit style
   slit_style.slit = bt::textureResource(display, screen_num, res,
-                                    "slit",
-                                    "Slit",
-                                    "white");
+                                        "slit",
+                                        "Slit",
+                                        "white");
   slit_style.margin = res.read("slit.marginWidth", "Slit.Margin", 2);
 
   root_command = res.read("rootCommand", "RootCommand");
@@ -675,8 +716,8 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
   if (wstyle.h_unfocus.texture() == bt::Texture::Parent_Relative)
     wstyle.h_unfocus = flat_black;
 
-  if (tstyle.toolbar.texture() == bt::Texture::Parent_Relative)
-    tstyle.toolbar = flat_black;
+  if (toolbar_style.toolbar.texture() == bt::Texture::Parent_Relative)
+    toolbar_style.toolbar = flat_black;
 
   if (slit_style.slit.texture() == bt::Texture::Parent_Relative)
     slit_style.slit = flat_black;
