@@ -29,7 +29,8 @@
 class Rect {
 public:
   Rect(void) : _x1(0), _y1(0), _x2(0), _y2(0) { }
-  Rect(int a, int b, int c, int d) { setRect(a, b, c, d); }
+  Rect(int __x, int __y, int __w, int __h)
+  { setRect(__x, __h, __w, __h); }
   explicit Rect(const XRectangle& xrect)
   { setRect(xrect.x, xrect.y, xrect.width, xrect.height); }
 
@@ -39,28 +40,28 @@ public:
   int bottom(void) const { return _y2; }
 
   int x(void) const { return _x1; }
-  void setX(int a) { _x1 = a; }
-  void newX(int a) { _x2 += a - _x1; _x1 = a; }
+  void setX(int __x) { _x2 += __x - _x1; _x1 = __x; }
 
   int y(void) const { return _y1; }
-  void setY(int b) { _y1 = b; }
-  void newY(int b) { _y2 += b - _y1; _y1 = b; }
+  void setY(int __y) { _y2 += __y - _y1; _y1 = __y; }
 
-  void setPos(int a, int b) { _x1 = a; _y1 = b; }
+  void setPos(int __x, int __y)
+  { _x2 += __x - _x1; _x1 = __x; _y2 += __y - _y1; _y1 = __y; }
 
   int width(void) const { return _x2 - _x1 + 1; }
-  void setWidth(int c) { _x2 = c + _x1 - 1; }
+  void setWidth(int __w) { _x2 = __w + _x1 - 1; }
 
   int height(void) const { return _y2 - _y1 + 1; }
-  void setHeight(int d) { _y2 = d + _y1 - 1; }
+  void setHeight(int __h) { _y2 = __h + _y1 - 1; }
 
-  void setSize(int a, int b) { setWidth(a); setHeight(b) ; }
+  void setSize(int __w, int __h)
+  { setWidth(__w); setHeight(__h); }
 
-  void setRect(int a, int b, int c, int d)
-  { setPos(a, b); setSize(c, d); }
+  void setRect(int __x, int __y, int __w, int __h)
+  { setPos(__x, __y); setSize(__w, __h); }
 
-  void setCoords(int a, int b, int c, int d)
-  { _x1 = a; _y1 = b; _x2 = c; _y2 = d; }
+  void setCoords(int __l, int __t, int __r, int __b)
+  { _x1 = __l; _y1 = __t; _x2 = __r; _y2 = __b; }
 
   bool operator==(const Rect &a)
   { return _x1 == a._x1 && _y1 == a._y1 && _x2 == a._x2 && _y2 == a._y2; }

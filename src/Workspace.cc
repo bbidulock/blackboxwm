@@ -366,7 +366,7 @@ static Bool rowRLBT(const Rect &first, const Rect &second) {
     return first.right() > second.right();
   return first.bottom() > second.bottom();
 }
- 
+
 static Bool rowRLTB(const Rect &first, const Rect &second) {
   if (first.y() == second.y())
     return first.right() > second.right();
@@ -378,19 +378,19 @@ static Bool rowLRBT(const Rect &first, const Rect &second) {
     return first.x() < second.x();
   return first.bottom() > second.bottom();
 }
- 
+
 static Bool rowLRTB(const Rect &first, const Rect &second) {
   if (first.y() == second.y())
     return first.x() < second.x();
   return first.y() < second.y();
 }
- 
+
 static Bool colLRTB(const Rect &first, const Rect &second) {
   if (first.x() == second.x())
     return first.y() < second.y();
   return first.x() < second.y();
 }
- 
+
 static Bool colLRBT(const Rect &first, const Rect &second) {
   if (first.x() == second.x())
     return first.bottom() > second.bottom();
@@ -402,7 +402,7 @@ static Bool colRLTB(const Rect &first, const Rect &second) {
     return first.y() < second.y();
   return first.right() > second.right();
 }
- 
+
 static Bool colRLBT(const Rect &first, const Rect &second) {
   if (first.right() == second.right())
     return first.bottom() > second.bottom();
@@ -413,7 +413,7 @@ static Bool colRLBT(const Rect &first, const Rect &second) {
 Bool Workspace::smartPlacement(Rect& win, const Rect& availableArea) {
   rectList spaces;
   spaces.push_back(availableArea); //initially the entire screen is free
-  
+
   //Find Free Spaces
   BlackboxWindowList::iterator wit = windowList.begin(),
     end = windowList.end();
@@ -465,20 +465,20 @@ Bool Workspace::smartPlacement(Rect& win, const Rect& availableArea) {
 
   //set new position based on the empty space found
   const Rect& where = *sit;
-  win.newX(where.x());
-  win.newY(where.y());
+  win.setX(where.x());
+  win.setY(where.y());
 
   // adjust the location() based on left/right and top/bottom placement
   if (screen->getPlacementPolicy() == BScreen::RowSmartPlacement) {
     if (screen->getRowPlacementDirection() == BScreen::RightLeft)
-      win.newX(where.right() - win.width());
+      win.setX(where.right() - win.width());
     if (screen->getColPlacementDirection() == BScreen::BottomTop)
-      win.newY(where.bottom() - win.height());
+      win.setY(where.bottom() - win.height());
   } else {
     if (screen->getColPlacementDirection() == BScreen::BottomTop)
-      win.newY(win.y() + where.height() - win.height());
+      win.setY(win.y() + where.height() - win.height());
     if (screen->getRowPlacementDirection() == BScreen::RightLeft)
-      win.newX(win.x() + where.width() - win.width());
+      win.setX(win.x() + where.width() - win.width());
   }
   return True;
 }
@@ -494,8 +494,8 @@ Bool Workspace::cascadePlacement(Rect &win, const Rect &availableArea) {
     cascade_y += availableArea.y();
   }
 
-  win.newX(cascade_x);
-  win.newY(cascade_y);
+  win.setX(cascade_x);
+  win.setY(cascade_y);
 
   return True;
 }
@@ -524,9 +524,9 @@ void Workspace::placeWindow(BlackboxWindow *win) {
   }
 
   if (new_win.right() > availableArea.right())
-    new_win.newX((availableArea.right() - new_win.width()) / 2);
+    new_win.setX((availableArea.right() - new_win.width()) / 2);
   if (new_win.bottom() > availableArea.bottom())
-    new_win.newY((availableArea.bottom() - new_win.height()) / 2);
+    new_win.setY((availableArea.bottom() - new_win.height()) / 2);
 
   win->configure(new_win.x(), new_win.y(), win->getWidth(), win->getHeight());
 }
