@@ -36,21 +36,18 @@ struct timeval;
 
 namespace bt {
 
-  class Timer;
-
   // use a wrapper class to avoid the header as well
-  class timeval {
-  public:
+  struct timeval {
     long tv_sec;
     long tv_usec;
 
+    inline timeval(void)
+    { tv_sec = tv_usec = 0l; }
+
+    // POSIX<->bt conversion
     timeval(const ::timeval &);
     timeval &operator=(const ::timeval &);
     operator ::timeval() const;
-
-  private:
-    inline timeval(void) { }
-    friend class Timer;
   };
 
   timeval normalizeTimeval(const timeval &tm);
