@@ -25,12 +25,11 @@
 #ifndef COLOR_HH
 #define COLOR_HH
 
-#include <map>
 #include <string>
-
 
 namespace bt {
 
+  // forward declarations
   class Display;
 
   class Color {

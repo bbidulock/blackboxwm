@@ -22,18 +22,15 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifdef HAVE_CONFIG_H
-#  include "../config.h"
-#endif // HAVE_CONFIG_H
+#include "Color.hh"
+#include "Display.hh"
 
-extern "C" {
 #include <X11/Xlib.h>
 #include <stdio.h>
 #include <assert.h>
-}
+#include <stdio.h>
 
-#include "Color.hh"
-#include "Display.hh"
+#include <map>
 
 // #define COLORCACHE_DEBUG
 
