@@ -26,12 +26,14 @@
 
 #include <X11/Xlib.h>
 
-#include "LinkedList.hh"
+#include <deque>
 
 class BScreen;
 class Clientmenu;
 class Workspace;
 class BlackboxWindow;
+
+typedef std::deque<BlackboxWindow*> BlackboxWindowList;
 
 class Workspace {
 private:
@@ -39,10 +41,11 @@ private:
   BlackboxWindow *lastfocus;
   Clientmenu *clientmenu;
 
-  LinkedList<BlackboxWindow> *stackingList, *windowList;
+  BlackboxWindowList stackingList, windowList;
 
   char *name;
-  int id, cascade_x, cascade_y;
+  unsigned int id;
+  int cascade_x, cascade_y;
 
 
 protected:
@@ -50,7 +53,7 @@ protected:
 
 
 public:
-  Workspace(BScreen *, int = 0);
+  Workspace(BScreen *scrn, unsigned int i = 0);
   ~Workspace(void);
 
   inline BScreen *getScreen(void) { return screen; }
@@ -61,28 +64,28 @@ public:
 
   inline const char *getName(void) const { return name; }
 
-  inline const int &getWorkspaceID(void) const { return id; }
+  inline const int getWorkspaceID(void) const { return id; }
   
   inline void setLastFocusedWindow(BlackboxWindow *w) { lastfocus = w; }
 
-  BlackboxWindow *getWindow(int);
+  BlackboxWindow *getWindow(unsigned int index);
 
-  Bool isCurrent(void);
-  Bool isLastWindow(BlackboxWindow *);
+  Bool isCurrent(void) const;
+  Bool isLastWindow(const BlackboxWindow* const w) const;
   
-  const int addWindow(BlackboxWindow *, Bool = False);
-  const int removeWindow(BlackboxWindow *);
-  const int getCount(void);
+  const int addWindow(BlackboxWindow *w, Bool = False);
+  const int removeWindow(BlackboxWindow *w);
+  const unsigned int getCount(void) const;
 
   void showAll(void);
   void hideAll(void);
   void removeAll(void);
-  void raiseWindow(BlackboxWindow *);
-  void lowerWindow(BlackboxWindow *);
+  void raiseWindow(BlackboxWindow *w);
+  void lowerWindow(BlackboxWindow *w);
   void reconfigure();
   void update();
   void setCurrent(void);
-  void setName(char *);
+  void setName(const char* const new_name);
   void shutdown(void);
 };
 

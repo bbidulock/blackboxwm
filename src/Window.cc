@@ -1412,13 +1412,7 @@ void BlackboxWindow::iconify(void) {
 }
 
 
-void BlackboxWindow::deiconify(Bool reassoc, Bool raise) {
-  if (flags.iconic || reassoc)
-    screen->reassociateWindow(this, -1, False);
-  else if (workspace_number !=
-           screen->getCurrentWorkspace()->getWorkspaceID())
-    return;
-
+void BlackboxWindow::show(void) {
   setState(NormalState);
 
   XSelectInput(display, client.window, NoEventMask);
@@ -1433,6 +1427,16 @@ void BlackboxWindow::deiconify(Bool reassoc, Bool raise) {
 
   flags.visible = True;
   flags.iconic = False;
+}
+
+void BlackboxWindow::deiconify(Bool reassoc, Bool raise) {
+  if (flags.iconic || reassoc)
+    screen->reassociateWindow(this, -1, False);
+  else if (workspace_number !=
+           screen->getCurrentWorkspace()->getWorkspaceID())
+    return;
+
+  show();
 
   if (reassoc && client.transient) client.transient->deiconify(True, False);
 

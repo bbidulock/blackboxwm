@@ -47,16 +47,12 @@
 #endif // STDC_HEADERS
 
 
-Workspace::Workspace(BScreen *scrn, int i) {
+Workspace::Workspace(BScreen *scrn, unsigned int i) {
   screen = scrn;
 
   cascade_x = cascade_y = 32;
 
   id = i;
-
-  stackingList = new LinkedList<BlackboxWindow>;
-  windowList = new LinkedList<BlackboxWindow>;
-  clientmenu = new Clientmenu(this);
 
   lastfocus = (BlackboxWindow *) 0;
 
@@ -67,10 +63,6 @@ Workspace::Workspace(BScreen *scrn, int i) {
 
 
 Workspace::~Workspace(void) {
-  delete stackingList;
-  delete windowList;
-  delete clientmenu;
-
   if (name)
     delete [] name;
 }
@@ -82,10 +74,10 @@ const int Workspace::addWindow(BlackboxWindow *w, Bool place) {
   if (place) placeWindow(w);
 
   w->setWorkspace(id);
-  w->setWindowNumber(windowList->count());
+  w->setWindowNumber(windowList.size());
 
-  stackingList->insert(w, 0);
-  windowList->insert(w);
+  stackingList.push_front(w);
+  windowList.push_back(w);
 
   clientmenu->insert((const char **) w->getTitle());
   clientmenu->update();
@@ -101,7 +93,10 @@ const int Workspace::addWindow(BlackboxWindow *w, Bool place) {
 const int Workspace::removeWindow(BlackboxWindow *w) {
   if (! w) return -1;
 
-  stackingList->remove(w);
+  BlackboxWindowList::iterator it = std::find(stackingList.begin(),
+                                              stackingList.end(),
+                                              w);
+  stackingList.erase(it);
 
   if (w->isFocused()) {
     if (w->isTransient()) {
@@ -111,7 +106,7 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
     } else if (screen->isSloppyFocus()) {
       screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
     } else {
-      BlackboxWindow *top = stackingList->first();
+      BlackboxWindow *top = stackingList.front();
       if (! top || ! top->setInputFocus()) {
         screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
         XSetInputFocus(screen->getBlackbox()->getXDisplay(),
@@ -124,46 +119,49 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
   if (lastfocus == w)
     lastfocus = (BlackboxWindow *) 0;
 
-  windowList->remove(w->getWindowNumber());
+  it = std::find(windowList.begin(), windowList.end(), w);
+  windowList.erase(it);
   clientmenu->remove(w->getWindowNumber());
   clientmenu->update();
 
   screen->updateNetizenWindowDel(w->getClientWindow());
 
-  LinkedListIterator<BlackboxWindow> it(windowList);
-  BlackboxWindow *bw = it.current();
-  for (int i = 0; bw; it++, i++, bw = it.current())
-    bw->setWindowNumber(i);
+  it = windowList.begin();
+  const BlackboxWindowList::iterator end = windowList.end();
+  for (int i = 0; it != end; ++it, ++i)
+    (*it)->setWindowNumber(i);
 
-  return windowList->count();
+  return windowList.size();
 }
 
 
 void Workspace::showAll(void) {
-  LinkedListIterator<BlackboxWindow> it(stackingList);
-  for (BlackboxWindow *bw = it.current(); bw; it++, bw = it.current())
-    bw->deiconify(False, False);
+  BlackboxWindowList::iterator it = stackingList.begin();
+  const BlackboxWindowList::iterator end = stackingList.end();
+  for (; it != end; ++it)
+    (*it)->show();
 }
 
 
 void Workspace::hideAll(void) {
-  LinkedList<BlackboxWindow> lst;
+  /* why is the order they are withdrawn important? */
 
-  LinkedListIterator<BlackboxWindow> it(stackingList);
-  for (BlackboxWindow *bw = it.current(); bw; it++, bw = it.current())
-    lst.insert(bw, 0);
+  /* make a temporary list in reverse order */
+  BlackboxWindowList lst(stackingList.rbegin(), stackingList.rend());
 
-  LinkedListIterator<BlackboxWindow> it2(&lst);
-  for (BlackboxWindow *bw = it2.current(); bw; it2++, bw = it2.current())
+  BlackboxWindowList::iterator it = lst.begin();
+  const BlackboxWindowList::iterator end = lst.end();
+  for (; it != end; ++it) {
+    BlackboxWindow *bw = *it;
     if (! bw->isStuck())
       bw->withdraw();
+  }
 }
 
 
 void Workspace::removeAll(void) {
-  LinkedListIterator<BlackboxWindow> it(windowList);
-  for (BlackboxWindow *bw = it.current(); bw; it++, bw = it.current())
-    bw->iconify();
+  while (! windowList.empty())
+    windowList.front()->iconify();
 }
 
 
@@ -193,8 +191,11 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
 
     if (! win->isIconic()) {
       wkspc = screen->getWorkspace(win->getWorkspaceNumber());
-      wkspc->stackingList->remove(win);
-      wkspc->stackingList->insert(win, 0);
+      BlackboxWindowList::iterator it = std::find(wkspc->stackingList.begin(),
+                                                  wkspc->stackingList.end(),
+                                                  win);
+      wkspc->stackingList.erase(it);
+      wkspc->stackingList.push_front(win);
     }
 
     if (! win->hasTransient() || ! win->getTransient())
@@ -234,8 +235,11 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
 
     if (! win->isIconic()) {
       wkspc = screen->getWorkspace(win->getWorkspaceNumber());
-      wkspc->stackingList->remove(win);
-      wkspc->stackingList->insert(win);
+      BlackboxWindowList::iterator it = std::find(wkspc->stackingList.begin(),
+                                                  wkspc->stackingList.end(),
+                                                  win);
+      wkspc->stackingList.erase(it);
+      wkspc->stackingList.push_back(win);
     }
 
     win = win->getTransientFor();
@@ -253,24 +257,26 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
 void Workspace::reconfigure(void) {
   clientmenu->reconfigure();
 
-  LinkedListIterator<BlackboxWindow> it(windowList);
-  for (BlackboxWindow *bw = it.current(); bw; it++, bw = it.current()) {
+  BlackboxWindowList::iterator it = windowList.begin();
+  const BlackboxWindowList::iterator end = windowList.end();
+  for (; it != end; ++it) {
+    BlackboxWindow *bw = *it;
     if (bw->validateClient())
       bw->reconfigure();
   }
 }
 
 
-BlackboxWindow *Workspace::getWindow(int index) {
-  if ((index >= 0) && (index < windowList->count()))
-    return windowList->find(index);
+BlackboxWindow *Workspace::getWindow(unsigned int index) {
+  if (index < windowList.size())
+    return *(windowList.begin() + index);
   else
     return 0;
 }
 
 
-const int Workspace::getCount(void) {
-  return windowList->count();
+const unsigned int Workspace::getCount(void) const {
+  return windowList.size();
 }
 
 
@@ -280,13 +286,13 @@ void Workspace::update(void) {
 }
 
 
-Bool Workspace::isCurrent(void) {
+Bool Workspace::isCurrent(void) const {
   return (id == screen->getCurrentWorkspaceID());
 }
 
 
-Bool Workspace::isLastWindow(BlackboxWindow *w) {
-  return (w == windowList->last());
+Bool Workspace::isLastWindow(const BlackboxWindow* const w) const {
+  return (w == windowList.back());
 }
 
 void Workspace::setCurrent(void) {
@@ -294,7 +300,7 @@ void Workspace::setCurrent(void) {
 }
 
 
-void Workspace::setName(char *new_name) {
+void Workspace::setName(const char* const new_name) {
   if (name)
     delete [] name;
 
@@ -312,9 +318,11 @@ void Workspace::setName(char *new_name) {
 
 
 void Workspace::shutdown(void) {
-  while (windowList->count()) {
-    windowList->first()->restore();
-    delete windowList->first();
+  while (! windowList.empty()) {
+    BlackboxWindow *bw = windowList.front();
+    bw->restore();
+    delete bw;
+    bw = 0;
   }
 }
 
@@ -333,7 +341,6 @@ void Workspace::placeWindow(BlackboxWindow *win) {
     delta_x = 8, delta_y = 8;
 
   int place_x = start_pos_x, place_y = start_pos_y;
-  LinkedListIterator<BlackboxWindow> it(windowList);
 
   switch (screen->getPlacementPolicy()) {
   case BScreen::RowSmartPlacement: {
@@ -351,9 +358,10 @@ void Workspace::placeWindow(BlackboxWindow *win) {
               place_x > 0 : place_x + win_w < (signed) availableArea.width)) {
         placed = True;
 
-        it.reset();
-        for (BlackboxWindow *curr = it.current(); placed && curr;
-             it++, curr = it.current()) {
+        BlackboxWindowList::iterator it = windowList.begin();
+        const BlackboxWindowList::iterator end = windowList.end();
+        for (; placed && it != end; ++it) {
+          BlackboxWindow *curr = *it;
           int curr_w = curr->getWidth() + (screen->getBorderWidth() * 4);
           int curr_h = ((curr->isShaded()) ?
                         curr->getTitleHeight() :
@@ -393,9 +401,10 @@ void Workspace::placeWindow(BlackboxWindow *win) {
               place_y > 0 : place_y + win_h < (signed) availableArea.height)){
         placed = True;
 
-        it.reset();
-        for (BlackboxWindow *curr = it.current(); placed && curr;
-             it++, curr = it.current()) {
+        BlackboxWindowList::iterator it = windowList.begin();
+        const BlackboxWindowList::iterator end = windowList.end();
+        for (; placed && it != end; ++it) {
+          BlackboxWindow *curr = *it;
           int curr_w = curr->getWidth() + (screen->getBorderWidth() * 4);
           int curr_h = ((curr->isShaded()) ?
                         curr->getTitleHeight() :

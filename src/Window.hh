@@ -287,6 +287,7 @@ public:
   void setFocusFlag(Bool);
   void iconify(void);
   void deiconify(Bool reassoc = True, Bool raise = True);
+  void show(void);
   void close(void);
   void withdraw(void);
   void maximize(unsigned int button);

@@ -1452,7 +1452,7 @@ void BScreen::addNetizen(Netizen *n) {
 
   LinkedListIterator<Workspace> it(workspacesList);
   for (Workspace *w = it.current(); w; it++, w = it.current()) {
-    for (int i = 0; i < w->getCount(); i++)
+    for (unsigned int i = 0; i < w->getCount(); i++)
       n->sendWindowAdd(w->getWindow(i)->getClientWindow(),
                        w->getWorkspaceID());
   }
@@ -1634,7 +1634,7 @@ void BScreen::reassociateWindow(BlackboxWindow *w, int wkspc_id, Bool ignore_sti
 
 void BScreen::nextFocus(void) {
   Bool have_focused = False;
-  int focused_window_number = -1;
+  unsigned int focused_window_number = 0;
   BlackboxWindow *next;
 
   if (blackbox->getFocusedWindow()) {
@@ -1646,9 +1646,9 @@ void BScreen::nextFocus(void) {
   }
 
   if ((getCurrentWorkspace()->getCount() > 1) && have_focused) {
-    int next_window_number = focused_window_number;
+    unsigned int next_window_number = focused_window_number;
     do {
-      if ((++next_window_number) >= getCurrentWorkspace()->getCount())
+      if ((next_window_number++) >= getCurrentWorkspace()->getCount())
         next_window_number = 0;
 
       next = getCurrentWorkspace()->getWindow(next_window_number);
