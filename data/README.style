@@ -319,3 +319,299 @@ somewhere in our menu.  Taking advantage of Blackbox' automatic menu updates,
 all we have to do is close and reopen the root menu and our new style entry
 will be visible.  Select it and Blackbox will apply the new style we just
 created.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Texture
+------------------------------------------------------------------------------
+
+A texture is a description of a particular visual element.  It
+consists of a text description, colors and a border width.  Textures
+are specified as follows:
+
+<name>: 		description
+<name>.color: 		color of the texture
+<name>.colorTo: 	target color for gradients and interlaced solids
+<name>.borderWidth: 	width of the texture border
+<name>.borderColor: 	color of the texture border
+
+
+Menu Style
+------------------------------------------------------------------------------
+
+menu.title			- title texture
+Menu.Title
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+menu.title.foregroundColor	- bitmap color for e.g. close button
+Menu.Title.Foreground
+
+menu.title.textColor		- title text color 
+Menu.Title.TextColor
+
+menu.title.font			- title text font
+Menu.Title.Font
+
+menu.title.alignment		- title text alignment
+Menu.Title.Alignment
+
+menu.title.marginWidth		- space around text in title
+Menu.Title.MarginWidth
+
+menu.frame			- frame texture
+Menu.Frame
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+menu.frame.foregroundColor	- bitmap color for checks and submenu-arrows
+menu.frame.Foreground
+
+menu.frame.textColor
+Menu.Frame.TextColor
+
+menu.frame.disabledColor	- disabled text color
+Menu.Frame.DisabledColor
+
+menu.frame.font			- item text font
+Menu.Frame.Font
+
+menu.frame.alignment		- text alignment for all items
+Menu.Frame.Alignment
+
+menu.frame.marginWidth		- space around all items in frame
+Menu.Frame.MarginWidth
+
+menu.active			- texture for the active menu item
+Menu.Active
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+menu.active.foregroundColor	- bitmap color for checks and submenu-arrows
+Menu.Active.Foreground
+
+menu.active.textColor		- menu item text color 
+Menu.Active.TextColor
+
+
+Slit Style
+------------------------------------------------------------------------------
+slit				- the texture of the slit
+Slit
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+slit.marginWidth		- space around and between slit clients
+Slit.MarginWidth
+
+
+Toolbar Style
+------------------------------------------------------------------------------
+
+toolbar				- the texture of the toolbar itself
+Toolbar
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+toolbar.label			- workspace label texture
+Toolbar.Label
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+toolbar.windowLabel		- window label texture
+Toolbar.Label
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+toolbar.clock			- clock label texture
+Toolbar.Label
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+toolbar.button			- button texture
+Toolbar.Button
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+toolbar.button.pressed		- pressed button texture
+Toolbar.Button.Pressed
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+toolbar.font
+Toolbar.Font
+
+toolbar.label.textColor		- workspace label text color
+Toolbar.Label.TextColor
+
+toolbar.windowLabel.textColor	- window label text color
+Toolbar.Label.TextColor
+
+toolbar.clock.textClolor	- clock label text color
+Toolbar.Label.TextColor
+
+toolbar.button.foregroundColor	- bitmap color for buttons
+Toolbar.Button.Foreground
+
+toolbar.alignment		- text alignment for all labels
+Toolbar.Alignment
+
+toolbar.font			- text font
+Toolbar.Font
+
+toolbar.marginWidth		- space around and between buttons and labels
+Toolbar.MarginWidth
+
+toolbar.label.marginWidth	- space around text in labels
+Toolbar.Label.MarginWidth
+
+toolbar.button.marginWidth	- space around bitmaps in buttons
+Toolbar.Button.MarginWidth
+
+
+Window Style
+------------------------------------------------------------------------------
+
+window.title.focus		- focused title texture
+Window.Title.Focus
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+window.label.focus		- focused label texture
+Window.Label.focus
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+window.button.focus		- focused button texture
+Window.Button.Focus
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+window.handle.focus		- focus handle texture
+Window.Handle.Focus
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+window.grip.focus		- focus grip texture
+Window.Grip.Focus
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+window.title.unfocus		- unfocused title texture
+Window.Title.Unfocus
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+window.label.unfocus		- unfocused label texture
+Window.Label.Unfocus
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+window.button.unfocus		- unfocused button texture
+Window.Button.Unfocus
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+window.handle.unfocus		- unfocused handle texture
+Window.Handle.Unfocus
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+window.grip.unfocus		- unfocused grip texture
+Window.Grip.Unfocus
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+window.button.pressed		- pressed button texture
+Window.Button.Pressed
+	.color
+	.colorTo
+	.borderWidth
+	.borderColor
+
+window.frame.borderColor	- color of border around client window
+Window.Frame.BorderColor
+
+window.button.focus.foregroundColor - bitmap color for focused buttons
+Window.Button.Focus.Foreground
+
+window.button.unfocus.foregroundColor - bitmap color for unfocused buttons
+Window.Button.Unfocus.Foreground
+
+window.label.focus.textColor	- text color for focused labels
+Window.Label.Focus.TextColor
+
+window.label.unfocus.textColor	- text color for unfocused labels
+Window.Label.Unfocus.TextColor
+
+window.font			- text font
+Window.Font
+
+window.alignment		- alignment of text in labels
+Window.Alignment
+
+window.title.marginWidth	- space around and between buttons and labels
+Window.Title.MarginWidth
+
+window.label.marginWidth	- space around text in labels
+Window.Label.MarginWidth
+
+window.button.marginWidth	- space around bitmaps in buttons
+Window.Button.MarginWidth
+
+window.frame.borderWidth	- border width around client window
+Window.Frame.BorderWidth
+
+window.handleHeight		- height of the window handle
+Window.HandleHeight
