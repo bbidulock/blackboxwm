@@ -1822,7 +1822,8 @@ void BlackboxWindow::setFullScreen(bool b) {
   client.state.fullscreen = b;
   if (client.state.fullscreen) {
     client.decorations = 0;
-    client.functions &= ~(WindowFunctionResize | WindowFunctionMove | WindowFunctionShade);
+    client.functions &= ~(WindowFunctionResize | WindowFunctionMove |
+                          WindowFunctionShade);
 
     if (!client.state.maximized)
       client.premax = frame.rect;
