@@ -205,7 +205,7 @@ public:
 
   BlackboxWindow *Transient(void) { return client.transient; }
   BlackboxWindow *TransientFor(void) { return client.transient_for; }
-  Bool isTransient(void) { return transient; }
+  Bool isTransient(void) { return ((transient) ? True : False); }
   Bool hasTransient(void) { return ((client.transient) ? True : False); }
   Bool isFocused(void) { return focused; }
   Bool isVisible(void) { return visible; }

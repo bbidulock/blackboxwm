@@ -21,7 +21,7 @@
 
 #ifndef _blackbox_hh
 #define _blackbox_hh
-#define _blackbox_version "zero point one five point zero beta"
+#define _blackbox_version "zero point one five point one beta"
 
 #include "debug.hh"
 #include "llist.hh"

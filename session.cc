@@ -474,7 +474,7 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
                XKeysymToString(XKeycodeToKeysym(display,
                                                 e->xkey.keycode, 0)));
 
-    if (e->xkey.state & ControlMask) {
+    if (e->xkey.state & Mod1Mask) {
       if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Tab) {
 	if ((ws_manager->currentWorkspace()->count() > 1) &&
             (focus_window_number >= 0)) {
@@ -500,7 +500,9 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
 	} else if (ws_manager->currentWorkspace()->count() >= 1) {
 	  ws_manager->currentWorkspace()->window(0)->setInputFocus();
 	}
-      } else if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Left){
+      }
+    } else if (e->xkey.state & ControlMask) {
+      if (XKeycodeToKeysym(display, e->xkey.keycode, 0) == XK_Left){
 	if (ws_manager->currentWorkspaceID() > 0)
 	  ws_manager->changeWorkspaceID(ws_manager->currentWorkspaceID() - 1);
 	else

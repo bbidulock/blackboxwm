@@ -16,51 +16,42 @@ XCOMM  along with this program; if not, write to the Free Software
 XCOMM  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 XCOMM
 XCOMM (See the included file COPYING / GPL-2.0)
-XCOMM
 
-XCOMM
-XCOMM Various defines for building blackbox
+XCOMM Source files from which blackbox is built
 
-INC =		blackbox.hh debug.hh graphics.hh icon.hh llist.hh \
-		menu.hh session.hh window.hh workspace.hh
-SRC =		blackbox.cc debug.cc graphics.cc icon.cc llist.cc \
-		main.cc menu.cc session.cc sessionmenu.cc window.cc \
-		windowmenu.cc workspace.cc workspacemenu.cc
-OBJ =		blackbox.o debug.o graphics.o icon.o main.o menu.o \
-		llist.o session.o sessionmenu.o window.o windowmenu.o \
-		workspace.o workspacemenu.o
+Includes =		blackbox.hh debug.hh graphics.hh icon.hh llist.hh \
+			menu.hh session.hh window.hh workspace.hh
+Sources =		blackbox.cc debug.cc graphics.cc icon.cc llist.cc \
+			main.cc menu.cc session.cc sessionmenu.cc window.cc \
+			windowmenu.cc workspace.cc workspacemenu.cc
+Objects =		blackbox.o debug.o graphics.o icon.o main.o menu.o \
+			llist.o session.o sessionmenu.o window.o windowmenu.o \
+			workspace.o workspacemenu.o
 
-XCOMM
-XCOMM Add any compiler specific options here
-XCOMM
-EXTRA_DEFS =	-Wall -W -DSHAPE -fno-strength-reduce
+XCOMM Add the name of a directory to search for includes (/include is appended)
+XPROJECTROOT =		/usr/local
 
-DEFAULTS_PATH =	-DXAPPLOADDIR=\"$(XAPPLOADDIR)\" -DXLIBDIR=\"$(LIBDIR)\"
-LIBS =		$(XLIB) $(EXTENSIONLIB)
+XCOMM Add compiler options here
+CompileOptions =	-Wall -W -DSHAPE -pipe $(CXXFLAGS)
+
+XCOMM Comment out the above and use this line for debugging
+XCOMM CompileOptions =	-Wall -W -DSHAPE -I$(INCROOT) -g -O2 -DDEBUG
+
+DefaultsPath =		-DXAPPLOADDIR=\"$(XAPPLOADDIR)\" -DXLIBDIR=\"$(LIBDIR)\"
+Libraries =		$(XLIB) $(EXTENSIONLIB)
 
 PROGRAMS = blackbox
-SRCS1 = $(SRC)
-OBJS1 = $(OBJ)
-ComplexProgramTarget_1(blackbox, $(LIBS), $(OTHER_LIBS))
+SRCS1 = $(Sources)
+OBJS1 = $(Objects)
+ComplexProgramTarget_1(blackbox, $(Libraries), $(OtherLibs))
 
-.cc.o: $(SRC)
-	$(CXX) $(CXXFLAGS) $(EXTRA_DEFS) -c -o $@ $<
-XCOMM
-XCOMM Comment out the above and un-comment below to get debugging symbols
-XCOMM
-XCOMM	$(CXX) -g -I$(INCDIR) $(EXTRA_DEFS) -c -o $@ $<
+.cc.o: $(Sources)
+	$(CXX) $(CompileOptions) -c -o $@ $<
 
 session.o: session.cc
-	$(CXX) $(CXXFLAGS) $(EXTRA_DEFS) $(DEFAULTS_PATH) -c -o $@ $<
-XCOMM
-XCOMM Comment out the above and un-comment below to get debugging symbols
-XCOMM
-XCOMM	$(CXX) -g -I$(INCDIR) $(EXTRA_DEFS) $(DEFAULTS_PATH) -c -o $@ $<
+	$(CXX) $(CompileOptions) $(DefaultsPath) -c -o $@ $<
 
-
-XCOMM
 XCOMM  %%% *** %%% *** Do not edit the lines below *** %%% *** %%%
-XCOMM
 
 depend:: 
 	rm -f Makefile.bak
@@ -76,7 +67,6 @@ install.app-defaults::
 	fi
 	$(INSTALL) $(INSTALLFLAGS) $(INSTMANFLAGS) Menu.ad $(LIBDIR)/Blackbox/Menu.ad
 
-XCOMM
 XCOMM Make rules I enjoy
 
 distclean::

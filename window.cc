@@ -71,7 +71,6 @@ BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window window) {
   client.width = wattrib.width;
   client.height = wattrib.height;
 
-  Window win;
   getWMHints();
 
   transient = False;
@@ -79,15 +78,17 @@ BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window window) {
   do_iconify = True;
   do_maximize = True;
   
+  Window win;
   if (XGetTransientForHint(display, client.window, &win)) {
-    if (win != client.window_group) {
-      if ((client.transient_for = session->getWindow(win)) != NULL)
+    if (win && (win != client.window_group)) {
+      if ((client.transient_for = session->getWindow(win)) != NULL) {
 	client.transient_for->client.transient = this;
       
-      transient = True;
-      do_iconify = True;
-      do_handle = False;
-      do_maximize = False; 
+        transient = True;
+        do_iconify = True;
+        do_handle = False;
+        do_maximize = False;
+      }
     }
   }
     
@@ -163,7 +164,7 @@ BlackboxWindow::BlackboxWindow(BlackboxSession *ctrl, Window window) {
   associateClientWindow();
   positionButtons();
 
-  XGrabKey(display, XKeysymToKeycode(display, XK_Tab), ControlMask,
+  XGrabKey(display, XKeysymToKeycode(display, XK_Tab), Mod1Mask,
            frame.window, True, GrabModeAsync, GrabModeAsync);
   XGrabKey(display, XKeysymToKeycode(display, XK_Left), ControlMask,
            frame.window, True, GrabModeAsync, GrabModeAsync);
@@ -1220,7 +1221,7 @@ void BlackboxWindow::maximizeWindow(void) {
   static int px, py;
   static unsigned int pw, ph;
 
-  if (maximized) {
+  if (! maximized) {
     int dx, dy;
     unsigned int dw, dh;
 

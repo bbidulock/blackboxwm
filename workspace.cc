@@ -182,31 +182,45 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
   // manager then tells the X server to restack the windows
 
   Window *tmp_stack = new Window[workspace_list->count()];
+  static int re_enter = 0;
   int i = 0, ii = 0;
 
-  if (w->isTransient()) raiseWindow(w->TransientFor());
-
-  for (i = 0; i < workspace_list->count(); ++i)
-    if (*(window_stack + i) != w->frameWindow())
-      *(tmp_stack + (ii++)) = *(window_stack + i);
+  if (w->isTransient() && ! re_enter) {
+    raiseWindow(w->TransientFor());
+  } else {
+    for (i = 0; i < workspace_list->count(); ++i)
+      if (*(window_stack + i) != w->frameWindow())
+        *(tmp_stack + (ii++)) = *(window_stack + i);
   
-  *(tmp_stack + workspace_list->count() - 1) = w->frameWindow();
+    *(tmp_stack + workspace_list->count() - 1) = w->frameWindow();
   
-  for (i = 0; i < workspace_list->count(); ++i)
-    *(window_stack + i) = *(tmp_stack + i);
+    for (i = 0; i < workspace_list->count(); ++i)
+      *(window_stack + i) = *(tmp_stack + i);
 
-  delete [] tmp_stack;
-  if (w->hasTransient()) raiseWindow(w->Transient());
-  ws_manager->stackWindows(window_stack, workspace_list->count());
+    delete [] tmp_stack;
+
+    if (w->hasTransient()) {
+      re_enter = 1;
+      raiseWindow(w->Transient());
+      re_enter = 0;
+    }
+
+    if (! re_enter)
+      ws_manager->stackWindows(window_stack, workspace_list->count());
+  }
 }
 
 
 void Workspace::lowerWindow(BlackboxWindow *w) {
   Window *tmp_stack = new Window[workspace_list->count()];
   int i, ii = 1;
+  static int re_enter = 0;
   
-  if (w->hasTransient()) lowerWindow(w->Transient());
-  
+  if (w->hasTransient() && ! re_enter) {
+    re_enter = 1;
+    lowerWindow(w->Transient());
+  }
+
   for (i = 0; i < workspace_list->count(); ++i)
     if (*(window_stack + i) != w->frameWindow())
       *(tmp_stack + (ii++)) = *(window_stack + i);
@@ -217,8 +231,15 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
     *(window_stack + i) = *(tmp_stack + i);
 
   delete [] tmp_stack;
-  if (w->isTransient()) lowerWindow(w->TransientFor());
-  ws_manager->stackWindows(window_stack, workspace_list->count());
+
+  if (w->isTransient() && ! re_enter) {
+    re_enter = 1;
+    lowerWindow(w->TransientFor());
+  }
+
+  if (! re_enter)
+    ws_manager->stackWindows(window_stack, workspace_list->count());
+  re_enter = 0;
 }
 
 
