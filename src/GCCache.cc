@@ -112,10 +112,8 @@ BGCCacheContext *BGCCache::nextContext(unsigned int scr) {
       c->used = false;
       c->screen = scr;
     }
-    if (! c->used && c->screen == scr) {
-      c->used = true;
+    if (! c->used && c->screen == scr)
       return c;
-    }
   }
 
   fprintf(stderr, "BGCCache: context fault!\n");
@@ -158,14 +156,13 @@ BGCCacheItem *BGCCache::find(const BColor &_color,
       return c;
     }
     // cache fault!
-    fprintf(stderr, "BGCCache: cache fault\n");
+    fprintf(stderr, "BGCCache: cache fault, count: %d, screen: %d, item screen: %d\n", c->count, screen, c->ctx->screen);
     abort();
   }
 
-  const unsigned long fontid = _font ? _font->fid : 0;
   if (c->ctx) {
     // reuse existing context
-    if (fontid && fontid != c->ctx->fontid)
+    if (_font && _font->fid && _font->fid != c->ctx->fontid)
       c->ctx->set(_font);
     c->count++;
     c->hits++;
@@ -186,7 +183,7 @@ BGCCacheItem *BGCCache::find(const BColor &_color,
 
 
 void BGCCache::release(BGCCacheItem *_item) {
-  _item->count--;
+  --_item->count;
 }
 
 
