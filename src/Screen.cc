@@ -740,48 +740,74 @@ void BScreen::propagateWindowName(const BlackboxWindow * const win) {
 
 
 void BScreen::nextFocus(void) {
-//   BlackboxWindow *focused = blackbox->getFocusedWindow(),
-//                     *next = focused;
+  BlackboxWindow *focused = blackbox->getFocusedWindow(),
+                    *next = 0;
+  BlackboxWindowList::iterator it, end = windowList.end();
 
-//   if (focused &&
-//       focused->getScreen()->screen_info.screenNumber() ==
-//       screen_info.screenNumber() &&
-//       current_workspace->windowCount() > 1) {
-//     do {
-//       next = current_workspace->getNextWindowInList(next);
-//     } while(next != focused && ! next->setInputFocus());
-
-//     if (next != focused)
-//       raiseWindow(next);
-//   } else if (current_workspace->windowCount() > 0) {
-//     next = current_workspace->getTopWindowOnStack();
-
-//     next->setInputFocus();
-//     raiseWindow(next);
-//   }
+  if (focused && focused->workspace() == current_workspace &&
+      focused->getScreen()->screen_info.screenNumber() ==
+      screen_info.screenNumber()) {
+    it = std::find(windowList.begin(), end, focused);
+    assert(it != end);
+    for (; it != end; ++it) {
+      next = *it;
+      if (next && next != focused && next->workspace() == current_workspace &&
+          next->setInputFocus()) {
+        // we found our new focus target
+        next->setInputFocus();
+        raiseWindow(next);
+        break;
+      }
+      next = 0;
+    }
+  }
+  if (!next) {
+    for (it = windowList.begin(); it != end; ++it) {
+      next = *it;
+      if (next && next->workspace() == current_workspace &&
+          next->setInputFocus()) {
+        // we found our new focus target
+        raiseWindow(next);
+        break;
+      }
+    }
+  }
 }
 
 
 void BScreen::prevFocus(void) {
-//   BlackboxWindow *focused = blackbox->getFocusedWindow(),
-//                     *next = focused;
+  BlackboxWindow *focused = blackbox->getFocusedWindow(),
+                    *next = 0;
+  BlackboxWindowList::reverse_iterator it, end = windowList.rend();
 
-//   if (focused &&
-//       focused->getScreen()->screen_info.screenNumber() ==
-//       screen_info.screenNumber() &&
-//       current_workspace->windowCount() > 1) {
-//     do {
-//       next = current_workspace->getPrevWindowInList(next);
-//     } while(next != focused && ! next->setInputFocus());
-
-//     if (next != focused)
-//       raiseWindow(next);
-//   } else if (current_workspace->windowCount() > 0) {
-//     next = current_workspace->getTopWindowOnStack();
-
-//     next->setInputFocus();
-//     raiseWindow(next);
-//   }
+  if (focused && focused->workspace() == current_workspace &&
+      focused->getScreen()->screen_info.screenNumber() ==
+      screen_info.screenNumber()) {
+    it = std::find(windowList.rbegin(), end, focused);
+    assert(it != end);
+    for (; it != end; ++it) {
+      next = *it;
+      if (next && next != focused && next->workspace() == current_workspace &&
+          next->setInputFocus()) {
+        // we found our new focus target
+        next->setInputFocus();
+        raiseWindow(next);
+        break;
+      }
+      next = 0;
+    }
+  }
+  if (!next) {
+    for (it = windowList.rbegin(); it != end; ++it) {
+      next = *it;
+      if (next && next->workspace() == current_workspace &&
+          next->setInputFocus()) {
+        // we found our new focus target
+        raiseWindow(next);
+        break;
+      }
+    }
+  }
 }
 
 
