@@ -1226,12 +1226,13 @@ void BScreen::InitMenu(void) {
 
 
 static
-void string_within(char begin, char end, const char *input, size_t length,
-                   char *output) {
+size_t string_within(char begin, char end,
+                     const char *input, size_t start_at, size_t length,
+                     char *output) {
   bool parse = False;
   size_t index = 0;
-
-  for (size_t i = 0; i < length; ++i) {
+  size_t i = start_at;
+  for (; i < length; ++i) {
     if (input[i] == begin) {
       parse = True;
     } else if (input[i] == end) {
@@ -1246,6 +1247,8 @@ void string_within(char begin, char end, const char *input, size_t length,
     output[index] = '\0';
   else
     output[0] = '\0';
+
+  return i;
 }
 
 
@@ -1268,7 +1271,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
     unsigned int key = 0;
 
     // get the keyword enclosed in []'s
-    string_within('[', ']', line, line_length, keyword);
+    size_t pos = string_within('[', ']', line, 0, line_length, keyword);
 
     if (keyword[0] == '\0') {  // no keyword, no menu entry
       continue;
@@ -1281,10 +1284,10 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
     }
 
     // get the label enclosed in ()'s
-    string_within('(', ')', line, line_length, label);
+    pos = string_within('(', ')', line, pos, line_length, label);
 
     // get the command enclosed in {}'s
-    string_within('{', '}', line, line_length, command);
+    pos = string_within('{', '}', line, pos, line_length, command);
 
     switch (key) {
     case 311: // end
