@@ -75,10 +75,7 @@ public:
   inline const bt::Rect &rect(void) const
   { return frame.rect; }
 
-  inline unsigned int exposedHeight(void) const
-  { return (_screen->resource().doToolbarAutoHide()
-            ? _screen->resource().toolbarStyle()->hidden_height
-            : _screen->resource().toolbarStyle()->toolbar_height); }
+  unsigned int exposedHeight(void) const;
 
   // StackEntity interface
   Window windowID(void) const { return frame.window; }

@@ -73,18 +73,8 @@ public:
   // StackEntity interface
   Window windowID(void) const { return frame.window; }
 
-  unsigned int exposedWidth(void) const {
-    if (screen->resource().slitDirection() == Vertical
-        && screen->resource().doSlitAutoHide())
-      return screen->resource().slitStyle()->margin;
-    return frame.rect.width();
-  }
-  unsigned int exposedHeight(void) const {
-    if (screen->resource().slitDirection() == Horizontal
-        && screen->resource().doSlitAutoHide())
-      return screen->resource().slitStyle()->margin;
-    return frame.rect.height();
-  }
+  unsigned int exposedWidth(void) const;
+  unsigned int exposedHeight(void) const;
 
   void addClient(Window w);
   void removeClient(SlitClient *client, bool remap = True);

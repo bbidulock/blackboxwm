@@ -56,7 +56,9 @@ Toolbar::Toolbar(BScreen *scrn) {
   clock_timer = new bt::Timer(blackbox, this);
   clock_timer->recurring(True);
 
-  const std::string time_format = _screen->resource().strftimeFormat();
+  const ToolbarOptions &options = _screen->resource().toolbarOptions();
+
+  const std::string &time_format = options.strftime_format;
   if (time_format.find("%S") != std::string::npos
       || time_format.find("%s") != std::string::npos
       || time_format.find("%r") != std::string::npos
@@ -72,12 +74,10 @@ Toolbar::Toolbar(BScreen *scrn) {
   hide_timer = new bt::Timer(blackbox, this);
   hide_timer->setTimeout(blackbox->resource().autoRaiseDelay());
 
-  ScreenResource& res = _screen->resource();
-
-  setLayer(res.isToolbarOnTop()
+  setLayer(options.always_on_top
            ? StackingList::LayerAbove
            : StackingList::LayerNormal);
-  hidden = res.doToolbarAutoHide();
+  hidden = options.auto_hide;
 
   new_name_pos = 0;
 
@@ -192,44 +192,63 @@ Toolbar::~Toolbar(void) {
 }
 
 
-void Toolbar::reconfigure(void) {
-  ScreenResource& resource = _screen->resource();
-  unsigned int width = (_screen->screenInfo().width() *
-                        resource.toolbarWidthPercent()) / 100;
+unsigned int Toolbar::exposedHeight(void) const {
+  const ToolbarOptions &options = _screen->resource().toolbarOptions();
+  const ToolbarStyle &style = _screen->resource().toolbarStyle();
+  return (options.auto_hide ? style.hidden_height : style.toolbar_height);
+}
 
-  const ScreenResource::ToolbarStyle* const style = resource.toolbarStyle();
-  const unsigned int border_width = style->toolbar.borderWidth();
+
+void Toolbar::reconfigure(void) {
+  ScreenResource &resource = _screen->resource();
+  const ToolbarOptions &options = resource.toolbarOptions();
+  const ToolbarStyle &style = resource.toolbarStyle();
+
+  unsigned int width = (_screen->screenInfo().width() *
+                        options.width_percent) / 100;
+
+  const unsigned int border_width = style.toolbar.borderWidth();
   const unsigned int extra =
-    style->frame_margin == 0 ? style->button.borderWidth() : 0;
-  frame.rect.setSize(width, style->toolbar_height);
+    style.frame_margin == 0 ? style.button.borderWidth() : 0;
+  frame.rect.setSize(width, style.toolbar_height);
 
   int x, y;
-  switch (resource.toolbarPlacement()) {
+  switch (options.placement) {
   case TopLeft:
   case TopRight:
   case TopCenter:
-    if (resource.toolbarPlacement() == TopLeft)
+    switch (options.placement) {
+    case TopLeft:
       x = 0;
-    else if (resource.toolbarPlacement() == TopRight)
+      break;
+    case TopRight:
       x = _screen->screenInfo().width() - frame.rect.width();
-    else
+      break;
+    default:
       x = (_screen->screenInfo().width() - frame.rect.width()) / 2;
+      break;
+    }
     y = 0;
-    frame.y_hidden = style->hidden_height - frame.rect.height();
+    frame.y_hidden = style.hidden_height - frame.rect.height();
     break;
 
   case BottomLeft:
   case BottomRight:
   case BottomCenter:
   default:
-    if (resource.toolbarPlacement() == BottomLeft)
+    switch (options.placement) {
+    case BottomLeft:
       x = 0;
-    else if (resource.toolbarPlacement() == BottomRight)
+      break;
+    case BottomRight:
       x = _screen->screenInfo().width() - frame.rect.width();
-    else
+      break;
+    default:
       x = (_screen->screenInfo().width() - frame.rect.width()) / 2;
+      break;
+    }
     y = _screen->screenInfo().height() - frame.rect.height();
-    frame.y_hidden = _screen->screenInfo().height() - style->hidden_height;
+    frame.y_hidden = _screen->screenInfo().height() - style.hidden_height;
     break;
   }
 
@@ -245,11 +264,11 @@ void Toolbar::reconfigure(void) {
     struct tm *tt = localtime(&ttmp);
     if (tt) {
       char t[1024];
-      int len = strftime(t, 1024, resource.strftimeFormat(), tt);
+      int len = strftime(t, 1024, options.strftime_format.c_str(), tt);
       if (len == 0) { // invalid time format found
         // so use the default
-        resource.saveStrftimeFormat("%I:%M %p");
-        len = strftime(t, 1024, resource.strftimeFormat(), tt);
+        const_cast<std::string &>(options.strftime_format) = "%I:%M %p";
+        len = strftime(t, 1024, options.strftime_format.c_str(), tt);
       }
       /*
        * find the length of the rendered string and add room for two extra
@@ -257,26 +276,26 @@ void Toolbar::reconfigure(void) {
        * two 'w' are used to get the widest possible width
        */
       clock_w =
-        bt::textRect(_screen->screenNumber(), style->font,
+        bt::textRect(_screen->screenNumber(), style.font,
                      bt::toUnicode(t)).width() +
-        bt::textRect(_screen->screenNumber(), style->font,
+        bt::textRect(_screen->screenNumber(), style.font,
                      bt::toUnicode("ww")).width();
     }
   }
 
   for (unsigned int i = 0; i < _screen->workspaceCount(); i++) {
     width =
-      bt::textRect(_screen->screenNumber(), style->font,
+      bt::textRect(_screen->screenNumber(), style.font,
                    _screen->resource().nameOfWorkspace(i)).width();
     label_w = std::max(label_w, width);
   }
 
-  label_w = clock_w = std::max(label_w, clock_w) + (style->label_margin * 2);
+  label_w = clock_w = std::max(label_w, clock_w) + (style.label_margin * 2);
 
   unsigned int window_label_w =
     (frame.rect.width() - (border_width * 2)
-     - (clock_w + (style->button_width * 4) + label_w
-        + (style->frame_margin * 8))
+     - (clock_w + (style.button_width * 4) + label_w
+        + (style.frame_margin * 8))
      + extra*6);
 
   XMoveResizeWindow(display, frame.window, frame.rect.x(),
@@ -284,48 +303,48 @@ void Toolbar::reconfigure(void) {
                     frame.rect.width(), frame.rect.height());
 
   // workspace label
-  frame.slabel_rect.setRect(border_width + style->frame_margin,
-                            border_width + style->frame_margin,
+  frame.slabel_rect.setRect(border_width + style.frame_margin,
+                            border_width + style.frame_margin,
                             label_w,
-                            style->label_height);
+                            style.label_height);
   // previous workspace button
-  frame.ps_rect.setRect(border_width + (style->frame_margin * 2) + label_w
+  frame.ps_rect.setRect(border_width + (style.frame_margin * 2) + label_w
                         - extra,
-                        border_width + style->frame_margin,
-                        style->button_width,
-                        style->button_width);
+                        border_width + style.frame_margin,
+                        style.button_width,
+                        style.button_width);
   // next workspace button
-  frame.ns_rect.setRect(border_width + (style->frame_margin * 3)
-                        + label_w + style->button_width - (extra * 2),
-                        border_width + style->frame_margin,
-                        style->button_width,
-                        style->button_width);
+  frame.ns_rect.setRect(border_width + (style.frame_margin * 3)
+                        + label_w + style.button_width - (extra * 2),
+                        border_width + style.frame_margin,
+                        style.button_width,
+                        style.button_width);
   // window label
-  frame.wlabel_rect.setRect(border_width + (style->frame_margin * 4)
-                            + (style->button_width * 2) + label_w - (extra * 3),
-                            border_width + style->frame_margin,
+  frame.wlabel_rect.setRect(border_width + (style.frame_margin * 4)
+                            + (style.button_width * 2) + label_w - (extra * 3),
+                            border_width + style.frame_margin,
                             window_label_w,
-                            style->label_height);
+                            style.label_height);
   // previous window button
-  frame.pw_rect.setRect(border_width + (style->frame_margin * 5)
-                        + (style->button_width * 2) + label_w
+  frame.pw_rect.setRect(border_width + (style.frame_margin * 5)
+                        + (style.button_width * 2) + label_w
                         + window_label_w - (extra * 4),
-                        border_width + style->frame_margin,
-                        style->button_width,
-                        style->button_width);
+                        border_width + style.frame_margin,
+                        style.button_width,
+                        style.button_width);
   // next window button
-  frame.nw_rect.setRect(border_width + (style->frame_margin * 6)
-                        + (style->button_width * 3) + label_w
+  frame.nw_rect.setRect(border_width + (style.frame_margin * 6)
+                        + (style.button_width * 3) + label_w
                         + window_label_w - (extra * 5),
-                        border_width + style->frame_margin,
-                        style->button_width,
-                        style->button_width);
+                        border_width + style.frame_margin,
+                        style.button_width,
+                        style.button_width);
   // clock
-  frame.clock_rect.setRect(frame.rect.width() - clock_w - style->frame_margin
+  frame.clock_rect.setRect(frame.rect.width() - clock_w - style.frame_margin
                            - border_width,
-                           border_width + style->frame_margin,
+                           border_width + style.frame_margin,
                            clock_w,
-                           style->label_height);
+                           style.label_height);
 
   XMoveResizeWindow(display, frame.workspace_label,
                     frame.slabel_rect.x(), frame.slabel_rect.y(),
@@ -350,52 +369,52 @@ void Toolbar::reconfigure(void) {
                     frame.clock_rect.width(), frame.clock_rect.height());
 
   frame.base =
-    bt::PixmapCache::find(_screen->screenNumber(), style->toolbar,
+    bt::PixmapCache::find(_screen->screenNumber(), style.toolbar,
                           frame.rect.width(), frame.rect.height(),
                           frame.base);
   frame.slabel =
-    bt::PixmapCache::find(_screen->screenNumber(), style->slabel,
+    bt::PixmapCache::find(_screen->screenNumber(), style.slabel,
                           frame.slabel_rect.width(),
                           frame.slabel_rect.height(),
                           frame.slabel);
   frame.wlabel =
-    bt::PixmapCache::find(_screen->screenNumber(), style->wlabel,
+    bt::PixmapCache::find(_screen->screenNumber(), style.wlabel,
                           frame.wlabel_rect.width(),
                           frame.wlabel_rect.height(),
                           frame.wlabel);
   frame.clk =
-    bt::PixmapCache::find(_screen->screenNumber(), style->clock,
+    bt::PixmapCache::find(_screen->screenNumber(), style.clock,
                           frame.clock_rect.width(),
                           frame.clock_rect.height(),
                           frame.clk);
   frame.button =
-    bt::PixmapCache::find(_screen->screenNumber(), style->button,
-                          style->button_width, style->button_width,
+    bt::PixmapCache::find(_screen->screenNumber(), style.button,
+                          style.button_width, style.button_width,
                           frame.button);
   frame.pbutton =
     bt::PixmapCache::find(_screen->screenNumber(),
-                          style->pressed,
-                          style->button_width, style->button_width,
+                          style.pressed,
+                          style.button_width, style.button_width,
                           frame.pbutton);
 
   XClearArea(display, frame.window, 0, 0,
              frame.rect.width(), frame.rect.height(), True);
 
   XClearArea(display, frame.workspace_label, 0, 0,
-             label_w, style->label_height, True);
+             label_w, style.label_height, True);
   XClearArea(display, frame.window_label, 0, 0,
-             window_label_w, style->label_height, True);
+             window_label_w, style.label_height, True);
   XClearArea(display, frame.clock, 0, 0,
-             clock_w, style->label_height, True);
+             clock_w, style.label_height, True);
 
   XClearArea(display, frame.psbutton, 0, 0,
-             style->button_width, style->button_width, True);
+             style.button_width, style.button_width, True);
   XClearArea(display, frame.nsbutton, 0, 0,
-             style->button_width, style->button_width, True);
+             style.button_width, style.button_width, True);
   XClearArea(display, frame.pwbutton, 0, 0,
-             style->button_width, style->button_width, True);
+             style.button_width, style.button_width, True);
   XClearArea(display, frame.nwbutton, 0, 0,
-             style->button_width, style->button_width, True);
+             style.button_width, style.button_width, True);
 }
 
 
@@ -403,7 +422,7 @@ void Toolbar::updateStrut(void) {
   // left and right are always 0
   strut.top = strut.bottom = 0;
 
-  switch(_screen->resource().toolbarPlacement()) {
+  switch(_screen->resource().toolbarOptions().placement) {
   case TopLeft:
   case TopCenter:
   case TopRight:
@@ -418,17 +437,17 @@ void Toolbar::updateStrut(void) {
 
 
 void Toolbar::redrawClockLabel(void) {
-  const ScreenResource::ToolbarStyle* const style =
-    _screen->resource().toolbarStyle();
+  const ToolbarOptions &options = _screen->resource().toolbarOptions();
+  const ToolbarStyle &style = _screen->resource().toolbarStyle();
 
   bt::Rect u(0, 0, frame.clock_rect.width(), frame.clock_rect.height());
   if (frame.clk == ParentRelative) {
     bt::Rect t(-frame.clock_rect.x(), -frame.clock_rect.y(),
                frame.rect.width(), frame.rect.height());
-    bt::drawTexture(_screen->screenNumber(), style->toolbar,
+    bt::drawTexture(_screen->screenNumber(), style.toolbar,
                     frame.clock, t, u, frame.base);
   } else {
-    bt::drawTexture(_screen->screenNumber(), style->clock,
+    bt::drawTexture(_screen->screenNumber(), style.clock,
                     frame.clock, u, u, frame.clk);
   }
 
@@ -440,27 +459,26 @@ void Toolbar::redrawClockLabel(void) {
   tt = localtime(&tmp);
   if (! tt)
     return; // ditto
-  if (! strftime(str, 1024, _screen->resource().strftimeFormat(), tt))
+  if (! strftime(str, 1024, options.strftime_format.c_str(), tt))
     return; // ditto
 
-  bt::Pen pen(_screen->screenNumber(), style->clock_text);
-  bt::drawText(style->font, pen, frame.clock, u, style->alignment,
+  bt::Pen pen(_screen->screenNumber(), style.clock_text);
+  bt::drawText(style.font, pen, frame.clock, u, style.alignment,
                bt::toUnicode(str));
 }
 
 
 void Toolbar::redrawWindowLabel(void) {
-  const ScreenResource::ToolbarStyle* const style =
-    _screen->resource().toolbarStyle();
+  const ToolbarStyle &style = _screen->resource().toolbarStyle();
 
   bt::Rect u(0, 0, frame.wlabel_rect.width(), frame.wlabel_rect.height());
   if (frame.wlabel == ParentRelative) {
     bt::Rect t(-frame.wlabel_rect.x(), -frame.wlabel_rect.y(),
                frame.rect.width(), frame.rect.height());
-    bt::drawTexture(_screen->screenNumber(), style->toolbar,
+    bt::drawTexture(_screen->screenNumber(), style.toolbar,
                     frame.window_label, t, u, frame.base);
   } else {
-    bt::drawTexture(_screen->screenNumber(), style->wlabel,
+    bt::drawTexture(_screen->screenNumber(), style.wlabel,
                     frame.window_label, u, u, frame.wlabel);
   }
 
@@ -468,124 +486,123 @@ void Toolbar::redrawWindowLabel(void) {
   if (! foc || foc->screen() != _screen)
     return;
 
-  bt::Pen pen(_screen->screenNumber(), style->wlabel_text);
-  bt::drawText(style->font, pen, frame.window_label, u,
-               style->alignment,
+  bt::Pen pen(_screen->screenNumber(), style.wlabel_text);
+  bt::drawText(style.font, pen, frame.window_label, u,
+               style.alignment,
                bt::ellideText(foc->title(), u.width(), bt::toUnicode("..."),
-                              _screen->screenNumber(), style->font));
+                              _screen->screenNumber(), style.font));
 }
 
 
 void Toolbar::redrawWorkspaceLabel(void) {
   const bt::ustring &name =
     _screen->resource().nameOfWorkspace(_screen->currentWorkspace());
-  const ScreenResource::ToolbarStyle* const style =
-    _screen->resource().toolbarStyle();
+  const ToolbarStyle &style = _screen->resource().toolbarStyle();
 
   bt::Rect u(0, 0, frame.slabel_rect.width(), frame.slabel_rect.height());
   if (frame.slabel == ParentRelative) {
     bt::Rect t(-frame.slabel_rect.x(), -frame.slabel_rect.y(),
                frame.rect.width(), frame.rect.height());
-    bt::drawTexture(_screen->screenNumber(), style->toolbar,
+    bt::drawTexture(_screen->screenNumber(), style.toolbar,
                     frame.workspace_label, t, u, frame.base);
   } else {
-    bt::drawTexture(_screen->screenNumber(), style->slabel,
+    bt::drawTexture(_screen->screenNumber(), style.slabel,
                     frame.workspace_label, u, u, frame.slabel);
   }
 
-  bt::Pen pen(_screen->screenNumber(), style->slabel_text);
-  bt::drawText(style->font, pen, frame.workspace_label, u,
-               style->alignment, name);
+  bt::Pen pen(_screen->screenNumber(), style.slabel_text);
+  bt::drawText(style.font, pen, frame.workspace_label, u,
+               style.alignment, name);
 }
 
 
 void Toolbar::redrawPrevWorkspaceButton(bool pressed) {
-  const ScreenResource::ToolbarStyle* const style =
+  const ToolbarStyle &style =
     _screen->resource().toolbarStyle();
 
   Pixmap p = pressed ? frame.pbutton : frame.button;
-  bt::Rect u(0, 0, style->button_width, style->button_width);
+  bt::Rect u(0, 0, style.button_width, style.button_width);
   if (p == ParentRelative) {
     bt::Rect t(-frame.ps_rect.x(), -frame.ps_rect.y(),
                frame.rect.width(), frame.rect.height());
-    bt::drawTexture(_screen->screenNumber(), style->toolbar,
+    bt::drawTexture(_screen->screenNumber(), style.toolbar,
                     frame.psbutton, t, u, frame.base);
   } else {
     bt::drawTexture(_screen->screenNumber(),
-                    pressed ? style->pressed : style->button,
+                    pressed ? style.pressed : style.button,
                     frame.psbutton, u, u, p);
   }
 
-  const bt::Pen pen(_screen->screenNumber(), style->foreground);
+  const bt::Pen pen(_screen->screenNumber(), style.foreground);
   bt::drawBitmap(bt::Bitmap::leftArrow(_screen->screenNumber()),
                  pen, frame.psbutton, u);
 }
 
 
 void Toolbar::redrawNextWorkspaceButton(bool pressed) {
-  const ScreenResource::ToolbarStyle* const style =
+  const ToolbarStyle &style =
     _screen->resource().toolbarStyle();
 
   Pixmap p = pressed ? frame.pbutton : frame.button;
-  bt::Rect u(0, 0, style->button_width, style->button_width);
+  bt::Rect u(0, 0, style.button_width, style.button_width);
   if (p == ParentRelative) {
     bt::Rect t(-frame.ns_rect.x(), -frame.ns_rect.y(),
                frame.rect.width(), frame.rect.height());
-    bt::drawTexture(_screen->screenNumber(), style->toolbar,
+    bt::drawTexture(_screen->screenNumber(), style.toolbar,
                     frame.nsbutton, t, u, frame.base);
   } else {
     bt::drawTexture(_screen->screenNumber(),
-                    pressed ? style->pressed : style->button,
+                    pressed ? style.pressed : style.button,
                     frame.nsbutton, u, u, p);
   }
 
-  const bt::Pen pen(_screen->screenNumber(), style->foreground);
+  const bt::Pen pen(_screen->screenNumber(), style.foreground);
   bt::drawBitmap(bt::Bitmap::rightArrow(_screen->screenNumber()),
                  pen, frame.nsbutton, u);
 }
 
 
 void Toolbar::redrawPrevWindowButton(bool pressed) {
-  const ScreenResource::ToolbarStyle* const style =
+  const ToolbarStyle &style =
     _screen->resource().toolbarStyle();
 
   Pixmap p = pressed ? frame.pbutton : frame.button;
-  bt::Rect u(0, 0, style->button_width, style->button_width);
+  bt::Rect u(0, 0, style.button_width, style.button_width);
   if (p == ParentRelative) {
     bt::Rect t(-frame.pw_rect.x(), -frame.pw_rect.y(),
                frame.rect.width(), frame.rect.height());
-    bt::drawTexture(_screen->screenNumber(), style->toolbar,
+    bt::drawTexture(_screen->screenNumber(), style.toolbar,
                     frame.pwbutton, t, u, frame.base);
   } else {
     bt::drawTexture(_screen->screenNumber(),
-                    pressed ? style->pressed : style->button,
+                    pressed ? style.pressed : style.button,
                     frame.pwbutton, u, u, p);
   }
 
-  const bt::Pen pen(_screen->screenNumber(), style->foreground);
+  const bt::Pen pen(_screen->screenNumber(), style.foreground);
   bt::drawBitmap(bt::Bitmap::leftArrow(_screen->screenNumber()),
                  pen, frame.pwbutton, u);
 }
 
 
 void Toolbar::redrawNextWindowButton(bool pressed) {
-  const ScreenResource::ToolbarStyle* const style =
+  const ToolbarStyle &style =
     _screen->resource().toolbarStyle();
 
   Pixmap p = pressed ? frame.pbutton : frame.button;
-  bt::Rect u(0, 0, style->button_width, style->button_width);
+  bt::Rect u(0, 0, style.button_width, style.button_width);
   if (p == ParentRelative) {
     bt::Rect t(-frame.nw_rect.x(), -frame.nw_rect.y(),
                frame.rect.width(), frame.rect.height());
-    bt::drawTexture(_screen->screenNumber(), style->toolbar,
+    bt::drawTexture(_screen->screenNumber(), style.toolbar,
                     frame.nwbutton, t, u, frame.base);
   } else {
     bt::drawTexture(_screen->screenNumber(),
-                    pressed ? style->pressed : style->button,
+                    pressed ? style.pressed : style.button,
                     frame.nwbutton, u, u, p);
   }
 
-  const bt::Pen pen(_screen->screenNumber(), style->foreground);
+  const bt::Pen pen(_screen->screenNumber(), style.foreground);
   bt::drawBitmap(bt::Bitmap::rightArrow(_screen->screenNumber()),
                  pen, frame.nwbutton, u);
 }
@@ -621,14 +638,14 @@ void Toolbar::buttonPressEvent(const XButtonEvent * const event) {
 
 void Toolbar::buttonReleaseEvent(const XButtonEvent * const event) {
   if (event->button == 1) {
-    const ScreenResource::ToolbarStyle* const style =
+    const ToolbarStyle &style =
       _screen->resource().toolbarStyle();
 
     if (event->window == frame.psbutton) {
       redrawPrevWorkspaceButton(False);
 
       if (bt::within(event->x, event->y,
-                     style->button_width, style->button_width)) {
+                     style.button_width, style.button_width)) {
         int new_workspace;
         if (_screen->currentWorkspace() > 0)
           new_workspace = _screen->currentWorkspace() - 1;
@@ -640,7 +657,7 @@ void Toolbar::buttonReleaseEvent(const XButtonEvent * const event) {
       redrawNextWorkspaceButton(False);
 
       if (bt::within(event->x, event->y,
-                     style->button_width, style->button_width))
+                     style.button_width, style.button_width))
         if (_screen->currentWorkspace() < _screen->workspaceCount() - 1)
           _screen->setCurrentWorkspace(_screen->currentWorkspace() + 1);
         else
@@ -649,13 +666,13 @@ void Toolbar::buttonReleaseEvent(const XButtonEvent * const event) {
       redrawPrevWindowButton(False);
 
       if (bt::within(event->x, event->y,
-                     style->button_width, style->button_width))
+                     style.button_width, style.button_width))
         _screen->prevFocus();
     } else if (event->window == frame.nwbutton) {
       redrawNextWindowButton(False);
 
       if (bt::within(event->x, event->y,
-                     style->button_width, style->button_width))
+                     style.button_width, style.button_width))
         _screen->nextFocus();
     } else if (event->window == frame.window_label)
       _screen->raiseFocus();
@@ -664,7 +681,7 @@ void Toolbar::buttonReleaseEvent(const XButtonEvent * const event) {
 
 
 void Toolbar::enterNotifyEvent(const XCrossingEvent * const /*unused*/) {
-  if (! _screen->resource().doToolbarAutoHide())
+  if (!_screen->resource().toolbarOptions().auto_hide)
     return;
 
   if (hidden) {
@@ -676,7 +693,7 @@ void Toolbar::enterNotifyEvent(const XCrossingEvent * const /*unused*/) {
 }
 
 void Toolbar::leaveNotifyEvent(const XCrossingEvent * const /*unused*/) {
-  if (! _screen->resource().doToolbarAutoHide())
+  if (!_screen->resource().toolbarOptions().auto_hide)
     return;
 
   if (hidden) {
@@ -700,7 +717,7 @@ void Toolbar::exposeEvent(const XExposeEvent * const event) {
     bt::Rect t(0, 0, frame.rect.width(), frame.rect.height());
     bt::Rect r(event->x, event->y, event->width, event->height);
     bt::drawTexture(_screen->screenNumber(),
-                    _screen->resource().toolbarStyle()->toolbar,
+                    _screen->resource().toolbarStyle().toolbar,
                     frame.window, t, r & t, frame.base);
   }
 }
@@ -727,7 +744,7 @@ void Toolbar::timeout(bt::Timer *timer) {
 
 
 void Toolbar::toggleAutoHide(void) {
-  bool do_auto_hide = !_screen->resource().doToolbarAutoHide();
+  bool do_auto_hide = !_screen->resource().toolbarOptions().auto_hide;
 
   updateStrut();
   if (_screen->slit())
@@ -742,7 +759,9 @@ void Toolbar::toggleAutoHide(void) {
 
 
 void Toolbar::setPlacement(Placement place) {
-  _screen->resource().saveToolbarPlacement(place);
+  ToolbarOptions &options =
+    const_cast<ToolbarOptions &>(_screen->resource().toolbarOptions());
+  options.placement = place;
   reconfigure();
 
   // reposition the slit as well to make sure it doesn't intersect the

@@ -133,9 +133,7 @@ void Configmenu::refresh(void) {
   setItemChecked(FullMaximization, res.fullMaximization());
   setItemChecked(FocusNewWindows, res.focusNewWindows());
   setItemChecked(FocusLastWindowOnWorkspace, res.focusLastWindowOnWorkspace());
-
-  const ScreenResource &sres = _bscreen->resource();
-  setItemChecked(DisableBindings, sres.allowScrollLock());
+  setItemChecked(DisableBindings, res.allowScrollLock());
 }
 
 
@@ -162,14 +160,10 @@ void Configmenu::itemClicked(unsigned int id, unsigned int) {
     res.setFocusLastWindowOnWorkspace(!res.focusLastWindowOnWorkspace());
     break;
 
-  case DisableBindings:
-    {
-      // disable keybindings with Scroll Lock
-      ScreenResource &sres = _bscreen->resource();
-      sres.saveAllowScrollLock(!sres.allowScrollLock());
-      _bscreen->reconfigure();
-      break;
-    }
+  case DisableBindings: // disable keybindings with Scroll Lock
+    res.setAllowScrollLock(!res.allowScrollLock());
+    _bscreen->blackbox()->reconfigure();
+    break;
 
   default:
     return;

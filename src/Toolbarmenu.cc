@@ -68,22 +68,24 @@ Toolbarmenu::Toolbarmenu(bt::Application &app, unsigned int screen,
 
 
 void Toolbarmenu::refresh(void) {
-  ScreenResource& res = _bscreen->resource();
-  setItemChecked(EnableToolbar, res.isToolbarEnabled());
-  setItemChecked(AlwaysOnTop, res.isToolbarOnTop());
-  setItemChecked(AutoHide, res.doToolbarAutoHide());
+  const ToolbarOptions &options = _bscreen->resource().toolbarOptions();
+  setItemChecked(EnableToolbar, options.enabled);
+  setItemChecked(AlwaysOnTop, options.always_on_top);
+  setItemChecked(AutoHide, options.auto_hide);
 }
 
 
 void Toolbarmenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button != 1) return;
+  if (button != 1)
+    return;
 
-  ScreenResource& res = _bscreen->resource();
   Toolbar *toolbar = _bscreen->toolbar();
+  ToolbarOptions &options =
+    const_cast<ToolbarOptions &>(_bscreen->resource().toolbarOptions());
 
   switch (id) {
   case EnableToolbar:
-    res.setToolbarEnabled(toolbar == 0);
+    options.enabled = (toolbar == 0);
     _bscreen->saveResource();
     if (toolbar != 0)
       _bscreen->destroyToolbar();
@@ -92,10 +94,10 @@ void Toolbarmenu::itemClicked(unsigned int id, unsigned int button) {
     break;
 
   case AlwaysOnTop:
-    res.saveToolbarOnTop(!res.isToolbarOnTop());
+    options.always_on_top = !options.always_on_top;
     _bscreen->saveResource();
     if (toolbar) {
-      StackingList::Layer new_layer = (res.isToolbarOnTop()
+      StackingList::Layer new_layer = (options.always_on_top
                                        ? StackingList::LayerAbove
                                        : StackingList::LayerNormal);
       _bscreen->stackingList().changeLayer(toolbar, new_layer);
@@ -104,7 +106,7 @@ void Toolbarmenu::itemClicked(unsigned int id, unsigned int button) {
     break;
 
   case AutoHide:
-    res.saveToolbarAutoHide(!res.doToolbarAutoHide());
+    options.auto_hide = !options.auto_hide;
     _bscreen->saveResource();
     if (toolbar)
       toolbar->toggleAutoHide();
@@ -135,23 +137,32 @@ ToolbarPlacementmenu::ToolbarPlacementmenu(bt::Application &app,
 
 
 void ToolbarPlacementmenu::refresh(void) {
-  int placement = _bscreen->resource().toolbarPlacement();
-  setItemChecked(Toolbar::TopLeft,      placement == Toolbar::TopLeft);
-  setItemChecked(Toolbar::TopCenter,    placement == Toolbar::TopCenter);
-  setItemChecked(Toolbar::TopRight,     placement == Toolbar::TopRight);
-  setItemChecked(Toolbar::BottomLeft,   placement == Toolbar::BottomLeft);
-  setItemChecked(Toolbar::BottomCenter, placement == Toolbar::BottomCenter);
-  setItemChecked(Toolbar::BottomRight,  placement == Toolbar::BottomRight);
+  const ToolbarOptions &options = _bscreen->resource().toolbarOptions();
+  setItemChecked(Toolbar::TopLeft,
+                 options.placement == Toolbar::TopLeft);
+  setItemChecked(Toolbar::TopCenter,
+                 options.placement == Toolbar::TopCenter);
+  setItemChecked(Toolbar::TopRight,
+                 options.placement == Toolbar::TopRight);
+  setItemChecked(Toolbar::BottomLeft,
+                 options.placement == Toolbar::BottomLeft);
+  setItemChecked(Toolbar::BottomCenter,
+                 options.placement == Toolbar::BottomCenter);
+  setItemChecked(Toolbar::BottomRight,
+                 options.placement == Toolbar::BottomRight);
 }
 
 
 void ToolbarPlacementmenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button != 1) return;
+  if (button != 1)
+    return;
 
-  ScreenResource& res = _bscreen->resource();
   Toolbar *toolbar = _bscreen->toolbar();
+  ToolbarOptions &options =
+    const_cast<ToolbarOptions &>(_bscreen->resource().toolbarOptions());
 
-  res.saveToolbarPlacement((Toolbar::Placement) id);
-  if (toolbar) toolbar->setPlacement((Toolbar::Placement) id);
+  options.placement = id;
+  if (toolbar)
+    toolbar->setPlacement((Toolbar::Placement) id);
   _bscreen->saveResource();
 }

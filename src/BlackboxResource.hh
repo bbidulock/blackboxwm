@@ -53,117 +53,91 @@ enum WindowPlacementPolicy {
   BottomTop
 };
 
-class ScreenResource: public bt::NoCopy {
+struct ToolbarOptions {
+  bool enabled;
+  int placement;
+  bool always_on_top, auto_hide;
+  int width_percent;
+  std::string strftime_format;
+};
+
+struct SlitOptions {
+  int direction;
+  int placement;
+  bool always_on_top, auto_hide;
+};
+
+struct WindowStyle {
+  struct {
+    bt::Color text, foreground;
+    bt::Texture title, label, button, handle, grip;
+  } focus, unfocus;
+  bt::Alignment alignment;
+  bt::Bitmap iconify, maximize, restore, close;
+  bt::Color frame_border;
+  bt::Font font;
+  bt::Texture pressed;
+  unsigned int title_margin, label_margin, button_margin,
+    frame_border_width, handle_height;
+
+  // calculated
+  unsigned int title_height, label_height, button_width, grip_width;
+};
+
+struct ToolbarStyle {
+  bt::Bitmap left, right;
+  bt::Color slabel_text, wlabel_text, clock_text, foreground;
+  bt::Texture toolbar, slabel, wlabel, clock, button, pressed;
+  bt::Font font;
+  bt::Alignment alignment;
+  unsigned int frame_margin, label_margin, button_margin;
+
+  // calculated extents
+  unsigned int toolbar_height, label_height, button_width, hidden_height;
+};
+
+struct SlitStyle {
+  bt::Texture slit;
+  unsigned int margin;
+};
+
+class ScreenResource : public bt::NoCopy {
 public:
-  struct WindowStyle {
-    struct {
-      bt::Color text, foreground;
-      bt::Texture title, label, button, handle, grip;
-    } focus, unfocus;
-    bt::Alignment alignment;
-    bt::Bitmap iconify, maximize, restore, close;
-    bt::Color frame_border;
-    bt::Font font;
-    bt::Texture pressed;
-    unsigned int title_margin, label_margin, button_margin,
-      frame_border_width, handle_height;
-
-    // calculated
-    unsigned int title_height, label_height, button_width, grip_width;
-  };
-
-  struct ToolbarStyle {
-    bt::Bitmap left, right;
-    bt::Color slabel_text, wlabel_text, clock_text, foreground;
-    bt::Texture toolbar, slabel, wlabel, clock, button, pressed;
-    bt::Font font;
-    bt::Alignment alignment;
-    unsigned int frame_margin, label_margin, button_margin;
-
-    // calculated extents
-    unsigned int toolbar_height, label_height, button_width, hidden_height;
-  };
-
-  struct SlitStyle {
-    bt::Texture slit;
-    unsigned int margin;
-  };
-
   void loadStyle(BScreen* screen, const std::string& style);
   void load(bt::Resource& res, unsigned int screen);
   void save(bt::Resource& res, BScreen* screen);
 
-  // access functions
-  inline const WindowStyle *windowStyle(void) const
-  { return &wstyle; }
-  inline const ToolbarStyle *toolbarStyle(void) const
-  { return &toolbar_style; }
-  inline const SlitStyle *slitStyle(void) const
-  { return &slit_style; }
+  inline const ToolbarOptions &toolbarOptions(void) const
+  { return _toolbarOptions; }
+  inline const SlitOptions &slitOptions(void) const
+  { return _slitOptions; }
+
+  inline const WindowStyle &windowStyle(void) const
+  { return _windowStyle; }
+  inline const ToolbarStyle &toolbarStyle(void) const
+  { return _toolbarStyle; }
+  inline const SlitStyle &slitStyle(void) const
+  { return _slitStyle; }
 
   // screen options
-  unsigned int numberOfWorkspaces(void) const { return workspace_count;   }
-  bool allowScrollLock(void) const            { return allow_scroll_lock; }
-  const std::string& rootCommand(void) const  { return root_command;      }
+  inline unsigned int numberOfWorkspaces(void) const
+  { return workspace_count; }
+  inline const std::string& rootCommand(void) const
+  { return root_command; }
   const bt::ustring &nameOfWorkspace(unsigned int i) const;
 
-  void saveWorkspaces(unsigned int w)      { workspace_count = w;   }
-  void saveAllowScrollLock(bool a)         { allow_scroll_lock = a; }
+  inline void saveWorkspaces(unsigned int w)
+  { workspace_count = w; }
   void saveWorkspaceName(unsigned int w, const bt::ustring &name);
 
-  // toolbar options
-  inline bool isToolbarEnabled(void) const
-  { return enable_toolbar; }
-  inline void setToolbarEnabled(bool b)
-  { enable_toolbar = b; }
-
-  bool isToolbarOnTop(void) const     { return tconfig.on_top;        }
-  bool doToolbarAutoHide(void) const  { return tconfig.auto_hide;     }
-  int toolbarPlacement(void) const    { return tconfig.placement;     }
-  unsigned int toolbarWidthPercent(void) const
-  { return tconfig.width_percent; }
-  const char* strftimeFormat(void) const
-  { return tconfig.strftime_format.c_str(); }
-
-  void saveToolbarOnTop(bool b)       { tconfig.on_top = b;          }
-  void saveToolbarAutoHide(bool b)    { tconfig.auto_hide = b;       }
-  void saveToolbarWidthPercent(unsigned int i) { tconfig.width_percent = i; }
-  void saveToolbarPlacement(int i)    { tconfig.placement = i;       }
-  void saveStrftimeFormat(const std::string& f)
-  { tconfig.strftime_format = f; }
-
-  // slit options
-  bool isSlitOnTop(void) const    { return sconfig.on_top;    }
-  bool doSlitAutoHide(void) const { return sconfig.auto_hide; }
-  int slitPlacement(void) const   { return sconfig.placement; }
-  int slitDirection(void) const   { return sconfig.direction; }
-
-  void saveSlitPlacement(int i) { sconfig.placement = i; }
-  void saveSlitDirection(int i) { sconfig.direction = i; }
-  void saveSlitOnTop(bool b)    { sconfig.on_top = b;    }
-  void saveSlitAutoHide(bool b) { sconfig.auto_hide = b; }
-
 private:
-  struct ToolbarConfig {
-    bool on_top, auto_hide;
-    int placement;
-    unsigned int width_percent;
-    std::string strftime_format;
-  };
+  ToolbarOptions _toolbarOptions;
+  SlitOptions _slitOptions;
 
-  struct SlitConfig {
-    bool on_top, auto_hide;
-    int placement, direction;
-  };
+  WindowStyle _windowStyle;
+  ToolbarStyle _toolbarStyle;
+  SlitStyle _slitStyle;
 
-  WindowStyle wstyle;
-  ToolbarStyle toolbar_style;
-  ToolbarConfig tconfig;
-  SlitStyle slit_style;
-  SlitConfig sconfig;
-
-  bool allow_scroll_lock;
-  bool enable_toolbar;
   unsigned int workspace_count;
   std::string root_command;
   std::vector<bt::ustring> workspaces;
@@ -194,6 +168,7 @@ private:
   bool full_max;
   bool focus_new_windows;
   bool focus_last_window_on_workspace;
+  bool allow_scroll_lock;
   unsigned int edge_snap_threshold;
 
 public:
@@ -296,6 +271,11 @@ public:
   { return focus_last_window_on_workspace; }
   inline void setFocusLastWindowOnWorkspace(bool b = true)
   { focus_last_window_on_workspace = b; }
+
+  inline bool allowScrollLock(void) const
+  { return allow_scroll_lock; }
+  inline void setAllowScrollLock(bool a)
+  { allow_scroll_lock = a; }
 
   inline unsigned int edgeSnapThreshold(void) const
   { return edge_snap_threshold; }

@@ -156,7 +156,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   _slit = 0;
 
   _toolbar = 0;
-  if (_resource.isToolbarEnabled()) {
+  if (_resource.toolbarOptions().enabled) {
     _toolbar = new Toolbar(this);
     _stackingList.insert(_toolbar);
   }
@@ -355,13 +355,13 @@ BScreen::~BScreen(void) {
 
 
 void BScreen::updateGeomWindow(void) {
-  const ScreenResource::WindowStyle * const style = _resource.windowStyle();
+  const WindowStyle &style = _resource.windowStyle();
   bt::Rect geomr =
-    bt::textRect(screen_info.screenNumber(), style->font,
+    bt::textRect(screen_info.screenNumber(), style.font,
                  bt::toUnicode("m:mmmm    m:mmmm"));
 
-  geom_w = geomr.width() + (style->label_margin * 2);
-  geom_h = geomr.height() + (style->label_margin * 2);
+  geom_w = geomr.width() + (style.label_margin * 2);
+  geom_h = geomr.height() + (style.label_margin * 2);
 
   if (geom_window == None) {
     XSetWindowAttributes setattrib;
@@ -376,9 +376,9 @@ void BScreen::updateGeomWindow(void) {
   }
 
   const bt::Texture &texture =
-    (style->focus.label.texture() == bt::Texture::Parent_Relative)
-    ? style->focus.title
-    : style->focus.label;
+    (style.focus.label.texture() == bt::Texture::Parent_Relative)
+    ? style.focus.title
+    : style.focus.label;
   geom_w += (texture.borderWidth() * 2);
   geom_h += (texture.borderWidth() * 2);
   geom_pixmap = bt::PixmapCache::find(screen_info.screenNumber(),
@@ -1498,20 +1498,20 @@ void BScreen::showGeometry(GeometryType type, const bt::Rect &rect) {
     assert(0);
   }
 
-  const ScreenResource::WindowStyle * const style = _resource.windowStyle();
+  const WindowStyle &style = _resource.windowStyle();
   const bt::Texture &texture =
-    (style->focus.label.texture() == bt::Texture::Parent_Relative)
-    ? style->focus.title
-    : style->focus.label;
+    (style.focus.label.texture() == bt::Texture::Parent_Relative)
+    ? style.focus.title
+    : style.focus.label;
   const bt::Rect u(0, 0, geom_w, geom_h);
-  const bt::Rect t(style->label_margin,
-                   style->label_margin,
-                   geom_w - (style->label_margin * 2),
-                   geom_h - (style->label_margin * 2));
-  const bt::Pen pen(screen_info.screenNumber(), style->focus.text);
+  const bt::Rect t(style.label_margin,
+                   style.label_margin,
+                   geom_w - (style.label_margin * 2),
+                   geom_h - (style.label_margin * 2));
+  const bt::Pen pen(screen_info.screenNumber(), style.focus.text);
   bt::drawTexture(screen_info.screenNumber(), texture, geom_window,
                   u, u, geom_pixmap);
-  bt::drawText(style->font, pen, geom_window, t, style->alignment,
+  bt::drawText(style.font, pen, geom_window, t, style.alignment,
                bt::toUnicode(label));
 }
 
@@ -1838,8 +1838,8 @@ void BScreen::placeWindow(BlackboxWindow *win) {
 
   if (placed == False) {
     cascadePlacement(new_win, avail);
-    cascade_x += _resource.windowStyle()->title_height;
-    cascade_y += _resource.windowStyle()->title_height;
+    cascade_x += _resource.windowStyle().title_height;
+    cascade_y += _resource.windowStyle().title_height;
   }
 
   if (new_win.right() > avail.right())

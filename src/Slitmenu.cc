@@ -83,24 +83,26 @@ Slitmenu::Slitmenu(bt::Application &app, unsigned int screen, BScreen *bscreen)
 
 
 void Slitmenu::refresh(void) {
-  ScreenResource& res = _bscreen->resource();
-  setItemChecked(AlwaysOnTop, res.isSlitOnTop());
-  setItemChecked(AutoHide, res.doSlitAutoHide());
+  const SlitOptions &options = _bscreen->resource().slitOptions();
+  setItemChecked(AlwaysOnTop, options.always_on_top);
+  setItemChecked(AutoHide, options.auto_hide);
 }
 
 
 void Slitmenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button != 1) return;
+  if (button != 1)
+    return;
 
-  ScreenResource& res = _bscreen->resource();
   Slit *slit = _bscreen->slit();
+  SlitOptions &options =
+    const_cast<SlitOptions &>(_bscreen->resource().slitOptions());
 
   switch (id) {
   case AlwaysOnTop:
-    res.saveSlitOnTop(!res.isSlitOnTop());
+    options.always_on_top = !options.always_on_top;
     _bscreen->saveResource();
     if (slit) {
-      StackingList::Layer new_layer = (res.isSlitOnTop()
+      StackingList::Layer new_layer = (options.always_on_top
                                        ? StackingList::LayerAbove
                                        : StackingList::LayerNormal);
       _bscreen->stackingList().changeLayer(slit, new_layer);
@@ -109,7 +111,7 @@ void Slitmenu::itemClicked(unsigned int id, unsigned int button) {
     break;
 
   case AutoHide:
-    res.saveSlitAutoHide(!res.doSlitAutoHide());
+    options.auto_hide = !options.auto_hide;
     _bscreen->saveResource();
     if (slit)
       slit->toggleAutoHide();
@@ -134,21 +136,24 @@ SlitDirectionmenu::SlitDirectionmenu(bt::Application &app, unsigned int screen,
 
 
 void SlitDirectionmenu::refresh(void) {
-  ScreenResource& res = _bscreen->resource();
-  setItemChecked(Slit::Horizontal, res.slitDirection() == Slit::Horizontal);
-  setItemChecked(Slit::Vertical, res.slitDirection() == Slit::Vertical);
+  const SlitOptions &options =_bscreen->resource().slitOptions();
+  setItemChecked(Slit::Horizontal, options.direction == Slit::Horizontal);
+  setItemChecked(Slit::Vertical, options.direction == Slit::Vertical);
 }
 
 
 void SlitDirectionmenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button != 1) return;
+  if (button != 1)
+    return;
 
-  ScreenResource& res = _bscreen->resource();
   Slit *slit = _bscreen->slit();
+  SlitOptions &options =
+    const_cast<SlitOptions &>(_bscreen->resource().slitOptions());
 
-  res.saveSlitDirection((Slit::Direction) id);
-  if (slit) slit->reconfigure();
+  options.direction = id;
   _bscreen->saveResource();
+  if (slit)
+    slit->reconfigure();
 }
 
 
@@ -173,25 +178,28 @@ SlitPlacementmenu::SlitPlacementmenu(bt::Application &app, unsigned int screen,
 
 
 void SlitPlacementmenu::refresh(void) {
-  int placement = _bscreen->resource().slitPlacement();
-  setItemChecked(Slit::TopLeft,      placement == Slit::TopLeft);
-  setItemChecked(Slit::CenterLeft,   placement == Slit::CenterLeft);
-  setItemChecked(Slit::BottomLeft,   placement == Slit::BottomLeft);
-  setItemChecked(Slit::TopCenter,    placement == Slit::TopCenter);
-  setItemChecked(Slit::BottomCenter, placement == Slit::BottomCenter);
-  setItemChecked(Slit::TopRight,     placement == Slit::TopRight);
-  setItemChecked(Slit::CenterRight,  placement == Slit::CenterRight);
-  setItemChecked(Slit::BottomRight,  placement == Slit::BottomRight);
+  const SlitOptions &options = _bscreen->resource().slitOptions();
+  setItemChecked(Slit::TopLeft,      options.placement == Slit::TopLeft);
+  setItemChecked(Slit::CenterLeft,   options.placement == Slit::CenterLeft);
+  setItemChecked(Slit::BottomLeft,   options.placement == Slit::BottomLeft);
+  setItemChecked(Slit::TopCenter,    options.placement == Slit::TopCenter);
+  setItemChecked(Slit::BottomCenter, options.placement == Slit::BottomCenter);
+  setItemChecked(Slit::TopRight,     options.placement == Slit::TopRight);
+  setItemChecked(Slit::CenterRight,  options.placement == Slit::CenterRight);
+  setItemChecked(Slit::BottomRight,  options.placement == Slit::BottomRight);
 }
 
 
 void SlitPlacementmenu::itemClicked(unsigned int id, unsigned int button) {
-  if (button != 1) return;
+  if (button != 1)
+    return;
 
-  ScreenResource& res = _bscreen->resource();
   Slit *slit = _bscreen->slit();
+  SlitOptions &options =
+    const_cast<SlitOptions &>(_bscreen->resource().slitOptions());
 
-  res.saveSlitPlacement((Slit::Placement) id);
-  if (slit) slit->reconfigure();
+  options.placement = id;
   _bscreen->saveResource();
+  if (slit)
+    slit->reconfigure();
 }

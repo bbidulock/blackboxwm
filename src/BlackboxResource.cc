@@ -105,7 +105,8 @@ void BlackboxResource::load(Blackbox& blackbox) {
 
   bt::DitherMode dither_mode;
   std::string str = res.read("session.imageDither", "Session.ImageDither",
-                             "OrderedDither"); if (!strcasecmp("ordered", str.c_str()) ||
+                             "OrderedDither");
+  if (!strcasecmp("ordered", str.c_str()) ||
       !strcasecmp("fast", str.c_str()) ||
       !strcasecmp("ordereddither", str.c_str()) ||
       !strcasecmp("fastdither", str.c_str())) {
@@ -196,6 +197,10 @@ void BlackboxResource::load(Blackbox& blackbox) {
     res.read("session.focusLastWindow",
              "Session.focusLastWindow",
              false);
+  allow_scroll_lock =
+    res.read("session.disableBindingsWithScrollLock",
+             "Session.disableBindingsWithScrollLock",
+             false);
   edge_snap_threshold =
     res.read("session.edgeSnapThreshold",
              "Session.EdgeSnapThreshold",
@@ -273,6 +278,7 @@ void BlackboxResource::save(Blackbox& blackbox) {
   res.write("session.fullMaximization", full_max);
   res.write("session.focusNewWindows", focus_new_windows);
   res.write("session.focusLastWindow", focus_last_window_on_workspace);
+  res.write("session.disableBindingsWithScrollLock", allow_scroll_lock);
   res.write("session.edgeSnapThreshold", edge_snap_threshold);
 
   for (unsigned int i = 0; i < blackbox.screenCount(); ++i)
@@ -287,7 +293,7 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
   char *placement = (char *) 0;
   unsigned int number = screen->screenNumber();
 
-  switch (sconfig.placement) {
+  switch (_slitOptions.placement) {
   case Slit::TopLeft: placement = "TopLeft"; break;
   case Slit::CenterLeft: placement = "CenterLeft"; break;
   case Slit::BottomLeft: placement = "BottomLeft"; break;
@@ -302,33 +308,26 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
   res.write(rc_string, placement);
 
   sprintf(rc_string, "session.screen%u.slit.direction", number);
-  res.write(rc_string, (sconfig.direction == Slit::Horizontal) ?
+  res.write(rc_string, (_slitOptions.direction == Slit::Horizontal) ?
             "Horizontal" : "Vertical");
 
   sprintf(rc_string, "session.screen%u.slit.onTop", number);
-  res.write(rc_string, sconfig.on_top);
+  res.write(rc_string, _slitOptions.always_on_top);
 
   sprintf(rc_string, "session.screen%u.slit.autoHide", number);
-  res.write(rc_string, sconfig.auto_hide);
+  res.write(rc_string, _slitOptions.auto_hide);
 
-  sprintf(rc_string, "session.screen%u.disableBindingsWithScrollLock",
-	  number);
-  res.write(rc_string, allow_scroll_lock);
 
   sprintf(rc_string,  "session.screen%u.enableToolbar", number);
-  res.write(rc_string, enable_toolbar);
-
-
-  sprintf(rc_string, "session.screen%u.workspaces", number);
-  res.write(rc_string, workspace_count);
+  res.write(rc_string, _toolbarOptions.enabled);
 
   sprintf(rc_string, "session.screen%u.toolbar.onTop", number);
-  res.write(rc_string, tconfig.on_top);
+  res.write(rc_string, _toolbarOptions.always_on_top);
 
   sprintf(rc_string, "session.screen%u.toolbar.autoHide", number);
-  res.write(rc_string, tconfig.auto_hide);
+  res.write(rc_string, _toolbarOptions.auto_hide);
 
-  switch (tconfig.placement) {
+  switch (_toolbarOptions.placement) {
   case Toolbar::TopLeft: placement = "TopLeft"; break;
   case Toolbar::BottomLeft: placement = "BottomLeft"; break;
   case Toolbar::TopCenter: placement = "TopCenter"; break;
@@ -340,8 +339,11 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
   sprintf(rc_string, "session.screen%u.toolbar.placement", number);
   res.write(rc_string, placement);
 
+  sprintf(rc_string, "session.screen%u.workspaces", number);
+  res.write(rc_string, workspace_count);
+
   std::vector<bt::ustring>::const_iterator it = workspaces.begin(),
-    end = workspaces.end();
+                                          end = workspaces.end();
   bt::ustring save_string = *it++;
   for (; it != end; ++it) {
     save_string += ',';
@@ -353,11 +355,11 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
 
   // these options can not be modified at runtime currently
 
-  sprintf(rc_string, "session.screen%u.strftimeFormat", number);
-  res.write(rc_string, tconfig.strftime_format.c_str());
-
   sprintf(rc_string, "session.screen%u.toolbar.widthPercent", number);
-  res.write(rc_string, tconfig.width_percent);
+  res.write(rc_string, _toolbarOptions.width_percent);
+
+  sprintf(rc_string, "session.screen%u.strftimeFormat", number);
+  res.write(rc_string, _toolbarOptions.strftime_format.c_str());
 }
 
 
@@ -366,86 +368,81 @@ void ScreenResource::load(bt::Resource& res, unsigned int screen) {
   std::string str;
 
   // toolbar settings
+  sprintf(name_lookup,  "session.screen%u.enableToolbar", screen);
+  sprintf(class_lookup, "Session.screen%u.enableToolbar", screen);
+  _toolbarOptions.enabled = res.read(name_lookup, class_lookup, true);
+
   sprintf(name_lookup,  "session.screen%u.toolbar.widthPercent", screen);
   sprintf(class_lookup, "Session.screen%u.Toolbar.WidthPercent", screen);
-  tconfig.width_percent = res.read(name_lookup, class_lookup, 66);
+  _toolbarOptions.width_percent = res.read(name_lookup, class_lookup, 66);
 
   sprintf(name_lookup, "session.screen%u.toolbar.placement", screen);
   sprintf(class_lookup, "Session.screen%u.Toolbar.Placement", screen);
   str = res.read(name_lookup, class_lookup, "BottomCenter");
   if (! strcasecmp(str.c_str(), "TopLeft"))
-    tconfig.placement = Toolbar::TopLeft;
+    _toolbarOptions.placement = Toolbar::TopLeft;
   else if (! strcasecmp(str.c_str(), "BottomLeft"))
-    tconfig.placement = Toolbar::BottomLeft;
+    _toolbarOptions.placement = Toolbar::BottomLeft;
   else if (! strcasecmp(str.c_str(), "TopCenter"))
-    tconfig.placement = Toolbar::TopCenter;
+    _toolbarOptions.placement = Toolbar::TopCenter;
   else if (! strcasecmp(str.c_str(), "TopRight"))
-    tconfig.placement = Toolbar::TopRight;
+    _toolbarOptions.placement = Toolbar::TopRight;
   else if (! strcasecmp(str.c_str(), "BottomRight"))
-    tconfig.placement = Toolbar::BottomRight;
+    _toolbarOptions.placement = Toolbar::BottomRight;
   else
-    tconfig.placement = Toolbar::BottomCenter;
+    _toolbarOptions.placement = Toolbar::BottomCenter;
 
   sprintf(name_lookup,  "session.screen%u.toolbar.onTop", screen);
   sprintf(class_lookup, "Session.screen%u.Toolbar.OnTop", screen);
-  tconfig.on_top = res.read(name_lookup, class_lookup, false);
+  _toolbarOptions.always_on_top = res.read(name_lookup, class_lookup, false);
 
   sprintf(name_lookup,  "session.screen%u.toolbar.autoHide", screen);
   sprintf(class_lookup, "Session.screen%u.Toolbar.autoHide", screen);
-  tconfig.auto_hide = res.read(name_lookup, class_lookup, false);
+  _toolbarOptions.auto_hide = res.read(name_lookup, class_lookup, false);
 
   sprintf(name_lookup,  "session.screen%u.strftimeFormat", screen);
   sprintf(class_lookup, "Session.screen%u.StrftimeFormat", screen);
-  tconfig.strftime_format = res.read(name_lookup, class_lookup, "%I:%M %p");
+  _toolbarOptions.strftime_format =
+    res.read(name_lookup, class_lookup, "%I:%M %p");
 
   // slit settings
   sprintf(name_lookup, "session.screen%u.slit.placement", screen);
   sprintf(class_lookup, "Session.screen%u.Slit.Placement", screen);
   str = res.read(name_lookup, class_lookup, "CenterRight");
   if (! strcasecmp(str.c_str(), "TopLeft"))
-    sconfig.placement = Slit::TopLeft;
+    _slitOptions.placement = Slit::TopLeft;
   else if (! strcasecmp(str.c_str(), "CenterLeft"))
-    sconfig.placement = Slit::CenterLeft;
+    _slitOptions.placement = Slit::CenterLeft;
   else if (! strcasecmp(str.c_str(), "BottomLeft"))
-    sconfig.placement = Slit::BottomLeft;
+    _slitOptions.placement = Slit::BottomLeft;
   else if (! strcasecmp(str.c_str(), "TopCenter"))
-    sconfig.placement = Slit::TopCenter;
+    _slitOptions.placement = Slit::TopCenter;
   else if (! strcasecmp(str.c_str(), "BottomCenter"))
-    sconfig.placement = Slit::BottomCenter;
+    _slitOptions.placement = Slit::BottomCenter;
   else if (! strcasecmp(str.c_str(), "TopRight"))
-    sconfig.placement = Slit::TopRight;
+    _slitOptions.placement = Slit::TopRight;
   else if (! strcasecmp(str.c_str(), "BottomRight"))
-    sconfig.placement = Slit::BottomRight;
+    _slitOptions.placement = Slit::BottomRight;
   else
-    sconfig.placement = Slit::CenterRight;
+    _slitOptions.placement = Slit::CenterRight;
 
   sprintf(name_lookup, "session.screen%u.slit.direction", screen);
   sprintf(class_lookup, "Session.screen%u.Slit.Direction", screen);
   str = res.read(name_lookup, class_lookup, "Vertical");
   if (! strcasecmp(str.c_str(), "Horizontal"))
-    sconfig.direction = Slit::Horizontal;
+    _slitOptions.direction = Slit::Horizontal;
   else
-    sconfig.direction = Slit::Vertical;
+    _slitOptions.direction = Slit::Vertical;
 
   sprintf(name_lookup, "session.screen%u.slit.onTop", screen);
   sprintf(class_lookup, "Session.screen%u.Slit.OnTop", screen);
-  sconfig.on_top = res.read(name_lookup, class_lookup, false);
+  _slitOptions.always_on_top = res.read(name_lookup, class_lookup, false);
 
   sprintf(name_lookup, "session.screen%u.slit.autoHide", screen);
   sprintf(class_lookup, "Session.screen%u.Slit.AutoHide", screen);
-  sconfig.auto_hide = res.read(name_lookup, class_lookup, false);
+  _slitOptions.auto_hide = res.read(name_lookup, class_lookup, false);
 
   // general screen settings
-
-  sprintf(name_lookup,  "session.screen%u.disableBindingsWithScrollLock",
-          screen);
-  sprintf(class_lookup, "Session.screen%u.disableBindingsWithScrollLock",
-          screen);
-  allow_scroll_lock = res.read(name_lookup, class_lookup, false);
-
-  sprintf(name_lookup,  "session.screen%u.enableToolbar", screen);
-  sprintf(class_lookup, "Session.screen%u.enableToolbar", screen);
-  enable_toolbar = res.read(name_lookup, class_lookup, true);
 
   sprintf(name_lookup,  "session.screen%u.workspaces", screen);
   sprintf(class_lookup, "Session.screen%u.Workspaces", screen);
@@ -486,245 +483,247 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
   bt::MenuStyle::get(*screen->blackbox(), screen_num)->load(res);
 
   // load window style
-  wstyle.font.setFontName(res.read("window.font", "Window.Font"));
+  _windowStyle.font.setFontName(res.read("window.font", "Window.Font"));
 
-  wstyle.iconify.load(screen_num, iconify_bits,
+  _windowStyle.iconify.load(screen_num, iconify_bits,
                       iconify_width, iconify_height);
-  wstyle.maximize.load(screen_num, maximize_bits,
+  _windowStyle.maximize.load(screen_num, maximize_bits,
                        maximize_width, maximize_height);
-  wstyle.restore.load(screen_num, restore_bits,
+  _windowStyle.restore.load(screen_num, restore_bits,
                       restore_width, restore_height);
-  wstyle.close.load(screen_num, close_bits,
+  _windowStyle.close.load(screen_num, close_bits,
                     close_width, close_height);
 
   // focused window style
-  wstyle.focus.text =
+  _windowStyle.focus.text =
     bt::Color::namedColor(display, screen_num,
                           res.read("window.label.focus.textColor",
                                    "Window.Label.Focus.TextColor",
                                    "black"));
-  wstyle.focus.foreground =
+  _windowStyle.focus.foreground =
     bt::Color::namedColor(display, screen_num,
                           res.read("window.button.focus.foregroundColor",
                                    "Window.Button.Focus.Foreground",
                                    res.read("window.button.focus.picColor",
                                             "Window.Button.Focus.PicColor",
                                             "black")));
-  wstyle.focus.title =
+  _windowStyle.focus.title =
     bt::textureResource(display, screen_num, res,
                         "window.title.focus",
                         "Window.Title.Focus",
                         "white");
-  wstyle.focus.label =
+  _windowStyle.focus.label =
     bt::textureResource(display, screen_num, res,
                         "window.label.focus",
                         "Window.Label.Focus",
                         "white");
-  wstyle.focus.button =
+  _windowStyle.focus.button =
     bt::textureResource(display, screen_num, res,
                         "window.button.focus",
                         "Window.Button.Focus",
                         "white");
-  wstyle.focus.handle =
+  _windowStyle.focus.handle =
     bt::textureResource(display, screen_num, res,
                         "window.handle.focus",
                         "Window.Handle.Focus",
                         "white");
-  wstyle.focus.grip =
+  _windowStyle.focus.grip =
     bt::textureResource(display, screen_num, res,
                         "window.grip.focus",
                         "Window.Grip.Focus",
                         "white");
 
   // unfocused window style
-  wstyle.unfocus.text =
+  _windowStyle.unfocus.text =
     bt::Color::namedColor(display, screen_num,
                           res.read("window.label.unfocus.textColor",
                                    "Window.Label.Unfocus.TextColor",
                                    "white"));
-  wstyle.unfocus.foreground =
+  _windowStyle.unfocus.foreground =
     bt::Color::namedColor(display, screen_num,
                           res.read("window.button.unfocus.foregroundColor",
                                    "Window.Button.Unfocus.Foreground",
                                    res.read("window.button.unfocus.picColor",
                                             "Window.Button.Unfocus.PicColor",
                                             "white")));
-  wstyle.unfocus.title =
+  _windowStyle.unfocus.title =
     bt::textureResource(display, screen_num, res,
                         "window.title.unfocus",
                         "Window.Title.Unfocus",
                         "black");
-  wstyle.unfocus.label =
+  _windowStyle.unfocus.label =
     bt::textureResource(display, screen_num, res,
                         "window.label.unfocus",
                         "Window.Label.Unfocus",
                         "black");
-  wstyle.unfocus.button =
+  _windowStyle.unfocus.button =
     bt::textureResource(display, screen_num, res,
                         "window.button.unfocus",
                         "Window.Button.Unfocus",
                         "black");
-  wstyle.unfocus.handle =
+  _windowStyle.unfocus.handle =
     bt::textureResource(display, screen_num, res,
                         "window.handle.unfocus",
                         "Window.Handle.Unfocus",
                         "black");
-  wstyle.unfocus.grip =
+  _windowStyle.unfocus.grip =
     bt::textureResource(display, screen_num, res,
                         "window.grip.unfocus",
                         "Window.Grip.Unfocus",
                         "black");
 
-  wstyle.frame_border =
+  _windowStyle.frame_border =
     bt::Color::namedColor(display, screen_num,
                           res.read("window.frame.borderColor",
                                    "Window.Frame.BorderColor",
                                    "black"));
-  wstyle.pressed =
+  _windowStyle.pressed =
     bt::textureResource(display, screen_num, res,
                         "window.button.pressed",
                         "Window.Button.Pressed",
                         "black");
 
-  wstyle.alignment =
+  _windowStyle.alignment =
     bt::alignResource(res, "window.alignment", "Window.Alignment");
 
-  wstyle.title_margin =
+  _windowStyle.title_margin =
     res.read("window.title.marginWidth", "Window.Title.MarginWidth", 2);
-  wstyle.label_margin =
+  _windowStyle.label_margin =
     res.read("window.label.marginWidth", "Window.Label.MarginWidth", 2);
-  wstyle.button_margin =
+  _windowStyle.button_margin =
     res.read("window.button.marginWidth", "Window.Button.MarginWidth", 2);
-  wstyle.frame_border_width =
+  _windowStyle.frame_border_width =
     res.read("window.frame.borderWidth", "Window.Frame.BorderWidth", 1);
-  wstyle.handle_height =
+  _windowStyle.handle_height =
     res.read("window.handleHeight", "Window.HandleHeight", 6);
 
   // the height of the titlebar is based upon the height of the font being
   // used to display the window's title
-  wstyle.button_width =
-    std::max(std::max(std::max(std::max(wstyle.iconify.width(),
-                                        wstyle.iconify.height()),
-                               std::max(wstyle.maximize.width(),
-                                        wstyle.maximize.height())),
-                      std::max(wstyle.restore.width(),
-                               wstyle.restore.height())),
-             std::max(wstyle.close.width(),
-                      wstyle.close.height())) +
-    ((std::max(wstyle.focus.button.borderWidth(),
-               wstyle.unfocus.button.borderWidth()) +
-      wstyle.button_margin) * 2);
-  wstyle.label_height =
-    std::max(bt::textHeight(screen_num, wstyle.font) +
-             ((std::max(wstyle.focus.label.borderWidth(),
-                        wstyle.unfocus.label.borderWidth()) +
-               wstyle.label_margin) * 2),
-             wstyle.button_width);
-  wstyle.button_width = std::max(wstyle.button_width, wstyle.label_height);
-  wstyle.title_height =
-    wstyle.label_height +
-    ((std::max(wstyle.focus.title.borderWidth(),
-               wstyle.unfocus.title.borderWidth()) +
-      wstyle.title_margin) * 2);
-  wstyle.grip_width = (wstyle.button_width * 2);
-  wstyle.handle_height += (std::max(wstyle.focus.handle.borderWidth(),
-                                    wstyle.unfocus.handle.borderWidth()) * 2);
+  _windowStyle.button_width =
+    std::max(std::max(std::max(std::max(_windowStyle.iconify.width(),
+                                        _windowStyle.iconify.height()),
+                               std::max(_windowStyle.maximize.width(),
+                                        _windowStyle.maximize.height())),
+                      std::max(_windowStyle.restore.width(),
+                               _windowStyle.restore.height())),
+             std::max(_windowStyle.close.width(),
+                      _windowStyle.close.height())) +
+    ((std::max(_windowStyle.focus.button.borderWidth(),
+               _windowStyle.unfocus.button.borderWidth()) +
+      _windowStyle.button_margin) * 2);
+  _windowStyle.label_height =
+    std::max(bt::textHeight(screen_num, _windowStyle.font) +
+             ((std::max(_windowStyle.focus.label.borderWidth(),
+                        _windowStyle.unfocus.label.borderWidth()) +
+               _windowStyle.label_margin) * 2),
+             _windowStyle.button_width);
+  _windowStyle.button_width = std::max(_windowStyle.button_width,
+                                       _windowStyle.label_height);
+  _windowStyle.title_height =
+    _windowStyle.label_height +
+    ((std::max(_windowStyle.focus.title.borderWidth(),
+               _windowStyle.unfocus.title.borderWidth()) +
+      _windowStyle.title_margin) * 2);
+  _windowStyle.grip_width = (_windowStyle.button_width * 2);
+  _windowStyle.handle_height +=
+    (std::max(_windowStyle.focus.handle.borderWidth(),
+              _windowStyle.unfocus.handle.borderWidth()) * 2);
 
   // load toolbar style
-  toolbar_style.font.setFontName(res.read("toolbar.font", "Toolbar.Font"));
+  _toolbarStyle.font.setFontName(res.read("toolbar.font", "Toolbar.Font"));
 
-  toolbar_style.toolbar =
+  _toolbarStyle.toolbar =
     bt::textureResource(display, screen_num, res,
                         "toolbar",
                         "Toolbar",
                         "white");
-  toolbar_style.slabel =
+  _toolbarStyle.slabel =
     bt::textureResource(display, screen_num, res,
                         "toolbar.label",
                         "Toolbar.Label",
                         "white");
-  toolbar_style.wlabel =
+  _toolbarStyle.wlabel =
     bt::textureResource(display, screen_num, res,
                         "toolbar.windowLabel",
                         "Toolbar.Label",
                         "white");
-  toolbar_style.button =
+  _toolbarStyle.button =
     bt::textureResource(display, screen_num, res,
                         "toolbar.button",
                         "Toolbar.Button",
                         "white");
-  toolbar_style.pressed =
+  _toolbarStyle.pressed =
     bt::textureResource(display, screen_num, res,
                         "toolbar.button.pressed",
                         "Toolbar.Button.Pressed",
                         "black");
 
-  toolbar_style.clock =
+  _toolbarStyle.clock =
     bt::textureResource(display, screen_num, res,
                         "toolbar.clock",
                         "Toolbar.Label",
                         "white");
 
-  toolbar_style.slabel_text =
+  _toolbarStyle.slabel_text =
     bt::Color::namedColor(display, screen_num,
                           res.read("toolbar.label.textColor",
                                    "Toolbar.Label.TextColor",
                                    "black"));
-  toolbar_style.wlabel_text =
+  _toolbarStyle.wlabel_text =
     bt::Color::namedColor(display, screen_num,
                           res.read("toolbar.windowLabel.textColor",
                                    "Toolbar.Label.TextColor",
                                    "black"));
-  toolbar_style.clock_text =
+  _toolbarStyle.clock_text =
     bt::Color::namedColor(display, screen_num,
                           res.read("toolbar.clock.textColor",
                                    "Toolbar.Label.TextColor",
                                    "white"));
-  toolbar_style.foreground =
+  _toolbarStyle.foreground =
     bt::Color::namedColor(display, screen_num,
                           res.read("toolbar.button.foregroundColor",
                                    "Toolbar.Button.Foreground",
                                    res.read("toolbar.button.picColor",
                                             "Toolbar.Button.PicColor",
                                             "black")));
-  toolbar_style.alignment =
+  _toolbarStyle.alignment =
     bt::alignResource(res, "toolbar.alignment", "Toolbar.Alignment");
 
-  toolbar_style.frame_margin =
+  _toolbarStyle.frame_margin =
     res.read("toolbar.marginWidth", "Toolbar.MarginWidth", 2);
-  toolbar_style.label_margin =
+  _toolbarStyle.label_margin =
     res.read("toolbar.label.marginWidth", "Toolbar.Label.MarginWidth", 2);
-  toolbar_style.button_margin =
+  _toolbarStyle.button_margin =
     res.read("toolbar.button.marginWidth", "Toolbar.Button.MarginWidth", 2);
 
   const bt::Bitmap &left = bt::Bitmap::leftArrow(screen_num),
                   &right = bt::Bitmap::rightArrow(screen_num);
-  toolbar_style.button_width =
+  _toolbarStyle.button_width =
     std::max(std::max(left.width(), left.height()),
              std::max(right.width(), right.height()))
-    + ((toolbar_style.button.borderWidth() + toolbar_style.button_margin) * 2);
-  toolbar_style.label_height =
-    std::max(bt::textHeight(screen_num, toolbar_style.font)
-             + ((std::max(std::max(toolbar_style.slabel.borderWidth(),
-                                   toolbar_style.wlabel.borderWidth()),
-                          toolbar_style.clock.borderWidth())
-                 + toolbar_style.label_margin) * 2),
-             toolbar_style.button_width);
-  toolbar_style.button_width = std::max(toolbar_style.button_width,
-                                        toolbar_style.label_height);
-  toolbar_style.toolbar_height = toolbar_style.label_height
-                                 + ((toolbar_style.toolbar.borderWidth()
-                                     + toolbar_style.frame_margin) * 2);
-  toolbar_style.hidden_height =
-    std::max(toolbar_style.toolbar.borderWidth()
-             + toolbar_style.frame_margin, 1u);
+    + ((_toolbarStyle.button.borderWidth() + _toolbarStyle.button_margin) * 2);
+  _toolbarStyle.label_height =
+    std::max(bt::textHeight(screen_num, _toolbarStyle.font)
+             + ((std::max(std::max(_toolbarStyle.slabel.borderWidth(),
+                                   _toolbarStyle.wlabel.borderWidth()),
+                          _toolbarStyle.clock.borderWidth())
+                 + _toolbarStyle.label_margin) * 2),
+             _toolbarStyle.button_width);
+  _toolbarStyle.button_width = std::max(_toolbarStyle.button_width,
+                                        _toolbarStyle.label_height);
+  _toolbarStyle.toolbar_height = _toolbarStyle.label_height
+                                 + ((_toolbarStyle.toolbar.borderWidth()
+                                     + _toolbarStyle.frame_margin) * 2);
+  _toolbarStyle.hidden_height =
+    std::max(_toolbarStyle.toolbar.borderWidth()
+             + _toolbarStyle.frame_margin, 1u);
 
   // load slit style
-  slit_style.slit = bt::textureResource(display, screen_num, res,
+  _slitStyle.slit = bt::textureResource(display, screen_num, res,
                                         "slit",
                                         "Slit",
                                         "white");
-  slit_style.margin = res.read("slit.marginWidth", "Slit.MarginWidth", 2);
+  _slitStyle.margin = res.read("slit.marginWidth", "Slit.MarginWidth", 2);
 
   root_command = res.read("rootCommand", "RootCommand");
 
@@ -733,20 +732,20 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
   flat_black.setDescription("flat solid");
   flat_black.setColor(bt::Color(0, 0, 0));
 
-  if (wstyle.focus.title.texture() == bt::Texture::Parent_Relative)
-    wstyle.focus.title = flat_black;
-  if (wstyle.unfocus.title.texture() == bt::Texture::Parent_Relative)
-    wstyle.unfocus.title = flat_black;
-  if (wstyle.focus.handle.texture() == bt::Texture::Parent_Relative)
-    wstyle.focus.handle = flat_black;
-  if (wstyle.unfocus.handle.texture() == bt::Texture::Parent_Relative)
-    wstyle.unfocus.handle = flat_black;
+  if (_windowStyle.focus.title.texture() == bt::Texture::Parent_Relative)
+    _windowStyle.focus.title = flat_black;
+  if (_windowStyle.unfocus.title.texture() == bt::Texture::Parent_Relative)
+    _windowStyle.unfocus.title = flat_black;
+  if (_windowStyle.focus.handle.texture() == bt::Texture::Parent_Relative)
+    _windowStyle.focus.handle = flat_black;
+  if (_windowStyle.unfocus.handle.texture() == bt::Texture::Parent_Relative)
+    _windowStyle.unfocus.handle = flat_black;
 
-  if (toolbar_style.toolbar.texture() == bt::Texture::Parent_Relative)
-    toolbar_style.toolbar = flat_black;
+  if (_toolbarStyle.toolbar.texture() == bt::Texture::Parent_Relative)
+    _toolbarStyle.toolbar = flat_black;
 
-  if (slit_style.slit.texture() == bt::Texture::Parent_Relative)
-    slit_style.slit = flat_black;
+  if (_slitStyle.slit.texture() == bt::Texture::Parent_Relative)
+    _slitStyle.slit = flat_black;
 }
 
 

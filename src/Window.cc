@@ -167,19 +167,19 @@ static void update_decorations(WindowDecorationFlags &decorations,
  */
 static
 bt::EWMH::Strut update_margin(WindowDecorationFlags decorations,
-                              const ScreenResource::WindowStyle *style) {
+                              const WindowStyle &style) {
   bt::EWMH::Strut margin;
 
   const unsigned int bw = ((decorations & WindowDecorationBorder)
-                           ? style->frame_border_width
+                           ? style.frame_border_width
                            : 0u);
   margin.top = margin.bottom = margin.left = margin.right = bw;
 
   if (decorations & WindowDecorationTitlebar)
-    margin.top += style->title_height - bw;
+    margin.top += style.title_height - bw;
 
   if (decorations & WindowDecorationHandle)
-    margin.bottom += style->handle_height - bw;
+    margin.bottom += style.handle_height - bw;
 
   return margin;
 }
@@ -987,7 +987,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   frame.utitle = frame.ftitle = frame.uhandle = frame.fhandle = None;
   frame.ulabel = frame.flabel = frame.ubutton = frame.fbutton = None;
   frame.pbutton = frame.ugrip = frame.fgrip = None;
-  frame.style = _screen->resource().windowStyle();
 
   timer = new bt::Timer(blackbox, this);
   timer->setTimeout(blackbox->resource().autoRaiseDelay());
@@ -1080,12 +1079,13 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     createHandle();
 
   // apply the size and gravity to the frame
-  frame.margin = ::update_margin(client.decorations, frame.style);
+  const WindowStyle &style = _screen->resource().windowStyle();
+  frame.margin = ::update_margin(client.decorations, style);
   frame.rect = ::applyGravity(client.rect,
                               frame.margin,
                               client.wmnormal.win_gravity);
   if (client.ewmh.shaded)
-    frame.rect.setHeight(frame.style->title_height);
+    frame.rect.setHeight(style.title_height);
 
   associateClientWindow();
 
@@ -1287,96 +1287,97 @@ void BlackboxWindow::associateClientWindow(void) {
 
 
 void BlackboxWindow::decorate(void) {
+  const WindowStyle &style = _screen->resource().windowStyle();
   if (client.decorations & WindowDecorationTitlebar) {
     // render focused button texture
     frame.fbutton =
       bt::PixmapCache::find(_screen->screenNumber(),
-                            frame.style->focus.button,
-                            frame.style->button_width,
-                            frame.style->button_width,
+                            style.focus.button,
+                            style.button_width,
+                            style.button_width,
                             frame.fbutton);
 
     // render unfocused button texture
     frame.ubutton =
       bt::PixmapCache::find(_screen->screenNumber(),
-                            frame.style->unfocus.button,
-                            frame.style->button_width,
-                            frame.style->button_width,
+                            style.unfocus.button,
+                            style.button_width,
+                            style.button_width,
                             frame.ubutton);
 
     // render pressed button texture
     frame.pbutton =
       bt::PixmapCache::find(_screen->screenNumber(),
-                            frame.style->pressed,
-                            frame.style->button_width,
-                            frame.style->button_width,
+                            style.pressed,
+                            style.button_width,
+                            style.button_width,
                             frame.pbutton);
 
     // render focused titlebar texture
     frame.ftitle =
       bt::PixmapCache::find(_screen->screenNumber(),
-                            frame.style->focus.title,
+                            style.focus.title,
                             frame.rect.width(),
-                            frame.style->title_height,
+                            style.title_height,
                             frame.ftitle);
 
     // render unfocused titlebar texture
     frame.utitle =
       bt::PixmapCache::find(_screen->screenNumber(),
-                            frame.style->unfocus.title,
+                            style.unfocus.title,
                             frame.rect.width(),
-                            frame.style->title_height,
+                            style.title_height,
                             frame.utitle);
 
     // render focused label texture
     frame.flabel =
       bt::PixmapCache::find(_screen->screenNumber(),
-                            frame.style->focus.label,
+                            style.focus.label,
                             frame.label_w,
-                            frame.style->label_height,
+                            style.label_height,
                             frame.flabel);
 
     // render unfocused label texture
     frame.ulabel =
       bt::PixmapCache::find(_screen->screenNumber(),
-                            frame.style->unfocus.label,
+                            style.unfocus.label,
                             frame.label_w,
-                            frame.style->label_height,
+                            style.label_height,
                             frame.ulabel);
   }
 
   XSetWindowBorder(blackbox->XDisplay(), frame.plate,
-                   frame.style->frame_border.pixel(_screen->screenNumber()));
+                   style.frame_border.pixel(_screen->screenNumber()));
 
   if (client.decorations & WindowDecorationHandle) {
     frame.fhandle =
       bt::PixmapCache::find(_screen->screenNumber(),
-                            frame.style->focus.handle,
+                            style.focus.handle,
                             frame.rect.width(),
-                            frame.style->handle_height,
+                            style.handle_height,
                             frame.fhandle);
 
     frame.uhandle =
       bt::PixmapCache::find(_screen->screenNumber(),
-                            frame.style->unfocus.handle,
+                            style.unfocus.handle,
                             frame.rect.width(),
-                            frame.style->handle_height,
+                            style.handle_height,
                             frame.uhandle);
   }
 
   if (client.decorations & WindowDecorationGrip) {
     frame.fgrip =
       bt::PixmapCache::find(_screen->screenNumber(),
-                            frame.style->focus.grip,
-                            frame.style->grip_width,
-                            frame.style->handle_height,
+                            style.focus.grip,
+                            style.grip_width,
+                            style.handle_height,
                             frame.fgrip);
 
     frame.ugrip =
       bt::PixmapCache::find(_screen->screenNumber(),
-                            frame.style->unfocus.grip,
-                            frame.style->grip_width,
-                            frame.style->handle_height,
+                            style.unfocus.grip,
+                            style.grip_width,
+                            style.handle_height,
                             frame.ugrip);
   }
 }
@@ -1543,19 +1544,20 @@ void BlackboxWindow::destroyMaximizeButton(void) {
 
 void BlackboxWindow::positionButtons(bool redecorate_label) {
   // we need to use signed ints here to detect windows that are too small
-  const int extra = frame.style->title_margin == 0 ?
-                    frame.style->focus.button.borderWidth() : 0,
-               bw = frame.style->button_width + frame.style->title_margin
+  const WindowStyle &style = _screen->resource().windowStyle();
+  const int extra = style.title_margin == 0 ?
+                    style.focus.button.borderWidth() : 0,
+               bw = style.button_width + style.title_margin
                     - extra,
-               by = frame.style->title_margin +
-                    frame.style->focus.title.borderWidth();
+               by = style.title_margin +
+                    style.focus.title.borderWidth();
   int lx = by, lw = frame.rect.width() - by;
 
   if (client.decorations & WindowDecorationIconify) {
     if (frame.iconify_button == None) createIconifyButton();
 
     XMoveResizeWindow(blackbox->XDisplay(), frame.iconify_button, by, by,
-                      frame.style->button_width, frame.style->button_width);
+                      style.button_width, style.button_width);
     XMapWindow(blackbox->XDisplay(), frame.iconify_button);
 
     lx += bw;
@@ -1565,13 +1567,13 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
   }
 
   int bx = frame.rect.width() - bw
-           - frame.style->focus.title.borderWidth() - extra;
+           - style.focus.title.borderWidth() - extra;
 
   if (client.decorations & WindowDecorationClose) {
     if (frame.close_button == None) createCloseButton();
 
     XMoveResizeWindow(blackbox->XDisplay(), frame.close_button, bx, by,
-                      frame.style->button_width, frame.style->button_width);
+                      style.button_width, style.button_width);
     XMapWindow(blackbox->XDisplay(), frame.close_button);
 
     bx -= bw;
@@ -1584,7 +1586,7 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
     if (frame.maximize_button == None) createMaximizeButton();
 
     XMoveResizeWindow(blackbox->XDisplay(), frame.maximize_button, bx, by,
-                      frame.style->button_width, frame.style->button_width);
+                      style.button_width, style.button_width);
     XMapWindow(blackbox->XDisplay(), frame.maximize_button);
 
     bx -= bw;
@@ -1596,25 +1598,25 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
   if (lw > by) {
     frame.label_w = lw - by;
     XMoveResizeWindow(blackbox->XDisplay(), frame.label, lx, by,
-                      frame.label_w, frame.style->label_height);
+                      frame.label_w, style.label_height);
     XMapWindow(blackbox->XDisplay(), frame.label);
 
     if (redecorate_label) {
       frame.flabel =
         bt::PixmapCache::find(_screen->screenNumber(),
-                              frame.style->focus.label,
-                              frame.label_w, frame.style->label_height,
+                              style.focus.label,
+                              frame.label_w, style.label_height,
                               frame.flabel);
       frame.ulabel =
         bt::PixmapCache::find(_screen->screenNumber(),
-                              frame.style->unfocus.label,
-                              frame.label_w, frame.style->label_height,
+                              style.unfocus.label,
+                              frame.label_w, style.label_height,
                               frame.ulabel);
     }
 
     const bt::ustring ellided =
       bt::ellideText(client.title, frame.label_w, bt::toUnicode("..."),
-                     _screen->screenNumber(), frame.style->font);
+                     _screen->screenNumber(), style.font);
 
     if (ellided != client.visible_title) {
       client.visible_title = ellided;
@@ -1630,9 +1632,10 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
 
 
 void BlackboxWindow::reconfigure(void) {
+  const WindowStyle &style = _screen->resource().windowStyle();
   if (isMaximized()) {
     // update the frame margin in case the style has changed
-    frame.margin = ::update_margin(client.decorations, frame.style);
+    frame.margin = ::update_margin(client.decorations, style);
 
     // make sure maximized windows have the correct size after a style
     // change
@@ -1647,13 +1650,13 @@ void BlackboxWindow::reconfigure(void) {
     r = ::restoreGravity(r, frame.margin, client.wmnormal.win_gravity);
 
     // update the frame margin in case the style has changed
-    frame.margin = ::update_margin(client.decorations, frame.style);
+    frame.margin = ::update_margin(client.decorations, style);
 
     // get the frame window geometry from the client window geometry
     // calculated above
     r = ::applyGravity(r, frame.margin, client.wmnormal.win_gravity);
     if (client.ewmh.shaded)
-      r.setHeight(frame.style->title_height);
+      r.setHeight(style.title_height);
 
     // trick configure into working
     frame.rect = bt::Rect();
@@ -1671,24 +1674,24 @@ void BlackboxWindow::grabButtons(void) {
     // grab button 1 for changing focus/raising
     blackbox->grabButton(Button1, 0, frame.plate, True, ButtonPressMask,
                          GrabModeSync, GrabModeSync, frame.plate, None,
-                         _screen->resource().allowScrollLock());
+                         blackbox->resource().allowScrollLock());
 
   if (hasWindowFunction(WindowFunctionMove))
     blackbox->grabButton(Button1, Mod1Mask, frame.window, True,
                          ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
                          GrabModeAsync, frame.window,
                          blackbox->resource().moveCursor(),
-                         _screen->resource().allowScrollLock());
+                         blackbox->resource().allowScrollLock());
   if (hasWindowFunction(WindowFunctionResize))
     blackbox->grabButton(Button3, Mod1Mask, frame.window, True,
                          ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
                          GrabModeAsync, frame.window,
-                         None, _screen->resource().allowScrollLock());
+                         None, blackbox->resource().allowScrollLock());
   // alt+middle lowers the window
   blackbox->grabButton(Button2, Mod1Mask, frame.window, True,
                        ButtonReleaseMask, GrabModeAsync, GrabModeAsync,
                        frame.window, None,
-                       _screen->resource().allowScrollLock());
+                       blackbox->resource().allowScrollLock());
 }
 
 
@@ -1701,8 +1704,9 @@ void BlackboxWindow::ungrabButtons(void) {
 
 
 void BlackboxWindow::positionWindows(void) {
+  const WindowStyle &style = _screen->resource().windowStyle();
   const unsigned int bw = (hasWindowDecoration(WindowDecorationBorder)
-                           ? frame.style->frame_border_width
+                           ? style.frame_border_width
                            : 0);
 
   XMoveResizeWindow(blackbox->XDisplay(), frame.window,
@@ -1723,7 +1727,7 @@ void BlackboxWindow::positionWindows(void) {
     if (frame.title == None) createTitlebar();
 
     XMoveResizeWindow(blackbox->XDisplay(), frame.title,
-                      0, 0, frame.rect.width(), frame.style->title_height);
+                      0, 0, frame.rect.width(), style.title_height);
 
     positionButtons();
     XMapSubwindows(blackbox->XDisplay(), frame.title);
@@ -1738,17 +1742,17 @@ void BlackboxWindow::positionWindows(void) {
     // use client.rect here so the value is correct even if shaded
     XMoveResizeWindow(blackbox->XDisplay(), frame.handle,
                       0, client.rect.height() + frame.margin.top,
-                      frame.rect.width(), frame.style->handle_height);
+                      frame.rect.width(), style.handle_height);
 
     if (client.decorations & WindowDecorationGrip) {
       if (frame.left_grip == None || frame.right_grip == None) createGrips();
 
       XMoveResizeWindow(blackbox->XDisplay(), frame.left_grip, 0, 0,
-                        frame.style->grip_width, frame.style->handle_height);
+                        style.grip_width, style.handle_height);
 
-      const int nx = frame.rect.width() - frame.style->grip_width;
+      const int nx = frame.rect.width() - style.grip_width;
       XMoveResizeWindow(blackbox->XDisplay(), frame.right_grip, nx, 0,
-                        frame.style->grip_width, frame.style->handle_height);
+                        style.grip_width, style.handle_height);
 
       XMapSubwindows(blackbox->XDisplay(), frame.handle);
     } else {
@@ -1839,10 +1843,11 @@ void BlackboxWindow::configureShape(void) {
   int num = 0;
   XRectangle xrect[2];
 
+  const WindowStyle &style = _screen->resource().windowStyle();
   if (client.decorations & WindowDecorationTitlebar) {
     xrect[0].x = xrect[0].y = 0;
     xrect[0].width = frame.rect.width();
-    xrect[0].height = frame.style->title_height;
+    xrect[0].height = style.title_height;
     ++num;
   }
 
@@ -1850,7 +1855,7 @@ void BlackboxWindow::configureShape(void) {
     xrect[1].x = 0;
     xrect[1].y = client.rect.height() + frame.margin.top;
     xrect[1].width = frame.rect.width();
-    xrect[1].height = frame.style->handle_height;
+    xrect[1].height = style.handle_height;
     ++num;
   }
 
@@ -2336,7 +2341,8 @@ void BlackboxWindow::setShaded(bool shaded) {
     setState(NormalState);
   } else {
     // set the frame rect to the shaded size
-    frame.rect.setHeight(frame.style->title_height);
+    const WindowStyle &style = _screen->resource().windowStyle();
+    frame.rect.setHeight(style.title_height);
 
     XResizeWindow(blackbox->XDisplay(), frame.window,
                   frame.rect.width(), frame.rect.height());
@@ -2371,7 +2377,8 @@ void BlackboxWindow::setFullScreen(bool b) {
     client.functions &= ~(WindowFunctionMove |
                           WindowFunctionResize |
                           WindowFunctionShade);
-    frame.margin = ::update_margin(client.decorations, frame.style);
+    const WindowStyle &style = _screen->resource().windowStyle();
+    frame.margin = ::update_margin(client.decorations, style);
 
     bt::Rect r = ::constrain(_screen->screenInfo().rect(),
                              frame.margin,
@@ -2395,7 +2402,8 @@ void BlackboxWindow::setFullScreen(bool b) {
                          client.motif,
                          client.wmnormal,
                          client.wmprotocols);
-    frame.margin = ::update_margin(client.decorations, frame.style);
+    const WindowStyle &style = _screen->resource().windowStyle();
+    frame.margin = ::update_margin(client.decorations, style);
 
     if (isVisible())
       changeLayer(StackingList::LayerNormal);
@@ -2555,11 +2563,12 @@ void BlackboxWindow::updateEWMHAllowedActions() {
 
 
 void BlackboxWindow::redrawTitle(void) const {
-  const bt::Rect u(0, 0, frame.rect.width(), frame.style->title_height);
+  const WindowStyle &style = _screen->resource().windowStyle();
+  const bt::Rect u(0, 0, frame.rect.width(), style.title_height);
   bt::drawTexture(_screen->screenNumber(),
                   (client.state.focused
-                   ? frame.style->focus.title
-                   : frame.style->unfocus.title),
+                   ? style.focus.title
+                   : style.unfocus.title),
                   frame.title, u, u,
                   (client.state.focused
                    ? frame.ftitle
@@ -2568,38 +2577,39 @@ void BlackboxWindow::redrawTitle(void) const {
 
 
 void BlackboxWindow::redrawLabel(void) const {
-  bt::Rect u(0, 0, frame.label_w, frame.style->label_height);
+  const WindowStyle &style = _screen->resource().windowStyle();
+  bt::Rect u(0, 0, frame.label_w, style.label_height);
   Pixmap p = (client.state.focused ? frame.flabel : frame.ulabel);
   if (p == ParentRelative) {
     const bt::Texture &texture =
-      (isFocused() ? frame.style->focus.title : frame.style->unfocus.title);
+      (isFocused() ? style.focus.title : style.unfocus.title);
     int offset = texture.borderWidth();
     if (client.decorations & WindowDecorationIconify)
-      offset += frame.style->button_width + frame.style->title_margin;
+      offset += style.button_width + style.title_margin;
 
-    const bt::Rect t(-(frame.style->title_margin + offset),
-                     -(frame.style->title_margin + texture.borderWidth()),
-                     frame.rect.width(), frame.style->title_height);
+    const bt::Rect t(-(style.title_margin + offset),
+                     -(style.title_margin + texture.borderWidth()),
+                     frame.rect.width(), style.title_height);
     bt::drawTexture(_screen->screenNumber(), texture, frame.label, t, u,
                     (client.state.focused ? frame.ftitle : frame.utitle));
   } else {
     bt::drawTexture(_screen->screenNumber(),
                     (client.state.focused
-                     ? frame.style->focus.label
-                     : frame.style->unfocus.label),
+                     ? style.focus.label
+                     : style.unfocus.label),
                     frame.label, u, u, p);
   }
 
   const bt::Pen pen(_screen->screenNumber(),
                     ((client.state.focused)
-                     ? frame.style->focus.text
-                     : frame.style->unfocus.text));
-  u.setCoords(u.left()  + frame.style->label_margin,
-              u.top() + frame.style->label_margin,
-              u.right() - frame.style->label_margin,
-              u.bottom() - frame.style->label_margin);
-  bt::drawText(frame.style->font, pen, frame.label, u,
-               frame.style->alignment, client.visible_title);
+                     ? style.focus.text
+                     : style.unfocus.text));
+  u.setCoords(u.left()  + style.label_margin,
+              u.top() + style.label_margin,
+              u.right() - style.label_margin,
+              u.bottom() - style.label_margin);
+  bt::drawText(style.font, pen, frame.label, u,
+               style.alignment, client.visible_title);
 }
 
 
@@ -2611,135 +2621,140 @@ void BlackboxWindow::redrawAllButtons(void) const {
 
 
 void BlackboxWindow::redrawIconifyButton(bool pressed) const {
-  const bt::Rect u(0, 0, frame.style->button_width, frame.style->button_width);
+  const WindowStyle &style = _screen->resource().windowStyle();
+  const bt::Rect u(0, 0, style.button_width, style.button_width);
   Pixmap p = (pressed ? frame.pbutton :
               (client.state.focused ? frame.fbutton : frame.ubutton));
   if (p == ParentRelative) {
     const bt::Texture &texture =
-      (isFocused() ? frame.style->focus.title : frame.style->unfocus.title);
-    const bt::Rect t(-(frame.style->title_margin + texture.borderWidth()),
-                     -(frame.style->title_margin + texture.borderWidth()),
-                     frame.rect.width(), frame.style->title_height);
+      (isFocused() ? style.focus.title : style.unfocus.title);
+    const bt::Rect t(-(style.title_margin + texture.borderWidth()),
+                     -(style.title_margin + texture.borderWidth()),
+                     frame.rect.width(), style.title_height);
     bt::drawTexture(_screen->screenNumber(), texture, frame.iconify_button,
                     t, u, (client.state.focused
                            ? frame.ftitle
                            : frame.utitle));
   } else {
     bt::drawTexture(_screen->screenNumber(),
-                    (pressed ? frame.style->pressed :
-                     (client.state.focused ? frame.style->focus.button :
-                      frame.style->unfocus.button)),
+                    (pressed ? style.pressed :
+                     (client.state.focused ? style.focus.button :
+                      style.unfocus.button)),
                     frame.iconify_button, u, u, p);
   }
 
   const bt::Pen pen(_screen->screenNumber(),
                     (client.state.focused
-                     ? frame.style->focus.foreground
-                     : frame.style->unfocus.foreground));
-  bt::drawBitmap(frame.style->iconify, pen, frame.iconify_button, u);
+                     ? style.focus.foreground
+                     : style.unfocus.foreground));
+  bt::drawBitmap(style.iconify, pen, frame.iconify_button, u);
 }
 
 
 void BlackboxWindow::redrawMaximizeButton(bool pressed) const {
-  const bt::Rect u(0, 0, frame.style->button_width, frame.style->button_width);
+  const WindowStyle &style = _screen->resource().windowStyle();
+  const bt::Rect u(0, 0, style.button_width, style.button_width);
   Pixmap p = (pressed ? frame.pbutton :
               (client.state.focused ? frame.fbutton : frame.ubutton));
   if (p == ParentRelative) {
     const bt::Texture &texture =
-      (isFocused() ? frame.style->focus.title : frame.style->unfocus.title);
-    int button_w = frame.style->button_width
-                   + frame.style->title_margin + texture.borderWidth();
+      (isFocused() ? style.focus.title : style.unfocus.title);
+    int button_w = style.button_width
+                   + style.title_margin + texture.borderWidth();
     if (client.decorations & WindowDecorationClose)
       button_w *= 2;
     const bt::Rect t(-(frame.rect.width() - button_w),
-                     -(frame.style->title_margin + texture.borderWidth()),
-                     frame.rect.width(), frame.style->title_height);
+                     -(style.title_margin + texture.borderWidth()),
+                     frame.rect.width(), style.title_height);
     bt::drawTexture(_screen->screenNumber(), texture, frame.maximize_button,
                     t, u, (client.state.focused
                            ? frame.ftitle
                            : frame.utitle));
   } else {
     bt::drawTexture(_screen->screenNumber(),
-                    (pressed ? frame.style->pressed :
-                     (client.state.focused ? frame.style->focus.button :
-                      frame.style->unfocus.button)),
+                    (pressed ? style.pressed :
+                     (client.state.focused ? style.focus.button :
+                      style.unfocus.button)),
                     frame.maximize_button, u, u, p);
   }
 
   const bt::Pen pen(_screen->screenNumber(),
                     (client.state.focused
-                     ? frame.style->focus.foreground
-                     : frame.style->unfocus.foreground));
-  bt::drawBitmap(isMaximized() ? frame.style->restore : frame.style->maximize,
+                     ? style.focus.foreground
+                     : style.unfocus.foreground));
+  bt::drawBitmap(isMaximized() ? style.restore : style.maximize,
                  pen, frame.maximize_button, u);
 }
 
 
 void BlackboxWindow::redrawCloseButton(bool pressed) const {
-  const bt::Rect u(0, 0, frame.style->button_width, frame.style->button_width);
+  const WindowStyle &style = _screen->resource().windowStyle();
+  const bt::Rect u(0, 0, style.button_width, style.button_width);
   Pixmap p = (pressed ? frame.pbutton :
               (client.state.focused ? frame.fbutton : frame.ubutton));
   if (p == ParentRelative) {
     const bt::Texture &texture =
-      (isFocused() ? frame.style->focus.title : frame.style->unfocus.title);
-    const int button_w = frame.style->button_width +
-                         frame.style->title_margin +
+      (isFocused() ? style.focus.title : style.unfocus.title);
+    const int button_w = style.button_width +
+                         style.title_margin +
                          texture.borderWidth();
     const bt::Rect t(-(frame.rect.width() - button_w),
-                     -(frame.style->title_margin + texture.borderWidth()),
-                     frame.rect.width(), frame.style->title_height);
+                     -(style.title_margin + texture.borderWidth()),
+                     frame.rect.width(), style.title_height);
     bt::drawTexture(_screen->screenNumber(),texture, frame.close_button, t, u,
                     (client.state.focused ? frame.ftitle : frame.utitle));
   } else {
     bt::drawTexture(_screen->screenNumber(),
-                    (pressed ? frame.style->pressed :
-                     (client.state.focused ? frame.style->focus.button :
-                      frame.style->unfocus.button)),
+                    (pressed ? style.pressed :
+                     (client.state.focused ? style.focus.button :
+                      style.unfocus.button)),
                     frame.close_button, u, u, p);
   }
 
   const bt::Pen pen(_screen->screenNumber(),
                     (client.state.focused
-                     ? frame.style->focus.foreground
-                     : frame.style->unfocus.foreground));
-  bt::drawBitmap(frame.style->close, pen, frame.close_button, u);
+                     ? style.focus.foreground
+                     : style.unfocus.foreground));
+  bt::drawBitmap(style.close, pen, frame.close_button, u);
 }
 
 
 void BlackboxWindow::redrawHandle(void) const {
-  const bt::Rect u(0, 0, frame.rect.width(), frame.style->handle_height);
+  const WindowStyle &style = _screen->resource().windowStyle();
+  const bt::Rect u(0, 0, frame.rect.width(), style.handle_height);
   bt::drawTexture(_screen->screenNumber(),
-                  (client.state.focused ? frame.style->focus.handle :
-                                          frame.style->unfocus.handle),
+                  (client.state.focused ? style.focus.handle :
+                                          style.unfocus.handle),
                   frame.handle, u, u,
                   (client.state.focused ? frame.fhandle : frame.uhandle));
 }
 
 
 void BlackboxWindow::redrawGrips(void) const {
-  const bt::Rect u(0, 0, frame.style->grip_width, frame.style->handle_height);
+  const WindowStyle &style = _screen->resource().windowStyle();
+  const bt::Rect u(0, 0, style.grip_width, style.handle_height);
   Pixmap p = (client.state.focused ? frame.fgrip : frame.ugrip);
   if (p == ParentRelative) {
-    bt::Rect t(0, 0, frame.rect.width(), frame.style->handle_height);
+    bt::Rect t(0, 0, frame.rect.width(), style.handle_height);
     bt::drawTexture(_screen->screenNumber(),
-                    (client.state.focused ? frame.style->focus.handle :
-                                            frame.style->unfocus.handle),
+                    (client.state.focused ? style.focus.handle :
+                                            style.unfocus.handle),
                     frame.right_grip, t, u, p);
 
-    t.setPos(-(frame.rect.width() - frame.style->grip_width), 0);
+    t.setPos(-(frame.rect.width() - style.grip_width), 0);
     bt::drawTexture(_screen->screenNumber(),
-                    (client.state.focused ? frame.style->focus.handle :
-                                            frame.style->unfocus.handle),
+                    (client.state.focused ? style.focus.handle :
+                                            style.unfocus.handle),
                     frame.right_grip, t, u, p);
   } else {
     bt::drawTexture(_screen->screenNumber(),
-                    (client.state.focused ? frame.style->focus.grip :
-                                            frame.style->unfocus.grip),
+                    (client.state.focused ? style.focus.grip :
+                                            style.unfocus.grip),
                     frame.left_grip, u, u, p);
 
     bt::drawTexture(_screen->screenNumber(),
-                    (client.state.focused ? frame.style->focus.grip :
-                                            frame.style->unfocus.grip),
+                    (client.state.focused ? style.focus.grip :
+                                            style.unfocus.grip),
                     frame.right_grip, u, u, p);
   }
 }
@@ -3042,7 +3057,8 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
 
     client.visible_title =
       bt::ellideText(client.title, frame.label_w, bt::toUnicode("..."),
-                     _screen->screenNumber(), frame.style->font);
+                     _screen->screenNumber(),
+                     _screen->resource().windowStyle().font);
     blackbox->ewmh().setWMVisibleName(client.window, client.visible_title);
 
     if (client.decorations & WindowDecorationTitlebar)
@@ -3232,7 +3248,7 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const event) {
     } else if (event->button == 2) {
       _screen->lowerWindow(this);
     } else if (event->button == 3) {
-      const int extra = frame.style->frame_border_width;
+      const int extra = _screen->resource().windowStyle().frame_border_width;
       const bt::Rect rect(client.rect.x() - extra,
                           client.rect.y() - extra,
                           client.rect.width() + (extra * 2),
@@ -3251,10 +3267,11 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const event) {
           client.window);
 #endif
 
+  const WindowStyle &style = _screen->resource().windowStyle();
   if (event->window == frame.maximize_button) {
     if (event->button < 4) {
       if (bt::within(event->x, event->y,
-                     frame.style->button_width, frame.style->button_width)) {
+                     style.button_width, style.button_width)) {
         maximize(event->button);
         _screen->raiseWindow(this);
       } else {
@@ -3264,7 +3281,7 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const event) {
   } else if (event->window == frame.iconify_button) {
     if (event->button == 1) {
       if (bt::within(event->x, event->y,
-                     frame.style->button_width, frame.style->button_width))
+                     style.button_width, style.button_width))
         iconify();
       else
         redrawIconifyButton();
@@ -3272,7 +3289,7 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const event) {
   } else if (event->window == frame.close_button) {
     if (event->button == 1) {
       if (bt::within(event->x, event->y,
-                     frame.style->button_width, frame.style->button_width))
+                     style.button_width, style.button_width))
         close();
       redrawCloseButton();
     }
@@ -3456,7 +3473,8 @@ void BlackboxWindow::startMove() {
     _screen->showGeometry(BScreen::Position, frame.changing);
 
     bt::Pen pen(_screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
-    const int bw = frame.style->frame_border_width, hw = bw / 2;
+    const int bw = _screen->resource().windowStyle().frame_border_width,
+              hw = bw / 2;
     pen.setGCFunction(GXxor);
     pen.setLineWidth(bw);
     pen.setSubWindowMode(IncludeInferiors);
@@ -3516,7 +3534,8 @@ void BlackboxWindow::continueMove(int x_root, int y_root) {
     configure(dx, dy, frame.rect.width(), frame.rect.height());
   } else {
     bt::Pen pen(_screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
-    const int bw = frame.style->frame_border_width, hw = bw / 2;
+    const int bw = _screen->resource().windowStyle().frame_border_width,
+              hw = bw / 2;
     pen.setGCFunction(GXxor);
     pen.setLineWidth(bw);
     pen.setSubWindowMode(IncludeInferiors);
@@ -3548,7 +3567,8 @@ void BlackboxWindow::finishMove() {
 
   if (!blackbox->resource().opaqueMove()) {
     bt::Pen pen(_screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
-    const int bw = frame.style->frame_border_width, hw = bw / 2;
+    const int bw = _screen->resource().windowStyle().frame_border_width,
+              hw = bw / 2;
     pen.setGCFunction(GXxor);
     pen.setLineWidth(bw);
     pen.setSubWindowMode(IncludeInferiors);
@@ -3617,7 +3637,8 @@ void BlackboxWindow::startResize(Window window) {
     blackbox->XGrabServer();
 
     bt::Pen pen(_screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
-    const int bw = frame.style->frame_border_width, hw = bw / 2;
+    const int bw = _screen->resource().windowStyle().frame_border_width,
+              hw = bw / 2;
     pen.setGCFunction(GXxor);
     pen.setLineWidth(bw);
     pen.setSubWindowMode(IncludeInferiors);
@@ -3696,7 +3717,8 @@ void BlackboxWindow::continueResize(int x_root, int y_root) {
       configure(frame.changing);
     } else {
       bt::Pen pen(_screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
-      const int bw = frame.style->frame_border_width, hw = bw / 2;
+      const int bw = _screen->resource().windowStyle().frame_border_width,
+                hw = bw / 2;
       pen.setGCFunction(GXxor);
       pen.setLineWidth(bw);
       pen.setSubWindowMode(IncludeInferiors);
@@ -3726,7 +3748,8 @@ void BlackboxWindow::finishResize() {
 
   if (!blackbox->resource().opaqueResize()) {
     bt::Pen pen(_screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
-    const int bw = frame.style->frame_border_width, hw = bw / 2;
+    const int bw = _screen->resource().windowStyle().frame_border_width,
+              hw = bw / 2;
     pen.setGCFunction(GXxor);
     pen.setLineWidth(bw);
     pen.setSubWindowMode(IncludeInferiors);
