@@ -83,8 +83,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 	       "failed\n"));
 #endif // DEBUG
 
-    delete this;
-
     b->ungrab();
     return;
   }
@@ -100,8 +98,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 		      "\tfor root window 0x%lx\n"),
 	              RootWindowOfScreen(wattrib.screen));
 #endif // DEBUG
-
-      delete this;
 
       b->ungrab();
       return;

@@ -30,7 +30,7 @@
 .if n .sp 1
 .if t .sp .5
 ..
-.TH blackbox 1 "Oktober 2002" "0.62.0"
+.TH blackbox 1 "Januari 2002" "0.62.0"
 .SH NAAM
 blackbox \- een window manager voor X11
 .SH SYNOPSIS
@@ -187,7 +187,8 @@ Breng venster naar achtergrond (i.e. achter alle andere vensters)
 Maakt dat dit venster altijd zichtbaar blijft in alle werkbladen
 .TP
 .B Afbreken
-Stuur een KILL signaal naar de eigenaar van het venster
+Stuur een KILL signaal naar de eigenaar van het venster. Doe dit
+alleen als gewoon afsluiten niet meer helpt!
 .TP
 .B Sluiten
 Sluit de applicatie netjes af
@@ -358,15 +359,10 @@ Hier is een kort voorbeeld van een menu bestand:
 .PP
 .nf
 # Blackbox menu file
-[begin] (Blackbox 0.60.3)
+[begin] (Blackbox @version@)
   [exec] (rxvt) {rxvt -ls}
-  [exec] (netscape) {netscape -install}
+  [exec] (Mozilla) {mozilla}
   [exec] (The GIMP) {gimp}
-  [exec] (XV) {xv}
-  [submenu] (pine)
-    [exec] (inkomend) {rxvt -name pine -e pine -i}
-    [exec] (nieuw bericht) {rxvt -name pine -e pine ""}
-  [end]
   [submenu] (Window Manager)
     [exec] (Menu bewerken) {nedit .blackbox/Menu}
     [submenu] (Stijl) {Welke stijl?}

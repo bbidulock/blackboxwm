@@ -13,9 +13,9 @@ $ #OpaqueMove
 $ #FullMax
 # Volledig maximaliseren
 $ #FocusNew
-# Geef nieuwe vensters direct toetsenbordfocus
+# Geef nieuwe vensters direct focus
 $ #FocusLast
-# Geef laatste venster toetsenbordfocus bij werkblad wisseling
+# Focus laatste venster bij wisselen van werkblad
 $ #ClickToFocus
 # Geef focus na muisklik in venster
 $ #SloppyFocus

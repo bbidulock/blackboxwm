@@ -165,7 +165,7 @@ clean-am:  clean-generic mostlyclean-am
 
 clean: clean-am
 
-distclean-am:  distclean-generic clean-am
+distclean-am:  distclean-generic clean-am distclean-local
 
 distclean: distclean-am
 
@@ -205,6 +205,9 @@ blackbox.cat: Translation.m
 	@if test x$(NLSTEST) = "x-DNLS"; then \
 		$(gencat_cmd) blackbox.cat Translation.m; \
 	fi
+
+distclean-local:
+	rm -f *\~
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -2,7 +2,7 @@ ChangeLog for 0.61.x
 
 Changes from 0.61.1 to 0.62.0:
   - the immorel release
-  - added the ja_JP nls directory
+  - added the ja_JP nls directory and man pages
   - general code touchups
   - blackbox-nls.hh is always generated even if --disable-nls is used.
     This allows us to not have all of those hideous #ifdef NLS chunks.
@@ -60,6 +60,9 @@ Changes from 0.61.1 to 0.62.0:
   - ignore style files ending in ~
   - support locale specifiers with @euro in them
   - added Slovenian man pages and nls, thanks Ales Kosir
+  - Toolbar name editing buffer reduced to 128 chars, logic added to make sure
+    this buffer is not overrun
+  - added German nls files, thanks Jan Schaumann
   - added my name to the code, updated the version output
     
 Changes from 0.61.0 to 0.61.1:

@@ -32,3 +32,6 @@ blackbox.cat: Translation.m
 	@if test x$(NLSTEST) = "x-DNLS"; then \
 		$(gencat_cmd) blackbox.cat Translation.m; \
 	fi
+
+distclean-local:
+	rm -f *\~

@@ -82,11 +82,12 @@ Toolbar::Toolbar(BScreen *scrn) {
 
   image_ctrl = screen->getImageControl();
 
-  editing = False;
   on_top = screen->isToolbarOnTop();
   hidden = do_auto_hide = screen->doToolbarAutoHide();
 
-  new_workspace_name = new_name_pos = 0;
+  editing = False;
+  new_workspace_name = (char *) 0;
+  new_name_pos = 0;
   frame.grab_x = frame.grab_y = 0;
 
   toolbarmenu = new Toolbarmenu(this);
@@ -979,8 +980,8 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
     blackbox->grab();
 
     if (! new_workspace_name) {
-      new_workspace_name = new char[1024];
-      new_name_pos = new_workspace_name;
+      new_workspace_name = new char[128];
+      new_name_pos = 0;
 
       if (! new_workspace_name) return;
     }
@@ -989,8 +990,9 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
     char keychar[1];
     XLookupString(ke, keychar, 1, &ks, 0);
 
-    if (ks == XK_Return) {
-      *(new_name_pos) = 0;
+    // either we are told to end with a return or we hit the end of the buffer
+    if (ks == XK_Return || new_name_pos == 127) {
+      *(new_workspace_name + new_name_pos + 1) = 0;
 
       editing = False;
 
@@ -1017,7 +1019,8 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
       }
 
       delete [] new_workspace_name;
-      new_workspace_name = new_name_pos = 0;
+      new_workspace_name = (char *) 0;
+      new_name_pos = 0;
 
       reconfigure();
     } else if (! (ks == XK_Shift_L || ks == XK_Shift_R ||
@@ -1028,14 +1031,16 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
 		  ks == XK_Super_L || ks == XK_Super_R ||
 		  ks == XK_Hyper_L || ks == XK_Hyper_R)) {
       if (ks == XK_BackSpace) {
-	if (new_name_pos != new_workspace_name) {
-	  *(--new_name_pos) = 0;
+	if (new_name_pos > 0) {
+	  --new_name_pos;
+	  *(new_workspace_name + new_name_pos) = '\0';
 	} else {
-	  *new_workspace_name = 0;
+	  *new_workspace_name = '\0';
 	}
       } else {
-	*(new_name_pos++) = *keychar;
-	*(new_name_pos) = 0;
+	*(new_workspace_name + new_name_pos) = *keychar;
+	++new_name_pos;
+	*(new_workspace_name + new_name_pos) = '\0';
       }
 
       XClearWindow(display, frame.workspace_label);

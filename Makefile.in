@@ -365,7 +365,8 @@ maintainer-clean
 
 
 uninstall-local:
-	rmdir $(pkgdatadir)
+	-rmdir $(pkgdatadir)
+
 distclean-local:
 	rm -f *\~ gmon.out
 

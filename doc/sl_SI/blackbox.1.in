@@ -351,15 +351,10 @@ je zgled za menujsko datoteko:
 .PP
 .nf
 # Menujska datoteka upravljalnika oken Blackbox
-[begin] (Blackbox 0.60.3)
+[begin] (Blackbox @version@)
   [exec] (rxvt) {rxvt -ls}
-  [exec] (netscape) {netscape -install}
+  [exec] (Mozilla) {mozilla}
   [exec] (GIMP) {gimp}
-  [exec] (XV) {xv}
-  [submenu] (pine)
-    [exec] (dospela pisma) {rxvt -name pine -e pine -i}
-    [exec] (novo sporoèilo) {rxvt -name pine -e pine ""}
-  [end]
   [submenu] (Upravljalnik oken)
     [exec] (Uredi menuje) {nedit .blackbox/Menu}
     [submenu] (Slog) {Kateri slog?}
@@ -818,8 +813,8 @@ Dostopna bo ¹e v mnogih jezikih.
 .IR bsetroot (1), \ bbkeys (1)  \" ni ¹e èisto narejen ;-(
 .\"
 .\" $Log: blackbox.1.in,v $
-.\" Revision 1.1.1.1  2002/01/25 10:25:28  shaleh
-.\" blackbox 0.62.0pre5
+.\" Revision 1.1.1.2  2002/01/25 10:33:18  shaleh
+.\" blackbox 0.62.0
 .\"
 .\" Revision 1.5  2002/1/13 18:12:44  kosir
 .\" Dopolnjeno za blackbox-0.62.0pre4

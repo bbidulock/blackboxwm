@@ -94,7 +94,8 @@ private:
   BTimer *clock_timer, *hide_timer;
   Toolbarmenu *toolbarmenu;
 
-  char *new_workspace_name, *new_name_pos;
+  char *new_workspace_name;
+  size_t new_name_pos;
 
   friend class HideHandler;
   friend class Toolbarmenu;

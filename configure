@@ -714,7 +714,7 @@ fi
 
 PACKAGE=blackbox
 
-VERSION=0.62.0pre5
+VERSION=0.62.0
 
 if test "`cd $srcdir && pwd`" != "`pwd`" && test -f $srcdir/config.status; then
   { echo "configure: error: source directory already configured; run "make distclean" there first" 1>&2; exit 1; }
@@ -3135,11 +3135,13 @@ util/Makefile
 data/Makefile
 data/styles/Makefile
 doc/Makefile
+doc/ja_JP/Makefile
 doc/nl_NL/Makefile
 doc/sl_SI/Makefile
 nls/Makefile
 nls/C/Makefile
 nls/da_DK/Makefile
+nls/de_DE/Makefile
 nls/es_ES/Makefile
 nls/et_EE/Makefile
 nls/fr_FR/Makefile
@@ -3262,11 +3264,13 @@ util/Makefile
 data/Makefile
 data/styles/Makefile
 doc/Makefile
+doc/ja_JP/Makefile
 doc/nl_NL/Makefile
 doc/sl_SI/Makefile
 nls/Makefile
 nls/C/Makefile
 nls/da_DK/Makefile
+nls/de_DE/Makefile
 nls/es_ES/Makefile
 nls/et_EE/Makefile
 nls/fr_FR/Makefile

@@ -347,15 +347,10 @@ Here is a short example of a menu file:
 .PP
 .nf
 # Blackbox menu file
-[begin] (Blackbox 0.60.3)
+[begin] (Blackbox @version@)
   [exec] (rxvt) {rxvt -ls}
-  [exec] (netscape) {netscape -install}
+  [exec] (Mozilla) {mozilla}
   [exec] (The GIMP) {gimp}
-  [exec] (XV) {xv}
-  [submenu] (pine)
-    [exec] (inbox) {rxvt -name pine -e pine -i}
-    [exec] (new message) {rxvt -name pine -e pine ""}
-  [end]
   [submenu] (Window Manager)
     [exec] (Edit Menus) {nedit .blackbox/Menu}
     [submenu] (Style) {Which Style?}

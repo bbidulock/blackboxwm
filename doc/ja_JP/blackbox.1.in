@@ -1,0 +1,839 @@
+.\"
+.\" Man page for Blackbox
+.\"
+.\" Copyright (c) 2000 by Wilbert Berendsen <wbsoft@xs4all.nl>
+.\" Japanese Version Copyright (c) 2002 SATOH Satoru <ss@gnome.gr.jp>
+.\"
+.\" This manual page may be freely distributed and modified.
+.\" Parts of the text are taken from website and several README's
+.\" by His Great Hughesness himself. Why reinvent wheels?
+.\"
+.\" Created with NEdit, tested with ``man'' and ``tkman.''
+.\" This manpage uses only standard groff and tmac.an macros.
+.\" To all translators who didn't do manpages earlier (like me ;-):
+.\" Read the Man-Page-Mini-HOWTO and the LDP manpage ``man 7 man''
+.\" There's all I needed to know about these macros.
+.\"
+.\" Japanese Version, first created Thu Jan 17 2002
+.\"
+.\" ..define sort of <blockquote><pre> macro
+.de EX
+.ne 5
+.if n .sp 1
+.if t .sp .5
+.nf
+.in +.5i
+..
+.de EE
+.fi
+.in -.5i
+.if n .sp 1
+.if t .sp .5
+..
+.TH blackbox 1 "October 4th, 2000" "0.61.1"
+.SH 名前
+blackbox \- X Window System 用のウィンドウマネージャ
+.SH 書式
+.BR blackbox " \-help | \-version"
+.br
+.B blackbox 
+.RI "[ \-rc" " rcfile " "] [ \-display" " display " ]
+.SH 説明
+.\"
+.\" blackbox.alug.org の最初のパラグラフから引用
+.\"
+Blackbox はOpen Group's X Window System、Version 11 Release 6 以上のための
+ウィンドウマネージャのリストに加わるべきものです。Blackbox は C++ で書かれ、
+(画像処理の部分の実装は Window Maker に似ていますが)他のどのウィンドウマネ
+ージャとも共通のコードを持っていません。
+.PP
+Blackbox はコードの最初の行を書いたときからミニマリズムを前提に発展してき
+ました。アイキャンディになることも多機能になることも、あるいは広く絶賛さ
+れている NeXT のインタフェースのためにもっとも Adorned (美しく装飾された)
+ものになることもないということを意味しています。単に
+.BR 動作が速いこと
+を目指しています。
+.PP
+Blackbox は、カスタマイズ可能なウィンドウ装飾、アプリケーションを起動する
+ためのルートメニュー、そのときのワークスペース名、フォーカスされている
+アプリケーション名、時刻を表示するツールバーの機能を持っています。
+またワークスペースを追加、消去するためのワークスペースメニューもあります。
+`スリット' は小さなアプリケーションを収納することができて、例えば
+bbtools はこのスリットの機能を利用しています。
+.PP
+アイコンについては Blackbox は特殊な方法をとっています。ウィンドウを最小化
+してもアイコンはどこにも現れません。その代わり、最小化されたアプリケーション
+はすべて ワークスペースメニューの`アイコン'サブメニューで見ることができます。
+もうあなたのデスクトップがアイコンでごっちゃになることもありません! アイコン
+の代わりにはウィンドウシェード機能も使えます。ウィンドウのタイトルバーで
+ダブルクリックすると、ウィンドウがシェード(折畳める)します (ウィンドウが
+消えて、タイトルバーだけが表示されるようになります)。
+.PP
+Blackbox は画像をその場で描画するための独自の画像クラスを使っています。
+スタイルファイルを使うと、デスクトップの外観を大幅に変えることができます。
+Blackbox は現在のところはページャなどの他のクライアントとの通信に独自の
+プロトコルを用いていますが、GNOME や KDE で使われているような、新しい
+ウィンドウマネージャ仕様のサポートの作業も進行中です。
+.SH オプション
+Blackbox は次のコマンド行オプションをサポートしています:
+.TP
+.B \-help
+コマンド行オプションと組込み特性を表示して、終了.
+.TP
+.B \-version
+バージョン情報を表示して、終了.
+.TP
+.BI \-rc \ rcfile
+標準
+.IR  "~/.blackboxrc"
+とは異なる他の初期化ファイルを使用.
+.TP
+.BI \-display \ display
+指定のディスプレイで Blackbox を起動.
+Blackbox 上で起動するプログラムもまた
+Programs started by Blackbox will have the
+.B DISPLAY
+環境変数をこの値に指定していることになります.
+.SH 実行
+Blackbox は通常ユーザの初期化スクリプト(大抵は
+This program is usually started by the user's startup script, most times called
+.IR ~/.xinitrc
+)の中で起動されます。
+blackbox を実行するにはスクリプト内に
+.EX 0
+exec blackbox
+.EE
+をスクリプトの最後で実行されるように追加します。
+なおこのとき Blackbox が終了すると X のセッションも終了します。
+.PP
+Blackbox は起動するとまず標準のメニューファイルを
+.IR @defaultmenu@
+について検索します。ここでシステム共通のメニューをユーザに
+対して提供することができます。
+.PP
+終了または再起動時には Blackbox はユーザ標準設定をユーザのホーム
+ディレクトリ内のファイル
+.I ~/.blackboxrc
+に保存します。
+このファイルのいくつかの項目は手で編集することができます。
+.SH 使い方
+バージョン 0.60.x から Blackbox はそれ自身ではキーイベント処理を行いません。
+そのためには、代わりに外部プログラム
+From version 0.60.x, Blackbox does no keyboard handling by itself; instead, it
+relies on an external program
+.IR bbkeys (1)
+を使います。
+そういうわけでこの節ではすべてのマウスコマンドについて説明します。
+.SS ルートウィンドウ (背景):
+右クリック(第三ボタン)でルートメニューがポップアップし、このメニューで
+アプリケーションを起動することができます。御希望に応じてメニューを
+カスタマイズすることもできます (メニューファイルの置き場所については
+前述のとおり)。
+中央クリック(第二ボタン)でワークスペースメニューがポップアップします。
+このメニューでは、ワークスペースの追加と削除、すべてのワークスペース上で
+動作しているアプリケーションの閲覧、アイコン化されたアプリケーションの
+表示、任意のアプリケーション/ワークスペースへのジャンプが可能です。
+.PP
+ワークスペースメニュー内のアプリケーション名の上で左クリック(第一ボタン)
+すると、そのワークスペースに移動し、そのアプリケーションのウィンドウを
+前面に出し/フォーカスします。中央クリック(第二ボタン)すると、その
+アプリケーションを現在のワークスペースに移動します。
+.SS ツールバー:
+ツールバーは、ワークスペース名、現在フォーカスされているウィンドウの
+名前、そして時計の三つの部分から構成されています。
+ツールバーは、左クリックで前面に、中央クリックで他のウィンドウの背面に
+(ただし、`常に最前面に(AlwaysOnTop)'が未指定の場合)、右クリックで
+ツールバーメニューをポップアップします。
+.PP
+このメニューを使うと、現在のワークスペースの名前を入力し、設定することが
+できます (入力し終ったら、Enter を押せば確定します)。
+またツールバーの位置、常に最前面に表示するかどうか、そしてマウス
+カーソルをよけると自動的に隠すようにするかどうかを選択することが
+できます。
+.PP
+注意: Blackbox バージョン 0.60.0 ではツールバー上で右クリックすると
+すぐにワークスペース名の編集モードに入るようになっていました。
+.SS ウィンドウタイトルバー、枠:
+ウィンドウの枠の上の任意の場所で左クリックすると、前面に出せます。
+ドラッグするとウィンドウを移動できます。
+底辺部分の左右の角のリサイズグリップをドラッグするとウィンドウを
+リサイズできます。
+中央クリックで即座にウィンドウを背面に下げることができます。
+枠またはタイトルバーの上で右クリックすると、次のコマンドを含む
+ウィンドウメニューをポップアップします:
+.TP
+.B 送り先...(Send To)
+ウィンドウを他のワークスペースに移動.
+中央ボタンでワークスペースを選択することで、その選択したワークスペースに
+アプリケーションと一緒に移動します.
+.TP
+.B シェード(Shade)
+ウィンドウをシェード(タイトルバーだけ表示).
+.TP
+.B アイコン化(Iconify)
+ウィンドウをアイコン化.
+`アイコン'はワークスペースメニューの`アイコン'サブメニュー内に表示
+されます。画面にアイコンが表示されるわけではありません。
+.TP
+.B 最大化(Maximize)
+ウィンドウを(非)最大化.
+中央ボタンでこの項目を選択するとウィンドウは垂直方向に最大化します。
+.TP
+.B 前面に出す(Raise)
+ウィンドウを前面に出す.
+.TP
+.B 後面に下げる(Lower)
+ウィンドウを後面に下げる.
+.TP
+.B 居座り(Stick)
+ウィンドウを居座らせる(元に戻す).
+そのウィンドウはワークスペースに限らず常に表示されるようになる。
+.TP
+.B 強制終了(Kill Client)
+ウィンドウの所有者 を kill (-SIGKILL).
+クライアントが終了を拒絶するときだけに使用します。
+.TP
+.B 終了(Close)
+アプリケーションを終了.
+.PP
+ウィンドウのタイトルバーをダブルクリックすると、ウィンドウは
+シェードし(折畳まれ)、タイトルバーだけが表示されるようになります。
+再度ダブルクリックすれば元に戻ります。
+.SS ウィンドウボタン:
+ウィンドウの左上角にあるボタンは最小化ボタンです。
+任意のマウスボタンでクリックするとウィンドウがアイコン化されます。
+右の方の×印のボタンはアプリケーションの終了ボタンです。
+もし右の方にもう一つボタンがあるなら、それはウィンドウを、
+左クリックで全画面表示(最大化)、右クリックで垂直方向だけ最大化、
+中央クリックで水平方向だけ最大化するためのボタンです。
+.SS メニュー:
+中央ボタンをクリックするとメニューが消えます。
+任意の[サブ]メニュー上でタイトルバー左ボタンをクリック+ドラッグで
+メニューを固定し、クリックしても消えずに表示され続けるようにする
+ことができます。
+.SS その他:
+ウィンドウをドラッグしたくても底辺のハンドルまたはタイトルバーが
+表示されていないとき(画面の外に出てしまっている場合など)、Altキーを
+押しながら第一ボタンでウィンドウの任意の場所でドラッグすることが
+できます。
+またAlt+第一ボタンで部分的に表示されているウィンドウを前面に出す
+ことができます。さらに、Alt+第二(第三)ボタンでウィンドウを後面に
+下げる(リサイズする)ことができます。
+.SH メニューファイル
+標準メニューファイルは
+.IR @defaultmenu@
+にインストールされます。
+もちろん、システム広範なメニューをすべてのユーザについて一斉に
+カスタマイズすることも可能ですが、各ユーザ用のメニューを作成する
+こともできます。
+それにはまずディレクトリ
+.IR "~/.blackbox/" " (or " "~/blackbox/" ")"
+をそのユーザのホームディレクトリに作成し、その中に例えば
+.I menu
+というメニューファイルを、新規あるいはシステム広範のメニューファイル
+をコピーして作成します。次に Blackbox に標準の代わりにこのメニュー
+ファイルを読み込むように指示します。それには
+.I ~/.blackboxrc
+ファイル内で、例えば、
+.EX
+session.menuFile:       ~/.blackbox/menu
+.EE
+というリソース値指定を追加(変更)します。
+この変更を適用するには、Blackbox は再起動する必要があります。
+メニューがきちんと利用可能であることを確認したら、Blackbox 標準の
+ルートメニューから`再起動'を選択します。
+.SS メニュー構文
+メニューの構文は非常に単純かつ効果的なものです。
+メニュー行には最大で三つのフィールドがあり、それらは次のような
+書式になっています:
+.EX
+[タグ] (ラベルまたはファイル名) {コマンドまたはファイル名}
+.EE
+サポートされているタグは以下のとおりです:
+.TP
+.B [begin] (ルートメニューのラベル)
+Blackbox にメニューファイルの解析開始を指示します。このタグは
+Blackbox がメニューファイルを解析するのに必要です。もしこの
+タグがみつからなければシステム標準メニューが代わりに利用されます。
+.TP
+.B [end]
+Blackbox にメニューの終端を指示します。
+これはサブメニューおよびルートメニューの両方に使えます。
+なお、必ず対応する[begin]タグがなければいけません。
+.TP
+.B [exec] (コマンドのラベル) {シェルコマンド}
+コマンドアイテムをメニューに挿入。
+メニューアイテムをメニューから選択すると Blackbox は `シェルコマンド'を
+実行します。
+.TP
+.B [exit] (終了用ラベル)
+Blackbox を終了するためのアイテムを挿入します。
+その上で動いているプログラムもすべて終了します。
+.TP
+.B [include] (ファイル名)
+.I ファイル名
+で指定されたファイルを解析し、現在のメニューに組込みます。ファイル名は
+絶対パスか、
+.IR ~/
+(ホームディレクトリに展開される)ではじまる名前です。例えば、
+.EX
+[include] (~/blackbox/stylesmenu)
+.EE
+とすれば、
+.I /home/bhughes/blackbox/stylesmenu
+がメニューに組込まれます。
+.TP
+.B [nop] (ラベル - オプション)
+メニューに何もしないアイテムを挿入します。
+これはメニューをブロックかセクションに分割するために使います。
+.B [nop]
+にはラベルをつけることができますが、必須ではなく、ラベル未指定の
+場合は単なる空白アイテムになります。
+.TP 
+.B [style] (ラベル) {ファイル名}
+選択されると
+.I ファイル名
+で指定されるスタイルファイルを読み込み、新しいテクスチャ、色、
+フォントを現在実行中のセッションに適用するように Blackbox に
+指示するアイテムを挿入します。
+.TP
+.B [stylesdir] (ディレクトリ名)
+指定されたディレクトリからディレクトリを除くすべてのファイル名を読み込み、
+各々に対応するメニューアイテムをメニュー内に生成します。Blackbox は各
+ファイルが適切なスタイルファイルであるととらえます。ユーザがメニュー
+からアイテムを選択するとその選択されたスタイルファイルを現在のセッション
+に適用します。メニュー内に生成されるラベルはスタイルファイルのファイル名
+です。
+.TP
+.B [stylesmenu] (ラベル) {ディレクトリ名}
+Creates a submenu entry with
+.I ラベル
+サブメニューエントリを作成し、そのサブメニュー内に指定ディレクトリの中の
+すべてのファイル名を
+.B [stylesdir]
+コマンドと同じようにして挿入
+.IP
+.RB \  [stylesdir] \ と\  [stylesmenu]
+の両方のコマンドともメニューを編集することなしにスタイルをインストール
+することを可能にします。
+.TP
+.B [submenu] (ラベル) {メニュータイトル - オプション}
+Blackbox に新規メニューを生成、解析するように指示します。
+このメニューはサブメニューとして親メニューに挿入されます。
+メニューは再帰的に解析されるので、その階層の深さに上限はなく、入れ子に
+なったサブメニューをつくることも可能です。新規メニューのタイトルは
+オプションです。未指定なら新規メニューのタイトルはアイテムのタイトルと
+同じものになります。
+サブメニューの終端には
+.B [end]
+タグが必要です。
+.TP
+.B [reconfig] (ラベル)
+このアイテムが選択されると現在のスタイルとメニューファイルが再度
+読み込まれ、変更を適用します。
+これによって、新しいスタイルやテーマをつくるとき、スタイルを編集
+保存する度に毎回 Blackbox を再起動する必要がなくなり、便利です。
+けれども、Blackbox は、メニュー変更時には自動的に再読み込みします。
+.TP
+.B [restart] (ラベル) {シェルコマンド - オプション}
+Blackbox を再起動させます。
+もし`シェルコマンド'が指定されていれば、停止後にそのコマンド
+(通常は他のウィンドウマネージャ)を実行します。コマンドが省略されて
+いれば Blackbox が起動します。
+.TP
+.B [config] (ラベル)
+ウィンドウ配置、フォーカススタイル、ウィンドウの移動スタイルなどの
+多数の設定オプションを含む、Blackbox が生成するサブメニューアイテムを
+挿入します。
+.TP
+.B [workspaces] (ラベル)
+Blackbox に直接メニューにワークスペースメニューへのリンクを挿入する
+ように指示します。これは(例えば第三ボタンのないマウスを使っているなど)
+ワークスペースにアクセスできない場合に便利です。
+.PP
+`#'ではじまる行はコメントとして扱われ、無視されます。また、
+ラベル/コマンド/ファイル名のフィールド内では次のようにして任意の
+文字をエスケープできます:
+.EX
+[exec] (\\(coolな\\) \\{XTERM\\}) {xterm -T \\"cool XTERM\\"}
+.EE
+`\\\\'を使って、バックスラッシュリテラルをラベル/コマンド/ファイル名
+フィールドに挿入することができます。
+.SS メニューの実例
+それではいくつかのアイテムを組み合わせてみましょう。次はメニューファイルの
+短かい例です:
+.PP
+.nf
+# Blackbox メニューファイル
+[begin] (Blackbox @version@)
+  [exec] (rxvt) {rxvt -ls}
+  [exec] (Mozilla) {mozilla}
+  [exec] (The GIMP) {gimp}
+  [submenu] (Window Manager)
+    [exec] (Edit Menus) {nedit .blackbox/Menu}
+    [submenu] (Style) {Which Style?}
+      [stylesdir] (~/.blackbox/styles)
+      [stylesmenu] (Blackbox Styles) {@pkgdatadir@/styles}
+    [end]
+    [config] (Config Options)
+    [reconfig] (Reconfigure)
+    [restart] (Restart)
+  [end]
+  [exit] (Log Out)
+[end]
+# end of menu file
+.fi
+.SH スタイル
+Blackbox では、ウィンドウの枠、メニュー、ツールバーなどの外観について、
+色やテクスチャ、フォントその他の
+.IR X (1)
+リソース指定を含む、特殊なファイルを利用することができます。
+.PP
+Blackbox は標準インストール状態で既に、いくつかのスタイル指定ファイルが
+利用できます。通常はこれらは
+.IR @pkgdatadir@/styles
+にインストールされています。
+これらのファイルを見たり、編集することで、Blackbox のスタイルの仕組みが
+どうなっているのか理解できます。
+メニューファイル内にメニューコマンド
+.BR [style] "、" [stylesdir] " そして " [stylesmenu]
+を挿入すれば、スタイルをその場で選択、変更できるようになります。
+.PP
+また、ホームディレクトリに(通常は
+.I ~/.blackbox/styles
+という名前の)ディレクトリを作成し、独自のスタイルファイルをそこに置く
+こともできます。
+もちろんこのディレクトリの名前は好きなものにできますが、多くの
+ダウンロード可能なテーマでは
+.I styles
+という名前(bb.themes.org での作法)に依っています。
+.PP
+スタイルの仕組みがどのように機能しているか理解するには、X のリソースが
+どのように機能しているかという知識が少し必要になります。
+.PP
+X のリソースはキーと値から構成されています。
+キーはピリオド(`.')で区切られた、いくつかの小さなキー(ときどき`子'として
+参照されます)の組み合わせからなります。
+またキーには星印(`*')を複数のキーに合致するワイルドカードとして使うことも
+できます。これは単色あるいは二色を基本にしたスタイルの場合に便利です。
+.PP
+Blackbox では四つの主要コンポーネント - ツールバー、スリット、メニュー、
+ウィンドウの(枠の)装飾 - をカスタマイズすることができます。
+.PP
+ウィンドウをドラッグする際にx-y座標を表示する小さなウィンドウについては、
+ウィンドウのタイトルバーのスタイルを借ります。
+.PP
+いくつかの簡単な例です:
+.EX
+toolbar.clock.color:	green
+.EE
+ツールバーの時計の色を`green(緑)'に設定しています。
+もう一つの例:
+.EX
+menu*color:	rgb:3/4/5
+.EE
+メニューと
+.I その`子'すべて
+について、色のリソースを`rgb:3/4/5'に設定しています
+(色名の説明については
+.IR X (1)
+を参照して下さい)。
+この設定には`子'も含まれているので
+.IR menu.title.color " と " menu.frame.color
+にも適用されます。
+さらに
+And with
+.EX
+*font:	-b&h-lucida-medium-r-normal-*-*-140-*
+.EE
+とすると、このフォント名をすべてのキーのフォントリソースに、一度で
+設定できます
+(プログラム
+.IR xfontsel "(1)、" gtkfontsel "、あるいは " xlsfonts "(1)"
+を利用すれば、システムにインストールされているフォントの情報を
+得ることができます)。
+.PP
+Blackbox にははテクスチャをその場で描画する機能があるのでちょっと
+豪華に見えます。テクスチャの記述は上述の色の場合と似た方法で指定
+します:
+.ta \w'toolbar.clock.colorTo:\ 'u
+.EX
+toolbar.clock:	Raised Gradient Diagonal Bevel1
+toolbar.clock.color:	rgb:8/6/4
+toolbar.clock.colorTo:	rgb:4/3/2
+.EE
+難しそうだけど心配しないで ;-) すぐ説明します!
+テクスチャ記述は次の最大五つのフィールドからなります:
+.TP
+.B Flat / Raised / Sunken
+flat(平坦)、raised(もり上った)、sunken(窪んだ) 外観のいずれかの
+コンポーネントを指示します。
+.TP
+.B Gradient / Solid
+単色(Solid)、グラデーションを伴うテクスチャ(Gradient)のどちらを描画するかを
+指示します。
+.TP
+.B Horizontal / Vertical / Diagonal / Crossdiagonal / Pipecross / Elliptic / Rectangle / Pyramid
+これらのテクスチャタイプ(それぞれ、水平/垂直/対角/両対角/パイプクロス/
+楕円/矩形/ピラミッド、を表す)の中から一つを選択します。なお、使うには
+.B Gradient
+も指定していなければなりません。
+.TP
+.B Interlaced
+はテクスチャをインターレース(線毎に暗くしていく)するように指示します。
+このオプションはほとんどのグラデーションテキスチャで利用されていますが、
+Blackbox バージョン 0.60.3 からは単色テキスチャでも機能します。
+.TP
+.B Bevel1 / Bevel2
+はどのタイプのビベル(色の傾斜=変化の度合)を利用するかを指示します。
+Bevel1 は標準のビベルで、画像の端から色を微妙に変化させていきます。
+Bevel2 はもう一つのビベルで、画像の端から一ピクセルのところから色を
+微妙に変化させていきます。
+.PP
+テクスチャ記述の代わりにオプション
+Instead of a texture description, the option
+.B ParentRelative
+も利用できます。これはそのコンポーネントを親の一部、つまり全体を透過的に
+扱います。
+.PP
+すべてのグラデーションテキスチャは二つの色値、
+All gradient textures are composed of two color values: the
+.IR color " と " colorTo " リソース"
+から構成されています。color はグラデーションのはじめの色、colorToは
+終わりの色を表しています。
+もし
+.B Interlaced 
+が
+.B Solid
+モードで利用されているなら
+.I colorTo
+リソースはインターレースの色を指定するのに利用します。
+.PP
+さて次は、完全なコンポーネントとそれらすべてのコンポーネントについて
+指定可能な値のリストです。コンポーネントの先頭には、Blackbox の
+スタイルと X のリソースファイル両方で使われる、感嘆符(`!')ではじまる
+コメント行が書かれています。
+.PP
+.ta \w'window.button.unfocus.picColor:\ 'u 
+.nf
+.\"
+.\" コマンドも翻訳するべき!
+.\"
+! ツールバー自身
+toolbar:	テクスチャ
+toolbar.color:	色
+toolbar.colorTo:	色
+
+! ツールバー上のボタン
+toolbar.button:	テクスチャまたは \fIParentRelative\fR
+toolbar.button.color:	色
+toolbar.button.colorTo:	色
+
+! 矢印ボタンの色
+toolbar.button.picColor:	色
+
+! 押下時のボタン
+toolbar.button.pressed:	テクスチャ \fI(例 Sunken)\fR または \fIParentRelative\fR
+toolbar.button.pressed.color:	色
+toolbar.button.pressed.colorTo:	色
+
+! 押下時の矢印ボタンの色
+toolbar.button.pressed.picColor:	色
+
+! ツールバーのワークスペースラベル
+toolbar.label:	テクスチャまたは \fIParentRelative\fR
+toolbar.label.color:	色
+toolbar.label.colorTo:	色
+toolbar.label.textColor:	色
+
+! ツールバーのウィンドウラベル
+toolbar.windowLabel:	テクスチャまたは \fIParentRelative\fR
+toolbar.windowLabel.color:	色
+toolbar.windowLabel.colorTo:	色
+toolbar.windowLabel.textColor:	色
+
+! ツールバーの時計
+toolbar.clock:	テクスチャまたは \fIParentRelative\fR
+toolbar.clock.color:	色
+toolbar.clock.colorTo:	色
+toolbar.clock.textColor:	色
+
+! ツールバーのテキストの位置
+toolbar.justify:	\fIcenter\fR、\fIleft\fR、\fIright\fR のどれか
+
+! すべてのツールバーコンポーネントに利用するフォント
+toolbar.font:	フォント \fI(例 -*-helvetica-medium-r-normal-*-*-100-*)\fR
+
+! メニュータイトルバー
+menu.title:	テクスチャ
+menu.title.color:	色
+menu.title.colorTo:	色
+menu.title.textColor:	色
+menu.title.font:	フォント
+menu.title.justify:	\fIcenter\fR、\fIleft\fR、\fIright\fR のどれか
+
+! メニュー枠
+menu.frame:	テクスチャ
+menu.frame.color:	色
+menu.frame.colorTo:	色
+menu.frame.textColor:	色
+menu.frame.disableColor:	色
+menu.frame.font:	フォント
+menu.frame.justify:	\fIcenter\fR、\fIleft\fR、\fIright\fR のどれか
+
+! サブメニューアイテムの鋲
+menu.bullet:	\fIempty\fR、\fItriangle\fR、\fIsquare\fR、\fIdiamond\fR のどれか
+menu.bullet.position:	\fIright\fR または \fIleft\fR
+
+! 強調表示されたメニューアイテム
+menu.hilite:	テクスチャ(例 \fIRaised\fR)
+menu.hilite.color:	色
+menu.hilite.colorTo:	色
+menu.hilite.textColor:	色
+
+! フォーカスウィンドウ
+window.title.focus:	テクスチャ
+window.title.focus.color:	色
+window.title.focus.colorTo:	色
+
+! 非フォーカスウィンドウ
+window.title.unfocus:	テクスチャ
+window.title.unfocus.color:	色
+window.title.unfocus.colorTo:	色
+
+! ウィンドウラベル
+window.label.focus:	テクスチャ または \fIParentRelative\fR
+window.label.focus.color:	色
+window.label.focus.colorTo:	色
+window.label.focus.textColor:	色
+
+window.label.unfocus:	テクスチャ または \fIParentRelative\fR
+window.label.unfocus.color:	色
+window.label.unfocus.colorTo:	色
+window.label.unfocus.textColor:	色
+
+! ハンドルバー
+window.handle.focus:	テクスチャ
+window.handle.focus.color:	色
+window.handle.focus.colorTo:	色
+
+window.handle.unfocus:	テクスチャ
+window.handle.unfocus.color:	色
+window.handle.unfocus.colorTo:	色
+
+! リサイズグリップ
+window.grip.focus:	テクスチャ
+window.grip.focus.color:	色
+window.grip.focus.colorTo:	色
+
+window.grip.unfocus:	テクスチャ
+window.grip.unfocus.color:	色
+window.grip.unfocus.colorTo:	色
+
+! ウィンドウボタン
+window.button.focus:	テクスチャまたは \fIParentRelative\fR
+window.button.focus.color:	色
+window.button.focus.colorTo:	色
+window.button.focus.picColor:	色
+
+window.button.unfocus:	テクスチャまたは \fIParentRelative\fR
+window.button.unfocus.color:	色
+window.button.unfocus.colorTo:	色
+window.button.unfocus.picColor:	色
+
+window.button.pressed:	テクスチャ(例 \fISunken\fR)
+window.button.pressed.color:	色
+window.button.pressed.colorTo:	色
+
+! ウィンドウ周囲の枠
+window.frame.focusColor:	色
+window.frame.unfocusColor:	色
+
+! フォントとウィンドウラベルのテキストの位置
+window.font:	Font
+window.justify:	\fIcenter\fR、\fIleft\fR、\fIright\fR のどれか
+
+! その他のリソース
+
+! すべてのコンポーネントの周囲に描画できる枠
+borderWidth:	ピクセル数、例えば \fI1\fR
+borderColor:	色
+
+bevelWidth:	ピクセル数 > 0
+handleWidth:	ピクセル数 > 0
+
+! ウィンドウ枠の幅(バージョン 0.61.x 以上)
+! 未指定なら frameWidth には bevelWidth の値が利用される
+frameWidth:	ピクセル数 > 0
+
+
+! スタイル選択時に実行されるコマンド
+! ルートウィンドウの壁紙設定を実行するのが典型的
+rootCommand:	シェルコマンド、例えば \fIbsetroot -mod 4 4 -fg rgb:	5/6/6 -bg grey20\fR
+
+! いくつかの bbtools はこれらの古い 0.51 のリソースを読み込む
+menuFont:	フォント
+titleFont:	フォント
+.fi
+.PP
+さてこれは長いリストですが、独自スタイルをつくる際には沢山のキーを
+簡単に一つのコマンドにまとめてしまうことができるのを忘れては
+いけません。例えば、
+.EX
+.ta \w'*unfocus.textColor:\ 'u
+*color:	slategrey
+*colorTo:	darkslategrey
+*unfocus.color:	darkslategrey
+*unfocus.colorTo:	black
+*textColor:	white
+*unfocus.textColor:	lightgrey
+*font:	lucidasans-10
+.EE
+はすべてのコンポーネントに対する素敵な標準指定となります。
+.SH スリット
+スリットは、例えば bbtools や WindowMaker のドックアプリケーションの
+ようなドッキング可能なアプリケーションを組込むことのできる、特別な
+Blackbox ウィンドウです。
+スリットの中で実行中のアプリケーションは自身のウィンドウ枠を
+持たず、代わりにスリット内に収まり、ワークスペースに関らずどの
+ワークスペースでも常に表示されています。
+スリットウィンドウの端を第三ボタンでクリックすると、その位置の指定、
+中に含むアプリケーションを水平、垂直どちらにグループ化するか、そして
+マウスを移動させた後隠して表示しないかとうかを設定するメニューが
+ポップアップされます。
+.PP
+スリットに入れるには、ドッキング可能なほとんどのアプリケーションで
+.B -w
+オプションを使います。例:
+.IR ~/.xinitrc
+に次のように記述:
+.EX
+bbmail -w &
+bbpager -w &
+exec blackbox
+.EE
+もちろん、スリットのサポート付きでコンパイル(標準ではそうなっています)する
+必要があります。
+.SH リソースファイル
+通常はリソースファイル
+.I ~/.blackboxrc
+を Blackbox 自身が作成、管理します。
+最後に選択されたスタイルファイル、ワークスペース名などの
+.B [config]
+メニュー(0.60.x 以上)由来のすべてのオプションはこのファイルに自動的に保存されます。
+けれども、いくつかのリソースについてはあなた自身が編集したいと思うかもしれません:
+.TP
+.B session.menuFile:
+これは Blackbox に検索するべきメニューファイルを指示します。
+.TP
+.B session.screen0.toolbar.widthPercent:
+ツールバーのスペース(%)を指示します。
+標準値:
+.IR 66 .
+.TP
+.B session.screen0.strftimeFormat:
+ツールバー上の現在時刻の表示方法を設定します。
+.IR strftime (3)
+形式を使います。
+標準値:
+.IR "%I:%M %p"
+.TP
+.B session.autoRaiseDelay:
+`自動的に前面に出す'オプションを有効にしているとき、ウィンドウを前面に
+出すまでの遅延時間(msec)を設定します。
+標準値:
+.IR 250 .
+.TP
+.B session.doubleClickInterval:
+ダブルクリックとみなすマウスクリックの時間間隔(msec)を設定します。
+標準値:
+.IR 250 .
+.TP
+.B session.screen0.edgeSnapThreshold:
+画面を横切ってウィンドウを移動する際、簡単に配置するために画面の端に
+`くっつける(snap)'することができます。
+この値は Blackbox にウィンドウが端にくっつくまでの距離(ピクセル)を
+指示します。
+標準値:
+.IR 0 .
+.TP
+.B session.cacheMax:
+Blackbox に X サーバがピックスマップをキャッシュするのに使うメモリ量
+(KByte)を指示します。もしあなたのマシンが少ないメモリで動作している
+ならこの値を小さくします。
+標準値:
+.IR 200 .
+.TP
+.B session.cacheLife:
+Blackbox に X サーバのメモリに未使用のピックスマップを保存する時間
+(分)を指示します。
+標準値:
+.IR 5 .
+.TP
+.B session.colorsPerChannel:
+Blackbox に仮想ディスプレイ上の X サーバから取得する色数を指示します。
+チャネルは red、green または blue です。Blackbox はこの値 ^ 3 個の色を
+確保し、常に利用可能にしておきます。
+この値は 2 から 6 までの値でなければなりません。もし 8bit ディスプレイで
+Blackbox を動作させているなら、このリソースは 4 に設定しなければなりません。
+標準値:
+.IR 4.
+.PP
+Blackbox を複数のデスクトップ環境で動作させているとき、
+.B screen0
+キーはまた任意の適切なデスクトップについて
+key can also be
+.B screen1, 2
+などに設定できます。
+.SH 環境変数
+.TP
+.B HOME
+Blackbox は
+.I .blackboxrc
+ファイルを探し、スタイルファイルとディレクトリ名を解決するのに
+.RB $ HOME
+を使います。
+.TP
+.B DISPLAY
+Blackbox は、コマンド行で他のディスプレイを指定されているのでなければこの
+環境変数によって指定されるディスプレイで起動します。
+.SH 著者とクレジット
+すべてのコードは最初 Brad Hughes
+.nh \" hyphenation off
+(blackbox@alug.org) と
+.hy \" on again
+Jeff Raven
+.nh
+(jraven@psu.edu) によって書かれ、保守されていましたが、
+.hy
+今は Sean 'Shaleh' Perry
+.nh
+(shaleh@debian.org) と
+.hy
+他の世界中からのたくさんの開発者からの改良、貢献によって成り立っています。
+.PP
+Blackbox 公式 web サイト:
+.nh
+.B http://blackbox.alug.org/
+.hy
+.br
+不具合あるいは機能追加要請ページおよび最新版はこちら:
+.nh
+.B http://sf.net/projects/blackboxwm
+.hy
+.br
+たくさんのテーマやその他のもの:
+.nh
+.B http://bb.themes.org/
+.hy
+.PP
+このマニュアルページは Wilbert Berendsen
+.nh
+(wbsoft@xs4all.nl) がまとめました。
+.hy
+他のいくつかの言語版が利用できます。
+日本語版は佐藤暁(SATOH Satoru)が
+.nh
+(ss@gnome.gr.jp) が訳したものです。
+.SH 関連項目
+.IR bsetroot (1), \ bbkeys (1)  \" まだありません ;-(

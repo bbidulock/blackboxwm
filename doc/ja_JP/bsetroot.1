@@ -1,0 +1,92 @@
+.\"
+.\" Man page for Bsetroot
+.\"
+.\" Copyright (c) 2000 by Wilbert Berendsen <wbsoft@xs4all.nl>
+.\" Japanese Version Copyright (c) 2002 SATOH Satoru <ss@gnome.gr.jp>
+.\"
+.TH bsetroot 1 "June 16th, 2000" "0.60.3"
+.SH 名前
+bsetroot \- blackbox 用の壁紙設定ユーティリティ
+.SH 書式
+.BR bsetroot " \-help"
+.br
+.B bsetroot
+.RI "[ \-display " display " ] \-solid " color
+.br
+.B bsetroot
+.RI "[ \-display " display " ] \-mod " "x y" " \-fg " color " \-bg " color
+.br
+.B bsetroot
+.RI "[ \-display " display " ] \-gradient " texture " \-from " color " \-to " color
+.SH 説明
+Bsetroot は壁紙設定のためのユーティリティで、ルートウィンドウの外観を次の
+三つの方法で設定することができます: 単色に塗り潰し、二色を組合せたパターンで
+塗り潰し、二つの異なる色に基づいたグラデーションテクスチャを描画。
+.PP
+Bsetroot は機能の上では
+.IR xsetroot (1)
+に似ていますが、複数画面および、Blackbox と同じ作法でのグラデーション
+テクスチャをサポートしています。
+カーソル処理などは未サポートです。
+Bsetroot は Blackbox パッケージの一部です。
+.SH オプション
+Bsetroot を操作するには三つの方法があり、どれから一つを選択する必要があります:
+.TP
+.BI \-solid " color"
+ルートウィンドウを指定した色に設定.
+.TP
+.BI \-mod " x y"
+複合パターンを作成. 必ず、
+.BR \-bg " と " \-fg
+の色を指定する必要があります.
+.TP
+.BI \-gradient " テクスチャ文字列"
+指定したテクスチャをルートウィンドウに描画.
+可能なテクスチャ文字列については 
+.IR blackbox (1)
+を参照されたし. 必ず、
+.BR \-from " と " \-to
+の両方の色を指定する必要があります.
+.TP
+.BI \-display " display"
+接続するディスプレイを指定.
+.TP
+.BI "\-bg, \-background " color
+背景色.
+.B \-mod
+パターンのために必要となります.
+.TP
+.BI "\-fg, \-foreground " color
+前景色
+.B \-mod
+パターンのために必要となります.
+.TP
+.BI \-from " color"
+テクスチャ描画の開始時の色.
+.B \-gradient
+操作モードについて必要となります.
+.TP
+.BI \-to " color"
+テクスチャ描画の終了時の色.
+.B \-gradient
+操作モードについて必要となります.
+.TP
+.B \-help
+バージョン情報および簡略ヘルプを表示して、終了.
+.SH 著者
+Bsetroot は Brad Hughes
+.nh \" hyphenation off
+(blackbox@alug.org)
+.hy \" on again
+と Jeff Raven
+.nh
+(jraven@psu.edu) によって書かれ、保守されていましたが、
+.hy
+今は Sean 'Shaleh' Perry
+.nh
+(shaleh@debian.org) と
+.hy
+他の世界中からのたくさんの開発者からの改良、貢献によって開発が進められています。
+.hy
+.SH 関連項目
+.IR blackbox (1)

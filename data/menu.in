@@ -62,17 +62,16 @@
   [exec] (Acroread)   {acroread}
 
   [submenu] (Graphics)
-    [exec] (XV)           {xv}
     [exec] (The GIMP)     {gimp}
     [exec] (Image Magick) {display}
   [end]
 
-  [submenu] (Netscape)
-    [exec] (Netscape Navigator)  {netscape}
+  [submenu] (Mozilla)
+    [exec] (Mozilla Navigator)  {mozilla}
     [submenu] (More...)
-      [exec] (Netscape Mail)     {netscape -mail}
-      [exec] (Netscape News)     {netscape -news}
-      [exec] (Netscape Composer) {netscape -edit}
+      [exec] (Mozilla Mail)     {mozilla -mail}
+      [exec] (Mozilla News)     {mozilla -news}
+      [exec] (Mozilla Composer) {mozilla -edit}
     [end]
   [end]
 
@@ -96,9 +95,9 @@
     [restart] (Start FVWM)        {fvwm}
     [restart] (Start WindowMaker) {wmaker}
     [restart] (Start Afterstep)   {afterstep}
+    [restart] (Start Enlightenment) {enlightenment}
     [restart] (Start TWM)         {twm}
     [restart] (Start KWM)         {kwm}
-    [restart] (Start MWM)         {mwm}
   [end]
 
   [exit] (Exit)

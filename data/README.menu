@@ -151,15 +151,14 @@ So we add the item to our menu, and it now looks like this:
 [end]
 ...
 
-Great!  Now let's add us some items to run an irc client, netscape, xv and
+Great!  Now let's add us some items to run an irc client, a web browser and
 some other common programs.  This gives up this:
 
 ...
 [begin] (Example \[Menu\])
 [exec] (xterm) {xterm -ls}
 [exec] (efnet irc) {xterm -e irc fnord irc.efnet.net}
-[exec] (Netscape Navigator) {netscape}
-[exec] (xv 3.10a) {xv}
+[exec] (Mozilla Navigator) {mozilla}
 [exec] (XEmacs) {xemacs}
 [exec] (The GIMP) {gimp}
 [exec] (Video Tune) {xvidtune}
@@ -175,10 +174,10 @@ do this with our menu file, so let's clean it up a bit:
 	[exec] (xterm) {xterm -ls}
 	[exec] (efnet irc) {xterm -e irc fnord irc.efnet.net}
 
-	[exec] (Netscape Navigator) {netscape}
+	[exec] (Mozilla Navigator) {mozilla}
 	[exec] (XEmacs) {xemacs}
 
-	[exec] (xv 3.10a) {xv}
+	[exec] (Konqueror) {konqueror}
 	[exec] (The GIMP) {gimp}
 
 	[exec] (Video Tune) {xvidtune}
@@ -196,12 +195,12 @@ we take advantage of the [nop] tag:
 
 	[nop]
 
-	[exec] (Netscape Navigator) {netscape}
+	[exec] (Mozilla Navigator) {mozilla}
 	[exec] (XEmacs) {xemacs}
 
 	[nop]
 
-	[exec] (xv 3.10a) {xv}
+	[exec] (Konqueror) {konqueror}
 	[exec] (The GIMP) {gimp}
 
 	[nop]
@@ -222,12 +221,12 @@ the themes.org site recommends.
 
 	[nop]
 
-	[exec] (Netscape Navigator) {netscape}
+	[exec] (Mozilla Navigator) {mozilla}
 	[exec] (XEmacs) {xemacs}
 
 	[nop]
 
-	[exec] (xv 3.10a) {xv}
+	[exec] (Konqueror) {konqueror}
 	[exec] (The GIMP) {gimp}
 
 	[nop]
@@ -273,12 +272,12 @@ After putting everything together, we have:
 
 	[nop]
 
-	[exec] (Netscape Navigator) {netscape}
+	[exec] (Mozilla Browser) {mozilla}
+	[exec] (Konqueror) {konqueror}
 	[exec] (XEmacs) {xemacs}
 
 	[nop]
 
-	[exec] (xv 3.10a) {xv}
 	[exec] (The GIMP) {gimp}
 
 	[nop]
