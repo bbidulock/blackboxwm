@@ -79,10 +79,14 @@ static int handleXErrors(Display *d, XErrorEvent *e) {
 // bit 2 is set)
 static void signalhandler(int sig) {
   sig_atomic_t mask = 1 << sig;
-  if (pending_signals & mask) {
-    fprintf(stderr, "%s: Recursive signal %d caught. dumping core...\n",
-            base_app ? base_app->applicationName().c_str() : "unknown", sig );
-    abort();
+  switch (sig) {
+  case SIGBUS: case SIGFPE: case SIGILL: case SIGSEGV:
+    if (pending_signals & mask) {
+      fprintf(stderr, "%s: Recursive signal %d caught. dumping core...\n",
+              base_app ? base_app->applicationName().c_str() : "unknown", sig );
+      abort();
+    }
+  default: break;
   }
 
   pending_signals |= mask;
