@@ -47,10 +47,10 @@ private:
 
   struct menu {
     char *label;
-    int x, y, x_move, y_move;
+    int x, y, x_move, y_move, sublevels, persub, use_sublevels;
     unsigned width, height,
       title_w, title_h,
-      button_w, button_h, item_h;
+      button_w, button_h, item_h, item_w;
     Pixmap item_pixmap, pushed_pixmap;
     Window frame, title;
   } menu;
@@ -64,20 +64,11 @@ protected:
 
   void drawSubmenu(int);
   Window createItemWindow(void);
-  void showMenu(void);
-  void hideMenu(void);
-  void moveMenu(int, int);
-  void updateMenu(void);
-  int insert(char *);
-  int insert(char **);
-  int insert(char *, int, char * = 0);
-  int insert(char *, BlackboxMenu *);
   int remove(int);
 
   void showTitle(void) { show_title = True; }
   void hideTitle(void) { show_title = False; }
   BlackboxMenuItem *find(int index) { return menuitems->find(index); }
-  BlackboxSession *Session(void) { return session; }
 
 
 public:
@@ -91,6 +82,11 @@ public:
   void Reconfigure(void);
   Bool hasSubmenu(int);
 
+  int insert(char *);
+  int insert(char **);
+  int insert(char *, int, char * = 0);
+  int insert(char *, BlackboxMenu *);
+
   Window windowID(void) { return menu.frame; }
   unsigned int Width(void) { return menu.width; }
   unsigned int Height(void) { return menu.height; }
@@ -103,6 +99,12 @@ public:
   Bool userMoved(void) { return user_moved; }
   void setMenuLabel(char *n) { menu.label = n; }
   void setMovable(Bool b) { movable = b; }
+
+  void showMenu(void);
+  void hideMenu(void);
+  void moveMenu(int, int);
+  void updateMenu(void);
+  void useSublevels(int s) { menu.use_sublevels = s; }
 };
 
 

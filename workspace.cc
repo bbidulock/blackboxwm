@@ -306,12 +306,12 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
     for (int i = 0; i < c; ++i) {
       wkspc = new Workspace(this, i);
       workspaces_list->append(wkspc);
-      workspaces_menu->insert(wkspc->name(), wkspc->menu());
+      workspaces_menu->insert(wkspc->name());
     }
   } else {
     wkspc = new Workspace(this, 0);
     workspaces_list->append(wkspc);
-    workspaces_menu->insert(wkspc->name(),wkspc->menu());
+    workspaces_menu->insert(wkspc->name());
   }
 
   workspaces_menu->updateMenu();
@@ -552,6 +552,14 @@ void WorkspaceManager::showMenu(void) {
   workspaces_menu->moveMenu(3, 3 + frame.button_h);
   workspaces_menu->showMenu();
   sub = True;
+
+  int mx = 4 + frame.button_h + workspaces_menu->Height();
+  llist_iterator<Workspace> it(workspaces_list);
+  for (; it.current(); it++) {
+    it.current()->moveMenu(3, mx);
+    it.current()->showMenu();
+    mx += it.current()->menu()->Height() + 1;
+  }
 }
 
 
@@ -563,6 +571,9 @@ void WorkspaceManager::hideMenu(void) {
 	      session->titleFont()->ascent, frame.title,
 	      strlen(frame.title));
   workspaces_menu->hideMenu();
+  llist_iterator<Workspace> it(workspaces_list);
+  for (; it.current(); it++)
+    it.current()->hideMenu();
 }
 
 
@@ -670,10 +681,16 @@ void WorkspaceManager::Reconfigure(void) {
   checkClock(True);
 
   workspaces_menu->Reconfigure();
-
+  int mx = 4 + frame.button_h + workspaces_menu->Height();
   llist_iterator<Workspace> it(workspaces_list);
-  for (int i = 0; it.current(); i++, it++)
+  for (; it.current(); it++)
     it.current()->Reconfigure();
+
+  it.reset();
+  for(; it.current(); it++) {
+    it.current()->moveMenu(3, mx);
+    mx += it.current()->menu()->Height() + 1;
+  }
 }
 
 

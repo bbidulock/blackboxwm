@@ -49,15 +49,6 @@ SessionMenu::~SessionMenu(void) {
 }
 
 
-int SessionMenu::insert(char *l, int f, char *e) {
-  return BlackboxMenu::insert(l, f, e);
-}
-
-int SessionMenu::insert(char *l, SessionMenu *s) {
-  return BlackboxMenu::insert(l, s);
-}
-
-
 int SessionMenu::remove(int index) {
   if (index >= 0 && index < count()) {
     BlackboxMenuItem *itmp = find(index);
@@ -82,31 +73,6 @@ int SessionMenu::remove(int index) {
 }
 
 
-void SessionMenu::showMenu(void) {
-  BlackboxMenu::showMenu();
-}
-
-
-void SessionMenu::hideMenu(void) {
-  BlackboxMenu::hideMenu();
-}
-
-
-void SessionMenu::moveMenu(int x, int y) {
-  BlackboxMenu::moveMenu(x, y);
-}
-
-
-void SessionMenu::updateMenu(void) {
-  BlackboxMenu::updateMenu();
-}
-
-
-Window SessionMenu::windowID(void) {
-  return BlackboxMenu::windowID();
-}
-
-
 void SessionMenu::itemPressed(int button, int item) {
   if (button == 1 && hasSubmenu(item)) {
     drawSubmenu(item);
@@ -120,9 +86,8 @@ void SessionMenu::titlePressed(int) {
 
 
 void SessionMenu::titleReleased(int button) {
-  if (button == 3)
-    if (windowID() == session->rootmenu->windowID())
-      hideMenu();
+  if (button == 3 && windowID() == session->rootmenu->windowID())
+    hideMenu();
 }
 
 
@@ -132,11 +97,11 @@ void SessionMenu::itemReleased(int button, int index) {
     if (item->Function()) {
       switch (item->Function()) {
       case BlackboxSession::B_Reconfigure:
-	Session()->Reconfigure();
+	session->Reconfigure();
 	break;
 
       case BlackboxSession::B_Restart:
-	Session()->Restart();
+	session->Restart();
 	break;
 
       case BlackboxSession::B_RestartOther:
@@ -144,7 +109,7 @@ void SessionMenu::itemReleased(int button, int index) {
 	break;
 
       case BlackboxSession::B_Exit:
-	Session()->Exit();
+	session->Exit();
 	break;
       }
 
@@ -160,14 +125,4 @@ void SessionMenu::itemReleased(int button, int index) {
 	session->rootmenu->hideMenu();
     }
   }
-}
-
-
-void SessionMenu::drawSubmenu(int index) {
-  BlackboxMenu::drawSubmenu(index);
-}
-
-
-void SessionMenu::Reconfigure(void) {
-  BlackboxMenu::Reconfigure();
 }

@@ -609,7 +609,6 @@ void BImage::renderBevel(Bool solidblack) {
     unsigned long pix0 = 0, pix1 = 0;
     unsigned char r, g, b, rr, gg, bb;
 
-    // lets do the easy parts... top and bottom lines
     unsigned int w = width - 2, h = height - 1, wh = width * (height - 3);
     unsigned long *p = data + width + 1;
     
@@ -696,7 +695,6 @@ void BImage::renderButton(Bool solidblack) {
     unsigned long pix0 = 0, pix1 = 0;
     unsigned char r, g, b, rr ,gg ,bb;
     
-    // lets do the easy parts... top and bottom lines
     unsigned int w = width, h = height - 1, wh = w * h;
     unsigned long *p = data;
     

@@ -52,12 +52,12 @@ BlackboxMenu::BlackboxMenu(BlackboxSession *ctrl) {
   menu.item_pixmap = None;
   menu.pushed_pixmap = None;
 
-  menu.width = menu.title_w = menu.height = menu.title_h =
+  menu.width = menu.title_w = menu.height = menu.title_h = menu.item_w =
     session->titleFont()->ascent + session->titleFont()->descent + 8;
   menu.button_h = menu.title_h - 6;
   menu.button_w = menu.button_h * 2 / 3;
   menu.label = 0;
-
+  menu.sublevels = menu.persub = menu.use_sublevels = 0;
   menu.item_h = session->menuFont()->ascent + session->menuFont()->descent + 4;
   
   unsigned long attrib_mask = CWBackPixmap|CWBackPixel|CWBorderPixel|
@@ -256,7 +256,7 @@ Window BlackboxMenu::createItemWindow(void) {
 
 void BlackboxMenu::updateMenu(void) {
   menu.item_h = session->menuFont()->ascent + session->menuFont()->descent + 4;
-  menu.width = ((show_title) ?
+  menu.item_w = ((show_title) ?
                 XTextWidth(session->titleFont(),
                            ((menu.label) ? menu.label : "Blackbox Menu"),
                            strlen(((menu.label) ? menu.label :
@@ -273,8 +273,31 @@ void BlackboxMenu::updateMenu(void) {
 	+ 8 + menu.item_h;
     else
       ii = 0;
-    menu.width = ((menu.width < (unsigned int) ii) ? ii : menu.width);
+    menu.item_w = ((menu.item_w < (unsigned int) ii) ? ii : menu.item_w);
   }
+
+  if (menuitems->count()) {
+    if (menu.use_sublevels) {
+      menu.sublevels = menu.use_sublevels;
+    } else {
+      menu.sublevels = 1;
+      while ((menu.item_w * menuitems->count() / menu.sublevels) >
+	     session->XResolution())
+	menu.sublevels++;
+    }
+
+    menu.persub = menuitems->count() / menu.sublevels;
+    if (menuitems->count() % menu.sublevels) menu.sublevels++;
+  } else {
+    menu.sublevels = 0;
+    menu.persub = 1;
+  }
+
+  menu.width = menu.persub * menu.item_w;
+  menu.title_h = session->titleFont()->ascent +
+    session->titleFont()->descent + 8;
+  menu.height = ((show_title) ? menu.title_h : 0) +
+    (menu.item_h * menu.sublevels);
 
   if (show_title) {
     BImage mt_image(session, menu.width, menu.title_h, session->Depth(),
@@ -288,7 +311,7 @@ void BlackboxMenu::updateMenu(void) {
     if (mt_pixmap) XFreePixmap(display, mt_pixmap);
   }
 
-  BImage *mi_image = new BImage(session, menu.width, menu.item_h,
+  BImage *mi_image = new BImage(session, menu.item_w, menu.item_h,
 				session->Depth(), session->menuItemColor());
   if (menu.item_pixmap) XFreePixmap(display, menu.item_pixmap);
   
@@ -303,8 +326,6 @@ void BlackboxMenu::updateMenu(void) {
 			  session->menuItemColor());
   delete mi_image;
   
-  menu.height = ((show_title) ? menu.title_h : 0) +
-    (menu.item_h * menuitems->count());
   XResizeWindow(display, menu.frame, menu.width, menu.height);
   if (show_title) XResizeWindow(display, menu.title, menu.width,
 				menu.title_h);
@@ -346,37 +367,42 @@ void BlackboxMenu::updateMenu(void) {
   }
 
   it.reset();
-  for (int i = 0; it.current(); it++, i++) {
+  int i = 0, sbl = 0;
+  for (; it.current(); it++, i++) {
     BlackboxMenuItem *itmp = it.current();
     if (itmp->sub_menu)
       itmp->sub_menu->updateMenu();
 
+    if (i == menu.persub) { i = 0; sbl++; }
+
     if (which_sub == i) {
       XSetWindowBackgroundPixmap(display, itmp->window, menu.pushed_pixmap);
-      XMoveResizeWindow(display, itmp->window, 0, (i * (menu.item_h - 1)) +
-			((show_title) ? menu.title_h : 0) + i,
-			menu.width + 8, menu.item_h);
+      XMoveResizeWindow(display, itmp->window, (i * menu.item_w),
+			(sbl * menu.item_h) +
+			((show_title) ? menu.title_h : 0),
+			menu.item_w, menu.item_h);
       XClearWindow(display, itmp->window);
       XDrawString(display, itmp->window, pitemGC, 4,
-		  session->menuFont()->ascent + 2,
+		  session->menuFont()->ascent + 3,
 		  ((itmp->ulabel) ? *itmp->ulabel : itmp->label),
 		  strlen(((itmp->ulabel) ? *itmp->ulabel : itmp->label)));
       if (itmp->sub_menu)
 	XDrawRectangle(display, itmp->window, pitemGC,
-		       menu.width - (menu.item_h - 6), 3, 3, 3);
+		       menu.item_w - (menu.item_h - 6), 3, 3, 3);
     } else {
       XSetWindowBackgroundPixmap(display, itmp->window, menu.item_pixmap);
-      XMoveResizeWindow(display, itmp->window, 0, (i * (menu.item_h - 1)) +
-			((show_title) ? menu.title_h : 0) + i,
-			menu.width + 8, menu.item_h);
+      XMoveResizeWindow(display, itmp->window, (i * menu.item_w),
+			(sbl * menu.item_h) +
+			((show_title) ? menu.title_h : 0),
+			menu.item_w, menu.item_h);
       XClearWindow(display, itmp->window);
       XDrawString(display, itmp->window, itemGC, 4,
-		  session->menuFont()->ascent + 2,
+		  session->menuFont()->ascent + 3,
 		  ((itmp->ulabel) ? *itmp->ulabel : itmp->label),
 		  strlen(((itmp->ulabel) ? *itmp->ulabel : itmp->label)));
       if (itmp->sub_menu)
 	XDrawRectangle(display, itmp->window, itemGC,
-		       menu.width - (menu.item_h - 6), 3, 3, 3);
+		       menu.item_w - (menu.item_h - 6), 3, 3, 3);
     }
   }
 
@@ -441,28 +467,27 @@ void BlackboxMenu::drawSubmenu(int index) {
                                menu.item_pixmap);
     XClearWindow(display, tmp->window);
     XDrawString(display, tmp->window, itemGC, 4,
-                session->menuFont()->ascent + 2,
+                session->menuFont()->ascent + 3,
                 ((tmp->ulabel) ? *tmp->ulabel : tmp->label),
                 strlen(((tmp->ulabel) ? *tmp->ulabel : tmp->label)));
 
     if (tmp->sub_menu)
       XDrawRectangle(display, tmp->window, itemGC,
-		     menu.width - (menu.item_h - 6), 3, 3, 3);
+		     menu.item_w - (menu.item_h - 6), 3, 3, 3);
   }
 
   if (index >= 0 && index < menuitems->count()) {
     BlackboxMenuItem *item = menuitems->find(index);
     if (item->sub_menu) {
-      int x = menu.x + menu.width + 1,
-	y =  menu.y + ((show_title) ? menu.title_h + 1 : 0) +
-	(index * menu.item_h) -
-	((item->sub_menu->show_title) ?
-	 item->sub_menu->menu.title_h + 1 : 0);
-
+      int x = menu.x + (menu.item_w * (index % menu.persub)),
+	y =  menu.y + ((show_title) ? menu.title_h + 1 : 1) +
+	(((index / menu.persub) + 1) * menu.item_h);
+      
       if (x + item->sub_menu->Width() > session->XResolution())
-	x -= (menu.width + item->sub_menu->Width() + 2);
-
+	x = session->XResolution() - (item->sub_menu->Width() + 2);
+      
       item->sub_menu->moveMenu(x, y);
+
       if (! item->sub_menu->visible)
 	item->sub_menu->showMenu();
       item->sub_menu->visible = 3;
@@ -499,7 +524,7 @@ void BlackboxMenu::buttonPressEvent(XButtonEvent *be) {
     for (int i = 0; it.current(); it++, i++) {
       BlackboxMenuItem *item = it.current();
       if (item->window == be->window) {
-	if (be->button == 3 && item->sub_menu) {
+	if (item->sub_menu) {
 	  if (! item->sub_menu->visible) {
 	    XSetWindowBackgroundPixmap(display, be->window,
 				       menu.pushed_pixmap);
@@ -513,13 +538,13 @@ void BlackboxMenu::buttonPressEvent(XButtonEvent *be) {
 	}
 
 	XDrawString(display, item->window, pitemGC, 4,
-		    session->menuFont()->ascent + 2,
+		    session->menuFont()->ascent + 3,
 		    ((item->ulabel) ? *item->ulabel : item->label),
 		    strlen(((item->ulabel) ? *item->ulabel : item->label)));
 
 	if (item->sub_menu)
 	  XDrawRectangle(display, item->window, pitemGC,
-			 menu.width - (menu.item_h - 6), 3, 3, 3);
+			 menu.item_w - (menu.item_h - 6), 3, 3, 3);
 	
 	itemPressed(be->button, i);
 	break;
@@ -552,12 +577,12 @@ void BlackboxMenu::buttonReleaseEvent(XButtonEvent *re) {
 	    XSetWindowBackgroundPixmap(display, re->window, menu.item_pixmap);
 	    XClearWindow(display, re->window);
 	    XDrawString(display, item->window, itemGC, 4,
-			session->menuFont()->ascent + 2,
+			session->menuFont()->ascent + 3,
 			((item->ulabel) ? *item->ulabel : item->label),
 			strlen(((item->ulabel) ? *item->ulabel :
 				item->label)));
 	    XDrawRectangle(display, item->window, itemGC,
-			   menu.width - (menu.item_h - 6), 3, 3, 3);
+			   menu.item_w - (menu.item_h - 6), 3, 3, 3);
 	    which_sub = -1;
 	  } else
 	    sub = False;
@@ -566,13 +591,13 @@ void BlackboxMenu::buttonReleaseEvent(XButtonEvent *re) {
 	    XSetWindowBackgroundPixmap(display, re->window, menu.item_pixmap);
 	    XClearWindow(display, re->window);
 	    XDrawString(display, item->window, itemGC, 4,
-		        session->menuFont()->ascent + 2,
+		        session->menuFont()->ascent + 3,
 		        ((item->ulabel) ? *item->ulabel : item->label),
 		        strlen(((item->ulabel) ? *item->ulabel :
 				item->label)));
 	    if (item->sub_menu)
 	      XDrawRectangle(display, item->window, itemGC,
-			     menu.width - (menu.item_h - 6), 3, 3, 3);
+			     menu.item_w - (menu.item_h - 6), 3, 3, 3);
 	  }
         }
 
@@ -657,14 +682,14 @@ void BlackboxMenu::exposeEvent(XExposeEvent *ee) {
       if (item->window == ee->window) {
 	XDrawString(display, item->window,
 		    ((i == which_sub) ? pitemGC : itemGC), 4,
-		    session->menuFont()->ascent + 2,
+		    session->menuFont()->ascent + 3,
 		    ((item->ulabel) ? *item->ulabel : item->label),
 		    strlen(((item->ulabel) ? *item->ulabel : item->label)));
 
 	if (item->sub_menu)
 	  XDrawRectangle(display, item->window,
 			 ((i == which_sub) ? pitemGC : itemGC),
-			 menu.width - (menu.item_h - 6), 3, 3, 3);
+			 menu.item_w - (menu.item_h - 6), 3, 3, 3);
 
 	break;
       }

@@ -150,6 +150,7 @@ private:
   Workspace *current;
   
   friend WorkspaceManagerMenu;
+  friend WorkspaceMenu;
 
 
 protected:
@@ -160,7 +161,6 @@ public:
   ~WorkspaceManager(void);
 
   int addWorkspace(void);
-  int removeWorkspaceID(int);
   void changeWorkspaceID(int);
   Workspace *workspace(int);
   void DissociateAll(void);

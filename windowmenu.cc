@@ -54,6 +54,7 @@ BlackboxWindowMenu::BlackboxWindowMenu(BlackboxWindow *w, BlackboxSession *s) :
   insert("Raise", BlackboxSession::B_WindowRaise);
   insert("Lower", BlackboxSession::B_WindowLower);
 
+  useSublevels(2);
   updateMenu();
 }
 

@@ -53,24 +53,13 @@ protected:
   virtual void itemReleased(int, int);
   virtual void titlePressed(int);
   virtual void titleReleased(int);
-  void drawSubmenu(int);
 
 
 public:
   SessionMenu(BlackboxSession *);
   virtual ~SessionMenu(void);
   
-  Window windowID(void);
-  void showMenu(void);
-  void hideMenu(void);
-  void moveMenu(int, int);
-  void updateMenu(void);
-  void Reconfigure(void);
   void defaultMenu(void) { default_menu = True; }
-
-  int insert(char *, void (*)());
-  int insert(char *, int, char * = 0);
-  int insert(char *, SessionMenu *);
   int remove(int);
 };
 

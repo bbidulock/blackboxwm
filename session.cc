@@ -298,8 +298,8 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
     } else if ((wsMan = searchWSManager(e->xbutton.window)) != NULL) {
       wsMan->buttonPressEvent(&e->xbutton);
     } else if (e->xbutton.window == root && e->xbutton.button == 3) {
-      rootmenu->moveMenu(e->xbutton.x_root - (rootmenu->Width() / 2),
-			 e->xbutton.y_root -
+      int mx = e->xbutton.x_root - (rootmenu->Width() / 2);
+      rootmenu->moveMenu(((mx > 0) ? mx : 0), e->xbutton.y_root -
 			 (rootmenu->titleHeight() / 2));
       
       if (! rootmenu->menuVisible())
@@ -1000,6 +1000,7 @@ void BlackboxSession::readMenuDatabase(SessionMenu *menu,
 	      if (XrmGetResource(*menu_database, rnstring, rcstring,
 				 &value_type, &value)) {
 		submenu = new SessionMenu(this);
+		submenu->setMovable(False);
 		menu->insert(label, submenu);
 		readMenuDatabase(submenu, &value, menu_database);
 		submenu->updateMenu();

@@ -60,6 +60,16 @@ void WorkspaceMenu::moveMenu(int x, int y) {
 
 void WorkspaceMenu::updateMenu(void) {
   BlackboxMenu::updateMenu();
+
+  if (workspace->ws_manager->workspaces_menu->menuVisible()) {
+    int mx = 4 + workspace->ws_manager->frame.button_h +
+      workspace->ws_manager->workspaces_menu->Height();
+    llist_iterator<Workspace> it(workspace->ws_manager->workspaces_list);
+    for (; it.current(); it++) {
+      it.current()->moveMenu(3, mx);
+      mx += it.current()->menu()->Height() + 1;
+    }
+  }
 }
 
 
@@ -161,9 +171,17 @@ void WorkspaceManagerMenu::itemReleased(int button, int item) {
 	Workspace *wkspc = new Workspace(ws_manager,
 					 ws_manager->workspaces_list->count());
 	ws_manager->workspaces_list->append(wkspc);
-	insert(wkspc->name(), wkspc->menu());
+	insert(wkspc->name());
 	XSync(ws_manager->display, False);
 	updateMenu();
+
+	int mx = 4 + ws_manager->frame.button_h + Height();
+	llist_iterator<Workspace> it(ws_manager->workspaces_list);
+	for (; it.current(); it++) {
+	  it.current()->moveMenu(3, mx);
+	  mx += it.current()->menu()->Height() + 1;
+	}
+	wkspc->menu()->showMenu();
       }
     } else if (item == 1) {
       int i = ws_manager->workspaces_list->count();
@@ -184,6 +202,13 @@ void WorkspaceManagerMenu::itemReleased(int button, int item) {
 	delete wkspc;
 	XSync(ws_manager->display, False);
 	updateMenu();
+
+	int mx = 4 + ws_manager->frame.button_h + Height();
+	llist_iterator<Workspace> it(ws_manager->workspaces_list);
+	for (; it.current(); it++) {
+	  it.current()->moveMenu(3, mx);
+	  mx += it.current()->menu()->Height() + 1;
+	}
       }
     } else if ((item - 2) != ws_manager->currentWorkspaceID()) {
       ws_manager->changeWorkspaceID(item - 2);
