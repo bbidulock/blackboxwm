@@ -171,10 +171,10 @@ void Workspace::Dissociate(void) {
     win = it.current();
     XUnmapWindow(display, win->frameWindow());
     XReparentWindow(display, win->clientWindow(),
-		    wsManager->_blackbox()->Root(), win->XFrame(),
-		    win->YFrame());
-    XMoveResizeWindow(display, win->clientWindow(), win->XFrame(),
-		      win->YFrame(), win->clientWidth(), win->clientHeight());
+		    wsManager->_blackbox()->Root(), win->XClient(),
+		    win->YClient());
+    XMoveResizeWindow(display, win->clientWindow(), win->XClient(),
+		      win->YClient(), win->clientWidth(), win->clientHeight());
     XMapWindow(display, win->clientWindow());
   }
 

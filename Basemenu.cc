@@ -137,7 +137,7 @@ Basemenu::~Basemenu(void) {
   blackbox->removeMenuSearch(menu.frame);
   XDestroyWindow(display, menu.frame);
 
-  if (menu.label) delete menu.label;
+  if (menu.label) delete [] menu.label;
 }
 
 
@@ -284,23 +284,24 @@ void Basemenu::Update(void) {
   if (menu.height < 1) menu.height = 1;
 
   if (title_vis) {
-    BImage mt_image(blackbox, menu.width, menu.title_h, blackbox->Depth(),
-		    blackbox->menuColor());
+    BImage *mt_image = new BImage(blackbox, menu.width, menu.title_h,
+				  blackbox->Depth());
     Pixmap mt_pixmap =
-      mt_image.renderImage(blackbox->menuTexture(), blackbox->menuColor(),
-			   blackbox->menuToColor());
-    
+      mt_image->renderImage(blackbox->menuTexture(), blackbox->menuColor(),
+			    blackbox->menuToColor());
+    delete mt_image;
     XSetWindowBackgroundPixmap(display, menu.title, mt_pixmap);
     XClearWindow(display, menu.title);
     if (mt_pixmap) XFreePixmap(display, mt_pixmap);
   }
   
   BImage *mi_image = new BImage(blackbox, menu.width, menu.iframe_h,
-				blackbox->Depth(), blackbox->menuItemColor());
+				blackbox->Depth());
   if (menu.iframe_pixmap) XFreePixmap(display, menu.iframe_pixmap);
   menu.iframe_pixmap = mi_image->renderImage(blackbox->menuItemTexture(),
 					   blackbox->menuItemColor(),
 					   blackbox->menuItemToColor());
+  delete mi_image;
   XSetWindowBackgroundPixmap(display, menu.iframe, menu.iframe_pixmap);
   
   XResizeWindow(display, menu.frame, menu.width, menu.height);
@@ -433,10 +434,12 @@ void Basemenu::drawSubmenu(int index, Bool) {
 
       int sbl = index / menu.persub, i = index - (sbl * menu.persub),
 	x = menu.x + (menu.item_w * (sbl + 1)) + 1,
-	y =  menu.y + ((menu.item_h + 1) * i);
+	y =  menu.y + ((menu.item_h + 1) * i) +
+	((title_vis) ? menu.title_h + 1 : 0) -
+	((item->sub_menu->title_vis) ? item->sub_menu->menu.title_h + 1 : 0);
       
       if (x + item->sub_menu->Width() > blackbox->XResolution())
-	x = blackbox->XResolution() - (item->sub_menu->Width() + 2);
+	x = menu.x - item->sub_menu->Width() - 1;
       
       item->sub_menu->Move(x, y);
 

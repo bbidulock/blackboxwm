@@ -411,18 +411,10 @@ void Blackbox::ProcessEvent(XEvent *e) {
   
   case PropertyNotify: {
     if (e->xproperty.state != PropertyDelete) {
-      if (e->xproperty.atom == XA_RESOURCE_MANAGER &&
-	  e->xproperty.window == root) {
-	if (resource.prompt_reconfigure) {
-	  reconfWidget = new ReconfigureWidget(this);
-	  reconfWidget->Show();
-	} else
-	  Reconfigure();
-      } else {
-	BlackboxWindow *pWin = searchWindow(e->xproperty.window);
-	if (pWin != NULL)
-	  pWin->propertyNotifyEvent(e->xproperty.atom);
-      }
+      BlackboxWindow *pWin = searchWindow(e->xproperty.window);
+      
+      if (pWin != NULL)
+	pWin->propertyNotifyEvent(e->xproperty.atom);
     }
 
     break;
@@ -944,9 +936,6 @@ void Blackbox::InitMenu(void) {
     rootmenu->insert("xterm", B_Execute, "xterm");
     rootmenu->insert("Restart", B_Restart);
     rootmenu->insert("Exit", B_Exit);
-    
-    // currently unimplemented
-    //    rootmenu->insert("Shutdown", B_Shutdown);
   }
 
   rootmenu->Update();
@@ -1106,6 +1095,8 @@ void Blackbox::LoadDefaults(void) {
   if ((resource.blackboxrc = XrmGetFileDatabase(rcfile)) == NULL)
     resource.blackboxrc = XrmGetFileDatabase(BLACKBOXAD);
 
+  delete [] rcfile;
+
   XrmValue value;
   char *value_type;
 
@@ -1193,16 +1184,6 @@ void Blackbox::LoadDefaults(void) {
     }
   } else
     resource.workspaces = 1;
-  
-  if (XrmGetResource(resource.blackboxrc,
-		     "blackbox.session.orientation",
-		     "Blackbox.Session.Orientation", &value_type, &value)) {
-    if (! strcasecmp(value.addr, "lefthanded"))
-      resource.orientation = B_LeftHandedUser;
-    else if (! strcasecmp(value.addr, "righthanded"))
-      resource.orientation = B_RightHandedUser;
-  } else
-    resource.orientation = B_RightHandedUser;
 
   if (XrmGetResource(resource.blackboxrc,
 		     "blackbox.session.reconfigurePrompt",

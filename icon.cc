@@ -80,12 +80,11 @@ BlackboxIcon::BlackboxIcon(Blackbox *bb, Window c) {
 		  blackbox->visual(), attrib_mask, &attrib);
   blackbox->saveIconSearch(icon.subwindow, this);
   
-  BImage image(blackbox, 128, icon.height,
-	       blackbox->Depth(), blackbox->frameColor());
-  Pixmap p = image.renderImage(blackbox->toolboxTexture(),
-			       blackbox->toolboxColor(),
-			       blackbox->toolboxToColor());
-
+  BImage *i_image = new BImage(blackbox, 128, icon.height, blackbox->Depth());
+  Pixmap p = i_image->renderImage(blackbox->toolboxTexture(),
+				  blackbox->toolboxColor(),
+				  blackbox->toolboxToColor());
+  delete i_image;
   XSetWindowBackgroundPixmap(display, icon.subwindow, p);
   XClearWindow(display, icon.subwindow);
   XFreePixmap(display, p);
@@ -203,12 +202,11 @@ void BlackboxIcon::Reconfigure(void) {
 		icon.height);
   XResizeWindow(display, icon.subwindow, 128,
 		icon.height);
-  BImage image(blackbox, 128, icon.height,
-	       blackbox->Depth(), blackbox->frameColor());
-  Pixmap p = image.renderImage(blackbox->toolboxTexture(),
-			       blackbox->toolboxColor(),
-			       blackbox->toolboxToColor());
-
+  BImage *i_image = new BImage(blackbox, 128, icon.height, blackbox->Depth());
+  Pixmap p = i_image->renderImage(blackbox->toolboxTexture(),
+				  blackbox->toolboxColor(),
+				  blackbox->toolboxToColor());
+  delete i_image;
   XSetWindowBackgroundPixmap(display, icon.subwindow, p);
   XClearWindow(display, icon.subwindow);
   XFreePixmap(display, p);

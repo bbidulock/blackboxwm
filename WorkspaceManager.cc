@@ -78,12 +78,12 @@ WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
 		  create_mask, &attrib_create);
   blackbox->saveWSManagerSearch(frame.window, this);
 
-  BImage *image = new BImage(blackbox, frame.width, frame.height,
-			     blackbox->Depth(), blackbox->frameColor());
-  Pixmap p = image->renderImage(blackbox->toolboxTexture(),
-				blackbox->toolboxColor(),
-				blackbox->toolboxToColor());
-  delete image;
+  BImage *t_image = new BImage(blackbox, frame.width, frame.height,
+			       blackbox->Depth());
+  Pixmap p = t_image->renderImage(blackbox->toolboxTexture(),
+				  blackbox->toolboxColor(),
+				  blackbox->toolboxToColor());
+  delete t_image;
   XSetWindowBackgroundPixmap(display, frame.window, p);
   if (p) XFreePixmap(display, p);
 
@@ -99,12 +99,12 @@ WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
 		  create_mask, &attrib_create);
   blackbox->saveWSManagerSearch(frame.workspaceDock, this);
 
-  BImage *wimage = new BImage(blackbox, frame.wsd_w, frame.wsd_h,
-			      blackbox->Depth(), blackbox->toolboxColor());
-  p = wimage->renderImage(blackbox->toolboxTexture(),
-			  blackbox->toolboxColor(),
-			  blackbox->toolboxToColor());
-  delete wimage;
+  BImage *w_image = new BImage(blackbox, frame.wsd_w, frame.wsd_h,
+			       blackbox->Depth());
+  p = w_image->renderImage(blackbox->toolboxTexture(),
+			   blackbox->toolboxColor(),
+			   blackbox->toolboxToColor());
+  delete w_image;
   XSetWindowBackgroundPixmap(display, frame.workspaceDock, p);
   if (p) XFreePixmap(display, p);
 
@@ -122,15 +122,15 @@ WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
 		  &attrib_create);
   blackbox->saveWSManagerSearch(frame.fButton, this);
 
-  BImage *bimage = new BImage(blackbox, frame.button_w, frame.button_h,
-			      blackbox->Depth(), blackbox->buttonColor());
-  frame.button = bimage->renderImage(blackbox->buttonTexture(),
-				    blackbox->buttonColor(),
-				    blackbox->buttonToColor());
-  frame.pbutton = bimage->renderInvertedImage(blackbox->buttonTexture(),
-					     blackbox->buttonColor(),
-					     blackbox->buttonToColor());
-  delete bimage;
+  BImage *b_image = new BImage(blackbox, frame.button_w, frame.button_h,
+			       blackbox->Depth());
+  frame.button = b_image->renderImage(blackbox->buttonTexture(),
+				      blackbox->buttonColor(),
+				      blackbox->buttonToColor());
+  frame.pbutton = b_image->renderInvertedImage(blackbox->buttonTexture(),
+					       blackbox->buttonColor(),
+					       blackbox->buttonToColor());
+  delete b_image;
   XSetWindowBackgroundPixmap(display, frame.fButton, frame.button);
   XSetWindowBackgroundPixmap(display, frame.bButton, frame.button);
 
@@ -141,12 +141,12 @@ WorkspaceManager::WorkspaceManager(Blackbox *bb, int c) {
 		  &attrib_create);
   blackbox->saveWSManagerSearch(frame.clock, this);
 
-  BImage *cimage = new BImage(blackbox, frame.clock_w, frame.clock_h,
-			      blackbox->Depth(), blackbox->toolboxColor());
-  p = cimage->renderInvertedImage(blackbox->toolboxTexture(),
-				  blackbox->toolboxColor(),
-				  blackbox->toolboxToColor());
-  delete cimage;
+  BImage *c_image = new BImage(blackbox, frame.clock_w, frame.clock_h,
+			      blackbox->Depth());
+  p = c_image->renderInvertedImage(blackbox->toolboxTexture(),
+				   blackbox->toolboxColor(),
+				   blackbox->toolboxToColor());
+  delete c_image;
   XSetWindowBackgroundPixmap(display, frame.clock, p);
   if (p) XFreePixmap(display, p);
   
@@ -348,45 +348,45 @@ void WorkspaceManager::Reconfigure(void) {
   XMoveResizeWindow(display, frame.clock, frame.width - frame.clock_w - 3,
 		    3, frame.clock_w, frame.clock_h);
   
-  BImage image(blackbox, frame.width, frame.height,
-	       blackbox->Depth(), blackbox->frameColor());
-  Pixmap p = image.renderImage(blackbox->toolboxTexture(),
-			       blackbox->toolboxColor(),
-			       blackbox->toolboxToColor());
-  
+  BImage *t_image = new BImage(blackbox, frame.width, frame.height,
+			       blackbox->Depth());
+  Pixmap p = t_image->renderImage(blackbox->toolboxTexture(),
+				  blackbox->toolboxColor(),
+				  blackbox->toolboxToColor());
+  delete t_image;
   XSetWindowBackgroundPixmap(display, frame.window, p);
   if (p) XFreePixmap(display, p);
 
-  BImage *wimage = new BImage(blackbox, frame.wsd_w, frame.wsd_h,
-			      blackbox->Depth(), blackbox->toolboxColor());
-  p = wimage->renderImage(blackbox->toolboxTexture(),
-			  blackbox->toolboxColor(),
-			  blackbox->toolboxToColor());
-  delete wimage;
+  BImage *w_image = new BImage(blackbox, frame.wsd_w, frame.wsd_h,
+			       blackbox->Depth());
+  p = w_image->renderImage(blackbox->toolboxTexture(),
+			   blackbox->toolboxColor(),
+			   blackbox->toolboxToColor());
+  delete w_image;
   XSetWindowBackgroundPixmap(display, frame.workspaceDock, p);
   if (p) XFreePixmap(display, p);
 
   if (frame.button) XFreePixmap(display, frame.button);
   if (frame.pbutton) XFreePixmap(display, frame.pbutton);
 
-  BImage bimage(blackbox, frame.button_w, frame.button_h,
-		blackbox->Depth(), blackbox->buttonColor());
-  frame.button = bimage.renderImage(blackbox->buttonTexture(),
-				    blackbox->buttonColor(),
-				    blackbox->buttonToColor());
-  frame.pbutton = bimage.renderInvertedImage(blackbox->buttonTexture(),
-					     blackbox->buttonColor(),
-					     blackbox->buttonToColor());
-
+  BImage *b_image = new BImage(blackbox, frame.button_w, frame.button_h,
+			       blackbox->Depth());
+  frame.button = b_image->renderImage(blackbox->buttonTexture(),
+				      blackbox->buttonColor(),
+				      blackbox->buttonToColor());
+  frame.pbutton = b_image->renderInvertedImage(blackbox->buttonTexture(),
+					       blackbox->buttonColor(),
+					       blackbox->buttonToColor());
+  delete b_image;
   XSetWindowBackgroundPixmap(display, frame.fButton, frame.button);
   XSetWindowBackgroundPixmap(display, frame.bButton, frame.button);
 
-  BImage cimage(blackbox, frame.clock_w, frame.clock_h,
-	        blackbox->Depth(), blackbox->toolboxColor());
-  p = cimage.renderInvertedImage(blackbox->toolboxTexture(),
-				 blackbox->toolboxColor(),
-				 blackbox->toolboxToColor());
-  
+  BImage *c_image = new BImage(blackbox, frame.clock_w, frame.clock_h,
+			       blackbox->Depth());
+  p = c_image->renderInvertedImage(blackbox->toolboxTexture(),
+				   blackbox->toolboxColor(),
+				   blackbox->toolboxToColor());
+  delete c_image;
   XSetWindowBackgroundPixmap(display, frame.clock, p);
   if (p) XFreePixmap(display, p);
 

@@ -43,10 +43,11 @@ Windowmenu::Windowmenu(BlackboxWindow *win, Blackbox *bb) : Basemenu(bb) {
   insert("(Un)Shade", Blackbox::B_WindowShade);
   insert("Iconify", Blackbox::B_WindowIconify);
   
-  if (window->resizable())
-    insert("(Un)Maximize", Blackbox::B_WindowMaximize);
-  
-  insert("Close", Blackbox::B_WindowClose);
+  if (window->isResizable())
+    insert("(Un)Maximize", Blackbox::B_WindowMaximize);  
+  if (window->isClosable())
+    insert("Close", Blackbox::B_WindowClose);
+
   insert("Raise", Blackbox::B_WindowRaise);
   insert("Lower", Blackbox::B_WindowLower);
   
@@ -111,11 +112,9 @@ SendtoWorkspaceMenu::SendtoWorkspaceMenu(BlackboxWindow *win, Blackbox *bb) :
   window = win;
   wsManager = bb->workspaceManager();
 
-  char *l = new char[strlen("Send To ...") + 1];
-  strncpy(l, "Send To ...", strlen("Send To ...") + 1);
-  setMenuLabel(l);
-
-  setTitleVisibility(True);
+  setTitleVisibility(False);
+  setMovable(False);
+  defaultMenu();
   Update();
 }
 
@@ -147,6 +146,13 @@ void SendtoWorkspaceMenu::Update(void) {
   
   for (i = 0; i < wsManager->count(); ++i)
     insert(wsManager->workspace(i)->Name());
-
+  
   Basemenu::Update();
+}
+
+
+void SendtoWorkspaceMenu::Show(void) {
+  Update();
+
+  Basemenu::Show();
 }

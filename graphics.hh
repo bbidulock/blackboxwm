@@ -70,8 +70,8 @@ private:
 
 
 protected:
-  void renderBevel1(Bool = False);
-  void renderBevel2(Bool = False);
+  void renderBevel1(Bool = True, Bool = False);
+  void renderBevel2(Bool = True, Bool = False);
   void invertImage(void);
   void renderDGradient(const BColor &, const BColor &);
   void renderHGradient(const BColor &, const BColor &);
@@ -84,9 +84,7 @@ protected:
 
   
 public:
-  BImage(Blackbox *, unsigned int, unsigned int, int,
-	 unsigned char = 0, unsigned char = 0, unsigned char = 0);
-  BImage(Blackbox *, unsigned int, unsigned int, int, const BColor &);
+  BImage(Blackbox *, unsigned int, unsigned int, int);
   ~BImage(void);
 
   Bool getPixel(unsigned int, unsigned int, unsigned long *);

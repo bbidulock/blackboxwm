@@ -32,31 +32,15 @@
 //
 // *************************************************************************
 
-BImage::BImage(Blackbox *bb, unsigned int w, unsigned int h, int d,
-	       unsigned char r, unsigned char g, unsigned char b)
-{
-  blackbox = bb;
-  width = ((signed) w > 0) ? w : 1;
-  height = ((signed) h > 0) ? h : 1;
-  depth = d;
-  
-  unsigned int wh = width * height;
-  data = new unsigned long[wh];
-  setBackgroundColor(r, g, b);
-}
 
-
-BImage::BImage(Blackbox *bb, unsigned int w, unsigned int h, int d,
-	       const BColor &c)
+BImage::BImage(Blackbox *bb, unsigned int w, unsigned int h, int d)
 {
   blackbox = bb;
   width = ((signed) w > 0) ? w : 1;
   height = ((signed) h > 0) ? h : 1;
   depth = d;
 
-  unsigned int wh = width * height;
-  data = new unsigned long [wh];
-  setBackgroundColor(c);
+  data = new unsigned long [width * height];
 }
 
 
@@ -77,8 +61,8 @@ Pixmap BImage::renderImage(unsigned long texture, const BColor &color1,
 }
 
 
-Pixmap BImage::renderInvertedImage(unsigned long texture, const BColor &color1,
-				   const BColor &color2)
+Pixmap BImage::renderInvertedImage(unsigned long texture,
+				   const BColor &color1, const BColor &color2)
 {
   texture |= BImageInverted;
   if (texture & BImageSolid)
@@ -91,17 +75,18 @@ Pixmap BImage::renderInvertedImage(unsigned long texture, const BColor &color1,
 
 
 Pixmap BImage::renderSolidImage(unsigned long texture, const BColor &color) {
+  bg_color = color;
   setBackgroundColor(color);
 
   if (texture & BImageRaised) {
     if (texture & BImageBevel1) {
       if (color.r == color.g && color.g == color.b && color.b == 0)
-	renderBevel1(True);
+	renderBevel1(True, True);
       else
 	renderBevel1();
     } else if (texture & BImageBevel2) {
       if (color.r == color.g && color.g == color.b && color.b == 0)
-	renderBevel2(True);
+	renderBevel2(True, True);
       else
 	renderBevel2();
     }
@@ -111,12 +96,12 @@ Pixmap BImage::renderSolidImage(unsigned long texture, const BColor &color) {
   } else if (texture & BImageSunken) {
     if (texture & BImageBevel1) {
       if (color.r == color.g && color.g == color.b && color.b == 0)
-	renderBevel1(True);
+	renderBevel1(True, True);
       else
 	renderBevel1();
     } else if (texture & BImageBevel2) {
       if (color.r == color.g && color.g == color.b && color.b == 0)
-	renderBevel2(True);
+	renderBevel2(True, True);
       else
 	renderBevel2();
     }
@@ -132,14 +117,16 @@ Pixmap BImage::renderSolidImage(unsigned long texture, const BColor &color) {
 Pixmap BImage::renderGradientImage(unsigned long texture, const BColor &from,
 				   const BColor &to)
 {
+  bg_color = from;
+
   if (texture & BImageDiagonal) {    
     if (texture & BImageSunken) {
       renderDGradient(to, from);
       
       if (texture & BImageBevel1)
-	renderBevel1();
+	renderBevel1(False);
       else if (texture & BImageBevel2)
-	renderBevel2();
+	renderBevel2(False);
 
       if (! (texture & BImageInverted))
 	invertImage();
@@ -147,9 +134,9 @@ Pixmap BImage::renderGradientImage(unsigned long texture, const BColor &from,
       renderDGradient(from, to);
       
       if (texture & BImageBevel1)
-	renderBevel1();
+	renderBevel1(False);
       else if (texture & BImageBevel2)
-	renderBevel2();
+	renderBevel2(False);
       
       if (texture & BImageInverted)
 	invertImage();
@@ -159,9 +146,9 @@ Pixmap BImage::renderGradientImage(unsigned long texture, const BColor &from,
       renderHGradient(to, from);
       
       if (texture & BImageBevel1)
-	renderBevel1();
+	renderBevel1(False);
       else if (texture & BImageBevel2)
-	renderBevel2();
+	renderBevel2(False);
 
       if (! (texture & BImageInverted))
 	invertImage();
@@ -169,9 +156,9 @@ Pixmap BImage::renderGradientImage(unsigned long texture, const BColor &from,
       renderHGradient(from, to);
       
       if (texture & BImageBevel1)
-	renderBevel1();
+	renderBevel1(False);
       else if (texture & BImageBevel2)
-	renderBevel2();
+	renderBevel2(False);
       
       if (texture & BImageInverted)
 	invertImage();
@@ -181,9 +168,9 @@ Pixmap BImage::renderGradientImage(unsigned long texture, const BColor &from,
       renderVGradient(to, from);
       
       if (texture & BImageBevel1)
-	renderBevel1();
+	renderBevel1(False);
       else if (texture & BImageBevel2)
-	renderBevel2();
+	renderBevel2(False);
 
       if (! (texture & BImageInverted))
 	invertImage();
@@ -191,9 +178,9 @@ Pixmap BImage::renderGradientImage(unsigned long texture, const BColor &from,
       renderVGradient(from, to);
       
       if (texture & BImageBevel1)
-	renderBevel1();
+	renderBevel1(False);
       else if (texture & BImageBevel2)
-	renderBevel2();
+	renderBevel2(False);
       
       if (texture & BImageInverted)
 	invertImage();
@@ -425,8 +412,6 @@ Pixmap BImage::convertToPixmap(void) {
 
 
 void BImage::setBackgroundColor(const BColor &c) {
-  bg_color = c;
-  
   unsigned int wh = width * height;
   unsigned long *p = data;
 
@@ -436,25 +421,8 @@ void BImage::setBackgroundColor(const BColor &c) {
   *p = bg_color.pixel;
 }
 
-  
-void BImage::setBackgroundColor(unsigned char r, unsigned char g,
-				unsigned char b)
-{
-  bg_color.r = r;
-  bg_color.g = g;
-  bg_color.b = b;
 
-  unsigned int wh = width * height; 
-  unsigned long *p = data;
-
-  bg_color.pixel = ((r << 16) | (g << 8) | (b));
-  
-  while (--wh) *(p++) = bg_color.pixel;
-  *p = bg_color.pixel;
-}
-
-
-void BImage::renderBevel1(Bool solidblack) {
+void BImage::renderBevel1(Bool solid, Bool solidblack) {
   if (width > 2 && height > 2) {
     unsigned long pix0 = 0, pix1 = 0;
     unsigned char r, g, b, rr ,gg ,bb;
@@ -462,10 +430,28 @@ void BImage::renderBevel1(Bool solidblack) {
     unsigned int w = width, h = height - 1, wh = w * h;
     unsigned long *p = data;
     
-    if (solidblack) {
-      pix0 = 0xc0c0c0;
-      pix1 = 0x606060;
-      
+    if (solid) {
+      if (solidblack) {
+	pix0 = 0xc0c0c0;
+	pix1 = 0x606060;
+      } else {
+	rr = bg_color.r * 3 / 2;
+	if (rr < bg_color.r) rr = ~0;
+	gg = bg_color.g * 3 / 2;
+	if (gg < bg_color.g) gg = ~0;
+	bb = bg_color.b * 3 / 2;
+	if (bb < bg_color.b) bb = ~0;
+	pix0 = ((rr << 16) | (gg << 8) | (bb));
+	
+	rr = bg_color.r * 3 / 4;
+	if (rr > bg_color.r) rr = 0;
+	gg = bg_color.g * 3 / 4;
+	if (gg > bg_color.g) gg = 0;
+	bb = bg_color.b * 3 / 4;
+	if (bb > bg_color.b) bb = 0;
+	pix1 = ((rr << 16) | (gg << 8) | (bb));
+      }      
+
       while (--w) {
 	*p = pix0;
 	*((p++) + wh) = pix1;
@@ -596,7 +582,7 @@ void BImage::renderBevel1(Bool solidblack) {
 }
 
 
-void BImage::renderBevel2(Bool solidblack) {
+void BImage::renderBevel2(Bool solid, Bool solidblack) {
   if (width > 4 && height > 4) {
     unsigned long pix0 = 0, pix1 = 0;
     unsigned char r, g, b, rr, gg, bb;
@@ -604,9 +590,27 @@ void BImage::renderBevel2(Bool solidblack) {
     unsigned int w = width - 2, h = height - 1, wh = width * (height - 3);
     unsigned long *p = data + width + 1;
     
-    if (solidblack) {
-      pix0 = 0xc0c0c0;
-      pix1 = 0x606060;
+    if (solid) {
+      if (solidblack) {
+	pix0 = 0xc0c0c0;
+	pix1 = 0x606060;   
+      } else {
+	rr = bg_color.r * 3 / 2;
+	if (rr < bg_color.r) rr = ~0;
+	gg = bg_color.g * 3 / 2;
+	if (gg < bg_color.g) gg = ~0;
+	bb = bg_color.b * 3 / 2;
+	if (bb < bg_color.b) bb = ~0;
+	pix0 = ((rr << 16) | (gg << 8) | (bb));
+	
+	rr = bg_color.r * 3 / 4;
+	if (rr > bg_color.r) rr = 0;
+	gg = bg_color.g * 3 / 4;
+	if (gg > bg_color.g) gg = 0;
+	bb = bg_color.b * 3 / 4;
+	if (bb > bg_color.b) bb = 0;
+	pix1 = ((rr << 16) | (gg << 8) | (bb));
+      }
       
       while (--w) {
 	*p = pix0;

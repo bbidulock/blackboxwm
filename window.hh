@@ -42,9 +42,9 @@ private:
   BlackboxIcon *icon;
   Windowmenu *windowmenu;
   
-  Bool do_handle, do_close, do_iconify, do_maximize, moving, resizing, shaded,
-    maximized, visible, iconic, transient, focused, icccm_compliant,
-    internal_window;
+  Bool moving, resizing, shaded, maximized, visible, iconic, transient,
+    focused, icccm_compliant, internal_window, resizable, do_close,
+    do_iconify;
   Display *display;
   
   struct client {
@@ -66,18 +66,20 @@ private:
   struct frame {
     Bool shaped;
     GC ftextGC, utextGC;
-    Pixmap utitle, ftitle, uhandle, fhandle, rhandle, button, pbutton;
-    Window window, title, handle, close_button, iconify_button,
+    Pixmap utitle, ftitle, uhandle, fhandle, rhandle, button, pbutton, fbase,
+      ubase;
+    Window window, title, base, handle, close_button, iconify_button,
       maximize_button, resize_handle;
-    int x, y;
+    int x, y, x_resize, y_resize;
     unsigned int width, height, title_h, title_w, handle_h, handle_w,
-      button_w, button_h, x_resize, y_resize;
+      base_w, base_h, button_w, button_h, rh_w, rh_h;
   } frame;
 
   struct {
     Bool WM_DELETE_WINDOW, WM_TAKE_FOCUS, WM_COLORMAP_WINDOWS;
   } Protocols;
 
+  char *resizeLabel;
   enum { F_NoInput = 0, F_Passive, F_LocallyActive, F_GloballyActive };
   int focus_mode, window_number, workspace_number;
 
@@ -142,12 +144,15 @@ public:
   Bool isFocused(void) { return focused; }
   Bool isVisible(void) { return visible; }
   Bool isIconic(void) { return iconic; }
-  Bool resizable(void) { return (do_maximize|do_handle); }
+  Bool isResizable(void) { return resizable; }
+  Bool isClosable(void) { return do_close; }
   Window frameWindow(void) { return frame.window; }
   Window clientWindow(void) { return client.window; }
   char **Title(void) { return &client.title; }
   int XFrame(void) { return frame.x; }
   int YFrame(void) { return frame.y; }
+  int XClient(void) { return client.x; }
+  int YClient(void) { return client.y; }
   int workspace(void) { return workspace_number; }
   int windowNumber(void) { return window_number; }
   unsigned int clientHeight(void) { return client.height; }

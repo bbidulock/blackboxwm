@@ -21,7 +21,7 @@
 
 #ifndef __blackbox_hh
 #define __blackbox_hh
-#define __blackbox_version "PRE zero point three zero point zero beta"
+#define __blackbox_version "PRE zero point three zero point one beta"
 
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
@@ -90,7 +90,7 @@ private:
     Bool prompt_reconfigure;
     XrmDatabase blackboxrc;
     char *menuFile;
-    int workspaces, orientation, justification;
+    int workspaces, justification;
   } resource;
 
   struct shape {
@@ -259,15 +259,13 @@ public:
   const BColor &toolboxTextColor(void) const { return resource.color.ttext; }
 
   // controls for arrangement of decorations
-  const int Orientation(void) const { return resource.orientation; }
   const int Justification(void) const { return resource.justification; }
   
   // public constants
   enum { B_Restart = 1, B_RestartOther, B_Exit, B_Shutdown, B_Execute,
 	 B_Reconfigure, B_WindowShade, B_WindowIconify, B_WindowMaximize,
 	 B_WindowClose, B_WindowRaise, B_WindowLower };
-  enum { B_LeftHandedUser = 1, B_RightHandedUser,
-	 B_LeftJustify, B_RightJustify, B_CenterJustify };
+  enum { B_LeftJustify, B_RightJustify, B_CenterJustify };
 };
 
 

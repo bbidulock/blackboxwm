@@ -66,6 +66,7 @@ public:
   SendtoWorkspaceMenu(BlackboxWindow *, Blackbox *);
   virtual ~SendtoWorkspaceMenu(void);
 
+  void Show(void);
   void Update(void);
 };
 
