@@ -2480,6 +2480,10 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
     blackbox->maskWindowEvents(0, (BlackboxWindow *) 0);
 
     if (! screen->doOpaqueMove()) {
+      // when drawing the rubber band, we need to make sure we only draw inside
+      // the frame... frame.changing_* contain the new coords for the window, so
+      // we need to subtract 1 from changing_w/changing_h every where we draw the
+      // rubber band (for both moving and resizing)
       XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
                      frame.changing_x, frame.changing_y, frame.changing_w - 1,
                      frame.changing_h - 1);
