@@ -355,17 +355,11 @@ BImageControl::BImageControl(BaseDisplay *dpy, const ScreenInfo *scrn,
 
 
 BImageControl::~BImageControl(void) {
-  if (sqrt_table) {
-    delete [] sqrt_table;
-  }
+  delete [] sqrt_table;
 
-  if (grad_xbuffer) {
-    delete [] grad_xbuffer;
-  }
+  delete [] grad_xbuffer;
 
-  if (grad_ybuffer) {
-    delete [] grad_ybuffer;
-  }
+  delete [] grad_ybuffer;
 
   if (colors) {
     unsigned long *pixels = new unsigned long [ncolors];
@@ -545,13 +539,13 @@ void BImageControl::getGradientBuffers(unsigned int w,
 
 
 void BImageControl::installRootColormap(void) {
-  Bool install = True;
-  int i = 0, ncmap = 0;
+  int ncmap = 0;
   Colormap *cmaps =
     XListInstalledColormaps(basedisplay->getXDisplay(), window, &ncmap);
 
   if (cmaps) {
-    for (i = 0; i < ncmap; i++)
+    Bool install = True;
+    for (int i = 0; i < ncmap; i++)
       if (*(cmaps + i) == colormap)
 	install = False;
 

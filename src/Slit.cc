@@ -80,7 +80,6 @@ Slit::Slit(BScreen *scr) {
 
 
 Slit::~Slit(void) {
-  if (timer->isTiming()) timer->stop();
   delete timer;
 
   delete slitmenu;
@@ -181,10 +180,10 @@ struct SlitClientMatch {
 
 
 void Slit::removeClient(Window w, Bool remap) {
-  SlitClientList::iterator it;
+  SlitClientList::iterator it = clientList.begin();
   const SlitClientList::iterator end = clientList.end();
 
-  it = std::find_if(clientList.begin(), end, SlitClientMatch(w));
+  it = std::find_if(it, end, SlitClientMatch(w));
   if (it != end) {
     removeClient(*it, remap);
     reconfigure();
@@ -486,28 +485,25 @@ void Slit::reposition(void) {
     break;
   }
 
-  Toolbar *tbar = screen->getToolbar();
-  int sw = frame.rect.width() + (screen->getBorderWidth() * 2),
-      sh = frame.rect.height() + (screen->getBorderWidth() * 2),
-      tw = tbar->getWidth() + screen->getBorderWidth(),
-      th = tbar->getHeight() + screen->getBorderWidth();
+  Rect tbar_rect = screen->getToolbar()->getRect();
+  tbar_rect.setSize(tbar_rect.width() + screen->getBorderWidth(),
+                    tbar_rect.height() + screen->getBorderWidth());
+  Rect slit_rect = frame.rect;
+  slit_rect.setSize(slit_rect.width() + (screen->getBorderWidth() * 2),
+                    slit_rect.height() + (screen->getBorderWidth() * 2));
 
-  if (tbar->getX() < frame.rect.x() + sw &&
-      tbar->getX() + tw > frame.rect.x() &&
-      tbar->getY() < frame.rect.y() + sh &&
-      tbar->getY() + th > frame.rect.y()) {
-    if (frame.rect.y() < th) {
+  if (slit_rect.intersects(tbar_rect)) {
+    Toolbar *tbar = screen->getToolbar();
+    frame.y_hidden = frame.rect.y();
+
+    if (frame.rect.y() < tbar_rect.height()) {
       frame.rect.setY(frame.rect.y() + tbar->getExposedHeight());
       if (screen->getSlitDirection() == Vertical)
         frame.y_hidden += tbar->getExposedHeight();
-      else
-        frame.y_hidden = frame.rect.y();
     } else {
       frame.rect.setY(frame.rect.y() - tbar->getExposedHeight());
       if (screen->getSlitDirection() == Vertical)
         frame.y_hidden -= tbar->getExposedHeight();
-      else
-        frame.y_hidden = frame.rect.y();
     }
   }
 
@@ -663,18 +659,16 @@ void Slitmenu::itemSelected(int button, unsigned int index) {
 
   switch (item->function()) {
   case 1: { // always on top
-    Bool change = ((slit->isOnTop()) ?  False : True);
-    slit->on_top = change;
-    setItemSelected(2, change);
+    slit->on_top = ((slit->isOnTop()) ?  False : True); 
+    setItemSelected(2, slit->on_top);
 
     if (slit->isOnTop()) slit->screen->raiseWindows((Window *) 0, 0);
     break;
   }
 
   case 2: { // auto hide
-    Bool change = ((slit->doAutoHide()) ?  False : True);
-    slit->do_auto_hide = change;
-    setItemSelected(3, change);
+    slit->do_auto_hide = ((slit->doAutoHide()) ?  False : True);;
+    setItemSelected(3, slit->do_auto_hide);
 
     break;
   }

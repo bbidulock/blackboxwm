@@ -127,6 +127,7 @@ public:
 
   inline Window getWindowID(void) const { return frame.window; }
 
+  inline const Rect& getRect(void) const { return frame.rect; }
   inline unsigned int getWidth(void) const { return frame.rect.width(); }
   inline unsigned int getHeight(void) const { return frame.rect.height(); }
   inline unsigned int getExposedHeight(void) const

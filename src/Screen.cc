@@ -386,8 +386,7 @@ void BScreen::reconfigure(void) {
   } else {
     geom_w = XTextWidth(resource.wstyle.font, s, l);
 
-    geom_h = resource.wstyle.font->ascent +
-      resource.wstyle.font->descent;
+    geom_h = resource.wstyle.font->ascent + resource.wstyle.font->descent;
   }
 
   geom_w += (resource.bevel_width * 2);
@@ -554,17 +553,15 @@ void BScreen::LoadStyle(void) {
     readDatabaseColor("window.button.unfocus.picColor",
                       "Window.Button.Unfocus.PicColor", "white");
 
+  resource.wstyle.justify = LeftJustify;
   if (XrmGetResource(resource.stylerc, "window.justify", "Window.Justify",
                      &value_type, &value)) {
     if (strstr(value.addr, "right") || strstr(value.addr, "Right"))
       resource.wstyle.justify = RightJustify;
     else if (strstr(value.addr, "center") || strstr(value.addr, "Center"))
       resource.wstyle.justify = CenterJustify;
-    else
-      resource.wstyle.justify = LeftJustify;
-  } else {
-    resource.wstyle.justify = LeftJustify;
   }
+
   // load toolbar config
   resource.tstyle.toolbar =
     readDatabaseTexture("toolbar", "Toolbar", "black");
@@ -592,17 +589,15 @@ void BScreen::LoadStyle(void) {
     readDatabaseColor("toolbar.button.picColor",
                       "Toolbar.Button.PicColor", "black");
 
+  resource.tstyle.justify = LeftJustify;
   if (XrmGetResource(resource.stylerc, "toolbar.justify",
                      "Toolbar.Justify", &value_type, &value)) {
     if (strstr(value.addr, "right") || strstr(value.addr, "Right"))
       resource.tstyle.justify = RightJustify;
     else if (strstr(value.addr, "center") || strstr(value.addr, "Center"))
       resource.tstyle.justify = CenterJustify;
-    else
-      resource.tstyle.justify = LeftJustify;
-  } else {
-    resource.tstyle.justify = LeftJustify;
   }
+
   // load menu config
   resource.mstyle.title =
     readDatabaseTexture("menu.title", "Menu.Title", "white");
@@ -621,6 +616,7 @@ void BScreen::LoadStyle(void) {
     readDatabaseColor("menu.hilite.textColor",
                       "Menu.Hilite.TextColor", "black");
 
+  resource.mstyle.t_justify = LeftJustify;
   if (XrmGetResource(resource.stylerc, "menu.title.justify",
                      "Menu.Title.Justify",
                      &value_type, &value)) {
@@ -628,11 +624,9 @@ void BScreen::LoadStyle(void) {
       resource.mstyle.t_justify = RightJustify;
     else if (strstr(value.addr, "center") || strstr(value.addr, "Center"))
       resource.mstyle.t_justify = CenterJustify;
-    else
-      resource.mstyle.t_justify = LeftJustify;
-  } else {
-    resource.mstyle.t_justify = LeftJustify;
   }
+
+  resource.mstyle.f_justify = LeftJustify;
   if (XrmGetResource(resource.stylerc, "menu.frame.justify",
                      "Menu.Frame.Justify",
                      &value_type, &value)) {
@@ -640,11 +634,9 @@ void BScreen::LoadStyle(void) {
       resource.mstyle.f_justify = RightJustify;
     else if (strstr(value.addr, "center") || strstr(value.addr, "Center"))
       resource.mstyle.f_justify = CenterJustify;
-    else
-      resource.mstyle.f_justify = LeftJustify;
-  } else {
-    resource.mstyle.f_justify = LeftJustify;
   }
+
+  resource.mstyle.bullet = Basemenu::Triangle;
   if (XrmGetResource(resource.stylerc, "menu.bullet", "Menu.Bullet",
                      &value_type, &value)) {
     if (! strncasecmp(value.addr, "empty", value.size))
@@ -653,61 +645,54 @@ void BScreen::LoadStyle(void) {
       resource.mstyle.bullet = Basemenu::Square;
     else if (! strncasecmp(value.addr, "diamond", value.size))
       resource.mstyle.bullet = Basemenu::Diamond;
-    else
-      resource.mstyle.bullet = Basemenu::Triangle;
-  } else {
-    resource.mstyle.bullet = Basemenu::Triangle;
   }
+
+  resource.mstyle.bullet_pos = Basemenu::Left;
   if (XrmGetResource(resource.stylerc, "menu.bullet.position",
                      "Menu.Bullet.Position", &value_type, &value)) {
     if (! strncasecmp(value.addr, "right", value.size))
       resource.mstyle.bullet_pos = Basemenu::Right;
-    else
-      resource.mstyle.bullet_pos = Basemenu::Left;
-  } else {
-    resource.mstyle.bullet_pos = Basemenu::Left;
   }
+
   resource.border_color =
     readDatabaseColor("borderColor", "BorderColor", "black");
 
+  unsigned int uint_value;
+
   // load bevel, border and handle widths
+  resource.handle_width = 6;
   if (XrmGetResource(resource.stylerc, "handleWidth", "HandleWidth",
-                     &value_type, &value)) {
-    if (sscanf(value.addr, "%u", &resource.handle_width) != 1 ||
-        resource.handle_width > (getWidth() / 2) ||
-        resource.handle_width == 0)
-      resource.handle_width = 6;
-  } else {
-    resource.handle_width = 6;
-  }
-  if (XrmGetResource(resource.stylerc, "borderWidth", "BorderWidth",
-                     &value_type, &value)) {
-    if (sscanf(value.addr, "%u", &resource.border_width) != 1)
-      resource.border_width = 1;
-  } else {
-    resource.border_width = 1;
+                     &value_type, &value) &&
+      sscanf(value.addr, "%u", &uint_value) == 1 &&
+      uint_value <= (getWidth() / 2) && uint_value != 0) {
+    resource.handle_width = uint_value;
   }
 
+  resource.border_width = 1;
+  if (XrmGetResource(resource.stylerc, "borderWidth", "BorderWidth",
+                     &value_type, &value) &&
+      sscanf(value.addr, "%u", &uint_value) == 1) {
+    resource.border_width = uint_value;
+  }
+
+  resource.bevel_width = 3;
   if (XrmGetResource(resource.stylerc, "bevelWidth", "BevelWidth",
-                     &value_type, &value)) {
-    if (sscanf(value.addr, "%u", &resource.bevel_width) != 1 ||
-        resource.bevel_width > (getWidth() / 2) ||
-        resource.bevel_width == 0)
-      resource.bevel_width = 3;
-  } else {
-    resource.bevel_width = 3;
+                     &value_type, &value) &&
+      sscanf(value.addr, "%u", &uint_value) == 1 &&
+      uint_value <= (getWidth() / 2) && uint_value != 0) {
+    resource.bevel_width = uint_value;
   }
+
+  resource.frame_width = resource.bevel_width;
   if (XrmGetResource(resource.stylerc, "frameWidth", "FrameWidth",
-                     &value_type, &value)) {
-    if (sscanf(value.addr, "%u", &resource.frame_width) != 1 ||
-        resource.frame_width > (getWidth() / 2))
-      resource.frame_width = resource.bevel_width;
-  } else {
-    resource.frame_width = resource.bevel_width;
+                     &value_type, &value) &&
+      sscanf(value.addr, "%u", &uint_value) == 1 &&
+      uint_value <= (getWidth() / 2)) {
+    resource.frame_width = uint_value;
   }
-  if (XrmGetResource(resource.stylerc,
-                     "rootCommand",
-                     "RootCommand", &value_type, &value)) {
+
+  if (XrmGetResource(resource.stylerc, "rootCommand", "RootCommand",
+                     &value_type, &value)) {
     bexec(value.addr, displayString());
   }
 
@@ -773,7 +758,7 @@ unsigned int BScreen::addWorkspace(void) {
 
 unsigned int BScreen::removeLastWorkspace(void) {
   if (workspacesList.size() == 1)
-    return 0;
+    return 1;
 
   Workspace *wkspc = workspacesList.back();
 
@@ -1023,10 +1008,9 @@ void BScreen::addWorkspaceName(const string& name) {
  * BScreen creation.
  */
 const string BScreen::getNameOfWorkspace(unsigned int id) {
-  std::string empty;
   if (id < workspaceNames.size())
     return workspaceNames[id];
-  return empty;
+  return string("");
 }
 
 
@@ -1651,9 +1635,9 @@ void BScreen::updateAvailableArea(void) {
   unsigned int current_left = 0, current_right = 0, current_top = 0,
     current_bottom = 0;
 
-  StrutList::iterator it = strutList.begin();
+  StrutList::const_iterator it = strutList.begin(), end = strutList.end();
 
-  for(; it != strutList.end(); ++it) {
+  for(; it != end; ++it) {
     NETStrut *strut = *it;
     if (strut->left > current_left)
       current_left = strut->left;
@@ -1672,8 +1656,8 @@ void BScreen::updateAvailableArea(void) {
   if (old_area != usableArea) {
     BlackboxWindowList::iterator it = windowList.begin(),
       end = windowList.end();
-    for(; it != end; ++it)
-      if((*it)->isMaximized()) (*it)->remaximize();
+    for (; it != end; ++it)
+      if ((*it)->isMaximized()) (*it)->remaximize();
   }
 }
 
@@ -1811,16 +1795,15 @@ XFontSet BScreen::readDatabaseFontSet(const string &rname,
                                       const string &rclass) {
   char *defaultFont = "fixed";
 
-  Bool load_default = False;
+  Bool load_default = True;
   XrmValue value;
   char *value_type;
   XFontSet fontset = 0;
   if (XrmGetResource(resource.stylerc, rname.c_str(), rclass.c_str(),
-                     &value_type, &value)) {
-    if (! (fontset = createFontSet(value.addr)))
-      load_default = True;
-  } else
-    load_default = True;
+                     &value_type, &value) &&
+      (fontset = createFontSet(value.addr))) {
+    load_default = False;
+  }
 
   if (load_default) {
     fontset = createFontSet(defaultFont);
@@ -1855,9 +1838,9 @@ XFontStruct *BScreen::readDatabaseFont(const string &rname,
 
       load_default = True;
     }
-  } else
+  } else {
     load_default = True;
-
+  }
 
   if (load_default) {
     font = XLoadQueryFont(blackbox->getXDisplay(), defaultFont);
