@@ -2488,12 +2488,12 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
                  wright = dx + frame.rect.width() - 1,
                    wtop = dy,
                 wbottom = dy + frame.rect.height() - 1;
-        fprintf(stderr, "dx: %d, dy: %d\n", dx, dy);
+
         int dleft = std::abs(wleft - srect.left()),
            dright = std::abs(wright - srect.right()),
              dtop = std::abs(wtop - srect.top()),
           dbottom = std::abs(wbottom - srect.bottom());
-        fprintf(stderr, "%d, %d, %d, %d\n", dleft, dtop, dright, dbottom);
+
         // snap left?
         if (dleft < snap_distance && dleft <= dright)
           dx = srect.left();
