@@ -708,19 +708,29 @@ static MotifHints readMotifWMHints(Blackbox *blackbox, Window window) {
 
       if (prop->decorations & MWM_DECOR_BORDER)
         motif.decorations |= WindowDecorationBorder;
-      if (prop->decorations & MWM_DECOR_RESIZEH) {
-        motif.decorations |= (WindowDecorationHandle |
-                              WindowDecorationGrip);
-      }
-      if (prop->decorations & MWM_DECOR_TITLE) {
-        motif.decorations |= (WindowDecorationTitlebar |
-                              WindowDecorationClose);
-      }
+      if (prop->decorations & MWM_DECOR_RESIZEH)
+        motif.decorations |= WindowDecorationHandle;
+      if (prop->decorations & MWM_DECOR_TITLE)
+        motif.decorations |= WindowDecorationTitlebar;
       if (prop->decorations & MWM_DECOR_MINIMIZE)
         motif.decorations |= WindowDecorationIconify;
       if (prop->decorations & MWM_DECOR_MAXIMIZE)
         motif.decorations |= WindowDecorationMaximize;
     }
+  }
+
+  if (motif.decorations & WindowDecorationBorder) {
+    if (motif.functions & WindowFunctionResize)
+      motif.functions |= WindowDecorationGrip;
+    else
+      motif.functions &= ~WindowDecorationGrip;
+  }
+
+  if (motif.decorations & WindowDecorationTitlebar) {
+    if (motif.functions & WindowFunctionClose)
+      motif.decorations |= WindowDecorationClose;
+    else
+      motif.decorations &= ~WindowDecorationClose;
   }
 
   XFree(prop);
