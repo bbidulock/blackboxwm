@@ -34,53 +34,52 @@
 class Slit;
 class Slitmenu;
 
-class Slitmenu : public Basemenu {
-private:
-    class Directionmenu : public Basemenu {
-    private:
-	Slitmenu *slitmenu;
+class Slitmenu : public Basemenu
+{
+public:
+  Slitmenu(Slit *);
+  virtual ~Slitmenu();
 
-    protected:
-	virtual void itemSelected(int, int);
+  Basemenu *getDirectionmenu() const { return directionmenu; }
+  Basemenu *getPlacementmenu() const { return placementmenu; }
 
-    public:
-	Directionmenu(Slitmenu *);
-    };
-
-    class Placementmenu : public Basemenu {
-    private:
-	Slitmenu *slitmenu;
-
-    protected:
-	virtual void itemSelected(int, int);
-
-    public:
-	Placementmenu(Slitmenu *);
-    };
-
-    Directionmenu *directionmenu;
-    Placementmenu *placementmenu;
-
-    Slit *slit;
-
-    friend class Directionmenu;
-    friend class Placementmenu;
-    friend class Slit;
-
+  virtual void reconfigure();
+  virtual void hide();
 
 protected:
-    virtual void itemSelected(int, int);
-    virtual void internal_hide();
+  virtual void itemClicked(const Point &, const Item &item, int button);
 
+private:
+  class Directionmenu : public Basemenu {
+  private:
+    Slitmenu *slitmenu;
 
-public:
-    Slitmenu(Slit *);
-    virtual ~Slitmenu();
+  protected:
+    virtual void itemClicked(const Point &, const Item &, int);
 
-    Basemenu *getDirectionmenu() const { return directionmenu; }
-    Basemenu *getPlacementmenu() const { return placementmenu; }
+  public:
+    Directionmenu(Slitmenu *);
+  };
 
-    void reconfigure();
+  class Placementmenu : public Basemenu {
+  private:
+    Slitmenu *slitmenu;
+
+  protected:
+    virtual void itemClicked(const Point &, const Item &, int);
+
+  public:
+    Placementmenu(Slitmenu *);
+  };
+
+  Directionmenu *directionmenu;
+  Placementmenu *placementmenu;
+
+  Slit *slit;
+
+  friend class Directionmenu;
+  friend class Placementmenu;
+  friend class Slit;
 };
 
 
@@ -145,6 +144,7 @@ public:
   void shutdown();
 
   void buttonPressEvent(XButtonEvent *);
+  void buttonReleaseEvent(XButtonEvent *);
   void enterNotifyEvent(XCrossingEvent *);
   void leaveNotifyEvent(XCrossingEvent *);
   void configureRequestEvent(XConfigureRequestEvent *);

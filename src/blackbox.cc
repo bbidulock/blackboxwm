@@ -318,9 +318,16 @@ void Blackbox::process_event(XEvent *e)
 
     BlackboxWindow *win = (BlackboxWindow *) 0;
     Toolbar *tbar = (Toolbar *) 0;
+#ifdef    SLIT
+    Slit *slit = (Slit *) 0;
+#endif // SLIT
 
     if ((win = searchWindow(e->xbutton.window)))
       win->buttonReleaseEvent(&e->xbutton);
+#ifdef    SLIT
+    else if ((slit = searchSlit(e->xbutton.window)))
+      slit->buttonReleaseEvent(&e->xbutton);
+#endif // SLIT
     else if ((tbar = searchToolbar(e->xbutton.window)))
       tbar->buttonReleaseEvent(&e->xbutton);
     else {
