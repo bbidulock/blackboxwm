@@ -358,9 +358,19 @@ void BlackboxMenu::updateMenu(void) {
 
 
 void BlackboxMenu::showMenu(void) {
+  int mx = menu.x + (menu.width / 2), sx = menu.width / 16,
+    sy =menu.height / 16;
+  XMoveResizeWindow(display, menu.frame, mx, menu.y, sx, sy);
+
   XMapSubwindows(display, menu.frame);
   XMapWindow(display, menu.frame);
   visible = True;
+
+  int fx = sx, fy = sy;
+  for (unsigned int i = 0; i < 16; i++, fx += sx, fy += sy)
+    XMoveResizeWindow(display, menu.frame, mx - (fx / 2), menu.y, fx, fy);
+  XMoveResizeWindow(display, menu.frame, menu.x, menu.y, menu.width,
+		    menu.height);
 }
 
 
@@ -371,6 +381,13 @@ void BlackboxMenu::hideMenu(void) {
     XSetWindowBackgroundPixmap(display, tmp->window, menu.item_pixmap);
     XClearWindow(display, tmp->window);
   }
+
+  int mx = menu.x + (menu.width / 2), sx = menu.width / 16,
+    sy =menu.height / 16;
+
+  int fx = menu.width, fy = menu.height;
+  for (unsigned int i = 0; i < 16; i++, fx -= sx, fy -= sy)
+    XMoveResizeWindow(display, menu.frame, mx - (fx / 2), menu.y, fx, fy);
 
   user_moved = False;
   visible = False;
@@ -418,7 +435,8 @@ void BlackboxMenu::drawSubmenu(int index) {
 	x -= (menu.width + item->sub_menu->Width() + 2);
 
       item->sub_menu->moveMenu(x, y);
-      item->sub_menu->showMenu();
+      if (! item->sub_menu->visible)
+	item->sub_menu->showMenu();
       item->sub_menu->visible = 3;
       sub = False;
       which_sub = index;

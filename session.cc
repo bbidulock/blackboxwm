@@ -495,9 +495,20 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
   
   case FocusIn: {
     BlackboxWindow *iWin = searchWindow(e->xfocus.window);
+
     if (iWin != NULL) {
       iWin->setFocusFlag(True);
       focus_window_number = iWin->windowNumber();
+    }
+
+    if ((e->xfocus.mode == NotifyNormal) &&
+	(e->xfocus.detail == NotifyPointer)) {
+      if (focus_window_number != -1) {
+	BlackboxWindow *tmp =
+	  ws_manager->currentWorkspace()->window(focus_window_number);
+	if (tmp->isVisible())
+	  tmp->setInputFocus();
+      }
     }
 
     break;
@@ -505,6 +516,7 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
   
   case FocusOut: {
     BlackboxWindow *oWin = searchWindow(e->xfocus.window);
+
     if (oWin != NULL && e->xfocus.mode == NotifyNormal)
       oWin->setFocusFlag(False);
 

@@ -18,6 +18,13 @@
 -- (See the included file COPYING / GPL-2.0)
 -- 
 
+*** %%% *** NOTE *** %%% ***
+Blackbox's configuration system has completely CHANGED.  All previous
+configurations will NOT WORK with this release.  This is the reason for a
+0.20.x release.  Please read the following text so that you can adapt your
+current configuration to the new format.
+*** %%% ***      *** %%% ***
+
 This file covers operation and configuration of Blackbox.  Since it is
 still in development, many things may or may not work properly (or at
 all).  This code was written from scratch (save for a bit of the 8bpp

@@ -1088,14 +1088,21 @@ Bool BlackboxWindow::setInputFocus(void) {
 void BlackboxWindow::iconifyWindow(void) {
   if (window_menu) window_menu->hideMenu();
   menu_visible = False;
-
-  for(unsigned int i = frame.height - frame.title_h; i > 10; i -= 10)
-    XResizeWindow(display, frame.window, frame.width, frame.title_h + i);
-
-  int wx = frame.x + (frame.width / 2);
-  for (unsigned int i = frame.width; i > 10; i -= 10)
-    XMoveResizeWindow(display, frame.window, wx - (i / 2), frame.y,
-                      i, frame.title_h);
+  
+  if (! shaded) {
+    int wx = frame.x + (frame.width / 2), sx = frame.width / 16,
+      sy = frame.height / 16;
+    
+    int fx = frame.width, fy = frame.height;
+    for (int i = 0; i < 16; i++, fx -= sx, fy -= sy)
+      XMoveResizeWindow(display, frame.window, wx - (fx / 2), frame.y, fx, fy);
+  } else {
+    int wx = frame.x + (frame.width / 2), sx = frame.width / 16;
+    int fx = frame.width;
+    for (int i = 0; i < 16; i++, fx -= sx)
+      XMoveResizeWindow(display, frame.window, wx - (fx / 2), frame.y, fx,
+			frame.title_h);
+  }
 
   XUnmapWindow(display, frame.window);
   visible = False;
@@ -1122,23 +1129,28 @@ void BlackboxWindow::iconifyWindow(void) {
 
 
 void BlackboxWindow::deiconifyWindow(void) {
-  int wx = frame.x + (frame.width / 2);
-  XMoveResizeWindow(display, frame.window, wx, frame.y, 1, frame.title_h);
+  int wx = frame.x + (frame.width / 2), sx = frame.width / 16,
+    sy = frame.height / 16;
+  XMoveResizeWindow(display, frame.window, wx, frame.y, sx, sy);
+  XMapWindow(display, frame.window);
 
+  if (! shaded) {
+    int fx = sx, fy = sy;
+    for (int i = 0; i < 16; i++, fx += sx, fy += sy)
+      XMoveResizeWindow(display, frame.window, wx - (fx / 2), frame.y, fx,
+			fy);
+    XMoveResizeWindow(display, frame.window, frame.x, frame.y, frame.width,
+		      frame.height);
+  } else {
+    int fx = sx;
+    for (int i = 0; i < 16; i++, fx += sx)
+      XMoveResizeWindow(display, frame.window, wx - (fx / 2), frame.y, fx,
+			frame.title_h);
+    XMoveResizeWindow(display, frame.window, frame.x, frame.y, frame.width,
+		      frame.title_h);
+  }
+      
   XMapSubwindows(display, frame.window);
-  XMapWindow(display, frame.window);
-
-  for (unsigned int i = 1; i < frame.width; i += 10)
-    XMoveResizeWindow(display, frame.window, wx - (i / 2), frame.y,
-                      i, frame.title_h);
-  XMoveResizeWindow(display, frame.window, frame.x, frame.y, frame.width,
-                    frame.title_h);
-
-  for(unsigned int i = 1; i < frame.height - frame.title_h; i += 10)
-    XResizeWindow(display, frame.window, frame.width, frame.title_h + i);
-  XResizeWindow(display, frame.window, frame.width, frame.height);
-
-  XMapWindow(display, frame.window);
   visible = True;
   iconic = False;
 
@@ -1187,6 +1199,21 @@ void BlackboxWindow::withdrawWindow(void) {
 
   focused = False;
   visible = False;
+
+  int wx = frame.x + (frame.width / 2), sx = frame.width / 16,
+    sy = frame.height / 16;
+  
+  if (! shaded) {
+    int fx = frame.width, fy = frame.height;
+    for (int i = 0; i < 16; i++, fx -= sx, fy -= sy)
+      XMoveResizeWindow(display, frame.window, wx - (fx / 2), frame.y, fx, fy);
+  } else {
+    int fx = frame.width;
+    for (int i = 0; i < 16; i++, fx -= sx)
+      XMoveResizeWindow(display, frame.window, wx - (fx / 2), frame.y, fx,
+			frame.title_h);
+  }
+
   XUnmapWindow(display, frame.window);
   if (window_menu) window_menu->hideMenu();
   
@@ -1249,6 +1276,7 @@ void BlackboxWindow::maximizeWindow(void) {
     dy = ((session->YResolution()) - dh) / 2;
 
     maximized = True;
+    shaded = False;
     configureWindow(dx, dy, dw, dh);
     session->raiseWindow(this);
   } else {
@@ -1262,9 +1290,17 @@ void BlackboxWindow::maximizeWindow(void) {
 
 void BlackboxWindow::shadeWindow(void) {
   if (shaded) {
+    int sy = frame.height / 16, fy = sy;
+    for (int i = 0; i < 16; i++, fy += sy)
+      XResizeWindow(display, frame.window, frame.width, fy);
+
     XResizeWindow(display, frame.window, frame.width, frame.height);
     shaded = False;
   } else {
+    int sy = frame.height / 16, fy = frame.height;
+    for (int i = 0; i < 16; i++, fy -= sy)
+      XResizeWindow(display, frame.window, frame.width, fy);
+    
     XResizeWindow(display, frame.window, frame.width, frame.title_h);
     shaded = True;
   }
@@ -1383,22 +1419,20 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
 		      session->StateAtom(), 32, PropModeReplace,
 		      (unsigned char *) state, 2);
 
-      int wx = frame.x + (frame.width / 2);
-      XMoveResizeWindow(display, frame.window, wx, frame.y, 1, frame.title_h);
+      int wx = frame.x + (frame.width / 2), sx = frame.width / 16,
+	sy = frame.height / 16;
+      XMoveResizeWindow(display, frame.window, wx, frame.y, sx, sy);
 
       XMapSubwindows(display, frame.window);
       XMapWindow(display, frame.window);
 
-      for (unsigned int i = 1; i < frame.width; i += 10)
-	XMoveResizeWindow(display, frame.window, wx - (i / 2), frame.y,
-			  i, frame.title_h);
+      int fx = sx, fy = sy;
+      for (unsigned int i = 0; i < 16; i++, fx += sx, fy += sy)
+	XMoveResizeWindow(display, frame.window, wx - (fx / 2), frame.y, fx,
+			  fy);
       XMoveResizeWindow(display, frame.window, frame.x, frame.y, frame.width,
-			frame.title_h);
+			frame.height);
       
-      for(unsigned int i = 1; i < frame.height - frame.title_h; i += 10)
-	XResizeWindow(display, frame.window, frame.width, frame.title_h + i);
-      XResizeWindow(display, frame.window, frame.width, frame.height);
-
       setFocusFlag(False);
       XUngrabServer(display);
     }
@@ -1440,13 +1474,20 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
 
     visible = False;
       
-    for(unsigned int i = frame.height - frame.title_h; i > 10; i -= 10)
-      XResizeWindow(display, frame.window, frame.width, frame.title_h + i);
+    int wx = frame.x + (frame.width / 2), sx = frame.width / 16,
+      sy = frame.height / 16;
 
-    int wx = frame.x + (frame.width / 2);
-    for (unsigned int i = frame.width; i > 10; i -= 10)
-      XMoveResizeWindow(display, frame.window, wx - (i / 2), frame.y,
-			i, frame.title_h);
+    if (! shaded) {
+      int fx = frame.width, fy = frame.height;
+      for (int i = 0; i < 16; i++, fx -= sx, fy -= sy)
+	XMoveResizeWindow(display, frame.window, wx - (fx / 2), frame.y, fx,
+			  fy);
+    } else {
+      int fx = frame.width;
+      for (int i = 0; i < 16; i++, fx -= sx)
+	XMoveResizeWindow(display, frame.window, wx - (fx / 2), frame.y, fx,
+			  frame.title_h);
+    }
 
     XUnmapWindow(display, frame.window);
 
@@ -1469,14 +1510,21 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
 
 void BlackboxWindow::destroyNotifyEvent(XDestroyWindowEvent *de) {
   if (de->window == client.window) {
-    for(unsigned int i = frame.height - frame.title_h; i > 10; i -= 10)
-      XResizeWindow(display, frame.window, frame.width, frame.title_h + i);
+    int wx = frame.x + (frame.width / 2), sx = frame.width / 16,
+      sy = frame.height / 16;
 
-    int wx = frame.x + (frame.width / 2);
-    for (unsigned int i = frame.width; i > 10; i -= 10)
-      XMoveResizeWindow(display, frame.window, wx - (i / 2), frame.y,
-			i, frame.title_h);
-
+    if (! shaded) {
+      int fx = frame.width, fy = frame.height;
+      for (int i = 0; i < 16; i++, fx -= sx, fy -= sy)
+	XMoveResizeWindow(display, frame.window, wx - (fx / 2), frame.y, fx,
+			  fy);
+    } else {
+      int fx = frame.width;
+      for (int i = 0; i < 16; i++, fx -= sx)
+	XMoveResizeWindow(display, frame.window, wx - (fx / 2), frame.y, fx,
+			  frame.title_h);
+    }
+  
     XUnmapWindow(display, frame.window);
     delete this;
   }
