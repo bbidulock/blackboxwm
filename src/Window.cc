@@ -213,9 +213,9 @@ bt::EWMH::Strut update_margin(WindowDecorationFlags decorations,
  * Add specified window to the appropriate window group, creating a
  * new group if necessary.
  */
-static void update_window_group(Window window_group,
-                                Blackbox *blackbox,
-                                BlackboxWindow *win) {
+static BWindowGroup *update_window_group(Window window_group,
+                                         Blackbox *blackbox,
+                                         BlackboxWindow *win) {
   BWindowGroup *group = win->findWindowGroup();
   if (!group) {
     new BWindowGroup(blackbox, window_group);
@@ -223,6 +223,7 @@ static void update_window_group(Window window_group,
     assert(group != 0);
   }
   group->addWindow(win);
+  return group;
 }
 
 
@@ -1037,7 +1038,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
                                              client.wmhints);
 
   if (client.wmhints.window_group != None)
-    ::update_window_group(client.wmhints.window_group, blackbox, this);
+    (void) ::update_window_group(client.wmhints.window_group, blackbox, this);
 
   if (isTransient()) {
     // add ourselves to our transient_for
@@ -3101,13 +3102,25 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
   case XA_WM_HINTS: {
     // remove from current window group
     BWindowGroup *group = findWindowGroup();
-    if (group)
+    if (group) {
+      if (isTransient() && isGroupTransient())
+        group->removeTransient(this);
       group->removeWindow(this);
+      group = 0;
+    }
 
     client.wmhints = ::readWMHints(blackbox, client.window);
 
-    if (client.wmhints.window_group != None)
-      ::update_window_group(client.wmhints.window_group, blackbox, this);
+    if (client.wmhints.window_group != None) {
+      // add to new window group
+      group = ::update_window_group(client.wmhints.window_group,
+                                    blackbox,
+                                    this);
+      if (isTransient() && isGroupTransient()) {
+        if (group)
+          group->addTransient(this);
+      }
+    }
     break;
   }
 
