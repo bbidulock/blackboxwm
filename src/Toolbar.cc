@@ -702,8 +702,7 @@ void Toolbar::edit(void) {
     return;
 
   XSetInputFocus(display, frame.workspace_label,
-                 ((screen->isSloppyFocus()) ? RevertToPointerRoot :
-                  RevertToParent), CurrentTime);
+                 RevertToPointerRoot, CurrentTime);
   XClearWindow(display, frame.workspace_label);
 
   blackbox->setNoFocus(True);
