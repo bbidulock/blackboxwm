@@ -300,7 +300,7 @@ public:
   void setFocusFlag(Bool focus);
   void iconify(void);
   void deiconify(Bool reassoc = True, Bool raise = True);
-  void show(Bool newWindow = False);
+  void show(void);
   void close(void);
   void withdraw(void);
   void maximize(unsigned int button);
@@ -321,7 +321,6 @@ public:
   void motionNotifyEvent(XMotionEvent *me);
   void destroyNotifyEvent(XDestroyWindowEvent */*unused*/);
   void mapRequestEvent(XMapRequestEvent *mre);
-  void mapNotifyEvent(XMapEvent *ne);
   void unmapNotifyEvent(XUnmapEvent */*unused*/);
   void reparentNotifyEvent(XReparentEvent */*unused*/);
   void propertyNotifyEvent(Atom atom);

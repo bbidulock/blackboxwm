@@ -1370,20 +1370,15 @@ void BlackboxWindow::iconify(void) {
 }
 
 
-void BlackboxWindow::show(Bool newWindow) {
+void BlackboxWindow::show() {
   setState(NormalState);
 
   XMapWindow(display, client.window);
   XMapSubwindows(display, frame.window);
   XMapWindow(display, frame.window);
 
-  /* if this window has been mapped before we mark it visible to avoid being
-   * handled by the mapNotifyEvent
-   */
-  if (! newWindow) {
-    flags.visible = True;
-    flags.iconic = False;
-  }
+  flags.visible = True;
+  flags.iconic = False;
 }
 
 
@@ -1393,7 +1388,7 @@ void BlackboxWindow::deiconify(Bool reassoc, Bool raise) {
   else if (workspace_number != screen->getCurrentWorkspace()->getID())
     return;
 
-  show(! reassoc);
+  show();
 
   if (reassoc && client.transient) client.transient->deiconify(True, False);
 
@@ -1419,6 +1414,8 @@ void BlackboxWindow::close(void) {
 
 
 void BlackboxWindow::withdraw(void) {
+  setState(current_state);
+
   flags.visible = False;
   flags.iconic = False;
 
@@ -2155,28 +2152,12 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
   case ZoomState:
   default:
     deiconify(False);
+    if ( ! blackbox->isStartup() && (flags.transient || screen->doFocusNew())) {
+      XSync(display, False); // make sure the frame is mapped...
+      setInputFocus();
+    }
     break;
   }
-}
-
-
-void BlackboxWindow::mapNotifyEvent(XMapEvent *ne) {
-  if (ne->window != client.window || ne->override_redirect || flags.visible)
-    return;
-
-  if (decorations.titlebar) positionButtons();
-
-  setState(NormalState);
-
-  redrawAllButtons();
-
-  if (flags.transient || screen->doFocusNew())
-    setInputFocus();
-  else
-    setFocusFlag(False);
-
-  flags.visible = True;
-  flags.iconic = False;
 }
 
 

@@ -326,16 +326,6 @@ void Blackbox::process_event(XEvent *e) {
     break;
   }
 
-  case MapNotify: {
-    BlackboxWindow *win = searchWindow(e->xmap.window);
-
-    if (win) {
-      win->mapNotifyEvent(&e->xmap);
-    }
-
-    break;
-  }
-
   case UnmapNotify: {
     BlackboxWindow *win = (BlackboxWindow *) 0;
     Slit *slit = (Slit *) 0;
@@ -615,6 +605,7 @@ void Blackbox::process_event(XEvent *e) {
 
   case NoExpose:
   case ConfigureNotify:
+  case MapNotify:
     break; // not handled, just ignore
 
   default: {
