@@ -31,16 +31,15 @@
 namespace bt {
 
   class Display;
-  class ColorCache;
 
   class Color {
   public:
-    static void clearColorCache(void);
+    static void clearCache(void);
 
     static Color namedColor(const Display &display, unsigned int screen,
                             const std::string &colorname);
 
-    Color(int r = -1, int g = -1, int b = -1);
+    explicit Color(int r = -1, int g = -1, int b = -1);
     Color(const Color &c);
     ~Color(void);
 
@@ -54,7 +53,7 @@ namespace bt {
       _blue  = b;
     }
 
-    unsigned long pixel(const Display &display, unsigned int screen) const;
+    unsigned long pixel(unsigned int screen) const;
 
     bool allocated(void) const { return _screen != ~0u; }
     bool valid(void) const
@@ -74,8 +73,6 @@ namespace bt {
     int _red, _green, _blue;
     mutable unsigned int _screen;
     mutable unsigned long _pixel;
-
-    static ColorCache *colorcache;
   };
 
 } // namespace bt

@@ -34,8 +34,8 @@ extern "C" {
 #include "Color.hh"
 #include "BaseDisplay.hh"
 
+// #define COLORCACHE_DEBUG
 
-// color cache
 
 namespace bt {
 
@@ -44,10 +44,29 @@ namespace bt {
     ColorCache(const Display &display);
     ~ColorCache(void);
 
+    /*
+      Finds a color matching the specified rgb on the given screen.
+
+      The color is allocated if needed; otherwise it is reference
+      counted and freed when no more references for the color exist.
+    */
     unsigned long find(unsigned int screen, int r, int g, int b);
+    /*
+      Releases the specified rgb on the given screen.
+
+      If the reference count for a particular color is zero, it will
+      be freed by calling clear().
+    */
     void release(unsigned int screen, int r, int g, int b);
 
-    void clear(void);
+    /*
+      Clears the color cache.  All colors with a zero reference count
+      are freed.
+
+      If force is true, then all colors are freed, regardless of the
+      reference count.  This is done when destroying the cache.
+    */
+    void clear(bool force);
 
   private:
     const Display &_display;
@@ -83,9 +102,23 @@ namespace bt {
 
     typedef std::map<RGB,PixelRef> Cache;
     typedef Cache::value_type CacheItem;
-
     Cache cache;
   };
+
+
+  static ColorCache *colorcache = 0;
+
+
+  void createColorCache(const Display &display) {
+    assert(colorcache == 0);
+    colorcache = new ColorCache(display);
+  }
+
+
+  void destroyColorCache(void) {
+    delete colorcache;
+    colorcache = 0;
+  }
 
 } // namespace bt
 
@@ -93,9 +126,7 @@ namespace bt {
 bt::ColorCache::ColorCache(const Display &display) : _display(display) { }
 
 
-bt::ColorCache::~ColorCache(void) {
-  clear();
-}
+bt::ColorCache::~ColorCache(void) { clear(true); }
 
 
 unsigned long bt::ColorCache::find(unsigned int screen, int r, int g, int b) {
@@ -109,6 +140,12 @@ unsigned long bt::ColorCache::find(unsigned int screen, int r, int g, int b) {
   if (it != cache.end()) {
     // found a cached color, use it
     ++it->second.count;
+
+#ifdef COLORCACHE_DEBUG
+    fprintf(stderr, "bt::ColorCache: use %02x/%02x/%02x, count %4d\n",
+            r, g, b, it->second.count);
+#endif // COLORCACHE_DEBUG
+
     return it->second.pixel;
   }
 
@@ -121,10 +158,16 @@ unsigned long bt::ColorCache::find(unsigned int screen, int r, int g, int b) {
 
   Colormap colormap = _display.screenNumber(screen)->getColormap();
   if (! XAllocColor(_display.XDisplay(), colormap, &xcol)) {
-    fprintf(stderr, "bt::Color::pixel: cannot allocate color 'rgb:%x/%x/%x'\n",
+    fprintf(stderr,
+            "bt::Color::pixel: cannot allocate color 'rgb:%02x/%02x/%02x'\n",
             r, g, b);
     xcol.pixel = BlackPixel(_display.XDisplay(), screen);
   }
+
+#ifdef COLORCACHE_DEBUG
+  fprintf(stderr, "bt::ColorCache: add %02x/%02x/%02x, pixel %08lx\n",
+          r, g, b, xcol.pixel);
+#endif // COLORCACHE_DEBUG
 
   cache.insert(CacheItem(rgb, PixelRef(xcol.pixel)));
 
@@ -140,16 +183,24 @@ void bt::ColorCache::release(unsigned int screen, int r, int g, int b) {
   RGB rgb(screen, r, g, b);
   Cache::iterator it = cache.find(rgb);
 
-  assert(it != cache.end());
+  assert(it != cache.end() && it->second.count > 0);
+  --it->second.count;
 
-  if (it->second.count > 0)
-    --it->second.count;
+#ifdef COLORCACHE_DEBUG
+  fprintf(stderr, "bt::ColorCache: rel %02x/%02x/%02x, count %4d\n",
+          r, g, b, it->second.count);
+#endif // COLORCACHE_DEBUG
 }
 
 
-void bt::ColorCache::clear(void) {
+void bt::ColorCache::clear(bool force) {
   Cache::iterator it = cache.begin();
   if (it == cache.end()) return; // nothing to do
+
+#ifdef COLORCACHE_DEBUG
+  fprintf(stderr, "bt::ColorCache: clearing cache, %d entries\n",
+          cache.size());
+#endif // COLORCACHE_DEBUG
 
   unsigned long *pixels = new unsigned long[ cache.size() ];
   unsigned int screen, count;
@@ -157,38 +208,41 @@ void bt::ColorCache::clear(void) {
   for (screen = 0; screen < _display.screenCount(); ++screen) {
     count = 0;
     it = cache.begin();
-
     while (it != cache.end()) {
-      if (it->second.count != 0 || it->first.screen != screen) {
+      if (it->second.count != 0 && !force) {
         ++it;
         continue;
       }
 
-      fprintf(stderr, "bt::ColorCache::clear: freeing '%lx'\n",
-              it->second.pixel);
+#ifdef COLORCACHE_DEBUG
+      fprintf(stderr, "bt::ColorCache: fre %02x/%02x/%02x, pixel %08lx\n",
+              it->first.r, it->first.g, it->first.b, it->second.pixel);
+#endif // COLORCACHE_DEBUG
 
-      pixels[ count++ ] = it->second.pixel;
-      Cache::iterator it2 = it;
-      ++it;
-      cache.erase(it2);
+      pixels[count++] = it->second.pixel;
+
+      Cache::iterator r = it++;
+      cache.erase(r);
     }
 
-    if (count > 0)
+    if (count > 0u) {
       XFreeColors(_display.XDisplay(),
                   _display.screenNumber(screen)->getColormap(),
                   pixels, count, 0);
+    }
   }
 
   delete [] pixels;
+
+#ifdef COLORCACHE_DEBUG
+  fprintf(stderr, "bt::ColorCache: cleared, %d entries remain\n",
+          cache.size());
+#endif // COLORCACHE_DEBUG
 }
 
 
-bt::ColorCache *bt::Color::colorcache = 0;
-
-
 bt::Color::Color(int r, int g, int b)
-  : _red(r), _green(g), _blue(b),
-    _screen(~0u), _pixel(0ul) { }
+  : _red(r), _green(g), _blue(b), _screen(~0u), _pixel(0ul) { }
 
 
 bt::Color::Color(const Color &c)
@@ -201,12 +255,10 @@ bt::Color::~Color(void) {
 }
 
 
-unsigned long bt::Color::pixel(const Display &display,
-                               unsigned int screen) const {
+unsigned long bt::Color::pixel(unsigned int screen) const {
   if ( _screen == screen) return _pixel; // already allocated on this screen
 
-  if (! colorcache) colorcache = new ColorCache(display);
-
+  assert(colorcache != 0);
   // deallocate() isn't const, so we don't call it from here
   if (_screen != ~0u) colorcache->release(_screen, _red, _green, _blue);
 
@@ -218,14 +270,15 @@ unsigned long bt::Color::pixel(const Display &display,
 
 void bt::Color::deallocate(void) {
   if (_screen == ~0u) return; // not allocated
-  if (colorcache) colorcache->release(_screen, _red, _green, _blue);
+  assert(colorcache != 0);
+  colorcache->release(_screen, _red, _green, _blue);
   _screen = ~0u;
   _pixel = 0ul;
 }
 
 
-void bt::Color::clearColorCache(void) {
-  if (colorcache) colorcache->clear();
+void bt::Color::clearCache(void) {
+  if (colorcache) colorcache->clear(false);
 }
 
 
