@@ -762,7 +762,7 @@ void BScreen::changeWorkspaceID(unsigned int id) {
   current_workspace->show();
 
   workspacemenu->setItemChecked(current_workspace->getID(), true);
-  toolbar->redrawWorkspaceLabel(True);
+  toolbar->redrawWorkspaceLabel();
 
   blackbox->netwm().setCurrentDesktop(screen_info.rootWindow(),
                                        current_workspace->getID());
@@ -932,7 +932,7 @@ void BScreen::propagateWindowName(const BlackboxWindow *w) {
                            bt::ellideText(w->getTitle(), 60, "..."));
 
     if (blackbox->getFocusedWindow() == w)
-      toolbar->redrawWindowLabel(True);
+      toolbar->redrawWindowLabel();
   } else {
     iconmenu->changeItem(w->getWindowNumber(), w->getIconTitle());
   }

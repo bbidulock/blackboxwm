@@ -274,11 +274,14 @@ private:
   void createMaximizeButton(void);
   void destroyMaximizeButton(void);
   void redrawWindowFrame(void) const;
+  void redrawTitle(void) const;
   void redrawLabel(void) const;
   void redrawAllButtons(void) const;
   void redrawCloseButton(bool pressed) const;
   void redrawIconifyButton(bool pressed) const;
   void redrawMaximizeButton(bool pressed) const;
+  void redrawHandle(void) const;
+  void redrawGrips(void) const;
   void applyGravity(bt::Rect &r);
   void restoreGravity(bt::Rect &r);
   void setState(unsigned long new_state, bool closing = False);

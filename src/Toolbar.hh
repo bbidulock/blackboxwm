@@ -48,7 +48,7 @@ private:
     Window window, workspace_label, window_label, clock, psbutton, nsbutton,
       pwbutton, nwbutton;
 
-    int x_hidden, y_hidden, hour, minute;
+    int x_hidden, y_hidden;
     unsigned int window_label_w, workspace_label_w, clock_w,
       button_w, bevel_w, label_h;
 
@@ -64,14 +64,14 @@ private:
   std::string new_workspace_name;
   size_t new_name_pos;
 
-  void redrawPrevWorkspaceButton(bool pressed = False, bool redraw = False);
-  void redrawNextWorkspaceButton(bool pressed = False, bool redraw = False);
-  void redrawPrevWindowButton(bool preseed = False, bool redraw = False);
-  void redrawNextWindowButton(bool preseed = False, bool redraw = False);
+  void redrawPrevWorkspaceButton(bool pressed = False);
+  void redrawNextWorkspaceButton(bool pressed = False);
+  void redrawPrevWindowButton(bool preseed = False);
+  void redrawNextWindowButton(bool preseed = False);
+  void redrawClockLabel(void);
 
   void updateStrut(void);
 
-  void checkClock(bool redraw = False);
 
 public:
   Toolbar(BScreen *scrn);
@@ -106,8 +106,8 @@ public:
   void toggleAutoHide(void);
   void toggleOnTop(void);
 
-  void redrawWindowLabel(bool redraw = False);
-  void redrawWorkspaceLabel(bool redraw = False);
+  void redrawWindowLabel(void);
+  void redrawWorkspaceLabel(void);
 
   virtual void timeout(bt::Timer *timer);
 
