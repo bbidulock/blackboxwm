@@ -1865,20 +1865,8 @@ void BlackboxWindow::restoreAttributes(void) {
   if (ret != Success || !net || nitems != PropBlackboxAttributesElements)
     return;
 
-  blackbox_attrib.flags = net->flags;
-  blackbox_attrib.attrib = net->attrib;
-  blackbox_attrib.decoration = net->decoration;
-  blackbox_attrib.workspace = net->workspace;
-  blackbox_attrib.stack = net->stack;
-  blackbox_attrib.premax_x = net->premax_x;
-  blackbox_attrib.premax_y = net->premax_y;
-  blackbox_attrib.premax_w = net->premax_w;
-  blackbox_attrib.premax_h = net->premax_h;
-
-  XFree((void *) net);
-
-  if (blackbox_attrib.flags & AttribShaded &&
-      blackbox_attrib.attrib & AttribShaded) {
+  if (net->flags & AttribShaded &&
+      net->attrib & AttribShaded) {
     int save_state =
       ((current_state == IconicState) ? NormalState : current_state);
 
@@ -1888,37 +1876,37 @@ void BlackboxWindow::restoreAttributes(void) {
     current_state = save_state;
   }
 
-  if ((blackbox_attrib.workspace != screen->getCurrentWorkspaceID()) &&
-      (blackbox_attrib.workspace < screen->getWorkspaceCount())) {
-    screen->reassociateWindow(this, blackbox_attrib.workspace, True);
+  if ((net->workspace != screen->getCurrentWorkspaceID()) &&
+      (net->workspace < screen->getWorkspaceCount())) {
+    screen->reassociateWindow(this, net->workspace, True);
 
     if (current_state == NormalState) current_state = WithdrawnState;
   } else if (current_state == WithdrawnState) {
     current_state = NormalState;
   }
 
-  if (blackbox_attrib.flags & AttribOmnipresent &&
-      blackbox_attrib.attrib & AttribOmnipresent) {
+  if (net->flags & AttribOmnipresent &&
+      net->attrib & AttribOmnipresent) {
     flags.stuck = False;
     stick();
 
     current_state = NormalState;
   }
 
-  if ((blackbox_attrib.flags & AttribMaxHoriz) ||
-      (blackbox_attrib.flags & AttribMaxVert)) {
-    int x = blackbox_attrib.premax_x, y = blackbox_attrib.premax_y;
-    unsigned int w = blackbox_attrib.premax_w, h = blackbox_attrib.premax_h;
+  if ((net->flags & AttribMaxHoriz) ||
+      (net->flags & AttribMaxVert)) {
+    int x = net->premax_x, y = net->premax_y;
+    unsigned int w = net->premax_w, h = net->premax_h;
     flags.maximized = 0;
 
     unsigned int m = 0;
-    if ((blackbox_attrib.flags & AttribMaxHoriz) &&
-        (blackbox_attrib.flags & AttribMaxVert))
-      m = (blackbox_attrib.attrib & (AttribMaxHoriz | AttribMaxVert)) ? 1 : 0;
-    else if (blackbox_attrib.flags & AttribMaxVert)
-      m = (blackbox_attrib.attrib & AttribMaxVert) ? 2 : 0;
-    else if (blackbox_attrib.flags & AttribMaxHoriz)
-      m = (blackbox_attrib.attrib & AttribMaxHoriz) ? 3 : 0;
+    if ((net->flags & AttribMaxHoriz) &&
+        (net->flags & AttribMaxVert))
+      m = (net->attrib & (AttribMaxHoriz | AttribMaxVert)) ? 1 : 0;
+    else if (net->flags & AttribMaxVert)
+      m = (net->attrib & AttribMaxVert) ? 2 : 0;
+    else if (net->flags & AttribMaxHoriz)
+      m = (net->attrib & AttribMaxHoriz) ? 3 : 0;
 
     if (m) maximize(m);
 
@@ -1929,6 +1917,8 @@ void BlackboxWindow::restoreAttributes(void) {
   }
 
   setState(current_state);
+
+  XFree((void *) net);
 }
 
 
