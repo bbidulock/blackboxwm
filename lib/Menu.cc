@@ -234,10 +234,10 @@ namespace bt {
     Menu *hidemenu;
     inline MenuDelay(void) : showmenu(0), hidemenu(0) { }
     inline void timeout(Timer *) {
-      if (hidemenu) hidemenu->hide();
-      hidemenu = 0;
-      if (showmenu) showmenu->show();
-      showmenu = 0;
+      if (hidemenu)
+        hidemenu->hide();
+      if (showmenu)
+        showmenu->show();
     }
   };
 
@@ -608,6 +608,9 @@ void bt::Menu::show(void) {
   if (_parent_menu && _parent_menu->isVisible())
     _parent_menu->_current_submenu = this;
 
+  // explicitly shown, no need to do it later
+  if (menudelay.showmenu == this)
+    menudelay.showmenu = 0;
   // don't hide this menu later if it is shown now
   if (menudelay.hidemenu == this)
     menudelay.hidemenu = 0;
@@ -635,6 +638,9 @@ void bt::Menu::hide(void) {
   // don't show this menu later if it is hidden now
   if (menudelay.showmenu == this)
     menudelay.showmenu = 0;
+  // explicitly hidden, no need to do it later
+  if (menudelay.hidemenu == this)
+    menudelay.hidemenu = 0;
 
   _active_index = ~0u;
   _active_submenu = 0;
@@ -1187,9 +1193,15 @@ void bt::Menu::deactivateItem(const Rect &rect, MenuItem &item,
   XClearArea(_app.XDisplay(), _window,
              rect.x(), rect.y(), rect.width(), rect.height(), True);
 
-  if (item.sub && item.sub->isVisible()) {
-    if (hide_submenu) item.sub->hide();
-    else menudelay.hidemenu = item.sub;
+  if (item.sub) {
+    if (menudelay.showmenu == item.sub)
+      menudelay.showmenu = 0;
+    if (item.sub->isVisible()) {
+      if (hide_submenu)
+        item.sub->hide();
+      else
+        menudelay.hidemenu = item.sub;
+    }
   }
 }
 
