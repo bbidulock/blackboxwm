@@ -575,45 +575,45 @@ void BlackboxWindow::decorate(void) {
   if (client.decorations & WindowDecorationTitlebar) {
     // render focused button texture
     frame.fbutton =
-      bt::PixmapCache::find(screen->screenNumber(), frame.style->b_focus,
+      bt::PixmapCache::find(screen->screenNumber(), frame.style->focus.button,
                             frame.style->button_width,
                             frame.style->button_width, frame.fbutton);
 
     // render unfocused button texture
     frame.ubutton =
-      bt::PixmapCache::find(screen->screenNumber(), frame.style->b_unfocus,
+      bt::PixmapCache::find(screen->screenNumber(), frame.style->unfocus.button,
                             frame.style->button_width,
                             frame.style->button_width, frame.ubutton);
 
     // render pressed button texture
     frame.pbutton =
-      bt::PixmapCache::find(screen->screenNumber(), frame.style->b_pressed,
+      bt::PixmapCache::find(screen->screenNumber(), frame.style->pressed,
                             frame.style->button_width,
                             frame.style->button_width, frame.pbutton);
 
     // render focused titlebar texture
     frame.ftitle =
-      bt::PixmapCache::find(screen->screenNumber(), frame.style->t_focus,
+      bt::PixmapCache::find(screen->screenNumber(), frame.style->focus.title,
                             frame.inside_w, frame.style->title_height,
                             frame.ftitle);
 
     // render unfocused titlebar texture
     frame.utitle =
-      bt::PixmapCache::find(screen->screenNumber(), frame.style->t_unfocus,
+      bt::PixmapCache::find(screen->screenNumber(), frame.style->unfocus.title,
                             frame.inside_w, frame.style->title_height,
                             frame.utitle);
 
     // render focused label texture
     frame.flabel =
       bt::PixmapCache::find(screen->screenNumber(),
-                            frame.style->l_focus,
+                            frame.style->focus.label,
                             frame.label_w, frame.style->label_height,
                             frame.flabel);
 
     // render unfocused label texture
     frame.ulabel =
       bt::PixmapCache::find(screen->screenNumber(),
-                            frame.style->l_unfocus,
+                            frame.style->unfocus.label,
                             frame.label_w, frame.style->label_height,
                             frame.ulabel);
 
@@ -624,12 +624,12 @@ void BlackboxWindow::decorate(void) {
 
   if (client.decorations & WindowDecorationHandle) {
     frame.fhandle =
-      bt::PixmapCache::find(screen->screenNumber(), frame.style->h_focus,
+      bt::PixmapCache::find(screen->screenNumber(), frame.style->focus.handle,
                             frame.inside_w, frame.style->handle_height,
                             frame.fhandle);
 
     frame.uhandle =
-      bt::PixmapCache::find(screen->screenNumber(), frame.style->h_unfocus,
+      bt::PixmapCache::find(screen->screenNumber(), frame.style->unfocus.handle,
                             frame.inside_w, frame.style->handle_height,
                             frame.uhandle);
 
@@ -640,12 +640,12 @@ void BlackboxWindow::decorate(void) {
 
   if (client.decorations & WindowDecorationGrip) {
     frame.fgrip =
-      bt::PixmapCache::find(screen->screenNumber(), frame.style->g_focus,
+      bt::PixmapCache::find(screen->screenNumber(), frame.style->focus.grip,
                             frame.style->grip_width,
                             frame.style->handle_height, frame.fgrip);
 
     frame.ugrip =
-      bt::PixmapCache::find(screen->screenNumber(), frame.style->g_unfocus,
+      bt::PixmapCache::find(screen->screenNumber(), frame.style->unfocus.grip,
                             frame.style->grip_width,
                             frame.style->handle_height, frame.ugrip);
 
@@ -880,12 +880,12 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
     if (redecorate_label) {
       frame.flabel =
         bt::PixmapCache::find(screen->screenNumber(),
-                              frame.style->l_focus,
+                              frame.style->focus.label,
                               frame.label_w, frame.style->label_height,
                               frame.flabel);
       frame.ulabel =
         bt::PixmapCache::find(screen->screenNumber(),
-                              frame.style->l_unfocus,
+                              frame.style->unfocus.label,
                               frame.label_w, frame.style->label_height,
                               frame.ulabel);
     }
@@ -2181,8 +2181,8 @@ void BlackboxWindow::restoreGravity(bt::Rect &r) {
 void BlackboxWindow::redrawTitle(void) const {
   bt::Rect u(0, 0, frame.inside_w, frame.style->title_height);
   bt::drawTexture(screen->screenNumber(),
-                  (client.state.focused ? frame.style->t_focus :
-                                          frame.style->t_unfocus),
+                  (client.state.focused ? frame.style->focus.title :
+                                          frame.style->unfocus.title),
                   frame.title, u, u,
                   (client.state.focused ? frame.ftitle : frame.utitle));
 }
@@ -2200,20 +2200,20 @@ void BlackboxWindow::redrawLabel(void) const {
                -(frame.style->bevel_width),
                frame.inside_w, frame.style->title_height);
     bt::drawTexture(screen->screenNumber(),
-                    (client.state.focused ? frame.style->t_focus :
-                                            frame.style->t_unfocus),
+                    (client.state.focused ? frame.style->focus.title :
+                                            frame.style->unfocus.title),
                     frame.label, t, u,
                     (client.state.focused ? frame.ftitle : frame.utitle));
   } else {
     bt::drawTexture(screen->screenNumber(),
-                    (client.state.focused ? frame.style->l_focus :
-                                            frame.style->l_unfocus),
+                    (client.state.focused ? frame.style->focus.label :
+                                            frame.style->unfocus.label),
                     frame.label, u, u, p);
   }
 
-  bt::Pen pen(screen->screenNumber(),
-              ((client.state.focused) ?
-               frame.style->l_text_focus : frame.style->l_text_unfocus));
+  bt::Pen pen(screen->screenNumber(), ((client.state.focused)
+                                       ? frame.style->focus.text
+                                       : frame.style->unfocus.text));
   u.setCoords(u.left()  + frame.style->bevel_width,
               u.top() + frame.style->bevel_width,
               u.right() - frame.style->bevel_width,
@@ -2239,24 +2239,24 @@ void BlackboxWindow::redrawIconifyButton(bool pressed) const {
                -(frame.style->bevel_width + 1),
                frame.inside_w, frame.style->title_height);
     bt::drawTexture(screen->screenNumber(),
-                    (client.state.focused ? frame.style->t_focus :
-                     frame.style->t_unfocus),
+                    (client.state.focused ? frame.style->focus.title :
+                     frame.style->unfocus.title),
                     frame.iconify_button, t, u,
                     (client.state.focused ? frame.ftitle : frame.utitle));
 
   } else {
     bt::drawTexture(screen->screenNumber(),
-                    (pressed ? frame.style->b_pressed :
-                     (client.state.focused ? frame.style->b_focus :
-                      frame.style->b_unfocus)),
+                    (pressed ? frame.style->pressed :
+                     (client.state.focused ? frame.style->focus.button :
+                      frame.style->unfocus.button)),
                     frame.iconify_button, u, u, p);
   }
 
   bt::drawBitmap(frame.style->iconify,
                  bt::Pen(screen->screenNumber(),
                          client.state.focused
-                         ? frame.style->b_pic_focus
-                         : frame.style->b_pic_unfocus),
+                         ? frame.style->focus.foreground
+                         : frame.style->unfocus.foreground),
                  frame.iconify_button, u);
 }
 
@@ -2273,23 +2273,23 @@ void BlackboxWindow::redrawMaximizeButton(bool pressed) const {
                -(frame.style->bevel_width + 1),
                frame.inside_w, frame.style->title_height);
     bt::drawTexture(screen->screenNumber(),
-                    (client.state.focused ? frame.style->t_focus :
-                     frame.style->t_unfocus),
+                    (client.state.focused ? frame.style->focus.title :
+                     frame.style->unfocus.title),
                     frame.maximize_button, t, u,
                     (client.state.focused ? frame.ftitle : frame.utitle));
   } else {
     bt::drawTexture(screen->screenNumber(),
-                    (pressed ? frame.style->b_pressed :
-                     (client.state.focused ? frame.style->b_focus :
-                      frame.style->b_unfocus)),
+                    (pressed ? frame.style->pressed :
+                     (client.state.focused ? frame.style->focus.button :
+                      frame.style->unfocus.button)),
                     frame.maximize_button, u, u, p);
   }
 
   bt::drawBitmap(isMaximized() ? frame.style->restore : frame.style->maximize,
                  bt::Pen(screen->screenNumber(),
                          client.state.focused
-                         ? frame.style->b_pic_focus
-                         : frame.style->b_pic_unfocus),
+                         ? frame.style->focus.foreground
+                         : frame.style->unfocus.foreground),
                  frame.maximize_button, u);
 }
 
@@ -2305,23 +2305,23 @@ void BlackboxWindow::redrawCloseButton(bool pressed) const {
                -(frame.style->bevel_width + 1),
                frame.inside_w, frame.style->title_height);
     bt::drawTexture(screen->screenNumber(),
-                    (client.state.focused ? frame.style->t_focus :
-                     frame.style->t_unfocus),
+                    (client.state.focused ? frame.style->focus.title :
+                     frame.style->unfocus.title),
                     frame.close_button, t, u,
                     (client.state.focused ? frame.ftitle : frame.utitle));
   } else {
     bt::drawTexture(screen->screenNumber(),
-                    (pressed ? frame.style->b_pressed :
-                     (client.state.focused ? frame.style->b_focus :
-                      frame.style->b_unfocus)),
+                    (pressed ? frame.style->pressed :
+                     (client.state.focused ? frame.style->focus.button :
+                      frame.style->unfocus.button)),
                     frame.close_button, u, u, p);
   }
 
   bt::drawBitmap(frame.style->close,
                  bt::Pen(screen->screenNumber(),
                          client.state.focused
-                         ? frame.style->b_pic_focus
-                         : frame.style->b_pic_unfocus),
+                         ? frame.style->focus.foreground
+                         : frame.style->unfocus.foreground),
                  frame.close_button, u);
 }
 
@@ -2329,8 +2329,8 @@ void BlackboxWindow::redrawCloseButton(bool pressed) const {
 void BlackboxWindow::redrawHandle(void) const {
   bt::Rect u(0, 0, frame.inside_w, frame.style->handle_height);
   bt::drawTexture(screen->screenNumber(),
-                  (client.state.focused ? frame.style->h_focus :
-                                          frame.style->h_unfocus),
+                  (client.state.focused ? frame.style->focus.handle :
+                                          frame.style->unfocus.handle),
                   frame.handle, u, u,
                   (client.state.focused ? frame.fhandle : frame.uhandle));
 }
@@ -2342,24 +2342,24 @@ void BlackboxWindow::redrawGrips(void) const {
   if (p == ParentRelative) {
     bt::Rect t(0, 0, frame.inside_w, frame.style->handle_height);
     bt::drawTexture(screen->screenNumber(),
-                    (client.state.focused ? frame.style->h_focus :
-                                            frame.style->h_unfocus),
+                    (client.state.focused ? frame.style->focus.handle :
+                                            frame.style->unfocus.handle),
                     frame.right_grip, t, u, p);
 
     t.setPos(-(frame.inside_w - frame.style->grip_width), 0);
     bt::drawTexture(screen->screenNumber(),
-                    (client.state.focused ? frame.style->h_focus :
-                                            frame.style->h_unfocus),
+                    (client.state.focused ? frame.style->focus.handle :
+                                            frame.style->unfocus.handle),
                     frame.right_grip, t, u, p);
   } else {
     bt::drawTexture(screen->screenNumber(),
-                    (client.state.focused ? frame.style->g_focus :
-                                            frame.style->g_unfocus),
+                    (client.state.focused ? frame.style->focus.grip :
+                                            frame.style->unfocus.grip),
                     frame.left_grip, u, u, p);
 
     bt::drawTexture(screen->screenNumber(),
-                    (client.state.focused ? frame.style->g_focus :
-                                            frame.style->g_unfocus),
+                    (client.state.focused ? frame.style->focus.grip :
+                                            frame.style->unfocus.grip),
                     frame.right_grip, u, u, p);
   }
 }

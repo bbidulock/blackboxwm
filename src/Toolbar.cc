@@ -603,7 +603,7 @@ void Toolbar::edit(void) {
                  frame.slabel_rect.width() / 2, 0, 1,
                  style->label_height - 1);
   // change the background of the window to that of an active window label
-  bt::Texture texture = _screen->resource().windowStyle()->l_focus;
+  bt::Texture texture = _screen->resource().windowStyle()->focus.label;
   frame.slabel = bt::PixmapCache::find(_screen->screenNumber(), texture,
                                        frame.slabel_rect.width(),
                                        frame.slabel_rect.height(),

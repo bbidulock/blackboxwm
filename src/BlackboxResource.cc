@@ -522,27 +522,27 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
   wstyle.close.load(screen_num, close_bits,
                     close_width, close_height);
 
-  wstyle.t_focus =
+  wstyle.focus.title =
     bt::textureResource(display, screen_num, res,
                         "window.title.focus", "Window.Title.Focus",
                         "white");
-  wstyle.t_unfocus =
+  wstyle.unfocus.title =
     bt::textureResource(display, screen_num, res,
                         "window.title.unfocus", "Window.Title.Unfocus",
                         "black");
-  wstyle.l_focus =
+  wstyle.focus.label =
     bt::textureResource(display, screen_num, res,
                         "window.label.focus", "Window.Label.Focus",
                         "white");
-  wstyle.l_unfocus =
+  wstyle.unfocus.label =
     bt::textureResource(display, screen_num, res,
                         "window.label.unfocus", "Window.Label.Unfocus",
                         "black");
-  wstyle.h_focus =
+  wstyle.focus.handle =
     bt::textureResource(display, screen_num, res,
                         "window.handle.focus", "Window.Handle.Focus",
                         "white");
-  wstyle.h_unfocus =
+  wstyle.unfocus.handle =
     bt::textureResource(display, screen_num, res,
                         "window.handle.unfocus", "Window.Handle.Unfocus",
                         "black");
@@ -559,43 +559,43 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
   wstyle.button_width = wstyle.label_height - 2;
   wstyle.grip_width = wstyle.button_width * 2;
 
-  wstyle.g_focus = bt::textureResource(display, screen_num, res,
-                                       "window.grip.focus",
-                                       "Window.Grip.Focus",
-                                       "white");
-  wstyle.g_unfocus = bt::textureResource(display, screen_num, res,
-                                         "window.grip.unfocus",
-                                         "Window.Grip.Unfocus",
-                                         "black");
-  wstyle.b_focus =
+  wstyle.focus.grip = bt::textureResource(display, screen_num, res,
+                                          "window.grip.focus",
+                                          "Window.Grip.Focus",
+                                          "white");
+  wstyle.unfocus.grip = bt::textureResource(display, screen_num, res,
+                                            "window.grip.unfocus",
+                                            "Window.Grip.Unfocus",
+                                            "black");
+  wstyle.focus.button =
     bt::textureResource(display, screen_num, res,
                         "window.button.focus", "Window.Button.Focus",
                         "white");
-  wstyle.b_unfocus =
+  wstyle.unfocus.button =
     bt::textureResource(display, screen_num, res,
                         "window.button.unfocus", "Window.Button.Unfocus",
                         "black");
-  wstyle.b_pressed =
+  wstyle.pressed =
     bt::textureResource(display, screen_num, res,
                         "window.button.pressed", "Window.Button.Pressed",
                         "black");
 
-  wstyle.l_text_focus =
+  wstyle.focus.text =
     bt::Color::namedColor(display, screen_num,
                           res.read("window.label.focus.textColor",
                                    "Window.Label.Focus.TextColor",
                                    "black"));
-  wstyle.l_text_unfocus =
+  wstyle.unfocus.text =
     bt::Color::namedColor(display, screen_num,
                           res.read("window.label.unfocus.textColor",
                                    "Window.Label.Unfocus.TextColor",
                                    "white"));
-  wstyle.b_pic_focus =
+  wstyle.focus.foreground =
     bt::Color::namedColor(display, screen_num,
                           res.read("window.button.focus.picColor",
                                    "Window.Button.Focus.PicColor",
                                    "black"));
-  wstyle.b_pic_unfocus =
+  wstyle.unfocus.foreground =
     bt::Color::namedColor(display, screen_num,
                           res.read("window.button.unfocus.picColor",
                                    "Window.Button.Unfocus.PicColor",
@@ -707,14 +707,14 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
   flat_black.setDescription("flat solid");
   flat_black.setColor(bt::Color(0, 0, 0));
 
-  if (wstyle.t_focus.texture() == bt::Texture::Parent_Relative)
-    wstyle.t_focus = flat_black;
-  if (wstyle.t_unfocus.texture() == bt::Texture::Parent_Relative)
-    wstyle.t_unfocus = flat_black;
-  if (wstyle.h_focus.texture() == bt::Texture::Parent_Relative)
-    wstyle.h_focus = flat_black;
-  if (wstyle.h_unfocus.texture() == bt::Texture::Parent_Relative)
-    wstyle.h_unfocus = flat_black;
+  if (wstyle.focus.title.texture() == bt::Texture::Parent_Relative)
+    wstyle.focus.title = flat_black;
+  if (wstyle.unfocus.title.texture() == bt::Texture::Parent_Relative)
+    wstyle.unfocus.title = flat_black;
+  if (wstyle.focus.handle.texture() == bt::Texture::Parent_Relative)
+    wstyle.focus.handle = flat_black;
+  if (wstyle.unfocus.handle.texture() == bt::Texture::Parent_Relative)
+    wstyle.unfocus.handle = flat_black;
 
   if (toolbar_style.toolbar.texture() == bt::Texture::Parent_Relative)
     toolbar_style.toolbar = flat_black;

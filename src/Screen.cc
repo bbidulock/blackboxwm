@@ -363,11 +363,11 @@ void BScreen::updateGeomWindow(void) {
                      _resource.borderColor()->pixel(screen_info.screenNumber()));
   }
 
-  bt::Texture texture = _resource.windowStyle()->l_focus;
+  bt::Texture texture = _resource.windowStyle()->focus.label;
   geom_pixmap = bt::PixmapCache::find(screen_info.screenNumber(),
                                       texture, geom_w, geom_h, geom_pixmap);
   if (geom_pixmap == ParentRelative) {
-    texture = _resource.windowStyle()->t_focus;
+    texture = _resource.windowStyle()->focus.title;
     geom_pixmap = bt::PixmapCache::find(screen_info.screenNumber(),
                                         texture, geom_w, geom_h, geom_pixmap);
   }
@@ -1316,7 +1316,7 @@ void BScreen::showPosition(int x, int y) {
   XClearWindow(blackbox->XDisplay(), geom_window);
 
   bt::Pen pen(screen_info.screenNumber(),
-              _resource.windowStyle()->l_text_focus);
+              _resource.windowStyle()->focus.text);
   bt::Rect rect(_resource.bevelWidth(), _resource.bevelWidth(),
                 geom_w - (_resource.bevelWidth() * 2),
                 geom_h - (_resource.bevelWidth() * 2));
@@ -1342,7 +1342,7 @@ void BScreen::showGeometry(unsigned int gx, unsigned int gy) {
   XClearWindow(blackbox->XDisplay(), geom_window);
 
   bt::Pen pen(screen_info.screenNumber(),
-              _resource.windowStyle()->l_text_focus);
+              _resource.windowStyle()->focus.text);
   bt::Rect rect(_resource.bevelWidth(), _resource.bevelWidth(),
                 geom_w - (_resource.bevelWidth() * 2),
                 geom_h - (_resource.bevelWidth() * 2));
