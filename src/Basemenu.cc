@@ -341,18 +341,32 @@ void Basemenu::popup( int x, int y, bool centerOnTitle )
       y = p.y();
       if ( y + height() > scr->height() )
         y -= items_rect.height() + title_rect.height() / 2;
+      if ( y < 0 )
+        y = 0;
+      if ( x + width() > scr->width() )
+        x = scr->width() - width();
+      if ( x < 0 )
+        x = 0;
     } else {
       y -= title_rect.y() + title_rect.height();
       if ( y + height() > scr->height() )
         y -= items_rect.height();
+      if ( y < 0 )
+        y = 0;
       if ( x + width() > scr->width() )
         x -= items_rect.width();
+      if ( x < 0 )
+        x = 0;
     }
   } else {
     if ( y + height() > scr->height() )
       y -= items_rect.height();
+    if ( y < 0 )
+      y = 0;
     if ( x + width() > scr->width() )
       x -= items_rect.width();
+    if ( x < 0 )
+      x = 0;
   }
 
   move( x, y );
