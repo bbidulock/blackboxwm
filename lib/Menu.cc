@@ -893,7 +893,7 @@ void bt::Menu::motionNotifyEvent(const XMotionEvent * const event) {
 }
 
 
-void bt::Menu::leaveNotifyEvent(const XCrossingEvent * const /*event*/) {
+void bt::Menu::leaveNotifyEvent(const XCrossingEvent * const /*unused*/) {
   Rect r(_irect.x(), _irect.y(), _itemw, 0);
   int row = 0, col = 0;
   ItemList::iterator it, end;

@@ -25,10 +25,6 @@
 #ifndef __Menu_hh
 #define __Menu_hh
 
-extern "C" {
-#include <X11/Xresource.h>
-}
-
 #include "Color.hh"
 #include "EventHandler.hh"
 #include "Font.hh"
@@ -235,7 +231,7 @@ namespace bt {
     virtual void buttonPressEvent(const XButtonEvent * const event);
     virtual void buttonReleaseEvent(const XButtonEvent * const event);
     virtual void motionNotifyEvent(const XMotionEvent * const event);
-    virtual void leaveNotifyEvent(const XCrossingEvent * const event);
+    virtual void leaveNotifyEvent(const XCrossingEvent * const /*unused*/);
     virtual void exposeEvent(const XExposeEvent * const event);
     virtual void keyPressEvent(const XKeyEvent * const event);
 
