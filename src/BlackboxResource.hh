@@ -41,9 +41,16 @@ enum PlacementPolicy { RowSmartPlacement = 400, ColSmartPlacement,
                        CascadePlacement };
 enum PlacementDirection { LeftRight = 403, RightLeft, TopBottom, BottomTop };
 
-struct ScreenResource: public bt::NoCopy {
+class ScreenResource: public bt::NoCopy {
 public:
-  struct WindowStyle {
+  ScreenResource(void);
+  ~ScreenResource(void);
+
+  class WindowStyle {
+  public:
+    WindowStyle(void);
+    ~WindowStyle(void);
+
     bt::Color l_text_focus, l_text_unfocus, b_pic_focus,
       b_pic_unfocus;
     bt::Texture f_focus, f_unfocus, t_focus, t_unfocus, l_focus, l_unfocus,
@@ -55,7 +62,11 @@ public:
       label_height, title_height, button_width;
   };
 
-  struct ToolbarStyle {
+  class ToolbarStyle {
+  public:
+    ToolbarStyle(void);
+    ~ToolbarStyle(void);
+
     bt::Color l_text, w_text, c_text, b_pic;
     bt::Texture toolbar, label, window, button, pressed, clock;
     bt::Font font;
@@ -84,12 +95,12 @@ public:
   bool doOpaqueMove(void) const         { return wconfig.opaque_move;   }
   bool doFullMax(void) const            { return wconfig.full_max;      }
   bool placementIgnoresShaded(void) const
-                                        { return wconfig.ignore_shaded; }
+  { return wconfig.ignore_shaded; }
   bool doFocusNew(void) const           { return wconfig.focus_new;     }
   bool doFocusLast(void) const          { return wconfig.focus_last;    }
   int placementPolicy(void) const       { return wconfig.placement_policy; }
   unsigned int edgeSnapThreshold(void) const
-                                        { return wconfig.edge_snap_threshold; }
+  { return wconfig.edge_snap_threshold; }
   int rowPlacementDirection(void) const { return wconfig.row_direction; }
   int colPlacementDirection(void) const { return wconfig.col_direction; }
 
@@ -97,9 +108,9 @@ public:
   bool doToolbarAutoHide(void) const  { return tconfig.auto_hide;     }
   int toolbarPlacement(void) const    { return tconfig.placement;     }
   unsigned int toolbarWidthPercent(void) const
-                                      { return tconfig.width_percent; }
+  { return tconfig.width_percent; }
   const char* strftimeFormat(void) const
-                                    { return tconfig.strftime_format.c_str(); }
+  { return tconfig.strftime_format.c_str(); }
 
   bool isSlitOnTop(void) const    { return sconfig.on_top;    }
   bool doSlitAutoHide(void) const { return sconfig.auto_hide; }
@@ -124,7 +135,7 @@ public:
   void saveToolbarWidthPercent(unsigned int i) { tconfig.width_percent = i; }
   void saveToolbarPlacement(int i)    { tconfig.placement = i;       }
   void saveStrftimeFormat(const std::string& f)
-                                      { tconfig.strftime_format = f; }
+  { tconfig.strftime_format = f; }
 
   void saveOpaqueMove(bool o)             { wconfig.opaque_move = o;         }
   void saveFullMax(bool f)                { wconfig.full_max = f;            }
@@ -134,14 +145,14 @@ public:
   void saveAutoRaise(bool a)              { wconfig.auto_raise = a;          }
   void saveClickRaise(bool c)             { wconfig.click_raise = c;         }
   void savePlacementPolicy(PlacementPolicy p)
-                                          { wconfig.placement_policy = p;    }
+  { wconfig.placement_policy = p;    }
   void saveRowPlacementDirection(PlacementDirection d)
-                                          { wconfig.row_direction = d;       }
+  { wconfig.row_direction = d;       }
   void saveColPlacementDirection(PlacementDirection d)
-                                          { wconfig.col_direction = d;       }
+  { wconfig.col_direction = d;       }
   void savePlacementIgnoresShaded(bool f) { wconfig.ignore_shaded = f;       }
   void saveEdgeSnapThreshold(unsigned int t)
-                                          { wconfig.edge_snap_threshold = t; }
+  { wconfig.edge_snap_threshold = t; }
 
   inline bool isToolbarEnabled(void) const
   { return enable_toolbar; }
