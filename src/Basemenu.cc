@@ -143,7 +143,7 @@ void Basemenu::drawItem( const Rect &r, const Item &item )
   }
 
   if ( item.isActive() ) {
-    BGCCache::Item gc = cache->find( style->menuHighlight().color() );
+    BGCCache::Item &gc = cache->find( style->menuHighlight().color() );
     if (  highlight_pixmap )
       XCopyArea( *display, highlight_pixmap, windowID(), gc.gc(),
                  0, 0, r.width(), r.height(), r.x(), r.y() );
@@ -152,7 +152,6 @@ void Basemenu::drawItem( const Rect &r, const Item &item )
                       r.x(), r.y(), r.width(), r.height() );
     cache->release( gc );
   }
-
 
   BGCCache::Item &gc =
     cache->find( ( item.isActive() ? style->menuHighlightTextColor() :
@@ -1111,8 +1110,6 @@ void Basemenu::exposeEvent( XEvent *e )
   BStyle *style = Blackbox::instance()->screen( screen() )->style();
   BaseDisplay *display = BaseDisplay::instance();
   BGCCache *cache = BGCCache::instance();
-  BGCCache::Item &tgc = cache->find( style->menuTitle().color() ),
-                 &igc = cache->find( style->menu().color() );
 
   if ( style->borderWidth() ) {
     // draw the borders of the menu if they need updating
@@ -1163,6 +1160,9 @@ void Basemenu::exposeEvent( XEvent *e )
     }
   }
 
+  BGCCache::Item &tgc = cache->find( style->menuTitle().color() ),
+                 &igc = cache->find( style->menu().color() );
+
   if ( show_title && todo.intersects( title_rect ) ) {
     Rect up = title_rect & todo;
     if ( style->menuTitle().texture() == ( BImage_Solid | BImage_Flat ) )
@@ -1189,6 +1189,8 @@ void Basemenu::exposeEvent( XEvent *e )
       if ( it == items.end() ) {
         // internal error
         fprintf( stderr, "Basemenu: cannot draw menu items, internal error\n" );
+        cache->release( tgc );
+        cache->release( igc );
         return;
       }
       it++;

@@ -1560,6 +1560,7 @@ void Blackbox::real_reconfigure(void) {
     }
   }
 
+  BGCCache::instance()->purge();
   LinkedListIterator<BScreen> it(screenList);
   for (BScreen *screen = it.current(); screen; it++, screen = it.current()) {
     screen->reconfigure();
