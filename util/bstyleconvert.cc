@@ -266,7 +266,7 @@ void Style::read(const Resource& res) {
   toolbar.button_pressed_color =
     res.read("toolbar.button.pressed.color",
              "Toolbar.Button.Pressed.Color", "black");
-  toolbar.button_colorTo =
+  toolbar.button_pressed_colorTo =
     res.read("toolbar.button.pressed.colorTo",
              "Toolbar.Button.Pressed.ColorTo", "");
 
