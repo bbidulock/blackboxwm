@@ -6,3 +6,4 @@ Changes from 0.65.x to 0.70.0
   - blackboxrc is no longer written on exit or restart.  Instead it is
     written whenever a change is made.  This means the rc can be
     edited while Blackbox is running (finally).
+  - Xft support has been added to support anti-aliased fonts.

@@ -30,10 +30,6 @@ ADD: use a fullscreen window with no background color/pixmap to hide
 ADD: documentation and examples for Rect, since the implementation seems
      to confuse people
 
-FIX: window colormap installation should follow focus... it doesn't at
-     the moment, and the changes in the event handling have removed
-     colormap installation completely.
-
 ADD: add _BLACKBOX_STYLE and _BLACKBOX_MENU atoms so that bbtools, bbconf,
      etc. can get the current path to the style in use and menu.
 
@@ -63,12 +59,6 @@ ADD: a regression test suite
      items to test:
        *) toggle decor works
        *) multihead
-
-CHANGE: the dithering menu texts should be more informative to the end user.
-        instead of having the algorithm name in the menu, use text like:
-	- Do not dither images
-	- Use fast dither (Ordered Dither)
-	- Use high-quality dither (Floyd-Steinberg Dither)
 
 Code cleanup:
 -----------------------------
