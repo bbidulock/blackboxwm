@@ -1058,18 +1058,13 @@ void Basemenu::showSubmenu(const Rect &r, const Item &item)
       px = 0;
   }
 
-  if (item.submenu()->show_title) {
+  if (item.submenu()->show_title)
     py -= item.submenu()->title_rect.y() + item.submenu()->title_rect.height();
-    if (py + item.submenu()->height() > scr->height())
-      py -= item.submenu()->items_rect.height() - r.height();
-    if (py < 0)
-      py = 0;
-  } else {
-    if (py + item.submenu()->height() > scr->height())
-      py -= item.submenu()->items_rect.height() - r.height();
-    if (py < 0)
-      py = 0;
-  }
+  if (py + item.submenu()->height() > scr->height())
+    py -= item.submenu()->items_rect.height() - r.height() -
+          (scr->style()->borderWidth() * 2) - scr->style()->bevelWidth();
+  if (py < 0)
+    py = 0;
 
   // show the submenu
   current_submenu = item.submenu();
