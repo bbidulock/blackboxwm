@@ -2,8 +2,6 @@
 
 CVS Bugs:
 -----------------------------
-* right to left placement is broken
-
 * sticky windows are not considered
 
 * colour issue under Irix
