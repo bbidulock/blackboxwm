@@ -192,7 +192,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   client.colormap = wattrib.colormap;
   client.workspace = screen->currentWorkspace();
   window_number = bt::BSENTINEL;
-  client.transient_for = 0;
   client.window_type = WindowTypeNormal;
   client.strut = 0;
   /*
@@ -226,9 +225,18 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   client.wmhints = readWMHints();
   client.wmnormal = readWMNormalHints();
   client.wmprotocols = readWMProtocols();
-  getTransientInfo();
-  if (client.window_type == WindowTypeNormal && isTransient())
-    client.window_type = WindowTypeDialog;
+  client.transient_for = readTransientInfo();
+
+  if (isTransient()) {
+    if (client.transient_for != (BlackboxWindow *) ~0ul) {
+      // register ourselves with our new transient_for
+      client.transient_for->client.transientList.push_back(this);
+      client.workspace = client.transient_for->client.workspace;
+    }
+
+    if (client.window_type == WindowTypeNormal)
+      client.window_type = WindowTypeDialog;
+  }
 
   if (client.wmhints.window_group != None)
     ::update_window_group(client.wmhints.window_group, blackbox, this);
@@ -369,15 +377,14 @@ BlackboxWindow::~BlackboxWindow(void) {
   if (isTransient()) {
     if (client.transient_for != (BlackboxWindow *) ~0ul)
       client.transient_for->client.transientList.remove(this);
-
-    client.transient_for = (BlackboxWindow*) 0;
+    client.transient_for = 0;
   }
 
   if (! client.transientList.empty()) {
     // reset transient_for for all transients
     BlackboxWindowList::iterator it, end = client.transientList.end();
     for (it = client.transientList.begin(); it != end; ++it)
-      (*it)->client.transient_for = (BlackboxWindow*) 0;
+      (*it)->client.transient_for = 0;
   }
 
   if (frame.title)
@@ -1284,85 +1291,75 @@ void BlackboxWindow::getMWMHints(void) {
 }
 
 
-void BlackboxWindow::getTransientInfo(void) {
-  if (client.transient_for &&
-      client.transient_for != (BlackboxWindow *) ~0ul) {
-    // reset transient_for in preparation of looking for a new owner
-    client.transient_for->client.transientList.remove(this);
-  }
+/*
+ * Reads the value of the WM_TRANSIENT_FOR property and returns a
+ * pointer to the transient parent for this window.  If the
+ * WM_TRANSIENT_FOR is missing or invalid, this function returns 0.
+ *
+ * 'client.wmhints' should be properly updated before calling this
+ * function.
+ *
+ * Note: a return value of ~0ul signifies a window that should be
+ * transient but has no discernible parent.
+ */
+BlackboxWindow *BlackboxWindow::readTransientInfo(void) {
+  Window trans_for = None;
 
-  // we have no transient_for until we find a new one
-  client.transient_for = (BlackboxWindow *) 0;
-
-  Window trans_for;
-  if (!XGetTransientForHint(blackbox->XDisplay(), client.window,
-                            &trans_for)) {
-    // transient_for hint not set
-    return;
+  if (!XGetTransientForHint(blackbox->XDisplay(), client.window, &trans_for)) {
+    // WM_TRANSIENT_FOR hint not set
+    return 0;
   }
 
   if (trans_for == client.window) {
     // wierd client... treat this window as a normal window
-    return;
+    return 0;
   }
 
   if (trans_for == None || trans_for == screen->screenInfo().rootWindow()) {
     /*
-      this is an undocumented interpretation of the ICCCM. a transient
-      associated with None/Root/itself is assumed to be a modal root
-      transient.  we don't support the concept of a global transient,
-      so we just associate this transient with nothing, and perhaps we
-      will add support later for global modality.
+      this is a slight violation of the ICCCM, yet the EWMH allows
+      this as a way to signify a group transient.
     */
-    client.transient_for = (BlackboxWindow *) ~0ul;
-    client.state.modal = True;
-    return;
+    trans_for = client.wmhints.window_group;
+
+    if (trans_for == None) {
+      /*
+        very broken client, wants a group transient, but it didn't set
+        the group
+      */
+      return (BlackboxWindow *) ~0ul;
+    }
   }
 
-  client.transient_for = blackbox->findWindow(trans_for);
-  if (! client.transient_for && client.wmhints.window_group
+  BlackboxWindow *win = blackbox->findWindow(trans_for);
+  if (!win && client.wmhints.window_group
       && trans_for == client.wmhints.window_group) {
     // no direct transient_for, perhaps this is a group transient?
     BWindowGroup *group =
       blackbox->findWindowGroup(client.wmhints.window_group);
-    if (group) client.transient_for = group->find(screen);
+    if (group) win = group->find(screen);
   }
 
-  if (! client.transient_for || client.transient_for == this) {
+  if (win) {
     /*
-      no transient_for found, or we have a wierd client that wants to
-      be a transient for itself, so we treat this window as a normal
-      window
+      Check for a circular transient state: this can lock up Blackbox
+      when it tries to find the non-transient window for a transient.
     */
-    client.transient_for = (BlackboxWindow*) 0;
-    return;
-  }
-
-  /*
-    Check for a circular transient state: this can lock up Blackbox
-    when it tries to find the non-transient window for a transient.
-  */
-  BlackboxWindow *w = this;
-  while (w->client.transient_for &&
-         w->client.transient_for != (BlackboxWindow *) ~0ul) {
-    if (w->client.transient_for == this) {
-      client.transient_for = (BlackboxWindow*) 0;
-      break;
+    BlackboxWindow *w = win;
+    while (w->client.transient_for &&
+           w->client.transient_for != (BlackboxWindow *) ~0ul) {
+      if (w->client.transient_for == this)
+        return 0;
+      w = w->client.transient_for;
     }
-    w = w->client.transient_for;
   }
 
-  if (client.transient_for) {
-    // register ourselves with our new transient_for
-    client.transient_for->client.transientList.push_back(this);
-    client.workspace = client.transient_for->client.workspace;
-  }
+  return win;
 }
 
 
 BlackboxWindow *BlackboxWindow::getTransientFor(void) const {
-  if (client.transient_for &&
-      client.transient_for != (BlackboxWindow*) ~0ul)
+  if (isTransient() && client.transient_for != (BlackboxWindow*) ~0ul)
     return client.transient_for;
   return 0;
 }
@@ -1620,9 +1617,8 @@ void BlackboxWindow::close(void) {
 void BlackboxWindow::iconify(void) {
   if (client.state.iconic) return;
 
-  if (client.transient_for &&
-      client.transient_for != (BlackboxWindow *) ~0ul &&
-      !client.transient_for->isIconic()) {
+  if (isTransient() && client.transient_for != (BlackboxWindow *) ~0ul
+      && !client.transient_for->isIconic()) {
     client.transient_for->iconify();
   }
 
@@ -2537,12 +2533,23 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
   case XA_WM_COMMAND:
     break;
 
-  case XA_WM_TRANSIENT_FOR:
-    // determine if this is a transient window
-    getTransientInfo();
+  case XA_WM_TRANSIENT_FOR: {
+    if (isTransient() && client.transient_for != (BlackboxWindow *) ~0ul) {
+      // reset transient_for in preparation of looking for a new owner
+      client.transient_for->client.transientList.remove(this);
+    }
 
-    // adjust the window decorations based on transience
+    // determine if this is a transient window
+    client.transient_for = readTransientInfo();
+
     if (isTransient()) {
+      if (client.transient_for != (BlackboxWindow *) ~0ul) {
+        // register ourselves with our new transient_for
+        client.transient_for->client.transientList.push_back(this);
+        client.workspace = client.transient_for->client.workspace;
+      }
+
+      // adjust the window decorations based on transience
       client.decorations &= ~(WindowDecorationIconify |
                               WindowDecorationMaximize);
       client.functions   &= ~(WindowFunctionShade |
@@ -2551,7 +2558,9 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
     }
 
     reconfigure();
+
     break;
+  }
 
   case XA_WM_HINTS: {
     // remove from current window group

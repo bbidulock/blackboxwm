@@ -223,10 +223,10 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   WMHints readWMHints(void);
   WMNormalHints readWMNormalHints(void);
   WMProtocols readWMProtocols(void);
+  BlackboxWindow *readTransientInfo(void);
 
   void getNetwmHints(void);
   void getMWMHints(void);
-  void getTransientInfo(void);
 
   void setNetWMAttributes(void);
 
@@ -278,8 +278,10 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   BlackboxWindow(Blackbox *b, Window w, BScreen *s);
   virtual ~BlackboxWindow(void);
 
-  inline bool isTransient(void) const { return client.transient_for != 0; }
-  inline bool isModal(void) const { return client.state.modal; }
+  inline bool isTransient(void) const
+  { return client.transient_for != 0; }
+  inline bool isModal(void) const
+  { return client.state.modal; }
 
   inline WindowType windowType(void) const
   { return client.window_type; }
@@ -332,8 +334,6 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
 
   unsigned long currentState(void) const
   { return client.current_state; }
-
-  inline void setModal(bool flag) { client.state.modal = flag; }
 
   bool validateClient(void) const;
 
