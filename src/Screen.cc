@@ -773,19 +773,14 @@ bool BScreen::focusFallback(const BlackboxWindow *win) {
   all transients of transients as well.
 */
 static
-BlackboxWindowList buildTransientList(unsigned int current_workspace,
-                                      const BlackboxWindow * const win) {
+BlackboxWindowList buildTransientList(const BlackboxWindow * const win) {
   const BlackboxWindowList &transients = win->transients();
   BlackboxWindowList all = transients;
   BlackboxWindowList::const_iterator it = transients.begin(),
                                     end = transients.end();
   for (; it != end; ++it) {
-    const BlackboxWindow * const tmp = *it;
-    if (tmp->workspace() == current_workspace
-        || tmp->workspace() == bt::BSENTINEL) {
-      BlackboxWindowList x = buildTransientList(current_workspace, tmp);
-      all.splice(all.end(), x);
-    }
+    BlackboxWindowList x = buildTransientList(*it);
+    all.splice(all.end(), x);
   }
   return all;
 }
@@ -797,9 +792,7 @@ BlackboxWindowList buildTransientList(unsigned int current_workspace,
   transients above).
 */
 static
-void raiseGroup(unsigned int current_workspace,
-                StackingList &stackingList,
-                BWindowGroup *group) {
+void raiseGroup(StackingList &stackingList, BWindowGroup *group) {
   BlackboxWindowList windows = group->windows();
   int layer = StackingList::LayerNormal;
   for (; layer < StackingList::LayerDesktop; ++layer) {
@@ -826,9 +819,7 @@ void raiseGroup(unsigned int current_workspace,
       }
 
       BlackboxWindow *tmp = dynamic_cast<BlackboxWindow *>(*it);
-      if (!tmp
-          || (tmp->workspace() != current_workspace
-              && tmp->workspace() != bt::BSENTINEL)) {
+      if (!tmp) {
         // entity is not a window, or window is not visible on the
         // current_workspace
         continue;
@@ -892,8 +883,7 @@ void raiseTransients(StackingList::iterator top,
   preserving the stacking order) befor raising the specified window.
 */
 static
-StackingList::iterator raiseWindow(unsigned int current_workspace,
-                                   StackingList &stackingList,
+StackingList::iterator raiseWindow(StackingList &stackingList,
                                    StackEntity *entity) {
   BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(entity);
   BWindowGroup *group = 0;
@@ -915,12 +905,12 @@ StackingList::iterator raiseWindow(unsigned int current_workspace,
     group = win->findWindowGroup();
     if (group) {
       // raise all windows in the group before raising 'win'
-      ::raiseGroup(current_workspace, stackingList, group);
+      ::raiseGroup(stackingList, group);
     } else {
       // raise non-transient parent before raising transient
       BlackboxWindow *tmp = win->findNonTransientParent();
       if (tmp != win)
-        (void) ::raiseWindow(current_workspace, stackingList, tmp);
+        (void) ::raiseWindow(stackingList, tmp);
     }
   }
 
@@ -930,7 +920,7 @@ StackingList::iterator raiseWindow(unsigned int current_workspace,
   assert(top != end);
   if (win) {
     // ... with all transients above it
-    BlackboxWindowList transients = buildTransientList(current_workspace, win);
+    BlackboxWindowList transients = buildTransientList(win);
     raiseTransients(top, stackingList, transients);
 
     // ... and group transients on top
@@ -941,12 +931,8 @@ StackingList::iterator raiseWindow(unsigned int current_workspace,
         BlackboxWindowList::const_iterator wit = groupTransients.begin(),
                                           wend = groupTransients.end();
         for (; wit != wend; ++wit) {
-          const BlackboxWindow * const tmp = *wit;
-          if (tmp->workspace() == current_workspace
-              || tmp->workspace() == bt::BSENTINEL) {
-            BlackboxWindowList x = buildTransientList(current_workspace, tmp);
-            groupTransients.splice(groupTransients.end(), x);
-          }
+          BlackboxWindowList x = buildTransientList(*wit);
+          groupTransients.splice(groupTransients.end(), x);
         }
         raiseTransients(top, stackingList, groupTransients);
       }
@@ -966,10 +952,7 @@ StackingList::iterator raiseWindow(unsigned int current_workspace,
   the X server.  The EWMH stacking hint is also updated.
  */
 void BScreen::raiseWindow(StackEntity *entity) {
-  StackingList::iterator top = ::raiseWindow(current_workspace,
-                                             _stackingList,
-                                             entity),
-                       begin = _stackingList.begin(),
+  StackingList::iterator top = ::raiseWindow(_stackingList, entity),
                          end = _stackingList.end();
   if (top == end) {
     // no need to raise entity
@@ -983,6 +966,7 @@ void BScreen::raiseWindow(StackEntity *entity) {
   // find the first entity above us (if any)
   StackEntity *above = 0;
   StackingList::iterator layer = _stackingList.layer(entity->layer()),
+                         begin = _stackingList.begin(),
                             it = layer;
   for (--it; it != begin; --it) {
     if (*it) {
