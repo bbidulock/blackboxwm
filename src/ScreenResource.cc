@@ -191,7 +191,6 @@ void ScreenResource::load(bt::Resource& res, unsigned int screen) {
   sprintf(name_lookup,  "session.screen%u.workspaces", screen);
   sprintf(class_lookup, "Session.screen%u.Workspaces", screen);
   workspace_count = res.read(name_lookup, class_lookup, 4);
-  printf("workspace_count %d\n", workspace_count);
 
   if (! workspace_names.empty())
     workspace_names.clear();
