@@ -74,7 +74,7 @@ gencat_cmd = @gencat_cmd@
 regex_cmd = @regex_cmd@
 
 NLSTEST = @NLS@
-SUBDIRS = C da_DK de_DE es_ES et_EE fr_FR it_IT ja_JP nl_NL pt_BR ru_RU 	sl_SI sv_SE tr_TR zh_CN zh_TW
+SUBDIRS = C da_DK de_DE es_ES et_EE fr_FR hu_HU it_IT ja_JP nl_NL pt_BR ru_RU 	sl_SI sv_SE tr_TR zh_CN zh_TW
 
 MAINTAINERCLEANFILES = Makefile.in blackbox-nls.hh
 DISTCLEANFILES = blackbox-nls.hh
@@ -91,9 +91,9 @@ GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps nls/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu nls/Makefile
 
-Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
@@ -192,6 +192,11 @@ distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 subdir = nls
 
 distdir: $(DISTFILES)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(top_distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu nls/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \

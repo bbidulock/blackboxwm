@@ -189,6 +189,7 @@ nls/de_DE/Makefile
 nls/es_ES/Makefile
 nls/et_EE/Makefile
 nls/fr_FR/Makefile
+nls/hu_HU/Makefile
 nls/it_IT/Makefile
 nls/ja_JP/Makefile
 nls/nl_NL/Makefile

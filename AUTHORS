@@ -13,9 +13,9 @@ Current Contributors:
 	Chris Mecca <flip@linuxguide.org>
 	 - use of his irix machine for testing
  	Wilbert Berendsen <wbsoft@xs4all.nl>
-	 - man pages and dutch nls file
+	 - man pages and Dutch nls file
 	Luca Marrazzo <marra.luca@libero.it>
-	 - italian nls files
+	 - Italian nls files
 	Ales Kosir <ales.kosir@telemach.net>
 	 - Slovenian man pages and nls
 	SATO Satoru <ssato@adachi.ne.jp>
@@ -26,6 +26,10 @@ Current Contributors:
 	 - Chinese nls support
 	Dale P. Smith <dsmith@altustech.com>
 	 - bsetroot now sets xrootpmap_id atom
+	Moto Chen <han_yi_chen@yahoo.com.tw>
+	 - Taiwan Chinese (zh_TW) support
+	Bodnar Istvan <piggy@dub.hu>
+	 - Hungarian (hu_HU) support
 
 Original Author:
         Brad Hughes <bhughes@trolltech.com>

@@ -34,7 +34,7 @@ Changes from 0.62.1:
     checking the transient state in X and setting the appropriate variables
     on the window.  To further attack the infinite loops this function ensures
     that client.transient != this.
-  - added zh_TW (Taiwan Chinese)
+  - added zh_TW (Taiwan Chinese) and Hungarian (hu_HU)
   - remove slit and netwm as compile time options
   - strip much of BaseDisplay's original functionality and move it to the
     blackbox class.
