@@ -33,6 +33,21 @@ namespace bt {
   // forward declarations
   class Rect;
   class Resource;
+  class Texture;
+
+  void drawTexture(unsigned int screen,
+                   const Texture &texture,
+                   Drawable drawable,
+                   const Rect &trect,
+                   const Rect &urect,
+                   Pixmap pixmap = 0ul);
+
+  Texture
+  textureResource(const Display &display, unsigned int screen,
+                  const Resource &resource,
+                  const std::string &name,
+                  const std::string &classname,
+                  const std::string &default_color = std::string("black"));
 
   class Texture {
   public:
@@ -97,20 +112,6 @@ namespace bt {
     unsigned long t;
     unsigned int bw;
   };
-
-  Texture
-  textureResource(const Display &display, unsigned int screen,
-                  const Resource &resource,
-                  const std::string &name,
-                  const std::string &classname,
-                  const std::string &default_color = std::string("black"));
-
-  void drawTexture(unsigned int screen,
-                   const Texture &texture,
-                   Drawable drawable,
-                   const Rect &trect,
-                   const Rect &urect,
-                   Pixmap pixmap = 0ul);
 
 } // namespace bt
 
