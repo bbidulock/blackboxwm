@@ -1890,7 +1890,7 @@ void BlackboxWindow::setState(unsigned long new_state, bool closing) {
   else if (client.state.layer == LAYER_ABOVE)
     atoms.push_back(netwm->wmStateAbove());
   else if (client.state.layer == LAYER_BELOW)
-    atoms.push_back(netwm->wmStateAbove());
+    atoms.push_back(netwm->wmStateBelow());
 
   if (atoms.empty())
     netwm->removeProperty(client.window, netwm->wmState());
