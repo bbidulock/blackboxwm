@@ -146,7 +146,6 @@ namespace bt {
 
     Application &_app;
     unsigned int _screen;
-    ImageControl *_imagecontrol;
     struct _title {
       Texture texture;
       Color foreground;
