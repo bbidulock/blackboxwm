@@ -24,7 +24,6 @@
 
 #include "Configmenu.hh"
 #include "Screen.hh"
-#include "../nls/blackbox-nls.hh"
 
 #include <Image.hh>
 #include <i18n.hh>
@@ -32,7 +31,8 @@
 
 class ConfigFocusmenu : public bt::Menu {
 public:
-  ConfigFocusmenu(bt::Application &app, unsigned int screen, BScreen *bscreen);
+  ConfigFocusmenu(bt::Application &app, unsigned int screen,
+                  BScreen *bscreen);
 
   void refresh(void);
 
@@ -61,12 +61,16 @@ private:
 
 class ConfigDithermenu : public bt::Menu {
 public:
-  ConfigDithermenu(bt::Application &app, unsigned int screen);
+  ConfigDithermenu(bt::Application &app, unsigned int screen,
+                   BScreen *bscreen);
 
   void refresh(void);
 
 protected:
   void itemClicked(unsigned int id, unsigned int);
+
+private:
+  BScreen *_bscreen;
 };
 
 
@@ -90,37 +94,25 @@ enum {
 Configmenu::Configmenu(bt::Application &app, unsigned int screen,
                        BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen) {
-  setTitle(bt::i18n(ConfigmenuSet, ConfigmenuConfigOptions, "Config options"));
+  setTitle("Configuration options");
   showTitle();
 
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuFocusModel,
-                      "Focus Model"),
-             new ConfigFocusmenu(app, screen, bscreen),
-             FocusModel);
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuWindowPlacement,
-                      "Window Placement"),
-             new ConfigPlacementmenu(app, screen, bscreen),
-             WindowPlacement);
+  ConfigFocusmenu *focusmenu =
+    new ConfigFocusmenu(app, screen, bscreen);
+  ConfigPlacementmenu *placementmenu =
+    new ConfigPlacementmenu(app, screen, bscreen);
+  ConfigDithermenu *dithermenu =
+    new ConfigDithermenu(app, screen, bscreen);
 
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuImageDithering,
-                      "Image Dithering"),
-             new ConfigDithermenu(app, screen),
-             ImageDithering);
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuOpaqueMove,
-                      "Opaque Window Moving"),
-             OpaqueWindowMoving);
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuFullMax,
-                      "Full Maximization"),
-             FullMaximization);
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuFocusNew,
-                      "Focus New Windows"),
-             FocusNewWindows);
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuFocusLast,
-                      "Focus Last Window on Workspace"),
-             FocusLastWindowOnWorkspace);
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuDisableBindings,
-                      "Disable Bindings with Scroll Lock"),
-             DisableBindings);
+  insertItem("Focus Model", focusmenu, FocusModel);
+  insertItem("Window Placement", placementmenu, WindowPlacement);
+  insertItem("Image Dithering", dithermenu, ImageDithering);
+
+  insertItem("Opaque Window Moving", OpaqueWindowMoving);
+  insertItem("Full Maximization", FullMaximization);
+  insertItem("Focus New Windows", FocusNewWindows);
+  insertItem("Focus Last Window on Workspace", FocusLastWindowOnWorkspace);
+  insertItem("Disable Bindings with Scroll Lock", DisableBindings);
   insertItem("Disable Toolbar", DisableToolbar);
 }
 
@@ -177,26 +169,25 @@ void Configmenu::itemClicked(unsigned int id, unsigned int) {
 ConfigFocusmenu::ConfigFocusmenu(bt::Application &app, unsigned int screen,
                                  BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen) {
-  setTitle(bt::i18n(ConfigmenuSet, ConfigmenuFocusModel, "Focus Model"));
+  setTitle("Focus Model");
   showTitle();
 
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuClickToFocus, "Click To Focus"),
-             ClickToFocus);
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuSloppyFocus, "Sloppy Focus"),
-             SloppyFocus);
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuAutoRaise, "Auto Raise"),
-             AutoRaise);
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuClickRaise, "Click Raise"),
-             ClickRaise);
+  insertItem("Click to Focus", ClickToFocus);
+  insertItem("Sloppy Focus", SloppyFocus);
+  insertItem("Auto Raise", AutoRaise);
+  insertItem("Click Raise", ClickRaise);
 }
 
 
 void ConfigFocusmenu::refresh(void) {
   ScreenResource& res = _bscreen->resource();
+
   setItemChecked(ClickToFocus, !res.isSloppyFocus());
   setItemChecked(SloppyFocus, res.isSloppyFocus());
+
   setItemEnabled(AutoRaise, res.isSloppyFocus());
   setItemChecked(AutoRaise, res.doAutoRaise());
+
   setItemEnabled(ClickRaise, res.isSloppyFocus());
   setItemChecked(ClickRaise, res.doClickRaise());
 }
@@ -214,16 +205,16 @@ void ConfigFocusmenu::itemClicked(unsigned int id, unsigned int) {
     break;
 
   case AutoRaise: // auto raise with sloppy focus
-    res.saveAutoRaise(! res.doAutoRaise());
+    res.saveAutoRaise(!res.doAutoRaise());
     break;
 
   case ClickRaise: // click raise with sloppy focus
-    res.saveClickRaise(! res.doClickRaise());
+    res.saveClickRaise(!res.doClickRaise());
     // make sure the appropriate mouse buttons are grabbed on the windows
     _bscreen->toggleFocusModel(BScreen::SloppyFocus);
     break;
-  default:
-    return;
+
+  default: return;
   } // switch
   _bscreen->saveResource();
 }
@@ -233,40 +224,23 @@ ConfigPlacementmenu::ConfigPlacementmenu(bt::Application &app,
                                          unsigned int screen,
                                          BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen) {
-  setTitle(bt::i18n(ConfigmenuSet, ConfigmenuWindowPlacement,
-                    "Window Placement"));
+  setTitle("Window Placement");
   showTitle();
 
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuSmartRows,
-                      "Smart Placement (Rows)"),
-             RowSmartPlacement);
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuSmartCols,
-                      "Smart Placement (Columns)"),
-             ColSmartPlacement);
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuCascade,
-                      "Cascade Placement"),
-             CascadePlacement);
+  insertItem("Smart Placement (Rows)", RowSmartPlacement);
+  insertItem("Smart Placement (Columns)", ColSmartPlacement);
+  insertItem("Cascade Placement", CascadePlacement);
 
   insertSeparator();
 
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuLeftRight,
-                      "Left to Right"),
-             LeftRight);
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuRightLeft,
-                      "Right to Left"),
-             RightLeft);
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuTopBottom,
-                      "Top to Bottom"),
-             TopBottom);
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuBottomTop,
-                      "Bottom to Top"),
-             BottomTop);
+  insertItem("Left to Right", LeftRight);
+  insertItem("Right to Left", RightLeft);
+  insertItem("Top to Bottom", TopBottom);
+  insertItem("Bottom to Top", BottomTop);
 
   insertSeparator();
 
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuIgnoreShaded,
-                      "Ignore Shaded Windows"),
-             ConfigmenuIgnoreShaded);
+  insertItem("Ignore Shaded Windows", IgnoreShadedWindows);
 }
 
 
@@ -294,7 +268,8 @@ void ConfigPlacementmenu::refresh(void) {
   setItemEnabled(BottomTop, ! cascade);
   setItemChecked(BottomTop, ! cascade && ! tb);
 
-  setItemChecked(ConfigmenuIgnoreShaded, res.placementIgnoresShaded());
+  setItemChecked(IgnoreShadedWindows,
+                 res.placementIgnoresShaded());
 }
 
 
@@ -334,22 +309,16 @@ void ConfigPlacementmenu::itemClicked(unsigned int id, unsigned int) {
 }
 
 
-ConfigDithermenu::ConfigDithermenu(bt::Application &app,
-                                   unsigned int screen)
-  : bt::Menu(app, screen) {
-  setTitle(bt::i18n(ConfigmenuSet, ConfigmenuImageDithering,
-                    "Image Dithering"));
+ConfigDithermenu::ConfigDithermenu(bt::Application &app, unsigned int screen,
+                                   BScreen *bscreen)
+  : bt::Menu(app, screen), _bscreen(bscreen)
+{
+  setTitle("Image Dithering");
   showTitle();
 
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuNoDithering,
-                      "Do not dither images"),
-             bt::NoDither);
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuOrderedDithering,
-                      "Use fast dither"),
-             bt::OrderedDither);
-  insertItem(bt::i18n(ConfigmenuSet, ConfigmenuFloydSteinbergDithering,
-                      "Use high-quality dither"),
-             bt::FloydSteinbergDither);
+  insertItem("Do not dither images", bt::NoDither);
+  insertItem("Use fast dither", bt::OrderedDither);
+  insertItem("Use high-quality dither", bt::FloydSteinbergDither);
 }
 
 
@@ -363,5 +332,7 @@ void ConfigDithermenu::refresh(void) {
 }
 
 
-void ConfigDithermenu::itemClicked(unsigned int id, unsigned int)
-{ bt::Image::setDitherMode((bt::DitherMode) id); }
+void ConfigDithermenu::itemClicked(unsigned int id, unsigned int) {
+  bt::Image::setDitherMode((bt::DitherMode) id);
+  _bscreen->saveResource();
+}
