@@ -1,8 +1,9 @@
 #!/bin/sh
 
-libtoolize -c
-aclocal -I /usr/local/share/aclocal
-autoheader
-automake --foreign -a -c
-autoconf
+${LIBTOOLIZE-libtoolize} -c
+${ACLOCAL-aclocal} -I /usr/local/share/aclocal
+${AUTOHEADER-autoheader}
+${AUTOMAKE-automake} --foreign -a -c
+${AUTOCONF-autoconf}
 
+rm -rf autom4te.cache
