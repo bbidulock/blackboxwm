@@ -57,10 +57,6 @@
 #  include <sys/param.h>
 #endif // HAVE_SYS_PARAM_H
 
-#ifndef   MAXPATHLEN
-#define   MAXPATHLEN 255
-#endif // MAXPATHLEN
-
 #ifdef    HAVE_SYS_SELECT_H
 #  include <sys/select.h>
 #endif // HAVE_SYS_SELECT_H

@@ -280,27 +280,27 @@ BlackboxWindow *Workspace::getWindow(unsigned int index) {
 
 
 BlackboxWindow*
-Workspace::getNextWindowOnStack(BlackboxWindow *w) {
-  BlackboxWindowList::iterator it = std::find(stackingList.begin(),
-                                              stackingList.end(),
+Workspace::getNextWindowInList(BlackboxWindow *w) {
+  BlackboxWindowList::iterator it = std::find(windowList.begin(),
+                                              windowList.end(),
                                               w);
-  assert(it != stackingList.end()); // window must be in list
+  assert(it != windowList.end());   // window must be in list
   ++it;                             // next window
-  if (it == stackingList.end())
-    return stackingList.front();    // if we walked off the end, wrap around
+  if (it == windowList.end())
+    return windowList.front();      // if we walked off the end, wrap around
 
   return *it;
 }
 
 
 BlackboxWindow*
-Workspace::getPrevWindowOnStack(BlackboxWindow *w) {
-  BlackboxWindowList::iterator it = std::find(stackingList.begin(),
-                                              stackingList.end(),
+Workspace::getPrevWindowInList(BlackboxWindow *w) {
+  BlackboxWindowList::iterator it = std::find(windowList.begin(),
+                                              windowList.end(),
                                               w);
-  assert(it != stackingList.end()); // window must be in list
-  if (it == stackingList.begin())
-    return stackingList.back();     // if we walked of the front, wrap around
+  assert(it != windowList.end()); // window must be in list
+  if (it == windowList.begin())
+    return windowList.back();     // if we walked of the front, wrap around
 
   return *(--it);
 }

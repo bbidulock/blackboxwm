@@ -73,8 +73,8 @@ public:
   inline void setLastFocusedWindow(BlackboxWindow *w) { lastfocus = w; }
 
   BlackboxWindow* getWindow(unsigned int index);
-  BlackboxWindow* getNextWindowOnStack(BlackboxWindow *w);
-  BlackboxWindow* getPrevWindowOnStack(BlackboxWindow *w);
+  BlackboxWindow* getNextWindowInList(BlackboxWindow *w);
+  BlackboxWindow* getPrevWindowInList(BlackboxWindow *w);
   BlackboxWindow* getTopWindowOnStack(void) const;
   void sendWindowList(Netizen &n);
 

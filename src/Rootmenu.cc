@@ -46,10 +46,6 @@
 #  include <sys/param.h>
 #endif // HAVE_SYS_PARAM_H
 
-#ifndef   MAXPATHLEN
-#define   MAXPATHLEN 255
-#endif // MAXPATHLEN
-
 
 Rootmenu::Rootmenu(BScreen *scrn) : Basemenu(scrn) {
   screen = scrn;
@@ -69,13 +65,11 @@ void Rootmenu::itemSelected(int button, int index) {
   switch (item->function()) {
   case BScreen::Execute:
     if (item->exec()) {
-      char displaystring[MAXPATHLEN];
-      sprintf(displaystring, "DISPLAY=%s",
-              DisplayString(screen->getBaseDisplay()->getXDisplay()));
-      sprintf(displaystring + strlen(displaystring) - 1, "%d",
-              screen->getScreenNumber());
+      string displaystring = "DISPLAY=";
+      displaystring += DisplayString(screen->getBaseDisplay()->getXDisplay());
+      displaystring[displaystring.length() - 1] = screen->getScreenNumber();
 
-      bexec(item->exec(), displaystring);
+      bexec(item->exec(), displaystring.c_str());
     }
     break;
 

@@ -81,10 +81,6 @@
 #include "Workspace.hh"
 #include "Workspacemenu.hh"
 
-#ifndef   MAXPATHLEN
-#define   MAXPATHLEN 255
-#endif // MAXPATHLEN
-
 #ifndef   FONT_ELEMENT_SIZE
 #define   FONT_ELEMENT_SIZE 50
 #endif // FONT_ELEMENT_SIZE
@@ -732,11 +728,9 @@ void BScreen::LoadStyle(void) {
   if (XrmGetResource(resource.stylerc,
                      "rootCommand",
                      "RootCommand", &value_type, &value)) {
-    char displaystring[MAXPATHLEN];
-    sprintf(displaystring, "DISPLAY=%s",
-            DisplayString(blackbox->getXDisplay()));
-    sprintf(displaystring + strlen(displaystring) - 1, "%d",
-            getScreenNumber());
+    string displaystring = "DISPLAY=";
+    displaystring += DisplayString(blackbox->getXDisplay());
+    displaystring[displaystring.length() - 1] = getScreenNumber();
 
     bexec(value.addr, displaystring);
   }
@@ -1112,7 +1106,7 @@ void BScreen::nextFocus(void) {
     BlackboxWindow *current;
     do {
       current = next;
-      next = current_workspace->getNextWindowOnStack(current);
+      next = current_workspace->getNextWindowInList(current);
     } while(!next->setInputFocus() && next != focused);
 
     if (next != focused)
@@ -1141,7 +1135,7 @@ void BScreen::prevFocus(void) {
     BlackboxWindow *current;
     do {
       current = next;
-      next = current_workspace->getPrevWindowOnStack(current);
+      next = current_workspace->getPrevWindowInList(current);
     } while(!next->setInputFocus() && next != focused);
 
     if (next != focused)

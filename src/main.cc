@@ -50,9 +50,6 @@
 #  include <sys/param.h>
 #endif // HAVE_SYS_PARAM_H
 
-#ifndef   MAXPATHLEN
-#define   MAXPATHLEN 255
-#endif // MAXPATHLEN
 
 I18n i18n; // initialized in main
 
@@ -128,12 +125,12 @@ int main(int argc, char **argv) {
       }
 
       session_display = argv[i];
-      char dtmp[MAXPATHLEN];
-      sprintf(dtmp, "DISPLAY=%s", session_display);
+      string dtmp = "DISPLAY=";
+      dtmp += session_display;
 
-      if (putenv(dtmp)) {
+      if (putenv(dtmp.c_str())) {
         fprintf(stderr, i18n(mainSet, mainWarnDisplaySet,
-                   "warning: couldn't set environment variable 'DISPLAY'\n"));
+                "warning: couldn't set environment variable 'DISPLAY'\n"));
         perror("putenv()");
       }
     } else if (! strcmp(argv[i], "-version")) {
