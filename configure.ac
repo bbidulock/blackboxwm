@@ -8,6 +8,14 @@ AC_CONFIG_SRCDIR([src/blackbox.cc])
 dnl Determine default prefix
 test "x$prefix" = "xNONE" && prefix="$ac_default_prefix"
 
+dnl Look in the most logical places for external libraries
+CPPFLAGS="$CPPFLAGS -I$prefix"
+LDFLAGS="$LDFLAGS -L$prefix"
+if test "x$prefix" != "x/usr/local"; then
+  CPPFLAGS="$CPPFLAGS -I/usr/local/include"
+  LDFLAGS="$LDFLAGS -L/usr/local/lib"
+fi
+
 dnl Locate required external software
 AC_PROG_CC
 
@@ -44,7 +52,7 @@ if test "x$GXX" = "xyes"; then
    AC_MSG_CHECKING([GNU C++ major version])
    AC_MSG_RESULT([$gxx_ver])
    if test "$gxx_ver" -ge 3; then
-     CXXFLAGS="${CXXFLAGS} -Woverloaded-virtual -Wshadow -Winline"
+     CXXFLAGS="${CXXFLAGS} -Woverloaded-virtual -Wshadow"
    fi
 else
    mips_pro_ver=`$CC -version 2>&1 | grep -i mipspro | cut -f4 -d ' '`
