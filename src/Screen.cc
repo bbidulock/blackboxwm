@@ -1870,7 +1870,7 @@ bool BScreen::smartPlacement(unsigned int workspace, bt::Rect& rect,
   // build a distribution grid
   unsigned int gw = x_end - x_begin - 1,
                gh = y_end - y_begin - 1;
-  std::bit_vector used_grid(gw * gh);
+  std::vector<bool> used_grid(gw * gh);
   std::fill_n(used_grid.begin(), used_grid.size(), false);
 
   for (w_it = stackingList.begin(), w_end = stackingList.end();

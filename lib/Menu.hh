@@ -263,7 +263,7 @@ namespace bt {
     std::string _title;
 
     ItemList _items;
-    std::bit_vector _id_bits;
+    std::vector<bool> _id_bits;
 
     Menu *_parent_menu;
     Menu *_active_submenu;

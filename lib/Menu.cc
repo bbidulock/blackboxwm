@@ -1096,7 +1096,7 @@ unsigned int bt::Menu::verifyId(unsigned int id) {
     abort();
   }
 
-  std::bit_vector::iterator it =
+  std::vector<bool>::iterator it =
     std::find(_id_bits.begin(), _id_bits.end(), false);
   if (it == _id_bits.end()) {
     // no free bits... expand
