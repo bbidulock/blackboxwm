@@ -1558,7 +1558,7 @@ void Blackbox::saveMenuFilename(const char *filename) {
   Bool found = False;
 
   MenuTimestampList::iterator it = menuTimestamps.begin();
-  for (; it != menuTimestamps.end() and !found; ++it) {
+  for (; it != menuTimestamps.end() && !found; ++it) {
     if (! strcmp((*it)->filename, filename)) found = True;
   }
   if (! found) {
