@@ -93,7 +93,7 @@ namespace bt {
   };
 
   static RealPixmapCache *realpixmapcache = 0;
-  static unsigned long maxmem_usage = 1048576ul; // 1mb default
+  static unsigned long maxmem_usage = 2ul*1024ul*1024ul; // 2mb default
   static unsigned long mem_usage = 0ul;
 
   void createPixmapCache(const Display &display) {
