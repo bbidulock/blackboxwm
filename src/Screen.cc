@@ -61,9 +61,9 @@ static int anotherWMRunning(Display *display, XErrorEvent *) {
 
 
 BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
-  opGC(0), screen_info(bb->display().screenInfo(scrn)), blackbox(bb),
-  _resource(bb->resource().screenResource(scrn)) {
-
+  screen_info(bb->display().screenInfo(scrn)), blackbox(bb),
+  _resource(bb->resource().screenResource(scrn))
+{
   XErrorHandler old = XSetErrorHandler((XErrorHandler) anotherWMRunning);
   XSelectInput(screen_info.display().XDisplay(),
                screen_info.rootWindow(),
@@ -97,8 +97,6 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   usableArea.setSize(screen_info.width(), screen_info.height());
 
   LoadStyle();
-
-  updateOpGC();
 
   geom_pixmap = None;
   geom_visible = False;
@@ -293,8 +291,6 @@ BScreen::~BScreen(void) {
                                     blackbox->netwm().activeWindow());
   blackbox->netwm().removeProperty(screen_info.rootWindow(),
                                     blackbox->netwm().workarea());
-
-  XFreeGC(blackbox->XDisplay(), opGC);
 }
 
 
@@ -343,30 +339,8 @@ void BScreen::updateGeomWindow(void) {
 }
 
 
-void BScreen::updateOpGC(void) {
-  XGCValues gcv;
-  unsigned long gc_value_mask = GCForeground;
-  if (! bt::i18n.multibyte()) gc_value_mask |= GCFont;
-
-  gcv.foreground = WhitePixel(blackbox->XDisplay(),
-                              screen_info.screenNumber())
-                   ^ BlackPixel(blackbox->XDisplay(),
-                                screen_info.screenNumber());
-  gcv.function = GXxor;
-  gcv.subwindow_mode = IncludeInferiors;
-  if (! opGC)
-    opGC = XCreateGC(blackbox->XDisplay(), screen_info.rootWindow(),
-                     GCForeground | GCFunction | GCSubwindowMode, &gcv);
-  else
-    XChangeGC(blackbox->XDisplay(), opGC,
-              GCForeground | GCFunction | GCSubwindowMode, &gcv);
-}
-
-
 void BScreen::reconfigure(void) {
   LoadStyle();
-
-  updateOpGC();
 
   updateGeomWindow();
 

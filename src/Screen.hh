@@ -52,7 +52,6 @@ namespace bt {
 class BScreen : public bt::NoCopy, public bt::EventHandler {
 private:
   bool managed, geom_visible;
-  GC opGC;
   Pixmap geom_pixmap;
   Window geom_window;
 
@@ -80,7 +79,6 @@ private:
 
   ScreenResource& _resource;
 
-  void updateOpGC(void);
   void updateGeomWindow(void);
 
   bool parseMenuFile(FILE *file, Rootmenu *menu);
@@ -111,7 +109,6 @@ public:
 
   bool isScreenManaged(void) const { return managed; }
 
-  const GC &getOpGC(void) const { return opGC; }
   Blackbox *getBlackbox(void) { return blackbox; }
 
   Rootmenu *getRootmenu(void) { return rootmenu; }
