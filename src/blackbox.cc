@@ -541,18 +541,21 @@ void Blackbox::process_event(XEvent *e) {
   }
 
   case FocusIn: {
-    if (e->xfocus.mode == NotifyGrab || e->xfocus.mode == NotifyUngrab ||
-        e->xfocus.detail == NotifyPointer)
+    if (e->xfocus.detail != NotifyAncestor && e->xfocus.detail != NotifyInferior &&
+        e->xfocus.detail != NotifyNonlinear)
       break;
     BlackboxWindow *win = searchWindow(e->xfocus.window);
-    if (win && ! win->isFocused())
+    if (win && ! win->isFocused()) {
       win->setFocusFlag(True);
+    }
     break;
   }
 
   case FocusOut: {
-    if (e->xfocus.mode == NotifyGrab || e->xfocus.mode == NotifyUngrab ||
-        e->xfocus.detail != NotifyNonlinear )
+    if ((e->xfocus.mode != NotifyNormal && e->xfocus.mode != NotifyWhileGrabbed) ||
+        (e->xfocus.detail != NotifyAncestor &&
+         e->xfocus.detail != NotifyNonlinearVirtual &&
+         e->xfocus.detail != NotifyNonlinear))
       break;
     BlackboxWindow *win = searchWindow(e->xfocus.window);
     if (win && win->isFocused()) {
