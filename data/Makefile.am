@@ -1,4 +1,4 @@
-# data/Makefile.am for Blackbox 0.60.x  - an X11 Window manager
+# data/Makefile.am for Blackbox 0.61.x  - an X11 Window manager
 
 SUBDIRS = styles
 CLEANFILES = menu

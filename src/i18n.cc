@@ -59,23 +59,19 @@ I18n::I18n(void) {
   if (! locale) {
     fprintf(stderr, "failed to set locale, reverting to \"C\"\n");
 #endif // HAVE_SETLOCALE
-    
     locale = "C";
-    
+    mb = 0;
 #ifdef    HAVE_SETLOCALE
+  } else if (! strcmp(locale, "C") || ! strcmp(locale, "POSIX")) {
+    mb = 0;
+  } else {
+    mb = 1;
+    // truncate any encoding off the end of the locale
+    char *l = strchr(locale, '.');
+    if (l) *l = '\0';
   }
 #endif // HAVE_SETLOCALE
-  
-  if (! strcmp(locale, "C") ||
-      ! strcmp(locale, "POSIX"))
-    mb = 0;
-  else
-    mb = 1;
-    
-  // truncate any encoding off the end of the locale
-  char *l = strchr(locale, '.');
-  if (l) *l = '\0';
-  
+
   catalog_filename = (char *) 0;
   catalog_fd = (nl_catd) -1;
 }

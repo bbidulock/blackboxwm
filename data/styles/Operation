@@ -68,10 +68,8 @@ window.handle.unfocus.colorTo:	grey20
 window.grip.focus:		parentrelative
 window.grip.unfocus:		parentrelative
 
-window.frame.focus:		flat solid
-window.frame.focus.color:	rgb:6/9/c
-window.frame.unfocus:		flat solid
-window.frame.unfocus.color:	grey50
+window.frame.focusColor:	rgb:6/9/c
+window.frame.unfocusColor:	grey50
 
 window.font:			lucidasans-10
 window.justify:			right

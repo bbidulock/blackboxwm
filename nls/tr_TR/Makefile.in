@@ -10,7 +10,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-# nls/tr_TR/Makefile.am for Blackbox-0.60.x - an X11 Window Manager
+# nls/tr_TR/Makefile.am for Blackbox-0.61.x - an X11 Window Manager
 # 
 # -- Türkce tercüme dizini için bir yapim-dosya-tabaný
 # 	kabalak -- kabalak@gmx.net
@@ -63,6 +63,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+CC = @CC@
 CXX = @CXX@
 DEBUG = @DEBUG@
 INTERLACE = @INTERLACE@
@@ -74,7 +75,6 @@ ORDEREDPSEUDO = @ORDEREDPSEUDO@
 PACKAGE = @PACKAGE@
 SHAPE = @SHAPE@
 SLIT = @SLIT@
-STYLEDFRAMES = @STYLEDFRAMES@
 TIMEDCACHE = @TIMEDCACHE@
 VERSION = @VERSION@
 gencat_cmd = @gencat_cmd@
@@ -82,7 +82,7 @@ regex_cmd = @regex_cmd@
 
 NLSTEST = @NLS@
 CLEANFILES = blackbox.cat
-MAINTAINERCLEANFILES = Makefile.in
+MAINTAINERCLEANFILES = Makefile.in Translation.m
 MFILES = BaseDisplay.m Basemenu.m Configmenu.m Icon.m Image.m Screen.m Slit.m Toolbar.m Window.m Windowmenu.m Workspace.m Workspacemenu.m blackbox.m common.m main.m bsetroot.m
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../../config.h
@@ -139,7 +139,7 @@ install-data: install-data-am
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-am
-uninstall-am:
+uninstall-am: uninstall-local
 uninstall: uninstall-am
 all-am: Makefile all-local
 all-redirect: all-am
@@ -180,24 +180,33 @@ maintainer-clean: maintainer-clean-am
 .PHONY: tags distdir info-am info dvi-am dvi check check-am \
 installcheck-am installcheck install-exec-am install-exec \
 install-data-local install-data-am install-data install-am install \
-uninstall-am uninstall all-local all-redirect all-am all installdirs \
-mostlyclean-generic distclean-generic clean-generic \
+uninstall-local uninstall-am uninstall all-local all-redirect all-am \
+all installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
 all-local: blackbox.cat
 install-data-local: blackbox.cat
 	@if test x$(NLSTEST) = "x-DNLS"; then \
-		echo "Installing catalog in $(pkgdatadir)/nls/tr_TR"; \
-		$(mkinstalldirs) $(pkgdatadir)/nls/tr_TR; \
-		$(INSTALL_DATA) blackbox.cat $(pkgdatadir)/nls/tr_TR; \
+		echo "Installing catalog in $(DESTDIR)$(pkgdatadir)/nls/tr_TR"; \
+		$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)/nls/tr_TR; \
+		$(INSTALL_DATA) blackbox.cat $(DESTDIR)$(pkgdatadir)/nls/tr_TR; \
+	fi
+uninstall-local:
+	@if test x$(NLSTEST) = "x-DNLS"; then \
+		rm -f $(DESTDIR)$(pkgdatadir)/nls/tr_TR/blackbox.cat; \
+		rmdir $(DESTDIR)$(pkgdatadir)/nls/tr_TR; \
 	fi
 
 Translation.m: $(MFILES)
-	awk -f ../convert.awk output=Translation.m $(MFILES)
+	@if test x$(NLSTEST) = "x-DNLS"; then \
+		awk -f ../convert.awk output=Translation.m $(MFILES); \
+	fi
 
 blackbox.cat: Translation.m
-	gencat blackbox.cat Translation.m
+	@if test x$(NLSTEST) = "x-DNLS"; then \
+		$(gencat_cmd) blackbox.cat Translation.m; \
+	fi
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

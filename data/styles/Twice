@@ -85,10 +85,8 @@ window.grip.unfocus:		flat crossdiagonal gradient
 window.grip.unfocus.color:	grey30
 window.grip.unfocus.colorTo:	grey20
 
-window.frame.focus:		flat solid
-window.frame.focus.color:	rgb:c/6/6
-window.frame.unfocus:		flat solid
-window.frame.unfocus.color:	grey30
+window.frame.focusColor:	rgb:c/6/6
+window.frame.unfocusColor:	grey30
 
 window.font:			lucidasans-10
 window.justify:			right

@@ -14,4 +14,4 @@ $ #MapRequest
 $ #UnmapNotify
 # BlackboxWindow::unmapNotifyEvent() för 0x%lx\n
 $ #UnmapNotifyReparent
-# BlackboxWindow::unmapnotifyEvent: 0x%lx till root\n
+# BlackboxWindow::unmapnotifyEvent: återför 0x%lx till root\n

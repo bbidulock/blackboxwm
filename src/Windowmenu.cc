@@ -219,17 +219,17 @@ Windowmenu::SendtoWorkspacemenu::SendtoWorkspacemenu(Windowmenu *w)
 
 
 void Windowmenu::SendtoWorkspacemenu::itemSelected(int button, int index) {
-  if (button == 1) {
-    if ((index) <= windowmenu->screen->getCount()) {
-      if ((index) != windowmenu->screen->getCurrentWorkspaceID()) {
-        if (windowmenu->window->isStuck()) windowmenu->window->stick();
+  if (button > 2) return;
 
-	windowmenu->window->withdraw();
-	windowmenu->screen->reassociateWindow(windowmenu->window, index, True);
-      }
-    }
-  } else
-    update();
+  if (index <= windowmenu->screen->getCount()) {
+    if (index == windowmenu->screen->getCurrentWorkspaceID()) return;
+    if (windowmenu->window->isStuck()) windowmenu->window->stick();
+
+    if (button == 1) windowmenu->window->withdraw();
+    windowmenu->screen->reassociateWindow(windowmenu->window, index, True);
+    if (button == 2) windowmenu->screen->changeWorkspaceID(index);
+  }
+  hide();
 }
 
 

@@ -1,4 +1,4 @@
-// bASEMEnu.hh for Blackbox - an X11 Window manager
+// Basemenu.hh for Blackbox - an X11 Window manager
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a

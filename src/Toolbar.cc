@@ -68,16 +68,23 @@ Toolbar::Toolbar(BScreen *scrn) {
   blackbox = screen->getBlackbox();
 
   // get the clock updating every minute
-  timer = new BTimer(blackbox, this);
+  clock_timer = new BTimer(blackbox, this);
   timeval now;
   gettimeofday(&now, 0);
-  timer->setTimeout((60 - (now.tv_sec % 60)) * 1000);
-  timer->start();
+  clock_timer->setTimeout((60 - (now.tv_sec % 60)) * 1000);
+  clock_timer->start();
+
+  hide_handler.toolbar = this;
+  hide_timer = new BTimer(blackbox, &hide_handler);
+  hide_timer->setTimeout(blackbox->getAutoRaiseDelay());
+  hide_timer->fireOnce(True);
 
   image_ctrl = screen->getImageControl();
 
   editing = False;
   on_top = screen->isToolbarOnTop();
+  hidden = do_auto_hide = screen->doToolbarAutoHide();
+
   new_workspace_name = new_name_pos = 0;
   frame.grab_x = frame.grab_y = 0;
 
@@ -91,14 +98,17 @@ Toolbar::Toolbar(BScreen *scrn) {
   attrib.background_pixel = attrib.border_pixel =
     screen->getBorderColor()->getPixel();
   attrib.override_redirect = True;
-  attrib.event_mask = ButtonPressMask | ButtonReleaseMask | ExposureMask |
-    KeyPressMask;
+  attrib.event_mask = ButtonPressMask | ButtonReleaseMask |
+                      EnterWindowMask | LeaveWindowMask;
 
   frame.window =
     XCreateWindow(display, screen->getRootWindow(), 0, 0, 1, 1, 0,
 		  screen->getDepth(), InputOutput, screen->getVisual(),
 		  create_mask, &attrib);
   blackbox->saveToolbarSearch(frame.window, this);
+
+  attrib.event_mask = ButtonPressMask | ButtonReleaseMask | ExposureMask |
+                      KeyPressMask | EnterWindowMask;
 
   frame.workspace_label =
     XCreateWindow(display, frame.window, 0, 0, 1, 1, 0, screen->getDepth(),
@@ -167,7 +177,8 @@ Toolbar::~Toolbar(void) {
 
   XDestroyWindow(display, frame.window);
 
-  delete timer;
+  delete hide_timer;
+  delete clock_timer;
   delete toolbarmenu;
 }
 
@@ -191,32 +202,50 @@ void Toolbar::reconfigure(void) {
   case TopLeft:
     frame.x = 0;
     frame.y = 0;
+    frame.x_hidden = 0;
+    frame.y_hidden = screen->getBevelWidth() - screen->getBorderWidth()
+                     - frame.height;
     break;
 
   case BottomLeft:
     frame.x = 0;
     frame.y = screen->getHeight() - frame.height - screen->getBorderWidth2x();
+    frame.x_hidden = 0;
+    frame.y_hidden = screen->getHeight() - screen->getBevelWidth()
+                     - screen->getBorderWidth();
     break;
 
   case TopCenter:
     frame.x = (screen->getWidth() - frame.width) / 2;
     frame.y = 0;
+    frame.x_hidden = frame.x;
+    frame.y_hidden = screen->getBevelWidth() - screen->getBorderWidth()
+                     - frame.height;
     break;
 
   case BottomCenter:
   default:
     frame.x = (screen->getWidth() - frame.width) / 2;
     frame.y = screen->getHeight() - frame.height - screen->getBorderWidth2x();
+    frame.x_hidden = frame.x;
+    frame.y_hidden = screen->getHeight() - screen->getBevelWidth()
+                     - screen->getBorderWidth();
     break;
 
   case TopRight:
     frame.x = screen->getWidth() - frame.width - screen->getBorderWidth2x();
     frame.y = 0;
+    frame.x_hidden = frame.x;
+    frame.y_hidden = screen->getBevelWidth() - screen->getBorderWidth()
+                     - frame.height;
     break;
 
   case BottomRight:
     frame.x = screen->getWidth() - frame.width - screen->getBorderWidth2x();
     frame.y = screen->getHeight() - frame.height - screen->getBorderWidth2x();
+    frame.x_hidden = frame.x;
+    frame.y_hidden = screen->getHeight() - screen->getBevelWidth()
+                     - screen->getBorderWidth();
     break;
   }
 
@@ -301,8 +330,13 @@ void Toolbar::reconfigure(void) {
     (frame.width - (frame.clock_w + (frame.button_w * 4) +
                     frame.workspace_label_w + (frame.bevel_w * 8) + 6));
 
-  XMoveResizeWindow(display, frame.window, frame.x, frame.y,
-		    frame.width, frame.height);
+  if (hidden)
+    XMoveResizeWindow(display, frame.window, frame.x_hidden, frame.y_hidden,
+		      frame.width, frame.height);
+  else
+    XMoveResizeWindow(display, frame.window, frame.x, frame.y,
+		      frame.width, frame.height);
+
   XMoveResizeWindow(display, frame.workspace_label, frame.bevel_w,
 		    frame.bevel_w, frame.workspace_label_w,
                     frame.label_h);
@@ -508,7 +542,7 @@ void Toolbar::checkClock(Bool redraw, Bool date) {
 		 ((frame.hour == 0) ? 12 : frame.hour)), frame.minute,
 		((frame.hour >= 12) ?
 		 i18n->getMessage(
-				  #ifdef    NLS
+#ifdef    NLS
 				  ToolbarSet, ToolbarNoStrftimeTimeFormatP,
 #else // !NLS
 				  0, 0,
@@ -935,6 +969,29 @@ void Toolbar::buttonReleaseEvent(XButtonEvent *re) {
 }
 
 
+void Toolbar::enterNotifyEvent(XCrossingEvent *ce) {
+  if (! do_auto_hide)
+    return;
+
+  if (hidden) {
+    if (! hide_timer->isTiming()) hide_timer->start();
+  } else {
+    if (hide_timer->isTiming()) hide_timer->stop();
+  }
+}
+
+void Toolbar::leaveNotifyEvent(XCrossingEvent *ce) {
+  if (! do_auto_hide)
+    return;
+
+  if (hidden) {
+    if (hide_timer->isTiming()) hide_timer->stop();
+  } else if (! toolbarmenu->isVisible()) {
+    if (! hide_timer->isTiming()) hide_timer->start();
+  }
+}
+
+
 void Toolbar::exposeEvent(XExposeEvent *ee) {
   if (ee->window == frame.clock) checkClock(True);
   else if (ee->window == frame.workspace_label && (! editing))
@@ -1054,7 +1111,18 @@ void Toolbar::timeout(void) {
 
   timeval now;
   gettimeofday(&now, 0);
-  timer->setTimeout((60 - (now.tv_sec % 60)) * 1000);
+  clock_timer->setTimeout((60 - (now.tv_sec % 60)) * 1000);
+}
+
+
+void Toolbar::HideHandler::timeout(void) {
+  toolbar->hidden = ! toolbar->hidden;
+  if (toolbar->hidden)
+    XMoveWindow(toolbar->display, toolbar->frame.window,
+		toolbar->frame.x_hidden, toolbar->frame.y_hidden);
+  else
+    XMoveWindow(toolbar->display, toolbar->frame.window,
+		toolbar->frame.x, toolbar->frame.y);
 }
 
 
@@ -1090,16 +1158,25 @@ Toolbarmenu::Toolbarmenu(Toolbar *tb) : Basemenu(tb->screen) {
 	 1);
   insert(i18n->getMessage(
 #ifdef    NLS
+			  CommonSet, CommonAutoHide,
+#else // !NLS
+			  0, 0,
+#endif // NLS
+			  "Auto hide"),
+	 2);
+  insert(i18n->getMessage(
+#ifdef    NLS
 			  ToolbarSet, ToolbarEditWkspcName,
 #else // !NLS
 			  0, 0,
 #endif // NLS
 			  "Edit current workspace name"),
-	 2);
+	 3);
 
   update();
 
   if (toolbar->isOnTop()) setItemSelected(1, True);
+  if (toolbar->doAutoHide()) setItemSelected(2, True);
 }
 
 
@@ -1114,21 +1191,42 @@ void Toolbarmenu::itemSelected(int button, int index) {
     if (! item) return;
 
     switch (item->function()) {
-    case 1: { // always on top
-      Bool change = ((toolbar->isOnTop()) ? False : True);
-      toolbar->on_top = change;
-      setItemSelected(1, change);
+    case 1: // always on top
+      {
+	Bool change = ((toolbar->isOnTop()) ? False : True);
+	toolbar->on_top = change;
+	setItemSelected(1, change);
 
-      if (toolbar->isOnTop()) toolbar->screen->raiseWindows((Window *) 0, 0);
-      break; }
+	if (toolbar->isOnTop()) toolbar->screen->raiseWindows((Window *) 0, 0);
+	break;
+      }
 
-    case 2: // edit current workspace name
-      hide();
+    case 2: // auto hide
+      {
+	Bool change = ((toolbar->doAutoHide()) ?  False : True);
+	toolbar->do_auto_hide = change;
+	setItemSelected(2, change);
+
+#ifdef    SLIT
+	toolbar->screen->getSlit()->reposition();
+#endif // SLIT
+	break;
+      }
+
+    case 3: // edit current workspace name
       toolbar->edit();
+      hide();
 
       break;
     }
   }
+}
+
+
+void Toolbarmenu::internal_hide(void) {
+  Basemenu::internal_hide();
+  if (toolbar->doAutoHide() && ! toolbar->isEditing())
+    toolbar->hide_handler.timeout();
 }
 
 

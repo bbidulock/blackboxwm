@@ -1,14 +1,14 @@
 $set 6 #Screen
 
 $ #AnotherWMRunning
-# BScreen::BScreen: ett fel inträffade under en query till X servern.\n  \
+# BScreen::BScreen: ett fel inträffade under en förfrågan till X servern.\n  \
 en annan fönsterhanterare körs redan på skärmen %s.\n
 $ #ManagingScreen
 # BScreen::BScreen: hanterar skärm %d med visuell 0x%lx, färgdjup %d\n
 $ #FontLoadFail
 # BScreen::LoadStyle(): kunde inte ladda font '%s'\n
 $ #DefaultFontLoadFail
-# BScreen::LoadStyle(): kunde inte ladda standard font.\n
+# BScreen::LoadStyle(): kunde inte ladda standardfont.\n
 $ #EmptyMenuFile
 # %s: tom menyfil\n
 $ #xterm
@@ -18,23 +18,23 @@ $ #Restart
 $ #Exit
 # Avsluta
 $ #EXECError
-# BScreen::parseMenuFile: [exec] fel, ingen menu-etikett och/eller kommando definierat\n
+# BScreen::parseMenuFile: [exec] fel, ingen menyetikett och/eller kommando definierat\n
 $ #EXITError
-# BScreen::parseMenuFile: [exit] fel, ingen meny-etikett definierad\n
+# BScreen::parseMenuFile: [exit] fel, ingen menyetikett definierad\n
 $ #STYLEError
-# BScreen::parseMenuFile: [style] fel, ingen meny-etikett och/eller filnamn definierat\n
+# BScreen::parseMenuFile: [style] fel, ingen menyetikett och/eller filnamn definierat\n
 $ #CONFIGError
-# BScreen::parseMenuFile: [config] fel, ingen meny-etikett definierad\n
+# BScreen::parseMenuFile: [config] fel, ingen menyetikett definierad\n
 $ #INCLUDEError
 # BScreen::parseMenuFile: [include] fel, inget filnamn definierat\n
 $ #INCLUDEErrorReg
 # BScreen::parseMenuFile: [include] fel, '%s' är inte en vanlig fil\n
 $ #SUBMENUError
-# BScreen::parseMenuFile: [submenu] fel, ingen meny-etikett definierad\n
+# BScreen::parseMenuFile: [submenu] fel, ingen menyetikett definierad\n
 $ #RESTARTError
-# BScreen::parseMenuFile: [restart] fel, ingen meny-etikett definiera\n
+# BScreen::parseMenuFile: [restart] fel, ingen menyetikett definiera\n
 $ #RECONFIGError
-# BScreen::parseMenuFile: [reconfig] fel, ingen meny-etikett definierad\n
+# BScreen::parseMenuFile: [reconfig] fel, ingen menyetikett definierad\n
 $ #STYLESDIRError
 # BScreen::parseMenuFile: [stylesdir/stylesmenu] fel, ingen katalog definierad\n
 $ #STYLESDIRErrorNotDir
@@ -42,7 +42,7 @@ $ #STYLESDIRErrorNotDir
 $ #STYLESDIRErrorNoExist
 # BScreen::parseMenuFile: [stylesdir/stylesmenu] fel, '%s' existerar inte\n
 $ #WORKSPACESError
-# BScreen::parseMenuFile: [workspaces] fel, ingen meny-etikett definierad\n
+# BScreen::parseMenuFile: [workspaces] fel, ingen menyetikett definierad\n
 $ #PositionLength
 # 0: 0000 x 0: 0000
 $ #PositionFormat

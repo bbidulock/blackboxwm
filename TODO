@@ -1,7 +1,11 @@
--- TODO for Blackbox 0.60.x  - an X11 Window manager
+-- TODO for Blackbox 0.61.x  - an X11 Window manager
 
 Stuff TODO or On The Way(tm):
 -----------------------------
+CHANGE: rework the .blackboxrc resources so that they give a more
+        uniform behavior across screens. (Still not sure how I want
+	to do this, so it'll have to wait.)
+
 ADD: support for KDE2 via the new WM Spec at
      http://www.freedesktop.org/standards/wm-spec/
 
@@ -12,7 +16,7 @@ DONE: focus handling needs revisiting for multiple screen displays... the
 
 DONE: get screen information from the XWindowAttributes.screen after calling
       XGetWindowAttributes... instead of looking XMapRequest.root and trying to
-      search for a the BScreen*
+      search for the BScreen*
 
 DONE: when starting a resize... the vertical size will reduce slightly... fix it
 

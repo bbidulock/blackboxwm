@@ -1,4 +1,4 @@
-# src/Makefile.am for Blackbox 0.60.x  - an X11 Window manager
+# src/Makefile.am for Blackbox 0.61.x  - an X11 Window manager
 # Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,14 +23,14 @@ DEFAULT_MENU=$(pkgdatadir)/menu
 DEFAULT_STYLE=$(pkgdatadir)/styles/Results
 
 CPPFLAGS= @CPPFLAGS@ @SHAPE@ @SLIT@ @INTERLACE@ @ORDEREDPSEUDO@ \
-@STYLEDFRAMES@ @DEBUG@ @NEWWMSPEC@ @NLS@ @TIMEDCACHE@ \
+@DEBUG@ @NEWWMSPEC@ @NLS@ @TIMEDCACHE@ \
 -DLOCALEPATH=\"$(pkgdatadir)/nls\" \
 -DDEFAULTMENU=\"$(DEFAULT_MENU)\" \
 -DDEFAULTSTYLE=\"$(DEFAULT_STYLE)\"
 
 bin_PROGRAMS= blackbox
 
-blackbox_SOURCES= BaseDisplay.cc Basemenu.cc Clientmenu.cc Configmenu.cc Icon.cc Image.cc LinkedList.cc Netizen.cc Rootmenu.cc Screen.cc Slit.cc Timer.cc Toolbar.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc i18n.cc main.cc
+blackbox_SOURCES= BaseDisplay.cc Basemenu.cc Clientmenu.cc Configmenu.cc Icon.cc Image.cc LinkedList.cc Netizen.cc Rootmenu.cc Screen.cc Slit.cc Timer.cc Toolbar.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc bsd-snprintf.c i18n.cc main.cc
 
 MAINTAINERCLEANFILES= Makefile.in
 
@@ -68,10 +68,10 @@ Rootmenu.o: Rootmenu.cc blackbox.hh BaseDisplay.hh LinkedList.hh \
  Timer.hh Image.hh Window.hh Icon.hh Basemenu.hh Windowmenu.hh Slit.hh \
  Rootmenu.hh Screen.hh Configmenu.hh Netizen.hh Workspace.hh \
  Workspacemenu.hh
-Screen.o: Screen.cc i18n.hh blackbox.hh BaseDisplay.hh LinkedList.hh \
- Timer.hh Image.hh Window.hh Icon.hh Basemenu.hh Windowmenu.hh Slit.hh \
- Clientmenu.hh Workspace.hh Screen.hh Configmenu.hh Netizen.hh \
- Rootmenu.hh Workspacemenu.hh Toolbar.hh
+Screen.o: Screen.cc i18n.hh bsd-snprintf.h blackbox.hh BaseDisplay.hh \
+ LinkedList.hh Timer.hh Image.hh Window.hh Icon.hh Basemenu.hh \
+ Windowmenu.hh Slit.hh Clientmenu.hh Workspace.hh Screen.hh Configmenu.hh \
+ Netizen.hh Rootmenu.hh Workspacemenu.hh Toolbar.hh
 Slit.o: Slit.cc i18n.hh blackbox.hh BaseDisplay.hh LinkedList.hh \
  Timer.hh Image.hh Window.hh Icon.hh Basemenu.hh Windowmenu.hh Slit.hh \
  Screen.hh Configmenu.hh Netizen.hh Rootmenu.hh Workspace.hh \
@@ -101,6 +101,7 @@ blackbox.o: blackbox.cc i18n.hh blackbox.hh BaseDisplay.hh \
  LinkedList.hh Timer.hh Image.hh Window.hh Icon.hh Basemenu.hh \
  Windowmenu.hh Slit.hh Clientmenu.hh Workspace.hh Rootmenu.hh \
  Screen.hh Configmenu.hh Netizen.hh Workspacemenu.hh Toolbar.hh
+bsd-snprintf.o: bsd-snprintf.c bsd-snprintf.h
 i18n.o: i18n.cc i18n.hh
 main.o: main.cc ../version.h i18n.hh blackbox.hh BaseDisplay.hh \
  LinkedList.hh Timer.hh Image.hh Window.hh Icon.hh Basemenu.hh \

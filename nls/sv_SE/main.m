@@ -1,9 +1,9 @@
 $set 14 #main
 
 $ #RCRequiresArg
-# error: '-rc' kräver ett argument\n
+# fel: '-rc' kräver ett argument\n
 $ #DISPLAYRequiresArg
-# error: '-display' kräver ett argument\n
+# fel: '-display' kräver ett argument\n
 $ #WarnDisplaySet
 # varning: kunde inte sätta variabeln 'DISPLAY'\n
 $ #Usage
@@ -14,8 +14,8 @@ $ #Usage
   -help\t\t\t\tvisa denna hjälptext och avsluta.\n\n
 $ #CompileOptions
 # Kompilerad med:\n\
-  Debugging\t\t\t%s\n\
+  Avlusning\t\t\t%s\n\
   Interlacing:\t\t\t%s\n\
   Form:\t\t\t\t%s\n\
   Slit:\t\t\t\t%s\n\
-  8bpp Ordered Dithering:\t%s\n\n
+  8bpp ordnad dithering:\t%s\n\n

@@ -70,10 +70,8 @@ window.grip.focus.color:	rgb:8/8/7
 window.grip.unfocus:		flat solid
 window.grip.unfocus.color:	rgb:4/4/38
 
-window.frame.focus:		flat solid
-window.frame.focus.color:	rgb:f/f/d
-window.frame.unfocus:		flat solid
-window.frame.unfocus.color:	rgb:6/6/54
+window.frame.focusColor:	rgb:f/f/d
+window.frame.unfocusColor:	rgb:6/6/54
 
 window.font:			lucidasans-10
 window.justify:			right

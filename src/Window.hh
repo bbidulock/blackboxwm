@@ -111,16 +111,16 @@ private:
       fbutton_pixel, pbutton_pixel, uborder_pixel, fborder_pixel,
       ugrip_pixel, fgrip_pixel;
     Pixmap ulabel, flabel, utitle, ftitle, uhandle, fhandle,
-      ubutton, fbutton, pbutton, uborder, fborder, ugrip, fgrip;
-    Window window, plate, title, label, border, handle,
-      close_button, iconify_button, maximize_button,
-      right_grip, left_grip;
+      ubutton, fbutton, pbutton, ugrip, fgrip;
+
+    Window window, plate, title, label, handle, close_button,
+      iconify_button, maximize_button, right_grip, left_grip;
 
     int x, y, resize_x, resize_y, move_x, move_y, grab_x, grab_y,
       y_border, y_handle;
-    unsigned int width, height, title_h, title_w, label_w, label_h,
-      handle_h, handle_w, button_w, button_h, grip_w, grip_h,
-      border_w, border_h, bevel_w, resize_w, resize_h, snap_w, snap_h;
+    unsigned int width, height, title_h, label_w, label_h, handle_h,
+      button_w, button_h, grip_w, grip_h, mwm_border_w, border_h,
+      bevel_w, resize_w, resize_h, snap_w, snap_h;
   } frame;
 
   enum { F_NoInput = 0, F_Passive, F_LocallyActive, F_GloballyActive };
@@ -142,7 +142,8 @@ protected:
   void setNetWMAttributes(void);
   void associateClientWindow(void);
   void decorate(void);
-  void positionButtons(void);
+  void decorateLabel(void);
+  void positionButtons(Bool redecorate_label = False);
   void positionWindows(void);
   void createCloseButton(void);
   void createIconifyButton(void);

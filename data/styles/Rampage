@@ -85,10 +85,8 @@ window.button.pressed:		sunken interlaced diagonal gradient bevel1
 window.button.pressed.color:	rgb:38/4/4
 window.button.pressed.colorTo:	rgb:d/f/f
 
-window.frame.focus:		sunken solid bevel1
-window.frame.unfocus:		sunken solid bevel1
-window.frame.focus.color:	grey72
-window.frame.unfocus.color:	grey72
+window.frame.focusColor:	grey72
+window.frame.unfocusColor:	grey72
 
 window.justify:			center
 

@@ -55,9 +55,10 @@ class BScreen;
 #endif // SLIT
 
 typedef struct WindowStyle {
-  BColor l_text_focus, l_text_unfocus, b_pic_focus, b_pic_unfocus;
+  BColor f_focus, f_unfocus, l_text_focus, l_text_unfocus, b_pic_focus,
+    b_pic_unfocus;
   BTexture t_focus, t_unfocus, l_focus, l_unfocus, h_focus, h_unfocus,
-    b_focus, b_unfocus, b_pressed, f_focus, f_unfocus, g_focus, g_unfocus;
+    b_focus, b_unfocus, b_pressed, g_focus, g_unfocus;
   GC l_text_focus_gc, l_text_unfocus_gc, b_pic_focus_gc, b_pic_unfocus_gc;
 
   XFontSet fontset;
@@ -128,8 +129,9 @@ private:
     ToolbarStyle tstyle;
     MenuStyle mstyle;
 
-    Bool toolbar_on_top, sloppy_focus, auto_raise, auto_edge_balance,
-      image_dither, ordered_dither, opaque_move, full_max, focus_new, focus_last;
+    Bool toolbar_on_top, toolbar_auto_hide, sloppy_focus, auto_raise,
+      auto_edge_balance, image_dither, ordered_dither, opaque_move, full_max,
+      focus_new, focus_last;
     BColor border_color;
     XrmDatabase stylerc;
 
@@ -137,11 +139,12 @@ private:
       edge_snap_threshold, row_direction, col_direction;
 
 #ifdef    SLIT
-    Bool slit_on_top;
+    Bool slit_on_top, slit_auto_hide;
     int slit_placement, slit_direction;
 #endif // SLIT
 
-    unsigned int handle_width, bevel_width, border_width, border_width_2x;
+    unsigned int handle_width, bevel_width, frame_width,
+      border_width, border_width_2x;
 
 #ifdef    HAVE_STRFTIME
     char *strftime_format;
@@ -173,6 +176,8 @@ public:
 
   inline const Bool &isToolbarOnTop(void) const
   { return resource.toolbar_on_top; }
+  inline const Bool &doToolbarAutoHide(void) const
+  { return resource.toolbar_auto_hide; }
   inline const Bool &isSloppyFocus(void) const
   { return resource.sloppy_focus; }
   inline const Bool &isRootColormapInstalled(void) const
@@ -197,6 +202,8 @@ public:
 
 #ifdef   SLIT
   inline const Bool &isSlitOnTop(void) const { return resource.slit_on_top; }
+  inline const Bool &doSlitAutoHide(void) const
+  { return resource.slit_auto_hide; }
   inline Slit *getSlit(void) { return slit; }
   inline const int &getSlitPlacement(void) const
   { return resource.slit_placement; }
@@ -204,7 +211,8 @@ public:
   { return resource.slit_direction; }
   inline void saveSlitPlacement(int p) { resource.slit_placement = p; }
   inline void saveSlitDirection(int d) { resource.slit_direction = d; }
-  inline void saveSlitOnTop(Bool t) { resource.slit_on_top = t; }
+  inline void saveSlitOnTop(Bool t)    { resource.slit_on_top = t; }
+  inline void saveSlitAutoHide(Bool t) { resource.slit_auto_hide = t; }
 #endif // SLIT
 
   inline Toolbar *getToolbar(void) { return toolbar; }
@@ -218,6 +226,8 @@ public:
   { return resource.handle_width; }
   inline const unsigned int &getBevelWidth(void) const
   { return resource.bevel_width; }
+  inline const unsigned int &getFrameWidth(void) const
+  { return resource.frame_width; }
   inline const unsigned int &getBorderWidth(void) const
   { return resource.border_width; }
   inline const unsigned int &getBorderWidth2x(void) const
@@ -247,6 +257,7 @@ public:
   inline void saveAutoRaise(Bool a) { resource.auto_raise = a; }
   inline void saveWorkspaces(int w) { resource.workspaces = w; }
   inline void saveToolbarOnTop(Bool r) { resource.toolbar_on_top = r; }
+  inline void saveToolbarAutoHide(Bool r) { resource.toolbar_auto_hide = r; }
   inline void saveToolbarWidthPercent(int w)
   { resource.toolbar_width_percent = w; }
   inline void saveToolbarPlacement(int p) { resource.toolbar_placement = p; }

@@ -10,7 +10,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-# nls/Makefile.am for Blackbox 0.60.x - an X11 Window Manager
+# nls/Makefile.am for Blackbox 0.61.x - an X11 Window Manager
 
 
 SHELL = @SHELL@
@@ -59,6 +59,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+CC = @CC@
 CXX = @CXX@
 DEBUG = @DEBUG@
 INTERLACE = @INTERLACE@
@@ -70,15 +71,13 @@ ORDEREDPSEUDO = @ORDEREDPSEUDO@
 PACKAGE = @PACKAGE@
 SHAPE = @SHAPE@
 SLIT = @SLIT@
-STYLEDFRAMES = @STYLEDFRAMES@
 TIMEDCACHE = @TIMEDCACHE@
 VERSION = @VERSION@
 gencat_cmd = @gencat_cmd@
 regex_cmd = @regex_cmd@
 
-NLSTEST = @NLS@
-SUBDIRS = C es_ES pt_BR ru_RU sv_SE tr_TR
-MAINTAINERCLEANFILES = Makefile.in
+SUBDIRS = C da_DK es_ES et_EE fr_FR pt_BR ru_RU sv_SE tr_TR
+MAINTAINERCLEANFILES = Makefile.in blackbox-nls.hh
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -225,8 +224,6 @@ install-exec-am:
 install-exec: install-exec-recursive
 
 install-data-am:
-	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
 install-data: install-data-recursive
 
 install-am: all-am
@@ -287,14 +284,6 @@ maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 distclean-local:
 	rm -f *\~
-
-install-data-hook:
-	@if test x$(NLSTEST) = "x-DNLS"; then \
-		ln -fs $(pkgdatadir)/nls/C $(pkgdatadir)/nls/US_ASCII; \
-		ln -fs $(pkgdatadir)/nls/C $(pkgdatadir)/nls/POSIX; \
-		ln -fs $(pkgdatadir)/nls/C $(pkgdatadir)/nls/en_US; \
-		ln -fs $(pkgdatadir)/nls/C $(pkgdatadir)/nls/en; \
-	fi
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

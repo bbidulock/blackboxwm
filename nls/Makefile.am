@@ -1,17 +1,8 @@
-# nls/Makefile.am for Blackbox 0.60.x - an X11 Window Manager
+# nls/Makefile.am for Blackbox 0.61.x - an X11 Window Manager
 
-NLSTEST = @NLS@
-SUBDIRS = C es_ES pt_BR ru_RU sv_SE tr_TR
-MAINTAINERCLEANFILES = Makefile.in
+SUBDIRS = C da_DK es_ES et_EE fr_FR pt_BR ru_RU sv_SE tr_TR
+MAINTAINERCLEANFILES = Makefile.in blackbox-nls.hh
 
 distclean-local:
 	rm -f *\~
-
-install-data-hook:
-	@if test x$(NLSTEST) = "x-DNLS"; then \
-		ln -fs $(pkgdatadir)/nls/C $(pkgdatadir)/nls/US_ASCII; \
-		ln -fs $(pkgdatadir)/nls/C $(pkgdatadir)/nls/POSIX; \
-		ln -fs $(pkgdatadir)/nls/C $(pkgdatadir)/nls/en_US; \
-		ln -fs $(pkgdatadir)/nls/C $(pkgdatadir)/nls/en; \
-	fi
 

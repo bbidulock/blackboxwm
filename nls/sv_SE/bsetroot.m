@@ -11,6 +11,6 @@ $ #Usage
   -gradient <texture>      texturlutning\n\
   -from <color>            startfärg\n\
   -to <color>              slutfärg\n\n\
-  -solid <color>           fast färg\n\n\
+  -solid <color>           solid färg\n\n\
   -help                    visa denna hjälptext och avsluta\n
 

@@ -89,11 +89,8 @@ window.grip.focus.colorTo:	black
 window.grip.unfocus:		flat solid
 window.grip.unfocus.color:	black
 
-window.frame.focus:		flat diagonal gradient
-window.frame.focus.color:	#980806
-window.frame.focus.colorTo:	black
-window.frame.unfocus:		flat solid
-window.frame.unfocus.color:	black
+window.frame.focusColor:	#980806
+window.frame.unfocusColor:	black
 
 window.font:			lucidasans-10
 window.justify:			center

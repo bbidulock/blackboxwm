@@ -46,18 +46,18 @@ Clientmenu::Clientmenu(Workspace *ws) : Basemenu(ws->getScreen()) {
 
 
 void Clientmenu::itemSelected(int button, int index) {
-  if (button == 1) {
-    if (index >= 0 && index < wkspc->getCount()) {
+  if (button > 2) return;
+
+  BlackboxWindow *win = wkspc->getWindow(index);
+  if (win) {
+    if (button == 1) {
       if (! wkspc->isCurrent()) wkspc->setCurrent();
-
-      BlackboxWindow *win = wkspc->getWindow(index);
-      if (win) {
-        wkspc->raiseWindow(win);
-        win->setInputFocus();
-      }
+    } else if (button == 2) {
+      if (! wkspc->isCurrent()) win->deiconify(True, False);
     }
-
-    if (! (screen->getWorkspacemenu()->isTorn() || isTorn()))
-      hide();
+    wkspc->raiseWindow(win);
+    win->setInputFocus();
   }
+
+  if (! (screen->getWorkspacemenu()->isTorn() || isTorn())) hide();
 }

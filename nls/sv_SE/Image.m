@@ -5,7 +5,7 @@ $ #ErrorCreatingSolidPixmap
 $ #ErrorCreatingXImage
 # BImage::renderXImage: fel under skapande av XImage\n
 $ #UnsupVisual
-# BImage::renderXImage: icke stöd för färgdjup\n
+# BImage::renderXImage: ej stöd för färgdjup\n
 $ #ErrorCreatingPixmap
 # BImage::renderPixmap: fel under skapande av pixmap\n
 $ #InvalidColormapSize
@@ -17,8 +17,8 @@ $ #ColorAllocFail
 $ #PixmapRelease
 # BImageControl::~BImageControl: pixmap cache - släpper %d pixmappar\n
 $ #PixmapCacheLarge
-# BImageControl::renderImage: stort cache, tvingar upprensning\n
+# BImageControl::renderImage: stor cache, tvingar upprensning\n
 $ #ColorParseError
 # BImageControl::getColor: färgfel: '%s'\n
 $ #ColorAllocError
-# BImageControl::getColor: färgallokerings fel: '%s'\n
+# BImageControl::getColor: färgallokeringsfel: '%s'\n

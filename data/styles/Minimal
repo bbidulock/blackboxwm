@@ -45,10 +45,8 @@ window.grip.focus:              Flat Solid
 window.grip.unfocus:            Flat Solid
 window.grip*color:              Grey
 
-window.frame.focus:             Flat Solid
-window.frame.focus.color:       SteelBlue
-window.frame.unfocus:           Flat Solid
-window.frame.unfocus.color:     MidnightBlue
+window.frame.focusColor:        SteelBlue
+window.frame.unfocusColor:      MidnightBlue
 
 window.justify:                 center
 

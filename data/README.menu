@@ -1,4 +1,4 @@
--- data/README.menu for Blackbox 0.60.x - an X11 Window manager
+-- data/README.menu for Blackbox 0.61.x - an X11 Window manager
 
 Creating a user defined menu:
 -----------------------------
@@ -112,6 +112,12 @@ The supported tags are as follows:
 	"link" to the systems workspace menu, so multiple [workspaces] tags
 	will display the same workspace menu, so expect it to move around if
 	you do so. ;)
+
+[config] (label)
+
+	This tells Blackbox to insert the ConfigMenu into your menu.  From
+	this menu you can configure several options stored in your
+	~/.blackboxrc, and the changes take effect immediately.
 
 Comments may be inserted on any line of the file, as long as the first
 character on the line is a `#.'

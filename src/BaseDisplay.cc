@@ -82,6 +82,10 @@
 #  include <sys/wait.h>
 #endif // HAVE_SYS_WAIT_H
 
+#if defined(HAVE_PROCESS_H) && defined(__EMX__)
+#  include <process.h>
+#endif //   HAVE_PROCESS_H             __EMX__
+
 
 // X error handler to handle any and all X errors while the application is
 // running
@@ -194,7 +198,19 @@ static void signalhandler(int sig) {
 }
 
 
-// convenience funciton
+// convenience functions
+#ifndef    __EMX__
+void bexec(const char *command, char* displaystring) {
+  if (! fork()) {
+    setsid();
+    putenv(displaystring);
+    execl("/bin/sh", "/bin/sh", "-c", command, NULL);
+    exit(0);
+  }
+}
+#endif // !__EMX__
+
+
 char *bstrdup(const char *s) {
   int l = strlen(s) + 1;
   char *n = new char[l];
@@ -307,7 +323,8 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
   blackbox_notify_window_lower =
     XInternAtom(display, "_BLACKBOX_NOTIFY_WINDOW_LOWER", False);
 
-  blackbox_change_workspace= XInternAtom(display, "_BLACKBOX_CHANGE_WORKSPACE", False);
+  blackbox_change_workspace =
+    XInternAtom(display, "_BLACKBOX_CHANGE_WORKSPACE", False);
   blackbox_change_window_focus =
     XInternAtom(display, "_BLACKBOX_CHANGE_WINDOW_FOCUS", False);
   blackbox_cycle_window_focus =

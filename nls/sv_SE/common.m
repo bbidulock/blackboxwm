@@ -13,23 +13,26 @@ $ #DirectionVert
 # Vertikal
 
 $ #AlwaysOnTop
-# Alltid overst
+# Alltid överst
 
 $ #PlacementTitle
 # Placering
 $ #PlacementTopLeft
-# Uppe till vanster
+# Uppe till vänster
 $ #PlacementCenterLeft
-# Mitten till vanster
+# Mitten till vänster
 $ #PlacementBottomLeft
-# Nere till vanster
+# Nere till vänster
 $ #PlacementTopCenter
 # Uppe i mitten
 $ #PlacementBottomCenter
 # Nere i mitten
 $ #PlacementTopRight
-# Uppe till hoger
+# Uppe till höger
 $ #PlacementCenterRight
-# Mitten till hoger
+# Mitten till höger
 $ #PlacementBottomRight
-# Nere till hoger
+# Nere till höger
+
+$ #AutoHide
+# Göm automatiskt

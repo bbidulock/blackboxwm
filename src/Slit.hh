@@ -68,6 +68,7 @@ private:
 
 protected:
   virtual void itemSelected(int, int);
+  virtual void internal_hide(void);
 
 
 public:
@@ -81,7 +82,7 @@ public:
 };
 
 
-class Slit {
+class Slit : public TimeoutHandler {
 private:
   class SlitClient {
   public:
@@ -90,20 +91,22 @@ private:
     int x, y;
     unsigned int width, height;
   };
-  
-  Bool on_top;
+
+  Bool on_top, hidden, do_auto_hide;
   Display *display;
   
   Blackbox *blackbox;
   BScreen *screen;
+  BTimer *timer;
+
   LinkedList<SlitClient> *clientList;
   Slitmenu *slitmenu;
   
   struct frame {
     Pixmap pixmap;
     Window window;
-    
-    int x, y;
+
+    int x, y, x_hidden, y_hidden;
     unsigned int width, height;
   } frame;
 
@@ -120,24 +123,34 @@ public:
   ~Slit();
 
   inline const Bool &isOnTop(void) const { return on_top; }
+  inline const Bool &isHidden(void) const { return hidden; }
+  inline const Bool &doAutoHide(void) const { return do_auto_hide; }
 
   inline Slitmenu *getMenu() { return slitmenu; }
 
   inline const Window &getWindowID() const { return frame.window; }
 
-  inline const int &getX(void) const { return frame.x; }
-  inline const int &getY(void) const { return frame.y; }
+  inline const int &getX(void) const
+  { return ((hidden) ? frame.x_hidden : frame.x); }
+  inline const int &getY(void) const
+  { return ((hidden) ? frame.y_hidden : frame.y); }
 
   inline const unsigned int &getWidth(void) const { return frame.width; }
   inline const unsigned int &getHeight(void) const { return frame.height; }
   
   void addClient(Window);
+  void removeClient(SlitClient *, Bool = True);
   void removeClient(Window, Bool = True);
   void reconfigure(void);
   void reposition(void);
+  void shutdown(void);
 
   void buttonPressEvent(XButtonEvent *);
+  void enterNotifyEvent(XCrossingEvent *);
+  void leaveNotifyEvent(XCrossingEvent *);
   void configureRequestEvent(XConfigureRequestEvent *);
+
+  virtual void timeout(void);
 
   enum { Vertical = 1, Horizontal };
   enum { TopLeft = 1, CenterLeft, BottomLeft, TopCenter, BottomCenter,

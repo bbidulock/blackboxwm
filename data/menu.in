@@ -9,7 +9,8 @@
 #
 # where [command] is one of:
 #
-# [begin] [end] [exec] [exit] [reconfig] [restart] [submenu] [style] [include]
+#   [begin] [end] [exec] [exit] [reconfig] [restart]
+#   [submenu] [style] [include] [workspaces] [config]
 #
 # [begin] is used for the top level menu
 # [submenu] is used for submenus
@@ -41,9 +42,18 @@
 # This will read more menu items from the file "filename".  The file cannot
 # contain a [begin] or [end], except for the [end] needed for submenus.
 #
+# [workspaces] (label)
+# This tells Blackbox to insert a "link" to the workspaces menu directly
+# into your menu.
+#
+# [config] (label)
+# This tells Blackbox to insert the ConfigMenu into your menu.  The ConfigMenu
+# allows you to change several options found in your ~/.blackboxrc file on the
+# fly.
+#
 # example:
 
-[begin] (Blackbox 0.60.x)
+[begin] (Blackbox 0.61.x)
   [exec] (xterm)    {xterm -ls}
   [exec] (rxvt)     {rxvt}
 

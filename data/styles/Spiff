@@ -78,10 +78,8 @@ window.button.pressed:		flat gradient diagonal
 window.button.pressed.color:	rgb:60/64/68
 window.button.pressed.colorTo:	rgb:80/84/88
 
-window.frame.focus:		flat solid
-window.frame.focus.color:	rgb:90/94/98
-window.frame.unfocus:		sunken solid bevel1
-window.frame.unfocus.color:	rgb:40/48/50
+window.frame.focusColor:	rgb:90/94/98
+window.frame.unfocusColor:	rgb:40/48/50
 
 window.handle.focus:		flat gradient diagonal
 window.handle.focus.color:	rgb:c0/c4/c8

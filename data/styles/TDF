@@ -79,10 +79,8 @@ window.button.pressed:		Flat Gradient Diagonal Bevel1
 window.button.pressed.color:	rgb:32/32/32
 window.button.pressed.colorTo:	rgb:82/6d/53
 
-window.frame.focus:		Raised Gradient pyramid Bevel1
-window.frame.focus.color:	rgb:4e/38/32
-window.frame.unfocus:		Raised Gradient pyramid Bevel1
-window.frame.unfocus.color:	rgb:4c/36/30
+window.frame.focusColor:	rgb:4e/38/32
+window.frame.unfocusColor:	rgb:4c/36/30
 
 window.handle.focus:		raised Gradient pyramid Bevel2
 window.handle.focus.color:	black

@@ -1,7 +1,7 @@
 $set 1 #BaseDisplay
 
 $ #XError
-# %s:  X fel: %s(%d) opkod %d/%d\n  resurs 0x%lx\n
+# %s:  X-fel: %s(%d) opkod %d/%d\n  resurs 0x%lx\n
 $ #SignalCaught
 # %s: signal %d fångad\n
 $ #ShuttingDown
@@ -13,4 +13,4 @@ $ #XConnectFail
 $ #CloseOnExecFail
 # BaseDisplay::BaseDisplay: kunde inte markera skärmanslutning som stäng-vid-exekvering\n
 $ #BadWindowRemove
-# BaseDisplay::eventLoop(): tar bort dåligt fönster från händelse-kön\n
+# BaseDisplay::eventLoop(): tar bort dåligt fönster från händelsekön\n

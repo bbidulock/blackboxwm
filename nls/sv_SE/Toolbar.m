@@ -15,8 +15,8 @@ $ #NoStrftimeTimeFormatP
 $ #NoStrftimeTimeFormatA
 # a
 $ #ToolbarTitle
-# Verktygsbom
+# Verktygslist
 $ #EditWkspcName
-# Andra namn pa skrivbordet
+# Ändra namn på skrivbordet
 $ #ToolbarPlacement
-# Verktygsbommens placering
+# Verktygslistens placering

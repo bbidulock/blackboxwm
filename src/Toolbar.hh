@@ -53,6 +53,7 @@ private:
 
 protected:
   virtual void itemSelected(int, int);
+  virtual void internal_hide(void);
 
 public:
   Toolbarmenu(Toolbar *);
@@ -66,7 +67,7 @@ public:
 
 class Toolbar : public TimeoutHandler {
 private:
-  Bool on_top, editing;
+  Bool on_top, editing, hidden, do_auto_hide;
   Display *display;
 
   struct frame {
@@ -75,19 +76,27 @@ private:
     Window window, workspace_label, window_label, clock, psbutton, nsbutton,
       pwbutton, nwbutton;
 
-    int x, y, hour, minute, grab_x, grab_y;
+    int x, y, x_hidden, y_hidden, hour, minute, grab_x, grab_y;
     unsigned int width, height, window_label_w, workspace_label_w, clock_w,
       button_w, bevel_w, label_h;
   } frame;
 
+  class HideHandler : public TimeoutHandler {
+  public:
+    Toolbar *toolbar;
+
+    virtual void timeout(void);
+  } hide_handler;
+
   Blackbox *blackbox;
   BImageControl *image_ctrl;
   BScreen *screen;
-  BTimer *timer;
+  BTimer *clock_timer, *hide_timer;
   Toolbarmenu *toolbarmenu;
 
   char *new_workspace_name, *new_name_pos;
 
+  friend HideHandler;
   friend Toolbarmenu;
   friend Toolbarmenu::Placementmenu;
 
@@ -103,16 +112,24 @@ public:
 
   inline const Bool &isEditing(void) const { return editing; }
   inline const Bool &isOnTop(void) const { return on_top; }
+  inline const Bool &isHidden(void) const { return hidden; }
+  inline const Bool &doAutoHide(void) const { return do_auto_hide; }
 
   inline const Window &getWindowID(void) const { return frame.window; }
 
   inline const unsigned int &getWidth(void) const { return frame.width; }
   inline const unsigned int &getHeight(void) const { return frame.height; }
-  inline const int &getX(void) const { return frame.x; }
-  inline const int &getY(void) const { return frame.y; }
+  inline const unsigned int &getExposedHeight(void) const
+  { return ((do_auto_hide) ? frame.bevel_w : frame.height); }
+  inline const int &getX(void) const
+  { return ((hidden) ? frame.x_hidden : frame.x); }
+  inline const int &getY(void) const
+  { return ((hidden) ? frame.y_hidden : frame.y); }
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);
+  void enterNotifyEvent(XCrossingEvent *);
+  void leaveNotifyEvent(XCrossingEvent *);
   void exposeEvent(XExposeEvent *);
   void keyPressEvent(XKeyEvent *);
 

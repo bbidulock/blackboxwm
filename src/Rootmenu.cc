@@ -42,9 +42,13 @@
 #  include <string.h>
 #endif // STDC_HEADERS
 
-#if defined(HAVE_PROCESS_H) && defined(__EMX__)
-#  include <process.h>
-#endif //   HAVE_PROCESS_H             __EMX__
+#ifdef    HAVE_SYS_PARAM_H
+#  include <sys/param.h>
+#endif // HAVE_SYS_PARAM_H
+
+#ifndef   MAXPATHLEN
+#define   MAXPATHLEN 255
+#endif // MAXPATHLEN
 
 
 Rootmenu::Rootmenu(BScreen *scrn) : Basemenu(scrn) {
@@ -61,28 +65,18 @@ void Rootmenu::itemSelected(int button, int index) {
       switch (item->function()) {
       case BScreen::Execute:
 	if (item->exec()) {
-#ifndef   __EMX__
-          int dslen =
-            strlen(DisplayString(screen->getBaseDisplay()->getXDisplay()));
-
-          char *displaystring = new char[dslen + 32];
-          char *command = new char[strlen(item->exec()) + dslen + 64];
-
-          sprintf(displaystring, "%s",
+#ifndef    __EMX__
+	  char displaystring[MAXPATHLEN];
+	  sprintf(displaystring, "DISPLAY=%s",
 		  DisplayString(screen->getBaseDisplay()->getXDisplay()));
-          // gotta love pointer math
-          sprintf(displaystring + dslen - 1, "%d", screen->getScreenNumber());
-	  sprintf(command, "DISPLAY=\"%s\" exec %s &", displaystring,
-		  item->exec());
-	  system(command);
+	  sprintf(displaystring + strlen(displaystring) - 1, "%d",
+		  screen->getScreenNumber());
 
-          delete [] displaystring;
-          delete [] command;
-#else // !__EMX__
+	  bexec(item->exec(), displaystring);
+#else //   __EMX__
 	  spawnlp(P_NOWAIT, "cmd.exe", "cmd.exe", "/c", item->exec(), NULL);
-#endif // __EMX__
+#endif // !__EMX__
 	}
-
 	break;
 
       case BScreen::Restart:
@@ -92,7 +86,6 @@ void Rootmenu::itemSelected(int button, int index) {
       case BScreen::RestartOther:
 	if (item->exec())
 	  blackbox->restart(item->exec());
-
 	break;
 
       case BScreen::Exit:
@@ -105,7 +98,6 @@ void Rootmenu::itemSelected(int button, int index) {
 
       case BScreen::Reconfigure:
         blackbox->reconfigure();
-
 	return;
       }
 

@@ -62,6 +62,10 @@ typedef struct _blackbox_attributes {
 #define PropBlackboxHintsElements      (5)
 #define PropBlackboxAttributesElements (8)
 
+#ifndef    __EMX__
+void bexec(const char *, char *);
+#endif // !__EMX__
+
 char *bstrdup(const char *);
 template <typename Z> inline Z min(Z a, Z b) { return ((a < b) ? a : b); }
 template <typename Z> inline Z max(Z a, Z b) { return ((a > b) ? a : b); }

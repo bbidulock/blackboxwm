@@ -109,10 +109,6 @@
 #  include <libgen.h>
 #endif // HAVE_LIBGEN_H
 
-#if (defined(HAVE_PROCESS_H) && defined(__EMX__))
-#  include <process.h>
-#endif //    HAVE_PROCESS_H             __EMX__
-
 #ifndef   HAVE_BASENAME
 static inline char *basename (char *);
 static inline char *basename (char *s) {
@@ -239,10 +235,10 @@ Blackbox::~Blackbox(void) {
 
     if (ts->filename)
       delete [] ts->filename;
-    
+
     delete ts;
   }
-  
+
   if (resource.menu_file)
     delete [] resource.menu_file;
 
@@ -551,6 +547,11 @@ void Blackbox::process_event(XEvent *e) {
       BScreen *screen = (BScreen *) 0;
       BlackboxWindow *win = (BlackboxWindow *) 0;
       Basemenu *menu = (Basemenu *) 0;
+      Toolbar *tbar = (Toolbar *) 0;
+
+#ifdef    SLIT
+      Slit *slit = (Slit *) 0;
+#endif // SLIT
 
       if (e->xcrossing.mode == NotifyGrab) break;
 
@@ -576,6 +577,12 @@ void Blackbox::process_event(XEvent *e) {
         }
       } else if ((menu = searchMenu(e->xcrossing.window)))
 	menu->enterNotifyEvent(&e->xcrossing);
+      else if ((tbar = searchToolbar(e->xcrossing.window)))
+	tbar->enterNotifyEvent(&e->xcrossing);
+#ifdef    SLIT
+      else if ((slit = searchSlit(e->xcrossing.window)))
+        slit->enterNotifyEvent(&e->xcrossing);
+#endif // SLIT
 
       break;
     }
@@ -586,11 +593,22 @@ void Blackbox::process_event(XEvent *e) {
 
       BlackboxWindow *win = (BlackboxWindow *) 0;
       Basemenu *menu = (Basemenu *) 0;
+      Toolbar *tbar = (Toolbar *) 0;
+
+#ifdef    SLIT
+      Slit *slit = (Slit *) 0;
+#endif // SLIT
 
       if ((menu = searchMenu(e->xcrossing.window)))
 	menu->leaveNotifyEvent(&e->xcrossing);
       else if ((win = searchWindow(e->xcrossing.window)))
         win->installColormap(False);
+      else if ((tbar = searchToolbar(e->xcrossing.window)))
+	tbar->leaveNotifyEvent(&e->xcrossing);
+#ifdef    SLIT
+      else if ((slit = searchSlit(e->xcrossing.window)))
+        slit->leaveNotifyEvent(&e->xcrossing);
+#endif // SLIT
 
       break;
     }
@@ -632,12 +650,28 @@ void Blackbox::process_event(XEvent *e) {
       break;
     }
 
+  case FocusIn:
+    {
+      if (e->xfocus.mode == NotifyUngrab ||
+	  e->xfocus.detail == NotifyPointer)
+	break;
+
+      BlackboxWindow *win = searchWindow(e->xfocus.window);
+      if (win && ! win->isFocused())
+	setFocusedWindow(win);
+
+      break;
+    }
+
+  case FocusOut:
+    break;
+
   case ClientMessage:
     {
       if (e->xclient.format == 32) {
         if (e->xclient.message_type == getWMChangeStateAtom()) {
           BlackboxWindow *win = searchWindow(e->xclient.window);
-          if (! win) return;
+          if (! win || ! win->validateClient()) return;
 
           if (e->xclient.data.l[0] == IconicState)
 	    win->iconify();
@@ -769,7 +803,7 @@ BlackboxWindow *Blackbox::searchGroup(Window window, BlackboxWindow *win) {
   for (; it.current(); it++) {
     WindowSearch *tmp = it.current();
     if (tmp)
-      if (tmp->getWindow ()== window) {
+      if (tmp->getWindow() == window) {
         w = tmp->getData();
         if (w->getClientWindow() != win->getClientWindow())
           return win;
@@ -1038,6 +1072,10 @@ void Blackbox::save_rc(void) {
     sprintf(rc_string, "session.screen%d.slit.onTop: %s", screen_number,
             ((screen->getSlit()->isOnTop()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
+
+    sprintf(rc_string, "session.screen%d.slit.autoHide: %s", screen_number,
+            ((screen->getSlit()->doAutoHide()) ? "True" : "False"));
+    XrmPutLineResource(&new_blackboxrc, rc_string);
 #endif // SLIT
 
     sprintf(rc_string, "session.opaqueMove: %s",
@@ -1102,6 +1140,10 @@ void Blackbox::save_rc(void) {
 
     sprintf(rc_string, "session.screen%d.toolbar.onTop:  %s", screen_number,
 	    ((screen->getToolbar()->isOnTop()) ? "True" : "False"));
+    XrmPutLineResource(&new_blackboxrc, rc_string);
+
+    sprintf(rc_string, "session.screen%d.toolbar.autoHide:  %s", screen_number,
+	    ((screen->getToolbar()->doAutoHide()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
     char *toolbar_placement = (char *) 0;
@@ -1220,7 +1262,7 @@ void Blackbox::load_rc(void) {
     resource.menu_file = bstrdup(value.addr);
   else
     resource.menu_file = bstrdup(DEFAULTMENU);
-  
+
   if (XrmGetResource(database, "session.colorsPerChannel",
 		     "Session.ColorsPerChannel", &value_type, &value)) {
     if (sscanf(value.addr, "%d", &resource.colors_per_channel) != 1) {
@@ -1240,7 +1282,7 @@ void Blackbox::load_rc(void) {
     resource.style_file = bstrdup(value.addr);
   else
     resource.style_file = bstrdup(DEFAULTSTYLE);
-  
+
   if (XrmGetResource(database, "session.doubleClickInterval",
 		     "Session.DoubleClickInterval", &value_type, &value)) {
     if (sscanf(value.addr, "%lu", &resource.double_click_interval) != 1)
@@ -1406,7 +1448,7 @@ void Blackbox::load_rc(BScreen *screen) {
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
 		     &value)) {
     char *search = bstrdup(value.addr);
-    
+
     int i;
     for (i = 0; i < screen->getNumberOfWorkspaces(); i++) {
       char *nn;
@@ -1431,6 +1473,17 @@ void Blackbox::load_rc(BScreen *screen) {
       screen->saveToolbarOnTop(False);
   } else
     screen->saveToolbarOnTop(False);
+
+  sprintf(name_lookup,  "session.screen%d.toolbar.autoHide", screen_number);
+  sprintf(class_lookup, "Session.Screen%d.Toolbar.autoHide", screen_number);
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
+		     &value)) {
+    if (! strncasecmp(value.addr, "true", value.size))
+      screen->saveToolbarAutoHide(True);
+    else
+      screen->saveToolbarAutoHide(False);
+  } else
+    screen->saveToolbarAutoHide(False);
 
   sprintf(name_lookup,  "session.screen%d.focusModel", screen_number);
   sprintf(class_lookup, "Session.Screen%d.FocusModel", screen_number);
@@ -1509,6 +1562,17 @@ void Blackbox::load_rc(BScreen *screen) {
       screen->saveSlitOnTop(False);
   else
     screen->saveSlitOnTop(False);
+
+  sprintf(name_lookup, "session.screen%d.slit.autoHide", screen_number);
+  sprintf(class_lookup, "Session.Screen%d.Slit.AutoHide", screen_number);
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
+                     &value))
+    if (! strncasecmp(value.addr, "True", value.size))
+      screen->saveSlitAutoHide(True);
+    else
+      screen->saveSlitAutoHide(False);
+  else
+    screen->saveSlitAutoHide(False);
 #endif // SLIT
 
 #ifdef    HAVE_STRFTIME
@@ -1731,34 +1795,34 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
   BlackboxWindow *old_win = (BlackboxWindow *) 0;
   Toolbar *old_tbar = (Toolbar *) 0, *tbar = (Toolbar *) 0;
   Workspace *old_wkspc = (Workspace *) 0, *wkspc = (Workspace *) 0;
-  
+
   if (focused_window) {
     old_win = focused_window;
     old_screen = old_win->getScreen();
     old_tbar = old_screen->getToolbar();
     old_wkspc = old_screen->getWorkspace(old_win->getWorkspaceNumber());
-    
+
     old_win->setFocusFlag(False);
     old_wkspc->getMenu()->setItemSelected(old_win->getWindowNumber(), False);
   }
-  
+
   if (win && ! win->isIconic()) {
     screen = win->getScreen();
     tbar = screen->getToolbar();
     wkspc = screen->getWorkspace(win->getWorkspaceNumber());
-    
+
     focused_window = win;
-    
+
     win->setFocusFlag(True);
     wkspc->getMenu()->setItemSelected(win->getWindowNumber(), True);
   } else
     focused_window = (BlackboxWindow *) 0;
-  
+
   if (tbar)
     tbar->redrawWindowLabel(True);
   if (screen)
     screen->updateNetizenWindowFocus();
-  
+
   if (old_tbar && old_tbar != tbar)
     old_tbar->redrawWindowLabel(True);
   if (old_screen && old_screen != screen)

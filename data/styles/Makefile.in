@@ -10,7 +10,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-# data/styles/Makefile.am for Blackbox 0.51.x  - an X11 Window manager
+# data/styles/Makefile.am for Blackbox 0.61.x  - an X11 Window manager
 
 
 SHELL = @SHELL@
@@ -59,6 +59,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+CC = @CC@
 CXX = @CXX@
 DEBUG = @DEBUG@
 INTERLACE = @INTERLACE@
@@ -70,7 +71,6 @@ ORDEREDPSEUDO = @ORDEREDPSEUDO@
 PACKAGE = @PACKAGE@
 SHAPE = @SHAPE@
 SLIT = @SLIT@
-STYLEDFRAMES = @STYLEDFRAMES@
 TIMEDCACHE = @TIMEDCACHE@
 VERSION = @VERSION@
 gencat_cmd = @gencat_cmd@

@@ -94,10 +94,8 @@ window.button.pressed:		flat diagonal interlaced gradient
 window.button.pressed.color:    rgb:4/4/38
 window.button.pressed.colorTo:  rgb:f/f/d
 
-window.frame.focus:		raised solid bevel1
-window.frame.focus.color:	grey85
-window.frame.unfocus:		raised solid bevel1
-window.frame.unfocus.color:	rgb:6/6/54
+window.frame.focusColor:	grey85
+window.frame.unfocusColor:	rgb:6/6/54
 
 window.font:			lucidasans-bold-10
 window.justify:			center

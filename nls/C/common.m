@@ -33,3 +33,6 @@ $ #PlacementCenterRight
 # Center Right
 $ #PlacementBottomRight
 # Bottom Right
+
+$ #AutoHide
+# Auto hide

@@ -1,7 +1,7 @@
 $set 10 #Windowmenu
 
 $ #SendTo
-# Skicka till ...
+# Skicka till...
 $ #Shade
 # Skugga
 $ #Iconify
@@ -9,12 +9,12 @@ $ #Iconify
 $ #Maximize
 # Maximera
 $ #Raise
-# Hoj
+# Höj
 $ #Lower
-# Sank
+# Sänk
 $ #Stick
 # Klibbig
 $ #KillClient
-# Doda klient
+# Döda klient
 $ #Close
-# Stang
+# Stäng

@@ -1,20 +1,29 @@
-# nls/sv_SE/Makefile.am for Blackbox-0.60.x - an X11 Window Manager
+# nls/sv_SE/Makefile.am for Blackbox-0.61.x - an X11 Window Manager
 
 NLSTEST = @NLS@
 CLEANFILES = blackbox.cat
-MAINTAINERCLEANFILES = Makefile.in
+MAINTAINERCLEANFILES = Makefile.in Translation.m
 MFILES = BaseDisplay.m Basemenu.m Configmenu.m Icon.m Image.m Screen.m Slit.m Toolbar.m Window.m Windowmenu.m Workspace.m Workspacemenu.m blackbox.m common.m main.m bsetroot.m
 
 all-local: blackbox.cat
 install-data-local: blackbox.cat
 	@if test x$(NLSTEST) = "x-DNLS"; then \
-		echo "Installing catalog in $(pkgdatadir)/nls/sv_SE"; \
-		$(mkinstalldirs) $(pkgdatadir)/nls/sv_SE; \
-		$(INSTALL_DATA) blackbox.cat $(pkgdatadir)/nls/sv_SE; \
+		echo "Installing catalog in $(DESTDIR)$(pkgdatadir)/nls/sv_SE"; \
+		$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)/nls/sv_SE; \
+		$(INSTALL_DATA) blackbox.cat $(DESTDIR)$(pkgdatadir)/nls/sv_SE; \
+	fi
+uninstall-local:
+	@if test x$(NLSTEST) = "x-DNLS"; then \
+		rm -f $(DESTDIR)$(pkgdatadir)/nls/sv_SE/blackbox.cat; \
+		rmdir $(DESTDIR)$(pkgdatadir)/nls/sv_SE; \
 	fi
 
 Translation.m: $(MFILES)
-	awk -f ../convert.awk output=Translation.m $(MFILES)
+	@if test x$(NLSTEST) = "x-DNLS"; then \
+		awk -f ../convert.awk output=Translation.m $(MFILES); \
+	fi
 
 blackbox.cat: Translation.m
-	gencat blackbox.cat Translation.m
+	@if test x$(NLSTEST) = "x-DNLS"; then \
+		$(gencat_cmd) blackbox.cat Translation.m; \
+	fi

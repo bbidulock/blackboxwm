@@ -15,7 +15,7 @@ $ #FullMax
 $ #FocusNew
 # Focus New Windows
 $ #FocusLast
-# Focus Last Window on Workspace
+# Focus Window on Workspace Change
 $ #ClickToFocus
 # Click to Focus
 $ #SloppyFocus

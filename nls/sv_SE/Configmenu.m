@@ -1,38 +1,38 @@
 $set 3 #Configmenu
 
 $ #ConfigOptions
-# Installningar
+# Inställningar
 $ #FocusModel
 # Fokusmodell
 $ #WindowPlacement
-# Fonsterplacering
+# Fönsterplacering
 $ #ImageDithering
-# Bild dithering
+# Bilddithering
 $ #OpaqueMove
-# Oklar fonsterrorelse
+# Ogenomskinlig fönsterförflyttning
 $ #FullMax
 # Full maximering
 $ #FocusNew
-# Fokus pa nya fonster
+# Fokus på nya fönster
 $ #FocusLast
-# Fokus pa senaste fonster
+# Fokusera fönster vid skrivbordsbyte
 $ #ClickToFocus
-# Klicka for fokus
+# Klicka för fokus
 $ #SloppyFocus
 # Hafsig fokus
 $ #AutoRaise
-# Hoj automatiskt
+# Höj automatiskt
 $ #SmartRows
-# Smartplacering (Rader)
+# Smart placering (Rader)
 $ #SmartCols
-# Smartplacering (Kolumner)
+# Smart placering (Kolumner)
 $ #Cascade
 # Kaskadplacering
 $ #LeftRight
-# Fran vanster
+# Från vänster
 $ #RightLeft
-# Fran hoger
+# Från höger
 $ #TopBottom
-# Uppifran
+# Uppifrån
 $ #BottomTop
-# Nerifran
+# Nerifrån
