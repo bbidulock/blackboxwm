@@ -254,6 +254,12 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   if (decorations.maximize) createMaximizeButton();
   if (decorations.close) createCloseButton();
 
+#ifdef    SHAPE
+  if (blackbox->hasShapeExtensions() && flags.shaped) {
+    configureShape();
+  }
+#endif // SHAPE
+
   // grab button 1 for changing focus
   blackbox->grabButton(Button1, 0, frame.plate, True, ButtonPressMask,
                        GrabModeSync, GrabModeSync, None, None);
@@ -472,11 +478,7 @@ void BlackboxWindow::associateClientWindow(void) {
 
     XShapeQueryExtents(display, client.window, &flags.shaped, &foo, &foo,
                        &ufoo, &ufoo, &foo, &foo, &foo, &ufoo, &ufoo);
-
-    if (flags.shaped) {
-      configureShape();
-    }
-  }
+}
 #endif // SHAPE
 
   XRaiseWindow(display, frame.plate);
