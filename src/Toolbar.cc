@@ -459,7 +459,7 @@ void Toolbar::redrawClockLabel(void) {
   tt = localtime(&tmp);
   if (! tt)
     return; // ditto
-  if (! strftime(str, 1024, options.strftime_format.c_str(), tt))
+  if (! strftime(str, sizeof(str), options.strftime_format.c_str(), tt))
     return; // ditto
 
   bt::Pen pen(_screen->screenNumber(), style.clock_text);
