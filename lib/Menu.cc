@@ -867,8 +867,16 @@ void bt::Menu::buttonReleaseEvent(const XButtonEvent * const event) {
 void bt::Menu::motionNotifyEvent(const XMotionEvent * const event) {
   ++_motion;
 
-  if (!_irect.contains(event->x, event->y))
+  if (_trect.contains(event->x, event->y)) {
+    // mouse moved over title, fake a leave event
+    leaveNotifyEvent(0);
     return;
+  }
+
+  if (!_irect.contains(event->x, event->y)) {
+    // mouse outside the menu
+    return;
+  }
 
   Rect r(_irect.x(), _irect.y(), _itemw, 0);
   int row = 0, col = 0;
