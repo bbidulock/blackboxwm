@@ -461,25 +461,23 @@ void Blackbox::rereadMenu(void) {
 
 
 void Blackbox::saveMenuFilename(const std::string& filename) {
-  assert(! filename.empty());
-  bool found = False;
+  assert(!filename.empty());
+  bool found = false;
 
   MenuTimestampList::iterator it = menuTimestamps.begin();
-  for (; it != menuTimestamps.end() && !found; ++it) {
-    if ((*it)->filename == filename) found = True;
-  }
-  if (! found) {
-    struct stat buf;
+  for (; it != menuTimestamps.end() && !found; ++it)
+    found = (*it)->filename == filename;
+  if (found)
+    return;
 
-    if (! stat(filename.c_str(), &buf)) {
-      MenuTimestamp *ts = new MenuTimestamp;
+  struct stat buf;
+  if (stat(filename.c_str(), &buf) != 0)
+    return; // file doesn't exist
 
-      ts->filename = filename;
-      ts->timestamp = buf.st_ctime;
-
-      menuTimestamps.push_back(ts);
-    }
-  }
+  MenuTimestamp *ts = new MenuTimestamp;
+  ts->filename = filename;
+  ts->timestamp = buf.st_ctime;
+  menuTimestamps.push_back(ts);
 }
 
 
