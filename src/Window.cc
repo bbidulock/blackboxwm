@@ -2877,7 +2877,7 @@ void BlackboxWindow::changeBlackboxHints(BlackboxHints *net) {
     if (flags.shaded && ! (decorations & Decor_Titlebar))
       shade();
 
-    if (frame.window) {
+    if (flags.visible && frame.window) {
       XMapSubwindows(blackbox->getXDisplay(), frame.window);
       XMapWindow(blackbox->getXDisplay(), frame.window);
     }
