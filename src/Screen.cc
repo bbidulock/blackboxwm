@@ -894,7 +894,7 @@ BScreen::raiseWindows(const bt::Netwm::WindowList* const workspace_stack) {
 
 
 void BScreen::saveStrftimeFormat(const std::string& format) {
-  resource.strftime_format = format;
+  resource.tconfig.strftime_format = format;
 }
 
 

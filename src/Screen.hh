@@ -69,6 +69,12 @@ struct WindowStyle {
     label_height, title_height, button_width;
 };
 
+struct WindowConfig {
+  bool sloppy_focus, auto_raise, opaque_move, full_max, ignore_shaded,
+       focus_new, focus_last, click_raise;
+  int edge_snap_threshold, placement_policy, row_direction, col_direction;
+};
+
 struct ToolbarStyle {
   bt::Color l_text, w_text, c_text, b_pic;
   bt::Texture toolbar, label, window, button, pressed, clock;
@@ -76,6 +82,16 @@ struct ToolbarStyle {
   bt::Alignment alignment;
 };
 
+struct ToolbarConfig {
+  bool on_top, auto_hide;
+  int placement, width_percent;
+  std::string strftime_format;
+};
+
+struct SlitConfig {
+  bool on_top, auto_hide;
+  int placement, direction;
+};
 
 typedef std::list<BlackboxWindow*> BlackboxWindowList;
 typedef std::list<Window> WindowList;
@@ -116,24 +132,15 @@ private:
 
   struct screen_resource {
     WindowStyle wstyle;
+    WindowConfig wconfig;
     ToolbarStyle tstyle;
+    ToolbarConfig tconfig;
+    SlitConfig sconfig;
 
-    bool toolbar_on_top, toolbar_auto_hide, sloppy_focus, auto_raise,
-      auto_edge_balance, image_dither, ordered_dither, opaque_move, full_max,
-      ignore_shaded, focus_new, focus_last, click_raise, allow_scroll_lock;
+    bool auto_edge_balance, image_dither, ordered_dither, allow_scroll_lock;
+    unsigned int workspaces, bevel_width, border_width;
     bt::Color border_color;
     XrmDatabase stylerc;
-
-    unsigned int workspaces;
-    int toolbar_placement, toolbar_width_percent, placement_policy,
-      edge_snap_threshold, row_direction, col_direction;
-
-    bool slit_on_top, slit_auto_hide;
-    int slit_placement, slit_direction;
-
-    unsigned int bevel_width, border_width;
-
-    std::string strftime_format;
   } resource;
 
   bool parseMenuFile(FILE *file, Rootmenu *menu);
@@ -164,25 +171,26 @@ public:
   unsigned int screenNumber(void) const { return screen_info.screenNumber(); }
 
   bool isToolbarOnTop(void) const
-  { return resource.toolbar_on_top; }
+  { return resource.tconfig.on_top; }
   bool doToolbarAutoHide(void) const
-  { return resource.toolbar_auto_hide; }
+  { return resource.tconfig.auto_hide; }
   bool isSloppyFocus(void) const
-  { return resource.sloppy_focus; }
+  { return resource.wconfig.sloppy_focus; }
   bool isRootColormapInstalled(void) const
   { return root_colormap_installed; }
-  bool doAutoRaise(void) const { return resource.auto_raise; }
-  bool doClickRaise(void) const { return resource.click_raise; }
+  bool doAutoRaise(void) const { return resource.wconfig.auto_raise; }
+  bool doClickRaise(void) const { return resource.wconfig.click_raise; }
   bool isScreenManaged(void) const { return managed; }
   bool doImageDither(void) const
   { return resource.image_dither; }
   bool doOrderedDither(void) const
   { return resource.ordered_dither; }
-  bool doOpaqueMove(void) const { return resource.opaque_move; }
-  bool doFullMax(void) const { return resource.full_max; }
-  bool placementIgnoresShaded(void) const { return resource.ignore_shaded; }
-  bool doFocusNew(void) const { return resource.focus_new; }
-  bool doFocusLast(void) const { return resource.focus_last; }
+  bool doOpaqueMove(void) const { return resource.wconfig.opaque_move; }
+  bool doFullMax(void) const { return resource.wconfig.full_max; }
+  bool placementIgnoresShaded(void) const
+  { return resource.wconfig.ignore_shaded; }
+  bool doFocusNew(void) const { return resource.wconfig.focus_new; }
+  bool doFocusLast(void) const { return resource.wconfig.focus_last; }
   bool allowScrollLock(void) const { return resource.allow_scroll_lock;}
 
   const GC &getOpGC(void) const { return opGC; }
@@ -190,18 +198,18 @@ public:
   bt::Color *getBorderColor(void) { return &resource.border_color; }
   Rootmenu *getRootmenu(void) { return rootmenu; }
 
-  bool isSlitOnTop(void) const { return resource.slit_on_top; }
+  bool isSlitOnTop(void) const { return resource.sconfig.on_top; }
   bool doSlitAutoHide(void) const
-  { return resource.slit_auto_hide; }
+  { return resource.sconfig.auto_hide; }
   Slit *getSlit(void) { return slit; }
   int getSlitPlacement(void) const
-  { return resource.slit_placement; }
+  { return resource.sconfig.placement; }
   int getSlitDirection(void) const
-  { return resource.slit_direction; }
-  void saveSlitPlacement(int p) { resource.slit_placement = p; }
-  void saveSlitDirection(int d) { resource.slit_direction = d; }
-  void saveSlitOnTop(bool t)    { resource.slit_on_top = t; }
-  void saveSlitAutoHide(bool t) { resource.slit_auto_hide = t; }
+  { return resource.sconfig.direction; }
+  void saveSlitPlacement(int p) { resource.sconfig.placement = p; }
+  void saveSlitDirection(int d) { resource.sconfig.direction = d; }
+  void saveSlitOnTop(bool t)    { resource.sconfig.on_top = t; }
+  void saveSlitAutoHide(bool t) { resource.sconfig.auto_hide = t; }
 
   Toolbar *getToolbar(void) { return toolbar; }
 
@@ -227,45 +235,46 @@ public:
   unsigned int getNumberOfWorkspaces(void) const
   { return resource.workspaces; }
   int getToolbarPlacement(void) const
-  { return resource.toolbar_placement; }
+  { return resource.tconfig.placement; }
   int getToolbarWidthPercent(void) const
-  { return resource.toolbar_width_percent; }
+  { return resource.tconfig.width_percent; }
   int getPlacementPolicy(void) const
-  { return resource.placement_policy; }
+  { return resource.wconfig.placement_policy; }
   int getEdgeSnapThreshold(void) const
-  { return resource.edge_snap_threshold; }
+  { return resource.wconfig.edge_snap_threshold; }
   int getRowPlacementDirection(void) const
-  { return resource.row_direction; }
+  { return resource.wconfig.row_direction; }
   int getColPlacementDirection(void) const
-  { return resource.col_direction; }
+  { return resource.wconfig.col_direction; }
 
   BlackboxWindow* getWindow(unsigned int workspace, unsigned int id);
 
   void setRootColormapInstalled(bool r) { root_colormap_installed = r; }
-  void saveSloppyFocus(bool s) { resource.sloppy_focus = s; }
-  void saveAutoRaise(bool a) { resource.auto_raise = a; }
-  void saveClickRaise(bool c) { resource.click_raise = c; }
+  void saveSloppyFocus(bool s) { resource.wconfig.sloppy_focus = s; }
+  void saveAutoRaise(bool a) { resource.wconfig.auto_raise = a; }
+  void saveClickRaise(bool c) { resource.wconfig.click_raise = c; }
   void saveWorkspaces(unsigned int w) { resource.workspaces = w; }
-  void saveToolbarOnTop(bool r) { resource.toolbar_on_top = r; }
-  void saveToolbarAutoHide(bool r) { resource.toolbar_auto_hide = r; }
+  void saveToolbarOnTop(bool r) { resource.tconfig.on_top = r; }
+  void saveToolbarAutoHide(bool r) { resource.tconfig.auto_hide = r; }
   void saveToolbarWidthPercent(int w)
-  { resource.toolbar_width_percent = w; }
-  void saveToolbarPlacement(int p) { resource.toolbar_placement = p; }
-  void savePlacementPolicy(int p) { resource.placement_policy = p; }
-  void saveRowPlacementDirection(int d) { resource.row_direction = d; }
-  void saveColPlacementDirection(int d) { resource.col_direction = d; }
+  { resource.tconfig.width_percent = w; }
+  void saveToolbarPlacement(int p) { resource.tconfig.placement = p; }
+  void savePlacementPolicy(int p) { resource.wconfig.placement_policy = p; }
+  void saveRowPlacementDirection(int d) { resource.wconfig.row_direction = d; }
+  void saveColPlacementDirection(int d) { resource.wconfig.col_direction = d; }
   void saveEdgeSnapThreshold(int t)
-  { resource.edge_snap_threshold = t; }
+  { resource.wconfig.edge_snap_threshold = t; }
   void saveImageDither(bool d) { resource.image_dither = d; }
-  void saveOpaqueMove(bool o) { resource.opaque_move = o; }
-  void saveFullMax(bool f) { resource.full_max = f; }
-  void savePlacementIgnoresShaded(bool f) { resource.ignore_shaded = f; }
-  void saveFocusNew(bool f) { resource.focus_new = f; }
-  void saveFocusLast(bool f) { resource.focus_last = f; }
+  void saveOpaqueMove(bool o) { resource.wconfig.opaque_move = o; }
+  void saveFullMax(bool f) { resource.wconfig.full_max = f; }
+  void savePlacementIgnoresShaded(bool f)
+  { resource.wconfig.ignore_shaded = f; }
+  void saveFocusNew(bool f) { resource.wconfig.focus_new = f; }
+  void saveFocusLast(bool f) { resource.wconfig.focus_last = f; }
   void saveAllowScrollLock(bool a) { resource.allow_scroll_lock = a; }
 
   const char *getStrftimeFormat(void)
-  { return resource.strftime_format.c_str(); }
+  { return resource.tconfig.strftime_format.c_str(); }
   void saveStrftimeFormat(const std::string& format);
 
   WindowStyle *getWindowStyle(void) { return &resource.wstyle; }
