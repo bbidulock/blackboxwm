@@ -1,5 +1,5 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
-// netwm.hh for Blackbox - an X11 Window manager
+// Netwm.hh for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2003 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000, 2002 - 2003
 //         Bradley T Hughes <bhughes at trolltech.com>
@@ -25,15 +25,10 @@
 #ifndef __Netwm_hh
 #define __Netwm_hh
 
-extern "C" {
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
-}
+#include "Util.hh"
 
 #include <string>
 #include <vector>
-
-#include "Util.hh"
 
 namespace bt {
 

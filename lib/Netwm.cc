@@ -1,5 +1,5 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
-// netwm.cc for Blackbox - an X11 Window manager
+// Netwm.cc for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2003 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000, 2002 - 2003
 //         Bradley T Hughes <bhughes at trolltech.com>
@@ -24,7 +24,11 @@
 
 #include "Netwm.hh"
 
+#include <X11/Xatom.h>
+#include <X11/Xlib.h>
+
 typedef unsigned char uchar;
+
 
 bt::Netwm::Netwm(::Display* _display): display(_display) {
   char* atoms[51] = {
