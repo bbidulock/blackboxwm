@@ -53,12 +53,12 @@ public:
 
     bt::Color l_text_focus, l_text_unfocus, b_pic_focus,
       b_pic_unfocus;
-    bt::Texture f_focus, f_unfocus, t_focus, t_unfocus, l_focus, l_unfocus,
+    bt::Texture t_focus, t_unfocus, l_focus, l_unfocus,
       h_focus, h_unfocus, b_focus, b_unfocus, b_pressed, g_focus, g_unfocus;
     bt::Bitmap iconify, maximize, restore, close;
     bt::Font font;
     bt::Alignment alignment;
-    unsigned int handle_height, grip_width, frame_width, bevel_width,
+    unsigned int handle_height, grip_width, bevel_width,
       label_height, title_height, button_width;
   };
 

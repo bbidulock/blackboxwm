@@ -259,7 +259,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   frame.window = frame.plate = frame.title = frame.handle = None;
   frame.close_button = frame.iconify_button = frame.maximize_button = None;
   frame.right_grip = frame.left_grip = None;
-  frame.uborder_pixel = frame.fborder_pixel = 0;
   frame.utitle = frame.ftitle = frame.uhandle = frame.fhandle = None;
   frame.ulabel = frame.flabel = frame.ubutton = frame.fbutton = None;
   frame.pbutton = frame.ugrip = frame.fgrip = None;
@@ -382,9 +381,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   // now that we know where to put the window and what it should look like
   // we apply the decorations
   decorate();
-
-  if (hasWindowDecoration(WindowDecorationBorder))
-    XSetWindowBorder(blackbox->XDisplay(), frame.plate, frame.uborder_pixel);
 
   grabButtons();
 
@@ -612,13 +608,6 @@ void BlackboxWindow::decorate(void) {
     XSetWindowBorder(blackbox->XDisplay(), frame.title,
                      screen->resource().borderColor()->
                      pixel(screen->screenNumber()));
-  }
-
-  if (client.decorations & WindowDecorationBorder) {
-    frame.fborder_pixel =
-      frame.style->f_focus.color().pixel(screen->screenNumber());
-    frame.uborder_pixel =
-      frame.style->f_unfocus.color().pixel(screen->screenNumber());
   }
 
   if (client.decorations & WindowDecorationHandle) {
@@ -962,10 +951,9 @@ void BlackboxWindow::positionWindows(void) {
                      ? frame.style->title_height
                      : frame.inside_h));
   XSetWindowBorderWidth(blackbox->XDisplay(), frame.window, frame.border_w);
-  XSetWindowBorderWidth(blackbox->XDisplay(), frame.plate, frame.mwm_border_w);
   XMoveResizeWindow(blackbox->XDisplay(), frame.plate,
-                    frame.margin.left - frame.mwm_border_w - frame.border_w,
-                    frame.margin.top - frame.mwm_border_w - frame.border_w,
+                    frame.margin.left - frame.border_w,
+                    frame.margin.top - frame.border_w,
                     client.rect.width(), client.rect.height());
   XMoveResizeWindow(blackbox->XDisplay(), client.window,
                     0, 0, client.rect.width(), client.rect.height());
@@ -993,8 +981,7 @@ void BlackboxWindow::positionWindows(void) {
     XSetWindowBorderWidth(blackbox->XDisplay(), frame.handle, frame.border_w);
 
     // use client.rect here so the value is correct even if shaded
-    const int ny = client.rect.height() + frame.margin.top +
-                   frame.mwm_border_w - frame.border_w;
+    const int ny = client.rect.height() + frame.margin.top - frame.border_w;
     XMoveResizeWindow(blackbox->XDisplay(), frame.handle,
                       -frame.border_w, ny,
                       frame.inside_w, frame.style->handle_height);
@@ -1531,8 +1518,7 @@ void BlackboxWindow::configureShape(void) {
 
   if (client.decorations & WindowDecorationHandle) {
     xrect[1].x = -frame.border_w;
-    xrect[1].y = frame.rect.height() - frame.margin.bottom +
-                 frame.mwm_border_w - frame.border_w;
+    xrect[1].y = frame.rect.height() - frame.margin.bottom - frame.border_w;
     xrect[1].width = frame.rect.width();
     xrect[1].height = frame.style->handle_height + (frame.border_w * 2);
     ++num;
@@ -1910,15 +1896,6 @@ void BlackboxWindow::redrawWindowFrame(void) const {
 
     if (client.decorations & WindowDecorationGrip)
       redrawGrips();
-  }
-
-  if (client.decorations & WindowDecorationBorder) {
-    if (client.state.focused)
-      XSetWindowBorder(blackbox->XDisplay(),
-                       frame.plate, frame.fborder_pixel);
-    else
-      XSetWindowBorder(blackbox->XDisplay(),
-                       frame.plate, frame.uborder_pixel);
   }
 }
 
@@ -2883,7 +2860,7 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const event) {
     } else if (event->button == 2) {
       screen->lowerWindow(this);
     } else if (event->button == 3) {
-      const int extra = frame.border_w + frame.mwm_border_w;
+      const int extra = frame.border_w;
       bt::Rect rect(client.rect.x() - extra,
                     client.rect.y() - extra,
                     client.rect.width() + (extra * 2),
@@ -3335,16 +3312,11 @@ void BlackboxWindow::timeout(bt::Timer *)
  * window's dimensions.
  */
 void BlackboxWindow::upsize(void) {
-  if (client.decorations & WindowDecorationBorder) {
-    frame.border_w = screen->resource().borderWidth();
-    frame.mwm_border_w = (!isTransient()) ? frame.style->frame_width : 0;
-  } else {
-    frame.mwm_border_w = frame.border_w = 0;
-  }
+  frame.border_w = (hasWindowDecoration(WindowDecorationBorder)
+                    ? screen->resource().borderWidth() : 0);
 
   frame.margin.top = frame.margin.bottom =
-    frame.margin.left = frame.margin.right =
-    frame.border_w + frame.mwm_border_w;
+    frame.margin.left = frame.margin.right = frame.border_w;
 
   if (client.decorations & WindowDecorationTitlebar)
     frame.margin.top += frame.border_w + frame.style->title_height;

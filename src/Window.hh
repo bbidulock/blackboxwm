@@ -191,7 +191,6 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
     ScreenResource::WindowStyle* style;
 
     // u -> unfocused, f -> has focus
-    unsigned long uborder_pixel, fborder_pixel;
     Pixmap ulabel, flabel, utitle, ftitle, uhandle, fhandle,
       ubutton, fbutton, pbutton, ugrip, fgrip;
 
@@ -220,7 +219,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
     int grab_x, grab_y;         // where was the window when it was grabbed?
 
     unsigned int inside_w, inside_h, // window w/h without border_w
-      label_w, mwm_border_w, border_w;
+      label_w, border_w;
   } frame;
 
   Window createToplevelWindow();

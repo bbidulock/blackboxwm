@@ -575,26 +575,6 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
                         "window.button.pressed", "Window.Button.Pressed",
                         "black");
 
-  // we create the window.frame texture by hand because it exists only to
-  // make the code cleaner and is not actually used for display
-  bt::Color color;
-  color = bt::Color::namedColor(display, screen_num,
-                                res.read("window.frame.focusColor",
-                                         "Window.Frame.FocusColor",
-                                         "white"));
-  wstyle.f_focus.setDescription("solid flat");
-  wstyle.f_focus.setColor(color);
-
-  color = bt::Color::namedColor(display, screen_num,
-                                res.read("window.frame.unfocusColor",
-                                         "Window.Frame.UnfocusColor",
-                                         "white"));
-  wstyle.f_unfocus.setDescription("solid flat");
-  wstyle.f_unfocus.setColor(color);
-
-  wstyle.frame_width = res.read("window.frameWidth", "Window.FrameWidth",
-                                bevel_width);
-
   wstyle.l_text_focus =
     bt::Color::namedColor(display, screen_num,
                           res.read("window.label.focus.textColor",
@@ -672,20 +652,22 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
 
   root_command = res.read("rootCommand", "RootCommand");
 
+  bt::Texture flat_black;
+  flat_black.setDescription("flat solid");
+  flat_black.setColor(bt::Color(0, 0, 0));
+
   // sanity checks
   if (wstyle.t_focus.texture() == bt::Texture::Parent_Relative)
-    wstyle.t_focus = wstyle.f_focus;
+    wstyle.t_focus = flat_black;
   if (wstyle.t_unfocus.texture() == bt::Texture::Parent_Relative)
-    wstyle.t_unfocus = wstyle.f_unfocus;
+    wstyle.t_unfocus = flat_black;
   if (wstyle.h_focus.texture() == bt::Texture::Parent_Relative)
-    wstyle.h_focus = wstyle.f_focus;
+    wstyle.h_focus = flat_black;
   if (wstyle.h_unfocus.texture() == bt::Texture::Parent_Relative)
-    wstyle.h_unfocus = wstyle.f_unfocus;
+    wstyle.h_unfocus = flat_black;
 
-  if (tstyle.toolbar.texture() == bt::Texture::Parent_Relative) {
-    tstyle.toolbar.setTexture(bt::Texture::Flat | bt::Texture::Solid);
-    tstyle.toolbar.setColor(bt::Color(0, 0, 0));
-  }
+  if (tstyle.toolbar.texture() == bt::Texture::Parent_Relative)
+    tstyle.toolbar = flat_black;
 }
 
 
