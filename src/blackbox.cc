@@ -99,6 +99,7 @@ using std::string;
 #include "blackbox.hh"
 #include "Basemenu.hh"
 #include "Clientmenu.hh"
+#include "GCCache.hh"
 #include "Image.hh"
 #include "Rootmenu.hh"
 #include "Screen.hh"
@@ -1523,6 +1524,8 @@ void Blackbox::real_reconfigure(void) {
   std::for_each(menuTimestamps.begin(), menuTimestamps.end(),
                 PointerAssassin());
   menuTimestamps.clear();
+
+  gcCache()->purge();
 
   std::for_each(screenList.begin(), screenList.end(),
                 std::mem_fun(&BScreen::reconfigure));
