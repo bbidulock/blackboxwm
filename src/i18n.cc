@@ -59,18 +59,18 @@ void NLSInit(const char *catalog) {
 
 
 I18n::I18n(void) {
+  mb = False;
 #ifdef    HAVE_SETLOCALE
   locale = setlocale(LC_ALL, "");
   if (! locale) {
     fprintf(stderr, "failed to set locale, reverting to \"C\"\n");
 #endif // HAVE_SETLOCALE
     locale = "C";
-    mb = False;
 #ifdef    HAVE_SETLOCALE
-  } else if (! strcmp(locale, "C") || ! strcmp(locale, "POSIX")) {
-    mb = False;
   } else {
-    mb = True;
+    // MB_CUR_MAX returns the size of a char in the current locale
+    if (MB_CUR_MAX > 1)
+      mb = True;
     // truncate any encoding off the end of the locale
     char *l = strchr(locale, '@');
     if (l) *l = '\0';

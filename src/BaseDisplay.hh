@@ -80,7 +80,8 @@ private:
     int event_basep, error_basep;
   } shape;
 
-  unsigned int MaskList[8], MaskListLength;
+  unsigned int MaskList[8];
+  size_t MaskListLength;
   
   Atom xa_wm_colormap_windows, xa_wm_protocols, xa_wm_state,
     xa_wm_delete_window, xa_wm_take_focus, xa_wm_change_state,

@@ -1,4 +1,4 @@
-# nls/nl_NL/Makefile.am for Blackbox - an X11 Window Manager
+# nls/zh_CN/Makefile.am for Blackbox - an X11 Window Manager
 
 NLSTEST = @NLS@
 CLEANFILES = blackbox.cat
@@ -9,17 +9,14 @@ MFILES = @srcdir@/BaseDisplay.m @srcdir@/Basemenu.m @srcdir@/Configmenu.m @srcdi
 all-local: blackbox.cat
 install-data-local: blackbox.cat
 	@if test x$(NLSTEST) = "x-DNLS"; then \
-		echo "Installing catalog in $(DESTDIR)$(pkgdatadir)/nls/nl_NL"; \
-		$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)/nls/nl_NL; \
-		$(INSTALL_DATA) blackbox.cat $(DESTDIR)$(pkgdatadir)/nls/nl_NL; \
-		rm -f $(DESTDIR)$(pkgdatadir)/nls/nl; \
-		ln -f -s nl_NL $(DESTDIR)$(pkgdatadir)/nls/nl; \
+		echo "Installing catalog in $(DESTDIR)$(pkgdatadir)/nls/zh_CN"; \
+		$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)/nls/zh_CN; \
+		$(INSTALL_DATA) blackbox.cat $(DESTDIR)$(pkgdatadir)/nls/zh_CN; \
 	fi
 uninstall-local:
 	@if test x$(NLSTEST) = "x-DNLS"; then \
-		rm -f $(DESTDIR)$(pkgdatadir)/nls/nl_NL/blackbox.cat; \
-		rm -f $(DESTDIR)$(pkgdatadir)/nls/nl; \
-		rmdir $(DESTDIR)$(pkgdatadir)/nls/nl_NL; \
+		rm -f $(DESTDIR)$(pkgdatadir)/nls/zh_CN/blackbox.cat; \
+		rmdir $(DESTDIR)$(pkgdatadir)/nls/zh_CN; \
 	fi
 
 Translation.m: $(MFILES)

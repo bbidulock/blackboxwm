@@ -1,4 +1,11 @@
-ChangeLog for 0.61.x
+ChangeLog for 0.62.x
+
+Changes from 0.62.0 to 0.62.1:
+  - the lock modifier code handles user redefined modifiers better
+  - check if the locale actually needs multibyte support before using multibyte
+    functions
+  - use srcdir in all of the makefiles
+  - added zh_CN (Chinese) nls support
 
 Changes from 0.61.1 to 0.62.0:
   - the immorel release

@@ -10,7 +10,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-# nls/sl_SI/Makefile.am for Blackbox - an X11 Window Manager
+# nls/zh_CN/Makefile.am for Blackbox - an X11 Window Manager
 
 
 SHELL = @SHELL@
@@ -94,7 +94,7 @@ GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps nls/sl_SI/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps nls/zh_CN/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
@@ -106,7 +106,7 @@ TAGS:
 
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 
-subdir = nls/sl_SI
+subdir = nls/zh_CN
 
 distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
@@ -186,14 +186,14 @@ maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 all-local: blackbox.cat
 install-data-local: blackbox.cat
 	@if test x$(NLSTEST) = "x-DNLS"; then \
-		echo "Installing catalog in $(DESTDIR)$(pkgdatadir)/nls/sl_SI"; \
-		$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)/nls/sl_SI; \
-		$(INSTALL_DATA) blackbox.cat $(DESTDIR)$(pkgdatadir)/nls/sl_SI; \
+		echo "Installing catalog in $(DESTDIR)$(pkgdatadir)/nls/zh_CN"; \
+		$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)/nls/zh_CN; \
+		$(INSTALL_DATA) blackbox.cat $(DESTDIR)$(pkgdatadir)/nls/zh_CN; \
 	fi
 uninstall-local:
 	@if test x$(NLSTEST) = "x-DNLS"; then \
-		rm -f $(DESTDIR)$(pkgdatadir)/nls/sl_SI/blackbox.cat; \
-		rmdir $(DESTDIR)$(pkgdatadir)/nls/sl_SI; \
+		rm -f $(DESTDIR)$(pkgdatadir)/nls/zh_CN/blackbox.cat; \
+		rmdir $(DESTDIR)$(pkgdatadir)/nls/zh_CN; \
 	fi
 
 Translation.m: $(MFILES)

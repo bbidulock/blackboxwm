@@ -4,7 +4,7 @@ NLSTEST = @NLS@
 CLEANFILES = blackbox.cat
 MAINTAINERCLEANFILES = Makefile.in Translation.m
 DISTCLEANFILES = Translation.m
-MFILES = BaseDisplay.m Basemenu.m Configmenu.m Icon.m Image.m Screen.m Slit.m Toolbar.m Window.m Windowmenu.m Workspace.m Workspacemenu.m blackbox.m common.m main.m bsetroot.m
+MFILES = @srcdir@/BaseDisplay.m @srcdir@/Basemenu.m @srcdir@/Configmenu.m @srcdir@/Icon.m @srcdir@/Image.m @srcdir@/Screen.m @srcdir@/Slit.m @srcdir@/Toolbar.m @srcdir@/Window.m @srcdir@/Windowmenu.m @srcdir@/Workspace.m @srcdir@/Workspacemenu.m @srcdir@/blackbox.m @srcdir@/common.m @srcdir@/main.m @srcdir@/bsetroot.m
 
 all-local: Translation.m blackbox.cat
 install-data-local: blackbox.cat
@@ -13,13 +13,13 @@ install-data-local: blackbox.cat
 		$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)/nls/C; \
 		$(INSTALL_DATA) blackbox.cat $(DESTDIR)$(pkgdatadir)/nls/C; \
 		rm -f $(DESTDIR)$(pkgdatadir)/nls/US_ASCII; \
-		ln -fs C $(DESTDIR)$(pkgdatadir)/nls/US_ASCII; \
+		ln -f -ss C $(DESTDIR)$(pkgdatadir)/nls/US_ASCII; \
 		rm -f $(DESTDIR)$(pkgdatadir)/nls/POSIX; \
-		ln -fs C $(DESTDIR)$(pkgdatadir)/nls/POSIX; \
+		ln -f -s C $(DESTDIR)$(pkgdatadir)/nls/POSIX; \
 		rm -f $(DESTDIR)$(pkgdatadir)/nls/en_US; \
-		ln -fs C $(DESTDIR)$(pkgdatadir)/nls/en_US; \
+		ln -f -s C $(DESTDIR)$(pkgdatadir)/nls/en_US; \
 		rm -f $(DESTDIR)$(pkgdatadir)/nls/en; \
-		ln -fs C $(DESTDIR)$(pkgdatadir)/nls/en; \
+		ln -f -s C $(DESTDIR)$(pkgdatadir)/nls/en; \
 	fi
 uninstall-local:
 	@if test x$(NLSTEST) = "x-DNLS"; then \
@@ -36,7 +36,7 @@ uninstall-local:
 # only need to generate it once.
 
 Translation.m: $(MFILES)
-	awk -f ../convert.awk header=../blackbox-nls.hh \
+	awk -f @srcdir@/../convert.awk header=../blackbox-nls.hh \
 		output=Translation.m $(MFILES)
 
 blackbox.cat: Translation.m
