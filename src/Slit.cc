@@ -300,7 +300,8 @@ void Slit::removeClient(SlitClient *client, bool remap) {
     XSelectInput(display, frame.window, NoEventMask);
     XSelectInput(display, client->window, NoEventMask);
     XReparentWindow(display, client->window, screen->screenInfo().rootWindow(),
-                    client->rect.x(), client->rect.y());
+                    frame.rect.x() + client->rect.x(),
+                    frame.rect.y() + client->rect.y());
     XChangeSaveSet(display, client->window, SetModeDelete);
     XSelectInput(display, frame.window, SubstructureRedirectMask |
                  ButtonPressMask | EnterWindowMask | LeaveWindowMask);
