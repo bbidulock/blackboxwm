@@ -27,13 +27,7 @@
 #include "Pen.hh"
 #include "Resource.hh"
 
-extern "C" {
 #include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <assert.h>
-#include <ctype.h>
-#include <stdio.h>
-}
 
 
 bt::Texture::Texture(void) : t(0ul), bw(0u) { }
@@ -178,10 +172,10 @@ bt::Texture bt::textureResource(const Display &display,
 
 void bt::drawTexture(unsigned int screen,
                      const Texture &texture,
-                     unsigned long drawable,
+                     Drawable drawable,
                      const Rect &trect,
                      const Rect &urect,
-                     unsigned long pixmap) {
+                     Pixmap pixmap) {
   Pen pen(screen, texture.color());
 
   if ((texture.texture() & Texture::Gradient) && pixmap) {

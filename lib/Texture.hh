@@ -28,11 +28,9 @@
 #include "Color.hh"
 #include "Util.hh"
 
-#include <string>
-
-
 namespace bt {
 
+  // forward declarations
   class Rect;
   class Resource;
 
@@ -109,10 +107,10 @@ namespace bt {
 
   void drawTexture(unsigned int screen,
                    const Texture &texture,
-                   unsigned long drawable,
+                   Drawable drawable,
                    const Rect &trect,
                    const Rect &urect,
-                   unsigned long pixmap = 0ul);
+                   Pixmap pixmap = 0ul);
 
 } // namespace bt
 
