@@ -2095,12 +2095,25 @@ bool BlackboxWindow::setInputFocus(void) {
   if (client.state.focused)
     return true;
 
-  const bt::Rect &scr = _screen->screenInfo().rect();
-  if (!frame.rect.intersects(scr)) {
-    // client is outside the screen, move it to the center
-    configure(scr.x() + (scr.width() - frame.rect.width()) / 2,
-              scr.y() + (scr.height() - frame.rect.height()) / 2,
-              frame.rect.width(), frame.rect.height());
+  switch (windowType()) {
+  case WindowTypeDock:
+    /*
+      Many docks have auto-hide features similar to the toolbar and
+      slit... we don't want these things to be moved to the center of
+      the screen when switching to an empty workspace.
+    */
+    break;
+
+  default:
+    {  const bt::Rect &scr = _screen->screenInfo().rect();
+      if (!frame.rect.intersects(scr)) {
+        // client is outside the screen, move it to the center
+        configure(scr.x() + (scr.width() - frame.rect.width()) / 2,
+                  scr.y() + (scr.height() - frame.rect.height()) / 2,
+                  frame.rect.width(), frame.rect.height());
+      }
+      break;
+    }
   }
 
   /*
