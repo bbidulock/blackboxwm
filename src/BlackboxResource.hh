@@ -25,6 +25,7 @@
 #ifndef   __BlackboxResource_hh
 #define   __BlackboxResource_hh
 
+#include <Bitmap.hh>
 #include <Color.hh>
 #include <Font.hh>
 #include <Texture.hh>
@@ -47,6 +48,7 @@ public:
       b_pic_unfocus;
     bt::Texture f_focus, f_unfocus, t_focus, t_unfocus, l_focus, l_unfocus,
       h_focus, h_unfocus, b_focus, b_unfocus, b_pressed, g_focus, g_unfocus;
+    bt::Bitmap iconify, maximize, close;
     bt::Font font;
     bt::Alignment alignment;
     unsigned int handle_height, grip_width, frame_width, bevel_width,
@@ -59,9 +61,6 @@ public:
     bt::Font font;
     bt::Alignment alignment;
   };
-
-  ScreenResource(void) {}
-  ~ScreenResource(void) {}
 
   void loadStyle(BScreen* screen, const std::string& style);
   void load(bt::Resource& res, unsigned int screen);

@@ -39,6 +39,25 @@
 static const std::string empty_string;
 
 
+static const int iconify_width  = 9;
+static const int iconify_height = 9;
+static const unsigned char iconify_bits[] =
+  { 0x00, 0x00, 0x82, 0x00, 0xc6, 0x00, 0x6c, 0x00, 0x38,
+    0x00, 0x10, 0x00, 0x00, 0x00, 0xff, 0x01, 0xff, 0x01 };
+
+static const int maximize_width  = 9;
+static const int maximize_height = 9;
+static const unsigned char maximize_bits[] =
+  { 0xff, 0x01, 0xff, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+    0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0xff, 0x01 };
+
+static const int close_width  = 9;
+static const int close_height = 9;
+static const unsigned char close_bits[] =
+  { 0x83, 0x01, 0xc7, 0x01, 0xee, 0x00, 0x7c, 0x00, 0x38,
+    0x00, 0x7c, 0x00, 0xee, 0x00, 0xc7, 0x01, 0x83, 0x01 };
+
+
 BlackboxResource::BlackboxResource(const std::string& rc): rc_file(rc) {
   screen_resources = 0;
   auto_raise_delay.tv_sec = auto_raise_delay.tv_usec = 0;
@@ -48,9 +67,8 @@ BlackboxResource::BlackboxResource(const std::string& rc): rc_file(rc) {
 }
 
 
-BlackboxResource::~BlackboxResource(void) {
-  delete [] screen_resources;
-}
+BlackboxResource::~BlackboxResource(void)
+{ delete [] screen_resources; }
 
 
 void BlackboxResource::load(Blackbox& blackbox) {
@@ -477,6 +495,13 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
   tstyle.font.setFontName(res.read("toolbar.font", "Toolbar.Font", "fixed"));
 
   // load window config
+  wstyle.iconify.load(screen_num, iconify_bits,
+                      iconify_width, iconify_height);
+  wstyle.maximize.load(screen_num, maximize_bits,
+                       maximize_width, maximize_height);
+  wstyle.close.load(screen_num, close_bits,
+                    close_width, close_height);
+
   wstyle.t_focus =
     bt::textureResource(display, screen_num, res,
                         "window.title.focus", "Window.Title.Focus",
