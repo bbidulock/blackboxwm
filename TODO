@@ -27,6 +27,9 @@ Stuff TODO or On The Way(tm):
 
 * re-add support for tear-off menus to bt::Menu
 
+* see about supporting specifications at www.freedesktop.org (for
+  example, the xdg-file location spec)
+
 bt::i18n is very awkward to use - replace it with something else that
 can translate into either UTF-8 (needed for NETWM and Xft) or locale
 (for Xmb).
