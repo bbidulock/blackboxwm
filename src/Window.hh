@@ -315,6 +315,9 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   unsigned long normalHintFlags(void) const
   { return client.normal_hint_flags; }
 
+  unsigned long currentState(void) const
+  { return client.current_state; }
+
   inline void setModal(bool flag) { client.state.modal = flag; }
 
   bool validateClient(void) const;
@@ -361,7 +364,6 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   void buttonReleaseEvent(const XButtonEvent * const re);
   void motionNotifyEvent(const XMotionEvent * const me);
   void destroyNotifyEvent(const XDestroyWindowEvent * const /*unused*/);
-  void mapRequestEvent(const XMapRequestEvent * const /*unused*/);
   void unmapNotifyEvent(const XUnmapEvent * const /*unused*/);
   void reparentNotifyEvent(const XReparentEvent * const /*unused*/);
   void propertyNotifyEvent(const XPropertyEvent * const pe);

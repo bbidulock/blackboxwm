@@ -481,8 +481,7 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
 void BScreen::addWindow(Window w) {
   manageWindow(w);
   BlackboxWindow *win = blackbox->findWindow(w);
-  if (win)
-    updateClientListHint();
+  if (win) updateClientListHint();
 }
 
 
@@ -517,7 +516,7 @@ void BScreen::manageWindow(Window w) {
 
   bool place_window = true;
   if (blackbox->startingUp()
-      || ((win->isTransient()
+      || ((win->isTransient() || win->isDesktop()
            || (win->normalHintFlags() & (PPosition|USPosition)))
           && win->clientRect().intersects(screen_info.rect())))
     place_window = false;
@@ -530,10 +529,20 @@ void BScreen::manageWindow(Window w) {
   if (!blackbox->startingUp())
     restackWindows();
 
-  // 'show' window in it's initial state
-  XEvent event;
-  event.xmaprequest.window = w;
-  win->mapRequestEvent(&event.xmaprequest);
+  // 'show' window in it's current state
+  switch (win->currentState()) {
+  case IconicState:
+    win->iconify();
+    break;
+
+  case WithdrawnState:
+    win->hide();
+    break;
+
+  default:
+    win->show();
+    break;
+  }
 
   if (!blackbox->startingUp() &&
       (!blackbox->activeScreen() || blackbox->activeScreen() == this) &&
@@ -546,7 +555,6 @@ void BScreen::manageWindow(Window w) {
 
 void BScreen::releaseWindow(BlackboxWindow *w, bool remap) {
   unmanageWindow(w, remap);
-
   updateClientListHint();
   updateClientListStackingHint();
 }

@@ -275,10 +275,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   // apply the size and gravity hint to the frame
   upsize();
-
-  if (blackbox->startingUp() || isTransient() || isDesktop() ||
-      (client.normal_hint_flags & (PPosition|USPosition)))
-    applyGravity(frame.rect);
+  applyGravity(frame.rect);
 
   /*
     the server needs to be grabbed here to prevent client's from sending
@@ -1943,7 +1940,7 @@ void BlackboxWindow::setState(unsigned long new_state) {
 
 
 bool BlackboxWindow::getState(void) {
-  client.current_state = 0;
+  client.current_state = NormalState;
 
   Atom atom_return;
   bool ret = False;
@@ -1961,7 +1958,6 @@ bool BlackboxWindow::getState(void) {
 
   if (nitems >= 1) {
     client.current_state = static_cast<unsigned long>(state[0]);
-
     ret = True;
   }
 
@@ -2486,35 +2482,6 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
       screen->removeStrut(client.strut);
       delete client.strut;
     }
-  }
-}
-
-
-void BlackboxWindow::mapRequestEvent(const XMapRequestEvent * const event) {
-  if (event->window != client.window)
-    return;
-
-#ifdef    DEBUG
-  fprintf(stderr, "BlackboxWindow::mapRequestEvent() for 0x%lx\n",
-          client.window);
-#endif // DEBUG
-
-  switch (client.current_state) {
-  case IconicState:
-    iconify();
-    break;
-
-  case WithdrawnState:
-    hide();
-    break;
-
-  case NormalState:
-  case InactiveState:
-  case ZoomState:
-  default:
-    show();
-    screen->raiseWindow(this);
-    break;
   }
 }
 
