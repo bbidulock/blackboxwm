@@ -143,8 +143,8 @@ AC_MSG_CHECKING([whether to build support for the MIT-SHM extension])
 AC_ARG_ENABLE([mitshm],
               AC_HELP_STRING([--enable-mitshm],
 	                     [enable support of the MIT-SHM extension @<:@default=yes@:>@]),
-	      [MITSHM="$enableval"]
-	      [MITSHM=no])
+	      [MITSHM="$enableval"],
+	      [MITSHM=yes])
 AC_MSG_RESULT([$MITSHM])
 
 if test "x$MITSHM" = "xyes"; then

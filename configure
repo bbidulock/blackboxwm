@@ -4410,7 +4410,8 @@ echo $ECHO_N "checking whether to build support for the MIT-SHM extension... $EC
 if test "${enable_mitshm+set}" = set; then
   enableval="$enable_mitshm"
   MITSHM="$enableval"
-	      MITSHM=no
+else
+  MITSHM=yes
 fi;
 echo "$as_me:$LINENO: result: $MITSHM" >&5
 echo "${ECHO_T}$MITSHM" >&6
