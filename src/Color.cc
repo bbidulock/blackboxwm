@@ -33,17 +33,17 @@ BColor::ColorCache BColor::colorcache;
 bool BColor::cleancache = false;
 
 
-BColor::BColor( int scr = -1 )
+BColor::BColor( int scr )
     : allocated( false ), r( -1 ), g( -1 ), b( -1 ), p( 0 ), scrn( scr )
 {
 }
 
-BColor::BColor( int rr, int gg, int bb, int scr = -1 )
+BColor::BColor( int rr, int gg, int bb, int scr )
     : allocated( false ), r( rr ), g( gg ), b( bb ), p( 0 ), scrn( scr )
 {
 }
 
-BColor::BColor( const string &name, int scr = -1 )
+BColor::BColor( const string &name, int scr )
     : allocated( false ), r( -1 ), g( -1 ), b( -1 ), p( 0 ), scrn( scr ),
       colorname( name )
 {

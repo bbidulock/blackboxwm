@@ -20,12 +20,6 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-// stupid macros needed to access some functions in version 2 of the GNU C
-// library
-#ifndef   _GNU_SOURCE
-#define   _GNU_SOURCE
-#endif // _GNU_SOURCE
-
 #ifdef    HAVE_CONFIG_H
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
@@ -193,12 +187,6 @@ void bexec(const char *command, char* displaystring) {
 }
 #endif // !__EMX__
 
-char *bstrdup(const char *s) {
-  const int l = strlen(s) + 1;
-  char *n = new char[l];
-  strncpy(n, s, l);
-  return n;
-}
 
 BaseDisplay::BaseDisplay(char *app_name, char *dpy_name)
     : popwidget( 0 ), popup_grab( false )

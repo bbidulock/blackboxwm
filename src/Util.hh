@@ -128,19 +128,19 @@ public:
     Rect operator|( const Rect &a ) const
     {
 	Rect b;
-	b._x1 = min( _x1, a._x1 );
-	b._y1 = min( _y1, a._y1 );
-	b._x2 = max( _x2, a._x2 );
-	b._y2 = max( _y2, a._y2 );
+	b._x1 = std::min( _x1, a._x1 );
+	b._y1 = std::min( _y1, a._y1 );
+	b._x2 = std::max( _x2, a._x2 );
+	b._y2 = std::max( _y2, a._y2 );
 	return b;
     }
     Rect operator&( const Rect &a ) const
     {
     	Rect b;
-	b._x1 = max( _x1, a._x1 );
-	b._y1 = max( _y1, a._y1 );
-	b._x2 = min( _x2, a._x2 );
-	b._y2 = min( _y2, a._y2 );
+	b._x1 = std::max( _x1, a._x1 );
+	b._y1 = std::max( _y1, a._y1 );
+	b._x2 = std::min( _x2, a._x2 );
+	b._y2 = std::min( _y2, a._y2 );
 	return b;
     }
     Rect &operator|=( const Rect &a )
@@ -153,11 +153,15 @@ public:
 	     p.y() >= _y1 && p.y() <= _y2; }
 
     bool intersects( const Rect &a ) const
-    { return max( _x1, a._x1 ) <= min( _x2, a._x2 ) &&
-	     max( _y1, a._y1 ) <= min( _y2, a._y2 ); }
+    { return std::max( _x1, a._x1 ) <= std::min( _x2, a._x2 ) &&
+	     std::max( _y1, a._y1 ) <= std::min( _y2, a._y2 ); }
 
 private:
     int _x1, _y1, _x2, _y2;
 };
+
+// some string functions
+char* expandTilde(const char *s);
+char* bstrdup(const char *);
 
 #endif // UTIL_HH

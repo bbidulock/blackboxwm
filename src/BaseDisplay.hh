@@ -70,7 +70,8 @@ typedef struct _blackbox_attributes {
 void bexec(const char *, char *);
 #endif // !__EMX__
 
-char *bstrdup(const char *);
+
+typedef std::deque<Widget*> WidgetQueue;
 
 class BaseDisplay {
 private:
@@ -327,7 +328,7 @@ public:
 
 private:
     Widget *popwidget;
-    deque<Widget*> popwidgets;
+    WidgetQueue popwidgets;
     bool popup_grab;
 };
 

@@ -234,7 +234,7 @@ void Basemenu::updateSize()
     item.height = titleh;
     item.idx = -1;
 
-    w = max( w, iw );
+    w = std::max( w, iw );
     h += item.height;
     h += 1;
   }
@@ -257,7 +257,7 @@ void Basemenu::updateSize()
         XmbTextExtents( style->menuFontSet(), item.label().c_str(),
                         item.label().length(), &ink, &logical );
         logical.width += 2;
-        iw = max( w, int( logical.width ) );
+        iw = std::max( w, int( logical.width ) );
       } else
         iw = XTextWidth( style->menuFont(), item.label().c_str(),
                          item.label().length() ) + 2;
@@ -266,19 +266,19 @@ void Basemenu::updateSize()
       item.height = itemh;
     }
 
-    w = max( w, iw );
+    w = std::max( w, iw );
     colh += item.height;
     rows++;
 
     if ( colh > scr->height() * 3 / 4 ) {
-      maxcolh = max( maxcolh, colh );
+      maxcolh = std::max( maxcolh, colh );
       colh = 0;
       cols++;
       rows = 0;
     }
   }
 
-  maxcolh = max( maxcolh, colh );
+  maxcolh = std::max( maxcolh, colh );
   h += maxcolh + 1;
   w *= cols;
 
@@ -482,7 +482,7 @@ int Basemenu::insert( const string &label, const Item &item, int index )
 
 void Basemenu::change( int index,
 			const string &label,
-			const Item &item = Item::Default )
+			const Item &item )
 {
   Items::iterator it = items.begin();
 
