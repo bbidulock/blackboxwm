@@ -91,7 +91,7 @@ const int Workspace::addWindow(BlackboxWindow *w, Bool place) {
   stackingList->insert(w, 0);
   windowList->insert(w);
 
-  // clientmenu->insert((const char **) w->getTitle());
+  clientmenu->insert(*w->getTitle());
   // clientmenu->update();
 
   screen->updateNetizenWindowAdd(w->getClientWindow(), id);
@@ -305,6 +305,7 @@ void Workspace::setName(char *new_name) {
   }
 
   clientmenu->setTitle(name);
+  clientmenu->showTitle();
   // clientmenu->update();
 }
 
