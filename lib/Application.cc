@@ -241,54 +241,58 @@ void bt::Application::run(void) {
       }
     }
 
+    do {
+      XEvent e;
+      while (run_state == RUNNING
+             && XEventsQueued(_display->XDisplay(), QueuedAlready)) {
+        XNextEvent(_display->XDisplay(), &e);
+        process_event(&e);
+      }
+    } while (run_state == RUNNING
+             && XEventsQueued(_display->XDisplay(), QueuedAfterFlush));
+
     if (run_state != RUNNING) break;
 
-    if (XPending(_display->XDisplay())) {
-      XEvent e;
-      XNextEvent(_display->XDisplay(), &e);
-      process_event(&e);
-    } else {
-      fd_set rfds;
-      ::timeval now, tm, *timeout = 0;
+    fd_set rfds;
+    ::timeval now, tm, *timeout = 0;
 
-      FD_ZERO(&rfds);
-      FD_SET(xfd, &rfds);
+    FD_ZERO(&rfds);
+    FD_SET(xfd, &rfds);
 
-      if (! timerList.empty()) {
-        const bt::Timer* const timer = timerList.top();
+    if (!timerList.empty()) {
+      const bt::Timer* const timer = timerList.top();
 
-        gettimeofday(&now, 0);
-        tm = timer->timeRemaining(now);
-
-        timeout = &tm;
-      }
-
-      int ret = select(xfd + 1, &rfds, 0, 0, timeout);
-      if (ret < 0) continue; // perhaps a signal interrupted select(2)
-
-      // check for timer timeout
       gettimeofday(&now, 0);
+      tm = timer->timeRemaining(now);
 
-      /*
-         there is a small chance for deadlock here:
-         *IF* the timer list keeps getting refreshed *AND* the time between
-         timer->start() and timer->shouldFire() is within the timer's period
-         then the timer will keep firing.  This should be VERY near impossible.
-         But to be safe, let's use a counter here.
-      */
-      unsigned int i = 0;
-      while (! timerList.empty() && i++ < 100) {
-        bt::Timer *timer = timerList.top();
-        if (! timer->shouldFire(now))
-          break;
+      timeout = &tm;
+    }
 
-        timerList.pop();
+    int ret = select(xfd + 1, &rfds, 0, 0, timeout);
+    if (ret < 0) continue; // perhaps a signal interrupted select(2)
 
-        timer->fireTimeout();
-        timer->halt();
-        if (timer->isRecurring())
-          timer->start();
-      }
+    // check for timer timeout
+    gettimeofday(&now, 0);
+
+    /*
+      there is a small chance for deadlock here:
+      *IF* the timer list keeps getting refreshed *AND* the time between
+      timer->start() and timer->shouldFire() is within the timer's period
+      then the timer will keep firing.  This should be VERY near impossible.
+      But to be safe, let's use a counter here.
+    */
+    unsigned int i = 0u;
+    while (!timerList.empty() && i++ < 100u) {
+      bt::Timer *timer = timerList.top();
+      if (! timer->shouldFire(now))
+        break;
+
+      timerList.pop();
+
+      timer->fireTimeout();
+      timer->halt();
+      if (timer->isRecurring())
+        timer->start();
     }
   }
 
