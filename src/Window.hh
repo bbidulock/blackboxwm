@@ -257,27 +257,27 @@ public:
 
   inline BScreen *getScreen(void) { return screen; }
 
-  inline const Window &getFrameWindow(void) const { return frame.window; }
-  inline const Window &getClientWindow(void) const { return client.window; }
+  inline const Window getFrameWindow(void) const { return frame.window; }
+  inline const Window getClientWindow(void) const { return client.window; }
 
   inline Windowmenu * getWindowmenu(void) { return windowmenu; }
 
   inline char **getTitle(void) { return &client.title; }
   inline char **getIconTitle(void) { return &client.icon_title; }
-  inline const int &getXFrame(void) const { return frame.x; }
-  inline const int &getYFrame(void) const { return frame.y; }
-  inline const int &getXClient(void) const { return client.x; }
-  inline const int &getYClient(void) const { return client.y; }
-  inline const int &getWorkspaceNumber(void) const { return workspace_number; }
-  inline const int &getWindowNumber(void) const { return window_number; }
+  inline const int getXFrame(void) const { return frame.x; }
+  inline const int getYFrame(void) const { return frame.y; }
+  inline const int getXClient(void) const { return client.x; }
+  inline const int getYClient(void) const { return client.y; }
+  inline const int getWorkspaceNumber(void) const { return workspace_number; }
+  inline const int getWindowNumber(void) const { return window_number; }
 
-  inline const unsigned int &getWidth(void) const { return frame.width; }
-  inline const unsigned int &getHeight(void) const { return frame.height; }
-  inline const unsigned int &getClientHeight(void) const
+  inline const unsigned int getWidth(void) const { return frame.width; }
+  inline const unsigned int getHeight(void) const { return frame.height; }
+  inline const unsigned int getClientHeight(void) const
   { return client.height; }
-  inline const unsigned int &getClientWidth(void) const
+  inline const unsigned int getClientWidth(void) const
   { return client.width; }
-  inline const unsigned int &getTitleHeight(void) const
+  inline const unsigned int getTitleHeight(void) const
   { return frame.title_h; }
 
   inline void setWindowNumber(int n) { window_number = n; }

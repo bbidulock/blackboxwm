@@ -68,7 +68,7 @@ private:
 public:
   DataSearch(Window w, Z *d): window(w), data(d) {}
 
-  inline const Window &getWindow(void) const { return window; }
+  inline const Window getWindow(void) const { return window; }
   inline Z *getData(void) { return data; }
 };
 
@@ -130,7 +130,7 @@ public:
   virtual ~Blackbox(void);
 
 #ifdef    HAVE_GETPID
-  inline const Atom &getBlackboxPidAtom(void) const { return blackbox_pid; }
+  inline const Atom getBlackboxPidAtom(void) const { return blackbox_pid; }
 #endif // HAVE_GETPID
 
   Basemenu *searchMenu(Window);
@@ -154,15 +154,15 @@ public:
   inline const char *getMenuFilename(void) const
     { return resource.menu_file; }
 
-  inline const int &getColorsPerChannel(void) const
+  inline const int getColorsPerChannel(void) const
     { return resource.colors_per_channel; }
 
   inline const timeval &getAutoRaiseDelay(void) const
     { return resource.auto_raise_delay; }
 
-  inline const unsigned long &getCacheLife(void) const
+  inline const unsigned long getCacheLife(void) const
     { return resource.cache_life; }
-  inline const unsigned long &getCacheMax(void) const
+  inline const unsigned long getCacheMax(void) const
     { return resource.cache_max; }
 
   inline void maskWindowEvents(Window w, BlackboxWindow *bw)

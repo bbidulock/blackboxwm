@@ -176,24 +176,24 @@ public:
   BScreen(Blackbox *, int);
   ~BScreen(void);
 
-  inline const Bool &isToolbarOnTop(void) const
+  inline const Bool isToolbarOnTop(void) const
   { return resource.toolbar_on_top; }
-  inline const Bool &doToolbarAutoHide(void) const
+  inline const Bool doToolbarAutoHide(void) const
   { return resource.toolbar_auto_hide; }
-  inline const Bool &isSloppyFocus(void) const
+  inline const Bool isSloppyFocus(void) const
   { return resource.sloppy_focus; }
-  inline const Bool &isRootColormapInstalled(void) const
+  inline const Bool isRootColormapInstalled(void) const
   { return root_colormap_installed; }
-  inline const Bool &doAutoRaise(void) const { return resource.auto_raise; }
-  inline const Bool &isScreenManaged(void) const { return managed; }
-  inline const Bool &doImageDither(void) const
+  inline const Bool doAutoRaise(void) const { return resource.auto_raise; }
+  inline const Bool isScreenManaged(void) const { return managed; }
+  inline const Bool doImageDither(void) const
   { return resource.image_dither; }
-  inline const Bool &doOrderedDither(void) const
+  inline const Bool doOrderedDither(void) const
   { return resource.ordered_dither; }
-  inline const Bool &doOpaqueMove(void) const { return resource.opaque_move; }
-  inline const Bool &doFullMax(void) const { return resource.full_max; }
-  inline const Bool &doFocusNew(void) const { return resource.focus_new; }
-  inline const Bool &doFocusLast(void) const { return resource.focus_last; }
+  inline const Bool doOpaqueMove(void) const { return resource.opaque_move; }
+  inline const Bool doFullMax(void) const { return resource.full_max; }
+  inline const Bool doFocusNew(void) const { return resource.focus_new; }
+  inline const Bool doFocusLast(void) const { return resource.focus_last; }
 
   inline const GC &getOpGC() const { return opGC; }
 
@@ -202,13 +202,13 @@ public:
   inline BImageControl *getImageControl(void) { return image_control; }
   inline Rootmenu *getRootmenu(void) { return rootmenu; }
 
-  inline const Bool &isSlitOnTop(void) const { return resource.slit_on_top; }
-  inline const Bool &doSlitAutoHide(void) const
+  inline const Bool isSlitOnTop(void) const { return resource.slit_on_top; }
+  inline const Bool doSlitAutoHide(void) const
   { return resource.slit_auto_hide; }
   inline Slit *getSlit(void) { return slit; }
-  inline const int &getSlitPlacement(void) const
+  inline const int getSlitPlacement(void) const
   { return resource.slit_placement; }
-  inline const int &getSlitDirection(void) const
+  inline const int getSlitDirection(void) const
   { return resource.slit_direction; }
   inline void saveSlitPlacement(int p) { resource.slit_placement = p; }
   inline void saveSlitDirection(int d) { resource.slit_direction = d; }
@@ -222,32 +222,32 @@ public:
 
   inline Workspacemenu *getWorkspacemenu(void) { return workspacemenu; }
 
-  inline const unsigned int &getHandleWidth(void) const
+  inline const unsigned int getHandleWidth(void) const
   { return resource.handle_width; }
-  inline const unsigned int &getBevelWidth(void) const
+  inline const unsigned int getBevelWidth(void) const
   { return resource.bevel_width; }
-  inline const unsigned int &getFrameWidth(void) const
+  inline const unsigned int getFrameWidth(void) const
   { return resource.frame_width; }
-  inline const unsigned int &getBorderWidth(void) const
+  inline const unsigned int getBorderWidth(void) const
   { return resource.border_width; }
 
   inline const int getCurrentWorkspaceID()
   { return current_workspace->getWorkspaceID(); }
   inline const int getCount(void) { return workspacesList->count(); }
   inline const int getIconCount(void) { return iconList->count(); }
-  inline const int &getNumberOfWorkspaces(void) const
+  inline const int getNumberOfWorkspaces(void) const
   { return resource.workspaces; }
-  inline const int &getToolbarPlacement(void) const
+  inline const int getToolbarPlacement(void) const
   { return resource.toolbar_placement; }
-  inline const int &getToolbarWidthPercent(void) const
+  inline const int getToolbarWidthPercent(void) const
   { return resource.toolbar_width_percent; }
-  inline const int &getPlacementPolicy(void) const
+  inline const int getPlacementPolicy(void) const
   { return resource.placement_policy; }
-  inline const int &getEdgeSnapThreshold(void) const
+  inline const int getEdgeSnapThreshold(void) const
   { return resource.edge_snap_threshold; }
-  inline const int &getRowPlacementDirection(void) const
+  inline const int getRowPlacementDirection(void) const
   { return resource.row_direction; }
-  inline const int &getColPlacementDirection(void) const
+  inline const int getColPlacementDirection(void) const
   { return resource.col_direction; }
 
   inline void setRootColormapInstalled(Bool r) { root_colormap_installed = r; }

@@ -111,20 +111,20 @@ public:
 
   inline Toolbarmenu *getMenu(void) { return toolbarmenu; }
 
-  inline const Bool &isEditing(void) const { return editing; }
-  inline const Bool &isOnTop(void) const { return on_top; }
-  inline const Bool &isHidden(void) const { return hidden; }
-  inline const Bool &doAutoHide(void) const { return do_auto_hide; }
+  inline const Bool isEditing(void) const { return editing; }
+  inline const Bool isOnTop(void) const { return on_top; }
+  inline const Bool isHidden(void) const { return hidden; }
+  inline const Bool doAutoHide(void) const { return do_auto_hide; }
 
-  inline const Window &getWindowID(void) const { return frame.window; }
+  inline const Window getWindowID(void) const { return frame.window; }
 
-  inline const unsigned int &getWidth(void) const { return frame.width; }
-  inline const unsigned int &getHeight(void) const { return frame.height; }
-  inline const unsigned int &getExposedHeight(void) const
+  inline const unsigned int getWidth(void) const { return frame.width; }
+  inline const unsigned int getHeight(void) const { return frame.height; }
+  inline const unsigned int getExposedHeight(void) const
   { return ((do_auto_hide) ? frame.bevel_w : frame.height); }
-  inline const int &getX(void) const
+  inline const int getX(void) const
   { return ((hidden) ? frame.x_hidden : frame.x); }
-  inline const int &getY(void) const
+  inline const int getY(void) const
   { return ((hidden) ? frame.y_hidden : frame.y); }
 
   void buttonPressEvent(XButtonEvent *);

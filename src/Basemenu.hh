@@ -78,12 +78,12 @@ public:
   Basemenu(BScreen *);
   virtual ~Basemenu(void);
 
-  inline const Bool &isTorn(void) const { return torn; }
-  inline const Bool &isVisible(void) const { return visible; }
+  inline const Bool isTorn(void) const { return torn; }
+  inline const Bool isVisible(void) const { return visible; }
 
   inline BScreen *getScreen(void) { return screen; }
 
-  inline const Window &getWindowID(void) const { return menu.window; }
+  inline const Window getWindowID(void) const { return menu.window; }
 
   inline const char *getLabel(void) const { return menu.label; }
 
@@ -92,14 +92,14 @@ public:
   int insert(const char *, Basemenu *, int = -1);
   int remove(int);
 
-  inline const int &getX(void) const { return menu.x; }
-  inline const int &getY(void) const { return menu.y; }
+  inline const int getX(void) const { return menu.x; }
+  inline const int getY(void) const { return menu.y; }
   inline int getCount(void) { return menuitems->count(); }
-  inline const int &getCurrentSubmenu(void) const { return which_sub; }
+  inline const int getCurrentSubmenu(void) const { return which_sub; }
 
-  inline const unsigned int &getWidth(void) const { return menu.width; }
-  inline const unsigned int &getHeight(void) const { return menu.height; }
-  inline const unsigned int &getTitleHeight(void) const
+  inline const unsigned int getWidth(void) const { return menu.width; }
+  inline const unsigned int getHeight(void) const { return menu.height; }
+  inline const unsigned int getTitleHeight(void) const
   { return menu.title_h; }
 
   inline void setInternalMenu(void) { internal_menu = True; }
@@ -158,12 +158,12 @@ public:
   inline const char *exec(void) const { return e; }
   inline const char *label(void) const { return l; }
   inline const char **ulabel(void) const { return u; }
-  inline const int &function(void) const { return f; }
+  inline const int function(void) const { return f; }
   inline Basemenu *submenu(void) { return s; }
 
-  inline const int &isEnabled(void) const { return enabled; }
+  inline const int isEnabled(void) const { return enabled; }
   inline void setEnabled(int e) { enabled = e; }
-  inline const int &isSelected(void) const { return selected; }
+  inline const int isSelected(void) const { return selected; }
   inline void setSelected(int s) { selected = s; }
 };
 
