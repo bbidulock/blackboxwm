@@ -1889,25 +1889,30 @@ BlackboxWindow *BlackboxWindow::findTransientFor(void) const {
 }
 
 
-// walk up to either 1) a non-transient window 2) a group transient,
-// watching out for a circular chain
-BlackboxWindow *BlackboxWindow::findNonTransientParent(void) const {
-  BlackboxWindow *w = const_cast<BlackboxWindow *>(this);
+/*
+  walk up to either 1) a non-transient window 2) a group transient,
+  watching out for a circular chain
 
+  this function returns zero for non-transient windows
+*/
+BlackboxWindow *BlackboxWindow::findNonTransientParent(void) const {
   BlackboxWindowList seen;
-  seen.push_back(w);
+  seen.push_back(const_cast<BlackboxWindow *>(this));
+
+  BlackboxWindow *w = findTransientFor();
+  if (!w)
+    return 0;
 
   while (w->isTransient() && !w->isGroupTransient()) {
+    seen.push_back(w);
     BlackboxWindow * const tmp = w->findTransientFor();
     if (!tmp)
       break;
-    w = tmp;
-
-    if (std::find(seen.begin(), seen.end(), w) != seen.end()) {
+    if (std::find(seen.begin(), seen.end(), tmp) != seen.end()) {
       // circular transient chain
       break;
     }
-    seen.push_back(w);
+    w = tmp;
   }
   return w;
 }
