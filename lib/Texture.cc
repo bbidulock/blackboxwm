@@ -22,28 +22,25 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifdef HAVE_CONFIG_H
-#  include "../config.h"
-#endif // HAVE_CONFIG_H
-
-extern "C" {
-#include <assert.h>
-#include <ctype.h>
-#include <stdio.h>
-}
-
 #include "Texture.hh"
 #include "Display.hh"
 #include "Pen.hh"
 #include "Resource.hh"
 
+extern "C" {
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <assert.h>
+#include <ctype.h>
+#include <stdio.h>
+}
+
 
 bt::Texture::Texture(void) : t(0ul), bw(0u) { }
 
 
-bt::Texture::Texture(const bt::Texture& tt) {
-  *this = tt;
-}
+bt::Texture::Texture(const bt::Texture& tt)
+{ *this = tt; }
 
 
 void bt::Texture::setColor(const bt::Color &new_color) {
@@ -135,6 +132,7 @@ bt::Texture& bt::Texture::operator=(const bt::Texture &tt) {
   sc = tt.sc;
   t  = tt.t;
   bw = tt.bw;
+
   return *this;
 }
 

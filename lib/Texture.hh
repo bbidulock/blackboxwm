@@ -22,14 +22,13 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifndef TEXTURE_HH
-#define TEXTURE_HH
+#ifndef __Texture_hh
+#define __Texture_hh
 
 #include "Color.hh"
+#include "Util.hh"
 
 #include <string>
-
-typedef unsigned long Pixmap;
 
 
 namespace bt {
@@ -101,14 +100,12 @@ namespace bt {
     unsigned int bw;
   };
 
-
   Texture
   textureResource(const Display &display, unsigned int screen,
                   const Resource &resource,
                   const std::string &name,
                   const std::string &classname,
                   const std::string &default_color = std::string("black"));
-
 
   void drawTexture(unsigned int screen,
                    const Texture &texture,
@@ -119,4 +116,4 @@ namespace bt {
 
 } // namespace bt
 
-#endif // TEXTURE_HH
+#endif // __Texture_hh
