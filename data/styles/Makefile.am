@@ -6,3 +6,6 @@ style_DATA = Artwiz Cthulhain Flux Minimal Nyz Operation Outcomes Rampage Rancor
 
 distclean-local:
 	rm -f *\~ .\#*
+
+uninstall-local:
+	rm -r -f $(styledir)

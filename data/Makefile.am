@@ -15,3 +15,6 @@ menu: menu.in
 install-data-local: menu
 	test -f $(DESTDIR)$(pkgdatadir)/menu || \
 	$(INSTALL_DATA) menu $(DESTDIR)$(pkgdatadir)
+
+uninstall-local:
+	rm -f $(pkgdatadir)/menu

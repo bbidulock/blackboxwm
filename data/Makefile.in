@@ -227,7 +227,7 @@ install-data: install-data-recursive
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-recursive
-uninstall-am:
+uninstall-am: uninstall-local
 uninstall: uninstall-recursive
 all-am: Makefile all-local
 all-redirect: all-recursive
@@ -276,10 +276,10 @@ maintainer-clean-recursive tags tags-recursive mostlyclean-tags \
 distclean-tags clean-tags maintainer-clean-tags distdir info-am info \
 dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
 install-exec install-data-local install-data-am install-data install-am \
-install uninstall-am uninstall all-local all-redirect all-am all \
-installdirs-am installdirs mostlyclean-generic distclean-generic \
-clean-generic maintainer-clean-generic clean mostlyclean distclean \
-maintainer-clean
+install uninstall-local uninstall-am uninstall all-local all-redirect \
+all-am all installdirs-am installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
 
 
 all-local: menu
@@ -293,6 +293,9 @@ menu: menu.in
 install-data-local: menu
 	test -f $(DESTDIR)$(pkgdatadir)/menu || \
 	$(INSTALL_DATA) menu $(DESTDIR)$(pkgdatadir)
+
+uninstall-local:
+	rm -f $(pkgdatadir)/menu
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
