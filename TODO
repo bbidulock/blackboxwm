@@ -88,3 +88,4 @@ CHANGE: move all of the fprintf() messages to a message function /
         be set to go to stderr, a log file, whatever.  It can also be
         disabled for final builds.
 
+CHANGE: use less pointers and more references
