@@ -2396,7 +2396,8 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
     if (setInputFocus())
       screen->raiseWindow(this);
   } else if (event->message_type == netwm.closeWindow()) {
-    close();
+    if (hasWindowFunction(WindowFunctionClose))
+      close();
   } else if (event->message_type == netwm.moveresizeWindow()) {
     XConfigureRequestEvent request;
     request.window = event->window;
