@@ -38,6 +38,7 @@ distclean-local:
 	rm -f *\~ *.orig *.rej
 
 # local dependencies
+
 BaseDisplay.o: BaseDisplay.cc ../config.h i18n.hh \
  ../nls/blackbox-nls.hh BaseDisplay.hh Timer.hh GCCache.hh Color.hh \
  Util.hh

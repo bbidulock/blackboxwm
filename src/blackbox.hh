@@ -90,6 +90,8 @@ class Basemenu;
 class Toolbar;
 class Slit;
 
+extern I18n i18n;
+
 class Blackbox : public BaseDisplay, public TimeoutHandler {
 private:
   struct BCursor {
@@ -105,7 +107,7 @@ private:
   struct BResource {
     Time double_click_interval;
 
-    char *menu_file, *style_file;
+    std::string menu_file, style_file;
     int colors_per_channel;
     timeval auto_raise_delay;
     unsigned long cache_life, cache_max;
@@ -217,14 +219,14 @@ public:
 
   inline BlackboxWindow *getFocusedWindow(void) { return focused_window; }
 
-  inline Time getDoubleClickInterval(void) const
+  inline const Time &getDoubleClickInterval(void) const
   { return resource.double_click_interval; }
-  inline Time getLastTime(void) const { return last_time; }
+  inline const Time &getLastTime(void) const { return last_time; }
 
   inline const char *getStyleFilename(void) const
-    { return resource.style_file; }
+    { return resource.style_file.c_str(); }
   inline const char *getMenuFilename(void) const
-    { return resource.menu_file; }
+    { return resource.menu_file.c_str(); }
 
   inline int getColorsPerChannel(void) const
     { return resource.colors_per_channel; }

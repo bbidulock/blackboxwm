@@ -94,7 +94,6 @@ public:
   void updateFocusModel(void);
   void update(void);
   void setCurrent(void);
-  void setName(const char* new_name);
   void setName(const std::string& new_name);
   void shutdown(void);
 };

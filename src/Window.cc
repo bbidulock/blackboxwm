@@ -137,9 +137,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   client.wm_hint_flags = client.normal_hint_flags = 0;
   client.transient_for = None;
   client.transient = 0;
-  client.title = 0;
   client.title_len = 0;
-  client.icon_title = 0;
   client.mwm_hint = (MwmHints *) 0;
   client.blackbox_hint = (BlackboxHints *) 0;
 
@@ -299,10 +297,6 @@ BlackboxWindow::~BlackboxWindow(void) {
   }
 
   if (windowmenu) delete windowmenu;
-
-  delete [] client.title;
-
-  delete [] client.icon_title;
 
   if (client.mwm_hint)
     XFree(client.mwm_hint);
@@ -737,15 +731,15 @@ void BlackboxWindow::reconfigure(void) {
   client.y = frame.y + frame.y_border + frame.mwm_border_w +
              frame.border_w;
 
-  if (client.title) {
+  if (! client.title.empty()) {
     if (i18n.multibyte()) {
       XRectangle ink, logical;
       XmbTextExtents(screen->getWindowStyle()->fontset,
-                     client.title, client.title_len, &ink, &logical);
+                     client.title.c_str(), client.title_len, &ink, &logical);
       client.title_text_w = logical.width;
     } else {
       client.title_text_w = XTextWidth(screen->getWindowStyle()->font,
-                                       client.title, client.title_len);
+                                       client.title.c_str(), client.title_len);
     }
     client.title_text_w += (frame.bevel_w * 4);
   }
@@ -807,11 +801,6 @@ void BlackboxWindow::positionWindows(void) {
 
 
 void BlackboxWindow::getWMName(void) {
-  if (client.title) {
-    delete [] client.title;
-    client.title = (char *) 0;
-  }
-
   XTextProperty text_prop;
   char **list;
   int num;
@@ -824,32 +813,32 @@ void BlackboxWindow::getWMName(void) {
         if ((XmbTextPropertyToTextList(display, &text_prop,
                                        &list, &num) == Success) &&
             (num > 0) && *list) {
-          client.title = bstrdup(*list);
+          client.title = *list;
           XFreeStringList(list);
         } else {
-          client.title = bstrdup((char *) text_prop.value);
+          client.title = (char *) text_prop.value;
         }
       } else {
-        client.title = bstrdup((char *) text_prop.value);
+        client.title = (char *) text_prop.value;
       }
       XFree((char *) text_prop.value);
     } else {
-      client.title = bstrdup(i18n(WindowSet, WindowUnnamed, "Unnamed"));
+      client.title = i18n(WindowSet, WindowUnnamed, "Unnamed");
     }
   } else {
-    client.title = bstrdup(i18n(WindowSet, WindowUnnamed, "Unnamed"));
+    client.title = i18n(WindowSet, WindowUnnamed, "Unnamed");
   }
-  client.title_len = strlen(client.title);
+  client.title_len = client.title.length();
 
   if (i18n.multibyte()) {
     XRectangle ink, logical;
     XmbTextExtents(screen->getWindowStyle()->fontset,
-                   client.title, client.title_len, &ink, &logical);
+                   client.title.c_str(), client.title_len, &ink, &logical);
     client.title_text_w = logical.width;
   } else {
-    client.title_len = strlen(client.title);
+    client.title_len = client.title.length();
     client.title_text_w = XTextWidth(screen->getWindowStyle()->font,
-                                     client.title, client.title_len);
+                                     client.title.c_str(), client.title_len);
   }
 
   client.title_text_w += (frame.bevel_w * 4);
@@ -857,11 +846,6 @@ void BlackboxWindow::getWMName(void) {
 
 
 void BlackboxWindow::getWMIconName(void) {
-  if (client.icon_title) {
-    delete [] client.icon_title;
-    client.icon_title = (char *) 0;
-  }
-
   XTextProperty text_prop;
   char **list;
   int num;
@@ -874,20 +858,20 @@ void BlackboxWindow::getWMIconName(void) {
          if ((XmbTextPropertyToTextList(display, &text_prop,
                                         &list, &num) == Success) &&
              (num > 0) && *list) {
-           client.icon_title = bstrdup(*list);
+           client.icon_title = *list;
            XFreeStringList(list);
          } else {
-           client.icon_title = bstrdup((char *) text_prop.value);
+           client.icon_title = (char *) text_prop.value;
         }
       } else {
-         client.icon_title = bstrdup((char *) text_prop.value);
+         client.icon_title = (char *) text_prop.value;
       }
       XFree((char *) text_prop.value);
     } else {
-      client.icon_title = bstrdup(client.title);
+      client.icon_title = client.title;
     }
   } else {
-    client.icon_title = bstrdup(client.title);
+    client.icon_title = client.title;
   }
 }
 
@@ -1989,11 +1973,12 @@ void BlackboxWindow::redrawLabel(void) {
     for (; dlen >= 0; dlen--) {
       if (i18n.multibyte()) {
         XRectangle ink, logical;
-        XmbTextExtents(screen->getWindowStyle()->fontset, client.title, dlen,
-                       &ink, &logical);
+        XmbTextExtents(screen->getWindowStyle()->fontset,
+                       client.title.c_str(), dlen, &ink, &logical);
         l = logical.width;
       } else {
-        l = XTextWidth(screen->getWindowStyle()->font, client.title, dlen);
+        l = XTextWidth(screen->getWindowStyle()->font,
+                       client.title.c_str(), dlen);
       }
       l += (frame.bevel_w * 4);
 
@@ -2017,10 +2002,10 @@ void BlackboxWindow::redrawLabel(void) {
   if (i18n.multibyte())
     XmbDrawString(display, frame.label, style->fontset, pen.gc(), dx,
                   (1 - style->fontset_extents->max_ink_extent.y),
-                  client.title, dlen);
+                  client.title.c_str(), dlen);
   else
     XDrawString(display, frame.label, pen.gc(), dx,
-                (style->font->ascent + 1), client.title, dlen);
+                (style->font->ascent + 1), client.title.c_str(), dlen);
 }
 
 

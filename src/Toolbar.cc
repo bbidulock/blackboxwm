@@ -569,7 +569,7 @@ void Toolbar::redrawWindowLabel(Bool redraw) {
 
   if (foc->getScreen() != screen) return;
 
-  char *title = *(foc->getTitle());
+  const char *title = foc->getTitle();
   int dx = (frame.bevel_w * 2), dlen = strlen(title);
   unsigned int l;
 

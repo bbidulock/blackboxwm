@@ -763,17 +763,14 @@ Slitmenu::Placementmenu::Placementmenu(Slitmenu *sm)
          Slit::BottomLeft);
   insert(i18n(CommonSet, CommonPlacementTopCenter, "Top Center"),
          Slit::TopCenter);
-  insert("");
-  insert(i18n(CommonSet, CommonPlacementBottomCenter,
-                          "Bottom Center"),
+  insert(" ");
+  insert(i18n(CommonSet, CommonPlacementBottomCenter, "Bottom Center"),
          Slit::BottomCenter);
   insert(i18n(CommonSet, CommonPlacementTopRight, "Top Right"),
          Slit::TopRight);
-  insert(i18n(CommonSet, CommonPlacementCenterRight,
-                          "Center Right"),
+  insert(i18n(CommonSet, CommonPlacementCenterRight, "Center Right"),
          Slit::CenterRight);
-  insert(i18n(CommonSet, CommonPlacementBottomRight,
-                          "Bottom Right"),
+  insert(i18n(CommonSet, CommonPlacementBottomRight, "Bottom Right"),
          Slit::BottomRight);
 
   update();

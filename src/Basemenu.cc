@@ -95,8 +95,6 @@ Basemenu::Basemenu(BScreen *scrn) {
       screen->getMenuStyle()->t_font->ascent +
       screen->getMenuStyle()->t_font->descent + (menu.bevel_w * 2);
 
-  menu.label = 0;
-
   menu.sublevels =
     menu.persub =
     menu.minsub = 0;
@@ -176,9 +174,6 @@ Basemenu::~Basemenu(void) {
 
   std::for_each(menuitems.begin(), menuitems.end(), PointerAssassin());
 
-  if (menu.label)
-    delete [] menu.label;
-
   if (menu.title_pixmap)
     image_ctrl->removeImage(menu.title_pixmap);
 
@@ -202,10 +197,7 @@ Basemenu::~Basemenu(void) {
 }
 
 
-BasemenuItem::~BasemenuItem(void) {
-  delete [] l;
-  delete [] e;
-}
+BasemenuItem::~BasemenuItem(void) {}
 
 
 BasemenuItem *Basemenu::find(int index) {
@@ -219,30 +211,21 @@ int Basemenu::insert(BasemenuItem *item, int pos) {
   if (pos < 0) {
     menuitems.push_back(item);
   } else {
-    if (pos >= (signed)menuitems.size())
-      fprintf(stderr, "WARNING: out of bounds in Basemenu::insert\n");
+    assert(pos >= (signed)menuitems.size());
     menuitems.insert((menuitems.begin() + pos), item);
   }
   return menuitems.size();
 }
 
 
-int Basemenu::insert(const char *l, int function, const char *e, int pos) {
-  char *label = 0, *exec = 0;
-
-  if (l) label = bstrdup(l);
-  if (e) exec = bstrdup(e);
-
+int Basemenu::insert(const string& label, int function,
+                     const string& exec, int pos) {
   BasemenuItem *item = new BasemenuItem(label, function, exec);
   return insert(item, pos);
 }
 
 
-int Basemenu::insert(const char *l, Basemenu *submenu, int pos) {
-  char *label = 0;
-
-  if (l) label = bstrdup(l);
-
+int Basemenu::insert(const string& label, Basemenu *submenu, int pos) {
   BasemenuItem *item = new BasemenuItem(label, submenu);
   submenu->parent = this;
 
@@ -250,20 +233,10 @@ int Basemenu::insert(const char *l, Basemenu *submenu, int pos) {
 }
 
 
-int Basemenu::insert(const string& l, Basemenu *submenu, int pos) {
-  return insert(l.c_str(), submenu, pos);
-}
+int Basemenu::insert(const string& ulabel, const string& label) {
+  BasemenuItem *item = new BasemenuItem(ulabel, label, 0);
 
-
-int Basemenu::insert(const string& l, int function, const char *e, int pos) {
-  return insert(l.c_str(), function, e, pos);
-}
-
-
-int Basemenu::insert(const char **ulabel, int pos, int function) {
-  BasemenuItem *item = new BasemenuItem(ulabel, function);
-
-  return insert(item, pos);
+  return insert(item, -1);
 }
 
 
@@ -310,7 +283,7 @@ void Basemenu::update(void) {
   }
 
   if (title_vis) {
-    const char *s = (menu.label) ? menu.label :
+    const char *s = (! menu.label.empty()) ? getLabel() :
       i18n(BasemenuSet, BasemenuBlackboxMenu, "Blackbox Menu");
     int l = strlen(s);
 
@@ -331,8 +304,9 @@ void Basemenu::update(void) {
   MenuItems::iterator it = menuitems.begin(), end = menuitems.end();
   for (; it != end; ++it) {
     BasemenuItem *tmp = *it;
-    const char *s = ((tmp->u && *(tmp->u)) ? *(tmp->u) :
-                     ((tmp->l) ? tmp->l : (const char *) 0));
+    const char *s = ((! tmp->u.empty()) ? tmp->u.c_str() :
+                     ((! tmp->l.empty()) ? tmp->l.c_str() : (const char *) 0));
+
     int l = strlen(s);
 
     if (i18n.multibyte()) {
@@ -513,9 +487,8 @@ void Basemenu::move(int x, int y) {
 
 
 void Basemenu::redrawTitle(void) {
-  char *text = (char *) ((menu.label) ? menu.label :
-                         i18n(BasemenuSet, BasemenuBlackboxMenu,
-                              "Blackbox Menu"));
+  const char *text = (! menu.label.empty()) ? getLabel() :
+    i18n(BasemenuSet, BasemenuBlackboxMenu, "Blackbox Menu");
   int dx = menu.bevel_w, len = strlen(text);
   unsigned int l;
 
@@ -625,7 +598,8 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clear,
   if (! item) return;
 
   Bool dotext = True, dohilite = True, dosel = True;
-  const char *text = (item->ulabel()) ? *item->ulabel() : item->label();
+  const char *text = item->ulabel();
+  if (! *text) text = item->label();
   int sbl = index / menu.persub, i = index - (sbl * menu.persub);
   int item_x = (sbl * menu.item_w), item_y = (i * menu.item_h);
   int hilite_x = item_x, hilite_y = item_y, hoff_x = 0, hoff_y = 0;
@@ -780,17 +754,13 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clear,
 }
 
 
-void Basemenu::setLabel(const string& l) {
-  setLabel(l.c_str());
+void Basemenu::setLabel(const string& label) {
+  menu.label = label;
 }
 
 
-void Basemenu::setLabel(const char *l) {
-  if (menu.label)
-    delete [] menu.label;
-
-  if (l) menu.label = bstrdup(l);
-  else menu.label = 0;
+void Basemenu::setLabel(const char *label) {
+  menu.label = (label != NULL) ? label : "";
 }
 
 

@@ -111,11 +111,6 @@ static int anotherWMRunning(Display *display, XErrorEvent *) {
   return(-1);
 }
 
-struct dcmp {
-  Bool operator()(const char *one, const char *two) const {
-    return (strcmp(one, two) < 0) ? True : False;
-  }
-};
 
 BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   blackbox = bb;
@@ -779,7 +774,8 @@ void BScreen::addIcon(BlackboxWindow *w) {
 
   iconList.push_back(w);
 
-  iconmenu->insert((const char **) w->getIconTitle());
+  const char* title = w->getIconTitle();
+  iconmenu->insert(title, title);
   iconmenu->update();
 }
 
@@ -1468,40 +1464,32 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
                   stylesmenu = menu;
 
                 DIR *d = opendir(stylesdir);
-                int entries = 0;
                 struct dirent *p;
+                std::vector<string> ls;
 
-                // get the total number of directory entries
-                while ((p = readdir(d))) entries++;
-                rewinddir(d);
-
-                char **ls = new char* [entries];
-                int index = 0;
-                while ((p = readdir(d)))
-                  ls[index++] = bstrdup(p->d_name);
+                while((p = readdir(d)))
+                  ls.push_back(p->d_name);
 
                 closedir(d);
 
-                std::sort(ls, ls + entries, dcmp());
+                std::sort(ls.begin(), ls.end());
 
-                int n, slen = strlen(stylesdir);
-                for (n = 0; n < entries; n++) {
-                  if (ls[n][strlen(ls[n])-1] != '~') {
-                    int nlen = strlen(ls[n]);
-                    char style[MAXPATHLEN + 1];
+                std::vector<string>::iterator it = ls.begin(),
+                  end = ls.end();
+                for (; it != end; ++it) {
+                  const string& fname = *it;
 
-                    strncpy(style, stylesdir, slen);
-                    *(style + slen) = '/';
-                    strncpy(style + slen + 1, ls[n], nlen + 1);
+                  if (fname[fname.size()-1] == '~')
+                    continue;
 
-                    if ((! stat(style, &statbuf)) && S_ISREG(statbuf.st_mode))
-                      stylesmenu->insert(ls[n], BScreen::SetStyle, style);
-                  }
+                  string style = stylesdir;
+                  style += '/';
+                  style += fname;
 
-                  delete [] ls[n];
+                  if ((! stat(style.c_str(), &statbuf)) &&
+                      S_ISREG(statbuf.st_mode))
+                    stylesmenu->insert(fname, BScreen::SetStyle, style);
                 }
-
-                delete [] ls;
 
                 stylesmenu->update();
 

@@ -30,6 +30,8 @@
 #  include <X11/extensions/shape.h>
 #endif // SHAPE
 
+#include <string>
+
 #include "BaseDisplay.hh"
 #include "Timer.hh"
 #include "Windowmenu.hh"
@@ -109,8 +111,8 @@ private:
     BlackboxWindow *transient;      // which window is our transient?
 
 
-    char *title, *icon_title;
-    size_t title_len;               // strlen(title)
+    std::string title, icon_title;
+    std::string::size_type title_len; // strlen(title)
 
     int x, y,
       old_bw;                       // client's borderwidth
@@ -265,8 +267,8 @@ public:
 
   inline Windowmenu * getWindowmenu(void) { return windowmenu; }
 
-  inline char **getTitle(void) { return &client.title; }
-  inline char **getIconTitle(void) { return &client.icon_title; }
+  inline const char *getTitle(void) { return client.title.c_str(); }
+  inline const char *getIconTitle(void) { return client.icon_title.c_str(); }
   inline int getXFrame(void) const { return frame.x; }
   inline int getYFrame(void) const { return frame.y; }
   inline int getXClient(void) const { return client.x; }

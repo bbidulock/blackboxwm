@@ -82,7 +82,8 @@ void Workspace::addWindow(BlackboxWindow *w, Bool place) {
   stackingList.push_front(w);
   windowList.push_back(w);
 
-  clientmenu->insert((const char **) w->getTitle());
+  string title = w->getTitle();
+  clientmenu->insert(title, title);
   clientmenu->update();
 
   screen->updateNetizenWindowAdd(w->getClientWindow(), id);
@@ -342,8 +343,8 @@ void Workspace::setCurrent(void) {
 }
 
 
-void Workspace::setName(const char* new_name) {
-  if (new_name && *new_name) {
+void Workspace::setName(const string& new_name) {
+  if (! new_name.empty()) {
     name = new_name;
   } else {
     char default_name[32];
@@ -355,11 +356,6 @@ void Workspace::setName(const char* new_name) {
 
   clientmenu->setLabel(name);
   clientmenu->update();
-}
-
-
-void Workspace::setName(const string& new_name) {
-  setName(new_name.c_str());
 }
 
 

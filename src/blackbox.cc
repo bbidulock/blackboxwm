@@ -150,7 +150,6 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
 
   no_focus = False;
 
-  resource.menu_file = resource.style_file = (char *) 0;
   resource.auto_raise_delay.tv_sec = resource.auto_raise_delay.tv_usec = 0;
 
   focused_window = masked_window = (BlackboxWindow *) 0;
@@ -201,8 +200,6 @@ Blackbox::~Blackbox(void) {
                 PointerAssassin());
 
   delete [] rc_file;
-  delete [] resource.menu_file;
-  delete [] resource.style_file;
 
   delete timer;
 }
@@ -889,7 +886,7 @@ void Blackbox::save_rc(void) {
 
   load_rc();
 
-  sprintf(rc_string, "session.menuFile:  %s", resource.menu_file);
+  sprintf(rc_string, "session.menuFile:  %s", getMenuFilename());
   XrmPutLineResource(&new_blackboxrc, rc_string);
 
   sprintf(rc_string, "session.colorsPerChannel:  %d",
@@ -1112,14 +1109,13 @@ void Blackbox::load_rc(void) {
   XrmValue value;
   char *value_type;
 
-  if (resource.menu_file)
-    delete [] resource.menu_file;
-
   if (XrmGetResource(database, "session.menuFile", "Session.MenuFile",
-                     &value_type, &value))
-    resource.menu_file = expandTilde(value.addr);
-  else
-    resource.menu_file = bstrdup(DEFAULTMENU);
+                     &value_type, &value)) {
+    const char* tmp = expandTilde(value.addr);
+    resource.menu_file = tmp;
+    delete [] tmp;
+  } else
+    resource.menu_file = DEFAULTMENU;
 
   if (XrmGetResource(database, "session.colorsPerChannel",
                      "Session.ColorsPerChannel", &value_type, &value)) {
@@ -1133,14 +1129,11 @@ void Blackbox::load_rc(void) {
     resource.colors_per_channel = 4;
   }
 
-  if (resource.style_file)
-    delete [] resource.style_file;
-
   if (XrmGetResource(database, "session.styleFile", "Session.StyleFile",
                      &value_type, &value))
-    resource.style_file = bstrdup(value.addr);
+    resource.style_file = value.addr;
   else
-    resource.style_file = bstrdup(DEFAULTSTYLE);
+    resource.style_file = DEFAULTSTYLE;
 
   if (XrmGetResource(database, "session.doubleClickInterval",
                      "Session.DoubleClickInterval", &value_type, &value)) {
@@ -1305,11 +1298,7 @@ void Blackbox::load_rc(BScreen *screen) {
     char *search = bstrdup(value.addr);
 
     for (unsigned int i = 0; i < screen->getNumberOfWorkspaces(); i++) {
-      char *nn;
-
-      if (! i) nn = strtok(search, ",");
-      else nn = strtok(NULL, ",");
-
+      char *nn = strsep(&search, ",");
       screen->addWorkspaceName(nn);
     }
 
@@ -1514,9 +1503,9 @@ void Blackbox::reconfigure(void) {
 
 void Blackbox::real_reconfigure(void) {
   XrmDatabase new_blackboxrc = (XrmDatabase) 0;
-  char *style = new char[strlen(resource.style_file) + 20];
+  char *style = new char[strlen(getStyleFilename()) + 20];
 
-  sprintf(style, "session.styleFile: %s", resource.style_file);
+  sprintf(style, "session.styleFile: %s", getStyleFilename());
   XrmPutLineResource(&new_blackboxrc, style);
 
   delete [] style;
@@ -1573,10 +1562,8 @@ void Blackbox::real_rereadMenu(void) {
 
 
 void Blackbox::saveStyleFilename(const char *filename) {
-  if (resource.style_file)
-    delete [] resource.style_file;
-
-  resource.style_file = bstrdup(filename);
+  assert(filename && *filename);
+  resource.style_file = filename;
 }
 
 
@@ -1593,7 +1580,7 @@ void Blackbox::saveMenuFilename(const char *filename) {
     if (! stat(filename, &buf)) {
       MenuTimestamp *ts = new MenuTimestamp;
 
-      ts->filename = bstrdup(filename);
+      ts->filename = filename;
       ts->timestamp = buf.st_ctime;
 
       menuTimestamps.push_back(ts);

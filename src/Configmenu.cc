@@ -128,16 +128,12 @@ void Configmenu::reconfigure(void) {
 Configmenu::Focusmenu::Focusmenu(Configmenu *cm) : Basemenu(cm->screen) {
   configmenu = cm;
 
-  setLabel(i18n(ConfigmenuSet, ConfigmenuFocusModel,
-                "Focus Model"));
+  setLabel(i18n(ConfigmenuSet, ConfigmenuFocusModel, "Focus Model"));
   setInternalMenu();
 
-  insert(i18n(ConfigmenuSet, ConfigmenuClickToFocus,
-              "Click To Focus"), 1);
-  insert(i18n(ConfigmenuSet, ConfigmenuSloppyFocus,
-              "Sloppy Focus"), 2);
-  insert(i18n(ConfigmenuSet, ConfigmenuAutoRaise,
-              "Auto Raise"), 3);
+  insert(i18n(ConfigmenuSet, ConfigmenuClickToFocus, "Click To Focus"), 1);
+  insert(i18n(ConfigmenuSet, ConfigmenuSloppyFocus, "Sloppy Focus"), 2);
+  insert(i18n(ConfigmenuSet, ConfigmenuAutoRaise, "Auto Raise"), 3);
   update();
 
   setItemSelected(0, (! configmenu->screen->isSloppyFocus()));

@@ -54,7 +54,7 @@ private:
     Pixmap frame_pixmap, title_pixmap, hilite_pixmap, sel_pixmap;
     Window window, frame, title;
 
-    char *label;
+    std::string label;
     int x, y, x_move, y_move, x_shift, y_shift, sublevels, persub, minsub,
       grab_x, grab_y;
     unsigned int width, height, title_h, frame_h, item_w, item_h, bevel_w,
@@ -90,17 +90,14 @@ public:
 
   inline Window getWindowID(void) const { return menu.window; }
 
-  inline const char *getLabel(void) const { return menu.label; }
+  inline const char *getLabel(void) const { return menu.label.c_str(); }
 
   int insert(BasemenuItem *item, int pos);
-  int insert(const char *l, int function = 0, const char *e = (const char*)0,
-             int pos = -1);
-  int insert(const std::string& l, int function = 0,
-             const char *e = (const char*) 0, int pos = -1);
-  int insert(const char **ulabel, int pos = -1, int function = 0);
-  int insert(const char *l, Basemenu *submenu, int pos = -1);
-  int insert(const std::string &l, Basemenu *submenu, int pos = -1);
-  int remove(int);
+  int insert(const std::string& label, int function = 0,
+             const string& exec = "", int pos = -1);
+  int insert(const std::string& ulabel, const std::string& label);
+  int insert(const std::string &label, Basemenu *submenu, int pos = -1);
+  int remove(int index);
 
   inline int getX(void) const { return menu.x; }
   inline int getY(void) const { return menu.y; }
@@ -149,7 +146,7 @@ public:
 class BasemenuItem {
 private:
   Basemenu *sub;
-  const char **u, *l, *e;
+  const std::string u, l, e;
   int f, enabled, selected;
 
   friend class Basemenu;
@@ -157,19 +154,20 @@ private:
 protected:
 
 public:
-  BasemenuItem(const char *lp, int fp, const char *ep = (const char *) 0):
-    sub(0), u(0), l(lp), e(ep), f(fp), enabled(1), selected(0) {}
+  BasemenuItem(const std::string& lp, int fp, const std::string& ep = ""):
+    sub(0), l(lp), e(ep), f(fp), enabled(1), selected(0) {}
 
-  BasemenuItem(const char *lp, Basemenu *mp): sub(mp), u(0), l(lp), e(0),
+  BasemenuItem(const string& lp, Basemenu *mp): sub(mp), l(lp),
                                               f(0), enabled(1), selected(0) {}
 
-  BasemenuItem(const char **up, int fp): sub(0), u(up), l(0), e(0), f(fp),
-                                         enabled(1), selected(0) {}
+  BasemenuItem(const std::string& up, const std::string& lp, int fp):
+    sub(0), u(up), l(lp), f(fp), enabled(1), selected(0) {}
+
   ~BasemenuItem(void);
 
-  inline const char *exec(void) const { return e; }
-  inline const char *label(void) const { return l; }
-  inline const char **ulabel(void) const { return u; }
+  inline const char *exec(void) const { return e.c_str(); }
+  inline const char *label(void) const { return l.c_str(); }
+  inline const char *ulabel(void) const { return u.c_str(); }
   inline int function(void) const { return f; }
   inline Basemenu *submenu(void) { return sub; }
 
