@@ -5,20 +5,20 @@
 // copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the 
+// and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in 
-// all copies or substantial portions of the Software. 
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
-// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-  
+
 #ifndef   __Image_hh
 #define   __Image_hh
 
@@ -69,7 +69,7 @@ public:
   inline BColor *getLoColor(void) { return &loColor; }
 
   inline const unsigned long &getTexture(void) const { return texture; }
-  
+
   inline void setTexture(unsigned long t) { texture = t; }
   inline void addTexture(unsigned long t) { texture |= t; }
 };
@@ -120,7 +120,7 @@ private:
 #ifdef    INTERLACE
   Bool interlaced;
 #endif // INTERLACE
-  
+
   XColor *colors;
 
   BColor *from, *to;
@@ -132,9 +132,9 @@ private:
 
 protected:
   Pixmap renderPixmap(void);
-  
+
   XImage *renderXImage(void);
-  
+
   void invert(void);
   void bevel1(void);
   void bevel2(void);
@@ -163,8 +163,10 @@ private:
   Bool dither;
   BaseDisplay *basedisplay;
   ScreenInfo *screeninfo;
+#ifdef    TIMEDCACHE
   BTimer *timer;
-
+#endif // TIMEDCACHE
+  
   Colormap root_colormap;
   Window window;
   XColor *colors;
@@ -176,7 +178,7 @@ private:
   unsigned int *grad_xbuffer, *grad_ybuffer, grad_buffer_width,
     grad_buffer_height;
   unsigned long *sqrt_table, cache_max;
-  
+
   typedef struct Cache {
     Pixmap pixmap;
 
@@ -195,14 +197,14 @@ protected:
 public:
   BImageControl(BaseDisplay *, ScreenInfo *, Bool = False, int = 4,
                 unsigned long = 300000l, unsigned long = 200l);
-  ~BImageControl(void);
+  virtual ~BImageControl(void);
 
   inline BaseDisplay *getBaseDisplay(void) { return basedisplay; }
- 
+
   inline const Bool &doDither(void) { return dither; }
 
   inline const Colormap &getColormap(void) const { return root_colormap; }
-  
+
   inline ScreenInfo *getScreenInfo(void) { return screeninfo; }
 
   inline const Window &getDrawable(void) const { return window; }

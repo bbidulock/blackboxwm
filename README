@@ -5,9 +5,14 @@ This is the README for Blackbox 0.60.x release.
 The source tree for Blackbox is comprised of three subdirectories:
 
 	data/		- this holds the default data files that Blackbox
-			  requires for proper operation
+                          requires for proper operation
+
+	nls/		- this holds the message files used to generate
+			  message catalogs for different languages
+
 	src/		- this holds the actual C++ source code for the window
 			  manager.
+
 	util/		- this holds source code for small utility programs
 			  that help Blackbox doing what it does best.
 
@@ -50,7 +55,7 @@ Supported Platforms:
 --------------------
 ix86-Linux 2.0.x (libc5 and glibc2)
 ix86-Linux 2.1.x (libc5 and glibc2)
-ix86-Linux 2.2.x (glibc2)
+ix86-Linux 2.2.x (libc5 and glibc2)
 ix86-Linux 2.3.x (glibc2.1)
 ix86-FreeBSD 4.0-current (development platform)
 ix86-FreeBSD 3.3-{stable,release}

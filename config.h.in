@@ -15,6 +15,15 @@
 /* Define if you have the basename function.  */
 #undef HAVE_BASENAME
 
+/* Define if you have the catclose function.  */
+#undef HAVE_CATCLOSE
+
+/* Define if you have the catgets function.  */
+#undef HAVE_CATGETS
+
+/* Define if you have the catopen function.  */
+#undef HAVE_CATOPEN
+
 /* Define if you have the getpid function.  */
 #undef HAVE_GETPID
 
@@ -42,11 +51,17 @@
 /* Define if you have the <locale.h> header file.  */
 #undef HAVE_LOCALE_H
 
+/* Define if you have the <nl_types.h> header file.  */
+#undef HAVE_NL_TYPES_H
+
 /* Define if you have the <process.h> header file.  */
 #undef HAVE_PROCESS_H
 
 /* Define if you have the <signal.h> header file.  */
 #undef HAVE_SIGNAL_H
+
+/* Define if you have the <stdarg.h> header file.  */
+#undef HAVE_STDARG_H
 
 /* Define if you have the <stdio.h> header file.  */
 #undef HAVE_STDIO_H

@@ -1,11 +1,11 @@
 # util/Makefile.am for Blackbox 0.60.x  - an X11 Window manager
 
-CPPFLAGS= @CPPFLAGS@ @DEBUG@
+CPPFLAGS= @CPPFLAGS@ @DEBUG@ @NLS@
 
 bin_PROGRAMS =		bsetroot
 
 bsetroot_SOURCES =	bsetroot.cc
-bsetroot_LDADD =	../src/BaseDisplay.o ../src/LinkedList.o ../src/Timer.o ../src/Image.o
+bsetroot_LDADD =	../src/BaseDisplay.o ../src/LinkedList.o ../src/Timer.o ../src/Image.o ../src/i18n.o
 
 MAINTAINERCLEANFILES =	Makefile.in
 

@@ -5,21 +5,21 @@
 // copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the 
+// and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in 
-// all copies or substantial portions of the Software. 
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
-// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-  
-// stupid macros needed to access some functions in version 2 of the GNU C 
+
+// stupid macros needed to access some functions in version 2 of the GNU C
 // library
 #ifndef   _GNU_SOURCE
 #define   _GNU_SOURCE
@@ -31,6 +31,7 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
+#include "i18n.hh"
 #include "blackbox.hh"
 
 #ifdef    HAVE_STDIO_H
@@ -40,10 +41,6 @@
 #ifdef    STDC_HEADERS
 #  include <stdlib.h>
 #endif // STDC_HEADERS
-
-#ifdef    HAVE_LOCALE_H
-#  include <locale.h>
-#endif // HAVE_LOCALE_H
 
 #ifdef    HAVE_UNISTD_H
 #include <sys/types.h>
@@ -61,10 +58,8 @@
 int main(int argc, char **argv) {
   char *session_display = (char *) 0;
   char *rc_file = (char *) 0;
- 
-#ifdef    HAVE_SETLOCALE
-  setlocale(LC_ALL, "");
-#endif // HAVE_SETLOCALE
+
+  NLSInit();
 
   int i;
   for (i = 1; i < argc; ++i) {
@@ -72,7 +67,14 @@ int main(int argc, char **argv) {
       // look for alternative rc file to use
 
       if ((++i) >= argc) {
-        fprintf(stderr, "error: '-rc' requires and argument\n");
+        fprintf(stderr,
+		i18n->getMessage(
+#ifdef    NLS
+				 mainSet, mainRCRequiresArg,
+#else // !NLS
+				 0, 0,
+#endif // NLS
+				 "error: '-rc' requires and argument\n"));
 
         ::exit(1);
       }
@@ -83,18 +85,32 @@ int main(int argc, char **argv) {
       // set by the environment variable DISPLAY
 
       if ((++i) >= argc) {
-	fprintf(stderr, "error: '-display' requires an argument\n");
+	fprintf(stderr,
+		i18n->getMessage(
+#ifdef    NLS
+				 mainSet, mainDISPLAYRequiresArg,
+#else // !NLS
+				 0, 0,
+#endif // NLS
+				 "error: '-display' requires an argument\n"));
 
 	::exit(1);
       }
-      
+
       session_display = argv[i];
       char dtmp[MAXPATHLEN];
       sprintf(dtmp, "DISPLAY=%s", session_display);
-      
+
       if (putenv(dtmp)) {
 	fprintf(stderr,
-		"warning: couldn't set environment variable 'DISPLAY'\n");
+		i18n->
+		getMessage(
+#ifdef    NLS
+			   mainSet, mainWarnDisplaySet,
+#else // !NLS
+			   0, 0,
+#endif // NLS
+			   "warning: couldn't set environment variable 'DISPLAY'\n"));
 	perror("putenv()");
       }
     } else if (! strcmp(argv[i], "-version")) {
@@ -105,52 +121,126 @@ int main(int argc, char **argv) {
       ::exit(0);
     } else if (! strcmp(argv[i], "-help")) {
       // print program usage and command line options
-      printf("Blackbox %s : (c) 1997 - 2000 Brad Hughes\n\n"
-             "  -display <string>\t\tuse display connection.\n"
-             "  -rc <string>\t\t\tuse alternate resource file.\n"
-	     "  -version\t\t\tdisplay version and exit.\n"
-             "  -help\t\t\t\tdisplay this help text and exit.\n\n",
+      printf(i18n->
+	     getMessage(
+#ifdef    NLS
+			mainSet, mainUsage,
+#else // !NLS
+			0, 0,
+#endif // NLS
+			"Blackbox %s : (c) 1997 - 2000 Brad Hughes\n\n"
+			"  -display <string>\t\tuse display connection.\n"
+			"  -rc <string>\t\t\tuse alternate resource file.\n"
+			"  -version\t\t\tdisplay version and exit.\n"
+			"  -help\t\t\t\tdisplay this help text and exit.\n\n"),
 	     __blackbox_version);
 
       // some people have requested that we print out command line options
       // as well
-      printf("Compile time options:\n"
-             "  Debugging:\t\t\t%s\n"
-             "  Interlacing:\t\t\t%s\n"
-             "  Shape:\t\t\t%s\n"
-             "  Slit:\t\t\t\t%s\n"
-             "  8bpp Ordered Dithering:\t%s\n\n",
+      printf(i18n->
+	     getMessage(
+#ifdef    NLS
+			mainSet, mainCompileOptions,
+#else // !NLS
+			0, 0,
+#endif // NLS
+			"Compile time options:\n"
+			"  Debugging:\t\t\t%s\n"
+			"  Interlacing:\t\t\t%s\n"
+			"  Shape:\t\t\t%s\n"
+			"  Slit:\t\t\t\t%s\n"
+			"  8bpp Ordered Dithering:\t%s\n\n"),
 #ifdef    DEBUG
-             "yes",
+	     i18n->getMessage(
+#ifdef    NLS
+			      CommonSet, CommonYes,
+#else // !NLS
+			      0, 0,
+#endif // NLS
+			      "yes"),
 #else // !DEBUG
-             "no",
+	     i18n->getMessage(
+#ifdef    NLS
+			      CommonSet, CommonNo,
+#else // !NLS
+			      0, 0,
+#endif // NLS
+			      "no"),
 #endif // DEBUG
 
 #ifdef    INTERLACE
-             "yes",
+	     i18n->getMessage(
+#ifdef    NLS
+			      CommonSet, CommonYes,
+#else // !NLS
+			      0, 0,
+#endif // NLS
+			      "yes"),
 #else // !INTERLACE
-             "no",
+	     i18n->getMessage(
+#ifdef    NLS
+			      CommonSet, CommonNo,
+#else // !NLS
+			      0, 0,
+#endif // NLS
+			      "no"),
 #endif // INTERLACE
 
 #ifdef    SHAPE
-             "yes",
+	     i18n->getMessage(
+#ifdef    NLS
+			      CommonSet, CommonYes,
+#else // !NLS
+			      0, 0,
+#endif // NLS
+			      "yes"),
 #else // !SHAPE
-             "no",
+	     i18n->getMessage(
+#ifdef    NLS
+			      CommonSet, CommonNo,
+#else // !NLS
+			      0, 0,
+#endif // NLS
+			      "no"),
 #endif // SHAPE
 
 #ifdef    SLIT
-             "yes",
+	     i18n->getMessage(
+#ifdef    NLS
+			      CommonSet, CommonYes,
+#else // !NLS
+			      0, 0,
+#endif // NLS
+			      "yes"),
 #else // !SLIT
-             "no",
+	     i18n->getMessage(
+#ifdef    NLS
+			      CommonSet, CommonNo,
+#else // !NLS
+			      0, 0,
+#endif // NLS
+			      "no"),
 #endif // SLIT
 
 #ifdef    ORDEREDPSEUDO
-             "yes"
+	     i18n->getMessage(
+#ifdef    NLS
+			      CommonSet, CommonYes,
+#else // !NLS
+			      0, 0,
+#endif // NLS
+			      "yes")
 #else // !ORDEREDPSEUDO
-             "no"
+	     i18n->getMessage(
+#ifdef    NLS
+			      CommonSet, CommonNo,
+#else // !NLS
+			      0, 0,
+#endif // NLS
+			      "no")
 #endif // ORDEREDPSEUDO
-      
-      );
+
+	     );
 
       ::exit(0);
     }
@@ -162,6 +252,6 @@ int main(int argc, char **argv) {
 
   Blackbox blackbox(argc, argv, session_display, rc_file);
   blackbox.eventLoop();
-  
+
   return(0);
 }

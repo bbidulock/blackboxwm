@@ -5,20 +5,20 @@
 // copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the 
+// and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in 
-// all copies or substantial portions of the Software. 
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
-// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-  
+
 #ifndef   __blackbox_hh
 #define   __blackbox_hh
 
@@ -55,18 +55,18 @@ class Blackbox;
 
 
 template <class Z>
-class DataSearch { 
+class DataSearch {
 private:
   Window window;
   Z *data;
 
 
-public: 
+public:
   DataSearch(Window w, Z *d) { window = w; data = d; }
 
   inline const Window &getWindow(void) const { return window; }
   inline Z *getData(void) { return data; }
-}; 
+};
 
 
 class Blackbox : public BaseDisplay, public TimeoutHandler {
@@ -78,14 +78,14 @@ private:
 
   struct resource {
     Time double_click_interval;
-    
+
     char *menu_file, *style_file;
     int colors_per_channel;
     timeval auto_raise_delay;
     unsigned long cache_life, cache_max;
   } resource;
- 
-  typedef DataSearch<BlackboxWindow> WindowSearch; 
+
+  typedef DataSearch<BlackboxWindow> WindowSearch;
   LinkedList<WindowSearch> *windowSearchList, *groupSearchList;
   typedef DataSearch<Basemenu> MenuSearch;
   LinkedList<MenuSearch> *menuSearchList;
@@ -170,7 +170,7 @@ public:
   void setFocusedWindow(BlackboxWindow *w);
   void shutdown(void);
   void load_rc(BScreen *);
-  void saveStyleFilename(char *);
+  void saveStyleFilename(const char *);
   void saveMenuFilename(const char *);
   void saveMenuSearch(Window, Basemenu *);
   void saveWindowSearch(Window, BlackboxWindow *);
@@ -180,7 +180,7 @@ public:
   void removeWindowSearch(Window);
   void removeToolbarSearch(Window);
   void removeGroupSearch(Window);
-  void restart(char * = 0);
+  void restart(const char * = 0);
   void reconfigure(void);
   void rereadMenu(void);
   void checkMenu(void);
@@ -191,12 +191,13 @@ public:
 
 #ifdef    SLIT
   Slit *searchSlit(Window);
-  
+
   void saveSlitSearch(Window, Slit *);
   void removeSlitSearch(Window);
 #endif // SLIT
-  
+
 #ifndef   HAVE_STRFTIME
+
   enum { B_AmericanDate = 1, B_EuropeanDate };
 #endif // HAVE_STRFTIME
 };

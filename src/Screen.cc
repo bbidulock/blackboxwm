@@ -5,21 +5,21 @@
 // copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the 
+// and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in 
-// all copies or substantial portions of the Software. 
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
-// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-  
-// stupid macros needed to access some functions in version 2 of the GNU C 
+
+// stupid macros needed to access some functions in version 2 of the GNU C
 // library
 #ifndef   _GNU_SOURCE
 #define   _GNU_SOURCE
@@ -32,6 +32,7 @@
 #include <X11/Xatom.h>
 #include <X11/keysym.h>
 
+#include "i18n.hh"
 #include "blackbox.hh"
 #include "Clientmenu.hh"
 #include "Icon.hh"
@@ -66,6 +67,10 @@
 #  include <dirent.h>
 #endif // HAVE_DIRENT_H
 
+#ifdef    HAVE_LOCALE_H
+#  include <locale.h>
+#endif // HAVE_LOCALE_H
+
 #ifdef    HAVE_UNISTD_H
 #  include <sys/types.h>
 #  include <unistd.h>
@@ -75,21 +80,36 @@
 #  include <sys/stat.h>
 #endif // HAVE_SYS_STAT_H
 
+#ifdef    HAVE_STDARG_H
+#  include <stdarg.h>
+#endif // HAVE_STDARG_H
+
 #ifndef   MAXPATHLEN
 #define   MAXPATHLEN 255
 #endif // MAXPATHLEN
+
+#ifndef   FONT_ELEMENT_SIZE
+#define   FONT_ELEMENT_SIZE 50
+#endif // FONT_ELEMENT_SIZE
 
 
 static Bool running = True;
 
 static int anotherWMRunning(Display *display, XErrorEvent *) {
   fprintf(stderr,
-	  "BScreen::BScreen: an error occured while querying the X server.\n"
-	  "  another window manager already running on display %s.\n",
+	  i18n->
+	  getMessage(
+#ifdef    NLS
+		     ScreenSet, ScreenAnotherWMRunning,
+#else // !NLS
+		     0, 0,
+#endif // NLS
+		     "BScreen::BScreen: an error occured while querying the X server.\n"
+		     "  another window manager already running on display %s.\n"),
           DisplayString(display));
-  
+
   running = False;
-  
+
   return(-1);
 }
 
@@ -103,15 +123,12 @@ BScreen::BScreen(Blackbox *bb, int scrn) : ScreenInfo(bb, scrn) {
   allocate(sizeof(BScreen), "Screen.cc");
 #endif // DEBUG
 
-  fprintf(stderr, "BScreen::BScreen: using visual 0x%lx, depth %d\n",
-         XVisualIDFromVisual(getVisual()), getDepth());
-
   blackbox = bb;
 
   event_mask = ColormapChangeMask | EnterWindowMask | PropertyChangeMask |
-    SubstructureRedirectMask | KeyPressMask | KeyReleaseMask |
-    ButtonPressMask | ButtonReleaseMask;
-  
+	       SubstructureRedirectMask | KeyPressMask | KeyReleaseMask |
+	       ButtonPressMask | ButtonReleaseMask;
+
   XErrorHandler old = XSetErrorHandler((XErrorHandler) anotherWMRunning);
   XSelectInput(getBaseDisplay()->getXDisplay(), getRootWindow(), event_mask);
   XSync(getBaseDisplay()->getXDisplay(), False);
@@ -120,13 +137,29 @@ BScreen::BScreen(Blackbox *bb, int scrn) : ScreenInfo(bb, scrn) {
   managed = running;
   if (! managed) return;
 
-  
-  
+  fprintf(stderr,
+	  i18n->
+	  getMessage(
+#ifdef    NLS
+		     ScreenSet, ScreenManagingScreen,
+#else // !NLS
+		     0, 0,
+#endif // NLS
+		     "BScreen::BScreen: managing screen %d "
+		     "using visual 0x%lx, depth %d\n"),
+	  getScreenNumber(), XVisualIDFromVisual(getVisual()),
+          getDepth());
+
   rootmenu = 0;
   resource.stylerc = 0;
+#ifdef    NLS
+  resource.mstyle.t_font = resource.mstyle.f_font = resource.tstyle.font =
+    resource.wstyle.font = (XFontSet) 0;
+#else // !NLS
   resource.mstyle.t_font = resource.mstyle.f_font = resource.tstyle.font =
     resource.wstyle.font = (XFontStruct *) 0;
- 
+#endif // NLS
+
 #ifdef    HAVE_STRFTIME
   resource.strftime_format = 0;
 #endif // HAVE_STRFTIME
@@ -137,7 +170,7 @@ BScreen::BScreen(Blackbox *bb, int scrn) : ScreenInfo(bb, scrn) {
   XChangeProperty(getBaseDisplay()->getXDisplay(), getRootWindow(),
                   blackbox->getBlackboxPidAtom(), XA_CARDINAL,
                   sizeof(pid_t) * 8, PropModeReplace,
-                  (unsigned char *) &bpid, 1); 
+                  (unsigned char *) &bpid, 1);
 #endif // HAVE_GETPID
 
   XDefineCursor(getBaseDisplay()->getXDisplay(), getRootWindow(),
@@ -145,22 +178,22 @@ BScreen::BScreen(Blackbox *bb, int scrn) : ScreenInfo(bb, scrn) {
 
   workspaceNames = new LinkedList<char>;
   workspacesList = new LinkedList<Workspace>;
-  
   rootmenuList = new LinkedList<Rootmenu>;
   netizenList = new LinkedList<Netizen>;
-  
+  iconList = new LinkedList<BlackboxWindow>;
+
   image_control =
     new BImageControl(blackbox, this, True, blackbox->getColorsPerChannel(),
                       blackbox->getCacheLife(), blackbox->getCacheMax());
   image_control->installRootColormap();
   root_colormap_installed = True;
-  
+
   blackbox->load_rc(this);
-  
+
   image_control->setDither(resource.image_dither);
 
   LoadStyle();
-  
+
   XGCValues gcv;
   gcv.foreground = WhitePixel(getBaseDisplay()->getXDisplay(),
 			      getScreenNumber());
@@ -170,16 +203,30 @@ BScreen::BScreen(Blackbox *bb, int scrn) : ScreenInfo(bb, scrn) {
                    GCForeground | GCFunction | GCSubwindowMode, &gcv);
 
   gcv.foreground = resource.wstyle.l_text_focus.getPixel();
+#ifndef   NLS
   gcv.font = resource.wstyle.font->fid;
+#endif // NLS
   resource.wstyle.l_text_focus_gc =
     XCreateGC(getBaseDisplay()->getXDisplay(), getRootWindow(),
-	      GCForeground | GCFont, &gcv);
-  
+#ifdef    NLS
+	      GCForeground,
+#else // !NLS
+	      GCForeground | GCFont,
+#endif // NLS
+	      &gcv);
+
   gcv.foreground = resource.wstyle.l_text_unfocus.getPixel();
+#ifndef   NLS
   gcv.font = resource.wstyle.font->fid;
+#endif // NLS
   resource.wstyle.l_text_unfocus_gc =
     XCreateGC(getBaseDisplay()->getXDisplay(), getRootWindow(),
-	      GCForeground | GCFont, &gcv);
+#ifdef    NLS
+	      GCForeground,
+#else // !NLS
+	      GCForeground | GCFont,
+#endif // NLS
+	      &gcv);
 
   gcv.foreground = resource.wstyle.b_pic_focus.getPixel();
   resource.wstyle.b_pic_focus_gc =
@@ -192,58 +239,125 @@ BScreen::BScreen(Blackbox *bb, int scrn) : ScreenInfo(bb, scrn) {
 	      GCForeground, &gcv);
 
   gcv.foreground = resource.mstyle.t_text.getPixel();
+#ifndef   NLS
   gcv.font = resource.mstyle.t_font->fid;
+#endif // NLS
   resource.mstyle.t_text_gc =
     XCreateGC(getBaseDisplay()->getXDisplay(), getRootWindow(),
-	      GCForeground | GCFont, &gcv);
+#ifdef    NLS
+	      GCForeground,
+#else // !NLS
+	      GCForeground | GCFont,
+#endif // NLS
+	      &gcv);
 
   gcv.foreground = resource.mstyle.f_text.getPixel();
+#ifndef   NLS
   gcv.font = resource.mstyle.f_font->fid;
+#endif // NLS
   resource.mstyle.f_text_gc =
     XCreateGC(getBaseDisplay()->getXDisplay(), getRootWindow(),
-	      GCForeground | GCFont, &gcv);
+#ifdef    NLS
+	      GCForeground,
+#else // !NLS
+	      GCForeground | GCFont,
+#endif // NLS
+	      &gcv);
 
   gcv.foreground = resource.mstyle.h_text.getPixel();
   resource.mstyle.h_text_gc =
     XCreateGC(getBaseDisplay()->getXDisplay(), getRootWindow(),
-	      GCForeground | GCFont, &gcv);
-  
+#ifdef    NLS
+	      GCForeground,
+#else // !NLS
+	      GCForeground | GCFont,
+#endif // NLS
+	      &gcv);
+
   gcv.foreground = resource.mstyle.d_text.getPixel();
   resource.mstyle.d_text_gc =
     XCreateGC(getBaseDisplay()->getXDisplay(), getRootWindow(),
-	      GCForeground | GCFont, &gcv);
-  
+#ifdef    NLS
+	      GCForeground,
+#else // !NLS
+	      GCForeground | GCFont,
+#endif // NLS
+	      &gcv);
+
   gcv.foreground = resource.tstyle.l_text.getPixel();
+#ifndef   NLS
   gcv.font = resource.tstyle.font->fid;
-  resource.tstyle.l_text_gc = 
+#endif // NLS
+  resource.tstyle.l_text_gc =
     XCreateGC(getBaseDisplay()->getXDisplay(), getRootWindow(),
-	      GCForeground | GCFont, &gcv);
+#ifdef    NLS
+	      GCForeground,
+#else // !NLS
+	      GCForeground | GCFont,
+#endif // NLS
+	      &gcv);
 
   gcv.foreground = resource.tstyle.w_text.getPixel();
-  resource.tstyle.w_text_gc = 
+  resource.tstyle.w_text_gc =
     XCreateGC(getBaseDisplay()->getXDisplay(), getRootWindow(),
-	      GCForeground | GCFont, &gcv);
-  
+#ifdef    NLS
+	      GCForeground,
+#else // !NLS
+	      GCForeground | GCFont,
+#endif // NLS
+	      &gcv);
+
   gcv.foreground = resource.tstyle.c_text.getPixel();
   resource.tstyle.c_text_gc =
     XCreateGC(getBaseDisplay()->getXDisplay(), getRootWindow(),
-	      GCForeground | GCFont, &gcv);
+#ifdef    NLS
+	      GCForeground,
+#else // !NLS
+	      GCForeground | GCFont,
+#endif // NLS
+	      &gcv);
 
   gcv.foreground = resource.tstyle.b_pic.getPixel();
   resource.tstyle.b_pic_gc =
     XCreateGC(getBaseDisplay()->getXDisplay(), getRootWindow(),
-	      GCForeground | GCFont, &gcv);
-  
-  geom_h = resource.wstyle.font->ascent +
+#ifdef    NLS
+	      GCForeground,
+#else // !NLS
+	      GCForeground | GCFont,
+#endif // NLS
+	      &gcv);
+
+  geom_h =
+#ifdef    NLS
+    resource.wstyle.extents->max_ink_extent.height +
+#else // !NLS
+    resource.wstyle.font->ascent +
     resource.wstyle.font->descent +
+#endif // NLS
     (resource.bevel_width * 2);
-  geom_w = (resource.bevel_width * 2) +
-    XTextWidth(resource.wstyle.font, "0: 0000 x 0: 0000",
-	       strlen("0: 0000 x 0: 0000"));
-  
+
+  const char *s =  i18n->getMessage(
+#ifdef    NLS
+				    ScreenSet, ScreenPositionLength,
+#else // !NLS
+				    0, 0,
+#endif // NLS
+				    "0: 0000 x 0: 0000");
+  int l = strlen(s);
+
+#ifdef    NLS
+  XRectangle ink, logical;
+  XmbTextExtents(resource.wstyle.font, s, l, &ink, &logical);
+  geom_w = logical.width;
+#else // !NLS
+  geom_w = XTextWidth(resource.wstyle.font, s, l);
+#endif // NLS
+
+  geom_w += (resource.bevel_width * 2);
+
   geom_pixmap =
     image_control->renderImage(geom_w, geom_h, &resource.wstyle.l_focus);
-  
+
   XSetWindowAttributes attrib;
   unsigned long mask = CWBackPixmap | CWBorderPixel | CWSaveUnder;
   attrib.background_pixmap = geom_pixmap;
@@ -255,11 +369,11 @@ BScreen::BScreen(Blackbox *bb, int scrn) : ScreenInfo(bb, scrn) {
                   0, 0, geom_w, geom_h, resource.border_width, getDepth(),
                   InputOutput, getVisual(), mask, &attrib);
   geom_visible = False;
-  
+
   workspacemenu = new Workspacemenu(this);
   iconmenu = new Iconmenu(this);
   configmenu = new Configmenu(this);
-  
+
   Workspace *wkspc = (Workspace *) 0;
   if (resource.workspaces != 0) {
     for (int i = 0; i < resource.workspaces; ++i) {
@@ -272,21 +386,21 @@ BScreen::BScreen(Blackbox *bb, int scrn) : ScreenInfo(bb, scrn) {
     workspacesList->insert(wkspc);
     workspacemenu->insert(wkspc->getName(), wkspc->getMenu());
   }
-  
+
   workspacemenu->insert("Icons", iconmenu);
   workspacemenu->update();
-  
+
   current_workspace = workspacesList->first();
   workspacemenu->setItemSelected(2, True);
-  
+
   toolbar = new Toolbar(this);
 
 #ifdef    SLIT
   slit = new Slit(this);
 #endif // SLIT
-  
+
   InitMenu();
-  
+
   raiseWindows(0, 0);
   rootmenu->update();
 
@@ -304,34 +418,34 @@ BScreen::BScreen(Blackbox *bb, int scrn) : ScreenInfo(bb, scrn) {
 
     XWMHints *wmhints = XGetWMHints(getBaseDisplay()->getXDisplay(),
 				    children[i]);
-    
+
     if (wmhints) {
       if ((wmhints->flags & IconWindowHint) &&
 	  (wmhints->icon_window != children[i]))
         for (int j = 0; j < (int) nchild; j++)
           if (children[j] == wmhints->icon_window) {
             children[j] = None;
-	    
+
             break;
           }
-      
+
       XFree(wmhints);
     }
   }
- 
+
   // manage shown windows
   for (i = 0; i < (int) nchild; ++i) {
     if (children[i] == None || (! blackbox->validateWindow(children[i])))
       continue;
-    
+
     XWindowAttributes attrib;
     if (XGetWindowAttributes(getBaseDisplay()->getXDisplay(), children[i],
                              &attrib)) {
       if (attrib.override_redirect) continue;
-    
+
       if (attrib.map_state != IsUnmapped) {
         new BlackboxWindow(blackbox, children[i], this);
-        
+
         BlackboxWindow *win = blackbox->searchWindow(children[i]);
         if (win) {
           XMapRequestEvent mre;
@@ -346,7 +460,7 @@ BScreen::BScreen(Blackbox *bb, int scrn) : ScreenInfo(bb, scrn) {
   if (! resource.sloppy_focus)
     XSetInputFocus(getBaseDisplay()->getXDisplay(), toolbar->getWindowID(),
 		   RevertToParent, CurrentTime);
-  
+
   XFree(children);
   XFlush(getBaseDisplay()->getXDisplay());
 }
@@ -360,7 +474,7 @@ BScreen::~BScreen(void) {
   if (! managed) return;
 
   if (geom_pixmap != None)
-    image_control->removeImage(geom_pixmap);    
+    image_control->removeImage(geom_pixmap);
 
   if (geom_window != None)
     XDestroyWindow(getBaseDisplay()->getXDisplay(), geom_window);
@@ -369,10 +483,16 @@ BScreen::~BScreen(void) {
 
   while (workspacesList->count())
     delete workspacesList->remove(0);
-  
+
   while (rootmenuList->count())
     rootmenuList->remove(0);
   
+  while (iconList->count())
+    delete iconList->remove(0);
+  
+  while (netizenList->count())
+    delete netizenList->remove(0);
+
 #ifdef    HAVE_STRFTIME
   if (resource.strftime_format) {
 #  ifdef    DEBUG
@@ -396,17 +516,41 @@ BScreen::~BScreen(void) {
 
   delete workspacesList;
   delete workspaceNames;
-
   delete rootmenuList;
+  delete iconList;
+  delete netizenList;  
 
-  if (resource.wstyle.font)
+  if (resource.wstyle.font) {
+#ifdef    NLS
+    XFreeFontSet(getBaseDisplay()->getXDisplay(), resource.wstyle.font);
+#else // !NLS
     XFreeFont(getBaseDisplay()->getXDisplay(), resource.wstyle.font);
-  
-  if (resource.mstyle.t_font)
-    XFreeFont(getBaseDisplay()->getXDisplay(), resource.mstyle.t_font);
+#endif // NLS
+  }
 
-  if (resource.mstyle.f_font)
+  if (resource.mstyle.t_font) {
+#ifdef    NLS
+    XFreeFontSet(getBaseDisplay()->getXDisplay(), resource.mstyle.t_font);
+#else // !NLS
+    XFreeFont(getBaseDisplay()->getXDisplay(), resource.mstyle.t_font);
+#endif // NLS
+  }
+
+  if (resource.mstyle.f_font) {
+#ifdef    NLS
+    XFreeFontSet(getBaseDisplay()->getXDisplay(), resource.mstyle.f_font);
+#else // !NLS
     XFreeFont(getBaseDisplay()->getXDisplay(), resource.mstyle.f_font);
+#endif // NLS
+  }
+
+  if (resource.tstyle.font) {
+#ifdef    NLS
+    XFreeFontSet(getBaseDisplay()->getXDisplay(), resource.tstyle.font);
+#else // !NLS
+    XFreeFont(getBaseDisplay()->getXDisplay(), resource.tstyle.font);
+#endif // NLS
+  }
 
   XFreeGC(getBaseDisplay()->getXDisplay(), opGC);
 
@@ -427,7 +571,7 @@ BScreen::~BScreen(void) {
 	  resource.mstyle.h_text_gc);
   XFreeGC(getBaseDisplay()->getXDisplay(),
 	  resource.mstyle.d_text_gc);
-  
+
   XFreeGC(getBaseDisplay()->getXDisplay(),
 	  resource.tstyle.l_text_gc);
   XFreeGC(getBaseDisplay()->getXDisplay(),
@@ -444,49 +588,49 @@ void BScreen::readDatabaseTexture(char *rname, char *rclass,
 {
   XrmValue value;
   char *value_type;
-  
+
   if (XrmGetResource(resource.stylerc, rname, rclass, &value_type,
 		     &value))
     image_control->parseTexture(texture, value.addr);
   else
     texture->setTexture(BImage_Solid | BImage_Flat);
-  
+
   if (texture->getTexture() & BImage_Solid) {
-    int clen = strlen(rclass) + 8, nlen = strlen(rname) + 8;
+    int clen = strlen(rclass) + 32, nlen = strlen(rname) + 32;
 
 #ifdef    DEBUG
     allocate(sizeof(char) * (clen + nlen), "Screen.cc");
 #endif // DEBUG
 
     char *colorclass = new char[clen], *colorname = new char[nlen];
-    
+
     sprintf(colorclass, "%s.Color", rclass);
     sprintf(colorname,  "%s.color", rname);
-    
+
     readDatabaseColor(colorname, colorclass, texture->getColor(),
 		      default_pixel);
 
-#ifdef    INTERLACED
+#ifdef    INTERLACE
     sprintf(colorclass, "%s.ColorTo", rclass);
-    sprintf(colorname,  "%s.colorTo," rname);
+    sprintf(colorname,  "%s.colorTo", rname);
 
-    readDatabaseColor(colorname, colorclass, texture->getcolor(),
+    readDatabaseColor(colorname, colorclass, texture->getColorTo(),
                       default_pixel);
-#endif // INTERLACED
-    
+#endif // INTERLACE
+
 #ifdef    DEBUG
     deallocate(sizeof(char) * (clen + nlen), "Screen.cc");
 #endif // DEBUG
 
     delete [] colorclass;
     delete [] colorname;
-    
+
     if ((! texture->getColor()->isAllocated()) ||
 	(texture->getTexture() & BImage_Flat))
       return;
-    
+
     XColor xcol;
-    
+
     xcol.red = (unsigned int) (texture->getColor()->getRed() +
 			       (texture->getColor()->getRed() >> 1));
     if (xcol.red >= 0xff) xcol.red = 0xffff;
@@ -499,13 +643,13 @@ void BScreen::readDatabaseTexture(char *rname, char *rclass,
 				(texture->getColor()->getBlue() >> 1));
     if (xcol.blue >= 0xff) xcol.blue = 0xffff;
     else xcol.blue *= 0xff;
-    
+
     if (! XAllocColor(getBaseDisplay()->getXDisplay(),
 		      image_control->getColormap(), &xcol))
       xcol.pixel = 0;
-    
+
     texture->getHiColor()->setPixel(xcol.pixel);
-    
+
     xcol.red =
       (unsigned int) ((texture->getColor()->getRed() >> 2) +
 		      (texture->getColor()->getRed() >> 1)) * 0xff;
@@ -515,11 +659,11 @@ void BScreen::readDatabaseTexture(char *rname, char *rclass,
     xcol.blue =
       (unsigned int) ((texture->getColor()->getBlue() >> 2) +
 		      (texture->getColor()->getBlue() >> 1)) * 0xff;
-    
+
     if (! XAllocColor(getBaseDisplay()->getXDisplay(),
 		      image_control->getColormap(), &xcol))
       xcol.pixel = 0;
-    
+
     texture->getLoColor()->setPixel(xcol.pixel);
   } else if (texture->getTexture() & BImage_Gradient) {
     int clen = strlen(rclass) + 10, nlen = strlen(rname) + 10;
@@ -530,18 +674,18 @@ void BScreen::readDatabaseTexture(char *rname, char *rclass,
 
     char *colorclass = new char[clen], *colorname = new char[nlen],
       *colortoclass = new char[clen], *colortoname = new char[nlen];
-    
+
     sprintf(colorclass, "%s.Color", rclass);
     sprintf(colorname,  "%s.color", rname);
-    
+
     sprintf(colortoclass, "%s.ColorTo", rclass);
     sprintf(colortoname,  "%s.colorTo", rname);
-    
+
     readDatabaseColor(colorname, colorclass, texture->getColor(),
 		      default_pixel);
     readDatabaseColor(colortoname, colortoclass, texture->getColorTo(),
 		      default_pixel);
-    
+
 #ifdef    DEBUG
     deallocate(sizeof(char) * 2 * (clen + nlen), "Screen.cc");
 #endif // DEBUG
@@ -559,7 +703,7 @@ void BScreen::readDatabaseColor(char *rname, char *rclass, BColor *color,
 {
   XrmValue value;
   char *value_type;
-  
+
   if (XrmGetResource(resource.stylerc, rname, rclass, &value_type,
 		     &value)) {
     image_control->parseColor(color, value.addr);
@@ -572,35 +716,213 @@ void BScreen::readDatabaseColor(char *rname, char *rclass, BColor *color,
 }
 
 
+#ifdef    NLS
+void BScreen::readDatabaseFont(char *rname, char *rclass, XFontSet *font) {
+#else // !NLS
 void BScreen::readDatabaseFont(char *rname, char *rclass, XFontStruct **font) {
+#endif // NLS
   if (! font) return;
-  
-  static const char *defaultFont = "fixed";
-  
+
+  static char *defaultFont = "fixed";
+
   Bool load_default = False;
   XrmValue value;
   char *value_type;
-  
-  if (*font)
+
+  if (*font) {
+#ifdef    NLS
+    XFreeFontSet(getBaseDisplay()->getXDisplay(), *font);
+#else // !NLS
     XFreeFont(getBaseDisplay()->getXDisplay(), *font);
-  
+#endif // NLS
+  }
+
   if (XrmGetResource(resource.stylerc, rname, rclass, &value_type, &value)) {
+#ifdef   NLS
+    char *fontname = value.addr;
+    if (! (*font = createFontSet(fontname)))
+      load_default = True;
+#else // !NLS
     if ((*font = XLoadQueryFont(getBaseDisplay()->getXDisplay(),
 				value.addr)) == NULL) {
       fprintf(stderr,
-	      "BScreen::LoadStyle(): couldn't load font '%s'\n", value.addr);
-      
+	      i18n->
+	      getMessage(
+#ifdef    NLS
+			 ScreenSet, ScreenFontLoadFail,
+#else // !NLS
+			 0, 0,
+#endif // NLS
+			 "BScreen::LoadStyle(): couldn't load font '%s'\n"),
+	      value.addr);
+
       load_default = True;
     }
+#endif // NLS
   } else
     load_default = True;
 
-  if (load_default && (*font = XLoadQueryFont(getBaseDisplay()->getXDisplay(),
-                                              defaultFont)) == NULL) {
-    fprintf(stderr, "BScreen::LoadStyle(): couldn't load default font.\n");
-    exit(2);
+  if (load_default) {
+#ifdef    NLS
+    *font = createFontSet(defaultFont);
+
+    if (! *font) {
+      fprintf(stderr,
+              i18n->
+              getMessage(
+#ifdef    NLS
+                         ScreenSet, ScreenDefaultFontLoadFail,
+#else // !NLS
+                         0, 0,
+#endif // NLS
+                         "BScreen::LoadStyle(): couldn't load default font.\n"));
+      exit(2);
+    }
+#else // !NLS
+    if ((*font = XLoadQueryFont(getBaseDisplay()->getXDisplay(),
+				defaultFont)) == NULL) {
+      fprintf(stderr,
+	      i18n->
+	      getMessage(
+#ifdef    NLS
+			 ScreenSet, ScreenDefaultFontLoadFail,
+#else // !NLS
+			 0, 0,
+#endif // NLS
+		         "BScreen::LoadStyle(): couldn't load default font.\n"));
+      exit(2);
+    }
+#endif // NLS
   }
 }
+
+
+
+#ifdef    NLS
+
+static const char * i_strstr(const char *str, const char *ptn) {
+  const char *s2, *p2;
+  for( ; *str; str++) {
+    for(s2=str,p2=ptn; ; s2++,p2++) {
+      if (!*p2) return str;
+      if (toupper(*s2) != toupper(*p2)) break;
+    }
+  }
+  return NULL;
+}
+
+
+static const char * Font_GetElement(const char *pattern, char *buf, int bufsiz, ...) {
+  const char *p, *v;
+  char *p2;
+  va_list va;
+
+  va_start(va, bufsiz);
+  buf[bufsiz-1] = 0;
+  buf[bufsiz-2] = '*';
+  while((v = va_arg(va, char *)) != NULL) {
+    p = i_strstr(pattern, v);
+    if (p) {
+      strncpy(buf, p+1, bufsiz-2);
+      p2 = strchr(buf, '-');
+      if (p2) *p2=0;
+      va_end(va);
+      return p;
+    }
+  }
+  va_end(va);
+  strncpy(buf, "*", bufsiz);
+  return NULL;
+}
+
+
+static const char * Font_GetSize(const char *pattern, int *size) {
+  const char *p;
+  const char *p2=NULL;
+  int n=0;
+
+  for (p=pattern; 1; p++) {
+    if (!*p) {
+      if (p2!=NULL && n>1 && n<72) {
+	*size = n; return p2+1;
+      } else {
+	*size = 16; return NULL;
+      }
+    } else if (*p=='-') {
+      if (n>1 && n<72 && p2!=NULL) {
+	*size = n;
+	return p2+1;
+      }
+      p2=p; n=0;
+    } else if (*p>='0' && *p<='9' && p2!=NULL) {
+      n *= 10;
+      n += *p-'0';
+    } else {
+      p2=NULL; n=0;
+    }
+  }
+}
+
+
+XFontSet BScreen::createFontSet(char *fontname) {
+  XFontSet fs;
+  char **missing, *def;
+  int nmissing, pixel_size = 0, buf_size = 0;
+  char weight[FONT_ELEMENT_SIZE], slant[FONT_ELEMENT_SIZE];
+
+  fs = XCreateFontSet(getBaseDisplay()->getXDisplay(),
+		      fontname, &missing, &nmissing, &def);
+  if (fs && (! nmissing)) return fs;
+
+#ifdef    HAVE_SETLOCALE
+  if (! fs) {
+    if (nmissing) XFreeStringList(missing);
+
+    setlocale(LC_CTYPE, "C");
+    fs = XCreateFontSet(getBaseDisplay()->getXDisplay(), fontname,
+			&missing, &nmissing, &def);
+    setlocale(LC_CTYPE, "");
+  }
+#endif // HAVE_SETLOCALE
+
+  if (fs) {
+    XFontStruct **fontstructs;
+    char **fontnames;
+    XFontsOfFontSet(fs, &fontstructs, &fontnames);
+    fontname = fontnames[0];
+  }
+
+  Font_GetElement(fontname, weight, FONT_ELEMENT_SIZE,
+		  "-medium-", "-bold-", "-demibold-", "-regular-", NULL);
+  Font_GetElement(fontname, slant, FONT_ELEMENT_SIZE,
+		  "-r-", "-i-", "-o-", "-ri-", "-ro-", NULL);
+  Font_GetSize(fontname, &pixel_size);
+
+  if (! strcmp(weight, "*")) strncpy(weight, "medium", FONT_ELEMENT_SIZE);
+  if (! strcmp(slant, "*")) strncpy(slant, "r", FONT_ELEMENT_SIZE);
+  if (pixel_size < 3) pixel_size = 3;
+  else if (pixel_size > 97) pixel_size = 97;
+
+  buf_size = strlen(fontname) + (FONT_ELEMENT_SIZE * 2) + 64;
+  char *pattern2 = new char[buf_size];
+  snprintf(pattern2, buf_size - 1,
+	   "%s,"
+	   "-*-*-%s-%s-*-*-%d-*-*-*-*-*-*-*,"
+	   "-*-*-*-*-*-*-%d-*-*-*-*-*-*-*,*",
+	   fontname, weight, slant, pixel_size, pixel_size);
+  fontname = pattern2;
+
+  if (nmissing) XFreeStringList(missing);
+  if (fs) XFreeFontSet(getBaseDisplay()->getXDisplay(), fs);
+
+  fs = XCreateFontSet(getBaseDisplay()->getXDisplay(), fontname,
+		      &missing, &nmissing, &def);
+  delete [] pattern2;
+
+  return fs;
+}
+
+#endif // NLS
 
 
 void BScreen::reconfigure(void) {
@@ -613,16 +935,30 @@ void BScreen::reconfigure(void) {
   gcv.subwindow_mode = IncludeInferiors;
   XChangeGC(getBaseDisplay()->getXDisplay(), opGC,
 	    GCForeground | GCFunction | GCSubwindowMode, &gcv);
-  
+
   gcv.foreground = resource.wstyle.l_text_focus.getPixel();
+#ifndef   NLS
   gcv.font = resource.wstyle.font->fid;
+#endif // NLS
   XChangeGC(getBaseDisplay()->getXDisplay(), resource.wstyle.l_text_focus_gc,
-	    GCForeground | GCFont, &gcv);
-  
+#ifdef    NLS
+	    GCForeground,
+#else // !NLS
+	    GCForeground | GCFont,
+#endif //NLS
+	    &gcv);
+
   gcv.foreground = resource.wstyle.l_text_unfocus.getPixel();
+#ifndef   NLS
   gcv.font = resource.wstyle.font->fid;
+#endif // NLS
   XChangeGC(getBaseDisplay()->getXDisplay(), resource.wstyle.l_text_unfocus_gc,
-	    GCForeground | GCFont, &gcv);
+#ifdef    NLS
+	    GCForeground,
+#else // !NLS
+	    GCForeground | GCFont,
+#endif // NLS
+	    &gcv);
 
   gcv.foreground = resource.wstyle.b_pic_focus.getPixel();
   XChangeGC(getBaseDisplay()->getXDisplay(), resource.wstyle.b_pic_focus_gc,
@@ -633,47 +969,115 @@ void BScreen::reconfigure(void) {
 	    GCForeground, &gcv);
 
   gcv.foreground = resource.mstyle.t_text.getPixel();
+#ifndef   NLS
   gcv.font = resource.mstyle.t_font->fid;
+#endif // NLS
   XChangeGC(getBaseDisplay()->getXDisplay(), resource.mstyle.t_text_gc,
-	    GCForeground | GCFont, &gcv);
-  
+#ifdef    NLS
+	    GCForeground,
+#else // !NLS
+	    GCForeground | GCFont,
+#endif // NLS
+	    &gcv);
+
   gcv.foreground = resource.mstyle.f_text.getPixel();
+#ifndef   NLS
   gcv.font = resource.mstyle.f_font->fid;
+#endif // NLS
   XChangeGC(getBaseDisplay()->getXDisplay(), resource.mstyle.f_text_gc,
-	    GCForeground | GCFont, &gcv);
-    
+#ifdef    NLS
+	    GCForeground,
+#else // !NLS
+	    GCForeground | GCFont,
+#endif // NLS
+	    &gcv);
+
   gcv.foreground = resource.mstyle.h_text.getPixel();
   XChangeGC(getBaseDisplay()->getXDisplay(), resource.mstyle.h_text_gc,
-	    GCForeground | GCFont, &gcv);
+	    #ifdef    NLS
+	    GCForeground,
+#else // !NLS
+	    GCForeground | GCFont,
+#endif // NLS
+	    &gcv);
 
   gcv.foreground = resource.mstyle.d_text.getPixel();
   XChangeGC(getBaseDisplay()->getXDisplay(), resource.mstyle.d_text_gc,
-	    GCForeground | GCFont, &gcv);
+#ifdef    NLS
+	    GCForeground,
+#else // !NLS
+	    GCForeground | GCFont,
+#endif // NLS
+	    &gcv);
 
   gcv.foreground = resource.tstyle.l_text.getPixel();
+#ifndef   NLS
   gcv.font = resource.tstyle.font->fid;
+#endif // NLS
   XChangeGC(getBaseDisplay()->getXDisplay(), resource.tstyle.l_text_gc,
-	    GCForeground | GCFont, &gcv);
+#ifdef   NLS
+	    GCForeground,
+#else // !NLS
+	    GCForeground | GCFont,
+#endif // NLS
+	    &gcv);
 
   gcv.foreground = resource.tstyle.w_text.getPixel();
   XChangeGC(getBaseDisplay()->getXDisplay(), resource.tstyle.w_text_gc,
-	    GCForeground | GCFont, &gcv);
-  
+#ifdef    NLS
+	    GCForeground,
+#else // !NLS
+	    GCForeground | GCFont,
+#endif // NLS
+	    &gcv);
+
   gcv.foreground = resource.tstyle.c_text.getPixel();
   XChangeGC(getBaseDisplay()->getXDisplay(), resource.tstyle.c_text_gc,
-	    GCForeground | GCFont, &gcv);
+#ifdef    NLS
+	    GCForeground,
+#else // !NLS
+	    GCForeground | GCFont,
+#endif // NLS
+	    &gcv);
 
   gcv.foreground = resource.tstyle.b_pic.getPixel();
   XChangeGC(getBaseDisplay()->getXDisplay(), resource.tstyle.b_pic_gc,
-	    GCForeground | GCFont, &gcv);
-  
-  geom_h = resource.wstyle.font->ascent +
+#ifdef    NLS
+	    GCForeground,
+#else // !NLS
+	    GCForeground | GCFont,
+#endif // NLS
+	    &gcv);
+
+  geom_h =
+#ifdef    NLS
+    resource.wstyle.extents->max_ink_extent.height +
+#else // !NLS
+    resource.wstyle.font->ascent +
     resource.wstyle.font->descent +
+#endif // NLS
     (resource.bevel_width * 2);
-  geom_w = (resource.bevel_width * 2) +
-    XTextWidth(resource.wstyle.font, "0: 0000 x 0: 0000",
-	       strlen("0: 0000 x 0: 0000"));
-  
+
+  const char *s = i18n->getMessage(
+#ifdef    NLS
+				   ScreenSet, ScreenPositionLength,
+#else // !NLS
+				   0, 0,
+#endif // NLS
+				   "0: 0000 x 0: 0000");
+  int l = strlen(s);
+
+#ifdef    NLS
+  XRectangle ink, logical;
+  XmbTextExtents(resource.wstyle.font, s, l, &ink, &logical);
+  geom_w = logical.width;
+#else // !NLS
+  geom_w = XTextWidth(resource.wstyle.font, s, l);
+#endif // NLS
+
+  geom_w += (resource.bevel_width * 2);
+
+
   Pixmap tmp = geom_pixmap;
   geom_pixmap =
     image_control->renderImage(geom_w, geom_h, &resource.wstyle.l_focus);
@@ -688,9 +1092,14 @@ void BScreen::reconfigure(void) {
 
   workspacemenu->reconfigure();
   iconmenu->reconfigure();
-  
-  InitMenu();
-  rootmenu->reconfigure();
+
+  {
+    int remember_sub = rootmenu->getCurrentSubmenu();
+    InitMenu();
+    rootmenu->reconfigure();
+    rootmenu->drawSubmenu(remember_sub);
+  }
+
   configmenu->reconfigure();
 
   toolbar->reconfigure();
@@ -699,11 +1108,18 @@ void BScreen::reconfigure(void) {
   slit->reconfigure();
 #endif // SLIT
 
-  LinkedListIterator<Workspace> it(workspacesList);
-  for (; it.current(); it++)
-    it.current()->reconfigure();
+  LinkedListIterator<Workspace> wit(workspacesList);
+  for (; wit.current(); wit++)
+    wit.current()->reconfigure();
+  
+  LinkedListIterator<BlackboxWindow> iit(iconList);
+  for (; iit.current(); iit++)
+    if (iit.current()->validateClient())
+      iit.current()->reconfigure();
+  
+  image_control->timeout();
 }
-
+ 
 
 void BScreen::rereadMenu(void) {
   InitMenu();
@@ -719,7 +1135,7 @@ void BScreen::removeWorkspaceNames(void) {
 #ifdef    DEBUG
     deallocate(sizeof(char) * (strlen(n) + 1), "Screen.cc");
 #endif // DEBUG
-    
+
     delete [] n;
   }
 }
@@ -732,7 +1148,7 @@ void BScreen::LoadStyle(void) {
 
   XrmValue value;
   char *value_type;
-  
+
   // load window config
   readDatabaseTexture("window.title.focus", "Window.Title.Focus",
 		      &resource.wstyle.t_focus,
@@ -819,7 +1235,7 @@ void BScreen::LoadStyle(void) {
       resource.wstyle.justify = BScreen::LeftJustify;
   } else
     resource.wstyle.justify = BScreen::LeftJustify;
-  
+
   // load toolbar config
   readDatabaseTexture("toolbar", "Toolbar",
 		      &resource.tstyle.toolbar,
@@ -863,7 +1279,7 @@ void BScreen::LoadStyle(void) {
 		    BlackPixel(getBaseDisplay()->getXDisplay(),
 			       getScreenNumber()));
   readDatabaseFont("toolbar.font", "Toolbar.Font", &resource.tstyle.font);
-  
+
   if (XrmGetResource(resource.stylerc, "toolbar.justify",
 		     "Toolbar.Justify", &value_type, &value)) {
     if (strstr(value.addr, "right") || strstr(value.addr, "Right"))
@@ -874,7 +1290,7 @@ void BScreen::LoadStyle(void) {
       resource.tstyle.justify = BScreen::LeftJustify;
   } else
     resource.tstyle.justify = BScreen::LeftJustify;
-  
+
   // load menu config
   readDatabaseTexture("menu.title", "Menu.Title",
 		      &resource.mstyle.title,
@@ -995,7 +1411,7 @@ void BScreen::LoadStyle(void) {
                      "RootCommand", &value_type, &value)) {
 #ifndef   __EMX__
     int dslen = strlen(DisplayString(getBaseDisplay()->getXDisplay()));
-    
+
 #  ifdef    DEBUG
     allocate(sizeof(char) * (dslen + 32), "Screen.cc");
 #  endif // DEBUG
@@ -1005,43 +1421,86 @@ void BScreen::LoadStyle(void) {
 #  ifdef    DEBUG
     allocate(sizeof(char) * (strlen(value.addr) + dslen + 64), "Screen.cc");
 #  endif // DEBUG
-    
+
     char *command = new char[strlen(value.addr) + dslen + 64];
-    
+
     sprintf(displaystring, "%s",
 	    DisplayString(getBaseDisplay()->getXDisplay()));
     // gotta love pointer math
     sprintf(displaystring + dslen - 1, "%d", getScreenNumber());
     sprintf(command, "DISPLAY=\"%s\" exec %s &",  displaystring, value.addr);
     system(command);
-    
+
 #  ifdef    DEBUG
     deallocate(sizeof(char) * (dslen + 32), "Screen.cc");
     deallocate(sizeof(char) * (strlen(value.addr) + dslen + 64), "Screen.cc");
 #  endif // DEBUG
-    
+
     delete [] displaystring;
     delete [] command;
 #else // !__EMX__
     spawnlp(P_NOWAIT, "cmd.exe", "cmd.exe", "/c", item->exec(), NULL);
 #endif // __EMX__
   }
-  
+
+#ifdef    NLS
+  resource.mstyle.t_extents = XExtentsOfFontSet(resource.mstyle.t_font);
+  resource.mstyle.f_extents = XExtentsOfFontSet(resource.mstyle.f_font);
+  resource.tstyle.extents = XExtentsOfFontSet(resource.tstyle.font);
+  resource.wstyle.extents = XExtentsOfFontSet(resource.wstyle.font);
+#endif // NLS
+
   XrmDestroyDatabase(resource.stylerc);
 }
 
 
+void BScreen::addIcon(BlackboxWindow *w) {
+  if (! w) return;
+  
+  w->setWorkspace(-1);
+  w->setWindowNumber(iconList->count());
+  
+  iconList->insert(w);
+  
+  iconmenu->insert((const char **) w->getIconTitle());
+  iconmenu->update();
+}
+
+
+void BScreen::removeIcon(BlackboxWindow *w) { 
+  if (! w) return;
+  
+  iconList->remove(w->getWindowNumber());
+  
+  iconmenu->remove(w->getWindowNumber());
+  iconmenu->update();
+  
+  LinkedListIterator<BlackboxWindow> it(iconList);
+  for (int i = 0; it.current(); it++, i++)
+    it.current()->setWindowNumber(i);
+}
+
+
+BlackboxWindow *BScreen::getIcon(int index) {
+  if (index >= 0 && index < iconList->count())
+    return iconList->find(index);
+  
+  return (BlackboxWindow *) 0;
+}
+ 
+
 int BScreen::addWorkspace(void) {
   Workspace *wkspc = new Workspace(this, workspacesList->count());
   workspacesList->insert(wkspc);
-  
+
   workspacemenu->insert(wkspc->getName(), wkspc->getMenu(),
 			wkspc->getWorkspaceID() + 1);
   workspacemenu->update();
 
   toolbar->reconfigure();
+
   updateNetizenWorkspaceCount();
-  
+
   return workspacesList->count();
 }
 
@@ -1049,12 +1508,12 @@ int BScreen::addWorkspace(void) {
 int BScreen::removeLastWorkspace(void) {
   if (workspacesList->count() > 1) {
     Workspace *wkspc = workspacesList->last();
-    
+
     if (current_workspace->getWorkspaceID() == wkspc->getWorkspaceID())
       changeWorkspaceID(current_workspace->getWorkspaceID() - 1);
-    
+
     wkspc->removeAll();
-    
+
     workspacemenu->remove(wkspc->getWorkspaceID() + 2);
     workspacemenu->update();
 
@@ -1062,11 +1521,12 @@ int BScreen::removeLastWorkspace(void) {
     delete wkspc;
 
     toolbar->reconfigure();
+
     updateNetizenWorkspaceCount();
-    
+
     return workspacesList->count();
   }
-  
+
   return 0;
 }
 
@@ -1079,18 +1539,26 @@ void BScreen::changeWorkspaceID(int id) {
 
     workspacemenu->setItemSelected(current_workspace->getWorkspaceID() + 2,
 				   False);
-    
+
     if (blackbox->getFocusedWindow() &&
 	blackbox->getFocusedWindow()->getScreen() == this &&
-        (! blackbox->getFocusedWindow()->isStuck()))
+        (! blackbox->getFocusedWindow()->isStuck())) {
+      current_workspace->setLastFocusedWindow(blackbox->getFocusedWindow());
       blackbox->setFocusedWindow((BlackboxWindow *) 0);
+    }
+
     current_workspace = getWorkspace(id);
-    
+
     workspacemenu->setItemSelected(current_workspace->getWorkspaceID() + 2,
 				   True);
     toolbar->redrawWorkspaceLabel(True);
-    
+
     current_workspace->showAll();
+
+    if (resource.focus_last && current_workspace->getLastFocusedWindow()) {
+      XSync(blackbox->getXDisplay(), False);
+      current_workspace->getLastFocusedWindow()->setInputFocus();
+    }
   }
 
   updateNetizenCurrentWorkspace();
@@ -1198,16 +1666,16 @@ void BScreen::raiseWindows(Window *workspace_stack, int num) {
   Window *session_stack = new
     Window[(num + workspacesList->count() + rootmenuList->count() + 13)];
   int i = 0, k = num;
-  
+
   XRaiseWindow(getBaseDisplay()->getXDisplay(), iconmenu->getWindowID());
   *(session_stack + i++) = iconmenu->getWindowID();
-  
+
   LinkedListIterator<Workspace> wit(workspacesList);
   for (; wit.current(); wit++)
     *(session_stack + i++) = wit.current()->getMenu()->getWindowID();
-  
+
   *(session_stack + i++) = workspacemenu->getWindowID();
-  
+
   *(session_stack + i++) = configmenu->getFocusmenu()->getWindowID();
   *(session_stack + i++) = configmenu->getPlacementmenu()->getWindowID();
   *(session_stack + i++) = configmenu->getWindowID();
@@ -1234,10 +1702,10 @@ void BScreen::raiseWindows(Window *workspace_stack, int num) {
   if (slit->isOnTop())
     *(session_stack + i++) = slit->getWindowID();
 #endif // SLIT
-  
+
   while (k--)
     *(session_stack + i++) = *(workspace_stack + k);
-  
+
   XRestackWindows(getBaseDisplay()->getXDisplay(), session_stack, i);
 
 #ifdef    DEBUG
@@ -1258,7 +1726,7 @@ void BScreen::saveStrftimeFormat(char *format) {
 
     delete [] resource.strftime_format;
   }
-  
+
 #  ifdef    DEBUG
   allocate(sizeof(char) * (strlen(format) + 1), "Screen.cc");
 #  endif // DEBUG
@@ -1270,29 +1738,20 @@ void BScreen::saveStrftimeFormat(char *format) {
 
 
 void BScreen::addWorkspaceName(char *name) {
-  int nlen = strlen(name) + 1;
-
-#ifdef    DEBUG
-  allocate(sizeof(char) * nlen, "Screen.cc");
-#endif // DEBUG
-  
-  char *wkspc_name = new char[nlen];
-  strncpy(wkspc_name, name, nlen);
-  
-  workspaceNames->insert(wkspc_name);
+  workspaceNames->insert(bstrdup(name));
 }
 
 
 void BScreen::getNameOfWorkspace(int id, char **name) {
   if (id >= 0 && id < workspaceNames->count()) {
     char *wkspc_name = workspaceNames->find(id);
-    
+
     if (wkspc_name) {
       int len = strlen(wkspc_name) + 1;
-      
-      // we don't call allocate() here when debugging because the debugger keeps records only
-      // on individual source files... this memory is allocated for Workspace.cc... which is
-      // immediately freed... no leak here...
+
+      // we don't call allocate() here when debugging because the debugger
+      // keeps records only on individual source files... this memory is allocated
+      // for Workspace.cc... which is immediately freed... no leak here...
       //
       //      allocate(sizeof(char) * len, "Screen.cc");
       //
@@ -1305,10 +1764,21 @@ void BScreen::getNameOfWorkspace(int id, char **name) {
 }
 
 
-void BScreen::reassociateWindow(BlackboxWindow *w) {
-  if (! w->isStuck() && w->getWorkspaceNumber() != getCurrentWorkspaceID()) {
+void BScreen::reassociateWindow(BlackboxWindow *w, int wkspc_id, Bool ignore_sticky) {
+  if (! w) return;
+  
+  if (wkspc_id == -1)
+    wkspc_id = current_workspace->getWorkspaceID();
+  
+  if (w->getWorkspaceNumber() == wkspc_id)
+    return;
+  
+  if (w->isIconic()) {
+    removeIcon(w);
+    getWorkspace(wkspc_id)->addWindow(w);
+  } else if (ignore_sticky || ! w->isStuck()) {
     getWorkspace(w->getWorkspaceNumber())->removeWindow(w);
-    getCurrentWorkspace()->addWindow(w);
+    getWorkspace(wkspc_id)->addWindow(w);
   }
 }
 
@@ -1316,6 +1786,7 @@ void BScreen::reassociateWindow(BlackboxWindow *w) {
 void BScreen::nextFocus(void) {
   Bool have_focused = False;
   int focused_window_number = -1;
+  BlackboxWindow *next;
 
   if (blackbox->getFocusedWindow())
     if (blackbox->getFocusedWindow()->getScreen()->getScreenNumber() ==
@@ -1323,26 +1794,24 @@ void BScreen::nextFocus(void) {
       have_focused = True;
       focused_window_number = blackbox->getFocusedWindow()->getWindowNumber();
     }
-  
+
   if ((getCurrentWorkspace()->getCount() > 1) && have_focused) {
-    BlackboxWindow *next;
-    
     int next_window_number = focused_window_number;
     do {
-      do {
-	if ((++next_window_number) >= getCurrentWorkspace()->getCount())
-	  next_window_number = 0;
-	
-	next = getCurrentWorkspace()->getWindow(next_window_number);
-      }	while (next->isIconic() && (next_window_number !=
-				    focused_window_number));
+      if ((++next_window_number) >= getCurrentWorkspace()->getCount())
+	next_window_number = 0;
+      
+      next = getCurrentWorkspace()->getWindow(next_window_number);
     } while ((! next->setInputFocus()) && (next_window_number !=
 					   focused_window_number));
     
     if (next_window_number != focused_window_number)
       getCurrentWorkspace()->raiseWindow(next);
   } else if (getCurrentWorkspace()->getCount() >= 1) {
-    getCurrentWorkspace()->getWindow(0)->setInputFocus();
+    next = current_workspace->getWindow(0);
+    
+    current_workspace->raiseWindow(next);
+    next->setInputFocus();
   }
 }
 
@@ -1350,6 +1819,7 @@ void BScreen::nextFocus(void) {
 void BScreen::prevFocus(void) {
   Bool have_focused = False;
   int focused_window_number = -1;
+  BlackboxWindow *prev;
   
   if (blackbox->getFocusedWindow())
     if (blackbox->getFocusedWindow()->getScreen()->getScreenNumber() ==
@@ -1357,43 +1827,42 @@ void BScreen::prevFocus(void) {
       have_focused = True;
       focused_window_number = blackbox->getFocusedWindow()->getWindowNumber();
     }
-  
+
   if ((getCurrentWorkspace()->getCount() > 1) && have_focused) {
-    BlackboxWindow *prev;
-    
     int prev_window_number = focused_window_number;
     do {
-      do {
-	if ((--prev_window_number) < 0)
-	  prev_window_number = getCurrentWorkspace()->getCount() - 1;
-	
-	prev = getCurrentWorkspace()->getWindow(prev_window_number);
-      } while (prev->isIconic() && (prev_window_number !=
-				    focused_window_number));
+      if ((--prev_window_number) < 0)
+	prev_window_number = getCurrentWorkspace()->getCount() - 1;
+      
+      prev = getCurrentWorkspace()->getWindow(prev_window_number);
     } while ((! prev->setInputFocus()) && (prev_window_number !=
 					   focused_window_number));
     
     if (prev_window_number != focused_window_number)
       getCurrentWorkspace()->raiseWindow(prev);
-  } else if (getCurrentWorkspace()->getCount() >= 1)
-    getCurrentWorkspace()->getWindow(0)->setInputFocus();
+  } else if (getCurrentWorkspace()->getCount() >= 1) {
+    prev = current_workspace->getWindow(0);
+    
+    current_workspace->raiseWindow(prev);
+    prev->setInputFocus();
+  }
 }
 
 
 void BScreen::raiseFocus(void) {
   Bool have_focused = False;
   int focused_window_number = -1;
-  
+
   if (blackbox->getFocusedWindow())
     if (blackbox->getFocusedWindow()->getScreen()->getScreenNumber() ==
 	getScreenNumber()) {
       have_focused = True;
       focused_window_number = blackbox->getFocusedWindow()->getWindowNumber();
     }
-  
+
   if ((getCurrentWorkspace()->getCount() > 1) && have_focused)
     getWorkspace(blackbox->getFocusedWindow()->getWorkspaceNumber())->
-      raiseWindow(blackbox->getFocusedWindow()); 
+      raiseWindow(blackbox->getFocusedWindow());
 }
 
 
@@ -1401,14 +1870,14 @@ void BScreen::InitMenu(void) {
   if (rootmenu) {
     while (rootmenuList->count())
       rootmenuList->remove(0);
-    
+
     while (rootmenu->getCount())
       rootmenu->remove(0);
   } else
     rootmenu = new Rootmenu(this);
-  
+
   Bool defaultMenu = True;
-  
+
   if (blackbox->getMenuFilename()) {
     FILE *menu_file = fopen(blackbox->getMenuFilename(), "r");
 
@@ -1417,11 +1886,11 @@ void BScreen::InitMenu(void) {
 	char line[1024], label[1024];
 	memset(line, 0, 1024);
 	memset(label, 0, 1024);
-	
+
 	while (fgets(line, 1024, menu_file) && ! feof(menu_file)) {
 	  if (line[0] != '#') {
 	    int i, key = 0, index = -1, len = strlen(line);
-	    
+
 	    key = 0;
 	    for (i = 0; i < len; i++)
 	      if (line[i] == '[') index = 0;
@@ -1429,7 +1898,7 @@ void BScreen::InitMenu(void) {
 	      else if (line[i] != ' ')
 		if (index++ >= 0)
 		  key += tolower(line[i]);
-	    
+
 	    if (key == 517) {
 	      index = -1;
 	      for (i = index; i < len; i++)
@@ -1439,10 +1908,10 @@ void BScreen::InitMenu(void) {
 		  if (line[i] == '\\' && i < len - 1) i++;
 		  label[index - 1] = line[i];
 		}
-	      
+
 	      if (index == -1) index = 0;
 	      label[index] = '\0';
-	      
+
 	      rootmenu->setLabel(label);
 	      defaultMenu = parseMenuFile(menu_file, rootmenu);
 	      break;
@@ -1450,18 +1919,54 @@ void BScreen::InitMenu(void) {
 	  }
 	}
       } else
-	fprintf(stderr, "%s: Empty menu file", blackbox->getMenuFilename());
-      
+	fprintf(stderr,
+		i18n->getMessage(
+#ifdef    NLS
+				 ScreenSet, ScreenEmptyMenuFile,
+#else // !NLS
+				 0, 0,
+#endif // NLS
+				 "%s: Empty menu file"),
+		blackbox->getMenuFilename());
+
       fclose(menu_file);
     } else
       perror(blackbox->getMenuFilename());
   }
-  
+
   if (defaultMenu) {
     rootmenu->setInternalMenu();
-    rootmenu->insert("xterm", BScreen::Execute, "xterm");
-    rootmenu->insert("Restart", BScreen::Restart);
-    rootmenu->insert("Exit", BScreen::Exit);
+    rootmenu->insert(i18n->getMessage(
+#ifdef    NLS
+				      ScreenSet, Screenxterm,
+#else // !NLS
+				      0, 0,
+#endif // NLS
+				      "xterm"),
+		     BScreen::Execute,
+		     i18n->getMessage(
+#ifdef    NLS
+				      ScreenSet, Screenxterm,
+#else // !NLS
+				      0, 0,
+#endif // NLS
+				      "xterm"));
+    rootmenu->insert(i18n->getMessage(
+#ifdef    NLS
+				      ScreenSet, ScreenRestart,
+#else // !NLS
+				      0, 0,
+#endif // NLS
+				      "Restart"),
+		     BScreen::Restart);
+    rootmenu->insert(i18n->getMessage(
+#ifdef    NLS
+				      ScreenSet, ScreenExit,
+#else // !NLS
+				      0, 0,
+#endif // NLS
+				      "Exit"),
+		     BScreen::Exit);
   } else
     blackbox->saveMenuFilename(blackbox->getMenuFilename());
 }
@@ -1469,17 +1974,17 @@ void BScreen::InitMenu(void) {
 
 Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
   char line[1024], label[1024], command[1024];
-  
+
   while (! feof(file)) {
     memset(line, 0, 1024);
     memset(label, 0, 1024);
     memset(command, 0, 1024);
-    
+
     if (fgets(line, 1024, file)) {
       if (line[0] != '#') {
 	register int i, key = 0, parse = 0, index = -1,
           line_length = strlen(line), label_length = 0, command_length = 0;
-	
+
 	// determine the keyword
 	key = 0;
 	for (i = 0; i < line_length; i++)
@@ -1488,9 +1993,10 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	  else if (line[i] != ' ')
 	    if (parse)
 	      key += tolower(line[i]);
-	
+
 	// get the label enclosed in ()'s
 	parse = 0;
+
 	for (i = 0; i < line_length; i++)
 	  if (line[i] == '(') {
 	    index = 0;
@@ -1500,7 +2006,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	    if (line[i] == '\\' && i < line_length - 1) i++;
 	    label[index - 1] = line[i];
 	  }
-	
+
 	if (parse) {
 	  label[index] = '\0';
 	  label_length = index;
@@ -1508,7 +2014,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	  label[0] = '\0';
 	  label_length = 0;
 	}
-	
+
 	// get the command enclosed in {}'s
 	parse = 0;
 	index = -1;
@@ -1521,7 +2027,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	    if (line[i] == '\\' && i < line_length - 1) i++;
 	    command[index - 1] = line[i];
 	  }
-	
+
 	if (parse) {
 	  command[index] = '\0';
 	  command_length = index;
@@ -1529,48 +2035,70 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	  command[0] = '\0';
 	  command_length = 0;
 	}
-	
+
 	switch (key) {
         case 311: //end
           return ((menu->getCount() == 0) ? True : False);
-	  
+
           break;
-	  
+
         case 333: // nop
 	  menu->insert(label);
 
 	  break;
 
-	case 421: // exec 
+	case 421: // exec
 	  if ((! *label) && (! *command)) {
-	    fprintf(stderr," BScreen::parseMenuFile: [exec] error, "
-		    "no menu label and/or command defined\n");
+	    fprintf(stderr,
+		    i18n->getMessage(
+#ifdef    NLS
+				     ScreenSet, ScreenEXECError,
+#else // !NLS
+				     0, 0,
+#endif // NLS
+				     "BScreen::parseMenuFile: [exec] error, "
+				     "no menu label and/or command defined\n"));
 	    continue;
 	  }
-	  
+
 	  menu->insert(label, BScreen::Execute, command);
-	  
+
 	  break;
-	  
+
 	case 442: // exit
 	  if (! *label) {
-	      fprintf(stderr, "BScreen::parseMenuFile: [exit] error, "
-		      "no menu label defined\n");
-	      continue;
+	    fprintf(stderr,
+		    i18n->getMessage(
+#ifdef    NLS
+				     ScreenSet, ScreenEXITError,
+#else // !NLS
+				     0, 0,
+#endif // NLS
+				     "BScreen::parseMenuFile: [exit] error, "
+				     "no menu label defined\n"));
+	    continue;
 	  }
-	  
+
 	  menu->insert(label, BScreen::Exit);
-	  
+
 	  break;
 
 	case 561: // style
 	  {
 	    if ((! *label) || (! *command)) {
-	      fprintf(stderr, "BScreen::parseMenuFile: [style] error, "
-		      "no menu label and/or filename defined\n");
+	      fprintf(stderr,
+		      i18n->
+		      getMessage(
+#ifdef    NLS
+				 ScreenSet, ScreenSTYLEError,
+#else // !NLS
+				 0, 0,
+#endif // NLS
+				 "BScreen::parseMenuFile: [style] error, "
+				 "no menu label and/or filename defined\n"));
 	      continue;
 	    }
-	    
+
 	    char style[MAXPATHLEN];
 
 	    // perform shell style ~ home directory expansion
@@ -1580,10 +2108,10 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	      homedir = getenv("HOME");
 	      homedir_len = strlen(homedir);
 	    }
-	    	    
+
 	    if (homedir && homedir_len != 0) {
 	      strncpy(style, homedir, homedir_len);
-	      
+
 	      strncpy(style + homedir_len, command + 1,
 		      command_length - 1);
 	      *(style + command_length + homedir_len - 1) = '\0';
@@ -1591,33 +2119,47 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	      strncpy(style, command, command_length);
 	      *(style + command_length) = '\0';
 	    }
-	    
+
 	    menu->insert(label, BScreen::SetStyle, style);
 	  }
-	  
+
 	  break;
 
 	case 630: // config
-	  {
-	    if (! *label) {
-	      fprintf(stderr, "BScreen::parseMenufile: [config] error, "
-		      "no label defined");
-	      continue;
-	    }
-	    
-	    menu->insert(label, configmenu);
+	  if (! *label) {
+	    fprintf(stderr,
+		    i18n->
+		    getMessage(
+#ifdef    NLS
+			       ScreenSet, ScreenCONFIGError,
+#else // !NLS
+			       0, 0,
+#endif // NLS
+			       "BScreen::parseMenufile: [config] error, "
+			       "no label defined"));
+	    continue;
 	  }
-	  
+
+	  menu->insert(label, configmenu);
+
 	  break;
-	  
+
 	case 740: // include
 	  {
 	    if (! *label) {
-	      fprintf(stderr, "BScreen::parseMenuFile: [include] error, "
-		      "no filename defined\n");
+	      fprintf(stderr,
+		      i18n->
+		      getMessage(
+#ifdef    NLS
+				 ScreenSet, ScreenINCLUDEError,
+#else // !NLS
+				 0, 0,
+#endif // NLS
+				 "BScreen::parseMenuFile: [include] error, "
+				 "no filename defined\n"));
 	      continue;
 	    }
-	    
+
 	    char newfile[MAXPATHLEN];
 
 	    // perform shell style ~ home directory expansion
@@ -1627,10 +2169,10 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	      homedir = getenv("HOME");
 	      homedir_len = strlen(homedir);
 	    }
-	    
+
 	    if (homedir && homedir_len != 0) {
 	      strncpy(newfile, homedir, homedir_len);
-	      
+
 	      strncpy(newfile + homedir_len, label + 1,
 		      label_length - 1);
 	      *(newfile + label_length + homedir_len - 1) = '\0';
@@ -1638,84 +2180,132 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	      strncpy(newfile, label, label_length);
 	      *(newfile + label_length) = '\0';
 	    }
-	    
+
 	    if (newfile) {
 	      FILE *submenufile = fopen(newfile, "r");
-	      
+
 	      if (submenufile) {
+                struct stat buf;
+                if (fstat(fileno(submenufile), &buf) ||
+                    (! S_ISREG(buf.st_mode))) {
+                  fprintf(stderr,
+			  i18n->
+			  getMessage(
+#ifdef    NLS
+				     ScreenSet, ScreenINCLUDEErrorReg,
+#else // !NLS
+				     0, 0,
+#endif // NLS
+				     "BScreen::parseMenuFile: [include] error: "
+				     "'%s' is not a regular file\n"), newfile);
+                  break;
+                }
+
 		if (! feof(submenufile)) {
 		  if (! parseMenuFile(submenufile, menu))
 		    blackbox->saveMenuFilename(newfile);
-		  
+
 		  fclose(submenufile);
 		}
 	      } else
 		perror(newfile);
 	    }
 	  }
-	  
-	  break;
-	  
-	  case 767: // submenu
-	    {
-	      if (! *label) {
-		fprintf(stderr, "BScreen::parseMenuFile: [submenu] error, "
-			"no menu label defined\n");
-		continue;
-	      }
 
-              Rootmenu *submenu = new Rootmenu(this);
-	      
-	      if (*command)
-		submenu->setLabel(command);
-	      else
-		submenu->setLabel(label);
-	      
-	      parseMenuFile(file, submenu);
-	      submenu->update();
-	      menu->insert(label, submenu);
-	      rootmenuList->insert(submenu);
+	  break;
+
+	case 767: // submenu
+	  {
+	    if (! *label) {
+	      fprintf(stderr,
+		      i18n->
+		      getMessage(
+#ifdef    NLS
+				 ScreenSet, ScreenSUBMENUError,
+#else // !NLS
+				 0, 0,
+#endif // NLS
+				 "BScreen::parseMenuFile: [submenu] error, "
+				 "no menu label defined\n"));
+	      continue;
 	    }
-	    
-	    break;
+
+	    Rootmenu *submenu = new Rootmenu(this);
+
+	    if (*command)
+	      submenu->setLabel(command);
+	    else
+	      submenu->setLabel(label);
+
+	    parseMenuFile(file, submenu);
+	    submenu->update();
+	    menu->insert(label, submenu);
+	    rootmenuList->insert(submenu);
+	  }
+
+	  break;
 
 	case 773: // restart
 	  {
 	    if (! *label) {
-	      fprintf(stderr, "BScreen::parseMenuFile: [restart] error, "
-		      "no menu label defined\n");
+	      fprintf(stderr,
+		      i18n->
+		      getMessage(
+#ifdef    NLS
+				 ScreenSet, ScreenRESTARTError,
+#else // !NLS
+				 0, 0,
+#endif // NLS
+				 "BScreen::parseMenuFile: [restart] error, "
+				 "no menu label defined\n"));
 	      continue;
 	    }
-	    
+
 	    if (*command)
 	      menu->insert(label, BScreen::RestartOther, command);
 	    else
 	      menu->insert(label, BScreen::Restart);
 	  }
-	  
-	  break;
-	  
-	  case 845: // reconfig
-	    {
-	      if (! *label) {
-		fprintf(stderr, "BScreen::parseMenuFile: [reconfig] error, "
-			"no menu label defined\n");
-		continue;
-	      }
-	      
-	      menu->insert(label, BScreen::Reconfigure);
-	    }
-	    
-	    break;
 
-        case 995: // stylesdir 
+	  break;
+
+	case 845: // reconfig
+	  {
+	    if (! *label) {
+	      fprintf(stderr,
+		      i18n->
+		      getMessage(
+#ifdef    NLS
+				 ScreenSet, ScreenRECONFIGError,
+#else // !NLS
+				 0, 0,
+#endif // NLs
+				 "BScreen::parseMenuFile: [reconfig] error, "
+				 "no menu label defined\n"));
+	      continue;
+	    }
+
+	    menu->insert(label, BScreen::Reconfigure);
+	  }
+
+	  break;
+
+        case 995: // stylesdir
         case 1113: // stylesmenu
           {
             Bool newmenu = ((key == 1113) ? True : False);
 
             if ((! *label) || ((! *command) && newmenu)) {
-              fprintf(stderr, "BScreen::parseMenuFile: [stylesdir/stylesmenu]"
-                      " error, no directory defined\n");
+              fprintf(stderr,
+		      i18n->
+		      getMessage(
+#ifdef    NLS
+				 ScreenSet, ScreenSTYLESDIRError,
+#else // !NLS
+				 0, 0,
+#endif // NLS
+				 "BScreen::parseMenuFile: [stylesdir/stylesmenu]"
+				 " error, no directory defined\n"));
               continue;
             }
 
@@ -1732,7 +2322,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
               homedir = getenv("HOME");
               homedir_len = strlen(homedir);
             }
-             
+
             if (homedir && homedir_len != 0) {
               strncpy(stylesdir, homedir, homedir_len);
 
@@ -1769,16 +2359,8 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
                 char **ls = new char* [entries];
                 int index = 0;
-                while ((p = readdir(d))) {
-                  int len = strlen(p->d_name) + 1;
-
-#ifdef    DEBUG
-		  allocate(sizeof(char) * len, "Screen.cc");
-#endif // DEBUG
-		  
-                  ls[index] = new char[len];
-                  strncpy(ls[index++], p->d_name, len);
-                }
+                while ((p = readdir(d)))
+		  ls[index++] = bstrdup(p->d_name);
 
                 qsort(ls, entries, sizeof(char *), dcmp);
 
@@ -1797,16 +2379,16 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 #ifdef    DEBUG
 		  deallocate(sizeof(char) * (nlen + 1), "Screen.cc");
 #endif // DEBUG
-		  
+
                   delete [] ls[n];
                 }
-		
+
 #ifdef    DEBUG
 		deallocate(sizeof(char*) * entries, "Screen.cc");
 #endif // DEBUG
-		
+
                 delete [] ls;
-		
+
                 stylesmenu->update();
 
                 if (newmenu) {
@@ -1817,13 +2399,29 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
                 blackbox->saveMenuFilename(stylesdir);
               } else {
-                fprintf(stderr, "BScreen::parseMenuFile:"
-                        " [stylesdir/stylesmenu] error, %s is not a"
-                        " directory\n", stylesdir);
+                fprintf(stderr,
+			i18n->
+			getMessage(
+#ifdef    NLS
+				   ScreenSet, ScreenSTYLESDIRErrorNotDir,
+#else // !NLS
+				   0, 0,
+#endif // NLS
+				   "BScreen::parseMenuFile:"
+				   " [stylesdir/stylesmenu] error, %s is not a"
+				   " directory\n"), stylesdir);
               }
             } else {
-              fprintf(stderr, "BScreen::parseMenuFile: [stylesdir/stylesmenu]"
-                      " error, %s does not exist\n", stylesdir);
+              fprintf(stderr,
+		      i18n->
+		      getMessage(
+#ifdef    NLS
+				 ScreenSet, ScreenSTYLESDIRErrorNoExist,
+#else // !NLS
+				 0, 0,
+#endif // NLS
+				 "BScreen::parseMenuFile: [stylesdir/stylesmenu]"
+				 " error, %s does not exist\n"), stylesdir);
             }
 
             break;
@@ -1832,20 +2430,27 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 	case 1090: // workspaces
 	  {
 	    if (! *label) {
-	      fprintf(stderr, "BScreen:parseMenuFile: [workspaces] error, "
-		      "no menu label defined\n");
+	      fprintf(stderr,
+		      i18n->getMessage(
+#ifdef    NLS
+				       ScreenSet, ScreenWORKSPACESError,
+#else // !NLS
+				       0, 0,
+#endif // NLS
+				       "BScreen:parseMenuFile: [workspaces] error, "
+				       "no menu label defined\n"));
 	      continue;
 	    }
-	    
+
 	    menu->insert(label, workspacemenu);
-	      
+
 	    break;
 	  }
 	}
       }
     }
   }
-  
+
   return ((menu->getCount() == 0) ? True : False);
 }
 
@@ -1859,7 +2464,7 @@ void BScreen::shutdown(void) {
   LinkedListIterator<Workspace> it(workspacesList);
   for (; it.current(); it ++)
     it.current()->shutdown();
-  
+
   blackbox->ungrab();
 }
 
@@ -1877,14 +2482,29 @@ void BScreen::showPosition(int x, int y) {
 
   char label[1024];
 
-  sprintf(label, "X: %4d x Y: %4d", x, y);
+  sprintf(label,
+	  i18n->getMessage(
+#ifdef    NLS
+			   ScreenSet, ScreenPositionFormat,
+#else // !NLS
+			   0, 0,
+#endif // NLS
+			   "X: %4d x Y: %4d"), x, y);
 
   XClearWindow(getBaseDisplay()->getXDisplay(), geom_window);
+#ifdef    NLS
+  XmbDrawString(getBaseDisplay()->getXDisplay(), geom_window,
+		resource.wstyle.font, resource.wstyle.l_text_focus_gc,
+		resource.bevel_width, resource.bevel_width -
+		resource.wstyle.extents->max_ink_extent.y,
+		label, strlen(label));
+#else // !NLS
   XDrawString(getBaseDisplay()->getXDisplay(), geom_window,
 	      resource.wstyle.l_text_focus_gc,
               resource.bevel_width,
 	      resource.wstyle.font->ascent +
               resource.bevel_width, label, strlen(label));
+#endif // NLS
 }
 
 
@@ -1901,14 +2521,29 @@ void BScreen::showGeometry(unsigned int gx, unsigned int gy) {
 
   char label[1024];
 
-  sprintf(label, "W: %4d x H: %4d", gx, gy);
+  sprintf(label,
+	  i18n->getMessage(
+#ifdef    NLS
+			   ScreenSet, ScreenGeometryFormat,
+#else // !NLS
+			   0, 0,
+#endif // NLS
+			   "W: %4d x H: %4d"), gx, gy);
 
   XClearWindow(getBaseDisplay()->getXDisplay(), geom_window);
+#ifdef    NLS
+  XmbDrawString(getBaseDisplay()->getXDisplay(), geom_window,
+		resource.wstyle.font, resource.wstyle.l_text_focus_gc,
+		resource.bevel_width, resource.bevel_width -
+		resource.wstyle.extents->max_ink_extent.y,
+		label, strlen(label));
+#else // !NLS
   XDrawString(getBaseDisplay()->getXDisplay(), geom_window,
 	      resource.wstyle.l_text_focus_gc,
               resource.bevel_width,
 	      resource.wstyle.font->ascent +
               resource.bevel_width, label, strlen(label));
+#endif // NLS
 }
 
 
@@ -1918,4 +2553,3 @@ void BScreen::hideGeometry(void) {
     geom_visible = False;
   }
 }
-

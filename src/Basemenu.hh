@@ -5,18 +5,18 @@
 // copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the 
+// and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in 
-// all copies or substantial portions of the Software. 
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
-// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
 #ifndef   __Basemenu_hh
@@ -55,14 +55,14 @@ private:
   struct _menu {
     Pixmap frame_pixmap, title_pixmap, hilite_pixmap, sel_pixmap;
     Window window, frame, title;
-    
+
     char *label;
     int x, y, x_move, y_move, x_shift, y_shift, sublevels, persub, minsub,
       grab_x, grab_y;
     unsigned int width, height, title_h, frame_h, item_w, item_h, bevel_w,
       bevel_h;
   } menu;
-  
+
 
 protected:
   inline BasemenuItem *find(int index) { return menuitems->find(index); }
@@ -72,7 +72,6 @@ protected:
   inline void setMinimumSublevels(int m) { menu.minsub = m; }
 
   virtual void itemSelected(int, int) = 0;
-  virtual void drawSubmenu(int);
   virtual void drawItem(int, Bool = False, Bool = False);
   virtual void redrawTitle();
   virtual void internal_hide(void);
@@ -84,22 +83,23 @@ public:
 
   inline const Bool &isTorn(void) const { return torn; }
   inline const Bool &isVisible(void) const { return visible; }
-  
+
   inline BScreen *getScreen(void) { return screen; }
 
   inline const Window &getWindowID(void) const { return menu.window; }
 
   inline const char *getLabel(void) const { return menu.label; }
 
-  int insert(char *, int = 0, char * = (char *) 0, int = -1);
-  int insert(char **, int = -1, int = 0);
-  int insert(char *, Basemenu *, int = -1);
+  int insert(const char *, int = 0, const char * = (const char *) 0, int = -1);
+  int insert(const char **, int = -1, int = 0);
+  int insert(const char *, Basemenu *, int = -1);
   int remove(int);
 
   inline const int &getX(void) const { return menu.x; }
   inline const int &getY(void) const { return menu.y; }
   inline int getCount(void) { return menuitems->count(); }
-  
+  inline const int &getCurrentSubmenu(void) const { return which_sub; }
+
   inline const unsigned int &getWidth(void) const { return menu.width; }
   inline const unsigned int &getHeight(void) const { return menu.height; }
   inline const unsigned int &getTitleHeight(void) const { return menu.title_h; }
@@ -109,11 +109,11 @@ public:
   inline void setTorn(void) { torn = True; }
   inline void removeParent(void)
     { if (internal_menu) parent = (Basemenu *) 0; }
-  
+
   Bool hasSubmenu(int);
   Bool isItemSelected(int);
   Bool isItemEnabled(int);
-  
+
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);
   void motionNotifyEvent(XMotionEvent *);
@@ -121,12 +121,13 @@ public:
   void leaveNotifyEvent(XCrossingEvent *);
   void exposeEvent(XExposeEvent *);
   void reconfigure(void);
-  void setLabel(char *n);
+  void setLabel(const char *n);
   void move(int, int);
   void update(void);
   void setItemSelected(int, Bool);
   void setItemEnabled(int, Bool);
-   
+
+  virtual void drawSubmenu(int);
   virtual void show(void);
   virtual void hide(void);
 
@@ -139,7 +140,7 @@ public:
 class BasemenuItem {
 private:
   Basemenu *s;
-  char **u, *l, *e;
+  const char **u, *l, *e;
   int f, enabled, selected;
 
   friend Basemenu;
@@ -149,7 +150,7 @@ protected:
 
 
 public:
-  BasemenuItem(char *lp, int fp, char *ep = (char *) 0) {
+  BasemenuItem(const char *lp, int fp, const char *ep = (const char *) 0) {
     l = lp;
     e = ep;
     s = 0;
@@ -163,7 +164,7 @@ public:
 #endif // DEBUG
   }
 
-  BasemenuItem(char *lp, Basemenu *mp) {
+  BasemenuItem(const char *lp, Basemenu *mp) {
     l = lp;
     s = mp;
     e = 0;
@@ -177,7 +178,7 @@ public:
 #endif // DEBUG
   }
 
-  BasemenuItem(char **up, int fp) {
+  BasemenuItem(const char **up, int fp) {
     u = up;
     l = e = 0;
     f = fp;
@@ -196,9 +197,9 @@ public:
   }
 #endif // DEBUG
 
-  inline char *exec(void) { return e; }
-  inline char *label(void) { return l; }
-  inline char **ulabel(void) { return u; }
+  inline const char *exec(void) const { return e; }
+  inline const char *label(void) const { return l; }
+  inline const char **ulabel(void) const { return u; }
   inline const int &function(void) const { return f; }
   inline Basemenu *submenu(void) { return s; }
 

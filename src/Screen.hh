@@ -5,20 +5,20 @@
 // copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the 
+// and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in 
-// all copies or substantial portions of the Software. 
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
-// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-  
+
 #ifndef   __Screen_hh
 #define   __Screen_hh
 
@@ -59,7 +59,13 @@ typedef struct WindowStyle {
   BTexture t_focus, t_unfocus, l_focus, l_unfocus, h_focus, h_unfocus,
     b_focus, b_unfocus, b_pressed, f_focus, f_unfocus, g_focus, g_unfocus;
   GC l_text_focus_gc, l_text_unfocus_gc, b_pic_focus_gc, b_pic_unfocus_gc;
+
+#ifdef    NLS
+  XFontSet font;
+  XFontSetExtents *extents;
+#else // !NLS
   XFontStruct *font;
+#endif // NLS
 
   int justify;
 } WindowStyle;
@@ -68,7 +74,13 @@ typedef struct ToolbarStyle {
   BColor l_text, w_text, c_text, b_pic;
   BTexture toolbar, label, window, button, pressed, clock;
   GC l_text_gc, w_text_gc, c_text_gc, b_pic_gc;
+
+#ifdef    NLS
+  XFontSet font;
+  XFontSetExtents *extents;
+#else // !NLS
   XFontStruct *font;
+#endif // NLS
 
   int justify;
 } ToolbarStyle;
@@ -77,7 +89,13 @@ typedef struct MenuStyle {
   BColor t_text, f_text, h_text, d_text;
   BTexture title, frame, hilite;
   GC t_text_gc, f_text_gc, h_text_gc, d_text_gc;
+
+#ifdef    NLS
+  XFontSet t_font, f_font;
+  XFontSetExtents *t_extents, *f_extents;
+#else // !NLS
   XFontStruct *t_font, *f_font;
+#endif // NLS
 
   int t_justify, f_justify, bullet, bullet_pos;
 } MenuStyle;
@@ -89,7 +107,7 @@ private:
   GC opGC;
   Pixmap geom_pixmap;
   Window geom_window;
-  
+
   Blackbox *blackbox;
   BImageControl *image_control;
   Configmenu *configmenu;
@@ -98,6 +116,7 @@ private:
 
   LinkedList<Rootmenu> *rootmenuList;
   LinkedList<Netizen> *netizenList;
+  LinkedList<BlackboxWindow> *iconList;
   
 #ifdef    SLIT
   Slit *slit;
@@ -106,49 +125,56 @@ private:
   Toolbar *toolbar;
   Workspace *current_workspace;
   Workspacemenu *workspacemenu;
-  
+
   unsigned int geom_w, geom_h;
   unsigned long event_mask;
-  
+
   LinkedList<char> *workspaceNames;
   LinkedList<Workspace> *workspacesList;
-  
+
   struct resource {
     WindowStyle wstyle;
     ToolbarStyle tstyle;
     MenuStyle mstyle;
 
     Bool toolbar_on_top, sloppy_focus, auto_raise, auto_edge_balance,
-      image_dither, ordered_dither, opaque_move, full_max, focus_new;
+      image_dither, ordered_dither, opaque_move, full_max, focus_new, focus_last;
     BColor border_color;
     XrmDatabase stylerc;
-    
+
     int workspaces, toolbar_placement, toolbar_width_percent, placement_policy,
-      edge_snap_threshold;
+      edge_snap_threshold, row_direction, col_direction;
 
 #ifdef    SLIT
     Bool slit_on_top;
     int slit_placement, slit_direction;
 #endif // SLIT
-    
+
     unsigned int handle_width, bevel_width, border_width, border_width_2x;
-    
+
 #ifdef    HAVE_STRFTIME
     char *strftime_format;
 #else // !HAVE_STRFTIME
     Bool clock24hour;
     int date_format;
 #endif // HAVE_STRFTIME
-    
+
   } resource;
-  
-  
+
+
 protected:
   Bool parseMenuFile(FILE *, Rootmenu *);
 
   void readDatabaseTexture(char *, char *, BTexture *, unsigned long);
   void readDatabaseColor(char *, char *, BColor *, unsigned long);
+
+#ifdef    NLS
+  void readDatabaseFont(char *, char *, XFontSet *);
+ XFontSet createFontSet(char *);
+#else // !NLS
   void readDatabaseFont(char *, char *, XFontStruct **);
+#endif // NLS
+
   void InitMenu(void);
   void LoadStyle(void);
 
@@ -158,23 +184,24 @@ public:
   ~BScreen(void);
 
   inline const Bool &isToolbarOnTop(void) const
-    { return resource.toolbar_on_top; }
+  { return resource.toolbar_on_top; }
   inline const Bool &isSloppyFocus(void) const
-    { return resource.sloppy_focus; }
+  { return resource.sloppy_focus; }
   inline const Bool &isRootColormapInstalled(void) const
-    { return root_colormap_installed; }
+  { return root_colormap_installed; }
   inline const Bool &doAutoRaise(void) const { return resource.auto_raise; }
   inline const Bool &isScreenManaged(void) const { return managed; }
   inline const Bool &doImageDither(void) const
-    { return resource.image_dither; }
+  { return resource.image_dither; }
   inline const Bool &doOrderedDither(void) const
-    { return resource.ordered_dither; }
+  { return resource.ordered_dither; }
   inline const Bool &doOpaqueMove(void) const { return resource.opaque_move; }
   inline const Bool &doFullMax(void) const { return resource.full_max; }
   inline const Bool &doFocusNew(void) const { return resource.focus_new; }
-  
+  inline const Bool &doFocusLast(void) const { return resource.focus_last; }
+
   inline const GC &getOpGC() const { return opGC; }
-  
+
   inline Blackbox *getBlackbox(void) { return blackbox; }
   inline BColor *getBorderColor(void) { return &resource.border_color; }
   inline BImageControl *getImageControl(void) { return image_control; }
@@ -184,43 +211,48 @@ public:
   inline const Bool &isSlitOnTop(void) const { return resource.slit_on_top; }
   inline Slit *getSlit(void) { return slit; }
   inline const int &getSlitPlacement(void) const
-    { return resource.slit_placement; }
+  { return resource.slit_placement; }
   inline const int &getSlitDirection(void) const
-    { return resource.slit_direction; }
+  { return resource.slit_direction; }
   inline void saveSlitPlacement(int p) { resource.slit_placement = p; }
   inline void saveSlitDirection(int d) { resource.slit_direction = d; }
   inline void saveSlitOnTop(Bool t) { resource.slit_on_top = t; }
 #endif // SLIT
-  
+
   inline Toolbar *getToolbar(void) { return toolbar; }
 
   inline Workspace *getWorkspace(int w) { return workspacesList->find(w); }
   inline Workspace *getCurrentWorkspace(void) { return current_workspace; }
 
   inline Workspacemenu *getWorkspacemenu(void) { return workspacemenu; }
-  
+
   inline const unsigned int &getHandleWidth(void) const
-    { return resource.handle_width; }
+  { return resource.handle_width; }
   inline const unsigned int &getBevelWidth(void) const
-    { return resource.bevel_width; }
+  { return resource.bevel_width; }
   inline const unsigned int &getBorderWidth(void) const
-    { return resource.border_width; }
+  { return resource.border_width; }
   inline const unsigned int &getBorderWidth2x(void) const
-    { return resource.border_width_2x; }
+  { return resource.border_width_2x; }
 
   inline const int getCurrentWorkspaceID()
-    { return current_workspace->getWorkspaceID(); }
+  { return current_workspace->getWorkspaceID(); }
   inline const int getCount(void) { return workspacesList->count(); }
+  inline const int getIconCount(void) { return iconList->count(); }
   inline const int &getNumberOfWorkspaces(void) const
-    { return resource.workspaces; }
+  { return resource.workspaces; }
   inline const int &getToolbarPlacement(void) const
-    { return resource.toolbar_placement; }
+  { return resource.toolbar_placement; }
   inline const int &getToolbarWidthPercent(void) const
-    { return resource.toolbar_width_percent; }
+  { return resource.toolbar_width_percent; }
   inline const int &getPlacementPolicy(void) const
-    { return resource.placement_policy; }
+  { return resource.placement_policy; }
   inline const int &getEdgeSnapThreshold(void) const
-    { return resource.edge_snap_threshold; }
+  { return resource.edge_snap_threshold; }
+  inline const int &getRowPlacementDirection(void) const
+  { return resource.row_direction; }
+  inline const int &getColPlacementDirection(void) const
+  { return resource.col_direction; }
 
   inline void setRootColormapInstalled(Bool r) { root_colormap_installed = r; }
   inline void saveSloppyFocus(Bool s) { resource.sloppy_focus = s; }
@@ -228,17 +260,18 @@ public:
   inline void saveWorkspaces(int w) { resource.workspaces = w; }
   inline void saveToolbarOnTop(Bool r) { resource.toolbar_on_top = r; }
   inline void saveToolbarWidthPercent(int w)
-    { resource.toolbar_width_percent = w; }
+  { resource.toolbar_width_percent = w; }
   inline void saveToolbarPlacement(int p) { resource.toolbar_placement = p; }
   inline void savePlacementPolicy(int p) { resource.placement_policy = p; }
+  inline void saveRowPlacementDirection(int d) { resource.row_direction = d; }
+  inline void saveColPlacementDirection(int d) { resource.col_direction = d; }
   inline void saveEdgeSnapThreshold(int t)
-    { resource.edge_snap_threshold = t; }
+  { resource.edge_snap_threshold = t; }
   inline void saveImageDither(Bool d) { resource.image_dither = d; }
   inline void saveOpaqueMove(Bool o) { resource.opaque_move = o; }
   inline void saveFullMax(Bool f) { resource.full_max = f; }
   inline void saveFocusNew(Bool f) { resource.focus_new = f; }
-  inline void addIcon(BlackboxIcon *icon) { iconmenu->insert(icon); } 
-  inline void removeIcon(BlackboxIcon *icon) { iconmenu->remove(icon); }
+  inline void saveFocusLast(Bool f) { resource.focus_last = f; }
   inline void iconUpdate(void) { iconmenu->update(); }
 
 #ifdef    HAVE_STRFTIME
@@ -248,24 +281,28 @@ public:
   inline int getDateFormat(void) { return resource.date_format; }
   inline void saveDateFormat(int f) { resource.date_format = f; }
   inline Bool isClock24Hour(void) { return resource.clock24hour; }
-  inline void saveClock24Hour(Bool c) { resource.clock24hour = b; }
+  inline void saveClock24Hour(Bool c) { resource.clock24hour = c; }
 #endif // HAVE_STRFTIME
 
   inline WindowStyle *getWindowStyle(void) { return &resource.wstyle; }
   inline MenuStyle *getMenuStyle(void) { return &resource.mstyle; }
   inline ToolbarStyle *getToolbarStyle(void) { return &resource.tstyle; }
 
+  BlackboxWindow *getIcon(int);
+  
   int addWorkspace(void);
   int removeLastWorkspace(void);
-
+  
   void removeWorkspaceNames(void);
   void addWorkspaceName(char *);
   void addNetizen(Netizen *);
   void removeNetizen(Window);
+  void addIcon(BlackboxWindow *);
+  void removeIcon(BlackboxWindow *);
   void getNameOfWorkspace(int, char **);
   void changeWorkspaceID(int);
   void raiseWindows(Window *, int);
-  void reassociateWindow(BlackboxWindow *);
+  void reassociateWindow(BlackboxWindow *, int, Bool);
   void prevFocus(void);
   void nextFocus(void);
   void raiseFocus(void);
@@ -274,7 +311,8 @@ public:
   void shutdown(void);
   void showPosition(int, int);
   void showGeometry(unsigned int, unsigned int);
-  void hideGeometry(void);  
+  void hideGeometry(void);
+
   void updateNetizenCurrentWorkspace(void);
   void updateNetizenWorkspaceCount(void);
   void updateNetizenWindowFocus(void);
@@ -284,7 +322,8 @@ public:
   void updateNetizenWindowRaise(Window);
   void updateNetizenWindowLower(Window);
 
-  enum { RowSmartPlacement = 1, ColSmartPlacement, CascadePlacement };
+  enum { RowSmartPlacement = 1, ColSmartPlacement, CascadePlacement, LeftRight,
+         RightLeft, TopBottom, BottomTop };
   enum { LeftJustify = 1, RightJustify, CenterJustify };
   enum { RoundBullet = 1, TriangleBullet, SquareBullet, NoBullet };
   enum { Restart = 1, RestartOther, Exit, Shutdown, Execute, Reconfigure,

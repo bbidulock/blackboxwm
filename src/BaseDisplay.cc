@@ -21,7 +21,6 @@
 
 // stupid macros needed to access some functions in version 2 of the GNU C
 // library
-
 #ifndef   _GNU_SOURCE
 #define   _GNU_SOURCE
 #endif // _GNU_SOURCE
@@ -39,6 +38,7 @@
 #  include <X11/extensions/shape.h>
 #endif // SHAPE
 
+#include "i18n.hh"
 #include "BaseDisplay.hh"
 #include "LinkedList.hh"
 #include "Timer.hh"
@@ -48,7 +48,7 @@
 #endif // DEBUG
 
 #ifdef    HAVE_FCNTL_H
-#  include <fcntl.h>  
+#  include <fcntl.h>
 #endif // HAVE_FCNTL_H
 
 #ifdef    HAVE_STDIO_H
@@ -58,7 +58,7 @@
 #ifdef    STDC_HEADERS
 #  include <stdlib.h>
 #  include <string.h>
-#endif // STDC_HEADERS 
+#endif // STDC_HEADERS
 
 #ifdef    HAVE_UNISTD_H
 #  include <sys/types.h>
@@ -70,7 +70,7 @@
 #endif // HAVE_SYS_SELECT_H
 
 #ifdef    HAVE_SIGNAL_H
-#  include <signal.h>  
+#  include <signal.h>
 #endif // HAVE_SIGNAL_H
 
 #ifdef    HAVE_SYS_SIGNAL_H
@@ -98,16 +98,21 @@ static Window last_bad_window = None;
 
 BaseDisplay *base_display;
 
-static int handleXErrors(Display *d, XErrorEvent *e) {
 #ifdef    DEBUG
+static int handleXErrors(Display *d, XErrorEvent *e) {
   char errtxt[128];
 
   XGetErrorText(d, e->error_code, errtxt, 128);
-  fprintf(stderr, "%s:  X error: %s(%d) opcodes %d/%d\n"
-                  "  resource 0x%lx\n",
+  fprintf(stderr,
+	  i18n->
+	  getMessage(BaseDisplaySet, BaseDisplayXError,
+		     "%s:  X error: %s(%d) opcodes %d/%d\n  resource 0x%lx\n"),
           base_display->getApplicationName(), errtxt, e->error_code,
           e->request_code, e->minor_code, e->resourceid);
+#else // !DEBUG
+static int handleXErrors(Display *, XErrorEvent *e) {
 #endif // DEBUG
+
   if (e->error_code == BadWindow) last_bad_window = e->resourceid;
   if (internal_error) abort();
 
@@ -148,19 +153,40 @@ static void signalhandler(int sig) {
       return;
     }
 
-    fprintf(stderr, "%s:  signal %d caught\n",
-            base_display->getApplicationName(), sig);
+    fprintf(stderr,
+	    i18n->getMessage(
+#ifdef    NLS
+			     BaseDisplaySet, BaseDisplaySignalCaught,
+#else // !NLS
+			     0, 0,
+#endif // NLS
+			     "%s:  signal %d caught\n"),
+	    base_display->getApplicationName(), sig);
 
     if (! base_display->isStartup() && ! re_enter) {
       internal_error = True;
 
       re_enter = 1;
-      fprintf(stderr, "shutting down\n");
+      fprintf(stderr,
+	      i18n->getMessage(
+#ifdef    NLS
+			       BaseDisplaySet, BaseDisplayShuttingDown,
+#else // !NLS
+			       0, 0,
+#endif // NLS
+			       "shutting down\n"));
       base_display->shutdown();
     }
 
     if (sig != SIGTERM && sig != SIGINT) {
-      fprintf(stderr, "aborting... dumping core\n");
+      fprintf(stderr,
+	      i18n->getMessage(
+#ifdef    NLS
+			       BaseDisplaySet, BaseDisplayAborting,
+#else // !NLS
+			       0, 0,
+#endif // NLS
+			       "aborting... dumping core\n"));
       abort();
     }
 
@@ -168,6 +194,15 @@ static void signalhandler(int sig) {
 
     break;
   }
+}
+
+
+// convenience funciton
+char *bstrdup(const char *s) {
+  int l = strlen(s) + 1;
+  char *n = new char[l];
+  strncpy(n, s, l);
+  return n;
 }
 
 
@@ -188,10 +223,10 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
 #ifdef    HAVE_SIGACTION
   struct sigaction action;
 
-  action.sa_handler = signalhandler;    
+  action.sa_handler = signalhandler;
   action.sa_mask = sigset_t();
   action.sa_flags = SA_NOCLDSTOP | SA_NODEFER;
-    
+
   sigaction(SIGSEGV, &action, NULL);
   sigaction(SIGFPE, &action, NULL);
   sigaction(SIGTERM, &action, NULL);
@@ -213,12 +248,26 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
 
   if (! (display = XOpenDisplay(dpy_name))) {
     fprintf(stderr,
-            "BaseDisplay::BaseDisplay: connection to X server failed.\n");
+            i18n->
+	    getMessage(
+#ifdef    NLS
+		       BaseDisplaySet, BaseDisplayXConnectFail,
+#else // !NLS
+		       0, 0,
+#endif // NLS
+		       "BaseDisplay::BaseDisplay: connection to X server failed.\n"));
     ::exit(2);
   } else if (fcntl(ConnectionNumber(display), F_SETFD, 1) == -1) {
     fprintf(stderr,
-            "BaseDisplay::BaseDisplay: couldn't mark display connection "
-            "as close-on-exec\n");
+            i18n->
+	    getMessage(
+#ifdef    NLS
+		       BaseDisplaySet, BaseDisplayCloseOnExecFail,
+#else // !NLS
+		       0, 0,
+#endif // NLS
+		       "BaseDisplay::BaseDisplay: couldn't mark display connection "
+		       "as close-on-exec\n"));
     ::exit(2);
   }
 
@@ -231,7 +280,7 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
 #else // !SHAPE
   shape.extensions = False;
 #endif // SHAPE
-  
+
   xa_wm_colormap_windows =
     XInternAtom(display, "WM_COLORMAP_WINDOWS", False);
   xa_wm_protocols = XInternAtom(display, "WM_PROTOCOLS", False);
@@ -241,36 +290,69 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
   xa_wm_take_focus = XInternAtom(display, "WM_TAKE_FOCUS", False);
   motif_wm_hints = XInternAtom(display, "_MOTIF_WM_HINTS", False);
 
-  net_hints = XInternAtom(display, "_NET_HINTS", False);
-  net_attributes = XInternAtom(display, "_NET_ATTRIBUTES", False);
-  net_change_attributes =
-    XInternAtom(display, "_NET_CHANGE_ATTRIBUTES", False);
+  blackbox_hints = XInternAtom(display, "_BLACKBOX_HINTS", False);
+  blackbox_attributes = XInternAtom(display, "_BLACKBOX_ATTRIBUTES", False);
+  blackbox_change_attributes =
+    XInternAtom(display, "_BLACKBOX_CHANGE_ATTRIBUTES", False);
 
-  net_structure_messages =
-    XInternAtom(display, "_NET_STRUCTURE_MESSAGES", False);
-  net_notify_startup =
-    XInternAtom(display, "_NET_NOTIFY_STARTUP", False);
-  net_notify_window_add =
-    XInternAtom(display, "_NET_NOTIFY_WINDOW_ADD", False);
-  net_notify_window_del =
-    XInternAtom(display, "_NET_NOTIFY_WINDOW_DEL", False);
-  net_notify_current_workspace =
-    XInternAtom(display, "_NET_NOTIFY_CURRENT_WORKSPACE", False);
-  net_notify_workspace_count =
-    XInternAtom(display, "_NET_NOTIFY_WORKSPACE_COUNT", False);
-  net_notify_window_focus =
-    XInternAtom(display, "_NET_NOTIFY_WINDOW_FOCUS", False);
-  net_notify_window_raise =
-    XInternAtom(display, "_NET_NOTIFY_WINDOW_RAISE", False);
-  net_notify_window_lower =
-    XInternAtom(display, "_NET_NOTIFY_WINDOW_LOWER", False);
+  blackbox_structure_messages =
+    XInternAtom(display, "_BLACKBOX_STRUCTURE_MESSAGES", False);
+  blackbox_notify_startup =
+    XInternAtom(display, "_BLACKBOX_NOTIFY_STARTUP", False);
+  blackbox_notify_window_add =
+    XInternAtom(display, "_BLACKBOX_NOTIFY_WINDOW_ADD", False);
+  blackbox_notify_window_del =
+    XInternAtom(display, "_BLACKBOX_NOTIFY_WINDOW_DEL", False);
+  blackbox_notify_current_workspace =
+    XInternAtom(display, "_BLACKBOX_NOTIFY_CURRENT_WORKSPACE", False);
+  blackbox_notify_workspace_count =
+    XInternAtom(display, "_BLACKBOX_NOTIFY_WORKSPACE_COUNT", False);
+  blackbox_notify_window_focus =
+    XInternAtom(display, "_BLACKBOX_NOTIFY_WINDOW_FOCUS", False);
+  blackbox_notify_window_raise =
+    XInternAtom(display, "_BLACKBOX_NOTIFY_WINDOW_RAISE", False);
+  blackbox_notify_window_lower =
+    XInternAtom(display, "_BLACKBOX_NOTIFY_WINDOW_LOWER", False);
 
-  net_change_workspace= XInternAtom(display, "_NET_CHANGE_WORKSPACE", False);
-  net_change_window_focus =
-    XInternAtom(display, "_NET_CHANGE_WINDOW_FOCUS", False);
-  net_cycle_window_focus =
-    XInternAtom(display, "_NET_CYCLE_WINDOW_FOCUS", False); 
-  
+  blackbox_change_workspace= XInternAtom(display, "_BLACKBOX_CHANGE_WORKSPACE", False);
+  blackbox_change_window_focus =
+    XInternAtom(display, "_BLACKBOX_CHANGE_WINDOW_FOCUS", False);
+  blackbox_cycle_window_focus =
+    XInternAtom(display, "_BLACKBOX_CYCLE_WINDOW_FOCUS", False);
+
+#ifdef    NEWWMSPEC
+
+  net_supported = XInternAtom(display, "_NET_SUPPORTED", False);
+  net_client_list = XInternAtom(display, "_NET_CLIENT_LIST", False);
+  net_client_list_stacking = XInternAtom(display, "_NET_CLIENT_LIST_STACKING", False);
+  net_number_of_desktops = XInternAtom(display, "_NET_NUMBER_OF_DESKTOPS", False);
+  net_desktop_geometry = XInternAtom(display, "_NET_DESKTOP_GEOMETRY", False);
+  net_desktop_viewport = XInternAtom(display, "_NET_DESKTOP_VIEWPORT", False);
+  net_current_desktop = XInternAtom(display, "_NET_CURRENT_DESKTOP", False);
+  net_desktop_names = XInternAtom(display, "_NET_DESKTOP_NAMES", False);
+  net_active_window = XInternAtom(display, "_NET_ACTIVE_WINDOW", False);
+  net_workarea = XInternAtom(display, "_NET_WORKAREA", False);
+  net_supporting_wm_check = XInternAtom(display, "_NET_SUPPORTING_WM_CHECK", False);
+  net_virtual_roots = XInternAtom(display, "_NET_VIRTUAL_ROOTS", False);
+
+  net_close_window = XInternAtom(display, "_NET_CLOSE_WINDOW", False);
+  net_wm_moveresize = XInternAtom(display, "_NET_WM_MOVERESIZE", False);
+
+  net_properties = XInternAtom(display, "_NET_PROPERTIES", False);
+  net_wm_name = XInternAtom(display, "_NET_WM_NAME", False);
+  net_wm_desktop = XInternAtom(display, "_NET_WM_DESKTOP", False);
+  net_wm_window_type = XInternAtom(display, "_NET_WM_WINDOW_TYPE", False);
+  net_wm_state = XInternAtom(display, "_NET_WM_STATE", False);
+  net_wm_strut = XInternAtom(display, "_NET_WM_STRUT", False);
+  net_wm_icon_geometry = XInternAtom(display, "_NET_WM_ICON_GEOMETRY", False);
+  net_wm_icon = XInternAtom(display, "_NET_WM_ICON", False);
+  net_wm_pid = XInternAtom(display, "_NET_WM_PID", False);
+  net_wm_handled_icons = XInternAtom(display, "_NET_WM_HANDLED_ICONS", False);
+
+  net_wm_ping = XInternAtom(display, "_NET_WM_PING", False);
+
+#endif // NEWWMSPEC
+
   cursor.session = XCreateFontCursor(display, XC_left_ptr);
   cursor.move = XCreateFontCursor(display, XC_fleur);
   cursor.ll_angle = XCreateFontCursor(display, XC_ll_angle);
@@ -325,11 +407,14 @@ void BaseDisplay::eventLoop(void) {
 
       if (last_bad_window != None && e.xany.window == last_bad_window) {
 #ifdef    DEBUG
-      fprintf(stderr, "BaseDisplay::eventLoop(): "
-              "removing bad window from event queue\n");
+      fprintf(stderr,
+	      i18n->
+	      getMessage(BaseDisplaySet, BaseDisplayBadWindowRemove,
+			 "BaseDisplay::eventLoop(): removing bad window "
+			 "from event queue\n"));
 #endif // DEBUG
-      } else { 
-        last_bad_window = None;
+      } else {
+	last_bad_window = None;
         process_event(&e);
       }
     } else {
@@ -386,7 +471,7 @@ void BaseDisplay::eventLoop(void) {
           break;
 
         it.current()->fireTimeout();
-  
+
         // restart the current timer so that the start time is updated
         if (! it.current()->doOnce()) it.current()->start();
         else it.current()->stop();
@@ -396,13 +481,13 @@ void BaseDisplay::eventLoop(void) {
 }
 
 
-const Bool BaseDisplay::validateWindow(Window window) {  
+const Bool BaseDisplay::validateWindow(Window window) {
   XEvent event;
   if (XCheckTypedWindowEvent(display, window, DestroyNotify, &event)) {
     XPutBackEvent(display, &event);
 
     return False;
-  } 
+  }
 
   return True;
 }
@@ -478,15 +563,15 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, int num) {
         visual = (vinfo_return + i)->visual;
       }
     }
-    
+
     XFree(vinfo_return);
   }
-  
+
   if (! visual)
     visual = DefaultVisual(basedisplay->getXDisplay(), screen_number);
 }
- 
- 
+
+
 #ifdef    DEBUG
 ScreenInfo::~ScreenInfo(void) {
   deallocate(sizeof(ScreenInfo), "BaseDisplay.cc");
