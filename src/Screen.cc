@@ -793,7 +793,11 @@ void BScreen::changeWorkspaceID(unsigned int id) {
 
     BlackboxWindow *focused = blackbox->getFocusedWindow();
     if (focused && focused->getScreen() == this && ! focused->isStuck()) {
-      assert(focused->getWorkspaceNumber() == current_workspace->getID());
+      if (focused->getWorkspaceNumber() != current_workspace->getID()) {
+        fprintf(stderr, "%s is on the wrong workspace, aborting\n",
+                focused->getTitle());
+        abort();
+      }
       current_workspace->setLastFocusedWindow(focused);
       blackbox->setFocusedWindow((BlackboxWindow *) 0);
     }
