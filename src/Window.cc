@@ -28,6 +28,7 @@
 
 extern "C" {
 #include <X11/Xatom.h>
+#include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <string.h>
 #include <stdlib.h>
@@ -3113,7 +3114,7 @@ void BlackboxWindow::leaveNotifyEvent(const XCrossingEvent*) {
 
 
 #ifdef    SHAPE
-void BlackboxWindow::shapeEvent(const XShapeEvent * const) {
+void BlackboxWindow::shapeEvent(const XEvent * const /*unused*/) {
   if (client.state.shaped)
     configureShape();
 }

@@ -482,15 +482,15 @@ void bt::Application::process_event(XEvent *event) {
 
   default: {
 #ifdef SHAPE
-    if (event->type == shape.event_basep) {
-      handler->shapeEvent(reinterpret_cast<XShapeEvent *>(event));
+    if (shape.extensions && event->type == shape.event_basep) {
+      handler->shapeEvent(event);
     } else
 #endif // SHAPE
-      {
 #ifdef    DEBUG
+      {
         fprintf(stderr, "unhandled event %d\n", event->type);
-#endif // DEBUG
       }
+#endif // DEBUG
     break;
   }
   } // switch

@@ -397,7 +397,7 @@ public:
 
 #ifdef    SHAPE
   void configureShape(void);
-  void shapeEvent(const XShapeEvent * const /*unused*/);
+  void shapeEvent(const XEvent * const /*unused*/);
 #endif // SHAPE
 
   virtual void timeout(bt::Timer *);

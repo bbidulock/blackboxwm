@@ -25,13 +25,7 @@
 #ifndef __EventHandler_hh
 #define __EventHandler_hh
 
-extern "C" {
 #include <X11/Xlib.h>
-#ifdef SHAPE
-#  include <X11/extensions/shape.h>
-#endif // SHAPE
-}
-
 
 namespace bt {
 
@@ -76,13 +70,12 @@ namespace bt {
     // Window size/position/stacking/etc. change request.
     virtual void configureRequestEvent(const XConfigureRequestEvent * const) {}
 
-    // Message passing
+    // Message passing.
     virtual void clientMessageEvent(const XClientMessageEvent * const) {}
 
-#ifdef    SHAPE
-    // Window shape changed.
-    virtual void shapeEvent(const XShapeEvent * const) {}
-#endif // SHAPE
+    // Window shape changed. (Note: we use XEvent instead of
+    // XShapeEvent to avoid the header.)
+    virtual void shapeEvent(const XEvent * const) {}
 
   protected:
     inline EventHandler(void) {}
