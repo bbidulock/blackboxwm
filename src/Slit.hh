@@ -27,9 +27,10 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+#include <list>
+
 #include "Screen.hh"
 #include "Basemenu.hh"
-#include "LinkedList.hh"
 
 // forward declaration
 class Slit;
@@ -84,7 +85,6 @@ public:
   void reconfigure(void);
 };
 
-
 class Slit : public TimeoutHandler {
 private:
   class SlitClient {
@@ -94,6 +94,7 @@ private:
     int x, y;
     unsigned int width, height;
   };
+  typedef std::list<SlitClient*> SlitClientList;
 
   Bool on_top, hidden, do_auto_hide;
   Display *display;
@@ -103,7 +104,7 @@ private:
   BTimer *timer;
   NETStrut strut;
 
-  LinkedList<SlitClient> *clientList;
+  SlitClientList clientList;
   Slitmenu *slitmenu;
 
   struct frame {
