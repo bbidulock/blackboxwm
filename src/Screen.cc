@@ -470,215 +470,209 @@ void BScreen::rereadMenu(void) {
 }
 
 
-void BScreen::LoadStyle(void) {
-  const bt::Display &display = blackbox->display();
-  unsigned int screen = screen_info.screenNumber();
+void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
+  const bt::Display &display = screen->getBlackbox()->display();
+  unsigned int screen_num = screen->screenNumber();
 
   // use the user selected style
-  bt::Resource res(std::string(blackbox->getStyleFilename()));
+  bt::Resource res(style);
   if (! res.valid())
-    res.load(std::string(DEFAULTSTYLE));
+    res.load(DEFAULTSTYLE);
 
   // load bevel and border widths
   std::string wstr = res.read("borderWidth", "BorderWidth", "1");
-  _resource.saveBorderWidth(strtoul(wstr.c_str(), 0, 0));
+  border_width = strtoul(wstr.c_str(), 0, 0);
   wstr = res.read("bevelWidth", "BevelWidth", "3");
-  _resource.saveBevelWidth(strtoul(wstr.c_str(), 0, 0));
+  bevel_width = strtoul(wstr.c_str(), 0, 0);
 
   // load menu style
-  bt::MenuStyle::get(*blackbox, screen)->load(res);
+  bt::MenuStyle::get(*screen->getBlackbox(), screen_num)->load(res);
 
   // load fonts
-  _resource.windowStyle()->font.setFontName(res.read("window.font",
-                                                     "Window.Font", "fixed"));
-  _resource.toolbarStyle()->font.setFontName(res.read("toolbar.font", "Toolbar.Font",
-                                             "fixed"));
+  wstyle.font.setFontName(res.read("window.font", "Window.Font", "fixed"));
+  tstyle.font.setFontName(res.read("toolbar.font", "Toolbar.Font", "fixed"));
 
   // load window config
-  _resource.windowStyle()->t_focus =
-    bt::textureResource(display, screen, res,
+  wstyle.t_focus =
+    bt::textureResource(display, screen_num, res,
                         "window.title.focus", "Window.Title.Focus",
                         "white");
-  _resource.windowStyle()->t_unfocus =
-    bt::textureResource(display, screen, res,
+  wstyle.t_unfocus =
+    bt::textureResource(display, screen_num, res,
                         "window.title.unfocus", "Window.Title.Unfocus",
                         "black");
-  _resource.windowStyle()->l_focus =
-    bt::textureResource(display, screen, res,
+  wstyle.l_focus =
+    bt::textureResource(display, screen_num, res,
                         "window.label.focus", "Window.Label.Focus",
                         "white");
-  _resource.windowStyle()->l_unfocus =
-    bt::textureResource(display, screen, res,
+  wstyle.l_unfocus =
+    bt::textureResource(display, screen_num, res,
                         "window.label.unfocus", "Window.Label.Unfocus",
                         "black");
-  _resource.windowStyle()->h_focus =
-    bt::textureResource(display, screen, res,
+  wstyle.h_focus =
+    bt::textureResource(display, screen_num, res,
                         "window.handle.focus", "Window.Handle.Focus",
                         "white");
-  _resource.windowStyle()->h_unfocus =
-    bt::textureResource(display, screen, res,
+  wstyle.h_unfocus =
+    bt::textureResource(display, screen_num, res,
                         "window.handle.unfocus", "Window.Handle.Unfocus",
                         "black");
 
   wstr = res.read("window.handleHeight", "Window.HandleHeight", "6");
-  ScreenResource::WindowStyle* wstyle = _resource.windowStyle();
-  wstyle->handle_height =
+
+  wstyle.handle_height =
     static_cast<unsigned int>(strtoul(wstr.c_str(), 0, 0));
 
-  wstyle->bevel_width = _resource.bevelWidth();
+  wstyle.bevel_width = bevel_width;
 
   // the height of the titlebar is based upon the height of the font being
   // used to display the window's title
-  wstyle->label_height = bt::textHeight(wstyle->font) + 2;
-  wstyle->title_height = wstyle->label_height + wstyle->bevel_width * 2;
-  wstyle->button_width = wstyle->label_height - 2;
-  wstyle->grip_width = wstyle->button_width * 2;
+  wstyle.label_height = bt::textHeight(wstyle.font) + 2;
+  wstyle.title_height = wstyle.label_height + wstyle.bevel_width * 2;
+  wstyle.button_width = wstyle.label_height - 2;
+  wstyle.grip_width = wstyle.button_width * 2;
 
-  wstyle->g_focus = bt::textureResource(display, screen, res,
-                                        "window.grip.focus",
-                                        "Window.Grip.Focus",
-                                        "white");
-  wstyle->g_unfocus = bt::textureResource(display, screen, res,
-                                          "window.grip.unfocus",
-                                          "Window.Grip.Unfocus",
-                                          "black");
-  _resource.windowStyle()->b_focus =
-    bt::textureResource(display, screen, res,
+  wstyle.g_focus = bt::textureResource(display, screen_num, res,
+                                       "window.grip.focus",
+                                       "Window.Grip.Focus",
+                                       "white");
+  wstyle.g_unfocus = bt::textureResource(display, screen_num, res,
+                                         "window.grip.unfocus",
+                                         "Window.Grip.Unfocus",
+                                         "black");
+  wstyle.b_focus =
+    bt::textureResource(display, screen_num, res,
                         "window.button.focus", "Window.Button.Focus",
                         "white");
-  _resource.windowStyle()->b_unfocus =
-    bt::textureResource(display, screen, res,
+  wstyle.b_unfocus =
+    bt::textureResource(display, screen_num, res,
                         "window.button.unfocus", "Window.Button.Unfocus",
                         "black");
-  _resource.windowStyle()->b_pressed =
-    bt::textureResource(display, screen, res,
+  wstyle.b_pressed =
+    bt::textureResource(display, screen_num, res,
                         "window.button.pressed", "Window.Button.Pressed",
                         "black");
 
   // we create the window.frame texture by hand because it exists only to
   // make the code cleaner and is not actually used for display
   bt::Color color;
-  color = bt::Color::namedColor(display, screen,
+  color = bt::Color::namedColor(display, screen_num,
                                 res.read("window.frame.focusColor",
                                          "Window.Frame.FocusColor",
                                          "white"));
-  _resource.windowStyle()->f_focus.setDescription("solid flat");
-  _resource.windowStyle()->f_focus.setColor(color);
+  wstyle.f_focus.setDescription("solid flat");
+  wstyle.f_focus.setColor(color);
 
-  color = bt::Color::namedColor(display, screen,
+  color = bt::Color::namedColor(display, screen_num,
                                 res.read("window.frame.unfocusColor",
                                          "Window.Frame.UnfocusColor",
                                          "white"));
-  _resource.windowStyle()->f_unfocus.setDescription("solid flat");
-  _resource.windowStyle()->f_unfocus.setColor(color);
+  wstyle.f_unfocus.setDescription("solid flat");
+  wstyle.f_unfocus.setColor(color);
 
   wstr = res.read("window.frameWidth", "Window.FrameWidth",
-                  bt::itostring(_resource.bevelWidth()));
-  _resource.windowStyle()->frame_width =
-    static_cast<unsigned int>(strtoul(wstr.c_str(), 0, 0));
+                  bt::itostring(bevel_width));
+  wstyle.frame_width = static_cast<unsigned int>(strtoul(wstr.c_str(), 0, 0));
 
-  _resource.windowStyle()->l_text_focus =
-    bt::Color::namedColor(display, screen,
+  wstyle.l_text_focus =
+    bt::Color::namedColor(display, screen_num,
                           res.read("window.label.focus.textColor",
                                    "Window.Label.Focus.TextColor",
                                    "black"));
-  _resource.windowStyle()->l_text_unfocus =
-    bt::Color::namedColor(display, screen,
+  wstyle.l_text_unfocus =
+    bt::Color::namedColor(display, screen_num,
                           res.read("window.label.unfocus.textColor",
                                    "Window.Label.Unfocus.TextColor",
                                    "white"));
-  _resource.windowStyle()->b_pic_focus =
-    bt::Color::namedColor(display, screen,
+  wstyle.b_pic_focus =
+    bt::Color::namedColor(display, screen_num,
                           res.read("window.button.focus.picColor",
                                    "Window.Button.Focus.PicColor",
                                    "black"));
-  _resource.windowStyle()->b_pic_unfocus =
-    bt::Color::namedColor(display, screen,
+  wstyle.b_pic_unfocus =
+    bt::Color::namedColor(display, screen_num,
                           res.read("window.button.unfocus.picColor",
                                    "Window.Button.Unfocus.PicColor",
                                    "white"));
 
-  _resource.windowStyle()->alignment =
+  wstyle.alignment =
     bt::alignResource(res, "window.alignment", "Window.Alignment");
 
   // load toolbar config
-  _resource.toolbarStyle()->toolbar =
-    bt::textureResource(display, screen, res,
-                        "toolbar", "Toolbar",
-                        "black");
-  _resource.toolbarStyle()->label =
-    bt::textureResource(display, screen, res,
-                        "toolbar.label", "Toolbar.Label",
-                        "black");
-  _resource.toolbarStyle()->window =
-    bt::textureResource(display, screen, res,
+  tstyle.toolbar = bt::textureResource(display, screen_num, res,
+                                       "toolbar", "Toolbar",
+                                       "black");
+  tstyle.label = bt::textureResource(display, screen_num, res,
+                                     "toolbar.label", "Toolbar.Label",
+                                     "black");
+  tstyle.window =
+    bt::textureResource(display, screen_num, res,
                         "toolbar.windowLabel", "Toolbar.WindowLabel",
                         "black");
-  _resource.toolbarStyle()->button =
-    bt::textureResource(display, screen, res,
+  tstyle.button =
+    bt::textureResource(display, screen_num, res,
                         "toolbar.button", "Toolbar.Button",
                         "white");
-  _resource.toolbarStyle()->pressed =
-    bt::textureResource(display, screen, res,
+  tstyle.pressed =
+    bt::textureResource(display, screen_num, res,
                         "toolbar.button.pressed", "Toolbar.Button.Pressed",
                         "black");
-  _resource.toolbarStyle()->clock =
-    bt::textureResource(display, screen, res,
-                        "toolbar.clock", "Toolbar.Clock",
-                        "black");
+  tstyle.clock =
+    bt::textureResource(display, screen_num, res,
+                        "toolbar.clock", "Toolbar.Clock", "black");
 
-  _resource.toolbarStyle()->l_text =
-    bt::Color::namedColor(display, screen,
+  tstyle.l_text =
+    bt::Color::namedColor(display, screen_num,
                           res.read("toolbar.label.textColor",
                                    "Toolbar.Label.TextColor",
                                    "white"));
-  _resource.toolbarStyle()->w_text =
-    bt::Color::namedColor(display, screen,
+  tstyle.w_text =
+    bt::Color::namedColor(display, screen_num,
                           res.read("toolbar.windowLabel.textColor",
                                    "Toolbar.WindowLabel.TextColor",
                                    "white"));
-  _resource.toolbarStyle()->c_text =
-    bt::Color::namedColor(display, screen,
+  tstyle.c_text =
+    bt::Color::namedColor(display, screen_num,
                           res.read("toolbar.clock.textColor",
                                    "Toolbar.Clock.TextColor",
                                    "white"));
-  _resource.toolbarStyle()->b_pic =
-    bt::Color::namedColor(display, screen,
+  tstyle.b_pic =
+    bt::Color::namedColor(display, screen_num,
                           res.read("toolbar.button.picColor",
                                    "Toolbar.Button.PicColor",
                                    "black"));
-  _resource.saveBorderColor(bt::Color::namedColor(display, screen,
-                                                  res.read("borderColor",
-                                                           "BorderColor",
-                                                           "black")));
-
-  _resource.toolbarStyle()->alignment =
+  tstyle.alignment =
     bt::alignResource(res, "toolbar.alignment", "Toolbar.Alignment");
 
-  std::string root_command = res.read("rootCommand", "RootCommand");
-  if (! root_command.empty())
-    bt::bexec(root_command, screen_info.displayString());
+  border_color = bt::Color::namedColor(display, screen_num,
+                                       res.read("borderColor",
+                                                "BorderColor",
+                                                "black"));
+
+  root_command = res.read("rootCommand", "RootCommand");
 
   // sanity checks
-  if (_resource.windowStyle()->t_focus.texture() ==
-      bt::Texture::Parent_Relative)
-    _resource.windowStyle()->t_focus = _resource.windowStyle()->f_focus;
-  if (_resource.windowStyle()->t_unfocus.texture() ==
-      bt::Texture::Parent_Relative)
-    _resource.windowStyle()->t_unfocus = _resource.windowStyle()->f_unfocus;
-  if (_resource.windowStyle()->h_focus.texture() ==
-      bt::Texture::Parent_Relative)
-    _resource.windowStyle()->h_focus = _resource.windowStyle()->f_focus;
-  if (_resource.windowStyle()->h_unfocus.texture() ==
-      bt::Texture::Parent_Relative)
-    _resource.windowStyle()->h_unfocus = _resource.windowStyle()->f_unfocus;
+  if (wstyle.t_focus.texture() == bt::Texture::Parent_Relative)
+    wstyle.t_focus = wstyle.f_focus;
+  if (wstyle.t_unfocus.texture() == bt::Texture::Parent_Relative)
+    wstyle.t_unfocus = wstyle.f_unfocus;
+  if (wstyle.h_focus.texture() == bt::Texture::Parent_Relative)
+    wstyle.h_focus = wstyle.f_focus;
+  if (wstyle.h_unfocus.texture() == bt::Texture::Parent_Relative)
+    wstyle.h_unfocus = wstyle.f_unfocus;
 
-  if (_resource.toolbarStyle()->toolbar.texture() ==
-      bt::Texture::Parent_Relative) {
-    _resource.toolbarStyle()->toolbar.setTexture(bt::Texture::Flat |
-                                                 bt::Texture::Solid);
-    _resource.toolbarStyle()->toolbar.setColor(bt::Color(0, 0, 0));
+  if (tstyle.toolbar.texture() == bt::Texture::Parent_Relative) {
+    tstyle.toolbar.setTexture(bt::Texture::Flat | bt::Texture::Solid);
+    tstyle.toolbar.setColor(bt::Color(0, 0, 0));
   }
+}
+
+
+void BScreen::LoadStyle(void) {
+  _resource.loadStyle(this, blackbox->getStyleFilename());
+
+  if (! _resource.rootCommand().empty())
+    bt::bexec(_resource.rootCommand(), screen_info.displayString());
 }
 
 

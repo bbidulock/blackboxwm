@@ -150,8 +150,8 @@ public:
   { return resource.double_click_interval; }
   inline const Time &getLastTime(void) const { return last_time; }
 
-  inline const char *getStyleFilename(void) const
-    { return resource.style_file.c_str(); }
+  const std::string& getStyleFilename(void) const
+  { return resource.style_file; }
   inline const char *getMenuFilename(void) const
     { return resource.menu_file.c_str(); }
 

@@ -67,9 +67,6 @@ enum PlacementDirection { LeftRight = 403, RightLeft, TopBottom, BottomTop };
 
 struct ScreenResource: public bt::NoCopy {
 public:
-  ScreenResource(void) {}
-  ~ScreenResource(void) {}
-
   struct WindowStyle {
     bt::Color l_text_focus, l_text_unfocus, b_pic_focus,
       b_pic_unfocus;
@@ -88,6 +85,11 @@ public:
     bt::Alignment alignment;
   };
 
+  ScreenResource(void) {}
+  ~ScreenResource(void) {}
+
+  void loadStyle(BScreen* screen, const std::string& style);
+
   // access functions
   WindowStyle* windowStyle(void)   { return &wstyle; }
   ToolbarStyle* toolbarStyle(void) { return &tstyle; }
@@ -97,6 +99,7 @@ public:
   unsigned int borderWidth(void) const        { return border_width;      }
   unsigned int numberOfWorkspaces(void) const { return workspaces;        }
   bool allowScrollLock(void) const            { return allow_scroll_lock; }
+  const std::string& rootCommand(void) const  { return root_command;      }
 
   bool isSloppyFocus(void) const        { return wconfig.sloppy_focus;  }
   bool doAutoRaise(void) const          { return wconfig.auto_raise;    }
@@ -188,6 +191,7 @@ private:
   bool allow_scroll_lock;
   unsigned int workspaces, bevel_width, border_width;
   bt::Color border_color;
+  std::string root_command;
 };
 
 class BScreen : public bt::NoCopy, public bt::EventHandler {
