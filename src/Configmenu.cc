@@ -296,13 +296,13 @@ ConfigDithermenu::ConfigDithermenu(bt::Application &app,
   showTitle();
 
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuNoDithering,
-                      "No Dithering"),
+                      "Do not dither images"),
              bt::NoDither);
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuOrderedDithering,
-                      "Ordered Dithering"),
+                      "Use fast dither"),
              bt::OrderedDither);
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuFloydSteinbergDithering,
-                      "Floyd-Steinberg Dithering"),
+                      "Use high-quality dither"),
              bt::FloydSteinbergDither);
 }
 

@@ -39,8 +39,8 @@ $ #TopBottom
 $ #BottomTop
 # 아래에서 위로
 $ #NoDithering
-# No Dithering
+# Do not dither images
 $ #OrderedDithering
-# Ordered Dithering
+# Use fast dither
 $ #FloydSteinbergDithering
-# Floyd-Steinberg Dithering
+# Use high-quality dither

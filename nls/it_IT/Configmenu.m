@@ -37,8 +37,8 @@ $ #TopBottom
 $ #BottomTop
 # dal Basso in Alto
 $ #NoDithering
-# No Dithering
+# Do not dither images
 $ #OrderedDithering
-# Ordered Dithering
+# Use fast dither
 $ #FloydSteinbergDithering
-# Floyd-Steinberg Dithering
+# Use high-quality dither
