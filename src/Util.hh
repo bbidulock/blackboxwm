@@ -102,4 +102,10 @@ struct PointerAssassin {
 std::string itostring(unsigned long i);
 std::string itostring(long i);
 
+template <class T>
+T next_it(T x) { return ++x; }
+
+template <class T>
+T prior_it(T x) { return --x; }
+
 #endif

@@ -51,7 +51,7 @@ private:
 
   std::string name;
   unsigned int id;
-  int cascade_x, cascade_y;
+  unsigned int cascade_x, cascade_y;
 
   Workspace(const Workspace&);
   Workspace& operator=(const Workspace&);
