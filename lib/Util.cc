@@ -189,9 +189,9 @@ std::string bt::textPropertyToString(Display *display,
 
   if (text_prop.value && text_prop.nitems > 0) {
     if (text_prop.encoding == XA_STRING) {
-      ret = (char *) text_prop.value;
+      ret = reinterpret_cast<char *>(text_prop.value);
     } else {
-      text_prop.nitems = strlen((char *) text_prop.value);
+      text_prop.nitems = strlen(reinterpret_cast<char *>(text_prop.value));
 
       char **list;
       int num;

@@ -128,8 +128,8 @@ Blackbox::Blackbox(char **m_argv, const char *dpy_name, const char *rc,
   resource.auto_raise_delay.tv_sec = resource.auto_raise_delay.tv_usec = 0;
 
   active_screen = 0;
-  focused_window = (BlackboxWindow *) 0;
-  _netwm = (bt::Netwm*) 0;
+  focused_window = 0;
+  _netwm = 0;
 
   XrmInitialize();
   load_rc();
@@ -463,7 +463,7 @@ BWindowGroup *Blackbox::findWindowGroup(Window window) {
   if (it != groupSearchList.end())
     return it->second;
 
-  return (BWindowGroup *) 0;
+  return 0;
 }
 
 
@@ -509,7 +509,7 @@ void Blackbox::shutdown(void) {
 
 
 void Blackbox::save_rc(void) {
-  XrmDatabase new_blackboxrc = (XrmDatabase) 0;
+  XrmDatabase new_blackboxrc = 0;
   char rc_string[1024];
 
   load_rc();
@@ -540,7 +540,7 @@ void Blackbox::save_rc(void) {
     BScreen *screen = screen_list[i];
     int screen_number = screen->screenNumber();
 
-    char *placement = (char *) 0;
+    char *placement = 0;
 
     switch (screen->resource().slitPlacement()) {
     case Slit::TopLeft: placement = "TopLeft"; break;
@@ -715,7 +715,7 @@ void Blackbox::save_rc(void) {
 
 
 void Blackbox::load_rc(void) {
-  XrmDatabase database = (XrmDatabase) 0;
+  XrmDatabase database = 0;
 
   database = XrmGetFileDatabase(rc_file.c_str());
 
@@ -801,7 +801,7 @@ void Blackbox::reconfigure(void) {
 
 
 void Blackbox::real_reconfigure(void) {
-  XrmDatabase new_blackboxrc = (XrmDatabase) 0;
+  XrmDatabase new_blackboxrc = 0;
 
   std::string style = "session.styleFile: " + resource.style_file;
   XrmPutLineResource(&new_blackboxrc, style.c_str());

@@ -129,7 +129,7 @@ bt::Application::Application(const std::string &app_name, const char *dpy_name,
   shape.extensions = False;
 #endif // SHAPE
 
-  XSetErrorHandler((XErrorHandler) handleXErrors);
+  XSetErrorHandler(handleXErrors);
 
   NumLockMask = ScrollLockMask = 0;
 
@@ -186,7 +186,7 @@ void bt::Application::eventLoop(void) {
 
   setRunState(RUNNING);
 
-  const int xfd = ConnectionNumber(_display.XDisplay());
+  const int xfd = XConnectionNumber(_display.XDisplay());
 
   while (run_state == RUNNING) {
     if (pending_signals) {
@@ -226,7 +226,7 @@ void bt::Application::eventLoop(void) {
       process_event(&e);
     } else {
       fd_set rfds;
-      timeval now, tm, *timeout = (timeval *) 0;
+      timeval now, tm, *timeout = 0;
 
       FD_ZERO(&rfds);
       FD_SET(xfd, &rfds);
@@ -482,7 +482,7 @@ void bt::Application::process_event(XEvent *event) {
   default: {
 #ifdef SHAPE
     if (event->type == shape.event_basep) {
-      handler->shapeEvent((XShapeEvent *) event);
+      handler->shapeEvent(reinterpret_cast<XShapeEvent *>(event));
     } else
 #endif // SHAPE
       {
@@ -594,7 +594,7 @@ void bt::Application::openMenu(Menu *menu) {
 void bt::Application::closeMenu(Menu *menu) {
   if (menus.empty() || menu != menus.front()) {
     fprintf(stderr, "BaseDisplay::closeMenu: menu %p not valid.\n",
-            (void *) menu);
+            static_cast<void *>(menu));
     return;
   }
 

@@ -182,7 +182,7 @@ void ConfigFocusmenu::itemClicked(unsigned int id, unsigned int) {
   switch (id) {
   case BScreen::ClickToFocus:
   case BScreen::SloppyFocus:
-    _bscreen->toggleFocusModel((BScreen::FocusModel) id);
+    _bscreen->toggleFocusModel(static_cast<BScreen::FocusModel>(id));
     break;
 
   case AutoRaiseID: // auto raise with sloppy focus
@@ -322,5 +322,5 @@ void ConfigDithermenu::refresh(void) {
 
 
 void ConfigDithermenu::itemClicked(unsigned int id, unsigned int) {
-  bt::Image::setDitherMode((bt::DitherMode) id);
+  bt::Image::setDitherMode(static_cast<bt::DitherMode>(id));
 }

@@ -113,16 +113,15 @@ static int anotherWMRunning(Display *display, XErrorEvent *) {
 BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   screen_info(bb->display().screenInfo(scrn)), blackbox(bb) {
 
-  XErrorHandler old = XSetErrorHandler((XErrorHandler) anotherWMRunning);
+  XErrorHandler old = XSetErrorHandler(anotherWMRunning);
   XSelectInput(screen_info.display().XDisplay(),
                screen_info.rootWindow(),
                ColormapChangeMask | EnterWindowMask | PropertyChangeMask |
-               StructureNotifyMask | // this really should go away
-               SubstructureRedirectMask |
+               StructureNotifyMask | SubstructureRedirectMask |
 	       ButtonPressMask | ButtonReleaseMask);
 
   XSync(screen_info.display().XDisplay(), False);
-  XSetErrorHandler((XErrorHandler) old);
+  XSetErrorHandler(old);
 
   managed = running;
   if (! managed) return;
@@ -205,7 +204,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   configmenu =
     new Configmenu(*blackbox, screen_info.screenNumber(), this);
 
-  Workspace *wkspc = (Workspace *) 0;
+  Workspace *wkspc = 0;
   if (_resource.numberOfWorkspaces() != 0) {
     for (unsigned int i = 0; i < _resource.numberOfWorkspaces(); ++i) {
       wkspc = new Workspace(this, i);
@@ -232,7 +231,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
   InitMenu();
 
-  raiseWindows((WindowStack*) 0);
+  raiseWindows(0);
 
   const bt::Netwm& netwm = blackbox->netwm();
   /*
@@ -441,7 +440,7 @@ void BScreen::reconfigure(void) {
   iconmenu->reconfigure();
 
   InitMenu();
-  raiseWindows((WindowStack*) 0);
+  raiseWindows(0);
   rootmenu->reconfigure();
 
   configmenu->reconfigure();
@@ -464,14 +463,14 @@ void BScreen::reconfigure(void) {
 
 void BScreen::rereadMenu(void) {
   InitMenu();
-  raiseWindows((WindowStack*) 0);
+  raiseWindows(0);
 
   rootmenu->reconfigure();
 }
 
 
 void ScreenResource::loadRCFile(unsigned int screen, const std::string& rc) {
-  XrmDatabase database = (XrmDatabase) 0;
+  XrmDatabase database = 0;
 
   database = XrmGetFileDatabase(rc.c_str());
 
@@ -968,7 +967,7 @@ BlackboxWindow *BScreen::getIcon(unsigned int index) {
     return *it;
   }
 
-  return (BlackboxWindow *) 0;
+  return 0;
 }
 
 
@@ -1095,7 +1094,7 @@ void BScreen::unmanageWindow(BlackboxWindow *w, bool remap) {
   windowList.remove(w);
 
   if (blackbox->getFocusedWindow() == w)
-    blackbox->setFocusedWindow((BlackboxWindow *) 0);
+    blackbox->setFocusedWindow(0);
 
   /*
     some managed windows can also be window group controllers.  when
@@ -1649,8 +1648,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
 
 void BScreen::shutdown(void) {
-  XSelectInput(blackbox->XDisplay(), screen_info.rootWindow(),
-               NoEventMask);
+  XSelectInput(blackbox->XDisplay(), screen_info.rootWindow(), NoEventMask);
   XSync(blackbox->XDisplay(), False);
 
   while(! windowList.empty())

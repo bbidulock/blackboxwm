@@ -74,7 +74,7 @@ bt::I18n::I18n(void) {
   }
 
 #ifdef HAVE_CATOPEN
-  catalog_fd = (nl_catd) -1;
+  catalog_fd = reinterpret_cast<nl_catd>(-1);
 #endif
 #endif // HAVE_SETLOCALE
 }
@@ -82,7 +82,7 @@ bt::I18n::I18n(void) {
 
 bt::I18n::~I18n(void) {
 #if defined(NLS) && defined(HAVE_CATCLOSE)
-  if (catalog_fd != (nl_catd) -1)
+  if (catalog_fd != reinterpret_cast<nl_catd>(-1))
     catclose(catalog_fd);
 #endif // HAVE_CATCLOSE
 }
@@ -102,7 +102,7 @@ void bt::I18n::openCatalog(const char *catalog) {
   catalog_fd = catopen(catalog_filename.c_str(), NL_CAT_LOCALE);
 #  endif // MCLoadBySet
 
-  if (catalog_fd == (nl_catd) -1)
+  if (catalog_fd == reinterpret_cast<nl_catd>(-1))
     fprintf(stderr, "failed to open catalog, using default messages\n");
 #endif // HAVE_CATOPEN
 }
@@ -110,7 +110,7 @@ void bt::I18n::openCatalog(const char *catalog) {
 const char* bt::I18n::operator()(int set, int msg,
                                  const char *msgString) const {
 #if   defined(NLS) && defined(HAVE_CATGETS)
-  if (catalog_fd != (nl_catd) -1)
+  if (catalog_fd != reinterpret_cast<nl_catd>(-1))
     return catgets(catalog_fd, set, msg, msgString);
   else
 #endif

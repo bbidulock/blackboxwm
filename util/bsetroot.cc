@@ -154,7 +154,7 @@ void bsetroot::setPixmapProperty(int screen, Pixmap pixmap) {
                      &type, &format, &length, &after, &data);
 
   if (data && type == XA_PIXMAP && format == 32 && length == 1)
-    xrootpmap = *((Pixmap *) data);
+    xrootpmap = *(reinterpret_cast<Pixmap *>(data));
 
   if (data) XFree(data);
 
@@ -164,7 +164,7 @@ void bsetroot::setPixmapProperty(int screen, Pixmap pixmap) {
                      &type, &format, &length, &after, &data_esetroot);
 
   if (data_esetroot && type == XA_PIXMAP && format == 32 && length == 1)
-    esetrootpmap = *((Pixmap *) data_esetroot);
+    esetrootpmap = *(reinterpret_cast<Pixmap *>(data_esetroot));
 
   if (data_esetroot) XFree(data_esetroot);
 
@@ -177,10 +177,10 @@ void bsetroot::setPixmapProperty(int screen, Pixmap pixmap) {
   if (pixmap) {
     XChangeProperty(display.XDisplay(), screen_info.rootWindow(),
 		    rootpmap_id, XA_PIXMAP, 32, PropModeReplace,
-		    (unsigned char *) &pixmap, 1);
+		    reinterpret_cast<unsigned char *>(&pixmap), 1);
     XChangeProperty(display.XDisplay(), screen_info.rootWindow(),
 		    esetroot_id, XA_PIXMAP, 32, PropModeReplace,
-		    (unsigned char *) &pixmap, 1);
+		    reinterpret_cast<unsigned char *>(&pixmap), 1);
   }
 }
 
@@ -360,7 +360,7 @@ void bsetroot::usage(int exit_code) {
 }
 
 int main(int argc, char **argv) {
-  char *display_name = (char *) 0;
+  char *display_name = 0;
   bool multi_head = False;
 
   bt::i18n.openCatalog("blackbox.cat");

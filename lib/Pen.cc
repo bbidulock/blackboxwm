@@ -204,7 +204,7 @@ bt::GCCacheContext *bt::GCCache::nextContext(unsigned int screen) {
 
   fprintf(stderr, "bt::GCCache: context fault!\n");
   abort();
-  return (GCCacheContext*) 0; // not reached
+  return 0; // not reached
 }
 
 

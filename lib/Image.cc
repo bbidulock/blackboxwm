@@ -117,7 +117,7 @@ namespace bt {
   static bool shm_attached = false;
   static const unsigned int shm_limit = 400*300*4; // 400x300 @ 32-bit default
   static int shm_id = -1;
-  static char *shm_addr = (char *) -1;
+  static char *shm_addr = reinterpret_cast<char *>(-1);
 
 
   static int handleShmError(::Display *, XErrorEvent *) {
@@ -146,9 +146,9 @@ namespace bt {
     }
 
     // detach shared memory segment
-    if (shm_addr != (char *) -1)
+    if (shm_addr != reinterpret_cast<char *>(-1))
       shmdt(shm_addr);
-    shm_addr = (char *) -1;
+    shm_addr = reinterpret_cast<char *>(-1);
 
     // destroy shared memory id
     if (shm_id != -1)
@@ -185,8 +185,8 @@ namespace bt {
     }
 
     // attached shared memory segment
-    shm_addr = (char *) shmat(shm_id, 0, 0);
-    if (shm_addr == (char *) -1) {
+    shm_addr = static_cast<char *>(shmat(shm_id, 0, 0));
+    if (shm_addr == reinterpret_cast<char *>(-1)) {
 #ifdef MITSHM_DEBUG
       perror("bt::createShmImage: shmat");
 #endif // MITSHM_DEBUG
@@ -461,7 +461,7 @@ bt::Image::Image(unsigned int w, unsigned int h)
   assert(width > 0  && width  < maximumWidth);
   assert(height > 0 && height < maximumHeight);
 
-  data = (RGB *) malloc( width * height * sizeof(RGB) );
+  data = static_cast<RGB *>(malloc(width * height * sizeof(RGB)));
 }
 
 
@@ -782,7 +782,7 @@ Pixmap bt::Image::renderPixmap(const Display &display, unsigned int screen) {
 
   XColorTable *colortable = colorTableList[screen];
   const ScreenInfo &screeninfo = display.screenInfo(screen);
-  XImage *image = (XImage *) 0;
+  XImage *image = 0;
   bool shm_ok = false;
 
 #ifdef MITSHM
@@ -802,15 +802,15 @@ Pixmap bt::Image::renderPixmap(const Display &display, unsigned int screen) {
       return None;
 
     buffer.reserve(image->bytes_per_line * (height + 1));
-    image->data = (char *) &buffer[0];
+    image->data = reinterpret_cast<char *>(&buffer[0]);
   }
 
-  unsigned char *d = (unsigned char *) image->data;
+  unsigned char *d = reinterpret_cast<unsigned char *>(image->data);
   unsigned int o = image->bits_per_pixel +
                    ((image->byte_order == MSBFirst) ? 1 : 0);
 
   DitherMode dmode = NoDither;
-  if ( screeninfo.depth() < 24 && width > 1 && height > 1)
+  if (screeninfo.depth() < 24 && width > 1 && height > 1)
     dmode = ditherMode();
 
   // render to XImage
@@ -1131,15 +1131,15 @@ void bt::Image::hgradient(const Color &from, const Color &to,
 void bt::Image::vgradient(const Color &from, const Color &to,
                           bool interlaced) {
   double dry, dgy, dby,
-    yr = static_cast<double>(from.red()),
+    yr = static_cast<double>(from.red()  ),
     yg = static_cast<double>(from.green()),
-    yb = static_cast<double>(from.blue());
+    yb = static_cast<double>(from.blue() );
   RGB *p = data;
   unsigned int x, y;
 
-  dry = (double) (to.red() - from.red());
-  dgy = (double) (to.green() - from.green());
-  dby = (double) (to.blue() - from.blue());
+  dry = static_cast<double>(to.red()   - from.red()  );
+  dgy = static_cast<double>(to.green() - from.green());
+  dby = static_cast<double>(to.blue()  - from.blue() );
 
   dry /= height;
   dgy /= height;
@@ -1384,9 +1384,9 @@ void bt::Image::egradient(const Color &from, const Color &to,
   unsigned int xt[maximumWidth][3], yt[maximumHeight][3];
   unsigned int x, y;
 
-  dry = drx = (double) (to.red() - from.red());
-  dgy = dgx = (double) (to.green() - from.green());
-  dby = dbx = (double) (to.blue() - from.blue());
+  dry = drx = static_cast<double>(to.red() - from.red());
+  dgy = dgx = static_cast<double>(to.green() - from.green());
+  dby = dbx = static_cast<double>(to.blue() - from.blue());
 
   rsign = (drx < 0) ? -1 : 1;
   gsign = (dgx < 0) ? -1 : 1;
@@ -1572,17 +1572,17 @@ void bt::Image::cdgradient(const Color &from, const Color &to,
 
   double drx, dgx, dbx, dry, dgy, dby;
   double yr = 0.0, yg = 0.0, yb = 0.0,
-         xr = (double) from.red(),
-         xg = (double) from.green(),
-         xb = (double) from.blue();
+         xr = static_cast<double>(from.red()  ),
+         xg = static_cast<double>(from.green()),
+         xb = static_cast<double>(from.blue() );
   RGB *p = data;
   unsigned int w = width * 2, h = height * 2;
   unsigned int xt[maximumWidth][3], yt[maximumHeight][3];
   unsigned int x, y;
 
-  dry = drx = (double) (to.red() - from.red());
-  dgy = dgx = (double) (to.green() - from.green());
-  dby = dbx = (double) (to.blue() - from.blue());
+  dry = drx = static_cast<double>(to.red()   - from.red()  );
+  dgy = dgx = static_cast<double>(to.green() - from.green());
+  dby = dbx = static_cast<double>(to.blue()  - from.blue() );
 
   // Create X table
   drx /= w;

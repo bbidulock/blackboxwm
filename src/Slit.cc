@@ -133,7 +133,7 @@ void SlitDirectionmenu::refresh(void) {
 void SlitDirectionmenu::itemClicked(unsigned int id, unsigned int button) {
   if (button != 1) return;
 
-  _slit->setDirection((Slit::Direction) id);
+  _slit->setDirection(static_cast<Slit::Direction>(id));
 }
 
 
@@ -164,7 +164,7 @@ SlitPlacementmenu::SlitPlacementmenu(bt::Application &app, unsigned int screen,
 void SlitPlacementmenu::itemClicked(unsigned int id, unsigned int button) {
   if (button != 1) return;
 
-  _slit->setPlacement((Slit::Placement) id);
+  _slit->setPlacement(static_cast<Slit::Placement>(id));
 }
 
 
@@ -309,7 +309,7 @@ void Slit::removeClient(SlitClient *client, bool remap) {
   }
 
   delete client;
-  client = (SlitClient *) 0;
+  client = 0;
 }
 
 
@@ -737,7 +737,7 @@ void Slit::timeout(bt::Timer *) {
 
 void Slit::toggleOnTop(void) {
   on_top = ! on_top;
-  if (on_top) screen->raiseWindows((WindowStack *) 0);
+  if (on_top) screen->raiseWindows(0);
 }
 
 

@@ -85,11 +85,11 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     if timer is zero in the destructor, and assume that the window is not
     fully constructed if timer is zero...
   */
-  timer = (bt::Timer*) 0;
+  timer = 0;
   blackbox = b;
   client.window = w;
   screen = s;
-  windowmenu = (Windowmenu*) 0;
+  windowmenu = 0;
   lastButtonPressTime = 0;
 
   if (! validateClient()) {
@@ -135,9 +135,9 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   client.functions = Func_Resize | Func_Move | Func_Iconify | Func_Maximize;
   client.normal_hint_flags = 0;
   client.window_group = None;
-  client.transient_for = (BlackboxWindow*) 0;
+  client.transient_for = 0;
   client.window_type = None;
-  client.strut = (bt::Netwm::Strut*) 0;
+  client.strut = 0;
   /*
     set the initial size and location of client window (relative to the
     _root window_). This position is the reference point used with the
@@ -333,17 +333,17 @@ BlackboxWindow::~BlackboxWindow(void) {
 
   // remove ourselves from our transient_for
   if (isTransient()) {
-    if (client.transient_for != (BlackboxWindow *) ~0ul)
+    if (client.transient_for != reinterpret_cast<BlackboxWindow *>(~0ul))
       client.transient_for->client.transientList.remove(this);
 
-    client.transient_for = (BlackboxWindow*) 0;
+    client.transient_for = 0;
   }
 
   if (! client.transientList.empty()) {
     // reset transient_for for all transients
     BlackboxWindowList::iterator it, end = client.transientList.end();
     for (it = client.transientList.begin(); it != end; ++it)
-      (*it)->client.transient_for = (BlackboxWindow*) 0;
+      (*it)->client.transient_for = 0;
   }
 
   if (frame.title)
@@ -866,7 +866,7 @@ void BlackboxWindow::getWMName(void) {
   if (! blackbox->netwm().readWMName(client.window, name) || name.empty()) {
     if (XGetWMName(blackbox->XDisplay(), client.window, &text_prop)) {
       name = bt::textPropertyToString(blackbox->XDisplay(), text_prop);
-      XFree((char *) text_prop.value);
+      XFree(reinterpret_cast<char *>(text_prop.value));
     }
   }
 
@@ -897,7 +897,7 @@ void BlackboxWindow::getWMIconName(void) {
       name.empty()) {
     if (XGetWMIconName(blackbox->XDisplay(), client.window, &text_prop)) {
       name = bt::textPropertyToString(blackbox->XDisplay(), text_prop);
-      XFree((char *) text_prop.value);
+      XFree(reinterpret_cast<char *>(text_prop.value));
     }
   }
 
@@ -1082,8 +1082,8 @@ void BlackboxWindow::getWMNormalHints(void) {
     availableArea changes max_width/height will be incorrect and lead to odd
     rendering bugs.
   */
-  client.max_width = (unsigned)-1;
-  client.max_height = (unsigned)-1;
+  client.max_width = ~0u;
+  client.max_height = ~0u;
 
   if (! XGetWMNormalHints(blackbox->XDisplay(), client.window,
                           &sizehint, &icccm_mask))
@@ -1143,14 +1143,14 @@ void BlackboxWindow::getMWMHints(void) {
   int format;
   Atom atom_return;
   unsigned long num, len;
-  MwmHints *mwm_hint = (MwmHints*) 0;
+  MwmHints *mwm_hint = 0;
 
   int ret = XGetWindowProperty(blackbox->XDisplay(), client.window,
                                blackbox->getMotifWMHintsAtom(), 0,
                                PropMwmHintsElements, False,
                                blackbox->getMotifWMHintsAtom(), &atom_return,
                                &format, &num, &len,
-                               (unsigned char **) &mwm_hint);
+                               reinterpret_cast<unsigned char **>(&mwm_hint));
 
   if (ret != Success || ! mwm_hint || num != PropMwmHintsElements)
     return;
@@ -1200,17 +1200,16 @@ void BlackboxWindow::getMWMHints(void) {
 
 void BlackboxWindow::getTransientInfo(void) {
   if (client.transient_for &&
-      client.transient_for != (BlackboxWindow *) ~0ul) {
+      client.transient_for != reinterpret_cast<BlackboxWindow *>(~0ul)) {
     // reset transient_for in preparation of looking for a new owner
     client.transient_for->client.transientList.remove(this);
   }
 
   // we have no transient_for until we find a new one
-  client.transient_for = (BlackboxWindow *) 0;
+  client.transient_for = 0;
 
   Window trans_for;
-  if (!XGetTransientForHint(blackbox->XDisplay(), client.window,
-                            &trans_for)) {
+  if (!XGetTransientForHint(blackbox->XDisplay(), client.window, &trans_for)) {
     // transient_for hint not set
     return;
   }
@@ -1226,7 +1225,7 @@ void BlackboxWindow::getTransientInfo(void) {
     // transient.  we don't support the concept of a global transient,
     // so we just associate this transient with nothing, and perhaps
     // we will add support later for global modality.
-    client.transient_for = (BlackboxWindow *) ~0ul;
+    client.transient_for = reinterpret_cast<BlackboxWindow *>(~0ul);
     client.state.modal = True;
     return;
   }
@@ -1242,7 +1241,7 @@ void BlackboxWindow::getTransientInfo(void) {
   if (! client.transient_for || client.transient_for == this) {
     // no transient_for found, or we have a wierd client that wants to be
     // a transient for itself, so we treat this window as a normal window
-    client.transient_for = (BlackboxWindow*) 0;
+    client.transient_for = 0;
     return;
   }
 
@@ -1250,9 +1249,9 @@ void BlackboxWindow::getTransientInfo(void) {
   // when it tries to find the non-transient window for a transient.
   BlackboxWindow *w = this;
   while(w->client.transient_for &&
-        w->client.transient_for != (BlackboxWindow *) ~0ul) {
+        w->client.transient_for != reinterpret_cast<BlackboxWindow *>(~0ul)) {
     if(w->client.transient_for == this) {
-      client.transient_for = (BlackboxWindow*) 0;
+      client.transient_for = 0;
       break;
     }
     w = w->client.transient_for;
@@ -1267,7 +1266,7 @@ void BlackboxWindow::getTransientInfo(void) {
 
 BlackboxWindow *BlackboxWindow::getTransientFor(void) const {
   if (client.transient_for &&
-      client.transient_for != (BlackboxWindow*) ~0ul)
+      client.transient_for != reinterpret_cast<BlackboxWindow *>(~0ul))
     return client.transient_for;
   return 0;
 }
@@ -1442,7 +1441,7 @@ bool BlackboxWindow::setInputFocus(void) {
 void BlackboxWindow::iconify(void) {
   // walk up to the topmost transient_for that is not iconified
   if (isTransient() &&
-      client.transient_for != (BlackboxWindow *) ~0ul &&
+      client.transient_for != reinterpret_cast<BlackboxWindow *>(~0ul) &&
       ! client.transient_for->isIconic()) {
 
     client.transient_for->iconify();
@@ -1758,7 +1757,8 @@ void BlackboxWindow::setState(unsigned long new_state, bool closing) {
   state[1] = None;
   XChangeProperty(blackbox->XDisplay(), client.window,
                   blackbox->getWMStateAtom(), blackbox->getWMStateAtom(), 32,
-                  PropModeReplace, (unsigned char *) state, 2);
+                  PropModeReplace,
+                  reinterpret_cast<unsigned char *>(state), 2);
 
   const bt::Netwm& netwm = blackbox->netwm();
 
@@ -1863,7 +1863,7 @@ bool BlackboxWindow::getState(void) {
                           blackbox->getWMStateAtom(),
                           0l, 2l, False, blackbox->getWMStateAtom(),
                           &atom_return, &foo, &nitems, &ulfoo,
-                          (unsigned char **) &state) != Success) ||
+                          reinterpret_cast<unsigned char **>(&state)) != Success) ||
       (! state)) {
     return False;
   }
@@ -1874,7 +1874,7 @@ bool BlackboxWindow::getState(void) {
     ret = True;
   }
 
-  XFree((void *) state);
+  XFree(state);
 
   return ret;
 }
@@ -2655,6 +2655,8 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const be) {
         setInputFocus();
       if (windowmenu && windowmenu->isVisible()) windowmenu->hide();
 
+      frame.grab_x = be->x_root - frame.rect.x() - frame.border_w;
+      frame.grab_y = be->y_root - frame.rect.y() - frame.border_w;
       screen->raiseWindow(this);
       XAllowEvents(blackbox->XDisplay(), ReplayPointer, be->time);
     }

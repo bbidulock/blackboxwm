@@ -156,7 +156,7 @@ ToolbarPlacementmenu::ToolbarPlacementmenu(bt::Application &app,
 void ToolbarPlacementmenu::itemClicked(unsigned int id, unsigned int button) {
   if (button != 1) return;
 
-  _toolbar->setPlacement((Toolbar::Placement) id);
+  _toolbar->setPlacement(static_cast<Toolbar::Placement>(id));
 }
 
 
@@ -367,7 +367,7 @@ void Toolbar::reconfigure(void) {
         resource.saveStrftimeFormat("%I:%M %p");
         len = strftime(t, 1024, resource.strftimeFormat(), tt);
       }
-      /* 
+      /*
        * find the length of the rendered string and add room for two extra
        * characters to it.  This allows for variable width output of the fonts.
        * two 'w' are used to get the widest possible width
@@ -977,7 +977,7 @@ void Toolbar::toggleAutoHide(void) {
 
 void Toolbar::toggleOnTop(void) {
   on_top = ! on_top;
-  if (on_top) screen->raiseWindows((WindowStack *) 0);
+  if (on_top) screen->raiseWindows(0);
 }
 
 

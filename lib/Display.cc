@@ -72,7 +72,7 @@ bt::Display::Display(const char *dpy_name, bool multi_head) {
   XSynchronize(xdisplay, True);
 #endif // DEBUG
 
-  if (fcntl(ConnectionNumber(xdisplay), F_SETFD, 1) == -1) {
+  if (fcntl(XConnectionNumber(xdisplay), F_SETFD, 1) == -1) {
     fprintf(stderr, "bt::Display: failed to mark connection close-on-exec\n");
     ::exit(2);
   }
@@ -84,7 +84,7 @@ bt::Display::Display(const char *dpy_name, bool multi_head) {
   } else {
     screen_info_count = ScreenCount(xdisplay);
     screen_info_list = new bt::ScreenInfo*[screen_info_count];
-    for (int i = 0; i < ScreenCount(xdisplay); ++i)
+    for (unsigned int i = 0; i < screen_info_count; ++i)
       screen_info_list[i] = new bt::ScreenInfo(*this, i);
   }
   createColorCache(*this);

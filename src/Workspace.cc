@@ -97,11 +97,11 @@ void StackingList::dump(void) const {
 
 
 StackingList::StackingList(void) {
-  desktop = stack.insert(stack.begin(), (BlackboxWindow*) 0);
-  below = stack.insert(desktop, (BlackboxWindow*) 0);
-  normal = stack.insert(below, (BlackboxWindow*) 0);
-  above = stack.insert(normal, (BlackboxWindow*) 0);
-  fullscreen = stack.insert(above, (BlackboxWindow*) 0);
+  desktop    = stack.insert(stack.begin(), 0);
+  below      = stack.insert(      desktop, 0);
+  normal     = stack.insert(        below, 0);
+  above      = stack.insert(       normal, 0);
+  fullscreen = stack.insert(        above, 0);
 }
 
 
@@ -177,7 +177,7 @@ BlackboxWindow* StackingList::front(void) const {
   assert(0);
 
   // this point is never reached, but the compiler doesn't know that.
-  return (BlackboxWindow*) 0;
+  return 0;
 }
 
 
@@ -191,7 +191,8 @@ BlackboxWindow* StackingList::back(void) const {
   }
   assert(0);
 
-  return (BlackboxWindow*) 0;
+  // this point is never reached, but the compiler doesn't know that.
+  return 0;
 }
 
 
@@ -204,7 +205,7 @@ Workspace::Workspace(BScreen *scrn, unsigned int i) {
 
   clientmenu = new Clientmenu(*screen->getBlackbox(), *screen, id);
 
-  lastfocus = (BlackboxWindow *) 0;
+  lastfocus = 0;
 
   setName(screen->getNameOfWorkspace(id));
 }
@@ -281,7 +282,7 @@ void Workspace::focusFallback(const BlackboxWindow *old_window) {
 
     if (old_window && lastfocus == old_window) {
       // The window was the last-focus target, so we need to replace it.
-      BlackboxWindow *win = (BlackboxWindow*) 0;
+      BlackboxWindow *win = 0;
       if (! stackingList.empty())
         win = stackingList.front();
       setLastFocusedWindow(win);
@@ -440,7 +441,8 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
 
   if (! layer_above) {
     // ok, no layers above us, how about below?
-    tmp = std::find(it, stackingList.end(), (BlackboxWindow*) 0);
+    tmp =
+      std::find(it, stackingList.end(), reinterpret_cast<BlackboxWindow *>(0));
     assert(tmp != stackingList.end());
     for (; tmp != stackingList.end(); ++tmp) {
       if (*tmp && it != tmp)
@@ -532,7 +534,7 @@ void Workspace::hide(void) {
     lastfocus = focused;
   } else {
     // if no window had focus, no need to store a last focus
-    lastfocus = (BlackboxWindow *) 0;
+    lastfocus = 0;
   }
 
   // withdraw windows in reverse order to minimize the number of Expose events
