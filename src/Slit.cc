@@ -47,7 +47,7 @@ Slit::Slit(BScreen *scr) {
   display = screen->getBaseDisplay()->getXDisplay();
   frame.window = frame.pixmap = None;
 
-  timer = new BTimer(blackbox, this);
+  timer = new bt::Timer(blackbox, this);
   timer->setTimeout(blackbox->getAutoRaiseDelay());
 
   slitmenu = new Slitmenu(this);

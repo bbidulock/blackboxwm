@@ -91,7 +91,7 @@ public:
 };
 
 
-class Slit : public TimeoutHandler, public EventHandler {
+class Slit : public bt::TimeoutHandler, public EventHandler {
 public:
   struct SlitClient {
     Window window, client_window, icon_window;
@@ -107,7 +107,7 @@ private:
 
   Blackbox *blackbox;
   BScreen *screen;
-  BTimer *timer;
+  bt::Timer *timer;
   Netwm::Strut strut;
 
   SlitClientList clientList;

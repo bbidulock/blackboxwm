@@ -74,7 +74,7 @@ public:
 };
 
 
-class BaseDisplay: public TimerQueueManager {
+class BaseDisplay: public bt::TimerQueueManager {
 private:
   struct BShape {
     bool extensions;
@@ -93,7 +93,7 @@ private:
 
   typedef std::vector<ScreenInfo> ScreenInfoList;
   ScreenInfoList screenInfoList;
-  TimerQueue timerList;
+  bt::TimerQueue timerList;
 
   const char *application_name;
 
@@ -157,8 +157,8 @@ public:
   void eventLoop(void);
 
   // from TimerQueueManager interface
-  virtual void addTimer(BTimer *timer);
-  virtual void removeTimer(BTimer *timer);
+  virtual void addTimer(bt::Timer *timer);
+  virtual void removeTimer(bt::Timer *timer);
 
   // another pure virtual... this is used to handle signals that BaseDisplay
   // doesn't understand itself

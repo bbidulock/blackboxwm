@@ -59,7 +59,7 @@ class Toolbar;
 class Slit;
 class Netwm;
 
-class Blackbox : public BaseDisplay, public TimeoutHandler {
+class Blackbox : public BaseDisplay, public bt::TimeoutHandler {
 private:
   struct BCursor {
     Cursor session, move, ll_angle, lr_angle;
@@ -96,7 +96,7 @@ private:
 
   BScreen *active_screen;
   BlackboxWindow *focused_window;
-  BTimer *timer;
+  bt::Timer *timer;
 
   bool no_focus, reconfigure_wait, reread_menu_wait;
   Time last_time;

@@ -73,7 +73,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     if timer is zero in the destructor, and assume that the window is not
     fully constructed if timer is zero...
   */
-  timer = (BTimer*) 0;
+  timer = (bt::Timer*) 0;
   blackbox = b;
   client.window = w;
   screen = s;
@@ -147,7 +147,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   frame.ulabel = frame.flabel = frame.ubutton = frame.fbutton = None;
   frame.pbutton = frame.ugrip = frame.fgrip = None;
 
-  timer = new BTimer(blackbox, this);
+  timer = new bt::Timer(blackbox, this);
   timer->setTimeout(blackbox->getAutoRaiseDelay());
 
   // get size, aspect, minimum/maximum size, ewmh and other hints set by the

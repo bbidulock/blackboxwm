@@ -73,14 +73,14 @@ Toolbar::Toolbar(BScreen *scrn) {
   blackbox = screen->getBlackbox();
 
   // get the clock updating every minute
-  clock_timer = new BTimer(blackbox, this);
+  clock_timer = new bt::Timer(blackbox, this);
   clock_timer->setTimeout(aMinuteFromNow());
   clock_timer->recurring(True);
   clock_timer->start();
   frame.minute = frame.hour = -1;
 
   hide_handler.toolbar = this;
-  hide_timer = new BTimer(blackbox, &hide_handler);
+  hide_timer = new bt::Timer(blackbox, &hide_handler);
   hide_timer->setTimeout(blackbox->getAutoRaiseDelay());
 
   on_top = screen->isToolbarOnTop();

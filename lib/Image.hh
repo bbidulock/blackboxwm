@@ -85,7 +85,7 @@ public:
 };
 
 
-class BImageControl : public TimeoutHandler {
+class BImageControl : public bt::TimeoutHandler {
 public:
   struct CachedImage {
     Pixmap pixmap;
@@ -139,7 +139,7 @@ private:
   BaseDisplay *basedisplay;
   const ScreenInfo *screeninfo;
 #ifdef    TIMEDCACHE
-  BTimer *timer;
+  bt::Timer *timer;
 #endif // TIMEDCACHE
 
   Colormap colormap;

@@ -91,7 +91,7 @@ public:
 };
 
 
-class BlackboxWindow : public TimeoutHandler, public EventHandler {
+class BlackboxWindow : public bt::TimeoutHandler, public EventHandler {
 public:
   enum Function { Func_Resize   = (1l << 0),
                   Func_Move     = (1l << 1),
@@ -113,7 +113,7 @@ public:
 private:
   Blackbox *blackbox;
   BScreen *screen;
-  BTimer *timer;
+  bt::Timer *timer;
 
   Time lastButtonPressTime;  // used for double clicks, when were we clicked
   Windowmenu *windowmenu;

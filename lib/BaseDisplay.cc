@@ -277,7 +277,7 @@ void BaseDisplay::eventLoop(void) {
       FD_SET(xfd, &rfds);
 
       if (! timerList.empty()) {
-        const BTimer* const timer = timerList.top();
+        const bt::Timer* const timer = timerList.top();
 
         gettimeofday(&now, 0);
         tm = timer->timeRemaining(now);
@@ -295,7 +295,7 @@ void BaseDisplay::eventLoop(void) {
       // timer->start() and timer->shouldFire() is within the timer's period
       // then the timer will keep firing.  This should be VERY near impossible.
       while (! timerList.empty()) {
-        BTimer *timer = timerList.top();
+        bt::Timer *timer = timerList.top();
         if (! timer->shouldFire(now))
           break;
 
@@ -493,13 +493,13 @@ void BaseDisplay::process_event(XEvent *event) {
 }
 
 
-void BaseDisplay::addTimer(BTimer *timer) {
+void BaseDisplay::addTimer(bt::Timer *timer) {
   if (! timer) return;
   timerList.push(timer);
 }
 
 
-void BaseDisplay::removeTimer(BTimer *timer) {
+void BaseDisplay::removeTimer(bt::Timer *timer) {
   timerList.release(timer);
 }
 

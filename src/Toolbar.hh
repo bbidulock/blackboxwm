@@ -72,7 +72,7 @@ public:
 };
 
 
-class Toolbar : public TimeoutHandler, public EventHandler {
+class Toolbar : public bt::TimeoutHandler, public EventHandler {
 private:
   bool on_top, editing, hidden, do_auto_hide;
   Display *display;
@@ -90,7 +90,7 @@ private:
     bt::Rect rect;
   } frame;
 
-  class HideHandler : public TimeoutHandler {
+  class HideHandler : public bt::TimeoutHandler {
   public:
     Toolbar *toolbar;
 
@@ -99,7 +99,7 @@ private:
 
   Blackbox *blackbox;
   BScreen *screen;
-  BTimer *clock_timer, *hide_timer;
+  bt::Timer *clock_timer, *hide_timer;
   Toolbarmenu *toolbarmenu;
   Netwm::Strut strut;
 
