@@ -2,6 +2,26 @@ At the request of some people, here is a Change log starting with 0.33.0.
 Enjoy! :)
 
 
+Changes from 0.34.0 to 0.34.1:
+	- fixed the unmanaged rxvt/xconsole/whatever problem that didn't
+	  decorate windows at start up... just a little logic error that was
+	  fixed with a few braces
+	- fixed the shutdown code so that X and blackbox don't die a gruesome
+	  death while reparenting the small applets on the workspace manager
+	  toolbar... the above bug fixed also fixed a bug that didn't reparent
+	  any existing app windows...
+	- updated libBox code to allow for flaws in it's design (forgotten from
+	  0.34.0)
+	- removed #include <sys/select.h> from blackbox.cc so that it compiles
+	  on any platform (since select is supposed to be defined in unistd.h)
+	- removed the NEED_STRNCASECMP block in blackbox.cc until i can get
+	  a working posix like routine to work (needed for OS2 platforms)
+	- edited the Imakefile scheme to have the the toplevel Imakefile and 
+	  Imakefiles in app-defaults/ lib/ and src/... there now is Imakeconfig
+	  which includes all the options in one file... so that editing all
+	  the Imakefiles is no longer necessary
+
+
 Changes from 0.33.6 to 0.34.0:
 	- edited some Imakefiles so that rpm creaters have an easier time
 	- added stuff to lib/  which contains a small (VERY small) library for

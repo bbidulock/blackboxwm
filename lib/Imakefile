@@ -1,8 +1,8 @@
 
+#include "../Imakeconfig"
+
 SRCS :=		AddWindow.c OpenApp.c RemoveWindow.c
 OBJS :=		AddWindow.o OpenApp.o RemoveWindow.o
-
-CFLAGS :=	-Wall -W $(CFLAGS)
 
 NormalLibraryTarget(Box,$(OBJS))
 DependTarget()

@@ -49,6 +49,10 @@ code has helped me immensely, and the BImage class follows the RImage data type
 very closely (the 8bpp code and dithering code was based off of WindowMaker's
 wrlib).
 
+I recently stumbled upon a library called ccmalloc (which is included in the
+source tarball with blackbox) that has helped me immensely.  Many thanks to
+Armin Biere <armin@ira.uka.de> for this debugging aid.
+
 
 Compilation and Installation:
 --------------------------------
@@ -56,10 +60,12 @@ Blackbox uses an Imakefile to better configure and allow for various
 system types.  Compiler flags, libraries and paths are automatically set
 in the various imake rules and templates files.
 
-Edit Imakefile, lib/Imakefile and src/Imakefile to #define the options that
-you want compiled into (or out of) blackbox.
+Edit the Imakeconfig file and #define the options that you want compiled into
+(or out of) blackbox. Do not edit the Imakefiles unless you know what you are
+doing.
 
 To fully compile and install blackbox, issue the following commands:
+	vi Imakeconfig
 	xmkmf -a
 	make
 	make install (as root, for permissions)

@@ -49,14 +49,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/time.h>
-#include <sys/select.h>
-
-#ifdef NEED_STRCASECMP
-int strncasecmp(const char *string1, const char *string2, size_t count)
-{
-  // implement it here.
-}
-#endif
 
 // *************************************************************************
 // signal handler to allow for proper and gentle shutdown
@@ -223,13 +215,11 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
   XQueryTree(display, root, &r, &p, &children, &nchild);
 
   for (int i = 0; i < (int) nchild; ++i) {
-    if (children[i] == None || ! validateWindow(children[i])) continue;
+    if (children[i] == None || (! validateWindow(children[i]))) continue;
 
     XWindowAttributes attrib;
-    if (XGetWindowAttributes(display, children[i], &attrib)) {
-      if ((! attrib.override_redirect) && (attrib.map_state != IsUnmapped)) {
-	XSync(display, False);
-		
+    if (XGetWindowAttributes(display, children[i], &attrib))
+      if (! attrib.override_redirect) {
 	Atom atom;
 	Bool app = False;
 	int foo;
@@ -243,48 +233,46 @@ Blackbox::Blackbox(int argc, char **argv, char *dpy_name) {
 	    app = True;
 	    (void) new Application(this, children[i]);
 	    XFree(state);
-	  }
-	
-	if (XGetWindowProperty(display, children[i], _XA_WM_STATE, 0, 3,
-			       False, _XA_WM_STATE, &atom, &foo,
-			       &nitems, &ulfoo, &state) == Success)
-	  if (atom == _XA_WM_STATE) {
-	    BlackboxWindow *nWin = new BlackboxWindow(this, children[i]);
-	    
-	    if (state) {
-	      switch (*((unsigned long *) state)) {
-	      case WithdrawnState:
+	  } else {
+	    if (XGetWindowProperty(display, children[i], _XA_WM_STATE, 0, 3,
+				   False, _XA_WM_STATE, &atom, &foo,
+				   &nitems, &ulfoo, &state) == Success) {
+	      BlackboxWindow *nWin = new BlackboxWindow(this, children[i]);
+	      
+	      if (atom == _XA_WM_STATE && state) {
+		switch (*((unsigned long *) state)) {
+		case WithdrawnState:
+		  nWin->deiconifyWindow();
+		  nWin->setFocusFlag(False);
+		  break;
+		  
+		case IconicState:
+		  nWin->iconifyWindow();
+		  break;
+		  
+		case NormalState:
+		default:
+		  nWin->deiconifyWindow();
+		  nWin->setFocusFlag(False);
+		  break;
+		}
+		
+		XFree(state);
+		state = 0;
+	      } else {
 		nWin->deiconifyWindow();
 		nWin->setFocusFlag(False);
-		break;
-		
-	      case IconicState:
-		nWin->iconifyWindow();
-		break;
-		
-	      case NormalState:
-	      default:
-		nWin->deiconifyWindow();
-		nWin->setFocusFlag(False);
-		break;
 	      }
-	    
-	      XFree(state);
-	      state = 0;
-	    } else {
-	      nWin->deiconifyWindow();
-	      nWin->setFocusFlag(False);
 	    }
 	  }
       }
-    }
   }
-
+  
   while (XPending(display)) {
     XEvent foo;
     XNextEvent(display, &foo);
   }
-
+  
   XSynchronize(display, False);
   XSync(display, False);
   XUngrabServer(display);
