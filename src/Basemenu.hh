@@ -25,18 +25,19 @@
 #define   __Basemenu_hh
 
 #include <X11/Xlib.h>
+#include <deque>
 
 class Blackbox;
 class BImageControl;
 class BScreen;
 class Basemenu;
 class BasemenuItem;
-#include "LinkedList.hh"
 
 
 class Basemenu {
 private:
-  LinkedList<BasemenuItem> *menuitems;
+  typedef std::deque<BasemenuItem*> MenuItems;
+  MenuItems menuitems;
   Blackbox *blackbox;
   Basemenu *parent;
   BImageControl *image_ctrl;
@@ -60,7 +61,7 @@ private:
 
 
 protected:
-  inline BasemenuItem *find(int index) { return menuitems->find(index); }
+  BasemenuItem *find(int index);
   inline void setTitleVisibility(Bool b) { title_vis = b; }
   inline void setMovable(Bool b) { movable = b; }
   inline void setHideTree(Bool h) { hide_tree = h; }
@@ -87,6 +88,7 @@ public:
 
   inline const char *getLabel(void) const { return menu.label; }
 
+  int insert(BasemenuItem *, int);
   int insert(const char *, int = 0, const char * = (const char *) 0, int = -1);
   int insert(const char **, int = -1, int = 0);
   int insert(const char *, Basemenu *, int = -1);
@@ -94,7 +96,7 @@ public:
 
   inline const int getX(void) const { return menu.x; }
   inline const int getY(void) const { return menu.y; }
-  inline int getCount(void) { return menuitems->count(); }
+  inline int getCount(void) { return menuitems.size(); }
   inline const int getCurrentSubmenu(void) const { return which_sub; }
 
   inline const unsigned int getWidth(void) const { return menu.width; }

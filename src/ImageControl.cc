@@ -33,6 +33,8 @@
 #  include <ctype.h>
 #endif // HAVE_CTYPE_H
 
+#include <X11/Xlib.h>
+
 #include <algorithm>
 
 #include "blackbox.hh"
@@ -399,7 +401,7 @@ Pixmap BImageControl::searchCache(unsigned int width, unsigned int height,
   CacheContainer::iterator it = cache.begin();
   const CacheContainer::iterator end = cache.end();
   for (; it != end; ++it) {
-    CachedImage &tmp = *it;
+    CachedImage& tmp = *it;
     if ((tmp.width == width) && (tmp.height == height) &&
         (tmp.texture == texture) && (tmp.pixel1 == c1->getPixel()))
       if (texture & BImage_Gradient) {
@@ -710,7 +712,24 @@ struct ZeroRefCheck {
   }
 };
 
+struct CacheCleaner {
+  Display *display;
+  CacheCleaner(Display *d): display(d) {}
+  void operator()(const BImageControl::CachedImage& image) const {
+    if (image.count == 0)
+      XFreePixmap(display, image.pixmap);
+  }
+};
+
+struct ZeroRefCount {
+  bool operator()(const BImageControl::CachedImage& image) const {
+    return (image.count == 0);
+  }
+};
+
 void BImageControl::timeout(void) {
-  cache.erase(std::remove_if(cache.begin(), cache.end(), ZeroRefCheck()),
-              cache.end());
+  std::for_each(cache.begin(), cache.end(),
+                CacheCleaner(basedisplay->getXDisplay()));
+  cache.remove_if(ZeroRefCount());
 }
+

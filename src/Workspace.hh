@@ -26,14 +26,14 @@
 
 #include <X11/Xlib.h>
 
-#include <deque>
+#include <list>
 
 class BScreen;
 class Clientmenu;
 class Workspace;
 class BlackboxWindow;
 
-typedef std::deque<BlackboxWindow*> BlackboxWindowList;
+typedef std::list<BlackboxWindow*> BlackboxWindowList;
 
 class Workspace {
 private:

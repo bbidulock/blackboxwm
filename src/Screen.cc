@@ -1324,8 +1324,7 @@ void BScreen::addIcon(BlackboxWindow *w) {
 void BScreen::removeIcon(BlackboxWindow *w) {
   if (! w) return;
 
-  iconList.erase(std::find(iconList.begin(), iconList.end(), w),
-                 iconList.end());
+  iconList.remove(w);
 
   iconmenu->remove(w->getWindowNumber());
   iconmenu->update();

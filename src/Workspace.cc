@@ -95,10 +95,7 @@ const int Workspace::addWindow(BlackboxWindow *w, Bool place) {
 const int Workspace::removeWindow(BlackboxWindow *w) {
   if (! w) return -1;
 
-  BlackboxWindowList::iterator it = std::find(stackingList.begin(),
-                                              stackingList.end(),
-                                              w);
-  stackingList.erase(it);
+  stackingList.remove(w);
 
   if (w->isFocused()) {
     if (w->isTransient()) {
@@ -121,14 +118,13 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
   if (lastfocus == w)
     lastfocus = (BlackboxWindow *) 0;
 
-  it = std::find(windowList.begin(), windowList.end(), w);
-  windowList.erase(it);
+  windowList.remove(w);
   clientmenu->remove(w->getWindowNumber());
   clientmenu->update();
 
   screen->updateNetizenWindowDel(w->getClientWindow());
 
-  it = windowList.begin();
+  BlackboxWindowList::iterator it = windowList.begin();
   const BlackboxWindowList::iterator end = windowList.end();
   for (int i = 0; it != end; ++it, ++i)
     (*it)->setWindowNumber(i);
@@ -193,10 +189,7 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
 
     if (! win->isIconic()) {
       wkspc = screen->getWorkspace(win->getWorkspaceNumber());
-      BlackboxWindowList::iterator it = std::find(wkspc->stackingList.begin(),
-                                                  wkspc->stackingList.end(),
-                                                  win);
-      wkspc->stackingList.erase(it);
+      wkspc->stackingList.remove(win);
       wkspc->stackingList.push_front(win);
     }
 
@@ -237,10 +230,7 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
 
     if (! win->isIconic()) {
       wkspc = screen->getWorkspace(win->getWorkspaceNumber());
-      BlackboxWindowList::iterator it = std::find(wkspc->stackingList.begin(),
-                                                  wkspc->stackingList.end(),
-                                                  win);
-      wkspc->stackingList.erase(it);
+      wkspc->stackingList.remove(win);
       wkspc->stackingList.push_back(win);
     }
 
@@ -270,10 +260,12 @@ void Workspace::reconfigure(void) {
 
 
 BlackboxWindow *Workspace::getWindow(unsigned int index) {
-  if (index < windowList.size())
-    return *(windowList.begin() + index);
-  else
-    return 0;
+  if (index < windowList.size()) {
+    BlackboxWindowList::iterator it = windowList.begin();
+    for(; index > 0; --index, ++it); /* increment to index */
+    return *it;
+  }
+  return 0;
 }
 
 
