@@ -2363,7 +2363,8 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
       show();
     }
   } else if (event->message_type == netwm.activeWindow()) {
-    if (workspace() != screen->currentWorkspace())
+    if (workspace() != bt::BSENTINEL
+        && workspace() != screen->currentWorkspace())
       screen->setCurrentWorkspace(workspace());
 
     if (client.state.iconic)
