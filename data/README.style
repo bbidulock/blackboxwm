@@ -1,4 +1,4 @@
--- data/README.style for Blackbox 0.61.x - an X11 Window manager
+-- data/README.style for Blackbox - an X11 Window manager
 
 Creating a new style (aka "theme"):
 -----------------------------------
@@ -240,11 +240,9 @@ and exclamation mark `!' and the rest of the line will be ignored.
 Let's finish off the details and take a look at our finished style:
 
 ...
-! Results - theme for Blackbox 0.51.x
+! Results - theme for Blackbox
 ! by Brad Hughes bhughes@tcac.net
 
-! define the toolbars textures... note that the interlaced option is new
-! in 0.51.x
 toolbar:                        Raised Diagonal Gradient Bevel1
 toolbar.button:                 Raised Diagonal Gradient Bevel1
 toolbar.button.pressed:         Sunken Diagonal Interlaced Gradient Bevel1
@@ -324,7 +322,7 @@ your menu (refer to README.menu for this) and add:
 
 [style] (Results) {~/.blackbox/Styles/results}
 
-somewhere in our menu.  Taking advantage of Blackbox 0.51.x's (and up)
-automagic menu updates, all we have to do is close and reopen the root menu
-and our new style entry will be visible.  Select it and Blackbox will apply
-the new style we just created.
+somewhere in our menu.  Taking advantage of Blackbox' automagic menu updates,
+all we have to do is close and reopen the root menu and our new style entry
+will be visible.  Select it and Blackbox will apply the new style we just
+created.

@@ -392,7 +392,8 @@ void Slit::reposition(void) {
 
   case BottomLeft:
     frame.x = 0;
-    frame.y = screen->getHeight() - frame.height - screen->getBorderWidth2x();
+    frame.y = screen->getHeight() - frame.height
+      - (screen->getBorderWidth() * 2);
     if (screen->getSlitDirection() == Vertical) {
       frame.x_hidden = screen->getBevelWidth() - screen->getBorderWidth()
 	               - frame.width;
@@ -414,14 +415,16 @@ void Slit::reposition(void) {
 
   case BottomCenter:
     frame.x = (screen->getWidth() - frame.width) / 2;
-    frame.y = screen->getHeight() - frame.height - screen->getBorderWidth2x();
+    frame.y = screen->getHeight() - frame.height
+      - (screen->getBorderWidth() * 2);
     frame.x_hidden = frame.x;
     frame.y_hidden = screen->getHeight() - screen->getBevelWidth()
                      - screen->getBorderWidth();
     break;
 
   case TopRight:
-    frame.x = screen->getWidth() - frame.width - screen->getBorderWidth2x();
+    frame.x = screen->getWidth() - frame.width
+      - (screen->getBorderWidth() * 2);
     frame.y = 0;
     if (screen->getSlitDirection() == Vertical) {
       frame.x_hidden = screen->getWidth() - screen->getBevelWidth()
@@ -436,7 +439,8 @@ void Slit::reposition(void) {
 
   case CenterRight:
   default:
-    frame.x = screen->getWidth() - frame.width - screen->getBorderWidth2x();
+    frame.x = screen->getWidth() - frame.width
+      - (screen->getBorderWidth() * 2);
     frame.y = (screen->getHeight() - frame.height) / 2;
     frame.x_hidden = screen->getWidth() - screen->getBevelWidth()
                      - screen->getBorderWidth();
@@ -444,8 +448,10 @@ void Slit::reposition(void) {
     break;
 
   case BottomRight:
-    frame.x = screen->getWidth() - frame.width - screen->getBorderWidth2x();
-    frame.y = screen->getHeight() - frame.height - screen->getBorderWidth2x();
+    frame.x = screen->getWidth() - frame.width
+      - (screen->getBorderWidth() * 2);
+    frame.y = screen->getHeight() - frame.height
+      - (screen->getBorderWidth() * 2);
     if (screen->getSlitDirection() == Vertical) {
       frame.x_hidden = screen->getWidth() - screen->getBevelWidth()
 	               - screen->getBorderWidth();
@@ -459,8 +465,8 @@ void Slit::reposition(void) {
   }
 
   Toolbar *tbar = screen->getToolbar();
-  int sw = frame.width + screen->getBorderWidth2x(),
-      sh = frame.height + screen->getBorderWidth2x(),
+  int sw = frame.width + (screen->getBorderWidth() * 2),
+      sh = frame.height + (screen->getBorderWidth() * 2),
       tw = tbar->getWidth() + screen->getBorderWidth(),
       th = tbar->getHeight() + screen->getBorderWidth();
 

@@ -1,4 +1,4 @@
-# nls/ru_RU/Makefile.am for Blackbox-0.61.x - an X11 Window Manager
+# nls/ru_RU/Makefile.am for Blackbox - an X11 Window Manager
 
 NLSTEST = @NLS@
 CLEANFILES = blackbox.cat

@@ -1,4 +1,4 @@
-# nls/tr_TR/Makefile.am for Blackbox-0.61.x - an X11 Window Manager
+# nls/tr_TR/Makefile.am for Blackbox - an X11 Window Manager
 # 
 # -- Türkce tercüme dizini için bir yapim-dosya-tabaný
 # 	kabalak -- kabalak@gmx.net

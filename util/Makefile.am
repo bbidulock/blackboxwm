@@ -1,4 +1,4 @@
-# util/Makefile.am for Blackbox 0.61.x  - an X11 Window manager
+# util/Makefile.am for Blackbox - an X11 Window manager
 
 CPPFLAGS= @CPPFLAGS@ @DEBUG@ @NLS@ @TIMEDCACHE@ @NEWWMSPEC@ @INTERLACE@ \
 @ORDEREDPSEUDO@

@@ -329,22 +329,22 @@ void Workspace::shutdown(void) {
 void Workspace::placeWindow(BlackboxWindow *win) {
   Bool placed = False;
 
-  const int win_w = win->getWidth() + (screen->getBorderWidth2x() * 2),
-    win_h = win->getHeight() + (screen->getBorderWidth2x() * 2),
+  const int win_w = win->getWidth() + (screen->getBorderWidth() * 4),
+    win_h = win->getHeight() + (screen->getBorderWidth() * 4),
 #ifdef    SLIT
     slit_x = screen->getSlit()->getX() - screen->getBorderWidth(),
     slit_y = screen->getSlit()->getY() - screen->getBorderWidth(),
     slit_w = screen->getSlit()->getWidth() +
-      (screen->getBorderWidth2x() * 2),
+      (screen->getBorderWidth() * 4),
     slit_h = screen->getSlit()->getHeight() +
-      (screen->getBorderWidth2x() * 2),
+      (screen->getBorderWidth() * 4),
 #endif // SLIT
     toolbar_x = screen->getToolbar()->getX() - screen->getBorderWidth(),
     toolbar_y = screen->getToolbar()->getY() - screen->getBorderWidth(),
     toolbar_w = screen->getToolbar()->getWidth() +
-      (screen->getBorderWidth2x() * 2),
+      (screen->getBorderWidth() * 4),
     toolbar_h = screen->getToolbar()->getHeight() + 
-      (screen->getBorderWidth2x() * 2),
+      (screen->getBorderWidth() * 4),
     start_pos = screen->getBorderWidth() + screen->getEdgeSnapThreshold(),
     change_y =
       ((screen->getColPlacementDirection() == BScreen::TopBottom) ? 1 : -1),
@@ -374,11 +374,10 @@ void Workspace::placeWindow(BlackboxWindow *win) {
         it.reset();
         for (BlackboxWindow *curr = it.current(); placed && curr;
 	     it++, curr = it.current()) {
-          int curr_w = curr->getWidth() + screen->getBorderWidth2x() +
-            screen->getBorderWidth2x();
+          int curr_w = curr->getWidth() + (screen->getBorderWidth() * 4);
           int curr_h =
 	    ((curr->isShaded()) ? curr->getTitleHeight() : curr->getHeight()) +
-            screen->getBorderWidth2x() + screen->getBorderWidth2x();
+            (screen->getBorderWidth() * 4);
 	  
           if (curr->getXFrame() < test_x + win_w &&
               curr->getXFrame() + curr_w > test_x &&
@@ -437,11 +436,10 @@ void Workspace::placeWindow(BlackboxWindow *win) {
         it.reset();
         for (BlackboxWindow *curr = it.current(); placed && curr;
 	     it++, curr = it.current()) {
-          int curr_w = curr->getWidth() + screen->getBorderWidth2x() +
-            screen->getBorderWidth2x();
+          int curr_w = curr->getWidth() + (screen->getBorderWidth() * 4);
           int curr_h =
             ((curr->isShaded()) ? curr->getTitleHeight() : curr->getHeight()) +
-            screen->getBorderWidth2x() + screen->getBorderWidth2x();
+            (screen->getBorderWidth() * 4);
 
           if (curr->getXFrame() < test_x + win_w &&
               curr->getXFrame() + curr_w > test_x &&

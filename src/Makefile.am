@@ -1,4 +1,4 @@
-# src/Makefile.am for Blackbox 0.61.x  - an X11 Window manager
+# src/Makefile.am for Blackbox - an X11 Window manager
 # Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 #
 # Permission is hereby granted, free of charge, to any person obtaining a

@@ -32,8 +32,16 @@ Changes from 0.61.1 to 0.62.0:
   - applied Kennis' patch for sending incorrect Slit configure notices
   - BlackboxWindow's flags have been moved into a flags structure
   - applied xOr's patch for border handling
-  - updated the manpages (thanks Wilbert)
+  - resizing a window turns off its maximized flag.  Before a resized window
+    thought it was still maximized and maximizing a double action
+  - BlackboxWindow::withdraw no longet sets the state to Withdrawn.
+    This confused some X clients.
+  - updated the manpages and added Dutch NLS support (thanks Wilbert)
   - the menu file mentioned in the manpage is now based on DEFAULT_MENU
+  - configure script found basename in -lgen, but did not set HAVE_BASENAME
+    causing compilation problems on irix and possibly others.  Added a call
+    to AC_DEFINE in AC_CHECK_LIB to fix this.
+  - menu is no longer installed, you need to copy it yourself
   - added my name to the code, updated the version output
     
 Changes from 0.61.0 to 0.61.1:

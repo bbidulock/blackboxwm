@@ -1,4 +1,4 @@
--- data/README.menu for Blackbox 0.61.x - an X11 Window manager
+-- data/README.menu for Blackbox - an X11 Window manager
 
 Creating a user defined menu:
 -----------------------------
@@ -363,7 +363,7 @@ is now ready for use.  If something doesn't work, read over the above example
 again to make sure you didn't forget a step or leave out the necessary tags.
 
 Now that Blackbox has been told where to find it's menu, it does a little more.
-Blackbox 0.51.x introduces automagic menu updates.  As long as you never
+Blackbox 0.51.x introduced automagic menu updates.  As long as you never
 change session.menuFile, you will never have to restart or reconfigure Blackbox
 whenever you change your menu.  Blackbox watches the timestamps on all the
 files it reads to build your menu.  If any of them change, they are reread and

@@ -1,4 +1,4 @@
-# doc/Makefile.am for Blackbox 0.61.x  - an X11 Window manager
+# doc/Makefile.am for Blackbox - an X11 Window manager
 
 CLEANFILES = blackbox.1
 MAINTAINERCLEANFILES = Makefile.in

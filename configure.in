@@ -1,7 +1,7 @@
-dnl configure.in for Blackbox 0.62.0  - an X11 Window manager
+dnl configure.in for Blackbox - an X11 Window manager
 dnl Initialize autoconf and automake
 AC_INIT(src/blackbox.cc)
-AM_INIT_AUTOMAKE(blackbox,0.62.0pre0,no-define)
+AM_INIT_AUTOMAKE(blackbox,0.62.0pre2,no-define)
 
 dnl Determine default prefix
 test x$prefix = "xNONE" && prefix="$ac_default_prefix"
@@ -26,7 +26,8 @@ AC_CHECK_HEADERS(ctype.h dirent.h fcntl.h libgen.h locale.h nl_types.h process.h
 AC_HEADER_TIME
 
 dnl Check for existance of basename(), setlocale() and strftime()
-AC_CHECK_FUNCS(basename, , AC_CHECK_LIB(gen, basename, LIBS="$LIBS -lgen"))
+AC_CHECK_FUNCS(basename, , AC_CHECK_LIB(gen, basename,
+			  AC_DEFINE(HAVE_BASENAME) LIBS="$LIBS -lgen"))
 AC_CHECK_FUNCS(getpid setlocale sigaction strftime strcasestr snprintf vsnprintf catopen catgets catclose)
 AC_CHECK_LIB(nsl, t_open, LIBS="$LIBS -lnsl")
 AC_CHECK_LIB(socket, socket, LIBS="$LIBS -lsocket")
@@ -240,4 +241,5 @@ nls/ru_RU/Makefile
 nls/sv_SE/Makefile
 nls/tr_TR/Makefile
 nls/ja_JP/Makefile
+nls/nl_NL/Makefile
 version.h)

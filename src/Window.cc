@@ -1471,7 +1471,6 @@ void BlackboxWindow::withdraw(void) {
   flags.visible = False;
   flags.iconic = False;
 
-  setState(WithdrawnState);
   XUnmapWindow(display, frame.window);
 
   XSelectInput(display, client.window, NoEventMask);
@@ -1488,13 +1487,17 @@ void BlackboxWindow::maximize(unsigned int button) {
   if (windowmenu && windowmenu->isVisible()) windowmenu->hide();
 
   if (flags.maximized) {
-    flags.maximized = False;
+    flags.maximized = 0;
 
     blackbox_attrib.flags &= ! (AttribMaxHoriz | AttribMaxVert);
     blackbox_attrib.attrib &= ! (AttribMaxHoriz | AttribMaxVert);
 
-    configure(blackbox_attrib.premax_x, blackbox_attrib.premax_y,
-	      blackbox_attrib.premax_w, blackbox_attrib.premax_h);
+    // when a resize is begun, maximize(0) is called to clear any maximization
+    // flags currently set.  Otherwise it still thinks it is maximized.
+    // so we do not need to call configure() because resizing will handle it
+    if (!flags.resizing)
+      configure(blackbox_attrib.premax_x, blackbox_attrib.premax_y,
+		blackbox_attrib.premax_w, blackbox_attrib.premax_h);
 
     blackbox_attrib.premax_x = blackbox_attrib.premax_y = 0;
     blackbox_attrib.premax_w = blackbox_attrib.premax_h = 0;
@@ -1539,7 +1542,7 @@ void BlackboxWindow::maximize(unsigned int button) {
   dh -= (dh % client.height_inc);
   dh += client.base_height;
   dh += frame.y_border;
-  dh += (frame.handle_h + frame.border_w);
+  dh += ((frame.handle_h + frame.border_w) * decorations.handle);
   dh += frame.mwm_border_w * 2;
 
   dx += ((screen->getWidth() - dw) / 2) - frame.border_w;
@@ -1589,7 +1592,7 @@ void BlackboxWindow::maximize(unsigned int button) {
     flags.shaded = False;
   }
 
-  flags.maximized = 1;
+  flags.maximized = button;
 
   configure(dx, dy, dw, dh);
   screen->getWorkspace(workspace_number)->raiseWindow(this);
@@ -1800,12 +1803,12 @@ Bool BlackboxWindow::getState(void) {
 void BlackboxWindow::setGravityOffsets(void) {
   // x coordinates for each gravity type
   const int x_west = client.x;
-  const int x_east = client.x - frame.width + 1;
-  const int x_center = client.x - frame.width/2 + 1;
+  const int x_east = client.x + client.width - frame.width;
+  const int x_center = client.x + client.width - frame.width/2;
   // y coordinates for each gravity type
   const int y_north = client.y;
-  const int y_south = client.y - frame.height + 1;
-  const int y_center = client.y - frame.height/2 + 1;
+  const int y_south = client.y + client.height - frame.height;
+  const int y_center = client.y + client.height - frame.height/2;
 
   switch (client.win_gravity) {
   case NorthWestGravity:
@@ -1848,8 +1851,7 @@ void BlackboxWindow::setGravityOffsets(void) {
   case ForgetGravity:
   case StaticGravity:
     frame.x = client.x - frame.mwm_border_w + frame.border_w;
-    frame.y = client.y - frame.y_border - frame.mwm_border_w -
-      frame.border_w;
+    frame.y = client.y - frame.y_border - frame.mwm_border_w - frame.border_w;
     break;
   }
 }
@@ -1916,7 +1918,7 @@ void BlackboxWindow::restoreAttributes(void) {
       (blackbox_attrib.flags & AttribMaxVert)) {
     int x = blackbox_attrib.premax_x, y = blackbox_attrib.premax_y;
     unsigned int w = blackbox_attrib.premax_w, h = blackbox_attrib.premax_h;
-    flags.maximized = False;
+    flags.maximized = 0;
 
     unsigned int m = False;
     if ((blackbox_attrib.flags & AttribMaxHoriz) &&
@@ -2606,6 +2608,9 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
     else
       right_fixsize();
 
+    // unset maximized state when resized after fully maximized
+    if (flags.maximized == 1)
+      maximize(0);
     flags.resizing = False;
     configure(frame.resize_x, frame.resize_y,
 	      frame.resize_w - (frame.border_w * 2),
@@ -2709,7 +2714,7 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
   } else if (functions.resize &&
 	     (((me->state & Button1Mask) && (me->window == frame.right_grip ||
 					     me->window == frame.left_grip)) ||
-	      (me->state == (Mod1Mask | Button3Mask) &&
+	      (me->state & (Mod1Mask | Button3Mask) &&
 	                                     me->window == frame.window))) {
     Bool left = (me->window == frame.left_grip);
 
@@ -2934,8 +2939,11 @@ void BlackboxWindow::upsize(void) {
   frame.bevel_w = screen->getBevelWidth();
 
   if (decorations.border) {
-    frame.mwm_border_w = screen->getFrameWidth();
     frame.border_w = screen->getBorderWidth();
+    if (!flags.transient)
+      frame.mwm_border_w = screen->getFrameWidth();
+    else
+      frame.mwm_border_w = 0;
   } else {
     frame.mwm_border_w = frame.border_w = 0;
   }

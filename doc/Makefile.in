@@ -10,7 +10,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-# doc/Makefile.am for Blackbox 0.61.x  - an X11 Window manager
+# doc/Makefile.am for Blackbox - an X11 Window manager
 
 
 SHELL = @SHELL@

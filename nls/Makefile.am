@@ -1,7 +1,7 @@
-# nls/Makefile.am for Blackbox 0.61.x - an X11 Window Manager
+# nls/Makefile.am for Blackbox - an X11 Window Manager
 
 NLSTEST = @NLS@
-SUBDIRS = C da_DK es_ES et_EE fr_FR pt_BR ru_RU sv_SE tr_TR ja_JP
+SUBDIRS = C da_DK es_ES et_EE fr_FR pt_BR ru_RU sv_SE tr_TR ja_JP nl_NL
 MAINTAINERCLEANFILES = Makefile.in blackbox-nls.hh
 DISTCLEANFILES = blackbox-nls.hh
 

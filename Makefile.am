@@ -1,4 +1,4 @@
-# Makefile.am for Blackbox 0.61.x  - an X11 Window manager
+# Makefile.am for Blackbox - an X11 Window manager
 
 AUTOMAKE_OPTIONS = foreign
 

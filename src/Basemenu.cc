@@ -100,13 +100,12 @@ Basemenu::Basemenu(BScreen *scrn) {
     menu.persub =
     menu.minsub = 0;
   
+  MenuStyle *style = screen->getMenuStyle();
   if (i18n->multibyte()) {
-    MenuStyle *style = screen->getMenuStyle();
     menu.item_h = style->f_fontset_extents->max_ink_extent.height +
       (menu.bevel_w);
   } else {
-    menu.item_h = screen->getMenuStyle()->f_font->ascent +
-		  screen->getMenuStyle()->f_font->descent +
+    menu.item_h = style->f_font->ascent + style->f_font->descent +
 		  (menu.bevel_w);
   }
   
@@ -262,19 +261,17 @@ int Basemenu::remove(int index) {
 
 
 void Basemenu::update(void) {
+  MenuStyle *style = screen->getMenuStyle();
   if (i18n->multibyte()) {
-    MenuStyle *style = screen->getMenuStyle();
     menu.item_h = style->f_fontset_extents->max_ink_extent.height +
 		  menu.bevel_w;
     menu.title_h = style->t_fontset_extents->max_ink_extent.height +
                    (menu.bevel_w * 2);
   } else {
-    menu.item_h = screen->getMenuStyle()->f_font->ascent +
-		  screen->getMenuStyle()->f_font->descent +
+    menu.item_h = style->f_font->ascent + style->f_font->descent +
 		  menu.bevel_w;
-    menu.title_h = screen->getMenuStyle()->t_font->ascent +
-		    screen->getMenuStyle()->t_font->descent +
-		    (menu.bevel_w * 2);
+    menu.title_h = style->t_font->ascent + style->t_font->descent +
+		   (menu.bevel_w * 2);
   }
     
   if (title_vis) {
@@ -563,7 +560,7 @@ void Basemenu::drawSubmenu(int index) {
 
       if ((y + item->submenu()->getHeight()) > screen->getHeight())
 	y = screen->getHeight() - item->submenu()->getHeight() -
-	    screen->getBorderWidth2x();
+	    (screen->getBorderWidth() * 2);
       if (y < 0) y = 0;
       
       item->submenu()->move(x, y);

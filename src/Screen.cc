@@ -1272,7 +1272,6 @@ void BScreen::LoadStyle(void) {
   } else {
     resource.border_width = 1;
   }
-  resource.border_width_2x = resource.border_width * 2;
 
   if (XrmGetResource(resource.stylerc, "bevelWidth", "BevelWidth",
                      &value_type, &value)) {
@@ -1351,7 +1350,7 @@ int BScreen::addWorkspace(void) {
   workspacesList->insert(wkspc);
 
   workspacemenu->insert(wkspc->getName(), wkspc->getMenu(),
-			wkspc->getWorkspaceID() + 1);
+			wkspc->getWorkspaceID() + 2);
   workspacemenu->update();
 
   toolbar->reconfigure();

@@ -53,7 +53,7 @@
 #
 # example:
 
-[begin] (Blackbox 0.61.x)
+[begin] (Blackbox)
   [exec] (xterm)    {xterm -ls}
   [exec] (rxvt)     {rxvt}
 

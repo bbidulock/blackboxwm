@@ -214,7 +214,8 @@ void Toolbar::reconfigure(void) {
 
   case BottomLeft:
     frame.x = 0;
-    frame.y = screen->getHeight() - frame.height - screen->getBorderWidth2x();
+    frame.y = screen->getHeight() - frame.height
+      - (screen->getBorderWidth() * 2);
     frame.x_hidden = 0;
     frame.y_hidden = screen->getHeight() - screen->getBevelWidth()
                      - screen->getBorderWidth();
@@ -231,14 +232,16 @@ void Toolbar::reconfigure(void) {
   case BottomCenter:
   default:
     frame.x = (screen->getWidth() - frame.width) / 2;
-    frame.y = screen->getHeight() - frame.height - screen->getBorderWidth2x();
+    frame.y = screen->getHeight() - frame.height
+      - (screen->getBorderWidth() * 2);
     frame.x_hidden = frame.x;
     frame.y_hidden = screen->getHeight() - screen->getBevelWidth()
                      - screen->getBorderWidth();
     break;
 
   case TopRight:
-    frame.x = screen->getWidth() - frame.width - screen->getBorderWidth2x();
+    frame.x = screen->getWidth() - frame.width
+      - (screen->getBorderWidth() * 2);
     frame.y = 0;
     frame.x_hidden = frame.x;
     frame.y_hidden = screen->getBevelWidth() - screen->getBorderWidth()
@@ -246,8 +249,10 @@ void Toolbar::reconfigure(void) {
     break;
 
   case BottomRight:
-    frame.x = screen->getWidth() - frame.width - screen->getBorderWidth2x();
-    frame.y = screen->getHeight() - frame.height - screen->getBorderWidth2x();
+    frame.x = screen->getWidth() - frame.width
+      - (screen->getBorderWidth() * 2);
+    frame.y = screen->getHeight() - frame.height
+      - (screen->getBorderWidth() * 2);
     frame.x_hidden = frame.x;
     frame.y_hidden = screen->getHeight() - screen->getBevelWidth()
                      - screen->getBorderWidth();
@@ -1007,7 +1012,7 @@ void Toolbar::keyPressEvent(XKeyEvent *ke) {
 	screen->getWorkspacemenu()->
 	  insert(screen->getCurrentWorkspace()->getName(),
 		 screen->getCurrentWorkspace()->getMenu(),
-		 screen->getCurrentWorkspace()->getWorkspaceID() + 1);
+		 screen->getCurrentWorkspace()->getWorkspaceID() + 2);
 	screen->getWorkspacemenu()->update();
       }
 

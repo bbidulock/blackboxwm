@@ -5,9 +5,15 @@ Code Maintainer:
 
 Current Contributors:
 	Ben 'xOr' Jansens <xor@orodu.net>
+	- metric tons of code patches
         John Kennis <jkennis@chello.nl>
+	- bbpager, ideas, and support
         Jason 'vanRijn' Kasper <vR@movingparts.net>
+	- bbkeys, ideas, support
 	Wilbert Berendsen <wbsoft@xs4all.nl>
+	 - man pages
+	Chris Mecca <flip@linuxguide.org>
+	 - use of his irix machine for testing
 
 Original Author:
         Brad Hughes <bhughes@trolltech.com>

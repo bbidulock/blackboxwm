@@ -1,9 +1,9 @@
-# data/Makefile.am for Blackbox 0.61.x  - an X11 Window manager
+# data/Makefile.am for Blackbox - an X11 Window manager
 
 SUBDIRS = styles
 CLEANFILES = menu
 MAINTAINERCLEANFILES = Makefile.in
-pkgdata_DATA = menu
+#pkgdata_DATA = menu
 
 all-local: menu
 distclean-local:

@@ -144,8 +144,7 @@ private:
     int slit_placement, slit_direction;
 #endif // SLIT
 
-    unsigned int handle_width, bevel_width, frame_width,
-      border_width, border_width_2x;
+    unsigned int handle_width, bevel_width, frame_width, border_width;
 
 #ifdef    HAVE_STRFTIME
     char *strftime_format;
@@ -231,8 +230,6 @@ public:
   { return resource.frame_width; }
   inline const unsigned int &getBorderWidth(void) const
   { return resource.border_width; }
-  inline const unsigned int &getBorderWidth2x(void) const
-  { return resource.border_width_2x; }
 
   inline const int getCurrentWorkspaceID()
   { return current_workspace->getWorkspaceID(); }

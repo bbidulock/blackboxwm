@@ -10,7 +10,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-# nls/C/Makefile.am for Blackbox-0.61.x - an X11 Window Manager
+# nls/C/Makefile.am for Blackbox - an X11 Window Manager
 
 
 SHELL = @SHELL@

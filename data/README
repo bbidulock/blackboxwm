@@ -1,4 +1,4 @@
--- data/README for Blackbox 0.61.x - an X11 Window manager
+-- data/README for Blackbox - an X11 Window manager
 
 The data/ directory holds some menu and style (or theme) examples for Blackbox.
 These are installed as system defaults, and are ALWAYS overwritten when
