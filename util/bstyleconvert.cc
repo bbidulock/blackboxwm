@@ -45,7 +45,7 @@ std::string tolower(const std::string &string)
   std::string::const_iterator it = string.begin();
   const std::string::const_iterator end = string.end();
   for (; it != end; ++it)
-    returnValue.push_back(std::tolower(*it));
+    returnValue.push_back(tolower(*it));
   return returnValue;
 }
 
