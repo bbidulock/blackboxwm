@@ -468,7 +468,7 @@ unsigned int BScreen::removeLastWorkspace(void) {
 
   wkspc->transferWindows(*(workspacesList.back()));
 
-  workspacemenu->removeItem(wkspc->id() + 3);
+  workspacemenu->removeWorkspace(wkspc);
 
   delete wkspc;
 
@@ -487,14 +487,14 @@ void BScreen::changeWorkspaceID(unsigned int id) {
 
   current_workspace->hide();
 
-  workspacemenu->setItemChecked(current_workspace->id() + 3, false);
+  workspacemenu->setWorkspaceChecked(current_workspace, false);
 
   current_workspace = getWorkspace(id);
   current_workspace_id = current_workspace->id();
 
   current_workspace->show();
 
-  workspacemenu->setItemChecked(current_workspace->id() + 3, true);
+  workspacemenu->setWorkspaceChecked(current_workspace, true);
   if (_toolbar) _toolbar->redrawWorkspaceLabel();
 
   blackbox->netwm().setCurrentDesktop(screen_info.rootWindow(),
