@@ -39,6 +39,7 @@ extern "C" {
 
 bt::Texture::Texture(void) : t(0ul), bw(0u) { }
 
+
 bt::Texture::Texture(const bt::Texture& tt) {
   *this = tt;
 }
@@ -136,25 +137,6 @@ bt::Texture& bt::Texture::operator=(const bt::Texture &tt) {
   return *this;
 }
 
-
-Pixmap bt::Texture::render(const Display &display, unsigned int screen,
-                           ImageControl &image_control, // go away!
-                           unsigned int width, unsigned int height,
-                           Pixmap old) {
-  Pixmap ret;
-  if (texture() == (bt::Texture::Flat | bt::Texture::Solid)) {
-    ret = None;
-  } else if (texture() == bt::Texture::Parent_Relative) {
-    ret = ParentRelative;
-  } else {
-    ret = image_control.renderImage(width, height, *this);
-    // ret = bt::Image(width, height).render(display, screen, *this);
-  }
-
-  if (old) image_control.removeImage(old);
-
-  return ret;
-}
 
 bt::Texture bt::textureResource(const Display &display,
                                 unsigned int screen,

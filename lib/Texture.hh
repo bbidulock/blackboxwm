@@ -89,16 +89,11 @@ namespace bt {
     void setBorderWidth(unsigned int new_bw) { bw = new_bw; }
 
     Texture &operator=(const Texture &tt);
-    bool operator==(const Texture &tt)
+    bool operator==(const Texture &tt) const
     { return (c == tt.c && ct == tt.ct && bc == tt.bc &&
               lc == tt.lc && sc == tt.sc && t == tt.t && bw == tt.bw); }
-    bool operator!=(const Texture &tt)
+    bool operator!=(const Texture &tt) const
     { return (! operator==(tt)); }
-
-    Pixmap render(const Display &display, unsigned int screen,
-                  ImageControl &image_control, // this needs to go away
-                  unsigned int width,  unsigned int height,
-                  Pixmap old = 0);
 
   private:
     std::string descr;
