@@ -537,6 +537,7 @@ void BlackboxMenu::hideMenu(void) {
   debug->msg("hiding menu\n");
   XGrabServer(display);
   XUnmapWindow(display, menu.frame);
+  user_moved = False;
   visible = False;
   if (which_sub != -1) {
     BlackboxMenuItem *tmp = menuitems->at(which_sub);

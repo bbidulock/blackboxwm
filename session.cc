@@ -326,6 +326,8 @@ void BlackboxSession::InitScreen(void) {
     XNextEvent(display, &foo);
   }
 
+
+  ws_manager->stackWindows(NULL, 0);
   XUngrabServer(display);
 }
 

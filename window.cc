@@ -1332,9 +1332,9 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
 		      session->StateAtom(), 32, PropModeReplace,
 		      (unsigned char *) state, 2);
 
-      setFocusFlag(false);
       XMapSubwindows(display, frame.window);
       XMapWindow(display, frame.window);
+      setFocusFlag(False);
       XUngrabServer(display);
     }
   }
