@@ -78,6 +78,7 @@ private:
   bool focus_new_windows;
   bool focus_last_window_on_workspace;
   bool allow_scroll_lock;
+  bool change_workspace_with_mouse_wheel;
   unsigned int edge_snap_threshold;
 
 public:
@@ -170,6 +171,11 @@ public:
   { return focus_last_window_on_workspace; }
   inline void setFocusLastWindowOnWorkspace(bool b = true)
   { focus_last_window_on_workspace = b; }
+
+  inline bool changeWorkspaceWithMouseWheel(void) const
+  { return change_workspace_with_mouse_wheel; }
+  inline void setChangeWorkspaceWithMouseWheel(bool b = true)
+  { change_workspace_with_mouse_wheel = b; }
 
   inline bool allowScrollLock(void) const
   { return allow_scroll_lock; }

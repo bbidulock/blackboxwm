@@ -1879,11 +1879,13 @@ void BScreen::buttonPressEvent(const XButtonEvent * const event) {
   } else if (event->button == 3) {
     _blackbox->checkMenu();
     _rootmenu->popup(event->x_root, event->y_root);
-  } else if (event->button == 4) {
+  } else if (event->button == 4 &&
+             _blackbox->resource().changeWorkspaceWithMouseWheel()) {
     setCurrentWorkspace(current_workspace < workspacesList.size() - 1
                         ? current_workspace + 1
                         : 0);
-  } else if (event->button == 5) {
+  } else if (event->button == 5 &&
+             _blackbox->resource().changeWorkspaceWithMouseWheel()) {
     setCurrentWorkspace(current_workspace > 0
                         ? current_workspace - 1
                         : workspacesList.size() - 1);

@@ -85,6 +85,7 @@ enum {
   FullMaximization,
   FocusNewWindows,
   FocusLastWindowOnWorkspace,
+  ChangeWorkspaceWithMouseWheel,
   DisableBindings,
   ToolbarOptions,
   SlitOptions,
@@ -111,17 +112,23 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
     new ConfigDithermenu(app, screen, bscreen);
 
   insertItem(bt::toUnicode("Focus Model"), focusmenu, FocusModel);
-  insertItem(bt::toUnicode("Window Placement"), placementmenu, WindowPlacement);
+  insertItem(bt::toUnicode("Window Placement"),
+             placementmenu, WindowPlacement);
   insertItem(bt::toUnicode("Image Dithering"), dithermenu, ImageDithering);
   insertSeparator();
   insertItem(bt::toUnicode("Opaque Window Moving"), OpaqueWindowMoving);
   insertItem(bt::toUnicode("Opaque Window Resizing"), OpaqueWindowResizing);
   insertItem(bt::toUnicode("Full Maximization"), FullMaximization);
   insertItem(bt::toUnicode("Focus New Windows"), FocusNewWindows);
-  insertItem(bt::toUnicode("Focus Last Window on Workspace"), FocusLastWindowOnWorkspace);
-  insertItem(bt::toUnicode("Disable Bindings with Scroll Lock"), DisableBindings);
+  insertItem(bt::toUnicode("Focus Last Window on Workspace"),
+             FocusLastWindowOnWorkspace);
+  insertItem(bt::toUnicode("Change Workspace with Mouse Wheel"),
+             ChangeWorkspaceWithMouseWheel);
+  insertItem(bt::toUnicode("Disable Bindings with Scroll Lock"),
+             DisableBindings);
   insertSeparator();
-  insertItem(bt::toUnicode("Toolbar Options"), bscreen->toolbarmenu(), ToolbarOptions);
+  insertItem(bt::toUnicode("Toolbar Options"),
+             bscreen->toolbarmenu(), ToolbarOptions);
   insertItem(bt::toUnicode("Slit Options"), bscreen->slitmenu(), SlitOptions);
 }
 
@@ -133,6 +140,8 @@ void Configmenu::refresh(void) {
   setItemChecked(FullMaximization, res.fullMaximization());
   setItemChecked(FocusNewWindows, res.focusNewWindows());
   setItemChecked(FocusLastWindowOnWorkspace, res.focusLastWindowOnWorkspace());
+  setItemChecked(ChangeWorkspaceWithMouseWheel,
+                 res.changeWorkspaceWithMouseWheel());
   setItemChecked(DisableBindings, res.allowScrollLock());
 }
 
@@ -158,6 +167,10 @@ void Configmenu::itemClicked(unsigned int id, unsigned int) {
 
   case FocusLastWindowOnWorkspace: // focus last window on workspace
     res.setFocusLastWindowOnWorkspace(!res.focusLastWindowOnWorkspace());
+    break;
+
+  case ChangeWorkspaceWithMouseWheel:
+    res.setChangeWorkspaceWithMouseWheel(!res.changeWorkspaceWithMouseWheel());
     break;
 
   case DisableBindings: // disable keybindings with Scroll Lock
