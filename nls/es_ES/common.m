@@ -16,20 +16,20 @@ $ #AlwaysOnTop
 # Siempre encima/arriba
 
 $ #PlacementTitle
-# Plazamiento 
+# Ubicación 
 $ #PlacementTopLeft
-# En la cabeza a la izquierda
+# Arriba a la izquierda
 $ #PlacementCenterLeft
 # Centro a la izquierda
 $ #PlacementBottomLeft
-# Al pie a la izquierda
+# Abajo a la izquierda
 $ #PlacementTopCenter
-# En la cabeza al centro
+# Arriba al centro
 $ #PlacementBottomCenter
-# Al pie al centro
+# Abajo al centro
 $ #PlacementTopRight
-# En la cabeza a la derecha
+# Arriba a la derecha
 $ #PlacementCenterRight
 # Centro a la derecha
 $ #PlacementBottomRight
-# Al pie a la derecha
+# Abajo a la derecha

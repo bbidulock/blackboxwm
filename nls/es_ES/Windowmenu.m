@@ -1,20 +1,20 @@
 $set 10 #Windowmenu
 
 $ #SendTo
-# Lanzar al ...
+# Enviar a ...
 $ #Shade
 # Enrollar
 $ #Iconify
-# Hacer en icono
+# Convertir en icono
 $ #Maximize
 # Maximizar
 $ #Raise
-# Alzar
+# Elevar
 $ #Lower
 # Bajar
 $ #Stick
-# Hacer engomado
+# Fijar
 $ #KillClient
-# Matar el cliente
+# Matar al cliente
 $ #Close
 # Cerrar

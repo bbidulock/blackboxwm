@@ -3,36 +3,36 @@ $set 3 #Configmenu
 $ #ConfigOptions
 # Opciones de configuración
 $ #FocusModel
-# Modelo de enfocar
+# Modelo de enfoque
 $ #WindowPlacement
-# Plazamiento de ventanas
+# Ubicación de ventanas
 $ #ImageDithering
-# Simulación de colores en imagenes
+# Simulación de colores en imágenes
 $ #OpaqueMove
-# Movimiento de ventanas en manera opaca
+# Movimiento opaco de ventanas
 $ #FullMax
 # Maximización total
 $ #FocusNew
 # Enfocar ventanas nuevas
 $ #FocusLast
-# Enfocar la ventana última en el escritorio
+# Enfocar la última ventana en el escritorio
 $ #ClickToFocus
-# Pulsar para enfocar
+# Seleccionar para enfocar
 $ #SloppyFocus
-# Enfocar en forma descuidada
+# Enfocar sin forma estricta
 $ #AutoRaise
-# Autoalzar las ventanas
+# Elevar automáticamente las ventanas
 $ #SmartRows
-# Plazamiento inteligente (filas)
+# Ubicación inteligente (filas)
 $ #SmartCols
-# Plazamiento inteligente (columnas)
+# Ubicación inteligente (columnas)
 $ #Cascade
-# Plazamiento cascada
+# Ubicación en cascada
 $ #LeftRight
-# La izquierda a la derecha
+# De izquierda a derecha
 $ #RightLeft
-# La derecha a la izquierda
+# De derecha a izquierda
 $ #TopBottom
-# La cabeza al pie
+# De arriba hacia abajo
 $ #BottomTop
-# El pie a la cabeza
+# De abajo hacia arriba

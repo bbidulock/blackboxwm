@@ -5,4 +5,4 @@ $ #SlitTitle
 $ #SlitDirection
 # Dirección de slit
 $ #SlitPlacement
-# Plazamiento de slit
+# Ubicación de slit

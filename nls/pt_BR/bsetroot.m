@@ -1,16 +1,16 @@
 $set 16 #bsetroot
 
 $ #MustSpecify
-# %s: error: must specify one of: -solid, -mod, -gradient\n
+# %s: erro: necessario especificar um dos seguintes argumentos: -solid, -mod, -gradient\n
 $ #Usage
 # %s 2.0: (c) 1997-2000 Brad Hughes\n\n\
-  -display <string>        display connection\n\
+  -display <string>        conexão com display\n\
   -mod <x> <y>             modula pattern\n\
   -foreground, -fg <color> modula foreground color\n\
   -background, -bg <color> modula background color\n\n\
-  -gradient <texture>      gradient texture\n\
-  -from <color>            gradient start color\n\
-  -to <color>              gradient end color\n\n\
-  -solid <color>           solid color\n\n\
-  -help                    print this help text and exit\n
+  -gradient <texture>      textura gradiente\n\
+  -from <color>            cor de inicio do gradiente\n\
+  -to <color>              com do fim do gradiente\n\n\
+  -solid <color>           cor solida\n\n\
+  -help                    mostra essa ajuda e sai\n
 

@@ -34,10 +34,6 @@ class BScreen;
 
 #include "LinkedList.hh"
 
-#ifdef    DEBUG
-#  include "mem.h"
-#endif // DEBUG
-
 
 class Basemenu {
 private:
@@ -72,7 +68,8 @@ protected:
   inline void setMinimumSublevels(int m) { menu.minsub = m; }
 
   virtual void itemSelected(int, int) = 0;
-  virtual void drawItem(int, Bool = False, Bool = False);
+  virtual void drawItem(int, Bool = False, Bool = False,
+			int = -1, int = -1, unsigned int = 0, unsigned int = 0);
   virtual void redrawTitle();
   virtual void internal_hide(void);
 
@@ -158,10 +155,6 @@ public:
     u = 0;
     enabled = 1;
     selected = 0;
-
-#ifdef    DEBUG
-    allocate(sizeof(BasemenuItem), __FUNCTION__);
-#endif // DEBUG
   }
 
   BasemenuItem(const char *lp, Basemenu *mp) {
@@ -172,10 +165,6 @@ public:
     u = 0;
     enabled = 1;
     selected = 0;
-
-#ifdef    DEBUG
-    allocate(sizeof(BasemenuItem), __FUNCTION__);
-#endif // DEBUG
   }
 
   BasemenuItem(const char **up, int fp) {
@@ -185,17 +174,7 @@ public:
     s = 0;
     enabled = 1;
     selected = 0;
-
-#ifdef    DEBUG
-    allocate(sizeof(BasemenuItem), __FUNCTION__);
-#endif // DEBUG
   }
-
-#ifdef    DEBUG
-  ~BasemenuItem(void) {
-    deallocate(sizeof(BasemenuItem), __FUNCTION__);
-  }
-#endif // DEBUG
 
   inline const char *exec(void) const { return e; }
   inline const char *label(void) const { return l; }

@@ -36,28 +36,13 @@
 #include "Workspace.hh"
 #include "Workspacemenu.hh"
 
-#ifdef    DEBUG
-#  include "mem.h"
-#endif // DEBUG
-
 
 Clientmenu::Clientmenu(Workspace *ws) : Basemenu(ws->getScreen()) {
-#ifdef    DEBUG
-  allocate(sizeof(Clientmenu), "Clientmenu.cc");
-#endif // DEBUG
-
   wkspc = ws;
   screen = wkspc->getScreen();
 
   setInternalMenu();
 }
-
-
-#ifdef    DEBUG
-Clientmenu::~Clientmenu(void) {
-  deallocate(sizeof(Clientmenu), "Clientmenu.cc");
-}
-#endif // DEBUG
 
 
 void Clientmenu::itemSelected(int button, int index) {

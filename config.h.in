@@ -33,6 +33,9 @@
 /* Define if you have the sigaction function.  */
 #undef HAVE_SIGACTION
 
+/* Define if you have the strcasestr function.  */
+#undef HAVE_STRCASESTR
+
 /* Define if you have the strftime function.  */
 #undef HAVE_STRFTIME
 

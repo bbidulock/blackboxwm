@@ -42,7 +42,6 @@ protected:
 
 public:
   Iconmenu(BScreen *);
-  virtual ~Iconmenu(void);
 };
 
 

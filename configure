@@ -714,7 +714,7 @@ fi
 
 PACKAGE=Blackbox
 
-VERSION=0.60.1-beta
+VERSION=0.60.2-beta
 
 if test "`cd $srcdir && pwd`" != "`pwd`" && test -f $srcdir/config.status; then
   { echo "configure: error: source directory already configured; run "make distclean" there first" 1>&2; exit 1; }
@@ -1394,7 +1394,7 @@ fi
 fi
 done
 
-for ac_func in getpid setlocale sigaction strftime catopen catgets catclose
+for ac_func in getpid setlocale sigaction strftime strcasestr catopen catgets catclose
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:1401: checking for $ac_func" >&5
@@ -2708,7 +2708,14 @@ else
 echo "configure:2709: checking which type of gencat you have" >&5
   gencat_gnu=`gencat -V 2>&1 | grep GNU`
   if test -z "$gencat_gnu"; then
-    echo "$ac_t""X/Open" 1>&6
+    if gencat -lang C++ -new test.cat nls/C/main.m; then
+      echo "$ac_t""X/Open" 1>&6
+      GENCAT_TYPE="X/Open"
+    else
+      echo "$ac_t""Sun" 1>&6
+      GENCAT_TYPE="Sun"
+    fi
+    rm -f test.cat
   else
     echo "$ac_t""GNU" 1>&6
     GENCAT_TYPE="GNU"
@@ -2719,7 +2726,7 @@ fi
 
 TIMEDCACHE=""
 echo $ac_n "checking whether to use the new timed pixmap cache""... $ac_c" 1>&6
-echo "configure:2723: checking whether to use the new timed pixmap cache" >&5
+echo "configure:2730: checking whether to use the new timed pixmap cache" >&5
 # Check whether --enable-timed-cache or --disable-timed-cache was given.
 if test "${enable_timed_cache+set}" = set; then
   enableval="$enable_timed_cache"
@@ -2738,12 +2745,12 @@ fi
 
 
 echo $ac_n "checking return type of signal handlers""... $ac_c" 1>&6
-echo "configure:2742: checking return type of signal handlers" >&5
+echo "configure:2749: checking return type of signal handlers" >&5
 if eval "test \"`echo '$''{'ac_cv_type_signal'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2747 "configure"
+#line 2754 "configure"
 #include "confdefs.h"
 #include <sys/types.h>
 #include <signal.h>
@@ -2760,7 +2767,7 @@ int main() {
 int i;
 ; return 0; }
 EOF
-if { (eval echo configure:2764: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2771: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_type_signal=void
 else
@@ -2780,7 +2787,7 @@ EOF
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:2784: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:2791: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"
@@ -2925,6 +2932,9 @@ nls/Makefile
 nls/C/Makefile
 nls/es_ES/Makefile
 nls/pt_BR/Makefile
+nls/ru_RU/Makefile
+nls/sv_SE/Makefile
+nls/tr_TR/Makefile
 version.h config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
@@ -3038,6 +3048,9 @@ nls/Makefile
 nls/C/Makefile
 nls/es_ES/Makefile
 nls/pt_BR/Makefile
+nls/ru_RU/Makefile
+nls/sv_SE/Makefile
+nls/tr_TR/Makefile
 version.h"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF

@@ -17,6 +17,6 @@ $ #NoStrftimeTimeFormatA
 $ #ToolbarTitle
 # Escritorio
 $ #EditWkspcName
-# Cambiar el nombre del escritorio corriente
+# Cambiar el nombre del escritorio actual
 $ #ToolbarPlacement
-# Plazamiento del escritorio
+# Ubicación de la barra de herramientas

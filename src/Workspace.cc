@@ -41,10 +41,6 @@
 #include "Workspace.hh"
 #include "Windowmenu.hh"
 
-#ifdef    DEBUG
-#  include "mem.h"
-#endif // DEBUG
-
 #ifdef    HAVE_STDIO_H
 #  include <stdio.h>
 #endif // HAVE_STDIO_H
@@ -58,10 +54,6 @@
 
 
 Workspace::Workspace(BScreen *scrn, int i) {
-#ifdef    DEBUG
-  allocate(sizeof(Workspace), "Workspace.cc");
-#endif // DEBUG
-
   screen = scrn;
 
   cascade_x = cascade_y = 32;
@@ -78,33 +70,17 @@ Workspace::Workspace(BScreen *scrn, int i) {
   screen->getNameOfWorkspace(id, &tmp);
   setName(tmp);
 
-  if (tmp) {
-    // this is the memory that is allocated in Screen.cc... see the note in
-    // BScreen::getNameOfWorkspace()
-    //
-    //     deallocate(sizeof(char) * (strlen(tmp) + 1), "Workspace.cc");
-    //
-
+  if (tmp)
     delete [] tmp;
-  }
 }
 
 
 Workspace::~Workspace(void) {
-#ifdef    DEBUG
-  deallocate(sizeof(Workspace), "Workspace.cc");
-#endif // DEBUG
-
   delete windowList;
   delete clientmenu;
 
-  if (name) {
-#ifdef    DEBUG
-    deallocate(sizeof(char) * (strlen(name) + 1), "Workspace.cc");
-#endif // DEBUG
-
+  if (name)
     delete [] name;
-  }
 }
 
 
@@ -148,11 +124,11 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
 		       RevertToParent, CurrentTime);
       }
     }
-    
-    if (lastfocus == w)
-      lastfocus = (BlackboxWindow *) 0;
   }
-
+  
+  if (lastfocus == w)
+    lastfocus = (BlackboxWindow *) 0;
+  
   windowList->remove(w->getWindowNumber());
   clientmenu->remove(w->getWindowNumber());
   clientmenu->update();
@@ -177,10 +153,11 @@ void Workspace::showAll(void) {
 void Workspace::hideAll(void) {
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (; it.current(); it++)
-    it.current()->withdraw();
+    if (! it.current()->isStuck())
+      it.current()->withdraw();
 }
- 
- 
+
+
 void Workspace::removeAll(void) {
   LinkedListIterator<BlackboxWindow> it(windowList);
   for (; it.current(); it++)
@@ -202,10 +179,6 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
     i++;
   }
 
-#ifdef    DEBUG
-  allocate(sizeof(Window) * i, "Workspace.cc");
-#endif // DEBUG
-
   Window *nstack = new Window[i];
 
   i = 0;
@@ -221,10 +194,6 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
   screen->updateNetizenWindowRaise(win->getClientWindow());
 
   screen->raiseWindows(nstack, i);
-
-#ifdef    DEBUG
-  deallocate(sizeof(Window) * i, "Workspace.cc");
-#endif // DEBUG
 
   delete [] nstack;
 }
@@ -243,10 +212,6 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
 
     i++;
   }
-
-#ifdef    DEBUG
-  allocate(sizeof(Window) * i, "Workspace.cc");
-#endif // DEBUG
 
   Window *nstack = new Window[i];
 
@@ -267,10 +232,6 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
   XRestackWindows(screen->getBaseDisplay()->getXDisplay(), nstack, i);
 
   screen->getBlackbox()->ungrab();
-
-#ifdef    DEBUG
-  deallocate(sizeof(Window) * i, "Workspace.cc");
-#endif // DEBUG
 
   delete [] nstack;
 }
@@ -320,42 +281,22 @@ void Workspace::setCurrent(void) {
 
 
 void Workspace::setName(char *new_name) {
-  if (name) {
-#ifdef    DEBUG
-    deallocate(sizeof(char) * (strlen(name) + 1), "Workspace.cc");
-#endif // DEBUG
-
+  if (name)
     delete [] name;
-  }
 
   if (new_name) {
-    int len = strlen(new_name) + 1;
-
-#ifdef    DEBUG
-    allocate(sizeof(char) * len, "Workspace.cc");
-#endif // DEBUG
-
-    name = new char[len];
-    sprintf(name, "%s", new_name);
+    name = bstrdup(new_name);
   } else {
-    name = new char[32];
-    if (name) {
-      sprintf(name,
-	      i18n->getMessage(
+    name = bstrdup(i18n->
+		   getMessage(
 #ifdef    NLS
-			       WorkspaceSet, WorkspaceDefaultNameFormat,
+			      WorkspaceSet, WorkspaceDefaultNameFormat,
 #else // !NLS
-			       0, 0,
+			      0, 0,
 #endif // NLS
-			       "Workspace %d"),
-	      id + 1);
-
-#ifdef    DEBUG
-      allocate(sizeof(char) * (strlen(name) + 1), "Workspace.cc");
-#endif // DEBUG
-    }
+			      "Workspace %d"));
   }
-
+  
   clientmenu->setLabel(name);
   clientmenu->update();
 }

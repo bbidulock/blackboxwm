@@ -1,8 +1,8 @@
-# nls/Makefile.am for Blackbox 0.60.x - an X11 Window Manager
+# nls/Makefile.am for B.awkbox 0.60.x - an X11 Window Manager
 
 NLSTEST = @NLS@
-SUBDIRS = C es_ES pt_BR
-CLEANFILES = blackbox-nls.hh
+SUBDIRS = C es_ES pt_BR ru_RU sv_SE tr_TR
+CLEANFILES = b.awkbox-nls.hh
 MAINTAINERCLEANFILES = Makefile.in
 
 distclean-local:

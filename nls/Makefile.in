@@ -10,7 +10,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-# nls/Makefile.am for Blackbox 0.60.x - an X11 Window Manager
+# nls/Makefile.am for B.awkbox 0.60.x - an X11 Window Manager
 
 
 SHELL = @SHELL@
@@ -77,8 +77,8 @@ gencat_cmd = @gencat_cmd@
 regex_cmd = @regex_cmd@
 
 NLSTEST = @NLS@
-SUBDIRS = C es_ES pt_BR
-CLEANFILES = blackbox-nls.hh
+SUBDIRS = C es_ES pt_BR ru_RU sv_SE tr_TR
+CLEANFILES = b.awkbox-nls.hh
 MAINTAINERCLEANFILES = Makefile.in
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h

@@ -36,20 +36,12 @@
 #include "Windowmenu.hh"
 #include "Workspace.hh"
 
-#ifdef    DEBUG
-#  include "mem.h"
-#endif // DEBUG
-
 #ifdef    STDC_HEADERS
 #  include <string.h>
 #endif // STDC_HEADERS
 
 
 Windowmenu::Windowmenu(BlackboxWindow *win) : Basemenu(win->getScreen()) {
-#ifdef    DEBUG
-  allocate(sizeof(Windowmenu), "Windowmenu.cc");
-#endif // DEBUG
-
   window = win;
   screen = window->getScreen();
 
@@ -141,10 +133,6 @@ Windowmenu::Windowmenu(BlackboxWindow *win) : Basemenu(win->getScreen()) {
 
 
 Windowmenu::~Windowmenu(void) {
-#ifdef    DEBUG
-  deallocate(sizeof(Windowmenu), "Windowmenu.cc");
-#endif // DEBUG
-
   delete sendToMenu;
 }
 
@@ -218,11 +206,9 @@ void Windowmenu::reconfigure(void) {
 }
 
 
-Windowmenu::SendtoWorkspacemenu::SendtoWorkspacemenu(Windowmenu *w) : Basemenu(w->screen) {
-#ifdef    DEBUG
-  allocate(sizeof(SendtoWorkspacemenu), "Windowmenu.cc");
-#endif // DEBUG
-
+Windowmenu::SendtoWorkspacemenu::SendtoWorkspacemenu(Windowmenu *w)
+  : Basemenu(w->screen)
+{
   windowmenu = w;
 
   setTitleVisibility(False);
@@ -230,13 +216,6 @@ Windowmenu::SendtoWorkspacemenu::SendtoWorkspacemenu(Windowmenu *w) : Basemenu(w
   setInternalMenu();
   update();
 }
-
-
-#ifdef    DEBUG
-Windowmenu::SendtoWorkspacemenu::~SendtoWorkspacemenu(void) {
-  deallocate(sizeof(SendtoWorkspacemenu), "Windowmenu.cc");
-}
-#endif // DEBUG
 
 
 void Windowmenu::SendtoWorkspacemenu::itemSelected(int button, int index) {
@@ -247,13 +226,6 @@ void Windowmenu::SendtoWorkspacemenu::itemSelected(int button, int index) {
 
 	windowmenu->window->withdraw();
 	windowmenu->screen->reassociateWindow(windowmenu->window, index, True);
-	
-	//	windowmenu->screen->
-	//          getWorkspace(windowmenu->window->getWorkspaceNumber())->
-	//          removeWindow(windowmenu->window);
-	//	windowmenu->screen->getWorkspace(index)->addWindow(windowmenu->window);
-	//
-	//	windowmenu->window->withdraw();
       }
     }
   } else

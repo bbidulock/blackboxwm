@@ -60,13 +60,10 @@ typedef struct WindowStyle {
     b_focus, b_unfocus, b_pressed, f_focus, f_unfocus, g_focus, g_unfocus;
   GC l_text_focus_gc, l_text_unfocus_gc, b_pic_focus_gc, b_pic_unfocus_gc;
 
-#ifdef    NLS
-  XFontSet font;
-  XFontSetExtents *extents;
-#else // !NLS
+  XFontSet fontset;
+  XFontSetExtents *fontset_extents;
   XFontStruct *font;
-#endif // NLS
-
+  
   int justify;
 } WindowStyle;
 
@@ -75,13 +72,10 @@ typedef struct ToolbarStyle {
   BTexture toolbar, label, window, button, pressed, clock;
   GC l_text_gc, w_text_gc, c_text_gc, b_pic_gc;
 
-#ifdef    NLS
-  XFontSet font;
-  XFontSetExtents *extents;
-#else // !NLS
+  XFontSet fontset;
+  XFontSetExtents *fontset_extents;
   XFontStruct *font;
-#endif // NLS
-
+  
   int justify;
 } ToolbarStyle;
 
@@ -90,12 +84,9 @@ typedef struct MenuStyle {
   BTexture title, frame, hilite;
   GC t_text_gc, f_text_gc, h_text_gc, d_text_gc;
 
-#ifdef    NLS
-  XFontSet t_font, f_font;
-  XFontSetExtents *t_extents, *f_extents;
-#else // !NLS
+  XFontSet t_fontset, f_fontset;
+  XFontSetExtents *t_fontset_extents, *f_fontset_extents;
   XFontStruct *t_font, *f_font;
-#endif // NLS
 
   int t_justify, f_justify, bullet, bullet_pos;
 } MenuStyle;
@@ -117,7 +108,7 @@ private:
   LinkedList<Rootmenu> *rootmenuList;
   LinkedList<Netizen> *netizenList;
   LinkedList<BlackboxWindow> *iconList;
-  
+
 #ifdef    SLIT
   Slit *slit;
 #endif // SLIT
@@ -168,12 +159,9 @@ protected:
   void readDatabaseTexture(char *, char *, BTexture *, unsigned long);
   void readDatabaseColor(char *, char *, BColor *, unsigned long);
 
-#ifdef    NLS
-  void readDatabaseFont(char *, char *, XFontSet *);
- XFontSet createFontSet(char *);
-#else // !NLS
+  void readDatabaseFontSet(char *, char *, XFontSet *);
+  XFontSet createFontSet(char *);
   void readDatabaseFont(char *, char *, XFontStruct **);
-#endif // NLS
 
   void InitMenu(void);
   void LoadStyle(void);
@@ -289,10 +277,10 @@ public:
   inline ToolbarStyle *getToolbarStyle(void) { return &resource.tstyle; }
 
   BlackboxWindow *getIcon(int);
-  
+
   int addWorkspace(void);
   int removeLastWorkspace(void);
-  
+
   void removeWorkspaceNames(void);
   void addWorkspaceName(char *);
   void addNetizen(Netizen *);

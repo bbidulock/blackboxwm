@@ -66,6 +66,9 @@ bsetroot::bsetroot(int argc, char **argv, char *dpy_name)
 
       grad = argv[i];
       grd = True;
+    } else if (! strcmp("-display", argv[i])) {
+      // -display passed through tests ealier... we just skip it now
+      i++;
     } else
       usage();
   }
@@ -264,7 +267,7 @@ int main(int argc, char **argv) {
   char *display_name = (char *) 0;
   int i = 1;
   
-  NLSInit();
+  NLSInit("blackbox.cat");
   
   for (; i < argc; i++) {
     if (! strcmp(argv[i], "-display")) {

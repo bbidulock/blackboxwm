@@ -2,7 +2,7 @@
 
 NLSTEST = @NLS@
 GENCAT_TYPE = @GENCAT_TYPE@
-CLEANFILES = blackbox.cat
+CLEANFILES = Translation.m blackbox.cat
 MAINTAINERCLEANFILES = Makefile.in
 MFILES = BaseDisplay.m Basemenu.m Configmenu.m Icon.m Image.m Screen.m Slit.m Toolbar.m Window.m Windowmenu.m Workspace.m Workspacemenu.m blackbox.m common.m main.m bsetroot.m
 
@@ -21,9 +21,13 @@ blackbox.cat: $(MFILES)
 	@if test x$(NLSTEST) = "x-DNLS"; then \
 		echo "Generating catalog file using $(GENCAT_TYPE) gencat"; \
 		if test "x$(GENCAT_TYPE)" = "xGNU"; then \
-			sed -f ../cnv $(MFILES) | \
+			sed -f ../gnucnv.sed $(MFILES) | \
 			gencat --new blackbox.cat - -H \
 				../blackbox-nls.hh; \
+		elif test "x$(GENCAT_TYPE)" = "xSun"; then \
+			awk -f ../suncnv.awk header=../blackbox-nls.hh \
+				output=Translation.m $(MFILES); \
+			gencat blackbox.cat Translation.m; \
 		else \
 			gencat -lang C++ -new blackbox.cat $(MFILES) -h \
 				../blackbox-nls.hh; \

@@ -1,6 +1,36 @@
 ChangeLog for 0.60.x
 
 
+Changes from 0.60.1 to 0.60.2:
+  - updated README.bbtools, since bbpager and bbkeys were updated to work with
+    0.60.x (also removed the .diffs from the source tree)
+  - fix for compiling with NLS support on Solaris
+  - added Turkish, Russian and Swedish translations
+  - applied patch for more correct Spanish translations
+  - added completed pt_BR (Brazillian Porteguese) translation
+  - removed mem.h and the allocate()/deallocate() calls throughout blackbox
+    these have been unused for a long time, and needed to go away :)
+  - compile fixes for --enable-debug
+  - changed the font loading/drawing code... XFontSets are only used if
+    the locale is set properly.  So you can still compile with nls support,
+    but do not set your LANG environment variable, and your fonts will be
+    loaded and drawn the old way
+  - smarter Basemenu::drawItem() code added, i noticed alot of flicker when
+    moving menus, because of code constantly redrawing menus items... this
+    has been significatly modified and sped up quite a bit
+  - fixed a bug where iconified windows wouldn't remove themselves from the
+    icon menu when they unmapped/closed themselves (which would result in a
+    crash if you selected this dead item)
+  - fixed a potential crash in Workspace::removeWindow() that had relation
+    to focus last window on workspace... one person experience gibberish being
+    displayed, another experienced a crash
+  - fixed a flicker problem when changing focus between windows rapidly
+    (the toolbar's window label was getting redrawn twice per focus, not
+    optimum behavior)
+  - fixed the infamous bsetroot segfault... this was quite a feat... took 3
+    people in excess of 8 hours to find... and it was a simple one line change
+
+
 Changes from 0.51.3.1 to 0.60.1: (note:  0.60.1 is 0.60.0 non-alpha)
   - changed licensing for Blackbox from GNU GPL to more open BSD license
     see the file LICENSE

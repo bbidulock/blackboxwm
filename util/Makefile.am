@@ -1,6 +1,7 @@
 # util/Makefile.am for Blackbox 0.60.x  - an X11 Window manager
 
-CPPFLAGS= @CPPFLAGS@ @DEBUG@ @NLS@
+CPPFLAGS= @CPPFLAGS@ @DEBUG@ @NLS@ @TIMEDCACHE@ @NEWWMSPEC@ @INTERLACE@ \
+@ORDEREDPSEUDO@
 
 bin_PROGRAMS =		bsetroot
 

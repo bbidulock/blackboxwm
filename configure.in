@@ -1,7 +1,7 @@
 dnl configure.in for Blackbox 0.60.x  - an X11 Window manager
 dnl Initialize autoconf and automake
 AC_INIT(src/blackbox.cc)
-AM_INIT_AUTOMAKE(Blackbox,0.60.1-beta,no-define)
+AM_INIT_AUTOMAKE(Blackbox,0.60.2-beta,no-define)
 
 dnl Determine default prefix
 test x$prefix = "xNONE" && prefix="$ac_default_prefix"
@@ -27,7 +27,7 @@ AC_HEADER_TIME
 
 dnl Check for existance of basename(), setlocale() and strftime()
 AC_CHECK_FUNCS(basename, , AC_CHECK_LIB(gen, basename, LIBS="$LIBS -lgen"))
-AC_CHECK_FUNCS(getpid setlocale sigaction strftime catopen catgets catclose)
+AC_CHECK_FUNCS(getpid setlocale sigaction strftime strcasestr catopen catgets catclose)
 AC_CHECK_LIB(nsl, t_open, LIBS="$LIBS -lnsl")
 AC_CHECK_LIB(socket, socket, LIBS="$LIBS -lsocket")
 
@@ -190,7 +190,14 @@ else
   AC_MSG_CHECKING([which type of gencat you have])
   gencat_gnu=`gencat -V 2>&1 | grep GNU`
   if test -z "$gencat_gnu"; then
-    AC_MSG_RESULT([X/Open])
+    if gencat -lang C++ -new test.cat nls/C/main.m; then
+      AC_MSG_RESULT([X/Open])
+      GENCAT_TYPE="X/Open"
+    else
+      AC_MSG_RESULT([Sun])
+      GENCAT_TYPE="Sun"
+    fi
+    rm -f test.cat
   else
     AC_MSG_RESULT([GNU])
     GENCAT_TYPE="GNU"
@@ -243,4 +250,7 @@ nls/Makefile
 nls/C/Makefile
 nls/es_ES/Makefile
 nls/pt_BR/Makefile
+nls/ru_RU/Makefile
+nls/sv_SE/Makefile
+nls/tr_TR/Makefile
 version.h)

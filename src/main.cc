@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
   char *session_display = (char *) 0;
   char *rc_file = (char *) 0;
 
-  NLSInit();
+  NLSInit("blackbox.cat");
 
   int i;
   for (i = 1; i < argc; ++i) {

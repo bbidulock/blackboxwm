@@ -43,10 +43,6 @@
 #include "LinkedList.hh"
 #include "Timer.hh"
 
-#ifdef    DEBUG
-#  include "mem.h"
-#endif // DEBUG
-
 #ifdef    HAVE_FCNTL_H
 #  include <fcntl.h>
 #endif // HAVE_FCNTL_H
@@ -72,10 +68,6 @@
 #ifdef    HAVE_SIGNAL_H
 #  include <signal.h>
 #endif // HAVE_SIGNAL_H
-
-#ifdef    HAVE_SYS_SIGNAL_H
-// #  include <sys/signal.h>
-#endif // HAVE_SYS_SIGNAL_H
 
 #ifndef   SA_NODEFER
 #  ifdef   SA_INTERRUPT
@@ -105,7 +97,12 @@ static int handleXErrors(Display *d, XErrorEvent *e) {
   XGetErrorText(d, e->error_code, errtxt, 128);
   fprintf(stderr,
 	  i18n->
-	  getMessage(BaseDisplaySet, BaseDisplayXError,
+	  getMessage(
+#ifdef    NLS
+		     BaseDisplaySet, BaseDisplayXError,
+#else // !NLS
+		     0, 0,
+#endif // NLS
 		     "%s:  X error: %s(%d) opcodes %d/%d\n  resource 0x%lx\n"),
           base_display->getApplicationName(), errtxt, e->error_code,
           e->request_code, e->minor_code, e->resourceid);
@@ -207,10 +204,6 @@ char *bstrdup(const char *s) {
 
 
 BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
-#ifdef    DEBUG
-  allocate(sizeof(BaseDisplay), "BaseDisplay.cc");
-#endif // DEBUG
-
   application_name = app_name;
 
   _startup = True;
@@ -372,10 +365,6 @@ BaseDisplay::BaseDisplay(char *app_name, char *dpy_name) {
 
 
 BaseDisplay::~BaseDisplay(void) {
-#ifdef    DEBUG
-  deallocate(sizeof(BaseDisplay), "BaseDisplay.cc");
-#endif // DEBUG
-
   while (screenInfoList->count()) {
     ScreenInfo *si = screenInfoList->first();
 
@@ -409,7 +398,12 @@ void BaseDisplay::eventLoop(void) {
 #ifdef    DEBUG
       fprintf(stderr,
 	      i18n->
-	      getMessage(BaseDisplaySet, BaseDisplayBadWindowRemove,
+	      getMessage(
+#ifdef    NLS
+			 BaseDisplaySet, BaseDisplayBadWindowRemove,
+#else // !NLS
+			 0, 0,
+#endif // NLS
 			 "BaseDisplay::eventLoop(): removing bad window "
 			 "from event queue\n"));
 #endif // DEBUG
@@ -528,10 +522,6 @@ void BaseDisplay::removeTimer(BTimer *timer) {
 
 
 ScreenInfo::ScreenInfo(BaseDisplay *d, int num) {
-#ifdef    DEBUG
-  allocate(sizeof(ScreenInfo), "BaseDisplay.cc");
-#endif // DEBUG
-
   basedisplay = d;
   screen_number = num;
 
@@ -570,10 +560,3 @@ ScreenInfo::ScreenInfo(BaseDisplay *d, int num) {
   if (! visual)
     visual = DefaultVisual(basedisplay->getXDisplay(), screen_number);
 }
-
-
-#ifdef    DEBUG
-ScreenInfo::~ScreenInfo(void) {
-  deallocate(sizeof(ScreenInfo), "BaseDisplay.cc");
-}
-#endif // DEBUG

@@ -41,6 +41,7 @@ extern "C" {
 class I18n {
 private:
   char *locale, *catalog_filename;
+  int mb;
   nl_catd catalog_fd;
 
 
@@ -53,16 +54,18 @@ public:
 
   inline const char *getLocale(void) const { return locale; }
   inline const char *getCatalogFilename(void) const { return catalog_filename; }
+  
+  inline const int &multibyte(void) const { return mb; }
 
   inline const nl_catd &getCatalogFd(void) const { return catalog_fd; }
 
   const char *getMessage(int, int, const char * = 0);
-  void openCatalog(void);
+  void openCatalog(const char *);
 };
 
 
 extern I18n *i18n;
-extern void NLSInit(void);
+extern void NLSInit(const char *);
 
 
 

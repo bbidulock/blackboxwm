@@ -36,16 +36,8 @@
 #include "Workspacemenu.hh"
 #include "Workspace.hh"
 
-#ifdef    DEBUG
-#  include "mem.h"
-#endif // DEBUG
-
 
 Workspacemenu::Workspacemenu(BScreen *scrn) : Basemenu(scrn) {
-#ifdef    DEBUG
-  allocate(sizeof(Workspacemenu), "Workspacemenu.cc");
-#endif // DEBUG
-
   screen = scrn;
 
   setInternalMenu();
@@ -73,13 +65,6 @@ Workspacemenu::Workspacemenu(BScreen *scrn) : Basemenu(scrn) {
 #endif // NLS
 			  "Remove Last"));
 }
-
-
-#ifdef    DEBUG
-Workspacemenu::~Workspacemenu(void) {
-  deallocate(sizeof(Workspacemenu), "Workspacemenu.cc");
-}
-#endif // DEBUG
 
 
 void Workspacemenu::itemSelected(int button, int index) {

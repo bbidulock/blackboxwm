@@ -55,10 +55,6 @@
 #include "Workspace.hh"
 #include "Workspacemenu.hh"
 
-#ifdef    DEBUG
-#  include "mem.h"
-#endif // DEBUG
-
 #ifdef    HAVE_STDIO_H
 #  include <stdio.h>
 #endif // HAVE_STDIO_H
@@ -154,10 +150,6 @@ Blackbox *blackbox;
 Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
   : BaseDisplay(m_argv[0], dpy_name)
 {
-#ifdef    DEBUG
-  allocate(sizeof(Blackbox), "blackbox.cc");
-#endif // DEBUG
-
   grab();
 
   if (! XSupportsLocale())
@@ -239,45 +231,23 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
 
 
 Blackbox::~Blackbox(void) {
-#ifdef    DEBUG
-  deallocate(sizeof(Blackbox), "blackbox.cc");
-#endif // DEBUG
-
   while (screenList->count())
     delete screenList->remove(0);
 
   while (menuTimestamps->count()) {
     MenuTimestamp *ts = menuTimestamps->remove(0);
 
-    if (ts->filename) {
-#ifdef    DEBUG
-      deallocate(sizeof(char) * (strlen(ts->filename) + 1), "blackbox.cc");
-#endif // DEBUG
-
+    if (ts->filename)
       delete [] ts->filename;
-    }
-
-#ifdef    DEBUG
-    deallocate(sizeof(MenuTimestamp), "blackbox.cc");
-#endif // DEBUG
+    
     delete ts;
   }
-
-  if (resource.menu_file) {
-#ifdef    DEBUG
-    deallocate(sizeof(char) * (strlen(resource.menu_file) + 1), "blackbox.cc");
-#endif // DEBUG
-
+  
+  if (resource.menu_file)
     delete [] resource.menu_file;
-  }
 
-  if (resource.style_file) {
-#ifdef    DEBUG
-    deallocate(sizeof(char) * (strlen(resource.style_file) + 1), "blackbox.cc");
-#endif // DEBUG
-
+  if (resource.style_file)
     delete [] resource.style_file;
-  }
 
   delete timer;
 
@@ -351,9 +321,9 @@ void Blackbox::process_event(XEvent *e) {
                 screen->getRootmenu()->hide();
             } else if (e->xbutton.button == 2) {
 	      int mx = e->xbutton.x_root -
-		(screen->getWorkspacemenu()->getWidth() / 2);
+		       (screen->getWorkspacemenu()->getWidth() / 2);
 	      int my = e->xbutton.y_root -
-		(screen->getWorkspacemenu()->getTitleHeight() / 2);
+		       (screen->getWorkspacemenu()->getTitleHeight() / 2);
 
 	      if (mx < 0) mx = 0;
 	      if (my < 0) my = 0;
@@ -361,14 +331,14 @@ void Blackbox::process_event(XEvent *e) {
 	      if (mx + screen->getWorkspacemenu()->getWidth() >
 		  screen->getWidth())
 		mx = screen->getWidth() -
-		  screen->getWorkspacemenu()->getWidth() -
-                  screen->getBorderWidth();
+		     screen->getWorkspacemenu()->getWidth() -
+		     screen->getBorderWidth();
 
 	      if (my + screen->getWorkspacemenu()->getHeight() >
 		  screen->getHeight())
 		my = screen->getHeight() -
-		  screen->getWorkspacemenu()->getHeight() -
-                  screen->getBorderWidth();
+		     screen->getWorkspacemenu()->getHeight() -
+		     screen->getBorderWidth();
 
 	      screen->getWorkspacemenu()->move(mx, my);
 
@@ -378,23 +348,23 @@ void Blackbox::process_event(XEvent *e) {
 	      }
 	    } else if (e->xbutton.button == 3) {
 	      int mx = e->xbutton.x_root -
-		(screen->getRootmenu()->getWidth() / 2);
+		       (screen->getRootmenu()->getWidth() / 2);
 	      int my = e->xbutton.y_root -
-		(screen->getRootmenu()->getTitleHeight() / 2);
+		       (screen->getRootmenu()->getTitleHeight() / 2);
 
 	      if (mx < 0) mx = 0;
 	      if (my < 0) my = 0;
 
 	      if (mx + screen->getRootmenu()->getWidth() > screen->getWidth())
 		mx = screen->getWidth() -
-		  screen->getRootmenu()->getWidth() -
-                  screen->getBorderWidth();
+		     screen->getRootmenu()->getWidth() -
+		     screen->getBorderWidth();
 
 	      if (my + screen->getRootmenu()->getHeight() >
 		  screen->getHeight())
 		my = screen->getHeight() -
-		  screen->getRootmenu()->getHeight() -
-                  screen->getBorderWidth();
+		     screen->getRootmenu()->getHeight() -
+		     screen->getBorderWidth();
 
 	      screen->getRootmenu()->move(mx, my);
 
@@ -472,8 +442,14 @@ void Blackbox::process_event(XEvent *e) {
     {
 #ifdef    DEBUG
       fprintf(stderr,
-	      i18n->getMessage(blackboxSet, blackboxMapRequest,
-			       "Blackbox::process_event(): MapRequest for 0x%lx\n"),
+	      i18n->
+	      getMessage(
+#  ifdef    NLS
+			 blackboxSet, blackboxMapRequest,
+#  else // !NLS
+			 0, 0,
+#  endif // NLS
+			 "Blackbox::process_event(): MapRequest for 0x%lx\n"),
               e->xmaprequest.window);
 #endif // DEBUG
 
@@ -594,7 +570,7 @@ void Blackbox::process_event(XEvent *e) {
 
           if (((! sa.leave) || sa.inferior) && win->isVisible() &&
               win->setInputFocus())
-              win->installColormap(True);
+	    win->installColormap(True);
 
           ungrab();
         }
@@ -668,11 +644,11 @@ void Blackbox::process_event(XEvent *e) {
           if (e->xclient.data.l[0] == NormalState)
             win->deiconify();
         } else if (e->xclient.message_type == getBlackboxChangeWorkspaceAtom()) {
-            BScreen *screen = searchScreen(e->xclient.window);
+	  BScreen *screen = searchScreen(e->xclient.window);
 
-            if (screen && e->xclient.data.l[0] >= 0 &&
-                e->xclient.data.l[0] < screen->getCount())
-              screen->changeWorkspaceID(e->xclient.data.l[0]);
+	  if (screen && e->xclient.data.l[0] >= 0 &&
+	      e->xclient.data.l[0] < screen->getCount())
+	    screen->changeWorkspaceID(e->xclient.data.l[0]);
         } else if (e->xclient.message_type == getBlackboxChangeWindowFocusAtom()) {
           BlackboxWindow *win = searchWindow(e->xclient.window);
 
@@ -1002,10 +978,6 @@ void Blackbox::save_rc(void) {
   if (! rc_file) {
     char *homedir = getenv("HOME");
 
-#ifdef    DEBUG
-    allocate(sizeof(char) * (strlen(homedir) + strlen("/.blackboxrc") + 1), "blackbox.cc");
-#endif // DEBUG
-
     dbfile = new char[strlen(homedir) + strlen("/.blackboxrc") + 1];
     sprintf(dbfile, "%s/.blackboxrc", homedir);
   } else
@@ -1216,10 +1188,6 @@ void Blackbox::save_rc(void) {
   XrmPutFileDatabase(old_blackboxrc, dbfile);
   XrmDestroyDatabase(old_blackboxrc);
 
-#ifdef    DEBUG
-  deallocate(sizeof(char) * (strlen(dbfile) + 1), "blackbox.cc");
-#endif // DEBUG
-
   delete [] dbfile;
 }
 
@@ -1232,10 +1200,6 @@ void Blackbox::load_rc(void) {
   if (! rc_file) {
     char *homedir = getenv("HOME");
 
-#ifdef    DEBUG
-    allocate(sizeof(char) * (strlen(homedir) + strlen("/.blackboxrc") + 1), "blackbox.cc");
-#endif // DEBUG
-
     dbfile = new char[strlen(homedir) + strlen("/.blackboxrc") + 1];
     sprintf(dbfile, "%s/.blackboxrc", homedir);
   } else
@@ -1243,44 +1207,20 @@ void Blackbox::load_rc(void) {
 
   database = XrmGetFileDatabase(dbfile);
 
-#ifdef    DEBUG
-  deallocate(sizeof(char) * (strlen(dbfile) + 1), "blackbox.cc");
-#endif // DEBUG
-
   delete [] dbfile;
 
   XrmValue value;
   char *value_type;
 
-  if (resource.menu_file) {
-#ifdef    DEBUG
-    deallocate(sizeof(char) * (strlen(resource.menu_file) + 1), "blackbox.cc");
-#endif // DEBUG
-
+  if (resource.menu_file)
     delete [] resource.menu_file;
-  }
 
   if (XrmGetResource(database, "session.menuFile", "Session.MenuFile",
-		     &value_type, &value)) {
-    int len = strlen(value.addr) + 1;
-
-#ifdef    DEBUG
-    allocate(sizeof(char) * len, "blackbox.cc");
-#endif // DEBUG
-
-    resource.menu_file = new char[len];
-    sprintf(resource.menu_file, "%s", value.addr);
-  } else {
-    int len = strlen(DEFAULTMENU) + 1;
-
-#ifdef    DEBUG
-    allocate(sizeof(char) * len, "blackbox.cc");
-#endif // DEBUG
-
-    resource.menu_file = new char[len];
-    sprintf(resource.menu_file, "%s", DEFAULTMENU);
-  }
-
+		     &value_type, &value))
+    resource.menu_file = bstrdup(value.addr);
+  else
+    resource.menu_file = bstrdup(DEFAULTMENU);
+  
   if (XrmGetResource(database, "session.colorsPerChannel",
 		     "Session.ColorsPerChannel", &value_type, &value)) {
     if (sscanf(value.addr, "%d", &resource.colors_per_channel) != 1) {
@@ -1292,35 +1232,15 @@ void Blackbox::load_rc(void) {
   } else
     resource.colors_per_channel = 4;
 
-  if (resource.style_file) {
-#ifdef    DEBUG
-    deallocate(sizeof(char) * (strlen(resource.style_file) + 1), "blackbox.cc");
-#endif // DEBUG
-
+  if (resource.style_file)
     delete [] resource.style_file;
-  }
 
   if (XrmGetResource(database, "session.styleFile", "Session.StyleFile",
-		     &value_type, &value)) {
-    int len = strlen(value.addr) + 1;
-
-#ifdef    DEBUG
-    allocate(sizeof(char) * len, "blackbox.cc");
-#endif // DEBUG
-
-    resource.style_file = new char[len];
-    sprintf(resource.style_file, "%s", value.addr);
-  } else {
-    int len = strlen(DEFAULTSTYLE);
-
-#ifdef    DEBUG
-    allocate(sizeof(char) * len, "blackbox.cc");
-#endif // DEBUG
-
-    resource.style_file = new char[len];
-    sprintf(resource.style_file, "%s", DEFAULTSTYLE);
-  }
-
+		     &value_type, &value))
+    resource.style_file = bstrdup(value.addr);
+  else
+    resource.style_file = bstrdup(DEFAULTSTYLE);
+  
   if (XrmGetResource(database, "session.doubleClickInterval",
 		     "Session.DoubleClickInterval", &value_type, &value)) {
     if (sscanf(value.addr, "%lu", &resource.double_click_interval) != 1)
@@ -1365,21 +1285,13 @@ void Blackbox::load_rc(BScreen *screen) {
 
   if (! rc_file) {
     char *homedir = getenv("HOME");
-
-#ifdef    DEBUG
-    allocate(sizeof(char) * (strlen(homedir) + strlen("/.blackboxrc") + 1), "blackbox.cc");
-#endif // DEBUG
-
+    
     dbfile = new char[strlen(homedir) + strlen("/.blackboxrc") + 1];
     sprintf(dbfile, "%s/.blackboxrc", homedir);
   } else
     dbfile = bstrdup(rc_file);
 
   database = XrmGetFileDatabase(dbfile);
-
-#ifdef    DEBUG
-  deallocate(sizeof(char) * (strlen(dbfile) + 1), "blackbox.cc");
-#endif // DEBUG
 
   delete [] dbfile;
 
@@ -1493,13 +1405,8 @@ void Blackbox::load_rc(BScreen *screen) {
   sprintf(class_lookup, "Session.Screen%d.WorkspaceNames", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
 		     &value)) {
-#ifdef    DEBUG
-    allocate(sizeof(char) * value.size, "blackbox.cc");
-#endif // DEBUG
-
-    char *search = new char[value.size];
-    sprintf(search, "%s", value.addr);
-
+    char *search = bstrdup(value.addr);
+    
     int i;
     for (i = 0; i < screen->getNumberOfWorkspaces(); i++) {
       char *nn;
@@ -1510,10 +1417,6 @@ void Blackbox::load_rc(BScreen *screen) {
       if (nn) screen->addWorkspaceName(nn);
       else break;
     }
-
-#ifdef    DEBUG
-    deallocate(sizeof(char) * value.size, "blackbox.cc");
-#endif // DEBUG
 
     delete [] search;
   }
@@ -1609,44 +1512,15 @@ void Blackbox::load_rc(BScreen *screen) {
 #endif // SLIT
 
 #ifdef    HAVE_STRFTIME
-  char *format = (char *) 0;
-
   sprintf(name_lookup,  "session.screen%d.strftimeFormat", screen_number);
   sprintf(class_lookup, "Session.Screen%d.StrftimeFormat", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
-		     &value)) {
-    int len = strlen(value.addr) + 1;
-
-#ifdef    DEBUG
-    allocate(sizeof(char) * len, "blackbox.cc");
-#endif // DEBUG
-
-    format = new char[len];
-    sprintf (format, "%s", value.addr);
-
-    screen->saveStrftimeFormat(format);
-  } else {
-    int len = strlen("%I:%M %p") + 1;
-
-#ifdef    DEBUG
-    allocate(sizeof(char) * len, "blackbox.cc");
-#endif // DEBUG
-
-    format = new char[len];
-    sprintf (format, "%%I:%%M %%p");
-
-    screen->saveStrftimeFormat(format);
-  }
-
-  if (format) {
-#ifdef    DEBUG
-    deallocate(sizeof(char) * (strlen(format) + 1), "blackbox.cc");
-#endif // DEBUG
-
-    delete [] format;
-  }
-
+		     &value))
+    screen->saveStrftimeFormat(value.addr);
+  else
+    screen->saveStrftimeFormat("%%I:%%M %%p");
 #else //  HAVE_STRFTIME
+
   sprintf(name_lookup,  "session.screen%d.dateFormat", screen_number);
   sprintf(class_lookup, "Session.Screen%d.DateFormat", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
@@ -1731,10 +1605,6 @@ void Blackbox::real_reconfigure(void) {
   if (! rc_file) {
     char *homedir = getenv("HOME");
 
-#ifdef    DEBUG
-    allocate(sizeof(char) * (strlen(homedir) + strlen("/.blackboxrc") + 1), "blackbox.cc");
-#endif // DEBUG
-
     dbfile = new char[strlen(homedir) + strlen("/.blackboxrc") + 1];
     sprintf(dbfile, "%s/.blackboxrc", homedir);
   } else
@@ -1749,27 +1619,14 @@ void Blackbox::real_reconfigure(void) {
   XrmPutFileDatabase(old_blackboxrc, dbfile);
   if (old_blackboxrc) XrmDestroyDatabase(old_blackboxrc);
 
-#ifdef    DEBUG
-  deallocate(sizeof(char) * (strlen(dbfile) + 1), "blackbox.cc");
-#endif // DEBUG
-
   delete [] dbfile;
 
   for (int i = 0, n = menuTimestamps->count(); i < n; i++) {
     MenuTimestamp *ts = menuTimestamps->remove(0);
 
     if (ts) {
-      if (ts->filename) {
-#ifdef    DEBUG
-	deallocate(sizeof(char) * (strlen(ts->filename) + 1), "blackbox.cc");
-#endif // DEBUG
-
+      if (ts->filename)
 	delete [] ts->filename;
-      }
-
-#ifdef    DEBUG
-      deallocate(sizeof(MenuTimestamp), "blackbox.cc");
-#endif // DEBUG
 
       delete ts;
     }
@@ -1815,17 +1672,8 @@ void Blackbox::real_rereadMenu(void) {
     MenuTimestamp *ts = menuTimestamps->remove(0);
 
     if (ts) {
-      if (ts->filename) {
-#ifdef    DEBUG
-	deallocate(sizeof(char) * (strlen(ts->filename) + 1), "blackbox.cc");
-#endif // DEBUG
-
+      if (ts->filename)
 	delete [] ts->filename;
-      }
-
-#ifdef    DEBUG
-      deallocate(sizeof(MenuTimestamp), "blackbox.cc");
-#endif // DEBUG
 
       delete ts;
     }
@@ -1838,13 +1686,8 @@ void Blackbox::real_rereadMenu(void) {
 
 
 void Blackbox::saveStyleFilename(const char *filename) {
-  if (resource.style_file) {
-#ifdef    DEBUG
-    deallocate(sizeof(char) * (strlen(resource.style_file) + 1), "blackbox.cc");
-#endif // DEBUG
-
+  if (resource.style_file)
     delete [] resource.style_file;
-  }
 
   resource.style_file = bstrdup(filename);
 }
@@ -1861,10 +1704,6 @@ void Blackbox::saveMenuFilename(const char *filename) {
     struct stat buf;
 
     if (! stat(filename, &buf)) {
-#ifdef    DEBUG
-      allocate(sizeof(MenuTimestamp), "blackbox.cc");
-#endif // DEBUG
-
       MenuTimestamp *ts = new MenuTimestamp;
 
       ts->filename = bstrdup(filename);
@@ -1888,30 +1727,40 @@ void Blackbox::timeout(void) {
 
 
 void Blackbox::setFocusedWindow(BlackboxWindow *win) {
+  BScreen *old_screen = (BScreen *) 0, *screen = (BScreen *) 0;
+  BlackboxWindow *old_win = (BlackboxWindow *) 0;
+  Toolbar *old_tbar = (Toolbar *) 0, *tbar = (Toolbar *) 0;
+  Workspace *old_wkspc = (Workspace *) 0, *wkspc = (Workspace *) 0;
+  
   if (focused_window) {
-    BlackboxWindow *w = focused_window;
-    BScreen *screen = w->getScreen();
-    Toolbar *tbar = screen->getToolbar();
-    Workspace *wkspc = screen->getWorkspace(w->getWorkspaceNumber());
-
-    focused_window = (BlackboxWindow *) 0;
-
-    w->setFocusFlag(False);
-    wkspc->getMenu()->setItemSelected(w->getWindowNumber(), False);
-    tbar->redrawWindowLabel(True);
-    screen->updateNetizenWindowFocus();
+    old_win = focused_window;
+    old_screen = old_win->getScreen();
+    old_tbar = old_screen->getToolbar();
+    old_wkspc = old_screen->getWorkspace(old_win->getWorkspaceNumber());
+    
+    old_win->setFocusFlag(False);
+    old_wkspc->getMenu()->setItemSelected(old_win->getWindowNumber(), False);
   }
-
+  
   if (win && ! win->isIconic()) {
-    BScreen *screen = win->getScreen();
-    Toolbar *tbar = screen->getToolbar();
-    Workspace *wkspc = screen->getWorkspace(win->getWorkspaceNumber());
-
+    screen = win->getScreen();
+    tbar = screen->getToolbar();
+    wkspc = screen->getWorkspace(win->getWorkspaceNumber());
+    
     focused_window = win;
-
+    
     win->setFocusFlag(True);
     wkspc->getMenu()->setItemSelected(win->getWindowNumber(), True);
+  } else
+    focused_window = (BlackboxWindow *) 0;
+  
+  if (tbar)
     tbar->redrawWindowLabel(True);
+  if (screen)
     screen->updateNetizenWindowFocus();
-  }
+  
+  if (old_tbar && old_tbar != tbar)
+    old_tbar->redrawWindowLabel(True);
+  if (old_screen && old_screen != screen)
+    old_screen->updateNetizenWindowFocus();
 }

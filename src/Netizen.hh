@@ -45,10 +45,6 @@ protected:
 public:
   Netizen(BScreen *, Window);
 
-#ifdef    DEBUG
-  ~Netizen(void);
-#endif // DEBUG
-
   inline const Window &getWindowID(void) const { return window; }
 
   void sendWorkspaceCount(void);

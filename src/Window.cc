@@ -38,10 +38,6 @@
 #include "Windowmenu.hh"
 #include "Workspace.hh"
 
-#ifdef    DEBUG
-#  include "mem.h"
-#endif // DEBUG
-
 #ifdef    SLIT
 #  include "Slit.hh"
 #endif // SLIT
@@ -63,11 +59,14 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 #ifdef    DEBUG
   fprintf(stderr,
 	  i18n->
-	  getMessage(WindowSet, WindowCreating,
+	  getMessage(
+#  ifdef    NLS
+		     WindowSet, WindowCreating,
+#  else // !NLS
+		     0, 0,
+#  endif // NLS
 		     "BlackboxWindow::BlackboxWindow(): creating 0x%lx\n"),
 	  w);
-
-  allocate(sizeof(BlackboxWindow), "Window.cc");
 #endif // DEBUG
 
   blackbox = b;
@@ -75,7 +74,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   moving = resizing = shaded = maximized = visible = iconic = False;
   transient = focused = stuck = modal =  send_focus_message = managed = False;
-  
+
   blackbox_attrib.workspace = workspace_number = window_number = -1;
 
   blackbox_attrib.flags = blackbox_attrib.attrib = blackbox_attrib.stack = 0l;
@@ -122,7 +121,12 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 #ifdef    DEBUG
     fprintf(stderr,
             i18n->
-	    getMessage(WindowSet, WindowXGetWindowAttributesFail,
+	    getMessage(
+#  ifdef    NLS
+		       WindowSet, WindowXGetWindowAttributesFail,
+#  else // !NLS
+		       0, 0,
+#  endif // NLS
 		       "BlackboxWindow::BlackboxWindow(): XGetWindowAttributes "
 		       "failed\n"));
 #endif // DEBUG
@@ -142,7 +146,12 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 #ifdef    DEBUG
     fprintf(stderr,
 	    i18n->
-	    getMessage(WindowSet, WindowCannotFindScreen,
+	    getMessage(
+#  ifdef    NLS
+		       WindowSet, WindowCannotFindScreen,
+#  else // !NLS
+		       0, 0,
+#  endif // NLS
 		       "BlackboxWindow::BlackboxWindow(): can't find screen\n"
 		       "	for root window 0x%lx\n"),
 	    RootWindowOfScreen(wattrib.screen));
@@ -328,17 +337,13 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
 
 BlackboxWindow::~BlackboxWindow(void) {
-#ifdef    DEBUG
-  deallocate(sizeof(BlackboxWindow), "Window.cc");
-#endif // DEBUG
-
   if (moving || resizing) XUngrabPointer(display, CurrentTime);
 
   if (workspace_number != -1 && window_number != -1)
     screen->getWorkspace(workspace_number)->removeWindow(this);
   else if (iconic)
     screen->removeIcon(this);
-  
+
   if (timer) {
     if (timer->isTiming()) timer->stop();
     delete timer;
@@ -348,7 +353,7 @@ BlackboxWindow::~BlackboxWindow(void) {
 
   if (client.title)
     delete [] client.title;
-  
+
   if (client.icon_title)
     delete [] client.icon_title;
 
@@ -741,20 +746,19 @@ void BlackboxWindow::reconfigure(void) {
   upsize();
 
   client.x = frame.x + (decorations.border * frame.bevel_w) +
-    screen->getBorderWidth();
+	     screen->getBorderWidth();
   client.y = frame.y + frame.y_border + (decorations.border * frame.bevel_w) +
-    screen->getBorderWidth();
+	     screen->getBorderWidth();
 
   if (client.title) {
-#ifdef    NLS
-    XRectangle ink, logical;
-    XmbTextExtents(screen->getWindowStyle()->font, client.title,
-		   client.title_len, &ink, &logical);
-    client.title_text_w = logical.width;
-#else // !NLS
-    client.title_text_w = XTextWidth(screen->getWindowStyle()->font,
-				     client.title, client.title_len);
-#endif // NLS
+    if (i18n->multibyte()) {
+      XRectangle ink, logical;
+      XmbTextExtents(screen->getWindowStyle()->fontset,
+		     client.title, client.title_len, &ink, &logical);
+      client.title_text_w = logical.width;
+    } else
+      client.title_text_w = XTextWidth(screen->getWindowStyle()->font,
+				       client.title, client.title_len);
 
     client.title_text_w += (frame.bevel_w * 4);
   }
@@ -901,17 +905,17 @@ void BlackboxWindow::getWMName(void) {
 
   client.title_len = strlen(client.title);
 
-#ifdef    NLS
-  XRectangle ink, logical;
-  XmbTextExtents(screen->getWindowStyle()->font, client.title,
-		 client.title_len, &ink, &logical);
-  client.title_text_w = logical.width;
-#else // !NLS
-  client.title_len = strlen(client.title);
-  client.title_text_w = XTextWidth(screen->getWindowStyle()->font,
-				   client.title, client.title_len);
-#endif // NLS
-
+  if (i18n->multibyte()) {
+    XRectangle ink, logical;
+    XmbTextExtents(screen->getWindowStyle()->fontset,
+		   client.title, client.title_len, &ink, &logical);
+    client.title_text_w = logical.width;
+  } else {
+    client.title_len = strlen(client.title);
+    client.title_text_w = XTextWidth(screen->getWindowStyle()->font,
+				     client.title, client.title_len);
+  }
+  
   client.title_text_w += (frame.bevel_w * 4);
 }
 
@@ -921,16 +925,16 @@ void BlackboxWindow::getWMIconName(void) {
     delete [] client.icon_title;
     client.icon_title = (char *) 0;
   }
-   
+
   XTextProperty text_prop;
   char **list;
   int num;
-   
+
   if (XGetWMIconName(display, client.window, &text_prop)) {
     if (text_prop.value && text_prop.nitems >0) {
       if (text_prop.encoding != XA_STRING) {
  	text_prop.nitems = strlen((char *) text_prop.value);
- 	
+
  	if ((XmbTextPropertyToTextList(display, &text_prop,
  				       &list, &num) == Success) &&
  	    (num > 0) && *list) {
@@ -940,7 +944,7 @@ void BlackboxWindow::getWMIconName(void) {
  	  client.icon_title = bstrdup((char *) text_prop.value);
       } else
  	client.icon_title = bstrdup((char *) text_prop.value);
-       
+
       XFree((char *) text_prop.value);
     } else
       client.icon_title = bstrdup(i18n->getMessage(
@@ -957,7 +961,7 @@ void BlackboxWindow::getWMIconName(void) {
 #else // !NLS
 						 0, 0,
 #endif //
-						 "Unnamed")); 
+						 "Unnamed"));
 }
 
 
@@ -1590,7 +1594,7 @@ void BlackboxWindow::stick(void) {
     blackbox_attrib.attrib ^= AttribOmnipresent;
 
     stuck = False;
-    
+
     if (! iconic)
       screen->reassociateWindow(this, -1, True);
 
@@ -1818,7 +1822,7 @@ void BlackboxWindow::restoreAttributes(void) {
   if (((int) blackbox_attrib.workspace != screen->getCurrentWorkspaceID()) &&
       ((int) blackbox_attrib.workspace < screen->getCount())) {
     screen->reassociateWindow(this, blackbox_attrib.workspace, True);
-    
+
     if (current_state == NormalState) current_state = WithdrawnState;
   } else if (current_state == WithdrawnState)
     current_state = NormalState;
@@ -1906,17 +1910,16 @@ void BlackboxWindow::redrawLabel(void) {
 
   if (client.title_text_w > frame.label_w)
     for (; dlen >= 0; dlen--) {
-#ifdef    NLS
-      XRectangle ink, logical;
-      XmbTextExtents(screen->getWindowStyle()->font, client.title, dlen,
-		     &ink, &logical);
-      l = logical.width;
-#else // !NLS
-      l = XTextWidth(screen->getWindowStyle()->font, client.title, dlen);
-#endif // NLS
-
+      if (i18n->multibyte()) {
+	XRectangle ink, logical;
+	XmbTextExtents(screen->getWindowStyle()->fontset, client.title, dlen,
+		       &ink, &logical);
+	l = logical.width;
+      } else
+	l = XTextWidth(screen->getWindowStyle()->font, client.title, dlen);
+      
       l += (frame.bevel_w * 4);
-
+      
       if (l < frame.label_w)
 	break;
     }
@@ -1931,20 +1934,19 @@ void BlackboxWindow::redrawLabel(void) {
     break;
   }
 
-#ifdef    NLS
-  XmbDrawString(display, frame.label,
-		screen->getWindowStyle()->font,
+  if (i18n->multibyte())
+    XmbDrawString(display, frame.label,
+		  screen->getWindowStyle()->fontset,
+		  ((focused) ? screen->getWindowStyle()->l_text_focus_gc :
+		   screen->getWindowStyle()->l_text_unfocus_gc), dx, 1 -
+		  screen->getWindowStyle()->fontset_extents->max_ink_extent.y,
+		  client.title, dlen);
+  else
+    XDrawString(display, frame.label,
 		((focused) ? screen->getWindowStyle()->l_text_focus_gc :
 		 screen->getWindowStyle()->l_text_unfocus_gc), dx,
-		1 - screen->getWindowStyle()->extents->max_ink_extent.y,
-		client.title, dlen);
-#else // !NLS
-  XDrawString(display, frame.label,
-	      ((focused) ? screen->getWindowStyle()->l_text_focus_gc :
-	       screen->getWindowStyle()->l_text_unfocus_gc), dx,
-	      screen->getWindowStyle()->font->ascent + 1, client.title,
-	      dlen);
-#endif // NLS
+		screen->getWindowStyle()->font->ascent + 1, client.title,
+		dlen);
 }
 
 
@@ -2114,8 +2116,6 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
     XDeleteProperty(display, client.window, blackbox->getWMStateAtom());
     XDeleteProperty(display, client.window, blackbox->getBlackboxAttributesAtom());
 
-    visible = False;
-    iconic = False;
     XUnmapWindow(display, frame.window);
     XUnmapWindow(display, client.window);
 
@@ -2219,7 +2219,7 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
 
   case XA_WM_NAME:
     getWMName();
-    
+
     if (decorations.titlebar) {
       XClearWindow(display, frame.label);
       redrawLabel();
@@ -2759,7 +2759,7 @@ void BlackboxWindow::changeBlackboxHints(BlackboxHints *net) {
   if ((net->flags & AttribWorkspace) &&
       (workspace_number != (signed) net->workspace)) {
     screen->reassociateWindow(this, net->workspace, True);
-    
+
     if (screen->getCurrentWorkspaceID() != (signed) net->workspace) withdraw();
     else deiconify();
   }
@@ -2811,25 +2811,25 @@ void BlackboxWindow::upsize(void) {
   // convert client.width/height into frame sizes
 
   frame.bevel_w = screen->getBevelWidth();
-  frame.title_h =
-    (
-#ifdef    NLS
-     screen->getWindowStyle()->extents->max_ink_extent.height +
-#else // !NLS
-     screen->getWindowStyle()->font->ascent +
-     screen->getWindowStyle()->font->descent +
-#endif // NLS
-     (frame.bevel_w * 2) + 2) *
-    decorations.titlebar;
+
+  if (i18n->multibyte())
+    frame.title_h = (screen->getWindowStyle()->fontset_extents->
+		     max_ink_extent.height +
+		     (frame.bevel_w * 2) + 2) * decorations.titlebar;
+  else
+    frame.title_h = (screen->getWindowStyle()->font->ascent +
+		     screen->getWindowStyle()->font->descent +
+		     (frame.bevel_w * 2) + 2) * decorations.titlebar;
+  
   frame.label_h =
     (frame.title_h - (frame.bevel_w * 2)) * decorations.titlebar;
   frame.button_w = frame.button_h = frame.label_h - 2;
   frame.y_border = (frame.title_h + screen->getBorderWidth()) *
-    decorations.titlebar;
+		   decorations.titlebar;
   frame.border_w = (client.width + (frame.bevel_w * 2)) *
-    decorations.border;
+		   decorations.border;
   frame.border_h = (client.height + (frame.bevel_w * 2)) *
-    decorations.border;
+		   decorations.border;
   frame.grip_h = screen->getHandleWidth() * decorations.handle;
   frame.grip_w = (frame.button_h * 2) * decorations.handle;
   frame.handle_h = decorations.handle * screen->getHandleWidth();

@@ -1,7 +1,7 @@
 $set 12 #Workspacemenu
 
 $ #WorkspacesTitle
-# Workspaces
+# Areas de Trabalho
 $ #NewWorkspace
 # Nova Area de Trabalho
 $ #RemoveLast

@@ -62,9 +62,6 @@ typedef unsigned int u_int32_t;
 #  include <ctype.h>
 #endif // HAVE_CTYPE_H
 
-template <typename Z> inline Z min(Z a, Z b) { return ((a < b) ? a : b); }
-template <typename Z> inline Z max(Z a, Z b) { return ((a > b) ? a : b); }
-
 static unsigned long bsqrt(unsigned long x) {
   if (x <= 0) return 0;
   if (x == 1) return 1;

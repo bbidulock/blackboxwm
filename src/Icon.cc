@@ -34,16 +34,8 @@
 #include "Screen.hh"
 #include "Window.hh"
 
-#ifdef    DEBUG
-#  include "mem.h"
-#endif // DEBUG
-
 
 Iconmenu::Iconmenu(BScreen *scrn) : Basemenu(scrn) {
-#ifdef    DEBUG
-  allocate(sizeof(Iconmenu), "Icon.cc");
-#endif // DEBUG
-
   setInternalMenu();
 
   screen = scrn;
@@ -59,24 +51,17 @@ Iconmenu::Iconmenu(BScreen *scrn) : Basemenu(scrn) {
 }
 
 
-Iconmenu::~Iconmenu(void) {
-#ifdef    DEBUG
-  deallocate(sizeof(Iconmenu), "Icon.cc");
-#endif // DEBUG
-}
-
-
 void Iconmenu::itemSelected(int button, int index) {
   if (button == 1) {
     if (index >= 0 && index < screen->getIconCount()) {
       BlackboxWindow *win = screen->getIcon(index);
-    
+
       if (win) {
 	win->deiconify();
 	win->setInputFocus();
       }
     }
-    
+
     if (! (screen->getWorkspacemenu()->isTorn() || isTorn()))
       hide();
   }

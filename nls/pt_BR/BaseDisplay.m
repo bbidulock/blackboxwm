@@ -3,7 +3,7 @@ $set 1 #BaseDisplay
 $ #XError
 # %s:  X erro: %s(%d) opcodes %d/%d\n  recurso 0x%lx\n
 $ #SignalCaught
-# %s: recebido sinal %d\n
+# %s: recebeido sinal %d\n
 $ #ShuttingDown
 # desligando\n
 $ #Aborting

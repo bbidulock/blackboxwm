@@ -63,7 +63,8 @@ typedef struct _blackbox_attributes {
 #define PropBlackboxAttributesElements (8)
 
 char *bstrdup(const char *);
-
+template <typename Z> inline Z min(Z a, Z b) { return ((a < b) ? a : b); }
+template <typename Z> inline Z max(Z a, Z b) { return ((a > b) ? a : b); }
 
 class BaseDisplay {
 private:
@@ -320,10 +321,6 @@ protected:
 
 public:
   ScreenInfo(BaseDisplay *, int);
-
-#ifdef    DEBUG
-  ~ScreenInfo(void);
-#endif // DEBUG
 
   inline BaseDisplay *getBaseDisplay(void) { return basedisplay; }
   inline Visual *getVisual(void) { return visual; }

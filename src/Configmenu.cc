@@ -34,16 +34,8 @@
 #include "Toolbar.hh"
 #include "Window.hh"
 
-#ifdef    DEBUG
-#  include "mem.h"
-#endif // DEBUG
-
 
 Configmenu::Configmenu(BScreen *scr) : Basemenu(scr) {
-#ifdef    DEBUG
-  allocate(sizeof(Configmenu), "Configmenu.cc");
-#endif // DEBUG
-
   screen = scr;
   blackbox = screen->getBlackbox();
   setLabel(i18n->getMessage(
@@ -67,7 +59,7 @@ Configmenu::Configmenu(BScreen *scr) : Basemenu(scr) {
 			  "Focus Model"), focusmenu);
   insert(i18n->getMessage(
 #ifdef    NLS
-			  ConfigmenuSet, ConfigmenuWindowPlacement,			
+			  ConfigmenuSet, ConfigmenuWindowPlacement,
 #else //! NLS
 			  0, 0,
 #endif // NLS
@@ -119,10 +111,6 @@ Configmenu::Configmenu(BScreen *scr) : Basemenu(scr) {
 
 
 Configmenu::~Configmenu(void) {
-#ifdef    DEBUG
-  deallocate(sizeof(Configmenu), "Configmenu.cc");
-#endif // DEBUG
-
   delete focusmenu;
   delete placementmenu;
 }
@@ -179,10 +167,6 @@ void Configmenu::reconfigure(void) {
 
 
 Configmenu::Focusmenu::Focusmenu(Configmenu *cm) : Basemenu(cm->screen) {
-#ifdef    DEBUG
-  allocate(sizeof(Focusmenu), "Configmenu.cc");
-#endif // DEBUG
-
   configmenu = cm;
 
   setLabel(i18n->getMessage(
@@ -223,13 +207,6 @@ Configmenu::Focusmenu::Focusmenu(Configmenu *cm) : Basemenu(cm->screen) {
   setItemEnabled(2, configmenu->screen->isSloppyFocus());
   setItemSelected(2, configmenu->screen->doAutoRaise());
 }
-
-
-#ifdef    DEBUG
-Configmenu::Focusmenu::~Focusmenu(void) {
-  deallocate(sizeof(Focusmenu), "Configmenu.cc");
-}
-#endif // DEBUG
 
 
 void Configmenu::Focusmenu::itemSelected(int button, int index) {
@@ -280,10 +257,6 @@ void Configmenu::Focusmenu::itemSelected(int button, int index) {
 
 
 Configmenu::Placementmenu::Placementmenu(Configmenu *cm) : Basemenu(cm->screen) {
-#ifdef    DEBUG
-  allocate(sizeof(Placementmenu), "Configmenu.cc");
-#endif // DEBUG
-
   configmenu = cm;
 
   setLabel(i18n->getMessage(
@@ -372,13 +345,6 @@ Configmenu::Placementmenu::Placementmenu(Configmenu *cm) : Basemenu(cm->screen) 
   setItemSelected(5, tb);
   setItemSelected(6, ! tb);
 }
-
-
-#ifdef    DEBUG
-Configmenu::Placementmenu::~Placementmenu(void) {
-  deallocate(sizeof(Placementmenu), "Configmenu.cc");
-}
-#endif // DEBUG
 
 
 void Configmenu::Placementmenu::itemSelected(int button, int index) {

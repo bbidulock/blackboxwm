@@ -43,12 +43,13 @@
 #  include <locale.h>
 #endif // HAVE_LOCALE_H
 
-
+static I18n static_i18n;
 I18n *i18n;
 
-void NLSInit(void) {
-  i18n = new I18n;
-  i18n->openCatalog();
+void NLSInit(const char *catalog) {
+  i18n = &static_i18n;
+
+  i18n->openCatalog(catalog);
 }
 
 
@@ -58,24 +59,25 @@ I18n::I18n(void) {
   if (! locale) {
     fprintf(stderr, "failed to set locale, reverting to \"C\"\n");
 #endif // HAVE_SETLOCALE
-
+    
     locale = "C";
-
+    
 #ifdef    HAVE_SETLOCALE
   }
 #endif // HAVE_SETLOCALE
-
+  
+  if (! strcmp(locale, "C") ||
+      ! strcmp(locale, "POSIX"))
+    mb = 0;
+  else
+    mb = 1;
+    
   // truncate any encoding off the end of the locale
   char *l = strchr(locale, '.');
   if (l) *l = '\0';
-
-  int lp = strlen(LOCALEPATH), lc = strlen(locale),
-      ct = strlen("//blackbox.cat"), len = lp + lc + ct + 1;
-  catalog_filename = new char[len];
-  strncpy(catalog_filename, LOCALEPATH, lp);
-  *(catalog_filename + lp) = '/';
-  strncpy(catalog_filename + lp + 1, locale, lc);
-  strncpy(catalog_filename + lp + lc + 1, "/blackbox.cat", ct);
+  
+  catalog_filename = (char *) 0;
+  catalog_fd = (nl_catd) -1;
 }
 
 
@@ -89,18 +91,29 @@ I18n::~I18n(void) {
 }
 
 
-void I18n::openCatalog(void) {
+void I18n::openCatalog(const char *catalog) {
 #if defined(NLS) && defined(HAVE_CATOPEN)
+  int lp = strlen(LOCALEPATH), lc = strlen(locale),
+      ct = strlen(catalog), len = lp + lc + ct + 3;
+  catalog_filename = new char[len];
+
+  strncpy(catalog_filename, LOCALEPATH, lp);
+  *(catalog_filename + lp) = '/';
+  strncpy(catalog_filename + lp + 1, locale, lc);
+  *(catalog_filename + lp + lc + 1) = '/';
+  strncpy(catalog_filename + lp + lc + 2, catalog, ct + 1);
+
 #  ifdef    MCLoadBySet
   catalog_fd = catopen(catalog_filename, MCLoadBySet);
 #  else // !MCLoadBySet
   catalog_fd = catopen(catalog_filename, NL_CAT_LOCALE);
 #  endif // MCLoadBySet
-  
+
   if (catalog_fd == (nl_catd) -1)
     fprintf(stderr, "failed to open catalog, using default messages\n");
 #else // !HAVE_CATOPEN
   catalog_fd = (nl_catd) -1;
+  catalog_filename = (char *) 0;
 #endif // HAVE_CATOPEN
 }
 

@@ -31,16 +31,8 @@
 
 #include "Netizen.hh"
 
-#ifdef    DEBUG
-#  include "mem.h"
-#endif // DEBUG
-
 
 Netizen::Netizen(BScreen *scr, Window win) {
-#ifdef    DEBUG
-  allocate(sizeof(Netizen), "Netizen.cc");
-#endif // DEBUG
-
   screen = scr;
   basedisplay = screen->getBaseDisplay();
   window = win;
@@ -56,13 +48,6 @@ Netizen::Netizen(BScreen *scr, Window win) {
 
   XSendEvent(basedisplay->getXDisplay(), window, False, NoEventMask, &event);
 }
-
-
-#ifdef    DEBUG
-Netizen::~Netizen(void) {
-  deallocate(sizeof(Netizen), "Netizen.cc");
-}
-#endif // DEBUG
 
 
 void Netizen::sendWorkspaceCount(void) {
