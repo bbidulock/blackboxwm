@@ -437,37 +437,34 @@ void BScreen::LoadStyle(void) {
 void BScreen::addWorkspace(void) {
   Workspace *wkspc = new Workspace(this, workspacesList.size());
   workspacesList.push_back(wkspc);
-
   _workspacemenu->insertWorkspace(wkspc);
 
-  if (_toolbar) _toolbar->reconfigure();
-
   _blackbox->netwm().setNumberOfDesktops(screen_info.rootWindow(),
-                                        workspacesList.size());
+                                         workspacesList.size());
   updateDesktopNamesHint();
 }
 
 
 void BScreen::removeLastWorkspace(void) {
-  if (workspacesList.size() == 1) return;
+  if (workspacesList.size() == 1)
+    return;
 
   Workspace *workspace = workspacesList.back();
-  workspacesList.pop_back();
 
-  if (current_workspace == workspace->id())
-    setCurrentWorkspace(workspace->id() - 1);
-
-  BlackboxWindowList::iterator it, end = windowList.end();
-  for (it = windowList.begin(); it != end; ++it) {
-    BlackboxWindow *win = *it;
+  BlackboxWindowList::iterator it = windowList.begin();
+  const BlackboxWindowList::iterator end = windowList.end();
+  for (; it != end; ++it) {
+    BlackboxWindow * const win = *it;
     if (win->workspace() == workspace->id())
       win->setWorkspace(workspace->id() - 1);
   }
 
-  _workspacemenu->removeWorkspace(workspace->id());
-  delete workspace;
+  if (current_workspace == workspace->id())
+    setCurrentWorkspace(workspace->id() - 1);
 
-  if (_toolbar) _toolbar->reconfigure();
+  _workspacemenu->removeWorkspace(workspace->id());
+  workspacesList.pop_back();
+  delete workspace;
 
   _blackbox->netwm().setNumberOfDesktops(screen_info.rootWindow(),
                                          workspacesList.size());
