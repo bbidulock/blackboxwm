@@ -184,10 +184,10 @@ static void update_decorations(WindowDecorationFlags &decorations,
 static void update_window_group(Window window_group,
                                 Blackbox *blackbox,
                                 BlackboxWindow *win) {
-  BWindowGroup *group = win->getWindowGroup();
+  BWindowGroup *group = win->findWindowGroup();
   if (!group) {
     new BWindowGroup(blackbox, window_group);
-    group = win->getWindowGroup();
+    group = win->findWindowGroup();
     assert(group != 0);
   }
   group->addWindow(win);
@@ -285,7 +285,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   if (isTransient()) {
     // add ourselves to our transient_for
-    BlackboxWindow *win = getTransientFor();
+    BlackboxWindow *win = findTransientFor();
     if (win) {
       win->addTransient(this);
       client.ewmh.workspace = win->workspace();
@@ -361,7 +361,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   // preserve the window's initial state on first map, and its current
   // state across a restart
-  if (!getState())
+  if (!readState())
     client.current_state = client.wmhints.initial_state;
 
   if (client.state.iconic) {
@@ -440,13 +440,13 @@ BlackboxWindow::~BlackboxWindow(void) {
     delete client.strut;
   }
 
-  BWindowGroup *group = getWindowGroup();
+  BWindowGroup *group = findWindowGroup();
   if (group)
     group->removeWindow(this);
 
   // remove ourselves from our transient_for
   if (isTransient()) {
-    BlackboxWindow *win = getTransientFor();
+    BlackboxWindow *win = findTransientFor();
     if (win)
       win->removeTransient(this);
     client.transient_for = 0;
@@ -1499,7 +1499,7 @@ void BlackboxWindow::removeTransient(BlackboxWindow *win) {
 }
 
 
-BlackboxWindow *BlackboxWindow::getTransientFor(void) const {
+BlackboxWindow *BlackboxWindow::findTransientFor(void) const {
   BlackboxWindow *win = 0;
   if (isTransient()) {
     win = blackbox->findWindow(client.transient_for);
@@ -1510,7 +1510,7 @@ BlackboxWindow *BlackboxWindow::getTransientFor(void) const {
 }
 
 
-BWindowGroup *BlackboxWindow::getWindowGroup(void) const {
+BWindowGroup *BlackboxWindow::findWindowGroup(void) const {
   BWindowGroup *group = 0;
   if (client.wmhints.window_group)
     group = blackbox->findWindowGroup(client.wmhints.window_group);
@@ -1542,7 +1542,7 @@ bool BlackboxWindow::setInputFocus(void) {
     pass focus to any modal transients, giving modal group transients
     higher priority
   */
-  BWindowGroup *group = getWindowGroup();
+  BWindowGroup *group = findWindowGroup();
   if (group && !group->transients().empty()) {
     BlackboxWindowList::const_iterator it = group->transients().begin(),
                                       end = group->transients().end();
@@ -1671,7 +1671,7 @@ void BlackboxWindow::iconify(void) {
   if (client.state.iconic) return;
 
   if (isTransient()) {
-    BlackboxWindow *win = getTransientFor();
+    BlackboxWindow *win = findTransientFor();
     if (win) {
       if (!win->isIconic())
         win->iconify();
@@ -1994,7 +1994,7 @@ void BlackboxWindow::setState(unsigned long new_state) {
 }
 
 
-bool BlackboxWindow::getState(void) {
+bool BlackboxWindow::readState(void) {
   client.current_state = NormalState;
 
   Atom atom_return;
@@ -2599,7 +2599,7 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
   case XA_WM_TRANSIENT_FOR: {
     if (isTransient()) {
       // remove ourselves from our transient_for
-      BlackboxWindow *win = getTransientFor();
+      BlackboxWindow *win = findTransientFor();
       if (win)
         win->removeTransient(this);
     }
@@ -2607,7 +2607,7 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
     // determine if this is a transient window
     client.transient_for = readTransientInfo();
     if (isTransient()) {
-      BlackboxWindow *win = getTransientFor();
+      BlackboxWindow *win = findTransientFor();
       if (win) {
         // add ourselves to our new transient_for
         win->addTransient(this);
@@ -2641,7 +2641,7 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
 
   case XA_WM_HINTS: {
     // remove from current window group
-    BWindowGroup *group = getWindowGroup();
+    BWindowGroup *group = findWindowGroup();
     if (group)
       group->removeWindow(this);
 

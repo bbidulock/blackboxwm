@@ -70,7 +70,7 @@ void Workspace::addWindow(BlackboxWindow *win) {
   assert(win->workspace() == _id || win->workspace() == bt::BSENTINEL);
 
   win->setWorkspace(_id);
-  const std::string s = bt::ellideText(win->getTitle(), 60, "...");
+  const std::string s = bt::ellideText(win->title(), 60, "...");
   int wid = clientmenu->insertItem(s);
   win->setWindowNumber(wid);
 }

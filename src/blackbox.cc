@@ -633,7 +633,7 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
 
 
 void Blackbox::updateActiveWindow() const {
-  Window active = (focused_window) ? focused_window->getClientWindow() : None;
+  Window active = (focused_window) ? focused_window->clientWindow() : None;
   for (unsigned int i = 0; i < display().screenCount(); ++i)
     _netwm->setActiveWindow(display().screenInfo(i).rootWindow(), active);
 }

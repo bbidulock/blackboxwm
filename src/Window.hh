@@ -270,7 +270,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   void applyGravity(bt::Rect &r);
   void restoreGravity(bt::Rect &r);
 
-  bool getState(void);
+  bool readState(void);
   void setState(unsigned long new_state);
   void clearState(void);
 
@@ -308,9 +308,9 @@ public:
   void addTransient(BlackboxWindow *win);
   void removeTransient(BlackboxWindow *win);
 
-  BlackboxWindow *getTransientFor(void) const;
+  BlackboxWindow *findTransientFor(void) const;
 
-  BWindowGroup *getWindowGroup(void) const;
+  BWindowGroup *findWindowGroup(void) const;
 
   inline BScreen *screen(void) const
   { return _screen; }
@@ -319,14 +319,14 @@ public:
   inline Window windowID(void) const
   { return frame.window; }
 
-  inline Window getFrameWindow(void) const
+  inline Window frameWindow(void) const
   { return frame.window; }
-  inline Window getClientWindow(void) const
+  inline Window clientWindow(void) const
   { return client.window; }
 
-  inline const char *getTitle(void) const
+  inline const char *title(void) const
   { return client.title.c_str(); }
-  inline const char *getIconTitle(void) const
+  inline const char *iconTitle(void) const
   { return client.icon_title.c_str(); }
 
   inline unsigned int workspace(void) const
@@ -342,9 +342,6 @@ public:
   { return frame.rect; }
   inline const bt::Rect &clientRect(void) const
   { return client.rect; }
-
-  inline unsigned int getTitleHeight(void) const
-  { return frame.style->title_height; }
 
   const WMHints &wmHints(void) const
   { return client.wmhints; }

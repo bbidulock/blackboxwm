@@ -196,7 +196,7 @@ void Windowmenu::itemClicked(unsigned int id, unsigned int) {
 
   case KillClient:
     XKillClient(_window->screen()->screenInfo().display().XDisplay(),
-                _window->getClientWindow());
+                _window->clientWindow());
     break;
 
   case Close:

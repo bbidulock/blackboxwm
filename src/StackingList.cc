@@ -181,7 +181,7 @@ void StackingList::dump(void) const {
     entity = *it;
     win = dynamic_cast<BlackboxWindow *>(entity);
     if (win)
-      fprintf(stderr, "%s: 0x%lx\n", win->getTitle(), win->getClientWindow());
+      fprintf(stderr, "%s: 0x%lx\n", win->title(), win->clientWindow());
     else if (entity)
       fprintf(stderr, "entity: 0x%lx\n", entity->windowID());
     else
@@ -191,7 +191,7 @@ void StackingList::dump(void) const {
   entity = *fullscreen;
   win = dynamic_cast<BlackboxWindow *>(entity);
   if (win)
-    fprintf(stderr, "%s: 0x%lx\n", win->getTitle(), win->getClientWindow());
+    fprintf(stderr, "%s: 0x%lx\n", win->title(), win->clientWindow());
   else if (entity)
     fprintf(stderr, "entity: 0x%lx\n", entity->windowID());
   else
@@ -199,7 +199,7 @@ void StackingList::dump(void) const {
   entity = *above;
   win = dynamic_cast<BlackboxWindow *>(entity);
   if (win)
-    fprintf(stderr, "%s: 0x%lx\n", win->getTitle(), win->getClientWindow());
+    fprintf(stderr, "%s: 0x%lx\n", win->title(), win->clientWindow());
   else if (entity)
     fprintf(stderr, "entity: 0x%lx\n", entity->windowID());
   else
@@ -207,7 +207,7 @@ void StackingList::dump(void) const {
   entity = *normal;
   win = dynamic_cast<BlackboxWindow *>(entity);
   if (win)
-    fprintf(stderr, "%s: 0x%lx\n", win->getTitle(), win->getClientWindow());
+    fprintf(stderr, "%s: 0x%lx\n", win->title(), win->clientWindow());
   else if (entity)
     fprintf(stderr, "entity: 0x%lx\n", entity->windowID());
   else
@@ -215,7 +215,7 @@ void StackingList::dump(void) const {
   entity = *below;
   win = dynamic_cast<BlackboxWindow *>(entity);
   if (win)
-    fprintf(stderr, "%s: 0x%lx\n", win->getTitle(), win->getClientWindow());
+    fprintf(stderr, "%s: 0x%lx\n", win->title(), win->clientWindow());
   else if (entity)
     fprintf(stderr, "entity: 0x%lx\n", entity->windowID());
   else
@@ -223,7 +223,7 @@ void StackingList::dump(void) const {
   entity = *desktop;
   win = dynamic_cast<BlackboxWindow *>(entity);
   if (win)
-    fprintf(stderr, "%s: 0x%lx\n", win->getTitle(), win->getClientWindow());
+    fprintf(stderr, "%s: 0x%lx\n", win->title(), win->clientWindow());
   else if (entity)
     fprintf(stderr, "entity: 0x%lx\n", entity->windowID());
   else

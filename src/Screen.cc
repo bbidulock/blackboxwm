@@ -652,7 +652,7 @@ bool BScreen::focusFallback(const BlackboxWindow *win) {
   if (workspace->id() != current_workspace)
     return false;
 
-  BWindowGroup *group = win->getWindowGroup();
+  BWindowGroup *group = win->findWindowGroup();
   if (group) {
     // focus the top-most window in the group
     BlackboxWindowList::const_iterator git = group->windows().begin(),
@@ -676,7 +676,7 @@ bool BScreen::focusFallback(const BlackboxWindow *win) {
 
   if (win) {
     if (win->isTransient()) {
-      BlackboxWindow * const tmp = win->getTransientFor();
+      BlackboxWindow * const tmp = win->findTransientFor();
       if (tmp
           && tmp->isVisible()
           && tmp->workspace() == current_workspace
@@ -728,13 +728,13 @@ void BScreen::raiseWindow(StackEntity *entity) {
     // walk up the transient_for's to the window that is not a transient
     BlackboxWindow *w = win;
     while (w->isTransient()) {
-      BlackboxWindow *tmp = w->getTransientFor();
+      BlackboxWindow *tmp = w->findTransientFor();
       if (!tmp || tmp == win)
         break;
       w = tmp;
     }
     win = w;
-    group = win->getWindowGroup();
+    group = win->findWindowGroup();
 
     if (win->isFullScreen() && win->layer() != StackingList::LayerFullScreen) {
       // move full-screen windows over all other windows when raising
@@ -828,13 +828,13 @@ void BScreen::lowerWindow(StackEntity *entity) {
     // walk up the transient_for's to the window that is not a transient
     BlackboxWindow *w = win;
     while (w->isTransient()) {
-      BlackboxWindow *tmp = w->getTransientFor();
+      BlackboxWindow *tmp = w->findTransientFor();
       if (!tmp || tmp == win)
         break;
       w = tmp;
     }
     win = w;
-    group = win->getWindowGroup();
+    group = win->findWindowGroup();
     top = win;
   }
 
@@ -959,7 +959,7 @@ void BScreen::propagateWindowName(const BlackboxWindow * const win) {
   Workspace *workspace = getWorkspace(win->workspace());
   if (!workspace) return;
 
-  const std::string s = bt::ellideText(win->getTitle(), 60, "...");
+  const std::string s = bt::ellideText(win->title(), 60, "...");
   workspace->menu()->changeItem(win->windowNumber(), s);
 
   if (_toolbar && blackbox->getFocusedWindow() == win)
@@ -1662,7 +1662,7 @@ void BScreen::updateClientListHint(void) const {
   bt::Netwm::WindowList clientList(windowList.size());
 
   std::transform(windowList.begin(), windowList.end(), clientList.begin(),
-                 std::mem_fun(&BlackboxWindow::getClientWindow));
+                 std::mem_fun(&BlackboxWindow::clientWindow));
 
   blackbox->netwm().setClientList(screen_info.rootWindow(), clientList);
 }
@@ -1677,7 +1677,7 @@ void BScreen::updateClientListStackingHint(void) const {
                                       end = stackingList.rend();
   for (; it != end; ++it) {
     const BlackboxWindow * const win = dynamic_cast<BlackboxWindow *>(*it);
-    if (win) stack.push_back(win->getClientWindow());
+    if (win) stack.push_back(win->clientWindow());
   }
 
   if (stack.empty()) {
@@ -1792,8 +1792,8 @@ void BScreen::placeWindow(BlackboxWindow *win) {
 
   if (placed == False) {
     cascadePlacement(new_win, avail);
-    cascade_x += win->getTitleHeight();
-    cascade_y += win->getTitleHeight();
+    cascade_x += _resource.windowStyle()->title_height;
+    cascade_y += _resource.windowStyle()->title_height;
   }
 
   if (new_win.right() > avail.right())
@@ -2156,16 +2156,16 @@ void BScreen::addIcon(BlackboxWindow *win) {
     workspace->removeWindow(win);
   }
 
-  const std::string s = bt::ellideText(win->getIconTitle(), 60, "...");
+  const std::string s = bt::ellideText(win->iconTitle(), 60, "...");
   int id = _iconmenu->insertItem(s);
-  blackbox->netwm().setWMVisibleIconName(win->getClientWindow(), s);
+  blackbox->netwm().setWMVisibleIconName(win->clientWindow(), s);
   win->setWindowNumber(id);
 }
 
 
 void BScreen::removeIcon(BlackboxWindow *win) {
   _iconmenu->removeItem(win->windowNumber());
-  blackbox->netwm().removeProperty(win->getClientWindow(),
+  blackbox->netwm().removeProperty(win->clientWindow(),
                                    blackbox->netwm().wmVisibleIconName());
 
   Workspace *workspace = getWorkspace(current_workspace);

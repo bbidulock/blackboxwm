@@ -453,7 +453,7 @@ void Toolbar::redrawWindowLabel(void) {
   bt::Pen pen(_screen->screenNumber(), style->wlabel_text);
   bt::drawText(style->font, pen, frame.window_label, u,
                style->alignment,
-               bt::ellideText(foc->getTitle(), u.width(), "...",
+               bt::ellideText(foc->title(), u.width(), "...",
                               _screen->screenNumber(), style->font));
 }
 
