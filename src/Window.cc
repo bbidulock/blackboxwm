@@ -218,7 +218,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
       client.normal_hint_flags & (PPosition|USPosition)) {
     applyGravity(frame.rect);
 
-    if (blackbox->isStartup() || client.rect.intersects(screen->getRect()))
+    if (blackbox->isStartup() ||
+        client.rect.intersects(screen->getScreenInfo().getRect()))
       place_window = False;
   }
 
@@ -1413,7 +1414,7 @@ bool BlackboxWindow::setInputFocus(void) {
   // do not give focus to a window that is about to close
   if (! validateClient()) return False;
 
-  if (! frame.rect.intersects(screen->getRect())) {
+  if (! frame.rect.intersects(screen->getScreenInfo().getRect())) {
     // client is outside the screen, move it to the center
     configure((screen->getWidth() - frame.rect.width()) / 2,
               (screen->getHeight() - frame.rect.height()) / 2,
@@ -2898,7 +2899,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
           dy = srect.bottom() - frame.rect.height() + 1;
 
         if (! screen->doFullMax()) {
-          srect = screen->getRect(); // now get the full screen
+          srect = screen->getScreenInfo().getRect(); // now get the full screen
 
           dleft = abs(wleft - srect.left()),
              dright = abs(wright - srect.right()),
