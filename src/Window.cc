@@ -1594,7 +1594,7 @@ bool BlackboxWindow::setInputFocus(void) {
     ce.xclient.window = client.window;
     ce.xclient.format = 32;
     ce.xclient.data.l[0] = blackbox->getWMTakeFocusAtom();
-    ce.xclient.data.l[1] = blackbox->getLastTime();
+    ce.xclient.data.l[1] = blackbox->XTime();
     ce.xclient.data.l[2] = 0l;
     ce.xclient.data.l[3] = 0l;
     ce.xclient.data.l[4] = 0l;
