@@ -1120,7 +1120,7 @@ void BScreen::prevFocus(void) const {
       focused->getScreen()->getScreenNumber() == getScreenNumber() &&
       current_workspace->getCount() > 1) {
     do {
-      next = current_workspace->getNextWindowInList(next);
+      next = current_workspace->getPrevWindowInList(next);
     } while(next != focused && ! next->setInputFocus());
 
     if (next != focused)
