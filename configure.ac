@@ -1,7 +1,9 @@
 dnl configure.in for Blackbox - an X11 Window manager
 dnl Initialize autoconf and automake
-AC_INIT(src/blackbox.cc)
-AM_INIT_AUTOMAKE(blackbox,0.70.0broken,no-define)
+
+AC_INIT([blackbox], [0.70.0broken], [http://blackboxwm.sourceforge.net])
+AM_INIT_AUTOMAKE([blackbox], [0.70.0broken])
+AC_CONFIG_SRCDIR([src/blackbox.cc])
 
 dnl Determine default prefix
 test x$prefix = "xNONE" && prefix="$ac_default_prefix"
@@ -15,21 +17,31 @@ AC_PROG_CXX
 AC_PROG_RANLIB
 AC_PROG_INSTALL
 
-AC_CHECK_PROGS(regex_cmd, sed)
+AC_CHECK_PROGS([regex_cmd],[sed])
 if test x$regex_cmd = "x"; then
   AC_MSG_ERROR([error. sed is required to build the default menu file.])
 fi
 
 dnl Check for system header files
-AC_CHECK_HEADERS(ctype.h dirent.h fcntl.h libgen.h locale.h nl_types.h process.h signal.h stdarg.h stdio.h stdlib.h string.h time.h unistd.h sys/param.h sys/select.h sys/signal.h sys/stat.h sys/time.h sys/types.h sys/wait.h)
+AC_CHECK_HEADERS(ctype.h dirent.h fcntl.h libgen.h locale.h nl_types.h process.h signal.h stdarg.h time.h sys/param.h sys/select.h sys/signal.h sys/time.h sys/wait.h)
 AC_HEADER_TIME
 
 dnl Check for existance of basename(), setlocale() and strftime()
-AC_CHECK_FUNCS(basename, , AC_CHECK_LIB(gen, basename,
-			  AC_DEFINE(HAVE_BASENAME) LIBS="$LIBS -lgen"))
+AC_CHECK_FUNCS([basename],
+               [],
+	       [AC_CHECK_LIB([gen],
+	                     [basename],
+			     [AC_DEFINE([HAVE_BASENAME])
+			      LIBS="$LIBS -lgen"])
+               ])
+
 AC_CHECK_FUNCS(getpid setlocale sigaction strftime strcasestr snprintf vsnprintf catopen catgets catclose)
-AC_CHECK_LIB(nsl, t_open, LIBS="$LIBS -lnsl")
-AC_CHECK_LIB(socket, socket, LIBS="$LIBS -lsocket")
+AC_CHECK_LIB([nsl],
+             [t_open],
+	     [LIBS="$LIBS -lnsl"])
+AC_CHECK_LIB([socket],
+             [socket],
+	     [LIBS="$LIBS -lsocket"])
 
 dnl Check for X headers and libraries
 AC_PATH_X
@@ -45,38 +57,38 @@ CXXFLAGS="$CXXFLAGS $X_CFLAGS"
 LIBS="$LIBS $X_LIBS"
 LDFLAGS="$LDFLAGS $LIBS $X_PRE_LIBS"
 
-AC_MSG_CHECKING(for g++)
-if test x$GXX = "xyes"; then
-  AC_MSG_RESULT([yes])
-  CXXFLAGS="${CXXFLAGS} -Wall -W -pedantic"
-  gxx_ver=`$CXX -dumpversion|sed -e 's/\..*//'`
-  if test $gxx_ver -ge 3; then
-    CXXFLAGS="${CXXFLAGS} -Woverloaded-virtual -Wshadow"
-  fi
+AC_MSG_CHECKING([for GNU C++ Compiler])
+if test x$GCC = "xyes"; then
+   AC_MSG_RESULT([yes])
+   CXXFLAGS="${CXXFLAGS} -Wall -W -pedantic"
+   gxx_ver=`$CXX -dumpversion|sed -e 's/\..*//'`
+   if test $gxx_ver -ge 3; then
+     CXXFLAGS="${CXXFLAGS} -Woverloaded-virtual -Wshadow -Winline"
+   fi
 else
-  AC_MSG_RESULT([no, trying other compilers])
-  AC_MSG_CHECKING(for MIPSpro)
-  mips_pro_ver=`$CC -version 2>&1 | grep -i mipspro | cut -f4 -d ' '`
-  if test "x$mips_pro_ver" = "x"; then
-    AC_MSG_RESULT([no])
-  else
-    AC_MSG_RESULT([yes, version $mips_pro_ver.])
-    AC_MSG_CHECKING(for -LANG:std in CXXFLAGS)
-    lang_std_not_set=`echo $CXXFLAGS | grep "\-LANG:std"`
-    if test "x$lang_std_not_set" = "x"; then
-      AC_MSG_RESULT([not set, setting.])
-      CXXFLAGS="${CXXFLAGS} -LANG:std"
-    else
-      AC_MSG_RESULT([already set.])
-    fi
-  fi 
+   AC_MSG_RESULT([no, trying other compilers])
+   AC_MSG_CHECKING([for MIPSpro])
+   mips_pro_ver=`$CC -version 2>&1 | grep -i mipspro | cut -f4 -d ' '`
+   if test "x$mips_pro_ver" = "x"; then
+      AC_MSG_RESULT([no])
+   else
+      AC_MSG_RESULT([yes, version $mips_pro_ver.])
+      AC_MSG_CHECKING(for -LANG:std in CXXFLAGS)
+      lang_std_not_set=`echo $CXXFLAGS | grep "\-LANG:std"`
+      if test "x$lang_std_not_set" = "x"; then
+         AC_MSG_RESULT([not set, setting.])
+         CXXFLAGS="${CXXFLAGS} -LANG:std"
+      else
+         AC_MSG_RESULT([already set.])
+      fi
+   fi 
 fi
 
 dnl Check for required functions in -lX11
-AC_CHECK_LIB(X11, XOpenDisplay,
-  LIBS="$LIBS -lX11",
-  AC_MSG_ERROR([Could not find XOpenDisplay in -lX11.])
-)
+AC_CHECK_LIB([X11],
+             [XOpenDisplay],
+             [LIBS="$LIBS -lX11"],
+             [AC_MSG_ERROR([Could not find XOpenDisplay in -lX11])])
 
 LIBS="$LIBS $X_EXTRA_LIBS"
 
@@ -85,87 +97,94 @@ Xext_lib=""
 dnl Check for XShape extension support and proper library files.
 SHAPE=""
 AC_MSG_CHECKING([whether to build support for the XShape extension])
-AC_ARG_ENABLE(
-  shape, [  --enable-shape          enable support of the XShape extension [default=yes]])
+AC_ARG_ENABLE([shape],
+              AC_HELP_STRING([--enable-shape],
+	                     [enable support of the XShape extension @<:@default=yes@:>@]))
 
 : ${enableval="yes"}
 if test x$enableval = "xyes"; then
   AC_MSG_RESULT([yes])
-  AC_CHECK_LIB(Xext, XShapeCombineShape,
-    AC_MSG_CHECKING([for X11/extensions/shape.h])
-    AC_TRY_LINK(
+  AC_CHECK_LIB([Xext],
+               [XShapeCombineShape],
+               [AC_MSG_CHECKING([for X11/extensions/shape.h])
+                AC_TRY_LINK(
+[
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/shape.h>
-, long foo = ShapeSet,
-      AC_MSG_RESULT([yes])
-      SHAPE="-DSHAPE"; Xext_lib="-lXext",
-      AC_MSG_RESULT([no])
-    )
-  )
+],
+[
+ long foo = ShapeSet
+],
+[
+                AC_MSG_RESULT([yes])
+                SHAPE="-DSHAPE"; Xext_lib="-lXext"
+],
+[AC_MSG_RESULT([no])]
+                           )
+               ])
 else
   AC_MSG_RESULT([no])
 fi
-AC_SUBST(SHAPE)
+AC_SUBST([SHAPE])
 
 LIBS="$LIBS $Xext_lib"
 
 dnl Check for ordered 8bpp dithering
 ORDEREDPSEUDO=""
 AC_MSG_CHECKING([whether to include Pseudocolor ordered dithering code])
-AC_ARG_ENABLE(ordered-pseudo,
-[  --enable-ordered-pseudo include code for ordered pseudocolor (8bpp)
-                          dithering [default=no]],
+AC_ARG_ENABLE([ordered-pseudo],
+              AC_HELP_STRING([--enable-ordered-pseudo],
+	                     [include code for ordered pseudocolor (8bpp) dithering @<:@default=no@:>@]),
+              [
   if test x$enableval = "xyes"; then
     AC_MSG_RESULT([yes])
     ORDEREDPSEUDO="-DORDEREDPSEUDO" 
   else
     AC_MSG_RESULT([no]) 
-  fi,
-  AC_MSG_RESULT([no])
-)
-AC_SUBST(ORDEREDPSEUDO)
+  fi          ],
+              [AC_MSG_RESULT([no])])
+AC_SUBST([ORDEREDPSEUDO])
 
 dnl Check whether to include debugging code
 DEBUG=""
 AC_MSG_CHECKING([whether to include verbose debugging code])
-AC_ARG_ENABLE(debug,
-  [  --enable-debug          include verbose debugging code [default=no]],
+AC_ARG_ENABLE([debug],
+              AC_HELP_STRING([--enable-debug],
+	                     [include verbose debugging code @<:@default=no@:>@]),
+[
   if test x$enableval = "xyes"; then
     AC_MSG_RESULT([yes])
-    if test x$GCC = "xyes"; then
-       DEBUG="-DDEBUG -fno-inline -g"
-    else
-       DEBUG="-DDEBUG"
-    fi
+    DEBUG="-DDEBUG -fno-inline -g"
   else
     AC_MSG_RESULT([no])
-    DEBUG="-DNDEBUG" 
-fi,
-  AC_MSG_RESULT([no])
-  DEBUG="-DNDEBUG" 
-)
+  fi
+],
+              [AC_MSG_RESULT([no])])
 AC_SUBST(DEBUG)
 
 dnl Check whether to include natural language support (i18n)
 NLS=""
 AC_MSG_CHECKING([whether to include NLS support])
-AC_ARG_ENABLE(nls,
-  [  --enable-nls            include natural language support [default=yes]],
+AC_ARG_ENABLE([nls],
+              AC_HELP_STRING([--enable-nls],
+	                     [include natural language support @<:@default=yes@:>@]),
+              [
   if test x$enableval = "xyes"; then
     AC_MSG_RESULT([yes])
     NLS="-DNLS"
   else
     AC_MSG_RESULT([no])
-  fi,
+  fi          ],
+              [
   AC_MSG_RESULT([yes])
   NLS="-DNLS"
-)
+              ])
 AC_SUBST(NLS)
 
-AC_CHECK_LIB(xpg4, setlocale, LIBS="$LIBS -lxpg4")
+AC_CHECK_LIB([xpg4], [setlocale], [LIBS="$LIBS -lxpg4"])
 
-AC_CHECK_PROGS(gencat_cmd, gencat)
+AC_CHECK_PROGS([gencat_cmd], [gencat])
 if test x$gencat_cmd = "x"; then
   NLS=""
 fi
@@ -174,22 +193,21 @@ fi
 dnl Check for new timed pixmap cache
 TIMEDCACHE=""
 AC_MSG_CHECKING([whether to use the new timed pixmap cache])
-AC_ARG_ENABLE(
-  timed-cache,
-[  --enable-timed-cache    use new timed pixmap cache [default=yes]],
+AC_ARG_ENABLE([timed-cache],
+              AC_HELP_STRING([--enable-timed-cache],
+	                     [use new timed pixmap cache @<:@default=yes@:>@]),
+              [
   if test x$enableval = "xyes"; then
     AC_MSG_RESULT([yes])
     TIMEDCACHE="-DTIMEDCACHE"
   else
     AC_MSG_RESULT([no])
-  fi,
+  fi          ],
+              [
   AC_MSG_RESULT([yes])
   TIMEDCACHE="-DTIMEDCACHE"
-)
-AC_SUBST(TIMEDCACHE)
-
-dnl Determine the return type of signal handlers
-AC_TYPE_SIGNAL
+              ])
+AC_SUBST([TIMEDCACHE])
 
 dnl Determine if maintainer portions of the Makefiles should be included.
 AM_MAINTAINER_MODE
@@ -206,19 +224,25 @@ AC_MSG_RESULT([])
 
 dnl Output files
 AM_CONFIG_HEADER(config.h)
-AC_OUTPUT(Makefile
+AC_CONFIG_FILES([
+Makefile
 lib/Makefile
 src/Makefile
 util/Makefile
 data/Makefile
 data/styles/Makefile
 doc/Makefile
+doc/fr_FR/Makefile
+doc/ja_JP/Makefile
+doc/nl_NL/Makefile
+doc/sl_SI/Makefile
 nls/Makefile
 nls/C/Makefile
 nls/da_DK/Makefile
 nls/de_DE/Makefile
 nls/es_AR/Makefile
 nls/es_ES/Makefile
+nls/et_EE/Makefile
 nls/fr_FR/Makefile
 nls/hu_HU/Makefile
 nls/it_IT/Makefile
@@ -234,7 +258,9 @@ nls/ru_RU/Makefile
 nls/sk_SK/Makefile
 nls/sl_SI/Makefile
 nls/sv_SE/Makefile
+nls/tr_TR/Makefile
 nls/uk_UA/Makefile
 nls/zh_CN/Makefile
 nls/zh_TW/Makefile
-version.h)
+version.h])
+AC_OUTPUT

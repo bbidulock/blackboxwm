@@ -25,6 +25,10 @@ warts:
 
 Stuff TODO or On The Way(tm):
 -----------------------------
+ADD: use a fullscreen window with no background color/pixmap to hide
+     flicker when switching to/from a workspaces with fullscreen and/or
+     maximized windows.
+
 ADD: proper support for omnipresent windows
 
 DEL: blackbox's Netizen implementation

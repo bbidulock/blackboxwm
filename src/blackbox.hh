@@ -28,9 +28,7 @@ extern "C" {
 #include <X11/Xlib.h>
 #include <X11/Xresource.h>
 
-#ifdef    HAVE_STDIO_H
-# include <stdio.h>
-#endif // HAVE_STDIO_H
+#include <stdio.h>
 
 #ifdef    TIME_WITH_SYS_TIME
 #  include <sys/time.h>

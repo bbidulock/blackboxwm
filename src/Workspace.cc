@@ -29,9 +29,7 @@ extern "C" {
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
-#ifdef    HAVE_STDIO_H
-#  include <stdio.h>
-#endif // HAVE_STDIO_H
+#include <stdio.h>
 
 #ifdef HAVE_STRING_H
 #  include <string.h>

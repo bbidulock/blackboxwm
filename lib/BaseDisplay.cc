@@ -37,13 +37,11 @@ extern "C" {
 #  include <X11/extensions/shape.h>
 #endif // SHAPE
 
+#include <stdio.h>
+
 #ifdef    HAVE_FCNTL_H
 #  include <fcntl.h>
 #endif // HAVE_FCNTL_H
-
-#ifdef    HAVE_STDIO_H
-#  include <stdio.h>
-#endif // HAVE_STDIO_H
 
 #ifdef HAVE_STDLIB_H
 #  include <stdlib.h>

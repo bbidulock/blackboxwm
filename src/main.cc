@@ -28,9 +28,7 @@
 #endif // HAVE_CONFIG_H
 
 extern "C" {
-#ifdef    HAVE_STDIO_H
-#  include <stdio.h>
-#endif // HAVE_STDIO_H
+#include <stdio.h>
 
 #ifdef HAVE_STDLIB_H
 #  include <stdlib.h>

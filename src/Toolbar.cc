@@ -32,9 +32,7 @@ extern "C" {
 #  include <string.h>
 #endif // HAVE_STRING_H
 
-#ifdef    HAVE_STDIO_H
-#  include <stdio.h>
-#endif // HAVE_STDIO_H
+#include <stdio.h>
 
 #ifdef    TIME_WITH_SYS_TIME
 # include <sys/time.h>

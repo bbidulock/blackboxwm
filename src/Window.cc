@@ -34,9 +34,7 @@ extern "C" {
 #endif // HAVE_STRING_H
 
 #ifdef    DEBUG
-#  ifdef    HAVE_STDIO_H
-#    include <stdio.h>
-#  endif // HAVE_STDIO_H
+#  include <stdio.h>
 #endif // DEBUG
 
 #ifdef HAVE_STDLIB_H
@@ -2225,7 +2223,7 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
   if (ce->format != 32) return;
 
   const Netwm* const netwm = blackbox->netwm();
-  
+
   if (ce->message_type == blackbox->getWMChangeStateAtom()) {
     if (ce->data.l[0] == IconicState)
       iconify();
@@ -2335,7 +2333,7 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
                second == netwm->wmStateBelow()) {
       client.state.layer = LAYER_BELOW;
     }
-    
+
     if (max_horz != 0 || max_vert != 0) {
       maximize(0);
       unsigned int button = 0;
@@ -2359,7 +2357,7 @@ void BlackboxWindow::clientMessageEvent(const XClientMessageEvent* const ce) {
       else
         client.state.skip = SKIP_NONE;
     }
-    
+
     setState(client.current_state);
   } else if (ce->message_type == netwm->wmStrut()) {
     if (! client.strut)

@@ -23,7 +23,6 @@ CPPFLAGS= @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ \
 @DEBUG@ @NLS@ @TIMEDCACHE@ \
 -DLOCALEPATH=\"$(pkgdatadir)/nls\"
 
-LIBRARIES = libblackbox.a
 noinst_LIBRARIES = libblackbox.a
 libblackbox_a_SOURCES= BaseDisplay.cc Color.cc GCCache.cc Image.cc ImageControl.cc Netwm.cc Texture.cc Timer.cc Util.cc i18n.cc
 
@@ -32,23 +31,3 @@ MAINTAINERCLEANFILES= Makefile.in
 distclean-local:
 	rm -f *\~ *.orig *.rej .\#*
 
-# local dependencies
-
-BaseDisplay.o: BaseDisplay.cc $(top_srcdir)/config.h i18n.hh \
- $(top_srcdir)/nls/blackbox-nls.hh BaseDisplay.hh Timer.hh GCCache.hh Color.hh \
- Util.hh
-Color.o: Color.cc $(top_srcdir)/config.h Color.hh BaseDisplay.hh Timer.hh
-GCCache.o: GCCache.cc $(top_srcdir)/config.h GCCache.hh BaseDisplay.hh Timer.hh \
- Color.hh Util.hh
-Image.o: Image.cc $(top_srcdir)/config.h i18n.hh \
- $(top_srcdir)/nls/blackbox-nls.hh BaseDisplay.hh Timer.hh GCCache.hh Color.hh \
- Image.hh Texture.hh Util.hh
-ImageControl.o: ImageControl.cc $(top_srcdir)/config.h i18n.hh \
- $(top_srcdir)/nls/blackbox-nls.hh BaseDisplay.hh Timer.hh Color.hh Image.hh \
- Texture.hh Util.hh
-Netwm.o: Netwm.hh Netwm.cc
-Texture.o: Texture.cc $(top_srcdir)/config.h Texture.hh Color.hh Util.hh \
- BaseDisplay.hh Timer.hh Image.hh i18n.hh $(top_srcdir)/nls/blackbox-nls.hh
-Timer.o: Timer.cc $(top_srcdir)/config.h BaseDisplay.hh Timer.hh Util.hh
-Util.o: Util.cc $(top_srcdir)/config.h Util.hh
-i18n.o: i18n.cc $(top_srcdir)/config.h i18n.hh $(top_srcdir)/nls/blackbox-nls.hh
