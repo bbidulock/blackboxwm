@@ -30,7 +30,7 @@ CPPFLAGS= @CPPFLAGS@ @SHAPE@ @INTERLACE@ @ORDEREDPSEUDO@ \
 
 bin_PROGRAMS= blackbox
 
-blackbox_SOURCES= BaseDisplay.cc Basemenu.cc Clientmenu.cc Configmenu.cc Iconmenu.cc Image.cc LinkedList.cc Netizen.cc Rootmenu.cc Screen.cc Slit.cc Timer.cc Toolbar.cc Util.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc bsd-snprintf.c i18n.cc main.cc
+blackbox_SOURCES= BaseDisplay.cc Basemenu.cc Clientmenu.cc Configmenu.cc Iconmenu.cc Image.cc ImageControl.cc LinkedList.cc Netizen.cc Rootmenu.cc Screen.cc Slit.cc Timer.cc Toolbar.cc Util.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc bsd-snprintf.c i18n.cc main.cc
 
 MAINTAINERCLEANFILES= Makefile.in
 
@@ -57,8 +57,9 @@ Icon.o: Iconmenu.cc i18n.hh blackbox.hh BaseDisplay.hh LinkedList.hh \
  Timer.hh Image.hh Window.hh Iconmenu.hh Basemenu.hh Windowmenu.hh Slit.hh \
  Screen.hh Configmenu.hh Netizen.hh Rootmenu.hh Workspace.hh \
  Workspacemenu.hh Toolbar.hh
-Image.o: Image.cc i18n.hh BaseDisplay.hh LinkedList.hh Timer.hh \
+Image.o: Image.cc BaseDisplay.hh LinkedList.hh Timer.hh \
  Image.hh
+ImageControl.o: ImageControl.cc BaseDisplay.hh Image.hh
 LinkedList.o: LinkedList.cc LinkedList.hh
 Netizen.o: Netizen.cc Netizen.hh BaseDisplay.hh LinkedList.hh Timer.hh \
  Screen.hh Configmenu.hh Basemenu.hh blackbox.hh Image.hh Window.hh \

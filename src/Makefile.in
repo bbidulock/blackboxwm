@@ -101,7 +101,7 @@ CPPFLAGS = @CPPFLAGS@ @SHAPE@ @INTERLACE@ @ORDEREDPSEUDO@ @DEBUG@ @NLS@ @TIMEDCA
 
 bin_PROGRAMS = blackbox
 
-blackbox_SOURCES = BaseDisplay.cc Basemenu.cc Clientmenu.cc Configmenu.cc Iconmenu.cc Image.cc LinkedList.cc Netizen.cc Rootmenu.cc Screen.cc Slit.cc Timer.cc Toolbar.cc Util.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc bsd-snprintf.c i18n.cc main.cc
+blackbox_SOURCES = BaseDisplay.cc Basemenu.cc Clientmenu.cc Configmenu.cc Iconmenu.cc Image.cc ImageControl.cc LinkedList.cc Netizen.cc Rootmenu.cc Screen.cc Slit.cc Timer.cc Toolbar.cc Util.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc bsd-snprintf.c i18n.cc main.cc
 
 MAINTAINERCLEANFILES = Makefile.in
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -118,9 +118,9 @@ X_LIBS = @X_LIBS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 blackbox_OBJECTS =  BaseDisplay.o Basemenu.o Clientmenu.o Configmenu.o \
-Iconmenu.o Image.o LinkedList.o Netizen.o Rootmenu.o Screen.o Slit.o \
-Timer.o Toolbar.o Util.o Window.o Windowmenu.o Workspace.o \
-Workspacemenu.o blackbox.o bsd-snprintf.o i18n.o main.o
+Iconmenu.o Image.o ImageControl.o LinkedList.o Netizen.o Rootmenu.o \
+Screen.o Slit.o Timer.o Toolbar.o Util.o Window.o Windowmenu.o \
+Workspace.o Workspacemenu.o blackbox.o bsd-snprintf.o i18n.o main.o
 blackbox_LDADD = $(LDADD)
 blackbox_DEPENDENCIES = 
 blackbox_LDFLAGS = 
@@ -342,8 +342,9 @@ Icon.o: Iconmenu.cc i18n.hh blackbox.hh BaseDisplay.hh LinkedList.hh \
  Timer.hh Image.hh Window.hh Iconmenu.hh Basemenu.hh Windowmenu.hh Slit.hh \
  Screen.hh Configmenu.hh Netizen.hh Rootmenu.hh Workspace.hh \
  Workspacemenu.hh Toolbar.hh
-Image.o: Image.cc i18n.hh BaseDisplay.hh LinkedList.hh Timer.hh \
+Image.o: Image.cc BaseDisplay.hh LinkedList.hh Timer.hh \
  Image.hh
+ImageControl.o: ImageControl.cc BaseDisplay.hh Image.hh
 LinkedList.o: LinkedList.cc LinkedList.hh
 Netizen.o: Netizen.cc Netizen.hh BaseDisplay.hh LinkedList.hh Timer.hh \
  Screen.hh Configmenu.hh Basemenu.hh blackbox.hh Image.hh Window.hh \

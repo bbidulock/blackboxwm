@@ -7,7 +7,7 @@ bin_SCRIPTS = 		bsetbg
 bin_PROGRAMS =		bsetroot
 
 bsetroot_SOURCES =	bsetroot.cc
-bsetroot_LDADD =	../src/BaseDisplay.o ../src/LinkedList.o ../src/Timer.o ../src/Image.o ../src/i18n.o ../src/Util.o
+bsetroot_LDADD =	../src/BaseDisplay.o ../src/LinkedList.o ../src/Timer.o ../src/Image.o ../src/ImageControl.o ../src/i18n.o ../src/Util.o
 
 MAINTAINERCLEANFILES =	Makefile.in
 
