@@ -1084,19 +1084,16 @@ unsigned int bt::Menu::verifyId(unsigned int id) {
     abort();
   }
 
-  IdBits::iterator begin = _id_bits.begin(),
-                     end = _id_bits.end(),
-                      it = std::find(begin, end, false);
-  if (it == end) {
+  IdBits::iterator it = std::find(_id_bits.begin(), _id_bits.end(), false);
+  if (it == _id_bits.end()) {
     // no free bits... expand
-    _id_bits.insert(end, _id_bits.size(), false);
-    end = _id_bits.end();
-    it = std::find(begin, end, false);
-    assert(it != end);
+    _id_bits.insert(_id_bits.end(), _id_bits.size(), false);
+    it = std::find(_id_bits.begin(), _id_bits.end(), false);
+    assert(it != _id_bits.end());
   }
 
   *it = true;
-  return static_cast<int>(it - begin);
+  return static_cast<int>(it - _id_bits.begin());
 }
 
 
