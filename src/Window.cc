@@ -257,8 +257,12 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     screen->getWorkspace(blackbox_attrib.workspace)->
       addWindow(this, place_window);
 
-  configure(frame.rect.x(), frame.rect.y(),
-            frame.rect.width(), frame.rect.height());
+  if (! place_window) {
+    // don't need to call configure if we are letting the workspace
+    // place the window
+    configure(frame.rect.x(), frame.rect.y(),
+              frame.rect.width(), frame.rect.height());
+  }
 
   if (flags.shaded) {
     flags.shaded = False;
