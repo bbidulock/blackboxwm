@@ -1687,7 +1687,10 @@ void BScreen::updateAvailableArea(void) {
       old_width != usableArea.width || old_height != usableArea.height) {
     usableArea.width += old_x - usableArea.x;
     usableArea.height += old_y - usableArea.y;
-    // TODO: update maximized windows to reflect new screen area
+    BlackboxWindowList::iterator it = windowList.begin(),
+      end = windowList.end();
+    for(; it != end; ++it)
+      if((*it)->isMaximized()) (*it)->remaximize();
   }
 }
 

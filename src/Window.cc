@@ -1462,16 +1462,10 @@ void BlackboxWindow::maximize(unsigned int button) {
   blackbox_attrib.premax_w = frame.width;
   blackbox_attrib.premax_h = frame.height;
 
-  fprintf(stderr, "initial; x: %d, y: %d, width: %d, height: %d\n", frame.x,
-          frame.y, frame.width, frame.height);
-
   const XRectangle &screen_area = screen->availableArea();
 
   int dx = screen_area.x, dy = screen_area.y;
   unsigned int dw = screen_area.width, dh = screen_area.height;
-
-  fprintf(stderr, "usable area; x: %d, y: %d, width: %d, height: %d\n", dx, dy,
-          dw, dh);
 
   dw -= frame.border_w * 2;
   dw -= frame.mwm_border_w * 2;
@@ -1532,8 +1526,6 @@ void BlackboxWindow::maximize(unsigned int button) {
 
   flags.maximized = button;
 
-  fprintf(stderr, "final size; x: %d, y: %d, width: %d, height: %d\n", dx, dy,
-          dw, dh);
   configure(dx, dy, dw, dh);
   screen->getWorkspace(workspace_number)->raiseWindow(this);
   redrawAllButtons();
@@ -1543,9 +1535,21 @@ void BlackboxWindow::maximize(unsigned int button) {
 
 // re-maximizes the window to take into account availableArea changes
 void BlackboxWindow::remaximize(void) {
+  // save the original dimensions because maximize will wipe them out
+  int premax_x = blackbox_attrib.premax_x,
+    premax_y = blackbox_attrib.premax_y,
+    premax_w = blackbox_attrib.premax_w,
+    premax_h = blackbox_attrib.premax_h;
+
   unsigned int button = flags.maximized;
-  flags.maximized = 0;
+  flags.maximized = 0; // trick maximize() into working
   maximize(button);
+
+  // restore saved values
+  blackbox_attrib.premax_x = premax_x;
+  blackbox_attrib.premax_y = premax_y;
+  blackbox_attrib.premax_w = premax_w;
+  blackbox_attrib.premax_h = premax_h;
 }
 
 
