@@ -1028,13 +1028,13 @@ void BlackboxWindow::getWMNormalHints(void) {
   long icccm_mask;
   XSizeHints sizehint;
 
-  const XRectangle& screen_area = screen->availableArea();
+  const Rect& screen_area = screen->availableArea();
 
   client.min_width = client.min_height =
     client.base_width = client.base_height =
     client.width_inc = client.height_inc = 1;
-  client.max_width = screen_area.width;
-  client.max_height = screen_area.height;
+  client.max_width = screen_area.width();
+  client.max_height = screen_area.height();
   client.min_aspect_x = client.min_aspect_y =
     client.max_aspect_x = client.max_aspect_y = 1;
   client.win_gravity = NorthWestGravity;
@@ -1503,17 +1503,19 @@ void BlackboxWindow::maximize(unsigned int button) {
   blackbox_attrib.premax_w = frame.width;
   blackbox_attrib.premax_h = frame.height;
 
-  const XRectangle &screen_area = screen->availableArea();
+  Rect screen_area = screen->availableArea();
+  if (screen->doFullMax())
+    screen_area = screen->screenInfo()->rect();
 
-  int dx = screen_area.x, dy = screen_area.y;
-  unsigned int dw = screen_area.width, dh = screen_area.height;
+  int dx = screen_area.x(), dy = screen_area.y();
+  unsigned int dw = screen_area.width(), dh = screen_area.height();
 
-  dw = screen->screenInfo()->width();
+  dw = screen_area.width();
   dw -= frame.border_w * 2;
   dw -= frame.mwm_border_w * 2;
   dw -= client.base_width;
 
-  dh = screen->screenInfo()->height();
+  dh = screen_area.height();
   dh -= frame.border_w * 2;
   dh -= frame.mwm_border_w * 2;
   dh -= ((frame.handle_h + frame.border_w) * decorations.handle);
@@ -1535,8 +1537,8 @@ void BlackboxWindow::maximize(unsigned int button) {
   dh += ((frame.handle_h + frame.border_w) * decorations.handle);
   dh += frame.mwm_border_w * 2;
 
-  dx += ((screen->screenInfo()->width() - dw) / 2) - frame.border_w;
-  dy += ((screen->screenInfo()->height() - dh) / 2) - frame.border_w;
+  dx += ((screen_area.width() - dw) / 2) - frame.border_w;
+  dy += ((screen_area.height() - dh) / 2) - frame.border_w;
 
   switch(button) {
   case 1:
@@ -2610,7 +2612,7 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
 	frame.move_y = frame.y;
         frame.resize_w = frame.width + (frame.border_w * 2);
         frame.resize_h = ((flags.shaded) ? frame.title_h : frame.height) +
-          (frame.border_w * 2);
+                         (frame.border_w * 2);
 
 	screen->showPosition(frame.x, frame.y);
 
@@ -2628,41 +2630,35 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
       dy -= frame.border_w;
 
       if (screen->getEdgeSnapThreshold()) {
-        int drx = screen->screenInfo()->width() - (dx + frame.snap_w);
+        Rect srect = screen->availableArea();
+        Rect wrect(dx, dy, frame.snap_w, frame.snap_h);
 
-        if (dx > 0 && dx < drx && dx < screen->getEdgeSnapThreshold()) dx = 0;
-	else if (drx > 0 && drx < screen->getEdgeSnapThreshold())
-	  dx = screen->screenInfo()->width() - frame.snap_w;
+        int dleft = std::abs(wrect.left() - srect.left());
+        int dright = std::abs(wrect.right() - srect.right());
+        int dtop = std::abs(wrect.top() - srect.top());
+        int dbottom = std::abs(wrect.bottom() - srect.bottom());
 
-        int dtty, dbby, dty, dby;
-        switch (screen->getToolbarPlacement()) {
-        case Toolbar::TopLeft:
-        case Toolbar::TopCenter:
-        case Toolbar::TopRight:
-          dtty = screen->getToolbar()->getExposedHeight() +
-	         frame.border_w;
-          dbby = screen->screenInfo()->height();
-          break;
+        // snap left?
+        if (dleft < screen->getEdgeSnapThreshold() && dleft < dright)
+          dx = srect.left();
+        // snap right?
+        else if (dright < screen->getEdgeSnapThreshold() && dright < dleft)
+          dx = srect.right() - frame.snap_w;
 
-        default:
-          dtty = 0;
-	  dbby = screen->getToolbar()->getY();
-          break;
-        }
-
-        dty = dy - dtty;
-        dby = dbby - (dy + frame.snap_h);
-
-	if (dy > 0 && dty < screen->getEdgeSnapThreshold()) dy = dtty;
-        else if (dby > 0 && dby < screen->getEdgeSnapThreshold())
-          dy = dbby - frame.snap_h;
+        // snap top?
+        if (dtop < screen->getEdgeSnapThreshold() && dtop < dbottom)
+          dy = srect.top();
+        // snap bottom?
+        else if (dbottom < screen->getEdgeSnapThreshold() && dbottom < dtop)
+          dy = srect.bottom() - frame.snap_h;
       }
 
       if (screen->doOpaqueMove()) {
 	configure(dx, dy, frame.width, frame.height);
       } else {
-	BGCCache::Item &gc = BGCCache::instance()->find( BColor( "orange" ), 0, GXxor,
-							 IncludeInferiors );
+	BGCCache::Item &gc =
+          BGCCache::instance()->find( BColor( "orange" ), 0, GXxor,
+                                      IncludeInferiors );
 	XDrawRectangle(*blackbox, screen->screenInfo()->rootWindow(), gc.gc(),
 		       frame.move_x, frame.move_y, frame.resize_w,
 		       frame.resize_h);
@@ -2683,7 +2679,7 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
 	     (((me->state & Button1Mask) && (me->window == frame.right_grip ||
 					     me->window == frame.left_grip)) ||
 	      (me->state & (Mod1Mask | Button3Mask) &&
-	                                     me->window == frame.window))) {
+               me->window == frame.window))) {
     Bool left = (me->window == frame.left_grip);
 
     if (! flags.resizing) {
@@ -2691,7 +2687,7 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
       XGrabPointer(*blackbox, me->window, False, ButtonMotionMask |
                    ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None,
                    ((left) ? blackbox->getLowerLeftAngleCursor() :
-                             blackbox->getLowerRightAngleCursor()),
+                    blackbox->getLowerRightAngleCursor()),
                    CurrentTime);
 
       flags.resizing = True;
