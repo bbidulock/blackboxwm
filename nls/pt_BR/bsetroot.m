@@ -13,4 +13,4 @@ $ #Usage
   -from <color>            cor de inicio do gradiente\n\
   -to <color>              com do fim do gradiente\n\
   -solid <color>           cor solida\n\
-  -help                    mostra este texto de ajuda e sai\n\
+  -help                    mostra este texto de ajuda e sai\n
