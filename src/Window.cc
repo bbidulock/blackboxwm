@@ -2146,9 +2146,9 @@ void BlackboxWindow::redrawLabel(void) const {
 
 
 void BlackboxWindow::redrawAllButtons(void) const {
-  if (frame.iconify_button) redrawIconifyButton(False);
-  if (frame.maximize_button) redrawMaximizeButton(client.state.maximized);
-  if (frame.close_button) redrawCloseButton(False);
+  if (frame.iconify_button) redrawIconifyButton();
+  if (frame.maximize_button) redrawMaximizeButton();
+  if (frame.close_button) redrawCloseButton();
 }
 
 
@@ -2207,7 +2207,7 @@ void BlackboxWindow::redrawMaximizeButton(bool pressed) const {
                     frame.maximize_button, u, u, p);
   }
 
-  bt::drawBitmap(frame.style->maximize,
+  bt::drawBitmap(isMaximized() ? frame.style->restore : frame.style->maximize,
                  bt::Pen(screen->screenNumber(),
                          client.state.focused
                          ? frame.style->b_pic_focus
@@ -2680,11 +2680,11 @@ void BlackboxWindow::exposeEvent(const XExposeEvent * const event) {
   else if (frame.label == event->window)
     redrawLabel();
   else if (frame.close_button == event->window)
-    redrawCloseButton(False);
+    redrawCloseButton();
   else if (frame.maximize_button == event->window)
-    redrawMaximizeButton(client.state.maximized);
+    redrawMaximizeButton();
   else if (frame.iconify_button == event->window)
-    redrawIconifyButton(False);
+    redrawIconifyButton();
   else if (frame.handle == event->window)
     redrawHandle();
   else if (frame.left_grip == event->window ||
@@ -2747,13 +2747,13 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const event) {
 
   if (frame.maximize_button == event->window) {
     if (event->button < 4)
-      redrawMaximizeButton(True);
+      redrawMaximizeButton(true);
   } else if (frame.iconify_button == event->window) {
     if (event->button == 1)
-      redrawIconifyButton(True);
+      redrawIconifyButton(true);
   } else if (frame.close_button == event->window) {
     if (event->button == 1)
-      redrawCloseButton(True);
+      redrawCloseButton(true);
   } else if (frame.plate == event->window) {
     if (event->button == 1
         || (event->button == 3 && event->state == Mod1Mask)) {
@@ -2817,7 +2817,7 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const event) {
         maximize(event->button);
         screen->raiseWindow(this);
       } else {
-        redrawMaximizeButton(client.state.maximized);
+        redrawMaximizeButton();
       }
     }
   } else if (event->window == frame.iconify_button) {
@@ -2826,14 +2826,14 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const event) {
                      frame.style->button_width, frame.style->button_width))
         iconify();
       else
-        redrawIconifyButton(False);
+        redrawIconifyButton();
     }
   } else if (event->window == frame.close_button) {
     if (event->button == 1) {
       if (bt::within(event->x, event->y,
                      frame.style->button_width, frame.style->button_width))
         close();
-      redrawCloseButton(False);
+      redrawCloseButton();
     }
   } else if (client.state.moving) {
     client.state.moving = False;

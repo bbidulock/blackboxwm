@@ -261,9 +261,9 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   void redrawTitle(void) const;
   void redrawLabel(void) const;
   void redrawAllButtons(void) const;
-  void redrawCloseButton(bool pressed) const;
-  void redrawIconifyButton(bool pressed) const;
-  void redrawMaximizeButton(bool pressed) const;
+  void redrawCloseButton(bool pressed = false) const;
+  void redrawIconifyButton(bool pressed = false) const;
+  void redrawMaximizeButton(bool pressed = false) const;
   void redrawHandle(void) const;
   void redrawGrips(void) const;
 
