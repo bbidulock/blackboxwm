@@ -116,6 +116,7 @@ BGCCacheContext *BGCCache::nextContext(unsigned int scr) {
 
   fprintf(stderr, "BGCCache: context fault!\n");
   abort();
+  return (BGCCacheContext*) 0; // not reached
 }
 
 
