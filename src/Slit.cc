@@ -609,9 +609,6 @@ Slitmenu::Slitmenu(Slit *sl)
 {
     slit = sl;
 
-    setTitle(i18n->getMessage(SlitSet, SlitSlitTitle, "Slit"));
-    showTitle();
-
     directionmenu = new Directionmenu(this);
     placementmenu = new Placementmenu(this);
 
@@ -670,9 +667,6 @@ Slitmenu::Directionmenu::Directionmenu(Slitmenu *sm)
 {
     slitmenu = sm;
 
-    setTitle(i18n->getMessage(SlitSet, SlitSlitDirection, "Slit Direction"));
-    showTitle();
-
     insert(i18n->getMessage(CommonSet, CommonDirectionHoriz, "Horizontal"),
 	   Slit::Horizontal);
     insert(i18n->getMessage(CommonSet, CommonDirectionVert, "Vertical"),
@@ -707,8 +701,6 @@ Slitmenu::Placementmenu::Placementmenu(Slitmenu *sm)
 {
     slitmenu = sm;
 
-    setTitle(i18n->getMessage(SlitSet, SlitSlitPlacement, "Slit Placement"));
-    showTitle();
     // setMinimumSublevels(3);
 
     insert(i18n->getMessage(CommonSet, CommonPlacementTopLeft, "Top Left"),
