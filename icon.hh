@@ -38,13 +38,11 @@ private:
   Display *display;
   GC iconGC;
 
-  struct {    
-    BColor text, cold, cold_t;
+  struct icon {
     Window client, window, subwindow;
 
     char *name;
     unsigned int width, height, label_w, label_h, pixmap_w, pixmap_h;
-    unsigned long t_icon;
   } icon;
 
   Blackbox *blackbox;
@@ -53,7 +51,6 @@ private:
 
 
 protected:
-  void readConfiguration(void);
 
 
 public:

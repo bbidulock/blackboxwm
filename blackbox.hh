@@ -91,6 +91,11 @@ private:
       unsigned long titleTexture, frameTexture;
     } menu;
 
+    struct icon {
+      BColor color, colorTo, textColor;
+      unsigned long texture;
+    } icon;
+
     Bool opaqueMove, imageDither;
     BColor borderColor;
     XrmDatabase blackboxrc;
@@ -267,6 +272,12 @@ public:
   const BColor &sCColor(void) { return resource.wsm.clockColor; }
   const BColor &sCColorTo(void) { return resource.wsm.clockColorTo; }
   const BColor &sTextColor(void) { return resource.wsm.textColor; }  
+
+  // icon controls
+  unsigned long iconTexture(void) { return resource.icon.texture; }
+  const BColor &iconColor(void) { return resource.icon.color; }
+  const BColor &iconColorTo(void) { return resource.icon.colorTo; }
+  const BColor &iTextColor(void) { return resource.icon.textColor; }
 
   // session information
   int Depth(void) { return depth; }

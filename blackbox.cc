@@ -1370,6 +1370,34 @@ void Blackbox::LoadDefaults(void) {
 			 &resource.wsm.textColor.g,
 			 &resource.wsm.textColor.b);
 
+  // load icon config
+  if (! (resource.icon.texture =
+	 blackbox->readDatabaseTexture("clientIcon.texture",
+				       "ClientIcon.Texture")))
+    resource.icon.texture = BImageRaised|BImageSolid|BImageBevel1;
+
+  if (! blackbox->readDatabaseColor("clientIcon.color", "ClientIcon.Color",
+				    &resource.icon.color))
+    resource. icon.color.pixel =
+      blackbox->getColor("darkblue", &resource.icon.color.r,
+			 &resource.icon.color.g, &resource.icon.color.b);
+
+  if (resource.icon.texture & BImageGradient)
+    if (! blackbox->readDatabaseColor("clientIcon.colorTo",
+				      "ClientIcon.ColorTo",
+				      &resource.icon.colorTo))
+      resource.icon.colorTo.pixel =
+	blackbox->getColor("black", &resource.icon.colorTo.r,
+			   &resource.icon.colorTo.g, &resource.icon.colorTo.b);
+
+  if (! blackbox->readDatabaseColor("clientIcon.textColor",
+				    "ClientIcon.TextColor",
+				    &resource.icon.textColor))
+    resource.icon.textColor.pixel =
+      blackbox->getColor("grey", &resource.icon.textColor.r,
+			 &resource.icon.textColor.g,
+			 &resource.icon.textColor.b);
+
   // load border color
   if (! (readDatabaseColor("session.borderColor", "Session.BorderColor",
 			   &resource.borderColor)))
