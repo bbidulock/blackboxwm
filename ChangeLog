@@ -31,9 +31,10 @@ Changes from 0.62.1:
   - update transient handling, should solve issues with apps like acroread.
     added a getTransientInfo() method of the BlackboxWindow class which handles
     checking the transient state in X and setting the appropriate variables
-    on the window.  To further attach the infinite loops this function ensures
+    on the window.  To further attack the infinite loops this function ensures
     that client.transient != this.
   - added zh_TW (Taiwan Chinese)
+  - remove slit and netwm as compile time options
 
 Changes from 0.62.0 to 0.62.1:
   - the lock modifier code handles user redefined modifiers better

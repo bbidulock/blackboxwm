@@ -25,8 +25,6 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
-#ifdef    SLIT
-
 #include <X11/keysym.h>
 
 #include "i18n.hh"
@@ -786,5 +784,3 @@ void Slitmenu::Placementmenu::itemSelected(int button, int index) {
   slitmenu->slit->reconfigure();
 }
 
-
-#endif // SLIT

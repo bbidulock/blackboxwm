@@ -55,9 +55,7 @@ class BImageControl;
 class BlackboxWindow;
 class Basemenu;
 class Toolbar;
-#ifdef    SLIT
 class Slit;
-#endif // SLIT
 
 extern I18n i18n;
 
@@ -97,11 +95,8 @@ private:
   LinkedList<MenuSearch> *menuSearchList;
   typedef DataSearch<Toolbar> ToolbarSearch;
   LinkedList<ToolbarSearch> *toolbarSearchList;
-
-#ifdef    SLIT
   typedef DataSearch<Slit> SlitSearch;
   LinkedList<SlitSearch> *slitSearchList;
-#endif // SLIT
 
   LinkedList<MenuTimestamp> *menuTimestamps;
   LinkedList<BScreen> *screenList;
@@ -152,6 +147,7 @@ public:
   inline const Time &getLastTime(void) const { return last_time; }
 
   Toolbar *searchToolbar(Window);
+  Slit *searchSlit(Window);
 
   inline const char *getStyleFilename(void) const
     { return resource.style_file; }
@@ -180,12 +176,14 @@ public:
   void saveMenuFilename(const char *);
   void saveMenuSearch(Window, Basemenu *);
   void saveWindowSearch(Window, BlackboxWindow *);
-  void saveToolbarSearch(Window, Toolbar *);
   void saveGroupSearch(Window, BlackboxWindow *);
+  void saveToolbarSearch(Window, Toolbar *);
+  void saveSlitSearch(Window, Slit *);
   void removeMenuSearch(Window);
   void removeWindowSearch(Window);
-  void removeToolbarSearch(Window);
   void removeGroupSearch(Window);
+  void removeToolbarSearch(Window);
+  void removeSlitSearch(Window);
   void restart(const char * = 0);
   void reconfigure(void);
   void rereadMenu(void);
@@ -195,15 +193,7 @@ public:
 
   virtual void timeout(void);
 
-#ifdef    SLIT
-  Slit *searchSlit(Window);
-
-  void saveSlitSearch(Window, Slit *);
-  void removeSlitSearch(Window);
-#endif // SLIT
-
 #ifndef   HAVE_STRFTIME
-
   enum { B_AmericanDate = 1, B_EuropeanDate };
 #endif // HAVE_STRFTIME
 };

@@ -80,11 +80,7 @@
 #include "Iconmenu.hh"
 #include "Image.hh"
 #include "Screen.hh"
-
-#ifdef    SLIT
 #include "Slit.hh"
-#endif // SLIT
-
 #include "Rootmenu.hh"
 #include "Toolbar.hh"
 #include "Util.hh"
@@ -428,9 +424,7 @@ BScreen::BScreen(Blackbox *bb, int scrn) : ScreenInfo(bb, scrn) {
 
   toolbar = new Toolbar(this);
 
-#ifdef    SLIT
   slit = new Slit(this);
-#endif // SLIT
 
   InitMenu();
 
@@ -537,11 +531,7 @@ BScreen::~BScreen(void) {
   delete workspacemenu;
   delete iconmenu;
   delete configmenu;
-
-#ifdef    SLIT
   delete slit;
-#endif // SLIT
-
   delete toolbar;
   delete image_control;
 
@@ -987,9 +977,7 @@ void BScreen::reconfigure(void) {
 
   toolbar->reconfigure();
 
-#ifdef    SLIT
   slit->reconfigure();
-#endif // SLIT
 
   LinkedListIterator<Workspace> wit(workspacesList);
   for (Workspace *w = wit.current(); w; wit++, w = wit.current())
@@ -1553,11 +1541,9 @@ void BScreen::raiseWindows(Window *workspace_stack, int num) {
   *(session_stack + i++) = configmenu->getPlacementmenu()->getWindowID();
   *(session_stack + i++) = configmenu->getWindowID();
 
-#ifdef    SLIT
   *(session_stack + i++) = slit->getMenu()->getDirectionmenu()->getWindowID();
   *(session_stack + i++) = slit->getMenu()->getPlacementmenu()->getWindowID();
   *(session_stack + i++) = slit->getMenu()->getWindowID();
-#endif // SLIT
 
   *(session_stack + i++) =
     toolbar->getMenu()->getPlacementmenu()->getWindowID();
@@ -1571,10 +1557,8 @@ void BScreen::raiseWindows(Window *workspace_stack, int num) {
   if (toolbar->isOnTop())
     *(session_stack + i++) = toolbar->getWindowID();
 
-#ifdef    SLIT
   if (slit->isOnTop())
     *(session_stack + i++) = slit->getWindowID();
-#endif // SLIT
 
   while (k--)
     *(session_stack + i++) = *(workspace_stack + k);
@@ -2154,9 +2138,7 @@ void BScreen::shutdown(void) {
     delete iconList->first();
   }
 
-#ifdef    SLIT
   slit->shutdown();
-#endif // SLIT
 
   XUngrabServer( getBaseDisplay()->getXDisplay() );
 }

@@ -35,9 +35,7 @@
 #include "Window.hh"
 #include "Workspace.hh"
 #include "Workspacemenu.hh"
-#ifdef SLIT
 #include "Slit.hh"
-#endif
 
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
@@ -1159,9 +1157,7 @@ void Toolbarmenu::itemSelected(int button, int index) {
     toolbar->do_auto_hide = change;
     setItemSelected(2, change);
 
-#ifdef    SLIT
     toolbar->screen->getSlit()->reposition();
-#endif // SLIT
     break;
   }
 
@@ -1225,9 +1221,7 @@ void Toolbarmenu::Placementmenu::itemSelected(int button, int index) {
   hide();
   toolbarmenu->toolbar->reconfigure();
 
-#ifdef    SLIT
   // reposition the slit as well to make sure it doesn't intersect the
   // toolbar
   toolbarmenu->toolbar->screen->getSlit()->reposition();
-#endif // SLIT
 }

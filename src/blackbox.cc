@@ -41,11 +41,7 @@
 #include "Clientmenu.hh"
 #include "Rootmenu.hh"
 #include "Screen.hh"
-
-#ifdef    SLIT
 #include "Slit.hh"
-#endif // SLIT
-
 #include "Toolbar.hh"
 #include "Util.hh"
 #include "Window.hh"
@@ -166,14 +162,10 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
   masked = None;
 
   windowSearchList = new LinkedList<WindowSearch>;
-  menuSearchList = new LinkedList<MenuSearch>;
-
-#ifdef    SLIT
-  slitSearchList = new LinkedList<SlitSearch>;
-#endif // SLIT
-
-  toolbarSearchList = new LinkedList<ToolbarSearch>;
   groupSearchList = new LinkedList<WindowSearch>;
+  menuSearchList = new LinkedList<MenuSearch>;
+  slitSearchList = new LinkedList<SlitSearch>;
+  toolbarSearchList = new LinkedList<ToolbarSearch>;
 
   menuTimestamps = new LinkedList<MenuTimestamp>;
 
@@ -240,13 +232,10 @@ Blackbox::~Blackbox(void) {
   delete menuTimestamps;
 
   delete windowSearchList;
+  delete groupSearchList;
   delete menuSearchList;
   delete toolbarSearchList;
-  delete groupSearchList;
-
-#ifdef    SLIT
   delete slitSearchList;
-#endif // SLIT
 }
 
 
@@ -261,9 +250,7 @@ void Blackbox::process_event(XEvent *e) {
     BlackboxWindow *win = (BlackboxWindow *) 0;
     Basemenu *menu = (Basemenu *) 0;
 
-#ifdef    SLIT
     Slit *slit = (Slit *) 0;
-#endif // SLIT
 
     Toolbar *tbar = (Toolbar *) 0;
 
@@ -274,11 +261,8 @@ void Blackbox::process_event(XEvent *e) {
         win->installColormap(True);
     } else if ((menu = searchMenu(e->xbutton.window))) {
       menu->buttonPressEvent(&e->xbutton);
-
-#ifdef    SLIT
     } else if ((slit = searchSlit(e->xbutton.window))) {
       slit->buttonPressEvent(&e->xbutton);
-#endif // SLIT
 
     } else if ((tbar = searchToolbar(e->xbutton.window))) {
       tbar->buttonPressEvent(&e->xbutton);
@@ -389,18 +373,12 @@ void Blackbox::process_event(XEvent *e) {
 
     BlackboxWindow *win = (BlackboxWindow *) 0;
 
-#ifdef    SLIT
     Slit *slit = (Slit *) 0;
-#endif // SLIT
 
     if ((win = searchWindow(e->xconfigurerequest.window))) {
       win->configureRequestEvent(&e->xconfigurerequest);
-
-#ifdef    SLIT
     } else if ((slit = searchSlit(e->xconfigurerequest.window))) {
       slit->configureRequestEvent(&e->xconfigurerequest);
-#endif // SLIT
-
     } else {
       if (validateWindow(e->xconfigurerequest.window)) {
         XWindowChanges xwc;
@@ -451,20 +429,14 @@ void Blackbox::process_event(XEvent *e) {
 
   case UnmapNotify: {
     BlackboxWindow *win = (BlackboxWindow *) 0;
-
-#ifdef    SLIT
     Slit *slit = (Slit *) 0;
-#endif // SLIT
 
     if ((win = searchWindow(e->xunmap.window))) {
       win->unmapNotifyEvent(&e->xunmap);
       if (focused_window == win)
         focused_window = (BlackboxWindow *) 0;
-#ifdef    SLIT
     } else if ((slit = searchSlit(e->xunmap.window))) {
       slit->removeClient(e->xunmap.window);
-#endif // SLIT
-
     }
 
     break;
@@ -472,19 +444,14 @@ void Blackbox::process_event(XEvent *e) {
 
   case DestroyNotify: {
     BlackboxWindow *win = (BlackboxWindow *) 0;
-
-#ifdef    SLIT
     Slit *slit = (Slit *) 0;
-#endif // SLIT
 
     if ((win = searchWindow(e->xdestroywindow.window))) {
       win->destroyNotifyEvent(&e->xdestroywindow);
       if (focused_window == win)
         focused_window = (BlackboxWindow *) 0;
-#ifdef    SLIT
     } else if ((slit = searchSlit(e->xdestroywindow.window))) {
       slit->removeClient(e->xdestroywindow.window, False);
-#endif // SLIT
     }
 
     break;
@@ -555,10 +522,7 @@ void Blackbox::process_event(XEvent *e) {
     BlackboxWindow *win = (BlackboxWindow *) 0;
     Basemenu *menu = (Basemenu *) 0;
     Toolbar *tbar = (Toolbar *) 0;
-
-#ifdef    SLIT
     Slit *slit = (Slit *) 0;
-#endif // SLIT
 
     if (e->xcrossing.mode == NotifyGrab) break;
 
@@ -582,10 +546,8 @@ void Blackbox::process_event(XEvent *e) {
       menu->enterNotifyEvent(&e->xcrossing);
     } else if ((tbar = searchToolbar(e->xcrossing.window))) {
       tbar->enterNotifyEvent(&e->xcrossing);
-#ifdef    SLIT
     } else if ((slit = searchSlit(e->xcrossing.window))) {
       slit->enterNotifyEvent(&e->xcrossing);
-#endif // SLIT
     }
     break;
   }
@@ -596,10 +558,7 @@ void Blackbox::process_event(XEvent *e) {
     BlackboxWindow *win = (BlackboxWindow *) 0;
     Basemenu *menu = (Basemenu *) 0;
     Toolbar *tbar = (Toolbar *) 0;
-
-#ifdef    SLIT
     Slit *slit = (Slit *) 0;
-#endif // SLIT
 
     if ((menu = searchMenu(e->xcrossing.window)))
       menu->leaveNotifyEvent(&e->xcrossing);
@@ -607,11 +566,8 @@ void Blackbox::process_event(XEvent *e) {
       win->installColormap(False);
     else if ((tbar = searchToolbar(e->xcrossing.window)))
       tbar->leaveNotifyEvent(&e->xcrossing);
-#ifdef    SLIT
     else if ((slit = searchSlit(e->xcrossing.window)))
       slit->leaveNotifyEvent(&e->xcrossing);
-#endif // SLIT
-
     break;
   }
 
@@ -856,7 +812,6 @@ Toolbar *Blackbox::searchToolbar(Window window) {
 }
 
 
-#ifdef    SLIT
 Slit *Blackbox::searchSlit(Window window) {
   LinkedListIterator<SlitSearch> it(slitSearchList);
 
@@ -867,7 +822,6 @@ Slit *Blackbox::searchSlit(Window window) {
 
   return (Slit *) 0;
 }
-#endif // SLIT
 
 
 void Blackbox::saveWindowSearch(Window window, BlackboxWindow *data) {
@@ -890,11 +844,9 @@ void Blackbox::saveToolbarSearch(Window window, Toolbar *data) {
 }
 
 
-#ifdef    SLIT
 void Blackbox::saveSlitSearch(Window window, Slit *data) {
   slitSearchList->insert(new SlitSearch(window, data));
 }
-#endif // SLIT
 
 
 void Blackbox::removeWindowSearch(Window window) {
@@ -945,7 +897,6 @@ void Blackbox::removeToolbarSearch(Window window) {
 }
 
 
-#ifdef    SLIT
 void Blackbox::removeSlitSearch(Window window) {
   LinkedListIterator<SlitSearch> it(slitSearchList);
   for (SlitSearch *tmp = it.current(); tmp; it++, tmp = it.current()) {
@@ -956,7 +907,6 @@ void Blackbox::removeSlitSearch(Window window) {
     }
   }
 }
-#endif // SLIT
 
 
 void Blackbox::restart(const char *prog) {
@@ -1020,7 +970,6 @@ void Blackbox::save_rc(void) {
   for (BScreen *screen = it.current(); screen; it++, screen = it.current()) {
     int screen_number = screen->getScreenNumber();
 
-#ifdef    SLIT
     char *slit_placement = (char *) 0;
 
     switch (screen->getSlitPlacement()) {
@@ -1050,7 +999,6 @@ void Blackbox::save_rc(void) {
     sprintf(rc_string, "session.screen%d.slit.autoHide: %s", screen_number,
             ((screen->getSlit()->doAutoHide()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
-#endif // SLIT
 
     sprintf(rc_string, "session.opaqueMove: %s",
             ((screen->doOpaqueMove()) ? "True" : "False"));
@@ -1478,7 +1426,7 @@ void Blackbox::load_rc(BScreen *screen) {
   } else {
     screen->savePlacementPolicy(BScreen::RowSmartPlacement);
   }
-#ifdef    SLIT
+
   sprintf(name_lookup, "session.screen%d.slit.placement", screen_number);
   sprintf(class_lookup, "Session.Screen%d.Slit.Placement", screen_number);
   if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
@@ -1535,7 +1483,6 @@ void Blackbox::load_rc(BScreen *screen) {
   } else {
     screen->saveSlitAutoHide(False);
   }
-#endif // SLIT
 
 #ifdef    HAVE_STRFTIME
   sprintf(name_lookup,  "session.screen%d.strftimeFormat", screen_number);

@@ -48,9 +48,7 @@
 #include "Workspace.hh"
 #include "Workspacemenu.hh"
 #include "blackbox.hh"
-#ifdef    SLIT
 class Slit; // forward reference
-#endif // SLIT
 #include "Image.hh"
 
 // forward declaration
@@ -117,10 +115,7 @@ private:
   LinkedList<Netizen> *netizenList;
   LinkedList<BlackboxWindow> *iconList;
 
-#ifdef    SLIT
   Slit *slit;
-#endif // SLIT
-
   Toolbar *toolbar;
   Workspace *current_workspace;
   Workspacemenu *workspacemenu;
@@ -148,10 +143,8 @@ private:
     int workspaces, toolbar_placement, toolbar_width_percent, placement_policy,
       edge_snap_threshold, row_direction, col_direction;
 
-#ifdef    SLIT
     Bool slit_on_top, slit_auto_hide;
     int slit_placement, slit_direction;
-#endif // SLIT
 
     unsigned int handle_width, bevel_width, frame_width, border_width;
 
@@ -209,7 +202,6 @@ public:
   inline BImageControl *getImageControl(void) { return image_control; }
   inline Rootmenu *getRootmenu(void) { return rootmenu; }
 
-#ifdef   SLIT
   inline const Bool &isSlitOnTop(void) const { return resource.slit_on_top; }
   inline const Bool &doSlitAutoHide(void) const
   { return resource.slit_auto_hide; }
@@ -222,7 +214,6 @@ public:
   inline void saveSlitDirection(int d) { resource.slit_direction = d; }
   inline void saveSlitOnTop(Bool t)    { resource.slit_on_top = t; }
   inline void saveSlitAutoHide(Bool t) { resource.slit_auto_hide = t; }
-#endif // SLIT
 
   inline Toolbar *getToolbar(void) { return toolbar; }
 

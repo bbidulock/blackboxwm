@@ -47,9 +47,8 @@
 #include "Window.hh"
 #include "Windowmenu.hh"
 #include "Workspace.hh"
-#ifdef    SLIT
-#  include "Slit.hh"
-#endif // SLIT
+#include "Slit.hh"
+
 
 /*
  * Initializes the class with default values/the window's set initial values.
@@ -161,14 +160,12 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   getWMHints();
   getWMNormalHints();
 
-#ifdef    SLIT
   if (client.initial_state == WithdrawnState) {
     screen->getSlit()->addClient(client.window);
     delete this;
 
     return;
   }
-#endif // SLIT
 
   flags.managed = True;
   blackbox->saveWindowSearch(client.window, this);
