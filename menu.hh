@@ -83,7 +83,6 @@ protected:
   int insert(char **);
   int insert(char *, int, char * = 0);
   int insert(char *, BlackboxMenu *);
-  int remove(char *);
   int remove(int);
   BlackboxMenuItem *at(int);
   BlackboxSession *Session(void);

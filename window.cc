@@ -570,11 +570,11 @@ void BlackboxWindow::createDecorations(void) {
   BImage image(session, frame.title_w, frame.title_h, session->Depth(),
 	       session->focusColor());
 
-  frame.ftitle = image.renderImage(session->frameTexture(), 1,
+  frame.ftitle = image.renderImage(session->windowTexture(), 1,
 				   session->focusColor(),
 				   session->focusToColor());
   
-  frame.utitle = image.renderImage(session->frameTexture(), 1,
+  frame.utitle = image.renderImage(session->windowTexture(), 1,
 				   session->unfocusColor(),
 				   session->unfocusToColor());
   
@@ -585,11 +585,11 @@ void BlackboxWindow::createDecorations(void) {
     BImage h_image(session, frame.handle_w, frame.handle_h, session->Depth(),
 		   session->focusColor());
     
-    frame.fhandle = h_image.renderImage(session->frameTexture(), 1,
+    frame.fhandle = h_image.renderImage(session->windowTexture(), 1,
 					session->focusColor(),
 					session->focusToColor());
     
-    frame.uhandle = h_image.renderImage(session->frameTexture(), 1,
+    frame.uhandle = h_image.renderImage(session->windowTexture(), 1,
 					session->unfocusColor(),
 					session->unfocusToColor());
     
@@ -785,11 +785,11 @@ void BlackboxWindow::Reconfigure(void) {
   BImage image(session, frame.title_w, frame.title_h, session->Depth(),
 	       session->focusColor());
   
-  frame.ftitle = image.renderImage(session->frameTexture(), 1,
+  frame.ftitle = image.renderImage(session->windowTexture(), 1,
 				   session->focusColor(),
 				   session->focusToColor());
   
-  frame.utitle = image.renderImage(session->frameTexture(), 1,
+  frame.utitle = image.renderImage(session->windowTexture(), 1,
 				   session->unfocusColor(),
 				   session->unfocusToColor());
   
@@ -800,11 +800,11 @@ void BlackboxWindow::Reconfigure(void) {
     BImage h_image(session, frame.handle_w, frame.handle_h,
 		   session->Depth(), session->focusColor());
     
-    frame.fhandle = h_image.renderImage(session->frameTexture(), 1,
+    frame.fhandle = h_image.renderImage(session->windowTexture(), 1,
 					session->focusColor(),
 					session->focusToColor());
     
-    frame.uhandle = h_image.renderImage(session->frameTexture(), 1,
+    frame.uhandle = h_image.renderImage(session->windowTexture(), 1,
 					session->unfocusColor(),
 					session->unfocusToColor());
 
@@ -1091,11 +1091,11 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
     BImage image(session, frame.title_w, frame.title_h, session->Depth(),
 		 session->focusColor());
 
-    frame.ftitle = image.renderImage(session->frameTexture(), 1,
+    frame.ftitle = image.renderImage(session->windowTexture(), 1,
 				     session->focusColor(),
 				     session->focusToColor());
 
-    frame.utitle = image.renderImage(session->frameTexture(), 1,
+    frame.utitle = image.renderImage(session->windowTexture(), 1,
 				     session->unfocusColor(),
 				     session->unfocusToColor());
     
@@ -1106,11 +1106,11 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
       BImage h_image(session, frame.handle_w, frame.handle_h,
 		     session->Depth(), session->focusColor());
 
-      frame.fhandle = h_image.renderImage(session->frameTexture(), 1,
+      frame.fhandle = h_image.renderImage(session->windowTexture(), 1,
 					  session->focusColor(),
 					  session->focusToColor());
 
-      frame.uhandle = h_image.renderImage(session->frameTexture(), 1,
+      frame.uhandle = h_image.renderImage(session->windowTexture(), 1,
 					  session->unfocusColor(),
 					  session->unfocusToColor());
     }

@@ -135,8 +135,7 @@ Blackbox::Blackbox(int argc, char **argv) {
   // event loop in each thread.
   //
 
-  session = new BlackboxSession(session_display);
-  session_list->insert(session);
+  session_list->insert(new BlackboxSession(session_display));
 }
 
 
@@ -152,7 +151,6 @@ Blackbox::Blackbox(int argc, char **argv) {
 */
 
 Blackbox::~Blackbox(void) {
-  delete session;
   delete session_list;
   delete debug;
 }
@@ -168,7 +166,7 @@ void Blackbox::EventLoop(void) {
   // to be managed;
   //
 
-  session->EventLoop();
+  session_list->at(0)->EventLoop();
 }
 
 
@@ -179,10 +177,14 @@ void Blackbox::Restart(char *prog) {
   //
 
   if (prog) {
-    delete session;
+    for (int i = 0; i < session_list->count(); ++i)
+      session_list->at(i)->Dissociate();
+
     execlp(prog, prog, NULL);
   } else {
-    delete session;
+    for (int i = 0; i < session_list->count(); ++i)
+      session_list->at(i)->Dissociate();
+
     execvp(b_argv[0], b_argv);
   }
 }

@@ -93,9 +93,9 @@ BlackboxIcon::BlackboxIcon(BlackboxSession *ctrl, Window c) {
   
   BImage image(session, 92, icon.height, session->Depth(),
 	       session->frameColor());
-  Pixmap p = image.renderImage(session->frameTexture(), 0,
-			       session->frameColor(),
-			       session->frameToColor());
+  Pixmap p = image.renderImage(session->toolboxTexture(), 0,
+			       session->toolboxColor(),
+			       session->toolboxToColor());
 
   XSetWindowBackgroundPixmap(display, icon.subwindow, p);
   XClearWindow(display, icon.subwindow);
@@ -237,9 +237,9 @@ void BlackboxIcon::Reconfigure(void) {
 
   BImage image(session, 92, icon.height, session->Depth(),
 	       session->frameColor());
-  Pixmap p = image.renderImage(session->frameTexture(), 0,
-			       session->frameColor(),
-			       session->frameToColor());
+  Pixmap p = image.renderImage(session->toolboxTexture(), 0,
+			       session->toolboxColor(),
+			       session->toolboxToColor());
 
   XSetWindowBackgroundPixmap(display, icon.subwindow, p);
   XClearWindow(display, icon.subwindow);

@@ -99,58 +99,30 @@ private:
   XColor *colors_8bpp;
 
   struct context {
-    XContext workspace,
-      window,
-      icon,
-      menu;
+    XContext workspace, window, icon, menu;
   } context;
 
   struct cursor {
-    Cursor session,
-      move;
+    Cursor session, move;
   } cursor;
-
 
   struct resource {
     struct color {
-      BColor frame,
-	frame_to,
-	focus,
-	focus_to,
-	unfocus,
-	unfocus_to,
-	menu,
-	menu_to,
-	imenu,
-	imenu_to,
-	button,
-	button_to,
-	icon,
-	ftext,
-	utext,
-	mtext,
-	mitext,
-	ptext,
-	itext;
+      BColor frame, toolbox, toolbox_to, focus, focus_to, unfocus, unfocus_to,
+	menu, menu_to, imenu, imenu_to, button, button_to, ftext, utext, mtext,
+	mitext, ptext, itext;
     } color;
     
     struct font {
-      XFontStruct *title,
-	*menu,
-	*icon;
+      XFontStruct *title, *menu, *icon;
     } font;
     
     struct texture {
-      int frame,
-	button,
-	menu,
-	imenu,
-	pimenu;
+      int toolbox, window, button, menu, imenu, pimenu;
     } texture;
 
     char *menuFile;
-    int workspaces,
-      orientation;
+    int workspaces, orientation;
   } resource;
 
   struct shape {
@@ -224,14 +196,17 @@ public:
   BlackboxMenu *getMenu(Window);
   WorkspaceManager *getWSManager(Window);
 
-  int frameTexture(void) { return resource.texture.frame; }
+  int toolboxTexture(void) { return resource.texture.toolbox; }
+  int windowTexture(void) { return resource.texture.window; }
   int buttonTexture(void) { return resource.texture.button; }
   int menuTexture(void) { return resource.texture.menu; }
   int menuItemTexture(void) { return resource.texture.imenu; }
   int menuItemPressedTexture(void) { return resource.texture.pimenu; }
 
   const BColor &frameColor(void) const { return resource.color.frame; }
-  const BColor &frameToColor(void) const { return resource.color.frame_to; }
+  const BColor &toolboxColor(void) const { return resource.color.toolbox; }
+  const BColor &toolboxToColor(void) const
+    { return resource.color.toolbox_to; }
   const BColor &focusColor(void) const { return resource.color.focus; }
   const BColor &focusToColor(void) const { return resource.color.focus_to; }
   const BColor &unfocusColor(void) const { return resource.color.unfocus; }
@@ -239,7 +214,6 @@ public:
     { return resource.color.unfocus_to; }
   const BColor &buttonColor(void) const { return resource.color.button; }
   const BColor &buttonToColor(void) const { return resource.color.button_to; }
-  const BColor &iconColor(void) const { return resource.color.icon; }
   const BColor &menuColor(void) const { return resource.color.menu; }
   const BColor &menuToColor(void) const { return resource.color.menu_to; }
   const BColor &menuItemColor(void) const { return resource.color.imenu; }
@@ -252,6 +226,7 @@ public:
   const BColor &menuPressedTextColor(void)
     const { return resource.color.ptext; }
   const BColor &iconTextColor(void) const { return resource.color.itext; }
+
   XColor *Colors8bpp(void) { return colors_8bpp; }
 
   const int Orientation(void) const { return resource.orientation; }

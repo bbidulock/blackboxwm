@@ -861,41 +861,76 @@ void BlackboxSession::LoadDefaults(void) {
   char *value_type;
 
   if (XrmGetResource(blackbox_database,
-		     "blackbox.session.frameTexture",
-		     "Blackbox.Session.FrameTexture", &value_type, &value)) {
+		     "blackbox.session.toolboxTexture",
+		     "Blackbox.Session.ToolboxTexture", &value_type, &value)) {
     if ((! strcasecmp(value.addr, "solid")) ||
 	(! strcasecmp(value.addr, "solidraised")))
-      resource.texture.frame = B_TextureRSolid;
+      resource.texture.toolbox = B_TextureRSolid;
     else if (! strcasecmp(value.addr, "solidsunken"))
-      resource.texture.frame = B_TextureSSolid;
+      resource.texture.toolbox = B_TextureSSolid;
     else if (! strcasecmp(value.addr, "solidflat"))
-      resource.texture.frame = B_TextureFSolid;
+      resource.texture.toolbox = B_TextureFSolid;
     else if ((! strcasecmp(value.addr, "dgradient")) ||
 	     (! strcasecmp(value.addr, "dgradientraised")))
-      resource.texture.frame = B_TextureRDGradient;
+      resource.texture.toolbox = B_TextureRDGradient;
     else if (! strcasecmp(value.addr, "dgradientsunken"))
-      resource.texture.frame = B_TextureSDGradient;
+      resource.texture.toolbox = B_TextureSDGradient;
     else if (! strcasecmp(value.addr, "dgradientflat"))
-      resource.texture.frame = B_TextureFDGradient;
+      resource.texture.toolbox = B_TextureFDGradient;
     else if ((! strcasecmp(value.addr, "hgradient")) ||
 	     (! strcasecmp(value.addr, "hgradientraised")))
-      resource.texture.frame = B_TextureRHGradient;
+      resource.texture.toolbox = B_TextureRHGradient;
     else if (! strcasecmp(value.addr, "hgradientsunken"))
-      resource.texture.frame = B_TextureSHGradient;
+      resource.texture.toolbox = B_TextureSHGradient;
     else if (! strcasecmp(value.addr, "hgradientflat"))
-      resource.texture.frame = B_TextureFHGradient;
+      resource.texture.toolbox = B_TextureFHGradient;
     else if ((! strcasecmp(value.addr, "vgradient")) ||
 	     (! strcasecmp(value.addr, "vgradientraised")))
-      resource.texture.frame = B_TextureRVGradient;
+      resource.texture.toolbox = B_TextureRVGradient;
     else if (! strcasecmp(value.addr, "vgradientsunken"))
-      resource.texture.frame = B_TextureSVGradient;
+      resource.texture.toolbox = B_TextureSVGradient;
     else if (! strcasecmp(value.addr, "vgradientflat"))
-      resource.texture.frame = B_TextureFVGradient;
+      resource.texture.toolbox = B_TextureFVGradient;
     else
-      resource.texture.frame = B_TextureRSolid;
+      resource.texture.toolbox = B_TextureRSolid;
   } else
-    resource.texture.frame = B_TextureRSolid;
+    resource.texture.toolbox = B_TextureRSolid;
 
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.session.windowTexture",
+		     "Blackbox.Session.WindowTexture", &value_type, &value)) {
+    if ((! strcasecmp(value.addr, "solid")) ||
+	(! strcasecmp(value.addr, "solidraised")))
+      resource.texture.window = B_TextureRSolid;
+    else if (! strcasecmp(value.addr, "solidsunken"))
+      resource.texture.window = B_TextureSSolid;
+    else if (! strcasecmp(value.addr, "solidflat"))
+      resource.texture.window = B_TextureFSolid;
+    else if ((! strcasecmp(value.addr, "dgradient")) ||
+	     (! strcasecmp(value.addr, "dgradientraised")))
+      resource.texture.window = B_TextureRDGradient;
+    else if (! strcasecmp(value.addr, "dgradientsunken"))
+      resource.texture.window = B_TextureSDGradient;
+    else if (! strcasecmp(value.addr, "dgradientflat"))
+      resource.texture.window = B_TextureFDGradient;
+    else if ((! strcasecmp(value.addr, "hgradient")) ||
+	     (! strcasecmp(value.addr, "hgradientraised")))
+      resource.texture.window = B_TextureRHGradient;
+    else if (! strcasecmp(value.addr, "hgradientsunken"))
+      resource.texture.window = B_TextureSHGradient;
+    else if (! strcasecmp(value.addr, "hgradientflat"))
+      resource.texture.window = B_TextureFHGradient;
+    else if ((! strcasecmp(value.addr, "vgradient")) ||
+	     (! strcasecmp(value.addr, "vgradientraised")))
+      resource.texture.window = B_TextureRVGradient;
+    else if (! strcasecmp(value.addr, "vgradientsunken"))
+      resource.texture.window = B_TextureSVGradient;
+    else if (! strcasecmp(value.addr, "vgradientflat"))
+      resource.texture.window = B_TextureFVGradient;
+    else
+      resource.texture.window = B_TextureRSolid;
+  } else
+    resource.texture.window = B_TextureRSolid;
 
   if (XrmGetResource(blackbox_database,
 		     "blackbox.window.buttonTexture",
@@ -1052,17 +1087,28 @@ void BlackboxSession::LoadDefaults(void) {
     resource.color.frame.pixel =
       getColor("grey", &resource.color.frame.r, &resource.color.frame.g,
 	       &resource.color.frame.b);
+
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.session.toolboxColor",
+		     "Blackbox.Session.ToolboxColor", &value_type, &value))
+    resource.color.toolbox.pixel =
+      getColor(value.addr, &resource.color.toolbox.r,
+	       &resource.color.toolbox.g, &resource.color.toolbox.b);
+  else
+    resource.color.toolbox.pixel =
+      getColor("grey", &resource.color.toolbox.r, &resource.color.toolbox.g,
+	       &resource.color.toolbox.b);
   
   if (XrmGetResource(blackbox_database,
-		     "blackbox.session.frameToColor",
-		     "Blackbox.Session.FrameToColor", &value_type, &value))
-    resource.color.frame_to.pixel =
-      getColor(value.addr, &resource.color.frame_to.r,
-	       &resource.color.frame_to.g, &resource.color.frame_to.b);
+		     "blackbox.session.toolboxToColor",
+		     "Blackbox.Session.ToolboxToColor", &value_type, &value))
+    resource.color.toolbox_to.pixel =
+      getColor(value.addr, &resource.color.toolbox_to.r,
+	       &resource.color.toolbox_to.g, &resource.color.toolbox_to.b);
   else
-    resource.color.frame_to.pixel =
-      getColor("black", &resource.color.frame_to.r,
-	       &resource.color.frame_to.g, &resource.color.frame_to.b);
+    resource.color.toolbox_to.pixel =
+      getColor("black", &resource.color.toolbox_to.r,
+	       &resource.color.toolbox_to.g, &resource.color.toolbox_to.b);
   
   if (XrmGetResource(blackbox_database,
 		     "blackbox.window.focusColor",
@@ -1129,17 +1175,6 @@ void BlackboxSession::LoadDefaults(void) {
     resource.color.button_to.pixel =
       getColor("black", &resource.color.button_to.r,
 	       &resource.color.button_to.g, &resource.color.button_to.b);
-  
-  if (XrmGetResource(blackbox_database,
-		     "blackbox.session.iconColor",
-		     "Blackbox.Session.IconColor", &value_type, &value))
-    resource.color.icon.pixel =
-      getColor(value.addr, &resource.color.icon.r,
-	       &resource.color.icon.g, &resource.color.icon.b);
-  else
-    resource.color.icon.pixel =
-      getColor("black", &resource.color.icon.r,
-	       &resource.color.icon.g, &resource.color.icon.b);
   
   if (XrmGetResource(blackbox_database,
 		     "blackbox.menu.menuColor",
@@ -1586,7 +1621,6 @@ void BlackboxSession::parseSubMenu(FILE *menu_file, SessionMenu *menu) {
 
 
 void BlackboxSession::Reconfigure(void) {
-  rootmenu->hideMenu();
   LoadDefaults();
 
   XGCValues gcv;
@@ -1598,7 +1632,14 @@ void BlackboxSession::Reconfigure(void) {
   XChangeGC(display, opGC, GCForeground|GCFunction|GCSubwindowMode|GCFont,
 	    &gcv);
 
-
+  Bool m = rootmenu->menuVisible();
+  int x = rootmenu->X(), y = rootmenu->Y();
+  rootmenu->hideMenu();
   InitMenu();
+  if (m) {
+    rootmenu->moveMenu(x, y);
+    rootmenu->showMenu();
+  }
+
   ws_manager->Reconfigure();
 }

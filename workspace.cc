@@ -350,7 +350,7 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
 
   /*
     lets do something new with the Workspace Manager and create a kind of tool
-     bar that lives on the left side of the root window... and have it house
+     box that lives on the left side of the root window... and have it house
      the workspace manager menu (which in turn houses the workspace menus)
   */
 
@@ -385,9 +385,9 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
 
   BImage image(session, frame.frame_w, frame.frame_h, session->Depth(),
 	       session->frameColor());
-  Pixmap p = image.renderImage(session->frameTexture(), 1,
-			       session->frameColor(),
-			       session->frameToColor());
+  Pixmap p = image.renderImage(session->toolboxTexture(), 1,
+			       session->toolboxColor(),
+			       session->toolboxToColor());
 
   XSetWindowBackgroundPixmap(display, frame.window, p);
   if (p) XFreePixmap(display, p);
@@ -410,13 +410,13 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
   BImage bimage(session, frame.button_w, frame.button_h, session->Depth(),
 		session->buttonColor());
 
-  frame.button = bimage.renderImage(session->frameTexture(), 0,
-				    session->focusColor(),
-				    session->focusToColor());
+  frame.button = bimage.renderImage(session->buttonTexture(), 0,
+				    session->buttonColor(),
+				    session->buttonToColor());
 
-  frame.pbutton = bimage.renderInvertedImage(session->frameTexture(), 0,
-					     session->focusColor(),
-					     session->focusToColor());
+  frame.pbutton = bimage.renderInvertedImage(session->buttonTexture(), 0,
+					     session->buttonColor(),
+					     session->buttonToColor());
 
   XSetWindowBackgroundPixmap(display, frame.workspace_button, frame.button);
   
@@ -427,10 +427,11 @@ WorkspaceManager::WorkspaceManager(BlackboxSession *s, int c) {
   XSaveContext(display, frame.icon, session->wsContext(), (XPointer) this);
   
   BImage iimage(session, frame.button_w, (frame.frame_h / 2) - 4,
-		session->Depth(), session->iconColor());
+		session->Depth(), session->toolboxColor());
 
-  p = iimage.renderSolidImage(BlackboxSession::B_TextureSSolid, 0,
-			      session->iconColor());
+  p = iimage.renderInvertedImage(session->toolboxTexture(), 0,
+				 session->toolboxColor(),
+				 session->toolboxToColor());
   
   XSetWindowBackgroundPixmap(display, frame.icon, p);
   if (p) XFreePixmap(display, p);
@@ -505,10 +506,10 @@ void WorkspaceManager::arrangeIcons(void) {
   XGrabServer(display);
   for (i = 0; i < ilist->count(); ++i) {
     icon = ilist->at(i);
-    icon->move(4, (icon->Height() - 1) * (ilist->count() - (i + 1)) +
+    icon->move(4, (icon->Height()) * (ilist->count() - (i + 1)) +
 	       (frame.frame_h / 2) + 1);
     XMoveWindow(display, icon->iconWindow(), 1,
-		(icon->Height() - 1) * (ilist->count() - (i + 1)) + 1);
+		(icon->Height()) * (ilist->count() - (i + 1)) + 1);
     icon->exposeEvent(NULL);
   }
   
@@ -601,9 +602,9 @@ void WorkspaceManager::Reconfigure(void) {
 
   BImage image(session, frame.frame_w, frame.frame_h, session->Depth(),
 	       session->frameColor());
-  Pixmap p = image.renderImage(session->frameTexture(), 1,
-			       session->frameColor(),
-			       session->frameToColor());
+  Pixmap p = image.renderImage(session->toolboxTexture(), 1,
+			       session->toolboxColor(),
+			       session->toolboxToColor());
   
   XSetWindowBackgroundPixmap(display, frame.window, p);
   if (p) XFreePixmap(display, p);
@@ -614,22 +615,26 @@ void WorkspaceManager::Reconfigure(void) {
   BImage bimage(session, frame.button_w, frame.button_h, session->Depth(),
 		session->buttonColor());
 
-  frame.button = bimage.renderImage(session->frameTexture(), 0,
-				    session->focusColor(),
-				    session->focusToColor());
+  frame.button = bimage.renderImage(session->buttonTexture(), 0,
+				    session->buttonColor(),
+				    session->buttonToColor());
 
-  frame.pbutton = bimage.renderInvertedImage(session->frameTexture(), 0,
-					     session->focusColor(),
-					     session->focusToColor());
+  frame.pbutton = bimage.renderInvertedImage(session->buttonTexture(), 0,
+					     session->buttonColor(),
+					     session->buttonToColor());
 
-  XSetWindowBackgroundPixmap(display, frame.workspace_button, frame.button);
+  if (workspaces_menu->menuVisible())
+    XSetWindowBackgroundPixmap(display, frame.workspace_button, frame.pbutton);
+  else
+    XSetWindowBackgroundPixmap(display, frame.workspace_button, frame.button);
   
   BImage iimage(session, frame.button_w, (frame.frame_h / 2) - 4,
-		session->Depth(), session->iconColor());
+		session->Depth(), session->toolboxColor());
 
-  p = iimage.renderSolidImage(BlackboxSession::B_TextureSSolid, 0,
-				     session->iconColor());
-  
+  p = iimage.renderInvertedImage(session->toolboxTexture(), 0,
+				 session->toolboxColor(),
+				 session->toolboxToColor());
+
   XSetWindowBackgroundPixmap(display, frame.icon, p);
   if (p) XFreePixmap(display, p);
 

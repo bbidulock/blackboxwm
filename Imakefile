@@ -27,7 +27,8 @@ SRC =		blackbox.cc debug.cc graphics.cc icon.cc llist.cc main.cc \
 		menu.cc session.cc window.cc workspace.cc
 OBJ =		blackbox.o debug.o graphics.o icon.o main.o menu.o llist.o \
 		session.o window.o workspace.o
-EXTRA_DEFS =	-Wall -W -DSHAPE -DXAPPLOADDIR=\"$(XAPPLOADDIR)\" -DXLIBDIR=\"$(LIBDIR)\"
+EXTRA_DEFS =	-Wall -W -DSHAPE
+DEFAULTS_PATH =	-DXAPPLOADDIR=\"$(XAPPLOADDIR)\" -DXLIBDIR=\"$(LIBDIR)\"
 LIBS =		$(XLIB) $(EXTENSIONLIB)
 
 XCOMM
@@ -40,6 +41,10 @@ ComplexProgramTarget_1(blackbox, $(LIBS), $(OTHER_LIBS))
 
 .cc.o: $(SRC)
 	$(CXX) $(CXXFLAGS) $(EXTRA_DEFS) -c -o $@ $<
+
+session.o: session.cc
+	$(CXX) $(CXXFLAGS) $(EXTRA_DEFS) $(DEFAULTS_PATH) -c -o $@ $<
+
 XCOMM
 XCOMM Comment out the above and un-comment below to get debugging symbols
 XCOMM

@@ -257,12 +257,6 @@ int BlackboxMenu::insert(char *label, BlackboxMenu *submenu) {
 }
 
 
-int BlackboxMenu::remove(char *) {
-  // i hope i never need this function
-  return 0;
-}
-
-
 int BlackboxMenu::remove(int index) {
   debug->msg("removing item %d\n", index);
   BlackboxMenuItem *item = menuitems->at(index);
@@ -341,19 +335,27 @@ void BlackboxMenu::updateMenu(void) {
 
   for (i = 0; i < menuitems->count(); ++i) {
     itmp = menuitems->at(i);
-    if (which_sub == i)
+    if (which_sub == i) {
       XSetWindowBackgroundPixmap(display, itmp->window, menu.pushed_pixmap);
-    else
+      XMoveResizeWindow(display, itmp->window, 0, (i * (menu.item_h - 1)) +
+			((show_title) ? menu.title_h : 0) + i,
+			menu.width + 8, menu.item_h);
+      XClearWindow(display, itmp->window);
+      XDrawString(display, itmp->window, pitemGC, 4,
+		  session->menuFont()->ascent + 2,
+		  ((itmp->ulabel) ? *itmp->ulabel : itmp->label),
+		  strlen(((itmp->ulabel) ? *itmp->ulabel : itmp->label)));
+    } else {
       XSetWindowBackgroundPixmap(display, itmp->window, menu.item_pixmap);
-
-    XMoveResizeWindow(display, itmp->window, 0, (i * (menu.item_h - 1)) +
-		      ((show_title) ? menu.title_h : 0) + i,
-		      menu.width + 8, menu.item_h);
-    XClearWindow(display, itmp->window);
-    XDrawString(display, itmp->window, itemGC, 4,
-		session->menuFont()->ascent + 2,
-		((itmp->ulabel) ? *itmp->ulabel : itmp->label),
-		strlen(((itmp->ulabel) ? *itmp->ulabel : itmp->label)));
+      XMoveResizeWindow(display, itmp->window, 0, (i * (menu.item_h - 1)) +
+			((show_title) ? menu.title_h : 0) + i,
+			menu.width + 8, menu.item_h);
+      XClearWindow(display, itmp->window);
+      XDrawString(display, itmp->window, itemGC, 4,
+		  session->menuFont()->ascent + 2,
+		  ((itmp->ulabel) ? *itmp->ulabel : itmp->label),
+		  strlen(((itmp->ulabel) ? *itmp->ulabel : itmp->label)));
+    }
   }
 
   XMapSubwindows(display, menu.frame);
