@@ -2549,24 +2549,25 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
       }
     } else {
       int dx = me->x_root - frame.grab_x, dy = me->y_root - frame.grab_y;
-
+      unsigned int snap_w = frame.width + (frame.border_w * 2),
+        snap_h = ((flags.shaded) ? frame.title_h : frame.height)
+          + (frame.border_w * 2);
       dx -= frame.border_w;
       dy -= frame.border_w;
 
       if (screen->getEdgeSnapThreshold()) {
-        int drx = screen->getWidth() - (dx + frame.snap_w);
+        int drx = screen->getWidth() - (dx + snap_w);
 
         if (dx > 0 && dx < drx && dx < screen->getEdgeSnapThreshold()) dx = 0;
         else if (drx > 0 && drx < screen->getEdgeSnapThreshold())
-          dx = screen->getWidth() - frame.snap_w;
+          dx = screen->getWidth() - snap_w;
 
         int dtty, dbby, dty, dby;
         switch (screen->getToolbarPlacement()) {
         case Toolbar::TopLeft:
         case Toolbar::TopCenter:
         case Toolbar::TopRight:
-          dtty = screen->getToolbar()->getExposedHeight() +
-                 frame.border_w;
+          dtty = screen->getToolbar()->getExposedHeight() + frame.border_w;
           dbby = screen->getHeight();
           break;
 
@@ -2577,11 +2578,11 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
         }
 
         dty = dy - dtty;
-        dby = dbby - (dy + frame.snap_h);
+        dby = dbby - (dy + snap_h);
 
         if (dy > 0 && dty < screen->getEdgeSnapThreshold()) dy = dtty;
         else if (dby > 0 && dby < screen->getEdgeSnapThreshold())
-          dy = dbby - frame.snap_h;
+          dy = dbby - snap_h;
       }
 
       if (screen->doOpaqueMove()) {
@@ -2858,9 +2859,6 @@ void BlackboxWindow::upsize(void) {
 
   frame.width = client.width + (frame.mwm_border_w * 2);
   frame.height = frame.y_handle + frame.handle_h;
-
-  frame.snap_w = frame.width + (frame.border_w * 2);
-  frame.snap_h = frame.height + (frame.border_w * 2);
 }
 
 
@@ -2882,9 +2880,6 @@ void BlackboxWindow::downsize(void) {
     - frame.handle_h - (decorations.handle ? frame.border_w : 0);
 
   frame.y_handle = frame.border_h + frame.y_border + frame.border_w;
-
-  frame.snap_w = frame.width + (frame.border_w * 2);
-  frame.snap_h = frame.height + (frame.border_w * 2);
 }
 
 

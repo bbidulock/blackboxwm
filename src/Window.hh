@@ -194,7 +194,7 @@ private:
 
     unsigned int width, height, title_h, label_w, label_h, handle_h,
       button_w, button_h, grip_w, grip_h, mwm_border_w, border_h, border_w,
-      bevel_w, snap_w, snap_h;
+      bevel_w;
   } frame;
 
   BlackboxWindow(const BlackboxWindow&);
