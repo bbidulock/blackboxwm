@@ -75,7 +75,7 @@ void bt::bexec(const std::string& command, const std::string& displaystring) {
     exit(ret);
   }
 #else //   __EMX__
-  spawnlp(P_NOWAIT, "cmd.exe", "cmd.exe", "/c", command, NULL);
+  spawnlp(P_NOWAIT, "cmd.exe", "cmd.exe", "/c", command.c_str(), NULL);
 #endif // !__EMX__
 }
 
