@@ -219,12 +219,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     configureShape();
 #endif // SHAPE
 
-  if (blackbox_attrib.workspace >= screen->getWorkspaceCount())
-    screen->getCurrentWorkspace()->addWindow(this, place_window);
-  else
-    screen->getWorkspace(blackbox_attrib.workspace)->
-      addWindow(this, place_window);
-
   /*
     the server needs to be grabbed here to prevent client's from sending
     events while we are in the process of configuring their window.
@@ -236,6 +230,12 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   associateClientWindow();
 
   blackbox->saveWindowSearch(client.window, this);
+
+  if (blackbox_attrib.workspace >= screen->getWorkspaceCount())
+    screen->getCurrentWorkspace()->addWindow(this, place_window);
+  else
+    screen->getWorkspace(blackbox_attrib.workspace)->
+      addWindow(this, place_window);
 
   if (! place_window) {
     // don't need to call configure if we are letting the workspace
