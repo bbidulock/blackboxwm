@@ -190,16 +190,16 @@ private:
      * size and location of the box drawn while the window dimensions or
      * location is being changed, ie. resized or moved
      */
-    int changing_x, changing_y;
-    unsigned int changing_w, changing_h;
+    Rect changing;
 
-    Rect rect;                 // frame geometry
+    Rect rect;                  // frame geometry
+    NETStrut margin;            // margins between the frame and client
 
-    int grab_x, grab_y,         // where was the window when it was grabbed?
-      y_border, y_handle;      // where within frame is the border and handle
+    int grab_x, grab_y;         // where was the window when it was grabbed?
 
-    unsigned int title_h, label_w, label_h, handle_h,
-      button_w, button_h, grip_w, grip_h, mwm_border_w, border_h, border_w,
+    unsigned int inside_w, inside_h, // window w/h without border_w
+      title_h, label_w, label_h, handle_h,
+      button_w, button_h, grip_w, grip_h, mwm_border_w, border_w,
       bevel_w;
   } frame;
 
@@ -243,9 +243,9 @@ private:
   void setGravityOffsets(void);
   void setState(unsigned long new_state);
   void upsize(void);
-  void downsize(void);
-  void right_fixsize(int *gx = 0, int *gy = 0);
-  void left_fixsize(int *gx = 0, int *gy = 0);
+
+  enum Corner { TopLeft, TopRight };
+  void constrain(Corner anchor, int *pw = 0, int *ph = 0);
 
 public:
   BlackboxWindow(Blackbox *b, Window w, BScreen *s = (BScreen *) 0);

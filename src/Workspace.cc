@@ -433,10 +433,8 @@ Bool Workspace::smartPlacement(Rect& win, const Rect& availableArea) {
   for (; wit != end; ++wit) {
     const BlackboxWindow* const curr = *wit;
     Rect tmp(curr->frameRect().x(), curr->frameRect().y(),
-             curr->frameRect().width() + (screen->getBorderWidth() * 4),
-             (curr->isShaded() ?
-              curr->getTitleHeight() : curr->frameRect().height()) +
-             (screen->getBorderWidth() * 4));
+             curr->frameRect().width() + screen->getBorderWidth(),
+             curr->frameRect().height() + screen->getBorderWidth());
 
     spaces = calcSpace(tmp, spaces);
   }
@@ -517,8 +515,7 @@ Bool Workspace::cascadePlacement(Rect &win, const Rect &availableArea) {
 void Workspace::placeWindow(BlackboxWindow *win) {
   Rect availableArea(screen->availableArea()),
     new_win(availableArea.x(), availableArea.y(),
-            win->frameRect().width() + (screen->getBorderWidth() * 2),
-            win->frameRect().height() + (screen->getBorderWidth() * 2));
+            win->frameRect().width(), win->frameRect().height());
   Bool placed = False;
 
   switch (screen->getPlacementPolicy()) {
@@ -541,6 +538,5 @@ void Workspace::placeWindow(BlackboxWindow *win) {
   if (new_win.bottom() > availableArea.bottom())
     new_win.setY((availableArea.bottom() - new_win.height()) / 2);
 
-  win->configure(new_win.x(), new_win.y(),
-                 win->frameRect().width(), win->frameRect().height());
+  win->configure(new_win.x(), new_win.y(), new_win.width(), new_win.height());
 }
