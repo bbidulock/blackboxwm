@@ -149,8 +149,6 @@ private:
   std::string l, e;
   int f, enabled, selected;
 
-  friend class Basemenu;
-
 protected:
 
 public:
