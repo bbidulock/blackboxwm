@@ -1414,7 +1414,7 @@ BlackboxWindow *BlackboxWindow::readTransientInfo(void) {
   }
 
   BlackboxWindow *win = blackbox->findWindow(trans_for);
-  if ((!win || win->getScreen() != screen())
+  if ((!win || win->getScreen() != getScreen())
       && client.wmhints.window_group
       && trans_for == client.wmhints.window_group) {
     // no direct transient_for, perhaps this is a group transient?
@@ -1425,7 +1425,7 @@ BlackboxWindow *BlackboxWindow::readTransientInfo(void) {
 
   if (win) {
     // Transients must be on the same screen as their parent.
-    if (win && win->getScreen() != screen())
+    if (win && win->getScreen() != getScreen())
       return 0;
 
     /*
