@@ -688,6 +688,8 @@ void Slitmenu::itemSelected(int button, unsigned int index) {
     setItemSelected(3, slit->do_auto_hide);
 
     slit->updateStrut();
+
+    slit->timeout(); // hide or unhide self
     break;
   }
   } // switch

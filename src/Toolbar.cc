@@ -1022,6 +1022,8 @@ void Toolbarmenu::itemSelected(int button, unsigned int index) {
 
     toolbar->updateStrut();
     getScreen()->getSlit()->reposition();
+
+    toolbar->hide_handler.timeout();
     break;
   }
 
