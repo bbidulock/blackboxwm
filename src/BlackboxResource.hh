@@ -43,14 +43,7 @@ enum PlacementDirection { LeftRight = 403, RightLeft, TopBottom, BottomTop };
 
 class ScreenResource: public bt::NoCopy {
 public:
-  ScreenResource(void);
-  ~ScreenResource(void);
-
-  class WindowStyle {
-  public:
-    WindowStyle(void);
-    ~WindowStyle(void);
-
+  struct WindowStyle {
     struct {
       bt::Color text, foreground;
       bt::Texture title, label, button, handle, grip;
@@ -67,11 +60,7 @@ public:
     unsigned int title_height, label_height, button_width, grip_width;
   };
 
-  class ToolbarStyle {
-  public:
-    ToolbarStyle(void);
-    ~ToolbarStyle(void);
-
+  struct ToolbarStyle {
     bt::Bitmap left, right;
     bt::Color slabel_text, wlabel_text, clock_text, foreground;
     bt::Texture toolbar, slabel, wlabel, clock, button, pressed;
@@ -83,11 +72,7 @@ public:
     unsigned int toolbar_height, label_height, button_width, hidden_height;
   };
 
-  class SlitStyle {
-  public:
-    SlitStyle(void);
-    ~SlitStyle(void);
-
+  struct SlitStyle {
     bt::Texture slit;
     unsigned int margin;
   };

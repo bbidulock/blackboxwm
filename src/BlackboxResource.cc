@@ -170,16 +170,6 @@ void BlackboxResource::save(Blackbox& blackbox) {
 }
 
 
-ScreenResource::ScreenResource(void) { }
-ScreenResource::~ScreenResource(void) { }
-ScreenResource::WindowStyle::WindowStyle(void) { }
-ScreenResource::WindowStyle::~WindowStyle(void) { }
-ScreenResource::ToolbarStyle::ToolbarStyle(void) { }
-ScreenResource::ToolbarStyle::~ToolbarStyle(void) { }
-ScreenResource::SlitStyle::SlitStyle(void) { }
-ScreenResource::SlitStyle::~SlitStyle(void) { }
-
-
 void ScreenResource::save(bt::Resource& res, BScreen* screen) {
   char rc_string[128];
   char *placement = (char *) 0;
