@@ -966,7 +966,7 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
   KeySym sym = XKeycodeToKeysym(_app.XDisplay(), event->keycode, 0);
   switch (sym) {
   case XK_Escape: {
-    hideAll();
+    hide();
     return;
   }
 
