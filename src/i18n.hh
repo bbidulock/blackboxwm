@@ -1,4 +1,6 @@
+// -*- mode: C++; indent-tabs-mode: nil; -*-
 // i18n.hh for Blackbox - an X11 Window manager
+// Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -22,16 +24,16 @@
 #ifndef   __i18n_h
 #define   __i18n_h
 
-#ifdef    NLS
-#  include "../nls/blackbox-nls.hh"
-#endif // NLS
+// always include this just for the #defines
+// this keeps the calls to i18n->getMessage clean, otherwise we have to
+// add ifdefs to every call to getMessage
+#include "../nls/blackbox-nls.hh"
 
 #ifdef    HAVE_LOCALE_H
 #  include <locale.h>
 #endif // HAVE_LOCALE_H
 
 #ifdef    HAVE_NL_TYPES_H
-// this is needed for linux libc5 systems
 extern "C" {
 #  include <nl_types.h>
 }
@@ -41,28 +43,24 @@ extern "C" {
 class I18n {
 private:
   char *locale, *catalog_filename;
+  bool mb;
+#ifdef HAVE_NL_TYPES_H
   nl_catd catalog_fd;
-
-
-protected:
-
+#endif
 
 public:
   I18n(void);
   ~I18n(void);
 
-  inline const char *getLocale(void) const { return locale; }
-  inline const char *getCatalogFilename(void) const { return catalog_filename; }
+  inline bool multibyte(void) const { return mb; }
 
-  inline const nl_catd &getCatalogFd(void) const { return catalog_fd; }
-
-  const char *getMessage(int, int, const char * = 0);
-  void openCatalog(void);
+  const char *getMessage(int set, int msg, const char *msgString) const;
+  void openCatalog(const char *catalog);
 };
 
 
 extern I18n *i18n;
-extern void NLSInit(void);
+extern void NLSInit(const char *);
 
 
 

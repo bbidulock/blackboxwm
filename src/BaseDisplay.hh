@@ -1,5 +1,6 @@
+// -*- mode: C++; indent-tabs-mode: nil; -*-
 // BaseDisplay.hh for Blackbox - an X11 Window manager
-// Copyright (c) 2001 Sean 'Shaleh' Perry <shaleh@debian.org>
+// Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -68,7 +69,7 @@ void bexec(const char *, char *);
 #endif // !__EMX__
 
 
-class BaseDisplay {
+class BaseDisplay: public TimerQueueManager {
 private:
   struct cursor {
     Cursor session, move, ll_angle, lr_angle;
@@ -124,7 +125,7 @@ private:
   Bool _startup, _shutdown;
   Display *display;
   LinkedList<ScreenInfo> *screenInfoList;
-  LinkedList<BTimer> *timerList;
+  TimerQueue timerList;
 
   char *display_name, *application_name;
   int number_of_screens, colors_per_channel;
@@ -308,8 +309,10 @@ public:
       Window grab_window) const;
   
   void eventLoop(void);
-  void addTimer(BTimer *);
-  void removeTimer(BTimer *);
+
+  // from TimerQueueManager interface
+  virtual void addTimer(BTimer *timer);
+  virtual void removeTimer(BTimer *timer);
 
   // another pure virtual... this is used to handle signals that BaseDisplay
   // doesn't understand itself

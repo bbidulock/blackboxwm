@@ -1,3 +1,4 @@
+// -*- mode: C++; indent-tabs-mode: nil; -*-
 // Util.cc for Blackbox - an X11 Window manager
 // Copyright (c) 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
@@ -20,8 +21,27 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#ifdef    HAVE_CONFIG_H
+#  include "../config.h"
+#endif // HAVE_CONFIG_H
+
+#ifdef HAVE_STRING_H
 #include <string.h>
+#endif
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
+#ifdef    TIME_WITH_SYS_TIME
+#  include <sys/time.h>
+#  include <time.h> 
+#else // !TIME_WITH_SYS_TIME 
+#  ifdef    HAVE_SYS_TIME_H
+#    include <sys/time.h>
+#  else // !HAVE_SYS_TIME_H
+#    include <time.h>
+#  endif // HAVE_SYS_TIME_H
+#endif // TIME_WITH_SYS_TIME
+
 #include <string>
 using std::string;
 
@@ -42,4 +62,27 @@ char* bstrdup(const char *s) {
   char *n = new char[l];
   strcpy(n, s);
   return n;
+}
+
+
+timeval normalizeTimeval(const timeval &tm) {
+  timeval ret = tm;
+
+  while (ret.tv_usec < 0) {
+    if (ret.tv_sec > 0) {
+      --ret.tv_sec;
+      ret.tv_usec += 1000000;
+    } else {
+      ret.tv_usec = 0;
+    }
+  }
+
+  if (ret.tv_usec >= 1000000) {
+    ret.tv_sec += ret.tv_usec / 1000000;
+    ret.tv_usec %= 1000000;
+  }
+
+  if (ret.tv_sec < 0) ret.tv_sec = 0;
+
+  return ret;
 }

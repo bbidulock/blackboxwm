@@ -1,92 +1,108 @@
+// -*- mode: C++; indent-tabs-mode: nil; -*-
+// Rootmenu.cc for Blackbox - an X11 Window manager
+// Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
+// Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
-// Basemenu.cc for Blackbox - an X11 Window manager
-// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//
-// (See the included file COPYING / GPL-2.0)
-//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#ifdef    HAVE_CONFIG_H
+#  include "../config.h"
+#endif // HAVE_CONFIG_H
 
-#include "Rootmenu.hh"
 #include "blackbox.hh"
+#include "Rootmenu.hh"
+#include "Screen.hh"
 
-#include <stdio.h>
-#include <stdlib.h>
+#ifdef    HAVE_STDIO_H
+#  include <stdio.h>
+#endif // HAVE_STDIO_H
+
+#ifdef    STDC_HEADERS
+#  include <stdlib.h>
+#  include <string.h>
+#endif // STDC_HEADERS
+
+#ifdef    HAVE_SYS_PARAM_H
+#  include <sys/param.h>
+#endif // HAVE_SYS_PARAM_H
+
+#ifndef   MAXPATHLEN
+#define   MAXPATHLEN 255
+#endif // MAXPATHLEN
 
 
-Rootmenu::Rootmenu(Blackbox *bb) : Basemenu(bb) {
-  blackbox = bb;
-}
-
-
-Rootmenu::~Rootmenu(void) {
-
+Rootmenu::Rootmenu(BScreen *scrn) : Basemenu(scrn) {
+  screen = scrn;
+  blackbox = screen->getBlackbox();
 }
 
 
 void Rootmenu::itemSelected(int button, int index) {
-  if (button == 1) {
-    BasemenuItem *item = find(index);
+  if (button != 1)
+    return;
 
-    if (item->Function()) {
-      switch (item->Function()) {
-      case Blackbox::B_Execute: {
-	if (item->Exec()) {
-	  char *command = new char[strlen(item->Exec()) + 8];
-	  sprintf(command, "exec %s &", item->Exec());
-	  system(command);
-	  delete [] command;
-	}
-	
-	break; }
-      
-      case Blackbox::B_ExecReconfigure:
-	if (item->Exec()) {
-	  char *command = new char[strlen(item->Exec()) + 1];
-	  sprintf(command, "%s", item->Exec());
-	  system(command);
-	  delete [] command;
-	}
-	
-      case Blackbox::B_Reconfigure:
-	blackbox->Reconfigure();
-	break;
-	
-      case Blackbox::B_Restart:
-	blackbox->Restart();
-	break;
-	
-      case Blackbox::B_RestartOther:
-	if (item->Exec())
-	  blackbox->Restart(item->Exec());
+  BasemenuItem *item = find(index);
 
-	break;
-	
-      case Blackbox::B_Exit:
-	blackbox->Exit();
-	break;
-      }
-      
-      if (! blackbox->Menu()->userMoved() &&
-	  item->Function() != Blackbox::B_Reconfigure &&
-	  item->Function() != Blackbox::B_ExecReconfigure)
-	blackbox->Menu()->Hide();
+  if (!item->function())
+    return;
+
+  switch (item->function()) {
+  case BScreen::Execute:
+    if (item->exec()) {
+#ifndef    __EMX__
+      char displaystring[MAXPATHLEN];
+      sprintf(displaystring, "DISPLAY=%s",
+	      DisplayString(screen->getBaseDisplay()->getXDisplay()));
+      sprintf(displaystring + strlen(displaystring) - 1, "%d",
+	      screen->getScreenNumber());
+
+      bexec(item->exec(), displaystring);
+#else //   __EMX__
+      spawnlp(P_NOWAIT, "cmd.exe", "cmd.exe", "/c", item->exec(), NULL);
+#endif // !__EMX__
     }
+    break;
+
+  case BScreen::Restart:
+    blackbox->restart();
+    break;
+
+  case BScreen::RestartOther:
+    if (item->exec())
+      blackbox->restart(item->exec());
+    break;
+
+  case BScreen::Exit:
+    blackbox->shutdown();
+    break;
+
+  case BScreen::SetStyle:
+    if (item->exec())
+      blackbox->saveStyleFilename(item->exec());
+
+  case BScreen::Reconfigure:
+    blackbox->reconfigure();
+    return;
   }
+
+  if (! (screen->getRootmenu()->isTorn() || isTorn()) &&
+      item->function() != BScreen::Reconfigure &&
+      item->function() != BScreen::SetStyle)
+    hide();
 }

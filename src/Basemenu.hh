@@ -1,75 +1,116 @@
-//
+// -*- mode: C++; indent-tabs-mode: nil; -*-
 // Basemenu.hh for Blackbox - an X11 Window manager
-// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
+// Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
+// Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//
-// (See the included file COPYING / GPL-2.0)
-//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 
-#ifndef __Basemenu_hh
-#define __Basemenu_hh
+#ifndef   __Basemenu_hh
+#define   __Basemenu_hh
 
 #include <X11/Xlib.h>
 
-// forward declarations
+class Blackbox;
+class BImageControl;
+class BScreen;
 class Basemenu;
 class BasemenuItem;
-
-class Blackbox;
-
 #include "LinkedList.hh"
-#include "graphics.hh"
 
-// base menu class... it is inherited for sessions, windows, and workspaces
+
 class Basemenu {
 private:
   LinkedList<BasemenuItem> *menuitems;
   Blackbox *blackbox;
   Basemenu *parent;
+  BImageControl *image_ctrl;
+  BScreen *screen;
 
-  Bool moving, visible, movable, user_moved, default_menu, title_vis, shifted;
+  Bool moving, visible, movable, torn, internal_menu, title_vis, shifted,
+    hide_tree;
   Display *display;
-  GC titleGC, itemGC, hitemGC, hbgGC;
-  int which_sub, which_press, which_sbl;
+  int which_sub, which_press, which_sbl, alignment;
 
-  struct menu {
-    Pixmap iframe_pixmap;
-    Window frame, iframe, title;
+  struct _menu {
+    Pixmap frame_pixmap, title_pixmap, hilite_pixmap, sel_pixmap;
+    Window window, frame, title;
 
     char *label;
-    int x, y, x_move, y_move, x_shift, y_shift, sublevels, persub;
-    unsigned int width, height, title_h, iframe_h, item_w, item_h, bevel_w,
+    int x, y, x_move, y_move, x_shift, y_shift, sublevels, persub, minsub,
+      grab_x, grab_y;
+    unsigned int width, height, title_h, frame_h, item_w, item_h, bevel_w,
       bevel_h;
   } menu;
 
-  void drawSubmenu(int, Bool = False);
-  void drawItem(int, Bool = False, Bool = False);
-
 
 protected:
-  BasemenuItem *find(int index) { return menuitems->find(index); }
-  void setTitleVisibility(Bool b) { title_vis = b; }
-  void setMovable(Bool b) { movable = b; }
+  inline BasemenuItem *find(int index) { return menuitems->find(index); }
+  inline void setTitleVisibility(Bool b) { title_vis = b; }
+  inline void setMovable(Bool b) { movable = b; }
+  inline void setHideTree(Bool h) { hide_tree = h; }
+  inline void setMinimumSublevels(int m) { menu.minsub = m; }
 
   virtual void itemSelected(int, int) = 0;
+  virtual void drawItem(int, Bool = False, Bool = False,
+			int = -1, int = -1, unsigned int = 0,
+			unsigned int = 0);
+  virtual void redrawTitle();
+  virtual void internal_hide(void);
 
 
 public:
-  Basemenu(Blackbox *);
+  Basemenu(BScreen *);
   virtual ~Basemenu(void);
+
+  inline const Bool &isTorn(void) const { return torn; }
+  inline const Bool &isVisible(void) const { return visible; }
+
+  inline BScreen *getScreen(void) { return screen; }
+
+  inline const Window &getWindowID(void) const { return menu.window; }
+
+  inline const char *getLabel(void) const { return menu.label; }
+
+  int insert(const char *, int = 0, const char * = (const char *) 0, int = -1);
+  int insert(const char **, int = -1, int = 0);
+  int insert(const char *, Basemenu *, int = -1);
+  int remove(int);
+
+  inline const int &getX(void) const { return menu.x; }
+  inline const int &getY(void) const { return menu.y; }
+  inline int getCount(void) { return menuitems->count(); }
+  inline const int &getCurrentSubmenu(void) const { return which_sub; }
+
+  inline const unsigned int &getWidth(void) const { return menu.width; }
+  inline const unsigned int &getHeight(void) const { return menu.height; }
+  inline const unsigned int &getTitleHeight(void) const
+  { return menu.title_h; }
+
+  inline void setInternalMenu(void) { internal_menu = True; }
+  inline void setAlignment(int a) { alignment = a; }
+  inline void setTorn(void) { torn = True; }
+  inline void removeParent(void)
+    { if (internal_menu) parent = (Basemenu *) 0; }
+
+  Bool hasSubmenu(int);
+  Bool isItemSelected(int);
+  Bool isItemEnabled(int);
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);
@@ -77,65 +118,53 @@ public:
   void enterNotifyEvent(XCrossingEvent *);
   void leaveNotifyEvent(XCrossingEvent *);
   void exposeEvent(XExposeEvent *);
+  void reconfigure(void);
+  void setLabel(const char *n);
+  void move(int, int);
+  void update(void);
+  void setItemSelected(int, Bool);
+  void setItemEnabled(int, Bool);
 
-  void Reconfigure(void);
-  Bool hasSubmenu(int);
+  virtual void drawSubmenu(int);
+  virtual void show(void);
+  virtual void hide(void);
 
-  int insert(char *, int = 0, char * = 0);
-  int insert(char **);
-  int insert(char *, Basemenu *);
-  int remove(int);
-
-  Bool userMoved(void) { return user_moved; }
-  Window WindowID(void) { return menu.frame; }
-  unsigned int Width(void) { return menu.width; }
-  unsigned int Height(void) { return menu.height; }
-  unsigned int titleHeight(void) { return menu.title_h; }
-  int X(void) { return menu.x; }
-  int Y(void) { return menu.y; }
-  int Visible(void) { return visible; }
-  const char *Label(void) const { return menu.label; }
-  int Count(void) { return menuitems->count(); }
-  void setMenuLabel(char *n) { menu.label = n; }
-  void Show(void);
-  void Hide(void);
-  void Move(int, int);
-  void Update(void);
-  void defaultMenu(void) { default_menu = True; }
+  enum { AlignDontCare = 1, AlignTop, AlignBottom };
+  enum { Right = 1, Left };
+  enum { Empty = 0, Square, Triangle, Diamond };
 };
 
 
-// menu items held in the menus
 class BasemenuItem {
 private:
-  Basemenu *sub_menu;
-  char **ulabel, *label, *exec;
-  int function;
+  Basemenu *s;
+  const char **u, *l, *e;
+  int f, enabled, selected;
 
-  friend Basemenu;
-
+  friend class Basemenu;
 
 protected:
 
-
 public:
-  BasemenuItem(char *l, int f, char *e = 0)
-    { label = l; exec = e; sub_menu = 0; function = f; ulabel = 0; }
+  BasemenuItem(const char *lp, int fp, const char *ep = (const char *) 0):
+    s(0), u(0), l(lp), e(ep), f(fp), enabled(1), selected(0) {}
 
-  BasemenuItem(char *l, Basemenu *m)
-    { label = l; sub_menu = m; exec = 0; function = 0; ulabel = 0; }
+  BasemenuItem(const char *lp, Basemenu *mp): s(mp), u(0), l(lp), e(0), f(0),
+					      enabled(1), selected(0) {}
 
-  BasemenuItem(char **u)
-    { ulabel = u; label = 0; exec = 0; function = 0; sub_menu = 0; }
+  BasemenuItem(const char **up, int fp): s(0), u(up), l(0), e(0), f(fp),
+					 enabled(1), selected(0) {}
 
-  ~BasemenuItem(void)
-    { /* the item doesn't delete any data it holds */ }
+  inline const char *exec(void) const { return e; }
+  inline const char *label(void) const { return l; }
+  inline const char **ulabel(void) const { return u; }
+  inline const int &function(void) const { return f; }
+  inline Basemenu *submenu(void) { return s; }
 
-  char *Exec(void) { return exec; }
-  char *Label(void) { return label; }
-  char **ULabel(void) { return ulabel; }
-  int Function(void) { return function; }
-  Basemenu *Submenu(void) { return sub_menu; }
+  inline const int &isEnabled(void) const { return enabled; }
+  inline void setEnabled(int e) { enabled = e; }
+  inline const int &isSelected(void) const { return selected; }
+  inline void setSelected(int s) { selected = s; }
 };
 
 

@@ -1,5 +1,6 @@
+// -*- mode: C++; indent-tabs-mode: nil; -*-
 // Toolbar.cc for Blackbox - an X11 Window manager
-// Copyright (c) 2001 Sean 'Shaleh' Perry <shaleh@debian.org>
+// Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -19,12 +20,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-
-// stupid macros needed to access some functions in version 2 of the GNU C
-// library
-#ifndef   _GNU_SOURCE
-#define   _GNU_SOURCE
-#endif // _GNU_SOURCE
 
 #ifdef    HAVE_CONFIG_H
 #  include "../config.h"
@@ -76,12 +71,12 @@ Toolbar::Toolbar(BScreen *scrn) {
   timeval now;
   gettimeofday(&now, 0);
   clock_timer->setTimeout((60 - (now.tv_sec % 60)) * 1000);
+  clock_timer->recurring(True);
   clock_timer->start();
 
   hide_handler.toolbar = this;
   hide_timer = new BTimer(blackbox, &hide_handler);
   hide_timer->setTimeout(blackbox->getAutoRaiseDelay());
-  hide_timer->fireOnce(True);
 
   image_ctrl = screen->getImageControl();
 
@@ -844,8 +839,8 @@ void Toolbar::edit(void) {
   int foo;
 
   editing = True;
-  if (XGetInputFocus(display, &window, &foo) &&
-      window == frame.workspace_label)
+  XGetInputFocus(display, &window, &foo);
+  if (window == frame.workspace_label)
     return;
 
   XSetInputFocus(display, frame.workspace_label,

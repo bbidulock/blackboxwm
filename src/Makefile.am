@@ -26,7 +26,7 @@ CPPFLAGS= @CPPFLAGS@ @SHAPE@ @SLIT@ @INTERLACE@ @ORDEREDPSEUDO@ \
 @DEBUG@ @NEWWMSPEC@ @NLS@ @TIMEDCACHE@ \
 -DLOCALEPATH=\"$(pkgdatadir)/nls\" \
 -DDEFAULTMENU=\"$(DEFAULT_MENU)\" \
--DDEFAULTSTYLE=\"$(DEFAULT_STYLE)\"
+-DDEFAULTSTYLE=\"$(DEFAULT_STYLE)\" -Wall -W -pedantic -fno-exceptions
 
 bin_PROGRAMS= blackbox
 
@@ -76,7 +76,7 @@ Slit.o: Slit.cc i18n.hh blackbox.hh BaseDisplay.hh LinkedList.hh \
  Timer.hh Image.hh Window.hh Iconmenu.hh Basemenu.hh Windowmenu.hh Slit.hh \
  Screen.hh Configmenu.hh Netizen.hh Rootmenu.hh Workspace.hh \
  Workspacemenu.hh Toolbar.hh
-Timer.o: Timer.cc BaseDisplay.hh LinkedList.hh Timer.hh
+Timer.o: Timer.cc BaseDisplay.hh LinkedList.hh Timer.hh Util.hh
 Toolbar.o: Toolbar.cc i18n.hh blackbox.hh BaseDisplay.hh LinkedList.hh \
  Timer.hh Image.hh Window.hh Iconmenu.hh Basemenu.hh Windowmenu.hh Slit.hh \
  Clientmenu.hh Workspace.hh Rootmenu.hh Screen.hh Configmenu.hh \

@@ -17,6 +17,17 @@ Changes from 0.62.1:
   - applied a patch from the long lost in the tundra Brad.  This one's a doozy.
     * no more blackbox->grab/ungrab calls everywhere
     * compression of motion, expose, and configure events
+  - added a Util.cc file which contains expandTilde() and bstrdup().  Now we
+    have one function which turns ~/ into /home/user/.  This is now called
+    everywhere this expansion should be done.  Even added this to the
+    resource.menu_file so now the menu file may be specified as ~/blackbox_menu
+  - added a TimerQueue which is a priority_queue with the ability to release
+    items it contains before they reach the top of the queue.  Also added a
+    TimerQueueManager protocol class which BaseDisplay now inherits from.
+  - BTimer now defaults to NOT recurring.  Most of the timers in blackbox were
+    one shots so I saw little benefit in defaulting to repeating timers.
+  - added emacs local variables to each file that prevent the addition of tabs
+  - XGetInputFocus() is void yet we were using it in a if() test.
 
 Changes from 0.62.0 to 0.62.1:
   - the lock modifier code handles user redefined modifiers better
