@@ -2813,7 +2813,7 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const event) {
     bt::Pen pen(screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
     const int hw = frame.border_w / 2;
     pen.setGCFunction(GXxor);
-    pen.setLineWidth(frame.border_w);;
+    pen.setLineWidth(frame.border_w);
     pen.setSubWindowMode(IncludeInferiors);
     XDrawRectangle(blackbox->XDisplay(), screen->screenInfo().rootWindow(),
                    pen.gc(),
@@ -2900,7 +2900,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
         bt::Pen pen(screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
         const int hw = frame.border_w / 2;
         pen.setGCFunction(GXxor);
-        pen.setLineWidth(frame.border_w);;
+        pen.setLineWidth(frame.border_w);
         pen.setSubWindowMode(IncludeInferiors);
         XDrawRectangle(blackbox->XDisplay(), screen->screenInfo().rootWindow(),
                        pen.gc(),
@@ -2931,7 +2931,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
         bt::Pen pen(screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
         const int hw = frame.border_w / 2;
         pen.setGCFunction(GXxor);
-        pen.setLineWidth(frame.border_w);;
+        pen.setLineWidth(frame.border_w);
         pen.setSubWindowMode(IncludeInferiors);
         XDrawRectangle(blackbox->XDisplay(), screen->screenInfo().rootWindow(),
                        pen.gc(),
@@ -2981,7 +2981,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
       bt::Pen pen(screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
       const int hw = frame.border_w / 2;
       pen.setGCFunction(GXxor);
-      pen.setLineWidth(frame.border_w);;
+      pen.setLineWidth(frame.border_w);
       pen.setSubWindowMode(IncludeInferiors);
       XDrawRectangle(blackbox->XDisplay(), screen->screenInfo().rootWindow(),
                      pen.gc(),
@@ -3018,7 +3018,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
         bt::Pen pen(screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
         const int hw = frame.border_w / 2;
         pen.setGCFunction(GXxor);
-        pen.setLineWidth(frame.border_w);;
+        pen.setLineWidth(frame.border_w);
         pen.setSubWindowMode(IncludeInferiors);
         XDrawRectangle(blackbox->XDisplay(), screen->screenInfo().rootWindow(),
                        pen.gc(),
