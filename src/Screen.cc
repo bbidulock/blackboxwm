@@ -38,6 +38,7 @@
 #include <Pen.hh>
 #include <PixmapCache.hh>
 
+#include <X11/Xutil.h>
 #include <sys/stat.h>
 #include <assert.h>
 #include <ctype.h>

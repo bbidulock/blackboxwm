@@ -28,13 +28,12 @@
 #include "Window.hh"
 #include "Windowmenu.hh"
 #include "Workspacemenu.hh"
-#include "../nls/blackbox-nls.hh"
 
 #include <Menu.hh>
 #include <Pen.hh>
 #include <PixmapCache.hh>
-#include <i18n.hh>
 
+#include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <sys/time.h>
 #include <assert.h>
@@ -69,23 +68,30 @@ private:
 };
 
 
+enum {
+  Placement,
+  AlwaysOnTop,
+  AutoHide,
+  EditWorkspaceName
+};
+
 Toolbarmenu::Toolbarmenu(bt::Application &app, unsigned int screen,
                          Toolbar *toolbar)
-  : bt::Menu(app, screen), _toolbar(toolbar) {
+  : bt::Menu(app, screen), _toolbar(toolbar)
+{
   ToolbarPlacementmenu *menu = new ToolbarPlacementmenu(app, screen, toolbar);
-  insertItem(bt::i18n(CommonSet, CommonPlacementTitle, "Placement"), menu, 1u);
+  insertItem("Placement", menu, Placement);
   insertSeparator();
-  insertItem(bt::i18n(CommonSet, CommonAlwaysOnTop, "Always on top"), 2u);
-  insertItem(bt::i18n(CommonSet, CommonAutoHide, "Auto Hide"), 3u);
+  insertItem("Always on top", AlwaysOnTop);
+  insertItem("Auto Hide", AutoHide);
   insertSeparator();
-  insertItem(bt::i18n(ToolbarSet, ToolbarEditWkspcName,
-                      "Edit current workspace name"), 4u);
+  insertItem("Edit current workspace name", EditWorkspaceName);
 }
 
 
 void Toolbarmenu::refresh(void) {
-  setItemChecked(2u, _toolbar->isOnTop());
-  setItemChecked(3u, _toolbar->doAutoHide());
+  setItemChecked(AlwaysOnTop, _toolbar->isOnTop());
+  setItemChecked(AutoHide, _toolbar->doAutoHide());
 }
 
 
@@ -93,15 +99,15 @@ void Toolbarmenu::itemClicked(unsigned int id, unsigned int button) {
   if (button != 1) return;
 
   switch (id) {
-  case 2u: // always on top
+  case AlwaysOnTop:
     _toolbar->toggleOnTop();
     break;
 
-  case 3u: // auto hide
+  case AutoHide:
     _toolbar->toggleAutoHide();
     break;
 
-  case 4u:
+  case EditWorkspaceName:
     _toolbar->edit();
     break;
 
@@ -114,20 +120,15 @@ void Toolbarmenu::itemClicked(unsigned int id, unsigned int button) {
 ToolbarPlacementmenu::ToolbarPlacementmenu(bt::Application &app,
                                            unsigned int screen,
                                            Toolbar *toolbar)
-  : bt::Menu(app, screen), _toolbar(toolbar) {
-  insertItem(bt::i18n(CommonSet, CommonPlacementTopLeft,
-                      "Top Left"), Toolbar::TopLeft);
-  insertItem(bt::i18n(CommonSet, CommonPlacementTopCenter,
-                      "Top Center"), Toolbar::TopCenter);
-  insertItem(bt::i18n(CommonSet, CommonPlacementTopRight,
-                      "Top Right"), Toolbar::TopRight);
+  : bt::Menu(app, screen), _toolbar(toolbar)
+{
+  insertItem("Top Left",      Toolbar::TopLeft);
+  insertItem("Top Center",    Toolbar::TopCenter);
+  insertItem("Top Right",     Toolbar::TopRight);
   insertSeparator();
-  insertItem(bt::i18n(CommonSet, CommonPlacementBottomLeft,
-                      "Bottom Left"), Toolbar::BottomLeft);
-  insertItem(bt::i18n(CommonSet, CommonPlacementBottomCenter,
-                      "Bottom Center"), Toolbar::BottomCenter);
-  insertItem(bt::i18n(CommonSet, CommonPlacementBottomRight,
-                      "Bottom Right"), Toolbar::BottomRight);
+  insertItem("Bottom Left",   Toolbar::BottomLeft);
+  insertItem("Bottom Center", Toolbar::BottomCenter);
+  insertItem("Bottom Right",  Toolbar::BottomRight);
 }
 
 
@@ -691,76 +692,76 @@ void Toolbar::edit(void) {
 }
 
 
-void Toolbar::buttonPressEvent(const XButtonEvent *be) {
-  if (be->button == 1) {
-    if (be->window == frame.psbutton)
+void Toolbar::buttonPressEvent(const XButtonEvent * const event) {
+  if (event->button == 1) {
+    if (event->window == frame.psbutton)
       redrawPrevWorkspaceButton(True);
-    else if (be->window == frame.nsbutton)
+    else if (event->window == frame.nsbutton)
       redrawNextWorkspaceButton(True);
-    else if (be->window == frame.pwbutton)
+    else if (event->window == frame.pwbutton)
       redrawPrevWindowButton(True);
-    else if (be->window == frame.nwbutton)
+    else if (event->window == frame.nwbutton)
       redrawNextWindowButton(True);
     else if (! isOnTop()) {
       WindowStack w;
       w.push_back(frame.window);
       _screen->raiseWindows(&w);
     }
-  } else if (be->button == 2 && (! isOnTop())) {
+  } else if (event->button == 2 && (! isOnTop())) {
     XLowerWindow(display, frame.window);
-  } else if (be->button == 3) {
+  } else if (event->button == 3) {
     BlackboxWindow *win = blackbox->getFocusedWindow();
-    if (be->window == frame.window_label
+    if (event->window == frame.window_label
         && win && win->getScreen() == _screen) {
       Windowmenu *windowmenu = _screen->windowmenu(win);
-      windowmenu->popup(be->x_root, be->y_root,
+      windowmenu->popup(event->x_root, event->y_root,
                         _screen->availableArea());
     } else {
-      toolbarmenu->popup(be->x_root, be->y_root,
+      toolbarmenu->popup(event->x_root, event->y_root,
                          _screen->availableArea());
     }
   }
 }
 
 
-void Toolbar::buttonReleaseEvent(const XButtonEvent *re) {
-  if (re->button == 1) {
-    if (re->window == frame.psbutton) {
+void Toolbar::buttonReleaseEvent(const XButtonEvent * const event) {
+  if (event->button == 1) {
+    if (event->window == frame.psbutton) {
       redrawPrevWorkspaceButton(False);
 
-      if (bt::within(re->x, re->y, frame.button_w, frame.button_w)) {
+      if (bt::within(event->x, event->y, frame.button_w, frame.button_w)) {
         if (_screen->currentWorkspace() > 0)
           _screen->setCurrentWorkspace(_screen->currentWorkspace() - 1);
         else
           _screen->setCurrentWorkspace(_screen->resource().
                                        numberOfWorkspaces() - 1);
       }
-    } else if (re->window == frame.nsbutton) {
+    } else if (event->window == frame.nsbutton) {
       redrawNextWorkspaceButton(False);
 
-      if (bt::within(re->x, re->y, frame.button_w, frame.button_w))
+      if (bt::within(event->x, event->y, frame.button_w, frame.button_w))
         if (_screen->currentWorkspace() <
             _screen->resource().numberOfWorkspaces() - 1)
           _screen->setCurrentWorkspace(_screen->currentWorkspace() + 1);
         else
           _screen->setCurrentWorkspace(0);
-    } else if (re->window == frame.pwbutton) {
+    } else if (event->window == frame.pwbutton) {
       redrawPrevWindowButton(False);
 
-      if (bt::within(re->x, re->y, frame.button_w, frame.button_w))
+      if (bt::within(event->x, event->y, frame.button_w, frame.button_w))
         _screen->prevFocus();
-    } else if (re->window == frame.nwbutton) {
+    } else if (event->window == frame.nwbutton) {
       redrawNextWindowButton(False);
 
-      if (bt::within(re->x, re->y, frame.button_w, frame.button_w))
+      if (bt::within(event->x, event->y, frame.button_w, frame.button_w))
         _screen->nextFocus();
-    } else if (re->window == frame.window_label)
+    } else if (event->window == frame.window_label)
       _screen->raiseFocus();
   }
 }
 
 
-void Toolbar::enterNotifyEvent(const XCrossingEvent *) {
+void Toolbar::enterNotifyEvent(const XCrossingEvent * const /*unused*/) {
   if (! doAutoHide())
     return;
 
@@ -771,7 +772,7 @@ void Toolbar::enterNotifyEvent(const XCrossingEvent *) {
   }
 }
 
-void Toolbar::leaveNotifyEvent(const XCrossingEvent *) {
+void Toolbar::leaveNotifyEvent(const XCrossingEvent * const /*unused*/) {
   if (! doAutoHide())
     return;
 
@@ -783,18 +784,18 @@ void Toolbar::leaveNotifyEvent(const XCrossingEvent *) {
 }
 
 
-void Toolbar::exposeEvent(const XExposeEvent *ee) {
-  if (ee->window == frame.clock) redrawClockLabel();
-  else if (ee->window == frame.workspace_label && (! editing))
+void Toolbar::exposeEvent(const XExposeEvent * const event) {
+  if (event->window == frame.clock) redrawClockLabel();
+  else if (event->window == frame.workspace_label && (! editing))
     redrawWorkspaceLabel();
-  else if (ee->window == frame.window_label) redrawWindowLabel();
-  else if (ee->window == frame.psbutton) redrawPrevWorkspaceButton();
-  else if (ee->window == frame.nsbutton) redrawNextWorkspaceButton();
-  else if (ee->window == frame.pwbutton) redrawPrevWindowButton();
-  else if (ee->window == frame.nwbutton) redrawNextWindowButton();
-  else if (ee->window == frame.window) {
+  else if (event->window == frame.window_label) redrawWindowLabel();
+  else if (event->window == frame.psbutton) redrawPrevWorkspaceButton();
+  else if (event->window == frame.nsbutton) redrawNextWorkspaceButton();
+  else if (event->window == frame.pwbutton) redrawPrevWindowButton();
+  else if (event->window == frame.nwbutton) redrawNextWindowButton();
+  else if (event->window == frame.window) {
     bt::Rect t(0, 0, frame.rect.width(), frame.rect.height());
-    bt::Rect r(ee->x, ee->y, ee->width, ee->height);
+    bt::Rect r(event->x, event->y, event->width, event->height);
     bt::drawTexture(_screen->screenNumber(),
                     _screen->resource().toolbarStyle()->toolbar,
                     frame.window, t, r & t, frame.base);
@@ -802,8 +803,8 @@ void Toolbar::exposeEvent(const XExposeEvent *ee) {
 }
 
 
-void Toolbar::keyPressEvent(const XKeyEvent *ke) {
-  if (ke->window == frame.workspace_label && editing) {
+void Toolbar::keyPressEvent(const XKeyEvent * const event) {
+  if (event->window == frame.workspace_label && editing) {
     if (new_workspace_name.empty())
       new_name_pos = 0;
 
@@ -812,7 +813,7 @@ void Toolbar::keyPressEvent(const XKeyEvent *ke) {
 
     KeySym ks;
     char keychar[1];
-    XLookupString(const_cast<XKeyEvent*>(ke), keychar, 1, &ks, 0);
+    XLookupString(const_cast<XKeyEvent*>(event), keychar, 1, &ks, 0);
 
     // either we are told to end with a return or we hit 127 chars
     if (ks == XK_Return || new_name_pos == 127) {
@@ -911,14 +912,13 @@ void Toolbar::timeout(bt::Timer *timer) {
 
 
 void Toolbar::toggleAutoHide(void) {
-  bool do_auto_hide = doAutoHide();
-  do_auto_hide = ! do_auto_hide;
+  bool do_auto_hide = !doAutoHide();
 
   updateStrut();
   if (_screen->slit())
     _screen->slit()->reposition();
 
-  if (do_auto_hide == False && hidden) {
+  if (!do_auto_hide && hidden) {
     // force the toolbar to be visible
     if (hide_timer->isTiming()) hide_timer->stop();
     hide_timer->fireTimeout();
@@ -929,11 +929,10 @@ void Toolbar::toggleAutoHide(void) {
 
 
 void Toolbar::toggleOnTop(void) {
-  bool on_top = isOnTop();
-  on_top = ! on_top;
-  if (on_top) _screen->raiseWindows((WindowStack *) 0);
-  _screen->resource().saveSlitOnTop(on_top);
+  _screen->resource().saveSlitOnTop(!isOnTop());
   _screen->saveResource();
+  if (isOnTop())
+    _screen->raiseWindows((WindowStack *) 0);
 }
 
 

@@ -25,27 +25,25 @@
 #ifndef   __Slit_hh
 #define   __Slit_hh
 
-extern "C" {
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-}
+#include <Util.hh>
+
+#include "BlackboxResource.hh"
+#include "Screen.hh"
 
 #include <list>
-
-#include "Screen.hh"
-#include "BlackboxResource.hh"
-#include "Util.hh"
 
 // forward declaration
 class Slitmenu;
 
 
 class Slit : public bt::TimeoutHandler, public bt::EventHandler,
-             public bt::NoCopy {
+             public bt::NoCopy
+{
 public:
   struct SlitClient {
-    Window window, client_window, icon_window;
-
+    Window window;
+    Window client_window;
+    Window icon_window;
     bt::Rect rect;
   };
 
@@ -109,11 +107,11 @@ public:
   void toggleAutoHide(void);
 
   // EventHandler interface
-  void buttonPressEvent(const XButtonEvent * const e);
+  void buttonPressEvent(const XButtonEvent * const event);
   void enterNotifyEvent(const XCrossingEvent * const /*unused*/);
   void leaveNotifyEvent(const XCrossingEvent * const /*unused*/);
-  void configureRequestEvent(const XConfigureRequestEvent * const e);
-  void unmapNotifyEvent(const XUnmapEvent * const e);
+  void configureRequestEvent(const XConfigureRequestEvent * const event);
+  void unmapNotifyEvent(const XUnmapEvent * const event);
   void reparentNotifyEvent(const XReparentEvent * const event);
 
   virtual void timeout(bt::Timer *);

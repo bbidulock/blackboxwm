@@ -25,13 +25,10 @@
 #ifndef   __Toolbar_hh
 #define   __Toolbar_hh
 
-extern "C" {
-#include <X11/Xlib.h>
-}
+#include <Timer.hh>
+#include <Util.hh>
 
 #include "Screen.hh"
-#include "Timer.hh"
-#include "Util.hh"
 
 // forward declaration
 class Toolbarmenu;
@@ -92,12 +89,12 @@ public:
   unsigned int getExposedHeight(void) const
   { return ((doAutoHide()) ? frame.bevel_w : frame.rect.height()); }
 
-  void buttonPressEvent(const XButtonEvent *be);
-  void buttonReleaseEvent(const XButtonEvent *re);
-  void enterNotifyEvent(const XCrossingEvent * /*unused*/);
-  void leaveNotifyEvent(const XCrossingEvent * /*unused*/);
-  void exposeEvent(const XExposeEvent *ee);
-  void keyPressEvent(const XKeyEvent *ke);
+  void buttonPressEvent(const XButtonEvent * const event);
+  void buttonReleaseEvent(const XButtonEvent * const event);
+  void enterNotifyEvent(const XCrossingEvent * const /*unused*/);
+  void leaveNotifyEvent(const XCrossingEvent * const /*unused*/);
+  void exposeEvent(const XExposeEvent * const event);
+  void keyPressEvent(const XKeyEvent * const event);
 
   void edit(void);
   void reconfigure(void);
