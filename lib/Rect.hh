@@ -83,6 +83,8 @@ namespace bt {
     bool intersects(const Rect &a) const;
     bool contains(int x_, int y_) const;
 
+    Rect inside(const Rect &a) const;
+
   private:
     int _x1, _y1, _x2, _y2;
   };
