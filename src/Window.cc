@@ -738,15 +738,9 @@ void BlackboxWindow::positionButtons(bool redecorate_label) {
 void BlackboxWindow::reconfigure(void) {
   upsize();
 
-  client.rect.setPos(frame.rect.left() + frame.margin.left,
-                     frame.rect.top() + frame.margin.top);
-
   positionWindows();
   decorate();
   redrawWindowFrame();
-
-  configure(frame.rect.x(), frame.rect.y(),
-            frame.rect.width(), frame.rect.height());
 
   if (windowmenu) {
     windowmenu->move(windowmenu->getX(), frame.rect.y() + frame.title_h);
@@ -785,7 +779,6 @@ void BlackboxWindow::positionWindows(void) {
                         frame.rect.top() + frame.margin.top,
                         frame.rect.right() - frame.margin.right,
                         frame.rect.bottom() - frame.margin.bottom);
-
 
   if (decorations & Decor_Titlebar) {
     if (frame.title == None) createTitlebar();
@@ -1224,8 +1217,6 @@ BlackboxWindow *BlackboxWindow::getTransientFor(void) const {
  * rectangles.
  * According to the ICCCM a client message is not sent for a resize, only a
  * move.
- * N.B. it is important that this function always update the client.rect, this
- * is basically the only external interface to this rectangle.
  */
 void BlackboxWindow::configure(int dx, int dy,
                                unsigned int dw, unsigned int dh) {
