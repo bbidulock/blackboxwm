@@ -38,9 +38,20 @@
 class BScreen;
 class Blackbox;
 
-enum PlacementPolicy { RowSmartPlacement = 400, ColSmartPlacement,
-                       CascadePlacement };
-enum PlacementDirection { LeftRight = 403, RightLeft, TopBottom, BottomTop };
+enum FocusModel {
+  SloppyFocusModel,
+  ClickToFocusModel
+};
+
+enum WindowPlacementPolicy {
+  RowSmartPlacement = 400,
+  ColSmartPlacement,
+  CascadePlacement,
+  LeftRight,
+  RightLeft,
+  TopBottom,
+  BottomTop
+};
 
 class ScreenResource: public bt::NoCopy {
 public:
@@ -90,26 +101,21 @@ public:
   inline const SlitStyle *slitStyle(void) const
   { return &slit_style; }
 
+  // screen options
   unsigned int numberOfWorkspaces(void) const { return workspace_count;   }
   bool allowScrollLock(void) const            { return allow_scroll_lock; }
   const std::string& rootCommand(void) const  { return root_command;      }
   const bt::ustring &nameOfWorkspace(unsigned int i) const;
 
-  bool isSloppyFocus(void) const        { return wconfig.sloppy_focus;  }
-  bool doAutoRaise(void) const          { return wconfig.auto_raise;    }
-  bool doClickRaise(void) const         { return wconfig.click_raise;   }
-  bool doOpaqueMove(void) const         { return wconfig.opaque_move;   }
-  bool doOpaqueResize(void) const       { return wconfig.opaque_resize; }
-  bool doFullMax(void) const            { return wconfig.full_max;      }
-  bool placementIgnoresShaded(void) const
-  { return wconfig.ignore_shaded; }
-  bool doFocusNew(void) const           { return wconfig.focus_new;     }
-  bool doFocusLast(void) const          { return wconfig.focus_last;    }
-  int placementPolicy(void) const       { return wconfig.placement_policy; }
-  unsigned int edgeSnapThreshold(void) const
-  { return wconfig.edge_snap_threshold; }
-  int rowPlacementDirection(void) const { return wconfig.row_direction; }
-  int colPlacementDirection(void) const { return wconfig.col_direction; }
+  void saveWorkspaces(unsigned int w)      { workspace_count = w;   }
+  void saveAllowScrollLock(bool a)         { allow_scroll_lock = a; }
+  void saveWorkspaceName(unsigned int w, const bt::ustring &name);
+
+  // toolbar options
+  inline bool isToolbarEnabled(void) const
+  { return enable_toolbar; }
+  inline void setToolbarEnabled(bool b)
+  { enable_toolbar = b; }
 
   bool isToolbarOnTop(void) const     { return tconfig.on_top;        }
   bool doToolbarAutoHide(void) const  { return tconfig.auto_hide;     }
@@ -119,21 +125,6 @@ public:
   const char* strftimeFormat(void) const
   { return tconfig.strftime_format.c_str(); }
 
-  bool isSlitOnTop(void) const    { return sconfig.on_top;    }
-  bool doSlitAutoHide(void) const { return sconfig.auto_hide; }
-  int slitPlacement(void) const   { return sconfig.placement; }
-  int slitDirection(void) const   { return sconfig.direction; }
-
-  // store functions
-  void saveWorkspaces(unsigned int w)      { workspace_count = w;   }
-  void saveAllowScrollLock(bool a)         { allow_scroll_lock = a; }
-  void saveWorkspaceName(unsigned int w, const bt::ustring &name);
-
-  void saveSlitPlacement(int i) { sconfig.placement = i; }
-  void saveSlitDirection(int i) { sconfig.direction = i; }
-  void saveSlitOnTop(bool b)    { sconfig.on_top = b;    }
-  void saveSlitAutoHide(bool b) { sconfig.auto_hide = b; }
-
   void saveToolbarOnTop(bool b)       { tconfig.on_top = b;          }
   void saveToolbarAutoHide(bool b)    { tconfig.auto_hide = b;       }
   void saveToolbarWidthPercent(unsigned int i) { tconfig.width_percent = i; }
@@ -141,38 +132,18 @@ public:
   void saveStrftimeFormat(const std::string& f)
   { tconfig.strftime_format = f; }
 
-  void saveOpaqueMove(bool o)             { wconfig.opaque_move = o;         }
-  void saveOpaqueResize(bool o)           { wconfig.opaque_resize = o;       }
-  void saveFullMax(bool f)                { wconfig.full_max = f;            }
-  void saveFocusNew(bool f)               { wconfig.focus_new = f;           }
-  void saveFocusLast(bool f)              { wconfig.focus_last = f;          }
-  void saveSloppyFocus(bool s)            { wconfig.sloppy_focus = s;        }
-  void saveAutoRaise(bool a)              { wconfig.auto_raise = a;          }
-  void saveClickRaise(bool c)             { wconfig.click_raise = c;         }
-  void savePlacementPolicy(PlacementPolicy p)
-  { wconfig.placement_policy = p;    }
-  void saveRowPlacementDirection(PlacementDirection d)
-  { wconfig.row_direction = d;       }
-  void saveColPlacementDirection(PlacementDirection d)
-  { wconfig.col_direction = d;       }
-  void savePlacementIgnoresShaded(bool f) { wconfig.ignore_shaded = f;       }
-  void saveEdgeSnapThreshold(unsigned int t)
-  { wconfig.edge_snap_threshold = t; }
+  // slit options
+  bool isSlitOnTop(void) const    { return sconfig.on_top;    }
+  bool doSlitAutoHide(void) const { return sconfig.auto_hide; }
+  int slitPlacement(void) const   { return sconfig.placement; }
+  int slitDirection(void) const   { return sconfig.direction; }
 
-  inline bool isToolbarEnabled(void) const
-  { return enable_toolbar; }
-  inline void setToolbarEnabled(bool b)
-  { enable_toolbar = b; }
+  void saveSlitPlacement(int i) { sconfig.placement = i; }
+  void saveSlitDirection(int i) { sconfig.direction = i; }
+  void saveSlitOnTop(bool b)    { sconfig.on_top = b;    }
+  void saveSlitAutoHide(bool b) { sconfig.auto_hide = b; }
 
 private:
-  struct WindowConfig {
-    bool sloppy_focus, auto_raise, opaque_move, opaque_resize, full_max,
-      ignore_shaded, focus_new, focus_last, click_raise;
-    unsigned int edge_snap_threshold;
-    PlacementPolicy placement_policy;
-    PlacementDirection row_direction, col_direction;
-  };
-
   struct ToolbarConfig {
     bool on_top, auto_hide;
     int placement;
@@ -186,7 +157,6 @@ private:
   };
 
   WindowStyle wstyle;
-  WindowConfig wconfig;
   ToolbarStyle toolbar_style;
   ToolbarConfig tconfig;
   SlitStyle slit_style;
@@ -212,6 +182,19 @@ private:
   std::string menu_file, style_file, rc_file;
   Time double_click_interval;
   bt::timeval auto_raise_delay;
+
+  FocusModel focus_model;
+  int window_placement_policy;
+  int row_direction, col_direction;
+  bool ignore_shaded;
+  bool auto_raise;
+  bool click_raise;
+  bool opaque_move;
+  bool opaque_resize;
+  bool full_max;
+  bool focus_new_windows;
+  bool focus_last_window_on_workspace;
+  unsigned int edge_snap_threshold;
 
 public:
   BlackboxResource(const std::string& rc);
@@ -246,10 +229,78 @@ public:
   inline void saveStyleFilename(const std::string& name)
   { style_file = name; }
 
-  inline const Time& doubleClickInterval(void) const
+  inline Time doubleClickInterval(void) const
   { return double_click_interval; }
   inline const bt::timeval& autoRaiseDelay(void) const
   { return auto_raise_delay; }
+
+  // window focus model
+  inline FocusModel focusModel(void) const
+  { return focus_model; }
+  inline void setFocusModel(FocusModel fm)
+  { focus_model = fm; }
+
+  inline bool autoRaise(void) const
+  { return auto_raise; }
+  inline void setAutoRaise(bool b = true)
+  { auto_raise = b; }
+
+  inline bool clickRaise(void) const
+  { return click_raise; }
+  inline void setClickRaise(bool b = true)
+  { click_raise = b; }
+
+  // window placement
+  inline int windowPlacementPolicy(void) const
+  { return window_placement_policy; }
+  inline void setWindowPlacementPolicy(int p)
+  { window_placement_policy = p;    }
+
+  inline int rowPlacementDirection(void) const
+  { return row_direction; }
+  inline void setRowPlacementDirection(int d)
+  { row_direction = d; }
+
+  inline int colPlacementDirection(void) const
+  { return col_direction; }
+  inline void setColPlacementDirection(int d)
+  { col_direction = d;       }
+
+  inline bool placementIgnoresShaded(void) const
+  { return ignore_shaded; }
+  inline void setPlacementIgnoresShaded(bool f)
+  { ignore_shaded = f; }
+
+  // other window options
+  inline bool opaqueMove(void) const
+  { return opaque_move; }
+  inline void setOpaqueMove(bool b = true)
+  { opaque_move = b; }
+
+  inline bool opaqueResize(void) const
+  { return opaque_resize; }
+  inline void setOpaqueResize(bool b = true)
+  { opaque_resize = b; }
+
+  inline bool fullMaximization(void) const
+  { return full_max; }
+  inline void setFullMaximization(bool b = true)
+  { full_max = b; }
+
+  inline bool focusNewWindows(void) const
+  { return focus_new_windows; }
+  inline void setFocusNewWindows(bool b = true)
+  { focus_new_windows = b; }
+
+  inline bool focusLastWindowOnWorkspace(void) const
+  { return focus_last_window_on_workspace; }
+  inline void setFocusLastWindowOnWorkspace(bool b = true)
+  { focus_last_window_on_workspace = b; }
+
+  inline unsigned int edgeSnapThreshold(void) const
+  { return edge_snap_threshold; }
+  inline void setEdgeSnapThreshold(unsigned int t)
+  { edge_snap_threshold = t; }
 };
 
 #endif

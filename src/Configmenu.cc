@@ -127,48 +127,55 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
 
 
 void Configmenu::refresh(void) {
-  ScreenResource& res = _bscreen->resource();
-  setItemChecked(OpaqueWindowMoving, res.doOpaqueMove());
-  setItemChecked(OpaqueWindowResizing, res.doOpaqueResize());
-  setItemChecked(FullMaximization, res.doFullMax());
-  setItemChecked(FocusNewWindows, res.doFocusNew());
-  setItemChecked(FocusLastWindowOnWorkspace, res.doFocusLast());
-  setItemChecked(DisableBindings, res.allowScrollLock());
+  const BlackboxResource &res = _bscreen->blackbox()->resource();
+  setItemChecked(OpaqueWindowMoving, res.opaqueMove());
+  setItemChecked(OpaqueWindowResizing, res.opaqueResize());
+  setItemChecked(FullMaximization, res.fullMaximization());
+  setItemChecked(FocusNewWindows, res.focusNewWindows());
+  setItemChecked(FocusLastWindowOnWorkspace, res.focusLastWindowOnWorkspace());
+
+  const ScreenResource &sres = _bscreen->resource();
+  setItemChecked(DisableBindings, sres.allowScrollLock());
 }
 
 
 void Configmenu::itemClicked(unsigned int id, unsigned int) {
-  ScreenResource& res = _bscreen->resource();
+  BlackboxResource &res = _bscreen->blackbox()->resource();
   switch (id) {
   case OpaqueWindowMoving: // opaque move
-    res.saveOpaqueMove(! res.doOpaqueMove());
+    res.setOpaqueMove(!res.opaqueMove());
     break;
 
   case OpaqueWindowResizing:
-    res.saveOpaqueResize(!res.doOpaqueResize());
+    res.setOpaqueResize(!res.opaqueResize());
     break;
 
   case FullMaximization: // full maximization
-    res.saveFullMax(! res.doFullMax());
+    res.setFullMaximization(!res.fullMaximization());
     break;
 
   case FocusNewWindows: // focus new windows
-    res.saveFocusNew(! res.doFocusNew());
+    res.setFocusNewWindows(!res.focusNewWindows());
     break;
 
   case FocusLastWindowOnWorkspace: // focus last window on workspace
-    res.saveFocusLast(! res.doFocusLast());
+    res.setFocusLastWindowOnWorkspace(!res.focusLastWindowOnWorkspace());
     break;
 
-  case DisableBindings: // disable keybindings with Scroll Lock
-    res.saveAllowScrollLock(! res.allowScrollLock());
-    _bscreen->reconfigure();
-    break;
+  case DisableBindings:
+    {
+      // disable keybindings with Scroll Lock
+      ScreenResource &sres = _bscreen->resource();
+      sres.saveAllowScrollLock(!sres.allowScrollLock());
+      _bscreen->reconfigure();
+      break;
+    }
 
   default:
     return;
   } // switch
-  _bscreen->saveResource();
+
+  res.save(*_bscreen->blackbox());
 }
 
 
@@ -187,43 +194,43 @@ ConfigFocusmenu::ConfigFocusmenu(bt::Application &app, unsigned int screen,
 
 
 void ConfigFocusmenu::refresh(void) {
-  ScreenResource& res = _bscreen->resource();
+  const BlackboxResource &res = _bscreen->blackbox()->resource();
 
-  setItemChecked(ClickToFocus, !res.isSloppyFocus());
-  setItemChecked(SloppyFocus, res.isSloppyFocus());
+  setItemChecked(ClickToFocus, res.focusModel() == ClickToFocusModel);
+  setItemChecked(SloppyFocus, res.focusModel() == SloppyFocusModel);
 
-  setItemEnabled(AutoRaise, res.isSloppyFocus());
-  setItemChecked(AutoRaise, res.doAutoRaise());
+  setItemEnabled(AutoRaise, res.focusModel() == SloppyFocusModel);
+  setItemChecked(AutoRaise, res.autoRaise());
 
-  setItemEnabled(ClickRaise, res.isSloppyFocus());
-  setItemChecked(ClickRaise, res.doClickRaise());
+  setItemEnabled(ClickRaise, res.focusModel() == SloppyFocusModel);
+  setItemChecked(ClickRaise, res.clickRaise());
 }
 
 
 void ConfigFocusmenu::itemClicked(unsigned int id, unsigned int) {
-  ScreenResource& res = _bscreen->resource();
+  BlackboxResource &res = _bscreen->blackbox()->resource();
   switch (id) {
   case ClickToFocus:
-    _bscreen->toggleFocusModel(BScreen::ClickToFocus);
+    _bscreen->toggleFocusModel(ClickToFocusModel);
     break;
 
   case SloppyFocus:
-    _bscreen->toggleFocusModel(BScreen::SloppyFocus);
+    _bscreen->toggleFocusModel(SloppyFocusModel);
     break;
 
   case AutoRaise: // auto raise with sloppy focus
-    res.saveAutoRaise(!res.doAutoRaise());
+    res.setAutoRaise(!res.autoRaise());
     break;
 
   case ClickRaise: // click raise with sloppy focus
-    res.saveClickRaise(!res.doClickRaise());
+    res.setClickRaise(!res.clickRaise());
     // make sure the appropriate mouse buttons are grabbed on the windows
-    _bscreen->toggleFocusModel(BScreen::SloppyFocus);
+    _bscreen->toggleFocusModel(SloppyFocusModel);
     break;
 
   default: return;
   } // switch
-  _bscreen->saveResource();
+  res.save(*_bscreen->blackbox());
 }
 
 
@@ -253,10 +260,10 @@ ConfigPlacementmenu::ConfigPlacementmenu(bt::Application &app,
 
 
 void ConfigPlacementmenu::refresh(void) {
-  ScreenResource& res = _bscreen->resource();
-  bool rowsmart = res.placementPolicy() == RowSmartPlacement,
-       colsmart = res.placementPolicy() == ColSmartPlacement,
-        cascade = res.placementPolicy() == CascadePlacement,
+  const BlackboxResource &res = _bscreen->blackbox()->resource();
+  bool rowsmart = res.windowPlacementPolicy() == RowSmartPlacement,
+       colsmart = res.windowPlacementPolicy() == ColSmartPlacement,
+        cascade = res.windowPlacementPolicy() == CascadePlacement,
              rl = res.rowPlacementDirection() == LeftRight,
              tb = res.colPlacementDirection() == TopBottom;
 
@@ -282,38 +289,32 @@ void ConfigPlacementmenu::refresh(void) {
 
 
 void ConfigPlacementmenu::itemClicked(unsigned int id, unsigned int) {
-  ScreenResource& res = _bscreen->resource();
+  BlackboxResource &res = _bscreen->blackbox()->resource();
   switch (id) {
   case RowSmartPlacement:
   case ColSmartPlacement:
-  case CascadePlacement: {
-    PlacementPolicy p = static_cast<PlacementPolicy>(id);
-    res.savePlacementPolicy(p);
-  }
+  case CascadePlacement:
+    res.setWindowPlacementPolicy(id);
     break;
 
   case LeftRight:
-  case RightLeft: {
-    PlacementDirection d = static_cast<PlacementDirection>(id);
-    res.saveRowPlacementDirection(d);
-  }
+  case RightLeft:
+    res.setRowPlacementDirection(id);
     break;
 
   case TopBottom:
-  case BottomTop: {
-    PlacementDirection d = static_cast<PlacementDirection>(id);
-    res.saveColPlacementDirection(d);
-  }
+  case BottomTop:
+    res.setColPlacementDirection(id);
     break;
 
   case IgnoreShadedWindows:
-    res.savePlacementIgnoresShaded(! res.placementIgnoresShaded());
+    res.setPlacementIgnoresShaded(! res.placementIgnoresShaded());
     break;
 
   default:
     return;
   } // switch
-  _bscreen->saveResource();
+  res.save(*_bscreen->blackbox());
 }
 
 
@@ -342,5 +343,5 @@ void ConfigDithermenu::refresh(void) {
 
 void ConfigDithermenu::itemClicked(unsigned int id, unsigned int) {
   bt::Image::setDitherMode((bt::DitherMode) id);
-  _bscreen->saveResource();
+  _bscreen->blackbox()->resource().save(*_bscreen->blackbox());
 }

@@ -1657,8 +1657,8 @@ void BlackboxWindow::reconfigure(void) {
 
 
 void BlackboxWindow::grabButtons(void) {
-  if (! _screen->resource().isSloppyFocus() ||
-      _screen->resource().doClickRaise())
+  if (blackbox->resource().focusModel() == ClickToFocusModel
+      || blackbox->resource().clickRaise())
     // grab button 1 for changing focus/raising
     blackbox->grabButton(Button1, 0, frame.plate, True, ButtonPressMask,
                          GrabModeSync, GrabModeSync, frame.plate, None,
@@ -3240,7 +3240,7 @@ void BlackboxWindow::enterNotifyEvent(const XCrossingEvent * const event) {
   if (event->window != frame.window || event->mode != NotifyNormal)
     return;
 
-  if (!_screen->resource().isSloppyFocus() || !isVisible())
+  if (blackbox->resource().focusModel() == ClickToFocusModel || !isVisible())
     return;
 
   switch (windowType()) {
@@ -3267,15 +3267,15 @@ void BlackboxWindow::enterNotifyEvent(const XCrossingEvent * const event) {
   if ((! leave || inferior) && ! isFocused())
     (void) setInputFocus();
 
-  if (_screen->resource().doAutoRaise())
+  if (blackbox->resource().autoRaise())
     timer->start();
 }
 
 
 void
 BlackboxWindow::leaveNotifyEvent(const XCrossingEvent * const /*unused*/) {
-  if (! (_screen->resource().isSloppyFocus() &&
-         _screen->resource().doAutoRaise()))
+  if (!(blackbox->resource().focusModel() == SloppyFocusModel
+        && blackbox->resource().autoRaise()))
     return;
 
   if (timer->isTiming())
@@ -3368,7 +3368,7 @@ void BlackboxWindow::startMove() {
 
   client.state.moving = true;
 
-  if (! _screen->resource().doOpaqueMove()) {
+  if (! blackbox->resource().opaqueMove()) {
     blackbox->XGrabServer();
 
     frame.changing = frame.rect;
@@ -3421,17 +3421,17 @@ void collisionAdjust(int* x, int* y, unsigned int width, unsigned int height,
 
 void BlackboxWindow::continueMove(int x_root, int y_root) {
   int dx = x_root - frame.grab_x, dy = y_root - frame.grab_y;
-  const int snap_distance = _screen->resource().edgeSnapThreshold();
+  const int snap_distance = blackbox->resource().edgeSnapThreshold();
 
   if (snap_distance) {
     collisionAdjust(&dx, &dy, frame.rect.width(), frame.rect.height(),
                     _screen->availableArea(), snap_distance);
-    if (! _screen->resource().doFullMax())
+    if (!blackbox->resource().fullMaximization())
       collisionAdjust(&dx, &dy, frame.rect.width(), frame.rect.height(),
                       _screen->screenInfo().rect(), snap_distance);
   }
 
-  if (_screen->resource().doOpaqueMove()) {
+  if (blackbox->resource().opaqueMove()) {
     configure(dx, dy, frame.rect.width(), frame.rect.height());
   } else {
     bt::Pen pen(_screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
@@ -3465,7 +3465,7 @@ void BlackboxWindow::finishMove() {
 
   client.state.moving = false;
 
-  if (!_screen->resource().doOpaqueMove()) {
+  if (!blackbox->resource().opaqueMove()) {
     bt::Pen pen(_screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
     const int bw = frame.style->frame_border_width, hw = bw / 2;
     pen.setGCFunction(GXxor);
@@ -3502,7 +3502,7 @@ void BlackboxWindow::startResize(Window window) {
       frame.corner = TopLeft;
   }
 
-  Cursor cursor;
+  Cursor cursor = None;
   switch (frame.corner) {
   case TopLeft:
     cursor = blackbox->resource().resizeBottomRightCursor();
@@ -3532,7 +3532,7 @@ void BlackboxWindow::startResize(Window window) {
   frame.changing = constrain(frame.rect, frame.margin, client.wmnormal,
                              Corner(frame.corner));
 
-  if (!_screen->resource().doOpaqueResize()) {
+  if (!blackbox->resource().opaqueResize()) {
     blackbox->XGrabServer();
 
     bt::Pen pen(_screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
@@ -3607,7 +3607,7 @@ void BlackboxWindow::continueResize(int x_root, int y_root) {
                              Corner(frame.corner));
 
   if (curr != frame.changing) {
-    if (_screen->resource().doOpaqueResize()) {
+    if (blackbox->resource().opaqueResize()) {
       configure(frame.changing);
     } else {
       bt::Pen pen(_screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
@@ -3642,7 +3642,7 @@ void BlackboxWindow::finishResize() {
 
   client.state.resizing = false;
 
-  if (!_screen->resource().doOpaqueResize()) {
+  if (!blackbox->resource().opaqueResize()) {
     bt::Pen pen(_screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
     const int bw = frame.style->frame_border_width, hw = bw / 2;
     pen.setGCFunction(GXxor);

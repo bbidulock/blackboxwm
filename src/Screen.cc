@@ -523,7 +523,8 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
         win->show();
     }
 
-    if (_resource.doFocusLast()
+    const BlackboxResource &res = _blackbox->resource();
+    if (res.focusLastWindowOnWorkspace()
         && (!focused_window
             || focused_window->workspace() != bt::BSENTINEL
             // these window types shouldn't keep focus
@@ -577,7 +578,7 @@ void BScreen::addWindow(Window w) {
   default:
     if (!_blackbox->startingUp() &&
         (!_blackbox->activeScreen() || _blackbox->activeScreen() == this) &&
-        (win->isTransient() || resource().doFocusNew())) {
+        (win->isTransient() || _blackbox->resource().focusNewWindows())) {
       XSync(_blackbox->XDisplay(), False); // make sure the frame is mapped..
       win->setInputFocus();
       break;
@@ -1562,7 +1563,7 @@ void BScreen::updateStrut(void) {
 
 
 const bt::Rect& BScreen::availableArea(void) {
-  if (_resource.doFullMax())
+  if (_blackbox->resource().fullMaximization())
     return screen_info.rect(); // return the full screen
   return usableArea;
 }
@@ -1682,13 +1683,7 @@ void BScreen::toggleFocusModel(FocusModel model) {
   std::for_each(windowList.begin(), windowList.end(),
                 std::mem_fun(&BlackboxWindow::ungrabButtons));
 
-  if (model == SloppyFocus) {
-    _resource.saveSloppyFocus(True);
-  } else {
-    _resource.saveSloppyFocus(False);
-    _resource.saveAutoRaise(False);
-    _resource.saveClickRaise(False);
-  }
+  _blackbox->resource().setFocusModel(model);
 
   std::for_each(windowList.begin(), windowList.end(),
                 std::mem_fun(&BlackboxWindow::grabButtons));
@@ -1852,7 +1847,8 @@ void BScreen::placeWindow(BlackboxWindow *win) {
                    win->frameRect().width(), win->frameRect().height());
   bool placed = False;
 
-  switch (_resource.placementPolicy()) {
+  BlackboxResource &res = _blackbox->resource();
+  switch (res.windowPlacementPolicy()) {
   case RowSmartPlacement:
   case ColSmartPlacement:
     placed = smartPlacement(win->workspace(), new_win, avail);
@@ -1906,13 +1902,14 @@ bool BScreen::cascadePlacement(bt::Rect &win,
 bool BScreen::smartPlacement(unsigned int workspace, bt::Rect& rect,
                              const bt::Rect& avail) {
   // constants
+  const BlackboxResource &res = _blackbox->resource();
   const bool row_placement =
-    (_resource.placementPolicy() == RowSmartPlacement);
+    (res.windowPlacementPolicy() == RowSmartPlacement);
   const bool leftright =
-    (_resource.rowPlacementDirection() == LeftRight);
+    (res.rowPlacementDirection() == LeftRight);
   const bool topbottom =
-    (_resource.colPlacementDirection() == TopBottom);
-  const bool ignore_shaded = _resource.placementIgnoresShaded();
+    (res.colPlacementDirection() == TopBottom);
+  const bool ignore_shaded = res.placementIgnoresShaded();
 
   const int left_border   = leftright ? 0 : -2;
   const int top_border    = topbottom ? 0 : -2;

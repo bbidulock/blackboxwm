@@ -119,7 +119,6 @@ private:
 public:
   enum { Restart = 1, RestartOther, Exit, Shutdown, Execute, Reconfigure,
          SetStyle };
-  enum FocusModel { SloppyFocus, ClickToFocus };
 
   BScreen(Blackbox *bb, unsigned int scrn);
   ~BScreen(void);

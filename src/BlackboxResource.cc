@@ -104,23 +104,22 @@ void BlackboxResource::load(Blackbox& blackbox) {
   auto_raise_delay.tv_usec *= 1000;
 
   bt::DitherMode dither_mode;
-  std::string tmp = res.read("session.imageDither", "Session.ImageDither",
-                             "OrderedDither");
-  if (!strcasecmp("ordered", tmp.c_str()) ||
-      !strcasecmp("fast", tmp.c_str()) ||
-      !strcasecmp("ordereddither", tmp.c_str()) ||
-      !strcasecmp("fastdither", tmp.c_str())) {
+  std::string str = res.read("session.imageDither", "Session.ImageDither",
+                             "OrderedDither"); if (!strcasecmp("ordered", str.c_str()) ||
+      !strcasecmp("fast", str.c_str()) ||
+      !strcasecmp("ordereddither", str.c_str()) ||
+      !strcasecmp("fastdither", str.c_str())) {
     dither_mode = bt::OrderedDither;
-  } else if (!strcasecmp("floydsteinberg", tmp.c_str()) ||
-             !strcasecmp("quality", tmp.c_str()) ||
-             !strcasecmp("diffuse", tmp.c_str()) ||
-             !strcasecmp("floydsteinbergdither", tmp.c_str()) ||
-             !strcasecmp("qualitydither", tmp.c_str()) ||
-             !strcasecmp("diffusedither", tmp.c_str())) {
+  } else if (!strcasecmp("floydsteinberg", str.c_str()) ||
+             !strcasecmp("quality", str.c_str()) ||
+             !strcasecmp("diffuse", str.c_str()) ||
+             !strcasecmp("floydsteinbergdither", str.c_str()) ||
+             !strcasecmp("qualitydither", str.c_str()) ||
+             !strcasecmp("diffusedither", str.c_str())) {
     dither_mode = bt::FloydSteinbergDither;
-  } else if (!strcasecmp("no", tmp.c_str()) ||
-             !strcasecmp("nodither", tmp.c_str()) ||
-             !strcasecmp("off", tmp.c_str())) {
+  } else if (!strcasecmp("no", str.c_str()) ||
+             !strcasecmp("nodither", str.c_str()) ||
+             !strcasecmp("off", str.c_str())) {
     dither_mode = bt::NoDither;
   } else {
     dither_mode = bt::OrderedDither;
@@ -137,6 +136,70 @@ void BlackboxResource::load(Blackbox& blackbox) {
     XCreateFontCursor(blackbox.XDisplay(), XC_top_right_corner);
   cursor.resize_bottom_right =
     XCreateFontCursor(blackbox.XDisplay(), XC_bottom_right_corner);
+
+  // window options
+  str = res.read("session.focusModel", "Session.FocusModel", "SloppyFocus");
+  if (str.find("ClickToFocus") != std::string::npos) {
+    focus_model = ClickToFocusModel;
+    auto_raise = false;
+    click_raise = false;
+  } else {
+    focus_model = SloppyFocusModel;
+    auto_raise = (str.find("AutoRaise") != std::string::npos);
+    click_raise = (str.find("ClickRaise") != std::string::npos);
+  }
+
+  str = res.read("session.windowPlacement",
+                 "Session.WindowPlacement",
+                 "RowSmartPlacement");
+  if (strcasecmp(str.c_str(), "ColSmartPlacement") == 0)
+    window_placement_policy = ColSmartPlacement;
+  else if (strcasecmp(str.c_str(), "CascadePlacement") == 0)
+    window_placement_policy = CascadePlacement;
+  else
+    window_placement_policy = RowSmartPlacement;
+
+  str = res.read("session.rowPlacementDirection",
+                 "Session.RowPlacementDirection",
+                 "lefttoright");
+  row_direction =
+    (strcasecmp(str.c_str(), "righttoleft") == 0) ? RightLeft : LeftRight;
+
+  str = res.read("session.colPlacementDirection",
+                 "Session.ColPlacementDirection",
+                 "toptobottom");
+  col_direction =
+    (strcasecmp(str.c_str(), "bottomtotop") == 0) ? BottomTop : TopBottom;
+
+  ignore_shaded =
+    res.read("session.placementIgnoresShaded",
+             "Session.placementIgnoresShaded",
+             true);
+
+  opaque_move =
+    res.read("session.opaqueMove",
+             "Session.OpaqueMove",
+             false);
+  opaque_resize =
+    res.read("session.opaqueResize",
+             "Session.OpaqueResize",
+             false);
+  full_max =
+    res.read("session.fullMaximization",
+             "Session.FullMaximization",
+             false);
+  focus_new_windows =
+    res.read("session.focusNewWindows",
+             "Session.FocusNewWindows",
+             false);
+  focus_last_window_on_workspace =
+    res.read("session.focusLastWindow",
+             "Session.focusLastWindow",
+             false);
+  edge_snap_threshold =
+    res.read("session.edgeSnapThreshold",
+             "Session.EdgeSnapThreshold",
+             0);
 
   for (unsigned int i = 0; i < blackbox.screenCount(); ++i)
     screen_resources[i].load(res, i);
@@ -157,13 +220,60 @@ void BlackboxResource::save(Blackbox& blackbox) {
   res.write("session.autoRaiseDelay", ((auto_raise_delay.tv_sec * 1000ul) +
                                        (auto_raise_delay.tv_usec / 1000ul)));
 
-  const char* tmp;
+  std::string str;
   switch (bt::Image::ditherMode()) {
-  case bt::OrderedDither:        tmp = "OrderedDither";        break;
-  case bt::FloydSteinbergDither: tmp = "FloydSteinbergDither"; break;
-  default:                       tmp = "NoDither";             break;
+  case bt::OrderedDither:        str = "OrderedDither";        break;
+  case bt::FloydSteinbergDither: str = "FloydSteinbergDither"; break;
+  default:                       str = "NoDither";             break;
   }
-  res.write("session.imageDither", tmp);
+  res.write("session.imageDither", str);
+
+  // window options
+  switch (focus_model) {
+  case SloppyFocusModel:
+  default:
+    str = "SloppyFocus";
+    if (auto_raise)
+      str += " AutoRaise";
+    if (click_raise)
+      str += " ClickRaise";
+    break;
+  case ClickToFocusModel:
+    str = "ClickToFocus";
+    break;
+  }
+  res.write("session.focusModel", str);
+
+  switch (window_placement_policy) {
+  case CascadePlacement:
+    str = "CascadePlacement";
+    break;
+  case ColSmartPlacement:
+    str = "ColSmartPlacement";
+    break;
+  case RowSmartPlacement:
+  default:
+    str = "RowSmartPlacement";
+    break;
+  }
+  res.write("session.windowPlacement", str);
+  res.write("session.rowPlacementDirection",
+            (row_direction == LeftRight)
+            ? "LeftToRight"
+            : "RightToLeft");
+  res.write("session.colPlacementDirection",
+            (col_direction == TopBottom)
+            ? "TopToBottom"
+            : "BottomToTop");
+
+  res.write("session.placementIgnoresShaded", ignore_shaded);
+
+  res.write("session.opaqueMove", opaque_move);
+  res.write("session.opaqueResize", opaque_resize);
+  res.write("session.fullMaximization", full_max);
+  res.write("session.focusNewWindows", focus_new_windows);
+  res.write("session.focusLastWindow", focus_last_window_on_workspace);
+  res.write("session.edgeSnapThreshold", edge_snap_threshold);
 
   for (unsigned int i = 0; i < blackbox.screenCount(); ++i)
     screen_resources[i].save(res, blackbox.screenNumber(i));
@@ -201,24 +311,6 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
   sprintf(rc_string, "session.screen%u.slit.autoHide", number);
   res.write(rc_string, sconfig.auto_hide);
 
-  sprintf(rc_string, "session.screen%u.placementIgnoresShaded", number);
-  res.write(rc_string, wconfig.ignore_shaded);
-
-  sprintf(rc_string, "session.screen%u.fullMaximization", number);
-  res.write(rc_string, wconfig.full_max);
-
-  sprintf(rc_string, "session.screen%u.focusNewWindows", number);
-  res.write(rc_string, wconfig.focus_new);
-
-  sprintf(rc_string, "session.screen%u.focusLastWindow", number);
-  res.write(rc_string, wconfig.focus_last);
-
-  sprintf(rc_string, "session.screen%u.opaqueMove", number);
-  res.write(rc_string, wconfig.opaque_move);
-
-  sprintf(rc_string, "session.screen%u.opaqueResize", number);
-  res.write(rc_string, wconfig.opaque_resize);
-
   sprintf(rc_string, "session.screen%u.disableBindingsWithScrollLock",
 	  number);
   res.write(rc_string, allow_scroll_lock);
@@ -226,42 +318,6 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
   sprintf(rc_string,  "session.screen%u.enableToolbar", number);
   res.write(rc_string, enable_toolbar);
 
-  sprintf(rc_string, "session.screen%u.rowPlacementDirection", number);
-  res.write(rc_string,
-            (wconfig.row_direction == LeftRight) ? "LeftToRight" :
-                                                   "RightToLeft");
-
-  sprintf(rc_string, "session.screen%u.colPlacementDirection", number);
-  res.write(rc_string,
-            (wconfig.col_direction == TopBottom) ? "TopToBottom" :
-                                                   "BottomToTop");
-
-  switch (wconfig.placement_policy) {
-  case CascadePlacement:
-    placement = "CascadePlacement";
-    break;
-  case ColSmartPlacement:
-    placement = "ColSmartPlacement";
-    break;
-  case RowSmartPlacement:
-  default:
-    placement = "RowSmartPlacement";
-    break;
-  }
-  sprintf(rc_string, "session.screen%u.windowPlacement", number);
-  res.write(rc_string, placement);
-
-  std::string fmodel;
-  if (! wconfig.sloppy_focus) {
-    fmodel = "ClickToFocus";
-  } else {
-    fmodel = "SloppyFocus";
-    if (wconfig.auto_raise) fmodel += " AutoRaise";
-    if (wconfig.click_raise) fmodel += " ClickRaise";
-  }
-
-  sprintf(rc_string, "session.screen%u.focusModel", number);
-  res.write(rc_string, fmodel.c_str());
 
   sprintf(rc_string, "session.screen%u.workspaces", number);
   res.write(rc_string, workspace_count);
@@ -300,9 +356,6 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
   sprintf(rc_string, "session.screen%u.strftimeFormat", number);
   res.write(rc_string, tconfig.strftime_format.c_str());
 
-  sprintf(rc_string, "session.screen%u.edgeSnapThreshold", number);
-  res.write(rc_string, wconfig.edge_snap_threshold);
-
   sprintf(rc_string, "session.screen%u.toolbar.widthPercent", number);
   res.write(rc_string, tconfig.width_percent);
 }
@@ -310,95 +363,25 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
 
 void ScreenResource::load(bt::Resource& res, unsigned int screen) {
   char name_lookup[128], class_lookup[128];
-
-  // window settings and behavior
-
-  sprintf(name_lookup,  "session.screen%u.placementIgnoresShaded", screen);
-  sprintf(class_lookup, "Session.screen%u.placementIgnoresShaded", screen);
-  wconfig.ignore_shaded = res.read(name_lookup, class_lookup, true);
-
-  sprintf(name_lookup,  "session.screen%u.fullMaximization", screen);
-  sprintf(class_lookup, "Session.screen%u.FullMaximization", screen);
-  wconfig.full_max = res.read(name_lookup, class_lookup, false);
-
-  sprintf(name_lookup,  "session.screen%u.focusNewWindows", screen);
-  sprintf(class_lookup, "Session.screen%u.FocusNewWindows", screen);
-  wconfig.focus_new = res.read(name_lookup, class_lookup, false);
-
-  sprintf(name_lookup,  "session.screen%u.focusLastWindow", screen);
-  sprintf(class_lookup, "Session.screen%u.focusLastWindow", screen);
-  wconfig.focus_last = res.read(name_lookup, class_lookup, false);
-
-  std::string tmp;
-
-  sprintf(name_lookup,  "session.screen%u.rowPlacementDirection", screen);
-  sprintf(class_lookup, "Session.screen%u.RowPlacementDirection", screen);
-  tmp = res.read(name_lookup, class_lookup, "lefttoright");
-  wconfig.row_direction =
-    (strcasecmp(tmp.c_str(), "righttoleft") == 0) ? RightLeft : LeftRight;
-
-  sprintf(name_lookup,  "session.screen%u.colPlacementDirection", screen);
-  sprintf(class_lookup, "Session.screen%u.ColPlacementDirection", screen);
-  tmp = res.read(name_lookup, class_lookup, "toptobottom");
-  wconfig.col_direction =
-    (strcasecmp(tmp.c_str(), "bottomtotop") == 0) ? BottomTop : TopBottom;
-
-  sprintf(name_lookup,  "session.screen%u.windowPlacement", screen);
-  sprintf(class_lookup, "Session.screen%u.WindowPlacement", screen);
-  tmp = res.read(name_lookup, class_lookup, "RowSmartPlacement");
-  if (strcasecmp(tmp.c_str(), "ColSmartPlacement") == 0)
-    wconfig.placement_policy = ColSmartPlacement;
-  else if (strcasecmp(tmp.c_str(), "CascadePlacement") == 0)
-    wconfig.placement_policy = CascadePlacement;
-  else
-    wconfig.placement_policy = RowSmartPlacement;
-
-  sprintf(name_lookup,  "session.screen%u.focusModel", screen);
-  sprintf(class_lookup, "Session.screen%u.FocusModel", screen);
-  wconfig.sloppy_focus = True;
-  wconfig.auto_raise = False;
-  wconfig.click_raise = False;
-  tmp = res.read(name_lookup, class_lookup, "SloppyFocus");
-  if (tmp.find("ClickToFocus") != std::string::npos) {
-    wconfig.sloppy_focus = False;
-  } else {
-    // must be sloppy
-    if (tmp.find("AutoRaise") != std::string::npos)
-      wconfig.auto_raise = True;
-    if (tmp.find("ClickRaise") != std::string::npos)
-      wconfig.click_raise = True;
-  }
-
-  sprintf(name_lookup,  "session.screen%u.edgeSnapThreshold", screen);
-  sprintf(class_lookup, "Session.screen%u.EdgeSnapThreshold", screen);
-  wconfig.edge_snap_threshold = res.read(name_lookup, class_lookup, 0);
-
-  sprintf(name_lookup,  "session.screen%u.opaqueMove", screen);
-  sprintf(class_lookup, "Session.screen%u.OpaqueMove", screen);
-  wconfig.opaque_move = res.read(name_lookup, class_lookup, false);
-
-  sprintf(name_lookup,  "session.screen%u.opaqueResize", screen);
-  sprintf(class_lookup, "Session.screen%u.OpaqueResize", screen);
-  wconfig.opaque_resize = res.read(name_lookup, class_lookup, false);
+  std::string str;
 
   // toolbar settings
-
   sprintf(name_lookup,  "session.screen%u.toolbar.widthPercent", screen);
   sprintf(class_lookup, "Session.screen%u.Toolbar.WidthPercent", screen);
   tconfig.width_percent = res.read(name_lookup, class_lookup, 66);
 
   sprintf(name_lookup, "session.screen%u.toolbar.placement", screen);
   sprintf(class_lookup, "Session.screen%u.Toolbar.Placement", screen);
-  tmp = res.read(name_lookup, class_lookup, "BottomCenter");
-  if (! strcasecmp(tmp.c_str(), "TopLeft"))
+  str = res.read(name_lookup, class_lookup, "BottomCenter");
+  if (! strcasecmp(str.c_str(), "TopLeft"))
     tconfig.placement = Toolbar::TopLeft;
-  else if (! strcasecmp(tmp.c_str(), "BottomLeft"))
+  else if (! strcasecmp(str.c_str(), "BottomLeft"))
     tconfig.placement = Toolbar::BottomLeft;
-  else if (! strcasecmp(tmp.c_str(), "TopCenter"))
+  else if (! strcasecmp(str.c_str(), "TopCenter"))
     tconfig.placement = Toolbar::TopCenter;
-  else if (! strcasecmp(tmp.c_str(), "TopRight"))
+  else if (! strcasecmp(str.c_str(), "TopRight"))
     tconfig.placement = Toolbar::TopRight;
-  else if (! strcasecmp(tmp.c_str(), "BottomRight"))
+  else if (! strcasecmp(str.c_str(), "BottomRight"))
     tconfig.placement = Toolbar::BottomRight;
   else
     tconfig.placement = Toolbar::BottomCenter;
@@ -418,28 +401,28 @@ void ScreenResource::load(bt::Resource& res, unsigned int screen) {
   // slit settings
   sprintf(name_lookup, "session.screen%u.slit.placement", screen);
   sprintf(class_lookup, "Session.screen%u.Slit.Placement", screen);
-  tmp = res.read(name_lookup, class_lookup, "CenterRight");
-  if (! strcasecmp(tmp.c_str(), "TopLeft"))
+  str = res.read(name_lookup, class_lookup, "CenterRight");
+  if (! strcasecmp(str.c_str(), "TopLeft"))
     sconfig.placement = Slit::TopLeft;
-  else if (! strcasecmp(tmp.c_str(), "CenterLeft"))
+  else if (! strcasecmp(str.c_str(), "CenterLeft"))
     sconfig.placement = Slit::CenterLeft;
-  else if (! strcasecmp(tmp.c_str(), "BottomLeft"))
+  else if (! strcasecmp(str.c_str(), "BottomLeft"))
     sconfig.placement = Slit::BottomLeft;
-  else if (! strcasecmp(tmp.c_str(), "TopCenter"))
+  else if (! strcasecmp(str.c_str(), "TopCenter"))
     sconfig.placement = Slit::TopCenter;
-  else if (! strcasecmp(tmp.c_str(), "BottomCenter"))
+  else if (! strcasecmp(str.c_str(), "BottomCenter"))
     sconfig.placement = Slit::BottomCenter;
-  else if (! strcasecmp(tmp.c_str(), "TopRight"))
+  else if (! strcasecmp(str.c_str(), "TopRight"))
     sconfig.placement = Slit::TopRight;
-  else if (! strcasecmp(tmp.c_str(), "BottomRight"))
+  else if (! strcasecmp(str.c_str(), "BottomRight"))
     sconfig.placement = Slit::BottomRight;
   else
     sconfig.placement = Slit::CenterRight;
 
   sprintf(name_lookup, "session.screen%u.slit.direction", screen);
   sprintf(class_lookup, "Session.screen%u.Slit.Direction", screen);
-  tmp = res.read(name_lookup, class_lookup, "Vertical");
-  if (! strcasecmp(tmp.c_str(), "Horizontal"))
+  str = res.read(name_lookup, class_lookup, "Vertical");
+  if (! strcasecmp(str.c_str(), "Horizontal"))
     sconfig.direction = Slit::Horizontal;
   else
     sconfig.direction = Slit::Vertical;
