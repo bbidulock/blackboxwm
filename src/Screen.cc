@@ -614,13 +614,8 @@ void BScreen::manageWindow(Window w) {
     workspace->addWindow(win);
   }
 
-  bool place_window = true;
-  if (_blackbox->startingUp()
-      || ((win->isTransient() || win->windowType() == WindowTypeDesktop
-           || (win->wmNormalHints().flags & (PPosition|USPosition)))
-          && win->clientRect().intersects(screen_info.rect())))
-    place_window = false;
-  if (place_window) placeWindow(win);
+  if (!_blackbox->startingUp())
+    placeWindow(win);
 
   windowList.push_back(win);
 
@@ -2019,33 +2014,48 @@ BlackboxWindow *BScreen::window(unsigned int workspace, unsigned int id) {
 
 
 void BScreen::placeWindow(BlackboxWindow *win) {
-  const bt::Rect &avail = availableArea();
-  bt::Rect new_win(avail.x(), avail.y(),
-                   win->frameRect().width(), win->frameRect().height());
-  bool placed = False;
+  bt::Rect r = win->frameRect();
 
-  BlackboxResource &res = _blackbox->resource();
-  switch (res.windowPlacementPolicy()) {
-  case RowSmartPlacement:
-  case ColSmartPlacement:
-    placed = smartPlacement(win->workspace(), new_win, avail);
-    break;
-  default:
-    break; // handled below
-  } // switch
-
-  if (placed == False) {
-    cascadePlacement(new_win, avail);
-    cascade_x += _resource.windowStyle().title_height;
-    cascade_y += _resource.windowStyle().title_height;
+  // if the client/user has explicitly placed the window, honor it
+  if (win->wmNormalHints().flags & (PPosition | USPosition)) {
+    // make sure that the window is not placed outside of the workarea
+    win->configure(r.inside(usableArea));
+    return;
   }
 
-  if (new_win.right() > avail.right())
-    new_win.setX(avail.left());
-  if (new_win.bottom() > avail.bottom())
-    new_win.setY(avail.top());
+  switch (win->windowType()) {
+  case WindowTypeDesktop:
+    win->configure(screen_info.rect());
+    return;
+  case WindowTypeDialog: {
+    BlackboxWindow *w = win->findTransientFor();
+    bt::Rect p = w ? w->frameRect() : usableArea;
+    const int x = static_cast<int>(p.x() + (p.width() - r.width()) / 2);
+    const int y = static_cast<int>(p.y() + (p.height() - r.height()) / 2);
+    r.setPos(x, y);
+    break;
+  }
+  default: {
+    bool placed = false;
+    BlackboxResource &res = _blackbox->resource();
+    switch (res.windowPlacementPolicy()) {
+    case RowSmartPlacement:
+    case ColSmartPlacement:
+      placed = smartPlacement(win->workspace(), r, usableArea);
+      break;
+    default:
+      break; // handled below
+    } // switch
+    if (!placed) {
+      cascadePlacement(r, usableArea);
+      cascade_x += _resource.windowStyle().title_height;
+      cascade_y += _resource.windowStyle().title_height;
+    }
+    break;
+  }
+  } // switch
 
-  win->configure(new_win.x(), new_win.y(), new_win.width(), new_win.height());
+  win->configure(r.inside(usableArea));
 }
 
 
