@@ -443,9 +443,10 @@ void Blackbox::process_event(XEvent *e) {
     } else if ((win = searchWindow(e->xcrossing.window))) {
       if (win->getScreen()->isSloppyFocus() &&
           (! win->isFocused()) && (! no_focus)) {
-        if (((! sa.leave) || sa.inferior) && win->isVisible() &&
-            win->setInputFocus())
-          win->installColormap(True); // XXX: shouldnt we honour no install?
+        if (((! sa.leave) || sa.inferior) && win->isVisible()) {
+          if (win->setInputFocus())
+            win->installColormap(True); // XXX: shouldnt we honour no install?
+        }
       }
     } else if ((menu = searchMenu(e->xcrossing.window))) {
       menu->enterNotifyEvent(&e->xcrossing);
@@ -544,9 +545,8 @@ void Blackbox::process_event(XEvent *e) {
         e->xfocus.detail == NotifyPointer)
       break;
     BlackboxWindow *win = searchWindow(e->xfocus.window);
-    if (win && ! win->isFocused()) {
+    if (win && ! win->isFocused())
       win->setFocusFlag(True);
-    }
     break;
   }
 

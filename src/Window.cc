@@ -1268,6 +1268,8 @@ void BlackboxWindow::configureShape(void) {
 
 
 Bool BlackboxWindow::setInputFocus(void) {
+  if (flags.focused) return True;
+
   if (((signed) (frame.x + frame.width)) < 0) {
     if (((signed) (frame.y + frame.y_border)) < 0)
       configure(frame.border_w, frame.border_w, frame.width, frame.height);
@@ -1290,46 +1292,41 @@ Bool BlackboxWindow::setInputFocus(void) {
                 frame.y + frame.border_w, frame.width, frame.height);
   }
 
-  Bool ret = False;
+  if (client.transient && flags.modal)
+    return client.transient->setInputFocus();
 
-  if (client.transient && flags.modal) {
-    ret = client.transient->setInputFocus();
-  } else if (! flags.focused) {
-    if (focus_mode == F_LocallyActive || focus_mode == F_Passive) {
-      XSetInputFocus(display, client.window,
-                     RevertToPointerRoot, CurrentTime);
-    } else {
-      // we could set the focus to none, since the window doesn't accept focus,
-      // but we shouldn't set focus to nothing since this would surely make
-      // someone angry
+  if (focus_mode == F_LocallyActive || focus_mode == F_Passive) {
+    XSetInputFocus(display, client.window, RevertToPointerRoot, CurrentTime);
+  } else {
+    /* we could set the focus to none, since the window doesn't accept focus,
+     * but we shouldn't set focus to nothing since this would surely make
+     * someone angry
+     */
       return False;
-    }
-
-    blackbox->setFocusedWindow(this);
-
-    if (flags.send_focus_message) {
-      XEvent ce;
-      ce.xclient.type = ClientMessage;
-      ce.xclient.message_type = blackbox->getWMProtocolsAtom();
-      ce.xclient.display = display;
-      ce.xclient.window = client.window;
-      ce.xclient.format = 32;
-      ce.xclient.data.l[0] = blackbox->getWMTakeFocusAtom();
-      ce.xclient.data.l[1] = blackbox->getLastTime();
-      ce.xclient.data.l[2] = 0l;
-      ce.xclient.data.l[3] = 0l;
-      ce.xclient.data.l[4] = 0l;
-      XSendEvent(display, client.window, False, NoEventMask, &ce);
-    }
-
-    if (screen->isSloppyFocus() && screen->doAutoRaise()) {
-      timer->start();
-    }
-
-    ret = True;
   }
 
-  return ret;
+  blackbox->setFocusedWindow(this);
+
+  if (flags.send_focus_message) {
+    XEvent ce;
+    ce.xclient.type = ClientMessage;
+    ce.xclient.message_type = blackbox->getWMProtocolsAtom();
+    ce.xclient.display = display;
+    ce.xclient.window = client.window;
+    ce.xclient.format = 32;
+    ce.xclient.data.l[0] = blackbox->getWMTakeFocusAtom();
+    ce.xclient.data.l[1] = blackbox->getLastTime();
+    ce.xclient.data.l[2] = 0l;
+    ce.xclient.data.l[3] = 0l;
+    ce.xclient.data.l[4] = 0l;
+    XSendEvent(display, client.window, False, NoEventMask, &ce);
+  }
+
+  if (screen->isSloppyFocus() && screen->doAutoRaise()) {
+    timer->start();
+  }
+
+  return True;
 }
 
 
@@ -1380,7 +1377,8 @@ void BlackboxWindow::show(void) {
   XMapSubwindows(display, frame.window);
   XMapWindow(display, frame.window);
 
-  if (flags.iconic && screen->doFocusNew()) setInputFocus();
+  if (flags.iconic && screen->doFocusNew())
+    setInputFocus();
 
   flags.visible = True;
   flags.iconic = False;
@@ -2161,7 +2159,7 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
 
 
 void BlackboxWindow::mapNotifyEvent(XMapEvent *ne) {
-  if (ne->window != client.window || ne->override_redirect || !flags.visible)
+  if (ne->window != client.window || ne->override_redirect || flags.visible)
     return;
 
   if (decorations.titlebar) positionButtons();

@@ -844,7 +844,6 @@ void BScreen::changeWorkspaceID(unsigned int id) {
 
     if (resource.focus_last && current_workspace->getLastFocusedWindow()) {
       XSync(blackbox->getXDisplay(), False);
-      fprintf(stderr, "giving focus: %s\n", current_workspace->getLastFocusedWindow()->getTitle());
       current_workspace->getLastFocusedWindow()->setInputFocus();
     }
   }
