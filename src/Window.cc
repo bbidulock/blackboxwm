@@ -259,13 +259,15 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
                        GrabModeSync, GrabModeSync, None, None);
 
   blackbox->grabButton(Button1, Mod1Mask, frame.window, True,
-      ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
-      GrabModeAsync, None, blackbox->getMoveCursor());
+                       ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
+                       GrabModeAsync, None, blackbox->getMoveCursor());
   blackbox->grabButton(Button2, Mod1Mask, frame.window, True,
-      ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, None);
+                       ButtonReleaseMask, GrabModeAsync, GrabModeAsync,
+                       None, None);
   blackbox->grabButton(Button3, Mod1Mask, frame.window, True,
-      ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
-      GrabModeAsync, None, blackbox->getLowerRightAngleCursor());
+                       ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
+                       GrabModeAsync, None,
+                       blackbox->getLowerRightAngleCursor());
 
   positionWindows();
   decorate();
@@ -305,7 +307,6 @@ BlackboxWindow::~BlackboxWindow(void) {
     XUngrabPointer(display, CurrentTime);
   }
 
-  if (timer->isTiming()) timer->stop();
   delete timer;
 
   if (windowmenu) delete windowmenu;
@@ -458,7 +459,8 @@ void BlackboxWindow::associateClientWindow(void) {
 
   XChangeSaveSet(display, client.window, SetModeInsert);
 
-  XSelectInput(display, frame.plate, SubstructureRedirectMask | SubstructureNotifyMask);
+  XSelectInput(display, frame.plate,
+               SubstructureRedirectMask | SubstructureNotifyMask);
   XReparentWindow(display, client.window, frame.plate, 0, 0);
 
 #ifdef    SHAPE
@@ -1338,11 +1340,13 @@ void BlackboxWindow::iconify(void) {
 
   setState(IconicState);
 
-  // we don't want this XUnmapWindow call to generate an UnmapNotify event, so
-  // we need to clear the event mask on frame.plate for a split second.
-  // HOWEVER, since X11 is asynchronous, the window could be destroyed in that
-  // split second, leaving us with a ghost window... so, we need to do this while
-  // the X server is grabbed
+  /*
+   * we don't want this XUnmapWindow call to generate an UnmapNotify event, so
+   * we need to clear the event mask on frame.plate for a split second.
+   * HOWEVER, since X11 is asynchronous, the window could be destroyed in that
+   * split second, leaving us with a ghost window... so, we need to do this
+   * while the X server is grabbed
+   */
   XGrabServer(display);
   XSelectInput(display, frame.plate, NoEventMask);
   XUnmapWindow(display, client.window);
@@ -1381,6 +1385,7 @@ void BlackboxWindow::show(void) {
   flags.visible = True;
   flags.iconic = False;
 }
+
 
 void BlackboxWindow::deiconify(Bool reassoc, Bool raise) {
   if (flags.iconic || reassoc)
@@ -1422,7 +1427,8 @@ void BlackboxWindow::withdraw(void) {
   XGrabServer(display);
   XSelectInput(display, frame.plate, NoEventMask);
   XUnmapWindow(display, client.window);
-  XSelectInput(display, frame.plate, SubstructureRedirectMask | SubstructureNotifyMask);
+  XSelectInput(display, frame.plate,
+               SubstructureRedirectMask | SubstructureNotifyMask);
   XUngrabServer(display);
 
   if (windowmenu) windowmenu->hide();
@@ -2207,6 +2213,9 @@ void BlackboxWindow::reparentNotifyEvent(XReparentEvent *re) {
                 "0x%lx.\n"), client.window, re->parent);
 #endif // DEBUG
 
+  XEvent ev;
+  ev.xreparent = *re;
+  XPutBackEvent(display, &ev);
   screen->unmanageWindow(this, True);
 }
 
@@ -2547,39 +2556,36 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
 
       const int snap_distance = screen->getEdgeSnapThreshold();
       if (snap_distance) {
-        int drx = screen->getWidth() - (dx + snap_w);
+        const XRectangle &srect = screen->availableArea();
+        // screen corners
+        const int sleft = srect.x,
+                 sright = srect.x + srect.width - 1,
+                   stop = srect.y,
+                sbottom = srect.y + srect.height - 1;
+        // window corners
+        const int wleft = dx,
+                 wright = dx + snap_w - 1,
+                   wtop = dy,
+                wbottom = dy + snap_h - 1;
 
-        if (dx < drx && ((dx > 0 && dx < snap_distance) ||
-                         (dx < 0 && dx > -snap_distance)))
-          dx = 0;
-        else if ((drx > 0 && drx < snap_distance) ||
-                 (drx < 0 && drx > -snap_distance))
-          dx = screen->getWidth() - snap_w;
+        const int dleft = std::abs(wleft - sleft),
+                 dright = std::abs(wright - sright),
+                   dtop = std::abs(wtop - stop),
+                dbottom = std::abs(wbottom - sbottom);
 
-        int dtty, dbby, dty, dby;
-        switch (screen->getToolbarPlacement()) {
-        case Toolbar::TopLeft:
-        case Toolbar::TopCenter:
-        case Toolbar::TopRight:
-          dtty = screen->getToolbar()->getExposedHeight() + frame.border_w;
-          dbby = screen->getHeight();
-          break;
+        // snap left?
+        if (dleft < snap_distance && dleft < dright)
+          dx = sleft;
+        // snap right?
+        else if (dright < snap_distance && dright < dleft)
+          dx = sright - snap_w;
 
-        default:
-          dtty = 0;
-          dbby = screen->getToolbar()->getY();
-          break;
-        }
-
-        dty = dy - dtty;
-        dby = dbby - (dy + snap_h);
-
-        if ((dy > 0 && dty < snap_distance) ||
-            (dy < 0 && dty > -snap_distance))
-          dy = dtty;
-        else if ((dby > 0 && dby < snap_distance) ||
-                 (dby < 0 && dby > -snap_distance))
-          dy = dbby - snap_h;
+        // snap top?
+        if (dtop < snap_distance && dtop < dbottom)
+          dy = stop;
+        // snap bottom?
+        else if (dbottom < snap_distance && dbottom < dtop)
+          dy = sbottom - snap_h;
       }
 
       if (screen->doOpaqueMove()) {
@@ -2709,7 +2715,7 @@ void BlackboxWindow::restore(Bool remap) {
     // according to the ICCCM - if the client doesn't reparent to
     // root, then we have to do it for them
     XReparentWindow(display, client.window, screen->getRootWindow(),
-                    client.x, client.y );
+                    client.x, client.y);
   }
 
   if (remap) XMapWindow(display, client.window);
