@@ -336,9 +336,10 @@ void Blackbox::process_event(XEvent *e) {
     Slit *slit = (Slit *) 0;
 
     if ((win = searchWindow(e->xunmap.window))) {
-      win->unmapNotifyEvent(&e->xunmap);
       if (focused_window == win)
         focused_window = (BlackboxWindow *) 0;
+      win->unmapNotifyEvent(&e->xunmap);
+      win = (BlackboxWindow*) 0;
     } else if ((slit = searchSlit(e->xunmap.window))) {
       slit->removeClient(e->xunmap.window);
     }
@@ -351,9 +352,10 @@ void Blackbox::process_event(XEvent *e) {
     Slit *slit = (Slit *) 0;
 
     if ((win = searchWindow(e->xdestroywindow.window))) {
-      win->destroyNotifyEvent(&e->xdestroywindow);
       if (focused_window == win)
         focused_window = (BlackboxWindow *) 0;
+      win->destroyNotifyEvent(&e->xdestroywindow);
+      win = (BlackboxWindow*) 0;
     } else if ((slit = searchSlit(e->xdestroywindow.window))) {
       slit->removeClient(e->xdestroywindow.window, False);
     }
@@ -368,7 +370,10 @@ void Blackbox::process_event(XEvent *e) {
   case ReparentNotify: {
     BlackboxWindow *win = searchWindow(e->xreparent.window);
     if (win) {
+      if (focused_window == win)
+        focused_window = (BlackboxWindow *) 0;
       win->reparentNotifyEvent(&e->xreparent);
+      win = (BlackboxWindow*) 0;
     } else {
       Slit *slit = searchSlit(e->xreparent.window);
       if (slit)
