@@ -41,7 +41,7 @@ namespace bt {
     explicit Resource(const std::string &filename);
     ~Resource(void);
 
-    inline bool empty(void) const { return db == NULL; }
+    inline bool valid(void) const { return db != NULL; }
 
     void load(const std::string &filename);
     void save(const std::string &filename);

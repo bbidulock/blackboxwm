@@ -44,6 +44,7 @@ void bt::Resource::load(const std::string &filename) {
 }
 
 void bt::Resource::save(const std::string &filename) {
+  if (! valid()) return;
   XrmPutFileDatabase(db, filename.c_str());
 }
 
