@@ -22,26 +22,21 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifndef GCCACHE_HH
-#define GCCACHE_HH
+#ifndef __Pen_hh
+#define __Pen_hh
 
 #include "Util.hh"
 
-#ifdef XFT
-extern "C" {
-#include <X11/Xft/Xft.h>
-}
-#endif
+typedef struct _XftDraw XftDraw;
 
 namespace bt {
 
+  // forward declarations
   class Color;
   class Display;
   class Font;
   class PenCacheItem;
-#ifdef XFT
   class XftCacheItem;
-#endif
 
   class Pen : public NoCopy {
   public:
@@ -59,9 +54,7 @@ namespace bt {
     const Display &display(void) const;
     const GC &gc(void) const;
 
-#ifdef XFT
     XftDraw *xftDraw(Drawable drawable) const;
-#endif
 
   private:
     unsigned int _screen;
@@ -72,14 +65,9 @@ namespace bt {
     int _subwindow;
 
     mutable PenCacheItem *_item;
-
-#ifdef XFT
     mutable XftCacheItem *_xftitem;
-#else
-    void *_xftitem; // avoid breaking binary compatibility...
-#endif
   };
 
 } // namespace bt
 
-#endif // GCCACHE_HH
+#endif // __Pen_hh

@@ -22,22 +22,23 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-extern "C" {
-#include <assert.h>
-#include <ctype.h>
-#include <locale.h>
-#include <stdio.h>
-}
-
-#include <map>
-#include <vector>
-
 #include "Font.hh"
 #include "Color.hh"
 #include "Display.hh"
 #include "Pen.hh"
 #include "Resource.hh"
 #include "i18n.hh"
+
+#ifdef XFT
+#  include <X11/Xft/Xft.h>
+#endif
+#include <assert.h>
+#include <ctype.h>
+#include <locale.h>
+#include <stdio.h>
+
+#include <map>
+#include <vector>
 
 // #define FONTCACHE_DEBUG
 

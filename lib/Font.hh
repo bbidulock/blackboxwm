@@ -25,18 +25,15 @@
 #ifndef __Font_hh
 #define __Font_hh
 
-extern "C" {
 #include <X11/Xlib.h>
-#ifdef XFT
-#  include <X11/Xft/Xft.h>
-#endif
-}
+
+typedef struct _XftFont XftFont;
 
 #include <string>
 
-
 namespace bt {
 
+  // forward declarations
   class Display;
   class Pen;
   class Rect;
@@ -61,9 +58,7 @@ namespace bt {
 
     XFontSet fontset(void) const;
     XFontStruct *font(void) const;
-#ifdef XFT
     XftFont *xftFont(unsigned int screen) const;
-#endif
 
     Font& operator=(const Font &f)
     { setFontName(f.fontName()); return *this; }
@@ -78,11 +73,7 @@ namespace bt {
     std::string _fontname;
     mutable XFontSet _fontset;
     mutable XFontStruct *_font;
-#ifdef XFT
     mutable XftFont *_xftfont;
-#else
-    void *_xftfont; // avoid breaking binary compatibility...
-#endif
     mutable unsigned int _screen; // only used for Xft
   };
 

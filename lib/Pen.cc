@@ -22,21 +22,20 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#ifdef HAVE_CONFIG_H
-#  include "../config.h"
-#endif // HAVE_CONFIG_H
-
-extern "C" {
-#include <stdio.h>
-}
-
-#include <algorithm>
-
 #include "Pen.hh"
 #include "Display.hh"
 #include "Color.hh"
 #include "Font.hh"
 #include "Util.hh"
+
+#include <X11/Xlib.h>
+#ifdef XFT
+#  include <X11/Xft/Xft.h>
+#endif
+
+#include <stdio.h>
+
+#include <algorithm>
 
 
 static const unsigned int cache_size    = 32u;
@@ -481,10 +480,7 @@ void bt::PenCache::release(XftCacheItem *xftitem) {
 bt::Pen::Pen(unsigned int screen_, const Color &color_,
              int function, int subwindow)
   : _screen(screen_), _color(color_), _fontid(0ul),
-    _function(function), _subwindow(subwindow), _item(0)
-#ifdef XFT
-    , _xftitem(0)
-#endif
+    _function(function), _subwindow(subwindow), _item(0), _xftitem(0)
 { }
 
 
@@ -519,8 +515,8 @@ const GC &bt::Pen::gc(void) const {
 }
 
 
-#ifdef XFT
 XftDraw *bt::Pen::xftDraw(Drawable drawable) const {
+#ifdef XFT
   if (_xftitem && _xftitem->drawable() != drawable) {
     pencache->release(_xftitem);
     _xftitem = 0;
@@ -529,7 +525,9 @@ XftDraw *bt::Pen::xftDraw(Drawable drawable) const {
     _xftitem = pencache->findXft(_screen, drawable);
   }
   return _xftitem->xftdraw();
-}
+#else
+  return 0;
 #endif
+}
 
 void bt::Pen::clearCache(void) { pencache->purge(); }

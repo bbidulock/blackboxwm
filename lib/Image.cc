@@ -27,6 +27,8 @@
 #include "Pen.hh"
 #include "Texture.hh"
 
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #ifdef    MITSHM
 #  include <sys/types.h>
 #  include <sys/ipc.h>
