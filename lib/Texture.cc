@@ -137,18 +137,19 @@ bt::Texture bt::textureResource(const Display &display,
                                 unsigned int screen,
                                 const bt::Resource &resource,
                                 const std::string &name,
-                                const std::string &class_name,
-                                const std::string &default_color) {
+                                const std::string &className,
+                                const std::string &defaultColor)
+{
   Texture texture;
 
   std::string description = resource.read(name + ".appearance",
-                                          class_name + ".Appearance",
+                                          className + ".Appearance",
                                           resource.read(name,
-                                                        class_name));
+                                                        className));
   if (description.empty()) {
     // no such texture, use the default color in a flat solid texture
     texture.setDescription("flat solid");
-    texture.setColor1(Color::namedColor(display, screen, default_color));
+    texture.setColor1(Color::namedColor(display, screen, defaultColor));
     return texture;
   }
 
@@ -158,24 +159,24 @@ bt::Texture bt::textureResource(const Display &display,
       || (texture.texture() & bt::Texture::Interlaced)) {
     std::string color1, color2;
     color1 = resource.read(name + ".color1",
-                           class_name + ".Color1",
+                           className + ".Color1",
                            resource.read(name + ".color",
-                                         class_name + ".Color",
-                                         default_color));
+                                         className + ".Color",
+                                         defaultColor));
     color2 = resource.read(name + ".color2",
-                           class_name + ".Color2",
+                           className + ".Color2",
                            resource.read(name + ".colorTo",
-                                         class_name + ".ColorTo",
-                                         default_color));
+                                         className + ".ColorTo",
+                                         defaultColor));
     texture.setColor1(Color::namedColor(display, screen, color1));
     texture.setColor2(Color::namedColor(display, screen, color2));
   } else {
     std::string color1;
     color1 = resource.read(name + ".backgroundColor",
-                           class_name + ".BackgroundColor",
+                           className + ".BackgroundColor",
                            resource.read(name + ".color",
-                                         class_name + ".Color",
-                                         default_color));
+                                         className + ".Color",
+                                         defaultColor));
     texture.setColor1(Color::namedColor(display, screen, color1));
   }
 
@@ -183,17 +184,36 @@ bt::Texture bt::textureResource(const Display &display,
     Color borderColor =
       Color::namedColor(display, screen,
                         resource.read(name + ".borderColor",
-                                      class_name + ".BorderColor",
+                                      className + ".BorderColor",
                                       "black"));
     texture.setBorderColor(borderColor);
 
     const std::string bstr =
-      resource.read(name + ".borderWidth", class_name + ".BorderWidth", "1");
+      resource.read(name + ".borderWidth", className + ".BorderWidth", "1");
     unsigned int bw = static_cast<unsigned int>(strtoul(bstr.c_str(), 0, 0));
     texture.setBorderWidth(bw);
   }
 
   return texture;
+}
+
+
+bt::Texture bt::textureResource(const Display &display,
+                                unsigned int screen,
+                                const Resource &resource,
+                                const std::string &name,
+                                const std::string &className,
+                                const Texture &defaultTexture)
+{
+  std::string description = resource.read(name + ".appearance",
+                                          className + ".Appearance",
+                                          resource.read(name,
+                                                        className));
+  if (description.empty()) {
+    // no such texture, return the default
+    return defaultTexture;
+  }
+  return textureResource(display, screen, resource, name, className);
 }
 
 

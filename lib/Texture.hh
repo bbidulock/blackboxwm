@@ -42,12 +42,31 @@ namespace bt {
                    const Rect &urect,
                    Pixmap pixmap = 0ul);
 
+  /*
+    If 'name.appearance' cannot be found, a flat solid texture in the
+    defaultColor is returned; otherwise, the texture is read.  All
+    missing colors are set to the defaultColor.
+   */
   Texture
-  textureResource(const Display &display, unsigned int screen,
+  textureResource(const Display &display,
+                  unsigned int screen,
                   const Resource &resource,
                   const std::string &name,
-                  const std::string &classname,
-                  const std::string &default_color = std::string("black"));
+                  const std::string &className,
+                  const std::string &defaultColor = "black");
+
+  /*
+    If 'name.appearance' cannot be found, the defaultTexture is
+    returned; otherwise, the above function is called with the passed
+    arguments.
+   */
+  Texture
+  textureResource(const Display &display,
+                  unsigned int screen,
+                  const Resource &resource,
+                  const std::string &name,
+                  const std::string &className,
+                  const Texture &defaultTexture);
 
   class Texture {
   public:
