@@ -38,9 +38,11 @@ extern "C" {
 #    include <stdio.h>
 #  endif // HAVE_STDIO_H
 #endif // DEBUG
-}
 
-#include <cstdlib>
+#ifdef HAVE_STDLIB_H
+   #include <stdlib.h>
+#endif // HAVE_STDLIB_H
+}
 
 #include "i18n.hh"
 #include "blackbox.hh"
@@ -2692,10 +2694,10 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
                    wtop = dy,
                 wbottom = dy + frame.rect.height() - 1;
 
-        int dleft = std::abs(wleft - srect.left()),
-           dright = std::abs(wright - srect.right()),
-             dtop = std::abs(wtop - srect.top()),
-          dbottom = std::abs(wbottom - srect.bottom());
+        int dleft = abs(wleft - srect.left()),
+           dright = abs(wright - srect.right()),
+             dtop = abs(wtop - srect.top()),
+          dbottom = abs(wbottom - srect.bottom());
 
         // snap left?
         if (dleft < snap_distance && dleft <= dright)
@@ -2714,10 +2716,10 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
         if (! screen->doFullMax()) {
           srect = screen->getRect(); // now get the full screen
 
-          dleft = std::abs(wleft - srect.left()),
-             dright = std::abs(wright - srect.right()),
-               dtop = std::abs(wtop - srect.top()),
-            dbottom = std::abs(wbottom - srect.bottom());
+          dleft = abs(wleft - srect.left()),
+             dright = abs(wright - srect.right()),
+               dtop = abs(wtop - srect.top()),
+            dbottom = abs(wbottom - srect.bottom());
 
           // snap left?
           if (dleft < snap_distance && dleft <= dright)

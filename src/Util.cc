@@ -26,6 +26,8 @@
 #endif // HAVE_CONFIG_H
 
 extern "C" {
+#include <X11/Xatom.h>
+
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
@@ -48,11 +50,9 @@ extern "C" {
 #if defined(HAVE_PROCESS_H) && defined(__EMX__)
 #  include <process.h>
 #endif //   HAVE_PROCESS_H             __EMX__
-}
-
-#include <X11/Xatom.h>
 
 #include <assert.h>
+}
 
 #include <algorithm>
 
@@ -160,7 +160,7 @@ void bexec(const string& command, const string& displaystring) {
     string cmd = "exec ";
     cmd += command;
     execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL);
-    exit(0);
+    exit(ret);
   }
 #else //   __EMX__
   spawnlp(P_NOWAIT, "cmd.exe", "cmd.exe", "/c", command, NULL);
@@ -239,7 +239,7 @@ string itostring(unsigned long i) {
 
 
 string itostring(long i) {
-  std::string tmp = itostring(static_cast<unsigned long>(std::abs(i)));
+  std::string tmp = itostring(static_cast<unsigned long>(abs(i)));
   if (i < 0)
     tmp.insert(tmp.begin(), '-');
   return tmp;
