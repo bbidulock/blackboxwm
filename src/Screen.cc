@@ -843,6 +843,8 @@ void BScreen::manageWindow(Window w) {
 void BScreen::unmanageWindow(BlackboxWindow *w, bool remap) {
   w->restore(remap);
 
+  if (w->isModal()) w->setModal(False);
+
   if (w->getWorkspaceNumber() != BSENTINEL &&
       w->getWindowNumber() != BSENTINEL)
     getWorkspace(w->getWorkspaceNumber())->removeWindow(w);

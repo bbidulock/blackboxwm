@@ -283,6 +283,7 @@ public:
   inline bool isIconic(void) const { return flags.iconic; }
   inline bool isShaded(void) const { return flags.shaded; }
   inline bool isMaximized(void) const { return flags.maximized; }
+  inline bool isModal(void) const { return flags.modal; }
   inline bool isStuck(void) const { return flags.stuck; }
   inline bool isIconifiable(void) const { return functions & Func_Iconify; }
   inline bool isMaximizable(void) const { return functions & Func_Maximize; }
@@ -319,6 +320,8 @@ public:
   { return frame.title_h; }
 
   inline void setWindowNumber(int n) { window_number = n; }
+
+  inline void setModal(bool flag) { flags.modal = flag; }
 
   bool validateClient(void) const;
   bool setInputFocus(void);
