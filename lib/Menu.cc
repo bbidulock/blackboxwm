@@ -749,8 +749,9 @@ void bt::Menu::updateSize(void) {
   }
 
   const ScreenInfo& screeninfo = _app.getScreenInfo(_screen);
-  unsigned int max_item_w = 20u, col_h = 0u, max_col_h = 0u;
+  unsigned int max_item_w, col_h = 0u, max_col_h = 0u;
   unsigned int row = 0u, cols = 1u;
+  max_item_w = std::max(20u, _trect.width());
   ItemList::iterator it, end;
   for (it= items.begin(), end = items.end(); it != end; ++it) {
     if (it->isSeparator()) {
