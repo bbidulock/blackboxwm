@@ -1180,17 +1180,13 @@ bool BlackboxWindow::getBlackboxHints(void) {
   if (blackbox_hint->flags & AttribDecoration) {
     switch (blackbox_hint->decoration) {
     case DecorNone:
-      // clear all decorations except close
-      decorations &= Decor_Close;
-      // clear all functions except close
-      functions &= Func_Close;
+      decorations = 0;
 
       break;
 
     case DecorTiny:
       decorations |= Decor_Titlebar | Decor_Iconify;
       decorations &= ~(Decor_Border | Decor_Handle | Decor_Maximize);
-      functions |= Func_Move | Func_Iconify;
       functions &= ~(Func_Resize | Func_Maximize);
 
       break;
@@ -1198,7 +1194,6 @@ bool BlackboxWindow::getBlackboxHints(void) {
     case DecorTool:
       decorations |= Decor_Titlebar;
       decorations &= ~(Decor_Iconify | Decor_Border | Decor_Handle);
-      functions |= Func_Move;
       functions &= ~(Func_Resize | Func_Maximize | Func_Iconify);
 
       break;
@@ -1207,8 +1202,6 @@ bool BlackboxWindow::getBlackboxHints(void) {
     default:
       decorations |= Decor_Titlebar | Decor_Border | Decor_Handle |
                      Decor_Iconify | Decor_Maximize;
-      functions |= Func_Resize | Func_Move | Func_Iconify | Func_Maximize;
-
       break;
     }
 
@@ -3002,8 +2995,7 @@ void BlackboxWindow::changeBlackboxHints(BlackboxHints *net) {
   if (net->flags & AttribDecoration) {
     switch (net->decoration) {
     case DecorNone:
-      // clear all decorations except close
-      decorations &= Decor_Close;
+      decorations = 0;
 
       break;
 
@@ -3027,9 +3019,19 @@ void BlackboxWindow::changeBlackboxHints(BlackboxHints *net) {
       break;
     }
 
-    // we can not be shaded if we lack a titlebar
-    if (flags.shaded && ! (decorations & Decor_Titlebar))
-      shade();
+    // sanity check the new decor
+    if (! (functions & Func_Resize))
+      decorations &= ~(Decor_Maximize | Decor_Handle);
+    if (! (functions & Func_Maximize))
+      decorations &= ~Decor_Maximize;
+
+    if (decorations & Decor_Titlebar) {
+      if (functions & Func_Close)   // close button is controlled by function
+        decorations |= Decor_Close; // not decor type
+    } else { 
+      if (flags.shaded) // we can not be shaded if we lack a titlebar
+        shade();
+    }
 
     if (flags.visible && frame.window) {
       XMapSubwindows(blackbox->getXDisplay(), frame.window);
