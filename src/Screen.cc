@@ -164,26 +164,34 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
                             workspacesList.size());
   netwm.setDesktopGeometry(screen_info.rootWindow(),
                            screen_info.width(), screen_info.height());
+  netwm.setDesktopViewport(screen_info.rootWindow(), 0, 0);
   netwm.setActiveWindow(screen_info.rootWindow(), None);
   updateWorkareaHint();
   updateDesktopNamesHint();
 
-  Atom supported[46] = {
+  Atom supported[] = {
     netwm.clientList(),
     netwm.clientListStacking(),
     netwm.numberOfDesktops(),
-    netwm.desktopGeometry(),
+    // _NET_DESKTOP_GEOMETRY is not supported
+    // _NET_DESKTOP_VIEWPORT is not supported
     netwm.currentDesktop(),
     netwm.desktopNames(),
     netwm.activeWindow(),
     netwm.workarea(),
+    // _NET_VIRTUAL_ROOTS   is not supported
+    // _NET_SHOWING_DESKTOP is not supported
+
     netwm.closeWindow(),
     netwm.moveresizeWindow(),
+    // _NET_WM_MOVERESIZE is not supported
+
     netwm.wmName(),
     netwm.wmVisibleName(),
     netwm.wmIconName(),
     netwm.wmVisibleIconName(),
     netwm.wmDesktop(),
+
     netwm.wmWindowType(),
     netwm.wmWindowTypeDesktop(),
     netwm.wmWindowTypeDock(),
@@ -193,9 +201,10 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     netwm.wmWindowTypeSplash(),
     netwm.wmWindowTypeDialog(),
     netwm.wmWindowTypeNormal(),
+
     netwm.wmState(),
     netwm.wmStateModal(),
-    /* sticky would go here, but we do not need it */
+    // _NET_WM_STATE_STICKY is not supported
     netwm.wmStateMaximizedVert(),
     netwm.wmStateMaximizedHorz(),
     netwm.wmStateShaded(),
@@ -205,20 +214,32 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     netwm.wmStateFullscreen(),
     netwm.wmStateAbove(),
     netwm.wmStateBelow(),
+
     netwm.wmAllowedActions(),
     netwm.wmActionMove(),
     netwm.wmActionResize(),
     netwm.wmActionMinimize(),
     netwm.wmActionShade(),
+    // _NET_WM_ACTION_STICK is not supported
     netwm.wmActionMaximizeHorz(),
     netwm.wmActionMaximizeVert(),
     netwm.wmActionFullscreen(),
     netwm.wmActionChangeDesktop(),
     netwm.wmActionClose(),
+
     netwm.wmStrut()
+    // _NET_WM_STRUT_PARTIAL is not supported
+    // _NET_WM_ICON_GEOMETRY is not supported
+    // _NET_WM_ICON          is not supported
+    // _NET_WM_PID           is not supported
+    // _NET_WM_HANDLED_ICONS is not supported
+    // _NET_WM_USER_TIME     is not supported
+
+    // _NET_WM_PING          is not supported
   };
 
-  netwm.setSupported(screen_info.rootWindow(), supported, 46);
+  netwm.setSupported(screen_info.rootWindow(), supported,
+                     sizeof(supported) / sizeof(Atom));
 
   unsigned int i, j, nchild;
   Window r, p, *children;
@@ -295,17 +316,19 @@ BScreen::~BScreen(void) {
   blackbox->netwm().removeProperty(screen_info.rootWindow(),
                                    blackbox->netwm().supportingWMCheck());
   blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                    blackbox->netwm().supported());
+                                   blackbox->netwm().supported());
   blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                    blackbox->netwm().numberOfDesktops());
+                                   blackbox->netwm().numberOfDesktops());
   blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                    blackbox->netwm().desktopGeometry());
+                                   blackbox->netwm().desktopGeometry());
   blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                    blackbox->netwm().currentDesktop());
+                                   blackbox->netwm().desktopViewport());
   blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                    blackbox->netwm().activeWindow());
+                                   blackbox->netwm().currentDesktop());
   blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                    blackbox->netwm().workarea());
+                                   blackbox->netwm().activeWindow());
+  blackbox->netwm().removeProperty(screen_info.rootWindow(),
+                                   blackbox->netwm().workarea());
 }
 
 
