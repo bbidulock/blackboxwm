@@ -32,7 +32,7 @@
 #include <stdio.h>
 
 
-void BGCCache::Context::set(const BColor &_color,
+void BGCCacheContext::set(const BColor &_color,
                             const XFontStruct * const _font,
                             const int _function,
                             const int _subwindow) {
@@ -52,7 +52,7 @@ void BGCCache::Context::set(const BColor &_color,
   XChangeGC(display->getXDisplay(), gc, mask, &gcv);
 }
 
-void BGCCache::Context::set(const XFontStruct * const _font) {
+void BGCCacheContext::set(const XFontStruct * const _font) {
   if (! _font) {
     fontid = 0;
     return;
@@ -67,17 +67,17 @@ void BGCCache::Context::set(const XFontStruct * const _font) {
 BGCCache::BGCCache(const BaseDisplay * const _display)
   : context_count(128u), cache_size(16u), cache_buckets(8u), display(_display)
 {
-  contexts = new Context*[context_count];
+  contexts = new BGCCacheContext*[context_count];
   unsigned int i;
   for (i = 0; i < context_count; i++) {
-    contexts[i] = new Context(display);
+    contexts[i] = new BGCCacheContext(display);
   }
 
-  cache = new Item*[ cache_size * cache_buckets ];
+  cache = new BGCCacheItem*[ cache_size * cache_buckets ];
   unsigned int b, s;
   for (i = 0, s = 0; i < cache_size; i++) {
     for (b = 0; b < cache_buckets; b++)
-      cache[ s++ ] = new Item;
+      cache[ s++ ] = new BGCCacheItem;
   }
 }
 
@@ -100,11 +100,11 @@ BGCCache::~BGCCache()
   contexts = 0;
 }
 
-BGCCache::Context *BGCCache::nextContext(unsigned int scr)
+BGCCacheContext *BGCCache::nextContext(unsigned int scr)
 {
   Window hd = display->getScreenInfo(scr)->getRootWindow();
 
-  register Context *c;
+  register BGCCacheContext *c;
   register unsigned int i = 0;
   while (i < context_count) {
     c = contexts[i++];
@@ -125,21 +125,21 @@ BGCCache::Context *BGCCache::nextContext(unsigned int scr)
   return 0; // shutup
 }
 
-void BGCCache::release(Context *ctx)
+void BGCCache::release(BGCCacheContext *ctx)
 {
   ctx->used = false;
 }
 
-BGCCache::Item *BGCCache::find(const BColor &_color,
-                               const XFontStruct * const _font,
-                               int _function, int _subwindow)
+BGCCacheItem *BGCCache::find(const BColor &_color,
+                             const XFontStruct * const _font,
+                             int _function, int _subwindow)
 {
   unsigned long pixel = _color.pixel();
   unsigned long fontid = _font ? _font->fid : 0;
   unsigned int screen = _color.screen();
   int key = _color.red() ^ _color.green() ^ _color.blue();
   int k = (key % cache_size) * cache_buckets;
-  Item *c = cache[ k ], *prev = 0;
+  BGCCacheItem *c = cache[ k ], *prev = 0;
 
 #define NOMATCH (c->ctx && (c->ctx->pixel != pixel || \
                               c->ctx->function != _function || \
@@ -210,7 +210,7 @@ BGCCache::Item *BGCCache::find(const BColor &_color,
   return c;
 }
 
-void BGCCache::release(Item *_item)
+void BGCCache::release(BGCCacheItem *_item)
 {
   _item->count--;
 }
@@ -221,7 +221,7 @@ void BGCCache::purge()
   unsigned int i, b, s;
   for (i = 0, s = 0; i < cache_size; i++) {
     for (b = 0; b < cache_buckets; b++) {
-      Item *d = cache[ s++ ];
+      BGCCacheItem *d = cache[ s++ ];
 
       if (d->ctx) {
         // fprintf(stderr, "  cache %4d,%2d=%2d: count %4d",

@@ -29,37 +29,56 @@
 #include "BaseDisplay.hh"
 #include "Color.hh"
 
-class BGCCache {
+class BGCCacheItem;
+
+class BGCCacheContext {
+public:
+  void set(const BColor &_color, const XFontStruct * const _font,
+           const int _function, const int _subwindow);
+  void set(const XFontStruct * const _font);
+
 private:
-  class Context {
-  public:
-    Context(const BaseDisplay * const _display)
-      : display(_display), gc(0), pixel(0ul), fontid(0ul),
-        function(0), subwindow(0), used(false), screen(~(0u))
-    {
-    }
+  BGCCacheContext(const BaseDisplay * const _display)
+    : display(_display), gc(0), pixel(0ul), fontid(0ul),
+      function(0), subwindow(0), used(false), screen(~(0u))
+  {
+  }
 
-    void set(const BColor &_color, const XFontStruct * const _font,
-             const int _function, const int _subwindow);
-    void set(const XFontStruct * const _font);
+  const BaseDisplay *display;
+  GC gc;
+  unsigned long pixel;
+  unsigned long fontid;
+  int function;
+  int subwindow;
+  bool used;
+  unsigned int screen;
 
-    const BaseDisplay *display;
-    GC gc;
-    unsigned long pixel;
-    unsigned long fontid;
-    int function;
-    int subwindow;
-    bool used;
-    unsigned int screen;
+  BGCCacheContext(const BGCCacheContext &_nocopy);
+  BGCCacheContext &operator=(const BGCCacheContext &_nocopy);
 
-  private:
-    Context(const Context &_nocopy);
-    Context &operator=(const Context &_nocopy);
-  };
+  friend class BGCCache;
+  friend class BGCCacheItem;
+};
 
-  Context *nextContext(unsigned int _screen);
-  void release(Context *ctx);
+class BGCCacheItem {
+public:
+  inline const GC &gc(void) const { return ctx->gc; }
 
+private:
+  BGCCacheItem(void) : ctx(0), count(0), hits(0), fault(false) { }
+
+  BGCCacheContext *ctx;
+  int count;
+  int hits;
+  bool fault;
+
+  BGCCacheItem(const BGCCacheItem &_nocopy);
+  BGCCacheItem &operator=(const BGCCacheItem &_nocopy);
+
+  friend class BGCCache;
+};
+
+class BGCCache {
 public:
   BGCCache(const BaseDisplay * const _display);
   ~BGCCache(void);
@@ -67,37 +86,23 @@ public:
   // cleans up the cache
   void purge(void);
 
-  class Item {
-  public:
-    Item(void) : ctx(0), count(0), hits(0), fault(false) { }
-    inline const GC &gc(void) const { return ctx->gc; }
-
-    Context *ctx;
-    int count;
-    int hits;
-    bool fault;
-
-  private:
-    Item(const Item &_nocopy);
-    Item &operator=(const Item &_nocopy);
-  };
-
-  Item *find(const BColor &_color, const XFontStruct * const _font = 0,
+  BGCCacheItem *find(const BColor &_color, const XFontStruct * const _font = 0,
              int _function = GXcopy, int _subwindow = ClipByChildren);
-  void release(Item *_item);
+  void release(BGCCacheItem *_item);
 
 private:
+  BGCCacheContext *nextContext(unsigned int _screen);
+  void release(BGCCacheContext *ctx);
+
   // this is closely modelled after the Qt GC cache, but with some of the
   // complexity stripped out
   const unsigned int context_count;
   const unsigned int cache_size;
   const unsigned int cache_buckets;
   const BaseDisplay *display;
-  Context **contexts;
-  Item **cache;
+  BGCCacheContext **contexts;
+  BGCCacheItem **cache;
 };
-
-
 
 class BPen {
 public:
@@ -119,7 +124,7 @@ private:
   int subwindow;
 
   mutable BGCCache *cache;
-  mutable BGCCache::Item *item;
+  mutable BGCCacheItem *item;
 };
 
 
