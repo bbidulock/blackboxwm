@@ -286,8 +286,8 @@ bt::PenCacheContext *bt::PenCache::nextContext(unsigned int screen) {
   Window hd = pencache->_display.screenInfo(screen).rootWindow();
 
   PenCacheContext *c;
-
-  for (unsigned int i = 0; i < context_count; ++i) {
+  unsigned int i;
+  for (i = 0; i < cache_total_size; ++i) {
     c = contexts + i;
 
     if (! c->_gc) {
@@ -299,7 +299,8 @@ bt::PenCacheContext *bt::PenCache::nextContext(unsigned int screen) {
       return c;
   }
 
-  fprintf(stderr, "bt::PenCache: context fault!\n");
+  fprintf(stderr, "bt::PenCache: context fault at %u of %u\n",
+          i, cache_total_size);
   abort();
   return 0; // not reached
 }
@@ -384,7 +385,8 @@ bt::XftCacheContext *bt::PenCache::nextXftContext(unsigned int screen) {
   const ScreenInfo &screeninfo = _display.screenInfo(screen);
 
   XftCacheContext *c;
-  for (unsigned int i = 0; i < context_count; ++i) {
+  unsigned int i;
+  for (i = 0; i < cache_total_size; ++i) {
     c = xftcontexts + i;
 
     if (! c->_xftdraw) {
@@ -398,7 +400,8 @@ bt::XftCacheContext *bt::PenCache::nextXftContext(unsigned int screen) {
       return c;
   }
 
-  fprintf(stderr, "bt::PenCache: Xft context fault!\n");
+  fprintf(stderr, "bt::PenCache: Xft context fault at %u of %u\n",
+          i, cache_total_size);
   abort();
   return 0; // not reached
 }
