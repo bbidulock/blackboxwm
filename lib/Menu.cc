@@ -1122,7 +1122,8 @@ void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
     ItemList::const_iterator anchor = _active_submenu->items.begin(),
                                 end = _active_submenu->items.end();
     ItemList::const_iterator it = std::find_if(anchor, end, InteractMatch());
-    if (it != end) _active_submenu->activateIndex(it->indx);
+    if (it != end && _active_submenu->count() > 0)
+      _active_submenu->activateIndex(it->indx);
     break;
   }
 
