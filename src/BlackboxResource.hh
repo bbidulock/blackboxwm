@@ -57,11 +57,14 @@ public:
     } focus, unfocus;
     bt::Alignment alignment;
     bt::Bitmap iconify, maximize, restore, close;
+    bt::Color frame_border;
     bt::Font font;
     bt::Texture pressed;
+    unsigned int title_margin, label_margin, button_margin,
+      frame_border_width, handle_height;
 
-    unsigned int handle_height, grip_width, bevel_width,
-      label_height, title_height, button_width;
+    // calculated
+    unsigned int title_height, label_height, button_width, grip_width;
   };
 
   class ToolbarStyle {

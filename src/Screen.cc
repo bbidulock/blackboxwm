@@ -348,8 +348,8 @@ void BScreen::updateGeomWindow(void) {
   bt::Rect geomr =
     bt::textRect(screen_info.screenNumber(), style->font, "m:mmmm    m:mmmm");
 
-  geom_w = geomr.width() + (style->bevel_width * 2);
-  geom_h = geomr.height() + (style->bevel_width * 2);
+  geom_w = geomr.width() + (style->label_margin * 2);
+  geom_h = geomr.height() + (style->label_margin * 2);
 
   if (geom_window == None) {
     XSetWindowAttributes setattrib;
@@ -948,8 +948,10 @@ void BScreen::InitMenu(void) {
           if (key == 517) { // [begin]
             index = -1;
             for (i = index; i < len; i++) {
-              if (line[i] == '(') index = 0;
-              else if (line[i] == ')') break;
+              if (line[i] == '(')
+                index = 0;
+              else if (line[i] == ')')
+                break;
               else if (index++ >= 0) {
                 if (line[i] == '\\' && i < len - 1) i++;
                 label[index - 1] = line[i];
@@ -1325,10 +1327,10 @@ void BScreen::showGeometry(GeometryType type, const bt::Rect &rect) {
     ? style->focus.title
     : style->focus.label;
   const bt::Rect u(0, 0, geom_w, geom_h);
-  const bt::Rect t(style->bevel_width,
-                        style->bevel_width,
-                        geom_w - (style->bevel_width * 2),
-                        geom_h - (style->bevel_width * 2));
+  const bt::Rect t(style->label_margin,
+                   style->label_margin,
+                   geom_w - (style->label_margin * 2),
+                   geom_h - (style->label_margin * 2));
   const bt::Pen pen(screen_info.screenNumber(), style->focus.text);
   bt::drawTexture(screen_info.screenNumber(), texture, geom_window,
                   u, u, geom_pixmap);

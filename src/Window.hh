@@ -220,8 +220,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
     bt::Netwm::Strut margin;
     int grab_x, grab_y;         // where was the window when it was grabbed?
 
-    unsigned int inside_w, inside_h, // window w/h without border_w
-      label_w, border_w;
+    unsigned int label_w;       // width of the label
   } frame;
 
   Window createToplevelWindow();

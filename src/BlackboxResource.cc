@@ -522,87 +522,135 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
   wstyle.close.load(screen_num, close_bits,
                     close_width, close_height);
 
-  wstyle.focus.title =
-    bt::textureResource(display, screen_num, res,
-                        "window.title.focus", "Window.Title.Focus",
-                        "white");
-  wstyle.unfocus.title =
-    bt::textureResource(display, screen_num, res,
-                        "window.title.unfocus", "Window.Title.Unfocus",
-                        "black");
-  wstyle.focus.label =
-    bt::textureResource(display, screen_num, res,
-                        "window.label.focus", "Window.Label.Focus",
-                        "white");
-  wstyle.unfocus.label =
-    bt::textureResource(display, screen_num, res,
-                        "window.label.unfocus", "Window.Label.Unfocus",
-                        "black");
-  wstyle.focus.handle =
-    bt::textureResource(display, screen_num, res,
-                        "window.handle.focus", "Window.Handle.Focus",
-                        "white");
-  wstyle.unfocus.handle =
-    bt::textureResource(display, screen_num, res,
-                        "window.handle.unfocus", "Window.Handle.Unfocus",
-                        "black");
-
-  wstyle.handle_height =
-    res.read("window.handleHeight", "Window.HandleHeight", 6);
-
-  wstyle.bevel_width = bevel_width;
-
-  // the height of the titlebar is based upon the height of the font being
-  // used to display the window's title
-  wstyle.label_height = bt::textHeight(screen_num, wstyle.font) + 2;
-  wstyle.title_height = wstyle.label_height + wstyle.bevel_width * 2;
-  wstyle.button_width = wstyle.label_height - 2;
-  wstyle.grip_width = wstyle.button_width * 2;
-
-  wstyle.focus.grip = bt::textureResource(display, screen_num, res,
-                                          "window.grip.focus",
-                                          "Window.Grip.Focus",
-                                          "white");
-  wstyle.unfocus.grip = bt::textureResource(display, screen_num, res,
-                                            "window.grip.unfocus",
-                                            "Window.Grip.Unfocus",
-                                            "black");
-  wstyle.focus.button =
-    bt::textureResource(display, screen_num, res,
-                        "window.button.focus", "Window.Button.Focus",
-                        "white");
-  wstyle.unfocus.button =
-    bt::textureResource(display, screen_num, res,
-                        "window.button.unfocus", "Window.Button.Unfocus",
-                        "black");
-  wstyle.pressed =
-    bt::textureResource(display, screen_num, res,
-                        "window.button.pressed", "Window.Button.Pressed",
-                        "black");
-
+  // focused window style
   wstyle.focus.text =
     bt::Color::namedColor(display, screen_num,
                           res.read("window.label.focus.textColor",
                                    "Window.Label.Focus.TextColor",
                                    "black"));
+  wstyle.focus.foreground =
+    bt::Color::namedColor(display, screen_num,
+                          res.read("window.button.focus.foregroundColor",
+                                   "Window.Button.Focus.Foreground",
+                                   res.read("window.button.focus.picColor",
+                                            "Window.Button.Focus.PicColor",
+                                            "black")));
+  wstyle.focus.title =
+    bt::textureResource(display, screen_num, res,
+                        "window.title.focus",
+                        "Window.Title.Focus",
+                        "white");
+  wstyle.focus.label =
+    bt::textureResource(display, screen_num, res,
+                        "window.label.focus",
+                        "Window.Label.Focus",
+                        "white");
+  wstyle.focus.button =
+    bt::textureResource(display, screen_num, res,
+                        "window.button.focus",
+                        "Window.Button.Focus",
+                        "white");
+  wstyle.focus.handle =
+    bt::textureResource(display, screen_num, res,
+                        "window.handle.focus",
+                        "Window.Handle.Focus",
+                        "white");
+  wstyle.focus.grip =
+    bt::textureResource(display, screen_num, res,
+                        "window.grip.focus",
+                        "Window.Grip.Focus",
+                        "white");
+
+  // unfocused window style
   wstyle.unfocus.text =
     bt::Color::namedColor(display, screen_num,
                           res.read("window.label.unfocus.textColor",
                                    "Window.Label.Unfocus.TextColor",
                                    "white"));
-  wstyle.focus.foreground =
-    bt::Color::namedColor(display, screen_num,
-                          res.read("window.button.focus.picColor",
-                                   "Window.Button.Focus.PicColor",
-                                   "black"));
   wstyle.unfocus.foreground =
     bt::Color::namedColor(display, screen_num,
                           res.read("window.button.unfocus.picColor",
                                    "Window.Button.Unfocus.PicColor",
                                    "white"));
+  wstyle.unfocus.title =
+    bt::textureResource(display, screen_num, res,
+                        "window.title.unfocus",
+                        "Window.Title.Unfocus",
+                        "black");
+  wstyle.unfocus.label =
+    bt::textureResource(display, screen_num, res,
+                        "window.label.unfocus",
+                        "Window.Label.Unfocus",
+                        "black");
+  wstyle.unfocus.button =
+    bt::textureResource(display, screen_num, res,
+                        "window.button.unfocus",
+                        "Window.Button.Unfocus",
+                        "black");
+  wstyle.unfocus.handle =
+    bt::textureResource(display, screen_num, res,
+                        "window.handle.unfocus",
+                        "Window.Handle.Unfocus",
+                        "black");
+  wstyle.unfocus.grip =
+    bt::textureResource(display, screen_num, res,
+                        "window.grip.unfocus",
+                        "Window.Grip.Unfocus",
+                        "black");
+
+  wstyle.frame_border =
+    bt::Color::namedColor(display, screen_num,
+                          res.read("window.frame.borderColor",
+                                   "Window.Frame.BorderColor",
+                                   "black"));
+  wstyle.pressed =
+    bt::textureResource(display, screen_num, res,
+                        "window.button.pressed", "Window.Button.Pressed",
+                        "black");
 
   wstyle.alignment =
     bt::alignResource(res, "window.alignment", "Window.Alignment");
+
+  wstyle.title_margin =
+    res.read("window.title.marginWidth", "Window.Title.MarginWidth", 2);
+  wstyle.label_margin =
+    res.read("window.label.marginWidth", "Window.Label.MarginWidth", 2);
+  wstyle.button_margin =
+    res.read("window.button.marginWidth", "Window.Button.MarginWidth", 2);
+  wstyle.frame_border_width =
+    res.read("window.frame.borderWidth", "Window.Frame.BorderWidth", 1);
+  wstyle.handle_height =
+    res.read("window.handleHeight", "Window.HandleHeight", 6);
+
+  // the height of the titlebar is based upon the height of the font being
+  // used to display the window's title
+  wstyle.button_width =
+    std::max(std::max(std::max(std::max(wstyle.iconify.width(),
+                                        wstyle.iconify.height()),
+                               std::max(wstyle.maximize.width(),
+                                        wstyle.maximize.height())),
+                      std::max(wstyle.restore.width(),
+                               wstyle.restore.height())),
+             std::max(wstyle.close.width(),
+                      wstyle.close.height())) +
+    ((std::max(wstyle.focus.button.borderWidth(),
+               wstyle.unfocus.button.borderWidth()) +
+      wstyle.button_margin) * 2);
+  wstyle.label_height =
+    std::max(bt::textHeight(screen_num, wstyle.font) +
+             ((std::max(wstyle.focus.label.borderWidth(),
+                        wstyle.unfocus.label.borderWidth()) +
+               wstyle.label_margin) * 2),
+             wstyle.button_width);
+  wstyle.button_width = std::max(wstyle.button_width, wstyle.label_height);
+  wstyle.title_height =
+    wstyle.label_height +
+    ((std::max(wstyle.focus.title.borderWidth(),
+               wstyle.unfocus.title.borderWidth()) +
+      wstyle.title_margin) * 2);
+  wstyle.grip_width = (wstyle.button_width * 2);
+  wstyle.handle_height += (std::max(wstyle.focus.handle.borderWidth(),
+                                    wstyle.unfocus.handle.borderWidth()) * 2);
 
   // load toolbar style
   toolbar_style.font.setFontName(res.read("toolbar.font", "Toolbar.Font"));
