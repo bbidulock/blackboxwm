@@ -1,0 +1,134 @@
+------------------------------------------------------------------------
+
+ICCCM Compliance: Version 2.0
+
+Section 4: Client to Window Manager Communication
+
+4.1.2 Client Properties:
+	WM_NAME:			supported
+	WM_ICON_NAME:			supported
+	WM_NORMAL_HINTS:		supported
+	WM_HINTS:			supported
+	WM_CLASS:			unused
+ 	WM_TRANSIENT_FOR:		supported
+	WM_PROTOCOLS:			supported
+ 	WM_DELETE_WINDOW:		supported
+ 	WM_TAKE_FOCUS:			supported
+	WM_COLORMAP_WINDOWS:		NOT supported
+	WM_CLIENT_MACHINE:		unused
+
+4.1.3 Window Manager Properties:
+	WM_STATE:			supported
+	WM_ICON_SIZE:			NOT supported
+4.1.4 Changing Window State:		supported
+4.1.5 Configuring the Window:		supported
+4.1.6 Changing Window Attributes:	supported
+4.1.7 Input Focus:			supported
+4.1.8 Colormaps:			NOT finished
+
+	Only the top-level window's colormap is installed when the
+	window is focused.  As mentioned above, WM_COLORMAP_WINDOWS is
+	not (yet) supported, neither is the WM_COLORMAP_NOTIFY
+	client message.
+
+4.1.9 Icons:				PARTIAL
+
+	The icon_pixmap field of the WM_HINTS property is ignored.
+	The icon_window field of the WM_HINTS property is also
+	ignored, which appears to be in violation of the ICCCM.
+
+4.1.10 Pop-up Windows:			supported
+4.1.11 Window Groups:			supported
+
+4.3 Communication through Selections:	NOT supported
+
+
+Section 5: Session Management
+
+5.2 Window Manager Support:		NOT supported
+
+	Blackbox does not (yet) support the X11 Session Management
+	Protocol, and as such does not work in such an environment.
+
+------------------------------------------------------------------------
+
+EWMH Compliance: Version 1.3
+See http://www.freedesktop.org/Standards/wm-spec
+
+Section 3: Root Window Properties (and Related Messages)
+
+_NET_SUPPORTED:				supported
+_NET_CLIENT_LIST:			supported
+_NET_NUMBER_OF_DESKTOPS:		supported
+_NET_DESKTOP_GEOMETRY:			NOT supported
+_NET_DESKTOP_VIEWPORT:			NOT supported
+_NET_CURRENT_DESKTOP:			supported
+_NET_DESKTOP_NAEMS:			supported
+_NET_ACTIVE_WINDOW:			supported
+_NET_WORKAREA:				supported
+_NET_SUPPORTING_WM_CHECK:		supported
+_NET_VIRTUAL_ROOTS:			NOT supported
+_NET_DESKTOP_LAYOUT:			NOT supported
+_NET_SHOWING_DESKTOP:			NOT supported
+
+
+Section 4: Other Root Window Messages
+
+_NET_CLOSE_WINDOW:			supported
+_NET_MOVERESIZE_WINDOW:			supported
+_NET_WM_MOVERESIZE:			NOT supported
+
+
+Section 5: Application Window Properties
+
+_NET_WM_NAME:				supported
+_NET_WM_VISIBLE_NAME:			NOT supported
+_NET_WM_ICON_NAME:			NOT supported
+_NET_WM_VISIBLE_ICON_NAME:		NOT supported
+_NET_WM_DESKTOP:			supported
+_NET_WM_WINDOW_TYPE:			supported
+	_NET_WM_WINDOW_TYPE_DESKTOP:	supported
+	_NET_WM_WINDOW_TYPE_DOCK:	supported
+	_NET_WM_WINDOW_TYPE_TOOLBAR:	NOT supported
+	_NET_WM_WINDOW_TYPE_MENU:	NOT supported
+	_NET_WM_WINDOW_TYPE_UTILITY:	NOT supported
+	_NET_WM_WINDOW_TYPE_SPLASH:	NOT supported
+	_NET_WM_WINDOW_TYPE_DIALOG:	supported
+	_NET_WM_WINDOW_TYPE_NORMAL:	supported
+_NET_WM_STATE:				supported
+	_NET_WM_STATE_MODAL:		NOT supported
+	_NET_WM_STATE_STICKY:		NOT supported
+	_NET_WM_STATE_MAXIMIZED_VERT:	supported
+	_NET_WM_STATE_MAXIMIZED_HORZ:	supported
+	_NET_WM_STATE_SHADED:		supported
+	_NET_WM_STATE_SKIP_TASKBAR:	NOT supported
+	_NET_WM_STATE_SKIP_PAGER:	NOT supported
+	_NET_WM_STATE_HIDDEN:		NOT supported
+	_NET_WM_STATE_FULLSCREEN:	supported
+	_NET_WM_STATE_ABOVE:		supported
+	_NET_WM_STATE_BELOW:		supported
+_NET_WM_ALLOWED_ACTIONS:		supported
+	_NET_WM_ACTION_MOVE:		NOT supported
+	_NET_WM_ACTION_RESIZE:		NOT supported
+	_NET_WM_ACITON_MINIMIZE:	supported
+	_NET_WM_ACTION_SHADE:		supported
+	_NET_WM_ACTION_STICK:		NOT supported
+	_NET_WM_ACTION_MAXIMIZE_HORZ:	supported
+	_NET_WM_ACTION_MAXIMIZE_VERT:	supported
+	_NET_WM_ACTION_FULLSCREEN:	supported
+	_NET_WM_ACTION_CHANGE_DESKTOP:	supported
+	_NET_WM_ACTION_CLOSE:		supported
+_NET_WM_STRUT:				NOT supported
+_NET_WM_STRUT_PARTIAL:			NOT supported
+_NET_WM_ICON_GEOMETRY:			NOT supported
+_NET_WM_ICON:				NOT supported
+_NET_WM_PID:				NOT supported
+_NET_WM_HANDLED_ICONS:			NOT supported
+_NET_WM_USER_TIME:			NOT supported
+
+
+Section 6: Window Manager Protocols
+
+_NET_WM_PING:				NOT supported
+
+------------------------------------------------------------------------
