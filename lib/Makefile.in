@@ -85,12 +85,12 @@ DEPDIR = @DEPDIR@
 EXEEXT = @EXEEXT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 MAINT = @MAINT@
+MITSHM = @MITSHM@
 NLS = @NLS@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 SHAPE = @SHAPE@
-TIMEDCACHE = @TIMEDCACHE@
 VERSION = @VERSION@
 am__include = @am__include@
 am__quote = @am__quote@
@@ -98,7 +98,7 @@ gencat_cmd = @gencat_cmd@
 install_sh = @install_sh@
 regex_cmd = @regex_cmd@
 
-CPPFLAGS = @CPPFLAGS@ @SHAPE@ @DEBUG@ @NLS@ \
+CPPFLAGS = @CPPFLAGS@ @SHAPE@ @MITSHM@ @DEBUG@ @NLS@ \
 			  -DLOCALEPATH=\"$(pkgdatadir)/nls\"
 
 noinst_LIBRARIES = libbt.a

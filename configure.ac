@@ -87,10 +87,10 @@ AC_CHECK_LIB([X11],
              [LIBS="$LIBS -lX11"],
              [AC_MSG_ERROR([Could not find XOpenDisplay in -lX11])])
 
-Xext_lib=""
+Xext_lib=
 
 dnl Check for XShape extension support and proper library files.
-SHAPE=""
+SHAPE=
 AC_MSG_CHECKING([whether to build support for the XShape extension])
 AC_ARG_ENABLE([shape],
               AC_HELP_STRING([--enable-shape],
@@ -125,8 +125,47 @@ AC_SUBST([SHAPE])
 
 LIBS="$LIBS $Xext_lib"
 
+dnl Check for MIT-SHM extension support and proper library files.
+MITSHM=
+AC_MSG_CHECKING([whether to build support for the MIT-SHM extension])
+AC_ARG_ENABLE([mitshm],
+              AC_HELP_STRING([--enable-mitshm],
+	                     [enable support of the MIT-SHM extension @<:@default=yes@:>@]))
+
+: ${enableval="yes"}
+if test x$enableval = "xyes"; then
+  AC_MSG_RESULT([yes])
+  AC_CHECK_LIB([Xext],
+               [XShmPutImage],
+               [AC_MSG_CHECKING([for X11/extensions/XShm.h])
+                AC_TRY_LINK(
+[
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <X11/extensions/XShm.h>
+],
+[
+ long foo = ShmCompletion
+],
+[
+                AC_MSG_RESULT([yes])
+                MITSHM="-DMITSHM"; Xext_lib="-lXext"
+],
+[AC_MSG_RESULT([no])]
+                           )
+               ])
+else
+  AC_MSG_RESULT([no])
+fi
+AC_SUBST([MITSHM])
+
+LIBS=`echo "$LIBS $Xext_lib" | sed -e 's/-lXext -lXext/-lXext/'`
+
 dnl Check whether to include debugging code
-DEBUG=""
+DEBUG=
 AC_MSG_CHECKING([whether to include verbose debugging code])
 AC_ARG_ENABLE([debug],
               AC_HELP_STRING([--enable-debug],
@@ -143,7 +182,7 @@ AC_ARG_ENABLE([debug],
 AC_SUBST(DEBUG)
 
 dnl Check whether to include natural language support (i18n)
-NLS=""
+NLS=
 AC_MSG_CHECKING([whether to include NLS support])
 AC_ARG_ENABLE([nls],
               AC_HELP_STRING([--enable-nls],
@@ -165,28 +204,8 @@ AC_CHECK_LIB([xpg4], [setlocale], [LIBS="$LIBS -lxpg4"])
 
 AC_CHECK_PROGS([gencat_cmd], [gencat])
 if test x$gencat_cmd = "x"; then
-  NLS=""
+  NLS=
 fi
-
-
-dnl Check for new timed pixmap cache
-TIMEDCACHE=""
-AC_MSG_CHECKING([whether to use the new timed pixmap cache])
-AC_ARG_ENABLE([timed-cache],
-              AC_HELP_STRING([--enable-timed-cache],
-	                     [use new timed pixmap cache @<:@default=yes@:>@]),
-              [
-  if test x$enableval = "xyes"; then
-    AC_MSG_RESULT([yes])
-    TIMEDCACHE="-DTIMEDCACHE"
-  else
-    AC_MSG_RESULT([no])
-  fi          ],
-              [
-  AC_MSG_RESULT([yes])
-  TIMEDCACHE="-DTIMEDCACHE"
-              ])
-AC_SUBST([TIMEDCACHE])
 
 dnl Determine if maintainer portions of the Makefiles should be included.
 AM_MAINTAINER_MODE
