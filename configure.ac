@@ -75,6 +75,29 @@ AC_CHECK_FUNCS([iconv_open],
                ])
 AC_SUBST(ICONV)
 
+iconv_signature=
+AC_MSG_CHECKING([for GNU libiconv])
+
+dnl check if we are using GNU libiconv
+AC_COMPILE_IFELSE([
+#include <sys/types.h>
+#include <iconv.h>
+
+int main(int, char **) {
+    iconv_t cd;
+    const char *inp;
+    char *outp;
+    size_t inbytes, outbytes;
+    iconv(cd, &inp, &inbytes, &outp, &outbytes);
+    return 0;
+}
+],
+ 		  [AC_DEFINE([HAVE_GNU_LIBICONV], [1],
+                             [Define to 1 when using GNU libiconv])
+		   AC_MSG_RESULT([yes])],
+		  [AC_MSG_RESULT([no, assuming POSIX compliance])]
+                 )
+
 LOCALE=
 AC_CHECK_FUNCS([setlocale],
                [],

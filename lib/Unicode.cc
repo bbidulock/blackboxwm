@@ -1,6 +1,10 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 #include "Unicode.hh"
 
+#ifdef HAVE_CONFIG_H
+#  include "../config.h"
+#endif
+
 #include <errno.h>
 #include <iconv.h>
 #include <locale.h>
@@ -46,7 +50,15 @@ namespace bt {
     if (cd == invalid)
       return;
 
+#ifdef HAVE_GNU_LIBICONV
+    // GNU libiconv
     const char *inp = reinterpret_cast<const char *>(in.c_str());
+#else
+    // POSIX compliant iconv(3)
+    char *inp =
+      reinterpret_cast<char *>
+      (const_cast<typename _Source::value_type *>(in.c_str()));
+#endif
     const typename _Source::size_type in_size =
       in.size() * sizeof(typename _Source::value_type);
     typename _Source::size_type in_bytes = in_size;
@@ -69,7 +81,15 @@ namespace bt {
         case EINVAL:
           {
             const typename _Source::size_type off = in_size - in_bytes + 1;
+#ifdef HAVE_GNU_LIBICONV
+            // GNU libiconv
             inp = reinterpret_cast<const char *>(in.c_str()) + off;
+#else
+            // POSIX compliant iconv(3)
+            inp =
+              reinterpret_cast<char *>
+              (const_cast<typename _Source::value_type *>(in.c_str()));
+#endif
             in_bytes = in_size - off;
             break;
           }
