@@ -105,8 +105,8 @@ static void signalhandler(int sig) {
 
 bt::Application::Application(const std::string &app_name, const char *dpy_name,
                              bool multi_head)
-  : _app_name(app_name), run_state(STARTUP), xserver_time(CurrentTime),
-    menu_grab(false)
+  : _app_name(bt::basename(app_name)), run_state(STARTUP),
+    xserver_time(CurrentTime), menu_grab(false)
 {
   assert(base_app == 0);
   ::base_app = this;
