@@ -17,6 +17,8 @@ CVS warts:
 * look into centering the window when maximizing and the window can not grow
   to fill the area
 
+* BlackboxWindow::deiconify needs a new name, also look into show()
+
 Stuff TODO or On The Way(tm):
 -----------------------------
 ADD: add _BLACKBOX_STYLE and _BLACKBOX_MENU atoms so that bbtools, bbconf, etc.

@@ -49,6 +49,8 @@ extern "C" {
 #include "Workspace.hh"
 #include "Windowmenu.hh"
 
+#include <functional>
+
 using std::string;
 
 
@@ -127,7 +129,7 @@ unsigned int Workspace::removeWindow(BlackboxWindow *w) {
 
 void Workspace::showAll(void) {
   std::for_each(stackingList.begin(), stackingList.end(),
-                std::mem_fun(&BlackboxWindow::show));
+                std::bind2nd(std::mem_fun(&BlackboxWindow::show), False));
 }
 
 

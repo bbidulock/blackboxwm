@@ -894,8 +894,6 @@ void BlackboxWindow::getWMProtocols(void) {
 void BlackboxWindow::getWMHints(void) {
   XWMHints *wmhint = XGetWMHints(display, client.window);
   if (! wmhint) {
-    flags.visible = True;
-    flags.iconic = False;
     focus_mode = F_Passive;
     client.window_group = None;
     client.initial_state = NormalState;
@@ -1370,18 +1368,20 @@ void BlackboxWindow::iconify(void) {
 }
 
 
-void BlackboxWindow::show(void) {
+void BlackboxWindow::show(Bool newWindow) {
   setState(NormalState);
 
   XMapWindow(display, client.window);
   XMapSubwindows(display, frame.window);
   XMapWindow(display, frame.window);
 
-  if (flags.iconic && screen->doFocusNew())
-    setInputFocus();
-
-  flags.visible = True;
-  flags.iconic = False;
+  /* if this window has been mapped before we mark it visible to avoid being
+   * handled by the mapNotifyEvent
+   */
+  if (! newWindow) {
+    flags.visible = True;
+    flags.iconic = False;
+  }
 }
 
 
@@ -1391,7 +1391,7 @@ void BlackboxWindow::deiconify(Bool reassoc, Bool raise) {
   else if (workspace_number != screen->getCurrentWorkspace()->getID())
     return;
 
-  show();
+  show(! reassoc);
 
   if (reassoc && client.transient) client.transient->deiconify(True, False);
 
