@@ -665,7 +665,7 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
     bt::alignResource(res, "toolbar.alignment", "Toolbar.Alignment");
 
   toolbar_style.frame_margin =
-    res.read("toolbar.marginWidth", "Frame.Margin", 2);
+    res.read("toolbar.marginWidth", "Toolbar.Margin", 2);
   toolbar_style.label_margin =
     res.read("toolbar.label.marginWidth", "Toolbar.Label.Margin", 2);
   toolbar_style.button_margin =
