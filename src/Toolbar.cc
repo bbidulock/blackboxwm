@@ -180,7 +180,7 @@ Toolbar2::Toolbar2(BScreen *scrn)
   updateLayout();
   updatePosition();
 
-  // show();
+  show();
 }
 
 Toolbar2::~Toolbar2()
@@ -1068,7 +1068,7 @@ void Toolbar::edit(void)
 
   editing = True;
   XGetInputFocus(*blackbox, &window, &foo);
-  if(window == frame.workspace_label)
+  if (window == frame.workspace_label)
     return;
 
   XSetInputFocus(*blackbox, frame.workspace_label,

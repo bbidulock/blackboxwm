@@ -32,6 +32,7 @@
 
 #include "BaseDisplay.hh"
 #include "Timer.hh"
+#include "blackbox.hh"
 
 // forward declaration
 class Windowmenu;
@@ -104,11 +105,11 @@ private:
   } flags;
 
   struct _client {
-    BlackboxWindow *transient_for,  // which window are we a transient for?
-      *transient;                   // which window is our transient?
-
     Window window,                  // the client's window
-      window_group;                 // the client's window group
+      window_group,                 // the client's window group
+      transient_for;                // which window are we a transient for?
+    BlackboxWindow *transient;      // which window is our transient?
+
 
     char *title, *icon_title;
     size_t title_len;               // strlen(title)
@@ -256,7 +257,8 @@ public:
   { return ((client.transient) ? True : False); }
 
   BlackboxWindow *getTransient(void) { return client.transient; }
-  BlackboxWindow *getTransientFor(void) { return client.transient_for; }
+  BlackboxWindow *getTransientFor(void)
+  { return blackbox->searchWindow(client.transient_for); }
 
   BScreen *getScreen(void) { return screen; }
 

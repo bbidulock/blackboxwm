@@ -40,4 +40,3 @@ private:
 };
 
 #endif // __Workspacemenu_hh
-

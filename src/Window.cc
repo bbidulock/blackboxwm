@@ -126,7 +126,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   functions.close = decorations.close = False;
 
   client.wm_hint_flags = client.normal_hint_flags = 0;
-  client.transient_for = client.transient = 0;
+  client.transient_for = None;
+  client.transient = 0;
   client.title = 0;
   client.title_len = 0;
   client.icon_title = 0;
@@ -172,28 +173,30 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   blackbox->saveWindowSearch(client.window, this);
 
   // determine if this is a transient window
-  Window win;
-  if (XGetTransientForHint(*blackbox, client.window, &win)) {
-    if (win && (win != client.window)) {
+  if (!XGetTransientForHint(*blackbox, client.window, &(client.transient_for))) {
+    client.transient_for = None;
+  } else {
+    if (client.transient_for == None ||
+        client.transient_for == client.window) {
+      client.transient_for = screen->rootWindow();
+    } else {
       BlackboxWindow *tr;
-      if ((tr = blackbox->searchWindow(win))) {
-	while (tr->client.transient) tr = tr->client.transient;
-	client.transient_for = tr;
-	tr->client.transient = this;
-	flags.stuck = client.transient_for->flags.stuck;
-	flags.transient = True;
-      } else if (win == client.window_group) {
-	if ((tr = blackbox->searchGroup(win, this))) {
-	  while (tr->client.transient) tr = tr->client.transient;
-	  client.transient_for = tr;
-	  tr->client.transient = this;
-	  flags.stuck = client.transient_for->flags.stuck;
-	  flags.transient = True;
-	}
+      if ((tr = blackbox->searchWindow(client.transient_for))) {
+        tr->client.transient = this;
+        flags.stuck = tr->flags.stuck;
+      } else if (client.transient_for == client.window_group) {
+        if ((tr = blackbox->searchGroup(client.transient_for, this))) {
+          tr->client.transient = this;
+          flags.stuck = tr->flags.stuck;
+        }
       }
     }
 
-    if (win == screen->rootWindow()) flags.modal = True;
+    if (client.transient_for == screen->rootWindow()) {
+      flags.modal = True;
+    }
+
+    flags.transient = True;
   }
 
   // adjust the window decorations based on transience and window sizes
@@ -328,10 +331,11 @@ BlackboxWindow::~BlackboxWindow(void) {
   if (client.window_group)
     blackbox->removeGroupSearch(client.window_group);
 
-  if (flags.transient && client.transient_for)
-    client.transient_for->client.transient = client.transient;
-  if (client.transient)
-    client.transient->client.transient_for = client.transient_for;
+  if (flags.transient) {
+    BlackboxWindow *bw = blackbox->searchWindow(client.transient_for);
+    if (bw)
+      bw->client.transient = client.transient;
+  }
 
   if (frame.close_button) {
     blackbox->removeWindowSearch(frame.close_button);
@@ -1392,9 +1396,11 @@ void BlackboxWindow::iconify(void) {
 
   screen->getWorkspace(workspace_number)->removeWindow(this);
 
-  if (flags.transient && client.transient_for &&
-      !client.transient_for->flags.iconic) {
-    client.transient_for->iconify();
+  if (flags.transient) {
+    BlackboxWindow *transientOwner =
+      blackbox->searchWindow(client.transient_for);
+    if (!transientOwner->flags.iconic)
+      transientOwner->iconify();
   }
   screen->addIcon(this);
 
@@ -2303,26 +2309,33 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
   case XA_WM_COMMAND:
     break;
 
-  case XA_WM_TRANSIENT_FOR:
+  case XA_WM_TRANSIENT_FOR: {
     // determine if this is a transient window
-    Window win;
-    if (XGetTransientForHint(*blackbox, client.window, &win)) {
-      if (win && (win != client.window)) {
-        if ((client.transient_for = blackbox->searchWindow(win))) {
-          client.transient_for->client.transient = this;
-          flags.stuck = client.transient_for->flags.stuck;
-          flags.transient = True;
-        } else if (win == client.window_group) {
-	  //jr This doesn't look quite right...
-          if ((client.transient_for = blackbox->searchGroup(win, this))) {
-            client.transient_for->client.transient = this;
-            flags.stuck = client.transient_for->flags.stuck;
-            flags.transient = True;
+    if (!XGetTransientForHint(*blackbox, client.window, &(client.transient_for))) {
+      client.transient_for = None;
+      flags.transient = False;
+    } else {
+      if (client.transient_for == None ||
+          client.transient_for == client.window) {
+        client.transient_for = screen->rootWindow();
+      } else {
+        BlackboxWindow *tr;
+        if ((tr = blackbox->searchWindow(client.transient_for))) {
+          tr->client.transient = this;
+          flags.stuck = tr->flags.stuck;
+        } else if (client.transient_for == client.window_group) {
+          if ((tr = blackbox->searchGroup(client.transient_for, this))) {
+            tr->client.transient = this;
+            flags.stuck = tr->flags.stuck;
           }
         }
       }
 
-      if (win == screen->rootWindow()) flags.modal = True;
+      if (client.transient_for == screen->rootWindow()) {
+        flags.modal = True;
+      }
+
+      flags.transient = True;
     }
 
     // adjust the window decorations based on transience
@@ -2330,7 +2343,7 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
       decorations.maximize = decorations.handle = functions.maximize = False;
 
     reconfigure();
-
+  }
     break;
 
   case XA_WM_HINTS:

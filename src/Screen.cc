@@ -1022,9 +1022,7 @@ Bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
             }
 
             char *style = expandTilde(command);
-
             menu->insert(label, Rootmenu::Item(Rootmenu::SetStyle, style));
-
 	    delete [] style;
           }
 

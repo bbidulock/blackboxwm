@@ -176,15 +176,12 @@ void Configmenu::Focusmenu::itemClicked(const Point &, const Item &item, int but
 
   case 2: // sloppy focus
     configmenu->screen->saveSloppyFocus(True);
-
     configmenu->screen->reconfigure();
-
     break;
 
   case 3: // auto raise with sloppy focus
     Bool change = ((configmenu->screen->doAutoRaise()) ? False : True);
     configmenu->screen->saveAutoRaise(change);
-
     break;
   }
 
@@ -256,61 +253,47 @@ void Configmenu::Placementmenu::itemClicked(const Point &, const Item &item, int
   switch (item.function()) {
   case BScreen::RowSmartPlacement:
     configmenu->screen->savePlacementPolicy(item.function());
-
     setItemChecked(0, True);
     setItemChecked(1, False);
     setItemChecked(2, False);
-
     break;
 
   case BScreen::ColSmartPlacement:
     configmenu->screen->savePlacementPolicy(item.function());
-
     setItemChecked(0, False);
     setItemChecked(1, True);
     setItemChecked(2, False);
-
     break;
 
   case BScreen::CascadePlacement:
     configmenu->screen->savePlacementPolicy(item.function());
-
     setItemChecked(0, False);
     setItemChecked(1, False);
     setItemChecked(2, True);
-
     break;
 
   case BScreen::LeftRight:
     configmenu->screen->saveRowPlacementDirection(BScreen::LeftRight);
-
     setItemChecked(3, True);
     setItemChecked(4, False);
-
     break;
 
   case BScreen::RightLeft:
     configmenu->screen->saveRowPlacementDirection(BScreen::RightLeft);
-
     setItemChecked(3, False);
     setItemChecked(4, True);
-
     break;
 
   case BScreen::TopBottom:
     configmenu->screen->saveColPlacementDirection(BScreen::TopBottom);
-
     setItemChecked(5, True);
     setItemChecked(6, False);
-
     break;
 
   case BScreen::BottomTop:
     configmenu->screen->saveColPlacementDirection(BScreen::BottomTop);
-
     setItemChecked(5, False);
     setItemChecked(6, True);
-
     break;
   }
 }

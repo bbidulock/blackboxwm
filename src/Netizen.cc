@@ -21,12 +21,6 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-// stupid macros needed to access some functions in version 2 of the GNU C
-// library
-#ifndef   _GNU_SOURCE
-#define   _GNU_SOURCE
-#endif // _GNU_SOURCE
-
 #ifdef    HAVE_CONFIG_H
 #include "../config.h"
 #endif // HAVE_CONFIG_H
@@ -35,18 +29,18 @@
 #include "Screen.hh"
 
 Netizen::Netizen(BScreen *scr, Window win)
-    : display( BaseDisplay::instance() ), screen( scr ), window( win )
+  : display(BaseDisplay::instance()), screen(scr), window(win)
 {
-    event.type = ClientMessage;
-    event.xclient.message_type = display->getBlackboxStructureMessagesAtom();
-    event.xclient.display = *display;
-    event.xclient.window = window;
-    event.xclient.format = 32;
-    event.xclient.data.l[0] = display->getBlackboxNotifyStartupAtom();
-    event.xclient.data.l[1] = event.xclient.data.l[2] =
-    event.xclient.data.l[3] = event.xclient.data.l[4] = 0l;
+  event.type = ClientMessage;
+  event.xclient.message_type = display->getBlackboxStructureMessagesAtom();
+  event.xclient.display = *display;
+  event.xclient.window = window;
+  event.xclient.format = 32;
+  event.xclient.data.l[0] = display->getBlackboxNotifyStartupAtom();
+  event.xclient.data.l[1] = event.xclient.data.l[2] =
+  event.xclient.data.l[3] = event.xclient.data.l[4] = 0l;
 
-    XSendEvent(*display, window, False, NoEventMask, &event);
+  XSendEvent(*display, window, False, NoEventMask, &event);
 }
 
 

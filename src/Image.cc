@@ -1769,292 +1769,292 @@ BImageControl::BImageControl(BaseDisplay *dpy, ScreenInfo *scrn, Bool _dither,
                              int _cpc, unsigned long cache_timeout,
                              unsigned long cmax)
 {
-    display = dpy;
-    screeninfo = scrn;
-    setDither(_dither);
-    setColorsPerChannel(_cpc);
+  display = dpy;
+  screeninfo = scrn;
+  setDither(_dither);
+  setColorsPerChannel(_cpc);
 
-    cache_max = cmax;
+  cache_max = cmax;
 #ifdef    TIMEDCACHE
-    if (cache_timeout) {
-	timer = new BTimer(display, this);
-	timer->setTimeout(cache_timeout);
-        timer->recurring(True);
-	timer->start();
-    } else
-	timer = (BTimer *) 0;
+  if (cache_timeout) {
+    timer = new BTimer(display, this);
+    timer->setTimeout(cache_timeout);
+    timer->recurring(True);
+    timer->start();
+  } else
+    timer = (BTimer *) 0;
 #endif // TIMEDCACHE
 
-    colors = (XColor *) 0;
-    ncolors = 0;
+  colors = (XColor *) 0;
+  ncolors = 0;
 
-    grad_xbuffer = grad_ybuffer = (unsigned int *) 0;
-    grad_buffer_width = grad_buffer_height = 0;
+  grad_xbuffer = grad_ybuffer = (unsigned int *) 0;
+  grad_buffer_width = grad_buffer_height = 0;
 
-    sqrt_table = (unsigned long *) 0;
+  sqrt_table = (unsigned long *) 0;
 
-    screen_depth = screeninfo->depth();
-    window = screeninfo->rootWindow();
-    screen_number = screeninfo->screen();
+  screen_depth = screeninfo->depth();
+  window = screeninfo->rootWindow();
+  screen_number = screeninfo->screen();
 
-    int count;
-    XPixmapFormatValues *pmv = XListPixmapFormats(*display,
-						  &count);
-    colormap = screeninfo->colormap();
+  int count;
+  XPixmapFormatValues *pmv = XListPixmapFormats(*display,
+                                                &count);
+  colormap = screeninfo->colormap();
 
-    if (pmv) {
-	bits_per_pixel = 0;
-	for (int i = 0; i < count; i++)
-	    if (pmv[i].depth == screen_depth) {
-		bits_per_pixel = pmv[i].bits_per_pixel;
-		break;
-	    }
+  if (pmv) {
+    bits_per_pixel = 0;
+    for (int i = 0; i < count; i++)
+      if (pmv[i].depth == screen_depth) {
+        bits_per_pixel = pmv[i].bits_per_pixel;
+        break;
+      }
 
-	XFree(pmv);
+    XFree(pmv);
+  }
+
+  if (bits_per_pixel == 0) bits_per_pixel = screen_depth;
+  if (bits_per_pixel >= 24) setDither(False);
+
+  red_offset = green_offset = blue_offset = 0;
+
+  switch (screeninfo->visual()->c_class) {
+  case TrueColor:
+    {
+      int i;
+
+      // compute color tables
+      unsigned long red_mask = screeninfo->visual()->red_mask,
+                  green_mask = screeninfo->visual()->green_mask,
+                   blue_mask = screeninfo->visual()->blue_mask;
+
+      while (! (red_mask & 1)) { red_offset++; red_mask >>= 1; }
+      while (! (green_mask & 1)) { green_offset++; green_mask >>= 1; }
+      while (! (blue_mask & 1)) { blue_offset++; blue_mask >>= 1; }
+
+      red_bits = 255 / red_mask;
+      green_bits = 255 / green_mask;
+      blue_bits = 255 / blue_mask;
+
+      for (i = 0; i < 256; i++) {
+        red_color_table[i] = i / red_bits;
+        green_color_table[i] = i / green_bits;
+        blue_color_table[i] = i / blue_bits;
+      }
     }
 
-    if (bits_per_pixel == 0) bits_per_pixel = screen_depth;
-    if (bits_per_pixel >= 24) setDither(False);
+    break;
 
-    red_offset = green_offset = blue_offset = 0;
+  case PseudoColor:
+  case StaticColor:
+    {
+      ncolors = colors_per_channel * colors_per_channel * colors_per_channel;
 
-    switch (screeninfo->visual()->c_class) {
-    case TrueColor:
-	{
-	    int i;
+      if (ncolors > (1 << screen_depth)) {
+        colors_per_channel = (1 << screen_depth) / 3;
+        ncolors = colors_per_channel * colors_per_channel * colors_per_channel;
+      }
 
-	    // compute color tables
-	    unsigned long red_mask = screeninfo->visual()->red_mask,
-			green_mask = screeninfo->visual()->green_mask,
-			 blue_mask = screeninfo->visual()->blue_mask;
+      if (colors_per_channel < 2 || ncolors > (1 << screen_depth)) {
+        fprintf(stderr, i18n(ImageSet, ImageInvalidColormapSize,
+                             "BImageControl::BImageControl: invalid colormap size %d "
+                             "(%d/%d/%d) - reducing"),
+                ncolors, colors_per_channel, colors_per_channel,
+                colors_per_channel);
 
-	    while (! (red_mask & 1)) { red_offset++; red_mask >>= 1; }
-	    while (! (green_mask & 1)) { green_offset++; green_mask >>= 1; }
-	    while (! (blue_mask & 1)) { blue_offset++; blue_mask >>= 1; }
+        colors_per_channel = (1 << screen_depth) / 3;
+      }
 
-	    red_bits = 255 / red_mask;
-	    green_bits = 255 / green_mask;
-	    blue_bits = 255 / blue_mask;
+      colors = new XColor[ncolors];
+      if (! colors) {
+        fprintf(stderr, i18n(ImageSet,
+                             ImageErrorAllocatingColormap,
+                             "BImageControl::BImageControl: error allocating "
+                             "colormap\n"));
+        exit(1);
+      }
 
-	    for (i = 0; i < 256; i++) {
-		red_color_table[i] = i / red_bits;
-		green_color_table[i] = i / green_bits;
-		blue_color_table[i] = i / blue_bits;
-	    }
-	}
-
-	break;
-
-    case PseudoColor:
-    case StaticColor:
-	{
-	    ncolors = colors_per_channel * colors_per_channel * colors_per_channel;
-
-	    if (ncolors > (1 << screen_depth)) {
-		colors_per_channel = (1 << screen_depth) / 3;
-		ncolors = colors_per_channel * colors_per_channel * colors_per_channel;
-	    }
-
-	    if (colors_per_channel < 2 || ncolors > (1 << screen_depth)) {
-		fprintf(stderr, i18n(ImageSet, ImageInvalidColormapSize,
-						 "BImageControl::BImageControl: invalid colormap size %d "
-						 "(%d/%d/%d) - reducing"),
-			ncolors, colors_per_channel, colors_per_channel,
-			colors_per_channel);
-
-		colors_per_channel = (1 << screen_depth) / 3;
-	    }
-
-	    colors = new XColor[ncolors];
-	    if (! colors) {
-		fprintf(stderr, i18n(ImageSet,
-						 ImageErrorAllocatingColormap,
-						 "BImageControl::BImageControl: error allocating "
-						 "colormap\n"));
-		exit(1);
-	    }
-
-	    int i = 0, ii, p, r, g, b,
+      int i = 0, ii, p, r, g, b,
 
 #ifdef    ORDEREDPSEUDO
-	     bits = 256 / colors_per_channel;
+       bits = 256 / colors_per_channel;
 #else // !ORDEREDPSEUDO
-	    bits = 255 / (colors_per_channel - 1);
+      bits = 255 / (colors_per_channel - 1);
 #endif // ORDEREDPSEUDO
 
-	    red_bits = green_bits = blue_bits = bits;
+      red_bits = green_bits = blue_bits = bits;
 
-	    for (i = 0; i < 256; i++)
-		red_color_table[i] = green_color_table[i] = blue_color_table[i] =
-				     i / bits;
+      for (i = 0; i < 256; i++)
+        red_color_table[i] = green_color_table[i] = blue_color_table[i] =
+                             i / bits;
 
-	    for (r = 0, i = 0; r < colors_per_channel; r++)
-		for (g = 0; g < colors_per_channel; g++)
-		    for (b = 0; b < colors_per_channel; b++, i++) {
-			colors[i].red = (r * 0xffff) / (colors_per_channel - 1);
-			colors[i].green = (g * 0xffff) / (colors_per_channel - 1);
-			colors[i].blue = (b * 0xffff) / (colors_per_channel - 1);;
-			colors[i].flags = DoRed|DoGreen|DoBlue;
-		    }
+      for (r = 0, i = 0; r < colors_per_channel; r++)
+        for (g = 0; g < colors_per_channel; g++)
+          for (b = 0; b < colors_per_channel; b++, i++) {
+            colors[i].red = (r * 0xffff) / (colors_per_channel - 1);
+            colors[i].green = (g * 0xffff) / (colors_per_channel - 1);
+            colors[i].blue = (b * 0xffff) / (colors_per_channel - 1);;
+            colors[i].flags = DoRed|DoGreen|DoBlue;
+          }
 
-	    for (i = 0; i < ncolors; i++)
-		if (! XAllocColor(*display, colormap, &colors[i])) {
-		    fprintf(stderr, i18n(ImageSet, ImageColorAllocFail,
-						     "couldn't alloc color %i %i %i\n"),
-			    colors[i].red, colors[i].green, colors[i].blue);
-		    colors[i].flags = 0;
-		} else
-		    colors[i].flags = DoRed|DoGreen|DoBlue;
+      for (i = 0; i < ncolors; i++)
+        if (! XAllocColor(*display, colormap, &colors[i])) {
+          fprintf(stderr, i18n(ImageSet, ImageColorAllocFail,
+                               "couldn't alloc color %i %i %i\n"),
+                  colors[i].red, colors[i].green, colors[i].blue);
+          colors[i].flags = 0;
+        } else
+          colors[i].flags = DoRed|DoGreen|DoBlue;
 
-	    XColor icolors[256];
-	    int incolors = (((1 << screen_depth) > 256) ? 256 : (1 << screen_depth));
+      XColor icolors[256];
+      int incolors = (((1 << screen_depth) > 256) ? 256 : (1 << screen_depth));
 
-	    for (i = 0; i < incolors; i++)
-		icolors[i].pixel = i;
+      for (i = 0; i < incolors; i++)
+        icolors[i].pixel = i;
 
-	    XQueryColors(*display, colormap, icolors, incolors);
-	    for (i = 0; i < ncolors; i++) {
-		if (! colors[i].flags) {
-		    unsigned long chk = 0xffffffff, pixel, close = 0;
+      XQueryColors(*display, colormap, icolors, incolors);
+      for (i = 0; i < ncolors; i++) {
+        if (! colors[i].flags) {
+          unsigned long chk = 0xffffffff, pixel, close = 0;
 
-		    p = 2;
-		    while (p--) {
-			for (ii = 0; ii < incolors; ii++) {
-			    r = (colors[i].red - icolors[i].red) >> 8;
-			    g = (colors[i].green - icolors[i].green) >> 8;
-			    b = (colors[i].blue - icolors[i].blue) >> 8;
-			    pixel = (r * r) + (g * g) + (b * b);
+          p = 2;
+          while (p--) {
+            for (ii = 0; ii < incolors; ii++) {
+              r = (colors[i].red - icolors[i].red) >> 8;
+              g = (colors[i].green - icolors[i].green) >> 8;
+              b = (colors[i].blue - icolors[i].blue) >> 8;
+              pixel = (r * r) + (g * g) + (b * b);
 
-			    if (pixel < chk) {
-				chk = pixel;
-				close = ii;
-			    }
+              if (pixel < chk) {
+                chk = pixel;
+                close = ii;
+              }
 
-			    colors[i].red = icolors[close].red;
-			    colors[i].green = icolors[close].green;
-			    colors[i].blue = icolors[close].blue;
+              colors[i].red = icolors[close].red;
+              colors[i].green = icolors[close].green;
+              colors[i].blue = icolors[close].blue;
 
-			    if (XAllocColor(*display, colormap,
-					    &colors[i])) {
-				colors[i].flags = DoRed|DoGreen|DoBlue;
-				break;
-			    }
-			}
-		    }
-		}
-	    }
+              if (XAllocColor(*display, colormap,
+                              &colors[i])) {
+                colors[i].flags = DoRed|DoGreen|DoBlue;
+                break;
+              }
+            }
+          }
+        }
+      }
 
-	    break;
-	}
-
-    case GrayScale:
-    case StaticGray:
-	{
-
-	    if (screeninfo->visual()->c_class == StaticGray) {
-		ncolors = 1 << screen_depth;
-	    } else {
-		ncolors = colors_per_channel * colors_per_channel * colors_per_channel;
-
-		if (ncolors > (1 << screen_depth)) {
-		    colors_per_channel = (1 << screen_depth) / 3;
-		    ncolors =
-			colors_per_channel * colors_per_channel * colors_per_channel;
-		}
-	    }
-
-	    if (colors_per_channel < 2 || ncolors > (1 << screen_depth)) {
-		fprintf(stderr, i18n(ImageSet, ImageInvalidColormapSize,
-						 "BImageControl::BImageControl: invalid colormap size %d "
-						 "(%d/%d/%d) - reducing"),
-			ncolors, colors_per_channel, colors_per_channel,
-			colors_per_channel);
-
-		colors_per_channel = (1 << screen_depth) / 3;
-	    }
-
-	    colors = new XColor[ncolors];
-	    if (! colors) {
-		fprintf(stderr, i18n(ImageSet,
-						 ImageErrorAllocatingColormap,
-						 "BImageControl::BImageControl: error allocating "
-						 "colormap\n"));
-		exit(1);
-	    }
-
-	    int i = 0, ii, p, bits = 255 / (colors_per_channel - 1);
-	    red_bits = green_bits = blue_bits = bits;
-
-	    for (i = 0; i < 256; i++)
-		red_color_table[i] = green_color_table[i] = blue_color_table[i] =
-				     i / bits;
-
-	    for (i = 0; i < ncolors; i++) {
-		colors[i].red = (i * 0xffff) / (colors_per_channel - 1);
-		colors[i].green = (i * 0xffff) / (colors_per_channel - 1);
-		colors[i].blue = (i * 0xffff) / (colors_per_channel - 1);;
-		colors[i].flags = DoRed|DoGreen|DoBlue;
-
-		if (! XAllocColor(*display, colormap,
-				  &colors[i])) {
-		    fprintf(stderr, i18n(ImageSet, ImageColorAllocFail,
-						     "couldn't alloc color %i %i %i\n"),
-			    colors[i].red, colors[i].green, colors[i].blue);
-		    colors[i].flags = 0;
-		} else
-		    colors[i].flags = DoRed|DoGreen|DoBlue;
-	    }
-
-	    XColor icolors[256];
-	    int incolors = (((1 << screen_depth) > 256) ? 256 :
-			    (1 << screen_depth));
-
-	    for (i = 0; i < incolors; i++)
-		icolors[i].pixel = i;
-
-	    XQueryColors(*display, colormap, icolors, incolors);
-	    for (i = 0; i < ncolors; i++) {
-		if (! colors[i].flags) {
-		    unsigned long chk = 0xffffffff, pixel, close = 0;
-
-		    p = 2;
-		    while (p--) {
-			for (ii = 0; ii < incolors; ii++) {
-			    int r = (colors[i].red - icolors[i].red) >> 8;
-			    int g = (colors[i].green - icolors[i].green) >> 8;
-			    int b = (colors[i].blue - icolors[i].blue) >> 8;
-			    pixel = (r * r) + (g * g) + (b * b);
-
-			    if (pixel < chk) {
-				chk = pixel;
-				close = ii;
-			    }
-
-			    colors[i].red = icolors[close].red;
-			    colors[i].green = icolors[close].green;
-			    colors[i].blue = icolors[close].blue;
-
-			    if (XAllocColor(*display, colormap,
-					    &colors[i])) {
-				colors[i].flags = DoRed|DoGreen|DoBlue;
-				break;
-			    }
-			}
-		    }
-		}
-	    }
-
-	    break;
-	}
-
-    default:
-	fprintf(stderr, i18n(ImageSet, ImageUnsupVisual,
-					 "BImageControl::BImageControl: unsupported "
-					 "visual %d\n"), screeninfo->visual()->c_class);
-	exit(1);
+      break;
     }
 
-    cache = new LinkedList<Cache>;
+  case GrayScale:
+  case StaticGray:
+    {
+
+      if (screeninfo->visual()->c_class == StaticGray) {
+        ncolors = 1 << screen_depth;
+      } else {
+        ncolors = colors_per_channel * colors_per_channel * colors_per_channel;
+
+        if (ncolors > (1 << screen_depth)) {
+          colors_per_channel = (1 << screen_depth) / 3;
+          ncolors =
+            colors_per_channel * colors_per_channel * colors_per_channel;
+        }
+      }
+
+      if (colors_per_channel < 2 || ncolors > (1 << screen_depth)) {
+        fprintf(stderr, i18n(ImageSet, ImageInvalidColormapSize,
+                             "BImageControl::BImageControl: invalid colormap size %d "
+                             "(%d/%d/%d) - reducing"),
+                ncolors, colors_per_channel, colors_per_channel,
+                colors_per_channel);
+
+        colors_per_channel = (1 << screen_depth) / 3;
+      }
+
+      colors = new XColor[ncolors];
+      if (! colors) {
+        fprintf(stderr, i18n(ImageSet,
+                             ImageErrorAllocatingColormap,
+                             "BImageControl::BImageControl: error allocating "
+                             "colormap\n"));
+        exit(1);
+      }
+
+      int i = 0, ii, p, bits = 255 / (colors_per_channel - 1);
+      red_bits = green_bits = blue_bits = bits;
+
+      for (i = 0; i < 256; i++)
+        red_color_table[i] = green_color_table[i] = blue_color_table[i] =
+                             i / bits;
+
+      for (i = 0; i < ncolors; i++) {
+        colors[i].red = (i * 0xffff) / (colors_per_channel - 1);
+        colors[i].green = (i * 0xffff) / (colors_per_channel - 1);
+        colors[i].blue = (i * 0xffff) / (colors_per_channel - 1);;
+        colors[i].flags = DoRed|DoGreen|DoBlue;
+
+        if (! XAllocColor(*display, colormap,
+                          &colors[i])) {
+          fprintf(stderr, i18n(ImageSet, ImageColorAllocFail,
+                               "couldn't alloc color %i %i %i\n"),
+                  colors[i].red, colors[i].green, colors[i].blue);
+          colors[i].flags = 0;
+        } else
+          colors[i].flags = DoRed|DoGreen|DoBlue;
+      }
+
+      XColor icolors[256];
+      int incolors = (((1 << screen_depth) > 256) ? 256 :
+                      (1 << screen_depth));
+
+      for (i = 0; i < incolors; i++)
+        icolors[i].pixel = i;
+
+      XQueryColors(*display, colormap, icolors, incolors);
+      for (i = 0; i < ncolors; i++) {
+        if (! colors[i].flags) {
+          unsigned long chk = 0xffffffff, pixel, close = 0;
+
+          p = 2;
+          while (p--) {
+            for (ii = 0; ii < incolors; ii++) {
+              int r = (colors[i].red - icolors[i].red) >> 8;
+              int g = (colors[i].green - icolors[i].green) >> 8;
+              int b = (colors[i].blue - icolors[i].blue) >> 8;
+              pixel = (r * r) + (g * g) + (b * b);
+
+              if (pixel < chk) {
+                chk = pixel;
+                close = ii;
+              }
+
+              colors[i].red = icolors[close].red;
+              colors[i].green = icolors[close].green;
+              colors[i].blue = icolors[close].blue;
+
+              if (XAllocColor(*display, colormap,
+                              &colors[i])) {
+                colors[i].flags = DoRed|DoGreen|DoBlue;
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      break;
+    }
+
+  default:
+    fprintf(stderr, i18n(ImageSet, ImageUnsupVisual,
+                         "BImageControl::BImageControl: unsupported "
+                         "visual %d\n"), screeninfo->visual()->c_class);
+    exit(1);
+  }
+
+  cache = new LinkedList<Cache>;
 }
 
 

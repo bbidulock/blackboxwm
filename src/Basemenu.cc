@@ -210,7 +210,6 @@ void Basemenu::clickActiveItem()
     it++;
   }
 
-  // only draw items that intersect with the needed update rect
   BStyle *style = Blackbox::instance()->screen(screen())->style();
   Rect r;
   bool do_hide = true;
@@ -258,7 +257,6 @@ int Basemenu::lookupItem(const string &lookup)
     it++;
   }
 
-  // only draw items that intersect with the needed update rect
   int first_index = -1;
   while (it != items.end()) {
     const Item &item = (*it++);
@@ -931,7 +929,6 @@ void Basemenu::setActiveItem(int index)
     it++;
   }
 
-  // only draw items that intersect with the needed update rect
   Rect r;
   int old_active_item = active_item;
   int row = 0, col = 0;
@@ -998,7 +995,6 @@ void Basemenu::showActiveSubmenu()
     it++;
   }
 
-  // only draw items that intersect with the needed update rect
   BStyle *style = Blackbox::instance()->screen(screen())->style();
   Rect r;
   int row = 0, col = 0;

@@ -40,8 +40,7 @@ extern "C" {
 #endif // HAVE_NL_TYPES_H
 
 
-class I18n
-{
+class I18n {
 public:
   I18n(void);
   ~I18n(void);

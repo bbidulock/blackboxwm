@@ -40,5 +40,4 @@ private:
   BScreen *screen;
 };
 
-
 #endif // __Iconmenu_hh

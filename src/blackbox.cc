@@ -160,10 +160,8 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
 
   argc = m_argc;
   argv = m_argv;
-  if (rc)
-    rc_file = expandTilde(rc);
-  else
-    rc_file = expandTilde("~/.blackboxrc");
+  if (! rc) rc = "~/.blackboxrc";
+  rc_file = expandTilde(rc);
 
   no_focus = False;
 
@@ -218,7 +216,7 @@ Blackbox::Blackbox(int m_argc, char **m_argv, char *dpy_name, char *rc)
   reconfigure_wait = reread_menu_wait = False;
 
   timer = new BTimer(this, this);
-  timer->setTimeout(0);
+  timer->setTimeout(0l);
 }
 
 
@@ -764,9 +762,9 @@ BlackboxWindow *Blackbox::searchWindow(Window window) {
   LinkedListIterator<WindowSearch> it(windowSearchList);
 
   for (WindowSearch *tmp = it.current(); tmp; it++, tmp = it.current()) {
-      if (tmp->getWindow() == window) {
-	return tmp->getData();
-      }
+    if (tmp->getWindow() == window) {
+      return tmp->getData();
+    }
   }
 
   return (BlackboxWindow *) 0;

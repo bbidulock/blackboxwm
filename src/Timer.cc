@@ -25,9 +25,9 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
-
 #include "Timer.hh"
 #include "Util.hh"
+
 
 BTimer::BTimer(TimerQueueManager *m, TimeoutHandler *h) {
   manager = m;

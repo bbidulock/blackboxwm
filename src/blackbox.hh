@@ -141,7 +141,7 @@ public:
   BlackboxWindow *searchWindow(Window);
   inline BlackboxWindow *getFocusedWindow(void) { return focused_window; }
 
-    BScreen *screen( int scr ) const { return screenList->find( scr ); }
+  BScreen *screen( int scr ) const { return screenList->find( scr ); }
 
   BScreen *searchScreen(Window);
 
