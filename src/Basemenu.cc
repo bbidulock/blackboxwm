@@ -643,7 +643,9 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clear,
   MenuStyle *style = screen->getMenuStyle();
   BPen pen((highlight || item->isSelected()) ? style->h_text : style->f_text),
       textpen((highlight) ? style->h_text :
-              item->isEnabled() ? style->f_text : style->d_text, style->f_font);
+              item->isEnabled() ? style->f_text : style->d_text, style->f_font),
+      hipen(style->hilite.color());
+
 
   sel_x = item_x;
   if (screen->getMenuStyle()->bullet_pos == Right)
@@ -683,18 +685,18 @@ void Basemenu::drawItem(int index, Bool highlight, Bool clear,
   if (dohilite && highlight && (menu.hilite_pixmap != ParentRelative)) {
     if (menu.hilite_pixmap)
       XCopyArea(display, menu.hilite_pixmap, menu.frame,
-                pen.gc(), hoff_x, hoff_y,
+                hipen.gc(), hoff_x, hoff_y,
                 hilite_w, hilite_h, hilite_x, hilite_y);
     else
-      XFillRectangle(display, menu.frame, pen.gc(),
+      XFillRectangle(display, menu.frame, hipen.gc(),
                      hilite_x, hilite_y, hilite_w, hilite_h);
   } else if (dosel && item->isSelected() &&
              (menu.sel_pixmap != ParentRelative)) {
     if (menu.sel_pixmap)
-      XCopyArea(display, menu.sel_pixmap, menu.frame, pen.gc(), 0, 0,
+      XCopyArea(display, menu.sel_pixmap, menu.frame, hipen.gc(), 0, 0,
                 half_w, half_w, sel_x, sel_y);
     else
-      XFillRectangle(display, menu.frame, pen.gc(), sel_x, sel_y, half_w, half_w);
+      XFillRectangle(display, menu.frame, hipen.gc(), sel_x, sel_y, half_w, half_w);
   }
 
   if (dotext && text) {
