@@ -1954,7 +1954,7 @@ bool BlackboxWindow::getState(void) {
 
 
 /*
- * Positions the Rect r according the the client window position and
+ * Positions the bt::Rect r according the the client window position and
  * window gravity.
  */
 void BlackboxWindow::applyGravity(bt::Rect &r) {
@@ -2017,7 +2017,7 @@ void BlackboxWindow::applyGravity(bt::Rect &r) {
 /*
  * The reverse of the applyGravity function.
  *
- * Positions the Rect r according to the frame window position and
+ * Positions the bt::Rect r according to the frame window position and
  * window gravity.
  */
 void BlackboxWindow::restoreGravity(bt::Rect &r) {
@@ -2101,8 +2101,9 @@ void BlackboxWindow::redrawLabel(void) const {
     dlen = style->doJustify(client.title.c_str(), pos, frame.label_w,
                             frame.bevel_w * 4, bt::i18n.multibyte());
 
-  bt::Pen pen((client.state.focused) ? style->l_text_focus : style->l_text_unfocus,
-           style->font);
+  bt::Pen pen(((client.state.focused) ?
+               style->l_text_focus : style->l_text_unfocus),
+              style->font);
   if (bt::i18n.multibyte())
     XmbDrawString(blackbox->getXDisplay(), frame.label, style->fontset,
                   pen.gc(), pos,
@@ -2183,7 +2184,7 @@ void BlackboxWindow::redrawMaximizeButton(bool pressed) const {
   XClearWindow(blackbox->getXDisplay(), frame.maximize_button);
 
   bt::Pen pen((client.state.focused) ? screen->getWindowStyle()->b_pic_focus :
-           screen->getWindowStyle()->b_pic_unfocus);
+              screen->getWindowStyle()->b_pic_unfocus);
   XDrawRectangle(blackbox->getXDisplay(), frame.maximize_button, pen.gc(),
                  2, 2, (frame.button_w - 5), (frame.button_w - 5));
   XDrawLine(blackbox->getXDisplay(), frame.maximize_button, pen.gc(),

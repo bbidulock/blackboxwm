@@ -20,24 +20,32 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 # DEALINGS IN THE SOFTWARE.
 
-DEFAULT_MENU=$(pkgdatadir)/menu
-DEFAULT_STYLE=$(pkgdatadir)/styles/Results
+DEFAULT_MENU		= $(pkgdatadir)/menu
+DEFAULT_STYLE		= $(pkgdatadir)/styles/Results
+CPPFLAGS		= @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ @DEBUG@ @NLS@ \
+			  -DLOCALEPATH=\"$(pkgdatadir)/nls\" \
+			  -DDEFAULTMENU=\"$(DEFAULT_MENU)\" \
+			  -DDEFAULTSTYLE=\"$(DEFAULT_STYLE)\" \
+			  -I$(top_srcdir)/lib
+bin_PROGRAMS		= blackbox
+blackbox_SOURCES	= Basemenu.cc					\
+                          Clientmenu.cc					\
+			  Configmenu.cc					\
+			  Iconmenu.cc					\
+			  Rootmenu.cc					\
+			  Screen.cc					\
+			  Slit.cc					\
+			  Toolbar.cc					\
+			  Window.cc					\
+			  Windowmenu.cc					\
+			  Workspace.cc					\
+			  Workspacemenu.cc				\
+			  blackbox.cc					\
+			  main.cc
+blackbox_DEPENDENCIES	= $(top_srcdir)/lib/libbt.a
+blackbox_LDADD		= -L$(top_srcdir)/lib -lbt
 
-CPPFLAGS= @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ \
-@DEBUG@ @NLS@ \
--DLOCALEPATH=\"$(pkgdatadir)/nls\" \
--DDEFAULTMENU=\"$(DEFAULT_MENU)\" \
--DDEFAULTSTYLE=\"$(DEFAULT_STYLE)\" \
--I$(top_srcdir)/lib
-
-bin_PROGRAMS= blackbox
-
-blackbox_SOURCES= Basemenu.cc Clientmenu.cc Configmenu.cc Iconmenu.cc Rootmenu.cc Screen.cc Slit.cc Toolbar.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc main.cc
-blackbox_DEPENDENCIES= $(top_builddir)/lib/libblackbox.a
-blackbox_LDADD= -L$(top_builddir)/lib -lblackbox
-
-MAINTAINERCLEANFILES= Makefile.in
+MAINTAINERCLEANFILES	= Makefile.in
 
 distclean-local:
 	rm -f *\~ *.orig *.rej .\#*
-
