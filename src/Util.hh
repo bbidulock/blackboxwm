@@ -30,7 +30,7 @@ class Rect {
 public:
   Rect(void) : _x1(0), _y1(0), _x2(0), _y2(0) { }
   Rect(int __x, int __y, int __w, int __h)
-  { setRect(__x, __h, __w, __h); }
+  { setRect(__x, __y, __w, __h); }
   explicit Rect(const XRectangle& xrect)
   { setRect(xrect.x, xrect.y, xrect.width, xrect.height); }
 
