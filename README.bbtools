@@ -1,0 +1,19 @@
+If you use either bbpager-0.2.7-alpha or bbkeys-0.3.2, then
+you will need to recompile them so that they will work with this non-alpha
+version of Blackbox.
+
+There are 2 patches in this directory,
+
+  bbpager-0.2.7-alpha-nyz.diff
+
+and
+
+  bbkeys-0.3.2-nyz.diff
+
+that will make bbpager and bbkeys work with this version of Blackbox.
+
+The reason for these patches?  The old "protocol" used by 0.60.0-alpha had
+messages, properties and the like prefixed with _NET, which is to be used by
+the new KDE2/GNOME window manager specification.  I decided to keep from
+polluting the namespace and changed everything to _BLACKBOX.
+
