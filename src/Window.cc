@@ -843,34 +843,29 @@ void BlackboxWindow::getWMProtocols(void) {
  * If the property is not set, then use a set of default values.
  */
 void BlackboxWindow::getWMHints(void) {
+  focus_mode = F_Passive;
+  client.initial_state = NormalState;
+
   XWMHints *wmhint = XGetWMHints(blackbox->getXDisplay(), client.window);
   if (! wmhint) {
-    focus_mode = F_Passive;
     client.window_group = None;
-    client.initial_state = NormalState;
     return;
   }
-  client.wm_hint_flags = wmhint->flags;
+
   if (wmhint->flags & InputHint) {
     if (wmhint->input == True) {
       if (flags.send_focus_message)
         focus_mode = F_LocallyActive;
-      else
-        focus_mode = F_Passive;
     } else {
       if (flags.send_focus_message)
         focus_mode = F_GloballyActive;
       else
         focus_mode = F_NoInput;
     }
-  } else {
-    focus_mode = F_Passive;
   }
 
   if (wmhint->flags & StateHint)
     client.initial_state = wmhint->initial_state;
-  else
-    client.initial_state = NormalState;
 
   if (wmhint->flags & WindowGroupHint) {
     if (! client.window_group) {
@@ -880,6 +875,8 @@ void BlackboxWindow::getWMHints(void) {
   } else {
     client.window_group = None;
   }
+
+  client.wm_hint_flags = wmhint->flags;
   XFree(wmhint);
 }
 
