@@ -7,7 +7,7 @@
 .\" See the file COPYING in the source directory 
 .\" root for License specifics and restrictions
 .\" 
-.\" Updated for Blackbox 0.65.0 release on 5 Sep 2002.
+.\" Updated for Blackbox 0.65.0 release on 18 Sep 2002.
 .\"
 .\"
 .\" Indented preformat macro. 
@@ -29,7 +29,7 @@
 .\"
 .\" ***** SubSection *****
 .\"
-.TH blackbox 1 "September 03, 2002" "0.65.0"
+.TH blackbox 1 "September 18, 2002" "0.65.0"
 .\"
 .\" * * * * * NAME * * * * * 
 .\"
@@ -39,7 +39,7 @@ blackbox \- a window manager for X11
 .\" * * * * * SYNOPSIS * * * * * 
 .\"
 .SH SYNOPSIS
-.BR blackbox \-help | \-version
+.BR "blackbox" " \-help | \-version"
 .br
 .B blackbox 
 .RI "[ \-rc" " rcfile " "] [ \-display" " display " ]
@@ -51,23 +51,18 @@ blackbox \- a window manager for X11
 .\" ----- overview -----
 Blackbox is a window manager for the Open Group's
 X Window System, Version 11 Release 6 and above.
-Blackbox requires only the X libraries and a C++
-compiler with a recent implementation of the Standard
-Template Library.
-.EX 0
-The design is meant to be fast and minimalist.
-.EE
+Its design is meant to be visually minimalist and fast.
 .PP
 .\" ----- usage overview -----
 Blackbox is similar to the NeXT interface and
 Windowmaker. Applications are launched using a
 menu which is accessed by right clicking on the
-root window. Workspace control is via a menu
-which is accessed by middle clicking on the root
-menu or using the tool bar. Individual windows
-can be controlled by buttons on the title bar
-and more options are available by right clicking
-on the title bar.
+root window. Workspaces, a system of virtual 
+desktops are controlled via a menu which is accessed 
+by middle clicking on the root window and by using 
+the toolbar. Individual windows can be controlled by 
+buttons on the title bar and more options are available 
+by right clicking on the title bar.
 .PP
 .\" ----- design overview -----
 Blackbox is able to generate beautiful window
@@ -82,12 +77,12 @@ Blackbox itself does not directly handle key
 bindings like most other window managers. This
 task is handled by a separate utility called
 bbkeys. Although Blackbox has a built-in
-workspace (paging) system, bbpager which provides
-a graphical pager is popular with many Blackbox users.
+workspace (paging) system, bbpager, which provides
+a graphical pager, is popular with many users.
 bbkeys, bbpager and several other bbtools can be found
 by going to
 .EX 0
-.B http://bbtools.thelinuxcommunity.org/.
+.B http://bbtools.thelinuxcommunity.org/
 .EE
 .\" ----- slit overview -----
 The slit is an edge of the screen which can
@@ -95,7 +90,7 @@ hold specially designed programs called dock
 apps (from Windowmaker). In addition, the 
 popular program gkrellm will also run in the slit. 
 There is a huge selection of dockapps available 
-and they run the gamut from must have gadgets 
+and they run the gamut from must-have gadgets 
 to utterly useless (but cute and/or funny) eye candy. 
 .EX 0
 .B http://www.bensinclair.com/dockapp/
@@ -117,7 +112,7 @@ Display version and exit.
 .TP
 .\" ----- rcfile -----
 .BI \-rc \ rcfile
-Use an alternate resource file
+Use an alternate resource file.
 .TP 
 .\" ----- display -----
 .BI \-display \ display
@@ -133,11 +128,12 @@ started by Blackbox.
 The most common method for starting Blackbox 
 is to place the the command "blackbox" (no quotes)
 at the end of your 
-.B ~/.xinitrc 
+.B ~/.xinitrc
+or
+.B ~/.xsession
 file. 
-The advantage of putting Blackbox at the end of 
-.B ~/.xinitrc 
-is that the X Window System will shutdown when you exit 
+The advantage of putting Blackbox at the end of the file
+is that the X Server will shutdown when you exit 
 Blackbox. Blackbox can also be started from 
 the command line of a terminal program like xterm in an
 X session that does not already have a window manager running.
@@ -157,8 +153,7 @@ The other resources available in the
 file are discussed later in this manual under 
 the heading RESOURCE FILE.
 
-On exit Blackbox writes its current configuration
-to 
+On exit, Blackbox writes its current configuration to 
 .B ~/.blackboxrc. 
 .EX 0
 .B NOTE: 
@@ -195,13 +190,12 @@ Note that Button One (Left Button) is not used.
 .B Main Menu
 The default installation assumes you have a number 
 of common X Window System programs in their typical
-locations. The default menu is heavily commented
-and covers a number of details of menu file syntax.
-The menu is defined by a plain text file named
-menu. This file can also be edited graphically
-by using the extension program bbconf which menu
-creation very easy. Menu file syntax is discussed
-later in this manual.
+locations. The default menu is defined by a plain text
+file named 'menu'. It is heavily commented and covers a
+number of details of menu file syntax. This file can also
+be edited graphically by using the extension program bbconf
+which makes menu creation very easy. Menu file syntax is
+discussed later in this manual.
 .EX 0
 .\" ----- main menu caveat -----
 .B Caveat:
@@ -225,7 +219,7 @@ Workspaces are listed by name. Clicking on the
 workspace name will take you to that workspace
 with focus on the program under the mouse. If 
 there are programs already running in the 
-workspace they will appear in a pop-out menu. 
+workspace, they will appear in a pop-out menu. 
 Clicking on the application name will jump to 
 the workspace and focus that application. If a
 middle click is used the window will be brought to
@@ -280,8 +274,8 @@ rapidly forks all of the dockapps, which then
 take varied and random times to draw themselves 
 for the first time. To get the dockapps to start 
 in a given order, follow each dockapp with 
-sleep 2; This gives each dockapp a chance to get 
-placed by the slit in the correct order.
+sleep 2; This ensures that each dockapp is placed 
+in the correct order by the slit.
 .EE
 .EX 8
 .B i.e.
@@ -294,7 +288,7 @@ gkrellm -w & sleep 2
 .\"
 .TP
 .B The Toolbar
-The tool bar provides an alternate method for 
+The toolbar provides an alternate method for 
 cycling through multiple workspaces and 
 applications. The left side of the toolbar is 
 the workspace control, the center is the 
@@ -325,32 +319,41 @@ the next best thing.
 .TP 
 .B Window Decorations
 Window decorations include handles at the bottom of
-each window and a title bar. The handles at the 
-bottom of the window are divided into three sections.
-The two corner sections are resizing handles The 
-center section is a window moving handle. The bottom 
-center handle and the title bar respond to a number 
-of mouse clicks and key + mouse click combinations.
+each window, a title bar, and three control buttons.
+The handles at the bottom of the window are divided 
+into three sections.  The two corner sections are 
+resizing handles The center section is a window 
+moving handle. The bottom center handle and the 
+title bar respond to a number of mouse clicks and 
+key + mouse click combinations. The three buttons
+in the title bar, left to right, are iconify, maximize,
+and close. The resize button has special behavior 
+detailed below.
 .\"
 .\" ----- mouse buttons -----
 .\"
 .TP
 .BR "Button One" "  (Left Button)" 
-Click and drag to move or resize bottom corners.
+Click and drag on titlebar to move or resize from bottom corners.
+Click the iconify button to move the window to the icon list.
+Click the maximize button to fully maximize the window.
+Click the close button to close the window and application.
 Double-Click the title bar to shade the window.
-.TP
-.BR "Button Two" "  (Middle Button)"
-Drop window to the bottom of the stack.
 .TP
 .BR "Alt + Button One" ""
 Click anywhere on client window and drag to move the window.
 .TP
-.BR "Alt + Button Three" ""
-Click anywhere on client window and drag to resize the window.
+.BR "Button Two" "  (Middle Button)"
+Click the titlebar to lower the window.
+Click the maximize button to maximize the window vertically.
 .TP
 .BR "Button Three" "  (Right Button)"
-Click on title bar or bottom center handle
-pulls down a control menu.
+Click on title bar or bottom center handle pulls down a control menu.
+Click the maximize button to maximize the window horizontally.
+.TP
+.BR "Alt + Button Three" ""
+Click anywhere on client window and drag to resize the window.
+
 .EX
 .\"
 .\" ----- control menu -----
@@ -359,8 +362,11 @@ pulls down a control menu.
 .EE
 .EX
 .B Send To ...
-Send this window to another workspace.  Also by middle clicking (button 2)
-a workspace entry you make it the current workspace and send the window there
+.BR "Button One" "  (Left Button)"
+Click to send this window to another workspace.  
+.BR "Button Two" "  (Middle Button)"
+Click to send this window to another workspace, change 
+to that workspace and keep the application focused.
 as well.
 .EE
 .EX
@@ -369,20 +375,20 @@ This is the same action as Double-Click with Button One.
 .EE
 .EX
 .B Iconify
-Hide the window on the icon menu.
+Hide the window.  It can be accessed with the icon menu.
 .EE
 .EX
 .B Maximize
-Toggle the state of window's maximization.
+Toggle window maximization.
 .EE
 .EX
 .B Raise
-Lift the window to the top of the stack and
+Bring window to the front above the other windows and
 focus it.
 .EE
 .EX
 .B Lower
-Drop the window to the bottom of the stack.
+Drop the window below the other ones.
 .EE
 .EX
 .B Stick
@@ -429,7 +435,7 @@ Blackbox styles is
 All themes should install by simply downloading them 
 to 
 .B ~/.blackbox/
-unzip it, de-tar it.
+then unzip it, and de-tar it.
 
 On open Unixes this will be:
 
@@ -478,15 +484,15 @@ in a portable fashion as well.
 .\"
 .\" ----- style format ------
 .\"
-The documented method for creating styles is 
-as follows:
 .TP
-.B "(1)      "
+.B The documented method for creating styles is as follows:
 .\" ----- background image -----
-Create or acquire the background for the style if
+.TP
+1. Create or acquire the background for the style if
 it will not be using 
 .B bsetroot 
 to draw a patterned background for the root window. 
+
 .EX
 .B NOTE:
 Blackbox runs on a wide variety 
@@ -495,11 +501,11 @@ displays to ultra high speed workstations with 25"
 screens and extreme resolution. For best results a 
 style graphic should be at least 1024x768.
 .EE 
-.TP
-.B "(2)      "
 .\" ----- style file ------
-Create a style file. The best way to do this is to 
-make a copy of a similar style and then edit it. 
+.TP
+2. Create a style file. 
+The best way to do this is to make a copy of a 
+similar style and then edit it. 
 
 The style file is a list of X resources and other
 external variables. Manipulating these variables 
@@ -513,10 +519,9 @@ set the root window image. This makes styles much
 more portable since various platforms have different 
 graphics software. For more info see 
 .B bsetbg (1).
-.TP
-.B "(3)      "
 .\" ----- directory layout
-Background images should be placed in
+.TP
+3. Background images should be placed in
 .B ~/.blackbox/backgrounds
 The style file should be placed in
 .B ~/.blackbox/styles
@@ -531,10 +536,9 @@ directories listed above are the only officially
 supported directories.  However you may put them
 whereever you like as long as you update your menu
 file so it knows where to find your styles.
-.TP
-.B "(4)      "
 .\" ----- tarball -----
-To create a consistent experience and to ensure
+.TP
+4. To create a consistent experience and to ensure
 portability between all systems it is important 
 to use the following format to create your style
 archive.
@@ -556,7 +560,7 @@ in these locations. Finally type
 tar cvzf NEW_STYLE.tar.gz *
 
 If you are using commercial Unix you may 
-need to gzip and tar separately.
+need to use gzip and tar separately.
 
 Now when a user downloads a new style file
 she knows that all she has to do is put
@@ -682,7 +686,7 @@ and other system preferences.
 .TP
 .BI "[reconfig]" "  (label) {shell command}"
 The reconfig command causes Blackbox to reread its 
-configuration files. This doe not include 
+configuration files. This does not include 
 .B ~/.blackboxrc
 which is only reread when Blackbox is restarted. If
 .I shell command
@@ -737,10 +741,10 @@ can be set from menus. Some of these can
 only be set by editing .blackboxrc directly.
 
 NOTE: Blackbox only reads this file during start
-up. To make changes to this file take effect 
-during a Blackbox session the user must choose
-"restart" on the main menu. If you do not do so, 
-your changes will be lost when Blackbox exits.
+up. To make changes take effect during a Blackbox
+session the user must choose "restart" on the main menu.
+If you do not do so, your changes will be lost when
+Blackbox exits.
 
 Some resources are named with a <num> after screen. This
 should be replaced with the number of the screen
@@ -961,11 +965,11 @@ stays visible after mouse out.
 .IB "Configurable in" "  ~/.Blackboxrc only:"
 .TP 3
 .BI "session.screen<num>.toolbar.widthPercent" "  [1-100]"
-percentage of screen used by the toolbar.
+Percentage of screen used by the toolbar.
 A number from 1-100 that sets the width of the toolbar.
-0 causes the toolbar to be set to its default width,
-not disappear. If you wish to do that there are patches
-that can do it.
+0 (zero) does not cause the toolbar to disappear, instead
+the toolbar is set to the default. If you want to lose the
+toolbar there are patches that can remove it.
 .EX
 .B Default is 66.
 .EE
@@ -973,7 +977,7 @@ that can do it.
 .BI "session.screen<num>.strftimeFormat" "  [string]"
 A C language date format string, any combination of
 specifiers can be used. The default is %I:%M %p which
-generates a 12 hour clock with minutes and an am pm
+generates a 12 hour clock with minutes and an am/pm
 indicator appropriate to the locale.
 .EX
 .IB "24 hours and minutes" "    %H:%M"
@@ -982,8 +986,10 @@ indicator appropriate to the locale.
 .IB "day/month/year" "          %d/%m/%y"
 .EE
 .EX
-.B Default is HR:MN am/pm
-See man 3 strftime for more details.
+.B Default is hours:minutes am/pm
+See
+.B strftime 3
+for more details.
 .EE
 .TP 3
 .BI "session.screen<num>.dateFormat" "  [American|European]"
@@ -1079,13 +1085,13 @@ Blackbox will use the value of $DISPLAY.
 .\" * * * * * FILES * * * * * 
 .\"
 .SH FILES
-.TP 5
+.TP
 .B blackbox
 Application binary
-.TP 5
+.TP
 .B ~/.blackboxrc
 User's startup and resource file.
-.TP 5
+.TP
 .B @defaultmenu@
 Default system wide menu
 	
@@ -1106,13 +1112,11 @@ http://sourceforge.net/projects/blackboxwm/
 .\" * * * * * BUGS * * * * * 
 .\"
 .SH BUGS
-In its current version, and after heavy beta testing,
-Blackbox does not have any known bugs. If you think you 
-have found a bug, please help by going to the development 
-website and select "Bugs" in the upper menu. Check the 
-bug list to see if your problem has already been reported.
-If it has please read the summary and add any information
-that you believe would help. If your bug has not been 
+If you think you have found a bug, please help by going
+to the development website and select "Bugs" in the upper
+menu. Check the bug list to see if your problem has already
+been reported. If it has please read the summary and add any
+information that you believe would help. If your bug has not been 
 submitted select "Submit New" and fill out the form.
 
 .\"
@@ -1135,7 +1139,7 @@ to other window managers.
 
 .BI "Jeff Raven" "  <jraven@psu.edu>"
 then picked up the torch for the 0.61.x series after 
-Brad took a full time job at TrollTech. 
+Brad took a full time job at TrollTech.
 
 .\" ----- man page author -----
 This manual page was written by:

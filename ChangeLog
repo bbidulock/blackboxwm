@@ -2,7 +2,8 @@ Changes from 0.62.1 to 0.65.0:
   - added Taiwan Chinese (zh_TW), Hungarian (hu_HU), Latvian (lv_LV),
     Korean (ko_KR), Norwegian (no_NO), Polish (pl_PL), Romanian (ro_RO) and
     Ukrainian (uk_UA) nls files and updated most of the others.
-  - added French man pages
+  - removed the Estonian (ee_ET) and Turkish (tr_TR) locales due to their
+    being heavily out of date and unmaintained
   - remove slit and netwm as compile time options
   - strip much of BaseDisplay's original functionality and move it to the
     blackbox class.
