@@ -222,7 +222,7 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
 
   // use the user selected style
   bt::Resource res(style);
-  if (! res.valid())
+  if (!res.valid())
     res.load(DEFAULTSTYLE);
 
   // load menu style
@@ -471,7 +471,12 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
                                         "white");
   _slitStyle.margin = res.read("slit.marginWidth", "Slit.MarginWidth", 2);
 
-  root_command = res.read("rootCommand", "RootCommand");
+  const std::string rc_file = screen->blackbox()->resource().rcFilename();
+  root_command =
+      bt::Resource(rc_file).read("rootCommand",
+                                 "RootCommand",
+                                 res.read("rootCommand",
+                                          "RootCommand"));
 
   // sanity checks
   bt::Texture flat_black;
