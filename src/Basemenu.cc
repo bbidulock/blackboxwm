@@ -148,9 +148,6 @@ Basemenu::Basemenu(BScreen *scrn) {
 }
 
 Basemenu::~Basemenu(void) {
-  fprintf(stderr, "deleting menu '%s'\n", menu.label);
-
-
   XUnmapWindow(display, menu.window);
 
   if (shown && shown->getWindowID() == getWindowID())
