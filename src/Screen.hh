@@ -65,6 +65,7 @@ struct WindowStyle {
     h_focus, h_unfocus, b_focus, b_unfocus, b_pressed, g_focus, g_unfocus;
   bt::Font font;
   bt::Alignment alignment;
+  unsigned int handle_width, frame_width;
 };
 
 struct ToolbarStyle {
@@ -132,7 +133,7 @@ private:
     bool slit_on_top, slit_auto_hide;
     int slit_placement, slit_direction;
 
-    unsigned int handle_width, bevel_width, frame_width, border_width;
+    unsigned int bevel_width, border_width;
 
     std::string strftime_format;
   } resource;
@@ -227,12 +228,8 @@ public:
 
   Workspacemenu *getWorkspacemenu(void) { return workspacemenu; }
 
-  unsigned int getHandleWidth(void) const
-  { return resource.handle_width; }
   unsigned int getBevelWidth(void) const
   { return resource.bevel_width; }
-  unsigned int getFrameWidth(void) const
-  { return resource.frame_width; }
   unsigned int getBorderWidth(void) const
   { return resource.border_width; }
 

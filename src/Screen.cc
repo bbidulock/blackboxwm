@@ -490,6 +490,14 @@ void BScreen::LoadStyle(void) {
   if (! res.valid())
     res.load(std::string(DEFAULTSTYLE));
 
+  // load bevel, border and handle widths
+  std::string wstr = res.read("borderWidth", "BorderWidth", "1");
+  resource.border_width =
+    static_cast<unsigned int>(strtoul(wstr.c_str(), 0, 0));
+  wstr = res.read("bevelWidth", "BevelWidth", "3");
+  resource.bevel_width =
+    static_cast<unsigned int>(strtoul(wstr.c_str(), 0, 0));
+
   // load menu style
   bt::MenuStyle::get(*blackbox, getScreenInfo().getScreenNumber(),
                      image_control)->load(res);
@@ -557,6 +565,10 @@ void BScreen::LoadStyle(void) {
                         getScreenInfo().getScreenNumber(),
                         image_control);
 
+  wstr = res.read("window.handleWidth", "Window.HandleWidth", "6");
+  resource.wstyle.handle_width =
+    static_cast<unsigned int>(strtoul(wstr.c_str(), 0, 0));
+
   resource.wstyle.g_focus =
     bt::textureResource(res,
                         "window.grip.focus",
@@ -601,7 +613,6 @@ void BScreen::LoadStyle(void) {
                         getScreenInfo().getScreenNumber(),
                         image_control);
 
-
   // we create the window.frame texture by hand because it exists only to
   // make the code cleaner and is not actually used for display
   bt::Color color = bt::Color(res.read("window.frame.focusColor",
@@ -621,6 +632,11 @@ void BScreen::LoadStyle(void) {
                                           getScreenInfo().getScreenNumber(),
                                           image_control);
   resource.wstyle.f_unfocus.setColor(color);
+
+  wstr = res.read("window.frameWidth", "Window.FrameWidth",
+                  bt::itostring(resource.bevel_width));
+  resource.wstyle.frame_width =
+    static_cast<unsigned int>(strtoul(wstr.c_str(), 0, 0));
 
   resource.wstyle.l_text_focus =
     bt::Color(res.read("window.label.focus.textColor",
@@ -724,21 +740,6 @@ void BScreen::LoadStyle(void) {
 
   resource.tstyle.alignment =
     bt::alignResource(res, "toolbar.alignment", "Toolbar.Alignment");
-
-  // load bevel, border and handle widths
-  std::string wstr = res.read("handleWidth", "HandleWidth", "6");
-  resource.handle_width =
-    static_cast<unsigned int>(strtoul(wstr.c_str(), 0, 0));
-  wstr = res.read("borderWidth", "BorderWidth", "1");
-  resource.border_width =
-    static_cast<unsigned int>(strtoul(wstr.c_str(), 0, 0));
-  wstr = res.read("bevelWidth", "BevelWidth", "3");
-  resource.bevel_width =
-    static_cast<unsigned int>(strtoul(wstr.c_str(), 0, 0));
-  wstr = res.read("frameWidth", "FrameWidth",
-                  bt::itostring(resource.bevel_width));
-  resource.frame_width =
-    static_cast<unsigned int>(strtoul(wstr.c_str(), 0, 0));
 
   std::string root_command = res.read("rootCommand", "RootCommand");
   if (! root_command.empty())

@@ -3081,12 +3081,13 @@ void BlackboxWindow::timeout(void) {
  * window's dimensions.
  */
 void BlackboxWindow::upsize(void) {
+  WindowStyle *style = screen->getWindowStyle();
   frame.bevel_w = screen->getBevelWidth();
 
   if (client.decorations & Decor_Border) {
     frame.border_w = screen->getBorderWidth();
     if (!isTransient())
-      frame.mwm_border_w = screen->getFrameWidth();
+      frame.mwm_border_w = style->frame_width;
     else
       frame.mwm_border_w = 0;
   } else {
@@ -3096,7 +3097,6 @@ void BlackboxWindow::upsize(void) {
   if (client.decorations & Decor_Titlebar) {
     // the height of the titlebar is based upon the height of the font being
     // used to display the window's title
-    WindowStyle *style = screen->getWindowStyle();
     frame.label_h = bt::textHeight(style->font) + 2;
     frame.title_h = frame.label_h + (frame.bevel_w * 2);
     frame.button_w = (frame.label_h - 2);
@@ -3118,7 +3118,7 @@ void BlackboxWindow::upsize(void) {
 
   if (client.decorations & Decor_Handle) {
     frame.grip_w = frame.button_w * 2;
-    frame.handle_h = screen->getHandleWidth();
+    frame.handle_h = style->handle_width;
 
     // set the bottom frame margin
     frame.margin.bottom = frame.border_w + frame.handle_h +

@@ -52,13 +52,14 @@ struct Style {
       label_focus_textColor, label_unfocus_textColor,
       handle_focus, handle_focus_color, handle_focus_colorTo,
       handle_unfocus, handle_unfocus_color, handle_unfocus_colorTo,
+      handle_width,
       grip_focus, grip_focus_color, grip_focus_colorTo,
       grip_unfocus, grip_unfocus_color, grip_unfocus_colorTo,
       button_focus, button_focus_color, button_focus_colorTo,
       button_unfocus, button_unfocus_color, button_unfocus_colorTo,
       button_pressed, button_pressed_color, button_pressed_colorTo,
       button_focus_picColor, button_unfocus_picColor,
-      frame_focusColor, frame_unfocusColor, alignment;
+      frame_focusColor, frame_unfocusColor, frame_width, alignment;
   };
   struct Toolbar {
     std::string font, frame, frame_color, frame_colorTo,
@@ -80,14 +81,17 @@ struct Style {
   Toolbar toolbar;
   Menu menu;
 
-  std::string border_color, border_width, handle_width, bevel_width,
-    frame_width, rootCommand;
+  std::string border_color, border_width, bevel_width, rootCommand;
 
   void read(const bt::Resource& res);
 };
 
 
 void Style::read(const bt::Resource& res) {
+  // load bevel, border and handle widths
+  border_width = res.read("borderWidth", "BorderWidth", "1");
+  bevel_width = res.read("bevelWidth", "BevelWidth", "3");
+
   // load window config
   window.font =
     res.read("window.font", "Window.Font", "fixed");
@@ -158,6 +162,8 @@ void Style::read(const bt::Resource& res) {
   window.handle_unfocus_colorTo =
     res.read("window.handle.unfocus.colorTo",
              "Window.Handle.Unfocus.ColorTo", "");
+  window.handle_width =
+    res.read("handleWidth", "HandleWidth", "6");
 
   window.grip_focus =
     normalize(res.read("window.grip.focus",
@@ -223,6 +229,7 @@ void Style::read(const bt::Resource& res) {
   window.frame_unfocusColor =
     res.read("window.frame.unfocusColor",
              "Window.Frame.UnfocusColor", "white");
+  window.frame_width = res.read("frameWidth", "FrameWidth", bevel_width);
 
   window.alignment = res.read("window.justify", "Window.Justify", "left");
 
@@ -348,16 +355,7 @@ void Style::read(const bt::Resource& res) {
 
   border_color = res.read("borderColor", "BorderColor", "black");
 
-  // load bevel, border and handle widths
-  handle_width =
-    res.read("handleWidth", "HandleWidth", "16");
-
-  border_width = res.read("borderWidth", "BorderWidth", "1");
-
-  bevel_width = res.read("bevelWidth", "BevelWidth", "3");
-
-  frame_width = res.read("frameWidth", "FrameWidth", bevel_width);
-
+  // set-background command
   rootCommand = res.read("rootCommand", "RootCommand", "");
 }
 
@@ -531,6 +529,8 @@ void convert(const Style& style, const char* const filename) {
              style.window.frame_unfocusColor);
   fout << '\n';
   writeValue(fout, "window.alignment", style.window.alignment);
+  writeValue(fout, "window.frameWidth", style.window.frame_width);
+  writeValue(fout, "window.handleWidth", style.window.handle_width);
   fout << '\n';
   writeComment(fout, "for 0.6x compatibility");
   writeValue(fout, "window.justify", style.window.alignment);
@@ -571,9 +571,10 @@ void convert(const Style& style, const char* const filename) {
   writeComment(fout, "***** the rest *****");
   writeValue(fout, "borderColor", style.border_color);
   writeValue(fout, "borderWidth", style.border_width);
-  writeValue(fout, "handleWidth", style.handle_width);
   writeValue(fout, "bevelWidth", style.bevel_width);
-  writeValue(fout, "frameWidth", style.frame_width);
+  writeComment(fout, " for 0.6x compatibility");
+  writeValue(fout, "handleWidth", style.window.handle_width);
+  writeValue(fout, "frameWidth", style.window.frame_width);
   if (! style.rootCommand.empty())
     writeValue(fout, "rootCommand", style.rootCommand);
 }
