@@ -24,6 +24,7 @@
 
 #include "blackbox.hh"
 #include "Screen.hh"
+#include "Slit.hh"
 #include "Toolbar.hh"
 #include "Window.hh"
 
@@ -175,30 +176,40 @@ void Blackbox::process_event(XEvent *e) {
   case ConfigureRequest: {
     BlackboxWindow *win = findWindow(e->xconfigurerequest.window);
     if (win) {
+      // a window wants to resize
       win->configureRequestEvent(&e->xconfigurerequest);
-    } else {
-      /*
-        handle configure requests for windows that have no EventHandlers
-        by simply configuring them as requested.
-
-        note: the event->window parameter points to the window being
-        configured, and event->parent points to the window that received
-        the event (in this case, the root window, since
-        SubstructureRedirect has been selected).
-      */
-      XWindowChanges xwc;
-      xwc.x = e->xconfigurerequest.x;
-      xwc.y = e->xconfigurerequest.y;
-      xwc.width = e->xconfigurerequest.width;
-      xwc.height = e->xconfigurerequest.height;
-      xwc.border_width = e->xconfigurerequest.border_width;
-      xwc.sibling = e->xconfigurerequest.above;
-      xwc.stack_mode = e->xconfigurerequest.detail;
-      XConfigureWindow(XDisplay(),
-                       e->xconfigurerequest.window,
-                       e->xconfigurerequest.value_mask,
-                       &xwc);
+      break;
     }
+
+    Slit *slit =
+      dynamic_cast<Slit *>(findEventHandler(e->xconfigurerequest.parent));
+    if (slit) {
+      // something in the slit wants to resize
+      slit->configureRequestEvent(&e->xconfigurerequest);
+      break;
+    }
+
+    /*
+      handle configure requests for windows that have no EventHandlers
+      by simply configuring them as requested.
+
+      note: the event->window parameter points to the window being
+      configured, and event->parent points to the window that received
+      the event (in this case, the root window, since
+      SubstructureRedirect has been selected).
+    */
+    XWindowChanges xwc;
+    xwc.x = e->xconfigurerequest.x;
+    xwc.y = e->xconfigurerequest.y;
+    xwc.width = e->xconfigurerequest.width;
+    xwc.height = e->xconfigurerequest.height;
+    xwc.border_width = e->xconfigurerequest.border_width;
+    xwc.sibling = e->xconfigurerequest.above;
+    xwc.stack_mode = e->xconfigurerequest.detail;
+    XConfigureWindow(XDisplay(),
+                     e->xconfigurerequest.window,
+                     e->xconfigurerequest.value_mask,
+                     &xwc);
     break;
   }
 
