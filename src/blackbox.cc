@@ -1650,8 +1650,7 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
     active_screen->updateNetizenWindowFocus();
     Window active = (focused_window) ? focused_window->getClientWindow() :
                                        None;
-    netwm()->setActiveWindow(active_screen->getRootWindow(), active,
-                             getXDisplay());
+    netwm()->setActiveWindow(active_screen->getRootWindow(), active);
   }
 
   if (old_screen && old_screen != active_screen) {
@@ -1659,7 +1658,6 @@ void Blackbox::setFocusedWindow(BlackboxWindow *win) {
     old_screen->updateNetizenWindowFocus();
     Window active = (focused_window) ? focused_window->getClientWindow() :
                                        None;
-    netwm()->setActiveWindow(old_screen->getRootWindow(), active,
-                             getXDisplay());
+    netwm()->setActiveWindow(old_screen->getRootWindow(), active);
   }
 }

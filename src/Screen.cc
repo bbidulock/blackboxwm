@@ -266,26 +266,18 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
     on the root window.  Then we must set _NET_WM_NAME on the child window
     to be the name of the wm.
   */
-  blackbox->netwm()->setSupportingWMCheck(getRootWindow(), geom_window,
-                                          blackbox->getXDisplay());
-  blackbox->netwm()->setSupportingWMCheck(geom_window, geom_window,
-                                          blackbox->getXDisplay());
-  blackbox->netwm()->setWMName("Blackbox", geom_window,
-                                blackbox->getXDisplay());
+  blackbox->netwm()->setSupportingWMCheck(getRootWindow(), geom_window);
+  blackbox->netwm()->setSupportingWMCheck(geom_window, geom_window);
+  blackbox->netwm()->setWMName(geom_window, "Blackbox");
 
-  blackbox->netwm()->setNumberOfDesktops(workspacesList.size(),
-                                         blackbox->getXDisplay(),
-                                         getRootWindow());
-  blackbox->netwm()->setDesktopGeometry(getWidth(), getHeight(),
-                                        blackbox->getXDisplay(),
-                                        getRootWindow());
-  blackbox->netwm()->setDesktopViewport(0, 0,
-                                        blackbox->getXDisplay(),
-                                        getRootWindow());
-  blackbox->netwm()->setActiveWindow(getRootWindow(), None,
-                                     blackbox->getXDisplay());
-  blackbox->netwm()->setWorkarea(0, 0, usableArea.width(), usableArea.height(),
-                                 blackbox->getXDisplay(), getRootWindow());
+  blackbox->netwm()->setNumberOfDesktops(getRootWindow(),
+                                         workspacesList.size());
+  blackbox->netwm()->setDesktopGeometry(getRootWindow(),
+                                        getWidth(), getHeight());
+  blackbox->netwm()->setDesktopViewport(getRootWindow(), 0, 0);
+  blackbox->netwm()->setActiveWindow(getRootWindow(), None);
+  blackbox->netwm()->setWorkarea(getRootWindow(), 0, 0,
+                                 usableArea.width(), usableArea.height());
 
   Atom supported[] = {
     blackbox->netwm()->numberOfDesktops(),
@@ -296,8 +288,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
     blackbox->netwm()->workarea()
   };
 
-  blackbox->netwm()->setSupported(supported, 6, blackbox->getXDisplay(),
-                                  getRootWindow());
+  blackbox->netwm()->setSupported(getRootWindow(), supported, 6);
 
   unsigned int i, j, nchild;
   Window r, p, *children;
@@ -372,22 +363,22 @@ BScreen::~BScreen(void) {
   delete toolbar;
   delete image_control;
 
-  blackbox->netwm()->removeProperty(blackbox->netwm()->supportingWMCheck(),
-                                    blackbox->getXDisplay(), getRootWindow());
-  blackbox->netwm()->removeProperty(blackbox->netwm()->supported(),
-                                    blackbox->getXDisplay(), getRootWindow());
-  blackbox->netwm()->removeProperty(blackbox->netwm()->numberOfDesktops(),
-                                    blackbox->getXDisplay(), getRootWindow());
-  blackbox->netwm()->removeProperty(blackbox->netwm()->desktopGeometry(),
-                                    blackbox->getXDisplay(), getRootWindow());
-  blackbox->netwm()->removeProperty(blackbox->netwm()->desktopViewport(),
-                                    blackbox->getXDisplay(), getRootWindow());
-  blackbox->netwm()->removeProperty(blackbox->netwm()->currentDesktop(),
-                                    blackbox->getXDisplay(), getRootWindow());
-  blackbox->netwm()->removeProperty(blackbox->netwm()->activeWindow(),
-                                    blackbox->getXDisplay(), getRootWindow());
-  blackbox->netwm()->removeProperty(blackbox->netwm()->workarea(),
-                                    blackbox->getXDisplay(), getRootWindow());
+  blackbox->netwm()->removeProperty(getRootWindow(),
+                                    blackbox->netwm()->supportingWMCheck());
+  blackbox->netwm()->removeProperty(getRootWindow(),
+                                    blackbox->netwm()->supported());
+  blackbox->netwm()->removeProperty(getRootWindow(),
+                                    blackbox->netwm()->numberOfDesktops());
+  blackbox->netwm()->removeProperty(getRootWindow(),
+                                    blackbox->netwm()->desktopGeometry());
+  blackbox->netwm()->removeProperty(getRootWindow(),
+                                    blackbox->netwm()->desktopViewport());
+  blackbox->netwm()->removeProperty(getRootWindow(),
+                                    blackbox->netwm()->currentDesktop());
+  blackbox->netwm()->removeProperty(getRootWindow(),
+                                    blackbox->netwm()->activeWindow());
+  blackbox->netwm()->removeProperty(getRootWindow(),
+                                    blackbox->netwm()->workarea());
 
   if (resource.wstyle.fontset)
     XFreeFontSet(blackbox->getXDisplay(), resource.wstyle.fontset);
@@ -849,9 +840,8 @@ unsigned int BScreen::addWorkspace(void) {
   toolbar->reconfigure();
 
   updateNetizenWorkspaceCount();
-  blackbox->netwm()->setNumberOfDesktops(workspacesList.size(),
-                                         blackbox->getXDisplay(),
-                                         getRootWindow());
+  blackbox->netwm()->setNumberOfDesktops(getRootWindow(),
+                                         workspacesList.size());
 
   return workspacesList.size();
 }
@@ -877,9 +867,8 @@ unsigned int BScreen::removeLastWorkspace(void) {
   toolbar->reconfigure();
 
   updateNetizenWorkspaceCount();
-  blackbox->netwm()->setNumberOfDesktops(workspacesList.size(),
-                                         blackbox->getXDisplay(),
-                                         getRootWindow());
+  blackbox->netwm()->setNumberOfDesktops(getRootWindow(),
+                                         workspacesList.size());
 
   return workspacesList.size();
 }
@@ -900,9 +889,8 @@ void BScreen::changeWorkspaceID(unsigned int id) {
   toolbar->redrawWorkspaceLabel(True);
 
   updateNetizenCurrentWorkspace();
-  blackbox->netwm()->setCurrentDesktop(current_workspace->getID(),
-                                       blackbox->getXDisplay(),
-                                       getRootWindow());
+  blackbox->netwm()->setCurrentDesktop(getRootWindow(),
+                                       current_workspace->getID());
 }
 
 
@@ -1749,8 +1737,8 @@ void BScreen::updateAvailableArea(void) {
       if ((*it)->isMaximized()) (*it)->remaximize();
   }
 
-  blackbox->netwm()->setWorkarea(0, 0, usableArea.width(), usableArea.height(),
-                                 blackbox->getXDisplay(), getRootWindow());
+  blackbox->netwm()->setWorkarea(getRootWindow(), 0, 0,
+                                 usableArea.width(), usableArea.height());
 }
 
 
