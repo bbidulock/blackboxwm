@@ -316,6 +316,10 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
                        client.wmnormal,
                        client.wmprotocols);
 
+  if (client.wmhints.initial_state == IconicState
+      && !hasWindowFunction(WindowFunctionIconify))
+    client.wmhints.initial_state = NormalState;
+
   bt::Netwm::Strut strut;
   if (blackbox->netwm().readWMStrut(client.window, &strut)) {
     client.strut = new bt::Netwm::Strut;
