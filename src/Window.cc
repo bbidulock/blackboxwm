@@ -736,8 +736,9 @@ void BlackboxWindow::updateFocusModel(void) {
 
 
 void BlackboxWindow::positionWindows(void) {
-  XResizeWindow(blackbox->getXDisplay(), frame.window, frame.inside_w,
-                (flags.shaded) ? frame.title_h : frame.inside_h);
+  XMoveResizeWindow(blackbox->getXDisplay(), frame.window,
+                    frame.rect.x(), frame.rect.y(), frame.inside_w,
+                    (flags.shaded) ? frame.title_h : frame.inside_h);
   XSetWindowBorderWidth(blackbox->getXDisplay(), frame.window, frame.border_w);
   XSetWindowBorderWidth(blackbox->getXDisplay(), frame.plate,
                         frame.mwm_border_w);
@@ -1173,9 +1174,6 @@ void BlackboxWindow::configure(int dx, int dy,
       configureShape();
     }
 #endif // SHAPE
-
-    XMoveWindow(blackbox->getXDisplay(), frame.window,
-                frame.rect.x(), frame.rect.y());
 
     positionWindows();
     decorate();
