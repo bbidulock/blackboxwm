@@ -36,6 +36,7 @@ extern "C" {
 namespace bt {
 
   class Display;
+  class Pen;
   class Rect;
 
   enum Alignment {
@@ -78,8 +79,9 @@ namespace bt {
 
   bt::Rect textRect(const bt::Font &font, const std::string &text);
 
-  void drawText(const bt::Font &font, Window window, const bt::Rect &rect,
-                bt::Alignment alignment, const std::string &text);
+  void drawText(const bt::Font &font, const bt::Pen &pen, Window window,
+                const bt::Rect &rect, bt::Alignment alignment,
+                const std::string &text);
 
 } // namespace bt
 
