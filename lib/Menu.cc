@@ -144,8 +144,8 @@ void bt::MenuStyle::load(const Resource &resource) {
 
 
 unsigned int bt::MenuStyle::separatorHeight(void) const {
-  return
-    (frame.texture.borderWidth() > 0 ? frame.texture.borderWidth() : 1) + 2;
+  return ((frame.texture.borderWidth() > 0 ? frame.texture.borderWidth() : 1)
+          + (2 * frame_margin));
 }
 
 
@@ -199,7 +199,7 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
   if (item.isSeparator()) {
     Pen pen(_screen, frame.foreground);
     XFillRectangle(pen.XDisplay(), window, pen.gc(),
-                   r2.x(), r2.y() + 1, r2.width(),
+                   r2.x(), r2.y() + frame_margin, r2.width(),
                    (frame.texture.borderWidth() > 0 ?
                     frame.texture.borderWidth() : 1));
     return;
