@@ -18,8 +18,8 @@ CVS warts:
   has multiple transients... this includes transient stacking
 
 * to accomplish the above, we NEED proper window group support... this includes
-  supporting group leader, with multiple toplevels which can have multiple group
-  transients... with group operations (iconify all, deiconify all,
+  supporting group leader, with multiple toplevels which can have multiple
+  group transients... with group operations (iconify all, deiconify all,
   send all to workspace, etc.)
 
 * Send to menu should not list the current workspace
@@ -31,8 +31,6 @@ CVS warts:
   to fill the area
 
 * BlackboxWindow::deiconify needs a new name, also look into show()
-
-* find out why Workspace::raiseWindow() is required for menus to behave
 
 Stuff TODO or On The Way(tm):
 -----------------------------
