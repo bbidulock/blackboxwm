@@ -36,9 +36,6 @@ CHANGE: sigaction is defined by POSIX.1, so we should drop the older
         objects to making blackbox require a POSIX.1 compliant host
         should speak up
 
-CHANGE: use a single XInternAtoms call to initialize all atoms in the
-        lib. reduces startup time and network activity
-
 FIX: window colormap installation should follow focus... it doesn't at
      the moment, and the changes in the event handling have removed
      colormap installation completely.

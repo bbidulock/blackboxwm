@@ -407,14 +407,24 @@ bool Blackbox::handleSignal(int sig) {
 
 
 void Blackbox::init_icccm(void) {
-  xa_wm_colormap_windows =
-    XInternAtom(getXDisplay(), "WM_COLORMAP_WINDOWS", False);
-  xa_wm_protocols = XInternAtom(getXDisplay(), "WM_PROTOCOLS", False);
-  xa_wm_state = XInternAtom(getXDisplay(), "WM_STATE", False);
-  xa_wm_change_state = XInternAtom(getXDisplay(), "WM_CHANGE_STATE", False);
-  xa_wm_delete_window = XInternAtom(getXDisplay(), "WM_DELETE_WINDOW", False);
-  xa_wm_take_focus = XInternAtom(getXDisplay(), "WM_TAKE_FOCUS", False);
-  motif_wm_hints = XInternAtom(getXDisplay(), "_MOTIF_WM_HINTS", False);
+  char* atoms[7] = {
+    "WM_COLORMAP_WINDOWS",
+    "WM_PROTOCOLS",
+    "WM_STATE",
+    "WM_CHANGE_STATE",
+    "WM_DELETE_WINDOW",
+    "WM_TAKE_FOCUS",
+    "_MOTIF_WM_HINTS"
+  };
+  Atom atoms_return[7];
+  XInternAtoms(getXDisplay(), atoms, 7, False, atoms_return);
+  xa_wm_colormap_windows = atoms_return[0];
+  xa_wm_protocols = atoms_return[1];
+  xa_wm_state = atoms_return[2];
+  xa_wm_change_state = atoms_return[3];
+  xa_wm_delete_window = atoms_return[4];
+  xa_wm_take_focus = atoms_return[5];
+  motif_wm_hints = atoms_return[6];
 
   _netwm = new Netwm(getXDisplay());
 }
