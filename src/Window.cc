@@ -114,7 +114,8 @@ static void update_decorations(WindowDecorationFlags &decorations,
     functions   &= ~(WindowFunctionShade |
                      WindowFunctionIconify |
                      WindowFunctionMaximize |
-                     WindowFunctionChangeLayer);
+                     WindowFunctionChangeLayer |
+                     WindowFunctionFullScreen);
     break;
 
   case WindowTypeDesktop:
@@ -134,7 +135,8 @@ static void update_decorations(WindowDecorationFlags &decorations,
     functions   &= ~(WindowFunctionResize |
                      WindowFunctionShade |
                      WindowFunctionIconify |
-                     WindowFunctionMaximize);
+                     WindowFunctionMaximize |
+                     WindowFunctionFullScreen);
     break;
 
   case WindowTypeUtility:
@@ -214,7 +216,16 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   screen = s;
   lastButtonPressTime = 0;
 
+  /*
+    the server needs to be grabbed here to prevent client's from sending
+    events while we are in the process of managing their window.
+    We hold the grab until after we are done moving the window around.
+  */
+
+  blackbox->XGrabServer();
+
   if (! validateClient()) {
+    blackbox->XUngrabServer();
     delete this;
     return;
   }
@@ -229,6 +240,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
             "BlackboxWindow::BlackboxWindow(): XGetWindowAttributes failed\n");
 #endif // DEBUG
 
+    blackbox->XUngrabServer();
     delete this;
     return;
   }
@@ -319,6 +331,10 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   if (client.wmhints.initial_state == IconicState
       && !hasWindowFunction(WindowFunctionIconify))
     client.wmhints.initial_state = NormalState;
+  if (isMaximized() && !hasWindowFunction(WindowFunctionMaximize))
+    client.ewmh.maxv = client.ewmh.maxh = false;
+  if (isFullScreen() && !hasWindowFunction(WindowFunctionFullScreen))
+    client.ewmh.fullscreen = false;
 
   bt::Netwm::Strut strut;
   if (blackbox->netwm().readWMStrut(client.window, &strut)) {
@@ -342,14 +358,6 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   // apply the size and gravity hint to the frame
   upsize();
   applyGravity(frame.rect);
-
-  /*
-    the server needs to be grabbed here to prevent client's from sending
-    events while we are in the process of configuring their window.
-    We hold the grab until after we are done moving the window around.
-  */
-
-  blackbox->XGrabServer();
 
   associateClientWindow();
 
@@ -1828,6 +1836,8 @@ void BlackboxWindow::setShaded(bool shaded) {
 
 
 void BlackboxWindow::setFullScreen(bool b) {
+  assert(hasWindowFunction(WindowFunctionFullScreen));
+
   if (client.ewmh.fullscreen == b)
     return;
 
@@ -2363,7 +2373,8 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
 
   if (event->message_type == blackbox->getWMChangeStateAtom()) {
     if (event->data.l[0] == IconicState) {
-      iconify();
+      if (hasWindowFunction(WindowFunctionIconify))
+        iconify();
     } else if (event->data.l[0] == NormalState) {
       show();
     }
@@ -2498,15 +2509,17 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
       */
     }
 
-    if (first == netwm.wmStateFullscreen() ||
-        second == netwm.wmStateFullscreen()) {
-      if (action == netwm.wmStateAdd() ||
-          (action == netwm.wmStateToggle() &&
-           ! client.ewmh.fullscreen)) {
-        setFullScreen(true);
-      } else if (action == netwm.wmStateToggle() ||
-                 action == netwm.wmStateRemove()) {
-        setFullScreen(false);
+    if (hasWindowFunction(WindowFunctionFullScreen)) {
+      if (first == netwm.wmStateFullscreen() ||
+          second == netwm.wmStateFullscreen()) {
+        if (action == netwm.wmStateAdd() ||
+            (action == netwm.wmStateToggle() &&
+             ! client.ewmh.fullscreen)) {
+          setFullScreen(true);
+        } else if (action == netwm.wmStateToggle() ||
+                   action == netwm.wmStateRemove()) {
+          setFullScreen(false);
+        }
       }
     }
 

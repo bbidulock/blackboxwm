@@ -51,6 +51,7 @@ enum WindowFunction {
   WindowFunctionClose           = 1<<5,
   WindowFunctionChangeWorkspace = 1<<6,
   WindowFunctionChangeLayer     = 1<<7,
+  WindowFunctionFullScreen      = 1<<8,
   NoWindowFunctions             = 0,
   AllWindowFunctions            = (WindowFunctionResize |
                                    WindowFunctionMove |
@@ -59,7 +60,8 @@ enum WindowFunction {
                                    WindowFunctionMaximize |
                                    WindowFunctionClose |
                                    WindowFunctionChangeWorkspace |
-                                   WindowFunctionChangeLayer)
+                                   WindowFunctionChangeLayer |
+                                   WindowFunctionFullScreen)
 };
 typedef unsigned char WindowFunctionFlags;
 
