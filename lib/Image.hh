@@ -35,6 +35,7 @@ extern "C" {
 #include "BaseDisplay.hh"
 #include "Color.hh"
 
+
 namespace bt {
 
   class Texture;

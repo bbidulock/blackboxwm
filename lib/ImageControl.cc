@@ -529,9 +529,9 @@ struct ZeroRefCheck {
 };
 
 struct CacheCleaner {
-  Display *display;
+  ::Display *display;
   ZeroRefCheck ref_check;
-  CacheCleaner(Display *d): display(d) {}
+  CacheCleaner(::Display *d): display(d) {}
   inline void operator()(const bt::ImageControl::CachedImage& image) const {
     if (ref_check(image))
       XFreePixmap(display, image.pixmap);
