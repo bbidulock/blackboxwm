@@ -1270,10 +1270,12 @@ void Blackbox::load_rc(BScreen *screen) {
     string search = value.addr;
     string::const_iterator it = search.begin(),
       end = search.end();
-    for (; it != end; ++it) {
+    while (1) {
       string::const_iterator tmp = it; // current string.begin()
       it = std::find(tmp, end, ',');   // look for comma between tmp and end
       screen->addWorkspaceName(string(tmp, it)); // string = search[tmp:it]
+      if (it == end) break;
+      ++it;
     }
   }
 
