@@ -1189,17 +1189,13 @@ void bt::Image::vgradient(const Color &from, const Color &to,
   if (interlaced) {
     // faked interlacing effect
     for (y = 0; y < height; ++y) {
-      p->red   = static_cast<unsigned char>(yr);
-      p->green = static_cast<unsigned char>(yg);
-      p->blue  = static_cast<unsigned char>(yb);
-
-      if (y & 1) {
-        p->red   = (p->red   >> 1) + (p->red   >> 2);
-        p->green = (p->green >> 1) + (p->green >> 2);
-        p->blue  = (p->blue  >> 1) + (p->blue  >> 2);
-      }
-
-      for (x = 1; x < width; ++x, ++p) *(p+1) = *p;
+      const RGB rgb = {
+        static_cast<unsigned char>((y & 1) ? (yr * 3. / 4.) : yr),
+        static_cast<unsigned char>((y & 1) ? (yg * 3. / 4.) : yg),
+        static_cast<unsigned char>((y & 1) ? (yb * 3. / 4.) : yb)
+      };
+      for (x = 0; x < width; ++x, ++p)
+        *p = rgb;
 
       yr += dry;
       yg += dgy;
@@ -1208,11 +1204,13 @@ void bt::Image::vgradient(const Color &from, const Color &to,
   } else {
     // normal vgradient
     for (y = 0; y < height; ++y) {
-      p->red   = static_cast<unsigned char>(yr);
-      p->green = static_cast<unsigned char>(yg);
-      p->blue  = static_cast<unsigned char>(yb);
-
-      for (x = 1; x < width; ++x, ++p) *(p+1) = *p;
+      const RGB rgb = {
+        static_cast<unsigned char>(yr),
+        static_cast<unsigned char>(yg),
+        static_cast<unsigned char>(yb)
+      };
+      for (x = 0; x < width; ++x, ++p)
+        *p = rgb;
 
       yr += dry;
       yg += dgy;
