@@ -1803,8 +1803,7 @@ void BlackboxWindow::restoreAttributes(void) {
   if (ret != Success || !net || nitems != PropBlackboxAttributesElements)
     return;
 
-  if (net->flags & AttribShaded &&
-      net->attrib & AttribShaded) {
+  if (net->flags & AttribShaded && net->attrib & AttribShaded) {
     int save_state = current_state;
 
     flags.shaded = False;
@@ -1822,16 +1821,14 @@ void BlackboxWindow::restoreAttributes(void) {
     current_state = NormalState;
   }
 
-  if (net->flags & AttribOmnipresent &&
-      net->attrib & AttribOmnipresent) {
+  if (net->flags & AttribOmnipresent && net->attrib & AttribOmnipresent) {
     flags.stuck = False;
     stick();
 
     current_state = NormalState;
   }
 
-  if ((net->flags & AttribMaxHoriz) ||
-      (net->flags & AttribMaxVert)) {
+  if (net->flags & AttribMaxHoriz || net->flags & AttribMaxVert) {
     blackbox_attrib.premax_x = net->premax_x;
     blackbox_attrib.premax_y = net->premax_y;
     blackbox_attrib.premax_w = net->premax_w;
