@@ -91,12 +91,13 @@ void Basemenu::drawTitle()
   if ( i18n->multibyte() )
     XmbDrawString( *BaseDisplay::instance(), windowID(), style->menuTitleFontSet(),
                    gc.gc(), title_rect.x() + dx, title_rect.y() +
-                   ( 1 - style->menuTitleFontSetExtents()->max_ink_extent.y ),
+                   ( style->bevelWidth() -
+                     style->menuTitleFontSetExtents()->max_ink_extent.y ),
                    title().c_str(), title().length() );
   else
     XDrawString( *BaseDisplay::instance(), windowID(), gc.gc(),
                  title_rect.x() + dx, title_rect.y() +
-                 (style->menuTitleFont()->ascent + 1),
+                 (style->menuTitleFont()->ascent + style->bevelWidth()),
                  title().c_str(), title().length() );
   BGCCache::instance()->release( gc );
 }
@@ -160,12 +161,13 @@ void Basemenu::drawItem( const Rect &r, const Item &item )
 
   if ( i18n->multibyte() )
     XmbDrawString( *display, windowID(), style->menuFontSet(), gc.gc(),
-                   r.x() + dx, r.y() +
-                   ( 1 - style->menuFontSetExtents()->max_ink_extent.y ),
+                   r.x() + dx, r.y() + ( style->borderWidth() -
+                                         style->menuFontSetExtents()->max_ink_extent.y ),
                    item.label().c_str(), item.label().length() );
   else
     XDrawString( *display, windowID(), gc.gc(),
-                 r.x() + dx, r.y() + ( style->menuFont()->ascent + 1 ),
+                 r.x() + dx, r.y() + ( style->menuFont()->ascent +
+                                       style->borderWidth() ),
                  item.label().c_str(), item.label().length() );
 
   if ( item.isChecked() ) {
@@ -202,12 +204,12 @@ void Basemenu::updateSize()
   BStyle *style = scr->style();
   if (i18n->multibyte()) {
     maxcolh = itemh = style->menuFontSetExtents()->max_ink_extent.height +
-              style->bevelWidth() * 2;
+              style->borderWidth() * 2;
     titleh = style->menuTitleFontSetExtents()->max_ink_extent.height +
              style->bevelWidth() * 2;
   } else {
     maxcolh = itemh = style->menuFont()->ascent + style->menuFont()->descent +
-              style->bevelWidth() * 2;
+              style->borderWidth() * 2;
     titleh = style->menuTitleFont()->ascent + style->menuTitleFont()->descent +
              style->bevelWidth() * 2;
   }
@@ -255,17 +257,17 @@ void Basemenu::updateSize()
 
     if ( item.isSeparator() ) {
       iw = 80;
-      item.height = style->borderWidth();
+      item.height = style->borderWidth() > 0 ? style->borderWidth() : 1;
     } else {
       if ( i18n->multibyte() ) {
         XRectangle ink, logical;
         XmbTextExtents( style->menuFontSet(), item.label().c_str(),
                         item.label().length(), &ink, &logical );
-        logical.width += style->bevelWidth() * 2;
+        logical.width += style->borderWidth() * 2;
         iw = std::max( w, int( logical.width ) );
       } else
         iw = XTextWidth( style->menuFont(), item.label().c_str(),
-                         item.label().length() ) + style->bevelWidth() * 2;
+                         item.label().length() ) + style->borderWidth() * 2;
 
       iw += indent + indent;
       item.height = itemh;
@@ -283,14 +285,17 @@ void Basemenu::updateSize()
     }
   }
 
-  maxcolh = std::max( maxcolh, colh );
-  h += maxcolh + style->borderWidth();
-  w *= cols;
-
   if ( w < 80 )
     w = 80;
-  if ( h < 6 )
-    h = 6;
+
+  maxcolh = std::max( maxcolh, colh );
+  maxcolh += style->bevelWidth() * 2;
+  h += maxcolh + style->borderWidth();
+
+  itemw = w;
+  w *= cols;
+  w += style->bevelWidth() * 2;
+  w += style->borderWidth() * 2;
 
   if ( show_title ) {
     Rect tr( style->borderWidth(), style->borderWidth(),
@@ -303,7 +308,7 @@ void Basemenu::updateSize()
     }
     if ( ir != items_rect || ! items_pixmap ) {
       items_rect = ir;
-      itemw = items_rect.width() / cols;
+      // itemw = items_rect.width() / cols;
       items_pixmap = style->menu().render( items_rect.size(), items_pixmap );
       highlight_pixmap = style->menuHighlight().render( Size( itemw, itemh ),
                                                         highlight_pixmap );
@@ -313,7 +318,7 @@ void Basemenu::updateSize()
              w - style->borderWidth() * 2, h - style->borderWidth() * 2 );
     if ( ir != items_rect || ! items_pixmap ) {
       items_rect = ir;
-      itemw = items_rect.width() / cols;
+      // itemw = items_rect.width() / cols;
       items_pixmap = style->menu().render( items_rect.size(), items_pixmap );
       highlight_pixmap = style->menuHighlight().render( Size( itemw, itemh ),
                                                         highlight_pixmap );
@@ -328,6 +333,7 @@ void Basemenu::updateSize()
 
 void Basemenu::reconfigure()
 {
+  title_rect = items_rect = Rect(0, 0, 1, 1);
   size_dirty = true;
   updateSize();
   if ( isVisible() )
@@ -413,7 +419,9 @@ void Basemenu::hide()
 
   Rect r;
   int row = 0, col = 0;
-  int x = items_rect.x(), y = items_rect.y();
+  BStyle *style = Blackbox::instance()->screen( screen() )->style();
+  int x = items_rect.x() + style->bevelWidth();
+  int y = items_rect.y() + style->bevelWidth();
   while ( it != items.end() ) {
     Item &item = (*it++);
     r.setRect( x, y, itemw, item.height );
@@ -429,8 +437,8 @@ void Basemenu::hide()
       // next column
       col++;
       row = 0;
-      y = items_rect.y();
-      x = items_rect.x() + itemw * col;
+      y = items_rect.y() + style->bevelWidth();
+      x = items_rect.x() + style->bevelWidth() + itemw * col;
     }
   }
 
@@ -626,7 +634,9 @@ void Basemenu::setItemEnabled( int index, bool enabled )
   Rect r;
   int i = 0;
   int row = 0, col = 0;
-  int x = items_rect.x(), y = items_rect.y();
+  BStyle *style = Blackbox::instance()->screen( screen() )->style();
+  int x = items_rect.x() + style->bevelWidth();
+  int y = items_rect.y() + style->bevelWidth();
   while ( i++ < index ) {
     if ( it == items.end() ) {
       // index is out of range
@@ -644,8 +654,8 @@ void Basemenu::setItemEnabled( int index, bool enabled )
       // next column
       col++;
       row = 0;
-      y = items_rect.y();
-      x = items_rect.x() + itemw * col;
+      y = items_rect.y() + style->bevelWidth();
+      x = items_rect.x() + style->bevelWidth() + itemw * col;
     }
   }
 
@@ -716,7 +726,9 @@ void Basemenu::setItemChecked( int index, bool check )
   Rect r;
   int i = 0;
   int row = 0, col = 0;
-  int x = items_rect.x(), y = items_rect.y();
+  BStyle *style = Blackbox::instance()->screen( screen() )->style();
+  int x = items_rect.x() + style->bevelWidth();
+  int y = items_rect.y() + style->bevelWidth();
   while ( i++ < index ) {
     if ( it == items.end() ) {
       // index is out of range
@@ -734,8 +746,8 @@ void Basemenu::setItemChecked( int index, bool check )
       // next column
       col++;
       row = 0;
-      y = items_rect.y();
-      x = items_rect.x() + itemw * col;
+      y = items_rect.y() + style->bevelWidth();
+      x = items_rect.x() + style->bevelWidth() + itemw * col;
     }
   }
 
@@ -820,7 +832,7 @@ void Basemenu::showSubmenu( const Rect &r, const Item &item )
   BScreen *scr = Blackbox::instance()->screen( screen() );
 
   int px = x() + r.x() + r.width();
-  int py = y() + r.y() - scr->style()->borderWidth();
+  int py = y() + r.y() - scr->style()->borderWidth() - scr->style()->bevelWidth();
   bool on_left = false;
 
   if ( parent_menu && parent_menu->isVisible() && parent_menu->x() > x() )
@@ -885,7 +897,9 @@ void Basemenu::buttonPressEvent( XEvent *e )
 
   Rect r;
   int row = 0, col = 0;
-  int x = items_rect.x(), y = items_rect.y();
+  BStyle *style = Blackbox::instance()->screen( screen() )->style();
+  int x = items_rect.x() + style->bevelWidth();
+  int y = items_rect.y() + style->bevelWidth();
   while ( it != items.end() ) {
     Item &item = (*it++);
     r.setRect( x, y, itemw, item.height );
@@ -905,8 +919,8 @@ void Basemenu::buttonPressEvent( XEvent *e )
       // next column
       col++;
       row = 0;
-      y = items_rect.y();
-      x = items_rect.x() + itemw * col;
+      y = items_rect.y() + style->bevelWidth();
+      x = items_rect.x() + style->bevelWidth() + itemw * col;
     }
   }
 }
@@ -949,7 +963,9 @@ void Basemenu::buttonReleaseEvent( XEvent *e )
   Rect r;
   bool once = true;
   int row = 0, col = 0;
-  int x = items_rect.x(), y = items_rect.y();
+  BStyle *style = Blackbox::instance()->screen( screen() )->style();
+  int x = items_rect.x() + style->bevelWidth();
+  int y = items_rect.y() + style->bevelWidth();
   while ( it != items.end() ) {
     Item &item = (*it++);
     r.setRect( x, y, itemw, item.height );
@@ -974,8 +990,8 @@ void Basemenu::buttonReleaseEvent( XEvent *e )
       // next column
       col++;
       row = 0;
-      y = items_rect.y();
-      x = items_rect.x() + itemw * col;
+      y = items_rect.y() + style->bevelWidth();
+      x = items_rect.x() + style->bevelWidth() + itemw * col;
     }
   }
 
@@ -1008,7 +1024,9 @@ void Basemenu::pointerMotionEvent( XEvent *e )
 
   Rect r;
   int row = 0, col = 0;
-  int x = items_rect.x(), y = items_rect.y();
+  BStyle *style = Blackbox::instance()->screen( screen() )->style();
+  int x = items_rect.x() + style->bevelWidth();
+  int y = items_rect.y() + style->bevelWidth();
   while ( it != items.end() ) {
     Item &item = (*it++);
     r.setRect( x, y, itemw, item.height );
@@ -1039,8 +1057,8 @@ void Basemenu::pointerMotionEvent( XEvent *e )
       // next column
       col++;
       row = 0;
-      y = items_rect.y();
-      x = items_rect.x() + itemw * col;
+      y = items_rect.y() + style->bevelWidth();
+      x = items_rect.x() + style->bevelWidth() + itemw * col;
     }
   }
 }
@@ -1060,7 +1078,9 @@ void Basemenu::leaveEvent( XEvent * )
 
   Rect r;
   int row = 0, col = 0;
-  int x = items_rect.x(), y = items_rect.y();
+  BStyle *style = Blackbox::instance()->screen( screen() )->style();
+  int x = items_rect.x() + style->bevelWidth();
+  int y = items_rect.y() + style->bevelWidth();
   while ( it != items.end() ) {
     Item &item = (*it++);
     r.setRect( x, y, itemw, item.height );
@@ -1079,8 +1099,8 @@ void Basemenu::leaveEvent( XEvent * )
       // next column
       col++;
       row = 0;
-      y = items_rect.y();
-      x = items_rect.x() + itemw * col;
+      y = items_rect.y() + style->bevelWidth();
+      x = items_rect.x() + style->bevelWidth() + itemw * col;
     }
   }
 }
@@ -1177,7 +1197,8 @@ void Basemenu::exposeEvent( XEvent *e )
     // only draw items that intersect with the needed update rect
     Rect r;
     int row = 0, col = 0;
-    int x = items_rect.x(), y = items_rect.y();
+    int x = items_rect.x() + style->bevelWidth();
+    int y = items_rect.y() + style->bevelWidth();
     while ( it != items.end() ) {
       const Item &item = (*it++);
       r.setRect( x, y, itemw, item.height );
@@ -1192,8 +1213,8 @@ void Basemenu::exposeEvent( XEvent *e )
         // next column
         col++;
         row = 0;
-        y = items_rect.y();
-        x = items_rect.x() + itemw * col;
+        y = items_rect.y() + style->bevelWidth();
+        x = items_rect.x() + style->bevelWidth() + itemw * col;
       }
     }
   }
