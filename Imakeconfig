@@ -1,0 +1,39 @@
+XCOMM Imakeconfig for Blackbox - an X11 Window manager
+XCOMM Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
+XCOMM
+XCOMM  This program is free software; you can redistribute it and/or modify
+XCOMM  it under the terms of the GNU General Public License as published by
+XCOMM  the Free Software Foundation; either version 2 of the License, or
+XCOMM  (at your option) any later version.
+XCOMM
+XCOMM  This program is distributed in the hope that it will be useful,
+XCOMM  but WITHOUT ANY WARRANTY; without even the implied warranty of
+XCOMM  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+XCOMM  GNU General Public License for more details.
+XCOMM
+XCOMM  You should have received a copy of the GNU General Public License
+XCOMM  along with this program; if not, write to the Free Software
+XCOMM  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+XCOMM
+XCOMM (See the included file COPYING / GPL-2.0)
+
+XCOMM Define this if you want to build ccmalloc
+XCOMM This will statically link blackbox (which sucks disk space... a
+XCOMM statically linked blackbox executable runs in excess of 3mb)
+#define MallocDebug
+
+XCOMM Define this to get XShapeExtention support
+#define SupportShapeExtension
+
+XCOMM Define this to get Jon Denardis' curved gradient hack
+XCOMM #define GradientHack
+
+XCOMM Uncomment this line to get debugging symbols in the executable
+XCOMM
+XCOMM You may also put any compiler specific flags here
+XCOMM CXXFLAGS :=	-Wall -W -fno-strength-reduce -pipe $(CXXFLAGS)
+XCOMM CXXFLAGS :=	$(CXXFLAGS) -g
+
+XCOMM Uncomment this line and edit it to your liking for building libBox
+XCOMM CFLAGS :=	-Wall -W $(CFLAGS)
+XCOMM CFLAGS :=	$(CFLAGS) -g
