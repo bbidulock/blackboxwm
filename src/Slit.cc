@@ -344,8 +344,8 @@ void Slit::reconfigure(void) {
       event.xconfigure.display = display;
       event.xconfigure.event = client->window;
       event.xconfigure.window = client->window;
-      event.xconfigure.x = frame.x + x + screen->getBorderWidth();
-      event.xconfigure.y = frame.y + y + screen->getBorderWidth();
+      event.xconfigure.x = x;
+      event.xconfigure.y = y;
       event.xconfigure.width = client->width;
       event.xconfigure.height = client->height;
       event.xconfigure.border_width = 0;

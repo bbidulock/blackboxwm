@@ -1462,7 +1462,7 @@ void BlackboxWindow::maximize(unsigned int button) {
   if (windowmenu && windowmenu->isVisible()) windowmenu->hide();
 
   if (! maximized) {
-    int dx, dy;
+    int dx = 0, dy = 0;
     unsigned int dw, dh;
 
     blackbox_attrib.premax_x = frame.x;
@@ -1482,9 +1482,10 @@ void BlackboxWindow::maximize(unsigned int button) {
     dh -= client.base_height;
     dh -= frame.y_border;
 
-    if (! screen->doFullMax())
-      dh -= screen->getToolbar()->getExposedHeight() +
-            screen->getBorderWidth();
+    if (! screen->doFullMax()) {
+      dh = screen->getToolbar()->getExposedHeight() +
+	screen->getBorderWidth();
+    }
 
     if (dw < client.min_width) dw = client.min_width;
     if (dh < client.min_height) dh = client.min_height;
@@ -1493,21 +1494,20 @@ void BlackboxWindow::maximize(unsigned int button) {
 
     dw -= (dw % client.width_inc);
     dw += client.base_width;
-    dh -= (dh % client.height_inc);
-    dh += client.base_height;
-
     dw += frame.mwm_border_w * 2;
 
+    dh -= (dh % client.height_inc);
+    dh += client.base_height;
     dh += frame.y_border;
     dh += (frame.handle_h + screen->getBorderWidth());
     dh += frame.mwm_border_w * 2;
 
-    dx = ((screen->getWidth() - dw) / 2) - screen->getBorderWidth();
+    dx += ((screen->getWidth() - dw) / 2) - screen->getBorderWidth();
 
     if (screen->doFullMax()) {
-      dy = ((screen->getHeight() - dh) / 2) - screen->getBorderWidth();
+      dy += ((screen->getHeight() - dh) / 2) - screen->getBorderWidth();
     } else {
-      dy = (((screen->getHeight() - screen->getToolbar()->getExposedHeight())
+      dy += (((screen->getHeight() - screen->getToolbar()->getExposedHeight())
 	     - dh) / 2) - screen->getBorderWidth();
 
       switch (screen->getToolbarPlacement()) {
@@ -1518,14 +1518,6 @@ void BlackboxWindow::maximize(unsigned int button) {
 	      screen->getBorderWidth();
         break;
       }
-    }
-
-    if (button == 2) {
-      dw = frame.width;
-      dx = frame.x;
-    } else if (button == 3) {
-      dh = frame.height;
-      dy = frame.y;
     }
 
     switch(button) {
@@ -1539,12 +1531,16 @@ void BlackboxWindow::maximize(unsigned int button) {
       blackbox_attrib.flags |= AttribMaxVert;
       blackbox_attrib.attrib |= AttribMaxVert;
 
+      dw = frame.width;
+      dx = frame.x;
       break;
 
     case 3:
       blackbox_attrib.flags |= AttribMaxHoriz;
       blackbox_attrib.attrib |= AttribMaxHoriz;
 
+      dh = frame.height;
+      dy = frame.y;
       break;
     }
 
@@ -2531,7 +2527,7 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
 	(re->y >= 0) && ((unsigned) re->y <= frame.button_h))
       close();
     redrawCloseButton(False);
-  } else if (moving && re->button == Button1) {
+  } else if (moving) {
     moving = False;
 
     blackbox->maskWindowEvents(0, (BlackboxWindow *) 0);
@@ -2548,7 +2544,7 @@ void BlackboxWindow::buttonReleaseEvent(XButtonEvent *re) {
     }
     screen->hideGeometry();
     XUngrabPointer(display, CurrentTime);
-  } else if (resizing && re->button == Button3) {
+  } else if (resizing) {
     XDrawRectangle(display, screen->getRootWindow(), screen->getOpGC(),
 		   frame.resize_x, frame.resize_y,
 		   frame.resize_w, frame.resize_h);
@@ -2663,7 +2659,7 @@ void BlackboxWindow::motionNotifyEvent(XMotionEvent *me) {
   } else if (functions.resize &&
 	     (((me->state & Button1Mask) && (me->window == frame.right_grip ||
 					     me->window == frame.left_grip)) ||
-	      (me->state & (Mod1Mask | Button3Mask) &&
+	      (me->state == (Mod1Mask | Button3Mask) &&
 	                                     me->window == frame.window))) {
     Bool left = (me->window == frame.left_grip);
 

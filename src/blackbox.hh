@@ -179,7 +179,7 @@ public:
   void removeWindowSearch(Window);
   void removeToolbarSearch(Window);
   void removeGroupSearch(Window);
-  void restart(const char * = 0);
+  void restart(const string * = 0);
   void reconfigure(void);
   void rereadMenu(void);
   void checkMenu(void);

@@ -27,10 +27,9 @@ Changes from 0.61.1 to 0.61.2:
   - fixed a typo in bsetroot.cc: 'on of' -> 'one of'.
   - fixed the window menu gets left open when another window button is pressed
     issue with a call to windowmenu->hide() in window->maximize()
-  - applied xOr's patch for the alt+right mouse resize and accidently hitting
-    left button weirdness bug.
   - applied xOr's patch for decoration handling
   - applied xOr's patch for the maximize, shade, unmaximize bug
+  - applied Kennis' patch for sending incorrect Slit configure notices
     
 Changes from 0.61.0 to 0.61.1:
   - fixed some of the code to explicitly use colormaps so that when
