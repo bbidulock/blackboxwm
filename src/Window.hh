@@ -380,7 +380,7 @@ public:
   void reconfigure(void);
   void grabButtons(void);
   void ungrabButtons(void);
-  void restore(bool remap);
+  void restore(void);
   void configure(int dx, int dy, unsigned int dw, unsigned int dh);
   inline void configure(const bt::Rect &r)
   { configure(r.x(), r.y(), r.width(), r.height()); }

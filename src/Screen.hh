@@ -94,7 +94,7 @@ private:
   void LoadStyle(void);
 
   void manageWindow(Window w);
-  void unmanageWindow(BlackboxWindow *win, bool remap);
+  void unmanageWindow(BlackboxWindow *win);
 
   void focusFallback(const BlackboxWindow *old_window);
 
@@ -169,7 +169,7 @@ public:
   unsigned int removeLastWorkspace(void);
 
   void addWindow(Window w);
-  void releaseWindow(BlackboxWindow *win, bool remap);
+  void releaseWindow(BlackboxWindow *win);
   BlackboxWindow* getWindow(unsigned int workspace, unsigned int id);
 
   void raiseWindow(StackEntity *entity);

@@ -2538,7 +2538,7 @@ void BlackboxWindow::unmapNotifyEvent(const XUnmapEvent * const event) {
           client.window);
 #endif // DEBUG
 
-  screen->releaseWindow(this, False);
+  screen->releaseWindow(this);
 }
 
 
@@ -2552,7 +2552,7 @@ BlackboxWindow::destroyNotifyEvent(const XDestroyWindowEvent * const event) {
           client.window);
 #endif // DEBUG
 
-  screen->releaseWindow(this, False);
+  screen->releaseWindow(this);
 }
 
 
@@ -2565,10 +2565,15 @@ void BlackboxWindow::reparentNotifyEvent(const XReparentEvent * const event) {
           "0x%lx.\n", client.window, event->parent);
 #endif // DEBUG
 
+  /*
+    put the ReparentNotify event back into the queue so that
+    BlackboxWindow::restore(void) can do the right thing
+  */
   XEvent replay;
   replay.xreparent = *event;
   XPutBackEvent(blackbox->XDisplay(), &replay);
-  screen->releaseWindow(this, True);
+
+  screen->releaseWindow(this);
 }
 
 
@@ -3233,25 +3238,21 @@ bool BlackboxWindow::validateClient(void) const {
 /*
  *
  */
-void BlackboxWindow::restore(bool remap) {
+void BlackboxWindow::restore(void) {
   XChangeSaveSet(blackbox->XDisplay(), client.window, SetModeDelete);
   XSelectInput(blackbox->XDisplay(), client.window, NoEventMask);
   XSelectInput(blackbox->XDisplay(), frame.plate, NoEventMask);
 
-  bool reparent = False;
-  XEvent ev;
-  if (XCheckTypedWindowEvent(blackbox->XDisplay(), client.window,
-                             ReparentNotify, &ev)) {
-    reparent = True;
-    remap = True;
+  /*
+    remove WM_STATE unless the we are shutting down (in which case we
+    want to make sure we preserve the state across restarts).
+  */
+  if (!blackbox->shuttingDown()) {
+    clearState();
+  } else if (isShaded() && !isIconic()) {
+    // do not leave a shaded window as an icon unless it was an icon
+    setState(NormalState);
   }
-
-  // do not leave a shaded window as an icon unless it was an icon
-  if (isShaded() && !isIconic())
-    client.current_state = NormalState;
-
-  // remove the wm hints unless the window is being remapped
-  setState(client.current_state);
 
   restoreGravity(client.rect);
 
@@ -3278,15 +3279,22 @@ void BlackboxWindow::restore(bool remap) {
 
   XUngrabServer(blackbox->XDisplay());
 
-  if (! reparent) {
-    // according to the ICCCM - if the client doesn't reparent to
-    // root, then we have to do it for them
+  XEvent unused;
+  if (!XCheckTypedWindowEvent(blackbox->XDisplay(), client.window,
+                              ReparentNotify, &unused)) {
+    /*
+      according to the ICCCM, the window manager is responsible for
+      reparenting the window back to root... however, we don't want to
+      do this if the window has been reparented by someone else
+      (i.e. not us).
+    */
     XReparentWindow(blackbox->XDisplay(), client.window,
                     screen->screenInfo().rootWindow(),
                     client.rect.x(), client.rect.y());
   }
 
-  if (remap) XMapWindow(blackbox->XDisplay(), client.window);
+  if (blackbox->shuttingDown())
+    XMapWindow(blackbox->XDisplay(), client.window);
 }
 
 

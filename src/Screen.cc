@@ -574,15 +574,15 @@ void BScreen::manageWindow(Window w) {
 }
 
 
-void BScreen::releaseWindow(BlackboxWindow *w, bool remap) {
-  unmanageWindow(w, remap);
+void BScreen::releaseWindow(BlackboxWindow *w) {
+  unmanageWindow(w);
   updateClientListHint();
   updateClientListStackingHint();
 }
 
 
-void BScreen::unmanageWindow(BlackboxWindow *win, bool remap) {
-  win->restore(remap);
+void BScreen::unmanageWindow(BlackboxWindow *win) {
+  win->restore();
 
   // pass focus to the next appropriate window
   if (win->isFocused() && blackbox->running())
@@ -1260,7 +1260,7 @@ void BScreen::shutdown(void) {
   XSync(blackbox->XDisplay(), False);
 
   while(! windowList.empty())
-    unmanageWindow(windowList.back(), True);
+    unmanageWindow(windowList.back());
 
   if (_slit)
     _slit->shutdown();

@@ -371,6 +371,12 @@ void Blackbox::removeWindowGroup(Window window) {
 
 
 void Blackbox::restart(const std::string &prog) {
+  setRunState(bt::Application::SHUTDOWN);
+
+  /*
+    since we don't allow control to return to the eventloop, we need
+    to call shutdown() explicitly
+  */
   shutdown();
 
   if (! prog.empty()) {
