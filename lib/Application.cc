@@ -587,7 +587,7 @@ void bt::Application::closeMenu(Menu *menu) {
   if (menus.empty() || menu != menus.front()) {
     fprintf(stderr, "BaseDisplay::closeMenu: menu %p not valid.\n",
             static_cast<void *>(menu));
-    return;
+    abort();
   }
 
   menus.pop_front();
