@@ -189,7 +189,6 @@ private:
 
   void updateAvailableArea(void);
   void updateWorkareaHint(void) const;
-  void updateDesktopNamesHint(void) const;
 
 public:
   enum { RowSmartPlacement = 1, ColSmartPlacement, CascadePlacement, LeftRight,
@@ -328,6 +327,7 @@ public:
 
   void updateClientListHint(void) const;
   void updateClientListStackingHint(void) const;
+  void updateDesktopNamesHint(void) const;
 
   unsigned int addWorkspace(void);
   unsigned int removeLastWorkspace(void);
