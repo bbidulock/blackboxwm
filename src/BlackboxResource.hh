@@ -143,6 +143,11 @@ public:
   void saveEdgeSnapThreshold(unsigned int t)
                                           { wconfig.edge_snap_threshold = t; }
 
+  inline bool isToolbarEnabled(void) const
+  { return enable_toolbar; }
+  inline void setToolbarEnabled(bool b)
+  { enable_toolbar = b; }
+
 private:
   struct WindowConfig {
     bool sloppy_focus, auto_raise, opaque_move, full_max, ignore_shaded,
@@ -171,6 +176,7 @@ private:
   SlitConfig sconfig;
 
   bool allow_scroll_lock;
+  bool enable_toolbar;
   unsigned int workspace_count, bevel_width, border_width;
   bt::Color border_color;
   std::string root_command;

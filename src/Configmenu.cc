@@ -157,6 +157,7 @@ void Configmenu::itemClicked(unsigned int id, unsigned int) {
       _bscreen->destroyToolbar();
     else
       _bscreen->createToolbar();
+    res.setToolbarEnabled(_bscreen->toolbar() != 0);
     break;
 
   default:

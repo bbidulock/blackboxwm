@@ -220,6 +220,9 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
 	  number);
   res.write(rc_string, allow_scroll_lock);
 
+  sprintf(rc_string,  "session.screen%d.enableToolbar", number);
+  res.write(rc_string, enable_toolbar);
+
   sprintf(rc_string, "session.screen%d.rowPlacementDirection", number);
   res.write(rc_string,
             (wconfig.row_direction == LeftRight) ? "LeftToRight" :
@@ -449,6 +452,10 @@ void ScreenResource::load(bt::Resource& res, unsigned int screen) {
   sprintf(class_lookup, "Session.Screen%d.disableBindingsWithScrollLock",
           screen);
   allow_scroll_lock = res.read(name_lookup, class_lookup, false);
+
+  sprintf(name_lookup,  "session.screen%d.enableToolbar", screen);
+  sprintf(class_lookup, "Session.Screen%d.enableToolbar", screen);
+  enable_toolbar = res.read(name_lookup, class_lookup, true);
 
   sprintf(name_lookup,  "session.screen%d.workspaces", screen);
   sprintf(class_lookup, "Session.Screen%d.Workspaces", screen);

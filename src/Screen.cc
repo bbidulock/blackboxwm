@@ -132,8 +132,11 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   // the Slit will be created on demand
   _slit = 0;
 
-  _toolbar = new Toolbar(this);
-  stackingList.insert(_toolbar);
+  _toolbar = 0;
+  if (_resource.isToolbarEnabled()) {
+    _toolbar = new Toolbar(this);
+    stackingList.insert(_toolbar);
+  }
 
   InitMenu();
 
