@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // WorkspaceMenu.hh for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
 // Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
@@ -24,24 +24,21 @@
 #ifndef   __Workspacemenu_hh
 #define   __Workspacemenu_hh
 
-#include "Basemenu.hh"
+#include "Menu.hh"
 
-// forward declaration
-class Workspacemenu;
-class Toolbar;
+class BScreen;
 
-class Workspacemenu : public Basemenu {
-private:
-  Workspacemenu(const Workspacemenu&);
-  Workspacemenu& operator=(const Workspacemenu&);
+
+class Workspacemenu : public bt::Menu {
+public:
+  Workspacemenu(bt::Application &app, unsigned int screen, BScreen *bscreen);
 
 protected:
-  virtual void itemSelected(int button, unsigned int index);
+  virtual void itemClicked(unsigned int id, unsigned int button);
 
-public:
-  Workspacemenu(BScreen *scrn);
+private:
+  BScreen *_bscreen;
 };
-
 
 #endif // __Workspacemenu_hh
 

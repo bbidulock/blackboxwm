@@ -231,7 +231,7 @@ public:
   bt::Color *getBorderColor(void) { return &resource.border_color; }
   bt::ImageControl *getImageControl(void) { return image_control; }
   Rootmenu *getRootmenu(void) { return rootmenu; }
-  
+
   // pass throughs to ScreenInfo
   Colormap getColormap(void) const
   { return screen_info.getColormap();}
@@ -317,8 +317,6 @@ public:
   void saveFocusNew(bool f) { resource.focus_new = f; }
   void saveFocusLast(bool f) { resource.focus_last = f; }
   void saveAllowScrollLock(bool a) { resource.allow_scroll_lock = a; }
-
-  void iconUpdate(void) { iconmenu->update(); }
 
 #ifdef    HAVE_STRFTIME
   const char *getStrftimeFormat(void)

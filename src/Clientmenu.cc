@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Clientmenu.cc for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
 // Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
@@ -25,35 +25,35 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
-#include "blackbox.hh"
 #include "Clientmenu.hh"
-#include "Screen.hh"
+
+extern "C" {
+#include <assert.h>
+}
+
 #include "Window.hh"
 #include "Workspace.hh"
-#include "Workspacemenu.hh"
 
 
-Clientmenu::Clientmenu(Workspace *ws) : Basemenu(ws->getScreen()) {
-  wkspc = ws;
-
-  setInternalMenu();
+Clientmenu::Clientmenu(bt::Application &app, unsigned int screen,
+                       Workspace *workspace)
+  : bt::Menu(app, screen), _workspace(workspace) {
+  setAutoDelete(false);
+  showTitle();
 }
 
 
-void Clientmenu::itemSelected(int button, unsigned int index) {
+void Clientmenu::itemClicked(unsigned int id, unsigned int button) {
   if (button > 2) return;
 
-  BlackboxWindow *win = wkspc->getWindow(index);
-  if (win) {
-    if (button == 1) {
-      if (! wkspc->isCurrent()) wkspc->setCurrent();
-    } else if (button == 2) {
-      if (! wkspc->isCurrent()) win->deiconify(True, False);
-    }
-    wkspc->raiseWindow(win);
-    win->setInputFocus();
+  BlackboxWindow *window = _workspace->getWindow(id);
+  assert(window != 0);
+
+  if (! _workspace->isCurrent()) {
+    if (button == 1) _workspace->setCurrent();
+    else if (button == 2) window->deiconify(true, false);
   }
 
-  Workspacemenu* wkspcmenu = wkspc->getScreen()->getWorkspacemenu();
-  if (! (wkspcmenu->isTorn() || isTorn())) hide();
+  _workspace->raiseWindow(window);
+  window->setInputFocus();
 }

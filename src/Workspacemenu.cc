@@ -25,40 +25,55 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
-#include "i18n.hh"
-#include "blackbox.hh"
-#include "Screen.hh"
-#include "Toolbar.hh"
 #include "Workspacemenu.hh"
+
+extern "C" {
+#include <assert.h>
+}
+
+#include "Screen.hh"
 #include "Workspace.hh"
+#include "i18n.hh"
 
 
-Workspacemenu::Workspacemenu(BScreen *scrn) : Basemenu(scrn) {
-  setInternalMenu();
-
-  setLabel(bt::i18n(WorkspacemenuSet, WorkspacemenuWorkspacesTitle,
+Workspacemenu::Workspacemenu(bt::Application &app, unsigned int screen,
+                             BScreen *bscreen)
+  : bt::Menu(app, screen), _bscreen(bscreen) {
+  setAutoDelete(false);
+  setTitle(bt::i18n(WorkspacemenuSet, WorkspacemenuWorkspacesTitle,
                     "Workspaces"));
-  insert(bt::i18n(WorkspacemenuSet, WorkspacemenuNewWorkspace,
-                  "New Workspace"));
-  insert(bt::i18n(WorkspacemenuSet, WorkspacemenuRemoveLast,
-                  "Remove Last"));
+  showTitle();
+
+  insertItem(bt::i18n(WorkspacemenuSet, WorkspacemenuNewWorkspace,
+                      "New Workspace"), 497);
+  insertItem(bt::i18n(WorkspacemenuSet, WorkspacemenuRemoveLast,
+                      "Remove Last"), 498);
+  insertSeparator();
 }
 
 
-void Workspacemenu::itemSelected(int button, unsigned int index) {
+void Workspacemenu::itemClicked(unsigned int id, unsigned int button) {
   if (button != 1)
     return;
 
-  if (index == 0) {
-    getScreen()->addWorkspace();
-  } else if (index == 1) {
-    getScreen()->removeLastWorkspace();
-  } else {
-    index -= 2;
-    const Workspace* const wkspc = getScreen()->getCurrentWorkspace();
-    if (wkspc->getID() != index && index < getScreen()->getWorkspaceCount())
-      getScreen()->changeWorkspaceID(index);
-  }
-  if (! (getScreen()->getWorkspacemenu()->isTorn() || isTorn()))
-    hide();
+  switch (id) {
+  case 497:
+    _bscreen->addWorkspace();
+    break;
+
+  case 498:
+    _bscreen->removeLastWorkspace();
+    break;
+
+  case 499: // iconmenu
+    break;
+
+  default:
+    assert(id < _bscreen->getWorkspaceCount());
+    if (_bscreen->getCurrentWorkspaceID() != id) {
+      _bscreen->changeWorkspaceID(id);
+      hideAll();
+    }
+    break;
+  } // switch
 }

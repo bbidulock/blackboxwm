@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Icon.cc for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
 // Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
@@ -25,33 +25,34 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
-#include "i18n.hh"
 #include "Iconmenu.hh"
+
+extern "C" {
+#include <assert.h>
+}
+
 #include "Screen.hh"
 #include "Window.hh"
+#include "i18n.hh"
 
 
-Iconmenu::Iconmenu(BScreen *scrn) : Basemenu(scrn) {
-  setInternalMenu();
-
-  setLabel(bt::i18n(IconSet, IconIcons, "Icons"));
-  update();
+Iconmenu::Iconmenu(bt::Application &app, unsigned int screen,
+                   BScreen *bscreen)
+  : bt::Menu(app, screen), _bscreen(bscreen) {
+  setAutoDelete(false);
+  setTitle(bt::i18n(IconSet, IconIcons, "Icons"));
+  showTitle();
 }
 
 
-void Iconmenu::itemSelected(int button, unsigned int index) {
-  if (button != 1)
-    return;
+void Iconmenu::itemClicked(unsigned int id, unsigned int button) {
+  if (button != 1) return;
 
-  if (index < getScreen()->getIconCount()) {
-    BlackboxWindow *win = getScreen()->getIcon(index);
+  assert(id < _bscreen->getIconCount());
 
-    if (win) {
-      win->deiconify();
-      win->setInputFocus();
-    }
-  }
+  BlackboxWindow *window = _bscreen->getIcon(id);
+  assert(window != 0);
 
-  if (! (getScreen()->getWorkspacemenu()->isTorn() || isTorn()))
-    hide();
+  window->deiconify();
+  window->setInputFocus();
 }

@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Clientmenu.hh for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
 // Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
@@ -24,22 +24,21 @@
 #ifndef   __Clientmenu_hh
 #define   __Clientmenu_hh
 
-#include "Basemenu.hh"
+#include "Menu.hh"
+
 class Workspace;
-class BScreen;
 
-class Clientmenu : public Basemenu {
-private:
-  Workspace *wkspc;
 
-  Clientmenu(const Clientmenu&);
-  Clientmenu& operator=(const Clientmenu&);
+class Clientmenu : public bt::Menu {
+public:
+  Clientmenu(bt::Application &app, unsigned int screen,
+             Workspace *workspace);
 
 protected:
-  virtual void itemSelected(int button, unsigned int index);
+  virtual void itemClicked(unsigned int id, unsigned int button);
 
-public:
-  Clientmenu(Workspace *ws);
+private:
+  Workspace *_workspace;
 };
 
 

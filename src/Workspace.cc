@@ -186,7 +186,9 @@ Workspace::Workspace(BScreen *scrn, unsigned int i) {
 
   id = i;
 
-  clientmenu = new Clientmenu(this);
+  clientmenu = new Clientmenu(*screen->getBlackbox(),
+                         screen->getScreenInfo().getScreenNumber(),
+                         this);
 
   lastfocus = (BlackboxWindow *) 0;
 
@@ -199,14 +201,12 @@ void Workspace::addWindow(BlackboxWindow *w, bool place) {
 
   if (place) placeWindow(w);
 
+  int wid = clientmenu->insertItem(bt::ellideText(w->getTitle(), 60, "..."));
   w->setWorkspace(id);
-  w->setWindowNumber(windowList.size());
+  w->setWindowNumber(wid);
 
   stackingList.insert(w);
   windowList.push_back(w);
-
-  clientmenu->insert(bt::ellideText(w->getTitle(), 60, "..."));
-  clientmenu->update();
 
   if (! w->isIconic())
     raiseWindow(w);
@@ -227,14 +227,7 @@ void Workspace::removeWindow(BlackboxWindow *w) {
   screen->updateClientListStackingHint();
 
   windowList.remove(w);
-  clientmenu->remove(w->getWindowNumber());
-  clientmenu->update();
-
-  BlackboxWindowList::iterator it = windowList.begin();
-  const BlackboxWindowList::iterator end = windowList.end();
-  unsigned int i = 0;
-  for (; it != end; ++it, ++i)
-    (*it)->setWindowNumber(i);
+  clientmenu->removeItem(w->getWindowNumber());
 
   if (windowList.empty())
     cascade_x = cascade_y = 32;
@@ -252,7 +245,7 @@ void Workspace::focusFallback(const BlackboxWindow *old_window) {
       newfocus = old_window->getTransientFor();
 
       if (! newfocus ||
-          newfocus->isIconic() ||                  // do not focus icons
+          newfocus->isIconic() ||                   // do not focus icons
           newfocus->getWorkspaceNumber() != id ||  // or other workspaces
           ! newfocus->setInputFocus())
         newfocus = 0;
@@ -584,8 +577,7 @@ void Workspace::setName(const std::string& new_name) {
     name = default_name;
   }
 
-  clientmenu->setLabel(name);
-  clientmenu->update();
+  clientmenu->setTitle(name);
 }
 
 

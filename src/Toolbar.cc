@@ -982,7 +982,7 @@ void Toolbar::keyPressEvent(const XKeyEvent *ke) {
       Workspace *wkspc = screen->getCurrentWorkspace();
       wkspc->setName(new_workspace_name);
 
-      screen->getWorkspacemenu()->changeItemLabel(wkspc->getID(), wkspc->getName());
+      screen->getWorkspacemenu()->changeItem(wkspc->getID(), wkspc->getName());
       screen->updateDesktopNamesHint();
 
       new_workspace_name.erase();

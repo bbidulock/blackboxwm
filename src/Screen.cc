@@ -145,7 +145,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     resource.wstyle.font = (XFontStruct *) 0;
 
   geom_pixmap = None;
-  
+
   timer = new bt::Timer(blackbox, this);
   timer->setTimeout(750l); // once every 1.5 seconds
   timer->start();
@@ -230,28 +230,33 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     XSetWindowBackgroundPixmap(blackbox->getXDisplay(),
                                geom_window, geom_pixmap);
 
-  workspacemenu = new Workspacemenu(this);
-  iconmenu = new Iconmenu(this);
+  workspacemenu =
+    new Workspacemenu(*blackbox, screen_info.getScreenNumber(), this);
+  iconmenu =
+    new Iconmenu(*blackbox, screen_info.getScreenNumber(), this);
   configmenu = new Configmenu(this);
 
   Workspace *wkspc = (Workspace *) 0;
   if (resource.workspaces != 0) {
     for (unsigned int i = 0; i < resource.workspaces; ++i) {
-      wkspc = new Workspace(this, workspacesList.size());
+      wkspc = new Workspace(this, i);
       workspacesList.push_back(wkspc);
-      workspacemenu->insert(wkspc->getName(), wkspc->getMenu());
+      workspacemenu->insertItem(wkspc->getName(), wkspc->getMenu(),
+                                wkspc->getID());
     }
   } else {
-    wkspc = new Workspace(this, workspacesList.size());
+    wkspc = new Workspace(this, 0u);
     workspacesList.push_back(wkspc);
-    workspacemenu->insert(wkspc->getName(), wkspc->getMenu());
+    workspacemenu->insertItem(wkspc->getName(), wkspc->getMenu(),
+                              wkspc->getID());
   }
 
-  workspacemenu->insert(bt::i18n(IconSet, IconIcons, "Icons"), iconmenu);
-  workspacemenu->update();
+  workspacemenu->insertSeparator();
+  workspacemenu->insertItem(bt::i18n(IconSet, IconIcons, "Icons"),
+                            iconmenu, 499u);
 
   current_workspace = workspacesList.front();
-  workspacemenu->setItemSelected(2, True);
+  workspacemenu->setItemChecked(current_workspace->getID(), true);
 
   removeWorkspaceNames(); // do not need them any longer
 
@@ -856,28 +861,17 @@ void BScreen::LoadStyle(void) {
 void BScreen::addIcon(BlackboxWindow *w) {
   if (! w) return;
 
-  w->setWorkspace(bt::BSENTINEL);
-  w->setWindowNumber(iconList.size());
-
   iconList.push_back(w);
-
-  iconmenu->insert(bt::ellideText(w->getIconTitle(), 60, "..."));
-  iconmenu->update();
+  int id = iconmenu->insertItem(bt::ellideText(w->getIconTitle(), 60, "..."));
+  w->setWorkspace(bt::BSENTINEL);
+  w->setWindowNumber(id);
 }
 
 
 void BScreen::removeIcon(BlackboxWindow *w) {
   if (! w) return;
-
   iconList.remove(w);
-
-  iconmenu->remove(w->getWindowNumber());
-  iconmenu->update();
-
-  BlackboxWindowList::iterator it = iconList.begin(),
-    end = iconList.end();
-  for (int i = 0; it != end; ++it)
-    (*it)->setWindowNumber(i++);
+  iconmenu->removeItem(w->getWindowNumber());
 }
 
 
@@ -896,9 +890,8 @@ unsigned int BScreen::addWorkspace(void) {
   Workspace *wkspc = new Workspace(this, workspacesList.size());
   workspacesList.push_back(wkspc);
 
-  workspacemenu->insert(wkspc->getName(), wkspc->getMenu(),
-                        wkspc->getID() + 2);
-  workspacemenu->update();
+  workspacemenu->insertItem(wkspc->getName(), wkspc->getMenu(),
+                            wkspc->getID(), workspacemenu->count() - 2);
 
   toolbar->reconfigure();
 
@@ -922,8 +915,7 @@ unsigned int BScreen::removeLastWorkspace(void) {
 
   wkspc->transferWindows(*(workspacesList.back()));
 
-  workspacemenu->remove(wkspc->getID() + 2);
-  workspacemenu->update();
+  workspacemenu->removeItem(wkspc->getID());
 
   delete wkspc;
 
@@ -942,13 +934,13 @@ void BScreen::changeWorkspaceID(unsigned int id) {
 
   current_workspace->hide();
 
-  workspacemenu->setItemSelected(current_workspace->getID() + 2, False);
+  workspacemenu->setItemChecked(current_workspace->getID(), false);
 
   current_workspace = getWorkspace(id);
 
   current_workspace->show();
 
-  workspacemenu->setItemSelected(current_workspace->getID() + 2, True);
+  workspacemenu->setItemChecked(current_workspace->getID(), true);
   toolbar->redrawWorkspaceLabel(True);
 
   blackbox->netwm()->setCurrentDesktop(screen_info.getRootWindow(),
@@ -1025,19 +1017,11 @@ BScreen::raiseWindows(const bt::Netwm::WindowList* const workspace_stack) {
   const unsigned int workspace_stack_size =
     (workspace_stack) ? workspace_stack->size() : 0;
   std::vector<Window> session_stack(workspace_stack_size +
-                                    workspacesList.size() +
                                     rootmenuList.size() + 8);
   std::back_insert_iterator<std::vector<Window> > it(session_stack);
 
-  XRaiseWindow(blackbox->getXDisplay(), iconmenu->getWindowID());
-  *(it++) = iconmenu->getWindowID();
-
-  WorkspaceList::iterator wit = workspacesList.begin();
-  const WorkspaceList::iterator w_end = workspacesList.end();
-  for (; wit != w_end; ++wit)
-    *(it++) = (*wit)->getMenu()->getWindowID();
-
-  *(it++) = workspacemenu->getWindowID();
+  XRaiseWindow(blackbox->getXDisplay(),
+               configmenu->getFocusmenu()->getWindowID());
 
   *(it++) = configmenu->getFocusmenu()->getWindowID();
   *(it++) = configmenu->getPlacementmenu()->getWindowID();
@@ -1111,17 +1095,15 @@ void BScreen::reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id) {
 
 
 void BScreen::propagateWindowName(const BlackboxWindow *bw) {
-  if (bw->isIconic()) {
-    iconmenu->changeItemLabel(bw->getWindowNumber(), bw->getIconTitle());
-    iconmenu->update();
-  } else {
+  if (! bw->isIconic()) {
     Clientmenu *clientmenu = getWorkspace(bw->getWorkspaceNumber())->getMenu();
-    clientmenu->changeItemLabel(bw->getWindowNumber(),
-                                bt::ellideText(bw->getTitle(), 60, "..."));
-    clientmenu->update();
+    clientmenu->changeItem(bw->getWindowNumber(),
+                           bt::ellideText(bw->getTitle(), 60, "..."));
 
     if (blackbox->getFocusedWindow() == bw)
       toolbar->redrawWindowLabel(True);
+  } else {
+    iconmenu->changeItem(bw->getWindowNumber(), bw->getIconTitle());
   }
 }
 
@@ -1573,7 +1555,8 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
         continue;
       }
 
-      menu->insert(label, workspacemenu);
+#warning "fix me"
+      // menu->insert(label, workspacemenu);
     }
       break;
     }
@@ -1783,26 +1766,7 @@ void BScreen::buttonPressEvent(const XButtonEvent * const event) {
     if (rootmenu->isVisible())
       rootmenu->hide();
   } else if (event->button == 2) {
-    int mx = event->x_root - (workspacemenu->getWidth() / 2);
-    int my = event->y_root - (workspacemenu->getTitleHeight() / 2);
-
-    if (mx < 0) mx = 0;
-    if (my < 0) my = 0;
-
-    if (mx + workspacemenu->getWidth() > screen_info.getWidth())
-      mx = screen_info.getWidth() - workspacemenu->getWidth() -
-        resource.border_width;
-
-    if (my + workspacemenu->getHeight() > screen_info.getHeight())
-      my = screen_info.getHeight() - workspacemenu->getHeight() -
-        resource.border_width;
-
-    workspacemenu->move(mx, my);
-
-    if (! workspacemenu->isVisible()) {
-      workspacemenu->removeParent();
-      workspacemenu->show();
-    }
+    workspacemenu->popup(event->x_root, event->y_root);
   } else if (event->button == 3) {
     int mx = event->x_root - (rootmenu->getWidth() / 2);
     int my = event->y_root - (rootmenu->getTitleHeight() / 2);
