@@ -96,7 +96,7 @@ X_LIBS = @X_LIBS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 bsetroot_OBJECTS =  bsetroot.o
-bsetroot_DEPENDENCIES = 
+bsetroot_DEPENDENCIES = ../lib/libblackbox.a
 bsetroot_LDFLAGS = 
 SCRIPTS =  $(bin_SCRIPTS)
 
@@ -318,7 +318,7 @@ distclean-local:
 bsetroot.o: bsetroot.cc ../config.h ../lib/i18n.hh \
  ../lib/../nls/blackbox-nls.hh ../lib/GCCache.hh ../lib/BaseDisplay.hh \
  ../lib/Timer.hh ../lib/Color.hh ../lib/Texture.hh ../lib/Util.hh \
- bsetroot.hh ../lib/Image.hh ../lib/libblackbox.a
+ bsetroot.hh ../lib/Image.hh
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

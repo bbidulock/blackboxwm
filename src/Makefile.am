@@ -32,6 +32,7 @@ CPPFLAGS= @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ \
 bin_PROGRAMS= blackbox
 
 blackbox_SOURCES= Basemenu.cc Clientmenu.cc Configmenu.cc Iconmenu.cc Netizen.cc Rootmenu.cc Screen.cc Slit.cc Toolbar.cc Window.cc Windowmenu.cc Workspace.cc Workspacemenu.cc blackbox.cc main.cc
+blackbox_DEPENDENCIES= ../lib/libblackbox.a
 blackbox_LDADD= -L../lib -lblackbox
 
 MAINTAINERCLEANFILES= Makefile.in
@@ -107,5 +108,4 @@ blackbox.o: blackbox.cc ../config.h ../lib/i18n.hh ../nls/blackbox-nls.hh \
  ../lib/Texture.hh ../lib/Util.hh Configmenu.hh Iconmenu.hh Netizen.hh \
  Workspace.hh Workspacemenu.hh Slit.hh Toolbar.hh Window.hh Windowmenu.hh
 main.o: main.cc ../version.h ../config.h ../lib/i18n.hh \
- ../nls/blackbox-nls.hh blackbox.hh ../lib/BaseDisplay.hh ../lib/Timer.hh \
- ../lib/libblackbox.a
+ ../nls/blackbox-nls.hh blackbox.hh ../lib/BaseDisplay.hh ../lib/Timer.hh

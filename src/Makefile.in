@@ -120,7 +120,7 @@ X_PRE_LIBS = @X_PRE_LIBS@
 blackbox_OBJECTS =  Basemenu.o Clientmenu.o Configmenu.o Iconmenu.o \
 Netizen.o Rootmenu.o Screen.o Slit.o Toolbar.o Window.o Windowmenu.o \
 Workspace.o Workspacemenu.o blackbox.o main.o
-blackbox_DEPENDENCIES = 
+blackbox_DEPENDENCIES = ../lib/libblackbox.a
 blackbox_LDFLAGS = 
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -384,8 +384,7 @@ blackbox.o: blackbox.cc ../config.h ../lib/i18n.hh ../nls/blackbox-nls.hh \
  ../lib/Texture.hh ../lib/Util.hh Configmenu.hh Iconmenu.hh Netizen.hh \
  Workspace.hh Workspacemenu.hh Slit.hh Toolbar.hh Window.hh Windowmenu.hh
 main.o: main.cc ../version.h ../config.h ../lib/i18n.hh \
- ../nls/blackbox-nls.hh blackbox.hh ../lib/BaseDisplay.hh ../lib/Timer.hh \
- ../lib/libblackbox.a
+ ../nls/blackbox-nls.hh blackbox.hh ../lib/BaseDisplay.hh ../lib/Timer.hh
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
