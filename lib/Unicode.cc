@@ -67,6 +67,12 @@ namespace bt {
     }
   }
 
+  static ustring add_bom(const ustring &string) {
+     ustring ret;
+     ret.push_back(0x0000feff);
+     return ret + string;
+  }
+
   template <typename _Source, typename _Target>
   static void convert(const char *target, const char *source,
                       const _Source &in, _Target &out) {
@@ -201,7 +207,7 @@ std::string bt::toLocale(const bt::ustring &string) {
     return ret;
   }
   ret.reserve(string.size());
-  convert("", "UTF-32", string, ret);
+  convert("", "UTF-32", add_bom(string), ret);
   return ret;
 }
 
@@ -210,7 +216,7 @@ std::string bt::toUtf8(const bt::ustring &utf32) {
   if (!hasUnicode())
     return ret;
   ret.reserve(utf32.size());
-  convert("UTF-8", "UTF-32", utf32, ret);
+  convert("UTF-8", "UTF-32", add_bom(utf32), ret);
   return ret;
 }
 
