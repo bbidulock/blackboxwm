@@ -20,7 +20,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 # DEALINGS IN THE SOFTWARE.
 
-CPPFLAGS		= @CPPFLAGS@ @SHAPE@ @ORDEREDPSEUDO@ @DEBUG@ @NLS@ \
+CPPFLAGS		= @CPPFLAGS@ @SHAPE@ @DEBUG@ @NLS@ \
 			  -DLOCALEPATH=\"$(pkgdatadir)/nls\"
 noinst_LIBRARIES	= libbt.a
 libbt_a_SOURCES		= Application.cc				\
@@ -28,10 +28,10 @@ libbt_a_SOURCES		= Application.cc				\
 			  Display.cc					\
 			  Font.cc					\
 			  Image.cc					\
-			  ImageControl.cc				\
 			  Menu.cc					\
 			  Netwm.cc					\
 			  Pen.cc					\
+			  PixmapCache.cc				\
 			  Resource.cc					\
 			  Texture.cc					\
 			  Timer.cc					\
