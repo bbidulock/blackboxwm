@@ -49,7 +49,6 @@ typedef std::vector<Window> WindowStack;
 #include "Configmenu.hh"
 #include "Iconmenu.hh"
 #include "Netwm.hh"
-#include "Timer.hh"
 #include "Workspacemenu.hh"
 #include "blackbox.hh"
 
@@ -80,8 +79,7 @@ typedef std::list<BlackboxWindow*> BlackboxWindowList;
 typedef std::list<Window> WindowList;
 
 
-class BScreen : public bt::NoCopy, public bt::EventHandler,
-                public bt::TimeoutHandler {
+class BScreen : public bt::NoCopy, public bt::EventHandler {
 private:
   bool root_colormap_installed, managed, geom_visible;
   GC opGC;
@@ -137,8 +135,6 @@ private:
 
     std::string strftime_format;
   } resource;
-
-  bt::Timer *timer;
 
   bool parseMenuFile(FILE *file, Rootmenu *menu);
 
@@ -328,8 +324,6 @@ public:
   void clientMessageEvent(const XClientMessageEvent * const event);
   void buttonPressEvent(const XButtonEvent * const event);
   void configureRequestEvent(const XConfigureRequestEvent * const event);
-
-  virtual void timeout(void);
 };
 
 

@@ -551,9 +551,9 @@ void Blackbox::save_rc(void) {
 
     const char *ditherMode;
     switch (bt::Image::ditherMode()) {
-    case bt::NoDither:             ditherMode = "NoDither";             break;
     case bt::OrderedDither:        ditherMode = "OrderedDither";        break;
     case bt::FloydSteinbergDither: ditherMode = "FloydSteinbergDither"; break;
+    default: ditherMode = "NoDither"; break;
     }
     sprintf(rc_string, "session.imageDither: %s", ditherMode);
     XrmPutLineResource(&new_blackboxrc, rc_string);

@@ -137,10 +137,6 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
   geom_pixmap = None;
 
-  timer = new bt::Timer(blackbox, this);
-  timer->setTimeout(750l); // once every 1.5 seconds
-  timer->start();
-
   XDefineCursor(blackbox->getXDisplay(), screen_info.getRootWindow(),
                 blackbox->getSessionCursor());
 
@@ -394,7 +390,6 @@ BScreen::~BScreen(void) {
   delete slit;
   delete toolbar;
   delete image_control;
-  delete timer;
 
   blackbox->netwm().removeProperty(screen_info.getRootWindow(),
                                    blackbox->netwm().supportingWMCheck());
@@ -1490,20 +1485,17 @@ void BScreen::hideGeometry(void) {
 void BScreen::addStrut(bt::Netwm::Strut *strut) {
   strutList.push_back(strut);
   area_is_dirty = True;
-  if (! timer->isTiming()) timer->start();
 }
 
 
 void BScreen::removeStrut(bt::Netwm::Strut *strut) {
   strutList.remove(strut);
   area_is_dirty = True;
-  if (! timer->isTiming()) timer->start();
 }
 
 
 void BScreen::updateStrut(void) {
   area_is_dirty = True;
-  if (! timer->isTiming()) timer->start();
 }
 
 
@@ -1544,7 +1536,6 @@ void BScreen::updateAvailableArea(void) {
   new_area.setSize(screen_info.getWidth() - (current.left + current.right),
                    screen_info.getHeight() - (current.top + current.bottom));
   area_is_dirty = False;
-  if (timer->isTiming()) timer->stop();
 
   if (new_area != usableArea) {
     usableArea = new_area;
@@ -1600,11 +1591,13 @@ void BScreen::buttonPressEvent(const XButtonEvent * const event) {
   } else if (event->button == 2) {
     workspacemenu->popup(event->x_root, event->y_root);
   } else if (event->button == 3) {
+    blackbox->checkMenu();
     rootmenu->popup(event->x_root, event->y_root);
   }
 }
 
-void BScreen::configureRequestEvent(const XConfigureRequestEvent * const event) {
+
+void BScreen::configureRequestEvent(const XConfigureRequestEvent* const event) {
   /*
     handle configure requests for windows that have no EventHandlers
     by simply configuring them as requested.
@@ -1729,12 +1722,6 @@ void BScreen::getDesktopNames(void) {
 
   if (names.size() < workspacesList.size())
     updateDesktopNamesHint();
-}
-
-
-void BScreen::timeout(void) {
-  if (area_is_dirty)
-    updateAvailableArea();
 }
 
 
