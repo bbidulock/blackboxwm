@@ -1688,8 +1688,23 @@ void BScreen::shutdown(void) {
                NoEventMask);
   XSync(_blackbox->XDisplay(), False);
 
+  // unmanage all windows, but keep them in the current stacking order
+  WindowStack stack;
+  StackingList::const_iterator it, end = _stackingList.end();
+  for (it = _stackingList.begin(); it != end; ++it) {
+    if (!(*it))
+      continue;
+    const BlackboxWindow * const win = dynamic_cast<BlackboxWindow *>(*it);
+    if (!win)
+      continue;
+    stack.push_back(win->clientWindow());
+  }
+
   while(! windowList.empty())
     unmanageWindow(windowList.back());
+
+  if (!stack.empty())
+    XRestackWindows(_blackbox->XDisplay(), &stack[0], stack.size());
 
   if (_slit)
     _slit->shutdown();
