@@ -5,18 +5,12 @@ Before 0.70.0 release:
 
 * Documentation updates
 
-* Focus Last Window on Workspace
-
 * i18n/l10n (translations) support
 
 netwm:
 -----------------------------
 * if we have N workspaces NET_DESKTOP_NAMES could supply us with N+M
   names.  When we create a new workspace we should consult this list.
-
-refactoring:
------------------------------
-* look into public v. private members of all classes
 
 Stuff TODO or On The Way(tm):
 -----------------------------
