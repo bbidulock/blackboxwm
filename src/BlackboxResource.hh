@@ -25,19 +25,13 @@
 #ifndef   __BlackboxResource_hh
 #define   __BlackboxResource_hh
 
-extern "C" {
-#include <X11/Xlib.h>
-#include <X11/Xresource.h>
-#include <sys/time.h>
-}
-
-#include <string>
-#include <vector>
-
 #include "Color.hh"
 #include "Font.hh"
 #include "Texture.hh"
+#include "Timer.hh"
 #include "Util.hh"
+
+#include <vector>
 
 class BScreen;
 class Blackbox;
@@ -195,7 +189,7 @@ private:
 
   std::string menu_file, style_file, rc_file;
   Time double_click_interval;
-  timeval auto_raise_delay;
+  bt::timeval auto_raise_delay;
   unsigned long cache_life, cache_max;
 
 public:
@@ -205,26 +199,36 @@ public:
   void load(Blackbox& blackbox);
   void save(Blackbox& blackbox);
 
-  ScreenResource& screenResource(unsigned int screen)
+  inline ScreenResource& screenResource(unsigned int screen)
   { return screen_resources[screen]; }
 
-  Cursor sessionCursor(void) const       { return cursor.session;             }
-  Cursor moveCursor(void) const          { return cursor.move;                }
-  Cursor resizeBottomLeftCursor(void) const
-                                         { return cursor.resize_bottom_left;  }
-  Cursor resizeBottomRightCursor(void) const
-                                         { return cursor.resize_bottom_right; }
+  inline Cursor sessionCursor(void) const
+  { return cursor.session; }
+  inline Cursor moveCursor(void) const
+  { return cursor.move; }
+  inline Cursor resizeBottomLeftCursor(void) const
+  { return cursor.resize_bottom_left; }
+  inline Cursor resizeBottomRightCursor(void) const
+  { return cursor.resize_bottom_right; }
 
-  const char* rcFilename(void) const    { return rc_file.c_str();    }
-  const char* menuFilename(void) const  { return menu_file.c_str();  }
-  const char* styleFilename(void) const { return style_file.c_str(); }
+  inline const char* rcFilename(void) const
+  { return rc_file.c_str(); }
+  inline const char* menuFilename(void) const
+  { return menu_file.c_str(); }
+  inline const char* styleFilename(void) const
+  { return style_file.c_str(); }
 
-  void saveStyleFilename(const std::string& name) { style_file = name; }
+  inline void saveStyleFilename(const std::string& name)
+  { style_file = name; }
 
-  const Time& doubleClickInterval(void) const { return double_click_interval; }
-  const timeval& autoRaiseDelay(void) const   { return auto_raise_delay;      }
-  unsigned long cacheLife(void) const         { return cache_life;            }
-  unsigned long cacheMax(void) const          { return cache_max;             }
+  inline const Time& doubleClickInterval(void) const
+  { return double_click_interval; }
+  inline const bt::timeval& autoRaiseDelay(void) const
+  { return auto_raise_delay; }
+  inline unsigned long cacheLife(void) const
+  { return cache_life; }
+  inline unsigned long cacheMax(void) const
+  { return cache_max; }
 };
 
 #endif

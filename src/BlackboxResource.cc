@@ -22,18 +22,21 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-extern "C" {
-#include <X11/cursorfont.h>
-}
-
-#include "Resource.hh"
 #include "BlackboxResource.hh"
 #include "Screen.hh"
+
 // next two needed for their enums
 #include "Slit.hh"
 #include "Toolbar.hh"
 
+#include <Image.hh>
+#include <Resource.hh>
+
+#include <X11/Xutil.h>
+#include <X11/cursorfont.h>
+
 static const std::string empty_string;
+
 
 BlackboxResource::BlackboxResource(const std::string& rc): rc_file(rc) {
   screen_resources = 0;
@@ -84,14 +87,25 @@ void BlackboxResource::load(Blackbox& blackbox) {
   bt::DitherMode dither_mode;
   std::string tmp = res.read("session.imageDither", "Session.ImageDither",
                              "OrderedDither");
-  if (! strcasecmp("ordereddither", tmp.c_str()))
+  if (!strcasecmp("ordered", tmp.c_str()) ||
+      !strcasecmp("fast", tmp.c_str()) ||
+      !strcasecmp("ordereddither", tmp.c_str()) ||
+      !strcasecmp("fastdither", tmp.c_str())) {
     dither_mode = bt::OrderedDither;
-  else if (! strcasecmp("floydsteinbergdither", tmp.c_str()))
+  } else if (!strcasecmp("floydsteinberg", tmp.c_str()) ||
+             !strcasecmp("quality", tmp.c_str()) ||
+             !strcasecmp("diffuse", tmp.c_str()) ||
+             !strcasecmp("floydsteinbergdither", tmp.c_str()) ||
+             !strcasecmp("qualitydither", tmp.c_str()) ||
+             !strcasecmp("diffusedither", tmp.c_str())) {
     dither_mode = bt::FloydSteinbergDither;
-  else if (! strcasecmp("nodither", tmp.c_str()))
+  } else if (!strcasecmp("no", tmp.c_str()) ||
+             !strcasecmp("nodither", tmp.c_str()) ||
+             !strcasecmp("off", tmp.c_str())) {
     dither_mode = bt::NoDither;
-  else
+  } else {
     dither_mode = bt::OrderedDither;
+  }
   bt::Image::setDitherMode(dither_mode);
 
   cursor.session = XCreateFontCursor(blackbox.XDisplay(), XC_left_ptr);
@@ -128,7 +142,7 @@ void BlackboxResource::save(Blackbox& blackbox) {
   switch (bt::Image::ditherMode()) {
   case bt::OrderedDither:        tmp = "OrderedDither";        break;
   case bt::FloydSteinbergDither: tmp = "FloydSteinbergDither"; break;
-  default: tmp = "NoDither"; break;
+  default:                       tmp = "NoDither";             break;
   }
   res.write("session.imageDither", tmp);
 
