@@ -28,6 +28,7 @@
 #include <stdlib.h>
 
 
+// make sure directory names end with a slash
 static std::string terminateDir(const std::string &string)
 {
   std::string returnValue = string;
@@ -40,7 +41,9 @@ static std::string terminateDir(const std::string &string)
 static std::string readEnvDir(const char *name, const char *defaultValue)
 {
   const char * const env = getenv(name);
-  return terminateDir(bt::expandTilde(std::string(env ? env : defaultValue)));
+  std::string returnValue = std::string(env ? env : defaultValue);
+  returnValue = bt::expandTilde(returnValue);
+  return terminateDir(returnValue);
 }
 
 static std::list<std::string> readEnvDirList(const char *name,
@@ -97,7 +100,7 @@ std::list<std::string> bt::XDG::BaseDir::dataDirs()
 std::list<std::string> bt::XDG::BaseDir::configDirs()
 {
   static std::list<std::string> XDG_CONFIG_DIRS =
-    readEnvDirList("XDG_CONFIG_DIRS", "/etc/xdg");
+    readEnvDirList("XDG_CONFIG_DIRS", "/etc/xdg/");
   return XDG_CONFIG_DIRS;
 }
 
@@ -106,4 +109,31 @@ std::string bt::XDG::BaseDir::cacheHome()
   static std::string XDG_CACHE_HOME =
     readEnvDir("XDG_CACHE_HOME", "~/.cache/");
   return XDG_CACHE_HOME;
+}
+
+std::string bt::XDG::BaseDir::writeDataFile(const std::string &filename)
+{
+  std::string path = dataHome() + filename;
+  std::string directoryName = dirname(path);
+  if (!mkdirhier(directoryName, 0700))
+    return std::string();
+  return path;
+}
+
+std::string bt::XDG::BaseDir::writeConfigFile(const std::string &filename)
+{
+  std::string path = configHome() + filename;
+  std::string directoryName = dirname(path);
+  if (!mkdirhier(directoryName, 0700))
+    return std::string();
+  return path;
+}
+
+std::string bt::XDG::BaseDir::writeCacheFile(const std::string &filename)
+{
+  std::string path = cacheHome() + filename;
+  std::string directoryName = dirname(path);
+  if (!mkdirhier(directoryName, 0700))
+    return std::string();
+  return path;
 }

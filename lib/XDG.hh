@@ -44,6 +44,17 @@ namespace bt {
       static std::list<std::string> dataDirs();
       static std::list<std::string> configDirs();
       static std::string cacheHome();
+
+      /*
+        These functions return an absolute path to where a particular
+        type of file can be written, creating directories as needed.
+        All return an empty string if nothing can be written
+        (i.e. destination directory does not exist and could not be
+        created).
+      */
+      static std::string writeDataFile(const std::string &filename);
+      static std::string writeConfigFile(const std::string &filename);
+      static std::string writeCacheFile(const std::string &filename);
     };
 
   } // namespace XDG
