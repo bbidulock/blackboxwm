@@ -44,7 +44,7 @@ static const unsigned int maximumHeight = 3000;
 
 bt::Image::Buffer bt::Image::buffer;
 unsigned int bt::Image::global_colorsPerChannel = 4;
-bool bt::Image::global_ditherEnabled = false;
+bool bt::Image::global_ditherEnabled = true;
 bt::Image::XColorTableList bt::Image::colorTableList;
 
 
@@ -388,31 +388,40 @@ Pixmap bt::Image::render_solid(const Display &display, unsigned int screen,
 
 Pixmap bt::Image::render_gradient(const Display &display, unsigned int screen,
                                   const bt::Texture &texture) {
+  Color from, to;
   bool inverted = false;
   bool interlaced = texture.texture() & bt::Texture::Interlaced;
 
   if (texture.texture() & bt::Texture::Sunken) {
-    if (! (texture.texture() & bt::Texture::Invert)) inverted = true;
+    from = texture.colorTo();
+    to = texture.color();
+
+    if (! (texture.texture() & bt::Texture::Invert))
+      inverted = true;
   } else {
-    if (texture.texture() & bt::Texture::Invert) inverted = true;
+    from = texture.color();
+    to = texture.colorTo();
+
+    if (texture.texture() & bt::Texture::Invert)
+      inverted = true;
   }
 
   if (texture.texture() & bt::Texture::Diagonal)
-    dgradient(texture.color(), texture.colorTo(), interlaced);
+    dgradient(from, to, interlaced);
   else if (texture.texture() & bt::Texture::Elliptic)
-    egradient(texture.color(), texture.colorTo(), interlaced);
+    egradient(from, to, interlaced);
   else if (texture.texture() & bt::Texture::Horizontal)
-    hgradient(texture.color(), texture.colorTo(), interlaced);
+    hgradient(from, to, interlaced);
   else if (texture.texture() & bt::Texture::Pyramid)
-      pgradient(texture.color(), texture.colorTo(), interlaced);
+    pgradient(from, to, interlaced);
   else if (texture.texture() & bt::Texture::Rectangle)
-    rgradient(texture.color(), texture.colorTo(), interlaced);
+    rgradient(from, to, interlaced);
   else if (texture.texture() & bt::Texture::Vertical)
-    vgradient(texture.color(), texture.colorTo(), interlaced);
+    vgradient(from, to, interlaced);
   else if (texture.texture() & bt::Texture::CrossDiagonal)
-    cdgradient(texture.color(), texture.colorTo(), interlaced);
+    cdgradient(from, to, interlaced);
   else if (texture.texture() & bt::Texture::PipeCross)
-    pcgradient(texture.color(), texture.colorTo(), interlaced);
+    pcgradient(from, to, interlaced);
 
   if (texture.texture() & (bt::Texture::Sunken | bt::Texture::Raised))
     bevel(texture.borderWidth());
