@@ -1364,9 +1364,8 @@ bool BlackboxWindow::setInputFocus(void) {
   if (client.transientList.size() > 0) {
     // transfer focus to any modal transients
     BlackboxWindowList::iterator it, end = client.transientList.end();
-    for (it = client.transientList.begin(); it != end; ++it) {
+    for (it = client.transientList.begin(); it != end; ++it)
       if ((*it)->flags.modal) return (*it)->setInputFocus();
-    }
   }
 
   bool ret = True;
@@ -1503,9 +1502,8 @@ void BlackboxWindow::deiconify(bool reassoc, bool raise) {
   // reassociate and deiconify all transients
   if (reassoc && client.transientList.size() > 0) {
     BlackboxWindowList::iterator it, end = client.transientList.end();
-    for (it = client.transientList.begin(); it != end; ++it) {
+    for (it = client.transientList.begin(); it != end; ++it)
       (*it)->deiconify(True, False);
-    }
   }
 
   if (raise)
@@ -1815,7 +1813,7 @@ void BlackboxWindow::redrawWindowFrame(void) const {
 
 void BlackboxWindow::setFocusFlag(bool focus) {
   // only focus a window if it is visible
-  if (focus && !flags.visible)
+  if (focus && ! flags.visible)
     return;
 
   flags.focused = focus;
