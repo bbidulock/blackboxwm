@@ -510,6 +510,7 @@ void bt::Menu::removeItem(unsigned int id) {
     it->sub->_parent_menu = 0;
     if (it->sub->_auto_delete) delete it->sub;
   }
+  idset.reset(it->ident);
   items.erase(it);
 
   if (isVisible()) {
@@ -531,6 +532,7 @@ void bt::Menu::removeIndex(unsigned int index) {
     it->sub->_parent_menu = 0;
     if (it->sub->_auto_delete) delete it->sub;
   }
+  idset.reset(it->ident);
   items.erase(it);
 
   if (isVisible()) {
@@ -575,7 +577,7 @@ void bt::Menu::hideTitle(void) {
 }
 
 
-void bt::Menu::popup(int x, int y, bool centerOnTitle) {
+void bt::Menu::popup(int x, int y, bool centered) {
   _motion = 0;
 
   refresh();
@@ -585,7 +587,7 @@ void bt::Menu::popup(int x, int y, bool centerOnTitle) {
 
   const ScreenInfo& screeninfo = _app.getScreenInfo(_screen);
   if (_show_title) {
-    if (centerOnTitle) {
+    if (centered) {
       x -= _trect.width() / 2;
       y -= _trect.height() / 2;
       if (y + _rect.height() > screeninfo.getHeight())
@@ -596,6 +598,8 @@ void bt::Menu::popup(int x, int y, bool centerOnTitle) {
         y -= _frect.height();
     }
   } else {
+    if (centered)
+      x -= _frect.width() / 2;
     if (y + _rect.height() > screeninfo.getHeight())
       y -= _frect.height();
   }
@@ -603,7 +607,7 @@ void bt::Menu::popup(int x, int y, bool centerOnTitle) {
   if (y < 0)
     y = 0;
   if (x + _rect.width() > screeninfo.getWidth())
-    x = screeninfo.getWidth() - _rect.width();
+    x -= _rect.width();
   if (x < 0)
     x = 0;
 

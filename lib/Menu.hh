@@ -222,7 +222,7 @@ namespace bt {
     void hideTitle(void);
 
     inline bool isVisible(void) const { return _visible; }
-    virtual void popup(int x, int y, bool centerOnTitle = true);
+    virtual void popup(int x, int y, bool centered = true);
     void move(int x, int y);
     virtual void show(void);
     virtual void hide(void);
