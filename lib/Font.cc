@@ -267,7 +267,7 @@ XFontSet bt::FontCache::findFontSet(const std::string &fontsetname) {
 #ifdef XFT
 XftFont *bt::FontCache::findXftFont(const std::string &fontname,
                                     unsigned int screen) {
-  if (!xft_initialized || _display.screenInfo(screen).depth() <= 8)
+  if (!xft_initialized)
     return 0;
 
   if (fontname.empty())
@@ -307,7 +307,12 @@ XftFont *bt::FontCache::findXftFont(const std::string &fontname,
   }
 
   if (use_xft) {
-    ret = XftFontOpenName(_display.XDisplay(), screen, fontname.c_str());
+    // Xft can't do antialiasing on 8bpp very well
+    std::string n = fontname;
+    if (_display.screenInfo(screen).depth() <= 8)
+      n += ":antialias=false";
+
+    ret = XftFontOpenName(_display.XDisplay(), screen, n.c_str());
     if (ret == NULL) {
       // Xft will never return NULL, but it doesn't hurt to be cautious
       fprintf(stderr, "bt::Font: couldn't load Xft%u '%s'\n",
