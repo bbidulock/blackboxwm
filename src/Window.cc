@@ -783,29 +783,12 @@ void BlackboxWindow::positionWindows(void) {
 
 void BlackboxWindow::getWMName(void) {
   XTextProperty text_prop;
-  char **list;
-  int num;
 
   if (XGetWMName(blackbox->getXDisplay(), client.window, &text_prop)) {
-    if (text_prop.value && text_prop.nitems > 0) {
-      if (text_prop.encoding != XA_STRING) {
-        text_prop.nitems = strlen((char *) text_prop.value);
-
-        if ((XmbTextPropertyToTextList(blackbox->getXDisplay(), &text_prop,
-                                       &list, &num) == Success) &&
-            (num > 0) && *list) {
-          client.title = *list;
-          XFreeStringList(list);
-        } else {
-          client.title = (char *) text_prop.value;
-        }
-      } else {
-        client.title = (char *) text_prop.value;
-      }
-      XFree((char *) text_prop.value);
-    } else {
+    client.title = textPropertyToString(blackbox->getXDisplay(), text_prop);
+    if (client.title.empty())
       client.title = i18n(WindowSet, WindowUnnamed, "Unnamed");
-    }
+    XFree((char *) text_prop.value);
   } else {
     client.title = i18n(WindowSet, WindowUnnamed, "Unnamed");
   }
@@ -814,29 +797,13 @@ void BlackboxWindow::getWMName(void) {
 
 void BlackboxWindow::getWMIconName(void) {
   XTextProperty text_prop;
-  char **list;
-  int num;
 
   if (XGetWMIconName(blackbox->getXDisplay(), client.window, &text_prop)) {
-    if (text_prop.value && text_prop.nitems > 0) {
-      if (text_prop.encoding != XA_STRING) {
-         text_prop.nitems = strlen((char *) text_prop.value);
-
-         if ((XmbTextPropertyToTextList(blackbox->getXDisplay(), &text_prop,
-                                        &list, &num) == Success) &&
-             (num > 0) && *list) {
-           client.icon_title = *list;
-           XFreeStringList(list);
-         } else {
-           client.icon_title = (char *) text_prop.value;
-        }
-      } else {
-         client.icon_title = (char *) text_prop.value;
-      }
-      XFree((char *) text_prop.value);
-    } else {
+    client.icon_title =
+      textPropertyToString(blackbox->getXDisplay(), text_prop);
+    if (client.icon_title.empty())
       client.icon_title = client.title;
-    }
+    XFree((char *) text_prop.value);
   } else {
     client.icon_title = client.title;
   }

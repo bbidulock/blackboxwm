@@ -25,6 +25,9 @@
 #define _BLACKBOX_UTIL_HH
 
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
+
+#include <string>
 
 class Rect {
 public:
@@ -81,8 +84,6 @@ private:
   int _x1, _y1, _x2, _y2;
 };
 
-#include <string>
-
 /* XXX: this needs autoconf help */
 const unsigned int BSENTINEL = 65535;
 
@@ -93,6 +94,8 @@ void bexec(const std::string& command, const std::string& displaystring);
 #ifndef   HAVE_BASENAME
 std::string basename(const std::string& path);
 #endif
+
+std::string textPropertyToString(Display *display, XTextProperty& text_prop);
 
 struct timeval; // forward declare to avoid the header
 timeval normalizeTimeval(const timeval &tm);

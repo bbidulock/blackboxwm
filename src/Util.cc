@@ -50,9 +50,11 @@ extern "C" {
 #endif //   HAVE_PROCESS_H             __EMX__
 }
 
-#include "Util.hh"
+#include <X11/Xatom.h>
 
 #include <algorithm>
+
+#include "Util.hh"
 
 using std::string;
 
@@ -122,6 +124,29 @@ string basename (const string& path) {
   return path.substr(slash+1);
 }
 #endif // HAVE_BASENAME
+
+
+string textPropertyToString(Display *display, XTextProperty& text_prop) {
+  string ret;
+
+  if (text_prop.value && text_prop.nitems > 0) {
+    ret = (char *) text_prop.value;
+    if (text_prop.encoding != XA_STRING) {
+      text_prop.nitems = strlen((char *) text_prop.value);
+
+      char **list;
+      int num;
+      if (XmbTextPropertyToTextList(display, &text_prop,
+                                    &list, &num) == Success &&
+          num > 0 && *list) {
+        ret = *list;
+        XFreeStringList(list);
+      }
+    }
+  }
+
+  return ret;
+}
 
 
 timeval normalizeTimeval(const timeval &tm) {
