@@ -998,12 +998,17 @@ void BScreen::changeWorkspace(BlackboxWindow *win, unsigned int id) {
 
 
 void BScreen::propagateWindowName(const BlackboxWindow * const win) {
-  Workspace *workspace = findWorkspace(win->workspace());
-  if (!workspace) return;
-
-  const bt::ustring s =
-    bt::ellideText(win->title(), 60, bt::toUnicode("..."));
-  workspace->menu()->changeItem(win->windowNumber(), s);
+  if (win->isIconic()) {
+    _iconmenu->changeItem(win->windowNumber(),
+                          bt::ellideText(win->iconTitle(), 60,
+                                         bt::toUnicode("...")));
+  } else if (win->workspace() != bt::BSENTINEL) {
+    Workspace *workspace = findWorkspace(win->workspace());
+    assert(workspace != 0);
+    workspace->menu()->changeItem(win->windowNumber(),
+                                  bt::ellideText(win->title(), 60,
+                                                 bt::toUnicode("...")));
+  }
 
   if (_toolbar && _blackbox->focusedWindow() == win)
     _toolbar->redrawWindowLabel();
