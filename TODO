@@ -12,13 +12,13 @@ CVS Bugs:
 
 * mozilla right click focus bug
 
-* dock apps started before blackbox are often not accepted.  Restarting can
-  also jettison dock apps
+* bbtools do not like to dock
 
 CVS warts:
 -----------------------------
 * transient handling should be properly done for cases where a single toplevel
   has multiple transients... this includes transient stacking
+  (partially finished)
 
 * to accomplish the above, we NEED proper window group support... this includes
   supporting group leader, with multiple toplevels which can have multiple
@@ -41,8 +41,6 @@ CVS warts:
 
 Stuff TODO or On The Way(tm):
 -----------------------------
-CHECK: casts there is surely some cruft there
-
 ADD: add _BLACKBOX_STYLE and _BLACKBOX_MENU atoms so that bbtools, bbconf, etc.
      can get the current path to the style in use and menu.
 
