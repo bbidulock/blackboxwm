@@ -624,10 +624,6 @@ void BlackboxWindow::decorate(void) {
                             frame.label_w,
                             frame.style->label_height,
                             frame.ulabel);
-
-    XSetWindowBorder(blackbox->XDisplay(), frame.title,
-                     screen->resource().borderColor()->
-                     pixel(screen->screenNumber()));
   }
 
   if (client.decorations & WindowDecorationHandle) {
@@ -644,10 +640,6 @@ void BlackboxWindow::decorate(void) {
                             frame.rect.width(),
                             frame.style->handle_height,
                             frame.uhandle);
-
-    XSetWindowBorder(blackbox->XDisplay(), frame.handle,
-                     screen->resource().borderColor()->
-                     pixel(screen->screenNumber()));
   }
 
   if (client.decorations & WindowDecorationGrip) {
@@ -664,18 +656,7 @@ void BlackboxWindow::decorate(void) {
                             frame.style->grip_width,
                             frame.style->handle_height,
                             frame.ugrip);
-
-    XSetWindowBorder(blackbox->XDisplay(), frame.left_grip,
-                     screen->resource().borderColor()->
-                     pixel(screen->screenNumber()));
-    XSetWindowBorder(blackbox->XDisplay(), frame.right_grip,
-                     screen->resource().borderColor()->
-                     pixel(screen->screenNumber()));
   }
-
-  XSetWindowBorder(blackbox->XDisplay(), frame.window,
-                   screen->resource().borderColor()->
-                   pixel(screen->screenNumber()));
 }
 
 
