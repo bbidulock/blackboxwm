@@ -53,6 +53,8 @@ private:
   bt::Timer *clock_timer, *hide_timer;
   bt::Netwm::Strut strut;
 
+  int clock_timer_resolution;
+
   std::string new_workspace_name;
   size_t new_name_pos;
 

@@ -39,11 +39,11 @@
 #include <assert.h>
 
 
-static
-long aMinuteFromNow(void) {
+long nextTimeout(int resolution) {
   timeval now;
   gettimeofday(&now, 0);
-  return ((60 - (now.tv_sec % 60)) * 1000);
+  return (std::max(1000l, ((resolution - (now.tv_sec % resolution)) * 1000))
+          - (now.tv_usec / 1000));
 }
 
 
@@ -53,9 +53,20 @@ Toolbar::Toolbar(BScreen *scrn) {
 
   // get the clock updating every minute
   clock_timer = new bt::Timer(blackbox, this);
-  clock_timer->setTimeout(aMinuteFromNow());
   clock_timer->recurring(True);
-  clock_timer->start();
+
+  const std::string time_format = _screen->resource().strftimeFormat();
+  if (time_format.find("%S") != std::string::npos
+      || time_format.find("%s") != std::string::npos
+      || time_format.find("%r") != std::string::npos
+      || time_format.find("%T") != std::string::npos) {
+    clock_timer_resolution = 1;
+  } else if (time_format.find("%M") != std::string::npos
+             || time_format.find("%R") != std::string::npos) {
+    clock_timer_resolution = 60;
+  } else {
+    clock_timer_resolution = 3600;
+  }
 
   hide_timer = new bt::Timer(blackbox, this);
   hide_timer->setTimeout(blackbox->resource().autoRaiseDelay());
@@ -137,11 +148,14 @@ Toolbar::Toolbar(BScreen *scrn) {
   blackbox->insertEventHandler(frame.nwbutton, this);
 
   frame.base = frame.slabel = frame.wlabel = frame.clk = frame.button =
-    frame.pbutton = None;
+ frame.pbutton = None;
 
   _screen->addStrut(&strut);
 
   reconfigure();
+
+  clock_timer->setTimeout(nextTimeout(clock_timer_resolution));
+  clock_timer->start();
 
   XMapSubwindows(display, frame.window);
   XMapWindow(display, frame.window);
@@ -692,7 +706,7 @@ void Toolbar::timeout(bt::Timer *timer) {
   if (timer == clock_timer) {
     redrawClockLabel();
 
-    clock_timer->setTimeout(aMinuteFromNow());
+    clock_timer->setTimeout(nextTimeout(clock_timer_resolution));
   } else if (timer == hide_timer) {
     hidden = ! hidden;
     if (hidden)
