@@ -21,7 +21,7 @@
 
 #ifndef _blackbox_hh
 #define _blackbox_hh
-#define _blackbox_version "zero point one zero point seven beta"
+#define _blackbox_version "zero point one zero point nine beta"
 
 //
 //   This is a class to manage a single X server connection.  It allows for

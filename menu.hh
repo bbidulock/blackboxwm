@@ -49,9 +49,8 @@ private:
 
   Bool moving, show_title, visible, sub;
   Display *display;
-  GC titleGC;
+  GC titleGC, itemGC, pitemGC;
   XContext itemContext;
-  XFontStruct *menuFont, *titleFont;
   
   int which_sub;
 
@@ -106,6 +105,7 @@ public:
   int Y(void) { return menu.y; }
   int menuVisible(void) { return visible; }
   void setMenuLabel(char *);
+  const char *label(void) const { return menu.label; }
   int count(void) { return menuitems->count(); }
 
   void buttonPressEvent(XButtonEvent *);

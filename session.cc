@@ -36,6 +36,8 @@ SessionMenu::SessionMenu(BlackboxSession *s) : BlackboxMenu(s)
 { }
 int SessionMenu::insert(char *l, int f, char *e)
 { return BlackboxMenu::insert(l, f, e); }
+int SessionMenu::insert(char *l, SessionMenu *s)
+{ return BlackboxMenu::insert(l, s); }
 void SessionMenu::showMenu(void)
 { BlackboxMenu::showMenu(); }
 void SessionMenu::moveMenu(int x, int y)
@@ -116,17 +118,17 @@ BlackboxSession::BlackboxSession(char *display_name) {
   depth = DefaultDepth(display, screen);
 
 #ifdef SHAPE
-  {
-    debug->msg("querying X server shape extensions\n");
-    int i, ii;
-    if (! (shape_extensions = XShapeQueryExtension(display, &i, &ii)))
-      debug->msg("server doesn't support shape extensions\n");
-    else
-      debug->msg("server supports shape extensions\n"
-		 "   (event_basep %d, error_basep %d)\n", i, ii);
-  }
+  debug->msg("querying X server shape extensions\n");
+  if (! (shape.extensions = XShapeQueryExtension(display, &shape.event_basep, 
+						 &shape.error_basep)))
+    debug->msg("server doesn't support shape extensions\n");
+  else
+    debug->msg("server supports shape extensions\n"
+	       "   (event_basep %d, error_basep %d)\n", shape.event_basep,
+	       shape.error_basep);
+
 #else
-  shape_extensions = False;
+  shape.extensions = False;
 #endif
 
   InitScreen();
@@ -334,100 +336,55 @@ void BlackboxSession::InitMenu(void) {
   char *line = new char[121], *label = new char[41], *command = new char[81];
   FILE *menu_file = fopen(resource.menuFile, "r");
   if (menu_file != NULL) {
-    if (! feof(menu_file)) {
-      memset(line, 0, 121);
-      memset(label, 0, 41);
-      memset(command, 0, 80);
-      fgets(line, 120, menu_file);
-      int len = strlen(line);
-      strncpy(command, line, 5);
-      command[5] = '\0';
-      strncpy(label, line + 5, len - 5);
+    memset(line, 0, 121);
+    memset(label, 0, 41);
+    memset(command, 0, 80);
+    fgets(line, 120, menu_file);
+    int i, ri, len = strlen(line);
 
-      if (! strncasecmp(command, "begin", 5)) {
-        int i, ri, llen = strlen(label);
-        for (i = 0; i < llen; ++i)
-          if (label[i] == '(') {
-            ++i;
-            break;
-          }
-
-        for (ri = llen; ri > 0; --ri)
-          if (label[ri] == ')')
-            break;
+    for (i = 0; i < len; ++i)
+      if (line[i] == '[') { ++i; break; }
+    for (ri = len; ri > 0; --ri)
+      if (line[ri] == ']') break;
+      
+    char *c;
+    if (i < ri && ri > 0) {
+      c = new char[ri - i + 1];
+      strncpy(c, line + i, ri - i);
+      *(c + (ri - i)) = '\0';
+      
+      if (! strcasecmp(c, "begin")) {
+	for (i = 0; i < len; ++i)
+	  if (line[i] == '(') { ++i; break; }
+	for (ri = len; ri > 0; --ri)
+	  if (line[ri] == ')') break;
 	
-        if (i < ri && ri > 0) {
-          char *newlabel = new char[ri - i + 1];
-          strncpy(newlabel, label + i, ri - i);
-          *(newlabel + (ri - i)) = '\0';
-          rootmenu->setMenuLabel(newlabel);
-        } 
+	char *l;
+	if (i < ri && ri > 0) {
+	  l = new char[ri - i + 1];
+	  strncpy(l, line + i, ri - i);
+	  *(l + (ri - i)) = '\0';
+	} else
+	  l = "(nil)";
+	
+	rootmenu->setMenuLabel(l);
+	parseSubMenu(menu_file, rootmenu);
 
-        while (! feof(menu_file)) {
-          memset(line, 0, 121);
-          memset(label, 0, 41);
-          memset(command, 0, 80);
-          fgets(line, 120, menu_file);
-          if (! strncasecmp(line, "end", 3)) break;
-          else {
-            len = strlen(line);
-            for (i = 0; i < len; ++i)
-              if (line[i] == '\"') { ++i; break; }
-            for (ri = len; ri > 0; --ri)
-              if (line[ri] == '\"') break;
-
-            char *l;
-            if (i < ri && ri > 0) {
-              l = new char[ri - i + 1];
-              strncpy(l, line + i, ri - i);
-              *(l + (ri - i)) = '\0';
-            } else
-              l = "(nil)";
-
-            for (i = 0; i < len; ++i)
-              if (line[i] == '(') { ++i; break; }
-            for (ri = len; ri > 0; --ri)
-              if (line[ri] == ')') break;
-
-            char *c;
-            if (i < ri && ri > 0) {
-              c = new char[ri - i + 1];
-              strncpy(c, line + i, ri - i);
-              *(c + (ri - i)) = '\0';
-            } else
-              c = 0;
-
-            if (c) {
-              if (! strncasecmp(c, "Restart", 7)) {
-                rootmenu->insert(l, B_Restart);
-                delete [] c;
-              } else if (! strncasecmp(c, "Exit", 4)) {
-                rootmenu->insert(l, B_Exit);
-                delete [] c;
-              } else if (! strncasecmp(c, "Shutdown", 8)) {
-                rootmenu->insert(l, B_Shutdown);
-                delete [] c;
-              } else
-                rootmenu->insert(l, B_Execute, c);
-            } else
-              fprintf(stderr, "error in menu file... label must have command\n"
-                      "  ex:  \"label\" (command)\n");
-          }
-        }
+	if (rootmenu->count() == 0) {
+	  rootmenu->insert("Restart", B_Restart);
+	  rootmenu->insert("Exit", B_Exit);
+	}
       } else {
-        
+	rootmenu->insert("Restart", B_Restart);
+	rootmenu->insert("Exit", B_Exit);
       }
-
     } else {
-      perror(resource.menuFile);
-      // error in menu file
+      rootmenu->insert("Restart", B_Restart);
+      rootmenu->insert("Exit", B_Exit);
     }
-
-    fclose(menu_file);
   } else {
     // no menu file... fall back on default
     perror(resource.menuFile);
-    rootmenu->insert("xterm", B_Execute, "xterm");
     rootmenu->insert("Restart", B_Restart);
     rootmenu->insert("Exit", B_Exit);
   }
@@ -480,8 +437,9 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
       case 3: b3Pressed = True; break;
       }
       
-      debug->msg("button press %u %lx %u (control mask %u)\n", e->xbutton.button,
-		 e->xbutton.window, e->xbutton.state, ControlMask);
+      debug->msg("button press %u %lx %u (control mask %u)\n",
+                 e->xbutton.button, e->xbutton.window, e->xbutton.state,
+                 ControlMask);
       
       if ((bWin = getWindow(e->xbutton.window)) != NULL) {
 	bWin->buttonPressEvent(&e->xbutton);
@@ -693,12 +651,6 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
     break;
   }
 
-  // the events we do not handle
-  case CreateNotify:
-  case ReparentNotify:
-  case ConfigureNotify:
-    break;
-    
   default:
     debug->msg("event %d: %lx\n", e->type, e->xany.window);
     break;
@@ -838,82 +790,7 @@ void BlackboxSession::reassociateWindow(BlackboxWindow *w) {
 void BlackboxSession::LoadDefaults(void) {
   //
   // blackbox defaults...
-  //  
-
-  getColor("black");
-
-  resource.color.frame.r =
-    resource.color.frame.g =
-    resource.color.frame.b =
-    resource.color.frame.pixel = 0;
-
-  resource.color.frame_to.r =
-    resource.color.frame_to.g =
-    resource.color.frame_to.b =
-    resource.color.frame_to.pixel = 0;
-  
-  resource.color.focus.r =
-    resource.color.focus.g =
-    resource.color.focus.b =
-    resource.color.focus.pixel = 0;
-
-  resource.color.focus_to.r =
-    resource.color.focus_to.g =
-    resource.color.focus_to.b =
-    resource.color.focus_to.pixel = 0;
-
-  resource.color.unfocus.r =
-    resource.color.unfocus.g =
-    resource.color.unfocus.b =
-    resource.color.unfocus.pixel = 0;
-
-  resource.color.unfocus_to.r =
-    resource.color.unfocus_to.g =
-    resource.color.unfocus_to.b =
-    resource.color.unfocus_to.pixel = 0;
-
-  resource.color.menu.r =
-    resource.color.menu.g =
-    resource.color.menu.b =
-    resource.color.menu.pixel = 0;
-
-  resource.color.menu_to.pixel = getColor("darkgrey",
-					  &resource.color.menu_to.r,
-					  &resource.color.menu_to.g,
-					  &resource.color.menu_to.b);
-  
-  resource.color.imenu.r =
-    resource.color.imenu.g =
-    resource.color.imenu.b =
-    resource.color.imenu.pixel = 0;
-  
-  resource.color.imenu_to.pixel = getColor("darkgrey", 
-					   &resource.color.imenu_to.r,
-					   &resource.color.imenu_to.g,
-					   &resource.color.imenu_to.b);
-    
-  resource.color.button.r =
-    resource.color.button.g =
-    resource.color.button.b =
-    resource.color.button.pixel = 0;
-
-  resource.color.button_to.r =
-    resource.color.button_to.g =
-    resource.color.button_to.b =
-    resource.color.button_to.pixel = 0;
-
-  resource.color.icon.r =
-    resource.color.icon.g =
-    resource.color.icon.b =
-    resource.color.icon.pixel = 0;
-
-  resource.color.ftext.pixel = getColor("white", &resource.color.ftext.r,
-					&resource.color.ftext.g,
-					&resource.color.ftext.b);
-
-  resource.color.utext.pixel = getColor("darkgrey", &resource.color.utext.r,
-					&resource.color.utext.g,
-					&resource.color.utext.b);
+  //
 
   debug->msg("initializing Xrm\n");
   XrmInitialize();
@@ -981,6 +858,8 @@ void BlackboxSession::LoadDefaults(void) {
       resource.texture.frame = B_TextureSVGradient;
     else if (! strcasecmp(value.addr, "vgradientflat"))
       resource.texture.frame = B_TextureFVGradient;
+    else
+      resource.texture.frame = B_TextureRSolid;
   } else
     resource.texture.frame = B_TextureRSolid;
 
@@ -1016,6 +895,8 @@ void BlackboxSession::LoadDefaults(void) {
       resource.texture.button = B_TextureSVGradient;
     else if (! strcasecmp(value.addr, "vgradientflat"))
       resource.texture.button = B_TextureFVGradient;
+    else
+      resource.texture.button = B_TextureRSolid;
   } else
     resource.texture.button = B_TextureRSolid;
 
@@ -1050,12 +931,15 @@ void BlackboxSession::LoadDefaults(void) {
       resource.texture.menu = B_TextureSVGradient;
     else if (! strcasecmp(value.addr, "vgradientflat"))
       resource.texture.menu = B_TextureFVGradient;
+    else
+      resource.texture.menu = B_TextureRSolid;
   } else
     resource.texture.menu = B_TextureRSolid;
 
   if (XrmGetResource(blackbox_database,
 		     "blackbox.menu.menuItemPressedTexture",
-		     "Blackbox.Menu.MenuItemPressedTexture", &value_type, &value)) {
+		     "Blackbox.Menu.MenuItemPressedTexture", &value_type,
+		     &value)) {
     if ((! strcasecmp(value.addr, "solid")) ||
 	(! strcasecmp(value.addr, "solidraised")))
       resource.texture.pimenu = B_TextureRSolid;
@@ -1084,6 +968,8 @@ void BlackboxSession::LoadDefaults(void) {
       resource.texture.pimenu = B_TextureSVGradient;
     else if (! strcasecmp(value.addr, "vgradientflat"))
       resource.texture.pimenu = B_TextureFVGradient;
+    else
+      resource.texture.pimenu = B_TextureFSolid;
   } else
     resource.texture.pimenu = B_TextureFSolid;
 
@@ -1118,6 +1004,8 @@ void BlackboxSession::LoadDefaults(void) {
       resource.texture.imenu = B_TextureSVGradient;
     else if (! strcasecmp(value.addr, "vgradientflat"))
       resource.texture.imenu = B_TextureFVGradient;
+    else
+      resource.texture.imenu = B_TextureRSolid;
   } else
     resource.texture.imenu = B_TextureRSolid;
 
@@ -1127,12 +1015,20 @@ void BlackboxSession::LoadDefaults(void) {
     resource.color.frame.pixel =
       getColor(value.addr, &resource.color.frame.r, &resource.color.frame.g,
 	       &resource.color.frame.b);
+  else
+    resource.color.frame.pixel =
+      getColor("grey", &resource.color.frame.r, &resource.color.frame.g,
+	       &resource.color.frame.b);
   
   if (XrmGetResource(blackbox_database,
 		     "blackbox.session.frameToColor",
 		     "Blackbox.Session.FrameToColor", &value_type, &value))
     resource.color.frame_to.pixel =
       getColor(value.addr, &resource.color.frame_to.r,
+	       &resource.color.frame_to.g, &resource.color.frame_to.b);
+  else
+    resource.color.frame_to.pixel =
+      getColor("black", &resource.color.frame_to.r,
 	       &resource.color.frame_to.g, &resource.color.frame_to.b);
   
   if (XrmGetResource(blackbox_database,
@@ -1141,6 +1037,10 @@ void BlackboxSession::LoadDefaults(void) {
     resource.color.focus.pixel =
       getColor(value.addr, &resource.color.focus.r, &resource.color.focus.g,
 	       &resource.color.focus.b);
+  else
+    resource.color.focus.pixel =
+      getColor("darkgrey", &resource.color.focus.r, &resource.color.focus.g,
+	       &resource.color.focus.b);
   
   if (XrmGetResource(blackbox_database,
 		     "blackbox.window.focusToColor",
@@ -1148,12 +1048,20 @@ void BlackboxSession::LoadDefaults(void) {
     resource.color.focus_to.pixel =
       getColor(value.addr, &resource.color.focus_to.r,
 	       &resource.color.focus_to.g, &resource.color.focus_to.b);
-  
+  else
+    resource.color.focus_to.pixel =
+      getColor("black", &resource.color.focus_to.r,
+	       &resource.color.focus_to.g, &resource.color.focus_to.b);
+
   if (XrmGetResource(blackbox_database,
 		     "blackbox.window.unfocusColor",
 		     "Blackbox.Window.UnfocusColor", &value_type, &value))
     resource.color.unfocus.pixel =
       getColor(value.addr, &resource.color.unfocus.r,
+	       &resource.color.unfocus.g, &resource.color.unfocus.b);
+  else
+    resource.color.unfocus.pixel =
+      getColor("black", &resource.color.unfocus.r,
 	       &resource.color.unfocus.g, &resource.color.unfocus.b);
   
   if (XrmGetResource(blackbox_database,
@@ -1162,12 +1070,20 @@ void BlackboxSession::LoadDefaults(void) {
     resource.color.unfocus_to.pixel =
       getColor(value.addr, &resource.color.unfocus_to.r,
 	       &resource.color.unfocus_to.g, &resource.color.unfocus_to.b);
+  else
+    resource.color.unfocus_to.pixel =
+      getColor("black", &resource.color.unfocus_to.r,
+	       &resource.color.unfocus_to.g, &resource.color.unfocus_to.b);
   
   if (XrmGetResource(blackbox_database,
 		     "blackbox.window.buttonColor",
 		     "Blackbox.Window.ButtonColor", &value_type, &value))
     resource.color.button.pixel =
       getColor(value.addr, &resource.color.button.r,
+	       &resource.color.button.g, &resource.color.button.b);
+  else
+    resource.color.button.pixel =
+      getColor("grey" , &resource.color.button.r,
 	       &resource.color.button.g, &resource.color.button.b);
   
   if (XrmGetResource(blackbox_database,
@@ -1176,12 +1092,20 @@ void BlackboxSession::LoadDefaults(void) {
     resource.color.button_to.pixel =
       getColor(value.addr, &resource.color.button_to.r,
 	       &resource.color.button_to.g, &resource.color.button_to.b);
+  else
+    resource.color.button_to.pixel =
+      getColor("black", &resource.color.button_to.r,
+	       &resource.color.button_to.g, &resource.color.button_to.b);
   
   if (XrmGetResource(blackbox_database,
 		     "blackbox.session.iconColor",
 		     "Blackbox.Session.IconColor", &value_type, &value))
     resource.color.icon.pixel =
       getColor(value.addr, &resource.color.icon.r,
+	       &resource.color.icon.g, &resource.color.icon.b);
+  else
+    resource.color.icon.pixel =
+      getColor("black", &resource.color.icon.r,
 	       &resource.color.icon.g, &resource.color.icon.b);
   
   if (XrmGetResource(blackbox_database,
@@ -1190,12 +1114,20 @@ void BlackboxSession::LoadDefaults(void) {
     resource.color.menu.pixel =
       getColor(value.addr, &resource.color.menu.r,
 	       &resource.color.menu.g, &resource.color.menu.b);
+  else
+    resource.color.menu.pixel =
+      getColor("darkgrey", &resource.color.menu.r,
+	       &resource.color.menu.g, &resource.color.menu.b);
   
   if (XrmGetResource(blackbox_database,
 		     "blackbox.menu.menuToColor",
 		     "Blackbox.Menu.MenuToColor", &value_type, &value))
     resource.color.menu_to.pixel =
       getColor(value.addr, &resource.color.menu_to.r,
+	       &resource.color.menu_to.g, &resource.color.menu_to.b);
+  else
+    resource.color.menu_to.pixel =
+      getColor("black", &resource.color.menu_to.r,
 	       &resource.color.menu_to.g, &resource.color.menu_to.b);
   
   if (XrmGetResource(blackbox_database,
@@ -1204,12 +1136,20 @@ void BlackboxSession::LoadDefaults(void) {
     resource.color.imenu.pixel =
       getColor(value.addr, &resource.color.imenu.r,
 	       &resource.color.imenu.g, &resource.color.imenu.b);
+  else
+    resource.color.imenu.pixel =
+      getColor("black", &resource.color.imenu.r,
+	       &resource.color.imenu.g, &resource.color.imenu.b);
   
   if (XrmGetResource(blackbox_database,
 		     "blackbox.menu.menuItemToColor",
 		     "Blackbox.Menu.MenuItemToColor", &value_type, &value))
     resource.color.imenu_to.pixel =
       getColor(value.addr, &resource.color.imenu_to.r,
+	       &resource.color.imenu_to.g, &resource.color.imenu_to.b);
+  else
+    resource.color.imenu_to.pixel =
+      getColor("grey", &resource.color.imenu_to.r,
 	       &resource.color.imenu_to.g, &resource.color.imenu_to.b);
   
   if (XrmGetResource(blackbox_database,
@@ -1218,6 +1158,10 @@ void BlackboxSession::LoadDefaults(void) {
     resource.color.ftext.pixel =
       getColor(value.addr, &resource.color.ftext.r, &resource.color.ftext.g,
 	       &resource.color.ftext.b);
+  else
+    resource.color.ftext.pixel =
+      getColor("white", &resource.color.ftext.r, &resource.color.ftext.g,
+	       &resource.color.ftext.b);
 
   if (XrmGetResource(blackbox_database,
 		     "blackbox.session.unfocusTextColor",
@@ -1225,6 +1169,57 @@ void BlackboxSession::LoadDefaults(void) {
     resource.color.utext.pixel =
       getColor(value.addr, &resource.color.utext.r, &resource.color.utext.g,
 	       &resource.color.utext.b);
+  else
+    resource.color.utext.pixel =
+      getColor("darkgrey", &resource.color.utext.r, &resource.color.utext.g,
+	       &resource.color.utext.b);
+
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.session.menuTextColor",
+		     "Blackbox.Session.MenuTextColor", &value_type, &value))
+    resource.color.mtext.pixel =
+      getColor(value.addr, &resource.color.mtext.r, &resource.color.mtext.g,
+	       &resource.color.mtext.b);
+  else
+    resource.color.mtext.pixel =
+      getColor("white", &resource.color.mtext.r, &resource.color.mtext.g,
+	       &resource.color.mtext.b);
+
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.session.menuItemTextColor",
+		     "Blackbox.Session.MenuItemTextColor", &value_type,
+		     &value))
+    resource.color.mitext.pixel =
+      getColor(value.addr, &resource.color.mitext.r, &resource.color.mitext.g,
+	       &resource.color.mitext.b);
+  else
+    resource.color.mitext.pixel =
+      getColor("grey", &resource.color.mitext.r, &resource.color.mitext.g,
+	       &resource.color.mitext.b);
+
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.session.menuPressedTextColor",
+		     "Blackbox.Session.MenuPressedTextColor", &value_type,
+		     &value))
+    resource.color.ptext.pixel =
+      getColor(value.addr, &resource.color.ptext.r, &resource.color.ptext.g,
+	       &resource.color.ptext.b);
+  else
+    resource.color.ptext.pixel =
+      getColor("grey", &resource.color.ptext.r, &resource.color.ptext.g,
+	       &resource.color.ptext.b);
+
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.session.iconTextColor",
+		     "Blackbox.Session.IconTextColor", &value_type,
+		     &value))
+    resource.color.itext.pixel =
+      getColor(value.addr, &resource.color.itext.r, &resource.color.itext.g,
+	       &resource.color.itext.b);
+  else
+    resource.color.itext.pixel =
+      getColor("grey", &resource.color.itext.r, &resource.color.itext.g,
+	       &resource.color.itext.b);
 
   if (XrmGetResource(blackbox_database,
 		     "blackbox.session.menuFile",
@@ -1243,9 +1238,12 @@ void BlackboxSession::LoadDefaults(void) {
   
   if (XrmGetResource(blackbox_database,
 		     "blackbox.session.workspaces",
-		     "Blackbox.Session.Workspaces", &value_type, &value))
-    if (sscanf(value.addr, "%d", &resource.workspaces) != 1)
+		     "Blackbox.Session.Workspaces", &value_type, &value)) {
+    if (sscanf(value.addr, "%d", &resource.workspaces) != 1) {
       resource.workspaces = 1;
+    }
+  } else
+    resource.workspaces = 1;
   
   if (XrmGetResource(blackbox_database,
 		     "blackbox.session.orientation",
@@ -1257,18 +1255,87 @@ void BlackboxSession::LoadDefaults(void) {
   } else
     resource.orientation = B_RightHandedUser;
 
+  const char *defaultFont = "-*-charter-medium-r-*-*-*-120-*-*-*-*-*-*";
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.session.titleFont",
+		     "Blackbox.Session.TitleFont", &value_type, &value)) {
+    if ((resource.font.title = XLoadQueryFont(display, value.addr)) == NULL) {
+      fprintf(stderr,
+	      " blackbox: couldn't load font '%s'\n"
+	      "  ...  reverting to default font.", value.addr);
+      if ((resource.font.title = XLoadQueryFont(display, defaultFont))
+	  == NULL) {
+	fprintf(stderr,
+		"blackbox: couldn't load default font.  please check to\n"
+		"make sure the necessary font is installed '%s'\n",
+		defaultFont);
+	exit(2);
+      }  
+    }
+  } else {
+    debug->msg("loading default font\n");
+    if ((resource.font.title = XLoadQueryFont(display, defaultFont)) == NULL) {
+      fprintf(stderr,
+	      "blackbox: couldn't load default font.  please check to\n"
+	      "make sure the necessary font is installed '%s'\n", defaultFont);
+      exit(2);
+    }
+  }
+
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.session.menuFont",
+		     "Blackbox.Session.MenuFont", &value_type, &value)) {
+    if ((resource.font.menu = XLoadQueryFont(display, value.addr)) == NULL) {
+      fprintf(stderr,
+	      " blackbox: couldn't load font '%s'\n"
+	      "  ...  reverting to default font.", value.addr);
+      if ((resource.font.menu = XLoadQueryFont(display, defaultFont))
+	  == NULL) {
+	fprintf(stderr,
+		"blackbox: couldn't load default font.  please check to\n"
+		"make sure the necessary font is installed '%s'\n",
+		defaultFont);
+	exit(2);
+      }  
+    }
+  } else {
+    debug->msg("loading default font\n");
+    if ((resource.font.menu = XLoadQueryFont(display, defaultFont)) == NULL) {
+      fprintf(stderr,
+	      "blackbox: couldn't load default font.  please check to\n"
+	      "make sure the necessary font is installed '%s'\n", defaultFont);
+      exit(2);
+    }
+  }
+
+  if (XrmGetResource(blackbox_database,
+		     "blackbox.session.iconFont",
+		     "Blackbox.Session.IconFont", &value_type, &value)) {
+    if ((resource.font.icon = XLoadQueryFont(display, value.addr)) == NULL) {
+      fprintf(stderr,
+	      " blackbox: couldn't load font '%s'\n"
+	      "  ...  reverting to default font.", value.addr);
+      if ((resource.font.icon = XLoadQueryFont(display, defaultFont))
+	  == NULL) {
+	fprintf(stderr,
+		"blackbox: couldn't load default font.  please check to\n"
+		"make sure the necessary font is installed '%s'\n",
+		defaultFont);
+	exit(2);
+      }  
+    }
+  } else {
+    debug->msg("loading default font\n");
+    if ((resource.font.icon = XLoadQueryFont(display, defaultFont)) == NULL) {
+      fprintf(stderr,
+	      "blackbox: couldn't load default font.  please check to\n"
+	      "make sure the necessary font is installed '%s'\n", defaultFont);
+      exit(2);
+    }
+  }
+
   debug->msg("destroying database\n");
   XrmDestroyDatabase(blackbox_database);
-
-  debug->msg("loading default font\n");
-  const char *defaultFont = "-*-charter-medium-r-*-*-*-120-*-*-*-*-*-*";
-  if ((resource.font.title = XLoadQueryFont(display, defaultFont)) == NULL) {
-    fprintf(stderr,
-	    "blackbox: couldn't load default font.  please check to\n"
-	    "make sure the necessary font is installed '%s'\n", defaultFont);
-    exit(2);
-  }
-  resource.font.menu = resource.font.title;
 }
 
 
@@ -1368,4 +1435,112 @@ unsigned long BlackboxSession::getColor(const char *colorname,
 	     color.red, color.green, color.blue, *r, *g, *b);
   
   return color.pixel;
+}
+
+
+void BlackboxSession::parseSubMenu(FILE *menu_file, SessionMenu *menu) {
+  char *line = new char[121], *label = new char[41], *command = new char[81];
+
+  debug->msg("parsing menu -%s-\n", menu->label());
+  if (! feof(menu_file)) {
+    while (! feof(menu_file)) {
+      memset(line, 0, 121);
+      memset(label, 0, 41);
+      memset(command, 0, 80);
+      fgets(line, 120, menu_file);
+      int len = strlen(line);
+      debug->msg("%s-new line -%s-\n", menu->label(), line);
+
+      int i, ri;
+      for (i = 0; i < len; ++i)
+	if (line[i] == '\"') { ++i; break; }
+      for (ri = len; ri > 0; --ri)
+	if (line[ri] == '\"') break;
+      
+      debug->msg("%s-checking for command: %i %i\n", menu->label(), i, ri);
+      char *l;
+      if (i < ri && ri > 0) {
+	l = new char[ri - i + 1];
+	strncpy(l, line + i, ri - i);
+	*(l + (ri - i)) = '\0';
+	
+	for (i = 0; i < len; ++i)
+	  if (line[i] == '(') { ++i; break; }
+	for (ri = len; ri > 0; --ri)
+	  if (line[ri] == ')') break;
+	
+	char *c;
+	if (i < ri && ri > 0) {
+	  c = new char[ri - i + 1];
+	  strncpy(c, line + i, ri - i);
+	  *(c + (ri - i)) = '\0';
+	} else
+	  c = 0;
+	
+	if (c) {
+	  debug->msg("%s-inserting command -%s %s-\n", menu->label(), l, c);
+	  if (! strncasecmp(c, "Restart", 7)) {
+	    menu->insert(l, B_Restart);
+	    delete [] c;
+	  } else if (! strncasecmp(c, "Exit", 4)) {
+	    menu->insert(l, B_Exit);
+	    delete [] c;
+	  } else if (! strncasecmp(c, "Shutdown", 8)) {
+	    menu->insert(l, B_Shutdown);
+	    delete [] c;
+	  } else
+	    menu->insert(l, B_Execute, c);
+	} else
+	  fprintf(stderr, "error in menu file... label must have command\n"
+		  "  ex:  \"label\" (command)\n");
+      } else {
+	debug->msg("%s-checking for submenu\n", menu->label());
+	for (i = 0; i < len; ++i)
+	  if (line[i] == '[') { ++i; break; }
+	for (ri = len; ri > 0; --ri)
+	  if (line[ri] == ']') break;
+      
+	char *c;
+	if (i < ri && ri > 0) {
+	  c = new char[ri - i + 1];
+	  strncpy(c, line + i, ri - i);
+	  *(c + (ri - i)) = '\0';
+	  
+	  if (! strcasecmp(c, "begin")) {
+	    SessionMenu *newmenu = new SessionMenu(this);
+
+	    for (i = 0; i < len; ++i)
+	      if (line[i] == '(') { ++i; break; }
+	    for (ri = len; ri > 0; --ri)
+	      if (line[ri] == ')') break;
+	
+	    char *l;
+	    if (i < ri && ri > 0) {
+	      l = new char[ri - i + 1];
+	      strncpy(l, line + i, ri - i);
+	      *(l + (ri - i)) = '\0';
+	    } else
+	      l = "(nil)";
+	    
+	    delete [] c;
+	    newmenu->setMenuLabel(l);
+	    parseSubMenu(menu_file, newmenu);
+	    debug->msg("%s-inserting submenu -%s-\n", menu->label(), l);
+	    menu->insert(l, newmenu);	
+	  } else if (! strcasecmp(c, "end")) {
+	    delete [] c;
+	    debug->msg("%s-end of submenu\n", menu->label());
+	    break;
+	  }
+	}
+      }
+    }
+  }
+
+  delete [] command;
+  delete [] line;
+  delete [] label;
+  menu->updateMenu();
+
+  debug->msg("%s-end of parse\n", menu->label());
 }

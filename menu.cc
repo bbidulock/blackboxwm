@@ -104,9 +104,16 @@ BlackboxMenu::BlackboxMenu(BlackboxSession *ctrl)
   menuitems = new llist<BlackboxMenuItem>;
   
   XGCValues gcv;
-  gcv.foreground = session->getColor("white");
+  gcv.foreground = session->menuTextColor().pixel;
   gcv.font = session->titleFont()->fid;
   titleGC = XCreateGC(display, menu.frame, GCForeground|GCFont, &gcv);
+
+  gcv.foreground = session->menuItemTextColor().pixel;
+  gcv.font = session->menuFont()->fid;
+  itemGC = XCreateGC(display, menu.frame, GCForeground|GCFont, &gcv);
+
+  gcv.foreground = session->menuPressedTextColor().pixel;
+  pitemGC = XCreateGC(display, menu.frame, GCForeground|GCFont, &gcv);
 
   itemContext = XUniqueContext();
   //
@@ -147,6 +154,8 @@ BlackboxMenu::~BlackboxMenu(void) {
   delete menuitems;
 
   XFreeGC(display, titleGC);
+  XFreeGC(display, itemGC);
+  XFreeGC(display, pitemGC);
   if (show_title) {
     XDeleteContext(display, menu.title, session->menuContext());
     XDestroyWindow(display, menu.title);
@@ -328,8 +337,8 @@ void BlackboxMenu::updateMenu(void) {
 		      ((show_title) ? menu.title_h : 0) + i,
 		      menu.width + 8, menu.item_h);
     XClearWindow(display, itmp->window);
-    XDrawString(display, itmp->window, titleGC, 4,
-		session->titleFont()->ascent + 2,
+    XDrawString(display, itmp->window, itemGC, 4,
+		session->menuFont()->ascent + 2,
 		((itmp->ulabel) ? *itmp->ulabel : itmp->label),
 		strlen(((itmp->ulabel) ? *itmp->ulabel : itmp->label)));
   }
@@ -388,10 +397,10 @@ void BlackboxMenu::buttonPressEvent(XButtonEvent *be) {
 	      XSetWindowBackgroundPixmap(display, tmp->window,
 					 menu.item_pixmap);
 	      XClearWindow(display, tmp->window);
-	      XDrawString(display, tmp->window, titleGC, 4,
-		    session->titleFont()->ascent + 2,
-		    ((tmp->ulabel) ? *tmp->ulabel : tmp->label),
-		    strlen(((tmp->ulabel) ? *tmp->ulabel : tmp->label)));
+	      XDrawString(display, tmp->window, itemGC, 4,
+			  session->menuFont()->ascent + 2,
+			  ((tmp->ulabel) ? *tmp->ulabel : tmp->label),
+			  strlen(((tmp->ulabel) ? *tmp->ulabel : tmp->label)));
 	    }
 	    
 	    XSetWindowBackgroundPixmap(display, be->window,
@@ -405,8 +414,8 @@ void BlackboxMenu::buttonPressEvent(XButtonEvent *be) {
 	  XClearWindow(display, be->window);
 	}
 
-	XDrawString(display, item->window, titleGC, 4,
-		    session->titleFont()->ascent + 2,
+	XDrawString(display, item->window, pitemGC, 4,
+		    session->menuFont()->ascent + 2,
 		    ((item->ulabel) ? *item->ulabel : item->label),
 		    strlen(((item->ulabel) ? *item->ulabel : item->label)));
 	
@@ -437,8 +446,8 @@ void BlackboxMenu::buttonReleaseEvent(XButtonEvent *re) {
 	    item->sub_menu->hideMenu();
 	    XSetWindowBackgroundPixmap(display, re->window, menu.item_pixmap);
 	    XClearWindow(display, re->window);
-	    XDrawString(display, item->window, titleGC, 4,
-			session->titleFont()->ascent + 2,
+	    XDrawString(display, item->window, itemGC, 4,
+			session->menuFont()->ascent + 2,
 			((item->ulabel) ? *item->ulabel : item->label),
 			strlen(((item->ulabel) ? *item->ulabel :
 				item->label)));
@@ -449,8 +458,8 @@ void BlackboxMenu::buttonReleaseEvent(XButtonEvent *re) {
           if (which_sub != i) {
 	    XSetWindowBackgroundPixmap(display, re->window, menu.item_pixmap);
 	    XClearWindow(display, re->window);
-	    XDrawString(display, item->window, titleGC, 4,
-		        session->titleFont()->ascent + 2,
+	    XDrawString(display, item->window, itemGC, 4,
+		        session->menuFont()->ascent + 2,
 		        ((item->ulabel) ? *item->ulabel : item->label),
 		        strlen(((item->ulabel) ? *item->ulabel :
 				item->label)));
@@ -503,8 +512,8 @@ void BlackboxMenu::exposeEvent(XExposeEvent *ee) {
     for (i = 0; i < menuitems->count(); ++i) {
       BlackboxMenuItem *item = menuitems->at(i);
       if (item->window == ee->window) {
-	XDrawString(display, item->window, titleGC, 4,
-		    session->titleFont()->ascent + 2,
+	XDrawString(display, item->window, itemGC, 4,
+		    session->menuFont()->ascent + 2,
 		    ((item->ulabel) ? *item->ulabel : item->label),
 		    strlen(((item->ulabel) ? *item->ulabel : item->label)));
 
@@ -580,7 +589,7 @@ void BlackboxMenu::drawSubMenu(int index) {
     item->sub_menu->moveMenu(menu.x + menu.width + 1,
 			     menu.y -
 			     ((show_title) ? menu.title_h : 0) +
-			     ((index * menu.item_h) -
+			     ((index * menu.item_h) +
 			      ((item->sub_menu->show_title) ?
 			       item->sub_menu->menu.title_h : 0)));
     

@@ -62,7 +62,7 @@ public:
 
   int insert(char *, void (*)());
   int insert(char *, int, char * = 0);
-  int insert(char *, BlackboxMenu *);
+  int insert(char *, SessionMenu *);
 };
 
 
@@ -86,7 +86,7 @@ private:
   Atom _XA_WM_COLORMAP_WINDOWS, _XA_WM_PROTOCOLS, _XA_WM_STATE,
     _XA_WM_DELETE_WINDOW, _XA_WM_TAKE_FOCUS;
 
-  Bool shutdown, shape_extensions;
+  Bool shutdown;
   Display *display;
   GC opGC;
   Visual *v;
@@ -122,13 +122,16 @@ private:
 	button_to,
 	icon,
 	ftext,
-	utext;
+	utext,
+	mtext,
+	mitext,
+	ptext,
+	itext;
     } color;
     
     struct font {
       XFontStruct *title,
 	*menu,
-	*imenu,
 	*icon;
     } font;
     
@@ -145,6 +148,11 @@ private:
       orientation;
   } resource;
 
+  struct shape {
+    Bool extensions;
+    int event_basep, error_basep;
+  } shape;
+
   int depth, screen;
   uint xres, yres;
 
@@ -157,6 +165,7 @@ protected:
   void Dissociate(void);
   void InitScreen(void);
   void InitMenu(void);
+  void parseSubMenu(FILE *, SessionMenu *);
   void InitColor(void);
   void ProcessEvent(XEvent *);
 
@@ -171,7 +180,7 @@ public:
   Visual *visual(void) { return v; }
   unsigned int XResolution(void) { return xres; }
   unsigned int YResolution(void) { return yres; }
-  Bool shapeExtensions(void) { return shape_extensions; }
+  Bool shapeExtensions(void) { return shape.extensions; }
 
   WorkspaceManager *WSManager(void) { return ws_manager; }
   void addIcon(BlackboxIcon *);
@@ -199,6 +208,7 @@ public:
 
   XFontStruct *titleFont(void) { return resource.font.title; }
   XFontStruct *menuFont(void) { return resource.font.menu; }
+  XFontStruct *iconFont(void) { return resource.font.icon; }
 
   unsigned long getColor(const char *);
   unsigned long getColor(const char *, unsigned char *, unsigned char *,
@@ -231,6 +241,11 @@ public:
     { return resource.color.imenu_to; }
   const BColor &focusTextColor(void) const { return resource.color.ftext; }
   const BColor &unfocusTextColor(void) const { return resource.color.utext; }
+  const BColor &menuTextColor(void) const { return resource.color.mtext; }
+  const BColor &menuItemTextColor(void) const { return resource.color.mitext; }
+  const BColor &menuPressedTextColor(void)
+    const { return resource.color.ptext; }
+  const BColor &iconTextColor(void) const { return resource.color.itext; }
   XColor *Colors8bpp(void) { return colors_8bpp; }
 
   const int Orientation(void) const { return resource.orientation; }

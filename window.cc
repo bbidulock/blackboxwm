@@ -532,6 +532,9 @@ void BlackboxWindow::associateClientWindow(void) {
     XReparentWindow(display, client.window, frame.window, 0,
 		    frame.title_h + 1);
 
+  if (session->shapeExtensions())
+    XShapeSelectInput(display, client.window, ShapeNotifyMask);
+
   XSaveContext(display, client.window, session->winContext(), (XPointer) this);
   createIconifyButton();
   createMaximizeButton();
@@ -1025,14 +1028,16 @@ Bool BlackboxWindow::setInputFocus(void) {
     XClearWindow(display, frame.title);
 
     if (do_handle) {
-    XSetWindowBackgroundPixmap(display, frame.handle, frame.fhandle);
-    XClearWindow(display, frame.handle);
+      XSetWindowBackgroundPixmap(display, frame.handle, frame.fhandle);
+      XClearWindow(display, frame.handle);
     }
 
     debug->msg("setting focus to window %lx - visible(Bool) %d\n",
 	       client.window, visible);
     XSetInputFocus(display, client.window, RevertToParent,
 		   CurrentTime);
+
+    drawTitleWin(0,0,0,0);
     return True;
     break;
   }
@@ -1473,9 +1478,9 @@ void BlackboxWindow::propertyNotifyEvent(Atom atom) {
     debug->msg ("wm name\n");
     if (client.title)
       if (strcmp(client.title, "Unnamed"))
-        XFree(client.title);
+	XFree(client.title);
     if (! XFetchName(display, client.window, &client.title))
-      client.title = "Unnamed";
+      client.title = 0;
     XClearWindow(display, frame.title);
     debug->msg("new window title: (%s)\n", client.title);
     drawTitleWin(0, 0, frame.title_w, frame.title_h);

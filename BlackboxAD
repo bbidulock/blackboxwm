@@ -1,26 +1,23 @@
 ! Blackbox window manager resource defaults
 ! (c) 1997 Brad Hughes
 
-blackbox*frameColor:              darkgrey
-blackbox*frameTexture:            Solid
+blackbox*frameColor:              rgb:24/40/40
+blackbox*frameTexture:            solid
 blackbox*focusColor:              darkslategrey
-blackbox*unfocusColor:             grey
+blackbox*unfocusColor:            black
 
-blackbox*buttonTexture:           Solid
-blackbox*buttonColor:             darkgrey
+blackbox*buttonTexture:           solid
+blackbox*buttonColor:             black
 
 blackbox*iconColor:               black
-blackbox*menuTexture:             Solid
+blackbox*menuTexture:             solid
 blackbox*menuColor:               darkgrey
-blackbox*menuItemTexture:         Solid
-blackbox*menuItemPressedTexture:  Solid
-blackbox*menuItemColor:           darkgrey
+blackbox*menuItemTexture:         solid
+blackbox*menuItemPressedTexture:  solid
+blackbox*menuItemColor:           black
+blackbox*menuTextColor:           black
+blackbox*menuItemTextColor:       grey
+blackbox*menuPressedTextColor:    white
 ! this is also the pressed color
 blackbox*menuItemToColor:         darkslategrey
 blackbox*workspaces:	          3
-
-! blackbox*frameToColor:          rgb:10/0/0
-! blackbox*focusToColor:          rgb:0/0/0
-! blackbox*unfocusToColor:        rgb:0/0/0
-! blackbox*menuToColor:           rgb:0/0/0
-! blackbox*buttonToColor:         rgb:c0/c0/c0

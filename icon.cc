@@ -51,11 +51,11 @@ BlackboxIcon::BlackboxIcon(BlackboxSession *ctrl, Window c) {
     icon.name = 0;
 
   int namewidth = (icon.name != NULL) ? 
-    XTextWidth(session->titleFont(), icon.name, strlen(icon.name)) :
-    XTextWidth(session->titleFont(), "Unnamed", strlen("Unnamed"));
+    XTextWidth(session->iconFont(), icon.name, strlen(icon.name)) :
+    XTextWidth(session->iconFont(), "Unnamed", strlen("Unnamed"));
   icon.width = (namewidth + 4 < 90) ? 90 : namewidth + 4;
-  icon.height = session->titleFont()->ascent +
-    session->titleFont()->descent + 4;
+  icon.height = session->iconFont()->ascent +
+    session->iconFont()->descent + 4;
 
   unsigned long attrib_mask = CWBackPixmap|CWBackPixel|CWBorderPixel|
     CWCursor|CWEventMask; 
@@ -77,8 +77,8 @@ BlackboxIcon::BlackboxIcon(BlackboxSession *ctrl, Window c) {
   debug->msg("creating icon window %lx %lx\n", icon.window, icon.client);
 
   XGCValues gcv;
-  gcv.foreground = session->getColor("white");
-  gcv.font = session->titleFont()->fid;
+  gcv.foreground = session->iconTextColor().pixel;
+  gcv.font = session->iconFont()->fid;
   iconGC = XCreateGC(display, icon.window, GCForeground|GCFont, &gcv);
   icon.subwindow = None;
 
@@ -157,7 +157,7 @@ void BlackboxIcon::buttonReleaseEvent(XButtonEvent *be) {
     BlackboxWindow *win = session->getWindow(icon.client);
     XUnmapWindow(display, icon.window);
     XDrawString(display, session->Root(), session->GCOperations(), icon.x + 2, 
-                icon.y + 2 + session->titleFont()->ascent,
+                icon.y + 2 + session->menuFont()->ascent,
                 ((icon.name != NULL) ? icon.name : "Unnamed"),
                 ((icon.name != NULL) ? strlen(icon.name) : strlen("Unnamed")));
     XClearWindow(display, session->WSManager()->iconWindowID());
@@ -172,7 +172,7 @@ void BlackboxIcon::enterNotifyEvent(XCrossingEvent *) {
   focus = True;
   XClearWindow(display, icon.subwindow);
   XDrawString(display, session->Root(), session->GCOperations(), icon.x + 2,
-              icon.y + 2 + session->titleFont()->ascent,
+              icon.y + 2 + session->menuFont()->ascent,
 	      ((icon.name != NULL) ? icon.name : "Unnamed"),
 	      ((icon.name != NULL) ? strlen(icon.name) : strlen("Unnamed")));
 }
@@ -181,7 +181,7 @@ void BlackboxIcon::enterNotifyEvent(XCrossingEvent *) {
 void BlackboxIcon::leaveNotifyEvent(XCrossingEvent *) {
   focus = False;
   XDrawString(display, session->Root(), session->GCOperations(), icon.x + 2, 
-              icon.y + 2 + session->titleFont()->ascent,
+              icon.y + 2 + session->menuFont()->ascent,
               ((icon.name != NULL) ? icon.name : "Unnamed"),
               ((icon.name != NULL) ? strlen(icon.name) : strlen("Unnamed")));
   XClearWindow(display, icon.subwindow);
@@ -192,25 +192,25 @@ void BlackboxIcon::leaveNotifyEvent(XCrossingEvent *) {
 void BlackboxIcon::exposeEvent(XExposeEvent *) {
   if (! focus) {
     int w = ((icon.name != NULL) ?
-      XTextWidth(session->titleFont(), icon.name, strlen(icon.name)) :
-      XTextWidth(session->titleFont(), "Unnamed", strlen("Unnamed"))) + 4;
+      XTextWidth(session->menuFont(), icon.name, strlen(icon.name)) :
+      XTextWidth(session->menuFont(), "Unnamed", strlen("Unnamed"))) + 4;
 
     if (w > 90) {
       int il;
       for (il = ((icon.name != NULL) ? strlen(icon.name) : strlen("Unnamed"));
        	   il > 0; --il) {
         if ((w = ((icon.name != NULL) ?
-                  XTextWidth(session->titleFont(), icon.name, il) :
-                  XTextWidth(session->titleFont(), "Unnamed", il)) + 4) < 90)
+                  XTextWidth(session->menuFont(), icon.name, il) :
+                  XTextWidth(session->menuFont(), "Unnamed", il)) + 4) < 90)
           break;
       }
 
       XDrawString(display, icon.subwindow, iconGC, 2, 2 +
-                  session->titleFont()->ascent,
+                  session->menuFont()->ascent,
                   ((icon.name != NULL) ? icon.name : "Unnamed"), il);
     } else {
       XDrawString(display, icon.subwindow, iconGC, 2, 2 +
-		  session->titleFont()->ascent,
+		  session->menuFont()->ascent,
 		  ((icon.name != NULL) ? icon.name : "Unnamed"),
 		  ((icon.name != NULL) ? strlen(icon.name) :
                    strlen("Unnamed")));

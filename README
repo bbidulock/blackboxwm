@@ -155,6 +155,10 @@ blackbox.menu.menuItemColor		Blackbox.Menu.MenuItemColor
 blackbox.menu.menuItemToColor		Blackbox.Menu.MenuItemToColor
 blackbox.session.focusTextColor		Blackbox.Session.FocusTextColor
 blackbox.session.unfocusTextColor	Blackbox.Session.UnfocusTextColor
+blackbox.session.menuTextColor		Blackbox.Session.MenuTextColor
+blackbox.session.menuItemTextColor	Blackbox.Session.MenuItemTextColor
+blackbox.session.menuPressedTextColor	Blackbox.Session.MenuPressedTextColor
+blackbox.session.iconTextColor		Blackbox.Session.IconTextColor;
 
 Accepted Values:
 	color specification of the form:
@@ -199,6 +203,20 @@ Accepted Values:
 	to allow for easier and more natural access for left handed and/or
 	right handed users.  (Note:  resizing from left handed orientation is
 	a bit awkward.  fix is forthcoming)
+
+
+Name:					Class:
+--------				---------
+blackbox.session.titleFont		Blackbox.Session.TitleFont
+blackbox.session.menuFont		Blackbox.Session.MenuFont
+blackbox.session.iconFont		Blackbox.Session.IconFont
+
+Accepted values:
+	any X font string.  if no resource is specified or if the font
+	specified does not exist, a default font is loaded.
+	the title font is the font used on window title bars, menu titles,
+	and the workspace button on the toolbar.  the menu font is used on
+	menu items, and the icon font is for icon labels
 
 
 As an idea of how to configure blackbox, here is a snippet of my .Xdefaults 
