@@ -223,9 +223,9 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   // get size, aspect, minimum/maximum size, ewmh and other hints set by the
   // client
   getNetwmHints();
-  getWMProtocols();
   client.wmhints = readWMHints();
   client.wmnormal = readWMNormalHints();
+  client.wmprotocols = readWMProtocols();
   getTransientInfo();
   if (client.window_type == WindowTypeNormal && isTransient())
     client.window_type = WindowTypeDialog;
@@ -1059,13 +1059,14 @@ void BlackboxWindow::getNetwmHints(void) {
 
 
 /*
- * Retrieve which WM Protocols are supported by the client window.  If
- * the WM_DELETE_WINDOW protocol is supported, add the close button to
- * the window's decorations and allow the close behavior.  If the
- * WM_TAKE_FOCUS protocol is supported, save a value that indicates
- * this.
+ * Retrieve which Window Manager Protocols are supported by the client
+ * window.
  */
-void BlackboxWindow::getWMProtocols(void) {
+WMProtocols BlackboxWindow::readWMProtocols(void) {
+  WMProtocols protocols;
+  protocols.wm_delete_window = false;
+  protocols.wm_take_focus    = false;
+
   Atom *proto;
   int num_return = 0;
 
@@ -1073,14 +1074,15 @@ void BlackboxWindow::getWMProtocols(void) {
                       &proto, &num_return)) {
     for (int i = 0; i < num_return; ++i) {
       if (proto[i] == blackbox->getWMDeleteAtom()) {
-        client.decorations |= WindowDecorationClose;
-        client.functions |= WindowFunctionClose;
+        protocols.wm_delete_window = true;
       } else if (proto[i] == blackbox->getWMTakeFocusAtom()) {
-        client.state.send_focus_message = True;
+        protocols.wm_take_focus = true;
       }
     }
     XFree(proto);
   }
+
+  return protocols;
 }
 
 
@@ -1516,7 +1518,7 @@ bool BlackboxWindow::setInputFocus(void) {
                    RevertToPointerRoot, CurrentTime);
   }
 
-  if (client.state.send_focus_message) {
+  if (client.wmprotocols.wm_take_focus) {
     XEvent ce;
     ce.xclient.type = ClientMessage;
     ce.xclient.message_type = blackbox->getWMProtocolsAtom();
@@ -2625,13 +2627,16 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
 
   default:
     if (event->atom == blackbox->getWMProtocolsAtom()) {
-      getWMProtocols();
+      client.wmprotocols = readWMProtocols();
 
-      if (client.decorations & WindowDecorationClose && !frame.close_button) {
-        createCloseButton();
-        if (client.decorations & WindowDecorationTitlebar) {
+      if (client.wmprotocols.wm_delete_window
+          && hasWindowDecoration(WindowDecorationTitlebar)) {
+        client.decorations |= WindowDecorationClose;
+        client.functions   |= WindowFunctionClose;
+
+        if (!frame.close_button) {
+          createCloseButton();
           positionButtons(True);
-          XMapSubwindows(blackbox->XDisplay(), frame.title);
         }
       }
     } else if (event->atom == blackbox->getMotifWMHintsAtom()) {

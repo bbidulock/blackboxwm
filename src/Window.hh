@@ -91,6 +91,10 @@ struct WMNormalHints {
   unsigned int base_width, base_height;
   unsigned int win_gravity;
 };
+struct WMProtocols {
+  bool wm_delete_window;
+  bool wm_take_focus;
+};
 
 
 class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
@@ -114,7 +118,6 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
       moving,                // is moving?
       resizing,              // is resizing?
       focused,               // has focus?
-      send_focus_message,    // should we send focus messages to our client?
       shaped;                // does the frame use the shape extension?
     unsigned int maximized;  // maximize is special, the number corresponds
                              // with a mouse button
@@ -125,7 +128,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
     inline WMState(void)
       : visible(false), modal(false), shaded(false), iconic(false),
         fullscreen(false), moving(false), resizing(false), focused(false),
-        send_focus_message(false), shaped(false), maximized(0), skip(SKIP_NONE)
+        shaped(false), maximized(0), skip(SKIP_NONE)
     { }
   };
 
@@ -152,6 +155,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
 
     WMHints wmhints;
     WMNormalHints wmnormal;
+    WMProtocols wmprotocols;
   } client;
 
   /*
@@ -218,9 +222,9 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
 
   WMHints readWMHints(void);
   WMNormalHints readWMNormalHints(void);
+  WMProtocols readWMProtocols(void);
 
   void getNetwmHints(void);
-  void getWMProtocols(void);
   void getMWMHints(void);
   void getTransientInfo(void);
 
@@ -323,6 +327,8 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   { return client.wmhints; }
   const WMNormalHints &wmNormalHints(void) const
   { return client.wmnormal; }
+  const WMProtocols &wmProtocols(void) const
+  { return client.wmprotocols; }
 
   unsigned long currentState(void) const
   { return client.current_state; }
