@@ -1507,12 +1507,14 @@ void BScreen::updateClientListStackingHint(void) const {
 
   StackingList::const_iterator it = stackingList.begin(),
                               end = stackingList.end();
-  for (; it != end; ++it)
-    if (*it) stack.push_back((*it)->windowID());
+  for (; it != end; ++it) {
+    const BlackboxWindow * const win = dynamic_cast<BlackboxWindow *>(*it);
+    if (win) stack.push_back(win->getClientWindow());
+  }
 
   if (stack.empty()) {
     blackbox->netwm().removeProperty(screen_info.rootWindow(),
-                                      blackbox->netwm().clientListStacking());
+                                     blackbox->netwm().clientListStacking());
     return;
   }
 
