@@ -60,7 +60,8 @@ extern "C" {
  * Initializes the class with default values/the window's set initial values.
  */
 BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
-  fprintf(stderr, "BlackboxWindow size: %d bytes\n", sizeof(BlackboxWindow));
+  // fprintf(stderr, "BlackboxWindow size: %d bytes\n",
+  // sizeof(BlackboxWindow));
 
 #ifdef    DEBUG
   fprintf(stderr, "BlackboxWindow::BlackboxWindow(): creating 0x%lx\n", w);
