@@ -1104,18 +1104,17 @@ static void lowerTransients(StackingList::iterator it,
 */
 static
 StackingList::iterator lowerWindow(StackingList &stackingList,
-                                   StackEntity *entity) {
-  BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(entity);
-  BWindowGroup *group = 0;
-
+                                   StackEntity *entity,
+                                   bool ignore_group = false) {
   StackingList::iterator it, end = stackingList.end();
+  BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(entity);
   if (win) {
     it = end;
-    group = win->findWindowGroup();
-    if (group) {
+    BWindowGroup *group = win->findWindowGroup();
+    if (!ignore_group && group) {
       // lower all windows in the group before lowering 'win'
       ::lowerGroup(stackingList, group);
-      it = std::find(it, end, (StackEntity *) 0);
+      it = std::find(stackingList.begin(), end, (StackEntity *) 0);
       assert(it != end);
     }
 
@@ -1123,7 +1122,7 @@ StackingList::iterator lowerWindow(StackingList &stackingList,
     BlackboxWindow *tmp = win->findNonTransientParent();
     if (tmp && tmp != win) {
       // lower non-transient parent
-      (void) ::lowerWindow(stackingList, tmp);
+      (void) ::lowerWindow(stackingList, tmp, true);
       if (it == end)
         it = layer;
     } else {
