@@ -97,23 +97,48 @@ public:
 class BlackboxWindow : public bt::TimeoutHandler, public bt::EventHandler,
                        public bt::NoCopy {
 public:
-  enum Function { Func_Resize   = (1l << 0),
-                  Func_Move     = (1l << 1),
-                  Func_Iconify  = (1l << 2),
-                  Func_Maximize = (1l << 3),
-                  Func_Close    = (1l << 4) };
-  typedef unsigned char FunctionFlags;
+  enum WMFunction {
+    Func_Resize   = (1l << 0),
+    Func_Move     = (1l << 1),
+    Func_Shade    = (1l << 2),
+    Func_Iconify  = (1l << 3),
+    Func_Maximize = (1l << 4),
+    Func_Close    = (1l << 5),
+    Func_All      = (Func_Resize |
+                     Func_Move |
+                     Func_Shade |
+                     Func_Iconify |
+                     Func_Maximize |
+                     Func_Close)
+  };
+  typedef unsigned char WMFunctionFlags;
 
-  enum Decoration { Decor_Titlebar = (1l << 0),
-                    Decor_Handle   = (1l << 1),
-                    Decor_Border   = (1l << 2),
-                    Decor_Iconify  = (1l << 3),
-                    Decor_Maximize = (1l << 4),
-                    Decor_Close    = (1l << 5) };
-  typedef unsigned char DecorationFlags;
+  enum WMDecoration {
+    Decor_Titlebar = (1l << 0),
+    Decor_Handle   = (1l << 1),
+    Decor_Grip     = (1l << 2),
+    Decor_Border   = (1l << 3),
+    Decor_Iconify  = (1l << 4),
+    Decor_Maximize = (1l << 5),
+    Decor_Close    = (1l << 6),
+    Decor_All      = (Decor_Titlebar |
+                      Decor_Handle |
+                      Decor_Grip |
+                      Decor_Border |
+                      Decor_Iconify |
+                      Decor_Maximize |
+                      Decor_Close)
+  };
+  typedef unsigned char WMDecorationFlags;
 
-  enum WMLayer { LAYER_NORMAL, LAYER_FULLSCREEN, LAYER_ABOVE, LAYER_BELOW,
-                 LAYER_DESKTOP };
+  enum WMLayer {
+    LAYER_NORMAL,
+    LAYER_FULLSCREEN,
+    LAYER_ABOVE,
+    LAYER_BELOW,
+    LAYER_DESKTOP
+  };
+
 private:
   Blackbox *blackbox;
   BScreen *screen;
@@ -159,7 +184,7 @@ private:
     int old_bw;                       // client's borderwidth
 
     unsigned int
-    min_width, min_height,        // can not be resized smaller
+      min_width, min_height,        // can not be resized smaller
       max_width, max_height,        // can not be resized larger
       width_inc, height_inc,        // increment step
       min_aspect_x, min_aspect_y,   // minimum aspect ratio
@@ -174,13 +199,8 @@ private:
     FocusMode focus_mode;
     WMState state;
     Atom window_type;
-    FunctionFlags functions;
-    /*
-     * what decorations do we have?
-     * this is based on the type of the client window as well as user input
-     * the menu is not really decor, but it goes hand in hand with the decor
-     */
-    DecorationFlags decorations;
+    WMFunctionFlags functions;
+    WMDecorationFlags decorations;
   } client;
 
   /*
@@ -238,7 +258,6 @@ private:
       label_w, mwm_border_w, border_w;
   } frame;
 
-  bool getState(void);
   Window createToplevelWindow();
   Window createChildWindow(Window parent, unsigned long event_mask,
                            Cursor = None);
@@ -251,22 +270,29 @@ private:
   void getWMHints(void);
   void getMWMHints(void);
   void getTransientInfo(void);
+
   void setNetWMAttributes(void);
+
   void associateClientWindow(void);
+
   void decorate(void);
-  void decorateLabel(void);
+
   void positionButtons(bool redecorate_label = False);
   void positionWindows(void);
-  void createHandle(void);
-  void destroyHandle(void);
+
   void createTitlebar(void);
   void destroyTitlebar(void);
-  void createCloseButton(void);
-  void destroyCloseButton(void);
+  void createHandle(void);
+  void destroyHandle(void);
+  void createGrips(void);
+  void destroyGrips(void);
   void createIconifyButton(void);
   void destroyIconifyButton(void);
   void createMaximizeButton(void);
   void destroyMaximizeButton(void);
+  void createCloseButton(void);
+  void destroyCloseButton(void);
+
   void redrawWindowFrame(void) const;
   void redrawTitle(void) const;
   void redrawLabel(void) const;
@@ -276,13 +302,18 @@ private:
   void redrawMaximizeButton(bool pressed) const;
   void redrawHandle(void) const;
   void redrawGrips(void) const;
+
   void applyGravity(bt::Rect &r);
   void restoreGravity(bt::Rect &r);
+
+  bool getState(void);
   void setState(unsigned long new_state, bool closing = False);
+
   void upsize(void);
+
   void showGeometry(const bt::Rect &r) const;
 
-  enum Corner { TopLeft, TopRight };
+  enum Corner { TopLeft, TopRight, BottomLeft, BottomRight };
   void constrain(Corner anchor);
 
 public:
@@ -298,16 +329,11 @@ public:
   inline bool isShaded(void) const { return client.state.shaded; }
   inline bool isMaximized(void) const { return client.state.maximized; }
   inline bool isModal(void) const { return client.state.modal; }
-  inline bool isIconifiable(void) const
-  { return client.functions & Func_Iconify; }
-  inline bool isMaximizable(void) const
-  { return client.functions & Func_Maximize; }
-  inline bool isResizable(void) const
-  { return client.functions & Func_Resize; }
-  inline bool isClosable(void) const { return client.functions & Func_Close; }
 
-  inline bool hasTitlebar(void) const
-  { return client.decorations & Decor_Titlebar; }
+  inline bool hasFunction(WMFunction func) const
+  { return client.functions & func; }
+  inline bool hasDecoration(WMDecoration decor) const
+  { return client.decorations & decor; }
 
   inline const BlackboxWindowList &getTransients(void) const
   { return client.transientList; }

@@ -72,14 +72,18 @@ Windowmenu::Windowmenu(bt::Application &app, unsigned int screen,
 
 
 void Windowmenu::refresh(void) {
-  setItemEnabled(BScreen::WindowShade, _window->hasTitlebar());
+  setItemEnabled(BScreen::WindowShade,
+                 _window->hasFunction(BlackboxWindow::Func_Shade));
   setItemChecked(BScreen::WindowShade, _window->isShaded());
 
-  setItemEnabled(BScreen::WindowMaximize, _window->isMaximizable());
+  setItemEnabled(BScreen::WindowMaximize,
+                 _window->hasFunction(BlackboxWindow::Func_Maximize));
   setItemChecked(BScreen::WindowMaximize, _window->isMaximized());
 
-  setItemEnabled(BScreen::WindowIconify, _window->isIconifiable());
-  setItemEnabled(BScreen::WindowClose, _window->isClosable());
+  setItemEnabled(BScreen::WindowIconify,
+                 _window->hasFunction(BlackboxWindow::Func_Iconify));
+  setItemEnabled(BScreen::WindowClose,
+                 _window->hasFunction(BlackboxWindow::Func_Close));
 }
 
 
