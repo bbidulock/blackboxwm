@@ -52,7 +52,7 @@ BColor::BColor(const std::string &_name,
   parseColorName();
 }
 
-BColor::~BColor()
+BColor::~BColor(void)
 {
   deallocate();
 }
@@ -74,7 +74,7 @@ void BColor::setDisplay(const BaseDisplay * const _display, unsigned int _screen
   }
 }
 
-unsigned long BColor::pixel() const
+unsigned long BColor::pixel(void) const
 {
   if (! allocated) {
     // mutable
@@ -85,7 +85,7 @@ unsigned long BColor::pixel() const
   return p;
 }
 
-void BColor::parseColorName()
+void BColor::parseColorName(void)
 {
   assert(dpy != 0);
 
@@ -115,7 +115,7 @@ void BColor::parseColorName()
   setRGB(xcol.red >> 8, xcol.green >> 8, xcol.blue >> 8);
 }
 
-void BColor::allocate()
+void BColor::allocate(void)
 {
   assert(dpy != 0);
   if (scrn == ~(0u)) scrn = DefaultScreen(display()->getXDisplay());
@@ -125,8 +125,9 @@ void BColor::allocate()
     if (colorname.empty()) {
       fprintf(stderr, "BColor: cannot allocate invalid color (using black)\n");
       setRGB(0, 0, 0);
-    } else
+    } else {
       parseColorName();
+    }
   }
 
   // see if we have allocated this color before
@@ -156,14 +157,13 @@ void BColor::allocate()
   p = xcol.pixel;
   allocated = true;
 
-  std::pair<RGB,PixelRef> pr(rgb, PixelRef(p));
-  colorcache.insert(pr);
+  colorcache.insert(std::make_pair(rgb, PixelRef(p)));
 
   if (cleancache)
     doCacheCleanup();
 }
 
-void BColor::deallocate()
+void BColor::deallocate(void)
 {
   if (! allocated)
     return;
@@ -171,11 +171,12 @@ void BColor::deallocate()
   assert(dpy != 0);
   RGB rgb(display(), scrn, r, g, b);
   ColorCache::iterator it = colorcache.find(rgb);
-  if (it != colorcache.end())
+  if (it != colorcache.end()) {
     if ((*it).second.count < 1)
       (*it).second.count = 0;
     else
       (*it).second.count--;
+  }
 
   if (cleancache)
     doCacheCleanup();
@@ -194,12 +195,12 @@ BColor &BColor::operator=(const BColor &c)
   return *this;
 }
 
-void BColor::cleanupColorCache()
+void BColor::cleanupColorCache(void)
 {
   cleancache = true;
 }
 
-void BColor::doCacheCleanup()
+void BColor::doCacheCleanup(void)
 {
   // ### TODO - support multiple displays!
   ColorCache::iterator it = colorcache.begin();
@@ -217,18 +218,19 @@ void BColor::doCacheCleanup()
     it = colorcache.begin();
     while (it != colorcache.end()) {
       if ((*it).second.count != 0 || (*it).first.screen != i) {
-        it++;
+        ++it;
         continue;
       }
 
       pixels[ count++ ] = (*it).second.p;
       ColorCache::iterator it2 = it;
-      it++;
+      ++it;
       colorcache.erase(it2);
     }
 
     if (count > 0)
-      XFreeColors(display->getXDisplay(), display->getScreenInfo(i)->getColormap(),
+      XFreeColors(display->getXDisplay(),
+                  display->getScreenInfo(i)->getColormap(),
                   pixels, count, 0);
   }
 

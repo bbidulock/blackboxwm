@@ -68,8 +68,8 @@ private:
   BGCCacheItem(void) : ctx(0), count(0), hits(0), fault(false) { }
 
   BGCCacheContext *ctx;
-  int count;
-  int hits;
+  unsigned int count;
+  unsigned int hits;
   bool fault;
 
   BGCCacheItem(const BGCCacheItem &_nocopy);
@@ -87,7 +87,7 @@ public:
   void purge(void);
 
   BGCCacheItem *find(const BColor &_color, const XFontStruct * const _font = 0,
-             int _function = GXcopy, int _subwindow = ClipByChildren);
+                     int _function = GXcopy, int _subwindow = ClipByChildren);
   void release(BGCCacheItem *_item);
 
 private:

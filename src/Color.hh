@@ -39,9 +39,9 @@ public:
          const BaseDisplay * const _display, unsigned int _screen = ~(0u));
   BColor(const std::string &_name,
          const BaseDisplay * const _display, unsigned int _screen = ~(0u));
-  ~BColor();
+  ~BColor(void);
 
-  inline const std::string &name() const { return colorname; }
+  inline const std::string &name(void) const { return colorname; }
 
   inline int   red(void) const { return r; }
   inline int green(void) const { return g; }
@@ -54,13 +54,14 @@ public:
     b = _b;
   }
 
-  inline const BaseDisplay *display() const { return dpy; }
-  inline unsigned int screen() const { return scrn; }
-  void setDisplay(const BaseDisplay * const _display, unsigned int _screen = ~(0u));
+  inline const BaseDisplay *display(void) const { return dpy; }
+  inline unsigned int screen(void) const { return scrn; }
+  void setDisplay(const BaseDisplay * const _display,
+                  unsigned int _screen = ~(0u));
 
   inline Bool isAllocated(void) const { return allocated; }
 
-  inline Bool isValid() const { return r != -1 && g != -1 && b != -1; }
+  inline Bool isValid(void) const { return r != -1 && g != -1 && b != -1; }
 
   unsigned long pixel(void) const;
 
@@ -71,12 +72,12 @@ public:
   inline Bool operator!=(const BColor &c) const
   { return (! operator==(c)); }
 
-  static void cleanupColorCache();
+  static void cleanupColorCache(void);
 
 private:
-  void parseColorName();
-  void allocate();
-  void deallocate();
+  void parseColorName(void);
+  void allocate(void);
+  void deallocate(void);
 
   Bool allocated;
   int r, g, b;
@@ -91,7 +92,7 @@ private:
     const unsigned int screen;
     const int r, g, b;
 
-    RGB() : display(0), screen(~(0u)),  r(-1), g(-1), b(-1) { }
+    RGB() : display(0), screen(~(0u)), r(-1), g(-1), b(-1) { }
     RGB(const BaseDisplay * const a, const unsigned int b,
         const int x, const int y, const int z)
       : display(a), screen(b), r(x), g(y), b(z)
@@ -117,7 +118,7 @@ private:
   };
   struct PixelRef {
     const unsigned long p;
-    int count;
+    unsigned int count;
     inline PixelRef() : p(0), count(0) { }
     inline PixelRef(const unsigned long x) : p(x), count(1) { }
   };

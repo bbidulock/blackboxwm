@@ -90,12 +90,9 @@ void BTexture::setColor(const BColor &cc)
 
 void BTexture::setDescription(const string &d)
 {
-  string tmp(d.length(), '\0');
-  unsigned int i = 0;
-  while (i < d.length()) {
-    tmp[i] = tolower(d[i]);
-    i++;
-  }
+  string tmp;
+
+  std::transform(d.begin(), d.end(), std::back_inserter(tmp), tolower);
   descr = tmp;
 
   if (descr.find("parentrelative") != string::npos) {
@@ -125,8 +122,9 @@ void BTexture::setDescription(const string &d)
         addTexture(BTexture::Vertical);
       else
         addTexture(BTexture::Diagonal);
-    } else
+    } else {
       addTexture(BTexture::Solid);
+    }
 
     if (descr.find("raised") != string::npos)
       addTexture(BTexture::Raised);
@@ -137,11 +135,12 @@ void BTexture::setDescription(const string &d)
     else
       addTexture(BTexture::Raised);
 
-    if (! (texture() & BTexture::Flat))
+    if (! (texture() & BTexture::Flat)) {
       if (descr.find("bevel2") != string::npos)
         addTexture(BTexture::Bevel2);
       else
         addTexture(BTexture::Bevel1);
+    }
 
     if (descr.find("interlaced") != string::npos)
       addTexture(BTexture::Interlaced);

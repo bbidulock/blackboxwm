@@ -63,7 +63,7 @@ public:
   BTexture(const BaseDisplay * const _display = 0, unsigned int _screen = ~(0u));
   BTexture(const string &_description,
            const BaseDisplay * const _display = 0, unsigned int _screen = ~(0u));
-  ~BTexture();
+  ~BTexture(void);
 
   void setColor(const BColor &_color);
   void setColorTo(const BColor &_colorTo) { ct = _colorTo; }
@@ -83,12 +83,12 @@ public:
   inline Bool operator!=(const BTexture &tt)
     { return (! operator==(tt)); }
 
-  const BaseDisplay *display() const { return dpy; }
-  unsigned int screen() const { return scrn; }
+  const BaseDisplay *display(void) const { return dpy; }
+  unsigned int screen(void) const { return scrn; }
   void setDisplay(const BaseDisplay * const _display,
                   const unsigned int _screen);
 
-  const std::string &description() const { return descr; }
+  const std::string &description(void) const { return descr; }
   void setDescription(const std::string &);
 
   // Pixmap render(const Size &, Pixmap old = 0);

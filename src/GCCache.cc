@@ -28,6 +28,7 @@
 #include "GCCache.hh"
 #include "BaseDisplay.hh"
 #include "Color.hh"
+#include "Util.hh"
 
 #include <stdio.h>
 
@@ -83,17 +84,9 @@ BGCCache::BGCCache(const BaseDisplay * const _display)
 
 BGCCache::~BGCCache()
 {
-  unsigned int i, b, s;
-  for (i = 0; i < context_count; i++) {
-    delete contexts[i];
-    contexts[i] = 0;
-  }
-  for (i = 0, s = 0; i < cache_size; ++i) {
-    for (b = 0; b < cache_buckets; ++b, ++s) {
-      delete cache[s];
-      cache[s] = 0;
-    }
-  }
+  std::for_each(contexts, contexts + context_count, PointerAssassin());
+  std::for_each(cache, cache + (cache_size * cache_buckets),
+                PointerAssassin());
   delete [] cache;
   delete [] contexts;
   cache = 0;
@@ -104,8 +97,8 @@ BGCCacheContext *BGCCache::nextContext(unsigned int scr)
 {
   Window hd = display->getScreenInfo(scr)->getRootWindow();
 
-  register BGCCacheContext *c;
-  register unsigned int i = 0;
+  BGCCacheContext *c;
+  unsigned int i = 0;
   while (i < context_count) {
     c = contexts[i++];
 
