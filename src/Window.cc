@@ -2597,7 +2597,7 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent *re) {
                      screen->getOpGC(), frame.changing.x(), frame.changing.y(),
                      frame.changing.width() - 1, frame.changing.height() - 1);
       XUngrabServer(blackbox->getXDisplay());
-      fprintf(stderr, "%s: done moving\n", getTitle());
+
       configure(frame.changing.x(), frame.changing.y(),
                 frame.changing.width(), frame.changing.height());
     } else {
