@@ -125,7 +125,13 @@ XImage *BImage::convertToXImage(void) {
   unsigned long *p = data;
     
   switch (depth) {
-  case 32: break;
+  case 32: {
+    
+    for (unsigned int y = 0; y < height; y++)
+      for (unsigned int x = 0; x < width; x++)
+	XPutPixel(image, x, y, *(p + (y + width) + x));
+
+    break; }
 
   case 24: {
     unsigned char *im = (unsigned char *) image->data;

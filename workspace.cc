@@ -198,6 +198,7 @@ int Workspace::showAll(void) {
   BlackboxWindow *win;
 
   int i;
+  ws_manager->stackWindows(window_stack, workspace_list->count());
   for (i = 0; i < workspace_list->count(); ++i) {
     win = workspace_list->at(i);
     if (! win->isIconic())

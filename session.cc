@@ -70,7 +70,7 @@ void SessionMenu::itemReleased(int button, int index) {
       sprintf(command, "exec %s &", item->Exec());
       system(command);
       delete [] command;
-      if (! userMoved())
+      if (! session->rootmenu->userMoved())
 	session->rootmenu->hideMenu();
     } else if (item->Function()) {
       switch (item->Function()) {
@@ -83,7 +83,7 @@ void SessionMenu::itemReleased(int button, int index) {
 	break;
       }
 
-      if (! userMoved())
+      if (! session->rootmenu->userMoved())
 	session->rootmenu->hideMenu();
     }
   }
@@ -652,7 +652,7 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
   
   case FocusOut: {
     BlackboxWindow *oWin = getWindow(e->xfocus.window);
-    if (oWin != NULL)
+    if (oWin != NULL && e->xfocus.mode == NotifyNormal)
       oWin->setFocusFlag(False);
     
     break;

@@ -45,6 +45,9 @@ XCOMM Comment out the above and un-comment below to get debugging symbols
 XCOMM
 XCOMM	$(CXX) -g -I$(INCDIR) $(EXTRA_DEFS) -c -o $@ $<
 
+depend:: 
+	rm -f Makefile.bak
+
 install:: install.app-defaults
 install.app-defaults::
 	@if [ ! -d $(XAPPLOADDIR) ]; then \
