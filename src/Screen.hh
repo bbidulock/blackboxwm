@@ -121,6 +121,7 @@ public:
   unsigned int screenNumber(void) const { return screen_info.screenNumber(); }
 
   ScreenResource& resource(void) { return _resource; }
+  void saveResource(void) { blackbox->resource().save(*blackbox); }
 
   bool isScreenManaged(void) const { return managed; }
   bool isRootColormapInstalled(void) const { return root_colormap_installed; }

@@ -485,8 +485,6 @@ void Blackbox::shutdown(void) {
                 std::mem_fun(&BScreen::shutdown));
 
   XSync(XDisplay(), False);
-
-  save_rc();
 }
 
 

@@ -109,7 +109,7 @@ void Slitmenu::itemClicked(unsigned int id, unsigned int button) {
     break;
 
   default:
-    break;
+    return;
   } // switch
 }
 
@@ -739,6 +739,7 @@ void Slit::toggleOnTop(void) {
   on_top = ! on_top;
   if (on_top) screen->raiseWindows((WindowStack *) 0);
   screen->resource().saveSlitOnTop(on_top);
+  screen->saveResource();
 }
 
 
@@ -755,6 +756,7 @@ void Slit::toggleAutoHide(void) {
     timer->fireTimeout();
   }
   screen->resource().saveSlitAutoHide(do_auto_hide);
+  screen->saveResource();
 }
 
 
@@ -777,6 +779,7 @@ Slit::Direction Slit::direction(void) const {
 void Slit::setDirection(Slit::Direction new_direction) {
   screen->resource().saveSlitDirection(new_direction);
   reconfigure();
+  screen->saveResource();
 }
 
 
@@ -788,4 +791,5 @@ Slit::Placement Slit::placement(void) const {
 void Slit::setPlacement(Slit::Placement new_placement) {
   screen->resource().saveSlitPlacement(new_placement);
   reconfigure();
+  screen->saveResource();
 }

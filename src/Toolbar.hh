@@ -57,7 +57,7 @@ private:
   } frame;
 
   Blackbox *blackbox;
-  BScreen *screen;
+  BScreen *_screen;
   bt::Timer *clock_timer, *hide_timer;
   Toolbarmenu *toolbarmenu;
   bt::Netwm::Strut strut;
@@ -79,10 +79,10 @@ public:
   virtual ~Toolbar(void);
 
   bool isEditing(void) const { return editing; }
-  bool isOnTop(void) const { return screen->resource().isToolbarOnTop(); }
+  bool isOnTop(void) const { return _screen->resource().isToolbarOnTop(); }
   bool isHidden(void) const { return hidden; }
   bool doAutoHide(void) const
-  { return screen->resource().doToolbarAutoHide(); }
+  { return _screen->resource().doToolbarAutoHide(); }
 
   Window getWindowID(void) const { return frame.window; }
 

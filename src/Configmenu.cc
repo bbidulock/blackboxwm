@@ -143,7 +143,10 @@ void Configmenu::itemClicked(unsigned int id, unsigned int) {
     res.saveAllowScrollLock(! res.allowScrollLock());
     _bscreen->reconfigure();
     break;
+  default:
+    return;
   } // switch
+  _bscreen->saveResource();
 }
 
 static const unsigned int AutoRaiseID = BScreen::SloppyFocus + 10;
@@ -194,7 +197,10 @@ void ConfigFocusmenu::itemClicked(unsigned int id, unsigned int) {
     // make sure the appropriate mouse buttons are grabbed on the windows
     _bscreen->toggleFocusModel(BScreen::SloppyFocus);
     break;
+  default:
+    return;
   } // switch
+  _bscreen->saveResource();
 }
 
 
@@ -288,7 +294,11 @@ void ConfigPlacementmenu::itemClicked(unsigned int id, unsigned int) {
 
   case ConfigmenuIgnoreShaded:
     res.savePlacementIgnoresShaded(! res.placementIgnoresShaded());
+
+  default:
+    return;
   } // switch
+  _bscreen->saveResource();
 }
 
 
