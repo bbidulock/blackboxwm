@@ -489,9 +489,12 @@ void BScreen::addWindow(Window w) {
 
 
 void BScreen::manageWindow(Window w) {
-  XWMHints *wmhint = XGetWMHints(blackbox->XDisplay(), w);
-  if (wmhint && (wmhint->flags & StateHint) &&
-      wmhint->initial_state == WithdrawnState) {
+  XWMHints *wmhints = XGetWMHints(blackbox->XDisplay(), w);
+  bool slit_client = (wmhints && (wmhints->flags & StateHint) &&
+                      wmhints->initial_state == WithdrawnState);
+  if (wmhints) XFree(wmhints);
+
+  if (slit_client) {
     if (!_slit) createSlit();
     _slit->addClient(w);
     return;
