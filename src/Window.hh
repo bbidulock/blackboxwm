@@ -271,7 +271,7 @@ private:
   void upsize(void);
 
   enum Corner { TopLeft, TopRight };
-  void constrain(Corner anchor, int *pw = 0, int *ph = 0);
+  void constrain(Corner anchor, unsigned int *pw = 0, unsigned int *ph = 0);
 
 public:
   BlackboxWindow(Blackbox *b, Window w, BScreen *s);

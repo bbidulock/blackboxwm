@@ -2830,7 +2830,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
 
       flags.resizing = True;
 
-      int gw, gh;
+      unsigned int gw, gh;
       frame.grab_x = me->x;
       frame.grab_y = me->y;
       frame.changing = frame.rect;
@@ -2847,7 +2847,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent *me) {
                      screen->getOpGC(), frame.changing.x(), frame.changing.y(),
                      frame.changing.width() - 1, frame.changing.height() - 1);
 
-      int gw, gh;
+      unsigned int gw, gh;
 
       Corner anchor;
 
@@ -3164,11 +3164,14 @@ void BlackboxWindow::upsize(void) {
  * The logical width and height are placed into pw and ph, if they
  * are non-zero.  Logical size refers to the users perception of
  * the window size (for example an xterm resizes in cells, not in pixels).
+ * pw and ph are then used to display the geometry during window moves, resize,
+ * etc.
  *
  * The physical geometry is placed into frame.changing_{x,y,width,height}.
  * Physical geometry refers to the geometry of the window in pixels.
  */
-void BlackboxWindow::constrain(Corner anchor, int *pw, int *ph) {
+void BlackboxWindow::constrain(Corner anchor,
+                               unsigned int *pw, unsigned int *ph) {
   // frame.changing represents the requested frame size, we need to
   // strip the frame margin off and constrain the client size
   frame.changing.setCoords(frame.changing.left() + frame.margin.left,
@@ -3176,39 +3179,42 @@ void BlackboxWindow::constrain(Corner anchor, int *pw, int *ph) {
                            frame.changing.right() - frame.margin.right,
                            frame.changing.bottom() - frame.margin.bottom);
 
-  int dw = frame.changing.width(), dh = frame.changing.height(),
+  unsigned int dw = frame.changing.width(), dh = frame.changing.height(),
     base_width = (client.base_width) ? client.base_width : client.min_width,
     base_height = (client.base_height) ? client.base_height :
                                          client.min_height;
 
   // constrain
-  if (dw < static_cast<signed>(client.min_width)) dw = client.min_width;
-  if (dh < static_cast<signed>(client.min_height)) dh = client.min_height;
-  if (dw > static_cast<signed>(client.max_width)) dw = client.max_width;
-  if (dh > static_cast<signed>(client.max_height)) dh = client.max_height;
+  if (dw < client.min_width) dw = client.min_width;
+  if (dh < client.min_height) dh = client.min_height;
+  if (dw > client.max_width) dw = client.max_width;
+  if (dh > client.max_height) dh = client.max_height;
 
-  dw -= base_width;
-  dw /= client.width_inc;
-  dh -= base_height;
-  dh /= client.height_inc;
+  assert(dw >= base_width && dh >= base_height);
 
-  if (pw) {
-    if (client.width_inc == 1)
-      *pw = dw + base_width;
-    else
+  if (client.width_inc > 1) {
+    dw -= base_width;
+    dw /= client.width_inc;
+  }
+  if (client.height_inc > 1) {
+    dh -= base_height;
+    dh /= client.height_inc;
+  }
+
+  if (pw)
       *pw = dw;
-  }
-  if (ph) {
-    if (client.height_inc == 1)
-      *ph = dh + base_height;
-    else
-      *ph = dh;
-  }
 
-  dw *= client.width_inc;
-  dw += base_width;
-  dh *= client.height_inc;
-  dh += base_height;
+  if (ph)
+      *ph = dh;
+
+  if (client.width_inc > 1) {
+    dw *= client.width_inc;
+    dw += base_width;
+  }
+  if (client.height_inc > 1) {
+    dh *= client.height_inc;
+    dh += base_height;
+  }
 
   frame.changing.setSize(dw, dh);
 
