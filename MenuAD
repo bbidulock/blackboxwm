@@ -1,6 +1,7 @@
-[begin] (Blackbox 0.11.4)
+[begin] (Blackbox 0.11.5)
   "xterm" (xterm -ls)
   "XEmacs" (xemacs)
+  "Netscape" (netscape)
   [begin] (X Utils)
     "Xfontsel" (xfontsel)
     "Xman" (xman)
@@ -10,6 +11,7 @@
   "The GIMP" (gimp)
   "Image Magick" (display)
   [begin] (Blackbox)
+    [restart] (WindowMaker) {wmaker}
     "Restart" (Restart)
     "Shutdown" (Exit)
   [end]

@@ -164,10 +164,6 @@ private:
 
 
 protected:
-  int anotherWMRunning(Display *, XErrorEvent *);
-  void sig11handler(int);
-
-  void Dissociate(void);
   void InitScreen(void);
   void InitMenu(void);
   void parseSubMenu(FILE *, SessionMenu *);
@@ -269,8 +265,9 @@ public:
   Atom ColormapAtom(void) { return _XA_WM_COLORMAP_WINDOWS; }
 
   GC GCOperations(void) { return opGC; }
+  void Dissociate(void);
   
-  enum { B_Restart = 1, B_Exit, B_Shutdown, B_Execute,
+  enum { B_Restart = 1, B_RestartOther, B_Exit, B_Shutdown, B_Execute,
 	 B_WindowClose, B_WindowMaximize, B_WindowIconify,
 	 B_WindowRaise, B_WindowLower, B_WindowSendToWorkspace };
   enum { B_TextureRSolid = 1, B_TextureSSolid, B_TextureFSolid,

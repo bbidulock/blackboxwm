@@ -213,6 +213,15 @@ int BlackboxMenu::insert(char *label, int function, char *exec) {
     ret = menuitems->count();
     break; }
 
+  case BlackboxSession::B_RestartOther: {
+    BlackboxMenuItem *item = new BlackboxMenuItem(createItemWindow(), label,
+						  function, exec);
+    XSaveContext(display, item->window, itemContext, (XPointer) item);
+    menuitems->append(item);
+    
+    ret = menuitems->count();
+    break; }
+  
   case BlackboxSession::B_Shutdown:
     //    ret = insert(label, (void (*)()) session->Shutdown);
     break;

@@ -21,7 +21,7 @@
 
 #ifndef _blackbox_hh
 #define _blackbox_hh
-#define _blackbox_version "zero point one one point four beta"
+#define _blackbox_version "zero point one one point five beta"
 
 //
 //   This is a class to manage a single X server connection.  It allows for
@@ -34,14 +34,6 @@ class BlackboxSession;
 
 
 class Blackbox {
-public:
-  Blackbox(int, char **);
-  ~Blackbox(void);
-
-  void EventLoop(void);
-  void Restart(char * = 0);
-protected:
-
 private:
   BlackboxSession *session;
   Debugger *debug;
@@ -49,7 +41,20 @@ private:
 
   char **b_argv;
   int b_argc;
+
+
+protected:
+
+
+public:
+  Blackbox(int, char **);
+  ~Blackbox(void);
+
+  void EventLoop(void);
+  void Restart(char * = 0);
+  void Shutdown(void);
 };
+
 
 extern Blackbox *blackbox;
 

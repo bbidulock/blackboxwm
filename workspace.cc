@@ -167,7 +167,8 @@ const int Workspace::addWindow(BlackboxWindow *w) {
 
   delete [] window_stack;
   window_stack = tmp_stack;
-  ws_manager->stackWindows(window_stack, workspace_list->count());
+  if (ws_manager->currentWorkspaceID() == workspace_id)
+    ws_manager->stackWindows(window_stack, workspace_list->count());
 
   return w->windowNumber();
 }
@@ -182,7 +183,8 @@ const int Workspace::removeWindow(BlackboxWindow *w) {
 
   delete [] window_stack;
   window_stack = tmp_stack;
-  ws_manager->stackWindows(window_stack, workspace_list->count() - 1);
+  if (ws_manager->currentWorkspaceID() == workspace_id)
+    ws_manager->stackWindows(window_stack, workspace_list->count() - 1);
 
   workspace_menu->remove((const int) w->windowNumber());
   workspace_list->remove((const int) w->windowNumber());
@@ -470,6 +472,7 @@ Workspace *WorkspaceManager::workspace(int w) {
 
 void WorkspaceManager::changeWorkspaceID(int id) {
   if (id != current->workspaceID()) {
+    XGrabServer(display);
     current->hideMenu();
     current->hideAll();
     current = workspace(id);
@@ -479,6 +482,7 @@ void WorkspaceManager::changeWorkspaceID(int id) {
                 session->titleFont()->ascent, frame.title,
 		strlen(frame.title));
     current->showAll();
+    XUngrabServer(display);
   }
 }
 
@@ -560,24 +564,19 @@ void WorkspaceManager::stackWindows(Window *workspace_stack, int num) {
 
   Window *session_stack = new Window[num + 3 + workspaces_list->count()];
 
-  // stack our workspace manager menu and root menu on top
   int i = 0;
   *(session_stack + i++) = session->menu()->windowID();
   *(session_stack + i++) = workspaces_menu->windowID();
 
-  // stack the workspace menus under them
   for (int j = 0; j < workspaces_list->count(); j++)
     *(session_stack + i++) = workspaces_list->at(j)->menu()->windowID();
     
-  // stack the windows next
   int k = num;
   while (k--)
     *(session_stack + i++) = *(workspace_stack + k);
 
-  // and the toolbar frame is last
   *(session_stack + i++) = frame.base;
 
-  // tell the X server what to do
   XRestackWindows(display, session_stack, i);
   delete [] session_stack;
 }

@@ -131,6 +131,10 @@ public:
     { window = w; ulabel = 0; label = l; exec = e; sub_menu = 0;
       function = 0; }
 
+  BlackboxMenuItem(Window w, char *l, int f, char *e)
+    { window = w; ulabel = 0; label = l; exec = e; sub_menu = 0;
+      function = f; }
+
   BlackboxMenuItem(Window w, char *l)
     { window = w; ulabel = 0; label = l; exec = 0; sub_menu = 0;
       function = 0; }

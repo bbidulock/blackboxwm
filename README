@@ -23,7 +23,7 @@ development, many things may or may not work properly (or at all).  This code
 was written from scratch (save for a bit of the 8bpp code, which was 
 implemented from WindowMaker 0.11.0 source code (and has since been improved
 upon and operates much faster than the way WindowMaker does, which is to alloc
-colors for each image), and the dgradient code, courtesy of Frank R. Belew
+colors for each image, and the dgradient code, courtesy of Frank R. Belew
 <frb@umr.edu>).  I plan to make a list of testers and code contributors in
 the future, which will appear here.
 
@@ -55,6 +55,8 @@ Contributors:
 	 - testing of 8bpp code
 	Mark Seward <illuzion@paradise.net.nz>
 	 - beta testing and bug reports
+	Keith Bolland <prime@strip.net.nz>
+	 - beta testing, bug reports and suggestions
 
 
 Compilation and Installation:
@@ -162,7 +164,7 @@ either mouse button 1 or 3, but only hidden when mouse button 3 is pressed on
 the item.  If one submenu is visible when another is selected, the first is
 hidden before the second is shown.
 
-The workspace manager menu operates different from the root menu in several
+The workspace manager menu operates differently from the root menu in several
 respects.  It does not have a title, and thus is not movable.  Pressing the
 Workspace button at the top of the toolbar maps the workspace manager menu.
 The "New Workspace" menu item creates a new workspace, which is like a
@@ -177,7 +179,8 @@ menu which contains a list of windows on any given workspace is available by
 pressing mouse button 3 on the appropriate workspace menu item.  If the user
 selects a window from the window list, blackbox will change workspaces to the
 appropriate workspace (if the window selected is not on the current workspace)
-and the window is raised and awarded keyboard input focus.
+and the window is raised (and moved to a visible location if it is not visible)
+and awarded keyboard input focus.
 
 Keyboard input focus is also awarded to those clients who accept it (again,
 the client specifies if it can take focus through ICCCM protocol requests).
@@ -367,15 +370,16 @@ The Menu File:
 The menu file is still in it's infancy, so only a single level of the root 
 menu is able to be created.  The format is shown below:
 
-[begin] (menu label)       <- this must be the first line in the file
+[begin] (menu label)		<- this must be the first line in the file
   "item label" (command -switches args)
   ...
-  [begin] (menu label)     <- submenu
+  [begin] (menu label)		<- submenu
     "item label" (command -switches args)
     ...
-  [end]                    <- end of submenu
-  "item label" (Restart)   <- restarts blackbox
-  "item label" (Exit)      <- exits blackbox
+  [end]				<- end of submenu
+  "item label" (Restart)	<- restarts blackbox
+  [restart] (label) {command}	<- restarts a different window manager
+  "item label" (Exit)		<- exits blackbox
 [end]
 
 

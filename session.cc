@@ -27,9 +27,17 @@
 
 #include <X11/keysym.h>
 
-#include <signal.h>
 #include <string.h>
 #include <stdlib.h>
+
+
+static int anotherWMRunning(Display *, XErrorEvent *) {
+  fprintf(stderr,
+	  "blackbox: a fatal error has occurred while querying the X server\n"
+	  "          make sure there is not another window manager running\n");
+  exit(3);
+  return(-1);
+}
 
 
 SessionMenu::SessionMenu(BlackboxSession *s) : BlackboxMenu(s)
@@ -65,17 +73,14 @@ void SessionMenu::titleReleased(int button) {
 void SessionMenu::itemReleased(int button, int index) {
   if (button == 1) {
     BlackboxMenuItem *item = at(index);
-    if (item->Exec()) {
-      char *command = new char[strlen(item->Exec()) + 8];
-      sprintf(command, "exec %s &", item->Exec());
-      system(command);
-      delete [] command;
-      if (! session->rootmenu->userMoved())
-	session->rootmenu->hideMenu();
-    } else if (item->Function()) {
+    if (item->Function()) {
       switch (item->Function()) {
       case BlackboxSession::B_Restart:
 	Session()->Restart();
+	break;
+
+      case BlackboxSession::B_RestartOther:
+	blackbox->Restart(item->Exec());
 	break;
 
       case BlackboxSession::B_Exit:
@@ -83,6 +88,13 @@ void SessionMenu::itemReleased(int button, int index) {
 	break;
       }
 
+      if (! session->rootmenu->userMoved())
+	session->rootmenu->hideMenu();
+    } else if (item->Exec()) {
+      char *command = new char[strlen(item->Exec()) + 8];
+      sprintf(command, "exec %s &", item->Exec());
+      system(command);
+      delete [] command;
       if (! session->rootmenu->userMoved())
 	session->rootmenu->hideMenu();
     }
@@ -108,8 +120,6 @@ void SessionMenu::drawSubmenu(int index)
 */
 
 BlackboxSession::BlackboxSession(char *display_name) {
-  signal(SIGSEGV, (void (*)(int)) sig11handler);
-
   b1Pressed = False;
   b2Pressed = False;
   b3Pressed = False;
@@ -183,15 +193,6 @@ BlackboxSession::~BlackboxSession() {
   XSync(display, 0);
   XCloseDisplay(display);
   delete debug;
-}
-
-
-int BlackboxSession::anotherWMRunning(Display *, XErrorEvent *) {
-  fprintf(stderr,
-	  "blackbox: a fatal error has occurred while querying the X server\n"
-	  "          make sure there is not another window manager running\n");
-  exit(3);
-  return(-1);
 }
 
 
@@ -758,7 +759,7 @@ void BlackboxSession::Restart(void) {
 
 void BlackboxSession::Exit(void) {
   XSetInputFocus(display, PointerRoot, RevertToParent, CurrentTime);
-  shutdown = True;  
+  shutdown = True;
 }
 
 
@@ -768,21 +769,6 @@ void BlackboxSession::addWindow(BlackboxWindow *w)
 
 void BlackboxSession::removeWindow(BlackboxWindow *w)
 { ws_manager->workspace(w->workspace())->removeWindow(w); }
-
-
-void BlackboxSession::sig11handler(int i) {
-  static int re_enter = 0;
-
-  fprintf(stderr, "%d sig 11 caught...", i);
-  if (! re_enter) {
-    re_enter = 1;
-    fprintf(stderr, "\ndissociating windows...");
-    Dissociate();
-  }
-
-  fprintf(stderr, "exiting...\n");
-  abort();
-}
 
 
 void BlackboxSession::reassociateWindow(BlackboxWindow *w) {
@@ -1512,7 +1498,8 @@ void BlackboxSession::parseSubMenu(FILE *menu_file, SessionMenu *menu) {
 	  fprintf(stderr, "error in menu file... label must have command\n"
 		  "  ex:  \"label\" (command)\n");
       } else {
-	debug->msg("%s-checking for submenu\n", menu->label());
+	debug->msg("%s-checking for submenu/window manager entry\n",
+		   menu->label());
 	for (i = 0; i < len; ++i)
 	  if (line[i] == '[') { ++i; break; }
 	for (ri = len; ri > 0; --ri)
@@ -1551,6 +1538,37 @@ void BlackboxSession::parseSubMenu(FILE *menu_file, SessionMenu *menu) {
 	    delete [] c;
 	    debug->msg("%s-end of submenu\n", menu->label());
 	    break;
+	  } else if (! strcasecmp(c, "restart")) {
+	    
+	    for (i = 0; i < len; ++i)
+	      if (line[i] == '(') { ++i; break; }
+	    for (ri = len; ri > 0; --ri)
+	      if (line[ri] == ')') break;
+	
+	    char *l;
+	    if (i < ri && ri > 0) {
+	      l = new char[ri - i + 1];
+	      strncpy(l, line + i, ri - i);
+	      *(l + (ri - i)) = '\0';
+	    } else
+	      l = "(nil)";
+
+	    for (i = 0; i < len; ++i)
+	      if (line[i] == '{') { ++i; break; }
+	    for (ri = len; ri > 0; --ri)
+	      if (line[ri] == '}') break;
+	
+	    char *e;
+	    if (i < ri && ri > 0) {
+	      e = new char[ri - i + 1];
+	      strncpy(e, line + i, ri - i);
+	      *(e + (ri - i)) = '\0';
+	    } else
+	      e = 0;
+
+	    delete [] c;
+	    if (e)
+	      menu->insert(l, B_RestartOther, e);
 	  }
 	}
       }

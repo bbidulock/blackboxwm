@@ -1018,6 +1018,28 @@ void BlackboxWindow::configureWindow(int dx, int dy, unsigned int dw,
 
 
 Bool BlackboxWindow::setInputFocus(void) {
+  if (((signed) (frame.x + frame.width)) < 0) {
+    if (((signed) (frame.y + frame.title_h)) < 0)
+      configureWindow(0, 0, frame.width, frame.height);
+    else if (frame.y > (signed) session->YResolution())
+      configureWindow(0, session->YResolution() - frame.height, frame.width,
+		      frame.height);
+    else
+      configureWindow(0, frame.y, frame.width, frame.height);
+  } else if (frame.x > (signed) session->XResolution()) {
+    if (((signed) (frame.y + frame.title_h)) < 0)
+      configureWindow(session->XResolution() - frame.width, 0, frame.width,
+		      frame.height);
+    else if (frame.y > (signed) session->YResolution())
+      configureWindow(session->XResolution() - frame.width,
+		      session->YResolution() - frame.height, frame.width,
+		      frame.height);
+    else
+      configureWindow(session->XResolution() - frame.width, frame.y,
+		      frame.width, frame.height);
+  }
+
+
   switch (focus_mode) {
   case F_NoInput:
   case F_GloballyActive:

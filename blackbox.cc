@@ -29,11 +29,27 @@
 #include "blackbox.hh"
 #include "session.hh"
 
+#include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 // global variable to allow access to restart and shutdown member functions
 Blackbox *blackbox;
+
+
+static void sig11handler(int i) {
+  static int re_enter = 0;
+  
+  fprintf(stderr, "%d sig 11 caught...", i);
+  if (! re_enter) {
+    re_enter = 1;
+    fprintf(stderr, "\nshutting down...");
+    blackbox->Shutdown();
+  }
+
+  fprintf(stderr, "exiting...\n");
+  abort();
+}
 
 
 /*
@@ -47,6 +63,8 @@ Blackbox *blackbox;
 */
 
 Blackbox::Blackbox(int argc, char **argv) {
+  signal(SIGSEGV, (void (*)(int)) sig11handler);
+
   b_argc = argc;
   b_argv = argv;
 
@@ -134,7 +152,6 @@ Blackbox::Blackbox(int argc, char **argv) {
 */
 
 Blackbox::~Blackbox(void) {
-  session_list->remove(session);
   delete session;
   delete session_list;
   delete debug;
@@ -161,10 +178,19 @@ void Blackbox::Restart(char *prog) {
   // It is also subject to change when multithreads are incorporated...
   //
 
-  if (prog)
+  if (prog) {
+    delete session;
     execlp(prog, prog, NULL);
-  else {
+  } else {
     delete session;
     execvp(b_argv[0], b_argv);
   }
+}
+
+
+void Blackbox::Shutdown(void) {
+  for (int i = 0; i < session_list->count(); ++i)
+    session_list->at(i)->Dissociate();
+
+  delete this;
 }
