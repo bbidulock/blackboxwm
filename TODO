@@ -33,6 +33,8 @@ CVS warts:
   idea: we could store the workspace number in the BasemenuItem
 
 * strut does not handle hidden toolbar or slit properly, but how should it?
+  If the item is set to autohide the strut value is always the hidden size
+  otherwise we use the full size
 
 * look into centering the window when maximizing and the window can not grow
   to fill the area
