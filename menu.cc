@@ -576,10 +576,12 @@ BlackboxSession *BlackboxMenu::Session(void) { return session; }
 void BlackboxMenu::drawSubMenu(int index) {
   if (index >= 0 && index < menuitems->count()) {
     BlackboxMenuItem *item = menuitems->at(index);
-    item->sub_menu->moveMenu(menu.x + menu.width,
-			     menu.y +
+    item->sub_menu->moveMenu(menu.x + menu.width + 1,
+			     menu.y -
 			     ((show_title) ? menu.title_h : 0) +
-			     ((index - 1) * menu.item_h) - 1);
+			     ((index * menu.item_h) -
+			      ((item->sub_menu->show_title) ?
+			       item->sub_menu->menu.title_h : 0)));
     
     item->sub_menu->showMenu();
     item->sub_menu->visible = 3;

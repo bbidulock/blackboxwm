@@ -47,13 +47,13 @@ BlackboxWindowMenu::BlackboxWindowMenu(BlackboxWindow *w, BlackboxSession *s) :
   session = s;
   hideTitle();
   
+  insert("Send To ...",
+         send_to_menu = new SendToWorkspaceMenu(window, session));
   insert("Iconify", BlackboxSession::B_WindowIconify);
   //  insert("Maximize", BlackboxSession::B_WindowMaximize);
   insert("Close", BlackboxSession::B_WindowClose);
   insert("Raise", BlackboxSession::B_WindowRaise);
   insert("Lower", BlackboxSession::B_WindowLower);
-  insert("Send To ...",
-         send_to_menu = new SendToWorkspaceMenu(window, session));
 
   updateMenu();
 }
@@ -64,7 +64,7 @@ BlackboxWindowMenu::~BlackboxWindowMenu(void)
 void BlackboxWindowMenu::titlePressed(int) { }
 void BlackboxWindowMenu::titleReleased(int) { }
 void BlackboxWindowMenu::itemPressed(int button, int item) {
-  if (button == 1 && item == 4) {
+  if (button == 1 && item == 0) {
     send_to_menu->updateMenu();
     BlackboxMenu::drawSubMenu(item);
   }
@@ -74,27 +74,24 @@ void BlackboxWindowMenu::itemPressed(int button, int item) {
 void BlackboxWindowMenu::itemReleased(int button, int item) {
   if (button == 1) {
     switch (item) {
-    case 0:
+    case 1:
       hideMenu();
       window->iconifyWindow();
       break;
 
-    case 1:
+    case 2:
       hideMenu();
       window->closeWindow();
       break;
 
-   case 2:
+    case 3:
       hideMenu();
       window->raiseWindow();
       break;
       
-    case 3:
+    case 4:
       hideMenu();
       window->lowerWindow();
-      break;
-
-    case 4:
       break;
     }
   }
@@ -125,8 +122,7 @@ SendToWorkspaceMenu::SendToWorkspaceMenu(BlackboxWindow *w,
   window = w;
   ws_manager = s->WSManager();
 
-  setMenuLabel("Send To ...");
-  showTitle();
+  hideTitle();
   updateMenu();
 }
 
@@ -499,7 +495,8 @@ void BlackboxWindow::associateClientWindow(void) {
     client.title = "Unnamed";
 
   if (session->Orientation() == BlackboxSession::B_LeftHandedUser)
-    XReparentWindow(display, client.window, frame.window, frame.handle_w + 1,
+    XReparentWindow(display, client.window, frame.window,
+		    ((do_handle) ? frame.handle_w + 1 : 0),
 		    frame.title_h + 1);
   else
     XReparentWindow(display, client.window, frame.window, 0,
@@ -1487,7 +1484,8 @@ void BlackboxWindow::buttonPressEvent(XButtonEvent *be) {
   } else if (session->button3Pressed()) {
     if (frame.title == be->window) {
       if (! menu_visible) {
-	window_menu->moveMenu(be->x_root, frame.y + frame.title_h);
+	window_menu->moveMenu(be->x_root - (window_menu->Width() / 2),
+			      frame.y + frame.title_h);
 	window_menu->showMenu();
       } else
 	window_menu->hideMenu();

@@ -101,6 +101,7 @@ public:
   Window windowID(void);
   unsigned int Width(void) { return menu.width; }
   unsigned int Height(void) { return menu.height; }
+  unsigned int titleHeight(void) { return menu.title_h; }
   int X(void) { return menu.x; }
   int Y(void) { return menu.y; }
   int menuVisible(void) { return visible; }

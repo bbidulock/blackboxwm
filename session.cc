@@ -156,7 +156,6 @@ BlackboxSession::~BlackboxSession() {
   // XFreeFont(display, resource.font.menu);
   XFreeGC(display, opGC);
   
-  delete [] resource.menuFile;
   delete rootmenu;
   delete ws_manager;
   debug->msg("closing X connection\n");
@@ -493,7 +492,9 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
 	wsMan->buttonPressEvent(&e->xbutton);
       } else if (e->xbutton.window == root && e->xbutton.button == 3) {
 	if (! rootmenu->menuVisible()) {
-	  rootmenu->moveMenu(e->xbutton.x_root, e->xbutton.y_root);
+	  rootmenu->moveMenu(e->xbutton.x_root - (rootmenu->Width() / 2),
+			     e->xbutton.y_root -
+			     (rootmenu->titleHeight() / 2));
 	  rootmenu->showMenu();
 	} else
 	  rootmenu->raiseMenu();
@@ -1157,12 +1158,10 @@ void BlackboxSession::LoadDefaults(void) {
   if (XrmGetResource(blackbox_database,
 		     "blackbox.session.menuFile",
 		     "Blackbox.Session.MenuFile", &value_type, &value)) {
-    resource.menuFile = new char[strlen(value.addr) + 1];
-    strncpy(resource.menuFile, value.addr, strlen(value.addr));
+    resource.menuFile = value.addr;
   } else {
 #define BLACKBOXMENUAD XLIBDIR##"/Blackbox/MenuAD"
-    resource.menuFile = new char[strlen(BLACKBOXMENUAD) + 1];
-    strncpy(resource.menuFile, BLACKBOXMENUAD, strlen(BLACKBOXMENUAD));
+    resource.menuFile = BLACKBOXMENUAD;
   }
   
   if (XrmGetResource(blackbox_database,
