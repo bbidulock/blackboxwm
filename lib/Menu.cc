@@ -273,11 +273,14 @@ void bt::MenuStyle::drawItem(Window window, const Rect &rect,
 namespace bt {
   // internal helper classes
 
-  class ShowDelay : public TimeoutHandler {
+  class MenuDelay : public TimeoutHandler {
   public:
     Menu *showmenu;
-    inline ShowDelay(void) : showmenu(0) { }
+    Menu *hidemenu;
+    inline MenuDelay(void) : showmenu(0), hidemenu(0) { }
     inline void timeout(Timer *) {
+      if (hidemenu) hidemenu->hide();
+      hidemenu = 0;
       if (showmenu) showmenu->show();
       showmenu = 0;
     }
@@ -307,7 +310,7 @@ namespace bt {
 
 } // namespace bt
 
-static bt::ShowDelay showdelay;
+static bt::MenuDelay menudelay;
 
 
 bt::Menu::Menu(Application &app, unsigned int screen)
@@ -320,7 +323,7 @@ bt::Menu::Menu(Application &app, unsigned int screen)
     _trect(0, 0, 0, 0),
     _frect(0, 0, 1, 1),
     _irect(0, 0, 1, 1),
-    _timer(&_app, &showdelay),
+    _timer(&_app, &menudelay),
     _parent_menu(0),
     _active_submenu(0),
     _motion(0),
@@ -633,6 +636,8 @@ void bt::Menu::move(int x, int y) {
 void bt::Menu::show(void) {
   if (isVisible()) return;
 
+  if (menudelay.hidemenu == this) menudelay.hidemenu = 0;
+
   updatePixmaps();
 
   XMapRaised(_app.XDisplay(), _window);
@@ -652,8 +657,7 @@ void bt::Menu::hide(void) {
   _active_submenu = 0;
   _active_index = ~0u;
 
-  if (showdelay.showmenu == this) showdelay.showmenu = 0;
-  _timer.stop();
+  if (menudelay.showmenu == this) menudelay.showmenu = 0;
 
   ItemList::iterator it, end;
   for (it = _items.begin(), end = _items.end(); it != end; ++it) {
@@ -761,9 +765,10 @@ void bt::Menu::updatePixmaps(void) {
   _fpixmap = PixmapCache::find(_screen, style->frameTexture(),
                                _frect.width(), _frect.height(), _fpixmap);
 
-  _apixmap = PixmapCache::find(_screen, style->activeTexture(),
-                               _itemw, textHeight(style->frameFont()) +
-                               (style->itemMargin() * 2), _apixmap);
+  _apixmap =
+    PixmapCache::find(_screen, style->activeTexture(), _itemw,
+                      textHeight(style->frameFont()) +
+                      (style->itemMargin() * 2), _apixmap);
 }
 
 
@@ -875,13 +880,13 @@ void bt::Menu::motionNotifyEvent(const XMotionEvent * const event) {
       if (! it->active && it->enabled)
         activateItem(r, *it);
     } else if (it->active) {
-      deactivateItem(r, *it);
+      deactivateItem(r, *it, false);
     }
 
     positionRect(r, row, col);
   }
 
-  if (showdelay.showmenu && ! _timer.isTiming())
+  if ((menudelay.showmenu || menudelay.hidemenu) && ! _timer.isTiming())
     _timer.start();
 }
 
@@ -899,7 +904,38 @@ void bt::Menu::leaveNotifyEvent(const XCrossingEvent * const /*event*/) {
     positionRect(r, row, col);
   }
 
-  showActiveSubmenu();
+  if (_timer.isTiming() && menudelay.hidemenu) {
+    /*
+      if the user has moved the mouse outside of the menu before the
+      timer has fired (which hides the old menu and shows the new), we
+      stop the timer and mark the "old" menu as active.
+
+      this results in a really smart menu that allows you to move the
+      mouse into submenus easily (even if you happen to move the mouse
+      over other items in the menu)
+    */
+
+    _active_submenu = menudelay.hidemenu;
+    menudelay.showmenu = 0;
+    menudelay.hidemenu = 0;
+    _timer.stop();
+
+    r.setRect(_irect.x(), _irect.y(), _itemw, 0);
+    row = col = 0;
+    for (it = _items.begin(), end = _items.end(); it != end; ++it) {
+      r.setHeight(it->height);
+
+      if (it->active && (! _active_submenu || it->sub != _active_submenu ||
+                         !_active_submenu->isVisible()))
+        deactivateItem(r, *it);
+      else if (it->sub == _active_submenu)
+        activateItem(r, *it);
+
+      positionRect(r, row, col);
+    }
+  } else {
+    showActiveSubmenu();
+  }
 }
 
 
@@ -1104,9 +1140,10 @@ void bt::Menu::activateItem(const Rect &rect, MenuItem &item) {
   XClearArea(_app.XDisplay(), _window,
              rect.x(), rect.y(), rect.width(), rect.height(), True);
 
-  showdelay.showmenu = item.sub;
+  menudelay.showmenu = item.sub;
+  if (menudelay.hidemenu == item.sub) menudelay.hidemenu = 0;
   _active_submenu = item.sub;
-  if (! item.sub) return;
+  if (! item.sub || item.sub->isVisible()) return;
 
   item.sub->refresh();
 
@@ -1143,15 +1180,18 @@ void bt::Menu::activateItem(const Rect &rect, MenuItem &item) {
 }
 
 
-void bt::Menu::deactivateItem(const Rect &rect, MenuItem &item) {
+void bt::Menu::deactivateItem(const Rect &rect, MenuItem &item,
+                              bool hide_submenu) {
   // clear old active item
   if (_active_index == item.indx) _active_index = ~0u;
   item.active = false;
   XClearArea(_app.XDisplay(), _window,
              rect.x(), rect.y(), rect.width(), rect.height(), True);
 
-  if (item.sub && item.sub->isVisible())
-    item.sub->hide();
+  if (item.sub && item.sub->isVisible()) {
+    if (hide_submenu) item.sub->hide();
+    else menudelay.hidemenu = item.sub;
+  }
 }
 
 
@@ -1179,10 +1219,13 @@ void bt::Menu::activateIndex(unsigned int index) {
 void bt::Menu::showActiveSubmenu(void) {
   if (! _active_submenu) return;
 
+  if (menudelay.hidemenu) menudelay.hidemenu->hide();
+  menudelay.hidemenu = 0;
+
   // active submenu, keep the menu item marked active and ensure
   // that the menu is visible
   if (! _active_submenu->isVisible())
     _active_submenu->show();
-  showdelay.showmenu = 0;
+  menudelay.showmenu = 0;
   _timer.stop();
 }

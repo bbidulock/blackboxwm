@@ -249,7 +249,8 @@ namespace bt {
 
     unsigned int verifyId(unsigned int id = ~0u);
     void activateItem(const Rect &rect, MenuItem &item);
-    void deactivateItem(const Rect &rect, MenuItem &item);
+    void deactivateItem(const Rect &rect, MenuItem &item,
+                        bool hide_submenu = true);
     void activateIndex(unsigned int index);
     void showActiveSubmenu(void);
 
