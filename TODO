@@ -19,7 +19,6 @@ warts:
 
 Stuff TODO or On The Way(tm):
 -----------------------------
-
 CHANGE: sigaction is defined by POSIX.1, so we should drop the older
         signal mechanism for easier code maintenance.  anyone with
         objects to making blackbox require a POSIX.1 compliant host
@@ -32,21 +31,7 @@ FIX: window colormap installation should follow focus... it doesn't at
      the moment, and the changes in the event handling have removed
      colormap installation completely.
 
-CHANGE: deiconify() is overloaded, we need a "place window on Workspace N" and
-        "bring this window back from icon land"
-
-CHANGE: as a corrolary to the above, BlackboxWindow::mapRequest should actually
-        be called for map requests
-
-CHECK: getBlackboxHints() and restoreAttributes() do a lot of the same work
-       should look into whether it can be combined or not
-
 CHANGE: sticky windows are not handled well
-
-CHANGE: look into centering the window when maximizing and the window can not
-        grow to fill the area
-
-CHANGE: BlackboxWindow::deiconify needs a new name, also look into show()
 
 ADD: add _BLACKBOX_STYLE and _BLACKBOX_MENU atoms so that bbtools, bbconf,
      etc. can get the current path to the style in use and menu.
@@ -67,7 +52,26 @@ ADD: get volunteers to translate blackbox into other languages
 ADD: draw resize frames using the styles borderWidth... should be fairly
      simple to do...
 
-ADD: always on top/bottom support
+ADD: always on top/bottom support, layers, etc
+
+ADD: a regression test suite
+     items to test:
+       *) toggle decor works
+       *) multihead
+
+Code cleanup:
+-----------------------------
+CHANGE: deiconify() is overloaded, we need a "place window on Workspace N" and
+        "bring this window back from icon land"
+
+CHANGE: as a corrolary to the above, BlackboxWindow::mapRequest should actually
+        be called for map requests
+
+CHECK: getBlackboxHints() and restoreAttributes() do a lot of the same work
+       should look into whether it can be combined or not
+
+CHANGE: look into centering the window when maximizing and the window can not
+        grow to fill the area
 
 ADD: way to empty a menu with one method call something like menu.erase() or
      menu.removeAll()
@@ -79,11 +83,6 @@ ADD: way to have items in menu and store data other than their index number.
      workspace[1]. Something like menu.insert(item, data).
 
 CHANGE: use a Workspace* instead of a number in BlackboxWindow
-
-ADD: a regression test suite
-     items to test:
-       *) toggle decor works
-       *) multihead
 
 CHANGE: move all of the fprintf() messages to a message function /
         class.  Something like message(WARN, "this is broken") and use
