@@ -336,10 +336,13 @@ void Blackbox::process_event(XEvent *e) {
     Slit *slit = (Slit *) 0;
 
     if ((win = searchWindow(e->xunmap.window))) {
-      if (focused_window == win)
-        focused_window = (BlackboxWindow *) 0;
-      win->unmapNotifyEvent(&e->xunmap);
-      win = (BlackboxWindow*) 0;
+      if (e->xunmap.window == win->getClientWindow() ||
+          win->validateClient()) {
+        if (focused_window == win)
+          focused_window = (BlackboxWindow *) 0;
+        win->unmapNotifyEvent(&e->xunmap);
+        win = (BlackboxWindow*) 0;
+      }
     } else if ((slit = searchSlit(e->xunmap.window))) {
       slit->removeClient(e->xunmap.window);
     }
@@ -352,10 +355,12 @@ void Blackbox::process_event(XEvent *e) {
     Slit *slit = (Slit *) 0;
 
     if ((win = searchWindow(e->xdestroywindow.window))) {
-      if (focused_window == win)
-        focused_window = (BlackboxWindow *) 0;
-      win->destroyNotifyEvent(&e->xdestroywindow);
-      win = (BlackboxWindow*) 0;
+      if (e->xdestroywindow.window == win->getClientWindow()) {
+             if (focused_window == win)
+               focused_window = (BlackboxWindow *) 0;
+             win->destroyNotifyEvent(&e->xdestroywindow);
+             win = (BlackboxWindow*) 0;
+      }
     } else if ((slit = searchSlit(e->xdestroywindow.window))) {
       slit->removeClient(e->xdestroywindow.window, False);
     }
@@ -370,10 +375,12 @@ void Blackbox::process_event(XEvent *e) {
   case ReparentNotify: {
     BlackboxWindow *win = searchWindow(e->xreparent.window);
     if (win) {
-      if (focused_window == win)
-        focused_window = (BlackboxWindow *) 0;
-      win->reparentNotifyEvent(&e->xreparent);
-      win = (BlackboxWindow*) 0;
+      if (e->xreparent.window == win->getClientWindow()) {
+        if (focused_window == win)
+          focused_window = (BlackboxWindow *) 0;
+        win->reparentNotifyEvent(&e->xreparent);
+        win = (BlackboxWindow*) 0;
+      }
     } else {
       Slit *slit = searchSlit(e->xreparent.window);
       if (slit)

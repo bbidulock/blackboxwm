@@ -2173,10 +2173,7 @@ void BlackboxWindow::mapNotifyEvent(XMapEvent *ne) {
 }
 
 
-void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
-  if (ue->window != client.window || ! validateClient())
-    return;
-
+void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *) {
 #ifdef    DEBUG
   fprintf(stderr, i18n(WindowSet, WindowUnmapNotify,
                        "BlackboxWindow::unmapNotifyEvent() for 0x%lx\n"),
@@ -2210,19 +2207,14 @@ void BlackboxWindow::unmapNotifyEvent(XUnmapEvent *ue) {
 }
 
 
-void BlackboxWindow::destroyNotifyEvent(XDestroyWindowEvent *de) {
-  if (de->window == client.window) {
-    XUnmapWindow(display, frame.window);
+void BlackboxWindow::destroyNotifyEvent(XDestroyWindowEvent *) {
+  XUnmapWindow(display, frame.window);
 
-    delete this;
-  }
+  delete this;
 }
 
 
-void BlackboxWindow::reparentNotifyEvent(XReparentEvent *re) {
-  if (re->window != client.window)
-    return;
-
+void BlackboxWindow::reparentNotifyEvent(XReparentEvent *) {
 #ifdef    DEBUG
   fprintf(stderr,
           i18n(WindowSet, WindowReparentNotify,

@@ -314,11 +314,11 @@ public:
   void buttonPressEvent(XButtonEvent *be);
   void buttonReleaseEvent(XButtonEvent *re);
   void motionNotifyEvent(XMotionEvent *me);
-  void destroyNotifyEvent(XDestroyWindowEvent *de);
+  void destroyNotifyEvent(XDestroyWindowEvent */*unused*/);
   void mapRequestEvent(XMapRequestEvent *mre);
   void mapNotifyEvent(XMapEvent *ne);
-  void unmapNotifyEvent(XUnmapEvent *ue);
-  void reparentNotifyEvent(XReparentEvent *re);
+  void unmapNotifyEvent(XUnmapEvent */*unused*/);
+  void reparentNotifyEvent(XReparentEvent */*unused*/);
   void propertyNotifyEvent(Atom atom);
   void exposeEvent(XExposeEvent *ee);
   void configureRequestEvent(XConfigureRequestEvent *cr);
