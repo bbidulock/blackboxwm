@@ -2013,7 +2013,7 @@ void BlackboxWindow::redrawLabel(void) {
   }
 
   WindowStyle *style = screen->getWindowStyle();
-  BPen pen((flags.focused) ? style->l_text_focus : style->l_text_unfocus);
+  BPen pen((flags.focused) ? style->l_text_focus : style->l_text_unfocus, style->font);
   if (i18n.multibyte())
     XmbDrawString(display, frame.label, style->fontset, pen.gc(), dx,
                   (1 - style->fontset_extents->max_ink_extent.y),
