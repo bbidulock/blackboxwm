@@ -332,23 +332,23 @@ void Workspace::placeWindow(BlackboxWindow *win) {
       ((screen->getRowPlacementDirection() == BScreen::LeftRight) ? 1 : -1),
     delta_x = 8, delta_y = 8;
 
-  int test_x, test_y, place_x = 0, place_y = 0;
+  int place_x = start_pos_x, place_y = start_pos_y;
   LinkedListIterator<BlackboxWindow> it(windowList);
 
   switch (screen->getPlacementPolicy()) {
   case BScreen::RowSmartPlacement: {
-    test_y = (screen->getColPlacementDirection() == BScreen::TopBottom) ?
+    place_y = (screen->getColPlacementDirection() == BScreen::TopBottom) ?
       start_pos_y : availableArea.height - win_h - start_pos_y;
 
     while (!placed &&
 	   ((screen->getColPlacementDirection() == BScreen::BottomTop) ?
-	    test_y > 0 : test_y + win_h < (signed) availableArea.height)) {
-      test_x = (screen->getRowPlacementDirection() == BScreen::LeftRight) ?
+	    place_y > 0 : place_y + win_h < (signed) availableArea.height)) {
+      place_x = (screen->getRowPlacementDirection() == BScreen::LeftRight) ?
 	start_pos_x : availableArea.width - win_w - start_pos_x;
 
       while (!placed &&
 	     ((screen->getRowPlacementDirection() == BScreen::RightLeft) ?
-	      test_x > 0 : test_x + win_w < (signed) availableArea.width)) {
+	      place_x > 0 : place_x + win_w < (signed) availableArea.width)) {
         placed = True;
 
         it.reset();
@@ -359,43 +359,38 @@ void Workspace::placeWindow(BlackboxWindow *win) {
 	    ((curr->isShaded()) ? curr->getTitleHeight() : curr->getHeight()) +
             (screen->getBorderWidth() * 4);
 	  
-          if (curr->getXFrame() < test_x + win_w &&
-              curr->getXFrame() + curr_w > test_x &&
-              curr->getYFrame() < test_y + win_h &&
-              curr->getYFrame() + curr_h > test_y) {
+          if (curr->getXFrame() < place_x + win_w &&
+              curr->getXFrame() + curr_w > place_x &&
+              curr->getYFrame() < place_y + win_h &&
+              curr->getYFrame() + curr_h > place_y) {
             placed = False;
 	  }
         }
 
-        if (placed) {
-          place_x = test_x;
-          place_y = test_y;
-
-          break;
-        }
-
-	test_x += (change_x * delta_x);
+        if (! placed)
+	  place_x += (change_x * delta_x);
       }
 
-      test_y += (change_y * delta_y);
+      if (! placed)
+	place_y += (change_y * delta_y);
     }
 
     break;
   }
 
   case BScreen::ColSmartPlacement: {
-    test_x = (screen->getRowPlacementDirection() == BScreen::LeftRight) ?
+    place_x = (screen->getRowPlacementDirection() == BScreen::LeftRight) ?
       start_pos_x : availableArea.width - win_w - start_pos_x;
 
     while (!placed &&
 	   ((screen->getRowPlacementDirection() == BScreen::RightLeft) ?
-	    test_x > 0 : test_x + win_w < (signed) availableArea.width)) {
-      test_y = (screen->getColPlacementDirection() == BScreen::TopBottom) ?
+	    place_x > 0 : place_x + win_w < (signed) availableArea.width)) {
+      place_y = (screen->getColPlacementDirection() == BScreen::TopBottom) ?
 	start_pos_y : availableArea.height - win_h - start_pos_y;
       
       while (!placed &&
 	     ((screen->getColPlacementDirection() == BScreen::BottomTop) ?
-	      test_y > 0 : test_y + win_h < (signed) availableArea.height)) {
+	      place_y > 0 : place_y + win_h < (signed) availableArea.height)) {
         placed = True;
 
         it.reset();
@@ -406,25 +401,20 @@ void Workspace::placeWindow(BlackboxWindow *win) {
             ((curr->isShaded()) ? curr->getTitleHeight() : curr->getHeight()) +
             (screen->getBorderWidth() * 4);
 
-          if (curr->getXFrame() < test_x + win_w &&
-              curr->getXFrame() + curr_w > test_x &&
-              curr->getYFrame() < test_y + win_h &&
-              curr->getYFrame() + curr_h > test_y) {
+          if (curr->getXFrame() < place_x + win_w &&
+              curr->getXFrame() + curr_w > place_x &&
+              curr->getYFrame() < place_y + win_h &&
+              curr->getYFrame() + curr_h > place_y) {
             placed = False;
 	  }
         }
 
-	if (placed) {
-	  place_x = test_x;
-	  place_y = test_y;
-
-	  break;
-	}
-
-	test_y += (change_y * delta_y);
+	if (! placed)
+	  place_y += (change_y * delta_y);
       }
 
-      test_x += (change_x * delta_x);
+      if (! placed)
+	place_x += (change_x * delta_x);
     }
 
     break;
