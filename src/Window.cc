@@ -296,7 +296,7 @@ BlackboxWindow::~BlackboxWindow(void) {
 
   delete timer;
 
-  if (windowmenu) delete windowmenu;
+  delete windowmenu;
 
   if (client.mwm_hint)
     XFree(client.mwm_hint);

@@ -160,7 +160,8 @@ void Workspace::removeAll(void) {
 
 
 void Workspace::raiseWindow(BlackboxWindow *w) {
-  if (stackingList.front() == w) return;
+  // XXX: if the next line is used, blackbox parts stop raising over windows
+  //  if (stackingList.front() == w) return;
 
   BlackboxWindow *win = (BlackboxWindow *) 0, *bottom = w;
 

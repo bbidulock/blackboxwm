@@ -18,6 +18,8 @@ CVS warts:
 
 * BlackboxWindow::deiconify needs a new name, also look into show()
 
+* find out why Workspace::raiseWindow() is required for menus to behave
+
 Stuff TODO or On The Way(tm):
 -----------------------------
 ADD: add _BLACKBOX_STYLE and _BLACKBOX_MENU atoms so that bbtools, bbconf, etc.
@@ -56,6 +58,8 @@ ADD: way to have items in menu and store data other than their index number.
      not blackbox would have no way to know that the one labelled "Workspace 2"
      actually was workspace #2 and was referenced by workspace[1].
      something like menu.insert(item, data).
+
+CHECK: why do we have workspace_number and attrib.workspace in BlackboWindow?
 
 (still here) better support for window groups... i don't know when i'm going to
     ever get to this
