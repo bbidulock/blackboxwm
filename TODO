@@ -14,6 +14,8 @@ ADD: get volunteers to translate blackbox into other languages
 ADD: draw resize frames using the styles borderWidth... should be fairly
      simple to do...
 
+ADD: always on top/bottom support
+
 CHECK: look at why memory usage is up... RSS won't go < 1mb now
        i noticed a memory leak from improper handling of non-existant
        windows... this fixes this some... this will be on going

@@ -1428,7 +1428,7 @@ void BScreen::addNetizen(Netizen *n) {
 
   LinkedListIterator<Workspace> it(workspacesList);
   for (Workspace *w = it.current(); w; it++, w = it.current()) {
-    for (int i = 0; w->getCount(); i++)
+    for (int i = 0; i < w->getCount(); i++)
       n->sendWindowAdd(w->getWindow(i)->getClientWindow(),
 		       w->getWorkspaceID());
   }
