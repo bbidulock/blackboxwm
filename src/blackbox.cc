@@ -352,11 +352,13 @@ void Blackbox::process_event(XEvent *e) {
     break;
   }
 
-  // this event is quite rare and is usually handled in unmapNotify
-  // however, if the window is unmapped when the reparent event occurs
-  // the window manager never sees it because an unmap event is not sent
-  // to an already unmapped window
   case ReparentNotify: {
+    /*
+      this event is quite rare and is usually handled in unmapNotify
+      however, if the window is unmapped when the reparent event occurs
+      the window manager never sees it because an unmap event is not sent
+      to an already unmapped window.
+    */
     BlackboxWindow *win = searchWindow(e->xreparent.window);
     if (win) {
       win->reparentNotifyEvent(&e->xreparent);
@@ -529,28 +531,93 @@ void Blackbox::process_event(XEvent *e) {
   }
 
   case FocusIn: {
-    if (e->xfocus.detail != NotifyAncestor &&
-        e->xfocus.detail != NotifyInferior &&
-        e->xfocus.detail != NotifyNonlinear)
+    if (e->xfocus.detail != NotifyNonlinear) {
+      /*
+        don't process FocusIns when:
+        1. the new focus window isn't an ancestor or inferior of the old
+        focus window (NotifyNonlinear)
+      */
       break;
-    BlackboxWindow *win = searchWindow(e->xfocus.window);
-    if (win && ! win->isFocused()) {
-      win->setFocusFlag(True);
     }
+
+    BlackboxWindow *win = searchWindow(e->xfocus.window);
+    if (win) {
+      if (! win->isFocused())
+        win->setFocusFlag(True);
+
+      /*
+        set the event window to None.  when the FocusOut event handler calls
+        this function recursively, it uses this as an indication that focus
+        has moved to a known window.
+      */
+      e->xfocus.window = None;
+    }
+
     break;
   }
 
   case FocusOut: {
-    if ((e->xfocus.mode != NotifyNormal &&
-         e->xfocus.mode != NotifyWhileGrabbed) ||
-        (e->xfocus.detail != NotifyAncestor &&
-         e->xfocus.detail != NotifyNonlinearVirtual &&
-         e->xfocus.detail != NotifyNonlinear))
+    if (e->xfocus.detail != NotifyNonlinear) {
+      /*
+        don't process FocusOuts when:
+        2. the new focus window isn't an ancestor or inferior of the old
+        focus window (NotifyNonlinear)
+      */
       break;
+    }
+
     BlackboxWindow *win = searchWindow(e->xfocus.window);
     if (win && win->isFocused()) {
-      win->setFocusFlag(False);
+      /*
+        before we mark "win" as unfocused, we need to verify that focus is
+        going to a known location, is in a known location, or set focus
+        to a known location.
+      */
+
+      XEvent event;
+      // don't check the current focus if FocusOut was generated during a grab
+      bool check_focus = (e->xfocus.mode == NotifyNormal);
+
+      /*
+        First, check if there is a pending FocusIn event waiting.  if there
+        is, process it and determine if focus has moved to another window
+        (the FocusIn event handler sets the window in the event
+        structure to None to indicate this).
+      */
+      if (XCheckTypedEvent(getXDisplay(), FocusIn, &event)) {
+
+        process_event(&event);
+        if (event.xfocus.window == None) {
+          // focus has moved
+          check_focus = False;
+        }
+      }
+
+      if (check_focus) {
+        /*
+          Second, we query the X server for the current input focus.
+          to make sure that we keep a consistent state.
+        */
+        BlackboxWindow *focus;
+        Window w;
+        int revert;
+        XGetInputFocus(getXDisplay(), &w, &revert);
+        focus = searchWindow(w);
+        if (focus) {
+          /*
+            focus got from "win" to "focus" under some very strange
+            circumstances, and we need to make sure that the focus indication
+            is correct.
+          */
+          setFocusedWindow(focus);
+        } else {
+          // we have no idea where focus went... so we set it to somewhere
+          setFocusedWindow(0);
+        }
+      }
+
     }
+
     break;
   }
 
@@ -1549,9 +1616,13 @@ void Blackbox::timeout(void) {
 
 
 void Blackbox::setFocusedWindow(BlackboxWindow *win) {
+  if (focused_window && focused_window == win) // nothing to do
+    return;
+
   BScreen *old_screen = 0;
 
   if (focused_window) {
+    focused_window->setFocusFlag(False);
     old_screen = focused_window->getScreen();
   }
 
