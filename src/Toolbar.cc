@@ -289,7 +289,6 @@ void Toolbar::reconfigure(void) {
       } else {
         frame.clock_w = XTextWidth(screen->getToolbarStyle()->font, t, len);
       }
-      frame.clock_w += (frame.bevel_w * 4);
     }
   }
 #else // !HAVE_STRFTIME
@@ -297,7 +296,7 @@ void Toolbar::reconfigure(void) {
     XTextWidth(screen->getToolbarStyle()->font,
                i18n(ToolbarSet, ToolbarNoStrftimeLength, "00:00000"),
                strlen(i18n(ToolbarSet, ToolbarNoStrftimeLength,
-                           "00:00000"))) + (frame.bevel_w * 4);
+                           "00:00000")));
 #endif // HAVE_STRFTIME
 
   frame.workspace_label_w = 0;
@@ -314,19 +313,17 @@ void Toolbar::reconfigure(void) {
       width = XTextWidth(screen->getToolbarStyle()->font,
                      workspace_name.c_str(), workspace_name.length());
     }
-    width += (frame.bevel_w * 4);
 
     if (width > frame.workspace_label_w) frame.workspace_label_w = width;
   }
 
-  if (frame.workspace_label_w < frame.clock_w)
-    frame.workspace_label_w = frame.clock_w;
-  else if (frame.workspace_label_w > frame.clock_w)
-    frame.clock_w = frame.workspace_label_w;
+  frame.workspace_label_w = frame.clock_w =
+    std::max(frame.workspace_label_w, frame.clock_w) + (frame.bevel_w * 4);
 
+  // XXX: where'd the +6 come from?
   frame.window_label_w =
     (frame.rect.width() - (frame.clock_w + (frame.button_w * 4) +
-                    frame.workspace_label_w + (frame.bevel_w * 8) + 6));
+                           frame.workspace_label_w + (frame.bevel_w * 8) + 6));
 
   if (hidden) {
     XMoveResizeWindow(display, frame.window, frame.x_hidden, frame.y_hidden,
@@ -359,7 +356,7 @@ void Toolbar::reconfigure(void) {
                      frame.workspace_label_w + frame.window_label_w + 5),
                     frame.bevel_w + 1, frame.button_w, frame.button_w);
   XMoveResizeWindow(display, frame.clock,
-                    frame.rect.width() - frame.clock_w - frame.bevel_w,
+                    frame.rect.width() - frame.clock_w - (frame.bevel_w * 2),
                     frame.bevel_w, frame.clock_w, frame.label_h);
 
   ToolbarStyle *style = screen->getToolbarStyle();
