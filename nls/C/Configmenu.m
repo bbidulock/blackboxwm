@@ -16,6 +16,8 @@ $ #FocusNew
 # Focus New Windows
 $ #FocusLast
 # Focus Window on Workspace Change
+$ #DisableBindings
+# Disable Bindings with Scroll Lock
 $ #ClickToFocus
 # Click to Focus
 $ #SloppyFocus

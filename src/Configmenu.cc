@@ -53,6 +53,8 @@ Configmenu::Configmenu(BScreen *scr) : Basemenu(scr) {
               "Focus New Windows"), 4);
   insert(i18n(ConfigmenuSet, ConfigmenuFocusLast,
               "Focus Last Window on Workspace"), 5);
+  insert(i18n(ConfigmenuSet, ConfigmenuDisableBindings,
+              "Disable Bindings with Scroll Lock"), 6);
   update();
 
   setItemSelected(2, getScreen()->getImageControl()->doDither());
@@ -60,12 +62,15 @@ Configmenu::Configmenu(BScreen *scr) : Basemenu(scr) {
   setItemSelected(4, getScreen()->doFullMax());
   setItemSelected(5, getScreen()->doFocusNew());
   setItemSelected(6, getScreen()->doFocusLast());
+  setItemSelected(7, getScreen()->allowScrollLock());
 }
+
 
 Configmenu::~Configmenu(void) {
   delete focusmenu;
   delete placementmenu;
 }
+
 
 void Configmenu::itemSelected(int button, unsigned int index) {
   if (button != 1)
@@ -79,7 +84,7 @@ void Configmenu::itemSelected(int button, unsigned int index) {
   switch(item->function()) {
   case 1: { // dither
     getScreen()->getImageControl()->
-      setDither((! getScreen()->getImageControl()->doDither()));
+      setDither(! getScreen()->getImageControl()->doDither());
 
     setItemSelected(index, getScreen()->getImageControl()->doDither());
 
@@ -87,7 +92,7 @@ void Configmenu::itemSelected(int button, unsigned int index) {
   }
 
   case 2: { // opaque move
-    getScreen()->saveOpaqueMove((! getScreen()->doOpaqueMove()));
+    getScreen()->saveOpaqueMove(! getScreen()->doOpaqueMove());
 
     setItemSelected(index, getScreen()->doOpaqueMove());
 
@@ -95,22 +100,29 @@ void Configmenu::itemSelected(int button, unsigned int index) {
   }
 
   case 3: { // full maximization
-    getScreen()->saveFullMax((! getScreen()->doFullMax()));
+    getScreen()->saveFullMax(! getScreen()->doFullMax());
 
     setItemSelected(index, getScreen()->doFullMax());
 
     break;
   }
   case 4: { // focus new windows
-    getScreen()->saveFocusNew((! getScreen()->doFocusNew()));
+    getScreen()->saveFocusNew(! getScreen()->doFocusNew());
 
     setItemSelected(index, getScreen()->doFocusNew());
     break;
   }
 
   case 5: { // focus last window on workspace
-    getScreen()->saveFocusLast((! getScreen()->doFocusLast()));
+    getScreen()->saveFocusLast(! getScreen()->doFocusLast());
     setItemSelected(index, getScreen()->doFocusLast());
+    break;
+  }
+
+  case 6: { // disable keybindings with Scroll Lock
+    getScreen()->saveAllowScrollLock(! getScreen()->allowScrollLock());
+    setItemSelected(index, getScreen()->allowScrollLock());
+    getScreen()->reconfigure();
     break;
   }
   } // switch
@@ -135,7 +147,7 @@ Configmenu::Focusmenu::Focusmenu(Configmenu *cm) : Basemenu(cm->getScreen()) {
   insert(i18n(ConfigmenuSet, ConfigmenuClickRaise, "Click Raise"), 4);
   update();
 
-  setItemSelected(0, (! getScreen()->isSloppyFocus()));
+  setItemSelected(0, ! getScreen()->isSloppyFocus());
   setItemSelected(1, getScreen()->isSloppyFocus());
   setItemEnabled(2, getScreen()->isSloppyFocus());
   setItemSelected(2, getScreen()->doAutoRaise());
@@ -173,7 +185,7 @@ void Configmenu::Focusmenu::itemSelected(int button, unsigned int index) {
     break;
   }
 
-  setItemSelected(0, (! getScreen()->isSloppyFocus()));
+  setItemSelected(0, ! getScreen()->isSloppyFocus());
   setItemSelected(1, getScreen()->isSloppyFocus());
   setItemEnabled(2, getScreen()->isSloppyFocus());
   setItemSelected(2, getScreen()->doAutoRaise());

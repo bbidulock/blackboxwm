@@ -61,6 +61,8 @@ Changes from 0.62.1 to 0.65.0:
     blackbox runs faster and is still one of the leanest window managers out
     there today.
   - smart window placement ignores shaded windows now
+  - new option in the Config menu which allows Scroll Lock to disable
+    Blackbox's keybindings.
   - first the resurrection of the code and now the return of Brad!  Blackbox
     is only getting better with age.
 

@@ -741,25 +741,29 @@ void BlackboxWindow::reconfigure(void) {
 
 
 void BlackboxWindow::grabButtons(void) {
-  if ((! screen->isSloppyFocus()) || screen->doClickRaise())
+  if (! screen->isSloppyFocus() || screen->doClickRaise())
     // grab button 1 for changing focus/raising
     blackbox->grabButton(Button1, 0, frame.plate, True, ButtonPressMask,
-                         GrabModeSync, GrabModeSync, frame.plate, None);
+                         GrabModeSync, GrabModeSync, frame.plate, None,
+                         screen->allowScrollLock());
 
   if (functions & Func_Move)
     blackbox->grabButton(Button1, Mod1Mask, frame.window, True,
                          ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
                          GrabModeAsync, frame.window,
-                         blackbox->getMoveCursor());
+                         blackbox->getMoveCursor(),
+                         screen->allowScrollLock());
   if (functions & Func_Resize)
     blackbox->grabButton(Button3, Mod1Mask, frame.window, True,
                          ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
                          GrabModeAsync, frame.window,
-                         blackbox->getLowerRightAngleCursor());
+                         blackbox->getLowerRightAngleCursor(),
+                         screen->allowScrollLock());
   // alt+middle lowers the window
   blackbox->grabButton(Button2, Mod1Mask, frame.window, True,
                        ButtonReleaseMask, GrabModeAsync, GrabModeAsync,
-                       frame.window, None);
+                       frame.window, None,
+                       screen->allowScrollLock());
 }
 
 
@@ -2859,6 +2863,7 @@ void BlackboxWindow::restore(bool remap) {
   XEvent ev;
   if (XCheckTypedWindowEvent(blackbox->getXDisplay(), client.window,
                              ReparentNotify, &ev)) {
+    fprintf(stderr, "0x%lx: heard a reparent\n", client.window);
     remap = True;
   } else {
     // according to the ICCCM - if the client doesn't reparent to

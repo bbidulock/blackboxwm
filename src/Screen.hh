@@ -149,7 +149,7 @@ private:
 
     bool toolbar_on_top, toolbar_auto_hide, sloppy_focus, auto_raise,
       auto_edge_balance, image_dither, ordered_dither, opaque_move, full_max,
-      focus_new, focus_last, click_raise;
+      focus_new, focus_last, click_raise, allow_scroll_lock;
     BColor border_color;
     XrmDatabase stylerc;
 
@@ -223,6 +223,7 @@ public:
   inline bool doFullMax(void) const { return resource.full_max; }
   inline bool doFocusNew(void) const { return resource.focus_new; }
   inline bool doFocusLast(void) const { return resource.focus_last; }
+  inline bool allowScrollLock(void) const { return resource.allow_scroll_lock;}
 
   inline const GC &getOpGC(void) const { return opGC; }
 
@@ -301,6 +302,8 @@ public:
   inline void saveFullMax(bool f) { resource.full_max = f; }
   inline void saveFocusNew(bool f) { resource.focus_new = f; }
   inline void saveFocusLast(bool f) { resource.focus_last = f; }
+  inline void saveAllowScrollLock(bool a) { resource.allow_scroll_lock = a; }
+
   inline void iconUpdate(void) { iconmenu->update(); }
 
 #ifdef    HAVE_STRFTIME

@@ -1065,6 +1065,10 @@ void Blackbox::save_rc(void) {
             ((screen->doFocusLast()) ? "True" : "False"));
     XrmPutLineResource(&new_blackboxrc, rc_string);
 
+    sprintf(rc_string, "session.screen%d.disableBindingsWithScrollLock: %s",
+            screen_number, ((screen->allowScrollLock()) ? "True" : "False"));
+    XrmPutLineResource(&new_blackboxrc, rc_string);
+
     sprintf(rc_string, "session.screen%d.rowPlacementDirection: %s",
             screen_number,
             ((screen->getRowPlacementDirection() == BScreen::LeftRight) ?
@@ -1289,6 +1293,17 @@ void Blackbox::load_rc(BScreen *screen) {
                      &value) &&
       ! strncasecmp(value.addr, "true", value.size)) {
     screen->saveFocusLast(True);
+  }
+
+  sprintf(name_lookup,  "session.screen%d.disableBindingsWithScrollLock",
+          screen_number);
+  sprintf(class_lookup, "Session.Screen%d.disableBindingsWithScrollLock",
+          screen_number);
+  screen->saveAllowScrollLock(False);
+  if (XrmGetResource(database, name_lookup, class_lookup, &value_type,
+                     &value) &&
+      ! strncasecmp(value.addr, "true", value.size)) {
+    screen->saveAllowScrollLock(True);
   }
 
   sprintf(name_lookup,  "session.screen%d.rowPlacementDirection",
