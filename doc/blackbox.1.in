@@ -354,57 +354,50 @@ Click the maximize button to maximize the window horizontally.
 .BR "Alt + Button Three" ""
 Click anywhere on client window and drag to resize the window.
 
-.EX
+.TP
 .\"
 .\" ----- control menu -----
 .\"
 .B The control menu contains:
-.EE
-.EX
+.TP
 .B Send To ...
+.EX
 .BR "Button One" "  (Left Button)"
 Click to send this window to another workspace.  
+.EE
+.EX
 .BR "Button Two" "  (Middle Button)"
 Click to send this window to another workspace, change 
 to that workspace and keep the application focused.
 as well.
-.EE
-.EX
+.TP
 .B Shade
 This is the same action as Double-Click with Button One.
-.EE
-.EX
+.TP
 .B Iconify
 Hide the window.  It can be accessed with the icon menu.
-.EE
-.EX
+.TP
 .B Maximize
 Toggle window maximization.
-.EE
-.EX
+.TP
 .B Raise
 Bring window to the front above the other windows and
 focus it.
-.EE
-.EX
+.TP
 .B Lower
 Drop the window below the other ones.
-.EE
-.EX
+.TP
 .B Stick
 Stick this window to the glass on the inside of
 the monitor so it does not hide when you change 
 workspaces.
-.EE 
-.EX
+.TP
 .B Kill Client
 This kills the client program with -SIGKILL (-9)
 Only use this as a last resort.
-.EE
-.EX
+.TP
 .B Close
 Send a close signal to the client application.
-.EE
 .\"
 .\" * * * * * STYLES * * * * * 
 .\"
