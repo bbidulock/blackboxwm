@@ -169,8 +169,7 @@ namespace bt {
       Pixmap check;
       Pixmap close;
     } bitmap;
-    unsigned int title_margin, frame_margin;
-    unsigned int item_indent;
+    unsigned int title_margin, frame_margin, item_indent;
 
     static MenuStyle **styles;
   };
