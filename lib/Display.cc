@@ -68,6 +68,10 @@ bt::Display::Display(const char *dpy_name, bool multi_head) {
     ::exit(2);
   }
 
+#ifdef DEBUG
+  XSynchronize(xdisplay, True);
+#endif // DEBUG
+
   if (fcntl(ConnectionNumber(xdisplay), F_SETFD, 1) == -1) {
     fprintf(stderr, "bt::Display: failed to mark connection close-on-exec\n");
     ::exit(2);
