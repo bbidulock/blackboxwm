@@ -47,6 +47,11 @@ extern "C" {
 #include <map>
 #include <string>
 
+// always include this just for the #defines
+// this keeps the calls to i18n->getMessage clean, otherwise we have to
+// add ifdefs to every call to getMessage
+#include "../nls/blackbox-nls.hh"
+
 #include "Application.hh"
 #include "Image.hh"
 #include "BlackboxResource.hh"

@@ -25,11 +25,6 @@
 #ifndef   __i18n_h
 #define   __i18n_h
 
-// always include this just for the #defines
-// this keeps the calls to i18n->getMessage clean, otherwise we have to
-// add ifdefs to every call to getMessage
-#include "../nls/blackbox-nls.hh"
-
 extern "C" {
 #ifdef    HAVE_LOCALE_H
 #  include <locale.h>
