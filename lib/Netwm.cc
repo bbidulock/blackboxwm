@@ -29,6 +29,7 @@ Netwm::Netwm(Display* _display): display(_display) {
   char* atoms[] = {
     "UTF8_STRING",
     "_NET_SUPPORTED",
+    "_NET_CLIENT_LIST",
     "_NET_NUMBER_OF_DESKTOPS",
     "_NET_DESKTOP_GEOMETRY",
     "_NET_CURRENT_DESKTOP",
@@ -40,31 +41,40 @@ Netwm::Netwm(Display* _display): display(_display) {
     "_NET_WM_NAME",
     "_NET_WM_ICON_NAME"
   };
-  Atom atoms_return[12];
-  XInternAtoms(display, atoms, 12, False, atoms_return);
+  Atom atoms_return[13];
+  XInternAtoms(display, atoms, 13, False, atoms_return);
 
   utf8_string = atoms_return[0];
   net_supported = atoms_return[1];
-  net_number_of_desktops = atoms_return[2];
-  net_desktop_geometry = atoms_return[3];
-  net_current_desktop = atoms_return[4];
-  net_desktop_names = atoms_return[5];
-  net_active_window = atoms_return[6];
-  net_workarea = atoms_return[7];
-  net_supporting_wm_check = atoms_return[8];
-  net_close_window = atoms_return[9];
-  net_wm_name = atoms_return[10];
-  net_wm_icon_name = atoms_return[11];
+  net_client_list = atoms_return[2];
+  net_number_of_desktops = atoms_return[3];
+  net_desktop_geometry = atoms_return[4];
+  net_current_desktop = atoms_return[5];
+  net_desktop_names = atoms_return[6];
+  net_active_window = atoms_return[7];
+  net_workarea = atoms_return[8];
+  net_supporting_wm_check = atoms_return[9];
+  net_close_window = atoms_return[10];
+  net_wm_name = atoms_return[11];
+  net_wm_icon_name = atoms_return[12];
 }
 
 
 // root window properties
 
-void Netwm::setSupported(Window target, Atom* supported,
+void Netwm::setSupported(Window target, Atom supported[],
                          unsigned int count) const {
   XChangeProperty(display, target, net_supported, XA_ATOM,
                   32, PropModeReplace,
                   reinterpret_cast<uchar*>(supported), count);
+}
+
+
+void Netwm::setClientList(Window target, const Window clientList[],
+                          unsigned int count) const {
+  XChangeProperty(display, target, net_client_list, XA_WINDOW,
+                  32, PropModeReplace,
+                  reinterpret_cast<uchar*>(&clientList), count);
 }
 
 
@@ -84,7 +94,7 @@ void Netwm::setDesktopGeometry(Window target,
 }
 
 
-void Netwm::setWorkarea(Window target, unsigned long *workarea,
+void Netwm::setWorkarea(Window target, unsigned long workarea[],
                         unsigned int count) const {
   XChangeProperty(display, target, net_workarea,
                   XA_CARDINAL, 32, PropModeReplace,

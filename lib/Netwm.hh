@@ -39,6 +39,7 @@ public:
 
   // root window properties
   inline Atom supported(void) const { return net_supported; }
+  inline Atom clientList(void) const { return net_client_list; }
   inline Atom numberOfDesktops(void) const { return net_number_of_desktops; }
   inline Atom desktopGeometry(void) const { return net_desktop_geometry; }
   inline Atom currentDesktop(void) const { return net_current_desktop; }
@@ -48,13 +49,15 @@ public:
   inline Atom supportingWMCheck(void) const { return net_supporting_wm_check; }
 
   void setSupported(Window target, Atom supported[], unsigned int count) const;
+  void setClientList(Window target, const Window clientList[],
+                     unsigned int count) const;
   void setNumberOfDesktops(Window target, unsigned int count) const;
   void setDesktopGeometry(Window target,
                           unsigned int width, unsigned int height) const;
   void setCurrentDesktop(Window target, unsigned int number) const;
   void setDesktopNames(Window target, const std::string& names) const;
   void setActiveWindow(Window target, Window data) const;
-  void setWorkarea(Window target, unsigned long *workarea,
+  void setWorkarea(Window target, unsigned long workarea[],
                    unsigned int count) const;
   void setSupportingWMCheck(Window target, Window data) const;
 
@@ -81,10 +84,10 @@ private:
 
   Display *display;
   Atom utf8_string,
-    net_supported, net_number_of_desktops, net_desktop_geometry,
-    net_current_desktop, net_desktop_names, net_active_window, net_workarea,
-    net_supporting_wm_check, net_close_window, net_wm_name,
-    net_wm_icon_name;
+    net_supported, net_client_list, net_number_of_desktops,
+    net_desktop_geometry, net_current_desktop, net_desktop_names,
+    net_active_window, net_workarea, net_supporting_wm_check,
+    net_close_window, net_wm_name, net_wm_icon_name;
 };
 
 #endif // _blackbox_netwm_hh

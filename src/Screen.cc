@@ -281,6 +281,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   updateDesktopNamesHint();
 
   Atom supported[] = {
+    blackbox->netwm()->clientList(),
     blackbox->netwm()->numberOfDesktops(),
     blackbox->netwm()->desktopGeometry(),
     blackbox->netwm()->currentDesktop(),
@@ -292,7 +293,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
     blackbox->netwm()->wmIconName()
   };
 
-  blackbox->netwm()->setSupported(getRootWindow(), supported, 9);
+  blackbox->netwm()->setSupported(getRootWindow(), supported, 10);
 
   unsigned int i, j, nchild;
   Window r, p, *children;
@@ -337,6 +338,8 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
   }
 
   XFree(children);
+
+  updateClientListHint();
 
   // call this again just in case a window we found updates the Strut list
   updateAvailableArea();
@@ -900,6 +903,14 @@ void BScreen::changeWorkspaceID(unsigned int id) {
 }
 
 
+void BScreen::addWindow(Window w) {
+  manageWindow(w);
+  BlackboxWindow *win = blackbox->findWindow(w);
+  if (win)
+    updateClientListHint();
+}
+
+
 void BScreen::manageWindow(Window w) {
   XWMHints *wmhint = XGetWMHints(blackbox->getXDisplay(), w);
   if (wmhint && (wmhint->flags & StateHint) &&
@@ -920,6 +931,12 @@ void BScreen::manageWindow(Window w) {
   mre.window = w;
   if (blackbox->isStartup()) win->restoreAttributes();
   win->mapRequestEvent(&mre);
+}
+
+
+void BScreen::releaseWindow(BlackboxWindow *w, bool remap) {
+  unmanageWindow(w, remap);
+  updateClientListHint();
 }
 
 
@@ -2116,4 +2133,20 @@ void BScreen::updateDesktopNamesHint(void) const {
     names += (*it)->getName() + '\0';
 
   blackbox->netwm()->setDesktopNames(getRootWindow(), names);
+}
+
+
+void BScreen::updateClientListHint(void) const {
+  if (windowList.empty()) {
+    blackbox->netwm()->setClientList(getRootWindow(), NULL, 0);
+    return;
+  }
+
+  std::vector<Window> clientList(windowList.size());
+
+  std::transform(windowList.begin(), windowList.end(), clientList.begin(),
+                 std::mem_fun(&BlackboxWindow::getClientWindow));
+  
+  blackbox->netwm()->setClientList(getRootWindow(), &clientList[0],
+                                   clientList.size());
 }

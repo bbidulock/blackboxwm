@@ -2357,7 +2357,7 @@ void BlackboxWindow::unmapNotifyEvent(const XUnmapEvent *ue) {
           client.window);
 #endif // DEBUG
 
-  screen->unmanageWindow(this, False);
+  screen->releaseWindow(this, False);
 }
 
 
@@ -2370,7 +2370,7 @@ void BlackboxWindow::destroyNotifyEvent(const XDestroyWindowEvent *de) {
           client.window);
 #endif // DEBUG
 
-  screen->unmanageWindow(this, False);
+  screen->releaseWindow(this, False);
 }
 
 
@@ -2386,7 +2386,7 @@ void BlackboxWindow::reparentNotifyEvent(const XReparentEvent *re) {
   XEvent ev;
   ev.xreparent = *re;
   XPutBackEvent(blackbox->getXDisplay(), &ev);
-  screen->unmanageWindow(this, True);
+  screen->releaseWindow(this, True);
 }
 
 

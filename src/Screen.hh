@@ -191,9 +191,13 @@ private:
   void InitMenu(void);
   void LoadStyle(void);
 
+  void manageWindow(Window w);
+  void unmanageWindow(BlackboxWindow *w, bool remap);
+
   void updateAvailableArea(void);
   void updateWorkareaHint(void) const;
   void updateDesktopNamesHint(void) const;
+  void updateClientListHint(void) const;
 
 public:
   enum { RowSmartPlacement = 1, ColSmartPlacement, CascadePlacement, LeftRight,
@@ -343,8 +347,9 @@ public:
   void addIcon(BlackboxWindow *w);
   void removeIcon(BlackboxWindow *w);
 
-  void manageWindow(Window w);
-  void unmanageWindow(BlackboxWindow *w, bool remap);
+  void addWindow(Window w);
+  void releaseWindow(BlackboxWindow *w, bool remap);
+
   void raiseWindows(Window *workspace_stack, unsigned int num);
   void reassociateWindow(BlackboxWindow *w, unsigned int wkspc_id);
   void propagateWindowName(const BlackboxWindow *bw);

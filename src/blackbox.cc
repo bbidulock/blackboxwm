@@ -238,7 +238,7 @@ void Blackbox::process_event(XEvent *e) {
         screen = findScreen(wattrib.root);
         assert(screen != 0); // this should never happen
       }
-      screen->manageWindow(e->xmaprequest.window);
+      screen->addWindow(e->xmaprequest.window);
     }
 
     break;
