@@ -31,6 +31,9 @@ CHANGE: sigaction is defined by POSIX.1, so we should drop the older
         objects to making blackbox require a POSIX.1 compliant host
         should speak up
 
+ADD: documentation and examples for Rect, since the implementation seems
+     to confuse people
+
 FIX: window colormap installation should follow focus... it doesn't at
      the moment, and the changes in the event handling have removed
      colormap installation completely.
