@@ -41,6 +41,8 @@ CVS warts:
 
 Stuff TODO or On The Way(tm):
 -----------------------------
+CHECK: casts there is surely some cruft there
+
 ADD: add _BLACKBOX_STYLE and _BLACKBOX_MENU atoms so that bbtools, bbconf, etc.
      can get the current path to the style in use and menu.
 

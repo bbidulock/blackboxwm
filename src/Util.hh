@@ -29,7 +29,7 @@
 class Rect {
 public:
   Rect(void) : _x1(0), _y1(0), _x2(0), _y2(0) { }
-  Rect(int __x, int __y, int __w, int __h)
+  Rect(int __x, int __y, unsigned int __w, unsigned int __h)
   { setRect(__x, __y, __w, __h); }
   explicit Rect(const XRectangle& xrect)
   { setRect(xrect.x, xrect.y, xrect.width, xrect.height); }
@@ -50,16 +50,16 @@ public:
   void setPos(int __x, int __y)
   { _x2 += __x - _x1; _x1 = __x; _y2 += __y - _y1; _y1 = __y; }
 
-  int width(void) const { return _x2 - _x1 + 1; }
-  void setWidth(int __w) { _x2 = __w + _x1 - 1; }
+  unsigned int width(void) const { return _x2 - _x1 + 1; }
+  void setWidth(unsigned int __w) { _x2 = __w + _x1 - 1; }
 
-  int height(void) const { return _y2 - _y1 + 1; }
-  void setHeight(int __h) { _y2 = __h + _y1 - 1; }
+  unsigned int height(void) const { return _y2 - _y1 + 1; }
+  void setHeight(unsigned int __h) { _y2 = __h + _y1 - 1; }
 
-  void setSize(int __w, int __h)
+  void setSize(unsigned int __w, unsigned int __h)
   { setWidth(__w); setHeight(__h); }
 
-  void setRect(int __x, int __y, int __w, int __h)
+  void setRect(int __x, int __y, unsigned int __w, unsigned int __h)
   { setPos(__x, __y); setSize(__w, __h); }
 
   void setCoords(int __l, int __t, int __r, int __b)
