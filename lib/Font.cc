@@ -113,8 +113,6 @@ void bt::Font::unload(void) {
     // found
     if (--it->second.count == 0) {
       // no more references to this font, free it
-      fprintf(stderr, "  removing from cache\n");
-
       if (it->second.fontset != NULL)
         XFreeFontSet(display()->XDisplay(), it->second.fontset);
       if (it->second.font != NULL)
