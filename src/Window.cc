@@ -3038,7 +3038,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
         blackbox->XGrabServer();
 
         frame.changing = frame.rect;
-        screen->showPosition(frame.changing.x(), frame.changing.y());
+        screen->showGeometry(BScreen::Position, frame.changing);
 
         bt::Pen pen(screen->screenNumber(), bt::Color(0xff, 0xff, 0xff));
         const int hw = frame.border_w / 2;
@@ -3093,7 +3093,7 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
                        frame.changing.height() - frame.border_w);
       }
 
-      screen->showPosition(dx, dy);
+      screen->showGeometry(BScreen::Position, bt::Rect(dx, dy, 0, 0));
     }
   } else if (hasWindowFunction(WindowFunctionResize) &&
              (event->state & Button1Mask &&
@@ -3388,7 +3388,7 @@ void BlackboxWindow::showGeometry(const bt::Rect &r) const {
     h /= client.wmnormal.height_inc;
   }
 
-  screen->showGeometry(w, h);
+  screen->showGeometry(BScreen::Size, bt::Rect(0, 0, w, h));
 }
 
 

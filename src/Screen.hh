@@ -195,8 +195,9 @@ public:
   void toggleFocusModel(FocusModel model);
   void rereadMenu(void);
   void shutdown(void);
-  void showPosition(int x, int y);
-  void showGeometry(unsigned int gx, unsigned int gy);
+
+  enum GeometryType { Position, Size };
+  void showGeometry(GeometryType type, const bt::Rect &rect);
   void hideGeometry(void);
 
   void clientMessageEvent(const XClientMessageEvent * const event);

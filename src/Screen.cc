@@ -114,7 +114,6 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     XCreateSimpleWindow(blackbox->XDisplay(), screen_info.rootWindow(),
                         0, 0, screen_info.width(), screen_info.height(), 0,
                         0l, 0l);
-  XSetWindowBackgroundPixmap(blackbox->XDisplay(), empty_window, None);
 
   updateGeomWindow();
 
@@ -337,46 +336,36 @@ BScreen::~BScreen(void) {
 
 
 void BScreen::updateGeomWindow(void) {
-  bt::Rect geomr = bt::textRect(screen_info.screenNumber(),
-                                _resource.windowStyle()->font,
-                                "m:mmmm    m:mmmm");
-  geom_w = geomr.width() + (_resource.bevelWidth() * 2);
-  geom_h = geomr.height() + (_resource.bevelWidth() * 2);
+  const ScreenResource::WindowStyle * const style = _resource.windowStyle();
+  bt::Rect geomr =
+    bt::textRect(screen_info.screenNumber(), style->font, "m:mmmm    m:mmmm");
+
+  geom_w = geomr.width() + (style->bevel_width * 2);
+  geom_h = geomr.height() + (style->bevel_width * 2);
 
   if (geom_window == None) {
     XSetWindowAttributes setattrib;
-    unsigned long mask = CWBorderPixel | CWColormap | CWSaveUnder;
-    setattrib.border_pixel =
-      _resource.borderColor()->pixel(screen_info.screenNumber());
+    unsigned long mask = CWColormap | CWSaveUnder;
     setattrib.colormap = screen_info.colormap();
     setattrib.save_under = True;
 
     geom_window =
       XCreateWindow(blackbox->XDisplay(), screen_info.rootWindow(),
-                    0, 0, geom_w, geom_h, _resource.borderWidth(),
-                    screen_info.depth(), InputOutput,
+                    0, 0, geom_w, geom_h, 0, screen_info.depth(), InputOutput,
                     screen_info.visual(), mask, &setattrib);
-  } else {
-    XSetWindowBorderWidth(blackbox->XDisplay(), geom_window,
-                          _resource.borderWidth());
-    XSetWindowBorder(blackbox->XDisplay(), geom_window,
-                     _resource.borderColor()->pixel(screen_info.screenNumber()));
   }
 
-  bt::Texture texture = _resource.windowStyle()->focus.label;
+  const bt::Texture &texture =
+    (style->focus.label.texture() == bt::Texture::Parent_Relative)
+    ? style->focus.title
+    : style->focus.label;
+  geom_w += (texture.borderWidth() * 2);
+  geom_h += (texture.borderWidth() * 2);
   geom_pixmap = bt::PixmapCache::find(screen_info.screenNumber(),
-                                      texture, geom_w, geom_h, geom_pixmap);
-  if (geom_pixmap == ParentRelative) {
-    texture = _resource.windowStyle()->focus.title;
-    geom_pixmap = bt::PixmapCache::find(screen_info.screenNumber(),
-                                        texture, geom_w, geom_h, geom_pixmap);
-  }
-  if (! geom_pixmap)
-    XSetWindowBackground(blackbox->XDisplay(), geom_window,
-                         texture.color().pixel(screen_info.screenNumber()));
-  else
-    XSetWindowBackgroundPixmap(blackbox->XDisplay(),
-                               geom_window, geom_pixmap);
+                                      texture,
+                                      geom_w,
+                                      geom_h,
+                                      geom_pixmap);
 }
 
 
@@ -1299,7 +1288,7 @@ void BScreen::shutdown(void) {
 }
 
 
-void BScreen::showPosition(int x, int y) {
+void BScreen::showGeometry(GeometryType type, const bt::Rect &rect) {
   if (! geom_visible) {
     XMoveResizeWindow(blackbox->XDisplay(), geom_window,
                       (screen_info.width() - geom_w) / 2,
@@ -1311,43 +1300,35 @@ void BScreen::showPosition(int x, int y) {
   }
 
   char label[80];
-  sprintf(label, "X:%4d    Y:%4d", x, y);
-
-  XClearWindow(blackbox->XDisplay(), geom_window);
-
-  bt::Pen pen(screen_info.screenNumber(),
-              _resource.windowStyle()->focus.text);
-  bt::Rect rect(_resource.bevelWidth(), _resource.bevelWidth(),
-                geom_w - (_resource.bevelWidth() * 2),
-                geom_h - (_resource.bevelWidth() * 2));
-  bt::drawText(_resource.windowStyle()->font, pen, geom_window, rect,
-               _resource.windowStyle()->alignment, label);
-}
-
-
-void BScreen::showGeometry(unsigned int gx, unsigned int gy) {
-  if (! geom_visible) {
-    XMoveResizeWindow(blackbox->XDisplay(), geom_window,
-                      (screen_info.width() - geom_w) / 2,
-                      (screen_info.height() - geom_h) / 2, geom_w, geom_h);
-    XMapWindow(blackbox->XDisplay(), geom_window);
-    XRaiseWindow(blackbox->XDisplay(), geom_window);
-
-    geom_visible = True;
+  switch (type) {
+  case Position:
+    sprintf(label, "X:%4d    Y:%4d", rect.x(), rect.y());
+    break;
+  case Size:
+    sprintf(label, "W:%4u    H:%4u", rect.width(), rect.height());
+    break;
+  default:
+    assert(0);
   }
 
-  char label[80];
-  sprintf(label, "W:%4u    H:%4u", gx, gy);
-
-  XClearWindow(blackbox->XDisplay(), geom_window);
-
-  bt::Pen pen(screen_info.screenNumber(),
-              _resource.windowStyle()->focus.text);
-  bt::Rect rect(_resource.bevelWidth(), _resource.bevelWidth(),
-                geom_w - (_resource.bevelWidth() * 2),
-                geom_h - (_resource.bevelWidth() * 2));
-  bt::drawText(_resource.windowStyle()->font, pen, geom_window, rect,
-               _resource.windowStyle()->alignment, label);
+  const ScreenResource::WindowStyle * const style = _resource.windowStyle();
+  const bt::Texture &texture =
+    (style->focus.label.texture() == bt::Texture::Parent_Relative)
+    ? style->focus.title
+    : style->focus.label;
+  bt::Rect u(0, 0, geom_w, geom_h);
+  bt::drawTexture(screen_info.screenNumber(), texture,
+                  geom_window, u, u, geom_pixmap);
+  bt::drawText(style->font,
+               bt::Pen(screen_info.screenNumber(),
+                       style->focus.text),
+               geom_window,
+               bt::Rect(style->bevel_width,
+                        style->bevel_width,
+                        geom_w - (style->bevel_width * 2),
+                        geom_h - (style->bevel_width * 2)),
+               style->alignment,
+               label);
 }
 
 
