@@ -1101,7 +1101,6 @@ void BlackboxWindow::getWMNormalHints(void) {
     availableArea changes max_width/height will be incorrect and lead to odd
     rendering bugs.
   */
-  const bt::Rect& screen_area = screen->getRect();
   client.max_width = (unsigned)-1;
   client.max_height = (unsigned)-1;
 
