@@ -832,8 +832,8 @@ void Toolbar::edit(void)
     int foo;
 
   editing = True;
-  if (XGetInputFocus(*blackbox, &window, &foo) &&
-      window == frame.workspace_label)
+  XGetInputFocus(*blackbox, &window, &foo);
+  if(window == frame.workspace_label)
     return;
 
   XSetInputFocus(*blackbox, frame.workspace_label,
