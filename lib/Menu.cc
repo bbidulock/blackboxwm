@@ -567,6 +567,8 @@ void bt::Menu::removeItem(unsigned int id) {
     updateSize();
     XClearArea(_app.getXDisplay(), _window,
                0, 0, _rect.width(), _rect.height(), True);
+  } else {
+    _size_dirty = true;
   }
 }
 
@@ -589,6 +591,8 @@ void bt::Menu::removeIndex(unsigned int index) {
     updateSize();
     XClearArea(_app.getXDisplay(), _window,
                0, 0, _rect.width(), _rect.height(), True);
+  } else {
+    _size_dirty = true;
   }
 }
 
@@ -601,6 +605,8 @@ void bt::Menu::clear(void) {
     updateSize();
     XClearArea(_app.getXDisplay(), _window,
                0, 0, _rect.width(), _rect.height(), True);
+  } else {
+    _size_dirty = true;
   }
 }
 
@@ -612,6 +618,8 @@ void bt::Menu::showTitle(void) {
     updateSize();
     XClearArea(_app.getXDisplay(), _window,
                0, 0, _rect.width(), _rect.height(), True);
+  } else {
+    _size_dirty = true;
   }
 }
 
@@ -623,6 +631,8 @@ void bt::Menu::hideTitle(void) {
     updateSize();
     XClearArea(_app.getXDisplay(), _window,
                0, 0, _rect.width(), _rect.height(), True);
+  } else {
+    _size_dirty = true;
   }
 }
 
