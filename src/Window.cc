@@ -1279,7 +1279,7 @@ void BlackboxWindow::getMWMHints(void) {
     if (mwmhints->functions & MWM_FUNC_ALL) {
       client.functions = AllWindowFunctions;
     } else {
-      client.functions = 0l;
+      client.functions = 0;
 
       if (mwmhints->functions & MWM_FUNC_RESIZE)
         client.functions |= WindowFunctionResize;
@@ -1298,7 +1298,7 @@ void BlackboxWindow::getMWMHints(void) {
     if (mwmhints->decorations & MWM_DECOR_ALL) {
       client.decorations = AllWindowDecorations;
     } else {
-      client.decorations = 0l;
+      client.decorations = 0;
 
       if (mwmhints->decorations & MWM_DECOR_BORDER)
         client.decorations |= WindowDecorationBorder;
