@@ -78,8 +78,17 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     return;
   }
 
-  fprintf(stderr, "%s: managing screen %u using visual 0x%lx, depth %d\n",
+  static const char *visual_classes[] = {
+    "StaticGray",
+    "GrayScale",
+    "StaticColor",
+    "PseudoColor",
+    "TrueColor",
+    "DirectColor"
+  };
+  fprintf(stderr, "%s: managing screen %u using %s visual 0x%lx, depth %d\n",
           blackbox->applicationName().c_str(), screen_info.screenNumber(),
+          visual_classes[screen_info.visual()->c_class],
           XVisualIDFromVisual(screen_info.visual()), screen_info.depth());
 
   blackbox->insertEventHandler(screen_info.rootWindow(), this);
