@@ -145,7 +145,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   struct _client {
     Window window;                    // the client's window
     Colormap colormap;
-    BlackboxWindow *transient_for;    // which window are we a transient for?
+    Window transient_for;             // which window are we a transient for?
     BlackboxWindowList transientList; // which windows are our transients?
 
     std::string title, visible_title, icon_title;
@@ -235,7 +235,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   WMHints readWMHints(void);
   WMNormalHints readWMNormalHints(void);
   WMProtocols readWMProtocols(void);
-  BlackboxWindow *readTransientInfo(void);
+  Window readTransientInfo(void);
 
   void associateClientWindow(void);
 
@@ -287,6 +287,9 @@ public:
 
   inline bool isTransient(void) const
   { return client.transient_for != 0; }
+  inline bool isGroupTransient(void) const
+  { return (client.transient_for != 0
+            && client.transient_for == client.wmhints.window_group); }
   inline bool isModal(void) const
   { return client.ewmh.modal; }
 
@@ -298,11 +301,14 @@ public:
   inline bool hasWindowDecoration(WindowDecoration decoration) const
   { return client.decorations & decoration; }
 
-  inline const BlackboxWindowList &getTransients(void) const
+  // ordered newest to oldest
+  inline const BlackboxWindowList &transients(void) const
   { return client.transientList; }
-  inline BlackboxWindow *getTransientFor(void) const
-  { return ((client.transient_for == (BlackboxWindow*) ~0ul)
-            ? 0 : client.transient_for); }
+
+  void addTransient(BlackboxWindow *win);
+  void removeTransient(BlackboxWindow *win);
+
+  BlackboxWindow *getTransientFor(void) const;
 
   inline BScreen *getScreen(void) const
   { return screen; }

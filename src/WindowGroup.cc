@@ -28,48 +28,76 @@
 
 #include <X11/Xlib.h>
 
+#include <assert.h>
+
 
 BWindowGroup::BWindowGroup(Blackbox *b, Window _group)
-  : blackbox(b), group(_group) {
-  XWindowAttributes wattrib;
-  if (! XGetWindowAttributes(blackbox->XDisplay(), group, &wattrib)) {
-    // group window doesn't seem to exist anymore
-    delete this;
-    return;
-  }
-
-  XSelectInput(blackbox->XDisplay(), group,
-               PropertyChangeMask | FocusChangeMask | StructureNotifyMask);
-
-  blackbox->insertWindowGroup(group, this);
-}
+  : blackbox(b), group(_group)
+{ blackbox->insertWindowGroup(group, this); }
 
 
 BWindowGroup::~BWindowGroup(void)
 { blackbox->removeWindowGroup(group); }
 
 
-BlackboxWindow *
-BWindowGroup::find(BScreen *screen, bool allow_transients) const {
-  BlackboxWindow *ret = blackbox->getFocusedWindow();
-
-  // does the focus window match (or any transient_fors)?
-  for (; ret; ret = ret->getTransientFor()) {
-    if (ret->getScreen() == screen && ret->wmHints().window_group == group
-        && (! ret->isTransient() || allow_transients))
-      break;
+void BWindowGroup::addWindow(BlackboxWindow *win) {
+  windowList.push_front(win);
+  if (win->isGroupTransient()) {
+    addTransient(win);
+  } else {
+    // add all group transients to the new group member
+    BlackboxWindowList::const_reverse_iterator it = transientList.rbegin();
+    const BlackboxWindowList::const_reverse_iterator
+      end = transientList.rend();
+    for (; it != end; ++it)
+      win->addTransient(*it);
   }
+}
 
-  if (ret) return ret;
 
-  // the focus window didn't match, look in the group's window list
-  BlackboxWindowList::const_iterator it, end = windowList.end();
-  for (it = windowList.begin(); it != end; ++it) {
-    ret = *it;
-    if (ret->getScreen() == screen && ret->wmHints().window_group == group
-        && (! ret->isTransient() || allow_transients))
-      break;
+void BWindowGroup::removeWindow(BlackboxWindow *win) {
+  if (win->isGroupTransient()) {
+    removeTransient(win);
+  } else {
+    // remove all group transients from the new group member
+    BlackboxWindowList::const_reverse_iterator it = transientList.rbegin();
+    const BlackboxWindowList::const_reverse_iterator
+      end = transientList.rend();
+    for (; it != end; ++it)
+      win->removeTransient(*it);
   }
+  windowList.remove(win);
 
-  return ret;
+  if (windowList.empty())
+    delete this;
+}
+
+
+void BWindowGroup::addTransient(BlackboxWindow *win) {
+  assert(win->isGroupTransient());
+  transientList.push_front(win);
+
+  // add the group transient to all group members
+  BlackboxWindowList::iterator it = windowList.begin();
+  const BlackboxWindowList::iterator end = windowList.end();
+  for (; it != end; ++it) {
+    if (*it == win || (*it)->isGroupTransient())
+      continue;
+    (*it)->addTransient(win);
+  }
+}
+
+
+void BWindowGroup::removeTransient(BlackboxWindow *win) {
+  assert(win->isGroupTransient());
+  transientList.remove(win);
+
+  // remove the group transient from all group members
+  BlackboxWindowList::iterator it = windowList.begin();
+  const BlackboxWindowList::iterator end = windowList.end();
+  for (; it != end; ++it) {
+    if (*it == win || (*it)->isGroupTransient())
+      continue;
+    (*it)->removeTransient(win);
+  }
 }

@@ -38,6 +38,7 @@ private:
   Blackbox *blackbox;
   Window group;
   BlackboxWindowList windowList;
+  BlackboxWindowList transientList;
 
 public:
   BWindowGroup(Blackbox *b, Window _group);
@@ -49,18 +50,11 @@ public:
   inline bool empty(void) const
   { return windowList.empty(); }
 
-  void addWindow(BlackboxWindow *w)
-  { windowList.push_back(w); }
-  void removeWindow(BlackboxWindow *w)
-  { windowList.remove(w); }
+  void addWindow(BlackboxWindow *win);
+  void removeWindow(BlackboxWindow *win);
 
-  /*
-   * find a window on the specified screen. the focused window (if
-   * any) is checked first, otherwise the first matching window found
-   * is returned. transients are returned only if allow_transients is
-   * true.
-   */
-  BlackboxWindow *find(BScreen *screen, bool allow_transients = false) const;
+  void addTransient(BlackboxWindow *win);
+  void removeTransient(BlackboxWindow *win);
 };
 
 #endif // __WindowGroup_hh

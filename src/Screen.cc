@@ -640,13 +640,6 @@ void BScreen::unmanageWindow(BlackboxWindow *win) {
   windowList.remove(win);
   stackingList.remove(win);
 
-  /*
-    some managed windows can also be window group controllers.  when
-    unmanaging such windows, we should also delete the window group.
-  */
-  BWindowGroup *group = blackbox->findWindowGroup(win->getClientWindow());
-  delete group;
-
   delete win;
 }
 
@@ -712,8 +705,13 @@ void BScreen::raiseWindow(StackEntity *entity) {
   BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(top);
   if (win) {
     // walk up the transient_for's to the window that is not a transient
-    while (win->isTransient() && win->getTransientFor())
-      win = win->getTransientFor();
+    BlackboxWindow *tmp = win;
+    while (tmp->isTransient()) {
+      tmp = tmp->getTransientFor();
+      if (!tmp || tmp == win)
+        break;
+    }
+    win = tmp;
 
     if (win->isFullScreen() && win->layer() != StackingList::LayerFullScreen) {
       // move full-screen windows over all other windows when raising
@@ -790,8 +788,13 @@ void BScreen::lowerWindow(StackEntity *entity) {
   BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(top);
   if (win) {
     // walk up the transient_for's to the window that is not a transient
-    while (win->isTransient() && win->getTransientFor())
-      win = win->getTransientFor();
+    BlackboxWindow *tmp = win;
+    while (tmp->isTransient()) {
+      tmp = tmp->getTransientFor();
+      if (!tmp || tmp == win)
+        break;
+    }
+    win = tmp;
     top = win;
   }
 
@@ -1657,13 +1660,13 @@ BlackboxWindow *BScreen::getWindow(unsigned int workspace, unsigned int id) {
  * is above stack[1], etc...
  */
 void BScreen::raiseTransients(const BlackboxWindow * const win) {
-  if (win->getTransients().empty())
+  if (win->transients().empty())
     return; // nothing to do
 
   // put win's transients in the stack
-  BlackboxWindowList::const_reverse_iterator it,
-    end = win->getTransients().rend();
-  for (it = win->getTransients().rbegin(); it != end; ++it) {
+  BlackboxWindowList::const_iterator it,
+    end = win->transients().end();
+  for (it = win->transients().begin(); it != end; ++it) {
     BlackboxWindow *w = *it;
     if (w->workspace() == current_workspace) {
       stackingList.raise(w);
@@ -1674,13 +1677,13 @@ void BScreen::raiseTransients(const BlackboxWindow * const win) {
 
 
 void BScreen::lowerTransients(const BlackboxWindow * const win) {
-  if (win->getTransients().empty())
+  if (win->transients().empty())
     return; // nothing to do
 
   // put win's transients in the stack
-  BlackboxWindowList::const_reverse_iterator it,
-    end = win->getTransients().rend();
-  for (it = win->getTransients().rbegin(); it != end; ++it) {
+  BlackboxWindowList::const_iterator it,
+    end = win->transients().end();
+  for (it = win->transients().begin(); it != end; ++it) {
     BlackboxWindow *w = *it;
     if (w->workspace() == current_workspace) {
       lowerTransients(w);
@@ -1692,11 +1695,11 @@ void BScreen::lowerTransients(const BlackboxWindow * const win) {
 
 void BScreen::stackTransients(const BlackboxWindow * const win,
                               WindowStack &stack) {
-  const BlackboxWindowList &list = win->getTransients();
+  const BlackboxWindowList &list = win->transients();
   if (list.empty()) return;
 
-  BlackboxWindowList::const_reverse_iterator it, end = list.rend();
-  for (it = list.rbegin(); it != end; ++it) {
+  BlackboxWindowList::const_iterator it, end = list.end();
+  for (it = list.begin(); it != end; ++it) {
     stackTransients(*it, stack);
     stack.push_back((*it)->getFrameWindow());
   }
