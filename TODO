@@ -3,7 +3,6 @@
 CVS Bugs:
 -----------------------------
 restart via menu, weird things happen
-unknown options segfault blackbox (blackbox --random)
 
 Stuff TODO or On The Way(tm):
 -----------------------------
