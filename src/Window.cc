@@ -44,31 +44,42 @@
 
 #include <assert.h>
 
-#define MwmHintsFunctions     (1l << 0)
-#define MwmHintsDecorations   (1l << 1)
 
-#define MwmFuncAll            (1l << 0)
-#define MwmFuncResize         (1l << 1)
-#define MwmFuncMove           (1l << 2)
-#define MwmFuncIconify        (1l << 3)
-#define MwmFuncMaximize       (1l << 4)
-#define MwmFuncClose          (1l << 5)
+// this structure only contains 3 elements, even though the Motif 2.0
+// structure contains 5, because we only use the first 3
+struct MwmHints {
+  unsigned long flags;
+  unsigned long functions;
+  unsigned long decorations;
+};
+static const unsigned int PROP_MWM_HINTS_ELEMENTS = 3u;
 
-#define MwmDecorAll           (1l << 0)
-#define MwmDecorBorder        (1l << 1)
-#define MwmDecorHandle        (1l << 2)
-#define MwmDecorTitle         (1l << 3)
-#define MwmDecorMenu          (1l << 4) // not used
-#define MwmDecorIconify       (1l << 5)
-#define MwmDecorMaximize      (1l << 6)
+// MWM flags
+enum {
+  MWM_HINTS_FUNCTIONS   = 1<<0,
+  MWM_HINTS_DECORATIONS = 1<<1
+};
 
-// this structure only contains 3 elements... the Motif 2.0 structure contains
-// 5... we only need the first 3... so that is all we will define
-typedef struct _MwmHints {
-  unsigned long flags, functions, decorations;
-} MwmHints;
+// MWM functions
+enum {
+  MWM_FUNC_ALL      = 1<<0,
+  MWM_FUNC_RESIZE   = 1<<1,
+  MWM_FUNC_MOVE     = 1<<2,
+  MWM_FUNC_MINIMIZE = 1<<3,
+  MWM_FUNC_MAXIMIZE = 1<<4,
+  MWM_FUNC_CLOSE    = 1<<5
+};
 
-#define PropMwmHintsElements  3
+// MWM decorations
+enum {
+  MWM_DECOR_ALL      = 1<<0,
+  MWM_DECOR_BORDER   = 1<<1,
+  MWM_DECOR_RESIZEH  = 1<<2,
+  MWM_DECOR_TITLE    = 1<<3,
+  MWM_DECOR_MENU     = 1<<4,
+  MWM_DECOR_MINIMIZE = 1<<5,
+  MWM_DECOR_MAXIMIZE = 1<<6
+};
 
 
 #if 0
@@ -1252,56 +1263,57 @@ void BlackboxWindow::getMWMHints(void) {
   int format;
   Atom atom_return;
   unsigned long num, len;
-  MwmHints *mwm_hint = (MwmHints*) 0;
+  MwmHints *mwmhints = 0;
 
   int ret = XGetWindowProperty(blackbox->XDisplay(), client.window,
                                blackbox->getMotifWMHintsAtom(), 0,
-                               PropMwmHintsElements, False,
+                               PROP_MWM_HINTS_ELEMENTS, False,
                                blackbox->getMotifWMHintsAtom(), &atom_return,
                                &format, &num, &len,
-                               (unsigned char **) &mwm_hint);
+                               (unsigned char **) &mwmhints);
 
-  if (ret != Success || ! mwm_hint || num != PropMwmHintsElements)
+  if (ret != Success || ! mwmhints || num != PROP_MWM_HINTS_ELEMENTS)
     return;
 
-  if (mwm_hint->flags & MwmHintsDecorations) {
-    if (mwm_hint->decorations & MwmDecorAll) {
-      client.decorations = AllWindowDecorations;
-    } else {
-      client.decorations = 0l;
-
-      if (mwm_hint->decorations & MwmDecorBorder)
-        client.decorations |= WindowDecorationBorder;
-      if (mwm_hint->decorations & MwmDecorHandle)
-        client.decorations |= WindowDecorationHandle;
-      if (mwm_hint->decorations & MwmDecorTitle)
-        client.decorations |= WindowDecorationTitlebar;
-      if (mwm_hint->decorations & MwmDecorIconify)
-        client.decorations |= WindowDecorationIconify;
-      if (mwm_hint->decorations & MwmDecorMaximize)
-        client.decorations |= WindowDecorationMaximize;
-    }
-  }
-
-  if (mwm_hint->flags & MwmHintsFunctions) {
-    if (mwm_hint->functions & MwmFuncAll) {
+  if (mwmhints->flags & MWM_HINTS_FUNCTIONS) {
+    if (mwmhints->functions & MWM_FUNC_ALL) {
       client.functions = AllWindowFunctions;
     } else {
       client.functions = 0l;
 
-      if (mwm_hint->functions & MwmFuncResize)
+      if (mwmhints->functions & MWM_FUNC_RESIZE)
         client.functions |= WindowFunctionResize;
-      if (mwm_hint->functions & MwmFuncMove)
+      if (mwmhints->functions & MWM_FUNC_MOVE)
         client.functions |= WindowFunctionMove;
-      if (mwm_hint->functions & MwmFuncIconify)
+      if (mwmhints->functions & MWM_FUNC_MINIMIZE)
         client.functions |= WindowFunctionIconify;
-      if (mwm_hint->functions & MwmFuncMaximize)
+      if (mwmhints->functions & MWM_FUNC_MAXIMIZE)
         client.functions |= WindowFunctionMaximize;
-      if (mwm_hint->functions & MwmFuncClose)
+      if (mwmhints->functions & MWM_FUNC_CLOSE)
         client.functions |= WindowFunctionClose;
     }
   }
-  XFree(mwm_hint);
+
+  if (mwmhints->flags & MWM_HINTS_DECORATIONS) {
+    if (mwmhints->decorations & MWM_DECOR_ALL) {
+      client.decorations = AllWindowDecorations;
+    } else {
+      client.decorations = 0l;
+
+      if (mwmhints->decorations & MWM_DECOR_BORDER)
+        client.decorations |= WindowDecorationBorder;
+      if (mwmhints->decorations & MWM_DECOR_RESIZEH)
+        client.decorations |= WindowDecorationHandle;
+      if (mwmhints->decorations & MWM_DECOR_TITLE)
+        client.decorations |= WindowDecorationTitlebar;
+      if (mwmhints->decorations & MWM_DECOR_MINIMIZE)
+        client.decorations |= WindowDecorationIconify;
+      if (mwmhints->decorations & MWM_DECOR_MAXIMIZE)
+        client.decorations |= WindowDecorationMaximize;
+    }
+  }
+
+  XFree(mwmhints);
 }
 
 
