@@ -1,7 +1,7 @@
 // -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // bsetroot - a background setting utility
-// Copyright (c) 2001 - 2004 Sean 'Shaleh' Perry <shaleh at debian.org>
-// Copyright (c) 1997 - 2000, 2002 - 2004
+// Copyright (c) 2001 - 2005 Sean 'Shaleh' Perry <shaleh at debian.org>
+// Copyright (c) 1997 - 2000, 2002 - 2005
 //         Bradley T Hughes <bhughes at trolltech.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -331,8 +331,8 @@ void bsetroot::gradient(void) {
 void bsetroot::usage(int exit_code) {
   fprintf(stderr,
           "bsetroot 3.1\n\n"
-          "Copyright (c) 2001 - 2004 Sean 'Shaleh' Perry\n"
-          "Copyright (c) 1997 - 2000, 2002 - 2004 Bradley T Hughes\n");
+          "Copyright (c) 2001 - 2005 Sean 'Shaleh' Perry\n"
+          "Copyright (c) 1997 - 2000, 2002 - 2005 Bradley T Hughes\n");
   fprintf(stderr,
           "  -display <string>        use display connection\n"
           "  -mod <x> <y>             modula pattern\n"
