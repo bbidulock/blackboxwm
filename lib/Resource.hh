@@ -52,6 +52,7 @@ namespace bt {
     std::string read(const std::string& name,
                      const std::string& classname,
                      const std::string& default_value = "") const;
+
     void write(const std::string &resource,
                const std::string &value);
 

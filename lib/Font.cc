@@ -419,8 +419,7 @@ std::string bt::ellideText(const std::string& text, size_t count,
 
 
 bt::Alignment bt::alignResource(const Resource &resource,
-                                const std::string &name,
-                                const std::string &classname,
+                                const char* name, const char* classname,
                                 Alignment default_align) {
   std::string res = resource.read(name, classname);
 

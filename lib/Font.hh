@@ -86,8 +86,7 @@ namespace bt {
                          const char* ellide);
 
   Alignment alignResource(const Resource &resource,
-                          const std::string &name,
-                          const std::string &classname,
+                          const char* name, const char* classname,
                           Alignment default_align = AlignLeft);
 
 } // namespace bt
