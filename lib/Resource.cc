@@ -27,31 +27,35 @@
 #include "Util.hh"
 
 
-bt::Resource::Resource(void) : db(NULL) {
+bt::Resource::Resource(void) : db(NULL) { }
 
-}
 
 bt::Resource::Resource(const std::string &filename) : db(NULL) {
   load(filename);
 }
 
+
 bt::Resource::~Resource(void) {
   XrmDestroyDatabase(db);
 }
+
 
 void bt::Resource::load(const std::string &filename) {
   XrmDestroyDatabase(db);
   db = XrmGetFileDatabase(expandTilde(filename).c_str());
 }
 
+
 void bt::Resource::save(const std::string &filename) {
   if (! valid()) return;
   XrmPutFileDatabase(db, expandTilde(filename).c_str());
 }
 
+
 void bt::Resource::merge(const std::string &filename) {
   XrmCombineFileDatabase(expandTilde(filename).c_str(), &db, true);
 }
+
 
 std::string bt::Resource::read(const std::string &name,
                                const std::string &classname,
@@ -63,8 +67,8 @@ std::string bt::Resource::read(const std::string &name,
   return default_value;
 }
 
+
 void bt::Resource::write(const std::string &resource,
-                         const std::string &value)
-{
+                         const std::string &value) {
   XrmPutStringResource(&db, resource.c_str(), value.c_str());
 }
