@@ -23,6 +23,7 @@
 // DEALINGS IN THE SOFTWARE.
 
 #include "Resource.hh"
+#include "Util.hh"
 
 extern "C" {
 #include <assert.h>
@@ -46,16 +47,8 @@ std::string normalize(const std::string& input) {
 }
 
 
-class Style {
-public:
-  Style(void);
-  ~Style(void);
-
-  class Window {
-  public:
-    Window(void);
-    ~Window(void);
-
+struct Style {
+  struct Window {
     std::string font, title_focus, title_focus_color, title_focus_colorTo,
       title_unfocus, title_unfocus_color, title_unfocus_colorTo,
       label_focus, label_focus_color, label_focus_colorTo,
@@ -72,11 +65,7 @@ public:
       button_focus_picColor, button_unfocus_picColor,
       frame_focusColor, frame_unfocusColor, frame_width, alignment;
   };
-  class Toolbar {
-  public:
-    Toolbar(void);
-    ~Toolbar(void);
-
+  struct Toolbar {
     std::string font, frame, frame_color, frame_colorTo,
       label, label_color, label_colorTo,
       window, window_color, window_colorTo,
@@ -85,10 +74,7 @@ public:
       button_pressed, button_pressed_color, button_pressed_colorTo,
       label_text, window_text, clock_text, button_pic, alignment;
   };
-  class Menu {
-  public:
-    Menu(void);
-    ~Menu(void);
+  struct Menu {
     std::string title_font, frame_font, title, title_color, title_colorTo,
       frame, frame_color, frame_colorTo, active, active_color, active_colorTo,
       title_text, frame_text, frame_foreground, disabledColor, active_text,
@@ -103,17 +89,6 @@ public:
 
   void read(const bt::Resource& res);
 };
-
-
-Style::Style(void) { }
-Style::~Style(void) { }
-Style::Window::Window(void) { }
-Style::Window::~Window(void) { }
-Style::Toolbar::Toolbar(void) { }
-Style::Toolbar::~Toolbar(void) { }
-Style::Menu::Menu(void) { }
-Style::Menu::~Menu(void) { }
-
 
 void Style::read(const bt::Resource& res) {
   // load bevel, border and handle widths
@@ -453,7 +428,7 @@ void writeTexture(std::ofstream& stream,
 
 
 void convert(const Style& style, const char* const filename) {
-  std::string new_style(filename);
+  std::string new_style(bt::basename(filename));
   new_style += ".70";
 
   std::ofstream fout(new_style.c_str());
@@ -474,8 +449,7 @@ void convert(const Style& style, const char* const filename) {
   writeValue(fout, "menu.frame.foregroundColor", style.menu.frame_foreground);
   fout << '\n';
   writeTexture(fout, "menu.active", style.menu.active,
-               style.menu.active_color, style.menu.active_colorTo,
-               style.border_width, style.border_color);
+               style.menu.active_color, style.menu.active_colorTo);
   writeValue(fout, "menu.active.textColor", style.menu.active_text);
   fout << '\n';
   writeComment(fout, "for 0.6x compatibility");
@@ -504,7 +478,8 @@ void convert(const Style& style, const char* const filename) {
   writeComment(fout, "focused window");
   writeTexture(fout, "window.title.focus", style.window.title_focus,
                style.window.title_focus_color,
-               style.window.title_focus_colorTo);
+               style.window.title_focus_colorTo,
+               style.border_width, style.border_color);
   fout << '\n';
   writeTexture(fout, "window.label.focus", style.window.label_focus,
                style.window.label_focus_color,
@@ -514,11 +489,13 @@ void convert(const Style& style, const char* const filename) {
   fout << '\n';
   writeTexture(fout, "window.handle.focus", style.window.handle_focus,
                style.window.handle_focus_color,
-               style.window.handle_focus_colorTo);
+               style.window.handle_focus_colorTo,
+               style.border_width, style.border_color);
   fout << '\n';
   writeTexture(fout, "window.grip.focus", style.window.grip_focus,
                style.window.grip_focus_color,
-               style.window.grip_focus_colorTo);
+               style.window.grip_focus_colorTo,
+               style.border_width, style.border_color);
   fout << '\n';
   writeTexture(fout, "window.button.focus", style.window.button_focus,
                style.window.button_focus_color,
@@ -535,7 +512,8 @@ void convert(const Style& style, const char* const filename) {
   writeComment(fout, "unfocused window");
   writeTexture(fout, "window.title.unfocus", style.window.title_unfocus,
                style.window.title_unfocus_color,
-               style.window.title_unfocus_colorTo);
+               style.window.title_unfocus_colorTo,
+               style.border_width, style.border_color);
   fout << '\n';
   writeTexture(fout, "window.label.unfocus", style.window.label_unfocus,
                style.window.label_unfocus_color,
@@ -545,11 +523,13 @@ void convert(const Style& style, const char* const filename) {
   fout << '\n';
   writeTexture(fout, "window.handle.unfocus", style.window.handle_unfocus,
                style.window.handle_unfocus_color,
-               style.window.handle_unfocus_colorTo);
+               style.window.handle_unfocus_colorTo,
+               style.border_width, style.border_color);
   fout << '\n';
   writeTexture(fout, "window.grip.unfocus", style.window.grip_unfocus,
                style.window.grip_unfocus_color,
-               style.window.grip_unfocus_colorTo);
+               style.window.grip_unfocus_colorTo,
+               style.border_width, style.border_color);
   fout << '\n';
   writeTexture(fout, "window.button.unfocus", style.window.button_unfocus,
                style.window.button_unfocus_color,
@@ -571,7 +551,9 @@ void convert(const Style& style, const char* const filename) {
   writeComment(fout, "***** toolbar *****");
   writeValue(fout, "toolbar.font", style.toolbar.font);
   writeTexture(fout, "toolbar", style.toolbar.frame,
-               style.toolbar.frame_color, style.toolbar.frame_colorTo);
+               style.toolbar.frame_color, style.toolbar.frame_colorTo,
+               style.border_width, style.border_color);
+
   fout << '\n';
   writeTexture(fout, "toolbar.label", style.toolbar.label,
                style.toolbar.label_color, style.toolbar.label_colorTo);
@@ -600,13 +582,10 @@ void convert(const Style& style, const char* const filename) {
   writeValue(fout, "toolbar.justify", style.toolbar.alignment);
   fout << '\n';
 
-  writeComment(fout, "***** the rest *****");
-  writeValue(fout, "borderColor", style.border_color);
-  writeValue(fout, "borderWidth", style.border_width);
-  writeValue(fout, "bevelWidth", style.bevel_width);
-  writeComment(fout, " for 0.6x compatibility");
+  writeComment(fout, "the rest, for 0.6x compatibility");
   writeValue(fout, "handleWidth", style.window.handle_height);
   writeValue(fout, "frameWidth", style.window.frame_width);
+  writeValue(fout, "bevelWidth", style.bevel_width);
   if (! style.rootCommand.empty())
     writeValue(fout, "rootCommand", style.rootCommand);
 }
