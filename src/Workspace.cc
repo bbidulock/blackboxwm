@@ -1,277 +1,271 @@
+// Workspace.cc for Blackbox - an X11 Window manager
+// Copyright (c) 2001 Sean 'Shaleh' Perry <shaleh@debian.org>
+// Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
-// workspace.cc for Blackbox - an X11 Window manager
-// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//
-// (See the included file COPYING / GPL-2.0)
-//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+// stupid macros needed to access some functions in version 2 of the GNU C
+// library
+#ifndef   _GNU_SOURCE
+#define   _GNU_SOURCE
+#endif // _GNU_SOURCE
 
+#ifdef    HAVE_CONFIG_H
+#  include "../config.h"
+#endif // HAVE_CONFIG_H
+
+#include <X11/Xlib.h>
+#include <X11/Xatom.h>
+
+#include "i18n.hh"
 #include "blackbox.hh"
-#include "window.hh"
+#include "Clientmenu.hh"
+#include "Screen.hh"
+#include "Toolbar.hh"
+#include "Window.hh"
 #include "Workspace.hh"
+#include "Windowmenu.hh"
 
-#include <stdio.h>
+#ifdef    HAVE_STDIO_H
+#  include <stdio.h>
+#endif // HAVE_STDIO_H
+
+#ifdef    STDC_HEADERS
+#  include <string.h>
+#endif // STDC_HEADERS
 
 
-// *************************************************************************
-// Workspace class code
-// *************************************************************************
+Workspace::Workspace(BScreen *scrn, int i) {
+  screen = scrn;
 
-Workspace::Workspace(WorkspaceManager *m, int i) {
-  wsManager = m;
+  cascade_x = cascade_y = 32;
 
   id = i;
-  stack = 0;
 
+  stackingList = new LinkedList<BlackboxWindow>;
   windowList = new LinkedList<BlackboxWindow>;
-  cMenu = new Clientmenu(m->_blackbox(), this);
-  cMenu->Update();
+  clientmenu = new Clientmenu(this);
 
-  name = new char[32];
-  label = new char[32];
-  sprintf(name, "Workspace %d", id);
-  sprintf(label, "0 window(s)");
+  lastfocus = (BlackboxWindow *) 0;
+
+  name = (char *) 0;
+  char *tmp = screen->getNameOfWorkspace(id);
+  setName(tmp);
 }
 
 
 Workspace::~Workspace(void) {
+  delete stackingList;
   delete windowList;
-  delete cMenu;
+  delete clientmenu;
 
-  delete [] name;
-  delete [] label;
+  if (name)
+    delete [] name;
 }
 
 
-const int Workspace::addWindow(BlackboxWindow *w) {
+const int Workspace::addWindow(BlackboxWindow *w, Bool place) {
+  if (! w) return -1;
+
+  if (place) placeWindow(w);
+
   w->setWorkspace(id);
   w->setWindowNumber(windowList->count());
 
+  stackingList->insert(w, 0);
   windowList->insert(w);
-  sprintf(label, "%d window(s)", windowList->count());
-  wsManager->redrawWSD(True);
 
-  cMenu->insert(w->Title());
-  cMenu->Update();
+  clientmenu->insert((const char **) w->getTitle());
+  clientmenu->update();
 
-  Window *tmp_stack = new Window[windowList->count()];
-  int i;
-  for (i = 0; i < (windowList->count() - 1); ++i)
-    *(tmp_stack + i) = *(stack + i);
+  screen->updateNetizenWindowAdd(w->getClientWindow(), id);
 
-  *(tmp_stack + i) = w->frameWindow();
+  raiseWindow(w);
 
-  delete [] stack;
-  stack = tmp_stack;
-  if (wsManager->currentWorkspaceID() == id)
-    wsManager->stackWindows(stack, windowList->count());
-
-  return w->windowNumber();
+  return w->getWindowNumber();
 }
 
 
 const int Workspace::removeWindow(BlackboxWindow *w) {
-  Window *tmp_stack = new Window[windowList->count() - 1];
+  if (! w) return -1;
 
-  int i = 0, ii = 0;
-  for (i = 0; i < windowList->count(); ++i)
-    if (*(stack + i) != w->frameWindow())
-      *(tmp_stack + (ii++)) = *(stack + i);
+  stackingList->remove(w);
 
-  delete [] stack;
-  stack = tmp_stack;
-
-  windowList->remove((const int) w->windowNumber());
-  sprintf(label, "%d window(s)", windowList->count());
-  wsManager->redrawWSD(True);
-
-  cMenu->remove(w->windowNumber());
-  cMenu->Update();
-
-  if (wsManager->currentWorkspaceID() == id)
-    wsManager->stackWindows(stack, windowList->count());
-
-  LinkedListIterator<BlackboxWindow> it(windowList);
-  for (i = 0; it.current(); it++, i++)
-    it.current()->setWindowNumber(i);
-
-  return windowList->count();
-}
-
-
-int Workspace::showAll(void) {
-  BlackboxWindow *win;
-
-  wsManager->stackWindows(stack, windowList->count());
-
-  LinkedListIterator<BlackboxWindow> it(windowList);
-  for (; it.current(); it++) {
-    win = it.current();
-    if (! win->isIconic())
-      win->deiconifyWindow();
-  }
-  
-  return windowList->count();
-}
-
-
-int Workspace::hideAll(void) {
-  BlackboxWindow *win;
-
-  LinkedListIterator<BlackboxWindow> it(windowList);
-  for (; it.current(); it++) {
-    win = it.current();
-    if (! win->isIconic())
-      win->withdrawWindow();
-  }
-
-  if (cMenu->Visible())
-    cMenu->Hide();
-
-  return windowList->count();
-} 
-
-
-int Workspace::removeAll(void) {
-  BlackboxWindow *win;
-
-  LinkedListIterator<BlackboxWindow> it(windowList);
-  for (; it.current(); it++) {
-    win = it.current();
-    wsManager->currentWorkspace()->addWindow(win);
-    if (! win->isIconic())
-      win->iconifyWindow();
-  }
-
-  return windowList->count();
-}
-
-
-void Workspace::Dissociate(void) {
-  Display *display = wsManager->_blackbox()->control();
-
-  XGrabServer(display);
-  LinkedListIterator<BlackboxWindow> it(windowList);
-  for (; it.current(); it++) {
-    if (wsManager->_blackbox()->validateWindow(it.current()->clientWindow())) {
-      XUnmapWindow(display, it.current()->frameWindow());
-      XReparentWindow(display, it.current()->clientWindow(),
-		      wsManager->_blackbox()->Root(), it.current()->XClient(),
-		      it.current()->YClient());
-      XMoveResizeWindow(display, it.current()->clientWindow(),
-			it.current()->XClient(),
-			it.current()->YClient(),
-			it.current()->clientWidth(),
-			it.current()->clientHeight());
-      XMapWindow(display, it.current()->clientWindow());
+  if (w->isFocused()) {
+    if (w->isTransient() && w->getTransientFor() &&
+	w->getTransientFor()->isVisible()) {
+      w->getTransientFor()->setInputFocus();
+    } else if (screen->isSloppyFocus()) {
+      screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
+    } else {
+      BlackboxWindow *top = stackingList->first();
+      if (! top || ! top->setInputFocus()) {
+	screen->getBlackbox()->setFocusedWindow((BlackboxWindow *) 0);
+	XSetInputFocus(screen->getBlackbox()->getXDisplay(),
+		       screen->getToolbar()->getWindowID(),
+		       RevertToParent, CurrentTime);
+      }
     }
   }
   
-  XSync(display, False);
-  XUngrabServer(display);
+  if (lastfocus == w)
+    lastfocus = (BlackboxWindow *) 0;
+
+  windowList->remove(w->getWindowNumber());
+  clientmenu->remove(w->getWindowNumber());
+  clientmenu->update();
+
+  screen->updateNetizenWindowDel(w->getClientWindow());
+
+  LinkedListIterator<BlackboxWindow> it(windowList);
+  BlackboxWindow *bw = it.current();
+  for (int i = 0; bw; it++, i++, bw = it.current())
+    bw->setWindowNumber(i);
+
+  return windowList->count();
+}
+
+
+void Workspace::showAll(void) {
+  LinkedListIterator<BlackboxWindow> it(stackingList);
+  for (BlackboxWindow *bw = it.current(); bw; it++, bw = it.current())
+    bw->deiconify(False, False);
+}
+
+
+void Workspace::hideAll(void) {
+  LinkedList<BlackboxWindow> lst;
+
+  LinkedListIterator<BlackboxWindow> it(stackingList);
+  for (BlackboxWindow *bw = it.current(); bw; it++, bw = it.current())
+    lst.insert(bw, 0);
+
+  LinkedListIterator<BlackboxWindow> it2(&lst);
+  for (BlackboxWindow *bw = it2.current(); bw; it2++, bw = it2.current())
+    if (! bw->isStuck())
+      bw->withdraw();
+}
+
+
+void Workspace::removeAll(void) {
+  LinkedListIterator<BlackboxWindow> it(windowList);
+  for (BlackboxWindow *bw = it.current(); bw; it++, bw = it.current())
+    bw->iconify();
 }
 
 
 void Workspace::raiseWindow(BlackboxWindow *w) {
-  // this just arranges the windows... and then passes it to the workspace
-  // manager... which adds this stack to it's own stack... and the workspace
-  // manager then tells the X server to restack the windows
+  BlackboxWindow *win = (BlackboxWindow *) 0, *bottom = w;
 
-  Window *tmp_stack = new Window[windowList->count()];
-  static int re_enter = 0;
-  int i = 0, ii = 0;
+  while (bottom->isTransient() && bottom->getTransientFor())
+    bottom = bottom->getTransientFor();
 
-  if (w->isTransient() && ! re_enter) {
-    raiseWindow(w->TransientFor());
-  } else {
-    for (i = 0; i < windowList->count(); ++i)
-      if (*(stack + i) != w->frameWindow())
-        *(tmp_stack + (ii++)) = *(stack + i);
-  
-    *(tmp_stack + windowList->count() - 1) = w->frameWindow();
-  
-    for (i = 0; i < windowList->count(); ++i)
-      *(stack + i) = *(tmp_stack + i);
+  int i = 1;
+  win = bottom;
+  while (win->hasTransient() && win->getTransient()) {
+    win = win->getTransient();
 
-    delete [] tmp_stack;
+    i++;
+  }
 
-    if (w->hasTransient()) {
-      if (! re_enter) {
-	re_enter = 1;
-	raiseWindow(w->Transient());
-	re_enter = 0;
-      } else
-	raiseWindow(w->Transient());
+  Window *nstack = new Window[i], *curr = nstack;
+  Workspace *wkspc;
+
+  win = bottom;
+  while (True) {
+    *(curr++) = win->getFrameWindow();
+    screen->updateNetizenWindowRaise(win->getClientWindow());
+
+    if (! win->isIconic()) {
+      wkspc = screen->getWorkspace(win->getWorkspaceNumber());
+      wkspc->stackingList->remove(win);
+      wkspc->stackingList->insert(win, 0);
     }
 
-    if (! re_enter && id == wsManager->currentWorkspaceID())
-      wsManager->stackWindows(stack, windowList->count());
+    if (! win->hasTransient() || ! win->getTransient())
+      break;
+
+    win = win->getTransient();
   }
+
+  screen->raiseWindows(nstack, i);
+
+  delete [] nstack;
 }
 
 
 void Workspace::lowerWindow(BlackboxWindow *w) {
-  Window *tmp_stack = new Window[windowList->count()];
-  int i, ii = 1;
-  static int re_enter = 0;
-  
-  if (w->hasTransient() && ! re_enter) {
-    lowerWindow(w->Transient());
-  } else {
-    for (i = 0; i < windowList->count(); ++i)
-      if (*(stack + i) != w->frameWindow())
-	*(tmp_stack + (ii++)) = *(stack + i);
-    
-    *(tmp_stack) = w->frameWindow();
-    
-    for (i = 0; i < windowList->count(); ++i)
-      *(stack + i) = *(tmp_stack + i);
-    
-    delete [] tmp_stack;
-    
-    if (w->isTransient()) {
-      if (! re_enter) {
-	re_enter = 1;
-	lowerWindow(w->TransientFor());
-	re_enter = 0;
-      } else
-	lowerWindow(w->TransientFor());
+  BlackboxWindow *win = (BlackboxWindow *) 0, *bottom = w;
+
+  while (bottom->isTransient() && bottom->getTransientFor())
+    bottom = bottom->getTransientFor();
+
+  int i = 1;
+  win = bottom;
+  while (win->hasTransient() && win->getTransient()) {
+    win = win->getTransient();
+
+    i++;
+  }
+
+  Window *nstack = new Window[i], *curr = nstack;
+  Workspace *wkspc;
+
+  while (True) {
+    *(curr++) = win->getFrameWindow();
+    screen->updateNetizenWindowLower(win->getClientWindow());
+
+    if (! win->isIconic()) {
+      wkspc = screen->getWorkspace(win->getWorkspaceNumber());
+      wkspc->stackingList->remove(win);
+      wkspc->stackingList->insert(win);
     }
-    
-    if (! re_enter && id == wsManager->currentWorkspaceID())
-      wsManager->stackWindows(stack, windowList->count());
+
+    if (! win->getTransientFor())
+      break;
+
+    win = win->getTransientFor();
+  }
+
+  screen->getBlackbox()->grab();
+
+  XLowerWindow(screen->getBaseDisplay()->getXDisplay(), *nstack);
+  XRestackWindows(screen->getBaseDisplay()->getXDisplay(), nstack, i);
+
+  screen->getBlackbox()->ungrab();
+
+  delete [] nstack;
+}
+
+
+void Workspace::reconfigure(void) {
+  clientmenu->reconfigure();
+
+  LinkedListIterator<BlackboxWindow> it(windowList);
+  for (BlackboxWindow *bw = it.current(); bw; it++, bw = it.current()) {
+    if (bw->validateClient())
+      bw->reconfigure();
   }
 }
 
 
-void Workspace::Reconfigure(void) {
-  cMenu->Reconfigure();
-
-  LinkedListIterator<BlackboxWindow> it(windowList);
-  for (; it.current(); it++)
-    if (wsManager->_blackbox()->validateWindow(it.current()->clientWindow()))
-      it.current()->Reconfigure();
-}
-
-
-BlackboxWindow *Workspace::window(int index) {
+BlackboxWindow *Workspace::getWindow(int index) {
   if ((index >= 0) && (index < windowList->count()))
     return windowList->find(index);
   else
@@ -279,16 +273,184 @@ BlackboxWindow *Workspace::window(int index) {
 }
 
 
-const int Workspace::Count(void) {
+const int Workspace::getCount(void) {
   return windowList->count();
 }
 
 
-void Workspace::Update(void) {
-  cMenu->Update();
+void Workspace::update(void) {
+  clientmenu->update();
+  screen->getToolbar()->redrawWindowLabel(True);
 }
 
 
-void Workspace::restackWindows(void) {
-  wsManager->stackWindows(stack, windowList->count());
+Bool Workspace::isCurrent(void) {
+  return (id == screen->getCurrentWorkspaceID());
+}
+
+
+Bool Workspace::isLastWindow(BlackboxWindow *w) {
+  return (w == windowList->last());
+}
+
+void Workspace::setCurrent(void) {
+  screen->changeWorkspaceID(id);
+}
+
+
+void Workspace::setName(char *new_name) {
+  if (name)
+    delete [] name;
+
+  if (new_name) {
+    name = bstrdup(new_name);
+  } else {
+    name = new char[128];
+    sprintf(name, i18n->getMessage(WorkspaceSet, WorkspaceDefaultNameFormat,
+				   "Workspace %d"), id + 1);
+  }
+  
+  clientmenu->setLabel(name);
+  clientmenu->update();
+}
+
+
+void Workspace::shutdown(void) {
+  while (windowList->count()) {
+    windowList->first()->restore();
+    delete windowList->first();
+  }
+}
+
+void Workspace::placeWindow(BlackboxWindow *win) {
+  Bool placed = False;
+
+  XRectangle availableArea = screen->availableArea();
+
+  const int win_w = win->getWidth() + (screen->getBorderWidth() * 4),
+    win_h = win->getHeight() + (screen->getBorderWidth() * 4),
+    start_pos_x = availableArea.x, start_pos_y = availableArea.y,
+    change_y =
+      ((screen->getColPlacementDirection() == BScreen::TopBottom) ? 1 : -1),
+    change_x =
+      ((screen->getRowPlacementDirection() == BScreen::LeftRight) ? 1 : -1),
+    delta_x = 8, delta_y = 8;
+
+  int test_x, test_y, place_x = 0, place_y = 0;
+  LinkedListIterator<BlackboxWindow> it(windowList);
+
+  switch (screen->getPlacementPolicy()) {
+  case BScreen::RowSmartPlacement: {
+    test_y = (screen->getColPlacementDirection() == BScreen::TopBottom) ?
+      start_pos_y : availableArea.height - win_h - start_pos_y;
+
+    while (!placed &&
+	   ((screen->getColPlacementDirection() == BScreen::BottomTop) ?
+	    test_y > 0 : test_y + win_h < (signed) availableArea.height)) {
+      test_x = (screen->getRowPlacementDirection() == BScreen::LeftRight) ?
+	start_pos_x : availableArea.width - win_w - start_pos_x;
+
+      while (!placed &&
+	     ((screen->getRowPlacementDirection() == BScreen::RightLeft) ?
+	      test_x > 0 : test_x + win_w < (signed) availableArea.width)) {
+        placed = True;
+
+        it.reset();
+        for (BlackboxWindow *curr = it.current(); placed && curr;
+	     it++, curr = it.current()) {
+          int curr_w = curr->getWidth() + (screen->getBorderWidth() * 4);
+          int curr_h =
+	    ((curr->isShaded()) ? curr->getTitleHeight() : curr->getHeight()) +
+            (screen->getBorderWidth() * 4);
+	  
+          if (curr->getXFrame() < test_x + win_w &&
+              curr->getXFrame() + curr_w > test_x &&
+              curr->getYFrame() < test_y + win_h &&
+              curr->getYFrame() + curr_h > test_y) {
+            placed = False;
+	  }
+        }
+
+        if (placed) {
+          place_x = test_x;
+          place_y = test_y;
+
+          break;
+        }
+
+	test_x += (change_x * delta_x);
+      }
+
+      test_y += (change_y * delta_y);
+    }
+
+    break;
+  }
+
+  case BScreen::ColSmartPlacement: {
+    test_x = (screen->getRowPlacementDirection() == BScreen::LeftRight) ?
+      start_pos_x : availableArea.width - win_w - start_pos_x;
+
+    while (!placed &&
+	   ((screen->getRowPlacementDirection() == BScreen::RightLeft) ?
+	    test_x > 0 : test_x + win_w < (signed) availableArea.width)) {
+      test_y = (screen->getColPlacementDirection() == BScreen::TopBottom) ?
+	start_pos_y : availableArea.height - win_h - start_pos_y;
+      
+      while (!placed &&
+	     ((screen->getColPlacementDirection() == BScreen::BottomTop) ?
+	      test_y > 0 : test_y + win_h < (signed) availableArea.height)) {
+        placed = True;
+
+        it.reset();
+        for (BlackboxWindow *curr = it.current(); placed && curr;
+	     it++, curr = it.current()) {
+          int curr_w = curr->getWidth() + (screen->getBorderWidth() * 4);
+          int curr_h =
+            ((curr->isShaded()) ? curr->getTitleHeight() : curr->getHeight()) +
+            (screen->getBorderWidth() * 4);
+
+          if (curr->getXFrame() < test_x + win_w &&
+              curr->getXFrame() + curr_w > test_x &&
+              curr->getYFrame() < test_y + win_h &&
+              curr->getYFrame() + curr_h > test_y) {
+            placed = False;
+	  }
+        }
+
+	if (placed) {
+	  place_x = test_x;
+	  place_y = test_y;
+
+	  break;
+	}
+
+	test_y += (change_y * delta_y);
+      }
+
+      test_x += (change_x * delta_x);
+    }
+
+    break;
+  }
+  } // switch
+
+  if (! placed) {
+    if (((unsigned) cascade_x > (availableArea.width / (unsigned) 2)) ||
+	((unsigned) cascade_y > (availableArea.height / (unsigned) 2)))
+      cascade_x = cascade_y = 32;
+
+    place_x = cascade_x;
+    place_y = cascade_y;
+
+    cascade_x += win->getTitleHeight();
+    cascade_y += win->getTitleHeight();
+  }
+  
+  if (place_x + win_w > (signed) availableArea.width)
+    place_x = (((signed) availableArea.width) - win_w) / 2;
+  if (place_y + win_h > (signed) availableArea.height)
+    place_y = (((signed) availableArea.height) - win_h) / 2;
+
+  win->configure(place_x, place_y, win->getWidth(), win->getHeight());
 }

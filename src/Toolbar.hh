@@ -1,96 +1,157 @@
-//
 // Toolbar.hh for Blackbox - an X11 Window manager
-// Copyright (c) 1997, 1998 by Brad Hughes, bhughes@arn.net
+// Copyright (c) 2001 Sean 'Shaleh' Perry <shaleh@debian.org>
+// Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//
-// (See the included file COPYING / GPL-2.0)
-//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
 
-#ifndef __Toolbar_hh
-#define __Toolbar_hh
+#ifndef   __Toolbar_hh
+#define   __Toolbar_hh
 
 #include <X11/Xlib.h>
+
+#include "Screen.hh"
+#include "Basemenu.hh"
+#include "Timer.hh"
 
 // forward declaration
 class Toolbar;
 
-class Blackbox;
-class BlackboxIcon;
-class Iconmenu;
-class Workspace;
-class Workspacemenu;
-class Application;
-
-#include "LinkedList.hh"
-
-
-class Toolbar {
+class Toolbarmenu : public Basemenu {
 private:
-  Bool wait_button, wait_ibutton, raised;
-  Display *display;
-  GC buttonGC;
+  class Placementmenu : public Basemenu {
+  private:
+    Toolbarmenu *toolbarmenu;
 
-  struct frame {
-    Pixmap frame, label, button, pbutton, ibutton, pibutton, clk;
-    Window base, window, workspaceLabel, workspacePrev, workspaceNext,
-      windowLabel, windowPrev, windowNext, iconButton, raiseButton, clock;
+  protected:
+    virtual void itemSelected(int, int);
 
-    int x, y;
-    unsigned int width, height, button_w, button_h, label_w, label_h,
-      ib_w, ib_h, clock_w, clock_h, bevel_w;
-  } frame;
-  
-  LinkedList<Workspace> *workspacesList;
-  Blackbox *blackbox;
-  Iconmenu *iconMenu;
-  Workspace *current, *zero;
-  Workspacemenu *wsMenu;
+  public:
+    Placementmenu(Toolbarmenu *);
+  };
+
+  Toolbar *toolbar;
+  Placementmenu *placementmenu;
+
+  friend class Placementmenu;
+  friend class Toolbar;
 
 
 protected:
+  virtual void itemSelected(int, int);
+  virtual void internal_hide(void);
+
+public:
+  Toolbarmenu(Toolbar *);
+  ~Toolbarmenu(void);
+
+  inline Basemenu *getPlacementmenu(void) { return placementmenu; }
+
+  void reconfigure(void);
+};
+
+
+class Toolbar : public TimeoutHandler {
+private:
+  Bool on_top, editing, hidden, do_auto_hide;
+  Display *display;
+
+  struct frame {
+    unsigned long button_pixel, pbutton_pixel;
+    Pixmap base, label, wlabel, clk, button, pbutton;
+    Window window, workspace_label, window_label, clock, psbutton, nsbutton,
+      pwbutton, nwbutton;
+
+    int x, y, x_hidden, y_hidden, hour, minute, grab_x, grab_y;
+    unsigned int width, height, window_label_w, workspace_label_w, clock_w,
+      button_w, bevel_w, label_h;
+  } frame;
+
+  class HideHandler : public TimeoutHandler {
+  public:
+    Toolbar *toolbar;
+
+    virtual void timeout(void);
+  } hide_handler;
+
+  Blackbox *blackbox;
+  BImageControl *image_ctrl;
+  BScreen *screen;
+  BTimer *clock_timer, *hide_timer;
+  Toolbarmenu *toolbarmenu;
+  NETStrut strut;
+
+  char *new_workspace_name;
+  size_t new_name_pos;
+
+  friend class HideHandler;
+  friend class Toolbarmenu;
+  friend class Toolbarmenu::Placementmenu;
 
 
 public:
-  Toolbar(Blackbox *, int = 1);
-  ~Toolbar(void);
+  Toolbar(BScreen *);
+  virtual ~Toolbar(void);
 
-  Blackbox *_blackbox(void) { return blackbox; }
+  inline Toolbarmenu *getMenu(void) { return toolbarmenu; }
 
-  int addWorkspace(void);
-  int removeLastWorkspace(void);
-  void changeWorkspaceID(int);
-  Workspace *workspace(int);
-  void addIcon(BlackboxIcon *i);
-  void removeIcon(BlackboxIcon *i);
-  void iconUpdate(void);
-  void stackWindows(Window *, int);
-  void Reconfigure(void);
-  void checkClock(Bool = False);
-  void redrawLabel(Bool = False);
+  inline const Bool &isEditing(void) const { return editing; }
+  inline const Bool &isOnTop(void) const { return on_top; }
+  inline const Bool &isHidden(void) const { return hidden; }
+  inline const Bool &doAutoHide(void) const { return do_auto_hide; }
+
+  inline const Window &getWindowID(void) const { return frame.window; }
+
+  inline const unsigned int &getWidth(void) const { return frame.width; }
+  inline const unsigned int &getHeight(void) const { return frame.height; }
+  inline const unsigned int &getExposedHeight(void) const
+  { return ((do_auto_hide) ? frame.bevel_w : frame.height); }
+  inline const int &getX(void) const
+  { return ((hidden) ? frame.x_hidden : frame.x); }
+  inline const int &getY(void) const
+  { return ((hidden) ? frame.y_hidden : frame.y); }
 
   void buttonPressEvent(XButtonEvent *);
   void buttonReleaseEvent(XButtonEvent *);
+  void enterNotifyEvent(XCrossingEvent *);
+  void leaveNotifyEvent(XCrossingEvent *);
   void exposeEvent(XExposeEvent *);
-  Window windowID(void) { return frame.window; }
-  Workspace *currentWorkspace(void) { return current; }
-  int count(void) { return workspacesList->count(); }
-  int currentWorkspaceID(void);
-  Bool Raised(void) { return raised; }
-  unsigned int Width(void) { return frame.width; }
-  unsigned int Height(void) { return frame.height; }
+  void keyPressEvent(XKeyEvent *);
+
+  void redrawWindowLabel(Bool = False);
+  void redrawWorkspaceLabel(Bool = False);
+  void redrawPrevWorkspaceButton(Bool = False, Bool = False);
+  void redrawNextWorkspaceButton(Bool = False, Bool = False);
+  void redrawPrevWindowButton(Bool = False, Bool = False);
+  void redrawNextWindowButton(Bool = False, Bool = False);
+  void edit(void);
+  void reconfigure(void);
+
+#ifdef    HAVE_STRFTIME
+  void checkClock(Bool = False);
+#else //  HAVE_STRFTIME
+  void checkClock(Bool = False, Bool = False);
+#endif // HAVE_STRFTIME
+
+  virtual void timeout(void);
+
+  enum { TopLeft = 1, BottomLeft, TopCenter,
+         BottomCenter, TopRight, BottomRight };
 };
 
 

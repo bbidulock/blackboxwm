@@ -1,91 +1,160 @@
-//
 // Slit.hh for Blackbox - an X11 Window manager
-// Copyright (c) 1997 - 1999, 1999 by Brad Hughes, bhughes@tcac.net
+// Copyright (c) 2001 Sean 'Shaleh' Perry <shaleh@debian.org>
+// Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the 
+// Software is furnished to do so, subject to the following conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+// The above copyright notice and this permission notice shall be included in 
+// all copies or substantial portions of the Software. 
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-//
-// (See the included file COPYING / GPL-2.0)
-//
-
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+// DEALINGS IN THE SOFTWARE.
+  
 #ifndef   __Slit_hh
 #define   __Slit_hh
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+#include "Screen.hh"
 #include "Basemenu.hh"
 #include "LinkedList.hh"
 
+// forward declaration
 class Slit;
+class Slitmenu;
 
+class Slitmenu : public Basemenu {
+private: 
+  class Directionmenu : public Basemenu {
+  private:
+    Slitmenu *slitmenu;
 
-class SlitClient {
-public:
-  Window client_window, icon_window, window;
-  
-  int x, y;
-  unsigned int width, height;
-};
+  protected:
+    virtual void itemSelected(int, int);
 
+  public:
+    Directionmenu(Slitmenu *);
+  };
 
-class SlitMenu : public Basemenu {
-private:
-  BScreen *screen;
+  class Placementmenu : public Basemenu {
+  private:
+    Slitmenu *slitmenu;
+
+  protected: 
+    virtual void itemSelected(int, int);
+
+  public:
+    Placementmenu(Slitmenu *);
+  };
+
+  Directionmenu *directionmenu;
+  Placementmenu *placementmenu;
+
   Slit *slit;
-  
-  
+
+  friend class Directionmenu;
+  friend class Placementmenu;
+  friend class Slit;
+
+
 protected:
   virtual void itemSelected(int, int);
-  
-  
+  virtual void internal_hide(void);
+
+
 public:
-  SlitMenu(Slit *, BScreen *);
+  Slitmenu(Slit *);
+  virtual ~Slitmenu(void);
+
+  inline Basemenu *getDirectionmenu(void) { return directionmenu; }
+  inline Basemenu *getPlacementmenu(void) { return placementmenu; }
+
+  void reconfigure(void);
 };
 
 
-class Slit {
+class Slit : public TimeoutHandler {
 private:
+  class SlitClient {
+  public:
+    Window window, client_window, icon_window;
+
+    int x, y;
+    unsigned int width, height;
+  };
+
+  Bool on_top, hidden, do_auto_hide;
   Display *display;
-  
+
   Blackbox *blackbox;
   BScreen *screen;
+  BTimer *timer;
+  NETStrut strut;
+
   LinkedList<SlitClient> *clientList;
-  SlitMenu *slitmenu;
-  
+  Slitmenu *slitmenu;
+
   struct frame {
     Pixmap pixmap;
     Window window;
-    
-    int x, y;
+
+    int x, y, x_hidden, y_hidden;
     unsigned int width, height;
   } frame;
-  
-  
-protected:
-  
-  
+
+  friend class Slitmenu;
+  friend class Slitmenu::Directionmenu;
+  friend class Slitmenu::Placementmenu;
+
+
 public:
-  Slit(Blackbox *, BScreen *);
-  ~Slit();
-  
+  Slit(BScreen *);
+  virtual ~Slit();
+
+  inline const Bool &isOnTop(void) const { return on_top; }
+  inline const Bool &isHidden(void) const { return hidden; }
+  inline const Bool &doAutoHide(void) const { return do_auto_hide; }
+
+  inline Slitmenu *getMenu() { return slitmenu; }
+
+  inline const Window &getWindowID() const { return frame.window; }
+
+  inline const int &getX(void) const
+  { return ((hidden) ? frame.x_hidden : frame.x); }
+  inline const int &getY(void) const
+  { return ((hidden) ? frame.y_hidden : frame.y); }
+
+  inline const unsigned int &getWidth(void) const { return frame.width; }
+  inline const unsigned int &getHeight(void) const { return frame.height; }
+
   void addClient(Window);
-  void removeClient(Window);
+  void removeClient(SlitClient *, Bool = True);
+  void removeClient(Window, Bool = True);
   void reconfigure(void);
+  void reposition(void);
+  void shutdown(void);
 
   void buttonPressEvent(XButtonEvent *);
+  void enterNotifyEvent(XCrossingEvent *);
+  void leaveNotifyEvent(XCrossingEvent *);
   void configureRequestEvent(XConfigureRequestEvent *);
+
+  virtual void timeout(void);
+
+  enum { Vertical = 1, Horizontal };
+  enum { TopLeft = 1, CenterLeft, BottomLeft, TopCenter, BottomCenter,
+         TopRight, CenterRight, BottomRight };
 };
 
 
