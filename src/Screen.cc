@@ -1661,6 +1661,15 @@ void BScreen::propertyNotifyEvent(const XPropertyEvent * const event) {
 }
 
 
+void BScreen::unmapNotifyEvent(const XUnmapEvent * const event) {
+  // handle synthetic unmap events according to ICCCM section 4.1.4
+  BlackboxWindow *win = _blackbox->findWindow(event->window);
+  if (win && event->event == screen_info.rootWindow()
+      && !event->from_configure)
+    win->unmapNotifyEvent(event);
+}
+
+
 void BScreen::toggleFocusModel(FocusModel model) {
   std::for_each(windowList.begin(), windowList.end(),
                 std::mem_fun(&BlackboxWindow::ungrabButtons));

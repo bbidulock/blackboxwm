@@ -216,6 +216,7 @@ public:
   void clientMessageEvent(const XClientMessageEvent * const event);
   void buttonPressEvent(const XButtonEvent * const event);
   void propertyNotifyEvent(const XPropertyEvent * const event);
+  void unmapNotifyEvent(const XUnmapEvent * const event);
 };
 
 #endif // __Screen_hh
