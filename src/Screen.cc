@@ -793,8 +793,6 @@ void BScreen::changeWorkspaceID(unsigned int id) {
 
   current_workspace->hide();
 
-  toolbar->redrawWorkspaceLabel(True);
-    
   workspacemenu->setItemSelected(current_workspace->getID() + 2, False);
 
   current_workspace = getWorkspace(id);
@@ -802,7 +800,8 @@ void BScreen::changeWorkspaceID(unsigned int id) {
   current_workspace->show();
 
   workspacemenu->setItemSelected(current_workspace->getID() + 2, True);
-
+  toolbar->redrawWorkspaceLabel(True);
+    
   updateNetizenCurrentWorkspace();
 }
 
