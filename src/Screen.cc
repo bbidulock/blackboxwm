@@ -271,11 +271,6 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) : ScreenInfo(bb, scrn) {
           }
         }
       }
-      if (wmhints->flags & StateHint &&
-          wmhints->initial_state == WithdrawnState) {
-        slit->addClient(children[i]);
-        children[i] = None;
-      }
 
       XFree(wmhints);
     }
