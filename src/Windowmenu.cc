@@ -93,7 +93,7 @@ void Windowmenu::itemClicked(unsigned int id, unsigned int) {
     break;
 
   case BScreen::WindowMaximize:
-    _window->maximize(0);
+    _window->maximize(1);
     break;
 
   case BScreen::WindowClose:
