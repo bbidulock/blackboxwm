@@ -1220,7 +1220,7 @@ void BlackboxWindow::configure(int dx, int dy,
                                unsigned int dw, unsigned int dh) {
   bool send_event = (frame.rect.x() != dx || frame.rect.y() != dy);
 
-  if ((dw != frame.rect.width()) || (dh != frame.rect.height())) {
+  if (dw != frame.rect.width() || dh != frame.rect.height()) {
     frame.rect.setRect(dx, dy, dw, dh);
     frame.inside_w = frame.rect.width() - (frame.border_w * 2);
     frame.inside_h = frame.rect.height() - (frame.border_w * 2);
@@ -1911,8 +1911,8 @@ void BlackboxWindow::restoreAttributes(void) {
     if (flags.maximized) remaximize();
   }
 
-  // with the state set it will then be the map events job to read the window's
-  // state and behave accordingly
+  // with the state set it will then be the map events job to read the
+  // window's state and behave accordingly
 
   XFree((void *) net);
 }
@@ -1927,12 +1927,12 @@ void BlackboxWindow::setGravityOffsets(void) {
   const int x_west = client.rect.x();
   const int x_east = client.rect.right() - frame.inside_w + 1;
   const int x_center = client.rect.left() +
-    ((client.rect.width() - frame.rect.width()) / 2);
+    (static_cast<signed>(client.rect.width() - frame.rect.width()) / 2);
   // y coordinates for each gravity type
   const int y_north = client.rect.y();
   const int y_south = client.rect.bottom() - frame.inside_h + 1;
   const int y_center = client.rect.top() +
-    ((client.rect.height() - frame.rect.height()) / 2);
+    (static_cast<signed>(client.rect.height() - frame.rect.height()) / 2);
 
   switch (client.win_gravity) {
   default:
@@ -2316,26 +2316,30 @@ void BlackboxWindow::configureRequestEvent(XConfigureRequestEvent *cr) {
   if (cr->window != client.window || flags.iconic)
     return;
 
-  int cx = frame.rect.x(), cy = frame.rect.y();
-  unsigned int cw = frame.rect.width(), ch = frame.rect.height();
+  Rect new_client = client.rect;
 
   if (cr->value_mask & CWBorderWidth)
     client.old_bw = cr->border_width;
 
   if (cr->value_mask & CWX)
-    cx = cr->x;
+    new_client.setX(cr->x);
 
   if (cr->value_mask & CWY)
-    cy = cr->y;
+    new_client.setY(cr->y);
 
   if (cr->value_mask & CWWidth)
-    cw = cr->width + frame.margin.left + frame.margin.right;
+    new_client.setWidth(cr->width);
 
   if (cr->value_mask & CWHeight)
-    ch = cr->height + frame.margin.top + frame.margin.bottom;
+    new_client.setHeight(cr->height);
 
-  if (frame.rect != Rect(cx, cy, cw, ch))
-    configure(cx, cy, cw, ch);
+  if (new_client != client.rect) {
+    client.rect = new_client;
+    upsize();
+    setGravityOffsets();
+    configure(frame.rect.x(), frame.rect.y(),
+              frame.rect.width(), frame.rect.height());
+  }
 
   if (cr->value_mask & CWStackMode) {
     switch (cr->detail) {
