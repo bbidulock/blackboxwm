@@ -2020,7 +2020,8 @@ void BlackboxWindow::mapRequestEvent(XMapRequestEvent *re) {
   case InactiveState:
   case ZoomState:
   default:
-    deiconify(False);
+    show();
+    screen->getWorkspace(blackbox_attrib.workspace)->raiseWindow(this);
     if (! blackbox->isStartup() && (isTransient() || screen->doFocusNew())) {
       XSync(blackbox->getXDisplay(), False); // make sure the frame is mapped..
       setInputFocus();
@@ -2631,9 +2632,12 @@ void BlackboxWindow::changeBlackboxHints(BlackboxHints *net) {
       (blackbox_attrib.workspace != net->workspace)) {
     screen->reassociateWindow(this, net->workspace, True);
 
-    if (screen->getCurrentWorkspaceID() != net->workspace)
+    if (screen->getCurrentWorkspaceID() != net->workspace) {
       withdraw();
-    else deiconify();
+    } else {
+      show();
+      screen->getWorkspace(blackbox_attrib.workspace)->raiseWindow(this);
+    }
   }
 
   if (net->flags & AttribDecoration) {
