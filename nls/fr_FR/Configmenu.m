@@ -22,6 +22,8 @@ $ #SloppyFocus
 # Attribution du clavier souple
 $ #AutoRaise
 # Premier plan automatique
+$ #ClickRaise
+# Cliquer pour mettre au premier plan
 $ #SmartRows
 # Disposition futée (Lignes)
 $ #SmartCols
