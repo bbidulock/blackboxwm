@@ -54,9 +54,9 @@ namespace bt {
 
     void setCoords(int l, int t, int r, int b);
 
-    bool operator==(const Rect &a)
+    bool operator==(const Rect &a) const
     { return _x1 == a._x1 && _y1 == a._y1 && _x2 == a._x2 && _y2 == a._y2; }
-    bool operator!=(const Rect &a) { return ! operator==(a); }
+    bool operator!=(const Rect &a) const { return ! operator==(a); }
 
     Rect operator|(const Rect &a) const;
     Rect operator&(const Rect &a) const;
