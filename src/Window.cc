@@ -44,6 +44,30 @@
 
 #include <assert.h>
 
+/*
+  sometimes C++ is a pain in the ass... it gives us stuff like the
+  default copy constructor and assignment operator (which does member
+  my member copy/assignment), but what we don't get is a default
+  comparison operator... how fucked up is that?
+
+  the language is designed to hand this:
+
+  struct foo { int a; int b };
+  foo a = { 0 , 0 }, b = a;
+  foo c;
+  c = a;
+
+  BUT, BUT, BUT, forget about doing this:
+
+  a = findFoo();
+  if (c == a)
+     return; // nothing to do
+  c = a;
+
+  ARGH!@#)(!*@#)(@#*$(!@#
+*/
+bool operator==(const WMNormalHints &x, const WMNormalHints &y);
+
 
 // Event mask used for managed client windows.
 const unsigned long client_window_event_mask =
@@ -3101,8 +3125,15 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
   }
 
   case XA_WM_NORMAL_HINTS: {
-    client.wmnormal = ::readWMNormalHints(blackbox, client.window,
-                                          _screen->screenInfo());
+    WMNormalHints wmnormal = ::readWMNormalHints(blackbox, client.window,
+                                                 _screen->screenInfo());
+    if (wmnormal == client.wmnormal) {
+      // apps like xv and GNU emacs seem to like to repeatedly set
+      // this property over and over
+      break;
+    }
+
+    client.wmnormal = wmnormal;
 
     ::update_decorations(client.decorations,
                          client.functions,
@@ -3841,4 +3872,23 @@ void BlackboxWindow::showGeometry(const bt::Rect &r) const {
   }
 
   _screen->showGeometry(BScreen::Size, bt::Rect(0, 0, w, h));
+}
+
+
+// see my rant above for an explanation of this operator
+bool operator==(const WMNormalHints &x, const WMNormalHints &y) {
+  return (x.flags == y.flags
+          && x.min_width == y.min_width
+          && x.min_height == y.min_height
+          && x.max_width == y.max_width
+          && x.max_height == y.max_height
+          && x.width_inc == y.width_inc
+          && x.height_inc == y.height_inc
+          && x.min_aspect_x == y.min_aspect_x
+          && x.min_aspect_y == y.min_aspect_y
+          && x.max_aspect_x == y.max_aspect_x
+          && x.max_aspect_y == y.max_aspect_y
+          && x.base_width == y.base_width
+          && x.base_height == y.base_height
+          && x.win_gravity == y.win_gravity);
 }
