@@ -2934,8 +2934,7 @@ void BlackboxWindow::upsize(void) {
   }
 
   // set the left/right frame margin
-  frame.margin.left = frame.margin.right =
-    frame.border_w + frame.mwm_border_w;
+  frame.margin.left = frame.margin.right = frame.border_w + frame.mwm_border_w;
 
   if (decorations & Decor_Handle) {
     frame.grip_w = frame.button_w * 2;
@@ -3008,18 +3007,16 @@ void BlackboxWindow::constrain(Corner anchor, int *pw, int *ph) {
   dh /= client.height_inc;
 
   if (pw) {
-    if (client.width_inc == 1) {
+    if (client.width_inc == 1)
       *pw = dw + base_width;
-    } else {
+    else
       *pw = dw;
-    }
   }
   if (ph) {
-    if (client.height_inc == 1) {
+    if (client.height_inc == 1)
       *ph = dh + base_height;
-    } else {
+    else
       *ph = dh;
-    }
   }
 
   dw *= client.width_inc;
