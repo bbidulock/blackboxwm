@@ -56,12 +56,11 @@ SendToMenu::SendToMenu( int scr, BlackboxWindow *w )
 
 void SendToMenu::refresh()
 {
-    int i, r = count();
-    if (r != 0)
-	for (i = 0; i < r; ++i)
-	    remove(0);
-    for ( i = 0; i < window->getScreen()->getCount(); i++ )
-	insert( window->getScreen()->getWorkspace(i)->getName() );
+  int i;
+  clear();
+  for ( i = 0; i < window->getScreen()->getCount(); i++ )
+    insert( window->getScreen()->getWorkspace(i)->getName() );
+  setItemChecked( window->getWorkspaceNumber(), true );
 }
 
 void SendToMenu::itemClicked( const Point &, const Item &item , int button )
