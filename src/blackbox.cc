@@ -64,7 +64,8 @@ static Bool scanForFocusIn(Display *, XEvent *e, XPointer) {
   if (e->type == FocusIn
       && (e->xfocus.mode == NotifyNormal
           || e->xfocus.mode == NotifyWhileGrabbed)
-      && e->xfocus.detail == NotifyNonlinearVirtual) {
+      && (e->xfocus.detail == NotifyNonlinearVirtual
+          || e->xfocus.detail == NotifyVirtual)) {
     return true;
   }
   return false;
@@ -248,12 +249,13 @@ void Blackbox::process_event(XEvent *e) {
 
     if ((e->xfocus.mode != NotifyNormal
          && e->xfocus.mode != NotifyWhileGrabbed)
-        || e->xfocus.detail != NotifyNonlinearVirtual) {
+        || (e->xfocus.detail != NotifyNonlinearVirtual
+            && e->xfocus.detail != NotifyVirtual)) {
       /*
         don't process FocusIns when:
         1. they are the result of a grab
         2. the new focus window isn't an ancestor or inferior of the
-        old focus window (NotifyNonlinearVirtual)
+        old focus window (NotifyNonlinearVirtual and NotifyVirtual)
       */
       break;
     }
@@ -286,12 +288,13 @@ void Blackbox::process_event(XEvent *e) {
 
     if ((e->xfocus.mode != NotifyNormal
          && e->xfocus.mode != NotifyWhileGrabbed)
-        || e->xfocus.detail != NotifyNonlinearVirtual) {
+        || (e->xfocus.detail != NotifyNonlinearVirtual
+            && e->xfocus.detail != NotifyVirtual)) {
       /*
         don't process FocusOuts when:
         1. they are the result of a grab
         2. the new focus window isn't an ancestor or inferior of the
-        old focus window (NotifyNonlinearVirtual)
+        old focus window (NotifyNonlinearVirtual and NotifyNonlinearVirtual)
       */
       break;
     }
