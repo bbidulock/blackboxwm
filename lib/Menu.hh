@@ -36,7 +36,6 @@
 #include <list>
 #include <vector>
 
-
 namespace bt {
 
   class Application;
@@ -277,7 +276,6 @@ namespace bt {
     bool _show_title;
     bool _visible;
   };
-
 
 } // namespace bt
 
