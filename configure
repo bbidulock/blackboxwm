@@ -2193,7 +2193,7 @@ CXXDEPMODE="depmode=$am_cv_CXX_dependencies_compiler_type"
 
 
 if test x$GXX = "xyes"; then
-   CXXFLAGS="${CXXFLAGS} -Wall -W -pedantic"
+   CXXFLAGS="${CXXFLAGS} -Wall -W"
    gxx_ver=`$CXX -dumpversion|sed -e 's/\..*//'`
    echo "$as_me:$LINENO: checking for GNU C++ version" >&5
 echo $ECHO_N "checking for GNU C++ version... $ECHO_C" >&6

@@ -16,7 +16,7 @@ dnl Locate required external software
 AC_PROG_CXX
 
 if test x$GXX = "xyes"; then
-   CXXFLAGS="${CXXFLAGS} -Wall -W -pedantic"
+   CXXFLAGS="${CXXFLAGS} -Wall -W"
    gxx_ver=`$CXX -dumpversion|sed -e 's/\..*//'`
    AC_MSG_CHECKING([for GNU C++ version])
    AC_MSG_RESULT([$gxx_ver.])

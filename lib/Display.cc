@@ -55,7 +55,6 @@ namespace bt {
 
 #ifdef    MITSHM
   void startupShm(const Display &display);
-  void shutdownShm(const Display &display);
 #endif // MITSHM
 
 } // namespace bt
@@ -90,10 +89,6 @@ bt::Display::Display(const char *dpy_name, bool multi_head) {
 
 
 bt::Display::~Display() {
-#ifdef    MITSHM
-  shutdownShm(*this);
-#endif // MITSHM
-
   destroyColorTables();
   destroyPixmapCache();
   destroyPenCache();
