@@ -696,7 +696,7 @@ void Toolbar::edit(void) {
 
   blackbox->setNoFocus(True);
   if (blackbox->getFocusedWindow())
-    blackbox->getFocusedWindow()->setFocusFlag(False);
+    blackbox->getFocusedWindow()->setFocused(false);
 
   const ScreenResource::ToolbarStyle* const style =
     _screen->resource().toolbarStyle();

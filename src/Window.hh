@@ -271,7 +271,6 @@ public:
   virtual ~BlackboxWindow(void);
 
   inline bool isTransient(void) const { return client.transient_for != 0; }
-  inline bool isFocused(void) const { return client.state.focused; }
   inline bool isVisible(void) const
   { return (! (client.current_state == 0 || client.state.iconic)); }
   inline bool isIconic(void) const { return client.state.iconic; }
@@ -323,9 +322,12 @@ public:
   inline void setModal(bool flag) { client.state.modal = flag; }
 
   bool validateClient(void) const;
+
+  inline bool isFocused(void) const
+  { return client.state.focused; }
+  void setFocused(bool focused);
   bool setInputFocus(void);
 
-  void setFocusFlag(bool focus);
   void iconify(void);
   void deiconify(bool reassoc = True, bool raise = True);
   void show(void);

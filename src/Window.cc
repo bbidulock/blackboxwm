@@ -1898,11 +1898,10 @@ void BlackboxWindow::redrawWindowFrame(void) const {
 }
 
 
-void BlackboxWindow::setFocusFlag(bool focus) {
-  if (focus && ! isVisible())
-    return;
+void BlackboxWindow::setFocused(bool focused) {
+  if (focused && ! isVisible()) return;
 
-  client.state.focused = focus;
+  client.state.focused = focused;
 
   redrawWindowFrame();
 
