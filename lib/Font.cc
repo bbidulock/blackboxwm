@@ -50,8 +50,6 @@ namespace bt {
     FontCache(const Display &dpy);
     ~FontCache(void);
 
-    const Display &display(void) const { return _display; }
-
     XFontStruct *findFont(const std::string &fontname);
     XFontSet findFontSet(const std::string &fontsetname);
 
@@ -384,7 +382,7 @@ void bt::drawText(const Font &font, Pen &pen, Window window,
   // set the font on the pen
   pen.setFont(font);
 
-  ::Display *xdpy = fontcache->display().XDisplay();
+  ::Display *xdpy = pen.display().XDisplay();
   if (i18n.multibyte()) {
     XmbDrawString(xdpy, window, font.fontset(), pen.gc(), tr.x(),
                   tr.y() - XExtentsOfFontSet(font.fontset())->max_ink_extent.y,
