@@ -1611,12 +1611,12 @@ void BScreen::hideGeometry(void) {
 }
 
 
-void BScreen::addStrut(NETStrut *strut) {
+void BScreen::addStrut(Strut *strut) {
   strutList.push_back(strut);
 }
 
 
-void BScreen::removeStrut(NETStrut *strut) {
+void BScreen::removeStrut(Strut *strut) {
   strutList.remove(strut);
 }
 
@@ -1643,7 +1643,7 @@ void BScreen::updateAvailableArea(void) {
   StrutList::const_iterator it = strutList.begin(), end = strutList.end();
 
   for(; it != end; ++it) {
-    NETStrut *strut = *it;
+    Strut *strut = *it;
     if (strut->left > current_left)
       current_left = strut->left;
     if (strut->top > current_top)

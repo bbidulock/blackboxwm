@@ -99,10 +99,10 @@ struct MenuStyle {
   int bullet, bullet_pos;
 };
 
-struct NETStrut {
+struct Strut {
   unsigned int top, bottom, left, right;
 
-  NETStrut(void): top(0), bottom(0), left(0), right(0) {}
+  Strut(void): top(0), bottom(0), left(0), right(0) {}
 };
 
 class BScreen : public ScreenInfo {
@@ -135,7 +135,7 @@ private:
 
   Rect usableArea;
 
-  typedef std::list<NETStrut*> StrutList;
+  typedef std::list<Strut*> StrutList;
   StrutList strutList;
   typedef std::vector<std::string> WorkspaceNamesList;
   WorkspaceNamesList workspaceNames;
@@ -322,8 +322,8 @@ public:
 
   const Rect& availableArea(void) const;
   void updateAvailableArea(void);
-  void addStrut(NETStrut *strut);
-  void removeStrut(NETStrut *strut);
+  void addStrut(Strut *strut);
+  void removeStrut(Strut *strut);
 
   unsigned int addWorkspace(void);
   unsigned int removeLastWorkspace(void);

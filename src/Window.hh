@@ -191,7 +191,7 @@ private:
     Rect changing;
 
     Rect rect;                  // frame geometry
-    NETStrut margin;            // margins between the frame and client
+    Strut margin;               // margins between the frame and client
 
     int grab_x, grab_y;         // where was the window when it was grabbed?
 
