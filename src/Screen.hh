@@ -216,6 +216,8 @@ public:
   { return resource.bevel_width; }
   unsigned int getBorderWidth(void) const
   { return resource.border_width; }
+  const Time& doubleClickInterval(void) const
+  { return blackbox->doubleClickInterval(); }
 
   unsigned int getCurrentWorkspaceID(void) const
   { return current_workspace_id; }

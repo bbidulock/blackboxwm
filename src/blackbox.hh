@@ -142,7 +142,7 @@ public:
 
   inline BlackboxWindow *getFocusedWindow(void) { return focused_window; }
 
-  inline const Time &getDoubleClickInterval(void) const
+  inline const Time &doubleClickInterval(void) const
   { return resource.double_click_interval; }
   inline const Time &getLastTime(void) const { return last_time; }
 
