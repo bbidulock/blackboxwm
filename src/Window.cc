@@ -849,29 +849,32 @@ void BlackboxWindow::positionWindows(void) {
 void BlackboxWindow::getWMName(void) {
   XTextProperty text_prop;
 
+  string name;
+
   if (XGetWMName(blackbox->getXDisplay(), client.window, &text_prop)) {
-    client.title = textPropertyToString(blackbox->getXDisplay(), text_prop);
-    if (client.title.empty())
-      client.title = i18n(WindowSet, WindowUnnamed, "Unnamed");
+    name = textPropertyToString(blackbox->getXDisplay(), text_prop);
     XFree((char *) text_prop.value);
-  } else {
-    client.title = i18n(WindowSet, WindowUnnamed, "Unnamed");
   }
+  if (! name.empty())
+    client.title = name;
+  else
+    client.title = i18n(WindowSet, WindowUnnamed, "Unnamed");
 }
 
 
 void BlackboxWindow::getWMIconName(void) {
   XTextProperty text_prop;
 
+  string name;
+
   if (XGetWMIconName(blackbox->getXDisplay(), client.window, &text_prop)) {
-    client.icon_title =
-      textPropertyToString(blackbox->getXDisplay(), text_prop);
-    if (client.icon_title.empty())
-      client.icon_title = client.title;
+    name = textPropertyToString(blackbox->getXDisplay(), text_prop);
     XFree((char *) text_prop.value);
-  } else {
-    client.icon_title = client.title;
   }
+  if (! name.empty())
+    client.icon_title = name;
+  else
+    client.icon_title = client.title;
 }
 
 
