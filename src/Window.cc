@@ -3134,10 +3134,8 @@ void BlackboxWindow::leaveNotifyEvent(const XCrossingEvent*) {
 
 
 #ifdef    SHAPE
-void BlackboxWindow::shapeEvent(const XEvent * const /*unused*/) {
-  if (client.state.shaped)
-    configureShape();
-}
+void BlackboxWindow::shapeEvent(const XEvent * const /*unused*/)
+{ if (client.state.shaped) configureShape(); }
 #endif // SHAPE
 
 
