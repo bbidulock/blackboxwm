@@ -153,7 +153,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   // get size, aspect, minimum/maximum size, ewmh and other hints set by the
   // client
-  if (! getNetwmHints())
+  getNetwmHints();
+  if (client.window_type == None)
     getMWMHints();
   getWMProtocols();
   getWMHints();
@@ -916,17 +917,15 @@ void BlackboxWindow::getWMIconName(void) {
 }
 
 
-bool BlackboxWindow::getNetwmHints(void) {
+void BlackboxWindow::getNetwmHints(void) {
   // wm_name and wm_icon_name are read separately
 
-  unsigned int count = 0;
   bool ret;
   const Netwm* const netwm = blackbox->netwm();
 
   Netwm::AtomList atoms;
   ret = netwm->readWMWindowType(client.window, atoms);
   if (ret) {
-    ++count;
     Netwm::AtomList::iterator it = atoms.begin(), end = atoms.end();
     for (; it != end; ++it) {
       if (netwm->isSupportedWMWindowType(*it)) {
@@ -939,7 +938,6 @@ bool BlackboxWindow::getNetwmHints(void) {
   atoms.clear();
   ret = netwm->readWMState(client.window, atoms);
   if (ret) {
-    ++count;
     Netwm::AtomList::iterator it = atoms.begin(), end = atoms.end();
     for (; it != end; ++it) {
       Atom state = *it;
@@ -983,15 +981,12 @@ bool BlackboxWindow::getNetwmHints(void) {
   unsigned int desktop;
   ret = netwm->readWMDesktop(client.window, desktop);
   if (ret) {
-    ++count;
     if (desktop != 0xFFFFFFFF)
       client.workspace = desktop;
   } else if (client.window_type == netwm->wmWindowTypeDesktop()) {
     // make me omnipresent
     client.state.layer = LAYER_DESKTOP;
   }
-
-  return (count > 0);
 }
 
 

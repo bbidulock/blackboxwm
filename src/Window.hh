@@ -244,7 +244,7 @@ private:
   Window createChildWindow(Window parent, unsigned long event_mask,
                            Cursor = None);
 
-  bool getNetwmHints(void);
+  void getNetwmHints(void);
   void getWMName(void);
   void getWMIconName(void);
   void getWMNormalHints(void);
