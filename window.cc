@@ -79,6 +79,7 @@ void BlackboxWindowMenu::titleReleased(int) { }
 void BlackboxWindowMenu::itemPressed(int button, int item) {
   if (button == 1 && item == 0) {
     send_to_menu->updateMenu();
+    XRaiseWindow(session->control(), send_to_menu->windowID());
     BlackboxMenu::drawSubmenu(item);
   }
 }
@@ -1379,6 +1380,9 @@ void BlackboxWindow::mapNotifyEvent(XMapEvent *ne) {
       debug->msg("map notify for client - setting visible attribute\n");
       XGrabServer(display);
       
+      getWMProtocols();
+      positionButtons();
+
       unsigned long state[2];
       state[0] = (unsigned long) NormalState;
       state[1] = (unsigned long) None;

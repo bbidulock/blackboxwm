@@ -598,6 +598,10 @@ void BlackboxSession::ProcessEvent(XEvent *e) {
     if (e->xproperty.atom == XA_RESOURCE_MANAGER &&
 	e->xproperty.window == root) {
       Reconfigure();
+    } else if (e->xproperty.state != PropertyDelete) {
+      BlackboxWindow *pWin = getWindow(e->xproperty.window);
+      if (pWin != NULL)
+        pWin->propertyNotifyEvent(e->xproperty.atom);
     }
 
     break;
