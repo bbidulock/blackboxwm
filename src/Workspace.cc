@@ -86,6 +86,27 @@ void StackingList::insert(BlackboxWindow* w) {
 }
 
 
+void StackingList::append(BlackboxWindow* w) {
+  assert(w);
+
+  StackingList::iterator& it = findLayer(w);
+  if (! *it) { // empty layer
+    it = stack.insert(it, w);
+    return;
+  }
+
+  // find the end of the layer (the zero pointer)
+  StackingList::iterator tmp = it;
+  for (; tmp != stack.end(); ++tmp) {
+    if (! *tmp) {
+      it = stack.insert(tmp, w);
+      return;
+    }
+  }
+  assert(0);
+}
+
+
 void StackingList::remove(BlackboxWindow* w) {
   assert(w);
 
@@ -153,7 +174,8 @@ void Workspace::addWindow(BlackboxWindow *w, bool place) {
   clientmenu->insert(title);
   clientmenu->update();
 
-  raiseWindow(w);
+  if (! w->isIconic())
+    raiseWindow(w);
 }
 
 
@@ -266,9 +288,14 @@ void Workspace::raiseTransients(const BlackboxWindow * const win,
                                 WindowStack& stack) {
   if (win->getTransients().empty()) return; // nothing to do
 
+  // put transients of win's transients in the stack
+  BlackboxWindowList::const_reverse_iterator it,
+    end = win->getTransients().rend();
+  for (it = win->getTransients().rbegin(); it != end; ++it)
+    raiseTransients(*it, stack);
+
   // put win's transients in the stack
-  BlackboxWindowList::const_iterator it, end = win->getTransients().end();
-  for (it = win->getTransients().begin(); it != end; ++it) {
+  for (it = win->getTransients().rbegin(); it != end; ++it) {
     BlackboxWindow *w = *it;
     if (! w->isIconic() && w->getWorkspaceNumber() == id) {
       stack.push_back(w->getFrameWindow());
@@ -276,10 +303,6 @@ void Workspace::raiseTransients(const BlackboxWindow * const win,
       stackingList.insert(w);
     }
   }
-
-  // put transients of win's transients in the stack
-  for (it = win->getTransients().begin(); it != end; ++it)
-    raiseTransients(*it, stack);
 }
 
 
@@ -299,7 +322,7 @@ void Workspace::lowerTransients(const BlackboxWindow * const win,
     if (! w->isIconic() && w->getWorkspaceNumber() == id) {
       stack.push_back(w->getFrameWindow());
       stackingList.remove(w);
-      stackingList.insert(w);
+      stackingList.append(w);
     }
   }
 }
@@ -314,6 +337,19 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
 
   // stack the window with all transients above
   WindowStack stack_vector;
+  bool layer_above = False;
+  StackingList::iterator it = stackingList.findLayer(win);
+  StackingList::iterator tmp = it;
+  for (; tmp != stackingList.begin(); --tmp) {
+    if (*tmp && it != tmp)
+      break;
+  }
+  if (*tmp) {
+    stack_vector.push_back((*tmp)->getFrameWindow());
+    layer_above = True;
+  }
+
+  raiseTransients(win, stack_vector);
 
   if (! win->isIconic() && win->getWorkspaceNumber() == id) {
     stack_vector.push_back(win->getFrameWindow());
@@ -321,9 +357,14 @@ void Workspace::raiseWindow(BlackboxWindow *w) {
     stackingList.insert(win);
   }
 
-  raiseTransients(win, stack_vector);
+  assert(! stack_vector.empty());
+  if (! layer_above)
+    XRaiseWindow(screen->getBlackbox()->getXDisplay(),
+                 stack_vector.front());
 
-  screen->raiseWindows(&stack_vector);
+  XRestackWindows(screen->getBlackbox()->getXDisplay(), &stack_vector[0],
+                  stack_vector.size());
+  screen->raiseWindows(0);
 }
 
 
@@ -336,18 +377,52 @@ void Workspace::lowerWindow(BlackboxWindow *w) {
 
   // stack the window with all transients above
   WindowStack stack_vector;
+  bool layer_above = False;
+  StackingList::iterator it = stackingList.findLayer(win);
+  StackingList::iterator tmp = it;
+  for (; tmp != stackingList.begin(); --tmp) {
+    if (*tmp && it != tmp)
+      break;
+  }
+  if (*tmp) {
+    stack_vector.push_back((*tmp)->getFrameWindow());
+    layer_above = True;
+  }
 
   lowerTransients(win, stack_vector);
 
   if (! win->isIconic() && win->getWorkspaceNumber() == id) {
     stack_vector.push_back(win->getFrameWindow());
     stackingList.remove(win);
-    stackingList.insert(win);
+    stackingList.append(win);
   }
 
-  XLowerWindow(screen->getDisplay()->getXDisplay(), stack_vector.front());
-  XRestackWindows(screen->getDisplay()->getXDisplay(),
-                  &stack_vector[0], stack_vector.size());
+  assert(! stack_vector.empty());
+
+  if (! layer_above) {
+    // ok, no layers above us, how about below?
+    tmp = std::find(it, stackingList.end(), (BlackboxWindow*) 0);
+    assert(tmp != stackingList.end());
+    for (; tmp != stackingList.end(); ++tmp) {
+      if (*tmp && it != tmp)
+        break;
+    }
+    if (tmp != stackingList.end() && *tmp) {
+      XWindowChanges changes;
+      changes.sibling = (*tmp)->getFrameWindow();
+      changes.stack_mode = Above;
+      XConfigureWindow(screen->getBlackbox()->getXDisplay(),
+                       stack_vector.front(), CWStackMode | CWSibling,
+                       &changes);
+    } else {
+      XLowerWindow(screen->getBlackbox()->getXDisplay(),
+                   stack_vector.front());
+    }
+  }
+
+  XRestackWindows(screen->getBlackbox()->getXDisplay(), &stack_vector[0],
+                  stack_vector.size());
+  screen->raiseWindows(0);
 }
 
 

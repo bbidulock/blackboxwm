@@ -55,6 +55,7 @@ public:
 
   StackingList(void);
   void insert(BlackboxWindow* w);
+  void append(BlackboxWindow* w);
   void remove(BlackboxWindow* w);
 
   iterator& findLayer(const BlackboxWindow* const w);
