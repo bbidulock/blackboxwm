@@ -63,7 +63,7 @@ StackingList::findLayer(const BlackboxWindow *const win) {
 StackingList::iterator StackingList::insert(BlackboxWindow *win) {
   assert(win);
 
-  StackingList::iterator& it = findLayer(win);
+  iterator& it = findLayer(win);
   it = stack.insert(it, win);
   return it;
 }
@@ -72,14 +72,14 @@ StackingList::iterator StackingList::insert(BlackboxWindow *win) {
 StackingList::iterator StackingList::append(BlackboxWindow *win) {
   assert(win);
 
-  StackingList::iterator& it = findLayer(win);
+  iterator& it = findLayer(win);
   if (!*it) { // empty layer
     it = stack.insert(it, win);
     return it;
   }
 
   // find the end of the layer (the zero pointer)
-  StackingList::iterator tmp = std::find(it, stack.end(), zero);
+  iterator tmp = std::find(it, stack.end(), zero);
   assert(tmp != stack.end());
   tmp = stack.insert(tmp, win);
   return tmp;
@@ -155,7 +155,7 @@ BlackboxWindow *StackingList::front(void) const {
 BlackboxWindow *StackingList::back(void) const {
   assert(stack.size() > 5);
 
-  StackingList::const_iterator it = desktop, _end = stack.begin();
+  const_iterator it = desktop, _end = stack.begin();
   for (--it; it != _end; --it) {
     if (*it) return *it;
   }
@@ -166,7 +166,7 @@ BlackboxWindow *StackingList::back(void) const {
 
 
 void StackingList::dump(void) const {
-  StackingList::const_iterator it = stack.begin(), end = stack.end();
+  const_iterator it = stack.begin(), end = stack.end();
   BlackboxWindow *win;
   fprintf(stderr, "Stack:\n");
   for (; it != end; ++it) {
