@@ -90,10 +90,12 @@ void BTexture::setColor(const BColor &cc)
 
 void BTexture::setDescription(const string &d)
 {
-  string tmp;
+  descr = "";
+  descr.reserve(d.length());
 
-  std::transform(d.begin(), d.end(), std::back_inserter(tmp), tolower);
-  descr = tmp;
+  string::const_iterator it = d.begin(), end = d.end();
+  for (; it != end; ++it)
+    descr += tolower(*it);
 
   if (descr.find("parentrelative") != string::npos) {
     setTexture(BTexture::Parent_Relative);
