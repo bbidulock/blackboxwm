@@ -1483,7 +1483,7 @@ void BlackboxWindow::maximize(unsigned int button) {
     dh -= frame.y_border;
 
     if (! screen->doFullMax()) {
-      dh = screen->getToolbar()->getExposedHeight() +
+      dh -= screen->getToolbar()->getExposedHeight() +
 	screen->getBorderWidth();
     }
 
