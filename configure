@@ -2301,7 +2301,7 @@ echo $ac_n "checking for g++""... $ac_c" 1>&6
 echo "configure:2302: checking for g++" >&5
 if test x$GXX = "xyes"; then
   echo "$ac_t""yes" 1>&6
-  CXXFLAGS="${CXXFLAGS} -Wall -W -pedantic"
+  CXXFLAGS="${CXXFLAGS} -Wall -W -pedantic -Woverloaded-virtual -Wshadow"
 else
   echo "$ac_t""no, trying other compilers" 1>&6
   echo $ac_n "checking for MIPSpro""... $ac_c" 1>&6

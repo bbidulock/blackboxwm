@@ -70,10 +70,12 @@ public:
   // application properties
   inline Atom wmName(void) const { return net_wm_name; }
   inline Atom wmIconName(void) const { return net_wm_icon_name; }
+  inline Atom wmDesktop(void) const { return net_wm_desktop; }
 
   void setWMName(Window target, const std::string& name) const;
   bool readWMName(Window target, std::string& name) const;
   bool readWMIconName(Window target, std::string& name) const;
+  bool readWMDesktop(Window target, unsigned int& desktop) const;
 
   // utility
   void removeProperty(Window target, Atom atom) const;
@@ -84,13 +86,16 @@ private:
 
   bool getUTF8StringProperty(Window target, Atom property,
                              std::string& value) const;
+  bool getCardinalProperty(Window target, Atom property,
+                           unsigned int& value) const;
 
   Display *display;
   Atom utf8_string,
     net_supported, net_client_list, net_number_of_desktops,
     net_desktop_geometry, net_current_desktop, net_desktop_names,
     net_active_window, net_workarea, net_supporting_wm_check,
-    net_close_window, net_moveresize_window, net_wm_name, net_wm_icon_name;
+    net_close_window, net_moveresize_window, net_wm_name, net_wm_icon_name,
+    net_wm_desktop;
 };
 
 #endif // _blackbox_netwm_hh

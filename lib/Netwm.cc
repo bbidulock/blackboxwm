@@ -40,10 +40,11 @@ Netwm::Netwm(Display* _display): display(_display) {
     "_NET_CLOSE_WINDOW",
     "_NET_MOVERESIZE_WINDOW",
     "_NET_WM_NAME",
-    "_NET_WM_ICON_NAME"
+    "_NET_WM_ICON_NAME",
+    "_NET_WM_DESKTOP"
   };
-  Atom atoms_return[14];
-  XInternAtoms(display, atoms, 14, False, atoms_return);
+  Atom atoms_return[15];
+  XInternAtoms(display, atoms, 15, False, atoms_return);
 
   utf8_string = atoms_return[0];
   net_supported = atoms_return[1];
@@ -59,6 +60,7 @@ Netwm::Netwm(Display* _display): display(_display) {
   net_moveresize_window = atoms_return[11];
   net_wm_name = atoms_return[12];
   net_wm_icon_name = atoms_return[13];
+  net_wm_desktop = atoms_return[14];
 }
 
 
@@ -172,6 +174,11 @@ bool Netwm::readWMIconName(Window target, std::string& name) const {
 }
 
 
+bool Netwm::readWMDesktop(Window target, unsigned int& desktop) const {
+  return getCardinalProperty(target, net_wm_desktop, desktop);
+}
+
+
 // utility
 
 void Netwm::removeProperty(Window target, Atom atom) const {
@@ -207,6 +214,26 @@ bool Netwm::getUTF8StringProperty(Window target, Atom property,
   value = reinterpret_cast<char*>(data);
 
   XFree(data);
+
+  return True;
+}
+
+
+bool Netwm::getCardinalProperty(Window target, Atom property,
+                                unsigned int& value) const {
+  Atom atom_return;
+  int size;
+  unsigned long nitems, bytes_left;
+  unsigned char *data;
+
+  int ret = XGetWindowProperty(display, target, property,
+                               0l, 1l, False,
+                               XA_CARDINAL, &atom_return, &size,
+                               &nitems, &bytes_left, &data);
+  if (ret != Success || nitems < 1)
+    return False;
+
+  value = * (reinterpret_cast<int*>(data));
 
   return True;
 }

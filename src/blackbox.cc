@@ -399,14 +399,12 @@ void Blackbox::process_event(XEvent *e) {
             win->installColormap(True);
           }
         }
-      } else if (e->xclient.message_type == netwm()->closeWindow()) {
+      } else if (e->xclient.message_type == netwm()->closeWindow() ||
+                 e->xclient.message_type == netwm()->moveresizeWindow() ||
+                 e->xclient.message_type == netwm()->wmDesktop()) {
         BlackboxWindow *win = findWindow(e->xclient.window);
         if (win)
-          win->close();
-      } else if (e->xclient.message_type == netwm()->moveresizeWindow()) {
-        BlackboxWindow *win = findWindow(e->xclient.window);
-        if (win)
-          win->netwmMoveResize(&(e->xclient));
+          win->netwmEvent(&(e->xclient));
       } else if (e->xclient.message_type ==
                  getBlackboxCycleWindowFocusAtom()) {
         BScreen *screen = findScreen(e->xclient.window);

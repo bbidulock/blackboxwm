@@ -235,6 +235,7 @@ private:
   Window createChildWindow(Window parent, unsigned long event_mask,
                            Cursor = None);
 
+  bool getNetwmHints(void);
   void getWMName(void);
   void getWMIconName(void);
   void getWMNormalHints(void);
@@ -344,6 +345,7 @@ public:
   void changeBlackboxHints(const BlackboxHints *net);
   void restoreAttributes(void);
 
+  void netwmEvent(const XClientMessageEvent * const ce);
   void buttonPressEvent(const XButtonEvent * const be);
   void buttonReleaseEvent(const XButtonEvent * const re);
   void motionNotifyEvent(const XMotionEvent * const me);
@@ -361,8 +363,6 @@ public:
   void configureShape(void);
   void shapeEvent(const XShapeEvent * const /*unused*/);
 #endif // SHAPE
-
-  void netwmMoveResize(const XClientMessageEvent* const ce);
 
   virtual void timeout(void);
 };

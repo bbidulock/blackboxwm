@@ -160,10 +160,10 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   timer = new BTimer(blackbox, this);
   timer->setTimeout(blackbox->getAutoRaiseDelay());
 
-  // get size, aspect, minimum/maximum size and other hints set by the
+  // get size, aspect, minimum/maximum size, ewmh and other hints set by the
   // client
 
-  if (! getBlackboxHints())
+  if (! getNetwmHints() || ! getBlackboxHints())
     getMWMHints();
 
   getWMProtocols();
@@ -908,6 +908,19 @@ void BlackboxWindow::getWMIconName(void) {
     client.icon_title = name;
   else
     client.icon_title = client.title;
+}
+
+
+bool BlackboxWindow::getNetwmHints(void) {
+  // wm_name and wm_icon_name are read separately
+
+  unsigned int desktop;
+  bool ret = blackbox->netwm()->readWMDesktop(client.window, desktop);
+  if (! ret)
+    return False;
+  if (desktop != 0xFFFFFFFF)
+    setWorkspace(desktop);
+  return True;
 }
 
 
@@ -2317,22 +2330,31 @@ void BlackboxWindow::redrawCloseButton(bool pressed) const {
 }
 
 
-void BlackboxWindow::netwmMoveResize(const XClientMessageEvent* const ce) {
-  XConfigureRequestEvent request;
-  request.window = ce->window;
-  request.x = ce->data.l[1];
-  request.y = ce->data.l[2];
-  request.width = ce->data.l[3];
-  request.height = ce->data.l[4];
-  request.value_mask = CWX | CWY | CWWidth | CWHeight;
+void BlackboxWindow::netwmEvent(const XClientMessageEvent* const ce) {
+  if (ce->message_type == blackbox->netwm()->closeWindow()) {
+    close();
+  } else if (ce->message_type == blackbox->netwm()->moveresizeWindow()) {
+    XConfigureRequestEvent request;
+    request.window = ce->window;
+    request.x = ce->data.l[1];
+    request.y = ce->data.l[2];
+    request.width = ce->data.l[3];
+    request.height = ce->data.l[4];
+    request.value_mask = CWX | CWY | CWWidth | CWHeight;
 
-  const int old_gravity = client.win_gravity;
-  if (ce->data.l[0] != 0)
-    client.win_gravity = ce->data.l[0];
+    const int old_gravity = client.win_gravity;
+    if (ce->data.l[0] != 0)
+      client.win_gravity = ce->data.l[0];
 
-  configureRequestEvent(&request);
+    configureRequestEvent(&request);
 
-  client.win_gravity = old_gravity;
+    client.win_gravity = old_gravity;
+  } else if (ce->message_type == blackbox->netwm()->wmDesktop()) {
+    const unsigned int desktop = ce->data.l[0];
+    if (desktop != 0xFFFFFFFF) {
+    }
+    // *** IMPLEMENT ME ***
+  }
 }
 
 
