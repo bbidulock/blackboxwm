@@ -467,7 +467,7 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
     if (colors[x] != ~0ul)
       continue;
 
-    int red, green, blue, gray;
+    int red = 0, green = 0, blue = 0, gray = 0;
 
     switch (visual_class) {
     case StaticGray:
