@@ -161,13 +161,13 @@ void Basemenu::drawItem( const Rect &r, const Item &item )
 
   if ( i18n->multibyte() )
     XmbDrawString( *display, windowID(), style->menuFontSet(), gc.gc(),
-                   r.x() + dx, r.y() + ( style->borderWidth() -
+                   r.x() + dx, r.y() + ( style->bevelWidth() -
                                          style->menuFontSetExtents()->max_ink_extent.y ),
                    item.label().c_str(), item.label().length() );
   else
     XDrawString( *display, windowID(), gc.gc(),
                  r.x() + dx, r.y() + ( style->menuFont()->ascent +
-                                       style->borderWidth() ),
+                                       style->bevelWidth() ),
                  item.label().c_str(), item.label().length() );
 
   if ( item.isChecked() ) {
@@ -204,12 +204,12 @@ void Basemenu::updateSize()
   BStyle *style = scr->style();
   if (i18n->multibyte()) {
     maxcolh = itemh = style->menuFontSetExtents()->max_ink_extent.height +
-              style->borderWidth() * 2;
+              style->bevelWidth() * 2;
     titleh = style->menuTitleFontSetExtents()->max_ink_extent.height +
              style->bevelWidth() * 2;
   } else {
     maxcolh = itemh = style->menuFont()->ascent + style->menuFont()->descent +
-              style->borderWidth() * 2;
+              style->bevelWidth() * 2;
     titleh = style->menuTitleFont()->ascent + style->menuTitleFont()->descent +
              style->bevelWidth() * 2;
   }
@@ -263,11 +263,11 @@ void Basemenu::updateSize()
         XRectangle ink, logical;
         XmbTextExtents( style->menuFontSet(), item.label().c_str(),
                         item.label().length(), &ink, &logical );
-        logical.width += style->borderWidth() * 2;
+        logical.width += style->bevelWidth() * 2;
         iw = std::max( w, int( logical.width ) );
       } else
         iw = XTextWidth( style->menuFont(), item.label().c_str(),
-                         item.label().length() ) + style->borderWidth() * 2;
+                         item.label().length() ) + style->bevelWidth() * 2;
 
       iw += indent + indent;
       item.height = itemh;
