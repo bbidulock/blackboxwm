@@ -898,7 +898,7 @@ void BlackboxWindow::getWMName(void) {
   if (! name.empty()) {
     client.title = name;
   } else {
-    client.title = i18n(WindowSet, WindowUnnamed, "Unnamed");
+    client.title = bt::i18n(WindowSet, WindowUnnamed, "Unnamed");
     blackbox->netwm()->setWMVisibleName(client.window, client.title);
   }
 }
@@ -2099,11 +2099,11 @@ void BlackboxWindow::redrawLabel(void) const {
 
   int pos = frame.bevel_w * 2,
     dlen = style->doJustify(client.title.c_str(), pos, frame.label_w,
-                            frame.bevel_w * 4, i18n.multibyte());
+                            frame.bevel_w * 4, bt::i18n.multibyte());
 
   BPen pen((client.state.focused) ? style->l_text_focus : style->l_text_unfocus,
            style->font);
-  if (i18n.multibyte())
+  if (bt::i18n.multibyte())
     XmbDrawString(blackbox->getXDisplay(), frame.label, style->fontset,
                   pen.gc(), pos,
                   (1 - style->fontset_extents->max_ink_extent.y),
@@ -3124,7 +3124,7 @@ void BlackboxWindow::upsize(void) {
     // the height of the titlebar is based upon the height of the font being
     // used to display the window's title
     WindowStyle *style = screen->getWindowStyle();
-    if (i18n.multibyte())
+    if (bt::i18n.multibyte())
       frame.title_h = (style->fontset_extents->max_ink_extent.height +
                        (frame.bevel_w * 2) + 2);
     else

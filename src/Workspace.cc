@@ -475,7 +475,7 @@ void Workspace::setName(const std::string& new_name) {
     name = new_name;
   } else {
     std::string tmp =
-      i18n(WorkspaceSet, WorkspaceDefaultNameFormat, "Workspace %d");
+      bt::i18n(WorkspaceSet, WorkspaceDefaultNameFormat, "Workspace %d");
     assert(tmp.length() < 32);
     char default_name[32];
     sprintf(default_name, tmp.c_str(), id + 1);

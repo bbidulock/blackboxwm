@@ -91,7 +91,7 @@ Basemenu::Basemenu(BScreen *scrn) {
 
   menu.bevel_w = screen->getBevelWidth();
 
-  if (i18n.multibyte())
+  if (bt::i18n.multibyte())
     menu.width = menu.title_h = menu.item_w = menu.frame_h =
       screen->getMenuStyle()->t_fontset_extents->max_ink_extent.height +
       (menu.bevel_w  * 2);
@@ -101,7 +101,7 @@ Basemenu::Basemenu(BScreen *scrn) {
       screen->getMenuStyle()->t_font->descent + (menu.bevel_w * 2);
 
   MenuStyle *style = screen->getMenuStyle();
-  if (i18n.multibyte()) {
+  if (bt::i18n.multibyte()) {
     menu.item_h = style->f_fontset_extents->max_ink_extent.height +
       (menu.bevel_w);
   } else {
@@ -259,7 +259,7 @@ int Basemenu::remove(int index) {
 
 void Basemenu::update(void) {
   const MenuStyle* const style = screen->getMenuStyle();
-  if (i18n.multibyte()) {
+  if (bt::i18n.multibyte()) {
     menu.item_h = style->f_fontset_extents->max_ink_extent.height +
       menu.bevel_w;
     menu.title_h = style->t_fontset_extents->max_ink_extent.height +
@@ -275,7 +275,7 @@ void Basemenu::update(void) {
     const char *s = getLabel();
     const int l = strlen(s);
 
-    if (i18n.multibyte()) {
+    if (bt::i18n.multibyte()) {
       XRectangle ink, logical;
       XmbTextExtents(screen->getMenuStyle()->t_fontset, s, l, &ink, &logical);
       menu.item_w = logical.width;
@@ -294,7 +294,7 @@ void Basemenu::update(void) {
     const char *s = (*it)->label();
     const int l = strlen(s);
 
-    if (i18n.multibyte()) {
+    if (bt::i18n.multibyte()) {
       XRectangle ink, logical;
       XmbTextExtents(screen->getMenuStyle()->f_fontset, s, l, &ink, &logical);
       ii = logical.width;
@@ -474,12 +474,12 @@ void Basemenu::move(int x, int y) {
 
 void Basemenu::redrawTitle(void) {
   const char *text = (! menu.label.empty()) ? getLabel() :
-    i18n(BasemenuSet, BasemenuBlackboxMenu, "Blackbox Menu");
+    bt::i18n(BasemenuSet, BasemenuBlackboxMenu, "Blackbox Menu");
   const int len = strlen(text);
   int dx = menu.bevel_w;
   unsigned int l;
 
-  if (i18n.multibyte()) {
+  if (bt::i18n.multibyte()) {
     XRectangle ink, logical;
     XmbTextExtents(screen->getMenuStyle()->t_fontset, text, len,
                    &ink, &logical);
@@ -506,7 +506,7 @@ void Basemenu::redrawTitle(void) {
 
   const MenuStyle* const style = screen->getMenuStyle();
   const BPen pen(style->t_text, style->t_font);
-  if (i18n.multibyte())
+  if (bt::i18n.multibyte())
     XmbDrawString(display, menu.title, style->t_fontset, pen.gc(), dx,
                   (menu.bevel_w - style->t_fontset_extents->max_ink_extent.y),
                   text, len);
@@ -601,7 +601,7 @@ void Basemenu::drawItem(int index, bool highlight, bool clear,
   unsigned int text_w = 0, text_h = 0;
 
   if (text) {
-    if (i18n.multibyte()) {
+    if (bt::i18n.multibyte()) {
       XRectangle ink, logical;
       XmbTextExtents(screen->getMenuStyle()->f_fontset,
                      text, len, &ink, &logical);
@@ -695,7 +695,7 @@ void Basemenu::drawItem(int index, bool highlight, bool clear,
   }
 
   if (dotext && text) {
-    if (i18n.multibyte())
+    if (bt::i18n.multibyte())
       XmbDrawString(display, menu.frame, screen->getMenuStyle()->f_fontset,
                     textpen.gc(), text_x, text_y, text, len);
     else

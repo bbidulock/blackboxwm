@@ -48,7 +48,7 @@ extern "C" {
 #include "bsetroot.hh"
 
 
-I18n i18n;
+bt::I18n bt::i18n;
 
 bsetroot::bsetroot(int argc, char **argv, char *dpy_name)
   : BaseDisplay(argv[0], dpy_name) {
@@ -104,7 +104,7 @@ bsetroot::bsetroot(int argc, char **argv, char *dpy_name)
 
   if ((mod + sol + grd) != True) {
     fprintf(stderr,
-	    i18n(bsetrootSet, bsetrootMustSpecify,
+	    bt::i18n(bsetrootSet, bsetrootMustSpecify,
 	         "%s: error: must specify one of: -solid, -mod, -gradient\n"),
 	    getApplicationName());
 
@@ -346,36 +346,36 @@ void bsetroot::gradient(void) {
 
 
 void bsetroot::usage(int exit_code) {
-    fprintf(stderr,
-	    i18n(bsetrootSet, bsetrootUsage,
-		 "%s 2.0\n\n"
-		 "Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>"
-		 "Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>"
-		 "  -display <string>        use display connection\n"
-		 "  -mod <x> <y>             modula pattern\n"
-		 "  -foreground, -fg <color> modula foreground color\n"
-		 "  -background, -bg <color> modula background color\n\n"
-		 "  -gradient <texture>      gradient texture\n"
-		 "  -from <color>            gradient start color\n"
-		 "  -to <color>              gradient end color\n\n"
-		 "  -solid <color>           solid color\n\n"
-		 "  -help                    print this help text and exit\n"),
-	    getApplicationName());
-
-    exit(exit_code);
+  fprintf(stderr,
+          "%s 2.0\n\n"
+          "Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry\n"
+          "Copyright (c) 1997 - 2000, 2002 Bradley T Hughes\n",
+          getApplicationName());
+  fprintf(stderr,
+          bt::i18n(bsetrootSet, bsetrootUsage,
+               "  -display <string>        use display connection\n"
+               "  -mod <x> <y>             modula pattern\n"
+               "  -foreground, -fg <color> modula foreground color\n"
+               "  -background, -bg <color> modula background color\n\n"
+               "  -gradient <texture>      gradient texture\n"
+               "  -from <color>            gradient start color\n"
+               "  -to <color>              gradient end color\n\n"
+               "  -solid <color>           solid color\n\n"
+               "  -help                    print this help text and exit\n"));
+  exit(exit_code);
 }
 
 int main(int argc, char **argv) {
   char *display_name = (char *) 0;
 
-  i18n.openCatalog("blackbox.cat");
+  bt::i18n.openCatalog("blackbox.cat");
 
   for (int i = 1; i < argc; i++) {
     if (! strcmp(argv[i], "-display")) {
       // check for -display option
 
       if ((++i) >= argc) {
-        fprintf(stderr, i18n(mainSet, mainDISPLAYRequiresArg,
+        fprintf(stderr, bt::i18n(mainSet, mainDISPLAYRequiresArg,
 		             "error: '-display' requires an argument\n"));
 
         ::exit(1);

@@ -33,27 +33,27 @@
 #include "Screen.hh"
 
 Configmenu::Configmenu(BScreen *scr) : Basemenu(scr) {
-  setLabel(i18n(ConfigmenuSet, ConfigmenuConfigOptions, "Config options"));
+  setLabel(bt::i18n(ConfigmenuSet, ConfigmenuConfigOptions, "Config options"));
   setInternalMenu();
 
   focusmenu = new Focusmenu(this);
   placementmenu = new Placementmenu(this);
 
-  insert(i18n(ConfigmenuSet, ConfigmenuFocusModel,
+  insert(bt::i18n(ConfigmenuSet, ConfigmenuFocusModel,
               "Focus Model"), focusmenu);
-  insert(i18n(ConfigmenuSet, ConfigmenuWindowPlacement,
+  insert(bt::i18n(ConfigmenuSet, ConfigmenuWindowPlacement,
               "Window Placement"), placementmenu);
-  insert(i18n(ConfigmenuSet, ConfigmenuImageDithering,
+  insert(bt::i18n(ConfigmenuSet, ConfigmenuImageDithering,
               "Image Dithering"), 1);
-  insert(i18n(ConfigmenuSet, ConfigmenuOpaqueMove,
+  insert(bt::i18n(ConfigmenuSet, ConfigmenuOpaqueMove,
               "Opaque Window Moving"), 2);
-  insert(i18n(ConfigmenuSet, ConfigmenuFullMax,
+  insert(bt::i18n(ConfigmenuSet, ConfigmenuFullMax,
               "Full Maximization"), 3);
-  insert(i18n(ConfigmenuSet, ConfigmenuFocusNew,
+  insert(bt::i18n(ConfigmenuSet, ConfigmenuFocusNew,
               "Focus New Windows"), 4);
-  insert(i18n(ConfigmenuSet, ConfigmenuFocusLast,
+  insert(bt::i18n(ConfigmenuSet, ConfigmenuFocusLast,
               "Focus Last Window on Workspace"), 5);
-  insert(i18n(ConfigmenuSet, ConfigmenuDisableBindings,
+  insert(bt::i18n(ConfigmenuSet, ConfigmenuDisableBindings,
               "Disable Bindings with Scroll Lock"), 6);
   update();
 
@@ -138,13 +138,13 @@ void Configmenu::reconfigure(void) {
 
 
 Configmenu::Focusmenu::Focusmenu(Configmenu *cm) : Basemenu(cm->getScreen()) {
-  setLabel(i18n(ConfigmenuSet, ConfigmenuFocusModel, "Focus Model"));
+  setLabel(bt::i18n(ConfigmenuSet, ConfigmenuFocusModel, "Focus Model"));
   setInternalMenu();
 
-  insert(i18n(ConfigmenuSet, ConfigmenuClickToFocus, "Click To Focus"), 1);
-  insert(i18n(ConfigmenuSet, ConfigmenuSloppyFocus, "Sloppy Focus"), 2);
-  insert(i18n(ConfigmenuSet, ConfigmenuAutoRaise, "Auto Raise"), 3);
-  insert(i18n(ConfigmenuSet, ConfigmenuClickRaise, "Click Raise"), 4);
+  insert(bt::i18n(ConfigmenuSet, ConfigmenuClickToFocus, "Click To Focus"), 1);
+  insert(bt::i18n(ConfigmenuSet, ConfigmenuSloppyFocus, "Sloppy Focus"), 2);
+  insert(bt::i18n(ConfigmenuSet, ConfigmenuAutoRaise, "Auto Raise"), 3);
+  insert(bt::i18n(ConfigmenuSet, ConfigmenuClickRaise, "Click Raise"), 4);
   update();
 
   setItemSelected(0, ! getScreen()->isSloppyFocus());
@@ -196,23 +196,24 @@ void Configmenu::Focusmenu::itemSelected(int button, unsigned int index) {
 
 Configmenu::Placementmenu::Placementmenu(Configmenu *cm):
   Basemenu(cm->getScreen()) {
-  setLabel(i18n(ConfigmenuSet, ConfigmenuWindowPlacement, "Window Placement"));
+  setLabel(bt::i18n(ConfigmenuSet, ConfigmenuWindowPlacement,
+                    "Window Placement"));
   setInternalMenu();
 
-  insert(i18n(ConfigmenuSet, ConfigmenuSmartRows, "Smart Placement (Rows)"),
-         BScreen::RowSmartPlacement);
-  insert(i18n(ConfigmenuSet, ConfigmenuSmartCols, "Smart Placement (Columns)"),
-         BScreen::ColSmartPlacement);
-  insert(i18n(ConfigmenuSet, ConfigmenuCascade, "Cascade Placement"),
-         BScreen::CascadePlacement);
-  insert(i18n(ConfigmenuSet, ConfigmenuLeftRight, "Left to Right"),
-         BScreen::LeftRight);
-  insert(i18n(ConfigmenuSet, ConfigmenuRightLeft, "Right to Left"),
-         BScreen::RightLeft);
-  insert(i18n(ConfigmenuSet, ConfigmenuTopBottom, "Top to Bottom"),
-         BScreen::TopBottom);
-  insert(i18n(ConfigmenuSet, ConfigmenuBottomTop, "Bottom to Top"),
-         BScreen::BottomTop);
+  insert(bt::i18n(ConfigmenuSet, ConfigmenuSmartRows,
+                  "Smart Placement (Rows)"), BScreen::RowSmartPlacement);
+  insert(bt::i18n(ConfigmenuSet, ConfigmenuSmartCols,
+                  "Smart Placement (Columns)"), BScreen::ColSmartPlacement);
+  insert(bt::i18n(ConfigmenuSet, ConfigmenuCascade,
+                  "Cascade Placement"), BScreen::CascadePlacement);
+  insert(bt::i18n(ConfigmenuSet, ConfigmenuLeftRight,
+                  "Left to Right"), BScreen::LeftRight);
+  insert(bt::i18n(ConfigmenuSet, ConfigmenuRightLeft,
+                  "Right to Left"), BScreen::RightLeft);
+  insert(bt::i18n(ConfigmenuSet, ConfigmenuTopBottom,
+                  "Top to Bottom"), BScreen::TopBottom);
+  insert(bt::i18n(ConfigmenuSet, ConfigmenuBottomTop,
+                  "Bottom to Top"), BScreen::BottomTop);
   update();
 
   switch (getScreen()->getPlacementPolicy()) {

@@ -158,7 +158,7 @@ Blackbox::Blackbox(char **m_argv, char *dpy_name, char *rc)
 
   if (screenList.empty()) {
     fprintf(stderr,
-            i18n(blackboxSet, blackboxNoManagableScreens,
+            bt::i18n(blackboxSet, blackboxNoManagableScreens,
               "Blackbox::Blackbox: no managable screens found, aborting.\n"));
     ::exit(3);
   }

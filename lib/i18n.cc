@@ -52,7 +52,7 @@ extern "C" {
 #define True true
 #define False false
 
-I18n::I18n(void) {
+bt::I18n::I18n(void) {
   mb = False;
 #ifdef    HAVE_SETLOCALE
   locale = setlocale(LC_ALL, "");
@@ -79,7 +79,7 @@ I18n::I18n(void) {
 }
 
 
-I18n::~I18n(void) {
+bt::I18n::~I18n(void) {
 #if defined(NLS) && defined(HAVE_CATCLOSE)
   if (catalog_fd != (nl_catd) -1)
     catclose(catalog_fd);
@@ -87,7 +87,7 @@ I18n::~I18n(void) {
 }
 
 
-void I18n::openCatalog(const char *catalog) {
+void bt::I18n::openCatalog(const char *catalog) {
 #if defined(NLS) && defined(HAVE_CATOPEN)
   std::string catalog_filename = LOCALEPATH;
   catalog_filename += '/';
@@ -106,7 +106,8 @@ void I18n::openCatalog(const char *catalog) {
 #endif // HAVE_CATOPEN
 }
 
-const char* I18n::operator()(int set, int msg, const char *msgString) const {
+const char* bt::I18n::operator()(int set, int msg,
+                                 const char *msgString) const {
 #if   defined(NLS) && defined(HAVE_CATGETS)
   if (catalog_fd != (nl_catd) -1)
     return catgets(catalog_fd, set, msg, msgString);

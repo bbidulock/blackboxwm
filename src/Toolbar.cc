@@ -197,7 +197,7 @@ void Toolbar::reconfigure(void) {
   unsigned int height = 0,
     width = (screen->getWidth() * screen->getToolbarWidthPercent()) / 100;
 
-  if (i18n.multibyte())
+  if (bt::i18n.multibyte())
     height = screen->getToolbarStyle()->fontset_extents->max_ink_extent.height;
   else
     height = screen->getToolbarStyle()->font->ascent +
@@ -271,7 +271,7 @@ void Toolbar::reconfigure(void) {
       }
       // find the length of the rendered string and add room for two extra
       // characters to it.  This allows for variable width output of the fonts
-      if (i18n.multibyte()) {
+      if (bt::i18n.multibyte()) {
         XRectangle ink, logical;
         XmbTextExtents(screen->getToolbarStyle()->fontset, t, len,
                        &ink, &logical);
@@ -288,8 +288,8 @@ void Toolbar::reconfigure(void) {
 #else // !HAVE_STRFTIME
   frame.clock_w =
     XTextWidth(screen->getToolbarStyle()->font,
-               i18n(ToolbarSet, ToolbarNoStrftimeLength, "00:00000"),
-               strlen(i18n(ToolbarSet, ToolbarNoStrftimeLength,
+               bt::i18n(ToolbarSet, ToolbarNoStrftimeLength, "00:00000"),
+               strlen(bt::i18n(ToolbarSet, ToolbarNoStrftimeLength,
                            "00:00000")));
 #endif // HAVE_STRFTIME
 
@@ -297,7 +297,7 @@ void Toolbar::reconfigure(void) {
 
   for (unsigned int i = 0; i < screen->getWorkspaceCount(); i++) {
     const std::string& workspace_name = screen->getWorkspace(i)->getName();
-    if (i18n.multibyte()) {
+    if (bt::i18n.multibyte()) {
       XRectangle ink, logical;
       XmbTextExtents(screen->getToolbarStyle()->fontset,
                      workspace_name.c_str(), workspace_name.length(),
@@ -483,23 +483,23 @@ void Toolbar::checkClock(bool redraw, bool date) {
                 tt->tm_mday, tt->tm_mon + 1,
                 (tt->tm_year >= 100) ? tt->tm_year - 100 : tt->tm_year);
       else
-        sprintf(t, i18n(ToolbarSet, ToolbarNoStrftimeDateFormat,
+        sprintf(t, bt::i18n(ToolbarSet, ToolbarNoStrftimeDateFormat,
                         "%02d/%02d/%02d"),
                 tt->tm_mon + 1, tt->tm_mday,
                 (tt->tm_year >= 100) ? tt->tm_year - 100 : tt->tm_year);
     } else {
       if (screen->isClock24Hour())
-        sprintf(t, i18n(ToolbarSet, ToolbarNoStrftimeTimeFormat24,
+        sprintf(t, bt::i18n(ToolbarSet, ToolbarNoStrftimeTimeFormat24,
                         "  %02d:%02d "),
                 frame.hour, frame.minute);
       else
-        sprintf(t, i18n(ToolbarSet, ToolbarNoStrftimeTimeFormat12,
+        sprintf(t, bt::i18n(ToolbarSet, ToolbarNoStrftimeTimeFormat12,
                         "%02d:%02d %sm"),
                 ((frame.hour > 12) ? frame.hour - 12 :
                  ((frame.hour == 0) ? 12 : frame.hour)), frame.minute,
                 ((frame.hour >= 12) ?
-                 i18n(ToolbarSet, ToolbarNoStrftimeTimeFormatP, "p") :
-                 i18n(ToolbarSet, ToolbarNoStrftimeTimeFormatA, "a")));
+                 bt::i18n(ToolbarSet, ToolbarNoStrftimeTimeFormatP, "p") :
+                 bt::i18n(ToolbarSet, ToolbarNoStrftimeTimeFormatA, "a")));
     }
 #endif // HAVE_STRFTIME
 
@@ -507,9 +507,9 @@ void Toolbar::checkClock(bool redraw, bool date) {
 
     int pos = frame.bevel_w * 2, // this is modified by doJustify()
       dlen = style->doJustify(t, pos, frame.clock_w,
-                              frame.bevel_w * 4, i18n.multibyte());
+                              frame.bevel_w * 4, bt::i18n.multibyte());
     BPen pen(style->c_text, style->font);
-    if (i18n.multibyte())
+    if (bt::i18n.multibyte())
       XmbDrawString(display, frame.clock, style->fontset, pen.gc(),
                     pos, (1 - style->fontset_extents->max_ink_extent.y),
                     t, dlen);
@@ -537,9 +537,9 @@ void Toolbar::redrawWindowLabel(bool redraw) {
 
   int pos = frame.bevel_w * 2, // modified by doJustify()
     dlen = style->doJustify(title, pos, frame.window_label_w,
-                            frame.bevel_w * 4, i18n.multibyte());
+                            frame.bevel_w * 4, bt::i18n.multibyte());
   BPen pen(style->w_text, style->font);
-  if (i18n.multibyte())
+  if (bt::i18n.multibyte())
     XmbDrawString(display, frame.window_label, style->fontset, pen.gc(), pos,
                   (1 - style->fontset_extents->max_ink_extent.y),
                   title, dlen);
@@ -559,9 +559,9 @@ void Toolbar::redrawWorkspaceLabel(bool redraw) {
 
   int pos = frame.bevel_w * 2,
     dlen = style->doJustify(name.c_str(), pos, frame.workspace_label_w,
-                            frame.bevel_w * 4, i18n.multibyte());
+                            frame.bevel_w * 4, bt::i18n.multibyte());
   BPen pen(style->l_text, style->font);
-  if (i18n.multibyte())
+  if (bt::i18n.multibyte())
     XmbDrawString(display, frame.workspace_label, style->fontset, pen.gc(),
                   pos, (1 - style->fontset_extents->max_ink_extent.y),
                   name.c_str(), dlen);
@@ -925,7 +925,7 @@ void Toolbar::keyPressEvent(const XKeyEvent *ke) {
       XClearWindow(display, frame.workspace_label);
       unsigned int l = new_workspace_name.length(), tw, x;
 
-      if (i18n.multibyte()) {
+      if (bt::i18n.multibyte()) {
         XRectangle ink, logical;
         XmbTextExtents(screen->getToolbarStyle()->fontset,
                        new_workspace_name.c_str(), l, &ink, &logical);
@@ -940,7 +940,7 @@ void Toolbar::keyPressEvent(const XKeyEvent *ke) {
 
       ToolbarStyle *style = screen->getToolbarStyle();
       BPen pen(style->l_text, style->font);
-      if (i18n.multibyte())
+      if (bt::i18n.multibyte())
         XmbDrawString(display, frame.workspace_label, style->fontset,
                       pen.gc(), x,
                       (1 - style->fontset_extents->max_ink_extent.y),
@@ -991,16 +991,16 @@ void Toolbar::toggleAutoHide(void) {
 Toolbarmenu::Toolbarmenu(Toolbar *tb) : Basemenu(tb->screen) {
   toolbar = tb;
 
-  setLabel(i18n(ToolbarSet, ToolbarToolbarTitle, "Toolbar"));
+  setLabel(bt::i18n(ToolbarSet, ToolbarToolbarTitle, "Toolbar"));
   setInternalMenu();
 
   placementmenu = new Placementmenu(this);
 
-  insert(i18n(CommonSet, CommonPlacementTitle, "Placement"),
+  insert(bt::i18n(CommonSet, CommonPlacementTitle, "Placement"),
          placementmenu);
-  insert(i18n(CommonSet, CommonAlwaysOnTop, "Always on top"), 1);
-  insert(i18n(CommonSet, CommonAutoHide, "Auto hide"), 2);
-  insert(i18n(ToolbarSet, ToolbarEditWkspcName,
+  insert(bt::i18n(CommonSet, CommonAlwaysOnTop, "Always on top"), 1);
+  insert(bt::i18n(CommonSet, CommonAutoHide, "Auto hide"), 2);
+  insert(bt::i18n(ToolbarSet, ToolbarEditWkspcName,
               "Edit current workspace name"), 3);
 
   update();
@@ -1064,21 +1064,21 @@ void Toolbarmenu::reconfigure(void) {
 
 Toolbarmenu::Placementmenu::Placementmenu(Toolbarmenu *tm)
   : Basemenu(tm->toolbar->screen) {
-  setLabel(i18n(ToolbarSet, ToolbarToolbarPlacement, "Toolbar Placement"));
+  setLabel(bt::i18n(ToolbarSet, ToolbarToolbarPlacement, "Toolbar Placement"));
   setInternalMenu();
   setMinimumSublevels(3);
 
-  insert(i18n(CommonSet, CommonPlacementTopLeft, "Top Left"),
+  insert(bt::i18n(CommonSet, CommonPlacementTopLeft, "Top Left"),
          Toolbar::TopLeft);
-  insert(i18n(CommonSet, CommonPlacementBottomLeft, "Bottom Left"),
+  insert(bt::i18n(CommonSet, CommonPlacementBottomLeft, "Bottom Left"),
          Toolbar::BottomLeft);
-  insert(i18n(CommonSet, CommonPlacementTopCenter, "Top Center"),
+  insert(bt::i18n(CommonSet, CommonPlacementTopCenter, "Top Center"),
          Toolbar::TopCenter);
-  insert(i18n(CommonSet, CommonPlacementBottomCenter, "Bottom Center"),
+  insert(bt::i18n(CommonSet, CommonPlacementBottomCenter, "Bottom Center"),
          Toolbar::BottomCenter);
-  insert(i18n(CommonSet, CommonPlacementTopRight, "Top Right"),
+  insert(bt::i18n(CommonSet, CommonPlacementTopRight, "Top Right"),
          Toolbar::TopRight);
-  insert(i18n(CommonSet, CommonPlacementBottomRight, "Bottom Right"),
+  insert(bt::i18n(CommonSet, CommonPlacementBottomRight, "Bottom Right"),
          Toolbar::BottomRight);
   update();
 }

@@ -637,18 +637,18 @@ void Slit::reparentNotifyEvent( const XReparentEvent * const event) {
 Slitmenu::Slitmenu(Slit *sl) : Basemenu(sl->screen) {
   slit = sl;
 
-  setLabel(i18n(SlitSet, SlitSlitTitle, "Slit"));
+  setLabel(bt::i18n(SlitSet, SlitSlitTitle, "Slit"));
   setInternalMenu();
 
   directionmenu = new Directionmenu(this);
   placementmenu = new Placementmenu(this);
 
-  insert(i18n(CommonSet, CommonDirectionTitle, "Direction"),
+  insert(bt::i18n(CommonSet, CommonDirectionTitle, "Direction"),
          directionmenu);
-  insert(i18n(CommonSet, CommonPlacementTitle, "Placement"),
+  insert(bt::i18n(CommonSet, CommonPlacementTitle, "Placement"),
          placementmenu);
-  insert(i18n(CommonSet, CommonAlwaysOnTop, "Always on top"), 1);
-  insert(i18n(CommonSet, CommonAutoHide, "Auto hide"), 2);
+  insert(bt::i18n(CommonSet, CommonAlwaysOnTop, "Always on top"), 1);
+  insert(bt::i18n(CommonSet, CommonAutoHide, "Auto hide"), 2);
 
   update();
 
@@ -707,12 +707,12 @@ void Slitmenu::reconfigure(void) {
 Slitmenu::Directionmenu::Directionmenu(Slitmenu *sm)
   : Basemenu(sm->slit->screen) {
 
-  setLabel(i18n(SlitSet, SlitSlitDirection, "Slit Direction"));
+  setLabel(bt::i18n(SlitSet, SlitSlitDirection, "Slit Direction"));
   setInternalMenu();
 
-  insert(i18n(CommonSet, CommonDirectionHoriz, "Horizontal"),
+  insert(bt::i18n(CommonSet, CommonDirectionHoriz, "Horizontal"),
          Slit::Horizontal);
-  insert(i18n(CommonSet, CommonDirectionVert, "Vertical"),
+  insert(bt::i18n(CommonSet, CommonDirectionVert, "Vertical"),
          Slit::Vertical);
 
   update();
@@ -749,26 +749,26 @@ void Slitmenu::Directionmenu::itemSelected(int button, unsigned int index) {
 Slitmenu::Placementmenu::Placementmenu(Slitmenu *sm)
   : Basemenu(sm->slit->screen) {
 
-  setLabel(i18n(SlitSet, SlitSlitPlacement, "Slit Placement"));
+  setLabel(bt::i18n(SlitSet, SlitSlitPlacement, "Slit Placement"));
   setMinimumSublevels(3);
   setInternalMenu();
 
-  insert(i18n(CommonSet, CommonPlacementTopLeft, "Top Left"),
+  insert(bt::i18n(CommonSet, CommonPlacementTopLeft, "Top Left"),
          Slit::TopLeft);
-  insert(i18n(CommonSet, CommonPlacementCenterLeft, "Center Left"),
+  insert(bt::i18n(CommonSet, CommonPlacementCenterLeft, "Center Left"),
          Slit::CenterLeft);
-  insert(i18n(CommonSet, CommonPlacementBottomLeft, "Bottom Left"),
+  insert(bt::i18n(CommonSet, CommonPlacementBottomLeft, "Bottom Left"),
          Slit::BottomLeft);
-  insert(i18n(CommonSet, CommonPlacementTopCenter, "Top Center"),
+  insert(bt::i18n(CommonSet, CommonPlacementTopCenter, "Top Center"),
          Slit::TopCenter);
   insert("");
-  insert(i18n(CommonSet, CommonPlacementBottomCenter, "Bottom Center"),
+  insert(bt::i18n(CommonSet, CommonPlacementBottomCenter, "Bottom Center"),
          Slit::BottomCenter);
-  insert(i18n(CommonSet, CommonPlacementTopRight, "Top Right"),
+  insert(bt::i18n(CommonSet, CommonPlacementTopRight, "Top Right"),
          Slit::TopRight);
-  insert(i18n(CommonSet, CommonPlacementCenterRight, "Center Right"),
+  insert(bt::i18n(CommonSet, CommonPlacementCenterRight, "Center Right"),
          Slit::CenterRight);
-  insert(i18n(CommonSet, CommonPlacementBottomRight, "Bottom Right"),
+  insert(bt::i18n(CommonSet, CommonPlacementBottomRight, "Bottom Right"),
          Slit::BottomRight);
 
   update();

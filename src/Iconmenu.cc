@@ -34,7 +34,7 @@
 Iconmenu::Iconmenu(BScreen *scrn) : Basemenu(scrn) {
   setInternalMenu();
 
-  setLabel(i18n(IconSet, IconIcons, "Icons"));
+  setLabel(bt::i18n(IconSet, IconIcons, "Icons"));
   update();
 }
 

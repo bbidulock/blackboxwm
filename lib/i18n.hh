@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // i18n.hh for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh at debian.org>
 // Copyright (c) 1997 - 2000, 2002 Bradley T Hughes <bhughes at trolltech.com>
@@ -40,24 +40,28 @@ extern "C" {
 }
 
 
-class I18n {
-private:
-  char *locale;
-  bool mb;
+namespace bt {
+
+  class I18n {
+  private:
+    char *locale;
+    bool mb;
 #ifdef HAVE_NL_TYPES_H
-  nl_catd catalog_fd;
+    nl_catd catalog_fd;
 #endif
 
-public:
-  I18n(void);
-  ~I18n(void);
+  public:
+    I18n(void);
+    ~I18n(void);
 
-  inline bool multibyte(void) const { return mb; }
+    inline bool multibyte(void) const { return mb; }
 
-  const char* operator()(int set, int msg, const char *msgString) const;
-  void openCatalog(const char *catalog);
-};
+    const char* operator()(int set, int msg, const char *msgString) const;
+    void openCatalog(const char *catalog);
+  };
 
-extern I18n i18n;
+  extern I18n i18n;
+
+}
 
 #endif // __i18n_h

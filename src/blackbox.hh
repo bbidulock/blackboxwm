@@ -46,7 +46,6 @@ extern "C" {
 #include <map>
 #include <string>
 
-#include "i18n.hh"
 #include "BaseDisplay.hh"
 #include "Timer.hh"
 
@@ -59,8 +58,6 @@ class Basemenu;
 class Toolbar;
 class Slit;
 class Netwm;
-
-extern I18n i18n;
 
 class Blackbox : public BaseDisplay, public TimeoutHandler {
 private:

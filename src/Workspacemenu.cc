@@ -36,9 +36,12 @@
 Workspacemenu::Workspacemenu(BScreen *scrn) : Basemenu(scrn) {
   setInternalMenu();
 
-  setLabel(i18n(WorkspacemenuSet, WorkspacemenuWorkspacesTitle, "Workspaces"));
-  insert(i18n(WorkspacemenuSet, WorkspacemenuNewWorkspace, "New Workspace"));
-  insert(i18n(WorkspacemenuSet, WorkspacemenuRemoveLast, "Remove Last"));
+  setLabel(bt::i18n(WorkspacemenuSet, WorkspacemenuWorkspacesTitle,
+                    "Workspaces"));
+  insert(bt::i18n(WorkspacemenuSet, WorkspacemenuNewWorkspace,
+                  "New Workspace"));
+  insert(bt::i18n(WorkspacemenuSet, WorkspacemenuRemoveLast,
+                  "Remove Last"));
 }
 
 
