@@ -165,6 +165,8 @@ bt::Application::Application(const std::string &app_name, const char *dpy_name,
 
   if (modmap)
     XFreeModifiermap(const_cast<XModifierKeymap*>(modmap));
+
+  XrmInitialize();
 }
 
 

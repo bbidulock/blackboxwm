@@ -216,7 +216,7 @@ void SendToWorkspacemenu::refresh(void) {
   BScreen *screen = _window->screen();
   const unsigned num = screen->workspaceCount();
   for (unsigned int i = 0; i < num; ++i)
-    insertItem(screen->resource().nameOfWorkspace(i), i);
+    insertItem(screen->resource().workspaceName(i), i);
 
   /*
     give a little visual indication to the user about which workspace

@@ -77,13 +77,13 @@ void Workspacemenu::itemClicked(unsigned int id, unsigned int) {
   switch (id) {
   case NewWorkspace:
     _bscreen->addWorkspace();
-    _bscreen->resource().saveWorkspaces(_bscreen->workspaceCount());
+    _bscreen->resource().setWorkspaceCount(_bscreen->workspaceCount());
     _bscreen->saveResource();
     break;
 
   case RemoveLastWorkspace:
     _bscreen->removeLastWorkspace();
-    _bscreen->resource().saveWorkspaces(_bscreen->workspaceCount());
+    _bscreen->resource().setWorkspaceCount(_bscreen->workspaceCount());
     _bscreen->saveResource();
     break;
 

@@ -25,17 +25,11 @@
 #ifndef   __BlackboxResource_hh
 #define   __BlackboxResource_hh
 
-#include <Bitmap.hh>
-#include <Color.hh>
-#include <Font.hh>
-#include <Texture.hh>
+#include "ScreenResource.hh"
+
 #include <Timer.hh>
-#include <Unicode.hh>
 #include <Util.hh>
 
-#include <vector>
-
-class BScreen;
 class Blackbox;
 
 enum FocusModel {
@@ -53,105 +47,20 @@ enum WindowPlacementPolicy {
   BottomTop
 };
 
-struct ToolbarOptions {
-  bool enabled;
-  int placement;
-  bool always_on_top, auto_hide;
-  int width_percent;
-  std::string strftime_format;
-};
-
-struct SlitOptions {
-  int direction;
-  int placement;
-  bool always_on_top, auto_hide;
-};
-
-struct WindowStyle {
-  struct {
-    bt::Color text, foreground;
-    bt::Texture title, label, button, handle, grip;
-  } focus, unfocus;
-  bt::Alignment alignment;
-  bt::Bitmap iconify, maximize, restore, close;
-  bt::Color frame_border;
-  bt::Font font;
-  bt::Texture pressed;
-  unsigned int title_margin, label_margin, button_margin,
-    frame_border_width, handle_height;
-
-  // calculated
-  unsigned int title_height, label_height, button_width, grip_width;
-};
-
-struct ToolbarStyle {
-  bt::Bitmap left, right;
-  bt::Color slabel_text, wlabel_text, clock_text, foreground;
-  bt::Texture toolbar, slabel, wlabel, clock, button, pressed;
-  bt::Font font;
-  bt::Alignment alignment;
-  unsigned int frame_margin, label_margin, button_margin;
-
-  // calculated extents
-  unsigned int toolbar_height, label_height, button_width, hidden_height;
-};
-
-struct SlitStyle {
-  bt::Texture slit;
-  unsigned int margin;
-};
-
-class ScreenResource : public bt::NoCopy {
-public:
-  void loadStyle(BScreen* screen, const std::string& style);
-  void load(bt::Resource& res, unsigned int screen);
-  void save(bt::Resource& res, BScreen* screen);
-
-  inline const ToolbarOptions &toolbarOptions(void) const
-  { return _toolbarOptions; }
-  inline const SlitOptions &slitOptions(void) const
-  { return _slitOptions; }
-
-  inline const WindowStyle &windowStyle(void) const
-  { return _windowStyle; }
-  inline const ToolbarStyle &toolbarStyle(void) const
-  { return _toolbarStyle; }
-  inline const SlitStyle &slitStyle(void) const
-  { return _slitStyle; }
-
-  // screen options
-  inline unsigned int numberOfWorkspaces(void) const
-  { return workspace_count; }
-  inline const std::string& rootCommand(void) const
-  { return root_command; }
-  const bt::ustring &nameOfWorkspace(unsigned int i) const;
-
-  inline void saveWorkspaces(unsigned int w)
-  { workspace_count = w; }
-  void saveWorkspaceName(unsigned int w, const bt::ustring &name);
-
-private:
-  ToolbarOptions _toolbarOptions;
-  SlitOptions _slitOptions;
-
-  WindowStyle _windowStyle;
-  ToolbarStyle _toolbarStyle;
-  SlitStyle _slitStyle;
-
-  unsigned int workspace_count;
-  std::string root_command;
-  std::vector<bt::ustring> workspaces;
+struct Cursors {
+  Cursor pointer;
+  Cursor move;
+  Cursor resize_top_left;
+  Cursor resize_bottom_left;
+  Cursor resize_top_right;
+  Cursor resize_bottom_right;
 };
 
 class BlackboxResource: public bt::NoCopy {
 private:
-  ScreenResource* screen_resources;
+  ScreenResource *screen_resources;
 
-  struct BCursor {
-    Cursor session, move, resize_top_left, resize_bottom_left,
-      resize_top_right, resize_bottom_right;
-  };
-  BCursor cursor;
+  Cursors _cursors;
 
   std::string menu_file, style_file, rc_file;
   Time double_click_interval;
@@ -178,21 +87,11 @@ public:
   void load(Blackbox& blackbox);
   void save(Blackbox& blackbox);
 
-  inline ScreenResource& screenResource(unsigned int screen)
+  inline ScreenResource &screenResource(unsigned int screen)
   { return screen_resources[screen]; }
 
-  inline Cursor sessionCursor(void) const
-  { return cursor.session; }
-  inline Cursor moveCursor(void) const
-  { return cursor.move; }
-  inline Cursor resizeTopLeftCursor(void) const
-  { return cursor.resize_top_left; }
-  inline Cursor resizeBottomLeftCursor(void) const
-  { return cursor.resize_bottom_left; }
-  inline Cursor resizeTopRightCursor(void) const
-  { return cursor.resize_top_right; }
-  inline Cursor resizeBottomRightCursor(void) const
-  { return cursor.resize_bottom_right; }
+  inline const Cursors &cursors(void) const
+  { return _cursors; }
 
   inline const char* rcFilename(void) const
   { return rc_file.c_str(); }

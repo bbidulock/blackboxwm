@@ -34,6 +34,7 @@ blackbox_SOURCES	= BlackboxResource.cc                           \
 			  Iconmenu.cc					\
 			  Rootmenu.cc					\
 			  Screen.cc					\
+			  ScreenResource.cc				\
 			  Slit.cc					\
 			  Slitmenu.cc					\
 			  StackingList.cc				\

@@ -286,7 +286,7 @@ void Toolbar::reconfigure(void) {
   for (unsigned int i = 0; i < _screen->workspaceCount(); i++) {
     width =
       bt::textRect(_screen->screenNumber(), style.font,
-                   _screen->resource().nameOfWorkspace(i)).width();
+                   _screen->resource().workspaceName(i)).width();
     label_w = std::max(label_w, width);
   }
 
@@ -496,7 +496,7 @@ void Toolbar::redrawWindowLabel(void) {
 
 void Toolbar::redrawWorkspaceLabel(void) {
   const bt::ustring &name =
-    _screen->resource().nameOfWorkspace(_screen->currentWorkspace());
+    _screen->resource().workspaceName(_screen->currentWorkspace());
   const ToolbarStyle &style = _screen->resource().toolbarStyle();
 
   bt::Rect u(0, 0, frame.slabel_rect.width(), frame.slabel_rect.height());

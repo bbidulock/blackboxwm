@@ -46,7 +46,7 @@ public:
   inline unsigned int id(void) const
   { return _id; }
 
-  const bt::ustring &name(void) const;
+  const bt::ustring name(void) const;
   void setName(const bt::ustring &new_name);
 
   void addWindow(BlackboxWindow *win);

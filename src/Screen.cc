@@ -102,7 +102,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   _windowmenu = 0;
 
   XDefineCursor(_blackbox->XDisplay(), screen_info.rootWindow(),
-                _blackbox->resource().sessionCursor());
+                _blackbox->resource().cursors().pointer);
 
   // start off full screen, top left.
   usableArea.setSize(screen_info.width(), screen_info.height());
@@ -139,11 +139,11 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   configmenu =
     new Configmenu(*_blackbox, screen_info.screenNumber(), this);
 
-  if (_resource.numberOfWorkspaces() == 0) // there is always 1 workspace
-    _resource.saveWorkspaces(1);
+  if (_resource.workspaceCount() == 0) // there is always 1 workspace
+    _resource.setWorkspaceCount(1);
 
   _workspacemenu->insertIconMenu(_iconmenu);
-  for (unsigned int i = 0; i < _resource.numberOfWorkspaces(); ++i) {
+  for (unsigned int i = 0; i < _resource.workspaceCount(); ++i) {
     Workspace *wkspc = new Workspace(this, i);
     workspacesList.push_back(wkspc);
     _workspacemenu->insertWorkspace(wkspc);

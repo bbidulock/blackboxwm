@@ -39,14 +39,14 @@ Workspace::Workspace(BScreen *scrn, unsigned int i) {
 
   clientmenu = new Clientmenu(*_screen->blackbox(), *_screen, _id);
 
-  setName(_screen->resource().nameOfWorkspace(i));
+  setName(_screen->resource().workspaceName(i));
 
   focused_window = 0;
 }
 
 
-const bt::ustring &Workspace::name(void) const
-{ return _screen->resource().nameOfWorkspace(_id); }
+const bt::ustring Workspace::name(void) const
+{ return _screen->resource().workspaceName(_id); }
 
 
 void Workspace::setName(const bt::ustring &new_name) {
@@ -60,7 +60,7 @@ void Workspace::setName(const bt::ustring &new_name) {
     the_name = bt::toUnicode(default_name);
   }
 
-  _screen->resource().saveWorkspaceName(_id, the_name);
+  _screen->resource().setWorkspaceName(_id, the_name);
   clientmenu->setTitle(the_name);
 }
 

@@ -1414,14 +1414,14 @@ void BlackboxWindow::createGrips(void) {
     createChildWindow(frame.handle,
                       ButtonPressMask | ButtonReleaseMask |
                       ButtonMotionMask | ExposureMask,
-                      blackbox->resource().resizeBottomLeftCursor());
+                      blackbox->resource().cursors().resize_bottom_left);
   blackbox->insertEventHandler(frame.left_grip, this);
 
   frame.right_grip =
     createChildWindow(frame.handle,
                       ButtonPressMask | ButtonReleaseMask |
                       ButtonMotionMask | ExposureMask,
-                      blackbox->resource().resizeBottomRightCursor());
+                      blackbox->resource().cursors().resize_bottom_right);
   blackbox->insertEventHandler(frame.right_grip, this);
 }
 
@@ -1680,7 +1680,7 @@ void BlackboxWindow::grabButtons(void) {
     blackbox->grabButton(Button1, Mod1Mask, frame.window, True,
                          ButtonReleaseMask | ButtonMotionMask, GrabModeAsync,
                          GrabModeAsync, frame.window,
-                         blackbox->resource().moveCursor(),
+                         blackbox->resource().cursors().move,
                          blackbox->resource().allowScrollLock());
   if (hasWindowFunction(WindowFunctionResize))
     blackbox->grabButton(Button3, Mod1Mask, frame.window, True,
@@ -3462,7 +3462,7 @@ void BlackboxWindow::startMove() {
   XGrabPointer(blackbox->XDisplay(), frame.window, false,
                Button1MotionMask | ButtonReleaseMask,
                GrabModeAsync, GrabModeAsync, None,
-               blackbox->resource().moveCursor(), blackbox->XTime());
+               blackbox->resource().cursors().move, blackbox->XTime());
 
   client.state.moving = true;
 
@@ -3606,20 +3606,20 @@ void BlackboxWindow::startResize(Window window) {
   Cursor cursor = None;
   switch (frame.corner) {
   case TopLeft:
-    cursor = blackbox->resource().resizeBottomRightCursor();
+    cursor = blackbox->resource().cursors().resize_bottom_right;
     frame.grab_x = frame.rect.width() - frame.grab_x;
     frame.grab_y = frame.rect.height() - frame.grab_y;
     break;
   case BottomLeft:
-    cursor = blackbox->resource().resizeTopRightCursor();
+    cursor = blackbox->resource().cursors().resize_top_right;
     frame.grab_x = frame.rect.width() - frame.grab_x;
     break;
   case TopRight:
-    cursor = blackbox->resource().resizeBottomLeftCursor();
+    cursor = blackbox->resource().cursors().resize_bottom_left;
     frame.grab_y = frame.rect.height() - frame.grab_y;
     break;
   case BottomRight:
-    cursor = blackbox->resource().resizeTopLeftCursor();
+    cursor = blackbox->resource().cursors().resize_top_left;
     break;
   }
 
