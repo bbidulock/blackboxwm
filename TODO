@@ -9,6 +9,8 @@ netwm:
 * if we have N workspaces NET_DESKTOP_NAMES could supply us with N+M
   names.  When we create a new workspace we should consult this list.
 
+* support for wm_window_type is in we just need to actually use it
+
 refactoring:
 -----------------------------
 * look into public v. private members of all classes
