@@ -119,7 +119,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
                ColormapChangeMask | EnterWindowMask | PropertyChangeMask |
                SubstructureRedirectMask | 
 	       StructureNotifyMask | SubstructureNotifyMask |
-	       ButtonPressMask | ButtonReleaseMask;
+	       ButtonPressMask | ButtonReleaseMask);
 
   XSync(screen_info.display().XDisplay(), False);
   XSetErrorHandler((XErrorHandler) old);
