@@ -1582,7 +1582,7 @@ void BScreen::shutdown(void) {
   XSync(blackbox->getXDisplay(), False);
 
   while(! windowList.empty())
-    unmanageWindow(windowList.front(), True);
+    unmanageWindow(windowList.back(), True);
 
   slit->shutdown();
 }
