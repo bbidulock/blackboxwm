@@ -144,7 +144,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   current_state = NormalState;
 
   /*
-    get the initial size and location of client window (relative to the
+    set the initial size and location of client window (relative to the
     _root window_). This position is the reference point used with the
     window's gravity to find the window's initial position.
   */
