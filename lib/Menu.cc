@@ -433,16 +433,17 @@ void bt::Menu::changeItem(unsigned int id, const std::string &newlabel,
 
   bt::MenuItem& item = *it;
   if (! item.isSeparator()) {
-    // new label
-    item.lbl = newlabel;
+    if (item.lbl != newlabel) {
+      // new label
+      item.lbl = newlabel;
+      invalidateSize();
+    }
+
     if (newid != ~0u) {
       // change the id if necessary
       _id_bits[item.ident] = false;
       item.ident = verifyId(newid);
     }
-    if (isVisible())
-      XClearArea(_app.XDisplay(), _window,
-                 r.x(), r.y(), r.width(), r.height(), True);
   }
 }
 
