@@ -58,6 +58,8 @@ Changes from 0.61.1 to 0.62.0:
   - check if the window is visible before changeBlackboxHints() calls maximize
   - placeWindow no longer takes edgeSnapThreshhold into account
   - ignore style files ending in ~
+  - support locale specifiers with @euro in them
+  - added Slovenian man pages and nls, thanks Ales Kosir
   - added my name to the code, updated the version output
     
 Changes from 0.61.0 to 0.61.1:

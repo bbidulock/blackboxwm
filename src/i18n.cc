@@ -72,7 +72,9 @@ I18n::I18n(void) {
   } else {
     mb = True;
     // truncate any encoding off the end of the locale
-    char *l = strchr(locale, '.');
+    char *l = strchr(locale, '@');
+    if (l) *l = '\0';
+    l = strchr(locale, '.');
     if (l) *l = '\0';
   }
 

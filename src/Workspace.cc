@@ -341,7 +341,7 @@ void Workspace::placeWindow(BlackboxWindow *win) {
       (screen->getBorderWidth() * 4),
     toolbar_h = screen->getToolbar()->getHeight() + 
       (screen->getBorderWidth() * 4),
-    start_pos = screen->getBorderWidth(),
+    start_pos = 0,
     change_y =
       ((screen->getColPlacementDirection() == BScreen::TopBottom) ? 1 : -1),
     change_x =

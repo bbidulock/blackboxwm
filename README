@@ -17,7 +17,7 @@ The source tree for Blackbox is comprised of five subdirectories:
 			  manager.
 
 	util/		- this holds source code for small utility programs
-			  that help Blackbox doing what it does best.
+			  that help Blackbox do what it does best.
 
 
 Quick Start:
@@ -62,9 +62,12 @@ With the start of the 0.60.x series Blackbox no longer handles any
 keyboard shortcuts; instead it supports a communication protocol which
 allows other programs to handle these and related tasks. If you'd like
 to be able to use keyboard shortcuts with Blackbox, bbkeys (available at
-http://movingparts.windsofstorm.net/bbkeys.shtml) can provide you with
-all the previous functionality and more.
-
+http://http://bbkeys.sourceforge.net) can provide you with all the previous
+functionality and more.
+If you're looking for a GUI with which to configure your blackbox menu and/or
+styles, check out http://bbconf.sourceforge.net. bbconf is a QT program that
+does just that, as well as providing a GUI for editing your keybindings for the
+above mentioned bbkeys.
 
 Supported Platforms:
 --------------------
@@ -93,21 +96,6 @@ rs6k-AIX 4.3.2
 MIPS-IRIX 6.5 (requires gcc, MIPSpro didn't like some of the template-fu)
 ix86-OS/2 (version? recent successes?)
 hp9000/715-HP/UX 10.20 (with egcs 1.1.1)
-
-NOTE: OS/2 support was included sometime in the 0.40.x series, but I have lost
-      touch with the person that contributed the patches.  The code is still in
-      place, but I don't know if 0.51.x still runs on this platform.
-
-UPDATE: A report has been confirmed that 0.51.x doesn't run on OS/2 with out
-        some work.  This has to do with lack of a getitimer(3) function.
-        Currently, getitimer(3) is used for auto raising, and is due for 
-        replacement sometime soon.
-
-UPDATE: Blackbox now makes use of its own internal timer, which doesn't use
-        getitimer(3).  I don't know if this is all that it takes to make
-        Blackbox work on OS/2, but I would like to hear success/fail reports.
-
-UPDATE: OS/2 code is going away unless the author hears complaints
 
 Please email shaleh@debian.org for other success reports.
 

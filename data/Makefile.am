@@ -10,4 +10,4 @@ distclean-local:
 	rm -f *\~
 
 menu: menu.in
-	@regex_cmd@ -e "s,@pkgdatadir@,$(pkgdatadir)," menu.in > menu
+	@regex_cmd@ -e "s,@pkgdatadir@,$(pkgdatadir)," @srcdir@/menu.in > menu

@@ -10,12 +10,14 @@ Current Contributors:
 	- bbpager, ideas, and support
         Jason 'vanRijn' Kasper <vR@movingparts.net>
 	- bbkeys, ideas, support
-	Wilbert Berendsen <wbsoft@xs4all.nl>
-	 - man pages and dutch nls file
 	Chris Mecca <flip@linuxguide.org>
 	 - use of his irix machine for testing
+ 	Wilbert Berendsen <wbsoft@xs4all.nl>
+	 - man pages and dutch nls file
 	Luca Marrazzo <marra.luca@libero.it>
 	 - italian nls files
+	Ales Kosir <ales.kosir@telemach.net>
+	 - Slovenian man pages and nls
 
 Original Author:
         Brad Hughes <bhughes@trolltech.com>

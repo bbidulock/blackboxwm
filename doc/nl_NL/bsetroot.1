@@ -1,0 +1,94 @@
+.\"
+.\" Man page for Bsetroot
+.\"
+.\" Copyright (c) 2000 by Wilbert Berendsen <wbsoft@xs4all.nl>
+.\"
+.\" Nederlandse versie door Wilbert Berendsen
+.\"
+.TH bsetroot 1 "June 16th, 2000" "0.60.3"
+.SH NAAM
+bsetroot \- blackbox utility om de achtergrond van het bureaublad aan te passen
+.SH SYNOPSIS
+.BR bsetroot " \-help"
+.br
+.B bsetroot
+.RI "[ \-display " display " ] \-solid " kleur
+.br
+.B bsetroot
+.RI "[ \-display " display " ] \-mod " "x y" " \-fg " kleur " \-bg " kleur
+.br
+.B bsetroot
+.RI "[ \-display " display " ] \-gradient " textuur " \-from " kleur " \-to " kleur
+.SH BESCHRIJVING
+Bsetroot is een utility die de achtergrond van het X bureaublad kan aanpassen op
+drie manieren:
+Effen kleur, een modula patroon (hokjes) in twee kleuren of een
+textuur gebaseerd op een verloop van twee verschillende kleuren.
+.PP
+Bsetroot lijkt een beetje op
+.IR xsetroot (1)
+maar bsetroot ondersteunt meerdere displays, en kan texturen genereren net als
+Blackbox.
+Cursors etc. kunnen niet met bsetroot worden ingesteld.
+Bsetroot is onderdeel van het Blackbox pakket.
+.SH OPTIES
+Bsetroot werkt op drie manieren.
+U moet een van de eerste drie opties kiezen:
+.TP
+.BI \-solid " kleur"
+Geeft de achtergrond een effen kleur.
+.TP
+.BI \-mod " x y"
+Maakt een modula patroon aan.
+Het is verplicht de
+.BR \-bg " en " \-fg
+kleuren aan te geven.
+.TP
+.BI \-gradient " textuur"
+Genereert de aangegeven textuur voor de achtergrond.
+Voor mogelijke texturen, zie
+.IR blackbox (1).
+Ook moeten hier twee kleuren worden aangegeven, met behulp van de
+.BR \-from " en " \-to
+opties.
+.TP
+.BI \-display " display"
+Geeft aan welke display moet worden gebruikt in plaats van de huidige.
+.TP
+.BI "\-bg, \-background " kleur
+Achtergrondkleur.
+Nodig voor
+.B \-mod
+patronen.
+.TP
+.BI "\-fg, \-foreground " color
+Voorgrondkleur.
+Nodig voor
+.B \-mod
+patronen.
+.TP
+.BI \-from " kleur"
+Beginkleur voor texturen.
+Nodig voor
+.B \-gradient
+werkwijze.
+.TP
+.BI \-to " kleur"
+Eindkleur voor texturen.
+Nodig voor
+.B \-gradient
+werkwijze.
+.TP
+.B \-help
+Beeldt versie informatie af en stop.
+.SH AUTEUR
+Bsetroot is geschreven en wordt onderhouden door Brad Hughes
+.nh \" hyphenation off
+(blackbox@alug.org)
+.hy \" on again
+en Jeff Raven
+.nh
+(jraven@psu.edu).
+.hy
+.SH ZIE OOK
+.IR blackbox (1)

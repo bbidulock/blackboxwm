@@ -1,16 +1,23 @@
 -- data/README for Blackbox - an X11 Window manager
 
 The data/ directory holds some menu and style (or theme) examples for Blackbox.
-These are installed as system defaults, and are ALWAYS overwritten when
+
+
+The styles are installed as system defaults, and are ALWAYS overwritten when
 upgrading or otherwise re-installing Blackbox.  Changes to them are
 discouraged, because of this reason.
 
-In the data/ directory, you will find a file named `menu' and a directory
-named `styles.'  These are the system defaults that are installed when
-Blackbox is built, and they are intended as examples on how to customize and
-control the appearance of Blackbox.  In the event that a user does not have
-a defined menu and/or style, Blackbox falls back on the example menu and/or
-styles included here.
+In the data/ directory, you will find a directory named `styles.'  These are
+the system defaults that are installed when Blackbox is built, and they are
+intended as examples on how to customize and control the appearance of
+Blackbox.
+In the event that a user does not have a defined style, Blackbox falls back on
+the example styles included here.
+
+Also in the data/ directory is a file named `menu'. This file is not installed
+with Blackbox, but is an example of a menu file that can be edited to simply
+create a custom menu. If the user does not have a defined menu, Blackbox falls
+back on a small, simple internal menu.
 
 For information on creating/editing a menu, see the file README.menu.
 
