@@ -1,4 +1,4 @@
-// -*- mode: C++; indent-tabs-mode: nil; -*-
+// -*- mode: C++; indent-tabs-mode: nil; c-basic-offset: 2; -*-
 // Slit.cc for Blackbox - an X11 Window manager
 // Copyright (c) 2001 - 2002 Sean 'Shaleh' Perry <shaleh@debian.org>
 // Copyright (c) 1997 - 2000 Brad Hughes (bhughes@tcac.net)
@@ -352,48 +352,52 @@ void Slit::reconfigure(void) {
 
 void Slit::updateStrut(void) {
   strut.top = strut.bottom = strut.left = strut.right = 0;
-  
-  switch (screen->getSlitDirection()) {
-  case Vertical:
-    switch (screen->getSlitPlacement()) {
-    case TopCenter:
-      strut.top = getY() + getExposedHeight() + (screen->getBorderWidth() * 2);
+
+  if (! clientList.empty()) {
+    switch (screen->getSlitDirection()) {
+    case Vertical:
+      switch (screen->getSlitPlacement()) {
+      case TopCenter:
+        strut.top = getY() + getExposedHeight() +
+                    (screen->getBorderWidth() * 2);
+        break;
+      case BottomCenter:
+        strut.bottom = screen->getHeight() - getY();
+        break;
+      case TopLeft:
+      case CenterLeft:
+      case BottomLeft:
+        strut.left = getExposedWidth() + (screen->getBorderWidth() * 2);
+        break;
+      case TopRight:
+      case CenterRight:
+      case BottomRight:
+        strut.right = getExposedWidth() + (screen->getBorderWidth() * 2);
+        break;
+      }
       break;
-    case BottomCenter:
-      strut.bottom = screen->getHeight() - getY();
-      break;
-    case TopLeft:
-    case CenterLeft:
-    case BottomLeft:
-      strut.left = getExposedWidth() + (screen->getBorderWidth() * 2);
-      break;
-    case TopRight:
-    case CenterRight:
-    case BottomRight:
-      strut.right = getExposedWidth() + (screen->getBorderWidth() * 2);
+    case Horizontal:
+      switch (screen->getSlitPlacement()) {
+      case TopCenter:
+      case TopLeft:
+      case TopRight:
+        strut.top = getY() + getExposedHeight() +
+                    (screen->getBorderWidth() * 2);
+        break;
+      case BottomCenter:
+      case BottomLeft:
+      case BottomRight:
+        strut.bottom = screen->getHeight() - getY();
+        break;
+      case CenterLeft:
+        strut.left = getExposedWidth() + (screen->getBorderWidth() * 2);
+        break;
+      case CenterRight:
+        strut.right = getExposedWidth() + (screen->getBorderWidth() * 2);
+        break;
+      }
       break;
     }
-    break;
-  case Horizontal:
-    switch (screen->getSlitPlacement()) {
-    case TopCenter:
-    case TopLeft:
-    case TopRight:
-      strut.top = getY() + getExposedHeight() + (screen->getBorderWidth() * 2);
-      break;
-    case BottomCenter:
-    case BottomLeft:
-    case BottomRight:
-      strut.bottom = screen->getHeight() - getY();
-      break;
-    case CenterLeft:
-      strut.left = getExposedWidth() + (screen->getBorderWidth() * 2);
-      break;
-    case CenterRight:
-      strut.right = getExposedWidth() + (screen->getBorderWidth() * 2);
-      break;
-    }
-    break;
   }
 
   // update area with new Strut info
