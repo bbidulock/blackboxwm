@@ -116,7 +116,7 @@ public:
 
   // another pure virtual... this is used to handle signals that BaseDisplay
   // doesn't understand itself
-  virtual const Bool handleSignal(int sig) = 0;
+  virtual Bool handleSignal(int sig) = 0;
 };
 
 

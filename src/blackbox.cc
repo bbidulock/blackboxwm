@@ -621,7 +621,7 @@ void Blackbox::process_event(XEvent *e) {
 }
 
 
-const Bool Blackbox::handleSignal(int sig) {
+Bool Blackbox::handleSignal(int sig) {
   switch (sig) {
   case SIGHUP:
     reconfigure();
@@ -733,7 +733,7 @@ void Blackbox::init_icccm(void) {
 }
 
 
-const Bool Blackbox::validateWindow(Window window) {
+Bool Blackbox::validateWindow(Window window) {
   XEvent event;
   if (XCheckTypedWindowEvent(getXDisplay(), window, DestroyNotify, &event)) {
     XPutBackEvent(getXDisplay(), &event);

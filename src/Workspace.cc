@@ -91,7 +91,7 @@ void Workspace::addWindow(BlackboxWindow *w, Bool place) {
 }
 
 
-const unsigned int Workspace::removeWindow(BlackboxWindow *w) {
+unsigned int Workspace::removeWindow(BlackboxWindow *w) {
   assert(w != 0);
 
   stackingList.remove(w);
@@ -113,7 +113,7 @@ const unsigned int Workspace::removeWindow(BlackboxWindow *w) {
       }
     }
   }
-  
+
   if (lastfocus == w)
     lastfocus = (BlackboxWindow *) 0;
 
@@ -317,7 +317,7 @@ void Workspace::sendWindowList(Netizen &n) {
 }
 
 
-const unsigned int Workspace::getCount(void) const {
+unsigned int Workspace::getCount(void) const {
   return windowList.size();
 }
 
@@ -352,7 +352,7 @@ void Workspace::setName(const char* new_name) {
              id + 1);
     name = default_name;
   }
-  
+
   clientmenu->setLabel(name);
   clientmenu->update();
 }
@@ -412,7 +412,7 @@ void Workspace::placeWindow(BlackboxWindow *win) {
           int curr_h = ((curr->isShaded()) ?
                         curr->getTitleHeight() :
                         curr->getHeight()) + (screen->getBorderWidth() * 4);
-          
+
           if (curr->getXFrame() < place_x + win_w &&
               curr->getXFrame() + curr_w > place_x &&
               curr->getYFrame() < place_y + win_h &&
@@ -441,7 +441,7 @@ void Workspace::placeWindow(BlackboxWindow *win) {
             place_x > 0 : place_x + win_w < (signed) availableArea.width)) {
       place_y = (screen->getColPlacementDirection() == BScreen::TopBottom) ?
         start_pos_y : availableArea.height - win_h - start_pos_y;
-      
+
       while (!placed &&
              ((screen->getColPlacementDirection() == BScreen::BottomTop) ?
               place_y > 0 : place_y + win_h < (signed) availableArea.height)){
@@ -487,7 +487,7 @@ void Workspace::placeWindow(BlackboxWindow *win) {
     cascade_x += win->getTitleHeight();
     cascade_y += win->getTitleHeight();
   }
-  
+
   if (place_x + win_w > (signed) availableArea.width)
     place_x = (((signed) availableArea.width) - win_w) / 2;
   if (place_y + win_h > (signed) availableArea.height)

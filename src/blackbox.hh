@@ -260,9 +260,9 @@ public:
   void rereadMenu(void);
   void checkMenu(void);
 
-  const Bool validateWindow(Window window);
+  Bool validateWindow(Window window);
 
-  virtual const Bool handleSignal(int sig);
+  virtual Bool handleSignal(int sig);
 
   virtual void timeout(void);
 

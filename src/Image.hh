@@ -83,10 +83,10 @@ public:
   Pixmap render_gradient(const BTexture &texture);
 
   // static methods for the builtin cache
-  static const unsigned long maximumCacheSize(void);
+  static unsigned long maximumCacheSize(void);
   static void setMaximumCacheSize(const unsigned long cache_max);
 
-  static const unsigned long cacheTimeout(void);
+  static unsigned long cacheTimeout(void);
   static void setCacheTimeout(const unsigned long cache_timeout);
 
 private:

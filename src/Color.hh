@@ -54,7 +54,7 @@ public:
     b = _b;
   }
 
-  inline const BaseDisplay * const display() const { return dpy; }
+  inline const BaseDisplay *display() const { return dpy; }
   inline unsigned int screen() const { return scrn; }
   void setDisplay(const BaseDisplay * const _display, unsigned int _screen = ~(0u));
 

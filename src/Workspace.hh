@@ -82,8 +82,8 @@ public:
   Bool isLastWindow(const BlackboxWindow* w) const;
 
   void addWindow(BlackboxWindow *w, Bool place = False);
-  const unsigned int removeWindow(BlackboxWindow *w);
-  const unsigned int getCount(void) const;
+  unsigned int removeWindow(BlackboxWindow *w);
+  unsigned int getCount(void) const;
 
   void showAll(void);
   void hideAll(void);
