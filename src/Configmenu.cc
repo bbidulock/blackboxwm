@@ -70,6 +70,22 @@ protected:
 };
 
 
+enum {
+  FocusModel,
+  WindowPlacement,
+  ImageDithering,
+  OpaqueWindowMoving,
+  FullMaximization,
+  FocusNewWindows,
+  FocusLastWindowOnWorkspace,
+  DisableBindings,
+  ClickToFocus,
+  SloppyFocus,
+  AutoRaise,
+  ClickRaise,
+  IgnoreShadedWindows
+};
+
 Configmenu::Configmenu(bt::Application &app, unsigned int screen,
                        BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen) {
@@ -79,64 +95,64 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuFocusModel,
                       "Focus Model"),
              new ConfigFocusmenu(app, screen, bscreen),
-             ConfigmenuFocusModel);
+             FocusModel);
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuWindowPlacement,
                       "Window Placement"),
              new ConfigPlacementmenu(app, screen, bscreen),
-             ConfigmenuWindowPlacement);
+             WindowPlacement);
 
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuImageDithering,
                       "Image Dithering"),
              new ConfigDithermenu(app, screen),
-             ConfigmenuImageDithering);
+             ImageDithering);
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuOpaqueMove,
                       "Opaque Window Moving"),
-             ConfigmenuOpaqueMove);
+             OpaqueWindowMoving);
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuFullMax,
                       "Full Maximization"),
-             ConfigmenuFullMax);
+             FullMaximization);
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuFocusNew,
                       "Focus New Windows"),
-             ConfigmenuFocusNew);
+             FocusNewWindows);
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuFocusLast,
                       "Focus Last Window on Workspace"),
-             ConfigmenuFocusLast);
+             FocusLastWindowOnWorkspace);
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuDisableBindings,
                       "Disable Bindings with Scroll Lock"),
-             ConfigmenuDisableBindings);
+             DisableBindings);
 }
 
 
 void Configmenu::refresh(void) {
   ScreenResource& res = _bscreen->resource();
-  setItemChecked(ConfigmenuOpaqueMove, res.doOpaqueMove());
-  setItemChecked(ConfigmenuFullMax, res.doFullMax());
-  setItemChecked(ConfigmenuFocusNew, res.doFocusNew());
-  setItemChecked(ConfigmenuFocusLast, res.doFocusLast());
-  setItemChecked(ConfigmenuDisableBindings, res.allowScrollLock());
+  setItemChecked(OpaqueWindowMoving, res.doOpaqueMove());
+  setItemChecked(FullMaximization, res.doFullMax());
+  setItemChecked(FocusNewWindows, res.doFocusNew());
+  setItemChecked(FocusLastWindowOnWorkspace, res.doFocusLast());
+  setItemChecked(DisableBindings, res.allowScrollLock());
 }
 
 
 void Configmenu::itemClicked(unsigned int id, unsigned int) {
   ScreenResource& res = _bscreen->resource();
   switch (id) {
-  case ConfigmenuOpaqueMove: // opaque move
+  case OpaqueWindowMoving: // opaque move
     res.saveOpaqueMove(! res.doOpaqueMove());
     break;
 
-  case ConfigmenuFullMax: // full maximization
+  case FullMaximization: // full maximization
     res.saveFullMax(! res.doFullMax());
     break;
 
-  case ConfigmenuFocusNew: // focus new windows
+  case FocusNewWindows: // focus new windows
     res.saveFocusNew(! res.doFocusNew());
     break;
 
-  case ConfigmenuFocusLast: // focus last window on workspace
+  case FocusLastWindowOnWorkspace: // focus last window on workspace
     res.saveFocusLast(! res.doFocusLast());
     break;
 
-  case ConfigmenuDisableBindings: // disable keybindings with Scroll Lock
+  case DisableBindings: // disable keybindings with Scroll Lock
     res.saveAllowScrollLock(! res.allowScrollLock());
     _bscreen->reconfigure();
     break;
@@ -146,8 +162,6 @@ void Configmenu::itemClicked(unsigned int id, unsigned int) {
   _bscreen->saveResource();
 }
 
-static const unsigned int AutoRaiseID = BScreen::SloppyFocus + 10;
-static const unsigned int ClickRaiseID = BScreen::SloppyFocus + 11;
 
 ConfigFocusmenu::ConfigFocusmenu(bt::Application &app, unsigned int screen,
                                  BScreen *bscreen)
@@ -156,40 +170,43 @@ ConfigFocusmenu::ConfigFocusmenu(bt::Application &app, unsigned int screen,
   showTitle();
 
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuClickToFocus, "Click To Focus"),
-             BScreen::ClickToFocus);
+             ClickToFocus);
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuSloppyFocus, "Sloppy Focus"),
-             BScreen::SloppyFocus);
+             SloppyFocus);
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuAutoRaise, "Auto Raise"),
-             AutoRaiseID);
+             AutoRaise);
   insertItem(bt::i18n(ConfigmenuSet, ConfigmenuClickRaise, "Click Raise"),
-             ClickRaiseID);
+             ClickRaise);
 }
 
 
 void ConfigFocusmenu::refresh(void) {
   ScreenResource& res = _bscreen->resource();
-  setItemChecked(BScreen::ClickToFocus, !res.isSloppyFocus());
-  setItemChecked(BScreen::SloppyFocus, res.isSloppyFocus());
-  setItemEnabled(AutoRaiseID, res.isSloppyFocus());
-  setItemChecked(AutoRaiseID, res.doAutoRaise());
-  setItemEnabled(ClickRaiseID, res.isSloppyFocus());
-  setItemChecked(ClickRaiseID, res.doClickRaise());
+  setItemChecked(ClickToFocus, !res.isSloppyFocus());
+  setItemChecked(SloppyFocus, res.isSloppyFocus());
+  setItemEnabled(AutoRaise, res.isSloppyFocus());
+  setItemChecked(AutoRaise, res.doAutoRaise());
+  setItemEnabled(ClickRaise, res.isSloppyFocus());
+  setItemChecked(ClickRaise, res.doClickRaise());
 }
 
 
 void ConfigFocusmenu::itemClicked(unsigned int id, unsigned int) {
   ScreenResource& res = _bscreen->resource();
   switch (id) {
-  case BScreen::ClickToFocus:
-  case BScreen::SloppyFocus:
-    _bscreen->toggleFocusModel((BScreen::FocusModel) id);
+  case ClickToFocus:
+    _bscreen->toggleFocusModel(BScreen::ClickToFocus);
     break;
 
-  case AutoRaiseID: // auto raise with sloppy focus
+  case SloppyFocus:
+    _bscreen->toggleFocusModel(BScreen::SloppyFocus);
+    break;
+
+  case AutoRaise: // auto raise with sloppy focus
     res.saveAutoRaise(! res.doAutoRaise());
     break;
 
-  case ClickRaiseID: // click raise with sloppy focus
+  case ClickRaise: // click raise with sloppy focus
     res.saveClickRaise(! res.doClickRaise());
     // make sure the appropriate mouse buttons are grabbed on the windows
     _bscreen->toggleFocusModel(BScreen::SloppyFocus);
@@ -295,7 +312,7 @@ void ConfigPlacementmenu::itemClicked(unsigned int id, unsigned int) {
   }
     break;
 
-  case ConfigmenuIgnoreShaded:
+  case IgnoreShadedWindows:
     res.savePlacementIgnoresShaded(! res.placementIgnoresShaded());
     break;
 
@@ -335,6 +352,5 @@ void ConfigDithermenu::refresh(void) {
 }
 
 
-void ConfigDithermenu::itemClicked(unsigned int id, unsigned int) {
-  bt::Image::setDitherMode((bt::DitherMode) id);
-}
+void ConfigDithermenu::itemClicked(unsigned int id, unsigned int)
+{ bt::Image::setDitherMode((bt::DitherMode) id); }
