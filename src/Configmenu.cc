@@ -126,7 +126,7 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
              FocusLastWindowOnWorkspace);
   insertItem(bt::toUnicode("Change Workspace with Mouse Wheel"),
              ChangeWorkspaceWithMouseWheel);
-  insertItem(bt::toUnicode("(Un)Shade Window with Mouse Wheel"),
+  insertItem(bt::toUnicode("Shade Windows with Mouse Wheel"),
              ShadeWindowWithMouseWheel);
   insertItem(bt::toUnicode("Toolbar Actions with Mouse Wheel"),
              ToolbarActionsWithMouseWheel);
