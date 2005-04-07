@@ -2907,15 +2907,17 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
   } else if (event->message_type == ewmh.moveresizeWindow()) {
     XConfigureRequestEvent request;
     request.window = event->window;
+    request.value_mask =
+      (event->data.l[0] >> 8) & (CWX | CWY | CWWidth | CWHeight);
     request.x = event->data.l[1];
     request.y = event->data.l[2];
     request.width = event->data.l[3];
     request.height = event->data.l[4];
-    request.value_mask = CWX | CWY | CWWidth | CWHeight;
 
+    const int gravity = (event->data.l[0] & 0xff);
     const int old_gravity = client.wmnormal.win_gravity;
     if (event->data.l[0] != 0)
-      client.wmnormal.win_gravity = event->data.l[0];
+      client.wmnormal.win_gravity = gravity;
 
     configureRequestEvent(&request);
 
