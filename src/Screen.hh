@@ -168,6 +168,8 @@ public:
   inline unsigned int currentWorkspace(void) const
   { return current_workspace; }
   void setCurrentWorkspace(unsigned int id);
+  void nextWorkspace(void);
+  void prevWorkspace(void);
 
   const bt::Rect& availableArea(void);
   void addStrut(bt::EWMH::Strut *strut);

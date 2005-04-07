@@ -609,8 +609,15 @@ void Toolbar::redrawNextWindowButton(bool pressed) {
 
 
 void Toolbar::buttonPressEvent(const XButtonEvent * const event) {
+  if (event->state == Mod1Mask) {
+    if (event->button == 1) 
+      _screen->raiseWindow(this);
+    else if (event->button == 2) 
+      _screen->lowerWindow(this);
+    return;
+  }
+
   if (event->button == 1) {
-    _screen->raiseWindow(this);
     if (event->window == frame.psbutton)
       redrawPrevWorkspaceButton(True);
     else if (event->window == frame.nsbutton)
@@ -619,19 +626,56 @@ void Toolbar::buttonPressEvent(const XButtonEvent * const event) {
       redrawPrevWindowButton(True);
     else if (event->window == frame.nwbutton)
       redrawNextWindowButton(True);
-  } else if (event->button == 2) {
-    _screen->lowerWindow(this);
-  } else if (event->button == 3) {
+    return;
+  }
+
+  if (event->window == frame.window_label) {
     BlackboxWindow *focus = blackbox->focusedWindow();
-    if (event->window == frame.window_label &&
-        focus && focus->screen() == _screen) {
-      Windowmenu *windowmenu = _screen->windowmenu(focus);
-      windowmenu->popup(event->x_root, event->y_root,
-                        _screen->availableArea());
-    } else {
-      _screen->toolbarmenu()->popup(event->x_root, event->y_root,
-                                    _screen->availableArea());
+    if (focus && focus->screen() == _screen) {
+      if (event->button == 2) {
+        _screen->lowerWindow(focus);
+      } else if (event->button == 3) {
+        Windowmenu *windowmenu = _screen->windowmenu(focus);
+        windowmenu->popup(event->x_root, event->y_root,
+                          _screen->availableArea());
+      } else if (blackbox->resource().toolbarActionsWithMouseWheel() &&
+                 blackbox->resource().shadeWindowWithMouseWheel() &&
+                 focus->hasWindowFunction(WindowFunctionShade)) {
+        if ((event->button == 4) && !focus->isShaded()) {
+          focus->setShaded(true);
+		  } else if ((event->button == 5) && focus->isShaded()) {
+          focus->setShaded(false);
+        }
+      }
     }
+    return;
+  }
+
+  if ((event->window == frame.pwbutton) || (event->window == frame.nwbutton)) {
+    if (blackbox->resource().toolbarActionsWithMouseWheel()) {
+      if (event->button == 4)
+        _screen->nextFocus();
+      else if (event->button == 5)
+        _screen->prevFocus();
+    }
+    // XXX: current-workspace window-list menu with button 2 or 3 here..
+    return;
+  }
+
+  // XXX: workspace-menu with button 2 or 3 on workspace-items (prev/next/label) here
+
+  // default-handlers (scroll through workspaces, popup toolbar-menu)
+  if (event->button == 3) {
+    _screen->toolbarmenu()->popup(event->x_root, event->y_root,
+                                  _screen->availableArea());
+    return;
+  }
+
+  if (blackbox->resource().toolbarActionsWithMouseWheel()) {
+    if (event->button == 4) 
+      _screen->nextWorkspace();
+    else if (event->button == 5) 
+      _screen->prevWorkspace();
   }
 }
 
@@ -646,22 +690,15 @@ void Toolbar::buttonReleaseEvent(const XButtonEvent * const event) {
 
       if (bt::within(event->x, event->y,
                      style.button_width, style.button_width)) {
-        int new_workspace;
-        if (_screen->currentWorkspace() > 0)
-          new_workspace = _screen->currentWorkspace() - 1;
-        else
-          new_workspace = _screen->workspaceCount() - 1;
-        _screen->setCurrentWorkspace(new_workspace);
+        _screen->prevWorkspace();
       }
     } else if (event->window == frame.nsbutton) {
       redrawNextWorkspaceButton(False);
 
       if (bt::within(event->x, event->y,
-                     style.button_width, style.button_width))
-        if (_screen->currentWorkspace() < _screen->workspaceCount() - 1)
-          _screen->setCurrentWorkspace(_screen->currentWorkspace() + 1);
-        else
-          _screen->setCurrentWorkspace(0);
+                     style.button_width, style.button_width)) {
+        _screen->nextWorkspace();
+      }
     } else if (event->window == frame.pwbutton) {
       redrawPrevWindowButton(False);
 

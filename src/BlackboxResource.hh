@@ -79,6 +79,8 @@ private:
   bool focus_last_window_on_workspace;
   bool allow_scroll_lock;
   bool change_workspace_with_mouse_wheel;
+  bool shade_window_with_mouse_wheel;
+  bool toolbar_actions_with_mouse_wheel;
   unsigned int edge_snap_threshold;
 
 public:
@@ -176,6 +178,16 @@ public:
   { return change_workspace_with_mouse_wheel; }
   inline void setChangeWorkspaceWithMouseWheel(bool b = true)
   { change_workspace_with_mouse_wheel = b; }
+
+  inline bool shadeWindowWithMouseWheel(void) const
+  { return shade_window_with_mouse_wheel; }
+  inline void setShadeWindowWithMouseWheel(bool b = true)
+  { shade_window_with_mouse_wheel = b; }
+
+  inline bool toolbarActionsWithMouseWheel(void) const
+  { return toolbar_actions_with_mouse_wheel; }
+  inline void setToolbarActionsWithMouseWheel(bool b = true)
+  { toolbar_actions_with_mouse_wheel = b; }
 
   inline bool allowScrollLock(void) const
   { return allow_scroll_lock; }

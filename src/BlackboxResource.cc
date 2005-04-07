@@ -194,6 +194,14 @@ void BlackboxResource::load(Blackbox& blackbox) {
     res.read("session.changeWorkspaceWithMouseWheel",
              "session.changeWorkspaceWithMouseWheel",
              true);
+  shade_window_with_mouse_wheel =
+    res.read("session.shadeWindowWithMouseWheel",
+             "session.shadeWindowWithMouseWheel",
+             true);
+  toolbar_actions_with_mouse_wheel =
+    res.read("session.toolbarActionsWithMouseWheel",
+             "session.toolbarActionsWithMouseWheel",
+             true);
   allow_scroll_lock =
     res.read("session.disableBindingsWithScrollLock",
              "Session.disableBindingsWithScrollLock",
@@ -293,6 +301,10 @@ void BlackboxResource::save(Blackbox& blackbox) {
   res.write("session.focusLastWindow", focus_last_window_on_workspace);
   res.write("session.changeWorkspaceWithMouseWheel",
             change_workspace_with_mouse_wheel);
+  res.write("session.shadeWindowWithMouseWheel",
+            shade_window_with_mouse_wheel);
+  res.write("session.toolbarActionsWithMouseWheel",
+            toolbar_actions_with_mouse_wheel);
   res.write("session.disableBindingsWithScrollLock", allow_scroll_lock);
   res.write("session.edgeSnapThreshold", edge_snap_threshold);
 

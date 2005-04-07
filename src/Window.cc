@@ -3405,6 +3405,16 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const event) {
 
       Windowmenu *windowmenu = _screen->windowmenu(this);
       windowmenu->popup(event->x_root, event->y_root, rect);
+    } else if (blackbox->resource().shadeWindowWithMouseWheel()) {
+      if (event->button == 4 
+       && hasWindowFunction(WindowFunctionShade)
+       && !isShaded()) {
+        setShaded(true);
+      } else if (event->button == 5
+       && hasWindowFunction(WindowFunctionShade)
+       && isShaded()) {
+        setShaded(false);
+      }
     }
   }
 }

@@ -86,6 +86,8 @@ enum {
   FocusNewWindows,
   FocusLastWindowOnWorkspace,
   ChangeWorkspaceWithMouseWheel,
+  ShadeWindowWithMouseWheel,
+  ToolbarActionsWithMouseWheel,
   DisableBindings,
   ToolbarOptions,
   SlitOptions,
@@ -124,6 +126,10 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
              FocusLastWindowOnWorkspace);
   insertItem(bt::toUnicode("Change Workspace with Mouse Wheel"),
              ChangeWorkspaceWithMouseWheel);
+  insertItem(bt::toUnicode("(Un)Shade Window with Mouse Wheel"),
+             ShadeWindowWithMouseWheel);
+  insertItem(bt::toUnicode("Toolbar Actions with Mouse Wheel"),
+             ToolbarActionsWithMouseWheel);
   insertItem(bt::toUnicode("Disable Bindings with Scroll Lock"),
              DisableBindings);
   insertSeparator();
@@ -142,6 +148,10 @@ void Configmenu::refresh(void) {
   setItemChecked(FocusLastWindowOnWorkspace, res.focusLastWindowOnWorkspace());
   setItemChecked(ChangeWorkspaceWithMouseWheel,
                  res.changeWorkspaceWithMouseWheel());
+  setItemChecked(ShadeWindowWithMouseWheel,
+                 res.shadeWindowWithMouseWheel());
+  setItemChecked(ToolbarActionsWithMouseWheel,
+                 res.toolbarActionsWithMouseWheel());
   setItemChecked(DisableBindings, res.allowScrollLock());
 }
 
@@ -171,6 +181,14 @@ void Configmenu::itemClicked(unsigned int id, unsigned int) {
 
   case ChangeWorkspaceWithMouseWheel:
     res.setChangeWorkspaceWithMouseWheel(!res.changeWorkspaceWithMouseWheel());
+    break;
+
+  case ShadeWindowWithMouseWheel:
+    res.setShadeWindowWithMouseWheel(!res.shadeWindowWithMouseWheel());
+    break;
+
+  case ToolbarActionsWithMouseWheel:
+    res.setToolbarActionsWithMouseWheel(!res.toolbarActionsWithMouseWheel());
     break;
 
   case DisableBindings: // disable keybindings with Scroll Lock
