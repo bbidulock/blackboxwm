@@ -450,8 +450,22 @@ unsigned int bt::textHeight(unsigned int screen, const Font &font) {
 }
 
 
+unsigned int bt::textIndent(unsigned int screen, const Font &font) {
+#ifdef XFT
+  const XftFont * const f = font.xftFont(screen);
+  if (f)
+    return f->descent;
+#endif
+
+  XFontSetExtents *e = XExtentsOfFontSet(font.fontSet());
+  return e->max_ink_extent.height + e->max_ink_extent.y;
+}
+
+
 bt::Rect bt::textRect(unsigned int screen, const Font &font,
                       const bt::ustring &text) {
+  const unsigned int indent = textIndent(screen, font);
+
 #ifdef XFT
   XftFont * const f = font.xftFont(screen);
   if (f) {
@@ -459,14 +473,15 @@ bt::Rect bt::textRect(unsigned int screen, const Font &font,
     XftTextExtents32(fontcache->_display.XDisplay(), f,
                      reinterpret_cast<const FcChar32 *>(text.data()),
                      text.length(), &xgi);
-    return Rect(xgi.x, 0, xgi.width - xgi.x, f->ascent + f->descent);
+    return Rect(xgi.x, 0, xgi.width - xgi.x + (indent * 2),
+                f->ascent + f->descent);
   }
 #endif
 
   const std::string str = toLocale(text);
   XRectangle ink, unused;
   XmbTextExtents(font.fontSet(), str.c_str(), str.length(), &ink, &unused);
-  return Rect(0, 0, ink.width,
+  return Rect(ink.x, 0, ink.width - ink.x + (indent * 2),
               XExtentsOfFontSet(font.fontSet())->max_ink_extent.height);
 }
 
@@ -475,6 +490,7 @@ void bt::drawText(const Font &font, const Pen &pen,
                   Drawable drawable, const Rect &rect,
                   Alignment alignment, const bt::ustring &text) {
   Rect tr = textRect(pen.screen(), font, text);
+  unsigned int indent = textIndent(pen.screen(), font);
 
   // align vertically (center for now)
   tr.setY(rect.y() + ((rect.height() - tr.height()) / 2));
@@ -482,7 +498,7 @@ void bt::drawText(const Font &font, const Pen &pen,
   // align horizontally
   switch (alignment) {
   case AlignRight:
-    tr.setX(rect.x() + rect.width() - tr.width());
+    tr.setX(rect.x() + rect.width() - tr.width() - 1);
     break;
 
   case AlignCenter:
@@ -493,6 +509,13 @@ void bt::drawText(const Font &font, const Pen &pen,
   case AlignLeft:
     tr.setX(rect.x());
   }
+
+#if 0
+  // draws the rect 'tr' in red... useful for debugging text placement
+  Pen red(pen.screen(), Color(255, 0, 0));
+  XDrawRectangle(red.XDisplay(), drawable, red.gc(),
+                 tr.x(), tr.y(), tr.width(), tr.height());
+#endif
 
 #ifdef XFT
   XftFont * const f = font.xftFont(pen.screen());
@@ -505,7 +528,7 @@ void bt::drawText(const Font &font, const Pen &pen,
     col.pixel = pen.color().pixel(pen.screen());
 
     XftDrawString32(pen.xftDraw(drawable), &col, f,
-                    tr.x(), tr.y() + f->ascent,
+                    tr.x() + indent, tr.y() + f->ascent,
                     reinterpret_cast<const FcChar32 *>(text.data()),
                     text.length());
     return;
@@ -513,7 +536,8 @@ void bt::drawText(const Font &font, const Pen &pen,
 #endif
 
   const std::string str = toLocale(text);
-  XmbDrawString(pen.XDisplay(), drawable, font.fontSet(), pen.gc(), tr.x(),
+  XmbDrawString(pen.XDisplay(), drawable, font.fontSet(), pen.gc(),
+                tr.x() + indent,
                 tr.y() - XExtentsOfFontSet(font.fontSet())->max_ink_extent.y,
                 str.c_str(), str.length());
 }

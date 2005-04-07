@@ -45,6 +45,12 @@ namespace bt {
 
   unsigned int textHeight(unsigned int screen, const Font &font);
 
+  /*
+    Returns the text indent (pad).  Note that textRect() and
+    drawText() use this function (so you do not have to).
+  */
+  unsigned int textIndent(unsigned int screen, const Font &font);
+
   Rect textRect(unsigned int screen, const Font &font,
                 const bt::ustring &text);
 
