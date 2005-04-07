@@ -556,6 +556,22 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
 }
 
 
+void BScreen::nextWorkspace(void) {
+  if (currentWorkspace() < (workspaceCount() - 1))
+    setCurrentWorkspace(currentWorkspace() + 1);
+  else
+    setCurrentWorkspace(0);
+}
+
+
+void BScreen::prevWorkspace(void) {
+  if (currentWorkspace() > 0)
+    setCurrentWorkspace(currentWorkspace() - 1);
+  else
+    setCurrentWorkspace(workspaceCount() - 1);
+}
+
+
 void BScreen::addWindow(Window w) {
   manageWindow(w);
   BlackboxWindow * const win = _blackbox->findWindow(w);
@@ -1874,14 +1890,10 @@ void BScreen::buttonPressEvent(const XButtonEvent * const event) {
     _rootmenu->popup(event->x_root, event->y_root);
   } else if (event->button == 4 &&
              _blackbox->resource().changeWorkspaceWithMouseWheel()) {
-    setCurrentWorkspace(current_workspace < workspacesList.size() - 1
-                        ? current_workspace + 1
-                        : 0);
+    nextWorkspace();
   } else if (event->button == 5 &&
              _blackbox->resource().changeWorkspaceWithMouseWheel()) {
-    setCurrentWorkspace(current_workspace > 0
-                        ? current_workspace - 1
-                        : workspacesList.size() - 1);
+    prevWorkspace();
   }
 }
 
