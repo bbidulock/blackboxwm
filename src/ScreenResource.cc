@@ -306,7 +306,7 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
     bt::Color::namedColor(display, screen_num,
                           res.read("window.frame.focus.borderColor",
                                    "Window.Frame.Focus.BorderColor",
-                                   "black"));
+                                   "white"));
 
   // unfocused window style
   _windowStyle.unfocus.text =
@@ -453,7 +453,7 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
     bt::Color::namedColor(display, screen_num,
                           res.read("toolbar.clock.textColor",
                                    "Toolbar.Label.TextColor",
-                                   "white"));
+                                   "black"));
   _toolbarStyle.foreground =
     bt::Color::namedColor(display, screen_num,
                           res.read("toolbar.button.foregroundColor",
