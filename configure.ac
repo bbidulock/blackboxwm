@@ -47,15 +47,7 @@ dnl Blackbox uses C++
 AC_LANG([C++])
 
 dnl Compiler specific options
-if test "x$GXX" = "xyes"; then
-   CXXFLAGS="${CXXFLAGS} -Wall -W -pedantic"
-   gxx_ver=`$CXX -dumpversion|sed -e 's/\..*//'`
-   AC_MSG_CHECKING([GNU C++ major version])
-   AC_MSG_RESULT([$gxx_ver])
-   if test "$gxx_ver" -ge 3; then
-     CXXFLAGS="${CXXFLAGS} -Woverloaded-virtual -Wshadow"
-   fi
-else
+if test "x$GXX" != "xyes"; then
    mips_pro_ver=`$CC -version 2>&1 | grep -i mipspro | cut -f4 -d ' '`
    if test "x$mips_pro_ver" != "x"; then
       AC_MSG_CHECKING([for MIPSpro version])
