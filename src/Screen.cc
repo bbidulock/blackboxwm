@@ -1329,8 +1329,11 @@ void BScreen::InitMenu(void) {
   bool defaultMenu = True;
 
   if (_blackbox->resource().menuFilename()) {
-    FILE *menu_file = fopen(_blackbox->resource().menuFilename(), "r");
-
+    const char * const filename = _blackbox->resource().menuFilename();
+    bool pipe_menu = filename[0] == '|';
+    FILE *menu_file = pipe_menu
+                      ? popen(filename + 1, "r")
+                      : fopen(filename, "r");
     if (!menu_file) {
       perror(_blackbox->resource().menuFilename());
     } else {
@@ -1379,7 +1382,10 @@ void BScreen::InitMenu(void) {
           }
         }
       }
-      fclose(menu_file);
+      if (pipe_menu)
+        pclose(menu_file);
+      else
+        fclose(menu_file);
     }
   }
 
@@ -1531,8 +1537,11 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
         continue;
       }
 
-      std::string newfile = bt::expandTilde(label);
-      FILE *submenufile = fopen(newfile.c_str(), "r");
+      bool pipe_menu = label[0] == '|';
+      std::string newfile = bt::expandTilde(pipe_menu ? label + 1 : label);
+      FILE *submenufile = pipe_menu
+                          ? popen(newfile.c_str(), "r")
+                          : fopen(newfile.c_str(), "r");
 
       if (! submenufile) {
         perror(newfile.c_str());
@@ -1540,10 +1549,11 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
       }
 
       struct stat buf;
-      if (fstat(fileno(submenufile), &buf) ||
-          ! S_ISREG(buf.st_mode)) {
+      if (!pipe_menu
+          && (fstat(fileno(submenufile), &buf) || ! S_ISREG(buf.st_mode))) {
         fprintf(stderr, "%s: [include] error: '%s' is not a regular file\n",
                 _blackbox->applicationName().c_str(), newfile.c_str());
+        fclose(submenufile);
         break;
       }
 
@@ -1551,7 +1561,10 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
         if (! parseMenuFile(submenufile, menu))
           _blackbox->saveMenuFilename(newfile);
 
-        fclose(submenufile);
+        if (pipe_menu)
+          pclose(submenufile);
+        else
+          fclose(submenufile);
       }
     }
 
