@@ -371,7 +371,7 @@ OldStyle readOldStyle(const bt::Resource &res)
   style.window.button_unfocus_picColor =
     res.read("window.button.unfocus.picColor",
              "Window.Button.Unfocus.PicColor",
-             "black");
+             "white");
   style.window.frame_focusColor =
     res.read("window.frame.focusColor",
              "Window.Frame.FocusColor",
