@@ -82,7 +82,8 @@ namespace bt {
 
     Pixmap renderPixmap(const Display &display, unsigned int screen);
 
-    void bevel(unsigned int border_width = 0);
+    void raisedBevel(unsigned int border_width = 0);
+    void sunkenBevel(unsigned int border_width = 0);
     void dgradient(const Color &from, const Color &to, bool interlaced);
     void egradient(const Color &from, const Color &to, bool interlaced);
     void hgradient(const Color &from, const Color &to, bool interlaced);

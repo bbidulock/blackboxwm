@@ -592,16 +592,8 @@ Pixmap bt::Image::render(const Display &display, unsigned int screen,
   if (!(texture.texture() & bt::Texture::Gradient))
     return None;
 
-  Color from, to;
-  bool interlaced = texture.texture() & bt::Texture::Interlaced;
-
-  if (texture.texture() & bt::Texture::Sunken) {
-    from = texture.color2();
-    to = texture.color1();
-  } else {
-    from = texture.color1();
-    to = texture.color2();
-  }
+  const Color from = texture.color1(), to = texture.color2();
+  const bool interlaced = texture.texture() & bt::Texture::Interlaced;
 
   data = new RGB[width * height];
 
@@ -622,8 +614,10 @@ Pixmap bt::Image::render(const Display &display, unsigned int screen,
   else if (texture.texture() & bt::Texture::PipeCross)
     pcgradient(from, to, interlaced);
 
-  if (texture.texture() & (bt::Texture::Sunken | bt::Texture::Raised))
-    bevel(texture.borderWidth());
+  if (texture.texture() & bt::Texture::Raised)
+    raisedBevel(texture.borderWidth());
+  else if (texture.texture() & bt::Texture::Sunken)
+    sunkenBevel(texture.borderWidth());
 
   Pixmap pixmap = renderPixmap(display, screen);
 
@@ -1010,7 +1004,7 @@ Pixmap bt::Image::renderPixmap(const Display &display, unsigned int screen) {
 }
 
 
-void bt::Image::bevel(unsigned int border_width) {
+void bt::Image::raisedBevel(unsigned int border_width) {
   if (width <= 2 || height <= 2 ||
       width <= (border_width * 4) || height <= (border_width * 4))
     return;
@@ -1094,6 +1088,100 @@ void bt::Image::bevel(unsigned int border_width) {
       gg = 0;
     if (bb > p->blue )
       bb = 0;
+
+    p->red   = rr;
+    p->green = gg;
+    p->blue  = bb;
+
+    ++p;
+  } while (--w);
+}
+
+
+void bt::Image::sunkenBevel(unsigned int border_width) {
+  if (width <= 2 || height <= 2 ||
+      width <= (border_width * 4) || height <= (border_width * 4))
+    return;
+
+  RGB *p = data + (border_width * width) + border_width;
+  unsigned int w = width - (border_width * 2);
+  unsigned int h = height - (border_width * 2) - 2;
+  unsigned char rr, gg, bb;
+
+  // top of the bevel
+  do {
+    rr = (p->red   >> 2) + (p->red   >> 1);
+    gg = (p->green >> 2) + (p->green >> 1);
+    bb = (p->blue  >> 2) + (p->blue  >> 1);
+
+    if (rr > p->red  )
+      rr = 0;
+    if (gg > p->green)
+      gg = 0;
+    if (bb > p->blue )
+      bb = 0;
+
+    p->red = rr;
+    p->green = gg;
+    p->blue = bb;
+
+    ++p;
+  } while (--w);
+
+  p += border_width + border_width;
+  w = width - (border_width * 2);
+
+  // left and right of the bevel
+  do {
+    rr = (p->red   >> 2) + (p->red   >> 1);
+    gg = (p->green >> 2) + (p->green >> 1);
+    bb = (p->blue  >> 2) + (p->blue  >> 1);
+
+    if (rr > p->red  )
+      rr = 0;
+    if (gg > p->green)
+      gg = 0;
+    if (bb > p->blue )
+      bb = 0;
+
+    p->red = rr;
+    p->green = gg;
+    p->blue = bb;
+
+    p += w - 1;
+
+    rr = p->red   + (p->red   >> 1);
+    gg = p->green + (p->green >> 1);
+    bb = p->blue  + (p->blue  >> 1);
+
+    if (rr < p->red)
+      rr = ~0;
+    if (gg < p->green)
+      gg = ~0;
+    if (bb < p->blue)
+      bb = ~0;
+
+    p->red   = rr;
+    p->green = gg;
+    p->blue  = bb;
+
+    p += border_width + border_width + 1;
+  } while (--h);
+
+  w = width - (border_width * 2);
+
+  // bottom of the bevel
+  do {
+    rr = p->red   + (p->red   >> 1);
+    gg = p->green + (p->green >> 1);
+    bb = p->blue  + (p->blue  >> 1);
+
+    if (rr < p->red)
+      rr = ~0;
+    if (gg < p->green)
+      gg = ~0;
+    if (bb < p->blue)
+      bb = ~0;
 
     p->red   = rr;
     p->green = gg;
