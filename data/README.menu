@@ -95,6 +95,13 @@ The supported tags are as follows:
     `~/path/from/home/dir.'  Blackbox also re-reads the entire
     menu structure from disk, in case the menu has changed.
 
+[stylesdir] (directory)
+
+    This tells Blackbox to create a [style] entry in the menu for every 
+    file in the specified directory. If you put all of your styles
+    into a single directory, this saves you having to create [style]
+    entries for each one manually.
+
 [submenu] (label) {title for menu - optional}
 
     This tells Blackbox to create and parse a new menu.  This menu
@@ -253,6 +260,15 @@ documentation recommends.
         [end]
     [end]
 
+An advantage of keeping styles in a directory of their own, is that you can
+use the [stylesdir] menu command to avoid having to add [style] entries
+manually. If you put your styles into ~/.blackbox/styles, the above style 
+menu can be made like this:
+
+        [submenu] (Themes) {Themes from themes.freshmeat.net}
+            [stylesdir] (~/.blackbox/styles)
+        [end]
+
 Even better.  Now that we've gotten a feel for the menu syntax, we
 decide to finish off our menu.  In addition to the styles we
 downloaded, we decide we also want to keep a submenu for the default
@@ -298,6 +314,10 @@ everything together, we have:
             [sep]
 
             [include] (/usr/local/share/blackbox/styles/stylesmenu)
+
+    # or, we could use
+    #       [stylesdir] (/usr/local/share/blackbox/styles)
+
         [end]
 
         [workspaces] (Workspace list)

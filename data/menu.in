@@ -9,7 +9,8 @@
 #
 # where [command] is one of:
 #
-# [begin] [end] [exec] [exit] [reconfig] [restart] [submenu] [style] [include]
+#   [begin] [end] [exec] [exit] [reconfig] [restart] [submenu] 
+#   [style] [stylesdir] [include] [workspaces] [config]
 #
 # [begin] is used for the top level menu
 # [submenu] is used for submenus
@@ -41,9 +42,18 @@
 # This will read more menu items from the file "filename".  The file cannot
 # contain a [begin] or [end], except for the [end] needed for submenus.
 #
+# [workspaces] (label)
+# This tells Blackbox to insert a "link" to the workspaces menu directly
+# into your menu.
+#
+# [config] (label)
+# This tells Blackbox to insert the ConfigMenu into your menu.  The ConfigMenu
+# allows you to change several options found in your ~/.blackboxrc file on the
+# fly.
+#
 # example:
 
-[begin] (Blackbox 0.50.x)
+[begin] (Blackbox)
   [exec] (xterm)    {xterm -ls}
   [exec] (rxvt)     {rxvt}
 
@@ -52,17 +62,16 @@
   [exec] (Acroread)   {acroread}
 
   [submenu] (Graphics)
-    [exec] (XV)           {xv}
     [exec] (The GIMP)     {gimp}
     [exec] (Image Magick) {display}
   [end]
 
-  [submenu] (Netscape)
-    [exec] (Netscape Navigator)  {netscape}
+  [submenu] (Mozilla)
+    [exec] (Mozilla Navigator)  {mozilla}
     [submenu] (More...)
-      [exec] (Netscape Mail)     {netscape -mail}
-      [exec] (Netscape News)     {netscape -news}
-      [exec] (Netscape Composer) {netscape -edit}
+      [exec] (Mozilla Mail)     {mozilla -mail}
+      [exec] (Mozilla News)     {mozilla -news}
+      [exec] (Mozilla Composer) {mozilla -edit}
     [end]
   [end]
 
@@ -73,7 +82,12 @@
     [exec] (Xload)    {xload}
   [end]
  
-  [include] (:pkgdatadir:/styles/stylesmenu)
+  [submenu] (Styles) {Choose a style...}
+    [stylesdir] (@pkgdatadir@/styles)
+  [end]
+
+  [workspaces] (Workspace List)
+  [config] (Configuration)
 
   [reconfig] (Reconfigure)
   [restart] (Restart)
@@ -81,9 +95,9 @@
     [restart] (Start FVWM)        {fvwm}
     [restart] (Start WindowMaker) {wmaker}
     [restart] (Start Afterstep)   {afterstep}
+    [restart] (Start Enlightenment) {enlightenment}
     [restart] (Start TWM)         {twm}
     [restart] (Start KWM)         {kwm}
-    [restart] (Start MWM)         {mwm}
   [end]
 
   [exit] (Exit)
