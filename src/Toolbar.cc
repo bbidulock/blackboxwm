@@ -40,11 +40,12 @@
 #include <assert.h>
 
 
-long nextTimeout(int resolution) {
+long nextTimeout(int resolution)
+{
   timeval now;
   gettimeofday(&now, 0);
-  return (std::max(1000l, ((resolution - (now.tv_sec % resolution)) * 1000))
-          - (now.tv_usec / 1000));
+  return (std::max(1000l, ((((resolution - (now.tv_sec % resolution)) * 1000l))
+                           - (now.tv_usec / 1000l))));
 }
 
 
@@ -610,9 +611,9 @@ void Toolbar::redrawNextWindowButton(bool pressed) {
 
 void Toolbar::buttonPressEvent(const XButtonEvent * const event) {
   if (event->state == Mod1Mask) {
-    if (event->button == 1) 
+    if (event->button == 1)
       _screen->raiseWindow(this);
-    else if (event->button == 2) 
+    else if (event->button == 2)
       _screen->lowerWindow(this);
     return;
   }
@@ -672,9 +673,9 @@ void Toolbar::buttonPressEvent(const XButtonEvent * const event) {
   }
 
   if (blackbox->resource().toolbarActionsWithMouseWheel()) {
-    if (event->button == 4) 
+    if (event->button == 4)
       _screen->nextWorkspace();
-    else if (event->button == 5) 
+    else if (event->button == 5)
       _screen->prevWorkspace();
   }
 }
