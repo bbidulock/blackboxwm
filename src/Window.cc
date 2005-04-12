@@ -719,11 +719,11 @@ static MotifHints readMotifWMHints(Blackbox *blackbox, Window window) {
     }
   }
 
-  if (motif.decorations & WindowDecorationBorder) {
+  if (motif.decorations & WindowDecorationHandle) {
     if (motif.functions & WindowFunctionResize)
-      motif.functions |= WindowDecorationGrip;
+      motif.decorations |= WindowDecorationGrip;
     else
-      motif.functions &= ~WindowDecorationGrip;
+      motif.decorations &= ~WindowDecorationGrip;
   }
 
   if (motif.decorations & WindowDecorationTitlebar) {
@@ -3406,7 +3406,7 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const event) {
       Windowmenu *windowmenu = _screen->windowmenu(this);
       windowmenu->popup(event->x_root, event->y_root, rect);
     } else if (blackbox->resource().shadeWindowWithMouseWheel()) {
-      if (event->button == 4 
+      if (event->button == 4
        && hasWindowFunction(WindowFunctionShade)
        && !isShaded()) {
         setShaded(true);
