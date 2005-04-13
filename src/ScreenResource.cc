@@ -256,13 +256,13 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
   _windowStyle.font.setFontName(res.read("window.font", "Window.Font"));
 
   _windowStyle.iconify.load(screen_num, iconify_bits,
-                      iconify_width, iconify_height);
+                            iconify_width, iconify_height);
   _windowStyle.maximize.load(screen_num, maximize_bits,
-                       maximize_width, maximize_height);
+                             maximize_width, maximize_height);
   _windowStyle.restore.load(screen_num, restore_bits,
-                      restore_width, restore_height);
+                            restore_width, restore_height);
   _windowStyle.close.load(screen_num, close_bits,
-                    close_width, close_height);
+                          close_width, close_height);
 
   // focused window style
   _windowStyle.focus.text =
@@ -504,10 +504,10 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
 
   const std::string rc_file = screen->blackbox()->resource().rcFilename();
   root_command =
-      bt::Resource(rc_file).read("rootCommand",
-                                 "RootCommand",
-                                 res.read("rootCommand",
-                                          "RootCommand"));
+    bt::Resource(rc_file).read("rootCommand",
+                               "RootCommand",
+                               res.read("rootCommand",
+                                        "RootCommand"));
 
   // sanity checks
   bt::Texture flat_black;
@@ -522,6 +522,10 @@ void ScreenResource::loadStyle(BScreen* screen, const std::string& style) {
     _windowStyle.focus.handle = flat_black;
   if (_windowStyle.unfocus.handle.texture() == bt::Texture::Parent_Relative)
     _windowStyle.unfocus.handle = flat_black;
+  if (_windowStyle.focus.grip.texture() == bt::Texture::Parent_Relative)
+    _windowStyle.focus.grip = flat_black;
+  if (_windowStyle.unfocus.grip.texture() == bt::Texture::Parent_Relative)
+    _windowStyle.unfocus.grip = flat_black;
 
   if (_toolbarStyle.toolbar.texture() == bt::Texture::Parent_Relative)
     _toolbarStyle.toolbar = flat_black;
