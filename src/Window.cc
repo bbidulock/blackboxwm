@@ -1192,6 +1192,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     client.ewmh.fullscreen = false; // trick setFullScreen into working
     setFullScreen(true);
   } else {
+    // check shaded now, could be cleared by remaximize()
+    bool wasShaded = isShaded();
     if (isMaximized()) {
       remaximize();
     } else {
@@ -1201,14 +1203,15 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
       configure(r);
     }
 
-    if (isShaded()) {
+    if (wasShaded) {
       client.ewmh.shaded = false;
       unsigned long save_state = client.current_state;
       setShaded(true);
 
       /*
-        At this point in the life of a window, current_state should only be set
-        to IconicState if the window was an *icon*, not if it was shaded.
+        At this point in the life of a window, current_state should
+        only be set to IconicState if the window was an *icon*, not
+        if it was shaded.
       */
       if (save_state != IconicState)
         client.current_state = save_state;
@@ -2417,8 +2420,6 @@ void BlackboxWindow::maximize(unsigned int button) {
 
 // re-maximizes the window to take into account availableArea changes
 void BlackboxWindow::remaximize(void) {
-  if (isShaded()) return;
-
   unsigned int button = 0u;
   if (client.ewmh.maxv) {
     button = (client.ewmh.maxh) ? 1u : 2u;
