@@ -2123,10 +2123,10 @@ bool BScreen::smartPlacement(unsigned int workspace, bt::Rect& rect,
     (res.colPlacementDirection() == TopBottom);
   const bool ignore_shaded = res.placementIgnoresShaded();
 
-  const int left_border   = leftright ? 0 : -2;
-  const int top_border    = topbottom ? 0 : -2;
-  const int right_border  = leftright ? 2 : 0;
-  const int bottom_border = topbottom ? 2 : 0;
+  const int left_border   = leftright ? 0 : -1;
+  const int top_border    = topbottom ? 0 : -1;
+  const int right_border  = leftright ? 1 : 0;
+  const int bottom_border = topbottom ? 1 : 0;
 
   StackingList::const_iterator w_it, w_end;
 
