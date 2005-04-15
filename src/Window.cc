@@ -1192,29 +1192,29 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     client.ewmh.fullscreen = false; // trick setFullScreen into working
     setFullScreen(true);
   } else {
-    // check shaded now, could be cleared by remaximize()
-    bool wasShaded = isShaded();
     if (isMaximized()) {
       remaximize();
     } else {
+      const unsigned long save_state = client.current_state;
+
       bt::Rect r = frame.rect;
       // trick configure into working
       frame.rect = bt::Rect();
       configure(r);
-    }
 
-    if (wasShaded) {
-      client.ewmh.shaded = false;
-      unsigned long save_state = client.current_state;
-      setShaded(true);
+      if (isShaded()) {
+        client.ewmh.shaded = false;
+        setShaded(true);
+      }
 
-      /*
-        At this point in the life of a window, current_state should
-        only be set to IconicState if the window was an *icon*, not
-        if it was shaded.
-      */
-      if (save_state != IconicState)
+      if (isShaded() && save_state != IconicState) {
+        /*
+          At this point in the life of a window, current_state should
+          only be set to IconicState if the window was an *icon*, not
+          if it was shaded.
+        */
         client.current_state = save_state;
+      }
     }
   }
 }
@@ -2418,8 +2418,37 @@ void BlackboxWindow::maximize(unsigned int button) {
 }
 
 
-// re-maximizes the window to take into account availableArea changes
+/*
+  re-maximizes the window to take into account availableArea changes.
+
+  note that unlike maximize(), the shaded state is preserved.
+*/
 void BlackboxWindow::remaximize(void) {
+  if (isShaded()) {
+    bt::Rect r = _screen->availableArea();
+
+    if (!client.ewmh.maxh) {
+      r.setX(frame.rect.x());
+      r.setWidth(frame.rect.width());
+    }
+    if (!client.ewmh.maxv) {
+      r.setY(frame.rect.y());
+      r.setHeight(frame.rect.height());
+    }
+
+    frame.rect = ::constrain(r, frame.margin, client.wmnormal, TopLeft);
+
+    positionWindows();
+    decorate();
+
+    // set the frame rect to the shaded size
+    const WindowStyle &style = _screen->resource().windowStyle();
+    frame.rect.setHeight(style.title_height);
+    XResizeWindow(blackbox->XDisplay(), frame.window,
+                  frame.rect.width(), frame.rect.height());
+    return;
+  }
+
   unsigned int button = 0u;
   if (client.ewmh.maxv) {
     button = (client.ewmh.maxh) ? 1u : 2u;
@@ -2429,7 +2458,6 @@ void BlackboxWindow::remaximize(void) {
 
   // trick maximize() into working
   client.ewmh.maxh = client.ewmh.maxv = false;
-
   const bt::Rect tmp = client.premax;
   maximize(button);
   client.premax = tmp;
