@@ -2525,13 +2525,17 @@ void BlackboxWindow::setFullScreen(bool b) {
     const WindowStyle &style = _screen->resource().windowStyle();
     frame.margin = ::update_margin(client.decorations, style);
 
-    bt::Rect r = ::constrain(_screen->screenInfo().rect(),
-                             frame.margin,
-                             client.wmnormal,
-                             TopLeft);
+    /*
+     * Note: we don't call ::constrain() here, because many
+     * applications are broken in this respect.  Some specify a
+     * max-size or aspect-ratio that simply doesn't cover the entire
+     * screen.  Let's try to be smarter than such applications and
+     * simply cover the entire screen.
+     */
+
     // trick configure() into working
     frame.rect = bt::Rect();
-    configure(r);
+    configure(_screen->screenInfo().rect());
 
     if (isVisible())
       changeLayer(StackingList::LayerFullScreen);
