@@ -258,6 +258,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
   void updateEWMHAllowedActions();
 
   void startMove();
+  void snapAdjust(int *x, int *y);
   void continueMove(int x_root, int y_root);
   void finishMove();
 

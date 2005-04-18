@@ -214,6 +214,10 @@ void BlackboxResource::load(Blackbox& blackbox) {
              res.read("session.screen0.edgeSnapThreshold",
                       "Session.Screen0.EdgeSnapThreshold",
                       0));
+  window_snap_threshold =
+    res.read("session.windowSnapThreshold",
+             "Session.windowSnapThreshold",
+             0);
 
   for (unsigned int i = 0; i < blackbox.screenCount(); ++i)
     screen_resources[i].load(res, i);
@@ -307,6 +311,7 @@ void BlackboxResource::save(Blackbox& blackbox) {
             toolbar_actions_with_mouse_wheel);
   res.write("session.disableBindingsWithScrollLock", allow_scroll_lock);
   res.write("session.edgeSnapThreshold", edge_snap_threshold);
+  res.write("session.windowSnapThreshold", window_snap_threshold);
 
   for (unsigned int i = 0; i < blackbox.screenCount(); ++i)
     screen_resources[i].save(res, blackbox.screenNumber(i));

@@ -3681,46 +3681,107 @@ void BlackboxWindow::startMove() {
 
 
 static
-void collisionAdjust(int* x, int* y, unsigned int width, unsigned int height,
+void collisionAdjust(int *dx, int *dy, int x, int y,
+                     unsigned int width, unsigned int height,
                      const bt::Rect& rect, int snap_distance) {
   // window corners
-  const int wleft = *x,
-           wright = *x + width - 1,
-             wtop = *y,
-          wbottom = *y + height - 1,
+  const int wleft = x,
+           wright = x + width - 1,
+             wtop = y,
+          wbottom = y + height - 1,
+  // left, right, top + bottom are for rect, douterleft = left border of rect
+       dinnerleft = abs(wleft - rect.left()),
+      dinnerright = abs(wright - rect.right()),
+        dinnertop = abs(wtop - rect.top()),
+     dinnerbottom = abs(wbottom - rect.bottom()),
+       douterleft = abs(wright - rect.left()),
+      douterright = abs(wleft - rect.right()),
+        doutertop = abs(wbottom - rect.top()),
+     douterbottom = abs(wtop - rect.bottom());
 
-            dleft = abs(wleft - rect.left()),
-           dright = abs(wright - rect.right()),
-             dtop = abs(wtop - rect.top()),
-          dbottom = abs(wbottom - rect.bottom());
+  if ((wtop <= rect.bottom() && wbottom >= rect.top())
+      || doutertop <= snap_distance
+      || douterbottom <= snap_distance) {
+    // snap left or right
+    if (douterleft <= dinnerleft && douterleft <= snap_distance)
+      // snap outer left
+      *dx = (x - (rect.left() - width));
+    else if (douterright <= dinnerright && douterright <= snap_distance)
+      // snap outer right
+      *dx = (x - rect.right() - 1);
+    else if (dinnerleft <= dinnerright && dinnerleft < snap_distance)
+      // snap inner left
+      *dx = (x - rect.left());
+    else if (dinnerright < snap_distance)
+      // snap inner right
+      *dx = (x - (rect.right() - width + 1));
+  }
 
-  // snap left?
-  if (dleft < snap_distance && dleft <= dright)
-    *x = rect.left();
-  // snap right?
-  else if (dright < snap_distance)
-    *x = rect.right() - width + 1;
+  if ((wleft <= rect.right() && wright >= rect.left())
+      || douterleft <= snap_distance
+      || douterright <= snap_distance) {
+    // snap top or bottom
+    if (doutertop <= dinnertop && doutertop <= snap_distance)
+      // snap outer top
+      *dy = (y - (rect.top() - height));
+    else if (douterbottom <= dinnerbottom && douterbottom <= snap_distance)
+      // snap outer bottom
+      *dy = (y - rect.bottom() - 1);
+    else if (dinnertop <= dinnerbottom && dinnertop < snap_distance)
+      // snap inner top
+      *dy = (y - rect.top());
+    else if (dinnerbottom < snap_distance)
+      // snap inner bottom
+      *dy = (y - (rect.bottom() - height + 1));
+  }
+}
 
-  // snap top?
-  if (dtop < snap_distance && dtop <= dbottom)
-    *y = rect.top();
-  // snap bottom?
-  else if (dbottom < snap_distance)
-    *y = rect.bottom() - height + 1;
+
+void BlackboxWindow::snapAdjust(int *x, int *y) {
+  int nx, ny, dx, dy, init_dx, init_dy;
+  const int edge_distance = blackbox->resource().edgeSnapThreshold();
+  const int win_distance  = blackbox->resource().windowSnapThreshold();
+
+  nx = (win_distance > edge_distance) ? win_distance : edge_distance;
+  ny = (win_distance > edge_distance) ? win_distance : edge_distance;
+  dx = init_dx = ++nx; dy = init_dy = ++ny;
+
+  if (edge_distance) {
+    collisionAdjust(&dx, &dy, *x, *y, frame.rect.width(), frame.rect.height(),
+                    _screen->availableArea(), edge_distance);
+    nx = (dx != init_dx && abs(dx) < abs(nx)) ? dx : nx; dx = init_dx;
+    ny = (dy != init_dy && abs(dy) < abs(ny)) ? dy : ny; dy = init_dy;
+    if (!blackbox->resource().fullMaximization()) {
+      collisionAdjust(&dx, &dy, *x, *y, frame.rect.width(), frame.rect.height(),
+                      _screen->screenInfo().rect(), edge_distance);
+      nx = (dx != init_dx && abs(dx) < abs(nx)) ? dx : nx; dx = init_dx;
+      ny = (dy != init_dy && abs(dy) < abs(ny)) ? dy : ny; dy = init_dy;
+    }
+  }
+  if (win_distance) {
+    StackingList::const_iterator it = _screen->stackingList().begin(),
+                                end = _screen->stackingList().end();
+    for (; it != end; ++it) {
+      BlackboxWindow * const win = dynamic_cast<BlackboxWindow *>(*it);
+      if (win && win != this &&
+          win->workspace() == _screen->currentWorkspace()) {
+        collisionAdjust(&dx, &dy, *x, *y, frame.rect.width(),
+                        frame.rect.height(), win->frame.rect, win_distance);
+        nx = (dx != init_dx && abs(dx) < abs(nx)) ? dx : nx; dx = init_dx;
+        ny = (dy != init_dy && abs(dy) < abs(ny)) ? dy : ny; dy = init_dy;
+      }
+    }
+  }
+
+  *x = (nx != init_dx) ? (*x - nx) : *x;
+  *y = (ny != init_dy) ? (*y - ny) : *y;
 }
 
 
 void BlackboxWindow::continueMove(int x_root, int y_root) {
   int dx = x_root - frame.grab_x, dy = y_root - frame.grab_y;
-  const int snap_distance = blackbox->resource().edgeSnapThreshold();
 
-  if (snap_distance) {
-    collisionAdjust(&dx, &dy, frame.rect.width(), frame.rect.height(),
-                    _screen->availableArea(), snap_distance);
-    if (!blackbox->resource().fullMaximization())
-      collisionAdjust(&dx, &dy, frame.rect.width(), frame.rect.height(),
-                      _screen->screenInfo().rect(), snap_distance);
-  }
+  snapAdjust(&dx, &dy);
 
   if (blackbox->resource().opaqueMove()) {
     configure(dx, dy, frame.rect.width(), frame.rect.height());

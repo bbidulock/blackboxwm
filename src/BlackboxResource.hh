@@ -82,6 +82,7 @@ private:
   bool shade_window_with_mouse_wheel;
   bool toolbar_actions_with_mouse_wheel;
   unsigned int edge_snap_threshold;
+  unsigned int window_snap_threshold;
 
 public:
   BlackboxResource(const std::string& rc);
@@ -198,6 +199,11 @@ public:
   { return edge_snap_threshold; }
   inline void setEdgeSnapThreshold(unsigned int t)
   { edge_snap_threshold = t; }
+
+  inline unsigned int windowSnapThreshold(void) const
+  { return window_snap_threshold; }
+  inline void setWindowSnapThreshold(unsigned int t)
+  { window_snap_threshold = t; }
 };
 
 #endif
