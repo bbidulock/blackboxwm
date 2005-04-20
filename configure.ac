@@ -1,8 +1,8 @@
 dnl configure.in for Blackbox - an X11 Window manager
 dnl Initialize autoconf and automake
 
-AC_INIT([blackbox], [0.70.0cvs], [http://blackboxwm.sourceforge.net])
-AM_INIT_AUTOMAKE([blackbox], [0.70.0cvs])
+AC_INIT([blackbox], [0.70.1cvs], [http://blackboxwm.sourceforge.net])
+AM_INIT_AUTOMAKE([blackbox], [0.70.1cvs])
 AC_CONFIG_SRCDIR([src/blackbox.cc])
 
 dnl Determine default prefix
