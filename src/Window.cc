@@ -1769,6 +1769,11 @@ void BlackboxWindow::grabButtons(void) {
                        ButtonReleaseMask, GrabModeAsync, GrabModeAsync,
                        frame.window, None,
                        blackbox->resource().allowScrollLock());
+  
+  blackbox->grabButton(Button3, Mod4Mask, frame.window, True,
+                       ButtonReleaseMask, GrabModeAsync, GrabModeAsync,
+                       frame.window, None,
+                       blackbox->resource().allowScrollLock());
 }
 
 
@@ -1777,6 +1782,7 @@ void BlackboxWindow::ungrabButtons(void) {
   blackbox->ungrabButton(Button1, Mod1Mask, frame.window);
   blackbox->ungrabButton(Button2, Mod1Mask, frame.window);
   blackbox->ungrabButton(Button3, Mod1Mask, frame.window);
+  blackbox->ungrabButton(Button3, Mod4Mask, frame.window);
 }
 
 
@@ -3429,7 +3435,8 @@ void BlackboxWindow::buttonPressEvent(const XButtonEvent * const event) {
       }
     } else if (event->button == 2) {
       _screen->lowerWindow(this);
-    } else if (event->button == 3) {
+    } else if (event->button == 3
+               || (event->button == 3 && event->state == Mod4Mask)) {
       const int extra = _screen->resource().windowStyle().frame_border_width;
       const bt::Rect rect(client.rect.x() - extra,
                           client.rect.y() - extra,
