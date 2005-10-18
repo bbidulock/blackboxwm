@@ -104,6 +104,7 @@ private:
 
   void placeWindow(BlackboxWindow *win);
   bool cascadePlacement(bt::Rect& win, const bt::Rect& avail);
+  bool centerPlacement(bt::Rect &win, const bt::Rect &avail);
   bool smartPlacement(unsigned int workspace, bt::Rect& win,
                       const bt::Rect& avail);
   unsigned int cascade_x, cascade_y;

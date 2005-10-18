@@ -40,6 +40,7 @@ enum FocusModel {
 enum WindowPlacementPolicy {
   RowSmartPlacement = 400,
   ColSmartPlacement,
+  CenterPlacement,
   CascadePlacement,
   LeftRight,
   RightLeft,

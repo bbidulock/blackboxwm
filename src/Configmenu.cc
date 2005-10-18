@@ -269,6 +269,7 @@ ConfigPlacementmenu::ConfigPlacementmenu(bt::Application &app,
 
   insertItem(bt::toUnicode("Smart Placement (Rows)"), RowSmartPlacement);
   insertItem(bt::toUnicode("Smart Placement (Columns)"), ColSmartPlacement);
+  insertItem(bt::toUnicode("Center Placement"), CenterPlacement);
   insertItem(bt::toUnicode("Cascade Placement"), CascadePlacement);
 
   insertSeparator();
@@ -288,28 +289,30 @@ void ConfigPlacementmenu::refresh(void) {
   const BlackboxResource &res = _bscreen->blackbox()->resource();
   bool rowsmart = res.windowPlacementPolicy() == RowSmartPlacement,
        colsmart = res.windowPlacementPolicy() == ColSmartPlacement,
+         center = res.windowPlacementPolicy() == CenterPlacement,
         cascade = res.windowPlacementPolicy() == CascadePlacement,
              rl = res.rowPlacementDirection() == LeftRight,
              tb = res.colPlacementDirection() == TopBottom;
 
   setItemChecked(RowSmartPlacement, rowsmart);
   setItemChecked(ColSmartPlacement, colsmart);
+  setItemChecked(CenterPlacement, center);
   setItemChecked(CascadePlacement, cascade);
 
-  setItemEnabled(LeftRight, ! cascade);
-  setItemChecked(LeftRight, cascade || rl);
+  setItemEnabled(LeftRight, !center && !cascade);
+  setItemChecked(LeftRight, !center && (cascade || rl));
 
-  setItemEnabled(RightLeft, ! cascade);
-  setItemChecked(RightLeft, ! cascade && ! rl);
+  setItemEnabled(RightLeft, !center && !cascade);
+  setItemChecked(RightLeft, !center && (!cascade && !rl));
 
-  setItemEnabled(TopBottom, ! cascade);
-  setItemChecked(TopBottom, cascade || tb);
+  setItemEnabled(TopBottom, !center && !cascade);
+  setItemChecked(TopBottom, !center && (cascade || tb));
 
-  setItemEnabled(BottomTop, ! cascade);
-  setItemChecked(BottomTop, ! cascade && ! tb);
+  setItemEnabled(BottomTop, !center && !cascade);
+  setItemChecked(BottomTop, !center && (!cascade && !tb));
 
-  setItemChecked(IgnoreShadedWindows,
-                 res.placementIgnoresShaded());
+  setItemEnabled(IgnoreShadedWindows, !center);
+  setItemChecked(IgnoreShadedWindows, !center && res.placementIgnoresShaded());
 }
 
 
@@ -318,6 +321,7 @@ void ConfigPlacementmenu::itemClicked(unsigned int id, unsigned int) {
   switch (id) {
   case RowSmartPlacement:
   case ColSmartPlacement:
+  case CenterPlacement:
   case CascadePlacement:
     res.setWindowPlacementPolicy(id);
     break;

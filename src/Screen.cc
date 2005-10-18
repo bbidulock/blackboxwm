@@ -2068,6 +2068,9 @@ void BScreen::placeWindow(BlackboxWindow *win) {
     case ColSmartPlacement:
       placed = smartPlacement(win->workspace(), r, usableArea);
       break;
+    case CenterPlacement:
+      placed = centerPlacement(r, usableArea);
+      break;
     default:
       break; // handled below
     } // switch
@@ -2108,6 +2111,17 @@ bool BScreen::cascadePlacement(bt::Rect &win,
   }
 
   return True;
+}
+
+
+bool BScreen::centerPlacement(bt::Rect &rect, const bt::Rect &avail)
+{
+  const int x =
+    static_cast<int>(avail.x() + (avail.width() - rect.width()) / 2);
+  const int y =
+    static_cast<int>(avail.y() + (avail.height() - rect.height()) / 2);
+  rect.setPos(x, y);
+  return true;
 }
 
 
@@ -2363,12 +2377,7 @@ bool BScreen::smartPlacement(unsigned int workspace, bt::Rect& rect,
     const int window_area = rect.width() * rect.height();
     if (window_area > screen_area / 8) {
       // center windows that don't fit (except for small windows)
-      const int x =
-        static_cast<int>(avail.x() + (avail.width() - rect.width()) / 2);
-      const int y =
-        static_cast<int>(avail.y() + (avail.height() - rect.height()) / 2);
-      rect.setPos(x, y);
-      return true;
+      return centerPlacement(rect, avail);
     }
     return false;
   }

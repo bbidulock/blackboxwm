@@ -138,6 +138,8 @@ void BlackboxResource::load(Blackbox& blackbox) {
                           "RowSmartPlacement"));
   if (strcasecmp(str.c_str(), "ColSmartPlacement") == 0)
     window_placement_policy = ColSmartPlacement;
+  else if (strcasecmp(str.c_str(), "CenterPlacement") == 0)
+    window_placement_policy = CenterPlacement;
   else if (strcasecmp(str.c_str(), "CascadePlacement") == 0)
     window_placement_policy = CascadePlacement;
   else
@@ -277,6 +279,9 @@ void BlackboxResource::save(Blackbox& blackbox) {
   switch (window_placement_policy) {
   case CascadePlacement:
     str = "CascadePlacement";
+    break;
+  case CenterPlacement:
+    str = "CenterPlacement";
     break;
   case ColSmartPlacement:
     str = "ColSmartPlacement";
