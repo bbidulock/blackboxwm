@@ -3683,7 +3683,9 @@ void BlackboxWindow::startMove() {
 static
 void collisionAdjust(int *dx, int *dy, int x, int y,
                      unsigned int width, unsigned int height,
-                     const bt::Rect& rect, int snap_distance) {
+                     const bt::Rect& rect, int snap_distance,
+                     bool snapCenter = false)
+{
   // window corners
   const int wleft = x,
            wright = x + width - 1,
@@ -3734,6 +3736,21 @@ void collisionAdjust(int *dx, int *dy, int x, int y,
       // snap inner bottom
       *dy = (y - (rect.bottom() - height + 1));
   }
+
+  if (snapCenter) {
+    const int cwx = x + width / 2;
+    const int cwy = y + height / 2;
+    const int crx = rect.x() + rect.width() / 2;
+    const int cry = rect.y() + rect.height() / 2;
+    const int cdx = abs(cwx - crx);
+    const int cdy = abs(cwy - cry);
+    if (cdx <= snap_distance)
+      // snap to horizontal center
+      *dx = x - (rect.x() + ((rect.width() - width) / 2));
+    if (cdy <= snap_distance)
+      // snap to vertical center
+      *dy = y - (rect.y() + ((rect.height() - height) / 2));
+  }
 }
 
 
@@ -3748,7 +3765,7 @@ void BlackboxWindow::snapAdjust(int *x, int *y) {
 
   if (edge_distance) {
     collisionAdjust(&dx, &dy, *x, *y, frame.rect.width(), frame.rect.height(),
-                    _screen->availableArea(), edge_distance);
+                    _screen->availableArea(), edge_distance, true);
     nx = (dx != init_dx && abs(dx) < abs(nx)) ? dx : nx; dx = init_dx;
     ny = (dy != init_dy && abs(dy) < abs(ny)) ? dy : ny; dy = init_dy;
     if (!blackbox->resource().fullMaximization()) {
