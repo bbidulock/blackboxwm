@@ -123,8 +123,7 @@ void Blackbox::shutdown(void) {
 
 static Bool scanForFocusIn(Display *, XEvent *e, XPointer) {
   if (e->type == FocusIn
-      && (e->xfocus.mode == NotifyNormal
-          || e->xfocus.mode == NotifyWhileGrabbed)
+      && e->xfocus.mode != NotifyGrab
       && (e->xfocus.detail == NotifyNonlinearVirtual
           || e->xfocus.detail == NotifyVirtual)) {
     return true;
@@ -225,8 +224,7 @@ void Blackbox::process_event(XEvent *e) {
            e->xfocus.window, Mode[e->xfocus.mode], Detail[e->xfocus.detail]);
 #endif
 
-    if ((e->xfocus.mode != NotifyNormal
-         && e->xfocus.mode != NotifyWhileGrabbed)
+    if (e->xfocus.mode == NotifyGrab
         || (e->xfocus.detail != NotifyNonlinearVirtual
             && e->xfocus.detail != NotifyVirtual)) {
       /*
@@ -264,8 +262,7 @@ void Blackbox::process_event(XEvent *e) {
            e->xfocus.window, Mode[e->xfocus.mode], Detail[e->xfocus.detail]);
 #endif
 
-    if ((e->xfocus.mode != NotifyNormal
-         && e->xfocus.mode != NotifyWhileGrabbed)
+    if (e->xfocus.mode == NotifyGrab
         || (e->xfocus.detail != NotifyNonlinearVirtual
             && e->xfocus.detail != NotifyVirtual)) {
       /*
@@ -301,7 +298,7 @@ void Blackbox::process_event(XEvent *e) {
 #ifdef FOCUS_DEBUG
         printf("          focused moved to an override_redirect window\n");
 #endif
-        lost_focus = false;
+        lost_focus = (e->xfocus.mode == NotifyNormal);
       }
     }
 
