@@ -111,7 +111,22 @@ AC_CHECK_FUNCS([setlocale],
                ])
 AC_SUBST(LOCALE)
 
-AC_CHECK_FUNCS([nl_langinfo])
+AC_MSG_CHECKING([for nl_langinfo])
+AC_COMPILE_IFELSE([
+#include <langinfo.h>
+
+int main(int, char **)
+{
+    const char *x;
+    x = nl_langinfo(CODESET);
+    return 0;
+}
+],
+                  [AC_DEFINE([HAVE_NL_LANGINFO], [1],
+                             [Define to 1 if you system has nl_langinfo(3)])
+                   AC_MSG_RESULT([yes])],
+                  [AC_MSG_RESULT([no])]
+                 )
 
 dnl needed for some X11 libs
 AC_CHECK_LIB([nsl],
