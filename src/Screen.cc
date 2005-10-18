@@ -1481,8 +1481,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
     case 333: // nop
       if (! *label)
         label[0] = '\0';
-      menu->insertItem(bt::toUnicode(label));
-
+      menu->setItemEnabled(menu->insertItem(bt::toUnicode(label)), false);
       break;
 
     case 421: // exec
