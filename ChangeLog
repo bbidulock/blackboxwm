@@ -1,5 +1,67 @@
 -- ChangeLog for Blackbox 0.70.x
 
+Changes from 0.70.0 to 0.70.1:
+------------------------------------------------------------------------------
+
+  - fix compilation on OpenBSD and Mac OS X
+  - documentation updates to data/README.menu
+  - fix bt::Timer to make sure it still works after daylight-savings
+    changes
+  - fix horizontal text alignment by adding a small indent to all text
+  - fix sunken gradient rendering: the colors are no longer inverted,
+    and the correct bevel is drawn
+  - add bt::XDG::BaseDir, which is an implementation of the
+    freedesktop.org basedir-spec version 0.6
+  - make bt::Pen able to recover from cache faults
+  - silence messages from bt::PixmapCache about the cache maximum
+    being exceeded
+  - add bt::Rect::inside(), which ensures that one rectangle is inside
+    the other
+  - fix bt::Resource to do nothing if filename arguments are empty
+  - fix bt::Resource::merge() to stop overriding existing entries (it
+    should only add new ones)
+  - add bt::Texture::textureResource() overload that returns a default
+    texture if the resource cannot be found
+  - add bt::dirname(), which returns the directory part of a file path
+  - add bt::mkdirhier(), which is equivalent to
+    'mkdir -m mode -p path'
+  - add bt::tolower(), which returns a string with all characters
+    lowercase
+  - add the "Center Placement" window placement policy, which places
+    all new windows in the center of the screen
+  - add "Shade Window with Mouse Wheel" and "Toolbar Actions with
+    Mouse Wheel" configuration options
+  - add window-to-window snapping support. This feature is off by
+    default, you need to set session.windowSnapThreshold to a positive
+    number in your ~/.blackboxrc.
+  - add support for piped menus. The output of a command can be used
+    to create the blackbox menu. This is done by prepending the pipe
+    character, |, to session.menuFile in ~/.blackboxrc or to [include]
+    filenames.
+  - [nop] menu entries are now drawn disabled
+  - fix "Focus Last Window on Workspace" behavior to stop preferring
+    windows that occupy all workspaces
+  - window placement takes windows with Desktop and Dialog types into
+    consideration and does the appropriate thing (instead of placing
+    them normally)
+  - remove 1 pixel gaps between windows when doing smart placement
+  - allow users to override the style's rootCommand in their
+    ~/.blackboxrc
+  - fix default colors used by blackbox when no style is found
+  - allow the Toolbar to be raised and lowered with
+    Alt+LeftMouseButton and Alt+MiddleMouseButton, respectively
+  - fix maximized+shaded windows from disappearing when restarting
+    blackbox
+  - each window's windowmenu can be accessed now with
+    Mod4+RightMouseButton
+  - fix fullscreen support to ignore aspect ratios set by applications
+    (specifically, this should fix movie players that are currently
+    displaying 16:9 video on a 4:3 screen)
+  - fix support for _NET_MOVERESIZE_WINDOW, normally sent from pagers
+  - fix focus problems caused by applications that try to fake
+    fullscreen by setting focus to an override-redirect window
+    (e.g. rdekstop)
+
 Changes from 0.65.x to 0.70.0:
 ------------------------------------------------------------------------------
 
