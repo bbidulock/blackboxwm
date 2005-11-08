@@ -25,6 +25,7 @@
 #ifndef __Pen_hh
 #define __Pen_hh
 
+#include "Color.hh"
 #include "Util.hh"
 
 typedef struct _XftDraw XftDraw;
@@ -32,15 +33,11 @@ typedef struct _XftDraw XftDraw;
 namespace bt {
 
   // forward declarations
-  class Color;
   class Display;
-  class PenCacheItem;
-  class XftCacheItem;
 
   class Pen : public NoCopy {
   public:
-    static void clearCache(void);
-
+    Pen(unsigned int screen_);
     Pen(unsigned int screen_, const Color &color_);
     ~Pen(void);
 
@@ -49,6 +46,7 @@ namespace bt {
     inline const Color &color(void) const
     { return _color; }
 
+    void setColor(const Color &color_);
     void setGCFunction(int function);
     void setLineWidth(int linewidth);
     void setSubWindowMode(int subwindow);
@@ -62,13 +60,14 @@ namespace bt {
   private:
     unsigned int _screen;
 
-    const Color &_color;
+    Color _color;
     int _function;
     int _linewidth;
     int _subwindow;
 
-    mutable PenCacheItem *_item;
-    mutable XftCacheItem *_xftitem;
+    mutable bool _dirty;
+    mutable GC _gc;
+    mutable XftDraw *_xftdraw;
   };
 
 } // namespace bt

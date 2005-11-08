@@ -46,8 +46,8 @@ namespace bt {
   void destroyFontCache(void);
 
 
-  void createPenCache(const Display &display);
-  void destroyPenCache(void);
+  void createPenLoader(const Display &display);
+  void destroyPenLoader(void);
 
 
   void createPixmapCache(const Display &display);
@@ -93,7 +93,7 @@ bt::Display::Display(const char *dpy_name, bool multi_head) {
   createBitmapLoader(*this);
   createColorCache(*this);
   createFontCache(*this);
-  createPenCache(*this);
+  createPenLoader(*this);
   createPixmapCache(*this);
 
 #ifdef    MITSHM
@@ -105,7 +105,7 @@ bt::Display::Display(const char *dpy_name, bool multi_head) {
 bt::Display::~Display() {
   destroyColorTables();
   destroyPixmapCache();
-  destroyPenCache();
+  destroyPenLoader();
   destroyFontCache();
   destroyColorCache();
   destroyBitmapLoader();
