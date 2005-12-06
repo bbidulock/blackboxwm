@@ -25,6 +25,8 @@
 #include "Util.hh"
 #include "XDG.hh"
 
+#include <algorithm>
+
 #include <stdlib.h>
 
 

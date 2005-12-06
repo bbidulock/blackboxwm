@@ -731,7 +731,6 @@ bool BScreen::focusFallback(const BlackboxWindow *win) {
     }
   }
 
-  const BlackboxWindow * const zero = 0;
 
   if (win) {
     if (win->isTransient()) {
@@ -745,6 +744,7 @@ bool BScreen::focusFallback(const BlackboxWindow *win) {
     }
 
     // try to focus the top-most window in the same layer as win
+    const StackEntity * const zero = 0;
     StackingList::iterator it = _stackingList.layer(win->layer()),
                           end = std::find(it, _stackingList.end(), zero);
     assert(it != _stackingList.end() && end != _stackingList.end());
