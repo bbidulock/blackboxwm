@@ -68,6 +68,7 @@ namespace bt {
 
   class TimeoutHandler {
   public:
+    inline virtual ~TimeoutHandler() { }
     virtual void timeout(Timer *t) = 0;
   };
 
@@ -159,6 +160,7 @@ namespace bt {
 
   class TimerQueueManager {
   public:
+    inline virtual ~TimerQueueManager() { }
     virtual void addTimer(Timer* timer) = 0;
     virtual void removeTimer(Timer* timer) = 0;
   };

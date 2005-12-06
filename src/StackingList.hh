@@ -89,6 +89,7 @@ private:
   StackingList::Layer _layer;
 public:
   inline StackEntity() : _layer(StackingList::LayerNormal) { }
+  inline virtual ~StackEntity() { }
   inline void setLayer(StackingList::Layer new_layer)
   { _layer = new_layer; }
   inline StackingList::Layer layer(void) const
