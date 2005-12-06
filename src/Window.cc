@@ -1239,6 +1239,7 @@ BlackboxWindow::~BlackboxWindow(void) {
   if (client.strut) {
     _screen->removeStrut(client.strut);
     delete client.strut;
+    client.strut = 0;
   }
 
   BWindowGroup *group = findWindowGroup();
@@ -1769,7 +1770,7 @@ void BlackboxWindow::grabButtons(void) {
                        ButtonReleaseMask, GrabModeAsync, GrabModeAsync,
                        frame.window, None,
                        blackbox->resource().allowScrollLock());
-  
+
   blackbox->grabButton(Button3, Mod4Mask, frame.window, True,
                        ButtonReleaseMask, GrabModeAsync, GrabModeAsync,
                        frame.window, None,
@@ -3310,6 +3311,7 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
       } else {
         _screen->removeStrut(client.strut);
         delete client.strut;
+        client.strut = 0;
       }
     }
 
