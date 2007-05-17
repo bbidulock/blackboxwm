@@ -1,6 +1,8 @@
 #!/bin/sh
 
-${ACLOCAL-aclocal} -I /usr/local/share/aclocal
+[ -d /usr/local/share/aclocal ] \
+    && ${ACLOCAL-aclocal} -I /usr/local/share/aclocal
+    || ${ACLOCAL-aclocal}
 ${LIBTOOLIZE-libtoolize} -c
 ${AUTOHEADER-autoheader}
 ${AUTOMAKE-automake} --foreign -a -c
