@@ -7,7 +7,7 @@
 *color1: rgb:dd/dd/d7
 *color2: rgb:ee/ee/e7
 
-*font: Bitstream Vera Sans-9
+*font: Sans Serif-9
 
 *borderColor: black
 *borderWidth: 1
@@ -18,7 +18,7 @@ menu.title.backgroundColor: grey
 menu.title.foregroundColor: black
 menu.title.textColor: black
 menu.title.alignment: center
-menu.title.font: Bitstream Vera Sans-9:style=Bold
+menu.title.font: Sans Serif-9:style=Bold
 
 menu.frame.appearance: raised gradient border
 menu.frame.textColor: black
@@ -69,5 +69,5 @@ window.grip.focus.backgroundColor: rgb:77/77/74
 window.grip.unfocus.appearance: raised solid border
 
 window*alignment: center
-window.font: Bitstream Vera Sans-9:style=Bold
+window.font: Sans Serif-9:style=Bold
 window.handleHeight: 8
