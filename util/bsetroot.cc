@@ -31,6 +31,7 @@
 
 #include <X11/Xatom.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 
 // ignore all X errors
