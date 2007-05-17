@@ -3790,7 +3790,8 @@ void BlackboxWindow::snapAdjust(int *x, int *y) {
     for (; it != end; ++it) {
       BlackboxWindow * const win = dynamic_cast<BlackboxWindow *>(*it);
       if (win && win != this &&
-          win->workspace() == _screen->currentWorkspace()) {
+          (win->workspace() == _screen->currentWorkspace()
+           || win->workspace() == bt::BSENTINEL)) {
         collisionAdjust(&dx, &dy, *x, *y, frame.rect.width(),
                         frame.rect.height(), win->frame.rect, win_distance);
         nx = (dx != init_dx && abs(dx) < abs(nx)) ? dx : nx; dx = init_dx;
