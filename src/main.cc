@@ -55,7 +55,8 @@ static void showHelp(int exitval) {
   // as well
   printf("Compile time options:\n"
          "  Debugging:\t\t\t%s\n"
-         "  Shape:\t\t\t%s\n\n",
+         "  Shape:\t\t\t%s\n"
+         "  Xft:\t\t\t\t%s\n\n",
 #ifdef    DEBUG
          "yes",
 #else // !DEBUG
@@ -63,10 +64,15 @@ static void showHelp(int exitval) {
 #endif // DEBUG
 
 #ifdef    SHAPE
-         "yes"
+         "yes",
 #else // !SHAPE
-         "no"
+         "no",
 #endif // SHAPE
+#ifdef XFT
+         "yes"
+#else // !XFT
+         "no"
+#endif // XFT
          );
 
   ::exit(exitval);
