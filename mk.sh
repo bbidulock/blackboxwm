@@ -1,7 +1,7 @@
 #!/bin/sh
 
 [ -d /usr/local/share/aclocal ] \
-    && ${ACLOCAL-aclocal} -I /usr/local/share/aclocal
+    && ${ACLOCAL-aclocal} -I /usr/local/share/aclocal \
     || ${ACLOCAL-aclocal}
 ${LIBTOOLIZE-libtoolize} -c
 ${AUTOHEADER-autoheader}
