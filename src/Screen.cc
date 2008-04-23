@@ -48,6 +48,8 @@
 #include <ctype.h>
 #include <dirent.h>
 
+#include <cstring>
+
 
 static bool running = true;
 static int anotherWMRunning(Display *, XErrorEvent *) {

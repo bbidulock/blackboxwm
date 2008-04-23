@@ -30,6 +30,8 @@
 
 #include <stdio.h>
 
+#include <cstring>
+
 
 bt::Resource::Resource(void)
   : db(NULL)

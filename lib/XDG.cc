@@ -28,7 +28,7 @@
 #include <algorithm>
 
 #include <stdlib.h>
-
+#include <algorithm>
 
 // make sure directory names end with a slash
 static std::string terminateDir(const std::string &string)

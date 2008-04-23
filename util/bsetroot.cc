@@ -27,12 +27,14 @@
 #include <Pen.hh>
 #include <Texture.hh>
 
+#include <cstdlib>
 #include <cctype>
 
 #include <X11/Xatom.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <cstring>
 
 // ignore all X errors
 static int x11_error(::Display *, XErrorEvent *)

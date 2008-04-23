@@ -45,6 +45,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <cstring>
+
 // #define COLORTABLE_DEBUG
 // #define MITSHM_DEBUG
 

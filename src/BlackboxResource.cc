@@ -33,6 +33,8 @@
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
 
+#include <cstring>
+
 
 BlackboxResource::BlackboxResource(const std::string& rc): rc_file(rc) {
   screen_resources = 0;

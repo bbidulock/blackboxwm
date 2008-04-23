@@ -5,7 +5,7 @@ libdir=@libdir@
 
 Name: Blackbox Toolbox
 Description: Utility class library for writing small applications
-Requires: @XFT_PKGCONFIG@
 Version: @VERSION@
+Requires.private: @XFT_PKGCONFIG@
 Libs: -L${libdir} -lbt @LDFLAGS@ @ICONV@ @LOCALE@
 Cflags: -I${includedir}/bt

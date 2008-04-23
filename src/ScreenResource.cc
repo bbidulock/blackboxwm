@@ -33,6 +33,8 @@
 
 #include <assert.h>
 
+#include <cstring>
+
 
 static const int iconify_width  = 9;
 static const int iconify_height = 9;

@@ -36,6 +36,8 @@
 
 #include <stdio.h>
 
+#include <cstring>
+
 
 static void showHelp(int exitval) {
   // print version - this should not be localized!
