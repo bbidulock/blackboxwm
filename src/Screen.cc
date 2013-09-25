@@ -1891,11 +1891,15 @@ void BScreen::clientMessageEvent(const XClientMessageEvent * const event) {
   if (event->message_type == _blackbox->ewmh().numberOfDesktops()) {
     unsigned int number = event->data.l[0];
     if (number > workspaceCount()) {
-      for (; number != workspaceCount(); --number)
+      do {
         addWorkspace();
+      }
+      while (number > workspaceCount());
     } else if (number < workspaceCount()) {
-      for (; number != workspaceCount(); ++number)
+      do {
         removeLastWorkspace();
+      }
+      while (number < workspaceCount());
     }
   } else if (event->message_type == _blackbox->ewmh().desktopNames()) {
     readDesktopNames();
