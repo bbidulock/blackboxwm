@@ -1,5 +1,7 @@
 $set 1 #BaseDisplay
 
+$ codeset=eucjp
+
 $ #XError
 # %s:  X ¥¨¥é¡¼: %s(%d) opcodes %d/%d\n  resource 0x%lx\n
 $ #SignalCaught

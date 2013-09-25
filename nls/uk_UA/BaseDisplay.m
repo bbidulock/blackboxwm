@@ -1,5 +1,7 @@
 $set 1 #BaseDisplay
 
+$ codeset=koi8u
+
 $ #XError
 # %s:  помилка X сервера: %s(%d) значення %d/%d\n ресурс 0x%lx\n
 $ #SignalCaught

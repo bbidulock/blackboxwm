@@ -1,5 +1,7 @@
 $set 1 #BaseDisplay
 
+$ codeset=iso-8859-1
+
 $ #XError
 # %s:  Erreur de X %s(%d) opcodes %d/%d\n  ressource 0x%lx\n
 $ #SignalCaught

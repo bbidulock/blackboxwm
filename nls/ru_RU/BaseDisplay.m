@@ -1,5 +1,7 @@
 $set 1 #BaseDisplay
 
+$ codeset=iso-8859-5
+
 $ #XError
 # %s:  ошибка X сервера: %s(%d) значения %d/%d\n ресурс 0x%lx\n
 $ #SignalCaught

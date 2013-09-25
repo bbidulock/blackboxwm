@@ -28,5 +28,7 @@
   printf "%d %s\n", minor, text > output
 }
   
+/^\$ codeset/ { print > output }
+
 ! /^(\$|#)/ { print > output }
 

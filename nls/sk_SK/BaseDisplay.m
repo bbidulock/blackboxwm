@@ -1,5 +1,7 @@
 $set 1 #BaseDisplay
 
+$ codeset=iso-8859-2
+
 $ #XError
 # %s:  X chyba: %s(%d) operaèné kódy %d/%d\n  zdroj 0x%lx\n
 $ #SignalCaught

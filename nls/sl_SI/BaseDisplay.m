@@ -1,5 +1,7 @@
 $set 1 #BaseDisplay
 
+$ codeset=iso-8859-2
+
 $ #XError
 # %s:  Napaka v sistemu oken X: %s(%d) operacijska koda %d/%d\n  vir 0x%lx\n
 $ #SignalCaught

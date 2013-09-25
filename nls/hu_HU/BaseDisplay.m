@@ -1,5 +1,7 @@
 $set 1 #BaseDisplay
 
+$ codeset=iso-8859-2
+
 $ #XError
 # %s:  X hiba: %s(%d) opcodes %d/%d\n  resource 0x%lx\n
 $ #SignalCaught
