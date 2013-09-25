@@ -248,6 +248,13 @@ void Slit::reconfigure(void) {
     bt::PixmapCache::find(screen->screenNumber(), texture,
                           frame.rect.width(), frame.rect.height(),
                           frame.pixmap);
+/*** START: BBDOCK PATCH FOR DOCK APPS THAT USE ParentRelative **************/
+  if ((texture.texture() & bt::Texture::Gradient) && frame.pixmap)
+    XSetWindowBackgroundPixmap(display, frame.window, frame.pixmap);
+  else if ((texture.texture() & bt::Texture::Solid))
+    XSetWindowBackground(display, frame.window, 
+      texture.color1().pixel(screen->screenNumber()));
+/*** STOP: BBDOCK PATCH FOR DOCK APPS THAT USE ParentRelative ***************/
   XClearArea(display, frame.window, 0, 0,
              frame.rect.width(), frame.rect.height(), True);
 
