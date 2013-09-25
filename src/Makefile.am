@@ -22,7 +22,7 @@
 
 DEFAULT_MENU		= $(pkgdatadir)/menu
 DEFAULT_STYLE		= $(pkgdatadir)/styles/Gray
-CPPFLAGS		= @CPPFLAGS@ @SHAPE@ @XFT@ @DEBUG@ @NLS@ \
+AM_CPPFLAGS		= @SHAPE@ @XFT@ @DEBUG@ @NLS@ \
 			  -DLOCALEPATH=\"$(pkgdatadir)/nls\" \
 			  -DDEFAULTMENU=\"$(DEFAULT_MENU)\" \
 			  -DDEFAULTSTYLE=\"$(DEFAULT_STYLE)\" \
