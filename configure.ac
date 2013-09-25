@@ -2,8 +2,9 @@ dnl configure.in for Blackbox - an X11 Window manager
 dnl Initialize autoconf and automake
 
 AC_INIT([blackbox], [0.70.2cvs], [http://blackboxwm.sourceforge.net])
-AM_INIT_AUTOMAKE([blackbox], [0.70.2cvs])
 AC_CONFIG_SRCDIR([src/blackbox.cc])
+AM_INIT_AUTOMAKE
+AC_CONFIG_MACRO_DIR([m4])
 
 dnl Determine default prefix
 test "x$prefix" = "xNONE" && prefix="$ac_default_prefix"
@@ -80,9 +81,11 @@ AC_CHECK_FUNCS([iconv_open],
                ])
 AC_SUBST(ICONV)
 
+m4_ifndef([AC_LANG_DEFINES_PROVIDED], [m4_define([AC_LANG_DEFINES_PROVIDED])])
+
 dnl check if we are using GNU libiconv
 AC_MSG_CHECKING([for GNU libiconv])
-AC_COMPILE_IFELSE([
+AC_COMPILE_IFELSE([AC_LANG_DEFINES_PROVIDED
 #include <sys/types.h>
 #include <iconv.h>
 
@@ -112,7 +115,7 @@ AC_CHECK_FUNCS([setlocale],
 AC_SUBST(LOCALE)
 
 AC_MSG_CHECKING([for nl_langinfo])
-AC_COMPILE_IFELSE([
+AC_COMPILE_IFELSE([AC_LANG_DEFINES_PROVIDED
 #include <langinfo.h>
 
 int main(int, char **)
