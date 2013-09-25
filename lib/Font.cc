@@ -204,7 +204,7 @@ XFontSet bt::FontCache::findFontSet(const std::string &fontsetname) {
   }
 
   XFontSet fs;
-  char **missing, *def = "-";
+  char **missing, *def = const_cast<char *>("-");
   int nmissing;
 
   // load the fontset

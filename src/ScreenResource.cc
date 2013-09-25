@@ -67,14 +67,14 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
   unsigned int number = screen->screenNumber();
 
   switch (_slitOptions.placement) {
-  case Slit::TopLeft: placement = "TopLeft"; break;
-  case Slit::CenterLeft: placement = "CenterLeft"; break;
-  case Slit::BottomLeft: placement = "BottomLeft"; break;
-  case Slit::TopCenter: placement = "TopCenter"; break;
-  case Slit::BottomCenter: placement = "BottomCenter"; break;
-  case Slit::TopRight: placement = "TopRight"; break;
-  case Slit::BottomRight: placement = "BottomRight"; break;
-  case Slit::CenterRight: default: placement = "CenterRight"; break;
+  case Slit::TopLeft: placement = const_cast<char *>("TopLeft"); break;
+  case Slit::CenterLeft: placement = const_cast<char *>("CenterLeft"); break;
+  case Slit::BottomLeft: placement = const_cast<char *>("BottomLeft"); break;
+  case Slit::TopCenter: placement = const_cast<char *>("TopCenter"); break;
+  case Slit::BottomCenter: placement = const_cast<char *>("BottomCenter"); break;
+  case Slit::TopRight: placement = const_cast<char *>("TopRight"); break;
+  case Slit::BottomRight: placement = const_cast<char *>("BottomRight"); break;
+  case Slit::CenterRight: default: placement = const_cast<char *>("CenterRight"); break;
   }
 
   sprintf(rc_string, "session.screen%u.slit.placement", number);
@@ -101,12 +101,12 @@ void ScreenResource::save(bt::Resource& res, BScreen* screen) {
   res.write(rc_string, _toolbarOptions.auto_hide);
 
   switch (_toolbarOptions.placement) {
-  case Toolbar::TopLeft: placement = "TopLeft"; break;
-  case Toolbar::BottomLeft: placement = "BottomLeft"; break;
-  case Toolbar::TopCenter: placement = "TopCenter"; break;
-  case Toolbar::TopRight: placement = "TopRight"; break;
-  case Toolbar::BottomRight: placement = "BottomRight"; break;
-  case Toolbar::BottomCenter: default: placement = "BottomCenter"; break;
+  case Toolbar::TopLeft: placement = const_cast<char *>("TopLeft"); break;
+  case Toolbar::BottomLeft: placement = const_cast<char *>("BottomLeft"); break;
+  case Toolbar::TopCenter: placement = const_cast<char *>("TopCenter"); break;
+  case Toolbar::TopRight: placement = const_cast<char *>("TopRight"); break;
+  case Toolbar::BottomRight: placement = const_cast<char *>("BottomRight"); break;
+  case Toolbar::BottomCenter: default: placement = const_cast<char *>("BottomCenter"); break;
   }
 
   sprintf(rc_string, "session.screen%u.toolbar.placement", number);

@@ -32,6 +32,7 @@
 
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
+#include <X11/XKBlib.h>
 
 #include <stdio.h>
 #include <assert.h>
@@ -1009,7 +1010,7 @@ void bt::Menu::activateSubmenu(void) {
 
 
 void bt::Menu::keyPressEvent(const XKeyEvent * const event) {
-  KeySym sym = XKeycodeToKeysym(_app.XDisplay(), event->keycode, 0);
+  KeySym sym = XkbKeycodeToKeysym(_app.XDisplay(), event->keycode, 0, 0);
   switch (sym) {
   case XK_Escape: {
     hide();

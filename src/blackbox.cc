@@ -75,7 +75,7 @@ void Blackbox::reload_rc(void) {
 
 
 void Blackbox::init_icccm(void) {
-  char* atoms[7] = {
+  const char* atoms[7] = {
     "WM_COLORMAP_WINDOWS",
     "WM_PROTOCOLS",
     "WM_STATE",
@@ -85,7 +85,7 @@ void Blackbox::init_icccm(void) {
     "_MOTIF_WM_HINTS"
   };
   Atom atoms_return[7];
-  XInternAtoms(XDisplay(), atoms, 7, false, atoms_return);
+  XInternAtoms(XDisplay(), const_cast<char **>(atoms), 7, false, atoms_return);
   xa_wm_colormap_windows = atoms_return[0];
   xa_wm_protocols = atoms_return[1];
   xa_wm_state = atoms_return[2];
