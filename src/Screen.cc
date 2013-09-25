@@ -1461,7 +1461,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
     size_t pos = 0;
     size_t line_length = strlen(line);
 
-    for (pos = 0; pos < len; pos++)
+    for (pos = 0; pos < line_length; pos++)
       if (line[pos] != ' ') break;
 
     if (line[pos] == '#') // comment, skip it
