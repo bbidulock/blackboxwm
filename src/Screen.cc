@@ -1349,10 +1349,19 @@ void BScreen::InitMenu(void) {
         memset(label, 0, 1024);
 
         while (fgets(line, 1024, menu_file) && ! feof(menu_file)) {
-          if (line[0] == '#')
+          /* Remove the newline character if necessary */
+          if (line[0] != '\0' && line[strlen(line) - 1] == '\n')
+            line[strlen(line) - 1] = '\0';
+
+          int i, len = strlen(line);
+
+          for (i = 0; i < len; i++)
+            if (line[i] != ' ') break;
+
+          if (line[i] == '#')
             continue;
 
-          int i, key = 0, index = -1, len = strlen(line);
+          int key = 0, index = -1;
 
           for (i = 0; i < len; i++) {
             if (line[i] == '[') index = 0;
@@ -1445,14 +1454,23 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
     if (! fgets(line, 1024, file))
       continue;
 
-    if (line[0] == '#') // comment, skip it
+    /* Remove the newline character if necessary */
+    if (line[0] != '\0' && line[strlen(line) - 1] == '\n')
+      line[strlen(line) - 1] = '\0';
+
+    size_t pos = 0;
+    size_t line_length = strlen(line);
+
+    for (pos = 0; pos < len; pos++)
+      if (line[pos] != ' ') break;
+
+    if (line[pos] == '#') // comment, skip it
       continue;
 
-    size_t line_length = strlen(line);
     unsigned int key = 0;
 
     // get the keyword enclosed in []'s
-    size_t pos = string_within('[', ']', line, 0, line_length, keyword);
+    pos = string_within('[', ']', line, 0, line_length, keyword);
 
     if (keyword[0] == '\0') {  // no keyword, no menu entry
       continue;
@@ -2056,8 +2074,10 @@ void BScreen::placeWindow(BlackboxWindow *win) {
   case WindowTypeDialog: {
     BlackboxWindow *w = win->findTransientFor();
     bt::Rect p = w ? w->frameRect() : usableArea;
-    const int x = static_cast<int>(p.x() + (p.width() - r.width()) / 2);
-    const int y = static_cast<int>(p.y() + (p.height() - r.height()) / 2);
+    const int x = static_cast<int>(p.x() +
+                                   static_cast<int>(p.width() - r.width()) / 2);
+    const int y = static_cast<int>(p.y() +
+                                   static_cast<int>(p.height() - r.height()) / 2);
     r.setPos(x, y);
     break;
   }
@@ -2118,9 +2138,11 @@ bool BScreen::cascadePlacement(bt::Rect &win,
 bool BScreen::centerPlacement(bt::Rect &rect, const bt::Rect &avail)
 {
   const int x =
-    static_cast<int>(avail.x() + (avail.width() - rect.width()) / 2);
+    static_cast<int>(avail.x() +
+                     static_cast<int>((avail.width() - rect.width())) / 2);
   const int y =
-    static_cast<int>(avail.y() + (avail.height() - rect.height()) / 2);
+    static_cast<int>(avail.y() +
+                     static_cast<int>((avail.height() - rect.height())) / 2);
   rect.setPos(x, y);
   return true;
 }

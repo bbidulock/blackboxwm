@@ -183,28 +183,28 @@ void bt::Resource::write(const char* resource, const char* value)
 
 void bt::Resource::write(const char* resource, int value) {
   char tmp[16];
-  sprintf(tmp, "%d", value);
+  snprintf(tmp, 16, "%d", value);
   write(resource, tmp);
 }
 
 
 void bt::Resource::write(const char* resource, unsigned int value) {
   char tmp[16];
-  sprintf(tmp, "%u", value);
+  snprintf(tmp, 16, "%u", value);
   write(resource, tmp);
 }
 
 
 void bt::Resource::write(const char* resource, long value) {
   char tmp[64];
-  sprintf(tmp, "%ld", value);
+  snprintf(tmp, 64, "%ld", value);
   write(resource, tmp);
 }
 
 
 void bt::Resource::write(const char* resource, unsigned long value) {
   char tmp[64];
-  sprintf(tmp, "%lu", value);
+  snprintf(tmp, 64, "%lu", value);
   write(resource, tmp);
 }
 
@@ -215,6 +215,6 @@ void bt::Resource::write(const char* resource, bool value)
 
 void bt::Resource::write(const char* resource, double value) {
   char tmp[80];
-  sprintf(tmp, "%f", value);
+  snprintf(tmp, 80, "%f", value);
   write(resource, tmp);
 }
