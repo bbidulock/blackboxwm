@@ -86,6 +86,8 @@ static WindowType window_type_from_atom(const bt::EWMH &ewmh, Atom atom) {
     return WindowTypeDock;
   if (atom == ewmh.wmWindowTypeMenu())
     return WindowTypeMenu;
+  if (atom == ewmh.wmWindowTypeNotification())
+    return WindowTypeNotification;
   if (atom == ewmh.wmWindowTypeSplash())
     return WindowTypeSplash;
   if (atom == ewmh.wmWindowTypeToolbar())
@@ -129,6 +131,7 @@ static void update_decorations(WindowDecorationFlags &decorations,
   case WindowTypeDesktop:
   case WindowTypeDock:
   case WindowTypeSplash:
+  case WindowTypeNotification:
     decorations = NoWindowDecorations;
     functions   = NoWindowFunctions;
     break;

@@ -220,6 +220,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     ewmh.wmWindowTypeDock(),
     ewmh.wmWindowTypeToolbar(),
     ewmh.wmWindowTypeMenu(),
+    ewmh.wmWindowTypeNotification(),
     ewmh.wmWindowTypeUtility(),
     ewmh.wmWindowTypeSplash(),
     ewmh.wmWindowTypeDialog(),

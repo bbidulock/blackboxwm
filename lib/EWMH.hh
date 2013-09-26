@@ -161,6 +161,8 @@ namespace bt {
     { return net_wm_window_type_toolbar; }
     inline Atom wmWindowTypeMenu(void) const
     { return net_wm_window_type_menu; }
+    inline Atom wmWindowTypeNotification(void) const
+    { return net_wm_window_type_notification; }
     inline Atom wmWindowTypeUtility(void) const
     { return net_wm_window_type_utility; }
     inline Atom wmWindowTypeSplash(void) const
@@ -311,6 +313,7 @@ namespace bt {
       net_wm_window_type_dock,
       net_wm_window_type_toolbar,
       net_wm_window_type_menu,
+      net_wm_window_type_notification,
       net_wm_window_type_utility,
       net_wm_window_type_splash,
       net_wm_window_type_dialog,

@@ -37,6 +37,7 @@ enum WindowType {
   WindowTypeDesktop,
   WindowTypeDock,
   WindowTypeMenu,
+  WindowTypeNotification,
   WindowTypeSplash,
   WindowTypeToolbar,
   WindowTypeUtility

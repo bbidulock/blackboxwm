@@ -68,6 +68,7 @@ bt::EWMH::EWMH(const Display &_display)
     { "_NET_WM_WINDOW_TYPE_DOCK", &net_wm_window_type_dock },
     { "_NET_WM_WINDOW_TYPE_TOOLBAR", &net_wm_window_type_toolbar },
     { "_NET_WM_WINDOW_TYPE_MENU", &net_wm_window_type_menu },
+    { "_NET_WM_WINDOW_TYPE_NOTIFICATION", &net_wm_window_type_notification },
     { "_NET_WM_WINDOW_TYPE_UTILITY", &net_wm_window_type_utility },
     { "_NET_WM_WINDOW_TYPE_SPLASH", &net_wm_window_type_splash },
     { "_NET_WM_WINDOW_TYPE_DIALOG", &net_wm_window_type_dialog },
@@ -712,6 +713,7 @@ bool bt::EWMH::isSupportedWMWindowType(Atom atom) const {
           atom == net_wm_window_type_dock ||
           atom == net_wm_window_type_toolbar ||
           atom == net_wm_window_type_menu ||
+          atom == net_wm_window_type_notification ||
           atom == net_wm_window_type_utility ||
           atom == net_wm_window_type_splash ||
           atom == net_wm_window_type_dialog ||
