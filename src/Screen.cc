@@ -251,8 +251,8 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     ewmh.wmActionChangeDesktop(),
     ewmh.wmActionClose(),
 
-    ewmh.wmStrut()
-    // _NET_WM_STRUT_PARTIAL is not supported
+    ewmh.wmStrut(),
+    ewmh.wmStrutPartial()
     // _NET_WM_ICON_GEOMETRY is not supported
     // _NET_WM_ICON          is not supported
     // _NET_WM_PID           is not supported

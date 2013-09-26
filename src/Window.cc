@@ -1117,11 +1117,21 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   if (isFullScreen() && !hasWindowFunction(WindowFunctionFullScreen))
     client.ewmh.fullscreen = false;
 
-  bt::EWMH::Strut strut;
-  if (blackbox->ewmh().readWMStrut(client.window, &strut)) {
+  bt::EWMH::StrutPartial partial;
+  if (blackbox->ewmh().readWMStrutPartial(client.window, &partial)) {
     client.strut = new bt::EWMH::Strut;
-    *client.strut = strut;
+    client.strut->left = partial.left;
+    client.strut->right = partial.right;
+    client.strut->top = partial.top;
+    client.strut->bottom = partial.bottom;
     _screen->addStrut(client.strut);
+  } else {
+    bt::EWMH::Strut strut;
+    if (blackbox->ewmh().readWMStrut(client.window, &strut)) {
+      client.strut = new bt::EWMH::Strut;
+      *client.strut = strut;
+      _screen->addStrut(client.strut);
+    }
   }
 
   /*
@@ -3308,6 +3318,26 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
       }
 
       blackbox->ewmh().readWMStrut(client.window, client.strut);
+      if (client.strut->left || client.strut->right ||
+          client.strut->top || client.strut->bottom) {
+        _screen->updateStrut();
+      } else {
+        _screen->removeStrut(client.strut);
+        delete client.strut;
+        client.strut = 0;
+      }
+    } else if (event->atom == blackbox->ewmh().wmStrutPartial()) {
+      if (! client.strut) {
+        client.strut = new bt::EWMH::Strut;
+        _screen->addStrut(client.strut);
+      }
+
+      bt::EWMH::StrutPartial partial;
+      blackbox->ewmh().readWMStrutPartial(client.window, &partial);
+      client.strut->left = partial.left;
+      client.strut->right = partial.right;
+      client.strut->top = partial.top;
+      client.strut->bottom = partial.bottom;
       if (client.strut->left || client.strut->right ||
           client.strut->top || client.strut->bottom) {
         _screen->updateStrut();

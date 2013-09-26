@@ -560,7 +560,7 @@ bool bt::EWMH::readWMStrutPartial(Window target, StrutPartial* strut) const {
                                0l, 12l, false,
                                XA_CARDINAL, &atom_return, &size,
                                &nitems, &bytes_left, &data);
-  if (ret != Success || nitems < 4)
+  if (ret != Success || nitems < 12)
     return false;
 
   unsigned long * const values = reinterpret_cast<unsigned long *>(data);
