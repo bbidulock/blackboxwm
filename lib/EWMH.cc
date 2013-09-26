@@ -57,6 +57,7 @@ bt::EWMH::EWMH(const Display &_display)
     { "_NET_WM_MOVERESIZE", &net_wm_moveresize },
     { "_NET_RESTACK_WINDOW", &net_restack_window },
     { "_NET_REQUEST_FRAME_EXTENTS", &net_request_frame_extents },
+    { "_NET_STARTUP_ID", &net_startup_id },
     { "_NET_WM_NAME", &net_wm_name },
     { "_NET_WM_VISIBLE_NAME", &net_wm_visible_name },
     { "_NET_WM_ICON_NAME", &net_wm_icon_name },
@@ -601,6 +602,11 @@ bool bt::EWMH::readWMIconGeometry(Window target, int &x, int &y,
   }
 
   return false;
+}
+
+void bt::EWMH::setWMPid(Window target, unsigned long pid) const {
+  setProperty(target, XA_CARDINAL, net_wm_pid,
+              reinterpret_cast<unsigned char *>(&pid), 1);
 }
 
 

@@ -43,6 +43,7 @@
 
 #include <X11/Xutil.h>
 #include <sys/types.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <assert.h>
 #include <ctype.h>
@@ -174,6 +175,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   */
   ewmh.setSupportingWMCheck(screen_info.rootWindow(), geom_window);
   ewmh.setSupportingWMCheck(geom_window, geom_window);
+  ewmh.setWMPid(geom_window, getpid());
   ewmh.setWMName(geom_window, bt::toUnicode("Blackbox"));
 
   ewmh.setCurrentDesktop(screen_info.rootWindow(), 0);
@@ -187,22 +189,26 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   updateDesktopNamesHint();
 
   Atom supported[] = {
+    ewmh.supported(),
+    ewmh.supportingWMCheck(),
     ewmh.clientList(),
     ewmh.clientListStacking(),
     ewmh.numberOfDesktops(),
-    // _NET_DESKTOP_GEOMETRY is not supported
-    // _NET_DESKTOP_VIEWPORT is not supported
+    ewmh.desktopGeometry(),
+    ewmh.desktopViewport(),
     ewmh.currentDesktop(),
     ewmh.desktopNames(),
     ewmh.activeWindow(),
     ewmh.workarea(),
     // _NET_VIRTUAL_ROOTS   is not supported
     // _NET_SHOWING_DESKTOP is not supported
+    ewmh.startupID(),
 
     ewmh.closeWindow(),
     ewmh.moveresizeWindow(),
     // _NET_WM_MOVERESIZE is not supported
 
+    ewmh.wmPid(),
     ewmh.wmName(),
     ewmh.wmVisibleName(),
     ewmh.wmIconName(),

@@ -137,6 +137,8 @@ namespace bt {
     { return net_restack_window; }
     inline Atom requestFrameExtents(void) const
     { return net_request_frame_extents; }
+    inline Atom startupID(void) const
+    { return net_startup_id; }
 
     // application properties
     inline Atom wmName(void) const
@@ -252,6 +254,7 @@ namespace bt {
     bool readWMIconGeometry(Window target, int &x, int &y,
                             unsigned int &width, unsigned int &height) const;
     // bool readWMIcon(Window target, ...) const;
+    void setWMPid(Window target, unsigned long pid) const;
     bool readWMPid(Window target, unsigned int &pid) const;
     // bool readWMHandledIcons(Window target, ...) const;
     bool readWMUserTime(Window target, Time &user_time) const;
@@ -297,6 +300,7 @@ namespace bt {
       net_wm_moveresize,
       net_restack_window,
       net_request_frame_extents,
+      net_startup_id,
       net_wm_name,
       net_wm_visible_name,
       net_wm_icon_name,
