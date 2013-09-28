@@ -95,6 +95,8 @@ namespace bt {
     { return net_desktop_layout; }
     inline Atom showingDesktop(void) const
     { return net_showing_desktop; }
+    inline Atom wmFullPlacement(void) const
+    { return net_wm_full_placement; }
 
     void setSupported(Window target, Atom atoms[], unsigned int count) const;
     bool readSupported(Window target, AtomList& atoms) const;
@@ -139,6 +141,18 @@ namespace bt {
     { return net_request_frame_extents; }
     inline Atom startupID(void) const
     { return net_startup_id; }
+    inline Atom startupInfo(void) const
+    { return net_startup_info; }
+    inline Atom startupInfoBegin(void) const
+    { return net_startup_info_begin; }
+    inline Atom systemTrayMessageData(void) const
+    { return net_system_tray_message_data; }
+    inline Atom systemTrayOpcode(void) const
+    { return net_system_tray_opcode; }
+    inline Atom systemTrayOrientation(void) const
+    { return net_system_tray_orientation; }
+    inline Atom systemtrayVisual(void) const
+    { return net_system_tray_visual; }
 
     // application properties
     inline Atom wmName(void) const
@@ -151,26 +165,38 @@ namespace bt {
     { return net_wm_visible_icon_name; }
     inline Atom wmDesktop(void) const
     { return net_wm_desktop; }
+
     inline Atom wmWindowType(void) const
     { return net_wm_window_type; }
+    inline Atom wmWindowTypeCombo(void) const
+    { return net_wm_window_type_combo; }
     inline Atom wmWindowTypeDesktop(void) const
     { return net_wm_window_type_desktop; }
-    inline Atom wmWindowTypeDock(void) const
-    { return net_wm_window_type_dock; }
-    inline Atom wmWindowTypeToolbar(void) const
-    { return net_wm_window_type_toolbar; }
-    inline Atom wmWindowTypeMenu(void) const
-    { return net_wm_window_type_menu; }
-    inline Atom wmWindowTypeNotification(void) const
-    { return net_wm_window_type_notification; }
-    inline Atom wmWindowTypeUtility(void) const
-    { return net_wm_window_type_utility; }
-    inline Atom wmWindowTypeSplash(void) const
-    { return net_wm_window_type_splash; }
     inline Atom wmWindowTypeDialog(void) const
     { return net_wm_window_type_dialog; }
+    inline Atom wmWindowTypeDnd(void) const
+    { return net_wm_window_type_dnd; }
+    inline Atom wmWindowTypeDock(void) const
+    { return net_wm_window_type_dock; }
+    inline Atom wmWindowTypeDropdownMenu(void) const
+    { return net_wm_window_type_dropdown_menu; }
+    inline Atom wmWindowTypeMenu(void) const
+    { return net_wm_window_type_menu; }
     inline Atom wmWindowTypeNormal(void) const
     { return net_wm_window_type_normal; }
+    inline Atom wmWindowTypeNotification(void) const
+    { return net_wm_window_type_notification; }
+    inline Atom wmWindowTypePopupMenu(void) const
+    { return net_wm_window_type_popup_menu; }
+    inline Atom wmWindowTypeSplash(void) const
+    { return net_wm_window_type_splash; }
+    inline Atom wmWindowTypeToolbar(void) const
+    { return net_wm_window_type_toolbar; }
+    inline Atom wmWindowTypeTooltip(void) const
+    { return net_wm_window_type_tooltip; }
+    inline Atom wmWindowTypeUtility(void) const
+    { return net_wm_window_type_utility; }
+
     inline Atom wmState(void) const
     { return net_wm_state; }
     inline Atom wmStateModal(void) const
@@ -203,28 +229,34 @@ namespace bt {
     { return 1; }
     inline Atom wmStateToggle(void) const
     { return 2; }
+
     inline Atom wmAllowedActions(void) const
     { return net_wm_allowed_actions; }
-    inline Atom wmActionMove(void) const
-    { return net_wm_action_move; }
-    inline Atom wmActionResize(void) const
-    { return net_wm_action_resize; }
-    inline Atom wmActionMinimize(void) const
-    { return net_wm_action_minimize; }
-    inline Atom wmActionShade(void) const
-    { return net_wm_action_shade; }
-    inline Atom wmActionStick(void) const
-    { return net_wm_action_stick; }
-    inline Atom wmActionMaximizeHorz(void) const
-    { return net_wm_action_maximize_horz; }
-    inline Atom wmActionMaximizeVert(void) const
-    { return net_wm_action_maximize_vert; }
-    inline Atom wmActionFullscreen(void) const
-    { return net_wm_action_fullscreen; }
+    inline Atom wmActionAbove(void) const
+    { return net_wm_action_above; }
+    inline Atom wmActionBelow(void) const
+    { return net_wm_action_below; }
     inline Atom wmActionChangeDesktop(void) const
     { return net_wm_action_change_desktop; }
     inline Atom wmActionClose(void) const
     { return net_wm_action_close; }
+    inline Atom wmActionFullscreen(void) const
+    { return net_wm_action_fullscreen; }
+    inline Atom wmActionMaximizeHorz(void) const
+    { return net_wm_action_maximize_horz; }
+    inline Atom wmActionMaximizeVert(void) const
+    { return net_wm_action_maximize_vert; }
+    inline Atom wmActionMinimize(void) const
+    { return net_wm_action_minimize; }
+    inline Atom wmActionMove(void) const
+    { return net_wm_action_move; }
+    inline Atom wmActionResize(void) const
+    { return net_wm_action_resize; }
+    inline Atom wmActionShade(void) const
+    { return net_wm_action_shade; }
+    inline Atom wmActionStick(void) const
+    { return net_wm_action_stick; }
+
     inline Atom wmStrut(void) const
     { return net_wm_strut; }
     inline Atom wmStrutPartial(void) const
@@ -239,6 +271,16 @@ namespace bt {
     { return net_wm_handled_icons; }
     inline Atom wmUserTime(void) const
     { return net_wm_user_time; }
+    inline Atom wmUserTimerWindow(void) const
+    { return net_wm_user_time_window; }
+    inline Atom wmFrameExtents(void) const
+    { return net_frame_extents; }
+    inline Atom wmOpaqueRegion(void) const
+    { return net_wm_opaque_region; }
+    inline Atom wmBypassCompositor(void) const
+    { return net_wm_bypass_compositor; }
+    inline Atom wmWindowOpacity(void) const
+    { return net_wm_window_opacity; }
 
     void setWMName(Window target, const bt::ustring &name) const;
     bool readWMName(Window target, bt::ustring &name) const;
@@ -267,6 +309,10 @@ namespace bt {
     { return net_wm_ping; }
     inline Atom wmSyncRequest(void) const
     { return net_wm_sync_request; }
+    inline Atom wmSyncRequestCounter(void) const
+    { return net_wm_sync_request_counter; }
+    inline Atom wmFullscreenMonitors(void) const
+    { return net_wm_fullscreen_monitors; }
 
     // utility
     void removeProperty(Window target, Atom atom) const;
@@ -283,78 +329,95 @@ namespace bt {
   private:
     const Display &display;
     Atom utf8_string,
-      net_supported,
+      net_active_window,
       net_client_list,
       net_client_list_stacking,
-      net_number_of_desktops,
-      net_desktop_geometry,
-      net_desktop_viewport,
-      net_current_desktop,
-      net_desktop_names,
-      net_active_window,
-      net_workarea,
-      net_supporting_wm_check,
-      net_virtual_roots,
-      net_desktop_layout,
-      net_showing_desktop,
       net_close_window,
+      net_current_desktop,
+      net_desktop_geometry,
+      net_desktop_layout,
+      net_desktop_names,
+      net_desktop_viewport,
+      net_frame_extents,
       net_moveresize_window,
-      net_wm_moveresize,
-      net_restack_window,
+      net_number_of_desktops,
       net_request_frame_extents,
+      net_restack_window,
+      net_showing_desktop,
       net_startup_id,
-      net_wm_name,
-      net_wm_visible_name,
-      net_wm_icon_name,
-      net_wm_visible_icon_name,
+      net_startup_info,
+      net_startup_info_begin,
+      net_supported,
+      net_supporting_wm_check,
+      net_system_tray_message_data,
+      net_system_tray_opcode,
+      net_system_tray_orientation,
+      net_system_tray_visual,
+      net_virtual_roots,
+      net_wm_action_above,
+      net_wm_action_below,
+      net_wm_action_change_desktop,
+      net_wm_action_close,
+      net_wm_action_fullscreen,
+      net_wm_action_maximize_horz,
+      net_wm_action_maximize_vert,
+      net_wm_action_minimize,
+      net_wm_action_move,
+      net_wm_action_resize,
+      net_wm_action_shade,
+      net_wm_action_stick,
+      net_wm_allowed_actions,
+      net_wm_bypass_compositor,
       net_wm_desktop,
-      net_wm_window_type,
-      net_wm_window_type_desktop,
-      net_wm_window_type_dock,
-      net_wm_window_type_toolbar,
-      net_wm_window_type_menu,
-      net_wm_window_type_notification,
-      net_wm_window_type_utility,
-      net_wm_window_type_splash,
-      net_wm_window_type_dialog,
-      net_wm_window_type_normal,
+      net_wm_full_placement,
+      net_wm_fullscreen_monitors,
+      net_wm_handled_icons,
+      net_wm_icon,
+      net_wm_icon_geometry,
+      net_wm_icon_name,
+      net_wm_moveresize,
+      net_wm_name,
+      net_wm_opaque_region,
+      net_wm_pid,
+      net_wm_ping,
       net_wm_state,
-      net_wm_state_modal,
-      net_wm_state_sticky,
-      net_wm_state_maximized_vert,
-      net_wm_state_maximized_horz,
-      net_wm_state_shaded,
-      net_wm_state_skip_taskbar,
-      net_wm_state_skip_pager,
-      net_wm_state_hidden,
-      net_wm_state_fullscreen,
       net_wm_state_above,
       net_wm_state_below,
       net_wm_state_demands_attention,
-      net_wm_state_remove,
-      net_wm_state_add,
-      net_wm_state_toggle,
-      net_wm_allowed_actions,
-      net_wm_action_move,
-      net_wm_action_resize,
-      net_wm_action_minimize,
-      net_wm_action_shade,
-      net_wm_action_stick,
-      net_wm_action_maximize_horz,
-      net_wm_action_maximize_vert,
-      net_wm_action_fullscreen,
-      net_wm_action_change_desktop,
-      net_wm_action_close,
+      net_wm_state_fullscreen,
+      net_wm_state_hidden,
+      net_wm_state_maximized_horz,
+      net_wm_state_maximized_vert,
+      net_wm_state_modal,
+      net_wm_state_shaded,
+      net_wm_state_skip_pager,
+      net_wm_state_skip_taskbar,
+      net_wm_state_sticky,
       net_wm_strut,
       net_wm_strut_partial,
-      net_wm_icon_geometry,
-      net_wm_icon,
-      net_wm_pid,
-      net_wm_handled_icons,
+      net_wm_sync_request,
+      net_wm_sync_request_counter,
       net_wm_user_time,
-      net_frame_extents,
-      net_wm_ping,
-      net_wm_sync_request;
+      net_wm_user_time_window,
+      net_wm_visible_icon_name,
+      net_wm_visible_name,
+      net_wm_window_opacity,
+      net_wm_window_type,
+      net_wm_window_type_combo,
+      net_wm_window_type_desktop,
+      net_wm_window_type_dialog,
+      net_wm_window_type_dnd,
+      net_wm_window_type_dock,
+      net_wm_window_type_dropdown_menu,
+      net_wm_window_type_menu,
+      net_wm_window_type_normal,
+      net_wm_window_type_notification,
+      net_wm_window_type_popup_menu,
+      net_wm_window_type_splash,
+      net_wm_window_type_toolbar,
+      net_wm_window_type_tooltip,
+      net_wm_window_type_utility,
+      net_workarea;
   };
 
 } // namespace bt
