@@ -184,6 +184,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   ewmh.setDesktopGeometry(screen_info.rootWindow(),
                           screen_info.width(), screen_info.height());
   ewmh.setDesktopViewport(screen_info.rootWindow(), 0, 0);
+  ewmh.setShowingDesktop(screen_info.rootWindow(), false);
   ewmh.setActiveWindow(screen_info.rootWindow(), None);
   updateWorkareaHint();
   updateDesktopNamesHint();
@@ -360,6 +361,8 @@ BScreen::~BScreen(void) {
                                    _blackbox->ewmh().activeWindow());
   _blackbox->ewmh().removeProperty(screen_info.rootWindow(),
                                    _blackbox->ewmh().workarea());
+  _blackbox->ewmh().removeProperty(screen_info.rootWindow(),
+                                   _blackbox->ewmh().showingDesktop());
 }
 
 

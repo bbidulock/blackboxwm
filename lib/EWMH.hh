@@ -118,6 +118,7 @@ namespace bt {
                          const std::vector<bt::ustring> &names) const;
     bool readDesktopNames(Window target,
                           std::vector<bt::ustring> &names) const;
+    void setShowingDesktop(Window target, bool flag) const;
     void setActiveWindow(Window target, Window data) const;
     void setWorkarea(Window target, unsigned long workareas[],
                      unsigned int count) const;

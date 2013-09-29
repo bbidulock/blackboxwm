@@ -361,6 +361,11 @@ bool bt::EWMH::readDesktopNames(Window target,
   return (!names.empty());
 }
 
+void bt::EWMH::setShowingDesktop(Window target, bool flag) const {
+  long data = flag ? 1 : 0;
+  setProperty(target, XA_CARDINAL, net_showing_desktop,
+              reinterpret_cast<unsigned char *>(&data), 1);
+}
 
 void bt::EWMH::setActiveWindow(Window target, Window data) const {
   setProperty(target, XA_WINDOW, net_active_window,
