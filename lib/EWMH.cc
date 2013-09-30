@@ -93,6 +93,7 @@ bt::EWMH::EWMH(const Display &_display)
     { "_NET_WM_STATE_ABOVE", &net_wm_state_above },
     { "_NET_WM_STATE_BELOW", &net_wm_state_below },
     { "_NET_WM_STATE_DEMANDS_ATTENTION", &net_wm_state_demands_attention },
+    { "_NET_WM_STATE_FOCUSED", &net_wm_state_focused },
     { "_NET_WM_STATE_FULLSCREEN", &net_wm_state_fullscreen },
     { "_NET_WM_STATE_HIDDEN", &net_wm_state_hidden },
     { "_NET_WM_STATE_MAXIMIZED_HORZ", &net_wm_state_maximized_horz },

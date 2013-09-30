@@ -135,7 +135,8 @@ static void update_decorations(WindowDecorationFlags &decorations,
                      WindowFunctionIconify |
                      WindowFunctionMaximize |
                      WindowFunctionChangeLayer |
-                     WindowFunctionFullScreen);
+                     WindowFunctionFullScreen |
+                     WindowFunctionStick);
     break;
 
   case WindowTypeDesktop:
@@ -571,6 +572,8 @@ static EWMH readEWMH(const bt::EWMH &bewmh,
   ewmh.fullscreen   = false;
   ewmh.above        = false;
   ewmh.below        = false;
+  ewmh.sticky       = false;
+  ewmh.urgent       = false;
 
   // note: wm_name and wm_icon_name are read separately
 
@@ -617,6 +620,15 @@ static EWMH readEWMH(const bt::EWMH &bewmh,
         ewmh.above = true;
       } else if (state == bewmh.wmStateBelow()) {
         ewmh.below = true;
+      } else if (state == bewmh.wmStateSticky()) {
+        ewmh.sticky = true;
+      } else if (state == bewmh.wmStateDemandsAttention()) {
+        ewmh.urgent = true;
+      } else if (state == bewmh.wmStateFocused()) {
+        /*
+         * ignore _NET_WM_STATE_FOCUSED if present, the wm sets
+         * this state, not the application
+         */
       }
     }
   }
@@ -766,6 +778,7 @@ static WMHints readWMHints(Blackbox *blackbox, Window window) {
   wmh.accept_focus = false;
   wmh.window_group = None;
   wmh.initial_state = NormalState;
+  wmh.urgency = false;
 
   XWMHints *wmhint = XGetWMHints(blackbox->XDisplay(), window);
   if (!wmhint) return wmh;
@@ -776,6 +789,8 @@ static WMHints readWMHints(Blackbox *blackbox, Window window) {
     wmh.initial_state = wmhint->initial_state;
   if (wmhint->flags & WindowGroupHint)
     wmh.window_group = wmhint->window_group;
+  if (wmhint->flags & XUrgencyHint)
+    wmh.urgency = true;
 
   XFree(wmhint);
 
@@ -2338,6 +2353,8 @@ void BlackboxWindow::activate(void) {
     show();
   if (client.ewmh.shaded)
     setShaded(false);
+  if (client.ewmh.urgent)
+    setUrgent(false);
   if (setInputFocus())
     _screen->raiseWindow(this);
 }
@@ -2625,6 +2642,29 @@ void BlackboxWindow::setFullScreen(bool b) {
 }
 
 
+void BlackboxWindow::setSticky(bool b) {
+  assert(hasWindowFunction(WindowFunctionStick));
+
+  if (client.ewmh.sticky == b)
+    return;
+
+  client.ewmh.sticky = b;
+
+  updateEWMHState();
+}
+
+
+void BlackboxWindow::setUrgent(bool b) {
+
+  if (client.ewmh.urgent == b)
+    return;
+
+  client.ewmh.urgent = b;
+
+  updateEWMHState();
+}
+
+
 void BlackboxWindow::redrawWindowFrame(void) const {
   if (client.decorations & WindowDecorationTitlebar) {
     redrawTitle();
@@ -2666,6 +2706,8 @@ void BlackboxWindow::setFocused(bool focused) {
         changeLayer(StackingList::LayerBelow);
     }
   }
+
+  updateEWMHState();
 }
 
 
@@ -2705,6 +2747,12 @@ void BlackboxWindow::updateEWMHState() {
     atoms.push_back(ewmh.wmStateSkipTaskbar());
   if (client.ewmh.skip_pager)
     atoms.push_back(ewmh.wmStateSkipPager());
+  if (client.ewmh.sticky)
+    atoms.push_back(ewmh.wmStateSticky());
+  if (client.ewmh.urgent)
+    atoms.push_back(ewmh.wmStateDemandsAttention());
+  if (client.state.focused)
+    atoms.push_back(ewmh.wmStateFocused());
 
   switch (layer()) {
   case StackingList::LayerAbove:
@@ -2750,7 +2798,16 @@ void BlackboxWindow::updateEWMHAllowedActions() {
       atoms.push_back(ewmh.wmActionMaximizeVert());
     }
 
-    atoms.push_back(ewmh.wmActionFullscreen());
+    if (hasWindowFunction(WindowFunctionChangeLayer)) {
+      atoms.push_back(ewmh.wmActionAbove());
+      atoms.push_back(ewmh.wmActionBelow());
+    }
+
+    if (hasWindowFunction(WindowFunctionFullScreen))
+      atoms.push_back(ewmh.wmActionFullscreen());
+
+    if (hasWindowFunction(WindowFunctionStick))
+      atoms.push_back(ewmh.wmActionStick());
   }
 
   if (hasWindowFunction(WindowFunctionClose))
@@ -3131,6 +3188,20 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
         }
       }
     }
+
+    if (hasWindowFunction(WindowFunctionStick)) {
+      if (first == ewmh.wmStateSticky() ||
+          second == ewmh.wmStateSticky()) {
+        if (action == ewmh.wmStateAdd() ||
+            (action == ewmh.wmStateToggle() &&
+             ! client.ewmh.sticky)) {
+          setSticky(true);
+        } else if (action == ewmh.wmStateToggle() ||
+                   action == ewmh.wmStateRemove()) {
+          setSticky(false);
+        }
+      }
+    }
   }
 }
 
@@ -3260,6 +3331,7 @@ void BlackboxWindow::propertyNotifyEvent(const XPropertyEvent * const event) {
           group->addTransient(this);
       }
     }
+    setUrgent(client.wmhints.urgency);
     break;
   }
 

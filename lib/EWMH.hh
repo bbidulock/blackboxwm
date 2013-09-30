@@ -224,6 +224,8 @@ namespace bt {
     { return net_wm_state_below; }
     inline Atom wmStateDemandsAttention(void) const
     { return net_wm_state_demands_attention; }
+    inline Atom wmStateFocused(void) const
+    { return net_wm_state_focused; }
     inline Atom wmStateRemove(void) const
     { return 0; }
     inline Atom wmStateAdd(void) const
@@ -385,6 +387,7 @@ namespace bt {
       net_wm_state_above,
       net_wm_state_below,
       net_wm_state_demands_attention,
+      net_wm_state_focused,
       net_wm_state_fullscreen,
       net_wm_state_hidden,
       net_wm_state_maximized_horz,

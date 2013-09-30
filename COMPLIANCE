@@ -74,8 +74,8 @@ _NET_DESKTOP_NAMES:			supported
 _NET_ACTIVE_WINDOW:			supported
 _NET_WORKAREA:				supported
 _NET_SUPPORTING_WM_CHECK:		supported
-_NET_VIRTUAL_ROOTS:			NOT supported
-_NET_DESKTOP_LAYOUT:			NOT supported
+_NET_VIRTUAL_ROOTS:			NOT supported (n/a)
+_NET_DESKTOP_LAYOUT:			supported (trivial)
 _NET_SHOWING_DESKTOP:			NOT supported
 
 
@@ -112,24 +112,24 @@ _NET_WM_WINDOW_TYPE:			supported
 	_NET_WM_WINDOW_TYPE_NORMAL:	supported
 _NET_WM_STATE:				supported
 	_NET_WM_STATE_MODAL:		supported
-	_NET_WM_STATE_STICKY:		NOT supported
+	_NET_WM_STATE_STICKY:		supported (trivial)
 	_NET_WM_STATE_MAXIMIZED_VERT:	supported
 	_NET_WM_STATE_MAXIMIZED_HORZ:	supported
 	_NET_WM_STATE_SHADED:		supported
-	_NET_WM_STATE_SKIP_TASKBAR:	NOT supported
-	_NET_WM_STATE_SKIP_PAGER:	NOT supported
+	_NET_WM_STATE_SKIP_TASKBAR:	supported (trivial)
+	_NET_WM_STATE_SKIP_PAGER:	supported (trivial)
 	_NET_WM_STATE_HIDDEN:		supported
 	_NET_WM_STATE_FULLSCREEN:	supported
 	_NET_WM_STATE_ABOVE:		supported
 	_NET_WM_STATE_BELOW:		supported
-	_NET_WM_STATE_DEMANDS_ATTENTION: NOT supported
-	_NET_WM_STATE_FOCUSED:		 NOT supported
+	_NET_WM_STATE_DEMANDS_ATTENTION: supported
+	_NET_WM_STATE_FOCUSED:		 supported
 _NET_WM_ALLOWED_ACTIONS:		supported
 	_NET_WM_ACTION_MOVE:		supported
 	_NET_WM_ACTION_RESIZE:          supported
 	_NET_WM_ACTION_MINIMIZE:	supported
 	_NET_WM_ACTION_SHADE:		supported
- 	_NET_WM_ACTION_STICK:		NOT supported
+ 	_NET_WM_ACTION_STICK:		supported (trivial)
 	_NET_WM_ACTION_MAXIMIZE_HORZ:	supported
 	_NET_WM_ACTION_MAXIMIZE_VERT:	supported
 	_NET_WM_ACTION_FULLSCREEN:	supported
@@ -142,7 +142,7 @@ _NET_WM_STRUT_PARTIAL:			NOT supported
 _NET_WM_ICON_GEOMETRY:			NOT supported
 _NET_WM_ICON:				NOT supported
 _NET_WM_PID:				NOT supported
-_NET_WM_HANDLED_ICONS:			NOT supported
+_NET_WM_HANDLED_ICONS:			supported (trivial)
 _NET_WM_USER_TIME:			NOT supported
 _NET_WM_USER_TIME_WINDOW:		NOT supported
 _NET_FRAME_EXTENTS:			NOT supported
@@ -154,7 +154,7 @@ Section 6: Window Manager Protocols
 _NET_WM_PING:				NOT supported
 _NET_WM_SYNC_REQUEST:			NOT supported
 _NET_WM_SYNC_REQUEST_COUNTER:		NOT supported
-_NET_WM_FULLSCREEN_MONITORS:		supported
+_NET_WM_FULLSCREEN_MONITORS:		NOT supported
 _NET_WM_FULL_PLACEMENT:			NOT supported
 
 Other specifications:

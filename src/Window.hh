@@ -58,6 +58,7 @@ enum WindowFunction {
   WindowFunctionChangeWorkspace = 1<<6,
   WindowFunctionChangeLayer     = 1<<7,
   WindowFunctionFullScreen      = 1<<8,
+  WindowFunctionStick           = 1<<9,
   NoWindowFunctions             = 0,
   AllWindowFunctions            = (WindowFunctionResize |
                                    WindowFunctionMove |
@@ -67,7 +68,8 @@ enum WindowFunction {
                                    WindowFunctionClose |
                                    WindowFunctionChangeWorkspace |
                                    WindowFunctionChangeLayer |
-                                   WindowFunctionFullScreen)
+                                   WindowFunctionFullScreen |
+                                   WindowFunctionStick)
 };
 typedef unsigned short WindowFunctionFlags;
 
@@ -103,6 +105,8 @@ struct EWMH {
   unsigned int fullscreen   : 1;
   unsigned int above        : 1;
   unsigned int below        : 1;
+  unsigned int sticky       : 1;
+  unsigned int urgent       : 1;
 };
 struct MotifHints {
   WindowDecorationFlags decorations;
@@ -112,6 +116,7 @@ struct WMHints {
   bool accept_focus;
   Window window_group;
   unsigned long initial_state;
+  bool urgency;
 };
 struct WMNormalHints {
   long flags;
@@ -386,6 +391,14 @@ public:
   inline bool isFullScreen(void) const
   { return client.ewmh.fullscreen; }
   void setFullScreen(bool b);
+
+  inline bool isSticky(void) const
+  { return client.ewmh.sticky; }
+  void setSticky(bool b);
+
+  inline bool isUrgent(void) const
+  { return client.ewmh.urgent; }
+  void setUrgent(bool b);
 
   void reconfigure(void);
   void grabButtons(void);

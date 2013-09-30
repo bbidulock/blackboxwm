@@ -260,13 +260,14 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     ewmh.desktopNames(),
     ewmh.activeWindow(),
     ewmh.workarea(),
-    // _NET_VIRTUAL_ROOTS   is not supported
-    // _NET_SHOWING_DESKTOP is not supported
+    // _NET_VIRTUAL_ROOTS               is not supported
+    ewmh.desktopLayout(),
+    // _NET_SHOWING_DESKTOP             is not supported
     ewmh.startupID(),
 
     ewmh.closeWindow(),
     ewmh.moveresizeWindow(),
-    // _NET_WM_MOVERESIZE is not supported
+    // _NET_WM_MOVERESIZE               is not supported
 
     ewmh.wmPid(),
     ewmh.wmName(),
@@ -293,7 +294,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
     ewmh.wmState(),
     ewmh.wmStateModal(),
-    // _NET_WM_STATE_STICKY is not supported
+    ewmh.wmStateSticky(),
     ewmh.wmStateMaximizedVert(),
     ewmh.wmStateMaximizedHorz(),
     ewmh.wmStateShaded(),
@@ -303,28 +304,51 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     ewmh.wmStateFullscreen(),
     ewmh.wmStateAbove(),
     ewmh.wmStateBelow(),
+    ewmh.wmStateDemandsAttention(),
+    ewmh.wmStateFocused(),
 
     ewmh.wmAllowedActions(),
     ewmh.wmActionMove(),
     ewmh.wmActionResize(),
     ewmh.wmActionMinimize(),
     ewmh.wmActionShade(),
-    // _NET_WM_ACTION_STICK is not supported
+    ewmh.wmActionStick(),
     ewmh.wmActionMaximizeHorz(),
     ewmh.wmActionMaximizeVert(),
     ewmh.wmActionFullscreen(),
     ewmh.wmActionChangeDesktop(),
     ewmh.wmActionClose(),
+    ewmh.wmActionAbove(),
+    ewmh.wmActionBelow(),
 
     ewmh.wmStrut(),
-    ewmh.wmStrutPartial()
-    // _NET_WM_ICON_GEOMETRY is not supported
-    // _NET_WM_ICON          is not supported
-    // _NET_WM_PID           is not supported
-    // _NET_WM_HANDLED_ICONS is not supported
-    // _NET_WM_USER_TIME     is not supported
+    ewmh.wmStrutPartial(),
+    // _NET_WM_ICON_GEOMETRY            is not supported
+    // _NET_WM_ICON                     is not supported
+    // _NET_WM_PID                      is not supported
+    ewmh.wmHandledIcons()
+    // _NET_WM_USER_TIME                is not supported
+    // _NET_WM_USER_TIME_WINDOW         is not supported
+    // _NET_FRAME_EXTENTS               is not supported
+    // _NET_WM_OPAQUE_REGION            is not supported
+    // _NET_WM_BYPASS_COMPOSITOR        is not supported
 
-    // _NET_WM_PING          is not supported
+    // _NET_WM_PING                     is not supported
+    // _NET_WM_SYNC_REQUEST             is not supported
+    // _NET_WM_SYNC_REQUEST_COUNTER     is not supported
+    // _NET_WM_FULLSCREEN_MONITORS      is not supported
+    // _NET_WM_FULL_PLACEMENT           is not supported
+
+    // _NET_STARTUP_ID                  is not supported
+    // _NET_STARTUP_INFO                is not supported
+    // _NET_STARTUP_INFO_BEGIN          is not supported
+    //
+    // _NET_SYSTEM_TRAY_MESSAGE_DATA    is not supported
+    // _NET_SYSTEM_TRAY_OPCODE          is not supported
+    // _NET_SYSTEM_TRAY_ORIENTATION     is not supported
+    // _NET_SYSTEM_TRAY_VISUAL          is not supported
+    //
+    // _NET_WM_WINDOW_OPACITY           is not supported
   };
 
   ewmh.setSupported(screen_info.rootWindow(), supported,
