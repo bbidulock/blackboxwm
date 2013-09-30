@@ -285,6 +285,11 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     ewmh.wmWindowTypeSplash(),
     ewmh.wmWindowTypeDialog(),
     ewmh.wmWindowTypeNormal(),
+    ewmh.wmWindowTypeCombo(),
+    ewmh.wmWindowTypeDnd(),
+    ewmh.wmWindowTypeDropdownMenu(),
+    ewmh.wmWindowTypePopupMenu(),
+    ewmh.wmWindowTypeTooltip(),
 
     ewmh.wmState(),
     ewmh.wmStateModal(),
@@ -657,6 +662,8 @@ void BScreen::addWindow(Window w) {
   switch (win->windowType()) {
   case WindowTypeDesktop:
   case WindowTypeDock:
+  case WindowTypeTooltip:
+  case WindowTypeDnd:
     // these types should not be focused when managed
     break;
 

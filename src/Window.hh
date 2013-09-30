@@ -40,7 +40,12 @@ enum WindowType {
   WindowTypeNotification,
   WindowTypeSplash,
   WindowTypeToolbar,
-  WindowTypeUtility
+  WindowTypeUtility,
+  WindowTypeCombo,
+  WindowTypeDnd,
+  WindowTypeDropdownMenu,
+  WindowTypePopupMenu,
+  WindowTypeTooltip
 };
 
 enum WindowFunction {

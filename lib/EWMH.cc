@@ -742,5 +742,10 @@ bool bt::EWMH::isSupportedWMWindowType(Atom atom) const {
           atom == net_wm_window_type_utility ||
           atom == net_wm_window_type_splash ||
           atom == net_wm_window_type_dialog ||
-          atom == net_wm_window_type_normal);
+          atom == net_wm_window_type_normal ||
+          atom == net_wm_window_type_combo ||
+          atom == net_wm_window_type_dnd ||
+          atom == net_wm_window_type_dropdown_menu ||
+          atom == net_wm_window_type_popup_menu ||
+          atom == net_wm_window_type_tooltip);
 }

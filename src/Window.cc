@@ -94,6 +94,16 @@ static WindowType window_type_from_atom(const bt::EWMH &ewmh, Atom atom) {
     return WindowTypeToolbar;
   if (atom == ewmh.wmWindowTypeUtility())
     return WindowTypeUtility;
+  if (atom == ewmh.wmWindowTypeCombo())
+    return WindowTypeCombo;
+  if (atom == ewmh.wmWindowTypeDnd())
+    return WindowTypeDnd;
+  if (atom == ewmh.wmWindowTypeDropdownMenu())
+    return WindowTypeDropdownMenu;
+  if (atom == ewmh.wmWindowTypePopupMenu())
+    return WindowTypePopupMenu;
+  if (atom == ewmh.wmWindowTypeTooltip())
+    return WindowTypeTooltip;
   return WindowTypeNormal;
 }
 
@@ -132,6 +142,11 @@ static void update_decorations(WindowDecorationFlags &decorations,
   case WindowTypeDock:
   case WindowTypeSplash:
   case WindowTypeNotification:
+  case WindowTypeCombo:
+  case WindowTypeDnd:
+  case WindowTypePopupMenu:
+  case WindowTypeDropdownMenu:
+  case WindowTypeTooltip:
     decorations = NoWindowDecorations;
     functions   = NoWindowFunctions;
     break;
@@ -1086,6 +1101,14 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   switch (windowType()) {
   case WindowTypeDesktop:
     setLayer(StackingList::LayerDesktop);
+    break;
+
+  case WindowTypeTooltip:
+  case WindowTypeDnd:
+  case WindowTypeDropdownMenu:
+  case WindowTypePopupMenu:
+  case WindowTypeCombo:
+    setLayer(StackingList::LayerAbove);
     break;
 
   case WindowTypeDock:
@@ -3578,6 +3601,11 @@ void BlackboxWindow::enterNotifyEvent(const XCrossingEvent * const event) {
   switch (windowType()) {
   case WindowTypeDesktop:
   case WindowTypeDock:
+  case WindowTypeCombo:
+  case WindowTypeDropdownMenu:
+  case WindowTypePopupMenu:
+  case WindowTypeDnd:
+  case WindowTypeTooltip:
     // these types cannot be focused w/ sloppy focus
     return;
 
