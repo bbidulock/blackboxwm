@@ -125,7 +125,7 @@ bt::EWMH::EWMH(const Display &_display)
     { "_NET_WM_WINDOW_TYPE_POPUP_MENU", &net_wm_window_type_popup_menu },
     { "_NET_WM_WINDOW_TYPE_SPLASH", &net_wm_window_type_splash },
     { "_NET_WM_WINDOW_TYPE_TOOLBAR", &net_wm_window_type_toolbar },
-    { "_NET_WM_WINDOW_TYPE_TOOLTIP", &net_wm_window_type_toolbar },
+    { "_NET_WM_WINDOW_TYPE_TOOLTIP", &net_wm_window_type_tooltip },
     { "_NET_WM_WINDOW_TYPE_UTILITY", &net_wm_window_type_utility },
     { "_NET_WORKAREA", &net_workarea }
   };
