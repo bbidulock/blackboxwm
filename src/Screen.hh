@@ -63,6 +63,10 @@ private:
   Window empty_window;
   Window no_focus_window;
 
+  Atom wm_sn;
+  Window wm_sn_owner;
+  Window select_window;
+
   const bt::ScreenInfo& screen_info;
   Blackbox *_blackbox;
   Configmenu *configmenu;
@@ -124,6 +128,9 @@ public:
 
   inline Window noFocusWindow() const
   { return no_focus_window; }
+
+  inline Atom wmSelection() const
+  { return wm_sn; }
 
   // information about the screen
   inline const bt::ScreenInfo &screenInfo(void) const

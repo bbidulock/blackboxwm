@@ -73,26 +73,37 @@ void Blackbox::reload_rc(void) {
   reconfigure();
 }
 
-
 void Blackbox::init_icccm(void) {
-  const char* atoms[7] = {
-    "WM_COLORMAP_WINDOWS",
-    "WM_PROTOCOLS",
-    "WM_STATE",
+  const char* atoms[13] = {
+    "MANAGER",
+    "_MOTIF_WM_HINTS",
+    "SM_CLIENT_ID",
     "WM_CHANGE_STATE",
+    "WM_CLIENT_LEADER",
+    "WM_COLORMAP_NOTIFY",
+    "WM_COLORMAP_WINDOWS",
     "WM_DELETE_WINDOW",
+    "WM_PROTOCOLS",
+    "WM_SAVE_YOURSELF",
+    "WM_STATE",
     "WM_TAKE_FOCUS",
-    "_MOTIF_WM_HINTS"
+    "WM_WINDOW_ROLE"
   };
-  Atom atoms_return[7];
-  XInternAtoms(XDisplay(), const_cast<char **>(atoms), 7, false, atoms_return);
-  xa_wm_colormap_windows = atoms_return[0];
-  xa_wm_protocols = atoms_return[1];
-  xa_wm_state = atoms_return[2];
+  Atom atoms_return[13];
+  XInternAtoms(XDisplay(), const_cast<char **>(atoms), 13, false, atoms_return);
+  xa_manager = atoms_return[0];
+  motif_wm_hints = atoms_return[1];
+  xa_sm_client_id = atoms_return[2];
   xa_wm_change_state = atoms_return[3];
-  xa_wm_delete_window = atoms_return[4];
-  xa_wm_take_focus = atoms_return[5];
-  motif_wm_hints = atoms_return[6];
+  xa_wm_client_leader = atoms_return[4];
+  xa_wm_colormap_notify = atoms_return[5];
+  xa_wm_colormap_windows = atoms_return[6];
+  xa_wm_delete_window = atoms_return[7];
+  xa_wm_protocols = atoms_return[8];
+  xa_wm_save_yourself = atoms_return[9];
+  xa_wm_state = atoms_return[10];
+  xa_wm_take_focus = atoms_return[11];
+  xa_wm_window_role = atoms_return[12];
 
   _ewmh = new bt::EWMH(display());
 }
@@ -316,6 +327,15 @@ void Blackbox::process_event(XEvent *e) {
       }
     }
 
+    break;
+  }
+
+  case SelectionClear: {
+    // shutdown if lost WM_S[n] selection
+    Atom selection = e->xselectionclear.selection;
+    for (unsigned int i = 0; i < screen_list_count; ++i)
+      if (selection == screen_list[i]->wmSelection())
+        setRunState(SHUTDOWN);
     break;
   }
 

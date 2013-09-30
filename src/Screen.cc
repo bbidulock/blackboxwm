@@ -58,11 +58,70 @@ static int anotherWMRunning(Display *, XErrorEvent *) {
   return -1;
 }
 
+extern "C" {
+
+static Bool selectionReleased(Display *d, XEvent *e, XPointer arg) {
+  if (e->type == DestroyNotify) {
+    if (e->xdestroywindow.window == (Window)arg) {
+      return True;
+    }
+  }
+  return False;
+}
+
+}
+
 
 BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   screen_info(bb->display().screenInfo(scrn)), _blackbox(bb),
   _resource(bb->resource().screenResource(scrn))
 {
+  char name[32];
+
+  snprintf(name, 32, "WM_S%d", screen_info.screenNumber());
+  wm_sn = XInternAtom(_blackbox->XDisplay(), name, False);
+
+  select_window =
+    XCreateSimpleWindow(_blackbox->XDisplay(), screen_info.rootWindow(),
+                        0, screen_info.height(), 1, 1, 0, 0L, 0L);
+
+  XGrabServer(_blackbox->XDisplay());
+
+  wm_sn_owner = XGetSelectionOwner(_blackbox->XDisplay(), wm_sn);
+
+  if (wm_sn_owner != None) {
+    XSelectInput(_blackbox->XDisplay(), wm_sn_owner, StructureNotifyMask);
+    XSync(_blackbox->XDisplay(), False);
+  }
+
+  XUngrabServer(_blackbox->XDisplay());
+
+  XSetSelectionOwner(_blackbox->XDisplay(), wm_sn, select_window, CurrentTime);
+
+  if (wm_sn_owner != None) {
+    XEvent event_return;
+    XIfEvent(_blackbox->XDisplay(), &event_return, &selectionReleased,
+             (XPointer) wm_sn_owner);
+    wm_sn_owner = None;
+  }
+
+  XClientMessageEvent manager_event;
+  manager_event.type = ClientMessage;
+  manager_event.window = screen_info.rootWindow();
+  manager_event.message_type = _blackbox->managerAtom();
+  manager_event.format = 32;
+  manager_event.data.l[0] = CurrentTime; // FIXME: timestamp
+  manager_event.data.l[1] = wm_sn;
+  manager_event.data.l[2] = select_window;
+  manager_event.data.l[3] = 2;
+  manager_event.data.l[4] = 0;
+  XSendEvent(_blackbox->XDisplay(), screen_info.rootWindow(), False,
+      StructureNotifyMask, (XEvent *)&manager_event);
+  XSync(_blackbox->XDisplay(), False);
+
+  // We own the WM_Sn selection at this point, but a running window manager
+  // might not be ICCCM compliant....
+
   running = true;
   XErrorHandler old = XSetErrorHandler((XErrorHandler) anotherWMRunning);
   XSelectInput(screen_info.display().XDisplay(),
@@ -329,7 +388,8 @@ BScreen::~BScreen(void) {
 
   if (geom_window != None)
     XDestroyWindow(_blackbox->XDisplay(), geom_window);
-  XDestroyWindow(_blackbox->XDisplay(), empty_window);
+  if (empty_window != None)
+    XDestroyWindow(_blackbox->XDisplay(), empty_window);
 
   std::for_each(workspacesList.begin(), workspacesList.end(),
                 bt::PointerAssassin());
@@ -363,6 +423,8 @@ BScreen::~BScreen(void) {
                                    _blackbox->ewmh().workarea());
   _blackbox->ewmh().removeProperty(screen_info.rootWindow(),
                                    _blackbox->ewmh().showingDesktop());
+  if (select_window != None)
+    XDestroyWindow(_blackbox->XDisplay(), select_window);
 }
 
 
