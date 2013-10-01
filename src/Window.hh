@@ -179,6 +179,9 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
     WMHints wmhints;
     WMNormalHints wmnormal;
     WMProtocols wmprotocols;
+
+    Time user_time;
+    bool have_user_time;
   } client;
 
   /*
@@ -399,6 +402,9 @@ public:
   inline bool isUrgent(void) const
   { return client.ewmh.urgent; }
   void setUrgent(bool b);
+
+  inline bool dontFocus(void) const
+  { return (client.have_user_time && client.user_time == 0); }
 
   void reconfigure(void);
   void grabButtons(void);

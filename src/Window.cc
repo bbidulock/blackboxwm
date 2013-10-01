@@ -951,7 +951,6 @@ static Window readTransientInfo(Blackbox *blackbox,
   return trans_for;
 }
 
-
 static bool readState(unsigned long &current_state,
                       Blackbox *blackbox,
                       Window window) {
@@ -1171,6 +1170,9 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
       _screen->addStrut(client.strut);
     }
   }
+
+  client.have_user_time =
+    blackbox->ewmh().readWMUserTime(client.window, client.user_time);
 
   /*
     if we just managed the group leader for an existing group, move

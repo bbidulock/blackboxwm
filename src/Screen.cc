@@ -325,11 +325,10 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     ewmh.wmStrutPartial(),
     // _NET_WM_ICON_GEOMETRY            is not supported
     // _NET_WM_ICON                     is not supported
-    // _NET_WM_PID                      is not supported
-    ewmh.wmHandledIcons()
-    // _NET_WM_USER_TIME                is not supported
-    // _NET_WM_USER_TIME_WINDOW         is not supported
-    // _NET_FRAME_EXTENTS               is not supported
+    ewmh.wmHandledIcons(),
+    ewmh.wmUserTime(),
+    ewmh.wmUserTimeWindow(),
+    ewmh.wmFrameExtents()
     // _NET_WM_OPAQUE_REGION            is not supported
     // _NET_WM_BYPASS_COMPOSITOR        is not supported
 
@@ -695,10 +694,12 @@ void BScreen::addWindow(Window w) {
     if (!_blackbox->startingUp() &&
         (!_blackbox->activeScreen() || _blackbox->activeScreen() == this) &&
         (win->isTransient() || _blackbox->resource().focusNewWindows())) {
-      XSync(_blackbox->XDisplay(), False); // make sure the frame is mapped..
-      win->setInputFocus();
-      break;
+      if (!win->dontFocus()) {
+        XSync(_blackbox->XDisplay(), False); // make sure the frame is mapped..
+        win->setInputFocus();
+      }
     }
+    break;
   }
 }
 

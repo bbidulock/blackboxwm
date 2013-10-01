@@ -141,10 +141,10 @@ _NET_WM_STRUT:				supported
 _NET_WM_STRUT_PARTIAL:			supported (trivial)
 _NET_WM_ICON_GEOMETRY:			NOT supported (n/a)
 _NET_WM_ICON:				NOT supported (n/a)
-_NET_WM_PID:				NOT supported
+_NET_WM_PID:				supported
 _NET_WM_HANDLED_ICONS:			supported (trivial)
-_NET_WM_USER_TIME:			NOT supported
-_NET_WM_USER_TIME_WINDOW:		NOT supported
+_NET_WM_USER_TIME:			supported
+_NET_WM_USER_TIME_WINDOW:		supported
 _NET_FRAME_EXTENTS:			supported
 _NET_WM_OPAQUE_REGION:			NOT supported
 _NET_WM_BYPASS_COMPOSITOR:		NOT supported

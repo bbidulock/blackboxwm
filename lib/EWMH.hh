@@ -274,7 +274,7 @@ namespace bt {
     { return net_wm_handled_icons; }
     inline Atom wmUserTime(void) const
     { return net_wm_user_time; }
-    inline Atom wmUserTimerWindow(void) const
+    inline Atom wmUserTimeWindow(void) const
     { return net_wm_user_time_window; }
     inline Atom wmFrameExtents(void) const
     { return net_frame_extents; }
@@ -305,6 +305,7 @@ namespace bt {
     bool readWMPid(Window target, unsigned int &pid) const;
     // bool readWMHandledIcons(Window target, ...) const;
     bool readWMUserTime(Window target, Time &user_time) const;
+    bool readWMUserTimeWindow(Window target, Window &window) const;
     // void readFrameExtents(Window target, ...) const;
     void setFrameExtents(Window target, Strut& borders) const;
 

@@ -651,9 +651,24 @@ bool bt::EWMH::readWMPid(Window target, unsigned int &pid) const {
 
 
 bool bt::EWMH::readWMUserTime(Window target, Time &user_time) const {
+  Window window = target;
+  if (!readWMUserTimeWindow(target, window)) {
+    window = target;
+  }
   unsigned char* data = 0;
-  if (getProperty(target, XA_CARDINAL, net_wm_user_time, &data)) {
+  if (getProperty(window, XA_CARDINAL, net_wm_user_time, &data)) {
     user_time = *(reinterpret_cast<unsigned long *>(data));
+
+    XFree(data);
+    return true;
+  }
+  return false;
+}
+
+bool bt::EWMH::readWMUserTimeWindow(Window target, Window &window) const {
+  unsigned char* data = 0;
+  if (getProperty(target, XA_WINDOW, net_wm_user_time_window, &data)) {
+    window = *(reinterpret_cast<unsigned long *>(data));
 
     XFree(data);
     return true;
