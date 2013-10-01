@@ -1209,6 +1209,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   // apply the size and gravity to the frame
   const WindowStyle &style = _screen->resource().windowStyle();
   frame.margin = ::update_margin(client.decorations, style);
+  blackbox->ewmh().setFrameExtents(client.window, frame.margin);
   frame.rect = ::applyGravity(client.rect,
                               frame.margin,
                               client.wmnormal.win_gravity);
@@ -1756,6 +1757,7 @@ void BlackboxWindow::reconfigure(void) {
   if (isMaximized()) {
     // update the frame margin in case the style has changed
     frame.margin = ::update_margin(client.decorations, style);
+    blackbox->ewmh().setFrameExtents(client.window, frame.margin);
 
     // make sure maximized windows have the correct size after a style
     // change
@@ -1771,6 +1773,7 @@ void BlackboxWindow::reconfigure(void) {
 
     // update the frame margin in case the style has changed
     frame.margin = ::update_margin(client.decorations, style);
+    blackbox->ewmh().setFrameExtents(client.window, frame.margin);
 
     // get the frame window geometry from the client window geometry
     // calculated above
@@ -2584,6 +2587,7 @@ void BlackboxWindow::setFullScreen(bool b) {
                           WindowFunctionShade);
     const WindowStyle &style = _screen->resource().windowStyle();
     frame.margin = ::update_margin(client.decorations, style);
+    blackbox->ewmh().setFrameExtents(client.window, frame.margin);
 
     /*
      * Note: we don't call ::constrain() here, because many
@@ -2613,6 +2617,7 @@ void BlackboxWindow::setFullScreen(bool b) {
                          client.wmprotocols);
     const WindowStyle &style = _screen->resource().windowStyle();
     frame.margin = ::update_margin(client.decorations, style);
+    blackbox->ewmh().setFrameExtents(client.window, frame.margin);
 
     if (isVisible())
       changeLayer(StackingList::LayerNormal);

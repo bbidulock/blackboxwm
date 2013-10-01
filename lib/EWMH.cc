@@ -662,6 +662,17 @@ bool bt::EWMH::readWMUserTime(Window target, Time &user_time) const {
 }
 
 
+void bt::EWMH::setFrameExtents(Window target, Strut& borders) const {
+  long array[4];
+  array[0] = borders.left;
+  array[1] = borders.right;
+  array[2] = borders.top;
+  array[3] = borders.bottom;
+  setProperty(target, XA_CARDINAL, net_frame_extents,
+              reinterpret_cast<unsigned char *>(array), 4);
+}
+
+
 // utility
 
 void bt::EWMH::removeProperty(Window target, Atom atom) const {

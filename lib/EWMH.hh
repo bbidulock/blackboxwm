@@ -306,6 +306,7 @@ namespace bt {
     // bool readWMHandledIcons(Window target, ...) const;
     bool readWMUserTime(Window target, Time &user_time) const;
     // void readFrameExtents(Window target, ...) const;
+    void setFrameExtents(Window target, Strut& borders) const;
 
     // Window Manager Protocols
     inline Atom wmPing(void) const
