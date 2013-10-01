@@ -2084,7 +2084,7 @@ void BScreen::updateWorkareaHint(void) const {
 
 
 void BScreen::updateDesktopNamesHint(void) const {
-  std::vector<bt::ustring> names(workspacesList.size());
+  std::vector<bt::ustring> names;
   WorkspaceList::const_iterator it = workspacesList.begin();
   const WorkspaceList::const_iterator end = workspacesList.end();
   for (; it != end; ++it)
