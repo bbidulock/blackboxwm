@@ -146,8 +146,8 @@ _NET_WM_HANDLED_ICONS:			supported (trivial)
 _NET_WM_USER_TIME:			supported
 _NET_WM_USER_TIME_WINDOW:		supported
 _NET_FRAME_EXTENTS:			supported
-_NET_WM_OPAQUE_REGION:			NOT supported
-_NET_WM_BYPASS_COMPOSITOR:		NOT supported
+_NET_WM_OPAQUE_REGION:			NOT supported (n/a)
+_NET_WM_BYPASS_COMPOSITOR:		NOT supported (n/a)
 
 Section 6: Window Manager Protocols
 
@@ -155,7 +155,7 @@ _NET_WM_PING:				NOT supported
 _NET_WM_SYNC_REQUEST:			NOT supported
 _NET_WM_SYNC_REQUEST_COUNTER:		NOT supported
 _NET_WM_FULLSCREEN_MONITORS:		NOT supported
-_NET_WM_FULL_PLACEMENT:			NOT supported
+_NET_WM_FULL_PLACEMENT:			NOT supported (n/a)
 
 Other specifications:
 
@@ -167,14 +167,14 @@ _NET_STARTUP_INFO_BEGIN:		supported
 
 System Tray Specification:
 
-_NET_SYSTEM_TRAY_MESSAGE_DATA:		NOT supported
-_NET_SYSTEM_TRAY_OPCODE:		NOT supported
-_NET_SYSTEM_TRAY_ORIENTATION:		NOT supported
-_NET_SYSTEM_TRAY_VISUAL:		NOT supported
+_NET_SYSTEM_TRAY_MESSAGE_DATA:		NOT supported (n/a)
+_NET_SYSTEM_TRAY_OPCODE:		NOT supported (n/a)
+_NET_SYSTEM_TRAY_ORIENTATION:		NOT supported (n/a)
+_NET_SYSTEM_TRAY_VISUAL:		NOT supported (n/a)
 
 Composite Manager Specification:
 
-_NET_WM_WINDOW_OPACITY:			NOT supported
+_NET_WM_WINDOW_OPACITY:			NOT supported (n/a)
 
 
 ------------------------------------------------------------------------

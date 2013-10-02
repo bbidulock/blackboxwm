@@ -328,7 +328,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     ewmh.wmHandledIcons(),
     ewmh.wmUserTime(),
     ewmh.wmUserTimeWindow(),
-    ewmh.wmFrameExtents(),
+    ewmh.wmFrameExtents()
     // _NET_WM_OPAQUE_REGION            is not supported
     // _NET_WM_BYPASS_COMPOSITOR        is not supported
 
@@ -337,10 +337,6 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     // _NET_WM_SYNC_REQUEST_COUNTER     is not supported
     // _NET_WM_FULLSCREEN_MONITORS      is not supported
     // _NET_WM_FULL_PLACEMENT           is not supported
-
-    ewmh.startupID(),
-    ewmh.startupInfo(),
-    ewmh.startupInfoBegin()
 
     // _NET_SYSTEM_TRAY_MESSAGE_DATA    is not supported
     // _NET_SYSTEM_TRAY_OPCODE          is not supported
