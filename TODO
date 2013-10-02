@@ -1,5 +1,17 @@
 -- TODO for Blackbox - an X11 Window manager
 
+New to do items:
+
+* add support for _NET_RESTACK_WINDOW.
+
+* add support for _NET_SHOWING_DESKTOP.
+
+* set WM_CLIENT_MACHINE on check window.
+
+* set WM_NAME and WM_CLASS on check window.
+
+Old to do items:
+
 * i18n/l10n (translations) support, need something else that can
   translate into either UTF-8 (needed for NETWM and Xft) or locale
   (for Xmb).

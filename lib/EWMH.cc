@@ -688,6 +688,21 @@ void bt::EWMH::setFrameExtents(Window target, Strut& borders) const {
 }
 
 
+bool bt::EWMH::readStartupID(Window target, bt::ustring &id) const {
+  if (!hasUnicode())
+    return false; // cannot convert UTF-8 to UTF-32
+
+  unsigned char *data = 0;
+  unsigned long nitems;
+  if (getListProperty(target, utf8_string, net_startup_id,
+                      &data, &nitems) && nitems > 0) {
+    id = toUtf32(reinterpret_cast<char*>(data));
+    XFree(data);
+  }
+  
+  return (!id.empty());
+}
+
 // utility
 
 void bt::EWMH::removeProperty(Window target, Atom atom) const {

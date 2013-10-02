@@ -328,7 +328,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     ewmh.wmHandledIcons(),
     ewmh.wmUserTime(),
     ewmh.wmUserTimeWindow(),
-    ewmh.wmFrameExtents()
+    ewmh.wmFrameExtents(),
     // _NET_WM_OPAQUE_REGION            is not supported
     // _NET_WM_BYPASS_COMPOSITOR        is not supported
 
@@ -338,10 +338,10 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     // _NET_WM_FULLSCREEN_MONITORS      is not supported
     // _NET_WM_FULL_PLACEMENT           is not supported
 
-    // _NET_STARTUP_ID                  is not supported
-    // _NET_STARTUP_INFO                is not supported
-    // _NET_STARTUP_INFO_BEGIN          is not supported
-    //
+    ewmh.startupID(),
+    ewmh.startupInfo(),
+    ewmh.startupInfoBegin()
+
     // _NET_SYSTEM_TRAY_MESSAGE_DATA    is not supported
     // _NET_SYSTEM_TRAY_OPCODE          is not supported
     // _NET_SYSTEM_TRAY_ORIENTATION     is not supported
@@ -2005,8 +2005,12 @@ void BScreen::clientMessageEvent(const XClientMessageEvent * const event) {
       }
       while (number < workspaceCount());
     }
+  } else if (event->message_type == _blackbox->ewmh().desktopGeometry()) {
+  } else if (event->message_type == _blackbox->ewmh().desktopViewport()) {
   } else if (event->message_type == _blackbox->ewmh().desktopNames()) {
     readDesktopNames();
+  } else if (event->message_type == _blackbox->ewmh().startupInfoBegin()) {
+  } else if (event->message_type == _blackbox->ewmh().startupInfo()) {
   } else if (event->message_type == _blackbox->ewmh().currentDesktop()) {
     const unsigned int workspace = event->data.l[0];
     if (workspace < workspaceCount() && workspace != current_workspace)

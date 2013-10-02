@@ -182,6 +182,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
 
     Time user_time;
     bool have_user_time;
+    bt::ustring startup_id;
   } client;
 
   /*
@@ -405,6 +406,10 @@ public:
 
   inline bool dontFocus(void) const
   { return (client.have_user_time && client.user_time == 0); }
+
+  const bt::ustring &startupID(void) const
+  { return client.startup_id; }
+
 
   void reconfigure(void);
   void grabButtons(void);

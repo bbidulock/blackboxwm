@@ -1174,6 +1174,8 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
   client.have_user_time =
     blackbox->ewmh().readWMUserTime(client.window, client.user_time);
 
+  blackbox->ewmh().readStartupID(client.window, client.startup_id);
+
   /*
     if we just managed the group leader for an existing group, move
     all group transients to this window

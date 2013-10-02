@@ -308,6 +308,7 @@ namespace bt {
     bool readWMUserTimeWindow(Window target, Window &window) const;
     // void readFrameExtents(Window target, ...) const;
     void setFrameExtents(Window target, Strut& borders) const;
+    bool readStartupID(Window target, bt::ustring &id) const;
 
     // Window Manager Protocols
     inline Atom wmPing(void) const
