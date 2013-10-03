@@ -138,4 +138,4 @@ list below is a general list and does not cover all changes in detail.
     automatically convert to the new format.
   - both the look and feel have been updated, feedback is encouraged
 
-# vim: set ft=README tw=72 nocin nosi fo+=tcqlorn:
+# vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:
