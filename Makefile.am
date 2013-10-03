@@ -1,7 +1,5 @@
 # Makefile.am for Blackbox - an X11 Window manager
 
-AUTOMAKE_OPTIONS	= foreign
-
 ACLOCAL_AMFLAGS		= -I m4
 
 SUBDIRS			= data \
