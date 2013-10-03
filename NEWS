@@ -1,5 +1,50 @@
 -- ChangeLog for Blackbox 0.70.x
+
+Changes from 0.70.1 to blackbox-0.70.2
+-----------------------------------------------
 
+  - minor corrections to _NET_SUPPORTED and COMPLIANCE
+  - prepare to support _NET_STARTUP_ID and friends
+  - support _NET_WM_USER_TIME/_NET_WM_USER_TIME_WINDOW
+  - added support for _NET_FRAME_EXTENTS
+  - fix _NET_DESKTOP_NAMES bug
+  - correct typo
+  - tweak compliance
+  - more EWMH support: all types, states and actions
+  - add support for additional _NET_WM_WINDOW_TYPEs
+  - added WM_Sn MANAGER selection compliance
+  - prepare for _NET_SHOWING_DESKTOP support
+  - add missing EWMH atoms
+  - add support for _NET_WM_STRUT_PARTIAL
+  - added support for _NET_WM_WINDOW_TYPE_NOTIFICATION
+  - marked more EWMH support
+  - typo in patch
+  - correct compiler warnings
+  - automake corrections
+  - autoconf corrections
+  - applied nls-codesets.patch from pld-linux
+  - fix runaway workspace creation ewmh.patch
+  - applied patch from github.com/tkoskine/blackboxwm
+  - applied bbdock.patch from archlinux
+  - applied bsetbg-feh.patch from archlinux
+  - applied textpropertytostring-unconditional.patch from debian
+
+  Following changes from blackboxwm CVS:
+
+  - apply patch from debian to compile with gcc 4.3.0
+  - fix typo
+  - apply patch from 1696203, which enables window snapping for
+    windows on all workspaces
+  - #include <stdlib.h>, as pointed out in bug 1709671
+  - XFT is a compile time option, show it in -v output
+  - s,Bitstream Vera Sans,Sans Serif,g
+  - run on kubuntu
+  - avoid dangling pointers by setting them to zero after deleting
+  - silence warnings from gcc 4.0.2
+  - compile with gcc 2.9x
+  - get rid of the GC/Xft cache... it's a constant source of
+    trouble and doesn't really give us a whole lot otherwise
+
 Changes from 0.70.0 to 0.70.1:
 ------------------------------------------------------------------------------
 
@@ -61,7 +106,7 @@ Changes from 0.70.0 to 0.70.1:
   - fix focus problems caused by applications that try to fake
     fullscreen by setting focus to an override-redirect window
     (e.g. rdekstop)
-
+
 Changes from 0.65.x to 0.70.0:
 ------------------------------------------------------------------------------
 
@@ -92,3 +137,5 @@ list below is a general list and does not cover all changes in detail.
   - the format of ~/.blackboxrc has changed.  Blackbox will
     automatically convert to the new format.
   - both the look and feel have been updated, feedback is encouraged
+
+# vim: set ft=README tw=72 nocin nosi fo+=tcqlorn:
