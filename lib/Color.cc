@@ -138,11 +138,11 @@ bt::ColorCache::~ColorCache(void)
 
 
 unsigned long bt::ColorCache::find(unsigned int screen, int r, int g, int b) {
-  if (r < 0 && r > 255)
+  if (r < 0 || r > 255)
     r = 0;
-  if (g < 0 && g > 255)
+  if (g < 0 || g > 255)
     g = 0;
-  if (b < 0 && b > 255)
+  if (b < 0 || b > 255)
     b = 0;
 
   // see if we have allocated this color before
@@ -187,11 +187,11 @@ unsigned long bt::ColorCache::find(unsigned int screen, int r, int g, int b) {
 
 
 void bt::ColorCache::release(unsigned int screen, int r, int g, int b) {
-  if (r < 0 && r > 255)
+  if (r < 0 || r > 255)
     r = 0;
-  if (g < 0 && g > 255)
+  if (g < 0 || g > 255)
     g = 0;
-  if (b < 0 && b > 255)
+  if (b < 0 || b > 255)
     b = 0;
 
   RGB rgb(screen, r, g, b);
