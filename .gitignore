@@ -37,7 +37,6 @@ libtool
 *.lo
 *.log
 ltmain.sh
-m4/
 Makefile
 Makefile.in
 missing
