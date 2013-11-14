@@ -115,7 +115,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     .value = (unsigned char*) hostname,
     .encoding = XA_STRING,
     .format = 8,
-    .nitems = 1
+    .nitems = strnlen(hostname,64)
   };
 
   XClassHint class_hint;
