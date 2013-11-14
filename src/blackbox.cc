@@ -395,7 +395,7 @@ void Blackbox::timeout(bt::Timer *) {
 }
 
 
-Blackbox::Blackbox(char **m_argv, const char *dpy_name,
+Blackbox::Blackbox(char **m_argv, int m_argc, const char *dpy_name,
                    const std::string& rc, bool multi_head)
   : bt::Application(m_argv[0], dpy_name, multi_head),
     grab_count(0u), _resource(rc)
@@ -407,6 +407,7 @@ Blackbox::Blackbox(char **m_argv, const char *dpy_name,
     fprintf(stderr, "cannot set locale modifiers\n");
 
   argv = m_argv;
+  argc = m_argc;
 
   active_screen = 0;
   focused_window = (BlackboxWindow *) 0;

@@ -47,11 +47,13 @@ Section 4: Client to Window Manager Communication
 Section 5: Session Management
 
 5.1 Client Support:
-        WM_CLIENT_LEADER                NOT supported
+	SM_CLIENT_ID			NOT supported
+	WM_CLIENT_LEADER		NOT supported
+	WM_WINDOW_ROLE			NOT supported
 
 5.2 Window Manager Support:		NOT supported
-        WM_COMMAND                      NOT supported
-        WM_SAVE_YOURSELF                NOT supported
+	WM_COMMAND			NOT supported
+	WM_SAVE_YOURSELF		NOT supported
 
 	Blackbox does not (yet) support the X11 Session Management
 	Protocol, and as such does not work in such an environment.
@@ -162,8 +164,8 @@ Other specifications:
 Startup Notification:
 
 _NET_STARTUP_ID:			supported
-_NET_STARTUP_INFO:			supported
-_NET_STARTUP_INFO_BEGIN:		supported
+_NET_STARTUP_INFO:			NOT supported
+_NET_STARTUP_INFO_BEGIN:		NOT supported
 
 System Tray Specification:
 

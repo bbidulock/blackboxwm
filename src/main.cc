@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
          sizeof(Slit));
 #endif
 
-  Blackbox blackbox(argv, dpy_name, rc_file, multi_head);
+  Blackbox blackbox(argv, argc, dpy_name, rc_file, multi_head);
   blackbox.run();
   return 0;
 }

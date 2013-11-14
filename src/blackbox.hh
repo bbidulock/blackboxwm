@@ -79,6 +79,7 @@ private:
   MenuTimestampList menuTimestamps;
 
   char **argv;
+  int argc;
 
   Atom xa_manager, motif_wm_hints, xa_sm_client_id, xa_wm_change_state,
        xa_wm_client_leader, xa_wm_colormap_notify, xa_wm_colormap_windows,
@@ -102,12 +103,15 @@ private:
   void timeout(bt::Timer *);
 
 public:
-  Blackbox(char **m_argv, const char *dpy_name, const std::string& rc,
+  Blackbox(char **m_argv, int argc, const char *dpy_name, const std::string& rc,
            bool multi_head);
   ~Blackbox(void);
 
   void XGrabServer(void);
   void XUngrabServer(void);
+
+  char **argV(void) const { return argv; }
+  int argC(void) const { return argc; }
 
   inline BlackboxResource &resource(void)
   { return _resource; }

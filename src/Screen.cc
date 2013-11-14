@@ -22,6 +22,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include "../version.h"
 #include "Screen.hh"
 #include "Clientmenu.hh"
 #include "Configmenu.hh"
@@ -104,6 +105,31 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
              (XPointer) wm_sn_owner);
     wm_sn_owner = None;
   }
+
+  const bt::EWMH& ewmh = _blackbox->ewmh();
+
+  char hostname[64] = { 0, };
+  gethostname(hostname, 64);
+
+  XTextProperty hname = {
+    .value = (unsigned char*) hostname,
+    .encoding = XA_STRING,
+    .format = 8,
+    .nitems = 1
+  };
+
+  XClassHint class_hint;
+  class_hint.res_name = strdup("blackbox");
+  class_hint.res_class = strdup("Blackbox");
+
+  snprintf(name, 32, "Blackbox %s", __blackbox_version);
+
+  Xutf8SetWMProperties(_blackbox->XDisplay(), select_window, name, NULL,
+      _blackbox->argV(), _blackbox->argC(), NULL, NULL, &class_hint);
+  XSetWMClientMachine(_blackbox->XDisplay(), select_window, &hname);
+
+  ewmh.setWMPid(select_window, getpid());
+  ewmh.setWMName(select_window,bt::toUnicode(name));
 
   XClientMessageEvent manager_event;
   manager_event.type = ClientMessage;
@@ -225,13 +251,19 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
 
   InitMenu();
 
-  const bt::EWMH& ewmh = _blackbox->ewmh();
   /*
     ewmh requires the window manager to set a property on a window it creates
     which is the id of that window.  We must also set an equivalent property
     on the root window.  Then we must set _NET_WM_NAME on the child window
     to be the name of the wm.
   */
+  Xutf8SetWMProperties(_blackbox->XDisplay(), geom_window, name, NULL,
+      _blackbox->argV(), _blackbox->argC(), NULL, NULL, &class_hint);
+  XSetWMClientMachine(_blackbox->XDisplay(), geom_window, &hname);
+
+  free(class_hint.res_name);
+  free(class_hint.res_class);
+
   ewmh.setSupportingWMCheck(screen_info.rootWindow(), geom_window);
   ewmh.setSupportingWMCheck(geom_window, geom_window);
   ewmh.setWMPid(geom_window, getpid());
