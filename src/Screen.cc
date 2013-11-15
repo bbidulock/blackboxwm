@@ -125,25 +125,11 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     .res_class = wm_class
   };
 
-  static char select_name[] = "selection";
+  static char wm_name[] = "Blackbox " __blackbox_version;
 
-  XTextProperty select_role = {
-    .value = (unsigned char *) select_name,
-    .encoding = XA_STRING,
-    .format = 8,
-    .nitems = strlen(select_name)
-  };
-
-  snprintf(name, 32, "Blackbox %s", __blackbox_version);
-
-  XSetTextProperty(_blackbox->XDisplay(), select_window, &select_role,
-      _blackbox->wmWindowRoleAtom());
-  Xutf8SetWMProperties(_blackbox->XDisplay(), select_window, name, NULL,
+  Xutf8SetWMProperties(_blackbox->XDisplay(), select_window, wm_name, NULL,
       _blackbox->argV(), _blackbox->argC(), NULL, NULL, &class_hint);
   XSetWMClientMachine(_blackbox->XDisplay(), select_window, &hname);
-
-  ewmh.setWMPid(select_window, getpid());
-  ewmh.setWMName(select_window,bt::toUnicode(name));
 
   XClientMessageEvent manager_event;
   manager_event.type = ClientMessage;
@@ -271,25 +257,10 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     on the root window.  Then we must set _NET_WM_NAME on the child window
     to be the name of the wm.
   */
-  static char check_name[] = "check";
-
-  XTextProperty check_role = {
-    .value = (unsigned char *) check_name,
-    .encoding = XA_STRING,
-    .format = 8,
-    .nitems = strlen(check_name)
-  };
-
-  XSetTextProperty(_blackbox->XDisplay(), geom_window, &check_role,
-      _blackbox->wmWindowRoleAtom());
-  Xutf8SetWMProperties(_blackbox->XDisplay(), geom_window, name, NULL,
-      _blackbox->argV(), _blackbox->argC(), NULL, NULL, &class_hint);
-  XSetWMClientMachine(_blackbox->XDisplay(), geom_window, &hname);
-
-  ewmh.setSupportingWMCheck(screen_info.rootWindow(), geom_window);
-  ewmh.setSupportingWMCheck(geom_window, geom_window);
-  ewmh.setWMPid(geom_window, getpid());
-  ewmh.setWMName(geom_window, bt::toUnicode(name));
+  ewmh.setSupportingWMCheck(screen_info.rootWindow(), select_window);
+  ewmh.setSupportingWMCheck(select_window, select_window);
+  ewmh.setWMPid(select_window, getpid());
+  ewmh.setWMName(select_window, bt::toUnicode(wm_name));
 
   ewmh.setCurrentDesktop(screen_info.rootWindow(), 0);
   ewmh.setNumberOfDesktops(screen_info.rootWindow(),
