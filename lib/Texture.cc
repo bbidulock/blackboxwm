@@ -88,6 +88,8 @@ void bt::Texture::setDescription(const std::string &d) {
         addTexture(bt::Texture::Elliptic);
       else if (descr.find("horizontal") != std::string::npos)
         addTexture(bt::Texture::Horizontal);
+      else if (descr.find("splitvertical") != std::string::npos)
+        addTexture(bt::Texture::SplitVertical);
       else if (descr.find("vertical") != std::string::npos)
         addTexture(bt::Texture::Vertical);
       else
