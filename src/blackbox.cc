@@ -437,7 +437,7 @@ Blackbox::Blackbox(char **m_argv, int m_argc, const char *dpy_name,
   }
 
   if (managed == 0) {
-    fprintf(stderr, "%s: no managable screens found, exiting...\n",
+    fprintf(stderr, "%s: no manageable screens found, exiting...\n",
             applicationName().c_str());
     ::exit(3);
   }
