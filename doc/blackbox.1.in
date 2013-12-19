@@ -251,7 +251,7 @@ learn more about dockapps refer to the web sites
 mentioned in the Description. Dockapps 
 automatically run in the slit in most cases, but
 may require a special command switch.  
-Often, -w is used for "withdrawn" into the slit.
+Often, \-w is used for "withdrawn" into the slit.
 
 gkrellm is a very useful and modern dockapp that
 gives the user near real time information on 
@@ -280,8 +280,8 @@ in the correct order by the slit.
 .EX 8
 .B i.e.
 #!/bin/bash
-speyes -w & sleep 2
-gkrellm -w & sleep 2
+speyes \-w & sleep 2
+gkrellm \-w & sleep 2
 .EE 
 .\"
 .\" ***** THE TOOLBAR *****
@@ -393,7 +393,7 @@ the monitor so it does not hide when you change
 workspaces.
 .TP
 .B Kill Client
-This kills the client program with -SIGKILL (-9)
+This kills the client program with \-SIGKILL (\-9)
 Only use this as a last resort.
 .TP
 .B Close
@@ -704,7 +704,7 @@ file, this action will also shutdown X.
 .B Here is a working example of a menu file:
 .\" ----- menu example -----
 [begin] (MenuName)
-   [exec] (xterm) {xterm -ls -bg black -fg green}
+   [exec] (xterm) {xterm \-ls \-bg black \-fg green}
    [submenu] (X utilities)
       [exec] (xcalc) {xcalc}
    [end]

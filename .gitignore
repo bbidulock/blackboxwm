@@ -18,6 +18,7 @@ _*
 *.lzo
 *.o
 *.o.*
+*.orig
 *.patch
 *.pc
 *.swo
