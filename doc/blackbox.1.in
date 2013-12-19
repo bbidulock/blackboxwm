@@ -202,7 +202,7 @@ discussed later in this manual.
 Menus can run arbitrary command lines, but
 if you wish to use a complex command line 
 it is best to place it in a shell script. 
-Remember to put #!/bin/sh on the first 
+Remember to put #!/bin/bash on the first 
 line and chmod 755 on the file to make it 
 executable.
 .EE
@@ -279,7 +279,7 @@ in the correct order by the slit.
 .EE
 .EX 8
 .B i.e.
-#!/bin/sh
+#!/bin/bash
 speyes -w & sleep 2
 gkrellm -w & sleep 2
 .EE 
