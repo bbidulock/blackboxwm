@@ -35,7 +35,7 @@
 #endif
 
 #include <assert.h>
-#include <stdio.h>
+#include <cstdio>
 
 namespace bt {
 

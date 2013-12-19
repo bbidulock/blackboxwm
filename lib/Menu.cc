@@ -34,7 +34,7 @@
 #include <X11/keysym.h>
 #include <X11/XKBlib.h>
 
-#include <stdio.h>
+#include <cstdio>
 #include <assert.h>
 
 

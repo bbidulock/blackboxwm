@@ -30,7 +30,7 @@
 #include <algorithm>
 
 #include <X11/Xlib.h>
-#include <ctype.h>
+#include <cctype>
 
 
 void bt::Texture::setColor1(const bt::Color &new_color) {

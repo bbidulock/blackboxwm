@@ -31,8 +31,8 @@
 #include <cctype>
 
 #include <X11/Xatom.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 #include <cstring>
 

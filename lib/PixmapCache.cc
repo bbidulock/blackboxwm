@@ -30,7 +30,7 @@
 
 #include <X11/Xlib.h>
 #include <assert.h>
-#include <stdio.h>
+#include <cstdio>
 
 #include <algorithm>
 #include <list>

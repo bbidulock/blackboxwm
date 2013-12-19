@@ -37,9 +37,9 @@
 #endif
 
 #include <assert.h>
-#include <ctype.h>
+#include <cctype>
 #include <locale.h>
-#include <stdio.h>
+#include <cstdio>
 
 // #define FONTCACHE_DEBUG
 

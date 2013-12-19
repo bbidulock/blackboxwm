@@ -34,7 +34,7 @@
 #include "blackbox.hh"
 #include "../version.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #include <cstring>
 
