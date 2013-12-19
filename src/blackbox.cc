@@ -361,6 +361,10 @@ bool Blackbox::process_signal(int sig) {
     rereadMenu();
     break;
 
+  case SIGQUIT:
+    restart();
+    break;
+
   default:
     return bt::Application::process_signal(sig);
   } // switch
