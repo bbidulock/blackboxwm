@@ -87,12 +87,13 @@ namespace bt {
       Pyramid             = (1l<<10),
       PipeCross           = (1l<<11),
       Elliptic            = (1l<<12),
+      SplitVertical       = (1l<<13),
       // parent relative image
-      Parent_Relative     = (1l<<13),
+      Parent_Relative     = (1l<<14),
       // fake interlaced image
-      Interlaced          = (1l<<14),
+      Interlaced          = (1l<<15),
       // border around image
-      Border              = (1l<<15)
+      Border              = (1l<<16)
     };
 
     inline Texture(void)

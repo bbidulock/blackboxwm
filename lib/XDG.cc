@@ -27,7 +27,7 @@
 
 #include <algorithm>
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <algorithm>
 
 // make sure directory names end with a slash

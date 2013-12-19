@@ -30,7 +30,7 @@
 
 #include <assert.h>
 #include <fcntl.h>
-#include <stdio.h>
+#include <cstdio>
 
 
 namespace bt {

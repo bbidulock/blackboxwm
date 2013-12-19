@@ -112,25 +112,25 @@ This variable can specify the logfile to be used when $LOG_LAST_CMD is defined.
 The default is ~/.bsetbg_last_cmd .
 
 .TP
-As mentioned above, \fBbsetbg\fR will function perfectly for the majority of users without having a configuration file. Power users who want more control over \fBbsetbg\fR's behavior should run \fBbsetbg -g\fR and use the output to create a \fI~/.bsetbgrc\fR which may then be tweaked by hand.
+As mentioned above, \fBbsetbg\fR will function perfectly for the majority of users without having a configuration file. Power users who want more control over \fBbsetbg\fR's behavior should run \fBbsetbg \-g\fR and use the output to create a \fI~/.bsetbgrc\fR which may then be tweaked by hand.
 
 .SH EXAMPLES
 In this example, bsetbg will set the image in centered mode:
 
-    bsetbg -center foo.png
+    bsetbg \-center foo.png
 
 An example of the \fB-exec\fR argument:
 
-    bsetbg -exec xv -root -quit -rmode 5 -rbg rgb:2/2/2 \\
-	-center foo.png
+    bsetbg \-exec xv \-root \-quit \-rmode 5 \-rbg rgb:2/2/2 \\
+	\-center foo.png
 
 An example in which bsetbg creates a configuration file using xv and qiv:
 
-	bsetbg -g xv qiv > ~/.bsetbgrc
+	bsetbg \-g xv qiv > ~/.bsetbgrc
 
 An example of the use of the \fB-app\fR argument:
 
-    bsetbg  -app qiv "-o rgb:d6/c5/a2 -x" -c foo.png
+    bsetbg \-app qiv "\-o rgb:d6/c5/a2 \-x" \-c foo.png
 
 .SH AUTHOR
 The author of

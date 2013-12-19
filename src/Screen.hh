@@ -32,7 +32,7 @@
 #include <EWMH.hh>
 #include <EventHandler.hh>
 
-#include <stdio.h>
+#include <cstdio>
 
 #include <list>
 #include <vector>

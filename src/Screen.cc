@@ -47,7 +47,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <assert.h>
-#include <ctype.h>
+#include <cctype>
 #include <dirent.h>
 
 #include <cstring>
@@ -2047,8 +2047,9 @@ void BScreen::buttonPressEvent(const XButtonEvent * const event) {
     makes another screen active.
   */
   _blackbox->setActiveScreen(this);
-
-  if (event->button == 2) {
+  if (event->button == 1) {
+  _iconmenu->popup(event->x_root, event->y_root);
+  } else if (event->button == 2) {
     _workspacemenu->popup(event->x_root, event->y_root);
   } else if (event->button == 3) {
     _blackbox->checkMenu();

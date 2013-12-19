@@ -42,8 +42,8 @@
 
 #include <assert.h>
 #include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 #include <cstring>
 
@@ -610,11 +610,13 @@ Pixmap bt::Image::render(const Display &display, unsigned int screen,
   else if (texture.texture() & bt::Texture::Rectangle)
     rgradient(from, to, interlaced);
   else if (texture.texture() & bt::Texture::Vertical)
-    vgradient(from, to, interlaced);
+    partial_vgradient(from, to, interlaced, 0, height);
   else if (texture.texture() & bt::Texture::CrossDiagonal)
     cdgradient(from, to, interlaced);
   else if (texture.texture() & bt::Texture::PipeCross)
     pcgradient(from, to, interlaced);
+  else if (texture.texture() & bt::Texture::SplitVertical)
+    svgradient(from, to, interlaced);
 
   if (texture.texture() & bt::Texture::Raised)
     raisedBevel(texture.borderWidth());
@@ -1362,26 +1364,31 @@ void bt::Image::hgradient(const Color &from, const Color &to,
 }
 
 
-void bt::Image::vgradient(const Color &from, const Color &to,
-                          bool interlaced) {
-  double dry, dgy, dby,
-    yr = static_cast<double>(from.red()  ),
-    yg = static_cast<double>(from.green()),
-    yb = static_cast<double>(from.blue() );
-  RGB *p = data;
+void bt::Image::partial_vgradient(const Color &from, const Color &to, 
+                                  bool interlaced,
+                                  unsigned int fromHeight, 
+                                  unsigned int toHeight)
+{
+  double yr = static_cast<double>(from.red()  );
+  double yg = static_cast<double>(from.green());
+  double yb = static_cast<double>(from.blue() );
+
+  double dry = static_cast<double>(to.red()   - from.red()  );
+  double dgy = static_cast<double>(to.green() - from.green());
+  double dby = static_cast<double>(to.blue()  - from.blue() );
+
+  unsigned int deltaHeight = toHeight - fromHeight;
+  dry /= deltaHeight;
+  dgy /= deltaHeight;
+  dby /= deltaHeight;
+
+  RGB *p = data + width*fromHeight;
   unsigned int x, y;
 
-  dry = static_cast<double>(to.red()   - from.red()  );
-  dgy = static_cast<double>(to.green() - from.green());
-  dby = static_cast<double>(to.blue()  - from.blue() );
-
-  dry /= height;
-  dgy /= height;
-  dby /= height;
 
   if (interlaced) {
     // faked interlacing effect
-    for (y = 0; y < height; ++y) {
+    for (y = fromHeight; y < toHeight; ++y) {
       const RGB rgb = {
         static_cast<unsigned char>((y & 1) ? (yr * 3. / 4.) : yr),
         static_cast<unsigned char>((y & 1) ? (yg * 3. / 4.) : yg),
@@ -1397,8 +1404,8 @@ void bt::Image::vgradient(const Color &from, const Color &to,
     }
   } else {
     // normal vgradient
-    for (y = 0; y < height; ++y) {
-      const RGB rgb = {
+      for (y = fromHeight; y < toHeight; ++y) {
+        const RGB rgb = {
         static_cast<unsigned char>(yr),
         static_cast<unsigned char>(yg),
         static_cast<unsigned char>(yb),
@@ -1933,4 +1940,30 @@ void bt::Image::cdgradient(const Color &from, const Color &to,
   }
 
   delete [] alloc;
+}
+
+
+/*
+ * Adapted from a patch by David Barr, http://david.chalkskeletons.com
+ * split grad: h1 -> from | to -> h2
+ */
+#define SAT_SHIFT(dest, input, shift) \
+  dest = input; dest += input >> shift; if (dest > 0xff) dest = 0xff;
+void bt::Image::svgradient(const Color &from, const Color &to,
+                           bool interlaced)
+{
+  int rt, gt, bt;
+  
+  SAT_SHIFT(rt, from.red(),   2);
+  SAT_SHIFT(gt, from.green(), 2);
+  SAT_SHIFT(bt, from.blue(),  2);
+  Color h1(rt, gt, bt);
+
+  SAT_SHIFT(rt, to.red(),   4);
+  SAT_SHIFT(gt, to.green(), 4);
+  SAT_SHIFT(bt, to.blue(),  4);
+  Color h2(rt, gt, bt);
+
+  partial_vgradient(h1, from, interlaced, 0, height/2);
+  partial_vgradient(to, h2, interlaced, height/2, height);
 }

@@ -6,12 +6,12 @@ Blackbox
 
 Package blackbox-0.70.2 was released under MIT license 2013-10-03.
 
-This is a fork of the original blackbox CVS that is on sourceforge:
+This is a fork of the original Blackbox CVS that is on Sourceforge:
 (http://blackboxwm.sourceforge.net).  This fork is hosted on GitHub at
 (http://github.com/bbidulock/blackboxwm).  What it includes is all
-changes made on the official blackbox CVS repository on branch
+changes made on the official Blackbox CVS repository on branch
 `blackbox-0_70_2cvs', as well as patches collected from pdl-linux,
-debian, the blackbox bug list, other github forks.  It also includes
+Debian, the blackbox bug list, other GitHub forks.  It also includes
 enhanced EWMH/ICCCM compliance.
 
 
@@ -19,7 +19,7 @@ Release
 -------
 
 This is the blackbox-0.70.2 package, released 2013-10-03.  This release,
-and the latest version, can be obtained from the GitHUB repository at
+and the latest version, can be obtained from the GitHub repository at
 (http://github.com/bbidulock/blackboxwm), using a command such as:
 
     $> git clone http://github.com/bbidulock/blackboxwm.git
@@ -27,7 +27,7 @@ and the latest version, can be obtained from the GitHUB repository at
 Please see the `NEWS' file for release notes and history of user visible
 changes for the current version, and the `ChangeLog' file for a more
 detailed history of implementation changes.  The `TODO' file lists
-features not yet implemented and other oustanding items.  The file
+features not yet implemented and other outstanding items.  The file
 `COMPLIANCE' lists the current state of EWMH/ICCCM compliance.
 
 Please see the `INSTALL' file for installation instructions.
@@ -36,7 +36,7 @@ When working from `git(1)', please see the `README-git' file.  An
 abbreviated installation procedure that works for most applications
 appears below.
 
-This release is published under the MIT licence that can be found in the
+This release is published under the MIT license that can be found in the
 file `COPYING'.
 
 
@@ -93,10 +93,10 @@ to be able to use keyboard shortcuts with Blackbox, bbkeys (available at
 http://bbkeys.sourceforge.net) can provide you with all the previous
 functionality and more.
 
-If you're looking for a GUI with which to configure your blackbox menu
+If you're looking for a GUI with which to configure your Blackbox menu
 and/or styles, check out http://bbconf.sourceforge.net. bbconf is a QT
 program that does just that, as well as providing a GUI for editing your
-keybindings for the above mentioned bbkeys.
+key bindings for the above mentioned bbkeys.
 
 
 # vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:

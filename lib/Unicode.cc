@@ -29,7 +29,7 @@
 #include <errno.h>
 #include <iconv.h>
 #include <locale.h>
-#include <stdio.h>
+#include <cstdio>
 
 #ifdef HAVE_CONFIG_H
 #  include "../config.h"

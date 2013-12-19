@@ -89,9 +89,13 @@ namespace bt {
     void hgradient(const Color &from, const Color &to, bool interlaced);
     void pgradient(const Color &from, const Color &to, bool interlaced);
     void rgradient(const Color &from, const Color &to, bool interlaced);
-    void vgradient(const Color &from, const Color &to, bool interlaced);
+    void partial_vgradient(const Color &from, const Color &to, 
+                           bool interlaced,
+                           unsigned int fromHeight, unsigned int toHeight);
     void cdgradient(const Color &from, const Color &to, bool interlaced);
     void pcgradient(const Color &from, const Color &to, bool interlaced);
+    void svgradient(const Color &from, const Color &to, bool interlaced);
+
 
     static unsigned int global_maximumColors;
     static DitherMode global_ditherMode;

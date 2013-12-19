@@ -35,12 +35,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <assert.h>
-#include <ctype.h>
+#include <cctype>
 #include <errno.h>
 #if defined(__EMX__)
 #  include <process.h>
 #endif // __EMX__
-#include <stdlib.h>
+#include <cstdlib>
 #include <string.h>
 #include <unistd.h>
 
