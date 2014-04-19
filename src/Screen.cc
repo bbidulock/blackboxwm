@@ -1469,50 +1469,40 @@ void BScreen::InitMenu(void) {
                 _blackbox->applicationName().c_str(),
                 _blackbox->resource().menuFilename());
       } else {
-        char line[1024], label[1024];
-        memset(line, 0, 1024);
-        memset(label, 0, 1024);
+        char line[1025];
+        memset(line, 0, 1025);
 
         while (fgets(line, 1024, menu_file) && ! feof(menu_file)) {
+          char *b = line, *p = b, *e = b + strnlen(line, 1024);
           /* Remove the newline character if necessary */
-          if (line[0] != '\0' && line[strlen(line) - 1] == '\n')
-            line[strlen(line) - 1] = '\0';
-
-          int i, len = strlen(line);
-
-          for (i = 0; i < len; i++)
-            if (line[i] != ' ') break;
-
-          if (line[i] == '#')
-            continue;
-
-          int key = 0, index = -1;
-
-          for (i = 0; i < len; i++) {
-            if (line[i] == '[') index = 0;
-            else if (line[i] == ']') break;
-            else if (line[i] != ' ')
-              if (index++ >= 0)
-                key += tolower(line[i]);
+          if (e > b && *(e-1) == '\n') {
+            e--;
+            *e = '\0';
           }
-
-          if (key == 517) { // [begin]
-            index = -1;
-            for (i = index; i < len; i++) {
-              if (line[i] == '(')
-                index = 0;
-              else if (line[i] == ')')
-                break;
-              else if (index++ >= 0) {
-                if (line[i] == '\\' && i < len - 1) i++;
-                label[index - 1] = line[i];
+          for (; p < e && isspace(*p); p++) ;
+          if (*p == '#')
+            continue;
+          for (; p < e && isspace(*p); p++) ;
+          if (!strncasecmp(p, "[begin]", 7)) {
+            p += 7;
+            for (; p < e && isspace(*p); p++) ;
+            if (*p == '(') {
+              p++;
+              for (b = p; p < e; p++) {
+                if (*p == ')') {
+                  *p = '\0';
+                  break;
+                }
+                if (*p == '\\') {
+                  memmove(p, p + 1, strlen(p) + 1);
+                  e--;
+                }
               }
+              if (p >= e)
+                p = b;
             }
-
-            if (index == -1) index = 0;
-            label[index] = '\0';
-
-            _rootmenu->setTitle(bt::toUnicode(label));
+            *p = '\0';
+            _rootmenu->setTitle(bt::toUnicode(b));
             defaultMenu = parseMenuFile(menu_file, _rootmenu);
             break;
           }
