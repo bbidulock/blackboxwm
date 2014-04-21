@@ -1147,8 +1147,7 @@ void lowerGroup(StackingList &stackingList, BWindowGroup *group) {
   BlackboxWindowList windows = group->windows();
   int layer = StackingList::LayerNormal;
   for (; layer < StackingList::LayerDesktop; ++layer) {
-    const StackingList::iterator begin = stackingList.begin(),
-                                   end = stackingList.end();
+    const StackingList::iterator end = stackingList.end();
     StackingList::iterator it = stackingList.layer(StackingList::Layer(layer)),
                        bottom = std::find(it, end, (StackEntity *) 0);
     // 'it' points to the top of the layer
@@ -1203,7 +1202,7 @@ static void lowerTransients(StackingList::iterator it,
 
     // found a transient in this layer, lower it
     --it;
-    StackingList::iterator l = stackingList.lower(tmp);
+    stackingList.lower(tmp);
     // don't bother looking at this window again
     transients.erase(wit);
   }

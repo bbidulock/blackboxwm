@@ -3658,12 +3658,12 @@ void BlackboxWindow::motionNotifyEvent(const XMotionEvent * const event) {
     else
       continueMove(event->x_root, event->y_root);
   } else if (hasWindowFunction(WindowFunctionResize)
-             && (event->state & Button1Mask
+             && ((event->state & Button1Mask
                  && (event->window == frame.right_grip
                      || event->window == frame.left_grip))
              || (event->state & Button3Mask
                  && event->state & Mod1Mask
-                 && event->window == frame.window)) {
+                 && event->window == frame.window))) {
     if (!client.state.resizing)
       startResize(event->window);
     else

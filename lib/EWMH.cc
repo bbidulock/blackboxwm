@@ -269,8 +269,8 @@ bool bt::EWMH::readDesktopGeometry(Window target,
 
 
 void bt::EWMH::setDesktopViewport(Window target, int x, int y) const {
-  const unsigned long viewport[] =
-    { static_cast<long>(x), static_cast<long>(y) };
+  unsigned long viewport[] =
+    { static_cast<unsigned long>(x), static_cast<unsigned long>(y) };
   setProperty(target, XA_CARDINAL, net_desktop_viewport,
               reinterpret_cast<const unsigned char *>(viewport), 2);
 }
