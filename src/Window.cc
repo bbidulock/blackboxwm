@@ -2179,6 +2179,8 @@ void BlackboxWindow::changeLayer(StackingList::Layer new_layer) {
 
   if (restack)
     _screen->restackWindows();
+
+  updateEWMHState();
 }
 
 
