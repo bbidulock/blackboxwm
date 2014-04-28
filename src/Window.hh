@@ -388,9 +388,15 @@ public:
 
   inline bool isMaximized(void) const
   { return client.ewmh.maxh || client.ewmh.maxv; }
-  // ### change to setMaximized()?
-  void maximize(unsigned int button);
-  void remaximize(void);
+  inline bool isMaximizedVert(void) const
+  { return client.ewmh.maxv; }
+  inline bool isMaximizedHorz(void) const
+  { return client.ewmh.maxh; }
+
+  void setMaximized(bool maxv, bool maxh);
+  void toggleMaximized(bool maxv, bool maxh);
+  void buttonMaximize(unsigned int button);
+  void reMaximize(void);
 
   inline bool isFullScreen(void) const
   { return client.ewmh.fullscreen; }

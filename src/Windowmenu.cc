@@ -57,6 +57,8 @@ enum {
   Shade,
   Iconify,
   Maximize,
+  MaximizeVert,
+  MaximizeHorz,
 #if defined(WITH_FULLSCREEN)
   FullScreen,
 #endif
@@ -76,6 +78,8 @@ Windowmenu::Windowmenu(bt::Application &app, unsigned int screen)
   insertItem(bt::toUnicode("Shade"), Shade);
   insertItem(bt::toUnicode("Iconify"), Iconify);
   insertItem(bt::toUnicode("Maximize"), Maximize);
+  insertItem(bt::toUnicode("Maximize Vert"), MaximizeVert);
+  insertItem(bt::toUnicode("Maximize Horz"), MaximizeHorz);
 #if defined(WITH_FULLSCREEN)
   insertItem(bt::toUnicode("Full Screen"), FullScreen);
 #endif
@@ -120,6 +124,12 @@ void Windowmenu::refresh(void) {
   setItemEnabled(Maximize, _window->hasWindowFunction(WindowFunctionMaximize));
   setItemChecked(Maximize, _window->isMaximized());
 
+  setItemEnabled(MaximizeVert, _window->hasWindowFunction(WindowFunctionMaximize));
+  setItemChecked(MaximizeVert, _window->isMaximizedVert());
+
+  setItemEnabled(MaximizeHorz, _window->hasWindowFunction(WindowFunctionMaximize));
+  setItemChecked(MaximizeHorz, _window->isMaximizedHorz());
+
 #if defined(WITH_FULLSCREEN)
   setItemEnabled(FullScreen, _window->windowType() == WindowTypeNormal);
   setItemChecked(FullScreen, _window->isFullScreen());
@@ -162,7 +172,15 @@ void Windowmenu::itemClicked(unsigned int id, unsigned int) {
     break;
 
   case Maximize:
-    _window->maximize(1);
+    _window->buttonMaximize(1);
+    break;
+
+  case MaximizeVert:
+    _window->buttonMaximize(2);
+    break;
+
+  case MaximizeHorz:
+    _window->buttonMaximize(3);
     break;
 
 #if defined(WITH_FULLSCREEN)

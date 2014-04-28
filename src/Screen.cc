@@ -1984,7 +1984,7 @@ void BScreen::updateAvailableArea(void) {
     BlackboxWindowList::iterator wit = windowList.begin(),
                                 wend = windowList.end();
     for (; wit != wend; ++wit)
-      if ((*wit)->isMaximized()) (*wit)->remaximize();
+      if ((*wit)->isMaximized()) (*wit)->reMaximize();
 
     updateWorkareaHint();
   }

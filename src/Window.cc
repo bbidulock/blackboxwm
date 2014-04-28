@@ -1249,7 +1249,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     setFullScreen(true);
   } else {
     if (isMaximized()) {
-      remaximize();
+      reMaximize();
     } else {
       const unsigned long save_state = client.current_state;
 
@@ -1765,7 +1765,7 @@ void BlackboxWindow::reconfigure(void) {
 
     // make sure maximized windows have the correct size after a style
     // change
-    remaximize();
+    reMaximize();
   } else {
     // get the client window geometry as if it was unmanaged
     bt::Rect r = frame.rect;
@@ -2400,7 +2400,7 @@ void BlackboxWindow::iconify(void) {
 }
 
 
-void BlackboxWindow::maximize(unsigned int button) {
+void BlackboxWindow::setMaximized(bool maxv, bool maxh) {
   assert(hasWindowFunction(WindowFunctionMaximize));
 
   // any maximize operation always unshades
@@ -2408,10 +2408,14 @@ void BlackboxWindow::maximize(unsigned int button) {
   frame.rect.setHeight(client.rect.height() + frame.margin.top
                        + frame.margin.bottom);
 
-  if (button == 0) {
-    if (isMaximized()) {
+  bool was_max = isMaximized();
+    
+  client.ewmh.maxv = maxv;
+  client.ewmh.maxh = maxh;
+
+  if (!maxv && !maxh) {
+    if (was_max) {
       // restore from maximized
-      client.ewmh.maxh = client.ewmh.maxv = false;
 
       if (!isFullScreen()) {
         /*
@@ -2432,27 +2436,84 @@ void BlackboxWindow::maximize(unsigned int button) {
 
         redrawAllButtons(); // in case it is not called in configure()
       }
-
-      updateEWMHState();
-      updateEWMHAllowedActions();
     }
-    return;
+
+  } else {
+
+    if (!isFullScreen()) {
+      // go go gadget-maximize!
+      bt::Rect r = _screen->availableArea();
+
+      if (!maxh) {
+        if (was_max) {
+          r.setX(client.premax.x());
+          r.setWidth(client.premax.width());
+        } else {
+          r.setX(frame.rect.x());
+          r.setWidth(frame.rect.width());
+        }
+      }
+
+      if (!maxv) {
+        if (was_max) {
+          r.setY(client.premax.y());
+          r.setHeight(client.premax.height());
+        } else {
+          r.setY(frame.rect.y());
+          r.setHeight(frame.rect.height());
+        }
+      }
+      
+      if (!was_max) {
+        // store the current frame geometry, so that we can restore it later
+        client.premax = ::restoreGravity(frame.rect,
+                                         frame.margin,
+                                         client.wmnormal.win_gravity);
+      }
+
+      r = ::constrain(r, frame.margin, client.wmnormal, TopLeft);
+      // trick configure into working
+      frame.rect = bt::Rect();
+      configure(r);
+    }
   }
 
+  updateEWMHState();
+  updateEWMHAllowedActions();
+}
+
+void BlackboxWindow::toggleMaximized(bool maxv, bool maxh) {
+  assert(hasWindowFunction(WindowFunctionMaximize));
+
+  if (!maxv && !maxh)
+    return;
+  maxv = maxv ? (client.ewmh.maxv ? false : true) : client.ewmh.maxv;
+  maxh = maxh ? (client.ewmh.maxh ? false : true) : client.ewmh.maxh;
+  setMaximized(maxv, maxh);
+}
+
+
+void BlackboxWindow::buttonMaximize(unsigned int button) {
+  assert(hasWindowFunction(WindowFunctionMaximize));
+
   switch (button) {
+  case 0:
+    setMaximized(false, false);
+    break;
+
   case 1:
-    client.ewmh.maxh = true;
-    client.ewmh.maxv = true;
+    if (!isMaximizedHorz() || !isMaximizedVert())
+      setMaximized(true, true);
+    else
+      setMaximized(false, false);
     break;
 
   case 2:
-    client.ewmh.maxh = false;
-    client.ewmh.maxv = true;
+    toggleMaximized(true, false);
     break;
 
   case 3:
-    client.ewmh.maxh = true;
-    client.ewmh.maxv = false;
+    toggleMaximized(false, true);
     break;
 
   default:
@@ -2460,41 +2521,14 @@ void BlackboxWindow::maximize(unsigned int button) {
     break;
   }
 
-  if (!isFullScreen()) {
-    // go go gadget-maximize!
-    bt::Rect r = _screen->availableArea();
-
-    if (!client.ewmh.maxh) {
-      r.setX(frame.rect.x());
-      r.setWidth(frame.rect.width());
-    }
-    if (!client.ewmh.maxv) {
-      r.setY(frame.rect.y());
-      r.setHeight(frame.rect.height());
-    }
-
-    // store the current frame geometry, so that we can restore it later
-    client.premax = ::restoreGravity(frame.rect,
-                                     frame.margin,
-                                     client.wmnormal.win_gravity);
-
-    r = ::constrain(r, frame.margin, client.wmnormal, TopLeft);
-    // trick configure into working
-    frame.rect = bt::Rect();
-    configure(r);
-  }
-
-  updateEWMHState();
-  updateEWMHAllowedActions();
 }
-
 
 /*
   re-maximizes the window to take into account availableArea changes.
 
   note that unlike maximize(), the shaded state is preserved.
 */
-void BlackboxWindow::remaximize(void) {
+void BlackboxWindow::reMaximize(void) {
   if (isShaded()) {
     bt::Rect r = _screen->availableArea();
 
@@ -2519,19 +2553,7 @@ void BlackboxWindow::remaximize(void) {
                   frame.rect.width(), frame.rect.height());
     return;
   }
-
-  unsigned int button = 0u;
-  if (client.ewmh.maxv) {
-    button = (client.ewmh.maxh) ? 1u : 2u;
-  } else if (client.ewmh.maxh) {
-    button = (client.ewmh.maxv) ? 1u : 3u;
-  }
-
-  // trick maximize() into working
-  client.ewmh.maxh = client.ewmh.maxv = false;
-  const bt::Rect tmp = client.premax;
-  maximize(button);
-  client.premax = tmp;
+  setMaximized(client.ewmh.maxv, client.ewmh.maxh);
 }
 
 
@@ -2544,7 +2566,7 @@ void BlackboxWindow::setShaded(bool shaded) {
   client.ewmh.shaded = shaded;
   if (!isShaded()) {
     if (isMaximized()) {
-      remaximize();
+      reMaximize();
     } else {
       // set the frame rect to the normal size
       frame.rect.setHeight(client.rect.height() + frame.margin.top +
@@ -2631,7 +2653,7 @@ void BlackboxWindow::setFullScreen(bool b) {
       changeLayer(StackingList::LayerNormal);
 
     if (isMaximized()) {
-      remaximize();
+      reMaximize();
     } else {
       bt::Rect r = ::applyGravity(client.premax,
                                   frame.margin,
@@ -3088,51 +3110,31 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
     }
 
     if (hasWindowFunction(WindowFunctionMaximize)) {
-      int max_horz = 0, max_vert = 0;
+      bool maxh = client.ewmh.maxh;
+      bool maxv = client.ewmh.maxv;
 
       if (first == ewmh.wmStateMaximizedHorz() ||
           second == ewmh.wmStateMaximizedHorz()) {
-        max_horz = ((action == ewmh.wmStateAdd()
-                     || (action == ewmh.wmStateToggle()
-                         && !client.ewmh.maxh))
-                    ? 1 : -1);
+        if (action == ewmh.wmStateAdd() ||
+            (action == ewmh.wmStateToggle() && !maxh))
+          maxh = true;
+        else if (action == ewmh.wmStateRemove() ||
+            (action == ewmh.wmStateToggle() && maxh))
+          maxh = false;
       }
 
       if (first == ewmh.wmStateMaximizedVert() ||
           second == ewmh.wmStateMaximizedVert()) {
-        max_vert = ((action == ewmh.wmStateAdd()
-                     || (action == ewmh.wmStateToggle()
-                         && !client.ewmh.maxv))
-                    ? 1 : -1);
+        if (action == ewmh.wmStateAdd() ||
+            (action == ewmh.wmStateToggle() && !maxv))
+          maxv = true;
+        else if (action == ewmh.wmStateRemove() ||
+            (action == ewmh.wmStateToggle() && maxv))
+          maxv = false;
       }
-
-      if (max_horz != 0 || max_vert != 0) {
-        int maxh;
-        if (max_horz == 1)
-          maxh = 1;
-        else if (max_horz == -1)
-          maxh = 0;
-        else
-          maxh = client.ewmh.maxh;
-        int maxv;
-        if (max_vert == 1)
-          maxv = 1;
-        else if (max_vert == -1)
-          maxv = 0;
-        else
-          maxv = client.ewmh.maxv;
-        unsigned int button = 0u;
-        if (maxv) {
-          button = maxh ? 1u : 2u;
-        } else if (maxh) {
-          button = maxv ? 1u : 3u;
-        }
-        // trick maximize() into working
-        client.ewmh.maxh = client.ewmh.maxv = false;
-        const bt::Rect tmp = client.premax;
-        maximize(button);
-        client.premax = tmp;
-      }
+      if (maxh != client.ewmh.maxh ||
+          maxv != client.ewmh.maxv)
+        setMaximized(maxv, maxh);
     }
 
     if (hasWindowFunction(WindowFunctionShade)) {
@@ -3628,7 +3630,7 @@ void BlackboxWindow::buttonReleaseEvent(const XButtonEvent * const event) {
     if (event->button < 4) {
       if (bt::within(event->x, event->y,
                      style.button_width, style.button_width)) {
-        maximize(event->button);
+        buttonMaximize(event->button);
         _screen->raiseWindow(this);
       } else {
         redrawMaximizeButton();
@@ -4092,7 +4094,7 @@ void BlackboxWindow::startResize(Window window) {
   } else {
     // unset maximized state when resized
     if (isMaximized())
-      maximize(0);
+      setMaximized(false, false);
   }
 
   showGeometry(frame.changing);
@@ -4205,7 +4207,7 @@ void BlackboxWindow::finishResize() {
 
     // unset maximized state when resized
     if (isMaximized())
-      maximize(0);
+      setMaximized(false, false);
   }
 
   client.state.resizing = false;
