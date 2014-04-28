@@ -2408,32 +2408,34 @@ void BlackboxWindow::maximize(unsigned int button) {
   frame.rect.setHeight(client.rect.height() + frame.margin.top
                        + frame.margin.bottom);
 
-  if (isMaximized()) {
-    // restore from maximized
-    client.ewmh.maxh = client.ewmh.maxv = false;
+  if (button == 0) {
+    if (isMaximized()) {
+      // restore from maximized
+      client.ewmh.maxh = client.ewmh.maxv = false;
 
-    if (!isFullScreen()) {
-      /*
-        when a resize is begun, maximize(0) is called to clear any
-        maximization flags currently set.  Otherwise it still thinks
-        it is maximized.  so we do not need to call configure()
-        because resizing will handle it
-      */
-      if (! client.state.resizing) {
-        bt::Rect r = ::applyGravity(client.premax,
-                                    frame.margin,
-                                    client.wmnormal.win_gravity);
-        r = ::constrain(r, frame.margin, client.wmnormal, TopLeft);
-        // trick configure into working
-        frame.rect = bt::Rect();
-        configure(r);
+      if (!isFullScreen()) {
+        /*
+          when a resize is begun, maximize(0) is called to clear any
+          maximization flags currently set.  Otherwise it still thinks
+          it is maximized.  so we do not need to call configure()
+          because resizing will handle it
+        */
+        if (! client.state.resizing) {
+          bt::Rect r = ::applyGravity(client.premax,
+                                      frame.margin,
+                                      client.wmnormal.win_gravity);
+          r = ::constrain(r, frame.margin, client.wmnormal, TopLeft);
+          // trick configure into working
+          frame.rect = bt::Rect();
+          configure(r);
+        }
+
+        redrawAllButtons(); // in case it is not called in configure()
       }
 
-      redrawAllButtons(); // in case it is not called in configure()
+      updateEWMHState();
+      updateEWMHAllowedActions();
     }
-
-    updateEWMHState();
-    updateEWMHAllowedActions();
     return;
   }
 
@@ -3105,17 +3107,31 @@ BlackboxWindow::clientMessageEvent(const XClientMessageEvent * const event) {
       }
 
       if (max_horz != 0 || max_vert != 0) {
-        if (isMaximized())
-          maximize(0);
+        int maxh;
+        if (max_horz == 1)
+          maxh = 1;
+        else if (max_horz == -1)
+          maxh = 0;
+        else
+          maxh = client.ewmh.maxh;
+        int maxv;
+        if (max_vert == 1)
+          maxv = 1;
+        else if (max_vert == -1)
+          maxv = 0;
+        else
+          maxv = client.ewmh.maxv;
         unsigned int button = 0u;
-        if (max_horz == 1 && max_vert != 1)
-          button = 3u;
-        else if (max_vert == 1 && max_horz != 1)
-          button = 2u;
-        else if (max_vert == 1 && max_horz == 1)
-          button = 1u;
-        if (button)
-          maximize(button);
+        if (maxv) {
+          button = maxh ? 1u : 2u;
+        } else if (maxh) {
+          button = maxv ? 1u : 3u;
+        }
+        // trick maximize() into working
+        client.ewmh.maxh = client.ewmh.maxv = false;
+        const bt::Rect tmp = client.premax;
+        maximize(button);
+        client.premax = tmp;
       }
     }
 
