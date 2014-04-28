@@ -122,7 +122,7 @@ void Windowmenu::refresh(void) {
   setItemChecked(Iconify, _window->isIconic());
 
   setItemEnabled(Maximize, _window->hasWindowFunction(WindowFunctionMaximize));
-  setItemChecked(Maximize, _window->isMaximized());
+  setItemChecked(Maximize, _window->isMaximizedVert() && _window->isMaximizedHorz());
 
   setItemEnabled(MaximizeVert, _window->hasWindowFunction(WindowFunctionMaximize));
   setItemChecked(MaximizeVert, _window->isMaximizedVert());
