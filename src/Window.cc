@@ -1392,6 +1392,12 @@ void BlackboxWindow::associateClientWindow(void) {
 
   XSelectInput(blackbox->XDisplay(), client.window,
                client_window_event_mask & ~StructureNotifyMask);
+  /* set backing_store and win_gravity to known values */
+  XSetWindowAttributes xswa;
+  xswa.backing_store = NotUseful;
+  xswa.win_gravity = NorthWestGravity;
+  XChangeWindowAttributes(blackbox->XDisplay(), client.window,
+              CWBackingStore | CWWinGravity, &xswa);
   XReparentWindow(blackbox->XDisplay(), client.window, frame.plate, 0, 0);
   XSelectInput(blackbox->XDisplay(), client.window, client_window_event_mask);
 
