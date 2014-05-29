@@ -575,10 +575,12 @@ void Blackbox::restart(const std::string &prog) {
   shutdown();
 
   if (! prog.empty()) {
+    std::string cmd = "exec ";
+    cmd += prog;
     putenv(const_cast<char *>
            (display().screenInfo(0).displayString().c_str()));
-    execlp(prog.c_str(), prog.c_str(), NULL);
-    perror(prog.c_str());
+    execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL);
+    perror("blackbox: restart");
   }
 
   // fall back in case the above execlp doesn't work
