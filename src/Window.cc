@@ -2818,38 +2818,36 @@ void BlackboxWindow::updateEWMHAllowedActions() {
 
   // set _NET_WM_ALLOWED_ACTIONS
   bt::EWMH::AtomList atoms;
-  if (! client.state.iconic) {
-    if (hasWindowFunction(WindowFunctionChangeWorkspace))
-      atoms.push_back(ewmh.wmActionChangeDesktop());
+  if (hasWindowFunction(WindowFunctionChangeWorkspace))
+    atoms.push_back(ewmh.wmActionChangeDesktop());
 
-    if (hasWindowFunction(WindowFunctionIconify))
-      atoms.push_back(ewmh.wmActionMinimize());
+  if (hasWindowFunction(WindowFunctionIconify))
+    atoms.push_back(ewmh.wmActionMinimize());
 
-    if (hasWindowFunction(WindowFunctionShade))
-      atoms.push_back(ewmh.wmActionShade());
+  if (hasWindowFunction(WindowFunctionShade))
+    atoms.push_back(ewmh.wmActionShade());
 
-    if (hasWindowFunction(WindowFunctionMove))
-      atoms.push_back(ewmh.wmActionMove());
+  if (hasWindowFunction(WindowFunctionMove))
+    atoms.push_back(ewmh.wmActionMove());
 
-    if (hasWindowFunction(WindowFunctionResize))
-      atoms.push_back(ewmh.wmActionResize());
+  if (hasWindowFunction(WindowFunctionResize))
+    atoms.push_back(ewmh.wmActionResize());
 
-    if (hasWindowFunction(WindowFunctionMaximize)) {
-      atoms.push_back(ewmh.wmActionMaximizeHorz());
-      atoms.push_back(ewmh.wmActionMaximizeVert());
-    }
-
-    if (hasWindowFunction(WindowFunctionChangeLayer)) {
-      atoms.push_back(ewmh.wmActionAbove());
-      atoms.push_back(ewmh.wmActionBelow());
-    }
-
-    if (hasWindowFunction(WindowFunctionFullScreen))
-      atoms.push_back(ewmh.wmActionFullscreen());
-
-    if (hasWindowFunction(WindowFunctionStick))
-      atoms.push_back(ewmh.wmActionStick());
+  if (hasWindowFunction(WindowFunctionMaximize)) {
+    atoms.push_back(ewmh.wmActionMaximizeHorz());
+    atoms.push_back(ewmh.wmActionMaximizeVert());
   }
+
+  if (hasWindowFunction(WindowFunctionChangeLayer)) {
+    atoms.push_back(ewmh.wmActionAbove());
+    atoms.push_back(ewmh.wmActionBelow());
+  }
+
+  if (hasWindowFunction(WindowFunctionFullScreen))
+    atoms.push_back(ewmh.wmActionFullscreen());
+
+  if (hasWindowFunction(WindowFunctionStick))
+    atoms.push_back(ewmh.wmActionStick());
 
   if (hasWindowFunction(WindowFunctionClose))
     atoms.push_back(ewmh.wmActionClose());
