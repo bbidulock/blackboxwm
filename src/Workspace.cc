@@ -22,6 +22,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include "gettext.h"
 #include "Workspace.hh"
 #include "Clientmenu.hh"
 #include "Screen.hh"
@@ -56,7 +57,8 @@ void Workspace::setName(const bt::ustring &new_name) {
     the_name = new_name;
   } else {
     char default_name[80];
-    sprintf(default_name, "Workspace %u", _id + 1);
+// TRANS The default name for a workspace with workspace number %u.
+    sprintf(default_name, gettext("Workspace %u"), _id + 1);
     the_name = bt::toUnicode(default_name);
   }
 

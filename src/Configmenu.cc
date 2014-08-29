@@ -22,6 +22,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include "gettext.h"
 #include "Configmenu.hh"
 #include "Screen.hh"
 #include "Slitmenu.hh"
@@ -103,7 +104,7 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
   setAutoDelete(false);
-  setTitle(bt::toUnicode("Configuration Options"));
+  setTitle(bt::toUnicode(gettext("Configuration Options")));
   showTitle();
 
   ConfigFocusmenu *focusmenu =
@@ -113,29 +114,29 @@ Configmenu::Configmenu(bt::Application &app, unsigned int screen,
   ConfigDithermenu *dithermenu =
     new ConfigDithermenu(app, screen, bscreen);
 
-  insertItem(bt::toUnicode("Focus Model"), focusmenu, FocusModel);
-  insertItem(bt::toUnicode("Window Placement"),
+  insertItem(bt::toUnicode(gettext("Focus Model")), focusmenu, FocusModel);
+  insertItem(bt::toUnicode(gettext("Window Placement")),
              placementmenu, WindowPlacement);
-  insertItem(bt::toUnicode("Image Dithering"), dithermenu, ImageDithering);
+  insertItem(bt::toUnicode(gettext("Image Dithering")), dithermenu, ImageDithering);
   insertSeparator();
-  insertItem(bt::toUnicode("Opaque Window Moving"), OpaqueWindowMoving);
-  insertItem(bt::toUnicode("Opaque Window Resizing"), OpaqueWindowResizing);
-  insertItem(bt::toUnicode("Full Maximization"), FullMaximization);
-  insertItem(bt::toUnicode("Focus New Windows"), FocusNewWindows);
-  insertItem(bt::toUnicode("Focus Last Window on Workspace"),
+  insertItem(bt::toUnicode(gettext("Opaque Window Moving")), OpaqueWindowMoving);
+  insertItem(bt::toUnicode(gettext("Opaque Window Resizing")), OpaqueWindowResizing);
+  insertItem(bt::toUnicode(gettext("Full Maximization")), FullMaximization);
+  insertItem(bt::toUnicode(gettext("Focus New Windows")), FocusNewWindows);
+  insertItem(bt::toUnicode(gettext("Focus Last Window on Workspace")),
              FocusLastWindowOnWorkspace);
-  insertItem(bt::toUnicode("Change Workspace with Mouse Wheel"),
+  insertItem(bt::toUnicode(gettext("Change Workspace with Mouse Wheel")),
              ChangeWorkspaceWithMouseWheel);
-  insertItem(bt::toUnicode("Shade Windows with Mouse Wheel"),
+  insertItem(bt::toUnicode(gettext("Shade Windows with Mouse Wheel")),
              ShadeWindowWithMouseWheel);
-  insertItem(bt::toUnicode("Toolbar Actions with Mouse Wheel"),
+  insertItem(bt::toUnicode(gettext("Toolbar Actions with Mouse Wheel")),
              ToolbarActionsWithMouseWheel);
-  insertItem(bt::toUnicode("Disable Bindings with Scroll Lock"),
+  insertItem(bt::toUnicode(gettext("Disable Bindings with Scroll Lock")),
              DisableBindings);
   insertSeparator();
-  insertItem(bt::toUnicode("Toolbar Options"),
+  insertItem(bt::toUnicode(gettext("Toolbar Options")),
              bscreen->toolbarmenu(), ToolbarOptions);
-  insertItem(bt::toUnicode("Slit Options"), bscreen->slitmenu(), SlitOptions);
+  insertItem(bt::toUnicode(gettext("Slit Options")), bscreen->slitmenu(), SlitOptions);
 }
 
 
@@ -208,13 +209,13 @@ ConfigFocusmenu::ConfigFocusmenu(bt::Application &app, unsigned int screen,
                                  BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
-  setTitle(bt::toUnicode("Focus Model"));
+  setTitle(bt::toUnicode(gettext("Focus Model")));
   showTitle();
 
-  insertItem(bt::toUnicode("Click to Focus"), ClickToFocus);
-  insertItem(bt::toUnicode("Sloppy Focus"), SloppyFocus);
-  insertItem(bt::toUnicode("Auto Raise"), AutoRaise);
-  insertItem(bt::toUnicode("Click Raise"), ClickRaise);
+  insertItem(bt::toUnicode(gettext("Click to Focus")), ClickToFocus);
+  insertItem(bt::toUnicode(gettext("Sloppy Focus")), SloppyFocus);
+  insertItem(bt::toUnicode(gettext("Auto Raise")), AutoRaise);
+  insertItem(bt::toUnicode(gettext("Click Raise")), ClickRaise);
 }
 
 
@@ -264,24 +265,24 @@ ConfigPlacementmenu::ConfigPlacementmenu(bt::Application &app,
                                          BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
-  setTitle(bt::toUnicode("Window Placement"));
+  setTitle(bt::toUnicode(gettext("Window Placement")));
   showTitle();
 
-  insertItem(bt::toUnicode("Smart Placement (Rows)"), RowSmartPlacement);
-  insertItem(bt::toUnicode("Smart Placement (Columns)"), ColSmartPlacement);
-  insertItem(bt::toUnicode("Center Placement"), CenterPlacement);
-  insertItem(bt::toUnicode("Cascade Placement"), CascadePlacement);
+  insertItem(bt::toUnicode(gettext("Smart Placement (Rows)")), RowSmartPlacement);
+  insertItem(bt::toUnicode(gettext("Smart Placement (Columns)")), ColSmartPlacement);
+  insertItem(bt::toUnicode(gettext("Center Placement")), CenterPlacement);
+  insertItem(bt::toUnicode(gettext("Cascade Placement")), CascadePlacement);
 
   insertSeparator();
 
-  insertItem(bt::toUnicode("Left to Right"), LeftRight);
-  insertItem(bt::toUnicode("Right to Left"), RightLeft);
-  insertItem(bt::toUnicode("Top to Bottom"), TopBottom);
-  insertItem(bt::toUnicode("Bottom to Top"), BottomTop);
+  insertItem(bt::toUnicode(gettext("Left to Right")), LeftRight);
+  insertItem(bt::toUnicode(gettext("Right to Left")), RightLeft);
+  insertItem(bt::toUnicode(gettext("Top to Bottom")), TopBottom);
+  insertItem(bt::toUnicode(gettext("Bottom to Top")), BottomTop);
 
   insertSeparator();
 
-  insertItem(bt::toUnicode("Ignore Shaded Windows"), IgnoreShadedWindows);
+  insertItem(bt::toUnicode(gettext("Ignore Shaded Windows")), IgnoreShadedWindows);
 }
 
 
@@ -351,12 +352,12 @@ ConfigDithermenu::ConfigDithermenu(bt::Application &app, unsigned int screen,
                                    BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
-  setTitle(bt::toUnicode("Image Dithering"));
+  setTitle(bt::toUnicode(gettext("Image Dithering")));
   showTitle();
 
-  insertItem(bt::toUnicode("Do not dither images"), bt::NoDither);
-  insertItem(bt::toUnicode("Use fast dither"), bt::OrderedDither);
-  insertItem(bt::toUnicode("Use high-quality dither"), bt::FloydSteinbergDither);
+  insertItem(bt::toUnicode(gettext("Do not dither images")), bt::NoDither);
+  insertItem(bt::toUnicode(gettext("Use fast dither")), bt::OrderedDither);
+  insertItem(bt::toUnicode(gettext("Use high-quality dither")), bt::FloydSteinbergDither);
 }
 
 

@@ -1,2 +1,10 @@
 # translatable sources
 src/Slitmenu.cc
+src/Configmenu.cc
+src/Iconmenu.cc
+src/Toolbarmenu.cc
+src/Windowmenu.cc
+src/Workspacemenu.cc
+src/Screen.cc
+src/Window.cc
+src/Workspace.cc

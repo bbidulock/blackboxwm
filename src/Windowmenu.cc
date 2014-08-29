@@ -22,6 +22,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include "gettext.h"
 #include "Windowmenu.hh"
 #include "Screen.hh"
 #include "Window.hh"
@@ -72,22 +73,22 @@ Windowmenu::Windowmenu(bt::Application &app, unsigned int screen)
   : bt::Menu(app, screen), _window(0)
 {
   _sendto = new SendToWorkspacemenu(app, screen);
-  insertItem(bt::toUnicode("Send to Workspace"), _sendto, SendToWorkspace);
-  insertItem(bt::toUnicode("Occupy all Workspaces"), OccupyAllWorkspaces);
+  insertItem(bt::toUnicode(gettext("Send to Workspace")), _sendto, SendToWorkspace);
+  insertItem(bt::toUnicode(gettext("Occupy all Workspaces")), OccupyAllWorkspaces);
   insertSeparator();
-  insertItem(bt::toUnicode("Shade"), Shade);
-  insertItem(bt::toUnicode("Iconify"), Iconify);
-  insertItem(bt::toUnicode("Maximize"), Maximize);
-  insertItem(bt::toUnicode("Maximize Vert"), MaximizeVert);
-  insertItem(bt::toUnicode("Maximize Horz"), MaximizeHorz);
+  insertItem(bt::toUnicode(gettext("Shade")), Shade);
+  insertItem(bt::toUnicode(gettext("Iconify")), Iconify);
+  insertItem(bt::toUnicode(gettext("Maximize")), Maximize);
+  insertItem(bt::toUnicode(gettext("Maximize Vert")), MaximizeVert);
+  insertItem(bt::toUnicode(gettext("Maximize Horz")), MaximizeHorz);
 #if defined(WITH_FULLSCREEN)
-  insertItem(bt::toUnicode("Full Screen"), FullScreen);
+  insertItem(bt::toUnicode(gettext("Full Screen")), FullScreen);
 #endif
-  insertItem(bt::toUnicode("Always on top"), AlwaysOnTop);
-  insertItem(bt::toUnicode("Always on bottom"), AlwaysOnBottom);
+  insertItem(bt::toUnicode(gettext("Always on top")), AlwaysOnTop);
+  insertItem(bt::toUnicode(gettext("Always on bottom")), AlwaysOnBottom);
   insertSeparator();
-  insertItem(bt::toUnicode("Kill Client"), KillClient);
-  insertItem(bt::toUnicode("Close"), Close);
+  insertItem(bt::toUnicode(gettext("Kill Client")), KillClient);
+  insertItem(bt::toUnicode(gettext("Close")), Close);
 }
 
 

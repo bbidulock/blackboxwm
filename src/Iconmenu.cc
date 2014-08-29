@@ -22,6 +22,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include "gettext.h"
 #include "Iconmenu.hh"
 #include "Screen.hh"
 #include "Window.hh"
@@ -34,7 +35,7 @@ Iconmenu::Iconmenu(bt::Application &app, unsigned int screen,
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
   setAutoDelete(false);
-  setTitle(bt::toUnicode("Iconified Windows"));
+  setTitle(bt::toUnicode(gettext("Iconified Windows")));
   showTitle();
 }
 

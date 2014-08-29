@@ -22,6 +22,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include "gettext.h"
 #include "Toolbarmenu.hh"
 #include "Toolbar.hh"
 
@@ -55,15 +56,20 @@ Toolbarmenu::Toolbarmenu(bt::Application &app, unsigned int screen,
                          BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
-  setTitle(bt::toUnicode("Toolbar Options"));
+  setTitle(bt::toUnicode(gettext("Toolbar Options")));
   showTitle();
 
   ToolbarPlacementmenu *menu = new ToolbarPlacementmenu(app, screen, bscreen);
-  insertItem(bt::toUnicode("Enable Toolbar"), EnableToolbar);
+  insertItem(bt::toUnicode(gettext("Enable Toolbar")), EnableToolbar);
   insertSeparator();
-  insertItem(bt::toUnicode("Placement"), menu, Placement);
-  insertItem(bt::toUnicode("Always on top"), AlwaysOnTop);
-  insertItem(bt::toUnicode("Auto Hide"), AutoHide);
+// TRANS The name of the placement submenu of the toolbar options menu
+// TRANS that allows the user to specify where they want the toolbar stacked
+// TRANS with relation to other windows.
+  insertItem(bt::toUnicode(gettext("Placement")), menu, Placement);
+// TRANS Always place the toolbar above other windows on the desktop.
+  insertItem(bt::toUnicode(gettext("Always on top")), AlwaysOnTop);
+// TRANS Automatically hide the toolbar when the pointer leaves the toolbar.
+  insertItem(bt::toUnicode(gettext("Auto Hide")), AutoHide);
 }
 
 
@@ -123,16 +129,24 @@ ToolbarPlacementmenu::ToolbarPlacementmenu(bt::Application &app,
                                            BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
-  setTitle(bt::toUnicode("Toolbar Placement"));
+// TRANS The name of the menu that controls toolbar placement; i.e.,
+// TRANS which corner or edge of the screen on which the toolbar is placed.
+  setTitle(bt::toUnicode(gettext("Toolbar Placement")));
   showTitle();
 
-  insertItem(bt::toUnicode("Top Left"),      Toolbar::TopLeft);
-  insertItem(bt::toUnicode("Top Center"),    Toolbar::TopCenter);
-  insertItem(bt::toUnicode("Top Right"),     Toolbar::TopRight);
+// TRANS Top left corner of the screen.
+  insertItem(bt::toUnicode(gettext("Top Left")),      Toolbar::TopLeft);
+// TRANS Centered at the top of the screen.
+  insertItem(bt::toUnicode(gettext("Top Center")),    Toolbar::TopCenter);
+// TRANS Top right corner of the screen.
+  insertItem(bt::toUnicode(gettext("Top Right")),     Toolbar::TopRight);
   insertSeparator();
-  insertItem(bt::toUnicode("Bottom Left"),   Toolbar::BottomLeft);
-  insertItem(bt::toUnicode("Bottom Center"), Toolbar::BottomCenter);
-  insertItem(bt::toUnicode("Bottom Right"),  Toolbar::BottomRight);
+// TRANS Bottom left corner of the screen.
+  insertItem(bt::toUnicode(gettext("Bottom Left")),   Toolbar::BottomLeft);
+// TRANS Centered at the bottom of the screen.
+  insertItem(bt::toUnicode(gettext("Bottom Center")), Toolbar::BottomCenter);
+// TRANS Bottom right corner of the screen.
+  insertItem(bt::toUnicode(gettext("Bottom Right")),  Toolbar::BottomRight);
 }
 
 

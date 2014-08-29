@@ -22,6 +22,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include "gettext.h"
 #include "Workspacemenu.hh"
 #include "Clientmenu.hh"
 #include "Iconmenu.hh"
@@ -44,12 +45,14 @@ Workspacemenu::Workspacemenu(bt::Application &app, unsigned int screen,
                              BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen) {
   setAutoDelete(false);
-  setTitle(bt::toUnicode("Workspaces"));
+  setTitle(bt::toUnicode(gettext("Workspaces")));
   showTitle();
 
   insertSeparator();
-  insertItem(bt::toUnicode("New Workspace"), NewWorkspace);
-  insertItem(bt::toUnicode("Remove Last Workspace"), RemoveLastWorkspace);
+// TRANS Create a new workspace and append it to the list of workspaces.
+  insertItem(bt::toUnicode(gettext("New Workspace")), NewWorkspace);
+// TRANS Remove the last workspace from the list of workspaces and destroy it.
+  insertItem(bt::toUnicode(gettext("Remove Last Workspace")), RemoveLastWorkspace);
 }
 
 
@@ -68,7 +71,9 @@ void Workspacemenu::setWorkspaceChecked(unsigned int id, bool checked)
 
 
 void Workspacemenu::insertIconMenu(Iconmenu *iconmenu) {
-  insertItem(bt::toUnicode("Iconified Windows"), iconmenu, Icons, 0);
+// TRANS A menu of the window that are iconified and would otherwise appear
+// TRANS on the workspace.
+  insertItem(bt::toUnicode(gettext("Iconified Windows")), iconmenu, Icons, 0);
   insertSeparator(1);
 }
 

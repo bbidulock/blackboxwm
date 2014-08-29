@@ -22,6 +22,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include "gettext.h"
 // make sure we get bt::textPropertyToString()
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -530,8 +531,9 @@ static bt::ustring readWMName(Blackbox *blackbox, Window window) {
     }
   }
 
+// TRANS The name to use for a window that has no name.
   if (name.empty())
-    name = bt::toUnicode("Unnamed");
+    name = bt::toUnicode(gettext("Unnamed"));
 
   return name;
 }

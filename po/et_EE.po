@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: blackbox 0.70.2.28\n"
 "Report-Msgid-Bugs-To: http://github.com/bbidulock/blackboxwm\n"
-"POT-Creation-Date: 2014-08-29 13:33-0600\n"
+"POT-Creation-Date: 2014-08-29 14:20-0600\n"
 "PO-Revision-Date: 2014-08-29 13:16-0600\n"
 "Last-Translator: Brian F. G. Bidulock <bidulock@openss7.org>\n"
 "Language-Team: Estonian\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/Slitmenu.cc:73
+#: src/Slitmenu.cc:73 src/Configmenu.cc:139
 msgid "Slit Options"
 msgstr ""
 
@@ -25,11 +25,15 @@ msgstr ""
 msgid "Direction"
 msgstr ""
 
-#: src/Slitmenu.cc:78
+#. TRANS The name of the placement submenu of the toolbar options menu
+#. TRANS that allows the user to specify where they want the toolbar stacked
+#. TRANS with relation to other windows.
+#: src/Slitmenu.cc:78 src/Toolbarmenu.cc:68
 msgid "Placement"
 msgstr ""
 
-#: src/Slitmenu.cc:81
+#. TRANS Always place the toolbar above other windows on the desktop.
+#: src/Slitmenu.cc:81 src/Toolbarmenu.cc:70 src/Windowmenu.cc:87
 msgid "Always on top"
 msgstr ""
 
@@ -53,7 +57,8 @@ msgstr ""
 msgid "Slit Placement"
 msgstr ""
 
-#: src/Slitmenu.cc:168
+#. TRANS Top left corner of the screen.
+#: src/Slitmenu.cc:168 src/Toolbarmenu.cc:138
 msgid "Top Left"
 msgstr ""
 
@@ -61,19 +66,23 @@ msgstr ""
 msgid "Center Left"
 msgstr ""
 
-#: src/Slitmenu.cc:170
+#. TRANS Bottom left corner of the screen.
+#: src/Slitmenu.cc:170 src/Toolbarmenu.cc:145
 msgid "Bottom Left"
 msgstr ""
 
-#: src/Slitmenu.cc:172
+#. TRANS Centered at the top of the screen.
+#: src/Slitmenu.cc:172 src/Toolbarmenu.cc:140
 msgid "Top Center"
 msgstr ""
 
-#: src/Slitmenu.cc:173
+#. TRANS Centered at the bottom of the screen.
+#: src/Slitmenu.cc:173 src/Toolbarmenu.cc:147
 msgid "Bottom Center"
 msgstr ""
 
-#: src/Slitmenu.cc:175
+#. TRANS Top right corner of the screen.
+#: src/Slitmenu.cc:175 src/Toolbarmenu.cc:142
 msgid "Top Right"
 msgstr ""
 
@@ -81,6 +90,236 @@ msgstr ""
 msgid "Center Right"
 msgstr ""
 
-#: src/Slitmenu.cc:177
+#. TRANS Bottom right corner of the screen.
+#: src/Slitmenu.cc:177 src/Toolbarmenu.cc:149
 msgid "Bottom Right"
+msgstr ""
+
+#: src/Configmenu.cc:107
+msgid "Configuration Options"
+msgstr ""
+
+#: src/Configmenu.cc:117 src/Configmenu.cc:212
+msgid "Focus Model"
+msgstr ""
+
+#: src/Configmenu.cc:118 src/Configmenu.cc:268
+msgid "Window Placement"
+msgstr ""
+
+#: src/Configmenu.cc:120 src/Configmenu.cc:355
+msgid "Image Dithering"
+msgstr ""
+
+#: src/Configmenu.cc:122
+msgid "Opaque Window Moving"
+msgstr ""
+
+#: src/Configmenu.cc:123
+msgid "Opaque Window Resizing"
+msgstr ""
+
+#: src/Configmenu.cc:124
+msgid "Full Maximization"
+msgstr ""
+
+#: src/Configmenu.cc:125
+msgid "Focus New Windows"
+msgstr ""
+
+#: src/Configmenu.cc:126
+msgid "Focus Last Window on Workspace"
+msgstr ""
+
+#: src/Configmenu.cc:128
+msgid "Change Workspace with Mouse Wheel"
+msgstr ""
+
+#: src/Configmenu.cc:130
+msgid "Shade Windows with Mouse Wheel"
+msgstr ""
+
+#: src/Configmenu.cc:132
+msgid "Toolbar Actions with Mouse Wheel"
+msgstr ""
+
+#: src/Configmenu.cc:134
+msgid "Disable Bindings with Scroll Lock"
+msgstr ""
+
+#: src/Configmenu.cc:137 src/Toolbarmenu.cc:59
+msgid "Toolbar Options"
+msgstr ""
+
+#: src/Configmenu.cc:215
+msgid "Click to Focus"
+msgstr ""
+
+#: src/Configmenu.cc:216
+msgid "Sloppy Focus"
+msgstr ""
+
+#: src/Configmenu.cc:217
+msgid "Auto Raise"
+msgstr ""
+
+#: src/Configmenu.cc:218
+msgid "Click Raise"
+msgstr ""
+
+#: src/Configmenu.cc:271
+msgid "Smart Placement (Rows)"
+msgstr ""
+
+#: src/Configmenu.cc:272
+msgid "Smart Placement (Columns)"
+msgstr ""
+
+#: src/Configmenu.cc:273
+msgid "Center Placement"
+msgstr ""
+
+#: src/Configmenu.cc:274
+msgid "Cascade Placement"
+msgstr ""
+
+#: src/Configmenu.cc:278
+msgid "Left to Right"
+msgstr ""
+
+#: src/Configmenu.cc:279
+msgid "Right to Left"
+msgstr ""
+
+#: src/Configmenu.cc:280
+msgid "Top to Bottom"
+msgstr ""
+
+#: src/Configmenu.cc:281
+msgid "Bottom to Top"
+msgstr ""
+
+#: src/Configmenu.cc:285
+msgid "Ignore Shaded Windows"
+msgstr ""
+
+#: src/Configmenu.cc:358
+msgid "Do not dither images"
+msgstr ""
+
+#: src/Configmenu.cc:359
+msgid "Use fast dither"
+msgstr ""
+
+#: src/Configmenu.cc:360
+msgid "Use high-quality dither"
+msgstr ""
+
+#. TRANS A menu of the window that are iconified and would otherwise appear
+#. TRANS on the workspace.
+#: src/Iconmenu.cc:38 src/Workspacemenu.cc:76
+msgid "Iconified Windows"
+msgstr ""
+
+#: src/Toolbarmenu.cc:63
+msgid "Enable Toolbar"
+msgstr ""
+
+#. TRANS Automatically hide the toolbar when the pointer leaves the toolbar.
+#: src/Toolbarmenu.cc:72
+msgid "Auto Hide"
+msgstr ""
+
+#. TRANS The name of the menu that controls toolbar placement; i.e.,
+#. TRANS which corner or edge of the screen on which the toolbar is placed.
+#: src/Toolbarmenu.cc:134
+msgid "Toolbar Placement"
+msgstr ""
+
+#: src/Windowmenu.cc:76
+msgid "Send to Workspace"
+msgstr ""
+
+#: src/Windowmenu.cc:77
+msgid "Occupy all Workspaces"
+msgstr ""
+
+#: src/Windowmenu.cc:79
+msgid "Shade"
+msgstr ""
+
+#: src/Windowmenu.cc:80
+msgid "Iconify"
+msgstr ""
+
+#: src/Windowmenu.cc:81
+msgid "Maximize"
+msgstr ""
+
+#: src/Windowmenu.cc:82
+msgid "Maximize Vert"
+msgstr ""
+
+#: src/Windowmenu.cc:83
+msgid "Maximize Horz"
+msgstr ""
+
+#: src/Windowmenu.cc:85
+msgid "Full Screen"
+msgstr ""
+
+#: src/Windowmenu.cc:88
+msgid "Always on bottom"
+msgstr ""
+
+#: src/Windowmenu.cc:90
+msgid "Kill Client"
+msgstr ""
+
+#: src/Windowmenu.cc:91
+msgid "Close"
+msgstr ""
+
+#: src/Workspacemenu.cc:48
+msgid "Workspaces"
+msgstr ""
+
+#. TRANS Create a new workspace and append it to the list of workspaces.
+#: src/Workspacemenu.cc:53
+msgid "New Workspace"
+msgstr ""
+
+#. TRANS Remove the last workspace from the list of workspaces and destroy it.
+#: src/Workspacemenu.cc:55
+msgid "Remove Last Workspace"
+msgstr ""
+
+#. TRANS The underscore '_' indicates the hot key.
+#: src/Screen.cc:1520
+msgid "_Blackbox"
+msgstr ""
+
+#. TRANS Launch a terminal.
+#: src/Screen.cc:1523
+msgid "xterm"
+msgstr ""
+
+#. TRANS Restart the window manager.
+#: src/Screen.cc:1526
+msgid "Restart"
+msgstr ""
+
+#. TRANS Exit the window manager.
+#: src/Screen.cc:1529
+msgid "Exit"
+msgstr ""
+
+#: src/Window.cc:536
+msgid "Unnamed"
+msgstr ""
+
+#. TRANS The default name for a workspace with workspace number %u.
+#: src/Workspace.cc:61
+#, c-format
+msgid "Workspace %u"
 msgstr ""

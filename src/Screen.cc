@@ -22,7 +22,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-#include "../version.h"
+#include "gettext.h"
+#include "version.h"
 #include "Screen.hh"
 #include "Clientmenu.hh"
 #include "Configmenu.hh"
@@ -1515,13 +1516,17 @@ void BScreen::InitMenu(void) {
   }
 
   if (defaultMenu) {
-    _rootmenu->setTitle(bt::toUnicode("_Blackbox"));
+// TRANS The underscore '_' indicates the hot key.
+    _rootmenu->setTitle(bt::toUnicode(gettext("_Blackbox")));
 
-    _rootmenu->insertFunction(bt::toUnicode("xterm"),
+// TRANS Launch a terminal.
+    _rootmenu->insertFunction(bt::toUnicode(gettext("xterm")),
                               BScreen::Execute, "xterm");
-    _rootmenu->insertFunction(bt::toUnicode("Restart"),
+// TRANS Restart the window manager.
+    _rootmenu->insertFunction(bt::toUnicode(gettext("Restart")),
                               BScreen::Restart);
-    _rootmenu->insertFunction(bt::toUnicode("Exit"),
+// TRANS Exit the window manager.
+    _rootmenu->insertFunction(bt::toUnicode(gettext("Exit")),
                               BScreen::Exit);
   } else {
     _blackbox->saveMenuFilename(_blackbox->resource().menuFilename());

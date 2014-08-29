@@ -9,7 +9,8 @@ SUBDIRS			= data \
 			  src \
 			  util
 
-EXTRA_DIST		= INSTALL \
+EXTRA_DIST		= gettext.h \
+			  INSTALL \
 			  COPYING \
 			  AUTHORS \
 			  AUTHORS.in \
