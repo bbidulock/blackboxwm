@@ -7,5 +7,5 @@ CLEANFILES = menu
 EXTRA_DIST = menu.in
 
 menu: menu.in
-	@regex_cmd@ -e "s,@pkgdatadir@,$(pkgdatadir)," @srcdir@/menu.in > menu
+	$(SED) -e "s,@pkgdatadir@,$(pkgdatadir)," @srcdir@/menu.in > menu
 

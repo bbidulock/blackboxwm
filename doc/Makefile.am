@@ -13,7 +13,7 @@ distclean-local:
 	rm -f *\~ .\#*
 
 blackbox.1: blackbox.1.in
-	@regex_cmd@ -e "s,@defaultmenu@,$(DEFAULT_MENU)," \
+	$(SED) -e "s,@defaultmenu@,$(DEFAULT_MENU)," \
 		-e "s,@pkgdatadir@,$(pkgdatadir)," \
 		-e "s,@version@,$(VERSION)," \
 		 @srcdir@/blackbox.1.in > blackbox.1

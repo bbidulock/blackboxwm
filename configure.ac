@@ -2,8 +2,8 @@ dnl configure.in for Blackbox - an X11 Window manager
 dnl Initialize autoconf and automake
 
 AC_PREREQ([2.69])
-AC_INIT([blackbox],[0.70.2.23],[http://github.com/bbidulock/blackboxwm])
-AC_REVISION([0.70.2.23])
+AC_INIT([blackbox],[0.70.2.24],[http://github.com/bbidulock/blackboxwm])
+AC_REVISION([0.70.2.24])
 
 AC_CONFIG_SRCDIR([src/blackbox.cc])
 AC_CONFIG_HEADERS([config.h])
@@ -11,7 +11,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 
-DATE='2014-07-16'
+DATE='2014-08-29'
 AC_SUBST([DATE])
 
 AM_INIT_AUTOMAKE([subdir-objects dist-bzip2 no-dist-gzip -Wall color-tests silent-rules tar-pax])
@@ -29,6 +29,7 @@ if test "x$prefix" != "x/usr/local"; then
 fi
 
 dnl Locate required external software
+AC_PROG_SED
 AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_CPP
@@ -54,11 +55,6 @@ LT_INIT([])
 LT_LANG([C++])
 AC_PROG_LIBTOOL
 AC_SUBST(LIBTOOL_DEPS)
-
-AC_CHECK_PROGS([regex_cmd], [sed])
-if test "x$regex_cmd" = "x"; then
-  AC_MSG_ERROR([error. sed is required to build the default menu file.])
-fi
 
 AC_CHECK_PROGS([gencat_cmd], [gencat])
 if test "x$gencat_cmd" = "x"; then
@@ -310,7 +306,7 @@ AC_ARG_ENABLE([nls],
               AC_HELP_STRING([--enable-nls],
 	                     [include natural language support @<:@default=yes@:>@]),
               [NLS="$enableval"],
-	      [NLS=yes])
+	      [NLS=no])
 AC_MSG_RESULT([$NLS])
 
 if test "x$NLS" = "xyes"; then
@@ -319,6 +315,7 @@ else
   NLS=
 fi
 AC_SUBST(NLS)
+AM_CONDITIONAL([USE_NLS],[test -n "$NLS"])
 
 dnl Output files
 AC_CONFIG_FILES([
