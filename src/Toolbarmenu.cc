@@ -56,10 +56,12 @@ Toolbarmenu::Toolbarmenu(bt::Application &app, unsigned int screen,
                          BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
+// TRANS The name of the submenu for controlling toolbar options.
   setTitle(bt::toUnicode(gettext("Toolbar Options")));
   showTitle();
 
   ToolbarPlacementmenu *menu = new ToolbarPlacementmenu(app, screen, bscreen);
+// TRANS Whether to show the toolbar or not.
   insertItem(bt::toUnicode(gettext("Enable Toolbar")), EnableToolbar);
   insertSeparator();
 // TRANS The name of the placement submenu of the toolbar options menu

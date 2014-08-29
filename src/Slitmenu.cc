@@ -70,15 +70,20 @@ enum {
 Slitmenu::Slitmenu(bt::Application &app, unsigned int screen, BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
+// TRANS The name of the submenu used for controlling slit options.
   setTitle(bt::toUnicode(gettext("Slit Options")));
   showTitle();
 
+// TRANS The name of the submenu for controlling the direction of the slit.
   insertItem(bt::toUnicode(gettext("Direction")), new SlitDirectionmenu(app, screen, bscreen),
              Direction);
+// TRANS The name of the submenu for controlling the placement of the slit.
   insertItem(bt::toUnicode(gettext("Placement")), new SlitPlacementmenu(app, screen, bscreen),
              Placement);
   insertSeparator();
+// TRANS Always place the slit on top of other windows.
   insertItem(bt::toUnicode(gettext("Always on top")), AlwaysOnTop);
+// TRANS Automatically hide the slit when the pointer leaves the slit.
   insertItem(bt::toUnicode(gettext("Auto hide")), AutoHide);
 }
 
@@ -128,10 +133,13 @@ SlitDirectionmenu::SlitDirectionmenu(bt::Application &app, unsigned int screen,
                                      BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
+// TRANS The name of the submenu for controlling slit direction.
   setTitle(bt::toUnicode(gettext("Slit Direction")));
   showTitle();
 
+// TRANS Arrange the slit horizontally (wider).
   insertItem(bt::toUnicode(gettext("Horizontal")), Slit::Horizontal);
+// TRANS Arrange the slit vertically (taller).
   insertItem(bt::toUnicode(gettext("Vertical")), Slit::Vertical);
 }
 
@@ -162,18 +170,27 @@ SlitPlacementmenu::SlitPlacementmenu(bt::Application &app, unsigned int screen,
                                      BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
+// TRANS The name of the submenu for controlling slit placement.
   setTitle(bt::toUnicode(gettext("Slit Placement")));
   showTitle();
 
+// TRANS Place the slit in the top left (NW) corner of the screen.
   insertItem(bt::toUnicode(gettext("Top Left")),      Slit::TopLeft);
+// TRANS Place the slit in the center left (W) edge of the screen.
   insertItem(bt::toUnicode(gettext("Center Left")),   Slit::CenterLeft);
+// TRANS Place the slit in the bottom left (SW) corner of the screen.
   insertItem(bt::toUnicode(gettext("Bottom Left")),   Slit::BottomLeft);
   insertSeparator();
+// TRANS Place the slit in the center top (N) edge of the screen.
   insertItem(bt::toUnicode(gettext("Top Center")),    Slit::TopCenter);
+// TRANS Place the slit in the center bottom (S) edge of the screen.
   insertItem(bt::toUnicode(gettext("Bottom Center")), Slit::BottomCenter);
   insertSeparator();
+// TRANS Place the slit in the top right (NE) corner of the screen.
   insertItem(bt::toUnicode(gettext("Top Right")),     Slit::TopRight);
+// TRANS Place the slit in the center right (E) edge of the screen.
   insertItem(bt::toUnicode(gettext("Center Right")),  Slit::CenterRight);
+// TRANS Place the slit in the bottom right (SE) corner of the screen.
   insertItem(bt::toUnicode(gettext("Bottom Right")),  Slit::BottomRight);
 }
 

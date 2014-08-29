@@ -73,21 +73,33 @@ Windowmenu::Windowmenu(bt::Application &app, unsigned int screen)
   : bt::Menu(app, screen), _window(0)
 {
   _sendto = new SendToWorkspacemenu(app, screen);
+// TRANS Send the window to another workspace without changing workspaces.
   insertItem(bt::toUnicode(gettext("Send to Workspace")), _sendto, SendToWorkspace);
+// TRANS Show the window on all workspaces.
   insertItem(bt::toUnicode(gettext("Occupy all Workspaces")), OccupyAllWorkspaces);
   insertSeparator();
+// TRANS Shade the window so that only the titlebar shows.
   insertItem(bt::toUnicode(gettext("Shade")), Shade);
+// TRANS Iconify the window so it is no longer visible.
   insertItem(bt::toUnicode(gettext("Iconify")), Iconify);
+// TRANS Maximize the size of the window both vertically and horizontally.
   insertItem(bt::toUnicode(gettext("Maximize")), Maximize);
+// TRANS Maximize the size of the window vertically.
   insertItem(bt::toUnicode(gettext("Maximize Vert")), MaximizeVert);
+// TRANS Maximize the size of the window horizontally.
   insertItem(bt::toUnicode(gettext("Maximize Horz")), MaximizeHorz);
 #if defined(WITH_FULLSCREEN)
+// TRANS Resize the window to cover the entire screen.
   insertItem(bt::toUnicode(gettext("Full Screen")), FullScreen);
 #endif
+// TRANS Always place this window above other windows.
   insertItem(bt::toUnicode(gettext("Always on top")), AlwaysOnTop);
+// TRANS Always place this window below other windows.
   insertItem(bt::toUnicode(gettext("Always on bottom")), AlwaysOnBottom);
   insertSeparator();
+// TRANS Kill the process associated with the window.
   insertItem(bt::toUnicode(gettext("Kill Client")), KillClient);
+// TRANS Ask the application owning the window to close it.
   insertItem(bt::toUnicode(gettext("Close")), Close);
 }
 

@@ -35,6 +35,7 @@ Iconmenu::Iconmenu(bt::Application &app, unsigned int screen,
   : bt::Menu(app, screen), _bscreen(bscreen)
 {
   setAutoDelete(false);
+// TRANS The name of a submenu that lists windows that are iconified.
   setTitle(bt::toUnicode(gettext("Iconified Windows")));
   showTitle();
 }

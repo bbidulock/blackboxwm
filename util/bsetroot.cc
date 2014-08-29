@@ -330,6 +330,7 @@ void bsetroot::usage(int exit_code) {
           "bsetroot 3.1\n\n"
           "Copyright (c) 2001 - 2005 Sean 'Shaleh' Perry\n"
           "Copyright (c) 1997 - 2000, 2002 - 2005 Bradley T Hughes\n");
+// TRANS Help message for the bsetroot program.
   fprintf(stderr, gettext(
           "  -display <string>        use display connection\n"
           "  -mod <x> <y>             modula pattern\n"

@@ -45,6 +45,7 @@ Workspacemenu::Workspacemenu(bt::Application &app, unsigned int screen,
                              BScreen *bscreen)
   : bt::Menu(app, screen), _bscreen(bscreen) {
   setAutoDelete(false);
+// TRANS The name of the submenu controlling the number of workspaces.
   setTitle(bt::toUnicode(gettext("Workspaces")));
   showTitle();
 
