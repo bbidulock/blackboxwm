@@ -2,8 +2,8 @@ dnl configure.in for Blackbox - an X11 Window manager
 dnl Initialize autoconf and automake
 
 AC_PREREQ([2.69])
-AC_INIT([blackbox],[0.70.2.24],[http://github.com/bbidulock/blackboxwm])
-AC_REVISION([0.70.2.24])
+AC_INIT([blackbox],[0.70.2],[http://github.com/bbidulock/blackboxwm])
+AC_REVISION([0.70.2])
 
 AC_CONFIG_SRCDIR([src/blackbox.cc])
 AC_CONFIG_HEADERS([config.h])
@@ -14,7 +14,7 @@ AC_USE_SYSTEM_EXTENSIONS
 DATE='2014-08-29'
 AC_SUBST([DATE])
 
-AM_INIT_AUTOMAKE([subdir-objects dist-bzip2 no-dist-gzip -Wall color-tests silent-rules tar-pax])
+AM_INIT_AUTOMAKE([subdir-objects dist-bzip2 no-dist-gzip color-tests silent-rules tar-pax])
 AM_MAINTAINER_MODE
 
 dnl Determine default prefix

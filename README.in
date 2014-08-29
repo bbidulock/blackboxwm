@@ -47,7 +47,8 @@ The quickest and easiest way to get Blackbox up and running is to run
 the following commands:
 
     $> git clone http://github.com/bbidulock/blackboxwm.git
-    $> autoreconf -fiv
+    $> cd blackboxwm
+    $> ./autogen.sh
     $> ./configure --prefix=/usr --mandir=/usr/share/man
     $> make V=0
     $> make DESTDIR="$pkgdir" install

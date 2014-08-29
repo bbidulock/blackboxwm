@@ -36,4 +36,4 @@ sed -r -e "$subst" README.in >README
 sed -r -e "$subst" NEWS.in >NEWS
 sed -r -e "$subst" AUTHORS.in >AUTHORS
 
-autoreconf -fiv
+autoreconf -fi
