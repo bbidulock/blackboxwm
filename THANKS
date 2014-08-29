@@ -1,0 +1,99 @@
+-- AUTHORS for Blackbox - an X11 Window Manager
+
+Current Authors:
+        Brad Hughes <bhughes at trolltech.com>
+	Sean 'Shaleh' Perry <shaleh at debian.org>
+
+Interim author for the 0.61.x series:
+        Jeff Raven <jraven at psu.edu>
+
+Current Contributors:
+	Ben 'xOr' Jansens <xor at orodu.net>
+	- metric tons of code patches
+        John Kennis <jkennis at chello.nl>
+	- bbpager, ideas, and support
+        Jason 'vanRijn' Kasper <vR at movingparts.net>
+	- bbkeys, ideas, support
+	Chris Mecca <flip at linuxguide.org>
+	 - use of his irix machine for testing
+	Dale P. Smith <dsmith at altustech.com>
+	 - bsetroot now sets xrootpmap_id atom
+	Matt Wilson <mwilson at quicksilver.net.nz>
+	 - for noticing all of the little things
+
+nls contributors:
+	Mads Martin Joergensen <mmj at suse.de>
+	 - Danish (da_DK)
+	Jan Schaumann <jschauma at netmeister.org>
+	 - German (de_DE)
+	Adriano Varoli Piazza <adrianovaroli at redusers.com>
+	 - Spanish (submitted as es_AR, ES and MX)
+	Duret Bertrand <bertrand.duret at libertysurf.fr>
+	 - updated French (fr_FR)
+	Bodnar Istvan <piggy at dub.hu>
+	 - Hungarian (hu_HU)
+	Luca Marrazzo <marra.luca at libero.it>
+	 - Italian (it_IT)
+	SATO Satoru <ssato at gnome.gr.jp>
+	 - Japanese (ja_JP)
+	Hyun Suk Noh <tzesti at users.sourceforge.net>
+	 - Korean (ko_KR)
+	Artis Trops <hornet at navigator.lv>
+	 - Latvian (lv_LV)
+ 	Wilbert Berendsen <wbsoft at xs4all.nl>
+	 - Dutch (nl_NL)
+	Øyvind Stegard <oyvind.stegard at bluezone.no>
+	 - Norwegian (no_NO)
+	Wojciech Krygier <wkrygie at kis.p.lodz.pl>
+	 - Polish (pl_PL)
+	Ciprian Popovici <ciprian at zuavra.net>
+	 - Romanian (ro_RO)
+	Michail A. Rusinov <one at da.ru>
+	Dmitriy N. Rusinov <rusinov at udm.net>
+	 - Russian (ru_RU)
+	Marian Andre <andre at intrak.sk>
+	 - Slovakian (sk_SK)
+	Ales Kosir <ales.kosir at telemach.net>
+	 - Slovenian (sl_SI)
+	Volodymyr M. Lisivka <lvm at mystery.lviv.net>
+	 - Ukrainian (uk_UA)
+	Wang Tiejun <wtj at dept3.buaa.edu.cn>
+	 - Chinese (zh_CN)
+	Moto Chen <han_yi_chen at yahoo.com.tw>
+	 - Taiwan Chinese (zh_TW)
+
+Past Contributors:
+        Jeffrey Sean Connell <ankh at canuck.gen.nz>
+          - debugger class code (ommited from sources)
+        Frank Belew <frb at umr.edu>
+          - dgradient code
+        Scott Garner <mrfab at arn.net>
+          - suggestions, bug reports and beta testing (*the* beta moron)
+        David Doan <ddoan at usa.net>
+         - testing of 8bpp code
+        Mark Seward <illuzion at paradise.net.nz>
+         - beta testing, bug reports and 32bpp testing
+        Keith Bolland <prime at strip.net.nz>
+         - beta testing, bug reports and suggestions
+        James Spooner <spoons at xtra.co.nz>
+         - beta testing, bug reports
+        Fred Knieper <derf at tamu.edu>
+         - beta testing, bug reports
+        Steve Udell <hettar at teleport.com>
+         - beta testing, bug reports, questions (very good ones)
+        Gregory Barlow <barlowg at ncssm-server.ncssm.edu>
+        - bug reports and patches/suggestions (original middle click advocate)
+        Dyon Balding <dyon.balding at eng.monash.edu.au>
+        - patch for Smart(er)Placement window placement
+        Mike Cole <mike at mydot.com>
+        - co-author/hacker of Image.cc (local LUG buddy)
+        John Kennis <jkennis at chello.nl>
+        - author of bbtools/beta testing/bug reports
+	Wilbert Berendsen <wbsoft at xs4all.nl>
+	- author of blackbox/bsetroot manpages
+
+(Brad's original message):
+I would also like to thank the creators of WindowMaker.  Reading the existing
+code has helped me immensely, and the BImage class follows the RImage data type
+very closely (the 8bpp code and dithering code was based off of WindowMaker's
+wrlib).

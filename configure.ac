@@ -1,10 +1,21 @@
 dnl configure.in for Blackbox - an X11 Window manager
 dnl Initialize autoconf and automake
 
-AC_INIT([blackbox], [0.70.2], [http://github.com/bbidulock/blackboxwm])
+AC_PREREQ([2.69])
+AC_INIT([blackbox],[0.70.2.23],[http://github.com/bbidulock/blackboxwm])
+AC_REVISION([0.70.2.23])
+
 AC_CONFIG_SRCDIR([src/blackbox.cc])
-AM_INIT_AUTOMAKE
+AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_AUX_DIR([scripts])
+AC_USE_SYSTEM_EXTENSIONS
+
+DATE='2014-07-16'
+AC_SUBST([DATE])
+
+AM_INIT_AUTOMAKE([subdir-objects dist-bzip2 no-dist-gzip -Wall color-tests silent-rules tar-pax])
+AM_MAINTAINER_MODE
 
 dnl Determine default prefix
 test "x$prefix" = "xNONE" && prefix="$ac_default_prefix"
@@ -18,7 +29,15 @@ if test "x$prefix" != "x/usr/local"; then
 fi
 
 dnl Locate required external software
+AC_PROG_AWK
 AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+AM_PROG_AR
+AC_PROG_MKDIR_P
+AC_ARG_VAR([LD], [Linker loader command])
 
 dnl Blackbox requires ANSI C headers
 AC_HEADER_STDC
@@ -27,10 +46,12 @@ if test "$ac_cv_header_stdc" = "no"; then
 fi
 
 AC_PROG_CXX
-AC_PROG_INSTALL
 
 dnl libbt shouldn't be shared by default (yet)
 AC_DISABLE_SHARED
+LT_PREREQ([2.4.2])
+LT_INIT([])
+LT_LANG([C++])
 AC_PROG_LIBTOOL
 AC_SUBST(LIBTOOL_DEPS)
 
@@ -299,11 +320,7 @@ else
 fi
 AC_SUBST(NLS)
 
-dnl Determine if maintainer portions of the Makefiles should be included.
-AM_MAINTAINER_MODE
-
 dnl Output files
-AM_CONFIG_HEADER(config.h)
 AC_CONFIG_FILES([
 version.h
 Makefile

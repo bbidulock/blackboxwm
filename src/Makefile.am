@@ -28,29 +28,46 @@ AM_CPPFLAGS		= @SHAPE@ @XFT@ @DEBUG@ @NLS@ \
 			  -DDEFAULTSTYLE=\"$(DEFAULT_STYLE)\" \
 			  -I$(top_srcdir)/lib
 bin_PROGRAMS		= blackbox
-blackbox_SOURCES	= BlackboxResource.cc                           \
-                          Clientmenu.cc					\
+blackbox_SOURCES	= BlackboxResource.cc				\
+			  BlackboxResource.hh				\
+			  Clientmenu.cc					\
+			  Clientmenu.hh					\
 			  Configmenu.cc					\
+			  Configmenu.hh					\
 			  Iconmenu.cc					\
+			  Iconmenu.hh					\
 			  Rootmenu.cc					\
+			  Rootmenu.hh					\
 			  Screen.cc					\
+			  Screen.hh					\
 			  ScreenResource.cc				\
+			  ScreenResource.hh				\
 			  Slit.cc					\
+			  Slit.hh					\
 			  Slitmenu.cc					\
+			  Slitmenu.hh					\
 			  StackingList.cc				\
+			  StackingList.hh				\
 			  Toolbar.cc					\
+			  Toolbar.hh					\
 			  Toolbarmenu.cc				\
+			  Toolbarmenu.hh				\
 			  Window.cc					\
+			  Window.hh					\
 			  WindowGroup.cc				\
+			  WindowGroup.hh				\
 			  Windowmenu.cc					\
+			  Windowmenu.hh					\
 			  Workspace.cc					\
+			  Workspace.hh					\
 			  Workspacemenu.cc				\
+			  Workspacemenu.hh				\
 			  blackbox.cc					\
+			  blackbox.hh					\
 			  main.cc
+
 blackbox_DEPENDENCIES	= $(top_builddir)/lib/libbt.la
 blackbox_LDADD		= $(top_builddir)/lib/libbt.la
-
-MAINTAINERCLEANFILES	= Makefile.in
 
 distclean-local:
 	rm -f *\~ *.orig *.rej .\#*

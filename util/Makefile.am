@@ -21,13 +21,12 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 # DEALINGS IN THE SOFTWARE.
 
-AM_CPPFLAGS		= @DEBUG@ @NLS@ \
-			  -I$(top_srcdir)/lib
+AM_CPPFLAGS		= @DEBUG@ @NLS@ -I$(top_srcdir)/lib
 
-bin_SCRIPTS		= bsetbg
+dist_bin_SCRIPTS	= bsetbg
 bin_PROGRAMS		= bsetroot bstyleconvert
 
-bsetroot_SOURCES	= bsetroot.cc
+bsetroot_SOURCES	= bsetroot.cc bsetroot.hh
 bsetroot_DEPENDENCIES	= $(top_builddir)/lib/libbt.la
 bsetroot_LDADD		= $(top_builddir)/lib/libbt.la
 
@@ -35,7 +34,3 @@ bstyleconvert_SOURCES		= bstyleconvert.cc
 bstyleconvert_DEPENDENCIES	= $(top_builddir)/lib/libbt.la
 bstyleconvert_LDADD		= $(top_builddir)/lib/libbt.la
 
-MAINTAINERCLEANFILES	= Makefile.in
-
-distclean-local:
-	rm -f *\~ *.orig *.rej .\#*

@@ -115,3 +115,7 @@ GTAGS
 *.orig
 *~
 \#*#
+
+scripts/
+m4/
+blackbox.1

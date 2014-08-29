@@ -1,4 +1,324 @@
-# created with git log --stat=76 | fmt -sct -w80
+# created with git log --stat=76 -M -C|fmt -sct -w80
+
+commit dfc6528eb9455651dd460855bc845d8e2cffae96
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jul 16 21:12:55 2014 -0600
+
+    allowed actions do not depend on iconic state
+
+ src/Window.cc | 46 ++++++++++++++++++++++------------------------
+ 1 file changed, 22 insertions(+), 24 deletions(-)
+
+commit bb9cbeda472547d12e5e9b3d82336d39fcd2f5f5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu May 29 07:34:49 2014 -0600
+
+    [restart] support to be shell cmd just like [exec]
+
+ src/blackbox.cc | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+commit f8319073deaa8c39f5de0be6ebd5ec4f95a91db6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu May 15 07:15:41 2014 -0600
+
+    keep client from setting stupid values on backing store and win gravity
+
+ src/Window.cc | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+commit c0d4a708ae17136e1c7aae52ce9367edf1649cbe
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Apr 27 20:14:51 2014 -0600
+
+    get maximize checkbutton to display correctly
+
+ src/Windowmenu.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 22660ef2505b4d9a1357993d320ea7fbce690e8d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Apr 27 20:05:27 2014 -0600
+
+    clean up maximization altogether
+
+ src/Screen.cc     |   2 +-
+ src/Window.cc     | 198 +++++++++++++++++++++++++-------------------------
+ src/Window.hh     |  12 ++-
+ src/Windowmenu.cc |  20 ++++-
+ 4 files changed, 129 insertions(+), 103 deletions(-)
+
+commit bfc97ae07bb283a631c31bbce03ddf1d48d5d696
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Apr 27 18:43:42 2014 -0600
+
+    trick EWMH maximization into working correctly
+
+ src/Window.cc | 80 +++++++++++++++++++++++++++++++++----------------------
+ 1 file changed, 48 insertions(+), 32 deletions(-)
+
+commit 070eafe3e26685188db90b8abf3cdc6305cca000
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Apr 27 18:11:07 2014 -0600
+
+    update EWMH state when changing layers
+
+ src/Window.cc | 2 ++
+ 1 file changed, 2 insertions(+)
+
+commit 050e9e1bc6da61fb3ad47ab3a65e076de5bd779c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Apr 20 23:33:02 2014 -0600
+
+    pass -g -O2 -D_FORTIFY_SOURCE=2 -Wall -Werror
+
+ lib/EWMH.cc   | 4 ++--
+ src/Screen.cc | 5 ++---
+ src/Window.cc | 4 ++--
+ 3 files changed, 6 insertions(+), 7 deletions(-)
+
+commit f898ddb58cd70a93c5d8a4e9e21b70826b526aaf
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Apr 19 13:30:28 2014 -0600
+
+    fix valgrind reported invalid access error
+
+ src/Screen.cc | 66 +++++++++++++++++++++++--------------------------------
+ 1 file changed, 28 insertions(+), 38 deletions(-)
+
+commit bcd18e6a9b9d4752b33ea52e77dc5f8326062cdf
+Author: DeltaResero <deltaresero@zoho.com>
+Date:   Thu Dec 19 02:29:50 2013 -0400
+
+    Replace headers stdio.h, ctype.h, & stdlib.h with cstdio, cctype, & cstdlib
+
+    These headers should probably be replaced as they have been deprecated
+    since C++98
+
+ lib/Application.cc | 4 ++--
+ lib/Color.cc       | 2 +-
+ lib/Display.cc     | 2 +-
+ lib/EWMH.cc        | 2 +-
+ lib/Font.cc        | 4 ++--
+ lib/Image.cc       | 4 ++--
+ lib/Menu.cc        | 2 +-
+ lib/Pen.cc         | 2 +-
+ lib/PixmapCache.cc | 2 +-
+ lib/Resource.cc    | 2 +-
+ lib/Texture.cc     | 2 +-
+ lib/Unicode.cc     | 2 +-
+ lib/Util.cc        | 4 ++--
+ lib/XDG.cc         | 2 +-
+ src/Screen.cc      | 2 +-
+ src/Screen.hh      | 2 +-
+ src/main.cc        | 2 +-
+ util/bsetroot.cc   | 4 ++--
+ 18 files changed, 23 insertions(+), 23 deletions(-)
+
+commit d57f13a1744b4a36e81182dd592662b3c9739b1f
+Author: DeltaResero <deltaresero@zoho.com>
+Date:   Thu Dec 19 02:27:54 2013 -0400
+
+    Make Blackbox restart when it receives SIGQUIT
+
+    Makes it possible to restart from Blackbox from the console
+
+ src/blackbox.cc | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+commit 13ed4c09498e1f144135025508ea42a6605e65f5
+Author: DeltaResero <deltaresero@zoho.com>
+Date:   Thu Dec 19 02:26:09 2013 -0400
+
+    Left click for iconified windows list
+
+    Author: Daneli
+    Causes a left click on the root window to pop up the iconified windows list
+
+ src/Screen.cc | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+commit 40115c12b47137e557026f8f3cba61bc1a472526
+Author: Johannes Winkelmann <jw@smts.ch>
+Date:   Thu Dec 19 02:22:28 2013 -0400
+
+    Add splitvertical gradient
+
+    Adapted from a patch by David Barr, http://david.chalkskeletons.com
+    Refactor vgradient into partial_vgradient with fromHeight and toHeight
+
+ lib/Image.cc   | 69 ++++++++++++++++++++++++++++++++++++++++--------------
+ lib/Image.hh   |  6 ++++-
+ lib/Texture.cc |  2 ++
+ lib/Texture.hh |  7 +++---
+ 4 files changed, 62 insertions(+), 22 deletions(-)
+
+commit f56679ae8e1b0c5a5f1cc113e00b38f2a52541ca
+Author: DeltaResero <deltaresero@zoho.com>
+Date:   Thu Dec 19 02:12:15 2013 -0400
+
+    Fix manageable spelling issue
+
+    Assuming 'managable' is actually just a frequent misspelling of
+    'manageable'
+
+ nls/C/blackbox.m     | 4 ++--
+ nls/da_DK/blackbox.m | 2 +-
+ nls/de_DE/blackbox.m | 2 +-
+ nls/es_AR/blackbox.m | 2 +-
+ nls/es_ES/blackbox.m | 2 +-
+ nls/et_EE/blackbox.m | 2 +-
+ nls/fr_FR/blackbox.m | 2 +-
+ nls/hu_HU/blackbox.m | 2 +-
+ nls/it_IT/blackbox.m | 2 +-
+ nls/ja_JP/blackbox.m | 2 +-
+ nls/ko_KR/blackbox.m | 4 ++--
+ nls/lv_LV/blackbox.m | 2 +-
+ nls/nl_NL/blackbox.m | 2 +-
+ nls/no_NO/blackbox.m | 2 +-
+ nls/pl_PL/blackbox.m | 2 +-
+ nls/pt_BR/blackbox.m | 2 +-
+ nls/ro_RO/blackbox.m | 2 +-
+ nls/ru_RU/blackbox.m | 2 +-
+ nls/sk_SK/blackbox.m | 2 +-
+ nls/sl_SI/blackbox.m | 2 +-
+ nls/sv_SE/blackbox.m | 2 +-
+ nls/tr_TR/blackbox.m | 2 +-
+ nls/uk_UA/blackbox.m | 2 +-
+ nls/zh_CN/blackbox.m | 2 +-
+ nls/zh_TW/blackbox.m | 4 ++--
+ src/blackbox.cc      | 2 +-
+ 26 files changed, 29 insertions(+), 29 deletions(-)
+
+commit 0362c6c338c100c69b19a170f0cb717bd0b22282
+Author: DeltaResero <deltaresero@zoho.com>
+Date:   Thu Dec 19 02:10:39 2013 -0400
+
+    Fix some spelling and manual typographic errors
+
+ .gitignore        |  1 +
+ README            | 16 ++++++++--------
+ doc/blackbox.1.in | 10 +++++-----
+ doc/bsetbg.1      | 12 ++++++------
+ 4 files changed, 20 insertions(+), 19 deletions(-)
+
+commit 22d4ea17a9a5aa687ac46b7b9f12bd2ffe7d1850
+Author: DeltaResero <deltaresero@zoho.com>
+Date:   Thu Dec 19 02:06:01 2013 -0400
+
+    Use bash instead of sh for scripts
+
+    sh != bash on all systems as it was in the past
+
+ doc/blackbox.1.in | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit ba960dcdb131f5fd4854e163e346b1f48a3051d4
+Author: DeltaResero <deltaresero@zoho.com>
+Date:   Thu Dec 19 02:03:31 2013 -0400
+
+    Reformat .gitignore and add more filetypes to ignore
+
+ .gitignore | 73 ++++++++++++++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 66 insertions(+), 7 deletions(-)
+
+commit 91abf78867446a45504abd6f4fe8c4bfdbe9017f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Nov 15 01:01:58 2013 -0700
+
+    collapse select and check windows to same window
+
+ src/Screen.cc | 41 ++++++-----------------------------------
+ 1 file changed, 6 insertions(+), 35 deletions(-)
+
+commit 646f833a39c89cc6412eb4260366f5c86bf6b790
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Nov 14 12:23:24 2013 -0700
+
+    add WM_WINDOW_ROLE to selection and check windows
+
+     When there are two top-level windows with the same WM_NAME, WM_CLASS
+     and WM_COMMAND values, there needs to be a differing WM_WINDOW_ROLE
+     property to distinguish the windows.  We give the WM_S%d selection
+     owner window the role "selection" and the _NET_SUPPORTING_WM_CHECK
+     window the role "check".
+
+ src/Screen.cc | 36 +++++++++++++++++++++++++++++-------
+ 1 file changed, 29 insertions(+), 7 deletions(-)
+
+commit 70399dd9bd9611933d6ad7c69bf8f38808e9e728
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Nov 14 10:32:51 2013 -0700
+
+    correct hostname length
+
+ src/Screen.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 8abab2b43bd9a709d9acab45efbcd07c6c085658
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Nov 14 10:21:58 2013 -0700
+
+    need empty m4 directory
+
+ .gitignore    | 1 -
+ m4/.gitignore | 5 +++++
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+commit 0cb793c8b70ad1784215704c135068ee6a12bc33
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Nov 14 10:16:13 2013 -0700
+
+    set full properties on selection and check windows
+
+    These properties are now set on selection window, and
+    in addition to other properties on the check window:
+
+      - set WM_NAME
+      - set WM_CLASS
+      - set WM_COMMAND
+      - set WM_CLIENT_MACHINE
+      - set _NET_WM_PID
+      - set _NET_WM_NAME
+
+    Selection window properties are set before the MANAGER
+    message is sent for selection WM_S%d.
+
+ COMPLIANCE      | 12 +++++++-----
+ src/Screen.cc   | 34 +++++++++++++++++++++++++++++++++-
+ src/blackbox.cc |  3 ++-
+ src/blackbox.hh |  6 +++++-
+ src/main.cc     |  2 +-
+ 5 files changed, 48 insertions(+), 9 deletions(-)
+
+commit b573153a39fef14120afdf5a13b3abfa9fba7718
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Nov 12 21:34:05 2013 -0700
+
+    ticket #337 on sourceforge
+
+ lib/Color.cc | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+commit 94c1bcb04a260646ef438dd3fa980a175e1d485a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Oct 3 04:11:54 2013 -0600
+
+    should not be used anymore
+
+ mk.sh | 11 -----------
+ 1 file changed, 11 deletions(-)
+
+commit 6155b1146f725f06fb96433c819b40c5738bc2fa
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Oct 3 04:10:43 2013 -0600
+
+    update release files
+
+ ChangeLog | 20110 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ NEWS      |     2 +-
+ README    |   103 +
+ 3 files changed, 20214 insertions(+), 1 deletion(-)
 
 commit c2c40192de91a06a8b7dbbed361514cfa8035cdc
 Author: Brian Bidulock <bidulock@openss7.org>
@@ -15,16 +335,13 @@ Date:   Thu Oct 3 01:00:54 2013 -0600
 
     preparations for release
 
- COPYING      |  21 +++
- ChangeLog    |  94 -------------
- INSTALL      | 399 ++++++++++++++++++++++++++++++++++++++++++++++---------
- LICENSE      |  21 ---
- Makefile.am  |   2 -
- NEWS         |  94 +++++++++++++
- README       | 130 ------------------
- README.old   | 130 ++++++++++++++++++
- configure.ac |   2 +-
- 9 files changed, 585 insertions(+), 308 deletions(-)
+ LICENSE => COPYING   |   0
+ INSTALL              | 399 ++++++++++++++++++++++++++++++++++++++++-------
+ Makefile.am          |   2 -
+ ChangeLog => NEWS    |   0
+ README => README.old |   0
+ configure.ac         |   2 +-
+ 6 files changed, 340 insertions(+), 63 deletions(-)
 
 commit ea08ea62c7b62f6be34da84b8999511df122caa6
 Author: Brian Bidulock <bidulock@openss7.org>
@@ -1804,20 +2121,20 @@ Date:	Wed Jan 5 08:18:44 2005 +0000
     moved the call to XrmInitialize() to bt::Application's constructor,
     this is a more logical location
 
- lib/Application.cc	 |   2 +
- src/BlackboxResource.cc | 529 +-------------------------------------------
- src/BlackboxResource.hh | 129 ++---------
- src/Makefile.am	 |   1 +
- src/Screen.cc		 |   8 +-
- src/ScreenResource.cc	 | 510 ++++++++++++++++++++++++++++++++++++++++++
- src/ScreenResource.hh	 | 129 +++++++++++
- src/Toolbar.cc		 |   4 +-
- src/Window.cc		 |  16 +-
- src/Windowmenu.cc	 |   2 +-
- src/Workspace.cc	 |   8 +-
- src/Workspace.hh	 |   2 +-
- src/Workspacemenu.cc	 |   4 +-
- 13 files changed, 687 insertions(+), 657 deletions(-)
+ lib/Application.cc				|   2 +
+ src/BlackboxResource.cc			| 529 +--------------------
+ src/BlackboxResource.hh			| 129 +----
+ src/Makefile.am				|   1 +
+ src/Screen.cc					|   8 +-
+ src/{BlackboxResource.cc => ScreenResource.cc} | 308 +-----------
+ src/ScreenResource.hh				| 129 +++++
+ src/Toolbar.cc					|   4 +-
+ src/Window.cc					|  16 +-
+ src/Windowmenu.cc				|   2 +-
+ src/Workspace.cc				|   8 +-
+ src/Workspace.hh				|   2 +-
+ src/Workspacemenu.cc				|   4 +-
+ 13 files changed, 200 insertions(+), 942 deletions(-)
 
 commit 88d9fde5279088b693c8ebf23b112dbea1e1bc1d
 Author: bradleyhughes <bradleyhughes>
@@ -3011,12 +3328,10 @@ Date:	Mon Aug 30 18:07:22 2004 +0000
 
     rename Utf8.* to Unicode.*
 
- lib/Makefile.am |   8 +--
- lib/Unicode.cc  | 139 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- lib/Unicode.hh  |  27 ++++++++++
- lib/Utf8.cc	 | 139 ----------------------------------------------------
- lib/Utf8.hh	 |  27 ----------
- 5 files changed, 170 insertions(+), 170 deletions(-)
+ lib/Makefile.am	     | 8 ++++----
+ lib/{Utf8.cc => Unicode.cc} | 0
+ lib/{Utf8.hh => Unicode.hh} | 0
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
 commit 991cf4a0bf1453110cc933112fa5b579f8d5e3c0
 Author: bradleyhughes <bradleyhughes>
@@ -6892,14 +7207,14 @@ Date:	Thu Oct 16 15:26:11 2003 +0000
 
     move bt::Rect into its own files
 
- lib/Display.hh  |   1 +
- lib/Makefile.am |   1 +
- lib/Menu.hh	 |   1 +
- lib/Rect.cc	 | 113 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- lib/Rect.hh	 |  77 +++++++++++++++++++++++++++++++++++
- lib/Util.cc	 |  86 ---------------------------------------
- lib/Util.hh	 |  49 +----------------------
- 7 files changed, 194 insertions(+), 134 deletions(-)
+ lib/Display.hh		  |   1 +
+ lib/Makefile.am	  |   1 +
+ lib/Menu.hh		  |   1 +
+ lib/Rect.cc		  | 113 +++++++++++++++++++++++++++++++++++++++++++
+ lib/{Util.hh => Rect.hh} |  61 ++---------------------
+ lib/Util.cc		  |  86 --------------------------------
+ lib/Util.hh		  |  49 +------------------
+ 7 files changed, 121 insertions(+), 191 deletions(-)
 
 commit dc6b9529cf6ee1e0d8cd6e437a2aa081081a1769
 Author: bradleyhughes <bradleyhughes>
@@ -11327,72 +11642,71 @@ Date:	Mon Sep 30 07:09:07 2002 +0000
 
     move over to newer auto* tools  (these things absolutely suck)
 
- Makefile.in		 |  377 ++-
- TODO			 |    4 +
- aclocal.m4		 |  586 +++-
- config.h.in		 |  144 +-
- configure		 | 7702 ++++++++++++++++++++++++++++++++-----------
- configure.ac		 |  266 ++
- configure.in		 |  240 --
- configure.lineno	 | 6835 ++++++++++++++++++++++++++++++++++++++
- data/Makefile.in	 |  254 +-
- data/styles/Makefile.in |  186 +-
- depcomp		 |  411 +++
- doc/Makefile.in	 |  195 +-
- doc/fr_FR/Makefile.in	 |  165 +-
- doc/ja_JP/Makefile.in	 |  165 +-
- doc/nl_NL/Makefile.in	 |  165 +-
- doc/sl_SI/Makefile.in	 |  165 +-
- install-sh		 |    1 +
- lib/BaseDisplay.cc	 |    6 +-
- lib/Image.cc		 |    6 +-
- lib/ImageControl.cc	 |    4 +-
- lib/Makefile.am	 |   21 -
- lib/Makefile.in	 |  334 +-
- lib/i18n.cc		 |    6 +-
- missing		 |  133 +-
- mkinstalldirs		 |    4 +-
- nls/C/Makefile.in	 |  163 +-
- nls/Makefile.in	 |  258 +-
- nls/da_DK/Makefile.in	 |  163 +-
- nls/de_DE/Makefile.in	 |  163 +-
- nls/es_AR/Makefile.in	 |  163 +-
- nls/es_ES/Makefile.in	 |  163 +-
- nls/et_EE/Makefile.in	 |  165 +-
- nls/fr_FR/Makefile.in	 |  163 +-
- nls/hu_HU/Makefile.in	 |  163 +-
- nls/it_IT/Makefile.in	 |  163 +-
- nls/ja_JP/Makefile.in	 |  163 +-
- nls/ko_KR/Makefile.in	 |  163 +-
- nls/lv_LV/Makefile.in	 |  163 +-
- nls/nl_NL/Makefile.in	 |  163 +-
- nls/no_NO/Makefile.in	 |  163 +-
- nls/pl_PL/Makefile.in	 |  163 +-
- nls/pt_BR/Makefile.in	 |  163 +-
- nls/ro_RO/Makefile.in	 |  163 +-
- nls/ru_RU/Makefile.in	 |  163 +-
- nls/sk_SK/Makefile.in	 |  163 +-
- nls/sl_SI/Makefile.in	 |  163 +-
- nls/sv_SE/Makefile.in	 |  163 +-
- nls/tr_TR/Makefile.in	 |  165 +-
- nls/uk_UA/Makefile.in	 |  163 +-
- nls/zh_CN/Makefile.in	 |  163 +-
- nls/zh_TW/Makefile.in	 |  163 +-
- src/Basemenu.cc	 |    4 +-
- src/Makefile.am	 |   67 -
- src/Makefile.in	 |  410 ++-
- src/Rootmenu.cc	 |    4 +-
- src/Toolbar.cc		 |    4 +-
- src/Window.cc		 |   10 +-
- src/Workspace.cc	 |    4 +-
- src/blackbox.cc	 |    4 +-
- src/blackbox.hh	 |    4 +-
- src/main.cc		 |    4 +-
- stamp-h.in		 |    1 +
- util/Makefile.am	 |    6 -
- util/Makefile.in	 |  349 +-
- util/bsetroot.cc	 |    4 +-
- 65 files changed, 17985 insertions(+), 5602 deletions(-)
+ Makefile.in		      |  377 +-
+ TODO			      |    4 +
+ aclocal.m4		      |  586 ++-
+ config.h.in		      |  144 +-
+ configure		      | 7702 ++++++++++++++++++++++++++++----------
+ configure.in => configure.ac |  194 +-
+ configure.lineno	      | 6835 +++++++++++++++++++++++++++++++++
+ data/Makefile.in	      |  254 +-
+ data/styles/Makefile.in      |  186 +-
+ depcomp		      |  411 ++
+ doc/Makefile.in	      |  195 +-
+ doc/fr_FR/Makefile.in	      |  165 +-
+ doc/ja_JP/Makefile.in	      |  165 +-
+ doc/nl_NL/Makefile.in	      |  165 +-
+ doc/sl_SI/Makefile.in	      |  165 +-
+ install-sh		      |    1 +
+ lib/BaseDisplay.cc	      |    6 +-
+ lib/Image.cc		      |    6 +-
+ lib/ImageControl.cc	      |    4 +-
+ lib/Makefile.am	      |   21 -
+ lib/Makefile.in	      |  334 +-
+ lib/i18n.cc		      |    6 +-
+ missing		      |  133 +-
+ mkinstalldirs		      |    4 +-
+ nls/C/Makefile.in	      |  163 +-
+ nls/Makefile.in	      |  258 +-
+ nls/da_DK/Makefile.in	      |  163 +-
+ nls/de_DE/Makefile.in	      |  163 +-
+ nls/es_AR/Makefile.in	      |  163 +-
+ nls/es_ES/Makefile.in	      |  163 +-
+ nls/et_EE/Makefile.in	      |  165 +-
+ nls/fr_FR/Makefile.in	      |  163 +-
+ nls/hu_HU/Makefile.in	      |  163 +-
+ nls/it_IT/Makefile.in	      |  163 +-
+ nls/ja_JP/Makefile.in	      |  163 +-
+ nls/ko_KR/Makefile.in	      |  163 +-
+ nls/lv_LV/Makefile.in	      |  163 +-
+ nls/nl_NL/Makefile.in	      |  163 +-
+ nls/no_NO/Makefile.in	      |  163 +-
+ nls/pl_PL/Makefile.in	      |  163 +-
+ nls/pt_BR/Makefile.in	      |  163 +-
+ nls/ro_RO/Makefile.in	      |  163 +-
+ nls/ru_RU/Makefile.in	      |  163 +-
+ nls/sk_SK/Makefile.in	      |  163 +-
+ nls/sl_SI/Makefile.in	      |  163 +-
+ nls/sv_SE/Makefile.in	      |  163 +-
+ nls/tr_TR/Makefile.in	      |  165 +-
+ nls/uk_UA/Makefile.in	      |  163 +-
+ nls/zh_CN/Makefile.in	      |  163 +-
+ nls/zh_TW/Makefile.in	      |  163 +-
+ src/Basemenu.cc	      |    4 +-
+ src/Makefile.am	      |   67 -
+ src/Makefile.in	      |  410 +-
+ src/Rootmenu.cc	      |    4 +-
+ src/Toolbar.cc		      |    4 +-
+ src/Window.cc		      |   10 +-
+ src/Workspace.cc	      |    4 +-
+ src/blackbox.cc	      |    4 +-
+ src/blackbox.hh	      |    4 +-
+ src/main.cc		      |    4 +-
+ stamp-h.in		      |    1 +
+ util/Makefile.am	      |    6 -
+ util/Makefile.in	      |  349 +-
+ util/bsetroot.cc	      |    4 +-
+ 64 files changed, 17829 insertions(+), 5446 deletions(-)
 
 commit 102f622e7b202319b99f44656e4c043530e6169f
 Author: shaleh <shaleh>
@@ -12253,76 +12567,62 @@ Date:	Wed Sep 18 20:11:54 2002 +0000
 
     moved out some classes to form the new blackbox lib
 
- Makefile.am		 |    2 +-
- Makefile.in		 |    2 +-
- configure		 |    4 +-
- configure.in		 |    3 +-
- data/Makefile.in	 |    1 +
- data/styles/Makefile.in |    1 +
- doc/Makefile.in	 |    1 +
- lib/BaseDisplay.cc	 |  896 ++++++++++++
- lib/BaseDisplay.hh	 |  314 +++++
- lib/Color.cc		 |  486 +++++++
- lib/Color.hh		 |  256 ++++
- lib/GCCache.cc		 |  406 ++++++
- lib/GCCache.hh		 |  270 ++++
- lib/Image.cc		 | 3272 +++++++++++++++++++++++++++++++++++++++++++
- lib/Image.hh		 |  336 +++++
- lib/ImageControl.cc	 | 1110 +++++++++++++++
- lib/Makefile.am	 |  106 ++
- lib/Makefile.in	 |  364 +++++
- lib/Texture.cc		 |  392 ++++++
- lib/Texture.hh		 |  216 +++
- lib/Timer.cc		 |  222 +++
- lib/Timer.hh		 |  262 ++++
- lib/Util.cc		 |  492 +++++++
- lib/Util.hh		 |  222 +++
- lib/i18n.cc		 |  238 ++++
- lib/i18n.hh		 |  126 ++
- nls/C/Makefile.in	 |    1 +
- nls/Makefile.in	 |    1 +
- nls/da_DK/Makefile.in	 |    1 +
- nls/de_DE/Makefile.in	 |    1 +
- nls/es_AR/Makefile.in	 |    1 +
- nls/es_ES/Makefile.in	 |    1 +
- nls/fr_FR/Makefile.in	 |    1 +
- nls/hu_HU/Makefile.in	 |    1 +
- nls/it_IT/Makefile.in	 |    1 +
- nls/ja_JP/Makefile.in	 |    1 +
- nls/ko_KR/Makefile.in	 |    1 +
- nls/lv_LV/Makefile.in	 |    1 +
- nls/nl_NL/Makefile.in	 |    1 +
- nls/no_NO/Makefile.in	 |    1 +
- nls/pl_PL/Makefile.in	 |    1 +
- nls/pt_BR/Makefile.in	 |    1 +
- nls/ro_RO/Makefile.in	 |    1 +
- nls/ru_RU/Makefile.in	 |    1 +
- nls/sk_SK/Makefile.in	 |    1 +
- nls/sl_SI/Makefile.in	 |    1 +
- nls/sv_SE/Makefile.in	 |    1 +
- nls/uk_UA/Makefile.in	 |    1 +
- nls/zh_CN/Makefile.in	 |    1 +
- nls/zh_TW/Makefile.in	 |    1 +
- src/BaseDisplay.cc	 |  468 -------
- src/BaseDisplay.hh	 |  157 ---
- src/Color.cc		 |  243 ----
- src/Color.hh		 |  128 --
- src/GCCache.cc		 |  203 ---
- src/GCCache.hh		 |  135 --
- src/Image.cc		 | 1649 ----------------------
- src/Image.hh		 |  168 ---
- src/ImageControl.cc	 |  599 --------
- src/Makefile.in	 |    1 +
- src/Texture.cc		 |  198 ---
- src/Texture.hh		 |  108 --
- src/Timer.cc		 |  111 --
- src/Timer.hh		 |  131 --
- src/Util.cc		 |  246 ----
- src/Util.hh		 |  111 --
- src/i18n.cc		 |  119 --
- src/i18n.hh		 |   63 -
- util/Makefile.in	 |    1 +
- 69 files changed, 10022 insertions(+), 4841 deletions(-)
+ Makefile.am		     |	  2 +-
+ Makefile.in		     |	  2 +-
+ configure		     |	  4 +-
+ configure.in		     |	  3 +-
+ data/Makefile.in	     |	  1 +
+ data/styles/Makefile.in     |	  1 +
+ doc/Makefile.in	     |	  1 +
+ lib/BaseDisplay.cc	     |	896 +++++++++++
+ {src => lib}/BaseDisplay.hh |	157 ++
+ {src => lib}/Color.cc	     |	243 +++
+ {src => lib}/Color.hh	     |	128 ++
+ {src => lib}/GCCache.cc     |	203 +++
+ {src => lib}/GCCache.hh     |	135 ++
+ lib/Image.cc		     | 3272 +++++++++++++++++++++++++++++++++++++++
+ {src => lib}/Image.hh	     |	168 ++
+ lib/ImageControl.cc	     | 1110 +++++++++++++
+ lib/Makefile.am	     |	106 ++
+ {src => lib}/Makefile.in    |	203 +--
+ {src => lib}/Texture.cc     |	198 ++-
+ {src => lib}/Texture.hh     |	108 ++
+ {src => lib}/Timer.cc	     |	111 ++
+ {src => lib}/Timer.hh	     |	131 ++
+ {src => lib}/Util.cc	     |	246 +++
+ {src => lib}/Util.hh	     |	111 ++
+ {src => lib}/i18n.cc	     |	119 ++
+ {src => lib}/i18n.hh	     |	 63 +
+ nls/C/Makefile.in	     |	  1 +
+ nls/Makefile.in	     |	  1 +
+ nls/da_DK/Makefile.in	     |	  1 +
+ nls/de_DE/Makefile.in	     |	  1 +
+ nls/es_AR/Makefile.in	     |	  1 +
+ nls/es_ES/Makefile.in	     |	  1 +
+ nls/fr_FR/Makefile.in	     |	  1 +
+ nls/hu_HU/Makefile.in	     |	  1 +
+ nls/it_IT/Makefile.in	     |	  1 +
+ nls/ja_JP/Makefile.in	     |	  1 +
+ nls/ko_KR/Makefile.in	     |	  1 +
+ nls/lv_LV/Makefile.in	     |	  1 +
+ nls/nl_NL/Makefile.in	     |	  1 +
+ nls/no_NO/Makefile.in	     |	  1 +
+ nls/pl_PL/Makefile.in	     |	  1 +
+ nls/pt_BR/Makefile.in	     |	  1 +
+ nls/ro_RO/Makefile.in	     |	  1 +
+ nls/ru_RU/Makefile.in	     |	  1 +
+ nls/sk_SK/Makefile.in	     |	  1 +
+ nls/sl_SI/Makefile.in	     |	  1 +
+ nls/sv_SE/Makefile.in	     |	  1 +
+ nls/uk_UA/Makefile.in	     |	  1 +
+ nls/zh_CN/Makefile.in	     |	  1 +
+ nls/zh_TW/Makefile.in	     |	  1 +
+ src/BaseDisplay.cc	     |	468 ------
+ src/Image.cc		     | 1649 --------------------
+ src/ImageControl.cc	     |	599 -------
+ src/Makefile.in	     |	  1 +
+ util/Makefile.in	     |	  1 +
+ 55 files changed, 7618 insertions(+), 2846 deletions(-)
 
 commit d79c058052c451cfd84ad81b38ebaebe939357d2
 Author: shaleh <shaleh>
@@ -12756,62 +13056,62 @@ Date:	Wed Aug 21 17:12:50 2002 +0000
 
     added Polish nls support
 
- ChangeLog		   |   4 +-
- Makefile.in		   |   2 +-
- configure		   |   2 +
- configure.in		   |   1 +
- data/Makefile.in	   |   2 +-
- data/styles/Makefile.in   |   2 +-
- doc/Makefile.in	   |   2 +-
- doc/fr_FR/Makefile.in	   |   2 +-
- doc/ja_JP/Makefile.in	   |   2 +-
- doc/nl_NL/Makefile.in	   |   2 +-
- doc/sl_SI/Makefile.in	   |   2 +-
- nls/C/Makefile.in	   |   2 +-
- nls/Makefile.am	   |   2 +-
- nls/Makefile.in	   |   4 +-
- nls/da_DK/Makefile.in	   |   2 +-
- nls/de_DE/Makefile.in	   |   2 +-
- nls/es_AR/Makefile.in	   |   2 +-
- nls/es_ES/Makefile.in	   |   2 +-
- nls/et_EE/Makefile.in	   |   2 +-
- nls/fr_FR/Makefile.in	   |   2 +-
- nls/hu_HU/Makefile.in	   |   2 +-
- nls/it_IT/Makefile.in	   |   2 +-
- nls/ja_JP/Makefile.in	   |   2 +-
- nls/ko_KR/Makefile.in	   |   2 +-
- nls/nl_NL/Makefile.in	   |   2 +-
- nls/no_NO/Makefile.in	   |   2 +-
- nls/pl_PL/BaseDisplay.m   |  16 ++++
- nls/pl_PL/Basemenu.m	   |   4 +
- nls/pl_PL/Configmenu.m    |  42 +++++++++
- nls/pl_PL/Icon.m	   |   4 +
- nls/pl_PL/Image.m	   |  25 +++++
- nls/pl_PL/Makefile.am	   |  35 +++++++
- nls/pl_PL/Makefile.in	   | 213 ++++++++++++++++++++++++++++++++++++++++++
- nls/pl_PL/Screen.m	   |  53 +++++++++++
- nls/pl_PL/Slit.m	   |   8 ++
- nls/pl_PL/Toolbar.m	   |  22 +++++
- nls/pl_PL/Window.m	   |  16 ++++
- nls/pl_PL/Windowmenu.m    |  20 ++++
- nls/pl_PL/Workspace.m	   |   4 +
- nls/pl_PL/Workspacemenu.m |   8 ++
- nls/pl_PL/blackbox.m	   |   6 ++
- nls/pl_PL/bsetroot.m	   |  16 ++++
- nls/pl_PL/common.m	   |  38 ++++++++
- nls/pl_PL/main.m	   |  20 ++++
- nls/pt_BR/Makefile.in	   |   2 +-
- nls/ro_RO/Makefile.in	   |   2 +-
- nls/ru_RU/Makefile.in	   |   2 +-
- nls/sl_SI/Makefile.in	   |   2 +-
- nls/sv_SE/Makefile.in	   |   2 +-
- nls/tr_TR/Makefile.in	   |   2 +-
- nls/uk_UA/Makefile.in	   |   2 +-
- nls/zh_CN/Makefile.in	   |   2 +-
- nls/zh_TW/Makefile.in	   |   2 +-
- src/Makefile.in	   |   2 +-
- util/Makefile.in	   |   2 +-
- 55 files changed, 590 insertions(+), 37 deletions(-)
+ ChangeLog			  |  4 +--
+ Makefile.in			  |  2 +-
+ configure			  |  2 ++
+ configure.in			  |  1 +
+ data/Makefile.in		  |  2 +-
+ data/styles/Makefile.in	  |  2 +-
+ doc/Makefile.in		  |  2 +-
+ doc/fr_FR/Makefile.in		  |  2 +-
+ doc/ja_JP/Makefile.in		  |  2 +-
+ doc/nl_NL/Makefile.in		  |  2 +-
+ doc/sl_SI/Makefile.in		  |  2 +-
+ nls/C/Makefile.in		  |  2 +-
+ nls/Makefile.am		  |  2 +-
+ nls/Makefile.in		  |  4 +--
+ nls/da_DK/Makefile.in		  |  2 +-
+ nls/de_DE/Makefile.in		  |  2 +-
+ nls/es_AR/Makefile.in		  |  2 +-
+ nls/es_ES/Makefile.in		  |  2 +-
+ nls/et_EE/Makefile.in		  |  2 +-
+ nls/fr_FR/Makefile.in		  |  2 +-
+ nls/hu_HU/Makefile.in		  |  2 +-
+ nls/it_IT/Makefile.in		  |  2 +-
+ nls/ja_JP/Makefile.in		  |  2 +-
+ nls/ko_KR/Makefile.in		  |  2 +-
+ nls/nl_NL/Makefile.in		  |  2 +-
+ nls/no_NO/Makefile.in		  |  2 +-
+ nls/pl_PL/BaseDisplay.m	  | 16 +++++++++++
+ nls/pl_PL/Basemenu.m		  |  4 +++
+ nls/pl_PL/Configmenu.m		  | 42 ++++++++++++++++++++++++++++
+ nls/pl_PL/Icon.m		  |  4 +++
+ nls/pl_PL/Image.m		  | 25 +++++++++++++++++
+ nls/pl_PL/Makefile.am		  | 35 ++++++++++++++++++++++++
+ nls/{et_EE => pl_PL}/Makefile.in |  8 +++---
+ nls/pl_PL/Screen.m		  | 53 ++++++++++++++++++++++++++++++++++++
+ nls/pl_PL/Slit.m		  |  8 ++++++
+ nls/pl_PL/Toolbar.m		  | 22 +++++++++++++++
+ nls/pl_PL/Window.m		  | 16 +++++++++++
+ nls/pl_PL/Windowmenu.m		  | 20 ++++++++++++++
+ nls/pl_PL/Workspace.m		  |  4 +++
+ nls/pl_PL/Workspacemenu.m	  |  8 ++++++
+ nls/pl_PL/blackbox.m		  |  6 ++++
+ nls/pl_PL/bsetroot.m		  | 16 +++++++++++
+ nls/pl_PL/common.m		  | 38 ++++++++++++++++++++++++++
+ nls/pl_PL/main.m		  | 20 ++++++++++++++
+ nls/pt_BR/Makefile.in		  |  2 +-
+ nls/ro_RO/Makefile.in		  |  2 +-
+ nls/ru_RU/Makefile.in		  |  2 +-
+ nls/sl_SI/Makefile.in		  |  2 +-
+ nls/sv_SE/Makefile.in		  |  2 +-
+ nls/tr_TR/Makefile.in		  |  2 +-
+ nls/uk_UA/Makefile.in		  |  2 +-
+ nls/zh_CN/Makefile.in		  |  2 +-
+ nls/zh_TW/Makefile.in		  |  2 +-
+ src/Makefile.in		  |  2 +-
+ util/Makefile.in		  |  2 +-
+ 55 files changed, 381 insertions(+), 41 deletions(-)
 
 commit f7a0c8bc05ce4428850053fbfed68ce74479df98
 Author: shaleh <shaleh>
@@ -13238,31 +13538,31 @@ Date:	Thu Jul 25 15:40:06 2002 +0000
     added es_AR as it is different enough from es_ES to warrant its own
     translation
 
- configure		   |   2 +
- configure.in		   |   1 +
- nls/Makefile.am	   |   4 +-
- nls/Makefile.in	   |   4 +-
- nls/es_AR/BaseDisplay.m   |  16 ++++
- nls/es_AR/Basemenu.m	   |   4 +
- nls/es_AR/Configmenu.m    |  42 +++++++++
- nls/es_AR/Icon.m	   |   4 +
- nls/es_AR/Image.m	   |  24 +++++
- nls/es_AR/Makefile.am	   |  35 +++++++
- nls/es_AR/Makefile.in	   | 213 ++++++++++++++++++++++++++++++++++++++++++
- nls/es_AR/Screen.m	   |  50 ++++++++++
- nls/es_AR/Slit.m	   |   8 ++
- nls/es_AR/Toolbar.m	   |  22 +++++
- nls/es_AR/Window.m	   |  17 ++++
- nls/es_AR/Windowmenu.m    |  20 ++++
- nls/es_AR/Workspace.m	   |   4 +
- nls/es_AR/Workspacemenu.m |   8 ++
- nls/es_AR/blackbox.m	   |   6 ++
- nls/es_AR/bsetroot.m	   |  15 +++
- nls/es_AR/common.m	   |  38 ++++++++
- nls/es_AR/main.m	   |  20 ++++
- nls/es_ES/Makefile.am	   |   2 -
- nls/es_ES/Makefile.in	   |   2 -
- 24 files changed, 553 insertions(+), 8 deletions(-)
+ configure			  |  2 ++
+ configure.in			  |  1 +
+ nls/Makefile.am		  |  4 +--
+ nls/Makefile.in		  |  4 +--
+ nls/es_AR/BaseDisplay.m	  | 16 ++++++++++++
+ nls/es_AR/Basemenu.m		  |  4 +++
+ nls/es_AR/Configmenu.m		  | 42 ++++++++++++++++++++++++++++++
+ nls/es_AR/Icon.m		  |  4 +++
+ nls/es_AR/Image.m		  | 24 +++++++++++++++++
+ nls/{es_ES => es_AR}/Makefile.am |  9 +------
+ nls/{es_ES => es_AR}/Makefile.in | 13 +++-------
+ nls/es_AR/Screen.m		  | 50 ++++++++++++++++++++++++++++++++++++
+ nls/es_AR/Slit.m		  |  8 ++++++
+ nls/es_AR/Toolbar.m		  | 22 ++++++++++++++++
+ nls/es_AR/Window.m		  | 17 ++++++++++++
+ nls/es_AR/Windowmenu.m		  | 20 +++++++++++++++
+ nls/es_AR/Workspace.m		  |  4 +++
+ nls/es_AR/Workspacemenu.m	  |  8 ++++++
+ nls/es_AR/blackbox.m		  |  6 +++++
+ nls/es_AR/bsetroot.m		  | 15 +++++++++++
+ nls/es_AR/common.m		  | 38 +++++++++++++++++++++++++++
+ nls/es_AR/main.m		  | 20 +++++++++++++++
+ nls/es_ES/Makefile.am		  |  2 --
+ nls/es_ES/Makefile.in		  |  2 --
+ 24 files changed, 309 insertions(+), 26 deletions(-)
 
 commit 5fae892b85c6410058f78ca14576254562ecf747
 Author: shaleh <shaleh>
@@ -13803,64 +14103,64 @@ Date:	Sat Jul 6 18:18:55 2002 +0000
       only need to set the x,y of the client.rect in positionWindows()
       other minor stuff
 
- ChangeLog		   |   4 +-
- Makefile.in		   |  10 +-
- configure		   |   2 +
- configure.in		   |   1 +
- data/Makefile.in	   |   8 +-
- data/styles/Makefile.in   |   4 +-
- doc/Makefile.in	   |   8 +-
- doc/fr_FR/Makefile.in	   |   4 +-
- doc/ja_JP/Makefile.in	   |   4 +-
- doc/nl_NL/Makefile.in	   |   4 +-
- doc/sl_SI/Makefile.in	   |   4 +-
- nls/C/Makefile.in	   |   4 +-
- nls/Makefile.am	   |   4 +-
- nls/Makefile.in	   |  10 +-
- nls/da_DK/Makefile.in	   |   4 +-
- nls/de_DE/Makefile.in	   |   4 +-
- nls/es_ES/Makefile.in	   |   4 +-
- nls/et_EE/Makefile.in	   |   4 +-
- nls/fr_FR/Makefile.in	   |   4 +-
- nls/hu_HU/Makefile.in	   |   4 +-
- nls/it_IT/Makefile.in	   |   4 +-
- nls/ja_JP/Makefile.in	   |   4 +-
- nls/ko_KR/BaseDisplay.m   |  16 ++++
- nls/ko_KR/Basemenu.m	   |   4 +
- nls/ko_KR/Configmenu.m    |  40 ++++++++
- nls/ko_KR/Icon.m	   |   4 +
- nls/ko_KR/Image.m	   |  24 +++++
- nls/ko_KR/Makefile.am	   |  35 +++++++
- nls/ko_KR/Makefile.in	   | 213 ++++++++++++++++++++++++++++++++++++++++++
- nls/ko_KR/Screen.m	   |  54 +++++++++++
- nls/ko_KR/Slit.m	   |   8 ++
- nls/ko_KR/Toolbar.m	   |  22 +++++
- nls/ko_KR/Window.m	   |  17 ++++
- nls/ko_KR/Windowmenu.m    |  20 ++++
- nls/ko_KR/Workspace.m	   |   4 +
- nls/ko_KR/Workspacemenu.m |   8 ++
- nls/ko_KR/blackbox.m	   |   6 ++
- nls/ko_KR/bsetroot.m	   |  16 ++++
- nls/ko_KR/common.m	   |  38 ++++++++
- nls/ko_KR/main.m	   |  20 ++++
- nls/nl_NL/Makefile.in	   |   4 +-
- nls/pt_BR/Makefile.in	   |   4 +-
- nls/ru_RU/Makefile.in	   |   4 +-
- nls/sl_SI/Makefile.in	   |   4 +-
- nls/sv_SE/Makefile.in	   |   4 +-
- nls/tr_TR/Makefile.in	   |   4 +-
- nls/uk_UA/Makefile.in	   |   4 +-
- nls/zh_CN/Makefile.in	   |   4 +-
- nls/zh_TW/Makefile.in	   |   4 +-
- src/Basemenu.hh	   |   3 +-
- src/GCCache.cc		   |   6 ++
- src/GCCache.hh		   |   2 +
- src/Makefile.in	   |   6 +-
- src/Slit.cc		   |   3 +
- src/Toolbar.cc		   |   3 +
- src/Window.cc		   |  48 ++++++----
- util/Makefile.in	   |   6 +-
- 57 files changed, 672 insertions(+), 93 deletions(-)
+ ChangeLog			  |  4 +--
+ Makefile.in			  | 10 +++----
+ configure			  |  2 ++
+ configure.in			  |  1 +
+ data/Makefile.in		  |  8 +++---
+ data/styles/Makefile.in	  |  4 +--
+ doc/Makefile.in		  |  8 +++---
+ doc/fr_FR/Makefile.in		  |  4 +--
+ doc/ja_JP/Makefile.in		  |  4 +--
+ doc/nl_NL/Makefile.in		  |  4 +--
+ doc/sl_SI/Makefile.in		  |  4 +--
+ nls/C/Makefile.in		  |  4 +--
+ nls/Makefile.am		  |  4 +--
+ nls/Makefile.in		  | 10 +++----
+ nls/da_DK/Makefile.in		  |  4 +--
+ nls/de_DE/Makefile.in		  |  4 +--
+ nls/es_ES/Makefile.in		  |  4 +--
+ nls/et_EE/Makefile.in		  |  4 +--
+ nls/fr_FR/Makefile.in		  |  4 +--
+ nls/hu_HU/Makefile.in		  |  4 +--
+ nls/it_IT/Makefile.in		  |  4 +--
+ nls/ja_JP/Makefile.in		  |  4 +--
+ nls/ko_KR/BaseDisplay.m	  | 16 +++++++++++
+ nls/ko_KR/Basemenu.m		  |  4 +++
+ nls/ko_KR/Configmenu.m		  | 40 ++++++++++++++++++++++++++
+ nls/ko_KR/Icon.m		  |  4 +++
+ nls/ko_KR/Image.m		  | 24 ++++++++++++++++
+ nls/ko_KR/Makefile.am		  | 35 +++++++++++++++++++++++
+ nls/{et_EE => ko_KR}/Makefile.in | 10 +++----
+ nls/ko_KR/Screen.m		  | 54 ++++++++++++++++++++++++++++++++++++
+ nls/ko_KR/Slit.m		  |  8 ++++++
+ nls/ko_KR/Toolbar.m		  | 22 +++++++++++++++
+ nls/ko_KR/Window.m		  | 17 ++++++++++++
+ nls/ko_KR/Windowmenu.m		  | 20 +++++++++++++
+ nls/ko_KR/Workspace.m		  |  4 +++
+ nls/ko_KR/Workspacemenu.m	  |  8 ++++++
+ nls/ko_KR/blackbox.m		  |  6 ++++
+ nls/ko_KR/bsetroot.m		  | 16 +++++++++++
+ nls/ko_KR/common.m		  | 38 +++++++++++++++++++++++++
+ nls/ko_KR/main.m		  | 20 +++++++++++++
+ nls/nl_NL/Makefile.in		  |  4 +--
+ nls/pt_BR/Makefile.in		  |  4 +--
+ nls/ru_RU/Makefile.in		  |  4 +--
+ nls/sl_SI/Makefile.in		  |  4 +--
+ nls/sv_SE/Makefile.in		  |  4 +--
+ nls/tr_TR/Makefile.in		  |  4 +--
+ nls/uk_UA/Makefile.in		  |  4 +--
+ nls/zh_CN/Makefile.in		  |  4 +--
+ nls/zh_TW/Makefile.in		  |  4 +--
+ src/Basemenu.hh		  |  3 +-
+ src/GCCache.cc			  |  6 ++++
+ src/GCCache.hh			  |  2 ++
+ src/Makefile.in		  |  6 ++--
+ src/Slit.cc			  |  3 ++
+ src/Toolbar.cc			  |  3 ++
+ src/Window.cc			  | 48 ++++++++++++++++++++------------
+ util/Makefile.in		  |  6 ++--
+ 57 files changed, 464 insertions(+), 98 deletions(-)
 
 commit e0871d10d48bf382d6240a19e9ea6ec778687924
 Author: uid34057 <uid34057>
@@ -15168,62 +15468,62 @@ Date:	Wed May 22 23:08:36 2002 +0000
 
     nls Makefile updates and the addition of Ukrainian nls file
 
- configure		   |   2 +
- configure.in		   |   1 +
- nls/Makefile.am	   |   2 +-
- nls/Makefile.in	   |   2 +-
- nls/da_DK/Makefile.am	   |  22 +++--
- nls/da_DK/Makefile.in	   |  14 +--
- nls/de_DE/Makefile.am	   |  20 ++--
- nls/de_DE/Makefile.in	   |  16 ++--
- nls/es_ES/Makefile.am	   |  44 +++++----
- nls/es_ES/Makefile.in	   |  14 +--
- nls/et_EE/Makefile.am	   |  22 +++--
- nls/et_EE/Makefile.in	   |  14 +--
- nls/fr_FR/Makefile.am	   |  24 +++--
- nls/fr_FR/Makefile.in	   |  16 ++--
- nls/hu_HU/Makefile.am	   |  14 +--
- nls/hu_HU/Makefile.in	   |  14 +--
- nls/it_IT/Makefile.am	   |  23 +++--
- nls/it_IT/Makefile.in	   |  14 +--
- nls/ja_JP/Makefile.am	   |  21 +++--
- nls/ja_JP/Makefile.in	   |  14 +--
- nls/nl_NL/Makefile.am	   |  23 +++--
- nls/nl_NL/Makefile.in	   |  14 +--
- nls/pt_BR/Makefile.am	   |  39 ++++----
- nls/pt_BR/Makefile.in	   |  14 +--
- nls/ru_RU/Makefile.am	   |  44 ++++-----
- nls/ru_RU/Makefile.in	   |  14 +--
- nls/sl_SI/Makefile.am	   |  21 +++--
- nls/sl_SI/Makefile.in	   |  14 +--
- nls/sv_SE/Makefile.am	   |  46 +++++----
- nls/sv_SE/Makefile.in	   |  14 +--
- nls/tr_TR/Makefile.am	   |  47 +++++-----
- nls/tr_TR/Makefile.in	   |  18 ++--
- nls/uk_UA/BaseDisplay.m   |  16 ++++
- nls/uk_UA/Basemenu.m	   |   4 +
- nls/uk_UA/Configmenu.m    |  38 ++++++++
- nls/uk_UA/Icon.m	   |   4 +
- nls/uk_UA/Image.m	   |  24 +++++
- nls/uk_UA/Makefile.am	   |  35 +++++++
- nls/uk_UA/Makefile.in	   | 213 ++++++++++++++++++++++++++++++++++++++++++
- nls/uk_UA/Screen.m	   |  52 +++++++++++
- nls/uk_UA/Slit.m	   |   8 ++
- nls/uk_UA/Toolbar.m	   |  22 +++++
- nls/uk_UA/Window.m	   |  17 ++++
- nls/uk_UA/Windowmenu.m    |  20 ++++
- nls/uk_UA/Workspace.m	   |   4 +
- nls/uk_UA/Workspacemenu.m |   8 ++
- nls/uk_UA/blackbox.m	   |   6 ++
- nls/uk_UA/bsetroot.m	   |  16 ++++
- nls/uk_UA/common.m	   |  38 ++++++++
- nls/uk_UA/main.m	   |  21 +++++
- nls/zh_CN/Makefile.am	   |  14 +--
- nls/zh_CN/Makefile.in	   |  14 +--
- nls/zh_TW/Makefile.am	   |  14 +--
- nls/zh_TW/Makefile.in	   |  14 +--
- src/Makefile.in	   |   4 +-
- 55 files changed, 935 insertions(+), 292 deletions(-)
+ configure			  |  2 ++
+ configure.in			  |  1 +
+ nls/Makefile.am		  |  2 +-
+ nls/Makefile.in		  |  2 +-
+ nls/da_DK/Makefile.am		  | 22 +++++++++------
+ nls/da_DK/Makefile.in		  | 14 +++++-----
+ nls/de_DE/Makefile.am		  | 20 +++++++-------
+ nls/de_DE/Makefile.in		  | 16 ++++++-----
+ nls/es_ES/Makefile.am		  | 44 +++++++++++++++++-------------
+ nls/es_ES/Makefile.in		  | 14 +++++-----
+ nls/et_EE/Makefile.am		  | 22 +++++++++------
+ nls/et_EE/Makefile.in		  | 14 +++++-----
+ nls/fr_FR/Makefile.am		  | 24 ++++++++++-------
+ nls/fr_FR/Makefile.in		  | 16 ++++++-----
+ nls/hu_HU/Makefile.am		  | 14 +++++-----
+ nls/hu_HU/Makefile.in		  | 14 +++++-----
+ nls/it_IT/Makefile.am		  | 23 +++++++++-------
+ nls/it_IT/Makefile.in		  | 14 +++++-----
+ nls/ja_JP/Makefile.am		  | 21 +++++++++------
+ nls/ja_JP/Makefile.in		  | 14 +++++-----
+ nls/nl_NL/Makefile.am		  | 23 +++++++++-------
+ nls/nl_NL/Makefile.in		  | 14 +++++-----
+ nls/pt_BR/Makefile.am		  | 39 +++++++++++++++------------
+ nls/pt_BR/Makefile.in		  | 14 +++++-----
+ nls/ru_RU/Makefile.am		  | 44 +++++++++++++++---------------
+ nls/ru_RU/Makefile.in		  | 14 +++++-----
+ nls/sl_SI/Makefile.am		  | 21 +++++++++------
+ nls/sl_SI/Makefile.in		  | 14 +++++-----
+ nls/sv_SE/Makefile.am		  | 46 +++++++++++++++++--------------
+ nls/sv_SE/Makefile.in		  | 14 +++++-----
+ nls/tr_TR/Makefile.am		  | 47 ++++++++++++++++----------------
+ nls/tr_TR/Makefile.in		  | 18 ++++++-------
+ nls/uk_UA/BaseDisplay.m	  | 16 +++++++++++
+ nls/uk_UA/Basemenu.m		  |  4 +++
+ nls/uk_UA/Configmenu.m		  | 38 ++++++++++++++++++++++++++
+ nls/uk_UA/Icon.m		  |  4 +++
+ nls/uk_UA/Image.m		  | 24 +++++++++++++++++
+ nls/{hu_HU => uk_UA}/Makefile.am | 14 +++++-----
+ nls/{da_DK => uk_UA}/Makefile.in | 18 +++++++------
+ nls/uk_UA/Screen.m		  | 52 ++++++++++++++++++++++++++++++++++++
+ nls/uk_UA/Slit.m		  |  8 ++++++
+ nls/uk_UA/Toolbar.m		  | 22 +++++++++++++++
+ nls/uk_UA/Window.m		  | 17 ++++++++++++
+ nls/uk_UA/Windowmenu.m		  | 20 ++++++++++++++
+ nls/uk_UA/Workspace.m		  |  4 +++
+ nls/uk_UA/Workspacemenu.m	  |  8 ++++++
+ nls/uk_UA/blackbox.m		  |  6 +++++
+ nls/uk_UA/bsetroot.m		  | 16 +++++++++++
+ nls/uk_UA/common.m		  | 38 ++++++++++++++++++++++++++
+ nls/uk_UA/main.m		  | 21 +++++++++++++++
+ nls/zh_CN/Makefile.am		  | 14 +++++-----
+ nls/zh_CN/Makefile.in		  | 14 +++++-----
+ nls/zh_TW/Makefile.am		  | 14 +++++-----
+ nls/zh_TW/Makefile.in		  | 14 +++++-----
+ src/Makefile.in		  |  4 +--
+ 55 files changed, 705 insertions(+), 306 deletions(-)
 
 commit d60684e4fcc0f06512ee9e997e2167a9ae1a725f
 Author: shaleh <shaleh>
@@ -17211,56 +17511,56 @@ Date:	Mon Mar 25 21:08:43 2002 +0000
 
     updated French support
 
- AUTHORS		   |   2 +
- ChangeLog		   |   1 +
- Makefile.in		   |   9 +-
- configure		   |   2 +
- configure.in		   |   1 +
- data/Makefile.in	   |   9 +-
- data/styles/Makefile.in   |   9 +-
- doc/Makefile.am	   |  10 +-
- doc/Makefile.in	   |  11 +-
- doc/fr_FR/Makefile.am	   |  42 ++
- doc/fr_FR/Makefile.in	   | 220 +++++++++++
- doc/fr_FR/blackbox.1.in   | 873 ++++++++++++++++++++++++++++++++++++++++++
- doc/fr_FR/bsetroot.1	   |  83 ++++
- doc/ja_JP/Makefile.in	   |   9 +-
- doc/nl_NL/Makefile.in	   |   9 +-
- doc/sl_SI/Makefile.in	   |   9 +-
- nls/C/Makefile.in	   |   9 +-
- nls/Makefile.in	   |   9 +-
- nls/da_DK/Makefile.in	   |   9 +-
- nls/de_DE/Makefile.in	   |   9 +-
- nls/es_ES/Makefile.in	   |   9 +-
- nls/et_EE/Makefile.in	   |   9 +-
- nls/fr_FR/BaseDisplay.m   |   6 +-
- nls/fr_FR/Configmenu.m    |  14 +-
- nls/fr_FR/Image.m	   |   8 +-
- nls/fr_FR/Makefile.in	   |   9 +-
- nls/fr_FR/Screen.m	   |  24 +-
- nls/fr_FR/Slit.m	   |   6 +-
- nls/fr_FR/Toolbar.m	   |   2 +-
- nls/fr_FR/Window.m	   |   2 +-
- nls/fr_FR/Windowmenu.m    |  12 +-
- nls/fr_FR/Workspace.m	   |   2 +-
- nls/fr_FR/Workspacemenu.m |   4 +-
- nls/fr_FR/bsetroot.m	   |  14 +-
- nls/fr_FR/common.m	   |   5 +-
- nls/fr_FR/main.m	   |   6 +-
- nls/hu_HU/Makefile.in	   |   9 +-
- nls/it_IT/Makefile.in	   |   9 +-
- nls/ja_JP/Makefile.in	   |   9 +-
- nls/nl_NL/Makefile.in	   |   9 +-
- nls/pt_BR/Makefile.in	   |   9 +-
- nls/ru_RU/Makefile.in	   |   9 +-
- nls/sl_SI/Makefile.in	   |   9 +-
- nls/sv_SE/Makefile.in	   |   9 +-
- nls/tr_TR/Makefile.in	   |   9 +-
- nls/zh_CN/Makefile.in	   |   9 +-
- nls/zh_TW/Makefile.in	   |   9 +-
- src/Makefile.in	   |  95 +----
- util/Makefile.in	   |  88 +----
- 49 files changed, 1369 insertions(+), 380 deletions(-)
+ AUTHORS			  |   2 +
+ ChangeLog			  |   1 +
+ Makefile.in			  |   9 +-
+ configure			  |   2 +
+ configure.in			  |   1 +
+ data/Makefile.in		  |   9 +-
+ data/styles/Makefile.in	  |   9 +-
+ doc/Makefile.am		  |  10 +-
+ doc/Makefile.in		  |  11 +-
+ doc/fr_FR/Makefile.am		  |  42 ++
+ doc/{ja_JP => fr_FR}/Makefile.in |  13 +-
+ doc/fr_FR/blackbox.1.in	  | 873 +++++++++++++++++++++++++++++++++++
+ doc/fr_FR/bsetroot.1		  |  83 ++++
+ doc/ja_JP/Makefile.in		  |   9 +-
+ doc/nl_NL/Makefile.in		  |   9 +-
+ doc/sl_SI/Makefile.in		  |   9 +-
+ nls/C/Makefile.in		  |   9 +-
+ nls/Makefile.in		  |   9 +-
+ nls/da_DK/Makefile.in		  |   9 +-
+ nls/de_DE/Makefile.in		  |   9 +-
+ nls/es_ES/Makefile.in		  |   9 +-
+ nls/et_EE/Makefile.in		  |   9 +-
+ nls/fr_FR/BaseDisplay.m	  |   6 +-
+ nls/fr_FR/Configmenu.m		  |  14 +-
+ nls/fr_FR/Image.m		  |   8 +-
+ nls/fr_FR/Makefile.in		  |   9 +-
+ nls/fr_FR/Screen.m		  |  24 +-
+ nls/fr_FR/Slit.m		  |   6 +-
+ nls/fr_FR/Toolbar.m		  |   2 +-
+ nls/fr_FR/Window.m		  |   2 +-
+ nls/fr_FR/Windowmenu.m		  |  12 +-
+ nls/fr_FR/Workspace.m		  |   2 +-
+ nls/fr_FR/Workspacemenu.m	  |   4 +-
+ nls/fr_FR/bsetroot.m		  |  14 +-
+ nls/fr_FR/common.m		  |   5 +-
+ nls/fr_FR/main.m		  |   6 +-
+ nls/hu_HU/Makefile.in		  |   9 +-
+ nls/it_IT/Makefile.in		  |   9 +-
+ nls/ja_JP/Makefile.in		  |   9 +-
+ nls/nl_NL/Makefile.in		  |   9 +-
+ nls/pt_BR/Makefile.in		  |   9 +-
+ nls/ru_RU/Makefile.in		  |   9 +-
+ nls/sl_SI/Makefile.in		  |   9 +-
+ nls/sv_SE/Makefile.in		  |   9 +-
+ nls/tr_TR/Makefile.in		  |   9 +-
+ nls/zh_CN/Makefile.in		  |   9 +-
+ nls/zh_TW/Makefile.in		  |   9 +-
+ src/Makefile.in		  |  95 +---
+ util/Makefile.in		  |  88 +---
+ 49 files changed, 1153 insertions(+), 389 deletions(-)
 
 commit 21ef46f88d396c47999ba1e54d80c180fe2cce32
 Author: shaleh <shaleh>
@@ -17268,56 +17568,56 @@ Date:	Mon Mar 25 20:58:30 2002 +0000
 
     added Hungarian nls support
 
- AUTHORS		   |   8 +-
- ChangeLog		   |   2 +-
- Makefile.in		   |   9 +-
- configure		   |   2 +
- configure.in		   |   1 +
- data/Makefile.in	   |   9 +-
- data/styles/Makefile.in   |   9 +-
- doc/Makefile.in	   |   9 +-
- doc/ja_JP/Makefile.in	   |   9 +-
- doc/nl_NL/Makefile.in	   |   9 +-
- doc/sl_SI/Makefile.in	   |   9 +-
- nls/C/Makefile.in	   |   9 +-
- nls/Makefile.am	   |   2 +-
- nls/Makefile.in	   |  11 ++-
- nls/da_DK/Makefile.in	   |   9 +-
- nls/de_DE/Makefile.in	   |   9 +-
- nls/es_ES/Makefile.in	   |   9 +-
- nls/et_EE/Makefile.in	   |   9 +-
- nls/fr_FR/Makefile.in	   |   9 +-
- nls/hu_HU/BaseDisplay.m   |  16 ++++
- nls/hu_HU/Basemenu.m	   |   4 +
- nls/hu_HU/Configmenu.m    |  38 ++++++++
- nls/hu_HU/Icon.m	   |   4 +
- nls/hu_HU/Image.m	   |  24 +++++
- nls/hu_HU/Makefile.am	   |  33 +++++++
- nls/hu_HU/Makefile.in	   | 216 ++++++++++++++++++++++++++++++++++++++++++
- nls/hu_HU/Screen.m	   |  52 ++++++++++
- nls/hu_HU/Slit.m	   |   8 ++
- nls/hu_HU/Toolbar.m	   |  22 +++++
- nls/hu_HU/Window.m	   |  17 ++++
- nls/hu_HU/Windowmenu.m    |  20 ++++
- nls/hu_HU/Workspace.m	   |   4 +
- nls/hu_HU/Workspacemenu.m |   8 ++
- nls/hu_HU/blackbox.m	   |   6 ++
- nls/hu_HU/bsetroot.m	   |  16 ++++
- nls/hu_HU/common.m	   |  38 ++++++++
- nls/hu_HU/main.m	   |  20 ++++
- nls/it_IT/Makefile.in	   |   9 +-
- nls/ja_JP/Makefile.in	   |   9 +-
- nls/nl_NL/Makefile.in	   |   9 +-
- nls/pt_BR/Makefile.in	   |   9 +-
- nls/ru_RU/Makefile.in	   |   9 +-
- nls/sl_SI/Makefile.in	   |   9 +-
- nls/sv_SE/Makefile.in	   |   9 +-
- nls/tr_TR/Makefile.in	   |   9 +-
- nls/zh_CN/Makefile.in	   |   9 +-
- nls/zh_TW/Makefile.in	   |   9 +-
- src/Makefile.in	   |  95 +++++++++++++++----
- util/Makefile.in	   |  88 ++++++++++++++---
- 49 files changed, 878 insertions(+), 84 deletions(-)
+ AUTHORS			  |  8 ++-
+ ChangeLog			  |  2 +-
+ Makefile.in			  |  9 +++-
+ configure			  |  2 +
+ configure.in			  |  1 +
+ data/Makefile.in		  |  9 +++-
+ data/styles/Makefile.in	  |  9 +++-
+ doc/Makefile.in		  |  9 +++-
+ doc/ja_JP/Makefile.in		  |  9 +++-
+ doc/nl_NL/Makefile.in		  |  9 +++-
+ doc/sl_SI/Makefile.in		  |  9 +++-
+ nls/C/Makefile.in		  |  9 +++-
+ nls/Makefile.am		  |  2 +-
+ nls/Makefile.in		  | 11 +++--
+ nls/da_DK/Makefile.in		  |  9 +++-
+ nls/de_DE/Makefile.in		  |  9 +++-
+ nls/es_ES/Makefile.in		  |  9 +++-
+ nls/et_EE/Makefile.in		  |  9 +++-
+ nls/fr_FR/Makefile.in		  |  9 +++-
+ nls/hu_HU/BaseDisplay.m	  | 16 ++++++
+ nls/hu_HU/Basemenu.m		  |  4 ++
+ nls/hu_HU/Configmenu.m		  | 38 +++++++++++++++
+ nls/hu_HU/Icon.m		  |  4 ++
+ nls/hu_HU/Image.m		  | 24 +++++++++
+ nls/hu_HU/Makefile.am		  | 33 +++++++++++++
+ nls/{et_EE => hu_HU}/Makefile.in | 23 +++++----
+ nls/hu_HU/Screen.m		  | 52 ++++++++++++++++++++
+ nls/hu_HU/Slit.m		  |  8 +++
+ nls/hu_HU/Toolbar.m		  | 22 +++++++++
+ nls/hu_HU/Window.m		  | 17 +++++++
+ nls/hu_HU/Windowmenu.m		  | 20 ++++++++
+ nls/hu_HU/Workspace.m		  |  4 ++
+ nls/hu_HU/Workspacemenu.m	  |  8 +++
+ nls/hu_HU/blackbox.m		  |  6 +++
+ nls/hu_HU/bsetroot.m		  | 16 ++++++
+ nls/hu_HU/common.m		  | 38 +++++++++++++++
+ nls/hu_HU/main.m		  | 20 ++++++++
+ nls/it_IT/Makefile.in		  |  9 +++-
+ nls/ja_JP/Makefile.in		  |  9 +++-
+ nls/nl_NL/Makefile.in		  |  9 +++-
+ nls/pt_BR/Makefile.in		  |  9 +++-
+ nls/ru_RU/Makefile.in		  |  9 +++-
+ nls/sl_SI/Makefile.in		  |  9 +++-
+ nls/sv_SE/Makefile.in		  |  9 +++-
+ nls/tr_TR/Makefile.in		  |  9 +++-
+ nls/zh_CN/Makefile.in		  |  9 +++-
+ nls/zh_TW/Makefile.in		  |  9 +++-
+ src/Makefile.in		  | 95 ++++++++++++++++++++++++++++++------
+ util/Makefile.in		  | 88 +++++++++++++++++++++++++++------
+ 49 files changed, 676 insertions(+), 93 deletions(-)
 
 commit 24c161d9b455eede1d5500b3e304f09c6a86827f
 Author: shaleh <shaleh>

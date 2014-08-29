@@ -8,26 +8,39 @@ SUBDIRS			= data \
 			  src \
 			  util
 
-MAINTAINERCLEANFILES	= Makefile.in \
-			  aclocal.m4 \
-			  config.h.in \
-			  config.guess \
-			  config.sub \
-			  configure \
-			  configure.lineno \
-			  depcomp \
-			  install-sh \
-			  ltmain.sh \
-			  missing \
-			  mkinstalldirs
+EXTRA_DIST		= INSTALL \
+			  COPYING \
+			  AUTHORS \
+			  AUTHORS.in \
+			  NEWS \
+			  NEWS.in \
+			  README \
+			  README.in \
+			  THANKS \
+			  TODO \
+			  ChangeLog
 
-LIBTOOL_DEPS =		@LIBTOOLS_DEPS@
-libtool: $(LIBTOOL_DEPS)
-	$(SHELL) ./config.status --recheck
+dist_noinst_SCRIPTS	= autogen.sh
 
-uninstall-local:
-	-rmdir $(pkgdatadir)
+ChangeLog:
+	( \
+	  echo -e "# created with git log --stat=76 -M -C|fmt -sct -w80\n" ; \
+	  git log --stat=76 -M -C|fmt -sct -w80 ; \
+	)>$@
 
-distclean-local:
-	rm -f *\~ gmon.out .\#*
-	rm -rf autom4te.cache
+AUTHORS.in:
+	( \
+	  echo "\@PACKAGE\@ -- authors file.  \@DATE\@" ; \
+	  echo "" ; \
+	  git log|grep '^Author:'|awk '{if(!authors[$$0]){print$$0;authors[$$0]=1;}}'|tac \
+	)>$@
+
+README: README.in
+	sed -r -e 's:\@PACKAGE\@:$(PACKAGE):g;s:\@VERSION\@:$(VERSION):g;s:\@DATE\@:$(DATE):g' $< >$@
+
+NEWS: NEWS.in
+	sed -r -e 's:\@PACKAGE\@:$(PACKAGE):g;s:\@VERSION\@:$(VERSION):g;s:\@DATE\@:$(DATE):g' $< >$@
+
+AUTHORS: AUTHORS.in
+	sed -r -e 's:\@PACKAGE\@:$(PACKAGE):g;s:\@VERSION\@:$(VERSION):g;s:\@DATE\@:$(DATE):g' $< >$@
+
