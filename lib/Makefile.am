@@ -21,7 +21,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 # DEALINGS IN THE SOFTWARE.
 
-AM_CPPFLAGS = 		@SHAPE@ @MITSHM@ @XFT@ @DEBUG@ @NLS@ \
+AM_CPPFLAGS =		$(X11_CFLAGS) $(XEXT_CFLAGS) $(XFT_CFLAGS) \
 			-DLOCALEPATH=\"$(pkgdatadir)/nls\"
 lib_LTLIBRARIES = 	libbt.la
 libbt_la_SOURCES = 	Application.cc					\
@@ -62,10 +62,8 @@ libbt_HEADERS = 	Application.hh					\
 			Util.hh						\
 			XDG.hh
 
-libbt_la_LIBADD =	@ICONV@ @LOCALE@
+libbt_la_LIBADD =	$(XFT_LIBS) $(XEXT_LIBS) $(X11_LIBS)
 
 pkgconfigdir = 		$(libdir)/pkgconfig
 nodist_pkgconfig_DATA =	libbt.pc
 
-DISTCLEANFILES = 	*\~ *.orig *.rej .\#* *.il *.pchi
-MAINTAINERCLEANFILES = 	Makefile.in

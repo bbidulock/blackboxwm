@@ -1,0 +1,86 @@
+# Japanese translations for blackbox package.
+# Copyright (C) 2014 Bradley T Hughes <bhuhes@trolltech.com>
+# This file is distributed under the same license as the blackbox package.
+# Brian F. G. Bidulock <bidulock@openss7.org>, 2014.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: blackbox 0.70.2.28\n"
+"Report-Msgid-Bugs-To: http://github.com/bbidulock/blackboxwm\n"
+"POT-Creation-Date: 2014-08-29 13:33-0600\n"
+"PO-Revision-Date: 2014-08-29 13:17-0600\n"
+"Last-Translator: Brian F. G. Bidulock <bidulock@openss7.org>\n"
+"Language-Team: Japanese\n"
+"Language: ja_JP\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ASCII\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/Slitmenu.cc:73
+msgid "Slit Options"
+msgstr ""
+
+#: src/Slitmenu.cc:76
+msgid "Direction"
+msgstr ""
+
+#: src/Slitmenu.cc:78
+msgid "Placement"
+msgstr ""
+
+#: src/Slitmenu.cc:81
+msgid "Always on top"
+msgstr ""
+
+#: src/Slitmenu.cc:82
+msgid "Auto hide"
+msgstr ""
+
+#: src/Slitmenu.cc:131
+msgid "Slit Direction"
+msgstr ""
+
+#: src/Slitmenu.cc:134
+msgid "Horizontal"
+msgstr ""
+
+#: src/Slitmenu.cc:135
+msgid "Vertical"
+msgstr ""
+
+#: src/Slitmenu.cc:165
+msgid "Slit Placement"
+msgstr ""
+
+#: src/Slitmenu.cc:168
+msgid "Top Left"
+msgstr ""
+
+#: src/Slitmenu.cc:169
+msgid "Center Left"
+msgstr ""
+
+#: src/Slitmenu.cc:170
+msgid "Bottom Left"
+msgstr ""
+
+#: src/Slitmenu.cc:172
+msgid "Top Center"
+msgstr ""
+
+#: src/Slitmenu.cc:173
+msgid "Bottom Center"
+msgstr ""
+
+#: src/Slitmenu.cc:175
+msgid "Top Right"
+msgstr ""
+
+#: src/Slitmenu.cc:176
+msgid "Center Right"
+msgstr ""
+
+#: src/Slitmenu.cc:177
+msgid "Bottom Right"
+msgstr ""

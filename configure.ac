@@ -1,10 +1,9 @@
-dnl configure.in for Blackbox - an X11 Window manager
-dnl Initialize autoconf and automake
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([blackbox],[0.70.2],[http://github.com/bbidulock/blackboxwm])
-AC_REVISION([0.70.2])
-
+AC_INIT([blackbox],[0.70.2.28],[http://github.com/bbidulock/blackboxwm])
+AC_REVISION([0.70.2.28])
 AC_CONFIG_SRCDIR([src/blackbox.cc])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -14,39 +13,22 @@ AC_USE_SYSTEM_EXTENSIONS
 DATE='2014-08-29'
 AC_SUBST([DATE])
 
+# Initialize Automake
 AM_INIT_AUTOMAKE([subdir-objects dist-bzip2 no-dist-gzip color-tests silent-rules tar-pax])
 AM_MAINTAINER_MODE
 
-dnl Determine default prefix
-test "x$prefix" = "xNONE" && prefix="$ac_default_prefix"
-
-dnl Look in the most logical places for external libraries
-CPPFLAGS="$CPPFLAGS -I$prefix/include"
-LDFLAGS="$LDFLAGS -L$prefix/lib"
-if test "x$prefix" != "x/usr/local"; then
-  CPPFLAGS="$CPPFLAGS -I/usr/local/include"
-  LDFLAGS="$LDFLAGS -L/usr/local/lib"
-fi
-
-dnl Locate required external software
+# Checks for programs.
 AC_PROG_SED
 AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_CPP
+AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AM_PROG_AR
 AC_PROG_MKDIR_P
 AC_ARG_VAR([LD], [Linker loader command])
-
-dnl Blackbox requires ANSI C headers
-AC_HEADER_STDC
-if test "$ac_cv_header_stdc" = "no"; then
-  AC_MSG_ERROR([Blackbox requires ANSI C headers.])
-fi
-
-AC_PROG_CXX
 
 dnl libbt shouldn't be shared by default (yet)
 AC_DISABLE_SHARED
@@ -56,291 +38,139 @@ LT_LANG([C++])
 AC_PROG_LIBTOOL
 AC_SUBST(LIBTOOL_DEPS)
 
-AC_CHECK_PROGS([gencat_cmd], [gencat])
-if test "x$gencat_cmd" = "x"; then
-  NLS=
-fi
+AM_GNU_GETTEXT_VERSION([0.19.2])
+AM_GNU_GETTEXT([external])
 
-dnl Blackbox uses C++
+AC_HEADER_STDC
 AC_LANG([C++])
 
-dnl Compiler specific options
-if test "x$GXX" != "xyes"; then
-   mips_pro_ver=`$CC -version 2>&1 | grep -i mipspro | cut -f4 -d ' '`
-   if test "x$mips_pro_ver" != "x"; then
-      AC_MSG_CHECKING([for MIPSpro version])
-      AC_MSG_RESULT([$mips_pro_ver.])
-      AC_MSG_CHECKING(for -LANG:std in CXXFLAGS)
-      lang_std_not_set=`echo $CXXFLAGS | grep "\-LANG:std"`
-      if test "x$lang_std_not_set" = "x"; then
-         AC_MSG_RESULT([not set, setting.])
-         CXXFLAGS="${CXXFLAGS} -LANG:std"
-      else
-         AC_MSG_RESULT([already set.])
-      fi
-   fi 
-fi
+PKG_PROG_PKG_CONFIG
 
-dnl Check if some required functions live in the C library, or in an
-dnl external library
-
-ICONV=
-AC_CHECK_FUNCS([iconv_open],
-               [],
-               [AC_CHECK_LIB([iconv],
-                             [iconv_open],
-                             [ICONV="-liconv"],
-                             [AC_CHECK_LIB([iconv],
-					   [libiconv_open],
-					   [ICONV="-liconv"],
-					   [AC_MSG_ERROR([Blackbox requires iconv(3) support.])])
-			     ])
-               ])
-AC_SUBST(ICONV)
-
-m4_ifndef([AC_LANG_DEFINES_PROVIDED], [m4_define([AC_LANG_DEFINES_PROVIDED])])
-
-dnl check if we are using GNU libiconv
-AC_MSG_CHECKING([for GNU libiconv])
-AC_COMPILE_IFELSE([AC_LANG_DEFINES_PROVIDED
-#include <sys/types.h>
-#include <iconv.h>
-
-int main(int, char **) {
-    iconv_t cd;
-    const char *inp;
-    char *outp;
-    size_t inbytes, outbytes;
-    iconv(cd, &inp, &inbytes, &outp, &outbytes);
-    return 0;
-}
-],
- 		  [AC_DEFINE([HAVE_GNU_LIBICONV], [1],
-                             [Define to 1 when using GNU libiconv])
-		   AC_MSG_RESULT([yes])],
-		  [AC_MSG_RESULT([no, assuming POSIX compliance])]
-                 )
-
-LOCALE=
-AC_CHECK_FUNCS([setlocale],
-               [],
-               [AC_CHECK_LIB([xpg4],
-                             [setlocale],
-                             [LOCALE="-lxpg4"],
-                             [AC_MSG_ERROR([Blackbox requires setlocale(3) support.])])
-               ])
-AC_SUBST(LOCALE)
-
-AC_MSG_CHECKING([for nl_langinfo])
-AC_COMPILE_IFELSE([AC_LANG_DEFINES_PROVIDED
-#include <langinfo.h>
-
-int main(int, char **)
-{
-    const char *x;
-    x = nl_langinfo(CODESET);
-    return 0;
-}
-],
-                  [AC_DEFINE([HAVE_NL_LANGINFO], [1],
-                             [Define to 1 if you system has nl_langinfo(3)])
-                   AC_MSG_RESULT([yes])],
-                  [AC_MSG_RESULT([no])]
-                 )
-
-dnl needed for some X11 libs
-AC_CHECK_LIB([nsl],
-             [t_open],
-	     [LIBS="$LIBS -lnsl"])
-AC_CHECK_LIB([socket],
-             [socket],
-	     [LIBS="$LIBS -lsocket"])
-
-dnl Check for X headers and libraries
+# Checks for header files.
 AC_PATH_X
+AC_CHECK_HEADERS([fcntl.h langinfo.h limits.h locale.h string.h sys/time.h unistd.h])
 
-if test "x$no_x" = "xyes"; then
-  AC_MSG_ERROR([Blackbox requires the X Window System libraries and headers.])
-fi
+# Checks for typedefs, structures, and compiler characteristics.
+AC_CHECK_HEADER_STDBOOL
+AC_C_INLINE
+AC_TYPE_MODE_T
+AC_TYPE_SIZE_T
 
-if test "x$x_includes" != "x"; then
-  CPPFLAGS="$CPPFLAGS -I$x_includes"
-  CXXFLAGS="$CXXFLAGS -I$x_includes"
-fi
-if test "x$x_libraries" != "x"; then
-  LIBS="$LIBS -L$x_libraries"
-fi
+# Checks for library functions.
+AC_FUNC_FORK
+AC_FUNC_STRNLEN
+AC_CHECK_FUNCS([gethostname gettimeofday memmove memset mkdir nl_langinfo putenv select setlocale sqrt strcasecmp strncasecmp strtol strtoul])
 
-dnl Check for required functions in -lX11
-XLIB=
-AC_CHECK_LIB([X11], [XOpenDisplay], [XLIB=yes], [XLIB=no])
-test "x$XLIB" = "xno" && AC_MSG_ERROR([standard X11 libraries not found])
+PKG_CHECK_MODULES([X11],[x11])
+PKG_CHECK_MODULES([XEXT],[Xext], [],
+	[enable_shape=no
+	 enable_mitshm=no])
 
-AC_CHECK_HEADERS([X11/Xlib.h], [XLIB=yes], [XLIB=no])
-test "x$XLIB" = "xno" && AC_MSG_ERROR([standard X11 headers not found])
-
-AC_CHECK_HEADERS([X11/Xatom.h X11/Xlocale.h X11/Xresource.h X11/Xutil.h X11/keysym.h], [XLIB=yes], [XLIB=no],
-[
-#include <X11/Xlib.h>
-])
-test "x$XLIB" = "xno" && AC_MSG_ERROR([standard X11 headers not found])
-
-dnl Check for SHAPE extension support and proper library files.
-AC_MSG_CHECKING([whether to build support for the SHAPE extension])
 AC_ARG_ENABLE([shape],
-              AC_HELP_STRING([--enable-shape],
-	                     [enable support of the SHAPE extension @<:@default=yes@:>@]),
-	      [SHAPE="$enableval"],
-	      [SHAPE=yes])
-AC_MSG_RESULT([$SHAPE])
-
-if test "x$SHAPE" = "xyes"; then
-  AC_CHECK_LIB([Xext], [XShapeCombineShape], [SHAPE=yes], [SHAPE=no])
-  
-  if test "x$SHAPE" = "xyes"; then
-    save_LIBS="$LIBS"
-      
-    if echo "$LIBS" | grep -q Xext 2>&1 >/dev/null; then
-      LIBS="$LIBS -lXext"
-    fi
-    AC_CHECK_HEADERS([X11/extensions/shape.h], [SHAPE=yes], [SHAPE=no],
-[
-#include <X11/Xlib.h>
-])
-      
-    if test "x$SHAPE" = "xyes"; then
-      SHAPE="-DSHAPE"
-    else
-      SHAPE=
-      LIBS="$save_LIBS"
-    fi
-  else
-    SHAPE=
-  fi
-else
-  SHAPE=
+    AC_HELP_STRING([--disable-shape],
+	[Disable use of SHAPE extension @<:@default=auto@:>@]))
+if test x$enable_shape != xno ; then
+    AC_CHECK_LIB([Xext],[XShapeCombineShape],
+	[AC_DEFINE([SHAPE],[1],[Define to enable SHAPE extension.])],
+	[enable_shape=no])
 fi
-AC_SUBST([SHAPE])
 
-dnl Check for MIT-SHM extension support and proper library files.
-AC_MSG_CHECKING([whether to build support for the MIT-SHM extension])
 AC_ARG_ENABLE([mitshm],
-              AC_HELP_STRING([--enable-mitshm],
-	                     [enable support of the MIT-SHM extension @<:@default=yes@:>@]),
-	      [MITSHM="$enableval"],
-	      [MITSHM=yes])
-AC_MSG_RESULT([$MITSHM])
-
-if test "x$MITSHM" = "xyes"; then
-  AC_CHECK_LIB([Xext], [XShmPutImage], [MITSHM=yes], [MITSHM=no])
-
-  if test "x$MITSHM" = "xyes"; then
-    save_LIBS="$LIBS"
-
-    LIBS="$LIBS -lXext"
-    AC_CHECK_HEADERS([X11/extensions/XShm.h], [MITSHM=yes], [MITSHM=no],
-[
-#include <X11/Xlib.h>
-])
-
-    if test "x$MITSHM" = "xyes"; then
-      MITSHM="-DMITSHM"
-    else
-      MITSHM=
-      LIBS="$save_LIBS"
-    fi
-  else
-    MITSHM=
-  fi
-else
-  MITSHM=
+    AC_HELP_STRING([--disable-mitshm],
+	[Disable use of the MIT-SHM extension @<:@default=auto@:>@]))
+if test x$enable_mitshm != xno ; then
+    AC_CHECK_LIB([Xext],[XShmPutImage],
+	[AC_DEFINE([MITSHM],[1],[Define to enable MIT-SHM extension.])],
+	[enable_mitshm=no])
 fi
-AC_SUBST([MITSHM])
 
-LIBS="$LIBS -lX11"
-
-dnl Check for Xft libraries
-AC_MSG_CHECKING([whether to build support for Xft])
 AC_ARG_ENABLE([xft],
-              AC_HELP_STRING([--enable-xft],
-                             [enable support for the Xft library @<:@default=yes@:>@]),
-	      [XFT="$enableval"],
-	      [XFT=yes])
-AC_MSG_RESULT([$XFT])
-
-if test "x$XFT" = "xyes"; then
-  PKG_CHECK_MODULES([xft],
-                    [xft >= 2.0.0], 
-                    [XFT="-DXFT"
-                     XFT_PKGCONFIG="xft >= 2.0.0"
-                     CXXFLAGS="$CXXFLAGS $xft_CFLAGS"
-                     LIBS="$LIBS $xft_LIBS"],
-                    [XFT=
-                     XFT_PKGCONFIG=])
-else
-  XFT=
-  XFT_PKGCONFIG=
+    AC_HELP_STRING([--disable-xft],
+	[Disable use of XFT library @<:@default=auto@:>@]))
+if test x$enable_xft != xno ; then
+    PKG_CHECK_MODULES([XFT],[xft >= 2.0.0],
+	[AC_DEFINE([XFT],[1],[Defint to enable XFT library.])],
+	[enable_xft=no])
 fi
-AC_SUBST([XFT])
-AC_SUBST([XFT_PKGCONFIG])
 
-dnl Check whether to include debugging code
-AC_MSG_CHECKING([whether to include verbose debugging code])
 AC_ARG_ENABLE([debug],
-              AC_HELP_STRING([--enable-debug],
-	                     [include verbose debugging code @<:@default=no@:>@]),
-	      [DEBUG="$enableval"],
-	      [DEBUG=no])
-AC_MSG_RESULT([$DEBUG])
-
-if test "x$DEBUG" = "xyes"; then
-    DEBUG="-DDEBUG -fno-inline -g"
-else
-    DEBUG=
+    AC_HELP_STRING([--enable-debug],
+	[Enable use of verbose debugging code @<:@default=no@:>@]))
+if test x$enable_debug = xyes ; then
+    AC_DEFINE([DEBUG],[1],[Define to enable debugging code.])
 fi
-AC_SUBST(DEBUG)
 
-dnl Check whether to include natural language support (i18n)
-AC_MSG_CHECKING([whether to include NLS support])
-AC_ARG_ENABLE([nls],
-              AC_HELP_STRING([--enable-nls],
-	                     [include natural language support @<:@default=yes@:>@]),
-              [NLS="$enableval"],
-	      [NLS=no])
-AC_MSG_RESULT([$NLS])
-
-if test "x$NLS" = "xyes"; then
-  NLS="-DNLS"
-else
-  NLS=
+AC_ARG_ENABLE([debug-colorcache],
+    AC_HELP_STRING([--enable-debug-colorcache],
+	[Enable color cache debugging code @<:@default=no@:>@]))
+if test x$enable_debug_colorcache = xyes ; then
+    AC_DEFINE([COLORCACHE_DEBUG],[1],[Define to debug color cache code.])
 fi
-AC_SUBST(NLS)
-AM_CONDITIONAL([USE_NLS],[test -n "$NLS"])
 
-dnl Output files
-AC_CONFIG_FILES([
-version.h
-Makefile
-data/Makefile
-data/styles/Makefile
-doc/Makefile
-doc/fr_FR/Makefile
-doc/ja_JP/Makefile
-doc/nl_NL/Makefile
-doc/sl_SI/Makefile
-lib/Makefile
-lib/libbt.pc
-src/Makefile
-util/Makefile
-])
+AC_ARG_ENABLE([debug-colortable],
+    AC_HELP_STRING([--enable-debug-colortable],
+	[Enable color table debugging code @<:@default=no@:>@]))
+if test x$enable_debug_colortable = xyes ; then
+    AC_DEFINE([COLORCACHE_DEBUG],[1],[Define to debug color table code.])
+fi
+
+AC_ARG_ENABLE([debug-focus],
+    AC_HELP_STRING([--enable-debug-focus],
+	[Enable focus debugging code @<:@default=no@:>@]))
+if test x$enable_debug_focus = xyes ; then
+    AC_DEFINE([FOCUS_DEBUG],[1],[Define to debug focus code.])
+fi
+
+AC_ARG_ENABLE([debug-fontcache],
+    AC_HELP_STRING([--enable-debug-fontcache],
+	[Enable font cache debugging code @<:@default=no@:>@]))
+if test x$enable_debug_fontcache = xyes ; then
+    AC_DEFINE([FONTCACHE_DEBUG],[1],[Define to debug font cache code.])
+fi
+
+AC_ARG_ENABLE([debug-mitshm],
+    AC_HELP_STRING([--enable-debug-mitshm],
+	[Enable MIT-SHM debugging code @<:@default=no@:>@]))
+if test x$enable_debug_mitshm = xyes ; then
+    AC_DEFINE([MITSHM_DEBUG],[1],[Define to debug MIT-SHM code.])
+fi
+
+AC_ARG_ENABLE([debug-pixmapcache],
+    AC_HELP_STRING([--enable-debug-pixmapcache],
+	[Enable pixmap cache debugging code @<:@default=no@:>@]))
+if test x$enable_debug_pixmapcache = xyes ; then
+    AC_DEFINE([FONTCACHE_DEBUG],[1],[Define to debug pixmap cache code.])
+fi
+
+AC_ARG_ENABLE([print-sizes],
+    AC_HELP_STRING([--enable-print-sizes],
+	[Enable printing of structure sizes on startup. @<:@default=no@:>@]))
+if test x$enable_print_sizes = xyes ; then
+    AC_DEFINE([PRINT_SIZES],[1],[Define to print structure sizes on startup.])
+fi
+
+AC_ARG_ENABLE([fullscreen],
+    AC_HELP_STRING([--disable-fullscreen],
+	[Disable fullscreen item in window menu. @<:@default=enabled@:>@]))
+if test x$enable_fullscreen != xno ; then
+    AC_DEFINE([WITH_FULLSCREEN],[1],[Define to add fullscreen item to window menu.])
+fi
+
+AM_CONDITIONAL([USE_NLS],[test x$enable_nls != xno])
+
+AC_CONFIG_FILES([version.h
+		 Makefile
+		 po/Makefile.in
+		 data/Makefile
+		 data/styles/Makefile
+		 doc/Makefile
+		 doc/fr_FR/Makefile
+		 doc/ja_JP/Makefile
+		 doc/nl_NL/Makefile
+		 doc/sl_SI/Makefile
+		 lib/Makefile
+		 lib/libbt.pc
+		 src/Makefile
+		 util/Makefile])
 AC_OUTPUT
 
-dnl Print results
-AC_MSG_RESULT([])
-AC_MSG_RESULT([	$PACKAGE version $VERSION configured successfully.])
-AC_MSG_RESULT([])
-AC_MSG_RESULT([Using '$prefix' for installation.])
-AC_MSG_RESULT([Using '$CXX' for C++ compiler.])
-AC_MSG_RESULT([Building with '$CPPFLAGS $CXXFLAGS' for C++ compiler flags.])
-AC_MSG_RESULT([Building with '$LDFLAGS $LIBS' libraries.])
-AC_MSG_RESULT([])

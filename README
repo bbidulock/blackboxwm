@@ -4,7 +4,7 @@ Blackbox -- read me first file.  2014-08-29
 Blackbox
 ========
 
-Package blackbox-0.70.2.24 was released under MIT license 2014-08-29.
+Package blackbox-0.70.2.28 was released under MIT license 2014-08-29.
 
 This is a fork of the original Blackbox CVS that is on Sourceforge:
 (http://blackboxwm.sourceforge.net).  This fork is hosted on GitHub at
@@ -18,7 +18,7 @@ enhanced EWMH/ICCCM compliance.
 Release
 -------
 
-This is the blackbox-0.70.2.24 package, released 2014-08-29.  This release,
+This is the blackbox-0.70.2.28 package, released 2014-08-29.  This release,
 and the latest version, can be obtained from the GitHub repository at
 (http://github.com/bbidulock/blackboxwm), using a command such as:
 
@@ -47,7 +47,8 @@ The quickest and easiest way to get Blackbox up and running is to run
 the following commands:
 
     $> git clone http://github.com/bbidulock/blackboxwm.git
-    $> autoreconf -fiv
+    $> cd blackboxwm
+    $> ./autogen.sh
     $> ./configure --prefix=/usr --mandir=/usr/share/man
     $> make V=0
     $> make DESTDIR="$pkgdir" install

@@ -21,10 +21,15 @@ if [ -z "$VERSION" ]; then
 	fi
 fi
 
-sed -r -e "s:AC_INIT\([[]$PACKAGE[]],[[][^]]*[]]:AC_INIT([$PACKAGE],[$VERSION]:
-	   s:AC_REVISION\([[][^]]*[]]\):AC_REVISION([$VERSION]):
-	   s:^DATE=.*$:DATE='$DATE':" \
-	  -i configure.ac
+GTVERSION=`gettext --version | head -1 | awk '{print$NF}'`
+
+cp -f configure.ac configure.in
+
+sed <configure.in >configure.ac -r \
+	-e "s:AC_INIT\([[]$PACKAGE[]],[[][^]]*[]]:AC_INIT([$PACKAGE],[$VERSION]:
+	    s:AC_REVISION\([[][^]]*[]]\):AC_REVISION([$VERSION]):
+	    s:^DATE=.*$:DATE='$DATE':
+	    s:^AM_GNU_GETTEXT_VERSION.*:AM_GNU_GETTEXT_VERSION([$GTVERSION]):"
 
 rm -f configure.in
 

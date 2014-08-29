@@ -22,7 +22,7 @@
 
 DEFAULT_MENU		= $(pkgdatadir)/menu
 DEFAULT_STYLE		= $(pkgdatadir)/styles/Gray
-AM_CPPFLAGS		= @SHAPE@ @XFT@ @DEBUG@ @NLS@ \
+AM_CPPFLAGS		= $(X11_CFLAGS) $(XEXT_CFLAGS) $(XFT_CFLAGS) \
 			  -DLOCALEPATH=\"$(pkgdatadir)/nls\" \
 			  -DDEFAULTMENU=\"$(DEFAULT_MENU)\" \
 			  -DDEFAULTSTYLE=\"$(DEFAULT_STYLE)\" \
@@ -68,6 +68,3 @@ blackbox_SOURCES	= BlackboxResource.cc				\
 
 blackbox_DEPENDENCIES	= $(top_builddir)/lib/libbt.la
 blackbox_LDADD		= $(top_builddir)/lib/libbt.la
-
-distclean-local:
-	rm -f *\~ *.orig *.rej .\#*
