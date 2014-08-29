@@ -1,6 +1,6 @@
 ! ***** Menu *****
-menu.frame.font:                        lucidasans-10
-menu.title.font:                        lucidasans-10
+menu.frame.font:                        Lucida Sans:size=10
+menu.title.font:                        Lucida Sans:size=10
 
 menu.title:                             raised crossdiagonal gradient border border
      menu.title.color:                  #980806
@@ -46,7 +46,7 @@ menu.title.justify:                     right
 
 
 ! ***** Window *****
-window.font:                            lucidasans-10
+window.font:                            Lucida Sans:size=10
 
 ! focused window
 window.title.focus:                     flat solid
@@ -110,7 +110,7 @@ window.handleHeight:                    4
 window.justify:                         center
 
 ! ***** toolbar *****
-toolbar.font:                           lucidasans-10
+toolbar.font:                           Lucida Sans:size=10
 toolbar:                                flat solid
      toolbar.color:                     #980806
      toolbar.colorTo:                   

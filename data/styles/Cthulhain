@@ -1,6 +1,6 @@
 ! ***** Menu *****
-menu.frame.font:                        -*-lucida-medium-r-*-*-*-100-*-*-*-*-*
-menu.title.font:                        -*-lucida-medium-r-*-*-*-100-*-*-*-*-*
+menu.frame.font:                        Lucida Sans:size=10
+menu.title.font:                        Lucida Sans:size=10
 
 menu.title:                             raised gradient crossdiagonal border border
      menu.title.color:                  #151a22
@@ -46,7 +46,7 @@ menu.title.justify:                     center
 
 
 ! ***** Window *****
-window.font:                            -*-lucida-medium-r-*-*-*-100-*-*-*-*-*
+window.font:                            Lucida Sans:size=10
 
 ! focused window
 window.title.focus:                     raised gradient diagonal
@@ -104,7 +104,7 @@ window.handleHeight:                    4
 window.justify:                         right
 
 ! ***** toolbar *****
-toolbar.font:                           -*-lucida-medium-r-*-*-*-100-*-*-*-*-*
+toolbar.font:                           Lucida Sans:size=10
 toolbar:                                raised gradient vertical
      toolbar.color:                     #585858
      toolbar.colorTo:                   #0f1319

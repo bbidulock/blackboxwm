@@ -1,6 +1,6 @@
 ! ***** Menu *****
-menu.frame.font:                        -b&h-lucida-medium-r-normal-*-*-100-*-*-p-*-iso8859-1
-menu.title.font:                        -b&h-lucida-medium-r-normal-*-*-100-*-*-p-*-iso8859-1
+menu.frame.font:                        Lucida Sans:size=10
+menu.title.font:                        Lucida Sans:size=10
 
 menu.title:                             raised diagonal gradient bevel1 border border
      menu.title.color:                  rgb:b/b/b
@@ -46,7 +46,7 @@ menu.title.justify:                     center
 
 
 ! ***** Window *****
-window.font:                            -b&h-lucida-medium-r-normal-*-*-100-*-*-p-*-iso8859-1
+window.font:                            Lucida Sans:size=10
 
 ! focused window
 window.title.focus:                     sunken diagonal gradient bevel1
@@ -110,7 +110,7 @@ window.handleHeight:                    5
 window.justify:                         center
 
 ! ***** toolbar *****
-toolbar.font:                           -b&h-lucida-medium-r-normal-*-*-100-*-*-p-*-iso8859-1
+toolbar.font:                           Lucida Sans:size=10
 toolbar:                                sunken
      toolbar.color:                     grey68
      toolbar.colorTo:                   

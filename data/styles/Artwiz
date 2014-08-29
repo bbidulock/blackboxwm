@@ -1,6 +1,6 @@
 ! ***** Menu *****
-menu.frame.font:                        -*-lucidatypewriter-medium-r-*-*-*-100-*-*-*-*-*-*
-menu.title.font:                        -*-lucidatypewriter-medium-r-*-*-*-100-*-*-*-*-*-*
+menu.frame.font:                        Lucida Typewriter:size=10
+menu.title.font:                        Lucida Typewriter:size=10
 
 menu.title:                             raised gradient diagonal border border
      menu.title.color:                  rgb:90/94/98
@@ -46,7 +46,7 @@ menu.title.justify:                     center
 
 
 ! ***** Window *****
-window.font:                            -*-lucidatypewriter-medium-r-*-*-*-100-*-*-*-*-*-*
+window.font:                            Lucida Typewriter:size=10
 
 ! focused window
 window.title.focus:                     raised gradient vertical
@@ -110,7 +110,7 @@ window.handleHeight:                    5
 window.justify:                         center
 
 ! ***** toolbar *****
-toolbar.font:                           -*-lucidatypewriter-medium-r-*-*-*-100-*-*-*-*-*-*
+toolbar.font:                           Lucida Typewriter:size=10
 toolbar:                                raised gradient vertical
      toolbar.color:                     rgb:80/84/88
      toolbar.colorTo:                   rgb:30/34/38

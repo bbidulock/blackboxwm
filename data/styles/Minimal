@@ -1,6 +1,6 @@
 ! ***** Menu *****
-menu.frame.font:                        -*-helvetica-*-r-*-*-12-*-*-*-*-*-*-*
-menu.title.font:                        -*-helvetica-*-r-*-*-12-*-*-*-*-*-*-*
+menu.frame.font:                        Helvetica:size=12
+menu.title.font:                        Helvetica:size=12
 
 menu.title:                             flat solid border border
      menu.title.color:                  Black
@@ -46,7 +46,7 @@ menu.title.justify:                     center
 
 
 ! ***** Window *****
-window.font:                            -*-helvetica-*-r-*-*-12-*-*-*-*-*-*-*
+window.font:                            Helvetica:size=12
 
 ! focused window
 window.title.focus:                     flat solid
@@ -100,7 +100,7 @@ window.handleHeight:                    4
 window.justify:                         center
 
 ! ***** toolbar *****
-toolbar.font:                           -*-helvetica-*-r-*-*-12-*-*-*-*-*-*-*
+toolbar.font:                           Helvetica:size=12
 toolbar:                                flat solid
      toolbar.color:                     MidnightBlue
      toolbar.colorTo:                   

@@ -1,6 +1,6 @@
 ! ***** Menu *****
-menu.frame.font:                        lucidasans-10
-menu.title.font:                        lucidasans-bold-10
+menu.frame.font:                        Lucida Sans:size=10
+menu.title.font:                        Lucida Sans:size=10:bold
 
 menu.title:                             raised diagonal interlaced gradient bevel1 border border
      menu.title.color:                  grey20
@@ -46,7 +46,7 @@ menu.title.justify:                     center
 
 
 ! ***** Window *****
-window.font:                            lucidasans-bold-10
+window.font:                            Lucida Sans:size=10:bold
 
 ! focused window
 window.title.focus:                     raised diagonal gradient bevel1
@@ -110,7 +110,7 @@ window.handleHeight:                    4
 window.justify:                         center
 
 ! ***** toolbar *****
-toolbar.font:                           lucidasans-bold-10
+toolbar.font:                           Lucida Sans:size=10:bold
 toolbar:                                raised diagonal gradient bevel1
      toolbar.color:                     rgb:8/8/7
      toolbar.colorTo:                   grey20
