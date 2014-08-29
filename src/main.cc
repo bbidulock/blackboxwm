@@ -24,6 +24,7 @@
 
 // #define PRINT_SIZES
 
+#include "gettext.h"
 #if defined(PRINT_SIZES)
 #  include "Screen.hh"
 #  include "Slit.hh"
@@ -32,7 +33,7 @@
 #endif
 
 #include "blackbox.hh"
-#include "../version.h"
+#include "version.h"
 
 #include <cstdio>
 
@@ -85,6 +86,10 @@ int main(int argc, char **argv) {
   std::string rc_file;
   bool multi_head = true;
 
+#ifdef ENABLE_NLS
+  bindtextdomain(PACKAGE, LOCDIR);
+  textdomain(PACKAGE);
+#endif
   for (int i = 1; i < argc; ++i) {
     if (! strcmp(argv[i], "-help")) {
       showHelp(0);

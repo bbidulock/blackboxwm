@@ -21,7 +21,8 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 # DEALINGS IN THE SOFTWARE.
 
-AM_CPPFLAGS		= -I$(top_srcdir) -I$(top_srcdir)/lib
+AM_CPPFLAGS		= -I$(top_srcdir) -I$(top_srcdir)/lib \
+			  -DLOCDIR=\"$(LOCDIR)\"
 
 dist_bin_SCRIPTS	= bsetbg
 bin_PROGRAMS		= bsetroot bstyleconvert

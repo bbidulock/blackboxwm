@@ -158,6 +158,13 @@ fi
 
 AM_CONDITIONAL([USE_NLS],[test x$enable_nls != xno])
 
+text "x$prefix" = xNONE && prefix="$ac_default_prefix"
+LOCDIR="$localedir"
+eval "LOCDIR=\"$LOCDIR\""
+eval "LOCDIR=\"$LOCDIR\""
+eval "LOCDIR=\"$LOCDIR\""
+AC_SUBST([LOCDIR])
+
 AC_CONFIG_FILES([version.h
 		 Makefile
 		 po/Makefile.in

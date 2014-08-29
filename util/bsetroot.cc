@@ -348,6 +348,10 @@ int main(int argc, char **argv) {
   char *display_name = 0;
   bool multi_head = False;
 
+#ifdef ENABLE_NLS
+  bindtextdomain(PACKAGE, LOCDIR);
+  textdomain(PACKAGE);
+#endif
   for (int i = 1; i < argc; i++) {
     if (! strcmp(argv[i], "-display")) {
       // check for -display option
