@@ -8,3 +8,4 @@ src/Workspacemenu.cc
 src/Screen.cc
 src/Window.cc
 src/Workspace.cc
+util/bsetroot.cc

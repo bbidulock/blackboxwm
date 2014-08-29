@@ -22,6 +22,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include "gettext.h"
 #include "bsetroot.hh"
 
 #include <Pen.hh>
@@ -329,7 +330,7 @@ void bsetroot::usage(int exit_code) {
           "bsetroot 3.1\n\n"
           "Copyright (c) 2001 - 2005 Sean 'Shaleh' Perry\n"
           "Copyright (c) 1997 - 2000, 2002 - 2005 Bradley T Hughes\n");
-  fprintf(stderr,
+  fprintf(stderr, gettext(
           "  -display <string>        use display connection\n"
           "  -mod <x> <y>             modula pattern\n"
           "  -foreground, -fg <color> modula foreground color\n"
@@ -338,7 +339,7 @@ void bsetroot::usage(int exit_code) {
           "  -from <color>            gradient start color\n"
           "  -to <color>              gradient end color\n\n"
           "  -solid <color>           solid color\n\n"
-          "  -help                    print this help text and exit\n");
+          "  -help                    print this help text and exit\n"));
   exit(exit_code);
 }
 
