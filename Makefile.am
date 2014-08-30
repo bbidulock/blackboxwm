@@ -20,7 +20,8 @@ EXTRA_DIST		= gettext.h \
 			  README.in \
 			  THANKS \
 			  TODO \
-			  ChangeLog
+			  ChangeLog \
+			  COMPLIANCE
 
 dist_noinst_SCRIPTS	= autogen.sh
 
