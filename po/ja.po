@@ -13,7 +13,7 @@ msgstr ""
 "Language-Team: Japanese\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=eucjp\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
@@ -360,7 +360,9 @@ msgstr "ËöÈø¥ï¡¼¥¯¥¹¥Ú¡¼¥¹¾Ãµî"
 #: src/Screen.cc:167
 #, c-format
 msgid "%s: another window manager is already running on display '%s'\n"
-msgstr "%s: Â¾¤Î¥¦¥£¥ó¥É¥¦¥Þ¥Í¡¼¥¸¥ã¤¬¥Ç¥£¥¹¥×¥ì¥¤ %s ¤Ç´û¤Ë¼Â¹ÔÃæ¤Ç¤¹.\n"
+msgstr ""
+"%s: Â¾¤Î¥¦¥£¥ó¥É¥¦¥Þ¥Í¡¼¥¸¥ã¤¬¥Ç¥£¥¹¥×¥ì¥¤ "
+"%s ¤Ç´û¤Ë¼Â¹ÔÃæ¤Ç¤¹.\n"
 
 #: src/Screen.cc:1468
 #, c-format
@@ -390,7 +392,9 @@ msgstr "½ªÎ»"
 #: src/Screen.cc:1629
 #, c-format
 msgid "%s: [exec] error, no menu label and/or command defined\n"
-msgstr "%s: [exec] ¥¨¥é¡¼¡¢¥á¥Ë¥å¡¼¥é¥Ù¥ë(¥³¥Þ¥ó¥É)Ì¤ÄêµÁ\n"
+msgstr ""
+"%s: [exec] ¥¨¥é¡¼¡¢¥á¥Ë¥å¡¼¥é¥Ù¥ë"
+"(¥³¥Þ¥ó¥É)Ì¤ÄêµÁ\n"
 
 #: src/Screen.cc:1639
 #, c-format
@@ -400,7 +404,9 @@ msgstr "%s: [exit] ¥¨¥é¡¼¡¢¥á¥Ë¥å¡¼¥é¥Ù¥ëÌ¤ÄêµÁ\n"
 #: src/Screen.cc:1650
 #, c-format
 msgid "%s: [style] error, no menu label and/or filename defined\n"
-msgstr "%s: [style] ¥¨¥é¡¼¡¢¥á¥Ë¥å¡¼¥é¥Ù¥ë(¥Õ¥¡¥¤¥ëÌ¾)Ì¤ÄêµÁ\n"
+msgstr ""
+"%s: [style] ¥¨¥é¡¼¡¢¥á¥Ë¥å¡¼¥é¥Ù¥ë"
+"(¥Õ¥¡¥¤¥ëÌ¾)Ì¤ÄêµÁ\n"
 
 #: src/Screen.cc:1663
 #, c-format
@@ -415,42 +421,54 @@ msgstr "%s: [include] ¥¨¥é¡¼¡¢¥Õ¥¡¥¤¥ëÌ¾Ì¤ÄêµÁ\n"
 #: src/Screen.cc:1692
 #, c-format
 msgid "%s: [include] error: '%s' is not a regular file\n"
-msgstr "%s: [include] ¥¨¥é¡¼¡¢'%s' ¤ÏÀµµ¬¥Õ¥¡¥¤¥ë¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó\n"
+msgstr ""
+"%s: "
+"[include] ¥¨¥é¡¼¡¢'%s' ¤ÏÀµµ¬¥Õ¥¡¥¤¥ë¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó\n"
 
 #: src/Screen.cc:1713
 #, c-format
 msgid "%s: [submenu] error, no menu label defined\n"
-msgstr "%s: [submenu] ¥¨¥é¡¼¡¢¥á¥Ë¥å¡¼¥é¥Ù¥ëÌ¤ÄêµÁ\n"
+msgstr ""
+"%s: [submenu] ¥¨¥é¡¼¡¢¥á¥Ë¥å¡¼¥é¥Ù¥ëÌ¤ÄêµÁ\n"
 
 #: src/Screen.cc:1735
 #, c-format
 msgid "%s: [restart] error, no menu label defined\n"
-msgstr "%s: [restart] ¥¨¥é¡¼¡¢¥á¥Ë¥å¡¼¥é¥Ù¥ëÌ¤ÄêµÁ\n"
+msgstr ""
+"%s: [restart] ¥¨¥é¡¼¡¢¥á¥Ë¥å¡¼¥é¥Ù¥ëÌ¤ÄêµÁ\n"
 
 #: src/Screen.cc:1751
 #, c-format
 msgid "%s: [reconfig] error, no menu label defined\n"
-msgstr "%s: [reconfig] ¥¨¥é¡¼¡¢¥á¥Ë¥å¡¼¥é¥Ù¥ëÌ¤ÄêµÁ\n"
+msgstr ""
+"%s: [reconfig] ¥¨¥é¡¼¡¢¥á¥Ë¥å¡¼¥é¥Ù¥ëÌ¤ÄêµÁ\n"
 
 #: src/Screen.cc:1766
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, no directory defined\n"
-msgstr "%s: [stylesdir/stylesmenu] ¥¨¥é¡¼¡¢¥Ç¥£¥ì¥¯¥È¥êÌ¾Ì¤ÄêµÁ\n"
+msgstr ""
+"%s: [stylesdir/"
+"stylesmenu] ¥¨¥é¡¼¡¢¥Ç¥£¥ì¥¯¥È¥êÌ¾Ì¤ÄêµÁ\n"
 
 #: src/Screen.cc:1779
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, '%s' does not exist\n"
-msgstr "%s: [stylesdir/stylesmenu] ¥¨¥é¡¼¡¢'%s' ¤ÏÂ¸ºß¤·¤Þ¤»¤ó\n"
+msgstr ""
+"%s: [stylesdir/"
+"stylesmenu] ¥¨¥é¡¼¡¢'%s' ¤ÏÂ¸ºß¤·¤Þ¤»¤ó\n"
 
 #: src/Screen.cc:1785
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, '%s' is not a directory\n"
-msgstr "%s: [stylesdir/stylesmenu] ¥¨¥é¡¼¡¢'%s' ¤Ï¥Ç¥£¥ì¥¯¥È¥ê¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó\n"
+msgstr ""
+"%s: [stylesdir/"
+"stylesmenu] ¥¨¥é¡¼¡¢'%s' ¤Ï¥Ç¥£¥ì¥¯¥È¥ê¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó\n"
 
 #: src/Screen.cc:1843
 #, c-format
 msgid "%s: [workspaces] error, no menu label defined\n"
-msgstr "%s: [workspaces] ¥¨¥é¡¼¡¢¥á¥Ë¥å¡¼¥é¥Ù¥ëÌ¤ÄêµÁ\n"
+msgstr ""
+"%s: [workspaces] ¥¨¥é¡¼¡¢¥á¥Ë¥å¡¼¥é¥Ù¥ëÌ¤ÄêµÁ\n"
 
 #: src/Window.cc:536
 msgid "Unnamed"
@@ -526,8 +544,8 @@ msgstr "¥ï¡¼¥¯¥¹¥Ú¡¼¥¹ %u"
 #, c-format
 msgid "bsetroot: error: must specify one of: -solid, -mod, -gradient\n"
 msgstr ""
-"bsetroot: ¥¨¥é¡¼: ¼¡¤ÎÃæ¤«¤é°ì¤Ä¤òÁªÂò¤·¤Ê¤±¤ì¤Ð¤Ê¤ê¤Þ¤»¤ó: -solid, -mod, -"
-"gradient\n"
+"bsetroot: ¥¨¥é¡¼: ¼¡¤ÎÃæ¤«¤é°ì¤Ä¤òÁªÂò¤·¤Ê¤±¤ì¤Ð¤Ê¤ê¤Þ¤»¤ó: "
+"-solid, -mod, -gradient\n"
 
 #: util/bsetroot.cc:336
 #, c-format
@@ -636,8 +654,8 @@ msgstr "bt::Display: X ¥µ¡¼¥Ð¤Ø¤ÎÀÜÂ³¤Ë¼ºÇÔ '%s'\n"
 #, c-format
 msgid "bt::Display: failed to mark connection close-on-exec\n"
 msgstr ""
-"bt::Display: ¥Ç¥£¥¹¥×¥ì¥¤ÀÜÂ³¤Ë¼Â¹Ô»þ¥¯¥í¡¼¥º¥Õ¥é¥°¤ò¤¿¤Æ¤ë¤³¤È¤¬¤Ç¤­¤Þ¤»¤ó¤Ç"
-"¤·¤¿\n"
+"bt::"
+"Display: ¥Ç¥£¥¹¥×¥ì¥¤ÀÜÂ³¤Ë¼Â¹Ô»þ¥¯¥í¡¼¥º¥Õ¥é¥°¤ò¤¿¤Æ¤ë¤³¤È¤¬¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿\n"
 
 #: lib/Font.cc:200
 #, c-format
@@ -793,17 +811,23 @@ msgstr "%s: Áàºî²ÄÇ½¤Ê¥¹¥¯¥ê¡¼¥ó¤¬¤¢¤ê¤Þ¤»¤ó¡¢
 #: src/main.cc:108
 #, c-format
 msgid "error: '-rc' requires and argument\n"
-msgstr "¥¨¥é¡¼: '-rc' ¥ª¥×¥·¥ç¥ó¤Ï°ú¿ô¤òÉ¬Í×¤È¤·¤Þ¤¹\n"
+msgstr ""
+"¥¨¥é¡¼: '-"
+"rc' ¥ª¥×¥·¥ç¥ó¤Ï°ú¿ô¤òÉ¬Í×¤È¤·¤Þ¤¹\n"
 
 #: src/main.cc:118
 #, c-format
 msgid "error: '-display' requires an argument\n"
-msgstr "¥¨¥é¡¼: '-display' ¥ª¥×¥·¥ç¥ó¤Ï°ú¿ô¤òÉ¬Í×¤È¤·¤Þ¤¹\n"
+msgstr ""
+"¥¨¥é¡¼: '-"
+"display' ¥ª¥×¥·¥ç¥ó¤Ï°ú¿ô¤òÉ¬Í×¤È¤·¤Þ¤¹\n"
 
 #: src/main.cc:128
 #, c-format
 msgid "warning: couldn't set environment variable 'DISPLAY'\n"
-msgstr "·Ù¹ð: ´Ä¶­ÊÑ¿ô 'DISPLAY' ¤òÀßÄê¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿\n"
+msgstr ""
+"·Ù¹ð: ´Ä¶­ÊÑ¿ô "
+"'DISPLAY' ¤òÀßÄê¤Ç¤­¤Þ¤»¤ó¤Ç¤·¤¿\n"
 
 #: src/StackingList.cc:198
 #, c-format

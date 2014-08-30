@@ -13,7 +13,7 @@ msgstr ""
 "Language-Team: Spanish\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
@@ -361,8 +361,8 @@ msgstr "Quitar Ultimo"
 #, c-format
 msgid "%s: another window manager is already running on display '%s'\n"
 msgstr ""
-"%s: Ya hay otro gestor de ventanas ejecutándose en la conexión de despliegue "
-"%s.\n"
+"%s: Ya hay otro gestor de ventanas ejecutándose en la conexión de "
+"despliegue %s.\n"
 
 #: src/Screen.cc:1468
 #, c-format
@@ -456,7 +456,8 @@ msgstr "%s: error en [stylesdir/stylesmenu], '%s' no es un directorio\n"
 #: src/Screen.cc:1843
 #, c-format
 msgid "%s: [workspaces] error, no menu label defined\n"
-msgstr "%s: error en [workspaces],  no se definió una etiqueta para el menú\n"
+msgstr ""
+"%s: error en [workspaces],  no se definió una etiqueta para el menú\n"
 
 #: src/Window.cc:536
 msgid "Unnamed"
