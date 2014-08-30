@@ -56,12 +56,12 @@ msgstr "Orientation de la Fente"
 #. TRANS Arrange the slit horizontally (wider).
 #: src/Slitmenu.cc:141
 msgid "Horizontal"
-msgstr ""
+msgstr "Horizontal"
 
 #. TRANS Arrange the slit vertically (taller).
 #: src/Slitmenu.cc:143
 msgid "Vertical"
-msgstr ""
+msgstr "Vertical"
 
 #. TRANS The name of the submenu for controlling slit placement.
 #: src/Slitmenu.cc:174
@@ -360,12 +360,12 @@ msgstr "Supprimer le dernier"
 #: src/Screen.cc:167
 #, c-format
 msgid "%s: another window manager is already running on display '%s'\n"
-msgstr ""
+msgstr "%s: Un autre gestionnaire de fenêtres est déjà lancé %s.\n"
 
 #: src/Screen.cc:1468
 #, c-format
 msgid "%s: menu file '%s' is empty\n"
-msgstr ""
+msgstr "%s: Fichier de menu vide '%s'\n"
 
 #. TRANS The underscore '_' indicates the hot key.
 #: src/Screen.cc:1520
@@ -380,77 +380,78 @@ msgstr ""
 #. TRANS Restart the window manager.
 #: src/Screen.cc:1526
 msgid "Restart"
-msgstr ""
+msgstr "Redémarrer"
 
 #. TRANS Exit the window manager.
 #: src/Screen.cc:1529
 msgid "Exit"
-msgstr ""
+msgstr "Sortie"
 
 #: src/Screen.cc:1629
 #, c-format
 msgid "%s: [exec] error, no menu label and/or command defined\n"
-msgstr ""
+msgstr "%s: [exec] Erreur, pas de libellé de menu et/ou de commande definie\n"
 
 #: src/Screen.cc:1639
 #, c-format
 msgid "%s: [exit] error, no menu label defined\n"
-msgstr ""
+msgstr "%s: [exit] Erreur, aucun libellé de menu défini\n"
 
 #: src/Screen.cc:1650
 #, c-format
 msgid "%s: [style] error, no menu label and/or filename defined\n"
 msgstr ""
+"%s: [style] Erreur, pas libellé de menu et/ou de nom de fichier defini\n"
 
 #: src/Screen.cc:1663
 #, c-format
 msgid "%s: [config] error, no label defined"
-msgstr ""
+msgstr "%s: [config] Erreur, aucun libellé de menu défini"
 
 #: src/Screen.cc:1673
 #, c-format
 msgid "%s: [include] error, no filename defined\n"
-msgstr ""
+msgstr "%s: [include] Erreur, aucun nom de fichier défini\n"
 
 #: src/Screen.cc:1692
 #, c-format
 msgid "%s: [include] error: '%s' is not a regular file\n"
-msgstr ""
+msgstr "%s: [include] Erreur, '%s' est un fichier invalide\n"
 
 #: src/Screen.cc:1713
 #, c-format
 msgid "%s: [submenu] error, no menu label defined\n"
-msgstr ""
+msgstr "%s: [submenu] Erreur, aucun libellé de menu défini\n"
 
 #: src/Screen.cc:1735
 #, c-format
 msgid "%s: [restart] error, no menu label defined\n"
-msgstr ""
+msgstr "%s: [restart] Erreur, aucun libellé de menu défini\n"
 
 #: src/Screen.cc:1751
 #, c-format
 msgid "%s: [reconfig] error, no menu label defined\n"
-msgstr ""
+msgstr "%s: [reconfig] Erreur, aucun libellé de menu défini\n"
 
 #: src/Screen.cc:1766
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, no directory defined\n"
-msgstr ""
+msgstr "%s: [stylesdir/stylesmenu] Erreur, aucun répertoire défini\n"
 
 #: src/Screen.cc:1779
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, '%s' does not exist\n"
-msgstr ""
+msgstr "%s: [stylesdir/stylesmenu] Erreur, '%s' est inexistant\n"
 
 #: src/Screen.cc:1785
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, '%s' is not a directory\n"
-msgstr ""
+msgstr "%s: [stylesdir/stylesmenu] Erreur, '%s' est un répertoire invalide\n"
 
 #: src/Screen.cc:1843
 #, c-format
 msgid "%s: [workspaces] error, no menu label defined\n"
-msgstr ""
+msgstr "%s: [workspaces] Erreur, aucun libellé de menu défini\n"
 
 #: src/Window.cc:536
 msgid "Unnamed"
@@ -459,12 +460,12 @@ msgstr "Inconnu"
 #: src/Window.cc:1006
 #, c-format
 msgid "BlackboxWindow::BlackboxWindow(): creating 0x%lx\n"
-msgstr ""
+msgstr "BlackboxWindow::BlackboxWindow(): Génération 0x%lx\n"
 
 #: src/Window.cc:1035
 #, c-format
 msgid "BlackboxWindow::BlackboxWindow(): XGetWindowAttributes failed\n"
-msgstr ""
+msgstr "BlackboxWindow::BlackboxWindow(): Echec de XGetWindowAttributres\n"
 
 #: src/Window.cc:1283
 #, c-format
@@ -479,7 +480,7 @@ msgstr ""
 #: src/Window.cc:3249
 #, c-format
 msgid "BlackboxWindow::unmapNotifyEvent() for 0x%lx\n"
-msgstr ""
+msgstr "BlackboxWindow::unmapNotifyEvent() pour 0x%lx\n"
 
 #: src/Window.cc:3263
 #, c-format
@@ -489,7 +490,7 @@ msgstr ""
 #: src/Window.cc:3276
 #, c-format
 msgid "BlackboxWindow::reparentNotifyEvent(): reparent 0x%lx to 0x%lx.\n"
-msgstr ""
+msgstr "BlackboxWindow::reparentNotifyEvent(): réattribue 0x%lx à la 0x%lx\n"
 
 #: src/Window.cc:3294
 #, c-format
@@ -562,11 +563,13 @@ msgid ""
 "%s:  X error: %s(%d) opcodes %d/%d\n"
 "  resource 0x%lx\n"
 msgstr ""
+"%s:  Erreur de X %s(%d) opcodes %d/%d\n"
+"  ressource 0x%lx\n"
 
 #: lib/Application.cc:222
 #, c-format
 msgid "%s: caught unknown signal '%u', dumping core.\n"
-msgstr ""
+msgstr "%s: signal %u capturé\n"
 
 #: lib/Application.cc:495
 #, c-format
@@ -767,7 +770,7 @@ msgstr ""
 #: src/blackbox.cc:151
 #, c-format
 msgid "Blackbox::process_event(): MapRequest for 0x%lx\n"
-msgstr ""
+msgstr "Blackbox::process_event: MapRequest pour 0x%lx\n"
 
 #: src/blackbox.cc:409
 #, c-format
@@ -782,22 +785,23 @@ msgstr ""
 #: src/blackbox.cc:445
 #, c-format
 msgid "%s: no manageable screens found, exiting...\n"
-msgstr ""
+msgstr "%s: Aucun écran exploitable n'a été trouvé, annulation\n"
 
 #: src/main.cc:108
 #, c-format
 msgid "error: '-rc' requires and argument\n"
-msgstr ""
+msgstr "Erreur: '-rc' nécessite un argument\n"
 
 #: src/main.cc:118
 #, c-format
 msgid "error: '-display' requires an argument\n"
-msgstr ""
+msgstr "Erreur: '-display' nécessite un argument\n"
 
 #: src/main.cc:128
 #, c-format
 msgid "warning: couldn't set environment variable 'DISPLAY'\n"
 msgstr ""
+"Attention: impossible d'attribuer la variable d'environnement 'DISPLAY'\n"
 
 #: src/StackingList.cc:198
 #, c-format
