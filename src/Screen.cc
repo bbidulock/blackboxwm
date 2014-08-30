@@ -164,7 +164,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   managed = running;
   if (! managed) {
     fprintf(stderr,
-            "%s: another window manager is already running on display '%s'\n",
+            gettext("%s: another window manager is already running on display '%s'\n"),
             _blackbox->applicationName().c_str(),
             DisplayString(_blackbox->XDisplay()));
     return;
@@ -1465,7 +1465,7 @@ void BScreen::InitMenu(void) {
       perror(_blackbox->resource().menuFilename());
     } else {
       if (feof(menu_file)) {
-        fprintf(stderr, "%s: menu file '%s' is empty\n",
+        fprintf(stderr, gettext("%s: menu file '%s' is empty\n"),
                 _blackbox->applicationName().c_str(),
                 _blackbox->resource().menuFilename());
       } else {
@@ -1626,7 +1626,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
     case 421: // exec
       if (! (*label && *command)) {
         fprintf(stderr,
-                "%s: [exec] error, no menu label and/or command defined\n",
+                gettext("%s: [exec] error, no menu label and/or command defined\n"),
                 _blackbox->applicationName().c_str());
         continue;
       }
@@ -1636,7 +1636,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
     case 442: // exit
       if (! *label) {
-        fprintf(stderr, "%s: [exit] error, no menu label defined\n",
+        fprintf(stderr, gettext("%s: [exit] error, no menu label defined\n"),
                 _blackbox->applicationName().c_str());
         continue;
       }
@@ -1647,7 +1647,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
     case 561: { // style
       if (! (*label && *command)) {
         fprintf(stderr,
-                "%s: [style] error, no menu label and/or filename defined\n",
+                gettext("%s: [style] error, no menu label and/or filename defined\n"),
                 _blackbox->applicationName().c_str());
         continue;
       }
@@ -1660,7 +1660,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
     case 630: // config
       if (! *label) {
-        fprintf(stderr, "%s: [config] error, no label defined",
+        fprintf(stderr, gettext("%s: [config] error, no label defined"),
                 _blackbox->applicationName().c_str());
         continue;
       }
@@ -1670,7 +1670,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
     case 740: { // include
       if (! *label) {
-        fprintf(stderr, "%s: [include] error, no filename defined\n",
+        fprintf(stderr, gettext("%s: [include] error, no filename defined\n"),
                 _blackbox->applicationName().c_str());
         continue;
       }
@@ -1689,7 +1689,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
       struct stat buf;
       if (!pipe_menu
           && (fstat(fileno(submenufile), &buf) || ! S_ISREG(buf.st_mode))) {
-        fprintf(stderr, "%s: [include] error: '%s' is not a regular file\n",
+        fprintf(stderr, gettext("%s: [include] error: '%s' is not a regular file\n"),
                 _blackbox->applicationName().c_str(), newfile.c_str());
         fclose(submenufile);
         break;
@@ -1710,7 +1710,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
     case 767: { // submenu
       if (! *label) {
-        fprintf(stderr, "%s: [submenu] error, no menu label defined\n",
+        fprintf(stderr, gettext("%s: [submenu] error, no menu label defined\n"),
                 _blackbox->applicationName().c_str());
         continue;
       }
@@ -1732,7 +1732,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
     case 773: { // restart
       if (! *label) {
-        fprintf(stderr, "%s: [restart] error, no menu label defined\n",
+        fprintf(stderr, gettext("%s: [restart] error, no menu label defined\n"),
                 _blackbox->applicationName().c_str());
         continue;
       }
@@ -1748,7 +1748,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
     case 845: { // reconfig
       if (! *label) {
-        fprintf(stderr, "%s: [reconfig] error, no menu label defined\n",
+        fprintf(stderr, gettext("%s: [reconfig] error, no menu label defined\n"),
                 _blackbox->applicationName().c_str());
         continue;
       }
@@ -1763,7 +1763,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
       if (! *label || (! *command && newmenu)) {
         fprintf(stderr,
-                "%s: [stylesdir/stylesmenu] error, no directory defined\n",
+                gettext("%s: [stylesdir/stylesmenu] error, no directory defined\n"),
                 _blackbox->applicationName().c_str());
         continue;
       }
@@ -1776,13 +1776,13 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
       if (stat(stylesdir.c_str(), &statbuf) == -1) {
         fprintf(stderr,
-                "%s: [stylesdir/stylesmenu] error, '%s' does not exist\n",
+                gettext("%s: [stylesdir/stylesmenu] error, '%s' does not exist\n"),
                 _blackbox->applicationName().c_str(), stylesdir.c_str());
         continue;
       }
       if (! S_ISDIR(statbuf.st_mode)) {
         fprintf(stderr,
-                "%s: [stylesdir/stylesmenu] error, '%s' is not a directory\n",
+                gettext("%s: [stylesdir/stylesmenu] error, '%s' is not a directory\n"),
                 _blackbox->applicationName().c_str(), stylesdir.c_str());
         continue;
       }
@@ -1840,7 +1840,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
     case 1090: { // workspaces
       if (! *label) {
-        fprintf(stderr, "%s: [workspaces] error, no menu label defined\n",
+        fprintf(stderr, gettext("%s: [workspaces] error, no menu label defined\n"),
                 _blackbox->applicationName().c_str());
         continue;
       }

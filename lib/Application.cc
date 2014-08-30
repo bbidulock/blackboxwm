@@ -22,6 +22,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include "gettext.h"
 #include "Application.hh"
 #include "Display.hh"
 #include "EventHandler.hh"
@@ -68,7 +69,7 @@ static int handleXErrors(Display *d, XErrorEvent *e) {
   char errtxt[128];
 
   XGetErrorText(d, e->error_code, errtxt, 128);
-  fprintf(stderr, "%s:  X error: %s(%d) opcodes %d/%d\n  resource 0x%lx\n",
+  fprintf(stderr, gettext("%s:  X error: %s(%d) opcodes %d/%d\n  resource 0x%lx\n"),
           base_app->applicationName().c_str(), errtxt, e->error_code,
           e->request_code, e->minor_code, e->resourceid);
 #else
@@ -218,7 +219,7 @@ void bt::Application::run(void) {
 
         if (run_state == SIGNALLED) {
           // dump core for unhandled signals
-          fprintf(stderr, "%s: caught unknown signal '%u', dumping core.\n",
+          fprintf(stderr, gettext("%s: caught unknown signal '%u', dumping core.\n"),
                   _app_name.c_str(), sig);
           abort();
         }
@@ -491,7 +492,7 @@ void bt::Application::process_event(XEvent *event) {
 #endif // SHAPE
 #ifdef    DEBUG
       {
-        fprintf(stderr, "unhandled event %d\n", event->type);
+        fprintf(stderr, gettext("unhandled event %d\n"), event->type);
       }
 #endif // DEBUG
     break;
@@ -612,7 +613,7 @@ void bt::Application::openMenu(Menu *menu) {
 
 void bt::Application::closeMenu(Menu *menu) {
   if (menus.empty() || menu != menus.front()) {
-    fprintf(stderr, "BaseDisplay::closeMenu: menu %p not valid.\n",
+    fprintf(stderr, gettext("BaseDisplay::closeMenu: menu %p not valid.\n"),
             static_cast<void *>(menu));
     abort();
   }

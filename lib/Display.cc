@@ -22,6 +22,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include "gettext.h"
 #include "Display.hh"
 
 #include <algorithm>
@@ -66,7 +67,7 @@ namespace bt {
 
 bt::Display::Display(const char *dpy_name, bool multi_head) {
   if (!(xdisplay = XOpenDisplay(dpy_name))) {
-    fprintf(stderr, "bt::Display: failed to open display '%s'\n",
+    fprintf(stderr, gettext("bt::Display: failed to open display '%s'\n"),
             dpy_name ? dpy_name : "");
     ::exit(2);
   }
@@ -76,7 +77,7 @@ bt::Display::Display(const char *dpy_name, bool multi_head) {
 #endif // DEBUG
 
   if (fcntl(XConnectionNumber(xdisplay), F_SETFD, 1) == -1) {
-    fprintf(stderr, "bt::Display: failed to mark connection close-on-exec\n");
+    fprintf(stderr, gettext("bt::Display: failed to mark connection close-on-exec\n"));
     ::exit(2);
   }
 

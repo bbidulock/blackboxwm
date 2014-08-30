@@ -7,13 +7,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: blackbox 0.70.2.28\n"
 "Report-Msgid-Bugs-To: http://github.com/bbidulock/blackboxwm\n"
-"POT-Creation-Date: 2014-08-29 15:14-0600\n"
+"POT-Creation-Date: 2014-08-29 18:03-0600\n"
 "PO-Revision-Date: 2014-08-29 13:16-0600\n"
 "Last-Translator: Brian F. G. Bidulock <bidulock@openss7.org>\n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
@@ -21,12 +21,12 @@ msgstr ""
 #. TRANS The name of the submenu for controlling slit options.
 #: src/Slitmenu.cc:74 src/Configmenu.cc:154
 msgid "Slit Options"
-msgstr ""
+msgstr "Fente"
 
 #. TRANS The name of the submenu for controlling the direction of the slit.
 #: src/Slitmenu.cc:78
 msgid "Direction"
-msgstr ""
+msgstr "Orientation"
 
 #. TRANS The name of the submenu for controlling the placement of the slit.
 #. TRANS The name of the placement submenu of the toolbar options menu
@@ -34,24 +34,24 @@ msgstr ""
 #. TRANS with relation to other windows.
 #: src/Slitmenu.cc:81 src/Toolbarmenu.cc:70
 msgid "Placement"
-msgstr ""
+msgstr "Disposition"
 
 #. TRANS Always place the slit on top of other windows.
 #. TRANS Always place the toolbar above other windows on the desktop.
 #. TRANS Always place this window above other windows.
 #: src/Slitmenu.cc:85 src/Toolbarmenu.cc:72 src/Windowmenu.cc:96
 msgid "Always on top"
-msgstr ""
+msgstr "Toujours au dessus"
 
 #. TRANS Automatically hide the slit when the pointer leaves the slit.
 #: src/Slitmenu.cc:87
 msgid "Auto hide"
-msgstr ""
+msgstr "Auto disparaît"
 
 #. TRANS The name of the submenu for controlling slit direction.
 #: src/Slitmenu.cc:137
 msgid "Slit Direction"
-msgstr ""
+msgstr "Orientation de la Fente"
 
 #. TRANS Arrange the slit horizontally (wider).
 #: src/Slitmenu.cc:141
@@ -66,78 +66,78 @@ msgstr ""
 #. TRANS The name of the submenu for controlling slit placement.
 #: src/Slitmenu.cc:174
 msgid "Slit Placement"
-msgstr ""
+msgstr "Disposition de la Fente"
 
 #. TRANS Place the slit in the top left (NW) corner of the screen.
 #. TRANS Top left corner of the screen.
 #: src/Slitmenu.cc:178 src/Toolbarmenu.cc:140
 msgid "Top Left"
-msgstr ""
+msgstr "En haut à gauche"
 
 #. TRANS Place the slit in the center left (W) edge of the screen.
 #: src/Slitmenu.cc:180
 msgid "Center Left"
-msgstr ""
+msgstr "Au centre à gauche"
 
 #. TRANS Place the slit in the bottom left (SW) corner of the screen.
 #. TRANS Bottom left corner of the screen.
 #: src/Slitmenu.cc:182 src/Toolbarmenu.cc:147
 msgid "Bottom Left"
-msgstr ""
+msgstr "En bas à gauche"
 
 #. TRANS Place the slit in the center top (N) edge of the screen.
 #. TRANS Centered at the top of the screen.
 #: src/Slitmenu.cc:185 src/Toolbarmenu.cc:142
 msgid "Top Center"
-msgstr ""
+msgstr "En haut au centre"
 
 #. TRANS Place the slit in the center bottom (S) edge of the screen.
 #. TRANS Centered at the bottom of the screen.
 #: src/Slitmenu.cc:187 src/Toolbarmenu.cc:149
 msgid "Bottom Center"
-msgstr ""
+msgstr "En bas au centre"
 
 #. TRANS Place the slit in the top right (NE) corner of the screen.
 #. TRANS Top right corner of the screen.
 #: src/Slitmenu.cc:190 src/Toolbarmenu.cc:144
 msgid "Top Right"
-msgstr ""
+msgstr "En haut à droite"
 
 #. TRANS Place the slit in the center right (E) edge of the screen.
 #: src/Slitmenu.cc:192
 msgid "Center Right"
-msgstr ""
+msgstr "Au centre à droite"
 
 #. TRANS Place the slit in the bottom right (SE) corner of the screen.
 #. TRANS Bottom right corner of the screen.
 #: src/Slitmenu.cc:194 src/Toolbarmenu.cc:151
 msgid "Bottom Right"
-msgstr ""
+msgstr "En bas à droite"
 
 #. TRANS The name of the primary window manager configuration menu.
 #: src/Configmenu.cc:108
 msgid "Configuration Options"
-msgstr ""
+msgstr "Options de configuration"
 
 #. TRANS The name of the submenu for controlling the window focus model.
 #: src/Configmenu.cc:119 src/Configmenu.cc:228
 msgid "Focus Model"
-msgstr ""
+msgstr "Mode d'attribution du clavier"
 
 #. TRANS The name of the submenu for controlling automatic window placement.
 #: src/Configmenu.cc:121 src/Configmenu.cc:289
 msgid "Window Placement"
-msgstr ""
+msgstr "Disposition des fenêtres"
 
 #. TRANS The name of the submenu for controlling image dithering.
 #: src/Configmenu.cc:124 src/Configmenu.cc:386
 msgid "Image Dithering"
-msgstr ""
+msgstr "Lissage des images"
 
 #. TRANS When windows are moved they are moved opaquely (their contents show).
 #: src/Configmenu.cc:127
 msgid "Opaque Window Moving"
-msgstr ""
+msgstr "Déplacement opaque des fenêtres"
 
 #. TRANS When windows are resized they are resized opaquely (their contents show).
 #: src/Configmenu.cc:129
@@ -147,17 +147,17 @@ msgstr ""
 #. TRANS When window are maximized, they are maximized to the full screen size.
 #: src/Configmenu.cc:131
 msgid "Full Maximization"
-msgstr ""
+msgstr "Maximisation complète"
 
 #. TRANS When new windows appear on the screen, they are focussed immediately.
 #: src/Configmenu.cc:133
 msgid "Focus New Windows"
-msgstr ""
+msgstr "Attribuer le clavier à la nouvelle fenêtre"
 
 #. TRANS When changing to a workspace, the previous focussed window on that workspace is focussed.
 #: src/Configmenu.cc:135
 msgid "Focus Last Window on Workspace"
-msgstr ""
+msgstr "Attribuer le clavier en changeant d'espace de travail"
 
 #. TRANS The workspaces may be changed using the mouse wheel.
 #: src/Configmenu.cc:138
@@ -177,42 +177,42 @@ msgstr ""
 #. TRANS Disable global key binding by setting the Scroll Lock key.
 #: src/Configmenu.cc:147
 msgid "Disable Bindings with Scroll Lock"
-msgstr ""
+msgstr "Désactiver les modificateurs avec Vérouillage Défilement"
 
 #. TRANS The name of the submenu for controlling toolbar options.
 #: src/Configmenu.cc:151 src/Toolbarmenu.cc:60
 msgid "Toolbar Options"
-msgstr ""
+msgstr "Barre d'outils"
 
 #. TRANS The user must click on a window to focus it.
 #: src/Configmenu.cc:232
 msgid "Click to Focus"
-msgstr ""
+msgstr "Cliquer pour obtenir le clavier"
 
 #. TRANS The user can move the mouse into the window to focus it.
 #: src/Configmenu.cc:234
 msgid "Sloppy Focus"
-msgstr ""
+msgstr "Attribution du clavier souple"
 
 #. TRANS When a window is focused it is automatically raised.
 #: src/Configmenu.cc:236
 msgid "Auto Raise"
-msgstr ""
+msgstr "Premier plan automatique"
 
 #. TRANS When a window is clicked it is raised.
 #: src/Configmenu.cc:238
 msgid "Click Raise"
-msgstr ""
+msgstr "Cliquer pour mettre au premier plan"
 
 #. TRANS Arrange windows intelligently in rows.
 #: src/Configmenu.cc:293
 msgid "Smart Placement (Rows)"
-msgstr ""
+msgstr "Disposition futée (Lignes)"
 
 #. TRANS Arrange windows intelligently in columns.
 #: src/Configmenu.cc:295
 msgid "Smart Placement (Columns)"
-msgstr ""
+msgstr "Disposition futée (Colonnes)"
 
 #. TRANS Center windows.
 #: src/Configmenu.cc:297
@@ -222,27 +222,27 @@ msgstr ""
 #. TRANS Arrange windows in a cascade.
 #: src/Configmenu.cc:299
 msgid "Cascade Placement"
-msgstr ""
+msgstr "Disposition en cascade"
 
 #. TRANS When arranging windows, arrange from left to right.
 #: src/Configmenu.cc:304
 msgid "Left to Right"
-msgstr ""
+msgstr "De gauche à droite"
 
 #. TRANS When arranging windows, arrange from right to left.
 #: src/Configmenu.cc:306
 msgid "Right to Left"
-msgstr ""
+msgstr "De droite à gauche"
 
 #. TRANS When arranging windows, arrange from top to bottom.
 #: src/Configmenu.cc:308
 msgid "Top to Bottom"
-msgstr ""
+msgstr "De haut en bas"
 
 #. TRANS When arranging windows, arrange from bottom to top.
 #: src/Configmenu.cc:310
 msgid "Bottom to Top"
-msgstr ""
+msgstr "De bas en haut"
 
 #. TRANS When arranging windows, ignore the presence of shaded windows.
 #: src/Configmenu.cc:315
@@ -269,7 +269,7 @@ msgstr ""
 #. TRANS on the workspace.
 #: src/Iconmenu.cc:39 src/Workspacemenu.cc:77
 msgid "Iconified Windows"
-msgstr ""
+msgstr "Icones"
 
 #. TRANS Whether to show the toolbar or not.
 #: src/Toolbarmenu.cc:65
@@ -279,38 +279,38 @@ msgstr ""
 #. TRANS Automatically hide the toolbar when the pointer leaves the toolbar.
 #: src/Toolbarmenu.cc:74
 msgid "Auto Hide"
-msgstr ""
+msgstr "Auto disparaît"
 
 #. TRANS The name of the menu that controls toolbar placement; i.e.,
 #. TRANS which corner or edge of the screen on which the toolbar is placed.
 #: src/Toolbarmenu.cc:136
 msgid "Toolbar Placement"
-msgstr ""
+msgstr "Disposition de la barre d'outils"
 
 #. TRANS Send the window to another workspace without changing workspaces.
 #: src/Windowmenu.cc:77
 msgid "Send to Workspace"
-msgstr ""
+msgstr "Envoie vers ..."
 
 #. TRANS Show the window on all workspaces.
 #: src/Windowmenu.cc:79
 msgid "Occupy all Workspaces"
-msgstr ""
+msgstr "Épingle"
 
 #. TRANS Shade the window so that only the titlebar shows.
 #: src/Windowmenu.cc:82
 msgid "Shade"
-msgstr ""
+msgstr "Fantôme"
 
 #. TRANS Iconify the window so it is no longer visible.
 #: src/Windowmenu.cc:84
 msgid "Iconify"
-msgstr ""
+msgstr "Iconifie"
 
 #. TRANS Maximize the size of the window both vertically and horizontally.
 #: src/Windowmenu.cc:86
 msgid "Maximize"
-msgstr ""
+msgstr "Maximise"
 
 #. TRANS Maximize the size of the window vertically.
 #: src/Windowmenu.cc:88
@@ -335,26 +335,36 @@ msgstr ""
 #. TRANS Kill the process associated with the window.
 #: src/Windowmenu.cc:101
 msgid "Kill Client"
-msgstr ""
+msgstr "Massacre"
 
 #. TRANS Ask the application owning the window to close it.
 #: src/Windowmenu.cc:103
 msgid "Close"
-msgstr ""
+msgstr "Ferme"
 
 #. TRANS The name of the submenu controlling the number of workspaces.
 #: src/Workspacemenu.cc:49
 msgid "Workspaces"
-msgstr ""
+msgstr "Espaces de travail"
 
 #. TRANS Create a new workspace and append it to the list of workspaces.
 #: src/Workspacemenu.cc:54
 msgid "New Workspace"
-msgstr ""
+msgstr "Nouvel espace de travail"
 
 #. TRANS Remove the last workspace from the list of workspaces and destroy it.
 #: src/Workspacemenu.cc:56
 msgid "Remove Last Workspace"
+msgstr "Supprimer le dernier"
+
+#: src/Screen.cc:167
+#, c-format
+msgid "%s: another window manager is already running on display '%s'\n"
+msgstr ""
+
+#: src/Screen.cc:1468
+#, c-format
+msgid "%s: menu file '%s' is empty\n"
 msgstr ""
 
 #. TRANS The underscore '_' indicates the hot key.
@@ -377,17 +387,147 @@ msgstr ""
 msgid "Exit"
 msgstr ""
 
+#: src/Screen.cc:1629
+#, c-format
+msgid "%s: [exec] error, no menu label and/or command defined\n"
+msgstr ""
+
+#: src/Screen.cc:1639
+#, c-format
+msgid "%s: [exit] error, no menu label defined\n"
+msgstr ""
+
+#: src/Screen.cc:1650
+#, c-format
+msgid "%s: [style] error, no menu label and/or filename defined\n"
+msgstr ""
+
+#: src/Screen.cc:1663
+#, c-format
+msgid "%s: [config] error, no label defined"
+msgstr ""
+
+#: src/Screen.cc:1673
+#, c-format
+msgid "%s: [include] error, no filename defined\n"
+msgstr ""
+
+#: src/Screen.cc:1692
+#, c-format
+msgid "%s: [include] error: '%s' is not a regular file\n"
+msgstr ""
+
+#: src/Screen.cc:1713
+#, c-format
+msgid "%s: [submenu] error, no menu label defined\n"
+msgstr ""
+
+#: src/Screen.cc:1735
+#, c-format
+msgid "%s: [restart] error, no menu label defined\n"
+msgstr ""
+
+#: src/Screen.cc:1751
+#, c-format
+msgid "%s: [reconfig] error, no menu label defined\n"
+msgstr ""
+
+#: src/Screen.cc:1766
+#, c-format
+msgid "%s: [stylesdir/stylesmenu] error, no directory defined\n"
+msgstr ""
+
+#: src/Screen.cc:1779
+#, c-format
+msgid "%s: [stylesdir/stylesmenu] error, '%s' does not exist\n"
+msgstr ""
+
+#: src/Screen.cc:1785
+#, c-format
+msgid "%s: [stylesdir/stylesmenu] error, '%s' is not a directory\n"
+msgstr ""
+
+#: src/Screen.cc:1843
+#, c-format
+msgid "%s: [workspaces] error, no menu label defined\n"
+msgstr ""
+
 #: src/Window.cc:536
 msgid "Unnamed"
+msgstr "Inconnu"
+
+#: src/Window.cc:1006
+#, c-format
+msgid "BlackboxWindow::BlackboxWindow(): creating 0x%lx\n"
+msgstr ""
+
+#: src/Window.cc:1035
+#, c-format
+msgid "BlackboxWindow::BlackboxWindow(): XGetWindowAttributes failed\n"
+msgstr ""
+
+#: src/Window.cc:1283
+#, c-format
+msgid "BlackboxWindow::~BlackboxWindow: destroying 0x%lx\n"
+msgstr ""
+
+#: src/Window.cc:2315
+#, c-format
+msgid "%s -- assumed: (%d, %d), real: (%d, %d)\n"
+msgstr ""
+
+#: src/Window.cc:3249
+#, c-format
+msgid "BlackboxWindow::unmapNotifyEvent() for 0x%lx\n"
+msgstr ""
+
+#: src/Window.cc:3263
+#, c-format
+msgid "BlackboxWindow::destroyNotifyEvent() for 0x%lx\n"
+msgstr ""
+
+#: src/Window.cc:3276
+#, c-format
+msgid "BlackboxWindow::reparentNotifyEvent(): reparent 0x%lx to 0x%lx.\n"
+msgstr ""
+
+#: src/Window.cc:3294
+#, c-format
+msgid "BlackboxWindow::propertyNotifyEvent(): for 0x%lx\n"
+msgstr ""
+
+#: src/Window.cc:3489
+#, c-format
+msgid "BlackboxWindow::exposeEvent() for 0x%lx\n"
+msgstr ""
+
+#: src/Window.cc:3561
+#, c-format
+msgid "BlackboxWindow::buttonPressEvent() for 0x%lx\n"
+msgstr ""
+
+#: src/Window.cc:3630
+#, c-format
+msgid "BlackboxWindow::buttonReleaseEvent() for 0x%lx\n"
+msgstr ""
+
+#: src/Window.cc:3673
+#, c-format
+msgid "BlackboxWindow::motionNotifyEvent() for 0x%lx\n"
 msgstr ""
 
 #. TRANS The default name for a workspace with workspace number %u.
 #: src/Workspace.cc:61
 #, c-format
 msgid "Workspace %u"
-msgstr ""
+msgstr "Espace de travail %u"
 
-#: util/bsetroot.cc:335
+#: util/bsetroot.cc:101
+#, c-format
+msgid "bsetroot: error: must specify one of: -solid, -mod, -gradient\n"
+msgstr "bsetroot: Erreur: il faut préciser : -solid, -mod, -gradient\n"
+
+#: util/bsetroot.cc:336
 #, c-format
 msgid ""
 "  -display <string>        use display connection\n"
@@ -402,4 +542,284 @@ msgid ""
 "  -solid <color>           solid color\n"
 "\n"
 "  -help                    print this help text and exit\n"
+msgstr ""
+"  -display <chaîne>        \tconnexion à l'affichage\n"
+"  -mod <x> <y>             \tmotif\n"
+"  -foreground, -fg <couleur> \tcouleur d'avant plan\n"
+"  -background, -bg <couleur> \tcouleur d'arrière plan\n"
+"\n"
+"  -gradient <texture>      \ttexture du dégradé\n"
+"  -from <couleur>            \tcouleur de départ du dégradé\n"
+"  -to <couleur>              \tcouleur d'arrivée du dégradé\n"
+"\n"
+"  -solid <couleur>           \tcouleur uniforme\n"
+"\n"
+"  -help                    \taffiche ce texte d'aide et quitte\n"
+
+#: lib/Application.cc:72
+#, c-format
+msgid ""
+"%s:  X error: %s(%d) opcodes %d/%d\n"
+"  resource 0x%lx\n"
+msgstr ""
+
+#: lib/Application.cc:222
+#, c-format
+msgid "%s: caught unknown signal '%u', dumping core.\n"
+msgstr ""
+
+#: lib/Application.cc:495
+#, c-format
+msgid "unhandled event %d\n"
+msgstr ""
+
+#: lib/Application.cc:616
+#, c-format
+msgid "BaseDisplay::closeMenu: menu %p not valid.\n"
+msgstr ""
+
+#: lib/Color.cc:157
+#, c-format
+msgid "bt::ColorCache: use %02x/%02x/%02x, count %4u\n"
+msgstr ""
+
+#: lib/Color.cc:174
+#, c-format
+msgid "bt::Color::pixel: cannot allocate color 'rgb:%02x/%02x/%02x'\n"
+msgstr ""
+
+#: lib/Color.cc:180
+#, c-format
+msgid "bt::ColorCache: add %02x/%02x/%02x, pixel %08lx\n"
+msgstr ""
+
+#: lib/Color.cc:205
+#, c-format
+msgid "bt::ColorCache: rel %02x/%02x/%02x, count %4u\n"
+msgstr ""
+
+#: lib/Color.cc:217
+#, c-format
+msgid "bt::ColorCache: clearing cache, %u entries\n"
+msgstr ""
+
+#: lib/Color.cc:234
+#, c-format
+msgid "bt::ColorCache: fre %02x/%02x/%02x, pixel %08lx\n"
+msgstr ""
+
+#: lib/Color.cc:254
+#, c-format
+msgid "bt::ColorCache: cleared, %u entries remain\n"
+msgstr ""
+
+#: lib/Color.cc:270
+#, c-format
+msgid "bt::Color::namedColor: empty colorname\n"
+msgstr ""
+
+#: lib/Color.cc:283
+#, c-format
+msgid "bt::Color::namedColor: invalid color '%s'\n"
+msgstr ""
+
+#: lib/Display.cc:70
+#, c-format
+msgid "bt::Display: failed to open display '%s'\n"
+msgstr "bt::Display: échec de la connexion au serveur X '%s'\n"
+
+#: lib/Display.cc:80
+#, c-format
+msgid "bt::Display: failed to mark connection close-on-exec\n"
+msgstr "bt::Display: impossible d'attribuer close-on-exec à l'affichage\n"
+
+#: lib/Font.cc:200
+#, c-format
+msgid "bt::FontCache: ref set  '%s'\n"
+msgstr ""
+
+#: lib/Font.cc:226 lib/Font.cc:260
+#, c-format
+msgid "bt::FontCache: add set  '%s'\n"
+msgstr ""
+
+#: lib/Font.cc:253
+#, c-format
+msgid "Warning: missing charset '%s' in fontset\n"
+msgstr ""
+
+#: lib/Font.cc:286
+#, c-format
+msgid "bt::FontCache: %s Xft%u '%s'\n"
+msgstr ""
+
+#: lib/Font.cc:305
+#, c-format
+msgid "bt::FontCache: skp Xft%u '%s'\n"
+msgstr ""
+
+#: lib/Font.cc:319
+#, c-format
+msgid "bt::Font: couldn't load Xft%u '%s'\n"
+msgstr ""
+
+#: lib/Font.cc:326
+#, c-format
+msgid "bt::FontCache: add Xft%u '%s'\n"
+msgstr ""
+
+#: lib/Font.cc:349
+#, c-format
+msgid "bt::FontCache: rel      '%s'\n"
+msgstr ""
+
+#: lib/Font.cc:367
+#, c-format
+msgid "bt::FontCache: clearing cache, %u entries\n"
+msgstr ""
+
+#: lib/Font.cc:377
+#, c-format
+msgid "bt::FontCache: fre      '%s'\n"
+msgstr ""
+
+#: lib/Font.cc:392
+#, c-format
+msgid "bt::FontCache: cleared, %u entries remain\n"
+msgstr ""
+
+#: lib/Image.cc:234
+#, c-format
+msgid "bt::createShmImage: X server failed to attach\n"
+msgstr ""
+
+#: lib/Image.cc:418
+#, c-format
+msgid "%s %3u: gray %04x\n"
+msgstr ""
+
+#: lib/Image.cc:433
+#, c-format
+msgid "%s %3u: %04x/%04x/%04x\n"
+msgstr ""
+
+#: lib/Image.cc:463
+#, c-format
+msgid "query %3u: %04x/%04x/%04x\n"
+msgstr ""
+
+#: lib/Image.cc:512
+#, c-format
+msgid "close %3u: %04x/%04x/%04x\n"
+msgstr ""
+
+#: lib/Menu.cc:1178
+#, c-format
+msgid "Error: bt::Menu::verifyId: id %u already used\n"
+msgstr ""
+
+#: lib/PixmapCache.cc:154
+#, c-format
+msgid "bt::PixmapCache: use %08lx %4ux%4u, count %4u\n"
+msgstr ""
+
+#: lib/PixmapCache.cc:166
+#, c-format
+msgid ""
+"bt::PixmapCache: add %08lx %4ux%4u\n"
+"                 mem %8lu max %8lu\n"
+msgstr ""
+
+#: lib/PixmapCache.cc:183
+#, c-format
+msgid ""
+"bt::PixmapCache: maximum size (%lu kb) exceeded\n"
+"bt::PixmapCache: current size: %lu kb\n"
+msgstr ""
+
+#: lib/PixmapCache.cc:207
+#, c-format
+msgid "bt::PixmapCache: rel %08lx %4ux%4u, count %4u\n"
+msgstr ""
+
+#: lib/PixmapCache.cc:218
+#, c-format
+msgid "bt::PixmapCache: clearing cache, %u entries\n"
+msgstr ""
+
+#: lib/PixmapCache.cc:226
+#, c-format
+msgid "bt::PixmapCache: skp %08lx %4ux%4u, count %4u\n"
+msgstr ""
+
+#: lib/PixmapCache.cc:235
+#, c-format
+msgid "bt::PixmapCache: fre %08lx %4ux%4u\n"
+msgstr ""
+
+#: lib/PixmapCache.cc:255
+#, c-format
+msgid ""
+"bt::PixmapCache: cleared, %u entries remain\n"
+"                 mem %8lu max %8lu\n"
+msgstr ""
+
+#: src/blackbox.cc:151
+#, c-format
+msgid "Blackbox::process_event(): MapRequest for 0x%lx\n"
+msgstr ""
+
+#: src/blackbox.cc:409
+#, c-format
+msgid "X server does not support locale\n"
+msgstr ""
+
+#: src/blackbox.cc:412
+#, c-format
+msgid "cannot set locale modifiers\n"
+msgstr ""
+
+#: src/blackbox.cc:445
+#, c-format
+msgid "%s: no manageable screens found, exiting...\n"
+msgstr ""
+
+#: src/main.cc:108
+#, c-format
+msgid "error: '-rc' requires and argument\n"
+msgstr ""
+
+#: src/main.cc:118
+#, c-format
+msgid "error: '-display' requires an argument\n"
+msgstr ""
+
+#: src/main.cc:128
+#, c-format
+msgid "warning: couldn't set environment variable 'DISPLAY'\n"
+msgstr ""
+
+#: src/StackingList.cc:198
+#, c-format
+msgid "  0x%lx: window 0x%lx %p '%s'\n"
+msgstr ""
+
+#: src/StackingList.cc:202
+#, c-format
+msgid "  0x%lx: %p unknown entity\n"
+msgstr ""
+
+#: src/StackingList.cc:205
+#, c-format
+msgid "  zero\n"
+msgstr ""
+
+#: src/StackingList.cc:212
+#, c-format
+msgid "Stack:\n"
+msgstr ""
+
+#: src/StackingList.cc:216
+#, c-format
+msgid "Layers:\n"
 msgstr ""

@@ -22,6 +22,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include "gettext.h"
 #include "blackbox.hh"
 #include "Screen.hh"
 #include "Slit.hh"
@@ -147,7 +148,7 @@ void Blackbox::process_event(XEvent *e) {
   switch (e->type) {
   case MapRequest: {
 #ifdef    DEBUG
-    fprintf(stderr, "Blackbox::process_event(): MapRequest for 0x%lx\n",
+    fprintf(stderr, gettext("Blackbox::process_event(): MapRequest for 0x%lx\n"),
             e->xmaprequest.window);
 #endif // DEBUG
 
@@ -405,10 +406,10 @@ Blackbox::Blackbox(char **m_argv, int m_argc, const char *dpy_name,
     grab_count(0u), _resource(rc)
 {
   if (! XSupportsLocale())
-    fprintf(stderr, "X server does not support locale\n");
+    fprintf(stderr, gettext("X server does not support locale\n"));
 
   if (XSetLocaleModifiers("") == NULL)
-    fprintf(stderr, "cannot set locale modifiers\n");
+    fprintf(stderr, gettext("cannot set locale modifiers\n"));
 
   argv = m_argv;
   argc = m_argc;
@@ -441,7 +442,7 @@ Blackbox::Blackbox(char **m_argv, int m_argc, const char *dpy_name,
   }
 
   if (managed == 0) {
-    fprintf(stderr, "%s: no manageable screens found, exiting...\n",
+    fprintf(stderr, gettext("%s: no manageable screens found, exiting...\n"),
             applicationName().c_str());
     ::exit(3);
   }

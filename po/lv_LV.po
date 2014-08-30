@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: blackbox 0.70.2.28\n"
 "Report-Msgid-Bugs-To: http://github.com/bbidulock/blackboxwm\n"
-"POT-Creation-Date: 2014-08-29 15:14-0600\n"
+"POT-Creation-Date: 2014-08-29 18:03-0600\n"
 "PO-Revision-Date: 2014-08-29 13:17-0600\n"
 "Last-Translator: Brian F. G. Bidulock <bidulock@openss7.org>\n"
 "Language-Team: Latvian\n"
@@ -358,6 +358,16 @@ msgstr ""
 msgid "Remove Last Workspace"
 msgstr ""
 
+#: src/Screen.cc:167
+#, c-format
+msgid "%s: another window manager is already running on display '%s'\n"
+msgstr ""
+
+#: src/Screen.cc:1468
+#, c-format
+msgid "%s: menu file '%s' is empty\n"
+msgstr ""
+
 #. TRANS The underscore '_' indicates the hot key.
 #: src/Screen.cc:1520
 msgid "_Blackbox"
@@ -378,8 +388,133 @@ msgstr ""
 msgid "Exit"
 msgstr ""
 
+#: src/Screen.cc:1629
+#, c-format
+msgid "%s: [exec] error, no menu label and/or command defined\n"
+msgstr ""
+
+#: src/Screen.cc:1639
+#, c-format
+msgid "%s: [exit] error, no menu label defined\n"
+msgstr ""
+
+#: src/Screen.cc:1650
+#, c-format
+msgid "%s: [style] error, no menu label and/or filename defined\n"
+msgstr ""
+
+#: src/Screen.cc:1663
+#, c-format
+msgid "%s: [config] error, no label defined"
+msgstr ""
+
+#: src/Screen.cc:1673
+#, c-format
+msgid "%s: [include] error, no filename defined\n"
+msgstr ""
+
+#: src/Screen.cc:1692
+#, c-format
+msgid "%s: [include] error: '%s' is not a regular file\n"
+msgstr ""
+
+#: src/Screen.cc:1713
+#, c-format
+msgid "%s: [submenu] error, no menu label defined\n"
+msgstr ""
+
+#: src/Screen.cc:1735
+#, c-format
+msgid "%s: [restart] error, no menu label defined\n"
+msgstr ""
+
+#: src/Screen.cc:1751
+#, c-format
+msgid "%s: [reconfig] error, no menu label defined\n"
+msgstr ""
+
+#: src/Screen.cc:1766
+#, c-format
+msgid "%s: [stylesdir/stylesmenu] error, no directory defined\n"
+msgstr ""
+
+#: src/Screen.cc:1779
+#, c-format
+msgid "%s: [stylesdir/stylesmenu] error, '%s' does not exist\n"
+msgstr ""
+
+#: src/Screen.cc:1785
+#, c-format
+msgid "%s: [stylesdir/stylesmenu] error, '%s' is not a directory\n"
+msgstr ""
+
+#: src/Screen.cc:1843
+#, c-format
+msgid "%s: [workspaces] error, no menu label defined\n"
+msgstr ""
+
 #: src/Window.cc:536
 msgid "Unnamed"
+msgstr ""
+
+#: src/Window.cc:1006
+#, c-format
+msgid "BlackboxWindow::BlackboxWindow(): creating 0x%lx\n"
+msgstr ""
+
+#: src/Window.cc:1035
+#, c-format
+msgid "BlackboxWindow::BlackboxWindow(): XGetWindowAttributes failed\n"
+msgstr ""
+
+#: src/Window.cc:1283
+#, c-format
+msgid "BlackboxWindow::~BlackboxWindow: destroying 0x%lx\n"
+msgstr ""
+
+#: src/Window.cc:2315
+#, c-format
+msgid "%s -- assumed: (%d, %d), real: (%d, %d)\n"
+msgstr ""
+
+#: src/Window.cc:3249
+#, c-format
+msgid "BlackboxWindow::unmapNotifyEvent() for 0x%lx\n"
+msgstr ""
+
+#: src/Window.cc:3263
+#, c-format
+msgid "BlackboxWindow::destroyNotifyEvent() for 0x%lx\n"
+msgstr ""
+
+#: src/Window.cc:3276
+#, c-format
+msgid "BlackboxWindow::reparentNotifyEvent(): reparent 0x%lx to 0x%lx.\n"
+msgstr ""
+
+#: src/Window.cc:3294
+#, c-format
+msgid "BlackboxWindow::propertyNotifyEvent(): for 0x%lx\n"
+msgstr ""
+
+#: src/Window.cc:3489
+#, c-format
+msgid "BlackboxWindow::exposeEvent() for 0x%lx\n"
+msgstr ""
+
+#: src/Window.cc:3561
+#, c-format
+msgid "BlackboxWindow::buttonPressEvent() for 0x%lx\n"
+msgstr ""
+
+#: src/Window.cc:3630
+#, c-format
+msgid "BlackboxWindow::buttonReleaseEvent() for 0x%lx\n"
+msgstr ""
+
+#: src/Window.cc:3673
+#, c-format
+msgid "BlackboxWindow::motionNotifyEvent() for 0x%lx\n"
 msgstr ""
 
 #. TRANS The default name for a workspace with workspace number %u.
@@ -388,7 +523,12 @@ msgstr ""
 msgid "Workspace %u"
 msgstr ""
 
-#: util/bsetroot.cc:335
+#: util/bsetroot.cc:101
+#, c-format
+msgid "bsetroot: error: must specify one of: -solid, -mod, -gradient\n"
+msgstr ""
+
+#: util/bsetroot.cc:336
 #, c-format
 msgid ""
 "  -display <string>        use display connection\n"
@@ -403,4 +543,272 @@ msgid ""
 "  -solid <color>           solid color\n"
 "\n"
 "  -help                    print this help text and exit\n"
+msgstr ""
+
+#: lib/Application.cc:72
+#, c-format
+msgid ""
+"%s:  X error: %s(%d) opcodes %d/%d\n"
+"  resource 0x%lx\n"
+msgstr ""
+
+#: lib/Application.cc:222
+#, c-format
+msgid "%s: caught unknown signal '%u', dumping core.\n"
+msgstr ""
+
+#: lib/Application.cc:495
+#, c-format
+msgid "unhandled event %d\n"
+msgstr ""
+
+#: lib/Application.cc:616
+#, c-format
+msgid "BaseDisplay::closeMenu: menu %p not valid.\n"
+msgstr ""
+
+#: lib/Color.cc:157
+#, c-format
+msgid "bt::ColorCache: use %02x/%02x/%02x, count %4u\n"
+msgstr ""
+
+#: lib/Color.cc:174
+#, c-format
+msgid "bt::Color::pixel: cannot allocate color 'rgb:%02x/%02x/%02x'\n"
+msgstr ""
+
+#: lib/Color.cc:180
+#, c-format
+msgid "bt::ColorCache: add %02x/%02x/%02x, pixel %08lx\n"
+msgstr ""
+
+#: lib/Color.cc:205
+#, c-format
+msgid "bt::ColorCache: rel %02x/%02x/%02x, count %4u\n"
+msgstr ""
+
+#: lib/Color.cc:217
+#, c-format
+msgid "bt::ColorCache: clearing cache, %u entries\n"
+msgstr ""
+
+#: lib/Color.cc:234
+#, c-format
+msgid "bt::ColorCache: fre %02x/%02x/%02x, pixel %08lx\n"
+msgstr ""
+
+#: lib/Color.cc:254
+#, c-format
+msgid "bt::ColorCache: cleared, %u entries remain\n"
+msgstr ""
+
+#: lib/Color.cc:270
+#, c-format
+msgid "bt::Color::namedColor: empty colorname\n"
+msgstr ""
+
+#: lib/Color.cc:283
+#, c-format
+msgid "bt::Color::namedColor: invalid color '%s'\n"
+msgstr ""
+
+#: lib/Display.cc:70
+#, c-format
+msgid "bt::Display: failed to open display '%s'\n"
+msgstr ""
+
+#: lib/Display.cc:80
+#, c-format
+msgid "bt::Display: failed to mark connection close-on-exec\n"
+msgstr ""
+
+#: lib/Font.cc:200
+#, c-format
+msgid "bt::FontCache: ref set  '%s'\n"
+msgstr ""
+
+#: lib/Font.cc:226 lib/Font.cc:260
+#, c-format
+msgid "bt::FontCache: add set  '%s'\n"
+msgstr ""
+
+#: lib/Font.cc:253
+#, c-format
+msgid "Warning: missing charset '%s' in fontset\n"
+msgstr ""
+
+#: lib/Font.cc:286
+#, c-format
+msgid "bt::FontCache: %s Xft%u '%s'\n"
+msgstr ""
+
+#: lib/Font.cc:305
+#, c-format
+msgid "bt::FontCache: skp Xft%u '%s'\n"
+msgstr ""
+
+#: lib/Font.cc:319
+#, c-format
+msgid "bt::Font: couldn't load Xft%u '%s'\n"
+msgstr ""
+
+#: lib/Font.cc:326
+#, c-format
+msgid "bt::FontCache: add Xft%u '%s'\n"
+msgstr ""
+
+#: lib/Font.cc:349
+#, c-format
+msgid "bt::FontCache: rel      '%s'\n"
+msgstr ""
+
+#: lib/Font.cc:367
+#, c-format
+msgid "bt::FontCache: clearing cache, %u entries\n"
+msgstr ""
+
+#: lib/Font.cc:377
+#, c-format
+msgid "bt::FontCache: fre      '%s'\n"
+msgstr ""
+
+#: lib/Font.cc:392
+#, c-format
+msgid "bt::FontCache: cleared, %u entries remain\n"
+msgstr ""
+
+#: lib/Image.cc:234
+#, c-format
+msgid "bt::createShmImage: X server failed to attach\n"
+msgstr ""
+
+#: lib/Image.cc:418
+#, c-format
+msgid "%s %3u: gray %04x\n"
+msgstr ""
+
+#: lib/Image.cc:433
+#, c-format
+msgid "%s %3u: %04x/%04x/%04x\n"
+msgstr ""
+
+#: lib/Image.cc:463
+#, c-format
+msgid "query %3u: %04x/%04x/%04x\n"
+msgstr ""
+
+#: lib/Image.cc:512
+#, c-format
+msgid "close %3u: %04x/%04x/%04x\n"
+msgstr ""
+
+#: lib/Menu.cc:1178
+#, c-format
+msgid "Error: bt::Menu::verifyId: id %u already used\n"
+msgstr ""
+
+#: lib/PixmapCache.cc:154
+#, c-format
+msgid "bt::PixmapCache: use %08lx %4ux%4u, count %4u\n"
+msgstr ""
+
+#: lib/PixmapCache.cc:166
+#, c-format
+msgid ""
+"bt::PixmapCache: add %08lx %4ux%4u\n"
+"                 mem %8lu max %8lu\n"
+msgstr ""
+
+#: lib/PixmapCache.cc:183
+#, c-format
+msgid ""
+"bt::PixmapCache: maximum size (%lu kb) exceeded\n"
+"bt::PixmapCache: current size: %lu kb\n"
+msgstr ""
+
+#: lib/PixmapCache.cc:207
+#, c-format
+msgid "bt::PixmapCache: rel %08lx %4ux%4u, count %4u\n"
+msgstr ""
+
+#: lib/PixmapCache.cc:218
+#, c-format
+msgid "bt::PixmapCache: clearing cache, %u entries\n"
+msgstr ""
+
+#: lib/PixmapCache.cc:226
+#, c-format
+msgid "bt::PixmapCache: skp %08lx %4ux%4u, count %4u\n"
+msgstr ""
+
+#: lib/PixmapCache.cc:235
+#, c-format
+msgid "bt::PixmapCache: fre %08lx %4ux%4u\n"
+msgstr ""
+
+#: lib/PixmapCache.cc:255
+#, c-format
+msgid ""
+"bt::PixmapCache: cleared, %u entries remain\n"
+"                 mem %8lu max %8lu\n"
+msgstr ""
+
+#: src/blackbox.cc:151
+#, c-format
+msgid "Blackbox::process_event(): MapRequest for 0x%lx\n"
+msgstr ""
+
+#: src/blackbox.cc:409
+#, c-format
+msgid "X server does not support locale\n"
+msgstr ""
+
+#: src/blackbox.cc:412
+#, c-format
+msgid "cannot set locale modifiers\n"
+msgstr ""
+
+#: src/blackbox.cc:445
+#, c-format
+msgid "%s: no manageable screens found, exiting...\n"
+msgstr ""
+
+#: src/main.cc:108
+#, c-format
+msgid "error: '-rc' requires and argument\n"
+msgstr ""
+
+#: src/main.cc:118
+#, c-format
+msgid "error: '-display' requires an argument\n"
+msgstr ""
+
+#: src/main.cc:128
+#, c-format
+msgid "warning: couldn't set environment variable 'DISPLAY'\n"
+msgstr ""
+
+#: src/StackingList.cc:198
+#, c-format
+msgid "  0x%lx: window 0x%lx %p '%s'\n"
+msgstr ""
+
+#: src/StackingList.cc:202
+#, c-format
+msgid "  0x%lx: %p unknown entity\n"
+msgstr ""
+
+#: src/StackingList.cc:205
+#, c-format
+msgid "  zero\n"
+msgstr ""
+
+#: src/StackingList.cc:212
+#, c-format
+msgid "Stack:\n"
+msgstr ""
+
+#: src/StackingList.cc:216
+#, c-format
+msgid "Layers:\n"
 msgstr ""

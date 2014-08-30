@@ -96,8 +96,9 @@ bsetroot::bsetroot(int argc, char **argv, char *dpy_name,
   }
 
   if ((mod + sol + grd) != True) {
+// TRANS Option error message.
     fprintf(stderr,
-            "bsetroot: error: must specify one of: -solid, -mod, -gradient\n");
+            gettext("bsetroot: error: must specify one of: -solid, -mod, -gradient\n"));
 
     usage(2);
   }

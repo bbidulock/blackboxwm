@@ -22,6 +22,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include "gettext.h"
 #include "Image.hh"
 #include "Display.hh"
 #include "Pen.hh"
@@ -230,7 +231,7 @@ namespace bt {
         // the X server failed to attach the shm segment
 
 #ifdef MITSHM_DEBUG
-        fprintf(stderr, "bt::createShmImage: X server failed to attach\n");
+        fprintf(stderr, gettext("bt::createShmImage: X server failed to attach\n"));
 #endif // MITSHM_DEBUG
 
         destroyShmImage(display, image);
@@ -414,7 +415,7 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
   case GrayScale:
     for (int x = 0; x < colors.size(); ++x) {
       const int gray = (x * 0xffff + (n_green - 1) / 2) / (n_green - 1);
-      fprintf(stderr, "%s %3u: gray %04x\n",
+      fprintf(stderr, gettext("%s %3u: gray %04x\n"),
               colors[x] == ~0ul ? "req  " : "alloc", x, gray);
     }
     break;
@@ -429,7 +430,7 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
       g = (g * 0xffff + (n_green - 1) / 2) / (n_green - 1);
       b = (b * 0xffff + (n_blue - 1) / 2) / (n_blue - 1);
 
-      fprintf(stderr, "%s %3u: %04x/%04x/%04x\n",
+      fprintf(stderr, gettext("%s %3u: %04x/%04x/%04x\n"),
               colors[x] == ~0ul ? "req  " : "alloc", x, r, g, b);
     }
     break;
@@ -459,7 +460,7 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
       break;
     }
 
-    fprintf(stderr, "query %3u: %04x/%04x/%04x\n",
+    fprintf(stderr, gettext("query %3u: %04x/%04x/%04x\n"),
             x, queried[x].red, queried[x].green, queried[x].blue);
   }
 #endif // COLORTABLE_DEBUG
@@ -508,7 +509,7 @@ bt::XColorTable::XColorTable(const Display &dpy, unsigned int screen,
     assert(best >= 0 && best < q_colors);
 
 #ifdef COLORTABLE_DEBUG
-    fprintf(stderr, "close %3u: %04x/%04x/%04x\n",
+    fprintf(stderr, gettext("close %3u: %04x/%04x/%04x\n"),
             x, queried[best].red, queried[best].green, queried[best].blue);
 #endif // COLORTABLE_DEBUG
 

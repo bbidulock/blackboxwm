@@ -22,6 +22,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include "gettext.h"
 #include "Menu.hh"
 #include "Application.hh"
 #include "Bitmap.hh"
@@ -1174,7 +1175,7 @@ unsigned int bt::Menu::verifyId(unsigned int id) {
       return id;
     }
 
-    fprintf(stderr, "Error: bt::Menu::verifyId: id %u already used\n", id);
+    fprintf(stderr, gettext("Error: bt::Menu::verifyId: id %u already used\n"), id);
     abort();
   }
 

@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
       // look for alternative rc file to use
 
       if ((++i) >= argc) {
-        fprintf(stderr, "error: '-rc' requires and argument\n");
+        fprintf(stderr, gettext("error: '-rc' requires and argument\n"));
         ::exit(1);
       }
 
@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
       // set by the environment variable DISPLAY
 
       if ((++i) >= argc) {
-        fprintf(stderr, "error: '-display' requires an argument\n");
+        fprintf(stderr, gettext("error: '-display' requires an argument\n"));
         ::exit(1);
       }
 
@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
 
       if (putenv(const_cast<char*>(dtmp.c_str()))) {
         fprintf(stderr,
-                "warning: couldn't set environment variable 'DISPLAY'\n");
+                gettext("warning: couldn't set environment variable 'DISPLAY'\n"));
         perror("putenv()");
       }
     } else if (! strcmp(argv[i], "-single")) {

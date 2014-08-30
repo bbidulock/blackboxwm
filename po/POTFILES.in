@@ -9,3 +9,13 @@ src/Screen.cc
 src/Window.cc
 src/Workspace.cc
 util/bsetroot.cc
+lib/Application.cc
+lib/Color.cc
+lib/Display.cc
+lib/Font.cc
+lib/Image.cc
+lib/Menu.cc
+lib/PixmapCache.cc
+src/blackbox.cc
+src/main.cc
+src/StackingList.cc

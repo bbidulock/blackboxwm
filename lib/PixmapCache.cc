@@ -23,6 +23,7 @@
 // DEALINGS IN THE SOFTWARE.
 
 
+#include "gettext.h"
 #include "PixmapCache.hh"
 #include "Display.hh"
 #include "Image.hh"
@@ -150,7 +151,7 @@ Pixmap bt::RealPixmapCache::find(unsigned int screen,
     p = it->pixmap;
 
 #ifdef PIXMAPCACHE_DEBUG
-    fprintf(stderr, "bt::PixmapCache: use %08lx %4ux%4u, count %4u\n",
+    fprintf(stderr, gettext("bt::PixmapCache: use %08lx %4ux%4u, count %4u\n"),
             it->pixmap, width, height, it->count);
 #endif // PIXMAPCACHE_DEBUG
   } else {
@@ -162,8 +163,8 @@ Pixmap bt::RealPixmapCache::find(unsigned int screen,
 
 #ifdef PIXMAPCACHE_DEBUG
       fprintf(stderr,
-              "bt::PixmapCache: add %08lx %4ux%4u\n"
-              "                 mem %8lu max %8lu\n",
+              gettext("bt::PixmapCache: add %08lx %4ux%4u\n"
+                      "                 mem %8lu max %8lu\n"),
               p, width, height, mem_usage, maxmem_usage);
 #endif // PIXMAPCACHE_DEBUG
 
@@ -179,8 +180,8 @@ Pixmap bt::RealPixmapCache::find(unsigned int screen,
 #ifdef PIXMAPCACHE_DEBUG
       if (mem_usage > maxmem_usage) {
         fprintf(stderr,
-                "bt::PixmapCache: maximum size (%lu kb) exceeded\n"
-                "bt::PixmapCache: current size: %lu kb\n",
+                gettext("bt::PixmapCache: maximum size (%lu kb) exceeded\n"
+                        "bt::PixmapCache: current size: %lu kb\n"),
                 maxmem_usage / 1024, mem_usage / 1024);
       }
 #endif // PIXMAPCACHE_DEBUG
@@ -203,7 +204,7 @@ void bt::RealPixmapCache::release(Pixmap pixmap) {
   --(it->count);
 
 #ifdef PIXMAPCACHE_DEBUG
-  fprintf(stderr, "bt::PixmapCache: rel %08lx %4ux%4u, count %4u\n",
+  fprintf(stderr, gettext("bt::PixmapCache: rel %08lx %4ux%4u, count %4u\n"),
           it->pixmap, it->width, it->height, it->count);
 #endif // PIXMAPCACHE_DEBUG
 }
@@ -214,7 +215,7 @@ void bt::RealPixmapCache::clear(bool force) {
     return; // nothing to do
 
 #ifdef PIXMAPCACHE_DEBUG
-  fprintf(stderr, "bt::PixmapCache: clearing cache, %u entries\n",
+  fprintf(stderr, gettext("bt::PixmapCache: clearing cache, %u entries\n"),
           cache.size());
 #endif // PIXMAPCACHE_DEBUG
 
@@ -222,7 +223,7 @@ void bt::RealPixmapCache::clear(bool force) {
   while (it != cache.end()) {
     if (it->count != 0 && !force) {
 #ifdef PIXMAPCACHE_DEBUG
-      fprintf(stderr, "bt::PixmapCache: skp %08lx %4ux%4u, count %4u\n",
+      fprintf(stderr, gettext("bt::PixmapCache: skp %08lx %4ux%4u, count %4u\n"),
               it->pixmap, it->width, it->height, it->count);
 #endif // PIXMAPCACHE_DEBUG
 
@@ -231,7 +232,7 @@ void bt::RealPixmapCache::clear(bool force) {
     }
 
 #ifdef PIXMAPCACHE_DEBUG
-    fprintf(stderr, "bt::PixmapCache: fre %08lx %4ux%4u\n",
+    fprintf(stderr, gettext("bt::PixmapCache: fre %08lx %4ux%4u\n"),
             it->pixmap, it->width, it->height);
 #endif // PIXMAPCACHE_DEBUG
 
@@ -251,8 +252,8 @@ void bt::RealPixmapCache::clear(bool force) {
 
 #ifdef PIXMAPCACHE_DEBUG
   fprintf(stderr,
-          "bt::PixmapCache: cleared, %u entries remain\n"
-          "                 mem %8lu max %8lu\n",
+          gettext("bt::PixmapCache: cleared, %u entries remain\n"
+                  "                 mem %8lu max %8lu\n"),
           cache.size(), mem_usage, maxmem_usage);
 #endif // PIXMAPCACHE_DEBUG
 }

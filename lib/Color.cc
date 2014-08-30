@@ -22,6 +22,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include "gettext.h"
 #include "Color.hh"
 #include "Display.hh"
 
@@ -153,7 +154,7 @@ unsigned long bt::ColorCache::find(unsigned int screen, int r, int g, int b) {
     ++it->second.count;
 
 #ifdef COLORCACHE_DEBUG
-    fprintf(stderr, "bt::ColorCache: use %02x/%02x/%02x, count %4u\n",
+    fprintf(stderr, gettext("bt::ColorCache: use %02x/%02x/%02x, count %4u\n"),
             r, g, b, it->second.count);
 #endif // COLORCACHE_DEBUG
 
@@ -170,13 +171,13 @@ unsigned long bt::ColorCache::find(unsigned int screen, int r, int g, int b) {
   Colormap colormap = _display.screenInfo(screen).colormap();
   if (!XAllocColor(_display.XDisplay(), colormap, &xcol)) {
     fprintf(stderr,
-            "bt::Color::pixel: cannot allocate color 'rgb:%02x/%02x/%02x'\n",
+            gettext("bt::Color::pixel: cannot allocate color 'rgb:%02x/%02x/%02x'\n"),
             r, g, b);
     xcol.pixel = BlackPixel(_display.XDisplay(), screen);
   }
 
 #ifdef COLORCACHE_DEBUG
-  fprintf(stderr, "bt::ColorCache: add %02x/%02x/%02x, pixel %08lx\n",
+  fprintf(stderr, gettext("bt::ColorCache: add %02x/%02x/%02x, pixel %08lx\n"),
           r, g, b, xcol.pixel);
 #endif // COLORCACHE_DEBUG
 
@@ -201,7 +202,7 @@ void bt::ColorCache::release(unsigned int screen, int r, int g, int b) {
   --it->second.count;
 
 #ifdef COLORCACHE_DEBUG
-  fprintf(stderr, "bt::ColorCache: rel %02x/%02x/%02x, count %4u\n",
+  fprintf(stderr, gettext("bt::ColorCache: rel %02x/%02x/%02x, count %4u\n"),
           r, g, b, it->second.count);
 #endif // COLORCACHE_DEBUG
 }
@@ -213,7 +214,7 @@ void bt::ColorCache::clear(bool force) {
     return; // nothing to do
 
 #ifdef COLORCACHE_DEBUG
-  fprintf(stderr, "bt::ColorCache: clearing cache, %u entries\n",
+  fprintf(stderr, gettext("bt::ColorCache: clearing cache, %u entries\n"),
           cache.size());
 #endif // COLORCACHE_DEBUG
 
@@ -230,7 +231,7 @@ void bt::ColorCache::clear(bool force) {
       }
 
 #ifdef COLORCACHE_DEBUG
-      fprintf(stderr, "bt::ColorCache: fre %02x/%02x/%02x, pixel %08lx\n",
+      fprintf(stderr, gettext("bt::ColorCache: fre %02x/%02x/%02x, pixel %08lx\n"),
               it->first.r, it->first.g, it->first.b, it->second.pixel);
 #endif // COLORCACHE_DEBUG
 
@@ -250,7 +251,7 @@ void bt::ColorCache::clear(bool force) {
   delete [] pixels;
 
 #ifdef COLORCACHE_DEBUG
-  fprintf(stderr, "bt::ColorCache: cleared, %u entries remain\n",
+  fprintf(stderr, gettext("bt::ColorCache: cleared, %u entries remain\n"),
           cache.size());
 #endif // COLORCACHE_DEBUG
 }
@@ -266,7 +267,7 @@ void bt::Color::clearCache(void)
 bt::Color bt::Color::namedColor(const Display &display, unsigned int screen,
                                 const std::string &colorname) {
   if (colorname.empty()) {
-    fprintf(stderr, "bt::Color::namedColor: empty colorname\n");
+    fprintf(stderr, gettext("bt::Color::namedColor: empty colorname\n"));
     return Color();
   }
 
@@ -279,7 +280,7 @@ bt::Color bt::Color::namedColor(const Display &display, unsigned int screen,
 
   Colormap colormap = display.screenInfo(screen).colormap();
   if (!XParseColor(display.XDisplay(), colormap, colorname.c_str(), &xcol)) {
-    fprintf(stderr, "bt::Color::namedColor: invalid color '%s'\n",
+    fprintf(stderr, gettext("bt::Color::namedColor: invalid color '%s'\n"),
             colorname.c_str());
     return Color();
   }

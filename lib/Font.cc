@@ -22,6 +22,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include "gettext.h"
 #include "Font.hh"
 #include "Color.hh"
 #include "Display.hh"
@@ -196,7 +197,7 @@ XFontSet bt::FontCache::findFontSet(const std::string &fontsetname) {
     // found it
 
 #ifdef FONTCACHE_DEBUG
-    fprintf(stderr, "bt::FontCache: ref set  '%s'\n", fontsetname.c_str());
+    fprintf(stderr, gettext("bt::FontCache: ref set  '%s'\n"), fontsetname.c_str());
 #endif // FONTCACHE_DEBUG
 
     ++it->second.count;
@@ -222,7 +223,7 @@ XFontSet bt::FontCache::findFontSet(const std::string &fontsetname) {
 
     if (fs) {
 #ifdef FONTCACHE_DEBUG
-      fprintf(stderr, "bt::FontCache: add set  '%s'\n", fontsetname.c_str());
+      fprintf(stderr, gettext("bt::FontCache: add set  '%s'\n"), fontsetname.c_str());
 #endif // FONTCACHE_DEBUG
 
       cache.insert(CacheItem(fn, FontRef(fs)));
@@ -249,14 +250,14 @@ XFontSet bt::FontCache::findFontSet(const std::string &fontsetname) {
                       &missing, &nmissing, &def);
   if (nmissing) {
     for (int x = 0; x < nmissing; ++x)
-      fprintf(stderr, "Warning: missing charset '%s' in fontset\n",
+      fprintf(stderr, gettext("Warning: missing charset '%s' in fontset\n"),
               missing[x]);
   }
   if (missing)
     XFreeStringList(missing);
 
 #ifdef FONTCACHE_DEBUG
-  fprintf(stderr, "bt::FontCache: add set  '%s'\n", fontsetname.c_str());
+  fprintf(stderr, gettext("bt::FontCache: add set  '%s'\n"), fontsetname.c_str());
 #endif // FONTCACHE_DEBUG
 
   cache.insert(CacheItem(fn, FontRef(fs)));
@@ -282,7 +283,7 @@ XftFont *bt::FontCache::findXftFont(const std::string &fontname,
     assert(it->first.screen == screen);
 
 #ifdef FONTCACHE_DEBUG
-    fprintf(stderr, "bt::FontCache: %s Xft%u '%s'\n",
+    fprintf(stderr, gettext("bt::FontCache: %s Xft%u '%s'\n"),
             it->second.xftfont ? "ref" : "skp",
             screen, fontname.c_str());
 #endif // FONTCACHE_DEBUG
@@ -301,7 +302,7 @@ XftFont *bt::FontCache::findXftFont(const std::string &fontname,
     XFreeFontNames(list);
 
 #ifdef FONTCACHE_DEBUG
-    fprintf(stderr, "bt::FontCache: skp Xft%u '%s'\n",
+    fprintf(stderr, gettext("bt::FontCache: skp Xft%u '%s'\n"),
             screen, fontname.c_str());
 #endif // FONTCACHE_DEBUG
   }
@@ -315,14 +316,14 @@ XftFont *bt::FontCache::findXftFont(const std::string &fontname,
     ret = XftFontOpenName(_display.XDisplay(), screen, n.c_str());
     if (ret == NULL) {
       // Xft will never return NULL, but it doesn't hurt to be cautious
-      fprintf(stderr, "bt::Font: couldn't load Xft%u '%s'\n",
+      fprintf(stderr, gettext("bt::Font: couldn't load Xft%u '%s'\n"),
               screen, fontname.c_str());
       ret = XftFontOpenName(_display.XDisplay(), screen, defaultXftFont);
     }
     assert(ret != NULL);
 
 #ifdef FONTCACHE_DEBUG
-    fprintf(stderr, "bt::FontCache: add Xft%u '%s'\n",
+    fprintf(stderr, gettext("bt::FontCache: add Xft%u '%s'\n"),
             screen, fontname.c_str());
 #endif // FONTCACHE_DEBUG
   }
@@ -345,7 +346,7 @@ void bt::FontCache::release(const std::string &fontname, unsigned int screen) {
   }
 
 #ifdef FONTCACHE_DEBUG
-  fprintf(stderr, "bt::FontCache: rel      '%s'\n", fontname.c_str());
+  fprintf(stderr, gettext("bt::FontCache: rel      '%s'\n"), fontname.c_str());
 #endif // FONTCACHE_DEBUG
 
   assert(!fontname.empty());
@@ -363,7 +364,7 @@ void bt::FontCache::clear(bool force) {
     return; // nothing to do
 
 #ifdef FONTCACHE_DEBUG
-  fprintf(stderr, "bt::FontCache: clearing cache, %u entries\n", cache.size());
+  fprintf(stderr, gettext("bt::FontCache: clearing cache, %u entries\n"), cache.size());
 #endif // FONTCACHE_DEBUG
 
   while (it != cache.end()) {
@@ -373,7 +374,7 @@ void bt::FontCache::clear(bool force) {
     }
 
 #ifdef FONTCACHE_DEBUG
-    fprintf(stderr, "bt::FontCache: fre      '%s'\n", it->first.name.c_str());
+    fprintf(stderr, gettext("bt::FontCache: fre      '%s'\n"), it->first.name.c_str());
 #endif // FONTCACHE_DEBUG
 
     if (it->second.fontset)
@@ -388,7 +389,7 @@ void bt::FontCache::clear(bool force) {
   }
 
 #ifdef FONTCACHE_DEBUG
-  fprintf(stderr, "bt::FontCache: cleared, %u entries remain\n", cache.size());
+  fprintf(stderr, gettext("bt::FontCache: cleared, %u entries remain\n"), cache.size());
 #endif // FONTCACHE_DEBUG
 }
 

@@ -22,6 +22,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+#include "gettext.h"
 #include "StackingList.hh"
 #include "Window.hh"
 
@@ -194,25 +195,25 @@ static void print_entity(StackEntity *entity)
 {
   BlackboxWindow *win = dynamic_cast<BlackboxWindow *>(entity);
   if (win) {
-    fprintf(stderr, "  0x%lx: window 0x%lx %p '%s'\n",
+    fprintf(stderr, gettext("  0x%lx: window 0x%lx %p '%s'\n"),
             win->windowID(), win->clientWindow(), win,
             bt::toLocale(win->title()).c_str());
   } else if (entity) {
-    fprintf(stderr, "  0x%lx: %p unknown entity\n",
+    fprintf(stderr, gettext("  0x%lx: %p unknown entity\n"),
             entity->windowID(), entity);
   } else {
-    fprintf(stderr, "  zero\n");
+    fprintf(stderr, gettext("  zero\n"));
   }
 }
 
 
 void StackingList::dump(void) const {
   const_iterator it = stack.begin(), _end = stack.end();
-  fprintf(stderr, "Stack:\n");
+  fprintf(stderr, gettext("Stack:\n"));
   for (; it != _end; ++it)
     print_entity(*it);
 
-  fprintf(stderr, "Layers:\n");
+  fprintf(stderr, gettext("Layers:\n"));
   print_entity(*fullscreen);
   print_entity(*above);
   print_entity(*normal);
