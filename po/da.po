@@ -1,4 +1,4 @@
-# French translations for blackbox package.
+# Danish translations for blackbox package.
 # Copyright (C) 2014 Bradley T Hughes <bhuhes@trolltech.com>
 # This file is distributed under the same license as the blackbox package.
 # Brian F. G. Bidulock <bidulock@openss7.org>, 2014.
@@ -7,26 +7,26 @@ msgid ""
 msgstr ""
 "Project-Id-Version: blackbox 0.70.2.28\n"
 "Report-Msgid-Bugs-To: http://github.com/bbidulock/blackboxwm\n"
-"POT-Creation-Date: 2014-08-29 19:28-0600\n"
+"POT-Creation-Date: 2014-08-29 19:43-0600\n"
 "PO-Revision-Date: 2014-08-29 13:16-0600\n"
 "Last-Translator: Brian F. G. Bidulock <bidulock@openss7.org>\n"
-"Language-Team: French\n"
-"Language: fr_FR\n"
+"Language-Team: Danish\n"
+"Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. TRANS The name of the submenu used for controlling slit options.
 #. TRANS The name of the submenu for controlling slit options.
 #: src/Slitmenu.cc:74 src/Configmenu.cc:154
 msgid "Slit Options"
-msgstr "Fente"
+msgstr ""
 
 #. TRANS The name of the submenu for controlling the direction of the slit.
 #: src/Slitmenu.cc:78
 msgid "Direction"
-msgstr "Orientation"
+msgstr ""
 
 #. TRANS The name of the submenu for controlling the placement of the slit.
 #. TRANS The name of the placement submenu of the toolbar options menu
@@ -34,24 +34,24 @@ msgstr "Orientation"
 #. TRANS with relation to other windows.
 #: src/Slitmenu.cc:81 src/Toolbarmenu.cc:70
 msgid "Placement"
-msgstr "Disposition"
+msgstr ""
 
 #. TRANS Always place the slit on top of other windows.
 #. TRANS Always place the toolbar above other windows on the desktop.
 #. TRANS Always place this window above other windows.
 #: src/Slitmenu.cc:85 src/Toolbarmenu.cc:72 src/Windowmenu.cc:96
 msgid "Always on top"
-msgstr "Toujours au dessus"
+msgstr ""
 
 #. TRANS Automatically hide the slit when the pointer leaves the slit.
 #: src/Slitmenu.cc:87
 msgid "Auto hide"
-msgstr "Auto disparaît"
+msgstr ""
 
 #. TRANS The name of the submenu for controlling slit direction.
 #: src/Slitmenu.cc:137
 msgid "Slit Direction"
-msgstr "Orientation de la Fente"
+msgstr ""
 
 #. TRANS Arrange the slit horizontally (wider).
 #: src/Slitmenu.cc:141
@@ -66,78 +66,78 @@ msgstr ""
 #. TRANS The name of the submenu for controlling slit placement.
 #: src/Slitmenu.cc:174
 msgid "Slit Placement"
-msgstr "Disposition de la Fente"
+msgstr ""
 
 #. TRANS Place the slit in the top left (NW) corner of the screen.
 #. TRANS Top left corner of the screen.
 #: src/Slitmenu.cc:178 src/Toolbarmenu.cc:140
 msgid "Top Left"
-msgstr "En haut à gauche"
+msgstr ""
 
 #. TRANS Place the slit in the center left (W) edge of the screen.
 #: src/Slitmenu.cc:180
 msgid "Center Left"
-msgstr "Au centre à gauche"
+msgstr ""
 
 #. TRANS Place the slit in the bottom left (SW) corner of the screen.
 #. TRANS Bottom left corner of the screen.
 #: src/Slitmenu.cc:182 src/Toolbarmenu.cc:147
 msgid "Bottom Left"
-msgstr "En bas à gauche"
+msgstr ""
 
 #. TRANS Place the slit in the center top (N) edge of the screen.
 #. TRANS Centered at the top of the screen.
 #: src/Slitmenu.cc:185 src/Toolbarmenu.cc:142
 msgid "Top Center"
-msgstr "En haut au centre"
+msgstr ""
 
 #. TRANS Place the slit in the center bottom (S) edge of the screen.
 #. TRANS Centered at the bottom of the screen.
 #: src/Slitmenu.cc:187 src/Toolbarmenu.cc:149
 msgid "Bottom Center"
-msgstr "En bas au centre"
+msgstr ""
 
 #. TRANS Place the slit in the top right (NE) corner of the screen.
 #. TRANS Top right corner of the screen.
 #: src/Slitmenu.cc:190 src/Toolbarmenu.cc:144
 msgid "Top Right"
-msgstr "En haut à droite"
+msgstr ""
 
 #. TRANS Place the slit in the center right (E) edge of the screen.
 #: src/Slitmenu.cc:192
 msgid "Center Right"
-msgstr "Au centre à droite"
+msgstr ""
 
 #. TRANS Place the slit in the bottom right (SE) corner of the screen.
 #. TRANS Bottom right corner of the screen.
 #: src/Slitmenu.cc:194 src/Toolbarmenu.cc:151
 msgid "Bottom Right"
-msgstr "En bas à droite"
+msgstr ""
 
 #. TRANS The name of the primary window manager configuration menu.
 #: src/Configmenu.cc:108
 msgid "Configuration Options"
-msgstr "Options de configuration"
+msgstr ""
 
 #. TRANS The name of the submenu for controlling the window focus model.
 #: src/Configmenu.cc:119 src/Configmenu.cc:228
 msgid "Focus Model"
-msgstr "Mode d'attribution du clavier"
+msgstr ""
 
 #. TRANS The name of the submenu for controlling automatic window placement.
 #: src/Configmenu.cc:121 src/Configmenu.cc:289
 msgid "Window Placement"
-msgstr "Disposition des fenêtres"
+msgstr ""
 
 #. TRANS The name of the submenu for controlling image dithering.
 #: src/Configmenu.cc:124 src/Configmenu.cc:386
 msgid "Image Dithering"
-msgstr "Lissage des images"
+msgstr ""
 
 #. TRANS When windows are moved they are moved opaquely (their contents show).
 #: src/Configmenu.cc:127
 msgid "Opaque Window Moving"
-msgstr "Déplacement opaque des fenêtres"
+msgstr ""
 
 #. TRANS When windows are resized they are resized opaquely (their contents show).
 #: src/Configmenu.cc:129
@@ -147,17 +147,17 @@ msgstr ""
 #. TRANS When window are maximized, they are maximized to the full screen size.
 #: src/Configmenu.cc:131
 msgid "Full Maximization"
-msgstr "Maximisation complète"
+msgstr ""
 
 #. TRANS When new windows appear on the screen, they are focussed immediately.
 #: src/Configmenu.cc:133
 msgid "Focus New Windows"
-msgstr "Attribuer le clavier à la nouvelle fenêtre"
+msgstr ""
 
 #. TRANS When changing to a workspace, the previous focussed window on that workspace is focussed.
 #: src/Configmenu.cc:135
 msgid "Focus Last Window on Workspace"
-msgstr "Attribuer le clavier en changeant d'espace de travail"
+msgstr ""
 
 #. TRANS The workspaces may be changed using the mouse wheel.
 #: src/Configmenu.cc:138
@@ -177,42 +177,42 @@ msgstr ""
 #. TRANS Disable global key binding by setting the Scroll Lock key.
 #: src/Configmenu.cc:147
 msgid "Disable Bindings with Scroll Lock"
-msgstr "Désactiver les modificateurs avec Vérouillage Défilement"
+msgstr ""
 
 #. TRANS The name of the submenu for controlling toolbar options.
 #: src/Configmenu.cc:151 src/Toolbarmenu.cc:60
 msgid "Toolbar Options"
-msgstr "Barre d'outils"
+msgstr ""
 
 #. TRANS The user must click on a window to focus it.
 #: src/Configmenu.cc:232
 msgid "Click to Focus"
-msgstr "Cliquer pour obtenir le clavier"
+msgstr ""
 
 #. TRANS The user can move the mouse into the window to focus it.
 #: src/Configmenu.cc:234
 msgid "Sloppy Focus"
-msgstr "Attribution du clavier souple"
+msgstr ""
 
 #. TRANS When a window is focused it is automatically raised.
 #: src/Configmenu.cc:236
 msgid "Auto Raise"
-msgstr "Premier plan automatique"
+msgstr ""
 
 #. TRANS When a window is clicked it is raised.
 #: src/Configmenu.cc:238
 msgid "Click Raise"
-msgstr "Cliquer pour mettre au premier plan"
+msgstr ""
 
 #. TRANS Arrange windows intelligently in rows.
 #: src/Configmenu.cc:293
 msgid "Smart Placement (Rows)"
-msgstr "Disposition futée (Lignes)"
+msgstr ""
 
 #. TRANS Arrange windows intelligently in columns.
 #: src/Configmenu.cc:295
 msgid "Smart Placement (Columns)"
-msgstr "Disposition futée (Colonnes)"
+msgstr ""
 
 #. TRANS Center windows.
 #: src/Configmenu.cc:297
@@ -222,27 +222,27 @@ msgstr ""
 #. TRANS Arrange windows in a cascade.
 #: src/Configmenu.cc:299
 msgid "Cascade Placement"
-msgstr "Disposition en cascade"
+msgstr ""
 
 #. TRANS When arranging windows, arrange from left to right.
 #: src/Configmenu.cc:304
 msgid "Left to Right"
-msgstr "De gauche à droite"
+msgstr ""
 
 #. TRANS When arranging windows, arrange from right to left.
 #: src/Configmenu.cc:306
 msgid "Right to Left"
-msgstr "De droite à gauche"
+msgstr ""
 
 #. TRANS When arranging windows, arrange from top to bottom.
 #: src/Configmenu.cc:308
 msgid "Top to Bottom"
-msgstr "De haut en bas"
+msgstr ""
 
 #. TRANS When arranging windows, arrange from bottom to top.
 #: src/Configmenu.cc:310
 msgid "Bottom to Top"
-msgstr "De bas en haut"
+msgstr ""
 
 #. TRANS When arranging windows, ignore the presence of shaded windows.
 #: src/Configmenu.cc:315
@@ -269,7 +269,7 @@ msgstr ""
 #. TRANS on the workspace.
 #: src/Iconmenu.cc:39 src/Workspacemenu.cc:77
 msgid "Iconified Windows"
-msgstr "Icones"
+msgstr ""
 
 #. TRANS Whether to show the toolbar or not.
 #: src/Toolbarmenu.cc:65
@@ -279,38 +279,38 @@ msgstr ""
 #. TRANS Automatically hide the toolbar when the pointer leaves the toolbar.
 #: src/Toolbarmenu.cc:74
 msgid "Auto Hide"
-msgstr "Auto disparaît"
+msgstr ""
 
 #. TRANS The name of the menu that controls toolbar placement; i.e.,
 #. TRANS which corner or edge of the screen on which the toolbar is placed.
 #: src/Toolbarmenu.cc:136
 msgid "Toolbar Placement"
-msgstr "Disposition de la barre d'outils"
+msgstr ""
 
 #. TRANS Send the window to another workspace without changing workspaces.
 #: src/Windowmenu.cc:77
 msgid "Send to Workspace"
-msgstr "Envoie vers ..."
+msgstr ""
 
 #. TRANS Show the window on all workspaces.
 #: src/Windowmenu.cc:79
 msgid "Occupy all Workspaces"
-msgstr "Épingle"
+msgstr ""
 
 #. TRANS Shade the window so that only the titlebar shows.
 #: src/Windowmenu.cc:82
 msgid "Shade"
-msgstr "Fantôme"
+msgstr ""
 
 #. TRANS Iconify the window so it is no longer visible.
 #: src/Windowmenu.cc:84
 msgid "Iconify"
-msgstr "Iconifie"
+msgstr ""
 
 #. TRANS Maximize the size of the window both vertically and horizontally.
 #: src/Windowmenu.cc:86
 msgid "Maximize"
-msgstr "Maximise"
+msgstr ""
 
 #. TRANS Maximize the size of the window vertically.
 #: src/Windowmenu.cc:88
@@ -335,27 +335,27 @@ msgstr ""
 #. TRANS Kill the process associated with the window.
 #: src/Windowmenu.cc:101
 msgid "Kill Client"
-msgstr "Massacre"
+msgstr ""
 
 #. TRANS Ask the application owning the window to close it.
 #: src/Windowmenu.cc:103
 msgid "Close"
-msgstr "Ferme"
+msgstr ""
 
 #. TRANS The name of the submenu controlling the number of workspaces.
 #: src/Workspacemenu.cc:49
 msgid "Workspaces"
-msgstr "Espaces de travail"
+msgstr ""
 
 #. TRANS Create a new workspace and append it to the list of workspaces.
 #: src/Workspacemenu.cc:54
 msgid "New Workspace"
-msgstr "Nouvel espace de travail"
+msgstr ""
 
 #. TRANS Remove the last workspace from the list of workspaces and destroy it.
 #: src/Workspacemenu.cc:56
 msgid "Remove Last Workspace"
-msgstr "Supprimer le dernier"
+msgstr ""
 
 #: src/Screen.cc:167
 #, c-format
@@ -454,7 +454,7 @@ msgstr ""
 
 #: src/Window.cc:536
 msgid "Unnamed"
-msgstr "Inconnu"
+msgstr ""
 
 #: src/Window.cc:1006
 #, c-format
@@ -520,12 +520,12 @@ msgstr ""
 #: src/Workspace.cc:61
 #, c-format
 msgid "Workspace %u"
-msgstr "Espace de travail %u"
+msgstr ""
 
 #: util/bsetroot.cc:101
 #, c-format
 msgid "bsetroot: error: must specify one of: -solid, -mod, -gradient\n"
-msgstr "bsetroot: Erreur: il faut préciser : -solid, -mod, -gradient\n"
+msgstr ""
 
 #: util/bsetroot.cc:336
 #, c-format
@@ -543,18 +543,6 @@ msgid ""
 "\n"
 "  -help                    print this help text and exit\n"
 msgstr ""
-"  -display <chaîne>        \tconnexion à l'affichage\n"
-"  -mod <x> <y>             \tmotif\n"
-"  -foreground, -fg <couleur> \tcouleur d'avant plan\n"
-"  -background, -bg <couleur> \tcouleur d'arrière plan\n"
-"\n"
-"  -gradient <texture>      \ttexture du dégradé\n"
-"  -from <couleur>            \tcouleur de départ du dégradé\n"
-"  -to <couleur>              \tcouleur d'arrivée du dégradé\n"
-"\n"
-"  -solid <couleur>           \tcouleur uniforme\n"
-"\n"
-"  -help                    \taffiche ce texte d'aide et quitte\n"
 
 #: lib/Application.cc:72
 #, c-format
@@ -626,12 +614,12 @@ msgstr ""
 #: lib/Display.cc:70
 #, c-format
 msgid "bt::Display: failed to open display '%s'\n"
-msgstr "bt::Display: échec de la connexion au serveur X '%s'\n"
+msgstr ""
 
 #: lib/Display.cc:80
 #, c-format
 msgid "bt::Display: failed to mark connection close-on-exec\n"
-msgstr "bt::Display: impossible d'attribuer close-on-exec à l'affichage\n"
+msgstr ""
 
 #: lib/Font.cc:200
 #, c-format

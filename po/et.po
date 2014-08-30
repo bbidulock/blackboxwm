@@ -1,4 +1,4 @@
-# Polish translations for blackbox package.
+# Estonian translations for blackbox package.
 # Copyright (C) 2014 Bradley T Hughes <bhuhes@trolltech.com>
 # This file is distributed under the same license as the blackbox package.
 # Brian F. G. Bidulock <bidulock@openss7.org>, 2014.
@@ -7,16 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: blackbox 0.70.2.28\n"
 "Report-Msgid-Bugs-To: http://github.com/bbidulock/blackboxwm\n"
-"POT-Creation-Date: 2014-08-29 19:28-0600\n"
-"PO-Revision-Date: 2014-08-29 13:17-0600\n"
+"POT-Creation-Date: 2014-08-29 19:43-0600\n"
+"PO-Revision-Date: 2014-08-29 13:16-0600\n"
 "Last-Translator: Brian F. G. Bidulock <bidulock@openss7.org>\n"
-"Language-Team: Polish\n"
-"Language: pl_PL\n"
+"Language-Team: Estonian\n"
+"Language: et\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
-"|| n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. TRANS The name of the submenu used for controlling slit options.
 #. TRANS The name of the submenu for controlling slit options.
