@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([blackbox],[0.70.2.35],[http://github.com/bbidulock/blackboxwm])
-AC_REVISION([0.70.2.35])
+AC_INIT([blackbox],[0.70.2.37],[http://github.com/bbidulock/blackboxwm])
+AC_REVISION([0.70.2.37])
 AC_CONFIG_SRCDIR([src/blackbox.cc])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])

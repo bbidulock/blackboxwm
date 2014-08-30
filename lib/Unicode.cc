@@ -31,10 +31,6 @@
 #include <locale.h>
 #include <cstdio>
 
-#ifdef HAVE_CONFIG_H
-#  include "../config.h"
-#endif
-
 #ifdef HAVE_NL_LANGINFO
 #  include <langinfo.h>
 #endif

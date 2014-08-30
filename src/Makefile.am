@@ -22,7 +22,8 @@
 
 DEFAULT_MENU		= $(pkgdatadir)/menu
 DEFAULT_STYLE		= $(pkgdatadir)/styles/Gray
-AM_CPPFLAGS		= -I$(top_srcdir) $(X11_CFLAGS) $(XEXT_CFLAGS) $(XFT_CFLAGS) \
+AM_CPPFLAGS		= -include config.h \
+			  -I$(top_srcdir) $(X11_CFLAGS) $(XEXT_CFLAGS) $(XFT_CFLAGS) \
 			  -DLOCDIR=\"$(LOCDIR)\" \
 			  -DDEFAULTMENU=\"$(DEFAULT_MENU)\" \
 			  -DDEFAULTSTYLE=\"$(DEFAULT_STYLE)\" \

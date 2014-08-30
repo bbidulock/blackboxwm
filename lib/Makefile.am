@@ -21,7 +21,8 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 # DEALINGS IN THE SOFTWARE.
 
-AM_CPPFLAGS =		-I$(top_srcdir) $(X11_CFLAGS) $(XEXT_CFLAGS) $(XFT_CFLAGS)
+AM_CPPFLAGS =		-include config.h \
+			-I$(top_srcdir) $(X11_CFLAGS) $(XEXT_CFLAGS) $(XFT_CFLAGS)
 lib_LTLIBRARIES = 	libbt.la
 libbt_la_SOURCES = 	Application.cc					\
 			Bitmap.cc					\
