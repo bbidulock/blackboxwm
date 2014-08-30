@@ -13,7 +13,7 @@ msgstr ""
 "Language-Team: Slovenian\n"
 "Language: sl\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=iso-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
 "%100==4 ? 2 : 3);\n"
@@ -22,12 +22,12 @@ msgstr ""
 #. TRANS The name of the submenu for controlling slit options.
 #: src/Slitmenu.cc:74 src/Configmenu.cc:154
 msgid "Slit Options"
-msgstr ""
+msgstr "Re¾a"
 
 #. TRANS The name of the submenu for controlling the direction of the slit.
 #: src/Slitmenu.cc:78
 msgid "Direction"
-msgstr ""
+msgstr "Smer"
 
 #. TRANS The name of the submenu for controlling the placement of the slit.
 #. TRANS The name of the placement submenu of the toolbar options menu
@@ -35,110 +35,110 @@ msgstr ""
 #. TRANS with relation to other windows.
 #: src/Slitmenu.cc:81 src/Toolbarmenu.cc:70
 msgid "Placement"
-msgstr ""
+msgstr "Lega"
 
 #. TRANS Always place the slit on top of other windows.
 #. TRANS Always place the toolbar above other windows on the desktop.
 #. TRANS Always place this window above other windows.
 #: src/Slitmenu.cc:85 src/Toolbarmenu.cc:72 src/Windowmenu.cc:96
 msgid "Always on top"
-msgstr ""
+msgstr "Vselej na vrhu"
 
 #. TRANS Automatically hide the slit when the pointer leaves the slit.
 #: src/Slitmenu.cc:87
 msgid "Auto hide"
-msgstr ""
+msgstr "Samodejno skrivanje"
 
 #. TRANS The name of the submenu for controlling slit direction.
 #: src/Slitmenu.cc:137
 msgid "Slit Direction"
-msgstr ""
+msgstr "Smer re¾e"
 
 #. TRANS Arrange the slit horizontally (wider).
 #: src/Slitmenu.cc:141
 msgid "Horizontal"
-msgstr ""
+msgstr "Vodoravno"
 
 #. TRANS Arrange the slit vertically (taller).
 #: src/Slitmenu.cc:143
 msgid "Vertical"
-msgstr ""
+msgstr "Navpièno"
 
 #. TRANS The name of the submenu for controlling slit placement.
 #: src/Slitmenu.cc:174
 msgid "Slit Placement"
-msgstr ""
+msgstr "Lega re¾e"
 
 #. TRANS Place the slit in the top left (NW) corner of the screen.
 #. TRANS Top left corner of the screen.
 #: src/Slitmenu.cc:178 src/Toolbarmenu.cc:140
 msgid "Top Left"
-msgstr ""
+msgstr "Na vrhu in levo poravnano"
 
 #. TRANS Place the slit in the center left (W) edge of the screen.
 #: src/Slitmenu.cc:180
 msgid "Center Left"
-msgstr ""
+msgstr "Navpièno osredninjeno in levo poravnano"
 
 #. TRANS Place the slit in the bottom left (SW) corner of the screen.
 #. TRANS Bottom left corner of the screen.
 #: src/Slitmenu.cc:182 src/Toolbarmenu.cc:147
 msgid "Bottom Left"
-msgstr ""
+msgstr "Na dnu in levo poravnano"
 
 #. TRANS Place the slit in the center top (N) edge of the screen.
 #. TRANS Centered at the top of the screen.
 #: src/Slitmenu.cc:185 src/Toolbarmenu.cc:142
 msgid "Top Center"
-msgstr ""
+msgstr "Na vrhu in osredinjeno"
 
 #. TRANS Place the slit in the center bottom (S) edge of the screen.
 #. TRANS Centered at the bottom of the screen.
 #: src/Slitmenu.cc:187 src/Toolbarmenu.cc:149
 msgid "Bottom Center"
-msgstr ""
+msgstr "Na dnu in osredinjeno"
 
 #. TRANS Place the slit in the top right (NE) corner of the screen.
 #. TRANS Top right corner of the screen.
 #: src/Slitmenu.cc:190 src/Toolbarmenu.cc:144
 msgid "Top Right"
-msgstr ""
+msgstr "Na vrhu in desno poravnano"
 
 #. TRANS Place the slit in the center right (E) edge of the screen.
 #: src/Slitmenu.cc:192
 msgid "Center Right"
-msgstr ""
+msgstr "Navpièno osredinjeno in desno poravnano"
 
 #. TRANS Place the slit in the bottom right (SE) corner of the screen.
 #. TRANS Bottom right corner of the screen.
 #: src/Slitmenu.cc:194 src/Toolbarmenu.cc:151
 msgid "Bottom Right"
-msgstr ""
+msgstr "Na dnu in desno poravnano"
 
 #. TRANS The name of the primary window manager configuration menu.
 #: src/Configmenu.cc:108
 msgid "Configuration Options"
-msgstr ""
+msgstr "Nastavitvene izbire"
 
 #. TRANS The name of the submenu for controlling the window focus model.
 #: src/Configmenu.cc:119 src/Configmenu.cc:228
 msgid "Focus Model"
-msgstr ""
+msgstr "Naèin fokusiranja"
 
 #. TRANS The name of the submenu for controlling automatic window placement.
 #: src/Configmenu.cc:121 src/Configmenu.cc:289
 msgid "Window Placement"
-msgstr ""
+msgstr "Postavitev oken"
 
 #. TRANS The name of the submenu for controlling image dithering.
 #: src/Configmenu.cc:124 src/Configmenu.cc:386
 msgid "Image Dithering"
-msgstr ""
+msgstr "Prelivanje slik"
 
 #. TRANS When windows are moved they are moved opaquely (their contents show).
 #: src/Configmenu.cc:127
 msgid "Opaque Window Moving"
-msgstr ""
+msgstr "Premikanje prosojnih oken"
 
 #. TRANS When windows are resized they are resized opaquely (their contents show).
 #: src/Configmenu.cc:129
@@ -148,17 +148,17 @@ msgstr ""
 #. TRANS When window are maximized, they are maximized to the full screen size.
 #: src/Configmenu.cc:131
 msgid "Full Maximization"
-msgstr ""
+msgstr "Najveèje okno"
 
 #. TRANS When new windows appear on the screen, they are focussed immediately.
 #: src/Configmenu.cc:133
 msgid "Focus New Windows"
-msgstr ""
+msgstr "Novo okno dobi fokus"
 
 #. TRANS When changing to a workspace, the previous focussed window on that workspace is focussed.
 #: src/Configmenu.cc:135
 msgid "Focus Last Window on Workspace"
-msgstr ""
+msgstr "Spremenjeni fokus okna na namizju"
 
 #. TRANS The workspaces may be changed using the mouse wheel.
 #: src/Configmenu.cc:138
@@ -183,22 +183,22 @@ msgstr ""
 #. TRANS The name of the submenu for controlling toolbar options.
 #: src/Configmenu.cc:151 src/Toolbarmenu.cc:60
 msgid "Toolbar Options"
-msgstr ""
+msgstr "Orodna letev"
 
 #. TRANS The user must click on a window to focus it.
 #: src/Configmenu.cc:232
 msgid "Click to Focus"
-msgstr ""
+msgstr "Za fokus kliknite"
 
 #. TRANS The user can move the mouse into the window to focus it.
 #: src/Configmenu.cc:234
 msgid "Sloppy Focus"
-msgstr ""
+msgstr "Povr¹ni fokus"
 
 #. TRANS When a window is focused it is automatically raised.
 #: src/Configmenu.cc:236
 msgid "Auto Raise"
-msgstr ""
+msgstr "Samodejno odkrivanje"
 
 #. TRANS When a window is clicked it is raised.
 #: src/Configmenu.cc:238
@@ -208,12 +208,12 @@ msgstr ""
 #. TRANS Arrange windows intelligently in rows.
 #: src/Configmenu.cc:293
 msgid "Smart Placement (Rows)"
-msgstr ""
+msgstr "Pametno postavljanje (vrstice)"
 
 #. TRANS Arrange windows intelligently in columns.
 #: src/Configmenu.cc:295
 msgid "Smart Placement (Columns)"
-msgstr ""
+msgstr "Pametno postavljanje (stolpci)"
 
 #. TRANS Center windows.
 #: src/Configmenu.cc:297
@@ -223,27 +223,27 @@ msgstr ""
 #. TRANS Arrange windows in a cascade.
 #: src/Configmenu.cc:299
 msgid "Cascade Placement"
-msgstr ""
+msgstr "Kaskadno postavljanje"
 
 #. TRANS When arranging windows, arrange from left to right.
 #: src/Configmenu.cc:304
 msgid "Left to Right"
-msgstr ""
+msgstr "Od leve proti desni"
 
 #. TRANS When arranging windows, arrange from right to left.
 #: src/Configmenu.cc:306
 msgid "Right to Left"
-msgstr ""
+msgstr "Od desne proti levi"
 
 #. TRANS When arranging windows, arrange from top to bottom.
 #: src/Configmenu.cc:308
 msgid "Top to Bottom"
-msgstr ""
+msgstr "Od zgoraj navzdol"
 
 #. TRANS When arranging windows, arrange from bottom to top.
 #: src/Configmenu.cc:310
 msgid "Bottom to Top"
-msgstr ""
+msgstr "Od spodaj navzgor"
 
 #. TRANS When arranging windows, ignore the presence of shaded windows.
 #: src/Configmenu.cc:315
@@ -270,7 +270,7 @@ msgstr ""
 #. TRANS on the workspace.
 #: src/Iconmenu.cc:39 src/Workspacemenu.cc:77
 msgid "Iconified Windows"
-msgstr ""
+msgstr "Ikone"
 
 #. TRANS Whether to show the toolbar or not.
 #: src/Toolbarmenu.cc:65
@@ -280,38 +280,38 @@ msgstr ""
 #. TRANS Automatically hide the toolbar when the pointer leaves the toolbar.
 #: src/Toolbarmenu.cc:74
 msgid "Auto Hide"
-msgstr ""
+msgstr "Samodejno skrivanje"
 
 #. TRANS The name of the menu that controls toolbar placement; i.e.,
 #. TRANS which corner or edge of the screen on which the toolbar is placed.
 #: src/Toolbarmenu.cc:136
 msgid "Toolbar Placement"
-msgstr ""
+msgstr "Lega orodne letve"
 
 #. TRANS Send the window to another workspace without changing workspaces.
 #: src/Windowmenu.cc:77
 msgid "Send to Workspace"
-msgstr ""
+msgstr "Na delovno povr¹ino..."
 
 #. TRANS Show the window on all workspaces.
 #: src/Windowmenu.cc:79
 msgid "Occupy all Workspaces"
-msgstr ""
+msgstr "Prilepi"
 
 #. TRANS Shade the window so that only the titlebar shows.
 #: src/Windowmenu.cc:82
 msgid "Shade"
-msgstr ""
+msgstr "Zastri"
 
 #. TRANS Iconify the window so it is no longer visible.
 #: src/Windowmenu.cc:84
 msgid "Iconify"
-msgstr ""
+msgstr "Pomanj¹aj"
 
 #. TRANS Maximize the size of the window both vertically and horizontally.
 #: src/Windowmenu.cc:86
 msgid "Maximize"
-msgstr ""
+msgstr "Poveèaj"
 
 #. TRANS Maximize the size of the window vertically.
 #: src/Windowmenu.cc:88
@@ -336,37 +336,37 @@ msgstr ""
 #. TRANS Kill the process associated with the window.
 #: src/Windowmenu.cc:101
 msgid "Kill Client"
-msgstr ""
+msgstr "Zaustavi "
 
 #. TRANS Ask the application owning the window to close it.
 #: src/Windowmenu.cc:103
 msgid "Close"
-msgstr ""
+msgstr "Zapusti"
 
 #. TRANS The name of the submenu controlling the number of workspaces.
 #: src/Workspacemenu.cc:49
 msgid "Workspaces"
-msgstr ""
+msgstr "Delovne povr¹ine"
 
 #. TRANS Create a new workspace and append it to the list of workspaces.
 #: src/Workspacemenu.cc:54
 msgid "New Workspace"
-msgstr ""
+msgstr "Nova delovna povr¹ina"
 
 #. TRANS Remove the last workspace from the list of workspaces and destroy it.
 #: src/Workspacemenu.cc:56
 msgid "Remove Last Workspace"
-msgstr ""
+msgstr "Odstrani zadnjo "
 
 #: src/Screen.cc:167
 #, c-format
 msgid "%s: another window manager is already running on display '%s'\n"
-msgstr ""
+msgstr "%s: nek upravljalnik oken ¾e teèe v prikazovalniku %s.\n"
 
 #: src/Screen.cc:1468
 #, c-format
 msgid "%s: menu file '%s' is empty\n"
-msgstr ""
+msgstr "%s: prazna menujska datoteka '%s'\n"
 
 #. TRANS The underscore '_' indicates the hot key.
 #: src/Screen.cc:1520
@@ -381,91 +381,91 @@ msgstr ""
 #. TRANS Restart the window manager.
 #: src/Screen.cc:1526
 msgid "Restart"
-msgstr ""
+msgstr "Ponovni zagon"
 
 #. TRANS Exit the window manager.
 #: src/Screen.cc:1529
 msgid "Exit"
-msgstr ""
+msgstr "Izhod"
 
 #: src/Screen.cc:1629
 #, c-format
 msgid "%s: [exec] error, no menu label and/or command defined\n"
-msgstr ""
+msgstr "%s: [exec] napaka: oznaki menuja ali ukaza nista doloèeni\n"
 
 #: src/Screen.cc:1639
 #, c-format
 msgid "%s: [exit] error, no menu label defined\n"
-msgstr ""
+msgstr "%s: [exit] napaka: oznaka menuja ni doloèena\n"
 
 #: src/Screen.cc:1650
 #, c-format
 msgid "%s: [style] error, no menu label and/or filename defined\n"
-msgstr ""
+msgstr "%s: [style] napaka: oznaki menuja ali datoteke nista doloèeni\n"
 
 #: src/Screen.cc:1663
 #, c-format
 msgid "%s: [config] error, no label defined"
-msgstr ""
+msgstr "%s: [config] napaka: oznaka menuja ni doloèena"
 
 #: src/Screen.cc:1673
 #, c-format
 msgid "%s: [include] error, no filename defined\n"
-msgstr ""
+msgstr "%s: [include] napaka: ime datoteke ni doloèeno\n"
 
 #: src/Screen.cc:1692
 #, c-format
 msgid "%s: [include] error: '%s' is not a regular file\n"
-msgstr ""
+msgstr "%s: [include] napaka: '%s' ni prava datoteka\n"
 
 #: src/Screen.cc:1713
 #, c-format
 msgid "%s: [submenu] error, no menu label defined\n"
-msgstr ""
+msgstr "%s: [submenu] napaka: oznaka menuja ni doloèena\n"
 
 #: src/Screen.cc:1735
 #, c-format
 msgid "%s: [restart] error, no menu label defined\n"
-msgstr ""
+msgstr "%s: [restart] napaka: oznaka menuja ni doloèena\n"
 
 #: src/Screen.cc:1751
 #, c-format
 msgid "%s: [reconfig] error, no menu label defined\n"
-msgstr ""
+msgstr "%s: [reconfig] napaka: oznaka menuja ni doloèena\n"
 
 #: src/Screen.cc:1766
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, no directory defined\n"
-msgstr ""
+msgstr "%s: [stylesdir/stylesmenu] napaka: imenik ni doloèen\n"
 
 #: src/Screen.cc:1779
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, '%s' does not exist\n"
-msgstr ""
+msgstr "%s: [stylesdir/stylesmenu] napaka:, '%s' ne obstaja\n"
 
 #: src/Screen.cc:1785
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, '%s' is not a directory\n"
-msgstr ""
+msgstr "%s: [stylesdir/stylesmenu] napaka: '%s' ni imenik\n"
 
 #: src/Screen.cc:1843
 #, c-format
 msgid "%s: [workspaces] error, no menu label defined\n"
-msgstr ""
+msgstr "%s: [workspaces] napaka: oznaka menuja ni doloèena\n"
 
 #: src/Window.cc:536
 msgid "Unnamed"
-msgstr ""
+msgstr "Neimenovano"
 
 #: src/Window.cc:1006
 #, c-format
 msgid "BlackboxWindow::BlackboxWindow(): creating 0x%lx\n"
-msgstr ""
+msgstr "BlackboxWindow::BlackboxWindow(): izdelujem 0x%lx\n"
 
 #: src/Window.cc:1035
 #, c-format
 msgid "BlackboxWindow::BlackboxWindow(): XGetWindowAttributes failed\n"
-msgstr ""
+msgstr "BlackboxWindow::BlackboxWindow(): neuspe¹en XGetWindowAttributres\n"
 
 #: src/Window.cc:1283
 #, c-format
@@ -480,7 +480,7 @@ msgstr ""
 #: src/Window.cc:3249
 #, c-format
 msgid "BlackboxWindow::unmapNotifyEvent() for 0x%lx\n"
-msgstr ""
+msgstr "BlackboxWindow::unmapNotifyEvent() za 0x%lx\n"
 
 #: src/Window.cc:3263
 #, c-format
@@ -491,6 +491,8 @@ msgstr ""
 #, c-format
 msgid "BlackboxWindow::reparentNotifyEvent(): reparent 0x%lx to 0x%lx.\n"
 msgstr ""
+"BlackboxWindow::reparentNotifyEvent(): ponovno prikljuèeno 0x%lx korenskemu "
+"oknu 0x%lx\n"
 
 #: src/Window.cc:3294
 #, c-format
@@ -521,12 +523,12 @@ msgstr ""
 #: src/Workspace.cc:61
 #, c-format
 msgid "Workspace %u"
-msgstr ""
+msgstr "Delovna povr¹ina %u"
 
 #: util/bsetroot.cc:101
 #, c-format
 msgid "bsetroot: error: must specify one of: -solid, -mod, -gradient\n"
-msgstr ""
+msgstr "bsetroot: napaka: doloèiti je treba eno: -solid, -mod, -gradient\n"
 
 #: util/bsetroot.cc:336
 #, c-format
@@ -544,6 +546,18 @@ msgid ""
 "\n"
 "  -help                    print this help text and exit\n"
 msgstr ""
+"  -display <string>        prika¾i povezavo\n"
+"  -mod <x> <y>             vzorec\n"
+"  -foreground, -fg <color> barva ospredja\n"
+"  -background, -bg <color> barva ozadja\n"
+"\n"
+"  -gradient <texture>      prelivna tekstura\n"
+"  -from <color>            zaèetna barva preliva\n"
+"  -to <color>              konèna barva preliva\n"
+"\n"
+"  -solid <color>           enotna barva\n"
+"\n"
+"  -help                    prika¾i ta navodila in konèaj\n"
 
 #: lib/Application.cc:72
 #, c-format
@@ -551,11 +565,13 @@ msgid ""
 "%s:  X error: %s(%d) opcodes %d/%d\n"
 "  resource 0x%lx\n"
 msgstr ""
+"%s:  Napaka v sistemu oken X: %s(%d) operacijska koda %d/%d\n"
+"  vir 0x%lx\n"
 
 #: lib/Application.cc:222
 #, c-format
 msgid "%s: caught unknown signal '%u', dumping core.\n"
-msgstr ""
+msgstr "%s: prejet signal %u\n"
 
 #: lib/Application.cc:495
 #, c-format
@@ -615,12 +631,14 @@ msgstr ""
 #: lib/Display.cc:70
 #, c-format
 msgid "bt::Display: failed to open display '%s'\n"
-msgstr ""
+msgstr "bt::Display: neuspe¹na povezava do stre¾nika X '%s'.\n"
 
 #: lib/Display.cc:80
 #, c-format
 msgid "bt::Display: failed to mark connection close-on-exec\n"
 msgstr ""
+"bt::Display: povezave do prikazovalnika ni moè pripraviti do samodejne "
+"prekinitve ob zaustavitvi\n"
 
 #: lib/Font.cc:200
 #, c-format
@@ -756,7 +774,7 @@ msgstr ""
 #: src/blackbox.cc:151
 #, c-format
 msgid "Blackbox::process_event(): MapRequest for 0x%lx\n"
-msgstr ""
+msgstr "Blackbox::process_event(): MapRequest za 0x%lx\n"
 
 #: src/blackbox.cc:409
 #, c-format
@@ -771,22 +789,22 @@ msgstr ""
 #: src/blackbox.cc:445
 #, c-format
 msgid "%s: no manageable screens found, exiting...\n"
-msgstr ""
+msgstr "%s: ni moè najti upravljivih zaslonov, prekinitev\n"
 
 #: src/main.cc:108
 #, c-format
 msgid "error: '-rc' requires and argument\n"
-msgstr ""
+msgstr "napaka: '-rc' zahteva argument\n"
 
 #: src/main.cc:118
 #, c-format
 msgid "error: '-display' requires an argument\n"
-msgstr ""
+msgstr "napaka: '-display' zahteva argument\n"
 
 #: src/main.cc:128
 #, c-format
 msgid "warning: couldn't set environment variable 'DISPLAY'\n"
-msgstr ""
+msgstr "opozorilo: spremenljivke okolja 'DISPLAY' ni moè nastaviti\n"
 
 #: src/StackingList.cc:198
 #, c-format
