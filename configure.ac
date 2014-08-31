@@ -62,7 +62,7 @@ AC_FUNC_STRNLEN
 AC_CHECK_FUNCS([gethostname gettimeofday memmove memset mkdir nl_langinfo putenv select setlocale sqrt strcasecmp strncasecmp strtol strtoul])
 
 PKG_CHECK_MODULES([X11],[x11])
-PKG_CHECK_MODULES([XEXT],[Xext], [],
+PKG_CHECK_MODULES([XEXT],[xext], [],
 	[enable_shape=no
 	 enable_mitshm=no])
 
@@ -158,7 +158,7 @@ fi
 
 AM_CONDITIONAL([USE_NLS],[test x$enable_nls != xno])
 
-text "x$prefix" = xNONE && prefix="$ac_default_prefix"
+test "x$prefix" = xNONE && prefix="$ac_default_prefix"
 LOCDIR="$localedir"
 eval "LOCDIR=\"$LOCDIR\""
 eval "LOCDIR=\"$LOCDIR\""
