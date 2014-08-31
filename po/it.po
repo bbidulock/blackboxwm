@@ -367,7 +367,7 @@ msgstr ""
 #: src/Screen.cc:181
 #, c-format
 msgid "%s: managing screen %u using %s visual 0x%lx, depth %d\n"
-msgstr ""
+msgstr "%s: gestendo schermo %u usando %s visuale 0x%lx, depth %d\n"
 
 #: src/Screen.cc:1468
 #, c-format
@@ -845,6 +845,11 @@ msgid ""
 "  -help\t\t\t\tdisplay this help text and exit.\n"
 "\n"
 msgstr ""
+"  -display <string>\t\tusa connessione display.\n"
+"  -rc <string>\t\t\tusa un file risorsa alternativo.\n"
+"  -version\t\t\tmostra la versione e esci.\n"
+"  -help\t\t\t\tmostra questo aiuto e esci.\n"
+"\n"
 
 #: src/main.cc:59
 #, c-format
@@ -856,14 +861,20 @@ msgid ""
 "  XFT:\t\t\t\t%s\n"
 "\n"
 msgstr ""
+"Opzioni in fase di compilazione:\n"
+"  Debugging\t\t\t%s\n"
+"  SHAPE:\t\t\t%s\n"
+"  MIT-SHM:\t\t\t%s\n"
+"  XFT:\t\t\t\t%s\n"
+"\n"
 
 #: src/main.cc:65 src/main.cc:71 src/main.cc:76 src/main.cc:81
 msgid "yes"
-msgstr ""
+msgstr "Si"
 
 #: src/main.cc:67 src/main.cc:73 src/main.cc:78 src/main.cc:83
 msgid "no"
-msgstr ""
+msgstr "No"
 
 #: src/main.cc:114
 #, c-format

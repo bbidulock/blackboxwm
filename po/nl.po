@@ -365,7 +365,7 @@ msgstr "%s: er werkt al een andere window manager op display %s.\n"
 #: src/Screen.cc:181
 #, c-format
 msgid "%s: managing screen %u using %s visual 0x%lx, depth %d\n"
-msgstr ""
+msgstr "%s: manager op scherm %u met %s visual 0x%lx, kleurdiepte %d\n"
 
 #: src/Screen.cc:1468
 #, c-format
@@ -841,6 +841,11 @@ msgid ""
 "  -help\t\t\t\tdisplay this help text and exit.\n"
 "\n"
 msgstr ""
+"  -display <displaynaam>   gebruik aangegeven display.\n"
+"  -rc <bestandsnaam>       gebruik alternatief resource bestand.\n"
+"  -version                 toon versie en stop.\n"
+"  -help                    toon deze hulp tekst en stop.\n"
+"\n"
 
 #: src/main.cc:59
 #, c-format
@@ -852,14 +857,20 @@ msgid ""
 "  XFT:\t\t\t\t%s\n"
 "\n"
 msgstr ""
+"Gecompileerd met instellingen:\n"
+"  Debugging:\t\t\t%s\n"
+"  SHAPE:\t\t\t%s\n"
+"  MIT-SHM:\t\t\t%s\n"
+"  XFT:\t\t\t\t%s\n"
+"\n"
 
 #: src/main.cc:65 src/main.cc:71 src/main.cc:76 src/main.cc:81
 msgid "yes"
-msgstr ""
+msgstr "Ja"
 
 #: src/main.cc:67 src/main.cc:73 src/main.cc:78 src/main.cc:83
 msgid "no"
-msgstr ""
+msgstr "Nee"
 
 #: src/main.cc:114
 #, c-format

@@ -366,7 +366,7 @@ msgstr "%s: ÄÒÕÇÏÊ ÍÅÎÅÄÖÅÒ ÏËÏÎ ÕÖÅ ÚÁÐÕÝÅÎ ÎÁ Ä
 #: src/Screen.cc:181
 #, c-format
 msgid "%s: managing screen %u using %s visual 0x%lx, depth %d\n"
-msgstr ""
+msgstr "%s: ÏÂÓÌÕÖÉ×ÁÅÔÓÑ ÜËÒÁÎ %u, %s ÉÓÐÏÌØÚÕÅÍÙÊ ÔÉÐ ×ÉÚÕÁÌÉÚÁÃÉÉ 0x%lx, ÇÌÕÂÉÎÁ Ã×ÅÔÁ %d\n"
 
 #: src/Screen.cc:1468
 #, c-format
@@ -840,6 +840,11 @@ msgid ""
 "  -help\t\t\t\tdisplay this help text and exit.\n"
 "\n"
 msgstr ""
+"  -display <string>\t\tÉÓÐÏÌØÚÏ×ÁÔØ ÚÁÄÁÎÎÙÊ ÄÉÓÐÌÅÊ.\n"
+"  -rc <string>\t\t\tÉÓÐÏÌØÚÏ×ÁÔØ ÁÌØÔÅÒÎÁÔÉ×ÎÙÊ ÆÁÊÌ ÒÅÓÕÒÓÏ×.\n"
+"  -version\t\t\t×Ù×ÅÓÔÉ ÎÏÍÅÒ ×ÅÒÓÉÉ É ×ÙÊÔÉ.\n"
+"  -help\t\t\t\t×Ù×ÅÓÔÉ ÜÔÕ ÐÏÄÓËÁÚËÕ É ×ÙÊÔÉ.\n"
+"\n"
 
 #: src/main.cc:59
 #, c-format
@@ -854,11 +859,11 @@ msgstr ""
 
 #: src/main.cc:65 src/main.cc:71 src/main.cc:76 src/main.cc:81
 msgid "yes"
-msgstr ""
+msgstr "äÁ"
 
 #: src/main.cc:67 src/main.cc:73 src/main.cc:78 src/main.cc:83
 msgid "no"
-msgstr ""
+msgstr "îÅÔ"
 
 #: src/main.cc:114
 #, c-format

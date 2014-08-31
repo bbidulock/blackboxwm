@@ -368,6 +368,8 @@ msgstr ""
 #, c-format
 msgid "%s: managing screen %u using %s visual 0x%lx, depth %d\n"
 msgstr ""
+"%s: ¥¹¥¯¥ê¡¼¥ó %u %s ¤ò»ë³Ð¸ú²Ì 0x%lx, ¿¼ÅÙ "
+"%d ¤ÇÀ©¸æÃæ\n"
 
 #: src/Screen.cc:1468
 #, c-format
@@ -861,6 +863,12 @@ msgid ""
 "  -help\t\t\t\tdisplay this help text and exit.\n"
 "\n"
 msgstr ""
+"  -display <string>\t\t»ØÄê¥Ç¥£¥¹¥×¥ì¥¤¤ËÀÜÂ³\n"
+"  -rc <string>\t\t"
+"\tÂå¤ê¤Î¥ê¥½¡¼¥¹¥Õ¥¡¥¤¥ë¤ò»ÈÍÑ\n"
+"  -version\t\t\t¥Ð¡¼¥¸¥ç¥ó¾ðÊó¤òÉ½¼¨¤·¡¢½ªÎ»\n"
+"  -help\t\t\t\t¤³¤Î¥Ø¥ë¥×¤òÉ½¼¨¤·¡¢½ªÎ»\n"
+"\n"
 
 #: src/main.cc:59
 #, c-format
@@ -872,14 +880,20 @@ msgid ""
 "  XFT:\t\t\t\t%s\n"
 "\n"
 msgstr ""
+"¥³¥ó¥Ñ¥¤¥ë»þ¥ª¥×¥·¥ç¥ó:\n"
+"  ¥Ç¥Ð¥Ã¥°\t\t\t%s\n"
+"  SHAPE:\t\t\t%s\n"
+"  MIT-SHM:\t\t\t%s\n"
+"  XFT:\t\t\t\t%s\n"
+"\n"
 
 #: src/main.cc:65 src/main.cc:71 src/main.cc:76 src/main.cc:81
 msgid "yes"
-msgstr ""
+msgstr "¤Ï¤¤"
 
 #: src/main.cc:67 src/main.cc:73 src/main.cc:78 src/main.cc:83
 msgid "no"
-msgstr ""
+msgstr "¤¤¤¤¤¨"
 
 #: src/main.cc:114
 #, c-format

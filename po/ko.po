@@ -839,11 +839,11 @@ msgstr ""
 
 #: src/main.cc:65 src/main.cc:71 src/main.cc:76 src/main.cc:81
 msgid "yes"
-msgstr ""
+msgstr "³×"
 
 #: src/main.cc:67 src/main.cc:73 src/main.cc:78 src/main.cc:83
 msgid "no"
-msgstr ""
+msgstr "¾Æ´Ï¿À"
 
 #: src/main.cc:114
 #, c-format

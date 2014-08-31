@@ -842,6 +842,11 @@ msgid ""
 "  -help\t\t\t\tdisplay this help text and exit.\n"
 "\n"
 msgstr ""
+"  -display <string>\t\tusar conexão com o display.\n"
+"  -rc <string>\t\t\tusar arquivo alternativo de recursos.\n"
+"  -version\t\t\texibe a versao e sair.\n"
+"  -help\t\t\t\texibe este texto de ajuda e sair.\n"
+"\n"
 
 #: src/main.cc:59
 #, c-format
@@ -853,14 +858,20 @@ msgid ""
 "  XFT:\t\t\t\t%s\n"
 "\n"
 msgstr ""
+"Opções em tempo de compilação:\n"
+"  Depuração:\t\t\t%s\n"
+"  SHAPE:\t\t\t%s\n"
+"  MIT-SHM:\t\t\t%s\n"
+"  XFT:\t\t\t\t%s\n"
+"\n"
 
 #: src/main.cc:65 src/main.cc:71 src/main.cc:76 src/main.cc:81
 msgid "yes"
-msgstr ""
+msgstr "Sim"
 
 #: src/main.cc:67 src/main.cc:73 src/main.cc:78 src/main.cc:83
 msgid "no"
-msgstr ""
+msgstr "Não"
 
 #: src/main.cc:114
 #, c-format

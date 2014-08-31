@@ -366,6 +366,7 @@ msgstr "%s: Un autre gestionnaire de fenêtres est déjà lancé %s.\n"
 #, c-format
 msgid "%s: managing screen %u using %s visual 0x%lx, depth %d\n"
 msgstr ""
+"%s: Gestion de l'écran %u avec le mode %s visuel 0x%lx, profondeur %d\n"
 
 #: src/Screen.cc:1468
 #, c-format
@@ -840,6 +841,11 @@ msgid ""
 "  -help\t\t\t\tdisplay this help text and exit.\n"
 "\n"
 msgstr ""
+"  -display <chaîne>\t\tutilise la connexion à l'affichage.\n"
+"  -rc <chaîne>\t\t\tutilise un autre fichier de configuration.\n"
+"  -version\t\t\taffiche la version et quitte.\n"
+"  -help\t\t\t\taffiche ce texte d'aide et quitte.\n"
+"\n"
 
 #: src/main.cc:59
 #, c-format
@@ -851,14 +857,20 @@ msgid ""
 "  XFT:\t\t\t\t%s\n"
 "\n"
 msgstr ""
+"Options de compilation:\n"
+"  Debugage\t\t\t%s\n"
+"  SHAPE:\t\t\t%s\n"
+"  MIT-SHM:\t\t\t%s\n"
+"  XFT:\t\t\t\t%s\n"
+"\n"
 
 #: src/main.cc:65 src/main.cc:71 src/main.cc:76 src/main.cc:81
 msgid "yes"
-msgstr ""
+msgstr "Oui"
 
 #: src/main.cc:67 src/main.cc:73 src/main.cc:78 src/main.cc:83
 msgid "no"
-msgstr ""
+msgstr "Non"
 
 #: src/main.cc:114
 #, c-format

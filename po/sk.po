@@ -365,7 +365,7 @@ msgstr "%s: displeji je práve spustený ïal¹í správca okien %s.\n"
 #: src/Screen.cc:181
 #, c-format
 msgid "%s: managing screen %u using %s visual 0x%lx, depth %d\n"
-msgstr ""
+msgstr "%s: riadiaca obrazovka %u pou¾íva %s zobrazenie 0x%lx, håbka %d\n"
 
 #: src/Screen.cc:1468
 #, c-format
@@ -844,6 +844,11 @@ msgid ""
 "  -help\t\t\t\tdisplay this help text and exit.\n"
 "\n"
 msgstr ""
+"  -display <string>\t\tpou¾ije sa pripojenie k zadanému displeju.\n"
+"  -rc <string>\t\t\tpou¾ije sa alternatívny konfiguraèný súbor.\n"
+"  -version\t\t\tzobrazí verziu a skonèí.\n"
+"  -help\t\t\t\tzobrazí túto nápovedu a skonèí.\n"
+"\n"
 
 #: src/main.cc:59
 #, c-format
@@ -855,14 +860,20 @@ msgid ""
 "  XFT:\t\t\t\t%s\n"
 "\n"
 msgstr ""
+"Nastavenia v èase kompilácie:\n"
+"  Ladenie\t\t\t%s\n"
+"  SHAPE:\t\t\t%s\n"
+"  MIT-SHM:\t\t\t%s\n"
+"  XFT:\t\t\t\t%s\n"
+"\n"
 
 #: src/main.cc:65 src/main.cc:71 src/main.cc:76 src/main.cc:81
 msgid "yes"
-msgstr ""
+msgstr "Áno"
 
 #: src/main.cc:67 src/main.cc:73 src/main.cc:78 src/main.cc:83
 msgid "no"
-msgstr ""
+msgstr "Nie"
 
 #: src/main.cc:114
 #, c-format

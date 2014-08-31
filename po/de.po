@@ -365,7 +365,7 @@ msgstr "%s: ein anderer Windowmanager benutzt Display %s bereits.\n"
 #: src/Screen.cc:181
 #, c-format
 msgid "%s: managing screen %u using %s visual 0x%lx, depth %d\n"
-msgstr ""
+msgstr "%s: Verwaltung von Bildschirm %u mit %s Visual 0x%lx, Tiefe %d\n"
 
 #: src/Screen.cc:1468
 #, c-format
@@ -837,6 +837,11 @@ msgid ""
 "  -help\t\t\t\tdisplay this help text and exit.\n"
 "\n"
 msgstr ""
+"  -display <string>\t\tDisplay Verbindung.\n"
+"  -rc <string>\t\t\talternative Konfigurationsdatei.\n"
+"  -version\t\t\tzeige Versionsnummer und Beendung.\n"
+"  -help\t\t\t\tzeige diesen Hilfstext und Beendung.\n"
+"\n"
 
 #: src/main.cc:59
 #, c-format
@@ -848,14 +853,20 @@ msgid ""
 "  XFT:\t\t\t\t%s\n"
 "\n"
 msgstr ""
+"Optionen zum Kompilationszeitpunkt:\n"
+"  Debugging:\t\t\t%s\n"
+"  SHAPE:\t\t\t%s\n"
+"  MIT-SHM:\t\t\t%s\n"
+"  XFT:\t\t\t\t%s\n"
+"\n"
 
 #: src/main.cc:65 src/main.cc:71 src/main.cc:76 src/main.cc:81
 msgid "yes"
-msgstr ""
+msgstr "Ja"
 
 #: src/main.cc:67 src/main.cc:73 src/main.cc:78 src/main.cc:83
 msgid "no"
-msgstr ""
+msgstr "Nein"
 
 #: src/main.cc:114
 #, c-format

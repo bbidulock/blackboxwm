@@ -366,7 +366,7 @@ msgstr "%s: jau darbojas cits logu pârvaldnieks uz displeja %s.\n"
 #: src/Screen.cc:181
 #, c-format
 msgid "%s: managing screen %u using %s visual 0x%lx, depth %d\n"
-msgstr ""
+msgstr "%s: parvaldu ekrânu %u, lietojot %s vizuâlo 0x%lx, dziïums %d\n"
 
 #: src/Screen.cc:1468
 #, c-format
@@ -843,6 +843,11 @@ msgid ""
 "  -help\t\t\t\tdisplay this help text and exit.\n"
 "\n"
 msgstr ""
+"  -display <virkne>\t\tlietot displeja savienojumu.\n"
+"  -rc <virkne>\t\t\tlietot citu resersu failu.\n"
+"  -version\t\t\tparâdît versiju un iziet.\n"
+"  -help\t\t\t\tparâdît ðo palîdzîbas tekstu un iziet.\n"
+"\n"
 
 #: src/main.cc:59
 #, c-format
@@ -854,14 +859,20 @@ msgid ""
 "  XFT:\t\t\t\t%s\n"
 "\n"
 msgstr ""
+"Kompilâcijas laika opcijas:\n"
+"  Atkïûdoðana\t\t\t%s\n"
+"  SHAPE:\t\t\t%s\n"
+"  MIT-SHM:\t\t\t%s\n"
+"  XFT:\t\t\t\t%s\n"
+"\n"
 
 #: src/main.cc:65 src/main.cc:71 src/main.cc:76 src/main.cc:81
 msgid "yes"
-msgstr ""
+msgstr "Jâ"
 
 #: src/main.cc:67 src/main.cc:73 src/main.cc:78 src/main.cc:83
 msgid "no"
-msgstr ""
+msgstr "Nç"
 
 #: src/main.cc:114
 #, c-format

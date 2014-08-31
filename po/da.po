@@ -365,7 +365,7 @@ msgstr "%s: en anden window manager er allerede kørende på display %s.\n"
 #: src/Screen.cc:181
 #, c-format
 msgid "%s: managing screen %u using %s visual 0x%lx, depth %d\n"
-msgstr ""
+msgstr "%s: håndterer skærm %u med %s visuel 0x%lx, farvedybde %d\n"
 
 #: src/Screen.cc:1468
 #, c-format
@@ -839,6 +839,11 @@ msgid ""
 "  -help\t\t\t\tdisplay this help text and exit.\n"
 "\n"
 msgstr ""
+"  -display <string>\t\tbrug skærm tilslutning.\n"
+"  -rc <string>\t\t\tbrug alternativ resource fil.\n"
+"  -version\t\t\tvis versionsnummer og afslut.\n"
+"  -help\t\t\t\tvis denne hjælp og afslut.\n"
+"\n"
 
 #: src/main.cc:59
 #, c-format
@@ -850,14 +855,20 @@ msgid ""
 "  XFT:\t\t\t\t%s\n"
 "\n"
 msgstr ""
+"Kompileret med:\n"
+"  Debugging:\t\t\t%s\n"
+"  SHAPE:\t\t\t%s\n"
+"  MIT-SHM:\t\t\t%s\n"
+"  XFT:\t\t\t\t%s\n"
+"\n"
 
 #: src/main.cc:65 src/main.cc:71 src/main.cc:76 src/main.cc:81
 msgid "yes"
-msgstr ""
+msgstr "Ja"
 
 #: src/main.cc:67 src/main.cc:73 src/main.cc:78 src/main.cc:83
 msgid "no"
-msgstr ""
+msgstr "Nej"
 
 #: src/main.cc:114
 #, c-format
