@@ -1660,7 +1660,7 @@ bool BScreen::parseMenuFile(FILE *file, Rootmenu *menu) {
 
     case 630: // config
       if (! *label) {
-        fprintf(stderr, gettext("%s: [config] error, no label defined"),
+        fprintf(stderr, gettext("%s: [config] error, no label defined\n"),
                 _blackbox->applicationName().c_str());
         continue;
       }
