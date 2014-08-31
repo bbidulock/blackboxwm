@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: blackbox 0.70.2.28\n"
 "Report-Msgid-Bugs-To: http://github.com/bbidulock/blackboxwm\n"
-"POT-Creation-Date: 2014-08-30 19:54-0600\n"
+"POT-Creation-Date: 2014-08-31 07:03-0600\n"
 "PO-Revision-Date: 2014-08-29 13:16-0600\n"
 "Last-Translator: Brian F. G. Bidulock <bidulock@openss7.org>\n"
 "Language-Team: Argentinian\n"
@@ -415,8 +415,8 @@ msgstr ""
 "para el menú\n"
 
 #: src/Screen.cc:1663
-#, c-format
-msgid "%s: [config] error, no label defined"
+#, fuzzy, c-format
+msgid "%s: [config] error, no label defined\n"
 msgstr "%s: error en [config],  no se definió una etiqueta para el menú"
 
 #: src/Screen.cc:1673
@@ -462,8 +462,7 @@ msgstr "%s: error en [stylesdir/stylesmenu], '%s' no es un directorio\n"
 #: src/Screen.cc:1843
 #, c-format
 msgid "%s: [workspaces] error, no menu label defined\n"
-msgstr ""
-"%s: error en [workspaces],  no se definió una etiqueta para el menú\n"
+msgstr "%s: error en [workspaces],  no se definió una etiqueta para el menú\n"
 
 #: src/Window.cc:536
 msgid "Unnamed"
@@ -832,7 +831,7 @@ msgstr ""
 msgid "%s: no manageable screens found, exiting...\n"
 msgstr "%s: no se encontraron pantallas manejables, abortando\n"
 
-#: src/main.cc:45 src/main.cc:104
+#: src/main.cc:45 src/main.cc:105
 #, c-format
 msgid ""
 "Blackbox %s\n"
@@ -881,17 +880,17 @@ msgstr "Sí"
 msgid "no"
 msgstr "No"
 
-#: src/main.cc:114
+#: src/main.cc:115
 #, c-format
 msgid "error: '-rc' requires and argument\n"
 msgstr "error: '-rc' requiere un argumento\n"
 
-#: src/main.cc:124
+#: src/main.cc:125
 #, c-format
 msgid "error: '-display' requires an argument\n"
 msgstr "error: '-display' requiere un argumento\n"
 
-#: src/main.cc:134
+#: src/main.cc:135
 #, c-format
 msgid "warning: couldn't set environment variable 'DISPLAY'\n"
 msgstr "Aviso: no pude establecer la variable de entorno 'DISPLAY'\n"

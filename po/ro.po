@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: blackbox 0.70.2.28\n"
 "Report-Msgid-Bugs-To: http://github.com/bbidulock/blackboxwm\n"
-"POT-Creation-Date: 2014-08-30 19:54-0600\n"
+"POT-Creation-Date: 2014-08-31 07:03-0600\n"
 "PO-Revision-Date: 2014-08-29 13:17-0600\n"
 "Last-Translator: Brian F. G. Bidulock <bidulock@openss7.org>\n"
 "Language-Team: Romanian\n"
@@ -411,8 +411,8 @@ msgstr ""
 "%s: [style] eroare, nu s-a completat eticheta si/sau comanda asociata\n"
 
 #: src/Screen.cc:1663
-#, c-format
-msgid "%s: [config] error, no label defined"
+#, fuzzy, c-format
+msgid "%s: [config] error, no label defined\n"
 msgstr "%s: [config] eroare, nu s-a completat eticheta"
 
 #: src/Screen.cc:1673
@@ -827,7 +827,7 @@ msgstr ""
 msgid "%s: no manageable screens found, exiting...\n"
 msgstr "%s: nu este disponibil nici un ecran, rularea se intrerupe\n"
 
-#: src/main.cc:45 src/main.cc:104
+#: src/main.cc:45 src/main.cc:105
 #, c-format
 msgid ""
 "Blackbox %s\n"
@@ -876,17 +876,17 @@ msgstr "Da"
 msgid "no"
 msgstr "Nu"
 
-#: src/main.cc:114
+#: src/main.cc:115
 #, c-format
 msgid "error: '-rc' requires and argument\n"
 msgstr "eroare: '-rc' necesita inca un parametru\n"
 
-#: src/main.cc:124
+#: src/main.cc:125
 #, c-format
 msgid "error: '-display' requires an argument\n"
 msgstr "eroare: '-display' necesita inca un parametru\n"
 
-#: src/main.cc:134
+#: src/main.cc:135
 #, c-format
 msgid "warning: couldn't set environment variable 'DISPLAY'\n"
 msgstr "atentionare: nu am putut crea variabila de mediu 'DISPLAY'\n"

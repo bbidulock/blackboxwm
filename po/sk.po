@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: blackbox 0.70.2.28\n"
 "Report-Msgid-Bugs-To: http://github.com/bbidulock/blackboxwm\n"
-"POT-Creation-Date: 2014-08-30 19:54-0600\n"
+"POT-Creation-Date: 2014-08-31 07:03-0600\n"
 "PO-Revision-Date: 2014-08-29 13:17-0600\n"
 "Last-Translator: Brian F. G. Bidulock <bidulock@openss7.org>\n"
 "Language-Team: Slovak\n"
@@ -408,8 +408,8 @@ msgid "%s: [style] error, no menu label and/or filename defined\n"
 msgstr "%s: [style] chyba, nedefinovaný titulok menu a/alebo názov súboru\n"
 
 #: src/Screen.cc:1663
-#, c-format
-msgid "%s: [config] error, no label defined"
+#, fuzzy, c-format
+msgid "%s: [config] error, no label defined\n"
 msgstr "%s: [config] chyba, nedefinovaný titulok menu"
 
 #: src/Screen.cc:1673
@@ -642,8 +642,7 @@ msgstr "bt::Display: zlyhalo pripojenie k X serveru '%s'\n"
 #, c-format
 msgid "bt::Display: failed to mark connection close-on-exec\n"
 msgstr ""
-"bt::Display: nie je mo¾né oznaèi» pripojenie k obrazovke ako close-on-"
-"exec\n"
+"bt::Display: nie je mo¾né oznaèi» pripojenie k obrazovke ako close-on-exec\n"
 
 #: lib/Font.cc:200
 #, c-format
@@ -826,7 +825,7 @@ msgstr ""
 msgid "%s: no manageable screens found, exiting...\n"
 msgstr "%s: nena¹li sa spravovateµné obrazovky, ru¹í sa\n"
 
-#: src/main.cc:45 src/main.cc:104
+#: src/main.cc:45 src/main.cc:105
 #, c-format
 msgid ""
 "Blackbox %s\n"
@@ -875,17 +874,17 @@ msgstr "Áno"
 msgid "no"
 msgstr "Nie"
 
-#: src/main.cc:114
+#: src/main.cc:115
 #, c-format
 msgid "error: '-rc' requires and argument\n"
 msgstr "chyba: '-rc' vy¾aduje argument\n"
 
-#: src/main.cc:124
+#: src/main.cc:125
 #, c-format
 msgid "error: '-display' requires an argument\n"
 msgstr "chyba: '-display' vy¾aduje argument\n"
 
-#: src/main.cc:134
+#: src/main.cc:135
 #, c-format
 msgid "warning: couldn't set environment variable 'DISPLAY'\n"
 msgstr "varovanie: nie je mo¾né nastavi» premennú prostredia 'DISPLAY'\n"

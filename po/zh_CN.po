@@ -7,13 +7,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: blackbox 0.70.2.28\n"
 "Report-Msgid-Bugs-To: http://github.com/bbidulock/blackboxwm\n"
-"POT-Creation-Date: 2014-08-30 19:54-0600\n"
+"POT-Creation-Date: 2014-08-31 07:03-0600\n"
 "PO-Revision-Date: 2014-08-29 13:17-0600\n"
 "Last-Translator: Brian F. G. Bidulock <bidulock@openss7.org>\n"
 "Language-Team: Chinese (simplified)\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=gh2312\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #. TRANS The name of the submenu used for controlling slit options.
@@ -25,7 +25,7 @@ msgstr "Slit"
 #. TRANS The name of the submenu for controlling the direction of the slit.
 #: src/Slitmenu.cc:78
 msgid "Direction"
-msgstr "·½Ïò"
+msgstr "方向"
 
 #. TRANS The name of the submenu for controlling the placement of the slit.
 #. TRANS The name of the placement submenu of the toolbar options menu
@@ -33,110 +33,110 @@ msgstr "·½Ïò"
 #. TRANS with relation to other windows.
 #: src/Slitmenu.cc:81 src/Toolbarmenu.cc:70
 msgid "Placement"
-msgstr "·ÅÖÃ"
+msgstr "放置"
 
 #. TRANS Always place the slit on top of other windows.
 #. TRANS Always place the toolbar above other windows on the desktop.
 #. TRANS Always place this window above other windows.
 #: src/Slitmenu.cc:85 src/Toolbarmenu.cc:72 src/Windowmenu.cc:96
 msgid "Always on top"
-msgstr "×ÜÔÚ×îÉÏÃæ"
+msgstr "总在最上面"
 
 #. TRANS Automatically hide the slit when the pointer leaves the slit.
 #: src/Slitmenu.cc:87
 msgid "Auto hide"
-msgstr "×Ô¶¯Òþ²Ø"
+msgstr "自动隐藏"
 
 #. TRANS The name of the submenu for controlling slit direction.
 #: src/Slitmenu.cc:137
 msgid "Slit Direction"
-msgstr "Slit ·½Ïò"
+msgstr "Slit 方向"
 
 #. TRANS Arrange the slit horizontally (wider).
 #: src/Slitmenu.cc:141
 msgid "Horizontal"
-msgstr "Ë®Æ½"
+msgstr "水平"
 
 #. TRANS Arrange the slit vertically (taller).
 #: src/Slitmenu.cc:143
 msgid "Vertical"
-msgstr "´¹Ö±"
+msgstr "垂直"
 
 #. TRANS The name of the submenu for controlling slit placement.
 #: src/Slitmenu.cc:174
 msgid "Slit Placement"
-msgstr "Slit ·ÅÖÃ"
+msgstr "Slit 放置"
 
 #. TRANS Place the slit in the top left (NW) corner of the screen.
 #. TRANS Top left corner of the screen.
 #: src/Slitmenu.cc:178 src/Toolbarmenu.cc:140
 msgid "Top Left"
-msgstr "ÉÏ×ó"
+msgstr "上左"
 
 #. TRANS Place the slit in the center left (W) edge of the screen.
 #: src/Slitmenu.cc:180
 msgid "Center Left"
-msgstr "ÖÐ×ó"
+msgstr "中左"
 
 #. TRANS Place the slit in the bottom left (SW) corner of the screen.
 #. TRANS Bottom left corner of the screen.
 #: src/Slitmenu.cc:182 src/Toolbarmenu.cc:147
 msgid "Bottom Left"
-msgstr "ÏÂ×ó"
+msgstr "下左"
 
 #. TRANS Place the slit in the center top (N) edge of the screen.
 #. TRANS Centered at the top of the screen.
 #: src/Slitmenu.cc:185 src/Toolbarmenu.cc:142
 msgid "Top Center"
-msgstr "ÉÏÖÐ"
+msgstr "上中"
 
 #. TRANS Place the slit in the center bottom (S) edge of the screen.
 #. TRANS Centered at the bottom of the screen.
 #: src/Slitmenu.cc:187 src/Toolbarmenu.cc:149
 msgid "Bottom Center"
-msgstr "ÏÂÖÐ"
+msgstr "下中"
 
 #. TRANS Place the slit in the top right (NE) corner of the screen.
 #. TRANS Top right corner of the screen.
 #: src/Slitmenu.cc:190 src/Toolbarmenu.cc:144
 msgid "Top Right"
-msgstr "ÉÏÓÒ"
+msgstr "上右"
 
 #. TRANS Place the slit in the center right (E) edge of the screen.
 #: src/Slitmenu.cc:192
 msgid "Center Right"
-msgstr "ÖÐÓÒ"
+msgstr "中右"
 
 #. TRANS Place the slit in the bottom right (SE) corner of the screen.
 #. TRANS Bottom right corner of the screen.
 #: src/Slitmenu.cc:194 src/Toolbarmenu.cc:151
 msgid "Bottom Right"
-msgstr "ÏÂÓÒ"
+msgstr "下右"
 
 #. TRANS The name of the primary window manager configuration menu.
 #: src/Configmenu.cc:108
 msgid "Configuration Options"
-msgstr "ÅäÖÃÑ¡Ïî"
+msgstr "配置选项"
 
 #. TRANS The name of the submenu for controlling the window focus model.
 #: src/Configmenu.cc:119 src/Configmenu.cc:228
 msgid "Focus Model"
-msgstr "¾Û½¹Ä£Ê½"
+msgstr "聚焦模式"
 
 #. TRANS The name of the submenu for controlling automatic window placement.
 #: src/Configmenu.cc:121 src/Configmenu.cc:289
 msgid "Window Placement"
-msgstr "´°¿Ú·ÅÖÃ"
+msgstr "窗口放置"
 
 #. TRANS The name of the submenu for controlling image dithering.
 #: src/Configmenu.cc:124 src/Configmenu.cc:386
 msgid "Image Dithering"
-msgstr "Í¼Ïñµ÷Ð³"
+msgstr "图像调谐"
 
 #. TRANS When windows are moved they are moved opaquely (their contents show).
 #: src/Configmenu.cc:127
 msgid "Opaque Window Moving"
-msgstr "ÏÔÊ¾ÒÆ¶¯´°¿ÚÄÚÈÝ"
+msgstr "显示移动窗口内容"
 
 #. TRANS When windows are resized they are resized opaquely (their contents show).
 #: src/Configmenu.cc:129
@@ -146,17 +146,17 @@ msgstr ""
 #. TRANS When window are maximized, they are maximized to the full screen size.
 #: src/Configmenu.cc:131
 msgid "Full Maximization"
-msgstr "ÍêÈ«×î´ó»¯"
+msgstr "完全最大化"
 
 #. TRANS When new windows appear on the screen, they are focussed immediately.
 #: src/Configmenu.cc:133
 msgid "Focus New Windows"
-msgstr "¾Û½¹ÐÂ´°¿Ú"
+msgstr "聚焦新窗口"
 
 #. TRANS When changing to a workspace, the previous focussed window on that workspace is focussed.
 #: src/Configmenu.cc:135
 msgid "Focus Last Window on Workspace"
-msgstr "×ÀÃæ¸Ä±äÊ±¾Û½¹´°¿Ú"
+msgstr "桌面改变时聚焦窗口"
 
 #. TRANS The workspaces may be changed using the mouse wheel.
 #: src/Configmenu.cc:138
@@ -176,42 +176,42 @@ msgstr ""
 #. TRANS Disable global key binding by setting the Scroll Lock key.
 #: src/Configmenu.cc:147
 msgid "Disable Bindings with Scroll Lock"
-msgstr "Scroll LockÈ¡ÏûÈÈ¼ü"
+msgstr "Scroll Lock取消热键"
 
 #. TRANS The name of the submenu for controlling toolbar options.
 #: src/Configmenu.cc:151 src/Toolbarmenu.cc:60
 msgid "Toolbar Options"
-msgstr ""
+msgstr "工具条"
 
 #. TRANS The user must click on a window to focus it.
 #: src/Configmenu.cc:232
 msgid "Click to Focus"
-msgstr "µã»÷¾Û½¹"
+msgstr "点击聚焦"
 
 #. TRANS The user can move the mouse into the window to focus it.
 #: src/Configmenu.cc:234
 msgid "Sloppy Focus"
-msgstr "×Ô¶¯¾Û½¹"
+msgstr "自动聚焦"
 
 #. TRANS When a window is focused it is automatically raised.
 #: src/Configmenu.cc:236
 msgid "Auto Raise"
-msgstr "×Ô¶¯ÉýÆð"
+msgstr "自动升起"
 
 #. TRANS When a window is clicked it is raised.
 #: src/Configmenu.cc:238
 msgid "Click Raise"
-msgstr "µã»÷ÉýÆð"
+msgstr "点击升起"
 
 #. TRANS Arrange windows intelligently in rows.
 #: src/Configmenu.cc:293
 msgid "Smart Placement (Rows)"
-msgstr "×Ô¶¯·ÅÖÃ(ÐÐ)"
+msgstr "自动放置(行)"
 
 #. TRANS Arrange windows intelligently in columns.
 #: src/Configmenu.cc:295
 msgid "Smart Placement (Columns)"
-msgstr "×Ô¶¯·ÅÖÃ(ÁÐ)"
+msgstr "自动放置(列)"
 
 #. TRANS Center windows.
 #: src/Configmenu.cc:297
@@ -221,27 +221,27 @@ msgstr ""
 #. TRANS Arrange windows in a cascade.
 #: src/Configmenu.cc:299
 msgid "Cascade Placement"
-msgstr "²ãµþ·ÅÖÃ"
+msgstr "层叠放置"
 
 #. TRANS When arranging windows, arrange from left to right.
 #: src/Configmenu.cc:304
 msgid "Left to Right"
-msgstr "´Ó×óµ½ÓÒ"
+msgstr "从左到右"
 
 #. TRANS When arranging windows, arrange from right to left.
 #: src/Configmenu.cc:306
 msgid "Right to Left"
-msgstr "´ÓÓÒµ½×ó"
+msgstr "从右到左"
 
 #. TRANS When arranging windows, arrange from top to bottom.
 #: src/Configmenu.cc:308
 msgid "Top to Bottom"
-msgstr "´ÓÉÏµ½ÏÂ"
+msgstr "从上到下"
 
 #. TRANS When arranging windows, arrange from bottom to top.
 #: src/Configmenu.cc:310
 msgid "Bottom to Top"
-msgstr "´ÓÏÂµ½ÉÏ"
+msgstr "从下到上"
 
 #. TRANS When arranging windows, ignore the presence of shaded windows.
 #: src/Configmenu.cc:315
@@ -268,7 +268,7 @@ msgstr ""
 #. TRANS on the workspace.
 #: src/Iconmenu.cc:39 src/Workspacemenu.cc:77
 msgid "Iconified Windows"
-msgstr "Í¼±ê"
+msgstr "图标"
 
 #. TRANS Whether to show the toolbar or not.
 #: src/Toolbarmenu.cc:65
@@ -278,38 +278,38 @@ msgstr ""
 #. TRANS Automatically hide the toolbar when the pointer leaves the toolbar.
 #: src/Toolbarmenu.cc:74
 msgid "Auto Hide"
-msgstr "×Ô¶¯Òþ²Ø"
+msgstr "自动隐藏"
 
 #. TRANS The name of the menu that controls toolbar placement; i.e.,
 #. TRANS which corner or edge of the screen on which the toolbar is placed.
 #: src/Toolbarmenu.cc:136
 msgid "Toolbar Placement"
-msgstr ""
+msgstr "工具条放置"
 
 #. TRANS Send the window to another workspace without changing workspaces.
 #: src/Windowmenu.cc:77
 msgid "Send to Workspace"
-msgstr "·¢ËÍµ½ ..."
+msgstr "发送到 ..."
 
 #. TRANS Show the window on all workspaces.
 #: src/Windowmenu.cc:79
 msgid "Occupy all Workspaces"
-msgstr "¶¤×¡"
+msgstr "钉住"
 
 #. TRANS Shade the window so that only the titlebar shows.
 #: src/Windowmenu.cc:82
 msgid "Shade"
-msgstr "¾íÁ±"
+msgstr "卷帘"
 
 #. TRANS Iconify the window so it is no longer visible.
 #: src/Windowmenu.cc:84
 msgid "Iconify"
-msgstr "Í¼±ê»¯"
+msgstr "图标化"
 
 #. TRANS Maximize the size of the window both vertically and horizontally.
 #: src/Windowmenu.cc:86
 msgid "Maximize"
-msgstr "×î´ó»¯"
+msgstr "最大化"
 
 #. TRANS Maximize the size of the window vertically.
 #: src/Windowmenu.cc:88
@@ -334,42 +334,42 @@ msgstr ""
 #. TRANS Kill the process associated with the window.
 #: src/Windowmenu.cc:101
 msgid "Kill Client"
-msgstr "É±ËÀ"
+msgstr "杀死"
 
 #. TRANS Ask the application owning the window to close it.
 #: src/Windowmenu.cc:103
 msgid "Close"
-msgstr "¹Ø±Õ"
+msgstr "关闭"
 
 #. TRANS The name of the submenu controlling the number of workspaces.
 #: src/Workspacemenu.cc:49
 msgid "Workspaces"
-msgstr "×ÀÃæ"
+msgstr "桌面"
 
 #. TRANS Create a new workspace and append it to the list of workspaces.
 #: src/Workspacemenu.cc:54
 msgid "New Workspace"
-msgstr "ÐÂ½¨×ÀÃæ"
+msgstr "新建桌面"
 
 #. TRANS Remove the last workspace from the list of workspaces and destroy it.
 #: src/Workspacemenu.cc:56
 msgid "Remove Last Workspace"
-msgstr "É¾³ý×ÀÃæ"
+msgstr "删除桌面"
 
 #: src/Screen.cc:167
 #, c-format
 msgid "%s: another window manager is already running on display '%s'\n"
-msgstr "%s: ÒÑ¾­ÓÐÁíÒ»¸ö´°¿Ú¹ÜÀíÆ÷ÔÚÔËÐÐ %s.\n"
+msgstr "%s: 已经有另一个窗口管理器在运行 %s.\n"
 
 #: src/Screen.cc:181
 #, c-format
 msgid "%s: managing screen %u using %s visual 0x%lx, depth %d\n"
-msgstr "%s: ¶ÔÆÁÄ» %u %s Ê¹ÓÃÊÓ 0x%lx, Éî¶È %d\n"
+msgstr "%s: 对屏幕 %u %s 使用视 0x%lx, 深度 %d\n"
 
 #: src/Screen.cc:1468
 #, c-format
 msgid "%s: menu file '%s' is empty\n"
-msgstr "%s: Çå¿Õ²Ëµ¥ÎÄ¼þ %s\n"
+msgstr "%s: 清空菜单文件 %s\n"
 
 #. TRANS The underscore '_' indicates the hot key.
 #: src/Screen.cc:1520
@@ -384,91 +384,91 @@ msgstr ""
 #. TRANS Restart the window manager.
 #: src/Screen.cc:1526
 msgid "Restart"
-msgstr "ÖØÐÂ¿ªÊ¼"
+msgstr "重新开始"
 
 #. TRANS Exit the window manager.
 #: src/Screen.cc:1529
 msgid "Exit"
-msgstr "ÍË³ö"
+msgstr "退出"
 
 #: src/Screen.cc:1629
 #, c-format
 msgid "%s: [exec] error, no menu label and/or command defined\n"
-msgstr "%s: [exec] ´íÎó, Ã»ÓÐ²Ëµ¥µÄ±êÌâ»òÃüÁî\n"
+msgstr "%s: [exec] 错误, 没有菜单的标题或命令\n"
 
 #: src/Screen.cc:1639
 #, c-format
 msgid "%s: [exit] error, no menu label defined\n"
-msgstr "%s: [exit] ´íÎó, Ã»ÓÐ²Ëµ¥µÄ±êÌâ\n"
+msgstr "%s: [exit] 错误, 没有菜单的标题\n"
 
 #: src/Screen.cc:1650
 #, c-format
 msgid "%s: [style] error, no menu label and/or filename defined\n"
-msgstr "%s: [style] ´íÎó, Ã»ÓÐ²Ëµ¥±êÌâ»òÎÄ¼þÃû\n"
+msgstr "%s: [style] 错误, 没有菜单标题或文件名\n"
 
 #: src/Screen.cc:1663
-#, c-format
-msgid "%s: [config] error, no label defined"
-msgstr "%s: [config] ´íÎó, Ã»ÓÐ²Ëµ¥±êÌâ"
+#, fuzzy, c-format
+msgid "%s: [config] error, no label defined\n"
+msgstr "%s: [config] 错误, 没有菜单标题\n"
 
 #: src/Screen.cc:1673
 #, c-format
 msgid "%s: [include] error, no filename defined\n"
-msgstr "%s: [include] ´íÎó, Ã»ÓÐÎÄ¼þÃû\n"
+msgstr "%s: [include] 错误, 没有文件名\n"
 
 #: src/Screen.cc:1692
 #, c-format
 msgid "%s: [include] error: '%s' is not a regular file\n"
-msgstr "%s: [include] ´íÎó, '%s' ²»ÊÇÒ»¸öÆÕÍ¨ÎÄ¼þ\n"
+msgstr "%s: [include] 错误, '%s' 不是一个普通文件\n"
 
 #: src/Screen.cc:1713
 #, c-format
 msgid "%s: [submenu] error, no menu label defined\n"
-msgstr "%s: [submenu] ´íÎó, Ã»ÓÐ²Ëµ¥±êÌâ\n"
+msgstr "%s: [submenu] 错误, 没有菜单标题\n"
 
 #: src/Screen.cc:1735
 #, c-format
 msgid "%s: [restart] error, no menu label defined\n"
-msgstr "%s: [restart] ´íÎó, Ã»ÓÐ²Ëµ¥±êÌâ\n"
+msgstr "%s: [restart] 错误, 没有菜单标题\n"
 
 #: src/Screen.cc:1751
 #, c-format
 msgid "%s: [reconfig] error, no menu label defined\n"
-msgstr "%s: [reconfig] ´íÎó, Ã»ÓÐ²Ëµ¥±êÌâ\n"
+msgstr "%s: [reconfig] 错误, 没有菜单标题\n"
 
 #: src/Screen.cc:1766
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, no directory defined\n"
-msgstr "%s: [stylesdir/stylesmenu] ´íÎó, Ã»ÓÐÖ¸ÃûÄ¿Â¼\n"
+msgstr "%s: [stylesdir/stylesmenu] 错误, 没有指名目录\n"
 
 #: src/Screen.cc:1779
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, '%s' does not exist\n"
-msgstr "%s: [stylesdir/stylesmenu] ´íÎó, '%s' ²»´æÔÚ\n"
+msgstr "%s: [stylesdir/stylesmenu] 错误, '%s' 不存在\n"
 
 #: src/Screen.cc:1785
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, '%s' is not a directory\n"
-msgstr "%s: [stylesdir/stylesmenu] ´íÎó, '%s' ²»ÊÇÄ¿Â¼\n"
+msgstr "%s: [stylesdir/stylesmenu] 错误, '%s' 不是目录\n"
 
 #: src/Screen.cc:1843
 #, c-format
 msgid "%s: [workspaces] error, no menu label defined\n"
-msgstr "%s: [workspaces] ´íÎó, Ã»ÓÐ²Ëµ¥±êÌâ\n"
+msgstr "%s: [workspaces] 错误, 没有菜单标题\n"
 
 #: src/Window.cc:536
 msgid "Unnamed"
-msgstr "ÎÞÃüÃû"
+msgstr "无命名"
 
 #: src/Window.cc:1006
 #, c-format
 msgid "BlackboxWindow::BlackboxWindow(): creating 0x%lx\n"
-msgstr "BlackboxWindow::BlackboxWindow(): ÕýÔÚ´´½¨ 0x%lx\n"
+msgstr "BlackboxWindow::BlackboxWindow(): 正在创建 0x%lx\n"
 
 #: src/Window.cc:1035
 #, c-format
 msgid "BlackboxWindow::BlackboxWindow(): XGetWindowAttributes failed\n"
-msgstr "BlackboxWindow::BlackboxWindow(): XGetWindowAttributres Ê§°Ü\n"
+msgstr "BlackboxWindow::BlackboxWindow(): XGetWindowAttributres 失败\n"
 
 #: src/Window.cc:1283
 #, c-format
@@ -524,14 +524,12 @@ msgstr ""
 #: src/Workspace.cc:61
 #, c-format
 msgid "Workspace %u"
-msgstr "×ÀÃæ %u"
+msgstr "桌面 %u"
 
 #: util/bsetroot.cc:101
 #, c-format
 msgid "bsetroot: error: must specify one of: -solid, -mod, -gradient\n"
-msgstr ""
-"bsetroot: ´íÎó: ±ØÐë´ÓÖÐÖ¸¶¨Ò»¸ö: -solid, -mod, -"
-"gradient\n"
+msgstr "bsetroot: 错误: 必须从中指定一个: -solid, -mod, -gradient\n"
 
 #: util/bsetroot.cc:336
 #, c-format
@@ -549,18 +547,18 @@ msgid ""
 "\n"
 "  -help                    print this help text and exit\n"
 msgstr ""
-"  -display <string>        ÏÔÊ¾Á¬½Ó\n"
-"  -mod <x> <y>             Ä£Ê½\n"
-"  -foreground, -fg <color> Ç°¾°É«\n"
-"  -background, -bg <color> ±³¾°É«\n"
+"  -display <string>        显示连接\n"
+"  -mod <x> <y>             模式\n"
+"  -foreground, -fg <color> 前景色\n"
+"  -background, -bg <color> 背景色\n"
 "\n"
-"  -gradient <texture>      ½¥½øÎÆÀí\n"
-"  -from <color>            ½¥½ø¿ªÊ¼É«\n"
-"  -to <color>              ½¥½ø½áÊøÉ«\n"
+"  -gradient <texture>      渐进纹理\n"
+"  -from <color>            渐进开始色\n"
+"  -to <color>              渐进结束色\n"
 "\n"
-"  -solid <color>           µ¥Ò»É«\n"
+"  -solid <color>           单一色\n"
 "\n"
-"  -help                    ÏÔÊ¾Õâ¸ö°ïÖú\n"
+"  -help                    显示这个帮助\n"
 
 #: lib/Application.cc:72
 #, c-format
@@ -568,13 +566,13 @@ msgid ""
 "%s:  X error: %s(%d) opcodes %d/%d\n"
 "  resource 0x%lx\n"
 msgstr ""
-"%s:  X ´íÎó: %s(%d) opcodes %d/%d\n"
+"%s:  X 错误: %s(%d) opcodes %d/%d\n"
 "  resource 0x%lx\n"
 
 #: lib/Application.cc:222
 #, c-format
 msgid "%s: caught unknown signal '%u', dumping core.\n"
-msgstr "%s: ²¶»ñÐÅºÅ %u \n"
+msgstr "%s: 捕获信号 %u\n"
 
 #: lib/Application.cc:495
 #, c-format
@@ -634,7 +632,7 @@ msgstr ""
 #: lib/Display.cc:70
 #, c-format
 msgid "bt::Display: failed to open display '%s'\n"
-msgstr "bt::Display: Á¬½Ó X ·þÎñÆ÷Ê§°Ü. '%s'\n"
+msgstr "bt::Display: 连接 X 服务器失败 %s.\n"
 
 #: lib/Display.cc:80
 #, c-format
@@ -820,9 +818,9 @@ msgstr ""
 #: src/blackbox.cc:445
 #, c-format
 msgid "%s: no manageable screens found, exiting...\n"
-msgstr "%s: Ã»ÓÐÕÒµ½¿É¿ØÖÆµÄÆÁÄ»£¬ÍË³ö...\n"
+msgstr "%s: 没有找到可控制的屏幕，退出...\n"
 
-#: src/main.cc:45 src/main.cc:104
+#: src/main.cc:45 src/main.cc:105
 #, c-format
 msgid ""
 "Blackbox %s\n"
@@ -840,10 +838,10 @@ msgid ""
 "  -help\t\t\t\tdisplay this help text and exit.\n"
 "\n"
 msgstr ""
-"  -display <string>\t\tÊ¹ÓÃÏÔÊ¾Á¬½Ó.\n"
-"  -rc <string>\t\t\tÊ¹ÓÃÆäËûµÄ×ÊÔ´ÎÄ¼þ.\n"
-"  -version\t\t\tÏÔÊ¾°æ±¾.\n"
-"  -help\t\t\t\tÏÔÊ¾Õâ¸ö°ïÖú.\n"
+"  -display <string>\t\t使用显示连接.\n"
+"  -rc <string>\t\t\t使用其他的资源文件.\n"
+"  -version\t\t\t显示版本.\n"
+"  -help\t\t\t\t显示这个帮助.\n"
 "\n"
 
 #: src/main.cc:59
@@ -856,7 +854,7 @@ msgid ""
 "  XFT:\t\t\t\t%s\n"
 "\n"
 msgstr ""
-"±àÒëÑ¡Ïî:\n"
+"编译选项:\n"
 "  Debugging:\t\t\t%s\n"
 "  SHAPE:\t\t\t%s\n"
 "  MIT-SHM:\t\t\t%s\n"
@@ -865,26 +863,26 @@ msgstr ""
 
 #: src/main.cc:65 src/main.cc:71 src/main.cc:76 src/main.cc:81
 msgid "yes"
-msgstr "ÊÇ"
+msgstr "是"
 
 #: src/main.cc:67 src/main.cc:73 src/main.cc:78 src/main.cc:83
 msgid "no"
-msgstr "·ñ"
+msgstr "否"
 
-#: src/main.cc:114
+#: src/main.cc:115
 #, c-format
 msgid "error: '-rc' requires and argument\n"
-msgstr "´íÎó: '-rc' ÐèÒª²ÎÊý\n"
+msgstr "错误: '-rc' 需要参数\n"
 
-#: src/main.cc:124
+#: src/main.cc:125
 #, c-format
 msgid "error: '-display' requires an argument\n"
-msgstr "´íÎó: '-display' ÐèÒª²ÎÊý\n"
+msgstr "错误: '-display' 需要参数\n"
 
-#: src/main.cc:134
+#: src/main.cc:135
 #, c-format
 msgid "warning: couldn't set environment variable 'DISPLAY'\n"
-msgstr "¾¯¸æ: ²»ÄÜÉèÖÃ»·¾³±äÁ¿ 'DISPLAY'\n"
+msgstr "警告: 不能设置环境变量 'DISPLAY'\n"
 
 #: src/StackingList.cc:198
 #, c-format

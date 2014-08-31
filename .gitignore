@@ -137,4 +137,8 @@ remove-potcdate.sed
 remove-potcdate.sin
 stamp-po
 Makefile.in.in
+en@boldquot.insert-header
+en@boldquot.po
+en@quot.insert-header
+en@quot.po
 

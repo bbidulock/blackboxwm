@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: blackbox 0.70.2.28\n"
 "Report-Msgid-Bugs-To: http://github.com/bbidulock/blackboxwm\n"
-"POT-Creation-Date: 2014-08-30 19:54-0600\n"
+"POT-Creation-Date: 2014-08-31 07:03-0600\n"
 "PO-Revision-Date: 2014-08-29 13:17-0600\n"
 "Last-Translator: Brian F. G. Bidulock <bidulock@openss7.org>\n"
 "Language-Team: Polish\n"
@@ -35,7 +35,7 @@ msgstr "Kierunek"
 #. TRANS with relation to other windows.
 #: src/Slitmenu.cc:81 src/Toolbarmenu.cc:70
 msgid "Placement"
-msgstr "Po³o¿enie"
+msgstr "Położenie"
 
 #. TRANS Always place the slit on top of other windows.
 #. TRANS Always place the toolbar above other windows on the desktop.
@@ -67,7 +67,7 @@ msgstr "Pionowy"
 #. TRANS The name of the submenu for controlling slit placement.
 #: src/Slitmenu.cc:174
 msgid "Slit Placement"
-msgstr "Po³o¿enie"
+msgstr "Położenie"
 
 #. TRANS Place the slit in the top left (NW) corner of the screen.
 #. TRANS Top left corner of the screen.
@@ -78,7 +78,7 @@ msgstr "Górne Lewe"
 #. TRANS Place the slit in the center left (W) edge of the screen.
 #: src/Slitmenu.cc:180
 msgid "Center Left"
-msgstr "¦rodkowe Lewe"
+msgstr "Środkowe Lewe"
 
 #. TRANS Place the slit in the bottom left (SW) corner of the screen.
 #. TRANS Bottom left corner of the screen.
@@ -107,7 +107,7 @@ msgstr "Górne Prawe"
 #. TRANS Place the slit in the center right (E) edge of the screen.
 #: src/Slitmenu.cc:192
 msgid "Center Right"
-msgstr "¦rodkowe Prawe"
+msgstr "Środkowe Prawe"
 
 #. TRANS Place the slit in the bottom right (SE) corner of the screen.
 #. TRANS Bottom right corner of the screen.
@@ -123,7 +123,7 @@ msgstr "Konfiguracja"
 #. TRANS The name of the submenu for controlling the window focus model.
 #: src/Configmenu.cc:119 src/Configmenu.cc:228
 msgid "Focus Model"
-msgstr "Sposób aktywacji okien "
+msgstr "Sposób aktywacji okien"
 
 #. TRANS The name of the submenu for controlling automatic window placement.
 #: src/Configmenu.cc:121 src/Configmenu.cc:289
@@ -138,7 +138,7 @@ msgstr "Rastrowanie obrazu"
 #. TRANS When windows are moved they are moved opaquely (their contents show).
 #: src/Configmenu.cc:127
 msgid "Opaque Window Moving"
-msgstr "Wy¶wietlaj zawarto¶æ przesuwanego okna"
+msgstr "Wyświetlaj zawartość przesuwanego okna"
 
 #. TRANS When windows are resized they are resized opaquely (their contents show).
 #: src/Configmenu.cc:129
@@ -148,7 +148,7 @@ msgstr ""
 #. TRANS When window are maximized, they are maximized to the full screen size.
 #: src/Configmenu.cc:131
 msgid "Full Maximization"
-msgstr "Pe³noekranowa maksymalizacja"
+msgstr "Pełnoekranowa maksymalizacja"
 
 #. TRANS When new windows appear on the screen, they are focussed immediately.
 #: src/Configmenu.cc:133
@@ -158,7 +158,7 @@ msgstr "Ustawiaj nowe okna jako aktywne"
 #. TRANS When changing to a workspace, the previous focussed window on that workspace is focussed.
 #: src/Configmenu.cc:135
 msgid "Focus Last Window on Workspace"
-msgstr "Zmieñ aktywne okno przy zmianie pulpitów"
+msgstr "Zmień aktywne okno przy zmianie pulpitów"
 
 #. TRANS The workspaces may be changed using the mouse wheel.
 #: src/Configmenu.cc:138
@@ -188,7 +188,7 @@ msgstr "Toolbar"
 #. TRANS The user must click on a window to focus it.
 #: src/Configmenu.cc:232
 msgid "Click to Focus"
-msgstr "Uaktywnia klikniêcie"
+msgstr "Uaktywnia kliknięcie"
 
 #. TRANS The user can move the mouse into the window to focus it.
 #: src/Configmenu.cc:234
@@ -203,7 +203,7 @@ msgstr "Podnoszenie automatyczne"
 #. TRANS When a window is clicked it is raised.
 #: src/Configmenu.cc:238
 msgid "Click Raise"
-msgstr "Podnoszenie po klikniêciu"
+msgstr "Podnoszenie po kliknięciu"
 
 #. TRANS Arrange windows intelligently in rows.
 #: src/Configmenu.cc:293
@@ -238,12 +238,12 @@ msgstr "od Prawej do Lewej"
 #. TRANS When arranging windows, arrange from top to bottom.
 #: src/Configmenu.cc:308
 msgid "Top to Bottom"
-msgstr "z Góry na Dó³"
+msgstr "z Góry na Dół"
 
 #. TRANS When arranging windows, arrange from bottom to top.
 #: src/Configmenu.cc:310
 msgid "Bottom to Top"
-msgstr "z Do³u do Góry"
+msgstr "z Dołu do Góry"
 
 #. TRANS When arranging windows, ignore the presence of shaded windows.
 #: src/Configmenu.cc:315
@@ -270,7 +270,7 @@ msgstr ""
 #. TRANS on the workspace.
 #: src/Iconmenu.cc:39 src/Workspacemenu.cc:77
 msgid "Iconified Windows"
-msgstr "Ikony"
+msgstr "Ikony "
 
 #. TRANS Whether to show the toolbar or not.
 #: src/Toolbarmenu.cc:65
@@ -286,12 +286,12 @@ msgstr "Automatyczne ukrywanie"
 #. TRANS which corner or edge of the screen on which the toolbar is placed.
 #: src/Toolbarmenu.cc:136
 msgid "Toolbar Placement"
-msgstr "Po³o¿enie"
+msgstr "Położenie"
 
 #. TRANS Send the window to another workspace without changing workspaces.
 #: src/Windowmenu.cc:77
 msgid "Send to Workspace"
-msgstr "Wy¶lij na ..."
+msgstr "Wyślij na ..."
 
 #. TRANS Show the window on all workspaces.
 #: src/Windowmenu.cc:79
@@ -301,7 +301,7 @@ msgstr "Przyklej"
 #. TRANS Shade the window so that only the titlebar shows.
 #: src/Windowmenu.cc:82
 msgid "Shade"
-msgstr "Zwiñ"
+msgstr "Zwiń"
 
 #. TRANS Iconify the window so it is no longer visible.
 #: src/Windowmenu.cc:84
@@ -356,22 +356,22 @@ msgstr "Nowy pulpit"
 #. TRANS Remove the last workspace from the list of workspaces and destroy it.
 #: src/Workspacemenu.cc:56
 msgid "Remove Last Workspace"
-msgstr "Usuñ ostatni"
+msgstr "Usuń ostatni"
 
 #: src/Screen.cc:167
 #, c-format
 msgid "%s: another window manager is already running on display '%s'\n"
-msgstr "%s: Inny mened¿er okien obs³uguje panel graficzny %s.\n"
+msgstr "%s: Inny menedżer okien obsługuje panel graficzny %s.\n"
 
 #: src/Screen.cc:181
 #, c-format
 msgid "%s: managing screen %u using %s visual 0x%lx, depth %d\n"
-msgstr "%s: obs³ugujê ekran %u %s visual 0x%lx, g³êbia kolorów %d\n"
+msgstr "%s: obsługuję ekran %u %s visual 0x%lx, głębia kolorów %d\n"
 
 #: src/Screen.cc:1468
 #, c-format
 msgid "%s: menu file '%s' is empty\n"
-msgstr "%s: plik menu jest pusty '%s'\n"
+msgstr "%s: plik menu jest pusty %s\n"
 
 #. TRANS The underscore '_' indicates the hot key.
 #: src/Screen.cc:1520
@@ -391,72 +391,72 @@ msgstr ""
 #. TRANS Exit the window manager.
 #: src/Screen.cc:1529
 msgid "Exit"
-msgstr "Wyj¶cie"
+msgstr "Wyjście"
 
 #: src/Screen.cc:1629
 #, c-format
 msgid "%s: [exec] error, no menu label and/or command defined\n"
-msgstr "%s: [exec] b³±d, brak etykiety menu i/lub komendy\n"
+msgstr "%s: [exec] błąd, brak etykiety menu i/lub komendy\n"
 
 #: src/Screen.cc:1639
 #, c-format
 msgid "%s: [exit] error, no menu label defined\n"
-msgstr "%s: [exit] b³±d, brak etykiety menu\n"
+msgstr "%s: [exit] błąd, brak etykiety menu\n"
 
 #: src/Screen.cc:1650
 #, c-format
 msgid "%s: [style] error, no menu label and/or filename defined\n"
-msgstr "%s: [style] b³±d, brak etykiety menu i/lub nazwy pliku\n"
+msgstr "%s: [style] błąd, brak etykiety menu i/lub nazwy pliku\n"
 
 #: src/Screen.cc:1663
-#, c-format
-msgid "%s: [config] error, no label defined"
-msgstr "%s: [config] b³±d, brak etykiety menu"
+#, fuzzy, c-format
+msgid "%s: [config] error, no label defined\n"
+msgstr "%s: [config] błąd, brak etykiety menu\n"
 
 #: src/Screen.cc:1673
 #, c-format
 msgid "%s: [include] error, no filename defined\n"
-msgstr "%s: [include] b³±d, brak nazwy pliku\n"
+msgstr "%s: [include] błąd, brak nazwy pliku\n"
 
 #: src/Screen.cc:1692
 #, c-format
 msgid "%s: [include] error: '%s' is not a regular file\n"
-msgstr "%s: [include] b³±d, '%s' nie jest zwyk³ym plikiem\n"
+msgstr "%s: [include] błąd, '%s' nie jest zwykłym plikiem\n"
 
 #: src/Screen.cc:1713
 #, c-format
 msgid "%s: [submenu] error, no menu label defined\n"
-msgstr "%s: [submenu] b³±d, brak etykiety menu\n"
+msgstr "%s: [submenu] błąd, brak etykiety menu\n"
 
 #: src/Screen.cc:1735
 #, c-format
 msgid "%s: [restart] error, no menu label defined\n"
-msgstr "%s: [restart] b³±d, brak etykiety menu\n"
+msgstr "%s: [restart] błąd, brak etykiety menu\n"
 
 #: src/Screen.cc:1751
 #, c-format
 msgid "%s: [reconfig] error, no menu label defined\n"
-msgstr "%s: [reconfig] b³±d, brak etykiety menu\n"
+msgstr "%s: [reconfig] błąd, brak etykiety menu\n"
 
 #: src/Screen.cc:1766
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, no directory defined\n"
-msgstr "%s: [stylesdir/stylesmenu] b³±d, brak nazwy katalogu\n"
+msgstr "%s: [stylesdir/stylesmenu] błąd, brak nazwy katalogu\n"
 
 #: src/Screen.cc:1779
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, '%s' does not exist\n"
-msgstr "%s: [stylesdir/stylesmenu] b³±d, '%s' nie istnieje\n"
+msgstr "%s: [stylesdir/stylesmenu] błąd, '%s' nie istnieje\n"
 
 #: src/Screen.cc:1785
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, '%s' is not a directory\n"
-msgstr "%s: [stylesdir/stylesmenu] b³±d, '%s' nie jest katalogiem\n"
+msgstr "%s: [stylesdir/stylesmenu] błąd, '%s' nie jest katalogiem\n"
 
 #: src/Screen.cc:1843
 #, c-format
 msgid "%s: [workspaces] error, no menu label defined\n"
-msgstr "%s: [workspaces] b³±d, brak etykiety menu\n"
+msgstr "%s: [workspaces] błąd, brak etykiety menu\n"
 
 #: src/Window.cc:536
 msgid "Unnamed"
@@ -465,13 +465,13 @@ msgstr "Bez nazwy"
 #: src/Window.cc:1006
 #, c-format
 msgid "BlackboxWindow::BlackboxWindow(): creating 0x%lx\n"
-msgstr "BlackboxWindow::BlackboxWindow(): tworzê 0x%lx\n"
+msgstr "BlackboxWindow::BlackboxWindow(): tworzę 0x%lx\n"
 
 #: src/Window.cc:1035
 #, c-format
 msgid "BlackboxWindow::BlackboxWindow(): XGetWindowAttributes failed\n"
 msgstr ""
-"BlackboxWindow::BlackboxWindow(): nieudane wywo³anie XGetWindowAttributres\n"
+"BlackboxWindow::BlackboxWindow(): nieudane wywołanie XGetWindowAttributres\n"
 
 #: src/Window.cc:1283
 #, c-format
@@ -533,8 +533,7 @@ msgstr "Pulpit %u"
 #: util/bsetroot.cc:101
 #, c-format
 msgid "bsetroot: error: must specify one of: -solid, -mod, -gradient\n"
-msgstr ""
-"bsetroot: b³±d: nale¿y u¿yæ jednej z opcji: -solid, -mod, -gradient\n"
+msgstr "bsetroot: błąd: należy użyć jednej z opcji: -solid, -mod, -gradient\n"
 
 #: util/bsetroot.cc:336
 #, c-format
@@ -552,18 +551,18 @@ msgid ""
 "\n"
 "  -help                    print this help text and exit\n"
 msgstr ""
-"  -display <string>        po³±cz z podanym panelem graficznym\n"
-"  -mod <x> <y>             wspó³czynniki siatki typu modula\n"
+"  -display <string>        połącz z podanym panelem graficznym\n"
+"  -mod <x> <y>             współczynniki siatki typu modula\n"
 "  -foreground, -fg <color> kolor siatki\n"
-"  -background, -bg <color> kolor t³a siatki\n"
+"  -background, -bg <color> kolor tła siatki\n"
 "\n"
 "  -gradient <texture>      tekstura gradientowa\n"
-"  -from <color>            pocz±tkowy kolor gradientu\n"
-"  -to <color>              koñcowy kolor gradientu\n"
+"  -from <color>            początkowy kolor gradientu\n"
+"  -to <color>              końcowy kolor gradientu\n"
 "\n"
-"  -solid <color>           jednolite wype³nienie podanym kolorem\n"
+"  -solid <color>           jednolite wypełnienie podanym kolorem\n"
 "\n"
-"  -help                    wy¶wietla ten komunikat\n"
+"  -help                    wyświetla ten komunikat\n"
 
 #: lib/Application.cc:72
 #, c-format
@@ -571,13 +570,13 @@ msgid ""
 "%s:  X error: %s(%d) opcodes %d/%d\n"
 "  resource 0x%lx\n"
 msgstr ""
-"%s:  b³±d X: %s(%d) opcodes %d/%d\n"
+"%s:  błąd X: %s(%d) opcodes %d/%d\n"
 "  resource 0x%lx\n"
 
 #: lib/Application.cc:222
 #, c-format
 msgid "%s: caught unknown signal '%u', dumping core.\n"
-msgstr "%s: z³apano sygna³ %u\n"
+msgstr "%s: złapano sygnał %u\n"
 
 #: lib/Application.cc:495
 #, c-format
@@ -637,12 +636,12 @@ msgstr ""
 #: lib/Display.cc:70
 #, c-format
 msgid "bt::Display: failed to open display '%s'\n"
-msgstr "bt::Display: Nie mo¿na po³±czyæ siê z X serwerem '%s'.\n"
+msgstr "bt::Display: Nie można połączyć się z X serwerem %s.\n"
 
 #: lib/Display.cc:80
 #, c-format
 msgid "bt::Display: failed to mark connection close-on-exec\n"
-msgstr "bt::Display: Nie mo¿na ustawiæ po³±czenia jako 'close-on-exec'\n"
+msgstr "bt::Display: Nie można ustawić połączenia jako 'close-on-exec'\n"
 
 #: lib/Font.cc:200
 #, c-format
@@ -823,9 +822,9 @@ msgstr ""
 #: src/blackbox.cc:445
 #, c-format
 msgid "%s: no manageable screens found, exiting...\n"
-msgstr "%s: nie znaleziono ekranów, którymi mo¿na by by³o zarz±dzaæ.\n"
+msgstr "%s: nie znaleziono ekranów, którymi można by było zarządzać.\n"
 
-#: src/main.cc:45 src/main.cc:104
+#: src/main.cc:45 src/main.cc:105
 #, c-format
 msgid ""
 "Blackbox %s\n"
@@ -843,10 +842,10 @@ msgid ""
 "  -help\t\t\t\tdisplay this help text and exit.\n"
 "\n"
 msgstr ""
-"  -display <string>\t\tpo³±cz z podanym panelem graficznym.\n"
-"  -rc <string>\t\t\tu¿yj innego pliku konfiguracyjnego.\n"
-"  -version\t\t\twy¶wietl wersjê i zakoñcz dzia³anie programu.\n"
-"  -help\t\t\t\twy¶wietl ten komunikat.\n"
+"  -display <string>\t\tpołącz z podanym panelem graficznym.\n"
+"  -rc <string>\t\t\tużyj innego pliku konfiguracyjnego.\n"
+"  -version\t\t\twyświetl wersję i zakończ działanie programu.\n"
+"  -help\t\t\t\twyświetl ten komunikat.\n"
 "\n"
 
 #: src/main.cc:59
@@ -859,7 +858,7 @@ msgid ""
 "  XFT:\t\t\t\t%s\n"
 "\n"
 msgstr ""
-"Opcje u¿yte podczas kompilacji:\n"
+"Opcje użyte podczas kompilacji:\n"
 "  Debugging:\t\t\t%s\n"
 "  SHAPE:\t\t\t%s\n"
 "  MIT-SHM:\t\t\t%s\n"
@@ -868,26 +867,26 @@ msgstr ""
 
 #: src/main.cc:65 src/main.cc:71 src/main.cc:76 src/main.cc:81
 msgid "yes"
-msgstr "Tak"
+msgstr "Tak "
 
 #: src/main.cc:67 src/main.cc:73 src/main.cc:78 src/main.cc:83
 msgid "no"
 msgstr "Nie"
 
-#: src/main.cc:114
+#: src/main.cc:115
 #, c-format
 msgid "error: '-rc' requires and argument\n"
-msgstr "b³±d: opcja '-rc' wymaga podania argumentu\n"
+msgstr "błąd: opcja '-rc' wymaga podania argumentu\n"
 
-#: src/main.cc:124
+#: src/main.cc:125
 #, c-format
 msgid "error: '-display' requires an argument\n"
-msgstr "b³±d: opcja '-display' wymaga podania argumentu\n"
+msgstr "błąd: opcja '-display' wymaga podania argumentu\n"
 
-#: src/main.cc:134
+#: src/main.cc:135
 #, c-format
 msgid "warning: couldn't set environment variable 'DISPLAY'\n"
-msgstr "ostrze¿enie: nie mo¿na ustawiæ zmiennej ¶rodowiskowej 'DISPLAY'\n"
+msgstr "ostrzeżenie: nie można ustawić zmiennej środowiskowej 'DISPLAY'\n"
 
 #: src/StackingList.cc:198
 #, c-format
