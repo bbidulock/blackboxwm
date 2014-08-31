@@ -1,7 +1,40 @@
 -- ChangeLog for Blackbox 0.70.x
 
-Changes from 0.70.2 to @PACKAGE@-@VERSION@
+Changes from 0.71 to @PACKAGE@-@VERSION@
 -----------------------------------------------
+
+Changes from 0.70.2 to blackbox-0.71
+-----------------------------------------------
+
+  - restore all of the previous NLS translations
+  - restore all of the additional basic styles
+  - better pkgconfig build system, passes distcheck
+  - allowed actions should not depend on iconic state
+  - proper restart of anohter window manager from root menu
+  - keeps clients from incorrectly setting window gravity
+  - maximize button state now correct given vert & horz
+  - cleaned up maximization to work from external tasklist
+  - updates EWMH when layers change from window menu
+  - compiles clean on gcc 4.9.1 with all warnings applied
+    and _FORTIFY_SOURCE=2
+  - fixed memory and access errors from valgrind runs
+  - uses proper standard C++ header files
+  - now restarts on SIGQUIT
+  - pops iconified window list on left click on root menu
+  - supports split vertical gradients
+  - proper spelling of manageable
+  - some other general cleanups
+  - make ICCCM 2.0 slection owner window and NetWM check
+    window the same window
+  - use WM_WINDOW_ROLE on own windows where necessary
+  - correct host name length (the hostname was incorrectly set
+    on WM_CLIENT_MACHINE
+  - sets all ICCCM/EWMH hints on the selection and check
+    windows
+  - sourceforge ticket #337 fix
+
+  See ChangeLog for details.
+
 
 Changes from 0.70.1 to blackbox-0.70.2
 -----------------------------------------------
