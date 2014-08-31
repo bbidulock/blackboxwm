@@ -42,39 +42,45 @@
 
 static void showHelp(int exitval) {
   // print version - this should not be localized!
-  printf("Blackbox %s\n"
+  printf(gettext("Blackbox %s\n"
          "Copyright (c) 2001 - 2005 Sean 'Shaleh' Perry\n"
-         "Copyright (c) 1997 - 2000, 2002 - 2005 Bradley T Hughes\n",
+         "Copyright (c) 1997 - 2000, 2002 - 2005 Bradley T Hughes\n"),
          __blackbox_version);
 
   // print program usage and command line options
-  printf("  -display <string>\t\tuse display connection.\n"
+  printf(gettext("  -display <string>\t\tuse display connection.\n"
          "  -single <string>\t\tmanage the default screen only\n"
          "  -rc <string>\t\t\tuse alternate resource file.\n"
          "  -version\t\t\tdisplay version and exit.\n"
-         "  -help\t\t\t\tdisplay this help text and exit.\n\n");
+         "  -help\t\t\t\tdisplay this help text and exit.\n\n"));
 
   // some people have requested that we print out compile options
   // as well
-  printf("Compile time options:\n"
+  printf(gettext("Compile time options:\n"
          "  Debugging:\t\t\t%s\n"
-         "  Shape:\t\t\t%s\n"
-         "  Xft:\t\t\t\t%s\n\n",
+         "  SHAPE:\t\t\t%s\n"
+         "  MIT-SHM:\t\t\t%s\n"
+         "  XFT:\t\t\t\t%s\n\n"),
 #ifdef    DEBUG
-         "yes",
+         gettext("yes"),
 #else // !DEBUG
-         "no",
+         gettext("no"),
 #endif // DEBUG
 
 #ifdef    SHAPE
-         "yes",
+         gettext("yes"),
 #else // !SHAPE
-         "no",
+         gettext("no"),
 #endif // SHAPE
+#ifdef    MITSHM
+         gettext("yes"),
+#else // !MITSHM
+         gettext("no"),
+#endif // MITSHM
 #ifdef XFT
-         "yes"
+         gettext("yes")
 #else // !XFT
-         "no"
+         gettext("no")
 #endif // XFT
          );
 
@@ -95,9 +101,9 @@ int main(int argc, char **argv) {
       showHelp(0);
     } else if (! strcmp(argv[i], "-version")) {
       // print current version string, this should not be localized!
-      printf("Blackbox %s\n"
+      printf(gettext("Blackbox %s\n"
              "Copyright (c) 2001 - 2005 Sean 'Shaleh' Perry\n"
-             "Copyright (c) 1997 - 2000, 2002 - 2005 Bradley T Hughes\n",
+             "Copyright (c) 1997 - 2000, 2002 - 2005 Bradley T Hughes\n"),
              __blackbox_version);
 
       ::exit(0);

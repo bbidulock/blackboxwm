@@ -232,7 +232,7 @@ void Blackbox::process_event(XEvent *e) {
 
   case FocusIn: {
 #ifdef FOCUS_DEBUG
-    printf("FocusIn : window %8lx mode %s detail %s\n",
+    printf(gettext("FocusIn : window %8lx mode %s detail %s\n"),
            e->xfocus.window, Mode[e->xfocus.mode], Detail[e->xfocus.detail]);
 #endif
 
@@ -253,7 +253,7 @@ void Blackbox::process_event(XEvent *e) {
       break;
 
 #ifdef FOCUS_DEBUG
-    printf("          win %p got focus\n", win);
+    printf(gettext("          win %p got focus\n"), win);
 #endif
     win->setFocused(true);
     setFocusedWindow(win);
@@ -270,7 +270,7 @@ void Blackbox::process_event(XEvent *e) {
 
   case FocusOut: {
 #ifdef FOCUS_DEBUG
-    printf("FocusOut: window %8lx mode %s detail %s\n",
+    printf(gettext("FocusOut: window %8lx mode %s detail %s\n"),
            e->xfocus.window, Mode[e->xfocus.mode], Detail[e->xfocus.detail]);
 #endif
 
@@ -308,7 +308,7 @@ void Blackbox::process_event(XEvent *e) {
           && XGetWindowAttributes(XDisplay(), w, &attr)
           && attr.override_redirect) {
 #ifdef FOCUS_DEBUG
-        printf("          focused moved to an override_redirect window\n");
+        printf(gettext("          focused moved to an override_redirect window\n"));
 #endif
         lost_focus = (e->xfocus.mode == NotifyNormal);
       }
@@ -316,13 +316,13 @@ void Blackbox::process_event(XEvent *e) {
 
     if (lost_focus) {
 #ifdef FOCUS_DEBUG
-      printf("          win %p lost focus\n", win);
+      printf(gettext("          win %p lost focus\n"), win);
 #endif
       win->setFocused(false);
 
       if (no_focus) {
 #ifdef FOCUS_DEBUG
-        printf("          no window has focus\n");
+        printf(gettext("          no window has focus\n"));
 #endif
         setFocusedWindow(0);
       }

@@ -178,7 +178,7 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
     "TrueColor",
     "DirectColor"
   };
-  printf("%s: managing screen %u using %s visual 0x%lx, depth %d\n",
+  printf(gettext("%s: managing screen %u using %s visual 0x%lx, depth %d\n"),
          _blackbox->applicationName().c_str(), screen_info.screenNumber(),
          visual_classes[screen_info.visual()->c_class],
          XVisualIDFromVisual(screen_info.visual()), screen_info.depth());
