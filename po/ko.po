@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: blackbox 0.70.2.28\n"
 "Report-Msgid-Bugs-To: http://github.com/bbidulock/blackboxwm\n"
-"POT-Creation-Date: 2014-08-30 18:40-0600\n"
+"POT-Creation-Date: 2014-08-30 19:54-0600\n"
 "PO-Revision-Date: 2014-08-29 13:17-0600\n"
 "Last-Translator: Brian F. G. Bidulock <bidulock@openss7.org>\n"
 "Language-Team: Korean\n"
@@ -360,6 +360,11 @@ msgstr "¸¶Áö¸· ÀÛ¾÷Ã¢ »èÁ¦"
 #: src/Screen.cc:167
 #, c-format
 msgid "%s: another window manager is already running on display '%s'\n"
+msgstr ""
+
+#: src/Screen.cc:181
+#, c-format
+msgid "%s: managing screen %u using %s visual 0x%lx, depth %d\n"
 msgstr ""
 
 #: src/Screen.cc:1468
@@ -757,6 +762,36 @@ msgstr ""
 msgid "Blackbox::process_event(): MapRequest for 0x%lx\n"
 msgstr ""
 
+#: src/blackbox.cc:235
+#, c-format
+msgid "FocusIn : window %8lx mode %s detail %s\n"
+msgstr ""
+
+#: src/blackbox.cc:256
+#, c-format
+msgid "          win %p got focus\n"
+msgstr ""
+
+#: src/blackbox.cc:273
+#, c-format
+msgid "FocusOut: window %8lx mode %s detail %s\n"
+msgstr ""
+
+#: src/blackbox.cc:311
+#, c-format
+msgid "          focused moved to an override_redirect window\n"
+msgstr ""
+
+#: src/blackbox.cc:319
+#, c-format
+msgid "          win %p lost focus\n"
+msgstr ""
+
+#: src/blackbox.cc:325
+#, c-format
+msgid "          no window has focus\n"
+msgstr ""
+
 #: src/blackbox.cc:409
 #, c-format
 msgid "X server does not support locale\n"
@@ -772,17 +807,55 @@ msgstr ""
 msgid "%s: no manageable screens found, exiting...\n"
 msgstr ""
 
-#: src/main.cc:108
+#: src/main.cc:45 src/main.cc:104
+#, c-format
+msgid ""
+"Blackbox %s\n"
+"Copyright (c) 2001 - 2005 Sean 'Shaleh' Perry\n"
+"Copyright (c) 1997 - 2000, 2002 - 2005 Bradley T Hughes\n"
+msgstr ""
+
+#: src/main.cc:51
+#, c-format
+msgid ""
+"  -display <string>\t\tuse display connection.\n"
+"  -single <string>\t\tmanage the default screen only\n"
+"  -rc <string>\t\t\tuse alternate resource file.\n"
+"  -version\t\t\tdisplay version and exit.\n"
+"  -help\t\t\t\tdisplay this help text and exit.\n"
+"\n"
+msgstr ""
+
+#: src/main.cc:59
+#, c-format
+msgid ""
+"Compile time options:\n"
+"  Debugging:\t\t\t%s\n"
+"  SHAPE:\t\t\t%s\n"
+"  MIT-SHM:\t\t\t%s\n"
+"  XFT:\t\t\t\t%s\n"
+"\n"
+msgstr ""
+
+#: src/main.cc:65 src/main.cc:71 src/main.cc:76 src/main.cc:81
+msgid "yes"
+msgstr ""
+
+#: src/main.cc:67 src/main.cc:73 src/main.cc:78 src/main.cc:83
+msgid "no"
+msgstr ""
+
+#: src/main.cc:114
 #, c-format
 msgid "error: '-rc' requires and argument\n"
 msgstr ""
 
-#: src/main.cc:118
+#: src/main.cc:124
 #, c-format
 msgid "error: '-display' requires an argument\n"
 msgstr ""
 
-#: src/main.cc:128
+#: src/main.cc:134
 #, c-format
 msgid "warning: couldn't set environment variable 'DISPLAY'\n"
 msgstr ""
