@@ -1,7 +1,7 @@
 # doc/<locale>/Makefile.am for Blackbox - an X11 Window manager
 
 # what locale is this
-locale = ja_JP
+locale = ja
 
 # where to install
 man1dir = $(mandir)/$(locale)/man1
