@@ -92,6 +92,7 @@ int main(int argc, char **argv) {
   std::string rc_file;
   bool multi_head = true;
 
+  setlocale(LC_ALL, "");
 #ifdef ENABLE_NLS
   bindtextdomain(PACKAGE, LOCDIR);
   textdomain(PACKAGE);
