@@ -38,7 +38,7 @@ LT_LANG([C++])
 AC_PROG_LIBTOOL
 AC_SUBST(LIBTOOL_DEPS)
 
-AM_GNU_GETTEXT_VERSION([0.19.2])
+AM_GNU_GETTEXT_VERSION([0.19.3])
 AM_GNU_GETTEXT([external])
 
 AC_HEADER_STDC
@@ -89,9 +89,12 @@ AC_ARG_ENABLE([xft],
 	[Disable use of XFT library @<:@default=auto@:>@]))
 if test x$enable_xft != xno ; then
     PKG_CHECK_MODULES([XFT],[xft >= 2.0.0],
-	[AC_DEFINE([XFT],[1],[Defint to enable XFT library.])],
-	[enable_xft=no])
+	[AC_DEFINE([XFT],[1],[Define to enable XFT library.])
+	 XFT_PKGCONFIG='xft >= 2.0.0'],
+	[enable_xft=no
+	 XFT_PKGCONFIG=''])
 fi
+AC_SUBST([XFT_PKGCONFIG])
 
 AC_ARG_ENABLE([debug],
     AC_HELP_STRING([--enable-debug],
