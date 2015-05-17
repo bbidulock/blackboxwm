@@ -2,15 +2,15 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([blackbox],[0.71],[http://github.com/bbidulock/blackboxwm])
-AC_REVISION([0.71])
+AC_INIT([blackbox],[0.71.1],[http://github.com/bbidulock/blackboxwm])
+AC_REVISION([0.71.1])
 AC_CONFIG_SRCDIR([src/blackbox.cc])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 
-DATE='2014-08-31'
+DATE='2015-05-16'
 AC_SUBST([DATE])
 
 # Initialize Automake
@@ -38,7 +38,7 @@ LT_LANG([C++])
 AC_PROG_LIBTOOL
 AC_SUBST(LIBTOOL_DEPS)
 
-AM_GNU_GETTEXT_VERSION([0.19.3])
+AM_GNU_GETTEXT_VERSION([0.19.4])
 AM_GNU_GETTEXT([external])
 
 AC_HEADER_STDC
