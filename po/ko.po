@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: blackbox 0.70.2.28\n"
 "Report-Msgid-Bugs-To: http://github.com/bbidulock/blackboxwm\n"
-"POT-Creation-Date: 2014-08-31 07:03-0600\n"
+"POT-Creation-Date: 2015-05-16 19:48-0600\n"
 "PO-Revision-Date: 2014-08-29 13:17-0600\n"
 "Last-Translator: Brian F. G. Bidulock <bidulock@openss7.org>\n"
 "Language-Team: Korean\n"
@@ -777,32 +777,32 @@ msgstr ""
 msgid "FocusOut: window %8lx mode %s detail %s\n"
 msgstr ""
 
-#: src/blackbox.cc:311
+#: src/blackbox.cc:313
 #, c-format
 msgid "          focused moved to an override_redirect window\n"
 msgstr ""
 
-#: src/blackbox.cc:319
+#: src/blackbox.cc:321
 #, c-format
 msgid "          win %p lost focus\n"
 msgstr ""
 
-#: src/blackbox.cc:325
+#: src/blackbox.cc:327
 #, c-format
 msgid "          no window has focus\n"
 msgstr ""
 
-#: src/blackbox.cc:409
+#: src/blackbox.cc:411
 #, c-format
 msgid "X server does not support locale\n"
 msgstr ""
 
-#: src/blackbox.cc:412
+#: src/blackbox.cc:414
 #, c-format
 msgid "cannot set locale modifiers\n"
 msgstr ""
 
-#: src/blackbox.cc:445
+#: src/blackbox.cc:447
 #, c-format
 msgid "%s: no manageable screens found, exiting...\n"
 msgstr ""
