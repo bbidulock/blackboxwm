@@ -21,7 +21,7 @@ if [ -z "$VERSION" ]; then
 	fi
 fi
 
-GTVERSION=`gettext --version | head -1 | awk '{print$NF}'`
+GTVERSION=`gettext --version|head -1|awk '{print$NF}'|sed -r 's,(^[^\.]*\.[^\.]*\.[^\.]*)\..*$,\1,'`
 
 cp -f configure.ac configure.in
 
