@@ -677,6 +677,9 @@ void BScreen::setCurrentWorkspace(unsigned int id) {
   XUnmapWindow(_blackbox->XDisplay(), empty_window);
 
   _blackbox->XUngrabServer();
+
+  if (_toolbar)
+    _toolbar->redrawWorkspaceLabel();
 }
 
 
