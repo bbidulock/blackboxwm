@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: blackbox 0.70.2.28\n"
 "Report-Msgid-Bugs-To: http://github.com/bbidulock/blackboxwm\n"
-"POT-Creation-Date: 2015-05-16 19:48-0600\n"
+"POT-Creation-Date: 2016-02-10 13:43-0700\n"
 "PO-Revision-Date: 2014-08-29 13:16-0600\n"
 "Last-Translator: Brian F. G. Bidulock <bidulock@openss7.org>\n"
 "Language-Team: Italian\n"
@@ -369,92 +369,92 @@ msgstr ""
 msgid "%s: managing screen %u using %s visual 0x%lx, depth %d\n"
 msgstr "%s: gestendo schermo %u usando %s visuale 0x%lx, depth %d\n"
 
-#: src/Screen.cc:1468
+#: src/Screen.cc:1471
 #, c-format
 msgid "%s: menu file '%s' is empty\n"
 msgstr "%s: file menu '%s' vuoto\n"
 
 #. TRANS The underscore '_' indicates the hot key.
-#: src/Screen.cc:1520
+#: src/Screen.cc:1523
 msgid "_Blackbox"
 msgstr ""
 
 #. TRANS Launch a terminal.
-#: src/Screen.cc:1523
+#: src/Screen.cc:1526
 msgid "xterm"
 msgstr "xterm"
 
 #. TRANS Restart the window manager.
-#: src/Screen.cc:1526
+#: src/Screen.cc:1529
 msgid "Restart"
 msgstr "Riavvia"
 
 #. TRANS Exit the window manager.
-#: src/Screen.cc:1529
+#: src/Screen.cc:1532
 msgid "Exit"
 msgstr "Esci"
 
-#: src/Screen.cc:1629
+#: src/Screen.cc:1632
 #, c-format
 msgid "%s: [exec] error, no menu label and/or command defined\n"
 msgstr "%s: [exec] errore, nessuna voce nel menu e/o comando definito\n"
 
-#: src/Screen.cc:1639
+#: src/Screen.cc:1642
 #, c-format
 msgid "%s: [exit] error, no menu label defined\n"
 msgstr "%s: [exit] errore, nessuna voce nel menu definita\n"
 
-#: src/Screen.cc:1650
+#: src/Screen.cc:1653
 #, c-format
 msgid "%s: [style] error, no menu label and/or filename defined\n"
 msgstr "%s: [style] errore, nessuna voce nel menu e/o file definto\n"
 
-#: src/Screen.cc:1663
+#: src/Screen.cc:1666
 #, fuzzy, c-format
 msgid "%s: [config] error, no label defined\n"
 msgstr "%s: [config] errore, nessuna voce nel menu definta"
 
-#: src/Screen.cc:1673
+#: src/Screen.cc:1676
 #, c-format
 msgid "%s: [include] error, no filename defined\n"
 msgstr "%s: [include] errore, nessun file definito\n"
 
-#: src/Screen.cc:1692
+#: src/Screen.cc:1695
 #, c-format
 msgid "%s: [include] error: '%s' is not a regular file\n"
 msgstr "%s: [include] errore, '%s' non è un file regolare\n"
 
-#: src/Screen.cc:1713
+#: src/Screen.cc:1716
 #, c-format
 msgid "%s: [submenu] error, no menu label defined\n"
 msgstr "%s: [submenu] errore, nessuna voce nel menu definta\n"
 
-#: src/Screen.cc:1735
+#: src/Screen.cc:1738
 #, c-format
 msgid "%s: [restart] error, no menu label defined\n"
 msgstr "%s: [restart] errore, nessuna voce nel menu definta\n"
 
-#: src/Screen.cc:1751
+#: src/Screen.cc:1754
 #, c-format
 msgid "%s: [reconfig] error, no menu label defined\n"
 msgstr "%s: [reconfig] errore, nessuna voce nel menu definta\n"
 
-#: src/Screen.cc:1766
+#: src/Screen.cc:1769
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, no directory defined\n"
 msgstr "%s: [stylesdir/stylesmenu] errore, nessuna cartella definita\n"
 
-#: src/Screen.cc:1779
+#: src/Screen.cc:1782
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, '%s' does not exist\n"
 msgstr "%s: [stylesdir/stylesmenu] errore, '%s' non esiste\n"
 
-#: src/Screen.cc:1785
+#: src/Screen.cc:1788
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, '%s' is not a directory\n"
 msgstr "%s: [stylesdir/stylesmenu] errore, '%s' non e' una cartella\n"
 
-#: src/Screen.cc:1843
+#: src/Screen.cc:1846
 #, c-format
 msgid "%s: [workspaces] error, no menu label defined\n"
 msgstr "%s: [workspaces] errore, nessuna voce nel menu definita\n"
@@ -473,52 +473,52 @@ msgstr "BlackboxWindow::BlackboxWindow(): creazione 0x%lx\n"
 msgid "BlackboxWindow::BlackboxWindow(): XGetWindowAttributes failed\n"
 msgstr "BlackboxWindow::BlackboxWindow(): XGetWindowAttributres fallito\n"
 
-#: src/Window.cc:1283
+#: src/Window.cc:1300
 #, c-format
 msgid "BlackboxWindow::~BlackboxWindow: destroying 0x%lx\n"
 msgstr ""
 
-#: src/Window.cc:2315
+#: src/Window.cc:2346
 #, c-format
 msgid "%s -- assumed: (%d, %d), real: (%d, %d)\n"
 msgstr ""
 
-#: src/Window.cc:3249
+#: src/Window.cc:3296
 #, c-format
 msgid "BlackboxWindow::unmapNotifyEvent() for 0x%lx\n"
 msgstr "BlackboxWindow::unmapNotifyEvent() per 0x%lx\n"
 
-#: src/Window.cc:3263
+#: src/Window.cc:3310
 #, c-format
 msgid "BlackboxWindow::destroyNotifyEvent() for 0x%lx\n"
 msgstr ""
 
-#: src/Window.cc:3276
+#: src/Window.cc:3323
 #, c-format
 msgid "BlackboxWindow::reparentNotifyEvent(): reparent 0x%lx to 0x%lx.\n"
 msgstr "BlackboxWindow::reparentNotifyEvent(): reparent 0x%lx a 0x%lx\n"
 
-#: src/Window.cc:3294
+#: src/Window.cc:3341
 #, c-format
 msgid "BlackboxWindow::propertyNotifyEvent(): for 0x%lx\n"
 msgstr ""
 
-#: src/Window.cc:3489
+#: src/Window.cc:3536
 #, c-format
 msgid "BlackboxWindow::exposeEvent() for 0x%lx\n"
 msgstr ""
 
-#: src/Window.cc:3561
+#: src/Window.cc:3608
 #, c-format
 msgid "BlackboxWindow::buttonPressEvent() for 0x%lx\n"
 msgstr ""
 
-#: src/Window.cc:3630
+#: src/Window.cc:3677
 #, c-format
 msgid "BlackboxWindow::buttonReleaseEvent() for 0x%lx\n"
 msgstr ""
 
-#: src/Window.cc:3673
+#: src/Window.cc:3720
 #, c-format
 msgid "BlackboxWindow::motionNotifyEvent() for 0x%lx\n"
 msgstr ""
