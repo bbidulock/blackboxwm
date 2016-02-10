@@ -217,6 +217,13 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
       close_button, iconify_button, maximize_button,
       right_grip, left_grip;
 
+    // the visual
+    Visual* visual;
+    // depth
+    int depth;
+    // and colormap
+    Colormap colormap;
+
     // frame geometry
     bt::Rect rect;
 
@@ -236,7 +243,7 @@ class BlackboxWindow : public StackEntity, public bt::TimeoutHandler,
 
   Window createToplevelWindow();
   Window createChildWindow(Window parent, unsigned long event_mask,
-                           Cursor = None);
+                           Cursor = None, Visual* = 0);
 
   void associateClientWindow(void);
 

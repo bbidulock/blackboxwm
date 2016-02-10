@@ -1040,6 +1040,19 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     return;
   }
 
+  if (wattrib.depth == 32) {
+    frame.depth = 32;
+    frame.visual = wattrib.visual;
+    frame.colormap = XCreateColormap(blackbox->XDisplay(),
+                                     _screen->screenInfo().rootWindow(),
+                                     frame.visual, AllocNone);
+  }
+  else {
+    frame.depth = _screen->screenInfo().depth();
+    frame.colormap = _screen->screenInfo().colormap();
+    frame.visual = _screen->screenInfo().visual();
+  }
+
   // set the eventmask early in the game so that we make sure we get
   // all the events we are interested in
   XSetWindowAttributes attrib_set;
@@ -1200,11 +1213,15 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
     }
   }
 
+  // non visible decor container windows
+
   frame.window = createToplevelWindow();
   blackbox->insertEventHandler(frame.window, this);
 
-  frame.plate = createChildWindow(frame.window, NoEventMask);
+  frame.plate = createChildWindow(frame.window, NoEventMask, None, frame.visual);
   blackbox->insertEventHandler(frame.plate, this);
+
+  // create visible decor windows
 
   if (client.decorations & WindowDecorationTitlebar)
     createTitlebar();
@@ -1332,6 +1349,9 @@ BlackboxWindow::~BlackboxWindow(void) {
 
   blackbox->removeEventHandler(frame.window);
   XDestroyWindow(blackbox->XDisplay(), frame.window);
+
+  if (frame.colormap)
+    XFreeColormap(blackbox->XDisplay(), frame.colormap);
 }
 
 
@@ -1343,15 +1363,19 @@ BlackboxWindow::~BlackboxWindow(void) {
 Window BlackboxWindow::createToplevelWindow(void) {
   XSetWindowAttributes attrib_create;
   unsigned long create_mask = CWColormap | CWOverrideRedirect | CWEventMask;
+  if (frame.depth == 32) {
+    create_mask |= CWBorderPixel;
+  }
 
-  attrib_create.colormap = _screen->screenInfo().colormap();
   attrib_create.override_redirect = True;
   attrib_create.event_mask = EnterWindowMask | LeaveWindowMask;
 
+  attrib_create.colormap = frame.colormap;
+
   return XCreateWindow(blackbox->XDisplay(),
                        _screen->screenInfo().rootWindow(), 0, 0, 1, 1, 0,
-                       _screen->screenInfo().depth(), InputOutput,
-                       _screen->screenInfo().visual(),
+                       frame.depth, InputOutput,
+                       frame.visual,
                        create_mask, &attrib_create);
 }
 
@@ -1362,9 +1386,16 @@ Window BlackboxWindow::createToplevelWindow(void) {
  */
 Window BlackboxWindow::createChildWindow(Window parent,
                                          unsigned long event_mask,
-                                         Cursor cursor) {
+                                         Cursor cursor, Visual* visual) {
   XSetWindowAttributes attrib_create;
   unsigned long create_mask = CWEventMask;
+  if (visual && frame.depth == 32) {
+    create_mask |= CWColormap | CWBorderPixel;
+    attrib_create.colormap = frame.colormap;
+  } else if (frame.depth == 32) {
+    create_mask |= CWColormap | CWBorderPixel;
+    attrib_create.colormap = _screen->screenInfo().colormap();
+  }
 
   attrib_create.event_mask = event_mask;
 
@@ -1374,8 +1405,8 @@ Window BlackboxWindow::createChildWindow(Window parent,
   }
 
   return XCreateWindow(blackbox->XDisplay(), parent, 0, 0, 1, 1, 0,
-                       _screen->screenInfo().depth(), InputOutput,
-                       _screen->screenInfo().visual(),
+                       visual ? frame.depth : _screen->screenInfo().depth(), InputOutput,
+                       visual ? frame.visual : _screen->screenInfo().visual(),
                        create_mask, &attrib_create);
 }
 
@@ -2720,8 +2751,24 @@ void BlackboxWindow::redrawWindowFrame(void) const {
     const bt::Color &c = (isFocused()
                           ? style.focus.frame_border
                           : style.unfocus.frame_border);
-    XSetWindowBorder(blackbox->XDisplay(), frame.plate,
-                     c.pixel(_screen->screenNumber()));
+    // If we have a ARGB visual, the ColorCache assumption about a single
+    // colormaps per screen is no longer valid. Just quickly custom alloc.
+    if (frame.depth < 32) {
+      XSetWindowBorder(blackbox->XDisplay(), frame.plate,
+                       c.pixel(_screen->screenNumber()));
+    }
+    else {
+      XColor xcol;
+      xcol.red   = c.red() | c.red() << 8;
+      xcol.green = c.green() | c.green() << 8;
+      xcol.blue  = c.blue() | c.blue() << 8;
+      xcol.pixel = 0;
+      xcol.flags = DoRed | DoGreen | DoBlue;
+      XAllocColor(blackbox->XDisplay(), frame.colormap, &xcol);
+      XSetWindowBorder(blackbox->XDisplay(), frame.plate,
+                       xcol.pixel);
+      XFreeColors(blackbox->XDisplay(), frame.colormap, &xcol.pixel, 1, 0);
+    }
   }
 
   if (client.decorations & WindowDecorationHandle) {
