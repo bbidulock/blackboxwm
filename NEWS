@@ -1,0 +1,153 @@
+blackbox -- history of user-visible changes.  2016-02-10
+
+Release blackbox-0.71.2 released 2016-02-10
+-------------------------------------------
+
+git shortlog -e -n -w80,6,8 0.71.1...0.71.2
+
+Brian Bidulock <bidulock@openss7.org> (5):
+      handle gettext 0.19.5.1
+      applied argb-visuals.patch from T2
+      applied workspace-label.patch from T2
+      no force reconfigure
+      update release and po files
+
+
+Release blackbox-0.71.1 released 2015-05-16
+-------------------------------------------
+
+git shortlog -e -n -w80,6,8 0.71...0.71.1
+
+Brian Bidulock <bidulock@openss7.org> (4):
+      fix generation of libbt.pc pkg-config file
+      fix some focus issue
+      update release files
+      update po files
+
+
+Release blackbox-0.71 released 2014-08-31
+-----------------------------------------
+
+git shortlog -e -n -w80,6,8 0.70.2...0.71
+
+Brian Bidulock <bidulock@openss7.org> (70):
+      ticket #337 on sourceforge
+      set full properties on selection and check windows
+      need empty m4 directory
+      correct hostname length
+      add WM_WINDOW_ROLE to selection and check windows
+      collapse select and check windows to same window
+      fix valgrind reported invalid access error
+      pass -g -O2 -D_FORTIFY_SOURCE=2 -Wall -Werror
+      update EWMH state when changing layers
+      trick EWMH maximization into working correctly
+      clean up maximization altogether
+      get maximize checkbutton to display correctly
+      keep client from setting stupid values on backing store and win gravity
+      [restart] support to be shell cmd just like [exec]
+      allowed actions do not depend on iconic state
+      passes a distcheck
+      conditional NLS handling
+      these are automatically generated
+      new instructions
+      proper fonts for styles
+      better build system
+      pulling in more translatable strings
+      more translable strings
+      add translation descriptions for all strings
+      bind to the text domains
+      more translatable strings, started fr_FR
+      update release files
+      simplify language designations
+      strap in German translations
+      Added Spanish translations
+      added Italian translations
+      added Japanese translations
+      get codeset right
+      added Dutch translations
+      added Danish translations
+      added Russian translations
+      added Romanian translations
+      upgraded French translations
+      more Spanish translations
+      added Estonian translations
+      added Hungarian translations
+      added Latvian translations
+      added Norwegian translations
+      added Polish translations
+      added Portugese translations
+      added Slovak translations
+      added Slovenian translations
+      add Swedish translations
+      added Ukrainian translations
+      added Turkish translations
+      add Korean transltations
+      added Chinese translations
+      added Chinese Traditional but too many multi-byte sequence errors.
+      do not needs this directory anymore
+      add COMPLIANCE document to release
+      update release files for release
+      a couple of typos in configure.ac
+      a few more translatable strings that I missed
+      updated PO files with new strings
+      Revert "do not needs this directory anymore"
+      add in more translated messages
+      Revert "Revert "do not needs this directory anymore""
+      put NLS manual pages in the right directory
+      have to setlocale to get NLS up and running
+      these are all utf-8 now (I think vim did that from the start)
+      Revert "do not needs this directory anymore"
+      Revert "Revert "do not needs this directory anymore""
+      fix missing newline
+      put all translations (.po files) in UTF-8
+      release date got pushed
+
+DeltaResero <deltaresero@zoho.com> (7):
+      Reformat .gitignore and add more filetypes to ignore
+      Use bash instead of sh for scripts
+      Fix some spelling and manual typographic errors
+      Fix manageable spelling issue
+      Left click for iconified windows list
+      Make Blackbox restart when it receives SIGQUIT
+      Replace headers stdio.h, ctype.h, & stdlib.h with cstdio, cctype, &
+        cstdlib
+
+Johannes Winkelmann <jw@smts.ch> (1):
+      Add splitvertical gradient
+
+
+Release blackbox-0.70.2 released 2013-10-03
+-------------------------------------------
+
+git shortlog -e -n -w80,6,8 0.70.2.4...0.70.2
+
+Brian Bidulock <bidulock@openss7.org> (19):
+      marked more EWMH support
+      added support for _NET_WM_WINDOW_TYPE_NOTIFICATION
+      add support for _NET_WM_STRUT_PARTIAL
+      add missing EWMH atoms
+      prepare for _NET_SHOWING_DESKTOP support
+      added WM_Sn MANAGER selection compliance
+      add support for additional _NET_WM_WINDOW_TYPEs
+      more EWMH support: all types, states and actions
+      tweak compliance
+      correct typo
+      fix _NET_DESKTOP_NAMES bug
+      added support for _NET_FRAME_EXTENTS
+      support _NET_WM_USER_TIME/_NET_WM_USER_TIME_WINDOW
+      prepare to support _NET_STARTUP_ID and friends
+      minor corrections to _NET_SUPPORTED and COMPLIANCE
+      preparations for release
+      update NEWS for release
+      update release files
+      should not be used anymore
+
+
+Release blackbox-0.70.2.4 released 2013-09-25
+---------------------------------------------
+
+git shortlog -e -n -w80,6,8 0.70.2.3...0.70.2.4
+
+Brian Bidulock <bidulock@openss7.org> (1):
+      typo in patch
+

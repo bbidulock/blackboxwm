@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([blackbox],[0.71.2],[http://github.com/bbidulock/blackboxwm])
+AC_INIT([blackbox],[0.71.2],[http://github.com/bbidulock/blackboxwm/issues])
 AC_REVISION([0.71.2])
 AC_CONFIG_SRCDIR([src/blackbox.cc])
 AC_CONFIG_HEADERS([config.h])
@@ -14,7 +14,7 @@ DATE='2016-02-10'
 AC_SUBST([DATE])
 
 # Initialize Automake
-AM_INIT_AUTOMAKE([subdir-objects dist-bzip2 no-dist-gzip color-tests silent-rules tar-pax])
+AM_INIT_AUTOMAKE([gnits 1.14 dist-xz no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
 AM_MAINTAINER_MODE
 
 # Checks for programs.
@@ -38,7 +38,7 @@ LT_LANG([C++])
 AC_PROG_LIBTOOL
 AC_SUBST(LIBTOOL_DEPS)
 
-AM_GNU_GETTEXT_VERSION([0.19.6])
+AM_GNU_GETTEXT_VERSION([0.19.7])
 AM_GNU_GETTEXT([external])
 
 AC_HEADER_STDC

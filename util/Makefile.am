@@ -36,3 +36,4 @@ bstyleconvert_SOURCES		= bstyleconvert.cc
 bstyleconvert_DEPENDENCIES	= $(top_builddir)/lib/libbt.la
 bstyleconvert_LDADD		= $(top_builddir)/lib/libbt.la
 
+AM_INSTALLCHECK_STD_OPTIONS_EXEMPT = bsetroot bstyleconvert

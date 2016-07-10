@@ -69,3 +69,5 @@ blackbox_SOURCES	= BlackboxResource.cc				\
 
 blackbox_DEPENDENCIES	= $(top_builddir)/lib/libbt.la
 blackbox_LDADD		= $(top_builddir)/lib/libbt.la
+
+AM_INSTALLCHECK_STD_OPTIONS_EXEMPT = blackbox
