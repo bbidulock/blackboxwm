@@ -1,9 +1,9 @@
-[Blackbox -- read me first file.  2016-02-10]: #
+[Blackbox -- read me first file.  2016-07-10]: #
 
 Blackbox
 ========
 
-Package blackbox-0.71.2 was released under MIT license 2016-02-10.
+Package blackbox-0.72 was released under MIT license 2016-07-10.
 
 This is a fork of the original Blackbox CVS that is on [Sourceforge][1].
 This fork is hosted on [GitHub][2].  What it includes is all changes made
@@ -15,7 +15,7 @@ other GitHub forks.  It also includes enhanced EWMH/ICCCM compliance.
 Release
 -------
 
-This is the `blackbox-0.71.2` package, released 2016-02-10.  This release,
+This is the `blackbox-0.72` package, released 2016-07-10.  This release,
 and the latest version, can be obtained from the GitHub [repository][2],
 using a command such as:
 

@@ -2,15 +2,15 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([blackbox],[0.71.2],[http://github.com/bbidulock/blackboxwm/issues])
-AC_REVISION([0.71.2])
+AC_INIT([blackbox],[0.72],[http://github.com/bbidulock/blackboxwm/issues])
+AC_REVISION([0.72])
 AC_CONFIG_SRCDIR([src/blackbox.cc])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 
-DATE='2016-02-10'
+DATE='2016-07-10'
 AC_SUBST([DATE])
 
 # Initialize Automake

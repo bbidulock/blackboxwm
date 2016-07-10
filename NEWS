@@ -1,4 +1,14 @@
-blackbox -- history of user-visible changes.  2016-02-10
+blackbox -- history of user-visible changes.  2016-07-10
+
+Release blackbox-0.72 released 2016-07-10
+-----------------------------------------
+
+git shortlog -e -n -w80,6,8 0.71.2...0.72
+
+Brian Bidulock <bidulock@openss7.org> (2):
+      simplify distribution
+      update po files
+
 
 Release blackbox-0.71.2 released 2016-02-10
 -------------------------------------------
@@ -141,13 +151,4 @@ Brian Bidulock <bidulock@openss7.org> (19):
       update NEWS for release
       update release files
       should not be used anymore
-
-
-Release blackbox-0.70.2.4 released 2013-09-25
----------------------------------------------
-
-git shortlog -e -n -w80,6,8 0.70.2.3...0.70.2.4
-
-Brian Bidulock <bidulock@openss7.org> (1):
-      typo in patch
 

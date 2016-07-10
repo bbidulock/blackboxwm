@@ -1,5 +1,64 @@
 # created with git log --stat=76 -M -C -200|fmt -sct -w80
 
+commit c5ad18bff4e5083c2ea593fe76fe7c32e4568420
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 10 10:13:29 2016 -0600
+
+    update po files
+
+ po/blackbox.pot | 4 ++--
+ po/da.po        | 4 ++--
+ po/de.po        | 4 ++--
+ po/es.po        | 4 ++--
+ po/es_AR.po     | 4 ++--
+ po/et.po        | 4 ++--
+ po/fr.po        | 4 ++--
+ po/hu.po        | 4 ++--
+ po/it.po        | 4 ++--
+ po/ja.po        | 4 ++--
+ po/ko.po        | 4 ++--
+ po/lv.po        | 4 ++--
+ po/nl.po        | 4 ++--
+ po/no.po        | 4 ++--
+ po/pl.po        | 4 ++--
+ po/pt_BR.po     | 4 ++--
+ po/ro.po        | 4 ++--
+ po/ru.po        | 4 ++--
+ po/sk.po        | 4 ++--
+ po/sl.po        | 4 ++--
+ po/sv.po        | 4 ++--
+ po/tr.po        | 4 ++--
+ po/uk.po        | 4 ++--
+ po/zh_CN.po     | 4 ++--
+ po/zh_TW.po     | 4 ++--
+ 25 files changed, 50 insertions(+), 50 deletions(-)
+
+commit 8da4746da03b1f404ced2a51a53bce5ae8e94a32
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 10 10:13:07 2016 -0600
+
+    simplify distribution
+
+ .gitignore            |   21 +-
+ AUTHORS.in => AUTHORS |   14 +-
+ ChangeLog             | 4853 +++++++++++++++++++++++++++++++++++++++++++++
+ Makefile.am           |  101 +-
+ NEWS                  |  153 ++
+ NEWS.in               |  177 --
+ README                |  131 +-
+ README.in             |  104 -
+ README.md             |  119 ++
+ README.md.in          |  119 ++
+ autogen.sh            |   56 +-
+ configure.ac          |    6 +-
+ configure.sh          |    4 +
+ dist.sh               |    9 +
+ gennews.sh            |   34 +
+ rebuild.sh            |    5 +-
+ src/Makefile.am       |    2 +
+ util/Makefile.am      |    1 +
+ 18 files changed, 5477 insertions(+), 432 deletions(-)
+
 commit 095f0214cfc243c3b367eb3a0711a7b49e6e90ae
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Wed Feb 10 13:46:47 2016 -0700
@@ -4827,27 +4886,3 @@ Date:   Mon Jan 24 09:30:03 2005 +0000
 
  src/Window.cc | 56 ++++++++++++++++++++++---------------------------------
  1 file changed, 22 insertions(+), 34 deletions(-)
-
-commit 34e360b3121abaaad08f118263a1a3ab5f497232
-Author: bradleyhughes <bradleyhughes>
-Date:   Mon Jan 24 09:06:10 2005 +0000
-
-    updateSize() and updateGeometry() can't be reimplemented, make them
-    private non-virtual functions
-
-    vanR has bugged me long enough, so I give up, give him a geometry()
-    function.
-
- lib/Menu.cc | 7 +++++++
- lib/Menu.hh | 8 +++++---
- 2 files changed, 12 insertions(+), 3 deletions(-)
-
-commit 2ec2a996d0cd47866dc704732f64eb1526e0b11d
-Author: bradleyhughes <bradleyhughes>
-Date:   Mon Jan 24 07:50:56 2005 +0000
-
-    add _NET_WM_STATE_DEMANDS_ATTENTION
-
- lib/EWMH.cc | 1 +
- lib/EWMH.hh | 3 +++
- 2 files changed, 4 insertions(+)
