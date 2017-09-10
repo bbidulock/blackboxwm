@@ -255,8 +255,10 @@ void bt::Application::run(void) {
     }
 
     int ret = select(xfd + 1, &rfds, 0, 0, timeout);
-    if (ret < 0)
+    if (ret < 0) {
+      errno = 0;
       continue; // perhaps a signal interrupted select(2)
+    }
 
     // check for timer timeout
     gettimeofday(&now, 0);
