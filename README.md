@@ -1,13 +1,13 @@
-[Blackbox -- read me first file.  2016-07-10]: #
+[blackbox -- read me first file.  2017-09-10]: #
 
-Blackbox
-========
+blackbox
+===============
 
-Package blackbox-0.72 was released under MIT license 2016-07-10.
+Package `blackbox-0.72.6` was released under MIT license 2017-09-10.
 
-This is a fork of the original Blackbox CVS that is on [Sourceforge][1].
+This is a fork of the original blackbox CVS that is on [Sourceforge][12].
 This fork is hosted on [GitHub][2].  What it includes is all changes made
-on the official Blackbox CVS repository on branch `blackbox-0_70_2cvs`, as
+on the official blackbox CVS repository on branch `blackbox-0_70_2cvs`, as
 well as patches collected from pdl-linux, Debian, the blackbox bug list,
 other GitHub forks.  It also includes enhanced EWMH/ICCCM compliance.
 
@@ -15,52 +15,53 @@ other GitHub forks.  It also includes enhanced EWMH/ICCCM compliance.
 Release
 -------
 
-This is the `blackbox-0.72` package, released 2016-07-10.  This release,
-and the latest version, can be obtained from the GitHub [repository][2],
-using a command such as:
+This is the `blackbox-0.72.6` package, released 2017-09-10.  This release, and
+the latest version, can be obtained from [GitHub][1], using a command such as:
 
     $> git clone https://github.com/bbidulock/blackboxwm.git
 
 Please see the [NEWS][3] file for release notes and history of user visible
 changes for the current version, and the [ChangeLog][4] file for a more
-detailed history of implementation changes.  The [TODO][5] file lists
-features not yet implemented and other outstanding items.  The file
-[COMPLIANCE][6] lists the current state of EWMH/ICCCM compliance.
+detailed history of implementation changes.  The [TODO][5] file lists features
+not yet implemented and other outstanding items.
+
+The file [COMPLIANCE][6] lists the current state of EWMH/ICCCM compliance.
 
 Please see the [INSTALL][7] file for installation instructions.
 
 When working from `git(1)`, please use this file.  An abbreviated
 installation procedure that works for most applications appears below.
 
-This release is published under the MIT license that can be found in the
-file [COPYING][8].
+This release is published under the MIT/X Consortium license that can be found
+in the file [LICENSE][8].
+This release is published under GPLv3.  Please see the license
+in the file [COPYING][9].
 
 
 Quick Start
 -----------
 
-The quickest and easiest way to get Blackbox up and running is to run the
+The quickest and easiest way to get blackbox up and running is to run the
 following commands:
 
-    $> git clone https://github.com/bbidulock/blackboxwm.git
-    $> cd blackboxwm
+    $> git clone https://github.com/bbidulock/blackboxwm.git blackbox
+    $> cd blackbox
     $> ./autogen.sh
-    $> ./configure --prefix=/usr --mandir=/usr/share/man
-    $> make V=0
+    $> ./configure
+    $> make
     $> make DESTDIR="$pkgdir" install
-    $> install -Dm644 COPYING "$pkgdir/usr/share/licenses/blackbox/COPYING"
 
-This will configure, compile and install Blackbox the quickest.  For those
-who like to spend the extra 15 seconds reading `./configure --help`, some
-compile time options can be turned on and off before the build.
+This will configure, compile and install blackbox the quickest.  For those who
+like to spend the extra 15 seconds reading `./configure --help`, some compile
+time options can be turned on and off before the build.
 
-For general information on GNU's `./configure`, see the [INSTALL][7] file.
+For general information on GNU's `./configure`, see the file [INSTALL][7].
 
 
-Configuring Blackbox
+Configuring blackbox
 --------------------
 
-The next thing most users want to do after installing Blackbox is to
+The next thing most users want to do after installing blackbox is to
 configure the colors, fonts, menus, etc. to their liking.  This is covered
 by the files [README][9], [README.menu][10] and [README.style][11].  These
 files give detailed information on how to customize your new window
@@ -83,37 +84,47 @@ machine-independent `rootCommand`.
 Third-party utilities
 ---------------------
 
-With the start of the `0.60.x` series Blackbox no longer handles any
+With the start of the `0.60.x` series blackbox no longer handles any
 keyboard shortcuts; instead it supports a communication protocol which
 allows other programs to handle these and related tasks. If you'd like to
-be able to use keyboard shortcuts with Blackbox, [`bbkeys(1)`][12] can
+be able to use keyboard shortcuts with blackbox, [`bbkeys(1)`][13] can
 provide you with all the previous functionality and more.
 
-If you're looking for a GUI with which to configure your Blackbox menu
-and/or styles, check out [`bbconf(1)`][13].  `bbconf(1)` is a QT program
+If you're looking for a GUI with which to configure your blackbox menu
+and/or styles, check out [`bbconf(1)`][14].  `bbconf(1)` is a QT program
 that does just that, as well as providing a GUI for editing your key
 bindings for the above mentioned `bbkeys(1)`.
 
 
-Reporting issues
-----------------
+Running
+-------
 
-Please report issues at GitHub, [here][14].
+Read the manual page after installation:
+
+    man blackbox
 
 
-[1]: http://blackboxwm.sourceforge.net
-[2]: https://github.com/bbidulock/blackboxwm
-[3]: NEWS
-[4]: ChangeLog
-[5]: TODO
-[6]: COMPLIANCE
-[7]: INSTALL
-[8]: COPYING
-[9]: data/README
-[10]: data/README.menu
-[11]: data/README.style
-[12]: http://bbkeys.sourceforge.net
-[13]: http://bbconf.sourceforge.net
-[14]: https://github.com/bbidulock/blackboxwm/issues
+Issues
+------
+
+Report issues on GitHub [here][2].
+
+
+
+[1]: https://github.com/bbidulock/blackboxwm
+[2]: https://github.com/bbidulock/blackboxwm/issues
+[3]: https://github.com/bbidulock/blackboxwm/blob/@BRANCH@/NEWS
+[4]: https://github.com/bbidulock/blackboxwm/blob/@BRANCH@/ChangeLog
+[5]: https://github.com/bbidulock/blackboxwm/blob/@BRANCH@/TODO
+[6]: https://github.com/bbidulock/blackboxwm/blob/@BRANCH@/COMPLIANCE
+[7]: https://github.com/bbidulock/blackboxwm/blob/@BRANCH@/INSTALL
+[8]: https://github.com/bbidulock/blackboxwm/blob/@BRANCH@/LICENSE
+[9]: https://github.com/bbidulock/blackboxwm/blob/@BRANCH@/COPYING
+[9]: https://github.com/bbidulock/blackboxwm/blob/@BRANCH@/data/README
+[10]: https://github.com/bbidulock/blackboxwm/blob/@BRANCH@/data/README.menu
+[11]: https://github.com/bbidulock/blackboxwm/blob/@BRANCH@/data/README.style
+[12]: http://blackboxwm.sourceforge.net
+[13]: http://bbkeys.sourceforge.net
+[14]: http://bbconf.sourceforge.net
 
 [ vim: set ft=markdown sw=4 tw=80 nocin nosi fo+=tcqlorn spell: ]: #
