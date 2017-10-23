@@ -20,6 +20,7 @@ _*
 *.o.*
 *.orig
 *.patch
+*.diff
 *.pc
 *.swo
 *.swp
@@ -152,4 +153,4 @@ en@boldquot.insert-header
 en@boldquot.po
 en@quot.insert-header
 en@quot.po
-
+nls/
