@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: blackbox 0.72\n"
 "Report-Msgid-Bugs-To: http://github.com/bbidulock/blackboxwm/issues\n"
-"POT-Creation-Date: 2016-07-10 10:30-0600\n"
+"POT-Creation-Date: 2017-10-23 13:42-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -549,24 +549,24 @@ msgid ""
 "  -help                    print this help text and exit\n"
 msgstr ""
 
-#: lib/Application.cc:72
+#: lib/Application.cc:73
 #, c-format
 msgid ""
 "%s:  X error: %s(%d) opcodes %d/%d\n"
 "  resource 0x%lx\n"
 msgstr ""
 
-#: lib/Application.cc:222
+#: lib/Application.cc:233
 #, c-format
 msgid "%s: caught unknown signal '%u', dumping core.\n"
 msgstr ""
 
-#: lib/Application.cc:495
+#: lib/Application.cc:508
 #, c-format
 msgid "unhandled event %d\n"
 msgstr ""
 
-#: lib/Application.cc:616
+#: lib/Application.cc:629
 #, c-format
 msgid "BaseDisplay::closeMenu: menu %p not valid.\n"
 msgstr ""
