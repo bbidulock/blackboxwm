@@ -49,8 +49,10 @@ namespace bt {
   private:
     struct {
       bool extensions;
+      int opcode_basep;
       int event_basep, error_basep;
-    } shape;
+      int major, minor;
+    } kbd, shape;
 
     Display *_display;
     std::string _app_name;

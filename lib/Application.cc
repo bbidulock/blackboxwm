@@ -32,6 +32,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
+#include <X11/XKBlib.h>
 #ifdef    SHAPE
 #  include <X11/extensions/shape.h>
 #endif // SHAPE
@@ -114,10 +115,20 @@ bt::Application::Application(const std::string &app_name, const char *dpy_name,
   sigaction(SIGUSR1, &action, NULL);
   sigaction(SIGUSR2, &action, NULL);
 
+  kbd.major = 1;
+  kbd.minor = 0;
+  kbd.extensions = XkbQueryExtension(_display->XDisplay(),
+                                     &kbd.opcode_basep,
+                                     &kbd.event_basep,
+                                     &kbd.error_basep,
+                                     &kbd.major, &kbd.minor);
+
 #ifdef    SHAPE
-  shape.extensions = XShapeQueryExtension(_display->XDisplay(),
-                                          &shape.event_basep,
-                                          &shape.error_basep);
+  if ((shape.extensions = XShapeQueryExtension(_display->XDisplay(),
+                                               &shape.event_basep,
+                                               &shape.error_basep))) {
+    XShapeQueryVersion(_display->XDisplay(), &shape.major, &shape.minor);
+  }
 #else // !SHAPE
   shape.extensions = False;
 #endif // SHAPE
