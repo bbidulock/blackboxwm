@@ -5,5 +5,5 @@
 [ -f Makefile ] && make distclean
 ./autogen.sh
 ./configure.sh
-make distcheck
+make -j$(($(nproc 2>/dev/null||echo 4)<<1)) distcheck
 

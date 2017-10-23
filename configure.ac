@@ -72,6 +72,7 @@ fi
 
 dnl libbt shouldn't be shared by default (yet)
 AC_DISABLE_SHARED
+LT_PATH_LD
 LT_PREREQ([2.4.2])
 LT_INIT([])
 LT_LANG([C++])
@@ -83,7 +84,7 @@ AM_GNU_GETTEXT([external])
 
 AC_LANG([C++])
 
-PKG_PROG_PKG_CONFIG
+PKG_PROG_PKG_CONFIG([0.14.0])
 
 # Checks for header files.
 AC_HEADER_STDC
