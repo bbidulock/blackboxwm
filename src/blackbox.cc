@@ -32,12 +32,15 @@
 #include <PixmapCache.hh>
 #include <Util.hh>
 
+extern "C" {
 #include <X11/Xresource.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <assert.h>
 #include <signal.h>
 #include <unistd.h>
+#include <sys/prctl.h>
+}
 
 // #define FOCUS_DEBUG
 #ifdef FOCUS_DEBUG
@@ -412,6 +415,11 @@ Blackbox::Blackbox(char **m_argv, int m_argc, const char *dpy_name,
 
   if (XSetLocaleModifiers("") == NULL)
     fprintf(stderr, gettext("cannot set locale modifiers\n"));
+
+  setsid();
+#ifdef PR_SET_CHILD_SUBREAPER
+  prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0);
+#endif
 
   argv = m_argv;
   argc = m_argc;
