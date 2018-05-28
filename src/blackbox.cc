@@ -39,7 +39,9 @@ extern "C" {
 #include <assert.h>
 #include <signal.h>
 #include <unistd.h>
+#ifdef __linux__
 #include <sys/prctl.h>
+#endif
 }
 
 // #define FOCUS_DEBUG
@@ -417,8 +419,10 @@ Blackbox::Blackbox(char **m_argv, int m_argc, const char *dpy_name,
     fprintf(stderr, gettext("cannot set locale modifiers\n"));
 
   setsid();
+#ifdef __linux__
 #ifdef PR_SET_CHILD_SUBREAPER
   prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0);
+#endif
 #endif
 
   argv = m_argv;
